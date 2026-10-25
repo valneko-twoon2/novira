@@ -22,18 +22,12 @@ import { toast } from '@/state/toasts';
 import { showViewer } from '@/state/ui';
 import { Button, cx, EmptyState, IconButton, ModelPicker, NumberInput, SliderNumber, Spinner } from '@/ui';
 import { GroupTabs } from './GroupTabs';
+import { pictureOf } from './pictures';
 import './drafts.css';
 
 const PER_PAGE = 24;
 
 const PROBLEMS = { 'not-txt2img': 'drafts.onlyTxt2img', 'no-builder': 'drafts.notReady', 'edit-model': 'drafts.editModel' } as const;
-
-/** Picture of a candidate: the finished image once it exists, else the draft. */
-function pictureOf(c: DraftCandidate, images: ImageDTO[]): { image: ImageDTO | undefined; finished: boolean } {
-  const final = c.finalImageName ? images.find((i) => i.name === c.finalImageName) : undefined;
-  if (final) return { image: final, finished: true };
-  return { image: c.imageName ? images.find((i) => i.name === c.imageName) : undefined, finished: false };
-}
 
 /**
  * `onOpen` shows a candidate's picture large in another place than the desktop viewer (the phone layout's): with it, each

@@ -249,18 +249,30 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  min-width: 240px;
-  max-width: 340px;
+  width: min(360px, 90vw);
 }
 
 .dv-olderlist {
   display: flex;
   flex-direction: column;
+  gap: var(--space-2);
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.dv-olderday h3 {
+  margin: 0 0 var(--space-1);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.dv-olderday ul {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-1);
-  max-height: 320px;
   margin: 0;
   padding: 0;
-  overflow-y: auto;
   list-style: none;
 }
 
@@ -274,9 +286,11 @@
   background: var(--bg-elevated);
 }
 
-.dv-olderitem > button {
+.dv-olderitem > button:first-child {
   display: flex;
   flex: 1;
+  align-items: center;
+  gap: var(--space-2);
   min-width: 0;
   padding: var(--space-1) var(--space-2);
   border: 0;
@@ -285,4 +299,35 @@
   font-size: 12px;
   text-align: left;
   cursor: pointer;
+}
+
+.dv-olderthumbs {
+  display: flex;
+  flex: none;
+  gap: 2px;
+  min-width: 40px;
+}
+
+.dv-olderthumbs img {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+
+.dv-oldertext {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dv-oldername {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dv-oldertime {
+  color: var(--text-muted);
+  font-size: 11px;
 }

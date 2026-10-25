@@ -60,7 +60,7 @@ Generation makes the pictures: a queue of jobs that run one at a time, the Comfy
 
 - A draft is a text-to-image job with `draftAt` (0 to 1). Its graph is a `KSamplerAdvanced` stopping at `draft_step(N, f) = clamp(round(f * N), ceil(0.2 * N), N - 2)` with `return_with_leftover_noise: disable`, for the SD family and every newer family on the shared graph; FLUX.2 cuts its sigmas at that step instead (model-families.md). Edit models refuse drafts. It needs at least 4 steps and no high-resolution fix. The result is stored as an intermediate image.
 - The Drafts view offers the Generate tab's picture models (`drawableModels`) less the edit models (`draftRefusal`, the file-name words the backend reads), and names the left-out ones.
-- `frontend/src/state/drafts.ts` keeps a session: 1 to 24 candidates (Settings `draftCount`, 4), random seeds, drawn to 0.25 to 0.6 of the steps (Settings `draftPosition`, percent, 35). The screen's count and position (`state/draftForm.ts`, unsaved) follow the settings until changed. Each is kept or rejected; Continue queues a normal run from step 0 with that seed. Sessions live in local storage (`novira.drafts`); `GroupTabs.tsx` shows the latest 5 as tabs, the older in a popup.
+- `frontend/src/state/drafts.ts` keeps a session: 1 to 24 candidates (Settings `draftCount`), random seeds, drawn to 0.25 to 0.6 of the steps (Settings `draftPosition`, percent). The screen's count and position (`state/draftForm.ts`) follow the settings until set. Each is kept or rejected; Continue queues a normal run from step 0 with that seed. Sessions live in local storage (`novira.drafts`); `GroupTabs.tsx` shows the latest 5 as tabs, the older in a popup by day with thumbnails.
 
 ### Guidance checks
 

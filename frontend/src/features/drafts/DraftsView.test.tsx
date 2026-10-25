@@ -12,6 +12,7 @@ import { useToasts } from '@/state/toasts';
 import { useUi } from '@/state/ui';
 import { TooltipProvider } from '@/ui';
 import { DraftsView } from './DraftsView';
+import { byDay } from './GroupTabs';
 
 const initial = { drafts: useDrafts.getState(), gallery: useGallery.getState(), toasts: useToasts.getState(), models: useModels.getState(), ui: useUi.getState() };
 const lastToast = () => useToasts.getState().toasts.at(-1);
@@ -209,6 +210,31 @@ describe('groups', () => {
       expect(list.querySelector('li')!.textContent).toContain('3.');
       fireEvent.click(list.querySelectorAll('li > button:first-child')[2]!);
       expect(useDrafts.getState().currentId).toBe('g1');
+    });
+
+    it('lists the older ones by day, the latest day and batch first, with the pictures drawn then', () => {
+      const at = (id: string, day: number, hour: number, n: number) => ({
+        ...group(id, [candidate(n), candidate(n + 50), candidate(n + 60)]),
+        createdAt: new Date(2026, 9, day, hour).getTime(),
+      });
+      useDrafts.setState({
+        groups: [at('g1', 3, 9, 1), at('g2', 3, 15, 2), at('g3', 4, 8, 3), ...[4, 5, 6, 7, 8].map((n) => at(`g${n}`, 10, n, n))],
+        currentId: 'g8',
+      });
+      useGallery.setState({ images: [picture('d2.png'), picture('d52.png'), picture('d1.png')] });
+      show();
+      fireEvent.click(screen.getByTestId('drafts-older'));
+      const list = screen.getByTestId('drafts-older-list');
+      expect(list.querySelectorAll('section')).toHaveLength(2);
+      expect([...list.querySelectorAll('li')].map((li) => li.textContent?.slice(0, 3))).toEqual(['3. ', '2. ', '1. '].map((s) => s.slice(0, 3)));
+      const second = list.querySelectorAll('section')[1]!;
+      expect([...second.querySelectorAll('li')].map((li) => li.querySelectorAll('img').length)).toEqual([2, 1]);
+    });
+
+    it('groups batches by calendar day, newest first', () => {
+      const at = (id: string, ...time: [number, number, number, number]) => ({ ...group(id, []), createdAt: new Date(2026, time[0], time[1], time[2], time[3]).getTime() });
+      const days = byDay([at('a', 9, 3, 23, 59), at('b', 9, 4, 0, 0), at('c', 9, 3, 0, 0)]);
+      expect(days.map((d) => d.groups.map((g) => g.id))).toEqual([['b'], ['a', 'c']]);
     });
 
     it('shows no popup button while the history fits on the screen', () => {
