@@ -80,9 +80,15 @@ describe('the original page', () => {
     expect(open).toHaveBeenCalledWith(model.pageUrl);
   });
 
-  it('falls back to a source that is an address, and shows no link for a local file', () => {
+  it('falls back to a page built from the source, and shows no link for a local file', () => {
     show({ ...model, pageUrl: undefined, source: 'https://huggingface.co/a/b' });
     expect(screen.getByTestId('mm-page-link').textContent).toBe('https://huggingface.co/a/b');
+    cleanup();
+    show({ ...model, pageUrl: undefined, source: 'civitai:827184/1-2' });
+    expect(screen.getByTestId('mm-page-link').textContent).toBe('https://civitai.com/models/827184');
+    cleanup();
+    show({ ...model, pageUrl: undefined, source: 'owner/repo::a/b.safetensors' });
+    expect(screen.getByTestId('mm-page-link').textContent).toBe('https://huggingface.co/owner/repo');
     cleanup();
     show({ ...model, pageUrl: undefined, source: 'C:/models/x.safetensors' });
     expect(screen.queryByTestId('mm-page-link')).toBeNull();

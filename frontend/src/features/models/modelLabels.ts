@@ -74,3 +74,14 @@ export function formatBytes(bytes: number): string {
   const v = bytes / 1024 ** i;
   return `${v.toFixed(i === 0 ? 0 : v < 10 ? 2 : 1)} ${units[i]}`;
 }
+
+/** The page a model came from: the stored one, else built from its install source (`civitai:<id>/…`, `owner/repo::file`, or an address). */
+export function modelPageUrl(model: { pageUrl?: string | null; source: string }): string | null {
+  if (model.pageUrl) return model.pageUrl;
+  const s = model.source.trim();
+  if (/^https?:\/\//i.test(s)) return s;
+  const civitai = /^civitai:(\d{1,12})(?:\/|$)/.exec(s);
+  if (civitai) return `https://civitai.com/models/${civitai[1]}`;
+  const hf = /^([\w.-]+\/[\w.-]+)::/.exec(s);
+  return hf ? `https://huggingface.co/${hf[1]}` : null;
+}

@@ -10,10 +10,10 @@ import { ModelGallery } from './ModelGallery';
 import { DefaultSettingsForm } from './DefaultSettingsForm';
 import { DeleteModelDialog } from './DeleteModelDialog';
 import { ModelEditForm } from './ModelEditForm';
-import { TYPE_KEYS, formatBytes, formatTag } from './modelLabels';
+import { TYPE_KEYS, formatBytes, formatTag, modelPageUrl } from './modelLabels';
 import { TriggerPhrases } from './TriggerPhrases';
 
-const isUrl = (s: string) => /^https?:\/\//i.test(s);
+
 
 export function ModelDetail({ model }: { model: ModelConfig }) {
   const setSelectedKey = useModels((s) => s.setSelectedKey);
@@ -24,7 +24,7 @@ export function ModelDetail({ model }: { model: ModelConfig }) {
   const canConvert = model.type === 'main' && model.format === 'checkpoint';
 
   // The system browser opens it, and only after the backend checked the address (https, a model site).
-  const pageUrl = model.pageUrl ?? (isUrl(model.source) ? model.source : null);
+  const pageUrl = modelPageUrl(model);
   const openSource = () => {
     if (!pageUrl) return;
     if (backend.kind === 'mock') {
