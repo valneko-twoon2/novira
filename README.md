@@ -116,6 +116,7 @@ scripts\start.bat
 | `scripts\start.bat` | アプリをビルドして起動します。`start.bat fast` はビルドせずに起動します |
 | `scripts\server.bat` | ブラウザ版のサーバーをビルドして起動します |
 | `scripts\release.bat` | リリース用にビルドし、`artifacts\` に `novira.exe` などを置きます |
+| `scripts\package.bat` | `release.bat` の後に使い、配布用の zip（`artifacts\novira-<バージョン>-windows-x64.zip`）と SHA-256 のファイルを作ります。ビルドした人のデータは入りません |
 | `scripts\rebuild.bat` | 画面が崩れたときなどに、作り直してから起動します |
 | `cd frontend` → `npm run dev` | エンジンなしで画面だけを確かめます（ブラウザで開くモック） |
 
