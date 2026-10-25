@@ -1,13 +1,13 @@
 .engine-banner {
+  /* In the corner, clear of the tab bars and filters at the top, which a start-up of the engine must not cover. */
   position: fixed;
-  top: var(--space-4);
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 76px;
+  left: calc(var(--nav-width) + var(--space-4));
   z-index: var(--z-toast);
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
-  width: min(480px, calc(100vw - 32px));
+  width: min(340px, calc(100vw - 32px));
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--border-strong);
   border-left: 4px solid var(--blue-400);
