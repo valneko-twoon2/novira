@@ -1,0 +1,13 @@
+# Cargo settings for every build under backend/.
+
+# Link with the LLVM linker shipped with Rust instead of link.exe. novira-core has about 80 integration test binaries,
+# and relinking them is most of a rebuild: after a one-file change in novira-core, `cargo test -p novira-core --no-run`
+# took 51-60 s with link.exe and 30-34 s with rust-lld (measured 2026-10-13); every test of the workspace passes either way.
+[target.x86_64-pc-windows-msvc]
+linker = "rust-lld.exe"
+
+[env]
+# `trustmark` turns on ort's `download-binaries`, which fetches a ~300 MB static ONNX Runtime at build time. novira
+# loads ONNX Runtime from a DLL at run time instead (`load-dynamic`), so the build needs nothing from the
+# network and links no ONNX Runtime.
+ORT_SKIP_DOWNLOAD = "1"

@@ -1,0 +1,72 @@
+.batch {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.batch__count {
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+
+.batch__thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.batch__thumbs img {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius);
+  object-fit: cover;
+  background: var(--base-900);
+}
+
+.batch__ops {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.batch__op {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.batch__op.is-on {
+  border-color: var(--accent);
+  background: var(--bg-active);
+}
+
+.batch__needs {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.batch__needs p {
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+
+.batch__error {
+  margin: 0;
+  color: var(--danger);
+  font-size: var(--fs-xs);
+}
+
+.batch__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}

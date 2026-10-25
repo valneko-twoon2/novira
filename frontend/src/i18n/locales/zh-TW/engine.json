@@ -1,0 +1,8 @@
+{
+  "engine.title.downloading": "正在下載圖像生成引擎（ComfyUI 與 Python）",
+  "engine.title.extracting": "正在解壓縮圖像生成引擎（ComfyUI 與 Python）",
+  "engine.title.starting": "正在啟動圖像生成引擎",
+  "engine.title.error": "無法準備圖像生成引擎",
+  "engine.sizeProgress": "{done} / {total}",
+  "engine.firstRunNote": "僅首次需要下載數 GB 的檔案。完成之前無法開始生成。"
+}

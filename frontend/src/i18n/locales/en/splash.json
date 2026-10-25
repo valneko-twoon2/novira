@@ -1,0 +1,19 @@
+{
+  "splash.open": "Open the app",
+  "splash.step.downloading": "Download",
+  "splash.step.extracting": "Unpack",
+  "splash.step.starting": "Start",
+  "splash.preparing": "Waiting for the image engine to start and its nodes to load",
+  "splash.engine.heading": "Getting the image engine ready",
+  "splash.engine.sub.downloading": "Downloading ComfyUI and Python",
+  "splash.engine.sub.extracting": "Unpacking the downloaded files",
+  "splash.engine.sub.starting": "Starting the engine and waiting for it to answer",
+  "splash.engine.rate": "{rate}/s",
+  "splash.engine.eta": "About {time} left",
+  "splash.engine.seconds": "{n} s",
+  "splash.engine.minutes": "{n} min {s} s",
+  "splash.engine.hours": "{h} h {m} min",
+  "splash.wait.heading.loading": "Starting novira",
+  "splash.wait.sub.loading": "Loading your data",
+  "splash.wait.heading.preparing": "Getting ready to use"
+}

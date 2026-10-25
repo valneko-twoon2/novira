@@ -1,0 +1,13 @@
+{
+  "none": {
+    "state": "none"
+  },
+  "restored": {
+    "state": "restored",
+    "uiState": "{\"novira.settings\":\"{}\"}"
+  },
+  "failed": {
+    "state": "failed",
+    "message": "the backup could not be restored; your data was kept as it was"
+  }
+}

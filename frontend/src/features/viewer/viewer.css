@@ -1,0 +1,478 @@
+/* Image viewer: toolbar, stage with fitted image, progress, compare, metadata overlay. */
+.viewer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.vtoolbar {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: var(--space-1) var(--space-2);
+}
+
+.vtoolbar__group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius);
+  background: var(--bg-input);
+}
+
+.vtoolbar .ui-divider--v {
+  height: 22px;
+}
+
+.viewer__stage {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.viewer__stage:hover .vnav {
+  opacity: 1;
+}
+
+.vimg {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background-color: var(--checker-a);
+  background-image:
+    linear-gradient(45deg, var(--checker-b) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--checker-b) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--checker-b) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--checker-b) 75%);
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  background-size: 16px 16px;
+  box-shadow: var(--shadow);
+}
+
+.vimg img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+}
+
+.vimg video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.vimg__audio {
+  position: absolute;
+  right: var(--space-2);
+  bottom: var(--space-2);
+  left: var(--space-2);
+  width: calc(100% - 2 * var(--space-2));
+}
+
+.vimg img.is-pixelated {
+  image-rendering: pixelated;
+}
+
+/* Zoom / pan surface: the image frame is placed by the view transform, at the top left plus a translation. */
+.vzoom {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+
+.viewer__stage > .vzoom {
+  position: absolute;
+  inset: 0;
+}
+
+.vzoom.is-grab {
+  cursor: grab;
+}
+
+.vzoom.is-panning {
+  cursor: grabbing;
+}
+
+.vzoom__frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.vzoom-controls {
+  position: absolute;
+  right: var(--space-2);
+  bottom: var(--space-2);
+  z-index: 2;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow);
+}
+
+.vempty__keys {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-faint);
+  font-size: var(--fs-sm);
+}
+
+.vnav {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 56px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--scrim-light);
+  color: var(--text);
+  font-size: 18px;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(-50%);
+  transition: opacity var(--duration), background var(--duration);
+}
+
+.vnav:hover {
+  border-color: var(--blue-400);
+  background: var(--bg-elevated);
+  color: var(--blue-300);
+}
+
+.vnav--prev {
+  left: var(--space-2);
+}
+
+.vnav--next {
+  right: var(--space-2);
+}
+
+.viewer__info {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+  height: 26px;
+  padding: 0 var(--space-3);
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
+.viewer__sep {
+  width: 1px;
+  height: 12px;
+  background: var(--border-strong);
+}
+
+.viewer__spacer {
+  flex: 1;
+}
+
+.viewer__name {
+  overflow: hidden;
+  color: var(--text-faint);
+  text-overflow: ellipsis;
+}
+
+/* Metadata overlay */
+.vmeta {
+  position: absolute;
+  inset: var(--space-2) auto var(--space-2) var(--space-2);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  width: min(460px, calc(100% - 16px));
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+}
+
+.vmeta__tabs {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.vmeta__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-1) 0 var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.vmeta__head .ui-tabs__list {
+  flex: 1;
+  border-bottom: none;
+}
+
+.vmeta__head .ui-tabs__tab {
+  padding: 0 var(--space-2);
+  font-size: var(--fs-sm);
+}
+
+.vmeta__body {
+  flex: 1;
+  min-height: 0;
+  padding: var(--space-2);
+  overflow: auto;
+  /* The prompts and the other values can be selected and copied by hand (the app turns selection off elsewhere). */
+  user-select: text;
+}
+
+.vmeta__body[hidden] {
+  display: none;
+}
+
+.vrecall {
+  display: flex;
+  flex-direction: column;
+}
+
+.vrecall__row {
+  display: grid;
+  grid-template-columns: 112px 1fr auto;
+  align-items: start;
+  gap: var(--space-2);
+  padding: 4px var(--space-1);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-sm);
+}
+
+.vrecall__row:hover {
+  background: var(--bg-hover);
+}
+
+.vrecall__label {
+  color: var(--text-faint);
+  line-height: 22px;
+}
+
+.vrecall__value {
+  overflow-wrap: anywhere;
+  color: var(--text);
+  line-height: 22px;
+  white-space: pre-wrap;
+}
+
+.vrecall__actions {
+  display: flex;
+  gap: 2px;
+  user-select: none;
+}
+
+.vrecall__spacer {
+  width: 24px;
+}
+
+.vjson {
+  position: relative;
+}
+
+.vjson pre {
+  margin: 0;
+  padding: var(--space-2);
+  overflow: auto;
+  border-radius: var(--radius);
+  background: var(--bg-input);
+  color: var(--blue-600);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.vjson__copy {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+
+/* Compare */
+.vcompare {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.vcompare__toolbar {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: var(--space-1) var(--space-2);
+}
+
+.vseg {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius);
+  background: var(--bg-input);
+}
+
+.vseg__btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: calc(var(--toolbar-control-h) - 4px);
+  padding: 0 var(--space-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--fs-md);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.vseg__btn svg {
+  font-size: var(--toolbar-icon);
+}
+
+.vseg__btn:hover {
+  color: var(--text);
+}
+
+.vseg__btn.is-active {
+  background: var(--grad-accent);
+  color: var(--invoke-text);
+}
+
+.vcompare__stage {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  padding: var(--space-2);
+}
+
+.vcompare__stage > .vzoom {
+  flex: 1;
+}
+
+.vcompare__sbs {
+  display: flex;
+  gap: var(--space-3);
+  width: 100%;
+  height: 100%;
+}
+
+.vcompare__half {
+  flex: 1;
+}
+
+.vcompare__label {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 1;
+  max-width: 45%;
+  padding: 1px 6px;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--overlay);
+  color: var(--blue-200);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.vcompare__label--b {
+  color: var(--yellow-300);
+}
+
+.vcompare__label--right {
+  right: 6px;
+  left: auto;
+}
+
+.vslider {
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.vslider__divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 2px;
+  background: var(--blue-300);
+  box-shadow: var(--glow);
+  transform: translateX(-1px);
+  pointer-events: none;
+}
+
+.vslider__handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 36px;
+  border: 2px solid var(--blue-300);
+  border-radius: var(--radius-pill);
+  background: var(--base-900);
+  transform: translate(-50%, -50%);
+}
+
+/* A job being drawn: its picture in progress and a thin bar under it. */
+.vlive {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  color: var(--text-muted);
+}
+
+.vlive__bar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: min(320px, 80%);
+}
+
+.vlive__step {
+  color: var(--blue-600);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  text-align: center;
+}

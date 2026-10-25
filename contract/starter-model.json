@@ -1,0 +1,12 @@
+{
+  "id": "sdxl-base",
+  "name": "SDXL base",
+  "base": "sdxl",
+  "type": "main",
+  "description": "The base model",
+  "source": "stabilityai/stable-diffusion-xl-base-1.0",
+  "dependencies": [
+    "sdxl-vae"
+  ],
+  "sizeBytes": 6938078334
+}

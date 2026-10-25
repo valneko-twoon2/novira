@@ -1,0 +1,115 @@
+{
+  "audio_ext": null,
+  "output_node": "9",
+  "prompt": {
+    "1": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "sdxl\\base.safetensors"
+      }
+    },
+    "2": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "a cat"
+      }
+    },
+    "3": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "blurry"
+      }
+    },
+    "4": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "source.png"
+      }
+    },
+    "5": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 1152,
+        "image": [
+          "4",
+          0
+        ],
+        "upscale_method": "lanczos",
+        "width": 1536
+      }
+    },
+    "6": {
+      "class_type": "VAEEncode",
+      "inputs": {
+        "pixels": [
+          "5",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "7": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 6.5,
+        "denoise": 0.2,
+        "latent_image": [
+          "6",
+          0
+        ],
+        "model": [
+          "1",
+          0
+        ],
+        "negative": [
+          "3",
+          0
+        ],
+        "positive": [
+          "2",
+          0
+        ],
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "seed": 42,
+        "steps": 20
+      }
+    },
+    "8": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "7",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "9": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "8",
+          0
+        ]
+      }
+    }
+  },
+  "thumbnail_node": null,
+  "total_steps": 20
+}

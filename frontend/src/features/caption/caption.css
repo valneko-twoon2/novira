@@ -1,0 +1,117 @@
+/* The "describe as a prompt" dialog: the picture (or a place to drop one) on the left, the text on the right. */
+.cap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: var(--space-4);
+}
+
+.cap__stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  max-height: 60vh;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--base-900);
+}
+
+.cap__stage.is-busy {
+  cursor: progress;
+}
+
+.cap__img {
+  display: block;
+  max-width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+  user-select: none;
+}
+
+.cap__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 280px;
+  padding: var(--space-4);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+  background: none;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+
+.cap__empty:hover {
+  color: var(--text);
+  background: var(--bg-hover);
+}
+
+.cap__busy {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+}
+
+.cap__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cap__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--fs-sm);
+}
+
+.cap__hint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+}
+
+.cap__needs {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+}
+
+.cap__needs p {
+  margin: 0;
+}
+
+.cap__row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.cap__row--wrap {
+  flex-wrap: wrap;
+}
+
+.cap__result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cap__error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+  margin: 0;
+  color: var(--danger);
+  font-size: var(--fs-xs);
+}
+

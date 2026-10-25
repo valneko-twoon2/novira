@@ -1,0 +1,35 @@
+/* The dialog that redoes a picture with a strength chosen on a slider. */
+.dvdlg {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.dvdlg__image {
+  align-self: center;
+  max-width: 100%;
+  max-height: 240px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  object-fit: contain;
+}
+
+.dvdlg__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--fs-sm);
+}
+
+.dvdlg__scale {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.dvdlg__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}

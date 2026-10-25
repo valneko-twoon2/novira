@@ -1,0 +1,17 @@
+{
+  "batch.title": "Process several at once",
+  "batch.count.one": "Runs the same operation on {count} picture",
+  "batch.count.other": "Runs the same operation on {count} pictures",
+  "batch.op": "Operation",
+  "batch.op.removeBackground.title": "Remove the background and cut out",
+  "batch.op.upscale.title": "Enlarge",
+  "batch.upscaler": "Upscale model",
+  "batch.noUpscaler": "There is no upscale model. Add one from the Models screen.",
+  "batch.needsPack": "Removing backgrounds needs the extension {pack}.",
+  "batch.install": "Install",
+  "batch.restart": "Restart ComfyUI to use it",
+  "batch.run": "Run",
+  "batch.queued.one": "{count} picture queued. The result goes to the board of its source",
+  "batch.queued.other": "{count} pictures queued. Results go to the boards of their sources",
+  "batch.failed": "Could not queue them"
+}

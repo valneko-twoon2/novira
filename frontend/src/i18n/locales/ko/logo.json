@@ -1,0 +1,19 @@
+{
+  "logo.text": "로고 문구",
+  "logo.textPlaceholder": "로고에 넣을 문구 (예: NOVIRA)",
+  "logo.style": "스타일",
+  "logo.stylePlaceholder": "분위기, 색상, 모양 (예: 미니멀, 파랑과 흰색, 기하학적)",
+  "logo.size": "모양",
+  "logo.size.square": "정사각형",
+  "logo.size.wide": "가로형",
+  "logo.size.tall": "세로형",
+  "logo.count": "후보 수: {count}",
+  "logo.countLabel": "후보 수",
+  "logo.note": "글자를 정확히 그리는 모델로 후보를 만듭니다. 영어 글자는 정확하지만 일본어는 깨질 수 있습니다. 그럴 때는 \"글자 겹치기\"로 텍스트 탭에서 글자를 넣으세요. 완성된 로고는 에셋에 저장됩니다.",
+  "logo.problem.text": "로고에 넣을 문구를 입력하세요",
+  "logo.problem.pack": "먼저 로고 모델을 다운로드하세요",
+  "logo.empty.title": "아직 로고가 없습니다",
+  "logo.empty.description": "\"글자 겹치기\"로 텍스트 탭에서 글자와 말풍선을 추가할 수 있습니다.",
+  "logo.layText": "글자 겹치기",
+  "logo.delete": "로고 삭제"
+}

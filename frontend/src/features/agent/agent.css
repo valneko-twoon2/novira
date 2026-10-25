@@ -1,0 +1,1044 @@
+/* AI assistant: chat window. */
+.agent-win {
+  /* Its own size is set, so the message box can be capped by it. */
+  container-type: size;
+  position: fixed;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  /* Over the app's panels (40 at most), under the dialogs (800), menus and popovers (900): it never covers them. */
+  z-index: var(--z-assistant);
+  display: flex;
+  flex-direction: column;
+  width: min(400px, calc(100vw - 32px));
+  height: min(580px, calc(100vh - 100px));
+  max-width: calc(100vw - 16px);
+  max-height: calc(100vh - 16px);
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow);
+}
+
+.agent-win.is-moved {
+  right: auto;
+  bottom: auto;
+  height: min(580px, calc(100vh - 16px));
+}
+
+/* Grips on every side and corner: drag to resize (the opposite side stays put). */
+.agent-win__grip {
+  position: absolute;
+  z-index: 2;
+  touch-action: none;
+}
+
+.agent-win__grip--n,
+.agent-win__grip--s {
+  right: 12px;
+  left: 12px;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+.agent-win__grip--n {
+  top: 0;
+}
+
+.agent-win__grip--s {
+  bottom: 0;
+}
+
+.agent-win__grip--e,
+.agent-win__grip--w {
+  top: 12px;
+  bottom: 12px;
+  width: 6px;
+  cursor: ew-resize;
+}
+
+.agent-win__grip--e {
+  right: 0;
+}
+
+.agent-win__grip--w {
+  left: 0;
+}
+
+.agent-win__grip--nw,
+.agent-win__grip--ne,
+.agent-win__grip--sw,
+.agent-win__grip--se {
+  width: 14px;
+  height: 14px;
+}
+
+.agent-win__grip--nw {
+  top: 0;
+  left: 0;
+  cursor: nwse-resize;
+}
+
+.agent-win__grip--se {
+  right: 0;
+  bottom: 0;
+  cursor: nwse-resize;
+}
+
+.agent-win__grip--ne {
+  top: 0;
+  right: 0;
+  cursor: nesw-resize;
+}
+
+.agent-win__grip--sw {
+  bottom: 0;
+  left: 0;
+  cursor: nesw-resize;
+}
+
+/* The bottom-right corner shows that the window can be resized. */
+.agent-win__grip--se::after {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--text-faint);
+  border-bottom: 2px solid var(--text-faint);
+  border-bottom-right-radius: var(--radius-xs);
+  content: '';
+}
+
+.agent-win__grip:hover {
+  background: var(--blue-400);
+  opacity: 0.4;
+}
+
+/* The model and effort the tool runs on, beside the chat's title. */
+.agent-model {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  max-width: 160px;
+  height: 22px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+}
+
+.agent-model:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.agent-model__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-model-pop {
+  /* Above the assistant's window, and still under the dialogs. */
+  z-index: var(--z-assistant-popover);
+  width: 300px;
+}
+
+.agent-model-pop__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.agent-model-pop__title {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.agent-model-pop__hint {
+  margin: 0;
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+}
+
+.agent-seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.agent-seg__btn {
+  height: 26px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+}
+
+.agent-seg__btn:hover {
+  color: var(--text);
+}
+
+.agent-seg__btn[aria-pressed='true'] {
+  border-color: transparent;
+  background: var(--grad-accent);
+  color: var(--white);
+}
+
+/* The assistant's account of how it read the request: one line, opened on demand. */
+.agent-thoughts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-1);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.agent-thoughts__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.agent-thoughts__row:hover {
+  color: var(--text);
+}
+
+.agent-thoughts__icon {
+  flex: none;
+}
+
+.agent-thoughts__line {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-thoughts__list {
+  margin: 0;
+  padding-left: var(--space-4);
+}
+
+.agent-win__head {
+  cursor: move;
+  user-select: none;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.agent-win__icon {
+  color: var(--blue-400);
+}
+
+.agent-win__title {
+  flex: none;
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.agent-win__spacer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Session bar: the current chat's title (opens the past chats) and the new-chat button. */
+.agent-sessbar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.agent-sessbar__pick {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.agent-sessbar__pick:hover,
+.agent-sessbar__pick[aria-expanded='true'] {
+  background: var(--bg-hover);
+}
+
+.agent-sessbar__icon {
+  flex: none;
+  color: var(--text-muted);
+}
+
+.agent-sessbar__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Past chats, most recent first. */
+.agent-sessions {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0;
+  margin: 0;
+  padding: var(--space-2);
+  overflow-y: auto;
+  list-style: none;
+}
+
+.agent-sessions--empty {
+  padding: var(--space-4);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.agent-sessions--empty p {
+  margin: 0;
+}
+
+.agent-session {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 36px;
+  padding-right: var(--space-1);
+  border-radius: var(--radius);
+}
+
+.agent-session:hover {
+  background: var(--bg-hover);
+}
+
+.agent-session.is-current {
+  background: var(--bg-active);
+  box-shadow: inset 2px 0 0 var(--blue-400);
+}
+
+.agent-session.is-editing,
+.agent-session.is-confirming {
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg-surface);
+}
+
+.agent-session.is-editing .ui-input {
+  flex: 1;
+}
+
+.agent-session__pick {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.agent-session__title {
+  overflow: hidden;
+  font-size: var(--fs-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-session__time {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+}
+
+.agent-session__ask {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: var(--fs-sm);
+}
+
+.agent-win__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 0;
+  padding: var(--space-3);
+  overflow-y: auto;
+  /* The conversation can be selected and copied by hand (the app turns selection off elsewhere). */
+  user-select: text;
+}
+
+.agent-win__body button {
+  user-select: none;
+}
+
+.agent-empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.agent-empty p {
+  margin: 0;
+}
+
+.agent-empty__chips {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.agent-chip {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.agent-chip:hover {
+  background: var(--bg-hover);
+}
+
+.agent-msg {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 92%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+}
+
+.agent-msg--user {
+  align-self: flex-end;
+  background: var(--grad-accent);
+  color: var(--white);
+}
+
+.agent-msg--assistant {
+  align-self: flex-start;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+
+/* A turn the app sent by itself so the assistant could go on: a quiet note in the middle. */
+.agent-msg--thinking {
+  flex-flow: row wrap;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+/* What the running request has changed so far, under the spinner. */
+.agent-msg--thinking .agent-acts {
+  flex-basis: 100%;
+}
+
+/* The question before the assistant reads pictures or prompts. */
+.agent-permission {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--warning);
+  border-radius: var(--radius-lg);
+  background: var(--warning-soft);
+  font-size: var(--fs-sm);
+}
+
+.agent-permission__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+  font-weight: 600;
+}
+
+.agent-permission__what,
+.agent-permission__hint {
+  margin: 0;
+}
+
+.agent-permission__hint {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.agent-permission__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.agent-msg.is-error {
+  border-color: var(--danger);
+  color: var(--danger-text);
+}
+
+.agent-msg__text {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.agent-msg__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+}
+
+.agent-msg__applied {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--success);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.agent-acts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding-left: var(--space-4);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.agent-acts.is-undone {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.agent-msg__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* What the assistant makes of the comic (see ComicPartsBar): a wrapping row of checkboxes above the input. */
+.agent-parts {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  padding: var(--space-2) var(--space-3) 0;
+  border: none;
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-xs);
+}
+
+.agent-parts__title {
+  float: left;
+  padding: 0;
+  color: var(--text-muted);
+}
+
+.agent-parts + .agent-win__input {
+  border-top: none;
+}
+
+.agent-win__input {
+  position: relative;
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+/* A picture dragged over the input box: the box shows where it will go. */
+.agent-win__input.is-dropping {
+  outline: 2px dashed var(--accent);
+  outline-offset: -4px;
+}
+
+.agent-win__drop {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  background: var(--bg-panel);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  pointer-events: none;
+}
+
+/* The pictures that go with the next message, on their own row above the text. */
+.agent-attached {
+  display: flex;
+  flex-basis: 100%;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.agent-attached__item,
+.agent-msg__pictures li {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-input);
+  color: var(--text-muted);
+}
+
+.agent-attached__item {
+  width: 52px;
+  height: 52px;
+}
+
+.agent-attached__item img,
+.agent-msg__pictures img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.agent-attached__remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: var(--bg-panel);
+}
+
+.agent-msg__pictures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.agent-msg__pictures li {
+  width: 72px;
+  height: 72px;
+}
+
+/* Copies the message's text; quiet until the message is pointed at. */
+.agent-msg__copy {
+  align-self: flex-end;
+  margin: calc(var(--space-1) * -1) calc(var(--space-2) * -1) calc(var(--space-1) * -1) 0;
+  color: inherit;
+  opacity: 0.55;
+}
+
+.agent-msg:hover .agent-msg__copy,
+.agent-msg__copy:focus-visible {
+  opacity: 1;
+}
+
+.agent-win__input .ui-textarea {
+  flex: 1;
+  /* The height is the one the user dragged (the store keeps it), but never more than half the window. */
+  max-height: 50cqh;
+  resize: none;
+}
+
+/* A thin bar on the box's top edge: drag it to change the box's height. */
+.agent-win__input-grip {
+  position: absolute;
+  top: -4px;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  height: 8px;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.agent-win__input-grip::after {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  width: 32px;
+  height: 4px;
+  border-radius: var(--radius-xs);
+  background: var(--border-strong);
+  content: '';
+  transform: translateX(-50%);
+}
+
+.agent-win__input-grip:hover::after,
+.agent-win__input-grip:focus-visible::after {
+  background: var(--accent);
+}
+
+.agent-win__input-grip:focus-visible {
+  outline: none;
+}
+
+.agent-setup {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  overflow-y: auto;
+}
+
+.agent-setup__choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.agent-choice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--base-800);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.agent-choice:hover:not(:disabled) {
+  border-color: var(--blue-400);
+}
+
+.agent-choice:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.agent-choice span {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.agent-setup__wait {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.agent-setup__error {
+  color: var(--danger-text);
+  overflow-wrap: anywhere;
+}
+
+.agent-packs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.agent-pack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--base-850);
+}
+
+.agent-pack p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.agent-pack__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+.agent-pack__done {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--success);
+  font-size: var(--fs-xs);
+}
+
+.agent-pack .agent-pack__caveat {
+  color: var(--warning);
+  font-size: var(--fs-xs);
+}
+
+.agent-pack .agent-pack__error {
+  color: var(--danger);
+  font-size: var(--fs-xs);
+}
+
+/* The "/" list of ready-made requests, over the conversation just above the box. */
+.agent-slash {
+  position: absolute;
+  right: var(--space-3);
+  bottom: calc(100% - var(--space-1));
+  left: var(--space-3);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  max-height: 260px;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow);
+}
+
+.agent-slash__head {
+  padding: var(--space-2) var(--space-3) var(--space-1);
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.agent-slash__empty {
+  margin: 0;
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  color: var(--text-faint);
+  font-size: var(--fs-sm);
+}
+
+.agent-slash__list {
+  margin: 0;
+  padding: 0 var(--space-1) var(--space-1);
+  overflow-y: auto;
+  list-style: none;
+}
+
+.agent-slash__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.agent-slash__item.is-active {
+  background: var(--bg-active);
+}
+
+.agent-slash__icon {
+  flex: none;
+  color: var(--blue-500);
+}
+
+.agent-slash__main {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.agent-slash__label {
+  color: var(--text);
+  font-size: var(--fs-sm);
+}
+
+.agent-slash__text {
+  overflow: hidden;
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-slash__cmd {
+  flex: none;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+
+/* The form that connects the assistant to an OpenAI-compatible server. */
+.agent-endpoint__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.agent-endpoint__title {
+  margin: 0;
+  font-size: var(--fs-md);
+}
+
+.agent-endpoint__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.agent-endpoint__label {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.agent-endpoint__hint {
+  margin: 0;
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+  overflow-wrap: anywhere;
+}
+
+.agent-endpoint__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.agent-endpoint__row .ui-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.agent-endpoint__warn {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+  margin: 0;
+  color: var(--warning-text, var(--text));
+  font-size: var(--fs-xs);
+}
+
+.agent-endpoint__warn svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.agent-endpoint__result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-xs);
+}
+
+.agent-endpoint__result li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+  overflow-wrap: anywhere;
+}
+
+.agent-endpoint__result svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.agent-endpoint__ok svg {
+  color: var(--success-text, var(--text));
+}
+
+.agent-endpoint__bad {
+  color: var(--danger-text);
+}
+
+.agent-endpoint__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.agent-tools-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+  margin: 0 var(--space-3);
+  color: var(--danger-text);
+  font-size: var(--fs-xs);
+  overflow-wrap: anywhere;
+}
+
+.agent-tools-banner svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+/* Set into a screen's column: it fills the column, and is not a floating window. */
+.agent-win--docked {
+  position: static;
+  z-index: auto;
+  flex: 1;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  max-width: none;
+  max-height: none;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}

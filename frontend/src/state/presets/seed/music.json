@@ -1,0 +1,4 @@
+[
+  { "id": "seed-music-lofi", "name": "Lo-fi instrumental", "data": { "tags": "lo-fi, hip hop, chill, mellow piano, soft drums, vinyl crackle", "instrumental": true, "seconds": 90, "bpm": 80, "key": "F major", "timeSignature": 4 } },
+  { "id": "seed-music-jpop", "name": "J-pop song", "data": { "tags": "j-pop, upbeat, female vocal, bright synth, electric guitar, energetic drums", "instrumental": false, "language": "ja", "seconds": 120, "bpm": 128, "key": "A major", "timeSignature": 4 } }
+]

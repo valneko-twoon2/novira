@@ -1,0 +1,139 @@
+{
+  "graph": {
+    "prompt": {
+      "model": {
+        "class_type": "CheckpointLoaderSimple",
+        "inputs": {
+          "ckpt_name": {
+            "$model": "main-key"
+          }
+        }
+      },
+      "lora1": {
+        "class_type": "LoraLoader",
+        "inputs": {
+          "model": [
+            "model",
+            0
+          ],
+          "clip": [
+            "model",
+            1
+          ],
+          "lora_name": {
+            "$model": "lora-key"
+          },
+          "strength_model": 0.8,
+          "strength_clip": 0.8
+        }
+      },
+      "lora2": {
+        "class_type": "LoraLoader",
+        "inputs": {
+          "model": [
+            "lora1",
+            0
+          ],
+          "clip": [
+            "lora1",
+            1
+          ],
+          "lora_name": {
+            "$model": "lora-key"
+          },
+          "strength_model": 0.6,
+          "strength_clip": 0.6
+        }
+      },
+      "pos": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "text": "a cute puppy sitting in a sunny meadow, detailed fur, soft light",
+          "clip": [
+            "lora2",
+            1
+          ]
+        }
+      },
+      "neg": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "text": "blurry, low quality, watermark",
+          "clip": [
+            "lora2",
+            1
+          ]
+        }
+      },
+      "noise": {
+        "class_type": "EmptyLatentImage",
+        "inputs": {
+          "width": 1024,
+          "height": 1024,
+          "batch_size": 1
+        }
+      },
+      "denoise": {
+        "class_type": "KSampler",
+        "inputs": {
+          "model": [
+            "lora2",
+            0
+          ],
+          "seed": {
+            "$seed": true
+          },
+          "steps": 30,
+          "cfg": 6,
+          "sampler_name": {
+            "$sampler_name": "dpmpp_2m_k"
+          },
+          "scheduler": {
+            "$scheduler": "dpmpp_2m_k"
+          },
+          "positive": [
+            "pos",
+            0
+          ],
+          "negative": [
+            "neg",
+            0
+          ],
+          "latent_image": [
+            "noise",
+            0
+          ],
+          "denoise": 1
+        }
+      },
+      "decode": {
+        "class_type": "VAEDecode",
+        "inputs": {
+          "samples": [
+            "denoise",
+            0
+          ],
+          "vae": [
+            "model",
+            2
+          ]
+        }
+      },
+      "save": {
+        "class_type": "SaveImage",
+        "inputs": {
+          "images": [
+            "decode",
+            0
+          ],
+          "filename_prefix": "novira"
+        }
+      }
+    },
+    "outputs": [
+      "save"
+    ]
+  },
+  "seed": null,
+  "random": true
+}

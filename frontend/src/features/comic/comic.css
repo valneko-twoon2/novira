@@ -1,0 +1,1553 @@
+/* The comic screen: the page view in the centre and the controls in the left panel. Accent fills use the brand gradient. */
+
+.comic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  overflow: auto;
+  padding: var(--space-4);
+  box-sizing: border-box;
+}
+
+.comic--empty {
+  justify-content: center;
+}
+
+/* The page view with its zoom bar above it; the page scrolls in the box below the bar. */
+.comic-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  /* The page bar under the page changes its rows by the width of this view (see .comic-pager). */
+  container: comic-view / inline-size;
+}
+
+/* The page's scrolling view, with the balloon editor docked over its side. */
+.comic-stage {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.comic-stage > .comic {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+}
+
+/* The balloon editor: laid over the board panel (or, when that is shut or narrow, the side of the page view), so the page stays in sight. */
+.comic-bubble-editor {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(280px, calc(100% - 2 * var(--space-3)));
+  max-height: calc(100% - 2 * var(--space-3));
+  overflow-y: auto;
+  padding: var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow);
+  box-sizing: border-box;
+}
+
+/* With room to spare, the page moves aside for the editor instead of going under it. */
+@container comic-view (min-width: 900px) {
+  .comic-stage.has-editor > .comic {
+    padding-right: calc(280px + 2 * var(--space-3));
+  }
+}
+
+.comic-bubble-editor__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.comic-bubble-editor__foot {
+  justify-content: flex-end;
+}
+
+/* The page's toolbar, as on the canvas: groups of tools split by thin lines, the zoom at the right end. */
+.comic-view__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+  box-sizing: border-box;
+}
+
+.comic-view__group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-right: var(--space-2);
+  border-right: 1px solid var(--border);
+}
+
+.comic-view__spacer {
+  flex: 1;
+}
+
+/* The pages, under the page view and in its middle: they stay in view while the page scrolls. */
+.comic-pager {
+  display: grid;
+  /* The ends keep their size; the pages in the middle take what is left and scroll across instead of wrapping. */
+  grid-template-areas: 'start nav end';
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+/* Too narrow for one row: undo and zoom share the first row and the pages take the whole second row (never more rows). */
+@container comic-view (max-width: 620px) {
+  .comic-pager {
+    grid-template-areas:
+      'start end'
+      'nav nav';
+    grid-template-columns: auto auto;
+    justify-content: space-between;
+    row-gap: var(--space-1);
+  }
+}
+
+.comic-pager__nav {
+  grid-area: nav;
+  display: flex;
+  flex-wrap: nowrap;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+}
+
+.comic-view__group--plain {
+  padding-right: 0;
+  border-right: 0;
+}
+
+.comic-pager__start {
+  grid-area: start;
+  display: flex;
+}
+
+.comic-pager__end {
+  grid-area: end;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.comic-pager__nav > :not(.comic-pager__list) {
+  flex: none;
+}
+
+/* The row of page drawings takes the room the other controls leave (not the room its drawings would like, so how many
+   fit can be measured from it; see PagePager), and holds one group of pages in its middle. */
+.comic-pager__list {
+  display: flex;
+  flex: 1 1 0;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* A comic read from the right: page 1 at the right end (see PagePager). */
+.comic-pager__list.is-rtl {
+  flex-direction: row-reverse;
+}
+
+/* A page's drawing: 56px tall, as wide as its paper (set in the element), framed when it is the page on screen. */
+.comic-pager__page {
+  position: relative;
+  flex: none;
+  height: 60px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  cursor: pointer;
+}
+
+.comic-pager__page:hover {
+  border-color: var(--border-strong);
+}
+
+.comic-pager__page:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.comic-pager__page.is-active {
+  border-color: var(--accent);
+}
+
+.comic-pager__page .comic-thumb {
+  width: 100%;
+  height: 100%;
+  box-shadow: var(--shadow);
+}
+
+.comic-pager__number {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  min-width: 1.4em;
+  padding: 0 3px;
+  border-radius: var(--radius-sm);
+  background: var(--overlay);
+  color: var(--on-overlay);
+  font-size: var(--fs-xs);
+  line-height: 1.4;
+  text-align: center;
+}
+
+.comic-pager__page.is-active .comic-pager__number {
+  background: var(--grad-accent);
+  color: var(--invoke-text);
+}
+
+.comic-pager__count {
+  flex: none;
+  margin: 0 var(--space-2);
+  white-space: nowrap;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.comic-page {
+  position: relative;
+  width: min(100%, 720px);
+  background: var(--white);
+  box-shadow: var(--shadow);
+  flex: none;
+  /* A page wider than the view (zoomed in) scrolls from its left edge, not from the middle. */
+  margin-inline: auto;
+}
+
+/* What lies off the page is cut off, as the saved page cuts it; the handles of a panel that runs off the page stay outside this. */
+.comic-page__drop {
+  position: absolute;
+  inset: 0;
+}
+
+.comic-page__crop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.comic-page__paper {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.comic-page .comic-panel-drop {
+  position: absolute;
+}
+
+.comic-panel {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  container-type: inline-size;
+  background: var(--bg-elevated);
+  box-sizing: border-box;
+  cursor: move;
+  outline: none;
+}
+
+.comic-panel.is-selected {
+  box-shadow: 0 0 0 3px var(--accent);
+}
+
+/* A reshaped panel is cut to its corners; the box-shadow of a selected panel cannot follow them, so the page's overlay outlines it (see .comic-frames). */
+.comic-panel.is-shaped {
+  box-shadow: none;
+}
+
+/* The panel's frame: rings along its edge, over its picture and under its balloons (see PanelFrame). Each is a stroke centred
+   on the edge, so only its inner half is inside the panel. The widths are set in the element, in page units. */
+.comic-panel__frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.comic-panel__ring {
+  stroke-linejoin: miter;
+  stroke-miterlimit: 4;
+}
+
+.comic-panel__ring.is-deep,
+.comic-panel__ring.is-gutter {
+  fill: none;
+  stroke: var(--white);
+}
+
+.comic-panel__ring.is-line {
+  fill: none;
+  stroke: var(--black);
+}
+
+/* The page's overlay: the gutters and frames of a reshaped page, the selected panel's edges and the cut line. It takes no pointer
+   events except on the edge that a double click adds a corner to. */
+.comic-frames {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.comic-frames__edge {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 3px;
+  stroke-linejoin: miter;
+  vector-effect: non-scaling-stroke;
+}
+
+/* The selected panel is outlined in the accent colour. */
+.comic-frames__edge.is-selected {
+  stroke: var(--accent);
+}
+
+.comic-rotate {
+  position: absolute;
+  z-index: 4;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  margin: 10px 0 0 -12px;
+  padding: 0;
+  place-items: center;
+  border: 2px solid var(--white);
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--white);
+  cursor: grab;
+  touch-action: none;
+}
+
+.comic-rotate:active {
+  cursor: grabbing;
+}
+
+.comic-frames__hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 14px;
+  vector-effect: non-scaling-stroke;
+  pointer-events: stroke;
+  cursor: copy;
+}
+
+.comic-cut__line {
+  stroke: var(--accent);
+  stroke-width: 2px;
+  stroke-dasharray: 6 4;
+  vector-effect: non-scaling-stroke;
+}
+
+/* A corner of the selected panel: dragged to reshape it, and a double click removes it. */
+.comic-vertex {
+  position: absolute;
+  z-index: 3;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  padding: 0;
+  border: 2px solid var(--white);
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: crosshair;
+  touch-action: none;
+}
+
+/* The bar in the middle of an edge of the selected panel: dragged, it slides the whole edge. */
+.comic-edge {
+  position: absolute;
+  z-index: 3;
+  width: 22px;
+  height: 8px;
+  margin: -4px 0 0 -11px;
+  padding: 0;
+  border: 2px solid var(--white);
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  touch-action: none;
+}
+
+/* The cursor shows the way the edge slides: across it, so a level edge goes up and down. */
+.comic-edge.is-ns {
+  cursor: ns-resize;
+}
+
+.comic-edge.is-ew {
+  cursor: ew-resize;
+}
+
+.comic-edge.is-nwse {
+  cursor: nwse-resize;
+}
+
+.comic-edge.is-nesw {
+  cursor: nesw-resize;
+}
+
+.comic-edge:focus-visible,
+.comic-vertex:focus-visible {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+/* Covers the page while it is cut: a press starts the line, and the release cuts. */
+.comic-cut {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+/* The surface over a panel whose picture is marked for a partial redraw: it takes the brush, over the panels and balloons. */
+.comic-fix {
+  position: absolute;
+  z-index: 5;
+  cursor: crosshair;
+  touch-action: none;
+  outline: 1px dashed var(--accent);
+}
+
+.comic-fix__paint {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.comic-fix__paint polyline {
+  fill: none;
+  stroke: var(--accent);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.55;
+}
+
+.comic-fix__paint circle {
+  fill: var(--accent);
+  opacity: 0.55;
+}
+
+/* The strip under the toolbar while a part is marked: the brush, what to draw there, how far it may change. */
+.comic-fixbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+
+.comic-fixbar__title {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.comic-fixbar__field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.comic-fixbar__slider {
+  width: 96px;
+}
+
+.comic-fixbar__words {
+  flex: 1 1 180px;
+  min-width: 140px;
+}
+
+.comic-panel__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  cursor: grab;
+  touch-action: none;
+}
+
+/* The panel's picture is placed by its view (centre, size, turn), not stretched over the panel. */
+.comic-panel__picture {
+  inset: auto;
+  max-width: none;
+  object-fit: fill;
+  transform-origin: center;
+}
+
+.comic-panel__image--pose {
+  object-fit: contain;
+  opacity: 0.6;
+}
+
+.comic-panel__empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  text-align: center;
+  overflow: hidden;
+}
+
+/* A stage direction stands for the picture to come: the script's words, read as notes rather than as a prompt. */
+.comic-panel__empty.is-note {
+  color: var(--text);
+  font-style: italic;
+  white-space: pre-wrap;
+}
+
+/* The panel's stage direction, written in the toolbar's popover. */
+.comic-note {
+  width: min(360px, 70vw);
+  min-height: 120px;
+}
+
+.comic-panel__drawing {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-2);
+  transform: translateX(-50%);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--overlay);
+  color: var(--on-overlay);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
+.comic-panel__drawing.is-failed {
+  color: var(--danger-text);
+}
+
+/* The outline is an SVG drawn in the balloon's own box (the same outline the page picture is drawn with); the text sits above it. */
+.comic-bubble {
+  position: absolute;
+  max-width: 42%;
+  padding: 0.6em 0.8em;
+  color: var(--black);
+  line-height: 1.3;
+  white-space: pre-wrap;
+  /* Japanese text breaks between phrases, not inside a word (Chromium; the other engines keep their own rules). */
+  word-break: auto-phrase;
+  text-align: center;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  box-sizing: border-box;
+}
+
+.comic-bubble--caption {
+  text-align: left;
+}
+
+/* A sound effect has no balloon: heavy black lettering with a white edge, which it keeps over a picture of any colour. */
+.comic-bubble--sfx {
+  max-width: 90%;
+  padding: 0.1em 0.2em;
+  font-weight: 900;
+  line-height: 1.1;
+  -webkit-text-stroke: 0.22em var(--white);
+  paint-order: stroke fill;
+}
+
+/* The outline's box is set in the element (it is larger than the text's box, see balloonOutline). */
+.comic-bubble__shape {
+  position: absolute;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* A balloon's outline (see BalloonArt): its line's strokes, centred on the outline and as wide as set in the element, then
+   the fill over their inner half, then the ink of a flash. */
+.comic-balloon__line {
+  fill: none;
+  stroke: var(--black);
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.comic-balloon__line.is-paper {
+  stroke: var(--white);
+}
+
+.comic-balloon__fill {
+  fill: var(--white);
+  stroke: none;
+}
+
+.comic-balloon__fill.is-dark,
+.comic-balloon__ink {
+  fill: var(--black);
+}
+
+/* A black balloon has white words. */
+.comic-bubble.is-dark {
+  color: var(--white);
+}
+
+/* Words with no balloon: plain weight, with a soft white edge so they stay legible over a picture. The edge is a glow of
+   shadows under the letters: a text stroke or a hard halo would swamp a thin letter at a small size. */
+.comic-bubble--plain {
+  max-width: 90%;
+  padding: 0.1em 0.2em;
+  text-shadow:
+    0 0 0.08em var(--white),
+    0 0 0.08em var(--white),
+    0 0 0.12em var(--white);
+}
+
+/* The points of an outline being shaped: dragged to change the shape (see ComicBalloon). */
+.comic-bubble__point {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-xs);
+  background: var(--white);
+  cursor: move;
+  touch-action: none;
+}
+
+.comic-bubble.is-shaping {
+  cursor: crosshair;
+}
+
+.comic-bubble__text {
+  position: relative;
+}
+
+/* Marked words (see balloonText): bold, and a dot beside each character (above it, or on its right in vertical writing). */
+.comic-bubble__text .is-bold {
+  font-weight: 700;
+}
+
+.comic-bubble__text .is-dots {
+  text-emphasis: filled dot;
+  text-emphasis-position: over right;
+}
+
+/* A vertical balloon is written vertically itself, not only its words: its height limit is then the length of a column, so
+   the words wrap into a new column there instead of running out of the balloon. */
+.comic-bubble.is-vertical {
+  max-height: 60%;
+  writing-mode: vertical-rl;
+}
+
+/* Words that run out of their balloon: a dashed warning ring round the balloon's box (see ComicBalloon). */
+.comic-bubble.is-overflowing {
+  outline: 1.5px dashed var(--danger-text);
+  outline-offset: 2px;
+}
+
+.comic-bubble.is-vertical .comic-bubble__text {
+  writing-mode: vertical-rl;
+  text-align: start;
+}
+
+.comic-bubble__handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border: 2px solid var(--white);
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: move;
+  touch-action: none;
+}
+
+/* The selected balloon: a dashed frame round its whole outline, over the art, while its panel shows no handles (see ComicEditor). */
+.comic-bubble__selection {
+  position: absolute;
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius-xs);
+  outline: 1px solid var(--white);
+  outline-offset: 0;
+  pointer-events: none;
+}
+
+/* A panel whose balloon is selected keeps only a thin line, so the balloon stands out as what is chosen. */
+.comic-panel.is-selected:has(.comic-bubble.is-selected) {
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.comic-detail__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.comic-hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.comic-bubble-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-1);
+  border-radius: var(--radius);
+}
+
+.comic-bubble-row:hover {
+  background: var(--bg-hover);
+}
+
+.comic-bubble-row__pick {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-1);
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.comic-bubble-row__kind {
+  flex: none;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.comic-bubble-row__text {
+  overflow: hidden;
+  font-size: var(--fs-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.comic-bubble-row__text.is-empty {
+  color: var(--text-faint);
+}
+
+.comic-bubble-row.is-selected {
+  outline: 1px solid var(--accent);
+  border-radius: var(--radius);
+}
+
+/* A panel's reference image is laid out like its picture, with its settings under the thumbnail. */
+.comic-ref {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.comic-ref__img {
+  width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+}
+
+.comic-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.comic-presets > * {
+  flex: 1 1 140px;
+  min-width: 0;
+}
+
+/* The selected picture: its whole extent, faint, under the panels, and its outline with handles over the page. */
+.comic-picture-ghost {
+  position: absolute;
+  max-width: none;
+  opacity: 0.3;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* The page's backdrop: under the panels, cut off at the page's edge (see .comic-page__crop). */
+.comic-backdrop-picture {
+  position: absolute;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* A panel with no picture lets the backdrop show through; with none, its grey shows. */
+.comic-page.has-backdrop .comic-panel {
+  background: transparent;
+}
+
+.comic-backdrop__tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.comic-picture {
+  position: absolute;
+  z-index: 3;
+  box-sizing: border-box;
+  border: 1px dashed var(--accent);
+  pointer-events: none;
+}
+
+/* The backdrop's outline is the hand's own: dragged anywhere on it, the picture moves. */
+.comic-picture.is-movable {
+  pointer-events: auto;
+  cursor: move;
+  touch-action: none;
+}
+
+.comic-picture__corner,
+.comic-picture__rotate {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  padding: 0;
+  border: 2px solid var(--white);
+  border-radius: var(--radius-xs);
+  background: var(--accent);
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.comic-picture__corner--nw,
+.comic-picture__corner--se {
+  cursor: nwse-resize;
+}
+
+.comic-picture__corner--ne,
+.comic-picture__corner--sw {
+  cursor: nesw-resize;
+}
+
+.comic-picture__rotate {
+  left: 50%;
+  top: -28px;
+  border-radius: 50%;
+  cursor: grab;
+}
+
+.comic-picture__stem {
+  position: absolute;
+  left: 50%;
+  top: -22px;
+  height: 22px;
+  border-left: 1px solid var(--accent);
+}
+
+.comic-picture__corner:focus-visible,
+.comic-picture__rotate:focus-visible {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+/* The page settings, opened from the toolbar. */
+.comic-settings {
+  width: 360px;
+  max-width: calc(100vw - 16px);
+}
+
+/* The popovers of the panel tools (balloons, pose, templates): wide enough for a balloon's row. */
+.comic-tool-pop {
+  width: 400px;
+  max-width: calc(100vw - 16px);
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* The balloon list is wider, to lay out its drawings of the balloons in rows. */
+.comic-tool-pop.is-wide {
+  width: 500px;
+}
+
+/* "Make this page": the page's story, its two choices, and the button. */
+.comic-story__text {
+  width: 100%;
+  min-height: 9em;
+  resize: vertical;
+}
+
+.comic-story__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* A panel's picture history: the picture it has now, then the earlier ones, each a thumbnail that puts it back. */
+.comic-takes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: var(--space-2);
+}
+
+.comic-take {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+}
+
+.comic-take__pick {
+  display: block;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.comic-take__pick:hover {
+  border-color: var(--border-strong);
+}
+
+.comic-take__pick:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.comic-take__img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.comic-take.is-now .comic-take__img {
+  border-radius: var(--radius-sm);
+  box-shadow: var(--selected-ring);
+}
+
+.comic-take__label {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.comic-take__remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: var(--overlay);
+  color: var(--on-overlay);
+}
+
+/* The balloons the list adds, each drawn as it looks with its name under it. */
+.comic-balloon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: var(--space-1);
+}
+
+.comic-balloon-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-input);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.comic-balloon-tile:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-hover);
+}
+
+.comic-balloon-tile:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.comic-balloon-tile__name {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: var(--fs-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A balloon drawn small, on white paper as it will be printed. */
+.comic-balloon-preview {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  color: var(--black);
+  overflow: hidden;
+}
+
+.comic-balloon-preview.is-small {
+  width: 30px;
+  height: 22px;
+}
+
+.comic-balloon-preview .comic-balloon {
+  width: 100%;
+  height: 100%;
+}
+
+.comic-balloon-preview.is-lettering {
+  font-size: var(--fs-md);
+  line-height: 1;
+}
+
+.comic-balloon-preview.is-small.is-lettering {
+  font-size: var(--fs-xs);
+}
+
+.comic-balloon-preview.is-sfx {
+  font-weight: 900;
+}
+
+.comic-bubble-editor__section {
+  margin: var(--space-1) 0 0;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+/* The frame line's colour: the system's colour picker, as tall as the other controls. */
+.comic-color {
+  width: 56px;
+  height: var(--control-h);
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: none;
+  cursor: pointer;
+}
+
+.comic-settings__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.comic-settings__title {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--fs-md);
+}
+
+.comic-settings__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.comic-book__hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.comic-book__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* The page templates: each layout drawn as a small page with its name under it. */
+.comic-templates__group {
+  margin-top: var(--space-3);
+}
+
+.comic-templates__title {
+  margin: 0 0 var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.comic-templates__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: var(--space-2);
+}
+
+.comic-templates__item {
+  position: relative;
+}
+
+.comic-templates__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  width: 100%;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-panel);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.comic-templates__card:hover {
+  border-color: var(--accent);
+}
+
+.comic-templates__item.is-armed .comic-templates__card {
+  border-color: var(--danger-text);
+}
+
+.comic-templates__card .comic-thumb {
+  width: 64px;
+}
+
+.comic-templates__name {
+  font-size: var(--fs-xs);
+  text-align: center;
+}
+
+.comic-templates__delete {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+}
+
+.comic-templates__save {
+  display: flex;
+  flex: 1;
+  gap: var(--space-2);
+}
+
+/* A small drawing of a page: white paper, grey panels with black frames (and their pictures when it has them). */
+.comic-thumb {
+  display: block;
+  height: auto;
+}
+
+.comic-thumb__paper {
+  fill: var(--white);
+}
+
+.comic-thumb__panel {
+  fill: var(--bg-elevated);
+}
+
+.comic-thumb__frame {
+  fill: none;
+  stroke: var(--black);
+  stroke-width: 0.012;
+}
+
+/* The comic chooser above the model card: the open comic's first page, as the model card shows its cover. It keeps the
+   panel's own margin, so its frame does not sit on the frame of the left column. */
+.comic-picker {
+  margin: var(--space-2);
+}
+
+.comic-picker__cover {
+  flex: none;
+  width: 44px;
+  border-radius: var(--radius-sm);
+}
+
+.comic-picker__cover.is-empty {
+  height: 62px;
+  border: 1px dashed var(--border-strong);
+}
+
+.comic-picker__option {
+  flex: none;
+  width: 28px;
+}
+
+.comic-picker__meta {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+/* The comic's cast in the panel tools: one row per character, its name line above its look tags. */
+.comic-cast {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* The characters side by side, the chosen one marked; in the panel tools each with whether it is in the selected panel. */
+.comic-cast__roster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.comic-cast__entry {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 2px 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-surface);
+}
+
+.comic-cast__entry.is-on {
+  border-color: var(--border-strong);
+  background: var(--bg-active);
+}
+
+.comic-cast__pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 200px;
+  padding: 2px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+
+.comic-cast__avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.comic-cast__entry-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Text for screen readers only. */
+.comic-cast__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The chosen character's words and picture, under the list. */
+.comic-cast__row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+}
+
+/* The name with the buttons beside it, on one line. */
+.comic-cast__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.comic-cast__head .ui-input {
+  flex: 1 1 auto;
+}
+
+.comic-cast__words {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* The boxes wrap their words and grow with them, from one line, instead of the shared minimum height. */
+.comic-cast__words .ui-textarea {
+  min-height: 0;
+  field-sizing: content;
+}
+
+/* In the larger window a box starts at three lines. */
+.comic-cast__words--large .ui-textarea {
+  min-height: 4.8em;
+}
+
+.comic-cast__parts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-2);
+}
+
+.comic-cast__words--large .comic-cast__parts {
+  grid-template-columns: 1fr;
+}
+
+.comic-cast__field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.comic-cast__label {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.comic-cast__ref {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.comic-cast__thumb {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+/* The comic's places and its world: the world's words, then one card per place; in the panel tools, the panel's place. */
+.comic-places {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.comic-places__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-2);
+}
+
+.comic-place {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-surface);
+}
+
+/* The name (or the panel's choice of place) with the buttons beside it, on one line. */
+.comic-place__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.comic-place__head .ui-input,
+.comic-place__head .ui-select {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.comic-place__field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.comic-place__label {
+  flex: none;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+/* The boxes wrap their words and grow with them, from one line, as a character's do. */
+.comic-places .ui-textarea {
+  min-height: 0;
+  field-sizing: content;
+}
+
+/* A character's sheet in the design tab: the front and the other views side by side, each with its name under it. */
+.comic-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.comic-sheet__views {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-1);
+  max-width: 420px;
+}
+
+.comic-sheet__view {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+}
+
+.comic-sheet__frame {
+  position: relative;
+  aspect-ratio: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+
+.comic-sheet__frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.comic-sheet__drawing {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 1px 2px;
+  font-size: var(--fs-xs);
+  text-align: center;
+  background: var(--overlay);
+  color: var(--on-overlay);
+}
+
+.comic-sheet__remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: var(--overlay);
+  color: var(--on-overlay);
+}
+
+.comic-sheet__view figcaption {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* A stamp balloon is a picture of lettering with no balloon: it is as tall as its size says (see ComicBalloon). */
+.comic-bubble--stamp {
+  line-height: 0;
+}
+
+.comic-bubble__stamp {
+  display: block;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+.comic-balloon-preview.is-stamp img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* The stamp picker of the balloon editor: a grid of the pictures, the chosen one ringed. */
+.comic-stamp-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.comic-stamp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: var(--space-1);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.comic-stamp-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--white);
+  cursor: pointer;
+}
+
+.comic-stamp-tile:hover {
+  border-color: var(--accent);
+}
+
+.comic-stamp-tile.is-selected {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+}
+
+.comic-stamp-tile img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.comic-place__empty {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}

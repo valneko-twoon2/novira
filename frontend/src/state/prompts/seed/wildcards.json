@@ -1,0 +1,5 @@
+[
+  { "name": "hair-color", "text": "black hair\nbrown hair\nblonde hair\nsilver hair\nred hair\nblue hair\npink hair" },
+  { "name": "expression", "text": "smile\nlaughing\nserious\nsurprised\nsleepy\nembarrassed" },
+  { "name": "time-of-day", "text": "morning, soft light\nnoon, bright sunlight\nsunset, golden hour\nnight, city lights" }
+]

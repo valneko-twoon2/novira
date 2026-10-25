@@ -1,0 +1,66 @@
+/* The page's layers (see PageLayers.tsx) and painting on the page (ComicEditor.tsx). */
+
+/* Each layer of the page is a box over the whole page; it takes no presses itself, only what is in it may. */
+.comic-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.comic-layer--panels > * {
+  pointer-events: auto;
+}
+
+/* A balloon is pressed and dragged; the box of its panel lets presses through to the panel under it. */
+.comic-layer--balloons .comic-bubble {
+  pointer-events: auto;
+}
+
+/* A locked layer still shows but takes no presses. */
+.comic-layer.is-locked > *,
+.comic-layer.is-locked .comic-bubble {
+  pointer-events: none;
+}
+
+.comic-balloons {
+  position: absolute;
+}
+
+/* The panel's place for its balloons: cut at the panel's edge as the panel is, and as wide, so the balloons' sizes (shares
+   of the panel's width) are the same as in the panel. */
+.comic-balloons__frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  container-type: inline-size;
+  box-sizing: border-box;
+}
+
+/* A panel whose balloon is selected keeps only a thin line, so the balloon stands out as what is chosen. */
+.comic-panel.is-selected.has-selected-bubble {
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.comic-layer__raster {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* The layer as the Canvas drew it, stretched over the part of the page it covers. */
+.comic-layer__pixels {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* While the page is painted on, the paint stage covers it and takes every press; the page's own tools take none. */
+.comic-page.is-painting .comic-page__crop,
+.comic-page.is-painting .comic-page__crop * {
+  pointer-events: none !important;
+}
+
+.comic-paint {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+}

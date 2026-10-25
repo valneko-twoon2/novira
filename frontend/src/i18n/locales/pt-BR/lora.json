@@ -1,0 +1,8 @@
+{
+  "lora.use": "Usar a LoRA",
+  "lora.gone": "(não está na lista de modelos)",
+  "lora.weight": "Intensidade da LoRA",
+  "lora.useHint": "Ao usar o personagem, a LoRA é adicionada com esta intensidade e a palavra-gatilho “{trigger}” entra no prompt. As imagens de referência são usadas como antes.",
+  "lora.goneNote": "A LoRA do personagem não está na lista de modelos, então foi deixada de fora.",
+  "lora.usedNote": "A LoRA treinada e sua palavra-gatilho também foram adicionadas."
+}

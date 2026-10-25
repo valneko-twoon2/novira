@@ -1,0 +1,17 @@
+{
+  "batch.title": "Mehrere auf einmal verarbeiten",
+  "batch.count.one": "Führt denselben Vorgang für {count} Bild aus",
+  "batch.count.other": "Führt denselben Vorgang für {count} Bilder aus",
+  "batch.op": "Vorgang",
+  "batch.op.removeBackground.title": "Hintergrund entfernen und freistellen",
+  "batch.op.upscale.title": "Vergrößern",
+  "batch.upscaler": "Upscale-Modell",
+  "batch.noUpscaler": "Kein Upscale-Modell vorhanden. Fügen Sie eines im Bereich „Modelle“ hinzu.",
+  "batch.needsPack": "Zum Entfernen von Hintergründen wird die Erweiterung {pack} benötigt.",
+  "batch.install": "Installieren",
+  "batch.restart": "ComfyUI neu starten, um sie zu verwenden",
+  "batch.run": "Ausführen",
+  "batch.queued.one": "{count} Bild eingereiht. Das Ergebnis geht auf das Board der Quelle",
+  "batch.queued.other": "{count} Bilder eingereiht. Die Ergebnisse gehen auf die Boards ihrer Quellen",
+  "batch.failed": "Einreihen nicht möglich"
+}

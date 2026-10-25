@@ -1,0 +1,49 @@
+{
+  "note": "What the app downloads at run time, so it is not shipped with the app. scripts/oss-licenses.mjs reads this, and fails when a file named in backend/crates/novira-core/src/provenance/files.json is in no entry's covers. `inside` names a part that comes within another download's package. Versions are the ones the app uses, or empty when it takes the latest.",
+  "downloads": [
+    {
+      "name": "ComfyUI",
+      "version": "",
+      "license": "GPL-3.0",
+      "url": "https://github.com/comfyanonymous/ComfyUI",
+      "covers": ["ComfyUI_windows_portable_nvidia.7z", "ComfyUI_windows_portable_amd.7z"]
+    },
+    {
+      "name": "Python",
+      "version": "",
+      "license": "PSF-2.0",
+      "url": "https://www.python.org/",
+      "inside": "the ComfyUI portable package",
+      "covers": []
+    },
+    {
+      "name": "PyTorch",
+      "version": "",
+      "license": "BSD-3-Clause",
+      "url": "https://github.com/pytorch/pytorch",
+      "inside": "the ComfyUI portable package",
+      "covers": []
+    },
+    {
+      "name": "7-Zip (7zr.exe)",
+      "version": "",
+      "license": "LGPL-2.1-or-later",
+      "url": "https://www.7-zip.org/",
+      "covers": ["7zr.exe"]
+    },
+    {
+      "name": "ONNX Runtime",
+      "version": "1.22.0",
+      "license": "MIT",
+      "url": "https://github.com/microsoft/onnxruntime",
+      "covers": ["onnxruntime.dll"]
+    },
+    {
+      "name": "TrustMark",
+      "version": "",
+      "license": "MIT",
+      "url": "https://github.com/adobe/trustmark",
+      "covers": ["encoder_P.onnx", "decoder_P.onnx"]
+    }
+  ]
+}

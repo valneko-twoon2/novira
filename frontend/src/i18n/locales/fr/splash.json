@@ -1,0 +1,19 @@
+{
+  "splash.open": "Ouvrir l'application",
+  "splash.step.downloading": "Téléchargement",
+  "splash.step.extracting": "Décompression",
+  "splash.step.starting": "Démarrage",
+  "splash.preparing": "En attente du démarrage du moteur d'images et du chargement de ses nœuds",
+  "splash.engine.heading": "Préparation du moteur d'images",
+  "splash.engine.sub.downloading": "Téléchargement de ComfyUI et de Python",
+  "splash.engine.sub.extracting": "Décompression des fichiers téléchargés",
+  "splash.engine.sub.starting": "Démarrage du moteur et attente de sa réponse",
+  "splash.engine.rate": "{rate}/s",
+  "splash.engine.eta": "Environ {time} restant(es)",
+  "splash.engine.seconds": "{n} s",
+  "splash.engine.minutes": "{n} min {s} s",
+  "splash.engine.hours": "{h} h {m} min",
+  "splash.wait.heading.loading": "Démarrage de novira",
+  "splash.wait.sub.loading": "Chargement de vos données",
+  "splash.wait.heading.preparing": "Préparation de l'utilisation"
+}

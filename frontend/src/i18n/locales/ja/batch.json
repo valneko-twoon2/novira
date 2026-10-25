@@ -1,0 +1,17 @@
+{
+  "batch.title": "まとめて処理",
+  "batch.count.one": "{count} 枚を同じ処理にかけます",
+  "batch.count.other": "{count} 枚を同じ処理にかけます",
+  "batch.op": "処理の種類",
+  "batch.op.removeBackground.title": "背景を消して切り抜く",
+  "batch.op.upscale.title": "拡大する",
+  "batch.upscaler": "拡大に使うモデル",
+  "batch.noUpscaler": "拡大用のモデルがありません。モデル画面からインストールしてください。",
+  "batch.needsPack": "背景を消すには、拡張機能 {pack} が必要です。",
+  "batch.install": "インストール",
+  "batch.restart": "ComfyUI を再起動して使えるようにする",
+  "batch.run": "実行する",
+  "batch.queued.one": "{count} 枚をキューに入れました。結果は元の画像と同じボードに入ります",
+  "batch.queued.other": "{count} 枚をキューに入れました。結果は元の画像と同じボードに入ります",
+  "batch.failed": "キューに入れられませんでした"
+}

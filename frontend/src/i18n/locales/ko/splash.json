@@ -1,0 +1,19 @@
+{
+  "splash.open": "앱 열기",
+  "splash.step.downloading": "다운로드",
+  "splash.step.extracting": "압축 해제",
+  "splash.step.starting": "시작",
+  "splash.preparing": "이미지 생성 엔진의 시작과 노드 정보 불러오기를 기다리는 중입니다",
+  "splash.engine.heading": "이미지 생성 엔진을 준비하는 중입니다",
+  "splash.engine.sub.downloading": "ComfyUI와 Python을 다운로드하는 중입니다",
+  "splash.engine.sub.extracting": "다운로드한 파일의 압축을 푸는 중입니다",
+  "splash.engine.sub.starting": "엔진을 시작하고 연결을 기다리는 중입니다",
+  "splash.engine.rate": "{rate}/초",
+  "splash.engine.eta": "남은 시간 약 {time}",
+  "splash.engine.seconds": "{n}초",
+  "splash.engine.minutes": "{n}분 {s}초",
+  "splash.engine.hours": "{h}시간 {m}분",
+  "splash.wait.heading.loading": "novira를 시작하는 중입니다",
+  "splash.wait.sub.loading": "데이터를 불러오는 중입니다",
+  "splash.wait.heading.preparing": "사용할 준비를 하는 중입니다"
+}

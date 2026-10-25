@@ -1,0 +1,65 @@
+/* The seed row shared by the Generate tab and the video, music and logo screens. */
+.pp-seed {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pp-seed__label {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.pp-seg {
+  display: inline-flex;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg-input);
+}
+
+.pp-seg__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 28px;
+  padding: 0 var(--space-2);
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pp-seg__btn + .pp-seg__btn {
+  border-left: 1px solid var(--border);
+}
+
+.pp-seg__btn:hover {
+  background: var(--bg-hover);
+}
+
+.pp-seg__btn.is-active {
+  background: var(--grad-accent);
+  color: var(--white);
+}
+
+.pp-seed__input {
+  flex: 1;
+  width: auto;
+  text-align: left;
+}
+
+/* While a new seed is drawn for every generation the box has nothing to set: gray it out so that is obvious. */
+.pp-seed__input:disabled {
+  border-color: var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-faint);
+  cursor: not-allowed;
+  opacity: 0.6;
+  -webkit-text-fill-color: var(--text-faint);
+}

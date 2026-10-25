@@ -1,0 +1,15 @@
+{
+  "id": "wf-1",
+  "name": "Mine",
+  "description": "A workflow",
+  "author": "me",
+  "tags": [
+    "portrait"
+  ],
+  "category": "user",
+  "updatedAt": 1700000000000,
+  "graph": {
+    "nodes": [],
+    "edges": []
+  }
+}

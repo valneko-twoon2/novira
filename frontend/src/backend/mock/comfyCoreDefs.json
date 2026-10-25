@@ -1,0 +1,2811 @@
+{
+  "CheckpointLoaderSimple": {
+    "input": {
+      "required": {
+        "ckpt_name": [
+          [
+            "ace_step_1.5_turbo_aio.safetensors",
+            "sd_xl_base_1.0.safetensors"
+          ],
+          {}
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "ckpt_name"
+      ]
+    },
+    "output": [
+      "MODEL",
+      "CLIP",
+      "VAE"
+    ],
+    "output_is_list": [
+      false,
+      false,
+      false
+    ],
+    "output_name": [
+      "MODEL",
+      "CLIP",
+      "VAE"
+    ],
+    "name": "CheckpointLoaderSimple",
+    "display_name": "Load Checkpoint",
+    "description": "Loads a diffusion model checkpoint, diffusion models are used to denoise latents.",
+    "python_module": "nodes",
+    "category": "model/loaders",
+    "output_node": false
+  },
+  "UNETLoader": {
+    "input": {
+      "required": {
+        "unet_name": [
+          [
+            "wan2.2_ti2v_5B_fp16.safetensors"
+          ]
+        ],
+        "weight_dtype": [
+          [
+            "default",
+            "fp8_e4m3fn",
+            "fp8_e4m3fn_fast",
+            "fp8_e5m2"
+          ],
+          {
+            "advanced": true
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "unet_name",
+        "weight_dtype"
+      ]
+    },
+    "output": [
+      "MODEL"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "MODEL"
+    ],
+    "name": "UNETLoader",
+    "display_name": "Load Diffusion Model",
+    "description": "",
+    "python_module": "nodes",
+    "category": "model/loaders",
+    "output_node": false
+  },
+  "CLIPLoader": {
+    "input": {
+      "required": {
+        "clip_name": [
+          [
+            "umt5_xxl_fp8_e4m3fn_scaled.safetensors"
+          ]
+        ],
+        "type": [
+          [
+            "stable_diffusion",
+            "stable_cascade",
+            "sd3",
+            "stable_audio",
+            "mochi",
+            "ltxv",
+            "pixart",
+            "cosmos",
+            "lumina2",
+            "wan",
+            "hidream",
+            "chroma",
+            "ace",
+            "omnigen2",
+            "qwen_image",
+            "hunyuan_image",
+            "flux2",
+            "ovis",
+            "longcat_image",
+            "cogvideox",
+            "lens",
+            "pixeldit",
+            "ideogram4",
+            "boogu",
+            "krea2",
+            "joyimage",
+            "mage",
+            "minimax",
+            "yue2"
+          ]
+        ]
+      },
+      "optional": {
+        "device": [
+          [
+            "default",
+            "cpu"
+          ],
+          {
+            "advanced": true
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "clip_name",
+        "type"
+      ],
+      "optional": [
+        "device"
+      ]
+    },
+    "output": [
+      "CLIP"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "CLIP"
+    ],
+    "name": "CLIPLoader",
+    "display_name": "Load CLIP",
+    "description": "Recipes:\nsd: clip-l\nstable cascade: clip-g\nsd3: t5 xxl / clip-g / clip-l\nstable audio: t5 base\nmochi: t5 xxl\ncogvideox: t5 xxl (226-token padding)\ncosmos: old t5 xxl\nlumina2: gemma 2 2B\nwan: umt5 xxl\nhidream: llama-3.1 (Recommend) or t5\nomnigen2: qwen vl 2.5 3B\njoyimage: qwen3-vl 8B\nlens: gpt-oss-20b\npixeldit: gemma 2 2B elm\nminimax: MiniMax H3 Qwen3-VL or Music3 Qwen/RVQ",
+    "python_module": "nodes",
+    "category": "model/loaders",
+    "output_node": false
+  },
+  "VAELoader": {
+    "input": {
+      "required": {
+        "vae_name": [
+          [
+            "wan2.2_vae.safetensors"
+          ]
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "vae_name"
+      ]
+    },
+    "output": [
+      "VAE"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "VAE"
+    ],
+    "name": "VAELoader",
+    "display_name": "Load VAE",
+    "description": "",
+    "python_module": "nodes",
+    "category": "model/loaders",
+    "output_node": false
+  },
+  "CLIPTextEncode": {
+    "input": {
+      "required": {
+        "text": [
+          "STRING",
+          {
+            "multiline": true,
+            "dynamicPrompts": true
+          }
+        ],
+        "clip": [
+          "CLIP",
+          {}
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "text",
+        "clip"
+      ]
+    },
+    "output": [
+      "CONDITIONING"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "CONDITIONING"
+    ],
+    "name": "CLIPTextEncode",
+    "display_name": "CLIP Text Encode (Prompt)",
+    "description": "Encodes a text prompt using a CLIP model into an embedding that can be used to guide the diffusion model towards generating specific images.",
+    "python_module": "nodes",
+    "category": "model/conditioning",
+    "output_node": false
+  },
+  "KSampler": {
+    "input": {
+      "required": {
+        "model": [
+          "MODEL",
+          {}
+        ],
+        "seed": [
+          "INT",
+          {
+            "default": 0,
+            "min": 0,
+            "max": 18446744073709552000,
+            "control_after_generate": true
+          }
+        ],
+        "steps": [
+          "INT",
+          {
+            "default": 20,
+            "min": 1,
+            "max": 10000
+          }
+        ],
+        "cfg": [
+          "FLOAT",
+          {
+            "default": 8,
+            "min": 0,
+            "max": 100,
+            "step": 0.1,
+            "round": 0.01
+          }
+        ],
+        "sampler_name": [
+          [
+            "euler",
+            "euler_cfg_pp",
+            "euler_ancestral",
+            "euler_ancestral_cfg_pp",
+            "heun",
+            "heunpp2",
+            "exp_heun_2_x0",
+            "exp_heun_2_x0_sde",
+            "dpm_2",
+            "dpm_2_ancestral",
+            "lms",
+            "dpm_fast",
+            "dpm_adaptive",
+            "dpmpp_2s_ancestral",
+            "dpmpp_2s_ancestral_cfg_pp",
+            "dpmpp_sde",
+            "dpmpp_sde_gpu",
+            "dpmpp_2m",
+            "dpmpp_2m_cfg_pp",
+            "dpmpp_2m_sde",
+            "dpmpp_2m_sde_gpu",
+            "dpmpp_2m_sde_heun",
+            "dpmpp_2m_sde_heun_gpu",
+            "dpmpp_3m_sde",
+            "dpmpp_3m_sde_gpu",
+            "ddpm",
+            "lcm",
+            "ipndm",
+            "ipndm_v",
+            "deis",
+            "cfgpp_ud10_ab",
+            "res_multistep",
+            "res_multistep_cfg_pp",
+            "res_multistep_ancestral",
+            "res_multistep_ancestral_cfg_pp",
+            "gradient_estimation",
+            "gradient_estimation_cfg_pp",
+            "er_sde",
+            "seeds_2",
+            "seeds_3",
+            "sa_solver",
+            "sa_solver_pece",
+            "ddim",
+            "uni_pc",
+            "uni_pc_bh2"
+          ],
+          {}
+        ],
+        "scheduler": [
+          [
+            "simple",
+            "sgm_uniform",
+            "karras",
+            "exponential",
+            "ddim_uniform",
+            "beta",
+            "normal",
+            "linear_quadratic",
+            "kl_optimal"
+          ],
+          {}
+        ],
+        "positive": [
+          "CONDITIONING",
+          {}
+        ],
+        "negative": [
+          "CONDITIONING",
+          {}
+        ],
+        "latent_image": [
+          "LATENT",
+          {}
+        ],
+        "denoise": [
+          "FLOAT",
+          {
+            "default": 1,
+            "min": 0,
+            "max": 1,
+            "step": 0.01
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "model",
+        "seed",
+        "steps",
+        "cfg",
+        "sampler_name",
+        "scheduler",
+        "positive",
+        "negative",
+        "latent_image",
+        "denoise"
+      ]
+    },
+    "output": [
+      "LATENT"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "LATENT"
+    ],
+    "name": "KSampler",
+    "display_name": "KSampler",
+    "description": "Uses the provided model, positive and negative conditioning to denoise the latent image.",
+    "python_module": "nodes",
+    "category": "model/sampling",
+    "output_node": false
+  },
+  "KSamplerAdvanced": {
+    "input": {
+      "required": {
+        "model": [
+          "MODEL"
+        ],
+        "add_noise": [
+          [
+            "enable",
+            "disable"
+          ],
+          {
+            "advanced": true
+          }
+        ],
+        "noise_seed": [
+          "INT",
+          {
+            "default": 0,
+            "min": 0,
+            "max": 18446744073709552000,
+            "control_after_generate": true
+          }
+        ],
+        "steps": [
+          "INT",
+          {
+            "default": 20,
+            "min": 1,
+            "max": 10000
+          }
+        ],
+        "cfg": [
+          "FLOAT",
+          {
+            "default": 8,
+            "min": 0,
+            "max": 100,
+            "step": 0.1,
+            "round": 0.01
+          }
+        ],
+        "sampler_name": [
+          [
+            "euler",
+            "euler_cfg_pp",
+            "euler_ancestral",
+            "euler_ancestral_cfg_pp",
+            "heun",
+            "heunpp2",
+            "exp_heun_2_x0",
+            "exp_heun_2_x0_sde",
+            "dpm_2",
+            "dpm_2_ancestral",
+            "lms",
+            "dpm_fast",
+            "dpm_adaptive",
+            "dpmpp_2s_ancestral",
+            "dpmpp_2s_ancestral_cfg_pp",
+            "dpmpp_sde",
+            "dpmpp_sde_gpu",
+            "dpmpp_2m",
+            "dpmpp_2m_cfg_pp",
+            "dpmpp_2m_sde",
+            "dpmpp_2m_sde_gpu",
+            "dpmpp_2m_sde_heun",
+            "dpmpp_2m_sde_heun_gpu",
+            "dpmpp_3m_sde",
+            "dpmpp_3m_sde_gpu",
+            "ddpm",
+            "lcm",
+            "ipndm",
+            "ipndm_v",
+            "deis",
+            "cfgpp_ud10_ab",
+            "res_multistep",
+            "res_multistep_cfg_pp",
+            "res_multistep_ancestral",
+            "res_multistep_ancestral_cfg_pp",
+            "gradient_estimation",
+            "gradient_estimation_cfg_pp",
+            "er_sde",
+            "seeds_2",
+            "seeds_3",
+            "sa_solver",
+            "sa_solver_pece",
+            "ddim",
+            "uni_pc",
+            "uni_pc_bh2"
+          ]
+        ],
+        "scheduler": [
+          [
+            "simple",
+            "sgm_uniform",
+            "karras",
+            "exponential",
+            "ddim_uniform",
+            "beta",
+            "normal",
+            "linear_quadratic",
+            "kl_optimal"
+          ]
+        ],
+        "positive": [
+          "CONDITIONING"
+        ],
+        "negative": [
+          "CONDITIONING"
+        ],
+        "latent_image": [
+          "LATENT"
+        ],
+        "start_at_step": [
+          "INT",
+          {
+            "default": 0,
+            "min": 0,
+            "max": 10000,
+            "advanced": true
+          }
+        ],
+        "end_at_step": [
+          "INT",
+          {
+            "default": 10000,
+            "min": 0,
+            "max": 10000,
+            "advanced": true
+          }
+        ],
+        "return_with_leftover_noise": [
+          [
+            "disable",
+            "enable"
+          ],
+          {
+            "advanced": true
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "model",
+        "add_noise",
+        "noise_seed",
+        "steps",
+        "cfg",
+        "sampler_name",
+        "scheduler",
+        "positive",
+        "negative",
+        "latent_image",
+        "start_at_step",
+        "end_at_step",
+        "return_with_leftover_noise"
+      ]
+    },
+    "output": [
+      "LATENT"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "LATENT"
+    ],
+    "name": "KSamplerAdvanced",
+    "display_name": "KSampler (Advanced)",
+    "description": "",
+    "python_module": "nodes",
+    "category": "model/sampling",
+    "output_node": false
+  },
+  "ModelSamplingSD3": {
+    "input": {
+      "required": {
+        "model": [
+          "MODEL"
+        ],
+        "shift": [
+          "FLOAT",
+          {
+            "default": 3,
+            "min": 0,
+            "max": 100,
+            "step": 0.01
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "model",
+        "shift"
+      ]
+    },
+    "output": [
+      "MODEL"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "MODEL"
+    ],
+    "name": "ModelSamplingSD3",
+    "display_name": "ModelSamplingSD3",
+    "description": "",
+    "python_module": "comfy_extras.nodes_model_advanced",
+    "category": "model/patch/stable diffusion",
+    "output_node": false
+  },
+  "ModelSamplingAuraFlow": {
+    "input": {
+      "required": {
+        "model": [
+          "MODEL"
+        ],
+        "shift": [
+          "FLOAT",
+          {
+            "default": 1.73,
+            "min": 0,
+            "max": 100,
+            "step": 0.01
+          }
+        ]
+      },
+      "optional": {
+        "sampling": [
+          [
+            "flow",
+            "img_to_img_velocity"
+          ],
+          {
+            "default": "flow",
+            "advanced": true
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "model",
+        "shift"
+      ],
+      "optional": [
+        "sampling"
+      ]
+    },
+    "output": [
+      "MODEL"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "MODEL"
+    ],
+    "name": "ModelSamplingAuraFlow",
+    "display_name": "ModelSamplingAuraFlow",
+    "description": "",
+    "python_module": "comfy_extras.nodes_model_advanced",
+    "category": "model/patch",
+    "output_node": false
+  },
+  "ConditioningZeroOut": {
+    "input": {
+      "required": {
+        "conditioning": [
+          "CONDITIONING"
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "conditioning"
+      ]
+    },
+    "output": [
+      "CONDITIONING"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "CONDITIONING"
+    ],
+    "name": "ConditioningZeroOut",
+    "display_name": "Conditioning Zero Out",
+    "description": "",
+    "python_module": "nodes",
+    "category": "model/conditioning/transform",
+    "output_node": false
+  },
+  "TextEncodeAceStepAudio1.5": {
+    "input": {
+      "required": {
+        "clip": [
+          "CLIP",
+          {}
+        ],
+        "tags": [
+          "STRING",
+          {
+            "multiline": true,
+            "dynamicPrompts": true
+          }
+        ],
+        "lyrics": [
+          "STRING",
+          {
+            "multiline": true,
+            "dynamicPrompts": true
+          }
+        ],
+        "seed": [
+          "INT",
+          {
+            "default": 0,
+            "min": 0,
+            "max": 18446744073709552000,
+            "control_after_generate": true
+          }
+        ],
+        "bpm": [
+          "INT",
+          {
+            "default": 120,
+            "min": 10,
+            "max": 300
+          }
+        ],
+        "duration": [
+          "FLOAT",
+          {
+            "default": 120,
+            "min": 0,
+            "max": 2000,
+            "step": 0.1
+          }
+        ],
+        "timesignature": [
+          "COMBO",
+          {
+            "multiselect": false,
+            "options": [
+              "2",
+              "3",
+              "4",
+              "6"
+            ]
+          }
+        ],
+        "language": [
+          "COMBO",
+          {
+            "default": "en",
+            "multiselect": false,
+            "options": [
+              "ar",
+              "az",
+              "bg",
+              "bn",
+              "ca",
+              "cs",
+              "da",
+              "de",
+              "el",
+              "en",
+              "es",
+              "fa",
+              "fi",
+              "fr",
+              "he",
+              "hi",
+              "hr",
+              "ht",
+              "hu",
+              "id",
+              "is",
+              "it",
+              "ja",
+              "ko",
+              "la",
+              "lt",
+              "ms",
+              "ne",
+              "nl",
+              "no",
+              "pa",
+              "pl",
+              "pt",
+              "ro",
+              "ru",
+              "sa",
+              "sk",
+              "sr",
+              "sv",
+              "sw",
+              "ta",
+              "te",
+              "th",
+              "tl",
+              "tr",
+              "uk",
+              "ur",
+              "vi",
+              "yue",
+              "zh",
+              "unknown"
+            ]
+          }
+        ],
+        "keyscale": [
+          "COMBO",
+          {
+            "multiselect": false,
+            "options": [
+              "C major",
+              "C# major",
+              "Db major",
+              "D major",
+              "D# major",
+              "Eb major",
+              "E major",
+              "F major",
+              "F# major",
+              "Gb major",
+              "G major",
+              "G# major",
+              "Ab major",
+              "A major",
+              "A# major",
+              "Bb major",
+              "B major",
+              "C minor",
+              "C# minor",
+              "Db minor",
+              "D minor",
+              "D# minor",
+              "Eb minor",
+              "E minor",
+              "F minor",
+              "F# minor",
+              "Gb minor",
+              "G minor",
+              "G# minor",
+              "Ab minor",
+              "A minor",
+              "A# minor",
+              "Bb minor",
+              "B minor"
+            ]
+          }
+        ],
+        "generate_audio_codes": [
+          "BOOLEAN",
+          {
+            "advanced": true,
+            "default": true
+          }
+        ],
+        "cfg_scale": [
+          "FLOAT",
+          {
+            "advanced": true,
+            "default": 2,
+            "min": 0,
+            "max": 100,
+            "step": 0.1
+          }
+        ],
+        "temperature": [
+          "FLOAT",
+          {
+            "advanced": true,
+            "default": 0.85,
+            "min": 0,
+            "max": 2,
+            "step": 0.01
+          }
+        ],
+        "top_p": [
+          "FLOAT",
+          {
+            "advanced": true,
+            "default": 0.9,
+            "min": 0,
+            "max": 2000,
+            "step": 0.01
+          }
+        ],
+        "top_k": [
+          "INT",
+          {
+            "advanced": true,
+            "default": 0,
+            "min": 0,
+            "max": 100
+          }
+        ],
+        "min_p": [
+          "FLOAT",
+          {
+            "advanced": true,
+            "default": 0,
+            "min": 0,
+            "max": 1,
+            "step": 0.001
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "clip",
+        "tags",
+        "lyrics",
+        "seed",
+        "bpm",
+        "duration",
+        "timesignature",
+        "language",
+        "keyscale",
+        "generate_audio_codes",
+        "cfg_scale",
+        "temperature",
+        "top_p",
+        "top_k",
+        "min_p"
+      ]
+    },
+    "output": [
+      "CONDITIONING"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "CONDITIONING"
+    ],
+    "name": "TextEncodeAceStepAudio1.5",
+    "display_name": null,
+    "description": "",
+    "python_module": "comfy_extras.nodes_ace",
+    "category": "model/conditioning/ace",
+    "output_node": false
+  },
+  "EmptyAceStep1.5LatentAudio": {
+    "input": {
+      "required": {
+        "seconds": [
+          "FLOAT",
+          {
+            "default": 120,
+            "min": 1,
+            "max": 1000,
+            "step": 0.01
+          }
+        ],
+        "batch_size": [
+          "INT",
+          {
+            "default": 1,
+            "min": 1,
+            "max": 4096
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "seconds",
+        "batch_size"
+      ]
+    },
+    "output": [
+      "LATENT"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "LATENT"
+    ],
+    "name": "EmptyAceStep1.5LatentAudio",
+    "display_name": "Empty Ace Step 1.5 Latent Audio",
+    "description": "",
+    "python_module": "comfy_extras.nodes_ace",
+    "category": "model/latent/ace",
+    "output_node": false
+  },
+  "VAEDecodeAudio": {
+    "input": {
+      "required": {
+        "samples": [
+          "LATENT",
+          {}
+        ],
+        "vae": [
+          "VAE",
+          {}
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "samples",
+        "vae"
+      ]
+    },
+    "output": [
+      "AUDIO"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "AUDIO"
+    ],
+    "name": "VAEDecodeAudio",
+    "display_name": "VAE Decode Audio",
+    "description": "",
+    "python_module": "comfy_extras.nodes_audio",
+    "category": "model/latent",
+    "output_node": false
+  },
+  "SaveAudioAdvanced": {
+    "input": {
+      "required": {
+        "audio": [
+          "AUDIO",
+          {}
+        ],
+        "filename_prefix": [
+          "STRING",
+          {
+            "default": "audio/ComfyUI",
+            "multiline": false
+          }
+        ],
+        "format": [
+          "COMFY_DYNAMICCOMBO_V3",
+          {
+            "options": [
+              {
+                "key": "flac",
+                "inputs": {
+                  "required": {}
+                }
+              },
+              {
+                "key": "mp3",
+                "inputs": {
+                  "required": {
+                    "quality": [
+                      "COMBO",
+                      {
+                        "default": "V0",
+                        "multiselect": false,
+                        "options": [
+                          "V0",
+                          "128k",
+                          "320k"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "key": "opus",
+                "inputs": {
+                  "required": {
+                    "quality": [
+                      "COMBO",
+                      {
+                        "default": "128k",
+                        "multiselect": false,
+                        "options": [
+                          "64k",
+                          "96k",
+                          "128k",
+                          "192k",
+                          "320k"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "hidden": {
+        "prompt": [
+          "PROMPT"
+        ],
+        "extra_pnginfo": [
+          "EXTRA_PNGINFO"
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "audio",
+        "filename_prefix",
+        "format"
+      ],
+      "hidden": [
+        "prompt",
+        "extra_pnginfo"
+      ]
+    },
+    "output": [
+      "AUDIO"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "audio"
+    ],
+    "name": "SaveAudioAdvanced",
+    "display_name": "Save Audio (Advanced)",
+    "description": "Saves the input audio to your ComfyUI output directory.",
+    "python_module": "comfy_extras.nodes_audio",
+    "category": "audio",
+    "output_node": true
+  },
+  "PreviewAudio": {
+    "input": {
+      "required": {
+        "audio": [
+          "AUDIO",
+          {}
+        ]
+      },
+      "hidden": {
+        "prompt": [
+          "PROMPT"
+        ],
+        "extra_pnginfo": [
+          "EXTRA_PNGINFO"
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "audio"
+      ],
+      "hidden": [
+        "prompt",
+        "extra_pnginfo"
+      ]
+    },
+    "output": [
+      "AUDIO"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "audio"
+    ],
+    "name": "PreviewAudio",
+    "display_name": "Preview Audio",
+    "description": "Preview the audio without saving it to the ComfyUI output directory.",
+    "python_module": "comfy_extras.nodes_audio",
+    "category": "audio",
+    "output_node": true
+  },
+  "LoadAudio": {
+    "input": {
+      "required": {
+        "audio": [
+          "COMBO",
+          {
+            "multiselect": false,
+            "options": [],
+            "audio_upload": true
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "audio"
+      ]
+    },
+    "output": [
+      "AUDIO"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "AUDIO"
+    ],
+    "name": "LoadAudio",
+    "display_name": "Load Audio",
+    "description": "",
+    "python_module": "comfy_extras.nodes_audio",
+    "category": "audio",
+    "output_node": false
+  },
+  "EmptyAudio": {
+    "input": {
+      "required": {
+        "duration": [
+          "FLOAT",
+          {
+            "default": 60,
+            "min": 0,
+            "max": 18446744073709552000,
+            "step": 0.01
+          }
+        ],
+        "sample_rate": [
+          "INT",
+          {
+            "advanced": true,
+            "default": 44100,
+            "min": 1,
+            "max": 192000
+          }
+        ],
+        "channels": [
+          "INT",
+          {
+            "advanced": true,
+            "default": 2,
+            "min": 1,
+            "max": 2
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "duration",
+        "sample_rate",
+        "channels"
+      ]
+    },
+    "output": [
+      "AUDIO"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "AUDIO"
+    ],
+    "name": "EmptyAudio",
+    "display_name": "Empty Audio",
+    "description": "",
+    "python_module": "comfy_extras.nodes_audio",
+    "category": "audio",
+    "output_node": false
+  },
+  "Wan22ImageToVideoLatent": {
+    "input": {
+      "required": {
+        "vae": [
+          "VAE",
+          {}
+        ],
+        "width": [
+          "INT",
+          {
+            "default": 1280,
+            "min": 32,
+            "max": 16384,
+            "step": 32
+          }
+        ],
+        "height": [
+          "INT",
+          {
+            "default": 704,
+            "min": 32,
+            "max": 16384,
+            "step": 32
+          }
+        ],
+        "length": [
+          "INT",
+          {
+            "default": 49,
+            "min": 1,
+            "max": 16384,
+            "step": 4
+          }
+        ],
+        "batch_size": [
+          "INT",
+          {
+            "default": 1,
+            "min": 1,
+            "max": 4096
+          }
+        ]
+      },
+      "optional": {
+        "start_image": [
+          "IMAGE",
+          {}
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "vae",
+        "width",
+        "height",
+        "length",
+        "batch_size"
+      ],
+      "optional": [
+        "start_image"
+      ]
+    },
+    "output": [
+      "LATENT"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "LATENT"
+    ],
+    "name": "Wan22ImageToVideoLatent",
+    "display_name": null,
+    "description": "",
+    "python_module": "comfy_extras.nodes_wan",
+    "category": "model/conditioning/wan",
+    "output_node": false
+  },
+  "VAEDecode": {
+    "input": {
+      "required": {
+        "samples": [
+          "LATENT",
+          {}
+        ],
+        "vae": [
+          "VAE",
+          {}
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "samples",
+        "vae"
+      ]
+    },
+    "output": [
+      "IMAGE"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "IMAGE"
+    ],
+    "name": "VAEDecode",
+    "display_name": "VAE Decode",
+    "description": "Decodes latent images back into pixel space images.",
+    "python_module": "nodes",
+    "category": "model/latent",
+    "output_node": false
+  },
+  "CreateVideo": {
+    "input": {
+      "required": {
+        "images": [
+          "IMAGE",
+          {}
+        ],
+        "fps": [
+          "FLOAT",
+          {
+            "default": 30,
+            "min": 1,
+            "max": 120,
+            "step": 1
+          }
+        ]
+      },
+      "optional": {
+        "audio": [
+          "AUDIO",
+          {}
+        ],
+        "bit_depth": [
+          "COMBO",
+          {
+            "default": "auto",
+            "multiselect": false,
+            "options": [
+              "auto",
+              8,
+              10
+            ]
+          }
+        ],
+        "color_space": [
+          "COMBO",
+          {
+            "default": "sRGB",
+            "multiselect": false,
+            "options": [
+              "sRGB",
+              "HDR",
+              "HDR PQ"
+            ]
+          }
+        ],
+        "codec": [
+          "COMBO",
+          {
+            "advanced": true,
+            "default": "none",
+            "multiselect": false,
+            "options": [
+              "none",
+              "auto",
+              "h264",
+              "av1"
+            ]
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "images",
+        "fps"
+      ],
+      "optional": [
+        "audio",
+        "bit_depth",
+        "color_space",
+        "codec"
+      ]
+    },
+    "output": [
+      "VIDEO"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "VIDEO"
+    ],
+    "name": "CreateVideo",
+    "display_name": "Create Video",
+    "description": "Create a video from images.",
+    "python_module": "comfy_extras.nodes_video",
+    "category": "video",
+    "output_node": false
+  },
+  "SaveVideo": {
+    "input": {
+      "required": {
+        "video": [
+          "VIDEO",
+          {}
+        ],
+        "filename_prefix": [
+          "STRING",
+          {
+            "default": "video/ComfyUI",
+            "multiline": false
+          }
+        ],
+        "format": [
+          "COMFY_DYNAMICCOMBO_V3",
+          {
+            "options": [
+              {
+                "key": "auto",
+                "inputs": {
+                  "required": {
+                    "codec": [
+                      "COMFY_DYNAMICCOMBO_V3",
+                      {
+                        "options": [
+                          {
+                            "key": "auto",
+                            "inputs": {
+                              "required": {}
+                            }
+                          },
+                          {
+                            "key": "h264",
+                            "inputs": {
+                              "required": {},
+                              "optional": {
+                                "encoding": [
+                                  "COMFY_DYNAMICCOMBO_V3",
+                                  {
+                                    "display_name": "encoding mode",
+                                    "options": [
+                                      {
+                                        "key": "auto",
+                                        "inputs": {
+                                          "required": {}
+                                        }
+                                      },
+                                      {
+                                        "key": "re-encode",
+                                        "inputs": {
+                                          "required": {
+                                            "crf": [
+                                              "FLOAT",
+                                              {
+                                                "default": 23,
+                                                "min": 0,
+                                                "max": 51,
+                                                "step": 1
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "key": "av1",
+                            "inputs": {
+                              "required": {},
+                              "optional": {
+                                "encoding": [
+                                  "COMFY_DYNAMICCOMBO_V3",
+                                  {
+                                    "display_name": "encoding mode",
+                                    "options": [
+                                      {
+                                        "key": "auto",
+                                        "inputs": {
+                                          "required": {}
+                                        }
+                                      },
+                                      {
+                                        "key": "re-encode",
+                                        "inputs": {
+                                          "required": {
+                                            "crf": [
+                                              "FLOAT",
+                                              {
+                                                "default": 30,
+                                                "min": 0,
+                                                "max": 63,
+                                                "step": 1
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "key": "mp4",
+                "inputs": {
+                  "required": {
+                    "codec": [
+                      "COMFY_DYNAMICCOMBO_V3",
+                      {
+                        "options": [
+                          {
+                            "key": "auto",
+                            "inputs": {
+                              "required": {}
+                            }
+                          },
+                          {
+                            "key": "h264",
+                            "inputs": {
+                              "required": {},
+                              "optional": {
+                                "encoding": [
+                                  "COMFY_DYNAMICCOMBO_V3",
+                                  {
+                                    "display_name": "encoding mode",
+                                    "options": [
+                                      {
+                                        "key": "auto",
+                                        "inputs": {
+                                          "required": {}
+                                        }
+                                      },
+                                      {
+                                        "key": "re-encode",
+                                        "inputs": {
+                                          "required": {
+                                            "crf": [
+                                              "FLOAT",
+                                              {
+                                                "default": 23,
+                                                "min": 0,
+                                                "max": 51,
+                                                "step": 1
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "key": "av1",
+                            "inputs": {
+                              "required": {},
+                              "optional": {
+                                "encoding": [
+                                  "COMFY_DYNAMICCOMBO_V3",
+                                  {
+                                    "display_name": "encoding mode",
+                                    "options": [
+                                      {
+                                        "key": "auto",
+                                        "inputs": {
+                                          "required": {}
+                                        }
+                                      },
+                                      {
+                                        "key": "re-encode",
+                                        "inputs": {
+                                          "required": {
+                                            "crf": [
+                                              "FLOAT",
+                                              {
+                                                "default": 30,
+                                                "min": 0,
+                                                "max": 63,
+                                                "step": 1
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "key": "mkv",
+                "inputs": {
+                  "required": {
+                    "codec": [
+                      "COMFY_DYNAMICCOMBO_V3",
+                      {
+                        "options": [
+                          {
+                            "key": "auto",
+                            "inputs": {
+                              "required": {}
+                            }
+                          },
+                          {
+                            "key": "h264",
+                            "inputs": {
+                              "required": {},
+                              "optional": {
+                                "encoding": [
+                                  "COMFY_DYNAMICCOMBO_V3",
+                                  {
+                                    "display_name": "encoding mode",
+                                    "options": [
+                                      {
+                                        "key": "auto",
+                                        "inputs": {
+                                          "required": {}
+                                        }
+                                      },
+                                      {
+                                        "key": "re-encode",
+                                        "inputs": {
+                                          "required": {
+                                            "crf": [
+                                              "FLOAT",
+                                              {
+                                                "default": 23,
+                                                "min": 0,
+                                                "max": 51,
+                                                "step": 1
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "key": "av1",
+                            "inputs": {
+                              "required": {},
+                              "optional": {
+                                "encoding": [
+                                  "COMFY_DYNAMICCOMBO_V3",
+                                  {
+                                    "display_name": "encoding mode",
+                                    "options": [
+                                      {
+                                        "key": "auto",
+                                        "inputs": {
+                                          "required": {}
+                                        }
+                                      },
+                                      {
+                                        "key": "re-encode",
+                                        "inputs": {
+                                          "required": {
+                                            "crf": [
+                                              "FLOAT",
+                                              {
+                                                "default": 30,
+                                                "min": 0,
+                                                "max": 63,
+                                                "step": 1
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "key": "webm",
+                "inputs": {
+                  "required": {
+                    "codec": [
+                      "COMFY_DYNAMICCOMBO_V3",
+                      {
+                        "options": [
+                          {
+                            "key": "auto",
+                            "inputs": {
+                              "required": {}
+                            }
+                          },
+                          {
+                            "key": "av1",
+                            "inputs": {
+                              "required": {},
+                              "optional": {
+                                "encoding": [
+                                  "COMFY_DYNAMICCOMBO_V3",
+                                  {
+                                    "display_name": "encoding mode",
+                                    "options": [
+                                      {
+                                        "key": "auto",
+                                        "inputs": {
+                                          "required": {}
+                                        }
+                                      },
+                                      {
+                                        "key": "re-encode",
+                                        "inputs": {
+                                          "required": {
+                                            "crf": [
+                                              "FLOAT",
+                                              {
+                                                "default": 30,
+                                                "min": 0,
+                                                "max": 63,
+                                                "step": 1
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "optional": {
+        "codec": [
+          "COMFY_DYNAMICCOMBO_V3",
+          {
+            "hidden": true,
+            "options": [
+              {
+                "key": "auto",
+                "inputs": {
+                  "required": {}
+                }
+              },
+              {
+                "key": "h264",
+                "inputs": {
+                  "required": {},
+                  "optional": {
+                    "encoding": [
+                      "COMFY_DYNAMICCOMBO_V3",
+                      {
+                        "display_name": "encoding mode",
+                        "options": [
+                          {
+                            "key": "auto",
+                            "inputs": {
+                              "required": {}
+                            }
+                          },
+                          {
+                            "key": "re-encode",
+                            "inputs": {
+                              "required": {
+                                "crf": [
+                                  "FLOAT",
+                                  {
+                                    "default": 23,
+                                    "min": 0,
+                                    "max": 51,
+                                    "step": 1
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "key": "av1",
+                "inputs": {
+                  "required": {},
+                  "optional": {
+                    "encoding": [
+                      "COMFY_DYNAMICCOMBO_V3",
+                      {
+                        "display_name": "encoding mode",
+                        "options": [
+                          {
+                            "key": "auto",
+                            "inputs": {
+                              "required": {}
+                            }
+                          },
+                          {
+                            "key": "re-encode",
+                            "inputs": {
+                              "required": {
+                                "crf": [
+                                  "FLOAT",
+                                  {
+                                    "default": 30,
+                                    "min": 0,
+                                    "max": 63,
+                                    "step": 1
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "hidden": {
+        "prompt": [
+          "PROMPT"
+        ],
+        "extra_pnginfo": [
+          "EXTRA_PNGINFO"
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "video",
+        "filename_prefix",
+        "format"
+      ],
+      "optional": [
+        "codec"
+      ],
+      "hidden": [
+        "prompt",
+        "extra_pnginfo"
+      ]
+    },
+    "output": [
+      "VIDEO"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "video"
+    ],
+    "name": "SaveVideo",
+    "display_name": "Save Video",
+    "description": "Saves the input videos to your ComfyUI output directory.",
+    "python_module": "comfy_extras.nodes_video",
+    "category": "video",
+    "output_node": true
+  },
+  "LoadVideo": {
+    "input": {
+      "required": {
+        "file": [
+          "COMBO",
+          {
+            "multiselect": false,
+            "options": [],
+            "video_upload": true
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "file"
+      ]
+    },
+    "output": [
+      "VIDEO"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "VIDEO"
+    ],
+    "name": "LoadVideo",
+    "display_name": "Load Video",
+    "description": "",
+    "python_module": "comfy_extras.nodes_video",
+    "category": "video",
+    "output_node": false
+  },
+  "GetVideoComponents": {
+    "input": {
+      "required": {
+        "video": [
+          "VIDEO",
+          {}
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "video"
+      ]
+    },
+    "output": [
+      "IMAGE",
+      "AUDIO",
+      "FLOAT",
+      "COMBO",
+      "COMBO"
+    ],
+    "output_is_list": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "output_name": [
+      "images",
+      "audio",
+      "fps",
+      "bit_depth",
+      "color_space"
+    ],
+    "name": "GetVideoComponents",
+    "display_name": "Get Video Components",
+    "description": "Extracts video frames, audio, frame rate, bit depth, and color space.",
+    "python_module": "comfy_extras.nodes_video",
+    "category": "video",
+    "output_node": false
+  },
+  "ImageFromBatch": {
+    "input": {
+      "required": {
+        "image": [
+          "IMAGE",
+          {}
+        ],
+        "batch_index": [
+          "INT",
+          {
+            "default": 0,
+            "min": -16384,
+            "max": 16384
+          }
+        ],
+        "length": [
+          "INT",
+          {
+            "default": 1,
+            "min": 1,
+            "max": 4096
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "image",
+        "batch_index",
+        "length"
+      ]
+    },
+    "output": [
+      "IMAGE"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "IMAGE"
+    ],
+    "name": "ImageFromBatch",
+    "display_name": "Get Image from Batch",
+    "description": "",
+    "python_module": "comfy_extras.nodes_images",
+    "category": "image/batch",
+    "output_node": false
+  },
+  "PreviewImage": {
+    "input": {
+      "required": {
+        "images": [
+          "IMAGE"
+        ]
+      },
+      "hidden": {
+        "prompt": "PROMPT",
+        "extra_pnginfo": "EXTRA_PNGINFO"
+      }
+    },
+    "input_order": {
+      "required": [
+        "images"
+      ],
+      "hidden": [
+        "prompt",
+        "extra_pnginfo"
+      ]
+    },
+    "output": [
+      "IMAGE"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "images"
+    ],
+    "name": "PreviewImage",
+    "display_name": "Preview Image",
+    "description": "Preview the images without saving them to the ComfyUI output directory.",
+    "python_module": "nodes",
+    "category": "image",
+    "output_node": true
+  },
+  "EmptyImage": {
+    "input": {
+      "required": {
+        "width": [
+          "INT",
+          {
+            "default": 512,
+            "min": 1,
+            "max": 16384,
+            "step": 1
+          }
+        ],
+        "height": [
+          "INT",
+          {
+            "default": 512,
+            "min": 1,
+            "max": 16384,
+            "step": 1
+          }
+        ],
+        "batch_size": [
+          "INT",
+          {
+            "default": 1,
+            "min": 1,
+            "max": 4096
+          }
+        ],
+        "color": [
+          "INT",
+          {
+            "default": 0,
+            "min": 0,
+            "max": 16777215,
+            "step": 1,
+            "display": "color"
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "width",
+        "height",
+        "batch_size",
+        "color"
+      ]
+    },
+    "output": [
+      "IMAGE"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "IMAGE"
+    ],
+    "name": "EmptyImage",
+    "display_name": "Empty Image",
+    "description": "",
+    "python_module": "nodes",
+    "category": "image",
+    "output_node": false
+  },
+  "LoadImage": {
+    "input": {
+      "required": {
+        "image": [
+          [
+            "example.png"
+          ],
+          {
+            "image_upload": true
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "image"
+      ]
+    },
+    "output": [
+      "IMAGE",
+      "MASK"
+    ],
+    "output_is_list": [
+      false,
+      false
+    ],
+    "output_name": [
+      "IMAGE",
+      "MASK"
+    ],
+    "name": "LoadImage",
+    "display_name": "Load Image",
+    "description": "",
+    "python_module": "nodes",
+    "category": "image",
+    "output_node": false
+  },
+  "SaveImage": {
+    "input": {
+      "required": {
+        "images": [
+          "IMAGE",
+          {}
+        ],
+        "filename_prefix": [
+          "STRING",
+          {
+            "default": "ComfyUI"
+          }
+        ]
+      },
+      "hidden": {
+        "prompt": "PROMPT",
+        "extra_pnginfo": "EXTRA_PNGINFO"
+      }
+    },
+    "input_order": {
+      "required": [
+        "images",
+        "filename_prefix"
+      ],
+      "hidden": [
+        "prompt",
+        "extra_pnginfo"
+      ]
+    },
+    "output": [
+      "IMAGE"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "images"
+    ],
+    "name": "SaveImage",
+    "display_name": "Save Image",
+    "description": "Saves the input images to your ComfyUI output directory.",
+    "python_module": "nodes",
+    "category": "image",
+    "output_node": true
+  },
+  "SaveAudio": {
+    "input": {
+      "required": {
+        "audio": [
+          "AUDIO",
+          {}
+        ],
+        "filename_prefix": [
+          "STRING",
+          {
+            "default": "audio/ComfyUI",
+            "multiline": false
+          }
+        ]
+      },
+      "hidden": {
+        "prompt": [
+          "PROMPT"
+        ],
+        "extra_pnginfo": [
+          "EXTRA_PNGINFO"
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "audio",
+        "filename_prefix"
+      ],
+      "hidden": [
+        "prompt",
+        "extra_pnginfo"
+      ]
+    },
+    "output": [
+      "AUDIO"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "audio"
+    ],
+    "name": "SaveAudio",
+    "display_name": "Save Audio (FLAC) (DEPRECATED)",
+    "description": "",
+    "python_module": "comfy_extras.nodes_audio",
+    "category": "audio",
+    "output_node": true,
+    "deprecated": true
+  },
+  "ClaudeNode": {
+    "input": {
+      "required": {
+        "prompt": [
+          "STRING",
+          {
+            "default": "",
+            "multiline": true
+          }
+        ],
+        "model": [
+          "COMFY_DYNAMICCOMBO_V3",
+          {
+            "options": [
+              {
+                "key": "Opus 5.5",
+                "inputs": {
+                  "required": {
+                    "max_tokens": [
+                      "INT",
+                      {
+                        "advanced": true,
+                        "default": 32768,
+                        "min": 4096,
+                        "max": 64000
+                      }
+                    ],
+                    "reasoning_effort": [
+                      "COMBO",
+                      {
+                        "advanced": true,
+                        "default": "high",
+                        "multiselect": false,
+                        "options": [
+                          "low",
+                          "medium",
+                          "high",
+                          "xhigh",
+                          "max"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "key": "Opus 5",
+                "inputs": {
+                  "required": {
+                    "max_tokens": [
+                      "INT",
+                      {
+                        "advanced": true,
+                        "default": 32768,
+                        "min": 4096,
+                        "max": 64000
+                      }
+                    ],
+                    "reasoning_effort": [
+                      "COMBO",
+                      {
+                        "advanced": true,
+                        "default": "high",
+                        "multiselect": false,
+                        "options": [
+                          "low",
+                          "medium",
+                          "high",
+                          "xhigh",
+                          "max"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "key": "Opus 4.8",
+                "inputs": {
+                  "required": {
+                    "max_tokens": [
+                      "INT",
+                      {
+                        "advanced": true,
+                        "default": 32768,
+                        "min": 4096,
+                        "max": 64000
+                      }
+                    ],
+                    "reasoning_effort": [
+                      "COMBO",
+                      {
+                        "advanced": true,
+                        "default": "off",
+                        "multiselect": false,
+                        "options": [
+                          "off",
+                          "low",
+                          "medium",
+                          "high",
+                          "xhigh",
+                          "max"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "key": "Fable 5.1",
+                "inputs": {
+                  "required": {
+                    "max_tokens": [
+                      "INT",
+                      {
+                        "advanced": true,
+                        "default": 32768,
+                        "min": 4096,
+                        "max": 64000
+                      }
+                    ],
+                    "reasoning_effort": [
+                      "COMBO",
+                      {
+                        "advanced": true,
+                        "default": "high",
+                        "multiselect": false,
+                        "options": [
+                          "low",
+                          "medium",
+                          "high",
+                          "xhigh",
+                          "max"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "key": "Fable 5",
+                "inputs": {
+                  "required": {
+                    "max_tokens": [
+                      "INT",
+                      {
+                        "advanced": true,
+                        "default": 32768,
+                        "min": 4096,
+                        "max": 64000
+                      }
+                    ],
+                    "reasoning_effort": [
+                      "COMBO",
+                      {
+                        "advanced": true,
+                        "default": "high",
+                        "multiselect": false,
+                        "options": [
+                          "low",
+                          "medium",
+                          "high",
+                          "xhigh",
+                          "max"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "key": "Sonnet 5",
+                "inputs": {
+                  "required": {
+                    "max_tokens": [
+                      "INT",
+                      {
+                        "advanced": true,
+                        "default": 32768,
+                        "min": 4096,
+                        "max": 64000
+                      }
+                    ],
+                    "reasoning_effort": [
+                      "COMBO",
+                      {
+                        "advanced": true,
+                        "default": "off",
+                        "multiselect": false,
+                        "options": [
+                          "off",
+                          "low",
+                          "medium",
+                          "high",
+                          "xhigh",
+                          "max"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "key": "Opus 4.7",
+                "inputs": {
+                  "required": {
+                    "max_tokens": [
+                      "INT",
+                      {
+                        "advanced": true,
+                        "default": 32768,
+                        "min": 4096,
+                        "max": 64000
+                      }
+                    ],
+                    "temperature": [
+                      "FLOAT",
+                      {
+                        "advanced": true,
+                        "default": 1,
+                        "min": 0,
+                        "max": 1,
+                        "step": 0.01
+                      }
+                    ],
+                    "reasoning_effort": [
+                      "COMBO",
+                      {
+                        "advanced": true,
+                        "default": "off",
+                        "multiselect": false,
+                        "options": [
+                          "off",
+                          "low",
+                          "medium",
+                          "high",
+                          "xhigh",
+                          "max"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "key": "Opus 4.6",
+                "inputs": {
+                  "required": {
+                    "max_tokens": [
+                      "INT",
+                      {
+                        "advanced": true,
+                        "default": 32768,
+                        "min": 4096,
+                        "max": 64000
+                      }
+                    ],
+                    "temperature": [
+                      "FLOAT",
+                      {
+                        "advanced": true,
+                        "default": 1,
+                        "min": 0,
+                        "max": 1,
+                        "step": 0.01
+                      }
+                    ],
+                    "reasoning_effort": [
+                      "COMBO",
+                      {
+                        "advanced": true,
+                        "default": "off",
+                        "multiselect": false,
+                        "options": [
+                          "off",
+                          "low",
+                          "medium",
+                          "high",
+                          "max"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "key": "Sonnet 4.6",
+                "inputs": {
+                  "required": {
+                    "max_tokens": [
+                      "INT",
+                      {
+                        "advanced": true,
+                        "default": 32768,
+                        "min": 4096,
+                        "max": 64000
+                      }
+                    ],
+                    "temperature": [
+                      "FLOAT",
+                      {
+                        "advanced": true,
+                        "default": 1,
+                        "min": 0,
+                        "max": 1,
+                        "step": 0.01
+                      }
+                    ],
+                    "reasoning_effort": [
+                      "COMBO",
+                      {
+                        "advanced": true,
+                        "default": "off",
+                        "multiselect": false,
+                        "options": [
+                          "off",
+                          "low",
+                          "medium",
+                          "high",
+                          "max"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "key": "Sonnet 4.5",
+                "inputs": {
+                  "required": {
+                    "max_tokens": [
+                      "INT",
+                      {
+                        "advanced": true,
+                        "default": 32768,
+                        "min": 4096,
+                        "max": 64000
+                      }
+                    ],
+                    "temperature": [
+                      "FLOAT",
+                      {
+                        "advanced": true,
+                        "default": 1,
+                        "min": 0,
+                        "max": 1,
+                        "step": 0.01
+                      }
+                    ],
+                    "reasoning_effort": [
+                      "COMBO",
+                      {
+                        "advanced": true,
+                        "default": "off",
+                        "multiselect": false,
+                        "options": [
+                          "off",
+                          "low",
+                          "medium",
+                          "high"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "key": "Haiku 4.5",
+                "inputs": {
+                  "required": {
+                    "max_tokens": [
+                      "INT",
+                      {
+                        "advanced": true,
+                        "default": 32768,
+                        "min": 4096,
+                        "max": 64000
+                      }
+                    ],
+                    "temperature": [
+                      "FLOAT",
+                      {
+                        "advanced": true,
+                        "default": 1,
+                        "min": 0,
+                        "max": 1,
+                        "step": 0.01
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "seed": [
+          "INT",
+          {
+            "default": 0,
+            "min": 0,
+            "max": 2147483647,
+            "control_after_generate": true
+          }
+        ],
+        "images": [
+          "COMFY_AUTOGROW_V3",
+          {
+            "template": {
+              "input": {
+                "required": {
+                  "image": [
+                    "IMAGE",
+                    {}
+                  ]
+                }
+              },
+              "names": [
+                "image_1",
+                "image_2",
+                "image_3",
+                "image_4",
+                "image_5",
+                "image_6",
+                "image_7",
+                "image_8",
+                "image_9",
+                "image_10",
+                "image_11",
+                "image_12",
+                "image_13",
+                "image_14",
+                "image_15",
+                "image_16",
+                "image_17",
+                "image_18",
+                "image_19",
+                "image_20"
+              ],
+              "min": 0
+            }
+          }
+        ]
+      },
+      "optional": {
+        "system_prompt": [
+          "STRING",
+          {
+            "advanced": true,
+            "default": "",
+            "multiline": true
+          }
+        ]
+      },
+      "hidden": {
+        "auth_token_comfy_org": [
+          "AUTH_TOKEN_COMFY_ORG"
+        ],
+        "api_key_comfy_org": [
+          "API_KEY_COMFY_ORG"
+        ],
+        "unique_id": [
+          "UNIQUE_ID"
+        ],
+        "comfy_usage_source": [
+          "COMFY_USAGE_SOURCE"
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "prompt",
+        "model",
+        "seed",
+        "images"
+      ],
+      "optional": [
+        "system_prompt"
+      ],
+      "hidden": [
+        "auth_token_comfy_org",
+        "api_key_comfy_org",
+        "unique_id",
+        "comfy_usage_source"
+      ]
+    },
+    "output": [
+      "STRING"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "STRING"
+    ],
+    "name": "ClaudeNode",
+    "display_name": "Anthropic Claude",
+    "description": "Generate text responses with Anthropic's Claude models. Provide a text prompt and optionally one or more images for multimodal context.",
+    "python_module": "comfy_api_nodes.nodes_anthropic",
+    "category": "partner/text/Anthropic",
+    "output_node": false,
+    "api_node": true
+  }
+}

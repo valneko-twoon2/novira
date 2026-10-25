@@ -1,0 +1,61 @@
+{
+  "items": [
+    {
+      "id": "827184",
+      "name": "WAI-illustrious-SDXL",
+      "kind": "Checkpoint",
+      "baseModel": "Illustrious",
+      "creator": "someone",
+      "downloads": 1000,
+      "likes": 200,
+      "rating": 4.5,
+      "ratingCount": 30,
+      "createdAt": 1700000000000,
+      "nsfw": false,
+      "imageCount": 2,
+      "imageUrls": [
+        "https://image.civitai.com/a.jpeg",
+        "https://image.civitai.com/b.jpeg"
+      ],
+      "tags": [
+        "anime"
+      ],
+      "description": "<p>A model</p>",
+      "license": [
+        "Sell images"
+      ],
+      "commercial": "allowed",
+      "permissions": [
+        {
+          "key": "sellImages",
+          "allowed": true
+        }
+      ],
+      "triggerWords": [
+        "masterpiece"
+      ],
+      "source": "civitai",
+      "versions": [
+        {
+          "id": "1",
+          "name": "v1",
+          "baseModel": "Illustrious",
+          "createdAt": 1700000000000,
+          "triggerWords": [
+            "masterpiece"
+          ],
+          "files": [
+            {
+              "id": "10",
+              "name": "wai.safetensors",
+              "sizeBytes": 6938078334,
+              "format": "SafeTensor",
+              "precision": "fp16"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "nextCursor": "cursor-2"
+}

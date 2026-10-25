@@ -1,0 +1,20 @@
+# cargo-mutants configuration for the Rust backend (run through scripts\mutation.bat; see docs/architecture/overview/tooling.md).
+# Mutation testing is slow (hours) and is NOT part of scripts\check.bat or CI. It runs the whole novira-core test suite once per
+# mutant in a temporary copy of the repository, so target\ and a running novira.exe are never touched.
+
+# The package is chosen on the command line (scripts\mutation.bat passes -p novira-core): src-tauri is IPC glue without unit
+# tests of its own. An examine_globs entry here would make --file on the command line have no effect, so there is none.
+
+# Copy only what git tracks: novira-data\ (many GB of models, and the harness output in work\) and target\ stay out of the temporary copy. This is
+# not the default of cargo-mutants 27 on Windows; without it every run copies tens of GB.
+gitignore = true
+
+# Every exclusion needs a reason here, and is added only after a run showed the mutants are noise.
+exclude_globs = []
+exclude_re = []
+
+# The whole suite takes about 40 s (50 test binaries are relinked for every mutant), so a mutant that makes a loop run
+# for ever is stopped late. A multiplier of 3 on the measured baseline with a floor of 120 s avoids false timeouts on a
+# busy machine without waiting for minutes.
+timeout_multiplier = 3.0
+minimum_test_timeout = 120.0

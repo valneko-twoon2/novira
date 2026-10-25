@@ -1,0 +1,143 @@
+{
+  "$comment": "One concept, one word. Read by scripts/check-glossary.mjs (tests/i18n-glossary.test.ts, pre-commit). Per term: the canonical ja and en word, why, the variants to avoid per language (regexes; '*' for every language), optional 'keys' (a regex: the rule reads only those catalog keys) and 'except' (catalog keys the rule skips, each with a reason). See .claude/rules/i18n.md.",
+  "terms": [
+    {
+      "concept": "Install",
+      "ja": "インストール",
+      "en": "install",
+      "why": "Putting an engine, an extension or a model on this PC is Install, as on the Models screen and in ComfyUI-Manager; 入れる stays for typing text and for putting a job in the queue",
+      "avoid": {
+        "ja": ["導入", "入れ直", "(拡張機能|拡張|パック|モデル|エンジン|ライブラリ|ComfyUI)(を|が|は|も)?(まだ)?(入れ|入っ)", "確かめてから入れ", "入れるときは中身", "まだ入って", "入っていないとき", "(パソコン|PC) ?に入れ", "探して入れ", "入れる作業"]
+      }
+    },
+    {
+      "concept": "Extension",
+      "ja": "拡張機能",
+      "en": "extension",
+      "why": "A ComfyUI custom node pack is called an extension on every screen (the Extensions tab); 'custom node' may explain it, 'pack' alone is not used for it",
+      "avoid": {
+        "ja": ["拡張パック", "(?<!モデル)パック(?!ージ)"],
+        "en": ["[Ee]xtension packs?", "(?<!Impact |Impact Sub|[Mm]odel |-|[Cc]ustom node )\\b[Pp]acks?\\b", "(?<![Cc]ustom )\\b[Nn]ode packs?\\b"]
+      }
+    },
+    {
+      "concept": "Cancel",
+      "ja": "キャンセル",
+      "en": "cancel",
+      "why": "Stopping a job or an install before it ends is Cancel, as in the queue (InvokeAI and ComfyUI say Cancel)",
+      "avoid": {
+        "ja": ["中止"],
+        "en": ["\\b[Aa]bort"]
+      }
+    },
+    {
+      "concept": "Install button",
+      "ja": "インストール",
+      "en": "Install",
+      "why": "A button that makes a model or an extension ready to use is Install, as on the Models screen; Download stays for the transfer itself and for saving to the PC",
+      "keys": "(\\.install$|^browse\\.card\\.download$)",
+      "avoid": {
+        "ja": ["^ダウンロード$"],
+        "en": ["^Download$"]
+      }
+    },
+    {
+      "concept": "Retry",
+      "ja": "再試行",
+      "en": "retry",
+      "why": "Running a failed job or download again is Retry (the queue's button); やり直す is Redo",
+      "keys": "\\.retry",
+      "avoid": {
+        "ja": ["やり直"]
+      }
+    },
+    {
+      "concept": "Status: failed",
+      "ja": "失敗",
+      "en": "Failed",
+      "why": "The status of a job or an install that did not finish is Failed, as in the queue",
+      "keys": "\\.status\\.",
+      "avoid": {
+        "ja": ["^エラー$"],
+        "en": ["^Error$"]
+      }
+    },
+    {
+      "concept": "Status: completed",
+      "ja": "完了",
+      "en": "Completed",
+      "why": "The status of a job or an install that finished is Completed, as in the queue",
+      "keys": "\\.(status|detail)\\.completed$",
+      "avoid": {
+        "ja": ["終了"],
+        "en": ["Finished|Done"]
+      }
+    },
+    {
+      "concept": "Author",
+      "ja": "作者",
+      "en": "author",
+      "why": "Who made a model, an extension or a workflow is the author, as ComfyUI-Manager and Hugging Face say",
+      "avoid": {
+        "ja": ["作成者", "制作者", "クリエイター"],
+        "en": ["\\b[Cc]reators?\\b"]
+      }
+    },
+    {
+      "concept": "Hugging Face",
+      "ja": "Hugging Face",
+      "en": "Hugging Face",
+      "why": "The site's own spelling",
+      "avoid": { "*": ["HuggingFace", "Huggingface", "Hugging face", "ハギングフェイス"] }
+    },
+    {
+      "concept": "Civitai",
+      "ja": "Civitai",
+      "en": "Civitai",
+      "why": "The site's own spelling",
+      "avoid": { "*": ["CivitAI", "CivitAi", "Civit AI", "\\bcivitai\\b(?![.\\w/-])"] }
+    },
+    {
+      "concept": "ComfyUI",
+      "ja": "ComfyUI",
+      "en": "ComfyUI",
+      "why": "The engine's own spelling",
+      "avoid": { "*": ["Comfy UI", "Comfyui", "comfyUI", "COMFYUI"] }
+    },
+    {
+      "concept": "LoRA",
+      "ja": "LoRA",
+      "en": "LoRA",
+      "why": "The usual spelling, as ComfyUI and InvokeAI write it",
+      "avoid": { "*": ["\\bLoRa\\b", "\\bLora\\b", "\\bLORA\\b", "\\blora\\b(?![._-])", "ロラ"] }
+    },
+    {
+      "concept": "VAE",
+      "ja": "VAE",
+      "en": "VAE",
+      "why": "An abbreviation, written in capitals",
+      "avoid": { "*": ["\\bVae\\b", "\\bvae\\b(?![._-])"] }
+    },
+    {
+      "concept": "ControlNet",
+      "ja": "ControlNet",
+      "en": "ControlNet",
+      "why": "The model family's own spelling",
+      "avoid": { "*": ["\\bControlnet\\b", "\\bControl Net\\b", "\\bcontrolnet\\b"] }
+    },
+    {
+      "concept": "IP-Adapter",
+      "ja": "IP-Adapter",
+      "en": "IP-Adapter",
+      "why": "The model's own spelling; ComfyUI_IPAdapter_plus is the name of an extension and stays as it is",
+      "avoid": { "*": ["(?<![\\w-])IP ?Adapter"] }
+    },
+    {
+      "concept": "American spelling",
+      "ja": "-",
+      "en": "color, center, behavior, license, canceled",
+      "why": "The English text uses American spelling, as InvokeAI and ComfyUI do",
+      "avoid": { "en": ["\\b[Cc]olour(s|ed|ing)?\\b", "\\b[Cc]entr(e|ed|es)\\b", "\\b[Bb]ehaviours?\\b", "\\b[Ll]icences?\\b", "\\b[Cc]ancell(ed|ing)\\b", "\\b[Ff]avourites?\\b", "\\b[Gg]rey(s|ed)?\\b"] }
+    }
+  ]
+}

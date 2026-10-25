@@ -1,0 +1,16 @@
+{
+  "x-dub": "audio",
+  "x-flux-comfyui": "model,control",
+  "x-wide-image-sender-receiver": "handy,files",
+  "x-wide-plugin-model-manager": "model",
+  "x-wide-prompt-input-helper": "prompt,text",
+  "XB_ToolBox": "workflow,performance",
+  "xcp_derp-UI": "prompt",
+  "xcp_derpNodes": "prompt",
+  "xenodes": "video,files,workflow",
+  "xenoflow": "api",
+  "xiantu-qwen-image21-workbench": "pose,model,control",
+  "xwide-use-everywhere": "animation",
+  "Xycuno-Oobabooga": "",
+  "xz3r0-nodes": "audio,files,text"
+}

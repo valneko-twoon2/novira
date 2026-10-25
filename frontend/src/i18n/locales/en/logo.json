@@ -1,0 +1,19 @@
+{
+  "logo.text": "Logo text",
+  "logo.textPlaceholder": "Text in the logo (e.g. NOVIRA)",
+  "logo.style": "Style",
+  "logo.stylePlaceholder": "Mood, colors and shape (e.g. minimal, blue and white, geometric)",
+  "logo.size": "Shape",
+  "logo.size.square": "Square",
+  "logo.size.wide": "Wide",
+  "logo.size.tall": "Tall",
+  "logo.count": "Candidates: {count}",
+  "logo.countLabel": "Candidates",
+  "logo.note": "Candidates come from a model that draws lettering correctly. English text is accurate, but Japanese can come out garbled; in that case use \"Lay text over\" to add the text in the Text tab. Finished logos are kept in the assets.",
+  "logo.problem.text": "Enter the text for the logo",
+  "logo.problem.pack": "Download the logo model first",
+  "logo.empty.title": "No logos yet",
+  "logo.empty.description": "Use \"Lay text over\" to add text and bubbles to one in the Text tab.",
+  "logo.layText": "Lay text over",
+  "logo.delete": "Delete logo"
+}

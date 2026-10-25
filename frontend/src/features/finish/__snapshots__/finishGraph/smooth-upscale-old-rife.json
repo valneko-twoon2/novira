@@ -1,0 +1,113 @@
+{
+  "prompt": {
+    "load": {
+      "class_type": "LoadVideo",
+      "inputs": {
+        "file": {
+          "$image": "clip.mp4"
+        }
+      }
+    },
+    "parts": {
+      "class_type": "GetVideoComponents",
+      "inputs": {
+        "video": [
+          "load",
+          0
+        ]
+      }
+    },
+    "smooth": {
+      "class_type": "RIFE VFI",
+      "inputs": {
+        "ckpt_name": "rife49.pth",
+        "frames": [
+          "parts",
+          0
+        ],
+        "multiplier": 2,
+        "fast_mode": true
+      }
+    },
+    "model": {
+      "class_type": "UpscaleModelLoader",
+      "inputs": {
+        "model_name": {
+          "$model": "upscaler-key"
+        }
+      }
+    },
+    "enlarge": {
+      "class_type": "ImageUpscaleWithModel",
+      "inputs": {
+        "upscale_model": [
+          "model",
+          0
+        ],
+        "image": [
+          "smooth",
+          0
+        ]
+      }
+    },
+    "fit": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "image": [
+          "enlarge",
+          0
+        ],
+        "upscale_method": "lanczos",
+        "width": 1664,
+        "height": 960,
+        "crop": "disabled"
+      }
+    },
+    "video": {
+      "class_type": "CreateVideo",
+      "inputs": {
+        "images": [
+          "fit",
+          0
+        ],
+        "fps": 32
+      }
+    },
+    "save": {
+      "class_type": "SaveVideo",
+      "inputs": {
+        "video": [
+          "video",
+          0
+        ],
+        "filename_prefix": "video/novira-finish",
+        "format": "mp4",
+        "codec": "auto"
+      }
+    },
+    "first": {
+      "class_type": "ImageFromBatch",
+      "inputs": {
+        "image": [
+          "fit",
+          0
+        ],
+        "batch_index": 0,
+        "length": 1
+      }
+    },
+    "thumb": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "first",
+          0
+        ]
+      }
+    }
+  },
+  "outputs": [
+    "save"
+  ],
+  "thumbnail": "thumb"
+}

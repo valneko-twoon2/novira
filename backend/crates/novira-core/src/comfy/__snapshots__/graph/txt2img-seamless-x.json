@@ -1,0 +1,103 @@
+{
+  "audio_ext": null,
+  "output_node": "8",
+  "prompt": {
+    "1": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "sdxl\\base.safetensors"
+      }
+    },
+    "2": {
+      "class_type": "SeamlessTile",
+      "inputs": {
+        "copy_model": "Make a copy",
+        "model": [
+          "1",
+          0
+        ],
+        "tiling": "x_only"
+      }
+    },
+    "3": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "a cat"
+      }
+    },
+    "4": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "blurry"
+      }
+    },
+    "5": {
+      "class_type": "EmptyLatentImage",
+      "inputs": {
+        "batch_size": 1,
+        "height": 768,
+        "width": 1024
+      }
+    },
+    "6": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 6.5,
+        "denoise": 1.0,
+        "latent_image": [
+          "5",
+          0
+        ],
+        "model": [
+          "2",
+          0
+        ],
+        "negative": [
+          "4",
+          0
+        ],
+        "positive": [
+          "3",
+          0
+        ],
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "seed": 42,
+        "steps": 20
+      }
+    },
+    "7": {
+      "class_type": "CircularVAEDecode",
+      "inputs": {
+        "samples": [
+          "6",
+          0
+        ],
+        "tiling": "x_only",
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "8": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "7",
+          0
+        ]
+      }
+    }
+  },
+  "thumbnail_node": null,
+  "total_steps": 20
+}

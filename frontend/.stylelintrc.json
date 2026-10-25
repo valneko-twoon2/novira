@@ -1,0 +1,19 @@
+{
+  "rules": {
+    "color-no-hex": true,
+    "function-disallowed-list": ["rgb", "rgba", "hsl", "hsla"],
+    "declaration-property-value-allowed-list": [
+      {
+        "/^border(-(top|bottom)-(left|right))?-radius$/": ["/^((var\\(--radius(-xs|-sm|-lg|-pill)?\\)|0|50%|inherit)\\s*)+$/"],
+        "z-index": ["/^(var\\(--z-[a-z-]+\\)|-?[0-9]|auto)$/"]
+      },
+      { "message": "Use a token from theme/tokens.css: a corner radius --radius-xs, -sm, --radius, -lg, -pill (or 0, 50%, inherit); a z-index above 9 a --z-* layer (0 to 9 and auto order the parts of one component)" }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/theme/tokens.css"],
+      "rules": { "color-no-hex": null, "function-disallowed-list": null, "declaration-property-value-allowed-list": null }
+    }
+  ]
+}

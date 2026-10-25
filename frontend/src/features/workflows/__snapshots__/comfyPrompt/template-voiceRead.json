@@ -1,0 +1,37 @@
+{
+  "graph": {
+    "prompt": {
+      "say": {
+        "class_type": "LoadAudio",
+        "inputs": {
+          "audio": {
+            "$speech": {
+              "text": "Hello! This is a short message read aloud by the voice engine.",
+              "language": "Auto",
+              "mode": "preset",
+              "speaker": "Ono_Anna",
+              "instruct": ""
+            }
+          }
+        }
+      },
+      "save": {
+        "class_type": "SaveAudioAdvanced",
+        "inputs": {
+          "audio": [
+            "say",
+            0
+          ],
+          "filename_prefix": "audio/novira",
+          "format": "mp3",
+          "format.quality": "128k"
+        }
+      }
+    },
+    "outputs": [
+      "save"
+    ]
+  },
+  "seed": null,
+  "random": false
+}

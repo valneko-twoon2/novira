@@ -1,0 +1,19 @@
+{
+  "splash.open": "アプリを開く",
+  "splash.step.downloading": "ダウンロード",
+  "splash.step.extracting": "展開",
+  "splash.step.starting": "起動",
+  "splash.preparing": "画像生成エンジンの起動と、ノード情報の読み込みを待っています",
+  "splash.engine.heading": "画像生成エンジンを準備しています",
+  "splash.engine.sub.downloading": "ComfyUI と Python をダウンロードしています",
+  "splash.engine.sub.extracting": "ダウンロードしたファイルを展開しています",
+  "splash.engine.sub.starting": "エンジンを起動して、接続を待っています",
+  "splash.engine.rate": "{rate}/秒",
+  "splash.engine.eta": "残り約 {time}",
+  "splash.engine.seconds": "{n} 秒",
+  "splash.engine.minutes": "{n} 分 {s} 秒",
+  "splash.engine.hours": "{h} 時間 {m} 分",
+  "splash.wait.heading.loading": "novira を起動しています",
+  "splash.wait.sub.loading": "データを読み込んでいます",
+  "splash.wait.heading.preparing": "使い始める準備をしています"
+}

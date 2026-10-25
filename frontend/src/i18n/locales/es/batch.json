@@ -1,0 +1,17 @@
+{
+  "batch.title": "Procesar varias a la vez",
+  "batch.count.one": "Ejecuta la misma operación en {count} imagen",
+  "batch.count.other": "Ejecuta la misma operación en {count} imágenes",
+  "batch.op": "Operación",
+  "batch.op.removeBackground.title": "Quitar el fondo y recortar",
+  "batch.op.upscale.title": "Ampliar",
+  "batch.upscaler": "Modelo de ampliación",
+  "batch.noUpscaler": "No hay ningún modelo de ampliación. Añada uno desde la pantalla Modelos.",
+  "batch.needsPack": "Quitar fondos requiere la extensión {pack}.",
+  "batch.install": "Instalar",
+  "batch.restart": "Reinicie ComfyUI para usarla",
+  "batch.run": "Ejecutar",
+  "batch.queued.one": "{count} imagen en cola. El resultado va al tablero de su origen",
+  "batch.queued.other": "{count} imágenes en cola. Los resultados van a los tableros de sus orígenes",
+  "batch.failed": "No se pudieron poner en cola"
+}

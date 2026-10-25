@@ -1,0 +1,207 @@
+{
+  "audio_ext": null,
+  "output_node": "14",
+  "passes": [
+    [
+      "10",
+      0
+    ],
+    [
+      "11",
+      10
+    ]
+  ],
+  "prompt": {
+    "1": {
+      "class_type": "UnetLoaderGGUF",
+      "inputs": {
+        "unet_name": "high-Q4_K_M.gguf"
+      }
+    },
+    "10": {
+      "class_type": "KSamplerAdvanced",
+      "inputs": {
+        "add_noise": "enable",
+        "cfg": 5.0,
+        "end_at_step": 10,
+        "latent_image": [
+          "9",
+          0
+        ],
+        "model": [
+          "3",
+          0
+        ],
+        "negative": [
+          "8",
+          0
+        ],
+        "noise_seed": 42,
+        "positive": [
+          "7",
+          0
+        ],
+        "return_with_leftover_noise": "enable",
+        "sampler_name": "uni_pc",
+        "scheduler": "simple",
+        "start_at_step": 0,
+        "steps": 20
+      }
+    },
+    "11": {
+      "class_type": "KSamplerAdvanced",
+      "inputs": {
+        "add_noise": "disable",
+        "cfg": 5.0,
+        "end_at_step": 10000,
+        "latent_image": [
+          "10",
+          0
+        ],
+        "model": [
+          "5",
+          0
+        ],
+        "negative": [
+          "8",
+          0
+        ],
+        "noise_seed": 0,
+        "positive": [
+          "7",
+          0
+        ],
+        "return_with_leftover_noise": "disable",
+        "sampler_name": "uni_pc",
+        "scheduler": "simple",
+        "start_at_step": 10,
+        "steps": 20
+      }
+    },
+    "12": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "11",
+          0
+        ],
+        "vae": [
+          "2",
+          0
+        ]
+      }
+    },
+    "13": {
+      "class_type": "CreateVideo",
+      "inputs": {
+        "fps": 24.0,
+        "images": [
+          "12",
+          0
+        ]
+      }
+    },
+    "14": {
+      "class_type": "SaveVideo",
+      "inputs": {
+        "codec": "auto",
+        "filename_prefix": "video/novira",
+        "format": "mp4",
+        "video": [
+          "13",
+          0
+        ]
+      }
+    },
+    "15": {
+      "class_type": "ImageFromBatch",
+      "inputs": {
+        "batch_index": 0,
+        "image": [
+          "12",
+          0
+        ],
+        "length": 1
+      }
+    },
+    "16": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "15",
+          0
+        ]
+      }
+    },
+    "2": {
+      "class_type": "VAELoader",
+      "inputs": {
+        "vae_name": "vae.safetensors"
+      }
+    },
+    "3": {
+      "class_type": "ModelSamplingSD3",
+      "inputs": {
+        "model": [
+          "1",
+          0
+        ],
+        "shift": 8.0
+      }
+    },
+    "4": {
+      "class_type": "UnetLoaderGGUF",
+      "inputs": {
+        "unet_name": "low-Q4_K_M.gguf"
+      }
+    },
+    "5": {
+      "class_type": "ModelSamplingSD3",
+      "inputs": {
+        "model": [
+          "4",
+          0
+        ],
+        "shift": 8.0
+      }
+    },
+    "6": {
+      "class_type": "CLIPLoaderGGUF",
+      "inputs": {
+        "clip_name": "te0-Q8_0.gguf",
+        "type": "wan"
+      }
+    },
+    "7": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "6",
+          0
+        ],
+        "text": "a cat"
+      }
+    },
+    "8": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "6",
+          0
+        ],
+        "text": "blurry"
+      }
+    },
+    "9": {
+      "class_type": "EmptyHunyuanLatentVideo",
+      "inputs": {
+        "batch_size": 1,
+        "height": 480,
+        "length": 49,
+        "width": 832
+      }
+    }
+  },
+  "thumbnail_node": "16",
+  "total_steps": 20
+}

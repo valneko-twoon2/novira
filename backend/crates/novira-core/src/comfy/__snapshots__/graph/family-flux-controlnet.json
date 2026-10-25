@@ -1,0 +1,169 @@
+{
+  "audio_ext": null,
+  "output_node": "14",
+  "prompt": {
+    "1": {
+      "class_type": "UNETLoader",
+      "inputs": {
+        "unet_name": "model.safetensors",
+        "weight_dtype": "default"
+      }
+    },
+    "10": {
+      "class_type": "ControlNetApplyAdvanced",
+      "inputs": {
+        "control_net": [
+          "7",
+          0
+        ],
+        "end_percent": 0.8,
+        "image": [
+          "9",
+          0
+        ],
+        "negative": [
+          "6",
+          0
+        ],
+        "positive": [
+          "5",
+          0
+        ],
+        "start_percent": 0.0,
+        "strength": 0.7,
+        "vae": [
+          "3",
+          0
+        ]
+      }
+    },
+    "11": {
+      "class_type": "EmptySD3LatentImage",
+      "inputs": {
+        "batch_size": 1,
+        "height": 768,
+        "width": 1024
+      }
+    },
+    "12": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 1.0,
+        "denoise": 1.0,
+        "latent_image": [
+          "11",
+          0
+        ],
+        "model": [
+          "1",
+          0
+        ],
+        "negative": [
+          "10",
+          1
+        ],
+        "positive": [
+          "10",
+          0
+        ],
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "seed": 42,
+        "steps": 20
+      }
+    },
+    "13": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "12",
+          0
+        ],
+        "vae": [
+          "3",
+          0
+        ]
+      }
+    },
+    "14": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "13",
+          0
+        ]
+      }
+    },
+    "2": {
+      "class_type": "DualCLIPLoader",
+      "inputs": {
+        "clip_name1": "te0.safetensors",
+        "clip_name2": "te1.safetensors",
+        "device": "default",
+        "type": "flux"
+      }
+    },
+    "3": {
+      "class_type": "VAELoader",
+      "inputs": {
+        "vae_name": "vae.safetensors"
+      }
+    },
+    "4": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "2",
+          0
+        ],
+        "text": "a cat"
+      }
+    },
+    "5": {
+      "class_type": "FluxGuidance",
+      "inputs": {
+        "conditioning": [
+          "4",
+          0
+        ],
+        "guidance": 6.5
+      }
+    },
+    "6": {
+      "class_type": "ConditioningZeroOut",
+      "inputs": {
+        "conditioning": [
+          "4",
+          0
+        ]
+      }
+    },
+    "7": {
+      "class_type": "ControlNetLoader",
+      "inputs": {
+        "control_net_name": "flux-union.safetensors"
+      }
+    },
+    "8": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "pose.png"
+      }
+    },
+    "9": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 768,
+        "image": [
+          "8",
+          0
+        ],
+        "upscale_method": "bilinear",
+        "width": 1024
+      }
+    }
+  },
+  "thumbnail_node": null,
+  "total_steps": 20
+}

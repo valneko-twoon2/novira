@@ -1,0 +1,260 @@
+{
+  "audio_ext": null,
+  "output_node": "24",
+  "prompt": {
+    "1": {
+      "class_type": "UNETLoader",
+      "inputs": {
+        "unet_name": "model.safetensors",
+        "weight_dtype": "default"
+      }
+    },
+    "10": {
+      "class_type": "ReferenceLatent",
+      "inputs": {
+        "conditioning": [
+          "5",
+          0
+        ],
+        "latent": [
+          "8",
+          0
+        ]
+      }
+    },
+    "11": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "jin.png"
+      }
+    },
+    "12": {
+      "class_type": "ImageScaleToTotalPixels",
+      "inputs": {
+        "image": [
+          "11",
+          0
+        ],
+        "megapixels": 1.0,
+        "resolution_steps": 16,
+        "upscale_method": "lanczos"
+      }
+    },
+    "13": {
+      "class_type": "VAEEncode",
+      "inputs": {
+        "pixels": [
+          "12",
+          0
+        ],
+        "vae": [
+          "3",
+          0
+        ]
+      }
+    },
+    "14": {
+      "class_type": "ReferenceLatent",
+      "inputs": {
+        "conditioning": [
+          "9",
+          0
+        ],
+        "latent": [
+          "13",
+          0
+        ]
+      }
+    },
+    "15": {
+      "class_type": "ReferenceLatent",
+      "inputs": {
+        "conditioning": [
+          "10",
+          0
+        ],
+        "latent": [
+          "13",
+          0
+        ]
+      }
+    },
+    "16": {
+      "class_type": "FluxGuidance",
+      "inputs": {
+        "conditioning": [
+          "14",
+          0
+        ],
+        "guidance": 6.5
+      }
+    },
+    "17": {
+      "class_type": "BasicGuider",
+      "inputs": {
+        "conditioning": [
+          "16",
+          0
+        ],
+        "model": [
+          "1",
+          0
+        ]
+      }
+    },
+    "18": {
+      "class_type": "EmptyFlux2LatentImage",
+      "inputs": {
+        "batch_size": 1,
+        "height": 768,
+        "width": 1024
+      }
+    },
+    "19": {
+      "class_type": "Flux2Scheduler",
+      "inputs": {
+        "height": 768,
+        "steps": 20,
+        "width": 1024
+      }
+    },
+    "2": {
+      "class_type": "CLIPLoader",
+      "inputs": {
+        "clip_name": "te0.safetensors",
+        "device": "default",
+        "type": "flux2"
+      }
+    },
+    "20": {
+      "class_type": "KSamplerSelect",
+      "inputs": {
+        "sampler_name": "euler"
+      }
+    },
+    "21": {
+      "class_type": "RandomNoise",
+      "inputs": {
+        "noise_seed": 42
+      }
+    },
+    "22": {
+      "class_type": "SamplerCustomAdvanced",
+      "inputs": {
+        "guider": [
+          "17",
+          0
+        ],
+        "latent_image": [
+          "18",
+          0
+        ],
+        "noise": [
+          "21",
+          0
+        ],
+        "sampler": [
+          "20",
+          0
+        ],
+        "sigmas": [
+          "19",
+          0
+        ]
+      }
+    },
+    "23": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "22",
+          0
+        ],
+        "vae": [
+          "3",
+          0
+        ]
+      }
+    },
+    "24": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "23",
+          0
+        ]
+      }
+    },
+    "3": {
+      "class_type": "VAELoader",
+      "inputs": {
+        "vae_name": "vae.safetensors"
+      }
+    },
+    "4": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "2",
+          0
+        ],
+        "text": "a cat"
+      }
+    },
+    "5": {
+      "class_type": "ConditioningZeroOut",
+      "inputs": {
+        "conditioning": [
+          "4",
+          0
+        ]
+      }
+    },
+    "6": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "mina.png"
+      }
+    },
+    "7": {
+      "class_type": "ImageScaleToTotalPixels",
+      "inputs": {
+        "image": [
+          "6",
+          0
+        ],
+        "megapixels": 1.0,
+        "resolution_steps": 16,
+        "upscale_method": "lanczos"
+      }
+    },
+    "8": {
+      "class_type": "VAEEncode",
+      "inputs": {
+        "pixels": [
+          "7",
+          0
+        ],
+        "vae": [
+          "3",
+          0
+        ]
+      }
+    },
+    "9": {
+      "class_type": "ReferenceLatent",
+      "inputs": {
+        "conditioning": [
+          "4",
+          0
+        ],
+        "latent": [
+          "8",
+          0
+        ]
+      }
+    }
+  },
+  "thumbnail_node": null,
+  "total_steps": 20
+}

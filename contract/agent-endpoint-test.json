@@ -1,0 +1,7 @@
+{
+  "reachable": true,
+  "error": "the model is not loaded",
+  "modelFound": false,
+  "tools": "unsupported",
+  "toolsReason": "the model answered in words instead of calling the tool"
+}

@@ -1,0 +1,34 @@
+{
+  "full": {
+    "categories": {
+      "model": "Modèle",
+      "background removal": "Fond"
+    },
+    "comfyNodesHeading": "Nœuds Comfy",
+    "extensionsHeading": "Extensions",
+    "nodes": {
+      "KSampler": {
+        "name": "Échantillonneur",
+        "description": "Débruite",
+        "inputs": {
+          "seed": {
+            "name": "Graine",
+            "tooltip": null
+          }
+        },
+        "outputs": {
+          "0": {
+            "name": null,
+            "tooltip": "Latent"
+          }
+        }
+      }
+    }
+  },
+  "empty": {
+    "categories": {},
+    "comfyNodesHeading": null,
+    "extensionsHeading": null,
+    "nodes": {}
+  }
+}

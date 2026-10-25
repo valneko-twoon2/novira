@@ -1,0 +1,19 @@
+{
+  "splash.open": "Abrir o app",
+  "splash.step.downloading": "Baixar",
+  "splash.step.extracting": "Extrair",
+  "splash.step.starting": "Iniciar",
+  "splash.preparing": "Aguardando o mecanismo de imagens iniciar e seus nós carregarem",
+  "splash.engine.heading": "Preparando o mecanismo de imagens",
+  "splash.engine.sub.downloading": "Baixando o ComfyUI e o Python",
+  "splash.engine.sub.extracting": "Descompactando os arquivos baixados",
+  "splash.engine.sub.starting": "Iniciando o mecanismo e aguardando a resposta",
+  "splash.engine.rate": "{rate}/s",
+  "splash.engine.eta": "Faltam cerca de {time}",
+  "splash.engine.seconds": "{n} s",
+  "splash.engine.minutes": "{n} min {s} s",
+  "splash.engine.hours": "{h} h {m} min",
+  "splash.wait.heading.loading": "Iniciando o novira",
+  "splash.wait.sub.loading": "Carregando seus dados",
+  "splash.wait.heading.preparing": "Preparando para o uso"
+}

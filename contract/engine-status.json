@@ -1,0 +1,23 @@
+{
+  "idle": {
+    "state": "idle"
+  },
+  "downloading": {
+    "state": "downloading",
+    "bytes": 10,
+    "totalBytes": 100
+  },
+  "extracting": {
+    "state": "extracting"
+  },
+  "starting": {
+    "state": "starting"
+  },
+  "ready": {
+    "state": "ready"
+  },
+  "error": {
+    "state": "error",
+    "message": "port in use"
+  }
+}

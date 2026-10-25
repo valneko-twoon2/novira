@@ -1,0 +1,5 @@
+[
+  { "id": "seed-standard", "name": "Standard", "data": { "scheduler": "dpmpp_2m_k", "steps": 30, "cfgScale": 7, "width": 1024, "height": 1024, "aspectRatio": "1:1" } },
+  { "id": "seed-draft", "name": "Draft (fast)", "data": { "scheduler": "euler_a", "steps": 12, "cfgScale": 5, "width": 768, "height": 768, "aspectRatio": "1:1" } },
+  { "id": "seed-quality", "name": "High quality", "data": { "scheduler": "dpmpp_2m_sde_k", "steps": 45, "cfgScale": 6.5, "width": 1216, "height": 832, "aspectRatio": "free" } }
+]

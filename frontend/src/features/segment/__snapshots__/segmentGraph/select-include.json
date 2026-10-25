@@ -1,0 +1,59 @@
+{
+  "prompt": {
+    "model": {
+      "class_type": "DownloadAndLoadSAM2Model",
+      "inputs": {
+        "model": "sam2.1_hiera_small.safetensors",
+        "segmentor": "single_image",
+        "device": "cuda",
+        "precision": "fp16"
+      }
+    },
+    "source": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": {
+          "$image": "photo.png"
+        }
+      }
+    },
+    "select": {
+      "class_type": "Sam2Segmentation",
+      "inputs": {
+        "image": [
+          "source",
+          0
+        ],
+        "sam2_model": [
+          "model",
+          0
+        ],
+        "keep_model_loaded": false,
+        "individual_objects": false,
+        "coordinates_positive": "[{\"x\":120,\"y\":81}]"
+      }
+    },
+    "picture": {
+      "class_type": "MaskToImage",
+      "inputs": {
+        "mask": [
+          "select",
+          0
+        ]
+      }
+    },
+    "save": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "picture",
+          0
+        ],
+        "filename_prefix": "novira-mask"
+      }
+    }
+  },
+  "outputs": [
+    "save"
+  ]
+}

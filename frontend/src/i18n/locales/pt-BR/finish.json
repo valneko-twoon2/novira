@@ -1,0 +1,16 @@
+{
+  "finish.title": "Finalizar o clipe",
+  "finish.smooth.title": "Suavizar o movimento (dobrar os quadros)",
+  "finish.smooth.desc": "Preenche os espaços entre os quadros para um movimento mais suave. A duração permanece; a quantidade de quadros e a taxa de quadros dobram.",
+  "finish.enlarge.title": "Ampliar (o dobro de largura e altura)",
+  "finish.enlarge.desc": "Amplia cada quadro com um modelo de ampliação. Leva mais tempo e memória.",
+  "finish.upscaler": "Modelo de ampliação",
+  "finish.noUpscaler": "Não há modelo de ampliação. Adicione um na tela Modelos.",
+  "finish.needsPack": "Preencher quadros requer a extensão {pack}.",
+  "finish.install": "Instalar",
+  "finish.restart": "Reinicie o ComfyUI para usar",
+  "finish.note": "O original permanece como está; o clipe finalizado é adicionado ao lado.",
+  "finish.run": "Finalizar",
+  "finish.queued": "Na fila. O clipe finalizado aparece na lista",
+  "finish.failed": "Não foi possível enfileirar"
+}

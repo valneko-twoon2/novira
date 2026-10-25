@@ -1,0 +1,4 @@
+#!/bin/sh
+# Versioned pre-commit hook (Windows, Git for Windows sh). Turned on by `npm install` in frontend/ (prepare script).
+# The checks live in .githooks/pre-commit.mjs.
+exec node .githooks/pre-commit.mjs

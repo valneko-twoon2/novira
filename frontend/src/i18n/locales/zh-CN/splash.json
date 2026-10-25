@@ -1,0 +1,19 @@
+{
+  "splash.open": "打开应用",
+  "splash.step.downloading": "下载",
+  "splash.step.extracting": "解压",
+  "splash.step.starting": "启动",
+  "splash.preparing": "正在等待图像生成引擎启动并加载节点信息",
+  "splash.engine.heading": "正在准备图像生成引擎",
+  "splash.engine.sub.downloading": "正在下载 ComfyUI 和 Python",
+  "splash.engine.sub.extracting": "正在解压已下载的文件",
+  "splash.engine.sub.starting": "正在启动引擎并等待连接",
+  "splash.engine.rate": "{rate}/秒",
+  "splash.engine.eta": "剩余约 {time}",
+  "splash.engine.seconds": "{n} 秒",
+  "splash.engine.minutes": "{n} 分 {s} 秒",
+  "splash.engine.hours": "{h} 小时 {m} 分",
+  "splash.wait.heading.loading": "正在启动 novira",
+  "splash.wait.sub.loading": "正在加载数据",
+  "splash.wait.heading.preparing": "正在准备开始使用"
+}

@@ -1,0 +1,25 @@
+{
+  "missing": {
+    "state": "missing",
+    "totalBytes": 100
+  },
+  "downloading": {
+    "state": "downloading",
+    "file": "model.safetensors",
+    "index": 1,
+    "count": 3,
+    "bytes": 10,
+    "totalBytes": 100
+  },
+  "installing": {
+    "state": "installing",
+    "step": "pip install"
+  },
+  "ready": {
+    "state": "ready"
+  },
+  "error": {
+    "state": "error",
+    "message": "network"
+  }
+}

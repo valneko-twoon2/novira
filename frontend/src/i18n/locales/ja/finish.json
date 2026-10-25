@@ -1,0 +1,16 @@
+{
+  "finish.title": "動画を仕上げる",
+  "finish.smooth.title": "動きをなめらかにする（コマを 2 倍に）",
+  "finish.smooth.desc": "コマとコマの間を補って、動きを滑らかにします。長さは変わらず、コマ数とフレームレートが 2 倍になります。",
+  "finish.enlarge.title": "大きくする（縦横 2 倍）",
+  "finish.enlarge.desc": "拡大用のモデルで、すべてのコマを大きくします。時間とメモリを多く使います。",
+  "finish.upscaler": "拡大に使うモデル",
+  "finish.noUpscaler": "拡大用のモデルがありません。モデル画面からインストールしてください。",
+  "finish.needsPack": "コマを補うには、拡張機能 {pack} が必要です。",
+  "finish.install": "インストール",
+  "finish.restart": "ComfyUI を再起動して使えるようにする",
+  "finish.note": "もとの動画はそのまま残り、仕上げた動画が新しく増えます。",
+  "finish.run": "仕上げる",
+  "finish.queued": "キューに入れました。できあがると動画の一覧に並びます",
+  "finish.failed": "キューに入れられませんでした"
+}

@@ -1,0 +1,18 @@
+{
+  "modelKey": "diffusion-anima",
+  "modelName": "anima-base-v1.0",
+  "missing": [
+    {
+      "id": "starter-qwen3-06b",
+      "name": "qwen_3_06b_base",
+      "base": "any",
+      "type": "text_encoder",
+      "description": "Text encoder",
+      "source": "circlestone-labs/Anima::split_files/text_encoders/qwen_3_06b_base.safetensors",
+      "sizeBytes": 1190000000
+    }
+  ],
+  "unavailable": [
+    "the SD3 VAE (sd3_vae.safetensors)"
+  ]
+}

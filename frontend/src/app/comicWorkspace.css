@@ -1,0 +1,106 @@
+/* The comic screen: the drawing form and the planning forms (tabs) | the page | the assistant and the gallery (tabs). */
+.comic-ws {
+  height: 100%;
+  min-height: 0;
+}
+
+.comic-ws__body {
+  height: 100%;
+  min-height: 0;
+}
+
+.comic-ws__col {
+  min-height: 0;
+}
+
+.comic-ws__surface {
+  position: relative;
+}
+
+/* Side column */
+.comic-side {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.comic-side__panel {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.comic-side__panel[data-state='inactive'] {
+  display: none;
+}
+
+.comic-side__panel--chat,
+.comic-side__panel--gallery {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.comic-side__panel--chat[data-state='inactive'],
+.comic-side__panel--gallery[data-state='inactive'] {
+  display: none;
+}
+
+.comic-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.comic-drawsettings__help {
+  margin: 0 0 var(--space-2);
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.comic-quick {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.comic-quick__modes {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.comic-quick__mode {
+  flex: 1;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.comic-quick__mode.is-on {
+  background: var(--bg-active);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.comic-drawscope,
+.comic-drawstyle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.comic-drawstyle__title {
+  margin: 0;
+  font-size: 13px;
+}

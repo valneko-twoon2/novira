@@ -1,0 +1,19 @@
+{
+  "logo.text": "ロゴの文字",
+  "logo.textPlaceholder": "ロゴに入れる文字（例: NOVIRA）",
+  "logo.style": "スタイル",
+  "logo.stylePlaceholder": "雰囲気や色、形（英語でも日本語でも。例: ミニマル、青と白、幾何学的）",
+  "logo.size": "形",
+  "logo.size.square": "正方形",
+  "logo.size.wide": "横長",
+  "logo.size.tall": "縦長",
+  "logo.count": "候補の数: {count}",
+  "logo.countLabel": "候補の数",
+  "logo.note": "文字を正しく描けるモデルで、候補を作ります。英語の文字は正確ですが、日本語は崩れることがあります。その場合は「文字を重ねる」でテキストタブから文字を入れてください。できたロゴはアセットに入ります。",
+  "logo.problem.text": "ロゴに入れる文字を入力してください",
+  "logo.problem.pack": "ロゴのモデルをダウンロードしてください",
+  "logo.empty.title": "ロゴはまだありません",
+  "logo.empty.description": "気に入ったものは「文字を重ねる」で、テキストタブで文字や吹き出しを足せます。",
+  "logo.layText": "文字を重ねる",
+  "logo.delete": "ロゴを削除"
+}

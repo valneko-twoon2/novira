@@ -1,0 +1,8 @@
+{
+  "lora.use": "LoRA verwenden",
+  "lora.gone": "(nicht in der Modellliste)",
+  "lora.weight": "LoRA-Stärke",
+  "lora.useHint": "Bei Verwendung des Charakters werden das LoRA mit dieser Stärke und das Triggerwort „{trigger}“ zum Prompt hinzugefügt. Die Referenzbilder werden wie bisher verwendet.",
+  "lora.goneNote": "Das LoRA des Charakters steht nicht in der Modellliste und wurde daher weggelassen.",
+  "lora.usedNote": "Das trainierte LoRA und sein Triggerwort wurden ebenfalls hinzugefügt."
+}

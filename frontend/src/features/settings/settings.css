@@ -1,0 +1,674 @@
+/* Settings, Hotkeys and About modals. */
+
+/* Settings: the tabs on the left, the open tab's settings on the right, filling the large modal so switching does not jump. */
+.st {
+  display: grid;
+  grid-template-columns: 184px minmax(0, 1fr);
+  gap: var(--space-5);
+  height: 100%;
+  min-height: 0;
+  /* Larger text on this screen only: the size tokens are set again here, so every control inside inherits them. */
+  --fs-xs: 13px;
+  --fs-sm: 14px;
+  --fs-md: 15px;
+}
+
+.st-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0;
+  padding-right: var(--space-3);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.st-nav__tab {
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.st-nav__tab:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.st-nav__tab.is-active {
+  background: var(--grad-accent);
+  color: var(--white);
+  font-weight: 600;
+}
+
+.st-nav .st-version {
+  margin-top: auto;
+  padding-top: var(--space-3);
+}
+
+.st-pane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+  padding-right: var(--space-1);
+  overflow-y: auto;
+}
+
+.st-loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-5);
+}
+
+/* A folder or address shown as it is: it may be long, so it wraps anywhere. */
+.st-path {
+  max-width: 520px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  overflow-wrap: anywhere;
+}
+
+.st-roots {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.st-roots__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.st-roots__item .st-path {
+  max-width: none;
+}
+
+.st-pane__note {
+  margin: 0 0 var(--space-1);
+}
+
+/* Narrow windows: the tabs become one scrolling row above the settings. */
+@media (width <= 720px) {
+  .st {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .st-nav {
+    flex-direction: row;
+    padding: 0 0 var(--space-2);
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+
+  .st-nav__tab {
+    flex: none;
+    white-space: nowrap;
+  }
+
+  .st-nav .st-version {
+    display: none;
+  }
+}
+
+.st-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.st-section__title {
+  margin: 0;
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--border);
+  color: var(--blue-300);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.st-section__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--bg-surface);
+}
+
+/* Rows a section keeps in a wrapper of its own (backup, unfinished downloads): spaced as in the section body. */
+.st-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.st-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 36px;
+}
+
+.st-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.st-row__label {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.st-row__help {
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+}
+
+.st-row__control {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.st-select {
+  width: 180px;
+}
+
+.st-key {
+  width: 200px;
+}
+
+.st-slider {
+  width: 260px;
+}
+
+.st-inline {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.st-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--orange-400);
+  border-radius: var(--radius);
+  color: var(--orange-400);
+  font-size: var(--fs-sm);
+}
+
+.st-version {
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+  text-align: center;
+}
+
+/* Hotkeys */
+.hk {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  height: min(640px, calc(100vh - 200px));
+  min-height: 0;
+}
+
+.hk-search {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.hk-search .ui-input {
+  padding-left: 26px;
+}
+
+.hk-search__icon {
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  color: var(--text-faint);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.hk-list {
+  flex: 1;
+  min-height: 0;
+  padding-right: var(--space-1);
+  overflow-y: auto;
+}
+
+.hk-group {
+  margin-bottom: var(--space-4);
+}
+
+.hk-group__title {
+  margin: 0 0 var(--space-1);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--border);
+  color: var(--blue-300);
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+.hk-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+.hk-row:hover {
+  background: var(--bg-hover);
+}
+
+.hk-row__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.hk-row__title {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.hk-row__desc {
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+}
+
+.hk-chords,
+.hk-chord {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 3px;
+}
+
+.hk-chords {
+  gap: var(--space-1);
+}
+
+.hk-plus,
+.hk-sep {
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+}
+
+/* About: one height on both tabs, so switching them does not resize the dialog (the list fills what is left) */
+.ab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  height: min(620px, calc(100vh - 150px));
+  text-align: left;
+}
+
+/* The hero: logo, then version, license and copyright on one line */
+.ab-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-4) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  text-align: center;
+}
+
+.ab-logo {
+  background: var(--grad-brand);
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  /* The letter spacing also follows the last letter; this keeps the word centred */
+  text-indent: 0.2em;
+}
+
+.ab-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.ab-meta__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-3);
+}
+
+.ab-meta__item + .ab-meta__item {
+  border-left: 1px solid var(--border-strong);
+}
+
+.ab-meta__label {
+  color: var(--text-faint);
+}
+
+.ab-tabs {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 0;
+}
+
+.ab-tabs__panel:not([hidden]) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.ab-tabs__panel:focus-visible {
+  outline: none;
+}
+
+.ab-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 0;
+}
+
+.ab-text {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+}
+
+.ab-footnote {
+  margin: 0;
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+}
+
+/* License: the full text of LICENSE fills the tab */
+
+.ab-chip:focus-visible,
+.ab-link:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.ab-license {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: var(--space-3);
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-input);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* The text under a row of the open-source list */
+.ab-license--inline {
+  height: 220px;
+  margin-top: var(--space-2);
+}
+
+/* Open-source software: part chips and search, then one list */
+.ab-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ab-chips {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.ab-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 28px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color var(--duration), color var(--duration);
+}
+
+.ab-chip:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.ab-chip[aria-pressed='true'] {
+  border-color: transparent;
+  background: var(--grad-accent);
+  color: var(--white);
+}
+
+.ab-chip__count {
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 400;
+}
+
+.ab-chip[aria-pressed='true'] .ab-chip__count {
+  color: var(--blue-200);
+}
+
+.ab-search {
+  position: relative;
+  flex: 0 1 240px;
+  min-width: 160px;
+}
+
+.ab-search__icon {
+  position: absolute;
+  top: 50%;
+  left: var(--space-2);
+  color: var(--text-faint);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.ab-search .ui-input {
+  padding-left: 28px;
+}
+
+.ab-list {
+  flex: 1;
+  min-height: 120px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.ab-list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ab-list__empty {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--text-faint);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+
+.ab-row {
+  padding: 6px var(--space-3);
+  font-size: var(--fs-sm);
+}
+
+.ab-row__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.ab-row + .ab-row {
+  border-top: 1px solid var(--border);
+}
+
+.ab-row:hover {
+  background: var(--bg-hover);
+}
+
+.ab-row__name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text);
+}
+
+.ab-row__version {
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+
+.ab-row__links {
+  display: inline-flex;
+  flex: none;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+/* Text buttons that read like links: the license text in place, the homepage in the browser */
+.ab-link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--blue-600);
+  font-size: var(--fs-xs);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ab-link:hover {
+  color: var(--text);
+}
+
+.ab-note {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--blue-700);
+  border-radius: var(--radius);
+  background: var(--bg-active);
+  color: var(--blue-600);
+  font-size: var(--fs-sm);
+}
+
+.st-help {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+}
+
+/* Backup */
+.st-progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-1) 0;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.st-backup__note {
+  margin: var(--space-1) 0 0;
+}
+
+.st-restore {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.st-restore p {
+  margin: 0;
+}
+
+.st-restore__made {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.st-restore__contents {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.st-restore__warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  font-size: var(--fs-sm);
+}
+
+.st-restore__warning svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.st-restore__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}

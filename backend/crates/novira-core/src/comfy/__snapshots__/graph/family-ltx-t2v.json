@@ -1,0 +1,178 @@
+{
+  "audio_ext": null,
+  "output_node": "13",
+  "prompt": {
+    "1": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "model.safetensors"
+      }
+    },
+    "10": {
+      "class_type": "SamplerCustom",
+      "inputs": {
+        "add_noise": true,
+        "cfg": 5.0,
+        "latent_image": [
+          "6",
+          0
+        ],
+        "model": [
+          "1",
+          0
+        ],
+        "negative": [
+          "7",
+          1
+        ],
+        "noise_seed": 42,
+        "positive": [
+          "7",
+          0
+        ],
+        "sampler": [
+          "9",
+          0
+        ],
+        "sigmas": [
+          "8",
+          0
+        ]
+      }
+    },
+    "11": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "10",
+          0
+        ],
+        "vae": [
+          "2",
+          0
+        ]
+      }
+    },
+    "12": {
+      "class_type": "CreateVideo",
+      "inputs": {
+        "fps": 24.0,
+        "images": [
+          "11",
+          0
+        ]
+      }
+    },
+    "13": {
+      "class_type": "SaveVideo",
+      "inputs": {
+        "codec": "auto",
+        "filename_prefix": "video/novira",
+        "format": "mp4",
+        "video": [
+          "12",
+          0
+        ]
+      }
+    },
+    "14": {
+      "class_type": "ImageFromBatch",
+      "inputs": {
+        "batch_index": 0,
+        "image": [
+          "11",
+          0
+        ],
+        "length": 1
+      }
+    },
+    "15": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "14",
+          0
+        ]
+      }
+    },
+    "2": {
+      "class_type": "VAELoader",
+      "inputs": {
+        "vae_name": "vae.safetensors"
+      }
+    },
+    "3": {
+      "class_type": "CLIPLoader",
+      "inputs": {
+        "clip_name": "te0.safetensors",
+        "device": "default",
+        "type": "ltxv"
+      }
+    },
+    "4": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "3",
+          0
+        ],
+        "text": "a cat"
+      }
+    },
+    "5": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "3",
+          0
+        ],
+        "text": "blurry"
+      }
+    },
+    "6": {
+      "class_type": "EmptyLTXVLatentVideo",
+      "inputs": {
+        "batch_size": 1,
+        "height": 480,
+        "length": 49,
+        "width": 832
+      }
+    },
+    "7": {
+      "class_type": "LTXVConditioning",
+      "inputs": {
+        "frame_rate": 24.0,
+        "negative": [
+          "5",
+          0
+        ],
+        "positive": [
+          "4",
+          0
+        ]
+      }
+    },
+    "8": {
+      "class_type": "LTXVScheduler",
+      "inputs": {
+        "base_shift": 0.95,
+        "latent": [
+          "6",
+          0
+        ],
+        "max_shift": 2.05,
+        "steps": 20,
+        "stretch": true,
+        "terminal": 0.1
+      }
+    },
+    "9": {
+      "class_type": "KSamplerSelect",
+      "inputs": {
+        "sampler_name": "euler"
+      }
+    }
+  },
+  "thumbnail_node": "15",
+  "total_steps": 20
+}

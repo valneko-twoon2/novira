@@ -1,0 +1,19 @@
+{
+  "splash.open": "App öffnen",
+  "splash.step.downloading": "Download",
+  "splash.step.extracting": "Entpacken",
+  "splash.step.starting": "Start",
+  "splash.preparing": "Warten, bis die Bild-Engine gestartet und ihre Nodes geladen sind",
+  "splash.engine.heading": "Bild-Engine wird vorbereitet",
+  "splash.engine.sub.downloading": "ComfyUI und Python werden heruntergeladen",
+  "splash.engine.sub.extracting": "Heruntergeladene Dateien werden entpackt",
+  "splash.engine.sub.starting": "Engine wird gestartet, Antwort wird abgewartet",
+  "splash.engine.rate": "{rate}/s",
+  "splash.engine.eta": "Noch ca. {time}",
+  "splash.engine.seconds": "{n} s",
+  "splash.engine.minutes": "{n} Min. {s} s",
+  "splash.engine.hours": "{h} Std. {m} Min.",
+  "splash.wait.heading.loading": "novira wird gestartet",
+  "splash.wait.sub.loading": "Ihre Daten werden geladen",
+  "splash.wait.heading.preparing": "Wird für die Nutzung vorbereitet"
+}

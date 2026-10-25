@@ -1,0 +1,88 @@
+{
+  "prompt": {
+    "source": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": {
+          "$image": "photo.png"
+        }
+      }
+    },
+    "cover": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": {
+          "$image": "mask.png"
+        }
+      }
+    },
+    "mask": {
+      "class_type": "ImageToMask",
+      "inputs": {
+        "image": [
+          "cover",
+          0
+        ],
+        "channel": "red"
+      }
+    },
+    "flip": {
+      "class_type": "InvertMask",
+      "inputs": {
+        "mask": [
+          "mask",
+          0
+        ]
+      }
+    },
+    "grow": {
+      "class_type": "INPAINT_ExpandMask",
+      "inputs": {
+        "mask": [
+          "flip",
+          0
+        ],
+        "grow": 12,
+        "blur": 6,
+        "blur_type": "gaussian"
+      }
+    },
+    "model": {
+      "class_type": "INPAINT_LoadInpaintModel",
+      "inputs": {
+        "model_name": "big-lama.pt"
+      }
+    },
+    "fill": {
+      "class_type": "INPAINT_InpaintWithModel",
+      "inputs": {
+        "image": [
+          "source",
+          0
+        ],
+        "mask": [
+          "grow",
+          0
+        ],
+        "inpaint_model": [
+          "model",
+          0
+        ],
+        "seed": 0
+      }
+    },
+    "save": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "fill",
+          0
+        ],
+        "filename_prefix": "novira-erase"
+      }
+    }
+  },
+  "outputs": [
+    "save"
+  ]
+}

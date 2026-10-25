@@ -1,0 +1,10 @@
+{
+  "comfyui-32gpu-video-upscale": "upscale,video",
+  "comfyui-360panoramas": "handy",
+  "ComfyUI-3D-Convert": "three,api",
+  "ComfyUI-3D-MeshTool": "three",
+  "ComfyUI-3D-Pack": "three",
+  "ComfyUI-3d-photo-inpainting": "partial,video,three",
+  "ComfyUI-3R3BOS-Pack": "handy",
+  "ComfyUI_3dPoseEditor": "pose,three"
+}

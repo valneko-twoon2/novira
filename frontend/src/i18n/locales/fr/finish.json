@@ -1,0 +1,16 @@
+{
+  "finish.title": "Finaliser le clip",
+  "finish.smooth.title": "Fluidifier le mouvement (images doublées)",
+  "finish.smooth.desc": "Comble l'espace entre les images pour un mouvement plus fluide. La durée reste la même ; le nombre d'images et la cadence doublent.",
+  "finish.enlarge.title": "Agrandir (deux fois plus large et haut)",
+  "finish.enlarge.desc": "Agrandit chaque image avec un modèle de mise à l'échelle. Demande plus de temps et de mémoire.",
+  "finish.upscaler": "Modèle de mise à l'échelle",
+  "finish.noUpscaler": "Aucun modèle de mise à l'échelle. Ajoutez-en un depuis l'écran Modèles.",
+  "finish.needsPack": "L'interpolation d'images nécessite l'extension {pack}.",
+  "finish.install": "Installer",
+  "finish.restart": "Redémarrez ComfyUI pour l'utiliser",
+  "finish.note": "L'original reste inchangé ; le clip finalisé est ajouté à côté.",
+  "finish.run": "Finaliser",
+  "finish.queued": "Mis en file. Le clip finalisé apparaîtra dans la liste",
+  "finish.failed": "Impossible de le mettre en file"
+}

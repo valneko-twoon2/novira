@@ -1,0 +1,17 @@
+{
+  "batch.title": "批量处理",
+  "batch.count.one": "对 {count} 张图像执行相同处理",
+  "batch.count.other": "对 {count} 张图像执行相同处理",
+  "batch.op": "处理类型",
+  "batch.op.removeBackground.title": "去除背景并抠图",
+  "batch.op.upscale.title": "放大",
+  "batch.upscaler": "用于放大的模型",
+  "batch.noUpscaler": "没有放大模型。请在模型界面中安装。",
+  "batch.needsPack": "去除背景需要扩展 {pack}。",
+  "batch.install": "安装",
+  "batch.restart": "重启 ComfyUI 以启用",
+  "batch.run": "执行",
+  "batch.queued.one": "已将 {count} 张图像加入队列。结果会放入与原图相同的画板",
+  "batch.queued.other": "已将 {count} 张图像加入队列。结果会放入与原图相同的画板",
+  "batch.failed": "无法加入队列"
+}

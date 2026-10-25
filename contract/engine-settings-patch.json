@@ -1,0 +1,5 @@
+{
+  "comfyuiPackage": "nvidia",
+  "comfyuiStartTimeoutSecs": 300,
+  "civitaiLookup": true
+}

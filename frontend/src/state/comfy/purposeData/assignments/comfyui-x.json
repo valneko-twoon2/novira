@@ -1,0 +1,17 @@
+{
+  "comfyui-x-portrait-nodes": "face,video,animation",
+  "comfyui-x-rework": "",
+  "comfyui-xav-anima-style-selector": "style",
+  "comfyui-xav-google-sheets": "",
+  "ComfyUI-XAV-Json-Nodes": "text",
+  "comfyui-xbhh-lora": "model",
+  "ComfyUI-xiaozhuguang": "workflow",
+  "ComfyUI-XingLiu": "model,image,control",
+  "ComfyUI-XPU-CacheClean": "performance",
+  "ComfyUI-XPUSYS-Monitor": "performance",
+  "ComfyUI-XTTS": "audio",
+  "comfyui-xy-grid-sidebar": "model",
+  "ComfyUI_XISER_Nodes": "image,text",
+  "ComfyUI_XLweb": "",
+  "ComfyUI_xObiomesh": "api,text"
+}

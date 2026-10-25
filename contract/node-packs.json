@@ -1,0 +1,17 @@
+{
+  "available": true,
+  "installed": [
+    {
+      "folder": "ComfyUI-Impact-Pack",
+      "url": "https://github.com/ltdrdata/ComfyUI-Impact-Pack",
+      "version": "v8.1.0"
+    },
+    {
+      "folder": "by-hand",
+      "url": null,
+      "version": null
+    }
+  ],
+  "comfyVersion": "0.3.50",
+  "restartNeeded": true
+}

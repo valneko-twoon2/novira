@@ -1,0 +1,130 @@
+/* The 3D rough's editor: the panel's view on the left, the things, the camera and the preview on the right. */
+.comic-rough {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: var(--space-4);
+  height: 100%;
+  min-height: 0;
+}
+
+.comic-rough__stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 360px;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--base-900);
+}
+
+.comic-rough__frame {
+  position: relative;
+  outline: 1px solid var(--border-strong);
+}
+
+.comic-rough__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+}
+
+.comic-rough__canvas:active {
+  cursor: grabbing;
+}
+
+.comic-rough__busy {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+}
+
+.comic-rough__error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--danger);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+
+.comic-rough__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.comic-rough__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.comic-rough__row--end {
+  justify-content: flex-end;
+  margin-top: auto;
+}
+
+.comic-rough__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.comic-rough__thing {
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-surface);
+  color: var(--text);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+}
+
+.comic-rough__thing:hover {
+  background: var(--bg-hover);
+}
+
+.comic-rough__thing.is-chosen {
+  border-color: var(--accent);
+  background: var(--bg-active);
+}
+
+.comic-rough__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+}
+
+.comic-rough__preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.comic-rough__preview figure {
+  margin: 0;
+}
+
+.comic-rough__preview canvas {
+  display: block;
+  max-width: 120px;
+  height: auto;
+  border: 1px solid var(--border);
+}
+
+.comic-rough__preview figcaption {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}

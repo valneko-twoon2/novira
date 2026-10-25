@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "novira",
+  "identifier": "app.novira.desktop",
+  "build": {
+    "frontendDist": "../../frontend/dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm --prefix ../frontend run dev -- --port 5173 --strictPort",
+    "beforeBuildCommand": "npm --prefix ../frontend run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "novira",
+        "width": 1480,
+        "height": 940,
+        "minWidth": 720,
+        "minHeight": 600,
+        "dragDropEnabled": false
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' data: blob: http://novira-image.localhost novira-image: https://*.civitai.com https://huggingface.co https://*.hf.co https://raw.githubusercontent.com https://avatars.githubusercontent.com; connect-src 'self' ipc: http://ipc.localhost http://novira-image.localhost novira-image: data: blob:; style-src 'self' 'unsafe-inline'; media-src 'self' blob: http://novira-image.localhost novira-image: https://*.civitai.com; font-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'",
+      "devCsp": null
+    }
+  },
+  "bundle": {
+    "active": false
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "ExportFormat": [
+    "png",
+    "jpeg",
+    "webp"
+  ],
+  "BackupPhase": [
+    "create",
+    "restore"
+  ]
+}

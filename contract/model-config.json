@@ -1,0 +1,44 @@
+{
+  "key": "main-sdxl",
+  "name": "WAI-illustrious-SDXL",
+  "base": "sdxl",
+  "type": "main",
+  "format": "checkpoint",
+  "description": "An anime model",
+  "path": "checkpoints/wai.safetensors",
+  "size": 6938078334,
+  "source": "civitai:827184",
+  "defaultSettings": {
+    "vae": "vae-sdxl",
+    "vaePrecision": "fp16",
+    "steps": 30,
+    "cfgScale": 5.5,
+    "scheduler": "euler_a",
+    "width": 1024,
+    "height": 1024
+  },
+  "triggerPhrases": [
+    "masterpiece"
+  ],
+  "coverImageUrl": "https://image.civitai.com/cover.jpeg",
+  "coverMature": true,
+  "license": {
+    "site": "huggingface",
+    "name": "CreativeML Open RAIL++-M",
+    "commercial": "limited",
+    "permissions": [
+      {
+        "key": "sellImages",
+        "allowed": true
+      },
+      {
+        "key": "sellModel",
+        "allowed": false
+      },
+      {
+        "key": "noCredit",
+        "allowed": null
+      }
+    ]
+  }
+}

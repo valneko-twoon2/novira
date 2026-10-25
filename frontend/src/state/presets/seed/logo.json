@@ -1,0 +1,7 @@
+[
+  { "id": "seed-logo-minimal", "name": "Minimal wordmark", "data": { "style": "minimalist, flat vector, clean sans-serif lettering, black on white, generous spacing", "size": "wide", "count": 2 } },
+  { "id": "seed-logo-emblem", "name": "Round emblem", "data": { "style": "circular badge emblem, bold outline, a simple icon above the lettering, two-color", "size": "square", "count": 2 } },
+  { "id": "seed-logo-neon", "name": "Neon sign", "data": { "style": "glowing neon tube lettering, dark background, vivid pink and blue", "size": "wide", "count": 2 } },
+  { "id": "seed-logo-handwritten", "name": "Handwritten brush", "data": { "style": "hand-drawn brush script lettering, warm ink, organic strokes", "size": "wide", "count": 2 } },
+  { "id": "seed-logo-retro", "name": "Retro badge", "data": { "style": "vintage retro badge, distressed texture, bold slab lettering, orange and navy", "size": "square", "count": 2 } }
+]

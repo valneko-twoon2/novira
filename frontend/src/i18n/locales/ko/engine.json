@@ -1,0 +1,8 @@
+{
+  "engine.title.downloading": "이미지 생성 엔진(ComfyUI와 Python)을 다운로드하는 중입니다",
+  "engine.title.extracting": "이미지 생성 엔진(ComfyUI와 Python)의 압축을 푸는 중입니다",
+  "engine.title.starting": "이미지 생성 엔진을 시작하는 중입니다",
+  "engine.title.error": "이미지 생성 엔진을 준비하지 못했습니다",
+  "engine.sizeProgress": "{done} / {total}",
+  "engine.firstRunNote": "처음 한 번은 수 GB의 다운로드가 필요합니다. 완료될 때까지 생성은 시작되지 않습니다."
+}

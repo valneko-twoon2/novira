@@ -1,0 +1,134 @@
+{
+  "audio_ext": null,
+  "output_node": "11",
+  "prompt": {
+    "1": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "sdxl\\base.safetensors"
+      }
+    },
+    "10": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "9",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "11": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "10",
+          0
+        ]
+      }
+    },
+    "2": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "a cat"
+      }
+    },
+    "3": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "blurry"
+      }
+    },
+    "4": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "source.png"
+      }
+    },
+    "5": {
+      "class_type": "UpscaleModelLoader",
+      "inputs": {
+        "model_name": "4x-UltraSharp.pth"
+      }
+    },
+    "6": {
+      "class_type": "ImageUpscaleWithModel",
+      "inputs": {
+        "image": [
+          "4",
+          0
+        ],
+        "upscale_model": [
+          "5",
+          0
+        ]
+      }
+    },
+    "7": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 1536,
+        "image": [
+          "6",
+          0
+        ],
+        "upscale_method": "lanczos",
+        "width": 2048
+      }
+    },
+    "8": {
+      "class_type": "VAEEncode",
+      "inputs": {
+        "pixels": [
+          "7",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "9": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 6.5,
+        "denoise": 0.35,
+        "latent_image": [
+          "8",
+          0
+        ],
+        "model": [
+          "1",
+          0
+        ],
+        "negative": [
+          "3",
+          0
+        ],
+        "positive": [
+          "2",
+          0
+        ],
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "seed": 42,
+        "steps": 20
+      }
+    }
+  },
+  "thumbnail_node": null,
+  "total_steps": 20
+}

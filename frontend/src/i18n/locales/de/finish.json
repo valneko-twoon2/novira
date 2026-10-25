@@ -1,0 +1,16 @@
+{
+  "finish.title": "Clip fertigstellen",
+  "finish.smooth.title": "Bewegung glätten (doppelte Bildzahl)",
+  "finish.smooth.desc": "Ergänzt Zwischenbilder, damit die Bewegung flüssiger wird. Die Länge bleibt gleich; Bildzahl und Bildrate verdoppeln sich.",
+  "finish.enlarge.title": "Vergrößern (doppelte Breite und Höhe)",
+  "finish.enlarge.desc": "Vergrößert jedes Einzelbild mit einem Upscale-Modell. Dauert länger und braucht mehr Speicher.",
+  "finish.upscaler": "Upscale-Modell",
+  "finish.noUpscaler": "Kein Upscale-Modell vorhanden. Fügen Sie eines im Bereich „Modelle“ hinzu.",
+  "finish.needsPack": "Zum Ergänzen von Zwischenbildern wird die Erweiterung {pack} benötigt.",
+  "finish.install": "Installieren",
+  "finish.restart": "ComfyUI neu starten, um sie zu verwenden",
+  "finish.note": "Das Original bleibt unverändert; der fertige Clip wird daneben hinzugefügt.",
+  "finish.run": "Fertigstellen",
+  "finish.queued": "Eingereiht. Der fertige Clip erscheint in der Liste",
+  "finish.failed": "Einreihen nicht möglich"
+}

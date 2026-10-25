@@ -1,0 +1,16 @@
+{
+  "finish.title": "完善视频",
+  "finish.smooth.title": "使动作更流畅（帧数翻倍）",
+  "finish.smooth.desc": "在帧与帧之间补帧，使动作更平滑。时长不变，帧数和帧率变为 2 倍。",
+  "finish.enlarge.title": "放大（长宽各 2 倍）",
+  "finish.enlarge.desc": "使用放大模型放大所有帧。会占用较多时间和内存。",
+  "finish.upscaler": "用于放大的模型",
+  "finish.noUpscaler": "没有放大模型。请在模型界面中安装。",
+  "finish.needsPack": "补帧需要扩展 {pack}。",
+  "finish.install": "安装",
+  "finish.restart": "重启 ComfyUI 以启用",
+  "finish.note": "原视频会保留，并新增完善后的视频。",
+  "finish.run": "开始完善",
+  "finish.queued": "已加入队列。完成后会出现在视频列表中",
+  "finish.failed": "无法加入队列"
+}

@@ -1,0 +1,20 @@
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.png -text
+*.jpg -text
+*.jpeg -text
+*.webp -text
+*.gif -text
+*.mp4 -text
+*.webm -text
+*.wav -text
+*.mp3 -text
+*.sqlite -text
+*.db -text
+*.safetensors -text
+*.ckpt -text
+*.pt -text
+*.pth -text
+*.bin -text
+*.zip -text

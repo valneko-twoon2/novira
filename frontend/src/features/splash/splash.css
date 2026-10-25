@@ -1,0 +1,227 @@
+/* Start-up screen: the logo and the engine's progress over a bright summer sky. */
+.sp {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  height: 100%;
+  /* The logo is anchored from the top, so it stays put while the card below grows and shrinks with its message. The offset
+     centres the tallest card (download with the first-run note). */
+  padding-top: max(var(--space-4), calc(50vh - 190px));
+  background: var(--bg-app);
+  overflow: hidden;
+}
+
+.sp__center {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  width: min(420px, calc(100% - 32px));
+}
+
+/* The sky fills the screen behind everything; SkyBackdrop draws it. */
+.sp__sky {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Brand-gradient letters with a soft shadow in the page colour, so the name stays readable over the clouds behind. */
+.sp__logo {
+  padding-left: 0.2em;
+  background: var(--grad-brand);
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  filter: drop-shadow(0 0 6px var(--bg-app)) drop-shadow(0 0 16px var(--bg-app));
+}
+
+/* The start-up card: every message of the start-up screen is shown in it. */
+.ep {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--bg-panel);
+}
+
+.ep.is-error {
+  border-color: var(--danger);
+}
+
+.ep.is-error .ep__badge {
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+.ep__message {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.ep__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ep__badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-active);
+  color: var(--blue-600);
+}
+
+.ep__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ep__title {
+  color: var(--text);
+  font-size: var(--fs-md);
+  font-weight: 700;
+}
+
+.ep__sub {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.ep__steps {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ep__step {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+}
+
+/* The line between two steps, behind the dots. */
+.ep__step + .ep__step::before {
+  content: '';
+  position: absolute;
+  top: 11px;
+  right: 50%;
+  left: calc(-50% + 14px);
+  height: 2px;
+  background: var(--border-strong);
+}
+
+.ep__step.is-done + .ep__step::before,
+.ep__step.is-active::before {
+  background: var(--grad-accent);
+}
+
+.ep__dot {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--bg-panel);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.ep__step.is-active {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.ep__step.is-active .ep__dot {
+  border-color: var(--blue-500);
+  color: var(--blue-600);
+}
+
+.ep__step.is-done {
+  color: var(--text-muted);
+}
+
+.ep__step.is-done .ep__dot {
+  border-color: var(--blue-500);
+  background: var(--grad-accent);
+  color: var(--white);
+}
+
+.ep__progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ep__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 1.4em;
+}
+
+.ep__percent {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.ep__size {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.ep__bar {
+  height: 8px;
+  border-radius: var(--radius-sm);
+}
+
+.ep__row--meta {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.ep__note {
+  margin: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+}

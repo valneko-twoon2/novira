@@ -1,0 +1,17 @@
+{
+  "batch.title": "Traiter plusieurs images à la fois",
+  "batch.count.one": "Applique la même opération à {count} image",
+  "batch.count.other": "Applique la même opération à {count} images",
+  "batch.op": "Opération",
+  "batch.op.removeBackground.title": "Supprimer l'arrière-plan et détourer",
+  "batch.op.upscale.title": "Agrandir",
+  "batch.upscaler": "Modèle de mise à l'échelle",
+  "batch.noUpscaler": "Aucun modèle de mise à l'échelle. Ajoutez-en un depuis l'écran Modèles.",
+  "batch.needsPack": "La suppression de l'arrière-plan nécessite l'extension {pack}.",
+  "batch.install": "Installer",
+  "batch.restart": "Redémarrez ComfyUI pour l'utiliser",
+  "batch.run": "Lancer",
+  "batch.queued.one": "{count} image mise en file. Le résultat va dans la planche de sa source",
+  "batch.queued.other": "{count} images mises en file. Les résultats vont dans les planches de leurs sources",
+  "batch.failed": "Impossible de les mettre en file"
+}

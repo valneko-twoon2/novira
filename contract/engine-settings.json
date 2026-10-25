@@ -1,0 +1,16 @@
+{
+  "dataDir": "C:\\Users\\you\\novira-data",
+  "comfyuiMode": "folder",
+  "comfyuiUrl": null,
+  "comfyuiDir": "D:\\ComfyUI",
+  "comfyuiPackage": "amd",
+  "comfyuiInstalled": false,
+  "installedComfyuiPackage": null,
+  "comfyuiStartTimeoutSecs": 600,
+  "modelRoots": [
+    "D:\\Models",
+    "E:\\StabilityMatrix\\Data\\Models"
+  ],
+  "civitaiLookup": false,
+  "restartNeeded": true
+}

@@ -1,0 +1,19 @@
+{
+  "logo.text": "Texte du logo",
+  "logo.textPlaceholder": "Texte du logo (ex. NOVIRA)",
+  "logo.style": "Style",
+  "logo.stylePlaceholder": "Ambiance, couleurs et forme (ex. minimaliste, bleu et blanc, géométrique)",
+  "logo.size": "Forme",
+  "logo.size.square": "Carré",
+  "logo.size.wide": "Large",
+  "logo.size.tall": "Haut",
+  "logo.count": "Candidats : {count}",
+  "logo.countLabel": "Candidats",
+  "logo.note": "Les candidats viennent d'un modèle qui dessine correctement les lettres. Le texte anglais est précis, mais le japonais peut sortir déformé ; dans ce cas, utilisez « Superposer du texte » pour ajouter le texte dans l'onglet Texte. Les logos terminés sont conservés dans les ressources.",
+  "logo.problem.text": "Saisissez le texte du logo",
+  "logo.problem.pack": "Téléchargez d'abord le modèle de logo",
+  "logo.empty.title": "Aucun logo",
+  "logo.empty.description": "Utilisez « Superposer du texte » pour ajouter du texte et des bulles à l'un d'eux dans l'onglet Texte.",
+  "logo.layText": "Superposer du texte",
+  "logo.delete": "Supprimer le logo"
+}

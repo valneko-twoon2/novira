@@ -1,0 +1,39 @@
+.engine-banner {
+  position: fixed;
+  top: var(--space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-toast);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: min(480px, calc(100vw - 32px));
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-strong);
+  border-left: 4px solid var(--blue-400);
+  border-radius: var(--radius);
+  background: var(--base-900);
+  box-shadow: var(--shadow);
+}
+
+.engine-banner.is-error {
+  border-left-color: var(--danger);
+}
+
+.engine-banner__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.engine-banner__title {
+  font-weight: 600;
+}
+
+.engine-banner__desc {
+  color: var(--text-muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}

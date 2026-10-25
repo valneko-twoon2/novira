@@ -1,0 +1,8 @@
+{
+  "engine.title.downloading": "Bild-Engine wird heruntergeladen (ComfyUI und Python)",
+  "engine.title.extracting": "Bild-Engine wird entpackt (ComfyUI und Python)",
+  "engine.title.starting": "Bild-Engine wird gestartet",
+  "engine.title.error": "Die Bild-Engine konnte nicht vorbereitet werden",
+  "engine.sizeProgress": "{done} / {total}",
+  "engine.firstRunNote": "Beim ersten Start werden einige GB heruntergeladen. Danach beginnt die Generierung."
+}

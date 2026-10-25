@@ -1,0 +1,19 @@
+{
+  "logo.text": "Logo 文字",
+  "logo.textPlaceholder": "Logo 中的文字（例：NOVIRA）",
+  "logo.style": "風格",
+  "logo.stylePlaceholder": "氛圍、顏色與形狀（例：極簡、藍白、幾何）",
+  "logo.size": "形狀",
+  "logo.size.square": "正方形",
+  "logo.size.wide": "橫向",
+  "logo.size.tall": "直向",
+  "logo.count": "候選數量：{count}",
+  "logo.countLabel": "候選數量",
+  "logo.note": "使用能正確繪製文字的模型產生候選。英文文字很準確，但日文可能出現錯字；此時請用「疊加文字」在文字分頁中加入文字。完成的 Logo 會存放在素材中。",
+  "logo.problem.text": "請輸入 Logo 中的文字",
+  "logo.problem.pack": "請先下載 Logo 模型",
+  "logo.empty.title": "還沒有 Logo",
+  "logo.empty.description": "按「疊加文字」可在文字分頁中為其加入文字與對話框。",
+  "logo.layText": "疊加文字",
+  "logo.delete": "刪除 Logo"
+}

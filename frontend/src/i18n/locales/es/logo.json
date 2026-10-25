@@ -1,0 +1,19 @@
+{
+  "logo.text": "Texto del logotipo",
+  "logo.textPlaceholder": "Texto del logotipo (p. ej. NOVIRA)",
+  "logo.style": "Estilo",
+  "logo.stylePlaceholder": "Ambiente, colores y forma (p. ej. minimalista, azul y blanco, geométrico)",
+  "logo.size": "Forma",
+  "logo.size.square": "Cuadrada",
+  "logo.size.wide": "Ancha",
+  "logo.size.tall": "Alta",
+  "logo.count": "Candidatos: {count}",
+  "logo.countLabel": "Candidatos",
+  "logo.note": "Los candidatos provienen de un modelo que dibuja bien las letras. El texto en inglés sale con precisión, pero el japonés puede salir distorsionado; en ese caso use «Superponer texto» para añadir el texto en la pestaña Texto. Los logotipos terminados se guardan en los recursos.",
+  "logo.problem.text": "Introduzca el texto del logotipo",
+  "logo.problem.pack": "Descargue primero el modelo de logotipos",
+  "logo.empty.title": "Aún no hay logotipos",
+  "logo.empty.description": "Use «Superponer texto» para añadir texto y bocadillos a uno en la pestaña Texto.",
+  "logo.layText": "Superponer texto",
+  "logo.delete": "Eliminar logotipo"
+}

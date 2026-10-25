@@ -1,0 +1,77 @@
+/* Video screen: the list of finished clips (the panel frame and form styles are shared, see media.css). */
+.vv-source {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+}
+
+.vv-source__preview {
+  position: relative;
+  align-self: center;
+}
+
+.vv-source__preview img {
+  display: block;
+  max-width: 100%;
+  max-height: 160px;
+  border-radius: var(--radius);
+}
+
+.vv-source__preview .ui-icon-btn {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+  background: var(--base-900);
+}
+
+.vv-source__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.vv-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-3);
+}
+
+.vv-clip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.vv-clip video {
+  width: 100%;
+  border-radius: var(--radius);
+  background: var(--base-900);
+}
+
+.vv-clip__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 11px;
+}
+
+.vv-clip__prompt {
+  flex: 1 0 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vv-clip__info {
+  flex: 1;
+  color: var(--text-faint);
+}

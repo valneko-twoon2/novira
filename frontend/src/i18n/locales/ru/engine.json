@@ -1,0 +1,8 @@
+{
+  "engine.title.downloading": "Загрузка движка изображений (ComfyUI и Python)",
+  "engine.title.extracting": "Распаковка движка изображений (ComfyUI и Python)",
+  "engine.title.starting": "Запуск движка изображений",
+  "engine.title.error": "Не удалось подготовить движок изображений",
+  "engine.sizeProgress": "{done} / {total}",
+  "engine.firstRunNote": "При первом запуске загружается несколько ГБ. Генерация начнётся после завершения."
+}

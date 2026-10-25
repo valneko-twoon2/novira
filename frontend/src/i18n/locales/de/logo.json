@@ -1,0 +1,19 @@
+{
+  "logo.text": "Logotext",
+  "logo.textPlaceholder": "Text im Logo (z. B. NOVIRA)",
+  "logo.style": "Stil",
+  "logo.stylePlaceholder": "Stimmung, Farben und Form (z. B. minimalistisch, blau und weiß, geometrisch)",
+  "logo.size": "Form",
+  "logo.size.square": "Quadratisch",
+  "logo.size.wide": "Breit",
+  "logo.size.tall": "Hoch",
+  "logo.count": "Kandidaten: {count}",
+  "logo.countLabel": "Kandidaten",
+  "logo.note": "Die Kandidaten stammen von einem Modell, das Schrift korrekt zeichnet. Englischer Text ist exakt, japanischer kann verzerrt ausfallen; verwenden Sie dann „Text darüberlegen“, um den Text im Tab „Text“ hinzuzufügen. Fertige Logos werden in den Assets gespeichert.",
+  "logo.problem.text": "Text für das Logo eingeben",
+  "logo.problem.pack": "Zuerst das Logo-Modell herunterladen",
+  "logo.empty.title": "Noch keine Logos",
+  "logo.empty.description": "Mit „Text darüberlegen“ fügen Sie im Tab „Text“ Text und Sprechblasen hinzu.",
+  "logo.layText": "Text darüberlegen",
+  "logo.delete": "Logo löschen"
+}

@@ -1,0 +1,19 @@
+{
+  "logo.text": "Texto do logotipo",
+  "logo.textPlaceholder": "Texto do logotipo (ex.: NOVIRA)",
+  "logo.style": "Estilo",
+  "logo.stylePlaceholder": "Clima, cores e forma (ex.: minimalista, azul e branco, geométrico)",
+  "logo.size": "Formato",
+  "logo.size.square": "Quadrado",
+  "logo.size.wide": "Largo",
+  "logo.size.tall": "Alto",
+  "logo.count": "Candidatos: {count}",
+  "logo.countLabel": "Candidatos",
+  "logo.note": "Os candidatos vêm de um modelo que desenha letras corretamente. O texto em inglês sai preciso, mas o japonês pode sair embaralhado; nesse caso use “Sobrepor texto” para adicionar o texto na aba Texto. Os logotipos prontos ficam nos recursos.",
+  "logo.problem.text": "Digite o texto do logotipo",
+  "logo.problem.pack": "Baixe primeiro o modelo de logotipo",
+  "logo.empty.title": "Nenhum logotipo ainda",
+  "logo.empty.description": "Use “Sobrepor texto” para adicionar texto e balões a um deles na aba Texto.",
+  "logo.layText": "Sobrepor texto",
+  "logo.delete": "Excluir logotipo"
+}

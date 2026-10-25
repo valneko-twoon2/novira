@@ -1,0 +1,213 @@
+{
+  "prompt": {
+    "ckpt": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": {
+          "$model": "sdxl-key"
+        }
+      }
+    },
+    "pos": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "a beach at sunset",
+        "clip": [
+          "ckpt",
+          1
+        ]
+      }
+    },
+    "neg": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "text": "",
+        "clip": [
+          "ckpt",
+          1
+        ]
+      }
+    },
+    "source": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": {
+          "$image": "photo.png"
+        }
+      }
+    },
+    "cover": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": {
+          "$image": "mask.png"
+        }
+      }
+    },
+    "mask": {
+      "class_type": "ImageToMask",
+      "inputs": {
+        "image": [
+          "cover",
+          0
+        ],
+        "channel": "red"
+      }
+    },
+    "flip": {
+      "class_type": "InvertMask",
+      "inputs": {
+        "mask": [
+          "mask",
+          0
+        ]
+      }
+    },
+    "grow": {
+      "class_type": "GrowMask",
+      "inputs": {
+        "mask": [
+          "flip",
+          0
+        ],
+        "expand": 12,
+        "tapered_corners": true
+      }
+    },
+    "soft": {
+      "class_type": "MaskToImage",
+      "inputs": {
+        "mask": [
+          "grow",
+          0
+        ]
+      }
+    },
+    "blur": {
+      "class_type": "ImageBlur",
+      "inputs": {
+        "image": [
+          "soft",
+          0
+        ],
+        "blur_radius": 9,
+        "sigma": 4
+      }
+    },
+    "feather": {
+      "class_type": "ImageToMask",
+      "inputs": {
+        "image": [
+          "blur",
+          0
+        ],
+        "channel": "red"
+      }
+    },
+    "encode": {
+      "class_type": "VAEEncode",
+      "inputs": {
+        "pixels": [
+          "source",
+          0
+        ],
+        "vae": [
+          "ckpt",
+          2
+        ]
+      }
+    },
+    "limit": {
+      "class_type": "SetLatentNoiseMask",
+      "inputs": {
+        "samples": [
+          "encode",
+          0
+        ],
+        "mask": [
+          "grow",
+          0
+        ]
+      }
+    },
+    "sample": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "ckpt",
+          0
+        ],
+        "positive": [
+          "pos",
+          0
+        ],
+        "negative": [
+          "neg",
+          0
+        ],
+        "latent_image": [
+          "limit",
+          0
+        ],
+        "seed": {
+          "$seed": true
+        },
+        "steps": 28,
+        "cfg": 6,
+        "sampler_name": {
+          "$sampler_name": "dpmpp_2m_k"
+        },
+        "scheduler": {
+          "$scheduler": "dpmpp_2m_k"
+        },
+        "denoise": 1
+      }
+    },
+    "decode": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "sample",
+          0
+        ],
+        "vae": [
+          "ckpt",
+          2
+        ]
+      }
+    },
+    "paste": {
+      "class_type": "ImageCompositeMasked",
+      "inputs": {
+        "destination": [
+          "source",
+          0
+        ],
+        "source": [
+          "decode",
+          0
+        ],
+        "x": 0,
+        "y": 0,
+        "resize_source": false,
+        "mask": [
+          "feather",
+          0
+        ]
+      }
+    },
+    "save": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "paste",
+          0
+        ],
+        "filename_prefix": "novira-redraw"
+      }
+    }
+  },
+  "outputs": [
+    "save"
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "audio_ext": null,
+  "output_node": "10",
+  "prompt": {
+    "1": {
+      "class_type": "UnetLoaderGGUF",
+      "inputs": {
+        "unet_name": "model-Q4_K_M.gguf"
+      }
+    },
+    "10": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "9",
+          0
+        ]
+      }
+    },
+    "2": {
+      "class_type": "DualCLIPLoaderGGUF",
+      "inputs": {
+        "clip_name1": "te0-Q8_0.gguf",
+        "clip_name2": "te1-Q8_0.gguf",
+        "type": "flux"
+      }
+    },
+    "3": {
+      "class_type": "VAELoader",
+      "inputs": {
+        "vae_name": "vae.safetensors"
+      }
+    },
+    "4": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "2",
+          0
+        ],
+        "text": "a cat"
+      }
+    },
+    "5": {
+      "class_type": "FluxGuidance",
+      "inputs": {
+        "conditioning": [
+          "4",
+          0
+        ],
+        "guidance": 6.5
+      }
+    },
+    "6": {
+      "class_type": "ConditioningZeroOut",
+      "inputs": {
+        "conditioning": [
+          "4",
+          0
+        ]
+      }
+    },
+    "7": {
+      "class_type": "EmptySD3LatentImage",
+      "inputs": {
+        "batch_size": 1,
+        "height": 768,
+        "width": 1024
+      }
+    },
+    "8": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 1.0,
+        "denoise": 1.0,
+        "latent_image": [
+          "7",
+          0
+        ],
+        "model": [
+          "1",
+          0
+        ],
+        "negative": [
+          "6",
+          0
+        ],
+        "positive": [
+          "5",
+          0
+        ],
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "seed": 42,
+        "steps": 20
+      }
+    },
+    "9": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "8",
+          0
+        ],
+        "vae": [
+          "3",
+          0
+        ]
+      }
+    }
+  },
+  "thumbnail_node": null,
+  "total_steps": 20
+}

@@ -1,0 +1,375 @@
+/* Prompt book dialog. */
+.pb-title {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.pb-count {
+  color: var(--text-faint);
+  font-family: var(--font);
+  font-size: var(--fs-xs);
+  font-weight: 400;
+}
+
+.pb {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  height: 100%;
+  min-height: 0;
+}
+
+.pb-form {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pb-form__tag {
+  flex: 1.2 1 160px;
+}
+
+.pb-form__meaning {
+  flex: 1.4 1 160px;
+}
+
+.pb-form__category {
+  flex: 1 1 120px;
+}
+
+.pb-form__note {
+  flex: 1.4 1 160px;
+}
+
+.pb-body {
+  display: flex;
+  flex: 1;
+  gap: var(--space-3);
+  min-height: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.pb-cats {
+  display: flex;
+  flex: 0 0 180px;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2);
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+
+.pb-cat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-1) var(--space-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.pb-cat:hover {
+  background: var(--bg-hover);
+}
+
+.pb-cat.is-active {
+  background: var(--bg-active);
+  color: var(--text);
+  box-shadow: inset 2px 0 0 var(--blue-500);
+}
+
+.pb-cat__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pb-cat__n {
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+}
+
+.pb-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-2) var(--space-2) var(--space-2) 0;
+}
+
+.pb-tools {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pb-search {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-faint);
+}
+
+.pb-search .ui-input {
+  flex: 1;
+}
+
+.pb-list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.pb-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-surface);
+}
+
+.pb-item.is-used {
+  border-color: var(--blue-400);
+}
+
+.pb-item__main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pb-item__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pb-item__tag {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.pb-pill {
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--bg-active);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.pb-used {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--blue-500);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.pb-item__meaning {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.pb-item__note {
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+}
+
+.pb-item__acts {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pb-empty {
+  padding: var(--space-6, 32px) 0;
+  color: var(--text-faint);
+  text-align: center;
+}
+
+.pb-item__targets {
+  display: flex;
+  flex: none;
+  gap: var(--space-2);
+}
+
+.pb-target {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 24px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+}
+
+.pb-target:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.pb-target--positive.is-on {
+  border-color: var(--blue-400);
+  background: var(--bg-active);
+  color: var(--blue-300);
+}
+
+.pb-target--negative.is-on {
+  border-color: var(--red-400);
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+/* On a phone the book is a screen of its own: a back control above the list, the categories as a strip, the form stacked. */
+.pb-screen {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  background: var(--bg-main);
+}
+
+.pb-screen__top {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 52px;
+  padding: 0 var(--space-2);
+  border-bottom: 1px solid var(--border);
+  background: var(--grad-header);
+}
+
+.pb-screen__back {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+}
+
+.pb-screen__title {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.pb-screen__body {
+  flex: 1;
+  min-height: 0;
+  padding: var(--space-3);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.pb-screen .pb {
+  height: auto;
+  min-height: 100%;
+}
+
+.pb-screen .pb-form {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.pb-screen .pb-form > * {
+  flex: none;
+  min-height: 44px;
+}
+
+.pb-screen .pb-body {
+  flex: 1;
+  flex-direction: column;
+  gap: 0;
+  overflow: visible;
+}
+
+.pb-screen .pb-cats {
+  flex: none;
+  flex-direction: row;
+  padding: var(--space-2);
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-right: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.pb-screen .pb-cat {
+  flex: none;
+  width: auto;
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+.pb-screen .pb-cat.is-active {
+  box-shadow: inset 0 -2px 0 var(--blue-500);
+}
+
+.pb-screen .pb-main {
+  padding: var(--space-2);
+}
+
+.pb-screen .pb-list {
+  overflow-y: visible;
+}
+
+.pb-screen .pb-item {
+  flex-wrap: wrap;
+}
+
+.pb-screen .pb-item__main {
+  flex: 1 1 100%;
+}
+
+.pb-screen .pb-target {
+  height: 40px;
+}

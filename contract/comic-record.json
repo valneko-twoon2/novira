@@ -1,0 +1,12 @@
+{
+  "id": "comic-1",
+  "updatedAt": 1700000000000,
+  "document": {
+    "title": "Mine",
+    "pages": [
+      {
+        "panels": []
+      }
+    ]
+  }
+}

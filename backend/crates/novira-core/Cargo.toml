@@ -1,0 +1,51 @@
+[package]
+name = "novira-core"
+version.workspace = true
+description = "novira backend: storage, queue, ComfyUI adapter and model management (no Tauri dependency)"
+edition = "2021"
+license = "Apache-2.0"
+
+[lints]
+workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tokio-util = { workspace = true }
+futures-util = { workspace = true }
+async-trait = "0.1"
+reqwest = { version = "0.13", default-features = false, features = ["native-tls", "json", "multipart", "stream", "query", "charset", "http2", "gzip", "brotli"] }
+tokio-tungstenite = { version = "0.30", default-features = false, features = ["connect"] }
+rusqlite = { version = "0.37", features = ["bundled"] }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp", "gif", "bmp"] }
+sha2 = "0.10"
+crc32fast = "1"
+base64 = "0.22"
+chrono = { version = "0.4", default-features = false, features = ["std", "clock"] }
+uuid = { version = "1", features = ["v4"] }
+# Backups: zip archives written and read as streams (MIT). Only deflate, through the zlib-rs backend flate2 already uses.
+zip = { version = "8", default-features = false, features = ["deflate-flate2-zlib-rs"] }
+# Invisible "AI-generated" watermark on exports (MIT, Adobe). It runs ONNX models through `ort`.
+trustmark = "=0.4.0"
+# ONNX Runtime is loaded at run time from a DLL with a pinned hash, not linked: a static build would make
+# novira.exe need the Visual C++ runtime (MSVCP140.dll) just to start. Pinned to the version trustmark uses.
+ort = { version = "=2.0.0-rc.10", default-features = false, features = ["load-dynamic"] }
+# C2PA content credentials on exports (MIT/Apache-2.0); pure-Rust crypto, no HTTP, no file I/O.
+c2pa = { version = "=0.91.2", default-features = false, features = ["rust_native_crypto"] }
+# The per-installation signing certificate for those credentials (MIT/Apache-2.0).
+rcgen = "0.14"
+serde_bytes = "0.11"
+# Loads the ONNX Runtime DLL once by itself first, so a missing Visual C++ runtime is an error, not a panic in `ort`.
+libloading = "0.8"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_Security_Cryptography", "Win32_System_JobObjects", "Win32_System_Registry", "Win32_System_Threading"] }
+
+[dev-dependencies]
+axum = { version = "0.8", features = ["ws", "multipart"] }
+tempfile = "3"
+flate2 = "1"
+# Property and fuzz-style tests (tests/prop_*.rs): generated inputs, in-process only; pinned so a new release cannot change the generated cases.
+proptest = { version = "=1.11.0", default-features = false, features = ["std", "bit-set"] }

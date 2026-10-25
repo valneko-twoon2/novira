@@ -1,0 +1,10 @@
+{
+  "lora.section": "LoRA",
+  "lora.noneOption": "LoRA なし",
+  "lora.use": "LoRA を使う",
+  "lora.gone": "（モデルの一覧にありません）",
+  "lora.weight": "LoRA の強さ",
+  "lora.useHint": "使うと、この強さの LoRA と、トリガーワード「{trigger}」がプロンプトに入ります。参照画像もこれまでどおり使われます。",
+  "lora.goneNote": "このキャラクターの LoRA はモデルの一覧にないため、使いませんでした。",
+  "lora.usedNote": "学習した LoRA とトリガーワードも入れました。"
+}

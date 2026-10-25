@@ -1,0 +1,8 @@
+{
+  "engine.title.downloading": "Téléchargement du moteur d'images (ComfyUI et Python)",
+  "engine.title.extracting": "Décompression du moteur d'images (ComfyUI et Python)",
+  "engine.title.starting": "Démarrage du moteur d'images",
+  "engine.title.error": "Le moteur d'images n'a pas pu être préparé",
+  "engine.sizeProgress": "{done} / {total}",
+  "engine.firstRunNote": "Le premier lancement télécharge quelques Go. La génération démarre une fois terminé."
+}

@@ -1,0 +1,46 @@
+{
+  "prompt": {
+    "source": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": {
+          "$image": "photo.png"
+        }
+      }
+    },
+    "model": {
+      "class_type": "UpscaleModelLoader",
+      "inputs": {
+        "model_name": {
+          "$model": "upscaler-key"
+        }
+      }
+    },
+    "scale": {
+      "class_type": "ImageUpscaleWithModel",
+      "inputs": {
+        "upscale_model": [
+          "model",
+          0
+        ],
+        "image": [
+          "source",
+          0
+        ]
+      }
+    },
+    "save": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "scale",
+          0
+        ],
+        "filename_prefix": "novira-upscale"
+      }
+    }
+  },
+  "outputs": [
+    "save"
+  ]
+}

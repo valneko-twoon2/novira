@@ -1,0 +1,195 @@
+{
+  "audio_ext": null,
+  "output_node": "15",
+  "prompt": {
+    "1": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "sdxl\\base.safetensors"
+      }
+    },
+    "10": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "2",
+          1
+        ],
+        "text": "a cat"
+      }
+    },
+    "11": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "2",
+          1
+        ],
+        "text": "blurry"
+      }
+    },
+    "12": {
+      "class_type": "EmptyLatentImage",
+      "inputs": {
+        "batch_size": 1,
+        "height": 768,
+        "width": 1024
+      }
+    },
+    "13": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 6.5,
+        "denoise": 1.0,
+        "latent_image": [
+          "12",
+          0
+        ],
+        "model": [
+          "9",
+          0
+        ],
+        "negative": [
+          "11",
+          0
+        ],
+        "positive": [
+          "10",
+          0
+        ],
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "seed": 42,
+        "steps": 20
+      }
+    },
+    "14": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "13",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "15": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "14",
+          0
+        ]
+      }
+    },
+    "2": {
+      "class_type": "LoraLoader",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "lora_name": "detail.safetensors",
+        "model": [
+          "1",
+          0
+        ],
+        "strength_clip": 0.6,
+        "strength_model": 0.6
+      }
+    },
+    "3": {
+      "class_type": "IPAdapterModelLoader",
+      "inputs": {
+        "ipadapter_file": "ip-adapter_sdxl_vit-h.safetensors"
+      }
+    },
+    "4": {
+      "class_type": "CLIPVisionLoader",
+      "inputs": {
+        "clip_name": "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors"
+      }
+    },
+    "5": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "ref-style.png"
+      }
+    },
+    "6": {
+      "class_type": "IPAdapterAdvanced",
+      "inputs": {
+        "clip_vision": [
+          "4",
+          0
+        ],
+        "combine_embeds": "concat",
+        "embeds_scaling": "V only",
+        "end_at": 1.0,
+        "image": [
+          "5",
+          0
+        ],
+        "ipadapter": [
+          "3",
+          0
+        ],
+        "model": [
+          "2",
+          0
+        ],
+        "start_at": 0.0,
+        "weight": 0.8,
+        "weight_type": "style transfer"
+      }
+    },
+    "7": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "ref-face.png"
+      }
+    },
+    "8": {
+      "class_type": "IPAdapterAdvanced",
+      "inputs": {
+        "clip_vision": [
+          "4",
+          0
+        ],
+        "combine_embeds": "concat",
+        "embeds_scaling": "V only",
+        "end_at": 0.9,
+        "image": [
+          "7",
+          0
+        ],
+        "ipadapter": [
+          "3",
+          0
+        ],
+        "model": [
+          "6",
+          0
+        ],
+        "start_at": 0.1,
+        "weight": 0.55,
+        "weight_type": "linear"
+      }
+    },
+    "9": {
+      "class_type": "RescaleCFG",
+      "inputs": {
+        "model": [
+          "8",
+          0
+        ],
+        "multiplier": 0.7
+      }
+    }
+  },
+  "thumbnail_node": null,
+  "total_steps": 20
+}

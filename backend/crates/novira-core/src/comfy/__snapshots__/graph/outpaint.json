@@ -1,0 +1,186 @@
+{
+  "audio_ext": null,
+  "output_node": "15",
+  "prompt": {
+    "1": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "sdxl\\base.safetensors"
+      }
+    },
+    "10": {
+      "class_type": "ImageToMask",
+      "inputs": {
+        "channel": "red",
+        "image": [
+          "9",
+          0
+        ]
+      }
+    },
+    "11": {
+      "class_type": "SetLatentNoiseMask",
+      "inputs": {
+        "mask": [
+          "10",
+          0
+        ],
+        "samples": [
+          "7",
+          0
+        ]
+      }
+    },
+    "12": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 6.5,
+        "denoise": 0.9,
+        "latent_image": [
+          "11",
+          0
+        ],
+        "model": [
+          "2",
+          0
+        ],
+        "negative": [
+          "4",
+          0
+        ],
+        "positive": [
+          "3",
+          0
+        ],
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "seed": 42,
+        "steps": 20
+      }
+    },
+    "13": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "12",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "14": {
+      "class_type": "ImageCompositeMasked",
+      "inputs": {
+        "destination": [
+          "6",
+          0
+        ],
+        "mask": [
+          "10",
+          0
+        ],
+        "resize_source": false,
+        "source": [
+          "13",
+          0
+        ],
+        "x": 0,
+        "y": 0
+      }
+    },
+    "15": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "14",
+          0
+        ]
+      }
+    },
+    "2": {
+      "class_type": "DifferentialDiffusion",
+      "inputs": {
+        "model": [
+          "1",
+          0
+        ]
+      }
+    },
+    "3": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "a cat"
+      }
+    },
+    "4": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "blurry"
+      }
+    },
+    "5": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "source.png"
+      }
+    },
+    "6": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 1000,
+        "image": [
+          "5",
+          0
+        ],
+        "upscale_method": "lanczos",
+        "width": 1280
+      }
+    },
+    "7": {
+      "class_type": "VAEEncode",
+      "inputs": {
+        "pixels": [
+          "6",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "8": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "mask.png"
+      }
+    },
+    "9": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 1000,
+        "image": [
+          "8",
+          0
+        ],
+        "upscale_method": "bilinear",
+        "width": 1280
+      }
+    }
+  },
+  "thumbnail_node": null,
+  "total_steps": 20
+}

@@ -1,0 +1,463 @@
+{
+  "audio_ext": null,
+  "output_node": "39",
+  "prompt": {
+    "1": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "sdxl\\base.safetensors"
+      }
+    },
+    "10": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "region-right.png"
+      }
+    },
+    "11": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 768,
+        "image": [
+          "10",
+          0
+        ],
+        "upscale_method": "bilinear",
+        "width": 1024
+      }
+    },
+    "12": {
+      "class_type": "ImageToMask",
+      "inputs": {
+        "channel": "red",
+        "image": [
+          "11",
+          0
+        ]
+      }
+    },
+    "13": {
+      "class_type": "IPAdapterAdvanced",
+      "inputs": {
+        "attn_mask": [
+          "12",
+          0
+        ],
+        "clip_vision": [
+          "3",
+          0
+        ],
+        "combine_embeds": "concat",
+        "embeds_scaling": "V only",
+        "end_at": 1.0,
+        "image": [
+          "9",
+          0
+        ],
+        "ipadapter": [
+          "2",
+          0
+        ],
+        "model": [
+          "8",
+          0
+        ],
+        "start_at": 0.0,
+        "weight": 0.42,
+        "weight_type": "linear"
+      }
+    },
+    "14": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "a cat"
+      }
+    },
+    "15": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "blurry"
+      }
+    },
+    "16": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "region-left.png"
+      }
+    },
+    "17": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 768,
+        "image": [
+          "16",
+          0
+        ],
+        "upscale_method": "bilinear",
+        "width": 1024
+      }
+    },
+    "18": {
+      "class_type": "ImageToMask",
+      "inputs": {
+        "channel": "red",
+        "image": [
+          "17",
+          0
+        ]
+      }
+    },
+    "19": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "1boy, short black hair, black gakuran"
+      }
+    },
+    "2": {
+      "class_type": "IPAdapterModelLoader",
+      "inputs": {
+        "ipadapter_file": "ip-adapter_sdxl_vit-h.safetensors"
+      }
+    },
+    "20": {
+      "class_type": "ConditioningSetMask",
+      "inputs": {
+        "conditioning": [
+          "19",
+          0
+        ],
+        "mask": [
+          "18",
+          0
+        ],
+        "set_cond_area": "default",
+        "strength": 1.0
+      }
+    },
+    "21": {
+      "class_type": "ConditioningCombine",
+      "inputs": {
+        "conditioning_1": [
+          "14",
+          0
+        ],
+        "conditioning_2": [
+          "20",
+          0
+        ]
+      }
+    },
+    "22": {
+      "class_type": "InvertMask",
+      "inputs": {
+        "mask": [
+          "18",
+          0
+        ]
+      }
+    },
+    "23": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "1boy, short black hair, black gakuran"
+      }
+    },
+    "24": {
+      "class_type": "ConditioningSetMask",
+      "inputs": {
+        "conditioning": [
+          "23",
+          0
+        ],
+        "mask": [
+          "22",
+          0
+        ],
+        "set_cond_area": "default",
+        "strength": 1.0
+      }
+    },
+    "25": {
+      "class_type": "ConditioningCombine",
+      "inputs": {
+        "conditioning_1": [
+          "15",
+          0
+        ],
+        "conditioning_2": [
+          "24",
+          0
+        ]
+      }
+    },
+    "26": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "region-right.png"
+      }
+    },
+    "27": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 768,
+        "image": [
+          "26",
+          0
+        ],
+        "upscale_method": "bilinear",
+        "width": 1024
+      }
+    },
+    "28": {
+      "class_type": "ImageToMask",
+      "inputs": {
+        "channel": "red",
+        "image": [
+          "27",
+          0
+        ]
+      }
+    },
+    "29": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "1girl, red ponytail, white haori"
+      }
+    },
+    "3": {
+      "class_type": "CLIPVisionLoader",
+      "inputs": {
+        "clip_name": "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors"
+      }
+    },
+    "30": {
+      "class_type": "ConditioningSetMask",
+      "inputs": {
+        "conditioning": [
+          "29",
+          0
+        ],
+        "mask": [
+          "28",
+          0
+        ],
+        "set_cond_area": "default",
+        "strength": 1.0
+      }
+    },
+    "31": {
+      "class_type": "ConditioningCombine",
+      "inputs": {
+        "conditioning_1": [
+          "21",
+          0
+        ],
+        "conditioning_2": [
+          "30",
+          0
+        ]
+      }
+    },
+    "32": {
+      "class_type": "InvertMask",
+      "inputs": {
+        "mask": [
+          "28",
+          0
+        ]
+      }
+    },
+    "33": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "1girl, red ponytail, white haori"
+      }
+    },
+    "34": {
+      "class_type": "ConditioningSetMask",
+      "inputs": {
+        "conditioning": [
+          "33",
+          0
+        ],
+        "mask": [
+          "32",
+          0
+        ],
+        "set_cond_area": "default",
+        "strength": 1.0
+      }
+    },
+    "35": {
+      "class_type": "ConditioningCombine",
+      "inputs": {
+        "conditioning_1": [
+          "25",
+          0
+        ],
+        "conditioning_2": [
+          "34",
+          0
+        ]
+      }
+    },
+    "36": {
+      "class_type": "EmptyLatentImage",
+      "inputs": {
+        "batch_size": 1,
+        "height": 768,
+        "width": 1024
+      }
+    },
+    "37": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 6.5,
+        "denoise": 1.0,
+        "latent_image": [
+          "36",
+          0
+        ],
+        "model": [
+          "13",
+          0
+        ],
+        "negative": [
+          "35",
+          0
+        ],
+        "positive": [
+          "31",
+          0
+        ],
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "seed": 42,
+        "steps": 20
+      }
+    },
+    "38": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "37",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "39": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "38",
+          0
+        ]
+      }
+    },
+    "4": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "ref-boy.png"
+      }
+    },
+    "5": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "region-left.png"
+      }
+    },
+    "6": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 768,
+        "image": [
+          "5",
+          0
+        ],
+        "upscale_method": "bilinear",
+        "width": 1024
+      }
+    },
+    "7": {
+      "class_type": "ImageToMask",
+      "inputs": {
+        "channel": "red",
+        "image": [
+          "6",
+          0
+        ]
+      }
+    },
+    "8": {
+      "class_type": "IPAdapterAdvanced",
+      "inputs": {
+        "attn_mask": [
+          "7",
+          0
+        ],
+        "clip_vision": [
+          "3",
+          0
+        ],
+        "combine_embeds": "concat",
+        "embeds_scaling": "V only",
+        "end_at": 1.0,
+        "image": [
+          "4",
+          0
+        ],
+        "ipadapter": [
+          "2",
+          0
+        ],
+        "model": [
+          "1",
+          0
+        ],
+        "start_at": 0.0,
+        "weight": 0.42,
+        "weight_type": "linear"
+      }
+    },
+    "9": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "ref-girl.png"
+      }
+    }
+  },
+  "thumbnail_node": null,
+  "total_steps": 20
+}

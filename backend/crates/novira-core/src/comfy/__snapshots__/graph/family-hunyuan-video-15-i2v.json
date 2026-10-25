@@ -1,0 +1,237 @@
+{
+  "audio_ext": null,
+  "output_node": "18",
+  "prompt": {
+    "1": {
+      "class_type": "UNETLoader",
+      "inputs": {
+        "unet_name": "model.safetensors",
+        "weight_dtype": "default"
+      }
+    },
+    "10": {
+      "class_type": "HunyuanVideo15ImageToVideo",
+      "inputs": {
+        "batch_size": 1,
+        "clip_vision_output": [
+          "9",
+          0
+        ],
+        "height": 480,
+        "length": 49,
+        "negative": [
+          "6",
+          0
+        ],
+        "positive": [
+          "5",
+          0
+        ],
+        "start_image": [
+          "7",
+          0
+        ],
+        "vae": [
+          "2",
+          0
+        ],
+        "width": 832
+      }
+    },
+    "11": {
+      "class_type": "CFGGuider",
+      "inputs": {
+        "cfg": 5.0,
+        "model": [
+          "3",
+          0
+        ],
+        "negative": [
+          "10",
+          1
+        ],
+        "positive": [
+          "10",
+          0
+        ]
+      }
+    },
+    "12": {
+      "class_type": "RandomNoise",
+      "inputs": {
+        "noise_seed": 42
+      }
+    },
+    "13": {
+      "class_type": "KSamplerSelect",
+      "inputs": {
+        "sampler_name": "euler"
+      }
+    },
+    "14": {
+      "class_type": "BasicScheduler",
+      "inputs": {
+        "denoise": 1.0,
+        "model": [
+          "3",
+          0
+        ],
+        "scheduler": "simple",
+        "steps": 20
+      }
+    },
+    "15": {
+      "class_type": "SamplerCustomAdvanced",
+      "inputs": {
+        "guider": [
+          "11",
+          0
+        ],
+        "latent_image": [
+          "10",
+          2
+        ],
+        "noise": [
+          "12",
+          0
+        ],
+        "sampler": [
+          "13",
+          0
+        ],
+        "sigmas": [
+          "14",
+          0
+        ]
+      }
+    },
+    "16": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "15",
+          0
+        ],
+        "vae": [
+          "2",
+          0
+        ]
+      }
+    },
+    "17": {
+      "class_type": "CreateVideo",
+      "inputs": {
+        "fps": 24.0,
+        "images": [
+          "16",
+          0
+        ]
+      }
+    },
+    "18": {
+      "class_type": "SaveVideo",
+      "inputs": {
+        "codec": "auto",
+        "filename_prefix": "video/novira",
+        "format": "mp4",
+        "video": [
+          "17",
+          0
+        ]
+      }
+    },
+    "19": {
+      "class_type": "ImageFromBatch",
+      "inputs": {
+        "batch_index": 0,
+        "image": [
+          "16",
+          0
+        ],
+        "length": 1
+      }
+    },
+    "2": {
+      "class_type": "VAELoader",
+      "inputs": {
+        "vae_name": "vae.safetensors"
+      }
+    },
+    "20": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "19",
+          0
+        ]
+      }
+    },
+    "3": {
+      "class_type": "ModelSamplingSD3",
+      "inputs": {
+        "model": [
+          "1",
+          0
+        ],
+        "shift": 7.0
+      }
+    },
+    "4": {
+      "class_type": "DualCLIPLoader",
+      "inputs": {
+        "clip_name1": "te0.safetensors",
+        "clip_name2": "te1.safetensors",
+        "device": "default",
+        "type": "hunyuan_video_15"
+      }
+    },
+    "5": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "4",
+          0
+        ],
+        "text": "a cat"
+      }
+    },
+    "6": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "4",
+          0
+        ],
+        "text": "blurry"
+      }
+    },
+    "7": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "start.png"
+      }
+    },
+    "8": {
+      "class_type": "CLIPVisionLoader",
+      "inputs": {
+        "clip_name": "sigclip_vision_patch14_384.safetensors"
+      }
+    },
+    "9": {
+      "class_type": "CLIPVisionEncode",
+      "inputs": {
+        "clip_vision": [
+          "8",
+          0
+        ],
+        "crop": "center",
+        "image": [
+          "7",
+          0
+        ]
+      }
+    }
+  },
+  "thumbnail_node": "20",
+  "total_steps": 20
+}

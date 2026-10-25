@@ -1,0 +1,8 @@
+{
+  "engine.title.downloading": "Baixando o mecanismo de imagens (ComfyUI e Python)",
+  "engine.title.extracting": "Descompactando o mecanismo de imagens (ComfyUI e Python)",
+  "engine.title.starting": "Iniciando o mecanismo de imagens",
+  "engine.title.error": "Não foi possível preparar o mecanismo de imagens",
+  "engine.sizeProgress": "{done} / {total}",
+  "engine.firstRunNote": "A primeira execução baixa alguns GB. A geração começa ao terminar."
+}

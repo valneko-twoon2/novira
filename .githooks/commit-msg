@@ -1,0 +1,3 @@
+#!/bin/sh
+# Versioned commit-msg hook (Windows, Git for Windows sh): the shape of the message is checked in .githooks/commit-msg.mjs.
+exec node .githooks/commit-msg.mjs "$1"

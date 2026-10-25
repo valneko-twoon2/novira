@@ -1,0 +1,8 @@
+{
+  "lora.use": "使用 LoRA",
+  "lora.gone": "（不在模型列表中）",
+  "lora.weight": "LoRA 强度",
+  "lora.useHint": "使用角色时会以此强度加入 LoRA，并在提示词中加入触发词“{trigger}”。参考图仍照常使用。",
+  "lora.goneNote": "这个角色的 LoRA 不在模型列表中，因此没有使用。",
+  "lora.usedNote": "也加入了训练的 LoRA 和触发词。"
+}

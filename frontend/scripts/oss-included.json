@@ -1,0 +1,15 @@
+{
+  "note": "Content that is not a package but ships inside the app (picture material). scripts/oss-licenses.mjs prints each entry with the license text kept in scripts/oss-texts/<text>, in THIRD_PARTY_NOTICES.txt. Add an entry in the same change as the content, and name where in the source it lives.",
+  "included": [
+    {
+      "name": "Sound-effect lettering pictures",
+      "version": "1",
+      "license": "CC0-1.0",
+      "text": "included-sfx-lettering.txt",
+      "usedIn": [
+        "frontend/src/assets/onomatopoeia/",
+        "frontend/src/state/comic/stamps.json"
+      ]
+    }
+  ]
+}

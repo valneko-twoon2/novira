@@ -1,0 +1,21 @@
+{
+  "message": "make it brighter",
+  "locale": "ja",
+  "history": [
+    {
+      "role": "user",
+      "text": "hi"
+    },
+    {
+      "role": "assistant",
+      "text": "hello"
+    }
+  ],
+  "screen": "workflows",
+  "focus": "ext:ComfyUI-Foo",
+  "agentModel": "opus",
+  "effort": "high",
+  "images": [
+    "0123456789abcdef0123456789abcdef.png"
+  ]
+}

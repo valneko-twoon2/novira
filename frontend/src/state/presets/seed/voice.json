@@ -1,0 +1,4 @@
+[
+  { "id": "seed-voice-narrator", "name": "Calm narrator", "data": { "mode": "preset", "speaker": "Ono_Anna", "instruct": "Calm, clear narration at a steady pace" } },
+  { "id": "seed-voice-announcer", "name": "Energetic announcer", "data": { "mode": "preset", "speaker": "Ryan", "instruct": "Energetic and excited, like a game show announcer" } }
+]

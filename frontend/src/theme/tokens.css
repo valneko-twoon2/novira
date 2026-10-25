@@ -1,0 +1,223 @@
+/* Design tokens. Layout and density follow InvokeAI; colors are a clean blue -> light blue -> white
+   palette. The --grad-* tokens are the background fills (flat colors) and the accent fills (the brand gradient).
+   NOTE: the --base-* scale is ordered from darkest (50, used for text) to lightest (950, used for
+   the app background), so `--base-900` style surfaces are near-white. */
+:root {
+  /* Cool neutrals, dark (text) -> light (surfaces) */
+  --base-50: #000000;
+  --base-100: #1e1e1e;
+  --base-150: #2e2e2e;
+  --base-200: #424242;
+  --base-300: #5c5c5c;
+  --base-400: #7a7a7a;
+  --base-500: #9a9a9a;
+  --base-600: #bdbdbd;
+  --base-700: #d6d6d6;
+  --base-750: #e4e4e4;
+  --base-800: #eeeeee;
+  --base-850: #f3f3f3;
+  --base-900: #f8f8f8;
+  --base-950: #ffffff;
+
+  /* Blues (accent). 200/300 are used as text on light surfaces, so they are mid-tone */
+  --blue-200: #dbe8fd;
+  --blue-300: #2f6feb;
+  --blue-400: #4a8bf3;
+  --blue-500: #2f6feb;
+  --blue-600: #2459d1;
+  --blue-700: #1d46a8;
+  --blue-800: #163683;
+
+  --yellow-300: #e0b100;
+  --yellow-400: #d9a400;
+  --yellow-500: #c99700;
+  --yellow-600: #a67c00;
+
+  --red-300: #c9344f;
+  --red-400: #dc4560;
+  --red-500: #d23a56;
+  --red-600: #b02a44;
+
+  --green-300: #1f9a63;
+  --green-400: #25a96e;
+  --green-500: #2bb673;
+
+  --orange-400: #e8851a;
+  --violet-400: #7c5ce0;
+  --teal-400: #1fb5ad;
+  --pink-400: #d8478f;
+
+  --white: #ffffff;
+  --black: #000000;
+  --on-overlay: #ffffff;
+  --overlay: rgb(0 0 0 / 55%);
+  --overlay-light: rgb(0 0 0 / 30%);
+  --scrim-light: rgb(255 255 255 / 90%);
+  --shadow: 0 8px 24px rgb(0 0 0 / 14%);
+  --glow: none;
+  --focus-ring: 0 0 0 2px rgb(47 111 235 / 45%);
+  --selected-ring: 0 0 0 2px var(--blue-400);
+  --checker-a: #e8e8e8;
+  --checker-b: #f6f6f6;
+
+  /* Gradients: the accent fills are the brand gradient; the backgrounds are flat */
+  --grad-app: #f4f4f4;
+  --grad-panel: #ffffff;
+  --grad-nav: #ffffff;
+  --grad-accent: var(--grad-brand);
+  --grad-invoke: var(--grad-brand);
+  --grad-invoke-hover: linear-gradient(135deg, var(--blue-600) 0%, var(--blue-600) 55%, var(--red-600) 100%);
+  --grad-header: transparent;
+  /* The one gradient: the app's name and mark, and the accent fills (blue to red at the lower right). */
+  --grad-brand: linear-gradient(135deg, var(--blue-500) 0%, var(--blue-500) 55%, var(--red-500) 100%);
+
+  --accent: var(--blue-400);
+  --accent-strong: var(--blue-500);
+  --invoke: var(--blue-400);
+  --invoke-hover: var(--blue-300);
+  --invoke-text: #ffffff;
+  --danger: var(--red-500);
+  --success-soft: rgb(43 182 115 / 14%);
+  --success-text: #167a4a;
+  --warning-soft: rgb(232 133 26 / 15%);
+  --warning-text: #a85a08;
+  --danger-soft: rgb(210 58 86 / 12%);
+  --danger-text: #b02a44;
+  --success: var(--green-500);
+  --warning: var(--orange-400);
+
+  --bg-app: var(--base-950);
+  --bg-panel: #ffffff;
+  --bg-surface: #f7f7f7;
+  --bg-elevated: #efefef;
+  --bg-input: #ffffff;
+  --bg-main: #ffffff;
+  --bg-hover: rgb(0 0 0 / 6%);
+  --bg-active: rgb(47 111 235 / 14%);
+  --border: rgb(0 0 0 / 12%);
+  --border-strong: rgb(0 0 0 / 22%);
+  --text: var(--base-50);
+  --text-muted: var(--base-300);
+  --text-faint: var(--base-400);
+
+  /* Corner radii: every border-radius in the app is one of these (stylelint stops a raw value outside this file). */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-lg: 10px;
+  /* Fully round ends, for pills, counters, switches and thin bars. */
+  --radius-pill: 999px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --font: 'Segoe UI Variable Text', 'Segoe UI', 'Yu Gothic UI', 'Meiryo UI', system-ui, sans-serif;
+  --font-display: var(--font);
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-lg: 15px;
+  --fs-xl: 20px;
+  --nav-width: 80px;
+  --nav-text: rgb(0 0 0 / 62%);
+  --nav-hover: rgb(0 0 0 / 8%);
+  --control-h: 30px;
+  /* Toolbar controls of the viewer and the canvas (IconButton size "md"). */
+  --toolbar-control-h: 32px;
+  --toolbar-icon: 18px;
+  --duration: 120ms;
+
+  /* Layers over the app, bottom to top: every z-index above 9 is one of these (stylelint stops a raw value outside this
+     file; 0 to 9 order the parts inside one component). */
+  --z-dock: 40;
+  --z-dropzone: 50;
+  --z-assistant: 500;
+  --z-assistant-popover: 501;
+  /* A picture opened full screen over the phone layout (below dialogs and menus, which it may open). */
+  --z-phone-view: 700;
+  --z-modal-overlay: 800;
+  --z-modal: 801;
+  --z-menu: 900;
+  --z-tooltip: 1000;
+  --z-toast: 1100;
+
+  /* The sky of the start-up screen. */
+  --sky-zenith: #3d9df0;
+  --sky-horizon: #c6f4f6;
+  --sky-cloud: #ffffff;
+  --sky-cloud-shade: #cfe3f7;
+}
+
+/* Dark theme (default). Same token names; the --base-* scale stays "50 = text, 950 = background". */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --base-50: #f2f2f2;
+  --base-100: #e0e0e0;
+  --base-150: #cbcbcb;
+  --base-200: #b0b0b0;
+  --base-300: #929292;
+  --base-400: #737373;
+  --base-500: #575757;
+  --base-600: #424242;
+  --base-700: #2e2e2e;
+  --base-750: #262626;
+  --base-800: #1e1e1e;
+  --base-850: #181818;
+  --base-900: #101010;
+  --base-950: #000000;
+
+  --blue-200: #bcd4ff;
+  --blue-300: #7aa8fb;
+  --blue-400: #5b94f7;
+  --blue-500: #3d7cf0;
+  --blue-600: #6d9cf8;
+  --blue-700: #2459d1;
+  --blue-800: #1b44a4;
+
+  --red-300: #ff8aa0;
+  --red-400: #ff6f8b;
+  --green-300: #6fe3a8;
+  --green-400: #4fd592;
+  --orange-400: #ffa94d;
+
+  --overlay: rgb(2 6 18 / 62%);
+  --overlay-light: rgb(2 6 18 / 40%);
+  --scrim-light: rgb(10 18 38 / 88%);
+  --shadow: 0 10px 30px rgb(0 4 20 / 55%);
+  --focus-ring: 0 0 0 2px rgb(91 148 247 / 55%);
+  --checker-a: #111111;
+  --checker-b: #1a1a1a;
+
+  --grad-app: #000000;
+  --grad-panel: #0a0a0a;
+  --grad-nav: #0a0a0a;
+  --grad-header: transparent;
+
+  --nav-text: rgb(255 255 255 / 92%);
+  --nav-hover: rgb(255 255 255 / 12%);
+
+  --success-soft: rgb(43 182 115 / 20%);
+  --success-text: #6fe3a8;
+  --warning-soft: rgb(232 133 26 / 22%);
+  --warning-text: #ffb766;
+  --danger-soft: rgb(240 80 110 / 20%);
+  --danger-text: #ff8aa0;
+
+  --bg-panel: #0a0a0a;
+  --bg-surface: #121212;
+  --bg-elevated: #1c1c1c;
+  --bg-input: #050505;
+  --bg-main: #000000;
+  --bg-hover: rgb(255 255 255 / 8%);
+  --bg-active: rgb(91 148 247 / 22%);
+  --border: rgb(255 255 255 / 12%);
+  --border-strong: rgb(255 255 255 / 22%);
+
+  --sky-zenith: #07163a;
+  --sky-horizon: #24508f;
+  --sky-cloud: #7489b0;
+  --sky-cloud-shade: #16233f;
+}

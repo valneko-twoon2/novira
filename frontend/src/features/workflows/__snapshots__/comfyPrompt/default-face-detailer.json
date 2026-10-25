@@ -1,0 +1,215 @@
+{
+  "graph": {
+    "prompt": {
+      "main_model_loader-1": {
+        "class_type": "CheckpointLoaderSimple",
+        "inputs": {
+          "ckpt_name": {
+            "$model": "sd15-key"
+          }
+        }
+      },
+      "compel-2": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "text": "Super cute tiger cub, national geographic award-winning photograph, detailed fur",
+          "clip": [
+            "main_model_loader-1",
+            1
+          ]
+        }
+      },
+      "compel-3": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "text": "blurry, low quality, watermark",
+          "clip": [
+            "main_model_loader-1",
+            1
+          ]
+        }
+      },
+      "controlnet-11": {
+        "class_type": "ControlNetLoader",
+        "inputs": {
+          "control_net_name": {
+            "$model": "controlnet-key"
+          }
+        }
+      },
+      "image-8": {
+        "class_type": "LoadImage",
+        "inputs": {
+          "image": {
+            "$image": "photo.png"
+          }
+        }
+      },
+      "img_resize-9": {
+        "class_type": "ImageScale",
+        "inputs": {
+          "image": [
+            "image-8",
+            0
+          ],
+          "upscale_method": "bicubic",
+          "width": 512,
+          "height": 512,
+          "crop": "disabled"
+        }
+      },
+      "canny_edge_detection-10": {
+        "class_type": "Canny",
+        "inputs": {
+          "image": [
+            "img_resize-9",
+            0
+          ],
+          "low_threshold": 0.39215686274509803,
+          "high_threshold": 0.7843137254901961
+        }
+      },
+      "denoise_latents-6:control": {
+        "class_type": "ControlNetApplyAdvanced",
+        "inputs": {
+          "positive": [
+            "compel-2",
+            0
+          ],
+          "negative": [
+            "compel-3",
+            0
+          ],
+          "control_net": [
+            "controlnet-11",
+            0
+          ],
+          "image": [
+            "canny_edge_detection-10",
+            0
+          ],
+          "strength": 0.5,
+          "start_percent": 0,
+          "end_percent": 1
+        }
+      },
+      "i2l-13": {
+        "class_type": "VAEEncode",
+        "inputs": {
+          "pixels": [
+            "img_resize-9",
+            0
+          ],
+          "vae": [
+            "main_model_loader-1",
+            2
+          ]
+        }
+      },
+      "denoise_latents-6:ipadapter": {
+        "class_type": "IPAdapterModelLoader",
+        "inputs": {
+          "ipadapter_file": {
+            "$model": "ip_adapter-key"
+          }
+        }
+      },
+      "denoise_latents-6:clipvision": {
+        "class_type": "CLIPVisionLoader",
+        "inputs": {
+          "clip_name": {
+            "$clip_vision": "ViT-H"
+          }
+        }
+      },
+      "denoise_latents-6:ipapply": {
+        "class_type": "IPAdapterAdvanced",
+        "inputs": {
+          "model": [
+            "main_model_loader-1",
+            0
+          ],
+          "ipadapter": [
+            "denoise_latents-6:ipadapter",
+            0
+          ],
+          "image": [
+            "image-8",
+            0
+          ],
+          "weight": 0.6,
+          "weight_type": "linear",
+          "combine_embeds": "concat",
+          "start_at": 0,
+          "end_at": 1,
+          "embeds_scaling": "V only",
+          "clip_vision": [
+            "denoise_latents-6:clipvision",
+            0
+          ]
+        }
+      },
+      "denoise_latents-6": {
+        "class_type": "KSampler",
+        "inputs": {
+          "model": [
+            "denoise_latents-6:ipapply",
+            0
+          ],
+          "seed": {
+            "$seed": true
+          },
+          "steps": 30,
+          "cfg": 7.5,
+          "sampler_name": {
+            "$sampler_name": "euler"
+          },
+          "scheduler": {
+            "$scheduler": "euler"
+          },
+          "positive": [
+            "denoise_latents-6:control",
+            0
+          ],
+          "negative": [
+            "denoise_latents-6:control",
+            1
+          ],
+          "latent_image": [
+            "i2l-13",
+            0
+          ],
+          "denoise": 0.6
+        }
+      },
+      "l2i-7": {
+        "class_type": "VAEDecode",
+        "inputs": {
+          "samples": [
+            "denoise_latents-6",
+            0
+          ],
+          "vae": [
+            "main_model_loader-1",
+            2
+          ]
+        }
+      },
+      "save_image-14": {
+        "class_type": "SaveImage",
+        "inputs": {
+          "images": [
+            "l2i-7",
+            0
+          ],
+          "filename_prefix": "novira"
+        }
+      }
+    },
+    "outputs": [
+      "save_image-14"
+    ]
+  },
+  "seed": null,
+  "random": true
+}

@@ -1,0 +1,5 @@
+[
+  { "id": "seed-video-preview", "name": "Quick preview", "data": { "model": "fast", "modelKey": null, "width": 640, "height": 352, "seconds": 2, "fps": 16, "steps": 4, "cfgScale": 1 } },
+  { "id": "seed-video-standard", "name": "Standard 832x480", "data": { "model": "standard", "modelKey": null, "width": 832, "height": 480, "seconds": 3, "fps": 24, "steps": 20, "cfgScale": 5 } },
+  { "id": "seed-video-vertical", "name": "Vertical, low VRAM", "data": { "model": "standard", "modelKey": null, "width": 480, "height": 832, "seconds": 3, "fps": 24, "steps": 20, "cfgScale": 5, "fp8": true, "tiledDecode": true } }
+]

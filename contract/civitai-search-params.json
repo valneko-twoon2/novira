@@ -1,0 +1,17 @@
+{
+  "source": "huggingface",
+  "query": "anime",
+  "kind": "LoRA",
+  "baseModel": "sdxl-compat",
+  "sort": "rating",
+  "period": "month",
+  "includeNsfw": false,
+  "cursor": "next-page",
+  "licenses": [
+    "sellImages",
+    "noCredit"
+  ],
+  "checkpointType": "Merge",
+  "safetensorsOnly": true,
+  "creator": "someone"
+}

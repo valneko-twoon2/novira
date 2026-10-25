@@ -1,0 +1,10 @@
+{
+  "lora.section": "LoRA",
+  "lora.noneOption": "No LoRA",
+  "lora.use": "Use the LoRA",
+  "lora.gone": "(not in the model list)",
+  "lora.weight": "LoRA strength",
+  "lora.useHint": "Using the character adds the LoRA at this strength and the trigger word “{trigger}” to the prompt. The reference pictures are used as before.",
+  "lora.goneNote": "The character's LoRA is not in the model list, so it was left out.",
+  "lora.usedNote": "The trained LoRA and its trigger word were added too."
+}

@@ -1,0 +1,50 @@
+{
+  "graph": {
+    "prompt": {
+      "upscale:model": {
+        "class_type": "UpscaleModelLoader",
+        "inputs": {
+          "model_name": {
+            "$model": "spandrel_image_to_image-key"
+          }
+        }
+      },
+      "source": {
+        "class_type": "LoadImage",
+        "inputs": {
+          "image": {
+            "$image": "photo.png"
+          }
+        }
+      },
+      "upscale": {
+        "class_type": "ImageUpscaleWithModel",
+        "inputs": {
+          "upscale_model": [
+            "upscale:model",
+            0
+          ],
+          "image": [
+            "source",
+            0
+          ]
+        }
+      },
+      "save": {
+        "class_type": "SaveImage",
+        "inputs": {
+          "images": [
+            "upscale",
+            0
+          ],
+          "filename_prefix": "novira"
+        }
+      }
+    },
+    "outputs": [
+      "save"
+    ]
+  },
+  "seed": null,
+  "random": false
+}

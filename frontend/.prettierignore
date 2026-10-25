@@ -1,0 +1,4 @@
+src/contract/generated/
+tests/fixtures/contract-check/**/generated/
+src/design/tokens/tokens.css
+tests/fixtures/rules/check-*.json

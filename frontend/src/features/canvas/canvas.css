@@ -1,0 +1,819 @@
+/* Canvas tab: toolbar, stage overlays, staging bar, drop targets and the layers panel. */
+
+.canvas-view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.canvas-view__body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Toolbar */
+.canvas-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 40px;
+  padding: var(--space-1) var(--space-2);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-panel);
+  flex-wrap: wrap;
+}
+
+.canvas-toolbar__group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.canvas-toolbar__spacer {
+  flex: 1;
+}
+
+.canvas-toolbar .ui-divider--v {
+  height: 22px;
+  margin: 0 var(--space-1);
+}
+
+.canvas-width {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: var(--space-1);
+}
+
+.canvas-width__label {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
+.canvas-width__input {
+  width: 64px;
+  height: var(--toolbar-control-h);
+}
+
+.canvas-width__pop {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 260px;
+}
+
+.canvas-width__presets,
+.canvas-color__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.canvas-chip {
+  min-width: 34px;
+  height: 22px;
+  padding: 0 var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+}
+
+.canvas-chip:hover,
+.canvas-chip[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.canvas-swatch {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  padding: 2px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: repeating-conic-gradient(var(--checker-a) 0% 25%, var(--checker-b) 0% 50%) 50% / 8px 8px;
+  cursor: pointer;
+}
+
+.canvas-swatch--trigger {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.canvas-swatch--trigger .canvas-swatch__color {
+  border-radius: 50%;
+}
+
+.canvas-swatch[aria-pressed='true'] {
+  box-shadow: var(--selected-ring);
+}
+
+.canvas-swatch__color {
+  flex: 1;
+  border-radius: var(--radius-xs);
+}
+
+.canvas-color {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 240px;
+}
+
+.canvas-color__row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.canvas-color__input {
+  flex-shrink: 0;
+  width: 44px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: none;
+  cursor: pointer;
+}
+
+.canvas-color__input--sm {
+  width: 36px;
+  height: 24px;
+}
+
+.canvas-color__hex {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+.canvas-color__alpha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+/* Stage */
+.canvas-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--checker-a);
+}
+
+.canvas-stage__canvas {
+  display: block;
+  touch-action: none;
+}
+
+.canvas-hud {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 2px var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--scrim-light);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+
+.canvas-hud__key {
+  color: var(--text-faint);
+  font-family: var(--font);
+}
+
+.canvas-empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-width: 420px;
+  padding: var(--space-4) var(--space-5);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--scrim-light);
+  text-align: center;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.canvas-empty__title {
+  margin-bottom: var(--space-1);
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.canvas-empty__desc {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+
+/* Staging toolbar */
+.canvas-staging {
+  position: absolute;
+  bottom: var(--space-4);
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-1);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--base-900);
+  box-shadow: var(--shadow), var(--glow);
+  transform: translateX(-50%);
+}
+
+.canvas-staging--inline {
+  position: static;
+  transform: none;
+  box-shadow: none;
+}
+
+.canvas-staging__grip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 2px;
+  color: var(--text-muted);
+  cursor: grab;
+}
+
+.canvas-staging__grip:active {
+  cursor: grabbing;
+}
+
+.canvas-staging__count {
+  min-width: 44px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+
+.canvas-staging__sep {
+  width: 1px;
+  height: 20px;
+  margin: 0 var(--space-1);
+  background: var(--border-strong);
+}
+
+/* Drop targets */
+.canvas-drop {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-dock);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  align-content: center;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: var(--scrim-light);
+}
+
+.canvas-drop__target {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 120px;
+  padding: var(--space-3);
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--bg-panel);
+  color: var(--text-muted);
+  font-weight: 600;
+  text-align: center;
+  transition:
+    border-color var(--duration),
+    background var(--duration);
+}
+
+.canvas-drop__target.is-over {
+  border-color: var(--blue-400);
+  background: var(--bg-active);
+  color: var(--blue-600);
+  box-shadow: var(--glow);
+}
+
+.canvas-drop__icon {
+  font-size: 28px;
+  line-height: 0;
+}
+
+/* Layers panel */
+.canvas-layers__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 40px;
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
+  border-bottom: 1px solid var(--border);
+  background: var(--grad-header);
+}
+
+.canvas-layers__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.canvas-layers__spacer {
+  flex: 1;
+}
+
+.canvas-layers__scroll {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2);
+}
+
+.canvas-layers__quick {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.canvas-group {
+  border-radius: var(--radius);
+  background: var(--bg-surface);
+}
+
+.canvas-group__header {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-right: var(--space-1);
+}
+
+.canvas-group__toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-2);
+  height: 30px;
+  padding: 0 var(--space-2);
+  border: none;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.canvas-group__toggle:hover {
+  background: var(--bg-hover);
+}
+
+.canvas-group__caret {
+  color: var(--text-faint);
+  transform: rotate(-90deg);
+  transition: transform var(--duration);
+}
+
+.canvas-group.is-open .canvas-group__caret {
+  transform: none;
+}
+
+.canvas-group__title {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.canvas-group__count {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-active);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  line-height: 16px;
+  text-align: center;
+}
+
+.canvas-group__body {
+  padding: 0 var(--space-1) var(--space-1);
+}
+
+.canvas-group__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.canvas-group__list.is-hidden {
+  opacity: 0.45;
+}
+
+.canvas-entity {
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+}
+
+.canvas-entity.is-drop-target {
+  box-shadow: inset 0 2px 0 var(--accent);
+}
+
+.canvas-entity.is-selected {
+  border-color: var(--blue-500);
+  background: var(--bg-hover);
+  box-shadow: inset 3px 0 0 var(--blue-400);
+}
+
+.canvas-entity__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: var(--space-1);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.canvas-entity__row:hover {
+  background: var(--bg-hover);
+}
+
+.canvas-entity__row:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.canvas-entity.is-disabled .canvas-entity__name,
+.canvas-entity.is-disabled .canvas-thumb {
+  opacity: 0.45;
+}
+
+.canvas-entity__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.canvas-entity__rename {
+  flex: 1;
+  height: 26px;
+}
+
+.canvas-entity__actions {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.canvas-entity__hover {
+  opacity: 0;
+}
+
+.canvas-entity__row:hover .canvas-entity__hover,
+.canvas-entity.is-selected .canvas-entity__hover,
+.canvas-entity__hover:focus-visible {
+  opacity: 1;
+}
+
+.canvas-thumb {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: repeating-conic-gradient(var(--checker-a) 0% 25%, var(--checker-b) 0% 50%) 50% / 8px 8px;
+  color: var(--text-faint);
+}
+
+.canvas-thumb--img {
+  width: 36px;
+  height: 36px;
+}
+
+.canvas-thumb--img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.canvas-settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2) var(--space-2);
+}
+
+.canvas-settings .ui-field__label {
+  font-size: var(--fs-xs);
+}
+
+.canvas-settings__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.canvas-settings__optional {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.canvas-settings__optional > .ui-slidernum {
+  flex: 1;
+}
+
+.canvas-prompt {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.canvas-prompt .ui-textarea {
+  height: auto;
+  min-height: 52px;
+  padding: var(--space-1) var(--space-2);
+  border-left: 3px solid var(--green-400);
+  resize: vertical;
+}
+
+.canvas-prompt--negative .ui-textarea {
+  border-left-color: var(--red-400);
+}
+
+.canvas-ref {
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-input);
+}
+
+.canvas-ref__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-1);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.canvas-ref__body {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.canvas-ref__body .canvas-imgpick {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+}
+
+.canvas-ref__fields {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.canvas-imgpick {
+  position: relative;
+  width: 100%;
+  height: 112px;
+  overflow: hidden;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: repeating-conic-gradient(var(--checker-a) 0% 25%, var(--checker-b) 0% 50%) 50% / 12px 12px;
+}
+
+.canvas-imgpick__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.canvas-imgpick__clear {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+
+.canvas-imgpick__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  width: 100%;
+  height: 100%;
+  padding: var(--space-1);
+  border: none;
+  background: var(--overlay-light);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  text-align: center;
+  cursor: pointer;
+}
+
+.canvas-imgpick__empty:hover {
+  color: var(--text);
+  background: var(--bg-hover);
+}
+
+/* Ready-made poses of the pose tool: category tabs on top, the poses of the category as a two-column list. */
+.pose-gallery {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: var(--space-4);
+  height: 100%;
+  min-height: 0;
+}
+
+.pose-gallery__rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 0;
+  padding-right: var(--space-2);
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+}
+
+.pose-gallery__group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pose-gallery__heading {
+  padding: 0 var(--space-2);
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+}
+
+.pose-gallery__category {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 28px;
+  padding: 0 var(--space-2);
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--fs-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.pose-gallery__category:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.pose-gallery__category.is-active {
+  background: var(--bg-active);
+  color: var(--blue-600);
+  font-weight: 500;
+}
+
+.pose-gallery__category:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.pose-gallery__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pose-gallery__count {
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+}
+
+.pose-gallery__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.pose-gallery__note {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.pose-gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pose-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+  padding: 0 0 var(--space-2);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-panel);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    box-shadow var(--duration),
+    border-color var(--duration);
+}
+
+.pose-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow);
+}
+
+.pose-card:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.pose-card .pose-preview {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-bottom: 1px solid var(--border);
+}
+
+.pose-card__name {
+  padding: 0 var(--space-2);
+  font-size: var(--fs-sm);
+}
+
+/* The stage over a document its host shows (see EmbeddedStage.tsx): it covers the document and takes the pointer. */
+.canvas-embedded {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.canvas-embedded__chrome {
+  display: block;
+}
+
+/* The selected layer, in the host's layer stack: as large as the document on screen. */
+.canvas-embedded__content {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* The painting tools a host shows in its own toolbar (see PaintToolbar.tsx). */
+.canvas-paint-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}

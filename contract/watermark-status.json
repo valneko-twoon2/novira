@@ -1,0 +1,17 @@
+{
+  "missing": {
+    "state": "missing"
+  },
+  "downloading": {
+    "state": "downloading",
+    "done": 1048576,
+    "total": 137080000
+  },
+  "ready": {
+    "state": "ready"
+  },
+  "failed": {
+    "state": "failed",
+    "message": "download answered 404 Not Found"
+  }
+}

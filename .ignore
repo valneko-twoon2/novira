@@ -1,0 +1,29 @@
+# Read by ripgrep (so by the Grep and Glob tools of coding agents), not by git or any build.
+# It keeps a search for a key or a phrase from returning the same line ten times, and keeps
+# generated files out of the results. To search one of these, name the path directly
+# (rg --no-ignore ... or Read the file).
+
+# Message catalogs and manual: ja is the source and en is written with it; the other languages
+# are translations of those (.claude/rules/i18n.md, manual.md).
+frontend/src/i18n/locales/de/
+frontend/src/i18n/locales/es/
+frontend/src/i18n/locales/fr/
+frontend/src/i18n/locales/ko/
+frontend/src/i18n/locales/pt-BR/
+frontend/src/i18n/locales/ru/
+frontend/src/i18n/locales/zh-CN/
+frontend/src/i18n/locales/zh-TW/
+docs/manual/de/
+docs/manual/es/
+docs/manual/fr/
+docs/manual/ko/
+docs/manual/pt-BR/
+docs/manual/ru/
+docs/manual/zh-CN/
+docs/manual/zh-TW/
+
+# Generated or resolved by tools, large, and never edited by hand.
+THIRD_PARTY_NOTICES.txt
+backend/Cargo.lock
+frontend/package-lock.json
+frontend/src/features/settings/ossLicenses.json

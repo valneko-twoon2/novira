@@ -1,0 +1,42 @@
+{
+  "flux": {
+    "sampler": "euler",
+    "scheduler": "simple"
+  },
+  "flux2": {
+    "sampler": "euler",
+    "scheduler": "Flux2Scheduler"
+  },
+  "anima": {
+    "sampler": "euler",
+    "scheduler": "simple"
+  },
+  "chroma": {
+    "sampler": "euler",
+    "scheduler": "beta"
+  },
+  "qwen-image": {
+    "sampler": "euler",
+    "scheduler": "simple"
+  },
+  "z-image": {
+    "sampler": "res_multistep",
+    "scheduler": "simple"
+  },
+  "sd-3": {
+    "sampler": "euler",
+    "scheduler": "sgm_uniform"
+  },
+  "hidream": {
+    "sampler": "uni_pc",
+    "scheduler": "simple"
+  },
+  "auraflow": {
+    "sampler": "euler",
+    "scheduler": "normal"
+  },
+  "hunyuan-image": {
+    "sampler": "euler",
+    "scheduler": "simple"
+  }
+}

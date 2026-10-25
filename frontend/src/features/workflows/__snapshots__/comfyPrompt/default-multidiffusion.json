@@ -1,0 +1,169 @@
+{
+  "graph": {
+    "prompt": {
+      "sdxl_model_loader-1": {
+        "class_type": "CheckpointLoaderSimple",
+        "inputs": {
+          "ckpt_name": {
+            "$model": "sdxl-key"
+          }
+        }
+      },
+      "sdxl_compel_prompt-2": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "text": "Super cute tiger cub, national geographic award-winning photograph, detailed fur",
+          "clip": [
+            "sdxl_model_loader-1",
+            1
+          ]
+        }
+      },
+      "sdxl_compel_prompt-3": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "text": "blurry, low quality, watermark",
+          "clip": [
+            "sdxl_model_loader-1",
+            1
+          ]
+        }
+      },
+      "controlnet-11": {
+        "class_type": "ControlNetLoader",
+        "inputs": {
+          "control_net_name": {
+            "$model": "tile-key"
+          }
+        }
+      },
+      "spandrel_image_to_image-9:model": {
+        "class_type": "UpscaleModelLoader",
+        "inputs": {
+          "model_name": {
+            "$model": "upscaler-key"
+          }
+        }
+      },
+      "image-8": {
+        "class_type": "LoadImage",
+        "inputs": {
+          "image": {
+            "$image": "photo.png"
+          }
+        }
+      },
+      "spandrel_image_to_image-9": {
+        "class_type": "ImageUpscaleWithModel",
+        "inputs": {
+          "upscale_model": [
+            "spandrel_image_to_image-9:model",
+            0
+          ],
+          "image": [
+            "image-8",
+            0
+          ]
+        }
+      },
+      "denoise_latents-6:control": {
+        "class_type": "ControlNetApplyAdvanced",
+        "inputs": {
+          "positive": [
+            "sdxl_compel_prompt-2",
+            0
+          ],
+          "negative": [
+            "sdxl_compel_prompt-3",
+            0
+          ],
+          "control_net": [
+            "controlnet-11",
+            0
+          ],
+          "image": [
+            "spandrel_image_to_image-9",
+            0
+          ],
+          "strength": 0.6,
+          "start_percent": 0,
+          "end_percent": 1
+        }
+      },
+      "i2l-10": {
+        "class_type": "VAEEncode",
+        "inputs": {
+          "pixels": [
+            "spandrel_image_to_image-9",
+            0
+          ],
+          "vae": [
+            "sdxl_model_loader-1",
+            2
+          ]
+        }
+      },
+      "denoise_latents-6": {
+        "class_type": "KSampler",
+        "inputs": {
+          "model": [
+            "sdxl_model_loader-1",
+            0
+          ],
+          "seed": {
+            "$seed": true
+          },
+          "steps": 30,
+          "cfg": 6,
+          "sampler_name": {
+            "$sampler_name": "dpmpp_2m_k"
+          },
+          "scheduler": {
+            "$scheduler": "dpmpp_2m_k"
+          },
+          "positive": [
+            "denoise_latents-6:control",
+            0
+          ],
+          "negative": [
+            "denoise_latents-6:control",
+            1
+          ],
+          "latent_image": [
+            "i2l-10",
+            0
+          ],
+          "denoise": 0.35
+        }
+      },
+      "l2i-7": {
+        "class_type": "VAEDecode",
+        "inputs": {
+          "samples": [
+            "denoise_latents-6",
+            0
+          ],
+          "vae": [
+            "sdxl_model_loader-1",
+            2
+          ]
+        }
+      },
+      "save_image-12": {
+        "class_type": "SaveImage",
+        "inputs": {
+          "images": [
+            "l2i-7",
+            0
+          ],
+          "filename_prefix": "novira"
+        }
+      }
+    },
+    "outputs": [
+      "save_image-12"
+    ]
+  },
+  "seed": null,
+  "random": true
+}

@@ -1,0 +1,147 @@
+{
+  "graph": {
+    "prompt": {
+      "main_model_loader-1": {
+        "class_type": "CheckpointLoaderSimple",
+        "inputs": {
+          "ckpt_name": {
+            "$model": "sd15-key"
+          }
+        }
+      },
+      "lora_loader-8": {
+        "class_type": "LoraLoader",
+        "inputs": {
+          "model": [
+            "main_model_loader-1",
+            0
+          ],
+          "clip": [
+            "main_model_loader-1",
+            1
+          ],
+          "lora_name": {
+            "$model": "detail-lora"
+          },
+          "strength_model": 0.7,
+          "strength_clip": 0.7
+        }
+      },
+      "lora_loader-9": {
+        "class_type": "LoraLoader",
+        "inputs": {
+          "model": [
+            "lora_loader-8",
+            0
+          ],
+          "clip": [
+            "lora_loader-8",
+            1
+          ],
+          "lora_name": {
+            "$model": "soft-lora"
+          },
+          "strength_model": 0.4,
+          "strength_clip": 0.4
+        }
+      },
+      "compel-2": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "text": "1girl, smile, cherry blossoms",
+          "clip": [
+            "lora_loader-9",
+            1
+          ]
+        }
+      },
+      "compel-3": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "text": "blurry, lowres",
+          "clip": [
+            "lora_loader-9",
+            1
+          ]
+        }
+      },
+      "noise-4": {
+        "class_type": "EmptyLatentImage",
+        "inputs": {
+          "width": 512,
+          "height": 768,
+          "batch_size": 1
+        }
+      },
+      "denoise_latents-5": {
+        "class_type": "KSampler",
+        "inputs": {
+          "model": [
+            "lora_loader-9",
+            0
+          ],
+          "seed": {
+            "$seed": true
+          },
+          "steps": 28,
+          "cfg": 6,
+          "sampler_name": {
+            "$sampler_name": "euler_a"
+          },
+          "scheduler": {
+            "$scheduler": "euler_a"
+          },
+          "positive": [
+            "compel-2",
+            0
+          ],
+          "negative": [
+            "compel-3",
+            0
+          ],
+          "latent_image": [
+            "noise-4",
+            0
+          ],
+          "denoise": 1
+        }
+      },
+      "vae_loader-10": {
+        "class_type": "VAELoader",
+        "inputs": {
+          "vae_name": {
+            "$model": "vae-key"
+          }
+        }
+      },
+      "l2i-6": {
+        "class_type": "VAEDecode",
+        "inputs": {
+          "samples": [
+            "denoise_latents-5",
+            0
+          ],
+          "vae": [
+            "vae_loader-10",
+            0
+          ]
+        }
+      },
+      "save_image-7": {
+        "class_type": "SaveImage",
+        "inputs": {
+          "images": [
+            "l2i-6",
+            0
+          ],
+          "filename_prefix": "novira"
+        }
+      }
+    },
+    "outputs": [
+      "save_image-7"
+    ]
+  },
+  "seed": 12345,
+  "random": false
+}

@@ -1,0 +1,39 @@
+{
+  "prompt": {
+    "source": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": {
+          "$image": "photo.png"
+        }
+      }
+    },
+    "pose": {
+      "class_type": "DWPreprocessor",
+      "inputs": {
+        "image": [
+          "source",
+          0
+        ],
+        "detect_hand": "disable",
+        "detect_body": "enable",
+        "detect_face": "disable",
+        "resolution": 512,
+        "bbox_detector": "yolox_l.onnx",
+        "pose_estimator": "dw-ll_ucoco_384.onnx"
+      }
+    },
+    "show": {
+      "class_type": "PreviewAny",
+      "inputs": {
+        "source": [
+          "pose",
+          1
+        ]
+      }
+    }
+  },
+  "outputs": [
+    "show"
+  ]
+}

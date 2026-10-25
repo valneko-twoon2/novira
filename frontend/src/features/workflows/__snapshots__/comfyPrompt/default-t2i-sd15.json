@@ -1,0 +1,102 @@
+{
+  "graph": {
+    "prompt": {
+      "main_model_loader-1": {
+        "class_type": "CheckpointLoaderSimple",
+        "inputs": {
+          "ckpt_name": {
+            "$model": "sd15-key"
+          }
+        }
+      },
+      "compel-2": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "text": "Super cute tiger cub, national geographic award-winning photograph, detailed fur",
+          "clip": [
+            "main_model_loader-1",
+            1
+          ]
+        }
+      },
+      "compel-3": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "text": "blurry, low quality, watermark",
+          "clip": [
+            "main_model_loader-1",
+            1
+          ]
+        }
+      },
+      "noise-5": {
+        "class_type": "EmptyLatentImage",
+        "inputs": {
+          "width": 512,
+          "height": 512,
+          "batch_size": 1
+        }
+      },
+      "denoise_latents-6": {
+        "class_type": "KSampler",
+        "inputs": {
+          "model": [
+            "main_model_loader-1",
+            0
+          ],
+          "seed": {
+            "$seed": true
+          },
+          "steps": 30,
+          "cfg": 7.5,
+          "sampler_name": {
+            "$sampler_name": "euler"
+          },
+          "scheduler": {
+            "$scheduler": "euler"
+          },
+          "positive": [
+            "compel-2",
+            0
+          ],
+          "negative": [
+            "compel-3",
+            0
+          ],
+          "latent_image": [
+            "noise-5",
+            0
+          ],
+          "denoise": 1
+        }
+      },
+      "l2i-7": {
+        "class_type": "VAEDecode",
+        "inputs": {
+          "samples": [
+            "denoise_latents-6",
+            0
+          ],
+          "vae": [
+            "main_model_loader-1",
+            2
+          ]
+        }
+      },
+      "l2i-7:preview": {
+        "class_type": "PreviewImage",
+        "inputs": {
+          "images": [
+            "l2i-7",
+            0
+          ]
+        }
+      }
+    },
+    "outputs": [
+      "l2i-7:preview"
+    ]
+  },
+  "seed": null,
+  "random": true
+}

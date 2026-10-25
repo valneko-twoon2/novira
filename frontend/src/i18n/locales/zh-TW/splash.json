@@ -1,0 +1,19 @@
+{
+  "splash.open": "開啟應用程式",
+  "splash.step.downloading": "下載",
+  "splash.step.extracting": "解壓縮",
+  "splash.step.starting": "啟動",
+  "splash.preparing": "正在等待圖像生成引擎啟動與節點資訊載入",
+  "splash.engine.heading": "正在準備圖像生成引擎",
+  "splash.engine.sub.downloading": "正在下載 ComfyUI 與 Python",
+  "splash.engine.sub.extracting": "正在解壓縮下載的檔案",
+  "splash.engine.sub.starting": "正在啟動引擎並等待連線",
+  "splash.engine.rate": "{rate}/秒",
+  "splash.engine.eta": "剩餘約 {time}",
+  "splash.engine.seconds": "{n} 秒",
+  "splash.engine.minutes": "{n} 分 {s} 秒",
+  "splash.engine.hours": "{h} 小時 {m} 分",
+  "splash.wait.heading.loading": "正在啟動 novira",
+  "splash.wait.sub.loading": "正在載入資料",
+  "splash.wait.heading.preparing": "正在準備開始使用"
+}

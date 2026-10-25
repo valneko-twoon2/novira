@@ -1,0 +1,470 @@
+/* App shell: side nav, workspace columns, main area, toasts. */
+.app {
+  display: flex;
+  height: 100%;
+}
+
+.app__content {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: var(--space-3);
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 80px;
+  color: var(--text-faint);
+}
+
+/* Side nav */
+.sidenav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  gap: var(--space-2);
+  width: var(--nav-width);
+  padding: var(--space-2) 0;
+  background: var(--grad-nav);
+}
+
+.sidenav__logo {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* The brand gradient on the letter only. */
+.sidenav__logo-mark {
+  background: var(--grad-brand);
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.sidenav__tabs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.sidenav__tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 68px;
+  height: 52px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--nav-text);
+  cursor: pointer;
+  transition:
+    background var(--duration),
+    color var(--duration);
+}
+
+.sidenav__label {
+  overflow: visible;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.sidenav__tab:hover {
+  color: var(--text);
+}
+
+/* Flat, not button-like: the active tab is marked by brighter content and a thin bar on the edge. */
+.sidenav__tab.is-active {
+  color: var(--text);
+}
+
+.sidenav__tab.is-active::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: -6px;
+  width: 3px;
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+  background: var(--text);
+}
+
+.sidenav__count {
+  position: absolute;
+  top: 3px;
+  right: 6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: var(--radius-pill);
+  background: var(--grad-accent);
+  color: var(--white);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.sidenav__spacer {
+  flex: 1;
+}
+
+/* The home network item's popover. The pairing code is dark on light in either theme, as a reader expects. */
+.lan-popover {
+  width: 280px;
+}
+
+.lan {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.lan__row,
+.lan__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.lan__warn {
+  margin: 0;
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--warning-soft);
+  color: var(--warning-text);
+  font-size: var(--fs-sm);
+}
+
+.lan__note {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.lan__codebox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.lan__code {
+  display: block;
+  width: 220px;
+  height: 220px;
+}
+
+.lan__code.is-expired {
+  opacity: 0.2;
+}
+
+.lan__left {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.lan__item {
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.lan__item--ask {
+  border-color: var(--accent);
+}
+
+.lan__who {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.lan__name {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.lan__peer {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.lan__confirm {
+  font-size: var(--fs-md);
+  font-variant-numeric: tabular-nums;
+}
+
+.lan__ok {
+  flex: none;
+  color: var(--success);
+}
+
+.home-link__light {
+  fill: var(--white);
+}
+
+.home-link__dark {
+  fill: var(--black);
+}
+
+.sidenav__mock .ui-badge {
+  height: 16px;
+  padding: 0 6px;
+  background: var(--nav-hover);
+  color: var(--text);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+/* Workspace */
+.workspace {
+  height: 100%;
+}
+
+.workspace__left,
+.workspace__right,
+.workspace__center {
+  min-height: 0;
+}
+
+/* The board panel is what the comic's balloon editor lies over (see features/comic/useBoardDock). */
+.workspace__right {
+  position: relative;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--grad-panel);
+}
+
+.panel__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.resize-handle {
+  width: 8px;
+  flex-shrink: 0;
+  background: transparent;
+  position: relative;
+}
+
+.resize-handle::after {
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 2px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  background: var(--border-strong);
+  content: '';
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity var(--duration);
+}
+
+.resize-handle:hover::after,
+.resize-handle[data-separator='active']::after {
+  opacity: 1;
+  background: var(--blue-400);
+}
+
+.resize-handle--h {
+  width: auto;
+  height: 8px;
+}
+
+.resize-handle--h::after {
+  top: 3px;
+  left: 50%;
+  width: 32px;
+  height: 2px;
+  transform: translateX(-50%);
+}
+
+/* Main area */
+.mainarea {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-main);
+}
+
+.mainarea__progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  background: transparent;
+}
+
+.mainarea__tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 var(--space-2);
+  border-bottom: 1px solid var(--border);
+  background: var(--grad-header);
+}
+
+.mainarea__tab {
+  height: 26px;
+  padding: 0 var(--space-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mainarea__tab:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.mainarea__tab.is-active {
+  background: var(--bg-active);
+  color: var(--blue-600);
+}
+
+.mainarea__spacer {
+  flex: 1;
+}
+
+.mainarea__body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Toasts */
+.toaster {
+  position: fixed;
+  right: var(--space-4);
+  bottom: 76px;
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 340px;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-left: 4px solid var(--blue-400);
+  border-radius: var(--radius);
+  background: var(--base-900);
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+  animation: toast-in 160ms ease-out;
+}
+
+.toast--success {
+  border-left-color: var(--green-400);
+}
+
+.toast--warning {
+  border-left-color: var(--orange-400);
+}
+
+.toast--error {
+  border-left-color: var(--red-400);
+}
+
+.toast__icon {
+  flex-shrink: 0;
+  color: var(--blue-300);
+}
+
+.toast--success .toast__icon {
+  color: var(--green-400);
+}
+
+.toast--warning .toast__icon {
+  color: var(--orange-400);
+}
+
+.toast--error .toast__icon {
+  color: var(--red-400);
+}
+
+.toast__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast__title {
+  font-weight: 600;
+}
+
+.toast__desc {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  white-space: pre-line;
+}
+
+.toast__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.toast__close {
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}

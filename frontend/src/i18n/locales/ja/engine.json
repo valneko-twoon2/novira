@@ -1,0 +1,8 @@
+{
+  "engine.title.downloading": "画像生成エンジン（ComfyUI と Python）をダウンロードしています",
+  "engine.title.extracting": "画像生成エンジン（ComfyUI と Python）を展開しています",
+  "engine.title.starting": "画像生成エンジンを起動しています",
+  "engine.title.error": "画像生成エンジンを準備できませんでした",
+  "engine.sizeProgress": "{done} / {total}",
+  "engine.firstRunNote": "初回だけ数 GB のダウンロードが必要です。完了するまで生成は始まりません。"
+}

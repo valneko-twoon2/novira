@@ -1,0 +1,8 @@
+{
+  "lora.use": "LoRA 사용",
+  "lora.gone": "(모델 목록에 없음)",
+  "lora.weight": "LoRA 강도",
+  "lora.useHint": "캐릭터를 쓰면 이 강도의 LoRA와 트리거 워드 ‘{trigger}’가 프롬프트에 들어갑니다. 참조 이미지도 지금처럼 쓰입니다.",
+  "lora.goneNote": "이 캐릭터의 LoRA가 모델 목록에 없어서 쓰지 않았습니다.",
+  "lora.usedNote": "학습한 LoRA와 트리거 워드도 넣었습니다."
+}

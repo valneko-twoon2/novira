@@ -1,0 +1,12 @@
+{
+  "phone.nav": "画面の切り替え",
+  "phone.openLive": "生成中の絵を大きく見る",
+  "phone.close": "閉じる",
+  "phone.board": "ボード",
+  "phone.place": "{index} / {count}",
+  "phone.useSettings": "この設定で生成",
+  "phone.gallery": "ギャラリー",
+  "phone.pictureMenu": "この画像のメニュー",
+  "phone.agentSetup": "パソコンでエージェントの AI を選んでログインすると、ここでも使えます。",
+  "phone.agentPlaceholder": "作りたい絵や、聞きたいことを伝えてください"
+}

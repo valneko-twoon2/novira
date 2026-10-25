@@ -1,0 +1,115 @@
+{
+  "graph": {
+    "prompt": {
+      "sdxl_model_loader-1": {
+        "class_type": "CheckpointLoaderSimple",
+        "inputs": {
+          "ckpt_name": {
+            "$model": "sdxl-key"
+          }
+        }
+      },
+      "sdxl_compel_prompt-2": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "text": "Super cute tiger cub, national geographic award-winning photograph, detailed fur",
+          "clip": [
+            "sdxl_model_loader-1",
+            1
+          ]
+        }
+      },
+      "sdxl_compel_prompt-3": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "text": "blurry, low quality, watermark",
+          "clip": [
+            "sdxl_model_loader-1",
+            1
+          ]
+        }
+      },
+      "image-8": {
+        "class_type": "LoadImage",
+        "inputs": {
+          "image": {
+            "$image": "photo.png"
+          }
+        }
+      },
+      "i2l-9": {
+        "class_type": "VAEEncode",
+        "inputs": {
+          "pixels": [
+            "image-8",
+            0
+          ],
+          "vae": [
+            "sdxl_model_loader-1",
+            2
+          ]
+        }
+      },
+      "denoise_latents-6": {
+        "class_type": "KSampler",
+        "inputs": {
+          "model": [
+            "sdxl_model_loader-1",
+            0
+          ],
+          "seed": {
+            "$seed": true
+          },
+          "steps": 30,
+          "cfg": 6,
+          "sampler_name": {
+            "$sampler_name": "dpmpp_2m_k"
+          },
+          "scheduler": {
+            "$scheduler": "dpmpp_2m_k"
+          },
+          "positive": [
+            "sdxl_compel_prompt-2",
+            0
+          ],
+          "negative": [
+            "sdxl_compel_prompt-3",
+            0
+          ],
+          "latent_image": [
+            "i2l-9",
+            0
+          ],
+          "denoise": 0.6
+        }
+      },
+      "l2i-7": {
+        "class_type": "VAEDecode",
+        "inputs": {
+          "samples": [
+            "denoise_latents-6",
+            0
+          ],
+          "vae": [
+            "sdxl_model_loader-1",
+            2
+          ]
+        }
+      },
+      "l2i-7:preview": {
+        "class_type": "PreviewImage",
+        "inputs": {
+          "images": [
+            "l2i-7",
+            0
+          ]
+        }
+      }
+    },
+    "outputs": [
+      "l2i-7:preview"
+    ]
+  },
+  "seed": null,
+  "random": true
+}

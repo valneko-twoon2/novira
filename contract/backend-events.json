@@ -1,0 +1,946 @@
+{
+  "queue_item_status_changed": {
+    "type": "queue_item_status_changed",
+    "item": {
+      "id": 7,
+      "batchId": "batch-1",
+      "status": "in_progress",
+      "origin": "workflows",
+      "destination": "canvas",
+      "params": {
+        "generationMode": "img2img",
+        "positivePrompt": "a cute girl, watercolor",
+        "negativePrompt": "lowres",
+        "modelKey": "main-sdxl",
+        "modelName": "WAI-illustrious-SDXL",
+        "vaeKey": "vae-sdxl",
+        "seed": 1234567,
+        "steps": 28,
+        "cfgScale": 6.5,
+        "cfgRescale": 0.25,
+        "scheduler": "dpmpp_2m_k",
+        "width": 832,
+        "height": 1216,
+        "clipSkip": 2,
+        "seamlessX": true,
+        "seamlessY": false,
+        "loras": [
+          {
+            "key": "lora-1",
+            "weight": 0.75,
+            "isEnabled": true
+          }
+        ],
+        "strength": 0.55,
+        "upscaleScale": 1.5,
+        "upscaleModelKey": "upscale-4x",
+        "creativity": 0.25,
+        "structure": 0.5,
+        "tileControlnetModelKey": "controlnet-tile",
+        "postProcessingModelKey": "upscale-4x",
+        "workflowName": "My graph",
+        "refImageCount": 1,
+        "controlLayerCount": 2,
+        "refImages": [
+          {
+            "imageUrl": "http://novira-image.localhost/full/reference.png",
+            "modelKey": "ip-adapter-sdxl",
+            "clipVisionModel": "ViT-H",
+            "weight": 0.65,
+            "beginEnd": [
+              0.125,
+              0.875
+            ],
+            "method": "style_precise",
+            "regionImageUrl": "http://novira-image.localhost/full/reference-region.png"
+          }
+        ],
+        "controlLayers": [
+          {
+            "imageUrl": "http://novira-image.localhost/full/control-1.png",
+            "modelKey": "controlnet-union-sdxl",
+            "weight": 0.75,
+            "beginEnd": [
+              0.25,
+              0.75
+            ],
+            "controlMode": "more_control",
+            "controlType": "openpose"
+          },
+          {
+            "imageUrl": "http://novira-image.localhost/full/control-2.png",
+            "modelKey": "controlnet-union-sdxl",
+            "weight": 1.25,
+            "beginEnd": [
+              0.5,
+              0.875
+            ],
+            "controlMode": "balanced",
+            "controlType": "softedge"
+          }
+        ],
+        "regionalGuidanceCount": 1,
+        "regionalLayers": [
+          {
+            "imageUrl": "http://novira-image.localhost/full/region-1.png",
+            "positivePrompt": "a red hat",
+            "negativePrompt": null,
+            "autoNegative": true
+          }
+        ],
+        "referencePictures": [
+          "http://novira-image.localhost/full/character.png"
+        ],
+        "maskBlur": 12,
+        "draftAt": 0.5,
+        "videoFrames": 81,
+        "videoFps": 16,
+        "videoFp8": true,
+        "videoTiledDecode": true,
+        "music": {
+          "lyrics": "[verse]\nla la la",
+          "seconds": 30,
+          "bpm": 120,
+          "key": "E minor",
+          "timeSignature": 4,
+          "language": "en",
+          "instrumental": false
+        },
+        "voice": {
+          "text": "Hello there",
+          "language": "English",
+          "mode": "design",
+          "speaker": "Vivian",
+          "instruct": "a calm, low voice"
+        },
+        "hiresFix": {
+          "scale": 1.5,
+          "strength": 0.45,
+          "upscaleModelKey": "upscale-4x",
+          "steps": 12
+        },
+        "mangaScreen": {
+          "screenLines": 240,
+          "whitePoint": 0.85,
+          "blackPoint": 0.35,
+          "gradation": 0.75,
+          "whiteLines": 0.45
+        },
+        "sampling": {
+          "sampler": "euler",
+          "scheduler": "simple"
+        }
+      },
+      "boardId": "board-1",
+      "initImageUrl": "http://novira-image.localhost/full/source.png",
+      "workflow": {
+        "nodes": [],
+        "edges": []
+      },
+      "comfyGraph": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "model.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "images": [
+                "1",
+                0
+              ],
+              "filename_prefix": "novira"
+            }
+          }
+        },
+        "outputs": [
+          "2"
+        ],
+        "thumbnail": "1"
+      },
+      "maskImageUrl": "http://novira-image.localhost/full/mask.png",
+      "controlLayers": [
+        {
+          "imageUrl": "http://novira-image.localhost/full/control-1.png",
+          "modelKey": "controlnet-union-sdxl",
+          "weight": 0.75,
+          "beginEnd": [
+            0.25,
+            0.75
+          ],
+          "controlMode": "more_control",
+          "controlType": "openpose"
+        },
+        {
+          "imageUrl": "http://novira-image.localhost/full/control-2.png",
+          "modelKey": "controlnet-union-sdxl",
+          "weight": 1.25,
+          "beginEnd": [
+            0.5,
+            0.875
+          ],
+          "controlMode": "balanced",
+          "controlType": "softedge"
+        }
+      ],
+      "regionalLayers": [
+        {
+          "imageUrl": "http://novira-image.localhost/full/region-1.png",
+          "positivePrompt": "a red hat",
+          "negativePrompt": null,
+          "autoNegative": true
+        }
+      ],
+      "refImages": [
+        {
+          "imageUrl": "http://novira-image.localhost/full/reference.png",
+          "modelKey": "ip-adapter-sdxl",
+          "clipVisionModel": "ViT-H",
+          "weight": 0.65,
+          "beginEnd": [
+            0.125,
+            0.875
+          ],
+          "method": "style_precise",
+          "regionImageUrl": "http://novira-image.localhost/full/reference-region.png"
+        }
+      ],
+      "referencePictures": [
+        "http://novira-image.localhost/full/character.png"
+      ],
+      "createdAt": 1700000000000,
+      "startedAt": 1700000001000,
+      "completedAt": 1700000002000,
+      "imageName": "abc.png",
+      "error": "ComfyUI KSampler: CUDA out of memory",
+      "errorKind": "out_of_memory",
+      "resultText": "1girl, solo, smile"
+    }
+  },
+  "queue_cleared": {
+    "type": "queue_cleared",
+    "items": [
+      {
+        "id": 7,
+        "batchId": "batch-1",
+        "status": "in_progress",
+        "origin": "workflows",
+        "destination": "canvas",
+        "params": {
+          "generationMode": "img2img",
+          "positivePrompt": "a cute girl, watercolor",
+          "negativePrompt": "lowres",
+          "modelKey": "main-sdxl",
+          "modelName": "WAI-illustrious-SDXL",
+          "vaeKey": "vae-sdxl",
+          "seed": 1234567,
+          "steps": 28,
+          "cfgScale": 6.5,
+          "cfgRescale": 0.25,
+          "scheduler": "dpmpp_2m_k",
+          "width": 832,
+          "height": 1216,
+          "clipSkip": 2,
+          "seamlessX": true,
+          "seamlessY": false,
+          "loras": [
+            {
+              "key": "lora-1",
+              "weight": 0.75,
+              "isEnabled": true
+            }
+          ],
+          "strength": 0.55,
+          "upscaleScale": 1.5,
+          "upscaleModelKey": "upscale-4x",
+          "creativity": 0.25,
+          "structure": 0.5,
+          "tileControlnetModelKey": "controlnet-tile",
+          "postProcessingModelKey": "upscale-4x",
+          "workflowName": "My graph",
+          "refImageCount": 1,
+          "controlLayerCount": 2,
+          "refImages": [
+            {
+              "imageUrl": "http://novira-image.localhost/full/reference.png",
+              "modelKey": "ip-adapter-sdxl",
+              "clipVisionModel": "ViT-H",
+              "weight": 0.65,
+              "beginEnd": [
+                0.125,
+                0.875
+              ],
+              "method": "style_precise",
+              "regionImageUrl": "http://novira-image.localhost/full/reference-region.png"
+            }
+          ],
+          "controlLayers": [
+            {
+              "imageUrl": "http://novira-image.localhost/full/control-1.png",
+              "modelKey": "controlnet-union-sdxl",
+              "weight": 0.75,
+              "beginEnd": [
+                0.25,
+                0.75
+              ],
+              "controlMode": "more_control",
+              "controlType": "openpose"
+            },
+            {
+              "imageUrl": "http://novira-image.localhost/full/control-2.png",
+              "modelKey": "controlnet-union-sdxl",
+              "weight": 1.25,
+              "beginEnd": [
+                0.5,
+                0.875
+              ],
+              "controlMode": "balanced",
+              "controlType": "softedge"
+            }
+          ],
+          "regionalGuidanceCount": 1,
+          "regionalLayers": [
+            {
+              "imageUrl": "http://novira-image.localhost/full/region-1.png",
+              "positivePrompt": "a red hat",
+              "negativePrompt": null,
+              "autoNegative": true
+            }
+          ],
+          "referencePictures": [
+            "http://novira-image.localhost/full/character.png"
+          ],
+          "maskBlur": 12,
+          "draftAt": 0.5,
+          "videoFrames": 81,
+          "videoFps": 16,
+          "videoFp8": true,
+          "videoTiledDecode": true,
+          "music": {
+            "lyrics": "[verse]\nla la la",
+            "seconds": 30,
+            "bpm": 120,
+            "key": "E minor",
+            "timeSignature": 4,
+            "language": "en",
+            "instrumental": false
+          },
+          "voice": {
+            "text": "Hello there",
+            "language": "English",
+            "mode": "design",
+            "speaker": "Vivian",
+            "instruct": "a calm, low voice"
+          },
+          "hiresFix": {
+            "scale": 1.5,
+            "strength": 0.45,
+            "upscaleModelKey": "upscale-4x",
+            "steps": 12
+          },
+          "mangaScreen": {
+            "screenLines": 240,
+            "whitePoint": 0.85,
+            "blackPoint": 0.35,
+            "gradation": 0.75,
+            "whiteLines": 0.45
+          },
+          "sampling": {
+            "sampler": "euler",
+            "scheduler": "simple"
+          }
+        },
+        "boardId": "board-1",
+        "initImageUrl": "http://novira-image.localhost/full/source.png",
+        "workflow": {
+          "nodes": [],
+          "edges": []
+        },
+        "comfyGraph": {
+          "prompt": {
+            "1": {
+              "class_type": "CheckpointLoaderSimple",
+              "inputs": {
+                "ckpt_name": "model.safetensors"
+              }
+            },
+            "2": {
+              "class_type": "SaveImage",
+              "inputs": {
+                "images": [
+                  "1",
+                  0
+                ],
+                "filename_prefix": "novira"
+              }
+            }
+          },
+          "outputs": [
+            "2"
+          ],
+          "thumbnail": "1"
+        },
+        "maskImageUrl": "http://novira-image.localhost/full/mask.png",
+        "controlLayers": [
+          {
+            "imageUrl": "http://novira-image.localhost/full/control-1.png",
+            "modelKey": "controlnet-union-sdxl",
+            "weight": 0.75,
+            "beginEnd": [
+              0.25,
+              0.75
+            ],
+            "controlMode": "more_control",
+            "controlType": "openpose"
+          },
+          {
+            "imageUrl": "http://novira-image.localhost/full/control-2.png",
+            "modelKey": "controlnet-union-sdxl",
+            "weight": 1.25,
+            "beginEnd": [
+              0.5,
+              0.875
+            ],
+            "controlMode": "balanced",
+            "controlType": "softedge"
+          }
+        ],
+        "regionalLayers": [
+          {
+            "imageUrl": "http://novira-image.localhost/full/region-1.png",
+            "positivePrompt": "a red hat",
+            "negativePrompt": null,
+            "autoNegative": true
+          }
+        ],
+        "refImages": [
+          {
+            "imageUrl": "http://novira-image.localhost/full/reference.png",
+            "modelKey": "ip-adapter-sdxl",
+            "clipVisionModel": "ViT-H",
+            "weight": 0.65,
+            "beginEnd": [
+              0.125,
+              0.875
+            ],
+            "method": "style_precise",
+            "regionImageUrl": "http://novira-image.localhost/full/reference-region.png"
+          }
+        ],
+        "referencePictures": [
+          "http://novira-image.localhost/full/character.png"
+        ],
+        "createdAt": 1700000000000,
+        "startedAt": 1700000001000,
+        "completedAt": 1700000002000,
+        "imageName": "abc.png",
+        "error": "ComfyUI KSampler: CUDA out of memory",
+        "errorKind": "out_of_memory",
+        "resultText": "1girl, solo, smile"
+      }
+    ]
+  },
+  "processor_state": {
+    "type": "processor_state",
+    "isPaused": true
+  },
+  "invocation_progress": {
+    "type": "invocation_progress",
+    "progress": {
+      "itemId": 7,
+      "step": 3,
+      "totalSteps": 28,
+      "progressImageUrl": "data:image/png;base64,iVBORw0KGgo=",
+      "message": "denoising"
+    }
+  },
+  "image_added": {
+    "type": "image_added",
+    "image": {
+      "name": "abc.png",
+      "mediaType": "video",
+      "url": "http://novira-image.localhost/full/abc.mp4",
+      "thumbnailUrl": "http://novira-image.localhost/thumb/abc.png",
+      "width": 832,
+      "height": 1216,
+      "createdAt": 1700000002000,
+      "boardId": "board-1",
+      "starred": true,
+      "isIntermediate": false,
+      "category": "general",
+      "metadata": {
+        "generationMode": "img2img",
+        "positivePrompt": "a cute girl, watercolor",
+        "negativePrompt": "lowres",
+        "modelKey": "main-sdxl",
+        "modelName": "WAI-illustrious-SDXL",
+        "vaeKey": "vae-sdxl",
+        "seed": 1234567,
+        "steps": 28,
+        "cfgScale": 6.5,
+        "cfgRescale": 0.25,
+        "scheduler": "dpmpp_2m_k",
+        "width": 832,
+        "height": 1216,
+        "clipSkip": 2,
+        "seamlessX": true,
+        "seamlessY": false,
+        "loras": [
+          {
+            "key": "lora-1",
+            "weight": 0.75,
+            "isEnabled": true
+          }
+        ],
+        "strength": 0.55,
+        "upscaleScale": 1.5,
+        "upscaleModelKey": "upscale-4x",
+        "creativity": 0.25,
+        "structure": 0.5,
+        "tileControlnetModelKey": "controlnet-tile",
+        "postProcessingModelKey": "upscale-4x",
+        "workflowName": "My graph",
+        "refImageCount": 1,
+        "controlLayerCount": 2,
+        "refImages": [
+          {
+            "imageUrl": "http://novira-image.localhost/full/reference.png",
+            "modelKey": "ip-adapter-sdxl",
+            "clipVisionModel": "ViT-H",
+            "weight": 0.65,
+            "beginEnd": [
+              0.125,
+              0.875
+            ],
+            "method": "style_precise",
+            "regionImageUrl": "http://novira-image.localhost/full/reference-region.png"
+          }
+        ],
+        "controlLayers": [
+          {
+            "imageUrl": "http://novira-image.localhost/full/control-1.png",
+            "modelKey": "controlnet-union-sdxl",
+            "weight": 0.75,
+            "beginEnd": [
+              0.25,
+              0.75
+            ],
+            "controlMode": "more_control",
+            "controlType": "openpose"
+          },
+          {
+            "imageUrl": "http://novira-image.localhost/full/control-2.png",
+            "modelKey": "controlnet-union-sdxl",
+            "weight": 1.25,
+            "beginEnd": [
+              0.5,
+              0.875
+            ],
+            "controlMode": "balanced",
+            "controlType": "softedge"
+          }
+        ],
+        "regionalGuidanceCount": 1,
+        "regionalLayers": [
+          {
+            "imageUrl": "http://novira-image.localhost/full/region-1.png",
+            "positivePrompt": "a red hat",
+            "negativePrompt": null,
+            "autoNegative": true
+          }
+        ],
+        "referencePictures": [
+          "http://novira-image.localhost/full/character.png"
+        ],
+        "maskBlur": 12,
+        "draftAt": 0.5,
+        "videoFrames": 81,
+        "videoFps": 16,
+        "videoFp8": true,
+        "videoTiledDecode": true,
+        "music": {
+          "lyrics": "[verse]\nla la la",
+          "seconds": 30,
+          "bpm": 120,
+          "key": "E minor",
+          "timeSignature": 4,
+          "language": "en",
+          "instrumental": false
+        },
+        "voice": {
+          "text": "Hello there",
+          "language": "English",
+          "mode": "design",
+          "speaker": "Vivian",
+          "instruct": "a calm, low voice"
+        },
+        "hiresFix": {
+          "scale": 1.5,
+          "strength": 0.45,
+          "upscaleModelKey": "upscale-4x",
+          "steps": 12
+        },
+        "mangaScreen": {
+          "screenLines": 240,
+          "whitePoint": 0.85,
+          "blackPoint": 0.35,
+          "gradation": 0.75,
+          "whiteLines": 0.45
+        },
+        "sampling": {
+          "sampler": "euler",
+          "scheduler": "simple"
+        }
+      },
+      "workflow": {
+        "nodes": [
+          {
+            "id": "n1"
+          }
+        ],
+        "edges": []
+      }
+    },
+    "item": {
+      "id": 7,
+      "batchId": "batch-1",
+      "status": "in_progress",
+      "origin": "workflows",
+      "destination": "canvas",
+      "params": {
+        "generationMode": "img2img",
+        "positivePrompt": "a cute girl, watercolor",
+        "negativePrompt": "lowres",
+        "modelKey": "main-sdxl",
+        "modelName": "WAI-illustrious-SDXL",
+        "vaeKey": "vae-sdxl",
+        "seed": 1234567,
+        "steps": 28,
+        "cfgScale": 6.5,
+        "cfgRescale": 0.25,
+        "scheduler": "dpmpp_2m_k",
+        "width": 832,
+        "height": 1216,
+        "clipSkip": 2,
+        "seamlessX": true,
+        "seamlessY": false,
+        "loras": [
+          {
+            "key": "lora-1",
+            "weight": 0.75,
+            "isEnabled": true
+          }
+        ],
+        "strength": 0.55,
+        "upscaleScale": 1.5,
+        "upscaleModelKey": "upscale-4x",
+        "creativity": 0.25,
+        "structure": 0.5,
+        "tileControlnetModelKey": "controlnet-tile",
+        "postProcessingModelKey": "upscale-4x",
+        "workflowName": "My graph",
+        "refImageCount": 1,
+        "controlLayerCount": 2,
+        "refImages": [
+          {
+            "imageUrl": "http://novira-image.localhost/full/reference.png",
+            "modelKey": "ip-adapter-sdxl",
+            "clipVisionModel": "ViT-H",
+            "weight": 0.65,
+            "beginEnd": [
+              0.125,
+              0.875
+            ],
+            "method": "style_precise",
+            "regionImageUrl": "http://novira-image.localhost/full/reference-region.png"
+          }
+        ],
+        "controlLayers": [
+          {
+            "imageUrl": "http://novira-image.localhost/full/control-1.png",
+            "modelKey": "controlnet-union-sdxl",
+            "weight": 0.75,
+            "beginEnd": [
+              0.25,
+              0.75
+            ],
+            "controlMode": "more_control",
+            "controlType": "openpose"
+          },
+          {
+            "imageUrl": "http://novira-image.localhost/full/control-2.png",
+            "modelKey": "controlnet-union-sdxl",
+            "weight": 1.25,
+            "beginEnd": [
+              0.5,
+              0.875
+            ],
+            "controlMode": "balanced",
+            "controlType": "softedge"
+          }
+        ],
+        "regionalGuidanceCount": 1,
+        "regionalLayers": [
+          {
+            "imageUrl": "http://novira-image.localhost/full/region-1.png",
+            "positivePrompt": "a red hat",
+            "negativePrompt": null,
+            "autoNegative": true
+          }
+        ],
+        "referencePictures": [
+          "http://novira-image.localhost/full/character.png"
+        ],
+        "maskBlur": 12,
+        "draftAt": 0.5,
+        "videoFrames": 81,
+        "videoFps": 16,
+        "videoFp8": true,
+        "videoTiledDecode": true,
+        "music": {
+          "lyrics": "[verse]\nla la la",
+          "seconds": 30,
+          "bpm": 120,
+          "key": "E minor",
+          "timeSignature": 4,
+          "language": "en",
+          "instrumental": false
+        },
+        "voice": {
+          "text": "Hello there",
+          "language": "English",
+          "mode": "design",
+          "speaker": "Vivian",
+          "instruct": "a calm, low voice"
+        },
+        "hiresFix": {
+          "scale": 1.5,
+          "strength": 0.45,
+          "upscaleModelKey": "upscale-4x",
+          "steps": 12
+        },
+        "mangaScreen": {
+          "screenLines": 240,
+          "whitePoint": 0.85,
+          "blackPoint": 0.35,
+          "gradation": 0.75,
+          "whiteLines": 0.45
+        },
+        "sampling": {
+          "sampler": "euler",
+          "scheduler": "simple"
+        }
+      },
+      "boardId": "board-1",
+      "initImageUrl": "http://novira-image.localhost/full/source.png",
+      "workflow": {
+        "nodes": [],
+        "edges": []
+      },
+      "comfyGraph": {
+        "prompt": {
+          "1": {
+            "class_type": "CheckpointLoaderSimple",
+            "inputs": {
+              "ckpt_name": "model.safetensors"
+            }
+          },
+          "2": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "images": [
+                "1",
+                0
+              ],
+              "filename_prefix": "novira"
+            }
+          }
+        },
+        "outputs": [
+          "2"
+        ],
+        "thumbnail": "1"
+      },
+      "maskImageUrl": "http://novira-image.localhost/full/mask.png",
+      "controlLayers": [
+        {
+          "imageUrl": "http://novira-image.localhost/full/control-1.png",
+          "modelKey": "controlnet-union-sdxl",
+          "weight": 0.75,
+          "beginEnd": [
+            0.25,
+            0.75
+          ],
+          "controlMode": "more_control",
+          "controlType": "openpose"
+        },
+        {
+          "imageUrl": "http://novira-image.localhost/full/control-2.png",
+          "modelKey": "controlnet-union-sdxl",
+          "weight": 1.25,
+          "beginEnd": [
+            0.5,
+            0.875
+          ],
+          "controlMode": "balanced",
+          "controlType": "softedge"
+        }
+      ],
+      "regionalLayers": [
+        {
+          "imageUrl": "http://novira-image.localhost/full/region-1.png",
+          "positivePrompt": "a red hat",
+          "negativePrompt": null,
+          "autoNegative": true
+        }
+      ],
+      "refImages": [
+        {
+          "imageUrl": "http://novira-image.localhost/full/reference.png",
+          "modelKey": "ip-adapter-sdxl",
+          "clipVisionModel": "ViT-H",
+          "weight": 0.65,
+          "beginEnd": [
+            0.125,
+            0.875
+          ],
+          "method": "style_precise",
+          "regionImageUrl": "http://novira-image.localhost/full/reference-region.png"
+        }
+      ],
+      "referencePictures": [
+        "http://novira-image.localhost/full/character.png"
+      ],
+      "createdAt": 1700000000000,
+      "startedAt": 1700000001000,
+      "completedAt": 1700000002000,
+      "imageName": "abc.png",
+      "error": "ComfyUI KSampler: CUDA out of memory",
+      "errorKind": "out_of_memory",
+      "resultText": "1girl, solo, smile"
+    }
+  },
+  "model_install": {
+    "type": "model_install",
+    "job": {
+      "id": "job-1",
+      "source": "https://civitai.com/api/download/models/1",
+      "name": "Some LoRA",
+      "status": "error",
+      "bytes": 1024,
+      "totalBytes": 4096,
+      "error": "disk full"
+    }
+  },
+  "model_added": {
+    "type": "model_added",
+    "model": {
+      "key": "main-sdxl",
+      "name": "WAI-illustrious-SDXL",
+      "base": "sdxl",
+      "type": "main",
+      "format": "checkpoint",
+      "description": "An anime model",
+      "path": "checkpoints/wai.safetensors",
+      "size": 6938078334,
+      "source": "civitai:827184",
+      "defaultSettings": {
+        "vae": "vae-sdxl",
+        "vaePrecision": "fp16",
+        "steps": 30,
+        "cfgScale": 5.5,
+        "scheduler": "euler_a",
+        "width": 1024,
+        "height": 1024
+      },
+      "triggerPhrases": [
+        "masterpiece"
+      ],
+      "coverImageUrl": "https://image.civitai.com/cover.jpeg",
+      "coverMature": true,
+      "license": {
+        "site": "huggingface",
+        "name": "CreativeML Open RAIL++-M",
+        "commercial": "limited",
+        "permissions": [
+          {
+            "key": "sellImages",
+            "allowed": true
+          },
+          {
+            "key": "sellModel",
+            "allowed": false
+          },
+          {
+            "key": "noCredit",
+            "allowed": null
+          }
+        ]
+      }
+    }
+  },
+  "engine_status": {
+    "type": "engine_status",
+    "status": {
+      "state": "downloading",
+      "bytes": 10,
+      "totalBytes": 100
+    }
+  },
+  "pack": {
+    "type": "pack",
+    "kind": "music",
+    "status": {
+      "state": "downloading",
+      "file": "model.safetensors",
+      "index": 1,
+      "count": 3,
+      "bytes": 10,
+      "totalBytes": 100
+    }
+  },
+  "node_pack": {
+    "type": "node_pack",
+    "url": "https://github.com/a/b",
+    "status": {
+      "state": "ready"
+    }
+  },
+  "log": {
+    "type": "log",
+    "entry": {
+      "at": 1760000000000,
+      "level": "error",
+      "source": "panic",
+      "message": "worker panicked"
+    }
+  },
+  "backup": {
+    "type": "backup",
+    "progress": {
+      "phase": "create",
+      "done": 12,
+      "total": 40
+    }
+  },
+  "agent_tool_call": {
+    "type": "agent_tool_call",
+    "call": {
+      "callId": "c-0123456789abcdef0123456789abcdef",
+      "tool": "set_generation_settings",
+      "args": {
+        "positivePrompt": "a cute girl",
+        "steps": 28
+      },
+      "readGated": false
+    }
+  },
+  "ui_state_changed": {
+    "type": "ui_state_changed",
+    "origin": "page-0123456789abcdef",
+    "revision": 1760000000000
+  }
+}

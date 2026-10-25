@@ -1,0 +1,16 @@
+{
+  "finish.title": "完稿影片",
+  "finish.smooth.title": "讓動作更流暢（影格加倍）",
+  "finish.smooth.desc": "在影格之間補幀，讓動作更滑順。長度不變，影格數與影格速率會變為 2 倍。",
+  "finish.enlarge.title": "放大（長寬各 2 倍）",
+  "finish.enlarge.desc": "使用放大模型放大所有影格。會耗費較多時間與記憶體。",
+  "finish.upscaler": "用於放大的模型",
+  "finish.noUpscaler": "沒有放大用的模型。請從模型畫面安裝。",
+  "finish.needsPack": "補幀需要擴充功能 {pack}。",
+  "finish.install": "安裝",
+  "finish.restart": "重新啟動 ComfyUI 以啟用",
+  "finish.note": "原本的影片會保留，並新增完稿後的影片。",
+  "finish.run": "完稿",
+  "finish.queued": "已加入佇列。完成後會排列在影片清單中",
+  "finish.failed": "無法加入佇列"
+}

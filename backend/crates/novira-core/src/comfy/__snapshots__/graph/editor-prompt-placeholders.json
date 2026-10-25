@@ -1,0 +1,217 @@
+{
+  "images": [
+    "photo.png"
+  ],
+  "models": [
+    {
+      "folder": "checkpoints",
+      "name": "sdxl\\base.safetensors"
+    }
+  ],
+  "outputs": [
+    "8"
+  ],
+  "prepared": {
+    "1": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "sdxl\\base.safetensors"
+      }
+    },
+    "2": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": {
+          "$image": "photo.png"
+        }
+      }
+    },
+    "3": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "a cat"
+      }
+    },
+    "4": {
+      "class_type": "VAEEncode",
+      "inputs": {
+        "pixels": [
+          "2",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "5": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 6.5,
+        "denoise": 0.6,
+        "latent_image": [
+          "4",
+          0
+        ],
+        "model": [
+          "1",
+          0
+        ],
+        "negative": [
+          "3",
+          0
+        ],
+        "positive": [
+          "3",
+          0
+        ],
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "seed": 1234,
+        "steps": 20
+      }
+    },
+    "6": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "5",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "7": {
+      "class_type": "FaceRig",
+      "inputs": {
+        "image": [
+          "6",
+          0
+        ],
+        "options": {
+          "pitch": 0,
+          "yaw": 10
+        }
+      }
+    },
+    "8": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "filename_prefix": "novira",
+        "images": [
+          "7",
+          0
+        ]
+      }
+    }
+  },
+  "thumbnail": null,
+  "uploaded": {
+    "1": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "sdxl\\base.safetensors"
+      }
+    },
+    "2": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "novira_photo.png"
+      }
+    },
+    "3": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "a cat"
+      }
+    },
+    "4": {
+      "class_type": "VAEEncode",
+      "inputs": {
+        "pixels": [
+          "2",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "5": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 6.5,
+        "denoise": 0.6,
+        "latent_image": [
+          "4",
+          0
+        ],
+        "model": [
+          "1",
+          0
+        ],
+        "negative": [
+          "3",
+          0
+        ],
+        "positive": [
+          "3",
+          0
+        ],
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "seed": 1234,
+        "steps": 20
+      }
+    },
+    "6": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "5",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "7": {
+      "class_type": "FaceRig",
+      "inputs": {
+        "image": [
+          "6",
+          0
+        ],
+        "options": {
+          "pitch": 0,
+          "yaw": 10
+        }
+      }
+    },
+    "8": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "filename_prefix": "novira",
+        "images": [
+          "7",
+          0
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,321 @@
+{
+  "audio_ext": null,
+  "output_node": "27",
+  "prompt": {
+    "1": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "sdxl\\base.safetensors"
+      }
+    },
+    "10": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "control-depth.png"
+      }
+    },
+    "11": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 768,
+        "image": [
+          "10",
+          0
+        ],
+        "upscale_method": "bilinear",
+        "width": 1024
+      }
+    },
+    "12": {
+      "class_type": "ControlNetApplyAdvanced",
+      "inputs": {
+        "control_net": [
+          "9",
+          0
+        ],
+        "end_percent": 0.5,
+        "image": [
+          "11",
+          0
+        ],
+        "negative": [
+          "8",
+          0
+        ],
+        "positive": [
+          "7",
+          0
+        ],
+        "start_percent": 0.0,
+        "strength": 0.6
+      }
+    },
+    "13": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "source.png"
+      }
+    },
+    "14": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 768,
+        "image": [
+          "13",
+          0
+        ],
+        "upscale_method": "lanczos",
+        "width": 1024
+      }
+    },
+    "15": {
+      "class_type": "VAEEncode",
+      "inputs": {
+        "pixels": [
+          "14",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "16": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "mask.png"
+      }
+    },
+    "17": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 768,
+        "image": [
+          "16",
+          0
+        ],
+        "upscale_method": "bilinear",
+        "width": 1024
+      }
+    },
+    "18": {
+      "class_type": "ImageToMask",
+      "inputs": {
+        "channel": "red",
+        "image": [
+          "17",
+          0
+        ]
+      }
+    },
+    "19": {
+      "class_type": "GrowMask",
+      "inputs": {
+        "expand": 4,
+        "mask": [
+          "18",
+          0
+        ],
+        "tapered_corners": true
+      }
+    },
+    "2": {
+      "class_type": "IPAdapterModelLoader",
+      "inputs": {
+        "ipadapter_file": "ip-adapter_sdxl_vit-h.safetensors"
+      }
+    },
+    "20": {
+      "class_type": "MaskToImage",
+      "inputs": {
+        "mask": [
+          "19",
+          0
+        ]
+      }
+    },
+    "21": {
+      "class_type": "ImageBlur",
+      "inputs": {
+        "blur_radius": 8,
+        "image": [
+          "20",
+          0
+        ],
+        "sigma": 4.0
+      }
+    },
+    "22": {
+      "class_type": "ImageToMask",
+      "inputs": {
+        "channel": "red",
+        "image": [
+          "21",
+          0
+        ]
+      }
+    },
+    "23": {
+      "class_type": "SetLatentNoiseMask",
+      "inputs": {
+        "mask": [
+          "22",
+          0
+        ],
+        "samples": [
+          "15",
+          0
+        ]
+      }
+    },
+    "24": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 6.5,
+        "denoise": 0.85,
+        "latent_image": [
+          "23",
+          0
+        ],
+        "model": [
+          "6",
+          0
+        ],
+        "negative": [
+          "12",
+          1
+        ],
+        "positive": [
+          "12",
+          0
+        ],
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "seed": 42,
+        "steps": 20
+      }
+    },
+    "25": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "24",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "26": {
+      "class_type": "ImageCompositeMasked",
+      "inputs": {
+        "destination": [
+          "14",
+          0
+        ],
+        "mask": [
+          "22",
+          0
+        ],
+        "resize_source": false,
+        "source": [
+          "25",
+          0
+        ],
+        "x": 0,
+        "y": 0
+      }
+    },
+    "27": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "26",
+          0
+        ]
+      }
+    },
+    "3": {
+      "class_type": "CLIPVisionLoader",
+      "inputs": {
+        "clip_name": "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors"
+      }
+    },
+    "4": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "ref-composition.png"
+      }
+    },
+    "5": {
+      "class_type": "IPAdapterAdvanced",
+      "inputs": {
+        "clip_vision": [
+          "3",
+          0
+        ],
+        "combine_embeds": "concat",
+        "embeds_scaling": "V only",
+        "end_at": 1.0,
+        "image": [
+          "4",
+          0
+        ],
+        "ipadapter": [
+          "2",
+          0
+        ],
+        "model": [
+          "1",
+          0
+        ],
+        "start_at": 0.0,
+        "weight": 1.0,
+        "weight_type": "composition"
+      }
+    },
+    "6": {
+      "class_type": "DifferentialDiffusion",
+      "inputs": {
+        "model": [
+          "5",
+          0
+        ]
+      }
+    },
+    "7": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "a cat"
+      }
+    },
+    "8": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "blurry"
+      }
+    },
+    "9": {
+      "class_type": "ControlNetLoader",
+      "inputs": {
+        "control_net_name": "controlnet-union-sdxl-promax.safetensors"
+      }
+    }
+  },
+  "thumbnail_node": null,
+  "total_steps": 20
+}

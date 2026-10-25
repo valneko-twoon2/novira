@@ -1,0 +1,8 @@
+{
+  "engine.title.downloading": "Downloading the image engine (ComfyUI and Python)",
+  "engine.title.extracting": "Unpacking the image engine (ComfyUI and Python)",
+  "engine.title.starting": "Starting the image engine",
+  "engine.title.error": "The image engine could not be prepared",
+  "engine.sizeProgress": "{done} / {total}",
+  "engine.firstRunNote": "The first run downloads a few GB. Generation starts once it is done."
+}

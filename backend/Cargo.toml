@@ -1,0 +1,29 @@
+[workspace]
+members = ["src-tauri", "crates/*"]
+resolver = "2"
+
+[workspace.package]
+# The app's one version: every crate inherits it, and the frontend's package.json must match (a test checks it).
+version = "0.1.0"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "fs", "io-util", "net", "process"] }
+tokio-util = "0.7"
+futures-util = { version = "0.3", default-features = false, features = ["std", "sink"] }
+
+[workspace.lints.clippy]
+result_large_err = "allow"
+
+# Debug builds are run rarely, and the debug info was most of target/ (about 48 GB of .pdb files across the test
+# binaries). Off for the whole dev profile, dependencies included: no variable view in a debugger; panics still print
+# their messages. Use `cargo test --config profile.dev.debug=true` for one run that needs it.
+[profile.dev]
+debug = false
+
+# The Civitai lookup hashes whole model files (gigabytes each) with SHA-256. Unoptimised, as in the debug build that
+# scripts\start.bat runs, the hash took minutes per checkpoint, so covers appeared one by one long after the start.
+[profile.dev.package.sha2]
+opt-level = 3

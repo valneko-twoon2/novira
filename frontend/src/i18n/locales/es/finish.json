@@ -1,0 +1,16 @@
+{
+  "finish.title": "Terminar el clip",
+  "finish.smooth.title": "Suavizar el movimiento (duplicar fotogramas)",
+  "finish.smooth.desc": "Rellena entre los fotogramas para que el movimiento sea más fluido. La duración no cambia; el número de fotogramas y la velocidad se duplican.",
+  "finish.enlarge.title": "Ampliar (el doble de ancho y alto)",
+  "finish.enlarge.desc": "Agranda cada fotograma con un modelo de ampliación. Requiere más tiempo y memoria.",
+  "finish.upscaler": "Modelo de ampliación",
+  "finish.noUpscaler": "No hay ningún modelo de ampliación. Añada uno desde la pantalla Modelos.",
+  "finish.needsPack": "Interpolar fotogramas requiere la extensión {pack}.",
+  "finish.install": "Instalar",
+  "finish.restart": "Reinicie ComfyUI para usarla",
+  "finish.note": "El original no se modifica; el clip terminado se añade junto a él.",
+  "finish.run": "Terminar",
+  "finish.queued": "En cola. El clip terminado aparecerá en la lista",
+  "finish.failed": "No se pudo poner en cola"
+}

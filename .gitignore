@@ -1,0 +1,27 @@
+# Build output
+target/
+dist/
+node_modules/
+
+# User data (novira-data/work/ holds the harness output), personal settings (never commit)
+novira-data/
+artifacts/
+config.json
+.env
+.env.*
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+.reference/
+
+# OS files
+Thumbs.db
+.DS_Store
+.claude/worktrees/
+
+# TrustMark models and ONNX Runtime fetched for the export watermark (pinned in provenance/files.json)
+*.onnx
+onnxruntime.dll
+*.tsbuildinfo

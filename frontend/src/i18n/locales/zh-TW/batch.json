@@ -1,0 +1,17 @@
+{
+  "batch.title": "批次處理",
+  "batch.count.one": "對 {count} 張圖像套用相同處理",
+  "batch.count.other": "對 {count} 張圖像套用相同處理",
+  "batch.op": "處理類型",
+  "batch.op.removeBackground.title": "去除背景並裁切",
+  "batch.op.upscale.title": "放大",
+  "batch.upscaler": "用於放大的模型",
+  "batch.noUpscaler": "沒有放大用的模型。請從模型畫面安裝。",
+  "batch.needsPack": "去除背景需要擴充功能 {pack}。",
+  "batch.install": "安裝",
+  "batch.restart": "重新啟動 ComfyUI 以啟用",
+  "batch.run": "執行",
+  "batch.queued.one": "已將 {count} 張圖像加入佇列。結果會放入與原圖相同的看板",
+  "batch.queued.other": "已將 {count} 張圖像加入佇列。結果會放入與原圖相同的看板",
+  "batch.failed": "無法加入佇列"
+}

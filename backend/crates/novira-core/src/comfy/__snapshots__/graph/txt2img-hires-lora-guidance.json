@@ -1,0 +1,277 @@
+{
+  "audio_ext": null,
+  "output_node": "20",
+  "passes": [
+    [
+      "14",
+      0
+    ],
+    [
+      "18",
+      20
+    ]
+  ],
+  "prompt": {
+    "1": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "sdxl\\base.safetensors"
+      }
+    },
+    "10": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "control-pose.png"
+      }
+    },
+    "11": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 768,
+        "image": [
+          "10",
+          0
+        ],
+        "upscale_method": "bilinear",
+        "width": 1024
+      }
+    },
+    "12": {
+      "class_type": "ControlNetApplyAdvanced",
+      "inputs": {
+        "control_net": [
+          "9",
+          0
+        ],
+        "end_percent": 0.75,
+        "image": [
+          "11",
+          0
+        ],
+        "negative": [
+          "8",
+          0
+        ],
+        "positive": [
+          "7",
+          0
+        ],
+        "start_percent": 0.0,
+        "strength": 0.75
+      }
+    },
+    "13": {
+      "class_type": "EmptyLatentImage",
+      "inputs": {
+        "batch_size": 1,
+        "height": 768,
+        "width": 1024
+      }
+    },
+    "14": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 6.5,
+        "denoise": 1.0,
+        "latent_image": [
+          "13",
+          0
+        ],
+        "model": [
+          "6",
+          0
+        ],
+        "negative": [
+          "12",
+          1
+        ],
+        "positive": [
+          "12",
+          0
+        ],
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "seed": 42,
+        "steps": 20
+      }
+    },
+    "15": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "14",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "16": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 1536,
+        "image": [
+          "15",
+          0
+        ],
+        "upscale_method": "lanczos",
+        "width": 2048
+      }
+    },
+    "17": {
+      "class_type": "VAEEncode",
+      "inputs": {
+        "pixels": [
+          "16",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "18": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 6.5,
+        "denoise": 0.5,
+        "latent_image": [
+          "17",
+          0
+        ],
+        "model": [
+          "6",
+          0
+        ],
+        "negative": [
+          "12",
+          1
+        ],
+        "positive": [
+          "12",
+          0
+        ],
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "seed": 42,
+        "steps": 15
+      }
+    },
+    "19": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "18",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "2": {
+      "class_type": "LoraLoader",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "lora_name": "detail.safetensors",
+        "model": [
+          "1",
+          0
+        ],
+        "strength_clip": 0.6,
+        "strength_model": 0.6
+      }
+    },
+    "20": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "19",
+          0
+        ]
+      }
+    },
+    "3": {
+      "class_type": "IPAdapterModelLoader",
+      "inputs": {
+        "ipadapter_file": "ip-adapter_sdxl_vit-h.safetensors"
+      }
+    },
+    "4": {
+      "class_type": "CLIPVisionLoader",
+      "inputs": {
+        "clip_name": "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors"
+      }
+    },
+    "5": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "ref-face.png"
+      }
+    },
+    "6": {
+      "class_type": "IPAdapterAdvanced",
+      "inputs": {
+        "clip_vision": [
+          "4",
+          0
+        ],
+        "combine_embeds": "concat",
+        "embeds_scaling": "V only",
+        "end_at": 1.0,
+        "image": [
+          "5",
+          0
+        ],
+        "ipadapter": [
+          "3",
+          0
+        ],
+        "model": [
+          "2",
+          0
+        ],
+        "start_at": 0.0,
+        "weight": 0.6,
+        "weight_type": "linear"
+      }
+    },
+    "7": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "2",
+          1
+        ],
+        "text": "a cat"
+      }
+    },
+    "8": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "2",
+          1
+        ],
+        "text": "blurry"
+      }
+    },
+    "9": {
+      "class_type": "ControlNetLoader",
+      "inputs": {
+        "control_net_name": "controlnet-union-sdxl-promax.safetensors"
+      }
+    }
+  },
+  "thumbnail_node": null,
+  "total_steps": 35
+}

@@ -1,0 +1,16 @@
+{
+  "finish.title": "Finish the clip",
+  "finish.smooth.title": "Smooth the motion (double the frames)",
+  "finish.smooth.desc": "Fills in between the frames so the motion is smoother. The length stays the same; the frame count and the frame rate double.",
+  "finish.enlarge.title": "Enlarge (twice as wide and tall)",
+  "finish.enlarge.desc": "Makes every frame larger with an upscale model. Takes more time and memory.",
+  "finish.upscaler": "Upscale model",
+  "finish.noUpscaler": "There is no upscale model. Add one from the Models screen.",
+  "finish.needsPack": "Filling in frames needs the extension {pack}.",
+  "finish.install": "Install",
+  "finish.restart": "Restart ComfyUI to use it",
+  "finish.note": "The original stays as it is; the finished clip is added next to it.",
+  "finish.run": "Finish",
+  "finish.queued": "Queued. The finished clip appears in the list",
+  "finish.failed": "Could not queue it"
+}

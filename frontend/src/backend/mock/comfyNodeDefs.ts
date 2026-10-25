@@ -1,0 +1,131 @@
+// Stand-in for ComfyUI's `object_info`: one core node (left out of the editor) and a few nodes from custom node packs.
+import type { ComfyNodeDefs } from '../types';
+
+export const MOCK_NODE_DEFS: ComfyNodeDefs = {
+  KSampler: {
+    input: {
+      required: {
+        model: ['MODEL'],
+        seed: ['INT', { default: 0, min: 0, max: 2 ** 64 - 1 }],
+        steps: ['INT', { default: 20, min: 1, max: 10000 }],
+        cfg: ['FLOAT', { default: 8, min: 0, max: 100, step: 0.1 }],
+        sampler_name: [['euler', 'euler_ancestral', 'dpmpp_2m']],
+        scheduler: [['normal', 'karras']],
+        positive: ['CONDITIONING'],
+        negative: ['CONDITIONING'],
+        latent_image: ['LATENT'],
+        denoise: ['FLOAT', { default: 1, min: 0, max: 1, step: 0.01 }],
+      },
+    },
+    output: ['LATENT'],
+    output_is_list: [false],
+    output_name: ['LATENT'],
+    name: 'KSampler',
+    display_name: 'KSampler',
+    description: 'Uses the provided model, positive and negative conditioning to denoise the latent image.',
+    python_module: 'nodes',
+    category: 'sampling',
+    output_node: false,
+  },
+  MockFilmGrain: {
+    input: {
+      required: {
+        image: ['IMAGE'],
+        intensity: ['FLOAT', { default: 0.25, min: 0, max: 1, step: 0.01, display: 'slider' }],
+        grain_size: ['FLOAT', { default: 1.5, min: 0.5, max: 4, step: 0.1 }],
+        monochrome: ['BOOLEAN', { default: true }],
+        seed: ['INT', { default: 0, min: 0, max: 2 ** 64 - 1, control_after_generate: true }],
+      },
+    },
+    input_order: { required: ['image', 'intensity', 'grain_size', 'monochrome', 'seed'] },
+    output: ['IMAGE'],
+    output_is_list: [false],
+    output_name: ['IMAGE'],
+    name: 'MockFilmGrain',
+    display_name: 'Film Grain (Mock)',
+    description: 'Adds photographic film grain.',
+    python_module: 'custom_nodes.ComfyUI-Mock-Tools',
+    category: 'Mock Tools/Texture',
+    output_node: false,
+  },
+  MockFaceRig: {
+    input: {
+      required: {
+        image: ['IMAGE'],
+        head_yaw: ['FLOAT', { default: 0, min: -30, max: 30, step: 0.5 }],
+        head_pitch: ['FLOAT', { default: 0, min: -30, max: 30, step: 0.5 }],
+        gaze_x: ['FLOAT', { default: 0, min: -1, max: 1, step: 0.01 }],
+        gaze_y: ['FLOAT', { default: 0, min: -1, max: 1, step: 0.01 }],
+        smile: ['FLOAT', { default: 0, min: -1, max: 1.5, step: 0.01, display: 'slider' }],
+        detector: [['yunet', 'yolov8'], { default: 'yunet' }],
+      },
+      optional: {
+        face_mask: ['MASK'],
+      },
+      hidden: { unique_id: 'UNIQUE_ID' },
+    },
+    output: ['IMAGE', 'FACE_LANDMARKS'],
+    output_is_list: [false, false],
+    output_name: ['image', 'landmarks'],
+    name: 'MockFaceRig',
+    display_name: 'Face Rig (Mock)',
+    description: 'Moves the head, gaze and expression of the face in a picture.',
+    python_module: 'custom_nodes.ComfyUI-Mock-Tools',
+    category: 'Mock Tools/Faces',
+    output_node: false,
+  },
+  MockLandmarkPreview: {
+    input: {
+      required: {
+        landmarks: ['FACE_LANDMARKS'],
+        caption: ['STRING', { default: '', multiline: true }],
+        style: ['COMBO', { options: ['dots', 'mesh'], default: 'mesh' }],
+      },
+    },
+    output: [],
+    output_is_list: [],
+    output_name: [],
+    name: 'MockLandmarkPreview',
+    display_name: 'Landmark Preview (Mock)',
+    description: 'Draws the detected face landmarks.',
+    python_module: 'custom_nodes.comfyui-mock-preview',
+    category: 'Mock Tools/Faces',
+    output_node: true,
+  },
+  MockResize: {
+    input: {
+      required: {
+        input: ['COMFY_MATCHTYPE_V3', { template: { template_id: 'input_type', allowed_types: 'IMAGE,MASK' } }],
+        mode: [
+          'COMFY_DYNAMICCOMBO_V3',
+          {
+            options: [
+              { key: 'scale dimensions', inputs: { required: { width: ['INT', { default: 512 }] } } },
+              { key: 'scale by multiplier', inputs: { required: { multiplier: ['FLOAT', { default: 2 }] } } },
+            ],
+          },
+        ],
+        extra: ['COMFY_AUTOGROW_V3', { template: { input: { required: { image: ['IMAGE', {}] } }, prefix: 'image', min: 1, max: 50 } }],
+        reference: [['a.png', 'b.png'], { image_upload: true }],
+      },
+    },
+    output: ['IMAGE'],
+    output_name: ['IMAGE'],
+    name: 'MockResize',
+    display_name: 'Resize (Mock V3)',
+    python_module: 'custom_nodes.ComfyUI-Mock-Tools',
+    category: 'Mock Tools',
+    output_node: false,
+  },
+  MockOldNode: {
+    input: { required: { image: ['IMAGE'] } },
+    output: ['IMAGE'],
+    output_name: ['IMAGE'],
+    name: 'MockOldNode',
+    display_name: 'Old Node (Mock)',
+    python_module: 'custom_nodes.ComfyUI-Mock-Tools',
+    category: 'Mock Tools',
+    output_node: false,
+    deprecated: true,
+  },
+};

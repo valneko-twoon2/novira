@@ -1,0 +1,909 @@
+/* The phone layout: a title bar, one tab at a time and the tabs at the foot, filling the screen of a phone held upright.
+   Controls are at least 40px tall so a finger hits them; text inputs use 16px so the phone does not zoom in on focus. */
+.phone {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg-app);
+  color: var(--text);
+}
+
+.phone__main {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.phone__tab {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Title bar */
+.phone-head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+  height: 52px;
+  padding: 0 var(--space-1) 0 var(--space-3);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-panel);
+}
+
+.phone-head .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.phone-head__logo {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.phone-head__spacer {
+  flex: 1;
+}
+
+.phone-head__menu {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+}
+
+/* The job being drawn, in the title bar */
+.phone-live {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 60%;
+  height: 40px;
+  padding: 3px var(--space-2) 3px 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-surface);
+  color: var(--text);
+}
+
+.phone-live__thumb {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+}
+
+.phone-live__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.phone-live__info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 72px;
+}
+
+.phone-live__step {
+  color: var(--blue-600);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
+.phone-live__bar {
+  height: 3px;
+}
+
+/* Tabs at the foot */
+.phone-nav {
+  display: flex;
+  flex: none;
+  border-top: 1px solid var(--border);
+  background: var(--bg-panel);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.phone-nav__tab {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 56px;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.phone-nav__tab.is-on {
+  color: var(--accent);
+}
+
+.phone-nav__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.phone-nav__badge {
+  position: absolute;
+  top: -4px;
+  left: 14px;
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--grad-accent);
+  color: var(--white);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+/* The picture open full screen */
+.phone-view {
+  position: fixed;
+  z-index: var(--z-phone-view);
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-app);
+}
+
+.phone-view__top {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+  height: 52px;
+  padding: 0 var(--space-1);
+}
+
+.phone-view__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text);
+}
+
+.phone-view__icon.is-on {
+  color: var(--accent);
+}
+
+.phone-view__place {
+  flex: 1;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+
+.phone-view__stage {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: var(--space-3);
+}
+
+/* The fingers zoom and swipe the picture, not the page. */
+.phone-view__stage--picture {
+  overflow: hidden;
+  touch-action: none;
+}
+
+.phone-view__picture {
+  flex: none;
+  max-width: none;
+  border-radius: var(--radius-sm);
+  user-select: none;
+  will-change: transform;
+}
+
+.phone-view__step {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 56px;
+  margin-top: -28px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--overlay);
+  color: var(--on-overlay);
+}
+
+.phone-view__step.is-previous {
+  left: var(--space-1);
+}
+
+.phone-view__step.is-next {
+  right: var(--space-1);
+}
+
+.phone-view__info {
+  flex: none;
+  max-height: 40%;
+  overflow-y: auto;
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--border);
+  background: var(--bg-panel);
+  font-size: var(--fs-sm);
+}
+
+.phone-view__info dl {
+  display: grid;
+  gap: 2px var(--space-2);
+  margin: 0;
+}
+
+.phone-view__info dt {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.phone-view__info dd {
+  margin: 0 0 var(--space-1);
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.phone-view__info p {
+  margin: 0;
+}
+
+.phone-view__dims {
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+
+.phone-view__actions {
+  display: flex;
+  flex: none;
+  border-top: 1px solid var(--border);
+  background: var(--bg-panel);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.phone-view__action {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  min-height: 60px;
+  padding: 0 2px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: var(--fs-xs);
+  text-align: center;
+}
+
+.phone-view__action:disabled {
+  color: var(--text-faint);
+}
+
+.phone-view__action.is-on {
+  color: var(--yellow-400);
+}
+
+.phone-view__action.is-danger {
+  color: var(--danger-text);
+}
+
+/* Images tab */
+.phone-imgs {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.phone-imgs__bar {
+  position: sticky;
+  z-index: 3;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-app);
+}
+
+.phone-imgs__board {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  font-size: 16px;
+}
+
+.phone-imgs__count {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+
+.phone-imgs__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  padding: 2px;
+}
+
+.phone-imgs__cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: var(--bg-input);
+  color: var(--text-muted);
+}
+
+.phone-imgs__cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.phone-imgs__star {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  color: var(--yellow-400);
+}
+
+.phone-imgs__cell.is-live {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.phone-imgs__step {
+  position: absolute;
+  bottom: 3px;
+  left: 3px;
+  padding: 0 4px;
+  border-radius: var(--radius-sm);
+  background: var(--overlay);
+  color: var(--on-overlay);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 15px;
+}
+
+.phone-imgs__empty {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  padding: var(--space-4);
+}
+
+.phone-imgs__end {
+  height: 1px;
+}
+
+/*
+ * Generate tab: the desktop's panel, scrolled as one column. The header's parts scroll with the form, except the row with
+ * the seed and the Generate button, which stays at the top; fields are big enough for a finger and 16px so the phone does
+ * not zoom in on them.
+ */
+.phone-gen {
+  min-height: 100%;
+}
+
+.phone-gen .pp {
+  height: auto;
+}
+
+.phone-gen .pp-head {
+  display: contents;
+}
+
+.phone-gen .pp-head__generate {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-panel);
+}
+
+.phone-gen .pp-body {
+  overflow-y: visible;
+}
+
+.phone-gen .pp-head > :not(.pp-head__generate) {
+  margin: var(--space-2) var(--space-2) 0;
+}
+
+.phone-gen .ui-select,
+.phone-gen .ui-number,
+.phone-gen .ui-btn,
+.phone-gen .pp-seed .ui-btn,
+.phone-gen .pp-seg__btn {
+  min-height: 44px;
+}
+
+/*
+ * Models and Browse: the desktop's screens. The model manager's category list becomes a strip above the models, and what
+ * is a row of controls on a wide screen wraps or scrolls sideways instead of squeezing its labels.
+ */
+.phone__tab .mm {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  border: 0;
+  border-radius: 0;
+}
+
+/* A model's detail takes the whole tab, as the browse screen's does (the drawer), with its close control in a bar above. */
+.phone__tab .mm {
+  position: relative;
+}
+
+.phone__tab .mm-detail {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  width: auto;
+  border-left: 0;
+  animation: browse-slide-in 160ms ease-out;
+}
+
+.phone__tab .mm-detail__top {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.phone__tab .mm-detail__scroll {
+  flex: 1;
+  min-height: 0;
+  padding-top: var(--space-4);
+}
+
+.phone__tab .mm-rail {
+  flex-direction: row;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.phone__tab .mm-rail > * {
+  flex: none;
+  white-space: nowrap;
+}
+
+.phone__tab .mm__main {
+  border-left: 0;
+  border-top: 1px solid var(--border);
+}
+
+.phone__tab .browse {
+  border: 0;
+  border-radius: 0;
+}
+
+.phone__tab .browse-seg {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.phone__tab .browse-seg button {
+  flex: none;
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+.phone__tab .browse-bar {
+  padding: var(--space-2);
+}
+
+/* Closed, the controls are one button; open, they scroll inside a part of the screen so the cards stay in view. */
+.phone__tab .browse-bar--head {
+  flex-wrap: nowrap;
+}
+
+.phone__tab .browse-bar--menu {
+  max-height: 55%;
+  overflow-y: auto;
+}
+
+.phone__tab .browse-size .ui-slider-wrap {
+  flex: 1;
+}
+
+.phone__tab .browse-size {
+  flex-basis: 100%;
+}
+
+.phone__tab .browse-search {
+  flex-basis: 100%;
+}
+
+.phone__tab .browse-bar__filters {
+  margin-left: 0;
+}
+
+/*
+ * Notices rise from the foot on a phone, just above the bars there: over the title bar they would hide the job being drawn,
+ * under it the first controls of a tab (the queue's). `--phone-foot` is the height of the bars at the foot of what is in
+ * front (PhoneShell marks it). Only the newest shows; the older ones wait under it until they time out. It closes with a
+ * finger.
+ */
+body:has(.phone) .toaster {
+  /* The tabs: 56px and their border. */
+  --phone-foot: 57px;
+
+  top: auto;
+  right: var(--space-2);
+  bottom: calc(var(--phone-foot) + env(safe-area-inset-bottom) + var(--space-2));
+  left: var(--space-2);
+  width: auto;
+}
+
+/* The tabs and the drafts' finish bar (28px buttons, their padding and border). */
+body:has(.phone[data-tab='drafts']) .toaster {
+  --phone-foot: 102px;
+}
+
+/* A picture full screen: its actions (60px and their border) instead of the tabs. */
+body:has(.phone[data-viewing]) .toaster {
+  --phone-foot: 61px;
+}
+
+body:has(.phone) .toast {
+  align-items: center;
+  padding: var(--space-1) 0 var(--space-1) var(--space-3);
+}
+
+body:has(.phone) .toast:not(:last-child) {
+  display: none;
+}
+
+body:has(.phone) .toast__close {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+}
+
+/* Queue tab */
+.phone-queue {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.phone-queue__state {
+  flex: 1;
+  color: var(--success-text);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.phone-queue__state.is-paused {
+  color: var(--warning-text);
+}
+
+.phone-queue__button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 40px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-input);
+  color: var(--text);
+  font-size: var(--fs-sm);
+}
+
+.phone-queue__button:disabled {
+  color: var(--text-faint);
+}
+
+.phone-queue__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-2);
+  list-style: none;
+}
+
+.phone-queue__card {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-surface);
+}
+
+.phone-queue__main {
+  display: flex;
+  flex: 1;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-2);
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+}
+
+.phone-queue__thumb {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-muted);
+}
+
+.phone-queue__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.phone-queue__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.phone-queue__line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.phone-queue__status {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+
+.phone-queue__status[data-status='in_progress'] {
+  color: var(--blue-400);
+}
+
+.phone-queue__status[data-status='completed'] {
+  color: var(--success-text);
+}
+
+.phone-queue__status[data-status='failed'] {
+  color: var(--danger-text);
+}
+
+.phone-queue__step,
+.phone-queue__where {
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+
+.phone-queue__prompt {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: var(--fs-sm);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.phone-queue__meta {
+  overflow: hidden;
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-queue__error {
+  color: var(--danger-text);
+  font-size: var(--fs-xs);
+  overflow-wrap: anywhere;
+}
+
+.phone-queue__act {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 52px;
+  border: 0;
+  border-left: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+}
+
+.phone-queue__act.is-danger {
+  color: var(--danger-text);
+}
+
+/* Drafts tab: the desktop's drafts view, in one column. */
+.phone__tab .dv {
+  height: auto;
+  min-height: 100%;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+}
+
+.phone__tab .dv-new {
+  padding: var(--space-3);
+  gap: var(--space-2);
+}
+
+.phone__tab .dv-field--model,
+.phone__tab .dv-field--slider {
+  width: 100%;
+}
+
+.phone__tab .dv-new .ui-select,
+.phone__tab .dv-new .ui-number,
+.phone__tab .dv-new .ui-btn {
+  min-height: 44px;
+}
+
+.phone__tab .dv-new .ui-number {
+  font-size: 16px;
+}
+
+.phone__tab .dv-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  padding: var(--space-2);
+  overflow-y: visible;
+}
+
+.phone__tab .dv-foot {
+  position: sticky;
+  bottom: 0;
+  flex-wrap: wrap;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-panel);
+}
+
+.phone__tab .dv-open,
+.phone__tab .dv-star {
+  padding: 8px;
+}
+
+/*
+ * iOS Safari zooms the page when a field under 16px gets focus: on the phone every text field is 16px or more, those of
+ * popovers and dialogs (outside .phone) included. The :not() adds the weight of an attribute, so a rule of two classes
+ * for one field in a component's own style does not win.
+ */
+body:has(.phone) :is(input, textarea, select):not([type='checkbox'], [type='radio'], [type='range'], [type='color'], [type='file']) {
+  font-size: 16px;
+}
+
+/* Menus (the picture's has some thirty items): rows a finger can hit, and a list that scrolls inside the screen. */
+body:has(.phone) .ui-menu:not(.ui-select__content) {
+  max-height: var(--radix-context-menu-content-available-height, 80dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+body:has(.phone) .ui-menu__item {
+  min-height: 44px;
+}
+
+/* Floating panels stay inside the screen. */
+body:has(.phone) .ui-popover,
+body:has(.phone) .ui-menu {
+  max-width: calc(100vw - 2 * var(--space-2));
+}
+
+/*
+ * Dialogs take the whole screen on a phone (the small confirmations stay a box in the middle): centred, a large one ran
+ * past the screen's foot (100vh counts the browser's bars) and its picture and settings were squeezed side by side.
+ */
+body:has(.phone) .ui-modal:not(.ui-modal--sm) {
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  border: 0;
+  border-radius: 0;
+  transform: none;
+}
+
+body:has(.phone) .ui-modal__body {
+  padding: var(--space-3);
+  overscroll-behavior: contain;
+}
+
+/* The dialogs that show a picture with its settings beside it (fix the face, cut out, select a part, describe, pose): the
+ * picture above, the settings under it. */
+body:has(.phone) :is(.ffx, .seg, .cap, .pose) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+body:has(.phone) :is(.ffx__stage, .seg__stage, .cap__stage) {
+  max-height: 45dvh;
+}
+
+body:has(.phone) .share__slider {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+
+/* The big prompt editor: the two prompts one above the other. */
+body:has(.phone) .pp-big {
+  grid-template-columns: 1fr;
+}
+
+body:has(.phone) .pp-big__input {
+  min-height: 30dvh;
+}
+
+/*
+ * Popovers that hold something to read or edit (a LoRA's trigger words, a reference image's settings) open in the middle
+ * of the screen on a phone: beside their button they run off the edge or sit half hidden. Radix places them with an
+ * inline transform on a wrapper, so the wrapper is pinned to the screen and the popover is centred in it.
+ */
+body:has(.phone) [data-radix-popper-content-wrapper]:has(> :is(.pp-lora__trigger-pop, .pp-refpop)) {
+  position: fixed !important;
+  inset: 0 !important;
+  display: grid;
+  place-items: center;
+  min-width: 0 !important;
+  transform: none !important;
+  pointer-events: none;
+}
+
+body:has(.phone) :is(.pp-lora__trigger-pop, .pp-refpop) {
+  max-width: calc(100vw - 2 * var(--space-3));
+  max-height: calc(100dvh - 2 * var(--space-3));
+  overflow-y: auto;
+  pointer-events: auto;
+}

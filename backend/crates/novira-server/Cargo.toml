@@ -1,0 +1,58 @@
+[package]
+name = "novira-server"
+version.workspace = true
+description = "novira backend over HTTP for a plain web browser: this computer only, or the home network, opened on demand"
+edition = "2021"
+license = "Apache-2.0"
+
+[lints]
+workspace = true
+
+[dependencies]
+novira-core = { path = "../novira-core" }
+serde_json = { workspace = true }
+tokio = { workspace = true, features = ["signal"] }
+# The HTTP server (MIT). The HTTP/1 server, routing, body limits and the WebSocket upgrade for `/events` (tokio-tungstenite,
+# MIT, already in the lock file): no JSON, query or form features.
+axum = { version = "0.8", default-features = false, features = ["http1", "tokio", "ws"] }
+# The connection is served by hand (not `axum::serve`) so each one has a header-read timeout and a slot from a
+# semaphore: a slow or flooding client cannot exhaust the computer (MIT, the versions axum already uses).
+hyper = { version = "1", default-features = false, features = ["http1", "server"] }
+hyper-util = { version = "0.1", default-features = false, features = ["tokio", "service"] }
+tower = { version = "0.5", default-features = false, features = ["util"] }
+# The per-start random token (MIT/Apache-2.0, already a dependency of novira-core).
+uuid = { version = "1", features = ["v4"] }
+# The QR code of the home-network address of the QR item (MIT/Apache-2.0); without its image, SVG and PIC renderers it
+# has no dependencies.
+qrcode = { version = "0.14", default-features = false }
+# TLS on the home-network listener (Apache-2.0/ISC/MIT). Only the ring provider (no aws-lc, no C build), no logging;
+# 0.23.46 is the first release without the rustls advisories of 2026 (docs/design/security.md).
+rustls = { version = "0.23.46", default-features = false, features = ["ring", "std", "tls12"] }
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12"] }
+# The "novira local CA" and the certificate it signs for the home address (MIT/Apache-2.0, the version novira-core
+# uses); `x509-parser` reads the saved CA back to sign with it.
+rcgen = { version = "0.14", features = ["x509-parser"] }
+# Random secrets of the pairing and sessions, and the SHA-256 kept of them (ISC-style; already rustls's provider).
+ring = "0.17"
+# The certificates' validity dates (MIT/Apache-2.0, the version and features novira-core uses).
+chrono = { version = "0.4", default-features = false, features = ["std", "clock"] }
+
+[target.'cfg(windows)'.dependencies]
+# The subnet mask of the address a home-network connection came in on (`GetIpAddrTable`), and the hardware address of
+# the gateway of its interface (`GetIpForwardTable`, `GetIpNetTable`, `SendARP`) that names the network (MIT/Apache-2.0,
+# the version novira-core already uses).
+windows-sys = { version = "0.61", features = ["Win32_NetworkManagement_IpHelper", "Win32_Networking_WinSock"] }
+# The network's category (public/private) through the Network List Manager COM API, so `--lan` can refuse a public
+# network (MIT/Apache-2.0, already in the lock file through tauri).
+windows = { version = "0.62", features = ["Win32_Networking_NetworkListManager", "Win32_System_Com"] }
+
+[target.'cfg(windows)'.build-dependencies]
+# The Windows version resource and icon of the exe (MIT/Apache-2.0, already in the lock file through tauri-build).
+tauri-winres = "0.3"
+
+[dev-dependencies]
+tempfile = "3"
+image = { version = "0.25", default-features = false, features = ["png"] }
+# A WebSocket client for the `/events` tests (MIT; the version axum uses).
+tokio-tungstenite = { version = "0.29", default-features = false, features = ["connect"] }
+futures-util = { version = "0.3", default-features = false }

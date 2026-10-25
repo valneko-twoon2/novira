@@ -1,0 +1,17 @@
+{
+  "batch.title": "Processar várias de uma vez",
+  "batch.count.one": "Executa a mesma operação em {count} imagem",
+  "batch.count.other": "Executa a mesma operação em {count} imagens",
+  "batch.op": "Operação",
+  "batch.op.removeBackground.title": "Remover o fundo e recortar",
+  "batch.op.upscale.title": "Ampliar",
+  "batch.upscaler": "Modelo de ampliação",
+  "batch.noUpscaler": "Não há modelo de ampliação. Adicione um na tela Modelos.",
+  "batch.needsPack": "Remover fundos requer a extensão {pack}.",
+  "batch.install": "Instalar",
+  "batch.restart": "Reinicie o ComfyUI para usar",
+  "batch.run": "Executar",
+  "batch.queued.one": "{count} imagem na fila. O resultado vai para a pasta de origem",
+  "batch.queued.other": "{count} imagens na fila. Os resultados vão para as pastas de origem",
+  "batch.failed": "Não foi possível enfileirar"
+}

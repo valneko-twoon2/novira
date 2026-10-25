@@ -1,0 +1,85 @@
+{
+  "prompt": {
+    "load": {
+      "class_type": "LoadVideo",
+      "inputs": {
+        "file": {
+          "$image": "clip.mp4"
+        }
+      }
+    },
+    "parts": {
+      "class_type": "GetVideoComponents",
+      "inputs": {
+        "video": [
+          "load",
+          0
+        ]
+      }
+    },
+    "smooth": {
+      "class_type": "RIFE VFI",
+      "inputs": {
+        "ckpt_name": "rife49.pth",
+        "frames": [
+          "parts",
+          0
+        ],
+        "clear_cache_after_n_frames": 10,
+        "multiplier": 2,
+        "fast_mode": true,
+        "ensemble": true,
+        "scale_factor": 1,
+        "dtype": "float16",
+        "torch_compile": false,
+        "batch_size": 1
+      }
+    },
+    "video": {
+      "class_type": "CreateVideo",
+      "inputs": {
+        "images": [
+          "smooth",
+          0
+        ],
+        "fps": 32
+      }
+    },
+    "save": {
+      "class_type": "SaveVideo",
+      "inputs": {
+        "video": [
+          "video",
+          0
+        ],
+        "filename_prefix": "video/novira-finish",
+        "format": "mp4",
+        "codec": "auto"
+      }
+    },
+    "first": {
+      "class_type": "ImageFromBatch",
+      "inputs": {
+        "image": [
+          "smooth",
+          0
+        ],
+        "batch_index": 0,
+        "length": 1
+      }
+    },
+    "thumb": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "first",
+          0
+        ]
+      }
+    }
+  },
+  "outputs": [
+    "save"
+  ],
+  "thumbnail": "thumb"
+}

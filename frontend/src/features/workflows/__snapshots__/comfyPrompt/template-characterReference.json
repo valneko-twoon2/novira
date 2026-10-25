@@ -1,0 +1,161 @@
+{
+  "graph": {
+    "prompt": {
+      "model": {
+        "class_type": "CheckpointLoaderSimple",
+        "inputs": {
+          "ckpt_name": {
+            "$model": "main-key"
+          }
+        }
+      },
+      "pos": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "text": "a cute puppy sitting in a sunny meadow, detailed fur, soft light",
+          "clip": [
+            "model",
+            1
+          ]
+        }
+      },
+      "neg": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "text": "blurry, low quality, watermark",
+          "clip": [
+            "model",
+            1
+          ]
+        }
+      },
+      "noise": {
+        "class_type": "EmptyLatentImage",
+        "inputs": {
+          "width": 1024,
+          "height": 1024,
+          "batch_size": 1
+        }
+      },
+      "ipaLoader": {
+        "class_type": "IPAdapterUnifiedLoader",
+        "inputs": {
+          "model": [
+            "model",
+            0
+          ],
+          "preset": "STANDARD (medium strength)"
+        }
+      },
+      "character": {
+        "class_type": "LoadImage",
+        "inputs": {
+          "image": {
+            "$image": "photo.png"
+          }
+        }
+      },
+      "cut": {
+        "class_type": "RMBG",
+        "inputs": {
+          "image": [
+            "character",
+            0
+          ],
+          "model": "INSPYRENET",
+          "sensitivity": 1,
+          "process_res": 1024,
+          "mask_blur": 0,
+          "mask_offset": 0,
+          "invert_output": false,
+          "refine_foreground": false,
+          "unload_model": false,
+          "background": "Color",
+          "background_color": "#FFFFFF"
+        }
+      },
+      "ipa": {
+        "class_type": "IPAdapter",
+        "inputs": {
+          "model": [
+            "ipaLoader",
+            0
+          ],
+          "ipadapter": [
+            "ipaLoader",
+            1
+          ],
+          "image": [
+            "cut",
+            0
+          ],
+          "weight": 0.6,
+          "start_at": 0,
+          "end_at": 1,
+          "weight_type": "standard"
+        }
+      },
+      "denoise": {
+        "class_type": "KSampler",
+        "inputs": {
+          "model": [
+            "ipa",
+            0
+          ],
+          "seed": {
+            "$seed": true
+          },
+          "steps": 30,
+          "cfg": 4.5,
+          "sampler_name": {
+            "$sampler_name": "dpmpp_2m_k"
+          },
+          "scheduler": {
+            "$scheduler": "dpmpp_2m_k"
+          },
+          "positive": [
+            "pos",
+            0
+          ],
+          "negative": [
+            "neg",
+            0
+          ],
+          "latent_image": [
+            "noise",
+            0
+          ],
+          "denoise": 1
+        }
+      },
+      "decode": {
+        "class_type": "VAEDecode",
+        "inputs": {
+          "samples": [
+            "denoise",
+            0
+          ],
+          "vae": [
+            "model",
+            2
+          ]
+        }
+      },
+      "save": {
+        "class_type": "SaveImage",
+        "inputs": {
+          "images": [
+            "decode",
+            0
+          ],
+          "filename_prefix": "novira"
+        }
+      }
+    },
+    "outputs": [
+      "save"
+    ]
+  },
+  "seed": null,
+  "random": true
+}

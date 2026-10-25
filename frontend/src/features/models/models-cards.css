@@ -1,0 +1,246 @@
+/* Model cards, grid and covers. */
+.mm-grid-scroll {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-4);
+  overflow-y: auto;
+}
+
+.mm-grid-empty {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+}
+
+.mm-empty__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.mm-grid--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--mm-thumb, 180px), 1fr));
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.mm-grid--list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mm-card-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-panel);
+  cursor: pointer;
+  outline: none;
+  transition:
+    box-shadow var(--duration),
+    border-color var(--duration);
+}
+
+.mm-card-item:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow);
+}
+
+.mm-card-item:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.mm-card-item.is-selected {
+  border-color: var(--blue-400);
+  box-shadow: 0 0 0 1px var(--blue-400);
+}
+
+.mm-card-item__media {
+  position: relative;
+  container-type: inline-size;
+}
+
+/* License tag on the cover, top left (the star and menu take the top right). The scrim keeps the soft tag colour readable
+   over the picture; a long label ends in an ellipsis, and on a narrow card only the icon is shown. */
+.mm-card-item__license {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  display: flex;
+  max-width: calc(100% - var(--space-2) * 2 - var(--space-1) - 52px);
+  border-radius: var(--radius-pill);
+  background: var(--scrim-light);
+}
+
+.mm-card-item__license .browse-commercial {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.mm-card-item__license .browse-commercial svg {
+  flex-shrink: 0;
+}
+
+.mm-card-item__license .browse-commercial__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@container (max-width: 159px) {
+  .mm-card-item__license .browse-commercial__label {
+    display: none;
+  }
+}
+
+.mm-card-item__badges {
+  position: absolute;
+  bottom: var(--space-2);
+  left: var(--space-2);
+  display: flex;
+  gap: var(--space-1);
+}
+
+.mm-card-item__actions {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  display: flex;
+  gap: var(--space-1);
+  opacity: 0;
+  transition: opacity var(--duration);
+}
+
+.mm-card-item:hover .mm-card-item__actions,
+.mm-card-item:focus-within .mm-card-item__actions,
+.mm-card-item__actions.has-favorite {
+  opacity: 1;
+}
+
+.mm-card-item__caption {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+}
+
+/* The whole name shows, on two lines when it must: two models often differ only at the end of their names. */
+.mm-card-item__name {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.mm-card-item__meta {
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.mm-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--scrim-light);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.mm-tag--accent {
+  border-color: transparent;
+  background: var(--grad-accent);
+  color: var(--on-overlay);
+}
+
+.mm-iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--scrim-light);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.mm-iconbtn:hover {
+  color: var(--text);
+}
+
+.mm-iconbtn.is-on {
+  color: var(--yellow-400);
+}
+
+/* Covers */
+.mm-cover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg-elevated);
+  color: var(--base-500);
+}
+
+.mm-cover--tall {
+  aspect-ratio: 2 / 3;
+}
+
+.mm-cover--wide {
+  aspect-ratio: 16 / 10;
+}
+
+.mm-cover--icon {
+  aspect-ratio: 16 / 10;
+  background: var(--bg-surface);
+}
+
+.mm-cover__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* List view */
+.mm-grid--list .mm-card-item {
+  flex-direction: row;
+  align-items: center;
+}
+
+.mm-grid--list .mm-card-item__media {
+  position: static;
+  flex-shrink: 0;
+  width: 72px;
+}
+
+.mm-grid--list .mm-cover {
+  aspect-ratio: 1;
+}
+
+.mm-grid--list .mm-card-item__badges,
+.mm-grid--list .mm-card-item__license {
+  display: none;
+}
+
+.mm-grid--list .mm-card-item__caption {
+  flex: 1;
+}
+
+.mm-grid--list .mm-card-item__actions {
+  top: 50%;
+  transform: translateY(-50%);
+}

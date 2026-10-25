@@ -1,0 +1,29 @@
+[package]
+name = "novira"
+version.workspace = true
+description = "novira desktop shell"
+edition = "2021"
+license = "Apache-2.0"
+
+[lints]
+workspace = true
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# `custom-protocol` makes every build (not only `cargo tauri build`) show the bundled frontend instead of waiting for a dev server.
+tauri = { version = "2", features = ["custom-protocol"] }
+novira-core = { path = "../crates/novira-core" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+# Native folder / save / open dialogs, opened by the shell itself so the WebView never handles a path (MIT).
+rfd = { version = "0.17", default-features = false, features = ["xdg-portal"] }
+
+[dev-dependencies]
+async-trait = "0.1"
+image = { version = "0.25", default-features = false, features = ["png"] }
+regex = "1"
+tempfile = "3"
+tokio-util = { workspace = true }

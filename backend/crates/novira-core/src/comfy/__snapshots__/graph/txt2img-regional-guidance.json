@@ -1,0 +1,310 @@
+{
+  "audio_ext": null,
+  "output_node": "26",
+  "prompt": {
+    "1": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "sdxl\\base.safetensors"
+      }
+    },
+    "10": {
+      "class_type": "InvertMask",
+      "inputs": {
+        "mask": [
+          "6",
+          0
+        ]
+      }
+    },
+    "11": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "a red hat"
+      }
+    },
+    "12": {
+      "class_type": "ConditioningSetMask",
+      "inputs": {
+        "conditioning": [
+          "11",
+          0
+        ],
+        "mask": [
+          "10",
+          0
+        ],
+        "set_cond_area": "default",
+        "strength": 1.0
+      }
+    },
+    "13": {
+      "class_type": "ConditioningCombine",
+      "inputs": {
+        "conditioning_1": [
+          "3",
+          0
+        ],
+        "conditioning_2": [
+          "12",
+          0
+        ]
+      }
+    },
+    "14": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "region-right.png"
+      }
+    },
+    "15": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 768,
+        "image": [
+          "14",
+          0
+        ],
+        "upscale_method": "bilinear",
+        "width": 1024
+      }
+    },
+    "16": {
+      "class_type": "ImageToMask",
+      "inputs": {
+        "channel": "red",
+        "image": [
+          "15",
+          0
+        ]
+      }
+    },
+    "17": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "a blue scarf"
+      }
+    },
+    "18": {
+      "class_type": "ConditioningSetMask",
+      "inputs": {
+        "conditioning": [
+          "17",
+          0
+        ],
+        "mask": [
+          "16",
+          0
+        ],
+        "set_cond_area": "default",
+        "strength": 1.0
+      }
+    },
+    "19": {
+      "class_type": "ConditioningCombine",
+      "inputs": {
+        "conditioning_1": [
+          "9",
+          0
+        ],
+        "conditioning_2": [
+          "18",
+          0
+        ]
+      }
+    },
+    "2": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "a cat"
+      }
+    },
+    "20": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "blur"
+      }
+    },
+    "21": {
+      "class_type": "ConditioningSetMask",
+      "inputs": {
+        "conditioning": [
+          "20",
+          0
+        ],
+        "mask": [
+          "16",
+          0
+        ],
+        "set_cond_area": "default",
+        "strength": 1.0
+      }
+    },
+    "22": {
+      "class_type": "ConditioningCombine",
+      "inputs": {
+        "conditioning_1": [
+          "13",
+          0
+        ],
+        "conditioning_2": [
+          "21",
+          0
+        ]
+      }
+    },
+    "23": {
+      "class_type": "EmptyLatentImage",
+      "inputs": {
+        "batch_size": 1,
+        "height": 768,
+        "width": 1024
+      }
+    },
+    "24": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 6.5,
+        "denoise": 1.0,
+        "latent_image": [
+          "23",
+          0
+        ],
+        "model": [
+          "1",
+          0
+        ],
+        "negative": [
+          "22",
+          0
+        ],
+        "positive": [
+          "19",
+          0
+        ],
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "seed": 42,
+        "steps": 20
+      }
+    },
+    "25": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "24",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "26": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "25",
+          0
+        ]
+      }
+    },
+    "3": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "blurry"
+      }
+    },
+    "4": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "region-left.png"
+      }
+    },
+    "5": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 768,
+        "image": [
+          "4",
+          0
+        ],
+        "upscale_method": "bilinear",
+        "width": 1024
+      }
+    },
+    "6": {
+      "class_type": "ImageToMask",
+      "inputs": {
+        "channel": "red",
+        "image": [
+          "5",
+          0
+        ]
+      }
+    },
+    "7": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "1",
+          1
+        ],
+        "text": "a red hat"
+      }
+    },
+    "8": {
+      "class_type": "ConditioningSetMask",
+      "inputs": {
+        "conditioning": [
+          "7",
+          0
+        ],
+        "mask": [
+          "6",
+          0
+        ],
+        "set_cond_area": "default",
+        "strength": 1.0
+      }
+    },
+    "9": {
+      "class_type": "ConditioningCombine",
+      "inputs": {
+        "conditioning_1": [
+          "2",
+          0
+        ],
+        "conditioning_2": [
+          "8",
+          0
+        ]
+      }
+    }
+  },
+  "thumbnail_node": null,
+  "total_steps": 20
+}

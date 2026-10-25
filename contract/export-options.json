@@ -1,0 +1,7 @@
+{
+  "format": "jpeg",
+  "quality": 85,
+  "maxSide": 1536,
+  "removeInfo": true,
+  "watermark": true
+}

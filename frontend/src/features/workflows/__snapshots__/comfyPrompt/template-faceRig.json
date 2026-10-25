@@ -1,0 +1,44 @@
+{
+  "graph": {
+    "prompt": {
+      "source": {
+        "class_type": "LoadImage",
+        "inputs": {
+          "image": {
+            "$image": "photo.png"
+          }
+        }
+      },
+      "rig": {
+        "class_type": "NKDFaceRig",
+        "inputs": {
+          "image": [
+            "source",
+            0
+          ],
+          "rig": "",
+          "crop_factor": 2,
+          "src_ratio": 1,
+          "stitching": true,
+          "face_index": 0
+        }
+      },
+      "save": {
+        "class_type": "SaveImage",
+        "inputs": {
+          "images": [
+            "rig",
+            0
+          ],
+          "filename_prefix": "novira"
+        }
+      }
+    },
+    "outputs": [
+      "save",
+      "rig"
+    ]
+  },
+  "seed": null,
+  "random": false
+}

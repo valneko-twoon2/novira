@@ -1,0 +1,19 @@
+{
+  "splash.open": "Открыть приложение",
+  "splash.step.downloading": "Загрузка",
+  "splash.step.extracting": "Распаковка",
+  "splash.step.starting": "Запуск",
+  "splash.preparing": "Ожидание запуска движка изображений и загрузки его узлов",
+  "splash.engine.heading": "Подготовка движка изображений",
+  "splash.engine.sub.downloading": "Загрузка ComfyUI и Python",
+  "splash.engine.sub.extracting": "Распаковка загруженных файлов",
+  "splash.engine.sub.starting": "Запуск движка и ожидание его ответа",
+  "splash.engine.rate": "{rate}/с",
+  "splash.engine.eta": "Осталось около {time}",
+  "splash.engine.seconds": "{n} с",
+  "splash.engine.minutes": "{n} мин {s} с",
+  "splash.engine.hours": "{h} ч {m} мин",
+  "splash.wait.heading.loading": "Запуск novira",
+  "splash.wait.sub.loading": "Загрузка ваших данных",
+  "splash.wait.heading.preparing": "Подготовка к работе"
+}

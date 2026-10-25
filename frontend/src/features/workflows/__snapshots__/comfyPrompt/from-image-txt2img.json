@@ -1,0 +1,103 @@
+{
+  "graph": {
+    "prompt": {
+      "sdxl_model_loader-1": {
+        "class_type": "CheckpointLoaderSimple",
+        "inputs": {
+          "ckpt_name": {
+            "$model": "sdxl-key"
+          }
+        }
+      },
+      "sdxl_compel_prompt-2": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "text": "1girl, smile, cherry blossoms",
+          "clip": [
+            "sdxl_model_loader-1",
+            1
+          ]
+        }
+      },
+      "sdxl_compel_prompt-3": {
+        "class_type": "CLIPTextEncode",
+        "inputs": {
+          "text": "blurry, lowres",
+          "clip": [
+            "sdxl_model_loader-1",
+            1
+          ]
+        }
+      },
+      "noise-4": {
+        "class_type": "EmptyLatentImage",
+        "inputs": {
+          "width": 832,
+          "height": 1216,
+          "batch_size": 1
+        }
+      },
+      "denoise_latents-5": {
+        "class_type": "KSampler",
+        "inputs": {
+          "model": [
+            "sdxl_model_loader-1",
+            0
+          ],
+          "seed": {
+            "$seed": true
+          },
+          "steps": 28,
+          "cfg": 6,
+          "sampler_name": {
+            "$sampler_name": "euler_a"
+          },
+          "scheduler": {
+            "$scheduler": "euler_a"
+          },
+          "positive": [
+            "sdxl_compel_prompt-2",
+            0
+          ],
+          "negative": [
+            "sdxl_compel_prompt-3",
+            0
+          ],
+          "latent_image": [
+            "noise-4",
+            0
+          ],
+          "denoise": 1
+        }
+      },
+      "l2i-6": {
+        "class_type": "VAEDecode",
+        "inputs": {
+          "samples": [
+            "denoise_latents-5",
+            0
+          ],
+          "vae": [
+            "sdxl_model_loader-1",
+            2
+          ]
+        }
+      },
+      "save_image-7": {
+        "class_type": "SaveImage",
+        "inputs": {
+          "images": [
+            "l2i-6",
+            0
+          ],
+          "filename_prefix": "novira"
+        }
+      }
+    },
+    "outputs": [
+      "save_image-7"
+    ]
+  },
+  "seed": 12345,
+  "random": false
+}

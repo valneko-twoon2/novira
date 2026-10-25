@@ -1,0 +1,17 @@
+{
+  "batch.title": "일괄 처리",
+  "batch.count.one": "{count}장을 같은 처리에 적용합니다",
+  "batch.count.other": "{count}장을 같은 처리에 적용합니다",
+  "batch.op": "처리 종류",
+  "batch.op.removeBackground.title": "배경을 지우고 오려내기",
+  "batch.op.upscale.title": "확대",
+  "batch.upscaler": "확대에 사용할 모델",
+  "batch.noUpscaler": "확대용 모델이 없습니다. 모델 화면에서 설치하세요.",
+  "batch.needsPack": "배경을 지우려면 확장 기능 {pack}이(가) 필요합니다.",
+  "batch.install": "설치",
+  "batch.restart": "ComfyUI를 다시 시작하여 사용할 수 있게 하기",
+  "batch.run": "실행",
+  "batch.queued.one": "{count}장을 대기열에 넣었습니다. 결과는 원본 이미지와 같은 보드에 들어갑니다",
+  "batch.queued.other": "{count}장을 대기열에 넣었습니다. 결과는 원본 이미지와 같은 보드에 들어갑니다",
+  "batch.failed": "대기열에 넣지 못했습니다"
+}

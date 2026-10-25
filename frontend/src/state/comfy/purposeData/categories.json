@@ -1,0 +1,527 @@
+[
+  {
+    "id": "face",
+    "names": {
+      "ja": "顔の修正・入れ替え",
+      "en": "Face Editing & Swap",
+      "zh-CN": "面部修复与替换",
+      "zh-TW": "臉部修復與替換",
+      "ko": "얼굴 보정 및 교체",
+      "ru": "Исправление и замена лиц",
+      "es": "Retoque e intercambio de rostros",
+      "pt-BR": "Correção e troca de rostos",
+      "fr": "Retouche et échange de visages",
+      "de": "Gesicht korrigieren und tauschen"
+    },
+    "desc": "顔の細部を整えたり、顔を検出・入れ替えたりする。",
+    "examples": [
+      "comfyui-impact-pack",
+      "comfyui-reactor",
+      "comfyui-advancedliveportrait"
+    ]
+  },
+  {
+    "id": "background",
+    "names": {
+      "ja": "背景の削除・変更",
+      "en": "Remove or Change Backgrounds",
+      "zh-CN": "移除或更换背景",
+      "zh-TW": "移除或更換背景",
+      "ko": "배경 제거 및 변경",
+      "ru": "Удаление и замена фона",
+      "es": "Quitar o cambiar fondos",
+      "pt-BR": "Remover ou trocar fundos",
+      "fr": "Supprimer ou changer l'arrière-plan",
+      "de": "Hintergrund entfernen oder ändern"
+    },
+    "desc": "背景を切り抜いたり、背景を差し替えたりする。",
+    "examples": [
+      "comfyui-rmbg",
+      "comfyui-inspyrenet-rembg",
+      "comfyui-layerdiffuse"
+    ]
+  },
+  {
+    "id": "partial",
+    "names": {
+      "ja": "一部を描き直す",
+      "en": "Edit Part of an Image",
+      "zh-CN": "局部重绘",
+      "zh-TW": "局部重繪",
+      "ko": "이미지 일부 다시 그리기",
+      "ru": "Перерисовка части",
+      "es": "Redibujar una parte",
+      "pt-BR": "Editar parte de uma imagem",
+      "fr": "Redessiner une partie de l'image",
+      "de": "Bildteile neu zeichnen"
+    },
+    "desc": "画像の一部を消す、補う、描き足す。",
+    "examples": [
+      "comfyui-inpaint-cropandstitch",
+      "LanPaint",
+      "comfyui-brushnet"
+    ]
+  },
+  {
+    "id": "upscale",
+    "names": {
+      "ja": "画像を高精細化",
+      "en": "Upscale & Enhance Images",
+      "zh-CN": "放大与增强图像",
+      "zh-TW": "放大與增強圖像",
+      "ko": "이미지 확대 및 개선",
+      "ru": "Апскейл и улучшение",
+      "es": "Ampliar y mejorar imágenes",
+      "pt-BR": "Ampliar e melhorar imagens",
+      "fr": "Agrandir et améliorer les images",
+      "de": "Bilder hochskalieren und verbessern"
+    },
+    "desc": "画像や動画の解像度を上げ、細部を補う。",
+    "examples": [
+      "comfyui_ultimatesdupscale",
+      "seedvr2_videoupscaler",
+      "comfyui-supir"
+    ]
+  },
+  {
+    "id": "pose",
+    "names": {
+      "ja": "ポーズ・構図を合わせる",
+      "en": "Guide Pose & Composition",
+      "zh-CN": "控制姿势与构图",
+      "zh-TW": "控制姿勢與構圖",
+      "ko": "포즈 및 구도 제어",
+      "ru": "Поза и композиция",
+      "es": "Guiar pose y composición",
+      "pt-BR": "Guiar pose e composição",
+      "fr": "Guider la pose et la composition",
+      "de": "Pose und Bildaufbau steuern"
+    },
+    "desc": "ポーズや輪郭、奥行きなどを手掛かりに生成を導く。",
+    "examples": [
+      "comfyui_controlnet_aux",
+      "comfyui-openpose-editor",
+      "comfyui-depthanythingv2"
+    ]
+  },
+  {
+    "id": "style",
+    "names": {
+      "ja": "絵柄・人物の雰囲気をそろえる",
+      "en": "Match Style & Character",
+      "zh-CN": "统一画风与角色",
+      "zh-TW": "統一畫風與角色",
+      "ko": "스타일 및 캐릭터 일관성",
+      "ru": "Единый стиль и персонаж",
+      "es": "Unificar estilo y personaje",
+      "pt-BR": "Manter estilo e personagem",
+      "fr": "Harmoniser style et personnage",
+      "de": "Stil und Charakter angleichen"
+    },
+    "desc": "参照画像や追加学習データを使い、絵柄や人物像を反映する。",
+    "examples": [
+      "comfyui_ipadapter_plus",
+      "comfyui_pulid_flux_ll",
+      "comfyui-lora-manager"
+    ]
+  },
+  {
+    "id": "video",
+    "names": {
+      "ja": "動画を生成・編集する",
+      "en": "Create & Edit Video",
+      "zh-CN": "生成与编辑视频",
+      "zh-TW": "生成與編輯影片",
+      "ko": "동영상 생성 및 편집",
+      "ru": "Создание и правка видео",
+      "es": "Crear y editar vídeo",
+      "pt-BR": "Criar e editar vídeos",
+      "fr": "Créer et modifier des vidéos",
+      "de": "Video erstellen und bearbeiten"
+    },
+    "desc": "動画の生成、読み込み、編集、フレーム補間を行う。",
+    "examples": [
+      "comfyui-videohelpersuite",
+      "ComfyUI-WanVideoWrapper",
+      "comfyui-frame-interpolation"
+    ]
+  },
+  {
+    "id": "color",
+    "names": {
+      "ja": "色を調整する",
+      "en": "Adjust Color",
+      "zh-CN": "调整颜色",
+      "zh-TW": "調整色彩",
+      "ko": "색상 조정",
+      "ru": "Настройка цвета",
+      "es": "Ajustar el color",
+      "pt-BR": "Ajustar cores",
+      "fr": "Ajuster les couleurs",
+      "de": "Farben anpassen"
+    },
+    "desc": "色味や明るさ、色調を補正・変更する。",
+    "examples": [
+      "ComfyUI-EasyColorCorrector",
+      "kaytool",
+      "comfyui-essentials"
+    ]
+  },
+  {
+    "id": "caption",
+    "names": {
+      "ja": "画像を説明・読み取る",
+      "en": "Describe & Read Images",
+      "zh-CN": "描述与识别图像",
+      "zh-TW": "描述與辨識圖像",
+      "ko": "이미지 설명 및 읽기",
+      "ru": "Описание и распознавание изображений",
+      "es": "Describir y leer imágenes",
+      "pt-BR": "Descrever e ler imagens",
+      "fr": "Décrire et lire les images",
+      "de": "Bilder beschreiben und auslesen"
+    },
+    "desc": "画像の内容を文章化したり、文字を読み取ったりする。",
+    "examples": [
+      "comfyui-florence2",
+      "comfyui_slk_joy_caption_two",
+      "ComfyUI-JoyCaption"
+    ]
+  },
+  {
+    "id": "light",
+    "names": {
+      "ja": "光と影を調整する",
+      "en": "Adjust Light & Shadow",
+      "zh-CN": "调整光影",
+      "zh-TW": "調整光影",
+      "ko": "빛과 그림자 조정",
+      "ru": "Свет и тени",
+      "es": "Ajustar luz y sombras",
+      "pt-BR": "Ajustar luz e sombra",
+      "fr": "Ajuster lumière et ombres",
+      "de": "Licht und Schatten anpassen"
+    },
+    "desc": "画像の照明や陰影を整えたり、光の当たり方を変えたりする。",
+    "examples": [
+      "comfyui-ic-light",
+      "ComfyUI-Relight",
+      "comfyui-relighting"
+    ]
+  },
+  {
+    "id": "handy",
+    "names": {
+      "ja": "作業を便利にする",
+      "en": "Make Workflows Easier",
+      "zh-CN": "提升工作流便利性",
+      "zh-TW": "提升工作流程便利性",
+      "ko": "작업 편의 기능",
+      "ru": "Удобство работы",
+      "es": "Facilitar el trabajo",
+      "pt-BR": "Facilitar os fluxos de trabalho",
+      "fr": "Faciliter le travail",
+      "de": "Arbeit erleichtern"
+    },
+    "desc": "操作や確認を助ける便利な機能を追加する。",
+    "examples": [
+      "rgthree-comfy",
+      "comfyui-easy-use",
+      "comfyui-mxtoolkit"
+    ]
+  },
+  {
+    "id": "audio",
+    "names": {
+      "ja": "音声・音楽を作る・扱う",
+      "en": "Create & Process Audio",
+      "zh-CN": "生成与处理音频",
+      "zh-TW": "生成與處理音訊",
+      "ko": "음성 및 음악 생성·처리",
+      "ru": "Создание и обработка аудио",
+      "es": "Crear y procesar audio",
+      "pt-BR": "Criar e processar áudio",
+      "fr": "Créer et traiter l'audio",
+      "de": "Audio und Musik erstellen und verarbeiten"
+    },
+    "desc": "音声や音楽の生成、変換、分離、読み上げを行う。",
+    "examples": [
+      "audio-separation-nodes-comfyui",
+      "comfyui-mmaudio",
+      "tts_audio_suite"
+    ]
+  },
+  {
+    "id": "prompt",
+    "names": {
+      "ja": "プロンプトを考え・整える",
+      "en": "Build & Improve Prompts",
+      "zh-CN": "编写与优化提示词",
+      "zh-TW": "編寫與優化提示詞",
+      "ko": "프롬프트 작성 및 개선",
+      "ru": "Составление и улучшение промптов",
+      "es": "Crear y mejorar prompts",
+      "pt-BR": "Criar e melhorar prompts",
+      "fr": "Rédiger et améliorer les prompts",
+      "de": "Prompts verfassen und verbessern"
+    },
+    "desc": "プロンプトの作成、拡張、整理を助ける。",
+    "examples": [
+      "comfyui-dynamicprompts",
+      "comfyui-prompt-control",
+      "comfyui-inspire-pack"
+    ]
+  },
+  {
+    "id": "model",
+    "names": {
+      "ja": "生成モデルを使う・管理する",
+      "en": "Use & Manage Models",
+      "zh-CN": "使用与管理模型",
+      "zh-TW": "使用與管理模型",
+      "ko": "생성 모델 사용 및 관리",
+      "ru": "Использование и управление моделями",
+      "es": "Usar y gestionar modelos",
+      "pt-BR": "Usar e gerenciar modelos",
+      "fr": "Utiliser et gérer les modèles",
+      "de": "Modelle verwenden und verwalten"
+    },
+    "desc": "生成モデルや追加学習データを読み込み、管理する。",
+    "examples": [
+      "ComfyUI-GGUF",
+      "comfyui-lora-manager",
+      "comfyui-art-venture"
+    ]
+  },
+  {
+    "id": "three",
+    "names": {
+      "ja": "3D素材を作る・扱う",
+      "en": "Create & Work with 3D",
+      "zh-CN": "创建与处理3D内容",
+      "zh-TW": "建立與處理3D內容",
+      "ko": "3D 콘텐츠 생성 및 작업",
+      "ru": "Создание и работа с 3D",
+      "es": "Crear y trabajar con 3D",
+      "pt-BR": "Criar e trabalhar com 3D",
+      "fr": "Créer et manipuler la 3D",
+      "de": "3D-Inhalte erstellen und bearbeiten"
+    },
+    "desc": "3Dモデルや立体表現を生成・読み込み・編集する。",
+    "examples": [
+      "ComfyUI-3D-Pack",
+      "comfyui-tripo",
+      "comfyui-3d"
+    ]
+  },
+  {
+    "id": "api",
+    "names": {
+      "ja": "外部AI・サービスと連携する",
+      "en": "Connect to AI Services",
+      "zh-CN": "连接外部AI与服务",
+      "zh-TW": "連接外部AI與服務",
+      "ko": "외부 AI 및 서비스 연동",
+      "ru": "Подключение внешних ИИ и сервисов",
+      "es": "Conectar con IA y servicios",
+      "pt-BR": "Conectar a serviços de IA",
+      "fr": "Se connecter à des IA et services externes",
+      "de": "Externe KI und Dienste anbinden"
+    },
+    "desc": "外部のAIモデルやオンラインサービスをワークフローから利用する。",
+    "examples": [
+      "comfyui-ollama",
+      "comfyui-gemini",
+      "comfyui-replicate"
+    ]
+  },
+  {
+    "id": "files",
+    "names": {
+      "ja": "画像・動画・ファイルを読み書きする",
+      "en": "Load & Save Media and Files",
+      "zh-CN": "读取与保存媒体和文件",
+      "zh-TW": "讀取與儲存媒體和檔案",
+      "ko": "미디어 및 파일 불러오기·저장",
+      "ru": "Загрузка и сохранение файлов",
+      "es": "Cargar y guardar medios y archivos",
+      "pt-BR": "Carregar e salvar mídia e arquivos",
+      "fr": "Charger et enregistrer médias et fichiers",
+      "de": "Medien und Dateien laden und speichern"
+    },
+    "desc": "画像や動画、設定ファイルの読み込み・保存・整理を行う。",
+    "examples": [
+      "comfyui-image-saver",
+      "comfyui-videohelpersuite",
+      "comfyui-metadata-helper"
+    ]
+  },
+  {
+    "id": "mask",
+    "names": {
+      "ja": "領域を選択・切り抜く",
+      "en": "Select & Segment Areas",
+      "zh-CN": "选择与分割区域",
+      "zh-TW": "選取與分割區域",
+      "ko": "영역 선택 및 분할",
+      "ru": "Выделение и сегментация областей",
+      "es": "Seleccionar y segmentar zonas",
+      "pt-BR": "Selecionar e segmentar áreas",
+      "fr": "Sélectionner et détourer des zones",
+      "de": "Bereiche auswählen und freistellen"
+    },
+    "desc": "画像内の人物や物体を検出し、編集する領域を切り分ける。",
+    "examples": [
+      "comfyui-segment-anything-2",
+      "comfyui-segment-anything",
+      "comfyui-rmbg"
+    ]
+  },
+  {
+    "id": "animation",
+    "names": {
+      "ja": "画像を動かす",
+      "en": "Animate Images",
+      "zh-CN": "让图像动起来",
+      "zh-TW": "讓圖像動起來",
+      "ko": "이미지 애니메이션",
+      "ru": "Анимация изображений",
+      "es": "Animar imágenes",
+      "pt-BR": "Animar imagens",
+      "fr": "Animer des images",
+      "de": "Bilder animieren"
+    },
+    "desc": "人物や画像に動きを付け、アニメーションを作る。",
+    "examples": [
+      "comfyui-animatediff-evolved",
+      "comfyui-advancedliveportrait",
+      "comfyui-frame-interpolation"
+    ]
+  },
+  {
+    "id": "image",
+    "names": {
+      "ja": "画像を加工・合成する",
+      "en": "Edit & Combine Images",
+      "zh-CN": "编辑与合成图像",
+      "zh-TW": "編輯與合成圖像",
+      "ko": "이미지 편집 및 합성",
+      "ru": "Редактирование и композиция изображений",
+      "es": "Editar y combinar imágenes",
+      "pt-BR": "Editar e combinar imagens",
+      "fr": "Retoucher et combiner des images",
+      "de": "Bilder bearbeiten und kombinieren"
+    },
+    "desc": "画像の変換、フィルター、レイヤー合成などを行う。",
+    "examples": [
+      "was-ns",
+      "comfyui-layerstyle",
+      "comfyui-image-filters"
+    ]
+  },
+  {
+    "id": "text",
+    "names": {
+      "ja": "文章・データを扱う",
+      "en": "Work with Text & Data",
+      "zh-CN": "处理文本与数据",
+      "zh-TW": "處理文字與資料",
+      "ko": "텍스트 및 데이터 처리",
+      "ru": "Работа с текстом и данными",
+      "es": "Trabajar con texto y datos",
+      "pt-BR": "Trabalhar com texto e dados",
+      "fr": "Traiter texte et données",
+      "de": "Text und Daten verarbeiten"
+    },
+    "desc": "文章や文字列、構造化データを生成・変換・処理する。",
+    "examples": [
+      "ComfyUI-QwenVL",
+      "was-node-suite-comfyui",
+      "comfyui-json-tools"
+    ]
+  },
+  {
+    "id": "workflow",
+    "names": {
+      "ja": "ワークフローを組み立てる",
+      "en": "Build & Automate Workflows",
+      "zh-CN": "构建与自动化工作流",
+      "zh-TW": "建立與自動化工作流程",
+      "ko": "워크플로 구성 및 자동화",
+      "ru": "Сборка и автоматизация процессов",
+      "es": "Crear y automatizar flujos",
+      "pt-BR": "Criar e automatizar fluxos",
+      "fr": "Construire et automatiser des workflows",
+      "de": "Workflows aufbauen und automatisieren"
+    },
+    "desc": "処理の繰り返しや分岐、キュー管理などを支援する。",
+    "examples": [
+      "comfyui-custom-scripts",
+      "comfyui-workflow-manager",
+      "comfyui-batch-processing"
+    ]
+  },
+  {
+    "id": "performance",
+    "names": {
+      "ja": "処理を軽く・速くする",
+      "en": "Improve Speed & Resource Use",
+      "zh-CN": "提升速度与资源利用",
+      "zh-TW": "提升速度與資源使用",
+      "ko": "속도 및 자원 사용 개선",
+      "ru": "Скорость и экономия ресурсов",
+      "es": "Mejorar velocidad y recursos",
+      "pt-BR": "Melhorar velocidade e uso de recursos",
+      "fr": "Améliorer vitesse et mémoire",
+      "de": "Tempo und Ressourcen verbessern"
+    },
+    "desc": "メモリ使用量や処理時間を抑え、実行を安定させる。",
+    "examples": [
+      "comfyui_memory_cleanup",
+      "ComfyUI-nunchaku",
+      "teacache"
+    ]
+  },
+  {
+    "id": "detect",
+    "names": {
+      "ja": "物体・人物を検出する",
+      "en": "Detect Objects & People",
+      "zh-CN": "检测物体与人物",
+      "zh-TW": "偵測物體與人物",
+      "ko": "사물 및 인물 감지",
+      "ru": "Обнаружение объектов и людей",
+      "es": "Detectar objetos y personas",
+      "pt-BR": "Detectar objetos e pessoas",
+      "fr": "Détecter objets et personnes",
+      "de": "Objekte und Personen erkennen"
+    },
+    "desc": "画像や動画から物体、人物、特徴を検出する。",
+    "examples": [
+      "comfyui-impact-subpack",
+      "comfyui-florence2",
+      "comfyui-ultralytics-yolo-detection"
+    ]
+  },
+  {
+    "id": "control",
+    "names": {
+      "ja": "参照画像で生成を導く",
+      "en": "Guide Generation with References",
+      "zh-CN": "使用参考图引导生成",
+      "zh-TW": "使用參考圖引導生成",
+      "ko": "참조 이미지로 생성 제어",
+      "ru": "Управление по референсам",
+      "es": "Guiar la generación con referencias",
+      "pt-BR": "Guiar a geração com referências",
+      "fr": "Guider la génération par références",
+      "de": "Generierung mit Referenzbildern steuern"
+    },
+    "desc": "参照画像やガイド情報に沿って生成結果を調整する。",
+    "examples": [
+      "comfyui_controlnet_aux",
+      "comfyui-advanced-controlnet",
+      "comfyui_ipadapter_plus"
+    ]
+  }
+]

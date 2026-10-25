@@ -1,0 +1,9 @@
+{
+  "nodeKey": "node-1",
+  "image": "abc.png",
+  "rig": "{}",
+  "quality": "final",
+  "cropFactor": 2.5,
+  "srcRatio": 1.5,
+  "faceIndex": 1
+}

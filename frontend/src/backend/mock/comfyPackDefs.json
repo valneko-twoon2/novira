@@ -1,0 +1,2027 @@
+{
+  "NKDFilmGrain": {
+    "input": {
+      "required": {
+        "amount": [
+          "FLOAT",
+          {
+            "default": 25,
+            "display_name": "Amount",
+            "max": 100,
+            "min": 0,
+            "step": 0.5
+          }
+        ],
+        "animate": [
+          "BOOLEAN",
+          {
+            "default": true,
+            "display_name": "Animate (video)"
+          }
+        ],
+        "color": [
+          "FLOAT",
+          {
+            "default": 0,
+            "display_name": "Color",
+            "max": 100,
+            "min": 0,
+            "step": 1
+          }
+        ],
+        "image": [
+          "IMAGE"
+        ],
+        "roughness": [
+          "FLOAT",
+          {
+            "default": 50,
+            "display_name": "Roughness",
+            "max": 100,
+            "min": 0,
+            "step": 0.5
+          }
+        ],
+        "seed": [
+          "INT",
+          {
+            "default": 0,
+            "display_name": "Seed",
+            "max": 18446744073709552000,
+            "min": 0
+          }
+        ],
+        "size": [
+          "FLOAT",
+          {
+            "default": 25,
+            "display_name": "Size",
+            "max": 100,
+            "min": 0,
+            "step": 0.5
+          }
+        ]
+      },
+      "optional": {
+        "mask": [
+          "MASK"
+        ]
+      }
+    },
+    "input_order": {
+      "optional": [
+        "mask"
+      ],
+      "required": [
+        "image",
+        "amount",
+        "size",
+        "roughness",
+        "color",
+        "animate",
+        "seed"
+      ]
+    },
+    "output": [
+      "IMAGE"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "image"
+    ],
+    "name": "NKDFilmGrain",
+    "display_name": "😺NKD Film Grain",
+    "description": "Lightroom / Camera Raw-style film grain: Amount, Size and Roughness. Monochrome by default; raise Color for dye-cloud color grain. On a video batch each frame g",
+    "python_module": "custom_nodes.ComfyUI-NKD-Basic-Tools",
+    "category": "😺NKD Nodes/Basic",
+    "output_node": false
+  },
+  "UltimateSDUpscaleNoUpscale": {
+    "input": {
+      "required": {
+        "batch_size": [
+          "INT",
+          {
+            "default": 1,
+            "max": 4096,
+            "min": 1,
+            "step": 1
+          }
+        ],
+        "cfg": [
+          "FLOAT",
+          {
+            "default": 8,
+            "max": 100,
+            "min": 0
+          }
+        ],
+        "denoise": [
+          "FLOAT",
+          {
+            "default": 0.2,
+            "max": 1,
+            "min": 0,
+            "step": 0.01
+          }
+        ],
+        "force_uniform_tiles": [
+          "BOOLEAN",
+          {
+            "default": true
+          }
+        ],
+        "mask_blur": [
+          "INT",
+          {
+            "default": 8,
+            "max": 64,
+            "min": 0,
+            "step": 1
+          }
+        ],
+        "mode_type": [
+          [
+            "Linear",
+            "Chess",
+            "None"
+          ]
+        ],
+        "model": [
+          "MODEL"
+        ],
+        "negative": [
+          "CONDITIONING"
+        ],
+        "positive": [
+          "CONDITIONING"
+        ],
+        "sampler_name": [
+          [
+            "euler",
+            "euler_cfg_pp",
+            "euler_ancestral",
+            "euler_ancestral_cfg_pp",
+            "heun",
+            "heunpp2",
+            "exp_heun_2_x0",
+            "exp_heun_2_x0_sde",
+            "dpm_2",
+            "dpm_2_ancestral",
+            "lms",
+            "dpm_fast",
+            "dpm_adaptive",
+            "dpmpp_2s_ancestral",
+            "dpmpp_2s_ancestral_cfg_pp",
+            "dpmpp_sde",
+            "dpmpp_sde_gpu",
+            "dpmpp_2m",
+            "dpmpp_2m_cfg_pp",
+            "dpmpp_2m_sde",
+            "dpmpp_2m_sde_gpu",
+            "dpmpp_2m_sde_heun",
+            "dpmpp_2m_sde_heun_gpu",
+            "dpmpp_3m_sde",
+            "dpmpp_3m_sde_gpu",
+            "ddpm",
+            "lcm",
+            "ipndm",
+            "ipndm_v",
+            "deis",
+            "cfgpp_ud10_ab",
+            "res_multistep",
+            "res_multistep_cfg_pp",
+            "res_multistep_ancestral",
+            "res_multistep_ancestral_cfg_pp",
+            "gradient_estimation",
+            "gradient_estimation_cfg_pp",
+            "er_sde",
+            "seeds_2",
+            "seeds_3",
+            "sa_solver",
+            "sa_solver_pece",
+            "ddim",
+            "uni_pc",
+            "uni_pc_bh2"
+          ]
+        ],
+        "scheduler": [
+          [
+            "simple",
+            "sgm_uniform",
+            "karras",
+            "exponential",
+            "ddim_uniform",
+            "beta",
+            "normal",
+            "linear_quadratic",
+            "kl_optimal"
+          ]
+        ],
+        "seam_fix_denoise": [
+          "FLOAT",
+          {
+            "default": 1,
+            "max": 1,
+            "min": 0,
+            "step": 0.01
+          }
+        ],
+        "seam_fix_mask_blur": [
+          "INT",
+          {
+            "default": 8,
+            "max": 64,
+            "min": 0,
+            "step": 1
+          }
+        ],
+        "seam_fix_mode": [
+          [
+            "None",
+            "Band Pass",
+            "Half Tile",
+            "Half Tile + Intersections"
+          ]
+        ],
+        "seam_fix_padding": [
+          "INT",
+          {
+            "default": 16,
+            "max": 8192,
+            "min": 0,
+            "step": 8
+          }
+        ],
+        "seam_fix_width": [
+          "INT",
+          {
+            "default": 64,
+            "max": 8192,
+            "min": 0,
+            "step": 8
+          }
+        ],
+        "seed": [
+          "INT",
+          {
+            "default": 0,
+            "max": 18446744073709552000,
+            "min": 0
+          }
+        ],
+        "steps": [
+          "INT",
+          {
+            "default": 20,
+            "max": 10000,
+            "min": 1,
+            "step": 1
+          }
+        ],
+        "tile_height": [
+          "INT",
+          {
+            "default": 512,
+            "max": 8192,
+            "min": 64,
+            "step": 8
+          }
+        ],
+        "tile_padding": [
+          "INT",
+          {
+            "default": 32,
+            "max": 8192,
+            "min": 0,
+            "step": 8
+          }
+        ],
+        "tile_width": [
+          "INT",
+          {
+            "default": 512,
+            "max": 8192,
+            "min": 64,
+            "step": 8
+          }
+        ],
+        "tiled_decode": [
+          "BOOLEAN",
+          {
+            "default": false
+          }
+        ],
+        "upscaled_image": [
+          "IMAGE"
+        ],
+        "vae": [
+          "VAE"
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "upscaled_image",
+        "model",
+        "positive",
+        "negative",
+        "vae",
+        "seed",
+        "steps",
+        "cfg",
+        "sampler_name",
+        "scheduler",
+        "denoise",
+        "mode_type",
+        "tile_width",
+        "tile_height",
+        "mask_blur",
+        "tile_padding",
+        "seam_fix_mode",
+        "seam_fix_denoise",
+        "seam_fix_width",
+        "seam_fix_mask_blur",
+        "seam_fix_padding",
+        "force_uniform_tiles",
+        "tiled_decode",
+        "batch_size"
+      ]
+    },
+    "output": [
+      "IMAGE"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "IMAGE"
+    ],
+    "name": "UltimateSDUpscaleNoUpscale",
+    "display_name": "Ultimate SD Upscale (No Upscale)",
+    "description": "Runs image-to-image on tiles from the input image.",
+    "python_module": "custom_nodes.ComfyUI_UltimateSDUpscale",
+    "category": "image/upscaling",
+    "output_node": false
+  },
+  "IPAdapterUnifiedLoader": {
+    "input": {
+      "required": {
+        "model": [
+          "MODEL"
+        ],
+        "preset": [
+          [
+            "LIGHT - SD1.5 only (low strength)",
+            "STANDARD (medium strength)",
+            "VIT-G (medium strength)",
+            "PLUS (high strength)",
+            "PLUS FACE (portraits)",
+            "FULL FACE - SD1.5 only (portraits stronger)"
+          ]
+        ]
+      },
+      "optional": {
+        "ipadapter": [
+          "IPADAPTER"
+        ]
+      }
+    },
+    "input_order": {
+      "optional": [
+        "ipadapter"
+      ],
+      "required": [
+        "model",
+        "preset"
+      ]
+    },
+    "output": [
+      "MODEL",
+      "IPADAPTER"
+    ],
+    "output_is_list": [
+      false,
+      false
+    ],
+    "output_name": [
+      "model",
+      "ipadapter"
+    ],
+    "name": "IPAdapterUnifiedLoader",
+    "display_name": "IPAdapter Unified Loader",
+    "description": "",
+    "python_module": "custom_nodes.ComfyUI_IPAdapter_plus",
+    "category": "ipadapter",
+    "output_node": false
+  },
+  "IPAdapter": {
+    "input": {
+      "required": {
+        "end_at": [
+          "FLOAT",
+          {
+            "default": 1,
+            "max": 1,
+            "min": 0,
+            "step": 0.001
+          }
+        ],
+        "image": [
+          "IMAGE"
+        ],
+        "ipadapter": [
+          "IPADAPTER"
+        ],
+        "model": [
+          "MODEL"
+        ],
+        "start_at": [
+          "FLOAT",
+          {
+            "default": 0,
+            "max": 1,
+            "min": 0,
+            "step": 0.001
+          }
+        ],
+        "weight": [
+          "FLOAT",
+          {
+            "default": 1,
+            "max": 3,
+            "min": -1,
+            "step": 0.05
+          }
+        ],
+        "weight_type": [
+          [
+            "standard",
+            "prompt is more important",
+            "style transfer"
+          ]
+        ]
+      },
+      "optional": {
+        "attn_mask": [
+          "MASK"
+        ]
+      }
+    },
+    "input_order": {
+      "optional": [
+        "attn_mask"
+      ],
+      "required": [
+        "model",
+        "ipadapter",
+        "image",
+        "weight",
+        "start_at",
+        "end_at",
+        "weight_type"
+      ]
+    },
+    "output": [
+      "MODEL"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "MODEL"
+    ],
+    "name": "IPAdapter",
+    "display_name": "IPAdapter",
+    "description": "",
+    "python_module": "custom_nodes.ComfyUI_IPAdapter_plus",
+    "category": "ipadapter",
+    "output_node": false
+  },
+  "NKDFaceRig": {
+    "input": {
+      "required": {
+        "crop_factor": [
+          "FLOAT",
+          {
+            "default": 2,
+            "max": 3,
+            "min": 1.5,
+            "step": 0.05
+          }
+        ],
+        "face_index": [
+          "INT",
+          {
+            "default": 0,
+            "display_name": "Face",
+            "max": 64,
+            "min": 0
+          }
+        ],
+        "image": [
+          "IMAGE"
+        ],
+        "rig": [
+          "STRING",
+          {
+            "default": "",
+            "multiline": true
+          }
+        ],
+        "src_ratio": [
+          "FLOAT",
+          {
+            "default": 1,
+            "max": 1,
+            "min": 0,
+            "step": 0.01
+          }
+        ],
+        "stitching": [
+          "BOOLEAN",
+          {
+            "default": true
+          }
+        ]
+      },
+      "optional": {
+        "expression": [
+          "NKD_EXPRESSION"
+        ]
+      }
+    },
+    "input_order": {
+      "hidden": [
+        "unique_id",
+        "prompt",
+        "extra_pnginfo"
+      ],
+      "optional": [
+        "expression"
+      ],
+      "required": [
+        "image",
+        "rig",
+        "crop_factor",
+        "src_ratio",
+        "stitching",
+        "face_index"
+      ]
+    },
+    "output": [
+      "IMAGE",
+      "MASK",
+      "NKD_EXPRESSION"
+    ],
+    "output_is_list": [
+      false,
+      false,
+      false
+    ],
+    "output_name": [
+      "image",
+      "face_mask",
+      "expression"
+    ],
+    "name": "NKDFaceRig",
+    "display_name": "😺NKD Face Rig",
+    "description": "Edit a portrait's expression with draggable controls sitting on the face itself, previewed live. Open the rig from the node's button; the handles hang off the d",
+    "python_module": "custom_nodes.ComfyUI-NKD-Basic-Tools",
+    "category": "😺NKD Nodes/Face",
+    "output_node": true
+  },
+  "FaceDetailer": {
+    "input": {
+      "required": {
+        "bbox_crop_factor": [
+          "FLOAT",
+          {
+            "default": 3,
+            "max": 10,
+            "min": 1,
+            "step": 0.1
+          }
+        ],
+        "bbox_detector": [
+          "BBOX_DETECTOR"
+        ],
+        "bbox_dilation": [
+          "INT",
+          {
+            "default": 10,
+            "max": 512,
+            "min": -512,
+            "step": 1
+          }
+        ],
+        "bbox_threshold": [
+          "FLOAT",
+          {
+            "default": 0.5,
+            "max": 1,
+            "min": 0,
+            "step": 0.01
+          }
+        ],
+        "cfg": [
+          "FLOAT",
+          {
+            "default": 8,
+            "max": 100,
+            "min": 0
+          }
+        ],
+        "clip": [
+          "CLIP"
+        ],
+        "cycle": [
+          "INT",
+          {
+            "default": 1,
+            "max": 10,
+            "min": 1,
+            "step": 1
+          }
+        ],
+        "denoise": [
+          "FLOAT",
+          {
+            "default": 0.5,
+            "max": 1,
+            "min": 0.0001,
+            "step": 0.01
+          }
+        ],
+        "drop_size": [
+          "INT",
+          {
+            "default": 10,
+            "max": 16384,
+            "min": 1,
+            "step": 1
+          }
+        ],
+        "feather": [
+          "INT",
+          {
+            "default": 5,
+            "max": 100,
+            "min": 0,
+            "step": 1
+          }
+        ],
+        "force_inpaint": [
+          "BOOLEAN",
+          {
+            "default": true
+          }
+        ],
+        "guide_size": [
+          "FLOAT",
+          {
+            "default": 512,
+            "max": 16384,
+            "min": 64,
+            "step": 8
+          }
+        ],
+        "guide_size_for": [
+          "BOOLEAN",
+          {
+            "default": true
+          }
+        ],
+        "image": [
+          "IMAGE"
+        ],
+        "max_size": [
+          "FLOAT",
+          {
+            "default": 1024,
+            "max": 16384,
+            "min": 64,
+            "step": 8
+          }
+        ],
+        "model": [
+          "MODEL"
+        ],
+        "negative": [
+          "CONDITIONING"
+        ],
+        "noise_mask": [
+          "BOOLEAN",
+          {
+            "default": true
+          }
+        ],
+        "positive": [
+          "CONDITIONING"
+        ],
+        "sam_bbox_expansion": [
+          "INT",
+          {
+            "default": 0,
+            "max": 1000,
+            "min": 0,
+            "step": 1
+          }
+        ],
+        "sam_detection_hint": [
+          [
+            "center-1",
+            "horizontal-2",
+            "vertical-2",
+            "rect-4",
+            "diamond-4",
+            "mask-area",
+            "mask-points",
+            "mask-point-bbox",
+            "none"
+          ]
+        ],
+        "sam_dilation": [
+          "INT",
+          {
+            "default": 0,
+            "max": 512,
+            "min": -512,
+            "step": 1
+          }
+        ],
+        "sam_mask_hint_threshold": [
+          "FLOAT",
+          {
+            "default": 0.7,
+            "max": 1,
+            "min": 0,
+            "step": 0.01
+          }
+        ],
+        "sam_mask_hint_use_negative": [
+          [
+            "False",
+            "Small",
+            "Outter"
+          ]
+        ],
+        "sam_threshold": [
+          "FLOAT",
+          {
+            "default": 0.93,
+            "max": 1,
+            "min": 0,
+            "step": 0.01
+          }
+        ],
+        "sampler_name": [
+          [
+            "euler",
+            "euler_cfg_pp",
+            "euler_ancestral",
+            "euler_ancestral_cfg_pp",
+            "heun",
+            "heunpp2",
+            "exp_heun_2_x0",
+            "exp_heun_2_x0_sde",
+            "dpm_2",
+            "dpm_2_ancestral",
+            "lms",
+            "dpm_fast",
+            "dpm_adaptive",
+            "dpmpp_2s_ancestral",
+            "dpmpp_2s_ancestral_cfg_pp",
+            "dpmpp_sde",
+            "dpmpp_sde_gpu",
+            "dpmpp_2m",
+            "dpmpp_2m_cfg_pp",
+            "dpmpp_2m_sde",
+            "dpmpp_2m_sde_gpu",
+            "dpmpp_2m_sde_heun",
+            "dpmpp_2m_sde_heun_gpu",
+            "dpmpp_3m_sde",
+            "dpmpp_3m_sde_gpu",
+            "ddpm",
+            "lcm",
+            "ipndm",
+            "ipndm_v",
+            "deis",
+            "cfgpp_ud10_ab",
+            "res_multistep",
+            "res_multistep_cfg_pp",
+            "res_multistep_ancestral",
+            "res_multistep_ancestral_cfg_pp",
+            "gradient_estimation",
+            "gradient_estimation_cfg_pp",
+            "er_sde",
+            "seeds_2",
+            "seeds_3",
+            "sa_solver",
+            "sa_solver_pece",
+            "ddim",
+            "uni_pc",
+            "uni_pc_bh2"
+          ]
+        ],
+        "scheduler": [
+          [
+            "simple",
+            "sgm_uniform",
+            "karras",
+            "exponential",
+            "ddim_uniform",
+            "beta",
+            "normal",
+            "linear_quadratic",
+            "kl_optimal",
+            "AYS SDXL",
+            "AYS SD1",
+            "AYS SVD",
+            "GITS[coeff=1.2]",
+            "LTXV[default]",
+            "OSS FLUX",
+            "OSS Wan",
+            "OSS Chroma"
+          ]
+        ],
+        "seed": [
+          "INT",
+          {
+            "default": 0,
+            "max": 18446744073709552000,
+            "min": 0
+          }
+        ],
+        "steps": [
+          "INT",
+          {
+            "default": 20,
+            "max": 10000,
+            "min": 1
+          }
+        ],
+        "vae": [
+          "VAE"
+        ],
+        "wildcard": [
+          "STRING",
+          {
+            "multiline": true
+          }
+        ]
+      },
+      "optional": {
+        "detailer_hook": [
+          "DETAILER_HOOK"
+        ],
+        "inpaint_model": [
+          "BOOLEAN",
+          {
+            "default": false
+          }
+        ],
+        "noise_mask_feather": [
+          "INT",
+          {
+            "default": 20,
+            "max": 100,
+            "min": 0,
+            "step": 1
+          }
+        ],
+        "sam_model_opt": [
+          "SAM_MODEL"
+        ],
+        "scheduler_func_opt": [
+          "SCHEDULER_FUNC"
+        ],
+        "segm_detector_opt": [
+          "SEGM_DETECTOR"
+        ],
+        "tiled_decode": [
+          "BOOLEAN",
+          {
+            "default": false
+          }
+        ],
+        "tiled_encode": [
+          "BOOLEAN",
+          {
+            "default": false
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "optional": [
+        "sam_model_opt",
+        "segm_detector_opt",
+        "detailer_hook",
+        "inpaint_model",
+        "noise_mask_feather",
+        "scheduler_func_opt",
+        "tiled_encode",
+        "tiled_decode"
+      ],
+      "required": [
+        "image",
+        "model",
+        "clip",
+        "vae",
+        "guide_size",
+        "guide_size_for",
+        "max_size",
+        "seed",
+        "steps",
+        "cfg",
+        "sampler_name",
+        "scheduler",
+        "positive",
+        "negative",
+        "denoise",
+        "feather",
+        "noise_mask",
+        "force_inpaint",
+        "bbox_threshold",
+        "bbox_dilation",
+        "bbox_crop_factor",
+        "sam_detection_hint",
+        "sam_dilation",
+        "sam_threshold",
+        "sam_bbox_expansion",
+        "sam_mask_hint_threshold",
+        "sam_mask_hint_use_negative",
+        "drop_size",
+        "bbox_detector",
+        "wildcard",
+        "cycle"
+      ]
+    },
+    "output": [
+      "IMAGE",
+      "IMAGE",
+      "IMAGE",
+      "MASK",
+      "DETAILER_PIPE",
+      "IMAGE"
+    ],
+    "output_is_list": [
+      false,
+      true,
+      true,
+      false,
+      false,
+      true
+    ],
+    "output_name": [
+      "image",
+      "cropped_refined",
+      "cropped_enhanced_alpha",
+      "mask",
+      "detailer_pipe",
+      "cnet_images"
+    ],
+    "name": "FaceDetailer",
+    "display_name": "FaceDetailer",
+    "description": "This node enhances details by automatically detecting specific objects in the input image using detection models (bbox, segm, sam) and regenerating the image by",
+    "python_module": "custom_nodes.ComfyUI-Impact-Pack",
+    "category": "ImpactPack/Simple",
+    "output_node": false
+  },
+  "UltralyticsDetectorProvider": {
+    "input": {
+      "required": {
+        "model_name": [
+          [
+            "bbox/face_yolov8m.pt",
+            "bbox/hand_yolov8s.pt",
+            "segm/person_yolov8m-seg.pt"
+          ]
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "model_name"
+      ]
+    },
+    "output": [
+      "BBOX_DETECTOR",
+      "SEGM_DETECTOR"
+    ],
+    "output_is_list": [
+      false,
+      false
+    ],
+    "output_name": [
+      "BBOX_DETECTOR",
+      "SEGM_DETECTOR"
+    ],
+    "name": "UltralyticsDetectorProvider",
+    "display_name": "UltralyticsDetectorProvider",
+    "description": "",
+    "python_module": "custom_nodes.ComfyUI-Impact-Subpack",
+    "category": "ImpactPack",
+    "output_node": false
+  },
+  "RMBG": {
+    "input": {
+      "required": {
+        "image": [
+          "IMAGE"
+        ],
+        "model": [
+          [
+            "RMBG-2.0",
+            "INSPYRENET",
+            "BEN",
+            "BEN2"
+          ]
+        ]
+      },
+      "optional": {
+        "background": [
+          [
+            "Alpha",
+            "Color"
+          ],
+          {
+            "default": "Alpha"
+          }
+        ],
+        "background_color": [
+          "COLORCODE",
+          {
+            "default": "#222222"
+          }
+        ],
+        "invert_output": [
+          "BOOLEAN",
+          {
+            "default": false
+          }
+        ],
+        "mask_blur": [
+          "INT",
+          {
+            "default": 0,
+            "max": 64,
+            "min": 0,
+            "step": 1
+          }
+        ],
+        "mask_offset": [
+          "INT",
+          {
+            "default": 0,
+            "max": 64,
+            "min": -64,
+            "step": 1
+          }
+        ],
+        "process_res": [
+          "INT",
+          {
+            "default": 1024,
+            "max": 2048,
+            "min": 256,
+            "step": 128
+          }
+        ],
+        "refine_foreground": [
+          "BOOLEAN",
+          {
+            "default": false
+          }
+        ],
+        "sensitivity": [
+          "FLOAT",
+          {
+            "default": 1,
+            "max": 1,
+            "min": 0,
+            "step": 0.01
+          }
+        ],
+        "unload_model": [
+          "BOOLEAN",
+          {
+            "default": false
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "optional": [
+        "sensitivity",
+        "process_res",
+        "mask_blur",
+        "mask_offset",
+        "invert_output",
+        "refine_foreground",
+        "unload_model",
+        "background",
+        "background_color"
+      ],
+      "required": [
+        "image",
+        "model"
+      ]
+    },
+    "output": [
+      "IMAGE",
+      "MASK",
+      "IMAGE"
+    ],
+    "output_is_list": [
+      false,
+      false,
+      false
+    ],
+    "output_name": [
+      "IMAGE",
+      "MASK",
+      "MASK_IMAGE"
+    ],
+    "name": "RMBG",
+    "display_name": "Remove Background (RMBG)",
+    "description": "",
+    "python_module": "custom_nodes.ComfyUI-RMBG",
+    "category": "🧪AILab/🧽RMBG",
+    "output_node": false
+  },
+  "RIFE VFI": {
+    "input": {
+      "required": {
+        "ckpt_name": [
+          [
+            "rife47.pth",
+            "rife49.pth",
+            "rife417.pth",
+            "rife426.pth"
+          ],
+          {
+            "default": "rife49.pth"
+          }
+        ],
+        "frames": [
+          "IMAGE"
+        ],
+        "clear_cache_after_n_frames": [
+          "INT",
+          {
+            "default": 10,
+            "min": 1,
+            "max": 1000
+          }
+        ],
+        "multiplier": [
+          "INT",
+          {
+            "default": 2,
+            "min": 1
+          }
+        ],
+        "fast_mode": [
+          "BOOLEAN",
+          {
+            "default": true
+          }
+        ],
+        "ensemble": [
+          "BOOLEAN",
+          {
+            "default": true
+          }
+        ],
+        "scale_factor": [
+          [
+            "0.25",
+            "0.5",
+            "1.0",
+            "2.0",
+            "4.0"
+          ],
+          {
+            "default": "1.0"
+          }
+        ],
+        "dtype": [
+          [
+            "float32",
+            "float16",
+            "bfloat16"
+          ],
+          {
+            "default": "float32"
+          }
+        ],
+        "torch_compile": [
+          "BOOLEAN",
+          {
+            "default": false
+          }
+        ],
+        "batch_size": [
+          "INT",
+          {
+            "default": 1,
+            "min": 1,
+            "max": 64
+          }
+        ]
+      },
+      "optional": {
+        "optional_interpolation_states": [
+          "INTERPOLATION_STATES"
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "ckpt_name",
+        "frames",
+        "clear_cache_after_n_frames",
+        "multiplier",
+        "fast_mode",
+        "ensemble",
+        "scale_factor",
+        "dtype",
+        "torch_compile",
+        "batch_size"
+      ],
+      "optional": [
+        "optional_interpolation_states"
+      ]
+    },
+    "output": [
+      "IMAGE"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "IMAGE"
+    ],
+    "name": "RIFE VFI",
+    "display_name": "RIFE VFI (recommend rife47 and rife49)",
+    "description": "",
+    "python_module": "custom_nodes.ComfyUI-Frame-Interpolation",
+    "category": "ComfyUI-Frame-Interpolation/VFI",
+    "output_node": false
+  },
+  "OpenposePreprocessor": {
+    "input": {
+      "required": {
+        "image": [
+          "IMAGE"
+        ]
+      },
+      "optional": {
+        "detect_body": [
+          [
+            "enable",
+            "disable"
+          ],
+          {
+            "default": "enable"
+          }
+        ],
+        "detect_face": [
+          [
+            "enable",
+            "disable"
+          ],
+          {
+            "default": "enable"
+          }
+        ],
+        "detect_hand": [
+          [
+            "enable",
+            "disable"
+          ],
+          {
+            "default": "enable"
+          }
+        ],
+        "resolution": [
+          "INT",
+          {
+            "default": 512,
+            "max": 16384,
+            "min": 64,
+            "step": 64
+          }
+        ],
+        "scale_stick_for_xinsr_cn": [
+          [
+            "disable",
+            "enable"
+          ],
+          {
+            "default": "disable"
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "optional": [
+        "detect_hand",
+        "detect_body",
+        "detect_face",
+        "resolution",
+        "scale_stick_for_xinsr_cn"
+      ],
+      "required": [
+        "image"
+      ]
+    },
+    "output": [
+      "IMAGE",
+      "POSE_KEYPOINT"
+    ],
+    "output_is_list": [
+      false,
+      false
+    ],
+    "output_name": [
+      "IMAGE",
+      "POSE_KEYPOINT"
+    ],
+    "name": "OpenposePreprocessor",
+    "display_name": "OpenPose Pose",
+    "description": "",
+    "python_module": "custom_nodes.comfyui_controlnet_aux",
+    "category": "ControlNet Preprocessors/Faces and Poses Estimators",
+    "output_node": false
+  },
+  "Florence2Run": {
+    "input": {
+      "required": {
+        "fill_mask": [
+          "BOOLEAN",
+          {
+            "default": true
+          }
+        ],
+        "florence2_model": [
+          "FL2MODEL"
+        ],
+        "image": [
+          "IMAGE"
+        ],
+        "task": [
+          [
+            "region_caption",
+            "dense_region_caption",
+            "region_proposal",
+            "caption",
+            "detailed_caption",
+            "more_detailed_caption",
+            "caption_to_phrase_grounding",
+            "referring_expression_segmentation",
+            "ocr",
+            "ocr_with_region",
+            "docvqa",
+            "prompt_gen_tags",
+            "prompt_gen_mixed_caption",
+            "prompt_gen_analyze",
+            "prompt_gen_mixed_caption_plus"
+          ]
+        ],
+        "text_input": [
+          "STRING",
+          {
+            "default": "",
+            "multiline": true
+          }
+        ]
+      },
+      "optional": {
+        "do_sample": [
+          "BOOLEAN",
+          {
+            "default": true
+          }
+        ],
+        "keep_model_loaded": [
+          "BOOLEAN",
+          {
+            "default": false
+          }
+        ],
+        "max_new_tokens": [
+          "INT",
+          {
+            "default": 1024,
+            "max": 4096,
+            "min": 1
+          }
+        ],
+        "num_beams": [
+          "INT",
+          {
+            "default": 3,
+            "max": 64,
+            "min": 1
+          }
+        ],
+        "output_mask_select": [
+          "STRING",
+          {
+            "default": ""
+          }
+        ],
+        "seed": [
+          "INT",
+          {
+            "default": 1,
+            "max": 18446744073709552000,
+            "min": 1
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "optional": [
+        "keep_model_loaded",
+        "max_new_tokens",
+        "num_beams",
+        "do_sample",
+        "output_mask_select",
+        "seed"
+      ],
+      "required": [
+        "image",
+        "florence2_model",
+        "text_input",
+        "task",
+        "fill_mask"
+      ]
+    },
+    "output": [
+      "IMAGE",
+      "MASK",
+      "STRING",
+      "JSON"
+    ],
+    "output_is_list": [
+      false,
+      false,
+      false,
+      false
+    ],
+    "output_name": [
+      "image",
+      "mask",
+      "caption",
+      "data"
+    ],
+    "name": "Florence2Run",
+    "display_name": "Florence2Run",
+    "description": "",
+    "python_module": "custom_nodes.ComfyUI-Florence2",
+    "category": "Florence2",
+    "output_node": false
+  },
+  "DownloadAndLoadFlorence2Model": {
+    "input": {
+      "required": {
+        "model": [
+          [
+            "microsoft/Florence-2-base",
+            "microsoft/Florence-2-base-ft",
+            "microsoft/Florence-2-large",
+            "microsoft/Florence-2-large-ft",
+            "HuggingFaceM4/Florence-2-DocVQA",
+            "thwri/CogFlorence-2.1-Large",
+            "thwri/CogFlorence-2.2-Large",
+            "gokaygokay/Florence-2-SD3-Captioner",
+            "gokaygokay/Florence-2-Flux-Large",
+            "MiaoshouAI/Florence-2-base-PromptGen-v1.5",
+            "MiaoshouAI/Florence-2-large-PromptGen-v1.5",
+            "MiaoshouAI/Florence-2-base-PromptGen-v2.0",
+            "MiaoshouAI/Florence-2-large-PromptGen-v2.0",
+            "PJMixers-Images/Florence-2-base-Castollux-v0.5"
+          ],
+          {
+            "default": "microsoft/Florence-2-base"
+          }
+        ],
+        "precision": [
+          [
+            "fp16",
+            "bf16",
+            "fp32"
+          ],
+          {
+            "default": "fp16"
+          }
+        ]
+      },
+      "optional": {
+        "convert_to_safetensors": [
+          "BOOLEAN",
+          {
+            "default": false
+          }
+        ],
+        "lora": [
+          "PEFTLORA"
+        ]
+      }
+    },
+    "input_order": {
+      "optional": [
+        "lora",
+        "convert_to_safetensors"
+      ],
+      "required": [
+        "model",
+        "precision"
+      ]
+    },
+    "output": [
+      "FL2MODEL"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "florence2_model"
+    ],
+    "name": "DownloadAndLoadFlorence2Model",
+    "display_name": "DownloadAndLoadFlorence2Model",
+    "description": "",
+    "python_module": "custom_nodes.ComfyUI-Florence2",
+    "category": "Florence2",
+    "output_node": false
+  },
+  "DownloadAndLoadSAM2Model": {
+    "category": "SAM2",
+    "description": "",
+    "display_name": "(Down)Load SAM2Model",
+    "input": {
+      "required": {
+        "device": [
+          [
+            "cuda",
+            "cpu",
+            "mps"
+          ]
+        ],
+        "model": [
+          [
+            "sam2_hiera_base_plus.safetensors",
+            "sam2_hiera_large.safetensors",
+            "sam2_hiera_small.safetensors",
+            "sam2_hiera_tiny.safetensors",
+            "sam2.1_hiera_base_plus.safetensors",
+            "sam2.1_hiera_large.safetensors",
+            "sam2.1_hiera_small.safetensors",
+            "sam2.1_hiera_tiny.safetensors"
+          ]
+        ],
+        "precision": [
+          [
+            "fp16",
+            "bf16",
+            "fp32"
+          ],
+          {
+            "default": "fp16"
+          }
+        ],
+        "segmentor": [
+          [
+            "single_image",
+            "video",
+            "automaskgenerator"
+          ]
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "model",
+        "segmentor",
+        "device",
+        "precision"
+      ]
+    },
+    "name": "DownloadAndLoadSAM2Model",
+    "output": [
+      "SAM2MODEL"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "sam2_model"
+    ],
+    "output_node": false,
+    "python_module": "custom_nodes.ComfyUI-segment-anything-2"
+  },
+  "Sam2Segmentation": {
+    "category": "SAM2",
+    "description": "",
+    "display_name": "Sam2Segmentation",
+    "input": {
+      "optional": {
+        "bboxes": [
+          "BBOX"
+        ],
+        "coordinates_negative": [
+          "STRING",
+          {
+            "forceInput": true
+          }
+        ],
+        "coordinates_positive": [
+          "STRING",
+          {
+            "forceInput": true
+          }
+        ],
+        "individual_objects": [
+          "BOOLEAN",
+          {
+            "default": false
+          }
+        ],
+        "mask": [
+          "MASK"
+        ]
+      },
+      "required": {
+        "image": [
+          "IMAGE"
+        ],
+        "keep_model_loaded": [
+          "BOOLEAN",
+          {
+            "default": false
+          }
+        ],
+        "sam2_model": [
+          "SAM2MODEL"
+        ]
+      }
+    },
+    "input_order": {
+      "optional": [
+        "coordinates_positive",
+        "coordinates_negative",
+        "bboxes",
+        "individual_objects",
+        "mask"
+      ],
+      "required": [
+        "sam2_model",
+        "image",
+        "keep_model_loaded"
+      ]
+    },
+    "name": "Sam2Segmentation",
+    "output": [
+      "MASK"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "mask"
+    ],
+    "output_node": false,
+    "python_module": "custom_nodes.ComfyUI-segment-anything-2"
+  },
+  "INPAINT_MaskedFill": {
+    "input": {
+      "required": {
+        "falloff": [
+          "INT",
+          {
+            "default": 0,
+            "max": 8191,
+            "min": 0,
+            "step": 1
+          }
+        ],
+        "fill": [
+          "COMBO",
+          {
+            "multiselect": false,
+            "options": [
+              "neutral",
+              "telea",
+              "navier-stokes"
+            ]
+          }
+        ],
+        "image": [
+          "IMAGE",
+          {}
+        ],
+        "mask": [
+          "MASK",
+          {}
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "image",
+        "mask",
+        "fill",
+        "falloff"
+      ]
+    },
+    "output": [
+      "IMAGE"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "image"
+    ],
+    "name": "INPAINT_MaskedFill",
+    "display_name": "Fill Masked Area",
+    "description": "",
+    "python_module": "custom_nodes.comfyui-inpaint-nodes",
+    "category": "inpaint",
+    "output_node": false
+  },
+  "INPAINT_ExpandMask": {
+    "input": {
+      "required": {
+        "blur": [
+          "INT",
+          {
+            "default": 7,
+            "max": 8096,
+            "min": 0,
+            "step": 1
+          }
+        ],
+        "blur_type": [
+          "COMBO",
+          {
+            "default": "gaussian",
+            "multiselect": false,
+            "options": [
+              "box",
+              "linear",
+              "gaussian"
+            ]
+          }
+        ],
+        "grow": [
+          "INT",
+          {
+            "default": 16,
+            "max": 8096,
+            "min": 0,
+            "step": 1
+          }
+        ],
+        "mask": [
+          "MASK",
+          {}
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "mask",
+        "grow",
+        "blur",
+        "blur_type"
+      ]
+    },
+    "output": [
+      "MASK"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "mask"
+    ],
+    "name": "INPAINT_ExpandMask",
+    "display_name": "Expand Mask",
+    "description": "",
+    "python_module": "custom_nodes.comfyui-inpaint-nodes",
+    "category": "inpaint",
+    "output_node": false
+  },
+  "INPAINT_LoadInpaintModel": {
+    "input": {
+      "required": {
+        "model_name": [
+          "COMBO",
+          {
+            "multiselect": false,
+            "options": []
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "model_name"
+      ]
+    },
+    "output": [
+      "INPAINT_MODEL"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "inpaint model"
+    ],
+    "name": "INPAINT_LoadInpaintModel",
+    "display_name": "Load Inpaint Model",
+    "description": "",
+    "python_module": "custom_nodes.comfyui-inpaint-nodes",
+    "category": "inpaint",
+    "output_node": false
+  },
+  "INPAINT_InpaintWithModel": {
+    "input": {
+      "optional": {
+        "optional_upscale_model": [
+          "UPSCALE_MODEL",
+          {
+            "display_name": "upscale model (optional)"
+          }
+        ]
+      },
+      "required": {
+        "image": [
+          "IMAGE",
+          {}
+        ],
+        "inpaint_model": [
+          "INPAINT_MODEL",
+          {}
+        ],
+        "mask": [
+          "MASK",
+          {}
+        ],
+        "seed": [
+          "INT",
+          {
+            "default": 0,
+            "max": 9007199254740991,
+            "min": 0,
+            "step": 1
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "optional": [
+        "optional_upscale_model"
+      ],
+      "required": [
+        "inpaint_model",
+        "image",
+        "mask",
+        "seed"
+      ]
+    },
+    "output": [
+      "IMAGE"
+    ],
+    "output_is_list": [
+      false
+    ],
+    "output_name": [
+      "inpainted image"
+    ],
+    "name": "INPAINT_InpaintWithModel",
+    "display_name": "Inpaint (using Model)",
+    "description": "",
+    "python_module": "custom_nodes.comfyui-inpaint-nodes",
+    "category": "inpaint",
+    "output_node": false
+  },
+  "DWPreprocessor": {
+    "input": {
+      "required": {
+        "image": [
+          "IMAGE"
+        ]
+      },
+      "optional": {
+        "detect_hand": [
+          [
+            "enable",
+            "disable"
+          ],
+          {
+            "default": "enable"
+          }
+        ],
+        "detect_body": [
+          [
+            "enable",
+            "disable"
+          ],
+          {
+            "default": "enable"
+          }
+        ],
+        "detect_face": [
+          [
+            "enable",
+            "disable"
+          ],
+          {
+            "default": "enable"
+          }
+        ],
+        "resolution": [
+          "INT",
+          {
+            "default": 512,
+            "min": 64,
+            "max": 16384,
+            "step": 64
+          }
+        ],
+        "bbox_detector": [
+          [
+            "None",
+            "yolox_l.torchscript.pt",
+            "yolox_l.onnx",
+            "yolo_nas_l_fp16.onnx",
+            "yolo_nas_m_fp16.onnx",
+            "yolo_nas_s_fp16.onnx"
+          ],
+          {
+            "default": "yolox_l.onnx"
+          }
+        ],
+        "pose_estimator": [
+          [
+            "dw-ll_ucoco_384_bs5.torchscript.pt",
+            "dw-ll_ucoco_384.onnx",
+            "dw-ll_ucoco.onnx"
+          ],
+          {
+            "default": "dw-ll_ucoco_384_bs5.torchscript.pt"
+          }
+        ],
+        "scale_stick_for_xinsr_cn": [
+          [
+            "disable",
+            "enable"
+          ],
+          {
+            "default": "disable"
+          }
+        ]
+      }
+    },
+    "input_order": {
+      "required": [
+        "image"
+      ],
+      "optional": [
+        "detect_hand",
+        "detect_body",
+        "detect_face",
+        "resolution",
+        "bbox_detector",
+        "pose_estimator",
+        "scale_stick_for_xinsr_cn"
+      ]
+    },
+    "output": [
+      "IMAGE",
+      "POSE_KEYPOINT"
+    ],
+    "output_is_list": [
+      false,
+      false
+    ],
+    "output_name": [
+      "IMAGE",
+      "POSE_KEYPOINT"
+    ],
+    "name": "DWPreprocessor",
+    "display_name": "DWPose Estimator",
+    "description": "",
+    "python_module": "custom_nodes.comfyui_controlnet_aux",
+    "category": "ControlNet Preprocessors/Faces and Poses Estimators",
+    "output_node": false
+  }
+}

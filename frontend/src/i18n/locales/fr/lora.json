@@ -1,0 +1,8 @@
+{
+  "lora.use": "Utiliser le LoRA",
+  "lora.gone": "(absent de la liste des modèles)",
+  "lora.weight": "Force du LoRA",
+  "lora.useHint": "Utiliser le personnage ajoute au prompt le LoRA à cette force et le mot déclencheur « {trigger} ». Les images de référence sont utilisées comme avant.",
+  "lora.goneNote": "Le LoRA du personnage n'est pas dans la liste des modèles, il a donc été ignoré.",
+  "lora.usedNote": "Le LoRA entraîné et son mot déclencheur ont aussi été ajoutés."
+}

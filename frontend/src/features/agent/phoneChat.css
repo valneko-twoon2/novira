@@ -1,0 +1,231 @@
+/* The assistant's chat screen on a phone (PhoneChat): over the whole phone layout, its height the part of the screen the
+   keyboard leaves (set from the visual viewport; 100dvh until it is known). Targets a finger hits are at least 44px, the
+   message box uses 16px so the phone does not zoom in on it. */
+.phone-chat {
+  position: fixed;
+  z-index: var(--z-phone-view);
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg-app);
+  color: var(--text);
+}
+
+.phone-chat__top {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
+  height: 52px;
+  padding: 0 var(--space-1);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-panel);
+}
+
+.phone-chat__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text);
+}
+
+.phone-chat__icon[aria-expanded='true'] {
+  color: var(--accent);
+}
+
+.phone-chat__title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-chat__top .agent-model {
+  max-width: 132px;
+  height: 32px;
+}
+
+.phone-chat__state {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  margin: 0;
+  padding: var(--space-5);
+  color: var(--text-muted);
+  font-size: var(--fs-lg);
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* The conversation: the user's messages as bubbles on the right, the assistant's answers as text across the screen. */
+.phone-chat__body {
+  gap: var(--space-4);
+  padding: var(--space-4);
+  overscroll-behavior: contain;
+}
+
+.phone-chat .agent-empty,
+.phone-chat .agent-msg,
+.phone-chat .agent-permission {
+  font-size: var(--fs-lg);
+}
+
+.phone-chat .agent-chip {
+  min-height: 44px;
+  font-size: var(--fs-lg);
+}
+
+.phone-chat .agent-msg--user {
+  max-width: 85%;
+  padding: var(--space-2) var(--space-3);
+}
+
+.phone-chat .agent-msg--assistant {
+  align-self: stretch;
+  max-width: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.phone-chat .agent-msg--assistant.is-error {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--danger);
+}
+
+.phone-chat .agent-msg__copy {
+  margin: 0;
+}
+
+.phone-chat .agent-thoughts__row,
+.phone-chat .agent-msg__buttons .ui-btn,
+.phone-chat .agent-permission .ui-btn {
+  min-height: 40px;
+}
+
+.phone-chat .agent-msg__pictures li {
+  width: 96px;
+  height: 96px;
+}
+
+/* The message box at the foot, clear of the phone's home bar. */
+.phone-chat .agent-win__input {
+  align-items: flex-end;
+  padding: var(--space-2) var(--space-2) calc(var(--space-2) + env(safe-area-inset-bottom));
+  background: var(--bg-panel);
+}
+
+.phone-chat .agent-win__input .ui-textarea {
+  min-height: 44px;
+  max-height: 40dvh;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.phone-chat .agent-win__input .ui-iconbtn {
+  width: 44px;
+  height: 44px;
+}
+
+.phone-chat .agent-attached__item {
+  width: 64px;
+  height: 64px;
+}
+
+/* Past chats: a sheet from the left over the conversation, the rest of the screen dimmed. */
+.phone-chat__sheet-wrap {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+}
+
+.phone-chat__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: var(--overlay);
+}
+
+.phone-chat__sheet {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  width: min(340px, 86%);
+  padding-bottom: env(safe-area-inset-bottom);
+  border-right: 1px solid var(--border-strong);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow);
+}
+
+.phone-chat__sheet-head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  height: 52px;
+  padding: 0 var(--space-1) 0 var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.phone-chat__sheet-title {
+  flex: 1;
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.phone-chat .agent-session {
+  min-height: 52px;
+}
+
+/* A chat's whole title, wrapped: the sheet is narrow and the title is what tells the chats apart. */
+.phone-chat .agent-session__title {
+  font-size: var(--fs-lg);
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.phone-chat .agent-session .ui-iconbtn {
+  width: 40px;
+  height: 40px;
+}
+
+.phone-chat .agent-session input {
+  font-size: 16px;
+}
+
+/* The model popover opens over the chat screen (it stacks above the desktop's window, which is lower). */
+body:has(.phone[data-chat]) .agent-model-pop {
+  z-index: var(--z-menu);
+}
+
+/* Notices rise just above the message box. */
+body:has(.phone[data-chat]) .toaster {
+  --phone-foot: 64px;
+}
+
+/* The user's own words need no copy button on a phone (a long press selects them). */
+.phone-chat .agent-msg--user .agent-msg__copy {
+  display: none;
+}
+
+.phone-chat .agent-acts,
+.phone-chat .agent-msg__applied,
+.phone-chat .agent-thoughts {
+  font-size: var(--fs-md);
+}

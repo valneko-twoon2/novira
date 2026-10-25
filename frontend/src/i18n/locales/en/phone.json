@@ -1,0 +1,12 @@
+{
+  "phone.nav": "Screens",
+  "phone.openLive": "Show the picture being drawn",
+  "phone.close": "Close",
+  "phone.board": "Board",
+  "phone.place": "{index} / {count}",
+  "phone.useSettings": "Use these settings",
+  "phone.gallery": "Gallery",
+  "phone.pictureMenu": "Menu of this picture",
+  "phone.agentSetup": "Choose the agent's AI and sign in on the PC, and it works here too.",
+  "phone.agentPlaceholder": "Describe the image you want, or ask a question"
+}

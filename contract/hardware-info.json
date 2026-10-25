@@ -1,0 +1,10 @@
+{
+  "known": {
+    "gpuName": "NVIDIA GeForce RTX 4070 Ti",
+    "vramBytes": 12878610432
+  },
+  "unknown": {
+    "gpuName": "",
+    "vramBytes": null
+  }
+}

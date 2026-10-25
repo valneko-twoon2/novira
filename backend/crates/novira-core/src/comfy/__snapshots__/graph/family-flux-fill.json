@@ -1,0 +1,252 @@
+{
+  "audio_ext": null,
+  "output_node": "21",
+  "prompt": {
+    "1": {
+      "class_type": "UNETLoader",
+      "inputs": {
+        "unet_name": "model.safetensors",
+        "weight_dtype": "default"
+      }
+    },
+    "10": {
+      "class_type": "MaskToImage",
+      "inputs": {
+        "mask": [
+          "9",
+          0
+        ]
+      }
+    },
+    "11": {
+      "class_type": "ImageBlur",
+      "inputs": {
+        "blur_radius": 16,
+        "image": [
+          "10",
+          0
+        ],
+        "sigma": 8.0
+      }
+    },
+    "12": {
+      "class_type": "ImageToMask",
+      "inputs": {
+        "channel": "red",
+        "image": [
+          "11",
+          0
+        ]
+      }
+    },
+    "13": {
+      "class_type": "CLIPTextEncode",
+      "inputs": {
+        "clip": [
+          "2",
+          0
+        ],
+        "text": "a cat"
+      }
+    },
+    "14": {
+      "class_type": "FluxGuidance",
+      "inputs": {
+        "conditioning": [
+          "13",
+          0
+        ],
+        "guidance": 30.0
+      }
+    },
+    "15": {
+      "class_type": "ConditioningZeroOut",
+      "inputs": {
+        "conditioning": [
+          "13",
+          0
+        ]
+      }
+    },
+    "16": {
+      "class_type": "DifferentialDiffusion",
+      "inputs": {
+        "model": [
+          "1",
+          0
+        ]
+      }
+    },
+    "17": {
+      "class_type": "InpaintModelConditioning",
+      "inputs": {
+        "mask": [
+          "12",
+          0
+        ],
+        "negative": [
+          "15",
+          0
+        ],
+        "noise_mask": true,
+        "pixels": [
+          "5",
+          0
+        ],
+        "positive": [
+          "14",
+          0
+        ],
+        "vae": [
+          "3",
+          0
+        ]
+      }
+    },
+    "18": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 1.0,
+        "denoise": 1.0,
+        "latent_image": [
+          "17",
+          2
+        ],
+        "model": [
+          "16",
+          0
+        ],
+        "negative": [
+          "17",
+          1
+        ],
+        "positive": [
+          "17",
+          0
+        ],
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "seed": 42,
+        "steps": 20
+      }
+    },
+    "19": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "18",
+          0
+        ],
+        "vae": [
+          "3",
+          0
+        ]
+      }
+    },
+    "2": {
+      "class_type": "DualCLIPLoader",
+      "inputs": {
+        "clip_name1": "te0.safetensors",
+        "clip_name2": "te1.safetensors",
+        "device": "default",
+        "type": "flux"
+      }
+    },
+    "20": {
+      "class_type": "ImageCompositeMasked",
+      "inputs": {
+        "destination": [
+          "5",
+          0
+        ],
+        "mask": [
+          "12",
+          0
+        ],
+        "resize_source": false,
+        "source": [
+          "19",
+          0
+        ],
+        "x": 0,
+        "y": 0
+      }
+    },
+    "21": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "20",
+          0
+        ]
+      }
+    },
+    "3": {
+      "class_type": "VAELoader",
+      "inputs": {
+        "vae_name": "vae.safetensors"
+      }
+    },
+    "4": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "src.png"
+      }
+    },
+    "5": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 768,
+        "image": [
+          "4",
+          0
+        ],
+        "upscale_method": "lanczos",
+        "width": 1024
+      }
+    },
+    "6": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "mask.png"
+      }
+    },
+    "7": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 768,
+        "image": [
+          "6",
+          0
+        ],
+        "upscale_method": "bilinear",
+        "width": 1024
+      }
+    },
+    "8": {
+      "class_type": "ImageToMask",
+      "inputs": {
+        "channel": "red",
+        "image": [
+          "7",
+          0
+        ]
+      }
+    },
+    "9": {
+      "class_type": "GrowMask",
+      "inputs": {
+        "expand": 8,
+        "mask": [
+          "8",
+          0
+        ],
+        "tapered_corners": true
+      }
+    }
+  },
+  "thumbnail_node": null,
+  "total_steps": 20
+}
