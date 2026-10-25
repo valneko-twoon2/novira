@@ -69,7 +69,7 @@ The folder is `NOVIRA_DATA_DIR` when set and not empty; else `novira-data/` in t
 - `comfyui/`: novira's own ComfyUI.
 - `cache/`: caches and temporary files of ComfyUI and the voice worker.
 - `voice/site/`: the voice worker's Python libraries.
-- `secrets/`: keys encrypted with Windows DPAPI (`backend/crates/novira-core/src/secret.rs`).
+- `secrets/`: keys encrypted with Windows DPAPI, and `store-id`, the id of this folder's Credential Manager entries for the Civitai key and the Hugging Face token (`backend/crates/novira-core/src/secret.rs`).
 - `extra_model_paths.yaml`: rewritten at every start; tells ComfyUI which folders hold models.
 - `logs/`: `comfyui.log` and `novira.log`.
 - `webview/`: the WebView2 profile, so the page's own storage (for example presets) is kept per data folder.

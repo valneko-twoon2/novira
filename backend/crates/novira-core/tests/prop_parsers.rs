@@ -567,18 +567,8 @@ fn a_saved_secret_of_any_bytes_is_read_or_refused_and_a_saved_key_reads_back() {
     let file = dir.path().join("secrets");
     check_up_to(64, (bytes(120), any_text()), |(data, key)| {
         std::fs::create_dir_all(&file).unwrap();
-        for entry in std::fs::read_dir(&file).unwrap().flatten() {
-            let _ = std::fs::remove_file(entry.path());
-        }
-        // Whatever the file holds, loading it answers; it never takes the process down.
-        save_civitai_key(dir.path(), Some("seed")).unwrap();
-        let stored = std::fs::read_dir(&file)
-            .unwrap()
-            .flatten()
-            .next()
-            .unwrap()
-            .path();
-        std::fs::write(&stored, &data).unwrap();
+        // Whatever an earlier version's file holds, loading it answers; it never takes the process down.
+        std::fs::write(file.join("civitai.key"), &data).unwrap();
         let _ = load_civitai_key(dir.path());
         // A real round trip: the trimmed key comes back, a blank one removes it.
         save_civitai_key(dir.path(), Some(&key)).unwrap();
@@ -590,6 +580,8 @@ fn a_saved_secret_of_any_bytes_is_read_or_refused_and_a_saved_key_reads_back() {
         }
         Ok(())
     });
+    // The keys of the folder leave the Credential Manager with it.
+    save_civitai_key(dir.path(), None).unwrap();
 }
 
 #[test]

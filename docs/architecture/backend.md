@@ -27,7 +27,7 @@ The shell (`backend/src-tauri/src/`): `commands.rs` holds the IPC commands (thin
 | `db.rs` | SQLite, one JSON document per row; the only file that uses `rusqlite` |
 | `settings.rs` | `settings.json`; the `Settings` type is the source of truth for every setting |
 | `endpoints.rs` | The addresses of outside services (Civitai, Hugging Face, GitHub, 7-Zip, TrustMark); a debug build can point them at a loopback test server |
-| `secret.rs` | Windows DPAPI encryption of saved keys and the content-credential signing key |
+| `secret.rs` | The Civitai key and Hugging Face token in the Windows Credential Manager; the other saved keys and the content-credential signing key encrypted with Windows DPAPI |
 | `sync.rs` | Lock helpers that survive a panic (`lock_safe`, `read_safe`, `write_safe`); no `unwrap` on a lock |
 | `child_job.rs` | A Windows job object: ComfyUI and the voice worker die with the app, even when it is killed |
 | `gpu_lock.rs`, `hardware.rs`, `fonts.rs` | The GPU lock directory and its owner record; the card and its memory; the installed font families |
@@ -59,7 +59,7 @@ novira-data/
 ├─ outputs/  thumbnails/      # gallery files
 ├─ models/                    # model folders (models/layout.rs)
 ├─ comfyui/                   # the installed ComfyUI and its Python (unless settings point at another one)
-├─ secrets/                   # DPAPI-encrypted keys (secret.rs)
+├─ secrets/                   # DPAPI-encrypted keys, and the id of this folder's Credential Manager entries (secret.rs)
 ├─ cache/  logs/              # ComfyUI caches; novira.log (rotated)
 ├─ settings.json  agent.json
 └─ restore-staging/  backup-before-restore-<date>/   # while a restore is pending; during one at start-up

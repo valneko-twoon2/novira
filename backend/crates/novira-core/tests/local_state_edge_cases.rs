@@ -27,10 +27,10 @@ fn a_secret_that_cannot_be_read_names_the_secret_in_the_error() {
 #[test]
 fn removing_a_secret_that_cannot_be_removed_is_an_error() {
     let data = tempfile::tempdir().unwrap();
-    std::fs::create_dir_all(secret_file(data.path(), "huggingface.key")).unwrap();
-    let err = save_secret(data.path(), Secret::HuggingFace, None).unwrap_err();
+    std::fs::create_dir_all(secret_file(data.path(), "assistant-endpoint.key")).unwrap();
+    let err = save_secret(data.path(), Secret::AssistantEndpoint, None).unwrap_err();
     assert!(
-        err.contains("cannot remove the saved Hugging Face token"),
+        err.contains("cannot remove the saved assistant server key"),
         "{err}"
     );
 }
@@ -42,12 +42,31 @@ fn saving_a_secret_where_the_folder_or_file_is_blocked_is_an_error() {
     std::fs::write(blocked.path().join("secrets"), b"x").unwrap();
     let err = save_secret(blocked.path(), Secret::Civitai, Some("key")).unwrap_err();
     assert!(err.contains("cannot create the secrets folder"), "{err}");
+    let err = save_secret(blocked.path(), Secret::AssistantEndpoint, Some("key")).unwrap_err();
+    assert!(err.contains("cannot create the secrets folder"), "{err}");
 
     // The key file cannot be written because a directory has its name.
     let data = tempfile::tempdir().unwrap();
+    std::fs::create_dir_all(secret_file(data.path(), "assistant-endpoint.key")).unwrap();
+    let err = save_secret(data.path(), Secret::AssistantEndpoint, Some("key")).unwrap_err();
+    assert!(
+        err.contains("cannot save the assistant server key"),
+        "{err}"
+    );
+}
+
+#[test]
+fn a_leftover_that_cannot_be_removed_does_not_stop_a_site_key_from_being_saved() {
+    let data = tempfile::tempdir().unwrap();
     std::fs::create_dir_all(secret_file(data.path(), "civitai.key")).unwrap();
-    let err = save_secret(data.path(), Secret::Civitai, Some("key")).unwrap_err();
-    assert!(err.contains("cannot save the Civitai key"), "{err}");
+    save_secret(data.path(), Secret::Civitai, Some("key")).unwrap();
+    assert_eq!(
+        load_secret(data.path(), Secret::Civitai)
+            .unwrap()
+            .as_deref(),
+        Some("key")
+    );
+    save_secret(data.path(), Secret::Civitai, None).unwrap();
 }
 
 // GPU lock --------------------------------------------------------------------------------------------------------
