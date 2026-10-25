@@ -321,5 +321,11 @@
   "params.parts.later": "Not now",
   "params.profile.mismatch.stepsLow": "Too few steps (recommended {value}, at least {min}). With too few, the picture can break up or come out as one flat color",
   "params.profile.mismatch.stepsHigh": "More steps than the recommended {value} (above {max}). It takes longer and the picture changes little",
-  "params.generation.samplingFixed": "{family} models are always drawn with this pair (ComfyUI's own recipe); the scheduler cannot be chosen"
+  "params.generation.samplingFixed": "{family} models are always drawn with this pair (ComfyUI's own recipe); the scheduler cannot be chosen",
+  "params.prompt.tagView": "Tag view",
+  "params.prompt.textView": "Text view",
+  "params.prompt.tagStrength": "Strength",
+  "params.prompt.tagReset": "Reset to 1",
+  "params.prompt.tagRemove": "Remove tag",
+  "params.prompt.tagAdd": "Add a tag"
 }

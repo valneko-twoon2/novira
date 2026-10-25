@@ -1,5 +1,5 @@
 // Positive and negative prompt boxes, always visible, each with its own preset row and prompt book button.
-import { ArrowsOutSimple, BookOpen, ChatCenteredText, Sparkle } from '@phosphor-icons/react';
+import { ArrowsOutSimple, BookOpen, ChatCenteredText, Sparkle, Tag, TextT } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import { backend } from '@/backend';
 import { t } from '@/i18n';
@@ -16,6 +16,7 @@ import { useMainModel } from '../model/useMainModel';
 import { BigPromptEditor } from './BigPromptEditor';
 import { DynamicPromptsButton } from './DynamicPromptsButton';
 import { applyRecommendedPrompts, setPrompt } from './promptActions';
+import { PromptTagView } from './PromptTagView';
 import { TokenCounter } from './TokenCounter';
 
 export function PromptBoxes() {
@@ -90,6 +91,7 @@ function PromptField({ kind }: { kind: PromptKind }) {
   const openBook = usePromptBook((s) => s.openBook);
   const ref = useRef<HTMLTextAreaElement>(null);
   const positive = kind === 'positive';
+  const [tagView, setTagView] = useState(false);
 
   useEffect(() => {
     if (positive && nonce > 0) ref.current?.focus();
@@ -101,6 +103,14 @@ function PromptField({ kind }: { kind: PromptKind }) {
         <span className="pp-prompt__label">{positive ? t('params.prompt.positive') : t('params.prompt.negative')}</span>
         <TokenCounter text={text} />
         <span className="pp-spacer" />
+        <IconButton
+          size="xs"
+          label={tagView ? t('params.prompt.textView') : t('params.prompt.tagView')}
+          icon={tagView ? <TextT /> : <Tag />}
+          aria-pressed={tagView}
+          data-testid={`${kind}-tag-view`}
+          onClick={() => setTagView(!tagView)}
+        />
         {positive && <CaptionButton />}
         {positive && <DynamicPromptsButton />}
         <Button
@@ -114,8 +124,10 @@ function PromptField({ kind }: { kind: PromptKind }) {
           {t('params.promptBook.open')}
         </Button>
       </div>
+      {tagView && <PromptTagView kind={kind} value={text} onChange={(v) => setPrompt(kind, v)} />}
       <Textarea
         ref={ref}
+        hidden={tagView}
         className="pp-prompt__input"
         value={text}
         placeholder={positive ? t('params.prompt.positivePlaceholder') : t('params.prompt.negativePlaceholder')}

@@ -35,6 +35,7 @@ The small buttons above the fields do the following.
 |---|---|
 | **{{ui:params.prompt.recommended}}** | Adds the quality words widely used with the selected model's family to "{{ui:params.prompt.positive}}", and the words to avoid to the end of "{{ui:params.prompt.negative}}". Models written in tags (Illustrious, NoobAI, Pony, Anima and so on) get tags such as `masterpiece, best quality` at the start; models written in sentences (FLUX, Qwen-Image and so on) get quality words at the end. Models that do not use a negative prompt (FLUX.1) get no negative words. Words that are already there are not added twice |
 | **{{ui:params.prompt.expand}}** | Edits positive and negative side by side in a large window |
+| **{{ui:params.prompt.tagView}}** | Switches the field to a row of tags, one per word. Press a tag to open a strength popover: change the strength with the slider, reset it to 1, or remove the tag. A tag whose strength changed is written into the prompt as `(smile:1.3)`. Type a word in the box below and press Enter to add a tag. Press the button again to return to the text |
 | **{{ui:params.promptBook.open}}** | Opens the presets, words gathered together with their meanings (described below) |
 | **{{ui:caption.fromPrompt}}** | Looks at a picture and writes out words you can use as a prompt. You can also drop a gallery picture or an image file from your computer on this button (explained in [Fixing and Reusing Pictures](04-improve.md)) |
 

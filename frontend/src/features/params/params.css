@@ -122,6 +122,7 @@
 
 .pp-prompt__head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
   min-height: 22px;
@@ -729,4 +730,66 @@
 
 .pp-rec__apply:hover b {
   text-decoration: underline;
+}
+
+.pp-tags__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 100px;
+  align-content: flex-start;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-input);
+}
+
+.pp-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-surface);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+
+.pp-tag:hover {
+  background: var(--bg-hover);
+}
+
+.pp-tag.is-weighted {
+  border-color: var(--accent);
+}
+
+.pp-tag__weight {
+  color: var(--accent);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.pp-tags__add {
+  flex: 1 1 100px;
+  min-width: 100px;
+}
+
+.pp-tagpop {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 240px;
+}
+
+.pp-tagpop__title {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.pp-tagpop__actions {
+  display: flex;
+  justify-content: space-between;
 }

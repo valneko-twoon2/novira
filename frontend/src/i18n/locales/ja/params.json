@@ -321,5 +321,11 @@
   "params.parts.later": "あとで",
   "params.profile.mismatch.stepsLow": "ステップ数が少なすぎます（推奨 {value}、{min} 以上）。少ないと、絵が崩れたり一色に塗りつぶされたりします",
   "params.profile.mismatch.stepsHigh": "ステップ数が推奨（{value}）より多く、{max} を超えています。時間がかかるわりに、絵はあまり変わりません",
-  "params.generation.samplingFixed": "{family} のモデルは、いつもこの組み合わせで描きます（ComfyUI の公式の手順）。スケジューラーは選べません"
+  "params.generation.samplingFixed": "{family} のモデルは、いつもこの組み合わせで描きます（ComfyUI の公式の手順）。スケジューラーは選べません",
+  "params.prompt.tagView": "タグ表示",
+  "params.prompt.textView": "テキスト表示",
+  "params.prompt.tagStrength": "強度",
+  "params.prompt.tagReset": "1 に戻す",
+  "params.prompt.tagRemove": "タグを削除",
+  "params.prompt.tagAdd": "タグを追加"
 }
