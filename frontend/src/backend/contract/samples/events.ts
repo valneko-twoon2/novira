@@ -32,9 +32,15 @@ export const hardwareInfo = {
 
 export const engineSettings = {
   dataDir: 'C:\\Users\\you\\novira-data',
+  dataDirChangeable: true,
+  dataDirNext: 'D:\\novira-data',
+  dataDirMoves: true,
+  dataDirNote: null,
   comfyuiMode: 'folder',
   comfyuiUrl: null,
   comfyuiDir: 'D:\\ComfyUI',
+  comfyuiInstallDir: 'D:\\engine',
+  comfyuiRoot: 'C:\\Users\\you\\novira-data\\comfyui',
   comfyuiPackage: 'amd',
   comfyuiInstalled: false,
   installedComfyuiPackage: null,

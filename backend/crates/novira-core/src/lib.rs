@@ -6,6 +6,7 @@ pub mod applog;
 pub mod backup;
 pub mod child_job;
 pub mod comfy;
+pub mod data_location;
 pub mod db;
 pub mod endpoints;
 pub mod engine;

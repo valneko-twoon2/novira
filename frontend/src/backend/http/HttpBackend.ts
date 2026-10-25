@@ -599,6 +599,22 @@ export class HttpBackend implements BackendClient {
     return this.call<EngineSettings | null>('add_model_root');
   }
 
+  chooseDataDir(moveData: boolean) {
+    return this.call<EngineSettings | null>('choose_data_dir', { moveData });
+  }
+
+  cancelDataDirChange() {
+    return this.call<EngineSettings>('cancel_data_dir_change');
+  }
+
+  chooseComfyuiInstallDir() {
+    return this.call<EngineSettings | null>('choose_comfyui_install_dir');
+  }
+
+  resetComfyuiInstallDir() {
+    return this.call<EngineSettings>('reset_comfyui_install_dir');
+  }
+
   removeModelRoot(index: number) {
     return this.call<EngineSettings>('remove_model_root', { index });
   }

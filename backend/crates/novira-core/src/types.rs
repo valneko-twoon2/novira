@@ -795,10 +795,22 @@ pub enum ComfyuiPackage {
 pub struct EngineSettings {
     /// The app's data folder (display only).
     pub data_dir: String,
+    /// The data folder can be changed from the app (not when `NOVIRA_DATA_DIR` or the browser server fixes it).
+    pub data_dir_changeable: bool,
+    /// The folder the next start opens, when a change is waiting for it.
+    pub data_dir_next: Option<String>,
+    /// The waiting change moves the current data into the new folder.
+    pub data_dir_moves: bool,
+    /// Why the last requested move did not happen.
+    pub data_dir_note: Option<String>,
     pub comfyui_mode: ComfyuiMode,
     /// Display only: these are changed in `settings.json`, never from the app.
     pub comfyui_url: Option<String>,
     pub comfyui_dir: Option<String>,
+    /// Where novira's own ComfyUI is installed at the next start; `None` for `comfyui` in the data folder.
+    pub comfyui_install_dir: Option<String>,
+    /// Where novira's own ComfyUI is installed now (owned mode).
+    pub comfyui_root: String,
     pub comfyui_package: ComfyuiPackage,
     /// novira's own ComfyUI is installed in the data folder (owned mode only).
     pub comfyui_installed: bool,

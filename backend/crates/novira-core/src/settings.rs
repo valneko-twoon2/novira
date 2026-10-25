@@ -18,6 +18,8 @@ pub struct Settings {
     pub comfyui_dir: Option<PathBuf>,
     /// Which ComfyUI portable package to download: `nvidia` (default) or `amd`.
     pub comfyui_package: String,
+    /// Where novira's own ComfyUI is installed (owned mode); unset for `comfyui` in the data folder. Read at start.
+    pub comfyui_install_dir: Option<PathBuf>,
     /// Python used to start ComfyUI. Defaults to the venv / embedded Python inside `comfyuiDir`.
     pub comfyui_python: Option<PathBuf>,
     /// Extra arguments for the owned ComfyUI process.
@@ -45,6 +47,7 @@ impl Default for Settings {
             comfyui_url: None,
             comfyui_package: "nvidia".into(),
             comfyui_dir: None,
+            comfyui_install_dir: None,
             comfyui_python: None,
             comfyui_args: Vec::new(),
             model_roots: Vec::new(),
@@ -99,6 +102,13 @@ impl Settings {
             (None, Some(_)) => ComfyuiMode::Folder,
             (None, None) => ComfyuiMode::Owned,
         }
+    }
+
+    /// The folder novira's own ComfyUI is installed in: `comfyuiInstallDir`, else `comfyui` in the data folder.
+    pub fn install_root(&self, data_dir: &Path) -> PathBuf {
+        self.comfyui_install_dir
+            .clone()
+            .unwrap_or_else(|| data_dir.join("comfyui"))
     }
 
     /// The package as the wire shows it. A value the app does not know (only possible by editing the file) shows as
@@ -182,6 +192,48 @@ pub fn check_new_model_root(root: &Path, saved: &[PathBuf], data_dir: &Path) -> 
     }
     if saved.iter().any(|s| path_key(s) == key) {
         return Err("This model folder is already added".into());
+    }
+    Ok(())
+}
+
+/// Checks a folder chosen to install novira's ComfyUI in: a full, plain path that is not the data folder or a folder
+/// holding it, and that is either empty (or new) or already holds a novira install, so nothing else is mixed into it.
+pub fn check_install_dir(dir: &Path, data_dir: &Path) -> Result<(), String> {
+    let text = dir.to_string_lossy();
+    if text.is_empty() || text.chars().any(char::is_control) {
+        return Err("Not a folder path".into());
+    }
+    if !dir.is_absolute() {
+        return Err("The ComfyUI folder must be a full path".into());
+    }
+    if dir
+        .components()
+        .any(|c| matches!(c, std::path::Component::ParentDir) || is_device_prefix(&c))
+    {
+        return Err("Not a plain folder path".into());
+    }
+    if dir.parent().is_none() {
+        return Err("A drive root cannot hold ComfyUI; make a folder in it".into());
+    }
+    let (key, data) = (path_key(dir), path_key(data_dir));
+    let sep = std::path::MAIN_SEPARATOR;
+    if key == data || data.starts_with(&format!("{key}{sep}")) {
+        return Err("The ComfyUI folder cannot be the data folder or hold it".into());
+    }
+    match std::fs::metadata(dir) {
+        Ok(m) if !m.is_dir() => return Err("The ComfyUI folder is not a folder".into()),
+        Ok(_) => {
+            let empty = std::fs::read_dir(dir)
+                .map_err(|e| format!("Cannot read the folder: {e}"))?
+                .next()
+                .is_none();
+            if !empty && !crate::comfy::install::is_installed(dir) {
+                return Err(
+                    "Choose an empty folder, or one that already holds novira's ComfyUI".into(),
+                );
+            }
+        }
+        Err(_) => {}
     }
     Ok(())
 }

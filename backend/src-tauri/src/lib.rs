@@ -53,13 +53,33 @@ fn default_data_dir(app_dir: &Path, user_dir: Option<&Path>, debug: bool) -> Pat
     }
 }
 
-/// Everything novira stores (models, generated images, ComfyUI, database, logs) goes in this folder: `NOVIRA_DATA_DIR`,
-/// else the default one (see `default_data_dir`).
-fn data_dir() -> PathBuf {
-    match std::env::var_os(DATA_DIR_ENV) {
-        Some(p) if !p.is_empty() => novira_core::plain_path(PathBuf::from(p)),
-        _ => default_data_dir(&app_dir(), user_dir().as_deref(), cfg!(debug_assertions)),
+fn data_dir_from_env() -> Option<PathBuf> {
+    std::env::var_os(DATA_DIR_ENV)
+        .filter(|p| !p.is_empty())
+        .map(|p| novira_core::plain_path(PathBuf::from(p)))
+}
+
+/// The file that records the data folder chosen in the Settings screen. Not used when `NOVIRA_DATA_DIR` fixes the
+/// folder, nor in a debug build, whose data stays in the repository.
+fn location_pointer() -> Option<PathBuf> {
+    if cfg!(debug_assertions) || data_dir_from_env().is_some() {
+        return None;
     }
+    novira_core::data_location::pointer_path()
+}
+
+/// Everything novira stores (models, generated images, ComfyUI, database, logs) goes in this folder: `NOVIRA_DATA_DIR`,
+/// else the one chosen in the Settings screen, else the default one (see `default_data_dir`).
+fn data_dir() -> PathBuf {
+    if let Some(dir) = data_dir_from_env() {
+        return dir;
+    }
+    location_pointer()
+        .and_then(|pointer| novira_core::data_location::read(&pointer))
+        .map(|location| location.data_dir)
+        .unwrap_or_else(|| {
+            default_data_dir(&app_dir(), user_dir().as_deref(), cfg!(debug_assertions))
+        })
 }
 
 /// WebView2 keeps what the page stores itself (presets, layout, ...) in a profile folder. By default that is one folder
@@ -130,12 +150,17 @@ fn install_panic_hook() {
 
 pub fn run() {
     install_panic_hook();
+    // A change of the data folder asked for in the Settings screen is carried out now, before the folder is opened.
+    if let Some(pointer) = location_pointer() {
+        novira_core::data_location::apply_pending(&pointer);
+    }
     use_own_webview_profile();
     let app = tauri::Builder::default()
         .setup(|app| {
             let backend =
                 open_backend().unwrap_or_else(|refusal| startup::fail(refusal, &data_dir()));
             backend.set_event_sink(events::sink(app.handle().clone()));
+            backend.set_location_pointer(location_pointer());
             tauri::async_runtime::spawn(backend.clone().run_worker());
             // Download (first run) and start the local ComfyUI right away.
             let engine = backend.clone();
@@ -262,6 +287,10 @@ pub fn run() {
             commands::set_engine_settings,
             commands::add_model_root,
             commands::remove_model_root,
+            commands::choose_data_dir,
+            commands::cancel_data_dir_change,
+            commands::choose_comfyui_install_dir,
+            commands::reset_comfyui_install_dir,
             commands::face_rig_library,
             commands::face_rig_preview,
             commands::export_images,
@@ -300,14 +329,20 @@ mod tests {
     fn a_release_build_keeps_its_data_in_the_user_folder() {
         let app = tempfile::tempdir().unwrap();
         let user = Path::new("C:/Users/someone");
-        assert_eq!(default_data_dir(app.path(), Some(user), false), user.join(DATA_DIR_NAME));
+        assert_eq!(
+            default_data_dir(app.path(), Some(user), false),
+            user.join(DATA_DIR_NAME)
+        );
     }
 
     #[test]
     fn a_debug_build_keeps_its_data_beside_the_app() {
         let app = Path::new("C:/repo");
         let user = Path::new("C:/Users/someone");
-        assert_eq!(default_data_dir(app, Some(user), true), app.join(DATA_DIR_NAME));
+        assert_eq!(
+            default_data_dir(app, Some(user), true),
+            app.join(DATA_DIR_NAME)
+        );
     }
 
     #[test]
@@ -315,7 +350,10 @@ mod tests {
         let app = tempfile::tempdir().unwrap();
         std::fs::create_dir(app.path().join(DATA_DIR_NAME)).unwrap();
         let user = Path::new("C:/Users/someone");
-        assert_eq!(default_data_dir(app.path(), Some(user), false), app.path().join(DATA_DIR_NAME));
+        assert_eq!(
+            default_data_dir(app.path(), Some(user), false),
+            app.path().join(DATA_DIR_NAME)
+        );
     }
 
     #[test]

@@ -221,8 +221,8 @@ Claude と Codex のほかに、このパソコンやネットワーク上で動
 
 | 項目 | 内容 |
 |---|---|
-| {{ui:settings.engine.dataDir.label}} | 作った絵、モデル、画像エンジンなどを置くフォルダです。表示だけで、ここでは変えられません |
-| {{ui:settings.engine.comfyui.label}} | 使っている ComfyUI です。ふだんは **{{ui:settings.engine.comfyui.owned}}** です。設定ファイルでほかの ComfyUI を指定したときは、その場所が出ます。ここでは変えられません |
+| {{ui:settings.engine.dataDir.label}} | 作った絵、モデル、画像エンジンなどを置くフォルダです。初めはユーザーフォルダの中の `novira-data` です。**{{ui:settings.engine.dataDir.change}}** を押すと、まず今のデータの扱いを選びます。**{{ui:settings.engine.dataDir.dialog.move}}** は、選んだ空のフォルダへ今のデータを移します（次の起動の最初に行うので、量が多いと時間がかかります）。**{{ui:settings.engine.dataDir.dialog.use}}** は、データを移さず、選んだフォルダを開きます（データがあればそれを、空なら新しく始めます）。そのあとフォルダを選ぶ窓が開き、選んだ場所は次の起動から使われます。**{{ui:settings.engine.dataDir.cancel}}** で取りやめられます。移動ができなかったときは、理由が出て、今のフォルダのまま起動します。環境変数 `NOVIRA_DATA_DIR` で決めているときは、ここでは変えられません |
+| {{ui:settings.engine.comfyui.label}} | 使っている ComfyUI です。ふだんはデータフォルダの中の `comfyui` にあり、その場所が出ます。設定ファイルでほかの ComfyUI を指定したときは、その場所が出ます。**{{ui:settings.engine.comfyui.change}}** で、アプリがインストールする ComfyUI の置き場所を変えられます。選んだフォルダが空なら、次の起動で新しくインストールします（大きなダウンロードです）。すでにインストール済みのフォルダならそのまま使います。古い場所のファイルは自動では消えません。**{{ui:settings.engine.comfyui.reset}}** で、データフォルダの中に戻します |
 | {{ui:settings.engine.package.label}} | **{{ui:settings.engine.package.nvidia}}** か **{{ui:settings.engine.package.amd}}**。次に ComfyUI をダウンロードするとき（初めてのインストールや版の切り替え）に使われます。ComfyUI がインストールされているときに、別の種類を選ぶと確認が出ます。確認すると、次に novira を起動したときに、選んだ種類で ComfyUI をインストールし直します（ダウンロードは大きく、時間がかかります） |
 | {{ui:settings.engine.timeout.label}} | ComfyUI を起動してから応答するまで待つ秒数です。30 秒から 1800 秒まで選べます。遅いパソコンでは長くします |
 | {{ui:settings.engine.modelRoots.label}} | データフォルダの models のほかに、モデルを探すフォルダです。**{{ui:settings.engine.modelRoots.add}}** を押すとフォルダを選ぶ窓が開きます。ComfyUI や Stability Matrix のフォルダの形が分かります。動画・音楽・音声・ロゴ・消去の追加モデルもここから見つかります（読むだけで、新しく入れるときはいつもデータフォルダに入ります）。16 個まで足せます。データフォルダの中や、すでにあるフォルダは足せません。× のボタンで外します。ブラウザで開いているときは、足すことはできず、外すことだけできます |

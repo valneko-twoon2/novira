@@ -287,7 +287,7 @@ describe('comic and text', () => {
 
 describe('the engine', () => {
   it('turns the Civitai lookup on, and says it applies at the next start', async () => {
-    const engine = { dataDir: 'C:\\data', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
+    const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
     const set = vi.spyOn(backend, 'setEngineSettings').mockImplementation(async (p) => ({ ...engine, ...p, restartNeeded: true }));
     openTab('engine');
@@ -297,14 +297,14 @@ describe('the engine', () => {
   });
 
   it('shows where the data and the engine are, and changes the package, the start wait and the model folders', async () => {
-    const engine = { dataDir: 'C:\\data', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
+    const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
     const set = vi.spyOn(backend, 'setEngineSettings').mockImplementation(async (p) => ({ ...engine, ...p, restartNeeded: true }));
     vi.spyOn(backend, 'addModelRoot').mockResolvedValueOnce({ ...engine, modelRoots: ['D:\\Models'], restartNeeded: true }).mockResolvedValueOnce(null);
     const remove = vi.spyOn(backend, 'removeModelRoot').mockResolvedValue(engine);
     openTab('engine');
     expect((await screen.findByTestId('settings-engine-data-dir')).textContent).toBe('C:\\data');
-    expect(screen.getByTestId('settings-engine-mode').textContent).toBe(t('settings.engine.comfyui.owned'));
+    expect(screen.getByTestId('settings-engine-mode').textContent).toBe('C:\\data\\comfyui');
     expect(screen.getByText(t('settings.engine.modelRoots.none'))).toBeTruthy();
     expect(screen.queryByTestId('settings-engine-restart')).toBeNull();
 
@@ -328,8 +328,58 @@ describe('the engine', () => {
     await waitFor(() => expect(screen.queryByText('D:\\Models')).toBeNull());
   });
 
+  it('changes the data folder after asking what happens to the data, and cancels a change that waits', async () => {
+    const engine = { dataDir: 'C:\\data', dataDirChangeable: true, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
+    vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
+    const choose = vi.spyOn(backend, 'chooseDataDir').mockImplementation(async (moveData) => ({ ...engine, dataDirNext: 'D:\\data2', dataDirMoves: moveData, restartNeeded: true }));
+    const cancel = vi.spyOn(backend, 'cancelDataDirChange').mockResolvedValue(engine);
+    openTab('engine');
+    fireEvent.click(await screen.findByTestId('settings-engine-data-dir-change'));
+    // The folder dialog opens only after the choice about the data.
+    expect(choose).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId('settings-engine-data-dir-move'));
+    await waitFor(() => expect(choose).toHaveBeenCalledWith(true));
+    expect((await screen.findByTestId('settings-engine-data-dir-next')).textContent).toBe(t('settings.engine.dataDir.nextMove', { path: 'D:\\data2' }));
+    expect(screen.getByTestId('settings-engine-restart')).toBeTruthy();
+    // The folder in use is still the one shown.
+    expect(screen.getByTestId('settings-engine-data-dir').textContent).toBe('C:\\data');
+    fireEvent.click(screen.getByTestId('settings-engine-data-dir-change'));
+    fireEvent.click(screen.getByTestId('settings-engine-data-dir-use'));
+    await waitFor(() => expect(choose).toHaveBeenLastCalledWith(false));
+    expect((await screen.findByTestId('settings-engine-data-dir-next')).textContent).toBe(t('settings.engine.dataDir.nextUse', { path: 'D:\\data2' }));
+    fireEvent.click(screen.getByTestId('settings-engine-data-dir-cancel'));
+    await waitFor(() => expect(cancel).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByTestId('settings-engine-data-dir-next')).toBeNull());
+  });
+
+  it('cannot change a data folder that is fixed, and shows why a move did not happen', async () => {
+    const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: 'not empty', comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
+    vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
+    openTab('engine');
+    expect((await screen.findByTestId('settings-engine-data-dir-note')).textContent).toBe(t('settings.engine.dataDir.note', { reason: 'not empty' }));
+    expect(screen.queryByTestId('settings-engine-data-dir-change')).toBeNull();
+  });
+
+  it('chooses and resets the place novira installs ComfyUI in', async () => {
+    const engine = { dataDir: 'C:\\data', dataDirChangeable: true, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null as string | null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
+    vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
+    const choose = vi.spyOn(backend, 'chooseComfyuiInstallDir').mockResolvedValueOnce({ ...engine, comfyuiInstallDir: 'E:\\engine', restartNeeded: true }).mockResolvedValueOnce(null);
+    const reset = vi.spyOn(backend, 'resetComfyuiInstallDir').mockResolvedValue(engine);
+    openTab('engine');
+    expect(screen.queryByTestId('settings-engine-comfyui-reset')).toBeNull();
+    fireEvent.click(await screen.findByTestId('settings-engine-comfyui-change'));
+    expect((await screen.findByTestId('settings-engine-comfyui-next')).textContent).toBe(t('settings.engine.comfyui.next', { path: 'E:\\engine' }));
+    // A cancelled dialog changes nothing.
+    fireEvent.click(screen.getByTestId('settings-engine-comfyui-change'));
+    await waitFor(() => expect(choose).toHaveBeenCalledTimes(2));
+    expect(screen.getByTestId('settings-engine-comfyui-next')).toBeTruthy();
+    fireEvent.click(screen.getByTestId('settings-engine-comfyui-reset'));
+    await waitFor(() => expect(reset).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByTestId('settings-engine-comfyui-next')).toBeNull());
+  });
+
   it('shows an engine named elsewhere, and reports a change the backend refuses', async () => {
-    const engine = { dataDir: 'C:\\data', comfyuiMode: 'url' as const, comfyuiUrl: 'http://127.0.0.1:8188', comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [], restartNeeded: false };
+    const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'url' as const, comfyuiUrl: 'http://127.0.0.1:8188', comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
     vi.spyOn(backend, 'addModelRoot').mockRejectedValue(new Error('already listed'));
     openTab('engine');
@@ -340,7 +390,7 @@ describe('the engine', () => {
 
   it('says an extra model folder is added in the desktop app when the page is on the browser server', async () => {
     asBrowserServer();
-    const engine = { dataDir: 'C:\\data', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: ['D:\\Models'], restartNeeded: false };
+    const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: ['D:\\Models'], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
     openTab('engine');
     expect((await screen.findByTestId('settings-engine-root-desktop-only')).textContent).toBe(t('common.desktopOnly'));
@@ -352,7 +402,7 @@ describe('the engine', () => {
   describe('the package choice when novira has installed ComfyUI', () => {
     /** An owned engine as the backend reports it: the package saved, and what novira installed (null when unknown). */
     const engineFor = (over: Partial<EngineSettings>): EngineSettings => ({
-      dataDir: 'C:\\data',
+      dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui',
       comfyuiMode: 'owned',
       comfyuiUrl: null,
       comfyuiDir: null,

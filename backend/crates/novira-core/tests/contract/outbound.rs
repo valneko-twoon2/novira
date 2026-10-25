@@ -192,9 +192,15 @@ pub fn unfinished_download(v: &Value) {
 pub fn engine_settings(v: &Value) {
     let settings = EngineSettings {
         data_dir: get(v, "dataDir"),
+        data_dir_changeable: get(v, "dataDirChangeable"),
+        data_dir_next: get(v, "dataDirNext"),
+        data_dir_moves: get(v, "dataDirMoves"),
+        data_dir_note: get(v, "dataDirNote"),
         comfyui_mode: get(v, "comfyuiMode"),
         comfyui_url: get(v, "comfyuiUrl"),
         comfyui_dir: get(v, "comfyuiDir"),
+        comfyui_install_dir: get(v, "comfyuiInstallDir"),
+        comfyui_root: get(v, "comfyuiRoot"),
         comfyui_package: get(v, "comfyuiPackage"),
         comfyui_installed: get(v, "comfyuiInstalled"),
         installed_comfyui_package: get(v, "installedComfyuiPackage"),

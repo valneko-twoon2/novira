@@ -1125,6 +1125,10 @@ export class MockBackend implements BackendClient {
   engineSettings = (): Promise<EngineSettings> => this.engine.engineSettings();
   setEngineSettings = (patch: EngineSettingsPatch): Promise<EngineSettings> => this.engine.setEngineSettings(patch);
   addModelRoot = (): Promise<EngineSettings | null> => this.engine.addModelRoot();
+  chooseDataDir = (moveData: boolean): Promise<EngineSettings | null> => this.engine.chooseDataDir(moveData);
+  cancelDataDirChange = (): Promise<EngineSettings> => this.engine.cancelDataDirChange();
+  chooseComfyuiInstallDir = (): Promise<EngineSettings | null> => this.engine.chooseComfyuiInstallDir();
+  resetComfyuiInstallDir = (): Promise<EngineSettings> => this.engine.resetComfyuiInstallDir();
   removeModelRoot = (index: number): Promise<EngineSettings> => this.engine.removeModelRoot(index);
 
   async faceRigLibrary(): Promise<FaceRigLibrary> {

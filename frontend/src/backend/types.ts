@@ -331,10 +331,22 @@ export type ComfyuiPackage = 'nvidia' | 'amd';
 export interface EngineSettings {
   /** The app's data folder (display only). */
   dataDir: string;
+  /** The data folder can be changed from the app (not when `NOVIRA_DATA_DIR` or the browser server fixes it). */
+  dataDirChangeable: boolean;
+  /** The folder the next start opens, when a change is waiting for it. */
+  dataDirNext: string | null;
+  /** The waiting change moves the current data into the new folder. */
+  dataDirMoves: boolean;
+  /** Why the last requested move did not happen. */
+  dataDirNote: string | null;
   comfyuiMode: ComfyuiMode;
   /** Display only: changed in `settings.json`, never from the app. */
   comfyuiUrl: string | null;
   comfyuiDir: string | null;
+  /** Where novira's own ComfyUI is installed from the next start; `null` for `comfyui` in the data folder. */
+  comfyuiInstallDir: string | null;
+  /** Where novira's own ComfyUI is installed now (owned mode). */
+  comfyuiRoot: string;
   comfyuiPackage: ComfyuiPackage;
   /** novira's own ComfyUI is installed in the data folder (owned mode only). */
   comfyuiInstalled: boolean;
@@ -346,7 +358,7 @@ export interface EngineSettings {
   modelRoots: string[];
   /** Look up local models on Civitai by file hash (their pictures and licenses). Sends the hashes; off by default. */
   civitaiLookup: boolean;
-  /** A saved value (package, start timeout, model folders, the lookup) differs from what the running app started with. */
+  /** A saved value (package, start timeout, model folders, the lookup, the data or ComfyUI folder) differs from what the running app started with. */
   restartNeeded: boolean;
 }
 

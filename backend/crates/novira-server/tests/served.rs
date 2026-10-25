@@ -305,6 +305,10 @@ async fn what_needs_a_dialog_or_a_restore_stays_unavailable() {
     let f = Fixture::start().await;
     for name in [
         "add_model_root",
+        "choose_data_dir",
+        "cancel_data_dir_change",
+        "choose_comfyui_install_dir",
+        "reset_comfyui_install_dir",
         "scan_folder",
         "export_images",
         "create_backup",

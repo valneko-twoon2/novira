@@ -530,6 +530,22 @@ export class TauriBackend implements BackendClient {
     return invoke<EngineSettings | null>('add_model_root');
   }
 
+  chooseDataDir(moveData: boolean) {
+    return invoke<EngineSettings | null>('choose_data_dir', { moveData });
+  }
+
+  cancelDataDirChange() {
+    return invoke<EngineSettings>('cancel_data_dir_change');
+  }
+
+  chooseComfyuiInstallDir() {
+    return invoke<EngineSettings | null>('choose_comfyui_install_dir');
+  }
+
+  resetComfyuiInstallDir() {
+    return invoke<EngineSettings>('reset_comfyui_install_dir');
+  }
+
   removeModelRoot(index: number) {
     return invoke<EngineSettings>('remove_model_root', { index });
   }

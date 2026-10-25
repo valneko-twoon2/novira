@@ -115,6 +115,10 @@ export const CALLS: {
   setEngineSettings: (b) =>
     b.setEngineSettings({ comfyuiPackage: 'amd', comfyuiStartTimeoutSecs: 600 }),
   addModelRoot: (b) => b.addModelRoot(),
+  chooseDataDir: (b) => b.chooseDataDir(true),
+  cancelDataDirChange: (b) => b.cancelDataDirChange(),
+  chooseComfyuiInstallDir: (b) => b.chooseComfyuiInstallDir(),
+  resetComfyuiInstallDir: (b) => b.resetComfyuiInstallDir(),
   removeModelRoot: (b) => b.removeModelRoot(0),
   faceRigLibrary: (b) => b.faceRigLibrary(),
   faceRigPreview: (b) => b.faceRigPreview({ nodeKey: 'n', rig: '{}', quality: 'drag' }),

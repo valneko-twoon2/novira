@@ -1,6 +1,7 @@
 ---
 covers:
   - backend/crates/novira-core/src/settings.rs
+  - backend/crates/novira-core/src/data_location.rs
   - backend/crates/novira-core/src/service/engine_settings.rs
   - backend/crates/novira-core/src/service/memory.rs
   - backend/crates/novira-core/src/comfy/process.rs
@@ -32,12 +33,13 @@ Settings are the choices that outlive one session: the backend's `settings.json`
 
 **Other tabs.** General (including `waitForEngine`, on by default: when off, the start-up screen does not wait for the engine or the node list, and the engine banner shows its state; `useSplashGate`), Generation (including the Drafts screen's starting count and position, `draftCount` and `draftPosition`), Gallery, Editing, Comic and text, and Developer change the page's own preferences, stored under `novira.settings` (`frontend/src/state/settings.ts`); their items are in `frontend/src/features/settings/settingsPanes.tsx`.
 
-**Settings: Engine** (`frontend/src/features/settings/EnginePane.tsx`). Shows the data folder and the ComfyUI mode (the URL or folder when set), read-only; `comfyuiPython`, `comfyuiArgs` and `gpuLock` are not shown. Four things change, each checked by the backend first:
+**Settings: Engine** (`frontend/src/features/settings/EnginePane.tsx`). Shows the data folder, where its own ComfyUI is installed (`comfyuiRoot`) and the ComfyUI mode (the URL or folder when set); `comfyuiPython`, `comfyuiArgs` and `gpuLock` are not shown. Five things change, each checked by the backend first:
 
 - the ComfyUI package; when an install exists and the package differs, the screen asks first;
 - the start timeout (a slider, 30 to 1800 s in steps of 10, saved 500 ms after it stops moving);
 - the Civitai lookup switch;
-- the extra model folders (added through a folder dialog, removed by row).
+- the extra model folders (added through a folder dialog, removed by row);
+- the data folder and the ComfyUI install folder (`LocationRows.tsx`; shell commands that open a folder dialog: `choose_data_dir`, `cancel_data_dir_change`, `choose_comfyui_install_dir`, `reset_comfyui_install_dir`, not served by the browser server). The data folder is recorded in a pointer file in the user's configuration folder (`data_location.rs`, `%LOCALAPPDATA%/novira/data-location.json`), because it cannot live in the folder it names. A release build reads it after `NOVIRA_DATA_DIR` and before the default; a debug build and a run with `NOVIRA_DATA_DIR` do not use it, and the screen then shows the folder as fixed. The change applies at the next start: first thing, before the folder is locked, a requested move renames the folder (same drive) or copies it and removes the old files; the target must be empty, the old folder must not be held by another novira, and on any failure the old folder stays in use and the reason is kept in the pointer (`dataDirNote`). `comfyuiInstallDir` (a `settings.json` key, read at start) places the owned ComfyUI; the folder must be empty or already hold an install, and nothing is moved. Model downloads in progress under it are not listed by the unfinished-downloads view, which reads the data folder only.
 
 A change that differs from what the app started with sets `restartNeeded`, and the screen says it applies at the next start. Model folders are read only at start.
 

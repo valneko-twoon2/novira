@@ -139,6 +139,8 @@ struct Inner {
     /// The Python for the voice libraries: an explicit setting, else the folder of ComfyUI's own.
     voice_python: (Option<PathBuf>, Option<PathBuf>),
     events: RwLock<Option<EventSink>>,
+    /// The file that records where the data folder is, set by the shell when the data folder may be changed from the app.
+    location_pointer: RwLock<Option<PathBuf>>,
     wake: Notify,
     http: reqwest::Client,
     /// For the model searches only: it asks for compressed answers (a page of results is over a megabyte of JSON). The client above
@@ -219,7 +221,7 @@ impl Backend {
     pub fn open(config: BackendConfig) -> Result<Self> {
         let mut watch = Stopwatch::start();
         let yaml_path = config.data_dir.join(EXTRA_MODEL_PATHS);
-        let install_root = config.data_dir.join("comfyui");
+        let install_root = config.settings.install_root(&config.data_dir);
         let st = &config.settings;
         // Without `comfyuiUrl` novira uses its own ComfyUI on a free loopback port; with it, an existing server.
         let managed = st.comfyui_url.is_none();
@@ -472,6 +474,7 @@ impl Backend {
             voice,
             voice_python,
             events: RwLock::new(None),
+            location_pointer: RwLock::new(None),
             wake: Notify::new(),
             http,
             search_http,

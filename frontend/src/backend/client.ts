@@ -212,6 +212,17 @@ export interface BackendClient {
    * cancelled. Refused when the folder is already listed, is the data folder or inside it, or 16 are listed.
    */
   addModelRoot(): Promise<EngineSettings | null>;
+  /**
+   * Asks for a folder in a native dialog and makes it the data folder of the next start, with the current data moved
+   * into it when `moveData` is set (an empty folder is needed then); null when the dialog is cancelled.
+   */
+  chooseDataDir(moveData: boolean): Promise<EngineSettings | null>;
+  /** Cancels a data folder change that waits for the next start. */
+  cancelDataDirChange(): Promise<EngineSettings>;
+  /** Asks for a folder and makes it the place novira's own ComfyUI is installed in from the next start; null when cancelled. */
+  chooseComfyuiInstallDir(): Promise<EngineSettings | null>;
+  /** novira's own ComfyUI goes back to `comfyui` in the data folder from the next start. */
+  resetComfyuiInstallDir(): Promise<EngineSettings>;
   /** Removes the extra model folder at `index` of `modelRoots`. */
   removeModelRoot(index: number): Promise<EngineSettings>;
   /** The axes and presets of the Face Rig pack (needs NKD Basic Tools installed and loaded). */

@@ -16,7 +16,7 @@ const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const LATENCY = 60;
 
 /** The engine settings the mock can change, and what it "started" with (the backend's defaults). */
-type EngineSettingsValues = Pick<EngineSettings, 'comfyuiPackage' | 'comfyuiStartTimeoutSecs' | 'modelRoots' | 'civitaiLookup'>;
+type EngineSettingsValues = Pick<EngineSettings, 'comfyuiPackage' | 'comfyuiStartTimeoutSecs' | 'modelRoots' | 'civitaiLookup' | 'comfyuiInstallDir'>;
 const MOCK_ENGINE_START = { comfyuiPackage: 'nvidia', comfyuiStartTimeoutSecs: 180, civitaiLookup: false } as const;
 const MOCK_MAX_MODEL_ROOTS = 16;
 
@@ -168,7 +168,9 @@ export class MockEngine {
   // Engine settings (settings.json in the desktop app). Like the backend: values are checked, saved, and apply at the
   // next start of the app, so `restartNeeded` compares them with what this session "started" with.
 
-  private engineSaved: EngineSettingsValues = { ...MOCK_ENGINE_START, modelRoots: [] };
+  private engineSaved: EngineSettingsValues = { ...MOCK_ENGINE_START, modelRoots: [], comfyuiInstallDir: null };
+  /** A data folder change waiting for the next start. */
+  private dataNext: { dir: string; moves: boolean } | null = null;
 
   private engineState(): EngineSettings {
     const saved = this.engineSaved;
@@ -176,9 +178,16 @@ export class MockEngine {
       saved.comfyuiPackage !== MOCK_ENGINE_START.comfyuiPackage ||
       saved.comfyuiStartTimeoutSecs !== MOCK_ENGINE_START.comfyuiStartTimeoutSecs ||
       saved.civitaiLookup !== MOCK_ENGINE_START.civitaiLookup ||
-      saved.modelRoots.length > 0;
+      saved.modelRoots.length > 0 ||
+      saved.comfyuiInstallDir !== null ||
+      this.dataNext !== null;
     return {
       dataDir: 'C:\\Users\\you\\novira-data',
+      dataDirChangeable: true,
+      dataDirNext: this.dataNext?.dir ?? null,
+      dataDirMoves: this.dataNext?.moves ?? false,
+      dataDirNote: null,
+      comfyuiRoot: 'C:\\Users\\you\\novira-data\\comfyui',
       comfyuiMode: 'owned',
       comfyuiUrl: null,
       comfyuiDir: null,
@@ -222,6 +231,30 @@ export class MockEngine {
     if (roots.length >= MOCK_MAX_MODEL_ROOTS) throw new Error(`At most ${MOCK_MAX_MODEL_ROOTS} model folders can be added`);
     const letter = [...'DEFGHIJKLMNOPQRSTUVWXYZ'].find((l) => !roots.includes(`${l}:\\Models`))!;
     roots.push(`${letter}:\\Models`);
+    return this.engineState();
+  }
+
+  async chooseDataDir(moveData: boolean): Promise<EngineSettings | null> {
+    await wait(LATENCY);
+    this.dataNext = { dir: 'D:\\novira-data', moves: moveData };
+    return this.engineState();
+  }
+
+  async cancelDataDirChange(): Promise<EngineSettings> {
+    await wait(LATENCY);
+    this.dataNext = null;
+    return this.engineState();
+  }
+
+  async chooseComfyuiInstallDir(): Promise<EngineSettings | null> {
+    await wait(LATENCY);
+    this.engineSaved.comfyuiInstallDir = 'D:\\ComfyUI-novira';
+    return this.engineState();
+  }
+
+  async resetComfyuiInstallDir(): Promise<EngineSettings> {
+    await wait(LATENCY);
+    this.engineSaved.comfyuiInstallDir = null;
     return this.engineState();
   }
 

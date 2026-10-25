@@ -156,9 +156,15 @@ describe('engine settings', () => {
     const { backend } = await start();
     expect(await settle(backend.engineSettings())).toEqual({
       dataDir: 'C:\\Users\\you\\novira-data',
+      dataDirChangeable: true,
+      dataDirNext: null,
+      dataDirMoves: false,
+      dataDirNote: null,
+      comfyuiRoot: 'C:\\Users\\you\\novira-data\\comfyui',
       comfyuiMode: 'owned',
       comfyuiUrl: null,
       comfyuiDir: null,
+      comfyuiInstallDir: null,
       comfyuiPackage: 'nvidia',
       comfyuiInstalled: true,
       installedComfyuiPackage: 'nvidia',
@@ -167,6 +173,16 @@ describe('engine settings', () => {
       modelRoots: [],
       restartNeeded: false,
     });
+  });
+
+  it('keeps a data folder change and a ComfyUI folder until cancelled or reset, each needing a restart', async () => {
+    const { backend } = await start();
+    const moved = await settle(backend.chooseDataDir(true));
+    expect(moved).toMatchObject({ dataDirNext: 'D:\\novira-data', dataDirMoves: true, restartNeeded: true });
+    expect(await settle(backend.chooseDataDir(false))).toMatchObject({ dataDirMoves: false });
+    expect(await settle(backend.cancelDataDirChange())).toMatchObject({ dataDirNext: null, restartNeeded: false });
+    expect(await settle(backend.chooseComfyuiInstallDir())).toMatchObject({ comfyuiInstallDir: 'D:\\ComfyUI-novira', restartNeeded: true });
+    expect(await settle(backend.resetComfyuiInstallDir())).toMatchObject({ comfyuiInstallDir: null, restartNeeded: false });
   });
 
   it('saves a valid patch and then needs a restart; back at the start values it does not', async () => {

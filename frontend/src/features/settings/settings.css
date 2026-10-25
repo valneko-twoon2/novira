@@ -672,3 +672,11 @@
   gap: var(--space-2);
   margin-top: var(--space-1);
 }
+
+.st-location {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-end;
+  text-align: right;
+}

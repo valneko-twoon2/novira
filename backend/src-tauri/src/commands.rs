@@ -337,6 +337,51 @@ pub async fn add_model_root(
     backend.add_model_root(&folder).map(Some).map_err(msg)
 }
 
+/// Asks for a folder and makes it the data folder of the next start, moving the current data into it when `move_data`
+/// is set; `null` when the user cancels the dialog.
+#[tauri::command]
+pub async fn choose_data_dir(
+    webview: tauri::Webview,
+    backend: State<'_, Backend>,
+    move_data: bool,
+) -> Res<Option<EngineSettings>> {
+    backend.check_data_dir_changeable().map_err(msg)?;
+    let Some(folder) = crate::dialogs::pick_folder(&webview).await else {
+        return Ok(None);
+    };
+    backend
+        .set_data_dir(&folder, move_data)
+        .map(Some)
+        .map_err(msg)
+}
+
+/// Cancels a data folder change that waits for the next start.
+#[tauri::command]
+pub fn cancel_data_dir_change(backend: State<'_, Backend>) -> Res<EngineSettings> {
+    guard(|| backend.cancel_data_dir_change().map_err(msg))
+}
+
+/// Asks for a folder and makes it the place novira's own ComfyUI is installed in from the next start.
+#[tauri::command]
+pub async fn choose_comfyui_install_dir(
+    webview: tauri::Webview,
+    backend: State<'_, Backend>,
+) -> Res<Option<EngineSettings>> {
+    let Some(folder) = crate::dialogs::pick_folder(&webview).await else {
+        return Ok(None);
+    };
+    backend
+        .set_comfyui_install_dir(Some(&folder))
+        .map(Some)
+        .map_err(msg)
+}
+
+/// ComfyUI goes back to `comfyui` in the data folder from the next start.
+#[tauri::command]
+pub fn reset_comfyui_install_dir(backend: State<'_, Backend>) -> Res<EngineSettings> {
+    guard(|| backend.set_comfyui_install_dir(None).map_err(msg))
+}
+
 #[tauri::command]
 pub fn remove_model_root(backend: State<'_, Backend>, index: usize) -> Res<EngineSettings> {
     guard(|| call::remove_model_root(&backend, index))

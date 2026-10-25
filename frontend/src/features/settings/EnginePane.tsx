@@ -1,4 +1,4 @@
-// Settings → Engine: where the app keeps its data and which image engine it uses (shown only), the ComfyUI package to
+// Settings → Engine: where the app keeps its data and where its image engine is installed (both can be changed), the ComfyUI package to
 // download, how long to wait for ComfyUI to start, whether models are looked up on Civitai, and the extra folders scanned for models. The backend checks and saves
 // each change; they apply at the next start, which a notice says.
 import { FolderPlus, X } from '@phosphor-icons/react';
@@ -7,6 +7,7 @@ import { backend, hasNativeDialogs, type ComfyuiPackage, type EngineSettings, ty
 import { t } from '@/i18n';
 import { toast } from '@/state/toasts';
 import { Button, IconButton, Select, SliderNumber, Spinner, Switch } from '@/ui';
+import { ComfyuiRow, DataDirRow } from './LocationRows';
 import { Row, SectionBlock } from './settingsLayout';
 
 /** How long the timeout slider rests before its value is saved, in milliseconds. */
@@ -86,16 +87,8 @@ export function EnginePane() {
         </div>
       )}
       <SectionBlock title={t('settings.section.engineWhere')}>
-        <Row label={t('settings.engine.dataDir.label')} help={t('settings.engine.dataDir.help')}>
-          <code className="st-path" data-testid="settings-engine-data-dir">
-            {engine.dataDir}
-          </code>
-        </Row>
-        <Row label={t('settings.engine.comfyui.label')} help={engine.comfyuiMode === 'owned' ? t('settings.engine.comfyui.ownedHelp') : t('settings.engine.comfyui.otherHelp')}>
-          <span className={engine.comfyuiMode === 'owned' ? 'st-row__help' : 'st-path'} data-testid="settings-engine-mode">
-            {engine.comfyuiMode === 'url' ? engine.comfyuiUrl : engine.comfyuiMode === 'folder' ? engine.comfyuiDir : t('settings.engine.comfyui.owned')}
-          </span>
-        </Row>
+        <DataDirRow engine={engine} busy={busy} run={run} />
+        <ComfyuiRow engine={engine} busy={busy} run={run} />
       </SectionBlock>
       <SectionBlock title={t('settings.section.engineStart')}>
         <Row label={t('settings.engine.package.label')} help={pendingPackage === null ? t('settings.engine.package.help') : t('settings.engine.package.reinstall')}>

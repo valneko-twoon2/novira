@@ -43,6 +43,7 @@ The shell (`backend/src-tauri/src/`): `commands.rs` holds the IPC commands (thin
 | `media/` | Gallery files (PNG / MP4, thumbnails, embedded metadata, upload limits, name checks), clean copies for sharing, audio |
 | `provenance/` | The "made with AI" marks on exported copies (TrustMark watermark, XMP, C2PA manifests) and the check that reads them |
 | `backup/` | The backup zip and the restore into `restore-staging/`, applied at the next start with roll-back |
+| `data_location/` | Where the data folder is (a pointer file in the user's config folder), and the move of the data into a new folder at the next start |
 
 ## How a job runs
 
