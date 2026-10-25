@@ -6,7 +6,7 @@ import { t } from '@/i18n';
 import { BASE_LABELS, useModels } from '@/state/models';
 import { toast } from '@/state/toasts';
 import { Button, CommercialTag, IconButton, Modal, writeClipboardText } from '@/ui';
-import { CoverImage } from './CoverImage';
+import { ModelGallery } from './ModelGallery';
 import { DefaultSettingsForm } from './DefaultSettingsForm';
 import { DeleteModelDialog } from './DeleteModelDialog';
 import { ModelEditForm } from './ModelEditForm';
@@ -24,12 +24,14 @@ export function ModelDetail({ model }: { model: ModelConfig }) {
   const canConvert = model.type === 'main' && model.format === 'checkpoint';
 
   // The system browser opens it, and only after the backend checked the address (https, a model site).
+  const pageUrl = model.pageUrl ?? (isUrl(model.source) ? model.source : null);
   const openSource = () => {
+    if (!pageUrl) return;
     if (backend.kind === 'mock') {
       toast({ status: 'info', title: t('browse.toast.openMock'), description: model.name }, 2200);
       return;
     }
-    backend.openSourcePage(model.source).catch((e: unknown) => {
+    backend.openSourcePage(pageUrl).catch((e: unknown) => {
       toast({ status: 'error', title: t('browse.toast.openFailed'), description: e instanceof Error ? e.message : String(e) });
     });
   };
@@ -61,7 +63,7 @@ export function ModelDetail({ model }: { model: ModelConfig }) {
         <IconButton label={t('models.detail.close')} icon={<X size={14} />} size="sm" onClick={() => setSelectedKey(null)} />
       </div>
       <div className="mm-detail__scroll">
-        <CoverImage model={model} className="mm-detail__cover" />
+        <ModelGallery key={model.key} model={model} />
         <h2 className="mm-detail__name">{model.name}</h2>
         <div className="mm-detail__badges">
           <span className="mm-tag mm-tag--accent">{BASE_LABELS[model.base]}</span>
@@ -69,7 +71,7 @@ export function ModelDetail({ model }: { model: ModelConfig }) {
           {formatTag(model) && <span className="mm-tag">{formatTag(model)}</span>}
         </div>
         <div className="mm-detail__actions">
-          {isUrl(model.source) && (
+          {pageUrl && (
             <Button size="sm" variant="outline" leftIcon={<ArrowSquareOut size={14} />} onClick={openSource}>
               {t('models.detail.openSource')}
             </Button>
@@ -111,6 +113,16 @@ export function ModelDetail({ model }: { model: ModelConfig }) {
               </dd>
               <dt>{t('models.details.source')}</dt>
               <dd className="mm-mono">{model.source}</dd>
+              {pageUrl && (
+                <>
+                  <dt>{t('models.details.page')}</dt>
+                  <dd className="mm-mono">
+                    <button type="button" className="mm-link" data-testid="mm-page-link" onClick={openSource}>
+                      {pageUrl}
+                    </button>
+                  </dd>
+                </>
+              )}
               <dt>{t('models.details.key')}</dt>
               <dd className="mm-mono">{model.key}</dd>
             </dl>

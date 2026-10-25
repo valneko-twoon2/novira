@@ -426,6 +426,32 @@ pub fn cover_with_maturity(version: &Value) -> Option<(String, bool)> {
         .or_else(|| mature_cover_of_version(version).map(|c| (c, true)))
 }
 
+/// Every picture of a version that the detail panel pages through, the cover first: the plain and mild ones, or all of
+/// them when every picture is mature (as for the cover). At most eight.
+pub fn cover_set(version: &Value) -> Vec<String> {
+    let all: Vec<(String, u64)> = pictures(version).collect();
+    let mild: Vec<String> = all
+        .iter()
+        .filter(|(_, level)| *level <= 2)
+        .map(|(u, _)| u.clone())
+        .take(8)
+        .collect();
+    if mild.is_empty() {
+        all.into_iter().map(|(u, _)| u).take(8).collect()
+    } else {
+        mild
+    }
+}
+
+/// The model's page on civitai.com for a version, from the ids the version lists.
+pub fn page_url(version: &Value) -> Option<String> {
+    Some(format!(
+        "https://civitai.com/models/{}?modelVersionId={}",
+        version["modelId"].as_u64()?,
+        version["id"].as_u64()?
+    ))
+}
+
 /// The words the author says activate a LoRA (`trainedWords`).
 pub fn trigger_words(version: &Value) -> Vec<String> {
     version["trainedWords"]

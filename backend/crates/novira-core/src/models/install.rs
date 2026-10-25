@@ -180,6 +180,10 @@ pub struct Resolved {
     pub cover: Option<String>,
     /// The cover is a mature picture (every picture of the version is), shown blurred.
     pub cover_mature: bool,
+    /// Every picture of the version (the cover first), when the site lists them.
+    pub covers: Vec<String>,
+    /// The model's page on the site.
+    pub page_url: Option<String>,
     /// Words that activate a LoRA, as the author lists them.
     pub trigger_words: Vec<String>,
 }
@@ -300,6 +304,8 @@ fn civitai_file(
         hugging_face: false,
         cover: cover.as_ref().map(|c| c.0.clone()),
         cover_mature: cover.is_some_and(|c| c.1),
+        covers: crate::models::civitai::cover_set(version),
+        page_url: crate::models::civitai::page_url(version),
         trigger_words: crate::models::civitai::trigger_words(version),
     })
 }
@@ -352,6 +358,8 @@ pub async fn resolve(
             hugging_face: true,
             cover: None,
             cover_mature: false,
+            covers: Vec::new(),
+            page_url: None,
             trigger_words: Vec::new(),
         }),
         Source::Url(url) => Ok(Resolved {
@@ -366,6 +374,8 @@ pub async fn resolve(
                 .is_ok_and(|u| u.scheme() == "https" && host_is(&u, "huggingface.co")),
             cover: None,
             cover_mature: false,
+            covers: Vec::new(),
+            page_url: None,
             trigger_words: Vec::new(),
         }),
         Source::Local(_) => Err("A local file does not need downloading".into()),

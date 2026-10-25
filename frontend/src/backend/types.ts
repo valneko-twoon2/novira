@@ -62,6 +62,10 @@ export interface ModelConfig {
   coverImageUrl?: string;
   /** The cover is a mature picture (all the site has for the model are), so the pictures carry the `is-mature` class (nothing styles it yet). */
   coverMature?: boolean;
+  /** Every picture the site has for the model, the cover first. Absent when the cover is the only one known. */
+  coverImageUrls?: string[];
+  /** The model's own page on the site it came from; an address `openSourcePage` accepts. */
+  pageUrl?: string;
   /** What the license allows, as the site the model came from states it. Absent until it has been looked up. */
   license?: OwnedModelLicense;
 }

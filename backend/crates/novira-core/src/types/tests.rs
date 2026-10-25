@@ -244,6 +244,8 @@ fn model_config_uses_type_for_the_kind_and_hides_empty_options() {
         trigger_phrases: Some(vec!["t".into()]),
         cover_image_url: None,
         cover_mature: None,
+        cover_image_urls: None,
+        page_url: None,
         license: None,
         comfy: None,
     };
@@ -255,6 +257,8 @@ fn model_config_uses_type_for_the_kind_and_hides_empty_options() {
         "defaultSettings",
         "coverImageUrl",
         "coverMature",
+        "coverImageUrls",
+        "pageUrl",
         "license",
         "comfy",
     ] {

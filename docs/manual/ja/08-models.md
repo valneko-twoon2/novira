@@ -96,11 +96,13 @@
 
 カードを押すと、右に詳細が開きます。閉じるときは右上の **{{ui:models.detail.close}}** を押します。
 
-詳細には、名前、ベースと種類の札、説明、**{{ui:models.details.size}}**、**{{ui:models.details.path}}**（コピーできます）、**{{ui:models.details.license}}**、**{{ui:models.details.source}}**が出ます。
+詳細には、名前、ベースと種類の札、説明、**{{ui:models.details.size}}**、**{{ui:models.details.path}}**（コピーできます）、**{{ui:models.details.license}}**、**{{ui:models.details.source}}**、**{{ui:models.details.page}}**（元のモデルのアドレス。押すとブラウザで開きます）が出ます。
+
+モデルの絵が複数あるときは、絵の左右の矢印で切り替えられ、右下に何枚目かが出ます（Civitai から入れたモデルは、元のページの絵が入ります）。
 
 上のボタンでは、次のことができます。
 
-- **{{ui:models.detail.openSource}}**：配布元のページをブラウザで開きます（アドレスのあるモデルだけ）。
+- **{{ui:models.detail.openSource}}**：元のモデルのページをブラウザで開きます（ページが分かるモデルだけ）。
 - **{{ui:common.edit}}**：名前・説明・ベース・種類を直します。ベースや種類が自動で正しく判定されなかったときに使います。
 - **{{ui:common.delete}}**：モデルを削除します（下を参照）。
 

@@ -418,3 +418,37 @@ fn full_size_covers_are_swapped_for_resized_ones() {
         "https://image.civitai.com/k/u/width=450/1.jpeg"
     );
 }
+
+#[test]
+fn the_pictures_to_page_through_and_the_model_page_come_from_the_version() {
+    let v = serde_json::json!({"id": 22, "modelId": 11, "images": [
+        { "type": "image", "nsfwLevel": 1, "url": "https://image.civitai.com/k/u/original=true/0.jpeg" },
+        { "type": "image", "nsfwLevel": 4, "url": "https://image.civitai.com/k/u/original=true/1.jpeg" },
+        { "type": "image", "nsfwLevel": 2, "url": "https://image.civitai.com/k/u/original=true/2.jpeg" }
+    ]});
+    // Mature pictures stay out while a plain one exists, and the cover is the first of them.
+    assert_eq!(
+        cover_set(&v),
+        vec![
+            "https://image.civitai.com/k/u/width=512/0.jpeg",
+            "https://image.civitai.com/k/u/width=512/2.jpeg"
+        ]
+    );
+    assert_eq!(cover_set(&v).first().cloned(), cover_of_version(&v));
+    assert_eq!(
+        page_url(&v).as_deref(),
+        Some("https://civitai.com/models/11?modelVersionId=22")
+    );
+    // Only mature pictures: all of them, as the cover does; no pictures: none; ids missing: no page.
+    let mature = serde_json::json!({"images": [
+        { "type": "image", "nsfwLevel": 4, "url": "https://image.civitai.com/k/u/original=true/1.jpeg" },
+        { "type": "image", "nsfwLevel": 8, "url": "https://image.civitai.com/k/u/original=true/2.jpeg" }
+    ]});
+    assert_eq!(cover_set(&mature).len(), 2);
+    assert!(cover_set(&serde_json::json!({})).is_empty());
+    assert_eq!(page_url(&mature), None);
+    // At most eight.
+    let many = serde_json::json!({"images": (0..12).map(|i| serde_json::json!(
+        { "type": "image", "nsfwLevel": 1, "url": format!("https://image.civitai.com/k/u/original=true/{i}.jpeg") })).collect::<Vec<_>>()});
+    assert_eq!(cover_set(&many).len(), 8);
+}

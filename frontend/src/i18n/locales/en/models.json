@@ -135,5 +135,9 @@
   "models.coverHint.text": "Some models have no picture. To get pictures for models you put in the folder yourself, turn on \"Look up models on Civitai\" in the settings (file hashes are sent to Civitai; applies at the next start).",
   "models.coverHint.open": "Open settings",
   "models.install.scanFailed": "Could not scan the folder",
-  "models.install.localPath": "Install a file on this PC from the Scan Folder tab"
+  "models.install.localPath": "Install a file on this PC from the Scan Folder tab",
+  "models.detail.prevImage": "Previous image",
+  "models.detail.nextImage": "Next image",
+  "models.detail.imageCount": "{index} / {count}",
+  "models.details.page": "Original page"
 }

@@ -4,7 +4,7 @@ use crate::sync::LockExt;
 use sha2::{Digest, Sha256};
 use std::io::Read;
 
-const COVERS_CHECKED_META: &str = "covers_checked_3";
+const COVERS_CHECKED_META: &str = "covers_checked_4";
 const LICENSES_CHECKED_META: &str = "licenses_checked_1";
 
 /// Where a model's license can be read without hashing the file.
@@ -180,7 +180,7 @@ impl Backend {
             Source::HuggingFace { repo, .. } => Some(repo.clone()),
             _ => None,
         };
-        let (file, kind, cover, cover_mature, trigger_words) = match source {
+        let (file, kind, cover, cover_mature, trigger_words, covers, page_url) = match source {
             Source::Local(path) => {
                 self.update_install(id, |j| j.status = ModelInstallStatus::Running);
                 if !path.is_file() || !layout::is_model_file(&path) {
@@ -209,7 +209,7 @@ impl Backend {
                     .await
                     .map_err(|e| fail(e.to_string()))?
                     .map_err(|e| fail(e.to_string()))?;
-                (dest, kind, None, false, Vec::new())
+                (dest, kind, None, false, Vec::new(), Vec::new(), None)
             }
             remote => {
                 let key = self.civitai_key();
@@ -283,9 +283,17 @@ impl Backend {
                     resolved.cover.clone(),
                     resolved.cover_mature,
                     resolved.trigger_words.clone(),
+                    resolved.covers.clone(),
+                    resolved.page_url.clone(),
                 )
             }
         };
+        let page_url = page_url.or_else(|| {
+            hf_repo
+                .as_ref()
+                .filter(|r| install::is_hugging_face_repo(r))
+                .map(|r| format!("https://huggingface.co/{r}"))
+        });
         let cover = match (cover, hf_repo) {
             (None, Some(repo)) => {
                 huggingface::cover_of_repo(&self.inner.http, &repo, self.hf_token().as_deref())
@@ -308,6 +316,9 @@ impl Backend {
         let mut model = registry::new_record(&found, Some(&source), Some(&name));
         model.cover_image_url = cover;
         model.cover_mature = (model.cover_image_url.is_some() && cover_mature).then_some(true);
+        // Pictures to page through are kept only when there is more than the cover.
+        model.cover_image_urls = (covers.len() > 1).then_some(covers);
+        model.page_url = page_url;
         if model.trigger_phrases.is_none() && !trigger_words.is_empty() {
             model.trigger_phrases = Some(trigger_words);
         }
@@ -320,7 +331,7 @@ impl Backend {
         Ok(model)
     }
 
-    /// Asks Civitai for the picture (and trigger words) of every model that has none, by the hash of its file: models put
+    /// Asks Civitai for the pictures, page and trigger words of every model that lacks a cover or a page, by the hash of its file: models put
     /// in the folder by hand, or installed before covers were kept. Each model is asked once; a file Civitai does not
     /// know stays without a cover. Runs in the background and stops at the first network failure (it retries next start).
     pub async fn fill_model_covers(self) {
@@ -335,7 +346,9 @@ impl Backend {
             .state()
             .models
             .iter()
-            .filter(|m| m.cover_image_url.is_none() && !checked.contains(&m.key))
+            .filter(|m| {
+                (m.cover_image_url.is_none() || m.page_url.is_none()) && !checked.contains(&m.key)
+            })
             .map(|m| (m.key.clone(), PathBuf::from(&m.path)))
             .collect();
         let mut checked = checked;
@@ -362,6 +375,8 @@ impl Backend {
             }
             let Some(version) = found else { continue };
             let cover = civitai::cover_with_maturity(&version);
+            let covers = civitai::cover_set(&version);
+            let page_url = civitai::page_url(&version);
             let words = civitai::trigger_words(&version);
             // The record may have been edited meanwhile: change only what is missing.
             let updated = {
@@ -374,6 +389,12 @@ impl Backend {
                     model.cover_image_url = Some(url);
                     model.cover_mature = mature.then_some(true);
                 }
+            }
+            if model.cover_image_urls.is_none() && covers.len() > 1 {
+                model.cover_image_urls = Some(covers);
+            }
+            if model.page_url.is_none() {
+                model.page_url = page_url;
             }
             if model.trigger_phrases.is_none() && !words.is_empty() {
                 model.trigger_phrases = Some(words);

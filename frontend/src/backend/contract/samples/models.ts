@@ -46,6 +46,8 @@ export const modelConfig = {
   triggerPhrases: ['masterpiece'],
   coverImageUrl: 'https://image.civitai.com/cover.jpeg',
   coverMature: true,
+  coverImageUrls: ['https://image.civitai.com/cover.jpeg', 'https://image.civitai.com/cover2.jpeg'],
+  pageUrl: 'https://civitai.com/models/827184?modelVersionId=1',
   license,
 } satisfies Required<ModelConfig>;
 

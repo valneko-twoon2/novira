@@ -135,5 +135,9 @@
   "models.coverHint.text": "絵のないモデルがあります。自分で置いたモデルの絵は、設定の「Civitai でモデルを調べる」をオンにすると取得できます（ファイルのハッシュが Civitai に送られます。次回の起動から反映されます）。",
   "models.coverHint.open": "設定を開く",
   "models.install.scanFailed": "フォルダをスキャンできませんでした",
-  "models.install.localPath": "パソコン内のファイルは「フォルダをスキャン」タブからインストールしてください"
+  "models.install.localPath": "パソコン内のファイルは「フォルダをスキャン」タブからインストールしてください",
+  "models.detail.prevImage": "前の画像",
+  "models.detail.nextImage": "次の画像",
+  "models.detail.imageCount": "{index} / {count}",
+  "models.details.page": "元のページ"
 }

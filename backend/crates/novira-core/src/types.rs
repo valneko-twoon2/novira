@@ -154,6 +154,12 @@ pub struct ModelConfig {
     /// The cover is a mature picture (every picture the site has for the model is). The UI marks it but does not blur it yet.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cover_mature: Option<bool>,
+    /// Every picture the site has for the model (the cover first), for the detail panel to page through. Absent when only the cover is known.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cover_image_urls: Option<Vec<String>>,
+    /// The model's own page on the site it came from (a Civitai model or a Hugging Face repository).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub page_url: Option<String>,
     /// What the model's license allows, as the site it came from states it (looked up by source or file hash).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub license: Option<ModelLicense>,

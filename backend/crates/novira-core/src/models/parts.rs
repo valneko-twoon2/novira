@@ -133,6 +133,8 @@ mod tests {
             trigger_phrases: None,
             cover_image_url: None,
             cover_mature: None,
+            cover_image_urls: None,
+            page_url: None,
             license: None,
             comfy: Some(ComfyRef {
                 folder: match kind {

@@ -96,11 +96,13 @@ A file that is partway through downloading goes into the model folder only after
 
 When you press a card, the details open on the right. To close them, press **{{ui:models.detail.close}}** at the upper right.
 
-The details show the name, the tags for base and type, the description, **{{ui:models.details.size}}**, **{{ui:models.details.path}}** (you can copy it), **{{ui:models.details.license}}** and **{{ui:models.details.source}}**.
+The details show the name, the tags for base and type, the description, **{{ui:models.details.size}}**, **{{ui:models.details.path}}** (you can copy it), **{{ui:models.details.license}}** and **{{ui:models.details.source}}** and **{{ui:models.details.page}}** (the address of the original model; press it to open it in your browser).
+
+When a model has several pictures, the arrows on either side of the picture switch between them, and the number of the current one shows at the lower right (a model installed from Civitai gets the pictures of its original page).
 
 With the buttons at the top, you can do the following.
 
-- **{{ui:models.detail.openSource}}**: Opens the page of the distributor in your browser (only for models that have an address).
+- **{{ui:models.detail.openSource}}**: Opens the original page of the model in your browser (only for models whose page is known).
 - **{{ui:common.edit}}**: Fixes the name, description, base and type. Use it when the base or type was not judged correctly automatically.
 - **{{ui:common.delete}}**: Deletes the model (see below).
 

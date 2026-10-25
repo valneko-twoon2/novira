@@ -237,7 +237,8 @@ async fn a_civitai_file_is_resolved_downloaded_and_given_its_cover_words_and_lic
             "id": 7001, "modelId": 701, "baseModel": "SDXL 1.0",
             "model": {"type": "LORA"},
             "trainedWords": ["catstyle"],
-            "images": [{"url": "https://image.civitai.com/k/u/original=true/1.jpeg", "type": "image", "nsfwLevel": 1}],
+            "images": [{"url": "https://image.civitai.com/k/u/original=true/1.jpeg", "type": "image", "nsfwLevel": 1},
+                       {"url": "https://image.civitai.com/k/u/original=true/3.jpeg", "type": "image", "nsfwLevel": 1}],
             "files": [
                 {"id": 8, "name": "other.safetensors", "sizeKB": 1.0, "downloadUrl": format!("{base}/dl/civ-other.safetensors")},
                 {"id": 9, "name": "civ-style.safetensors", "primary": true, "sizeKB": 1.0,
@@ -261,6 +262,11 @@ async fn a_civitai_file_is_resolved_downloaded_and_given_its_cover_words_and_lic
         .as_deref()
         .unwrap()
         .contains("width=512"));
+    assert_eq!(model.cover_image_urls.as_ref().map(Vec::len), Some(2));
+    assert_eq!(
+        model.page_url.as_deref(),
+        Some("https://civitai.com/models/701?modelVersionId=7001")
+    );
     assert_eq!(model.license.as_ref().unwrap().site, "civitai");
     let download = site().requests("/dl/civ-style.safetensors");
     assert_eq!(
@@ -431,7 +437,7 @@ async fn covers_and_licences_of_models_found_by_hash_are_filled_in() {
     site().put_json(
         &format!("/api/v1/model-versions/by-hash/{hash}"),
         &json!({
-            "modelId": 801, "trainedWords": ["hashword"],
+            "id": 802, "modelId": 801, "trainedWords": ["hashword"],
             "images": [{"url": "https://image.civitai.com/k/u/original=true/2.jpeg", "type": "image", "nsfwLevel": 1}]
         }),
     );
@@ -443,6 +449,12 @@ async fn covers_and_licences_of_models_found_by_hash_are_filled_in() {
     backend.clone().fill_model_licenses().await;
     let model = model_named(&backend, "by-hash.safetensors");
     assert!(model.cover_image_url.is_some());
+    // One picture only: nothing to page through, but the page is kept.
+    assert!(model.cover_image_urls.is_none());
+    assert_eq!(
+        model.page_url.as_deref(),
+        Some("https://civitai.com/models/801?modelVersionId=802")
+    );
     assert_eq!(model.trigger_phrases, Some(vec!["hashword".to_string()]));
     assert_eq!(model.license.as_ref().unwrap().site, "civitai");
     assert!(events

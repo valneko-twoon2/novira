@@ -82,6 +82,8 @@ pub fn new_record(
             }),
         cover_image_url: None,
         cover_mature: None,
+        cover_image_urls: None,
+        page_url: None,
         comfy: Some(ComfyRef {
             folder: found.folder.to_string(),
             name: found.comfy_name.clone(),
