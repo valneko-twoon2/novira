@@ -3,10 +3,11 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { t, tCount } from '@/i18n';
+import { useDraftForm } from '@/state/draftForm';
 import { useDrafts, type DraftCandidate, type DraftGroup } from '@/state/drafts';
 import { useGallery } from '@/state/gallery';
 import { useModels } from '@/state/models';
-import { useSettings } from '@/state/settings';
+import { SETTINGS_DEFAULTS, useSettings } from '@/state/settings';
 import { useToasts } from '@/state/toasts';
 import { useUi } from '@/state/ui';
 import { TooltipProvider } from '@/ui';
@@ -39,6 +40,8 @@ const group = (id: string, candidates: DraftCandidate[]): DraftGroup => ({
 const picture = (name: string) => ({ name, url: `blob:${name}`, thumbnailUrl: `blob:t-${name}`, width: 512, height: 768 }) as never;
 
 beforeEach(() => {
+  useDraftForm.setState({ count: null, percent: null });
+  useSettings.setState({ draftCount: SETTINGS_DEFAULTS.draftCount, draftPosition: SETTINGS_DEFAULTS.draftPosition });
   vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
   useDrafts.setState({ ...initial.drafts, groups: [], currentId: null, selection: [], busy: false }, true);
   useGallery.setState({ ...initial.gallery, images: [] }, true);
@@ -91,6 +94,27 @@ describe('starting drafts', () => {
     fireEvent.click(screen.getByTestId('drafts-start'));
     await waitFor(() => expect(start).toHaveBeenLastCalledWith(3, 0.35, null));
     expect(useSettings.getState().draftCount).toBe(10);
+  });
+
+  it('starts the position from the settings, and keeps count and position when the screen is left and opened again', async () => {
+    const start = vi.fn().mockResolvedValue(null);
+    useDrafts.setState({ start });
+    useSettings.getState().set({ draftPosition: 50 });
+    show();
+    fireEvent.click(screen.getByTestId('drafts-start'));
+    await waitFor(() => expect(start).toHaveBeenLastCalledWith(4, 0.5, null));
+    const count = screen.getAllByLabelText(t('drafts.count')).find((e) => (e as HTMLInputElement).type === 'number')!;
+    fireEvent.change(count, { target: { value: '7' } });
+    fireEvent.blur(count);
+    const position = screen.getAllByLabelText(t('drafts.position')).find((e) => (e as HTMLInputElement).type === 'number')!;
+    fireEvent.change(position, { target: { value: '30' } });
+    fireEvent.blur(position);
+    cleanup();
+    // Another screen was shown meanwhile: the box and the slider come back as they were set, not from the settings.
+    show();
+    fireEvent.click(screen.getByTestId('drafts-start'));
+    await waitFor(() => expect(start).toHaveBeenLastCalledWith(7, 0.3, null));
+    expect(useSettings.getState().draftPosition).toBe(50);
   });
 
   it('explains why a batch could not start, and reports a failure', async () => {

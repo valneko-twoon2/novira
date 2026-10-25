@@ -193,6 +193,7 @@ Claude と Codex のほかに、このパソコンやネットワーク上で動
 
 - **{{ui:settings.antialiasProgressImages}}**：生成の途中の絵を、ギャラリーの「{{ui:gallery.generating.title}}」の枠でなめらかに表示します。オフだと、粗い点のまま見えます。
 - **{{ui:settings.draftCount.label}}**：下書きの画面を開いたときの枚数の初めの値です（1〜24 枚。初めは 4 枚）。画面でその都度変えることもできます。
+- **{{ui:settings.draftPosition.label}}**：下書きの画面を開いたときの位置の初めの値です（25〜60 %。初めは 35 %）。
 - **{{ui:settings.lowMemory.label}}**：GPU のメモリが少ないパソコン向けです。オンにすると、モデルを GPU のメモリに置いたままにしないので、少ないメモリで作れますが、作るのは遅くなります。切り替えるとエンジンを再起動します。作成中の項目があるときは、エンジンを次に起動したときから使われます。ほかで起動したエンジンにつないでいるときは使えません。
 - **{{ui:settings.assistantRead.label}}**（**{{ui:settings.section.assistant}}**）：エージェントが、ギャラリーの画像の情報と生成タブのプロンプトを読んでよいかどうかです。**{{ui:settings.assistantRead.ask}}**（初期値）、**{{ui:settings.assistantRead.always}}**、**{{ui:settings.assistantRead.never}}** から選びます。
 - **{{ui:settings.assistantWeb.label}}**（**{{ui:settings.section.assistant}}**）：エージェントが Wikipedia で事実を調べてよいかどうかです。選び方は同じで、画像の読み取りとは別の設定です。

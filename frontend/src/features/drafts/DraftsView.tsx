@@ -7,13 +7,13 @@ import {
   draftModels,
   draftStepOf,
   modelsWithoutDrafts,
-  POSITION_DEFAULT,
   POSITION_MAX,
   POSITION_MIN,
   useDrafts,
   type DraftCandidate,
   type DraftGroup,
 } from '@/state/drafts';
+import { useDraftForm } from '@/state/draftForm';
 import { useGallery } from '@/state/gallery';
 import { useModels } from '@/state/models';
 import { useParams } from '@/state/params';
@@ -73,9 +73,13 @@ export function DraftsView({ onOpen }: { onOpen?: (imageName: string) => void } 
 function NewDrafts() {
   const start = useDrafts((s) => s.start);
   const busy = useDrafts((s) => s.busy);
-  // Starts at the count the settings give; the box can still be changed for this run.
-  const [count, setCount] = useState(() => useSettings.getState().draftCount);
-  const [percent, setPercent] = useState(Math.round(POSITION_DEFAULT * 100));
+  // The count and the position start at what the settings give and stay as they are set, also when another screen is shown between.
+  const settingsCount = useSettings((s) => s.draftCount);
+  const settingsPercent = useSettings((s) => s.draftPosition);
+  const count = useDraftForm((s) => s.count) ?? settingsCount;
+  const percent = useDraftForm((s) => s.percent) ?? settingsPercent;
+  const setCount = (n: number) => useDraftForm.getState().set({ count: n });
+  const setPercent = (n: number) => useDraftForm.getState().set({ percent: n });
   // Another model for the drafts; until one is picked they follow the Generate tab's model.
   const models = useModels((s) => s.models);
   const generateModel = useParams((s) => s.modelKey);

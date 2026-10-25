@@ -4,7 +4,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { useCanvas } from './canvas';
 import { activePage, useComic } from './comic/store';
-import { applyStartTab, DRAFT_COUNT_RANGE, restoreSettings, SETTINGS_DEFAULTS, UNDO_LIMIT_RANGE, useSettings } from './settings';
+import { applyStartTab, DRAFT_COUNT_RANGE, DRAFT_POSITION_RANGE, restoreSettings, SETTINGS_DEFAULTS, UNDO_LIMIT_RANGE, useSettings } from './settings';
 import { useTextEditor, withDefaultFont } from './text/textEditor';
 import { newTextLayer } from './text/textModel';
 import { useUi } from './ui';
@@ -48,6 +48,9 @@ describe('restoreSettings', () => {
     for (const wrong of [0, DRAFT_COUNT_RANGE.max + 1, 2.5, -3, NaN, '8', null, true]) expect(restoreSettings({ draftCount: wrong }).draftCount).toBe(4);
     // A store from before the setting has none: it reads back as the default.
     expect(restoreSettings({ language: 'en' }).draftCount).toBe(4);
+    expect(SETTINGS_DEFAULTS.draftPosition).toBe(35);
+    for (const ok of [DRAFT_POSITION_RANGE.min, 40, DRAFT_POSITION_RANGE.max]) expect(restoreSettings({ draftPosition: ok }).draftPosition).toBe(ok);
+    for (const wrong of [24, 61, 32.5, NaN, '40', null]) expect(restoreSettings({ draftPosition: wrong }).draftPosition).toBe(35);
   });
 
   it('drops the four switches that did nothing from an old store', async () => {

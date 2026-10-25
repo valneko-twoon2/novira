@@ -5,7 +5,7 @@ import { backend } from '@/backend';
 import { LOCALES, t, tCount, type Locale, type MessageKey } from '@/i18n';
 import { FRAME_MARGIN_RANGE, FRAME_WIDTH_RANGE, PAGE_SIZES, READING_DIRECTIONS } from '@/state/comic/document';
 import { useGallery, type GallerySettings } from '@/state/gallery';
-import { COMIC_PANELS_RANGE, DRAFT_COUNT_RANGE, READ_ACCESS, TOAST_SECONDS_RANGE, UNDO_LIMIT_RANGE, useSettings, type SettingsValues, type StartTab } from '@/state/settings';
+import { COMIC_PANELS_RANGE, DRAFT_COUNT_RANGE, DRAFT_POSITION_RANGE, READ_ACCESS, TOAST_SECONDS_RANGE, UNDO_LIMIT_RANGE, useSettings, type SettingsValues, type StartTab } from '@/state/settings';
 import { toast } from '@/state/toasts';
 import { NAV, type TabName } from '@/state/ui';
 import { sanitizeUiZoom, UI_ZOOM_STEPS } from '@/state/uiZoom';
@@ -53,7 +53,7 @@ function Toggle({ k, label, help, testId }: { k: BoolSetting; label: string; hel
 }
 
 /** A number setting with a slider and a box beside it. */
-function NumberRow({ k, label, help, range, testId }: { k: 'toastSeconds' | 'undoLimit' | 'comicPanelCount' | 'comicFrameMm' | 'comicMarginMm' | 'mockStepDelay' | 'draftCount'; label: string; help?: string; range: { min: number; max: number; step: number }; testId?: string }) {
+function NumberRow({ k, label, help, range, testId }: { k: 'toastSeconds' | 'undoLimit' | 'comicPanelCount' | 'comicFrameMm' | 'comicMarginMm' | 'mockStepDelay' | 'draftCount' | 'draftPosition'; label: string; help?: string; range: { min: number; max: number; step: number }; testId?: string }) {
   const value = useSettings((s) => s[k]);
   const set = useSettings((s) => s.set);
   return (
@@ -124,6 +124,7 @@ export function GenerationPane() {
         </Row>
         <LowMemoryNote />
         <NumberRow k="draftCount" label={t('settings.draftCount.label')} range={DRAFT_COUNT_RANGE} testId="settings-draft-count" />
+        <NumberRow k="draftPosition" label={t('settings.draftPosition.label')} range={DRAFT_POSITION_RANGE} testId="settings-draft-position" />
         {mock && <NumberRow k="mockStepDelay" label={t('settings.mockStepDelay')} help={t('settings.mockStepDelayHelp')} range={{ min: 0, max: 300, step: 10 }} />}
       </SectionBlock>
       <SectionBlock title={t('settings.section.assistant')}>

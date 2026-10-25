@@ -313,5 +313,6 @@
   "settings.hotkeys.canvas.bucket": "バケツ（塗りつぶし）",
   "settings.hotkeys.canvas.bucketDesc": "バケツツールを選びます",
   "settings.hotkeys.canvas.fitBbox": "生成範囲をレイヤーに合わせる",
-  "settings.hotkeys.canvas.fitBboxDesc": "表示中のレイヤーがちょうど入る大きさに生成範囲を合わせます"
+  "settings.hotkeys.canvas.fitBboxDesc": "表示中のレイヤーがちょうど入る大きさに生成範囲を合わせます",
+  "settings.draftPosition.label": "下書きの最初の位置（%）"
 }

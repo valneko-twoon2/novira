@@ -193,6 +193,7 @@ When you choose **{{ui:app.nav.settings}}** from the **{{ui:app.nav.settingsMenu
 
 - **{{ui:settings.antialiasProgressImages}}**: Shows pictures in progress smoothly in the "{{ui:gallery.generating.title}}" frame of the gallery. If it is off, they look like rough dots.
 - **{{ui:settings.draftCount.label}}**: the starting value of the count when you open the Drafts screen (1 to 24 pictures; 4 at first). You can still change it there each time.
+- **{{ui:settings.draftPosition.label}}**: the starting value of the position when you open the Drafts screen (25 to 60 %; 35 % at first).
 - **{{ui:settings.lowMemory.label}}**: for computers whose GPU has little memory. When it is on, models are not kept in GPU memory, so less memory is needed but making is slower. Switching it restarts the engine. While an item is being made, it applies the next time the engine starts. It cannot be used while the app is connected to an engine started elsewhere.
 - **{{ui:settings.assistantRead.label}}** (**{{ui:settings.section.assistant}}**): whether the agent may read the information of the gallery's pictures and the prompts of the Generate tab. Choose from **{{ui:settings.assistantRead.ask}}** (the default), **{{ui:settings.assistantRead.always}}** and **{{ui:settings.assistantRead.never}}**.
 - **{{ui:settings.assistantWeb.label}}** (**{{ui:settings.section.assistant}}**): whether the agent may look facts up on Wikipedia. It is asked and chosen the same way, apart from reading pictures.

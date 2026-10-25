@@ -109,6 +109,9 @@ describe('generation, gallery, editing and developer', () => {
     expect(useSettings.getState().draftCount).toBe(4);
     typeNumber(t('settings.draftCount.label'), '6');
     expect(useSettings.getState().draftCount).toBe(6);
+    expect(useSettings.getState().draftPosition).toBe(35);
+    typeNumber(t('settings.draftPosition.label'), '50');
+    expect(useSettings.getState().draftPosition).toBe(50);
     openTab('gallery');
     toggle(t('settings.confirmOnDelete'));
     expect(useSettings.getState().confirmOnDelete).toBe(false);

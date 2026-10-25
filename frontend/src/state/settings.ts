@@ -23,6 +23,8 @@ export type ReadAccess = (typeof READ_ACCESS)[number];
 export const COMIC_PANELS_RANGE = { min: 1, max: 6, step: 1, default: 3 } as const;
 /** How many candidates the Drafts screen asks for at first (the number box there can still be changed per run). */
 export const DRAFT_COUNT_RANGE = { min: 1, max: 24, step: 1, default: 4 } as const;
+/** How far, in percent of the steps, the Drafts screen draws at first (the slider there can still be changed per run; `POSITION_MIN`..`POSITION_MAX` of `drafts.ts`). */
+export const DRAFT_POSITION_RANGE = { min: 25, max: 60, step: 5, default: 35 } as const;
 
 export interface SettingsValues {
   language: Locale;
@@ -52,6 +54,8 @@ export interface SettingsValues {
   comicMarginMm: number;
   /** How many candidates the Drafts screen starts a batch with. */
   draftCount: number;
+  /** How far, in percent of the steps, the Drafts screen draws a batch at first. */
+  draftPosition: number;
   /** Whether the AI assistant may read the gallery's pictures and their prompts, and the prompt boxes. */
   assistantReadAccess: ReadAccess;
   /** Whether the AI assistant may look facts up on Wikipedia (its search words leave the PC). Separate from reading pictures. */
@@ -83,6 +87,7 @@ export const SETTINGS_DEFAULTS: SettingsValues = {
   comicFrameMm: FRAME_WIDTH_RANGE.default,
   comicMarginMm: FRAME_MARGIN_RANGE.default,
   draftCount: DRAFT_COUNT_RANGE.default,
+  draftPosition: DRAFT_POSITION_RANGE.default,
   assistantReadAccess: 'ask',
   assistantWebAccess: 'ask',
 };
@@ -118,6 +123,7 @@ export function restoreSettings(saved: unknown): SettingsValues {
     comicFrameMm: inRange(s.comicFrameMm, FRAME_WIDTH_RANGE, d.comicFrameMm),
     comicMarginMm: inRange(s.comicMarginMm, FRAME_MARGIN_RANGE, d.comicMarginMm),
     draftCount: wholeInRange(s.draftCount, DRAFT_COUNT_RANGE, d.draftCount),
+    draftPosition: wholeInRange(s.draftPosition, DRAFT_POSITION_RANGE, d.draftPosition),
     assistantReadAccess: oneOf(s.assistantReadAccess, READ_ACCESS, d.assistantReadAccess),
     assistantWebAccess: oneOf(s.assistantWebAccess, READ_ACCESS, d.assistantWebAccess),
   };

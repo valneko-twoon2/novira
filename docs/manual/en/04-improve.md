@@ -271,7 +271,7 @@ A picture changes greatly depending on the seed. Drafts is a feature that draws 
 Open the **{{ui:app.views.drafts}}** tab in the center of the **{{ui:app.tabs.generate}}** tab.
 
 1. Choose the **{{ui:drafts.model}}**. At first, the model of the Generate tab is selected. Every picture model the Generate tab offers can be chosen: SDXL and SD1.X, and also the models that come without their text encoders and VAE, such as Anima, Flux, FLUX.2 and Z-Image. Edit models (Flux Fill, Flux Kontext, Qwen-Image-Edit) only change a picture you give them, so they are not in the list; when you have some, their names are shown below.
-2. Decide the **{{ui:drafts.count}}** (1 to 24 pictures; 4 at first, which you can change with **{{ui:settings.draftCount.label}}** in the settings).
+2. Decide the **{{ui:drafts.count}}** (1 to 24 pictures; 4 at first, which you can change with **{{ui:settings.draftCount.label}}** in the settings). The count and the position stay as you set them when you switch to other screens, until you close the app.
 3. Decide the **{{ui:drafts.position}}** (25 to 60%; 35% at first). The smaller it is, the faster it is done, but the rougher the pictures.
 4. Press **{{ui:drafts.start}}**.
 

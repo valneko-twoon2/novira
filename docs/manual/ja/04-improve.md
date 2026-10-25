@@ -271,7 +271,7 @@ CFG スケールやステップ数を変えると、絵がどう変わるか。�
 **{{ui:app.tabs.generate}}** タブの中央にある、**{{ui:app.views.drafts}}** タブを開きます。
 
 1. **{{ui:drafts.model}}** を選びます。最初は、生成タブのモデルが選ばれています。生成タブで選べる絵のモデルは、SDXL や SD1.X のほか、Anima・Flux・FLUX.2・Z-Image などの本体だけのモデルも選べます。編集用のモデル（Flux Fill・Flux Kontext・Qwen-Image-Edit）は元の絵を直すためのものなので一覧になく、入っているときはその名前が下に出ます。
-2. **{{ui:drafts.count}}** を決めます（1〜24 枚。最初は 4 枚で、設定の **{{ui:settings.draftCount.label}}** で変えられます）。
+2. **{{ui:drafts.count}}** を決めます（1〜24 枚。最初は 4 枚で、設定の **{{ui:settings.draftCount.label}}** で変えられます）。枚数と位置は、ほかの画面に切り替えても、アプリを閉じるまでは画面で決めた値のままです。
 3. **{{ui:drafts.position}}** を決めます（25〜60%。最初は 35%）。小さいほど早くできますが、粗い絵になります。
 4. **{{ui:drafts.start}}** を押します。
 

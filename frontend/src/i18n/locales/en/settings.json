@@ -313,5 +313,6 @@
   "settings.hotkeys.canvas.bucket": "Bucket (fill)",
   "settings.hotkeys.canvas.bucketDesc": "Select the bucket tool",
   "settings.hotkeys.canvas.fitBbox": "Fit Bounding Box to Layers",
-  "settings.hotkeys.canvas.fitBboxDesc": "Fit the bounding box around the visible layers"
+  "settings.hotkeys.canvas.fitBboxDesc": "Fit the bounding box around the visible layers",
+  "settings.draftPosition.label": "Draft position at first (%)"
 }
