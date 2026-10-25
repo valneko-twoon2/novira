@@ -237,7 +237,7 @@ Here is how to use them.
 
 So that you can build prompts even if you do not remember English words, there is the **{{ui:params.promptBook.open}}**. Open it from the button above the positive and negative fields.
 
-- When you choose a category on the left (hairstyles, expressions, clothing, composition and so on), only the words in that category are listed. The search field at the top searches words, meanings, categories and notes all at once.
+- When you choose a category on the left (people, relations and interactions, poses, motions, expressions, gaze, composition, hairstyles, clothing and so on), only the words in that category are listed. The search field at the top searches words, meanings, categories and notes all at once.
 - Press "{{ui:params.prompt.positive}}" or "{{ui:params.prompt.negative}}" to the right of a word and the word is added to the prompt. An added word gets a check mark, and pressing it again removes it.
 - Type a word and its meaning into the input field at the very top and press **{{ui:params.promptBook.register}}** to add your own word. The pencil to the right of a word edits it, and the trash can deletes it.
 

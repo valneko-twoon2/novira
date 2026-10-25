@@ -31,7 +31,17 @@ interface PromptBookState {
 let seq = 0;
 const newId = () => `pb-${Date.now().toString(36)}${(seq++).toString(36)}`;
 
-const seedEntries: PromptBookEntry[] = (seed as PromptBookInput[]).map((e, i) => ({ ...e, id: `seed-${i}` }));
+// The id follows the content, so entries added to the seed later never collide with ones a person already holds.
+const seedEntries: PromptBookEntry[] = (seed as PromptBookInput[]).map((e) => ({ ...e, id: `seed:${e.category}:${e.tag}` }));
+
+const entryKey = (e: PromptBookInput) => `${e.category}
+${e.tag.trim().toLowerCase()}`;
+
+/** Adds the seed entries a saved book does not hold yet (a person's own and edited entries stay as they are). */
+export function withNewSeedEntries(saved: PromptBookEntry[]): PromptBookEntry[] {
+  const have = new Set(saved.map(entryKey));
+  return [...saved, ...seedEntries.filter((e) => !have.has(entryKey(e)))];
+}
 
 export const usePromptBook = create<PromptBookState>()(
   persist(
@@ -49,6 +59,15 @@ export const usePromptBook = create<PromptBookState>()(
       openBook: (target) => set({ open: true, target }),
       closeBook: () => set({ open: false }),
     }),
-    { name: 'novira.promptBook', version: 1, partialize: (s) => ({ entries: s.entries }) },
+    {
+      name: 'novira.promptBook',
+      version: 2,
+      partialize: (s) => ({ entries: s.entries }),
+      // Version 2 grew the seed (poses, motions, relations ...): bring the new words to books saved before it.
+      migrate: (persisted, version) => {
+        const state = persisted as { entries?: PromptBookEntry[] };
+        return version < 2 && Array.isArray(state.entries) ? { ...state, entries: withNewSeedEntries(state.entries) } : state;
+      },
+    },
   ),
 );
