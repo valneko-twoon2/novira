@@ -53,6 +53,13 @@ describe('restoreSettings', () => {
     for (const wrong of [24, 61, 32.5, NaN, '40', null]) expect(restoreSettings({ draftPosition: wrong }).draftPosition).toBe(35);
   });
 
+  it('waits for the engine by default, and reads back only a boolean', () => {
+    expect(SETTINGS_DEFAULTS.waitForEngine).toBe(true);
+    expect(restoreSettings({ waitForEngine: false }).waitForEngine).toBe(false);
+    for (const wrong of ['false', 0, null]) expect(restoreSettings({ waitForEngine: wrong }).waitForEngine).toBe(true);
+    expect(restoreSettings({ language: 'en' }).waitForEngine).toBe(true);
+  });
+
   it('drops the four switches that did nothing from an old store', async () => {
     localStorage.setItem('novira.settings', JSON.stringify({ version: 0, state: { language: 'en', shouldUseCpuNoise: true, enableImageDebugging: true } }));
     await useSettings.persist.rehydrate();

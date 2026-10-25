@@ -187,6 +187,7 @@ When you choose **{{ui:app.nav.settings}}** from the **{{ui:app.nav.settingsMenu
 | {{ui:settings.theme.label}} | **{{ui:settings.theme.dark}}** (the default) or **{{ui:settings.theme.light}}** |
 | {{ui:settings.uiZoom.label}} | Desktop version only. The size of the whole screen. You can choose from 50% to 300%. You can also change it with `Ctrl` and `+` / `-` |
 | {{ui:settings.startTab.label}} | The tab shown first when the app opens. At first it is **{{ui:app.tabs.generate}}**. Choose **{{ui:settings.startTab.last}}** to open the tab that was open when you closed the app |
+| {{ui:settings.waitForEngine.label}} | On at first: the start-up screen waits until the image engine has finished loading. Turn it off to open the app while the engine is still loading; its state shows in a banner |
 | {{ui:settings.toastSeconds.label}} | How many seconds a notification stays before it closes by itself, from 2 to 15 (3.5 at first) |
 
 ### {{ui:settings.tab.generation}}

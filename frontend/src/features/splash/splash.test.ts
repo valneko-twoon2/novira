@@ -3,12 +3,14 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useComfyNodes } from '@/state/comfy/comfyNodes';
 import { useEngine } from '@/state/engine';
+import { SETTINGS_DEFAULTS, useSettings } from '@/state/settings';
 import { formatBytes, formatRemaining } from './EnginePanel';
 import { ENGINE_START_GRACE_MS, MAX_PREPARE_MS, MIN_SPLASH_MS, useSplashGate } from './useSplashGate';
 
 describe('start-up screen gate', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    useSettings.setState({ waitForEngine: true });
     useEngine.setState({ status: { state: 'ready' } });
     useComfyNodes.setState({ status: 'ready', defs: {}, error: null });
   });
@@ -93,6 +95,42 @@ describe('start-up screen gate', () => {
     const { result } = renderHook(() => useSplashGate(true));
     act(() => void vi.advanceTimersByTime(MAX_PREPARE_MS + 10));
     expect(result.current.showSplash).toBe(false);
+  });
+});
+
+describe('start-up screen gate with the engine wait turned off', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    useSettings.setState({ waitForEngine: false });
+    useComfyNodes.setState({ status: 'idle', defs: null, load: vi.fn(async () => {}) });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    useSettings.setState({ waitForEngine: SETTINGS_DEFAULTS.waitForEngine });
+  });
+
+  it.each([
+    { state: 'downloading', bytes: 1, totalBytes: 10 },
+    { state: 'starting' },
+    { state: 'idle' },
+    { state: 'error', message: 'boom' },
+  ] as const)('opens after the minimum time while the engine is %o', (status) => {
+    useEngine.setState({ status });
+    const { result } = renderHook(() => useSplashGate(true));
+    expect(result.current.showSplash).toBe(true);
+    act(() => void vi.advanceTimersByTime(MIN_SPLASH_MS + 10));
+    expect(result.current.showSplash).toBe(false);
+  });
+
+  it('still waits for the backend', () => {
+    useEngine.setState({ status: { state: 'ready' } });
+    const { result } = renderHook(() => useSplashGate(false));
+    act(() => void vi.advanceTimersByTime(MIN_SPLASH_MS + 10));
+    expect(result.current.showSplash).toBe(true);
+  });
+
+  it('waits by default', () => {
+    expect(SETTINGS_DEFAULTS.waitForEngine).toBe(true);
   });
 });
 

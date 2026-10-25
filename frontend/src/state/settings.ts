@@ -56,6 +56,8 @@ export interface SettingsValues {
   draftCount: number;
   /** How far, in percent of the steps, the Drafts screen draws a batch at first. */
   draftPosition: number;
+  /** Whether the start-up screen waits for the image engine (ComfyUI) to finish loading; off opens the app at once, with the engine banner. */
+  waitForEngine: boolean;
   /** Whether the AI assistant may read the gallery's pictures and their prompts, and the prompt boxes. */
   assistantReadAccess: ReadAccess;
   /** Whether the AI assistant may look facts up on Wikipedia (its search words leave the PC). Separate from reading pictures. */
@@ -88,6 +90,7 @@ export const SETTINGS_DEFAULTS: SettingsValues = {
   comicMarginMm: FRAME_MARGIN_RANGE.default,
   draftCount: DRAFT_COUNT_RANGE.default,
   draftPosition: DRAFT_POSITION_RANGE.default,
+  waitForEngine: true,
   assistantReadAccess: 'ask',
   assistantWebAccess: 'ask',
 };
@@ -124,6 +127,7 @@ export function restoreSettings(saved: unknown): SettingsValues {
     comicMarginMm: inRange(s.comicMarginMm, FRAME_MARGIN_RANGE, d.comicMarginMm),
     draftCount: wholeInRange(s.draftCount, DRAFT_COUNT_RANGE, d.draftCount),
     draftPosition: wholeInRange(s.draftPosition, DRAFT_POSITION_RANGE, d.draftPosition),
+    waitForEngine: bool(s.waitForEngine, d.waitForEngine),
     assistantReadAccess: oneOf(s.assistantReadAccess, READ_ACCESS, d.assistantReadAccess),
     assistantWebAccess: oneOf(s.assistantWebAccess, READ_ACCESS, d.assistantWebAccess),
   };

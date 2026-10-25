@@ -314,5 +314,7 @@
   "settings.hotkeys.canvas.bucketDesc": "Select the bucket tool",
   "settings.hotkeys.canvas.fitBbox": "Fit Bounding Box to Layers",
   "settings.hotkeys.canvas.fitBboxDesc": "Fit the bounding box around the visible layers",
-  "settings.draftPosition.label": "Draft position at first (%)"
+  "settings.draftPosition.label": "Draft position at first (%)",
+  "settings.waitForEngine.label": "Wait for the image engine at start-up",
+  "settings.waitForEngine.help": "When off, the app opens while the engine is still loading. Its state shows in a banner."
 }

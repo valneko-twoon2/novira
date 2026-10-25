@@ -187,6 +187,7 @@ Claude と Codex のほかに、このパソコンやネットワーク上で動
 | {{ui:settings.theme.label}} | **{{ui:settings.theme.dark}}**（初期値）か **{{ui:settings.theme.light}}** |
 | {{ui:settings.uiZoom.label}} | デスクトップ版のみ。画面全体の大きさです。50% から 300% まで選べます。`Ctrl` と `+` / `-` でも変えられます |
 | {{ui:settings.startTab.label}} | アプリを開いたときに最初に出すタブです。初めは **{{ui:app.tabs.generate}}** です。**{{ui:settings.startTab.last}}** を選ぶと、前に閉じたときのタブが開きます |
+| {{ui:settings.waitForEngine.label}} | 初めはオンで、起動画面は画像エンジンの読み込みが終わるまで待ちます。オフにすると、読み込みの途中でもアプリを開きます。エンジンの状態はバナーに出ます |
 | {{ui:settings.toastSeconds.label}} | 通知が自動で消えるまでの秒数です。2 秒から 15 秒まで選べます（初めは 3.5 秒） |
 
 ### {{ui:settings.tab.generation}}

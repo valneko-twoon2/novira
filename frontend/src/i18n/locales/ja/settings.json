@@ -314,5 +314,7 @@
   "settings.hotkeys.canvas.bucketDesc": "バケツツールを選びます",
   "settings.hotkeys.canvas.fitBbox": "生成範囲をレイヤーに合わせる",
   "settings.hotkeys.canvas.fitBboxDesc": "表示中のレイヤーがちょうど入る大きさに生成範囲を合わせます",
-  "settings.draftPosition.label": "下書きの最初の位置（%）"
+  "settings.draftPosition.label": "下書きの最初の位置（%）",
+  "settings.waitForEngine.label": "起動時に画像エンジンの読み込みを待つ",
+  "settings.waitForEngine.help": "切ると、読み込みの途中でもアプリを開きます。エンジンの状態はバナーに出ます。"
 }

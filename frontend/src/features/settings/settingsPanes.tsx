@@ -104,6 +104,7 @@ export function GeneralPane() {
         <Row label={t('settings.startTab.label')}>
           <Select className="st-select" value={s.startTab} onChange={(v) => s.set({ startTab: v })} options={startOptions} aria-label={t('settings.startTab.label')} data-testid="settings-start-tab" />
         </Row>
+        <Toggle k="waitForEngine" label={t('settings.waitForEngine.label')} help={t('settings.waitForEngine.help')} testId="settings-wait-for-engine" />
         <NumberRow k="toastSeconds" label={t('settings.toastSeconds.label')} range={TOAST_SECONDS_RANGE} testId="settings-toast-seconds" />
       </SectionBlock>
     </>

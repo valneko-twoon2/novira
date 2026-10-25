@@ -1,9 +1,10 @@
 // When the start-up screen goes away: the backend is up, the screen has been seen long enough, and the app is ready to
 // use: the image engine is no longer being installed or started, and the node list the editors need has been read (or
-// the user chose to go ahead without waiting).
+// the user chose to go ahead without waiting, or turned the wait off in the settings).
 import { useCallback, useEffect, useState } from 'react';
 import { useComfyNodes } from '@/state/comfy/comfyNodes';
 import { useEngine } from '@/state/engine';
+import { useSettings } from '@/state/settings';
 
 /** The screen stays at least this long, so the bubbles are seen even when everything is already in place. */
 export const MIN_SPLASH_MS = 1800;
@@ -15,6 +16,7 @@ export const MAX_PREPARE_MS = 40_000;
 export function useSplashGate(backendReady: boolean): { showSplash: boolean; preparing: boolean; open: () => void } {
   const status = useEngine((s) => s.status);
   const nodes = useComfyNodes((s) => s.status);
+  const waitForEngine = useSettings((s) => s.waitForEngine);
   const [seenLongEnough, setSeen] = useState(false);
   const [skipped, setSkipped] = useState(false);
   const [released, setReleased] = useState(false);
@@ -29,9 +31,9 @@ export function useSplashGate(backendReady: boolean): { showSplash: boolean; pre
   useEffect(() => {
     if (backendReady && engineReady) void useComfyNodes.getState().load();
   }, [backendReady, engineReady]);
-  const working = status.state === 'downloading' || status.state === 'extracting' || status.state === 'starting' || status.state === 'error';
-  const waitingForEngine = status.state === 'idle' && !graceOver;
-  const readingNodes = engineReady && (nodes === 'idle' || nodes === 'loading');
+  const working = waitForEngine && (status.state === 'downloading' || status.state === 'extracting' || status.state === 'starting' || status.state === 'error');
+  const waitingForEngine = waitForEngine && status.state === 'idle' && !graceOver;
+  const readingNodes = waitForEngine && engineReady && (nodes === 'idle' || nodes === 'loading');
   const preparing = backendReady && !giveUp && (waitingForEngine || readingNodes);
   const hold = !backendReady || !seenLongEnough || (working && !skipped) || (preparing && !skipped);
   useEffect(() => {

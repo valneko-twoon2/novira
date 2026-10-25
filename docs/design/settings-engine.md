@@ -30,7 +30,7 @@ Settings are the choices that outlive one session: the backend's `settings.json`
 - `comfyuiStartTimeoutSecs`: 180, allowed 30 to 1800.
 - `civitaiLookup`: `false`. `lowMemoryMode`: `false`. `civitaiApiKey` is a plain fallback; the key saved in the Accounts tab is encrypted (see models.md).
 
-**Other tabs.** General, Generation (including the Drafts screen's starting count and position, `draftCount` and `draftPosition`), Gallery, Editing, Comic and text, and Developer change the page's own preferences, stored under `novira.settings` (`frontend/src/state/settings.ts`); their items are in `frontend/src/features/settings/settingsPanes.tsx`.
+**Other tabs.** General (including `waitForEngine`, on by default: when off, the start-up screen does not wait for the engine or the node list, and the engine banner shows its state; `useSplashGate`), Generation (including the Drafts screen's starting count and position, `draftCount` and `draftPosition`), Gallery, Editing, Comic and text, and Developer change the page's own preferences, stored under `novira.settings` (`frontend/src/state/settings.ts`); their items are in `frontend/src/features/settings/settingsPanes.tsx`.
 
 **Settings: Engine** (`frontend/src/features/settings/EnginePane.tsx`). Shows the data folder and the ComfyUI mode (the URL or folder when set), read-only; `comfyuiPython`, `comfyuiArgs` and `gpuLock` are not shown. Four things change, each checked by the backend first:
 

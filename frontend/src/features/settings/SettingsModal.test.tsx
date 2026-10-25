@@ -94,6 +94,9 @@ describe('general', () => {
     expect(useSettings.getState().startTab).toBe('models');
     typeNumber(t('settings.toastSeconds.label'), '8');
     expect(useSettings.getState().toastSeconds).toBe(8);
+    expect(useSettings.getState().waitForEngine).toBe(true);
+    toggle(t('settings.waitForEngine.label'));
+    expect(useSettings.getState().waitForEngine).toBe(false);
     expect(modal().getByText(t('settings.version', { version: 'novira 0.1.0 (mock)' }))).toBeTruthy();
     expect(screen.queryByLabelText(t('settings.uiZoom.label'))).toBeNull();
   });
