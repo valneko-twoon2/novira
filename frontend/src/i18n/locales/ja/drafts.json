@@ -28,5 +28,8 @@
   "drafts.model": "モデル",
   "drafts.editModel": "編集用のモデル（Flux Fill・Flux Kontext・Qwen-Image-Edit）は元の画像を直すためのものなので、下書きは作れません。下書きのモデルを別のものにしてください",
   "drafts.leftOut": "一覧にないモデル: {names}（編集用のモデルは元の画像を直すためのもので、下書きには使えません）",
-  "drafts.open": "大きく見る"
+  "drafts.open": "大きく見る",
+  "drafts.older.one": "古い履歴 {count} 件",
+  "drafts.older.other": "古い履歴 {count} 件",
+  "drafts.closeOlder": "古い履歴をすべて閉じる"
 }

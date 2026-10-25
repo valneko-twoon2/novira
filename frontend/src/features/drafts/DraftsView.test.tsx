@@ -195,6 +195,40 @@ describe('groups', () => {
     expect(screen.getAllByTestId('draft-cell')).toHaveLength(1);
   });
 
+  describe('history', () => {
+    const many = (n: number) => Array.from({ length: n }, (_, i) => group(`g${i + 1}`, [candidate(i + 1)]));
+
+    it('keeps only the latest five as tabs and reaches the older ones from a popup', () => {
+      useDrafts.setState({ groups: many(8), currentId: 'g8' });
+      show();
+      expect(screen.getAllByRole('tab')).toHaveLength(5);
+      expect(screen.getByTestId('drafts-older').textContent).toContain('3');
+      fireEvent.click(screen.getByTestId('drafts-older'));
+      const list = screen.getByTestId('drafts-older-list');
+      expect(list.querySelectorAll('li')).toHaveLength(3);
+      expect(list.querySelector('li')!.textContent).toContain('3.');
+      fireEvent.click(list.querySelectorAll('li > button:first-child')[2]!);
+      expect(useDrafts.getState().currentId).toBe('g1');
+    });
+
+    it('shows no popup button while the history fits on the screen', () => {
+      useDrafts.setState({ groups: many(5), currentId: 'g5' });
+      show();
+      expect(screen.queryByTestId('drafts-older')).toBeNull();
+      expect(screen.getAllByRole('tab')).toHaveLength(5);
+    });
+
+    it('closes all the older ones at once and leaves the latest', () => {
+      useDrafts.setState({ groups: many(7), currentId: 'g1' });
+      show();
+      fireEvent.click(screen.getByTestId('drafts-older'));
+      fireEvent.click(screen.getByTestId('drafts-close-older'));
+      expect(useDrafts.getState().groups.map((g) => g.id)).toEqual(['g3', 'g4', 'g5', 'g6', 'g7']);
+      expect(useDrafts.getState().currentId).toBe('g7');
+      expect(screen.queryByTestId('drafts-older')).toBeNull();
+    });
+  });
+
   it('shows the last group when none is current', () => {
     useDrafts.setState({ groups: [group('a', [candidate(1)]), group('b', [candidate(2), candidate(3)])], currentId: null });
     show();

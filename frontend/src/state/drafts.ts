@@ -117,6 +117,8 @@ interface DraftsState {
   clearSelection: () => void;
   mark: (groupId: string, candidateId: string, verdict: Verdict) => void;
   closeGroup: (id: string) => void;
+  /** Closes several groups at once (the older ones of the history). */
+  closeGroups: (ids: string[]) => void;
   sync: (items: QueueItem[]) => void;
   /** Starts a batch from the Generate tab's current settings, with another main model when `modelKey` is given. Resolves with a reason when it cannot start. */
   start: (count: number, position: number, modelKey?: string | null) => Promise<{ error: 'no-builder' | 'not-txt2img' | 'edit-model' } | null>;
@@ -173,9 +175,10 @@ export const useDrafts = create<DraftsState>()(
             g.id === groupId ? { ...g, candidates: g.candidates.map((c) => (c.id === candidateId ? { ...c, verdict: c.verdict === verdict ? null : verdict } : c)) } : g,
           ),
         }),
-      closeGroup: (id) => {
-        const groups = get().groups.filter((g) => g.id !== id);
-        const wasCurrent = get().currentId === id;
+      closeGroup: (id) => get().closeGroups([id]),
+      closeGroups: (ids) => {
+        const groups = get().groups.filter((g) => !ids.includes(g.id));
+        const wasCurrent = ids.includes(get().currentId ?? '');
         set({ groups, currentId: wasCurrent ? (groups[groups.length - 1]?.id ?? null) : get().currentId, selection: wasCurrent ? [] : get().selection });
       },
       sync: (items) => {

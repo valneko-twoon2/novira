@@ -28,5 +28,8 @@
   "drafts.model": "Model",
   "drafts.editModel": "Edit models (Flux Fill, Flux Kontext, Qwen-Image-Edit) only change a source picture, so they cannot make drafts. Pick another model for the drafts.",
   "drafts.leftOut": "Not in the list: {names} (edit models only change a source picture and cannot make drafts)",
-  "drafts.open": "View large"
+  "drafts.open": "View large",
+  "drafts.older.one": "{count} older batch",
+  "drafts.older.other": "{count} older batches",
+  "drafts.closeOlder": "Close all older batches"
 }

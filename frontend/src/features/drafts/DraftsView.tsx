@@ -21,6 +21,7 @@ import { DRAFT_COUNT_RANGE, useSettings } from '@/state/settings';
 import { toast } from '@/state/toasts';
 import { showViewer } from '@/state/ui';
 import { Button, cx, EmptyState, IconButton, ModelPicker, NumberInput, SliderNumber, Spinner } from '@/ui';
+import { GroupTabs } from './GroupTabs';
 import './drafts.css';
 
 const PER_PAGE = 24;
@@ -41,24 +42,11 @@ function pictureOf(c: DraftCandidate, images: ImageDTO[]): { image: ImageDTO | u
 export function DraftsView({ onOpen }: { onOpen?: (imageName: string) => void } = {}) {
   const groups = useDrafts((s) => s.groups);
   const currentId = useDrafts((s) => s.currentId);
-  const setCurrent = useDrafts((s) => s.setCurrent);
-  const closeGroup = useDrafts((s) => s.closeGroup);
   const group = groups.find((g) => g.id === currentId) ?? groups[groups.length - 1];
   return (
     <div className="dv" data-testid="drafts-view">
       <NewDrafts />
-      {groups.length > 0 && (
-        <div className="dv-groups" role="tablist">
-          {groups.map((g, i) => (
-            <span key={g.id} className={cx('dv-group', g.id === group?.id && 'is-on')}>
-              <button type="button" role="tab" aria-selected={g.id === group?.id} onClick={() => setCurrent(g.id)}>
-                {t('drafts.group', { n: i + 1, model: g.params.modelName })}
-              </button>
-              <IconButton size="xs" label={t('drafts.closeGroup')} icon={<X />} onClick={() => closeGroup(g.id)} />
-            </span>
-          ))}
-        </div>
-      )}
+      <GroupTabs groups={groups} currentId={group?.id ?? null} />
       {group ? (
         <GroupGrid key={group.id} group={group} onOpen={onOpen} />
       ) : (
