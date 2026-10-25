@@ -50,7 +50,7 @@ The screen asks `queue` to enqueue a request; `guidance.rs` checks the mask, con
 
 ## Data on disk
 
-`novira-data/` next to the app (the repository root in debug builds; `NOVIRA_DATA_DIR` changes it):
+`novira-data/` (the repository root in debug builds; the user folder in release builds, or beside the executable where one already exists; `NOVIRA_DATA_DIR` changes it):
 
 ```text
 novira-data/

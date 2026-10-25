@@ -100,7 +100,7 @@ In the code, "pack" is used for two different things; the screens say 拡張機�
 | Word | Meaning | Note |
 |---|---|---|
 | インストール (Install) | Put an engine, extension or model on this PC | ダウンロード (Download) is the transfer itself: its progress, and a file saved by the browser |
-| データフォルダ (Data folder) | Everything novira keeps: pictures, models, the engine, settings. `novira-data/` by default | `NOVIRA_DATA_DIR` overrides it |
+| データフォルダ (Data folder) | Everything novira keeps: pictures, models, the engine, settings. `novira-data/` by default (in the user folder in a release build) | `NOVIRA_DATA_DIR` overrides it |
 
 ## Modes and parts of the code
 

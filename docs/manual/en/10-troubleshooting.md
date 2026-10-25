@@ -164,7 +164,7 @@ If you still cannot find it, check the **{{ui:queue.col.destination}}** of the i
 
 Images, models and records all go into a folder named **`novira-data`**. The location is as follows.
 
-- Distributed version: the folder you chose at installation. By default, it is `novira-data` inside the same folder as the app's executable (`novira.exe`).
+- Distributed version: `novira-data` inside your user folder (`C:\Users\<your name>`). If a `novira-data` already sits in the same folder as the app's executable (`novira.exe`), as it did before, that one keeps being used.
 - Version under development: `novira-data` inside the top folder of the repository.
 
 You can change it to another location with the environment variable `NOVIRA_DATA_DIR`.
