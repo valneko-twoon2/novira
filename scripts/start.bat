@@ -1,5 +1,5 @@
 @echo off
-rem novira launcher: builds the frontend and the app, then starts backend\target\debug\novira.exe.
+rem novira launcher: builds the app (and the frontend, when a source changed), then starts backend\target\debug\novira.exe.
 rem   scripts\start.bat        build (only what changed), then start
 rem   scripts\start.bat fast   start without building
 rem Data stays in novira-data\ in the repository root. If novira is already open, close it first (Windows locks the exe).
@@ -29,12 +29,7 @@ if not exist frontend\node_modules (
   popd
 )
 
-echo Building the frontend...
-pushd frontend
-call npm run build
-if errorlevel 1 ( popd & goto fail )
-popd
-
+rem The screens are built by the app's own build (backendsrc-tauriuild.rs), only when a source is newer than frontenddist.
 echo Building the app...
 pushd backend
 cargo build -p novira

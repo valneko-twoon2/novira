@@ -31,11 +31,9 @@ if not exist frontend\node_modules (
   popd
 )
 
-echo Building the frontend...
-pushd frontend
-call npm run build
-if errorlevel 1 ( popd & goto fail )
-popd
+echo Building the frontend (only when a source changed)...
+node toolsensure-frontend.mjs
+if errorlevel 1 goto fail
 
 echo Building the server...
 pushd backend

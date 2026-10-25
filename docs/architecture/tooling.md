@@ -9,9 +9,9 @@ How the project is started, checked and guarded, and which file guards what. How
 | In `scripts/` | What |
 |---|---|
 | `start.bat` | Builds what changed, then opens `backend\target\debug\novira.exe` (`fast` skips it) |
-| `rebuild.bat` | Clean rebuild: fresh `frontend/dist`, `cargo clean -p novira` (drops Tauri's cached screens), build, open (`full`: all of `backend/target`) |
+| `rebuild.bat` | Clean rebuild: fresh `frontend/dist`, `cargo clean -p novira`, build, open (`full`: all of `backend/target`) |
 | `dev.bat` | `cargo tauri dev`: Vite hot reload with the real backend |
-| `server.bat` | Builds, starts `novira-server` on `novira-data` with the engine and opens the browser (`fast` skips the build) |
+| `server.bat` | Builds what changed (`tools/ensure-frontend.mjs`), starts `novira-server` on `novira-data` with the engine and opens the browser (`fast` skips the build) |
 | `release.bat` | A release build into `artifacts/`: the app, `novira-server.exe`, `dist/` and a `server.bat` it writes |
 | `package.bat` | After `release.bat`: the zip and `.sha256` for a release page (`tools/package-release.mjs`) |
 | `check.bat` | All fast checks: `npm run check` plus `cargo fmt --check`, clippy with `-D warnings`, `cargo test` |
