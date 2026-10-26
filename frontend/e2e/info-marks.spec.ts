@@ -1,12 +1,24 @@
 // The "i" beside a label shows the control's explanation; the settings keep only the text that has to stay in view.
 import { expect, msg, openApp, test } from './fixtures';
 
-test('a generation parameter has an i that shows its explanation', async ({ page }) => {
+test('only the scheduler has an i among the generation parameters, and its list says what each one is for', async ({ page }) => {
   await openApp(page, '?scenario=empty');
+  // The newer families run their own sampler, so a model that takes a choice is picked.
+  await page.getByTestId('model-picker').click();
+  await page.getByTestId('model-picker-list').locator('.pp-picker__item', { hasText: /Juggernaut|SDXL|Illustrious/ }).first().click();
+  const scheduler = page.locator('.ui-field', { hasText: msg('params.generation.scheduler') }).first();
+  await scheduler.getByTestId('info-mark').hover();
+  await expect(page.getByRole('tooltip')).toHaveText(msg('params.generation.schedulerInfo'));
   const steps = page.locator('.ui-field', { hasText: msg('params.generation.steps') }).first();
-  await expect(steps.locator('.ui-field__label')).toHaveText(msg('params.generation.steps'));
-  await steps.getByTestId('info-mark').hover();
-  await expect(page.getByRole('tooltip')).toHaveText(msg('params.generation.stepsInfo'));
+  await expect(steps.getByTestId('info-mark')).toHaveCount(0);
+
+  await page.getByRole('combobox', { name: msg('params.generation.scheduler') }).click();
+  const unipc = page.getByRole('option', { name: /UniPC/ });
+  await expect(unipc).toContainText(msg('params.scheduler.detail.unipc'));
+  await expect(page.getByRole('option', { name: /DDIM/ })).toContainText(msg('params.scheduler.detail.ddim'));
+  await unipc.click();
+  // The closed select shows the name only.
+  await expect(page.getByRole('combobox', { name: msg('params.generation.scheduler') })).toHaveText('UniPC');
 });
 
 test('the settings rows have an i instead of a sub text, and a plain row has neither', async ({ page }) => {

@@ -246,14 +246,20 @@ export function Checkbox({ checked, onChange, label, disabled }: { checked: bool
   );
 }
 
-/** Label + control row used throughout the parameter panels. */
-export function Field({ label, children, info, orientation = 'horizontal', className }: { label: ReactNode; children: ReactNode; info?: ReactNode; orientation?: 'horizontal' | 'vertical'; className?: string }) {
+/** Label + control row used throughout the parameter panels. `info` shows on hovering the label; with `mark` a visible "i" beside the label shows it. */
+export function Field({ label, children, info, mark, orientation = 'horizontal', className }: { label: ReactNode; children: ReactNode; info?: ReactNode; mark?: boolean; orientation?: 'horizontal' | 'vertical'; className?: string }) {
   return (
     <div className={cx('ui-field', `ui-field--${orientation}`, className)}>
-      <span className="ui-field__label">
-        {label}
-        {typeof info === 'string' && info !== '' && <InfoMark info={info} />}
-      </span>
+      {mark && typeof info === 'string' && info !== '' ? (
+        <span className="ui-field__label">
+          {label}
+          <InfoMark info={info} />
+        </span>
+      ) : (
+        <Tooltip content={info}>
+          <span className="ui-field__label">{label}</span>
+        </Tooltip>
+      )}
       <div className="ui-field__control">{children}</div>
     </div>
   );

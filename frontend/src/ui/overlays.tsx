@@ -18,6 +18,8 @@ export interface SelectOption<V extends string = string> {
   group?: string;
   disabled?: boolean;
   description?: ReactNode;
+  /** A second line under the label in the list (not shown in the closed select). */
+  detail?: ReactNode;
   /** Leading visual (e.g. a thumbnail) shown in the dropdown list. */
   icon?: ReactNode;
 }
@@ -75,7 +77,14 @@ export function Select<V extends string>({
                   {opts.map((o) => (
                     <RadixSelect.Item key={o.value} value={o.value} disabled={o.disabled} className="ui-menu__item">
                       {o.icon}
-                      <RadixSelect.ItemText>{o.label}</RadixSelect.ItemText>
+                      {o.detail ? (
+                        <span className="ui-menu__stack">
+                          <RadixSelect.ItemText>{o.label}</RadixSelect.ItemText>
+                          <span className="ui-menu__detail">{o.detail}</span>
+                        </span>
+                      ) : (
+                        <RadixSelect.ItemText>{o.label}</RadixSelect.ItemText>
+                      )}
                       {o.description && <span className="ui-menu__desc">{o.description}</span>}
                       <RadixSelect.ItemIndicator className="ui-menu__check">
                         <Check size={12} />

@@ -327,5 +327,18 @@
   "params.prompt.tagRemove": "Remove tag",
   "params.prompt.tagAdd": "Add a tag",
   "params.prompt.tagName": "Tag name",
-  "params.prompt.view": "View"
+  "params.prompt.view": "View",
+  "params.scheduler.detail.euler": "Plain and fast. A safe default.",
+  "params.scheduler.detail.euler_a": "Re-adds noise every step. Varied results; the picture changes with the step count.",
+  "params.scheduler.detail.euler_k": "Euler with Karras spacing. Cleaner detail in fewer steps.",
+  "params.scheduler.detail.dpmpp_2m": "A standard that settles reliably in few steps.",
+  "params.scheduler.detail.dpmpp_2m_k": "DPM++ 2M with Karras spacing. Crisp detail; the most used.",
+  "params.scheduler.detail.dpmpp_2m_sde_k": "Adds randomness for richer texture. Slightly slower and less repeatable.",
+  "params.scheduler.detail.dpmpp_sde_k": "High quality, but about twice as slow: two evaluations per step.",
+  "params.scheduler.detail.heun": "Accurate and smooth, but slow: two evaluations per step.",
+  "params.scheduler.detail.lms": "An older method with a soft finish.",
+  "params.scheduler.detail.ddim": "Gentle and repeatable. Suits generating from an image.",
+  "params.scheduler.detail.unipc": "Converges fast, even around 10 steps. For quick results.",
+  "params.scheduler.detail.lcm": "Only for LCM models or LoRAs. Use 4-8 steps and CFG 1-2.",
+  "params.scheduler.detail.tcd": "Only for TCD LoRAs. Draws in few steps."
 }

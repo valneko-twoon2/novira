@@ -327,5 +327,18 @@
   "params.prompt.tagRemove": "タグを削除",
   "params.prompt.tagAdd": "タグを追加",
   "params.prompt.tagName": "タグ名",
-  "params.prompt.view": "表示"
+  "params.prompt.view": "表示",
+  "params.scheduler.detail.euler": "素直で速い。迷ったらこれ。",
+  "params.scheduler.detail.euler_a": "毎ステップにノイズを足し直す。絵が変わりやすく、ステップ数で別の絵になる。",
+  "params.scheduler.detail.euler_k": "Euler にカラスの刻み方を組み合わせる。少ないステップで細部が整う。",
+  "params.scheduler.detail.dpmpp_2m": "少ないステップで安定して収束する定番。",
+  "params.scheduler.detail.dpmpp_2m_k": "DPM++ 2M にカラスの刻み方。細部がくっきりし、最もよく使われる。",
+  "params.scheduler.detail.dpmpp_2m_sde_k": "ランダム性を加え、質感が豊か。少し遅く、同じ絵になりにくい。",
+  "params.scheduler.detail.dpmpp_sde_k": "品質は高いが、1 ステップで 2 回計算するため約 2 倍遅い。",
+  "params.scheduler.detail.heun": "精度が高くなめらか。1 ステップで 2 回計算するため遅い。",
+  "params.scheduler.detail.lms": "古くからある方式。やわらかい仕上がり。",
+  "params.scheduler.detail.ddim": "変化が穏やかで再現しやすい。画像からの生成向き。",
+  "params.scheduler.detail.unipc": "10 ステップ前後でも収束が速い。短時間で仕上げたいとき。",
+  "params.scheduler.detail.lcm": "LCM 用のモデルや LoRA 専用。4〜8 ステップ、CFG 1〜2 で使う。",
+  "params.scheduler.detail.tcd": "TCD 用の LoRA 専用。少ないステップで描く。"
 }

@@ -33,19 +33,19 @@ function SchedulerStepsCfg() {
   return (
     <>
       {fixed && main ? (
-        <Field label={t('params.generation.scheduler')} info={t('params.generation.schedulerInfo')}>
+        <Field label={t('params.generation.scheduler')} info={t('params.generation.schedulerInfo')} mark>
           <span className="pp-fixed" data-testid="sampling-fixed">
             {samplingLabel(fixed)}
           </span>
         </Field>
       ) : (
         <>
-          <Field label={t('params.generation.scheduler')} info={t('params.generation.schedulerInfo')}>
+          <Field label={t('params.generation.scheduler')} info={t('params.generation.schedulerInfo')} mark>
             <Select<SchedulerName>
               value={scheduler}
               onChange={(v) => set({ scheduler: v })}
               aria-label={t('params.generation.scheduler')}
-              options={SCHEDULERS.map((s) => ({ value: s, label: schedulerLabel(s, main?.base) }))}
+              options={SCHEDULERS.map((s) => ({ value: s, label: schedulerLabel(s, main?.base), detail: t(`params.scheduler.detail.${s}`) }))}
             />
           </Field>
           <RecommendedHint k="scheduler" />

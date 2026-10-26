@@ -264,6 +264,7 @@
   position: relative;
   flex: 1;
   min-width: 0;
+  max-width: 260px;
   padding: var(--space-1) 0;
 }
 
@@ -644,6 +645,23 @@
 
 .ui-menu__text {
   flex: 1;
+}
+
+.ui-menu__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 260px;
+  padding: var(--space-1) 0;
+}
+
+.ui-menu__detail {
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+}
+
+.ui-menu__item[data-highlighted] .ui-menu__detail {
+  color: var(--white);
 }
 
 .ui-menu__shortcut,
