@@ -11,8 +11,7 @@ import { formatBytes, formatRemaining, StartupCard, useTransferRate } from './En
 import { SkyBackdrop } from './SkyBackdrop';
 import './splash.css';
 
-const reason = (e: unknown) =>
-  typeof e === 'string' ? e : e instanceof Error ? e.message : String(e);
+const reason = (e: unknown) => (typeof e === 'string' ? e : e instanceof Error ? e.message : String(e));
 
 /** How often the moving screen asks how far the copy is. */
 const MOVE_POLL_MS = 500;
@@ -42,37 +41,19 @@ function Moving({ initial }: { initial: FirstRunInfo }) {
             <SkyBackdrop />
             <div className="sp__center sp__center--wide">
               <div className="sp__logo">novira</div>
-              <StartupCard
-                icon={<FolderOpen size={22} weight="duotone" />}
-                heading={t('firstrun.moving.title')}
-                sub={t('firstrun.moving.body')}
-                testId="data-moving-card"
-              >
+              <StartupCard icon={<FolderOpen size={22} weight="duotone" />} heading={t('firstrun.moving.title')} sub={t('firstrun.moving.body')} testId="data-moving-card">
                 <div className="ep__progress">
                   <div className="ep__row">
                     <span className="ep__percent" data-testid="data-moving-percent">
                       {copying ? `${Math.round(fraction * 100)}%` : ''}
                     </span>
-                    <span className="ep__size">
-                      {copying
-                        ? t('engine.sizeProgress', {
-                            done: formatBytes(moved),
-                            total: formatBytes(toMove),
-                          })
-                        : ''}
-                    </span>
+                    <span className="ep__size">{copying ? t('engine.sizeProgress', { done: formatBytes(moved), total: formatBytes(toMove) }) : ''}</span>
                   </div>
                   <ProgressBar value={fraction} indeterminate={!copying} className="ep__bar" />
                   {copying && (rate || remaining) && (
                     <div className="ep__row ep__row--meta">
-                      <span>
-                        {rate ? t('splash.engine.rate', { rate: formatBytes(rate) }) : ''}
-                      </span>
-                      <span>
-                        {remaining
-                          ? t('splash.engine.eta', { time: formatRemaining(remaining) })
-                          : ''}
-                      </span>
+                      <span>{rate ? t('splash.engine.rate', { rate: formatBytes(rate) }) : ''}</span>
+                      <span>{remaining ? t('splash.engine.eta', { time: formatRemaining(remaining) }) : ''}</span>
                     </div>
                   )}
                 </div>
@@ -115,11 +96,7 @@ export function FirstRun({ initial }: { initial: FirstRunInfo }) {
             <SkyBackdrop />
             <div className="sp__center sp__center--wide">
               <div className="sp__logo">novira</div>
-              <StartupCard
-                icon={<Gear size={22} weight="duotone" />}
-                heading={t('firstrun.title')}
-                testId="first-run-card"
-              >
+              <StartupCard icon={<Gear size={22} weight="duotone" />} heading={t('firstrun.title')} testId="first-run-card">
                 {rows.map((row) => (
                   <div className="fr__row" key={row.kind}>
                     <div className="fr__label">{t(`firstrun.${row.kind}.label`)}</div>
@@ -128,24 +105,11 @@ export function FirstRun({ initial }: { initial: FirstRunInfo }) {
                       {row.path}
                     </code>
                     <div className="fr__buttons">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        leftIcon={<FolderOpen />}
-                        disabled={busy}
-                        onClick={() => void run(() => firstRun.choose(row.kind))}
-                        data-testid={`first-run-${row.kind}-choose`}
-                      >
+                      <Button size="sm" variant="outline" leftIcon={<FolderOpen />} disabled={busy} onClick={() => void run(() => firstRun.choose(row.kind))} data-testid={`first-run-${row.kind}-choose`}>
                         {t('firstrun.choose')}
                       </Button>
                       {!row.isDefault && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          disabled={busy}
-                          onClick={() => void run(() => firstRun.reset(row.kind))}
-                          data-testid={`first-run-${row.kind}-reset`}
-                        >
+                        <Button size="sm" variant="ghost" disabled={busy} onClick={() => void run(() => firstRun.reset(row.kind))} data-testid={`first-run-${row.kind}-reset`}>
                           {t('firstrun.useDefault')}
                         </Button>
                       )}
@@ -157,13 +121,7 @@ export function FirstRun({ initial }: { initial: FirstRunInfo }) {
                     {t('firstrun.failed', { reason: failure })}
                   </p>
                 )}
-                <Button
-                  variant="solid"
-                  scheme="invoke"
-                  disabled={busy}
-                  onClick={() => void run(() => firstRun.finish())}
-                  data-testid="first-run-start"
-                >
+                <Button variant="solid" scheme="invoke" disabled={busy} onClick={() => void run(() => firstRun.finish())} data-testid="first-run-start">
                   {t('firstrun.start')}
                 </Button>
               </StartupCard>

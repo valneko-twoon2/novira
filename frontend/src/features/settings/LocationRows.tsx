@@ -9,15 +9,7 @@ import { Row } from './settingsLayout';
 
 type Run = (change: () => Promise<EngineSettings | null>) => Promise<void>;
 
-export function DataDirRow({
-  engine,
-  busy,
-  run,
-}: {
-  engine: EngineSettings;
-  busy: boolean;
-  run: Run;
-}) {
+export function DataDirRow({ engine, busy, run }: { engine: EngineSettings; busy: boolean; run: Run }) {
   const [asking, setAsking] = useState(false);
   const canChange = engine.dataDirChangeable && hasNativeDialogs();
   const choose = (moveData: boolean) => {
@@ -35,20 +27,11 @@ export function DataDirRow({
           </code>
           {engine.dataDirNext && (
             <span className="st-row__help" data-testid="settings-engine-data-dir-next">
-              {t(
-                engine.dataDirMoves
-                  ? 'settings.engine.dataDir.nextMove'
-                  : 'settings.engine.dataDir.nextUse',
-                { path: engine.dataDirNext },
-              )}
+              {t(engine.dataDirMoves ? 'settings.engine.dataDir.nextMove' : 'settings.engine.dataDir.nextUse', { path: engine.dataDirNext })}
             </span>
           )}
           {engine.dataDirNote && (
-            <span
-              className="st-row__help st-row__warn"
-              role="alert"
-              data-testid="settings-engine-data-dir-note"
-            >
+            <span className="st-row__help st-row__warn" role="alert" data-testid="settings-engine-data-dir-note">
               {t('settings.engine.dataDir.note', { reason: engine.dataDirNote })}
             </span>
           )}
@@ -58,24 +41,11 @@ export function DataDirRow({
       {canChange && (
         <div className="st-inline">
           {engine.dataDirNext && (
-            <Button
-              size="sm"
-              variant="ghost"
-              disabled={busy}
-              onClick={() => void run(() => backend.cancelDataDirChange())}
-              data-testid="settings-engine-data-dir-cancel"
-            >
+            <Button size="sm" variant="ghost" disabled={busy} onClick={() => void run(() => backend.cancelDataDirChange())} data-testid="settings-engine-data-dir-cancel">
               {t('settings.engine.dataDir.cancel')}
             </Button>
           )}
-          <Button
-            size="sm"
-            variant="outline"
-            leftIcon={<FolderOpen />}
-            disabled={busy}
-            onClick={() => setAsking(true)}
-            data-testid="settings-engine-data-dir-change"
-          >
+          <Button size="sm" variant="outline" leftIcon={<FolderOpen />} disabled={busy} onClick={() => setAsking(true)} data-testid="settings-engine-data-dir-change">
             {t('settings.engine.dataDir.change')}
           </Button>
         </div>
@@ -91,18 +61,10 @@ export function DataDirRow({
             <Button variant="ghost" onClick={() => setAsking(false)}>
               {t('common.cancel')}
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => choose(false)}
-              data-testid="settings-engine-data-dir-use"
-            >
+            <Button variant="outline" onClick={() => choose(false)} data-testid="settings-engine-data-dir-use">
               {t('settings.engine.dataDir.dialog.use')}
             </Button>
-            <Button
-              scheme="accent"
-              onClick={() => choose(true)}
-              data-testid="settings-engine-data-dir-move"
-            >
+            <Button scheme="accent" onClick={() => choose(true)} data-testid="settings-engine-data-dir-move">
               {t('settings.engine.dataDir.dialog.move')}
             </Button>
           </>
@@ -119,21 +81,10 @@ export function DataDirRow({
   );
 }
 
-export function ComfyuiRow({
-  engine,
-  busy,
-  run,
-}: {
-  engine: EngineSettings;
-  busy: boolean;
-  run: Run;
-}) {
+export function ComfyuiRow({ engine, busy, run }: { engine: EngineSettings; busy: boolean; run: Run }) {
   const owned = engine.comfyuiMode === 'owned';
   const canChange = owned && hasNativeDialogs();
-  const next =
-    engine.comfyuiInstallDir && engine.comfyuiInstallDir !== engine.comfyuiRoot
-      ? engine.comfyuiInstallDir
-      : null;
+  const next = engine.comfyuiInstallDir && engine.comfyuiInstallDir !== engine.comfyuiRoot ? engine.comfyuiInstallDir : null;
   return (
     <Row
       label={t('settings.engine.comfyui.label')}
@@ -141,11 +92,7 @@ export function ComfyuiRow({
       detail={
         <>
           <code className="st-path" data-testid="settings-engine-mode">
-            {engine.comfyuiMode === 'url'
-              ? engine.comfyuiUrl
-              : engine.comfyuiMode === 'folder'
-                ? engine.comfyuiDir
-                : engine.comfyuiRoot}
+            {engine.comfyuiMode === 'url' ? engine.comfyuiUrl : engine.comfyuiMode === 'folder' ? engine.comfyuiDir : engine.comfyuiRoot}
           </code>
           {owned && next && (
             <span className="st-row__help" data-testid="settings-engine-comfyui-next">
@@ -156,14 +103,7 @@ export function ComfyuiRow({
       }
     >
       {canChange && (
-        <Button
-          size="sm"
-          variant="outline"
-          leftIcon={<FolderOpen />}
-          disabled={busy}
-          onClick={() => void run(() => backend.chooseComfyuiInstallDir())}
-          data-testid="settings-engine-comfyui-change"
-        >
+        <Button size="sm" variant="outline" leftIcon={<FolderOpen />} disabled={busy} onClick={() => void run(() => backend.chooseComfyuiInstallDir())} data-testid="settings-engine-comfyui-change">
           {t('settings.engine.comfyui.change')}
         </Button>
       )}

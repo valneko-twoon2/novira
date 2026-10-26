@@ -49,11 +49,7 @@ export function DataPane() {
       <BackupSection />
       <UnfinishedDownloads />
       <SectionBlock title={t('settings.section.reset')}>
-        <Row
-          label={t('settings.reset.scope.label')}
-          help={t('settings.resetWebUiHelp')}
-          note={t(SCOPE_HELP[scope])}
-        >
+        <Row label={t('settings.reset.scope.label')} help={t('settings.resetWebUiHelp')} note={t(SCOPE_HELP[scope])}>
           <div className="st-inline">
             <Select
               className="st-select"
@@ -71,22 +67,12 @@ export function DataPane() {
                 <Button size="sm" variant="ghost" onClick={() => setConfirming(false)}>
                   {t('common.cancel')}
                 </Button>
-                <Button
-                  size="sm"
-                  scheme="danger"
-                  onClick={reset}
-                  data-testid="settings-reset-confirm"
-                >
+                <Button size="sm" scheme="danger" onClick={reset} data-testid="settings-reset-confirm">
                   {t('settings.resetConfirm')}
                 </Button>
               </div>
             ) : (
-              <Button
-                size="sm"
-                scheme="danger"
-                onClick={() => setConfirming(true)}
-                data-testid="settings-reset"
-              >
+              <Button size="sm" scheme="danger" onClick={() => setConfirming(true)} data-testid="settings-reset">
                 {t('settings.resetWebUi')}
               </Button>
             )}

@@ -20,14 +20,7 @@ const initial: FirstRunInfo = {
 let calls: { cmd: string; payload: unknown }[] = [];
 const answer = (handler: (cmd: string, payload: unknown) => unknown) => {
   calls = [];
-  vi.stubGlobal(
-    'ResizeObserver',
-    class {
-      observe() {}
-      unobserve() {}
-      disconnect() {}
-    },
-  );
+  vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
   mockIPC((cmd, payload) => {
     calls.push({ cmd, payload });
     return handler(cmd, payload);
@@ -51,25 +44,14 @@ describe('first-start screen', () => {
   });
 
   it('shows a folder chosen in the dialog, and goes back to the default', async () => {
-    const chosen = {
-      ...initial,
-      dataDir: 'D:/novira',
-      comfyuiDir: 'D:/novira/comfyui',
-      dataIsDefault: false,
-    };
-    answer((cmd) =>
-      cmd === 'first_run_choose' ? chosen : cmd === 'first_run_reset' ? initial : null,
-    );
+    const chosen = { ...initial, dataDir: 'D:/novira', comfyuiDir: 'D:/novira/comfyui', dataIsDefault: false };
+    answer((cmd) => (cmd === 'first_run_choose' ? chosen : cmd === 'first_run_reset' ? initial : null));
     render(<FirstRun initial={initial} />);
     fireEvent.click(screen.getByTestId('first-run-data-choose'));
-    await waitFor(() =>
-      expect(screen.getByTestId('first-run-data-path').textContent).toBe('D:/novira'),
-    );
+    await waitFor(() => expect(screen.getByTestId('first-run-data-path').textContent).toBe('D:/novira'));
     expect(calls[0]).toEqual({ cmd: 'first_run_choose', payload: { kind: 'data' } });
     fireEvent.click(screen.getByTestId('first-run-data-reset'));
-    await waitFor(() =>
-      expect(screen.getByTestId('first-run-data-path').textContent).toBe(initial.dataDir),
-    );
+    await waitFor(() => expect(screen.getByTestId('first-run-data-path').textContent).toBe(initial.dataDir));
     expect(calls[1]).toEqual({ cmd: 'first_run_reset', payload: { kind: 'data' } });
   });
 
@@ -89,11 +71,7 @@ describe('first-start screen', () => {
     });
     render(<FirstRun initial={initial} />);
     fireEvent.click(screen.getByTestId('first-run-data-choose'));
-    await waitFor(() =>
-      expect(screen.getByTestId('first-run-failure').textContent).toContain(
-        'The chosen path is not a folder',
-      ),
-    );
+    await waitFor(() => expect(screen.getByTestId('first-run-failure').textContent).toContain('The chosen path is not a folder'));
     expect(screen.getByTestId('first-run-data-path').textContent).toBe(initial.dataDir);
   });
 
@@ -104,9 +82,7 @@ describe('first-start screen', () => {
     });
     render(<FirstRun initial={initial} />);
     fireEvent.click(screen.getByTestId('first-run-start'));
-    await waitFor(() =>
-      expect(screen.getByTestId('first-run-failure').textContent).toContain('cannot create'),
-    );
+    await waitFor(() => expect(screen.getByTestId('first-run-failure').textContent).toContain('cannot create'));
     expect(calls).toEqual([{ cmd: 'first_run_finish', payload: {} }]);
     expect((screen.getByTestId('first-run-start') as HTMLButtonElement).disabled).toBe(false);
   });
@@ -122,9 +98,7 @@ describe('first-start screen', () => {
 
   it('shows how far the copy is, asking again as it goes', async () => {
     const moving = { ...initial, needed: false, moving: true };
-    answer((cmd) =>
-      cmd === 'first_run_info' ? { ...moving, moved: 3 * 1024 ** 3, toMove: 4 * 1024 ** 3 } : null,
-    );
+    answer((cmd) => (cmd === 'first_run_info' ? { ...moving, moved: 3 * 1024 ** 3, toMove: 4 * 1024 ** 3 } : null));
     render(<FirstRun initial={{ ...moving, moved: 1024 ** 3, toMove: 4 * 1024 ** 3 }} />);
     expect(screen.getByTestId('data-moving-percent').textContent).toBe('25%');
     await waitFor(() => expect(screen.getByTestId('data-moving-percent').textContent).toBe('75%'), {

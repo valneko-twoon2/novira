@@ -1,23 +1,13 @@
 // Generation parameters edited in the left panel (shared by Generate, Canvas, Upscaling), kept across starts.
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type {
-  ClipVisionModel,
-  GenerationMetadata,
-  HiresFix,
-  ImageDTO,
-  LoRAParam,
-  RefImageInput,
-  RefImageMethod,
-  SchedulerName,
-} from '@/backend';
+import type { ClipVisionModel, GenerationMetadata, HiresFix, ImageDTO, LoRAParam, RefImageInput, RefImageMethod, SchedulerName } from '@/backend';
 import { randomSeed } from '@/backend';
 import { useGallery } from './gallery';
 import { useModels } from './models';
 import { recalledModel, recalledModelKey, type RecalledModel } from './recallModel';
 
-export type AspectRatioId =
-  'free' | '21:9' | '16:9' | '3:2' | '4:3' | '1:1' | '3:4' | '2:3' | '9:16' | '9:21';
+export type AspectRatioId = 'free' | '21:9' | '16:9' | '3:2' | '4:3' | '1:1' | '3:4' | '2:3' | '9:16' | '9:21';
 
 export const ASPECT_RATIOS: { id: AspectRatioId; value: number | null }[] = [
   { id: 'free', value: null },
@@ -189,11 +179,7 @@ const TRAINED_SIZES: readonly (readonly [number, number])[] = [
 ];
 
 /** The trained size nearest in shape to `width` × `height`, for a model whose base side is `base`. */
-export function trainedSize(
-  width: number,
-  height: number,
-  base: number,
-): { width: number; height: number } {
+export function trainedSize(width: number, height: number, base: number): { width: number; height: number } {
   const ratio = width / height;
   const scale = base / 1024;
   const scaled = (v: number) => roundTo8(v * scale);
@@ -201,17 +187,12 @@ export function trainedSize(
     [w, h],
     [h, w],
   ]);
-  const [w, h] = sizes.reduce((best, s) =>
-    Math.abs(Math.log(s[0] / s[1] / ratio)) < Math.abs(Math.log(best[0] / best[1] / ratio))
-      ? s
-      : best,
-  );
+  const [w, h] = sizes.reduce((best, s) => (Math.abs(Math.log(s[0] / s[1] / ratio)) < Math.abs(Math.log(best[0] / best[1] / ratio)) ? s : best));
   return { width: scaled(w), height: scaled(h) };
 }
 let refSeq = 1;
 
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null && !Array.isArray(v);
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /** `defaults` with each field `stored` holds in the same kind (storage may hold anything). A null default takes text or null. */
 function pickStored<T extends object>(defaults: T, stored: unknown): T {
@@ -223,8 +204,7 @@ function pickStored<T extends object>(defaults: T, stored: unknown): T {
     if (d === null) {
       if (s === null || typeof s === 'string') out[k] = s;
     } else if (Array.isArray(d)) {
-      if (Array.isArray(s) && s.length === d.length && s.every((x, i) => typeof x === typeof d[i]))
-        out[k] = s;
+      if (Array.isArray(s) && s.length === d.length && s.every((x, i) => typeof x === typeof d[i])) out[k] = s;
     } else if (isRecord(d)) {
       out[k] = pickStored(d, s);
     } else if (typeof s === typeof d && (typeof s !== 'number' || Number.isFinite(s))) {
@@ -235,43 +215,20 @@ function pickStored<T extends object>(defaults: T, stored: unknown): T {
 }
 
 const LORA_DEFAULT: LoRAParam = { key: '', weight: 0.75, isEnabled: true };
-const REF_DEFAULT: RefImage = {
-  id: '',
-  isEnabled: true,
-  imageName: null,
-  imageUrl: null,
-  modelKey: null,
-  weight: 1,
-  beginEnd: [0, 1],
-  method: 'full',
-  clipVisionModel: 'ViT-H',
-};
+const REF_DEFAULT: RefImage = { id: '', isEnabled: true, imageName: null, imageUrl: null, modelKey: null, weight: 1, beginEnd: [0, 1], method: 'full', clipVisionModel: 'ViT-H' };
 
 /** The form as it was left (every setting is kept across starts), from what storage holds; anything unreadable stays at `current`. */
 export function restoreParams(stored: unknown, current: ParamsState): ParamsState {
   if (!isRecord(stored)) return current;
   const out = pickStored(current, stored);
   const list = (v: unknown) => (Array.isArray(v) ? v.filter(isRecord) : []);
-  out.loras = Array.isArray(stored.loras)
-    ? list(stored.loras)
-        .filter((l) => typeof l.key === 'string')
-        .map((l) => pickStored(LORA_DEFAULT, l))
-    : current.loras;
-  out.refImages = Array.isArray(stored.refImages)
-    ? list(stored.refImages)
-        .filter((r) => typeof r.id === 'string')
-        .map((r) => pickStored(REF_DEFAULT, r))
-    : current.refImages;
+  out.loras = Array.isArray(stored.loras) ? list(stored.loras).filter((l) => typeof l.key === 'string').map((l) => pickStored(LORA_DEFAULT, l)) : current.loras;
+  out.refImages = Array.isArray(stored.refImages) ? list(stored.refImages).filter((r) => typeof r.id === 'string').map((r) => pickStored(REF_DEFAULT, r)) : current.refImages;
   const image = isRecord(stored.upscale) ? stored.upscale.initialImage : undefined;
-  const isImage =
-    isRecord(image) && typeof image.name === 'string' && typeof image.url === 'string';
-  out.upscale = {
-    ...out.upscale,
-    initialImage: isImage ? (image as unknown as ImageDTO) : current.upscale.initialImage,
-  };
+  const isImage = isRecord(image) && typeof image.name === 'string' && typeof image.url === 'string';
+  out.upscale = { ...out.upscale, initialImage: isImage ? (image as unknown as ImageDTO) : current.upscale.initialImage };
   // New reference images must not take an id a restored one has.
-  for (const r of out.refImages)
-    refSeq = Math.max(refSeq, Number(/^ref-(\d+)$/.exec(r.id)?.[1] ?? 0) + 1);
+  for (const r of out.refImages) refSeq = Math.max(refSeq, Number(/^ref-(\d+)$/.exec(r.id)?.[1] ?? 0) + 1);
   return out;
 }
 
@@ -287,14 +244,11 @@ export function keepDrawForSaving(settings: object | null): void {
   savedDraw = settings;
 }
 
-export function keepPromptsForSaving(
-  prompts: Pick<ParamsState, 'positivePrompt' | 'negativePrompt'> | null,
-): void {
+export function keepPromptsForSaving(prompts: Pick<ParamsState, 'positivePrompt' | 'negativePrompt'> | null): void {
   savedPrompts = prompts;
 }
 
-const fieldsOf = (s: ParamsState) =>
-  Object.fromEntries(Object.entries(s).filter(([, v]) => typeof v !== 'function')) as ParamsFields;
+const fieldsOf = (s: ParamsState) => Object.fromEntries(Object.entries(s).filter(([, v]) => typeof v !== 'function')) as ParamsFields;
 
 export const useParams = create<ParamsState>()(
   persist(
@@ -351,10 +305,7 @@ export const useParams = create<ParamsState>()(
           if (axis === 'width') set({ width: v, height: roundTo8(v / ratio) });
           else set({ height: v, width: roundTo8(v * ratio) });
         } else {
-          set({
-            [axis]: v,
-            aspectRatio: s.aspectLocked ? s.aspectRatio : 'free',
-          } as Partial<ParamsState>);
+          set({ [axis]: v, aspectRatio: s.aspectLocked ? s.aspectRatio : 'free' } as Partial<ParamsState>);
         }
       },
       setAspectRatio: (id) => {
@@ -367,9 +318,7 @@ export const useParams = create<ParamsState>()(
       },
       swapDimensions: () => {
         const s = get();
-        const flipped = s.aspectRatio.includes(':')
-          ? (s.aspectRatio.split(':').reverse().join(':') as AspectRatioId)
-          : s.aspectRatio;
+        const flipped = s.aspectRatio.includes(':') ? (s.aspectRatio.split(':').reverse().join(':') as AspectRatioId) : s.aspectRatio;
         const known = ASPECT_RATIOS.some((a) => a.id === flipped);
         set({ width: s.height, height: s.width, aspectRatio: known ? flipped : 'free' });
       },
@@ -388,8 +337,7 @@ export const useParams = create<ParamsState>()(
         if (get().loras.some((l) => l.key === key)) return;
         set({ loras: [...get().loras, { key, weight: 0.75, isEnabled: true }] });
       },
-      updateLora: (key, patch) =>
-        set({ loras: get().loras.map((l) => (l.key === key ? { ...l, ...patch } : l)) }),
+      updateLora: (key, patch) => set({ loras: get().loras.map((l) => (l.key === key ? { ...l, ...patch } : l)) }),
       removeLora: (key) => set({ loras: get().loras.filter((l) => l.key !== key) }),
       addRefImage: (init) => {
         const id = `ref-${refSeq++}`;
@@ -408,8 +356,7 @@ export const useParams = create<ParamsState>()(
         set({ refImages: [...get().refImages, ref] });
         return id;
       },
-      updateRefImage: (id, patch) =>
-        set({ refImages: get().refImages.map((r) => (r.id === id ? { ...r, ...patch } : r)) }),
+      updateRefImage: (id, patch) => set({ refImages: get().refImages.map((r) => (r.id === id ? { ...r, ...patch } : r)) }),
       removeRefImage: (id) => set({ refImages: get().refImages.filter((r) => r.id !== id) }),
       recallAll: (m) => {
         const model = recalledModel(m, useModels.getState().models);
@@ -470,13 +417,7 @@ export const newRandomSeed = () => useParams.getState().set({ seed: randomSeed()
 /** The form's high-resolution fix for what a picture stored: on with its values, or off (the other values kept). */
 export function hiresFromMetadata(h: HiresFix | undefined, current: HiresParams): HiresParams {
   if (!h) return { ...current, enabled: false };
-  return {
-    enabled: true,
-    scale: h.scale,
-    strength: h.strength,
-    upscaleModelKey: h.upscaleModelKey ?? null,
-    steps: h.steps ?? 0,
-  };
+  return { enabled: true, scale: h.scale, strength: h.strength, upscaleModelKey: h.upscaleModelKey ?? null, steps: h.steps ?? 0 };
 }
 
 /** The high-resolution fix as the queue receives it; undefined when it is off. */
@@ -491,11 +432,7 @@ export function hiresFixInput(h: HiresParams): HiresFix | undefined {
 }
 
 /** Size of the second pass: the first size times the scale, snapped to multiples of 8 (as the backend does). */
-export function hiresSize(
-  width: number,
-  height: number,
-  scale: number,
-): { width: number; height: number } {
+export function hiresSize(width: number, height: number, scale: number): { width: number; height: number } {
   return { width: roundTo8(width * scale), height: roundTo8(height * scale) };
 }
 
@@ -519,16 +456,7 @@ export function refImagesFromInputs(inputs: RefImageInput[]): RefImage[] {
 export function refImageInputs(refs: RefImage[]): RefImageInput[] {
   return refs.flatMap((r) =>
     r.isEnabled && r.imageUrl && r.modelKey
-      ? [
-          {
-            imageUrl: r.imageUrl,
-            modelKey: r.modelKey,
-            clipVisionModel: r.clipVisionModel,
-            weight: r.weight,
-            beginEnd: [r.beginEnd[0], r.beginEnd[1]],
-            method: r.method,
-          },
-        ]
+      ? [{ imageUrl: r.imageUrl, modelKey: r.modelKey, clipVisionModel: r.clipVisionModel, weight: r.weight, beginEnd: [r.beginEnd[0], r.beginEnd[1]], method: r.method }]
       : [],
   );
 }
