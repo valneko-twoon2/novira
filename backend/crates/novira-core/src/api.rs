@@ -135,6 +135,10 @@ pub const SHELL_ONLY: &[&str] = &[
     "create_backup",
     "open_backup",
     "confirm_restore",
+    "first_run_info",
+    "first_run_choose",
+    "first_run_reset",
+    "first_run_finish",
 ];
 
 macro_rules! commands {

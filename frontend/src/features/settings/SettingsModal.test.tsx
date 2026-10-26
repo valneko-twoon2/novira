@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { backend, type EngineSettings } from '@/backend';
 import { asBrowserServer } from '@/backend/browserServer.testkit';
 import { t, tCount } from '@/i18n';
+import { APP_VERSION } from '@/state/appVersion';
 import { useGallery } from '@/state/gallery';
 import { SETTINGS_DEFAULTS, useSettings } from '@/state/settings';
 import { useToasts } from '@/state/toasts';
@@ -97,7 +98,7 @@ describe('general', () => {
     expect(useSettings.getState().waitForEngine).toBe(true);
     toggle(t('settings.waitForEngine.label'));
     expect(useSettings.getState().waitForEngine).toBe(false);
-    expect(modal().getByText(t('settings.version', { version: 'novira 0.1.0 (mock)' }))).toBeTruthy();
+    expect(modal().getByText(t('settings.version', { version: `novira ${APP_VERSION} (mock)` }))).toBeTruthy();
     expect(screen.queryByLabelText(t('settings.uiZoom.label'))).toBeNull();
   });
 });
@@ -255,7 +256,7 @@ describe('the desktop app', () => {
     show();
     openTab('general');
     expect(screen.getAllByLabelText(t('settings.uiZoom.label')).length).toBeGreaterThan(0);
-    expect(modal().getByText(t('settings.version', { version: 'novira 0.1.0' }))).toBeTruthy();
+    expect(modal().getByText(t('settings.version', { version: `novira ${APP_VERSION}` }))).toBeTruthy();
     openTab('generation');
     expect(screen.queryByLabelText(t('settings.mockStepDelay'))).toBeNull();
   });

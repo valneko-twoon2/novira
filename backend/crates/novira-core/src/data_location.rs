@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
 const POINTER_FILE: &str = "data-location.json";
+/// A debug build keeps its own pointer, so trying a folder in `tauri dev` never moves the installed app's data.
+const DEV_POINTER_FILE: &str = "data-location-dev.json";
 const LOCK_FILE: &str = crate::startup::LOCK_FILE_NAME;
 
 /// What the pointer holds.
@@ -20,8 +22,9 @@ pub struct Location {
     pub move_error: Option<String>,
 }
 
-/// The pointer file in the user's configuration folder (`%LOCALAPPDATA%\novira`, else `$XDG_CONFIG_HOME` or `~/.config`).
-pub fn pointer_path() -> Option<PathBuf> {
+/// The pointer file in the user's configuration folder (`%LOCALAPPDATA%\novira`, else `$XDG_CONFIG_HOME` or `~/.config`);
+/// `dev` names the one a debug build uses.
+pub fn pointer_path(dev: bool) -> Option<PathBuf> {
     let base = std::env::var_os("LOCALAPPDATA")
         .or_else(|| std::env::var_os("XDG_CONFIG_HOME"))
         .filter(|p| !p.is_empty())
@@ -31,7 +34,8 @@ pub fn pointer_path() -> Option<PathBuf> {
                 .filter(|p| !p.is_empty())
                 .map(|h| PathBuf::from(h).join(".config"))
         })?;
-    Some(base.join("novira").join(POINTER_FILE))
+    let file = if dev { DEV_POINTER_FILE } else { POINTER_FILE };
+    Some(base.join("novira").join(file))
 }
 
 /// The pointer's content; `None` when there is no pointer, it is unreadable or it names no folder.
@@ -83,23 +87,46 @@ fn inside(child: &Path, parent: &Path) -> bool {
     child != parent && child.starts_with(&parent)
 }
 
-/// Checks a folder chosen for the data. With `move_data`, the folder must be empty (or new): the data is moved into it.
-/// Without, it is opened as it is (an empty folder starts a new library; one that holds data is the library to open).
-pub fn check_new(new: &Path, current: &Path, move_data: bool) -> Result<(), String> {
+/// Checks a folder chosen for the data when there is no data folder yet (the first start): a plain full path to a new
+/// folder, an empty one, or one that already holds data (opened as it is).
+pub fn check_folder(new: &Path) -> Result<(), String> {
+    let text = new.to_string_lossy();
+    if text.is_empty() || text.chars().any(char::is_control) {
+        return Err("Not a folder path".into());
+    }
     if !new.is_absolute() {
         return Err("The data folder must be a full path".into());
+    }
+    let device = |c: std::path::Component| {
+        matches!(
+            c,
+            std::path::Component::Prefix(p) if matches!(p.kind(), std::path::Prefix::DeviceNS(_))
+        )
+    };
+    if new
+        .components()
+        .any(|c| matches!(c, std::path::Component::ParentDir) || device(c))
+    {
+        return Err("Not a plain folder path".into());
     }
     if new.parent().is_none() {
         return Err("A drive root cannot be the data folder; make a folder in it".into());
     }
+    if new.exists() && !new.is_dir() {
+        return Err("The chosen path is not a folder".into());
+    }
+    Ok(())
+}
+
+/// Checks a folder chosen for the data. With `move_data`, the folder must be empty (or new): the data is moved into it.
+/// Without, it is opened as it is (an empty folder starts a new library; one that holds data is the library to open).
+pub fn check_new(new: &Path, current: &Path, move_data: bool) -> Result<(), String> {
+    check_folder(new)?;
     if same(new, current) {
         return Err("This is already the data folder".into());
     }
     if inside(new, current) || inside(current, new) {
         return Err("The new data folder and the current one cannot be inside each other".into());
-    }
-    if new.exists() && !new.is_dir() {
-        return Err("The chosen path is not a folder".into());
     }
     if move_data && new.is_dir() {
         let empty = std::fs::read_dir(new)

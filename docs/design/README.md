@@ -27,6 +27,7 @@ One page per feature, each the current specification of that feature: how it beh
 | [comic-rough.md](comic-rough.md) | A comic panel's 3D rough: mannequins, props, a floor and a camera, baked into the pose picture and a depth map |
 | [comic-pages.md](comic-pages.md) | Comic page layouts, the page plan checks, the sound-effect pictures |
 | [comic-scene.md](comic-scene.md) | The assistant's `scene` operation: a panel written as one scene and turned into prompt, pose and balloons |
+| [first-run.md](first-run.md) | The first start of the desktop app: choosing the data folder and the ComfyUI folder before anything is opened |
 | [settings-engine.md](settings-engine.md) | Settings, engine settings, low-memory mode, unfinished downloads, backup and restore |
 | [ui-state-sync.md](ui-state-sync.md) | The screen state (`novira.*` keys) kept in the backend and followed live by the other open pages: the PC and phones |
 | [browser-server.md](browser-server.md) | The real backend behind a plain web browser: the shared command layer, the localhost-only server with its token, the commands it answers, the picture route |

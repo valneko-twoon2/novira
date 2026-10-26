@@ -13,6 +13,10 @@ const NOT_CALLED: Record<string, string> = {
   upload_image: 'a picture is posted to /upload/image, not to /api',
   export_images: 'the copies come back as a download from /export/images, not from /api',
   set_ui_zoom: 'the browser zooms by itself',
+  first_run_info: 'the first-start screen exists only in the desktop app, before a backend does',
+  first_run_choose: 'see first_run_info',
+  first_run_reset: 'see first_run_info',
+  first_run_finish: 'see first_run_info',
 };
 
 const api = read('backend/crates/novira-core/src/api.rs');
@@ -35,9 +39,9 @@ function shellOnly(): string[] {
   return [...list.slice(0, list.indexOf('];')).matchAll(/"([a-z_]+)"/g)].map((m) => m[1]!);
 }
 
-/** The IPC argument names of the shell's own commands (camelCase), from `commands.rs`. */
+/** The IPC argument names of the shell's own commands (camelCase), from `commands.rs` and `first_run.rs`. */
 function shellArguments(): Map<string, string[]> {
-  const src = read('backend/src-tauri/src/commands.rs');
+  const src = read('backend/src-tauri/src/commands.rs') + read('backend/src-tauri/src/first_run.rs');
   const out = new Map<string, string[]>();
   for (const m of src.matchAll(/#\[tauri::command\]\s*pub (?:async )?fn (\w+)\(([^)]*)\)/g)) {
     const params = [...m[2]!.matchAll(/(?<![:\w])(\w+)\s*:(?!:)\s*/g)]

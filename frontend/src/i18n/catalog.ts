@@ -27,6 +27,7 @@ import jaQueue from './locales/ja/queue.json';
 import jaSegment from './locales/ja/segment.json';
 import jaSettings from './locales/ja/settings.json';
 import jaSplash from './locales/ja/splash.json';
+import jaFirstrun from './locales/ja/firstrun.json';
 import jaText from './locales/ja/text.json';
 import jaVideo from './locales/ja/video.json';
 import jaVoice from './locales/ja/voice.json';
@@ -62,6 +63,7 @@ import enQueue from './locales/en/queue.json';
 import enSegment from './locales/en/segment.json';
 import enSettings from './locales/en/settings.json';
 import enSplash from './locales/en/splash.json';
+import enFirstrun from './locales/en/firstrun.json';
 import enText from './locales/en/text.json';
 import enVideo from './locales/en/video.json';
 import enVoice from './locales/en/voice.json';
@@ -111,6 +113,7 @@ export const ja = {
   ...jaShare,
   ...jaText,
   ...jaSplash,
+  ...jaFirstrun,
 };
 
 export type MessageKey = keyof typeof ja;
@@ -154,6 +157,7 @@ export const en: Catalog = {
   ...enShare,
   ...enText,
   ...enSplash,
+  ...enFirstrun,
 };
 
 export const LOCALES = ['ja', 'en', 'zh-CN', 'zh-TW', 'ko', 'ru', 'es', 'pt-BR', 'fr', 'de'] as const;

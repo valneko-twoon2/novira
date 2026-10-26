@@ -4,7 +4,7 @@ import './theme/base.css';
 import './ui/ui.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { backendReady, perf } from '@/backend';
+import { backendReady, firstStart, perf } from '@/backend';
 import { hideToken } from '@/backend/http/hideToken';
 import { localeReady } from '@/i18n';
 import { adoptBackendUiState } from '@/state/uiStateSync';
@@ -15,6 +15,18 @@ async function start(root: HTMLElement) {
   await backendReady;
   hideToken();
   perf.mark('backend-ready');
+  // The very first start has no backend yet: the screen that asks for the folders is all there is, and the app restarts.
+  const first = await firstStart();
+  if (first) {
+    const { FirstRun } = await import('@/features/splash/FirstRun');
+    await localeReady();
+    createRoot(root).render(
+      <StrictMode>
+        <FirstRun initial={first} />
+      </StrictMode>,
+    );
+    return;
+  }
   // Before the app is loaded: its stores read the saved state from the browser storage as they are made.
   await adoptBackendUiState();
   const { App } = await import('@/app/App');

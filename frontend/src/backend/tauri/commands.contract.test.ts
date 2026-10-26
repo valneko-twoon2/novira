@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // Contract between the IPC calls `TauriBackend` makes and the commands the shell registers
-// (`backend/src-tauri/src/command_list.rs` and the `#[tauri::command]` functions in `commands.rs`):
+// (`backend/src-tauri/src/command_list.rs` and the `#[tauri::command]` functions in `commands.rs` and `first_run.rs`):
 // every command name must exist, and the argument names must be the Rust parameters in camelCase
 // (Tauri renames command arguments that way).
 import { clearMocks, mockIPC } from '@tauri-apps/api/mocks';
@@ -11,6 +11,10 @@ import { TauriBackend } from './TauriBackend';
 /** Registered commands that the frontend does not call, and why. */
 const NOT_CALLED: Record<string, string> = {
   pack_status: 'pack states arrive with bootstrap and as `pack` events',
+  first_run_info: 'the first-start screen calls these through firstRun.ts (firstRun.test.ts), before a backend exists',
+  first_run_choose: 'see first_run_info',
+  first_run_reset: 'see first_run_info',
+  first_run_finish: 'see first_run_info',
 };
 
 /** Parameters that are not IPC arguments: injected state and the raw request (`upload_image` sends bytes). */
@@ -24,7 +28,7 @@ function registeredCommands(): string[] {
 
 /** Each `#[tauri::command]` function with its IPC argument names (camelCase). */
 function commandArguments(): Map<string, string[]> {
-  const src = read('backend/src-tauri/src/commands.rs');
+  const src = read('backend/src-tauri/src/commands.rs') + read('backend/src-tauri/src/first_run.rs');
   const out = new Map<string, string[]>();
   for (const m of src.matchAll(/#\[tauri::command\]\s*pub (?:async )?fn (\w+)\(([^)]*)\)/g)) {
     const params = [...m[2]!.matchAll(/(?<![:\w])(\w+)\s*:(?!:)\s*/g)]

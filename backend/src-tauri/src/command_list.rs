@@ -93,4 +93,8 @@ pub const COMMANDS: &[&str] = &[
     "take_restored_ui_state",
     "list_unfinished_downloads",
     "delete_unfinished_downloads",
+    "first_run_info",
+    "first_run_choose",
+    "first_run_reset",
+    "first_run_finish",
 ];

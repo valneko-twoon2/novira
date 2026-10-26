@@ -10,6 +10,7 @@ pub mod data_location;
 pub mod db;
 pub mod endpoints;
 pub mod engine;
+pub mod first_run;
 pub mod fonts;
 pub mod gpu_lock;
 pub mod hardware;

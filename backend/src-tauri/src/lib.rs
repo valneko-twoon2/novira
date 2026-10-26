@@ -3,6 +3,7 @@
 pub mod commands;
 pub mod dialogs;
 pub mod events;
+pub mod first_run;
 pub mod image_scheme;
 pub mod startup;
 
@@ -60,12 +61,31 @@ fn data_dir_from_env() -> Option<PathBuf> {
 }
 
 /// The file that records the data folder chosen in the Settings screen. Not used when `NOVIRA_DATA_DIR` fixes the
-/// folder, nor in a debug build, whose data stays in the repository.
+/// folder. A debug build has a pointer of its own, so it never moves the installed app's data.
 fn location_pointer() -> Option<PathBuf> {
-    if cfg!(debug_assertions) || data_dir_from_env().is_some() {
+    if data_dir_from_env().is_some() {
         return None;
     }
-    novira_core::data_location::pointer_path()
+    novira_core::data_location::pointer_path(cfg!(debug_assertions))
+}
+
+/// The folder a start with no choice would use.
+fn default_data_dir_now() -> PathBuf {
+    default_data_dir(&app_dir(), user_dir().as_deref(), cfg!(debug_assertions))
+}
+
+/// Whether nothing says where the data goes yet, so the first-start screen asks (`novira_core::first_run`). Data beside
+/// the app, or in the user's folder where earlier versions kept it, is data already.
+fn first_run_needed() -> bool {
+    let Some(pointer) = location_pointer() else {
+        return false;
+    };
+    let beside = app_dir().join(DATA_DIR_NAME);
+    let user = user_dir().map(|u| u.join(DATA_DIR_NAME));
+    let existing: Vec<&Path> = std::iter::once(beside.as_path())
+        .chain(user.as_deref())
+        .collect();
+    novira_core::first_run::needed(&pointer, &existing)
 }
 
 /// Everything novira stores (models, generated images, ComfyUI, database, logs) goes in this folder: `NOVIRA_DATA_DIR`,
@@ -77,9 +97,7 @@ fn data_dir() -> PathBuf {
     location_pointer()
         .and_then(|pointer| novira_core::data_location::read(&pointer))
         .map(|location| location.data_dir)
-        .unwrap_or_else(|| {
-            default_data_dir(&app_dir(), user_dir().as_deref(), cfg!(debug_assertions))
-        })
+        .unwrap_or_else(default_data_dir_now)
 }
 
 /// WebView2 keeps what the page stores itself (presets, layout, ...) in a profile folder. By default that is one folder
@@ -89,7 +107,12 @@ fn data_dir() -> PathBuf {
 fn use_own_webview_profile() {
     const ENV: &str = "WEBVIEW2_USER_DATA_FOLDER";
     if std::env::var_os(ENV).is_none() {
-        std::env::set_var(ENV, data_dir().join("webview"));
+        // At the first start the data folder is not chosen yet, and the page must not leave a profile in the default one.
+        let profile = match location_pointer().filter(|_| first_run_needed()) {
+            Some(pointer) => pointer.with_file_name("setup-webview"),
+            None => data_dir().join("webview"),
+        };
+        std::env::set_var(ENV, profile);
     }
 }
 
@@ -157,6 +180,13 @@ pub fn run() {
     use_own_webview_profile();
     let app = tauri::Builder::default()
         .setup(|app| {
+            app.manage(first_run::FirstRun::default());
+            app.manage(commands::LastExport::default());
+            app.manage(commands::ScannedModels::default());
+            if first_run_needed() {
+                // The first-start screen asks for the folders; the app restarts and opens them as a normal start.
+                return Ok(());
+            }
             let backend =
                 open_backend().unwrap_or_else(|refusal| startup::fail(refusal, &data_dir()));
             backend.set_event_sink(events::sink(app.handle().clone()));
@@ -180,14 +210,22 @@ pub fn run() {
             #[cfg(windows)]
             fit_window_icon(app);
             app.manage(backend);
-            app.manage(commands::LastExport::default());
-            app.manage(commands::ScannedModels::default());
             Ok(())
         })
         .register_asynchronous_uri_scheme_protocol(
             image_scheme::SCHEME,
             |ctx, request, responder| {
-                let backend = ctx.app_handle().state::<Backend>().inner().clone();
+                // Before the first start is over there is no backend, and no picture to serve.
+                let Some(backend) = ctx.app_handle().try_state::<Backend>() else {
+                    responder.respond(
+                        tauri::http::Response::builder()
+                            .status(404)
+                            .body(Vec::new())
+                            .expect("static headers are valid"),
+                    );
+                    return;
+                };
+                let backend = backend.inner().clone();
                 let path = request.uri().path().to_string();
                 let range = request
                     .headers()
@@ -306,6 +344,10 @@ pub fn run() {
             commands::take_restored_ui_state,
             commands::list_unfinished_downloads,
             commands::delete_unfinished_downloads,
+            first_run::first_run_info,
+            first_run::first_run_choose,
+            first_run::first_run_reset,
+            first_run::first_run_finish,
         ])
         .build(tauri::generate_context!())
         .expect("failed to start novira");

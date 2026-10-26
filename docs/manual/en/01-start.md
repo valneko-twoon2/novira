@@ -29,7 +29,7 @@ novira is made of four parts.
 You do not need to install the engine yourself. novira installs it automatically the first time it starts.
 The engine and its components (such as Python) go only into novira's data folder. Nothing is changed elsewhere on your computer, and any Python you already have is left alone.
 
-The data folder is named `novira-data` and sits inside the app's folder. Use this folder when you want to move or back up your images and models.
+The first time you start the app, a screen asks where the data folder and the engine (ComfyUI) are installed. Press "{{ui:firstrun.start}}" to keep the standard places, or press "{{ui:firstrun.choose}}" on a row to pick another folder. Both can be changed later under Engine in the settings. Use the data folder when you want to move or back up your images and models.
 
 > Image generation uses the GPU (graphics card). By default, novira installs the engine for NVIDIA GPUs.
 

@@ -4,6 +4,7 @@ import { mockPicture } from './mock/mockPictures';
 import { mockModule, type MockModule } from './mockModule';
 import { HttpBackend, isServedByServer } from './http/HttpBackend';
 import { serverLanApi, type LanApi } from './http/lan';
+import { firstRun, type FirstRunInfo } from './tauri/firstRun';
 import { isTauri, TauriBackend } from './tauri/TauriBackend';
 
 function scenario(): 'default' | 'empty' {
@@ -71,6 +72,18 @@ export async function getLanApi(): Promise<LanApi | null> {
   return flag === null ? null : (await import('./mock/mockLan')).mockLan(flag);
 }
 
+/**
+ * What the first-start screen needs, or `null` when this is not the first start (or not the desktop app). At the first
+ * start the app has no backend yet, so nothing else may be called before the screen has finished and the app restarted.
+ */
+export async function firstStart(): Promise<FirstRunInfo | null> {
+  if (!isTauri()) return null;
+  const info = await firstRun.info();
+  return info.needed ? info : null;
+}
+
+export { firstRun } from './tauri/firstRun';
+export type { FirstRunInfo, FolderKind } from './tauri/firstRun';
 export type { BackendClient } from './client';
 export * from './types';
 export { loadImage } from './mock/imageSynth';

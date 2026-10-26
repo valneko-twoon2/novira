@@ -99,6 +99,10 @@
     "allow-take-restored-ui-state",
     "allow-list-unfinished-downloads",
     "allow-delete-unfinished-downloads",
+    "allow-first-run-info",
+    "allow-first-run-choose",
+    "allow-first-run-reset",
+    "allow-first-run-finish",
     "core:event:allow-listen",
     "core:event:allow-unlisten",
     "core:window:allow-set-theme"

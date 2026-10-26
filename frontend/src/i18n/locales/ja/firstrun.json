@@ -1,0 +1,11 @@
+{
+  "firstrun.title": "最初の設定",
+  "firstrun.data.label": "データフォルダ",
+  "firstrun.data.help": "作った絵、モデル、設定などを置きます。",
+  "firstrun.comfyui.label": "画像エンジン（ComfyUI）のインストール先",
+  "firstrun.comfyui.help": "数 GB の空きが要ります。容量に余裕のある場所を選んでください。",
+  "firstrun.choose": "フォルダを選ぶ",
+  "firstrun.useDefault": "標準の場所に戻す",
+  "firstrun.start": "この場所で始める",
+  "firstrun.failed": "設定できませんでした: {reason}"
+}

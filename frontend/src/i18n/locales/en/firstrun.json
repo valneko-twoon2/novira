@@ -1,0 +1,11 @@
+{
+  "firstrun.title": "First-time setup",
+  "firstrun.data.label": "Data folder",
+  "firstrun.data.help": "Your pictures, models and settings are kept here.",
+  "firstrun.comfyui.label": "Image engine (ComfyUI) install folder",
+  "firstrun.comfyui.help": "It needs several GB. Choose a place with room to spare.",
+  "firstrun.choose": "Choose folder",
+  "firstrun.useDefault": "Use the default",
+  "firstrun.start": "Start with these folders",
+  "firstrun.failed": "Could not set up: {reason}"
+}
