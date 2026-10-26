@@ -196,7 +196,9 @@ async function main(argv) {
   const rel = path.relative(ROOTS.work, data);
   if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) throw new Error(`refusing: the data folder ${data} is not inside ${ROOTS.work}`);
   fs.mkdirSync(data, { recursive: true });
-  const copy = path.join(ROOTS.work, 'comfy-copy', 'portable', 'ComfyUI');
+  // The copy is the harness folder's; a move of the data folder may have taken it along (its work/ goes with it).
+  const copies = [ROOTS.work, ...(ROOTS.moved ? [path.join(ROOTS.moved, 'work')] : [])].map((w) => path.join(w, 'comfy-copy', 'portable', 'ComfyUI'));
+  const copy = copies.find((c) => fs.existsSync(path.join(c, 'main.py'))) ?? copies[0];
   if (!fs.existsSync(path.join(data, 'settings.json'))) {
     if (!fs.existsSync(path.join(copy, 'main.py'))) throw new Error(`no settings.json in ${data} and no ComfyUI copy at ${copy}: copy one there first (docs/verification.md)`);
     patchSettings(data, { comfyuiDir: copy });

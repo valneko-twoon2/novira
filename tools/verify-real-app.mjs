@@ -281,7 +281,7 @@ async function main() {
   if (opts.build || !fs.existsSync(L.exe)) build(L);
   if (!fs.existsSync(L.exe)) throw new Error(`the build produced no exe at ${L.exe}`);
   touchEnvironment(L);
-  log(shareModels(L) ? `models of novira-data/models are shared through modelRoots in ${path.join(L.data, 'settings.json')}` : `${SHARED_MODELS} does not exist: no shared model folder`);
+  log(shareModels(L) ? `models of ${SHARED_MODELS} are shared through modelRoots in ${path.join(L.data, 'settings.json')}` : `${SHARED_MODELS} does not exist: no shared model folder`);
   let restoreSettings = null;
   if (opts.noEngine) {
     const off = await turnEngineOff(L);

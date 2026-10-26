@@ -126,7 +126,7 @@ To judge a change: `node tools/perf.mjs all --save before` on the code before it
 
 ## Where the harness writes
 
-One root, `novira-data/work/` of the main checkout (from a worktree too: `tools/harness-paths.mjs` takes the first entry of `git worktree list`, and the shared models are that checkout's `novira-data/models`), with these entries (all git-ignored through `novira-data/`):
+One root, `novira-data/work/` of the main checkout (from a worktree too: `tools/harness-paths.mjs` takes the first entry of `git worktree list`, and the shared models are that checkout's `novira-data/models`, or, when the Settings screen moved the data folder out of the repository, the `models/` of the folder the pointer in `%LOCALAPPDATA%\novira` names, the debug build's first; a ComfyUI copy the move took along in its `work/` is used too), with these entries (all git-ignored through `novira-data/`):
 
 | Entry | What | Deleted when unused for |
 |---|---|---|

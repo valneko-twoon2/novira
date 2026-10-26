@@ -1,10 +1,11 @@
 // Where the harness writes and which models it shares, the same from the main checkout and from any Git worktree of it.
 // A worktree has no novira-data/ of its own, so everything resolves against the main checkout (the first entry of
 // `git worktree list`): its novira-data/work/ holds the standing environment (verification data, ComfyUI copy) and its
-// novira-data/models/ is shared read-only through the `modelRoots` setting. Nothing is linked: a junction to the models
-// once let a folder removal follow it.
+// novira-data/models/ (or that of the data folder the app moved to) is shared read-only through the `modelRoots` setting.
+// Nothing is linked: a junction to the models once let a folder removal follow it.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseWorktrees } from './worktree.mjs';
@@ -53,7 +54,32 @@ export function mainCheckout(from = HERE, git = (cwd) => execFileSync('git', ['w
   return path.resolve(from);
 }
 
-/** `{ repo, main, work, models }`: this checkout, the main one, its harness folder and its shared model folder. */
-export function harnessRoots(repo = HERE, main = mainCheckout(repo)) {
-  return { repo: path.resolve(repo), main, work: path.join(main, 'novira-data', 'work'), models: path.join(main, 'novira-data', 'models') };
+/**
+ * The data folder the user's app opens when the Settings screen moved it out of the repository: the `dataDir` of the
+ * pointer in `%LOCALAPPDATA%\novira` (the debug build's first, as `cargo tauri dev` is how this checkout's app runs).
+ * `null` without a pointer. Never throws.
+ */
+export function movedDataDir(env = process.env, read = (f) => fs.readFileSync(f, 'utf8')) {
+  const base = env.LOCALAPPDATA || env.XDG_CONFIG_HOME;
+  if (!base) return null;
+  for (const file of ['data-location-dev.json', 'data-location.json']) {
+    try {
+      const dir = JSON.parse(read(path.join(base, 'novira', file))).dataDir;
+      if (typeof dir === 'string' && dir) return path.resolve(dir);
+    } catch {
+      // No pointer, or not one the app wrote: try the next.
+    }
+  }
+  return null;
+}
+
+/**
+ * `{ repo, main, work, models, moved }`: this checkout, the main one, its harness folder, its shared model folder and the
+ * data folder the user's app moved to (or null). The models are the main checkout's novira-data/models, or the moved
+ * data folder's when that one is gone (the move takes the models along). The harness folder stays in the repository.
+ */
+export function harnessRoots(repo = HERE, main = mainCheckout(repo), moved = movedDataDir(), exists = fs.existsSync) {
+  const own = path.join(main, 'novira-data', 'models');
+  const models = !exists(own) && moved && exists(path.join(moved, 'models')) ? path.join(moved, 'models') : own;
+  return { repo: path.resolve(repo), main, work: path.join(main, 'novira-data', 'work'), models, moved };
 }

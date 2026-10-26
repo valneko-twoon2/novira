@@ -35,7 +35,7 @@ import {
 // @ts-expect-error -- plain ESM script without types
 import { mergeRuns, parseArgs } from '../../tools/models-sweep.mjs';
 // @ts-expect-error -- plain ESM script without types
-import { harnessRoots, mainCheckout } from '../../tools/harness-paths.mjs';
+import { harnessRoots, mainCheckout, movedDataDir } from '../../tools/harness-paths.mjs';
 // @ts-expect-error -- plain ESM script without types
 import { reminder, sweepReminders } from '../../.claude/hooks/commit-before-stop.mjs';
 
@@ -445,8 +445,33 @@ describe('the main checkout a worktree shares', () => {
     expect(mainCheckout('E:/Code/copy', () => {
       throw new Error('not a repository');
     }).replaceAll('\\', '/')).toBe('E:/Code/copy');
-    const roots = harnessRoots('E:/Code/novira-wt-x', 'E:/Code/novira');
+    const roots = harnessRoots('E:/Code/novira-wt-x', 'E:/Code/novira', null, () => true);
     expect(roots.work.replaceAll('\\', '/')).toBe('E:/Code/novira/novira-data/work');
     expect(roots.models.replaceAll('\\', '/')).toBe('E:/Code/novira/novira-data/models');
+  });
+
+  it('shares the models of a data folder the app moved out of the repository, and keeps the harness folder in it', () => {
+    const exists = (p: string) => p.replaceAll('\\', '/').startsWith('C:/data/models');
+    const roots = harnessRoots('E:/Code/novira', 'E:/Code/novira', 'C:/data', exists);
+    expect(roots.models.replaceAll('\\', '/')).toBe('C:/data/models');
+    expect(roots.work.replaceAll('\\', '/')).toBe('E:/Code/novira/novira-data/work');
+    // The repository's own models win while they are there; no pointer keeps them.
+    expect(harnessRoots('E:/Code/novira', 'E:/Code/novira', 'C:/data', () => true).models.replaceAll('\\', '/')).toBe('E:/Code/novira/novira-data/models');
+    expect(harnessRoots('E:/Code/novira', 'E:/Code/novira', null, () => false).models.replaceAll('\\', '/')).toBe('E:/Code/novira/novira-data/models');
+  });
+
+  it('reads the moved data folder from the debug pointer first, then the installed one', () => {
+    const files: Record<string, string> = { 'L/novira/data-location.json': '{"dataDir":"D:/inst"}', 'L/novira/data-location-dev.json': '{"dataDir":"D:/dev"}' };
+    const read = (f: string) => {
+      const text = files[f.replaceAll('\\', '/')];
+      if (text === undefined) throw new Error('missing');
+      return text;
+    };
+    expect(movedDataDir({ LOCALAPPDATA: 'L' }, read)?.replaceAll('\\', '/')).toBe('D:/dev');
+    delete files['L/novira/data-location-dev.json'];
+    expect(movedDataDir({ LOCALAPPDATA: 'L' }, read)?.replaceAll('\\', '/')).toBe('D:/inst');
+    files['L/novira/data-location.json'] = 'not json';
+    expect(movedDataDir({ LOCALAPPDATA: 'L' }, read)).toBeNull();
+    expect(movedDataDir({}, read)).toBeNull();
   });
 });
