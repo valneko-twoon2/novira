@@ -22,8 +22,8 @@
   "params.refImage.dropNew": "参照画像として追加",
   "params.refImage.noModelHelp": "参照画像（雰囲気やスタイルを寄せる機能）には、{base} 用の IP-Adapter モデルが必要です。まだインストールされていません。",
   "params.refImage.installModels": "モデルをインストール",
-  "params.refImage.i2iHelp": "この画像を下絵にして描き直したい（i2i）ときは、キャンバスを使います。",
-  "params.refImage.openI2i": "キャンバスで i2i",
+  "params.refImage.i2iHelp": "この画像を下絵にして描き直したい（i2i）ときは、i2i の欄に置きます。",
+  "params.refImage.openI2i": "i2i に使う",
   "params.refImage.selectModel": "モデルを選択",
   "params.refImage.noModels": "対応するモデルがありません",
   "params.refImage.clipVision": "CLIP Vision",
@@ -172,7 +172,7 @@
   "params.launchpad.generate.refTitle": "参照画像を使う",
   "params.launchpad.generate.refDesc": "画像の雰囲気やスタイルを参考にして生成します。",
   "params.launchpad.generate.startTitle": "元になる画像から始める",
-  "params.launchpad.generate.startDesc": "キャンバスに画像を置いて、それを元に描き直します。",
+  "params.launchpad.generate.startDesc": "画像を下絵にして、プロンプトに合わせて描き直します（i2i）。",
   "params.launchpad.generate.canvasTitle": "キャンバスで編集",
   "params.launchpad.canvas.title": "キャンバスを始める",
   "params.launchpad.canvas.drawTitle": "描く・画像をアップロードして始める",
@@ -340,5 +340,11 @@
   "params.scheduler.detail.ddim": "変化が穏やかで再現しやすい。画像からの生成向き。",
   "params.scheduler.detail.unipc": "10 ステップ前後でも収束が速い。短時間で仕上げたいとき。",
   "params.scheduler.detail.lcm": "LCM 用のモデルや LoRA 専用。4〜8 ステップ、CFG 1〜2 で使う。",
-  "params.scheduler.detail.tcd": "TCD 用の LoRA 専用。少ないステップで描く。"
+  "params.scheduler.detail.tcd": "TCD 用の LoRA 専用。少ないステップで描く。",
+  "params.i2i.title": "i2i（元画像から描き直す）",
+  "params.i2i.dropHint": "描き直す元の画像をドロップ",
+  "params.i2i.dropOverlay": "この画像から描き直す",
+  "params.i2i.clear": "元画像を外す",
+  "params.hires.i2iNote": "i2i の元画像があるときは使えません。",
+  "params.refImage.openCanvas": "キャンバスで開く"
 }

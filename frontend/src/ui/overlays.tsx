@@ -6,7 +6,7 @@ import * as RadixPopover from '@radix-ui/react-popover';
 import * as RadixSelect from '@radix-ui/react-select';
 import * as RadixTabs from '@radix-ui/react-tabs';
 import { CaretDown, CaretRight, Check, X } from '@phosphor-icons/react';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { isPhoneLayout } from '@/state/layout';
 import { cx } from './controls';
 
@@ -308,16 +308,22 @@ export function Section({
   title,
   badges,
   defaultOpen = true,
+  openOn,
   children,
   actions,
 }: {
   title: ReactNode;
   badges?: ReactNode[];
   defaultOpen?: boolean;
+  /** Opens the section each time this changes to something truthy (a picture put in it from elsewhere). */
+  openOn?: unknown;
   children: ReactNode;
   actions?: ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  useEffect(() => {
+    if (openOn) setOpen(true);
+  }, [openOn]);
   return (
     <section className={cx('ui-section', open && 'is-open')}>
       <div className="ui-section__header">

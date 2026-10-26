@@ -92,6 +92,13 @@ describe('restoreParams', () => {
     expect('unknown' in s).toBe(false);
   });
 
+  it('keeps the picture to draw over only when it names an image and its address', () => {
+    const image = { name: 'a.png', url: 'u/full/a.png', thumbnailUrl: 't', width: 512, height: 768 };
+    expect(restoreParams({ initImage: image }, initial).initImage).toEqual(image);
+    expect(restoreParams({ initImage: { name: 'a.png' } }, initial).initImage).toBeNull();
+    expect(restoreParams({ initImage: 'a.png' }, initial).initImage).toBeNull();
+  });
+
   it('ignores the manga finish an older version stored with the form', () => {
     const s = restoreParams({ cfgScale: 5, manga: { enabled: true, screenLines: 240 } }, initial);
     expect(s.cfgScale).toBe(5);

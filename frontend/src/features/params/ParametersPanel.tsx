@@ -16,6 +16,7 @@ import { AdvancedSection } from './sections/AdvancedSection';
 import { CompositingSection } from './sections/CompositingSection';
 import { GenerationSection } from './sections/GenerationSection';
 import { HiresSection } from './sections/HiresSection';
+import { I2iSection } from './sections/I2iSection';
 import { ImageSection } from './sections/ImageSection';
 import { UpscaleSection } from './upscale/UpscaleSection';
 import { WildcardsDialog } from './wildcards/WildcardsDialog';
@@ -36,6 +37,7 @@ export function ParametersPanel({ tab, lead, beforeModel }: { tab: TabName; lead
         ) : (
           <>
             <RefImageList />
+            {tab === 'generate' && <I2iSection />}
             {tab !== 'comic' && <ImageSection tab={tab} />}
             <GenerationSection />
             {(tab === 'generate' || tab === 'comic') && <HiresSection />}

@@ -371,6 +371,24 @@
   font-size: var(--fs-sm);
 }
 
+.pp-refpop__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* Image to image: the picture beside the strength. */
+.pp-i2i {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.pp-i2i .ui-field {
+  flex: 1;
+  min-width: 0;
+}
+
 .pp-refpop__note.is-warning {
   border-left: 2px solid var(--warning);
 }

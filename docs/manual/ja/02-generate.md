@@ -140,6 +140,7 @@ Anima・Flux・FLUX.2・Chroma・Qwen-Image・Z-Image・SD3・HiDream・AuraFlow
 | 区画 | 入っているもの |
 |---|---|
 | **{{ui:params.refImage.sectionLabel}}**（プロンプトのすぐ下） | 絵の雰囲気や登場人物を寄せるための画像（後述） |
+| **{{ui:params.i2i.title}}** | 元の絵をもとに描き直す（i2i）ときの元画像と、{{ui:params.image.strength}}（後述） |
 | **{{ui:params.image.title}}** | {{ui:params.image.aspect}}、幅と高さ。「{{ui:params.image.swap}}」「{{ui:params.image.lock}}」「{{ui:params.image.optimal}}」のボタンもあります |
 | **{{ui:params.generation.title}}** | LoRA（絵柄や人物を足す小さな追加モデル）、{{ui:params.generation.scheduler}}、{{ui:params.generation.steps}}、{{ui:params.generation.cfg}} |
 | **{{ui:params.hires.title}}** | 描いた絵を拡大して、もう一度描き直す 2 回目の生成（後述） |
@@ -258,7 +259,17 @@ Anima・Flux・FLUX.2・Chroma・Qwen-Image・Z-Image・SD3・HiDream・AuraFlow
 
 必要なモデルや拡張機能がインストールされていないときは、枠に警告の印が出て、小窓や生成ボタンの下に案内が出ます。案内のボタンからインストールできます。
 
-> 参照画像は「雰囲気を寄せる」ためのものです。「この絵をもとに描き直したい」ときは、キャンバスを使います。[キャンバスで描き足す](05-canvas.md) を見てください。
+> 参照画像は「雰囲気を寄せる」ためのものです。「この絵をもとに描き直したい」ときは、次の i2i を使います。
+
+## i2i（元の絵から描き直す）
+
+**{{ui:params.i2i.title}}** の区画に絵を置くと、その絵を下絵にして描き直します。構図や色をそのまま生かして、プロンプトに合わせて変えたいときに使います。
+
+1. 区画を開き、ギャラリーの絵（またはパソコンの画像ファイル）を枠にドロップします。参照画像の小窓の **{{ui:params.refImage.openI2i}}** からも置けます。
+2. 幅と高さは、置いた絵の形にいちばん近い、モデルの得意な大きさに変わります。あとから手で変えても構いません。
+3. **{{ui:params.image.strength}}** で、どれだけ描き直すかを決めます。0 に近いほど元の絵のまま、1 に近いほど元の絵を気にせず描きます。0.5 前後から試すのがおすすめです。
+
+元画像を置いている間は、{{ui:params.hires.title}} は使えません。外すには、枠の右上の × を押します。塗った部分だけを描き直したいときは、[キャンバスで描き足す](05-canvas.md) を使います。
 
 ### キャラクター
 

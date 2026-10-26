@@ -1,5 +1,5 @@
 // Settings popover of a reference image (IP-Adapter model, method, weight, begin/end).
-import { BoundingBox, DownloadSimple, Trash, X } from '@phosphor-icons/react';
+import { BoundingBox, DownloadSimple, ImageSquare, Trash, X } from '@phosphor-icons/react';
 import { t } from '@/i18n';
 import { useCanvas } from '@/state/canvas';
 import { findImage } from '@/state/gallery';
@@ -7,7 +7,7 @@ import { BASE_LABELS, modelsOfType, useModels } from '@/state/models';
 import { useParams, type RefImage, type RefImageMethod } from '@/state/params';
 import { useUi } from '@/state/ui';
 import { Button, Field, IconButton, ImageDropZone, Select, SliderNumber, Switch } from '@/ui';
-import { methodLabel } from '../labels';
+import { methodLabel, optimalDimension } from '../labels';
 import { imageFromNames, uploadFirst } from './useImageDrop';
 
 const METHODS: RefImageMethod[] = ['full', 'style', 'composition', 'style_strong', 'style_precise'];
@@ -28,6 +28,8 @@ export function RefImageSettings({ refImage: r, index, onImage }: Props) {
   const ipModels = modelsOfType(models, 'ip_adapter', mainBase);
   const selected = models.find((m) => m.key === r.modelKey);
   const isFlux = mainBase === 'flux';
+  // Image to image is a section of the Generate tab only.
+  const onGenerate = useUi((s) => s.activeTab) === 'generate';
   const image = findImage(r.imageName);
   const patch = (p: Partial<RefImage>) => update(r.id, p);
   return (
@@ -63,9 +65,16 @@ export function RefImageSettings({ refImage: r, index, onImage }: Props) {
       {image && (
         <div className="pp-refpop__note">
           <span>{t('params.refImage.i2iHelp')}</span>
-          <Button size="xs" variant="outline" leftIcon={<BoundingBox />} onClick={() => useCanvas.getState().importImage(image, 'newCanvasRaster')} data-testid="ref-to-canvas">
-            {t('params.refImage.openI2i')}
-          </Button>
+          <div className="pp-refpop__actions">
+            {onGenerate && (
+              <Button size="xs" variant="outline" leftIcon={<ImageSquare />} onClick={() => useParams.getState().setInitImage(image, optimalDimension(mainBase))} data-testid="ref-to-i2i">
+                {t('params.refImage.openI2i')}
+              </Button>
+            )}
+            <Button size="xs" variant="outline" leftIcon={<BoundingBox />} onClick={() => useCanvas.getState().importImage(image, 'newCanvasRaster')} data-testid="ref-to-canvas">
+              {t('params.refImage.openCanvas')}
+            </Button>
+          </div>
         </div>
       )}
       <Field label={t('params.refImage.model')}>

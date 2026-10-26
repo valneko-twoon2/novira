@@ -105,6 +105,8 @@ export interface ParamsState {
   dynamicPromptMode: DynamicPromptMode;
   /** Denoising strength for img2img / canvas. */
   strength: number;
+  /** The Generate tab's image to draw over (image to image); null draws from noise. */
+  initImage: ImageDTO | null;
   refImages: RefImage[];
   // Compositing (canvas)
   maskBlur: number;
@@ -124,6 +126,8 @@ export interface ParamsState {
   setAspectRatio: (id: AspectRatioId) => void;
   swapDimensions: () => void;
   optimizeSize: (base: number) => void;
+  /** Sets the image to draw over; a picture also sets the size to the trained size nearest its shape (`base` is the model's side). */
+  setInitImage: (image: ImageDTO | null, base: number) => void;
   addLora: (key: string) => void;
   updateLora: (key: string, patch: Partial<LoRAParam>) => void;
   removeLora: (key: string) => void;
@@ -151,6 +155,7 @@ export type ParamsFields = Omit<
   | 'setAspectRatio'
   | 'swapDimensions'
   | 'optimizeSize'
+  | 'setInitImage'
   | 'addLora'
   | 'updateLora'
   | 'removeLora'
@@ -226,6 +231,8 @@ export function restoreParams(stored: unknown, current: ParamsState): ParamsStat
   out.refImages = Array.isArray(stored.refImages) ? list(stored.refImages).filter((r) => typeof r.id === 'string').map((r) => pickStored(REF_DEFAULT, r)) : current.refImages;
   const image = isRecord(stored.upscale) ? stored.upscale.initialImage : undefined;
   const isImage = isRecord(image) && typeof image.name === 'string' && typeof image.url === 'string';
+  const init = stored.initImage;
+  out.initImage = isRecord(init) && typeof init.name === 'string' && typeof init.url === 'string' ? (init as unknown as ImageDTO) : current.initImage;
   out.upscale = { ...out.upscale, initialImage: isImage ? (image as unknown as ImageDTO) : current.upscale.initialImage };
   // New reference images must not take an id a restored one has.
   for (const r of out.refImages) refSeq = Math.max(refSeq, Number(/^ref-(\d+)$/.exec(r.id)?.[1] ?? 0) + 1);
@@ -275,6 +282,7 @@ export const useParams = create<ParamsState>()(
       iterations: 1,
       dynamicPromptMode: 'combinatorial',
       strength: 0.7,
+      initImage: null,
       refImages: [],
       maskBlur: 16,
       coherenceMode: 'Gaussian Blur',
@@ -333,6 +341,7 @@ export const useParams = create<ParamsState>()(
         const width = roundTo8(Math.sqrt(base * base * ratio));
         set({ width, height: roundTo8(width / ratio) });
       },
+      setInitImage: (image, base) => set(image ? { initImage: image, aspectRatio: 'free', ...trainedSize(image.width, image.height, base) } : { initImage: null }),
       addLora: (key) => {
         if (get().loras.some((l) => l.key === key)) return;
         set({ loras: [...get().loras, { key, weight: 0.75, isEnabled: true }] });

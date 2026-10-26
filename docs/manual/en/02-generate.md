@@ -140,6 +140,7 @@ Under the prompt there are sections that group the settings. You can open and cl
 | Section | What it contains |
 |---|---|
 | **{{ui:params.refImage.sectionLabel}}** (right under the prompt) | Images used to steer the mood or the characters of a picture (described below) |
+| **{{ui:params.i2i.title}}** | The picture to draw over when redrawing from a picture, and the {{ui:params.image.strength}} (described below) |
 | **{{ui:params.image.title}}** | {{ui:params.image.aspect}}, width and height. There are also the "{{ui:params.image.swap}}", "{{ui:params.image.lock}}" and "{{ui:params.image.optimal}}" buttons |
 | **{{ui:params.generation.title}}** | LoRA (a small add-on model that adds an art style or a character), {{ui:params.generation.scheduler}}, {{ui:params.generation.steps}}, {{ui:params.generation.cfg}} |
 | **{{ui:params.hires.title}}** | A second pass that enlarges the drawn picture and draws it again (see below) |
@@ -258,7 +259,17 @@ In the small window you can decide the following.
 
 When a required model or extension is not installed, a warning mark appears on the frame, and guidance appears in the small window and under the Generate button. You can install it from the button in the guidance.
 
-> A reference image is for "steering the mood". When you want to "redraw based on this picture", use the canvas. See [Drawing More on the Canvas](05-canvas.md).
+> A reference image is for "steering the mood". When you want to "redraw based on this picture", use image to image, described next.
+
+## Image to image (redrawing from a picture)
+
+Put a picture in the **{{ui:params.i2i.title}}** section, and it is drawn over as the starting point. Use it to keep the layout and colors of a picture while changing it to fit the prompt.
+
+1. Open the section and drop a gallery picture (or an image file from your computer) on the frame. **{{ui:params.refImage.openI2i}}** in a reference image's small window puts one there too.
+2. The width and height change to the size the model draws well that is nearest the picture's shape. You can change them by hand afterwards.
+3. **{{ui:params.image.strength}}** decides how much is drawn again. Near 0 keeps the picture as it is; near 1 ignores it. Around 0.5 is a good start.
+
+While a picture is set, the {{ui:params.hires.title}} is not used. To remove the picture, press the × at the top right of its frame. To redraw only a painted part, use [Drawing More on the Canvas](05-canvas.md).
 
 ### Characters
 

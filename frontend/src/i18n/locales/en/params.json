@@ -22,8 +22,8 @@
   "params.refImage.dropNew": "Add as a reference image",
   "params.refImage.noModelHelp": "Reference images (matching the look or style) need an IP-Adapter model for {base}. None is installed yet.",
   "params.refImage.installModels": "Install models",
-  "params.refImage.i2iHelp": "To redraw from this picture (image to image), use the canvas.",
-  "params.refImage.openI2i": "Image to image on canvas",
+  "params.refImage.i2iHelp": "To draw over this picture (image to image), put it in the image to image section.",
+  "params.refImage.openI2i": "Use for image to image",
   "params.refImage.selectModel": "Select a model",
   "params.refImage.noModels": "No compatible models",
   "params.refImage.clipVision": "CLIP Vision",
@@ -172,7 +172,7 @@
   "params.launchpad.generate.refTitle": "Use a Reference Image",
   "params.launchpad.generate.refDesc": "Guide the style or look with an image.",
   "params.launchpad.generate.startTitle": "Use a Starting Image",
-  "params.launchpad.generate.startDesc": "Place an image on the canvas and redraw from it.",
+  "params.launchpad.generate.startDesc": "Draws over a picture to fit the prompt (image to image).",
   "params.launchpad.generate.canvasTitle": "Edit Image on Canvas",
   "params.launchpad.canvas.title": "Get started with the Canvas",
   "params.launchpad.canvas.drawTitle": "Draw or upload an image to start",
@@ -340,5 +340,11 @@
   "params.scheduler.detail.ddim": "Gentle and repeatable. Suits generating from an image.",
   "params.scheduler.detail.unipc": "Converges fast, even around 10 steps. For quick results.",
   "params.scheduler.detail.lcm": "Only for LCM models or LoRAs. Use 4-8 steps and CFG 1-2.",
-  "params.scheduler.detail.tcd": "Only for TCD LoRAs. Draws in few steps."
+  "params.scheduler.detail.tcd": "Only for TCD LoRAs. Draws in few steps.",
+  "params.i2i.title": "Image to image",
+  "params.i2i.dropHint": "Drop an image to draw over",
+  "params.i2i.dropOverlay": "Draw over this image",
+  "params.i2i.clear": "Remove the image",
+  "params.hires.i2iNote": "Not available while an image to draw over is set.",
+  "params.refImage.openCanvas": "Open on the canvas"
 }

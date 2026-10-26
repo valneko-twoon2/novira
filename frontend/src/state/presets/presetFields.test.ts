@@ -38,6 +38,7 @@ const IMAGE: Record<keyof ParamsFields, true | string> = {
   iterations: 'how many pictures belongs to the press, not to the look',
   dynamicPromptMode: true,
   strength: true,
+  initImage: 'the picture to draw over belongs to one picture, as the video source does',
   refImages: true,
   maskBlur: true,
   coherenceMode: true,

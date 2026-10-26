@@ -94,19 +94,21 @@ describe('generate launchpad', () => {
     expect(useParams.getState().refImages[1]).toMatchObject({ imageName: 'pic', imageUrl: '/img/pic.png' });
   });
 
-  it('goes to the canvas start page from the start card and imports a dropped image as a raster layer', async () => {
-    const importImage = vi.fn();
-    useCanvas.setState({ importImage });
+  it('puts a picture dropped on the start card in the image to image section, and stays on this tab', async () => {
+    useParams.setState({ initImage: null });
     show(<GenerateLaunchpad />);
-    fireEvent.click(screen.getByText(t('params.launchpad.generate.startTitle')));
-    expect(useUi.getState().activeTab).toBe('canvas');
-    expect(useUi.getState().mainView.canvas).toBe('launchpad');
-
-    act(() => useUi.getState().setTab('generate'));
     dropOn(t('params.launchpad.generate.startTitle'), ['pic']);
-    await waitFor(() => expect(importImage).toHaveBeenCalledWith(image, 'newCanvasRaster'));
-    expect(useUi.getState().activeTab).toBe('canvas');
-    expect(useUi.getState().mainView.canvas).toBe('canvas');
+    await waitFor(() => expect(useParams.getState().initImage).toEqual(image));
+    expect(useUi.getState().activeTab).toBe('generate');
+  });
+
+  it('opens a file chooser from the start card', () => {
+    show(<GenerateLaunchpad />);
+    const input = screen.getByTestId('lp-start-file') as HTMLInputElement;
+    const click = vi.spyOn(input, 'click');
+    fireEvent.click(screen.getByText(t('params.launchpad.generate.startTitle')));
+    expect(click).toHaveBeenCalled();
+    expect(useUi.getState().activeTab).toBe('generate');
   });
 
   it('opens the canvas itself from the canvas card', () => {
