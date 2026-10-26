@@ -419,6 +419,24 @@ pub fn hunyuan_in_channels(h: &Header) -> Option<u64> {
 /// Whether a checkpoint carries its own text encoders and its own VAE (SD3.5 and Flux checkpoints are made with and
 /// without them).
 pub fn bundled_parts(h: &Header) -> (bool, bool) {
+    bundled_parts_of(h, None)
+}
+
+/// `bundled_parts` for a model of `base`: ComfyUI takes the parts out of a checkpoint by the key prefixes of the
+/// model's own class, and Anima's are `cond_stage_model.` and `first_stage_model.` (not `text_encoders.` and `vae.`,
+/// which some merged Anima checkpoints use). Parts it cannot find come out as `None` from `CheckpointLoaderSimple`
+/// (`clip input is invalid: None`), so for Anima only those prefixes count and the separate files are used instead.
+pub fn bundled_parts_for(base: BaseModel, h: &Header) -> (bool, bool) {
+    bundled_parts_of(h, Some(base))
+}
+
+fn bundled_parts_of(h: &Header, base: Option<BaseModel>) -> (bool, bool) {
+    if base == Some(BaseModel::Anima) {
+        return (
+            any_key(h, |k| k.starts_with("cond_stage_model.")),
+            any_key(h, |k| k.starts_with("first_stage_model.")),
+        );
+    }
     let clip = any_key(h, |k| {
         k.starts_with("text_encoders.")
             || k.starts_with("cond_stage_model.")
@@ -1260,6 +1278,32 @@ mod tests {
             json!({}),
         );
         assert_eq!(bundled_parts(&sd), (true, true));
+    }
+
+    #[test]
+    fn an_anima_checkpoint_carries_only_the_parts_comfyui_reads() {
+        // A merged Anima checkpoint (read from its header 2026-10-26) names its parts `text_encoders.` and `vae.`, which
+        // ComfyUI's Anima does not read: `CheckpointLoaderSimple` gave `None` for the clip.
+        let merged = header(
+            &[
+                "model.diffusion_model.llm_adapter.embed.weight",
+                "text_encoders.qwen3_06b.model.norm.weight",
+                "vae.decoder.conv1.weight",
+            ],
+            json!({}),
+        );
+        assert_eq!(bundled_parts(&merged), (true, true));
+        assert_eq!(bundled_parts_for(BaseModel::Anima, &merged), (false, false));
+        assert_eq!(bundled_parts_for(BaseModel::Flux, &merged), (true, true));
+        let standard = header(
+            &[
+                "model.diffusion_model.llm_adapter.embed.weight",
+                "cond_stage_model.qwen3_06b.model.norm.weight",
+                "first_stage_model.decoder.conv1.weight",
+            ],
+            json!({}),
+        );
+        assert_eq!(bundled_parts_for(BaseModel::Anima, &standard), (true, true));
     }
 
     /// A header with the given tensors and shapes (`name=channels` sets the second dimension).

@@ -8,11 +8,11 @@ use super::starter;
 use crate::comfy::split::{
     name_has, pick, Family, Loader, Need, WanKind, CLIP_VISION_H, LLAVA_VISION, SIGCLIP_VISION,
 };
-use crate::types::{ModelConfig, ModelPartsReport, ModelType, StarterModel};
+use crate::types::{BaseModel, ModelConfig, ModelPartsReport, ModelType, StarterModel};
 
 /// How a diffusion model or checkpoint of the split families loads: on its own, or from a file that carries parts.
-pub fn loader_of(kind: ModelType, header: Option<&Header>) -> Loader {
-    match (kind, header.map(classify::bundled_parts)) {
+pub fn loader_of(kind: ModelType, base: BaseModel, header: Option<&Header>) -> Loader {
+    match (kind, header.map(|h| classify::bundled_parts_for(base, h))) {
         // An unreadable header is taken as a checkpoint with every part, as the SD family's are.
         (ModelType::Main, None) => Loader::Checkpoint {
             clip: true,
@@ -58,7 +58,7 @@ pub fn missing_parts(models: &[ModelConfig], model: &ModelConfig) -> ModelPartsR
         return report;
     };
     let header = classify::read_header(std::path::Path::new(&model.path));
-    let loader = loader_of(model.kind, header.as_ref());
+    let loader = loader_of(model.kind, model.base, header.as_ref());
     let name = model
         .comfy
         .as_ref()

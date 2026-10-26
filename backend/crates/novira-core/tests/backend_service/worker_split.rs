@@ -228,3 +228,43 @@ async fn an_sd_picture_records_no_fixed_sampling_even_when_one_was_sent() {
     assert_eq!(meta.scheduler, "euler_a");
     backend.shutdown();
 }
+
+#[tokio::test]
+async fn an_anima_checkpoint_with_parts_comfyui_cannot_read_gets_the_installed_ones() {
+    let dir = tempfile::tempdir().unwrap();
+    let models = dir.path().join("models");
+    // A merged Anima checkpoint names its parts `text_encoders.` and `vae.`; ComfyUI's Anima reads neither from a
+    // checkpoint (`clip input is invalid: None`), so the encoder and the VAE come from the installed files.
+    safetensors(
+        &models.join("checkpoints/anima_merge.safetensors"),
+        &[
+            "model.diffusion_model.blocks.0.self_attn.q_proj.weight",
+            "model.diffusion_model.llm_adapter.embed.weight",
+            "text_encoders.qwen3_06b.model.layers.0.self_attn.q_proj.weight",
+            "vae.decoder.conv1.weight",
+        ],
+    );
+    safetensors(
+        &models.join("text_encoders/qwen_3_06b_base.safetensors"),
+        QWEN,
+    );
+    safetensors(&models.join("vae/qwen_image_vae.safetensors"), VAE);
+    let engine = Arc::new(FakeEngine::default());
+    let (backend, _) = open(dir.path(), engine.clone());
+    let key = anima_key(&backend);
+    tokio::spawn(backend.clone().run_worker());
+    backend.enqueue(request(&key, "a girl", 1)).unwrap();
+    wait_until(|| statuses(&backend) == vec![QueueItemStatus::Completed]).await;
+
+    let jobs = engine.jobs.lock().unwrap();
+    let split = jobs[0].split.as_ref().expect("a split job");
+    assert_eq!(
+        split.loader,
+        novira_core::comfy::split::Loader::Checkpoint {
+            clip: false,
+            vae: false
+        }
+    );
+    assert_eq!(split.text_encoders.len(), 1);
+    assert!(jobs[0].vae.is_some());
+}

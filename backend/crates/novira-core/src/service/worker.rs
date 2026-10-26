@@ -353,7 +353,7 @@ impl Backend {
             return Ok(None);
         };
         let header = classify::read_header(std::path::Path::new(&m.path));
-        let loader = crate::models::parts::loader_of(m.kind, header.as_ref());
+        let loader = crate::models::parts::loader_of(m.kind, m.base, header.as_ref());
         let name = m.comfy.as_ref().map(|c| c.name.clone()).unwrap_or_default();
         let variant = classify::detect_variant(m.base, header.as_ref(), &name);
         let mut text_encoders = Vec::new();
