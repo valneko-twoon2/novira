@@ -37,6 +37,7 @@ pub fn civitai_search_params(v: &Value) {
         checkpoint_type,
         safetensors_only,
         creator,
+        price,
     } = parse(v);
     let wire = json!({
         "query": query,
@@ -51,6 +52,7 @@ pub fn civitai_search_params(v: &Value) {
         "checkpointType": checkpoint_type,
         "safetensorsOnly": safetensors_only,
         "creator": creator,
+        "price": price,
     });
     assert_eq!(wire, *v, "SearchParams");
 }

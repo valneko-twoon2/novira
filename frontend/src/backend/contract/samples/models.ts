@@ -104,6 +104,7 @@ export const civitaiSearchParams = {
   checkpointType: 'Merge',
   safetensorsOnly: true,
   creator: 'someone',
+  price: 'free',
 } satisfies Required<CivitaiSearchParams>;
 
 export const civitaiModel = {
@@ -134,6 +135,8 @@ export const civitaiModel = {
       baseModel: 'Illustrious',
       createdAt: 1700000000000,
       triggerWords: ['masterpiece'],
+      paid: true,
+      paidUntil: 1893456000000,
       files: [{ id: '10', name: 'wai.safetensors', sizeBytes: 6938078334, format: 'SafeTensor', precision: 'fp16' }],
     },
   ],

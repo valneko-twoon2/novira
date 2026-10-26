@@ -29,6 +29,9 @@ pub struct SearchParams {
     /// Only models of this creator (empty: anyone).
     #[serde(default)]
     pub creator: String,
+    /// `free` or `paid`: only models whose newest version is free, or asks for payment (empty: either).
+    #[serde(default)]
+    pub price: String,
 }
 
 fn default_source() -> String {
@@ -54,6 +57,19 @@ pub struct CivitaiVersion {
     pub created_at: i64,
     pub trigger_words: Vec<String>,
     pub files: Vec<CivitaiFile>,
+    /// Civitai asks for payment for this version (`paidAccess`). The API key cannot tell a buyer from anyone else, so a
+    /// paid version is never downloaded from here.
+    pub paid: bool,
+    /// When the payment ends and the version becomes free (early access), in epoch milliseconds; `None` for a version
+    /// that is paid for good, or that is not paid.
+    pub paid_until: Option<i64>,
+}
+
+impl CivitaiVersion {
+    /// Whether the version still asks for payment at `now_ms`.
+    pub fn is_paid_at(&self, now_ms: i64) -> bool {
+        self.paid && self.paid_until.is_none_or(|end| end > now_ms)
+    }
 }
 
 pub use crate::types::Permission;
@@ -213,11 +229,21 @@ fn keep(m: &CivitaiModel, p: &SearchParams) -> bool {
             .iter()
             .any(|x| x.key == key && x.allowed == Some(true))
     };
+    let paid = m.versions.first().is_some_and(|v| v.is_paid_at(now_ms()));
     p.licenses.iter().all(|k| allowed(k))
+        && match p.price.as_str() {
+            "free" => !paid,
+            "paid" => paid,
+            _ => true,
+        }
         && (!p.safetensors_only
             || m.versions
                 .first()
                 .is_some_and(|v| v.files.iter().any(|f| f.format == "SafeTensor")))
+}
+
+fn now_ms() -> i64 {
+    chrono::Utc::now().timestamp_millis()
 }
 
 /// `query` for the given base models, page size and cursor.
@@ -535,6 +561,10 @@ fn model(m: &Value, include_nsfw: bool) -> Option<CivitaiModel> {
                         }),
                         trigger_words: strings(&v["trainedWords"]),
                         files,
+                        paid: v["paidAccess"].is_object(),
+                        paid_until: v["paidAccess"]["endsAt"]
+                            .is_string()
+                            .then(|| epoch_ms(&v["paidAccess"]["endsAt"])),
                         id,
                     })
                 })

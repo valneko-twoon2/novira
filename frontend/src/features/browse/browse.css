@@ -307,6 +307,25 @@
   left: var(--space-2);
 }
 
+.browse-paid {
+  position: absolute;
+  top: calc(var(--space-2) + 24px);
+  left: var(--space-2);
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--yellow-600);
+  color: var(--white);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.browse-paid-note {
+  margin: var(--space-2) 0 0;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
 .browse-count {
   right: var(--space-2);
   display: inline-flex;

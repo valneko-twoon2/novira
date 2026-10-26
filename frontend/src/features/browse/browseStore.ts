@@ -17,6 +17,8 @@ export interface BrowseFilters {
   checkpointType: string;
   safetensorsOnly: boolean;
   creator: string;
+  /** `free`, `paid`, or empty for either (Civitai). */
+  price: string;
 }
 
 /** The narrowest and widest a card in the grid can be, in pixels. */
@@ -44,6 +46,7 @@ export const useBrowse = create<BrowseState>()((set) => ({
   checkpointType: '',
   safetensorsOnly: false,
   creator: '',
+  price: '',
   cardSize: isPhoneLayout() ? 150 : 220,
   setCardSize: (cardSize) => set({ cardSize: Math.min(CARD_MAX, Math.max(CARD_MIN, cardSize)) }),
   selected: null,

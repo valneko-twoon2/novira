@@ -26,6 +26,8 @@ The Browse tab searches Civitai and Hugging Face for models and opens their page
 |---|---|
 | Opening pages | `open_civitai_page` takes a numeric id, `open_huggingface_page` an `owner/repo` of plain characters, `open_source_page` an `https` address whose host is in `SOURCE_SITES` (or a subdomain of one; the extension manager's source link, the about dialog's homepages). A test keeps every homepage of the bundled open-source list on that list. The browser is started with the address as one argument, never through a shell. |
 
+- **Paid versions.** A Civitai version carries `paidAccess` (`permanent`, or `endsAt` for an early access); `availability` stays `Public` for them, so it is not what decides. `CivitaiVersion.paid` and `paid_until` (epoch ms, none for a version paid for good) hold it; `is_paid_at(now)` says whether it still asks for payment, so an early access that has ended is free again. The `price` filter (`free`, `paid`; `keep` in `civitai.rs`) looks at the newest version. The card shows a badge ("Paid", or "Paid until <date>"), the detail names the end of an early access, and the download button is locked for any paid version: the API key cannot tell a buyer from anyone else, so the app never tries (`features/browse/paid.ts`, `DownloadButton.tsx`). Hugging Face has none.
+
 ## Known limits
 
 - Hugging Face and Civitai content filtering is best effort (see Adult content).

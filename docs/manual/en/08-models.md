@@ -174,9 +174,9 @@ You can narrow the results with the menus on the right.
 |---|---|
 | {{ui:browse.base.label}} | {{ui:browse.base.sdxlCompat}}, {{ui:browse.base.illustrious}}, {{ui:browse.base.noobai}}, {{ui:browse.base.sdxl}}, {{ui:browse.base.pony}}, {{ui:browse.base.sd15}}, {{ui:browse.base.flux}}, {{ui:browse.base.anima}} and so on |
 | {{ui:browse.sort.label}} | {{ui:browse.sort.downloads}}, {{ui:browse.sort.rating}}, {{ui:browse.sort.newest}} |
-| {{ui:browse.period.label}} | All time, Year, Month, Week, Day (Civitai only) |
+| {{ui:browse.period.label}} | All time, Year, Month, Week, Day (Civitai only). A paid version shows "{{ui:browse.paid.badge}}" on its card, and an early access also shows the day it becomes free. A paid version cannot be installed (its button cannot be pressed), because the app cannot tell whether you bought it; get it on Civitai's page |
 | {{ui:browse.nsfw.label}} | Off by default. When you turn it on, adult-oriented models appear too |
-| **{{ui:browse.filter.button}}** | Opens a box where you can narrow by what the license allows (selling generated images, use on generation services and so on; only models that allow everything you tick appear), the type of checkpoint, only models that have a safetensors file, and the author (the exact same name). The button shows how many filters are set, and **{{ui:browse.filter.reset}}** clears them (Civitai only) |
+| **{{ui:browse.filter.button}}** | Opens a box where you can narrow by what the license allows (selling generated images, use on generation services and so on; only models that allow everything you tick appear), the type of checkpoint, the price ({{ui:browse.filter.free}} or {{ui:browse.filter.paid}}), only models that have a safetensors file, and the author (the exact same name). The button shows how many filters are set, and **{{ui:browse.filter.reset}}** clears them (Civitai only) |
 
 When you scroll to the bottom, more is loaded. You can also load more with **{{ui:browse.status.loadMore}}**. If it could not be fetched, press **{{ui:browse.status.retry}}**.
 

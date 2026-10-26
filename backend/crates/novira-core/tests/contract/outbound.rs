@@ -79,6 +79,8 @@ fn civitai_version(v: &Value) -> CivitaiVersion {
             .iter()
             .map(civitai_file)
             .collect(),
+        paid: get(v, "paid"),
+        paid_until: get(v, "paidUntil"),
     }
 }
 

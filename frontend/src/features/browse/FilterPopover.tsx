@@ -8,13 +8,13 @@ import { useBrowse } from './browseStore';
 export const LICENSE_FILTERS = ['sellImages', 'generationServices', 'sellModel', 'shareMerges', 'differentLicense', 'noCredit'] as const;
 
 /** How many of the extra filters are set. */
-export function activeFilterCount(f: { licenses: string[]; checkpointType: string; safetensorsOnly: boolean; creator: string }): number {
-  return f.licenses.length + (f.checkpointType ? 1 : 0) + (f.safetensorsOnly ? 1 : 0) + (f.creator.trim() ? 1 : 0);
+export function activeFilterCount(f: { licenses: string[]; checkpointType: string; safetensorsOnly: boolean; creator: string; price: string }): number {
+  return f.licenses.length + (f.checkpointType ? 1 : 0) + (f.safetensorsOnly ? 1 : 0) + (f.creator.trim() ? 1 : 0) + (f.price ? 1 : 0);
 }
 
 export function FilterPopover() {
-  const { kind, licenses, checkpointType, safetensorsOnly, creator, setFilter } = useBrowse();
-  const count = activeFilterCount({ licenses, checkpointType, safetensorsOnly, creator });
+  const { kind, licenses, checkpointType, safetensorsOnly, creator, price, setFilter } = useBrowse();
+  const count = activeFilterCount({ licenses, checkpointType, safetensorsOnly, creator, price });
   const toggle = (key: string, on: boolean) => setFilter('licenses', on ? [...licenses, key] : licenses.filter((k) => k !== key));
   return (
     <Popover>
@@ -51,6 +51,20 @@ export function FilterPopover() {
           </div>
         )}
         <div className="browse-filter__group">
+          <div className="browse-filter__title">{t('browse.filter.price')}</div>
+          <Select
+            aria-label={t('browse.filter.price')}
+            value={price || 'any'}
+            onChange={(v) => setFilter('price', v === 'any' ? '' : v)}
+            options={[
+              { value: 'any', label: t('browse.filter.any') },
+              { value: 'free', label: t('browse.filter.free') },
+              { value: 'paid', label: t('browse.filter.paid') },
+            ]}
+            data-testid="browse-filter-price"
+          />
+        </div>
+        <div className="browse-filter__group">
           <Checkbox checked={safetensorsOnly} onChange={(on) => setFilter('safetensorsOnly', on)} label={t('browse.filter.safetensors')} />
         </div>
         <div className="browse-filter__group">
@@ -66,6 +80,7 @@ export function FilterPopover() {
             setFilter('checkpointType', '');
             setFilter('safetensorsOnly', false);
             setFilter('creator', '');
+            setFilter('price', '');
           }}
           data-testid="browse-filters-reset"
         >

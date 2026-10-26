@@ -5,6 +5,8 @@ import { hashString, mulberry32 } from './random';
 /** Fixed "now" so the period filter is deterministic. */
 export const CIVITAI_NOW = Date.UTC(2026, 9, 1);
 const DAY = 86_400_000;
+/** Early access in the fixtures ends after this day, which is always ahead of the real clock the badge reads. */
+const EARLY_ACCESS_BASE = Date.UTC(2099, 0, 1);
 
 type Row = [name: string, kind: CivitaiKind, base: string];
 
@@ -120,6 +122,15 @@ function permissionsOf(license: string[]): ModelPermission[] {
   ];
 }
 
+/** A few newest versions ask for payment, from the name alone (no random numbers, so the other fixtures do not move): one in nine for good, one in nine as early access that ends far in the future (a fixed day in 2099, so it is always still paid). */
+function paidAccess(name: string, versionIndex: number): { paid?: boolean; paidUntil?: number } {
+  if (versionIndex !== 0) return {};
+  const h = hashString(`paid:${name}`) % 9;
+  if (h === 0) return { paid: true };
+  if (h === 1) return { paid: true, paidUntil: EARLY_ACCESS_BASE + (1 + (hashString(`until:${name}`) % 20)) * DAY };
+  return {};
+}
+
 function buildModel(row: Row, index: number): CivitaiModel {
   const [name, kind, baseModel] = row;
   const rand = mulberry32(hashString(`civitai:${name}`));
@@ -144,6 +155,7 @@ function buildModel(row: Row, index: number): CivitaiModel {
       createdAt: createdAt - v * Math.floor(20 + rand() * 60) * DAY,
       triggerWords,
       files,
+      ...paidAccess(name, v),
     };
   });
   const downloads = Math.floor(200 + rand() ** 3 * 240_000);

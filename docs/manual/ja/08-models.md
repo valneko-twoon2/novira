@@ -174,9 +174,9 @@ LoRA などには、使うときにプロンプトへ入れると効く言葉（
 |---|---|
 | {{ui:browse.base.label}} | {{ui:browse.base.sdxlCompat}}、{{ui:browse.base.illustrious}}、{{ui:browse.base.noobai}}、{{ui:browse.base.sdxl}}、{{ui:browse.base.pony}}、{{ui:browse.base.sd15}}、{{ui:browse.base.flux}}、{{ui:browse.base.anima}} など |
 | {{ui:browse.sort.label}} | {{ui:browse.sort.downloads}}、{{ui:browse.sort.rating}}、{{ui:browse.sort.newest}} |
-| {{ui:browse.period.label}} | 全期間・1 年・1 か月・1 週間・24 時間（Civitai のときだけ） |
+| {{ui:browse.period.label}} | 全期間・1 年・1 か月・1 週間・24 時間（Civitai のときだけ）。有料の版には、カードに「{{ui:browse.paid.badge}}」と出ます。アーリーアクセス中のものは、無料になる日も出ます。有料の版は、購入済みでもアプリからは判別できないため、インストールできません（ボタンは押せません）。Civitai のページで入手してください |
 | {{ui:browse.nsfw.label}} | 初期値はオフです。オンにすると、成人向けのモデルも出ます |
-| **{{ui:browse.filter.button}}** | 押すと枠が開き、ライセンスで許可されていること（生成した画像の販売、生成サービスでの利用など。チェックしたものをすべて許すモデルだけが出ます）、チェックポイントの種類、safetensors 形式のファイルがあるものだけ、作者（名前が完全に同じもの）で絞れます。いくつ絞っているかがボタンに出て、**{{ui:browse.filter.reset}}** で戻せます（Civitai のときだけ） |
+| **{{ui:browse.filter.button}}** | 押すと枠が開き、ライセンスで許可されていること（生成した画像の販売、生成サービスでの利用など。チェックしたものをすべて許すモデルだけが出ます）、チェックポイントの種類、料金（{{ui:browse.filter.free}}・{{ui:browse.filter.paid}}）、safetensors 形式のファイルがあるものだけ、作者（名前が完全に同じもの）で絞れます。いくつ絞っているかがボタンに出て、**{{ui:browse.filter.reset}}** で戻せます（Civitai のときだけ） |
 
 下までスクロールすると、続きが読み込まれます。**{{ui:browse.status.loadMore}}** でも読み込めます。取得できなかったときは **{{ui:browse.status.retry}}** を押してください。
 

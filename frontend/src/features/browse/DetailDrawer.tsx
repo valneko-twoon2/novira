@@ -5,6 +5,7 @@ import { t } from '@/i18n';
 import { Badge, Button, CommercialTag, IconButton, Select } from '@/ui';
 import { Cover } from './Cover';
 import { DownloadButton } from './DownloadButton';
+import { paidBadge, paidReason } from './paid';
 import { formatCount, formatSize } from './format';
 import { openOnCivitai } from './openCivitai';
 import { TriggerChips } from './TriggerChips';
@@ -73,8 +74,13 @@ export function DetailDrawer({ model, onClose }: { model: CivitaiModel; onClose:
             aria-label={t('browse.detail.version')}
             value={version.id}
             onChange={setVersionId}
-            options={model.versions.map((v) => ({ value: v.id, label: `${v.name} · ${v.baseModel}` }))}
+            options={model.versions.map((v) => ({ value: v.id, label: [`${v.name} · ${v.baseModel}`, paidBadge(v)].filter(Boolean).join(' · ') }))}
           />
+          {paidReason(version) && (
+            <p className="browse-paid-note" data-testid="browse-paid-note">
+              {paidReason(version)}
+            </p>
+          )}
         </section>
 
         <section>
@@ -89,7 +95,7 @@ export function DetailDrawer({ model, onClose }: { model: CivitaiModel; onClose:
                   </div>
                 </div>
                 <div className="browse-files__dl">
-                  <DownloadButton model={model} file={f} fullWidth={false} />
+                  <DownloadButton model={model} file={f} version={version} fullWidth={false} />
                 </div>
               </li>
             ))}

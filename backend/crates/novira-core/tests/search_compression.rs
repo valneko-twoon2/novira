@@ -72,6 +72,7 @@ async fn a_civitai_search_asks_for_compressed_answers_and_reads_them() {
         licenses: Vec::new(),
         checkpoint_type: String::new(),
         safetensors_only: false,
+        price: String::new(),
         creator: String::new(),
     };
     let found = backend.search_civitai(params).await.unwrap();

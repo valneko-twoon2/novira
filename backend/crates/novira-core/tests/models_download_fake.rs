@@ -115,6 +115,7 @@ fn search_params(source: &str) -> SearchParams {
         licenses: Vec::new(),
         checkpoint_type: String::new(),
         safetensors_only: false,
+        price: String::new(),
         creator: String::new(),
     }
 }

@@ -16,14 +16,14 @@ import { useDebounced } from './useDebounced';
 const SKELETON_COUNT = 10;
 
 export function ModelBrowser() {
-  const { source, kind, baseModel, sort, period, includeNsfw, licenses, checkpointType, safetensorsOnly, creator, query, selected, cardSize, setFilter, select } = useBrowse();
+  const { source, kind, baseModel, sort, period, includeNsfw, licenses, checkpointType, safetensorsOnly, creator, price, query, selected, cardSize, setFilter, select } = useBrowse();
   const [queryInput, setQueryInput] = useState(query);
   const debounced = useDebounced(queryInput, 300);
   useEffect(() => setFilter('query', debounced), [debounced, setFilter]);
 
   const hf = source === 'huggingface';
   // Hugging Face is opened by address (see HuggingFaceBrowse), so the paged search runs for Civitai only.
-  const { items, status, error, loadingMore, hasMore, loadMore, retry } = useCivitaiSearch({ source: 'civitai', query, kind, baseModel, sort, period, includeNsfw, licenses, checkpointType: kind === 'Checkpoint' || kind === 'all' ? checkpointType : '', safetensorsOnly, creator }, !hf);
+  const { items, status, error, loadingMore, hasMore, loadMore, retry } = useCivitaiSearch({ source: 'civitai', query, kind, baseModel, sort, period, includeNsfw, licenses, checkpointType: kind === 'Checkpoint' || kind === 'all' ? checkpointType : '', safetensorsOnly, creator, price }, !hf);
 
   const sentinel = useRef<HTMLDivElement>(null);
   useEffect(() => {

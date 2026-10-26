@@ -44,6 +44,8 @@
           "triggerWords": [
             "masterpiece"
           ],
+          "paid": true,
+          "paidUntil": 1893456000000,
           "files": [
             {
               "id": "10",

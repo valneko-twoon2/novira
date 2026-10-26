@@ -114,5 +114,13 @@
   "browse.filter.reset": "Clear filters",
   "browse.cover.maybeMature": "No picture. It may show if mature content is included",
   "browse.menu": "Search and filters",
-  "browse.cardSize": "Card size"
+  "browse.cardSize": "Card size",
+  "browse.filter.price": "Price",
+  "browse.filter.free": "Free",
+  "browse.filter.paid": "Paid",
+  "browse.paid.badge": "Paid",
+  "browse.paid.badgeUntil": "Paid until {date}",
+  "browse.paid.locked": "Paid",
+  "browse.paid.permanent": "This version is paid. Even if you bought it, novira cannot tell, so it cannot install it. Get it on Civitai's page.",
+  "browse.paid.early": "Early access: paid until {date}, free after that, when it can be installed. It cannot be installed from novira now."
 }

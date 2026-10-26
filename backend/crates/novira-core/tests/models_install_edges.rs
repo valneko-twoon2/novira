@@ -144,6 +144,7 @@ async fn a_search_the_host_refuses_reports_the_status() {
         licenses: Vec::new(),
         checkpoint_type: String::new(),
         safetensors_only: false,
+        price: String::new(),
         creator: String::new(),
     };
     site().put("/api/v1/models", Route::status(500));

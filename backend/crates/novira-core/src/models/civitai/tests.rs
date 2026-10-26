@@ -14,6 +14,7 @@ fn params() -> SearchParams {
         licenses: Vec::new(),
         checkpoint_type: String::new(),
         safetensors_only: false,
+        price: String::new(),
         creator: String::new(),
     }
 }
@@ -463,4 +464,50 @@ fn the_pictures_to_page_through_and_the_model_page_come_from_the_version() {
     let many = serde_json::json!({"images": (0..12).map(|i| serde_json::json!(
         { "type": "image", "nsfwLevel": 1, "url": format!("https://image.civitai.com/k/u/original=true/{i}.jpeg") })).collect::<Vec<_>>()});
     assert_eq!(cover_set(&many).len(), 8);
+}
+
+/// A model whose newest version carries `paidAccess` as the API answers it.
+fn model_with_paid_access(id: &str, paid_access: serde_json::Value) -> CivitaiModel {
+    let m = &json!({"id": id.parse::<u64>().unwrap(), "name": id, "type": "LORA", "stats": {}, "modelVersions": [{"id": 1, "baseModel": "Pony", "paidAccess": paid_access, "files": [{"id": 9, "name": "a.safetensors", "sizeKB": 1.0, "metadata": {}}]}]});
+    model(m, true).unwrap()
+}
+
+#[test]
+fn a_version_says_whether_and_until_when_civitai_asks_for_payment() {
+    let free = model_with_paid_access("1", json!(null));
+    assert!(!free.versions[0].paid && free.versions[0].paid_until.is_none());
+    let forever = model_with_paid_access("2", json!({"permanent": true, "endsAt": null}));
+    assert!(forever.versions[0].paid && forever.versions[0].paid_until.is_none());
+    let early = model_with_paid_access(
+        "3",
+        json!({"permanent": false, "endsAt": "2026-11-03T18:27:07.789Z"}),
+    );
+    let until = early.versions[0].paid_until.expect("an end date");
+    assert_eq!(until, 1_793_730_427_789);
+    // Early access is paid until its end, then free; a permanent one never is.
+    assert!(early.versions[0].is_paid_at(until - 1));
+    assert!(!early.versions[0].is_paid_at(until));
+    assert!(forever.versions[0].is_paid_at(i64::MAX));
+    assert!(!free.versions[0].is_paid_at(0));
+}
+
+#[test]
+fn the_price_filter_keeps_free_or_paid_models_by_their_newest_version() {
+    let free = model_with_paid_access("1", json!(null));
+    let paid = model_with_paid_access("2", json!({"permanent": true, "endsAt": null}));
+    let over = model_with_paid_access(
+        "3",
+        json!({"permanent": false, "endsAt": "2020-01-01T00:00:00Z"}),
+    );
+    let mut p = params();
+    assert!(keep(&free, &p) && keep(&paid, &p) && keep(&over, &p));
+    p.price = "free".into();
+    assert!(keep(&free, &p) && !keep(&paid, &p));
+    // Early access that has ended is free again.
+    assert!(keep(&over, &p));
+    p.price = "paid".into();
+    assert!(!keep(&free, &p) && keep(&paid, &p) && !keep(&over, &p));
+    // Anything else is no filter.
+    p.price = "nope".into();
+    assert!(keep(&free, &p) && keep(&paid, &p));
 }

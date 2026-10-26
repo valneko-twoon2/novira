@@ -423,6 +423,8 @@ pub fn map_response(body: &Value, include_nsfw: bool) -> Vec<CivitaiModel> {
                 created_at: epoch_ms(&m["lastModified"]).max(created),
                 trigger_words,
                 files,
+                paid: false,
+                paid_until: None,
             }],
         });
     }
@@ -528,6 +530,7 @@ mod tests {
             licenses: Vec::new(),
             checkpoint_type: String::new(),
             safetensors_only: false,
+            price: String::new(),
             creator: String::new(),
         }
     }

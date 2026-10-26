@@ -1,5 +1,6 @@
 // Pure filtering, sorting and cursor pagination over the Browse fixture.
 import type { CivitaiModel, CivitaiPeriod, CivitaiSearchParams, CivitaiSearchResult } from '../types';
+import { isPaid } from '../paid';
 import { CIVITAI_MODELS, CIVITAI_NOW } from './civitaiData';
 
 export const CIVITAI_PAGE_SIZE = 20;
@@ -32,6 +33,7 @@ export function searchCivitaiModels(params: CivitaiSearchParams, models: Civitai
     .filter((m) => params.source === 'huggingface' || m.createdAt >= since)
     .filter((m) => (params.licenses ?? []).every((k) => (m.permissions ?? []).some((p) => p.key === k && p.allowed === true)))
     .filter((m) => !params.safetensorsOnly || m.versions[0]?.files.some((f) => f.format === 'SafeTensor'))
+    .filter((m) => !params.price || (params.price === 'paid') === isPaid(m.versions[0], CIVITAI_NOW))
     .filter((m) => !params.creator?.trim() || m.creator.toLowerCase() === params.creator.trim().toLowerCase())
     .filter((m) => !q || `${m.name} ${m.creator} ${m.tags.join(' ')} ${m.triggerWords.join(' ')}`.toLowerCase().includes(q))
     .sort((a, b) => {

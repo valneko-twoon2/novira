@@ -15,6 +15,7 @@ fn params(query: &str, cursor: Option<String>) -> SearchParams {
         licenses: Vec::new(),
         checkpoint_type: String::new(),
         safetensors_only: false,
+        price: String::new(),
         creator: String::new(),
     }
 }

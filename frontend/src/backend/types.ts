@@ -754,6 +754,10 @@ export interface CivitaiVersion {
   createdAt: number;
   triggerWords: string[];
   files: CivitaiFile[];
+  /** Civitai asks for payment for this version. Absent for Hugging Face and for older answers. */
+  paid?: boolean;
+  /** When the payment ends (epoch ms: early access); null for a version that is paid for good or not paid. */
+  paidUntil?: number | null;
 }
 
 /** Whether generated images / the model may be used commercially, derived from the license terms. */
@@ -826,6 +830,8 @@ export interface CivitaiSearchParams {
   safetensorsOnly?: boolean;
   /** Only models of this creator. Civitai only. */
   creator?: string;
+  /** `free` or `paid`: only models whose newest version is free, or asks for payment; absent or empty for either. Civitai only. */
+  price?: string;
 }
 
 export interface CivitaiSearchResult {

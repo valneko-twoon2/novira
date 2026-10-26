@@ -114,5 +114,13 @@
   "browse.filter.reset": "絞り込みを解除",
   "browse.cover.maybeMature": "画像なし。成人向けを含めると表示される場合があります",
   "browse.menu": "絞り込みと検索",
-  "browse.cardSize": "カードの大きさ"
+  "browse.cardSize": "カードの大きさ",
+  "browse.filter.price": "料金",
+  "browse.filter.free": "無料",
+  "browse.filter.paid": "有料",
+  "browse.paid.badge": "有料",
+  "browse.paid.badgeUntil": "有料 〜{date}",
+  "browse.paid.locked": "有料",
+  "browse.paid.permanent": "この版は有料です。購入した場合も、キーでは判別できないため novira からはインストールできません。Civitai のページで入手してください。",
+  "browse.paid.early": "アーリーアクセス中で、{date} まで有料です。それ以降は無料になり、インストールできます。今は novira からはインストールできません。"
 }

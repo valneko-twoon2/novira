@@ -45,12 +45,21 @@ describe('FilterPopover', () => {
   });
 
   it('counts each kind of filter once', () => {
-    expect(activeFilterCount({ licenses: [], checkpointType: '', safetensorsOnly: false, creator: ' ' })).toBe(0);
-    expect(activeFilterCount({ licenses: ['a', 'b'], checkpointType: 'Merge', safetensorsOnly: true, creator: 'x' })).toBe(5);
+    expect(activeFilterCount({ licenses: [], checkpointType: '', safetensorsOnly: false, creator: ' ', price: '' })).toBe(0);
+    expect(activeFilterCount({ licenses: ['a', 'b'], checkpointType: 'Merge', safetensorsOnly: true, creator: 'x', price: 'paid' })).toBe(6);
   });
 });
 
 describe('the mock search with the extra filters', () => {
+  it('keeps only free, or only paid, models by their newest version', () => {
+    const free = searchCivitaiModels({ ...base, price: 'free' });
+    const paid = searchCivitaiModels({ ...base, price: 'paid' });
+    expect(paid.items.length).toBeGreaterThan(0);
+    expect(free.items.length).toBeGreaterThan(0);
+    expect(paid.items.every((m) => m.versions[0]?.paid === true)).toBe(true);
+    expect(free.items.every((m) => !m.versions[0]?.paid)).toBe(true);
+  });
+
   const base = { query: '', kind: 'all', baseModel: 'all', sort: 'downloads', period: 'all', includeNsfw: true } as const;
   it('keeps only models whose license allows every asked-for permission', () => {
     const all = searchCivitaiModels({ ...base });

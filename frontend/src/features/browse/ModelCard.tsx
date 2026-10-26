@@ -7,9 +7,11 @@ import { DownloadButton } from './DownloadButton';
 import { defaultFile } from './download';
 import { formatCount } from './format';
 import { openOnCivitai } from './openCivitai';
+import { paidBadge } from './paid';
 import { TriggerChips } from './TriggerChips';
 
 export function ModelCard({ model, onOpen }: { model: CivitaiModel; onOpen: () => void }) {
+  const paid = paidBadge(model.versions[0]);
   return (
     <article
       className="browse-card"
@@ -28,6 +30,11 @@ export function ModelCard({ model, onOpen }: { model: CivitaiModel; onOpen: () =
         <span className="browse-pill">
           {model.kind} · {model.baseModel}
         </span>
+        {paid && (
+          <span className="browse-paid" data-testid="browse-paid-badge">
+            {paid}
+          </span>
+        )}
         <span className="browse-count" title={t('browse.card.images', { count: model.imageCount })}>
           <Images size={11} /> {model.imageCount}
         </span>

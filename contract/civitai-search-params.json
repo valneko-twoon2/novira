@@ -13,5 +13,6 @@
   ],
   "checkpointType": "Merge",
   "safetensorsOnly": true,
-  "creator": "someone"
+  "creator": "someone",
+  "price": "free"
 }
