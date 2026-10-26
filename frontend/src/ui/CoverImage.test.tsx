@@ -49,4 +49,32 @@ describe('CoverImage', () => {
     fireEvent.click(thumb);
     expect((await screen.findByAltText('Model One')).getAttribute('src')).toBe(cover(container)!.getAttribute('src'));
   });
+
+  it('goes through all the pictures of the enlarged view, around both ends, and starts from the first each time', async () => {
+    const urls = ['blob:a', 'blob:b', 'blob:c'];
+    const { container } = render(<CoverImage model={model({ coverImageUrl: 'blob:a', coverImageUrls: urls })} zoomable className="thumb" />);
+    fireEvent.click(container.querySelector('.thumb')!);
+    const shown = () => screen.getByAltText('Model One').getAttribute('src');
+    expect(shown()).toBe('blob:a');
+    expect(screen.getByTestId('cover-zoom-count').textContent).toBe(t('models.detail.imageCount', { index: 1, count: 3 }));
+    fireEvent.click(screen.getByTestId('cover-zoom-next'));
+    expect(shown()).toBe('blob:b');
+    fireEvent.click(screen.getByTestId('cover-zoom-prev'));
+    fireEvent.click(screen.getByTestId('cover-zoom-prev'));
+    expect(shown()).toBe('blob:c');
+    fireEvent.keyDown(screen.getByTestId('cover-zoom'), { key: 'ArrowRight' });
+    expect(shown()).toBe('blob:a');
+    // Closed and opened again, it starts from the first.
+    fireEvent.click(screen.getByTestId('cover-zoom-next'));
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    fireEvent.click(container.querySelector('.thumb')!);
+    expect(shown()).toBe('blob:a');
+  });
+
+  it('shows no arrows for a model with one picture', async () => {
+    const { container } = render(<CoverImage model={model({ coverImageUrl: 'blob:a', coverImageUrls: ['blob:a'] })} zoomable className="thumb" />);
+    fireEvent.click(container.querySelector('.thumb')!);
+    expect(screen.queryByTestId('cover-zoom-next')).toBeNull();
+    expect(screen.queryByTestId('cover-zoom-count')).toBeNull();
+  });
 });

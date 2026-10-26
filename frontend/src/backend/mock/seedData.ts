@@ -1,8 +1,13 @@
 // Fixture data for the mock backend. Model and board names are engine/user data, not UI text.
 import type { BoardDTO, ModelConfig, SavedWorkflow, StarterModel } from '../types';
+import { mockPicture } from './mockPictures';
 
 const GB = 1024 ** 3;
 const MB = 1024 ** 2;
+
+/** A flat picture of the given shape: what a model with several pictures of different shapes looks like. */
+const shape = (width: number, height: number, color: string) =>
+  `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="${color}"/></svg>`)}`;
 
 export const SEED_MODELS: ModelConfig[] = [
   {
@@ -16,6 +21,7 @@ export const SEED_MODELS: ModelConfig[] = [
     size: 6.9 * GB,
     source: 'https://civitai.com/models/133005',
     defaultSettings: { steps: 30, cfgScale: 6, scheduler: 'dpmpp_2m_k', width: 1024, height: 1024 },
+    coverImageUrls: [mockPicture('main-juggernaut-xl'), shape(640, 360, '#3b5b8c'), shape(360, 640, '#8c3b5b')],
     triggerPhrases: [],
     license: {
       site: 'civitai',

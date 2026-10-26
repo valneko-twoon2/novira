@@ -1227,8 +1227,44 @@ button.browse-commercial:focus-visible {
 }
 
 .pp-zoom {
+  position: relative;
   display: grid;
   place-items: center;
+}
+
+.pp-zoom__arrow {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-top: -16px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--overlay);
+  color: var(--on-overlay);
+  cursor: pointer;
+}
+
+.pp-zoom__arrow.is-prev {
+  left: var(--space-2);
+}
+
+.pp-zoom__arrow.is-next {
+  right: var(--space-2);
+}
+
+.pp-zoom__count {
+  position: absolute;
+  right: var(--space-2);
+  bottom: var(--space-2);
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--overlay);
+  color: var(--on-overlay);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
 }
 
 .pp-zoom img {

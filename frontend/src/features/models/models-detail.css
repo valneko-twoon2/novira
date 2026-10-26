@@ -30,14 +30,16 @@
   border-radius: var(--radius-lg);
 }
 
-/* A picture keeps its own shape here, whole: the frame follows it instead of cropping it (the cards crop to a grid). */
+/* A picture sits whole in a frame of a fixed shape, as in the Browse tab's detail: the frame is reserved before the picture
+   is known, so choosing another picture (of another shape) does not resize the panel (the cards crop to a grid). */
 .mm-detail .mm-detail__cover:has(.mm-cover__img) {
-  aspect-ratio: auto;
+  width: min(100%, 320px);
+  margin: 0 auto;
+  aspect-ratio: 2 / 3;
 }
 
 .mm-detail .mm-detail__cover .mm-cover__img {
-  height: auto;
-  max-height: 70vh;
+  height: 100%;
   object-fit: contain;
 }
 
