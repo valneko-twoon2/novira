@@ -74,6 +74,11 @@ test('each prompt switches between its text and its tags with two buttons', asyn
 
 test('the prompt headers have icons only: describe, dynamic prompts and presets', async ({ page }) => {
   await openApp(page, '?scenario=empty');
+  // The header's buttons are spaced alike: the text and tag buttons are not touching.
+  for (const kind of ['positive', 'negative']) {
+    const [text, tags] = [await page.getByTestId(`${kind}-text-view`).boundingBox(), await page.getByTestId(`${kind}-tag-view`).boundingBox()];
+    expect(tags!.x - (text!.x + text!.width)).toBeGreaterThanOrEqual(4);
+  }
   await expect(page.getByTestId('prompt-caption')).toHaveText('');
   await expect(page.getByTestId('positive-open-book')).toHaveText('');
   await expect(page.getByTestId('negative-open-book')).toHaveText('');

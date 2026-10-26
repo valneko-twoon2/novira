@@ -115,6 +115,13 @@
   border-left-color: var(--red-500);
 }
 
+/* The text and tag view buttons, spaced like the other buttons of the header. */
+.pp-viewswitch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 /* The "describe a picture as a prompt" button also takes a picture dropped on it. */
 .pp-prompt__caption {
   display: inline-flex;
