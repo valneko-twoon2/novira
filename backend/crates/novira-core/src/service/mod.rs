@@ -346,6 +346,10 @@ impl Backend {
         }
         state.images = images;
         watch.lap("image urls");
+        // Every original goes in the folder of its board (pictures an older version stored flat, a board renamed).
+        files.index();
+        crate::media::arrangement::arrange(&files, &state.boards, &state.images);
+        watch.lap("gallery folders");
 
         // Models: the files on disk decide what is listed; stored records keep the user's edits.
         let stored: Vec<ModelConfig> = db.load(Table::Models)?;

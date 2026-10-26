@@ -47,7 +47,25 @@ impl Backend {
         self.db()
             .put(Table::Images, &image.name, image.created_at, image)?;
         self.state().images.insert(0, image.clone());
+        self.arrange_files(Some(std::slice::from_ref(&image.name)));
         Ok(())
+    }
+
+    /// Puts the files of the named pictures (every picture when `None`) in the folder of their board under `outputs/`
+    /// (`media::arrangement`). Called after anything that changes a picture's board, its board's name, or brings it back.
+    pub(super) fn arrange_files(&self, names: Option<&[String]>) {
+        let (boards, pictures) = {
+            let s = self.state();
+            let picked = names.map(Picked::new);
+            let pictures: Vec<ImageDTO> = s
+                .images
+                .iter()
+                .filter(|i| picked.as_ref().is_none_or(|p| p.contains(&i.name)))
+                .cloned()
+                .collect();
+            (s.boards.clone(), pictures)
+        };
+        crate::media::arrangement::arrange(&self.inner.files, &boards, &pictures);
     }
 
     pub fn update_images(&self, names: &[String], patch: ImagePatch) -> Result<Vec<ImageDTO>> {
@@ -71,6 +89,10 @@ impl Backend {
             Table::Images,
             out.iter().map(|i| (i.name.as_str(), i.created_at, i)),
         )?;
+        if patch.board_id.is_some() || patch.is_intermediate.is_some() {
+            let moved: Vec<String> = out.iter().map(|i| i.name.clone()).collect();
+            self.arrange_files(Some(&moved));
+        }
         Ok(out)
     }
 
@@ -170,6 +192,9 @@ impl Backend {
         s.images.retain(|i| !back.iter().any(|b| b.name == i.name));
         s.images.extend(back.iter().cloned());
         s.images.sort_by_key(|i| std::cmp::Reverse(i.created_at));
+        drop(s);
+        let names: Vec<String> = back.iter().map(|i| i.name.clone()).collect();
+        self.arrange_files(Some(&names));
         Ok(back)
     }
 

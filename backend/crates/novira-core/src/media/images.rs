@@ -1,8 +1,12 @@
-//! Image files on disk: originals as PNG under `outputs/`, thumbnails under `thumbnails/`.
+//! Image files on disk: originals as PNG under `outputs/` (in the folders `arrangement` gives them), thumbnails under
+//! `thumbnails/`.
 //! Generation parameters are embedded as UTF-8 `iTXt` chunks so a PNG carries its own settings.
 use crate::media::audio;
+use crate::sync::LockExt;
 use image::GenericImageView;
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 
 pub const METADATA_KEY: &str = "novira_metadata";
 pub const WORKFLOW_KEY: &str = "novira_workflow";
@@ -22,6 +26,9 @@ pub struct ImageFiles {
     thumbnails: PathBuf,
     /// Where deleted pictures wait to be taken back (`trash/`): the original and the thumbnail side by side.
     trash: PathBuf,
+    /// Where each original is under `outputs/`, by name; a name not here is `outputs/<name>` (a new file, or one an
+    /// older version stored).
+    placed: Mutex<HashMap<String, PathBuf>>,
 }
 
 /// True for names novira generates (`<hex/uuid>` with a picture, video or audio extension); anything else is refused
@@ -73,11 +80,97 @@ impl ImageFiles {
             originals,
             thumbnails,
             trash: data_dir.join("trash"),
+            placed: Mutex::default(),
         })
     }
 
     pub fn original_path(&self, name: &str) -> Option<PathBuf> {
-        is_valid_name(name).then(|| self.originals.join(name))
+        if !is_valid_name(name) {
+            return None;
+        }
+        let rel = self.placed.lock_safe().get(name).cloned();
+        Some(
+            self.originals
+                .join(rel.as_deref().unwrap_or(Path::new(name))),
+        )
+    }
+
+    /// Finds every original under `outputs/` (one folder down) by the name its file name holds, so a picture opens
+    /// wherever its file was put. Returns how many it found.
+    pub fn index(&self) -> usize {
+        let mut found = HashMap::new();
+        let Ok(top) = std::fs::read_dir(&self.originals) else {
+            return 0;
+        };
+        for entry in top.flatten() {
+            let Ok(kind) = entry.file_type() else {
+                continue;
+            };
+            let file = entry.file_name();
+            if kind.is_file() {
+                if let Some(name) = file.to_str().and_then(crate::media::arrangement::name_in) {
+                    found.insert(name.to_string(), PathBuf::from(&file));
+                }
+            } else if kind.is_dir() {
+                let Ok(inner) = std::fs::read_dir(entry.path()) else {
+                    continue;
+                };
+                for f in inner.flatten() {
+                    let inner_name = f.file_name();
+                    if !f.file_type().is_ok_and(|k| k.is_file()) {
+                        continue;
+                    }
+                    if let Some(name) = inner_name
+                        .to_str()
+                        .and_then(crate::media::arrangement::name_in)
+                    {
+                        found.insert(name.to_string(), Path::new(&file).join(&inner_name));
+                    }
+                }
+            }
+        }
+        let n = found.len();
+        *self.placed.lock_safe() = found;
+        n
+    }
+
+    /// Moves a picture's original to `rel` under `outputs/` (a folder and a file name). True when it moved; false when it
+    /// is there already or has no file. A file already at `rel` is never replaced.
+    pub fn move_to(&self, name: &str, rel: &Path) -> std::io::Result<bool> {
+        let Some(from) = self.original_path(name) else {
+            return Ok(false);
+        };
+        let to = self.originals.join(rel);
+        if from == to || !from.is_file() {
+            return Ok(false);
+        }
+        if to.exists() {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::AlreadyExists,
+                format!("{} exists", to.display()),
+            ));
+        }
+        if let Some(parent) = to.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        std::fs::rename(&from, &to)?;
+        self.placed
+            .lock_safe()
+            .insert(name.to_string(), rel.to_path_buf());
+        Ok(true)
+    }
+
+    /// Removes the folders of `outputs/` that no file is left in (a board renamed or emptied).
+    pub fn remove_empty_folders(&self) {
+        let Ok(top) = std::fs::read_dir(&self.originals) else {
+            return;
+        };
+        for entry in top.flatten() {
+            if entry.file_type().is_ok_and(|k| k.is_dir()) {
+                // Fails, as wanted, while anything is inside.
+                let _ = std::fs::remove_dir(entry.path());
+            }
+        }
     }
 
     pub fn thumbnail_path(&self, name: &str) -> Option<PathBuf> {
@@ -146,6 +239,7 @@ impl ImageFiles {
         {
             let _ = std::fs::remove_file(p);
         }
+        self.placed.lock_safe().remove(name);
     }
 
     /// The two files of a picture in the trash: the original and the thumbnail.
@@ -174,10 +268,14 @@ impl ImageFiles {
                 moved = ok;
             }
         }
+        // It comes back to `outputs/<name>`, and `arrangement` puts it in its folder again.
+        if moved {
+            self.placed.lock_safe().remove(name);
+        }
         moved
     }
 
-    /// Puts a trashed picture's files back. True when the original is in place afterwards.
+    /// Puts a trashed picture's files back (the original at `outputs/<name>`). True when the original is in place afterwards.
     pub fn restore(&self, name: &str) -> bool {
         let (Some(to), Some(from)) = (
             [self.original_path(name), self.thumbnail_path(name)]

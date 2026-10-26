@@ -352,3 +352,114 @@ async fn restore_and_delete_refuse_names_that_leave_the_picture_folders() {
     assert!(!dir.path().join("trash").join("secret.png").exists());
     backend.shutdown();
 }
+
+/// Where a picture's file is under `outputs/`, by folder.
+fn file_of(dir: &std::path::Path, folder: &str, img: &ImageDTO) -> std::path::PathBuf {
+    dir.join("outputs")
+        .join(folder)
+        .join(novira_core::media::arrangement::file_name(
+            &img.name,
+            img.created_at,
+        ))
+}
+
+#[tokio::test]
+async fn files_sit_in_the_folder_of_their_board_and_follow_a_move_and_a_rename() {
+    let dir = tempfile::tempdir().unwrap();
+    let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+    let board = backend.create_board("風景").unwrap();
+    let img = backend
+        .upload_image(
+            png(8, 8),
+            ImageOptions {
+                board_id: Some(board.id.clone()),
+                ..ImageOptions::default()
+            },
+        )
+        .await
+        .unwrap();
+    let loose = backend
+        .upload_image(png(8, 8), ImageOptions::default())
+        .await
+        .unwrap();
+    let draft = backend
+        .upload_image(
+            png(8, 8),
+            ImageOptions {
+                is_intermediate: Some(true),
+                ..ImageOptions::default()
+            },
+        )
+        .await
+        .unwrap();
+    assert!(file_of(dir.path(), "風景", &img).is_file());
+    assert!(file_of(dir.path(), "未分類", &loose).is_file());
+    assert!(file_of(dir.path(), "_下書き", &draft).is_file());
+    assert!(!dir.path().join("outputs").join(&img.name).exists());
+
+    backend
+        .update_board(
+            &board.id,
+            BoardPatch {
+                name: Some("夜景".into()),
+                archived: None,
+            },
+        )
+        .unwrap();
+    assert!(file_of(dir.path(), "夜景", &img).is_file());
+    assert!(!dir.path().join("outputs").join("風景").exists());
+
+    // Onto the board, then off it again.
+    backend
+        .update_images(
+            std::slice::from_ref(&loose.name),
+            serde_json::from_value(json!({ "boardId": board.id })).unwrap(),
+        )
+        .unwrap();
+    assert!(file_of(dir.path(), "夜景", &loose).is_file());
+    backend.delete_board(&board.id, false).unwrap();
+    assert!(file_of(dir.path(), "未分類", &img).is_file());
+    assert!(file_of(dir.path(), "未分類", &loose).is_file());
+    assert!(backend.read_image("full", &img.name).is_some());
+    backend.shutdown();
+}
+
+#[tokio::test]
+async fn a_restored_picture_goes_back_to_its_folder_and_a_start_arranges_flat_files() {
+    let dir = tempfile::tempdir().unwrap();
+    let img = {
+        let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+        let board = backend.create_board("Keep").unwrap();
+        let img = backend
+            .upload_image(
+                png(8, 8),
+                ImageOptions {
+                    board_id: Some(board.id.clone()),
+                    ..ImageOptions::default()
+                },
+            )
+            .await
+            .unwrap();
+        backend
+            .delete_images(std::slice::from_ref(&img.name))
+            .unwrap();
+        assert!(!file_of(dir.path(), "Keep", &img).exists());
+        backend
+            .restore_images(std::slice::from_ref(&img.name))
+            .unwrap();
+        assert!(file_of(dir.path(), "Keep", &img).is_file());
+        backend.shutdown();
+        img
+    };
+    // As an older version kept it: flat in outputs. The next start puts it in its folder.
+    std::fs::rename(
+        file_of(dir.path(), "Keep", &img),
+        dir.path().join("outputs").join(&img.name),
+    )
+    .unwrap();
+    std::fs::remove_dir(dir.path().join("outputs").join("Keep")).unwrap();
+    let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+    assert!(file_of(dir.path(), "Keep", &img).is_file());
+    assert!(backend.read_image("full", &img.name).is_some());
+    backend.shutdown();
+}

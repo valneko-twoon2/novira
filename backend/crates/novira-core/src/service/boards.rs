@@ -35,6 +35,8 @@ impl Backend {
         drop(s);
         self.db()
             .put(Table::Boards, &board.id, board.created_at, &board)?;
+        // The board's folder follows its name (and so may another board's that shared it).
+        self.arrange_files(None);
         Ok(board)
     }
 
@@ -73,6 +75,7 @@ impl Backend {
         drop(db);
         // The pictures of the board wait in the trash like any deleted picture.
         self.move_to_trash(&trashed)?;
+        self.arrange_files(None);
         Ok(deleted)
     }
 }

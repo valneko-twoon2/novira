@@ -363,7 +363,15 @@ async fn exported_pictures_are_clean_copies_and_other_media_are_skipped() {
     assert_eq!(image::load_from_memory(&first).unwrap().width(), 32);
     // The original keeps its settings.
     assert!(backend.read_image("full", &pic.name).is_some());
-    assert!(dir.path().join(OUTPUTS).join(&pic.name).is_file());
+    assert!(dir
+        .path()
+        .join(OUTPUTS)
+        .join(novira_core::media::arrangement::UNCATEGORIZED)
+        .join(novira_core::media::arrangement::file_name(
+            &pic.name,
+            pic.created_at
+        ))
+        .is_file());
 
     for bad in [vec!["../x.png".to_string()], vec![]] {
         assert!(backend.check_export(&bad, &options).is_err());
