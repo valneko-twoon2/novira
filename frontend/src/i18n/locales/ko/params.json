@@ -10,7 +10,6 @@
   "params.prompt.dynamicHelp": "{{빨강|파랑}}처럼 쓰면 조합마다 별도의 프롬프트로 생성합니다.",
   "params.prompt.dynamicCapped": "최대 {max}건까지로 제한하고 있습니다.",
   "params.prompt.empty": "(비어 있음)",
-  "params.refImage.sectionLabel": "참조 이미지",
   "params.refImage.add": "참조 이미지 추가",
   "params.refImage.title": "참조 이미지 {index}",
   "params.refImage.enabled": "참조 이미지 사용",

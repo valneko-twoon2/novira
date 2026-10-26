@@ -10,7 +10,6 @@
   "params.prompt.dynamicHelp": "Запись {{red|blue}} создаёт по одному промпту на каждую комбинацию.",
   "params.prompt.dynamicCapped": "Ограничено до {max} промптов.",
   "params.prompt.empty": "(пусто)",
-  "params.refImage.sectionLabel": "Референсы",
   "params.refImage.add": "Добавить референс",
   "params.refImage.title": "Референс {index}",
   "params.refImage.enabled": "Включить референс",

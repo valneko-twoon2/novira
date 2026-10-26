@@ -50,9 +50,8 @@ export function ModelProfilePopover({ model }: { model: ModelConfig }) {
       <div className="pp-profile__top">
         <b>{t('params.profile.title')}</b>
         {bad.length === 0 ? (
-          <span className="pp-profile__ok" title={t('params.profile.matches')}>
+          <span className="pp-profile__ok" title={t('params.profile.matches')} aria-label={t('params.profile.matches')} role="img" data-testid="model-profile-ok">
             <CheckCircle size={14} weight="fill" />
-            {t('params.profile.matches')}
           </span>
         ) : (
           <Button

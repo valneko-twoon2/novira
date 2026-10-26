@@ -10,7 +10,6 @@
   "params.prompt.dynamicHelp": "Mit {{rot|blau}} wird pro Kombination ein Prompt erzeugt.",
   "params.prompt.dynamicCapped": "Begrenzt auf {max} Prompts.",
   "params.prompt.empty": "(leer)",
-  "params.refImage.sectionLabel": "Referenzbilder",
   "params.refImage.add": "Referenzbild hinzufügen",
   "params.refImage.title": "Referenzbild {index}",
   "params.refImage.enabled": "Referenzbild aktivieren",

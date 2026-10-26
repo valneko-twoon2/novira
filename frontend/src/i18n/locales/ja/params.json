@@ -10,7 +10,7 @@
   "params.prompt.dynamicHelp": "{{赤|青}} のように書くと、組み合わせごとに別々のプロンプトで生成します。",
   "params.prompt.dynamicCapped": "最大 {max} 件までに制限しています。",
   "params.prompt.empty": "（空）",
-  "params.refImage.sectionLabel": "参照画像",
+  "params.refImage.sectionLabel": "IP-Adapter",
   "params.refImage.add": "参照画像を追加",
   "params.refImage.title": "参照画像 {index}",
   "params.refImage.enabled": "参照画像を有効にする",

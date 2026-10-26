@@ -70,11 +70,24 @@ describe('image size', () => {
     expect(p().aspectRatio).toBe('free');
   });
 
-  it('optimizes the size to the model resolution keeping the ratio', () => {
-    p().set({ width: 512, height: 512 });
+  it('snaps a free shape to the nearest size the model was trained on, scaled to its base', () => {
+    p().set({ aspectRatio: 'free', width: 512, height: 512 });
     p().optimizeSize(1024);
     expect([p().width, p().height]).toEqual([1024, 1024]);
+    // Already at the model's area, yet not a trained size: it still changes (the button did nothing here before).
+    p().set({ width: 1568, height: 672 });
+    p().optimizeSize(1024);
+    expect([p().width, p().height]).toEqual([1536, 640]);
+    p().set({ width: 700, height: 1000 });
+    p().optimizeSize(1024);
+    expect([p().width, p().height]).toEqual([832, 1216]);
     p().set({ width: 1600, height: 900 });
+    p().optimizeSize(512);
+    expect([p().width, p().height]).toEqual([672, 384]);
+  });
+
+  it('keeps a chosen ratio at the model area', () => {
+    p().set({ aspectRatio: '16:9', width: 1600, height: 900 });
     p().optimizeSize(1024);
     expect(p().width / p().height).toBeCloseTo(16 / 9, 1);
     expect(p().width * p().height).toBeGreaterThan(1024 * 1024 * 0.95);

@@ -10,7 +10,7 @@
   "params.prompt.dynamicHelp": "Write {{red|blue}} to generate one prompt per combination.",
   "params.prompt.dynamicCapped": "Limited to {max} prompts.",
   "params.prompt.empty": "(empty)",
-  "params.refImage.sectionLabel": "Reference images",
+  "params.refImage.sectionLabel": "IP-Adapter",
   "params.refImage.add": "Add reference image",
   "params.refImage.title": "Reference image {index}",
   "params.refImage.enabled": "Enable reference image",

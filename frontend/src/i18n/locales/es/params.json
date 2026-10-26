@@ -10,7 +10,6 @@
   "params.prompt.dynamicHelp": "Escriba {{rojo|azul}} para generar un prompt por cada combinación.",
   "params.prompt.dynamicCapped": "Limitado a {max} prompts.",
   "params.prompt.empty": "(vacío)",
-  "params.refImage.sectionLabel": "Imágenes de referencia",
   "params.refImage.add": "Añadir imagen de referencia",
   "params.refImage.title": "Imagen de referencia {index}",
   "params.refImage.enabled": "Activar imagen de referencia",

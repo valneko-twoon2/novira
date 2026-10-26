@@ -10,7 +10,6 @@
   "params.prompt.dynamicHelp": "写成 {{红|蓝}} 这样，会为每种组合分别用不同的提示词生成。",
   "params.prompt.dynamicCapped": "最多限制为 {max} 条。",
   "params.prompt.empty": "（空）",
-  "params.refImage.sectionLabel": "参考图像",
   "params.refImage.add": "添加参考图像",
   "params.refImage.title": "参考图像 {index}",
   "params.refImage.enabled": "启用参考图像",
