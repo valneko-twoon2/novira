@@ -13,6 +13,27 @@ import './splash.css';
 
 const reason = (e: unknown) => (typeof e === 'string' ? e : e instanceof Error ? e.message : String(e));
 
+/** Shown while a data folder change from the Settings screen is carried out at start-up (the window is the only sign of it). */
+function Moving() {
+  return (
+    <LocaleRoot>
+      <TooltipProvider>
+        <ErrorBoundary area="data move" variant="screen">
+          <div className="sp" data-testid="data-moving">
+            <SkyBackdrop />
+            <div className="sp__center sp__center--wide">
+              <div className="sp__logo">novira</div>
+              <StartupCard icon={<Gear size={22} weight="duotone" />} heading={t('firstrun.moving.title')} testId="data-moving-card">
+                <p>{t('firstrun.moving.body')}</p>
+              </StartupCard>
+            </div>
+          </div>
+        </ErrorBoundary>
+      </TooltipProvider>
+    </LocaleRoot>
+  );
+}
+
 export function FirstRun({ initial }: { initial: FirstRunInfo }) {
   const [info, setInfo] = useState(initial);
   const [busy, setBusy] = useState(false);
@@ -30,6 +51,7 @@ export function FirstRun({ initial }: { initial: FirstRunInfo }) {
       setBusy(false);
     }
   };
+  if (info.moving) return <Moving />;
   const rows: { kind: FolderKind; path: string; isDefault: boolean }[] = [
     { kind: 'data', path: info.dataDir, isDefault: info.dataIsDefault },
     { kind: 'comfyui', path: info.comfyuiDir, isDefault: info.comfyuiIsDefault },

@@ -173,16 +173,36 @@ fn install_panic_hook() {
 
 pub fn run() {
     install_panic_hook();
-    // A change of the data folder asked for in the Settings screen is carried out now, before the folder is opened.
-    if let Some(pointer) = location_pointer() {
-        novira_core::data_location::apply_pending(&pointer);
-    }
     use_own_webview_profile();
     let app = tauri::Builder::default()
         .setup(|app| {
             app.manage(first_run::FirstRun::default());
             app.manage(commands::LastExport::default());
             app.manage(commands::ScannedModels::default());
+            // A change of the data folder asked for in the Settings screen is carried out now, before the folder is
+            // opened. Moving can take minutes, so the window is up and says so; the app restarts when it is done.
+            if let Some(pointer) =
+                location_pointer().filter(|p| novira_core::data_location::move_pending(p))
+            {
+                app.state::<first_run::FirstRun>()
+                    .moving
+                    .store(true, std::sync::atomic::Ordering::SeqCst);
+                let handle = app.handle().clone();
+                std::thread::spawn(move || {
+                    novira_core::data_location::apply_pending(&pointer);
+                    // A pointer that still asks for the move cannot be rewritten; restarting would move again for ever.
+                    if novira_core::data_location::move_pending(&pointer) {
+                        startup::fail(
+                            startup::Refusal::Error(
+                                "The new data folder could not be recorded".into(),
+                            ),
+                            &data_dir(),
+                        );
+                    }
+                    handle.restart()
+                });
+                return Ok(());
+            }
             if first_run_needed() {
                 // The first-start screen asks for the folders; the app restarts and opens them as a normal start.
                 return Ok(());

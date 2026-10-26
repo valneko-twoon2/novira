@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { FirstRunInfo } from '@/backend';
 import { FirstRun } from './FirstRun';
 
-const initial: FirstRunInfo = { needed: true, dataDir: 'C:/Users/me/novira-data', comfyuiDir: 'C:/Users/me/novira-data/comfyui', dataIsDefault: true, comfyuiIsDefault: true };
+const initial: FirstRunInfo = { needed: true, dataDir: 'C:/Users/me/novira-data', comfyuiDir: 'C:/Users/me/novira-data/comfyui', dataIsDefault: true, comfyuiIsDefault: true, moving: false };
 
 let calls: { cmd: string; payload: unknown }[] = [];
 const answer = (handler: (cmd: string, payload: unknown) => unknown) => {
@@ -76,5 +76,13 @@ describe('first-start screen', () => {
     await waitFor(() => expect(screen.getByTestId('first-run-failure').textContent).toContain('cannot create'));
     expect(calls).toEqual([{ cmd: 'first_run_finish', payload: {} }]);
     expect((screen.getByTestId('first-run-start') as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('only says that the data is being moved while a folder change from the Settings screen is carried out', () => {
+    answer(() => null);
+    render(<FirstRun initial={{ ...initial, needed: false, moving: true }} />);
+    expect(screen.getByTestId('data-moving')).toBeTruthy();
+    expect(screen.queryByTestId('first-run-start')).toBeNull();
+    expect(calls).toEqual([]);
   });
 });

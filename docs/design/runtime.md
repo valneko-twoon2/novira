@@ -61,7 +61,7 @@ Launchers: `scripts\start.bat` builds what changed and opens `backend\target\deb
 
 ### Data folder
 
-The folder is `NOVIRA_DATA_DIR` when set and not empty; else `novira-data/` in the repository root in a debug build. A release build uses `novira-data/` in the user folder (`USERPROFILE`, else `HOME`), unless one already sits beside the executable, which it keeps using so an update does not leave data behind (`default_data_dir` in `backend/src-tauri/src/lib.rs`). The browser server has no default. A folder chosen in Settings is read from a pointer file (`data_location.rs`, see settings-engine.md) after the variable and before this default (a debug build has its own pointer); with nothing at all, the first start asks (first-run.md); a move it asks for is done before the lock is taken.
+The folder is `NOVIRA_DATA_DIR` when set and not empty; else `novira-data/` in the repository root in a debug build. A release build uses `novira-data/` in the user folder (`USERPROFILE`, else `HOME`), unless one already sits beside the executable, which it keeps using so an update does not leave data behind (`default_data_dir` in `backend/src-tauri/src/lib.rs`). The browser server has no default. A folder chosen in Settings is read from a pointer file (`data_location.rs`, see settings-engine.md) after the variable and before this default (a debug build has its own pointer); with nothing at all, the first start asks (first-run.md); a move it asks for is done before the lock is taken, in a thread started from window setup behind the "moving" screen, and the app restarts after it.
 
 - `novira.sqlite` and its WAL file: the database (see Storage).
 - `outputs/`, `thumbnails/`: the gallery files.

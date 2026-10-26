@@ -7,5 +7,7 @@
   "firstrun.choose": "Choose folder",
   "firstrun.useDefault": "Use the default",
   "firstrun.start": "Start with these folders",
-  "firstrun.failed": "Could not set up: {reason}"
+  "firstrun.failed": "Could not set up: {reason}",
+  "firstrun.moving.title": "Moving your data",
+  "firstrun.moving.body": "Your data is being moved to the new folder. A large library can take a few minutes. novira reopens by itself when it is done."
 }

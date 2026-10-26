@@ -8,6 +8,7 @@ use novira_core::first_run::{self, Choice};
 use novira_core::sync::LockExt;
 use serde::Serialize;
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use tauri::State;
 
@@ -16,6 +17,8 @@ use tauri::State;
 pub struct FirstRun {
     data: Mutex<Option<PathBuf>>,
     comfyui: Mutex<Option<PathBuf>>,
+    /// The data is being moved to the folder chosen in the Settings screen; the page shows that until the app restarts.
+    pub moving: AtomicBool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -26,6 +29,7 @@ pub struct FirstRunInfo {
     pub comfyui_dir: String,
     pub data_is_default: bool,
     pub comfyui_is_default: bool,
+    pub moving: bool,
 }
 
 #[derive(Clone, Copy)]
@@ -64,6 +68,7 @@ fn info(state: &FirstRun) -> FirstRunInfo {
     let (data, comfyui) = effective(state);
     FirstRunInfo {
         needed: crate::first_run_needed(),
+        moving: state.moving.load(Ordering::SeqCst),
         data_is_default: state.data.lock_safe().is_none(),
         comfyui_is_default: comfyui.is_none(),
         comfyui_dir: comfyui

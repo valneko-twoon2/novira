@@ -155,3 +155,21 @@ fn a_pointer_without_a_move_just_names_the_folder() {
     .unwrap();
     assert_eq!(apply_pending(&pointer), Some(dir.path().join("data")));
 }
+
+#[test]
+fn a_move_is_pending_only_while_the_pointer_still_asks_for_it() {
+    let dir = tempfile::tempdir().unwrap();
+    let (old, new) = (dir.path().join("old"), dir.path().join("new"));
+    put(&old, "novira.sqlite", "db");
+    let pointer = dir.path().join("cfg/data-location.json");
+    assert!(!move_pending(&pointer));
+    let asked = Location {
+        data_dir: new.clone(),
+        move_from: Some(old),
+        move_error: None,
+    };
+    write(&pointer, &asked).unwrap();
+    assert!(move_pending(&pointer));
+    apply_pending(&pointer);
+    assert!(!move_pending(&pointer));
+}

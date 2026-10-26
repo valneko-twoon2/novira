@@ -79,7 +79,7 @@ export async function getLanApi(): Promise<LanApi | null> {
 export async function firstStart(): Promise<FirstRunInfo | null> {
   if (!isTauri()) return null;
   const info = await firstRun.info();
-  return info.needed ? info : null;
+  return info.needed || info.moving ? info : null;
 }
 
 export { firstRun } from './tauri/firstRun';

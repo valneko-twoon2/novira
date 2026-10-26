@@ -140,6 +140,11 @@ pub fn check_new(new: &Path, current: &Path, move_data: bool) -> Result<(), Stri
     Ok(())
 }
 
+/// Whether the pointer asks for the data to be moved at this start (so the app can show that it is working).
+pub fn move_pending(pointer: &Path) -> bool {
+    read(pointer).is_some_and(|l| l.move_from.is_some())
+}
+
 /// Carries out a move the pointer asks for, before anything is opened. A move that cannot be done leaves the old folder
 /// in use and records why. Returns the folder to open.
 pub fn apply_pending(pointer: &Path) -> Option<PathBuf> {

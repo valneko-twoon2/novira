@@ -10,6 +10,8 @@ export interface FirstRunInfo {
   comfyuiDir: string;
   dataIsDefault: boolean;
   comfyuiIsDefault: boolean;
+  /** The data is being moved to the folder chosen in the Settings screen; the app restarts when it is done. */
+  moving: boolean;
 }
 
 export const firstRun = {
