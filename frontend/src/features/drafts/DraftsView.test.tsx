@@ -7,12 +7,12 @@ import { useDraftForm } from '@/state/draftForm';
 import { useDrafts, type DraftCandidate, type DraftGroup } from '@/state/drafts';
 import { useGallery } from '@/state/gallery';
 import { useModels } from '@/state/models';
+import { useParams } from '@/state/params';
 import { SETTINGS_DEFAULTS, useSettings } from '@/state/settings';
 import { useToasts } from '@/state/toasts';
 import { useUi } from '@/state/ui';
 import { TooltipProvider } from '@/ui';
 import { DraftsView } from './DraftsView';
-import { byDay } from './GroupTabs';
 
 const initial = { drafts: useDrafts.getState(), gallery: useGallery.getState(), toasts: useToasts.getState(), models: useModels.getState(), ui: useUi.getState() };
 const lastToast = () => useToasts.getState().toasts.at(-1);
@@ -199,59 +199,56 @@ describe('groups', () => {
   describe('history', () => {
     const many = (n: number) => Array.from({ length: n }, (_, i) => group(`g${i + 1}`, [candidate(i + 1)]));
 
-    it('keeps only the latest five as tabs and reaches the older ones from a popup', () => {
+    it('keeps only the latest five as tabs, and opens any batch from the history screen', () => {
       useDrafts.setState({ groups: many(8), currentId: 'g8' });
       show();
       expect(screen.getAllByRole('tab')).toHaveLength(5);
-      expect(screen.getByTestId('drafts-older').textContent).toContain('3');
-      fireEvent.click(screen.getByTestId('drafts-older'));
-      const list = screen.getByTestId('drafts-older-list');
-      expect(list.querySelectorAll('li')).toHaveLength(3);
-      expect(list.querySelector('li')!.textContent).toContain('3.');
-      fireEvent.click(list.querySelectorAll('li > button:first-child')[2]!);
+      expect(screen.getByTestId('drafts-history-button').textContent).toContain('8');
+      fireEvent.click(screen.getByTestId('drafts-history-button'));
+      const cards = screen.getAllByTestId('drafts-history-card');
+      expect(cards).toHaveLength(8);
+      // Newest first, each with the number its tab has.
+      expect(cards[0]!.textContent).toContain('8.');
+      fireEvent.click(within(cards[7]!).getByTestId('drafts-history-open'));
       expect(useDrafts.getState().currentId).toBe('g1');
+      expect(screen.queryByTestId('drafts-history')).toBeNull();
     });
 
-    it('lists the older ones by day, the latest day and batch first, with the pictures drawn then', () => {
-      const at = (id: string, day: number, hour: number, n: number) => ({
-        ...group(id, [candidate(n), candidate(n + 50), candidate(n + 60)]),
-        createdAt: new Date(2026, 9, day, hour).getTime(),
-      });
-      useDrafts.setState({
-        groups: [at('g1', 3, 9, 1), at('g2', 3, 15, 2), at('g3', 4, 8, 3), ...[4, 5, 6, 7, 8].map((n) => at(`g${n}`, 10, n, n))],
-        currentId: 'g8',
-      });
-      useGallery.setState({ images: [picture('d2.png'), picture('d52.png'), picture('d1.png')] });
+    it('shows the pictures drawn then on each card, and narrows by model and by words of the prompt', () => {
+      const made = (id: string, model: string, prompt: string, n: number) => ({ ...group(id, [candidate(n), candidate(n + 50)]), params: { ...group(id, []).params, modelName: model, positivePrompt: prompt } });
+      useDrafts.setState({ groups: [made('a', 'Anima', 'a cat on a roof', 1), made('b', 'SDXL', 'a dog in the rain', 2), made('c', 'Anima', 'a cat in the snow', 3)], currentId: 'c' });
+      useGallery.setState({ images: [picture('d1.png'), picture('d51.png'), picture('d2.png')] });
       show();
-      fireEvent.click(screen.getByTestId('drafts-older'));
-      const list = screen.getByTestId('drafts-older-list');
-      expect(list.querySelectorAll('section')).toHaveLength(2);
-      expect([...list.querySelectorAll('li')].map((li) => li.textContent?.slice(0, 3))).toEqual(['3. ', '2. ', '1. '].map((s) => s.slice(0, 3)));
-      const second = list.querySelectorAll('section')[1]!;
-      expect([...second.querySelectorAll('li')].map((li) => li.querySelectorAll('img').length)).toEqual([2, 1]);
+      fireEvent.click(screen.getByTestId('drafts-history-button'));
+      const cardOf = (n: string) => screen.getAllByTestId('drafts-history-card').find((c) => c.textContent?.includes(n))!;
+      expect(cardOf('1.').querySelectorAll('img')).toHaveLength(2);
+      expect(cardOf('2.').querySelectorAll('img')).toHaveLength(1);
+      fireEvent.click(screen.getAllByTestId('drafts-history-model').find((b) => b.textContent?.startsWith('Anima'))!);
+      expect(screen.getAllByTestId('drafts-history-card')).toHaveLength(2);
+      fireEvent.change(screen.getByTestId('drafts-history-search'), { target: { value: 'snow' } });
+      expect(screen.getAllByTestId('drafts-history-card')).toHaveLength(1);
+      fireEvent.change(screen.getByTestId('drafts-history-search'), { target: { value: 'horse' } });
+      expect(screen.queryAllByTestId('drafts-history-card')).toHaveLength(0);
     });
 
-    it('groups batches by calendar day, newest first', () => {
-      const at = (id: string, ...time: [number, number, number, number]) => ({ ...group(id, []), createdAt: new Date(2026, time[0], time[1], time[2], time[3]).getTime() });
-      const days = byDay([at('a', 9, 3, 23, 59), at('b', 9, 4, 0, 0), at('c', 9, 3, 0, 0)]);
-      expect(days.map((d) => d.groups.map((g) => g.id))).toEqual([['b'], ['a', 'c']]);
-    });
-
-    it('shows no popup button while the history fits on the screen', () => {
-      useDrafts.setState({ groups: many(5), currentId: 'g5' });
+    it('puts the settings of a batch back in the Generate form', () => {
+      const g = { ...group('a', [candidate(1)]), params: { ...group('a', []).params, positivePrompt: 'a lighthouse', negativePrompt: '', steps: 33, seed: 7, cfgScale: 5, scheduler: 'euler', loras: [] } as DraftGroup['params'] };
+      useDrafts.setState({ groups: [g], currentId: 'a' });
       show();
-      expect(screen.queryByTestId('drafts-older')).toBeNull();
-      expect(screen.getAllByRole('tab')).toHaveLength(5);
+      fireEvent.click(screen.getByTestId('drafts-history-button'));
+      fireEvent.click(screen.getByTestId('drafts-history-reuse'));
+      expect(useParams.getState()).toMatchObject({ positivePrompt: 'a lighthouse', steps: 33 });
+      expect(lastToast()?.title).toBe(t('drafts.history.reused'));
     });
 
-    it('closes all the older ones at once and leaves the latest', () => {
+    it('closes all the older ones at once from the history screen and leaves the latest', () => {
       useDrafts.setState({ groups: many(7), currentId: 'g1' });
       show();
-      fireEvent.click(screen.getByTestId('drafts-older'));
+      fireEvent.click(screen.getByTestId('drafts-history-button'));
       fireEvent.click(screen.getByTestId('drafts-close-older'));
       expect(useDrafts.getState().groups.map((g) => g.id)).toEqual(['g3', 'g4', 'g5', 'g6', 'g7']);
       expect(useDrafts.getState().currentId).toBe('g7');
-      expect(screen.queryByTestId('drafts-older')).toBeNull();
+      expect(screen.queryByTestId('drafts-close-older')).toBeNull();
     });
   });
 

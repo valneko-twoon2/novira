@@ -1,7 +1,7 @@
 // Display labels for parameter enums. Scheduler names are engine names and stay untranslated.
 import type { BaseModel, SchedulerName } from '@/backend';
 import { t } from '@/i18n';
-import type { CoherenceMode, InfillMethod, RefImageMethod } from '@/state/params';
+import { baseSide, type CoherenceMode, type InfillMethod, type RefImageMethod } from '@/state/params';
 
 export const SCHEDULER_LABELS: Record<SchedulerName, string> = {
   euler: 'Euler',
@@ -69,8 +69,4 @@ export function infillLabel(m: InfillMethod): string {
 }
 
 /** Optimal square side for a model base (InvokeAI "optimal size"). */
-export function optimalDimension(base: string | undefined): number {
-  if (base === 'sd-1') return 512;
-  if (base === 'sd-2') return 768;
-  return 1024;
-}
+export const optimalDimension = baseSide;

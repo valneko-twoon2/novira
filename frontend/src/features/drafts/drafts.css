@@ -245,89 +245,231 @@
   border-color: var(--blue-400);
 }
 
-.dv-olderpop {
+/* The history screen: periods and models at the left, the batches by day at the right. */
+.dh {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  width: min(360px, 90vw);
+  gap: var(--space-4);
+  height: min(72vh, 680px);
 }
 
-.dv-olderlist {
+.dh__nav {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  max-height: 420px;
+  flex-shrink: 0;
+  gap: 2px;
+  width: 220px;
   overflow-y: auto;
 }
 
-.dv-olderday h3 {
-  margin: 0 0 var(--space-1);
-  color: var(--text-muted);
-  font-size: 11px;
+.dh__navlabel {
+  margin: var(--space-2) 0 var(--space-1);
+  padding: 0 var(--space-2);
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
   font-weight: 600;
 }
 
-.dv-olderday ul {
+.dh__navitem {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.dv-olderitem {
-  display: flex;
-  align-items: center;
-  border-radius: var(--radius);
-}
-
-.dv-olderitem.is-on {
-  background: var(--bg-elevated);
-}
-
-.dv-olderitem > button:first-child {
-  display: flex;
-  flex: 1;
+  flex-shrink: 0;
   align-items: center;
   gap: var(--space-2);
-  min-width: 0;
-  padding: var(--space-1) var(--space-2);
-  border: 0;
+  height: 30px;
+  padding: 0 var(--space-2);
+  border: none;
+  border-radius: var(--radius);
   background: transparent;
-  color: inherit;
-  font-size: 12px;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
   text-align: left;
   cursor: pointer;
 }
 
-.dv-olderthumbs {
-  display: flex;
-  flex: none;
-  gap: 2px;
-  min-width: 40px;
+.dh__navitem:hover {
+  background: var(--bg-hover);
+  color: var(--text);
 }
 
-.dv-olderthumbs img {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-sm);
-  object-fit: cover;
+.dh__navitem.is-active {
+  background: var(--bg-active);
+  color: var(--text);
+  box-shadow: inset 2px 0 0 var(--accent);
 }
 
-.dv-oldertext {
-  display: flex;
-  flex-direction: column;
+.dh__navname {
+  flex: 1;
   min-width: 0;
-}
-
-.dv-oldername {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.dv-oldertime {
+.dh__count {
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+}
+
+.dh__navspacer {
+  flex: 1;
+}
+
+.dh__main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.dh__bar {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.dh__bar .ui-select {
+  width: 160px;
+}
+
+.dh__search {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: center;
+}
+
+.dh__search svg {
+  position: absolute;
+  left: var(--space-2);
+  color: var(--text-faint);
+}
+
+.dh__search .ui-input {
+  width: 100%;
+  padding-left: 28px;
+}
+
+.dh__list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: var(--space-1);
+}
+
+.dh__day h3 {
+  margin: 0 0 var(--space-2);
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.dh__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-3);
+}
+
+.dh-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+}
+
+.dh-card.is-current {
+  border-color: var(--blue-400);
+}
+
+.dh-card__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-2);
+  border: none;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.dh-card__thumbs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  margin-bottom: var(--space-1);
+}
+
+.dh-card__thumbs img {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+
+.dh-card__title {
+  overflow: hidden;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dh-card__prompt {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.dh-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+}
+
+.dh-card__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2) var(--space-2);
+}
+
+.dh-card__spacer {
+  flex: 1;
+}
+
+/* Narrow windows (the phone): the periods and models become one scrolling row above the batches. */
+@media (width <= 720px) {
+  .dh {
+    flex-direction: column;
+    gap: var(--space-2);
+    height: min(78vh, 680px);
+  }
+
+  .dh__nav {
+    flex-direction: row;
+    width: auto;
+    overflow-x: auto;
+  }
+
+  .dh__navitem {
+    flex: none;
+  }
+
+  .dh__navname {
+    max-width: 160px;
+  }
+
+  .dh__navlabel,
+  .dh__navspacer {
+    display: none;
+  }
 }

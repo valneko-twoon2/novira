@@ -183,6 +183,13 @@ const TRAINED_SIZES: readonly (readonly [number, number])[] = [
   [1536, 640],
 ];
 
+/** The side of a square a model of `base` draws best (InvokeAI's "optimal size"). */
+export function baseSide(base: string | undefined): number {
+  if (base === 'sd-1') return 512;
+  if (base === 'sd-2') return 768;
+  return 1024;
+}
+
 /** The trained size nearest in shape to `width` × `height`, for a model whose base side is `base`. */
 export function trainedSize(width: number, height: number, base: number): { width: number; height: number } {
   const ratio = width / height;

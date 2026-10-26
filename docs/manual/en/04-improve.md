@@ -285,7 +285,13 @@ Pictures drawn to the end go into the gallery just like a normal generation, and
 
 > Drafts can be used only for generation that makes pictures from text. If you have reference images or the like set, a message appears and you cannot start. Draft pictures are not lined up in the gallery list.
 
-Drafts line up in the tabs at the top "in the order you started them". Only the latest 5 stay as tabs; the older ones are chosen from the list that the "older batches" button at the left of the tabs opens. The list is split by day and shows thumbnails of the drafts drawn then, with the time. When you no longer need one, close it with the ✕ on its tab or in the list, or close all the older ones at once with "{{ui:drafts.closeOlder}}" in the list.
+Drafts line up in the tabs at the top "in the order you started them". Only the latest 5 stay as tabs. Every draft is on the **{{ui:drafts.history.title}}** screen that the "History" button at the left of the tabs opens.
+
+- Choose a period ({{ui:drafts.history.period.today}}, {{ui:drafts.history.period.yesterday}}, {{ui:drafts.history.period.week}}, {{ui:drafts.history.period.older}}) and a model in the left column to see only those drafts. The box at the top finds drafts by words of their prompts or model names.
+- The drafts are split by day and show the pictures drawn then, the time, the size and how many drafts and finished pictures there are.
+- **{{ui:drafts.history.open}}** opens a draft, and **{{ui:drafts.history.reuse}}** puts its settings back in the Generate form.
+
+When you no longer need one, close it with the ✕ on its tab or in the history, or close all the older ones that are not tabs at once with "{{ui:drafts.closeOlder}}" on the history screen.
 
 ## Processing in bulk
 

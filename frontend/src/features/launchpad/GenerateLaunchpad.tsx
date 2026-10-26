@@ -1,13 +1,12 @@
 // Launchpad of the Generate tab.
 import { ImageSquare, PaintBrush, Sparkle, TextT } from '@phosphor-icons/react';
 import { useRef } from 'react';
-import type { ImageDTO } from '@/backend';
-import { optimalDimension } from '@/features/params/labels';
-import { useMainModel } from '@/features/params/model/useMainModel';
+import { backend, type ImageDTO } from '@/backend';
 import { addDefaultRefImage } from '@/features/params/refImages/RefImageList';
-import { uploadFirst } from '@/features/params/refImages/useImageDrop';
+import { autoAddBoardId } from '@/state/invoke';
+import { findModel } from '@/state/models';
 import { t } from '@/i18n';
-import { useParams } from '@/state/params';
+import { baseSide, useParams } from '@/state/params';
 import { useUi } from '@/state/ui';
 import { chordLabel, Kbd } from '@/ui';
 import { LaunchpadCard, LaunchpadPage, Tip } from './LaunchpadCard';
@@ -16,9 +15,8 @@ export function GenerateLaunchpad() {
   const ui = useUi.getState;
   const file = useRef<HTMLInputElement>(null);
   // A picture to start from goes to the image to image section of this tab, sized to its shape.
-  const base = optimalDimension(useMainModel()?.base);
   const drawOver = (img: ImageDTO | null | undefined) => {
-    if (img) useParams.getState().setInitImage(img, base);
+    if (img) useParams.getState().setInitImage(img, baseSide(findModel(useParams.getState().modelKey)?.base));
   };
   return (
     <LaunchpadPage
@@ -69,9 +67,9 @@ export function GenerateLaunchpad() {
         hidden
         data-testid="lp-start-file"
         onChange={(e) => {
-          const files = [...(e.target.files ?? [])];
+          const f = e.target.files?.[0];
           e.target.value = '';
-          void uploadFirst(files).then(drawOver);
+          if (f) void backend.uploadImage(f, { boardId: autoAddBoardId(), category: 'user' }).then(drawOver);
         }}
       />
       <LaunchpadCard

@@ -188,6 +188,16 @@ const SURFACES: Record<string, Surface> = {
     const openers = ['segment', 'cutout', 'facefix', 'manga', 'caption', 'character', 'share', 'derive'].map((x) => `[data-testid="viewer-${x}"]`);
     await scan('viewer', { tooltips: true, openers });
   },
+  'draft history': async (page, _locale, scan) => {
+    await page.getByTestId('positive-prompt').fill('a lighthouse on a cliff');
+    await page.getByTestId('view-drafts').click();
+    await page.getByTestId('drafts-start').click();
+    await expect(page.getByTestId('draft-cell').first()).toBeVisible();
+    await page.getByTestId('drafts-history-button').click();
+    await expect(page.getByTestId('drafts-history-card')).toHaveCount(1);
+    await settle(page);
+    await scan('history', ALL);
+  },
   'workflow library and node picker': async (page, _locale, scan) => {
     await showTab(page, 'workflows');
     await page.keyboard.press('Shift+A');
@@ -369,6 +379,9 @@ const PHONE_SURFACES: Record<string, Surface> = {
     await page.getByTestId('drafts-start').click();
     await expect(page.getByTestId('draft-open')).toHaveCount(4, { timeout: 20_000 });
     await scan('drafts', ALL);
+    await page.getByTestId('drafts-history-button').click();
+    await expect(page.getByTestId('drafts-history-card')).toHaveCount(1);
+    await scan('drafts history');
   },
   'phone assistant chat': async (page, locale, scan) => {
     await page.getByTestId('phone-chat-open').click();
