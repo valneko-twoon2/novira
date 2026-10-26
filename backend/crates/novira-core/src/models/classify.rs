@@ -16,9 +16,11 @@ pub struct Header {
     pub shapes: std::collections::HashMap<String, Vec<u64>>,
 }
 
-/// Tensors whose shape is kept: where a model's input channels show what it is made for.
+/// Tensors whose shape is kept: where a model's input channels show what it is made for, and the latent channels a VAE
+/// decodes.
 fn keeps_shape(key: &str) -> bool {
-    key.ends_with("patch_embedding.weight")
+    key == VAE_DECODER_IN
+        || key.ends_with("patch_embedding.weight")
         || key.ends_with("img_in.proj.weight")
         || bare(key) == "img_in.weight"
         || bare(key) == "txt_in.weight"
@@ -250,6 +252,15 @@ fn in_channels(h: &Header, suffix: &str) -> Option<u64> {
         .iter()
         .find(|(k, _)| *k == suffix || k.ends_with(&format!(".{suffix}")))
         .and_then(|(_, s)| s.get(1).copied())
+}
+
+/// The first layer of an image VAE's decoder (`[width, latent channels, 3, 3]`), the same name in the original and the
+/// diffusers layout.
+const VAE_DECODER_IN: &str = "decoder.conv_in.weight";
+
+/// The latent channels a VAE decodes: 4 for the Stable Diffusion 1.x, 2.x and SDXL VAEs, 16 for Flux's and SD3's.
+pub fn vae_latent_channels(h: &Header) -> Option<u64> {
+    h.shapes.get(VAE_DECODER_IN).and_then(|s| s.get(1).copied())
 }
 
 /// The input columns of Flux's image embedding: 64 for the plain models and Kontext, 384 for Fill (the picture's
@@ -777,7 +788,13 @@ pub fn detect_base(kind: ModelType, header: Option<&Header>, file_name: &str) ->
         }
         _ => None,
     };
-    from_keys.unwrap_or_else(|| base_from_name(file_name))
+    let base = from_keys.unwrap_or_else(|| base_from_name(file_name));
+    // A 4-channel VAE whose name tells no family (`vae-ft-mse-840000-ema-pruned`) is the SD 1.5 one: SDXL's carry "xl" in
+    // their names. Without a family it was offered with Anima and Flux models, whose 16-channel latents it cannot decode.
+    if kind == ModelType::Vae && base == BaseModel::Any && vae_latent_channels(h) == Some(4) {
+        return BaseModel::Sd1;
+    }
+    base
 }
 
 pub fn detect_format(kind: ModelType, path: &Path) -> ModelFormat {
@@ -1466,6 +1483,72 @@ mod tests {
             BaseModel::Any
         );
         assert_eq!(detect_kind(&header(&["foo"], json!({}))), None);
+    }
+
+    #[test]
+    fn a_vae_whose_name_tells_no_family_takes_one_from_its_latent_channels() {
+        // `decoder.conv_in.weight` of the real files (2026-10-26): [512, 4, 3, 3] in vae-ft-mse-840000-ema-pruned,
+        // [512, 16, 3, 3] in Flux's ae (whose metadata names it), [1024, 64, 3, 3] in HunyuanImage 2.1's (named so).
+        let vae = |channels: u64| {
+            let mut m = Map::new();
+            m.insert(
+                "encoder.down.0.block.0.conv1.weight".into(),
+                json!({ "dtype": "F16", "shape": [128, 128, 3, 3], "data_offsets": [0, 2] }),
+            );
+            m.insert(
+                "decoder.up.0.block.0.conv1.weight".into(),
+                json!({ "dtype": "F16", "shape": [128, 128, 3, 3], "data_offsets": [0, 2] }),
+            );
+            m.insert(
+                "decoder.conv_in.weight".into(),
+                json!({ "dtype": "F16", "shape": [512, channels, 3, 3], "data_offsets": [0, 2] }),
+            );
+            parse_header(&serde_json::to_vec(&m).unwrap()).unwrap()
+        };
+        let four = vae(4);
+        assert_eq!(vae_latent_channels(&four), Some(4));
+        assert_eq!(detect_kind(&four), Some(ModelType::Vae));
+        let name = "vae-ft-mse-840000-ema-pruned.safetensors";
+        assert_eq!(
+            detect_base(ModelType::Vae, Some(&four), name),
+            BaseModel::Sd1
+        );
+        // A name that tells the family wins; other channel counts, and no shape, tell none.
+        assert_eq!(
+            detect_base(ModelType::Vae, Some(&four), "sdxl_vae.safetensors"),
+            BaseModel::Sdxl
+        );
+        assert_eq!(
+            detect_base(ModelType::Vae, Some(&vae(16)), name),
+            BaseModel::Any
+        );
+        assert_eq!(
+            detect_base(ModelType::Vae, Some(&vae(64)), name),
+            BaseModel::Any
+        );
+        assert_eq!(
+            detect_base(
+                ModelType::Vae,
+                Some(&header(&["decoder.conv_in.weight"], json!({}))),
+                name
+            ),
+            BaseModel::Any
+        );
+        // Only a VAE: a LoRA or a checkpoint is not judged by the channels.
+        assert_eq!(
+            detect_base(ModelType::Lora, Some(&four), name),
+            BaseModel::Any
+        );
+        // The decoder of a checkpoint's own VAE is under its prefix and is not read as a separate VAE's.
+        let mut m = Map::new();
+        m.insert(
+            "first_stage_model.decoder.conv_in.weight".into(),
+            json!({ "dtype": "F16", "shape": [512, 4, 3, 3], "data_offsets": [0, 2] }),
+        );
+        assert_eq!(
+            vae_latent_channels(&parse_header(&serde_json::to_vec(&m).unwrap()).unwrap()),
+            None
+        );
     }
 
     #[test]

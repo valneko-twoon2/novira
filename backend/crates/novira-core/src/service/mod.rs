@@ -66,7 +66,7 @@ const HIDDEN_MODELS_META: &str = "hidden_models";
 const LORA_BASES_CHECKED_META: &str = "lora_bases_checked_1";
 /// Set once the records stored without a family were checked against the current detection (`registry::corrected_any_bases`);
 /// bump the number when the detection learns a family it did not tell before.
-const ANY_BASES_CHECKED_META: &str = "any_bases_checked_1";
+const ANY_BASES_CHECKED_META: &str = "any_bases_checked_2";
 const EXTRA_MODEL_PATHS: &str = "extra_model_paths.yaml";
 const INTERRUPTED: &str = "Interrupted because novira was closed";
 

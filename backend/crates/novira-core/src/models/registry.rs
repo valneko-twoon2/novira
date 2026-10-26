@@ -314,10 +314,12 @@ mod tests {
     #[test]
     fn a_record_stored_without_a_family_takes_the_one_its_file_now_names() {
         let dir = tempfile::tempdir().unwrap();
-        let vae = |name: &str| {
+        let vae_of = |name: &str, shape: &str| {
             let path = dir.path().join(name);
-            let json =
-                br#"{"decoder.conv_in.weight":{"dtype":"F16","shape":[1],"data_offsets":[0,2]}}"#;
+            let json = format!(
+                r#"{{"decoder.conv_in.weight":{{"dtype":"F16","shape":{shape},"data_offsets":[0,2]}}}}"#
+            );
+            let json = json.as_bytes();
             let mut bytes = (json.len() as u64).to_le_bytes().to_vec();
             bytes.extend_from_slice(json);
             bytes.extend_from_slice(&[0, 0]);
@@ -330,10 +332,12 @@ mod tests {
                 size: bytes.len() as u64,
             }
         };
+        let vae = |name: &str| vae_of(name, "[1]");
         let listed = merge(
             &[
                 vae("hunyuan_image_2.1_vae_fp16.safetensors"),
                 vae("plain.safetensors"),
+                vae_of("vae-ft-mse-840000-ema-pruned.safetensors", "[512,4,3,3]"),
             ],
             &[],
             &HashSet::new(),
@@ -354,6 +358,15 @@ mod tests {
             vec![ModelConfig {
                 base: BaseModel::HunyuanImage,
                 ..old.clone()
+            }]
+        );
+        // The SD 1.5 VAE, offered with every model before its latent channels were read.
+        let mse = stored("vae-ft-mse-840000-ema-pruned", BaseModel::Any);
+        assert_eq!(
+            corrected_any_bases(std::slice::from_ref(&mse)),
+            vec![ModelConfig {
+                base: BaseModel::Sd1,
+                ..mse
             }]
         );
         // A file that is gone is left as it is.
