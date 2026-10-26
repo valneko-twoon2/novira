@@ -32,7 +32,7 @@ if not exist frontend\node_modules (
 )
 
 echo Building the frontend (only when a source changed)...
-node toolsensure-frontend.mjs
+node tools/ensure-frontend.mjs
 if errorlevel 1 goto fail
 
 echo Building the server...
