@@ -54,5 +54,6 @@
   "common.font.search": "Search fonts",
   "common.font.noMatch": "No font matches",
   "common.font.standard": "Standard",
-  "common.desktopOnly": "Available in the desktop app, not in a browser."
+  "common.desktopOnly": "Available in the desktop app, not in a browser.",
+  "common.info": "Show details"
 }

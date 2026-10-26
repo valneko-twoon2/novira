@@ -49,7 +49,7 @@ export function DataPane() {
       <BackupSection />
       <UnfinishedDownloads />
       <SectionBlock title={t('settings.section.reset')}>
-        <Row label={t('settings.reset.scope.label')} help={t(SCOPE_HELP[scope])}>
+        <Row label={t('settings.reset.scope.label')} note={t(SCOPE_HELP[scope])}>
           <Select
             className="st-select"
             value={scope}

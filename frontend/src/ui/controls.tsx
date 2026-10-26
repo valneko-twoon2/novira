@@ -9,6 +9,7 @@ import {
   type ReactNode,
   type TextareaHTMLAttributes,
 } from 'react';
+import { InfoMark } from './InfoMark';
 import { Tooltip } from './Tooltip';
 
 type Scheme = 'base' | 'accent' | 'invoke' | 'danger';
@@ -249,9 +250,10 @@ export function Checkbox({ checked, onChange, label, disabled }: { checked: bool
 export function Field({ label, children, info, orientation = 'horizontal', className }: { label: ReactNode; children: ReactNode; info?: ReactNode; orientation?: 'horizontal' | 'vertical'; className?: string }) {
   return (
     <div className={cx('ui-field', `ui-field--${orientation}`, className)}>
-      <Tooltip content={info}>
-        <span className="ui-field__label">{label}</span>
-      </Tooltip>
+      <span className="ui-field__label">
+        {label}
+        {typeof info === 'string' && info !== '' && <InfoMark info={info} />}
+      </span>
       <div className="ui-field__control">{children}</div>
     </div>
   );

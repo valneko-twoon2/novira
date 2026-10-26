@@ -84,7 +84,7 @@ export function UnfinishedDownloads() {
           <ul className="st-roots" data-testid="settings-unfinished-list">
             {items.map((u, index) => (
               <li key={u.path} data-testid={`settings-unfinished-row-${index}`}>
-                <Row label={u.name} help={folderOf(u.path) || undefined}>
+                <Row label={u.name} note={folderOf(u.path) || undefined}>
                   <div className="st-inline">
                     <span className="st-row__help">{formatKept(u.bytes)}</span>
                     <Button size="sm" variant="outline" scheme="danger" disabled={busy} onClick={() => void remove([u.path])} data-testid={`settings-unfinished-delete-${index}`}>

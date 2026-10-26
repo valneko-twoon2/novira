@@ -17,7 +17,7 @@ export function DataDirRow({ engine, busy, run }: { engine: EngineSettings; busy
     void run(() => backend.chooseDataDir(moveData));
   };
   return (
-    <Row label={t('settings.engine.dataDir.label')} help={canChange ? t('settings.engine.dataDir.help') : t('settings.engine.dataDir.fixedHelp')}>
+    <Row label={t('settings.engine.dataDir.label')} help={canChange ? undefined : t('settings.engine.dataDir.fixedHelp')}>
       <div className="st-location">
         <code className="st-path" data-testid="settings-engine-data-dir">
           {engine.dataDir}

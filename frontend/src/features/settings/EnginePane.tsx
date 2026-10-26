@@ -91,7 +91,7 @@ export function EnginePane() {
         <ComfyuiRow engine={engine} busy={busy} run={run} />
       </SectionBlock>
       <SectionBlock title={t('settings.section.engineStart')}>
-        <Row label={t('settings.engine.package.label')} help={pendingPackage === null ? t('settings.engine.package.help') : t('settings.engine.package.reinstall')}>
+        <Row label={t('settings.engine.package.label')} help={t('settings.engine.package.help')} note={pendingPackage === null ? undefined : t('settings.engine.package.reinstall')}>
           <div className="st-inline">
             <Select
               className="st-select"
@@ -114,7 +114,7 @@ export function EnginePane() {
             )}
           </div>
         </Row>
-        <Row label={t('settings.engine.timeout.label')} help={t('settings.engine.timeout.help')}>
+        <Row label={t('settings.engine.timeout.label')}>
           <div className="st-slider" data-testid="settings-engine-timeout">
             <SliderNumber value={timeout ?? engine.comfyuiStartTimeoutSecs} onChange={changeTimeout} {...TIMEOUT_RANGE} aria-label={t('settings.engine.timeout.label')} />
           </div>
@@ -132,7 +132,6 @@ export function EnginePane() {
         </Row>
       </SectionBlock>
       <SectionBlock title={t('settings.engine.modelRoots.label')}>
-        <p className="st-row__help st-pane__note">{t('settings.engine.modelRoots.help')}</p>
         {engine.modelRoots.length === 0 && <p className="st-row__help">{t('settings.engine.modelRoots.none')}</p>}
         <ul className="st-roots" data-testid="settings-engine-roots">
           {engine.modelRoots.map((root, i) => (

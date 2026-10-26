@@ -88,7 +88,7 @@ export function GeneralPane() {
           />
         </Row>
         {!mock && (
-          <Row label={t('settings.uiZoom.label')} help={t('settings.uiZoom.help')}>
+          <Row label={t('settings.uiZoom.label')}>
             <Select
               className="st-select"
               value={String(sanitizeUiZoom(s.uiZoom))}
@@ -206,7 +206,7 @@ export function GalleryPane() {
         {toggle('autoSwitch', t('gallery.settings.autoSwitch'))}
         {toggle('autoAssignBoardOnClick', t('gallery.settings.autoAssign'))}
         <Toggle k="confirmOnDelete" label={t('settings.confirmOnDelete')} />
-        <Row label={t('settings.clearIntermediates')} help={t('settings.clearIntermediatesHelp')}>
+        <Row label={t('settings.clearIntermediates')}>
           <Button size="sm" scheme="danger" variant="outline" disabled={intermediates.length === 0} isLoading={clearing} onClick={() => void clearIntermediates()}>
             {tCount('settings.clearIntermediatesButton', intermediates.length)}
           </Button>
@@ -237,7 +237,6 @@ export function ComicTextPane() {
         </Row>
       </SectionBlock>
       <SectionBlock title={t('settings.section.comicPage')}>
-        <p className="st-row__help st-pane__note">{t('settings.comicPage.help')}</p>
         <Row label={t('comic.page.size')}>
           <Select className="st-select" value={s.comicPageSize} onChange={(v) => s.set({ comicPageSize: v })} options={PAGE_SIZES.map((p) => ({ value: p, label: p }))} aria-label={t('comic.page.size')} data-testid="settings-comic-size" />
         </Row>
@@ -275,7 +274,7 @@ export function AccountsPane() {
 export function DeveloperPane() {
   return (
     <SectionBlock title={t('settings.section.developer')}>
-      <Toggle k="showDevLog" label={t('settings.showDevLog')} help={t('settings.showDevLogHelp')} />
+      <Toggle k="showDevLog" label={t('settings.showDevLog')} />
     </SectionBlock>
   );
 }

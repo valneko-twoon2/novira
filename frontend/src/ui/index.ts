@@ -17,3 +17,4 @@ export { ZOOM_HOTKEYS } from './zoomHotkeys';
 export { ErrorBoundary } from './ErrorBoundary';
 export { PressAgainButton, PressAgainIconButton, PressAgainMenuItem } from './PressAgain';
 export { OutOfMemoryNotice } from './OutOfMemoryNotice';
+export { InfoMark } from './InfoMark';

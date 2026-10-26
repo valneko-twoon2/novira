@@ -54,5 +54,6 @@
   "common.font.search": "フォントを検索",
   "common.font.noMatch": "合うフォントがありません",
   "common.font.standard": "標準",
-  "common.desktopOnly": "デスクトップアプリで使えます。ブラウザからは使えません。"
+  "common.desktopOnly": "デスクトップアプリで使えます。ブラウザからは使えません。",
+  "common.info": "説明を見る"
 }
