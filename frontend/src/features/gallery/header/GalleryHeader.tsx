@@ -1,9 +1,10 @@
 // Gallery toolbar: Images / Assets tabs, image count, search, date filter, settings and upload; below it the active date filter.
-import { MagnifyingGlass, UploadSimple, X } from '@phosphor-icons/react';
+import { ArrowArcLeft, ArrowArcRight, MagnifyingGlass, UploadSimple, X } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { t } from '@/i18n';
 import type { DateRange } from '@/state/dateFilter';
 import { useGallery, type GalleryView } from '@/state/gallery';
+import { redoDeletion, undoDeletion, useGalleryUndo } from '@/state/galleryUndo';
 import { cx, IconButton, TextInput } from '@/ui';
 import { rangeLabel } from '../dateLabels';
 import { useBoardImages } from '../useBoardImages';
@@ -36,6 +37,8 @@ export function GalleryHeader({ onUploadClick }: { onUploadClick: () => void }) 
   const search = useGallery((s) => s.search);
   const dateFilter = useGallery((s) => s.dateFilter);
   const count = useBoardImages().length;
+  const canUndo = useGalleryUndo((s) => s.undo.length > 0);
+  const canRedo = useGalleryUndo((s) => s.redo.length > 0);
   const [searchOpen, setSearchOpen] = useState(search.length > 0);
   const g = useGallery.getState;
   return (
@@ -60,6 +63,8 @@ export function GalleryHeader({ onUploadClick }: { onUploadClick: () => void }) 
           {count}
         </span>
         <span className="gheader__spacer" />
+        <IconButton label={t('gallery.undoDelete.label')} icon={<ArrowArcLeft />} size="xs" disabled={!canUndo} onClick={() => void undoDeletion()} data-testid="gallery-undo-delete" />
+        <IconButton label={t('gallery.redoDelete.label')} icon={<ArrowArcRight />} size="xs" disabled={!canRedo} onClick={() => void redoDeletion()} data-testid="gallery-redo-delete" />
         <IconButton
           label={t('gallery.search.label')}
           icon={<MagnifyingGlass />}

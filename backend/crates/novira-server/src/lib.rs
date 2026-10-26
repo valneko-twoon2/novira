@@ -119,6 +119,7 @@ pub const SERVED: &[&str] = &[
     "delete_board",
     "update_images",
     "delete_images",
+    "restore_images",
     "save_comic",
     "delete_comic",
     "save_canvas",

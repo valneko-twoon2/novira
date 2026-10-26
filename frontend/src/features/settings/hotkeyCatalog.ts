@@ -89,6 +89,8 @@ export const HOTKEY_CATEGORIES: HotkeyCategory[] = [
     title: 'settings.hotkeys.category.gallery',
     hotkeys: [
       hk('gallery', 'navigate', ['arrowleft', 'arrowright', 'arrowup', 'arrowdown']),
+      hk('gallery', 'undoDelete', ['mod+z']),
+      hk('gallery', 'redoDelete', ['mod+shift+z', 'mod+y']),
       hk('gallery', 'selectAll', ['mod+a']),
       hk('gallery', 'clearSelection', ['escape']),
       hk('gallery', 'star', ['.']),

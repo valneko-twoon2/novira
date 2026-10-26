@@ -2,6 +2,7 @@
 import { backend, type BoardDTO } from '@/backend';
 import { t } from '@/i18n';
 import { useGallery } from '@/state/gallery';
+import { recordDeletion, undoDeletion } from '@/state/galleryUndo';
 import { toast } from '@/state/toasts';
 
 export async function createBoard(): Promise<BoardDTO> {
@@ -30,7 +31,8 @@ export async function deleteBoard(id: string, deleteImages: boolean) {
   if (deletedImages.length) g.removeImages(deletedImages);
   else g.detachBoardImages(id);
   g.removeBoard(id);
-  toast({ status: 'success', title: t('gallery.boards.deleted') });
+  recordDeletion(deletedImages);
+  toast({ status: 'success', title: t('gallery.boards.deleted'), actions: deletedImages.length ? [{ label: t('gallery.undoDelete.action'), run: () => void undoDeletion(deletedImages) }] : undefined });
 }
 
 export function downloadBoard() {

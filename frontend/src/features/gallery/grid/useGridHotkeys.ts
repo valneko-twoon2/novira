@@ -1,7 +1,8 @@
-// Gallery keyboard shortcuts: arrows move (Shift extends), Delete, Ctrl+A, Ctrl+C, Escape.
+// Gallery keyboard shortcuts: arrows move (Shift extends), Delete, Ctrl+Z / Ctrl+Shift+Z (a deletion back and again), Ctrl+A, Ctrl+C, Escape.
 // Active while the viewer is the main view or the pointer is over the grid, so the canvas keeps its keys.
 import type { RefObject } from 'react';
 import { useGallery } from '@/state/gallery';
+import { redoDeletion, undoDeletion } from '@/state/galleryUndo';
 import { useUi, type TabName } from '@/state/ui';
 import { useHotkey } from '@/ui';
 import { copyImage } from '../actions';
@@ -39,6 +40,16 @@ export function useGridHotkeys({ tab, names, stepRow, gridRef, scrollToIndex }: 
   useHotkey(
     'delete',
     guard(() => requestDeleteImages(useGallery.getState().selection)),
+    opts,
+  );
+  useHotkey(
+    'mod+z',
+    guard(() => void undoDeletion()),
+    opts,
+  );
+  useHotkey(
+    ['mod+shift+z', 'mod+y'],
+    guard(() => void redoDeletion()),
     opts,
   );
   useHotkey(

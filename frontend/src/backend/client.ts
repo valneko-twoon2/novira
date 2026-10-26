@@ -73,7 +73,10 @@ export interface BackendClient {
   /** Store a rendered image (e.g. canvas flatten, filter result). */
   saveImageFromUrl(url: string, opts: { boardId: string | null; isIntermediate?: boolean; category?: ImageDTO['category'] }): Promise<ImageDTO>;
   updateImages(names: string[], patch: Partial<Pick<ImageDTO, 'boardId' | 'starred' | 'isIntermediate'>>): Promise<ImageDTO[]>;
+  /** Takes pictures out of the gallery into the backend's trash, where `restoreImages` can bring them back for a while. */
   deleteImages(names: string[]): Promise<void>;
+  /** Brings deleted pictures back; the ones the trash no longer holds are left out of the answer. */
+  restoreImages(names: string[]): Promise<ImageDTO[]>;
 
   // Queue
   enqueue(request: EnqueueRequest): Promise<QueueItem[]>;

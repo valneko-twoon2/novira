@@ -20,6 +20,7 @@ One page per feature, each the current specification of that feature: how it beh
 | [assistant-pictures.md](assistant-pictures.md) | The pictures the assistant sees: attachments the user makes, and a drawn comic page on the comic screen after the user allows it |
 | [assistant-web-lookup.md](assistant-web-lookup.md) | The assistant's fact look-up on Wikipedia: the fixed hosts, the request, the limits, its own permission setting |
 | [gallery-share.md](gallery-share.md) | The gallery's files and boards, the image scheme, export for sharing, the watermark and content credentials |
+| [gallery-trash.md](gallery-trash.md) | Deleting pictures: the trash that keeps them for 14 days, and undo and redo of a deletion |
 | [gallery-view.md](gallery-view.md) | The gallery grid and the viewer on a picture being drawn: the cell at the start of the grid, the large live picture |
 | [comic-canvas.md](comic-canvas.md) | The saved canvas document and comic projects, the font list |
 | [comic-layers.md](comic-layers.md) | A comic page's layers (Canvas layers, one store per page), painting on a page, inpainting a page |

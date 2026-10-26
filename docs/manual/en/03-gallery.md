@@ -256,7 +256,13 @@ You can delete a picture in the following ways.
 
 A confirmation window appears, and pressing "{{ui:common.delete}}" deletes it.
 
-> A deleted picture cannot be restored. There is no place like a recycle bin.
+A deleted picture is not erased at once. It is kept for 14 days (500 pictures at most), so you can take a deletion back.
+
+- Press **Undo** on the message that appears after deleting. It is there for a few seconds.
+- Or press the "{{ui:gallery.undoDelete.label}}" button at the top of the gallery, or `Ctrl+Z` while the pointer is over the gallery (or the viewer is open). The last 30 deletions can be taken back, newest first.
+- To delete again what you brought back, press the "{{ui:gallery.redoDelete.label}}" button, or `Ctrl+Shift+Z` (`Ctrl+Y`).
+
+> The history of what you can undo is forgotten when you close the app. A picture deleted more than 14 days ago cannot be restored. Deleting a board together with its pictures can be taken back the same way; the pictures come back to "{{ui:gallery.boards.uncategorized}}" when the board is gone.
 
 If you check "{{ui:common.dontAskAgain}}" in the confirmation window, pictures are deleted without confirmation from then on. To get the confirmation back, turn on "{{ui:settings.confirmOnDelete}}" in **{{ui:app.nav.settings}}**.
 

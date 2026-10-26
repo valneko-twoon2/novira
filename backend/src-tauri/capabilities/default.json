@@ -15,6 +15,7 @@
     "allow-upload-image",
     "allow-update-images",
     "allow-delete-images",
+    "allow-restore-images",
     "allow-enqueue",
     "allow-cancel-queue-item",
     "allow-cancel-batch",

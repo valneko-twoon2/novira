@@ -230,5 +230,14 @@
   "gallery.manga.failed": "The finish failed",
   "gallery.toast.recallModelByName": "The model was matched by its name: {name}",
   "gallery.toast.recallModelMissing": "The model \"{name}\" was not found, so the current model stays",
-  "gallery.meta.sampling": "Sampler (what ran)"
+  "gallery.meta.sampling": "Sampler (what ran)",
+  "gallery.undoDelete.label": "Undo delete",
+  "gallery.undoDelete.action": "Undo",
+  "gallery.undoDelete.done.one": "{count} image restored",
+  "gallery.undoDelete.done.other": "{count} images restored",
+  "gallery.undoDelete.expired": "Could not restore: they were kept for too long",
+  "gallery.undoDelete.failed": "Could not undo the delete",
+  "gallery.redoDelete.label": "Delete again",
+  "gallery.redoDelete.done.one": "{count} image deleted again",
+  "gallery.redoDelete.done.other": "{count} images deleted again"
 }

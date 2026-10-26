@@ -20,6 +20,8 @@ pub enum ImageError {
 pub struct ImageFiles {
     originals: PathBuf,
     thumbnails: PathBuf,
+    /// Where deleted pictures wait to be taken back (`trash/`): the original and the thumbnail side by side.
+    trash: PathBuf,
 }
 
 /// True for names novira generates (`<hex/uuid>` with a picture, video or audio extension); anything else is refused
@@ -70,6 +72,7 @@ impl ImageFiles {
         Ok(Self {
             originals,
             thumbnails,
+            trash: data_dir.join("trash"),
         })
     }
 
@@ -141,6 +144,60 @@ impl ImageFiles {
             .into_iter()
             .flatten()
         {
+            let _ = std::fs::remove_file(p);
+        }
+    }
+
+    /// The two files of a picture in the trash: the original and the thumbnail.
+    fn trashed_paths(&self, name: &str) -> Option<[PathBuf; 2]> {
+        let thumb = self.thumbnail_path(name)?;
+        Some([self.trash.join(name), self.trash.join(thumb.file_name()?)])
+    }
+
+    /// Moves a picture's files into the trash (so a deletion can be taken back). Returns whether the original moved.
+    pub fn trash(&self, name: &str) -> bool {
+        let (Some(from), Some(to)) = (
+            [self.original_path(name), self.thumbnail_path(name)]
+                .into_iter()
+                .collect::<Option<Vec<_>>>(),
+            self.trashed_paths(name),
+        ) else {
+            return false;
+        };
+        if std::fs::create_dir_all(&self.trash).is_err() {
+            return false;
+        }
+        let mut moved = false;
+        for (i, (a, b)) in from.iter().zip(&to).enumerate() {
+            let ok = std::fs::rename(a, b).is_ok();
+            if i == 0 {
+                moved = ok;
+            }
+        }
+        moved
+    }
+
+    /// Puts a trashed picture's files back. True when the original is in place afterwards.
+    pub fn restore(&self, name: &str) -> bool {
+        let (Some(to), Some(from)) = (
+            [self.original_path(name), self.thumbnail_path(name)]
+                .into_iter()
+                .collect::<Option<Vec<_>>>(),
+            self.trashed_paths(name),
+        ) else {
+            return false;
+        };
+        for (a, b) in from.iter().zip(&to) {
+            if a.exists() {
+                let _ = std::fs::rename(a, b);
+            }
+        }
+        to[0].exists()
+    }
+
+    /// Deletes a trashed picture's files for good.
+    pub fn purge(&self, name: &str) {
+        for p in self.trashed_paths(name).into_iter().flatten() {
             let _ = std::fs::remove_file(p);
         }
     }

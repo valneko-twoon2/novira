@@ -3,6 +3,7 @@ import { backend, canOpenNewWindow, openInNewWindow, type ImageDTO } from '@/bac
 import { t, tCount } from '@/i18n';
 import { useCanvas, type CanvasImportTarget } from '@/state/canvas';
 import { useGallery, type BoardId } from '@/state/gallery';
+import { recordDeletion, undoDeletion } from '@/state/galleryUndo';
 import { defaultRefModelKey } from '@/state/models';
 import { useVideo } from '@/state/media/video';
 import { useParams } from '@/state/params';
@@ -35,7 +36,8 @@ export async function deleteImagesNow(names: string[]) {
   if (!names.length) return;
   await backend.deleteImages(names);
   useGallery.getState().removeImages(names);
-  toast({ status: 'success', title: tCount('gallery.toast.deleted', names.length) });
+  recordDeletion(names);
+  toast({ status: 'success', title: tCount('gallery.toast.deleted', names.length), actions: [{ label: t('gallery.undoDelete.action'), run: () => void undoDeletion(names) }] });
 }
 
 export function downloadImages(images: ImageDTO[]) {

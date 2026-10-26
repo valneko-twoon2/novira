@@ -258,6 +258,7 @@ pub fn run() {
             commands::upload_image,
             commands::update_images,
             commands::delete_images,
+            commands::restore_images,
             commands::enqueue,
             commands::cancel_queue_item,
             commands::cancel_batch,

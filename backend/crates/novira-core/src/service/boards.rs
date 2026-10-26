@@ -56,22 +56,23 @@ impl Backend {
             }
         }
         let gone = super::gallery::Picked::new(&deleted);
+        let trashed: Vec<ImageDTO> = s
+            .images
+            .iter()
+            .filter(|i| gone.contains(&i.name))
+            .cloned()
+            .collect();
         s.images.retain(|i| !gone.contains(&i.name));
         drop(s);
         let mut db = self.db();
         db.delete(Table::Boards, &[id])?;
-        db.delete(
-            Table::Images,
-            &deleted.iter().map(String::as_str).collect::<Vec<_>>(),
-        )?;
         db.put_many(
             Table::Images,
             moved.iter().map(|i| (i.name.as_str(), i.created_at, i)),
         )?;
         drop(db);
-        for name in &deleted {
-            self.inner.files.delete(name);
-        }
+        // The pictures of the board wait in the trash like any deleted picture.
+        self.move_to_trash(&trashed)?;
         Ok(deleted)
     }
 }

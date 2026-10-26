@@ -85,6 +85,11 @@ pub fn delete_images(backend: State<'_, Backend>, names: Vec<String>) -> Res<()>
 }
 
 #[tauri::command]
+pub fn restore_images(backend: State<'_, Backend>, names: Vec<String>) -> Res<Vec<ImageDTO>> {
+    guard(|| call::restore_images(&backend, names))
+}
+
+#[tauri::command]
 pub fn enqueue(backend: State<'_, Backend>, request: EnqueueRequest) -> Res<Vec<QueueItem>> {
     guard(|| call::enqueue(&backend, request))
 }

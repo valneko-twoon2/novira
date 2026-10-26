@@ -230,5 +230,14 @@
   "gallery.manga.failed": "仕上げられませんでした",
   "gallery.toast.recallModelByName": "モデルは名前から「{name}」を選びました",
   "gallery.toast.recallModelMissing": "モデル「{name}」が見つからないため、今のモデルのままです",
-  "gallery.meta.sampling": "サンプラー（実際に使ったもの）"
+  "gallery.meta.sampling": "サンプラー（実際に使ったもの）",
+  "gallery.undoDelete.label": "削除を元に戻す",
+  "gallery.undoDelete.action": "元に戻す",
+  "gallery.undoDelete.done.one": "{count} 枚の画像を元に戻しました",
+  "gallery.undoDelete.done.other": "{count} 枚の画像を元に戻しました",
+  "gallery.undoDelete.expired": "保管期間が過ぎたため、元に戻せませんでした",
+  "gallery.undoDelete.failed": "削除を元に戻せませんでした",
+  "gallery.redoDelete.label": "もう一度削除する",
+  "gallery.redoDelete.done.one": "{count} 枚の画像をもう一度削除しました",
+  "gallery.redoDelete.done.other": "{count} 枚の画像をもう一度削除しました"
 }

@@ -58,6 +58,7 @@ The screen asks `queue` to enqueue a request; `guidance.rs` checks the mask, con
 novira-data/
 ├─ novira.sqlite              # one JSON document per row (db.rs)
 ├─ outputs/  thumbnails/      # gallery files
+├─ trash/                     # deleted pictures that can still be taken back (14 days, 500 at most)
 ├─ models/                    # model folders (models/layout.rs)
 ├─ comfyui/                   # the installed ComfyUI and its Python (unless settings point at another one)
 ├─ secrets/                   # DPAPI-encrypted keys, and the id of this folder's Credential Manager entries (secret.rs)

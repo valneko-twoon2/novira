@@ -20,6 +20,7 @@ fn index_page(table: Table) -> u64 {
         Table::Queue => 11,
         Table::Comics => 13,
         Table::Watermarks => 15,
+        Table::Trash => 17,
     }
 }
 
@@ -115,8 +116,8 @@ fn models_that_cannot_be_saved_stop_the_backend_from_starting() {
     assert!(err.to_string().contains("database error"), "{err}");
 }
 
-/// The page of the index of the `meta` table (created after the seven tables).
-const META_INDEX_PAGE: u64 = 17;
+/// The page of the index of the `meta` table (created after the eight tables).
+const META_INDEX_PAGE: u64 = 19;
 
 fn damage_meta(dir: &Path) {
     let mut file = std::fs::OpenOptions::new()

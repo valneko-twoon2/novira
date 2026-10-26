@@ -17,7 +17,8 @@ fn index_page(table: Option<Table>) -> u64 {
         Some(Table::Queue) => 11,
         Some(Table::Comics) => 13,
         Some(Table::Watermarks) => 15,
-        None => 17,
+        Some(Table::Trash) => 17,
+        None => 19,
     }
 }
 

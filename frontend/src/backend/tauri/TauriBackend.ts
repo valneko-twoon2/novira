@@ -219,6 +219,10 @@ export class TauriBackend implements BackendClient {
     return invoke<void>('delete_images', { names });
   }
 
+  restoreImages(names: string[]) {
+    return invoke<ImageDTO[]>('restore_images', { names });
+  }
+
   // Queue ------------------------------------------------------------------
 
   /** A picture rendered in the page (canvas flatten, mask, blob) stored as a hidden image the backend can read. */

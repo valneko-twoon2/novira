@@ -300,6 +300,9 @@ commands! {
     sync delete_images(b, names: Vec<String>) -> () {
         b.delete_images(&names).map_err(msg)
     }
+    sync restore_images(b, names: Vec<String>) -> Vec<ImageDTO> {
+        b.restore_images(&names).map_err(msg)
+    }
     sync enqueue(b, request: EnqueueRequest) -> Vec<QueueItem> {
         b.enqueue(request).map_err(msg)
     }

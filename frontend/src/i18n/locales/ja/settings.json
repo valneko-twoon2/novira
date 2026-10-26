@@ -323,5 +323,9 @@
   "settings.engine.dataDir.dialog.useHelp": "今のデータは移しません。選んだフォルダにデータがあればそれを開き、空なら新しく始めます。",
   "settings.engine.comfyui.change": "インストール先を変更",
   "settings.engine.comfyui.reset": "既定に戻す",
-  "settings.engine.comfyui.next": "次の起動から {path} にインストールします。"
+  "settings.engine.comfyui.next": "次の起動から {path} にインストールします。",
+  "settings.hotkeys.gallery.undoDelete": "削除を元に戻す",
+  "settings.hotkeys.gallery.undoDeleteDesc": "直前に削除した画像をギャラリーへ戻します",
+  "settings.hotkeys.gallery.redoDelete": "もう一度削除する",
+  "settings.hotkeys.gallery.redoDeleteDesc": "元に戻した削除をやり直します"
 }

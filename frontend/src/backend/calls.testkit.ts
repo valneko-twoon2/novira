@@ -32,6 +32,7 @@ export const CALLS: {
   uploadImage: (b) => b.uploadImage(new Blob([new Uint8Array([1, 2, 3])]), { boardId: null }),
   updateImages: (b) => b.updateImages(['a.png'], { starred: true }),
   deleteImages: (b) => b.deleteImages(['a.png']),
+  restoreImages: (b) => b.restoreImages(['a.png']),
   enqueue: (b) =>
     b.enqueue({
       ...(fixture('enqueue-request') as Parameters<BackendClient['enqueue']>[0]),

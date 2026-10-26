@@ -7,6 +7,7 @@ pub const COMMANDS: &[&str] = &[
     "upload_image",
     "update_images",
     "delete_images",
+    "restore_images",
     "enqueue",
     "cancel_queue_item",
     "cancel_batch",

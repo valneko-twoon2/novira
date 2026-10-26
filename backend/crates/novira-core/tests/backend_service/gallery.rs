@@ -199,3 +199,156 @@ async fn saving_a_workflow_with_its_id_updates_it_in_place() {
     assert_eq!(workflows[0].tags, ["x"]);
     assert_eq!(workflows[0].graph, json!({ "v": 2 }));
 }
+
+#[tokio::test]
+async fn a_deleted_picture_waits_in_the_trash_and_comes_back_with_its_board_and_star() {
+    let dir = tempfile::tempdir().unwrap();
+    let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+    let board = backend.create_board("Keep").unwrap();
+    let img = backend
+        .upload_image(
+            png(8, 8),
+            ImageOptions {
+                board_id: Some(board.id.clone()),
+                ..ImageOptions::default()
+            },
+        )
+        .await
+        .unwrap();
+    let other = backend
+        .upload_image(png(8, 8), ImageOptions::default())
+        .await
+        .unwrap();
+    backend
+        .update_images(
+            std::slice::from_ref(&img.name),
+            ImagePatch {
+                starred: Some(true),
+                ..ImagePatch::default()
+            },
+        )
+        .unwrap();
+
+    backend
+        .delete_images(std::slice::from_ref(&img.name))
+        .unwrap();
+    assert!(backend
+        .bootstrap()
+        .images
+        .iter()
+        .all(|i| i.name != img.name));
+    assert!(backend.read_image("full", &img.name).is_none());
+    assert!(dir.path().join("trash").join(&img.name).exists());
+
+    let back = backend
+        .restore_images(std::slice::from_ref(&img.name))
+        .unwrap();
+    assert_eq!(back.len(), 1);
+    assert_eq!(back[0].board_id.as_deref(), Some(board.id.as_str()));
+    assert!(back[0].starred);
+    assert!(backend.read_image("full", &img.name).is_some());
+    assert!(backend.read_image("thumb", &img.name).is_some());
+    // The newest picture stays first: the restored one is older than the other.
+    let names: Vec<String> = backend
+        .bootstrap()
+        .images
+        .into_iter()
+        .map(|i| i.name)
+        .collect();
+    assert_eq!(names.len(), 2);
+    assert!(names.contains(&other.name));
+    // Restoring twice, or what was never deleted, brings nothing.
+    assert!(backend
+        .restore_images(std::slice::from_ref(&img.name))
+        .unwrap()
+        .is_empty());
+    assert!(backend
+        .restore_images(&["nope.png".into()])
+        .unwrap()
+        .is_empty());
+    backend.shutdown();
+}
+
+#[tokio::test]
+async fn a_picture_whose_board_was_deleted_in_the_meantime_comes_back_uncategorized() {
+    let dir = tempfile::tempdir().unwrap();
+    let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+    let board = backend.create_board("Gone").unwrap();
+    let img = backend
+        .upload_image(
+            png(8, 8),
+            ImageOptions {
+                board_id: Some(board.id.clone()),
+                ..ImageOptions::default()
+            },
+        )
+        .await
+        .unwrap();
+    // Deleting the board with its pictures puts them in the trash too.
+    assert_eq!(
+        backend.delete_board(&board.id, true).unwrap(),
+        vec![img.name.clone()]
+    );
+    let back = backend
+        .restore_images(std::slice::from_ref(&img.name))
+        .unwrap();
+    assert_eq!(back[0].board_id, None);
+    backend.shutdown();
+}
+
+#[tokio::test]
+async fn a_trashed_picture_survives_a_restart_and_a_stray_name_is_deleted_for_good() {
+    let dir = tempfile::tempdir().unwrap();
+    let name = {
+        let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+        let img = backend
+            .upload_image(png(8, 8), ImageOptions::default())
+            .await
+            .unwrap();
+        backend
+            .delete_images(std::slice::from_ref(&img.name))
+            .unwrap();
+        backend.shutdown();
+        img.name
+    };
+    let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+    assert!(backend.bootstrap().images.is_empty());
+    assert_eq!(
+        backend
+            .restore_images(std::slice::from_ref(&name))
+            .unwrap()
+            .len(),
+        1
+    );
+    // A stray file the gallery does not know is removed outright, not trashed.
+    let stray = format!("{}.png", "a".repeat(32));
+    std::fs::write(dir.path().join("outputs").join(&stray), b"x").unwrap();
+    backend.delete_images(std::slice::from_ref(&stray)).unwrap();
+    assert!(!dir.path().join("outputs").join(&stray).exists());
+    assert!(!dir.path().join("trash").join(&stray).exists());
+    backend.shutdown();
+}
+
+#[tokio::test]
+async fn restore_and_delete_refuse_names_that_leave_the_picture_folders() {
+    let dir = tempfile::tempdir().unwrap();
+    let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+    let outside = dir.path().join("secret.png");
+    std::fs::write(&outside, b"keep me").unwrap();
+    for name in [
+        "../secret.png",
+        r"..\secret.png",
+        "C:/secret.png",
+        "a/b.png",
+        "",
+    ] {
+        assert!(backend
+            .restore_images(&[name.to_string()])
+            .unwrap()
+            .is_empty());
+        backend.delete_images(&[name.to_string()]).unwrap();
+    }
+    assert!(outside.exists());
+    assert!(!dir.path().join("trash").join("secret.png").exists());
+    backend.shutdown();
+}

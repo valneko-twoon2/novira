@@ -156,6 +156,8 @@ export class MockBackend implements BackendClient {
   private models: ModelConfig[] = [];
   private boards: BoardDTO[] = [];
   private images: ImageDTO[] = [];
+  /** Deleted pictures that `restoreImages` can bring back. */
+  private trash: ImageDTO[] = [];
   private workflows: SavedWorkflow[] = [];
   private queue: QueueItem[] = [];
   private nextItemId = 1;
@@ -327,6 +329,7 @@ export class MockBackend implements BackendClient {
       if (deleteImages) deleted.push(img.name);
       else img.boardId = null;
     }
+    this.trash.push(...this.images.filter((i) => deleted.includes(i.name)));
     this.images = this.images.filter((i) => !deleted.includes(i.name));
     return { deletedImages: deleted };
   }
@@ -373,7 +376,18 @@ export class MockBackend implements BackendClient {
 
   async deleteImages(names: string[]) {
     await wait(LATENCY);
+    this.trash.push(...this.images.filter((i) => names.includes(i.name)));
     this.images = this.images.filter((i) => !names.includes(i.name));
+  }
+
+  async restoreImages(names: string[]) {
+    await wait(LATENCY);
+    const back = this.trash.filter((i) => names.includes(i.name));
+    this.trash = this.trash.filter((i) => !names.includes(i.name));
+    const boards = new Set(this.boards.map((b) => b.id));
+    for (const img of back) if (img.boardId && !boards.has(img.boardId)) img.boardId = null;
+    this.images = [...back, ...this.images].sort((a, b) => b.createdAt - a.createdAt);
+    return back.map((i) => ({ ...i }));
   }
 
   // Queue ------------------------------------------------------------------

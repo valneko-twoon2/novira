@@ -323,5 +323,9 @@
   "settings.engine.dataDir.dialog.useHelp": "Leaves the current data where it is. A folder that already holds data is opened; an empty one starts a new library.",
   "settings.engine.comfyui.change": "Change the place",
   "settings.engine.comfyui.reset": "Back to the default",
-  "settings.engine.comfyui.next": "From the next start it is installed in {path}."
+  "settings.engine.comfyui.next": "From the next start it is installed in {path}.",
+  "settings.hotkeys.gallery.undoDelete": "Undo delete",
+  "settings.hotkeys.gallery.undoDeleteDesc": "Brings the images you deleted last back to the gallery",
+  "settings.hotkeys.gallery.redoDelete": "Delete again",
+  "settings.hotkeys.gallery.redoDeleteDesc": "Deletes again what you brought back"
 }

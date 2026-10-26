@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { backend, type GenerationMetadata, type ImageDTO } from '@/backend';
 import { t } from '@/i18n';
 import { useGallery } from '@/state/gallery';
+import { useGalleryUndo } from '@/state/galleryUndo';
 import { useParams } from '@/state/params';
 import { useToasts } from '@/state/toasts';
 import { useUi } from '@/state/ui';
@@ -83,6 +84,19 @@ describe('moving, starring and deleting', () => {
     await deleteImagesNow(['a']);
     expect(useGallery.getState().images.map((i) => i.name)).toEqual(['b']);
     expect(lastToast()?.status).toBe('success');
+  });
+
+  it('offers an undo with the toast, and the button brings the pictures back', async () => {
+    useGallery.setState({ images: [image('a'), image('b')] });
+    useGalleryUndo.setState({ undo: [], redo: [] });
+    vi.spyOn(backend, 'deleteImages').mockResolvedValue(undefined);
+    vi.spyOn(backend, 'restoreImages').mockResolvedValue([image('a')]);
+    await deleteImagesNow(['a']);
+    expect(useGalleryUndo.getState().undo).toEqual([['a']]);
+    const action = lastToast()?.actions?.[0];
+    expect(action?.label).toBe(t('gallery.undoDelete.action'));
+    action?.run();
+    await vi.waitFor(() => expect(useGallery.getState().images.map((i) => i.name).sort()).toEqual(['a', 'b']));
   });
 });
 

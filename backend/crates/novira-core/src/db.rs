@@ -16,6 +16,8 @@ pub enum Table {
     Comics,
     /// Watermark ids of exported copies and the gallery picture each came from.
     Watermarks,
+    /// Pictures deleted from the gallery that can still be taken back (`service/gallery.rs`).
+    Trash,
 }
 
 impl Table {
@@ -28,10 +30,11 @@ impl Table {
             Table::Queue => "queue",
             Table::Comics => "comics",
             Table::Watermarks => "watermarks",
+            Table::Trash => "trash",
         }
     }
 
-    const ALL: [Table; 7] = [
+    const ALL: [Table; 8] = [
         Table::Boards,
         Table::Images,
         Table::Workflows,
@@ -39,6 +42,7 @@ impl Table {
         Table::Queue,
         Table::Comics,
         Table::Watermarks,
+        Table::Trash,
     ];
 }
 

@@ -74,17 +74,125 @@ impl Backend {
         Ok(out)
     }
 
+    /// Takes pictures out of the gallery into the trash, where they wait to be brought back with `restore_images`.
+    /// A name the gallery does not know has its files deleted for good (a stray file).
     pub fn delete_images(&self, names: &[String]) -> Result<()> {
         let picked = Picked::new(names);
-        self.state().images.retain(|i| !picked.contains(&i.name));
+        let trashed: Vec<ImageDTO> = {
+            let mut s = self.state();
+            let gone = s
+                .images
+                .iter()
+                .filter(|i| picked.contains(&i.name))
+                .cloned()
+                .collect();
+            s.images.retain(|i| !picked.contains(&i.name));
+            gone
+        };
+        self.move_to_trash(&trashed)?;
+        let strays: Vec<&String> = names
+            .iter()
+            .filter(|n| !trashed.iter().any(|i| &i.name == *n))
+            .collect();
         self.db().delete(
             Table::Images,
-            &names.iter().map(String::as_str).collect::<Vec<_>>(),
+            &strays.iter().map(|n| n.as_str()).collect::<Vec<_>>(),
         )?;
-        for n in names {
+        for n in strays {
             self.inner.files.delete(n);
         }
         Ok(())
+    }
+
+    /// Writes the pictures into the trash table, moves their files there and drops what has waited too long.
+    pub(super) fn move_to_trash(&self, images: &[ImageDTO]) -> Result<()> {
+        if images.is_empty() {
+            return Ok(());
+        }
+        let at = now();
+        let rows: Vec<TrashedImage> = images
+            .iter()
+            .map(|i| TrashedImage {
+                image: i.clone(),
+                trashed_at: at,
+            })
+            .collect();
+        {
+            let mut db = self.db();
+            db.put_many(
+                Table::Trash,
+                rows.iter().map(|r| (r.image.name.as_str(), at, r)),
+            )?;
+            db.delete(
+                Table::Images,
+                &images.iter().map(|i| i.name.as_str()).collect::<Vec<_>>(),
+            )?;
+        }
+        for i in images {
+            self.inner.files.trash(&i.name);
+        }
+        self.purge_trash();
+        Ok(())
+    }
+
+    /// Brings trashed pictures back into the gallery; the ones that were already purged are left out of the answer.
+    pub fn restore_images(&self, names: &[String]) -> Result<Vec<ImageDTO>> {
+        let picked = Picked::new(names);
+        let rows: Vec<TrashedImage> = self.db().load(Table::Trash)?;
+        let mut back = Vec::new();
+        let mut gone = Vec::new();
+        for row in rows.into_iter().filter(|r| picked.contains(&r.image.name)) {
+            gone.push(row.image.name.clone());
+            if !self.inner.files.restore(&row.image.name) {
+                continue;
+            }
+            let mut image = self.image_dto(row.image);
+            // Its board may have been deleted since.
+            if let Some(b) = &image.board_id {
+                if !self.state().boards.iter().any(|x| &x.id == b) {
+                    image.board_id = None;
+                }
+            }
+            back.push(image);
+        }
+        {
+            let mut db = self.db();
+            db.put_many(
+                Table::Images,
+                back.iter().map(|i| (i.name.as_str(), i.created_at, i)),
+            )?;
+            db.delete(
+                Table::Trash,
+                &gone.iter().map(String::as_str).collect::<Vec<_>>(),
+            )?;
+        }
+        let mut s = self.state();
+        s.images.retain(|i| !back.iter().any(|b| b.name == i.name));
+        s.images.extend(back.iter().cloned());
+        s.images.sort_by_key(|i| std::cmp::Reverse(i.created_at));
+        Ok(back)
+    }
+
+    /// Deletes for good what has been in the trash longer than `TRASH_KEEP_MS`, and the oldest beyond `TRASH_KEEP_COUNT`.
+    pub(super) fn purge_trash(&self) {
+        let Ok(rows) = self.db().load::<TrashedImage>(Table::Trash) else {
+            return;
+        };
+        let times: Vec<(String, i64)> = rows
+            .iter()
+            .map(|r| (r.image.name.clone(), r.trashed_at))
+            .collect();
+        let stale = stale_in_trash(times, now(), TRASH_KEEP_MS, TRASH_KEEP_COUNT);
+        if stale.is_empty() {
+            return;
+        }
+        for name in &stale {
+            self.inner.files.purge(name);
+        }
+        let _ = self.db().delete(
+            Table::Trash,
+            &stale.iter().map(String::as_str).collect::<Vec<_>>(),
+        );
     }
 
     /// Bytes and content type for the image URL scheme (`full` or `thumb`).
@@ -104,6 +212,33 @@ impl Backend {
         let name = rest.rsplit('/').next()?;
         images::is_valid_name(name).then(|| name.to_string())
     }
+}
+
+/// How long a deleted picture can be taken back, and how many wait at most.
+const TRASH_KEEP_MS: i64 = 14 * 24 * 60 * 60 * 1000;
+const TRASH_KEEP_COUNT: usize = 500;
+
+/// The names to drop from the trash: the ones trashed before `now - keep_ms`, and, of the rest, every one past the newest
+/// `keep_count`.
+fn stale_in_trash(
+    mut rows: Vec<(String, i64)>,
+    now: i64,
+    keep_ms: i64,
+    keep_count: usize,
+) -> Vec<String> {
+    rows.sort_by_key(|(_, at)| std::cmp::Reverse(*at));
+    rows.into_iter()
+        .enumerate()
+        .filter(|(i, (_, at))| *i >= keep_count || *at < now - keep_ms)
+        .map(|(_, (name, _))| name)
+        .collect()
+}
+
+/// A picture in the trash: its gallery record and when it was deleted (milliseconds).
+#[derive(serde::Serialize, serde::Deserialize)]
+struct TrashedImage {
+    image: ImageDTO,
+    trashed_at: i64,
 }
 
 /// The names of picked pictures, asked once per picture of the gallery. A long list is a set: among 2400 pictures, 100
@@ -135,7 +270,25 @@ impl<'a> Picked<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::Picked;
+    use super::{stale_in_trash, Picked};
+
+    #[test]
+    fn the_trash_drops_what_is_old_and_what_is_beyond_the_newest_few() {
+        let row = |n: &str, at: i64| (n.to_string(), at);
+        let rows = vec![row("old", 100), row("a", 900), row("b", 950), row("c", 990)];
+        // Nothing is too old and all fit: nothing goes.
+        assert!(stale_in_trash(rows.clone(), 1000, 10_000, 4).is_empty());
+        // Older than the keep time goes, whatever the count (a row at exactly the limit stays).
+        assert_eq!(stale_in_trash(rows.clone(), 1000, 800, 4), ["old"]);
+        assert!(stale_in_trash(rows.clone(), 1000, 900, 4).is_empty());
+        assert!(stale_in_trash(rows.clone(), 1000, 900, 4)
+            .iter()
+            .all(|n| n != "a"));
+        // Beyond the newest two goes: the oldest ones, in the order of age.
+        assert_eq!(stale_in_trash(rows.clone(), 1000, 10_000, 2), ["a", "old"]);
+        assert_eq!(stale_in_trash(rows, 1000, 10_000, 0).len(), 4);
+        assert!(stale_in_trash(Vec::new(), 1000, 10, 5).is_empty());
+    }
 
     #[test]
     fn a_short_and_a_long_pick_answer_alike() {
