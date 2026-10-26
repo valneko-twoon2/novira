@@ -37,7 +37,7 @@ export function I2iSection() {
           )}
         </ImageDropZone>
         <Field label={t('params.image.strength')} info={t('params.image.strengthInfo')}>
-          <SliderNumber value={strength} onChange={(v) => set({ strength: v })} min={0} max={1} step={0.01} precision={2} marks={[0, 0.5, 1]} disabled={!image} aria-label={t('params.image.strength')} />
+          <SliderNumber value={strength} onChange={(v) => set({ strength: v })} min={0} max={1} step={0.01} precision={2} marks={[0, 0.5, 1]} aria-label={t('params.image.strength')} />
         </Field>
       </div>
     </Section>

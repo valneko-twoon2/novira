@@ -341,7 +341,7 @@
   "params.scheduler.detail.unipc": "10 ステップ前後でも収束が速い。短時間で仕上げたいとき。",
   "params.scheduler.detail.lcm": "LCM 用のモデルや LoRA 専用。4〜8 ステップ、CFG 1〜2 で使う。",
   "params.scheduler.detail.tcd": "TCD 用の LoRA 専用。少ないステップで描く。",
-  "params.i2i.title": "i2i（元画像から描き直す）",
+  "params.i2i.title": "i2i",
   "params.i2i.dropHint": "描き直す元の画像をドロップ",
   "params.i2i.dropOverlay": "この画像から描き直す",
   "params.i2i.clear": "元画像を外す",

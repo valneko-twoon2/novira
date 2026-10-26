@@ -4,12 +4,16 @@ import { expect, msg, openApp, test } from './fixtures';
 
 test('a gallery picture dropped on the image to image section is drawn over at a size of its shape', async ({ page }) => {
   await openApp(page);
-  await page.getByRole('button', { name: msg('params.i2i.title') }).click();
-  await expect(page.getByRole('slider', { name: msg('params.image.strength') })).toBeDisabled();
+  await page.getByRole('button', { name: msg('params.i2i.title'), exact: true }).click();
+  // The strength can be set before a picture is put in.
+  const slider = page.getByRole('slider', { name: msg('params.image.strength') });
+  await expect(slider).toBeEnabled();
+  await slider.focus();
+  await page.keyboard.press('ArrowLeft');
+  await expect(slider).toHaveAttribute('aria-valuenow', '0.69');
   const before = await page.getByTestId('gallery-thumb').count();
   await page.getByTestId('gallery-thumb').first().dragTo(page.locator('[data-testid="i2i-section"] .pp-upimg'));
   await expect(page.getByTestId('i2i-image')).toBeVisible();
-  await expect(page.getByRole('slider', { name: msg('params.image.strength') })).toBeEnabled();
   // The size follows the picture's shape, as one of the sizes the model was trained on.
   const width = Number(await page.getByRole('spinbutton', { name: msg('common.width') }).inputValue());
   const height = Number(await page.getByRole('spinbutton', { name: msg('common.height') }).inputValue());

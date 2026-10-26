@@ -302,6 +302,12 @@
   cursor: grab;
 }
 
+/* A slider that cannot be moved looks so (Radix marks it with data-disabled). */
+.ui-slider[data-disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .ui-slider__thumb:focus-visible {
   box-shadow: var(--focus-ring);
 }
