@@ -78,7 +78,9 @@ fn video_params() -> GenerationMetadata {
 
 #[test]
 fn every_image_family_draws_from_text() {
-    let p = params(GenerationMode::Txt2img);
+    let mut p = params(GenerationMode::Txt2img);
+    // Anima runs the scheduler setting, and plain `euler` is its template's; the other families ignore the setting.
+    p.scheduler = "euler".into();
     snap("family-anima", &p, &job(Family::Anima), None);
     snap("family-flux", &p, &job(Family::Flux), None);
     snap("family-chroma", &p, &job(Family::Chroma), None);
@@ -105,6 +107,7 @@ fn every_image_family_draws_from_text() {
 #[test]
 fn a_draft_of_a_newer_family_stops_early() {
     let mut p = params(GenerationMode::Txt2img);
+    p.scheduler = "euler".into();
     p.draft_at = Some(0.35);
     snap("family-anima-draft", &p, &job(Family::Anima), None);
     snap("family-z-image-draft", &p, &job(Family::ZImage), None);
@@ -160,6 +163,7 @@ fn flux_redraws_inpaints_and_upscales_through_the_shared_graph() {
 
 fn controlled(case: &str, f: Family, model: &ComfyRef) {
     let mut p = params(GenerationMode::Txt2img);
+    p.scheduler = "euler".into();
     p.control_layer_count = Some(1);
     let guidance = GuidanceInput {
         controls: vec![ControlInput {

@@ -298,7 +298,6 @@
   "params.wildcards.entryCount.other": "{count} 个条目",
   "params.wildcards.entriesPlaceholder": "每行写一个。空行和以 # 开头的行会被跳过。",
   "params.promptBook.open": "预设",
-  "params.promptBook.openHint": "打开预设",
   "params.promptBook.title": "预设",
   "params.promptBook.search": "搜索预设",
   "params.readiness.refNeedsEncoder": "参考图像需要图像编码器（CLIP {size}）。请从入门模型中安装，或在参考图像设置中选择其他编码器。",

@@ -5,9 +5,12 @@ import { FAMILY_SAMPLING, fixedSampling, samplingLabel } from './familySampling'
 
 describe('fixedSampling', () => {
   it('applies to main and diffusion models of a picture family only', () => {
-    expect(fixedSampling({ base: 'anima', type: 'main' })).toEqual({ sampler: 'euler', scheduler: 'simple' });
-    expect(fixedSampling({ base: 'anima', type: 'diffusion_model' })).toEqual(FAMILY_SAMPLING.anima);
-    expect(fixedSampling({ base: 'anima', type: 'lora' })).toBeUndefined();
+    expect(fixedSampling({ base: 'flux', type: 'main' })).toEqual({ sampler: 'euler', scheduler: 'simple' });
+    expect(fixedSampling({ base: 'flux', type: 'diffusion_model' })).toEqual(FAMILY_SAMPLING.flux);
+    expect(fixedSampling({ base: 'flux', type: 'lora' })).toBeUndefined();
+    // Anima runs the scheduler setting, so nothing is fixed for it.
+    expect(fixedSampling({ base: 'anima', type: 'main' })).toBeUndefined();
+    expect(fixedSampling({ base: 'anima', type: 'diffusion_model' })).toBeUndefined();
     expect(fixedSampling({ base: 'sdxl', type: 'main' })).toBeUndefined();
     expect(fixedSampling({ base: 'sd-1', type: 'main' })).toBeUndefined();
     expect(fixedSampling({ base: 'wan', type: 'diffusion_model' })).toBeUndefined();

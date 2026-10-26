@@ -5,7 +5,7 @@ import { t } from '@/i18n';
 import { useParams } from '@/state/params';
 import { toast } from '@/state/toasts';
 import { Button, Popover, PopoverContent, PopoverTrigger } from '@/ui';
-import { SCHEDULER_LABELS } from '../labels';
+import { schedulerLabel } from '../labels';
 import { modelProfile, profileMismatches, type ProfileKey } from './modelProfile';
 import { applyRecommended } from './selectMainModel';
 
@@ -28,7 +28,7 @@ export function ModelProfilePopover({ model }: { model: ModelConfig }) {
         ? t('params.profile.mismatch.stepsLow', { value: p.steps, min: p.stepsRange[0] })
         : t('params.profile.mismatch.stepsHigh', { value: p.steps, max: p.stepsRange[1] }),
     cfg: t('params.profile.mismatch.cfg', { value: p.cfgScale }),
-    scheduler: t('params.profile.mismatch.scheduler', { value: SCHEDULER_LABELS[p.scheduler] }),
+    scheduler: t('params.profile.mismatch.scheduler', { value: schedulerLabel(p.scheduler, model.base) }),
     size: t('params.profile.mismatch.size', { value: `${p.width}×${p.height}` }),
   };
   return (
@@ -72,7 +72,7 @@ export function ModelProfilePopover({ model }: { model: ModelConfig }) {
       <div className="pp-chips">
         {chip('steps', t('params.profile.steps', { value: p.steps }))}
         {chip('cfg', t('params.profile.cfg', { value: p.cfgScale }))}
-        {chip('scheduler', p.fixedSampling ? samplingLabel(p.fixedSampling) : SCHEDULER_LABELS[p.scheduler])}
+        {chip('scheduler', p.fixedSampling ? samplingLabel(p.fixedSampling) : schedulerLabel(p.scheduler, model.base))}
         {chip('size', `${p.width}×${p.height}`)}
         {p.quality && (
           <span className="pp-pchip pp-pchip--tags" title={p.quality}>

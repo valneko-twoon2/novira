@@ -2,7 +2,6 @@
   "caption.menu": "Als Prompt beschreiben",
   "caption.title": "Bild als Prompt beschreiben",
   "caption.fromPrompt": "Aus einem Bild",
-  "caption.fromPromptHint": "Wandelt ein Bild in Worte für den Prompt um. Ziehen Sie ein Galeriebild hierher oder klicken Sie, um eines auszuwählen.",
   "caption.dropHere": "Bild hier ablegen",
   "caption.dropOrUpload": "Bild ablegen oder klicken, um eine Datei zu wählen",
   "caption.loading": "ComfyUI wird vorbereitet…",

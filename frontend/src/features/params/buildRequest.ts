@@ -5,7 +5,9 @@ import { findModel, modelsOfType, useModels } from '@/state/models';
 import { generationMetadata, txt2imgParts } from '@/state/generationParts';
 import { useParams } from '@/state/params';
 import { useWildcards, wildcardMap } from '@/state/prompts/wildcards';
-import { expandPrompt, hasDynamicSyntax, randomPrompt } from '@/state/prompts/dynamicPrompts';
+import { expandPrompt, hasDynamicSyntax, MAX_DYNAMIC_PROMPTS, randomPrompt } from '@/state/prompts/dynamicPrompts';
+
+const NEGATIVE_SEED_MIX = 0x5bd1e995;
 
 function baseRequest(origin: QueueOrigin, params: GenerationMetadata, prepend: boolean): EnqueueRequest {
   const p = useParams.getState();
@@ -28,15 +30,22 @@ function baseRequest(origin: QueueOrigin, params: GenerationMetadata, prepend: b
  */
 export function dynamicBatches(req: EnqueueRequest): EnqueueRequest[] {
   const template = req.params.positivePrompt;
+  const negativeTemplate = req.params.negativePrompt ?? '';
   const lists = wildcardMap(useWildcards.getState().lists);
-  if (useParams.getState().dynamicPromptMode === 'random' && hasDynamicSyntax(template)) {
+  if (useParams.getState().dynamicPromptMode === 'random' && (hasDynamicSyntax(template) || hasDynamicSyntax(negativeTemplate))) {
     return Array.from({ length: Math.max(1, req.iterations) }, (_, i) => {
       const seed = req.randomizeSeed ? randomSeed() : batchSeed(req.params.seed, i);
-      return { ...req, iterations: 1, randomizeSeed: false, params: { ...req.params, seed, positivePrompt: randomPrompt(template, lists, seed) } };
+      // The negative picks from the seed too, mixed so it does not pick the same place as the positive.
+      const negativePrompt = hasDynamicSyntax(negativeTemplate) ? randomPrompt(negativeTemplate, lists, (seed ^ NEGATIVE_SEED_MIX) >>> 0) : negativeTemplate;
+      return { ...req, iterations: 1, randomizeSeed: false, params: { ...req.params, seed, positivePrompt: randomPrompt(template, lists, seed), negativePrompt } };
     });
   }
-  const prompts = expandPrompt(template, undefined, lists);
-  return (prompts.length ? prompts : ['']).map((positivePrompt) => ({ ...req, params: { ...req.params, positivePrompt } }));
+  const positives = expandPrompt(template, undefined, lists);
+  // A plain negative prompt is sent as it is, not tidied.
+  const negatives = hasDynamicSyntax(negativeTemplate) ? expandPrompt(negativeTemplate, undefined, lists) : [negativeTemplate];
+  // Every positive with every negative, up to the same cap as one prompt alone.
+  const pairs = (positives.length ? positives : ['']).flatMap((positivePrompt) => (negatives.length ? negatives : [negativeTemplate]).map((negativePrompt) => ({ positivePrompt, negativePrompt })));
+  return pairs.slice(0, MAX_DYNAMIC_PROMPTS).map((texts) => ({ ...req, params: { ...req.params, ...texts } }));
 }
 
 /**

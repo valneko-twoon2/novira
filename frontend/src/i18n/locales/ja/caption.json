@@ -2,7 +2,6 @@
   "caption.menu": "絵からプロンプトを作る",
   "caption.title": "絵からプロンプトを作る",
   "caption.fromPrompt": "絵から",
-  "caption.fromPromptHint": "絵を言葉にしてプロンプトに使います。ギャラリーの絵をここにドロップするか、押して選びます。",
   "caption.dropHere": "ここに絵をドロップ",
   "caption.dropOrUpload": "絵をドロップするか、押してファイルを選ぶ",
   "caption.loading": "ComfyUI を準備しています…",

@@ -298,7 +298,6 @@
   "params.wildcards.entryCount.other": "{count} Einträge",
   "params.wildcards.entriesPlaceholder": "Ein Eintrag pro Zeile. Leere Zeilen und Zeilen mit # am Anfang werden übersprungen.",
   "params.promptBook.open": "Vorgaben",
-  "params.promptBook.openHint": "Die Vorgaben öffnen",
   "params.promptBook.title": "Vorgaben",
   "params.promptBook.search": "Vorgaben durchsuchen",
   "params.readiness.refNeedsEncoder": "Referenzbilder benötigen einen Bild-Encoder (CLIP {size}). Installieren Sie ihn über die Starter-Modelle oder wählen Sie in den Referenzbild-Einstellungen einen anderen Encoder.",

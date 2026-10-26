@@ -44,15 +44,20 @@ export function paramsReadiness(opts: { refImages: boolean }): string[] {
   return reasons;
 }
 
-/** Reasons the positive prompt cannot be expanded: wildcards without a usable list, lists that use themselves. */
+/** Reasons the positive or the negative prompt cannot be expanded: wildcards without a usable list, lists that use themselves. */
 export function promptReadiness(): string[] {
-  const p = wildcardProblems(useParams.getState().positivePrompt, wildcardMap(useWildcards.getState().lists));
-  return [
-    ...p.unknown.map((name) => t('params.readiness.wildcardUnknown', { name: `__${name}__` })),
-    ...p.empty.map((name) => t('params.readiness.wildcardEmpty', { name: `__${name}__` })),
-    ...p.cycles.map((name) => t('params.readiness.wildcardCycle', { name: `__${name}__` })),
-    ...(p.tooDeep ? [t('params.readiness.wildcardDeep', { max: MAX_WILDCARD_DEPTH })] : []),
-  ];
+  const { positivePrompt, negativePrompt } = useParams.getState();
+  const lists = wildcardMap(useWildcards.getState().lists);
+  const reasons = [positivePrompt, negativePrompt].flatMap((prompt) => {
+    const p = wildcardProblems(prompt, lists);
+    return [
+      ...p.unknown.map((name) => t('params.readiness.wildcardUnknown', { name: `__${name}__` })),
+      ...p.empty.map((name) => t('params.readiness.wildcardEmpty', { name: `__${name}__` })),
+      ...p.cycles.map((name) => t('params.readiness.wildcardCycle', { name: `__${name}__` })),
+      ...(p.tooDeep ? [t('params.readiness.wildcardDeep', { max: MAX_WILDCARD_DEPTH })] : []),
+    ];
+  });
+  return [...new Set(reasons)];
 }
 
 /** The Generate tab: the shared reasons, the prompt, and the high-resolution fix's upscale model. */

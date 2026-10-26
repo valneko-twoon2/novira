@@ -181,7 +181,7 @@ async fn a_checkpoint_of_a_newer_family_loads_only_the_parts_it_lacks() {
 }
 
 #[tokio::test]
-async fn an_anima_picture_records_the_sampling_that_ran_not_the_scheduler_setting() {
+async fn an_anima_picture_runs_and_records_the_scheduler_setting_with_no_fixed_sampling() {
     let dir = tempfile::tempdir().unwrap();
     let models = dir.path().join("models");
     safetensors(&models.join("diffusion_models/anima.safetensors"), ANIMA);
@@ -199,15 +199,9 @@ async fn an_anima_picture_records_the_sampling_that_ran_not_the_scheduler_settin
     backend.enqueue(req).unwrap();
     wait_until(|| statuses(&backend) == vec![QueueItemStatus::Completed]).await;
 
+    // Anima follows the setting, so nothing fixed is recorded: the setting is what ran.
     let meta = backend.bootstrap().images.remove(0).metadata.unwrap();
-    assert_eq!(
-        meta.sampling,
-        Some(Sampling {
-            sampler: "euler".into(),
-            scheduler: "simple".into(),
-        })
-    );
-    // The setting itself is kept as it was sent.
+    assert_eq!(meta.sampling, None);
     assert_eq!(meta.scheduler, "euler_a");
     backend.shutdown();
 }

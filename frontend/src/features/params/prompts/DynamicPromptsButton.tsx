@@ -1,5 +1,5 @@
-// "Show dynamic prompts preview": lists the prompts the {a|b} and __wildcard__ syntax expands to, picks the mode
-// (every combination or random) and opens the wildcard lists.
+// "Show dynamic prompts preview": lists the prompts the {a|b} and __wildcard__ syntax of one prompt box (positive or
+// negative) expands to, picks the mode (every combination or random) and opens the wildcard lists.
 import { BracketsCurly, ListBullets } from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
 import { batchSeed } from '@/backend';
@@ -13,8 +13,8 @@ import { expandPrompt, hasDynamicSyntax, MAX_DYNAMIC_PROMPTS, randomPrompt } fro
 
 const MODES: DynamicPromptMode[] = ['combinatorial', 'random'];
 
-export function DynamicPromptsButton() {
-  const prompt = useParams((s) => s.positivePrompt);
+export function DynamicPromptsButton({ kind = 'positive' }: { kind?: 'positive' | 'negative' }) {
+  const prompt = useParams((s) => (kind === 'positive' ? s.positivePrompt : s.negativePrompt));
   const mode = useParams((s) => s.dynamicPromptMode);
   const iterations = useParams((s) => s.iterations);
   const seed = useParams((s) => s.seed);
@@ -46,7 +46,7 @@ export function DynamicPromptsButton() {
           icon={<BracketsCurly />}
           isActive={dynamic}
           tooltipSide="right"
-          data-testid="dynamic-prompts"
+          data-testid={kind === 'positive' ? 'dynamic-prompts' : 'dynamic-prompts-negative'}
         />
       </PopoverTrigger>
       <PopoverContent side={phone ? 'bottom' : 'right'} align="start" className="pp-dyn">

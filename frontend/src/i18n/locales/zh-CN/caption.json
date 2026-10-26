@@ -2,7 +2,6 @@
   "caption.menu": "从图像生成提示词",
   "caption.title": "从图像生成提示词",
   "caption.fromPrompt": "从图像",
-  "caption.fromPromptHint": "把图像转成文字用作提示词。把图库中的图像拖到这里，或点击选择。",
   "caption.dropHere": "把图像拖到这里",
   "caption.dropOrUpload": "拖入图像，或点击选择文件",
   "caption.loading": "正在准备 ComfyUI…",

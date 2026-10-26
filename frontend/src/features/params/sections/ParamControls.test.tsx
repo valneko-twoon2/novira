@@ -272,26 +272,39 @@ describe('ModelProfilePopover', () => {
 });
 
 describe('GenerationSection scheduler', () => {
-  it('shows the sampling an Anima model always runs, read-only, and the choice for an SDXL model', () => {
-    const anima = model('anima1', 'main', 'anima');
+  it('shows the sampling a Flux model always runs, read-only, and the choice for an SDXL or an Anima model', () => {
+    const flux = model('flux1', 'main', 'flux');
     const xl = model('xl1', 'main', 'sdxl');
-    useModels.setState({ models: [anima, xl] });
-    useParams.setState({ modelKey: 'anima1', scheduler: 'euler_a' });
+    const anima = model('anima1', 'main', 'anima');
+    useModels.setState({ models: [flux, xl, anima] });
+    useParams.setState({ modelKey: 'flux1', scheduler: 'euler_a' });
     const { rerender } = show(<GenerationSection showLoras={false} />);
     expect(screen.getByTestId('sampling-fixed').textContent).toBe('euler / simple');
-    expect(screen.getByText(t('params.generation.samplingFixed', { family: 'Anima' }))).toBeTruthy();
     expect(screen.queryByRole('combobox', { name: t('params.generation.scheduler') })).toBeNull();
     act(() => state().set({ modelKey: 'xl1' }));
     rerender(<TooltipProvider><GenerationSection showLoras={false} /></TooltipProvider>);
     expect(screen.queryByTestId('sampling-fixed')).toBeNull();
     expect(screen.getByLabelText(t('params.generation.scheduler'))).toBeTruthy();
+    act(() => state().set({ modelKey: 'anima1', scheduler: 'euler' }));
+    rerender(<TooltipProvider><GenerationSection showLoras={false} /></TooltipProvider>);
+    expect(screen.queryByTestId('sampling-fixed')).toBeNull();
+    // Anima's own template is euler with the simple scheduler, which plain euler means there.
+    expect(screen.getByLabelText(t('params.generation.scheduler')).textContent).toContain('Euler / simple');
   });
 
-  it('does not count the unused scheduler setting as off the recommended values', () => {
+  it('does not count the unused scheduler setting as off the recommended values for a family that fixes it', () => {
+    const flux = model('flux1', 'main', 'flux');
+    useModels.setState({ models: [flux] });
+    useParams.setState({ modelKey: 'flux1', steps: 28, cfgScale: 3.5, scheduler: 'euler_a', width: 1024, height: 1024 });
+    show(<ModelProfilePopover model={flux} />);
+    expect(screen.getByTestId('model-profile-trigger').getAttribute('title')).toBe(t('params.profile.matches'));
+  });
+
+  it('counts a scheduler other than the recommended one as off for an Anima model', () => {
     const anima = model('anima1', 'main', 'anima');
     useModels.setState({ models: [anima] });
     useParams.setState({ modelKey: 'anima1', steps: 30, cfgScale: 4.5, scheduler: 'euler_a', width: 1024, height: 1024 });
     show(<ModelProfilePopover model={anima} />);
-    expect(screen.getByTestId('model-profile-trigger').getAttribute('title')).toBe(t('params.profile.matches'));
+    expect(screen.getByTestId('model-profile-trigger').getAttribute('title')).not.toBe(t('params.profile.matches'));
   });
 });

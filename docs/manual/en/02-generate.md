@@ -29,13 +29,13 @@ Here are some rules of thumb for writing.
 - With many models, English makes it easier to get the result you want. If the model's description says how to write for it, follow that.
 - Put the important words toward the front.
 
-The small buttons above the fields do the following.
+The small buttons above the fields do the following. They are icons only; hold the pointer over one to see its name.
 
 | Button | What it does |
 |---|---|
 | **{{ui:params.prompt.recommended}}** | Adds the quality words widely used with the selected model's family to "{{ui:params.prompt.positive}}", and the words to avoid to the end of "{{ui:params.prompt.negative}}". Models written in tags (Illustrious, NoobAI, Pony, Anima and so on) get tags such as `masterpiece, best quality` at the start; models written in sentences (FLUX, Qwen-Image and so on) get quality words at the end. Models that do not use a negative prompt (FLUX.1) get no negative words. Words that are already there are not added twice |
 | **{{ui:params.prompt.expand}}** | Edits positive and negative side by side in a large window |
-| **{{ui:params.prompt.tagView}}** | Switches the field to a row of tags, one per word. Press a tag to open a strength popover: change the strength with the slider, reset it to 1, or remove the tag. A tag whose strength changed is written into the prompt as `(smile:1.3)`. Type a word in the box below and press Enter to add a tag. Press the button again to return to the text |
+| **{{ui:params.prompt.textView}}** / **{{ui:params.prompt.tagView}}** | Switches the field between the plain text and a row of tags, one per word. Press a tag to open a popover: rewrite its words, change its strength with the slider, reset it to 1, or remove the tag. A tag whose strength changed is written into the prompt as `(smile:1.3)`. Type a word in the box below and press Enter to add a tag |
 | **{{ui:params.promptBook.open}}** | Opens the presets, words gathered together with their meanings (described below) |
 | **{{ui:caption.fromPrompt}}** | Looks at a picture and writes out words you can use as a prompt. You can also drop a gallery picture or an image file from your computer on this button (explained in [Fixing and Reusing Pictures](04-improve.md)) |
 
@@ -58,7 +58,7 @@ If you write curly brackets with choices separated by vertical bars (`|`) in the
 When "{{ui:params.invoke.iterations}}" (described below) is 2 or more, the number of pictures made is the number of combinations times Iterations. For example, 2 combinations with Iterations set to 3 gives 6 pictures.
 This syntax works only in the positive field. In the negative field, curly brackets are treated as plain characters.
 
-You can check what text it expands to with the **{{ui:params.prompt.dynamicPreview}}** button (the `{ }` icon) above the positive field. Pressing it shows a list of the combinations.
+You can check what text it expands to with the **{{ui:params.prompt.dynamicPreview}}** button (the `{ }` icon) above the positive field. Pressing it shows a list of the combinations. The negative field has the same button, and `{a|b}` and wildcards work in the negative prompt too. The combinations are every pair of a positive and a negative.
 
 ### Wildcards `__name__`
 

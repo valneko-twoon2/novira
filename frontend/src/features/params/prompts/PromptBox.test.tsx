@@ -73,6 +73,27 @@ describe('the prompt boxes', () => {
     await waitFor(() => expect(screen.queryByTestId('big-positive')).toBeNull());
   });
 
+  it('switches each prompt between its text and its tags with two buttons, the active one marked', () => {
+    for (const kind of ['positive', 'negative'] as const) {
+      const text = screen.getByTestId(`${kind}-text-view`);
+      const tags = screen.getByTestId(`${kind}-tag-view`);
+      expect([text.getAttribute('aria-pressed'), tags.getAttribute('aria-pressed')]).toEqual(['true', 'false']);
+      fireEvent.click(tags);
+      expect(screen.getByTestId(`${kind}-tags`)).toBeTruthy();
+      expect([text.getAttribute('aria-pressed'), tags.getAttribute('aria-pressed')]).toEqual(['false', 'true']);
+      fireEvent.click(text);
+      expect(screen.queryByTestId(`${kind}-tags`)).toBeNull();
+    }
+  });
+
+  it('has the dynamic prompts button on the negative prompt too, lit when it uses the syntax', () => {
+    expect(screen.getByTestId('dynamic-prompts')).toBeTruthy();
+    const negative = screen.getByTestId('dynamic-prompts-negative');
+    expect(negative.getAttribute('data-active')).not.toBe('true');
+    act(() => useParams.setState({ negativePrompt: 'bad {hands|feet}' }));
+    expect(screen.getByTestId('dynamic-prompts-negative').className).toMatch(/active/);
+  });
+
   it('opens the prompt book for either prompt', () => {
     fireEvent.click(screen.getByTestId('negative-open-book'));
     expect(usePromptBook.getState()).toMatchObject({ open: true, target: 'negative' });

@@ -2,7 +2,6 @@
   "caption.menu": "Describe as a prompt",
   "caption.title": "Describe a picture as a prompt",
   "caption.fromPrompt": "From a picture",
-  "caption.fromPromptHint": "Turns a picture into words for the prompt. Drop a gallery picture here, or click to choose one.",
   "caption.dropHere": "Drop a picture here",
   "caption.dropOrUpload": "Drop a picture, or click to choose a file",
   "caption.loading": "Getting ComfyUI ready…",

@@ -298,7 +298,6 @@
   "params.wildcards.entryCount.other": "{count} entradas",
   "params.wildcards.entriesPlaceholder": "Uma entrada por linha. Linhas vazias e linhas que começam com # são ignoradas.",
   "params.promptBook.open": "Predefinições",
-  "params.promptBook.openHint": "Abrir as predefinições",
   "params.promptBook.title": "Predefinições",
   "params.promptBook.search": "Buscar nas predefinições",
   "params.readiness.refNeedsEncoder": "Imagens de referência precisam de um codificador de imagem (CLIP {size}). Instale-o pelos modelos iniciais ou escolha outro codificador nas configurações da imagem de referência.",

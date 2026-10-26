@@ -5,7 +5,7 @@ import { t, tCount } from '@/i18n';
 import { BASE_LABELS } from '@/state/models';
 import { useParams } from '@/state/params';
 import { Field, Section, Select, SliderNumber } from '@/ui';
-import { SCHEDULER_LABELS } from '../labels';
+import { schedulerLabel } from '../labels';
 import { LoraPicker } from '../model/LoraPicker';
 import { RecommendedHint } from '../model/RecommendedHint';
 import { useMainModel } from '../model/useMainModel';
@@ -33,14 +33,11 @@ function SchedulerStepsCfg() {
   return (
     <>
       {fixed && main ? (
-        <>
-          <Field label={t('params.generation.scheduler')} info={t('params.generation.schedulerInfo')}>
-            <span className="pp-fixed" data-testid="sampling-fixed">
-              {samplingLabel(fixed)}
-            </span>
-          </Field>
-          <p className="pp-rec pp-rec--note">{t('params.generation.samplingFixed', { family: BASE_LABELS[main.base] })}</p>
-        </>
+        <Field label={t('params.generation.scheduler')} info={t('params.generation.schedulerInfo')}>
+          <span className="pp-fixed" data-testid="sampling-fixed">
+            {samplingLabel(fixed)}
+          </span>
+        </Field>
       ) : (
         <>
           <Field label={t('params.generation.scheduler')} info={t('params.generation.schedulerInfo')}>
@@ -48,7 +45,7 @@ function SchedulerStepsCfg() {
               value={scheduler}
               onChange={(v) => set({ scheduler: v })}
               aria-label={t('params.generation.scheduler')}
-              options={SCHEDULERS.map((s) => ({ value: s, label: SCHEDULER_LABELS[s] }))}
+              options={SCHEDULERS.map((s) => ({ value: s, label: schedulerLabel(s, main?.base) }))}
             />
           </Field>
           <RecommendedHint k="scheduler" />

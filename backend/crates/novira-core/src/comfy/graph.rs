@@ -398,8 +398,12 @@ pub fn build(input: &GraphInput<'_>) -> Result<BuiltGraph, String> {
         return super::variants::build(input, split);
     }
     let (sampler, scheduler) = match family {
-        Some(f) => f.sampling(),
-        None => sampler_for(&p.scheduler)
+        Some(f) if !f.follows_scheduler_setting() => f.sampling(),
+        _ => family
+            .map_or_else(
+                || sampler_for(&p.scheduler),
+                |f| f.sampling_for(&p.scheduler),
+            )
             .ok_or_else(|| format!("Scheduler '{}' is not available in ComfyUI", p.scheduler))?,
     };
     if p.steps == 0 {

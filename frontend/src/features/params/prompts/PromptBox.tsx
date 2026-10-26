@@ -67,20 +67,17 @@ function CaptionButton() {
         });
       }}
     >
-      <Button
+      <IconButton
         size="xs"
-        variant="ghost"
-        leftIcon={<ChatCenteredText />}
-        title={t('caption.fromPromptHint')}
+        label={t('caption.fromPrompt')}
+        icon={<ChatCenteredText />}
         data-testid="prompt-caption"
         onClick={() => {
           const { selection } = useGallery.getState();
           const picked = selection.length === 1 ? findImage(selection[0] ?? null) : undefined;
           showCaption(picked && (picked.mediaType ?? 'image') === 'image' ? picked.name : null);
         }}
-      >
-        {t('caption.fromPrompt')}
-      </Button>
+      />
     </ImageDropZone>
   );
 }
@@ -103,26 +100,29 @@ function PromptField({ kind }: { kind: PromptKind }) {
         <span className="pp-prompt__label">{positive ? t('params.prompt.positive') : t('params.prompt.negative')}</span>
         <TokenCounter text={text} />
         <span className="pp-spacer" />
-        <IconButton
-          size="xs"
-          label={tagView ? t('params.prompt.textView') : t('params.prompt.tagView')}
-          icon={tagView ? <TextT /> : <Tag />}
-          aria-pressed={tagView}
-          data-testid={`${kind}-tag-view`}
-          onClick={() => setTagView(!tagView)}
-        />
+        <span className="pp-viewswitch" role="group" aria-label={t('params.prompt.view')}>
+          <IconButton
+            size="xs"
+            label={t('params.prompt.textView')}
+            icon={<TextT />}
+            isActive={!tagView}
+            aria-pressed={!tagView}
+            data-testid={`${kind}-text-view`}
+            onClick={() => setTagView(false)}
+          />
+          <IconButton
+            size="xs"
+            label={t('params.prompt.tagView')}
+            icon={<Tag />}
+            isActive={tagView}
+            aria-pressed={tagView}
+            data-testid={`${kind}-tag-view`}
+            onClick={() => setTagView(true)}
+          />
+        </span>
         {positive && <CaptionButton />}
-        {positive && <DynamicPromptsButton />}
-        <Button
-          size="xs"
-          variant="ghost"
-          leftIcon={<BookOpen />}
-          title={t('params.promptBook.openHint')}
-          data-testid={`${kind}-open-book`}
-          onClick={() => openBook(kind)}
-        >
-          {t('params.promptBook.open')}
-        </Button>
+        <DynamicPromptsButton kind={kind} />
+        <IconButton size="xs" label={t('params.promptBook.open')} icon={<BookOpen />} data-testid={`${kind}-open-book`} onClick={() => openBook(kind)} />
       </div>
       {tagView && <PromptTagView kind={kind} value={text} onChange={(v) => setPrompt(kind, v)} />}
       <Textarea

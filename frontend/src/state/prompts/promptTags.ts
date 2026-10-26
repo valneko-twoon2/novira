@@ -92,6 +92,15 @@ export function setTagWeightAt(prompt: string, index: number, weight: number): s
   return joinWeightedTags(tags);
 }
 
+/** Renames the entry at `index`, keeping its strength; a blank name leaves the prompt as it is. */
+export function setTagTextAt(prompt: string, index: number, text: string): string {
+  const tags = parseWeightedTags(prompt);
+  const name = text.trim();
+  if (!tags[index] || !name) return prompt;
+  tags[index] = { ...tags[index], text: name };
+  return joinWeightedTags(tags);
+}
+
 export function removeTagAt(prompt: string, index: number): string {
   return joinWeightedTags(parseWeightedTags(prompt).filter((_, i) => i !== index));
 }

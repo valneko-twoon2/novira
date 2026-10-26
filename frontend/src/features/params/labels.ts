@@ -1,5 +1,5 @@
 // Display labels for parameter enums. Scheduler names are engine names and stay untranslated.
-import type { SchedulerName } from '@/backend';
+import type { BaseModel, SchedulerName } from '@/backend';
 import { t } from '@/i18n';
 import type { CoherenceMode, InfillMethod, RefImageMethod } from '@/state/params';
 
@@ -18,6 +18,14 @@ export const SCHEDULER_LABELS: Record<SchedulerName, string> = {
   lcm: 'LCM',
   tcd: 'TCD',
 };
+
+/**
+ * A scheduler as the screen names it for a model of `base`. Anima's own template runs euler with the `simple` scheduler,
+ * which is what plain `euler` means there (`Family::sampling_for` in the backend), so it reads that way.
+ */
+export function schedulerLabel(name: SchedulerName, base?: BaseModel): string {
+  return base === 'anima' && name === 'euler' ? 'Euler / simple' : SCHEDULER_LABELS[name];
+}
 
 export function methodLabel(m: RefImageMethod): string {
   switch (m) {

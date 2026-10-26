@@ -298,7 +298,6 @@
   "params.wildcards.entryCount.other": "{count} entrées",
   "params.wildcards.entriesPlaceholder": "Une entrée par ligne. Les lignes vides et celles commençant par # sont ignorées.",
   "params.promptBook.open": "Préréglages",
-  "params.promptBook.openHint": "Ouvrir les préréglages",
   "params.promptBook.title": "Préréglages",
   "params.promptBook.search": "Rechercher dans les préréglages",
   "params.readiness.refNeedsEncoder": "Les images de référence nécessitent un encodeur d'image (CLIP {size}). Installez-le depuis les modèles de départ, ou choisissez un autre encodeur dans les réglages de l'image de référence.",

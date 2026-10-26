@@ -2,7 +2,6 @@
   "caption.menu": "Descrever como prompt",
   "caption.title": "Descrever uma imagem como prompt",
   "caption.fromPrompt": "A partir de uma imagem",
-  "caption.fromPromptHint": "Transforma uma imagem em palavras para o prompt. Solte aqui uma imagem da galeria ou clique para escolher.",
   "caption.dropHere": "Solte uma imagem aqui",
   "caption.dropOrUpload": "Solte uma imagem ou clique para escolher um arquivo",
   "caption.loading": "Preparando o ComfyUI…",

@@ -2,7 +2,7 @@
 import { Check } from '@phosphor-icons/react';
 import { t } from '@/i18n';
 import { useParams } from '@/state/params';
-import { SCHEDULER_LABELS } from '../labels';
+import { schedulerLabel } from '../labels';
 import { modelProfile } from './modelProfile';
 import { useMainModel } from './useMainModel';
 
@@ -21,7 +21,7 @@ export function RecommendedHint({ k }: { k: RecommendedKey }) {
     : typeof rec === 'number'
       ? Math.abs((current as number) - rec) < 0.01
       : current === rec;
-  const text = k === 'scheduler' ? SCHEDULER_LABELS[p.scheduler] : range ? t('params.profile.range', { min: range[0], max: range[1], value: rec as number }) : String(rec);
+  const text = k === 'scheduler' ? schedulerLabel(p.scheduler, main.base) : range ? t('params.profile.range', { min: range[0], max: range[1], value: rec as number }) : String(rec);
   const apply = () => {
     if (k === 'steps') set({ steps: p.steps });
     else if (k === 'cfg') set({ cfgScale: p.cfgScale });

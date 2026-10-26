@@ -170,6 +170,38 @@ describe('params builders', () => {
     expect(dynamicBatches({ ...base, params: { positivePrompt: 'a cat', seed: 1 } as never })).toHaveLength(1);
   });
 
+  it('expands a dynamic negative prompt too: every positive with every negative, or one pick per seed', () => {
+    const base = { origin: 'generate', destination: 'gallery', iterations: 1, randomizeSeed: false, prepend: false, boardId: null } as const;
+    useParams.setState({ dynamicPromptMode: 'combinatorial' });
+    const both = dynamicBatches({ ...base, params: { positivePrompt: '{a|b}', negativePrompt: '{x|y}', seed: 5 } as never });
+    expect(both.map((b) => [b.params.positivePrompt, b.params.negativePrompt])).toEqual([
+      ['a', 'x'],
+      ['a', 'y'],
+      ['b', 'x'],
+      ['b', 'y'],
+    ]);
+    // Only the negative is dynamic: the positive stays as it is in every batch.
+    const only = dynamicBatches({ ...base, params: { positivePrompt: 'a cat', negativePrompt: '{x|y}', seed: 5 } as never });
+    expect(only.map((b) => [b.params.positivePrompt, b.params.negativePrompt])).toEqual([
+      ['a cat', 'x'],
+      ['a cat', 'y'],
+    ]);
+    // A plain negative prompt is sent exactly as typed, not tidied.
+    const plain = dynamicBatches({ ...base, params: { positivePrompt: '{a|b}', negativePrompt: 'bad ,  hands', seed: 5 } as never });
+    expect(plain.map((b) => b.params.negativePrompt)).toEqual(['bad ,  hands', 'bad ,  hands']);
+    useParams.setState({ dynamicPromptMode: 'random' });
+    const random = dynamicBatches({ ...base, iterations: 6, params: { positivePrompt: 'a cat', negativePrompt: '{x|y}', seed: 40 } as never });
+    expect(random).toHaveLength(6);
+    for (const b of random) expect(b.params.negativePrompt).toMatch(/^(x|y)$/);
+    expect(dynamicBatches({ ...base, iterations: 6, params: { positivePrompt: 'a cat', negativePrompt: '{x|y}', seed: 40 } as never }).map((b) => b.params.negativePrompt)).toEqual(random.map((b) => b.params.negativePrompt));
+  });
+
+  it('reports a wildcard problem of the negative prompt as well', () => {
+    useParams.setState({ positivePrompt: 'a cat', negativePrompt: '__nothing__' });
+    expect(generateReadiness().some((r) => r.includes('__nothing__'))).toBe(true);
+    useParams.setState({ negativePrompt: '' });
+  });
+
   it('builds an upscale request from the initial image', async () => {
     expect(upscaleReadiness()).toHaveLength(1);
     const image = { name: 'i', url: 'u', thumbnailUrl: 'u', width: 300, height: 200 } as never;

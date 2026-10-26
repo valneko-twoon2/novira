@@ -2,7 +2,6 @@
   "caption.menu": "從圖像產生提示詞",
   "caption.title": "從圖像產生提示詞",
   "caption.fromPrompt": "從圖像",
-  "caption.fromPromptHint": "把圖像轉成文字當作提示詞。把圖庫中的圖像拖到這裡，或點擊選擇。",
   "caption.dropHere": "把圖像拖到這裡",
   "caption.dropOrUpload": "拖入圖像，或點擊選擇檔案",
   "caption.loading": "正在準備 ComfyUI…",

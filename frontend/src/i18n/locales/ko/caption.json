@@ -2,7 +2,6 @@
   "caption.menu": "그림으로 프롬프트 만들기",
   "caption.title": "그림으로 프롬프트 만들기",
   "caption.fromPrompt": "그림에서",
-  "caption.fromPromptHint": "그림을 말로 바꿔 프롬프트에 씁니다. 갤러리의 그림을 여기에 끌어다 놓거나 눌러서 고르세요.",
   "caption.dropHere": "여기에 그림을 놓으세요",
   "caption.dropOrUpload": "그림을 끌어다 놓거나 눌러서 파일을 고르세요",
   "caption.loading": "ComfyUI를 준비하는 중…",

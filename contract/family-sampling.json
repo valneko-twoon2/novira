@@ -7,10 +7,6 @@
     "sampler": "euler",
     "scheduler": "Flux2Scheduler"
   },
-  "anima": {
-    "sampler": "euler",
-    "scheduler": "simple"
-  },
   "chroma": {
     "sampler": "euler",
     "scheduler": "beta"

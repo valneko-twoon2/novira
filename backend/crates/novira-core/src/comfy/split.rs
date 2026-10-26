@@ -397,6 +397,22 @@ impl Family {
         }
     }
 
+    /// Whether a picture of the family runs the user's scheduler setting instead of the template's own sampler and
+    /// scheduler. Anima does: the setting starts at its template's, and the user may choose another.
+    pub fn follows_scheduler_setting(self) -> bool {
+        self == Family::Anima
+    }
+
+    /// The sampler and scheduler of the setting `name` for a family that follows it. For Anima, `euler` stays what its
+    /// template runs (euler with the `simple` scheduler): pictures made before the choice existed recorded `euler`,
+    /// and drawn again they must run the same.
+    pub fn sampling_for(self, name: &str) -> Option<(&'static str, &'static str)> {
+        if self == Family::Anima && name == "euler" {
+            return Some(self.sampling());
+        }
+        super::graph::sampler_for(name)
+    }
+
     /// The sampler and scheduler a picture of the family is drawn with, as recorded with it: `sampling`, except FLUX.2,
     /// whose graph takes its sigmas from `Flux2Scheduler`. The frontend's copy is checked against this through
     /// `contract/family-sampling.json`.
@@ -439,7 +455,11 @@ pub fn fixed_sampling(model: &ModelConfig, mode: GenerationMode) -> Option<Sampl
     if !drawn || !matches!(model.kind, ModelType::DiffusionModel | ModelType::Main) {
         return None;
     }
-    let (sampler, scheduler) = Family::of(model.base)?.picture_sampling();
+    let family = Family::of(model.base)?;
+    if family.follows_scheduler_setting() {
+        return None;
+    }
+    let (sampler, scheduler) = family.picture_sampling();
     Some(Sampling {
         sampler: sampler.into(),
         scheduler: scheduler.into(),

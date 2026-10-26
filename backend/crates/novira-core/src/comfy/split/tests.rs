@@ -72,7 +72,9 @@ fn source<'a>(g: &'a BuiltGraph, link: &Value) -> &'a Value {
 }
 
 fn built(f: Family) -> BuiltGraph {
-    let p = params(GenerationMode::Txt2img);
+    let mut p = params(GenerationMode::Txt2img);
+    // Anima runs the setting, and plain `euler` is its template's.
+    p.scheduler = "euler".into();
     let unet = r("diffusion_models", "model.safetensors");
     let vae = r("vae", "vae.safetensors");
     let split = job(f);
@@ -212,6 +214,7 @@ fn every_family_of_the_shared_graph_drafts_with_the_advanced_sampler() {
     ] {
         let split = job(f);
         let mut p = params(GenerationMode::Txt2img);
+        p.scheduler = "euler".into();
         p.steps = 30;
         p.draft_at = Some(0.35);
         let g = build_any(&input(&p, &unet, Some(&vae), &split)).unwrap();
@@ -654,10 +657,9 @@ fn the_recorded_sampling_is_what_each_picture_family_graph_runs() {
     let unet = r("diffusion_models", "model.safetensors");
     let vae = r("vae", "vae.safetensors");
     let mut p = params(GenerationMode::Txt2img);
-    // A setting the SD family would run; the newer families ignore it.
+    // A setting the SD family would run; the families that fix their sampling ignore it.
     p.scheduler = "euler_a".into();
     for f in [
-        Family::Anima,
         Family::Flux,
         Family::Chroma,
         Family::QwenImage,
@@ -684,6 +686,32 @@ fn the_recorded_sampling_is_what_each_picture_family_graph_runs() {
 }
 
 #[test]
+fn anima_runs_the_scheduler_setting_and_plain_euler_is_its_template() {
+    let unet = r("diffusion_models", "model.safetensors");
+    let vae = r("vae", "vae.safetensors");
+    let split = job(Family::Anima);
+    let run = |scheduler: &str| {
+        let mut p = params(GenerationMode::Txt2img);
+        p.scheduler = scheduler.into();
+        build_any(&input(&p, &unet, Some(&vae), &split)).map(|g| {
+            let k = node(&g, "KSampler");
+            (
+                k["sampler_name"].as_str().unwrap().to_string(),
+                k["scheduler"].as_str().unwrap().to_string(),
+            )
+        })
+    };
+    let pair = |a: &str, b: &str| Ok((a.to_string(), b.to_string()));
+    // Pictures made before the choice existed recorded `euler` and ran euler with `simple`.
+    assert_eq!(run("euler"), pair("euler", "simple"));
+    assert_eq!(run("euler_a"), pair("euler_ancestral", "normal"));
+    assert_eq!(run("dpmpp_2m_k"), pair("dpmpp_2m", "karras"));
+    assert!(run("not-a-scheduler")
+        .unwrap_err()
+        .contains("not available"));
+}
+
+#[test]
 fn the_sampling_is_fixed_for_picture_family_models_in_the_modes_the_picture_graph_draws() {
     let of = |base: &str, kind: &str| -> ModelConfig {
         serde_json::from_value(serde_json::json!({
@@ -697,6 +725,7 @@ fn the_sampling_is_fixed_for_picture_family_models_in_the_modes_the_picture_grap
         sampler: "euler".into(),
         scheduler: "simple".into(),
     });
+    let flux = of("flux", "main");
     for mode in [
         GenerationMode::Txt2img,
         GenerationMode::Img2img,
@@ -705,7 +734,12 @@ fn the_sampling_is_fixed_for_picture_family_models_in_the_modes_the_picture_grap
         GenerationMode::Upscale,
         GenerationMode::Workflow,
     ] {
-        assert_eq!(fixed_sampling(&anima, mode), euler_simple, "{mode:?}");
+        assert_eq!(fixed_sampling(&flux, mode), euler_simple, "{mode:?}");
+        assert_eq!(
+            fixed_sampling(&anima, mode),
+            None,
+            "Anima follows the setting: {mode:?}"
+        );
     }
     for mode in [
         GenerationMode::Graph,
@@ -718,9 +752,10 @@ fn the_sampling_is_fixed_for_picture_family_models_in_the_modes_the_picture_grap
     }
     let txt = GenerationMode::Txt2img;
     assert_eq!(
-        fixed_sampling(&of("anima", "diffusion_model"), txt),
+        fixed_sampling(&of("flux", "diffusion_model"), txt),
         euler_simple
     );
+    assert_eq!(fixed_sampling(&of("anima", "diffusion_model"), txt), None);
     assert_eq!(fixed_sampling(&of("anima", "lora"), txt), None);
     assert_eq!(fixed_sampling(&of("sdxl", "main"), txt), None);
     assert_eq!(fixed_sampling(&of("sd-1", "main"), txt), None);

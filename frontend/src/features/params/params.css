@@ -784,12 +784,8 @@
   min-width: 240px;
 }
 
-.pp-tagpop__title {
-  font-size: var(--fs-sm);
-  font-weight: 600;
-}
-
 .pp-tagpop__actions {
   display: flex;
-  justify-content: space-between;
+  gap: var(--space-1);
+  justify-content: flex-end;
 }

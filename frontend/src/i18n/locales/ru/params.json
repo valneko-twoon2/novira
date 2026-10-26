@@ -298,7 +298,6 @@
   "params.wildcards.entryCount.other": "Записей: {count}",
   "params.wildcards.entriesPlaceholder": "Одна запись в строке. Пустые строки и строки, начинающиеся с #, пропускаются.",
   "params.promptBook.open": "Пресеты",
-  "params.promptBook.openHint": "Открыть пресеты",
   "params.promptBook.title": "Пресеты",
   "params.promptBook.search": "Поиск по пресетам",
   "params.readiness.refNeedsEncoder": "Для референсных изображений нужен кодировщик изображений (CLIP {size}). Установите его из стартовых моделей или выберите другой кодировщик в настройках референсного изображения.",
