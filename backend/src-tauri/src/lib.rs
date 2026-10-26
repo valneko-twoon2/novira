@@ -108,9 +108,15 @@ fn use_own_webview_profile() {
     const ENV: &str = "WEBVIEW2_USER_DATA_FOLDER";
     if std::env::var_os(ENV).is_none() {
         // At the first start the data folder is not chosen yet, and the page must not leave a profile in the default one.
-        let profile = match location_pointer().filter(|_| first_run_needed()) {
-            Some(pointer) => pointer.with_file_name("setup-webview"),
-            None => data_dir().join("webview"),
+        // While the data moves, a profile in either folder would be in the way of the move (it would make the new folder
+        // hold `webview` before the data's own comes over), so the "moving" screen keeps one beside the pointer.
+        let pointer = location_pointer();
+        let profile = match pointer {
+            Some(p) if first_run_needed() => p.with_file_name("setup-webview"),
+            Some(p) if novira_core::data_location::move_pending(&p) => {
+                p.with_file_name("moving-webview")
+            }
+            _ => data_dir().join("webview"),
         };
         std::env::set_var(ENV, profile);
     }

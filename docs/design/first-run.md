@@ -18,7 +18,7 @@ The very first start of the desktop app asks where the data folder and novira's 
 
 **What is written.** `novira_core::first_run::apply` checks the choice (the same checks as the Settings screen: a full plain path, not a drive root, a new or empty folder or one that already holds data for the data folder; `check_install_dir` for ComfyUI), creates the data folder, saves `comfyuiInstallDir` in its `settings.json`, and writes the pointer last, so a failure leaves the next start a first start again. The default data folder is `default_data_dir` (the user's folder in a release build); the default ComfyUI folder is `comfyui` inside the data folder, which writes no setting.
 
-**The page profile.** The WebView profile normally sits in the data folder. At the first start it goes to `setup-webview` next to the pointer file, so the default data folder is not created before the user chooses.
+**The page profile.** The WebView profile normally sits in the data folder. At the first start it goes to `setup-webview` next to the pointer file, so the default data folder is not created before the user chooses. While a data move from Settings is carried out it goes to `moving-webview` there, so neither folder holds a profile in the way of the move.
 
 ## Boundaries
 
