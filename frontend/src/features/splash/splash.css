@@ -47,6 +47,8 @@
 
 /* The start-up card: every message of the start-up screen is shown in it. */
 .ep {
+  /* The start-up texts are short: Japanese wraps between phrases, never leaving "す" or "ます。" alone on a line. */
+  word-break: auto-phrase;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);

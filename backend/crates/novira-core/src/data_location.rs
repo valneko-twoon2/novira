@@ -169,12 +169,18 @@ pub fn move_pending(pointer: &Path) -> bool {
 /// Carries out a move the pointer asks for, before anything is opened. A move that cannot be done leaves the old folder
 /// in use and records why. Returns the folder to open.
 pub fn apply_pending(pointer: &Path) -> Option<PathBuf> {
+    apply_pending_with(pointer, &|_, _| {})
+}
+
+/// `apply_pending`, telling `progress` the bytes copied so far and the bytes to copy while the data is copied to another
+/// drive (a rename on the same drive is at once and reports nothing).
+pub fn apply_pending_with(pointer: &Path, progress: &dyn Fn(u64, u64)) -> Option<PathBuf> {
     let mut location = read(pointer)?;
     let Some(from) = location.move_from.take() else {
         return Some(location.data_dir);
     };
     let to = location.data_dir.clone();
-    match move_data(&from, &to) {
+    match move_data(&from, &to, &mut Progress::new(&from, progress)) {
         Ok(()) => {
             location.move_error = None;
             let _ = write(pointer, &location);
@@ -196,7 +202,7 @@ pub fn apply_pending(pointer: &Path) -> Option<PathBuf> {
 /// Moves everything in `from` into `to`: a rename when it can be, else a copy followed by removing the old files. The
 /// folder `from` must not be in use (nothing holds its lock), and nothing in `to` may share a name with what `from` holds
 /// (`to` may hold other things: they stay). A failed move puts back what it had moved and removes what it had copied.
-fn move_data(from: &Path, to: &Path) -> Result<(), String> {
+fn move_data(from: &Path, to: &Path, progress: &mut Progress) -> Result<(), String> {
     if !from.is_dir() {
         return Err(format!("{} does not exist", from.display()));
     }
@@ -214,7 +220,7 @@ fn move_data(from: &Path, to: &Path) -> Result<(), String> {
         if std::fs::rename(from, to).is_ok() {
             return Ok(());
         }
-        return copy_whole(from, to);
+        return copy_whole(from, to, progress);
     }
     let entries: Vec<std::fs::DirEntry> = std::fs::read_dir(from)
         .map_err(|e| e.to_string())?
@@ -231,8 +237,8 @@ fn move_data(from: &Path, to: &Path) -> Result<(), String> {
             continue;
         }
         let done = match entry.file_type() {
-            Ok(kind) if kind.is_dir() => copy_tree(&source, &target),
-            Ok(kind) if kind.is_file() => std::fs::copy(&source, &target).map(|_| ()),
+            Ok(kind) if kind.is_dir() => copy_tree(&source, &target, progress),
+            Ok(kind) if kind.is_file() => copy_file(&source, &target, progress),
             Ok(_) => Ok(()),
             Err(e) => Err(e),
         };
@@ -263,8 +269,8 @@ fn move_data(from: &Path, to: &Path) -> Result<(), String> {
 }
 
 /// Copies `from` to the new folder `to` (another drive), then removes the old files; a failed copy leaves nothing at `to`.
-fn copy_whole(from: &Path, to: &Path) -> Result<(), String> {
-    if let Err(e) = copy_tree(from, to) {
+fn copy_whole(from: &Path, to: &Path, progress: &mut Progress) -> Result<(), String> {
+    if let Err(e) = copy_tree(from, to, progress) {
         let _ = std::fs::remove_dir_all(to);
         return Err(format!("copying failed: {e}"));
     }
@@ -278,16 +284,76 @@ fn copy_whole(from: &Path, to: &Path) -> Result<(), String> {
     Ok(())
 }
 
-fn copy_tree(from: &Path, to: &Path) -> std::io::Result<()> {
+/// The bytes copied so far, against the size of the whole data (measured when the first copy starts).
+struct Progress<'a> {
+    from: PathBuf,
+    done: u64,
+    total: Option<u64>,
+    report: &'a dyn Fn(u64, u64),
+}
+
+impl<'a> Progress<'a> {
+    fn new(from: &Path, report: &'a dyn Fn(u64, u64)) -> Self {
+        Self {
+            from: from.to_path_buf(),
+            done: 0,
+            total: None,
+            report,
+        }
+    }
+
+    fn add(&mut self, bytes: u64) {
+        let from = &self.from;
+        let total = *self.total.get_or_insert_with(|| size_of(from));
+        self.done += bytes;
+        (self.report)(self.done.min(total), total);
+    }
+}
+
+/// The bytes of the files under `dir` (links not followed).
+fn size_of(dir: &Path) -> u64 {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return 0;
+    };
+    entries
+        .filter_map(Result::ok)
+        .map(|e| match e.file_type() {
+            Ok(k) if k.is_dir() => size_of(&e.path()),
+            Ok(k) if k.is_file() => e.metadata().map(|m| m.len()).unwrap_or(0),
+            _ => 0,
+        })
+        .sum()
+}
+
+/// Copies one file in pieces, so a model of several gigabytes moves the progress as it goes.
+fn copy_file(from: &Path, to: &Path, progress: &mut Progress) -> std::io::Result<()> {
+    use std::io::{Read, Write};
+    const PIECE: usize = 8 * 1024 * 1024;
+    let mut source = std::fs::File::open(from)?;
+    let mut target = std::fs::File::create(to)?;
+    let mut buf = vec![0u8; PIECE];
+    progress.add(0);
+    loop {
+        let n = source.read(&mut buf)?;
+        if n == 0 {
+            break;
+        }
+        target.write_all(&buf[..n])?;
+        progress.add(n as u64);
+    }
+    target.sync_all()
+}
+
+fn copy_tree(from: &Path, to: &Path, progress: &mut Progress) -> std::io::Result<()> {
     std::fs::create_dir_all(to)?;
     for entry in std::fs::read_dir(from)? {
         let entry = entry?;
         let target = to.join(entry.file_name());
         let kind = entry.file_type()?;
         if kind.is_dir() {
-            copy_tree(&entry.path(), &target)?;
+            copy_tree(&entry.path(), &target, progress)?;
         } else if kind.is_file() {
-            std::fs::copy(entry.path(), &target)?;
+            copy_file(&entry.path(), &target, progress)?;
         }
         // A link is not followed or copied: ComfyUI's install and the models do not use them.
     }

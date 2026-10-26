@@ -12,6 +12,9 @@ export interface FirstRunInfo {
   comfyuiIsDefault: boolean;
   /** The data is being moved to the folder chosen in the Settings screen; the app restarts when it is done. */
   moving: boolean;
+  /** Bytes copied so far and bytes to copy while the move copies to another drive (both 0 before, and on one drive). */
+  moved: number;
+  toMove: number;
 }
 
 export const firstRun = {

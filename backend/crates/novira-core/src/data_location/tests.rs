@@ -222,3 +222,34 @@ fn a_move_is_pending_only_while_the_pointer_still_asks_for_it() {
     apply_pending(&pointer);
     assert!(!move_pending(&pointer));
 }
+
+#[test]
+fn a_copy_to_another_drive_reports_its_bytes_up_to_the_whole_size() {
+    let dir = tempfile::tempdir().unwrap();
+    let (old, new) = (dir.path().join("old"), dir.path().join("new"));
+    put(&old, "novira.sqlite", "db");
+    std::fs::create_dir_all(old.join("models")).unwrap();
+    // Larger than one piece, so the file reports more than once.
+    std::fs::write(old.join("models/a.safetensors"), vec![7u8; 9 * 1024 * 1024]).unwrap();
+    let seen = std::cell::RefCell::new(Vec::new());
+    let report = |done: u64, total: u64| seen.borrow_mut().push((done, total));
+    copy_whole(&old, &new, &mut Progress::new(&old, &report)).unwrap();
+    let seen = seen.into_inner();
+    let whole = 2 + 9 * 1024 * 1024;
+    assert!(seen.iter().all(|&(_, total)| total == whole));
+    assert!(seen.windows(2).all(|w| w[0].0 <= w[1].0), "never goes back");
+    assert!(
+        seen.iter()
+            .filter(|&&(done, _)| done > 2 && done < whole)
+            .count()
+            >= 1
+    );
+    assert_eq!(seen.last().unwrap().0, whole);
+    assert_eq!(
+        std::fs::read(new.join("models/a.safetensors"))
+            .unwrap()
+            .len(),
+        9 * 1024 * 1024
+    );
+    assert!(!old.exists());
+}

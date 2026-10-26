@@ -9,5 +9,5 @@
   "firstrun.start": "この場所で始める",
   "firstrun.failed": "設定できませんでした: {reason}",
   "firstrun.moving.title": "データを移動しています",
-  "firstrun.moving.body": "新しいデータフォルダへ移しています。容量が大きいと数分かかります。終わると novira が自動で開き直します。"
+  "firstrun.moving.body": "終わると novira が自動で開き直します。"
 }

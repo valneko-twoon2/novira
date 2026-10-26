@@ -195,7 +195,12 @@ pub fn run() {
                     .store(true, std::sync::atomic::Ordering::SeqCst);
                 let handle = app.handle().clone();
                 std::thread::spawn(move || {
-                    novira_core::data_location::apply_pending(&pointer);
+                    let state = handle.state::<first_run::FirstRun>();
+                    novira_core::data_location::apply_pending_with(&pointer, &|done, total| {
+                        use std::sync::atomic::Ordering::SeqCst;
+                        state.to_move.store(total, SeqCst);
+                        state.moved.store(done, SeqCst);
+                    });
                     // A pointer that still asks for the move cannot be rewritten; restarting would move again for ever.
                     if novira_core::data_location::move_pending(&pointer) {
                         startup::fail(
