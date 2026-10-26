@@ -43,6 +43,18 @@ fn several_base_models_in_a_popularity_sort_are_searched_one_at_a_time() {
 }
 
 #[test]
+fn the_flux_choice_asks_for_the_names_civitai_knows() {
+    let mut p = params();
+    p.base_model = "FLUX.1".into();
+    p.sort = "downloads".into();
+    let asked = bases(&p);
+    assert_eq!(asked.len(), FLUX_BASES.len());
+    assert!(!asked.iter().any(|b| b == "FLUX.1"));
+    assert!(asked.iter().any(|b| b == "Flux.1 D") && asked.iter().any(|b| b == "Flux.2 D"));
+    assert!(splits(&p, &asked));
+}
+
+#[test]
 fn each_request_names_its_own_base_model_page_size_and_cursor() {
     let mut p = params();
     p.base_model = "sdxl-compat".into();

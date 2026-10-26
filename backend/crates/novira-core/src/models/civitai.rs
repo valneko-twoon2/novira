@@ -138,6 +138,17 @@ pub struct SearchResult {
 }
 
 pub const SDXL_COMPATIBLE: &[&str] = &["SDXL 1.0", "Illustrious", "NoobAI", "Pony"];
+/// What the "FLUX" choice asks Civitai for. Civitai has no base model named `FLUX.1`: it names each variant, so asking for
+/// that name found nothing (checked against the live API 2026-10-26).
+pub const FLUX_BASES: &[&str] = &[
+    "Flux.1 D",
+    "Flux.1 S",
+    "Flux.1 Krea",
+    "Flux.1 Kontext",
+    "Flux.2 D",
+    "Flux.2 Klein 9B",
+    "Flux.2 Klein 4B",
+];
 const PAGE_SIZE: &str = "24";
 
 /// Query pairs for `GET /models`.
@@ -171,6 +182,7 @@ fn bases(p: &SearchParams) -> Vec<String> {
         "all" | "" if p.kind == "Diffusion" => list(DIFFUSION_BASES),
         "all" | "" => Vec::new(),
         "sdxl-compat" => list(SDXL_COMPATIBLE),
+        "FLUX.1" => list(FLUX_BASES),
         exact => vec![exact.to_string()],
     }
 }
