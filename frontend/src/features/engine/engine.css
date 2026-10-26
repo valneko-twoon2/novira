@@ -3,7 +3,8 @@
   position: fixed;
   bottom: 76px;
   left: calc(var(--nav-width) + var(--space-4));
-  z-index: var(--z-toast);
+  /* Under every dialog, menu and tooltip: a start-up that takes a while must not cover what the user is working in. */
+  z-index: var(--z-dock);
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
