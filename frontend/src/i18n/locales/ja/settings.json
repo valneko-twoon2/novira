@@ -13,8 +13,8 @@
   "settings.mockStepDelayHelp": "1 ステップあたりの待ち時間（ミリ秒）",
   "settings.confirmOnDelete": "削除の前に確認",
   "settings.clearIntermediates": "中間画像を消去",
-  "settings.clearIntermediatesButton.one": "中間画像 {count} 枚を消去",
-  "settings.clearIntermediatesButton.other": "中間画像 {count} 枚を消去",
+  "settings.clearIntermediatesButton.one": "{count} 枚を消去",
+  "settings.clearIntermediatesButton.other": "{count} 枚を消去",
   "settings.resetWebUi": "初期化する",
   "settings.resetWebUiHelp": "選んだ範囲を初期値に戻します。画像、モデル、漫画、キャンバスは消えません。",
   "settings.resetConfirm": "初期化する",
@@ -322,10 +322,10 @@
   "settings.engine.dataDir.dialog.moveHelp": "今のデータを、選んだ空のフォルダへ移します。次の起動の最初に行うので、量が多いと時間がかかります。",
   "settings.engine.dataDir.dialog.useHelp": "今のデータは移しません。選んだフォルダにデータがあればそれを開き、空なら新しく始めます。",
   "settings.engine.comfyui.change": "インストール先を変更",
-  "settings.engine.comfyui.reset": "既定に戻す",
   "settings.engine.comfyui.next": "次の起動から {path} にインストールします。",
   "settings.hotkeys.gallery.undoDelete": "削除を元に戻す",
   "settings.hotkeys.gallery.undoDeleteDesc": "直前に削除した画像をギャラリーへ戻します",
   "settings.hotkeys.gallery.redoDelete": "もう一度削除する",
-  "settings.hotkeys.gallery.redoDeleteDesc": "元に戻した削除をやり直します"
+  "settings.hotkeys.gallery.redoDeleteDesc": "元に戻した削除をやり直します",
+  "settings.section.models": "モデル"
 }

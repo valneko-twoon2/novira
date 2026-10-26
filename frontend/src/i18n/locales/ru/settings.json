@@ -13,8 +13,6 @@
   "settings.mockStepDelayHelp": "Задержка на шаг (мс)",
   "settings.confirmOnDelete": "Подтверждать удаление",
   "settings.clearIntermediates": "Очистка промежуточных",
-  "settings.clearIntermediatesButton.one": "Очистить {count} промежуточное",
-  "settings.clearIntermediatesButton.other": "Очистить промежуточных: {count}",
   "settings.resetDone": "Веб-интерфейс сброшен. Перезагрузите, чтобы применить.",
   "settings.reload": "Перезагрузить",
   "settings.version": "Версия: {version}",

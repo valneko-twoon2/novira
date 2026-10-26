@@ -13,8 +13,6 @@
   "settings.mockStepDelayHelp": "每一步的等待时间（毫秒）",
   "settings.confirmOnDelete": "删除前确认",
   "settings.clearIntermediates": "清除中间图像",
-  "settings.clearIntermediatesButton.one": "清除 {count} 张中间图像",
-  "settings.clearIntermediatesButton.other": "清除 {count} 张中间图像",
   "settings.resetDone": "已重置。重新加载后生效。",
   "settings.reload": "重新加载",
   "settings.version": "版本：{version}",

@@ -13,8 +13,8 @@
   "settings.mockStepDelayHelp": "Delay per step (ms)",
   "settings.confirmOnDelete": "Confirm on Delete",
   "settings.clearIntermediates": "Clear Intermediates",
-  "settings.clearIntermediatesButton.one": "Clear {count} Intermediate",
-  "settings.clearIntermediatesButton.other": "Clear {count} Intermediates",
+  "settings.clearIntermediatesButton.one": "Clear {count}",
+  "settings.clearIntermediatesButton.other": "Clear {count}",
   "settings.resetWebUi": "Reset",
   "settings.resetWebUiHelp": "Puts the chosen part back to how it was at first. Pictures, models, comics and the canvas are kept.",
   "settings.resetConfirm": "Yes, reset",
@@ -322,10 +322,10 @@
   "settings.engine.dataDir.dialog.moveHelp": "Moves the current data into the empty folder you choose. It is done first thing at the next start, so a large library takes a while.",
   "settings.engine.dataDir.dialog.useHelp": "Leaves the current data where it is. A folder that already holds data is opened; an empty one starts a new library.",
   "settings.engine.comfyui.change": "Change the place",
-  "settings.engine.comfyui.reset": "Back to the default",
   "settings.engine.comfyui.next": "From the next start it is installed in {path}.",
   "settings.hotkeys.gallery.undoDelete": "Undo delete",
   "settings.hotkeys.gallery.undoDeleteDesc": "Brings the images you deleted last back to the gallery",
   "settings.hotkeys.gallery.redoDelete": "Delete again",
-  "settings.hotkeys.gallery.redoDeleteDesc": "Deletes again what you brought back"
+  "settings.hotkeys.gallery.redoDeleteDesc": "Deletes again what you brought back",
+  "settings.section.models": "Models"
 }

@@ -150,8 +150,8 @@ Collez la valeur et cliquez sur **{{ui:settings.civitaiKey.save}}**. Vous pouvez
 
 Les images que vous avez créées, ainsi que ce que vous avez réglé et enregistré dans l'application, peuvent être regroupés dans un seul fichier zip. Cela sert à déménager vers un autre ordinateur ou à se prémunir contre un incident.
 
-- **{{ui:share.backup.create}}** : ouvre une fenêtre pour choisir l'emplacement d'enregistrement. Le nom de fichier est d'emblée « novira-backup-date-heure.zip ». S'il y a beaucoup d'images, cela prend du temps, et l'avancement s'affiche dans cette rubrique.
-- **{{ui:share.backup.restore}}** : choisissez le fichier zip d'une sauvegarde. Après vérification de son contenu, une fenêtre de confirmation s'affiche.
+- **{{ui:share.backup.createLabel}}** : ouvre une fenêtre pour choisir l'emplacement d'enregistrement. Le nom de fichier est d'emblée « novira-backup-date-heure.zip ». S'il y a beaucoup d'images, cela prend du temps, et l'avancement s'affiche dans cette rubrique.
+- **{{ui:share.backup.restoreLabel}}** : choisissez le fichier zip d'une sauvegarde. Après vérification de son contenu, une fenêtre de confirmation s'affiche.
 
 Voici ce que la sauvegarde contient et ce qu'elle ne contient pas.
 

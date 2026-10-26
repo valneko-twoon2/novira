@@ -18,6 +18,8 @@ body {
   font-family: var(--font);
   font-size: var(--fs-md);
   line-height: 1.4;
+  /* Text that wraps balances its last line, so a sentence never ends on a line of one or two characters. */
+  text-wrap: pretty;
   overflow: hidden;
   user-select: none;
   -webkit-font-smoothing: antialiased;

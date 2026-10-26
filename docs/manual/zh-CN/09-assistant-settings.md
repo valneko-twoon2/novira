@@ -150,8 +150,8 @@ AI 助手并不是由 novira 自己运行 AI，而是调用你电脑上的 AI �
 
 可以将制作的图像，以及在应用中设置、登记的内容，打包保存为一个 zip 文件。用于搬到另一台电脑，或以防万一。
 
-- **{{ui:share.backup.create}}**：会打开选择保存位置的窗口。文件名一开始就是“novira-backup-日期-时间.zip”。图像较多时需要一些时间，进度会显示在这一栏。
-- **{{ui:share.backup.restore}}**：选择备份的 zip 文件。检查内容后，会出现确认窗口。
+- **{{ui:share.backup.createLabel}}**：会打开选择保存位置的窗口。文件名一开始就是“novira-backup-日期-时间.zip”。图像较多时需要一些时间，进度会显示在这一栏。
+- **{{ui:share.backup.restoreLabel}}**：选择备份的 zip 文件。检查内容后，会出现确认窗口。
 
 备份中包含和不包含的内容如下。
 

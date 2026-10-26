@@ -3,13 +3,28 @@
 import { useState } from 'react';
 import { backend } from '@/backend';
 import { LOCALES, t, tCount, type Locale, type MessageKey } from '@/i18n';
-import { FRAME_MARGIN_RANGE, FRAME_WIDTH_RANGE, PAGE_SIZES, READING_DIRECTIONS } from '@/state/comic/document';
+import {
+  FRAME_MARGIN_RANGE,
+  FRAME_WIDTH_RANGE,
+  PAGE_SIZES,
+  READING_DIRECTIONS,
+} from '@/state/comic/document';
 import { useGallery, type GallerySettings } from '@/state/gallery';
-import { COMIC_PANELS_RANGE, DRAFT_COUNT_RANGE, DRAFT_POSITION_RANGE, READ_ACCESS, TOAST_SECONDS_RANGE, UNDO_LIMIT_RANGE, useSettings, type SettingsValues, type StartTab } from '@/state/settings';
+import {
+  COMIC_PANELS_RANGE,
+  DRAFT_COUNT_RANGE,
+  DRAFT_POSITION_RANGE,
+  READ_ACCESS,
+  TOAST_SECONDS_RANGE,
+  UNDO_LIMIT_RANGE,
+  useSettings,
+  type SettingsValues,
+  type StartTab,
+} from '@/state/settings';
 import { toast } from '@/state/toasts';
 import { NAV, type TabName } from '@/state/ui';
 import { sanitizeUiZoom, UI_ZOOM_STEPS } from '@/state/uiZoom';
-import { Button, FontPicker, Select, Slider, SliderNumber, Switch } from '@/ui';
+import { Button, FontPicker, Select, SliderNumber, Switch } from '@/ui';
 import { CivitaiKeyControl, HuggingFaceTokenControl } from './CivitaiKeyControl';
 import { LowMemoryNote, LowMemorySwitch } from './LowMemoryControl';
 import { Row, SectionBlock } from './settingsLayout';
@@ -40,26 +55,70 @@ const TAB_LABEL: Record<TabName, MessageKey> = {
   extensions: 'app.nav.extensions',
 };
 
-type BoolSetting = { [K in keyof SettingsValues]: SettingsValues[K] extends boolean ? K : never }[keyof SettingsValues];
+type BoolSetting = {
+  [K in keyof SettingsValues]: SettingsValues[K] extends boolean ? K : never;
+}[keyof SettingsValues];
 
-function Toggle({ k, label, help, testId }: { k: BoolSetting; label: string; help?: string; testId?: string }) {
+function Toggle({
+  k,
+  label,
+  help,
+  testId,
+}: {
+  k: BoolSetting;
+  label: string;
+  help?: string;
+  testId?: string;
+}) {
   const value = useSettings((s) => s[k]);
   const set = useSettings((s) => s.set);
   return (
     <Row label={label} help={help}>
-      <Switch checked={value} onChange={(v) => set({ [k]: v })} aria-label={label} data-testid={testId} />
+      <Switch
+        checked={value}
+        onChange={(v) => set({ [k]: v })}
+        aria-label={label}
+        data-testid={testId}
+      />
     </Row>
   );
 }
 
 /** A number setting with a slider and a box beside it. */
-function NumberRow({ k, label, help, range, testId }: { k: 'toastSeconds' | 'undoLimit' | 'comicPanelCount' | 'comicFrameMm' | 'comicMarginMm' | 'mockStepDelay' | 'draftCount' | 'draftPosition'; label: string; help?: string; range: { min: number; max: number; step: number }; testId?: string }) {
+function NumberRow({
+  k,
+  label,
+  help,
+  range,
+  testId,
+}: {
+  k:
+    | 'toastSeconds'
+    | 'undoLimit'
+    | 'comicPanelCount'
+    | 'comicFrameMm'
+    | 'comicMarginMm'
+    | 'mockStepDelay'
+    | 'draftCount'
+    | 'draftPosition';
+  label: string;
+  help?: string;
+  range: { min: number; max: number; step: number };
+  testId?: string;
+}) {
   const value = useSettings((s) => s[k]);
   const set = useSettings((s) => s.set);
   return (
     <Row label={label} help={help}>
       <div className="st-slider" data-testid={testId}>
-        <SliderNumber value={value} onChange={(v) => set({ [k]: v })} min={range.min} max={range.max} step={range.step} aria-label={label} />
+        <SliderNumber
+          value={value}
+          onChange={(v) => set({ [k]: v })}
+          min={range.min}
+          max={range.max}
+          step={range.step}
+          aria-label={label}
+        />
       </div>
     </Row>
   );
@@ -68,12 +127,21 @@ function NumberRow({ k, label, help, range, testId }: { k: 'toastSeconds' | 'und
 export function GeneralPane() {
   const s = useSettings();
   const mock = backend.kind === 'mock';
-  const startOptions: { value: StartTab; label: string }[] = [{ value: 'last', label: t('settings.startTab.last') }, ...NAV.map((tab) => ({ value: tab, label: t(TAB_LABEL[tab]) }))];
+  const startOptions: { value: StartTab; label: string }[] = [
+    { value: 'last', label: t('settings.startTab.last') },
+    ...NAV.map((tab) => ({ value: tab, label: t(TAB_LABEL[tab]) })),
+  ];
   return (
     <>
       <SectionBlock title={t('settings.section.look')}>
         <Row label={t('settings.language.label')}>
-          <Select className="st-select" value={s.language} onChange={(v) => s.set({ language: v })} options={LOCALES.map((l) => ({ value: l, label: t(LANGUAGE_KEYS[l]) }))} aria-label={t('settings.language.label')} />
+          <Select
+            className="st-select"
+            value={s.language}
+            onChange={(v) => s.set({ language: v })}
+            options={LOCALES.map((l) => ({ value: l, label: t(LANGUAGE_KEYS[l]) }))}
+            aria-label={t('settings.language.label')}
+          />
         </Row>
         <Row label={t('settings.theme.label')}>
           <Select
@@ -93,7 +161,10 @@ export function GeneralPane() {
               className="st-select"
               value={String(sanitizeUiZoom(s.uiZoom))}
               onChange={(v) => s.set({ uiZoom: Number(v) })}
-              options={UI_ZOOM_STEPS.map((z) => ({ value: String(z), label: `${Math.round(z * 100)}%` }))}
+              options={UI_ZOOM_STEPS.map((z) => ({
+                value: String(z),
+                label: `${Math.round(z * 100)}%`,
+              }))}
               aria-label={t('settings.uiZoom.label')}
               data-testid="settings-ui-zoom"
             />
@@ -102,10 +173,27 @@ export function GeneralPane() {
       </SectionBlock>
       <SectionBlock title={t('settings.section.behaviour')}>
         <Row label={t('settings.startTab.label')}>
-          <Select className="st-select" value={s.startTab} onChange={(v) => s.set({ startTab: v })} options={startOptions} aria-label={t('settings.startTab.label')} data-testid="settings-start-tab" />
+          <Select
+            className="st-select"
+            value={s.startTab}
+            onChange={(v) => s.set({ startTab: v })}
+            options={startOptions}
+            aria-label={t('settings.startTab.label')}
+            data-testid="settings-start-tab"
+          />
         </Row>
-        <Toggle k="waitForEngine" label={t('settings.waitForEngine.label')} help={t('settings.waitForEngine.help')} testId="settings-wait-for-engine" />
-        <NumberRow k="toastSeconds" label={t('settings.toastSeconds.label')} range={TOAST_SECONDS_RANGE} testId="settings-toast-seconds" />
+        <Toggle
+          k="waitForEngine"
+          label={t('settings.waitForEngine.label')}
+          help={t('settings.waitForEngine.help')}
+          testId="settings-wait-for-engine"
+        />
+        <NumberRow
+          k="toastSeconds"
+          label={t('settings.toastSeconds.label')}
+          range={TOAST_SECONDS_RANGE}
+          testId="settings-toast-seconds"
+        />
       </SectionBlock>
     </>
   );
@@ -124,9 +212,26 @@ export function GenerationPane() {
           <LowMemorySwitch />
         </Row>
         <LowMemoryNote />
-        <NumberRow k="draftCount" label={t('settings.draftCount.label')} range={DRAFT_COUNT_RANGE} testId="settings-draft-count" />
-        <NumberRow k="draftPosition" label={t('settings.draftPosition.label')} range={DRAFT_POSITION_RANGE} testId="settings-draft-position" />
-        {mock && <NumberRow k="mockStepDelay" label={t('settings.mockStepDelay')} help={t('settings.mockStepDelayHelp')} range={{ min: 0, max: 300, step: 10 }} />}
+        <NumberRow
+          k="draftCount"
+          label={t('settings.draftCount.label')}
+          range={DRAFT_COUNT_RANGE}
+          testId="settings-draft-count"
+        />
+        <NumberRow
+          k="draftPosition"
+          label={t('settings.draftPosition.label')}
+          range={DRAFT_POSITION_RANGE}
+          testId="settings-draft-position"
+        />
+        {mock && (
+          <NumberRow
+            k="mockStepDelay"
+            label={t('settings.mockStepDelay')}
+            help={t('settings.mockStepDelayHelp')}
+            range={{ min: 0, max: 300, step: 10 }}
+          />
+        )}
       </SectionBlock>
       <SectionBlock title={t('settings.section.assistant')}>
         <Row label={t('settings.assistantRead.label')} help={t('settings.assistantRead.help')}>
@@ -134,7 +239,10 @@ export function GenerationPane() {
             className="st-select"
             value={readAccess}
             onChange={(v) => set({ assistantReadAccess: v })}
-            options={READ_ACCESS.map((a) => ({ value: a, label: t(`settings.assistantRead.${a}`) }))}
+            options={READ_ACCESS.map((a) => ({
+              value: a,
+              label: t(`settings.assistantRead.${a}`),
+            }))}
             aria-label={t('settings.assistantRead.label')}
             data-testid="settings-assistant-read"
           />
@@ -144,7 +252,10 @@ export function GenerationPane() {
             className="st-select"
             value={webAccess}
             onChange={(v) => set({ assistantWebAccess: v })}
-            options={READ_ACCESS.map((a) => ({ value: a, label: t(`settings.assistantRead.${a}`) }))}
+            options={READ_ACCESS.map((a) => ({
+              value: a,
+              label: t(`settings.assistantRead.${a}`),
+            }))}
             aria-label={t('settings.assistantWeb.label')}
             data-testid="settings-assistant-web"
           />
@@ -160,9 +271,23 @@ export function GalleryPane() {
   const images = useGallery((st) => st.images);
   const intermediates = images.filter((i) => i.isIntermediate).map((i) => i.name);
   const [clearing, setClearing] = useState(false);
-  const toggle = (key: 'autoSwitch' | 'autoAssignBoardOnClick' | 'starredFirst' | 'alwaysShowImageSizeBadge' | 'showArchivedBoards' | 'groupByDate', label: string) => (
+  const toggle = (
+    key:
+      | 'autoSwitch'
+      | 'autoAssignBoardOnClick'
+      | 'starredFirst'
+      | 'alwaysShowImageSizeBadge'
+      | 'showArchivedBoards'
+      | 'groupByDate',
+    label: string,
+  ) => (
     <Row label={label}>
-      <Switch checked={g[key]} onChange={(v) => set({ [key]: v })} aria-label={label} data-testid={`settings-gallery-${key}`} />
+      <Switch
+        checked={g[key]}
+        onChange={(v) => set({ [key]: v })}
+        aria-label={label}
+        data-testid={`settings-gallery-${key}`}
+      />
     </Row>
   );
   const clearIntermediates = async () => {
@@ -170,9 +295,16 @@ export function GalleryPane() {
     try {
       await backend.deleteImages(intermediates);
       useGallery.getState().removeImages(intermediates);
-      toast({ status: 'success', title: tCount('settings.toast.intermediatesCleared', intermediates.length) });
+      toast({
+        status: 'success',
+        title: tCount('settings.toast.intermediatesCleared', intermediates.length),
+      });
     } catch (err) {
-      toast({ status: 'error', title: t('settings.toast.intermediatesFailed'), description: err instanceof Error ? err.message : String(err) });
+      toast({
+        status: 'error',
+        title: t('settings.toast.intermediatesFailed'),
+        description: err instanceof Error ? err.message : String(err),
+      });
     } finally {
       setClearing(false);
     }
@@ -182,7 +314,14 @@ export function GalleryPane() {
       <SectionBlock title={t('settings.section.galleryView')}>
         <Row label={t('gallery.settings.thumbnailSize')}>
           <div className="st-slider">
-            <Slider value={g.thumbnailSize} min={45} max={256} step={1} onChange={(v) => set({ thumbnailSize: v })} aria-label={t('gallery.settings.thumbnailSize')} />
+            <SliderNumber
+              value={g.thumbnailSize}
+              min={45}
+              max={256}
+              step={1}
+              onChange={(v) => set({ thumbnailSize: v })}
+              aria-label={t('gallery.settings.thumbnailSize')}
+            />
           </div>
         </Row>
         <Row label={t('gallery.settings.sort')}>
@@ -207,7 +346,14 @@ export function GalleryPane() {
         {toggle('autoAssignBoardOnClick', t('gallery.settings.autoAssign'))}
         <Toggle k="confirmOnDelete" label={t('settings.confirmOnDelete')} />
         <Row label={t('settings.clearIntermediates')}>
-          <Button size="sm" scheme="danger" variant="outline" disabled={intermediates.length === 0} isLoading={clearing} onClick={() => void clearIntermediates()}>
+          <Button
+            size="sm"
+            scheme="danger"
+            variant="outline"
+            disabled={intermediates.length === 0}
+            isLoading={clearing}
+            onClick={() => void clearIntermediates()}
+          >
             {tCount('settings.clearIntermediatesButton', intermediates.length)}
           </Button>
         </Row>
@@ -219,7 +365,13 @@ export function GalleryPane() {
 export function EditPane() {
   return (
     <SectionBlock title={t('settings.section.edit')}>
-      <NumberRow k="undoLimit" label={t('settings.undoLimit.label')} help={t('settings.undoLimit.help')} range={UNDO_LIMIT_RANGE} testId="settings-undo-limit" />
+      <NumberRow
+        k="undoLimit"
+        label={t('settings.undoLimit.label')}
+        help={t('settings.undoLimit.help')}
+        range={UNDO_LIMIT_RANGE}
+        testId="settings-undo-limit"
+      />
     </SectionBlock>
   );
 }
@@ -230,27 +382,58 @@ export function ComicTextPane() {
     <>
       <SectionBlock title={t('settings.section.fonts')}>
         <Row label={t('settings.comicFont.label')}>
-          <FontPicker value={s.comicFont || null} onChange={(font) => s.set({ comicFont: font ?? '' })} defaultLabel={t('common.font.standard')} label={t('settings.comicFont.label')} testId="settings-comic-font" />
+          <div className="st-select st-font">
+            <FontPicker
+              value={s.comicFont || null}
+              onChange={(font) => s.set({ comicFont: font ?? '' })}
+              defaultLabel={t('common.font.standard')}
+              label={t('settings.comicFont.label')}
+              testId="settings-comic-font"
+            />
+          </div>
         </Row>
         <Row label={t('settings.textFont.label')}>
-          <FontPicker value={s.textFont || null} onChange={(font) => s.set({ textFont: font ?? '' })} defaultLabel={t('common.font.standard')} label={t('settings.textFont.label')} testId="settings-text-font" />
+          <div className="st-select st-font">
+            <FontPicker
+              value={s.textFont || null}
+              onChange={(font) => s.set({ textFont: font ?? '' })}
+              defaultLabel={t('common.font.standard')}
+              label={t('settings.textFont.label')}
+              testId="settings-text-font"
+            />
+          </div>
         </Row>
       </SectionBlock>
       <SectionBlock title={t('settings.section.comicPage')}>
         <Row label={t('comic.page.size')}>
-          <Select className="st-select" value={s.comicPageSize} onChange={(v) => s.set({ comicPageSize: v })} options={PAGE_SIZES.map((p) => ({ value: p, label: p }))} aria-label={t('comic.page.size')} data-testid="settings-comic-size" />
+          <Select
+            className="st-select"
+            value={s.comicPageSize}
+            onChange={(v) => s.set({ comicPageSize: v })}
+            options={PAGE_SIZES.map((p) => ({ value: p, label: p }))}
+            aria-label={t('comic.page.size')}
+            data-testid="settings-comic-size"
+          />
         </Row>
         <Row label={t('comic.page.direction')}>
           <Select
             className="st-select"
             value={s.comicDirection}
             onChange={(v) => s.set({ comicDirection: v })}
-            options={READING_DIRECTIONS.map((d) => ({ value: d, label: t(`comic.page.direction.${d}`) }))}
+            options={READING_DIRECTIONS.map((d) => ({
+              value: d,
+              label: t(`comic.page.direction.${d}`),
+            }))}
             aria-label={t('comic.page.direction')}
             data-testid="settings-comic-direction"
           />
         </Row>
-        <NumberRow k="comicPanelCount" label={t('settings.comicPage.panels')} range={COMIC_PANELS_RANGE} testId="settings-comic-panels" />
+        <NumberRow
+          k="comicPanelCount"
+          label={t('settings.comicPage.panels')}
+          range={COMIC_PANELS_RANGE}
+          testId="settings-comic-panels"
+        />
         <NumberRow k="comicFrameMm" label={t('comic.page.frameWidth')} range={FRAME_WIDTH_RANGE} />
         <NumberRow k="comicMarginMm" label={t('comic.page.margin')} range={FRAME_MARGIN_RANGE} />
       </SectionBlock>

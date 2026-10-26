@@ -627,7 +627,7 @@
 }
 
 .st-backup__note {
-  margin: var(--space-1) 0 0;
+  margin: 0;
 }
 
 .st-restore {
@@ -673,10 +673,28 @@
   margin-top: var(--space-1);
 }
 
-.st-location {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  align-items: flex-end;
-  text-align: right;
+/* A row's note that reports a failure (a data move that could not be done). */
+.st-row__warn {
+  color: var(--warning-text);
+}
+
+.st-font .ui-select {
+  width: 100%;
+}
+
+/* What each button of a dialog does, under the button's own name. */
+.st-choices {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+
+.st-choices dt {
+  font-weight: 600;
+}
+
+.st-choices dd {
+  margin: 0 0 var(--space-2);
+  color: var(--text-muted);
 }

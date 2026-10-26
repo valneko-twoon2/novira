@@ -112,7 +112,7 @@ export function BackupSection() {
             {t('share.backup.create')}
           </Button>
         </Row>
-        <Row label={t('share.backup.restoreLabel')} help={t('share.backup.restoreHelp')}>
+        <Row label={t('share.backup.restoreLabel')} help={t('share.backup.restoreHelp')} note={t('share.backup.keysNote')}>
           <Button size="sm" leftIcon={<ArrowCounterClockwise size={14} />} isLoading={busy === 'restore'} disabled={running || !available} onClick={() => void chooseBackup()} data-testid="backup-restore">
             {t('share.backup.restore')}
           </Button>
@@ -128,7 +128,6 @@ export function BackupSection() {
             <ProgressBar value={progress.total ? progress.done / progress.total : 0} />
           </div>
         )}
-        <p className="st-row__help st-backup__note">{t('share.backup.keysNote')}</p>
         {mock && <p className="st-row__help st-backup__note">{t('share.backup.mockNote')}</p>}
       </div>
       {pending && <RestoreConfirm info={pending} busy={busy === 'confirm'} onCancel={cancel} onConfirm={() => void confirm()} />}

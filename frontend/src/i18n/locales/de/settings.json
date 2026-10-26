@@ -13,8 +13,6 @@
   "settings.mockStepDelayHelp": "Verzögerung pro Schritt (ms)",
   "settings.confirmOnDelete": "Beim Löschen bestätigen",
   "settings.clearIntermediates": "Zwischenbilder leeren",
-  "settings.clearIntermediatesButton.one": "{count} Zwischenbild leeren",
-  "settings.clearIntermediatesButton.other": "{count} Zwischenbilder leeren",
   "settings.resetDone": "Die Web-Oberfläche wurde zurückgesetzt. Zum Anwenden neu laden.",
   "settings.reload": "Neu laden",
   "settings.version": "Version: {version}",

@@ -13,8 +13,6 @@
   "settings.mockStepDelayHelp": "Délai par étape (ms)",
   "settings.confirmOnDelete": "Confirmer avant de supprimer",
   "settings.clearIntermediates": "Effacer les images intermédiaires",
-  "settings.clearIntermediatesButton.one": "Effacer {count} image intermédiaire",
-  "settings.clearIntermediatesButton.other": "Effacer {count} images intermédiaires",
   "settings.resetDone": "Réinitialisation effectuée. Rechargez pour appliquer.",
   "settings.reload": "Recharger",
   "settings.version": "Version : {version}",

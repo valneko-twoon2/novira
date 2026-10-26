@@ -150,8 +150,8 @@ Einfügen und **{{ui:settings.civitaiKey.save}}** drücken. Später sind auch **
 
 Die erzeugten Bilder und alles, was in der App eingestellt und registriert wurde, lassen sich in einer einzigen ZIP-Datei speichern. Sie dient dem Umzug auf einen anderen Computer oder als Vorsorge für den Notfall.
 
-- **{{ui:share.backup.create}}**: Es öffnet sich ein Fenster zur Wahl des Speicherorts. Der Dateiname lautet von Anfang an „novira-backup-Datum-Uhrzeit.zip“. Bei vielen Bildern dauert es eine Weile, und der Fortschritt wird in diesem Bereich angezeigt.
-- **{{ui:share.backup.restore}}**: Hier wird die ZIP-Datei einer Sicherung gewählt. Nach der Prüfung des Inhalts erscheint ein Bestätigungsfenster.
+- **{{ui:share.backup.createLabel}}**: Es öffnet sich ein Fenster zur Wahl des Speicherorts. Der Dateiname lautet von Anfang an „novira-backup-Datum-Uhrzeit.zip“. Bei vielen Bildern dauert es eine Weile, und der Fortschritt wird in diesem Bereich angezeigt.
+- **{{ui:share.backup.restoreLabel}}**: Hier wird die ZIP-Datei einer Sicherung gewählt. Nach der Prüfung des Inhalts erscheint ein Bestätigungsfenster.
 
 Was in einer Sicherung enthalten ist und was nicht:
 

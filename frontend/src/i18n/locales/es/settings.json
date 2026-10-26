@@ -13,8 +13,6 @@
   "settings.mockStepDelayHelp": "Retraso por paso (ms)",
   "settings.confirmOnDelete": "Confirmar al eliminar",
   "settings.clearIntermediates": "Borrar intermedios",
-  "settings.clearIntermediatesButton.one": "Borrar {count} intermedio",
-  "settings.clearIntermediatesButton.other": "Borrar {count} intermedios",
   "settings.resetDone": "La interfaz web se ha restablecido. Recargue para aplicarlo.",
   "settings.reload": "Recargar",
   "settings.version": "Versión: {version}",

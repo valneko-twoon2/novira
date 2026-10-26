@@ -27,7 +27,7 @@ export function Splash({ onOpen, preparing = false }: { onOpen: () => void; prep
             <EnginePanel status={status} />
             {/* The download goes on in the background: the app opens with its banner showing the progress. */}
             {status.state === 'downloading' && (
-              <Button variant="outline" onClick={onOpen} data-testid="splash-open-later">
+              <Button onClick={onOpen} data-testid="splash-open-later">
                 {t('splash.open')}
               </Button>
             )}

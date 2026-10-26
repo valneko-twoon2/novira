@@ -3,7 +3,13 @@
 // each change; they apply at the next start, which a notice says.
 import { FolderPlus, X } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
-import { backend, hasNativeDialogs, type ComfyuiPackage, type EngineSettings, type EngineSettingsPatch } from '@/backend';
+import {
+  backend,
+  hasNativeDialogs,
+  type ComfyuiPackage,
+  type EngineSettings,
+  type EngineSettingsPatch,
+} from '@/backend';
 import { t } from '@/i18n';
 import { toast } from '@/state/toasts';
 import { Button, IconButton, Select, SliderNumber, Spinner, Switch } from '@/ui';
@@ -16,7 +22,12 @@ const SAVE_DELAY_MS = 500;
 const TIMEOUT_RANGE = { min: 30, max: 1800, step: 10 } as const;
 const PACKAGES: ComfyuiPackage[] = ['nvidia', 'amd'];
 
-const failed = (err: unknown) => toast({ status: 'error', title: t('settings.engine.failed'), description: err instanceof Error ? err.message : String(err) });
+const failed = (err: unknown) =>
+  toast({
+    status: 'error',
+    title: t('settings.engine.failed'),
+    description: err instanceof Error ? err.message : String(err),
+  });
 
 export function EnginePane() {
   const [engine, setEngine] = useState<EngineSettings | null>(null);
@@ -77,7 +88,9 @@ export function EnginePane() {
     const next = pendingPackage;
     if (next === null) return;
     // The select keeps the chosen package until the backend has saved it.
-    void run(() => backend.setEngineSettings({ comfyuiPackage: next })).finally(() => setPendingPackage(null));
+    void run(() => backend.setEngineSettings({ comfyuiPackage: next })).finally(() =>
+      setPendingPackage(null),
+    );
   };
   return (
     <>
@@ -91,23 +104,41 @@ export function EnginePane() {
         <ComfyuiRow engine={engine} busy={busy} run={run} />
       </SectionBlock>
       <SectionBlock title={t('settings.section.engineStart')}>
-        <Row label={t('settings.engine.package.label')} help={t('settings.engine.package.help')} note={pendingPackage === null ? undefined : t('settings.engine.package.reinstall')}>
+        <Row
+          label={t('settings.engine.package.label')}
+          help={t('settings.engine.package.help')}
+          note={pendingPackage === null ? undefined : t('settings.engine.package.reinstall')}
+        >
           <div className="st-inline">
             <Select
               className="st-select"
               value={pendingPackage ?? engine.comfyuiPackage}
               onChange={choosePackage}
-              options={PACKAGES.map((p) => ({ value: p, label: t(`settings.engine.package.${p}`) }))}
+              options={PACKAGES.map((p) => ({
+                value: p,
+                label: t(`settings.engine.package.${p}`),
+              }))}
               disabled={busy}
               aria-label={t('settings.engine.package.label')}
               data-testid="settings-engine-package"
             />
             {pendingPackage !== null && (
               <>
-                <Button size="sm" variant="ghost" onClick={() => setPendingPackage(null)} data-testid="settings-engine-package-cancel">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setPendingPackage(null)}
+                  data-testid="settings-engine-package-cancel"
+                >
                   {t('common.cancel')}
                 </Button>
-                <Button size="sm" scheme="accent" disabled={busy} onClick={confirmPackage} data-testid="settings-engine-package-confirm">
+                <Button
+                  size="sm"
+                  scheme="accent"
+                  disabled={busy}
+                  onClick={confirmPackage}
+                  data-testid="settings-engine-package-confirm"
+                >
                   {t('settings.engine.package.confirm')}
                 </Button>
               </>
@@ -116,11 +147,16 @@ export function EnginePane() {
         </Row>
         <Row label={t('settings.engine.timeout.label')}>
           <div className="st-slider" data-testid="settings-engine-timeout">
-            <SliderNumber value={timeout ?? engine.comfyuiStartTimeoutSecs} onChange={changeTimeout} {...TIMEOUT_RANGE} aria-label={t('settings.engine.timeout.label')} />
+            <SliderNumber
+              value={timeout ?? engine.comfyuiStartTimeoutSecs}
+              onChange={changeTimeout}
+              {...TIMEOUT_RANGE}
+              aria-label={t('settings.engine.timeout.label')}
+            />
           </div>
         </Row>
       </SectionBlock>
-      <SectionBlock title={t('settings.engine.civitai.label')}>
+      <SectionBlock title={t('settings.section.models')}>
         <Row label={t('settings.engine.civitai.label')} help={t('settings.engine.civitai.help')}>
           <Switch
             checked={engine.civitaiLookup}
@@ -130,28 +166,46 @@ export function EnginePane() {
             data-testid="settings-engine-civitai"
           />
         </Row>
-      </SectionBlock>
-      <SectionBlock title={t('settings.engine.modelRoots.label')}>
-        {engine.modelRoots.length === 0 && <p className="st-row__help">{t('settings.engine.modelRoots.none')}</p>}
-        <ul className="st-roots" data-testid="settings-engine-roots">
-          {engine.modelRoots.map((root, i) => (
-            <li key={root} className="st-roots__item">
-              <code className="st-path">{root}</code>
-              <IconButton size="xs" label={t('settings.engine.modelRoots.remove')} icon={<X />} disabled={busy} onClick={() => void run(() => backend.removeModelRoot(i))} data-testid="settings-engine-root-remove" />
-            </li>
-          ))}
-        </ul>
-        {hasNativeDialogs() ? (
-          <div>
-            <Button size="sm" variant="outline" leftIcon={<FolderPlus />} isLoading={busy} onClick={() => void run(() => backend.addModelRoot())} data-testid="settings-engine-root-add">
+        <Row
+          label={t('settings.engine.modelRoots.label')}
+          note={engine.modelRoots.length === 0 ? t('settings.engine.modelRoots.none') : undefined}
+          detail={
+            engine.modelRoots.length > 0 && (
+              <ul className="st-roots" data-testid="settings-engine-roots">
+                {engine.modelRoots.map((root, i) => (
+                  <li key={root} className="st-roots__item">
+                    <code className="st-path">{root}</code>
+                    <IconButton
+                      size="xs"
+                      label={t('settings.engine.modelRoots.remove')}
+                      icon={<X />}
+                      disabled={busy}
+                      onClick={() => void run(() => backend.removeModelRoot(i))}
+                      data-testid="settings-engine-root-remove"
+                    />
+                  </li>
+                ))}
+              </ul>
+            )
+          }
+        >
+          {hasNativeDialogs() ? (
+            <Button
+              size="sm"
+              variant="outline"
+              leftIcon={<FolderPlus />}
+              isLoading={busy}
+              onClick={() => void run(() => backend.addModelRoot())}
+              data-testid="settings-engine-root-add"
+            >
               {t('settings.engine.modelRoots.add')}
             </Button>
-          </div>
-        ) : (
-          <p className="st-row__help" data-testid="settings-engine-root-desktop-only">
-            {t('common.desktopOnly')}
-          </p>
-        )}
+          ) : (
+            <span className="st-row__help" data-testid="settings-engine-root-desktop-only">
+              {t('common.desktopOnly')}
+            </span>
+          )}
+        </Row>
       </SectionBlock>
     </>
   );

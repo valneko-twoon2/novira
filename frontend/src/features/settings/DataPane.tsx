@@ -49,34 +49,48 @@ export function DataPane() {
       <BackupSection />
       <UnfinishedDownloads />
       <SectionBlock title={t('settings.section.reset')}>
-        <Row label={t('settings.reset.scope.label')} note={t(SCOPE_HELP[scope])}>
-          <Select
-            className="st-select"
-            value={scope}
-            onChange={(v) => {
-              setScope(v);
-              setConfirming(false);
-            }}
-            options={SCOPES.map((s) => ({ value: s, label: t(SCOPE_LABEL[s]) }))}
-            aria-label={t('settings.reset.scope.label')}
-            data-testid="settings-reset-scope"
-          />
-        </Row>
-        <Row label={t('settings.resetWebUi')} help={t('settings.resetWebUiHelp')}>
-          {confirming ? (
-            <div className="st-inline">
-              <Button size="sm" variant="ghost" onClick={() => setConfirming(false)}>
-                {t('common.cancel')}
+        <Row
+          label={t('settings.reset.scope.label')}
+          help={t('settings.resetWebUiHelp')}
+          note={t(SCOPE_HELP[scope])}
+        >
+          <div className="st-inline">
+            <Select
+              className="st-select"
+              value={scope}
+              onChange={(v) => {
+                setScope(v);
+                setConfirming(false);
+              }}
+              options={SCOPES.map((s) => ({ value: s, label: t(SCOPE_LABEL[s]) }))}
+              aria-label={t('settings.reset.scope.label')}
+              data-testid="settings-reset-scope"
+            />
+            {confirming ? (
+              <div className="st-inline">
+                <Button size="sm" variant="ghost" onClick={() => setConfirming(false)}>
+                  {t('common.cancel')}
+                </Button>
+                <Button
+                  size="sm"
+                  scheme="danger"
+                  onClick={reset}
+                  data-testid="settings-reset-confirm"
+                >
+                  {t('settings.resetConfirm')}
+                </Button>
+              </div>
+            ) : (
+              <Button
+                size="sm"
+                scheme="danger"
+                onClick={() => setConfirming(true)}
+                data-testid="settings-reset"
+              >
+                {t('settings.resetWebUi')}
               </Button>
-              <Button size="sm" scheme="danger" onClick={reset} data-testid="settings-reset-confirm">
-                {t('settings.resetConfirm')}
-              </Button>
-            </div>
-          ) : (
-            <Button size="sm" scheme="danger" onClick={() => setConfirming(true)} data-testid="settings-reset">
-              {t('settings.resetWebUi')}
-            </Button>
-          )}
+            )}
+          </div>
         </Row>
         {needsReload && (
           <div className="st-notice" data-testid="settings-reset-done">

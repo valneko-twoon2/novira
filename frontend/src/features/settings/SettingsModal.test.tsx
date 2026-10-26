@@ -361,11 +361,10 @@ describe('the engine', () => {
     expect(screen.queryByTestId('settings-engine-data-dir-change')).toBeNull();
   });
 
-  it('chooses and resets the place novira installs ComfyUI in', async () => {
+  it('chooses the place novira installs ComfyUI in, with no button back to the default', async () => {
     const engine = { dataDir: 'C:\\data', dataDirChangeable: true, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null as string | null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
     const choose = vi.spyOn(backend, 'chooseComfyuiInstallDir').mockResolvedValueOnce({ ...engine, comfyuiInstallDir: 'E:\\engine', restartNeeded: true }).mockResolvedValueOnce(null);
-    const reset = vi.spyOn(backend, 'resetComfyuiInstallDir').mockResolvedValue(engine);
     openTab('engine');
     expect(screen.queryByTestId('settings-engine-comfyui-reset')).toBeNull();
     fireEvent.click(await screen.findByTestId('settings-engine-comfyui-change'));
@@ -374,9 +373,7 @@ describe('the engine', () => {
     fireEvent.click(screen.getByTestId('settings-engine-comfyui-change'));
     await waitFor(() => expect(choose).toHaveBeenCalledTimes(2));
     expect(screen.getByTestId('settings-engine-comfyui-next')).toBeTruthy();
-    fireEvent.click(screen.getByTestId('settings-engine-comfyui-reset'));
-    await waitFor(() => expect(reset).toHaveBeenCalled());
-    await waitFor(() => expect(screen.queryByTestId('settings-engine-comfyui-next')).toBeNull());
+    expect(screen.queryByTestId('settings-engine-comfyui-reset')).toBeNull();
   });
 
   it('shows an engine named elsewhere, and reports a change the backend refuses', async () => {

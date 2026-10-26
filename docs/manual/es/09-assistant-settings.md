@@ -150,8 +150,8 @@ Se pega y se pulsa **{{ui:settings.civitaiKey.save}}**. Después también se pue
 
 Se pueden guardar las imágenes y lo configurado y registrado en la aplicación en un solo archivo zip, para llevarlo a otro ordenador o por precaución.
 
-- **{{ui:share.backup.create}}**: se abre una ventana para elegir dónde guardarla. El nombre del archivo empieza como «novira-backup-fecha-hora.zip». Con muchas imágenes tarda un rato, y el progreso se muestra en esta parte.
-- **{{ui:share.backup.restore}}**: se elige un archivo zip de copia de seguridad. Se comprueba su contenido y luego se abre una ventana de confirmación.
+- **{{ui:share.backup.createLabel}}**: se abre una ventana para elegir dónde guardarla. El nombre del archivo empieza como «novira-backup-fecha-hora.zip». Con muchas imágenes tarda un rato, y el progreso se muestra en esta parte.
+- **{{ui:share.backup.restoreLabel}}**: se elige un archivo zip de copia de seguridad. Se comprueba su contenido y luego se abre una ventana de confirmación.
 
 Qué contiene una copia de seguridad y qué no:
 

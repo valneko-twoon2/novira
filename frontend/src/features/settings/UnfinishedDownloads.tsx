@@ -62,7 +62,7 @@ export function UnfinishedDownloads() {
   return (
     <SectionBlock title={t('settings.section.unfinished')}>
       <div className="st-group" data-testid="settings-unfinished">
-        <Row label={t('settings.unfinished.title')} help={t('settings.unfinished.help')}>
+        <Row label={t('settings.unfinished.title')} help={t('settings.unfinished.help')} note={items !== null && items.length === 0 ? t('settings.unfinished.empty') : undefined}>
           {hasItems &&
             (confirming ? (
               <div className="st-inline">
@@ -79,7 +79,6 @@ export function UnfinishedDownloads() {
               </Button>
             ))}
         </Row>
-        {items !== null && items.length === 0 && <p className="st-row__help">{t('settings.unfinished.empty')}</p>}
         {items !== null && items.length > 0 && (
           <ul className="st-roots" data-testid="settings-unfinished-list">
             {items.map((u, index) => (

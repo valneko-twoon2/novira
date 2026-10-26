@@ -13,8 +13,6 @@
   "settings.mockStepDelayHelp": "1스텝당 대기 시간 (밀리초)",
   "settings.confirmOnDelete": "삭제 전에 확인",
   "settings.clearIntermediates": "중간 이미지 삭제",
-  "settings.clearIntermediatesButton.one": "중간 이미지 {count}장 삭제",
-  "settings.clearIntermediatesButton.other": "중간 이미지 {count}장 삭제",
   "settings.resetDone": "초기화했습니다. 새로고침하면 반영됩니다.",
   "settings.reload": "새로고침",
   "settings.version": "버전: {version}",
