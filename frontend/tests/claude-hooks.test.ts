@@ -202,6 +202,45 @@ describe('data-guard hook', () => {
     expect(appeared(['a'], ['a', 'b'])).toEqual(['b']);
     expect(listProtected(join(root, 'missing'))).toEqual([]);
   });
+
+  it('guards a data folder the app moved out of the repository the same way, by whatever name it has', () => {
+    const moved = 'C:/Users/u/mydata';
+    const both = [data, moved];
+    expect(isProtected('C:\\Users\\u\\mydata\\models\\a.safetensors', both)).toBe(true);
+    expect(isProtected(`${moved}/work/comfy-copy/x`, both)).toBe(false);
+    expect(isProtected(`${data}/settings.json`, both)).toBe(true);
+    for (const cmd of [`rm -rf ${moved}/models/x`, 'rm -rf /c/Users/u/mydata/models/x', `echo x > ${moved}/settings.json`,`cp a.txt C:\\Users\\u\\mydata\\outputs\\`, 'rm -rf novira-data/models/x']) {
+      expect(shellWritesProtected(cmd, both, repo), cmd).toBe(true);
+    }
+    for (const cmd of [`ls ${moved}/models`, `cp ${moved}/models/a /tmp/`, `rm -rf ${moved}/work/x`]) {
+      expect(shellWritesProtected(cmd, both, repo), cmd).toBe(false);
+    }
+
+    const root = mkdtempSync(join(tmpdir(), 'guard-'));
+    const own = join(root, 'repo', 'novira-data');
+    const away = join(root, 'away');
+    const roots = { work: join(own, 'work'), moved: away };
+    mkdirSync(join(away, 'models', 'vae'), { recursive: true });
+    mkdirSync(own, { recursive: true });
+    const input = { tool_name: 'Bash', tool_use_id: 't2', tool_input: { command: 'node script.mjs' }, cwd: root };
+    const errors: string[] = [];
+    const write = process.stderr.write;
+    process.stderr.write = ((s: string) => (errors.push(s), true)) as typeof process.stderr.write;
+    try {
+      guard('pre', input, roots);
+      writeFileSync(join(away, 'models', 'vae', 'left.txt'), '');
+      mkdirSync(join(away, 'work', 'ok'), { recursive: true });
+      guard('post', input, roots);
+      expect(errors.join('')).toContain('left.txt');
+      expect(errors.join('')).not.toContain('ok');
+      guard('pre', { tool_name: 'Edit', tool_input: { file_path: join(away, 'settings.json') } }, roots);
+      expect(errors.at(-1)).toContain('only under novira-data/work/');
+    } finally {
+      process.stderr.write = write;
+      process.exitCode = 0;
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 });
 
 describe('commit-before-stop hook', () => {
