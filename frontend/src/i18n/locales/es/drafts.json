@@ -4,7 +4,6 @@
   "drafts.count": "Cantidad",
   "drafts.position": "Punto del borrador (%)",
   "drafts.start": "Crear borradores",
-  "drafts.hint": "Usa los ajustes de la pestaña Generar y solo cambia la semilla, dibujando cada candidato hasta cierto punto. Elija los que le gusten y termínelos.",
   "drafts.empty.title": "Aún no hay borradores",
   "drafts.empty.description": "Elija una cantidad y un punto, y pulse Crear borradores para alinear candidatos a medio dibujar.",
   "drafts.onlyTxt2img": "Los borradores solo funcionan con texto a imagen (quite la imagen de referencia)",

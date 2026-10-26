@@ -4,7 +4,6 @@
   "drafts.count": "Count",
   "drafts.position": "Draft position (%)",
   "drafts.start": "Make drafts",
-  "drafts.hint": "Uses the Generate tab's settings and only changes the seed, drawing each candidate part of the way. Pick the ones you like and draw them to the end.",
   "drafts.empty.title": "No drafts yet",
   "drafts.empty.description": "Choose a count and a position, then press Make drafts to line up half-drawn candidates.",
   "drafts.onlyTxt2img": "Drafts work with text to image only (remove the reference image)",

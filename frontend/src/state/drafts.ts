@@ -70,6 +70,17 @@ export function modelsWithoutDrafts(models: ModelConfig[]): ModelConfig[] {
   return drawableModels(models).filter((m) => draftRefusal(m) !== null);
 }
 
+/**
+ * Whether a candidate can be drawn to the end (again). A candidate whose finished picture was cancelled, failed or was
+ * deleted from the gallery is offered again: the draft stays good, since drawing the finished picture starts from the seed.
+ * Only one whose finished picture is being drawn, or exists, waits.
+ */
+export function canFinish(c: DraftCandidate, finalPictureExists: boolean): boolean {
+  if (c.status !== 'ready') return false;
+  if (c.finalItemId === null || c.finalStatus === 'failed') return true;
+  return c.finalStatus === 'ready' && !finalPictureExists;
+}
+
 export const draftStepOf = (group: Pick<DraftGroup, 'params' | 'position'>) => draftStep(group.params.steps, group.position);
 
 function statusOf(item: QueueItem | undefined, hasImage: boolean): DraftStatus {
@@ -242,7 +253,9 @@ export const useDrafts = create<DraftsState>()(
           const started = new Map<string, number>();
           for (const cid of candidateIds) {
             const c = group.candidates.find((x) => x.id === cid);
-            if (!c || c.finalItemId !== null) continue;
+            // The finished picture being drawn, or not yet known, is not started twice; a cancelled or failed one, or one
+            // that is done (its picture deleted since), is drawn again.
+            if (!c || (c.finalItemId !== null && c.finalStatus !== 'failed' && c.finalStatus !== 'ready')) continue;
             const [item] = await backend.enqueue({
               origin: 'generate',
               destination: 'gallery',
@@ -259,7 +272,7 @@ export const useDrafts = create<DraftsState>()(
             groups: get().groups.map((g) =>
               g.id !== groupId
                 ? g
-                : { ...g, candidates: g.candidates.map((c) => (started.has(c.id) ? { ...c, finalItemId: started.get(c.id)!, finalStatus: 'queued' as const } : c)) },
+                : { ...g, candidates: g.candidates.map((c) => (started.has(c.id) ? { ...c, finalItemId: started.get(c.id)!, finalStatus: 'queued' as const, finalImageName: null } : c)) },
             ),
             selection: get().selection.filter((s) => !started.has(s)),
           });

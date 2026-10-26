@@ -4,7 +4,6 @@
   "drafts.count": "Quantidade",
   "drafts.position": "Ponto do rascunho (%)",
   "drafts.start": "Criar rascunhos",
-  "drafts.hint": "Usa as configurações da aba Gerar e muda apenas a seed, desenhando cada candidato até certo ponto. Escolha os que gostar e desenhe-os até o fim.",
   "drafts.empty.title": "Nenhum rascunho ainda",
   "drafts.empty.description": "Escolha uma quantidade e um ponto e pressione Criar rascunhos para alinhar candidatos meio desenhados.",
   "drafts.onlyTxt2img": "Os rascunhos funcionam só com texto para imagem (remova a imagem de referência)",

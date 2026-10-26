@@ -4,7 +4,6 @@
   "drafts.count": "장수",
   "drafts.position": "초안 위치 (%)",
   "drafts.start": "초안 만들기",
-  "drafts.hint": "생성 탭의 설정은 그대로 두고 시드만 바꿔 중간까지 그립니다. 마음에 드는 것만 골라 끝까지 그릴 수 있습니다.",
   "drafts.empty.title": "초안이 아직 없습니다",
   "drafts.empty.description": "장수와 위치를 정하고 「초안 만들기」를 누르면 중간까지 그린 후보가 나열됩니다.",
   "drafts.onlyTxt2img": "초안은 텍스트로 이미지를 생성할 때만 사용할 수 있습니다 (참조 이미지를 제거하세요)",

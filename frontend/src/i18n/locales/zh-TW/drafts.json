@@ -4,7 +4,6 @@
   "drafts.count": "張數",
   "drafts.position": "草稿進度位置（%）",
   "drafts.start": "建立草稿",
-  "drafts.hint": "沿用生成分頁的設定，只更換種子，先畫到一半。只挑選喜歡的，再繼續畫到最後。",
   "drafts.empty.title": "目前還沒有草稿",
   "drafts.empty.description": "設定張數與位置後按下「建立草稿」，就會排列出畫到一半的候選圖。",
   "drafts.onlyTxt2img": "草稿僅適用於文字轉圖像的生成（請移除參考圖像）",

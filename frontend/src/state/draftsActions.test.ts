@@ -2,7 +2,7 @@
 // The drafts store's actions: selecting, marking, closing groups, the start problems, finishing and retrying.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { backend, type EnqueueRequest, type GenerationMetadata, type QueueItem } from '@/backend';
-import { draftStepOf, useDrafts, type DraftCandidate, type DraftGroup } from './drafts';
+import { canFinish, draftStepOf, useDrafts, type DraftCandidate, type DraftGroup } from './drafts';
 import { registerInvokeBuilder } from './invoke';
 import { useQueue } from './queue';
 
@@ -110,6 +110,39 @@ describe('finishing and retrying', () => {
     expect(state().groups[0]!.candidates[0]!.finalStatus).toBe('queued');
     expect(state().selection).toEqual(['c2']);
     expect(state().busy).toBe(false);
+  });
+
+  it('draws a candidate to the end again after its finished picture was cancelled, failed or deleted, never twice at once', async () => {
+    const enqueue = vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => [{ id: 200 + r.params.seed, params: r.params } as QueueItem]);
+    useDrafts.setState({
+      groups: [
+        group('a', [
+          candidate(1, { status: 'ready', finalItemId: 5, finalStatus: 'failed' }),
+          candidate(2, { status: 'ready', finalItemId: 6, finalStatus: 'running' }),
+          candidate(3, { status: 'ready', finalItemId: 7, finalStatus: 'queued' }),
+          candidate(4, { status: 'ready', finalItemId: 8, finalStatus: 'ready', finalImageName: 'gone.png' }),
+        ]),
+      ],
+    });
+    await state().finish('a', ['c1', 'c2', 'c3', 'c4']);
+    expect(enqueue).toHaveBeenCalledTimes(2);
+    const done = state().groups[0]!.candidates;
+    expect(done.map((c) => c.finalItemId)).toEqual([211, 6, 7, 214]);
+    expect(done.map((c) => c.finalStatus)).toEqual(['queued', 'running', 'queued', 'queued']);
+    // The picture of the earlier try is forgotten, so the cell does not show it while the new one is drawn.
+    expect(done[3]!.finalImageName).toBeNull();
+  });
+
+  it('offers to finish a candidate unless its draft is not ready, or its finished picture is being drawn or exists', () => {
+    const c = (over: Partial<DraftCandidate>) => candidate(1, { status: 'ready', ...over });
+    expect(canFinish(c({}), false)).toBe(true);
+    expect(canFinish(c({ status: 'running' }), false)).toBe(false);
+    expect(canFinish(c({ status: 'failed' }), false)).toBe(false);
+    expect(canFinish(c({ finalItemId: 5, finalStatus: 'failed' }), false)).toBe(true);
+    expect(canFinish(c({ finalItemId: 5, finalStatus: 'queued' }), false)).toBe(false);
+    expect(canFinish(c({ finalItemId: 5, finalStatus: 'running' }), false)).toBe(false);
+    expect(canFinish(c({ finalItemId: 5, finalStatus: 'ready' }), true)).toBe(false);
+    expect(canFinish(c({ finalItemId: 5, finalStatus: 'ready' }), false)).toBe(true);
   });
 
   it('runs the failed drafts again with the same seeds and without the second pass', async () => {

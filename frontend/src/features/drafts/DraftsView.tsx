@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { ImageDTO } from '@/backend';
 import { t, tCount } from '@/i18n';
 import {
+  canFinish,
   draftModels,
   draftStepOf,
   modelsWithoutDrafts,
@@ -104,7 +105,6 @@ function NewDrafts() {
       <Button variant="solid" scheme="invoke" leftIcon={<Lightning weight="fill" />} isLoading={busy} onClick={() => void run()} data-testid="drafts-start">
         {t('drafts.start')}
       </Button>
-      <p className="dv-hint">{t('drafts.hint')}</p>
       {leftOut.length > 0 && (
         <p className="dv-hint" data-testid="drafts-left-out">
           {t('drafts.leftOut', { names: leftOut.map((m) => m.name).join(', ') })}
@@ -125,7 +125,7 @@ function GroupGrid({ group, onOpen }: { group: DraftGroup; onOpen: ((imageName: 
   const [page, setPage] = useState(0);
   const pages = Math.max(1, Math.ceil(group.candidates.length / PER_PAGE));
   const shown = group.candidates.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
-  const finishable = group.candidates.filter((c) => selection.includes(c.id) && c.status === 'ready' && c.finalItemId === null);
+  const finishable = group.candidates.filter((c) => selection.includes(c.id) && canFinish(c, !!c.finalImageName && images.some((i) => i.name === c.finalImageName)));
   const failed = group.candidates.filter((c) => c.status === 'failed').length;
   const step = draftStepOf(group);
 

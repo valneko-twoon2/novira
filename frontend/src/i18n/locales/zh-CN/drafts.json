@@ -4,7 +4,6 @@
   "drafts.count": "数量",
   "drafts.position": "草稿位置（%）",
   "drafts.start": "创建草稿",
-  "drafts.hint": "沿用生成标签页的设置，只更换种子，先画到一半。只选择喜欢的，再画完。",
   "drafts.empty.title": "还没有草稿",
   "drafts.empty.description": "设定数量和位置后点击“创建草稿”，就会排列出画到一半的候选图。",
   "drafts.onlyTxt2img": "草稿仅可用于文生图（请移除参考图像）",

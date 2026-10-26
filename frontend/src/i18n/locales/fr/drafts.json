@@ -4,7 +4,6 @@
   "drafts.count": "Nombre",
   "drafts.position": "Avancement du brouillon (%)",
   "drafts.start": "Créer des brouillons",
-  "drafts.hint": "Utilise les réglages de l'onglet Générer et ne change que le seed, en dessinant chaque candidat jusqu'à mi-parcours. Choisissez ceux qui vous plaisent et menez-les à terme.",
   "drafts.empty.title": "Aucun brouillon",
   "drafts.empty.description": "Choisissez un nombre et un avancement, puis appuyez sur Créer des brouillons pour aligner des candidats à moitié dessinés.",
   "drafts.onlyTxt2img": "Les brouillons ne fonctionnent qu'avec texte vers image (retirez l'image de référence)",
