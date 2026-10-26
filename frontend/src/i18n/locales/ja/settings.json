@@ -319,7 +319,7 @@
   "settings.engine.dataDir.dialog.title": "データフォルダを変える",
   "settings.engine.dataDir.dialog.move": "今のデータを移す",
   "settings.engine.dataDir.dialog.use": "そのまま使う",
-  "settings.engine.dataDir.dialog.moveHelp": "今のデータを、選んだ空のフォルダへ移します。次の起動の最初に行うので、量が多いと時間がかかります。",
+  "settings.engine.dataDir.dialog.moveHelp": "今のデータを、選んだフォルダへ移します。フォルダにほかのものがあっても、同じ名前のものがなければ移せます。次の起動の最初に行うので、量が多いと時間がかかります。",
   "settings.engine.dataDir.dialog.useHelp": "今のデータは移しません。選んだフォルダにデータがあればそれを開き、空なら新しく始めます。",
   "settings.engine.comfyui.change": "インストール先を変更",
   "settings.engine.comfyui.next": "次の起動から {path} にインストールします。",

@@ -319,7 +319,7 @@
   "settings.engine.dataDir.dialog.title": "Change the data folder",
   "settings.engine.dataDir.dialog.move": "Move the data",
   "settings.engine.dataDir.dialog.use": "Use as it is",
-  "settings.engine.dataDir.dialog.moveHelp": "Moves the current data into the empty folder you choose. It is done first thing at the next start, so a large library takes a while.",
+  "settings.engine.dataDir.dialog.moveHelp": "Moves the current data into the folder you choose. The folder may hold other things, as long as none has the name of a part of the data. It is done first thing at the next start, so a large library takes a while.",
   "settings.engine.dataDir.dialog.useHelp": "Leaves the current data where it is. A folder that already holds data is opened; an empty one starts a new library.",
   "settings.engine.comfyui.change": "Change the place",
   "settings.engine.comfyui.next": "From the next start it is installed in {path}.",

@@ -118,8 +118,9 @@ pub fn check_folder(new: &Path) -> Result<(), String> {
     Ok(())
 }
 
-/// Checks a folder chosen for the data. With `move_data`, the folder must be empty (or new): the data is moved into it.
-/// Without, it is opened as it is (an empty folder starts a new library; one that holds data is the library to open).
+/// Checks a folder chosen for the data. With `move_data`, nothing in the folder may have the name of something in the
+/// current data (it may hold other things, such as an install of ComfyUI): the data is moved in beside them. Without, it
+/// is opened as it is (an empty folder starts a new library; one that holds data is the library to open).
 pub fn check_new(new: &Path, current: &Path, move_data: bool) -> Result<(), String> {
     check_folder(new)?;
     if same(new, current) {
@@ -128,16 +129,36 @@ pub fn check_new(new: &Path, current: &Path, move_data: bool) -> Result<(), Stri
     if inside(new, current) || inside(current, new) {
         return Err("The new data folder and the current one cannot be inside each other".into());
     }
-    if move_data && new.is_dir() {
-        let empty = std::fs::read_dir(new)
-            .map_err(|e| format!("cannot read {}: {e}", new.display()))?
-            .next()
-            .is_none();
-        if !empty {
-            return Err("To move the data, choose an empty folder".into());
-        }
+    if move_data {
+        clash(current, new)?;
     }
     Ok(())
+}
+
+/// The name of an entry `from` has that `to` has too (compared without case, as Windows does); a move would put one over
+/// the other, so it is refused.
+fn clash(from: &Path, to: &Path) -> Result<(), String> {
+    if !to.is_dir() {
+        return Ok(());
+    }
+    let names = |dir: &Path| -> Result<Vec<String>, String> {
+        Ok(std::fs::read_dir(dir)
+            .map_err(|e| format!("cannot read {}: {e}", dir.display()))?
+            .filter_map(Result::ok)
+            .map(|e| e.file_name().to_string_lossy().to_lowercase())
+            .collect())
+    };
+    let there = names(to)?;
+    let Ok(ours) = names(from) else {
+        return Ok(());
+    };
+    match ours.iter().find(|n| there.contains(n)) {
+        Some(name) => Err(format!(
+            "{} already holds {name}; choose a folder without it",
+            to.display()
+        )),
+        None => Ok(()),
+    }
 }
 
 /// Whether the pointer asks for the data to be moved at this start (so the app can show that it is working).
@@ -173,7 +194,8 @@ pub fn apply_pending(pointer: &Path) -> Option<PathBuf> {
 }
 
 /// Moves everything in `from` into `to`: a rename when it can be, else a copy followed by removing the old files. The
-/// folder `from` must not be in use (nothing holds its lock), and `to` must be empty or missing.
+/// folder `from` must not be in use (nothing holds its lock), and nothing in `to` may share a name with what `from` holds
+/// (`to` may hold other things: they stay). A failed move puts back what it had moved and removes what it had copied.
 fn move_data(from: &Path, to: &Path) -> Result<(), String> {
     if !from.is_dir() {
         return Err(format!("{} does not exist", from.display()));
@@ -183,32 +205,67 @@ fn move_data(from: &Path, to: &Path) -> Result<(), String> {
         Ok(None) => return Err("another novira is using the current data folder".into()),
         Err(e) => return Err(format!("cannot lock the current data folder: {e}")),
     };
-    if to.is_dir() {
-        let empty = std::fs::read_dir(to)
-            .map_err(|e| e.to_string())?
-            .next()
-            .is_none();
-        if !empty {
-            return Err(format!("{} is not empty", to.display()));
-        }
-    }
+    clash(from, to)?;
     if let Some(parent) = to.parent() {
         std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
-    // Folders cannot be renamed over a folder that exists, even an empty one, on every system.
-    let existed = to.is_dir();
-    if existed {
-        std::fs::remove_dir(to).map_err(|e| e.to_string())?;
+    if !to.exists() {
+        drop(_lock);
+        if std::fs::rename(from, to).is_ok() {
+            return Ok(());
+        }
+        return copy_whole(from, to);
     }
+    let entries: Vec<std::fs::DirEntry> = std::fs::read_dir(from)
+        .map_err(|e| e.to_string())?
+        .filter_map(Result::ok)
+        .collect();
     drop(_lock);
-    if std::fs::rename(from, to).is_ok() {
-        return Ok(());
+    // Each entry in turn: renamed when it can be, else copied. What is done is undone when a later one fails.
+    let mut renamed: Vec<(PathBuf, PathBuf)> = Vec::new();
+    let mut copied: Vec<PathBuf> = Vec::new();
+    for entry in &entries {
+        let (source, target) = (entry.path(), to.join(entry.file_name()));
+        if std::fs::rename(&source, &target).is_ok() {
+            renamed.push((source, target));
+            continue;
+        }
+        let done = match entry.file_type() {
+            Ok(kind) if kind.is_dir() => copy_tree(&source, &target),
+            Ok(kind) if kind.is_file() => std::fs::copy(&source, &target).map(|_| ()),
+            Ok(_) => Ok(()),
+            Err(e) => Err(e),
+        };
+        if let Err(e) = done {
+            copied.push(target);
+            for path in &copied {
+                let _ = if path.is_dir() {
+                    std::fs::remove_dir_all(path)
+                } else {
+                    std::fs::remove_file(path)
+                };
+            }
+            for (source, target) in renamed.iter().rev() {
+                let _ = std::fs::rename(target, source);
+            }
+            return Err(format!("copying failed: {e}"));
+        }
+        copied.push(target);
     }
+    // Every copy is whole: the old files are not needed. Leftovers (a file in use) are not an error.
+    if let Err(e) = std::fs::remove_dir_all(from) {
+        crate::applog::warn(
+            "data-location",
+            format!("the old folder was not fully removed: {e}"),
+        );
+    }
+    Ok(())
+}
+
+/// Copies `from` to the new folder `to` (another drive), then removes the old files; a failed copy leaves nothing at `to`.
+fn copy_whole(from: &Path, to: &Path) -> Result<(), String> {
     if let Err(e) = copy_tree(from, to) {
         let _ = std::fs::remove_dir_all(to);
-        if existed {
-            let _ = std::fs::create_dir_all(to);
-        }
         return Err(format!("copying failed: {e}"));
     }
     // The copy is whole: the old files are not needed. Leftovers (a file in use) are not an error.

@@ -376,10 +376,17 @@ mod tests {
         b.set_location_pointer(Some(pointer.clone()));
         let full = base.path().join("full");
         std::fs::create_dir_all(&full).unwrap();
-        std::fs::write(full.join("a.txt"), "x").unwrap();
+        // Something of the same name as a part of the data.
+        let taken = std::fs::read_dir(&data)
+            .unwrap()
+            .next()
+            .unwrap()
+            .unwrap()
+            .file_name();
+        std::fs::write(full.join(taken), "x").unwrap();
         assert!(
             b.set_data_dir(&full, true).is_err(),
-            "a move needs an empty folder"
+            "a move cannot put the data over a name the folder has"
         );
         assert!(
             b.set_data_dir(&data, false).is_err(),

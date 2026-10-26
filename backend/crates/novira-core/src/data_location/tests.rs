@@ -31,7 +31,7 @@ fn the_pointer_reads_back_what_was_written_and_a_broken_one_reads_as_none() {
 fn a_new_data_folder_is_checked() {
     let dir = tempfile::tempdir().unwrap();
     let current = dir.path().join("current");
-    std::fs::create_dir_all(&current).unwrap();
+    put(&current, "novira.sqlite", "db");
     let ok = |new: &Path, mv| check_new(new, &current, mv);
     assert!(ok(&dir.path().join("fresh"), true).is_ok());
     assert!(ok(&current, false).is_err());
@@ -43,7 +43,19 @@ fn a_new_data_folder_is_checked() {
     assert!(ok(&file, false).is_err());
     let full = dir.path().join("full");
     put(&full, "novira.sqlite", "db");
-    assert!(ok(&full, true).is_err(), "a move needs an empty folder");
+    assert!(
+        ok(&full, true).is_err(),
+        "a move cannot put the data over a file of the same name"
+    );
+    let beside = dir.path().join("beside");
+    put(&beside, "portable/ComfyUI/main.py", "");
+    assert!(
+        ok(&beside, true).is_ok(),
+        "other things in the folder stay beside the data"
+    );
+    let upper = dir.path().join("upper");
+    put(&upper, "NOVIRA.SQLITE", "db");
+    assert!(ok(&upper, true).is_err(), "names are compared without case");
     assert!(
         ok(&full, false).is_ok(),
         "without a move, a folder with data is opened as it is"
@@ -89,11 +101,46 @@ fn a_pending_move_carries_the_data_over_and_opens_the_new_folder() {
 }
 
 #[test]
-fn a_move_into_a_folder_that_has_files_is_refused_and_the_old_folder_stays_in_use() {
+fn a_move_into_a_folder_that_holds_other_things_puts_the_data_beside_them() {
     let dir = tempfile::tempdir().unwrap();
     let (old, new) = (dir.path().join("old"), dir.path().join("new"));
     put(&old, "novira.sqlite", "db");
-    put(&new, "other.txt", "not ours");
+    put(&old, "comfyui/portable/ComfyUI/main.py", "old engine");
+    put(&new, "portable/ComfyUI/main.py", "new engine");
+    let pointer = dir.path().join("data-location.json");
+    write(
+        &pointer,
+        &Location {
+            data_dir: new.clone(),
+            move_from: Some(old.clone()),
+            move_error: None,
+        },
+    )
+    .unwrap();
+    assert_eq!(apply_pending(&pointer), Some(new.clone()));
+    assert_eq!(
+        std::fs::read_to_string(new.join("novira.sqlite")).unwrap(),
+        "db"
+    );
+    assert_eq!(
+        std::fs::read_to_string(new.join("comfyui/portable/ComfyUI/main.py")).unwrap(),
+        "old engine"
+    );
+    assert_eq!(
+        std::fs::read_to_string(new.join("portable/ComfyUI/main.py")).unwrap(),
+        "new engine"
+    );
+    assert!(!old.exists());
+    assert!(read(&pointer).unwrap().move_error.is_none());
+}
+
+#[test]
+fn a_move_onto_a_name_the_folder_already_has_is_refused_and_the_old_folder_stays_in_use() {
+    let dir = tempfile::tempdir().unwrap();
+    let (old, new) = (dir.path().join("old"), dir.path().join("new"));
+    put(&old, "novira.sqlite", "db");
+    put(&old, "outputs/a.png", "picture");
+    put(&new, "Outputs/other.png", "not ours");
     let pointer = dir.path().join("data-location.json");
     write(
         &pointer,
@@ -106,11 +153,13 @@ fn a_move_into_a_folder_that_has_files_is_refused_and_the_old_folder_stays_in_us
     .unwrap();
     assert_eq!(apply_pending(&pointer), Some(old.clone()));
     assert!(old.join("novira.sqlite").is_file());
-    assert!(new.join("other.txt").is_file());
+    assert!(old.join("outputs/a.png").is_file());
+    assert!(new.join("Outputs/other.png").is_file());
+    assert!(!new.join("novira.sqlite").exists());
     let after = read(&pointer).unwrap();
     assert_eq!(after.data_dir, old);
     assert!(after.move_from.is_none());
-    assert!(after.move_error.unwrap().contains("not empty"));
+    assert!(after.move_error.unwrap().contains("already holds"));
 }
 
 #[test]
