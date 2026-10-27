@@ -7,8 +7,9 @@ One page per feature, each the current specification of that feature: how it beh
 | [runtime.md](runtime.md) | How the backend starts, runs and stops: layers, the data folder and its lock, storage, child processes, the self-contained build |
 | [navigation.md](navigation.md) | The side bar, the number keys, and the media row with the Comic icon |
 | [phone-layout.md](phone-layout.md) | The phone layout of the browser page: when it shows, its tabs, what each tab does and what it leaves out |
-| [generation.md](generation.md) | The generation queue and worker, ComfyUI graphs for pictures, drafts, guidance (masks, control layers, reference images), the local engine, the GPU lock |
+| [generation.md](generation.md) | The generation queue and worker, ComfyUI graphs for pictures, guidance (masks, control layers, reference images), the local engine, the GPU lock |
 | [model-families.md](model-families.md) | The newer image model families (Anima, Flux, SD3...): their loaders, encoders, VAE and control patches |
+| [drafts.md](drafts.md) | Drafts: candidates drawn part of the way, then finished one by one |
 | [media-generation.md](media-generation.md) | Video, music, voice and logo generation |
 | [workflows.md](workflows.md) | The node workflow editor: saved workflows, the editor state, saving and importing a workflow file |
 | [workflow-graphs.md](workflow-graphs.md) | Running a workflow graph: the ComfyUI prompt the editor compiles, ComfyUI's own nodes in the editor, the result (picture, text, sound, video) |

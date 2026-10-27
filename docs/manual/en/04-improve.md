@@ -283,7 +283,7 @@ Pictures drawn to the end go into the gallery just like a normal generation, and
 
 > Although it says "{{ui:manual.drafts.finish}}", it does not resume from the middle. It draws again from beginning to end with the same seed. Because of this, the time it takes to finish is the same as a normal generation. You get a picture with the composition you saw in the draft.
 
-> Drafts can be used only for generation that makes pictures from text. If you have reference images or the like set, a message appears and you cannot start. Draft pictures are not lined up in the gallery list.
+> Drafts can be used for generation that makes pictures from text, and for redrawing a picture put in the **{{ui:params.i2i.title}}** section. With {{ui:params.i2i.title}}, a draft is drawn to the position share of the steps actually drawn, which depend on the **{{ui:params.image.strength}}**. Draft pictures are not lined up in the gallery list.
 
 Drafts line up in the tabs at the top "in the order you started them". Only the latest 5 stay as tabs. Every draft is on the **{{ui:drafts.history.title}}** screen that the "History" button at the left of the tabs opens.
 

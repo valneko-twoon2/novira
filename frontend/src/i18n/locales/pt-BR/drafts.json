@@ -6,7 +6,6 @@
   "drafts.start": "Criar rascunhos",
   "drafts.empty.title": "Nenhum rascunho ainda",
   "drafts.empty.description": "Escolha uma quantidade e um ponto e pressione Criar rascunhos para alinhar candidatos meio desenhados.",
-  "drafts.onlyTxt2img": "Os rascunhos funcionam só com texto para imagem (remova a imagem de referência)",
   "drafts.notReady": "A aba Gerar ainda não está pronta",
   "drafts.failed": "Não foi possível iniciar os rascunhos",
   "drafts.badge.draft": "Rascunho {percent}% ({step} de {steps})",

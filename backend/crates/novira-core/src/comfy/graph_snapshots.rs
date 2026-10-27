@@ -330,6 +330,15 @@ fn img2img() {
     snapshot_built("img2img", &Models::image(), &p, Some("source.png"));
 }
 
+#[test]
+fn img2img_draft() {
+    let mut p = params(GenerationMode::Img2img);
+    p.steps = 28;
+    p.strength = Some(0.45);
+    p.draft_at = Some(0.35);
+    snapshot_built("img2img-draft", &Models::image(), &p, Some("source.png"));
+}
+
 fn masked(mask: &str) -> GuidanceInput<'_> {
     GuidanceInput {
         mask_image: Some(mask),

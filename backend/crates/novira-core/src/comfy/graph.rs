@@ -228,6 +228,16 @@ pub fn draft_step(steps: u32, fraction: f64) -> u32 {
     k as u32
 }
 
+/// The schedule a draft samples from and the step it starts at: KSampler with a denoise below 1 makes a schedule of
+/// `int(steps / denoise)` steps and draws its last `steps`, so a draft of image to image starts that far into it.
+pub fn draft_schedule(steps: u32, denoise: f64) -> (u32, u32) {
+    if denoise > 0.9999 {
+        return (steps, 0);
+    }
+    let schedule = (f64::from(steps) / denoise) as u32;
+    (schedule, schedule - steps)
+}
+
 /// Output size: the requested size, scaled for upscaling, snapped to multiples of 8.
 pub fn output_size(p: &GenerationMetadata) -> (u32, u32) {
     let scale = if p.generation_mode == GenerationMode::Upscale {
@@ -410,11 +420,17 @@ pub fn build(input: &GraphInput<'_>) -> Result<BuiltGraph, String> {
         return Err("Steps must be at least 1".into());
     }
     if let Some(f) = p.draft_at {
-        if p.generation_mode != GenerationMode::Txt2img {
-            return Err("Drafts are only available for text to image".into());
+        if !matches!(
+            p.generation_mode,
+            GenerationMode::Txt2img | GenerationMode::Img2img
+        ) {
+            return Err("Drafts are only available for text to image and image to image".into());
         }
         if !(f > 0.0 && f < 1.0) || p.steps < 4 {
             return Err("A draft needs a position between 0 and 1 and at least 4 steps".into());
+        }
+        if denoise_for(p) <= 0.0 {
+            return Err("A draft needs a strength above 0".into());
         }
     }
     if p.generation_mode == GenerationMode::Graph {
@@ -722,7 +738,10 @@ pub fn build(input: &GraphInput<'_>) -> Result<BuiltGraph, String> {
     let mut total_steps = p.steps;
     let sampled = match p.draft_at {
         // Stop early and let the sampler finish that step cleanly, so the draft shows what the image is turning into.
+        // Image to image draws only the last steps of a longer schedule, as KSampler does with its denoise; the
+        // draft stops at the position of the steps actually drawn.
         Some(f) => {
+            let (schedule, start) = draft_schedule(p.steps, denoise_for(p));
             total_steps = draft_step(p.steps, f);
             g.add(
                 "KSamplerAdvanced",
@@ -730,15 +749,15 @@ pub fn build(input: &GraphInput<'_>) -> Result<BuiltGraph, String> {
                     "model": model,
                     "add_noise": "enable",
                     "noise_seed": p.seed,
-                    "steps": p.steps,
+                    "steps": schedule,
                     "cfg": cfg,
                     "sampler_name": sampler,
                     "scheduler": scheduler,
                     "positive": positive,
                     "negative": negative,
                     "latent_image": latent,
-                    "start_at_step": 0,
-                    "end_at_step": total_steps,
+                    "start_at_step": start,
+                    "end_at_step": start + total_steps,
                     "return_with_leftover_noise": "disable",
                 }),
             )

@@ -6,7 +6,6 @@
   "drafts.start": "Entwürfe erstellen",
   "drafts.empty.title": "Noch keine Entwürfe",
   "drafts.empty.description": "Wählen Sie Anzahl und Stufe und klicken Sie auf „Entwürfe erstellen“, um halbfertige Kandidaten aufzureihen.",
-  "drafts.onlyTxt2img": "Entwürfe funktionieren nur mit Text zu Bild (Referenzbild entfernen)",
   "drafts.notReady": "Der Tab „Generieren“ ist noch nicht bereit",
   "drafts.failed": "Entwürfe konnten nicht gestartet werden",
   "drafts.badge.draft": "Entwurf {percent} % (Schritt {step} von {steps})",

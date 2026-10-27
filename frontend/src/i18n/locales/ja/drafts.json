@@ -6,7 +6,6 @@
   "drafts.start": "下書きを作る",
   "drafts.empty.title": "下書きはまだありません",
   "drafts.empty.description": "枚数と位置を決めて「下書きを作る」を押すと、途中まで描いた候補が並びます。",
-  "drafts.onlyTxt2img": "下書きはテキストから画像の生成だけで使えます（参照画像を外してください）",
   "drafts.notReady": "生成タブの設定がまだ整っていません",
   "drafts.failed": "下書きを始められませんでした",
   "drafts.badge.draft": "下書き {percent}%（{steps} 中 {step}）",

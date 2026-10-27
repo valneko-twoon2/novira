@@ -85,13 +85,39 @@ describe('groups and selection', () => {
 });
 
 describe('starting', () => {
-  it('says so when there is no builder, and when the settings are not text to picture', async () => {
+  it('says so when there is no builder', async () => {
     registerInvokeBuilder('generate', undefined as never);
     expect(await state().start(2, 0.3)).toEqual({ error: 'no-builder' });
-    const request = { origin: 'generate', destination: 'gallery', params: { generationMode: 'img2img' }, iterations: 1, randomizeSeed: false, prepend: false, boardId: null } as EnqueueRequest;
-    registerInvokeBuilder('generate', { readiness: () => [], build: async () => request });
-    expect(await state().start(2, 0.3)).toEqual({ error: 'not-txt2img' });
     expect(state().busy).toBe(false);
+  });
+
+  it('drafts image to image over the stored source and finishes and retries over it again', async () => {
+    const source = 'http://novira-image.localhost/full/source.png';
+    const request = { origin: 'generate', destination: 'gallery', params: { generationMode: 'img2img', strength: 0.5, steps: 30, seed: 1 }, iterations: 2, randomizeSeed: false, prepend: false, boardId: null, initImageUrl: source } as EnqueueRequest;
+    registerInvokeBuilder('generate', { readiness: () => [], build: async () => request });
+    const enqueue = vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => [{ id: 1, params: r.params, initImageUrl: r.initImageUrl ?? null } as QueueItem]);
+    expect(await state().start(1, 0.3)).toBeNull();
+    const g = state().groups.at(-1)!;
+    expect(g.initImageUrl).toBe(source);
+    await state().finish(g.id, [g.candidates[0]!.id]);
+    useDrafts.setState({ groups: [{ ...g, candidates: [{ ...g.candidates[0]!, status: 'failed' }] }] });
+    await state().retryFailed(g.id);
+    expect(enqueue.mock.calls.map(([r]) => [r.params.generationMode, r.params.draftAt, r.params.strength, r.initImageUrl])).toEqual([
+      ['img2img', 0.3, 0.5, source],
+      ['img2img', undefined, 0.5, source],
+      ['img2img', 0.3, 0.5, source],
+    ]);
+  });
+
+  it('keeps no source for text to image', async () => {
+    const request = { origin: 'generate', destination: 'gallery', params: { generationMode: 'txt2img', steps: 30, seed: 1 }, iterations: 1, randomizeSeed: false, prepend: false, boardId: null } as EnqueueRequest;
+    registerInvokeBuilder('generate', { readiness: () => [], build: async () => request });
+    const enqueue = vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => [{ id: 1, params: r.params, initImageUrl: null } as QueueItem]);
+    expect(await state().start(1, 0.3)).toBeNull();
+    const g = state().groups.at(-1)!;
+    expect('initImageUrl' in g).toBe(false);
+    await state().finish(g.id, [g.candidates[0]!.id]);
+    expect(enqueue.mock.calls[1]![0]).not.toHaveProperty('initImageUrl');
   });
 });
 

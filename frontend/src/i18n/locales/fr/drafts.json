@@ -6,7 +6,6 @@
   "drafts.start": "Créer des brouillons",
   "drafts.empty.title": "Aucun brouillon",
   "drafts.empty.description": "Choisissez un nombre et un avancement, puis appuyez sur Créer des brouillons pour aligner des candidats à moitié dessinés.",
-  "drafts.onlyTxt2img": "Les brouillons ne fonctionnent qu'avec texte vers image (retirez l'image de référence)",
   "drafts.notReady": "L'onglet Générer n'est pas encore prêt",
   "drafts.failed": "Impossible de lancer les brouillons",
   "drafts.badge.draft": "Brouillon {percent} % (étape {step} sur {steps})",

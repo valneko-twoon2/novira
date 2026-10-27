@@ -113,8 +113,50 @@ fn a_draft_stops_early_with_the_advanced_sampler() {
     assert_eq!(g.total_steps, 10);
     assert_eq!(draft_step(28, 0.1), 6);
     assert_eq!(draft_step(28, 0.99), 26);
-    p.generation_mode = GenerationMode::Img2img;
-    assert!(build(&input(&p, &c, Some("a.png"))).is_err());
+    p.generation_mode = GenerationMode::Upscale;
+    assert!(build(&input(&p, &c, Some("a.png")))
+        .unwrap_err()
+        .contains("Drafts are only available"));
+}
+
+#[test]
+fn an_image_to_image_draft_starts_where_the_denoise_starts() {
+    let c = ckpt();
+    let mut p = params(GenerationMode::Img2img);
+    p.steps = 28;
+    p.strength = Some(0.5);
+    p.draft_at = Some(0.35);
+    let g = build(&input(&p, &c, Some("a.png"))).unwrap();
+    // KSampler with denoise 0.5 draws the last 28 of 56 steps; the draft stops at 35% of those 28.
+    let ks = by_class(&g, "KSamplerAdvanced")[0];
+    assert_eq!(ks["steps"], 56);
+    assert_eq!(ks["start_at_step"], 28);
+    assert_eq!(ks["end_at_step"], 38);
+    assert_eq!(g.total_steps, 10);
+    assert!(!by_class(&g, "VAEEncode").is_empty());
+    // A full strength draws the whole schedule, as text to image does.
+    p.strength = Some(1.0);
+    let ks = by_class(
+        &build(&input(&p, &c, Some("a.png"))).unwrap(),
+        "KSamplerAdvanced",
+    )[0]
+    .clone();
+    assert_eq!(
+        (
+            ks["steps"].clone(),
+            ks["start_at_step"].clone(),
+            ks["end_at_step"].clone()
+        ),
+        (json!(28), json!(0), json!(10))
+    );
+    p.strength = Some(0.0);
+    assert!(build(&input(&p, &c, Some("a.png")))
+        .unwrap_err()
+        .contains("strength above 0"));
+    // The schedule follows KSampler's int(steps / denoise).
+    assert_eq!(draft_schedule(28, 0.7), (40, 12));
+    assert_eq!(draft_schedule(30, 0.3), (100, 70));
+    assert_eq!(draft_schedule(20, 0.99995), (20, 0));
 }
 
 fn hires(scale: f64, strength: f64, model: Option<&str>, steps: Option<u32>) -> HiresFix {

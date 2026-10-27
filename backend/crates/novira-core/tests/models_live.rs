@@ -9,7 +9,7 @@
 //! and the files it needs (encoders, VAE). Optional: `NOVIRA_LIVE_IMAGE` (a picture: image to image, or the start of a
 //! clip), `NOVIRA_LIVE_PROMPT`, `NOVIRA_LIVE_NEGATIVE`, `NOVIRA_LIVE_STEPS`, `NOVIRA_LIVE_CFG`, `NOVIRA_LIVE_SIZE` (`WxH`), `NOVIRA_LIVE_FRAMES`, `NOVIRA_LIVE_OUT`
 //! (a folder that gets the result file), `NOVIRA_LIVE_REGION_MASK` and `NOVIRA_LIVE_REGION_PROMPT` (a regional guidance
-//! layer), `NOVIRA_LIVE_SEAMLESS` (`x`, `y` or `xy`, seamless tiling).
+//! layer), `NOVIRA_LIVE_SEAMLESS` (`x`, `y` or `xy`, seamless tiling), `NOVIRA_LIVE_DRAFT` (a draft position, 0 to 1).
 use novira_core::types::*;
 use novira_core::{Backend, BackendConfig, Settings};
 use std::path::PathBuf;
@@ -143,6 +143,7 @@ async fn a_model_makes_a_picture_or_a_clip() {
             request.params.strength = Some(0.6);
         }
     }
+    request.params.draft_at = env("NOVIRA_LIVE_DRAFT").and_then(|v| v.parse().ok());
 
     // A regional guidance layer: NOVIRA_LIVE_REGION_MASK (white inside) with NOVIRA_LIVE_REGION_PROMPT.
     if let (Some(path), Some(prompt)) = (

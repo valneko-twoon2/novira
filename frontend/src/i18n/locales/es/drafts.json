@@ -6,7 +6,6 @@
   "drafts.start": "Crear borradores",
   "drafts.empty.title": "Aún no hay borradores",
   "drafts.empty.description": "Elija una cantidad y un punto, y pulse Crear borradores para alinear candidatos a medio dibujar.",
-  "drafts.onlyTxt2img": "Los borradores solo funcionan con texto a imagen (quite la imagen de referencia)",
   "drafts.notReady": "La pestaña Generar aún no está lista",
   "drafts.failed": "No se pudieron iniciar los borradores",
   "drafts.badge.draft": "Borrador {percent}% ({step} de {steps})",

@@ -33,6 +33,8 @@ export interface DraftGroup {
   params: GenerationMetadata;
   /** Reference images of the batch (as many as `params.refImageCount`), sent again when a draft is finished. */
   refImages?: RefImageInput[];
+  /** The stored picture image to image draws over, sent again when a draft is finished. */
+  initImageUrl?: string;
   boardId: string | null;
   /** Fraction of the steps the drafts are drawn to. */
   position: number;
@@ -48,7 +50,7 @@ const fileNameOf = (m: ModelConfig) => ((m.path || m.name).split(/[\\/]/).pop() 
 
 /**
  * Why a model the Generate tab draws with cannot make drafts, or null when it can. The edit models (Flux Fill, Flux
- * Kontext, Qwen-Image-Edit) only change a source picture, and a draft is drawn from text. The backend tells them apart
+ * Kontext, Qwen-Image-Edit) take a source picture through their own conditioning, which a draft does not stop early. The backend tells them apart
  * by the same words in the file name (Fill also by its tensors, so it refuses one this misses).
  */
 export function draftRefusal(m: ModelConfig): 'edit' | null {
@@ -132,7 +134,7 @@ interface DraftsState {
   closeGroups: (ids: string[]) => void;
   sync: (items: QueueItem[]) => void;
   /** Starts a batch from the Generate tab's current settings, with another main model when `modelKey` is given. Resolves with a reason when it cannot start. */
-  start: (count: number, position: number, modelKey?: string | null) => Promise<{ error: 'no-builder' | 'not-txt2img' | 'edit-model' } | null>;
+  start: (count: number, position: number, modelKey?: string | null) => Promise<{ error: 'no-builder' | 'edit-model' } | null>;
   /** Draws the given candidates to the end. */
   finish: (groupId: string, candidateIds: string[]) => Promise<void>;
   /** Runs the failed drafts again with the same seeds. */
@@ -202,7 +204,6 @@ export const useDrafts = create<DraftsState>()(
         set({ busy: true });
         try {
           const request = await built;
-          if (request.params.generationMode !== 'txt2img') return { error: 'not-txt2img' };
           const model = findModel(withModel(request.params, modelKey).modelKey);
           if (model && draftRefusal(model)) return { error: 'edit-model' };
           // A draft stops early and is never enlarged; the finished picture gets the high-resolution fix again.
@@ -224,6 +225,7 @@ export const useDrafts = create<DraftsState>()(
             createdAt: Date.now(),
             params,
             ...(request.refImages?.length ? { refImages: request.refImages } : {}),
+            ...(items[0]?.initImageUrl ? { initImageUrl: items[0].initImageUrl } : {}),
             boardId: request.boardId,
             position,
             candidates: items.map((it, i) => ({
@@ -261,6 +263,7 @@ export const useDrafts = create<DraftsState>()(
               destination: 'gallery',
               params: { ...group.params, seed: c.seed },
               ...(group.refImages ? { refImages: group.refImages } : {}),
+              ...(group.initImageUrl ? { initImageUrl: group.initImageUrl } : {}),
               iterations: 1,
               randomizeSeed: false,
               prepend: false,
@@ -292,6 +295,7 @@ export const useDrafts = create<DraftsState>()(
               destination: 'gallery',
               params: draftOf(group.params, c.seed, group.position),
               ...(group.refImages ? { refImages: group.refImages } : {}),
+              ...(group.initImageUrl ? { initImageUrl: group.initImageUrl } : {}),
               iterations: 1,
               randomizeSeed: false,
               prepend: false,

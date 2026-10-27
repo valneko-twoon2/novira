@@ -6,7 +6,6 @@
   "drafts.start": "创建草稿",
   "drafts.empty.title": "还没有草稿",
   "drafts.empty.description": "设定数量和位置后点击“创建草稿”，就会排列出画到一半的候选图。",
-  "drafts.onlyTxt2img": "草稿仅可用于文生图（请移除参考图像）",
   "drafts.notReady": "生成标签页的设置尚未就绪",
   "drafts.failed": "无法开始草稿",
   "drafts.badge.draft": "草稿 {percent}%（{step}/{steps}）",

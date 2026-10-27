@@ -6,7 +6,6 @@
   "drafts.start": "建立草稿",
   "drafts.empty.title": "目前還沒有草稿",
   "drafts.empty.description": "設定張數與位置後按下「建立草稿」，就會排列出畫到一半的候選圖。",
-  "drafts.onlyTxt2img": "草稿僅適用於文字轉圖像的生成（請移除參考圖像）",
   "drafts.notReady": "生成分頁的設定尚未完成",
   "drafts.failed": "無法開始草稿",
   "drafts.badge.draft": "草稿 {percent}%（{steps} 步中的第 {step} 步）",

@@ -70,9 +70,12 @@ fn every_builder_refuses_a_job_without_steps() {
 }
 
 #[test]
-fn a_draft_needs_text_to_image_a_position_inside_the_steps_and_a_job_that_is_not_a_graph() {
+fn a_draft_needs_text_or_image_to_image_a_position_inside_the_steps_and_a_job_that_is_not_a_graph()
+{
+    assert!(refusal("upscale", json!({ "draftAt": 0.5 }))
+        .contains("only available for text to image and image to image"));
     assert!(
-        refusal("img2img", json!({ "draftAt": 0.5 })).contains("only available for text to image")
+        refusal("img2img", json!({ "draftAt": 0.5, "strength": 0.0 })).contains("strength above 0")
     );
     for patch in [
         json!({ "draftAt": 1.5 }),

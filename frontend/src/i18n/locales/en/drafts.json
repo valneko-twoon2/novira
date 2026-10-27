@@ -6,7 +6,6 @@
   "drafts.start": "Make drafts",
   "drafts.empty.title": "No drafts yet",
   "drafts.empty.description": "Choose a count and a position, then press Make drafts to line up half-drawn candidates.",
-  "drafts.onlyTxt2img": "Drafts work with text to image only (remove the reference image)",
   "drafts.notReady": "The Generate tab is not ready yet",
   "drafts.failed": "Could not start the drafts",
   "drafts.badge.draft": "Draft {percent}% ({step} of {steps})",

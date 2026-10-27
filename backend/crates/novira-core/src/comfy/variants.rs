@@ -40,8 +40,13 @@ fn flux2(input: &GraphInput<'_>, split: &SplitJob) -> Result<BuiltGraph, String>
     }
     let draft_end = match p.draft_at {
         Some(f) => {
-            if p.generation_mode != GenerationMode::Txt2img {
-                return Err("Drafts are only available for text to image".into());
+            if !matches!(
+                p.generation_mode,
+                GenerationMode::Txt2img | GenerationMode::Img2img
+            ) {
+                return Err(
+                    "Drafts are only available for text to image and image to image".into(),
+                );
             }
             if !(f > 0.0 && f < 1.0) || p.steps < 4 {
                 return Err("A draft needs a position between 0 and 1 and at least 4 steps".into());
@@ -674,8 +679,14 @@ mod tests {
         assert!(e(GenerationMode::Upscale, Some("a.png"), None).contains("draws from text"));
     }
 
-    /// A text-to-image job of `variant` drawn as a draft to `at` of `steps`.
-    fn draft(family: Family, variant: Variant, steps: u32, at: f64) -> Result<BuiltGraph, String> {
+    /// A job of `variant` drawn as a draft to `at` of `steps`: text to image, or image to image from `init`.
+    fn draft(
+        family: Family,
+        variant: Variant,
+        steps: u32,
+        at: f64,
+        init: Option<&str>,
+    ) -> Result<BuiltGraph, String> {
         let mut split = SplitJob::new(
             family,
             Loader::Unet,
@@ -684,7 +695,11 @@ mod tests {
                 .collect(),
         );
         split.variant = variant;
-        let mut p = params(GenerationMode::Txt2img);
+        let mut p = params(if init.is_some() {
+            GenerationMode::Img2img
+        } else {
+            GenerationMode::Txt2img
+        });
         p.steps = steps;
         p.draft_at = Some(at);
         let unet = r("diffusion_models", "m.safetensors");
@@ -699,7 +714,7 @@ mod tests {
             post_processing_model: None,
             text_encoder: None,
             split: Some(&split),
-            init_image: None,
+            init_image: init,
             guidance: GuidanceInput::default(),
         })
     }
@@ -717,7 +732,7 @@ mod tests {
     #[test]
     fn a_flux2_draft_runs_the_first_steps_and_keeps_the_denoised_picture() {
         for variant in [Variant::Flux2Dev, Variant::Flux2Klein4b] {
-            let g = draft(Family::Flux2, variant, 28, 0.35).unwrap();
+            let g = draft(Family::Flux2, variant, 28, 0.35, None).unwrap();
             let split = inputs(&g, "SplitSigmas");
             assert_eq!(split["step"], 10, "{variant:?}");
             let scheduler = &g.prompt[split["sigmas"][0].as_str().unwrap()];
@@ -730,6 +745,17 @@ mod tests {
             assert_eq!(decode["samples"][1], 1, "the denoised output, {variant:?}");
             assert_eq!(g.total_steps, 10);
         }
+        // Image to image edits from the whole schedule too (the source is a reference, not a start), so its draft is cut alike.
+        let edit = draft(
+            Family::Flux2,
+            Variant::Flux2Klein4b,
+            28,
+            0.35,
+            Some("a.png"),
+        )
+        .unwrap();
+        assert_eq!(inputs(&edit, "SplitSigmas")["step"], 10);
+        assert_eq!(edit.total_steps, 10);
         // Without a draft the sampler takes the whole schedule and its plain output.
         let full = run(
             Family::Flux2,
@@ -743,10 +769,10 @@ mod tests {
         assert_eq!(inputs(&full, "VAEDecode")["samples"][1], 0);
         assert_eq!(full.total_steps, params(GenerationMode::Txt2img).steps);
         // The same limits as the shared graph.
-        assert!(draft(Family::Flux2, Variant::Flux2Dev, 3, 0.5)
+        assert!(draft(Family::Flux2, Variant::Flux2Dev, 3, 0.5, None)
             .unwrap_err()
             .contains("at least 4 steps"));
-        assert!(draft(Family::Flux2, Variant::Flux2Dev, 20, 1.0)
+        assert!(draft(Family::Flux2, Variant::Flux2Dev, 20, 1.0, None)
             .unwrap_err()
             .contains("between 0 and 1"));
     }
@@ -769,7 +795,10 @@ mod tests {
             (Family::QwenImage, Variant::QwenEdit),
             (Family::QwenImage, Variant::QwenEditPlus),
         ] {
-            assert!(draft(family, variant, 20, 0.35).is_err(), "{variant:?}");
+            assert!(
+                draft(family, variant, 20, 0.35, None).is_err(),
+                "{variant:?}"
+            );
         }
     }
 

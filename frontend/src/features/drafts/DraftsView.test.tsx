@@ -119,11 +119,11 @@ describe('starting drafts', () => {
   });
 
   it('explains why a batch could not start, and reports a failure', async () => {
-    const start = vi.fn().mockResolvedValueOnce({ error: 'not-txt2img' }).mockResolvedValueOnce({ error: 'no-builder' }).mockRejectedValueOnce(new Error('queue down'));
+    const start = vi.fn().mockResolvedValueOnce({ error: 'edit-model' }).mockResolvedValueOnce({ error: 'no-builder' }).mockRejectedValueOnce(new Error('queue down'));
     useDrafts.setState({ start });
     show();
     fireEvent.click(screen.getByTestId('drafts-start'));
-    await waitFor(() => expect(lastToast()).toMatchObject({ status: 'warning', title: t('drafts.onlyTxt2img') }));
+    await waitFor(() => expect(lastToast()).toMatchObject({ status: 'warning', title: t('drafts.editModel') }));
     fireEvent.click(screen.getByTestId('drafts-start'));
     await waitFor(() => expect(lastToast()).toMatchObject({ title: t('drafts.notReady') }));
     fireEvent.click(screen.getByTestId('drafts-start'));

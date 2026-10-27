@@ -249,10 +249,11 @@ fn every_family_of_the_shared_graph_drafts_with_the_advanced_sampler() {
         late.generation_mode = GenerationMode::Img2img;
         let mut i = input(&late, &unet, Some(&vae), &split);
         i.init_image = Some("a.png");
-        assert!(
-            build_any(&i).unwrap_err().contains("text to image"),
-            "{f:?}"
-        );
+        // Image to image draws the last 30 steps of int(30 / 0.7) = 42 and stops at 35% of those 30.
+        let k = node(&build_any(&i).unwrap(), "KSamplerAdvanced").clone();
+        assert_eq!(k["steps"], 42, "{f:?}");
+        assert_eq!(k["start_at_step"], 12, "{f:?}");
+        assert_eq!(k["end_at_step"], 23, "{f:?}");
     }
 }
 

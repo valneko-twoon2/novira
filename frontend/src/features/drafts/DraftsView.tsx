@@ -28,7 +28,7 @@ import './drafts.css';
 
 const PER_PAGE = 24;
 
-const PROBLEMS = { 'not-txt2img': 'drafts.onlyTxt2img', 'no-builder': 'drafts.notReady', 'edit-model': 'drafts.editModel' } as const;
+const PROBLEMS = { 'no-builder': 'drafts.notReady', 'edit-model': 'drafts.editModel' } as const;
 
 /**
  * `onOpen` shows a candidate's picture large in another place than the desktop viewer (the phone layout's): with it, each
