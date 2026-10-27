@@ -139,5 +139,21 @@
   "models.detail.prevImage": "前の画像",
   "models.detail.nextImage": "次の画像",
   "models.detail.imageCount": "{index} / {count}",
-  "models.details.page": "元のページ"
+  "models.details.page": "元のページ",
+  "models.starter.purposes": "用途",
+  "models.starter.families": "系統",
+  "models.starter.all": "すべて",
+  "models.starter.allFamilies": "すべての系統",
+  "models.starter.pack": "モデルパック",
+  "models.starter.purpose.picture": "画像を作る",
+  "models.starter.purpose.edit": "画像を直す",
+  "models.starter.purpose.video": "動画",
+  "models.starter.purpose.logo": "ロゴ",
+  "models.starter.purpose.music": "音楽",
+  "models.starter.purpose.voice": "音声",
+  "models.starter.purpose.erase": "消す",
+  "models.starter.purpose.upscale": "アップスケール",
+  "models.starter.purpose.control": "構図の制御",
+  "models.starter.purpose.reference": "参照画像",
+  "models.starter.purpose.parts": "VAE・エンコーダー"
 }

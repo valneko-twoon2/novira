@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { backend, type ModelConfig, type ModelInstallJob, type StarterModel } from '@/backend';
 import { asBrowserServer } from '@/backend/browserServer.testkit';
 import { t } from '@/i18n';
+import { usePacks } from '@/state/media/packs';
 import { installModel } from '@/state/modelInstall';
 import { useModels } from '@/state/models';
 import { useToasts } from '@/state/toasts';
@@ -133,6 +134,12 @@ describe('InstallScanFolder', () => {
 });
 
 describe('InstallStarter', () => {
+  beforeEach(() => {
+    const missing = { state: 'missing', totalBytes: 1e9 } as const;
+    usePacks.setState({ packs: { video: missing, turbo: missing, music: missing, voice: missing, inpaint: missing, logo: missing } });
+    vi.spyOn(backend, 'installPack').mockResolvedValue(undefined);
+  });
+
   const starters: StarterModel[] = [
     { id: 's1', name: 'Base One', base: 'sd-1', type: 'main', description: 'first', source: 'src/one' },
     { id: 's2', name: 'Fast XL', base: 'sdxl', type: 'main', description: 'quick', source: 'src/two', dependencies: ['VAE A', 'VAE B'] },
@@ -150,10 +157,49 @@ describe('InstallStarter', () => {
 
     fireEvent.click(within(screen.getAllByTestId('mm-starter')[0]!).getByText(t('models.install.install')));
     expect(installed).toHaveBeenLastCalledWith('src/one', 'Base One');
+    // A bundle is offered for the family picked on the left.
+    expect(screen.queryByText(t('models.starter.bundle', { base: 'SDXL' }))).toBeNull();
+    fireEvent.click(screen.getByTestId('mm-starter-family-sdxl'));
+    expect(screen.getAllByTestId('mm-starter')).toHaveLength(2);
     fireEvent.click(screen.getByText(t('models.starter.bundle', { base: 'SDXL' })));
     expect(installed).toHaveBeenLastCalledWith('src/two', 'Fast XL');
-    // Nothing is left to install for Flux.
-    expect((screen.getByText(t('models.starter.bundle', { base: 'FLUX' })).closest('button') as HTMLButtonElement).disabled).toBe(true);
+    // Nothing is left to install for SD1.X once its one model is installing.
+    useModels.setState({ models: [model('src/three'), model('src/one')] });
+    fireEvent.click(screen.getByTestId('mm-starter-family-sd-1'));
+    expect((screen.getByText(t('models.starter.bundle', { base: 'SD1.X' })).closest('button') as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('sorts the models and the model packs by purpose and family, and counts each choice', async () => {
+    const list: StarterModel[] = [
+      { id: 'anima', name: 'Anima Base', base: 'anima', type: 'diffusion_model', description: '', source: 'a', dependencies: ['enc'] },
+      { id: 'enc', name: 'qwen encoder', base: 'any', type: 'text_encoder', description: '', source: 'e' },
+      { id: 'up', name: '4x-UltraSharp', base: 'any', type: 'spandrel_image_to_image', description: '', source: 'u' },
+      { id: 'wan', name: 'Wan 2.1', base: 'wan', type: 'diffusion_model', description: '', source: 'w' },
+    ];
+    vi.spyOn(backend, 'listStarterModels').mockResolvedValue(list);
+    usePacks.setState({ packs: { ...usePacks.getState().packs, logo: { state: 'missing', totalBytes: 6e9 }, video: { state: 'ready' } } });
+    ui(<InstallStarter />);
+    await waitFor(() => expect(screen.getAllByTestId('mm-starter')).toHaveLength(4));
+    // Every pack is listed beside the models: an installed one says so, a missing one offers its install.
+    expect(screen.getAllByTestId('mm-starter-pack')).toHaveLength(6);
+    expect(within(screen.getByTestId('mm-starter-purpose-logo')).getByText('1')).toBeTruthy();
+    fireEvent.click(screen.getByTestId('mm-starter-purpose-logo'));
+    expect(screen.queryAllByTestId('mm-starter')).toHaveLength(0);
+    fireEvent.click(screen.getByTestId('mm-starter-pack-install-logo'));
+    expect(backend.installPack).toHaveBeenCalledWith('logo');
+    // Video: the Wan model and the two video packs.
+    fireEvent.click(screen.getByTestId('mm-starter-purpose-video'));
+    expect(screen.getAllByTestId('mm-starter')).toHaveLength(1);
+    expect(screen.getAllByTestId('mm-starter-pack')).toHaveLength(2);
+    expect(within(screen.getAllByTestId('mm-starter-pack')[0]!).getByTestId('install-state-installed')).toBeTruthy();
+    // Anima: its model and the encoder it needs; the upscaler belongs to no family.
+    fireEvent.click(screen.getByTestId('mm-starter-purpose-all'));
+    fireEvent.click(screen.getByTestId('mm-starter-family-anima'));
+    expect(screen.getAllByTestId('mm-starter').map((r) => r.querySelector('.mm-item__name')?.textContent)).toEqual(['Anima Base', 'qwen encoder']);
+    expect(screen.getAllByRole('heading', { level: 4 }).map((h) => h.textContent)).toEqual([t('models.starter.purpose.picture'), t('models.starter.purpose.parts')]);
+    // A purpose with nothing in the family is left out.
+    expect(screen.queryByTestId('mm-starter-purpose-upscale')).toBeNull();
+    expect(screen.getByTestId('mm-starter-purpose-parts')).toBeTruthy();
   });
 
   it('searches by name, description, base and type, and says when nothing matches', async () => {

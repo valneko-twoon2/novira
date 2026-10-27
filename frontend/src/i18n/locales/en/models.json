@@ -139,5 +139,21 @@
   "models.detail.prevImage": "Previous image",
   "models.detail.nextImage": "Next image",
   "models.detail.imageCount": "{index} / {count}",
-  "models.details.page": "Original page"
+  "models.details.page": "Original page",
+  "models.starter.purposes": "Purpose",
+  "models.starter.families": "Family",
+  "models.starter.all": "All",
+  "models.starter.allFamilies": "All families",
+  "models.starter.pack": "Model pack",
+  "models.starter.purpose.picture": "Make pictures",
+  "models.starter.purpose.edit": "Edit pictures",
+  "models.starter.purpose.video": "Video",
+  "models.starter.purpose.logo": "Logos",
+  "models.starter.purpose.music": "Music",
+  "models.starter.purpose.voice": "Voice",
+  "models.starter.purpose.erase": "Erase",
+  "models.starter.purpose.upscale": "Upscaling",
+  "models.starter.purpose.control": "Composition control",
+  "models.starter.purpose.reference": "Reference images",
+  "models.starter.purpose.parts": "VAEs and encoders"
 }

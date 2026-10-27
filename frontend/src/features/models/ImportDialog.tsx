@@ -11,7 +11,7 @@ export function ImportDialog() {
   const open = useModelImport((s) => s.isOpen);
   const tab = useModelImport((s) => s.tab);
   return (
-    <Modal open={open} onOpenChange={(next) => (next ? useModelImport.getState().open() : useModelImport.getState().close())} title={t('models.import.title')} size="lg" closeLabel={t('common.close')}>
+    <Modal open={open} onOpenChange={(next) => (next ? useModelImport.getState().open() : useModelImport.getState().close())} title={t('models.import.title')} size={tab === 'starter' ? 'xl' : 'lg'} closeLabel={t('common.close')}>
       <Tabs className="mm-install__tabs" value={tab} onValueChange={(v) => useModelImport.getState().setTab(v as ImportTab)}>
         <TabList>
           <Tab value="source">{t('models.install.tab.source')}</Tab>

@@ -184,3 +184,48 @@
 .mm-job[data-status='completed'] .ui-progress__bar {
   background: var(--green-500);
 }
+
+/* Starter Models: purposes and families on the left, the list on the right. */
+.mm-starters {
+  display: grid;
+  grid-template-columns: minmax(160px, 200px) minmax(0, 1fr);
+  gap: var(--space-3);
+  min-height: 0;
+}
+
+.mm-starters__nav {
+  align-self: start;
+  border-radius: var(--radius);
+}
+
+.mm-starters__nav .mm-rail__title {
+  margin-top: var(--space-1);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.mm-starters__main {
+  min-width: 0;
+}
+
+.mm-starters__group {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-1) var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.mm-starters__group:first-child {
+  margin-top: 0;
+}
+
+.mm-starter__error {
+  color: var(--red-300);
+}
+
+@media (width <= 720px) {
+  .mm-starters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
