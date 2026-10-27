@@ -20,3 +20,19 @@ fn html_drag_and_drop_reaches_the_page() {
         );
     }
 }
+
+#[test]
+fn the_window_starts_hidden_until_its_theme_is_set() {
+    // Shown at once, the frame followed Windows until setup gave it the saved theme, so a light app opened in a dark
+    // frame; setup shows the window itself (`show_window`) on every path.
+    let conf = conf();
+    for window in conf["app"]["windows"].as_array().expect("windows") {
+        assert_eq!(window["visible"].as_bool(), Some(false));
+    }
+    let lib = include_str!("../src/lib.rs");
+    assert_eq!(
+        lib.matches("show_window(app,").count(),
+        3,
+        "the moving, first-start and normal paths each show it"
+    );
+}

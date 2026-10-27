@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
@@ -19,12 +20,28 @@ export function woff2Only(): Plugin {
   };
 }
 
+/**
+ * `public/theme-boot.js` puts the saved theme on the page before its first paint, so it is a plain script that index.html
+ * loads in <head>, not a module Vite bundles. The dev server serves it from `public/`; the build, which leaves `public/`
+ * out, writes this one file.
+ */
+export function themeBoot(): Plugin {
+  return {
+    name: 'novira:theme-boot',
+    apply: 'build',
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'theme-boot.js', source: readFileSync(here('public/theme-boot.js'), 'utf8') });
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [woff2Only(), react()],
+  plugins: [woff2Only(), themeBoot(), react()],
   resolve: { alias: { '@': here('src') } },
   // The license files live at the repository root and the About dialog imports them as text (`?raw`).
   server: { fs: { allow: [here('..')] } },
-  // `public/` holds only the browser mock's pictures, which the desktop app never shows: the build leaves them out (the dev server still serves them).
+  // `public/` holds the browser mock's pictures, which the desktop app never shows: the build leaves them out (the dev server still serves them).
+  // Its `theme-boot.js` is written by `themeBoot`.
   build: {
     outDir: 'dist',
     sourcemap: false,

@@ -126,19 +126,32 @@ fn open_backend() -> Result<Backend, startup::Refusal> {
     novira_core::startup::open_backend(&data_dir(), image_scheme::url_base())
 }
 
-/// Colours the window frame with the theme the screens were left in. The page sets it too (`setWindowTheme`), but only
-/// once its code has loaded; until then the frame followed Windows, so a light app opened in a dark frame for a while.
-fn match_window_theme(app: &tauri::App, backend: &Backend) {
+/// Shows the window, which `tauri.conf.json` creates hidden, once its frame and the page behind it have the theme the
+/// screens were left in (`light`; dark is the screens' default). Shown at once, the frame followed Windows until then,
+/// so a light app opened in a dark frame. The page later keeps the frame in step itself (`setWindowTheme`).
+fn show_window(app: &tauri::App, light: bool) {
     let Some(window) = app.get_webview_window("main") else {
         return;
     };
-    let theme = if backend.saved_theme_is_light() {
-        tauri::Theme::Light
+    let (theme, background) = if light {
+        (
+            tauri::Theme::Light,
+            tauri::window::Color(255, 255, 255, 255),
+        )
     } else {
-        tauri::Theme::Dark
+        (tauri::Theme::Dark, tauri::window::Color(0, 0, 0, 255))
     };
     if let Err(e) = window.set_theme(Some(theme)) {
         novira_core::applog::warn("window", format!("could not set the window theme: {e}"));
+    }
+    if let Err(e) = window.set_background_color(Some(background)) {
+        novira_core::applog::warn(
+            "window",
+            format!("could not set the window background: {e}"),
+        );
+    }
+    if let Err(e) = window.show() {
+        novira_core::applog::error("window", format!("could not show the window: {e}"));
     }
 }
 
@@ -206,6 +219,7 @@ pub fn run() {
             if let Some(pointer) =
                 location_pointer().filter(|p| novira_core::data_location::move_pending(p))
             {
+                show_window(app, false);
                 app.state::<first_run::FirstRun>()
                     .moving
                     .store(true, std::sync::atomic::Ordering::SeqCst);
@@ -232,11 +246,12 @@ pub fn run() {
             }
             if first_run_needed() {
                 // The first-start screen asks for the folders; the app restarts and opens them as a normal start.
+                show_window(app, false);
                 return Ok(());
             }
             let backend =
                 open_backend().unwrap_or_else(|refusal| startup::fail(refusal, &data_dir()));
-            match_window_theme(app, &backend);
+            show_window(app, backend.saved_theme_is_light());
             backend.set_event_sink(events::sink(app.handle().clone()));
             backend.set_location_pointer(location_pointer());
             tauri::async_runtime::spawn(backend.clone().run_worker());
