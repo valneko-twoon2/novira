@@ -7,6 +7,7 @@ import { createRoot } from 'react-dom/client';
 import { backendReady, firstStart, perf } from '@/backend';
 import { hideToken } from '@/backend/http/hideToken';
 import { localeReady } from '@/i18n';
+import { savedTheme } from '@/state/savedTheme';
 import { adoptBackendUiState } from '@/state/uiStateSync';
 
 // The app is loaded once the backend is set (the browser mock is a chunk of its own), and its first render waits for the
@@ -29,6 +30,8 @@ async function start(root: HTMLElement) {
   }
   // Before the app is loaded: its stores read the saved state from the browser storage as they are made.
   await adoptBackendUiState();
+  // The saved theme now, not once the app is loaded (App.tsx follows it from then on), so a light app never shows dark first.
+  document.documentElement.dataset.theme = savedTheme();
   const { App } = await import('@/app/App');
   perf.mark('app-loaded');
   await localeReady();

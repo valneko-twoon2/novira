@@ -126,6 +126,22 @@ fn open_backend() -> Result<Backend, startup::Refusal> {
     novira_core::startup::open_backend(&data_dir(), image_scheme::url_base())
 }
 
+/// Colours the window frame with the theme the screens were left in. The page sets it too (`setWindowTheme`), but only
+/// once its code has loaded; until then the frame followed Windows, so a light app opened in a dark frame for a while.
+fn match_window_theme(app: &tauri::App, backend: &Backend) {
+    let Some(window) = app.get_webview_window("main") else {
+        return;
+    };
+    let theme = if backend.saved_theme_is_light() {
+        tauri::Theme::Light
+    } else {
+        tauri::Theme::Dark
+    };
+    if let Err(e) = window.set_theme(Some(theme)) {
+        novira_core::applog::warn("window", format!("could not set the window theme: {e}"));
+    }
+}
+
 /// Gives the window the small frame of the app's icon (16 px at 100 % scale, 20 at 125 %, and so on). Tauri hands the window the
 /// 32 px frame as its small icon, which Windows then shrinks for the title bar and the Task Manager, so the row of the window
 /// looked heavier than the row of the program, which shows the small frame itself. The frame is picked again when the window
@@ -220,6 +236,7 @@ pub fn run() {
             }
             let backend =
                 open_backend().unwrap_or_else(|refusal| startup::fail(refusal, &data_dir()));
+            match_window_theme(app, &backend);
             backend.set_event_sink(events::sink(app.handle().clone()));
             backend.set_location_pointer(location_pointer());
             tauri::async_runtime::spawn(backend.clone().run_worker());

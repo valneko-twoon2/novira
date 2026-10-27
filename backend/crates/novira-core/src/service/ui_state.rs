@@ -97,6 +97,21 @@ impl Backend {
         }
     }
 
+    /// Whether the screens were last left in the light theme (`theme` of the `novira.settings` store), so the shell can
+    /// colour the window frame before the page's code has loaded. Anything unreadable counts as not light: dark is the
+    /// screens' default.
+    pub fn saved_theme_is_light(&self) -> bool {
+        let Ok(Some(state)) = self.db().meta(UI_STATE_META) else {
+            return false;
+        };
+        let Ok(keys) = serde_json::from_str::<HashMap<String, String>>(&state) else {
+            return false;
+        };
+        keys.get("novira.settings")
+            .and_then(|s| serde_json::from_str::<Value>(s).ok())
+            .is_some_and(|s| s["state"]["theme"] == "light")
+    }
+
     /// Replaces the saved screen state, then tells every open page with a `ui_state_changed` event (the state itself
     /// is not in it: a page reads it with `adopt_ui_state`). `origin` is the saving page's own id, so that page can
     /// tell the event is its own echo.

@@ -224,6 +224,37 @@ async fn the_screen_state_is_shared_through_the_database_and_the_backends_wins()
 }
 
 #[tokio::test]
+async fn the_saved_theme_is_read_for_the_window_frame() {
+    let dir = tempfile::tempdir().unwrap();
+    let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+    // No state yet: the screens' default, dark.
+    assert!(!backend.saved_theme_is_light());
+    let settings = |text: &str| {
+        serde_json::json!({ "novira.settings": text, "novira.drafts": "{}" }).to_string()
+    };
+    backend
+        .save_ui_state(
+            &settings(r#"{"state":{"theme":"light","language":"en"},"version":0}"#),
+            None,
+        )
+        .unwrap();
+    assert!(backend.saved_theme_is_light());
+    for not_light in [
+        r#"{"state":{"theme":"dark"},"version":0}"#,
+        r#"{"state":{"language":"en"},"version":0}"#,
+        r#"{"theme":"light"}"#,
+        "not json",
+    ] {
+        backend.save_ui_state(&settings(not_light), None).unwrap();
+        assert!(!backend.saved_theme_is_light(), "{not_light}");
+    }
+    backend
+        .save_ui_state(r#"{"novira.drafts":"{}"}"#, None)
+        .unwrap();
+    assert!(!backend.saved_theme_is_light(), "no settings");
+}
+
+#[tokio::test]
 async fn a_saved_screen_state_is_announced_with_the_savers_id_and_a_growing_revision() {
     let dir = tempfile::tempdir().unwrap();
     let (backend, events) = open(dir.path(), Arc::new(FakeEngine::default()));
