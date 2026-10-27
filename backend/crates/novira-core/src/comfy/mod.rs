@@ -15,6 +15,7 @@ pub mod process;
 pub mod registry;
 pub mod split;
 mod switch;
+mod tiles;
 pub mod ui_locale;
 pub mod user_graph;
 mod variants;

@@ -6,7 +6,7 @@ This chapter explains **{{ui:app.tabs.upscaling}}**, which enlarges pictures, an
 
 ![The Upscaling screen. A drop target for a picture and cards showing the steps are lined up in the center](shot:upscaling)
 
-Open **{{ui:app.tabs.upscaling}}** with the frame icon in the side bar on the left (the key 3 also opens it). It enlarges a picture while adding fine detail. It does not simply stretch it. First it enlarges the picture with an upscaling model, and then it uses the prompt and a tile ControlNet to redraw the fine parts.
+Open **{{ui:app.tabs.upscaling}}** with the frame icon in the side bar on the left (the key 3 also opens it). It enlarges a picture while adding fine detail. It does not simply stretch it. First it enlarges the picture with an upscaling model, and then it uses the prompt and a tile ControlNet to redraw the fine parts. A large picture is split into tiles about the size of the original picture, and each tile is redrawn and joined to the others. The model draws at a size it handles well, so the picture does not break up, and the time grows roughly with the number of tiles. Every tile is drawn with the whole prompt, so with a prompt that names a person, small figures or faces may be added to tiles of sky or background. Then lower **{{ui:params.upscale.creativity}}**, or keep only words about quality and texture in the prompt.
 
 ### What you use
 

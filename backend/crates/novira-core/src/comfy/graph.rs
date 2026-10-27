@@ -177,7 +177,7 @@ impl Builder {
     }
 
     /// Like `add`, but returns the node already added with the same class and inputs (shared model loaders).
-    fn add_once(&mut self, class: &str, inputs: Value) -> String {
+    pub(super) fn add_once(&mut self, class: &str, inputs: Value) -> String {
         let wanted = json!({ "class_type": class, "inputs": inputs });
         match self.nodes.iter().find(|(_, n)| **n == wanted) {
             Some((id, _)) => id.clone(),
@@ -186,7 +186,7 @@ impl Builder {
     }
 }
 
-fn link(node: &str, slot: u32) -> Value {
+pub(super) fn link(node: &str, slot: u32) -> Value {
     json!([node, slot])
 }
 
@@ -237,6 +237,9 @@ pub fn draft_schedule(steps: u32, denoise: f64) -> (u32, u32) {
     let schedule = (f64::from(steps) / denoise) as u32;
     (schedule, schedule - steps)
 }
+
+/// The longest side an upscale may have.
+pub const MAX_UPSCALE_SIDE: u32 = 8192;
 
 /// Output size: the requested size, scaled for upscaling, snapped to multiples of 8.
 pub fn output_size(p: &GenerationMetadata) -> (u32, u32) {
@@ -480,6 +483,12 @@ pub fn build(input: &GraphInput<'_>) -> Result<BuiltGraph, String> {
     }
     // Reference images patch the model's attention, one IP-Adapter after the other; one with a region acts only there.
     let (width, height) = output_size(p);
+    // The Upscaling screen's limit (`MAX_SIDE` in `UpscaleSection.tsx`): past it the tiles would be too many to build.
+    if p.generation_mode == GenerationMode::Upscale && width.max(height) > MAX_UPSCALE_SIDE {
+        return Err(format!(
+            "An upscale can be at most {MAX_UPSCALE_SIDE} pixels on a side"
+        ));
+    }
     for r in &input.guidance.refs {
         let ipadapter = g.add_once(
             "IPAdapterModelLoader",
@@ -664,6 +673,13 @@ pub fn build(input: &GraphInput<'_>) -> Result<BuiltGraph, String> {
         }
     }
 
+    // An upscale larger than a tile is redrawn tile by tile (tiles.rs); seamless tiling needs the whole picture at once.
+    let tiles = if p.generation_mode == GenerationMode::Upscale && tiling.is_none() {
+        super::tiles::grid(width, height, super::tiles::tile_side(p.width, p.height))
+    } else {
+        Vec::new()
+    };
+    let tiled = tiles.len() > 1;
     // The source picture at the output size, and the mask that says where it is redrawn.
     let mut source: Option<Value> = None;
     let mut soft_mask: Option<Value> = None;
@@ -688,10 +704,15 @@ pub fn build(input: &GraphInput<'_>) -> Result<BuiltGraph, String> {
                 ),
                 0,
             );
-            let encoded = link(
-                &g.add("VAEEncode", json!({ "pixels": scaled, "vae": vae })),
-                0,
-            );
+            // Tiles encode their own cuts.
+            let encoded = if tiled {
+                Value::Null
+            } else {
+                link(
+                    &g.add("VAEEncode", json!({ "pixels": scaled, "vae": vae })),
+                    0,
+                )
+            };
             source = Some(scaled);
             match input.guidance.mask_image {
                 Some(mask_name) => {
@@ -714,70 +735,6 @@ pub fn build(input: &GraphInput<'_>) -> Result<BuiltGraph, String> {
             0,
         ),
     };
-    // Upscaling with a tile ControlNet: the enlarged picture guides the redraw, at the strength of the structure setting.
-    if let (GenerationMode::Upscale, Some(tile), Some(scaled)) =
-        (p.generation_mode, input.tile_controlnet, source.clone())
-    {
-        let net = g.add_once("ControlNetLoader", json!({ "control_net_name": tile.name }));
-        let mut inputs = json!({
-            "positive": positive,
-            "negative": negative,
-            "control_net": link(&net, 0),
-            "image": scaled,
-            "strength": structure_weight(p.structure),
-            "start_percent": 0.0,
-            "end_percent": 1.0,
-        });
-        if family.is_some() {
-            inputs["vae"] = vae.clone();
-        }
-        let id = g.add("ControlNetApplyAdvanced", inputs);
-        positive = link(&id, 0);
-        negative = link(&id, 1);
-    }
-    let mut total_steps = p.steps;
-    let sampled = match p.draft_at {
-        // Stop early and let the sampler finish that step cleanly, so the draft shows what the image is turning into.
-        // Image to image draws only the last steps of a longer schedule, as KSampler does with its denoise; the
-        // draft stops at the position of the steps actually drawn.
-        Some(f) => {
-            let (schedule, start) = draft_schedule(p.steps, denoise_for(p));
-            total_steps = draft_step(p.steps, f);
-            g.add(
-                "KSamplerAdvanced",
-                json!({
-                    "model": model,
-                    "add_noise": "enable",
-                    "noise_seed": p.seed,
-                    "steps": schedule,
-                    "cfg": cfg,
-                    "sampler_name": sampler,
-                    "scheduler": scheduler,
-                    "positive": positive,
-                    "negative": negative,
-                    "latent_image": latent,
-                    "start_at_step": start,
-                    "end_at_step": start + total_steps,
-                    "return_with_leftover_noise": "disable",
-                }),
-            )
-        }
-        None => g.add(
-            "KSampler",
-            json!({
-                "model": model,
-                "seed": p.seed,
-                "steps": p.steps,
-                "cfg": cfg,
-                "sampler_name": sampler,
-                "scheduler": scheduler,
-                "positive": positive,
-                "negative": negative,
-                "latent_image": latent,
-                "denoise": denoise_for(p),
-            }),
-        ),
-    };
     let decode = |g: &mut Builder, samples: Value| {
         link(
             &match tiling {
@@ -790,50 +747,139 @@ pub fn build(input: &GraphInput<'_>) -> Result<BuiltGraph, String> {
             0,
         )
     };
-    let mut result = decode(&mut g, link(&sampled, 0));
+    let mut total_steps = p.steps;
     let mut passes = Vec::new();
-    if let Some(h) = &p.hires_fix {
-        // The second pass: the decoded first picture is enlarged (by the upscale model, then to the exact size, or
-        // by a plain Lanczos resize), encoded again and redrawn at the strength with the same seed, model (LoRAs and
-        // reference images included) and conditioning (control layers included; ControlNet scales its picture to
-        // the latent).
-        let (w2, h2) = hires_size(p, h.scale);
-        let mut pixels = result;
-        if let Some(up) = input.upscale_model {
-            let loader = g.add("UpscaleModelLoader", json!({ "model_name": up.name }));
-            let id = g.add(
-                "ImageUpscaleWithModel",
-                json!({ "upscale_model": link(&loader, 0), "image": pixels }),
-            );
-            pixels = link(&id, 0);
-        }
-        let scaled = g.add(
-            "ImageScale",
-            json!({ "image": pixels, "upscale_method": "lanczos", "width": w2, "height": h2, "crop": "disabled" }),
-        );
-        let encoded = g.add(
-            "VAEEncode",
-            json!({ "pixels": link(&scaled, 0), "vae": vae }),
-        );
-        let steps2 = h.steps.unwrap_or(p.steps);
-        let second = g.add(
-            "KSampler",
-            json!({
-                "model": model,
-                "seed": p.seed,
-                "steps": steps2,
-                "cfg": cfg,
-                "sampler_name": sampler,
-                "scheduler": scheduler,
+    let mut result;
+    if tiled {
+        let net = input
+            .tile_controlnet
+            .map(|tile| g.add_once("ControlNetLoader", json!({ "control_net_name": tile.name })));
+        let picture = source.clone().expect("an upscale has its source picture");
+        let redraw = super::tiles::Redraw {
+            model: &model,
+            positive: &positive,
+            negative: &negative,
+            vae: &vae,
+            picture: &picture,
+            seed: p.seed,
+            steps: p.steps,
+            cfg,
+            sampler,
+            scheduler,
+            denoise: denoise_for(p),
+            control: net.as_deref().map(|n| (n, structure_weight(p.structure))),
+            control_vae: family.is_some(),
+        };
+        (result, passes) = super::tiles::redraw(&mut g, &redraw, &tiles);
+        total_steps = p.steps * tiles.len() as u32;
+    } else {
+        // Upscaling with a tile ControlNet: the enlarged picture guides the redraw, at the strength of the structure setting.
+        if let (GenerationMode::Upscale, Some(tile), Some(scaled)) =
+            (p.generation_mode, input.tile_controlnet, source.clone())
+        {
+            let net = g.add_once("ControlNetLoader", json!({ "control_net_name": tile.name }));
+            let mut inputs = json!({
                 "positive": positive,
                 "negative": negative,
-                "latent_image": link(&encoded, 0),
-                "denoise": h.strength,
-            }),
-        );
-        passes = vec![(sampled.clone(), 0), (second.clone(), total_steps)];
-        total_steps += steps2;
-        result = decode(&mut g, link(&second, 0));
+                "control_net": link(&net, 0),
+                "image": scaled,
+                "strength": structure_weight(p.structure),
+                "start_percent": 0.0,
+                "end_percent": 1.0,
+            });
+            if family.is_some() {
+                inputs["vae"] = vae.clone();
+            }
+            let id = g.add("ControlNetApplyAdvanced", inputs);
+            positive = link(&id, 0);
+            negative = link(&id, 1);
+        }
+        let sampled = match p.draft_at {
+            // Stop early and let the sampler finish that step cleanly, so the draft shows what the image is turning into.
+            // Image to image draws only the last steps of a longer schedule, as KSampler does with its denoise; the
+            // draft stops at the position of the steps actually drawn.
+            Some(f) => {
+                let (schedule, start) = draft_schedule(p.steps, denoise_for(p));
+                total_steps = draft_step(p.steps, f);
+                g.add(
+                    "KSamplerAdvanced",
+                    json!({
+                        "model": model,
+                        "add_noise": "enable",
+                        "noise_seed": p.seed,
+                        "steps": schedule,
+                        "cfg": cfg,
+                        "sampler_name": sampler,
+                        "scheduler": scheduler,
+                        "positive": positive,
+                        "negative": negative,
+                        "latent_image": latent,
+                        "start_at_step": start,
+                        "end_at_step": start + total_steps,
+                        "return_with_leftover_noise": "disable",
+                    }),
+                )
+            }
+            None => g.add(
+                "KSampler",
+                json!({
+                    "model": model,
+                    "seed": p.seed,
+                    "steps": p.steps,
+                    "cfg": cfg,
+                    "sampler_name": sampler,
+                    "scheduler": scheduler,
+                    "positive": positive,
+                    "negative": negative,
+                    "latent_image": latent,
+                    "denoise": denoise_for(p),
+                }),
+            ),
+        };
+        result = decode(&mut g, link(&sampled, 0));
+        if let Some(h) = &p.hires_fix {
+            // The second pass: the decoded first picture is enlarged (by the upscale model, then to the exact size, or
+            // by a plain Lanczos resize), encoded again and redrawn at the strength with the same seed, model (LoRAs and
+            // reference images included) and conditioning (control layers included; ControlNet scales its picture to
+            // the latent).
+            let (w2, h2) = hires_size(p, h.scale);
+            let mut pixels = result;
+            if let Some(up) = input.upscale_model {
+                let loader = g.add("UpscaleModelLoader", json!({ "model_name": up.name }));
+                let id = g.add(
+                    "ImageUpscaleWithModel",
+                    json!({ "upscale_model": link(&loader, 0), "image": pixels }),
+                );
+                pixels = link(&id, 0);
+            }
+            let scaled = g.add(
+                "ImageScale",
+                json!({ "image": pixels, "upscale_method": "lanczos", "width": w2, "height": h2, "crop": "disabled" }),
+            );
+            let encoded = g.add(
+                "VAEEncode",
+                json!({ "pixels": link(&scaled, 0), "vae": vae }),
+            );
+            let steps2 = h.steps.unwrap_or(p.steps);
+            let second = g.add(
+                "KSampler",
+                json!({
+                    "model": model,
+                    "seed": p.seed,
+                    "steps": steps2,
+                    "cfg": cfg,
+                    "sampler_name": sampler,
+                    "scheduler": scheduler,
+                    "positive": positive,
+                    "negative": negative,
+                    "latent_image": link(&encoded, 0),
+                    "denoise": h.strength,
+                }),
+            );
+            passes = vec![(sampled.clone(), 0), (second.clone(), total_steps)];
+            total_steps += steps2;
+            result = decode(&mut g, link(&second, 0));
+        }
     }
     // Upscaling with a post-processing model: it finishes the drawn picture, which is then fitted to the output size.
     if let (GenerationMode::Upscale, Some(post)) = (p.generation_mode, input.post_processing_model)

@@ -434,19 +434,87 @@ fn upscale_with_a_tile_controlnet_guides_the_redraw_at_the_structure_setting() {
         by_class(&g, "ControlNetLoader")[0]["control_net_name"],
         "tile.safetensors"
     );
+    // 2048 x 1536 in tiles of 896: each tile's redraw is guided by its own cut, through one loader.
     let apply = by_class(&g, "ControlNetApplyAdvanced");
-    assert_eq!(apply.len(), 1);
-    assert!((apply[0]["strength"].as_f64().unwrap() - 1.0).abs() < 1e-9);
-    assert_eq!(class_of(&g, &apply[0]["image"]), "ImageScale");
-    let sampler = by_class(&g, "KSampler")[0];
+    assert_eq!(apply.len(), 6);
+    assert_eq!(by_class(&g, "ControlNetLoader").len(), 1);
+    for a in &apply {
+        assert!((a["strength"].as_f64().unwrap() - 1.0).abs() < 1e-9);
+        assert_eq!(class_of(&g, &a["image"]), "ImageCrop");
+    }
+    for sampler in by_class(&g, "KSampler") {
+        assert_eq!(
+            class_of(&g, &sampler["positive"]),
+            "ControlNetApplyAdvanced"
+        );
+        assert_eq!(
+            class_of(&g, &sampler["negative"]),
+            "ControlNetApplyAdvanced"
+        );
+    }
+}
+
+#[test]
+fn a_large_upscale_is_redrawn_tile_by_tile_and_blended_into_the_enlarged_picture() {
+    let mut p = params(GenerationMode::Upscale);
+    p.upscale_scale = Some(2.0);
+    p.steps = 20;
+    let c = ckpt();
+    let g = build(&input(&p, &c, Some("src.png"))).unwrap();
+    let tiles = super::super::tiles::grid(2048, 1536, 896);
+    assert_eq!(tiles.len(), 6);
+    let crops = by_class(&g, "ImageCrop");
+    assert_eq!(crops.len(), 6);
+    for (crop, t) in crops.iter().zip(&tiles) {
+        assert_eq!(class_of(&g, &crop["image"]), "ImageScale");
+        assert_eq!(
+            (&crop["x"], &crop["y"], &crop["width"], &crop["height"]),
+            (&json!(t.x), &json!(t.y), &json!(t.width), &json!(t.height))
+        );
+    }
+    // Every tile is encoded from its cut and redrawn at the upscale's strength; the whole picture is never encoded.
+    let samplers = by_class(&g, "KSampler");
+    assert_eq!(samplers.len(), 6);
+    for s in &samplers {
+        assert_eq!(class_of(&g, &s["latent_image"]), "VAEEncode");
+        assert_eq!(s["denoise"], denoise_for(&p));
+    }
+    assert_eq!(by_class(&g, "VAEEncode").len(), 6);
+    // The tiles are laid over the enlarged picture one after another; all but the first blend in with a feathered edge.
+    let laid = by_class(&g, "ImageCompositeMasked");
+    assert_eq!(laid.len(), 6);
+    assert_eq!(class_of(&g, &laid[0]["destination"]), "ImageScale");
+    assert!(laid[0].get("mask").is_none());
+    for l in &laid[1..] {
+        assert_eq!(class_of(&g, &l["destination"]), "ImageCompositeMasked");
+        assert_eq!(class_of(&g, &l["mask"]), "FeatherMask");
+    }
     assert_eq!(
-        class_of(&g, &sampler["positive"]),
-        "ControlNetApplyAdvanced"
+        class_of(&g, &by_class(&g, "PreviewImage")[0]["images"]),
+        "ImageCompositeMasked"
     );
+    // Progress counts on through the tiles.
+    assert_eq!(g.total_steps, 120);
     assert_eq!(
-        class_of(&g, &sampler["negative"]),
-        "ControlNetApplyAdvanced"
+        g.passes
+            .iter()
+            .map(|(_, before)| *before)
+            .collect::<Vec<_>>(),
+        vec![0, 20, 40, 60, 80, 100]
     );
+    // The screen's limit holds here too: a larger output would be too many tiles to build.
+    let mut huge = p.clone();
+    huge.width = 4100;
+    assert!(build(&input(&huge, &c, Some("src.png")))
+        .unwrap_err()
+        .contains("at most 8192 pixels"));
+    huge.width = 4096;
+    assert!(build(&input(&huge, &c, Some("src.png"))).is_ok());
+    // Seamless tiling keeps the single pass over the whole picture.
+    p.seamless_x = true;
+    let whole = build(&input(&p, &c, Some("src.png"))).unwrap();
+    assert!(by_class(&whole, "ImageCrop").is_empty());
+    assert_eq!(by_class(&whole, "KSampler").len(), 1);
 }
 
 #[test]
@@ -464,7 +532,7 @@ fn upscale_with_a_post_processing_model_finishes_the_picture_then_fits_the_outpu
     .unwrap();
     let finishing = by_class(&g, "ImageUpscaleWithModel")
         .into_iter()
-        .find(|n| class_of(&g, &n["image"]) == "VAEDecode")
+        .find(|n| class_of(&g, &n["image"]) == "ImageCompositeMasked")
         .expect("the finishing model takes the drawn picture");
     let loader_id = finishing["upscale_model"][0].as_str().unwrap();
     assert_eq!(g.prompt[loader_id]["inputs"]["model_name"], "post.pth");

@@ -1,6 +1,32 @@
 {
   "audio_ext": null,
-  "output_node": "14",
+  "output_node": "51",
+  "passes": [
+    [
+      "10",
+      0
+    ],
+    [
+      "15",
+      20
+    ],
+    [
+      "22",
+      40
+    ],
+    [
+      "29",
+      60
+    ],
+    [
+      "36",
+      80
+    ],
+    [
+      "43",
+      100
+    ]
+  ],
   "prompt": {
     "1": {
       "class_type": "CheckpointLoaderSimple",
@@ -9,10 +35,37 @@
       }
     },
     "10": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 6.5,
+        "denoise": 0.35,
+        "latent_image": [
+          "9",
+          0
+        ],
+        "model": [
+          "1",
+          0
+        ],
+        "negative": [
+          "3",
+          0
+        ],
+        "positive": [
+          "2",
+          0
+        ],
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "seed": 42,
+        "steps": 20
+      }
+    },
+    "11": {
       "class_type": "VAEDecode",
       "inputs": {
         "samples": [
-          "9",
+          "10",
           0
         ],
         "vae": [
@@ -21,45 +74,127 @@
         ]
       }
     },
-    "11": {
-      "class_type": "UpscaleModelLoader",
-      "inputs": {
-        "model_name": "2x-sharpen.pth"
-      }
-    },
     "12": {
-      "class_type": "ImageUpscaleWithModel",
+      "class_type": "ImageCompositeMasked",
       "inputs": {
-        "image": [
-          "10",
+        "destination": [
+          "7",
           0
         ],
-        "upscale_model": [
+        "resize_source": false,
+        "source": [
           "11",
           0
-        ]
+        ],
+        "x": 0,
+        "y": 0
       }
     },
     "13": {
-      "class_type": "ImageScale",
+      "class_type": "ImageCrop",
       "inputs": {
-        "crop": "disabled",
-        "height": 1536,
+        "height": 896,
         "image": [
-          "12",
+          "7",
           0
         ],
-        "upscale_method": "lanczos",
-        "width": 2048
+        "width": 896,
+        "x": 576,
+        "y": 0
       }
     },
     "14": {
-      "class_type": "PreviewImage",
+      "class_type": "VAEEncode",
       "inputs": {
-        "images": [
+        "pixels": [
           "13",
           0
+        ],
+        "vae": [
+          "1",
+          2
         ]
+      }
+    },
+    "15": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 6.5,
+        "denoise": 0.35,
+        "latent_image": [
+          "14",
+          0
+        ],
+        "model": [
+          "1",
+          0
+        ],
+        "negative": [
+          "3",
+          0
+        ],
+        "positive": [
+          "2",
+          0
+        ],
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "seed": 42,
+        "steps": 20
+      }
+    },
+    "16": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "15",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "17": {
+      "class_type": "SolidMask",
+      "inputs": {
+        "height": 896,
+        "value": 1.0,
+        "width": 896
+      }
+    },
+    "18": {
+      "class_type": "FeatherMask",
+      "inputs": {
+        "bottom": 0,
+        "left": 320,
+        "mask": [
+          "17",
+          0
+        ],
+        "right": 0,
+        "top": 0
+      }
+    },
+    "19": {
+      "class_type": "ImageCompositeMasked",
+      "inputs": {
+        "destination": [
+          "12",
+          0
+        ],
+        "mask": [
+          "18",
+          0
+        ],
+        "resize_source": false,
+        "source": [
+          "16",
+          0
+        ],
+        "x": 576,
+        "y": 0
       }
     },
     "2": {
@@ -72,6 +207,166 @@
         "text": "a cat"
       }
     },
+    "20": {
+      "class_type": "ImageCrop",
+      "inputs": {
+        "height": 896,
+        "image": [
+          "7",
+          0
+        ],
+        "width": 896,
+        "x": 1152,
+        "y": 0
+      }
+    },
+    "21": {
+      "class_type": "VAEEncode",
+      "inputs": {
+        "pixels": [
+          "20",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "22": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 6.5,
+        "denoise": 0.35,
+        "latent_image": [
+          "21",
+          0
+        ],
+        "model": [
+          "1",
+          0
+        ],
+        "negative": [
+          "3",
+          0
+        ],
+        "positive": [
+          "2",
+          0
+        ],
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "seed": 42,
+        "steps": 20
+      }
+    },
+    "23": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "22",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "24": {
+      "class_type": "SolidMask",
+      "inputs": {
+        "height": 896,
+        "value": 1.0,
+        "width": 896
+      }
+    },
+    "25": {
+      "class_type": "FeatherMask",
+      "inputs": {
+        "bottom": 0,
+        "left": 320,
+        "mask": [
+          "24",
+          0
+        ],
+        "right": 0,
+        "top": 0
+      }
+    },
+    "26": {
+      "class_type": "ImageCompositeMasked",
+      "inputs": {
+        "destination": [
+          "19",
+          0
+        ],
+        "mask": [
+          "25",
+          0
+        ],
+        "resize_source": false,
+        "source": [
+          "23",
+          0
+        ],
+        "x": 1152,
+        "y": 0
+      }
+    },
+    "27": {
+      "class_type": "ImageCrop",
+      "inputs": {
+        "height": 896,
+        "image": [
+          "7",
+          0
+        ],
+        "width": 896,
+        "x": 0,
+        "y": 640
+      }
+    },
+    "28": {
+      "class_type": "VAEEncode",
+      "inputs": {
+        "pixels": [
+          "27",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "29": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 6.5,
+        "denoise": 0.35,
+        "latent_image": [
+          "28",
+          0
+        ],
+        "model": [
+          "1",
+          0
+        ],
+        "negative": [
+          "3",
+          0
+        ],
+        "positive": [
+          "2",
+          0
+        ],
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "seed": 42,
+        "steps": 20
+      }
+    },
     "3": {
       "class_type": "CLIPTextEncode",
       "inputs": {
@@ -82,16 +377,325 @@
         "text": "blurry"
       }
     },
+    "30": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "29",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "31": {
+      "class_type": "SolidMask",
+      "inputs": {
+        "height": 896,
+        "value": 1.0,
+        "width": 896
+      }
+    },
+    "32": {
+      "class_type": "FeatherMask",
+      "inputs": {
+        "bottom": 0,
+        "left": 0,
+        "mask": [
+          "31",
+          0
+        ],
+        "right": 0,
+        "top": 256
+      }
+    },
+    "33": {
+      "class_type": "ImageCompositeMasked",
+      "inputs": {
+        "destination": [
+          "26",
+          0
+        ],
+        "mask": [
+          "32",
+          0
+        ],
+        "resize_source": false,
+        "source": [
+          "30",
+          0
+        ],
+        "x": 0,
+        "y": 640
+      }
+    },
+    "34": {
+      "class_type": "ImageCrop",
+      "inputs": {
+        "height": 896,
+        "image": [
+          "7",
+          0
+        ],
+        "width": 896,
+        "x": 576,
+        "y": 640
+      }
+    },
+    "35": {
+      "class_type": "VAEEncode",
+      "inputs": {
+        "pixels": [
+          "34",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "36": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 6.5,
+        "denoise": 0.35,
+        "latent_image": [
+          "35",
+          0
+        ],
+        "model": [
+          "1",
+          0
+        ],
+        "negative": [
+          "3",
+          0
+        ],
+        "positive": [
+          "2",
+          0
+        ],
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "seed": 42,
+        "steps": 20
+      }
+    },
+    "37": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "36",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "38": {
+      "class_type": "SolidMask",
+      "inputs": {
+        "height": 896,
+        "value": 1.0,
+        "width": 896
+      }
+    },
+    "39": {
+      "class_type": "FeatherMask",
+      "inputs": {
+        "bottom": 0,
+        "left": 320,
+        "mask": [
+          "38",
+          0
+        ],
+        "right": 0,
+        "top": 256
+      }
+    },
     "4": {
       "class_type": "LoadImage",
       "inputs": {
         "image": "source.png"
       }
     },
+    "40": {
+      "class_type": "ImageCompositeMasked",
+      "inputs": {
+        "destination": [
+          "33",
+          0
+        ],
+        "mask": [
+          "39",
+          0
+        ],
+        "resize_source": false,
+        "source": [
+          "37",
+          0
+        ],
+        "x": 576,
+        "y": 640
+      }
+    },
+    "41": {
+      "class_type": "ImageCrop",
+      "inputs": {
+        "height": 896,
+        "image": [
+          "7",
+          0
+        ],
+        "width": 896,
+        "x": 1152,
+        "y": 640
+      }
+    },
+    "42": {
+      "class_type": "VAEEncode",
+      "inputs": {
+        "pixels": [
+          "41",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "43": {
+      "class_type": "KSampler",
+      "inputs": {
+        "cfg": 6.5,
+        "denoise": 0.35,
+        "latent_image": [
+          "42",
+          0
+        ],
+        "model": [
+          "1",
+          0
+        ],
+        "negative": [
+          "3",
+          0
+        ],
+        "positive": [
+          "2",
+          0
+        ],
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "seed": 42,
+        "steps": 20
+      }
+    },
+    "44": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "43",
+          0
+        ],
+        "vae": [
+          "1",
+          2
+        ]
+      }
+    },
+    "45": {
+      "class_type": "SolidMask",
+      "inputs": {
+        "height": 896,
+        "value": 1.0,
+        "width": 896
+      }
+    },
+    "46": {
+      "class_type": "FeatherMask",
+      "inputs": {
+        "bottom": 0,
+        "left": 320,
+        "mask": [
+          "45",
+          0
+        ],
+        "right": 0,
+        "top": 256
+      }
+    },
+    "47": {
+      "class_type": "ImageCompositeMasked",
+      "inputs": {
+        "destination": [
+          "40",
+          0
+        ],
+        "mask": [
+          "46",
+          0
+        ],
+        "resize_source": false,
+        "source": [
+          "44",
+          0
+        ],
+        "x": 1152,
+        "y": 640
+      }
+    },
+    "48": {
+      "class_type": "UpscaleModelLoader",
+      "inputs": {
+        "model_name": "2x-sharpen.pth"
+      }
+    },
+    "49": {
+      "class_type": "ImageUpscaleWithModel",
+      "inputs": {
+        "image": [
+          "47",
+          0
+        ],
+        "upscale_model": [
+          "48",
+          0
+        ]
+      }
+    },
     "5": {
       "class_type": "UpscaleModelLoader",
       "inputs": {
         "model_name": "4x-UltraSharp.pth"
+      }
+    },
+    "50": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "crop": "disabled",
+        "height": 1536,
+        "image": [
+          "49",
+          0
+        ],
+        "upscale_method": "lanczos",
+        "width": 2048
+      }
+    },
+    "51": {
+      "class_type": "PreviewImage",
+      "inputs": {
+        "images": [
+          "50",
+          0
+        ]
       }
     },
     "6": {
@@ -121,10 +725,23 @@
       }
     },
     "8": {
+      "class_type": "ImageCrop",
+      "inputs": {
+        "height": 896,
+        "image": [
+          "7",
+          0
+        ],
+        "width": 896,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "9": {
       "class_type": "VAEEncode",
       "inputs": {
         "pixels": [
-          "7",
+          "8",
           0
         ],
         "vae": [
@@ -132,35 +749,8 @@
           2
         ]
       }
-    },
-    "9": {
-      "class_type": "KSampler",
-      "inputs": {
-        "cfg": 6.5,
-        "denoise": 0.35,
-        "latent_image": [
-          "8",
-          0
-        ],
-        "model": [
-          "1",
-          0
-        ],
-        "negative": [
-          "3",
-          0
-        ],
-        "positive": [
-          "2",
-          0
-        ],
-        "sampler_name": "dpmpp_2m",
-        "scheduler": "karras",
-        "seed": 42,
-        "steps": 20
-      }
     }
   },
   "thumbnail_node": null,
-  "total_steps": 20
+  "total_steps": 120
 }

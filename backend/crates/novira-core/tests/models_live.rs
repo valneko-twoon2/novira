@@ -9,7 +9,8 @@
 //! and the files it needs (encoders, VAE). Optional: `NOVIRA_LIVE_IMAGE` (a picture: image to image, or the start of a
 //! clip), `NOVIRA_LIVE_PROMPT`, `NOVIRA_LIVE_NEGATIVE`, `NOVIRA_LIVE_STEPS`, `NOVIRA_LIVE_CFG`, `NOVIRA_LIVE_SIZE` (`WxH`), `NOVIRA_LIVE_FRAMES`, `NOVIRA_LIVE_OUT`
 //! (a folder that gets the result file), `NOVIRA_LIVE_REGION_MASK` and `NOVIRA_LIVE_REGION_PROMPT` (a regional guidance
-//! layer), `NOVIRA_LIVE_SEAMLESS` (`x`, `y` or `xy`, seamless tiling), `NOVIRA_LIVE_DRAFT` (a draft position, 0 to 1).
+//! layer), `NOVIRA_LIVE_SEAMLESS` (`x`, `y` or `xy`, seamless tiling), `NOVIRA_LIVE_DRAFT` (a draft position, 0 to 1),
+//! `NOVIRA_LIVE_UPSCALE` (a scale: upscale `NOVIRA_LIVE_IMAGE` with the first upscale model installed).
 use novira_core::types::*;
 use novira_core::{Backend, BackendConfig, Settings};
 use std::path::PathBuf;
@@ -138,7 +139,21 @@ async fn a_model_makes_a_picture_or_a_clip() {
             .await
             .unwrap();
         request.init_image_url = Some(source.url);
-        if !video {
+        if let Some(scale) = env("NOVIRA_LIVE_UPSCALE").and_then(|v| v.parse().ok()) {
+            let up = models
+                .iter()
+                .find(|m| m.kind == ModelType::SpandrelImageToImage)
+                .expect("an upscale model");
+            println!(
+                "upscale x{scale} of {}x{} with {}",
+                source.width, source.height, up.name
+            );
+            request.params.generation_mode = GenerationMode::Upscale;
+            request.params.upscale_scale = Some(scale);
+            request.params.upscale_model_key = Some(up.key.clone());
+            request.params.width = source.width;
+            request.params.height = source.height;
+        } else if !video {
             request.params.generation_mode = GenerationMode::Img2img;
             request.params.strength = Some(0.6);
         }
