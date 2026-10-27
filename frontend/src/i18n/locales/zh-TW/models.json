@@ -67,7 +67,6 @@
   "models.starter.bundles": "套組",
   "models.starter.bundle": "安裝 {base} 全套",
   "models.starter.search": "篩選入門模型",
-  "models.starter.dependencies": "相依：{list}",
   "models.queue.title": "安裝佇列",
   "models.queue.prune": "整理已完成項目",
   "models.queue.cancel": "中止安裝",

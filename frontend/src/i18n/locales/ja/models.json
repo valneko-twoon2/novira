@@ -73,7 +73,6 @@
   "models.starter.bundles": "バンドル",
   "models.starter.bundle": "{base} 一式をインストール",
   "models.starter.search": "スターターモデルを絞り込む",
-  "models.starter.dependencies": "依存: {list}",
   "models.queue.title": "インストールキュー",
   "models.queue.prune": "完了分を整理",
   "models.queue.cancel": "インストールをキャンセル",

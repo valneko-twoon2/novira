@@ -67,7 +67,6 @@
   "models.starter.bundles": "Наборы",
   "models.starter.bundle": "Установить набор {base}",
   "models.starter.search": "Фильтр стартовых моделей",
-  "models.starter.dependencies": "Зависимости: {list}",
   "models.queue.title": "Очередь установки",
   "models.queue.prune": "Убрать завершённые",
   "models.queue.cancel": "Отменить установку",

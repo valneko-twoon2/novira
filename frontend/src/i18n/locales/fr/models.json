@@ -67,7 +67,6 @@
   "models.starter.bundles": "Lots",
   "models.starter.bundle": "Installer le lot {base}",
   "models.starter.search": "Filtrer les modèles de départ",
-  "models.starter.dependencies": "Dépendances : {list}",
   "models.queue.title": "File d'installation",
   "models.queue.prune": "Purger",
   "models.queue.cancel": "Annuler l'installation",

@@ -67,7 +67,6 @@
   "models.starter.bundles": "整合包",
   "models.starter.bundle": "安装 {base} 整套模型",
   "models.starter.search": "筛选入门模型",
-  "models.starter.dependencies": "依赖：{list}",
   "models.queue.title": "安装队列",
   "models.queue.prune": "清理已完成项",
   "models.queue.cancel": "中止安装",

@@ -1,5 +1,5 @@
-// The Starter Models tab sorts the models and the model packs by purpose and family: a family brings its parts along,
-// and a pack (the logo model) is installed from the same list.
+// The Starter Models tab shows the models and the model packs as cards, by purpose on the left and family in the toolbar:
+// a family brings its parts along, the purposes stay put, and a pack (the logo model) is installed from the same cards.
 import { expect, msg, openApp, test } from './fixtures';
 
 test('narrows the starter models by family and purpose, and installs a model pack from the list', async ({ page }) => {
@@ -11,13 +11,15 @@ test('narrows the starter models by family and purpose, and installs a model pac
   await expect(rows.first()).toBeVisible();
 
   // Anima: its model and the encoder and VAE it loads.
-  await page.getByTestId('mm-starter-family-anima').click();
-  await expect(rows.locator('.mm-item__name')).toHaveText(['Anima Base 1.0', 'qwen_3_06b_base', 'qwen_image_vae']);
+  await page.getByTestId('mm-starter-family').click();
+  await page.getByRole('option', { name: 'Anima', exact: true }).click();
+  await expect(rows.locator('.mm-card-item__name')).toHaveText(['Anima Base 1.0', 'qwen_3_06b_base', 'qwen_image_vae']);
   await expect(page.getByTestId('mm-starter-pack')).toHaveCount(0);
-  await expect(page.getByTestId('mm-starter-purpose-video')).toHaveCount(0);
+  await expect(page.getByTestId('mm-starter-purpose-video').locator('.mm-rail__count')).toHaveText('0');
 
   // Logos: the logo model pack, installed from here.
-  await page.getByTestId('mm-starter-family-all').click();
+  await page.getByTestId('mm-starter-family').click();
+  await page.getByRole('option', { name: msg('models.starter.allFamilies') }).click();
   await page.getByTestId('mm-starter-purpose-logo').click();
   await expect(rows).toHaveCount(0);
   const pack = page.getByTestId('mm-starter-pack');

@@ -80,43 +80,6 @@
   min-width: 0;
 }
 
-.mm-bundles {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.mm-starter {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-2);
-  border-radius: var(--radius-sm);
-}
-
-.mm-starter + .mm-starter {
-  border-top: 1px solid var(--border);
-}
-
-.mm-starter__main {
-  flex: 1;
-  min-width: 0;
-}
-
-.mm-starter__deps {
-  margin-top: 2px;
-  color: var(--blue-600);
-  font-size: var(--fs-xs);
-}
-
-.mm-item__top {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-width: 0;
-}
-
 .mm-item__name {
   overflow: hidden;
   font-size: var(--fs-sm);
@@ -185,7 +148,7 @@
   background: var(--green-500);
 }
 
-/* Starter Models: purposes and families on the left, the list on the right. */
+/* Starter Models: the purposes on the left, the toolbar and the cards (as in the Model Manager) on the right. */
 .mm-starters {
   display: grid;
   grid-template-columns: minmax(160px, 200px) minmax(0, 1fr);
@@ -205,19 +168,60 @@
 }
 
 .mm-starters__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
   min-width: 0;
 }
 
+.mm-starters__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .mm-starters__group {
-  margin: var(--space-2) 0 0;
-  padding: var(--space-1) var(--space-2);
+  margin: var(--space-2) 0;
   color: var(--text-muted);
   font-size: var(--fs-xs);
   font-weight: 600;
 }
 
-.mm-starters__group:first-child {
-  margin-top: 0;
+/* The install control sits at the foot of the card. */
+.mm-starter-card {
+  cursor: default;
+}
+
+/* A type's name can be long ("diffusion model (Flux, Wan, Anima...)"): its tag wraps inside the card. */
+.mm-starter-card .mm-tag {
+  height: auto;
+  min-height: 18px;
+  white-space: normal;
+}
+
+/* A starter has no picture yet: every card has the same low icon cover. */
+.mm-grid--grid .mm-starter-card .mm-cover {
+  aspect-ratio: 16 / 10;
+}
+
+.mm-starter-card .mm-card-item__caption {
+  flex: 1;
+}
+
+.mm-starter-card__desc {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.mm-starter-card__action {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 var(--space-3) var(--space-2);
+}
+
+.mm-grid--list .mm-starter-card__action {
+  padding: 0 var(--space-3);
 }
 
 .mm-starter__error {

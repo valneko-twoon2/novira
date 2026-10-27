@@ -67,7 +67,6 @@
   "models.starter.bundles": "Paquetes",
   "models.starter.bundle": "Instalar paquete {base}",
   "models.starter.search": "Filtrar modelos iniciales",
-  "models.starter.dependencies": "Dependencias: {list}",
   "models.queue.title": "Cola de instalación",
   "models.queue.prune": "Limpiar",
   "models.queue.cancel": "Cancelar instalación",

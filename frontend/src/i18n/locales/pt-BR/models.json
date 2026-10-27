@@ -67,7 +67,6 @@
   "models.starter.bundles": "Pacotes",
   "models.starter.bundle": "Instalar pacote {base}",
   "models.starter.search": "Filtrar modelos iniciais",
-  "models.starter.dependencies": "Dependências: {list}",
   "models.queue.title": "Fila de instalação",
   "models.queue.prune": "Limpar",
   "models.queue.cancel": "Cancelar instalação",

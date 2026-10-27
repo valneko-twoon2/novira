@@ -67,7 +67,6 @@
   "models.starter.bundles": "번들",
   "models.starter.bundle": "{base} 세트 설치",
   "models.starter.search": "스타터 모델 필터링",
-  "models.starter.dependencies": "의존: {list}",
   "models.queue.title": "설치 대기열",
   "models.queue.prune": "완료된 항목 정리",
   "models.queue.cancel": "설치 중단",

@@ -47,11 +47,10 @@ export function parseStateModels(source) {
 /** The Models screen's rail (`modelCategories.ts`): `[{ id, types }]`, and the types that show an icon instead of a cover. */
 export function parseModelCategories(source) {
   const rail = [...source.matchAll(/\{\s*id:\s*'([^']+)',\s*labelKey:\s*'[^']+',\s*types:\s*\[([^\]]*)\]\s*\}/g)].map(([, id, list]) => ({ id, types: [...list.matchAll(/'([^']+)'/g)].map((m) => m[1]) }));
-  const tall = /if \(([^)]*)\) return 'tall'/.exec(source)?.[1] ?? '';
-  const wide = /if \(([^)]*)\) return 'wide'/.exec(source)?.[1] ?? '';
+  const picture = /if \(([^)]*)\) return 'picture'/.exec(source)?.[1] ?? '';
   const typesIn = (cond) => [...cond.matchAll(/type === '([^']+)'/g)].map((m) => m[1]);
   if (!rail.length) throw new Error(`could not read the rail from ${MODEL_CATEGORIES_TS}`);
-  return { rail, pictureTypes: new Set([...typesIn(tall), ...typesIn(wide)]) };
+  return { rail, pictureTypes: new Set(typesIn(picture)) };
 }
 
 const PACKS_RS = 'backend/crates/novira-core/src/packs.rs';

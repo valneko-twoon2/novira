@@ -73,7 +73,6 @@
   "models.starter.bundles": "Bundles",
   "models.starter.bundle": "Install {base} bundle",
   "models.starter.search": "Filter starter models",
-  "models.starter.dependencies": "Dependencies: {list}",
   "models.queue.title": "Install Queue",
   "models.queue.prune": "Prune",
   "models.queue.cancel": "Cancel install",

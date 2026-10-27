@@ -26,12 +26,11 @@ export function matchesCategory(type: ModelType, id: CategoryId): boolean {
   return c ? c.types.includes(type) : true;
 }
 
-export type CoverKind = 'tall' | 'wide' | 'icon';
+export type CoverKind = 'picture' | 'icon';
 
-/** Main models, diffusion models (Anima, Flux, Wan... kept as a diffusion model alone) and LoRA get a tall cover, adapters a
- * wide one, the rest an icon. */
+/** Main models, diffusion models (Anima, Flux, Wan... kept as a diffusion model alone), LoRA and adapters show a picture,
+ * the rest an icon. Every cover has the same shape. */
 export function coverKind(type: ModelType): CoverKind {
-  if (type === 'main' || type === 'diffusion_model' || type === 'lora') return 'tall';
-  if (type === 'controlnet' || type === 't2i_adapter' || type === 'ip_adapter') return 'wide';
+  if (type === 'main' || type === 'diffusion_model' || type === 'lora' || type === 'controlnet' || type === 't2i_adapter' || type === 'ip_adapter') return 'picture';
   return 'icon';
 }

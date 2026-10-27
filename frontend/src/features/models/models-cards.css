@@ -23,7 +23,8 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--mm-thumb, 180px), 1fr));
   gap: var(--space-3);
-  align-items: start;
+  /* The cards of a row are as tall as the tallest (a name on two lines), so every row is even. */
+  align-items: stretch;
 }
 
 .mm-grid--list {
@@ -100,9 +101,11 @@
 
 .mm-card-item__badges {
   position: absolute;
+  right: var(--space-2);
   bottom: var(--space-2);
   left: var(--space-2);
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-1);
 }
 
@@ -185,27 +188,19 @@
   color: var(--yellow-400);
 }
 
-/* Covers */
+/* Covers: one shape for every card, so the cards of a row are the same size whatever the model. */
 .mm-cover {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
   overflow: hidden;
+  aspect-ratio: 2 / 3;
   background: var(--bg-elevated);
   color: var(--base-500);
 }
 
-.mm-cover--tall {
-  aspect-ratio: 2 / 3;
-}
-
-.mm-cover--wide {
-  aspect-ratio: 16 / 10;
-}
-
 .mm-cover--icon {
-  aspect-ratio: 16 / 10;
   background: var(--bg-surface);
 }
 

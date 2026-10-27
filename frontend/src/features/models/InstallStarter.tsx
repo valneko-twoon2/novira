@@ -1,21 +1,22 @@
-// "Starter Models" tab: curated models and the media packs, sorted by what they are for and by family on the left, with
-// search, a bundle for the families that have one, and per-entry install.
-import { Cube, MagnifyingGlass, Stack } from '@phosphor-icons/react';
-import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react';
+// "Starter Models" tab, laid out like the Model Manager: what each entry is for on the left (always the same list), a
+// toolbar with search, the family, the view and the card size, and cards of the curated models and the media packs.
+import { Cube, MagnifyingGlass, Package, Rows, SquaresFour, TextT } from '@phosphor-icons/react';
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { backend, type BaseModel, type PackKind, type StarterModel } from '@/backend';
 import { t } from '@/i18n';
 import { formatPackSize, usePacks } from '@/state/media/packs';
 import { BASE_LABELS, useModels } from '@/state/models';
-import { Badge, Button, EmptyState, InstallSlot, InstallStatus, Spinner, TextInput, cx } from '@/ui';
+import { Button, EmptyState, IconButton, InstallSlot, InstallStatus, Select, Slider, Spinner, TextInput, cx, type SelectOption } from '@/ui';
 import { installModel, sourceState } from '@/state/modelInstall';
-import { TYPE_KEYS } from './modelLabels';
+import type { ViewMode } from './ModelGrid';
+import { formatBytes, TYPE_KEYS } from './modelLabels';
 import { familiesIn, filterEntries, PURPOSE_KEYS, STARTER_PURPOSES, starterEntries, type StarterEntry, type StarterPurpose } from './starterCatalog';
 
 const BUNDLES: BaseModel[] = ['sd-1', 'sdxl', 'flux'];
+const THUMB_MIN = 120;
+const THUMB_MAX = 260;
 
-/** A choice on the left; one with nothing to show under the other choice is left out, unless it is the one picked. */
-function NavItem({ active, icon, label, count, onClick, testId }: { active: boolean; icon?: ReactNode; label: string; count: number; onClick: () => void; testId: string }) {
-  if (count === 0 && !active) return null;
+function RailItem({ active, icon, label, count, onClick, testId }: { active: boolean; icon?: ReactNode; label: string; count: number; onClick: () => void; testId: string }) {
   return (
     <button type="button" className={cx('mm-rail__item', active && 'is-active')} aria-pressed={active} data-testid={testId} onClick={onClick}>
       {icon && <span className="mm-rail__icon">{icon}</span>}
@@ -35,7 +36,9 @@ export function InstallStarter() {
   const [starters, setStarters] = useState<StarterModel[] | null>(null);
   const [search, setSearch] = useState('');
   const [purpose, setPurpose] = useState<StarterPurpose | null>(null);
-  const [family, setFamily] = useState<BaseModel | null>(null);
+  const [family, setFamily] = useState<BaseModel | 'all'>('all');
+  const [view, setView] = useState<ViewMode>('grid');
+  const [thumb, setThumb] = useState(160);
   const models = useModels((s) => s.models);
   const jobs = useModels((s) => s.installJobs);
 
@@ -60,99 +63,136 @@ export function InstallStarter() {
     );
   }
 
-  const shown = filterEntries(entries, purpose, family);
-  const names = new Map(starters.map((s) => [s.id, s.name]));
+  const picked = family === 'all' ? null : family;
+  const shown = filterEntries(entries, purpose, picked);
+  const familyOptions: SelectOption<BaseModel | 'all'>[] = [
+    { value: 'all', label: t('models.starter.allFamilies') },
+    ...familiesIn(starterEntries(starters)).map((b) => ({ value: b, label: BASE_LABELS[b] })),
+  ];
   const bundleOpen = (base: BaseModel) => starters.some((s) => s.base === base && !sourceState(s.source, models, jobs));
   const installBundle = (base: BaseModel) => {
     for (const s of starters) if (s.base === base && !sourceState(s.source, models, jobs)) void installModel(s.source, s.name);
   };
+  const groups = STARTER_PURPOSES.map((p) => ({ purpose: p, entries: shown.filter((e) => e.purpose === p) })).filter((g) => g.entries.length > 0);
+  const style = { '--mm-thumb': `${thumb}px` } as CSSProperties;
 
   return (
     <div className="mm-starters" data-testid="mm-starters">
       <nav className="mm-rail mm-starters__nav" aria-label={t('models.starter.purposes')}>
         <h3 className="mm-rail__title">{t('models.starter.purposes')}</h3>
-        <NavItem testId="mm-starter-purpose-all" active={purpose === null} icon={<Cube size={14} />} label={t('models.starter.all')} count={filterEntries(entries, null, family).length} onClick={() => setPurpose(null)} />
-        {STARTER_PURPOSES.map((p) => (
-          <NavItem key={p} testId={`mm-starter-purpose-${p}`} active={purpose === p} label={t(PURPOSE_KEYS[p])} count={filterEntries(entries, p, family).length} onClick={() => setPurpose(purpose === p ? null : p)} />
-        ))}
+        <RailItem testId="mm-starter-purpose-all" active={purpose === null} icon={<Cube size={14} />} label={t('models.starter.all')} count={filterEntries(entries, null, picked).length} onClick={() => setPurpose(null)} />
         <div className="mm-rail__divider" />
-        <h3 className="mm-rail__title">{t('models.starter.families')}</h3>
-        <NavItem testId="mm-starter-family-all" active={family === null} icon={<Stack size={14} />} label={t('models.starter.allFamilies')} count={filterEntries(entries, purpose, null).length} onClick={() => setFamily(null)} />
-        {familiesIn(starterEntries(starters)).map((b) => (
-          <NavItem key={b} testId={`mm-starter-family-${b}`} active={family === b} label={BASE_LABELS[b]} count={filterEntries(entries, purpose, b).length} onClick={() => setFamily(family === b ? null : b)} />
+        {STARTER_PURPOSES.map((p) => (
+          <RailItem key={p} testId={`mm-starter-purpose-${p}`} active={purpose === p} label={t(PURPOSE_KEYS[p])} count={filterEntries(entries, p, picked).length} onClick={() => setPurpose(p)} />
         ))}
       </nav>
-      <div className="mm-form mm-starters__main">
+      <div className="mm-starters__main">
         <div className="mm-form__help">{t('models.starter.help')}</div>
-        <div className="mm-search">
-          <MagnifyingGlass size={14} className="mm-search__icon" />
-          <TextInput value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('models.starter.search')} aria-label={t('models.starter.search')} />
-        </div>
-        {family && BUNDLES.includes(family) && (
-          <div className="mm-bundles">
-            <Button size="xs" variant="outline" scheme="accent" onClick={() => installBundle(family)} disabled={!bundleOpen(family)}>
-              {t('models.starter.bundle', { base: BASE_LABELS[family] })}
-            </Button>
+        <div className="mm-starters__toolbar">
+          <div className="mm-search">
+            <MagnifyingGlass size={14} className="mm-search__icon" />
+            <TextInput value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('models.starter.search')} aria-label={t('models.starter.search')} />
           </div>
-        )}
-        <div className="mm-results">
-          {shown.length === 0 && <EmptyState title={t('models.noMatch')} />}
-          {shown.map((e, i) => (
-            <Fragment key={e.kind === 'model' ? e.model.id : `pack-${e.pack}`}>
-              {(i === 0 || shown[i - 1]!.purpose !== e.purpose) && <h4 className="mm-starters__group">{t(PURPOSE_KEYS[e.purpose])}</h4>}
-              {e.kind === 'model' ? <StarterRow s={e.model} names={names} /> : <PackRow kind={e.pack} />}
-            </Fragment>
-          ))}
+          <div className="mm-toolbar__select">
+            <Select value={family} onChange={setFamily} options={familyOptions} aria-label={t('models.starter.families')} data-testid="mm-starter-family" />
+          </div>
+          <div className="mm-toolbar__group">
+            <IconButton label={t('models.view.grid')} icon={<SquaresFour size={15} />} size="sm" isActive={view === 'grid'} onClick={() => setView('grid')} />
+            <IconButton label={t('models.view.list')} icon={<Rows size={15} />} size="sm" isActive={view === 'list'} onClick={() => setView('list')} />
+          </div>
+          <div className="mm-toolbar__thumb">
+            <Slider value={thumb} onChange={setThumb} min={THUMB_MIN} max={THUMB_MAX} step={10} aria-label={t('models.thumbSize')} disabled={view === 'list'} />
+          </div>
+          <span className="mm-spacer" />
+          {picked && BUNDLES.includes(picked) && (
+            <Button size="sm" variant="outline" scheme="accent" onClick={() => installBundle(picked)} disabled={!bundleOpen(picked)}>
+              {t('models.starter.bundle', { base: BASE_LABELS[picked] })}
+            </Button>
+          )}
         </div>
+        {groups.length === 0 && <EmptyState title={t('models.noMatch')} />}
+        {groups.map((g) => (
+          <section key={g.purpose} className="mm-starters__section">
+            <h4 className="mm-starters__group">{t(PURPOSE_KEYS[g.purpose])}</h4>
+            <div className={`mm-grid mm-grid--${view} mm-starters__grid`} style={style}>
+              {g.entries.map((e) => (e.kind === 'model' ? <StarterCard key={e.model.id} s={e.model} /> : <PackCard key={`pack-${e.pack}`} kind={e.pack} />))}
+            </div>
+          </section>
+        ))}
       </div>
     </div>
   );
 }
 
-function StarterRow({ s, names }: { s: StarterModel; names: Map<string, string> }) {
+/** The card's frame: an icon cover with the badges, then the name, the description, the size and the install control. */
+function Card({ testId, icon, badges, name, description, meta, error, action }: { testId: string; icon: ReactNode; badges: ReactNode; name: string; description?: string; meta?: string; error?: boolean; action: ReactNode }) {
   return (
-    <div className="mm-starter" data-testid="mm-starter">
-      <div className="mm-starter__main">
-        <div className="mm-item__top">
-          {s.base !== 'any' && <Badge scheme="accent">{BASE_LABELS[s.base]}</Badge>}
-          <Badge>{t(TYPE_KEYS[s.type])}</Badge>
-          <span className="mm-item__name">{s.name}</span>
+    <div className="mm-card-item mm-starter-card" data-testid={testId}>
+      <div className="mm-card-item__media">
+        <div className="mm-cover mm-cover--icon" aria-hidden>
+          {icon}
         </div>
-        <div className="mm-item__desc">{s.description}</div>
-        {s.dependencies && s.dependencies.length > 0 && (
-          <div className="mm-starter__deps">{t('models.starter.dependencies', { list: s.dependencies.map((d) => names.get(d) ?? d).join(', ') })}</div>
-        )}
+        <div className="mm-card-item__badges">{badges}</div>
       </div>
-      <InstallSlot source={s.source}>
-        <Button size="xs" onClick={() => void installModel(s.source, s.name)}>
-          {t('models.install.install')}
-        </Button>
-      </InstallSlot>
+      <div className="mm-card-item__caption">
+        <span className="mm-card-item__name">{name}</span>
+        {description && <span className={cx('mm-starter-card__desc', error && 'mm-starter__error')}>{description}</span>}
+        {meta && <span className="mm-card-item__meta">{meta}</span>}
+      </div>
+      <div className="mm-starter-card__action">{action}</div>
     </div>
+  );
+}
+
+function StarterCard({ s }: { s: StarterModel }) {
+  const Icon = s.type === 'vae' ? Cube : s.type === 'clip_embed' || s.type === 't5_encoder' || s.type === 'text_encoder' ? TextT : Package;
+  return (
+    <Card
+      testId="mm-starter"
+      icon={<Icon size={28} weight="light" />}
+      badges={
+        <>
+          {s.base !== 'any' && <span className="mm-tag mm-tag--accent">{BASE_LABELS[s.base]}</span>}
+          <span className="mm-tag">{t(TYPE_KEYS[s.type])}</span>
+        </>
+      }
+      name={s.name}
+      description={s.description}
+      meta={s.sizeBytes ? formatBytes(s.sizeBytes) : undefined}
+      action={
+        <InstallSlot source={s.source}>
+          <Button size="xs" onClick={() => void installModel(s.source, s.name)}>
+            {t('models.install.install')}
+          </Button>
+        </InstallSlot>
+      }
+    />
   );
 }
 
 /** A media pack, installed by the pack download instead of the model install queue. */
-function PackRow({ kind }: { kind: PackKind }) {
+function PackCard({ kind }: { kind: PackKind }) {
   const pack = usePacks((s) => s.packs[kind]);
   return (
-    <div className="mm-starter" data-testid="mm-starter-pack">
-      <div className="mm-starter__main">
-        <div className="mm-item__top">
-          <Badge>{t('models.starter.pack')}</Badge>
-          <span className="mm-item__name">{t(`pack.title.${kind}`)}</span>
-        </div>
-        {pack.state === 'missing' && <div className="mm-item__desc">{t(`pack.missing.${kind}`, { size: formatPackSize(pack.totalBytes) })}</div>}
-        {pack.state === 'error' && <div className="mm-item__desc mm-starter__error">{pack.message}</div>}
-      </div>
-      {pack.state === 'ready' && <InstallStatus state={{ kind: 'installed' }} />}
-      {pack.state === 'downloading' && <InstallStatus state={{ kind: 'queued', progress: pack.totalBytes ? pack.bytes / pack.totalBytes : 0 }} />}
-      {pack.state === 'installing' && <InstallStatus state={{ kind: 'queued', progress: 0 }} />}
-      {(pack.state === 'missing' || pack.state === 'error') && (
-        <Button size="xs" onClick={() => void backend.installPack(kind)} data-testid={`mm-starter-pack-install-${kind}`}>
-          {t(pack.state === 'error' ? 'pack.retry' : 'pack.install')}
-        </Button>
-      )}
-    </div>
+    <Card
+      testId="mm-starter-pack"
+      icon={<Package size={28} weight="light" />}
+      badges={<span className="mm-tag">{t('models.starter.pack')}</span>}
+      name={t(`pack.title.${kind}`)}
+      description={pack.state === 'missing' ? t(`pack.missing.${kind}`, { size: formatPackSize(pack.totalBytes) }) : pack.state === 'error' ? pack.message : undefined}
+      error={pack.state === 'error'}
+      action={
+        <>
+          {pack.state === 'ready' && <InstallStatus state={{ kind: 'installed' }} />}
+          {pack.state === 'downloading' && <InstallStatus state={{ kind: 'queued', progress: pack.totalBytes ? pack.bytes / pack.totalBytes : 0 }} />}
+          {pack.state === 'installing' && <InstallStatus state={{ kind: 'queued', progress: 0 }} />}
+          {(pack.state === 'missing' || pack.state === 'error') && (
+            <Button size="xs" onClick={() => void backend.installPack(kind)} data-testid={`mm-starter-pack-install-${kind}`}>
+              {t(pack.state === 'error' ? 'pack.retry' : 'pack.install')}
+            </Button>
+          )}
+        </>
+      }
+    />
   );
 }

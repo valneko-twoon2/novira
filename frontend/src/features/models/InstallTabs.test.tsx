@@ -133,8 +133,16 @@ describe('InstallScanFolder', () => {
   });
 });
 
+/** Picks a family in the toolbar's list. */
+function pickFamily(label: string) {
+  fireEvent.keyDown(screen.getByTestId('mm-starter-family'), { key: 'Enter' });
+  fireEvent.click(screen.getByRole('option', { name: label }));
+}
+
 describe('InstallStarter', () => {
   beforeEach(() => {
+    // The card size slider measures itself.
+    vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
     const missing = { state: 'missing', totalBytes: 1e9 } as const;
     usePacks.setState({ packs: { video: missing, turbo: missing, music: missing, voice: missing, inpaint: missing, logo: missing } });
     vi.spyOn(backend, 'installPack').mockResolvedValue(undefined);
@@ -147,25 +155,27 @@ describe('InstallStarter', () => {
   ];
   const model = (source: string): ModelConfig => ({ key: source, name: source, base: 'sdxl', type: 'vae', format: 'diffusers', description: '', path: '', size: 0, source });
 
-  it('lists the starter models with their dependencies and installs one, or a whole bundle', async () => {
+  it('lists the starter models as cards and installs one, or a whole bundle', async () => {
     vi.spyOn(backend, 'listStarterModels').mockResolvedValue(starters);
     useModels.setState({ models: [model('src/three')] });
     ui(<InstallStarter />);
     await waitFor(() => expect(screen.getAllByTestId('mm-starter')).toHaveLength(3));
-    expect(screen.getByText(t('models.starter.dependencies', { list: 'VAE A, VAE B' }))).toBeTruthy();
+    // A card says what the model is and what it does; the list of what it depends on is not shown.
+    expect(within(screen.getAllByTestId('mm-starter')[1]!).getByText('quick')).toBeTruthy();
+    expect(screen.queryByText(/VAE A/)).toBeNull();
     expect(screen.getByText(t('models.install.installed'))).toBeTruthy();
 
     fireEvent.click(within(screen.getAllByTestId('mm-starter')[0]!).getByText(t('models.install.install')));
     expect(installed).toHaveBeenLastCalledWith('src/one', 'Base One');
-    // A bundle is offered for the family picked on the left.
+    // A bundle is offered for the family picked in the toolbar.
     expect(screen.queryByText(t('models.starter.bundle', { base: 'SDXL' }))).toBeNull();
-    fireEvent.click(screen.getByTestId('mm-starter-family-sdxl'));
+    pickFamily('SDXL');
     expect(screen.getAllByTestId('mm-starter')).toHaveLength(2);
     fireEvent.click(screen.getByText(t('models.starter.bundle', { base: 'SDXL' })));
     expect(installed).toHaveBeenLastCalledWith('src/two', 'Fast XL');
     // Nothing is left to install for SD1.X once its one model is installing.
     useModels.setState({ models: [model('src/three'), model('src/one')] });
-    fireEvent.click(screen.getByTestId('mm-starter-family-sd-1'));
+    pickFamily('SD1.X');
     expect((screen.getByText(t('models.starter.bundle', { base: 'SD1.X' })).closest('button') as HTMLButtonElement).disabled).toBe(true);
   });
 
@@ -194,12 +204,14 @@ describe('InstallStarter', () => {
     expect(within(screen.getAllByTestId('mm-starter-pack')[0]!).getByTestId('install-state-installed')).toBeTruthy();
     // Anima: its model and the encoder it needs; the upscaler belongs to no family.
     fireEvent.click(screen.getByTestId('mm-starter-purpose-all'));
-    fireEvent.click(screen.getByTestId('mm-starter-family-anima'));
-    expect(screen.getAllByTestId('mm-starter').map((r) => r.querySelector('.mm-item__name')?.textContent)).toEqual(['Anima Base', 'qwen encoder']);
+    pickFamily('Anima');
+    expect(screen.getAllByTestId('mm-starter').map((r) => r.querySelector('.mm-card-item__name')?.textContent)).toEqual(['Anima Base', 'qwen encoder']);
     expect(screen.getAllByRole('heading', { level: 4 }).map((h) => h.textContent)).toEqual([t('models.starter.purpose.picture'), t('models.starter.purpose.parts')]);
-    // A purpose with nothing in the family is left out.
-    expect(screen.queryByTestId('mm-starter-purpose-upscale')).toBeNull();
-    expect(screen.getByTestId('mm-starter-purpose-parts')).toBeTruthy();
+    // Every purpose stays on the left whatever the family, with nothing to show counted as 0.
+    expect(within(screen.getByTestId('mm-starter-purpose-upscale')).getByText('0')).toBeTruthy();
+    expect(within(screen.getByTestId('mm-starter-purpose-parts')).getByText('1')).toBeTruthy();
+    fireEvent.click(screen.getByTestId('mm-starter-purpose-upscale'));
+    expect(screen.getByText(t('models.noMatch'))).toBeTruthy();
   });
 
   it('searches by name, description, base and type, and says when nothing matches', async () => {

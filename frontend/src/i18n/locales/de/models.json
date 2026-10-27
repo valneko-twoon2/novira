@@ -67,7 +67,6 @@
   "models.starter.bundles": "Pakete",
   "models.starter.bundle": "Paket {base} installieren",
   "models.starter.search": "Starter-Modelle filtern",
-  "models.starter.dependencies": "Abhängigkeiten: {list}",
   "models.queue.title": "Installationswarteschlange",
   "models.queue.prune": "Bereinigen",
   "models.queue.cancel": "Installation abbrechen",
