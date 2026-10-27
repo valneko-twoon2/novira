@@ -15,7 +15,6 @@
   "settings.clearIntermediates": "중간 이미지 삭제",
   "settings.resetDone": "초기화했습니다. 새로고침하면 반영됩니다.",
   "settings.reload": "새로고침",
-  "settings.version": "버전: {version}",
   "settings.toast.intermediatesCleared.one": "중간 이미지 {count}장을 삭제했습니다",
   "settings.toast.intermediatesCleared.other": "중간 이미지 {count}장을 삭제했습니다",
   "settings.toast.intermediatesFailed": "중간 이미지를 삭제하지 못했습니다",

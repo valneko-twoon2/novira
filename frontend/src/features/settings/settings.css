@@ -45,11 +45,6 @@
   font-weight: 600;
 }
 
-.st-nav .st-version {
-  margin-top: auto;
-  padding-top: var(--space-3);
-}
-
 .st-pane {
   display: flex;
   flex-direction: column;
@@ -116,10 +111,6 @@
   .st-nav__tab {
     flex: none;
     white-space: nowrap;
-  }
-
-  .st-nav .st-version {
-    display: none;
   }
 }
 
@@ -213,12 +204,6 @@
   border-radius: var(--radius);
   color: var(--orange-400);
   font-size: var(--fs-sm);
-}
-
-.st-version {
-  color: var(--text-faint);
-  font-size: var(--fs-xs);
-  text-align: center;
 }
 
 /* Hotkeys */

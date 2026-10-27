@@ -20,7 +20,6 @@
   "settings.resetConfirm": "Yes, reset",
   "settings.resetDone": "Web UI has been reset. Reload to apply.",
   "settings.reload": "Reload",
-  "settings.version": "Version: {version}",
   "settings.toast.intermediatesCleared.one": "Cleared {count} intermediate",
   "settings.toast.intermediatesCleared.other": "Cleared {count} intermediates",
   "settings.toast.intermediatesFailed": "Failed to clear intermediates",

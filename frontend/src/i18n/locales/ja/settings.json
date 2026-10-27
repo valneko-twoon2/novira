@@ -20,7 +20,6 @@
   "settings.resetConfirm": "初期化する",
   "settings.resetDone": "リセットしました。再読み込みすると反映されます。",
   "settings.reload": "再読み込み",
-  "settings.version": "バージョン: {version}",
   "settings.toast.intermediatesCleared.one": "中間画像 {count} 枚を消去しました",
   "settings.toast.intermediatesCleared.other": "中間画像 {count} 枚を消去しました",
   "settings.toast.intermediatesFailed": "中間画像を消去できませんでした",

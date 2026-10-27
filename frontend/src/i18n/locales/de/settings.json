@@ -15,7 +15,6 @@
   "settings.clearIntermediates": "Zwischenbilder leeren",
   "settings.resetDone": "Die Web-Oberfläche wurde zurückgesetzt. Zum Anwenden neu laden.",
   "settings.reload": "Neu laden",
-  "settings.version": "Version: {version}",
   "settings.toast.intermediatesCleared.one": "{count} Zwischenbild geleert",
   "settings.toast.intermediatesCleared.other": "{count} Zwischenbilder geleert",
   "settings.toast.intermediatesFailed": "Zwischenbilder konnten nicht geleert werden",

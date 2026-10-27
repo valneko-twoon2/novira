@@ -175,7 +175,7 @@ Drag any of the four edges or four corners of the window to change its size. The
 
 ![The settings screen. The tabs are listed on the left, and the chosen tab's items on the right](shot:settings)
 
-When you choose **{{ui:app.nav.settings}}** from the **{{ui:app.nav.settingsMenu}}** at the lower left, the settings screen opens. Choose a tab on the left, and its items are shown on the right. What you change is used right away and stays even after you close the app. When you open the screen again, the tab you looked at last opens. The version of the app is shown below the list of tabs.
+When you choose **{{ui:app.nav.settings}}** from the **{{ui:app.nav.settingsMenu}}** at the lower left, the settings screen opens. Choose a tab on the left, and its items are shown on the right. What you change is used right away and stays even after you close the app. When you open the screen again, the tab you looked at last opens.
 
 > This picture is a sample screen running in a browser. It does not show **{{ui:settings.uiZoom.label}}**, which exists only in the desktop version.
 

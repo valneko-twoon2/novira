@@ -15,7 +15,6 @@
   "settings.clearIntermediates": "Очистка промежуточных",
   "settings.resetDone": "Веб-интерфейс сброшен. Перезагрузите, чтобы применить.",
   "settings.reload": "Перезагрузить",
-  "settings.version": "Версия: {version}",
   "settings.toast.intermediatesCleared.one": "Очищено {count} промежуточное",
   "settings.toast.intermediatesCleared.other": "Очищено промежуточных: {count}",
   "settings.toast.intermediatesFailed": "Не удалось очистить промежуточные",

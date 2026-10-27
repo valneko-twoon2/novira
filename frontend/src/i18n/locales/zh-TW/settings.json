@@ -15,7 +15,6 @@
   "settings.clearIntermediates": "清除中間圖像",
   "settings.resetDone": "已重設。重新載入後即會生效。",
   "settings.reload": "重新載入",
-  "settings.version": "版本：{version}",
   "settings.toast.intermediatesCleared.one": "已清除 {count} 張中間圖像",
   "settings.toast.intermediatesCleared.other": "已清除 {count} 張中間圖像",
   "settings.toast.intermediatesFailed": "無法清除中間圖像",

@@ -15,7 +15,6 @@
   "settings.clearIntermediates": "Limpar intermediários",
   "settings.resetDone": "A interface web foi redefinida. Recarregue para aplicar.",
   "settings.reload": "Recarregar",
-  "settings.version": "Versão: {version}",
   "settings.toast.intermediatesCleared.one": "{count} intermediário removido",
   "settings.toast.intermediatesCleared.other": "{count} intermediários removidos",
   "settings.toast.intermediatesFailed": "Falha ao limpar os intermediários",

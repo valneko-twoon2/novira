@@ -57,6 +57,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
   vi.restoreAllMocks();
 });
 
@@ -70,6 +71,18 @@ describe('the tabs', () => {
       expect(screen.queryByTestId('settings-pane-general')).toBeNull();
     }
     expect(screen.queryByText(/CPU/)).toBeNull();
+  });
+
+  it('has no version line: the About window says it', () => {
+    expect(modal().queryByText(APP_VERSION, { exact: false })).toBeNull();
+  });
+
+  it('leaves out the comic and text tab in the app build, where those screens are hidden', () => {
+    cleanup();
+    vi.stubEnv('MODE', 'production');
+    show();
+    expect(screen.queryByTestId('settings-tab-comicText')).toBeNull();
+    expect(screen.getByTestId('settings-tab-engine')).toBeTruthy();
   });
 
   it('opens again on the tab last open', () => {
@@ -98,7 +111,6 @@ describe('general', () => {
     expect(useSettings.getState().waitForEngine).toBe(true);
     toggle(t('settings.waitForEngine.label'));
     expect(useSettings.getState().waitForEngine).toBe(false);
-    expect(modal().getByText(t('settings.version', { version: `novira ${APP_VERSION} (mock)` }))).toBeTruthy();
     expect(screen.queryByLabelText(t('settings.uiZoom.label'))).toBeNull();
   });
 });
@@ -256,7 +268,6 @@ describe('the desktop app', () => {
     show();
     openTab('general');
     expect(screen.getAllByLabelText(t('settings.uiZoom.label')).length).toBeGreaterThan(0);
-    expect(modal().getByText(t('settings.version', { version: `novira ${APP_VERSION}` }))).toBeTruthy();
     openTab('generation');
     expect(screen.queryByLabelText(t('settings.mockStepDelay'))).toBeNull();
   });

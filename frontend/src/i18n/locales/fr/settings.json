@@ -15,7 +15,6 @@
   "settings.clearIntermediates": "Effacer les images intermédiaires",
   "settings.resetDone": "Réinitialisation effectuée. Rechargez pour appliquer.",
   "settings.reload": "Recharger",
-  "settings.version": "Version : {version}",
   "settings.toast.intermediatesCleared.one": "{count} image intermédiaire effacée",
   "settings.toast.intermediatesCleared.other": "{count} images intermédiaires effacées",
   "settings.toast.intermediatesFailed": "Impossible d'effacer les images intermédiaires",

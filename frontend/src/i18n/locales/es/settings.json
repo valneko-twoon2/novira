@@ -15,7 +15,6 @@
   "settings.clearIntermediates": "Borrar intermedios",
   "settings.resetDone": "La interfaz web se ha restablecido. Recargue para aplicarlo.",
   "settings.reload": "Recargar",
-  "settings.version": "Versión: {version}",
   "settings.toast.intermediatesCleared.one": "Se borró {count} intermedio",
   "settings.toast.intermediatesCleared.other": "Se borraron {count} intermedios",
   "settings.toast.intermediatesFailed": "No se pudieron borrar los intermedios",
