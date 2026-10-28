@@ -18,7 +18,6 @@
   "models.type.t2iAdapter": "T2I Adapter",
   "models.type.ipAdapter": "IP Adapter",
   "models.type.clipVision": "CLIP Vision",
-  "models.type.spandrel": "Spandrel (image vers image)",
   "models.type.t5Encoder": "Encodeur T5",
   "models.type.clipEmbed": "CLIP Embed",
   "models.details.title": "Détails du modèle",
@@ -121,8 +120,6 @@
   "models.details.license": "Licence",
   "models.details.licenseUnknown": "Inconnue (introuvable sur le site d'origine ; vérifiée au démarrage)",
   "models.install.hfLookupFailed": "Impossible d'obtenir la liste des fichiers : {error}",
-  "models.type.diffusion": "Modèle de diffusion (Flux, Wan, Anima, etc.)",
   "models.card.license": "Licence : {use} (appuyez pour les détails)",
-  "models.type.textEncoder": "Encodeur de texte",
-  "models.type.modelPatch": "Patch de modèle (LLLite, etc.)"
+  "models.type.textEncoder": "Encodeur de texte"
 }

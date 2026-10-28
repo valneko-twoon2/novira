@@ -18,7 +18,6 @@
   "models.type.t2iAdapter": "T2I Adapter",
   "models.type.ipAdapter": "IP Adapter",
   "models.type.clipVision": "CLIP Vision",
-  "models.type.spandrel": "Spandrel（图生图）",
   "models.type.t5Encoder": "T5 编码器",
   "models.type.clipEmbed": "CLIP Embed",
   "models.details.title": "模型详情",
@@ -121,8 +120,6 @@
   "models.details.license": "许可证",
   "models.details.licenseUnknown": "未知（在分发网站上未找到。启动时会进行检查）",
   "models.install.hfLookupFailed": "无法获取文件列表：{error}",
-  "models.type.diffusion": "扩散模型（Flux、Wan、Anima 等）",
   "models.card.license": "许可：{use}（点击查看详情）",
-  "models.type.textEncoder": "文本编码器",
-  "models.type.modelPatch": "模型补丁（LLLite 等）"
+  "models.type.textEncoder": "文本编码器"
 }
