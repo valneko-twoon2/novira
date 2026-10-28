@@ -4,7 +4,7 @@ resolver = "2"
 
 [workspace.package]
 # The app's one version: every crate inherits it, and the frontend's package.json must match (a test checks it).
-version = "0.2.0"
+version = "0.3.0"
 
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
