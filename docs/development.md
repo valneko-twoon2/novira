@@ -46,7 +46,7 @@ Windows locks a running `novira.exe`, so close the app before you start, rebuild
 |---|---|
 | `node tools\affected.mjs` | Runs only the checks the changed files need. Start here |
 | `scripts\version.bat` | Sets the app's version (asks for it, or `version.bat 0.2.0`) in `Cargo.toml`, `package.json` and the lock files | You prepare a release |
-| `scripts\package.bat` | Packs what `release.bat` built into the zip for a release page, with its SHA-256 (the programs and licence texts only) | You publish a release |
+| `scripts\package.bat` | Packs what `release.bat` built into the zip for a release page, with its SHA-256 (the programs and licence texts only); write the release notes from [release-notes-template.md](release-notes-template.md) | You publish a release |
 | `scripts\check.bat` | Every fast check: typecheck, lint, unit tests and line ends on the frontend, `cargo fmt`, clippy and `cargo test` on the backend (`frontend` or `backend` for one side) |
 | `cd frontend && npm run check` | The frontend part alone |
 | `cd frontend && npx vitest run <path>` | One frontend test file |
