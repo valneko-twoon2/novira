@@ -105,7 +105,7 @@ test('the page view zooms with its bar, and the reset goes back to 100%', async 
   await expect(page.getByTestId('comic-page')).toBeVisible();
 
   const before = await page.getByTestId('comic-page').boundingBox();
-  await page.getByRole('button', { name: msg('common.zoomIn') }).click();
+  await page.getByTestId('comic-editor').getByRole('button', { name: msg('common.zoomIn'), exact: true }).click();
   await expect(page.getByTestId('comic-zoom-value')).toHaveText('150%');
   const after = await page.getByTestId('comic-page').boundingBox();
   expect(after!.width).toBeGreaterThan(before!.width * 1.4);

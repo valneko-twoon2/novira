@@ -17,7 +17,7 @@ async function transparentPicture(page: import('@playwright/test').Page): Promis
 
 test('the transparent margin of a picture is trimmed and saved as a new picture', async ({ page }) => {
   await openApp(page, '?scenario=empty');
-  await page.locator('input[type="file"]').first().setInputFiles({ name: 'cutout.png', mimeType: 'image/png', buffer: await transparentPicture(page) });
+  await page.getByTestId('gallery-panel').locator('input[type="file"]').setInputFiles({ name: 'cutout.png', mimeType: 'image/png', buffer: await transparentPicture(page) });
   await expect(page.getByTestId('gallery-thumb')).toHaveCount(1);
 
   await page.getByTestId('gallery-thumb').first().click({ button: 'right' });
