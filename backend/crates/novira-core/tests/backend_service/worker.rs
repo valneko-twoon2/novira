@@ -97,7 +97,7 @@ async fn a_hires_fix_resolves_its_upscale_model_and_stores_the_first_pass_size()
         steps: None,
     };
     let mut with_model = request(&key, "hires", 1);
-    with_model.params.hires_fix = Some(hires(Some(upscaler)));
+    with_model.params.hires_fix = Some(hires(Some(upscaler.clone())));
     let mut unknown = request(&key, "hires unknown", 1);
     unknown.params.hires_fix = Some(hires(Some("no-such-upscaler".into())));
     backend.enqueue(with_model).unwrap();
@@ -117,6 +117,22 @@ async fn a_hires_fix_resolves_its_upscale_model_and_stores_the_first_pass_size()
     assert_eq!(meta.hires_fix.map(|h| h.scale), Some(1.5));
     let error = backend.queue_snapshot().items[1].error.clone().unwrap();
     assert!(error.contains("Upscale model not found"), "{error}");
+    // Image to image resolves the fix's model too.
+    let mut over = request(&key, "hires over a picture", 1);
+    over.params.generation_mode = GenerationMode::Img2img;
+    over.params.strength = Some(0.6);
+    over.params.hires_fix = Some(hires(Some(upscaler)));
+    over.init_image_url = Some(image.url.clone());
+    backend.enqueue(over).unwrap();
+    wait_until(|| {
+        statuses(&backend).len() == 3 && statuses(&backend)[2] == QueueItemStatus::Completed
+    })
+    .await;
+    let job = engine.jobs.lock().unwrap()[1].clone();
+    assert_eq!(
+        job.upscale_model.map(|r| r.name),
+        Some("4x-test.pth".to_string())
+    );
     backend.shutdown();
 }
 

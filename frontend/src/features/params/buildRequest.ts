@@ -61,12 +61,11 @@ async function withDynamicPrompts(req: EnqueueRequest): Promise<EnqueueRequest> 
 
 export async function buildGenerateRequest(prepend: boolean): Promise<EnqueueRequest> {
   const { params, refImages } = txt2imgParts();
-  // An image to draw over makes it image to image; the high-resolution fix is for text to image only.
+  // An image to draw over makes it image to image; the high-resolution fix then enlarges what is drawn over it.
   const { initImage, strength } = useParams.getState();
   if (initImage) {
     params.generationMode = 'img2img';
     params.strength = strength;
-    delete params.hiresFix;
   }
   return withDynamicPrompts({ ...baseRequest('generate', params, prepend), ...(refImages.length ? { refImages } : {}), ...(initImage ? { initImageUrl: initImage.url } : {}) });
 }

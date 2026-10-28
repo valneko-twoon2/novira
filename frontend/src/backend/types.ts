@@ -231,7 +231,7 @@ export interface MangaScreen {
   whiteLines: number;
 }
 
-/** The second pass of text to image ("high-resolution fix"): the first picture enlarged and drawn again with the same
+/** The second pass of text or image to image ("high-resolution fix"): the first picture enlarged and drawn again with the same
  * seed, prompt and guidance at a low strength. */
 export interface HiresFix {
   /** Enlargement of the first pass (the form offers 1.25 to 2.0). */

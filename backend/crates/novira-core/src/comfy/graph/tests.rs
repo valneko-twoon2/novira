@@ -247,13 +247,39 @@ fn hires_fix_with_a_model_upscales_then_resizes_and_snaps_to_eight() {
 }
 
 #[test]
+fn hires_fix_over_image_to_image_enlarges_the_picture_drawn_over_the_source() {
+    let mut p = params(GenerationMode::Img2img);
+    p.strength = Some(0.6);
+    p.hires_fix = Some(hires(1.5, 0.45, None, None));
+    let c = ckpt();
+    let g = build(&input(&p, &c, Some("a.png"))).unwrap();
+    let samplers = nodes(&g, "KSampler");
+    assert_eq!(samplers.len(), 2);
+    let (first, second) = (samplers[0].1, samplers[1].1);
+    // The first pass draws over the source at its own strength, the second at the fix's.
+    assert_eq!(first["denoise"], 0.6);
+    assert_eq!(class_of(&g, &first["latent_image"]), "VAEEncode");
+    assert_eq!(second["denoise"], 0.45);
+    assert_eq!(second["seed"], first["seed"]);
+    // The source is fitted to 1024 x 768, the first picture enlarged to 1536 x 1152.
+    let scales = by_class(&g, "ImageScale");
+    assert_eq!(class_of(&g, &scales[0]["image"]), "LoadImage");
+    assert_eq!(class_of(&g, &scales[1]["image"]), "VAEDecode");
+    assert_eq!(
+        (scales[1]["width"].as_u64(), scales[1]["height"].as_u64()),
+        (Some(1536), Some(1152))
+    );
+    assert_eq!(g.total_steps, 40);
+}
+
+#[test]
 fn hires_fix_is_refused_where_it_cannot_run() {
     let c = ckpt();
     let refuse =
         |p: &GenerationMetadata, init: Option<&str>| build(&input(p, &c, init)).unwrap_err();
-    let mut p = params(GenerationMode::Img2img);
+    let mut p = params(GenerationMode::Upscale);
     p.hires_fix = Some(hires(1.5, 0.45, None, None));
-    assert!(refuse(&p, Some("a.png")).contains("text to image"));
+    assert!(refuse(&p, Some("a.png")).contains("text to image and image to image"));
     let mut p = params(GenerationMode::Txt2img);
     p.draft_at = Some(0.5);
     p.hires_fix = Some(hires(1.5, 0.45, None, None));

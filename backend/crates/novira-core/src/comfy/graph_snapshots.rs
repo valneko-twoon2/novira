@@ -339,6 +339,15 @@ fn img2img_draft() {
     snapshot_built("img2img-draft", &Models::image(), &p, Some("source.png"));
 }
 
+#[test]
+fn img2img_hires() {
+    // The first pass draws over the source at its strength; the second enlarges that picture as text to image does.
+    let mut p = params(GenerationMode::Img2img);
+    p.strength = Some(0.6);
+    p.hires_fix = Some(hires(1.5, 0.45, None, None));
+    snapshot_built("img2img-hires", &Models::image(), &p, Some("source.png"));
+}
+
 fn masked(mask: &str) -> GuidanceInput<'_> {
     GuidanceInput {
         mask_image: Some(mask),

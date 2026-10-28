@@ -345,6 +345,5 @@
   "params.i2i.dropHint": "描き直す元の画像をドロップ",
   "params.i2i.dropOverlay": "この画像から描き直す",
   "params.i2i.clear": "元画像を外す",
-  "params.hires.i2iNote": "i2i の元画像があるときは使えません。",
   "params.refImage.openCanvas": "キャンバスで開く"
 }

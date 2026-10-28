@@ -473,9 +473,9 @@ export class MockBackend implements BackendClient {
     if (isTextGraph(item.comfyGraph)) return this.processText(item, run);
     if (item.comfyGraph && Object.values(item.comfyGraph.prompt).some((n) => n.class_type === 'Sam2Segmentation')) return this.processMask(item, run);
     if (item.comfyGraph && Object.values(item.comfyGraph.prompt).some((n) => n.class_type === 'INPAINT_MaskedFill' || n.class_type === 'INPAINT_InpaintWithModel' || n.class_type === 'SetLatentNoiseMask' || n.class_type === 'RMBG' || n.class_type === 'MangaFinish' || n.class_type === 'LoadVideo' || n.class_type === 'ImageUpscaleWithModel')) return this.processErase(item, run);
-    // Like the backend graph: the high-resolution fix is a second pass of text to image, never of a draft.
+    // Like the backend graph: the high-resolution fix is a second pass of text or image to image, never of a draft.
     const hires = p.hiresFix;
-    if (hires && (p.generationMode !== 'txt2img' || p.draftAt !== undefined)) throw new Error('The high-resolution fix is only available for text to image');
+    if (hires && ((p.generationMode !== 'txt2img' && p.generationMode !== 'img2img') || p.draftAt !== undefined)) throw new Error('The high-resolution fix is only available for text to image and image to image');
     const scale = p.generationMode === 'upscale' ? (p.upscaleScale ?? 2) : 1;
     const round8 = (v: number) => Math.max(64, Math.round(v / 8) * 8);
     const width = hires ? round8(p.width * hires.scale) : Math.round(p.width * scale);

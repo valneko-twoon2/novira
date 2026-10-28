@@ -115,7 +115,7 @@ describe('params builders', () => {
     expect((await buildUpscaleRequest(false)).params.hiresFix).toBeUndefined();
   });
 
-  it('draws over the image to image picture with its strength, sized to the trained size nearest its shape, and without the fix', async () => {
+  it('draws over the image to image picture with its strength, sized to the trained size nearest its shape, and with the fix', async () => {
     useParams.getState().setHires({ enabled: true });
     const image = { name: 'i.png', url: 'u/full/i.png', thumbnailUrl: 'u', width: 1200, height: 800 } as never;
     useParams.getState().set({ strength: 0.55 });
@@ -123,8 +123,7 @@ describe('params builders', () => {
     expect([useParams.getState().width, useParams.getState().height, useParams.getState().aspectRatio]).toEqual([1216, 832, 'free']);
     const req = await buildGenerateRequest(false);
     expect(req.initImageUrl).toBe('u/full/i.png');
-    expect(req.params).toMatchObject({ generationMode: 'img2img', strength: 0.55, width: 1216, height: 832 });
-    expect(req.params.hiresFix).toBeUndefined();
+    expect(req.params).toMatchObject({ generationMode: 'img2img', strength: 0.55, width: 1216, height: 832, hiresFix: { scale: 1.5, strength: 0.45 } });
     // Removed, it is text to image again, and the size stays as it was set.
     useParams.getState().setInitImage(null, 1024);
     const plain = await buildGenerateRequest(false);

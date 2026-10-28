@@ -269,7 +269,7 @@ Put a picture in the **{{ui:params.i2i.title}}** section, and it is drawn over a
 2. The width and height change to the size the model draws well that is nearest the picture's shape. You can change them by hand afterwards.
 3. **{{ui:params.image.strength}}** decides how much is drawn again. Near 0 keeps the picture as it is; near 1 ignores it. Around 0.5 is a good start.
 
-While a picture is set, the {{ui:params.hires.title}} is not used. To remove the picture, press the × at the top right of its frame. To redraw only a painted part, use [Drawing More on the Canvas](05-canvas.md).
+With the {{ui:params.hires.title}} on, the picture drawn over yours is enlarged and drawn again. To remove the picture, press the × at the top right of its frame. To redraw only a painted part, use [Drawing More on the Canvas](05-canvas.md).
 
 ### Characters
 

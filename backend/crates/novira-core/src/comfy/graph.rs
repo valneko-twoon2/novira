@@ -268,8 +268,13 @@ fn check_hires(input: &GraphInput<'_>) -> Result<(), String> {
     let Some(h) = &p.hires_fix else {
         return Ok(());
     };
-    if p.generation_mode != GenerationMode::Txt2img {
-        return Err("The high-resolution fix is only available for text to image".into());
+    if !matches!(
+        p.generation_mode,
+        GenerationMode::Txt2img | GenerationMode::Img2img
+    ) {
+        return Err(
+            "The high-resolution fix is only available for text to image and image to image".into(),
+        );
     }
     if p.draft_at.is_some() {
         return Err("A draft cannot use the high-resolution fix".into());

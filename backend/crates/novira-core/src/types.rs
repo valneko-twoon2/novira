@@ -373,7 +373,7 @@ pub struct MangaScreen {
     pub white_lines: f64,
 }
 
-/// The second pass of text to image ("high-resolution fix"): the first picture is enlarged and drawn again with the
+/// The second pass of text or image to image ("high-resolution fix"): the first picture is enlarged and drawn again with the
 /// same seed, prompt and guidance at a low denoise, so the larger picture gets new detail instead of blur.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

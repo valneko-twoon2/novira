@@ -316,11 +316,19 @@ describe('mock backend: generation', () => {
     expect(new Set(totals)).toEqual(new Set([5]));
   });
 
-  it('refuses the high-resolution fix outside text to image', async () => {
+  it('enlarges a picture drawn over a source with the high-resolution fix', async () => {
+    const { backend, events, settled } = await start();
+    const [item] = await backend.enqueue(request({}, { generationMode: 'img2img', strength: 0.6, width: 512, height: 512, hiresFix: { scale: 1.5, strength: 0.45 } }));
+    expect((await settled(item!.id)).status).toBe('completed');
+    const image = events.flatMap((e) => (e.type === 'image_added' ? [e.image] : []))[0]!;
+    expect([image.width, image.height]).toEqual([768, 768]);
+  });
+
+  it('refuses the high-resolution fix outside text and image to image', async () => {
     const { backend, settled } = await start();
-    const [item] = await backend.enqueue(request({}, { generationMode: 'img2img', hiresFix: { scale: 1.5, strength: 0.45 } }));
+    const [item] = await backend.enqueue(request({}, { generationMode: 'upscale', hiresFix: { scale: 1.5, strength: 0.45 } }));
     const done = await settled(item!.id);
-    expect([done.status, done.error]).toEqual(['failed', 'The high-resolution fix is only available for text to image']);
+    expect([done.status, done.error]).toEqual(['failed', 'The high-resolution fix is only available for text to image and image to image']);
   });
 });
 

@@ -345,6 +345,5 @@
   "params.i2i.dropHint": "Drop an image to draw over",
   "params.i2i.dropOverlay": "Draw over this image",
   "params.i2i.clear": "Remove the image",
-  "params.hires.i2iNote": "Not available while an image to draw over is set.",
   "params.refImage.openCanvas": "Open on the canvas"
 }

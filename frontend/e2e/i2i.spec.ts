@@ -1,5 +1,5 @@
 // Image to image on the Generate tab: a gallery picture put in its section is drawn over, at the trained size nearest
-// its shape, and the reference image settings send a picture there too.
+// its shape (and enlarged by the high-resolution fix when it is on), and the reference image settings send a picture there too.
 import { expect, msg, openApp, test } from './fixtures';
 
 test('a gallery picture dropped on the image to image section is drawn over at a size of its shape', async ({ page }) => {
@@ -27,6 +27,24 @@ test('a gallery picture dropped on the image to image section is drawn over at a
 
   await page.getByTestId('i2i-clear').click();
   await expect(page.getByTestId('i2i-image')).toHaveCount(0);
+});
+
+test('the high-resolution fix enlarges the picture drawn over a source', async ({ page }) => {
+  await openApp(page);
+  await page.getByRole('button', { name: msg('params.hires.title') }).click();
+  await page.getByRole('switch', { name: msg('params.hires.enable') }).click();
+  await page.getByRole('button', { name: msg('params.i2i.title'), exact: true }).click();
+  const before = await page.getByTestId('gallery-thumb').count();
+  await page.getByTestId('gallery-thumb').first().dragTo(page.locator('[data-testid="i2i-section"] .pp-upimg'));
+  await expect(page.getByTestId('i2i-image')).toBeVisible();
+  const width = Number(await page.getByRole('spinbutton', { name: msg('common.width') }).inputValue());
+  const height = Number(await page.getByRole('spinbutton', { name: msg('common.height') }).inputValue());
+  const enlarged = (v: number) => Math.round((v * 1.5) / 8) * 8;
+  await expect(page.getByTestId('hires-output')).toContainText(`${enlarged(width)}×${enlarged(height)}`);
+
+  await page.getByTestId('invoke-button').click();
+  await expect(page.getByTestId('gallery-thumb')).toHaveCount(before + 1);
+  await expect(page.getByTestId('viewer-info')).toContainText(`${enlarged(width)}`);
 });
 
 test('the reference image settings put the picture in the image to image section', async ({ page }) => {

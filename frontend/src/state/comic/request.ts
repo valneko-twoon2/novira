@@ -432,7 +432,7 @@ export function fixRequest(ref: PanelRef, source: { url: string; width: number; 
     const p = useParams.getState();
     const fromCast = characterRefs(ref.panel, ref.project);
     const { params: generation, refImages } = txt2imgParts(fromCast);
-    // The high-resolution fix is a pass of text to image only.
+    // The high-resolution fix is a pass of text or image to image, not of inpainting.
     delete generation.hiresFix;
     const words = options.words?.trim();
     const panel = words ? { ...ref.panel, prompt: words } : ref.panel;

@@ -274,10 +274,10 @@ impl Backend {
         {
             loras.push((self.resolve_model(&l.key, "LoRA")?, l.weight));
         }
-        // Upscaling, or the second pass of a text-to-image job that enlarges with a model.
+        // Upscaling, or the second pass of a text-to-image or image-to-image job that enlarges with a model.
         let upscale_key = match p.generation_mode {
             GenerationMode::Upscale => p.upscale_model_key.as_deref(),
-            GenerationMode::Txt2img => p
+            GenerationMode::Txt2img | GenerationMode::Img2img => p
                 .hires_fix
                 .as_ref()
                 .and_then(|h| h.upscale_model_key.as_deref()),

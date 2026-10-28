@@ -15,7 +15,6 @@ export function HiresSection() {
   const setHires = useParams((s) => s.setHires);
   const models = useModels((s) => s.models);
   const warnings = useInvokeWarnings('generate');
-  const i2i = useParams((s) => s.initImage) !== null;
   const upscalers = modelsOfType(models, 'spandrel_image_to_image');
   const chosen = upscalers.some((m) => m.key === h.upscaleModelKey) ? h.upscaleModelKey! : SMOOTH;
   const out = hiresSize(width, height, h.scale);
@@ -77,11 +76,6 @@ export function HiresSection() {
         {h.enabled && (
           <p className="pp-hint" data-testid="hires-output">
             {h.steps === 0 ? t('params.hires.outputSameSteps', { width: out.width, height: out.height }) : t('params.hires.output', { width: out.width, height: out.height, steps: h.steps })}
-          </p>
-        )}
-        {h.enabled && i2i && (
-          <p className="pp-hint" data-testid="hires-i2i-note">
-            {t('params.hires.i2iNote')}
           </p>
         )}
         {h.enabled &&
