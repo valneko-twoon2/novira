@@ -18,7 +18,7 @@ function Host() {
   return <PageSettings page={p.pages[0]!} project={p} />;
 }
 
-async function open() {
+async function startUp() {
   useComic.getState().setProjects([newProject('Settings')]);
   render(
     <TooltipProvider>
@@ -55,7 +55,7 @@ afterEach(() => {
 
 describe('the page settings', () => {
   it('sets the number of panels, within the most a page holds', async () => {
-    await open();
+    await startUp();
     setNum(t('comic.page.panelCount'), '5');
     expect(page().panels).toHaveLength(5);
     setNum(t('comic.page.panelCount'), '999');
@@ -65,7 +65,7 @@ describe('the page settings', () => {
   });
 
   it('changes the columns, the paper and the reading direction from their lists', async () => {
-    await open();
+    await startUp();
     choose(t('comic.page.columns'), /3/);
     expect(page().columns).toBe(3);
     choose(t('comic.page.size'), /^A5/);
@@ -75,7 +75,7 @@ describe('the page settings', () => {
   });
 
   it('writes the frame width, the margin and the inset, kept within their ranges', async () => {
-    await open();
+    await startUp();
     setNum(t('comic.page.frameWidth'), '1.5');
     expect(page().frameMm).toBeCloseTo(1.5);
     setNum(t('comic.page.frameWidth'), '50');
@@ -87,13 +87,13 @@ describe('the page settings', () => {
   });
 
   it('writes the frame colour', async () => {
-    await open();
+    await startUp();
     fireEvent.change(screen.getByTestId('comic-frame-color'), { target: { value: '#ff0000' } });
     expect(page().frameColor).toBe('#ff0000');
   });
 
   it('sets the effect of the comic, and of the page or back to following the comic', async () => {
-    await open();
+    await startUp();
     choose(t('comic.effect.comic'), t('comic.effect.sepia'));
     expect(project().effect).toBe('sepia');
     choose(t('comic.effect.page'), t('comic.effect.mono'));
@@ -103,7 +103,7 @@ describe('the page settings', () => {
   });
 
   it('keeps the shapes button off while the layout is automatic, and resets hand-made shapes with it', async () => {
-    await open();
+    await startUp();
     const reset = screen.getByTestId('comic-shape-reset') as HTMLButtonElement;
     expect(reset.disabled).toBe(true);
     expect(screen.getByText(t('comic.page.autoLayout'))).toBeTruthy();

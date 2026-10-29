@@ -44,7 +44,7 @@ function fire(type: string, x: number, y: number, init: MouseEventInit = {}) {
 const at = (p: { x: number; y: number }) => [p.x * W, p.y * H] as const;
 const last = () => changes.at(-1)!;
 
-function open(start: ComicRough) {
+function startUp(start: ComicRough) {
   rough = start;
   scene = createRoughScene(canvas, start, W / H, { change: (r) => changes.push(r), select: (id) => selects.push(id) });
 }
@@ -77,7 +77,7 @@ afterEach(() => {
 
 describe('picking in the view', () => {
   it('chooses the person under the pointer and drags it over the floor', () => {
-    open(newRough());
+    startUp(newRough());
     const id = rough.people[0]!.id;
     fire('pointerdown', W / 2, H / 2);
     expect(selects).toEqual([id]);
@@ -94,7 +94,7 @@ describe('picking in the view', () => {
     start.people = [];
     start.props = [{ ...newProp('box'), y: 0.4 }];
     start.camera.target.y = 0.4;
-    open(start);
+    startUp(start);
     fire('pointerdown', W / 2, H / 2);
     expect(selects).toEqual([start.props[0]!.id]);
     fire('pointermove', W / 2 - 40, H / 2);
@@ -102,7 +102,7 @@ describe('picking in the view', () => {
   });
 
   it('lets go of the choice on a click of the background', () => {
-    open(newRough());
+    startUp(newRough());
     scene.select(rough.people[0]!.id);
     fire('pointerdown', 5, 5);
     fire('pointerup', 5, 5);
@@ -112,7 +112,7 @@ describe('picking in the view', () => {
 
 describe('the camera', () => {
   it('turns round what it looks at when the background is dragged, and stops short of straight up', () => {
-    open(newRough());
+    startUp(newRough());
     fire('pointerdown', 5, 5);
     fire('pointermove', 45, 25);
     const camera = last().camera;
@@ -125,7 +125,7 @@ describe('the camera', () => {
   });
 
   it('slides the target with Shift or the right button', () => {
-    open(newRough());
+    startUp(newRough());
     fire('pointerdown', 5, 5, { shiftKey: true });
     fire('pointermove', 105, 5);
     expect(last().camera.target.x).not.toBe(rough.camera.target.x);
@@ -136,7 +136,7 @@ describe('the camera', () => {
   });
 
   it('comes nearer on a wheel up and goes back on a wheel down, within the limits', () => {
-    open(newRough());
+    startUp(newRough());
     const wheel = (deltaY: number) => canvas.dispatchEvent(new WheelEvent('wheel', { deltaY, cancelable: true, bubbles: true }));
     wheel(-100);
     expect(last().camera.distance).toBeLessThan(rough.camera.distance);
@@ -147,7 +147,7 @@ describe('the camera', () => {
   });
 
   it('takes no menu on the right button', () => {
-    open(newRough());
+    startUp(newRough());
     const e = new Event('contextmenu', { cancelable: true });
     canvas.dispatchEvent(e);
     expect(e.defaultPrevented).toBe(true);
@@ -158,7 +158,7 @@ describe('the joints of the chosen person', () => {
   const pointOf = (joint: number) => at(project(rough.camera, W / H, personJoints(rough.people[0]!)[joint]!));
 
   it('bends a limb round the joint it hangs from when its coloured joint is dragged', () => {
-    open(newRough());
+    startUp(newRough());
     scene.select(rough.people[0]!.id);
     const [x, y] = pointOf(J.rWrist);
     fire('pointerdown', x, y);
@@ -168,7 +168,7 @@ describe('the joints of the chosen person', () => {
   });
 
   it('moves the whole person when the neck is dragged', () => {
-    open(newRough());
+    startUp(newRough());
     scene.select(rough.people[0]!.id);
     const [x, y] = pointOf(J.neck);
     fire('pointerdown', x, y);
@@ -181,7 +181,7 @@ describe('the joints of the chosen person', () => {
 
 describe('a rough changed from outside', () => {
   it('keeps the choice while the thing is still there and drops it when it is gone', () => {
-    open(newRough());
+    startUp(newRough());
     const person = rough.people[0]!;
     scene.select(person.id);
     const shifted = { ...person, x: 0.3 };
@@ -199,13 +199,13 @@ describe('a rough changed from outside', () => {
   });
 
   it('resizes to the canvas', () => {
-    open({ ...newRough(), floor: false });
+    startUp({ ...newRough(), floor: false });
     scene.resize();
     expect(gl.sizes.at(-1)).toEqual([W, H]);
   });
 
   it('follows a change of the theme', async () => {
-    open(newRough());
+    startUp(newRough());
     document.documentElement.setAttribute('data-theme', 'dark');
     await Promise.resolve();
     document.documentElement.removeAttribute('data-theme');
@@ -213,7 +213,7 @@ describe('a rough changed from outside', () => {
   });
 
   it('frees the renderer when it is closed', () => {
-    open(newRough());
+    startUp(newRough());
     scene.dispose();
     expect(gl.disposed).toBe(1);
     scene = { dispose() {} } as RoughScene;

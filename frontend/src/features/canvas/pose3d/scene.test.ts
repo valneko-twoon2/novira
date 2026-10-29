@@ -38,7 +38,7 @@ function fire(type: string, x: number, y: number) {
   Object.defineProperty(e, 'pointerId', { value: 1 });
   canvas.dispatchEvent(e);
 }
-const open = (hidden: number[] = []) => {
+const startUp = (hidden: number[] = []) => {
   scene = createPoseScene(canvas, row, hidden, RADIUS, () => changed++);
 };
 
@@ -66,7 +66,7 @@ afterEach(() => {
 
 describe('the joints', () => {
   it('start as given, and a copy is handed out', () => {
-    open([3]);
+    startUp([3]);
     expect(scene.joints()).toEqual(row);
     scene.joints()[0]!.x = 999;
     expect(scene.joints()).toEqual(row);
@@ -74,7 +74,7 @@ describe('the joints', () => {
   });
 
   it('swing a joint round its parent when its ball is dragged, and go back on reset', () => {
-    open();
+    startUp();
     const [x, y] = screen(row[4]!);
     fire('pointerdown', x, y);
     fire('pointermove', x, y - 40);
@@ -88,7 +88,7 @@ describe('the joints', () => {
   });
 
   it('slide the neck, which hangs from nothing, in the picture plane', () => {
-    open();
+    startUp();
     const [x, y] = screen(row[1]!);
     fire('pointerdown', x, y);
     fire('pointermove', x, y - 30);
@@ -100,7 +100,7 @@ describe('the joints', () => {
 
 describe('the view', () => {
   it('turns with a drag of the background and stops short of straight up or down', () => {
-    open();
+    startUp();
     fire('pointerdown', 5, 5);
     fire('pointermove', 55, 35);
     expect(scene.view().yaw).toBeCloseTo(0.5);
@@ -112,13 +112,13 @@ describe('the view', () => {
   });
 
   it('is set from outside within the same limit', () => {
-    open();
+    startUp();
     scene.setView(1, 10);
     expect(scene.view()).toEqual({ yaw: 1, pitch: Math.PI / 2 });
   });
 
   it('ignores a move with nothing pressed, and a pointer that is let go', () => {
-    open();
+    startUp();
     const before = changed;
     fire('pointermove', 50, 50);
     expect(changed).toBe(before);
@@ -129,7 +129,7 @@ describe('the view', () => {
   });
 
   it('zooms with the wheel, within limits, and resizes to a wide or a tall canvas', () => {
-    open();
+    startUp();
     const wheel = (deltaY: number) => canvas.dispatchEvent(new WheelEvent('wheel', { deltaY, cancelable: true, bubbles: true }));
     for (let i = 0; i < 40; i++) wheel(-100);
     for (let i = 0; i < 80; i++) wheel(100);
@@ -140,7 +140,7 @@ describe('the view', () => {
   });
 
   it('frees the renderer when it is closed', () => {
-    open();
+    startUp();
     scene.dispose();
     expect(gl.disposed).toBe(1);
     scene = { dispose() {} } as PoseScene;
