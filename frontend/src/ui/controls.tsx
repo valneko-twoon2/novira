@@ -292,10 +292,10 @@ export function EmptyState({ icon, title, description, children }: { icon?: Reac
   );
 }
 
-export function ProgressBar({ value, indeterminate, className }: { value: number; indeterminate?: boolean; className?: string }) {
+export function ProgressBar({ value, indeterminate, className, label }: { value: number; indeterminate?: boolean; className?: string; label?: string }) {
   const fraction = Math.max(0, Math.min(1, value));
   return (
-    <div className={cx('ui-progress', indeterminate && 'is-indeterminate', className)} role="progressbar" aria-valuenow={indeterminate ? undefined : Math.round(fraction * 100)} aria-valuemin={0} aria-valuemax={100}>
+    <div className={cx('ui-progress', indeterminate && 'is-indeterminate', className)} role="progressbar" aria-label={label} aria-valuenow={indeterminate ? undefined : Math.round(fraction * 100)} aria-valuemin={0} aria-valuemax={100}>
       <div className="ui-progress__bar" style={{ width: indeterminate ? undefined : `${fraction * 100}%` }} />
     </div>
   );

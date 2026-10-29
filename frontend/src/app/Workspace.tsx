@@ -166,6 +166,7 @@ function MainArea({ tab }: { tab: TabName }) {
     <div className="mainarea">
       <ProgressBar
         className="mainarea__progress"
+        label={t('queue.status.inProgress')}
         value={progress ? progress.step / progress.totalSteps : 0}
         indeterminate={running && !progress}
       />
