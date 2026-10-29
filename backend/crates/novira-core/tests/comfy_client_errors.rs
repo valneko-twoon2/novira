@@ -880,6 +880,8 @@ async fn stopping_while_the_owned_comfyui_starts_is_a_cancellation() {
     });
     let err = e.prepare(&cancel).await.unwrap_err();
     assert!(matches!(err, EngineError::Cancelled), "{err}");
+    // The screens must not go on saying "starting" for a start that was given up.
+    assert_eq!(e.status(), EngineStatus::Idle);
     e.shutdown();
 }
 

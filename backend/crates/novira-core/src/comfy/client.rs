@@ -249,7 +249,11 @@ impl ComfyEngine {
                 self.set_status(EngineStatus::Ready);
                 Ok(())
             }
-            Err(EngineError::Cancelled) => Err(EngineError::Cancelled),
+            // A start or install that was given up leaves nothing running: the status must not stay at the step it was in.
+            Err(EngineError::Cancelled) => {
+                self.set_status(EngineStatus::Idle);
+                Err(EngineError::Cancelled)
+            }
             Err(e) => {
                 self.set_status(EngineStatus::Error {
                     message: e.to_string(),
