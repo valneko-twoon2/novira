@@ -388,11 +388,13 @@ async fn model_records_can_be_edited_deleted_and_scanned() {
         .unwrap();
     assert!(!scanned.is_empty() && scanned.iter().all(|f| f.installed));
     assert!(backend.scan_folder("relative/dir").await.is_err());
-    // Deleting an unknown key is fine; a vanished file is an error.
+    // Deleting an unknown key is fine; a file that is already gone only has its record removed.
     backend.delete_model("nope").unwrap();
     std::fs::remove_file(&model.path).unwrap();
-    assert!(matches!(
-        backend.delete_model(&model.key),
-        Err(BackendError::Internal(_))
-    ));
+    backend.delete_model(&model.key).unwrap();
+    assert!(backend
+        .bootstrap()
+        .models
+        .iter()
+        .all(|m| m.key != model.key));
 }

@@ -54,12 +54,84 @@ fn copy_limited(from: &mut impl Read, to: &Path, limit: u64) -> Result<(), Strin
         .create_new(true)
         .open(to)
         .map_err(|e| format!("cannot unpack: {e}"))?;
-    let written = std::io::copy(&mut from.take(limit + 1), &mut out)
-        .map_err(|e| format!("the backup is damaged: {e}"))?;
+    copy_into(from, &mut out, limit)
+}
+
+/// The copy itself: a failed read means the backup is damaged, a failed write (a full disk) does not.
+fn copy_into(
+    from: &mut impl Read,
+    out: &mut impl std::io::Write,
+    limit: u64,
+) -> Result<(), String> {
+    let mut from = from.take(limit + 1);
+    let mut buf = [0u8; 64 * 1024];
+    let mut written = 0u64;
+    loop {
+        let n = match from.read(&mut buf) {
+            Ok(0) => break,
+            Ok(n) => n,
+            Err(e) if e.kind() == std::io::ErrorKind::Interrupted => continue,
+            Err(e) => return Err(format!("the backup is damaged: {e}")),
+        };
+        out.write_all(&buf[..n])
+            .map_err(|e| format!("cannot unpack: {e}"))?;
+        written += n as u64;
+    }
     if written > limit {
         return Err("a file in the backup is too large".into());
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod copy_tests {
+    use super::*;
+
+    struct Full(usize);
+    impl std::io::Write for Full {
+        fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+            if self.0 == 0 {
+                return Err(std::io::Error::other("no space left on device"));
+            }
+            let n = buf.len().min(self.0);
+            self.0 -= n;
+            Ok(n)
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+
+    struct Broken;
+    impl Read for Broken {
+        fn read(&mut self, _: &mut [u8]) -> std::io::Result<usize> {
+            Err(std::io::Error::other("bad checksum"))
+        }
+    }
+
+    #[test]
+    fn a_full_disk_is_not_called_a_damaged_backup() {
+        let err = copy_into(&mut &[7u8; 1000][..], &mut Full(10), 5000).unwrap_err();
+        assert!(
+            err.starts_with("cannot unpack") && err.contains("no space"),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn a_unreadable_entry_is_a_damaged_backup() {
+        let err = copy_into(&mut Broken, &mut Vec::new(), 5000).unwrap_err();
+        assert!(err.starts_with("the backup is damaged"), "{err}");
+    }
+
+    #[test]
+    fn an_entry_over_the_limit_is_refused_and_one_at_it_is_copied() {
+        let mut out = Vec::new();
+        copy_into(&mut &[1u8; 100][..], &mut out, 100).unwrap();
+        assert_eq!(out.len(), 100);
+        let err = copy_into(&mut &[1u8; 101][..], &mut Vec::new(), 100).unwrap_err();
+        assert!(err.contains("too large"), "{err}");
+    }
 }
 
 fn read_manifest(archive: &mut zip::ZipArchive<File>) -> Result<Manifest, String> {
