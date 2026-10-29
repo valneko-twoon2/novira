@@ -103,3 +103,53 @@ fn a_target_that_cannot_be_replaced_fails_the_backup_and_leaves_no_partial_file(
     assert!(target.join("keep.txt").is_file());
     assert!(!dir.path().join("backup.zip.partial").exists());
 }
+
+/// A database file that holds `bytes` of data (the fresh one is only a few pages).
+fn big_database_bytes(bytes: usize) -> Vec<u8> {
+    let dir = tempfile::tempdir().unwrap();
+    let db = Db::open(dir.path()).unwrap();
+    db.put(
+        novira_core::db::Table::Workflows,
+        "big",
+        1,
+        &json!({ "filler": "x".repeat(bytes) }),
+    )
+    .unwrap();
+    drop(db);
+    std::fs::read(dir.path().join(DATABASE)).unwrap()
+}
+
+#[test]
+fn entries_of_a_realistic_size_are_unpacked_whole() {
+    // Each entry limit is far above these sizes; a limit that came out tiny (a wrong constant) would refuse them.
+    let dir = tempfile::tempdir().unwrap();
+    let zip = dir.path().join("sizes.zip");
+    let database = big_database_bytes(200_000);
+    let mut padded = serde_json::from_slice::<serde_json::Value>(&manifest()).unwrap();
+    padded["note"] = json!("n".repeat(20_000));
+    let picture = vec![7u8; 100_000];
+    make_zip(
+        &zip,
+        &[
+            (MANIFEST, serde_json::to_vec(&padded).unwrap()),
+            (DATABASE, database.clone()),
+            ("outputs/big.png", picture.clone()),
+            ("thumbnails/big.png.thumb", picture.clone()),
+        ],
+    );
+    let data = tempfile::tempdir().unwrap();
+    stage(&zip, data.path(), |_, _| {}).expect("a backup with ordinary sizes is unpacked");
+    let root = data.path().join(STAGING);
+    assert_eq!(
+        std::fs::read(root.join(DATABASE)).unwrap().len(),
+        database.len()
+    );
+    assert_eq!(
+        std::fs::read(root.join("outputs/big.png")).unwrap(),
+        picture
+    );
+    assert_eq!(
+        std::fs::read(root.join("thumbnails/big.png.thumb")).unwrap(),
+        picture
+    );
+}

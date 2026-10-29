@@ -408,6 +408,31 @@ mod copy_tests {
         assert!(err.starts_with("the backup is damaged"), "{err}");
     }
 
+    struct Hiccup(u8);
+    impl Read for Hiccup {
+        fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+            if self.0 < 3 {
+                self.0 += 1;
+                return Err(std::io::Error::from(std::io::ErrorKind::Interrupted));
+            }
+            if self.0 == 3 {
+                self.0 += 1;
+                buf[..4].copy_from_slice(b"data");
+                return Ok(4);
+            }
+            Ok(0)
+        }
+    }
+
+    #[test]
+    fn an_interrupted_read_is_tried_again_and_a_real_failure_is_not() {
+        let mut out = Vec::new();
+        copy_into(&mut Hiccup(0), &mut out, 100).unwrap();
+        assert_eq!(out, b"data");
+        // An error that is not an interruption ends the copy at once (it must not be retried for ever).
+        assert!(copy_into(&mut Broken, &mut Vec::new(), 100).is_err());
+    }
+
     #[test]
     fn an_entry_over_the_limit_is_refused_and_one_at_it_is_copied() {
         let mut out = Vec::new();
