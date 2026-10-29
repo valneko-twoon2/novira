@@ -18,3 +18,8 @@ exclude_re = []
 # busy machine without waiting for minutes.
 timeout_multiplier = 3.0
 minimum_test_timeout = 120.0
+
+# The temporary copy holds only backend/, so a test that reads a file of frontend/ fails on the unmutated code and no
+# mutant is tried. These tests are skipped here; they run in every normal `cargo test`.
+#   every_open_source_homepage_may_be_opened: reads frontend/src/features/settings/ossLicenses.json
+additional_cargo_test_args = ["--", "--skip", "every_open_source_homepage_may_be_opened"]
