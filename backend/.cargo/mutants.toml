@@ -24,6 +24,8 @@ minimum_test_timeout = 120.0
 #   every_open_source_homepage_may_be_opened: reads frontend/src/features/settings/ossLicenses.json
 #   every_fixture_is_checked, fixtures_match_the_rust_types (tests/contract) and the four prop_roundtrip tests that read
 #   a fixture: read contract/
+#   secret::tests: write to the Windows Credential Manager, which refuses new entries (error 8) once old test runs have
+#   filled it; they run in every normal `cargo test` and no mutant of the files tested here reaches them.
 additional_cargo_test_args = [
   "--",
   "--skip", "every_open_source_homepage_may_be_opened",
@@ -33,4 +35,5 @@ additional_cargo_test_args = [
   "--skip", "an_edited_fixture_is_refused_or_settles_after_one_round_trip",
   "--skip", "unknown_fields_of_the_generation_settings_are_kept_for_newer_frontends",
   "--skip", "a_generation_setting_of_any_prompt_text_and_numbers_round_trips",
+  "--skip", "secret::tests",
 ]
