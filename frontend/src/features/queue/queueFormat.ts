@@ -36,5 +36,6 @@ export function durationSeconds(item: QueueItem): number | null {
 
 export function shortId(id: string): string {
   const parts = id.split('-');
-  return parts.length > 1 ? (parts[1] ?? id) + '-' + (parts[2] ?? '').slice(-4) : id.slice(0, 8);
+  if (!parts[1]) return id.slice(0, 8);
+  return parts[2] ? `${parts[1]}-${parts[2].slice(-4)}` : parts[1];
 }

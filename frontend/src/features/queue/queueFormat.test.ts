@@ -1,7 +1,7 @@
 // The queue's times: a finished job's duration, and the clock time shown for a moment.
 import { describe, expect, it } from 'vitest';
 import type { QueueItem } from '@/backend';
-import { durationSeconds, formatTime } from './queueFormat';
+import { durationSeconds, formatTime, shortId } from './queueFormat';
 
 const timed = (startedAt: number | null, completedAt: number | null) => ({ startedAt, completedAt }) as QueueItem;
 
@@ -29,5 +29,14 @@ describe('formatTime', () => {
   it('shows the hour, minute and second of the moment', () => {
     const moment = new Date(2026, 9, 29, 13, 5, 7).getTime();
     expect(formatTime(moment)).toMatch(/13:05:07|01:05:07/);
+  });
+});
+
+describe('shortId', () => {
+  it('keeps the hex part of a batch id and the end of a third part, with no dash left hanging', () => {
+    expect(shortId('batch-0123456789ab')).toBe('0123456789ab');
+    expect(shortId('batch-abcd-1234567')).toBe('abcd-4567');
+    expect(shortId('plainidentifier')).toBe('plainide');
+    expect(shortId('-')).toBe('-');
   });
 });
