@@ -153,3 +153,22 @@ fn entries_of_a_realistic_size_are_unpacked_whole() {
         picture
     );
 }
+
+#[test]
+fn unpacking_reports_each_entry_once_counting_from_one() {
+    let dir = tempfile::tempdir().unwrap();
+    let zip = dir.path().join("progress.zip");
+    make_zip(
+        &zip,
+        &[
+            (MANIFEST, manifest()),
+            (DATABASE, database_bytes()),
+            ("outputs/a.png", vec![1u8; 10]),
+            ("thumbnails/a.png.thumb", vec![2u8; 10]),
+        ],
+    );
+    let data = tempfile::tempdir().unwrap();
+    let mut seen = Vec::new();
+    stage(&zip, data.path(), |done, total| seen.push((done, total))).unwrap();
+    assert_eq!(seen, vec![(1, 4), (2, 4), (3, 4), (4, 4)]);
+}
