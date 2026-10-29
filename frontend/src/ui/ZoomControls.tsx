@@ -34,7 +34,7 @@ export function ZoomControls({ scale, onZoomIn, onZoomOut, onZoomTo, onFit, fitL
       <Menu>
         <Tooltip content={t('common.zoom')}>
           <MenuTrigger asChild>
-            <button type="button" className="ui-zoom__value" aria-label={t('common.zoom')} data-testid={testId}>
+            <button type="button" className="ui-zoom__value" aria-label={`${t('common.zoom')}: ${Math.round(scale * 100)}%`} data-testid={testId}>
               {Math.round(scale * 100)}%
             </button>
           </MenuTrigger>

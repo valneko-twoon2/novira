@@ -8,7 +8,7 @@ import { useDevLog } from '@/state/devLog';
 import { useQueue } from '@/state/queue';
 import { useSettings } from '@/state/settings';
 import { NAV, NAV_HOTKEYS, navOf, useUi, type NavName } from '@/state/ui';
-import { Badge, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, Tooltip } from '@/ui';
+import { Badge, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, Tooltip, withVisibleText } from '@/ui';
 import { HomeLinkButton } from './HomeLinkButton';
 
 const ICONS: Record<NavName, ReactNode> = {
@@ -70,7 +70,7 @@ export function SideNav() {
               type="button"
               role="tab"
               aria-selected={active === tab}
-              aria-label={t(TAB_LABEL_KEYS[tab])}
+              aria-label={withVisibleText(t(TAB_LABEL_KEYS[tab]), t(SHORT_LABEL_KEYS[tab]))}
               data-testid={`tab-${tab}`}
               className={`sidenav__tab${active === tab ? ' is-active' : ''}`}
               onClick={() => setTab(tab === 'generate' ? generateMode : tab)}
@@ -87,7 +87,7 @@ export function SideNav() {
           <button
             type="button"
             aria-pressed={agentOpen}
-            aria-label={t('agent.open')}
+            aria-label={withVisibleText(t('agent.open'), t('app.tabs.short.agent'))}
             data-testid="agent-open"
             className={`sidenav__tab${agentOpen ? ' is-active' : ''}`}
             onClick={() => setAgentOpen(!agentOpen)}
@@ -104,7 +104,7 @@ export function SideNav() {
           <button
             type="button"
             aria-pressed={devLogOpen}
-            aria-label={t('app.devlog.open')}
+            aria-label={withVisibleText(t('app.devlog.open'), t('app.devlog.short'))}
             data-testid="devlog-open"
             className={`sidenav__tab${devLogOpen ? ' is-active' : ''}`}
             onClick={() => useDevLog.getState().setOpen(!devLogOpen)}
@@ -127,7 +127,7 @@ export function SideNav() {
         <button
           type="button"
           aria-pressed={active === 'extensions'}
-          aria-label={t(TAB_LABEL_KEYS.extensions)}
+          aria-label={withVisibleText(t(TAB_LABEL_KEYS.extensions), t(SHORT_LABEL_KEYS.extensions))}
           data-testid="tab-extensions"
           className={`sidenav__tab${active === 'extensions' ? ' is-active' : ''}`}
           onClick={() => setTab('extensions')}
@@ -138,7 +138,7 @@ export function SideNav() {
       </Tooltip>
       <Menu>
         <MenuTrigger asChild>
-          <button type="button" className="sidenav__tab" aria-label={t('app.nav.settingsMenu')}>
+          <button type="button" className="sidenav__tab" aria-label={withVisibleText(t('app.nav.settingsMenu'), t('app.nav.settings'))}>
             <Gear size={22} weight="regular" />
             <span className="sidenav__label">{t('app.nav.settings')}</span>
           </button>

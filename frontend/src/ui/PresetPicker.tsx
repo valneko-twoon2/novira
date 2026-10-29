@@ -5,6 +5,7 @@ import { CaretDown, Check, DotsThree, FloppyDisk, FloppyDiskBack, PencilSimple, 
 import { useState } from 'react';
 import { t } from '@/i18n';
 import { toast } from '@/state/toasts';
+import { withVisibleText } from './accessibleName';
 import { Button, cx, IconButton } from './controls';
 import { NameDialog } from './NameDialog';
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from './overlays';
@@ -58,12 +59,12 @@ export function PresetPicker(props: PresetPickerProps) {
   };
 
   const trigger = compact ? (
-    <button type="button" className="ui-select ui-preset__compact" aria-label={props.label} data-testid="preset-trigger">
+    <button type="button" className="ui-select ui-preset__compact" aria-label={`${props.label}: ${current ? current.name : t('presets.choose')}`} data-testid="preset-trigger">
       <span className="ui-select__value">{current ? current.name : <span className="ui-select__placeholder">{t('presets.choose')}</span>}</span>
       <CaretDown size={12} />
     </button>
   ) : (
-    <button type="button" className="ui-preset__card" aria-label={props.label} data-testid="preset-trigger">
+    <button type="button" className="ui-preset__card" aria-label={withVisibleText(props.label, [t('presets.label'), current ? current.name : t('presets.choose'), current?.summary].filter(Boolean).join(''))} data-testid="preset-trigger">
       <span className="ui-preset__text">
         <span className="ui-preset__caption">{t('presets.label')}</span>
         <span className={cx('ui-preset__name', !current && 'is-placeholder')}>{current ? current.name : t('presets.choose')}</span>

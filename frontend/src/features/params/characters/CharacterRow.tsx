@@ -44,7 +44,7 @@ export function CharacterRow() {
       </span>
       <SearchPicker
         trigger={
-          <button type="button" className="ui-select pp-chars__trigger" aria-label={t('character.row.label')} data-testid="character-trigger">
+          <button type="button" className="ui-select pp-chars__trigger" aria-label={`${t('character.row.label')}: ${current ? current.name : t('character.row.choose')}`} data-testid="character-trigger">
             <span className="ui-select__value">{current ? current.name : <span className="ui-select__placeholder">{t('character.row.choose')}</span>}</span>
             <CaretDown size={12} />
           </button>

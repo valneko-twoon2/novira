@@ -8,7 +8,7 @@ import type { ComicProject } from '@/state/comic/document';
 import { pageAspect, pageShapes } from '@/state/comic/layout';
 import { activeProject, useComic } from '@/state/comic/store';
 import { useGallery } from '@/state/gallery';
-import { Button, cx, IconButton, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, NameDialog, PressAgainMenuItem, SearchPicker } from '@/ui';
+import { Button, cx, IconButton, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, NameDialog, PressAgainMenuItem, SearchPicker, withVisibleText } from '@/ui';
 import { PageThumb } from './PageThumb';
 
 /** The first page of a comic as a small picture, with the pictures of its panels. */
@@ -44,7 +44,7 @@ export function ComicProjectPicker() {
         <div className="pp-model__main">
           <SearchPicker
             trigger={
-              <button type="button" className="ui-select" aria-label={t('comic.project.label')} data-testid="comic-project-picker">
+              <button type="button" className="ui-select" aria-label={withVisibleText(t('comic.project.label'), current ? current.name || t('comic.project.newName') : t('comic.project.choose'))} data-testid="comic-project-picker">
                 <span className="ui-select__value">{current ? current.name || t('comic.project.newName') : <span className="ui-select__placeholder">{t('comic.project.choose')}</span>}</span>
                 <CaretDown size={12} />
               </button>

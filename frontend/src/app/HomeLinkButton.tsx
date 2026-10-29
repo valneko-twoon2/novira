@@ -5,7 +5,7 @@ import { QrCode } from '@phosphor-icons/react';
 import { useEffect } from 'react';
 import { t } from '@/i18n';
 import { useLan } from '@/state/lan';
-import { Popover, PopoverContent, PopoverTrigger, Tooltip } from '@/ui';
+import { Popover, PopoverContent, PopoverTrigger, Tooltip, withVisibleText } from '@/ui';
 import { LanPanel } from './LanPanel';
 
 export function HomeLinkButton() {
@@ -20,7 +20,7 @@ export function HomeLinkButton() {
     <Popover onOpenChange={(open) => useLan.getState().setPopoverOpen(open)}>
       <Tooltip content={t('app.nav.homeLink')} side="right">
         <PopoverTrigger asChild>
-          <button type="button" className="sidenav__tab" aria-label={t('app.nav.homeLink')} data-testid="home-link-open">
+          <button type="button" className="sidenav__tab" aria-label={withVisibleText(t('app.nav.homeLink'), t('app.tabs.short.homeLink'))} data-testid="home-link-open">
             <QrCode size={22} weight="regular" />
             <span className="sidenav__label">{t('app.tabs.short.homeLink')}</span>
             {waiting > 0 && <span className="sidenav__count">{waiting}</span>}
