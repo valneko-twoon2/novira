@@ -253,3 +253,41 @@ fn a_copy_to_another_drive_reports_its_bytes_up_to_the_whole_size() {
     );
     assert!(!old.exists());
 }
+
+#[cfg(windows)]
+#[test]
+fn a_move_that_fails_halfway_puts_back_what_it_moved_and_removes_what_it_copied() {
+    use std::os::windows::fs::OpenOptionsExt;
+    let dir = tempfile::tempdir().unwrap();
+    let (old, new) = (dir.path().join("old"), dir.path().join("new"));
+    put(&old, "novira.sqlite", "db");
+    put(&old, "outputs/a.png", "picture");
+    put(&old, "outputs/b.png", "picture");
+    put(&new, "keep.txt", "not ours");
+    // Opened with no sharing at all: the file can be neither renamed nor copied.
+    let _held = std::fs::OpenOptions::new()
+        .read(true)
+        .share_mode(0)
+        .open(old.join("outputs/b.png"))
+        .unwrap();
+    let pointer = dir.path().join("data-location.json");
+    write(
+        &pointer,
+        &Location {
+            data_dir: new.clone(),
+            move_from: Some(old.clone()),
+            move_error: None,
+        },
+    )
+    .unwrap();
+    assert_eq!(apply_pending(&pointer), Some(old.clone()));
+    assert!(old.join("novira.sqlite").is_file());
+    assert!(old.join("outputs/a.png").is_file());
+    assert!(old.join("outputs/b.png").is_file());
+    assert!(!new.join("novira.sqlite").exists());
+    assert!(!new.join("outputs").exists());
+    assert!(new.join("keep.txt").is_file());
+    let after = read(&pointer).unwrap();
+    assert_eq!(after.data_dir, old);
+    assert!(after.move_error.unwrap().contains("copying failed"));
+}
