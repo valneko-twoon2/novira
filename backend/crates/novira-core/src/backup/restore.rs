@@ -83,57 +83,6 @@ fn copy_into(
     Ok(())
 }
 
-#[cfg(test)]
-mod copy_tests {
-    use super::*;
-
-    struct Full(usize);
-    impl std::io::Write for Full {
-        fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-            if self.0 == 0 {
-                return Err(std::io::Error::other("no space left on device"));
-            }
-            let n = buf.len().min(self.0);
-            self.0 -= n;
-            Ok(n)
-        }
-        fn flush(&mut self) -> std::io::Result<()> {
-            Ok(())
-        }
-    }
-
-    struct Broken;
-    impl Read for Broken {
-        fn read(&mut self, _: &mut [u8]) -> std::io::Result<usize> {
-            Err(std::io::Error::other("bad checksum"))
-        }
-    }
-
-    #[test]
-    fn a_full_disk_is_not_called_a_damaged_backup() {
-        let err = copy_into(&mut &[7u8; 1000][..], &mut Full(10), 5000).unwrap_err();
-        assert!(
-            err.starts_with("cannot unpack") && err.contains("no space"),
-            "{err}"
-        );
-    }
-
-    #[test]
-    fn a_unreadable_entry_is_a_damaged_backup() {
-        let err = copy_into(&mut Broken, &mut Vec::new(), 5000).unwrap_err();
-        assert!(err.starts_with("the backup is damaged"), "{err}");
-    }
-
-    #[test]
-    fn an_entry_over_the_limit_is_refused_and_one_at_it_is_copied() {
-        let mut out = Vec::new();
-        copy_into(&mut &[1u8; 100][..], &mut out, 100).unwrap();
-        assert_eq!(out.len(), 100);
-        let err = copy_into(&mut &[1u8; 101][..], &mut Vec::new(), 100).unwrap_err();
-        assert!(err.contains("too large"), "{err}");
-    }
-}
-
 fn read_manifest(archive: &mut zip::ZipArchive<File>) -> Result<Manifest, String> {
     let entry = archive
         .by_name(MANIFEST)
@@ -416,4 +365,55 @@ pub fn take_outcome(data_dir: &Path) -> RestoreOutcome {
     };
     let _ = std::fs::remove_file(&path);
     serde_json::from_str(&text).unwrap_or(RestoreOutcome::None)
+}
+
+#[cfg(test)]
+mod copy_tests {
+    use super::*;
+
+    struct Full(usize);
+    impl std::io::Write for Full {
+        fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+            if self.0 == 0 {
+                return Err(std::io::Error::other("no space left on device"));
+            }
+            let n = buf.len().min(self.0);
+            self.0 -= n;
+            Ok(n)
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+
+    struct Broken;
+    impl Read for Broken {
+        fn read(&mut self, _: &mut [u8]) -> std::io::Result<usize> {
+            Err(std::io::Error::other("bad checksum"))
+        }
+    }
+
+    #[test]
+    fn a_full_disk_is_not_called_a_damaged_backup() {
+        let err = copy_into(&mut &[7u8; 1000][..], &mut Full(10), 5000).unwrap_err();
+        assert!(
+            err.starts_with("cannot unpack") && err.contains("no space"),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn a_unreadable_entry_is_a_damaged_backup() {
+        let err = copy_into(&mut Broken, &mut Vec::new(), 5000).unwrap_err();
+        assert!(err.starts_with("the backup is damaged"), "{err}");
+    }
+
+    #[test]
+    fn an_entry_over_the_limit_is_refused_and_one_at_it_is_copied() {
+        let mut out = Vec::new();
+        copy_into(&mut &[1u8; 100][..], &mut out, 100).unwrap();
+        assert_eq!(out.len(), 100);
+        let err = copy_into(&mut &[1u8; 101][..], &mut Vec::new(), 100).unwrap_err();
+        assert!(err.contains("too large"), "{err}");
+    }
 }
