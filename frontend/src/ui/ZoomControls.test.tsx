@@ -46,7 +46,7 @@ describe('ZoomControls', () => {
     cleanup();
     const onActualSize = vi.fn();
     setup({ onActualSize });
-    fireEvent.click(screen.getByRole('button', { name: t('common.zoomActualSize') }));
+    fireEvent.click(screen.getByRole('button', { name: `1:1 ${t('common.zoomActualSize')}` }));
     expect(onActualSize).toHaveBeenCalledOnce();
   });
 
