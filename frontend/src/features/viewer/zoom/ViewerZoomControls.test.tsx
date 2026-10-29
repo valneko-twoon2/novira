@@ -37,7 +37,7 @@ describe('ViewerZoomControls', () => {
     expect(fns.zoomIn).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole('button', { name: new RegExp(t('common.zoomOut')) }));
     expect(fns.zoomOut).toHaveBeenCalledTimes(1);
-    fireEvent.click(screen.getByRole('button', { name: t('common.zoomActualSize') }));
+    fireEvent.click(screen.getByRole('button', { name: `1:1 ${t('common.zoomActualSize')}` }));
     expect(fns.actualSize).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole('button', { name: new RegExp(t('gallery.viewer.zoomFit')) }));
     expect(fns.fit).toHaveBeenCalledTimes(1);

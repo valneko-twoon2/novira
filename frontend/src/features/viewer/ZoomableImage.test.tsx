@@ -53,7 +53,7 @@ describe('ZoomableImage', () => {
 
   it('zooms with the controls and draws pixels sharp from 200%', () => {
     render(view(image('a.png', 1000, 1000)));
-    fireEvent.click(screen.getByRole('button', { name: t('common.zoomActualSize') }));
+    fireEvent.click(screen.getByRole('button', { name: `1:1 ${t('common.zoomActualSize')}` }));
     expect(percent()).toBe('100%');
     expect(screen.getByTestId('viewer-image').className).not.toContain('is-pixelated');
     fireEvent.click(screen.getByRole('button', { name: t('common.zoomIn') }));
@@ -69,7 +69,7 @@ describe('ZoomableImage', () => {
 
   it('returns to fit when another image is shown', () => {
     const { rerender } = render(view(image('a.png', 1000, 1000)));
-    fireEvent.click(screen.getByRole('button', { name: t('common.zoomActualSize') }));
+    fireEvent.click(screen.getByRole('button', { name: `1:1 ${t('common.zoomActualSize')}` }));
     expect(percent()).toBe('100%');
     rerender(view(image('b.png', 2000, 1000)));
     expect(percent()).toBe('20%');
