@@ -61,6 +61,7 @@ describe('extension manager', () => {
     const installed = screen.getAllByTestId('extension-item');
     expect(installed.length).toBeLessThan(cards.length);
     fireEvent.change(screen.getByTestId('ex-search'), { target: { value: 'nothing-like-this' } });
+    console.log(JSON.stringify(useNodePacks.getState().packs), screen.queryAllByText(t('workflows.packs.unavailable')).length);
     expect(screen.queryAllByTestId('extension-item')).toHaveLength(0);
     expect(screen.getByText(t('workflows.packs.mgr.empty'))).toBeTruthy();
   });
@@ -282,5 +283,159 @@ describe('the source link of an extension', () => {
     expect(link.tagName).toBe('BUTTON');
     fireEvent.click(link);
     expect(open).toHaveBeenCalledWith('https://github.com/ltdrdata/ComfyUI-Impact-Pack');
+  });
+});
+
+describe('the rail width', () => {
+  const handle = () => screen.getByTestId('ex-rail-handle');
+  const tab = () => screen.getByTestId('extensions-tab');
+  beforeEach(() => localStorage.removeItem('novira.extensions.railWidth'));
+  afterEach(() => localStorage.removeItem('novira.extensions.railWidth'));
+
+  it('starts at 200, or at the saved width kept within the limits', () => {
+    show();
+    expect(tab().style.gridTemplateColumns).toContain('200px');
+    cleanup();
+    localStorage.setItem('novira.extensions.railWidth', '9000');
+    show();
+    expect(tab().style.gridTemplateColumns).toContain('480px');
+    cleanup();
+    localStorage.setItem('novira.extensions.railWidth', '12');
+    show();
+    expect(tab().style.gridTemplateColumns).toContain('160px');
+  });
+
+  it('starts at 200 when the browser storage cannot be read', () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('blocked');
+    });
+    show();
+    expect(tab().style.gridTemplateColumns).toContain('200px');
+  });
+
+  it('saves the width after the arrow keys, narrowing with the left one and ignoring other keys', () => {
+    show();
+    fireEvent.keyDown(handle(), { key: 'ArrowLeft' });
+    expect(handle().getAttribute('aria-valuenow')).toBe('184');
+    expect(localStorage.getItem('novira.extensions.railWidth')).toBe('184');
+    fireEvent.keyDown(handle(), { key: 'Home' });
+    expect(handle().getAttribute('aria-valuenow')).toBe('184');
+  });
+
+  it('follows a drag, within the limits, and saves it when the pointer is released', () => {
+    show();
+    fireEvent.pointerDown(handle(), { clientX: 100 });
+    act(() => void window.dispatchEvent(new MouseEvent('pointermove', { clientX: 160 })));
+    expect(handle().getAttribute('aria-valuenow')).toBe('260');
+    act(() => void window.dispatchEvent(new MouseEvent('pointermove', { clientX: 5000 })));
+    expect(handle().getAttribute('aria-valuenow')).toBe('480');
+    expect(localStorage.getItem('novira.extensions.railWidth')).toBeNull();
+    act(() => void window.dispatchEvent(new MouseEvent('pointerup')));
+    expect(localStorage.getItem('novira.extensions.railWidth')).toBe('480');
+    // After the release the drag no longer follows the pointer.
+    act(() => void window.dispatchEvent(new MouseEvent('pointermove', { clientX: 0 })));
+    expect(handle().getAttribute('aria-valuenow')).toBe('480');
+  });
+
+  it('still works when the width cannot be saved', () => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('full');
+    });
+    show();
+    fireEvent.keyDown(handle(), { key: 'ArrowRight' });
+    expect(handle().getAttribute('aria-valuenow')).toBe('216');
+  });
+});
+
+describe('cards by keyboard and their picture', () => {
+  it('opens and closes the detail with Enter or Space on the card itself, not for a key pressed on its button', async () => {
+    show();
+    await openCard('ComfyUI-Impact-Pack');
+    const card = () => screen.getAllByTestId('extension-item').find((c) => c.textContent?.includes('ComfyUI-Impact-Pack'))!;
+    fireEvent.click(card());
+    expect(screen.queryByTestId('extension-detail')).toBeNull();
+    fireEvent.keyDown(card(), { key: 'Enter' });
+    expect(screen.getByTestId('extension-detail')).toBeTruthy();
+    fireEvent.keyDown(card(), { key: ' ' });
+    expect(screen.queryByTestId('extension-detail')).toBeNull();
+    fireEvent.keyDown(card(), { key: 'a' });
+    expect(screen.queryByTestId('extension-detail')).toBeNull();
+    const button = card().querySelector('button');
+    if (button) fireEvent.keyDown(button, { key: 'Enter' });
+    expect(screen.queryByTestId('extension-detail')).toBeNull();
+  });
+
+  it('opens the ComfyUI detail by keyboard too, and closes it again', async () => {
+    show();
+    const card = await screen.findByTestId('comfy-version');
+    fireEvent.keyDown(card, { key: 'Enter' });
+    expect(await screen.findByTestId('comfy-versions')).toBeTruthy();
+    fireEvent.keyDown(card, { key: ' ' });
+    expect(screen.queryByTestId('comfy-versions')).toBeNull();
+    fireEvent.keyDown(card, { key: 'x' });
+    expect(screen.queryByTestId('comfy-versions')).toBeNull();
+  });
+
+  it('falls back to the puzzle icon when the picture of a registry pack cannot be loaded', async () => {
+    const node = { id: 'pic', name: 'ComfyUI-Pictured', description: 'Has a picture', publisher: 'someone', repository: 'https://github.com/someone/ComfyUI-Pictured', icon: 'https://example.invalid/i.png', downloads: 1, stars: 1, version: '1.0.0', updated: null, license: null };
+    vi.spyOn(backend, 'registryNodes').mockResolvedValue([node]);
+    show();
+    const card = await waitFor(() => {
+      const found = screen.getAllByTestId('extension-item').find((c) => c.textContent?.includes('ComfyUI-Pictured'));
+      expect(found).toBeTruthy();
+      return found!;
+    });
+    const img = card.querySelector('img')!;
+    expect(img.getAttribute('src')).toBe('https://example.invalid/i.png');
+    fireEvent.error(img);
+    expect(card.querySelector('img')).toBeNull();
+    expect(card.querySelector('.ex-card__media svg')).not.toBeNull();
+  });
+});
+
+describe('notices', () => {
+  const initialPacks = useNodePacks.getState();
+  const initialRegistry = useRegistry.getState();
+  afterEach(() => {
+    useNodePacks.setState(initialPacks, true);
+    useRegistry.setState(initialRegistry, true);
+  });
+
+  it('retries reading the registry from the notice, forcing a fresh read', async () => {
+    const load = vi.fn().mockResolvedValue(undefined);
+    useRegistry.setState({ load, error: 'offline', nodes: null });
+    show();
+    const notice = await screen.findByTestId('registry-failed');
+    expect(notice.textContent).toContain('offline');
+    load.mockClear();
+    fireEvent.click(within(notice).getByRole('button', { name: t('workflows.packs.mgr.retry') }));
+    expect(load).toHaveBeenCalledWith(true);
+  });
+
+  it('says that the registry is loading while nothing is there yet', () => {
+    useRegistry.setState({ load: vi.fn().mockResolvedValue(undefined), loading: true, nodes: null, error: null });
+    show();
+    expect(screen.getByText(t('workflows.packs.mgr.registryLoading'))).toBeTruthy();
+  });
+
+  it('shows the engine restart bar and restarts on a press', async () => {
+    const restart = vi.fn().mockResolvedValue(undefined);
+    vi.spyOn(backend, 'nodePacks').mockResolvedValue({ available: true, comfyVersion: null, restartNeeded: true, installed: [] });
+    useNodePacks.setState({ restart });
+    show();
+    const bar = await screen.findByTestId('extensions-restart');
+    fireEvent.click(within(bar).getByRole('button', { name: t('workflows.packs.restart') }));
+    expect(restart).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows no list but says so when extensions cannot be managed, and shows an install error', () => {
+    useNodePacks.setState({ load: vi.fn().mockResolvedValue(undefined) });
+    show();
+    // Set after the first render, in one step with the checks: a late answer of the mock cannot overwrite it.
+    act(() => useNodePacks.setState({ packs: { available: false, comfyVersion: null, restartNeeded: false, installed: [] }, error: 'git is missing' }));
+    expect(screen.getByText(t('workflows.packs.unavailable'))).toBeTruthy();
+    expect(screen.queryAllByTestId('extension-item')).toHaveLength(0);
+    expect(screen.queryByText(t('workflows.packs.mgr.empty'))).toBeNull();
+    expect(screen.getByText('git is missing')).toBeTruthy();
   });
 });

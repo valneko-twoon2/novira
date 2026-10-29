@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { backend, type AgentToolCall } from '@/backend';
 import { registerAgentEditor, registerAgentModelSelector, registerAgentWorkflow, type AgentEditor } from './agentRegistry';
-import { createToolRun, currentScreen, DECLINED, DECLINED_WEB, isReadGated, MAX_ANSWER_CHARS, runAgentTool, TOOL_NAMES, type PermissionChoice, type ToolRun } from './agentTools';
+import { createToolRun, currentScreen, DECLINED, DECLINED_WEB, isReadGated, MAX_ANSWER_CHARS, runAgentTool, TOOL_NAMES, webQuestion, type PermissionChoice, type ToolRun } from './agentTools';
 import { useNodePacks } from './comfy/nodePacks';
 import { useRegistry } from './comfy/registry';
 import { useGallery } from './gallery';
@@ -430,5 +430,86 @@ describe('extensions', () => {
     expect(await call('recommend_packs', { ids: ['rmbg', 'made-up', 'ext:ComfyUI-Foo', 'rmbg'] })).toEqual({ ok: true, content: { shown: ['rmbg', 'ext:ComfyUI-Foo'], unknown: ['made-up'] } });
     expect(run.log).toEqual([{ kind: 'packs', ids: ['rmbg', 'ext:ComfyUI-Foo'] }]);
     expect(run.snapshot).toBeUndefined();
+  });
+});
+
+describe('what the first tests leave', () => {
+  it('words the question of a web look-up: one short line, the language, and nothing for other tools or bad arguments', () => {
+    expect(webQuestion('lookup_reference', { query: '  kimono \n  obi  ', language: 'en' })).toEqual({ query: 'kimono obi', language: 'en' });
+    expect(webQuestion('lookup_reference', { query: 'x'.repeat(150) }).query).toHaveLength(100);
+    expect(webQuestion('lookup_reference', { query: 5, language: 'fr' })).toEqual({ query: '', language: 'ja' });
+    expect(webQuestion('lookup_reference', 'text')).toEqual({});
+    expect(webQuestion('lookup_reference', null)).toEqual({});
+    expect(webQuestion('get_screen', { query: 'x' })).toEqual({});
+  });
+
+  it('gives the manga guide, whole or for a topic', async () => {
+    const whole = await call('get_manga_guide', {});
+    expect(whole.ok).toBe(true);
+    const topic = await call('get_manga_guide', { topic: 'no-such-topic-at-all' });
+    expect(topic).toHaveProperty('ok');
+  });
+
+  it('lists the LoRAs of the settings and of a picture, with their weights', async () => {
+    useParams.getState().addLora('l1');
+    useParams.getState().updateLora('l1', { weight: 0.7 });
+    expect(await call('get_generation_settings', {})).toMatchObject({ content: { loras: [{ key: 'l1', weight: 0.7 }] } });
+    const metadata = { positivePrompt: 'p', negativePrompt: '', modelKey: 'm', modelName: 'M', generationMode: 'txt2img', seed: 1, steps: 2, cfgScale: 3, scheduler: 'euler', width: 8, height: 8, loras: [{ key: 'l9', weight: 0.4 }] };
+    useGallery.setState({ images: [{ name: 'a.png', url: '', thumbnailUrl: '', width: 8, height: 8, createdAt: 1, boardId: null, starred: false, isIntermediate: false, category: 'general', workflow: null, metadata } as never] });
+    expect(await call('get_image_info', { name: 'a.png' })).toMatchObject({ content: { generation: { loras: [{ key: 'l9', weight: 0.4 }] } } });
+  });
+
+  it('gives the workflow with the recipes of the extensions that are installed', async () => {
+    const recipes = vi.fn((_installed: string[]) => [{ id: 'r' } as never]);
+    registerAgentWorkflow(() => ({ dropped: [] }), () => [], recipes);
+    registerAgentEditor('workflows', editor('workflows'));
+    useNodePacks.setState({ packs: { available: true, installed: [{ folder: 'ComfyUI_IPAdapter_plus', url: 'https://github.com/cubiq/ComfyUI_IPAdapter_plus', version: null }], comfyVersion: null, restartNeeded: false } });
+    try {
+      await call('get_workflow');
+      expect(recipes).toHaveBeenCalledWith(['ipadapter']);
+    } finally {
+      registerAgentWorkflow(() => ({ dropped: [] }), () => []);
+      useNodePacks.setState({ packs: null });
+    }
+  });
+});
+
+describe('drawing the comic', () => {
+  const comic = () => {
+    const e = editor('comic');
+    registerAgentEditor('comic', e);
+    return e;
+  };
+
+  it('fails without a comic editor, and asks for the panel number when the scope is a panel', async () => {
+    registerAgentEditor('comic', undefined as never);
+    expect(await call('generate', { target: 'comic' })).toEqual({ ok: false, content: 'The comic is not available.' });
+    comic();
+    expect(await call('generate', { target: 'comic', scope: 'panel' })).toEqual({ ok: false, content: 'scope panel needs panel.' });
+  });
+
+  it('says nothing was queued when the comic has nothing to draw', async () => {
+    const e = editor('comic', false);
+    registerAgentEditor('comic', e);
+    const result = await call('generate', { target: 'comic', scope: 'page' });
+    expect(result).toMatchObject({ ok: false, content: expect.stringContaining('Nothing was queued') });
+    expect(run.log).toEqual([]);
+    expect(e.applied).toEqual([[{ op: 'draw', scope: 'page' }]]);
+  });
+
+  it('queues the panels and reports the new queue items once they stop coming', async () => {
+    useQueue.setState({ items: [{ id: 1, status: 'completed' } as never] });
+    const e = comic();
+    const apply = e.apply;
+    e.apply = (ops) => {
+      useQueue.setState({ items: [...useQueue.getState().items, { id: 5, status: 'waiting' } as never, { id: 6, status: 'waiting' } as never] });
+      return apply(ops);
+    };
+    const result = await call('generate', { target: 'comic', scope: 'panel', panel: 2 });
+    expect(result).toMatchObject({ ok: true, content: { queued: [5, 6] } });
+    expect(e.applied[0]).toEqual([{ op: 'draw', scope: 'panel', panel: 2 }]);
+    expect(run.log).toEqual([{ kind: 'queued', count: 2 }]);
+    expect(useUi.getState().activeTab).toBe('comic');
+    useQueue.setState({ items: [] });
   });
 });
