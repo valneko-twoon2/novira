@@ -149,7 +149,12 @@ mod tests {
     #[tokio::test]
     async fn a_version_that_is_not_a_tag_is_refused_before_anything_moves() {
         let err = engine_not_installed_by_novira()
-            .switch_to("../v0.3.0", Path::new("."), &CancellationToken::new(), &|_, _| {})
+            .switch_to(
+                "../v0.3.0",
+                Path::new("."),
+                &CancellationToken::new(),
+                &|_, _| {},
+            )
             .await
             .unwrap_err();
         assert!(matches!(err, EngineError::Failed(m) if m.contains("Not a ComfyUI version")));
@@ -158,7 +163,12 @@ mod tests {
     #[tokio::test]
     async fn a_comfyui_that_novira_did_not_install_cannot_change_its_version_here() {
         let err = engine_not_installed_by_novira()
-            .switch_to("v0.3.0", Path::new("."), &CancellationToken::new(), &|_, _| {})
+            .switch_to(
+                "v0.3.0",
+                Path::new("."),
+                &CancellationToken::new(),
+                &|_, _| {},
+            )
             .await
             .unwrap_err();
         assert!(matches!(err, EngineError::Failed(m) if m.contains("not installed by novira")));
