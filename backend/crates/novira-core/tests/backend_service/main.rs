@@ -1,7 +1,11 @@
 //! Backend service with a fake engine: queue lifecycle, saved results, persistence across restarts, models.
 //! One test binary; each module covers one area and shares fixtures from `common`.
 
+#[path = "../fake_site/mod.rs"]
+mod fake_site;
+
 mod api;
+mod api_commands;
 mod assistant;
 mod assistant_endpoint;
 mod backup;
@@ -21,6 +25,7 @@ mod media;
 mod memory;
 mod models;
 mod models_without_comfy;
+mod node_pack_net;
 mod queue;
 mod settings;
 mod worker;
