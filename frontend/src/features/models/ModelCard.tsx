@@ -18,26 +18,13 @@ export interface ModelCardProps {
 
 export function ModelCard({ model, selected, favorite, onSelect, onToggleFavorite, onDelete }: ModelCardProps) {
   return (
-    <div
-      className={cx('mm-card-item', selected && 'is-selected')}
-      role="button"
-      tabIndex={0}
-      aria-pressed={selected}
-      aria-label={model.name}
-      data-testid="mm-item"
-      onClick={onSelect}
-      onKeyDown={(e) => {
-        if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
-          e.preventDefault();
-          onSelect();
-        }
-      }}
-    >
+    <div className={cx('mm-card-item', selected && 'is-selected')} role="group" aria-label={model.name} data-testid="mm-item">
+      {/* One button over the whole card selects it; the license tag, the star and the menu sit above it as its siblings. */}
+      <button type="button" className="mm-card-item__select" aria-pressed={selected} aria-label={model.name} onClick={onSelect} />
       <div className="mm-card-item__media">
         <CoverImage model={model} />
         {model.license && (
-          // The tag opens its own list of what the license allows; pressing it must not select the card.
-          <div className="mm-card-item__license" onClick={(e) => e.stopPropagation()}>
+          <div className="mm-card-item__license">
             <CommercialTag
               value={model.license.commercial}
               permissions={model.license.permissions}
@@ -51,7 +38,7 @@ export function ModelCard({ model, selected, favorite, onSelect, onToggleFavorit
           <span className="mm-tag mm-tag--accent">{BASE_LABELS[model.base]}</span>
           {formatTag(model) && <span className="mm-tag">{formatTag(model)}</span>}
         </div>
-        <div className={cx('mm-card-item__actions', favorite && 'has-favorite')} onClick={(e) => e.stopPropagation()}>
+        <div className={cx('mm-card-item__actions', favorite && 'has-favorite')}>
           <button
             type="button"
             className={cx('mm-iconbtn', 'mm-iconbtn--star', favorite && 'is-on')}
