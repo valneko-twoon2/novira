@@ -134,3 +134,41 @@ impl ComfyEngine {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+    use std::time::Duration;
+
+    /// An engine that novira did not install: it has no install folder and no process.
+    fn engine_not_installed_by_novira() -> ComfyEngine {
+        ComfyEngine::new("http://127.0.0.1:8188", None, Duration::from_secs(1)).unwrap()
+    }
+
+    #[tokio::test]
+    async fn a_version_that_is_not_a_tag_is_refused_before_anything_moves() {
+        let err = engine_not_installed_by_novira()
+            .switch_to("../v0.3.0", Path::new("."), &CancellationToken::new(), &|_, _| {})
+            .await
+            .unwrap_err();
+        assert!(matches!(err, EngineError::Failed(m) if m.contains("Not a ComfyUI version")));
+    }
+
+    #[tokio::test]
+    async fn a_comfyui_that_novira_did_not_install_cannot_change_its_version_here() {
+        let err = engine_not_installed_by_novira()
+            .switch_to("v0.3.0", Path::new("."), &CancellationToken::new(), &|_, _| {})
+            .await
+            .unwrap_err();
+        assert!(matches!(err, EngineError::Failed(m) if m.contains("not installed by novira")));
+    }
+
+    #[tokio::test]
+    async fn changing_the_package_of_an_install_that_is_not_there_does_nothing() {
+        let result = engine_not_installed_by_novira()
+            .change_package(&CancellationToken::new())
+            .await;
+        assert!(result.is_ok());
+    }
+}
