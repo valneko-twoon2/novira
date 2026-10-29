@@ -817,3 +817,43 @@ fn txt2img_seamless_tiling() {
     p.seamless_x = true;
     snapshot_built("txt2img-seamless-x", &Models::image(), &p, None);
 }
+
+// The comparison helpers themselves ---------------------------------------------------------------------------------
+
+fn panic_text(f: impl FnOnce() + std::panic::UnwindSafe) -> String {
+    let err = std::panic::catch_unwind(f).expect_err("the check should fail");
+    err.downcast_ref::<String>().cloned().unwrap_or_default()
+}
+
+#[test]
+fn a_difference_hint_points_at_the_first_differing_line() {
+    let hint = diff_hint("a\nb\nc\nd", "a\nb\nX\nd\ne");
+    assert!(
+        hint.starts_with("first difference at line 3 (snapshot has 4 lines, built graph has 5)")
+    );
+    assert!(hint.contains("-    3 | c") && hint.contains("+    3 | X"));
+    // Texts that only differ in length point just past the shorter one.
+    assert!(diff_hint("a", "a\nb").contains("first difference at line 2"));
+}
+
+#[test]
+fn a_missing_or_different_snapshot_fails_with_how_to_update_it() {
+    if std::env::var(UPDATE_ENV).as_deref() == Ok("1") {
+        return; // Updating on purpose would write these probes.
+    }
+    let missing = panic_text(|| assert_snapshot("zz-no-such-case", &json!({ "a": 1 })));
+    assert!(
+        missing.contains("is missing") && missing.contains(UPDATE_ENV),
+        "{missing}"
+    );
+    let different =
+        panic_text(|| assert_snapshot("family-anima-draft", &json!({ "not": "the graph" })));
+    assert!(
+        different.contains("does not match the built graph"),
+        "{different}"
+    );
+    assert!(
+        different.contains("first difference at line"),
+        "{different}"
+    );
+}

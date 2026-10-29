@@ -1346,5 +1346,78 @@ mod tests {
         let e = ComfyEngine::new("http://127.0.0.1:8188", None, Duration::from_secs(1)).unwrap();
         assert!(e.ws_url().starts_with("ws://127.0.0.1:8188/ws?clientId="));
         assert!(ComfyEngine::new("file:///x", None, Duration::from_secs(1)).is_err());
+        let secure =
+            ComfyEngine::new("https://comfy.example:8443", None, Duration::from_secs(1)).unwrap();
+        assert!(secure
+            .ws_url()
+            .starts_with("wss://comfy.example:8443/ws?clientId="));
+    }
+
+    #[tokio::test]
+    async fn freeing_memory_from_a_comfyui_that_cannot_be_reached_only_logs() {
+        let closed = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let port = closed.local_addr().unwrap().port();
+        drop(closed);
+        let e = ComfyEngine::new(
+            &format!("http://127.0.0.1:{port}"),
+            None,
+            Duration::from_secs(1),
+        )
+        .unwrap();
+        e.free_memory().await;
+    }
+
+    #[tokio::test]
+    async fn a_caller_that_waited_for_the_start_lock_finds_the_server_already_up() {
+        use axum::routing::get;
+        use std::sync::atomic::AtomicBool;
+        let up = std::sync::Arc::new(AtomicBool::new(false));
+        let flag = up.clone();
+        let app = axum::Router::new().route(
+            "/system_stats",
+            get(move || {
+                let up = flag.clone();
+                async move {
+                    if up.load(Ordering::SeqCst) {
+                        axum::http::StatusCode::OK
+                    } else {
+                        axum::http::StatusCode::SERVICE_UNAVAILABLE
+                    }
+                }
+            }),
+        );
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+        let dir = tempfile::tempdir().unwrap();
+        // The process is never started: the second ping under the lock answers first.
+        let process =
+            super::super::process::ComfyProcess::new(super::super::process::OwnedProcessConfig {
+                comfyui_dir: dir.path().join("comfy"),
+                python: None,
+                host: "127.0.0.1".into(),
+                port,
+                extra_model_paths: dir.path().join("extra.yaml"),
+                extra_args: vec![],
+                log_file: dir.path().join("comfyui.log"),
+            });
+        let engine = std::sync::Arc::new(
+            ComfyEngine::new(
+                &format!("http://127.0.0.1:{port}"),
+                Some(process),
+                Duration::from_secs(5),
+            )
+            .unwrap(),
+        );
+        let guard = engine.start_lock.lock().await;
+        let waiting = {
+            let engine = engine.clone();
+            tokio::spawn(async move { engine.ensure_ready(&CancellationToken::new()).await })
+        };
+        // The first ping fails, then the caller waits for the lock.
+        tokio::time::sleep(Duration::from_millis(300)).await;
+        up.store(true, Ordering::SeqCst);
+        drop(guard);
+        assert_eq!(waiting.await.unwrap(), Ok(()));
     }
 }

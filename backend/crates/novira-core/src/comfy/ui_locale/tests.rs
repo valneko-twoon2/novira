@@ -177,3 +177,10 @@ export{a as list,b as default}; /* unclosed"#;
         assert!(parse_module(bad).is_err(), "{bad}");
     }
 }
+
+#[test]
+fn numeric_keys_and_a_surrogate_pair_written_as_escapes_are_read() {
+    let v = parse_module(r#"var a={1:`one`,22:"two"},b="\ud83d\ude00";export{a,b};"#).unwrap();
+    assert_eq!(v["a"], json!({ "1": "one", "22": "two" }));
+    assert_eq!(v["b"], json!("\u{1F600}"));
+}
