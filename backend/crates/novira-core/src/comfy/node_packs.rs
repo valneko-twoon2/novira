@@ -676,13 +676,20 @@ pub async fn install_version(
         Ok(repo.repo.clone())
     }
     .await;
-    if result.is_err() && placed {
-        let _ = std::fs::remove_dir_all(&dest);
-        if backup.exists() {
-            let _ = std::fs::rename(&backup, &dest);
+    let mut keep_work = false;
+    if result.is_err() {
+        if placed {
+            let _ = std::fs::remove_dir_all(&dest);
+        }
+        // The installed pack was moved aside before the new one was moved in, so it comes back whether or not the new
+        // one got into place. When it cannot come back, the work folder that holds it is left alone.
+        if backup.exists() && !dest.exists() {
+            keep_work = std::fs::rename(&backup, &dest).is_err();
         }
     }
-    let _ = std::fs::remove_dir_all(&work);
+    if !keep_work {
+        let _ = std::fs::remove_dir_all(&work);
+    }
     result
 }
 

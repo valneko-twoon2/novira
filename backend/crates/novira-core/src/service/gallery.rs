@@ -150,8 +150,32 @@ impl Backend {
                 &images.iter().map(|i| i.name.as_str()).collect::<Vec<_>>(),
             )?;
         }
-        for i in images {
-            self.inner.files.trash(&i.name);
+        // A picture whose original cannot be moved (something else has the file open) stays where it is, in the gallery.
+        let stuck: Vec<&ImageDTO> = images
+            .iter()
+            .filter(|i| !self.inner.files.trash(&i.name) && self.inner.files.has_original(&i.name))
+            .collect();
+        if !stuck.is_empty() {
+            {
+                let mut db = self.db();
+                db.put_many(
+                    Table::Images,
+                    stuck.iter().map(|i| (i.name.as_str(), i.created_at, *i)),
+                )?;
+                db.delete(
+                    Table::Trash,
+                    &stuck.iter().map(|i| i.name.as_str()).collect::<Vec<_>>(),
+                )?;
+            }
+            let mut s = self.state();
+            s.images.extend(stuck.iter().map(|i| (*i).clone()));
+            s.images.sort_by_key(|i| std::cmp::Reverse(i.created_at));
+            drop(s);
+            self.purge_trash();
+            return Err(BackendError::Internal(format!(
+                "{} of the pictures are in use by another program and were not deleted",
+                stuck.len()
+            )));
         }
         self.purge_trash();
         Ok(())
@@ -164,10 +188,15 @@ impl Backend {
         let mut back = Vec::new();
         let mut gone = Vec::new();
         for row in rows.into_iter().filter(|r| picked.contains(&r.image.name)) {
-            gone.push(row.image.name.clone());
             if !self.inner.files.restore(&row.image.name) {
+                // A picture whose file is still in the trash (it is in use) can be restored again; one whose file is
+                // gone (purged) cannot, and its row goes.
+                if !self.inner.files.is_trashed(&row.image.name) {
+                    gone.push(row.image.name.clone());
+                }
                 continue;
             }
+            gone.push(row.image.name.clone());
             let mut image = self.image_dto(row.image);
             // Its board may have been deleted since.
             if let Some(b) = &image.board_id {

@@ -293,6 +293,17 @@ impl ImageFiles {
         to[0].exists()
     }
 
+    /// Whether a picture's original is in the gallery's folders.
+    pub fn has_original(&self, name: &str) -> bool {
+        self.original_path(name).is_some_and(|p| p.exists())
+    }
+
+    /// Whether a picture's original is in the trash.
+    pub fn is_trashed(&self, name: &str) -> bool {
+        self.trashed_paths(name)
+            .is_some_and(|[original, _]| original.exists())
+    }
+
     /// Deletes a trashed picture's files for good.
     pub fn purge(&self, name: &str) {
         for p in self.trashed_paths(name).into_iter().flatten() {
