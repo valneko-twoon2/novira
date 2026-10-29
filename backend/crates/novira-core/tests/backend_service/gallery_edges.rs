@@ -1,7 +1,7 @@
 //! The trash of the gallery at its edges: pictures that waited too long, a trashed file that is gone, and a trash or
 //! gallery table that can no longer be written.
 use super::common::*;
-use novira_core::db::{Table, DB_FILE};
+use novira_core::db::Table;
 use novira_core::types::*;
 use std::path::Path;
 use std::sync::Arc;
@@ -19,23 +19,14 @@ fn db_error(err: impl std::fmt::Display) -> bool {
 
 /// Makes every trashed picture look as if it was deleted at `at` (milliseconds).
 fn trashed_at(dir: &Path, at: i64) {
-    let conn = rusqlite::Connection::open(dir.join(DB_FILE)).unwrap();
-    let rows: Vec<(String, String)> = {
-        let mut stmt = conn.prepare("SELECT id, data FROM trash").unwrap();
-        stmt.query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
-            .unwrap()
-            .map(Result::unwrap)
-            .collect()
-    };
+    let db = novira_core::db::Db::open(dir).unwrap();
+    let rows: Vec<serde_json::Value> = db.load(novira_core::db::Table::Trash).unwrap();
     assert!(!rows.is_empty());
-    for (id, data) in rows {
-        let mut v: serde_json::Value = serde_json::from_str(&data).unwrap();
+    for mut v in rows {
         v["trashed_at"] = serde_json::json!(at);
-        conn.execute(
-            "UPDATE trash SET data = ?1 WHERE id = ?2",
-            rusqlite::params![v.to_string(), id],
-        )
-        .unwrap();
+        let name = v["image"]["name"].as_str().unwrap().to_string();
+        db.put(novira_core::db::Table::Trash, &name, at, &v)
+            .unwrap();
     }
 }
 

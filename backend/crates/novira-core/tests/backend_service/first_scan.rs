@@ -26,23 +26,17 @@ fn safetensors(path: &Path, tensors: &[&str]) {
 
 /// Rewrites every stored model record the way an older version would have left it.
 fn age_records(dir: &Path, edit: impl Fn(&mut Value)) {
-    let conn = rusqlite::Connection::open(dir.join(DB_FILE)).unwrap();
-    conn.execute("DELETE FROM meta", []).unwrap();
-    let rows: Vec<(String, String)> = {
-        let mut stmt = conn.prepare("SELECT id, data FROM models").unwrap();
-        stmt.query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
-            .unwrap()
-            .map(Result::unwrap)
-            .collect()
-    };
-    for (id, data) in rows {
-        let mut v: Value = serde_json::from_str(&data).unwrap();
-        edit(&mut v);
-        conn.execute(
-            "UPDATE models SET data = ?1 WHERE id = ?2",
-            rusqlite::params![v.to_string(), id],
-        )
+    // The first-scan marks live in `meta`, which `Db` can set but not remove; this one fixed statement removes them.
+    rusqlite::Connection::open(dir.join(DB_FILE))
+        .unwrap()
+        .execute("DELETE FROM meta", [])
         .unwrap();
+    let db = novira_core::db::Db::open(dir).unwrap();
+    let rows: Vec<Value> = db.load(novira_core::db::Table::Models).unwrap();
+    for mut v in rows {
+        edit(&mut v);
+        let key = v["key"].as_str().unwrap().to_string();
+        db.put(novira_core::db::Table::Models, &key, 0, &v).unwrap();
     }
 }
 

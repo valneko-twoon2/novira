@@ -1,7 +1,6 @@
 //! Guidance at its edges: a region picture that is missing or stored, a union ControlNet under a main model of a newer
 //! family, and the pictures a FLUX.2 model takes in as references.
 use super::common::*;
-use novira_core::db::DB_FILE;
 use novira_core::types::*;
 use serde_json::json;
 use std::path::Path;
@@ -140,26 +139,16 @@ async fn a_flux2_model_reads_the_reference_pictures_it_takes_in_itself() {
         backend.shutdown();
     }
     // The checkpoint is recorded as a FLUX.2 model, the way a user could set its family.
-    let conn = rusqlite::Connection::open(dir.path().join(DB_FILE)).unwrap();
-    let rows: Vec<(String, String)> = {
-        let mut stmt = conn.prepare("SELECT id, data FROM models").unwrap();
-        stmt.query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
-            .unwrap()
-            .map(Result::unwrap)
-            .collect()
-    };
-    for (id, data) in rows {
-        let mut v: serde_json::Value = serde_json::from_str(&data).unwrap();
+    let db = novira_core::db::Db::open(dir.path()).unwrap();
+    let rows: Vec<serde_json::Value> = db.load(novira_core::db::Table::Models).unwrap();
+    for mut v in rows {
         if v["path"].as_str().unwrap().contains("sdxl_base") {
             v["base"] = json!("flux2");
-            conn.execute(
-                "UPDATE models SET data = ?1 WHERE id = ?2",
-                rusqlite::params![v.to_string(), id],
-            )
-            .unwrap();
+            let key = v["key"].as_str().unwrap().to_string();
+            db.put(novira_core::db::Table::Models, &key, 0, &v).unwrap();
         }
     }
-    drop(conn);
+    drop(db);
     let engine = Arc::new(FakeEngine::default());
     let (backend, _) = open(dir.path(), engine.clone());
     tokio::spawn(backend.clone().run_worker());

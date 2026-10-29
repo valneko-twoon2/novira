@@ -14,10 +14,12 @@ use std::path::{Path, PathBuf};
 const SHELL_ALLOWED: &[&str] = &["backend/src-tauri/build.rs"];
 /// These checks themselves hold the forbidden forms as test data.
 const SCAN_SELF: &str = "backend/src-tauri/tests/security/";
-/// The database module, and the service's conversion of its error type.
+/// The database module, and the service's conversion of its error type; and one test that has to delete the first-scan
+/// marks from `meta` (one fixed statement without values; `Db` cannot remove a mark).
 const RUSQLITE_ALLOWED: &[&str] = &[
     "backend/crates/novira-core/src/db.rs",
     "backend/crates/novira-core/src/service/mod.rs",
+    "backend/crates/novira-core/tests/backend_service/first_scan.rs",
 ];
 
 fn rust_sources() -> Vec<(String, String)> {
