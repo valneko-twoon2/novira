@@ -265,6 +265,36 @@ mod tests {
     use super::*;
 
     #[test]
+    fn a_comfyui_folder_that_is_not_a_plain_full_folder_path_is_refused() {
+        let base = tempfile::tempdir().unwrap();
+        let data = base.path().join("novira-data");
+        let refused = |dir: &Path, why: &str| {
+            let err = check_install_dir(dir, &data).unwrap_err();
+            assert!(err.contains(why), "{dir:?}: {err}");
+        };
+        refused(Path::new(""), "Not a folder path");
+        refused(Path::new("a\nb"), "Not a folder path");
+        refused(Path::new("relative/comfy"), "full path");
+        refused(
+            &base.path().join("a").join("..").join("b"),
+            "plain folder path",
+        );
+        let root = base.path().ancestors().last().unwrap().to_path_buf();
+        refused(&root, "drive root");
+        // The spelling in which two paths are compared: no trailing separator, and case only matters off Windows.
+        let folder = base.path().join("Comfy");
+        std::fs::create_dir_all(&folder).unwrap();
+        assert_eq!(
+            path_key(&folder),
+            path_key(&base.path().join("Comfy").join(""))
+        );
+        assert_eq!(
+            path_key(&folder) == path_key(&base.path().join("COMFY")),
+            cfg!(windows)
+        );
+    }
+
+    #[test]
     fn missing_file_gives_defaults() {
         let dir = tempfile::tempdir().unwrap();
         assert_eq!(Settings::load(dir.path()).unwrap(), Settings::default());

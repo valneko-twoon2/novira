@@ -487,3 +487,63 @@ fn files_that_stay_behind_after_a_copy_are_not_an_error() {
     );
     assert!(new.join("keep.txt").is_file());
 }
+
+#[test]
+fn a_pointer_below_a_file_cannot_be_written() {
+    let dir = tempfile::tempdir().unwrap();
+    put(dir.path(), "file", "x");
+    let pointer = dir
+        .path()
+        .join("file")
+        .join("sub")
+        .join("data-location.json");
+    let location = Location {
+        data_dir: dir.path().join("data"),
+        move_from: None,
+        move_error: None,
+    };
+    let err = write(&pointer, &location).unwrap_err();
+    assert!(err.contains("cannot create"), "{err}");
+}
+
+#[test]
+fn a_move_from_a_folder_that_is_gone_is_not_checked_for_clashes() {
+    let dir = tempfile::tempdir().unwrap();
+    let (current, new) = (dir.path().join("gone"), dir.path().join("new"));
+    put(&new, "keep.txt", "x");
+    // Nothing to compare against: the move itself reports that the old folder is missing.
+    assert!(check_new(&new, &current, true).is_ok());
+}
+
+#[test]
+fn a_move_to_a_place_that_cannot_be_made_fails_with_the_reason() {
+    let dir = tempfile::tempdir().unwrap();
+    let old = dir.path().join("old");
+    put(&old, "novira.sqlite", "db");
+    put(dir.path(), "file", "x");
+    let new = dir.path().join("file").join("sub").join("data");
+    let err = move_data(&old, &new, &mut Progress::new(&old, &|_, _| {})).unwrap_err();
+    assert!(!err.is_empty());
+    assert!(old.join("novira.sqlite").is_file());
+}
+
+#[cfg(windows)]
+#[test]
+fn a_file_that_cannot_be_moved_or_copied_is_not_left_half_copied() {
+    use std::os::windows::fs::OpenOptionsExt;
+    let dir = tempfile::tempdir().unwrap();
+    let (old, new) = (dir.path().join("old"), dir.path().join("new"));
+    put(&old, "a.txt", "a");
+    put(&old, "held.bin", "held");
+    put(&new, "keep.txt", "not ours");
+    let _held = std::fs::OpenOptions::new()
+        .read(true)
+        .share_mode(0)
+        .open(old.join("held.bin"))
+        .unwrap();
+    let err = move_data(&old, &new, &mut Progress::new(&old, &|_, _| {})).unwrap_err();
+    assert!(err.contains("copying failed"), "{err}");
+    assert!(old.join("a.txt").is_file() && old.join("held.bin").is_file());
+    assert!(!new.join("a.txt").exists() && !new.join("held.bin").exists());
+    assert!(new.join("keep.txt").is_file());
+}

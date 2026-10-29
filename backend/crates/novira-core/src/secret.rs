@@ -381,6 +381,13 @@ fn unprotect(_: &[u8]) -> Result<Vec<u8>, String> {
 mod tests {
     use super::*;
 
+    /// The Credential Manager is one store for the whole user, and a save followed by a read of it came back empty when
+    /// several tests used it at once (about one full run in five, 2026-10-29): the tests that use it take turns.
+    fn serial() -> std::sync::MutexGuard<'static, ()> {
+        static TURN: std::sync::Mutex<()> = std::sync::Mutex::new(());
+        TURN.lock().unwrap_or_else(|e| e.into_inner())
+    }
+
     /// Removes what a test saved, so the Credential Manager of the machine running the tests stays clean.
     struct Cleanup<'a>(&'a Path);
     impl Drop for Cleanup<'_> {
@@ -397,6 +404,7 @@ mod tests {
 
     #[test]
     fn key_round_trips_through_the_credential_manager_and_leaves_no_file() {
+        let _serial = serial();
         let dir = tempfile::tempdir().unwrap();
         let _clean = Cleanup(dir.path());
         assert_eq!(load_civitai_key(dir.path()).unwrap(), None);
@@ -414,6 +422,7 @@ mod tests {
 
     #[test]
     fn each_secret_has_its_own_entry_or_file() {
+        let _serial = serial();
         let dir = tempfile::tempdir().unwrap();
         let _clean = Cleanup(dir.path());
         save_secret(dir.path(), Secret::Civitai, Some("a")).unwrap();
@@ -445,6 +454,7 @@ mod tests {
 
     #[test]
     fn blank_key_removes_the_entry() {
+        let _serial = serial();
         let dir = tempfile::tempdir().unwrap();
         let _clean = Cleanup(dir.path());
         save_civitai_key(dir.path(), Some("k")).unwrap();
@@ -456,6 +466,7 @@ mod tests {
 
     #[test]
     fn two_data_folders_do_not_share_keys() {
+        let _serial = serial();
         let (a, b) = (tempfile::tempdir().unwrap(), tempfile::tempdir().unwrap());
         let (_ca, _cb) = (Cleanup(a.path()), Cleanup(b.path()));
         save_civitai_key(a.path(), Some("of-a")).unwrap();
@@ -466,6 +477,7 @@ mod tests {
 
     #[test]
     fn a_key_in_a_moved_data_folder_is_still_found() {
+        let _serial = serial();
         let dir = tempfile::tempdir().unwrap();
         let _clean = Cleanup(dir.path());
         save_civitai_key(dir.path(), Some("kept")).unwrap();
@@ -484,6 +496,7 @@ mod tests {
 
     #[test]
     fn a_long_unicode_key_reads_back_and_one_over_the_limit_is_refused() {
+        let _serial = serial();
         let dir = tempfile::tempdir().unwrap();
         let _clean = Cleanup(dir.path());
         let long = "鍵".repeat(1280);
@@ -503,6 +516,7 @@ mod tests {
 
     #[test]
     fn a_key_saved_as_a_file_by_an_earlier_version_moves_into_the_credential_manager() {
+        let _serial = serial();
         let dir = tempfile::tempdir().unwrap();
         let _clean = Cleanup(dir.path());
         let sealed = protect(b"old-key").unwrap();
@@ -522,6 +536,7 @@ mod tests {
 
     #[test]
     fn tampered_old_file_is_an_error_not_a_key() {
+        let _serial = serial();
         let dir = tempfile::tempdir().unwrap();
         let _clean = Cleanup(dir.path());
         std::fs::create_dir_all(dir.path().join(SECRETS_DIR)).unwrap();
@@ -531,10 +546,51 @@ mod tests {
 
     #[test]
     fn other_secrets_stay_encrypted_files() {
+        let _serial = serial();
         let dir = tempfile::tempdir().unwrap();
         save_secret(dir.path(), Secret::AssistantEndpoint, Some("abc123SECRET")).unwrap();
         let raw = std::fs::read(secret_path(dir.path(), Secret::AssistantEndpoint)).unwrap();
         assert!(!String::from_utf8_lossy(&raw).contains("abc123SECRET"));
         assert!(!dir.path().join(SECRETS_DIR).join(STORE_ID_FILE).exists());
+    }
+
+    #[test]
+    fn the_credential_manager_reports_what_it_refuses_and_reads_an_empty_value() {
+        let _serial = serial();
+        // An empty target name is refused by every call.
+        assert!(credential::read("").unwrap_err().contains("cannot read"));
+        assert!(credential::write("", "x")
+            .unwrap_err()
+            .contains("cannot save"));
+        assert!(credential::delete("")
+            .unwrap_err()
+            .contains("cannot remove"));
+        // An entry with no value at all reads back as an empty string.
+        let target = format!("novira/test-{}/empty", new_store_id());
+        credential::write(&target, "").unwrap();
+        assert_eq!(credential::read(&target).unwrap().as_deref(), Some(""));
+        credential::delete(&target).unwrap();
+        assert_eq!(credential::read(&target).unwrap(), None);
+    }
+
+    #[test]
+    fn an_unreadable_or_damaged_file_names_the_secret_it_belongs_to() {
+        let _serial = serial();
+        let dir = tempfile::tempdir().unwrap();
+        // A folder where the file should be cannot be read.
+        std::fs::create_dir_all(secret_path(dir.path(), Secret::C2paSigning)).unwrap();
+        let err = load_secret(dir.path(), Secret::C2paSigning).unwrap_err();
+        assert!(err.contains("saved signing key"), "{err}");
+        // A file that decrypts to bytes that are not text is damaged.
+        std::fs::write(
+            secret_path(dir.path(), Secret::LanCa),
+            protect(&[0xff, 0xfe, 0xfd]).unwrap(),
+        )
+        .unwrap();
+        let err = load_secret(dir.path(), Secret::LanCa).unwrap_err();
+        assert!(
+            err.contains("home-network certificate key is damaged"),
+            "{err}"
+        );
     }
 }
