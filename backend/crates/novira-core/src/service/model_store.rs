@@ -665,6 +665,10 @@ mod tests {
             Some(LicenseRef::HuggingFace("owner/repo".into()))
         );
         assert_eq!(license_ref_of_source("E:/models/a.safetensors"), None);
+        // A page address needs both an owner and a repository.
+        assert_eq!(license_ref_of_source("https://huggingface.co/owner/"), None);
+        assert_eq!(license_ref_of_source("https://huggingface.co//repo"), None);
+        assert_eq!(license_ref_of_source("https://huggingface.co/owner"), None);
         assert_eq!(
             license_ref_of_source("https://example.com/a.safetensors"),
             None

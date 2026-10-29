@@ -176,6 +176,14 @@ async fn a_downloaded_lora_is_placed_classified_and_announced() {
         .find(|m| m.path.ends_with("style.safetensors"))
         .unwrap();
     assert_eq!((model.kind, model.base), (ModelType::Lora, BaseModel::Sdxl));
+    // The last progress reported is the whole file.
+    assert_eq!(done.bytes, done.total_bytes, "{done:?}");
+    // Parts are asked for by key: the report is about that model, and another key is unknown.
+    assert_eq!(
+        backend.model_parts(&model.key).unwrap().model_key,
+        model.key
+    );
+    assert!(backend.model_parts("other-key").is_err());
     assert_eq!(
         model.trigger_phrases,
         Some(vec!["zap".to_string(), "boom".to_string()])

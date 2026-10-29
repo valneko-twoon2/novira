@@ -77,6 +77,30 @@ async fn a_trashed_picture_whose_file_is_gone_is_left_out_of_a_restore() {
     backend.shutdown();
 }
 
+#[tokio::test]
+async fn deleting_a_known_and_an_unknown_name_together_trashes_one_and_removes_the_other_for_good()
+{
+    let dir = tempfile::tempdir().unwrap();
+    let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+    let name = upload(&backend).await;
+    let outputs = dir.path().join("outputs");
+    std::fs::write(outputs.join("stray.png"), b"x").unwrap();
+    backend
+        .delete_images(&[name.clone(), "stray.png".to_string()])
+        .unwrap();
+    // The known picture waits in the trash and can come back; the stray file is gone.
+    assert!(dir.path().join("trash").join(&name).exists());
+    assert!(!outputs.join("stray.png").exists());
+    assert_eq!(
+        backend
+            .restore_images(std::slice::from_ref(&name))
+            .unwrap()
+            .len(),
+        1
+    );
+    backend.shutdown();
+}
+
 /// Starts a backend again after the index of `table` was damaged; `seed` runs before, on a healthy one.
 async fn reopened_damaged(
     dir: &Path,

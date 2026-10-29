@@ -408,6 +408,57 @@ mod copy_tests {
         assert!(err.starts_with("the backup is damaged"), "{err}");
     }
 
+    #[test]
+    fn removing_what_is_not_there_is_fine_and_a_failure_is_reported() {
+        let dir = tempfile::tempdir().unwrap();
+        remove_any(&dir.path().join("missing")).unwrap();
+        let file = dir.path().join("f");
+        std::fs::write(&file, b"x").unwrap();
+        remove_any(&file).unwrap();
+        assert!(!file.exists());
+        let sub = dir.path().join("d");
+        std::fs::create_dir_all(sub.join("in")).unwrap();
+        remove_any(&sub).unwrap();
+        assert!(!sub.exists());
+        // A file Windows refuses to delete: the refusal must come back, not be swallowed.
+        #[cfg(windows)]
+        {
+            let locked = dir.path().join("locked");
+            std::fs::write(&locked, b"x").unwrap();
+            use std::os::windows::fs::OpenOptionsExt;
+            let _held = std::fs::OpenOptions::new()
+                .read(true)
+                .share_mode(3)
+                .open(&locked)
+                .unwrap();
+            assert!(remove_any(&locked).is_err());
+        }
+    }
+
+    #[test]
+    fn a_missing_source_is_not_retried() {
+        let dir = tempfile::tempdir().unwrap();
+        let started = std::time::Instant::now();
+        let err = rename_when_free(&dir.path().join("none"), &dir.path().join("to")).unwrap_err();
+        assert_eq!(err.kind(), std::io::ErrorKind::NotFound);
+        assert!(started.elapsed() < Duration::from_secs(2));
+    }
+
+    #[test]
+    fn the_old_data_folder_name_counts_up_from_two_while_taken() {
+        let dir = tempfile::tempdir().unwrap();
+        let first = old_dir(dir.path());
+        std::fs::create_dir(&first).unwrap();
+        let second = old_dir(dir.path());
+        assert_eq!(
+            second.file_name().unwrap().to_string_lossy(),
+            format!("{}-2", first.file_name().unwrap().to_string_lossy())
+        );
+        std::fs::create_dir(&second).unwrap();
+        let third = old_dir(dir.path());
+        assert!(third.to_string_lossy().ends_with("-3"), "{third:?}");
+    }
+
     struct Hiccup(u8);
     impl Read for Hiccup {
         fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
