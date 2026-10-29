@@ -19,7 +19,18 @@ exclude_re = []
 timeout_multiplier = 3.0
 minimum_test_timeout = 120.0
 
-# The temporary copy holds only backend/, so a test that reads a file of frontend/ fails on the unmutated code and no
+# The temporary copy holds only backend/, so a test that reads a file outside it fails on the unmutated code and no
 # mutant is tried. These tests are skipped here; they run in every normal `cargo test`.
 #   every_open_source_homepage_may_be_opened: reads frontend/src/features/settings/ossLicenses.json
-additional_cargo_test_args = ["--", "--skip", "every_open_source_homepage_may_be_opened"]
+#   every_fixture_is_checked, fixtures_match_the_rust_types (tests/contract) and the four prop_roundtrip tests that read
+#   a fixture: read contract/
+additional_cargo_test_args = [
+  "--",
+  "--skip", "every_open_source_homepage_may_be_opened",
+  "--skip", "every_fixture_is_checked",
+  "--skip", "fixtures_match_the_rust_types",
+  "--skip", "every_contract_fixture_survives_a_round_trip_unchanged",
+  "--skip", "an_edited_fixture_is_refused_or_settles_after_one_round_trip",
+  "--skip", "unknown_fields_of_the_generation_settings_are_kept_for_newer_frontends",
+  "--skip", "a_generation_setting_of_any_prompt_text_and_numbers_round_trips",
+]
