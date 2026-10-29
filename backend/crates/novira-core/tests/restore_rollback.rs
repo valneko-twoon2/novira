@@ -12,11 +12,11 @@ use std::io::Write;
 use std::os::windows::fs::OpenOptionsExt;
 use std::path::Path;
 
-/// Every test in this binary wants quick retries.
-fn quick_retries() {
-    // Short, but not so short that the whole retry window (about 40 pauses) is over before a busy machine has run the
-    // thread that opens the file the restore is waiting on.
-    std::env::set_var("NOVIRA_TEST_RETRY_PAUSE_MS", "25");
+/// Every test in this binary waits out the retry window of a restore (40 tries) instead of giving up early.
+fn patient_retries() {
+    // 40 pauses of 250 ms make about 10 s, the same as the thread that holds the file waits for it. At 25 ms the whole
+    // window was over before a busy machine had run that thread (2026-10-29).
+    std::env::set_var("NOVIRA_TEST_RETRY_PAUSE_MS", "250");
 }
 
 fn database_bytes() -> Vec<u8> {
@@ -108,7 +108,7 @@ fn old_folders(data: &Path) -> Vec<std::path::PathBuf> {
 
 #[test]
 fn a_swap_that_fails_and_cannot_be_undone_says_where_the_previous_data_is() {
-    quick_retries();
+    patient_retries();
     let dir = tempfile::tempdir().unwrap();
     let data = data_with_ready_restore(dir.path());
     // A restored picture is in use, so the restored pictures cannot be moved in (after the restored database was).
@@ -135,7 +135,7 @@ fn a_swap_that_fails_and_cannot_be_undone_says_where_the_previous_data_is() {
 
 #[test]
 fn a_swap_that_fails_before_anything_moves_in_puts_the_previous_data_back() {
-    quick_retries();
+    patient_retries();
     let dir = tempfile::tempdir().unwrap();
     let data = data_with_ready_restore(dir.path());
     // A current picture is in use: its folder cannot be moved aside.
@@ -151,7 +151,7 @@ fn a_swap_that_fails_before_anything_moves_in_puts_the_previous_data_back() {
 
 #[test]
 fn a_previous_folder_that_cannot_be_deleted_after_a_restore_is_left_where_it_is() {
-    quick_retries();
+    patient_retries();
     let dir = tempfile::tempdir().unwrap();
     let data = data_with_ready_restore(dir.path());
     // Once the current database is moved aside, something opens it: the folder it is in cannot be deleted.
@@ -180,7 +180,7 @@ fn a_previous_folder_that_cannot_be_deleted_after_a_restore_is_left_where_it_is(
 
 #[test]
 fn a_restore_whose_unpacked_folders_are_not_all_there_still_applies() {
-    quick_retries();
+    patient_retries();
     let dir = tempfile::tempdir().unwrap();
     let data = data_with_ready_restore(dir.path());
     // Nothing of the thumbnails was unpacked, so there is nothing of them to move in.

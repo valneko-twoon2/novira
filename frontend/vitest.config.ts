@@ -17,6 +17,9 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}', 'tests/**/*.test.{ts,tsx}'],
     exclude: ['e2e/**', 'node_modules/**', 'dist/**'],
     environment: 'node',
+    // Ten workers, not one per core: with coverage on, the heaviest files passed alone and timed out (5 s) in a full run
+    // on a 16-core machine (2026-10-29).
+    maxWorkers: 10,
     // The icon package's entry imports about 3000 small modules, and each test file loads them again (about 3 s per file,
     // measured 2026-10-13). Bundling it once into a single file took the full run from 201 s to 90 s.
     deps: {
