@@ -310,6 +310,38 @@ http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture</Iptc4xmpExt:Digit
     }
 
     #[test]
+    fn damaged_headers_are_refused_instead_of_cut() {
+        // A JFIF marker whose length field is missing or runs past the end.
+        assert!(add_to_jpeg(&[0xFF, 0xD8, 0xFF, 0xE0, 0x00], b"x").is_none());
+        assert!(add_to_jpeg(&[0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x40, 0x01], b"x").is_none());
+        // A packet too long for one JPEG segment.
+        assert!(add_to_jpeg(&[0xFF, 0xD8], &vec![b'x'; 70_000]).is_none());
+        // RIFF files whose header or chunk table is cut short.
+        assert!(webp_chunks(b"RIFF").is_none());
+        assert!(webp_chunks(b"RIFF\x04\0\0\0WAVE").is_none());
+        assert!(webp_chunks(b"RIFF\x14\0\0\0WEBPVP8L\xFF\0\0\0").is_none());
+    }
+
+    #[test]
+    fn a_webp_that_already_has_the_extended_header_keeps_it_and_gets_one_label() {
+        let once = add(&encoded(ImageFormat::WebP, true), ImageFormat::WebP).unwrap();
+        let twice = add(&once, ImageFormat::WebP).unwrap();
+        let count = |bytes: &[u8]| bytes.windows(4).filter(|w| *w == b"XMP ").count();
+        assert_eq!(count(&twice), 1);
+        assert_eq!(count(&twice), count(&once));
+        assert_eq!(
+            digital_source_type(&twice).as_deref(),
+            Some(TRAINED_ALGORITHMIC_MEDIA.rsplit('/').next().unwrap())
+        );
+    }
+
+    #[test]
+    fn an_empty_code_after_the_address_is_not_a_label() {
+        let empty = "<x:xmpmeta>DigitalSourceType digitalsourcetype/ </x:xmpmeta>";
+        assert_eq!(digital_source_type(empty.as_bytes()), None);
+    }
+
+    #[test]
     fn ai_source_codes() {
         assert!(is_ai_source("trainedAlgorithmicMedia"));
         assert!(is_ai_source("compositeWithTrainedAlgorithmicMedia"));
