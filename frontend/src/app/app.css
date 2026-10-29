@@ -60,6 +60,12 @@
   margin-top: var(--space-2);
 }
 
+.sidenav__tablist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
 .sidenav__tab {
   position: relative;
   display: flex;
@@ -331,6 +337,12 @@
   right: 0;
   z-index: 5;
   background: transparent;
+}
+
+.mainarea__tablist {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
 }
 
 .mainarea__tabs {

@@ -62,7 +62,8 @@ export function SideNav() {
           <span className="sidenav__logo-mark">n</span>
         </button>
       </Tooltip>
-      <div className="sidenav__tabs" role="tablist" aria-orientation="vertical">
+      <div className="sidenav__tabs">
+        <div className="sidenav__tablist" role="tablist" aria-orientation="vertical">
         {NAV.filter((tab) => tab !== 'extensions').map((tab) => (
           <Tooltip key={tab} content={`${t(TAB_LABEL_KEYS[tab])} (${NAV_HOTKEYS[tab]})`} side="right">
             <button
@@ -80,6 +81,7 @@ export function SideNav() {
             </button>
           </Tooltip>
         ))}
+        </div>
         {/* The assistant is not a screen: it opens its window over the current one, and stays lit while open. */}
         <Tooltip content={t('agent.title')} side="right">
           <button

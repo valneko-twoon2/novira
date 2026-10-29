@@ -22,7 +22,7 @@ export function QueueRow({ item, expanded, onToggle }: { item: QueueItem; expand
 
   return (
     <div className={cx('qt-item', expanded && 'is-expanded')} data-status={item.status} data-testid="queue-item">
-      <div className="qt-row" role="row" onClick={onToggle}>
+      <div className="qt-row" onClick={onToggle}>
         <span className="qt-row__caret">
           <CaretRight size={12} weight="bold" />
         </span>
