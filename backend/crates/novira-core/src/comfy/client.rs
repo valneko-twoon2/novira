@@ -25,6 +25,10 @@ use tokio_util::sync::CancellationToken;
 
 const PING_TIMEOUT: Duration = Duration::from_secs(3);
 const POLL_WITHOUT_WS: Duration = Duration::from_secs(1);
+/// How long a question about a job may take before ComfyUI is taken to have stopped; it answers in a moment when well.
+const HISTORY_TIMEOUT: Duration = Duration::from_secs(60);
+/// The cancel requests are best effort: a ComfyUI that does not answer them must not hold the cancelled job.
+const INTERRUPT_TIMEOUT: Duration = Duration::from_secs(5);
 const POLL_WITH_WS: Duration = Duration::from_secs(10);
 
 #[derive(Debug, Clone, PartialEq)]
@@ -418,8 +422,36 @@ impl ComfyEngine {
     }
 
     async fn history(&self, prompt_id: &str) -> Result<Option<Value>, EngineError> {
-        let v = self.get_json(&format!("history/{prompt_id}")).await?;
+        let path = format!("history/{prompt_id}");
+        // A ComfyUI that is stuck or has died must not hold the job for good: the request has its own time limit.
+        let res = self
+            .http
+            .get(self.url(&path))
+            .timeout(HISTORY_TIMEOUT)
+            .send()
+            .await
+            .map_err(|e| {
+                failed(format!(
+                    "ComfyUI stopped answering ({e}); its log is logs/comfyui.log in the data folder"
+                ))
+            })?;
+        if !res.status().is_success() {
+            return Err(failed(format!("ComfyUI {path} answered {}", res.status())));
+        }
+        let v: Value = res.json().await.map_err(failed)?;
         Ok(v.get(prompt_id).cloned())
+    }
+
+    /// `history`, ended at once by a cancel (a ComfyUI that does not answer cannot make a cancelled job wait).
+    async fn history_unless_cancelled(
+        &self,
+        prompt_id: &str,
+        cancel: &CancellationToken,
+    ) -> Result<Option<Value>, EngineError> {
+        tokio::select! {
+            _ = cancel.cancelled() => Err(EngineError::Cancelled),
+            entry = self.history(prompt_id) => entry,
+        }
     }
 
     /// Asks ComfyUI to unload its models and drop its cached results (`POST /free`). Its prompt worker does it before
@@ -444,12 +476,14 @@ impl ComfyEngine {
             .http
             .post(self.url("queue"))
             .json(&json!({ "delete": [prompt_id] }))
+            .timeout(INTERRUPT_TIMEOUT)
             .send()
             .await;
         let _ = self
             .http
             .post(self.url("interrupt"))
             .json(&json!({ "prompt_id": prompt_id }))
+            .timeout(INTERRUPT_TIMEOUT)
             .send()
             .await;
     }
@@ -1181,7 +1215,14 @@ impl ComfyEngine {
                 Next::Ws(Some(Err(_)) | None) => ws = None,
                 Next::Poll => {
                     last_poll = Instant::now();
-                    if let Some(entry) = self.history(&prompt_id).await? {
+                    let entry = match self.history_unless_cancelled(&prompt_id, cancel).await {
+                        Err(EngineError::Cancelled) => {
+                            self.interrupt(&prompt_id).await;
+                            return Err(EngineError::Cancelled);
+                        }
+                        other => other?,
+                    };
+                    if let Some(entry) = entry {
                         if is_done(&entry) {
                             break;
                         }
@@ -1193,7 +1234,7 @@ impl ComfyEngine {
         let no_result = job.graph.as_ref().is_some_and(|g| g.no_result);
         // The history entry may lag the WebSocket a little.
         for _ in 0..50 {
-            if let Some(entry) = self.history(&prompt_id).await? {
+            if let Some(entry) = self.history_unless_cancelled(&prompt_id, cancel).await? {
                 if no_result && is_done(&entry) {
                     entry_failed(&entry)?;
                     return Ok(self.side_picture(&entry, &built.output_node).await);
