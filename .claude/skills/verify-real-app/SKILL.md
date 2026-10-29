@@ -24,10 +24,11 @@ Static, unit and mock-browser checks come first (`node tools/affected.mjs`, and 
 | What changed | Run |
 |---|---|
 | The worker, a graph, model files, the GPU path | `node tools/models-live.mjs <part of the model name>` (no window, about a minute) |
+| A screen or flow on the real backend that a browser can show (no IPC, shell, CSP or start-up in question) | the browser path: `tools/server-run.mjs` (`startServer`) with Playwright's Chromium, or `node tools/models-sweep.mjs --via server`; no window opens |
 | IPC, the Tauri shell, the WebView (picture or video display, CSP), start-up, what a screen sends | `node tools/verify-real-app.mjs <test.mjs>` (the window, driven over CDP) |
 | How models are listed, classified or drawn with (`.claude/rules/models.md`) | `node tools/models-sweep.mjs` with `--category` or `--model` to narrow it |
 
-Run each from the main checkout's root with `NOVIRA_GPU_LOCK` set. All three use the user's models through `modelRoots` (no copy). The user checks the desktop app themselves by default; do not open the window when the no-window run covers the change.
+Run each from the main checkout's root with `NOVIRA_GPU_LOCK` set. All three use the user's models through `modelRoots` (no copy). The user checks the desktop app themselves by default; do not open the window when the no-window run or the browser path covers the change (the user dislikes the window: browser first).
 
 A window run that only needs files to display (a picture, a video, a CSP check) takes `--no-engine` when what it shows is already in the isolated data; it then skips ComfyUI and the GPU. A change to models or a graph is checked on more than one model category when others take the same path (`.claude/rules/models.md`): run one per category without being asked.
 
