@@ -276,7 +276,9 @@ impl Backend {
                 }
                 std::fs::create_dir_all(dest.parent().expect("has parent"))
                     .map_err(|e| fail(e.to_string()))?;
-                std::fs::rename(&part, &dest).map_err(|e| fail(e.to_string()))?;
+                crate::models::install::rename_when_free(&part, &dest)
+                    .await
+                    .map_err(|e| fail(e.to_string()))?;
                 (
                     dest,
                     kind,

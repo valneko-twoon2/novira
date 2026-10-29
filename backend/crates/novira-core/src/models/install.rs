@@ -422,6 +422,31 @@ fn read_resume(dest: &Path) -> Option<Resume> {
     serde_json::from_str(&std::fs::read_to_string(resume_path(dest)).ok()?).ok()
 }
 
+/// Access denied (5) or a sharing violation (32): another program has the file.
+fn is_held(e: &std::io::Error) -> bool {
+    e.kind() == std::io::ErrorKind::PermissionDenied
+        || (cfg!(windows) && e.raw_os_error() == Some(32))
+}
+
+/// Moves a finished download into place, trying again for a while when Windows refuses access: a virus scanner holds
+/// a file that was just written. Without this, a move that fails after a download of many gigabytes starts the
+/// download again, because the record of the part is gone by then.
+pub(crate) async fn rename_when_free(from: &Path, to: &Path) -> std::io::Result<()> {
+    let mut tries = 0u32;
+    loop {
+        match std::fs::rename(from, to) {
+            Err(e) if is_held(&e) && tries < 8 => {
+                tries += 1;
+                tokio::time::sleep(crate::test_timing::retry_pause(Duration::from_millis(
+                    250 * u64::from(tries),
+                )))
+                .await;
+            }
+            other => return other,
+        }
+    }
+}
+
 /// Streams `url` into `dest`. `progress(bytes, total)` is called as data arrives. A download that fails or is cancelled
 /// keeps the bytes it has (and its `.resume` record), so the next call continues from there; the caller removes the file
 /// when it no longer wants it.

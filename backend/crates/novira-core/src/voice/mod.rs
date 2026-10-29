@@ -422,7 +422,9 @@ pub async fn install(
             if let Some(parent) = dest.parent() {
                 std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
             }
-            std::fs::rename(&part, &dest).map_err(|e| e.to_string())?;
+            crate::models::install::rename_when_free(&part, &dest)
+                .await
+                .map_err(|e| e.to_string())?;
             done_bytes += size;
         }
         std::fs::write(root.join(".complete"), b"ok").map_err(|e| e.to_string())?;
