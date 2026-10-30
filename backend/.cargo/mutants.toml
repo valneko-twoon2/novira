@@ -48,7 +48,8 @@ exclude_re = [
   'replace - with / in chunks',
   # The cover is marked mature only for a cover that exists, and no answer has a mature mark without a cover.
   'replace && with \|\| in Backend::run_install',
-  # `Found.trusted` is true only for a signer on a real trust list; a test has none to sign with.
+  # `Found.trusted` is true only for a signer on a real trust list; a test has none to sign with. cargo-mutants 27.1.0 does not
+  # apply exclude_re to field deletions, so this one still shows as missed; the line takes effect once a version does.
   'delete field trusted from struct Found expression in read',
 ]
 

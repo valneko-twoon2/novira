@@ -33,6 +33,8 @@ Run it when a module's tests were written or changed in a way that could leave a
 
 Rules: never weaken or delete an existing test to make a mutant disappear. Each exclusion gets a reason in the TOML file.
 
+cargo-mutants 27.1.0 applies no name filter (`exclude_re`, nor `--re` on the command line) to the `delete field ... from struct ...` mutants (check with `cargo mutants -p novira-core --list -f <file> --exclude-re "delete field"`): such a mutant cannot be excluded or picked by name. A missed one that is equivalent stays in `missed.txt`; name it in the report.
+
 ## 4. Confirm
 
 1. Run the same file again. The missed list should now be empty, or hold only the equivalent mutants you named.
