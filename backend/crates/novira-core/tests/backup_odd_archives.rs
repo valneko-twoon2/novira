@@ -172,3 +172,22 @@ fn unpacking_reports_each_entry_once_counting_from_one() {
     stage(&zip, data.path(), |done, total| seen.push((done, total))).unwrap();
     assert_eq!(seen, vec![(1, 4), (2, 4), (3, 4), (4, 4)]);
 }
+
+#[test]
+fn a_symbolic_link_in_a_backup_is_refused_even_under_a_gallery_name() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("link.zip");
+    let mut zip = zip::ZipWriter::new(std::fs::File::create(&path).unwrap());
+    let plain = zip::write::SimpleFileOptions::default();
+    zip.start_file(MANIFEST, plain).unwrap();
+    zip.write_all(&manifest()).unwrap();
+    zip.start_file(DATABASE, plain).unwrap();
+    zip.write_all(&database_bytes()).unwrap();
+    zip.add_symlink("outputs/a.png", "../../secret", plain)
+        .unwrap();
+    zip.finish().unwrap();
+    let data = tempfile::tempdir().unwrap();
+    let err = stage(&path, data.path(), |_, _| {}).unwrap_err();
+    assert!(err.contains("unexpected file in the backup"), "{err}");
+    assert!(!data.path().join("outputs").join("a.png").exists());
+}

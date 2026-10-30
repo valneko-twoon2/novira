@@ -77,6 +77,37 @@ async fn a_trashed_picture_whose_file_is_gone_is_left_out_of_a_restore() {
     backend.shutdown();
 }
 
+/// The file called `name` anywhere under `dir`.
+fn walk_for(dir: &Path, name: &str) -> Option<std::path::PathBuf> {
+    for entry in std::fs::read_dir(dir).ok()?.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            if let Some(found) = walk_for(&path, name) {
+                return Some(found);
+            }
+        } else if path
+            .file_name()
+            .is_some_and(|n| n.to_string_lossy().ends_with(name))
+        {
+            return Some(path);
+        }
+    }
+    None
+}
+
+#[tokio::test]
+async fn a_picture_whose_original_is_already_gone_is_deleted_without_a_complaint() {
+    let dir = tempfile::tempdir().unwrap();
+    let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+    let name = upload(&backend).await;
+    let original = walk_for(&dir.path().join("outputs"), &name).expect("the original is on disk");
+    std::fs::remove_file(original).unwrap();
+    // Nothing can be moved, and nothing holds a file: the record goes to the trash and the call is fine.
+    backend.delete_images(std::slice::from_ref(&name)).unwrap();
+    assert!(backend.bootstrap().images.is_empty());
+    backend.shutdown();
+}
+
 #[tokio::test]
 async fn deleting_a_known_and_an_unknown_name_together_trashes_one_and_removes_the_other_for_good()
 {

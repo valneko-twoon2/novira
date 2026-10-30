@@ -285,9 +285,11 @@ fn roll_back(
     for item in moved_in {
         remove_any(&data_dir.join(item))?;
     }
-    // WAL files now in the data folder belong to the restored database (the old ones were moved aside).
-    for item in ["novira.sqlite-wal", "novira.sqlite-shm"] {
-        if !moved_in.contains(&item) {
+    // WAL files now in the data folder belong to the restored database (the old ones were moved aside). They are
+    // that only once the restored database is in: before that, a WAL file in the data folder is the old database's own
+    // (the swap failed before it was moved aside) and holds commits that are in no other file.
+    if moved_in.contains(&DATABASE) {
+        for item in ["novira.sqlite-wal", "novira.sqlite-shm"] {
             remove_any(&data_dir.join(item))?;
         }
     }

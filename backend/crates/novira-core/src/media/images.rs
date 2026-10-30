@@ -527,6 +527,31 @@ mod tests {
     }
 
     #[test]
+    fn the_size_limits_of_a_picture_are_256_mib_100_megapixels_and_20000_pixels_a_side() {
+        assert_eq!(MAX_IMAGE_BYTES, 268_435_456);
+        assert_eq!(MAX_IMAGE_PIXELS, 100_000_000);
+        assert_eq!(MAX_IMAGE_SIDE, 20_000);
+    }
+
+    #[test]
+    fn a_picture_is_in_the_gallery_or_in_the_trash_only_when_its_file_is() {
+        let dir = tempfile::tempdir().unwrap();
+        let files = ImageFiles::new(dir.path()).unwrap();
+        let name = new_name();
+        assert!(!files.has_original(&name));
+        assert!(!files.is_trashed(&name));
+        // A name that is no picture name is neither.
+        assert!(!files.has_original("../x.png"));
+        assert!(!files.is_trashed("../x.png"));
+        std::fs::write(files.original_path(&name).unwrap(), tiny_png(2, 2)).unwrap();
+        assert!(files.has_original(&name));
+        assert!(!files.is_trashed(&name));
+        assert!(files.trash(&name));
+        assert!(!files.has_original(&name));
+        assert!(files.is_trashed(&name));
+    }
+
+    #[test]
     fn text_chunks_round_trip_utf8_and_replace_previous_values() {
         let png = tiny_png(4, 3);
         let a = with_text(&png, METADATA_KEY, r#"{"prompt":"猫"}"#).unwrap();

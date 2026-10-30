@@ -134,6 +134,33 @@ fn a_swap_that_fails_and_cannot_be_undone_says_where_the_previous_data_is() {
 }
 
 #[test]
+fn a_database_that_cannot_be_moved_aside_keeps_its_write_ahead_log() {
+    patient_retries();
+    let dir = tempfile::tempdir().unwrap();
+    let data = data_with_ready_restore(dir.path());
+    std::fs::write(
+        data.join("novira.sqlite-wal"),
+        b"commits not yet in the database",
+    )
+    .unwrap();
+    std::fs::write(data.join("novira.sqlite-shm"), b"index").unwrap();
+    // The first thing the swap moves is the database itself, and something else still has it open.
+    let _in_use = hold(&data.join(DATABASE));
+    apply_pending(&data);
+    let RestoreOutcome::Failed { message } = take_outcome(&data) else {
+        panic!("the restore should have failed");
+    };
+    assert!(message.contains("kept as it was"), "{message}");
+    assert_eq!(std::fs::read(data.join(DATABASE)).unwrap(), b"current data");
+    // Nothing had been moved, so the log still belongs to the database that stayed: losing it loses commits.
+    assert_eq!(
+        std::fs::read(data.join("novira.sqlite-wal")).unwrap(),
+        b"commits not yet in the database"
+    );
+    assert!(data.join("novira.sqlite-shm").exists());
+}
+
+#[test]
 fn a_swap_that_fails_before_anything_moves_in_puts_the_previous_data_back() {
     patient_retries();
     let dir = tempfile::tempdir().unwrap();

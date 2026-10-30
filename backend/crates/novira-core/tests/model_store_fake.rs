@@ -315,6 +315,43 @@ async fn a_running_download_can_be_cancelled() {
 }
 
 #[tokio::test]
+async fn cancelling_one_download_leaves_the_other_running() {
+    let dir = tempfile::tempdir().unwrap();
+    let base = serve(vec![]);
+    let (backend, events) = open(dir.path());
+    let a = backend
+        .install_model(&format!("{base}/slow-a.safetensors"), None)
+        .unwrap();
+    let b = backend
+        .install_model(&format!("{base}/slow-b.safetensors"), None)
+        .unwrap();
+    for id in [&a.id, &b.id] {
+        for _ in 0..250 {
+            if last_job(&events, id).is_some_and(|j| j.status == ModelInstallStatus::Downloading) {
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(20)).await;
+        }
+    }
+    backend.cancel_install(&a.id);
+    assert_eq!(
+        finish(&events, &a.id).await.status,
+        ModelInstallStatus::Cancelled
+    );
+    // The other one was not asked to stop.
+    tokio::time::sleep(Duration::from_millis(300)).await;
+    assert_eq!(
+        last_job(&events, &b.id).unwrap().status,
+        ModelInstallStatus::Downloading
+    );
+    backend.cancel_install(&b.id);
+    assert_eq!(
+        finish(&events, &b.id).await.status,
+        ModelInstallStatus::Cancelled
+    );
+}
+
+#[tokio::test]
 async fn local_installs_refuse_what_is_not_a_model() {
     let dir = tempfile::tempdir().unwrap();
     let src = tempfile::tempdir().unwrap();
@@ -396,6 +433,13 @@ async fn model_records_can_be_edited_deleted_and_scanned() {
         .unwrap();
     assert!(!scanned.is_empty() && scanned.iter().all(|f| f.installed));
     assert!(backend.scan_folder("relative/dir").await.is_err());
+    // A relative path is refused even when it names a folder that exists (the test runs in the crate's folder).
+    assert!(backend.scan_folder(".").await.is_err());
+    // An absolute path that is no folder is refused too.
+    assert!(backend
+        .scan_folder(&dir.path().join("novira.sqlite").to_string_lossy())
+        .await
+        .is_err());
     // Deleting an unknown key is fine; a file that is already gone only has its record removed.
     backend.delete_model("nope").unwrap();
     std::fs::remove_file(&model.path).unwrap();
