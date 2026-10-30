@@ -126,7 +126,10 @@ async fn the_cover_lookup_fills_only_what_a_model_lacks() {
         .key;
     // The model already has its own cover (and no page): the lookup must still be made, to fill the page and the set.
     backend
-        .update_model(&key, serde_json::json!({"coverImageUrl": "https://example.test/mine.png"}))
+        .update_model(
+            &key,
+            serde_json::json!({"coverImageUrl": "https://example.test/mine.png"}),
+        )
         .unwrap();
     site().put_json(
         &by_hash_path(&bytes),
@@ -137,9 +140,20 @@ async fn the_cover_lookup_fills_only_what_a_model_lacks() {
         }),
     );
     backend.clone().fill_model_covers().await;
-    let model = backend.bootstrap().models.into_iter().find(|m| m.key == key).unwrap();
-    assert_eq!(model.cover_image_url.as_deref(), Some("https://example.test/mine.png"));
-    assert_eq!(model.page_url.as_deref(), Some("https://civitai.com/models/7?modelVersionId=77"));
+    let model = backend
+        .bootstrap()
+        .models
+        .into_iter()
+        .find(|m| m.key == key)
+        .unwrap();
+    assert_eq!(
+        model.cover_image_url.as_deref(),
+        Some("https://example.test/mine.png")
+    );
+    assert_eq!(
+        model.page_url.as_deref(),
+        Some("https://civitai.com/models/7?modelVersionId=77")
+    );
     assert_eq!(model.cover_image_urls.as_ref().map(Vec::len), Some(2));
     // A version without trigger words leaves the phrases unset, not empty.
     assert_eq!(model.trigger_phrases, None);

@@ -273,6 +273,15 @@ mod tests {
         assert_eq!(merged.format, fresh.format);
         assert_eq!(merged.comfy, fresh.comfy);
         assert_eq!(merged.name, "My detail");
+        // The same file found somewhere else (same size) is the same model at its new path.
+        let moved = ModelConfig {
+            path: "Z:/old-place/detail-xl.safetensors".into(),
+            ..fresh.clone()
+        };
+        let a3 = found(dir.path(), "detail-xl.safetensors", 4);
+        let merged = merge(std::slice::from_ref(&a3), &[moved], &HashSet::new());
+        assert_eq!(merged.listed[0].path, a3.path.to_string_lossy());
+        assert_eq!(merged.changed.len(), 1);
     }
 
     /// A LoRA file whose header holds `keys` and `meta`.

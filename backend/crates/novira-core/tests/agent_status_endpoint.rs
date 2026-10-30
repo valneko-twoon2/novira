@@ -21,16 +21,25 @@ async fn the_saved_server_is_reported_with_every_provider() {
     save_provider(dir.path(), AgentProvider::Openai).unwrap();
     let s = status(dir.path(), None).await;
     assert!(s.installed && s.logged_in);
-    assert_eq!(s.endpoint.as_ref().map(|e| e.model.as_str()), Some("local-model"));
+    assert_eq!(
+        s.endpoint.as_ref().map(|e| e.model.as_str()),
+        Some("local-model")
+    );
     // A command line tool as the provider (here one that does not exist): the server is still reported.
     save_provider(dir.path(), AgentProvider::Claude).unwrap();
     let missing = dir.path().join("no-such-tool.exe");
     let s = status(dir.path(), Some(&missing)).await;
     assert_eq!(s.provider, Some(AgentProvider::Claude));
-    assert_eq!(s.endpoint.as_ref().map(|e| e.model.as_str()), Some("local-model"));
+    assert_eq!(
+        s.endpoint.as_ref().map(|e| e.model.as_str()),
+        Some("local-model")
+    );
     // A data folder where no provider was ever saved still reports the server.
     let other = tempfile::tempdir().unwrap();
     save_endpoint(other.path(), saved_server()).unwrap();
     let s = status(other.path(), None).await;
-    assert_eq!(s.endpoint.as_ref().map(|e| e.base_url.as_str()), Some("http://127.0.0.1:1/v1"));
+    assert_eq!(
+        s.endpoint.as_ref().map(|e| e.base_url.as_str()),
+        Some("http://127.0.0.1:1/v1")
+    );
 }

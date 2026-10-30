@@ -297,7 +297,10 @@ async fn a_civitai_model_with_one_mature_picture_keeps_it_as_a_marked_cover_and_
                        "downloadUrl": format!("{base}/dl/civ-mature.safetensors")}]
         }),
     );
-    site().put("/dl/civ-mature.safetensors", Route::bytes(lora("civ-mature")));
+    site().put(
+        "/dl/civ-mature.safetensors",
+        Route::bytes(lora("civ-mature")),
+    );
     let job = backend.install_model("civitai:711/7101-9", None).unwrap();
     let done = finish(&events, &job.id).await;
     assert_eq!(done.status, ModelInstallStatus::Completed, "{done:?}");
@@ -319,7 +322,10 @@ async fn a_civitai_model_with_one_mature_picture_keeps_it_as_a_marked_cover_and_
     );
     site().put("/dl/civ-bare.safetensors", Route::bytes(lora("civ-bare")));
     let job = backend.install_model("civitai:712/7102-9", None).unwrap();
-    assert_eq!(finish(&events, &job.id).await.status, ModelInstallStatus::Completed);
+    assert_eq!(
+        finish(&events, &job.id).await.status,
+        ModelInstallStatus::Completed
+    );
     let bare = model_named(&backend, "civ-bare.safetensors");
     assert_eq!((bare.cover_image_url, bare.cover_mature), (None, None));
 }
