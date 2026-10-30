@@ -245,11 +245,16 @@ async fn a_cancelled_pack_install_puts_the_old_version_back() {
     let err = engine
         .switch_version("v0.4.0", world.root(), &cancel, &|_, _| trip.cancel())
         .await;
-    // The cancel lands during the first pack: the work stops and the old package is back.
+    // The cancel lands during the first pack: the work stops and the old package is back, with the pack.
     assert_eq!(err, Err(EngineError::Cancelled));
     assert_eq!(
         std::fs::read_to_string(comfyui_dir(world.root()).join("main.py")).unwrap(),
         "old"
+    );
+    let packs = custom_nodes_dir(&comfyui_dir(world.root()));
+    assert!(
+        packs.join("sw-cancel").is_dir(),
+        "the pack went with the new version"
     );
     engine.shutdown();
 }
@@ -257,6 +262,13 @@ async fn a_cancelled_pack_install_puts_the_old_version_back() {
 #[tokio::test]
 async fn a_new_version_that_does_not_start_is_replaced_by_the_old_one() {
     let world = World::new("v0.4.0", "ok");
+    // A pack copied in by hand (no record, so not installed again), holding a model it downloaded.
+    world.pack("by-hand", None);
+    std::fs::write(
+        custom_nodes_dir(&comfyui_dir(world.root())).join("by-hand/model.bin"),
+        "weights",
+    )
+    .unwrap();
     let engine = world.engine(false, "nvidia");
     let err = engine
         .switch_version(
@@ -277,6 +289,15 @@ async fn a_new_version_that_does_not_start_is_replaced_by_the_old_one() {
     );
     assert!(!previous_dir(world.root()).exists());
     assert!(world.root().join(PORTABLE_DIR).is_dir());
+    assert_eq!(
+        std::fs::read_to_string(
+            custom_nodes_dir(&comfyui_dir(world.root())).join("by-hand/model.bin")
+        )
+        .ok()
+        .as_deref(),
+        Some("weights"),
+        "the pack went with the new version"
+    );
     engine.shutdown();
 }
 

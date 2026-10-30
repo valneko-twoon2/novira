@@ -265,6 +265,7 @@ impl Backend {
         )
         .map_err(BackendError::Invalid)?;
         if managed && st.comfyui_dir.is_none() {
+            crate::comfy::install::recover_switch(&install_root);
             engine = engine.with_installer(install_root, st.comfyui_package.clone());
         }
         let voice = Arc::new(
