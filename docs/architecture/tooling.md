@@ -15,20 +15,20 @@ How the project is started, checked and guarded, and which file guards what. How
 | `release.bat` | A release build into `artifacts/`: the app, `novira-server.exe`, `dist/` and a `server.bat` it writes |
 | `package.bat` | After `release.bat` and `tools/release-smoke.mjs` (the built files start): zip and `.sha256` (`tools/package-release.mjs`) |
 | `check.bat` | All fast checks: `npm run check` plus `cargo fmt --check`, clippy with `-D warnings`, `cargo test` |
-| `full-check.bat` | All tests by hand (no CI): `check.bat`, `novira-server`, Playwright, layout scan (`tools/full-check.mjs`) |
+| `full-check.bat` | All tests by hand (no CI): `check.bat`, `novira-server`, the mock against it (`tools/diff-backends.mjs`), Playwright, layout scan (`tools/full-check.mjs`) |
 | `coverage.bat`, `mutation.bat` | Coverage, mutation testing; reports in `novira-data/work/` |
 | `version.bat` | Sets the one version in `Cargo.toml`, `package.json` and the lock files (`tools/set-version.mjs`) |
 | `manual.bat` | The manual: mock-app screenshots, then `novira-data/work/manual/<language>/` |
 
 | Elsewhere | What |
 |---|---|
-| `tools/affected.mjs` | Only the checks the changed files need, run |
-| `tools/typecheck.mjs`, `tools/docs-check.mjs`, `tools/ui-refs.mjs`, `tools/visual-baselines.mjs`, `tools/check-eol.mjs`, `tools/fix-eol.mjs`, `tools/eol.mjs`, `tools/check-name.mjs` | Whole-repository checks: types, the map, stale doc code names, stale test ids and text keys, stale baselines, line ends, name spelling |
+| `tools/affected.mjs` | Only the checks the changed files need |
+| `tools/typecheck.mjs`, `docs-check.mjs`, `ui-refs.mjs`, `visual-baselines.mjs`, `check-eol.mjs`, `fix-eol.mjs`, `eol.mjs`, `check-name.mjs` | Whole-repository checks: types, the map, stale doc code names, stale test ids and text keys, stale baselines, line ends, name spelling |
 | `tools/layout-scan.mjs`, `tools/e2e-lock.mjs` | The layout scan (with text fit) and its pass record; the lock for one heavy Playwright run at a time |
 | `e2e/a11y.spec.ts` (`e2e/a11yKnown.ts`) | axe-core (WCAG A/AA, no contrast) on each main tab: fails beyond the known list, which only shrinks |
 | `tools/worktree.mjs` | Makes and removes a subagent worktree |
 | `tools/prune-stale.mjs` | Deletes stale `novira-data/work/` entries (below) |
-| `tools/verify-real-app.mjs`, `tools/models-live.mjs`, `tools/gpu-check.mjs`, `tools/harness-paths.mjs`, `tools/harness-process.mjs`, `tools/server-run.mjs` | The real app (or browser server), or one engine job, isolated (`docs/verification.md`); a worktree uses the main checkout's `novira-data/`; they stop when the GPU is busy. Shared: paths, the harness build (`HARNESS_MODE`: every screen in), processes, cargo |
+| `tools/verify-real-app.mjs`, `models-live.mjs`, `gpu-check.mjs`, `harness-paths.mjs`, `harness-process.mjs`, `server-run.mjs` | The real app (or browser server), or one engine job, isolated (`docs/verification.md`); a worktree uses the main checkout's `novira-data/`; they stop when the GPU is busy. Shared: paths, the harness build (`HARNESS_MODE`: every screen in), processes, cargo |
 | `tools/models-sweep.mjs`, `models-sweep-app.mjs`, `models-sweep-lib.mjs` | Every installed model checked in the isolated app or (`--via server`) Chromium (`.claude/rules/models.md`) |
 | `tools/perf.mjs` (runs `tools/perf-startup.mjs`, `backend/crates/novira-core/examples/backend_timing.rs`) | Speed of the backend, the frontend start and the real app's IPC, against a saved baseline |
 | `tools/fetch-trustmark.mjs`, `tools/comfy-node-defs.mjs` | The watermark's pinned files, hash-checked; the saved node definitions of ComfyUI |

@@ -31,8 +31,10 @@
     "tests/**/*.ts",
     "tests/**/*.tsx",
     "e2e/**/*.ts",
+    "difftest/**/*.ts",
     "playwright.config.ts",
     "vite.config.ts",
-    "vitest.config.ts"
+    "vitest.config.ts",
+    "vitest.difftest.config.ts"
   ]
 }

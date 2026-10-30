@@ -84,6 +84,28 @@ const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const LATENCY = 60;
 /** The largest comic document, as its JSON text in bytes (the backend's cap for the same data). */
 const MAX_COMIC_BYTES = 32 * 1024 * 1024;
+/** The backend's limits of the canvas document and the screen state (`service/canvas.rs`, `service/ui_state.rs`). */
+const MAX_CANVAS_BYTES = 32 * 1024 * 1024;
+const MAX_UI_STATE_BYTES = 32 * 1024 * 1024;
+const MAX_UI_STATE_KEY = 200;
+
+/** The JSON object `text` holds, or `null` when it is not one (an array, a number, broken text). */
+function jsonObject(text: string): Record<string, unknown> | null {
+  try {
+    const value: unknown = JSON.parse(text);
+    return value !== null && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Refuses a screen state the backend refuses: too large, or not an object of `novira.` keys with text values. */
+function checkUiState(state: string): void {
+  if (new TextEncoder().encode(state).length > MAX_UI_STATE_BYTES) throw new Error('the screen state is too large');
+  const map = jsonObject(state);
+  const fine = map !== null && Object.entries(map).every(([k, v]) => k.startsWith('novira.') && new TextEncoder().encode(k).length <= MAX_UI_STATE_KEY && typeof v === 'string');
+  if (!fine) throw new Error('the screen state must be a JSON object of novira.* keys with text values');
+}
 
 /** What each pack downloads in the mock: file names and sizes (only for the progress display). */
 const MOCK_PACK_FILES: Record<PackKind, { file: string; size: number }[]> = {
@@ -156,6 +178,8 @@ export class MockBackend implements BackendClient {
   private models: ModelConfig[] = [];
   private boards: BoardDTO[] = [];
   private images: ImageDTO[] = [];
+  /** Whether `bootstrap` has filled the pretend library. */
+  private seeded = false;
   /** Deleted pictures that `restoreImages` can bring back. */
   private trash: ImageDTO[] = [];
   private workflows: SavedWorkflow[] = [];
@@ -233,6 +257,24 @@ export class MockBackend implements BackendClient {
   }
 
   async bootstrap() {
+    // The first call fills the pretend library; later ones read what is there now, as the backend does.
+    const first = !this.seeded;
+    this.seeded = true;
+    if (first) this.seed();
+    await wait(LATENCY);
+    if (first && this.engineInstall) setTimeout(() => this.simulateEngineInstall(), 0);
+    return {
+      models: this.models.map((m) => ({ ...m })),
+      boards: this.boards.map((b) => ({ ...b })),
+      images: this.images.map((i) => ({ ...i })),
+      workflows: this.workflows.map((w) => ({ ...w })),
+      engine: this.engineInstall ? ({ state: 'downloading', bytes: 0, totalBytes: 2_400_000_000 } as const) : ({ state: 'ready' } as const),
+      packs: { ...this.packs },
+    };
+  }
+
+  /** The pretend library of the scenario: models, workflows and, by default, boards and pictures. */
+  private seed() {
     this.models = SEED_MODELS.map((m) => ({ ...m }));
     this.workflows = [...DEFAULT_WORKFLOWS, ...MOCK_USER_WORKFLOWS].map((w) => ({ ...w }));
     if (this.scenario === 'default') {
@@ -243,6 +285,7 @@ export class MockBackend implements BackendClient {
         this.clock += SEED_IMAGE_SPACING_MS;
         this.images.unshift({
           name: this.imageName(),
+          mediaType: 'image',
           url,
           thumbnailUrl: url,
           width: spec.width,
@@ -275,16 +318,6 @@ export class MockBackend implements BackendClient {
         });
       }
     }
-    await wait(LATENCY);
-    if (this.engineInstall) setTimeout(() => this.simulateEngineInstall(), 0);
-    return {
-      models: this.models.map((m) => ({ ...m })),
-      boards: this.boards.map((b) => ({ ...b })),
-      images: this.images.map((i) => ({ ...i })),
-      workflows: this.workflows.map((w) => ({ ...w })),
-      engine: this.engineInstall ? ({ state: 'downloading', bytes: 0, totalBytes: 2_400_000_000 } as const) : ({ state: 'ready' } as const),
-      packs: { ...this.packs },
-    };
   }
 
   /** The settings as the backend saves them: with the sampling a model of the newer families ran in place of the
@@ -345,6 +378,7 @@ export class MockBackend implements BackendClient {
     const { width, height } = await imageSize(url);
     const image: ImageDTO = {
       name: this.imageName(),
+      mediaType: 'image',
       url,
       thumbnailUrl: url,
       width,
@@ -1083,6 +1117,8 @@ export class MockBackend implements BackendClient {
 
   async saveCanvas(document: string) {
     await wait(LATENCY);
+    if (new TextEncoder().encode(document).length > MAX_CANVAS_BYTES) throw new Error('the canvas document is too large');
+    if (!jsonObject(document)) throw new Error('the canvas document must be a JSON object');
     this.canvasDocument = document;
   }
 
@@ -1092,12 +1128,14 @@ export class MockBackend implements BackendClient {
   private uiState: string | null = null;
 
   async adoptUiState(local: string | null) {
+    if (local !== null) checkUiState(local);
     if (this.uiState !== null) return this.uiState;
     if (local !== null && local !== '{}') this.uiState = local;
     return null;
   }
 
   async saveUiState(state: string) {
+    checkUiState(state);
     this.uiState = state;
   }
 
