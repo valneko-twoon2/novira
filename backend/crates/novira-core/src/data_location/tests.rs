@@ -233,7 +233,7 @@ fn a_copy_to_another_drive_reports_its_bytes_up_to_the_whole_size() {
     std::fs::write(old.join("models/a.safetensors"), vec![7u8; 9 * 1024 * 1024]).unwrap();
     let seen = std::cell::RefCell::new(Vec::new());
     let report = |done: u64, total: u64| seen.borrow_mut().push((done, total));
-    copy_whole(&old, &new, &mut Progress::new(&old, &report)).unwrap();
+    copy_tree(&old, &new, &mut Progress::new(&old, &report)).unwrap();
     let seen = seen.into_inner();
     let whole = 2 + 9 * 1024 * 1024;
     assert!(seen.iter().all(|&(_, total)| total == whole));
@@ -251,7 +251,6 @@ fn a_copy_to_another_drive_reports_its_bytes_up_to_the_whole_size() {
             .len(),
         9 * 1024 * 1024
     );
-    assert!(!old.exists());
 }
 
 #[cfg(windows)]

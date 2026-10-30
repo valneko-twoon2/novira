@@ -177,13 +177,19 @@ pub fn apply_pending(pointer: &Path) -> Option<PathBuf> {
 pub fn apply_pending_with(pointer: &Path, progress: &dyn Fn(u64, u64)) -> Option<PathBuf> {
     let mut location = read(pointer)?;
     let Some(from) = location.move_from.take() else {
+        // The marker of a move whose last step (removing the old folder) was cut off.
+        let _ = std::fs::remove_file(location.data_dir.join(MOVE_MARKER));
         return Some(location.data_dir);
     };
     let to = location.data_dir.clone();
     match move_data(&from, &to, &mut Progress::new(&from, progress)) {
         Ok(()) => {
             location.move_error = None;
-            let _ = write(pointer, &location);
+            // The pointer names the new folder before the old files go: a start cut off from here on opens the new
+            // folder. When it cannot be written, the next start finds the move's marker and finishes the move again.
+            if write(pointer, &location).is_ok() {
+                finish_move(&from, &to);
+            }
             Some(to)
         }
         Err(e) => {
@@ -199,89 +205,157 @@ pub fn apply_pending_with(pointer: &Path, progress: &dyn Fn(u64, u64)) -> Option
     }
 }
 
-/// Moves everything in `from` into `to`: a rename when it can be, else a copy followed by removing the old files. The
-/// folder `from` must not be in use (nothing holds its lock), and nothing in `to` may share a name with what `from` holds
-/// (`to` may hold other things: they stay). A failed move puts back what it had moved and removes what it had copied.
+/// Written into the new folder before anything moves into it, and removed once the pointer names that folder. A start
+/// that finds it continues the move it records instead of refusing the names the cut-off start had already moved.
+pub const MOVE_MARKER: &str = ".novira-moving";
+
+/// What a move records in its marker.
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct MoveRecord {
+    /// The move made the new folder (it did not exist), so a failed move removes it again.
+    made: bool,
+    /// The names in the old folder when the move began: the names that are moved.
+    entries: Vec<String>,
+}
+
+fn remove_any(path: &Path) -> std::io::Result<()> {
+    if path.is_dir() {
+        std::fs::remove_dir_all(path)
+    } else {
+        std::fs::remove_file(path)
+    }
+}
+
+/// Moves everything in `from` into `to`: a rename of the whole folder when `to` does not exist and it can be, else each
+/// entry in turn, renamed when it can be and copied when not. The old files stay until `finish_move`. The folder `from`
+/// must not be in use (nothing holds its lock), and nothing in `to` may share a name with what `from` holds (`to` may
+/// hold other things: they stay). A marker in `to` lets a start that was cut off continue; a failed move puts back what
+/// it had moved, removes what it had copied, and removes `to` when it made it.
 fn move_data(from: &Path, to: &Path, progress: &mut Progress) -> Result<(), String> {
+    move_entries(from, to, progress, usize::MAX)
+}
+
+/// `move_data`, stopping after `limit` entries as a start cut off there would (tests).
+fn move_entries(
+    from: &Path,
+    to: &Path,
+    progress: &mut Progress,
+    limit: usize,
+) -> Result<(), String> {
     if !from.is_dir() {
+        // The old folder goes only after the pointer names the new one, or in one rename into a new folder: a start
+        // cut off before the pointer was written finds the data already there.
+        if to.is_dir() {
+            return Ok(());
+        }
         return Err(format!("{} does not exist", from.display()));
     }
-    let _lock = match crate::startup::try_claim(&from.join(LOCK_FILE)) {
+    // Held while the names are read, released before anything moves (the lock file is one of the entries).
+    let lock = match crate::startup::try_claim(&from.join(LOCK_FILE)) {
         Ok(Some(lock)) => lock,
         Ok(None) => return Err("another novira is using the current data folder".into()),
         Err(e) => return Err(format!("cannot lock the current data folder: {e}")),
     };
-    clash(from, to)?;
-    if let Some(parent) = to.parent() {
-        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-    }
-    if !to.exists() {
-        drop(_lock);
-        if std::fs::rename(from, to).is_ok() {
-            return Ok(());
+    let marker = to.join(MOVE_MARKER);
+    let record = match std::fs::read_to_string(&marker) {
+        Ok(text) => {
+            drop(lock);
+            serde_json::from_str::<MoveRecord>(&text)
+                .map_err(|e| format!("the record of the earlier move is damaged: {e}"))?
         }
-        return copy_whole(from, to, progress);
-    }
-    let entries: Vec<std::fs::DirEntry> = std::fs::read_dir(from)
-        .map_err(|e| e.to_string())?
-        .filter_map(Result::ok)
-        .collect();
-    drop(_lock);
-    // Each entry in turn: renamed when it can be, else copied. What is done is undone when a later one fails.
-    let mut renamed: Vec<(PathBuf, PathBuf)> = Vec::new();
-    let mut copied: Vec<PathBuf> = Vec::new();
-    for entry in &entries {
-        let (source, target) = (entry.path(), to.join(entry.file_name()));
-        if std::fs::rename(&source, &target).is_ok() {
-            renamed.push((source, target));
+        Err(_) => {
+            clash(from, to)?;
+            if let Some(parent) = to.parent() {
+                std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+            }
+            let made = !to.exists();
+            let entries = std::fs::read_dir(from)
+                .map_err(|e| e.to_string())?
+                .filter_map(Result::ok)
+                .map(|e| e.file_name().to_string_lossy().into_owned())
+                .filter(|n| n != MOVE_MARKER)
+                .collect();
+            drop(lock);
+            if made {
+                if std::fs::rename(from, to).is_ok() {
+                    return Ok(());
+                }
+                std::fs::create_dir(to).map_err(|e| e.to_string())?;
+            }
+            let record = MoveRecord { made, entries };
+            let text = serde_json::to_string(&record).map_err(|e| e.to_string())?;
+            if let Err(e) = std::fs::write(&marker, text) {
+                if made {
+                    let _ = std::fs::remove_dir(to);
+                }
+                return Err(format!("cannot write into {}: {e}", to.display()));
+            }
+            record
+        }
+    };
+    for name in record.entries.iter().take(limit) {
+        let (source, target) = (from.join(name), to.join(name));
+        if !source.exists() {
+            // Renamed by a start that was cut off.
             continue;
         }
-        let done = match entry.file_type() {
-            Ok(kind) if kind.is_dir() => copy_tree(&source, &target, progress),
-            Ok(kind) if kind.is_file() => copy_file(&source, &target, progress),
+        // Both folders hold the name only when a cut-off start was copying it: they shared no name when the move
+        // began. The half copy goes.
+        if target.exists() {
+            if let Err(e) = remove_any(&target) {
+                return Err(undo(from, to, &record, format!("copying failed: {e}")));
+            }
+        }
+        if std::fs::rename(&source, &target).is_ok() {
+            continue;
+        }
+        let done = match std::fs::symlink_metadata(&source) {
+            Ok(meta) if meta.is_dir() => copy_tree(&source, &target, progress),
+            Ok(meta) if meta.is_file() => copy_file(&source, &target, progress),
             Ok(_) => Ok(()),
             Err(e) => Err(e),
         };
         if let Err(e) = done {
-            copied.push(target);
-            for path in &copied {
-                let _ = if path.is_dir() {
-                    std::fs::remove_dir_all(path)
-                } else {
-                    std::fs::remove_file(path)
-                };
-            }
-            for (source, target) in renamed.iter().rev() {
-                let _ = std::fs::rename(target, source);
-            }
-            return Err(format!("copying failed: {e}"));
+            return Err(undo(from, to, &record, format!("copying failed: {e}")));
         }
-        copied.push(target);
-    }
-    // Every copy is whole: the old files are not needed. Leftovers (a file in use) are not an error.
-    if let Err(e) = std::fs::remove_dir_all(from) {
-        crate::applog::warn(
-            "data-location",
-            format!("the old folder was not fully removed: {e}"),
-        );
     }
     Ok(())
 }
 
-/// Copies `from` to the new folder `to` (another drive), then removes the old files; a failed copy leaves nothing at `to`.
-fn copy_whole(from: &Path, to: &Path, progress: &mut Progress) -> Result<(), String> {
-    if let Err(e) = copy_tree(from, to, progress) {
-        let _ = std::fs::remove_dir_all(to);
-        return Err(format!("copying failed: {e}"));
+/// Puts back what a move had renamed (in this start or a cut-off one), removes what it had copied, and removes the
+/// marker, and `to` when the move made it. Returns `message`.
+fn undo(from: &Path, to: &Path, record: &MoveRecord, message: String) -> String {
+    for name in &record.entries {
+        let (source, target) = (from.join(name), to.join(name));
+        if !target.exists() {
+            continue;
+        }
+        let _ = if source.exists() {
+            remove_any(&target)
+        } else {
+            std::fs::rename(&target, &source)
+        };
     }
-    // The copy is whole: the old files are not needed. Leftovers (a file in use) are not an error.
-    if let Err(e) = std::fs::remove_dir_all(from) {
-        crate::applog::warn(
-            "data-location",
-            format!("the old folder was not fully removed: {e}"),
-        );
+    let _ = std::fs::remove_file(to.join(MOVE_MARKER));
+    if record.made {
+        let _ = std::fs::remove_dir(to);
     }
-    Ok(())
+    message
+}
+
+/// After the pointer names the new folder: removes the old one (what the move left in it) and the marker. Leftovers (a
+/// file in use) are not an error.
+fn finish_move(from: &Path, to: &Path) {
+    if from.exists() {
+        if let Err(e) = std::fs::remove_dir_all(from) {
+            crate::applog::warn(
+                "data-location",
+                format!("the old folder was not fully removed: {e}"),
+            );
+        }
+    }
+    let _ = std::fs::remove_file(to.join(MOVE_MARKER));
 }
 
 /// The bytes copied so far, against the size of the whole data (measured when the first copy starts).
@@ -362,3 +436,6 @@ fn copy_tree(from: &Path, to: &Path, progress: &mut Progress) -> std::io::Result
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod crash_tests;
