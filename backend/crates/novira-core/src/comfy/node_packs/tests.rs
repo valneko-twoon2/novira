@@ -286,3 +286,67 @@ fn a_frozen_line_pins_only_with_both_a_name_and_a_version() {
     assert_eq!(pin("numpy"), None);
     assert_eq!(pin("  "), None);
 }
+
+/// A `custom_nodes` folder with the work folder of a pack install cut off after the installed pack moved aside.
+fn cut_off_install(custom_nodes: &Path, replaces: Option<&str>) -> PathBuf {
+    let work = custom_nodes.join(".novira-0123abcd");
+    std::fs::create_dir_all(work.join("previous")).unwrap();
+    std::fs::write(work.join("previous/nodes.py"), "old pack").unwrap();
+    std::fs::create_dir_all(work.join("sub0")).unwrap();
+    if let Some(folder) = replaces {
+        std::fs::write(work.join(REPLACES), folder).unwrap();
+    }
+    work
+}
+
+#[test]
+fn a_start_after_a_pack_install_was_cut_off_puts_the_pack_back_and_clears_the_work_folder() {
+    let dir = tempfile::tempdir().unwrap();
+    let work = cut_off_install(dir.path(), Some("my-pack"));
+    recover_installs(dir.path());
+    assert_eq!(
+        std::fs::read_to_string(dir.path().join("my-pack/nodes.py")).unwrap(),
+        "old pack"
+    );
+    assert!(!work.exists());
+}
+
+#[test]
+fn a_start_after_the_new_pack_was_placed_keeps_it_and_clears_the_work_folder() {
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::create_dir_all(dir.path().join("my-pack")).unwrap();
+    std::fs::write(dir.path().join("my-pack/nodes.py"), "new pack").unwrap();
+    let work = cut_off_install(dir.path(), Some("my-pack"));
+    // A work folder with nothing moved aside (cut off while downloading) goes too.
+    let fetching = dir.path().join(".novira-fetching");
+    std::fs::create_dir_all(fetching.join("sub0")).unwrap();
+    recover_installs(dir.path());
+    assert_eq!(
+        std::fs::read_to_string(dir.path().join("my-pack/nodes.py")).unwrap(),
+        "new pack"
+    );
+    assert!(!work.exists() && !fetching.exists());
+}
+
+#[test]
+fn a_work_folder_whose_pack_cannot_be_named_is_kept() {
+    for replaces in [
+        None,
+        Some(""),
+        Some("../outside"),
+        Some(".hidden"),
+        Some("a/b"),
+        Some("C:x"),
+    ] {
+        let dir = tempfile::tempdir().unwrap();
+        let work = cut_off_install(dir.path(), replaces);
+        recover_installs(dir.path());
+        assert!(work.join("previous/nodes.py").is_file(), "{replaces:?}");
+    }
+    // Folders that are not novira's are never touched.
+    let dir = tempfile::tempdir().unwrap();
+    std::fs::create_dir_all(dir.path().join("someone/previous")).unwrap();
+    std::fs::create_dir_all(dir.path().join(".git")).unwrap();
+    recover_installs(dir.path());
+    assert!(dir.path().join("someone/previous").is_dir() && dir.path().join(".git").is_dir());
+}

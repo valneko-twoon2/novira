@@ -246,6 +246,14 @@ impl Backend {
             (None, true) => Some(crate::comfy::install::comfyui_dir(&install_root)),
             (None, false) => None,
         };
+        if managed && st.comfyui_dir.is_none() {
+            crate::comfy::install::recover_switch(&install_root);
+        }
+        if let Some(dir) = &dir {
+            crate::comfy::node_packs::recover_installs(
+                &crate::comfy::node_packs::custom_nodes_dir(dir),
+            );
+        }
         let voice_python = (st.comfyui_python.clone(), dir.clone());
         let process = dir.map(|dir| {
             ComfyProcess::new(OwnedProcessConfig {
@@ -265,7 +273,6 @@ impl Backend {
         )
         .map_err(BackendError::Invalid)?;
         if managed && st.comfyui_dir.is_none() {
-            crate::comfy::install::recover_switch(&install_root);
             engine = engine.with_installer(install_root, st.comfyui_package.clone());
         }
         let voice = Arc::new(

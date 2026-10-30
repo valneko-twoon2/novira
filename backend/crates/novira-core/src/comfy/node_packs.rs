@@ -25,6 +25,43 @@ pub fn route_allowed(route: &str) -> bool {
 /// File novira leaves in a pack it installed, to remember where it came from.
 const MARKER: &str = ".novira-pack.json";
 
+/// File in the work folder of a pack install (`custom_nodes/.novira-<id>/`) that names the pack folder it replaces,
+/// written before the installed pack moves into the work folder's `previous`.
+const REPLACES: &str = "replaces";
+
+/// At start, before ComfyUI runs: the work folders that pack installs cut off (the power went, the app was killed) left in
+/// `custom_nodes`. A pack moved aside whose place is still empty goes back; the rest of each work folder is deleted.
+/// A work folder whose pack cannot go back is kept, so nothing the user had is lost.
+pub fn recover_installs(custom_nodes: &Path) {
+    for entry in std::fs::read_dir(custom_nodes)
+        .into_iter()
+        .flatten()
+        .flatten()
+    {
+        let work = entry.path();
+        if !entry.file_name().to_string_lossy().starts_with(".novira-") || !work.is_dir() {
+            continue;
+        }
+        let previous = work.join("previous");
+        if previous.is_dir() {
+            let folder = std::fs::read_to_string(work.join(REPLACES)).unwrap_or_default();
+            let folder = folder.trim();
+            let plain = !folder.is_empty()
+                && !folder.starts_with('.')
+                && !folder.contains(['/', '\\', ':'])
+                && !folder.contains("..");
+            if !plain {
+                continue;
+            }
+            let dest = custom_nodes.join(folder);
+            if !dest.exists() && std::fs::rename(&previous, &dest).is_err() {
+                continue;
+            }
+        }
+        let _ = std::fs::remove_dir_all(&work);
+    }
+}
+
 /// A GitHub repository given as `https://github.com/<owner>/<repo>`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GithubRepo {
@@ -625,6 +662,7 @@ pub async fn install_version(
         .map_err(|e| e.to_string())?;
 
         if dest.exists() {
+            std::fs::write(work.join(REPLACES), &repo.repo).map_err(|e| e.to_string())?;
             std::fs::rename(&dest, &backup)
                 .map_err(|e| format!("Cannot replace the installed {}: {e}", repo.repo))?;
         }
