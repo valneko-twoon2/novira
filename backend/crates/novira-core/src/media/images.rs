@@ -401,8 +401,11 @@ pub fn check_limits(bytes: &[u8]) -> Result<(), ImageError> {
 pub fn to_png(bytes: &[u8]) -> Result<Vec<u8>, ImageError> {
     check_limits(bytes)?;
     if bytes.starts_with(PNG_SIGNATURE) {
-        // Validate the chunk structure so a truncated file is refused here, not when it is served.
+        // Refused here, not when it is served: a truncated file, and one whose chunks are whole but whose pixels do not
+        // decode (found by tests/fuzz_inputs.rs). The bytes are kept as they are, with their text chunks.
         chunks(bytes).ok_or_else(|| ImageError::Decode("broken PNG".into()))?;
+        image::load_from_memory_with_format(bytes, image::ImageFormat::Png)
+            .map_err(|e| ImageError::Decode(e.to_string()))?;
         return Ok(bytes.to_vec());
     }
     let img = image::load_from_memory(bytes).map_err(|e| ImageError::Decode(e.to_string()))?;
@@ -626,6 +629,19 @@ mod tests {
         truncated.truncate(truncated.len() - 5);
         assert!(to_png(&truncated).is_err());
         assert!(to_png(b"hello").is_err());
+    }
+
+    #[test]
+    fn a_png_whose_chunks_are_whole_but_whose_pixels_are_damaged_is_refused() {
+        // Found by tests/fuzz_inputs.rs: the chunk list read fine, so the file was kept, and the gallery could not show it.
+        let mut png = tiny_png(9, 7);
+        let idat = png.windows(4).position(|w| w == b"IDAT").unwrap();
+        for byte in &mut png[idat + 6..idat + 10] {
+            *byte ^= 0xa5;
+        }
+        assert!(chunks(&png).is_some(), "the chunk list is still whole");
+        assert!(to_png(&png).is_err());
+        assert!(to_png(&tiny_png(9, 7)).is_ok());
     }
 
     #[test]
