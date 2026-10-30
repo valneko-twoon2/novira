@@ -246,87 +246,170 @@ fn old_dir(data_dir: &Path) -> PathBuf {
     dir
 }
 
-/// Moves the current data into `old` and the staged data in, then opens the result. Records what moved so a failure
-/// can be undone.
-fn swap(
-    data_dir: &Path,
-    staged: &Path,
-    old: &Path,
-    moved_out: &mut Vec<&'static str>,
-    moved_in: &mut Vec<&'static str>,
-) -> Result<(), String> {
-    std::fs::create_dir_all(old).map_err(|e| e.to_string())?;
-    for item in CURRENT {
-        let from = data_dir.join(item);
-        if from.exists() {
-            rename_when_free(&from, &old.join(item))
-                .map_err(|e| format!("cannot move the current {item} aside: {e}"))?;
-            moved_out.push(item);
-        }
+/// The journal of a restore being applied, in the staging folder: the name of the folder the current data moves into.
+/// Written before the first rename, so a start that was cut off continues into the same folder.
+const JOURNAL: &str = "APPLYING";
+
+/// The item of the staging folder whose place tells where `item` of the data folder belongs: the WAL files go with
+/// the database.
+fn counterpart(item: &str) -> &str {
+    match item {
+        "novira.sqlite-wal" | "novira.sqlite-shm" => DATABASE,
+        other => other,
     }
-    for item in STAGED {
-        let from = staged.join(item);
-        if from.exists() {
-            rename_when_free(&from, &data_dir.join(item))
-                .map_err(|e| format!("cannot move the restored {item} in: {e}"))?;
-            moved_in.push(item);
-        }
-    }
-    check_database(data_dir)
 }
 
-/// Puts the old data back after a failed swap.
-fn roll_back(
-    data_dir: &Path,
-    old: &Path,
-    moved_out: &[&'static str],
-    moved_in: &[&'static str],
-) -> std::io::Result<()> {
-    for item in moved_in {
-        remove_any(&data_dir.join(item))?;
+/// Applying a confirmed restore one step at a time. Each step is one rename, the check of the restored database, or
+/// the removal of the previous data, and the next step is read from the folders themselves: a restored item still in
+/// the staging folder has not been moved in (stage() makes every one of them). So a start cut off between any two
+/// steps leaves folders the next start continues from, to the same end.
+struct Applying {
+    data: PathBuf,
+    staged: PathBuf,
+    old: PathBuf,
+    /// Why the restored data was refused; the steps then put the previous data back.
+    failed: Option<String>,
+}
+
+/// What a step left to do.
+#[derive(Debug, PartialEq)]
+enum Next {
+    More,
+    Restored,
+    /// The previous data is back (or, when that failed too, the message says where it is).
+    Refused(String),
+}
+
+impl Applying {
+    /// Continues the restore a cut-off start began, or begins one by writing the journal.
+    fn begin(data_dir: &Path) -> Result<Self, String> {
+        let staged = staging(data_dir);
+        let journal = staged.join(JOURNAL);
+        let old = match std::fs::read_to_string(&journal) {
+            Ok(name) => {
+                let name = name.trim();
+                if !name.starts_with(OLD_PREFIX)
+                    || name.contains(['/', '\\'])
+                    || name.contains("..")
+                {
+                    return Err("the restore journal is damaged; your data was not changed".into());
+                }
+                data_dir.join(name)
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                if !staged.join(DATABASE).is_file() {
+                    return Err(
+                        "the unpacked backup is incomplete; your data was not changed".into(),
+                    );
+                }
+                let old = old_dir(data_dir);
+                let name = old.file_name().expect("a folder name").to_string_lossy();
+                std::fs::write(&journal, name.as_bytes())
+                    .map_err(|e| format!("cannot start the restore: {e}"))?;
+                old
+            }
+            Err(e) => return Err(format!("cannot read the restore journal: {e}")),
+        };
+        Ok(Self {
+            data: data_dir.to_path_buf(),
+            staged,
+            old,
+            failed: None,
+        })
     }
-    // WAL files now in the data folder belong to the restored database (the old ones were moved aside). They are
-    // that only once the restored database is in: before that, a WAL file in the data folder is the old database's own
-    // (the swap failed before it was moved aside) and holds commits that are in no other file.
-    if moved_in.contains(&DATABASE) {
-        for item in ["novira.sqlite-wal", "novira.sqlite-shm"] {
-            remove_any(&data_dir.join(item))?;
+
+    fn step(&mut self) -> Next {
+        if let Some(message) = self.failed.clone() {
+            return self.roll_back_step(message);
+        }
+        for item in CURRENT {
+            let from = self.data.join(item);
+            if self.staged.join(counterpart(item)).exists() && from.exists() {
+                let moved = std::fs::create_dir_all(&self.old)
+                    .and_then(|()| rename_when_free(&from, &self.old.join(item)));
+                if let Err(e) = moved {
+                    self.failed = Some(format!("cannot move the current {item} aside: {e}"));
+                }
+                return Next::More;
+            }
+        }
+        for item in STAGED {
+            let from = self.staged.join(item);
+            if from.exists() {
+                if let Err(e) = rename_when_free(&from, &self.data.join(item)) {
+                    self.failed = Some(format!("cannot move the restored {item} in: {e}"));
+                }
+                return Next::More;
+            }
+        }
+        if let Err(message) = check_database(&self.data) {
+            self.failed = Some(message);
+            return Next::More;
+        }
+        if let Err(e) = remove_any(&self.old) {
+            crate::applog::warn(
+                "restore",
+                format!("the previous data is still in {}: {e}", self.old.display()),
+            );
+        }
+        Next::Restored
+    }
+
+    /// One step of putting the previous data back: the restored items go back to the staging folder (the WAL files
+    /// first, which belong to the restored database while it is in), then the previous items come back.
+    fn roll_back_step(&mut self, message: String) -> Next {
+        let restored_db_in = !self.staged.join(DATABASE).exists();
+        let back_to_staging = ["novira.sqlite-wal", "novira.sqlite-shm"]
+            .into_iter()
+            .filter(|_| restored_db_in)
+            .chain(STAGED)
+            .find(|item| !self.staged.join(item).exists() && self.data.join(item).exists());
+        let (from, to) = match back_to_staging {
+            Some(item) => (self.data.join(item), self.staged.join(item)),
+            None => match CURRENT
+                .into_iter()
+                .find(|item| self.old.join(item).exists())
+            {
+                Some(item) => (self.old.join(item), self.data.join(item)),
+                None => {
+                    return match std::fs::remove_dir(&self.old) {
+                        Err(e) if e.kind() != std::io::ErrorKind::NotFound => {
+                            self.refused(message, e)
+                        }
+                        _ => Next::Refused(format!(
+                            "the backup could not be restored; your data was kept as it was ({message})"
+                        )),
+                    };
+                }
+            },
+        };
+        match rename_when_free(&from, &to) {
+            Ok(()) => Next::More,
+            Err(e) => self.refused(message, e),
         }
     }
-    for item in moved_out {
-        rename_when_free(&old.join(item), &data_dir.join(item))?;
+
+    fn refused(&self, message: String, e: std::io::Error) -> Next {
+        Next::Refused(format!(
+            "the backup could not be restored ({message}) and putting the previous data back failed ({e}); it is in {}",
+            self.old.display()
+        ))
     }
-    std::fs::remove_dir(old)
 }
 
 fn apply(data_dir: &Path) -> Result<String, String> {
-    let staged = staging(data_dir);
-    let ui_state = match std::fs::read_to_string(staged.join(UI_STATE)) {
+    let ui_state = match std::fs::read_to_string(staging(data_dir).join(UI_STATE)) {
         Ok(text) => text,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => "{}".into(),
         Err(e) => return Err(format!("cannot read the restored screen state: {e}")),
     };
-    let old = old_dir(data_dir);
-    let (mut moved_out, mut moved_in) = (Vec::new(), Vec::new());
-    match swap(data_dir, &staged, &old, &mut moved_out, &mut moved_in) {
-        Ok(()) => {
-            if let Err(e) = std::fs::remove_dir_all(&old) {
-                crate::applog::warn(
-                    "restore",
-                    format!("the previous data is still in {}: {e}", old.display()),
-                );
-            }
-            Ok(ui_state)
+    let mut run = Applying::begin(data_dir)?;
+    loop {
+        match run.step() {
+            Next::More => {}
+            Next::Restored => return Ok(ui_state),
+            Next::Refused(message) => return Err(message),
         }
-        Err(message) => match roll_back(data_dir, &old, &moved_out, &moved_in) {
-            Ok(()) => Err(format!(
-                "the backup could not be restored; your data was kept as it was ({message})"
-            )),
-            Err(e) => Err(format!(
-                "the backup could not be restored ({message}) and putting the previous data back failed ({e}); it is in {}",
-                old.display()
-            )),
-        },
     }
 }
 
@@ -350,7 +433,8 @@ pub fn apply_pending(data_dir: &Path) {
             RestoreOutcome::Failed { message }
         }
     };
-    if let Err(e) = discard(data_dir) {
+    // The marker goes first: a start cut off while the rest is removed must not apply the restore again.
+    if let Err(e) = remove_any(&staged.join(READY)).and_then(|()| discard(data_dir)) {
         crate::applog::warn("restore", format!("cannot remove {STAGING}: {e}"));
     }
     let text = serde_json::to_string(&outcome).expect("the outcome serializes");
@@ -368,6 +452,9 @@ pub fn take_outcome(data_dir: &Path) -> RestoreOutcome {
     let _ = std::fs::remove_file(&path);
     serde_json::from_str(&text).unwrap_or(RestoreOutcome::None)
 }
+
+#[cfg(test)]
+mod crash_tests;
 
 #[cfg(test)]
 mod copy_tests {
