@@ -121,10 +121,22 @@ pub fn save_secret(data_dir: &Path, which: Secret, value: Option<&str>) -> Resul
             let sealed = protect(k.as_bytes())?;
             std::fs::create_dir_all(path.parent().expect("has a parent"))
                 .map_err(|e| format!("cannot create the secrets folder: {e}"))?;
-            std::fs::write(&path, sealed)
+            write_whole(&path, &sealed)
                 .map_err(|e| format!("cannot save the {}: {e}", which.label()))
         }
     }
+}
+
+/// Writes a sibling first and moves it over the file, so a write cut off (the power goes) never leaves half of one: a
+/// half key cannot be unsealed, and a half store id would make a new id and lose the saved keys.
+fn write_whole(path: &Path, bytes: &[u8]) -> std::io::Result<()> {
+    let mut temp = path.as_os_str().to_owned();
+    temp.push(".tmp");
+    let temp = std::path::PathBuf::from(temp);
+    std::fs::write(&temp, bytes)?;
+    std::fs::rename(&temp, path).inspect_err(|_| {
+        let _ = std::fs::remove_file(&temp);
+    })
 }
 
 fn store_credential(data_dir: &Path, name: &str, value: &str) -> Result<(), String> {
@@ -146,7 +158,7 @@ fn target_for(data_dir: &Path, name: &str, create: bool) -> Result<Option<String
             let id = new_store_id();
             std::fs::create_dir_all(data_dir.join(SECRETS_DIR))
                 .map_err(|e| format!("cannot create the secrets folder: {e}"))?;
-            std::fs::write(&file, &id)
+            write_whole(&file, id.as_bytes())
                 .map_err(|e| format!("cannot save the secrets folder id: {e}"))?;
             id
         }
@@ -380,6 +392,21 @@ fn unprotect(_: &[u8]) -> Result<Vec<u8>, String> {
 #[cfg(all(test, windows))]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_write_replaces_the_file_whole_and_a_cut_off_one_leaves_the_old_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("store-id");
+        write_whole(&file, b"old id").unwrap();
+        // A write cut off before its rename leaves only the sibling, half written: the file is still whole.
+        std::fs::write(dir.path().join("store-id.tmp"), b"ne").unwrap();
+        assert_eq!(std::fs::read(&file).unwrap(), b"old id");
+        write_whole(&file, b"new id").unwrap();
+        assert_eq!(std::fs::read(&file).unwrap(), b"new id");
+        assert!(!dir.path().join("store-id.tmp").exists());
+        // A write into a folder that is not there fails and leaves nothing.
+        assert!(write_whole(&dir.path().join("none").join("f"), b"x").is_err());
+    }
 
     /// The Credential Manager is one store for the whole user, and a save followed by a read of it came back empty when
     /// several tests used it at once (about one full run in five, 2026-10-29): the tests that use it take turns.
