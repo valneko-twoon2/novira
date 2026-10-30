@@ -365,6 +365,9 @@ mod tests {
         assert!(!s.data_dir_moves && s.data_dir_next.is_some());
         let s = b.cancel_data_dir_change().unwrap();
         assert_eq!((s.data_dir_next, s.restart_needed), (None, false));
+        // The pointer now names the folder in use and no move.
+        let kept = data_location::read(&pointer).unwrap();
+        assert_eq!((kept.data_dir, kept.move_from), (data.clone(), None));
     }
 
     #[test]

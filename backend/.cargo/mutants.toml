@@ -11,7 +11,46 @@ gitignore = true
 
 # Every exclusion needs a reason here, and is added only after a run showed the mutants are noise.
 exclude_globs = []
-exclude_re = []
+# Each pattern names the mutant by what it changes, not by its line. A reason follows each group.
+exclude_re = [
+  # The mutant makes a retry or a poll loop run for ever; the test run is stopped by the timeout, which is how the
+  # change is noticed. Re-running them costs minutes each and shows nothing new.
+  'replace match guard e\.kind\(\) == std::io::ErrorKind::Interrupted with true in copy_into',
+  'replace == with != in copy_into',
+  'replace match guard e\.kind\(\) == std::io::ErrorKind::NotFound \|\| tries >= 40 with false in rename_when_free',
+  'replace \+= with -= in rename_when_free',
+  'replace \+= with \*= in rename_when_free',
+  'replace \+= with \*= in old_dir',
+  'replace \+= with \*= in rename_retrying',
+  'replace && with \|\| in rename_retrying',
+  'with true in rename_retrying',
+  'replace ComfyEngine::history(_unless_cancelled)? -> Result<Option<Value>, EngineError> with Ok',
+  'replace is_done -> bool with false',
+  'replace \|\| with && in is_done',
+  # The pause between two retries is one constant under the test seam (`test_timing::retry_pause`), so its arithmetic
+  # and the ninth try instead of the eighth cannot be told apart without waiting for real seconds.
+  'replace < with <= in rename_retrying',
+  'replace < with <= in rename_when_free',
+  'replace \* with [+/] in rename_when_free',
+  'replace \* with [+/] in rename_retrying',
+  # The size of the copy buffer changes nothing a caller can see.
+  'replace \* with \+ in copy_into',
+  # Whether a time limit is reached by < or <=, and how often a progress report is thinned out, depend on the clock.
+  'replace < with <= in ComfyEngine::ensure_ready_inner',
+  'replace >= with < in Backend::run_install',
+  # Only the choice between logging and not logging.
+  'replace match guard r\.status\(\)\.is_success\(\) with (true|false) in ComfyEngine::free_memory',
+  # A name of four characters that ends in an extension starts with a dot, which is refused anyway.
+  'replace > with >= in is_valid_name',
+  # `chunks`: the loop ends in `None` whether it stops at the end or one step later, and `end / 4` and `end - 4` both
+  # reach the end of the slice that `get` checks.
+  'replace < with <= in chunks',
+  'replace - with / in chunks',
+  # The cover is marked mature only for a cover that exists, and no answer has a mature mark without a cover.
+  'replace && with \|\| in Backend::run_install',
+  # `Found.trusted` is true only for a signer on a real trust list; a test has none to sign with.
+  'delete field trusted from struct Found expression in read',
+]
 
 # The whole suite takes about 40 s (50 test binaries are relinked for every mutant), so a mutant that makes a loop run
 # for ever is stopped late. A multiplier of 3 on the measured baseline with a floor of 120 s avoids false timeouts on a

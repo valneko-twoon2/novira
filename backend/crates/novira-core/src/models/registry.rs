@@ -251,6 +251,30 @@ mod tests {
         assert_eq!(third.changed.len(), 1);
     }
 
+    #[test]
+    fn a_changed_file_refreshes_what_the_file_says_about_itself_and_not_the_users_edits() {
+        let dir = tempfile::tempdir().unwrap();
+        let a = found(dir.path(), "detail-xl.safetensors", 4);
+        let fresh = merge(std::slice::from_ref(&a), &[], &HashSet::new()).listed[0].clone();
+        let stale = ModelConfig {
+            base: BaseModel::Flux,
+            format: crate::types::ModelFormat::Gguf,
+            comfy: Some(ComfyRef {
+                name: "old-name.safetensors".into(),
+                ..fresh.comfy.clone().unwrap()
+            }),
+            name: "My detail".into(),
+            ..fresh.clone()
+        };
+        assert_ne!((stale.base, stale.format), (fresh.base, fresh.format));
+        let a2 = found(dir.path(), "detail-xl.safetensors", 9);
+        let merged = merge(&[a2], &[stale], &HashSet::new()).listed[0].clone();
+        assert_eq!(merged.base, fresh.base);
+        assert_eq!(merged.format, fresh.format);
+        assert_eq!(merged.comfy, fresh.comfy);
+        assert_eq!(merged.name, "My detail");
+    }
+
     /// A LoRA file whose header holds `keys` and `meta`.
     fn lora_file(dir: &std::path::Path, name: &str, keys: &[&str], meta: &str) -> FoundModel {
         let tensors: Vec<String> = keys
