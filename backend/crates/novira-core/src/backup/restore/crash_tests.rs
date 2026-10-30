@@ -204,6 +204,16 @@ fn a_damaged_journal_changes_nothing() {
         std::fs::write(staging(&data).join(JOURNAL), name).unwrap();
         assert!(Applying::begin(&data).is_err(), "{name}");
     }
+    // A journal that is there but cannot be read is not a missing one: starting afresh would write a new journal over it
+    // and lose the folder the previous data was moved into.
+    let unreadable = [b'b', 0xff, 0xfe, b'x'];
+    std::fs::write(staging(&data).join(JOURNAL), unreadable).unwrap();
+    let err = Applying::begin(&data).err().unwrap();
+    assert!(err.contains("cannot read the restore journal"), "{err}");
+    assert_eq!(
+        std::fs::read(staging(&data).join(JOURNAL)).unwrap(),
+        unreadable
+    );
     std::fs::remove_file(staging(&data).join(JOURNAL)).unwrap();
     std::fs::remove_file(staging(&data).join(DATABASE)).unwrap();
     assert!(Applying::begin(&data).is_err(), "no database to restore");

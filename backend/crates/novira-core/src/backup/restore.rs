@@ -288,10 +288,8 @@ impl Applying {
         let old = match std::fs::read_to_string(&journal) {
             Ok(name) => {
                 let name = name.trim();
-                if !name.starts_with(OLD_PREFIX)
-                    || name.contains(['/', '\\'])
-                    || name.contains("..")
-                {
+                // One folder of the data folder: a name with the prefix and no separator cannot lead anywhere else.
+                if !name.starts_with(OLD_PREFIX) || name.contains(['/', '\\']) {
                     return Err("the restore journal is damaged; your data was not changed".into());
                 }
                 data_dir.join(name)
