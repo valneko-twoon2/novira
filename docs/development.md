@@ -46,9 +46,11 @@ Windows locks a running `novira.exe`, so close the app before you start, rebuild
 |---|---|
 | `node tools\affected.mjs` | Runs only the checks the changed files need. Start here |
 | `scripts\version.bat` | Sets the app's version (asks for it, or `version.bat 0.2.0`) in `Cargo.toml`, `package.json` and the lock files | You prepare a release |
-| `node toolselease-smoke.mjs` | Starts what `release.bat` put in `artifacts\`: the server on an empty data folder and on each old-data fixture, and the app with no engine, each until its main screen or its data answers. Nothing uses the GPU; its folders are deleted after | You publish a release, before `package.bat` |
+| `node tools
+elease-smoke.mjs` | Starts what `release.bat` put in `artifacts\`: the server on an empty data folder and on each old-data fixture, and the app with no engine, each until its main screen or its data answers. Nothing uses the GPU; its folders are deleted after | You publish a release, before `package.bat` |
 | `scripts\package.bat` | Packs what `release.bat` built into the zip for a release page, with its SHA-256 (the programs and licence texts only); write the release notes from [release-notes-template.md](release-notes-template.md) | You publish a release |
 | `scripts\check.bat` | Every fast check: typecheck, lint, unit tests and line ends on the frontend, `cargo fmt`, clippy and `cargo test` on the backend (`frontend` or `backend` for one side) |
+| `scriptsull-check.bat` | Every test there is, by hand now and then (there is no CI): `check.bat`, the browser server's tests, every Playwright project and the layout scan, about half an hour; the report goes to `novira-data\workull-check\` (`--no-browser` skips the browser steps) |
 | `cd frontend && npm run check` | The frontend part alone |
 | `cd frontend && npx vitest run <path>` | One frontend test file |
 | `cd backend && cargo test -p novira-core --lib` | The backend's unit tests |

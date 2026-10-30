@@ -15,9 +15,10 @@ How the project is started, checked and guarded, and which file guards what. How
 | `release.bat` | A release build into `artifacts/`: the app, `novira-server.exe`, `dist/` and a `server.bat` it writes |
 | `package.bat` | After `release.bat` and `tools/release-smoke.mjs` (the built files start): zip and `.sha256` (`tools/package-release.mjs`) |
 | `check.bat` | All fast checks: `npm run check` plus `cargo fmt --check`, clippy with `-D warnings`, `cargo test` |
-| `coverage.bat`, `mutation.bat` | Coverage and mutation testing; reports in `novira-data/work/`, no source changes |
+| `full-check.bat` | All tests by hand (no CI): `check.bat`, `novira-server`, Playwright, layout scan (`tools/full-check.mjs`) |
+| `coverage.bat`, `mutation.bat` | Coverage, mutation testing; reports in `novira-data/work/` |
 | `version.bat` | Sets the one version in `Cargo.toml`, `package.json` and the lock files (`tools/set-version.mjs`) |
-| `manual.bat` | The user manual: mock-app screenshots, then `novira-data/work/manual/<language>/` |
+| `manual.bat` | The manual: mock-app screenshots, then `novira-data/work/manual/<language>/` |
 
 | Elsewhere | What |
 |---|---|
@@ -32,7 +33,7 @@ How the project is started, checked and guarded, and which file guards what. How
 | `tools/perf.mjs` (runs `tools/perf-startup.mjs`, `backend/crates/novira-core/examples/backend_timing.rs`) | Speed of the backend, the frontend start and the real app's IPC, against a saved baseline |
 | `tools/fetch-trustmark.mjs`, `tools/comfy-node-defs.mjs` | The watermark's pinned files, hash-checked; the saved node definitions of ComfyUI |
 | `.githooks/` | `pre-commit` and `commit-msg` (sh wrappers, turned on by `npm install`) running `pre-commit.mjs` / `commit-msg.mjs` |
-| `frontend/scripts/` | The scripts tied to the frontend: the local lint rules (`eslint-*.mjs`), `check-i18n-sync.mjs`, `check-manual-sync.mjs`, `check-glossary.mjs`, `i18n-add.mjs`, `i18n-todo.mjs`, `manual.mjs`, `shot.mjs`, `e2e-server.mjs` (the cached build the layout scan opens, in `novira-data/work/e2e-build/`) |
+| `frontend/scripts/` | The scripts tied to the frontend: the local lint rules (`eslint-*.mjs`), text and manual checks, `shot.mjs`, `e2e-server.mjs` (the layout scan's cached build, `novira-data/work/e2e-build/`) |
 | `.claude/hooks/`, `.claude/settings.json` | Claude Code hooks (below) |
 
 ### Stale output
