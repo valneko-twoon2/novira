@@ -24,8 +24,9 @@ minimum_test_timeout = 120.0
 #   every_open_source_homepage_may_be_opened: reads frontend/src/features/settings/ossLicenses.json
 #   every_fixture_is_checked, fixtures_match_the_rust_types (tests/contract) and the four prop_roundtrip tests that read
 #   a fixture: read contract/
-#   secret::tests: write to the Windows Credential Manager, which refuses new entries (error 8) once old test runs have
-#   filled it; they run in every normal `cargo test` and no mutant of the files tested here reaches them.
+#   secret::tests and the nine tests below them save a site key: they write to the Windows Credential Manager, which
+#   refuses new entries (error 8) while it is full of entries that old test runs left. They run in every normal
+#   `cargo test`; mutants that only these tests would catch (the download paths that send a key) show as missed.
 additional_cargo_test_args = [
   "--",
   "--skip", "every_open_source_homepage_may_be_opened",
@@ -36,4 +37,13 @@ additional_cargo_test_args = [
   "--skip", "unknown_fields_of_the_generation_settings_are_kept_for_newer_frontends",
   "--skip", "a_generation_setting_of_any_prompt_text_and_numbers_round_trips",
   "--skip", "secret::tests",
+  "--skip", "keys_are_saved_across_restarts_and_a_blank_one_removes_it",
+  "--skip", "the_token_is_sent_when_one_is_set",
+  "--skip", "a_leftover_that_cannot_be_removed_does_not_stop_a_site_key_from_being_saved",
+  "--skip", "the_cover_lookup_sends_the_civitai_key_and_stops_when_the_app_is_closing",
+  "--skip", "a_hugging_face_search_follows_the_next_links_and_sends_the_token",
+  "--skip", "a_hugging_face_file_is_downloaded_with_the_token_and_gets_cover_and_licence",
+  "--skip", "a_civitai_search_is_mapped_and_sent_with_the_key",
+  "--skip", "a_civitai_file_is_resolved_downloaded_and_given_its_cover_words_and_licence",
+  "--skip", "a_saved_secret_of_any_bytes_is_read_or_refused_and_a_saved_key_reads_back",
 ]
