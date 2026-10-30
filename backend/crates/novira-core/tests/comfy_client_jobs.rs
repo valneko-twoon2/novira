@@ -24,6 +24,8 @@ struct Fake {
     nodes: Vec<&'static str>,
     /// The files the GGUF loaders list.
     gguf: Vec<&'static str>,
+    /// The files the text-encoder GGUF loader lists, when it lists others than `gguf`.
+    clip_gguf: Vec<&'static str>,
     /// The upload (counted from 1) that fails with HTTP 500; 0 for none.
     fail_upload_at: usize,
     uploads: Arc<AtomicUsize>,
@@ -63,7 +65,8 @@ async fn serve(fake: Fake) -> (ComfyEngine, Fake) {
                     return StatusCode::NOT_FOUND.into_response();
                 }
                 Json(json!({ node: { "input": { "required": {
-                    "unet_name": [f.gguf], "clip_name": [f.gguf]
+                    "unet_name": [f.gguf],
+                    "clip_name": [if f.clip_gguf.is_empty() { f.gguf.clone() } else { f.clip_gguf.clone() }]
                 } } } }))
                 .into_response()
             }),
@@ -122,6 +125,7 @@ fn fake() -> Fake {
     Fake {
         nodes: vec!["KSampler"],
         gguf: vec![],
+        clip_gguf: vec![],
         fail_upload_at: 0,
         uploads: Arc::default(),
         outputs: Arc::default(),
@@ -224,6 +228,32 @@ async fn gguf_files_are_looked_up_in_the_lists_of_the_gguf_loaders() {
         m.contains("missing.gguf") && m.contains("text_encoders"),
         "{m}"
     );
+}
+
+#[tokio::test]
+async fn each_gguf_file_is_looked_up_in_the_list_of_its_own_loader() {
+    let (engine, _) = serve(Fake {
+        nodes: vec!["KSampler", "UnetLoaderGGUF", "CLIPLoaderGGUF"],
+        gguf: vec!["unet-only.gguf"],
+        clip_gguf: vec!["clip-only.gguf"],
+        ..fake()
+    })
+    .await;
+    engine
+        .validate(&gguf_job("unet-only.gguf", "clip-only.gguf"))
+        .await
+        .unwrap();
+    // The model folder is called `unet` in older installs; it is still read from the model loader.
+    let mut old = gguf_job("unet-only.gguf", "clip-only.gguf");
+    old.checkpoint = r("unet", "unet-only.gguf");
+    engine.validate(&old).await.unwrap();
+    // Swapped, each file is missing from the list it is asked in.
+    assert!(failure(
+        engine
+            .validate(&gguf_job("clip-only.gguf", "unet-only.gguf"))
+            .await
+    )
+    .contains("clip-only.gguf"));
 }
 
 #[tokio::test]

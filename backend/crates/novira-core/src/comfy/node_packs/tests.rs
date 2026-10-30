@@ -238,3 +238,51 @@ fn portable_builds_pin_their_wheels_by_the_version_in_the_file_name() {
             "Torchaudio==2.11.0\n"
         );
 }
+
+#[test]
+fn a_version_file_with_an_empty_or_overlong_value_gives_no_version() {
+    let dir = tempfile::tempdir().unwrap();
+    let write = |text: &str| std::fs::write(dir.path().join("comfyui_version.py"), text).unwrap();
+    write("__version__ = \"\"\n");
+    assert_eq!(comfyui_version(dir.path()), None);
+    write(&format!("__version__ = \"{}\"\n", "9".repeat(40)));
+    assert_eq!(
+        comfyui_version(dir.path()).as_deref(),
+        Some("9".repeat(40).as_str())
+    );
+    write(&format!("__version__ = \"{}\"\n", "9".repeat(41)));
+    assert_eq!(comfyui_version(dir.path()), None);
+}
+
+#[test]
+fn only_the_named_repository_of_the_named_owner_has_libraries_left_out_or_added() {
+    let repo = |o: &str, r: &str| GithubRepo {
+        owner: o.into(),
+        repo: r.into(),
+    };
+    // Owner and repository must both match, whatever the case.
+    assert!(!skipped_requirements(&repo("Fannovel16", "comfyui_controlnet_aux")).is_empty());
+    assert!(!skipped_requirements(&repo("fannovel16", "ComfyUI_ControlNet_Aux")).is_empty());
+    assert!(skipped_requirements(&repo("Fannovel16", "other")).is_empty());
+    assert!(skipped_requirements(&repo("someone", "comfyui_controlnet_aux")).is_empty());
+    // The RMBG pack gets its Windows-only triton package, and only there.
+    let rmbg = extra_requirements(&repo("1038lab", "ComfyUI-RMBG"));
+    if cfg!(windows) {
+        assert_eq!(rmbg, &["triton-windows"]);
+    } else {
+        assert!(rmbg.is_empty());
+    }
+    assert!(extra_requirements(&repo("1038lab", "other")).is_empty());
+}
+
+#[test]
+fn a_frozen_line_pins_only_with_both_a_name_and_a_version() {
+    assert_eq!(
+        pin("numpy==1.26.4"),
+        Some(("numpy".into(), "1.26.4".into()))
+    );
+    assert_eq!(pin("numpy=="), None);
+    assert_eq!(pin("==1.0"), None);
+    assert_eq!(pin("numpy"), None);
+    assert_eq!(pin("  "), None);
+}

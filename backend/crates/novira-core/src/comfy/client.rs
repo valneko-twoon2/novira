@@ -1354,6 +1354,72 @@ mod tests {
     }
 
     #[test]
+    fn only_the_end_messages_of_our_own_prompt_end_the_job() {
+        let msg = |kind: &str, id: &str, node: &str| {
+            format!(
+                r#"{{"type":"{kind}","data":{{"prompt_id":"{id}","node":{node},"exception_message":"boom"}}}}"#
+            )
+        };
+        for (kind, node, want) in [
+            ("executing", "null", WsEvent::Done),
+            ("execution_success", "null", WsEvent::Done),
+            (
+                "execution_error",
+                "null",
+                WsEvent::Error("ComfyUI: boom".into()),
+            ),
+            ("execution_interrupted", "null", WsEvent::Interrupted),
+        ] {
+            // Ours ends it; another prompt's identical message is ignored.
+            let got = parse_ws_text(&msg(kind, "a", node), "a");
+            assert!(
+                matches!((&got, &want), (WsEvent::Error(_), WsEvent::Error(_))) || got == want,
+                "{kind}: {got:?}"
+            );
+            assert_eq!(
+                parse_ws_text(&msg(kind, "b", node), "a"),
+                WsEvent::Other,
+                "{kind}"
+            );
+            // A message without any prompt id is not ours either.
+            let anon = format!(r#"{{"type":"{kind}","data":{{"node":null}}}}"#);
+            assert_eq!(parse_ws_text(&anon, "a"), WsEvent::Other, "{kind}");
+        }
+        // Progress without a prompt id is taken as ours (ComfyUI sends it so while a job runs).
+        let anon = r#"{"type":"progress","data":{"value":2,"max":5}}"#;
+        assert!(matches!(
+            parse_ws_text(anon, "a"),
+            WsEvent::Progress {
+                value: 2,
+                max: 5,
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    fn a_history_entry_is_done_when_completed_or_ended_with_a_status() {
+        let done = |v: serde_json::Value| is_done(&v);
+        assert!(done(serde_json::json!({ "status": { "completed": true } })));
+        assert!(done(
+            serde_json::json!({ "status": { "status_str": "success" } })
+        ));
+        assert!(done(
+            serde_json::json!({ "status": { "status_str": "error" } })
+        ));
+        assert!(!done(
+            serde_json::json!({ "status": { "completed": false, "status_str": "running" } })
+        ));
+        assert!(!done(serde_json::json!({})));
+    }
+
+    #[test]
+    fn an_output_node_that_showed_an_empty_text_list_showed_nothing() {
+        let entry = serde_json::json!({ "status": { "status_str": "success" }, "outputs": { "9": { "text": [] } } });
+        assert_eq!(output_text(&entry, "9").unwrap(), None);
+    }
+
+    #[test]
     fn text_outputs_are_read_and_files_win_over_text() {
         let entry = serde_json::json!({ "status": { "status_str": "success" }, "outputs": {
             "9": { "text": ["1girl, solo, smile"] },

@@ -55,6 +55,22 @@ async fn the_tags_and_the_description_of_a_pack_repository_have_a_size_cap() {
     assert!(err.contains("unexpectedly large"), "{err}");
 }
 
+#[tokio::test]
+async fn an_answer_of_exactly_the_cap_is_still_read() {
+    let repo = parse_github("https://github.com/exactowner/exactrepo").unwrap();
+    // Announced and sent as plain bytes: the announced length is the cap itself.
+    site().put(
+        "/repos/exactowner/exactrepo/tags",
+        Route::bytes(vec![b' '; 1_000_000]),
+    );
+    assert!(tags(&client(), &repo).await.unwrap().is_empty());
+    // Compressed on the wire, so only the size read counts.
+    site().put("/repos/exactowner/exactrepo/tags", gzip_zeros(1_000_000));
+    assert!(tags(&client(), &repo).await.is_ok());
+    site().put("/repos/exactowner/exactrepo", gzip_zeros(1_000_000));
+    assert!(repo_info(&client(), &repo).await.is_ok());
+}
+
 fn page_node(id: &str, name: &str, downloads: u64) -> serde_json::Value {
     json!({
         "id": id, "name": name, "status": "NodeStatusActive", "downloads": downloads,

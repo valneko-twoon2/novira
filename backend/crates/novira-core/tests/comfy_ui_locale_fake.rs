@@ -28,6 +28,10 @@ enum Mode {
     UnreadableWords,
     /// The words file is larger than a script may be.
     TooLarge,
+    /// The words file is exactly as large as a script may be (not text of words, so "no words", not an error).
+    AtLimit,
+    /// The words file is one byte over what a script may be.
+    OneOver,
     /// The words file is not text.
     NotText,
     /// The words file is missing (HTTP 404).
@@ -60,6 +64,8 @@ async fn asset(State(m): State<Mode>, Path(name): Path<String>) -> impl IntoResp
             Mode::MissingFile => StatusCode::NOT_FOUND.into_response(),
             Mode::UnreadableWords => text("this is not a module"),
             Mode::TooLarge => text(&"a".repeat(9 * 1024 * 1024)),
+            Mode::AtLimit => text(&"a".repeat(8 * 1024 * 1024)),
+            Mode::OneOver => text(&"a".repeat(8 * 1024 * 1024 + 1)),
             Mode::NotText => ([(header::CONTENT_TYPE, "text/javascript")], vec![0xff, 0xfe, 0xfd]).into_response(),
             _ => text(MAIN),
         },
@@ -128,6 +134,10 @@ async fn a_script_that_cannot_be_fetched_is_an_error_that_names_what_failed() {
         .to_string();
     assert!(err.contains("main-fr.js") && err.contains("404"), "{err}");
     let err = words(Mode::TooLarge, "fr").await.unwrap_err().to_string();
+    assert!(err.contains("too large"), "{err}");
+    // The limit itself is allowed; one byte more is not.
+    assert_eq!(words(Mode::AtLimit, "fr").await.unwrap(), None);
+    let err = words(Mode::OneOver, "fr").await.unwrap_err().to_string();
     assert!(err.contains("too large"), "{err}");
     assert!(words(Mode::NotText, "fr").await.is_err());
 }
