@@ -436,6 +436,14 @@ mod copy_tests {
     }
 
     #[test]
+    fn the_unpack_limits_are_one_mib_for_the_manifest_sixteen_gib_for_the_database_and_eight_for_a_picture(
+    ) {
+        assert_eq!(MAX_MANIFEST, 1_048_576);
+        assert_eq!(MAX_DATABASE, 17_179_869_184);
+        assert_eq!(MAX_GALLERY_FILE, 8_589_934_592);
+    }
+
+    #[test]
     fn a_missing_source_is_not_retried() {
         let dir = tempfile::tempdir().unwrap();
         let started = std::time::Instant::now();
