@@ -4,6 +4,9 @@
 mod fake_site;
 
 use fake_site::{site, Route};
+#[path = "key_cleanup/mod.rs"]
+mod key_cleanup;
+use key_cleanup::KeyCleanup;
 use novira_core::engine::{Engine, EngineError, EngineJob, EngineOutput, ProgressFn};
 use novira_core::models::civitai::SearchParams;
 use novira_core::types::*;
@@ -124,6 +127,7 @@ fn search_params(source: &str) -> SearchParams {
 async fn a_civitai_search_is_mapped_and_sent_with_the_key() {
     let dir = tempfile::tempdir().unwrap();
     let (backend, _) = open(dir.path());
+    let _keys = KeyCleanup::new(dir.path());
     backend
         .set_civitai_key(Some("civ-search-key".into()))
         .unwrap();
@@ -192,6 +196,7 @@ async fn a_civitai_search_is_mapped_and_sent_with_the_key() {
 async fn a_hugging_face_search_follows_the_next_links_and_sends_the_token() {
     let dir = tempfile::tempdir().unwrap();
     let (backend, _) = open(dir.path());
+    let _keys = KeyCleanup::new(dir.path());
     backend
         .set_hf_token(Some("hf_search_token".into()))
         .unwrap();
@@ -230,6 +235,7 @@ async fn a_hugging_face_search_follows_the_next_links_and_sends_the_token() {
 async fn a_civitai_file_is_resolved_downloaded_and_given_its_cover_words_and_licence() {
     let dir = tempfile::tempdir().unwrap();
     let (backend, events) = open(dir.path());
+    let _keys = KeyCleanup::new(dir.path());
     backend.set_civitai_key(Some("civ-dl-key".into())).unwrap();
     let base = &site().base;
     site().put_json(
@@ -351,6 +357,7 @@ async fn a_civitai_answer_that_is_not_ok_fails_the_install() {
 async fn a_hugging_face_file_is_downloaded_with_the_token_and_gets_cover_and_licence() {
     let dir = tempfile::tempdir().unwrap();
     let (backend, events) = open(dir.path());
+    let _keys = KeyCleanup::new(dir.path());
     backend.set_hf_token(Some("hf_dl_token".into())).unwrap();
     site().put(
         "/owner/hf-lora/resolve/main/hf-lora.safetensors",

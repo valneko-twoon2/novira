@@ -4,6 +4,9 @@
 mod fake_site;
 
 use fake_site::{site, Route};
+#[path = "key_cleanup/mod.rs"]
+mod key_cleanup;
+use key_cleanup::KeyCleanup;
 use novira_core::engine::{Engine, EngineError, EngineJob, EngineOutput, ProgressFn};
 use novira_core::types::*;
 use novira_core::{Backend, BackendConfig, Settings};
@@ -88,6 +91,7 @@ async fn the_cover_lookup_sends_the_civitai_key_and_stops_when_the_app_is_closin
     let (dir, bytes, _) = data_with_lora("odd-key");
     let path = by_hash_path(&bytes);
     let (backend, _) = open_with(dir.path(), vec![]);
+    let _keys = KeyCleanup::new(dir.path());
     backend
         .set_civitai_key(Some("odd-key-secret".into()))
         .unwrap();
