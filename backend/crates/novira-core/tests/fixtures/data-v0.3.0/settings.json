@@ -1,0 +1,9 @@
+{
+  "civitaiLookup": false,
+  "lowMemoryMode": true,
+  "comfyuiArgs": [
+    "--fast"
+  ],
+  "comfyuiStartTimeoutSecs": 300,
+  "gpuLock": ""
+}

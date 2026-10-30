@@ -30,6 +30,7 @@ mod memory;
 mod models;
 mod models_without_comfy;
 mod node_pack_net;
+mod old_data;
 mod queue;
 mod service_edges;
 mod settings;

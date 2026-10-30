@@ -13,11 +13,11 @@ How the project is started, checked and guarded, and which file guards what. How
 | `dev.bat` | `cargo tauri dev`: Vite hot reload with the real backend |
 | `server.bat` | Builds what changed (`tools/ensure-frontend.mjs`), starts `novira-server` on `novira-data` with the engine and opens the browser (`fast` skips the build) |
 | `release.bat` | A release build into `artifacts/`: the app, `novira-server.exe`, `dist/` and a `server.bat` it writes |
-| `package.bat` | After `release.bat`: the zip and `.sha256` for a release page (`tools/package-release.mjs`) |
+| `package.bat` | After `release.bat` and `tools/release-smoke.mjs` (the built files start): zip and `.sha256` (`tools/package-release.mjs`) |
 | `check.bat` | All fast checks: `npm run check` plus `cargo fmt --check`, clippy with `-D warnings`, `cargo test` |
 | `coverage.bat`, `mutation.bat` | Coverage and mutation testing; reports in `novira-data/work/`, no source changes |
 | `version.bat` | Sets the one version in `Cargo.toml`, `package.json` and the lock files (`tools/set-version.mjs`) |
-| `manual.bat` | The user manual: screenshots of every language from the mock app, then `novira-data/work/manual/<language>/` |
+| `manual.bat` | The user manual: mock-app screenshots, then `novira-data/work/manual/<language>/` |
 
 | Elsewhere | What |
 |---|---|
