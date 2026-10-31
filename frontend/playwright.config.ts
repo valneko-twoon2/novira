@@ -64,6 +64,16 @@ export default defineConfig({
       use: { ...devices['Pixel 7'] },
     },
     {
+      // The same phone layout in WebKit, Safari's engine, as an iPhone opens the browser server on the home network.
+      // Playwright's WebKit is not iOS Safari, but it shares the engine's CSS, layout and touch handling.
+      // `npx playwright install webkit` once. WebKit on Windows runs these about a third slower than Chromium: twice the
+      // time per case.
+      name: 'webkit',
+      testMatch: 'phone*.spec.ts',
+      timeout: 60_000,
+      use: { ...devices['iPhone 14'] },
+    },
+    {
       // Visual regression (`npm run e2e:visual`). Pinned scale, locale and time zone so pixels and dates match the baselines.
       name: 'visual',
       testMatch: 'visual.spec.ts',

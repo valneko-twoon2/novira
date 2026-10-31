@@ -1,8 +1,8 @@
 // The whole test suite in one run, to be started by hand now and then (there is no CI): what scripts\check.bat runs, plus
-// what it leaves out because it is slow: the browser server's tests, every Playwright project (the screen flows, the phone
-// layout, the visual regression) and the layout scan. Every step runs even when an earlier one failed. The result goes to
-// novira-data/work/full-check/<time>.md (step, result, minutes, the last lines of a failed step) and the exit code is 1
-// when any step failed.
+// what it leaves out because it is slow: the browser server's tests, the mock compared with the real backend, every
+// Playwright project (the screen flows, the phone layout in Chromium and WebKit, the visual regression) and the layout
+// scan. Every step runs even when an earlier one failed. The result goes to novira-data/work/full-check/<time>.md (step,
+// result, minutes, the last lines of a failed step) and the exit code is 1 when any step failed.
 // Nothing here uses the GPU, the network beyond what the tests' fakes serve on loopback, or the user's data folder.
 // Usage, from the repository root:  node tools/full-check.mjs [--no-browser] [--list]   (scripts\full-check.bat)
 //   --no-browser  skips the Playwright steps and the layout scan
@@ -28,14 +28,15 @@ export function plan({ browser = true } = {}) {
   const steps = [
     { name: 'scripts\\check.bat (frontend check, cargo fmt, clippy, novira-core and novira tests)', cwd: '.', command: 'cmd.exe', args: ['/d', '/c', 'scripts\\check.bat'] },
     { name: 'cargo test novira-server', cwd: 'backend', command: 'cargo', args: ['test', '-p', 'novira-server'] },
+    { name: 'the mock against the real backend (tools/diff-backends.mjs)', cwd: '.', command: process.execPath, args: ['tools/diff-backends.mjs'] },
   ];
   if (browser) {
     steps.push(
       {
-        name: 'Playwright: chromium, phone and visual projects',
+        name: 'Playwright: chromium, phone, webkit and visual projects',
         cwd: 'frontend',
         command: process.execPath,
-        args: [path.join(REPO, 'tools', 'e2e-lock.mjs'), '--', 'npx', 'playwright', 'test', '--project=chromium', '--project=phone', '--project=visual'],
+        args: [path.join(REPO, 'tools', 'e2e-lock.mjs'), '--', 'npx', 'playwright', 'test', '--project=chromium', '--project=phone', '--project=webkit', '--project=visual'],
       },
       { name: 'layout scan (ja and en)', cwd: '.', command: process.execPath, args: ['tools/layout-scan.mjs'] },
     );

@@ -4,16 +4,17 @@ import { describe, expect, it } from 'vitest';
 import { formatReport, parseArgs, plan } from '../../tools/full-check.mjs';
 
 describe('full-check', () => {
-  it('runs the fast checks, the server tests, every Playwright project and the layout scan, in that order', () => {
+  it('runs the fast checks, the server tests, the mock against the backend, every Playwright project and the layout scan, in that order', () => {
     const names = plan().map((s: { name: string }) => s.name);
     expect(names[0]).toMatch(/^scripts\\check\.bat/);
     expect(names[1]).toBe('cargo test novira-server');
-    const playwright = plan()[2];
+    expect(names[2]).toMatch(/diff-backends/);
+    const playwright = plan()[3];
     expect(playwright.cwd).toBe('frontend');
-    expect(playwright.args).toEqual(expect.arrayContaining(['--project=chromium', '--project=phone', '--project=visual']));
+    expect(playwright.args).toEqual(expect.arrayContaining(['--project=chromium', '--project=phone', '--project=webkit', '--project=visual']));
     expect(playwright.args[0]).toMatch(/e2e-lock\.mjs$/);
-    expect(names[3]).toMatch(/^layout scan/);
-    expect(plan({ browser: false })).toHaveLength(2);
+    expect(names[4]).toMatch(/^layout scan/);
+    expect(plan({ browser: false })).toHaveLength(3);
   });
 
   it('takes only its own options', () => {

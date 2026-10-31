@@ -49,7 +49,7 @@ test('a phone gets the phone layout: one tab with the tabs at its foot, no side 
 });
 
 test('draws a picture from the Generate tab, shows it full screen while it is drawn, then the picture it made', async ({ page }) => {
-  await openPhone(page, { stepDelay: 300 });
+  await openPhone(page, { stepDelay: 1000 });
   await expect(page.getByTestId('invoke-button')).toBeDisabled();
   await expect(page.getByTestId('generation-reason')).toBeVisible();
   await pickFirstModel(page);
@@ -105,7 +105,7 @@ test('looks through the pictures of a board full screen: swipe, star, info, dele
 });
 
 test('follows the jobs on the Queue tab: its count, cancelling one waiting, trying it again, watching one drawn', async ({ page }) => {
-  await openPhone(page, { stepDelay: 300 });
+  await openPhone(page, { stepDelay: 1000 });
   await pickFirstModel(page);
   await page.getByTestId('positive-prompt').fill('a quiet harbour in the rain');
   await page.getByTestId('invoke-button').tap();
