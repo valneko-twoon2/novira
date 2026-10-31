@@ -87,6 +87,8 @@ class Compiler {
   /** A sampler takes a random seed. */
   random = false;
   private readonly compiled = new Map<string, Outputs>();
+  /** The nodes whose compile has begun and not ended. */
+  private readonly compiling = new Set<string>();
   private readonly byId: Map<string, WorkflowNode>;
 
   constructor(private readonly g: Pick<EditorGraph, 'nodes' | 'edges'>) {
@@ -103,7 +105,15 @@ class Compiler {
   outputsOf(node: WorkflowNode): Outputs {
     let outs = this.compiled.get(node.id);
     if (!outs) {
-      outs = this.compile(node);
+      // Meeting a node again while it is still being compiled means the graph loops back into itself, which ComfyUI
+      // cannot run (the editor refuses such a connection, but a file or the assistant can bring one in).
+      if (this.compiling.has(node.id)) throw new ComfyGraphError('unsupported', node.id);
+      this.compiling.add(node.id);
+      try {
+        outs = this.compile(node);
+      } finally {
+        this.compiling.delete(node.id);
+      }
       this.compiled.set(node.id, outs);
     }
     return outs;

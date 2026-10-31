@@ -6,6 +6,7 @@ import type { WorkflowEdge, WorkflowNode } from '@/state/workflows/workflows';
 import { comfyTemplates } from './comfyNodes';
 import { ComfyGraphError, compileComfyPrompt } from './comfyPrompt';
 import { createNode, makeEdge } from './graph';
+import { readinessReasons } from './invokeBuilder';
 import { getTemplate, setExtensionTemplates } from './templates';
 
 beforeEach(() => setExtensionTemplates(comfyTemplates(MOCK_NODE_DEFS)));
@@ -34,6 +35,18 @@ describe('connections that point at nothing', () => {
     const edge: WorkflowEdge = { ...makeEdge('src', 'image', 'save', 'image'), sourceHandle: null };
     const g = { nodes: [node('image', 'src', { image: 'a.png' }), node('save_image', 'save')], edges: [edge] };
     expect(fail(g)).toMatchObject({ reason: 'unsupported', nodeId: 'src', field: null });
+  });
+
+  it('refuses a graph that loops back into itself, naming a node of the loop, and says so before it is queued', () => {
+    // The editor refuses such a connection, but a file or the assistant can still bring one in.
+    const nodes = [node('comfy:MockFilmGrain', 'a'), node('comfy:MockFilmGrain', 'b'), node('save_image', 'save')];
+    const edges = [makeEdge('a', 'IMAGE', 'b', 'image'), makeEdge('b', 'IMAGE', 'a', 'image'), makeEdge('b', 'IMAGE', 'save', 'image')];
+    const e = fail({ nodes, edges });
+    expect(e.reason).toBe('unsupported');
+    expect(['a', 'b']).toContain(e.nodeId);
+    const reasons = readinessReasons({ nodes, edges });
+    expect(reasons).toHaveLength(1);
+    expect(reasons[0]).toMatch(/Film Grain \(Mock\).*まだ実行できません/);
   });
 
   it('refuses a node of a pack whose nodes ComfyUI no longer lists', () => {
