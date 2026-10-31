@@ -160,7 +160,8 @@ fn a_start_cut_off_while_the_previous_data_was_being_removed_finishes_the_remova
     assert_eq!(journal, None, "no journal before the first start");
     let mut run = Applying::begin(&data).unwrap();
     let old = run.old.clone();
-    while run.step() == Next::More {}
+    // Bounded as `apply` is: a step that never ends the run fails the test instead of holding it.
+    assert!((0..MAX_STEPS).any(|_| run.step() != Next::More));
     // Cut off half way through removing the previous data: part of it is still there, the marker and journal too.
     std::fs::create_dir_all(old.join(OUTPUTS)).unwrap();
     std::fs::write(old.join(OUTPUTS).join("old.png"), b"current picture").unwrap();
@@ -256,7 +257,10 @@ fn a_folder_of_the_previous_data_that_cannot_be_removed_is_named() {
             std::fs::write(old.join("someone-elses.txt"), b"x").unwrap();
         }
     }
-    while last == Next::More {
+    for _ in 0..MAX_STEPS {
+        if last != Next::More {
+            break;
+        }
         last = run.step();
     }
     match last {
