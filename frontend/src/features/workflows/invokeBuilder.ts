@@ -44,7 +44,11 @@ export function readinessReasons(g: Pick<EditorGraph, 'nodes' | 'edges'>): strin
     const size = (n.data.inputs.clip_vision_model ?? 'ViT-H') as ClipVisionModel;
     if (encoderMissing(size, useModels.getState().models)) reasons.push(t('workflows.readiness.ipAdapterEncoder', { ...args, size }));
   }
-  const bad = invalidEdges(g.nodes, g.edges).length;
+  // A ComfyUI node whose pack is gone is named for that; its connections are not counted again as invalid ones. Left
+  // unconnected, it does not stop the run.
+  const gone = new Set(g.nodes.filter((n) => n.data.type.startsWith('comfy:') && !getTemplate(n.data.type) && g.edges.some((e) => e.source === n.id || e.target === n.id)).map((n) => n.id));
+  for (const n of g.nodes.filter((x) => gone.has(x.id))) reasons.push(t('workflows.readiness.packGone', { node: n.data.label || n.data.type.slice('comfy:'.length) }));
+  const bad = invalidEdges(g.nodes, g.edges).filter((e) => !gone.has(e.source) && !gone.has(e.target)).length;
   if (bad) reasons.push(t('workflows.readiness.invalidEdges', { count: bad }));
   if (!reasons.length && runsAsPrompt(g)) {
     const why = comfyPromptProblem(g);
@@ -67,7 +71,8 @@ function choiceReasons(nodes: WorkflowNode[]): string[] {
       const args = { node: nodeTitle(n), field: fieldLabel(n.data.type, input.name) };
       const value = n.data.inputs[input.name];
       if (input.options.length === 0) reasons.push(t('workflows.readiness.noChoices', args));
-      else if (typeof value !== 'string' || !input.options.includes(value)) reasons.push(t('workflows.readiness.notInList', { ...args, value: String(value ?? '') }));
+      else if (value === null || value === undefined || value === '') reasons.push(t('workflows.readiness.missingInput', args));
+      else if (typeof value !== 'string' || !input.options.includes(value)) reasons.push(t('workflows.readiness.notInList', { ...args, value: String(value) }));
     }
   }
   return reasons;

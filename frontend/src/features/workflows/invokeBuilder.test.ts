@@ -75,6 +75,17 @@ describe('what keeps a workflow from running', () => {
     expect(readinessReasons(g)).toEqual([]);
   });
 
+  it('names a wired node whose extension is gone instead of counting its connections as mismatched ones', () => {
+    const g = text2image();
+    g.nodes.push(node('comfy:MockFilmGrain', 'grain', { intensity: 0.4 }));
+    g.edges.push(makeEdge(byType(g, 'l2i').id, 'image', 'grain', 'image'));
+    setExtensionTemplates([]);
+    expect(readinessReasons(g)).toEqual([t('workflows.readiness.packGone', { node: 'MockFilmGrain' })]);
+    g.nodes.find((n) => n.id === 'grain')!.data.label = 'Grain';
+    g.edges.push(makeEdge(byType(g, 'sdxl_compel_prompt').id, 'conditioning', byType(g, 'denoise_latents').id, 'cfg_scale'));
+    expect(readinessReasons(g)).toEqual([t('workflows.readiness.packGone', { node: 'Grain' }), t('workflows.readiness.invalidEdges', { count: 1 })]);
+  });
+
   it('asks for the description of a described voice, which only that voice needs', () => {
     usePacks.getState().setPack('voice', { state: 'ready' });
     const g = graphOf('voiceRead');
@@ -118,11 +129,22 @@ describe('what keeps a workflow from running', () => {
     expect(readinessReasons(g)).toEqual([]);
   });
 
-  it('blocks a ComfyUI choice the node holds no value for (a model never picked)', () => {
+  it('asks for a ComfyUI choice the node holds no value for (a model never picked), not for an empty name in the list', () => {
     const g = graphOf('musicAceStep');
     const loader = byType(g, 'comfy:CheckpointLoaderSimple');
-    loader.data.inputs.ckpt_name = null;
-    expect(readinessReasons(g)).toEqual([t('workflows.readiness.notInList', { node: nodeTitle(loader.data.type), field: fieldLabel(loader.data.type, 'ckpt_name'), value: '' })]);
+    const args = { node: nodeTitle(loader.data.type), field: fieldLabel(loader.data.type, 'ckpt_name') };
+    for (const unset of [null, undefined, '']) {
+      loader.data.inputs.ckpt_name = unset;
+      expect(readinessReasons(g)).toEqual([t('workflows.readiness.missingInput', args)]);
+    }
+  });
+
+  it('names a ComfyUI choice that is not in the list ComfyUI has now', () => {
+    const g = graphOf('musicAceStep');
+    const loader = byType(g, 'comfy:CheckpointLoaderSimple');
+    loader.data.inputs.ckpt_name = 'elsewhere.safetensors';
+    const args = { node: nodeTitle(loader.data.type), field: fieldLabel(loader.data.type, 'ckpt_name') };
+    expect(readinessReasons(g)).toEqual([t('workflows.readiness.notInList', { ...args, value: 'elsewhere.safetensors' })]);
   });
 });
 

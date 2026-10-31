@@ -538,5 +538,6 @@
   "workflows.nodeLibrary.count.one": "{count} 個のノード",
   "workflows.nodeLibrary.count.other": "{count} 個のノード",
   "workflows.nodeLibrary.section.core": "Comfyノード",
-  "workflows.packs.catalog.mangascreen": "絵を白黒のマンガ原稿に仕上げる。線、平らな面、本物のスクリーントーン。"
+  "workflows.packs.catalog.mangascreen": "絵を白黒のマンガ原稿に仕上げる。線、平らな面、本物のスクリーントーン。",
+  "workflows.readiness.packGone": "「{node}」の拡張機能がインストールされていません。「拡張」タブからインストールするか、このノードを外してください"
 }
