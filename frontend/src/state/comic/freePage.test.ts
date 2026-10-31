@@ -130,11 +130,12 @@ describe('the other panel operations on a free page', () => {
   it('adds and takes away a corner of one panel only, down to a three-cornered panel', () => {
     const page = seedFree();
     const [first, second, third] = page.shapes!;
+    // The first panel's right edge lies on the page margin; the new corner stands past it, as only a free panel may.
     const [top, bottom] = [first![1]!, first![2]!];
-    const middle = { x: (top.x + bottom.x) / 2, y: (top.y + bottom.y) / 2 };
-    expect(useComic.getState().insertCorner(page.id, 0, 1, middle)).toBe(true);
+    const out = { x: (top.x + bottom.x) / 2 + 0.05, y: (top.y + bottom.y) / 2 };
+    expect(useComic.getState().insertCorner(page.id, 0, 1, out)).toBe(true);
     expect(current().shapes![0]).toHaveLength(5);
-    expect(current().shapes![0]![2]).toEqual(middle);
+    expect(current().shapes![0]![2]).toEqual(out);
     expect(current().shapes!.slice(1)).toEqual([second, third]);
     // A rectangle's corner can go too: a free panel shares no corner with a neighbour.
     expect(useComic.getState().removeCorner(page.id, 0, 2)).toBe(true);
@@ -154,6 +155,8 @@ describe('the other panel operations on a free page', () => {
     expect(applied.x).toBeGreaterThan(0);
     expect(applied.x).toBeLessThan(5);
     expect(current().shapes![0]![1]!.x).toBeCloseTo(before.x + applied.x);
+    // Unlike a tiled panel, which stops at the page margin, a free panel may run off the page.
+    expect(current().shapes![0]![1]!.x).toBeGreaterThan(1);
   });
 
   it('adds a panel of its own at the end instead of cutting one', () => {

@@ -79,12 +79,13 @@ describe('an edit of one page', () => {
 describe('deleting a page', () => {
   it('that is not on screen keeps the page on screen and the panel selected on it', () => {
     const { a, first, second } = seed();
-    const selected = page(a, first).panels[1]!.id;
+    const third = useComic.getState().addPage()!;
+    const selected = page(a, third).panels[1]!.id;
     useComic.getState().selectPanel(selected);
     useComic.getState().deletePage(second);
     const s = useComic.getState();
-    expect(project(a).pages.map((pg) => pg.id)).toEqual([first]);
-    expect(s.activePageId).toBe(first);
+    expect(project(a).pages.map((pg) => pg.id)).toEqual([first, third]);
+    expect(s.activePageId).toBe(third);
     expect(s.selectedPanelId).toBe(selected);
   });
 

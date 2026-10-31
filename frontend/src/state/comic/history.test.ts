@@ -191,17 +191,17 @@ describe('the comic undo history', () => {
   });
 
   it('a step of a project deleted since changes nothing and keeps the open project and page', () => {
-    const a = newProject('A');
-    const b = newProject('B');
-    useComic.getState().setProjects([a, b]);
-    useComic.getState().setPrompt(a.pages[0]!.panels[0]!.id, 'in A');
-    useComic.getState().deleteProject(a.id);
+    const [a, b, c] = [newProject('A'), newProject('B'), newProject('C')];
+    useComic.getState().setProjects([a, b, c]);
+    useComic.getState().setPrompt(b.pages[0]!.panels[0]!.id, 'in B');
+    useComic.getState().selectProject(c.id);
+    useComic.getState().deleteProject(b.id);
     const kept = useComic.getState().projects;
 
     useComic.getState().undo();
     expect(useComic.getState().projects).toEqual(kept);
-    expect(useComic.getState().projects[0]).toBe(kept[0]);
-    expect(useComic.getState()).toMatchObject({ activeProjectId: b.id, activePageId: b.pages[0]!.id, past: [] });
+    expect(useComic.getState().projects.every((p, i) => p === kept[i])).toBe(true);
+    expect(useComic.getState()).toMatchObject({ activeProjectId: c.id, activePageId: c.pages[0]!.id, past: [] });
   });
 
   it('a step of the last project, deleted since, leaves nothing open', () => {
