@@ -788,14 +788,15 @@ async fn check_request(
         return text(StatusCode::FORBIDDEN, "this connection is not served");
     };
     let headers = request.headers();
-    // Exactly one `Host` and at most one `Origin`: with two, which one a check reads and which one a later reader
-    // trusts could differ.
+    // Exactly one `Host` and at most one `Origin` and `Sec-Fetch-Site`: with two, which one a check reads and which one a
+    // later reader trusts could differ (the fetch-site check reads the first, so `same-origin` before `cross-site` passed).
     if headers.get_all(header::HOST).iter().count() != 1
         || headers.get_all(header::ORIGIN).iter().count() > 1
+        || headers.get_all("sec-fetch-site").iter().count() > 1
     {
         return text(
             StatusCode::BAD_REQUEST,
-            "a request names one host and one origin",
+            "a request names one host, one origin and one fetch site",
         );
     }
     let host = headers

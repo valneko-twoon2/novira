@@ -320,6 +320,21 @@ async fn a_wrong_host_or_origin_is_refused_even_with_the_token() {
         let r = f.get("/", &[("Sec-Fetch-Site", site)]).await;
         assert_eq!(r.status, status, "Sec-Fetch-Site: {site}");
     }
+    // Two of them are refused, whatever their order: the check reads one, so `same-origin` first once let `cross-site`
+    // through (found by tests/http_fuzz.rs).
+    for pair in [
+        ["same-origin", "cross-site"],
+        ["none", ""],
+        ["cross-site", "same-origin"],
+    ] {
+        let r = f
+            .get(
+                "/",
+                &[("Sec-Fetch-Site", pair[0]), ("Sec-Fetch-Site", pair[1])],
+            )
+            .await;
+        assert_eq!(r.status, 400, "Sec-Fetch-Site: {pair:?}");
+    }
     // The cookie does not let a request through with the wrong host either.
     let r = send(
         f.server.addr,
