@@ -163,6 +163,55 @@ describe('the comic undo history', () => {
     expect(useComic.getState().past).toHaveLength(20);
     useSettings.getState().reset();
   });
+
+  it('a step that opens another project lets go of the panel and the balloon selected in this one', () => {
+    const a = newProject('A');
+    const b = newProject('B');
+    useComic.getState().setProjects([a, b]);
+    const aPanel = a.pages[0]!.panels[0]!.id;
+    const bubble = useComic.getState().addBubble(aPanel, 'speech')!;
+    useComic.getState().selectProject(b.id);
+    useComic.getState().setPrompt(b.pages[0]!.panels[0]!.id, 'in B');
+    useComic.getState().selectProject(a.id);
+    useComic.getState().openBubbleEditor(aPanel, bubble);
+
+    useComic.getState().undo();
+    expect(useComic.getState()).toMatchObject({ activeProjectId: b.id, selectedPanelId: null, selectedBubbleId: null, bubbleEditor: false });
+  });
+
+  it('a step that keeps the selected balloon keeps it selected with its editor open', () => {
+    const [first] = openProject().panels;
+    const bubble = useComic.getState().addBubble(first!, 'speech')!;
+    useComic.getState().openBubbleEditor(first!, bubble);
+    useComic.getState().setPrompt(first!, 'a cat');
+
+    useComic.getState().undo();
+    expect(prompt(first!)).toBe('');
+    expect(useComic.getState()).toMatchObject({ selectedPanelId: first, selectedBubbleId: bubble, bubbleEditor: true });
+  });
+
+  it('a step of a project deleted since changes nothing and keeps the open project and page', () => {
+    const [a, b, c] = [newProject('A'), newProject('B'), newProject('C')];
+    useComic.getState().setProjects([a, b, c]);
+    useComic.getState().setPrompt(b.pages[0]!.panels[0]!.id, 'in B');
+    useComic.getState().selectProject(c.id);
+    useComic.getState().deleteProject(b.id);
+    const kept = useComic.getState().projects;
+
+    useComic.getState().undo();
+    expect(useComic.getState().projects).toEqual(kept);
+    expect(useComic.getState().projects.every((p, i) => p === kept[i])).toBe(true);
+    expect(useComic.getState()).toMatchObject({ activeProjectId: c.id, activePageId: c.pages[0]!.id, past: [] });
+  });
+
+  it('a step of the last project, deleted since, leaves nothing open', () => {
+    const { project, panels } = openProject();
+    useComic.getState().setPrompt(panels[0]!, 'gone');
+    useComic.getState().deleteProject(project.id);
+
+    useComic.getState().undo();
+    expect(useComic.getState()).toMatchObject({ projects: [], activeProjectId: null, activePageId: null, selectedPanelId: null });
+  });
 });
 
 describe('restoreProjects', () => {
