@@ -52,7 +52,7 @@ export function connectionTypes(nodes: WorkflowNode[], c: ConnectionLike): { fro
 }
 
 /** True when adding source -> target would close a cycle. */
-export function createsCycle(edges: WorkflowEdge[], source: string, target: string): boolean {
+export function createsCycle(edges: Pick<WorkflowEdge, 'source' | 'target'>[], source: string, target: string): boolean {
   if (source === target) return true;
   const out = new Map<string, string[]>();
   for (const e of edges) out.set(e.source, [...(out.get(e.source) ?? []), e.target]);

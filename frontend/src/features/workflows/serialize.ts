@@ -1,6 +1,6 @@
 // Conversion between the editor graph and the JSON stored in the library, image metadata and files.
 import { EMPTY_META, type EditorGraph, type FormField, type WorkflowEdge, type WorkflowMeta, type WorkflowNode } from '@/state/workflows/workflows';
-import { createNode, makeEdge } from './graph';
+import { createNode, createsCycle, makeEdge } from './graph';
 import { packsOfNodes, type PackRef } from './packRequirements';
 import { getInput, getOutput, getTemplate } from './templates';
 
@@ -35,7 +35,8 @@ const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'obj
 const str = (v: unknown, fallback = '') => (typeof v === 'string' ? v : fallback);
 
 /**
- * Parse a serialized workflow. Unknown node types make it invalid; dangling edges and form fields are dropped. A file
+ * Parse a serialized workflow. Unknown node types make it invalid; dangling edges, edges that close a loop (in file
+ * order, as the editor refuses them) and form fields are dropped. A file
  * that names another format, or a version this editor does not know, is refused: its shape may differ. A file that
  * names neither (written by hand or by an older build) is read as version 1.
  */
@@ -74,6 +75,7 @@ export function deserializeWorkflow(raw: unknown): EditorGraph | null {
     const sh = str(e.sourceHandle);
     const th = str(e.targetHandle);
     if (!src || !tgt || !getOutput(src.data.type, sh) || !getInput(tgt.data.type, th)) continue;
+    if (createsCycle(edges, src.id, tgt.id)) continue;
     edges.push(makeEdge(src.id, sh, tgt.id, th));
   }
   const metaRaw = isRecord(value.meta) ? value.meta : {};
