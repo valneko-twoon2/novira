@@ -18,6 +18,9 @@ export function nodeTitle(n: WorkflowNode): string {
   return n.data.label || typeTitle(n.data.type);
 }
 
+/** Nodes that only hold a value and hand it to what they feed. */
+const VALUE_NODES = new Set(['integer', 'float', 'string', 'boolean']);
+
 export function readinessReasons(g: Pick<EditorGraph, 'nodes' | 'edges'>): string[] {
   const reasons: string[] = [];
   if (!g.nodes.some((n) => getTemplate(n.data.type)?.isOutput)) reasons.push(t('workflows.readiness.noOutput'));
@@ -25,11 +28,21 @@ export function readinessReasons(g: Pick<EditorGraph, 'nodes' | 'edges'>): strin
     const template = getTemplate(n.data.type);
     if (!template) continue;
     for (const input of template.inputs) {
-      if (!input.required || !isActive(input, n.data.inputs)) continue;
-      const connected = !!incomingEdge(g.edges, n.id, input.name);
-      if (connected) continue;
-      const value = n.data.inputs[input.name];
-      const missing = input.input === 'connection' || value === null || value === undefined || value === '';
+      if (!isActive(input, n.data.inputs)) continue;
+      const edge = incomingEdge(g.edges, n.id, input.name);
+      const from = edge ? g.nodes.find((x) => x.id === edge.source) : undefined;
+      let missing: boolean;
+      if (from && VALUE_NODES.has(from.data.type)) {
+        // A value node hands over its own value, and one that holds none leaves the input out of the request, where the
+        // engine refuses it only at the run. That holds for any input, also a ComfyUI widget, which the template does
+        // not mark as required; an empty text is still a value unless the input is required.
+        const value = from.data.inputs.value;
+        missing = value === null || value === undefined || (!!input.required && value === '');
+      } else {
+        if (!input.required || edge) continue;
+        const value = n.data.inputs[input.name];
+        missing = input.input === 'connection' || value === null || value === undefined || value === '';
+      }
       if (!missing) continue;
       const args = { node: nodeTitle(n), field: fieldLabel(n.data.type, input.name) };
       reasons.push(MODEL_FIELDS[input.type] ? t('workflows.readiness.missingModel', args) : t('workflows.readiness.missingInput', args));
@@ -105,7 +118,7 @@ function resolve(g: Pick<EditorGraph, 'nodes' | 'edges'>, node: WorkflowNode | u
   if (edge) {
     const src = g.nodes.find((n) => n.id === edge.source);
     if (src?.data.type === 'rand_int') return { value: randomSeed(), random: true };
-    if (src && ['integer', 'float', 'string', 'boolean'].includes(src.data.type)) return { value: src.data.inputs.value, random: false };
+    if (src && VALUE_NODES.has(src.data.type)) return { value: src.data.inputs.value, random: false };
     if (src?.data.type === 'image' && (edge.sourceHandle === 'width' || edge.sourceHandle === 'height')) {
       const img = findImage(imageName(src.data.inputs.image));
       return { value: img ? img[edge.sourceHandle] : undefined, random: false };

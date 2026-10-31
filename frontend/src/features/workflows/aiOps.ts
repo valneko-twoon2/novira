@@ -4,7 +4,7 @@
 // assistant can correct itself.
 import type { EditorGraph } from '@/state/workflows/workflows';
 import { isCompatible } from './fieldTypes';
-import { createNode } from './graph';
+import { createNode, createsCycle } from './graph';
 import { deserializeWorkflow, serializeWorkflow, type SerializedWorkflow } from './serialize';
 import { getInput, getOutput, getTemplate } from './templates';
 import { widgetOwnedFields } from './widgetFields';
@@ -41,6 +41,8 @@ interface Link {
   target: string;
   targetHandle: string;
 }
+
+const LOOP = 'this would make the graph loop back into itself';
 
 /** Why a connection cannot be made between these nodes, or null when it can. */
 function connectionProblem(nodes: { id: string; data: { type: string } }[], e: Link): string | null {
@@ -82,11 +84,14 @@ export function checkAssistantGraph(graph: unknown): AssistantGraphReport {
     for (const k of left) dropped.push(`${str(n.id)}.${k}: ${type} takes no typed value for this`);
     return { ...n, data: { ...n.data, inputs: cleaned } };
   });
+  // The connections kept so far, in order, the way loading keeps them: one that closes a loop with them is dropped.
+  const kept: Link[] = [];
   for (const e of Array.isArray(graph.edges) ? graph.edges : []) {
     if (!isRec(e)) continue;
     const link = { source: str(e.source), sourceHandle: str(e.sourceHandle), target: str(e.target), targetHandle: str(e.targetHandle) };
-    const problem = connectionProblem(typed, link);
+    const problem = connectionProblem(typed, link) ?? (createsCycle(kept, link.source, link.target) ? LOOP : null);
     if (problem) dropped.push(`${link.source}.${link.sourceHandle} -> ${link.target}.${link.targetHandle}: ${problem}`);
+    else kept.push(link);
   }
   return { graph: { ...graph, nodes }, unknownTypes, dropped };
 }
@@ -173,13 +178,15 @@ export function applyWorkflowOps(graph: SerializedWorkflow, ops: unknown[]): Wor
       }
       case 'connect': {
         const edge = { source: str(op.source), sourceHandle: str(op.sourceHandle), target: str(op.target), targetHandle: str(op.targetHandle) };
-        const problem = edge.source === edge.target ? 'a node cannot feed itself' : connectionProblem(nodes, edge);
+        // An input takes one connection, so the one this replaces does not count toward a loop.
+        const others = edges.filter((e) => !(e.target === edge.target && e.targetHandle === edge.targetHandle));
+        const problem = edge.source === edge.target ? 'a node cannot feed itself' : (connectionProblem(nodes, edge) ?? (createsCycle(others, edge.source, edge.target) ? LOOP : null));
         if (problem) {
           skip(`${edge.source}.${edge.sourceHandle} -> ${edge.target}.${edge.targetHandle}: ${problem}`);
           break;
         }
         // An input takes one connection: a new one replaces the old.
-        edges = [...edges.filter((e) => !(e.target === edge.target && e.targetHandle === edge.targetHandle)), edge];
+        edges = [...others, edge];
         applied += 1;
         break;
       }

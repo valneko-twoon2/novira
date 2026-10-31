@@ -86,6 +86,32 @@ describe('what keeps a workflow from running', () => {
     expect(readinessReasons(g)).toEqual([t('workflows.readiness.packGone', { node: 'Grain' }), t('workflows.readiness.invalidEdges', { count: 1 })]);
   });
 
+  it('asks for an input fed by a value node that holds no value, which the request would leave out', () => {
+    const g = text2image();
+    g.nodes.push(node('comfy:MockFilmGrain', 'grain'), node('float', 'amount', { value: null }));
+    g.edges.push(makeEdge(byType(g, 'l2i').id, 'image', 'grain', 'image'), makeEdge('amount', 'value', 'grain', 'intensity'));
+    const args = { node: nodeTitle('comfy:MockFilmGrain'), field: fieldLabel('comfy:MockFilmGrain', 'intensity') };
+    expect(readinessReasons(g)).toEqual([t('workflows.readiness.missingInput', args)]);
+    g.nodes.find((n) => n.id === 'amount')!.data.inputs.value = 0;
+    expect(readinessReasons(g)).toEqual([]);
+  });
+
+  it('asks for text to read when the String node wired to it is empty', () => {
+    usePacks.getState().setPack('voice', { state: 'ready' });
+    const g = graphOf('voiceRead');
+    const say = byType(g, 'voice_speak');
+    g.nodes.push(node('string', 'words', { value: '' }));
+    g.edges.push(makeEdge('words', 'value', say.id, 'text'));
+    expect(readinessReasons(g)).toEqual([t('workflows.readiness.missingInput', { node: nodeTitle('voice_speak'), field: fieldLabel('voice_speak', 'text') })]);
+  });
+
+  it('lets an empty String node feed a prompt that may be empty', () => {
+    const g = text2image();
+    g.nodes.push(node('string', 'words', { value: '' }));
+    g.edges.push(makeEdge('words', 'value', byType(g, 'sdxl_compel_prompt').id, 'prompt'));
+    expect(readinessReasons(g)).toEqual([]);
+  });
+
   it('asks for the description of a described voice, which only that voice needs', () => {
     usePacks.getState().setPack('voice', { state: 'ready' });
     const g = graphOf('voiceRead');
