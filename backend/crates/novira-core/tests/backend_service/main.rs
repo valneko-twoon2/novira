@@ -6,6 +6,7 @@ mod fake_site;
 
 mod api;
 mod api_commands;
+mod api_fuzz;
 mod assistant;
 mod assistant_edges;
 mod assistant_endpoint;
