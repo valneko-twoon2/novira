@@ -538,5 +538,6 @@
   "workflows.nodeLibrary.count.one": "{count} node",
   "workflows.nodeLibrary.count.other": "{count} nodes",
   "workflows.nodeLibrary.section.core": "Comfy Nodes",
-  "workflows.packs.catalog.mangascreen": "Finishes a picture as a black-and-white manga page: lines, flat tones and real screentone."
+  "workflows.packs.catalog.mangascreen": "Finishes a picture as a black-and-white manga page: lines, flat tones and real screentone.",
+  "workflows.readiness.packGone": "The extension for {node} is not installed. Install it from the Extensions tab, or remove the node"
 }
