@@ -117,7 +117,8 @@ describe('queueing panels', () => {
 describe('the characters\' reference pictures before the panels', () => {
   it('draws the panels from the words alone when a portrait cannot be queued, and tries no other portrait', async () => {
     const ids = seed([A, C]);
-    const { prompts } = mockQueue(121, (n) => (n === 1 ? new Error('engine is down') : undefined));
+    // The queue refuses every portrait, so a second try would show as a second refusal.
+    const { prompts } = mockQueue(121, (_, r) => (r.params.positivePrompt.includes('white background') ? new Error('engine is down') : undefined));
     expect(await drawPanels(ids)).toBe(3);
     // One refused portrait, then the three panels: no second portrait, and no wait for a picture that was never queued.
     expect(prompts()).toHaveLength(4);
@@ -135,16 +136,19 @@ describe('the characters\' reference pictures before the panels', () => {
     expect(toasts()).toEqual([enqueued(3)]);
   });
 
-  it('queues the panels only once every character\'s portrait has come', async () => {
+  it('queues the panels only once every character\'s portrait has come, however long the later one takes', async () => {
+    vi.useFakeTimers();
     const ids = seed([A, C]);
     const { prompts } = mockQueue(141);
     const drawing = drawPanels(ids);
-    await vi.waitFor(() => expect(prompts()).toHaveLength(2));
-    await flush();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(prompts()).toHaveLength(2);
     finishPortrait(141, 'grandpa.png');
-    await flush();
+    // A picture takes a minute or so: the other portrait is still waited for.
+    await vi.advanceTimersByTimeAsync(60_000);
     expect(prompts()).toHaveLength(2);
     finishPortrait(142, 'mina.png');
+    await vi.advanceTimersByTimeAsync(0);
     expect(await drawing).toBe(3);
     expect(useComic.getState().projects[0]!.cast.map((c) => c.imageName)).toEqual(['grandpa.png', 'mina.png']);
   });
