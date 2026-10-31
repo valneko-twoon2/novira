@@ -306,3 +306,14 @@ fn a_part_is_named_by_its_source_so_the_same_install_finds_it() {
     assert_eq!(hex.len(), 16);
     assert!(hex.bytes().all(|b| b.is_ascii_hexdigit()));
 }
+
+#[test]
+fn only_an_access_refusal_or_a_sharing_violation_counts_as_a_file_held_by_another_program() {
+    use std::io::{Error, ErrorKind};
+    assert!(is_held(&Error::from(ErrorKind::PermissionDenied)));
+    assert!(!is_held(&Error::from(ErrorKind::NotFound)));
+    assert!(!is_held(&Error::from(ErrorKind::AlreadyExists)));
+    // Raw codes: 32 is a sharing violation on Windows; 2 (not found) never is.
+    assert_eq!(is_held(&Error::from_raw_os_error(32)), cfg!(windows));
+    assert!(!is_held(&Error::from_raw_os_error(2)));
+}

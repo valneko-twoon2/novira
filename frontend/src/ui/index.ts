@@ -3,6 +3,7 @@ export * from './overlays';
 export { ImageDropZone } from './ImageDropZone';
 export { InstallSlot, InstallStatus } from './InstallStatus';
 export { useHotkey, chordLabel } from './useHotkey';
+export { withVisibleText } from './accessibleName';
 export { CommercialTag } from './CommercialTag';
 export { CoverImage } from './CoverImage';
 export { ModelPicker } from './ModelPicker';

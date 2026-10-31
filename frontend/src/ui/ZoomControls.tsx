@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { t } from '@/i18n';
 import { cx, IconButton, TOOLBAR_BUTTON_SIZE, Tooltip } from './controls';
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from './overlays';
+import { withVisibleText } from './accessibleName';
 import { chordLabel } from './useHotkey';
 import { ZOOM_HOTKEYS } from './zoomHotkeys';
 import { ZOOM_PRESETS } from './zoomMath';
@@ -34,7 +35,7 @@ export function ZoomControls({ scale, onZoomIn, onZoomOut, onZoomTo, onFit, fitL
       <Menu>
         <Tooltip content={t('common.zoom')}>
           <MenuTrigger asChild>
-            <button type="button" className="ui-zoom__value" aria-label={t('common.zoom')} data-testid={testId}>
+            <button type="button" className="ui-zoom__value" aria-label={`${t('common.zoom')}: ${Math.round(scale * 100)}%`} data-testid={testId}>
               {Math.round(scale * 100)}%
             </button>
           </MenuTrigger>
@@ -52,7 +53,7 @@ export function ZoomControls({ scale, onZoomIn, onZoomOut, onZoomTo, onFit, fitL
       <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('common.zoomIn')} tooltip={withKey(t('common.zoomIn'), ZOOM_HOTKEYS.zoomIn)} icon={<MagnifyingGlassPlus />} onClick={onZoomIn} />
       {onActualSize && (
         <Tooltip content={withKey(t('common.zoomActualSize'), ZOOM_HOTKEYS.actualSize)}>
-          <button type="button" className="ui-zoom__value ui-zoom__actual" aria-label={t('common.zoomActualSize')} onClick={onActualSize}>
+          <button type="button" className="ui-zoom__value ui-zoom__actual" aria-label={withVisibleText(t('common.zoomActualSize'), '1:1')} onClick={onActualSize}>
             1:1
           </button>
         </Tooltip>

@@ -127,6 +127,38 @@ describe('the other panel operations on a free page', () => {
     expect(current().shapes![1]).toEqual(before[1]);
   });
 
+  it('adds and takes away a corner of one panel only, down to a three-cornered panel', () => {
+    const page = seedFree();
+    const [first, second, third] = page.shapes!;
+    // The first panel's right edge lies on the page margin; the new corner stands past it, as only a free panel may.
+    const [top, bottom] = [first![1]!, first![2]!];
+    const out = { x: (top.x + bottom.x) / 2 + 0.05, y: (top.y + bottom.y) / 2 };
+    expect(useComic.getState().insertCorner(page.id, 0, 1, out)).toBe(true);
+    expect(current().shapes![0]).toHaveLength(5);
+    expect(current().shapes![0]![2]).toEqual(out);
+    expect(current().shapes!.slice(1)).toEqual([second, third]);
+    // A rectangle's corner can go too: a free panel shares no corner with a neighbour.
+    expect(useComic.getState().removeCorner(page.id, 0, 2)).toBe(true);
+    expect(useComic.getState().removeCorner(page.id, 0, 0)).toBe(true);
+    expect(current().shapes![0]).toHaveLength(3);
+    expect(current().shapes!.slice(1)).toEqual([second, third]);
+  });
+
+  it('slides an edge of one panel only and says how far it went, cut short past the page', () => {
+    const page = seedFree();
+    const [first, second, third] = page.shapes!;
+    expect(useComic.getState().moveEdge(page.id, 0, 1, { x: 0.02, y: 0 })).toEqual({ x: expect.closeTo(0.02), y: 0 });
+    expect(current().shapes![0]![1]!.x).toBeCloseTo(first![1]!.x + 0.02);
+    expect(current().shapes!.slice(1)).toEqual([second, third]);
+    const before = current().shapes![0]![1]!;
+    const applied = useComic.getState().moveEdge(page.id, 0, 1, { x: 5, y: 0 })!;
+    expect(applied.x).toBeGreaterThan(0);
+    expect(applied.x).toBeLessThan(5);
+    expect(current().shapes![0]![1]!.x).toBeCloseTo(before.x + applied.x);
+    // Unlike a tiled panel, which stops at the page margin, a free panel may run off the page.
+    expect(current().shapes![0]![1]!.x).toBeGreaterThan(1);
+  });
+
   it('adds a panel of its own at the end instead of cutting one', () => {
     const page = seedFree();
     const id = useComic.getState().halvePanel(page.id, 0);

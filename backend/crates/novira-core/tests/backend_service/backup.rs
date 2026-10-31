@@ -382,3 +382,89 @@ async fn exported_pictures_are_clean_copies_and_other_media_are_skipped() {
         .await
         .is_err());
 }
+
+fn download_options(format: ExportFormat) -> ExportOptions {
+    ExportOptions {
+        format,
+        quality: 80,
+        max_side: None,
+        remove_info: true,
+        watermark: false,
+    }
+}
+
+#[tokio::test]
+async fn one_picture_for_the_browser_comes_as_itself_and_several_as_a_zip() {
+    let dir = tempfile::tempdir().unwrap();
+    let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+    let a = backend
+        .upload_image(png(16, 16), ImageOptions::default())
+        .await
+        .unwrap();
+    let b = backend
+        .upload_image(png(8, 8), ImageOptions::default())
+        .await
+        .unwrap();
+
+    let one = backend
+        .export_download(vec![a.name.clone()], download_options(ExportFormat::Jpeg))
+        .await
+        .unwrap();
+    assert!(
+        one.file_name.ends_with(".jpg") || one.file_name.ends_with(".jpeg"),
+        "{}",
+        one.file_name
+    );
+    assert_eq!(one.content_type, "image/jpeg");
+    assert_eq!(image::load_from_memory(&one.bytes).unwrap().width(), 16);
+    assert_eq!(
+        (
+            one.result.count,
+            one.result.skipped,
+            one.result.folder.as_str()
+        ),
+        (1, 0, "")
+    );
+
+    // The same picture twice and another one: three copies, none overwriting another, in one zip.
+    let many = backend
+        .export_download(
+            vec![a.name.clone(), a.name.clone(), b.name.clone()],
+            download_options(ExportFormat::Webp),
+        )
+        .await
+        .unwrap();
+    assert!(
+        many.file_name.starts_with("novira-export-") && many.file_name.ends_with(".zip"),
+        "{}",
+        many.file_name
+    );
+    assert_eq!(many.content_type, "application/zip");
+    let archive = zip::ZipArchive::new(std::io::Cursor::new(many.bytes)).unwrap();
+    assert_eq!(archive.len(), 3);
+    assert_eq!(many.result.count, 3);
+    backend.shutdown();
+}
+
+#[tokio::test]
+async fn a_download_of_pictures_that_cannot_be_read_says_so() {
+    let dir = tempfile::tempdir().unwrap();
+    let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+    let err = backend
+        .export_download(
+            vec![images::new_name()],
+            download_options(ExportFormat::Png),
+        )
+        .await
+        .unwrap_err();
+    assert!(
+        err.to_string()
+            .contains("none of the chosen pictures could be read"),
+        "{err}"
+    );
+    assert!(backend
+        .export_download(vec![], download_options(ExportFormat::Png))
+        .await
+        .is_err());
+    backend.shutdown();
+}

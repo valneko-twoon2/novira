@@ -293,6 +293,17 @@ impl ImageFiles {
         to[0].exists()
     }
 
+    /// Whether a picture's original is in the gallery's folders.
+    pub fn has_original(&self, name: &str) -> bool {
+        self.original_path(name).is_some_and(|p| p.exists())
+    }
+
+    /// Whether a picture's original is in the trash.
+    pub fn is_trashed(&self, name: &str) -> bool {
+        self.trashed_paths(name)
+            .is_some_and(|[original, _]| original.exists())
+    }
+
     /// Deletes a trashed picture's files for good.
     pub fn purge(&self, name: &str) {
         for p in self.trashed_paths(name).into_iter().flatten() {
@@ -390,8 +401,11 @@ pub fn check_limits(bytes: &[u8]) -> Result<(), ImageError> {
 pub fn to_png(bytes: &[u8]) -> Result<Vec<u8>, ImageError> {
     check_limits(bytes)?;
     if bytes.starts_with(PNG_SIGNATURE) {
-        // Validate the chunk structure so a truncated file is refused here, not when it is served.
+        // Refused here, not when it is served: a truncated file, and one whose chunks are whole but whose pixels do not
+        // decode (found by tests/fuzz_inputs.rs). The bytes are kept as they are, with their text chunks.
         chunks(bytes).ok_or_else(|| ImageError::Decode("broken PNG".into()))?;
+        image::load_from_memory_with_format(bytes, image::ImageFormat::Png)
+            .map_err(|e| ImageError::Decode(e.to_string()))?;
         return Ok(bytes.to_vec());
     }
     let img = image::load_from_memory(bytes).map_err(|e| ImageError::Decode(e.to_string()))?;
@@ -516,6 +530,31 @@ mod tests {
     }
 
     #[test]
+    fn the_size_limits_of_a_picture_are_256_mib_100_megapixels_and_20000_pixels_a_side() {
+        assert_eq!(MAX_IMAGE_BYTES, 268_435_456);
+        assert_eq!(MAX_IMAGE_PIXELS, 100_000_000);
+        assert_eq!(MAX_IMAGE_SIDE, 20_000);
+    }
+
+    #[test]
+    fn a_picture_is_in_the_gallery_or_in_the_trash_only_when_its_file_is() {
+        let dir = tempfile::tempdir().unwrap();
+        let files = ImageFiles::new(dir.path()).unwrap();
+        let name = new_name();
+        assert!(!files.has_original(&name));
+        assert!(!files.is_trashed(&name));
+        // A name that is no picture name is neither.
+        assert!(!files.has_original("../x.png"));
+        assert!(!files.is_trashed("../x.png"));
+        std::fs::write(files.original_path(&name).unwrap(), tiny_png(2, 2)).unwrap();
+        assert!(files.has_original(&name));
+        assert!(!files.is_trashed(&name));
+        assert!(files.trash(&name));
+        assert!(!files.has_original(&name));
+        assert!(files.is_trashed(&name));
+    }
+
+    #[test]
     fn text_chunks_round_trip_utf8_and_replace_previous_values() {
         let png = tiny_png(4, 3);
         let a = with_text(&png, METADATA_KEY, r#"{"prompt":"猫"}"#).unwrap();
@@ -590,6 +629,19 @@ mod tests {
         truncated.truncate(truncated.len() - 5);
         assert!(to_png(&truncated).is_err());
         assert!(to_png(b"hello").is_err());
+    }
+
+    #[test]
+    fn a_png_whose_chunks_are_whole_but_whose_pixels_are_damaged_is_refused() {
+        // Found by tests/fuzz_inputs.rs: the chunk list read fine, so the file was kept, and the gallery could not show it.
+        let mut png = tiny_png(9, 7);
+        let idat = png.windows(4).position(|w| w == b"IDAT").unwrap();
+        for byte in &mut png[idat + 6..idat + 10] {
+            *byte ^= 0xa5;
+        }
+        assert!(chunks(&png).is_some(), "the chunk list is still whole");
+        assert!(to_png(&png).is_err());
+        assert!(to_png(&tiny_png(9, 7)).is_ok());
     }
 
     #[test]

@@ -166,16 +166,18 @@ function MainArea({ tab }: { tab: TabName }) {
     <div className="mainarea">
       <ProgressBar
         className="mainarea__progress"
+        label={t('queue.status.inProgress')}
         value={progress ? progress.step / progress.totalSteps : 0}
         indeterminate={running && !progress}
       />
-      <div className="mainarea__tabs" role="tablist">
+      <div className="mainarea__tabs">
         <IconButton
           label={leftOpen ? t('app.panels.hideLeft') : t('app.panels.showLeft')}
           icon={leftOpen ? <CaretDoubleLeft /> : <CaretDoubleRight />}
           size="xs"
           onClick={toggleLeft}
         />
+        <div className="mainarea__tablist" role="tablist">
         {views.map((v) => (
           <button
             key={v}
@@ -189,6 +191,7 @@ function MainArea({ tab }: { tab: TabName }) {
             {t(VIEW_LABEL_KEYS[v])}
           </button>
         ))}
+        </div>
         <span className="mainarea__spacer" />
         <IconButton
           label={rightOpen ? t('app.panels.hideRight') : t('app.panels.showRight')}

@@ -1,13 +1,15 @@
 // @vitest-environment jsdom
 // The picture over the whole page: it shows under the panels, its tool popover edits it, its handles drag it, and Escape or
 // Delete end or undo the editing.
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, createEvent, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ImageDTO } from '@/backend';
+import { backend, type ImageDTO } from '@/backend';
 import { setLocale } from '@/i18n';
 import { newProject } from '@/state/comic/document';
 import { useComic } from '@/state/comic/store';
+import { IMAGE_MIME } from '@/state/dnd';
 import { useGallery } from '@/state/gallery';
+import { useToasts } from '@/state/toasts';
 import { TooltipProvider } from '@/ui';
 import { ComicEditor } from './ComicEditor';
 
@@ -82,5 +84,102 @@ describe('the backdrop on the page', () => {
     act(() => useComic.getState().selectBackdrop(true));
     fireEvent.keyDown(window, { key: 'Delete' });
     expect(page().backdrop).toBeNull();
+  });
+});
+
+/** Drops names or files on the backdrop popover's drop zone. */
+function dropOnPopover(data: { names?: string[]; files?: File[] }) {
+  const zone = screen.getByTestId('comic-backdrop-pop').closest('.comic-backdrop')!;
+  const event = createEvent.drop(zone);
+  Object.defineProperty(event, 'dataTransfer', {
+    value: {
+      types: data.names ? [IMAGE_MIME] : ['Files'],
+      files: data.files ?? [],
+      getData: (mime: string) => (mime === IMAGE_MIME && data.names ? JSON.stringify(data.names) : ''),
+    },
+  });
+  fireEvent(zone, event);
+}
+
+describe('putting a picture in from the popover', () => {
+  beforeEach(() => useToasts.setState({ toasts: [] }));
+
+  it('shows no edit or reset button while the page has no backdrop', async () => {
+    show(false);
+    fireEvent.click(screen.getByTestId('comic-backdrop'));
+    await screen.findByTestId('comic-backdrop-pop');
+    expect(screen.queryByTestId('comic-backdrop-edit')).toBeNull();
+    expect(screen.queryByTestId('comic-backdrop-reset')).toBeNull();
+    expect(screen.queryByTestId('comic-backdrop-clear')).toBeNull();
+  });
+
+  it('puts a gallery picture dropped on the popover over the page, and selects it', async () => {
+    show(false);
+    fireEvent.click(screen.getByTestId('comic-backdrop'));
+    await screen.findByTestId('comic-backdrop-pop');
+    dropOnPopover({ names: ['sky.png'] });
+    await waitFor(() => expect(page().backdrop).toMatchObject({ imageName: 'sky.png' }));
+    expect(useComic.getState().backdropSelected).toBe(true);
+  });
+
+  it('tells the user when the dropped picture is not in the gallery', async () => {
+    show(false);
+    fireEvent.click(screen.getByTestId('comic-backdrop'));
+    await screen.findByTestId('comic-backdrop-pop');
+    dropOnPopover({ names: ['gone.png'] });
+    await waitFor(() => expect(useToasts.getState().toasts).toHaveLength(1));
+    expect(useToasts.getState().toasts[0]!.status).toBe('error');
+    expect(page().backdrop).toBeNull();
+  });
+
+  it('uploads a dropped file, and reports a failed upload', async () => {
+    const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValueOnce({ name: 'up.png', url: 'novira://up.png' } as ImageDTO);
+    show(false);
+    fireEvent.click(screen.getByTestId('comic-backdrop'));
+    await screen.findByTestId('comic-backdrop-pop');
+    dropOnPopover({ files: [new File(['x'], 'up.png', { type: 'image/png' })] });
+    await waitFor(() => expect(page().backdrop).toMatchObject({ imageName: 'up.png' }));
+    upload.mockRejectedValueOnce(new Error('disk full'));
+    dropOnPopover({ files: [new File(['x'], 'b.png', { type: 'image/png' })] });
+    await waitFor(() => expect(useToasts.getState().toasts.some((x) => x.description === 'disk full')).toBe(true));
+    expect(page().backdrop).toMatchObject({ imageName: 'up.png' });
+    upload.mockRestore();
+  });
+
+  it('uploads a file picked with the upload button of the tools', async () => {
+    vi.spyOn(backend, 'uploadImage').mockResolvedValueOnce({ name: 'picked.png', url: 'novira://picked.png' } as ImageDTO);
+    show(false);
+    fireEvent.click(screen.getByTestId('comic-backdrop'));
+    await screen.findByTestId('comic-backdrop-pop');
+    const input = screen.getByTestId('comic-backdrop-tools').querySelector('input[type="file"]') as HTMLInputElement;
+    fireEvent.change(input, { target: { files: [new File(['x'], 'picked.png', { type: 'image/png' })] } });
+    await waitFor(() => expect(page().backdrop).toMatchObject({ imageName: 'picked.png' }));
+    vi.restoreAllMocks();
+  });
+});
+
+describe('editing and clearing from the popover', () => {
+  beforeEach(() => useToasts.setState({ toasts: [] }));
+
+  it('toggles the editing with the edit button', async () => {
+    show();
+    fireEvent.click(screen.getByTestId('comic-backdrop'));
+    const edit = await screen.findByTestId('comic-backdrop-edit');
+    expect(edit.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(edit);
+    expect(useComic.getState().backdropSelected).toBe(true);
+    expect(edit.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(edit);
+    expect(useComic.getState().backdropSelected).toBe(false);
+  });
+
+  it('takes the picture off the page with the clear button, and the notice puts it back', async () => {
+    show();
+    fireEvent.click(screen.getByTestId('comic-backdrop'));
+    fireEvent.click(await screen.findByTestId('comic-backdrop-clear'));
+    expect(page().backdrop).toBeNull();
+    const notice = useToasts.getState().toasts[0]!;
+    act(() => notice.actions![0]!.run());
+    expect(page().backdrop).toMatchObject({ imageName: 'sky.png' });
   });
 });

@@ -4,6 +4,9 @@
 mod fake_site;
 
 use fake_site::{site, Route};
+#[path = "key_cleanup/mod.rs"]
+mod key_cleanup;
+use key_cleanup::KeyCleanup;
 use novira_core::engine::{Engine, EngineError, EngineJob, EngineOutput, ProgressFn};
 use novira_core::types::*;
 use novira_core::{Backend, BackendConfig, Settings};
@@ -88,6 +91,7 @@ async fn the_cover_lookup_sends_the_civitai_key_and_stops_when_the_app_is_closin
     let (dir, bytes, _) = data_with_lora("odd-key");
     let path = by_hash_path(&bytes);
     let (backend, _) = open_with(dir.path(), vec![]);
+    let _keys = KeyCleanup::new(dir.path());
     backend
         .set_civitai_key(Some("odd-key-secret".into()))
         .unwrap();
@@ -107,6 +111,71 @@ async fn the_cover_lookup_sends_the_civitai_key_and_stops_when_the_app_is_closin
     backend.clone().fill_model_covers().await;
     backend.clone().fill_model_licenses().await;
     assert!(site().requests(&by_hash_path(&bytes)).is_empty());
+}
+
+#[tokio::test]
+async fn the_cover_lookup_fills_only_what_a_model_lacks() {
+    let (dir, bytes, _) = data_with_lora("odd-fill");
+    let (backend, _) = open_with(dir.path(), vec![]);
+    let key = backend
+        .bootstrap()
+        .models
+        .into_iter()
+        .find(|m| m.path.ends_with("odd-fill.safetensors"))
+        .unwrap()
+        .key;
+    // The model already has its own cover (and no page): the lookup must still be made, to fill the page and the set.
+    backend
+        .update_model(
+            &key,
+            serde_json::json!({"coverImageUrl": "https://example.test/mine.png"}),
+        )
+        .unwrap();
+    site().put_json(
+        &by_hash_path(&bytes),
+        &serde_json::json!({
+            "id": 77, "modelId": 7, "trainedWords": [],
+            "images": [{"url": "https://image.civitai.com/k/u/original=true/a.jpeg", "type": "image", "nsfwLevel": 1},
+                       {"url": "https://image.civitai.com/k/u/original=true/b.jpeg", "type": "image", "nsfwLevel": 1}]
+        }),
+    );
+    backend.clone().fill_model_covers().await;
+    let model = backend
+        .bootstrap()
+        .models
+        .into_iter()
+        .find(|m| m.key == key)
+        .unwrap();
+    assert_eq!(
+        model.cover_image_url.as_deref(),
+        Some("https://example.test/mine.png")
+    );
+    assert_eq!(
+        model.page_url.as_deref(),
+        Some("https://civitai.com/models/7?modelVersionId=77")
+    );
+    assert_eq!(model.cover_image_urls.as_ref().map(Vec::len), Some(2));
+    // A version without trigger words leaves the phrases unset, not empty.
+    assert_eq!(model.trigger_phrases, None);
+}
+
+#[tokio::test]
+async fn a_failed_license_lookup_is_asked_again_later_but_an_unknown_model_is_not() {
+    let (dir, bytes, _) = data_with_lora("odd-lic-fail");
+    let (backend, _) = open_with(dir.path(), vec![]);
+    site().put(&by_hash_path(&bytes), Route::status(500));
+    backend.clone().fill_model_licenses().await;
+    backend.clone().fill_model_licenses().await;
+    // A server error is not an answer: each pass asks again.
+    assert_eq!(site().requests(&by_hash_path(&bytes)).len(), 2);
+
+    let (dir, bytes, _) = data_with_lora("odd-lic-unknown");
+    let (backend, _) = open_with(dir.path(), vec![]);
+    site().put(&by_hash_path(&bytes), Route::status(404));
+    backend.clone().fill_model_licenses().await;
+    backend.clone().fill_model_licenses().await;
+    // "Civitai does not know it" is an answer: it is remembered.
+    assert_eq!(site().requests(&by_hash_path(&bytes)).len(), 1);
 }
 
 #[tokio::test]

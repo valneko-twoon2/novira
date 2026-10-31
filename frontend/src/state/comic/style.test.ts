@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { phrasesOf, promptStyleOf, TAG_WORDS_MAX } from './style';
+import { parseStyle, phrasesOf, promptStyleOf, STYLE_MAX, TAG_WORDS_MAX } from './style';
 
 describe('phrasesOf', () => {
   it(`names the terms longer than ${TAG_WORDS_MAX} words, without their weights`, () => {
@@ -18,5 +18,21 @@ describe('promptStyleOf', () => {
     expect(promptStyleOf('sdxl')).toBe('tags');
     expect(promptStyleOf(null)).toBe('tags');
     expect(promptStyleOf('flux')).toBe('sentences');
+  });
+});
+
+describe('parseStyle', () => {
+  it('keeps the words that are text, cut to their limit', () => {
+    expect(parseStyle({ positive: 'a'.repeat(STYLE_MAX + 5), negative: 'bad' })).toEqual({ positive: 'a'.repeat(STYLE_MAX), negative: 'bad' });
+    expect(parseStyle({ negative: 'bad' })).toEqual({ negative: 'bad' });
+  });
+
+  it('gives nothing for a value that holds no words', () => {
+    expect(parseStyle(undefined)).toBeUndefined();
+    expect(parseStyle(null)).toBeUndefined();
+    expect(parseStyle([])).toBeUndefined();
+    expect(parseStyle('words')).toBeUndefined();
+    expect(parseStyle({ positive: 3, negative: null })).toBeUndefined();
+    expect(parseStyle({})).toBeUndefined();
   });
 });

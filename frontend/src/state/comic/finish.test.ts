@@ -34,6 +34,15 @@ describe('the stacking order of panels', () => {
     expect(page().panels.map((p) => p.id)).toEqual([ids[0], ids[1], ids[2]]);
   });
 
+  it('moves a panel one step forward, and orders the panels of an automatic page, which keeps no shapes', () => {
+    const id = seed();
+    const ids = page().panels.map((p) => p.id);
+    expect(useComic.getState().movePanelOrder(id, 0, 'forward')).toBe(1);
+    expect(page().panels.map((p) => p.id)).toEqual([ids[1], ids[0], ids[2]]);
+    expect(page().shapes).toBeNull();
+    expect(useComic.getState().movePanelOrder(id, 2, 'forward')).toBe(-1);
+  });
+
   it('changes nothing for a panel already at the end, or one that is not there', () => {
     const id = seed();
     useComic.getState().setPageFree(id, true);

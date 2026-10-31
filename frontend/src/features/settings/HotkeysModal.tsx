@@ -69,7 +69,7 @@ function HotkeysBody() {
         <MagnifyingGlass size={14} className="hk-search__icon" />
         <TextInput value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('settings.hotkeys.search')} aria-label={t('settings.hotkeys.search')} autoFocus />
       </div>
-      <div className="hk-list">
+      <div className="hk-list" tabIndex={0} role="region" aria-label={t('settings.hotkeys.title')}>
         {groups.length === 0 && <EmptyState title={t('settings.hotkeys.noMatch')} />}
         {groups.map((g) => (
           <section key={g.id} className="hk-group">

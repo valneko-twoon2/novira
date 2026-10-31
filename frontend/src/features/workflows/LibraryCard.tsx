@@ -14,7 +14,7 @@ export function WorkflowLibraryCard() {
   const openModal = useUi((s) => s.openModal);
   return (
     <div className="wf-libcard">
-      <button type="button" className="ui-preset__card" aria-label={t('workflows.library.button')} data-testid="wf-open-library" onClick={() => openModal('workflowLibrary')}>
+      <button type="button" className="ui-preset__card" aria-label={`${t('workflows.library.button')}: ${name || t('workflows.untitled')}`} data-testid="wf-open-library" onClick={() => openModal('workflowLibrary')}>
         <span className="ui-preset__text">
           <span className="ui-preset__caption">{t('workflows.library.button')}</span>
           <span className={cx('ui-preset__name', !name && 'is-placeholder')} data-testid="wf-library-name">

@@ -14,7 +14,7 @@ A deleted picture is kept for a while, so a deletion made by mistake can be undo
 
 ## Behaviour
 
-**The trash.** `delete_images`, and deleting a board together with its pictures, do not remove a picture: its record moves to the `trash` table (the picture's gallery record and the time) and its two files move to the data folder's `trash/` (`ImageFiles::trash`). `restore_images` moves them back and answers the pictures that came back. A picture returns with its board and star; when its board was deleted meanwhile it returns uncategorized. A name the gallery does not know (a stray file) is deleted outright.
+**The trash.** `delete_images`, and deleting a board together with its pictures, do not remove a picture: its record moves to the `trash` table (the picture's gallery record and the time) and its two files move to the data folder's `trash/` (`ImageFiles::trash`). `restore_images` moves them back and answers the pictures that came back. A picture returns with its board and star; when its board was deleted meanwhile it returns uncategorized. A name the gallery does not know (a stray file) is deleted outright. A picture whose original cannot be moved because another program has the file open stays in the gallery and the deletion reports it; a picture whose file cannot be moved back stays in the trash and can be restored again.
 
 **Keeping.** A picture stays 14 days, and at most 500 pictures stay; each deletion drops the older ones beyond that for good (`stale_in_trash`). Backups do not include the trash.
 

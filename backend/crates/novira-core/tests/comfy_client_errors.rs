@@ -64,6 +64,8 @@ impl Default for Cfg {
 struct Fake {
     cfg: Arc<Cfg>,
     uploads: Arc<Mutex<Vec<String>>>,
+    /// The prompts the fake was given.
+    prompts: Arc<Mutex<Vec<Value>>>,
     frees: Arc<AtomicU32>,
     up: Arc<AtomicBool>,
 }
@@ -94,6 +96,7 @@ async fn serve_on(listener: tokio::net::TcpListener, cfg: Cfg) -> Fake {
         up: Arc::new(AtomicBool::new(cfg.up)),
         cfg: Arc::new(cfg),
         uploads: Arc::default(),
+        prompts: Arc::default(),
         frees: Arc::default(),
     };
     let app = Router::new()
@@ -156,7 +159,8 @@ async fn serve_on(listener: tokio::net::TcpListener, cfg: Cfg) -> Fake {
         )
         .route(
             "/prompt",
-            post(|State(f): State<Fake>| async move {
+            post(|State(f): State<Fake>, Json(body): Json<Value>| async move {
+                f.prompts.lock().unwrap().push(body["prompt"].clone());
                 match f.cfg.prompt {
                     "noid" => Json(json!({})).into_response(),
                     "reject" => (
@@ -371,6 +375,21 @@ async fn a_video_and_a_sound_in_the_graph_are_uploaded_and_a_prompt_without_an_i
     let err = message(run(&engine(&url), &graph_job(graph)).await);
     assert!(err.contains("no prompt id"), "{err}");
     assert_eq!(fake.uploads.lock().unwrap().len(), 3);
+}
+
+#[tokio::test]
+async fn an_uploaded_picture_is_named_with_its_subfolder_only_when_there_is_one() {
+    for (upload, want) in [("sub", "s/a.png"), ("ok", "a.png")] {
+        let (url, fake) = serve(Cfg {
+            upload,
+            ..Cfg::default()
+        })
+        .await;
+        // The fake has no history, so the run fails after the prompt was queued; the prompt is what is read.
+        let _ = run(&engine(&url), &graph_job(plain_graph())).await;
+        let prompts = fake.prompts.lock().unwrap();
+        assert_eq!(prompts[0]["1"]["inputs"]["image"], want, "{upload}");
+    }
 }
 
 #[tokio::test]
@@ -880,6 +899,8 @@ async fn stopping_while_the_owned_comfyui_starts_is_a_cancellation() {
     });
     let err = e.prepare(&cancel).await.unwrap_err();
     assert!(matches!(err, EngineError::Cancelled), "{err}");
+    // The screens must not go on saying "starting" for a start that was given up.
+    assert_eq!(e.status(), EngineStatus::Idle);
     e.shutdown();
 }
 

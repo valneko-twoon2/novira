@@ -3,7 +3,7 @@
 //! that cannot use tools being shown as such and refused afterwards.
 use super::common::*;
 #[path = "../agent_endpoint/server.rs"]
-mod server;
+pub(crate) mod server;
 use novira_core::agent::{
     AgentEndpointInput, AgentProvider, AgentRequest, AgentToolAnswer, AgentToolsState,
 };

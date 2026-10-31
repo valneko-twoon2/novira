@@ -42,7 +42,7 @@ The node workflow editor of the Workflows tab, the workflows it saves, and what 
 
 - Save and Save As (`actions.ts`, `persist`) send the name, description, author, tags and serialized graph. Save writes in place only for an open user workflow (`canSaveInPlace`). A failure shows as a notification.
 - The serialized form (`frontend/src/features/workflows/serialize.ts`) is `format: "novira-workflow"`, `version: 1`, the details, nodes, edges, the form, and `packs` (folder and GitHub address of each custom pack used, when there are some).
-- Reading (`deserializeWorkflow`, from an object or JSON text) needs `nodes` and `edges` arrays. A node needs a string id, `data`, `position` and a node type the editor knows; one unknown type makes the file invalid. Edges to missing nodes or unknown handles and form entries for missing fields are dropped. A `format` other than `novira-workflow`, or a `version` other than 1, is refused; a file that names neither is read as version 1.
+- Reading (`deserializeWorkflow`, from an object or JSON text) needs `nodes` and `edges` arrays. A node needs a string id, `data`, `position` and a node type the editor knows; one unknown type makes the file invalid. Edges to missing nodes or unknown handles, an edge that closes a loop with the edges before it, and form entries for missing fields are dropped. A `format` other than `novira-workflow`, or a `version` other than 1, is refused; a file that names neither is read as version 1.
 
 ### Files that need missing packs
 

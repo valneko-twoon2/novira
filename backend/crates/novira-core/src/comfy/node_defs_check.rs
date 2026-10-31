@@ -214,6 +214,16 @@ mod tests {
     }
 
     #[test]
+    fn a_prompt_that_is_not_an_object_and_a_text_for_a_number_are_named() {
+        assert_eq!(
+            problems(&json!([]), &defs()),
+            ["the prompt is not an object"]
+        );
+        let bad = said(json!({"model": ["1", 0], "steps": "twenty", "sampler": "euler"}));
+        assert!(bad.contains("not a number"), "{bad}");
+    }
+
+    #[test]
     fn a_node_with_a_dynamic_input_takes_the_inputs_of_its_choice() {
         let defs = json!({ "nodes": { "Save": {
             "required": { "format": {"type": "DYNAMIC"} }, "optional": {}, "output": []

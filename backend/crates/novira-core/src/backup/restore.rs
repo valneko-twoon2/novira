@@ -54,8 +54,29 @@ fn copy_limited(from: &mut impl Read, to: &Path, limit: u64) -> Result<(), Strin
         .create_new(true)
         .open(to)
         .map_err(|e| format!("cannot unpack: {e}"))?;
-    let written = std::io::copy(&mut from.take(limit + 1), &mut out)
-        .map_err(|e| format!("the backup is damaged: {e}"))?;
+    copy_into(from, &mut out, limit)
+}
+
+/// The copy itself: a failed read means the backup is damaged, a failed write (a full disk) does not.
+fn copy_into(
+    from: &mut impl Read,
+    out: &mut impl std::io::Write,
+    limit: u64,
+) -> Result<(), String> {
+    let mut from = from.take(limit + 1);
+    let mut buf = [0u8; 64 * 1024];
+    let mut written = 0u64;
+    loop {
+        let n = match from.read(&mut buf) {
+            Ok(0) => break,
+            Ok(n) => n,
+            Err(e) if e.kind() == std::io::ErrorKind::Interrupted => continue,
+            Err(e) => return Err(format!("the backup is damaged: {e}")),
+        };
+        out.write_all(&buf[..n])
+            .map_err(|e| format!("cannot unpack: {e}"))?;
+        written += n as u64;
+    }
     if written > limit {
         return Err("a file in the backup is too large".into());
     }
@@ -225,87 +246,179 @@ fn old_dir(data_dir: &Path) -> PathBuf {
     dir
 }
 
-/// Moves the current data into `old` and the staged data in, then opens the result. Records what moved so a failure
-/// can be undone.
-fn swap(
-    data_dir: &Path,
-    staged: &Path,
-    old: &Path,
-    moved_out: &mut Vec<&'static str>,
-    moved_in: &mut Vec<&'static str>,
-) -> Result<(), String> {
-    std::fs::create_dir_all(old).map_err(|e| e.to_string())?;
-    for item in CURRENT {
-        let from = data_dir.join(item);
-        if from.exists() {
-            rename_when_free(&from, &old.join(item))
-                .map_err(|e| format!("cannot move the current {item} aside: {e}"))?;
-            moved_out.push(item);
-        }
+/// The journal of a restore being applied, in the staging folder: the name of the folder the current data moves into.
+/// Written before the first rename, so a start that was cut off continues into the same folder.
+const JOURNAL: &str = "APPLYING";
+
+/// The item of the staging folder whose place tells where `item` of the data folder belongs: the WAL files go with
+/// the database.
+fn counterpart(item: &str) -> &str {
+    match item {
+        "novira.sqlite-wal" | "novira.sqlite-shm" => DATABASE,
+        other => other,
     }
-    for item in STAGED {
-        let from = staged.join(item);
-        if from.exists() {
-            rename_when_free(&from, &data_dir.join(item))
-                .map_err(|e| format!("cannot move the restored {item} in: {e}"))?;
-            moved_in.push(item);
-        }
-    }
-    check_database(data_dir)
 }
 
-/// Puts the old data back after a failed swap.
-fn roll_back(
-    data_dir: &Path,
-    old: &Path,
-    moved_out: &[&'static str],
-    moved_in: &[&'static str],
-) -> std::io::Result<()> {
-    for item in moved_in {
-        remove_any(&data_dir.join(item))?;
+/// Applying a confirmed restore one step at a time. Each step is one rename, the check of the restored database, or
+/// the removal of the previous data, and the next step is read from the folders themselves: a restored item still in
+/// the staging folder has not been moved in (stage() makes every one of them). So a start cut off between any two
+/// steps leaves folders the next start continues from, to the same end.
+struct Applying {
+    data: PathBuf,
+    staged: PathBuf,
+    old: PathBuf,
+    /// Why the restored data was refused; the steps then put the previous data back.
+    failed: Option<String>,
+}
+
+/// What a step left to do.
+#[derive(Debug, PartialEq)]
+enum Next {
+    More,
+    Restored,
+    /// The previous data is back (or, when that failed too, the message says where it is).
+    Refused(String),
+}
+
+impl Applying {
+    /// Continues the restore a cut-off start began, or begins one by writing the journal.
+    fn begin(data_dir: &Path) -> Result<Self, String> {
+        let staged = staging(data_dir);
+        let journal = staged.join(JOURNAL);
+        let old = match std::fs::read_to_string(&journal) {
+            Ok(name) => {
+                let name = name.trim();
+                // One folder of the data folder: a name with the prefix and no separator cannot lead anywhere else.
+                if !name.starts_with(OLD_PREFIX) || name.contains(['/', '\\']) {
+                    return Err("the restore journal is damaged; your data was not changed".into());
+                }
+                data_dir.join(name)
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                if !staged.join(DATABASE).is_file() {
+                    return Err(
+                        "the unpacked backup is incomplete; your data was not changed".into(),
+                    );
+                }
+                let old = old_dir(data_dir);
+                let name = old.file_name().expect("a folder name").to_string_lossy();
+                std::fs::write(&journal, name.as_bytes())
+                    .map_err(|e| format!("cannot start the restore: {e}"))?;
+                old
+            }
+            Err(e) => return Err(format!("cannot read the restore journal: {e}")),
+        };
+        Ok(Self {
+            data: data_dir.to_path_buf(),
+            staged,
+            old,
+            failed: None,
+        })
     }
-    // WAL files now in the data folder belong to the restored database (the old ones were moved aside).
-    for item in ["novira.sqlite-wal", "novira.sqlite-shm"] {
-        if !moved_in.contains(&item) {
-            remove_any(&data_dir.join(item))?;
+
+    fn step(&mut self) -> Next {
+        if let Some(message) = self.failed.clone() {
+            return self.roll_back_step(message);
+        }
+        for item in CURRENT {
+            let from = self.data.join(item);
+            if self.staged.join(counterpart(item)).exists() && from.exists() {
+                let moved = std::fs::create_dir_all(&self.old)
+                    .and_then(|()| rename_when_free(&from, &self.old.join(item)));
+                if let Err(e) = moved {
+                    self.failed = Some(format!("cannot move the current {item} aside: {e}"));
+                }
+                return Next::More;
+            }
+        }
+        for item in STAGED {
+            let from = self.staged.join(item);
+            if from.exists() {
+                if let Err(e) = rename_when_free(&from, &self.data.join(item)) {
+                    self.failed = Some(format!("cannot move the restored {item} in: {e}"));
+                }
+                return Next::More;
+            }
+        }
+        if let Err(message) = check_database(&self.data) {
+            self.failed = Some(message);
+            return Next::More;
+        }
+        if let Err(e) = remove_any(&self.old) {
+            crate::applog::warn(
+                "restore",
+                format!("the previous data is still in {}: {e}", self.old.display()),
+            );
+        }
+        Next::Restored
+    }
+
+    /// One step of putting the previous data back: the restored items go back to the staging folder (the WAL files
+    /// first, which belong to the restored database while it is in), then the previous items come back.
+    fn roll_back_step(&mut self, message: String) -> Next {
+        let restored_db_in = !self.staged.join(DATABASE).exists();
+        let back_to_staging = ["novira.sqlite-wal", "novira.sqlite-shm"]
+            .into_iter()
+            .filter(|_| restored_db_in)
+            .chain(STAGED)
+            .find(|item| !self.staged.join(item).exists() && self.data.join(item).exists());
+        let (from, to) = match back_to_staging {
+            Some(item) => (self.data.join(item), self.staged.join(item)),
+            None => match CURRENT
+                .into_iter()
+                .find(|item| self.old.join(item).exists())
+            {
+                Some(item) => (self.old.join(item), self.data.join(item)),
+                None => {
+                    return match std::fs::remove_dir(&self.old) {
+                        Err(e) if e.kind() != std::io::ErrorKind::NotFound => {
+                            self.refused(message, e)
+                        }
+                        _ => Next::Refused(format!(
+                            "the backup could not be restored; your data was kept as it was ({message})"
+                        )),
+                    };
+                }
+            },
+        };
+        match rename_when_free(&from, &to) {
+            Ok(()) => Next::More,
+            Err(e) => self.refused(message, e),
         }
     }
-    for item in moved_out {
-        rename_when_free(&old.join(item), &data_dir.join(item))?;
+
+    fn refused(&self, message: String, e: std::io::Error) -> Next {
+        Next::Refused(format!(
+            "the backup could not be restored ({message}) and putting the previous data back failed ({e}); it is in {}",
+            self.old.display()
+        ))
     }
-    std::fs::remove_dir(old)
 }
 
 fn apply(data_dir: &Path) -> Result<String, String> {
-    let staged = staging(data_dir);
-    let ui_state = match std::fs::read_to_string(staged.join(UI_STATE)) {
+    let ui_state = match std::fs::read_to_string(staging(data_dir).join(UI_STATE)) {
         Ok(text) => text,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => "{}".into(),
         Err(e) => return Err(format!("cannot read the restored screen state: {e}")),
     };
-    let old = old_dir(data_dir);
-    let (mut moved_out, mut moved_in) = (Vec::new(), Vec::new());
-    match swap(data_dir, &staged, &old, &mut moved_out, &mut moved_in) {
-        Ok(()) => {
-            if let Err(e) = std::fs::remove_dir_all(&old) {
-                crate::applog::warn(
-                    "restore",
-                    format!("the previous data is still in {}: {e}", old.display()),
-                );
-            }
-            Ok(ui_state)
+    let mut run = Applying::begin(data_dir)?;
+    // Each step moves one item, so a restore takes about twenty. A step that reports a move the folders do not show
+    // would repeat for ever and hold the start; it stops instead, leaving the data where it is.
+    for _ in 0..MAX_STEPS {
+        match run.step() {
+            Next::More => {}
+            Next::Restored => return Ok(ui_state),
+            Next::Refused(message) => return Err(message),
         }
-        Err(message) => match roll_back(data_dir, &old, &moved_out, &moved_in) {
-            Ok(()) => Err(format!(
-                "the backup could not be restored; your data was kept as it was ({message})"
-            )),
-            Err(e) => Err(format!(
-                "the backup could not be restored ({message}) and putting the previous data back failed ({e}); it is in {}",
-                old.display()
-            )),
-        },
     }
+    Err(format!(
+        "the backup could not be restored: moving the data did not finish; the previous data is in {}",
+        run.old.display()
+    ))
 }
+
+/// More steps than any restore needs (five items aside, three in, and as many back).
+const MAX_STEPS: usize = 64;
 
 /// Applies a confirmed restore. Called at start-up before the database is opened. Does nothing without a confirmed
 /// restore; an unpacked backup that was never confirmed is removed.
@@ -327,7 +440,8 @@ pub fn apply_pending(data_dir: &Path) {
             RestoreOutcome::Failed { message }
         }
     };
-    if let Err(e) = discard(data_dir) {
+    // The marker goes first: a start cut off while the rest is removed must not apply the restore again.
+    if let Err(e) = remove_any(&staged.join(READY)).and_then(|()| discard(data_dir)) {
         crate::applog::warn("restore", format!("cannot remove {STAGING}: {e}"));
     }
     let text = serde_json::to_string(&outcome).expect("the outcome serializes");
@@ -344,4 +458,142 @@ pub fn take_outcome(data_dir: &Path) -> RestoreOutcome {
     };
     let _ = std::fs::remove_file(&path);
     serde_json::from_str(&text).unwrap_or(RestoreOutcome::None)
+}
+
+#[cfg(test)]
+mod crash_tests;
+
+#[cfg(test)]
+mod copy_tests {
+    use super::*;
+
+    struct Full(usize);
+    impl std::io::Write for Full {
+        fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+            if self.0 == 0 {
+                return Err(std::io::Error::other("no space left on device"));
+            }
+            let n = buf.len().min(self.0);
+            self.0 -= n;
+            Ok(n)
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+
+    struct Broken;
+    impl Read for Broken {
+        fn read(&mut self, _: &mut [u8]) -> std::io::Result<usize> {
+            Err(std::io::Error::other("bad checksum"))
+        }
+    }
+
+    #[test]
+    fn a_full_disk_is_not_called_a_damaged_backup() {
+        let err = copy_into(&mut &[7u8; 1000][..], &mut Full(10), 5000).unwrap_err();
+        assert!(
+            err.starts_with("cannot unpack") && err.contains("no space"),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn a_unreadable_entry_is_a_damaged_backup() {
+        let err = copy_into(&mut Broken, &mut Vec::new(), 5000).unwrap_err();
+        assert!(err.starts_with("the backup is damaged"), "{err}");
+    }
+
+    #[test]
+    fn removing_what_is_not_there_is_fine_and_a_failure_is_reported() {
+        let dir = tempfile::tempdir().unwrap();
+        remove_any(&dir.path().join("missing")).unwrap();
+        let file = dir.path().join("f");
+        std::fs::write(&file, b"x").unwrap();
+        remove_any(&file).unwrap();
+        assert!(!file.exists());
+        let sub = dir.path().join("d");
+        std::fs::create_dir_all(sub.join("in")).unwrap();
+        remove_any(&sub).unwrap();
+        assert!(!sub.exists());
+        // A file Windows refuses to delete: the refusal must come back, not be swallowed.
+        #[cfg(windows)]
+        {
+            let locked = dir.path().join("locked");
+            std::fs::write(&locked, b"x").unwrap();
+            use std::os::windows::fs::OpenOptionsExt;
+            let _held = std::fs::OpenOptions::new()
+                .read(true)
+                .share_mode(3)
+                .open(&locked)
+                .unwrap();
+            assert!(remove_any(&locked).is_err());
+        }
+    }
+
+    #[test]
+    fn the_unpack_limits_are_one_mib_for_the_manifest_sixteen_gib_for_the_database_and_eight_for_a_picture(
+    ) {
+        assert_eq!(MAX_MANIFEST, 1_048_576);
+        assert_eq!(MAX_DATABASE, 17_179_869_184);
+        assert_eq!(MAX_GALLERY_FILE, 8_589_934_592);
+    }
+
+    #[test]
+    fn a_missing_source_is_not_retried() {
+        let dir = tempfile::tempdir().unwrap();
+        let started = std::time::Instant::now();
+        let err = rename_when_free(&dir.path().join("none"), &dir.path().join("to")).unwrap_err();
+        assert_eq!(err.kind(), std::io::ErrorKind::NotFound);
+        assert!(started.elapsed() < Duration::from_secs(2));
+    }
+
+    #[test]
+    fn the_old_data_folder_name_counts_up_from_two_while_taken() {
+        let dir = tempfile::tempdir().unwrap();
+        let first = old_dir(dir.path());
+        std::fs::create_dir(&first).unwrap();
+        let second = old_dir(dir.path());
+        assert_eq!(
+            second.file_name().unwrap().to_string_lossy(),
+            format!("{}-2", first.file_name().unwrap().to_string_lossy())
+        );
+        std::fs::create_dir(&second).unwrap();
+        let third = old_dir(dir.path());
+        assert!(third.to_string_lossy().ends_with("-3"), "{third:?}");
+    }
+
+    struct Hiccup(u8);
+    impl Read for Hiccup {
+        fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+            if self.0 < 3 {
+                self.0 += 1;
+                return Err(std::io::Error::from(std::io::ErrorKind::Interrupted));
+            }
+            if self.0 == 3 {
+                self.0 += 1;
+                buf[..4].copy_from_slice(b"data");
+                return Ok(4);
+            }
+            Ok(0)
+        }
+    }
+
+    #[test]
+    fn an_interrupted_read_is_tried_again_and_a_real_failure_is_not() {
+        let mut out = Vec::new();
+        copy_into(&mut Hiccup(0), &mut out, 100).unwrap();
+        assert_eq!(out, b"data");
+        // An error that is not an interruption ends the copy at once (it must not be retried for ever).
+        assert!(copy_into(&mut Broken, &mut Vec::new(), 100).is_err());
+    }
+
+    #[test]
+    fn an_entry_over_the_limit_is_refused_and_one_at_it_is_copied() {
+        let mut out = Vec::new();
+        copy_into(&mut &[1u8; 100][..], &mut out, 100).unwrap();
+        assert_eq!(out.len(), 100);
+        let err = copy_into(&mut &[1u8; 101][..], &mut Vec::new(), 100).unwrap_err();
+        assert!(err.contains("too large"), "{err}");
+    }
 }

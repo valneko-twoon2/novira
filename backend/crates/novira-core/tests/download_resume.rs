@@ -16,6 +16,10 @@ enum Next {
     Serve { cut_after: Option<usize> },
     /// Send the headers, then nothing.
     Stall,
+    /// Answer 200 with the whole file and no length: the end of the connection ends the file.
+    NoLength,
+    /// Answer a range request with 206 for the file's real size but only the first 200 bytes of the rest.
+    ShortPartial,
 }
 
 #[derive(Default)]
@@ -106,6 +110,42 @@ fn answer(mut stream: TcpStream, shared: &Mutex<Shared>) {
             );
             let _ = stream.write_all(head.as_bytes());
             std::thread::sleep(Duration::from_secs(3));
+        }
+        Next::NoLength => {
+            let head = format!(
+                "HTTP/1.1 200 OK
+ETag: {validator}
+Connection: close
+
+"
+            );
+            let _ = stream.write_all(head.as_bytes());
+            let _ = stream.write_all(&body);
+            let _ = stream.flush();
+        }
+        Next::ShortPartial => {
+            let start = range
+                .as_deref()
+                .and_then(|r| r.strip_prefix("bytes="))
+                .and_then(|r| r.strip_suffix('-'))
+                .and_then(|n| n.parse::<usize>().ok())
+                .unwrap_or(0);
+            let end = (start + 200).min(body.len());
+            let head = format!(
+                "HTTP/1.1 206 Partial Content
+Content-Range: bytes {start}-{}/{}
+Content-Length: {}
+ETag: {validator}
+Connection: close
+
+",
+                body.len() - 1,
+                body.len(),
+                end - start
+            );
+            let _ = stream.write_all(head.as_bytes());
+            let _ = stream.write_all(&body[start..end]);
+            let _ = stream.flush();
         }
         Next::Serve { cut_after } => {
             // The range counts only when If-Range names the file as it is now; otherwise the whole file is sent.
@@ -416,4 +456,63 @@ async fn a_part_being_downloaded_is_kept_by_a_delete_until_the_download_ends() {
     );
     assert!(!dest.exists());
     assert!(!record_path(&dest).exists(), "and its record");
+}
+
+async fn fetch(site: &Site, dest: &std::path::Path) -> Result<(), InstallError> {
+    download_with_stall(
+        &client(),
+        &site.url,
+        None,
+        dest,
+        &CancellationToken::new(),
+        Duration::from_secs(5),
+        |_, _| {},
+    )
+    .await
+}
+
+#[tokio::test]
+async fn a_file_sent_without_a_length_is_whole_when_the_connection_ends() {
+    let body = bytes(500, 3);
+    let site = Site::start(body.clone(), "v1");
+    site.script(vec![Next::NoLength]);
+    let dir = tempfile::tempdir().unwrap();
+    let dest = dir.path().join("model.safetensors");
+    fetch(&site, &dest).await.unwrap();
+    assert_eq!(std::fs::read(&dest).unwrap(), body);
+}
+
+#[tokio::test]
+async fn a_resumed_file_is_checked_against_the_size_the_server_names_for_the_whole_file() {
+    let body = bytes(1000, 1);
+    let site = Site::start(body.clone(), "v1");
+    let dir = tempfile::tempdir().unwrap();
+    let dest = dir.path().join("model.safetensors");
+    // A part of 400 bytes whose record remembers a size that is out of date: the answer's own Content-Range wins.
+    std::fs::write(&dest, &body[..400]).unwrap();
+    write_record(&dest, 700, "\"v1\"");
+    fetch(&site, &dest).await.unwrap();
+    assert_eq!(std::fs::read(&dest).unwrap(), body);
+
+    // The server names the whole size but sends only a piece: the file is not complete, and the part is kept.
+    let dest = dir.path().join("short.safetensors");
+    std::fs::write(&dest, &body[..400]).unwrap();
+    write_record(&dest, 1000, "\"v1\"");
+    site.script(vec![Next::ShortPartial]);
+    let err = fetch(&site, &dest).await.unwrap_err().to_string();
+    assert!(err.contains("ended early"), "{err}");
+    assert!(record_path(&dest).is_file());
+}
+
+#[tokio::test]
+async fn an_empty_part_is_fetched_without_a_range() {
+    let body = bytes(300, 2);
+    let site = Site::start(body.clone(), "v1");
+    let dir = tempfile::tempdir().unwrap();
+    let dest = dir.path().join("model.safetensors");
+    std::fs::write(&dest, b"").unwrap();
+    write_record(&dest, 300, "\"v1\"");
+    fetch(&site, &dest).await.unwrap();
+    assert_eq!(std::fs::read(&dest).unwrap(), body);
+    assert_eq!(site.seen()[0], (None, None), "nothing to continue from");
 }

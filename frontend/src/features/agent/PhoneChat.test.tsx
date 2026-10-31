@@ -7,7 +7,7 @@ import { backend, type AgentStatus } from '@/backend';
 import { t } from '@/i18n';
 import { useAgent, type AgentMessage } from '@/state/agent';
 import { TooltipProvider } from '@/ui';
-import { PhoneChat } from './PhoneChat';
+import { PhoneChat, PhoneChatLayer } from './PhoneChat';
 
 const ready: AgentStatus = { provider: 'claude', installed: true, loggedIn: true, models: [] };
 const message = (id: number, role: 'user' | 'assistant', text: string, extra: Partial<AgentMessage> = {}): AgentMessage => ({ id, role, text, tools: [], ...extra });
@@ -133,5 +133,58 @@ describe('phone chat', () => {
     fireEvent.click(screen.getByTestId('phone-chat-history'));
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(screen.queryByTestId('phone-chat-sheet')).toBeNull();
+  });
+});
+
+describe('the chat layer', () => {
+  it('renders nothing until the assistant is first opened, then stays mounted (hidden) after it closes', () => {
+    seed(ready, { open: false });
+    const { container } = render(
+      <TooltipProvider>
+        <PhoneChatLayer />
+      </TooltipProvider>,
+    );
+    expect(screen.queryByTestId('phone-chat')).toBeNull();
+    expect(container.innerHTML).toBe('');
+    act(() => useAgent.setState({ open: true }));
+    expect(screen.getByTestId('phone-chat')).toBeTruthy();
+    act(() => useAgent.setState({ open: false }));
+    // Hidden, not removed: the draft in the message box survives.
+    expect(document.querySelector('[data-testid="phone-chat"]')).not.toBeNull();
+  });
+});
+
+describe('the visible area above the keyboard', () => {
+  class FakeViewport extends EventTarget {
+    height = 500;
+    offsetTop = 20;
+  }
+  afterEach(() => delete (window as { visualViewport?: unknown }).visualViewport);
+
+  it('follows the visual viewport as the keyboard opens, and stops listening on unmount', () => {
+    const vv = new FakeViewport();
+    Object.defineProperty(window, 'visualViewport', { configurable: true, value: vv });
+    seed(ready);
+    const { unmount } = show();
+    const chat = () => screen.getByTestId('phone-chat');
+    expect(chat().style.height).toBe('500px');
+    expect(chat().style.top).toBe('20px');
+    vv.height = 300;
+    act(() => void vv.dispatchEvent(new Event('resize')));
+    expect(chat().style.height).toBe('300px');
+    vv.offsetTop = 40;
+    act(() => void vv.dispatchEvent(new Event('scroll')));
+    expect(chat().style.top).toBe('40px');
+    const el = chat();
+    unmount();
+    vv.height = 100;
+    vv.dispatchEvent(new Event('resize'));
+    expect(el.style.height).toBe('300px');
+  });
+
+  it('leaves the size to the style sheet when the browser has no visual viewport', () => {
+    seed(ready);
+    show();
+    expect(screen.getByTestId('phone-chat').style.height).toBe('');
   });
 });

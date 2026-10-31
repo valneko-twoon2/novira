@@ -42,7 +42,7 @@ const image = (name: string): ImageDTO => ({ name, thumbnailUrl: `thumb-${name}`
 describe('numbers', () => {
   it('commits an integer on blur and clamps it to the range', () => {
     field({ type: 'integer', min: 1, max: 10, step: 1, default: 5 }, undefined);
-    const box = screen.getByLabelText('The field') as HTMLInputElement;
+    const box = screen.getByLabelText(/^The field/) as HTMLInputElement;
     expect(box.value).toBe('5');
     fireEvent.change(box, { target: { value: '99' } });
     fireEvent.blur(box);
@@ -51,7 +51,7 @@ describe('numbers', () => {
 
   it('shows a float with two decimals', () => {
     field({ type: 'float', step: 0.05 }, 0.5);
-    expect((screen.getByLabelText('The field') as HTMLInputElement).value).toBe('0.50');
+    expect((screen.getByLabelText(/^The field/) as HTMLInputElement).value).toBe('0.50');
   });
 
   it('shows a slider with a number box when the field asks for a slider', () => {
@@ -67,11 +67,11 @@ describe('numbers', () => {
 describe('text, switch and choices', () => {
   it('edits a single-line and a multi-line string', () => {
     const { unmount } = field({ type: 'string' }, 'old');
-    fireEvent.change(screen.getByLabelText('The field'), { target: { value: 'new' } });
+    fireEvent.change(screen.getByLabelText(/^The field/), { target: { value: 'new' } });
     expect(stored().x).toBe('new');
     unmount();
     field({ type: 'string', ui: 'textarea' }, 5);
-    const area = screen.getByLabelText('The field') as HTMLTextAreaElement;
+    const area = screen.getByLabelText(/^The field/) as HTMLTextAreaElement;
     expect(area.tagName).toBe('TEXTAREA');
     expect(area.value).toBe('');
     fireEvent.change(area, { target: { value: 'two\nlines' } });
@@ -89,13 +89,13 @@ describe('text, switch and choices', () => {
   it('renders the choices of an enum, a scheduler and a board field', () => {
     useGallery.setState({ boards: [{ id: 'b1', name: 'Mine', archived: false }, { id: 'b2', name: 'Old', archived: true }] as never });
     const { unmount } = field({ type: 'enum', options: ['a', 'b'] }, 'b');
-    expect(screen.getByLabelText('The field').textContent).toContain('b');
+    expect(screen.getByLabelText(/^The field/).textContent).toContain('b');
     unmount();
     const scheduler = field({ type: 'SchedulerField', options: ['euler', 'dpmpp_2m_k', 'custom'] }, 'dpmpp_2m_k');
-    expect(screen.getByLabelText('The field').textContent).toContain('DPM++ 2M Karras');
+    expect(screen.getByLabelText(/^The field/).textContent).toContain('DPM++ 2M Karras');
     scheduler.unmount();
     field({ type: 'BoardField' }, undefined);
-    expect(screen.getByLabelText('The field').textContent).toContain(t('workflows.field.boardAuto'));
+    expect(screen.getByLabelText(/^The field/).textContent).toContain(t('workflows.field.boardAuto'));
   });
 
   it('renders nothing for a type it has no control for', () => {
@@ -109,16 +109,16 @@ describe('models', () => {
 
   it('says there are no models of that type', () => {
     field({ type: 'LoRAModelField' }, null);
-    expect(screen.getByLabelText('The field').textContent).toContain(t('workflows.field.noModels'));
+    expect(screen.getByLabelText(/^The field/).textContent).toContain(t('workflows.field.noModels'));
   });
 
   it('shows the picked model and asks to pick when the stored key is not installed', () => {
     useModels.setState({ models: [lora('l1')] });
     const { unmount } = field({ type: 'LoRAModelField' }, 'l1');
-    expect(screen.getByLabelText('The field').textContent).toContain('Lora l1');
+    expect(screen.getByLabelText(/^The field/).textContent).toContain('Lora l1');
     unmount();
     field({ type: 'LoRAModelField' }, 'gone');
-    expect(screen.getByLabelText('The field').textContent).toContain(t('workflows.field.selectModel'));
+    expect(screen.getByLabelText(/^The field/).textContent).toContain(t('workflows.field.selectModel'));
   });
 });
 

@@ -108,3 +108,31 @@ describe('ModelCard license tag', () => {
     expect(onSelect).not.toHaveBeenCalled();
   });
 });
+
+describe('ModelCard structure', () => {
+  it('is a group named by the model with one select button, whose pressed state follows the selection', () => {
+    const onSelect = vi.fn();
+    const { rerender } = render(<ModelCard model={model} selected={false} favorite={false} onSelect={onSelect} onToggleFavorite={vi.fn()} onDelete={vi.fn()} />);
+    const card = screen.getByRole('group', { name: 'Sunny XL' });
+    const select = card.querySelector('.mm-card-item__select') as HTMLButtonElement;
+    expect(select.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(select);
+    expect(onSelect).toHaveBeenCalledOnce();
+    rerender(<ModelCard model={model} selected favorite={false} onSelect={onSelect} onToggleFavorite={vi.fn()} onDelete={vi.fn()} />);
+    expect(select.getAttribute('aria-pressed')).toBe('true');
+    expect(card.className).toContain('is-selected');
+  });
+
+  it('keeps the star, the menu and the license tag out of the card select button', () => {
+    const onSelect = vi.fn();
+    const onToggleFavorite = vi.fn();
+    render(<ModelCard model={licensed} selected={false} favorite={false} onSelect={onSelect} onToggleFavorite={onToggleFavorite} onDelete={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: t('models.card.favorite') }));
+    expect(onToggleFavorite).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByTestId('commercial-tag'));
+    expect(onSelect).not.toHaveBeenCalled();
+    // No interactive element sits inside another one: the only button holding other things is none.
+    const select = document.querySelector('.mm-card-item__select')!;
+    expect(select.children).toHaveLength(0);
+  });
+});

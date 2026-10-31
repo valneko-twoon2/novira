@@ -58,6 +58,18 @@ describe('the Read Aloud node', () => {
     expect(reason({ text: 'Hi', mode: 'preset' })).toBeNull();
   });
 
+  it('reads with the Voice tab\'s language and speaker when the node holds none, and still needs a text it never held', () => {
+    const compiled = (drop: string[], say: Record<string, unknown> = { text: 'Hi' }) => {
+      const g = reading(say);
+      for (const field of drop) delete g.nodes[0]!.data.inputs[field];
+      return () => compileComfyPrompt(g).graph.prompt.say!.inputs.audio as { $speech: Record<string, string> };
+    };
+    expect(compiled(['language', 'speaker', 'mode', 'instruct'])().$speech).toEqual({ text: 'Hi', language: 'Auto', mode: 'preset', speaker: 'Ono_Anna', instruct: '' });
+    expect(compiled([], { text: 'Hi', language: '', speaker: '' })().$speech).toMatchObject({ language: 'Auto', speaker: 'Ono_Anna' });
+    expect(compiled(['text'])).toThrow(expect.objectContaining({ reason: 'missingInput', nodeId: 'say', field: 'text' }));
+    expect(compiled(['instruct'], { text: 'Hi', mode: 'design' })).toThrow(expect.objectContaining({ reason: 'missingInput', nodeId: 'say', field: 'instruct' }));
+  });
+
   it('sends the description of a preset voice as its style and drops a mode it does not know', () => {
     const say = (inputs: Record<string, unknown>) => compileComfyPrompt(reading(inputs)).graph.prompt.say!.inputs.audio as { $speech: Record<string, string> };
     expect(say({ text: 'Hi', instruct: 'whisper' }).$speech).toMatchObject({ mode: 'preset', instruct: 'whisper' });

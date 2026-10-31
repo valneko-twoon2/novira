@@ -20,7 +20,7 @@ export function QueueList() {
 
   return (
     <>
-      <div className="qt-row qt-row--head" role="row">
+      <div className="qt-row qt-row--head">
         <span />
         <span>#</span>
         <span>{t('queue.col.status')}</span>

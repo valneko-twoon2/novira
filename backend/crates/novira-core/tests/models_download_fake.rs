@@ -4,6 +4,9 @@
 mod fake_site;
 
 use fake_site::{site, Route};
+#[path = "key_cleanup/mod.rs"]
+mod key_cleanup;
+use key_cleanup::KeyCleanup;
 use novira_core::engine::{Engine, EngineError, EngineJob, EngineOutput, ProgressFn};
 use novira_core::models::civitai::SearchParams;
 use novira_core::types::*;
@@ -124,6 +127,7 @@ fn search_params(source: &str) -> SearchParams {
 async fn a_civitai_search_is_mapped_and_sent_with_the_key() {
     let dir = tempfile::tempdir().unwrap();
     let (backend, _) = open(dir.path());
+    let _keys = KeyCleanup::new(dir.path());
     backend
         .set_civitai_key(Some("civ-search-key".into()))
         .unwrap();
@@ -192,6 +196,7 @@ async fn a_civitai_search_is_mapped_and_sent_with_the_key() {
 async fn a_hugging_face_search_follows_the_next_links_and_sends_the_token() {
     let dir = tempfile::tempdir().unwrap();
     let (backend, _) = open(dir.path());
+    let _keys = KeyCleanup::new(dir.path());
     backend
         .set_hf_token(Some("hf_search_token".into()))
         .unwrap();
@@ -230,6 +235,7 @@ async fn a_hugging_face_search_follows_the_next_links_and_sends_the_token() {
 async fn a_civitai_file_is_resolved_downloaded_and_given_its_cover_words_and_licence() {
     let dir = tempfile::tempdir().unwrap();
     let (backend, events) = open(dir.path());
+    let _keys = KeyCleanup::new(dir.path());
     backend.set_civitai_key(Some("civ-dl-key".into())).unwrap();
     let base = &site().base;
     site().put_json(
@@ -274,6 +280,54 @@ async fn a_civitai_file_is_resolved_downloaded_and_given_its_cover_words_and_lic
         download[0].authorization.as_deref(),
         Some("Bearer civ-dl-key")
     );
+}
+
+#[tokio::test]
+async fn a_civitai_model_with_one_mature_picture_keeps_it_as_a_marked_cover_and_no_set() {
+    let dir = tempfile::tempdir().unwrap();
+    let (backend, events) = open(dir.path());
+    let base = &site().base;
+    site().put_json(
+        "/api/v1/model-versions/7101",
+        &json!({
+            "id": 7101, "modelId": 711, "baseModel": "SDXL 1.0",
+            "model": {"type": "LORA"},
+            "images": [{"url": "https://image.civitai.com/k/u/original=true/m.jpeg", "type": "image", "nsfwLevel": 4}],
+            "files": [{"id": 9, "name": "civ-mature.safetensors", "primary": true, "sizeKB": 1.0,
+                       "downloadUrl": format!("{base}/dl/civ-mature.safetensors")}]
+        }),
+    );
+    site().put(
+        "/dl/civ-mature.safetensors",
+        Route::bytes(lora("civ-mature")),
+    );
+    let job = backend.install_model("civitai:711/7101-9", None).unwrap();
+    let done = finish(&events, &job.id).await;
+    assert_eq!(done.status, ModelInstallStatus::Completed, "{done:?}");
+    let model = model_named(&backend, "civ-mature.safetensors");
+    assert!(model.cover_image_url.is_some());
+    assert_eq!(model.cover_mature, Some(true));
+    // One picture is the cover itself: there is nothing to page through.
+    assert_eq!(model.cover_image_urls, None);
+
+    // A model with no picture at all has no cover and so no mature mark.
+    site().put_json(
+        "/api/v1/model-versions/7102",
+        &json!({
+            "id": 7102, "modelId": 712, "baseModel": "SDXL 1.0",
+            "model": {"type": "LORA"},
+            "files": [{"id": 9, "name": "civ-bare.safetensors", "primary": true, "sizeKB": 1.0,
+                       "downloadUrl": format!("{base}/dl/civ-bare.safetensors")}]
+        }),
+    );
+    site().put("/dl/civ-bare.safetensors", Route::bytes(lora("civ-bare")));
+    let job = backend.install_model("civitai:712/7102-9", None).unwrap();
+    assert_eq!(
+        finish(&events, &job.id).await.status,
+        ModelInstallStatus::Completed
+    );
+    let bare = model_named(&backend, "civ-bare.safetensors");
+    assert_eq!((bare.cover_image_url, bare.cover_mature), (None, None));
 }
 
 #[tokio::test]
@@ -351,6 +405,7 @@ async fn a_civitai_answer_that_is_not_ok_fails_the_install() {
 async fn a_hugging_face_file_is_downloaded_with_the_token_and_gets_cover_and_licence() {
     let dir = tempfile::tempdir().unwrap();
     let (backend, events) = open(dir.path());
+    let _keys = KeyCleanup::new(dir.path());
     backend.set_hf_token(Some("hf_dl_token".into())).unwrap();
     site().put(
         "/owner/hf-lora/resolve/main/hf-lora.safetensors",

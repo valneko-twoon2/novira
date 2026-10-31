@@ -276,7 +276,9 @@ impl Backend {
                 }
                 std::fs::create_dir_all(dest.parent().expect("has parent"))
                     .map_err(|e| fail(e.to_string()))?;
-                std::fs::rename(&part, &dest).map_err(|e| fail(e.to_string()))?;
+                crate::models::install::rename_when_free(&part, &dest)
+                    .await
+                    .map_err(|e| fail(e.to_string()))?;
                 (
                     dest,
                     kind,
@@ -560,24 +562,35 @@ impl Backend {
 
     /// Removes a model. Files novira installed are deleted; files in the user's own folders are only hidden.
     pub fn delete_model(&self, key: &str) -> Result<()> {
-        let mut s = self.state();
-        let Some(pos) = s.models.iter().position(|m| m.key == key) else {
-            return Ok(());
+        let path = {
+            let s = self.state();
+            let Some(model) = s.models.iter().find(|m| m.key == key) else {
+                return Ok(());
+            };
+            PathBuf::from(&model.path)
         };
-        let model = s.models.remove(pos);
-        let path = PathBuf::from(&model.path);
-        let owned = path.starts_with(&self.inner.models_dir);
-        if !owned {
-            s.hidden_models.insert(key.to_string());
-        }
-        let hidden = serde_json::to_string(&s.hidden_models).expect("set serializes");
-        drop(s);
-        if owned {
-            std::fs::remove_file(&path).map_err(|e| {
-                BackendError::Internal(format!("Cannot delete {}: {e}", path.display()))
-            })?;
+        if path.starts_with(&self.inner.models_dir) {
+            // A file that cannot be deleted (another program has it open) leaves the model as it was; one that is
+            // already gone only needs its record removed.
+            match std::fs::remove_file(&path) {
+                Ok(()) => {}
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+                Err(e) => {
+                    return Err(BackendError::Internal(format!(
+                        "Cannot delete {}: {e}",
+                        path.display()
+                    )))
+                }
+            }
+            self.state().models.retain(|m| m.key != key);
             self.db().delete(Table::Models, &[key])?;
         } else {
+            let hidden = {
+                let mut s = self.state();
+                s.models.retain(|m| m.key != key);
+                s.hidden_models.insert(key.to_string());
+                serde_json::to_string(&s.hidden_models).expect("set serializes")
+            };
             self.db().set_meta(HIDDEN_MODELS_META, &hidden)?;
         }
         Ok(())
@@ -652,6 +665,10 @@ mod tests {
             Some(LicenseRef::HuggingFace("owner/repo".into()))
         );
         assert_eq!(license_ref_of_source("E:/models/a.safetensors"), None);
+        // A page address needs both an owner and a repository.
+        assert_eq!(license_ref_of_source("https://huggingface.co/owner/"), None);
+        assert_eq!(license_ref_of_source("https://huggingface.co//repo"), None);
+        assert_eq!(license_ref_of_source("https://huggingface.co/owner"), None);
         assert_eq!(
             license_ref_of_source("https://example.com/a.safetensors"),
             None

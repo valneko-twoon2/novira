@@ -132,3 +132,55 @@ fn maps_the_app_languages_to_comfyui_s() {
     assert_eq!(comfy_language("../ja"), None);
     assert_eq!(comfy_language("xx"), None);
 }
+
+#[test]
+fn comments_arrays_escapes_and_short_forms_are_read() {
+    let src = r#"// a line comment
+/* a block
+comment */ const a=[1,"x",[!1,void 0]],b={a,"k":'v\x41\n\t\r\b\f\v\0\q\
+end'};
+export{a as list,b as default}; /* unclosed"#;
+    let v = parse_module(src).unwrap();
+    assert_eq!(v["a"], json!([1.0, "x", [false, null]]));
+    assert_eq!(v["k"], json!("vA\n\t\r\u{8}\u{c}\u{b}\0qend"));
+    // A line comment on the last line is skipped, and a list that never closes is an error.
+    assert!(parse_module("var a=1; // end").is_ok());
+    assert!(parse_module("var a=[1,2 export{a};").is_err());
+    // A surrogate pair, a signed number and a list without a trailing comma.
+    let pair = parse_module(r#"var a="😀A",b=[-1.5,2];export{a,b};"#).unwrap();
+    assert_eq!(pair["a"], json!("\u{1F600}A"));
+    assert_eq!(pair["b"], json!([-1.5, 2.0]));
+    for bad in [
+        r#"var a=!2;export{a};"#,
+        r#"var a="\x4";export{a};"#,
+        r#"var a="\xzz";export{a};"#,
+        r#"var a="\u00";export{a};"#,
+        r#"var a="\ud83d\u00";export{a};"#,
+        r#"var a="\ud83d\uzzzz";export{a};"#,
+        r#"var a="\ud83d";export{a};"#,
+        r#"var a="\uzzzz";export{a};"#,
+        r#"var a="\u{110000}";export{a};"#,
+        r#"var a="\u{41";export{a};"#,
+        r#"var a="abc"#,
+        "var a=\"line\nbreak\";export{a};",
+        "var a=`x${y}`;export{a};",
+        "var a=[1 2];export{a};",
+        "var a={b:1 c:2};export{a};",
+        "var a=void x;export{a};",
+        "var a=JSON.stringify(`{}`);export{a};",
+        "var a=JSON.parse(5);export{a};",
+        "var a=JSON.parse(`{`);export{a};",
+        "export{a",
+        "var a=nowhere;export{a};",
+        "var a=[nowhere];export{a};",
+    ] {
+        assert!(parse_module(bad).is_err(), "{bad}");
+    }
+}
+
+#[test]
+fn numeric_keys_and_a_surrogate_pair_written_as_escapes_are_read() {
+    let v = parse_module(r#"var a={1:`one`,22:"two"},b="\ud83d\ude00";export{a,b};"#).unwrap();
+    assert_eq!(v["a"], json!({ "1": "one", "22": "two" }));
+    assert_eq!(v["b"], json!("\u{1F600}"));
+}

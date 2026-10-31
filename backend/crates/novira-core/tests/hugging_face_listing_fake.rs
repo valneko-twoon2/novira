@@ -2,6 +2,9 @@
 mod fake_site;
 
 use fake_site::{site, Route};
+#[path = "key_cleanup/mod.rs"]
+mod key_cleanup;
+use key_cleanup::KeyCleanup;
 use novira_core::engine::{Engine, EngineError, EngineJob, EngineOutput, ProgressFn};
 use novira_core::{Backend, BackendConfig, Settings};
 use serde_json::json;
@@ -103,7 +106,8 @@ async fn the_token_is_sent_when_one_is_set() {
         "/api/models/listing-owner/gated",
         &json!({ "siblings": [{ "rfilename": "gated.safetensors" }] }),
     );
-    let (_dir, backend) = open();
+    let (dir, backend) = open();
+    let _keys = KeyCleanup::new(dir.path());
     backend
         .set_hf_token(Some("hf_listing_test".into()))
         .unwrap();

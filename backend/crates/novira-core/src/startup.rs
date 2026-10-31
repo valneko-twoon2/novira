@@ -87,4 +87,28 @@ mod tests {
         // The refusal came first: no database was created.
         assert!(!dir.path().join("novira.sqlite").exists());
     }
+    #[test]
+    fn a_new_folder_is_locked_and_opened_with_its_database() {
+        let dir = tempfile::tempdir().unwrap();
+        let data = dir.path().join("novira-data");
+        match open_backend(&data, "/novira-image".into()) {
+            Ok(_) => {}
+            Err(_) => panic!("a new folder should open"),
+        }
+        assert!(data.join("novira.sqlite").is_file());
+        assert!(data.join("logs").is_dir());
+        // The lock stays with the process: another claim on the same folder is refused.
+        assert!(try_claim(&data.join(LOCK_FILE_NAME)).unwrap().is_none());
+    }
+
+    #[test]
+    fn a_lock_that_cannot_be_opened_is_an_error_and_not_taken_for_another_novira() {
+        let dir = tempfile::tempdir().unwrap();
+        // A folder where the lock file should be: the lock cannot be opened at all.
+        std::fs::create_dir(dir.path().join(LOCK_FILE_NAME)).unwrap();
+        match open_backend(dir.path(), "/novira-image".into()) {
+            Err(Refusal::Error(m)) => assert!(m.contains("cannot lock the data folder"), "{m}"),
+            other => panic!("expected an error, got {:?}", other.map(|_| ())),
+        }
+    }
 }

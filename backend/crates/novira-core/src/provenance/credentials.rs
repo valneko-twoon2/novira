@@ -369,4 +369,16 @@ mod tests {
         let raw = std::fs::read(dir.path().join("secrets").join("c2pa-signing.key")).unwrap();
         assert!(!String::from_utf8_lossy(&raw).contains("PRIVATE KEY"));
     }
+
+    #[cfg(windows)]
+    #[test]
+    fn an_unreadable_saved_identity_is_replaced_by_a_new_one() {
+        let dir = tempfile::tempdir().unwrap();
+        crate::secret::save_secret(dir.path(), Secret::C2paSigning, Some("this is not json"))
+            .unwrap();
+        let made = Identity::load_or_create(dir.path()).unwrap();
+        // The new identity was saved over the bad one, so the next start reads it.
+        let again = Identity::load_or_create(dir.path()).unwrap();
+        assert_eq!(made.chain, again.chain);
+    }
 }

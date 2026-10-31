@@ -1,8 +1,10 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import type { ImageDTO } from '@/backend';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { backend, type ImageDTO } from '@/backend';
+import { setLocale } from '@/i18n';
+import { useToasts } from '@/state/toasts';
 import { useGallery } from '@/state/gallery';
 import { emptyPage, newProject } from './document';
-import { putGalleryImage } from './panelImage';
+import { putFileImage, putGalleryImage, reportImageFailure } from './panelImage';
 import { findPanel, useComic } from './store';
 
 let panelId = '';
@@ -38,5 +40,39 @@ describe('putting a gallery picture into a panel', () => {
   it('leaves the panel alone when the picture is not in the gallery', () => {
     expect(putGalleryImage(panelId, ['gone.png'])).toBe(false);
     expect(imageOf()).toBeNull();
+  });
+});
+
+describe('putting a file from the computer into a panel', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('uploads it to the gallery first, then makes it the picture of the panel', async () => {
+    const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue({ name: 'up.png', url: 'novira://up.png' } as ImageDTO);
+    await putFileImage(panelId, new File(['x'], 'up.png', { type: 'image/png' }));
+    expect(upload).toHaveBeenCalledOnce();
+    expect(useGallery.getState().images.map((i) => i.name)).toContain('up.png');
+    expect(imageOf()).toBe('up.png');
+  });
+
+  it('leaves the panel alone when the upload fails', async () => {
+    vi.spyOn(backend, 'uploadImage').mockRejectedValue(new Error('disk full'));
+    await expect(putFileImage(panelId, new File(['x'], 'up.png'))).rejects.toThrow('disk full');
+    expect(imageOf()).toBeNull();
+  });
+});
+
+describe('reporting a failed picture', () => {
+  beforeEach(() => {
+    setLocale('en');
+    useToasts.setState({ toasts: [] });
+  });
+  afterEach(() => setLocale('ja'));
+
+  it('toasts an error with the message of an Error, and the text of anything else', () => {
+    reportImageFailure(new Error('too big'));
+    reportImageFailure('plain text');
+    const toasts = useToasts.getState().toasts;
+    expect(toasts.map((x) => x.description)).toEqual(['too big', 'plain text']);
+    expect(toasts.every((x) => x.status === 'error')).toBe(true);
   });
 });

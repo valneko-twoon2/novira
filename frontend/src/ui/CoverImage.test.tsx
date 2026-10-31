@@ -77,4 +77,40 @@ describe('CoverImage', () => {
     expect(screen.queryByTestId('cover-zoom-next')).toBeNull();
     expect(screen.queryByTestId('cover-zoom-count')).toBeNull();
   });
+
+  it('opens from the keyboard with Enter or Space, and ignores other keys', () => {
+    const { container } = render(<CoverImage model={model({ coverImageUrl: 'blob:a' })} zoomable className="thumb" />);
+    const thumb = container.querySelector('.thumb')!;
+    expect(thumb.getAttribute('role')).toBe('button');
+    fireEvent.keyDown(thumb, { key: 'a' });
+    expect(screen.queryByTestId('cover-zoom')).toBeNull();
+    fireEvent.keyDown(thumb, { key: 'Enter' });
+    expect(screen.getByTestId('cover-zoom')).toBeTruthy();
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(screen.queryByTestId('cover-zoom')).toBeNull();
+    fireEvent.keyDown(thumb, { key: ' ' });
+    expect(screen.getByTestId('cover-zoom')).toBeTruthy();
+  });
+
+  it('steps with the arrow keys both ways, and ignores them for a single picture', () => {
+    const many = render(<CoverImage model={model({ coverImageUrl: 'blob:a', coverImageUrls: ['blob:a', 'blob:b'] })} zoomable className="thumb" />);
+    fireEvent.click(many.container.querySelector('.thumb')!);
+    const shown = () => screen.getByAltText('Model One').getAttribute('src');
+    fireEvent.keyDown(screen.getByTestId('cover-zoom'), { key: 'ArrowLeft' });
+    expect(shown()).toBe('blob:b');
+    fireEvent.keyDown(screen.getByTestId('cover-zoom'), { key: 'Home' });
+    expect(shown()).toBe('blob:b');
+    cleanup();
+    const one = render(<CoverImage model={model({ coverImageUrl: 'blob:a' })} zoomable className="thumb" />);
+    fireEvent.click(one.container.querySelector('.thumb')!);
+    fireEvent.keyDown(screen.getByTestId('cover-zoom'), { key: 'ArrowRight' });
+    expect(screen.getByAltText('Model One').getAttribute('src')).toBe('blob:a');
+  });
+
+  it('marks a mature picture in the thumbnail and in the enlarged view', () => {
+    const { container } = render(<CoverImage model={model({ coverImageUrl: 'blob:a', coverMature: true })} zoomable className="thumb" />);
+    expect(cover(container)!.className).toBe('is-mature');
+    fireEvent.click(container.querySelector('.thumb')!);
+    expect(screen.getByAltText('Model One').className).toBe('is-mature');
+  });
 });

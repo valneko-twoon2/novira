@@ -153,6 +153,34 @@ mod tests {
     }
 
     #[test]
+    fn a_main_model_with_an_unreadable_header_is_a_checkpoint_with_every_part() {
+        assert!(matches!(
+            loader_of(ModelType::Main, BaseModel::Sdxl, None),
+            Loader::Checkpoint {
+                clip: true,
+                vae: true
+            }
+        ));
+    }
+
+    #[test]
+    fn a_wan_image_to_video_model_by_name_wants_the_vision_model_only_before_2_2() {
+        let wan = |name: &str| model("w", name, ModelType::DiffusionModel, BaseModel::Wan);
+        let old = wan("wan2.1_i2v_480p.safetensors");
+        let new = wan("wan2.2_i2v_high_noise.safetensors");
+        let wants_vision = |m: &ModelConfig| {
+            missing_parts(std::slice::from_ref(m), m)
+                .missing
+                .iter()
+                .any(|s| s.id.contains("clip-vision"))
+        };
+        assert!(wants_vision(&old));
+        assert!(!wants_vision(&new));
+        // A text-to-video one never does.
+        assert!(!wants_vision(&wan("wan2.1_t2v_1.3B.safetensors")));
+    }
+
+    #[test]
     fn anima_alone_misses_its_encoder_and_vae() {
         let anima = model(
             "a",

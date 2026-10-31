@@ -35,7 +35,7 @@ export function ModelPicker({
   return (
     <SearchPicker
       trigger={
-        <button type="button" className="ui-select" disabled={disabled} aria-label={ariaLabel} data-testid={testId}>
+        <button type="button" className="ui-select" disabled={disabled} aria-label={ariaLabel && `${ariaLabel}: ${current ? current.name : placeholder}`} data-testid={testId}>
           <span className="ui-select__value">{current ? current.name : <span className="ui-select__placeholder">{placeholder}</span>}</span>
           <CaretDown size={12} />
         </button>

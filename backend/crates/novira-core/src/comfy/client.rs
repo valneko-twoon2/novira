@@ -25,6 +25,10 @@ use tokio_util::sync::CancellationToken;
 
 const PING_TIMEOUT: Duration = Duration::from_secs(3);
 const POLL_WITHOUT_WS: Duration = Duration::from_secs(1);
+/// How long a question about a job may take before ComfyUI is taken to have stopped; it answers in a moment when well.
+const HISTORY_TIMEOUT: Duration = Duration::from_secs(60);
+/// The cancel requests are best effort: a ComfyUI that does not answer them must not hold the cancelled job.
+const INTERRUPT_TIMEOUT: Duration = Duration::from_secs(5);
 const POLL_WITH_WS: Duration = Duration::from_secs(10);
 
 #[derive(Debug, Clone, PartialEq)]
@@ -245,7 +249,11 @@ impl ComfyEngine {
                 self.set_status(EngineStatus::Ready);
                 Ok(())
             }
-            Err(EngineError::Cancelled) => Err(EngineError::Cancelled),
+            // A start or install that was given up leaves nothing running: the status must not stay at the step it was in.
+            Err(EngineError::Cancelled) => {
+                self.set_status(EngineStatus::Idle);
+                Err(EngineError::Cancelled)
+            }
             Err(e) => {
                 self.set_status(EngineStatus::Error {
                     message: e.to_string(),
@@ -418,8 +426,36 @@ impl ComfyEngine {
     }
 
     async fn history(&self, prompt_id: &str) -> Result<Option<Value>, EngineError> {
-        let v = self.get_json(&format!("history/{prompt_id}")).await?;
+        let path = format!("history/{prompt_id}");
+        // A ComfyUI that is stuck or has died must not hold the job for good: the request has its own time limit.
+        let res = self
+            .http
+            .get(self.url(&path))
+            .timeout(HISTORY_TIMEOUT)
+            .send()
+            .await
+            .map_err(|e| {
+                failed(format!(
+                    "ComfyUI stopped answering ({e}); its log is logs/comfyui.log in the data folder"
+                ))
+            })?;
+        if !res.status().is_success() {
+            return Err(failed(format!("ComfyUI {path} answered {}", res.status())));
+        }
+        let v: Value = res.json().await.map_err(failed)?;
         Ok(v.get(prompt_id).cloned())
+    }
+
+    /// `history`, ended at once by a cancel (a ComfyUI that does not answer cannot make a cancelled job wait).
+    async fn history_unless_cancelled(
+        &self,
+        prompt_id: &str,
+        cancel: &CancellationToken,
+    ) -> Result<Option<Value>, EngineError> {
+        tokio::select! {
+            _ = cancel.cancelled() => Err(EngineError::Cancelled),
+            entry = self.history(prompt_id) => entry,
+        }
     }
 
     /// Asks ComfyUI to unload its models and drop its cached results (`POST /free`). Its prompt worker does it before
@@ -444,12 +480,14 @@ impl ComfyEngine {
             .http
             .post(self.url("queue"))
             .json(&json!({ "delete": [prompt_id] }))
+            .timeout(INTERRUPT_TIMEOUT)
             .send()
             .await;
         let _ = self
             .http
             .post(self.url("interrupt"))
             .json(&json!({ "prompt_id": prompt_id }))
+            .timeout(INTERRUPT_TIMEOUT)
             .send()
             .await;
     }
@@ -1181,7 +1219,14 @@ impl ComfyEngine {
                 Next::Ws(Some(Err(_)) | None) => ws = None,
                 Next::Poll => {
                     last_poll = Instant::now();
-                    if let Some(entry) = self.history(&prompt_id).await? {
+                    let entry = match self.history_unless_cancelled(&prompt_id, cancel).await {
+                        Err(EngineError::Cancelled) => {
+                            self.interrupt(&prompt_id).await;
+                            return Err(EngineError::Cancelled);
+                        }
+                        other => other?,
+                    };
+                    if let Some(entry) = entry {
                         if is_done(&entry) {
                             break;
                         }
@@ -1193,7 +1238,7 @@ impl ComfyEngine {
         let no_result = job.graph.as_ref().is_some_and(|g| g.no_result);
         // The history entry may lag the WebSocket a little.
         for _ in 0..50 {
-            if let Some(entry) = self.history(&prompt_id).await? {
+            if let Some(entry) = self.history_unless_cancelled(&prompt_id, cancel).await? {
                 if no_result && is_done(&entry) {
                     entry_failed(&entry)?;
                     return Ok(self.side_picture(&entry, &built.output_node).await);
@@ -1309,6 +1354,72 @@ mod tests {
     }
 
     #[test]
+    fn only_the_end_messages_of_our_own_prompt_end_the_job() {
+        let msg = |kind: &str, id: &str, node: &str| {
+            format!(
+                r#"{{"type":"{kind}","data":{{"prompt_id":"{id}","node":{node},"exception_message":"boom"}}}}"#
+            )
+        };
+        for (kind, node, want) in [
+            ("executing", "null", WsEvent::Done),
+            ("execution_success", "null", WsEvent::Done),
+            (
+                "execution_error",
+                "null",
+                WsEvent::Error("ComfyUI: boom".into()),
+            ),
+            ("execution_interrupted", "null", WsEvent::Interrupted),
+        ] {
+            // Ours ends it; another prompt's identical message is ignored.
+            let got = parse_ws_text(&msg(kind, "a", node), "a");
+            assert!(
+                matches!((&got, &want), (WsEvent::Error(_), WsEvent::Error(_))) || got == want,
+                "{kind}: {got:?}"
+            );
+            assert_eq!(
+                parse_ws_text(&msg(kind, "b", node), "a"),
+                WsEvent::Other,
+                "{kind}"
+            );
+            // A message without any prompt id is not ours either.
+            let anon = format!(r#"{{"type":"{kind}","data":{{"node":null}}}}"#);
+            assert_eq!(parse_ws_text(&anon, "a"), WsEvent::Other, "{kind}");
+        }
+        // Progress without a prompt id is taken as ours (ComfyUI sends it so while a job runs).
+        let anon = r#"{"type":"progress","data":{"value":2,"max":5}}"#;
+        assert!(matches!(
+            parse_ws_text(anon, "a"),
+            WsEvent::Progress {
+                value: 2,
+                max: 5,
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    fn a_history_entry_is_done_when_completed_or_ended_with_a_status() {
+        let done = |v: serde_json::Value| is_done(&v);
+        assert!(done(serde_json::json!({ "status": { "completed": true } })));
+        assert!(done(
+            serde_json::json!({ "status": { "status_str": "success" } })
+        ));
+        assert!(done(
+            serde_json::json!({ "status": { "status_str": "error" } })
+        ));
+        assert!(!done(
+            serde_json::json!({ "status": { "completed": false, "status_str": "running" } })
+        ));
+        assert!(!done(serde_json::json!({})));
+    }
+
+    #[test]
+    fn an_output_node_that_showed_an_empty_text_list_showed_nothing() {
+        let entry = serde_json::json!({ "status": { "status_str": "success" }, "outputs": { "9": { "text": [] } } });
+        assert_eq!(output_text(&entry, "9").unwrap(), None);
+    }
+
+    #[test]
     fn text_outputs_are_read_and_files_win_over_text() {
         let entry = serde_json::json!({ "status": { "status_str": "success" }, "outputs": {
             "9": { "text": ["1girl, solo, smile"] },
@@ -1346,5 +1457,78 @@ mod tests {
         let e = ComfyEngine::new("http://127.0.0.1:8188", None, Duration::from_secs(1)).unwrap();
         assert!(e.ws_url().starts_with("ws://127.0.0.1:8188/ws?clientId="));
         assert!(ComfyEngine::new("file:///x", None, Duration::from_secs(1)).is_err());
+        let secure =
+            ComfyEngine::new("https://comfy.example:8443", None, Duration::from_secs(1)).unwrap();
+        assert!(secure
+            .ws_url()
+            .starts_with("wss://comfy.example:8443/ws?clientId="));
+    }
+
+    #[tokio::test]
+    async fn freeing_memory_from_a_comfyui_that_cannot_be_reached_only_logs() {
+        let closed = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let port = closed.local_addr().unwrap().port();
+        drop(closed);
+        let e = ComfyEngine::new(
+            &format!("http://127.0.0.1:{port}"),
+            None,
+            Duration::from_secs(1),
+        )
+        .unwrap();
+        e.free_memory().await;
+    }
+
+    #[tokio::test]
+    async fn a_caller_that_waited_for_the_start_lock_finds_the_server_already_up() {
+        use axum::routing::get;
+        use std::sync::atomic::AtomicBool;
+        let up = std::sync::Arc::new(AtomicBool::new(false));
+        let flag = up.clone();
+        let app = axum::Router::new().route(
+            "/system_stats",
+            get(move || {
+                let up = flag.clone();
+                async move {
+                    if up.load(Ordering::SeqCst) {
+                        axum::http::StatusCode::OK
+                    } else {
+                        axum::http::StatusCode::SERVICE_UNAVAILABLE
+                    }
+                }
+            }),
+        );
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+        let dir = tempfile::tempdir().unwrap();
+        // The process is never started: the second ping under the lock answers first.
+        let process =
+            super::super::process::ComfyProcess::new(super::super::process::OwnedProcessConfig {
+                comfyui_dir: dir.path().join("comfy"),
+                python: None,
+                host: "127.0.0.1".into(),
+                port,
+                extra_model_paths: dir.path().join("extra.yaml"),
+                extra_args: vec![],
+                log_file: dir.path().join("comfyui.log"),
+            });
+        let engine = std::sync::Arc::new(
+            ComfyEngine::new(
+                &format!("http://127.0.0.1:{port}"),
+                Some(process),
+                Duration::from_secs(5),
+            )
+            .unwrap(),
+        );
+        let guard = engine.start_lock.lock().await;
+        let waiting = {
+            let engine = engine.clone();
+            tokio::spawn(async move { engine.ensure_ready(&CancellationToken::new()).await })
+        };
+        // The first ping fails, then the caller waits for the lock.
+        tokio::time::sleep(Duration::from_millis(300)).await;
+        up.store(true, Ordering::SeqCst);
+        drop(guard);
+        assert_eq!(waiting.await.unwrap(), Ok(()));
     }
 }

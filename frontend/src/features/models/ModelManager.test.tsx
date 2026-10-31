@@ -42,6 +42,8 @@ const show = () =>
       <ImportDialog />
     </TooltipProvider>,
   );
+/** The button over a card, which selects it (a native button: Enter and Space press it in the browser). */
+const selectButton = (card: HTMLElement) => card.querySelector('.mm-card-item__select') as HTMLElement;
 const items = () => screen.queryAllByTestId('mm-item').map((el) => el.getAttribute('aria-label'));
 const choose = (label: string, option: string) => {
   fireEvent.keyDown(screen.getAllByLabelText(label).find((el) => el.getAttribute('role') === 'combobox')!, { key: 'Enter' });
@@ -123,16 +125,17 @@ describe('ModelManager list', () => {
 });
 
 describe('ModelManager selection and deletion', () => {
-  it('opens the detail panel on click or Enter and closes it by selecting the same card again', () => {
+  it('opens the detail panel when a card is pressed and closes it by pressing the same card again', () => {
     show();
-    fireEvent.click(screen.getAllByTestId('mm-item')[3]!);
+    fireEvent.click(selectButton(screen.getAllByTestId('mm-item')[3]!));
     expect(useModels.getState().selectedKey).toBe('m1');
     expect(screen.getByTestId('mm-default-settings')).toBeTruthy();
-    fireEvent.click(screen.getAllByTestId('mm-item')[3]!);
+    fireEvent.click(selectButton(screen.getAllByTestId('mm-item')[3]!));
     expect(useModels.getState().selectedKey).toBeNull();
-    fireEvent.keyDown(screen.getAllByTestId('mm-item')[2]!, { key: 'Enter' });
+    fireEvent.click(selectButton(screen.getAllByTestId('mm-item')[2]!));
     expect(useModels.getState().selectedKey).toBe('m2');
-    fireEvent.keyDown(screen.getAllByTestId('mm-item')[2]!, { key: ' ' });
+    expect(screen.getAllByTestId('mm-item')[2]!.querySelector('.mm-card-item__select')?.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(selectButton(screen.getAllByTestId('mm-item')[2]!));
     expect(useModels.getState().selectedKey).toBeNull();
   });
 
@@ -187,7 +190,7 @@ describe('default settings editing', () => {
       ],
     });
     show();
-    fireEvent.click(screen.getAllByTestId('mm-item').find((el) => el.getAttribute('aria-label') === 'Sunny XL')!);
+    fireEvent.click(selectButton(screen.getAllByTestId('mm-item').find((el) => el.getAttribute('aria-label') === 'Sunny XL')!));
     const box = within(screen.getByTestId('mm-default-settings'));
     choose(t('models.defaults.vae'), 'Fine VAE');
     choose(t('models.defaults.vaePrecision'), 'FP32');

@@ -184,9 +184,16 @@ fn map_download(e: InstallError) -> EngineError {
     }
 }
 
-/// Where the package that was in use is kept while another version replaces it.
+/// Where the package that was in use is kept while another version replaces it. Present only while a switch runs: a
+/// start that finds it was cut off during a switch (`recover_switch`).
 pub fn previous_dir(root: &Path) -> PathBuf {
     root.join(".previous")
+}
+
+/// Where a kept package goes, in one rename, before it is deleted: a deletion cut off half way never leaves a partial
+/// `.previous` that a start would put back.
+fn discarded_dir(root: &Path) -> PathBuf {
+    root.join(".previous-discarded")
 }
 
 /// Moves the pack folders of `from` (a ComfyUI folder) into `to`'s `custom_nodes`, leaving what `to` already has. The
@@ -198,7 +205,9 @@ pub fn carry_over_custom_nodes(from: &Path, to: &Path) -> std::io::Result<()> {
     for entry in std::fs::read_dir(&source)?.flatten() {
         let name = entry.file_name();
         let dest = target.join(&name);
-        if dest.exists() || name.to_string_lossy() == "__pycache__" {
+        // A `.novira-` folder is the work folder of a pack install, not a pack.
+        let name_text = name.to_string_lossy();
+        if dest.exists() || name_text == "__pycache__" || name_text.starts_with(".novira-") {
             continue;
         }
         std::fs::rename(entry.path(), dest)?;
@@ -213,6 +222,10 @@ pub fn restore_previous(root: &Path) -> std::io::Result<()> {
     if !previous.is_dir() {
         return Ok(());
     }
+    // The pack folders moved into the new package go back first, so deleting it does not take them along.
+    if comfyui_dir(root).join("custom_nodes").is_dir() {
+        carry_over_custom_nodes(&comfyui_dir(root), &previous.join("ComfyUI"))?;
+    }
     let target = root.join(PORTABLE_DIR);
     let _ = std::fs::remove_dir_all(&target);
     std::fs::rename(previous, target)
@@ -220,7 +233,39 @@ pub fn restore_previous(root: &Path) -> std::io::Result<()> {
 
 /// Deletes the kept package once the new one works.
 pub fn discard_previous(root: &Path) {
-    let _ = std::fs::remove_dir_all(previous_dir(root));
+    let discarded = discarded_dir(root);
+    let _ = std::fs::remove_dir_all(&discarded);
+    if std::fs::rename(previous_dir(root), &discarded).is_ok() {
+        let _ = std::fs::remove_dir_all(&discarded);
+    }
+}
+
+/// At start, before the engine is prepared: a version switch that was cut off (the power went, the app was killed)
+/// left the old package in `.previous`; it is put back with every pack, as a switch that fails puts it back. The
+/// remains of a deletion that was cut off go. Returns whether a package was put back.
+pub fn recover_switch(root: &Path) -> bool {
+    let _ = std::fs::remove_dir_all(discarded_dir(root));
+    if !previous_dir(root).is_dir() {
+        return false;
+    }
+    match restore_previous(root) {
+        Ok(()) => {
+            crate::applog::warn(
+                "comfy",
+                "a ComfyUI version switch did not finish; the previous version was put back",
+            );
+            true
+        }
+        Err(e) => {
+            crate::applog::error(
+                "comfy",
+                format!(
+                    "a ComfyUI version switch did not finish and the previous version could not be put back: {e}"
+                ),
+            );
+            false
+        }
+    }
 }
 
 /// Downloads and unpacks the package into `root`. `status` is called as the work moves along.
@@ -501,6 +546,65 @@ mod tests {
         std::fs::create_dir_all(previous_dir(root.path())).unwrap();
         discard_previous(root.path());
         assert!(!previous_dir(root.path()).exists());
+        assert!(!discarded_dir(root.path()).exists());
+    }
+
+    /// An install root with the old package kept in `.previous` (one pack of the user's) and, when `new` is set, the new
+    /// package in place (its own example pack, and the user's pack when `carried`).
+    fn cut_off_switch(root: &Path, new: bool, carried: bool) {
+        let old = previous_dir(root).join("ComfyUI");
+        std::fs::create_dir_all(old.join("custom_nodes")).unwrap();
+        std::fs::write(old.join("main.py"), "old").unwrap();
+        let mine = if carried {
+            comfyui_dir(root).join("custom_nodes/mine")
+        } else {
+            old.join("custom_nodes/mine")
+        };
+        std::fs::create_dir_all(&mine).unwrap();
+        std::fs::write(mine.join("model.bin"), "weights").unwrap();
+        if new {
+            let new = comfyui_dir(root);
+            std::fs::create_dir_all(new.join("custom_nodes/example")).unwrap();
+            std::fs::write(new.join("main.py"), "new").unwrap();
+        }
+    }
+
+    #[test]
+    fn a_start_after_a_switch_was_cut_off_puts_the_old_version_back_with_its_packs() {
+        for (new, carried) in [(false, false), (true, false), (true, true)] {
+            let root = tempfile::tempdir().unwrap();
+            cut_off_switch(root.path(), new, carried);
+            assert!(recover_switch(root.path()), "{new} {carried}");
+            let comfy = comfyui_dir(root.path());
+            assert_eq!(
+                std::fs::read_to_string(comfy.join("main.py")).unwrap(),
+                "old"
+            );
+            assert_eq!(
+                std::fs::read_to_string(comfy.join("custom_nodes/mine/model.bin")).unwrap(),
+                "weights",
+                "{new} {carried}"
+            );
+            // A folder only the new package has comes along too: which folders are the user's is not known, and
+            // keeping one too many costs nothing.
+            assert!(!previous_dir(root.path()).exists());
+        }
+    }
+
+    #[test]
+    fn a_start_after_a_switch_finished_changes_nothing_and_drops_a_cut_off_deletion() {
+        let root = tempfile::tempdir().unwrap();
+        assert!(!recover_switch(root.path()));
+        std::fs::create_dir_all(comfyui_dir(root.path())).unwrap();
+        std::fs::write(comfyui_dir(root.path()).join("main.py"), "new").unwrap();
+        // The kept package was being deleted after a switch that worked: it had been renamed first.
+        std::fs::create_dir_all(discarded_dir(root.path()).join("ComfyUI")).unwrap();
+        assert!(!recover_switch(root.path()));
+        assert!(!discarded_dir(root.path()).exists());
+        assert_eq!(
+            std::fs::read_to_string(comfyui_dir(root.path()).join("main.py")).unwrap(),
+            "new"
+        );
     }
 
     #[test]

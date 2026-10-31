@@ -126,6 +126,20 @@ describe('halvePanel', () => {
     expect(useComic.getState().halvePanel(page.id, 0)).toBeNull();
     expect(current().panels).toHaveLength(MAX_PANELS_PER_PAGE);
   });
+
+  it('cuts nothing from a panel too small to make two panels, either way across', () => {
+    const page = seed(2);
+    // A thin strip under a big panel: each half of it would be smaller than a panel may be.
+    const strip: Shape = [{ x: 0.1, y: 0.8 }, { x: 0.9, y: 0.8 }, { x: 0.9, y: 0.805 }, { x: 0.1, y: 0.805 }];
+    const big: Shape = [{ x: 0.1, y: 0.1 }, { x: 0.9, y: 0.1 }, { x: 0.9, y: 0.8 }, { x: 0.1, y: 0.8 }];
+    useComic.getState().setProjects([{ ...useComic.getState().projects[0]!, pages: [{ ...page, shapes: [big, strip], free: false }] }]);
+    useComic.getState().selectPanel('panel-0');
+    const before = useComic.getState().projects;
+    expect(useComic.getState().halvePanel(page.id, 1)).toBeNull();
+    expect(useComic.getState().projects).toBe(before);
+    expect(useComic.getState().past).toEqual([]);
+    expect(useComic.getState().selectedPanelId).toBe('panel-0');
+  });
 });
 
 describe('the store moveEdge', () => {
@@ -211,6 +225,20 @@ describe('removePanel', () => {
     expect(allValid(after)).toBe(true);
     expect(after.reduce((sum, s) => sum + shapeArea(s), 0)).toBeCloseTo(before.reduce((sum, s) => sum + shapeArea(s), 0), 4);
     expect(useComic.getState().selectedPanelId).toBeNull();
+  });
+
+  it('passes over a neighbour that only touches the panel at a corner, and gives the area to the next one', () => {
+    // A tiled page of four in a square, read left to right: top left, top right, bottom left, bottom right.
+    const box = (x: number, y: number): Shape => [{ x, y }, { x: x + 0.4, y }, { x: x + 0.4, y: y + 0.4 }, { x, y: y + 0.4 }];
+    const page = seed(4);
+    const shapes = [box(0.1, 0.1), box(0.5, 0.1), box(0.1, 0.5), box(0.5, 0.5)];
+    useComic.getState().setProjects([{ ...useComic.getState().projects[0]!, pages: [{ ...page, shapes, free: false }] }]);
+    // The nearest panels of the bottom left one are the top right (a corner only) and the bottom right (an edge).
+    expect(useComic.getState().removePanel(page.id, 2)).toBe(true);
+    expect(current().panels.map((p) => p.id)).toEqual(['panel-0', 'panel-1', 'panel-3']);
+    expect(current().shapes).not.toBeNull();
+    expect(current().shapes!.map(shapeArea).map((a) => Number(a.toFixed(6)))).toEqual([0.16, 0.16, 0.32]);
+    expect(allValid(current().shapes!)).toBe(true);
   });
 
   it('keeps the last panel and refuses a panel that is not there', () => {

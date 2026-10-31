@@ -29,7 +29,7 @@ The gallery keeps the pictures, videos and audio that novira makes or receives, 
 
 **Recall.** "Use all", "Remix", the viewer's model row and the face fix take the stored model by its key; when the key is empty or not installed (pictures made by another program and imported), they look the stored name up among the drawable models (`frontend/src/state/recallModel.ts`): case and punctuation are ignored, an exact name or file name wins, else the only model whose name starts with it. With no match, or several, the current model stays and the notification names the missing one. LoRAs and the VAE are stored by key only, so they have no such fallback.
 
-**Upload.** The page sends raw bytes and options (board, intermediate flag, category) in a header. Before decoding, `images::check_limits` refuses a file over 256 MiB, a side over 20,000 pixels, more than 100,000,000 pixels, and any format other than PNG, JPEG, WebP, GIF or BMP (detected from the content). A PNG is kept byte for byte once its chunks are checked; other formats are re-encoded as PNG.
+**Upload.** The page sends raw bytes and options (board, intermediate flag, category) in a header. Before decoding, `images::check_limits` refuses a file over 256 MiB, a side over 20,000 pixels, more than 100,000,000 pixels, and any format other than PNG, JPEG, WebP, GIF or BMP (detected from the content). A PNG is kept byte for byte once its chunks and pixels are checked; other formats are re-encoded as PNG.
 
 **Gallery state.** Pictures made for the canvas, as intermediates or as drafts (`draftAt`) get `isIntermediate` and are left out of the board view (`frontend/src/state/gallery.ts`). Logos get category `other`.
 

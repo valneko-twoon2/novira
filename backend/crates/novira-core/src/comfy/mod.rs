@@ -1,5 +1,7 @@
 //! ComfyUI adapter: graph building, the HTTP/WebSocket client and the owned process.
 pub mod client;
+#[cfg(test)]
+mod gap_tests;
 pub mod graph;
 #[cfg(test)]
 mod graph_snapshots;

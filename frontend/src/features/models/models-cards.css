@@ -53,7 +53,20 @@
   box-shadow: var(--shadow);
 }
 
-.mm-card-item:focus-visible {
+/* The button over the whole card, below the cover's own layer (media) so that the tag, star and menu on it stay pressable. */
+.mm-card-item__select {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+.mm-card-item__select:focus-visible {
   box-shadow: var(--focus-ring);
 }
 
@@ -64,7 +77,15 @@
 
 .mm-card-item__media {
   position: relative;
+  z-index: 2;
   container-type: inline-size;
+  /* Presses on the cover go through to the select button; only the tag, star and menu take them. */
+  pointer-events: none;
+}
+
+.mm-card-item__license,
+.mm-card-item__actions {
+  pointer-events: auto;
 }
 
 /* License tag on the cover, top left (the star and menu take the top right). The scrim keeps the soft tag colour readable

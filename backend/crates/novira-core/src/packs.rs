@@ -468,7 +468,9 @@ pub async fn install_files_in(
                 InstallError::Cancelled => "cancelled".to_string(),
                 InstallError::Failed(m) => m,
             })?;
-        std::fs::rename(&part, &dest).map_err(|e| e.to_string())?;
+        crate::models::install::rename_when_free(&part, &dest)
+            .await
+            .map_err(|e| e.to_string())?;
     }
     Ok(())
 }
