@@ -40,16 +40,22 @@ describe('an edit of one page', () => {
     { name: 'a panel removed', edit: (id) => useComic.getState().removePanel(id, 0) },
     { name: 'its finishing effect', edit: (id) => useComic.getState().setPageEffect(id, 'mono') },
     { name: 'its backdrop', edit: (id) => useComic.getState().setBackdrop(id, 'back.png') },
-    { name: 'the view of its backdrop', prepare: (id) => useComic.getState().setBackdrop(id, 'back.png'), edit: (id) => useComic.getState().setBackdropView(id, { scale: 2 }) },
+    { name: 'the view of its backdrop', prepare: backdrops, edit: (id) => useComic.getState().setBackdropView(id, { scale: 2 }) },
     {
       name: 'the view of its backdrop put back',
       prepare: (id) => {
-        useComic.getState().setBackdrop(id, 'back.png');
+        backdrops();
         useComic.getState().setBackdropView(id, { scale: 2 });
       },
       edit: (id) => useComic.getState().resetBackdrop(id, ['scale']),
     },
   ];
+
+  /** A backdrop on every page of the open comic, so a view edit that missed its page would have one to change. */
+  function backdrops() {
+    const open = useComic.getState().projects.find((p) => p.id === useComic.getState().activeProjectId)!;
+    for (const pg of open.pages) useComic.getState().setBackdrop(pg.id, 'back.png');
+  }
 
   for (const { name, prepare, edit } of cases) {
     it(`changes that page only: ${name}`, () => {
