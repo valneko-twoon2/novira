@@ -467,6 +467,15 @@ describe('mock backend: boards and images', () => {
 });
 
 describe('mock backend: models, workflows and packs', () => {
+  it('refuses the unfinished download paths the backend refuses, before deleting any', async () => {
+    const { backend } = await start();
+    await expect(backend.deleteUnfinishedDownloads(['../outside', 'x'.repeat(512)])).resolves.toEqual([]);
+    for (const bad of [[''], ['a\u0007b'], ['x'.repeat(513)], ['あ'.repeat(171)], Array.from({ length: 1001 }, (_, i) => `p${i}`)]) {
+      await expect(backend.deleteUnfinishedDownloads(bad), String(bad[0]).slice(0, 10)).rejects.toThrow();
+    }
+    await expect(backend.deleteUnfinishedDownloads(Array.from({ length: 1000 }, (_, i) => `p${i}`))).resolves.toEqual([]);
+  });
+
   it("offers every node of ComfyUI's own, in ComfyUI's order, with the hand-made ones in their place and no file names", async () => {
     const { backend } = await start();
     const defs = await backend.nodeDefs();

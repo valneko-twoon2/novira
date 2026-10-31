@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: base.resolve,
   test: {
     include: ['difftest/**/*.difftest.ts'],
+    setupFiles: ['difftest/setup.ts'],
     environment: 'node',
     maxWorkers: 1,
     testTimeout: 20_000,

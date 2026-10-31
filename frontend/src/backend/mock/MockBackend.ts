@@ -88,6 +88,9 @@ const MAX_COMIC_BYTES = 32 * 1024 * 1024;
 const MAX_CANVAS_BYTES = 32 * 1024 * 1024;
 const MAX_UI_STATE_BYTES = 32 * 1024 * 1024;
 const MAX_UI_STATE_KEY = 200;
+/** The backend's limits of a deletion of unfinished downloads (`unfinished.rs`): paths per call, bytes per path. */
+const MAX_UNFINISHED_PICKED = 1000;
+const MAX_UNFINISHED_PATH = 512;
 
 /** The JSON object `text` holds, or `null` when it is not one (an array, a number, broken text). */
 function jsonObject(text: string): Record<string, unknown> | null {
@@ -1290,6 +1293,10 @@ export class MockBackend implements BackendClient {
   }
 
   async deleteUnfinishedDownloads(paths: string[]): Promise<UnfinishedDownload[]> {
+    // Checked as the backend checks them, before anything is deleted.
+    if (paths.length > MAX_UNFINISHED_PICKED) throw new Error(`At most ${MAX_UNFINISHED_PICKED} unfinished downloads can be deleted at once`);
+    // eslint-disable-next-line no-control-regex
+    if (paths.some((p) => !p || new TextEncoder().encode(p).length > MAX_UNFINISHED_PATH || /[\u0000-\u001f\u007f-\u009f]/.test(p))) throw new Error('Not an unfinished download path');
     this.unfinishedDownloads = this.unfinishedDownloads.filter((d) => !paths.includes(d.path));
     return this.listUnfinishedDownloads();
   }
