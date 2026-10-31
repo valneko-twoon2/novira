@@ -219,3 +219,55 @@ fn a_damaged_journal_changes_nothing() {
     assert!(Applying::begin(&data).is_err(), "no database to restore");
     assert_eq!(which(&data).as_deref(), Some("current"));
 }
+
+#[test]
+fn a_refused_restore_into_an_empty_data_folder_says_the_data_was_kept() {
+    let dir = tempfile::tempdir().unwrap();
+    let data = data_with_ready_restore(dir.path(), false);
+    // Nothing of the current data is there, so nothing is moved aside and no folder for it is made.
+    for item in [DATABASE, OUTPUTS, THUMBNAILS] {
+        let _ = std::fs::remove_dir_all(data.join(item));
+        let _ = std::fs::remove_file(data.join(item));
+    }
+    apply_pending(&data);
+    match take_outcome(&data) {
+        RestoreOutcome::Failed { message } => {
+            assert!(message.contains("kept as it was"), "{message}")
+        }
+        other => panic!("{other:?}"),
+    }
+    assert!(leftovers(&data).is_empty());
+}
+
+#[test]
+fn a_folder_of_the_previous_data_that_cannot_be_removed_is_named() {
+    let dir = tempfile::tempdir().unwrap();
+    let data = data_with_ready_restore(dir.path(), false);
+    let mut run = Applying::begin(&data).unwrap();
+    let old = run.old.clone();
+    let mut last = Next::More;
+    for _ in 0..8 {
+        last = run.step();
+        if last != Next::More {
+            break;
+        }
+        // Something that is not the data's lands in the folder of the previous data, so it cannot be removed empty.
+        if old.is_dir() {
+            std::fs::write(old.join("someone-elses.txt"), b"x").unwrap();
+        }
+    }
+    while last == Next::More {
+        last = run.step();
+    }
+    match last {
+        Next::Refused(message) => {
+            assert!(
+                message.contains("putting the previous data back failed"),
+                "{message}"
+            );
+            assert!(message.contains(&old.display().to_string()), "{message}");
+        }
+        other => panic!("{other:?}"),
+    }
+    assert_eq!(which(&data).as_deref(), Some("current"));
+}

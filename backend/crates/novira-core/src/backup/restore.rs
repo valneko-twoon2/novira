@@ -402,14 +402,23 @@ fn apply(data_dir: &Path) -> Result<String, String> {
         Err(e) => return Err(format!("cannot read the restored screen state: {e}")),
     };
     let mut run = Applying::begin(data_dir)?;
-    loop {
+    // Each step moves one item, so a restore takes about twenty. A step that reports a move the folders do not show
+    // would repeat for ever and hold the start; it stops instead, leaving the data where it is.
+    for _ in 0..MAX_STEPS {
         match run.step() {
             Next::More => {}
             Next::Restored => return Ok(ui_state),
             Next::Refused(message) => return Err(message),
         }
     }
+    Err(format!(
+        "the backup could not be restored: moving the data did not finish; the previous data is in {}",
+        run.old.display()
+    ))
 }
+
+/// More steps than any restore needs (five items aside, three in, and as many back).
+const MAX_STEPS: usize = 64;
 
 /// Applies a confirmed restore. Called at start-up before the database is opened. Does nothing without a confirmed
 /// restore; an unpacked backup that was never confirmed is removed.
