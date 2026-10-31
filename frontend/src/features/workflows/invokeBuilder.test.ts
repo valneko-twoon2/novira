@@ -41,8 +41,11 @@ function text2image(name = 'Plain'): EditorGraph {
 }
 
 describe('what keeps a workflow from running', () => {
-  it('asks for an output node when nothing saves or shows the result', () => {
-    const g = { nodes: [node('sdxl_model_loader', 'model', { model: 'sdxl-key' }), node('noise', 'noise')], edges: [] };
+  it('asks for an output node when nothing saves or shows the result, besides what else is missing', () => {
+    const g = { nodes: [node('sdxl_model_loader', 'model', { model: '' }), node('noise', 'noise')], edges: [] };
+    const missing = t('workflows.readiness.missingModel', { node: nodeTitle('sdxl_model_loader'), field: fieldLabel('sdxl_model_loader', 'model') });
+    expect(readinessReasons(g)).toEqual([t('workflows.readiness.noOutput'), missing]);
+    g.nodes[0]!.data.inputs.model = 'sdxl-key';
     expect(readinessReasons(g)).toEqual([t('workflows.readiness.noOutput')]);
   });
 
