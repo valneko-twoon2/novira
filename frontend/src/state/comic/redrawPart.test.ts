@@ -124,4 +124,30 @@ describe('redrawPart', () => {
     expect(await redrawPart('panel-0', box, { strength: 0.7 })).toBe(false);
     expect(toast).toHaveBeenLastCalledWith({ status: 'error', title: t('comic.draw.failed'), description: 'engine is down' });
   });
+
+  it('refuses a panel that is not there, as one without a picture', async () => {
+    seed();
+    const { enqueue } = mockBackend();
+    expect(await redrawPart('gone', box, { strength: 0.7 })).toBe(false);
+    expect(toast).toHaveBeenLastCalledWith({ status: 'warning', title: t('comic.fix.noPicture') });
+    expect(enqueue).not.toHaveBeenCalled();
+  });
+
+  it('passes on the text the desktop shell refuses the job with', async () => {
+    seed();
+    mockBackend();
+    // The shell rejects a command with the error's text, not an Error.
+    vi.spyOn(backend, 'enqueue').mockRejectedValue('queue is full');
+    expect(await redrawPart('panel-0', box, { strength: 0.7 })).toBe(false);
+    expect(toast).toHaveBeenLastCalledWith({ status: 'error', title: t('comic.draw.failed'), description: 'queue is full' });
+  });
+
+  it('does not say the redraw is queued when the queue takes no job', async () => {
+    seed();
+    mockBackend();
+    vi.spyOn(backend, 'enqueue').mockResolvedValue([]);
+    expect(await redrawPart('panel-0', box, { strength: 0.7 })).toBe(false);
+    expect(toast).not.toHaveBeenCalled();
+    expect(useComic.getState().pending).toEqual({});
+  });
 });
