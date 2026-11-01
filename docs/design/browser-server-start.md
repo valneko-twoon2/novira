@@ -2,7 +2,7 @@
 covers:
   - backend/crates/novira-server/src/main.rs
   - scripts/server.bat
-  - scripts/release.bat
+  - scripts/release/package.bat
 ---
 # Starting the browser server
 
@@ -10,7 +10,7 @@ How `novira-server` ([browser-server.md](browser-server.md)) is started: its opt
 
 ## Behaviour
 
-`novira-server (--data <folder> | --app-data) --dist <folder> [--port N] [--engine] [--open]`. `--data` falls back to `NOVIRA_DATA_DIR`; `--app-data` takes the folder `novira.exe` beside it opens (`data_location::app_data`: the variable, the pointer, the default; exit 2 before its first start or while a move waits); with none it stops (exit 2), so an app's data is never opened by accident. A data folder another process holds is refused with exit 3. `--dist` is a built `frontend/dist` (else it stops). `--port` defaults to the last start's port (`server-port` in the data folder: a page's saved state is per address), else a free one. `--engine` also starts the worker, the engine and the watermark preparation, as the app does. When ready it prints `novira-server: http://127.0.0.1:<port>/?token=<token>`; `--open` also hands the address to the default browser (`api::browser_command`, no shell). Ctrl-C stops it. `scripts/server.bat` builds the frontend and the server (`fast` skips that) and starts it on the repository's `novira-data` with `--engine --open`; `scripts/release.bat` puts `novira-server.exe`, `dist/` and `server.bat` (written by it, with `--app-data`) into `artifacts/`.
+`novira-server (--data <folder> | --app-data) --dist <folder> [--port N] [--engine] [--open]`. `--data` falls back to `NOVIRA_DATA_DIR`; `--app-data` takes the folder `novira.exe` beside it opens (`data_location::app_data`: the variable, the pointer, the default; exit 2 before its first start or while a move waits); with none it stops (exit 2), so an app's data is never opened by accident. A data folder another process holds is refused with exit 3. `--dist` is a built `frontend/dist` (else it stops). `--port` defaults to the last start's port (`server-port` in the data folder: a page's saved state is per address), else a free one. `--engine` also starts the worker, the engine and the watermark preparation, as the app does. When ready it prints `novira-server: http://127.0.0.1:<port>/?token=<token>`; `--open` also hands the address to the default browser (`api::browser_command`, no shell). Ctrl-C stops it. `scripts/server.bat` builds the frontend and the server (`fast` skips that) and starts it on the repository's `novira-data` with `--engine --open`; `scripts/release/package.bat` puts `novira-server.exe`, `dist/` and `server.bat` (written by it, with `--app-data`) into `artifacts/`.
 
 ## Boundaries
 

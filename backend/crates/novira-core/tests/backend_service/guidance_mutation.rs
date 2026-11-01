@@ -1,4 +1,4 @@
-//! Guidance checks added after mutation testing (cargo-mutants, `scripts\mutation.bat`): a video or sound is not a picture for
+//! Guidance checks added after mutation testing (cargo-mutants, `scripts\checks\mutation.bat`): a video or sound is not a picture for
 //! a mask or control layer, and the base model a ControlNet must fit is the one of the job's own main model.
 use super::common::*;
 use novira_core::types::*;

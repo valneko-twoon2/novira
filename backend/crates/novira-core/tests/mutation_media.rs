@@ -1,4 +1,4 @@
-//! Tests added after mutation testing (cargo-mutants, `scripts\mutation.bat`) showed that a change of the media helpers went
+//! Tests added after mutation testing (cargo-mutants, `scripts\checks\mutation.bat`) showed that a change of the media helpers went
 //! unnoticed.
 use novira_core::media::images::{
     check_limits, ImageFiles, MAX_IMAGE_BYTES, MAX_IMAGE_PIXELS, MAX_IMAGE_SIDE,

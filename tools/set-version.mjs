@@ -2,7 +2,7 @@
 // it), frontend/package.json and the two copies of it in frontend/package-lock.json, and the workspace crates' entries
 // of backend/Cargo.lock (`cargo update --workspace --offline`). A test (frontend/tests) keeps package.json equal to Cargo.
 // Usage: `node tools/set-version.mjs 0.2.0` or `0.2.0-beta.1`; with no argument it shows the version and asks for one
-// (scripts\version.bat). Nothing is committed: the changed files are listed for you to review.
+// (scripts\release\set-version.bat). Nothing is committed: the changed files are listed for you to review.
 import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createInterface } from 'node:readline/promises';

@@ -4,21 +4,19 @@ How the project is started, checked and guarded, and which file guards what. How
 
 ## Launchers and tools
 
-`scripts/` holds what you run by hand: the Windows launchers (`.bat`). `tools/` holds what AI sessions, the Git hooks and CI call, and the parts they share. `.githooks/` holds the Git hooks: a thin `sh` file per hook and its body in Node.
+`scripts/` holds what you run by hand: the Windows launchers (`.bat`); everyday ones at its top, long checks in `checks/`, the release in `release/`. `tools/` holds what AI sessions, the Git hooks and CI call, and the parts they share. `.githooks/` holds the Git hooks: a thin `sh` file per hook and its body in Node.
 
 | In `scripts/` | What |
 |---|---|
-| `start.bat` | Builds what changed, then opens `backend\target\debug\novira.exe` (`fast` skips it) |
-| `rebuild.bat` | Clean rebuild: fresh `frontend/dist`, `cargo clean -p novira`, build, open (`full`: all of `backend/target`) |
+| `start.bat` | Builds what changed, then opens `backend\target\debug\novira.exe` (`fast` skips it; `clean` cleans `frontend/dist` and the app crate first, `clean full` all of `backend/target`) |
 | `dev.bat` | `cargo tauri dev`: Vite hot reload with the real backend |
 | `server.bat` | Builds what changed (`tools/ensure-frontend.mjs`), starts `novira-server` on `novira-data` with the engine and opens the browser (`fast` skips the build) |
-| `release.bat` | A release build into `artifacts/`: the app, `novira-server.exe`, `dist/` and a `server.bat` it writes |
-| `package.bat` | After `release.bat` and `tools/release-smoke.mjs` (the built files start): zip and `.sha256` (`tools/package-release.mjs`) |
 | `check.bat` | All fast checks: `npm run check` plus `cargo fmt --check`, clippy with `-D warnings`, `cargo test` |
-| `full-check.bat` | All tests by hand (no CI): `check.bat`, `novira-server`, the mock against it (`tools/diff-backends.mjs`), Playwright, layout scan (`tools/full-check.mjs`) |
-| `coverage.bat`, `mutation.bat` | Coverage, mutation testing; reports in `novira-data/work/` |
-| `version.bat` | Sets the one version in `Cargo.toml`, `package.json` and the lock files (`tools/set-version.mjs`) |
-| `manual.bat` | The manual: mock-app screenshots, then `novira-data/work/manual/<language>/` |
+| `checks/full-check.bat` | All tests by hand (no CI): `check.bat`, `novira-server`, the mock against it (`tools/diff-backends.mjs`), Playwright, layout scan (`tools/full-check.mjs`) |
+| `checks/coverage.bat`, `checks/mutation.bat` | Coverage, mutation testing; reports in `novira-data/work/` |
+| `checks/manual.bat` | The manual: mock-app screenshots, then `novira-data/work/manual/<language>/` |
+| `release/package.bat` | Release build into `artifacts/`, then zip and `.sha256` (`tools/package-release.mjs`); `build` skips the zip, for `tools/release-smoke.mjs` |
+| `release/set-version.bat` | Sets the one version in `Cargo.toml`, `package.json` and the lock files (`tools/set-version.mjs`) |
 
 | Elsewhere | What |
 |---|---|
@@ -85,8 +83,8 @@ Rules (`.claude/rules/`) say what must hold; Claude Code loads one when a file u
 | Claude Code hooks (`.claude/hooks/`) | the map's entry page missing from a session or subagent (`architecture-map.mjs`, at `SessionStart` and `SubagentStart`); wrong line ends after an edit or a shell rewrite (LF; CRLF for `.bat`/`.cmd`); uncommitted work at the end of a turn (`commit-before-stop.mjs` reminds once), model code committed with no sweep record for HEAD; a write into `novira-data/` (or where the app moved it) outside `work/` (`data-guard.mjs`: refused before, reported after). The Stop hook asks for `tools/worktree.mjs remove` of every finished worktree. Line-end and uncommitted-work hooks see every worktree (`worktrees.mjs`). |
 | `cargo test -p novira --test robustness` | `unwrap` / `expect` on locks (use `novira_core::sync`), synchronous commands that do not run through `commands::guard` (a panic on the main thread kills the app) |
 | `cargo test -p novira --test window_config` | `dragDropEnabled` turned on (on Windows no HTML5 drag and drop reaches the page) |
-| `npm run coverage` (`coverage.bat`) | frontend coverage falling below the floors in `frontend/vitest.config.ts`. Run by hand, not in `npm run check`. Rust: `coverage.bat backend` fails below its line floor (`--fail-under-lines`). `npm run coverage:e2e` (`coverage.bat e2e`) adds the browser coverage of the Playwright run (`frontend/scripts/coverage-report.mjs`) |
-| `mutation.bat rust` (`cargo mutants`, config `backend/.cargo/mutants.toml`) | a test that does not notice a real change of the code (a surviving mutant). Not in `check.bat` or CI (a day for the crate; one file with `-- -f <path>`); equivalent mutants are excluded in the config with a reason | frontend (see its own part of `mutation.bat`), code the tests never run (that is `coverage.bat`) |
+| `npm run coverage` (`checks/coverage.bat`) | frontend coverage falling below the floors in `frontend/vitest.config.ts`. Run by hand, not in `npm run check`. Rust: `checks/coverage.bat backend` fails below its line floor (`--fail-under-lines`). `npm run coverage:e2e` (`checks/coverage.bat e2e`) adds the browser coverage of the Playwright run (`frontend/scripts/coverage-report.mjs`) |
+| `checks/mutation.bat rust` (`cargo mutants`, config `backend/.cargo/mutants.toml`) | a test that does not notice a real change of the code (a surviving mutant). Not in `check.bat` or CI (a day for the crate; one file with `-- -f <path>`); equivalent mutants are excluded in the config with a reason | frontend (see its own part of `checks/mutation.bat`), code the tests never run (that is `checks/coverage.bat`) |
 | `npx vitest run <file>.property.test.ts` (part of `npm run check`; fast-check, shared setup in `frontend/src/propertyTest.testkit.ts`) | hostile or random input reaching pure frontend logic and stores. In process only (`fetch` throws), fixed run count and seed (`NOVIRA_PBT_RUNS`, `NOVIRA_PBT_SEED`); a known bug is an `it.fails` test with a `known bug:` comment |
 | `prop_*` tests of novira-core (`--test prop_paths` and the others) | hostile or random input reaching a pure function or parser: a path that escapes its folder or names a device or another host; a prompt with a dangling link, a cycle or a null input; a parser that panics or overflows; a contract type that changes in a round trip. Fixed seed | only what the generators reach: no real engine, network or GPU, and a bug outside the generated shapes |
 | `backend/rustfmt.toml` (`newline_style = "Unix"`) | Rust line ends |

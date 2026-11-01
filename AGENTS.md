@@ -26,7 +26,7 @@
 | `backend/src-tauri/` | Tauri 2 の薄いシェル（IPC、画像の URL スキーム、ウィンドウ） |
 | ComfyUI | アプリが自分で導入して動かす。データは `novira-data/`（`NOVIRA_DATA_DIR` で変更） |
 
-起動は `scripts\start.bat`、ビルドが壊れたら `scripts\rebuild.bat`、フロントを頻繁に直すなら `scripts\dev.bat`。Windows 用で `make` は無い。
+起動は `scripts\start.bat`、ビルドが壊れたら `scripts\start.bat clean`、フロントを頻繁に直すなら `scripts\dev.bat`。Windows 用で `make` は無い。
 
 ## 2. 資料の入口
 

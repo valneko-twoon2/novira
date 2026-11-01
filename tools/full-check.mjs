@@ -4,7 +4,7 @@
 // scan. Every step runs even when an earlier one failed. The result goes to novira-data/work/full-check/<time>.md (step,
 // result, minutes, the last lines of a failed step) and the exit code is 1 when any step failed.
 // Nothing here uses the GPU, the network beyond what the tests' fakes serve on loopback, or the user's data folder.
-// Usage, from the repository root:  node tools/full-check.mjs [--no-browser] [--list]   (scripts\full-check.bat)
+// Usage, from the repository root:  node tools/full-check.mjs [--no-browser] [--list]   (scripts\checks\full-check.bat)
 //   --no-browser  skips the Playwright steps and the layout scan
 //   --list        prints the steps and runs nothing
 import { spawn } from 'node:child_process';

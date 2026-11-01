@@ -2,13 +2,13 @@
 rem Measures test coverage; nothing is changed in the sources. Reports go to novira-data\work\coverage\ (not committed).
 rem   frontend: vitest + v8 (statements, branches, functions, lines); fails below the floors in frontend\vitest.config.ts
 rem   backend:  cargo llvm-cov for novira-core (lines, functions, regions; stable Rust cannot count branches); fails below 98.2% lines
-rem Usage: scripts\coverage.bat            both
-rem        scripts\coverage.bat frontend   only the frontend
-rem        scripts\coverage.bat backend    only the Rust part; first run installs cargo-llvm-cov (needs rustup)
-rem        scripts\coverage.bat e2e        runs the Playwright tests (about 15 minutes) with browser coverage and adds it to the unit figure (lines)
+rem Usage: scripts\checks\coverage.bat            both
+rem        scripts\checks\coverage.bat frontend   only the frontend
+rem        scripts\checks\coverage.bat backend    only the Rust part; first run installs cargo-llvm-cov (needs rustup)
+rem        scripts\checks\coverage.bat e2e        runs the Playwright tests (about 15 minutes) with browser coverage and adds it to the unit figure (lines)
 rem The Rust build goes to backend\target\llvm-cov-target, so a running novira.exe is not touched.
 setlocal
-pushd "%~dp0.."
+pushd "%~dp0..\.."
 set "PATH=%USERPROFILE%\.cargo\bin;%PATH%"
 set "COV_FAILED="
 

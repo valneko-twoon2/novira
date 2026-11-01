@@ -52,7 +52,7 @@ Follow this when reading or changing the source of `frontend/` or `backend/`. Fo
 | `src-tauri` (commands, capability) | `cargo test -p novira` (it also checks that the command list matches the capability) and `npx vitest run src/backend/tauri` (argument names match) |
 | Finishing | `cargo fmt --all`, `cargo clippy -p novira-core --tests` |
 
-After changing a Rust file with logic, run `/test-mutation` on it (one file at a time through `scripts\mutation.bat`) to see whether the tests notice a real change. For choosing the cases, see the `/testing` skill.
+After changing a Rust file with logic, run `/test-mutation` on it (one file at a time through `scripts\checks\mutation.bat`) to see whether the tests notice a real change. For choosing the cases, see the `/testing` skill.
 
 `*_live.rs` touches external services or the real engine, so run it only when asked.
 

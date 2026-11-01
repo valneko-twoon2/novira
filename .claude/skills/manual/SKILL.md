@@ -19,11 +19,11 @@ When the manual must change and how chapters, translations and scenes must be wr
 | One script for both | `node frontend/scripts/manual.mjs [all\|shots\|build] [--locale ja,en] [--scene id,id] [--theme …] [--list] [--allow-missing-images] [--open\|--no-open]` |
 | Pictures (`shots`) | → `novira-data/work/manual/<language>/images/<id>.png` |
 | HTML (`build`) | → `novira-data/work/manual/<language>/index.html` (contents), `novira-data/work/manual/<language>/<NN-name>.html` (one per chapter) and `novira-data/work/manual/index.html` (languages) |
-| From the repository root | `scripts\manual.bat` (shots + build + open), `scripts\manual.bat shots [languages]`, `scripts\manual.bat build [languages]` |
+| From the repository root | `scripts\checks\manual.bat` (shots + build + open), `scripts\checks\manual.bat shots [languages]`, `scripts\checks\manual.bat build [languages]` |
 
 ## Steps by request
 
-1. **Produce the HTML** (no content change): `scripts\manual.bat` (or `shots` then `build`). Pictures are not in git, so a fresh clone needs the shots step first. Report the path `novira-data/work/manual/index.html`.
+1. **Produce the HTML** (no content change): `scripts\checks\manual.bat` (or `shots` then `build`). Pictures are not in git, so a fresh clone needs the shots step first. Report the path `novira-data/work/manual/index.html`.
 2. **A feature changed** (screen, flow or wording the user sees): find the chapter (`grep -rln "<message key>" docs/manual/ja`, or by topic), edit the **Japanese** chapter first, then the same place in **en** (same structure). Run `npm run manual:check` in `frontend/` now, before anything else. Then `node frontend/scripts/manual-pending.mjs add` marks the chapter as behind for the other eight languages (they show the English chapter until translated). Name controls with `{{ui:<key>}}`. If a screen changed, keep its scene's steps in step and report its pictures as not retaken (`.claude/rules/manual.md` section 5); take them only when the user asks: `node frontend/scripts/manual.mjs shots --locale ja --scene <id>`, then open the picture.
 3. **A new screen to show:** add a scene, then use it with `![caption](shot:<id>)` in the Japanese chapter and in every translation.
    - A scene is `{ id, query?, settings?, run(s) }`. Take the picture with `s.shot()`, or `s.shot(element)` to cut out one part.
@@ -32,14 +32,14 @@ When the manual must change and how chapters, translations and scenes must be wr
    - Open the picture and check it by eye: the right state is open, the content is there, nothing overflows.
 4. **Catch up the translations** (when a piece of work ends, before a release, or when asked): `node frontend/scripts/manual-pending.mjs list` shows what each language lacks. Translate those chapters from the English or Japanese one (a helper may take a language each; the brief: "Translate the chapters listed for <lang> in docs/manual/pending.json from docs/manual/ja into docs/manual/<lang>, same structure, LF, terms of that language's catalog; report in Japanese"), then `node frontend/scripts/manual-pending.mjs clear <lang> [chapter...]` and `npx vitest run tests/manual.test.ts`.
 5. **Translate:** follow section 3 of the rule (same structure, `{{ui:…}}`, `shot:` and URLs unchanged, the app's own words, `_meta.json`).
-6. **Add a language:** after the app's own locale folder exists (the `i18n` skill), create `docs/manual/<code>/` with `_meta.json` and every chapter under the same file names, then `scripts\manual.bat shots <code>`.
+6. **Add a language:** after the app's own locale folder exists (the `i18n` skill), create `docs/manual/<code>/` with `_meta.json` and every chapter under the same file names, then `scripts\checks\manual.bat shots <code>`.
 
 ## Check
 
 | Changed | Run |
 |---|---|
-| Chapters, `_meta.json` | `npx vitest run tests/manual.test.ts` in `frontend/`; to look at it, `scripts\manual.bat build ja` |
-| Scenes, the shots runner | `scripts\manual.bat shots ja` (every language: `scripts\manual.bat shots`), then the pictures |
+| Chapters, `_meta.json` | `npx vitest run tests/manual.test.ts` in `frontend/`; to look at it, `scripts\checks\manual.bat build ja` |
+| Scenes, the shots runner | `scripts\checks\manual.bat shots ja` (every language: `scripts\checks\manual.bat shots`), then the pictures |
 | The renderer, the build | `npx vitest run tests/manual.test.ts` |
 
 Also `npm run check:eol` (and `npm run typecheck` when scripts changed). Commit the Markdown, scenes and scripts only; `novira-data/work/` stays untracked.

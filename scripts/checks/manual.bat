@@ -1,12 +1,12 @@
 @echo off
 rem Builds the user manual (docs\manual\<language>\*.md -> novira-data\work\manual\<language>\: index.html and one page per chapter) and takes its screenshots.
-rem   scripts\manual.bat                 take the screenshots of every language, build the pages, open them in the browser
-rem   scripts\manual.bat build           build the pages only (the screenshots must have been taken before)
-rem   scripts\manual.bat shots           take the screenshots only
-rem   scripts\manual.bat shots ja,en     only some languages (also: scripts\manual.bat build ja)
+rem   scripts\checks\manual.bat                 take the screenshots of every language, build the pages, open them in the browser
+rem   scripts\checks\manual.bat build           build the pages only (the screenshots must have been taken before)
+rem   scripts\checks\manual.bat shots           take the screenshots only
+rem   scripts\checks\manual.bat shots ja,en     only some languages (also: scripts\checks\manual.bat build ja)
 rem Output stays under novira-data\work\ (not committed). The screenshots come from the browser mock, so no engine, GPU or running novira is needed.
 setlocal
-pushd "%~dp0.."
+pushd "%~dp0..\.."
 
 if not exist frontend\node_modules (
   echo Installing frontend packages...
@@ -24,7 +24,7 @@ if not "%LANGS%"=="" set "LANG_ARG=--locale %LANGS%"
 if /i "%MODE%"=="build" goto build
 if /i "%MODE%"=="shots" goto shots
 if not "%MODE%"=="" (
-  echo Unknown option "%MODE%". Use: scripts\manual.bat [build ^| shots] [languages]
+  echo Unknown option "%MODE%". Use: scripts\checks\manual.bat [build ^| shots] [languages]
   goto fail
 )
 

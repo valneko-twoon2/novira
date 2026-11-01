@@ -9,7 +9,7 @@ paths:
 
 # User manual
 
-The manual is for users. The source is Markdown in `docs/manual/<language>/`, which `scripts\manual.bat` turns into HTML pages per language: a contents page and one page per chapter (`novira-data/work/manual/<language>/index.html`, `<NN-name>.html`). The built pages are `index.html`, a contents page with one card per chapter and the titles of its sections, and one page per chapter. Every chapter page has a left index of the chapters, with the sections of the chapter being read listed under it; it ends with links to the previous and next chapter, and the language list links to the same page in each language. The pages use no script, and `tests/manual.test.ts` checks them. The procedures (taking shots, building, updating chapters, translating, adding a language) are in the `/manual` skill. How to add a language is in [i18n.md](i18n.md).
+The manual is for users. The source is Markdown in `docs/manual/<language>/`, which `scripts\checks\manual.bat` turns into HTML pages per language: a contents page and one page per chapter (`novira-data/work/manual/<language>/index.html`, `<NN-name>.html`). The built pages are `index.html`, a contents page with one card per chapter and the titles of its sections, and one page per chapter. Every chapter page has a left index of the chapters, with the sections of the chapter being read listed under it; it ends with links to the previous and next chapter, and the language list links to the same page in each language. The pages use no script, and `tests/manual.test.ts` checks them. The procedures (taking shots, building, updating chapters, translating, adding a language) are in the `/manual` skill. How to add a language is in [i18n.md](i18n.md).
 
 ## 1. When to update
 
@@ -47,7 +47,7 @@ When you add, change or remove a feature the user sees, update the manual **in t
 
 ## 5. Verifying and reporting
 
-- **Never take the manual's shots (`shots`, `all`) on your own initiative.** The user takes them by hand with the tool (`scripts\manual.bat shots [languages]`) or tells you to. A change that leaves the pictures out of date is reported as "pictures not retaken", with the scenes that are affected; it is not a reason to run the shots.
+- **Never take the manual's shots (`shots`, `all`) on your own initiative.** The user takes them by hand with the tool (`scripts\checks\manual.bat shots [languages]`) or tells you to. A change that leaves the pictures out of date is reported as "pictures not retaken", with the scenes that are affected; it is not a reason to run the shots.
 
 - Even for changes to chapters or `_meta.json` only, run `npx vitest run tests/manual.test.ts` (in frontend/; `npm run manual:check`), because it checks structure and screen words. Run it as soon as ja and en are written, before translating or handing anything to a helper: a screen word that cannot be used (for example one with a `{count}` placeholder) is then found once, not in every language. Line endings are LF.
 - The report states the chapters and languages you fixed (and which languages are left pending), the scenes you added or changed, the range you retook (all languages or some), and the range you did not look at.

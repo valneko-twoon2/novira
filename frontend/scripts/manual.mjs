@@ -1,5 +1,5 @@
 // The user manual in one script: takes the screenshots of every screen in every language, and builds the HTML pages.
-//   node frontend/scripts/manual.mjs [all|shots|build] [options]        (repository root or frontend/; or `scripts\manual.bat`)
+//   node frontend/scripts/manual.mjs [all|shots|build] [options]        (repository root or frontend/; or `scripts\checks\manual.bat`)
 //     all     (default) shots, then build, then open in the browser (--no-open to skip)
 //     shots   take the pictures: every scene of manual/scenes.mjs in every language -> novira-data/work/manual/<language>/images/<scene id>.png
 //     build   docs/manual/<language>/*.md -> novira-data/work/manual/<language>/index.html (contents) + one <NN-name>.html per chapter, and novira-data/work/manual/index.html
@@ -362,7 +362,7 @@ export function buildManual({ locales = listLocales(), source = MANUAL_SOURCE, o
     mkdirSync(join(dir, 'images'), { recursive: true });
     if (!allowMissingImages) {
       for (const id of new Set(rendered.shots)) {
-        if (!existsSync(join(dir, 'images', `${id}.png`))) problems.push(`${locale}: picture ${id}.png has not been taken (run scripts\\manual.bat shots)`);
+        if (!existsSync(join(dir, 'images', `${id}.png`))) problems.push(`${locale}: picture ${id}.png has not been taken (run scripts\\checks\\manual.bat shots)`);
       }
     }
     for (const page of rendered.pages) writeFileSync(join(dir, page.file), page.html);

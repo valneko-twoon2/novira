@@ -1,4 +1,4 @@
-//! Tests added after mutation testing (cargo-mutants, `scripts\mutation.bat`) showed that the size limits of a job's guidance
+//! Tests added after mutation testing (cargo-mutants, `scripts\checks\mutation.bat`) showed that the size limits of a job's guidance
 //! could move by one without any test failing: each limit must accept exactly its maximum and refuse one more.
 use novira_core::service::guidance::{check, MAX_CONTROL_LAYERS, MAX_REF_IMAGES};
 use novira_core::types::{

@@ -1,5 +1,5 @@
-// The smoke test of a release build: what scripts\release.bat put in artifacts\ starts and shows its main screen, before
-// scripts\package.bat packs it (docs/development.md). It checks the files themselves, not a build of its own:
+// The smoke test of a release build: what `scripts\release\package.bat build` put in artifacts\ starts and shows its main screen,
+// before the zip is made (docs/development.md). It checks the files themselves, not a build of its own:
 //   1. the release files are there (novira.exe, novira-server.exe, dist\index.html, server.bat);
 //   2. novira-server.exe on an empty data folder serves the page, and the page reaches the Generate tab without a script error;
 //   3. novira-server.exe on a copy of each old-data fixture (backend/crates/novira-core/tests/fixtures/data-<version>/)
@@ -169,7 +169,7 @@ async function appOnEmptyData(artifacts, root) {
 async function main() {
   const { artifacts } = parseArgs(process.argv.slice(2));
   const missing = missingFiles(artifacts);
-  if (missing.length) throw new Error(`not in ${artifacts}: ${missing.join(', ')} (run scripts\\release.bat first)`);
+  if (missing.length) throw new Error(`not in ${artifacts}: ${missing.join(', ')} (run scripts\\release\\package.bat build first)`);
   const root = path.join(WORK, 'release-smoke');
   const steps = [
     ['the server on an empty data folder', () => serverOnEmptyData(artifacts, root)],

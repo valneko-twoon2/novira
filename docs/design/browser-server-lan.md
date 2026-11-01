@@ -7,7 +7,7 @@ covers:
   - backend/crates/novira-server/src/trusted.rs
   - backend/crates/novira-server/src/main.rs
   - scripts/server.bat
-  - scripts/release.bat
+  - scripts/release/package.bat
 ---
 # Browser server on the home network
 

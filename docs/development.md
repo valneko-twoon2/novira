@@ -36,7 +36,7 @@ Then run `scripts\start.bat` from the repository root. The first build compiles 
 | `scripts\dev.bat` | The desktop app on the Vite dev server (`cargo tauri dev`), with the real backend | You edit the frontend often: a saved edit shows at once, only Rust edits recompile |
 | `scripts\start.bat` | The desktop app, built once (`start.bat fast` opens it without building) | You want the app as a user sees it |
 | `scripts\server.bat` | The backend alone as a local web server, opened in your browser (`server.bat fast` skips the build; a phone on the home Wi-Fi is let in from the QR item of the page) | You work on the browser version, or want the real backend without a window |
-| `scripts\rebuild.bat` | A clean rebuild of the frontend and the app, then opens it (`rebuild.bat full` also rebuilds every dependency) | The app looks broken although the sources are fine, for example unstyled HTML |
+| `scripts\start.bat clean` | A clean rebuild of the frontend and the app, then opens it (`start.bat clean full` also rebuilds every dependency) | The app looks broken although the sources are fine, for example unstyled HTML |
 
 Windows locks a running `novira.exe`, so close the app before you start, rebuild or check with a launcher. All of them keep the data in `novira-data\` in the repository root; set `NOVIRA_DATA_DIR` to use another folder. Only one process can use a data folder at a time, so the app and the browser server cannot run together on the same one.
 
@@ -45,12 +45,11 @@ Windows locks a running `novira.exe`, so close the app before you start, rebuild
 | Command | What it does |
 |---|---|
 | `node tools\affected.mjs` | Runs only the checks the changed files need. Start here |
-| `scripts\version.bat` | Sets the app's version (asks for it, or `version.bat 0.2.0`) in `Cargo.toml`, `package.json` and the lock files | You prepare a release |
-| `node tools
-elease-smoke.mjs` | Starts what `release.bat` put in `artifacts\`: the server on an empty data folder and on each old-data fixture, and the app with no engine, each until its main screen or its data answers. Nothing uses the GPU; its folders are deleted after | You publish a release, before `package.bat` |
-| `scripts\package.bat` | Packs what `release.bat` built into the zip for a release page, with its SHA-256 (the programs and licence texts only); write the release notes from [release-notes-template.md](release-notes-template.md) | You publish a release |
+| `scripts\release\set-version.bat` | Sets the app's version (asks for it, or `set-version.bat 0.2.0`) in `Cargo.toml`, `package.json` and the lock files | You prepare a release |
+| `node tools\release-smoke.mjs` | Starts what `package.bat build` put in `artifacts\`: the server on an empty data folder and on each old-data fixture, and the app with no engine, each until its main screen or its data answers. Nothing uses the GPU; its folders are deleted after | You publish a release, before the zip |
+| `scripts\release\package.bat` | Builds the release into `artifacts\` and packs it into the zip for a release page, with its SHA-256 (the programs and licence texts only; `package.bat build` stops before the zip); write the release notes from [release-notes-template.md](release-notes-template.md) | You publish a release |
 | `scripts\check.bat` | Every fast check: typecheck, lint, unit tests and line ends on the frontend, `cargo fmt`, clippy and `cargo test` on the backend (`frontend` or `backend` for one side) |
-| `scripts\full-check.bat` | Every test there is, by hand now and then (there is no CI): `check.bat`, the browser server's tests, the mock compared with the real backend, every Playwright project and the layout scan, about half an hour; the report goes to `novira-data\work\full-check\` (`--no-browser` skips the browser steps) |
+| `scripts\checks\full-check.bat` | Every test there is, by hand now and then (there is no CI): `check.bat`, the browser server's tests, the mock compared with the real backend, every Playwright project and the layout scan, about half an hour; the report goes to `novira-data\work\full-check\` (`--no-browser` skips the browser steps) |
 | `cd frontend && npm run check` | The frontend part alone |
 | `cd frontend && npx vitest run <path>` | One frontend test file |
 | `cd backend && cargo test -p novira-core --lib` | The backend's unit tests |

@@ -1,7 +1,7 @@
-// Packs what scripts\release.bat put in artifacts\ into one zip for a release page: novira-<version>-windows-x64.zip, with a
+// Packs what the release build of scripts\release\package.bat put in artifacts\ into one zip for a release page: novira-<version>-windows-x64.zip, with a
 // folder of the same name inside and a .sha256 file beside it. Only the programs go in (novira.exe, novira-server.exe, dist\,
 // server.bat) and the licence texts; artifacts\novira-data\ (the data of whoever built it) is never in it.
-// Usage: `node tools/package-release.mjs` (scripts\package.bat). It builds nothing: run scripts\release.bat first.
+// Usage: `node tools/package-release.mjs`, the last step of scripts\release\package.bat. It builds nothing itself.
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -45,7 +45,7 @@ function main() {
   const version = cargoVersion(readFileSync(join(ROOT, 'backend', 'Cargo.toml'), 'utf8'));
   if (!version) fail('backend/Cargo.toml has no [workspace.package] version.');
   const missing = missingEntries();
-  if (missing.length) fail(`not found: ${missing.join(', ')}. Run scripts\\release.bat first.`);
+  if (missing.length) fail(`not found: ${missing.join(', ')}. Run scripts\\release\\package.bat first.`);
 
   const name = packageName(version);
   const stage = join(ART, 'package');

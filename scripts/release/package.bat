@@ -1,11 +1,14 @@
 @echo off
-rem novira release build: puts the release programs into artifacts\ in the repository root (git-ignored).
-rem   scripts\release.bat             build in release mode -> artifacts\novira.exe (the app) and, for a plain web
-rem                                   browser, artifacts\novira-server.exe, artifacts\dist\ (the screens it serves)
-rem                                   and artifacts\server.bat (starts the server on the data folder novira.exe opens)
+rem novira release: builds the release programs into artifacts\ in the repository root (git-ignored), then packs them into
+rem artifacts\novira-VERSION-windows-x64.zip with its SHA-256 file for a release page (tools\package-release.mjs; the zip holds
+rem the programs and the licence texts only, never artifacts\novira-data).
+rem   scripts\release\package.bat         build, then the zip
+rem   scripts\release\package.bat build   build only (for tools\release-smoke.mjs before the zip)
+rem The build puts artifacts\novira.exe (the app) and, for a plain web browser, artifacts\novira-server.exe, artifacts\dist\
+rem (the screens it serves) and artifacts\server.bat (starts the server on the data folder novira.exe opens).
 rem The first release build takes a few minutes. Close a running exe in artifacts first (Windows locks it).
 setlocal
-pushd "%~dp0.."
+pushd "%~dp0..\.."
 rem Put cargo first: a long PATH gets cut off at its end by cmd.
 set "PATH=%USERPROFILE%\.cargo\bin;%PATH%"
 
@@ -78,6 +81,12 @@ if errorlevel 1 (
   goto fail
 )
 
+if /i "%~1"=="build" goto done
+echo Packing the zip...
+node tools\package-release.mjs
+if errorlevel 1 goto fail
+
+:done
 echo.
 echo Done. The files are in %CD%\artifacts
 popd

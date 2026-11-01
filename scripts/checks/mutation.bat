@@ -3,12 +3,12 @@ rem Mutation testing: changes the code a little (a mutant), runs the tests, and 
 rem It takes hours, so it is NOT part of scripts\check.bat or CI. Nothing in the sources is changed; reports go to novira-data\work\mutation\ (not committed).
 rem   rust:     cargo-mutants on backend\crates\novira-core with backend\.cargo\mutants.toml. Mutants run in a temporary copy of the
 rem             repository, so target\ and a running novira.exe are not touched. First run installs cargo-mutants.
-rem Usage: scripts\mutation.bat rust                              the whole crate (about a day; prefer one file at a time)
-rem        scripts\mutation.bat rust -- -f crates\novira-core\src\settings.rs     one file
-rem        scripts\mutation.bat rust -- --shard 1/8               one eighth of the mutants (shards run on different days)
+rem Usage: scripts\checks\mutation.bat rust                              the whole crate (about a day; prefer one file at a time)
+rem        scripts\checks\mutation.bat rust -- -f crates\novira-core\src\settings.rs     one file
+rem        scripts\checks\mutation.bat rust -- --shard 1/8               one eighth of the mutants (shards run on different days)
 rem Extra arguments after "--" are passed on to the tool of the chosen part. At most two jobs run at once (the machine is shared).
 setlocal
-pushd "%~dp0.."
+pushd "%~dp0..\.."
 set "PATH=%USERPROFILE%\.cargo\bin;%PATH%"
 set "MUT_PART=%~1"
 set "MUT_EXTRA="
@@ -25,7 +25,7 @@ goto :collect
 :collected
 
 if /i "%MUT_PART%"=="rust" goto :rust
-echo Usage: scripts\mutation.bat [rust] [-- extra arguments]
+echo Usage: scripts\checks\mutation.bat [rust] [-- extra arguments]
 popd
 endlocal
 exit /b 2

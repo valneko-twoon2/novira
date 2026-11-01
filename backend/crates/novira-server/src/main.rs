@@ -276,15 +276,15 @@ mod tests {
             .contains("start novira.exe"));
     }
 
-    /// The release folder's `server.bat` (written by `scripts/release.bat`) opens the app's own data folder, not a new
+    /// The release folder's `server.bat` (written by `scripts/release/package.bat`) opens the app's own data folder, not a new
     /// one beside the exe that the app would then take for its data.
     #[test]
     fn the_release_launcher_opens_the_apps_data_folder() {
-        let release = include_str!("../../../../scripts/release.bat");
+        let release = include_str!("../../../../scripts/release/package.bat");
         let start = release
             .lines()
             .find(|l| l.contains("novira-server.exe\" --"))
-            .expect("release.bat starts novira-server.exe");
+            .expect("package.bat starts novira-server.exe");
         assert!(start.contains("--app-data"), "{start}");
         assert!(!start.contains("--data "), "{start}");
     }
