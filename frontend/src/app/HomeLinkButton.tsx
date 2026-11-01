@@ -1,6 +1,6 @@
-// The side bar's QR item: on the page novira-server serves to its own computer, the home network of this
-// computer: open or closed, the pairing code a phone scans, the phones asking to pair and the paired ones (`LanPanel`).
-// Absent everywhere else (the desktop app, a phone, a page that cannot read the state).
+// The side bar's QR item: in the desktop app and on the page novira-server serves to its own computer, the home network of
+// this computer: open or closed, the pairing code a phone scans, the phones asking to pair and the paired ones (`LanPanel`).
+// Absent everywhere else (a phone, a page that cannot read the state).
 import { QrCode } from '@phosphor-icons/react';
 import { useEffect } from 'react';
 import { t } from '@/i18n';

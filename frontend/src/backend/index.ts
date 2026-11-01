@@ -5,6 +5,7 @@ import { mockModule, type MockModule } from './mockModule';
 import { HttpBackend, isServedByServer } from './http/HttpBackend';
 import { serverLanApi, type LanApi } from './http/lan';
 import { firstRun, type FirstRunInfo } from './tauri/firstRun';
+import { tauriLanApi } from './tauri/lan';
 import { isTauri, TauriBackend } from './tauri/TauriBackend';
 
 function scenario(): 'default' | 'empty' {
@@ -61,12 +62,13 @@ export function standInCover(key: string | number): string | undefined {
 
 /**
  * The home network of the page's own server, to open and close it, trust a network and approve phones: the server's on a
- * page that `novira-server` served, the mock's (a pretend one, `?lan`) in a plain browser, none in the desktop app. Whether
- * this page may use it is answered by `state()` (a phone gets nothing).
+ * page that `novira-server` served, the app's commands in the desktop app (its own server runs inside it), the mock's (a
+ * pretend one, `?lan`) in a plain browser. Whether this page may use it is answered by `state()` (a phone gets nothing).
  */
 export async function getLanApi(): Promise<LanApi | null> {
   const served = serverLanApi();
   if (served) return served;
+  if (isTauri()) return tauriLanApi;
   if (backend.kind !== 'mock' || typeof location === 'undefined') return null;
   const flag = new URLSearchParams(location.search).get('lan');
   return flag === null ? null : (await import('./mock/mockLan')).mockLan(flag);

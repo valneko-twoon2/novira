@@ -1,8 +1,8 @@
 // The home network of the page's own server: what it is doing now, read from `GET /lan/state`. The QR item in the
 // side bar and the prompt for a phone that asks to pair both read it from here. It is read once when the page starts; while
 // the home network is open it is read every few seconds (faster while the item's popover is open), and while it is closed
-// it is read only when something here changes it. A page with no home network of its own (the desktop app, a phone, the
-// browser mock) gets no state, so nothing shows.
+// it is read only when something here changes it. A page with no home network of its own (a phone, the browser mock
+// without `?lan`) gets no state, so nothing shows.
 import { create } from 'zustand';
 import { getLanApi, type LanApi, type LanState } from '@/backend';
 

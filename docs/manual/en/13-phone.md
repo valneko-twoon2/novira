@@ -4,15 +4,16 @@ You can use novira on your computer from the browser of a phone on your home Wi-
 
 ## Connecting
 
-1. Close the novira app. Only one program at a time can use the data folder.
-2. In File Explorer, open the app's folder (the one with `server.bat`), type `cmd` in the address bar at the top and press Enter. A Command Prompt opens in that folder.
-3. Type `server.bat` and press Enter. The same screen also opens in the computer's browser.
-4. In the computer's browser, press **{{ui:app.tabs.short.homeLink}}** in the bar on the left. The network you are on is remembered as your home network, and the door opens.
-5. A QR code appears. Scan it with the camera of a phone on the same Wi-Fi as the computer, and open the address it finds. The code expires after 2 minutes and works for one phone only. When it runs out, press **{{ui:app.lan.newCode}}**.
-6. On a phone you have not used before, the browser shows a certificate warning. Follow "Installing the certificate" below to install the certificate.
-7. On the phone, check the name of the device and press "Connect". The phone shows a 6-digit code. The same number appears on the computer, in the **{{ui:app.tabs.short.homeLink}}** screen (or as a notice in the corner of the screen when it is not open); if they match, press **{{ui:app.lan.allow}}**. novira opens on the phone.
+1. In the novira app, press **{{ui:app.tabs.short.homeLink}}** in the bar on the left. The network you are on is remembered as your home network, and the door opens.
+2. A QR code appears. Scan it with the camera of a phone on the same Wi-Fi as the computer, and open the address it finds. The code expires after 2 minutes and works for one phone only. When it runs out, press **{{ui:app.lan.newCode}}**.
+3. On a phone you have not used before, the browser shows a certificate warning. Follow "Installing the certificate" below to install the certificate.
+4. On the phone, check the name of the device and press "Connect". The phone shows a 6-digit code. The same number appears on the computer, in the **{{ui:app.tabs.short.homeLink}}** screen (or as a notice in the corner of the screen when it is not open); if they match, press **{{ui:app.lan.allow}}**. novira opens on the phone.
 
-To stop, press Ctrl+C in the Command Prompt, or close its window.
+Closing the app closes the door too; a phone that was connected connects again the next time it opens.
+
+### Connecting from the browser version
+
+You can also connect the same way from the browser version, without the app. Close the app (only one program at a time can use the data folder), open the app's folder (the one with `server.bat`) in File Explorer, type `cmd` in the address bar at the top and press Enter. In the Command Prompt that opens, type `server.bat` and press Enter; the same screen opens in the computer's browser, where you press **{{ui:app.tabs.short.homeLink}}** in the bar on the left. To stop, press Ctrl+C in the Command Prompt, or close its window.
 
 ### Installing the certificate
 
@@ -31,7 +32,7 @@ There is no button to close the door to the home network. Closing the popup leav
 
 ### When Windows asks
 
-At the first start, Windows asks whether novira-server may communicate. Allow it on private networks.
+The first time the door opens, Windows asks whether novira (novira-server in the browser version) may communicate. Allow it on private networks.
 
 When Windows treats the network you are on as "Public", the screen shows a warning. Open it only on a network that is yours. If the phone still cannot connect, in Windows Settings, under "Network & internet", open the properties of the Wi-Fi (or cable) connection you use and set the network profile type to "Private network".
 

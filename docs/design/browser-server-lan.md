@@ -11,7 +11,7 @@ covers:
 ---
 # Browser server on the home network
 
-The browser server ([browser-server.md](browser-server.md)) can also open a second listener for the devices of the home network, so a phone on the same Wi-Fi can use novira in its browser. That listener speaks TLS only, with a certificate from a CA made on this computer, opens only on a network this computer's owner trusted, closes when unused, and lets a device in only after this computer approved its pairing ([browser-server-pairing.md](browser-server-pairing.md)). Until this computer's page opens it, nothing here is listening and the server stays on this computer.
+The browser server ([browser-server.md](browser-server.md)) can also open a second listener for the devices of the home network, so a phone on the same Wi-Fi can use novira in its browser. That listener speaks TLS only, with a certificate from a CA made on this computer, opens only on a network this computer's owner trusted, closes when unused, and lets a device in only after this computer approved its pairing ([browser-server-pairing.md](browser-server-pairing.md)). Until this computer's page opens it, nothing here is listening and the server stays on this computer. The desktop app runs the same server inside itself, with only this listener ([browser-server-app.md](browser-server-app.md)), so a phone pairs with the app the same way.
 
 ## Behaviour
 
@@ -46,6 +46,6 @@ Tests: `backend/crates/novira-server/src/home_network.rs` (ranges, subnets, mask
 - Name constraints bind only clients that enforce them; a stolen CA key could still sign for a home address. The key is as safe as the other DPAPI secrets (security.md).
 - Every device on the same subnet reaches the listener at the network level (the CA, the pairing page and its calls); a session is what keeps them out of the app. A guest network on the same subnet is the home network to the server.
 - The gateway's hardware address is not secret and can be copied by a rogue access point; it tells the owner's networks apart from other ones, it does not prove the gateway. It is read once a half minute, so a move to another network closes the listener within that time.
-- Windows asks once per program whether `novira-server.exe` may accept connections; allowing it on public networks is needed when Windows calls the home network public (Settings can set it to private instead).
+- Windows asks once per program whether `novira-server.exe` (or `novira.exe`, for the app) may accept connections; allowing it on public networks is needed when Windows calls the home network public (Settings can set it to private instead).
 - Sessions end with the server, so the phone pairs again after each start.
 - Only IPv4. A phone reaching this computer through a VPN (Tailscale and the like) comes from another subnet and is refused. A new home address needs a restart of the listener (a new leaf).

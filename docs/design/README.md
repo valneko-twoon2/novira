@@ -36,4 +36,5 @@ One page per feature, each the current specification of that feature: how it beh
 | [browser-server.md](browser-server.md) | The real backend behind a plain web browser: the shared command layer, the localhost-only server with its token, the commands it answers, the picture route |
 | [browser-server-lan.md](browser-server-lan.md) | The browser server on the home network (opened on demand): the TLS-only listener and its local CA, who is answered, the subnet check |
 | [browser-server-pairing.md](browser-server-pairing.md) | Pairing a phone with the home-network listener: the pairing code and QR, the phone page, this computer's approval, sessions and their limits |
+| [browser-server-app.md](browser-server-app.md) | Phones and the desktop app: the home-network listener run inside the app, the window's `lan_*` commands, the built-in page and the picture URLs |
 | [security.md](security.md) | What is common to all: what is at stake, the IPC and CSP boundaries, an index of each feature's boundaries, limits that belong to no feature, how to re-check |

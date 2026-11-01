@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 // Contract between the IPC calls `TauriBackend` makes and the commands the shell registers
-// (`backend/src-tauri/src/command_list.rs` and the `#[tauri::command]` functions in `commands.rs` and `first_run.rs`):
+// (`backend/src-tauri/src/command_list.rs` and the `#[tauri::command]` functions in `commands.rs`, `first_run.rs` and
+// `home_network.rs`):
 // every command name must exist, and the argument names must be the Rust parameters in camelCase
 // (Tauri renames command arguments that way).
 import { clearMocks, mockIPC } from '@tauri-apps/api/mocks';
@@ -15,10 +16,19 @@ const NOT_CALLED: Record<string, string> = {
   first_run_choose: 'see first_run_info',
   first_run_reset: 'see first_run_info',
   first_run_finish: 'see first_run_info',
+  lan_state: 'the home network commands are called through tauri/lan.ts (lan.test.ts)',
+  lan_open: 'see lan_state',
+  lan_close: 'see lan_state',
+  lan_trust: 'see lan_state',
+  lan_untrust: 'see lan_state',
+  lan_pair_code: 'see lan_state',
+  lan_approve: 'see lan_state',
+  lan_deny: 'see lan_state',
+  lan_revoke: 'see lan_state',
 };
 
 /** Parameters that are not IPC arguments: injected state and the raw request (`upload_image` sends bytes). */
-const INJECTED = /^(State<|tauri::ipc::Request<|tauri::Webview\b)/;
+const INJECTED = /^(State<|tauri::ipc::Request<|tauri::Webview\b|tauri::AppHandle\b)/;
 
 function registeredCommands(): string[] {
   const list = read('backend/src-tauri/src/command_list.rs');
@@ -28,7 +38,7 @@ function registeredCommands(): string[] {
 
 /** Each `#[tauri::command]` function with its IPC argument names (camelCase). */
 function commandArguments(): Map<string, string[]> {
-  const src = read('backend/src-tauri/src/commands.rs') + read('backend/src-tauri/src/first_run.rs');
+  const src = read('backend/src-tauri/src/commands.rs') + read('backend/src-tauri/src/first_run.rs') + read('backend/src-tauri/src/home_network.rs');
   const out = new Map<string, string[]>();
   for (const m of src.matchAll(/#\[tauri::command\]\s*pub (?:async )?fn (\w+)\(([^)]*)\)/g)) {
     const params = [...m[2]!.matchAll(/(?<![:\w])(\w+)\s*:(?!:)\s*/g)]

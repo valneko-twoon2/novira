@@ -114,7 +114,8 @@ fn no_extra(args: &Map<String, Value>) -> Result<(), CallError> {
 }
 
 /// Commands the desktop shell implements itself because they need its window, a dialog, a raw request body or state it
-/// keeps between calls. The browser server answers them with "not available in the browser yet".
+/// keeps between calls. The browser server answers them with "not available in the browser yet". The `lan_*` ones drive
+/// the home network of the app's own server; a browser page of `novira-server` has the routes instead (`/lan/*`).
 pub const SHELL_ONLY: &[&str] = &[
     "upload_image",
     "install_model",
@@ -139,6 +140,15 @@ pub const SHELL_ONLY: &[&str] = &[
     "first_run_choose",
     "first_run_reset",
     "first_run_finish",
+    "lan_state",
+    "lan_open",
+    "lan_close",
+    "lan_trust",
+    "lan_untrust",
+    "lan_pair_code",
+    "lan_approve",
+    "lan_deny",
+    "lan_revoke",
 ];
 
 macro_rules! commands {

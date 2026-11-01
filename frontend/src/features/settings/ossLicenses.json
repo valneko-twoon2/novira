@@ -729,6 +729,18 @@
       "url": "https://github.com/kornelski/avif-serialize"
     },
     {
+      "name": "axum",
+      "version": "0.8.9",
+      "license": "MIT",
+      "url": "https://github.com/tokio-rs/axum"
+    },
+    {
+      "name": "axum-core",
+      "version": "0.5.6",
+      "license": "MIT",
+      "url": "https://github.com/tokio-rs/axum"
+    },
+    {
       "name": "base16ct",
       "version": "0.2.0",
       "license": "Apache-2.0 OR MIT",
@@ -1917,6 +1929,12 @@
       "url": "https://github.com/servo/html5ever"
     },
     {
+      "name": "matchit",
+      "version": "0.8.4",
+      "license": "MIT AND BSD-3-Clause",
+      "url": "https://github.com/ibraheemdev/matchit"
+    },
+    {
       "name": "matrixmultiply",
       "version": "0.3.11",
       "license": "MIT OR Apache-2.0",
@@ -1981,6 +1999,12 @@
       "version": "0.20.0",
       "license": "Apache-2.0 OR MIT",
       "url": "https://github.com/tauri-apps/muda"
+    },
+    {
+      "name": "multer",
+      "version": "3.1.0",
+      "license": "MIT",
+      "url": "https://github.com/rwf2/multer"
     },
     {
       "name": "multiversion_no_op",
@@ -2365,6 +2389,12 @@
       "version": "0.4.1",
       "license": "MIT OR Apache-2.0",
       "url": "https://github.com/aldanor/qoi-rust"
+    },
+    {
+      "name": "qrcode",
+      "version": "0.14.1",
+      "license": "MIT OR Apache-2.0",
+      "url": "https://github.com/kennytm/qrcode-rust"
     },
     {
       "name": "quick-error",
@@ -2763,6 +2793,12 @@
       "url": "https://github.com/serde-rs/json"
     },
     {
+      "name": "serde_path_to_error",
+      "version": "0.1.20",
+      "license": "MIT OR Apache-2.0",
+      "url": "https://github.com/dtolnay/path-to-error"
+    },
+    {
       "name": "serde_repr",
       "version": "0.1.21",
       "license": "MIT OR Apache-2.0",
@@ -2821,6 +2857,12 @@
       "version": "0.4.3",
       "license": "MIT OR Apache-2.0",
       "url": "https://github.com/servo/stylo"
+    },
+    {
+      "name": "sha1",
+      "version": "0.10.7",
+      "license": "MIT OR Apache-2.0",
+      "url": "https://github.com/RustCrypto/hashes"
     },
     {
       "name": "sha1",
@@ -3142,6 +3184,12 @@
     },
     {
       "name": "tokio-tungstenite",
+      "version": "0.29.0",
+      "license": "MIT",
+      "url": "https://github.com/snapview/tokio-tungstenite"
+    },
+    {
+      "name": "tokio-tungstenite",
       "version": "0.30.0",
       "license": "MIT",
       "url": "https://github.com/snapview/tokio-tungstenite"
@@ -3235,6 +3283,12 @@
       "version": "0.2.5",
       "license": "MIT",
       "url": "https://github.com/seanmonstar/try-lock"
+    },
+    {
+      "name": "tungstenite",
+      "version": "0.29.0",
+      "license": "MIT OR Apache-2.0",
+      "url": "https://github.com/snapview/tungstenite-rs"
     },
     {
       "name": "tungstenite",
