@@ -96,6 +96,7 @@ exit /b 0
 :fail
 popd
 echo.
-pause
+rem A build server (CI is set) has nobody to press a key.
+if not defined CI pause
 endlocal
 exit /b 1

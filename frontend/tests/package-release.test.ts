@@ -1,7 +1,7 @@
 // scripts/tools/package-release.mjs: the version, the package name and what goes into the zip.
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- a plain .mjs tool without types
-import { cargoVersion, ENTRIES, missingEntries, packageName } from '../../scripts/tools/package-release.mjs';
+import { cargoVersion, ENTRIES, missingEntries, packageName, tagNamesVersion } from '../../scripts/tools/package-release.mjs';
 
 describe('package-release', () => {
   it('reads the workspace version, not a dependency version', () => {
@@ -12,6 +12,14 @@ describe('package-release', () => {
 
   it('names the package after the version', () => {
     expect(packageName('0.2.0-beta.1')).toBe('novira-0.2.0-beta.1-windows-x64');
+  });
+
+  it('accepts a tag only when it is v and exactly the version', () => {
+    expect(tagNamesVersion('v0.4.0', '0.4.0')).toBe(true);
+    expect(tagNamesVersion('v0.4.0-beta.1', '0.4.0-beta.1')).toBe(true);
+    for (const tag of ['0.4.0', 'v0.4', 'v0.4.0-beta.1', 'v0.4.00', 'V0.4.0', 'v0.4.0 ', '', undefined, null]) expect(tagNamesVersion(tag, '0.4.0')).toBe(false);
+    expect(tagNamesVersion('v', '')).toBe(false);
+    expect(tagNamesVersion('v0.4.0', null)).toBe(false);
   });
 
   it('packs the programs and the licence texts, and never the data folder', () => {

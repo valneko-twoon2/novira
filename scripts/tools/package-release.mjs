@@ -2,6 +2,7 @@
 // folder of the same name inside and a .sha256 file beside it. Only the programs go in (novira.exe, novira-server.exe, dist\,
 // server.bat) and the licence texts; artifacts\novira-data\ (the data of whoever built it) is never in it.
 // Usage: `node scripts/tools/package-release.mjs`, the last step of scripts\release\package.bat. It builds nothing itself.
+// `--check-tag v0.4.0` only checks that the tag names the version of backend/Cargo.toml (the release workflow runs it first).
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -31,6 +32,11 @@ export function packageName(version) {
   return `novira-${version}-windows-x64`;
 }
 
+/** Whether a release tag (`v0.4.0`) names exactly `version`: the tag is the letter v and the version, nothing else. */
+export function tagNamesVersion(tag, version) {
+  return typeof tag === 'string' && typeof version === 'string' && version !== '' && tag === `v${version}`;
+}
+
 /** The entries that are missing, as the names a person would look for. */
 export function missingEntries(entries = ENTRIES, exists = existsSync) {
   return entries.filter((e) => !exists(e.from)).map((e) => e.to);
@@ -44,6 +50,13 @@ function fail(message) {
 function main() {
   const version = cargoVersion(readFileSync(join(ROOT, 'backend', 'Cargo.toml'), 'utf8'));
   if (!version) fail('backend/Cargo.toml has no [workspace.package] version.');
+  const at = process.argv.indexOf('--check-tag');
+  if (at !== -1) {
+    const tag = process.argv[at + 1];
+    if (!tagNamesVersion(tag, version)) fail(`the tag "${tag ?? ''}" does not name the version ${version} of backend/Cargo.toml (expected v${version}). Run scripts/release/set-version.bat and commit before tagging.`);
+    console.log(`package-release: the tag ${tag} names the version ${version}`);
+    return;
+  }
   const missing = missingEntries();
   if (missing.length) fail(`not found: ${missing.join(', ')}. Run scripts\\release\\package.bat first.`);
 
