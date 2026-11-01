@@ -9,7 +9,7 @@
 // Nothing starts ComfyUI or uses the GPU. Every data folder and the WebView2 profile are made inside
 // novira-data/work/release-smoke/ and deleted at the end; only the processes this script started are stopped.
 // Usage, from the repository root:  node scripts/tools/release-smoke.mjs [--artifacts <folder>]   (default: artifacts\)
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
@@ -81,6 +81,45 @@ function freshFolder(root, name) {
   return dir;
 }
 
+/** The last `lines` lines of `text`, trimmed and cut to `max` characters (the end is what says why a program stopped). */
+export function tailOf(text, lines = 15, max = 2000) {
+  const kept = String(text ?? '').trim().split(/\r?\n/).slice(-lines).join('\n');
+  return kept.length > max ? kept.slice(kept.length - max) : kept;
+}
+
+/** The installed WebView2 runtime's version, or why it could not be read (the window needs it). */
+function webview2Runtime() {
+  if (process.platform !== 'win32') return 'not Windows';
+  const client = '{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}';
+  for (const key of [`HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\EdgeUpdate\\Clients\\${client}`, `HKLM\\SOFTWARE\\Microsoft\\EdgeUpdate\\Clients\\${client}`]) {
+    const r = spawnSync('reg', ['query', key, '/v', 'pv'], { encoding: 'utf8', windowsHide: true });
+    const found = /pv\s+REG_SZ\s+(\S+)/.exec(r.stdout ?? '');
+    if (found) return found[1];
+  }
+  return 'not installed (no EdgeUpdate client key)';
+}
+
+/** What to read when the app's window did not come up: the runtime, the app's own output and log, and the profile folder. */
+function appDiagnostics(app, output, data, webview) {
+  const parts = [`WebView2 runtime: ${webview2Runtime()}`, `app: ${app.exitCode === null ? 'still running' : `exited ${app.exitCode}`}`];
+  let profile = [];
+  try {
+    profile = fs.readdirSync(webview);
+  } catch {
+    // the folder is made by the runtime; none means it never started
+  }
+  parts.push(`WebView2 profile folder: ${profile.length ? `${profile.length} entries` : 'empty (the runtime did not start)'}`);
+  const out = tailOf(output.text);
+  if (out) parts.push(`app output:\n${out}`);
+  try {
+    const log = tailOf(fs.readFileSync(path.join(data, 'logs', 'novira.log'), 'utf8'));
+    if (log) parts.push(`logs/novira.log:\n${log}`);
+  } catch {
+    parts.push('logs/novira.log: none');
+  }
+  return parts.join('\n  ');
+}
+
 async function callApi(server, command) {
   const res = await fetch(`${server.origin}/api/${command}`, { method: 'POST', headers: { 'x-novira-token': server.token, 'content-type': 'application/json' }, body: '{}' });
   if (!res.ok) throw new Error(`${command}: HTTP ${res.status}`);
@@ -141,7 +180,9 @@ async function appOnEmptyData(artifacts, root) {
   const webview = freshFolder(root, 'app-webview');
   fs.writeFileSync(path.join(data, 'settings.json'), JSON.stringify(engineOff({}, 'http://127.0.0.1:9'), null, 2) + '\n');
   const env = { ...process.env, NOVIRA_DATA_DIR: data, WEBVIEW2_USER_DATA_FOLDER: webview, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${CDP_PORT}` };
-  const app = spawn(path.join(artifacts, 'novira.exe'), [], { env, stdio: 'ignore' });
+  const app = spawn(path.join(artifacts, 'novira.exe'), [], { env, stdio: ['ignore', 'pipe', 'pipe'] });
+  const output = { text: '' };
+  for (const stream of [app.stdout, app.stderr]) stream.on('data', (chunk) => (output.text = (output.text + chunk).slice(-8000)));
   let browser;
   try {
     const until = Date.now() + 60_000;
@@ -160,6 +201,8 @@ async function appOnEmptyData(artifacts, root) {
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await reachGenerate(page, errors);
+  } catch (e) {
+    throw new Error(`${e.message}\n  ${appDiagnostics(app, output, data, webview)}`);
   } finally {
     await browser?.close().catch(() => undefined);
     stopTrees([app.pid]);

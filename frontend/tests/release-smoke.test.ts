@@ -2,7 +2,7 @@
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { checkFixtureBootstrap, fixtureVersions, missingFiles, parseArgs } from '../../scripts/tools/release-smoke.mjs';
+import { checkFixtureBootstrap, fixtureVersions, missingFiles, parseArgs, tailOf } from '../../scripts/tools/release-smoke.mjs';
 
 const whole = {
   boards: [{ name: 'Scenery' }, { name: 'Portraits' }],
@@ -24,6 +24,15 @@ describe('release-smoke', () => {
     const present = new Set([path.join('A', 'novira.exe'), path.join('A', 'server.bat')]);
     expect(missingFiles('A', (f: string) => present.has(f))).toEqual(['novira-server.exe', path.join('dist', 'index.html')]);
     expect(missingFiles('A', () => true)).toEqual([]);
+  });
+
+  it('keeps the end of what a program printed, cut to a size', () => {
+    const lines = Array.from({ length: 40 }, (_, i) => `line ${i + 1}`).join('\r\n');
+    expect(tailOf(lines, 3)).toBe('line 38\nline 39\nline 40');
+    expect(tailOf('  only  \n')).toBe('only');
+    expect(tailOf('x'.repeat(5000), 15, 100)).toBe('x'.repeat(100));
+    expect(tailOf(undefined)).toBe('');
+    expect(tailOf('')).toBe('');
   });
 
   it('finds the committed old-data fixtures by version', () => {
