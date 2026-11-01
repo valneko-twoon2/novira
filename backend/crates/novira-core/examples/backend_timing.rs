@@ -10,7 +10,7 @@
 //! (`modelRoots`) are read, never written. Prints the steps of
 //! `Backend::open` and, for the commands the screens call at start and often, the median time of the call, of turning
 //! its answer into JSON bytes, and of the browser server's path (`api::dispatch`, then bytes), with the size of the JSON.
-//! `--json` also writes every sample (ms) to a file, for `tools/perf.mjs`.
+//! `--json` also writes every sample (ms) to a file, for `scripts/tools/perf.mjs`.
 use novira_core::api::{self, call, Res};
 use novira_core::models::{classify, layout};
 use novira_core::startup;

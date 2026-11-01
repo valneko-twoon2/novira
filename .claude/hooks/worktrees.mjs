@@ -2,7 +2,7 @@
 // user's dev server watches it) lives outside CLAUDE_PROJECT_DIR, so a hook that looks only there sees nothing of it.
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
-import { parseWorktrees } from '../../tools/worktree.mjs';
+import { parseWorktrees } from '../../scripts/tools/worktree.mjs';
 
 /** Every work tree of the repository of `root` (at least `root` itself). Never throws. */
 export function worktreeRoots(root) {

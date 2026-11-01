@@ -41,7 +41,7 @@ All in one commit:
 3. Settings: `LANGUAGE_KEYS` in `frontend/src/features/settings/SettingsModal.tsx`, and `settings.language.<name>` (the language's own name, e.g. `Français`) in `settings.json` of **every** language.
 4. Tests: the `Locale` type and `CATALOGS` in `frontend/e2e/fixtures.ts`, the language list in `frontend/e2e/settings.spec.ts`.
 5. Manual: `docs/manual/fr/` with `_meta.json` and every chapter of `ja` under the same file names (the `manual` skill, "Add a language"), then `scripts\checks\manual.bat shots fr`.
-6. Dates and numbers go through `Intl` with the current language, so they usually need nothing. Check by eye: the gallery's date filter and the Browse tab in that language, and `node tools/layout-scan.mjs --locales fr` for overflow, cut-off text and crowded controls.
+6. Dates and numbers go through `Intl` with the current language, so they usually need nothing. Check by eye: the gallery's date filter and the Browse tab in that language, and `node scripts/tools/layout-scan.mjs --locales fr` for overflow, cut-off text and crowded controls.
 
 ## Remove a language
 

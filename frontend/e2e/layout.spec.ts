@@ -10,7 +10,7 @@
 // (theme/tokens.css), so the boxes are the same and only the rules that look at colours (which boxes are drawn, so which
 // can touch) can find something new. Text fit, tooltips and menus depend on the boxes only, so they run in the dark theme.
 //
-// Runs as the `layout` Playwright project through `node tools/layout-scan.mjs`, which records a pass for the pre-commit
+// Runs as the `layout` Playwright project through `node scripts/tools/layout-scan.mjs`, which records a pass for the pre-commit
 // hook. LAYOUT_LOCALES picks the languages (`ja,en` by default, `all` for every language the app has).
 import { join } from 'node:path';
 import type { Page } from '@playwright/test';

@@ -48,7 +48,7 @@ src-tauri  ── commands.rs (validate) ──▶ novira-core::service ──�
 | What the browser mock answers | `frontend/src/backend/mock/` (`MockBackend.ts`, `mockEngine.ts`) |
 | The comic | `frontend/src/state/comic/`, `frontend/src/features/comic/`; saved by `backend/crates/novira-core/src/service/comics.rs` |
 | Export for sharing, the watermark | `backend/crates/novira-core/src/service/share.rs`, `media/export.rs`, `provenance/` |
-| What a feature does now, its boundaries and limits | `docs/design/README.md`; `node tools/docs-check.mjs --find <path>` names the page of a file |
+| What a feature does now, its boundaries and limits | `docs/design/README.md`; `node scripts/tools/docs-check.mjs --find <path>` names the page of a file |
 | How checks and launchers work | [tooling.md](tooling.md) |
 
 ## Where things live
@@ -59,11 +59,10 @@ src-tauri  ── commands.rs (validate) ──▶ novira-core::service ──�
 | `backend/` | the Cargo workspace: `crates/novira-core/`, `crates/novira-server/`, `src-tauri/` |
 | `contract/` | JSON fixtures of the wire types, checked by both sides |
 | `docs/` | `design/` each feature's specification and security, `manual/<language>/` the manual, `development.md`, `verification.md` |
-| `scripts/` | what you run by hand: the Windows launchers (`.bat`) |
-| `tools/` | what AI sessions, Git hooks and CI call (checks, worktrees, real-app runs), and what they share |
+| `scripts/` | what you run by hand: the Windows launchers (`.bat`); in `tools/`, what AI sessions, Git hooks and CI call (checks, worktrees, real-app runs) |
 | `.githooks/`, `.claude/` | the Git hooks (sh wrapper + Node body); Claude Code hooks, rules and skills ([tooling.md](tooling.md)) |
 | `novira-data/`, `data/`, `outputs/` | user data and generated files, never committed; `novira-data/work/` holds everything the harness generates (verification data, reports, builds, scratch) |
 
 ## Keeping it current
 
-This guide holds what a search of the code does not show: how the parts connect, where the truth is, where to start. Change it in the same commit when a part is added, removed or moved, a boundary changes, or a "where to start" row stops being true. Do not list files here; the tree is the list. `tools/docs-check.mjs` fails when a top-level folder, a crate, a feature folder, a rule or a skill is not named in these pages, when a path written in backticks no longer exists, and when the pages grow past their size limit ([the rule](../../.claude/rules/architecture-map.md)).
+This guide holds what a search of the code does not show: how the parts connect, where the truth is, where to start. Change it in the same commit when a part is added, removed or moved, a boundary changes, or a "where to start" row stops being true. Do not list files here; the tree is the list. `scripts/tools/docs-check.mjs` fails when a top-level folder, a crate, a feature folder, a rule or a skill is not named in these pages, when a path written in backticks no longer exists, and when the pages grow past their size limit ([the rule](../../.claude/rules/architecture-map.md)).

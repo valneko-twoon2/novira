@@ -1,8 +1,8 @@
 ---
-description: What the architecture map (docs/architecture/) holds and what it leaves to a search of the code; how big it may get (enforced by tools/docs-check.mjs)
+description: What the architecture map (docs/architecture/) holds and what it leaves to a search of the code; how big it may get (enforced by scripts/tools/docs-check.mjs)
 paths:
   - "docs/architecture/**"
-  - "tools/docs-check.mjs"
+  - "scripts/tools/docs-check.mjs"
 ---
 
 # Keeping the architecture map short and true
@@ -38,7 +38,7 @@ In the same commit as one of these: a part is added, removed or moved (a top-lev
 
 ## Limits and what the machine checks
 
-`tools/docs-check.mjs` fails when:
+`scripts/tools/docs-check.mjs` fails when:
 
 - a top-level folder, a crate, a `frontend/src/` folder, a feature folder, a `novira-core/src/` folder, a launcher, a rule or a skill is not named in its page (the entry page for the top-level folders, `frontend.md`, `backend.md`, `tooling.md`, and `AGENTS.md` for rules and skills);
 - a path written in backticks, or a link, in a map page points at something that does not exist (fix the page; do not remove the check);
@@ -46,6 +46,6 @@ In the same commit as one of these: a part is added, removed or moved (a top-lev
 
 If a page grows past its limit, cut what a search of the code shows (file lists, a row per file); do not add pages. A new area that fits no page needs the user to decide: ask before adding a page.
 
-Steps: `git diff --stat` to list what was added, moved or removed, and keep only what changes the map; edit the page in its style (English, paths in backticks from the repository root); remove mentions of what no longer exists; run `node tools/docs-check.mjs` and `npm run check:eol` in `frontend/`. The pre-commit hook runs `docs-check.mjs --git`, which also fails a change to a security boundary (IPC commands, capabilities, `tauri.conf.json`) committed without a design page (`docs-check.mjs --find <path>` names it).
+Steps: `git diff --stat` to list what was added, moved or removed, and keep only what changes the map; edit the page in its style (English, paths in backticks from the repository root); remove mentions of what no longer exists; run `node scripts/tools/docs-check.mjs` and `npm run check:eol` in `frontend/`. The pre-commit hook runs `docs-check.mjs --git`, which also fails a change to a security boundary (IPC commands, capabilities, `tauri.conf.json`) committed without a design page (`docs-check.mjs --find <path>` names it).
 
 It cannot tell whether a page says the right thing. When you change a page, read the paragraph around your change again and fix what is no longer true.

@@ -1,4 +1,4 @@
-// The e2e lock (tools/e2e-lock.mjs) that keeps two heavy Playwright runs from sharing the machine, and the server choice
+// The e2e lock (scripts/tools/e2e-lock.mjs) that keeps two heavy Playwright runs from sharing the machine, and the server choice
 // and build cache of the e2e runs (frontend/scripts/e2e-server.mjs).
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { acquire, commandLine, describeLock, isStale, lockPath, OLD_MS, takeOver } from '../../tools/e2e-lock.mjs';
+import { acquire, commandLine, describeLock, isStale, lockPath, OLD_MS, takeOver } from '../../scripts/tools/e2e-lock.mjs';
 // @ts-expect-error -- plain ESM script without types
 import { buildDir, inputsHash, serverMode } from '../scripts/e2e-server.mjs';
 

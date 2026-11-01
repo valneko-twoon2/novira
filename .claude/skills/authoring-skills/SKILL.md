@@ -80,5 +80,5 @@ It checks the name, the description, the length, backslash paths, missing links 
 ## 6. Register it
 
 - Add the skill to the skill list in `AGENTS.md` (section 2) and to the skill table in `docs/architecture/tooling.md`.
-- Run `node tools/docs-check.mjs` and, in `frontend/`, `npm run check:eol`.
+- Run `node scripts/tools/docs-check.mjs` and, in `frontend/`, `npm run check:eol`.
 - Commit the skill folder with the registrations.

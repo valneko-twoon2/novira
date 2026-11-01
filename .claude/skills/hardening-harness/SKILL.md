@@ -34,7 +34,7 @@ Take the first row that can see the mistake:
 | A subagent starting | `SubagentStart` hook that adds context | `.claude/hooks/architecture-map.mjs` |
 | A commit | `.githooks/pre-commit.mjs` or `commit-msg.mjs` | also stops a human or another tool |
 | What the code is | A test (`frontend/tests/structure.test.ts`, `test-hygiene.test.ts`, `cargo test -p novira --test security`) or an ESLint rule (`frontend/scripts/eslint-*.mjs`) | runs in `npm run check` and CI |
-| A harness script doing harm (leaving an exe, a lock, a folder) | The script cleans up in every case and refuses unsafe input | `tools/`, e.g. `verify-real-app.mjs`, `prune-stale.mjs` |
+| A harness script doing harm (leaving an exe, a lock, a folder) | The script cleans up in every case and refuses unsafe input | `scripts/tools/`, e.g. `verify-real-app.mjs`, `prune-stale.mjs` |
 
 A rule's text (`.claude/rules/`, `AGENTS.md`) only when no row can see it; say in the report why.
 
@@ -59,7 +59,7 @@ Look for the other ways to the same harm: the other tool (Bash and PowerShell, W
 
 ## 6. Check and report
 
-Run `npx vitest run tests/claude-hooks.test.ts` (or the guard's own test) and `npm run check:eol` in `frontend/`, and `node tools/docs-check.mjs`. Trigger the guard once for real when it is safe to and show its message: for a `PreToolUse` refusal, try the forbidden write with the Write tool on a new file name (refused, so nothing is written); for a Git hook, `git commit` a staged scratch change with the bad message and unstage it afterwards. Never trigger it on the user's real data. Report the mistake, the guard and its moment, what it lets through, the loopholes found and covered, and the commit.
+Run `npx vitest run tests/claude-hooks.test.ts` (or the guard's own test) and `npm run check:eol` in `frontend/`, and `node scripts/tools/docs-check.mjs`. Trigger the guard once for real when it is safe to and show its message: for a `PreToolUse` refusal, try the forbidden write with the Write tool on a new file name (refused, so nothing is written); for a Git hook, `git commit` a staged scratch change with the bad message and unstage it afterwards. Never trigger it on the user's real data. Report the mistake, the guard and its moment, what it lets through, the loopholes found and covered, and the commit.
 
 ## Reviewing the whole harness
 

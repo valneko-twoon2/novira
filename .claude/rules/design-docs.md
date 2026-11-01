@@ -1,8 +1,8 @@
 ---
-description: What a design page (docs/design/, one per feature) holds, how to find the page of the code you change, and when to update it (enforced by tools/docs-check.mjs)
+description: What a design page (docs/design/, one per feature) holds, how to find the page of the code you change, and when to update it (enforced by scripts/tools/docs-check.mjs)
 paths:
   - "docs/design/**"
-  - "tools/docs-check.mjs"
+  - "scripts/tools/docs-check.mjs"
 ---
 
 # Design pages: the current specification, one per feature
@@ -11,7 +11,7 @@ paths:
 
 ## Read before changing
 
-Before changing code, run `node tools/docs-check.mjs --find <path>...` for the files you will change and read the pages it names. If none covers a path, nothing needs reading. The index is `docs/design/README.md`; `security.md` holds what is common to every feature (what is at stake, the shared principles, the known limits that span features, how to re-check).
+Before changing code, run `node scripts/tools/docs-check.mjs --find <path>...` for the files you will change and read the pages it names. If none covers a path, nothing needs reading. The index is `docs/design/README.md`; `security.md` holds what is common to every feature (what is at stake, the shared principles, the known limits that span features, how to re-check).
 
 ## A page
 
@@ -40,4 +40,4 @@ In the same commit as a change that makes a page untrue: behaviour, a boundary, 
 
 ## What the machine checks
 
-`tools/docs-check.mjs` fails when a page has no `covers` or one that matches no file, when a page is not in `docs/design/README.md`, when a path or link it writes does not exist, when a code name it writes in backticks (camelCase, snake_case, UPPER_SNAKE: a removed component or constant) is in no code of the repository, when a page is over its limit, and when a boundary file is committed with no design page. It **warns** (in pre-commit, without failing) when a commit changes code that a page covers and the page is not in the commit: re-read the page and fix it if it no longer holds. It cannot tell whether a page is true.
+`scripts/tools/docs-check.mjs` fails when a page has no `covers` or one that matches no file, when a page is not in `docs/design/README.md`, when a path or link it writes does not exist, when a code name it writes in backticks (camelCase, snake_case, UPPER_SNAKE: a removed component or constant) is in no code of the repository, when a page is over its limit, and when a boundary file is committed with no design page. It **warns** (in pre-commit, without failing) when a commit changes code that a page covers and the page is not in the commit: re-read the page and fix it if it no longer holds. It cannot tell whether a page is true.

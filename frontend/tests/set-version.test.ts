@@ -1,8 +1,8 @@
-// tools/set-version.mjs: what counts as a version, and the three files it rewrites.
+// scripts/tools/set-version.mjs: what counts as a version, and the three files it rewrites.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- a plain .mjs tool without types
-import { isVersion, withCargoVersion, withPackageVersion } from '../../tools/set-version.mjs';
+import { isVersion, withCargoVersion, withPackageVersion } from '../../scripts/tools/set-version.mjs';
 
 describe('set-version', () => {
   it('takes a version both Cargo and npm accept', () => {

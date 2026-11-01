@@ -497,7 +497,7 @@ const FRONTEND = resolve(HERE, '..');
 export async function takeShots({ locales = listLocales(), scenes = SCENES, theme = 'dark' } = {}) {
   const { chromium } = await import('@playwright/test');
   const { createServer } = await import('vite');
-  const { acquire } = await import('../../tools/e2e-lock.mjs');
+  const { acquire } = await import('../../scripts/tools/e2e-lock.mjs');
   // A heavy browser run: one at a time with the other Playwright runs (the layout scan wants port 5191 to itself, too).
   const releaseLock = await acquire({ what: 'manual shots' });
   const server = await createServer({ root: FRONTEND, logLevel: 'error', server: { port: 5191, strictPort: false } });

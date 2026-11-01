@@ -9,7 +9,7 @@ import { contextFor } from '../../.claude/hooks/architecture-map.mjs';
 // @ts-expect-error -- plain ESM scripts without types
 import { shouldConvert } from '../../.claude/hooks/eol.mjs';
 // @ts-expect-error -- plain ESM scripts without types
-import { wantedEol, withEol } from '../../tools/eol.mjs';
+import { wantedEol, withEol } from '../../scripts/tools/eol.mjs';
 // @ts-expect-error -- plain ESM scripts without types
 import { badEol, rewritesFiles } from '../../.claude/hooks/eol-after-shell.mjs';
 // @ts-expect-error -- plain ESM scripts without types
@@ -19,7 +19,7 @@ import { pending, reminder } from '../../.claude/hooks/commit-before-stop.mjs';
 // @ts-expect-error -- plain ESM scripts without types
 import { rootHolding } from '../../.claude/hooks/worktrees.mjs';
 // @ts-expect-error -- plain ESM scripts without types
-import { finished, parseWorktrees as parseTrees } from '../../tools/worktree.mjs';
+import { finished, parseWorktrees as parseTrees } from '../../scripts/tools/worktree.mjs';
 
 describe('worktree script', () => {
   const porcelain = ['worktree E:/Code/novira', 'HEAD a', 'branch refs/heads/main', '', 'worktree E:/Code/wt-done', 'HEAD b', 'branch refs/heads/done', '', 'worktree E:/Code/wt-work', 'HEAD c', 'branch refs/heads/work', '', 'worktree E:/Code/wt-dirty', 'HEAD d', 'branch refs/heads/dirty', '', 'worktree E:/Code/wt-gone', 'HEAD e', 'detached', ''].join('\n');
@@ -45,7 +45,7 @@ describe('worktree script', () => {
 });
 
 describe('worktree helper of the hooks', () => {
-  it('reads `git worktree list --porcelain` through tools/worktree.mjs: the main checkout first, a detached head without a branch', () => {
+  it('reads `git worktree list --porcelain` through scripts/tools/worktree.mjs: the main checkout first, a detached head without a branch', () => {
     const out = ['worktree E:/Code/novira', 'HEAD abc', 'branch refs/heads/main', '', 'worktree E:/Code/novira-wt-x', 'HEAD def', 'detached', ''].join('\n');
     const trees = parseTrees(out).map((t: { path: string; branch: string | null }) => [t.path.replaceAll('\\', '/').split('/').pop(), t.branch]);
     expect(trees).toEqual([
@@ -247,7 +247,7 @@ describe('commit-before-stop hook', () => {
   it('asks to remove finished worktrees when nothing else is pending, once', () => {
     const text = reminder({}, [], false, ['E:/Code/wt-done']);
     expect(text).toContain('E:/Code/wt-done');
-    expect(text).toContain('tools/worktree.mjs remove');
+    expect(text).toContain('scripts/tools/worktree.mjs remove');
     expect(reminder({ stop_hook_active: true }, [], false, ['E:/Code/wt-done'])).toBeNull();
     expect(reminder({}, [], true, ['E:/Code/wt-done'])).toBeNull();
     expect(reminder({}, [], false, [])).toBeNull();

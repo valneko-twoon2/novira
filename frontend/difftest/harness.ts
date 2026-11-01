@@ -1,5 +1,5 @@
 // What the differential tests share: the two backends (the browser mock and the real backend behind novira-server,
-// started by tools/diff-backends.mjs), a picture to upload, and the comparison of what each answered.
+// started by scripts/tools/diff-backends.mjs), a picture to upload, and the comparison of what each answered.
 // Compared after taking out what is meant to differ: ids and names each side makes up (mapped by first appearance),
 // times, picture addresses (the transport), and the mock's own seed models and example workflows (only what a case made
 // is compared). An error is compared as "refused", not by its text.

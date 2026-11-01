@@ -5,7 +5,7 @@
 // ordinary calls stay fast.
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
-import { wantedEol } from '../../tools/eol.mjs';
+import { wantedEol } from '../../scripts/tools/eol.mjs';
 import { worktreeRoots } from './worktrees.mjs';
 
 const REWRITES = /\b(?:sed|awk|perl|python3?|tee|Set-Content|Out-File|Add-Content|WriteAllText)\b|(?<![<>=\d&|-])>{1,2}(?!&)\s*[^\s&|]|node\s+(?:-e|\S*\.(?:cjs|mjs|js))/;

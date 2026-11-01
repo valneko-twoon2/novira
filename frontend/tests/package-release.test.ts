@@ -1,7 +1,7 @@
-// tools/package-release.mjs: the version, the package name and what goes into the zip.
+// scripts/tools/package-release.mjs: the version, the package name and what goes into the zip.
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- a plain .mjs tool without types
-import { cargoVersion, ENTRIES, missingEntries, packageName } from '../../tools/package-release.mjs';
+import { cargoVersion, ENTRIES, missingEntries, packageName } from '../../scripts/tools/package-release.mjs';
 
 describe('package-release', () => {
   it('reads the workspace version, not a dependency version', () => {

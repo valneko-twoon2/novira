@@ -1,7 +1,7 @@
-// The whole test suite in one run (tools/full-check.mjs): its steps, its options and its report.
+// The whole test suite in one run (scripts/tools/full-check.mjs): its steps, its options and its report.
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { formatReport, parseArgs, plan } from '../../tools/full-check.mjs';
+import { formatReport, parseArgs, plan } from '../../scripts/tools/full-check.mjs';
 
 describe('full-check', () => {
   it('runs the fast checks, the server tests, the mock against the backend, every Playwright project and the layout scan, in that order', () => {

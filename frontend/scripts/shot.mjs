@@ -7,7 +7,7 @@
 import { mkdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { chromium } from '@playwright/test';
-import { harnessRoots } from '../../tools/harness-paths.mjs';
+import { harnessRoots } from '../../scripts/tools/harness-paths.mjs';
 
 const args = process.argv.slice(2);
 let url = 'http://localhost:5173/';

@@ -15,7 +15,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { cargoCommand } from '../../tools/harness-process.mjs';
+import { cargoCommand } from '../../scripts/tools/harness-process.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const frontendDir = join(here, '..');

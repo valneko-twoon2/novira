@@ -1,8 +1,8 @@
-// The smoke test of a release build (tools/release-smoke.mjs): its options, the files it requires and what an old-data fixture must hold.
+// The smoke test of a release build (scripts/tools/release-smoke.mjs): its options, the files it requires and what an old-data fixture must hold.
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { checkFixtureBootstrap, fixtureVersions, missingFiles, parseArgs } from '../../tools/release-smoke.mjs';
+import { checkFixtureBootstrap, fixtureVersions, missingFiles, parseArgs } from '../../scripts/tools/release-smoke.mjs';
 
 const whole = {
   boards: [{ name: 'Scenery' }, { name: 'Portraits' }],

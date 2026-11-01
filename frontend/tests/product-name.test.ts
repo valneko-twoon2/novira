@@ -1,9 +1,9 @@
-// The product is "novira", never "Novira" (tools/check-name.mjs, run by the pre-commit hook and here over every tracked file).
+// The product is "novira", never "Novira" (scripts/tools/check-name.mjs, run by the pre-commit hook and here over every tracked file).
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- a plain .mjs tool without types
-import { findMisspellings, misspelledLines } from '../../tools/check-name.mjs';
+import { findMisspellings, misspelledLines } from '../../scripts/tools/check-name.mjs';
 
 describe('the product name', () => {
   it('is found when written with a capital, at the start of a sentence too', () => {

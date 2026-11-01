@@ -44,9 +44,9 @@ Windows locks a running `novira.exe`, so close the app before you start, rebuild
 
 | Command | What it does |
 |---|---|
-| `node tools\affected.mjs` | Runs only the checks the changed files need. Start here |
+| `node scripts\tools\affected.mjs` | Runs only the checks the changed files need. Start here |
 | `scripts\release\set-version.bat` | Sets the app's version (asks for it, or `set-version.bat 0.2.0`) in `Cargo.toml`, `package.json` and the lock files | You prepare a release |
-| `node tools\release-smoke.mjs` | Starts what `package.bat build` put in `artifacts\`: the server on an empty data folder and on each old-data fixture, and the app with no engine, each until its main screen or its data answers. Nothing uses the GPU; its folders are deleted after | You publish a release, before the zip |
+| `node scripts\tools\release-smoke.mjs` | Starts what `package.bat build` put in `artifacts\`: the server on an empty data folder and on each old-data fixture, and the app with no engine, each until its main screen or its data answers. Nothing uses the GPU; its folders are deleted after | You publish a release, before the zip |
 | `scripts\release\package.bat` | Builds the release into `artifacts\` and packs it into the zip for a release page, with its SHA-256 (the programs and licence texts only; `package.bat build` stops before the zip); write the release notes from [release-notes-template.md](release-notes-template.md) | You publish a release |
 | `scripts\check.bat` | Every fast check: typecheck, lint, unit tests and line ends on the frontend, `cargo fmt`, clippy and `cargo test` on the backend (`frontend` or `backend` for one side) |
 | `scripts\checks\full-check.bat` | Every test there is, by hand now and then (there is no CI): `check.bat`, the browser server's tests, the mock compared with the real backend, every Playwright project and the layout scan, about half an hour; the report goes to `novira-data\work\full-check\` (`--no-browser` skips the browser steps) |
@@ -59,7 +59,7 @@ Which checks fit which change is in [../.claude/rules/regression-tests.md](../.c
 
 ## Good to know
 
-- **Where things are.** `frontend/` is the UI, `backend/` the Rust workspace (`crates/novira-core` is the backend as a library, `src-tauri` the thin desktop shell, `crates/novira-server` the browser server), `contract/` the sample JSON both sides check, `scripts/` the launchers, `tools/` the checks and helpers. [architecture/README.md](architecture/README.md) says where to start for each kind of change.
+- **Where things are.** `frontend/` is the UI, `backend/` the Rust workspace (`crates/novira-core` is the backend as a library, `src-tauri` the thin desktop shell, `crates/novira-server` the browser server), `contract/` the sample JSON both sides check, `scripts/` the launchers, `scripts/tools/` the checks and helpers. [architecture/README.md](architecture/README.md) says where to start for each kind of change.
 - **Screen text** goes only in the catalogs under `frontend/src/i18n/locales/`, Japanese and English together. See [../.claude/rules/i18n.md](../.claude/rules/i18n.md).
 - **Generated files** (verification data, reports, builds, scratch) go under `novira-data\work\`, which is not committed and is cleaned when stale.
 - **Commit messages** are in Japanese and start with a Conventional Commits type (`feat:`, `fix:`, `docs:`, `chore:` ...): a first line of at most 72 characters, then up to eight short bullets ([../.claude/rules/commit-messages.md](../.claude/rules/commit-messages.md)). The commit hook refuses a message that does not follow it.

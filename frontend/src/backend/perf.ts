@@ -1,4 +1,4 @@
-// Start-up marks and backend call timings for the measurement tool (tools/perf.mjs); nothing on screen shows them. Always
+// Start-up marks and backend call timings for the measurement tool (scripts/tools/perf.mjs); nothing on screen shows them. Always
 // on and cheap: a mark is one `performance.mark`, a call is one entry in a ring of the last CALL_LIMIT. The size of an
 // answer is measured only while the session flag RECORD_FLAG is '1' (the harness sets it and reloads), since that turns
 // the answer into JSON text. The harness reads it all with `window.__noviraPerf.snapshot()`.

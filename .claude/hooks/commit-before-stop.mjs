@@ -3,14 +3,14 @@
 // or says why it did not (the user said not to, a check is failing). It asks once per stop: the stop that follows the reminder
 // (`stop_hook_active`) is never blocked, so a refused commit cannot loop. It never blocks during a merge or rebase.
 // With everything committed, it also asks for the model sweep when model code was committed on a branch and no sweep record
-// covers its HEAD (tools/models-sweep-lib.mjs; the hook only reads the records, it never runs the sweep).
+// covers its HEAD (scripts/tools/models-sweep-lib.mjs; the hook only reads the records, it never runs the sweep).
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { harnessRoots } from '../../tools/harness-paths.mjs';
-import { readRecords, recordCoversHead, sweepReminder } from '../../tools/models-sweep-lib.mjs';
-import { finished, isFresh, parseWorktrees } from '../../tools/worktree.mjs';
+import { harnessRoots } from '../../scripts/tools/harness-paths.mjs';
+import { readRecords, recordCoversHead, sweepReminder } from '../../scripts/tools/models-sweep-lib.mjs';
+import { finished, isFresh, parseWorktrees } from '../../scripts/tools/worktree.mjs';
 import { worktreeRoots } from './worktrees.mjs';
 
 // novira-data/ (user data, and novira-data/work/ where the harness writes) is never reported as pending.
@@ -33,7 +33,7 @@ export function reminder(input, changed, inMerge, leftover = [], sweep = []) {
     return [
       'AGENTS.md: these worktrees are finished (clean, and their branch is merged into main, or the folder is gone). Remove each one now:',
       ...leftover,
-      'Use `node tools/worktree.mjs remove <path>`, never `git worktree remove` by hand: it unlinks node_modules first, or the main checkout loses its own.',
+      'Use `node scripts/tools/worktree.mjs remove <path>`, never `git worktree remove` by hand: it unlinks node_modules first, or the main checkout loses its own.',
     ].join('\n');
   }
   if (!changed.length) return null;
@@ -42,7 +42,7 @@ export function reminder(input, changed, inMerge, leftover = [], sweep = []) {
   return [
     'AGENTS.md: work that changes files ends with your own commit. There are uncommitted changes:',
     shown + more,
-    'Run the checks that fit (node tools/affected.mjs), fix what fails, commit with a message that follows .claude/rules/commit-messages.md, then report.',
+    'Run the checks that fit (node scripts/tools/affected.mjs), fix what fails, commit with a message that follows .claude/rules/commit-messages.md, then report.',
     'If you must not commit now (the user said not to, or a check you cannot fix is failing), say so in the report instead.',
   ].join('\n');
 }
@@ -83,8 +83,8 @@ export function sweepReminders(roots, { git, records }) {
   return out;
 }
 
-/** Runs tools/prune-stale.mjs (stale harness output under novira-data/work/); returns the lines of what it deleted. Never throws, gives up after 6 s. */
-export function pruneStale(script = fileURLToPath(new URL('../../tools/prune-stale.mjs', import.meta.url))) {
+/** Runs scripts/tools/prune-stale.mjs (stale harness output under novira-data/work/); returns the lines of what it deleted. Never throws, gives up after 6 s. */
+export function pruneStale(script = fileURLToPath(new URL('../../scripts/tools/prune-stale.mjs', import.meta.url))) {
   try {
     const run = spawnSync(process.execPath, [script, '--quiet'], { encoding: 'utf8', timeout: 6000, windowsHide: true });
     return String(run.stdout ?? '')
@@ -103,7 +103,7 @@ if (isMain)
   process.stdin.on('end', () => {
     try {
       const removed = pruneStale();
-      if (removed.length) process.stderr.write(['Stale harness output was deleted (tools/prune-stale.mjs):', ...removed, ''].join(NL));
+      if (removed.length) process.stderr.write(['Stale harness output was deleted (scripts/tools/prune-stale.mjs):', ...removed, ''].join(NL));
     } catch {
       // Pruning never blocks the stop.
     }

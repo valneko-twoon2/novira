@@ -380,7 +380,7 @@ fn the_phone_page_has_the_same_strings_in_japanese_and_english() {
         for (key, value) in map {
             let text = value.as_str().unwrap_or_else(|| panic!("{lang}.{key}"));
             assert!(!text.trim().is_empty(), "{lang}.{key}");
-            // The spelling of the name is checked over the whole repository (`tools/check-name.mjs`).
+            // The spelling of the name is checked over the whole repository (`scripts/tools/check-name.mjs`).
             assert!(!text.contains("NOVIRA"), "{lang}.{key}: {text}");
         }
         let mut keys: Vec<&String> = map.keys().collect();

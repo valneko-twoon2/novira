@@ -1,11 +1,11 @@
-// The layout scan's record and the pre-commit gate built on it (tools/layout-scan.mjs).
+// The layout scan's record and the pre-commit gate built on it (scripts/tools/layout-scan.mjs).
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { defaultWorkers, fingerprint, gateMessage, indexFingerprint, isLayoutSource, parseArgs, parseStage, passed, readPasses, treeFingerprint, withPass } from '../../tools/layout-scan.mjs';
+import { defaultWorkers, fingerprint, gateMessage, indexFingerprint, isLayoutSource, parseArgs, parseStage, passed, readPasses, treeFingerprint, withPass } from '../../scripts/tools/layout-scan.mjs';
 
 describe('layout source', () => {
   it('is css anywhere, ui/ and app/, feature components and the scan itself', () => {
@@ -15,7 +15,7 @@ describe('layout source', () => {
   });
 
   it('is not tests, test support, feature logic, state, other specs or other folders', () => {
-    for (const path of ['frontend/src/ui/controls.test.tsx', 'frontend/src/features/comic/ComicEditor.test.tsx', 'frontend/src/features/comic/comicStore.ts', 'frontend/src/state/ui.ts', 'frontend/src/backend/mock/canvas2dRecorder.testkit.ts', 'frontend/e2e/text-fit.spec.ts', 'frontend/src/i18n/locales/ja/app.json', 'tools/affected.mjs', 'backend/src/ui/a.css']) {
+    for (const path of ['frontend/src/ui/controls.test.tsx', 'frontend/src/features/comic/ComicEditor.test.tsx', 'frontend/src/features/comic/comicStore.ts', 'frontend/src/state/ui.ts', 'frontend/src/backend/mock/canvas2dRecorder.testkit.ts', 'frontend/e2e/text-fit.spec.ts', 'frontend/src/i18n/locales/ja/app.json', 'scripts/tools/affected.mjs', 'backend/src/ui/a.css']) {
       expect(isLayoutSource(path), path).toBe(false);
     }
   });
@@ -81,7 +81,7 @@ describe('pre-commit gate', () => {
     const text = gateMessage(['frontend/src/ui/ui.css', 'frontend/src/state/ui.ts'], 'staged', [{ fingerprint: 'older', locales: ['ja', 'en'] }]);
     expect(text).toContain('frontend/src/ui/ui.css');
     expect(text).not.toContain('frontend/src/state/ui.ts');
-    expect(text).toContain('node tools/layout-scan.mjs');
+    expect(text).toContain('node scripts/tools/layout-scan.mjs');
     expect(gateMessage(['frontend/src/ui/ui.css'], 'staged', [{ fingerprint: 'staged', locales: ['ja'] }])).not.toBeNull();
   });
 

@@ -1,8 +1,8 @@
-// The pure parts of the start-up measurement (tools/perf-startup.mjs): medians, blocking time of long tasks, which backend
+// The pure parts of the start-up measurement (scripts/tools/perf-startup.mjs): medians, blocking time of long tasks, which backend
 // call waited for which, the options, and the summary of a Chrome trace.
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { blocking, median, medians, parseArgs, recorded, traceSummary, waitedFor } from '../../tools/perf-startup.mjs';
+import { blocking, median, medians, parseArgs, recorded, traceSummary, waitedFor } from '../../scripts/tools/perf-startup.mjs';
 
 describe('median', () => {
   it('takes the middle of an odd count and the upper middle of an even one, unsorted input', () => {

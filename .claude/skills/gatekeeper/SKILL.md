@@ -29,9 +29,9 @@ Merge progress:
 
 ## 0.5 Making a worktree (for a subagent, or for yourself while the user's dev server watches the main tree)
 
-1. The Agent tool's `isolation: "worktree"` can refuse with a path-case error on this machine (`e:` against `E:`). Make the worktree with `node tools/worktree.mjs add <name>` (a sibling folder `../novira-wt-<name>` on a new dated branch, `frontend/node_modules` linked) and give the subagent its absolute path. The hooks (`.claude/hooks/worktrees.mjs`) watch every worktree of the repository for line ends and uncommitted work.
-2. The linked `node_modules` is the junction section 4 warns about: `git worktree remove` follows it and empties the main tree's `node_modules` (it happened once; `npm ci` in `frontend/` restores it). **Remove a worktree only with `node tools/worktree.mjs remove <path>`**: it unlinks first, removes the worktree, and deletes the branch when it is merged. The Stop hook asks for it for every finished worktree.
-3. Playwright in a worktree needs its own port, or it reuses the main tree's server and tests the wrong code: `E2E_PORT=51xx npx playwright test ...`. Run a whole project under the e2e lock (`node tools/e2e-lock.mjs -- ...`); if many cases still time out together, rerun the failures with `--workers=2` before calling them failures.
+1. The Agent tool's `isolation: "worktree"` can refuse with a path-case error on this machine (`e:` against `E:`). Make the worktree with `node scripts/tools/worktree.mjs add <name>` (a sibling folder `../novira-wt-<name>` on a new dated branch, `frontend/node_modules` linked) and give the subagent its absolute path. The hooks (`.claude/hooks/worktrees.mjs`) watch every worktree of the repository for line ends and uncommitted work.
+2. The linked `node_modules` is the junction section 4 warns about: `git worktree remove` follows it and empties the main tree's `node_modules` (it happened once; `npm ci` in `frontend/` restores it). **Remove a worktree only with `node scripts/tools/worktree.mjs remove <path>`**: it unlinks first, removes the worktree, and deletes the branch when it is merged. The Stop hook asks for it for every finished worktree.
+3. Playwright in a worktree needs its own port, or it reuses the main tree's server and tests the wrong code: `E2E_PORT=51xx npx playwright test ...`. Run a whole project under the e2e lock (`node scripts/tools/e2e-lock.mjs -- ...`); if many cases still time out together, rerun the failures with `--workers=2` before calling them failures.
 4. `npx tsc -b` leaves `frontend/tsconfig.tsbuildinfo`; delete it before committing.
 
 ## 1. Before the merge (in the subagent's branch, read only)
@@ -70,7 +70,7 @@ Merge progress:
 ## 4. Clean up
 
 1. Stop what the subagent left running (its dev servers, polling shells, a stray `ollama` it started). Never the user's `novira.exe` or ComfyUI.
-2. **A worktree holds junctions** (`node_modules`) that point into the main tree, and `git worktree remove` can follow them and delete the main tree's contents. Remove it only with `node tools/worktree.mjs remove <path>` (it unlinks first and deletes the branch when merged; an unmerged branch is never deleted with `-D`: ask). After this, `ls frontend/node_modules` in the main tree must still list packages.
+2. **A worktree holds junctions** (`node_modules`) that point into the main tree, and `git worktree remove` can follow them and delete the main tree's contents. Remove it only with `node scripts/tools/worktree.mjs remove <path>` (it unlinks first and deletes the branch when merged; an unmerged branch is never deleted with `-D`: ask). After this, `ls frontend/node_modules` in the main tree must still list packages.
 3. If the folder is still held by a process, find it (`Get-CimInstance Win32_Process` by command line), stop only the subagent's own, then remove.
 4. Push `main` (`git push origin main`): the user allows a push of `main` after each merge into it (AGENTS.md section 3). Never `--force`, never another branch.
 

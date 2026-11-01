@@ -7,7 +7,7 @@ setlocal
 pushd "%~dp0..\.."
 rem Put cargo first: a long PATH gets cut off at its end by cmd.
 set "PATH=%USERPROFILE%\.cargo\bin;%PATH%"
-node tools\set-version.mjs %*
+node scripts\tools\set-version.mjs %*
 set "RESULT=%errorlevel%"
 popd
 endlocal & exit /b %RESULT%
