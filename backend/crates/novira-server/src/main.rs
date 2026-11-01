@@ -1,22 +1,26 @@
-//! `novira-server --data <dir> --dist <dir> [--port N] [--engine] [--open]`: the novira backend on `127.0.0.1` for a web
+//! `novira-server (--data <dir> | --app-data) --dist <dir> [--port N] [--engine] [--open]`: the novira backend on `127.0.0.1` for a web
 //! browser. Prints one line, `novira-server: http://127.0.0.1:<port>/?token=<token>`, when it is ready; open that address.
 //! The home-network listener (TLS, its own port) stays closed until the page on this computer opens it from the QR item
 //! of the side bar, for a phone to pair with.
+use novira_core::data_location::AppData;
 use novira_core::startup::Refusal;
 use novira_server::{Ca, Control, Server};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-const USAGE: &str = "usage: novira-server --data <folder> --dist <folder> [--port <number>] [--engine] [--open]
-  --data    the data folder (else the NOVIRA_DATA_DIR variable); one process per folder. There is no default:
-            the server never guesses at the data of an installed app
+const USAGE: &str = "usage: novira-server (--data <folder> | --app-data) --dist <folder> [--port <number>] [--engine] [--open]
+  --data      the data folder (else the NOVIRA_DATA_DIR variable); one process per folder. There is no default:
+              the server never guesses at the data of an installed app
+  --app-data  the data folder novira.exe in the same folder as this program opens (NOVIRA_DATA_DIR, else the
+              folder chosen in novira, else its default)
   --dist    the built frontend (frontend/dist)
   --port    the port (default: the port of the last start on this data folder, else a free one)
   --engine  also start the queue worker and the image engine, as the app does (installs ComfyUI on a first run)
   --open    open the printed address in the default browser";
 
 struct Options {
-    data: PathBuf,
+    /// `None` with `--app-data`: the folder of the app beside this program (`app_data_folder`).
+    data: Option<PathBuf>,
     dist: PathBuf,
     port: Option<u16>,
     engine: bool,
@@ -24,18 +28,14 @@ struct Options {
 }
 
 fn parse(args: impl Iterator<Item = String>, env_data: Option<String>) -> Result<Options, String> {
-    let (mut data, mut dist, mut port, mut engine, mut open) = (
-        env_data.filter(|d| !d.is_empty()).map(PathBuf::from),
-        None,
-        None,
-        false,
-        false,
-    );
+    let (mut data, mut dist, mut port, mut engine, mut open, mut app_data) =
+        (None, None, None, false, false, false);
     let mut args = args;
     while let Some(arg) = args.next() {
         let mut value = |name: &str| args.next().ok_or_else(|| format!("{name} needs a value"));
         match arg.as_str() {
             "--data" => data = Some(PathBuf::from(value("--data")?)),
+            "--app-data" => app_data = true,
             "--dist" => dist = Some(PathBuf::from(value("--dist")?)),
             "--port" => {
                 port = Some(
@@ -49,13 +49,49 @@ fn parse(args: impl Iterator<Item = String>, env_data: Option<String>) -> Result
             other => return Err(format!("unknown option: {other}")),
         }
     }
+    if app_data && data.is_some() {
+        return Err("give --data or --app-data, not both".into());
+    }
+    // The variable fixes the folder for the app too, so it comes first with `--app-data` as well.
+    let data = data.or_else(|| env_data.filter(|d| !d.is_empty()).map(PathBuf::from));
+    if data.is_none() && !app_data {
+        return Err("no data folder: give --data or --app-data, or set NOVIRA_DATA_DIR".into());
+    }
     Ok(Options {
-        data: data.ok_or("no data folder: give --data or set NOVIRA_DATA_DIR")?,
+        data,
         dist: dist.ok_or("no frontend folder: give --dist")?,
         port,
         engine,
         open,
     })
+}
+
+/// The data folder novira.exe beside this program opens, as it decides it (`data_location::app_data`).
+fn app_data_folder() -> Result<PathBuf, String> {
+    let exe = std::env::current_exe().map_err(|e| format!("cannot find this program: {e}"))?;
+    let app_dir = exe
+        .parent()
+        .ok_or("cannot find the folder of this program")?;
+    let pointer = novira_core::data_location::pointer_path(cfg!(debug_assertions));
+    folder_of(novira_core::data_location::app_data(
+        app_dir,
+        novira_core::data_location::user_dir().as_deref(),
+        pointer.as_deref(),
+        cfg!(debug_assertions),
+    ))
+}
+
+/// The folder to open, or why the app has to start first.
+fn folder_of(app_data: AppData) -> Result<PathBuf, String> {
+    match app_data {
+        AppData::Folder(folder) => Ok(folder),
+        AppData::FirstStart => {
+            Err("novira has not chosen its data folder yet: start novira.exe once first".into())
+        }
+        AppData::Moving => Err(
+            "novira moves its data folder at its next start: start novira.exe once first".into(),
+        ),
+    }
 }
 
 /// Where the port of the last start is kept, inside the data folder.
@@ -109,7 +145,14 @@ async fn main() -> ExitCode {
             return ExitCode::from(2);
         }
     };
-    let data = novira_core::plain_path(options.data.canonicalize().unwrap_or(options.data.clone()));
+    let data = match options.data.clone().map(Ok).unwrap_or_else(app_data_folder) {
+        Ok(data) => data,
+        Err(e) => {
+            eprintln!("novira-server: {e}");
+            return ExitCode::from(2);
+        }
+    };
+    let data = novira_core::plain_path(data.canonicalize().unwrap_or(data));
     let backend = match novira_server::open_backend(&data) {
         Ok(b) => b,
         Err(Refusal::AlreadyRunning) => {
@@ -168,7 +211,7 @@ async fn main() -> ExitCode {
 
 #[cfg(test)]
 mod tests {
-    use super::{parse, remember_port, remembered_port, PORT_FILE};
+    use super::{folder_of, parse, remember_port, remembered_port, AppData, PORT_FILE};
 
     fn args(s: &str) -> impl Iterator<Item = String> + '_ {
         s.split_whitespace().map(str::to_string)
@@ -178,26 +221,39 @@ mod tests {
     fn the_options_are_read_and_the_data_folder_has_no_default() {
         let o = parse(args("--data d --dist f --port 8123 --engine --open"), None).unwrap();
         assert_eq!(
-            (o.port, o.engine, o.open, o.data.to_str(), o.dist.to_str()),
+            (
+                o.port,
+                o.engine,
+                o.open,
+                o.data.as_deref().and_then(|d| d.to_str()),
+                o.dist.to_str()
+            ),
             (Some(8123), true, true, Some("d"), Some("f"))
         );
         let plain = parse(args("--data d --dist f"), None).unwrap();
         assert_eq!((plain.engine, plain.open, plain.port), (false, false, None));
         // The variable is the fallback, and the option wins.
         assert_eq!(
-            parse(args("--dist f"), Some("env".into()))
-                .unwrap()
-                .data
-                .to_str(),
-            Some("env")
+            parse(args("--dist f"), Some("env".into())).unwrap().data,
+            Some("env".into())
         );
         assert_eq!(
             parse(args("--data d --dist f"), Some("env".into()))
                 .unwrap()
-                .data
-                .to_str(),
-            Some("d")
+                .data,
+            Some("d".into())
         );
+        // `--app-data` leaves the folder to the app's own choice, after the variable, and never with `--data`.
+        assert_eq!(parse(args("--app-data --dist f"), None).unwrap().data, None);
+        assert_eq!(
+            parse(args("--app-data --dist f"), Some("env".into()))
+                .unwrap()
+                .data,
+            Some("env".into())
+        );
+        assert!(parse(args("--app-data --data d --dist f"), None).is_err());
+        assert!(parse(args("--data d --app-data --dist f"), None).is_err());
+        assert!(parse(args("--app-data"), None).is_err());
         assert!(parse(args("--dist f"), None).is_err());
         assert!(parse(args("--dist f"), Some(String::new())).is_err());
         assert!(parse(args("--data d"), None).is_err());
@@ -207,6 +263,30 @@ mod tests {
         assert!(parse(args("--data d --dist f --wan"), None).is_err());
         // The home network is opened from the page, not by an option.
         assert!(parse(args("--data d --dist f --lan"), None).is_err());
+    }
+
+    #[test]
+    fn the_apps_folder_is_opened_only_when_the_app_has_one() {
+        assert_eq!(folder_of(AppData::Folder("d".into())), Ok("d".into()));
+        assert!(folder_of(AppData::FirstStart)
+            .unwrap_err()
+            .contains("start novira.exe"));
+        assert!(folder_of(AppData::Moving)
+            .unwrap_err()
+            .contains("start novira.exe"));
+    }
+
+    /// The release folder's `server.bat` (written by `scripts/release.bat`) opens the app's own data folder, not a new
+    /// one beside the exe that the app would then take for its data.
+    #[test]
+    fn the_release_launcher_opens_the_apps_data_folder() {
+        let release = include_str!("../../../../scripts/release.bat");
+        let start = release
+            .lines()
+            .find(|l| l.contains("novira-server.exe\" --"))
+            .expect("release.bat starts novira-server.exe");
+        assert!(start.contains("--app-data"), "{start}");
+        assert!(!start.contains("--data "), "{start}");
     }
 
     #[test]

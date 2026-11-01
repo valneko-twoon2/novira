@@ -14,7 +14,7 @@ use tauri::Manager;
 
 pub const DATA_DIR_ENV: &str = "NOVIRA_DATA_DIR";
 /// Folder name beside the app (ignored by git).
-pub const DATA_DIR_NAME: &str = "novira-data";
+pub const DATA_DIR_NAME: &str = novira_core::data_location::DATA_DIR_NAME;
 
 /// The folder the app lives in: the executable's folder, or the repository root in a debug build.
 fn app_dir() -> PathBuf {
@@ -35,25 +35,7 @@ fn app_dir() -> PathBuf {
     }
 }
 
-/// The user's folder (`%USERPROFILE%`, else `$HOME`), where a release build keeps its data.
-fn user_dir() -> Option<PathBuf> {
-    ["USERPROFILE", "HOME"]
-        .iter()
-        .filter_map(std::env::var_os)
-        .find(|p| !p.is_empty())
-        .map(PathBuf::from)
-}
-
-/// Where the data goes when `NOVIRA_DATA_DIR` is not set. A debug build keeps it in the repository, as before. A release build
-/// keeps it in the user's folder, but a copy that already has a data folder beside it keeps using that one, so an update
-/// does not leave the models and pictures behind.
-fn default_data_dir(app_dir: &Path, user_dir: Option<&Path>, debug: bool) -> PathBuf {
-    let beside = app_dir.join(DATA_DIR_NAME);
-    match user_dir {
-        Some(user) if !debug && !beside.is_dir() => user.join(DATA_DIR_NAME),
-        _ => beside,
-    }
-}
+use novira_core::data_location::{default_data_dir, user_dir};
 
 fn data_dir_from_env() -> Option<PathBuf> {
     std::env::var_os(DATA_DIR_ENV)
@@ -448,46 +430,6 @@ pub fn run() {
 
 #[cfg(test)]
 mod tests {
-    use super::{default_data_dir, DATA_DIR_NAME};
-    use std::path::Path;
-
-    #[test]
-    fn a_release_build_keeps_its_data_in_the_user_folder() {
-        let app = tempfile::tempdir().unwrap();
-        let user = Path::new("C:/Users/someone");
-        assert_eq!(
-            default_data_dir(app.path(), Some(user), false),
-            user.join(DATA_DIR_NAME)
-        );
-    }
-
-    #[test]
-    fn a_debug_build_keeps_its_data_beside_the_app() {
-        let app = Path::new("C:/repo");
-        let user = Path::new("C:/Users/someone");
-        assert_eq!(
-            default_data_dir(app, Some(user), true),
-            app.join(DATA_DIR_NAME)
-        );
-    }
-
-    #[test]
-    fn a_copy_with_a_data_folder_beside_it_keeps_using_it() {
-        let app = tempfile::tempdir().unwrap();
-        std::fs::create_dir(app.path().join(DATA_DIR_NAME)).unwrap();
-        let user = Path::new("C:/Users/someone");
-        assert_eq!(
-            default_data_dir(app.path(), Some(user), false),
-            app.path().join(DATA_DIR_NAME)
-        );
-    }
-
-    #[test]
-    fn without_a_user_folder_the_data_stays_beside_the_app() {
-        let app = Path::new("C:/app");
-        assert_eq!(default_data_dir(app, None, false), app.join(DATA_DIR_NAME));
-    }
-
     /// The About dialog and the Settings screen show the frontend's `package.json` version, which must equal the
     /// version every crate inherits from `[workspace.package]`.
     #[test]

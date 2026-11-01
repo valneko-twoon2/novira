@@ -2,7 +2,7 @@
 rem novira release build: puts the release programs into artifacts\ in the repository root (git-ignored).
 rem   scripts\release.bat             build in release mode -> artifacts\novira.exe (the app) and, for a plain web
 rem                                   browser, artifacts\novira-server.exe, artifacts\dist\ (the screens it serves)
-rem                                   and artifacts\server.bat (starts the server on the data folder next to the exe)
+rem                                   and artifacts\server.bat (starts the server on the data folder novira.exe opens)
 rem The first release build takes a few minutes. Close a running exe in artifacts first (Windows locks it).
 setlocal
 pushd "%~dp0.."
@@ -47,10 +47,10 @@ if errorlevel 1 (
   echo Could not copy frontend\dist to artifacts\dist.
   goto fail
 )
-rem artifacts\server.bat is written here: it starts the server of a release folder (data folder next to the exe).
+rem artifacts\server.bat is written here: it starts the server of a release folder on the data folder novira.exe opens.
 > artifacts\server.bat echo @echo off
->> artifacts\server.bat echo rem novira browser server, from the release folder: starts novira-server.exe on the data folder next to it ^(the one
->> artifacts\server.bat echo rem novira.exe uses^) with the image engine, and opens the page in the default browser. Ctrl-C stops it.
+>> artifacts\server.bat echo rem novira browser server, from the release folder: starts novira-server.exe on the data folder novira.exe opens
+>> artifacts\server.bat echo rem ^(the one chosen in novira, else its default^) with the image engine, and opens the page in the default browser. Ctrl-C stops it.
 >> artifacts\server.bat echo rem The server listens on 127.0.0.1 only; the home network ^(a phone on the same Wi-Fi^) opens from the QR item of its page.
 >> artifacts\server.bat echo rem The address it prints carries this start's token.
 >> artifacts\server.bat echo rem Close novira ^(novira.exe^) first: only one program can hold the data folder.
@@ -63,7 +63,7 @@ rem artifacts\server.bat is written here: it starts the server of a release fold
 >> artifacts\server.bat echo   echo The folder dist was not found next to this file.
 >> artifacts\server.bat echo   goto fail
 >> artifacts\server.bat echo ^)
->> artifacts\server.bat echo "%%~dp0novira-server.exe" --data "%%~dp0novira-data" --dist "%%~dp0dist" --engine --open
+>> artifacts\server.bat echo "%%~dp0novira-server.exe" --app-data --dist "%%~dp0dist" --engine --open
 >> artifacts\server.bat echo if errorlevel 1 goto fail
 >> artifacts\server.bat echo endlocal
 >> artifacts\server.bat echo exit /b 0

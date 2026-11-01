@@ -546,3 +546,92 @@ fn a_file_that_cannot_be_moved_or_copied_is_not_left_half_copied() {
     assert!(!new.join("a.txt").exists() && !new.join("held.bin").exists());
     assert!(new.join("keep.txt").is_file());
 }
+
+#[test]
+fn a_release_build_keeps_its_data_in_the_user_folder() {
+    let app = tempfile::tempdir().unwrap();
+    let user = Path::new("C:/Users/someone");
+    assert_eq!(
+        default_data_dir(app.path(), Some(user), false),
+        user.join(DATA_DIR_NAME)
+    );
+}
+
+#[test]
+fn a_debug_build_keeps_its_data_beside_the_app() {
+    let app = Path::new("C:/repo");
+    let user = Path::new("C:/Users/someone");
+    assert_eq!(
+        default_data_dir(app, Some(user), true),
+        app.join(DATA_DIR_NAME)
+    );
+}
+
+#[test]
+fn a_copy_with_a_data_folder_beside_it_keeps_using_it() {
+    let app = tempfile::tempdir().unwrap();
+    std::fs::create_dir(app.path().join(DATA_DIR_NAME)).unwrap();
+    let user = Path::new("C:/Users/someone");
+    assert_eq!(
+        default_data_dir(app.path(), Some(user), false),
+        app.path().join(DATA_DIR_NAME)
+    );
+}
+
+#[test]
+fn without_a_user_folder_the_data_stays_beside_the_app() {
+    let app = Path::new("C:/app");
+    assert_eq!(default_data_dir(app, None, false), app.join(DATA_DIR_NAME));
+}
+
+#[test]
+fn the_apps_data_folder_is_the_chosen_one_before_any_folder_beside_it() {
+    let dir = tempfile::tempdir().unwrap();
+    let (app, user) = (dir.path().join("app"), dir.path().join("user"));
+    let pointer = dir.path().join("cfg").join("data-location.json");
+    std::fs::create_dir_all(&app).unwrap();
+    // Nothing chosen and no data anywhere: the app asks at its first start.
+    assert_eq!(
+        app_data(&app, Some(&user), Some(&pointer), false),
+        AppData::FirstStart
+    );
+    // Data in the user's folder from an earlier version is data already.
+    std::fs::create_dir_all(user.join(DATA_DIR_NAME)).unwrap();
+    assert_eq!(
+        app_data(&app, Some(&user), Some(&pointer), false),
+        AppData::Folder(user.join(DATA_DIR_NAME))
+    );
+    // A folder beside the app, without a choice, is the default one then.
+    std::fs::create_dir_all(app.join(DATA_DIR_NAME)).unwrap();
+    assert_eq!(
+        app_data(&app, Some(&user), Some(&pointer), false),
+        AppData::Folder(app.join(DATA_DIR_NAME))
+    );
+    // A folder chosen at the first start or in the Settings screen wins over the one beside the app.
+    let chosen = dir.path().join("chosen");
+    let location = Location {
+        data_dir: chosen.clone(),
+        ..Location::default()
+    };
+    write(&pointer, &location).unwrap();
+    assert_eq!(
+        app_data(&app, Some(&user), Some(&pointer), false),
+        AppData::Folder(chosen.clone())
+    );
+    // A move that waits for the app's next start is not a folder to open yet.
+    let moving = Location {
+        data_dir: chosen,
+        move_from: Some(user.join(DATA_DIR_NAME)),
+        move_error: None,
+    };
+    write(&pointer, &moving).unwrap();
+    assert_eq!(
+        app_data(&app, Some(&user), Some(&pointer), false),
+        AppData::Moving
+    );
+    // With no place for a pointer, only the default is left.
+    assert_eq!(
+        app_data(&app, Some(&user), None, false),
+        AppData::Folder(app.join(DATA_DIR_NAME))
+    );
+}

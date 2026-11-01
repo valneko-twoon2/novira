@@ -393,7 +393,9 @@ async fn a_paired_phone_reaches_only_clean_paths_of_the_built_in_files() {
     let (server, sink) = embed(
         backend.clone(),
         Frontend::Embedded(Arc::new(move |path| {
-            log.lock().unwrap().push(path.to_string());
+            log.lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .push(path.to_string());
             match path {
                 "index.html" => Some(b"<html><head></head></html>".to_vec()),
                 "assets/app.js" => Some(b"console.log(1)".to_vec()),
@@ -505,7 +507,7 @@ async fn a_paired_phone_reaches_only_clean_paths_of_the_built_in_files() {
             );
         }
     }
-    let asked = asked.lock().unwrap().clone();
+    let asked = asked.lock().unwrap_or_else(|e| e.into_inner()).clone();
     assert!(
         asked.iter().any(|p| p == "assets/app.js"),
         "the fuzzing never reached a real file"
