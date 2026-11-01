@@ -34,6 +34,7 @@ One page per feature, each the current specification of that feature: how it beh
 | [settings-engine.md](settings-engine.md) | Settings, engine settings, low-memory mode, unfinished downloads, backup and restore |
 | [ui-state-sync.md](ui-state-sync.md) | The screen state (`novira.*` keys) kept in the backend and followed live by the other open pages: the PC and phones |
 | [browser-server.md](browser-server.md) | The real backend behind a plain web browser: the shared command layer, the localhost-only server with its token, the commands it answers, the picture route |
+| [browser-server-start.md](browser-server-start.md) | Starting the browser server: its options, the data folder it opens (`--data`, `--app-data`), the launchers |
 | [browser-server-lan.md](browser-server-lan.md) | The browser server on the home network (opened on demand): the TLS-only listener and its local CA, who is answered, the subnet check |
 | [browser-server-pairing.md](browser-server-pairing.md) | Pairing a phone with the home-network listener: the pairing code and QR, the phone page, this computer's approval, sessions and their limits |
 | [browser-server-app.md](browser-server-app.md) | Phones and the desktop app: the home-network listener run inside the app, the window's `lan_*` commands, the built-in page and the picture URLs |

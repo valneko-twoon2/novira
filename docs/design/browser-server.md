@@ -22,7 +22,7 @@ The layer lives in `novira-core`, which stays free of Tauri and of any HTTP stac
 
 ### The server
 
-`novira-server --data <folder> --dist <folder> [--port N] [--engine] [--open]`. `--data` falls back to `NOVIRA_DATA_DIR`; with neither it stops (exit 2), so an installed app's data is never opened by accident. A data folder another process holds is refused with exit 3. `--dist` is a built `frontend/dist` (else it stops). `--port` defaults to the last start's port (`server-port` in the data folder: a page's saved state is per address), else a free one. `--engine` also starts the worker, the engine and the watermark preparation, as the app does. When ready it prints `novira-server: http://127.0.0.1:<port>/?token=<token>`; `--open` also hands the address to the default browser (`api::browser_command`, no shell). Ctrl-C stops it. `scripts/server.bat` builds the frontend and the server (`fast` skips that) and starts it on the repository's `novira-data` with `--engine --open`; `scripts/release.bat` puts `novira-server.exe`, `dist/` and `server.bat` (written by it, data folder next to the exe) into `artifacts/`.
+How it is started (the options, the data folder, the launchers): [browser-server-start.md](browser-server-start.md).
 
 Routes (`backend/crates/novira-server/src/lib.rs`):
 

@@ -161,6 +161,67 @@ fn clash(from: &Path, to: &Path) -> Result<(), String> {
     }
 }
 
+/// Folder name of the data beside the app, or in the user's folder.
+pub const DATA_DIR_NAME: &str = "novira-data";
+
+/// The user's folder (`%USERPROFILE%`, else `$HOME`), where a release build keeps its data.
+pub fn user_dir() -> Option<PathBuf> {
+    ["USERPROFILE", "HOME"]
+        .iter()
+        .filter_map(std::env::var_os)
+        .find(|p| !p.is_empty())
+        .map(PathBuf::from)
+}
+
+/// Where the data goes when nothing chose it. A debug build keeps it in the repository (`app_dir`). A release build
+/// keeps it in the user's folder, but a copy that already has a data folder beside it keeps using that one, so an update
+/// does not leave the models and pictures behind.
+pub fn default_data_dir(app_dir: &Path, user_dir: Option<&Path>, debug: bool) -> PathBuf {
+    let beside = app_dir.join(DATA_DIR_NAME);
+    match user_dir {
+        Some(user) if !debug && !beside.is_dir() => user.join(DATA_DIR_NAME),
+        _ => beside,
+    }
+}
+
+/// What the app in `app_dir` opens at its next start when `NOVIRA_DATA_DIR` does not fix the folder.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum AppData {
+    /// This folder.
+    Folder(PathBuf),
+    /// Nothing says where yet: the app asks at its first start.
+    FirstStart,
+    /// The pointer asks for the data to be moved, which the app does at its next start.
+    Moving,
+}
+
+/// The data folder of the app in `app_dir`, decided as the app decides it: the folder chosen in the Settings screen or
+/// at the first start (`pointer`), else the default one (`default_data_dir`).
+pub fn app_data(
+    app_dir: &Path,
+    user_dir: Option<&Path>,
+    pointer: Option<&Path>,
+    debug: bool,
+) -> AppData {
+    if let Some(pointer) = pointer {
+        if move_pending(pointer) {
+            return AppData::Moving;
+        }
+        let beside = app_dir.join(DATA_DIR_NAME);
+        let user = user_dir.map(|u| u.join(DATA_DIR_NAME));
+        let existing: Vec<&Path> = std::iter::once(beside.as_path())
+            .chain(user.as_deref())
+            .collect();
+        if crate::first_run::needed(pointer, &existing) {
+            return AppData::FirstStart;
+        }
+        if let Some(location) = read(pointer) {
+            return AppData::Folder(location.data_dir);
+        }
+    }
+    AppData::Folder(default_data_dir(app_dir, user_dir, debug))
+}
+
 /// Whether the pointer asks for the data to be moved at this start (so the app can show that it is working).
 pub fn move_pending(pointer: &Path) -> bool {
     read(pointer).is_some_and(|l| l.move_from.is_some())
