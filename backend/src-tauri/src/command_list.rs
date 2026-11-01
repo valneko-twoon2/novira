@@ -98,4 +98,13 @@ pub const COMMANDS: &[&str] = &[
     "first_run_choose",
     "first_run_reset",
     "first_run_finish",
+    "lan_state",
+    "lan_open",
+    "lan_close",
+    "lan_trust",
+    "lan_untrust",
+    "lan_pair_code",
+    "lan_approve",
+    "lan_deny",
+    "lan_revoke",
 ];

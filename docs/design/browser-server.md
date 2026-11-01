@@ -18,7 +18,7 @@ The real backend behind a plain web browser: novira without its window, and chec
 
 The layer lives in `novira-core`, which stays free of Tauri and of any HTTP stack. `backend/src-tauri/src/command_list.rs` stays the list of Tauri commands (and the capability file stays equal to it); a test in `commands.rs` checks that it equals `api::NAMES` plus `api::SHELL_ONLY` and that each delegated Tauri command takes the layer's parameter names.
 
-`api::SHELL_ONLY` lists the commands only the desktop shell implements: folder, open and save dialogs, the raw upload body, the zoom, opening the system browser (served in another form, below), the model files a scan listed (`install_model`; served without local paths), the last export folder, the restart after a restore, `prepare_watermark`. Both shells also share, in `novira-core`: opening the data folder under its lock (`startup.rs`: `open_backend`, one process per folder) and what a picture path serves (`image_serve.rs`, the decision behind `novira-image://` and `/novira-image/`).
+`api::SHELL_ONLY` lists the commands only the desktop shell implements: folder, open and save dialogs, the raw upload body, the zoom, the system browser (served in another form, below), a scan's model files (`install_model`; served without local paths), the last export folder, the restart after a restore, `prepare_watermark`, `lan_*` (browser-server-app.md). Both shells also share, in `novira-core`: opening the data folder under its lock (`startup.rs`: `open_backend`, one process per folder) and what a picture path serves (`image_serve.rs`, the decision behind `novira-image://` and `/novira-image/`).
 
 ### The server
 

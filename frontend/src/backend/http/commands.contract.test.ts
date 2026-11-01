@@ -17,6 +17,15 @@ const NOT_CALLED: Record<string, string> = {
   first_run_choose: 'see first_run_info',
   first_run_reset: 'see first_run_info',
   first_run_finish: 'see first_run_info',
+  lan_state: 'the page of novira-server drives the home network over its routes (/lan/*, /pair/*: http/lan.ts)',
+  lan_open: 'see lan_state',
+  lan_close: 'see lan_state',
+  lan_trust: 'see lan_state',
+  lan_untrust: 'see lan_state',
+  lan_pair_code: 'see lan_state',
+  lan_approve: 'see lan_state',
+  lan_deny: 'see lan_state',
+  lan_revoke: 'see lan_state',
 };
 
 const api = read('backend/crates/novira-core/src/api.rs');
@@ -39,15 +48,15 @@ function shellOnly(): string[] {
   return [...list.slice(0, list.indexOf('];')).matchAll(/"([a-z_]+)"/g)].map((m) => m[1]!);
 }
 
-/** The IPC argument names of the shell's own commands (camelCase), from `commands.rs` and `first_run.rs`. */
+/** The IPC argument names of the shell's own commands (camelCase), from `commands.rs`, `first_run.rs` and `home_network.rs`. */
 function shellArguments(): Map<string, string[]> {
-  const src = read('backend/src-tauri/src/commands.rs') + read('backend/src-tauri/src/first_run.rs');
+  const src = read('backend/src-tauri/src/commands.rs') + read('backend/src-tauri/src/first_run.rs') + read('backend/src-tauri/src/home_network.rs');
   const out = new Map<string, string[]>();
   for (const m of src.matchAll(/#\[tauri::command\]\s*pub (?:async )?fn (\w+)\(([^)]*)\)/g)) {
     const params = [...m[2]!.matchAll(/(?<![:\w])(\w+)\s*:(?!:)\s*/g)]
       .filter(
         (p) =>
-          !/^(State<|tauri::ipc::Request<|tauri::Webview\b)/.test(
+          !/^(State<|tauri::ipc::Request<|tauri::Webview\b|tauri::AppHandle\b)/.test(
             m[2]!.slice(p.index! + p[0].length),
           ),
       )

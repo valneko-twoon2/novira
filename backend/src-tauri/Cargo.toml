@@ -15,6 +15,8 @@ tauri-build = { version = "2", features = [] }
 # `custom-protocol` makes every build (not only `cargo tauri build`) show the bundled frontend instead of waiting for a dev server.
 tauri = { version = "2", features = ["custom-protocol"] }
 novira-core = { path = "../crates/novira-core" }
+# The phones' server (`home_network.rs`): runs inside the app with only its home-network listener, opened on demand.
+novira-server = { path = "../crates/novira-server" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }

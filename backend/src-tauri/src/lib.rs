@@ -4,6 +4,7 @@ pub mod commands;
 pub mod dialogs;
 pub mod events;
 pub mod first_run;
+pub mod home_network;
 pub mod image_scheme;
 pub mod startup;
 
@@ -252,7 +253,14 @@ pub fn run() {
             let backend =
                 open_backend().unwrap_or_else(|refusal| startup::fail(refusal, &data_dir()));
             show_window(app, backend.saved_theme_is_light());
-            backend.set_event_sink(events::sink(app.handle().clone()));
+            // The phones' server runs inside the app; its home network opens only from the side bar's QR item.
+            let (lan, phones) =
+                home_network::start(app, backend.clone(), data_dir(), image_scheme::url_base());
+            backend.set_event_sink(home_network::both(
+                events::sink(app.handle().clone()),
+                phones,
+            ));
+            app.manage(lan);
             backend.set_location_pointer(location_pointer());
             tauri::async_runtime::spawn(backend.clone().run_worker());
             // Download (first run) and start the local ComfyUI right away.
@@ -412,11 +420,23 @@ pub fn run() {
             first_run::first_run_choose,
             first_run::first_run_reset,
             first_run::first_run_finish,
+            home_network::lan_state,
+            home_network::lan_open,
+            home_network::lan_close,
+            home_network::lan_trust,
+            home_network::lan_untrust,
+            home_network::lan_pair_code,
+            home_network::lan_approve,
+            home_network::lan_deny,
+            home_network::lan_revoke,
         ])
         .build(tauri::generate_context!())
         .expect("failed to start novira");
     app.run(|handle, event| {
         if let tauri::RunEvent::Exit = event {
+            if let Some(lan) = handle.try_state::<home_network::HomeNetwork>() {
+                tauri::async_runtime::block_on(lan.0.stop());
+            }
             if let Some(backend) = handle.try_state::<Backend>() {
                 backend.shutdown();
             }

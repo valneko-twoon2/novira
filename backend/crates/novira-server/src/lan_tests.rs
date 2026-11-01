@@ -65,30 +65,7 @@ impl Bench {
         headers: &[(&str, &str)],
         body: &str,
     ) -> (StatusCode, HeaderMap, String) {
-        let host = ends.local.unwrap().to_string();
-        let mut request = HttpRequest::builder().method(method).uri(path);
-        if !headers.iter().any(|(n, _)| n.eq_ignore_ascii_case("host")) {
-            request = request.header(header::HOST, host);
-        }
-        for (name, value) in headers {
-            request = request.header(*name, *value);
-        }
-        let mut request = request.body(Body::from(body.to_string())).unwrap();
-        request.extensions_mut().insert(ConnectInfo(ends));
-        let response = router(self.server.state.clone())
-            .oneshot(request)
-            .await
-            .unwrap();
-        let status = response.status();
-        let headers = response.headers().clone();
-        let bytes = axum::body::to_bytes(response.into_body(), 1 << 20)
-            .await
-            .unwrap();
-        (
-            status,
-            headers,
-            String::from_utf8_lossy(&bytes).into_owned(),
-        )
+        ask_router(&self.server.state, ends, method, path, headers, body).await
     }
 
     pub async fn stop(self) {
@@ -166,7 +143,7 @@ pub(crate) fn this_computer(b: &Bench) -> Ends {
 }
 
 /// The headers the phone page's `fetch` sends to the listener on `port`.
-fn phone_headers(port: u16) -> Vec<(&'static str, String)> {
+pub(crate) fn phone_headers(port: u16) -> Vec<(&'static str, String)> {
     vec![
         ("origin", format!("https://{HOME}:{port}")),
         ("sec-fetch-site", "same-origin".into()),
@@ -270,6 +247,39 @@ impl Bench {
         .await
         .0
     }
+}
+
+/// A request through the router of `state`, as if it came on a connection with `ends` (`Host` is its local end unless
+/// `headers` name one).
+pub(crate) async fn ask_router(
+    state: &Arc<AppState>,
+    ends: Ends,
+    method: &str,
+    path: &str,
+    headers: &[(&str, &str)],
+    body: &str,
+) -> (StatusCode, HeaderMap, String) {
+    let host = ends.local.unwrap().to_string();
+    let mut request = HttpRequest::builder().method(method).uri(path);
+    if !headers.iter().any(|(n, _)| n.eq_ignore_ascii_case("host")) {
+        request = request.header(header::HOST, host);
+    }
+    for (name, value) in headers {
+        request = request.header(*name, *value);
+    }
+    let mut request = request.body(Body::from(body.to_string())).unwrap();
+    request.extensions_mut().insert(ConnectInfo(ends));
+    let response = router(state.clone()).oneshot(request).await.unwrap();
+    let status = response.status();
+    let headers = response.headers().clone();
+    let bytes = axum::body::to_bytes(response.into_body(), 1 << 20)
+        .await
+        .unwrap();
+    (
+        status,
+        headers,
+        String::from_utf8_lossy(&bytes).into_owned(),
+    )
 }
 
 pub(crate) const OTHER: Ipv4Addr = Ipv4Addr::new(192, 168, 1, 21);

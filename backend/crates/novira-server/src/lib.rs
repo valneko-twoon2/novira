@@ -35,6 +35,7 @@ use std::time::Duration;
 use tokio::sync::{broadcast, oneshot, watch, Semaphore};
 use tower::ServiceExt as _;
 
+mod embedded;
 mod home_network;
 mod lan;
 #[cfg(test)]
@@ -42,6 +43,7 @@ mod lan_tests;
 mod pair;
 mod tls;
 mod trusted;
+pub use embedded::{embed, Embedded, Managed};
 pub use home_network::{home_address, network_is_public};
 pub use lan::{system_probe, Control, NetworkInfo, OpenError, Probe, LAN_IDLE};
 pub use pair::{
@@ -296,10 +298,26 @@ fn hosts_of(local: SocketAddr) -> Vec<String> {
     }
 }
 
+/// Reads a file of the built frontend by its path inside the build (`index.html`, `assets/app.js`); `None` when there is
+/// no such file.
+pub type ReadFile = Arc<dyn Fn(&str) -> Option<Vec<u8>> + Send + Sync>;
+
+/// Where the page's files come from.
+#[derive(Clone)]
+pub enum Frontend {
+    /// A built `frontend/dist` folder.
+    Folder(PathBuf),
+    /// The files built into the desktop app.
+    Embedded(ReadFile),
+}
+
 struct AppState {
     backend: Backend,
     token: String,
-    dist: PathBuf,
+    frontend: Frontend,
+    /// The base of the backend's picture URLs when it is not [`IMAGE_URL_BASE`] (the desktop app's backend): its URLs
+    /// are written with this server's base on the way out and back on the way in (`embedded::to_page`, `from_page`).
+    image_base: Option<String>,
     /// Every backend event as the JSON the desktop sends on `novira://event`.
     events: broadcast::Sender<String>,
     /// Set when the server stops, so open event connections end (the graceful shutdown waits for them).
@@ -519,28 +537,9 @@ pub async fn start(backend: Backend, dist: PathBuf, port: u16) -> std::io::Resul
         uuid::Uuid::new_v4().simple(),
         uuid::Uuid::new_v4().simple()
     );
-    let (events, _) = broadcast::channel::<String>(EVENT_BACKLOG);
-    let (shutdown, _) = watch::channel(false);
+    let state = new_state(backend.clone(), Frontend::Folder(dist), None, token.clone());
     // The backend's events (queue, progress, installs, log lines) go to every open `/events` connection.
-    let feed = events.clone();
-    backend.set_event_sink(Arc::new(move |event| {
-        if let Ok(json) = serde_json::to_string(&event) {
-            // No receiver is not an error: nobody has the page open.
-            let _ = feed.send(json);
-        }
-    }));
-    let state = Arc::new(AppState {
-        backend,
-        events,
-        shutdown,
-        token: token.clone(),
-        dist,
-        lan: std::sync::Mutex::new(None),
-        pairing: std::sync::Mutex::new(pair::Pairing::default()),
-        revoked: watch::channel(0).0,
-        control: std::sync::Mutex::new(None),
-        lan_activity: std::sync::Mutex::new(std::time::Instant::now()),
-    });
+    backend.set_event_sink(event_feed(&state));
     // Open connections of this listener end on their own: the event sockets when the shutdown watch fires
     // (`Server::stop` sends it), others when they finish.
     let accept = accept_loop(listener, router(state.clone()), None, None);
@@ -551,6 +550,43 @@ pub async fn start(backend: Backend, dist: PathBuf, port: u16) -> std::io::Resul
         state,
         accept,
         watcher,
+    })
+}
+
+/// The state of a server, before any listener.
+fn new_state(
+    backend: Backend,
+    frontend: Frontend,
+    image_base: Option<String>,
+    token: String,
+) -> Arc<AppState> {
+    Arc::new(AppState {
+        backend,
+        events: broadcast::channel::<String>(EVENT_BACKLOG).0,
+        shutdown: watch::channel(false).0,
+        token,
+        frontend,
+        image_base,
+        lan: std::sync::Mutex::new(None),
+        pairing: std::sync::Mutex::new(pair::Pairing::default()),
+        revoked: watch::channel(0).0,
+        control: std::sync::Mutex::new(None),
+        lan_activity: std::sync::Mutex::new(std::time::Instant::now()),
+    })
+}
+
+/// The sink that hands each backend event to every open `/events` connection, as the JSON the desktop sends.
+fn event_feed(state: &Arc<AppState>) -> novira_core::EventSink {
+    let state = state.clone();
+    Arc::new(move |event| {
+        let Ok(mut value) = serde_json::to_value(&event) else {
+            return;
+        };
+        embedded::to_page(&state, &mut value);
+        if let Ok(json) = serde_json::to_string(&value) {
+            // No receiver is not an error: nobody has the page open.
+            let _ = state.events.send(json);
+        }
     })
 }
 
@@ -919,7 +955,13 @@ async fn check_request(
 
 /// `index.html` with the script that marks the page as served by this server, placed before the app's own script.
 async fn index(State(state): State<Arc<AppState>>) -> Response {
-    let Ok(html) = tokio::fs::read_to_string(state.dist.join("index.html")).await else {
+    let html = match &state.frontend {
+        Frontend::Folder(dist) => tokio::fs::read_to_string(dist.join("index.html"))
+            .await
+            .ok(),
+        Frontend::Embedded(read) => read("index.html").and_then(|b| String::from_utf8(b).ok()),
+    };
+    let Some(html) = html else {
         return text(
             StatusCode::INTERNAL_SERVER_ERROR,
             "index.html cannot be read",
@@ -1230,7 +1272,7 @@ async fn command(
         );
     }
     // An empty body is no arguments; anything else must be one JSON value (so bad JSON is a 400, not "no arguments").
-    let args: Value = if body.iter().all(u8::is_ascii_whitespace) {
+    let mut args: Value = if body.iter().all(u8::is_ascii_whitespace) {
         Value::Null
     } else {
         match serde_json::from_slice(&body) {
@@ -1244,6 +1286,7 @@ async fn command(
             }
         }
     };
+    embedded::from_page(&state, &mut args);
     if !SERVED.contains(&name.as_str()) {
         return if api::NAMES.contains(&name.as_str()) || api::SHELL_ONLY.contains(&name.as_str()) {
             failure(
@@ -1278,7 +1321,7 @@ async fn command(
         api::dispatch(&state.backend, &name, args).await
     };
     match result {
-        Ok(text) => json_text_response(StatusCode::OK, text),
+        Ok(text) => json_text_response(StatusCode::OK, embedded::text_to_page(&state, text)),
         Err(CallError::UnknownCommand) => failure(
             StatusCode::NOT_FOUND,
             "unknown_command",
@@ -1329,10 +1372,11 @@ async fn upload_image(
         }
     };
     match state.backend.upload_image(body.to_vec(), options).await {
-        Ok(image) => json_response(
-            StatusCode::OK,
-            &serde_json::to_value(image).unwrap_or(Value::Null),
-        ),
+        Ok(image) => {
+            let mut value = serde_json::to_value(image).unwrap_or(Value::Null);
+            embedded::to_page(&state, &mut value);
+            json_response(StatusCode::OK, &value)
+        }
         Err(e) => failure(StatusCode::UNPROCESSABLE_ENTITY, "failed", &e.to_string()),
     }
 }
@@ -1583,19 +1627,25 @@ async fn static_file(State(state): State<Arc<AppState>>, request: Request) -> Re
     let Some(segments) = safe_segments(request.uri().path()) else {
         return not_found();
     };
-    let path = segments.iter().fold(state.dist.clone(), |p, s| p.join(s));
-    let Some(kind) = content_type(&path) else {
+    let Some(kind) = content_type(FsPath::new(&segments.join("/"))) else {
         return not_found();
     };
-    // Resolved paths must stay inside the folder (a link inside it could point out).
-    let (Ok(root), Ok(real)) = (state.dist.canonicalize(), path.canonicalize()) else {
-        return not_found();
+    let bytes = match &state.frontend {
+        Frontend::Folder(dist) => {
+            let path = segments.iter().fold(dist.clone(), |p, s| p.join(s));
+            // Resolved paths must stay inside the folder (a link inside it could point out).
+            let (Ok(root), Ok(real)) = (dist.canonicalize(), path.canonicalize()) else {
+                return not_found();
+            };
+            if !real.starts_with(&root) || !real.is_file() {
+                return not_found();
+            }
+            tokio::fs::read(&real).await.ok()
+        }
+        Frontend::Embedded(read) => read(&segments.join("/")),
     };
-    if !real.starts_with(&root) || !real.is_file() {
-        return not_found();
-    }
-    match tokio::fs::read(&real).await {
-        Ok(bytes) => (
+    match bytes {
+        Some(bytes) => (
             [
                 (header::CONTENT_TYPE, kind),
                 (header::CACHE_CONTROL, "no-cache"),
@@ -1603,7 +1653,7 @@ async fn static_file(State(state): State<Arc<AppState>>, request: Request) -> Re
             bytes,
         )
             .into_response(),
-        Err(_) => not_found(),
+        None => not_found(),
     }
 }
 
