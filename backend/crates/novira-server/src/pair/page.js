@@ -1,6 +1,7 @@
 // The phone's side of pairing with novira-server (served as /pair.js; the strings are put in by the server from
-// strings.json). The code comes in the address's fragment, which a browser never sends; it is dropped from the address
-// bar and the history at once. The phone asks to pair, shows the confirmation number the PC also shows, and waits
+// strings.json). The code comes in the address's fragment, which a browser never sends. It stays in the address until it
+// is used, so the page can be handed on to another browser (a QR reader's own view opened in Safari or Chrome); once the
+// request is sent it is dropped from the address bar and the history. The phone asks to pair, shows the confirmation number the PC also shows, and waits
 // until the PC allows or refuses; then the server's session cookie opens the app.
 'use strict';
 (function () {
@@ -13,7 +14,6 @@
     return document.getElementById(id);
   };
   var code = location.hash.slice(1);
-  history.replaceState(null, '', '/pair');
   document.documentElement.lang = lang;
   $('title').textContent = t('title');
   $('ca').textContent = t('installCa');
@@ -42,6 +42,8 @@
     $('send').disabled = true;
     post('/pair/request', { code: code, label: $('label').value.trim() })
       .then(function (reply) {
+        // A code that was used, or refused as wrong, is no use in another browser either.
+        if (reply.ok || reply.status === 403) history.replaceState(null, '', '/pair');
         if (!reply.ok) {
           say(reply.status === 429 ? 'tooMany' : reply.status === 400 ? 'badLabel' : 'badCode');
           // A used or wrong code stays wrong; a name or a pause can be fixed here.
