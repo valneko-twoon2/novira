@@ -99,9 +99,45 @@ function webview2Runtime() {
   return 'not installed (no EdgeUpdate client key)';
 }
 
-/** What to read when the app's window did not come up: the runtime, the app's own output and log, and the profile folder. */
+/** Whether `port` lies in a range `netsh int ipv4 show excludedportrange protocol=tcp` lists (Windows keeps such ranges for itself). */
+export function portIsExcluded(text, port) {
+  for (const line of String(text ?? '').split(/\r?\n/)) {
+    const range = /^\s*(\d+)\s+(\d+)\s*\*?\s*$/.exec(line);
+    if (range && port >= Number(range[1]) && port <= Number(range[2])) return true;
+  }
+  return false;
+}
+
+/** The output of a fixed program with fixed arguments, or why there is none (a diagnostic never throws). */
+function run(command, args) {
+  const r = spawnSync(command, args, { encoding: 'utf8', windowsHide: true, timeout: 20_000 });
+  return r.error ? `${command}: ${r.error.message}` : `${r.stdout ?? ''}${r.stderr ?? ''}`;
+}
+
+/** What the machine says about the debugging port and the programs that should be using it. */
+function machineFacts() {
+  if (process.platform !== 'win32') return [];
+  const listening = run('netstat', ['-ano', '-p', 'tcp'])
+    .split(/\r?\n/)
+    .filter((l) => l.includes(`:${CDP_PORT} `));
+  const programs = run('powershell', [
+    '-NoProfile',
+    '-NonInteractive',
+    '-Command',
+    "Get-CimInstance Win32_Process | Where-Object { $_.Name -in 'novira.exe','msedgewebview2.exe' } | Select-Object -First 8 | ForEach-Object { '{0} pid={1} {2}' -f $_.Name, $_.ProcessId, $_.CommandLine }",
+  ]);
+  const interactive = run('powershell', ['-NoProfile', '-NonInteractive', '-Command', '[Environment]::UserInteractive']).trim();
+  return [
+    `port ${CDP_PORT} in Windows' excluded ranges: ${portIsExcluded(run('netsh', ['int', 'ipv4', 'show', 'excludedportrange', 'protocol=tcp']), CDP_PORT) ? 'YES' : 'no'}`,
+    `port ${CDP_PORT} in netstat: ${listening.length ? tailOf(listening.join('\n'), 4) : 'not listening'}`,
+    `session is interactive: ${interactive || 'unknown'}`,
+    `programs:\n${tailOf(programs, 8, 1800) || 'none'}`,
+  ];
+}
+
+/** What to read when the app's window did not come up: the runtime, the machine, the app's own output and log, and the profile folder. */
 function appDiagnostics(app, output, data, webview) {
-  const parts = [`WebView2 runtime: ${webview2Runtime()}`, `app: ${app.exitCode === null ? 'still running' : `exited ${app.exitCode}`}`];
+  const parts = [`WebView2 runtime: ${webview2Runtime()}`, `app: ${app.exitCode === null ? 'still running' : `exited ${app.exitCode}`}`, ...machineFacts()];
   let profile = [];
   try {
     profile = fs.readdirSync(webview);

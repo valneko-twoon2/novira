@@ -2,7 +2,7 @@
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { checkFixtureBootstrap, fixtureVersions, missingFiles, parseArgs, tailOf } from '../../scripts/tools/release-smoke.mjs';
+import { checkFixtureBootstrap, fixtureVersions, missingFiles, parseArgs, portIsExcluded, tailOf } from '../../scripts/tools/release-smoke.mjs';
 
 const whole = {
   boards: [{ name: 'Scenery' }, { name: 'Portraits' }],
@@ -33,6 +33,18 @@ describe('release-smoke', () => {
     expect(tailOf('x'.repeat(5000), 15, 100)).toBe('x'.repeat(100));
     expect(tailOf(undefined)).toBe('');
     expect(tailOf('')).toBe('');
+  });
+
+  it('says whether a port lies in a range Windows keeps for itself', () => {
+    const netsh = ['', 'Protocol tcp Port Exclusion Ranges', '', 'Start Port    End Port', '----------    --------', '      1234        1333', '      9300        9399     *', '', '* - Administered port exclusions.'].join('\r\n');
+    expect(portIsExcluded(netsh, 9334)).toBe(true);
+    expect(portIsExcluded(netsh, 9300)).toBe(true);
+    expect(portIsExcluded(netsh, 9399)).toBe(true);
+    expect(portIsExcluded(netsh, 9400)).toBe(false);
+    expect(portIsExcluded(netsh, 1233)).toBe(false);
+    expect(portIsExcluded('', 9334)).toBe(false);
+    expect(portIsExcluded(undefined, 9334)).toBe(false);
+    expect(portIsExcluded('no ranges here', 9334)).toBe(false);
   });
 
   it('finds the committed old-data fixtures by version', () => {
