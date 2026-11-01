@@ -1,5 +1,5 @@
 //! The real TrustMark watermark on the CPU. Needs the pinned files, fetched once with
-//! `node tools/fetch-trustmark.mjs` (into `backend/target/resources/trustmark`), then:
+//! `node scripts/tools/fetch-trustmark.mjs` (into `backend/target/resources/trustmark`), then:
 //! `cargo test -p novira-core --test watermark_live -- --ignored --nocapture`.
 //! Without the files each test says so and returns.
 #![allow(dead_code)]
@@ -25,7 +25,7 @@ fn found() -> Option<Found> {
     let found = files::locate(&[models_dir()]);
     if found.is_none() {
         eprintln!(
-            "skipped: the watermark files are not in {} (run node tools/fetch-trustmark.mjs)",
+            "skipped: the watermark files are not in {} (run node scripts/tools/fetch-trustmark.mjs)",
             models_dir().display()
         );
     }
@@ -61,7 +61,7 @@ fn psnr(a: &DynamicImage, b: &DynamicImage) -> f64 {
 }
 
 #[test]
-#[ignore = "needs the TrustMark files (node tools/fetch-trustmark.mjs)"]
+#[ignore = "needs the TrustMark files (node scripts/tools/fetch-trustmark.mjs)"]
 fn the_watermark_survives_jpeg_at_80_and_half_the_size() {
     let Some(found) = found() else { return };
     let t = Instant::now();
@@ -108,7 +108,7 @@ fn the_watermark_survives_jpeg_at_80_and_half_the_size() {
 }
 
 #[tokio::test]
-#[ignore = "needs the TrustMark files (node tools/fetch-trustmark.mjs)"]
+#[ignore = "needs the TrustMark files (node scripts/tools/fetch-trustmark.mjs)"]
 async fn an_exported_copy_points_back_to_its_gallery_picture() {
     let Some(_) = found() else { return };
     let dir = tempfile::tempdir().unwrap();

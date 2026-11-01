@@ -1,7 +1,7 @@
 // The harness build of the browser app, and its server for the Playwright runs (playwright.config.ts starts it when
 // E2E_SERVER is `build`, served by `vite preview`). The dev server compiles every module on demand and answers about a
 // thousand requests for each page a test opens, so many workers at once mostly wait for it; a build is a handful of files.
-// The same build is what the verification app embeds and the browser server serves (tools/harness-paths.mjs,
+// The same build is what the verification app embeds and the browser server serves (scripts/tools/harness-paths.mjs,
 // buildHarnessDist): it is minified like the app's, in the harness mode, so it keeps what the app's build leaves out.
 //
 // The build goes to novira-data/work/e2e-build/<checkout>/ of the main checkout (everything the harness writes lives
@@ -16,9 +16,9 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { acquire } from '../../tools/e2e-lock.mjs';
-import { HARNESS_MODE, harnessDistDir } from '../../tools/harness-paths.mjs';
-import { markUsed } from '../../tools/prune-stale.mjs';
+import { acquire } from '../../scripts/tools/e2e-lock.mjs';
+import { HARNESS_MODE, harnessDistDir } from '../../scripts/tools/harness-paths.mjs';
+import { markUsed } from '../../scripts/tools/prune-stale.mjs';
 
 const FRONTEND = fileURLToPath(new URL('..', import.meta.url));
 const REPO = join(FRONTEND, '..');
@@ -64,18 +64,18 @@ export function inputsHash(root = FRONTEND, inputs = INPUTS) {
   return hash.digest('hex');
 }
 
-/** Where this checkout's harness build lives (tools/harness-paths.mjs): one folder per checkout, so two worktrees never share one. */
+/** Where this checkout's harness build lives (scripts/tools/harness-paths.mjs): one folder per checkout, so two worktrees never share one. */
 export function buildDir(repo = REPO) {
   return harnessDistDir(repo);
 }
 
-/** The Vite mode of the e2e build: the harness mode (tools/harness-paths.mjs), so every screen of the app is in it. */
+/** The Vite mode of the e2e build: the harness mode (scripts/tools/harness-paths.mjs), so every screen of the app is in it. */
 const BUILD_MODE = HARNESS_MODE;
 
 /** Builds into `out` unless its stamp matches the inputs. */
 async function ensureBuild(out) {
   mkdirSync(join(out, '..'), { recursive: true });
-  // The lock of tools/e2e-lock.mjs on its own directory: it records its owner, so a build killed half way is taken over at
+  // The lock of scripts/tools/e2e-lock.mjs on its own directory: it records its owner, so a build killed half way is taken over at
   // once instead of blocking the next run, and a waiter says what it waits for.
   const release = await acquire({ dir: `${out}.lock`, what: 'the harness build of the frontend', pollMs: 500, log: (l) => console.log(`e2e-server: ${l}`) });
   try {

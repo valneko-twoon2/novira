@@ -1,5 +1,5 @@
 //! The watermark through the real TrustMark files on small pictures, so the code that needs the ONNX Runtime DLL runs in
-//! the ordinary test run. The files come from `node tools/fetch-trustmark.mjs` (into `backend/target/resources/trustmark`);
+//! the ordinary test run. The files come from `node scripts/tools/fetch-trustmark.mjs` (into `backend/target/resources/trustmark`);
 //! without them each test says so and returns. `watermark_live.rs` covers the large picture and the survival checks.
 #![allow(dead_code)]
 #[path = "backend_service/common.rs"]

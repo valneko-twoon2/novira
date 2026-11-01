@@ -1,7 +1,7 @@
-// Which changed files make tools/affected.mjs name the visual regression (tools/visual-baselines.mjs).
+// Which changed files make scripts/tools/affected.mjs name the visual regression (scripts/tools/visual-baselines.mjs).
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { isScreenSource } from '../../tools/visual-baselines.mjs';
+import { isScreenSource } from '../../scripts/tools/visual-baselines.mjs';
 
 describe('the files that can change a main screen', () => {
   it('runs for the source that decides what the screens show', () => {
@@ -25,7 +25,7 @@ describe('the files that can change a main screen', () => {
       'frontend/src/propertyTest.testkit.ts',
       'frontend/src/vite-env.d.ts',
       'frontend/e2e/visual.spec.ts',
-      'tools/docs-check.mjs',
+      'scripts/tools/docs-check.mjs',
       'docs/architecture/README.md',
       'backend/crates/novira-core/src/lib.rs',
     ]) {

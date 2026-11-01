@@ -1,7 +1,7 @@
-// The checks tools/affected.mjs chooses for a change (the tables of .claude/rules/regression-tests.md, done by a tool).
+// The checks scripts/tools/affected.mjs chooses for a change (the tables of .claude/rules/regression-tests.md, done by a tool).
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { modulesNamed, plan, readCoreTests, specsFor } from '../../tools/affected.mjs';
+import { modulesNamed, plan, readCoreTests, specsFor } from '../../scripts/tools/affected.mjs';
 
 interface Check {
   side: string;
@@ -60,7 +60,7 @@ describe('affected checks: frontend', () => {
   });
 
   it('checks the test ids and text keys named outside the app when a component, the ja catalog or a script naming them changes', () => {
-    for (const path of ['frontend/src/features/media/MediaTabs.tsx', 'frontend/src/i18n/locales/ja/media.json', 'frontend/e2e/comic.spec.ts', 'frontend/scripts/manual/scenes.mjs', 'tools/models-sweep-app.mjs', 'docs/design/navigation.md']) {
+    for (const path of ['frontend/src/features/media/MediaTabs.tsx', 'frontend/src/i18n/locales/ja/media.json', 'frontend/e2e/comic.spec.ts', 'frontend/scripts/manual/scenes.mjs', 'scripts/tools/models-sweep-app.mjs', 'docs/design/navigation.md']) {
       expect(commands(run([path])).some((c) => c.includes('tests/ui-refs.test.ts')), path).toBe(true);
     }
     for (const path of ['frontend/src/i18n/locales/en/media.json', 'docs/manual/ja/02-generate.md', 'frontend/src/ui/Button.css']) {
@@ -102,23 +102,23 @@ describe('affected checks: frontend', () => {
 
   it('names the model sweep for model code, and not for its tests', () => {
     for (const path of ['backend/crates/novira-core/src/models/classify.rs', 'frontend/src/features/models/CoverImage.tsx', 'frontend/src/ui/ModelPicker.tsx']) {
-      expect(run([path]).skipped.map((s) => s.cmd), path).toContain('node tools/models-sweep.mjs --build');
+      expect(run([path]).skipped.map((s) => s.cmd), path).toContain('node scripts/tools/models-sweep.mjs --build');
     }
-    expect(run(['frontend/src/features/models/CoverImage.test.tsx']).skipped.map((s) => s.cmd)).not.toContain('node tools/models-sweep.mjs --build');
-    expect(run(['frontend/src/features/models/models.css', 'frontend/src/ui/CoverImage.css']).skipped.map((s) => s.cmd)).not.toContain('node tools/models-sweep.mjs --build');
+    expect(run(['frontend/src/features/models/CoverImage.test.tsx']).skipped.map((s) => s.cmd)).not.toContain('node scripts/tools/models-sweep.mjs --build');
+    expect(run(['frontend/src/features/models/models.css', 'frontend/src/ui/CoverImage.css']).skipped.map((s) => s.cmd)).not.toContain('node scripts/tools/models-sweep.mjs --build');
   });
 
   it('runs the layout scan for css, shared components, the composition and feature components, not for tests or logic', () => {
     for (const path of ['frontend/src/theme/tokens.css', 'frontend/src/ui/controls.tsx', 'frontend/src/app/SideNav.tsx', 'frontend/src/features/models/ModelCard.tsx', 'frontend/e2e/layoutRules.ts']) {
-      expect(commands(run([path])), path).toContain('node tools/layout-scan.mjs');
+      expect(commands(run([path])), path).toContain('node scripts/tools/layout-scan.mjs');
     }
-    for (const path of ['frontend/src/features/models/modelStore.ts', 'frontend/src/ui/controls.test.tsx', 'frontend/src/state/ui.ts', 'tools/docs-check.mjs']) {
-      expect(commands(run([path])), path).not.toContain('node tools/layout-scan.mjs');
+    for (const path of ['frontend/src/features/models/modelStore.ts', 'frontend/src/ui/controls.test.tsx', 'frontend/src/state/ui.ts', 'scripts/tools/docs-check.mjs']) {
+      expect(commands(run([path])), path).not.toContain('node scripts/tools/layout-scan.mjs');
     }
   });
 
   it('names no Playwright run for a test, a script or the test settings', () => {
-    for (const path of ['frontend/src/features/comic/ComicEditor.test.tsx', 'frontend/src/ui/Button.test.tsx', 'tools/docs-check.mjs', 'frontend/vitest.config.ts']) {
+    for (const path of ['frontend/src/features/comic/ComicEditor.test.tsx', 'frontend/src/ui/Button.test.tsx', 'scripts/tools/docs-check.mjs', 'frontend/vitest.config.ts']) {
       expect(run([path]).skipped, path).toEqual([]);
     }
   });

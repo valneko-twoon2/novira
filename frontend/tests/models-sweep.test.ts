@@ -1,4 +1,4 @@
-// The model sweep (tools/models-sweep*.mjs): what it reads from the code agrees with the code, which models stand for their
+// The model sweep (scripts/tools/models-sweep*.mjs): what it reads from the code agrees with the code, which models stand for their
 // kind, the graph and picture checks, the verdicts and the table, which changes need a sweep and when a record still covers
 // HEAD, the Stop hook's reminder, and the main checkout a worktree shares its harness folder with.
 import { deflateSync } from 'node:zlib';
@@ -31,11 +31,11 @@ import {
   unscannedFolders,
   wireKind,
   // @ts-expect-error -- plain ESM script without types
-} from '../../tools/models-sweep-lib.mjs';
+} from '../../scripts/tools/models-sweep-lib.mjs';
 // @ts-expect-error -- plain ESM script without types
-import { mergeRuns, parseArgs } from '../../tools/models-sweep.mjs';
+import { mergeRuns, parseArgs } from '../../scripts/tools/models-sweep.mjs';
 // @ts-expect-error -- plain ESM script without types
-import { harnessRoots, mainCheckout, movedDataDir } from '../../tools/harness-paths.mjs';
+import { harnessRoots, mainCheckout, movedDataDir } from '../../scripts/tools/harness-paths.mjs';
 // @ts-expect-error -- plain ESM script without types
 import { reminder, sweepReminders } from '../../.claude/hooks/commit-before-stop.mjs';
 
@@ -393,7 +393,7 @@ describe('when a sweep is due', () => {
     const base = { root: 'E:/wt', records: [record] };
     expect(sweepReminder({ ...base, committed: ['docs/a.md'], covers: () => false })).toBeNull();
     expect(sweepReminder({ ...base, committed: ['frontend/src/state/models.ts'], covers: () => true })).toBeNull();
-    expect(sweepReminder({ ...base, committed: ['frontend/src/state/models.ts'], covers: () => false })).toContain('node tools/models-sweep.mjs');
+    expect(sweepReminder({ ...base, committed: ['frontend/src/state/models.ts'], covers: () => false })).toContain('node scripts/tools/models-sweep.mjs');
   });
 });
 

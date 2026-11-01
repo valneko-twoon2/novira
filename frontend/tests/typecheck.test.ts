@@ -1,10 +1,10 @@
-// The pre-commit type check (tools/typecheck.mjs): which staged paths start it, and where its build info lives.
+// The pre-commit type check (scripts/tools/typecheck.mjs): which staged paths start it, and where its build info lives.
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { checkoutEntry, harnessDistDir } from '../../tools/harness-paths.mjs';
+import { checkoutEntry, harnessDistDir } from '../../scripts/tools/harness-paths.mjs';
 // @ts-expect-error -- plain ESM script without types
-import { needsTypecheck } from '../../tools/typecheck.mjs';
+import { needsTypecheck } from '../../scripts/tools/typecheck.mjs';
 
 describe('needsTypecheck', () => {
   it('starts for any ts, tsx, mts or JSON of the frontend, tests and declarations included', () => {
@@ -14,7 +14,7 @@ describe('needsTypecheck', () => {
   });
 
   it('does not start for other files of the frontend or files outside it', () => {
-    for (const p of ['frontend/src/theme/tokens.css', 'frontend/scripts/manual.mjs', 'tools/affected.mjs', 'docs/architecture/tooling.md', 'backend/src-tauri/tauri.conf.json', 'contract/settings.json', 'xfrontend/a.ts']) {
+    for (const p of ['frontend/src/theme/tokens.css', 'frontend/scripts/manual.mjs', 'scripts/tools/affected.mjs', 'docs/architecture/tooling.md', 'backend/src-tauri/tauri.conf.json', 'contract/settings.json', 'xfrontend/a.ts']) {
       expect(needsTypecheck([p]), p).toBe(false);
     }
     expect(needsTypecheck([])).toBe(false);

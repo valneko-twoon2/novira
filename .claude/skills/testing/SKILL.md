@@ -36,10 +36,10 @@ Read a reference file when the change adds or changes a status, an event on a st
 
 ## 4. Check what the cases reach
 
-Measured: frontend statements, branches, functions and lines (floors in `frontend/vitest.config.ts`); Rust lines, functions and regions (floor in `scripts\coverage.bat`, CI uses the same). Not measured: condition coverage, MC/DC, Rust branches, equivalence classes, boundary values. For those, the case table in your report is the evidence.
+Measured: frontend statements, branches, functions and lines (floors in `frontend/vitest.config.ts`); Rust lines, functions and regions (floor in `scripts\checks\coverage.bat`, CI uses the same). Not measured: condition coverage, MC/DC, Rust branches, equivalence classes, boundary values. For those, the case table in your report is the evidence.
 
 1. Frontend, one file: `npx vitest run <test file> --coverage.enabled --coverage.include=<source file>` in `frontend/`, then read the Branches column. A threshold message at the end is expected for one file. Do not run the whole suite for this.
-2. Backend: `scripts\coverage.bat backend` gives lines. For whether cases catch real changes, use `/test-mutation`.
+2. Backend: `scripts\checks\coverage.bat backend` gives lines. For whether cases catch real changes, use `/test-mutation`.
 3. `npm run coverage` (the whole-suite floors) is a CI step, not part of `npm run check`; run it only when the change is broad enough to affect the floors.
 
 ## 5. Report

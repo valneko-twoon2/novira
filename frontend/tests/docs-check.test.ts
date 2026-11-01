@@ -1,4 +1,4 @@
-// The checks that keep the architecture map and the design pages in step with the repository (tools/docs-check.mjs):
+// The checks that keep the architecture map and the design pages in step with the repository (scripts/tools/docs-check.mjs):
 // the real repository must pass, and each rule must fire on a repository that breaks it.
 import { describe, expect, it } from 'vitest';
 import {
@@ -15,11 +15,11 @@ import {
   stagedWarnings,
   structureProblems,
   // @ts-expect-error -- plain ESM script without types
-} from '../../tools/docs-check.mjs';
+} from '../../scripts/tools/docs-check.mjs';
 
 const QUEUE = 'backend/crates/novira-core/src/service/queue.rs';
 const PAGES: Record<string, string> = {
-  'docs/architecture/README.md': '# Architecture\n\nfrontend/ backend/ docs/ .claude/ scripts/ tools/ .githooks/ start.bat [tooling](tooling.md)\n',
+  'docs/architecture/README.md': '# Architecture\n\nfrontend/ backend/ docs/ .claude/ scripts/ scripts/tools/ .githooks/ start.bat [tooling](tooling.md)\n',
   'docs/architecture/frontend.md': '# frontend\n\napp/ features/ gallery/ viewer/\n',
   'docs/architecture/backend.md': '# backend\n\ncrates/ novira-core/ service/ comfy/\n',
   'docs/architecture/tooling.md': '# tooling\n\nrules/i18n.md skills/i18n/ start.bat check.mjs pre-commit.mjs\n',
@@ -31,7 +31,7 @@ const PAGES: Record<string, string> = {
 const TREE = [
   ...Object.keys(PAGES),
   'scripts/start.bat',
-  'tools/check.mjs',
+  'scripts/tools/check.mjs',
   '.githooks/pre-commit.mjs',
   '.claude/rules/i18n.md',
   '.claude/skills/i18n/SKILL.md',
@@ -62,7 +62,7 @@ describe('the map against the tree', () => {
       'backend/crates/other/src/lib.rs',
       'backend/crates/novira-core/src/models/mod.rs',
       'scripts/run.bat',
-      'tools/new-tool.mjs',
+      'scripts/tools/new-tool.mjs',
       '.githooks/new-hook.mjs',
       '.claude/rules/new-rule.md',
       '.claude/skills/new-skill/SKILL.md',
@@ -80,8 +80,8 @@ describe('the map against the tree', () => {
 
   it('wants the whole name: a tool written only inside a longer name is not described', () => {
     const pages = { ...PAGES, 'docs/architecture/tooling.md': `${PAGES['docs/architecture/tooling.md']} check-eol.mjs` };
-    expect(problems([...TREE, 'tools/eol.mjs'], pages).join('\n')).toContain('"eol.mjs"');
-    expect(problems([...TREE, 'tools/check-eol.mjs'], pages)).toEqual([]);
+    expect(problems([...TREE, 'scripts/tools/eol.mjs'], pages).join('\n')).toContain('"eol.mjs"');
+    expect(problems([...TREE, 'scripts/tools/check-eol.mjs'], pages)).toEqual([]);
   });
 
   it('does not ask for the files of a folder, only for the folder', () => {

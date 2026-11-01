@@ -1,4 +1,4 @@
-//! Tests added after mutation testing (cargo-mutants, `scripts\mutation.bat`) showed that a change of the model helpers went
+//! Tests added after mutation testing (cargo-mutants, `scripts\checks\mutation.bat`) showed that a change of the model helpers went
 //! unnoticed. Each test names the behaviour that a mutant used to break without any test failing.
 use novira_core::models::classify::{detect_base, detect_kind, read_header_unchecked, Header};
 use novira_core::models::layout::walk;

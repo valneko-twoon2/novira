@@ -1,12 +1,12 @@
 // Claude Code PostToolUse hook (Write / Edit / MultiEdit): text files in this repository are LF, and Windows batch files
-// (.bat, .cmd) are CRLF (tools/eol.mjs). A file tool can write the other one (a new .bat comes out LF), so the edited
+// (.bat, .cmd) are CRLF (scripts/tools/eol.mjs). A file tool can write the other one (a new .bat comes out LF), so the edited
 // file is converted right after the edit. Binary files and files outside the repository are left alone. Never fails the
 // tool call: any problem is ignored (check:eol and the pre-commit hook still catch what slips through). A file in one of the
 // repository's Git worktrees counts as inside the repository.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { wantedEol, withEol } from '../../tools/eol.mjs';
+import { wantedEol, withEol } from '../../scripts/tools/eol.mjs';
 import { rootHolding, worktreeRoots } from './worktrees.mjs';
 
 const SKIP = /(^|[\\/])(node_modules|target|\.git|dist|test-results)([\\/]|$)/;

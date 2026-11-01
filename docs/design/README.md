@@ -1,6 +1,6 @@
 # Design: what each feature does now
 
-One page per feature, each the current specification of that feature: how it behaves, how it is built, its security boundaries, its known limits. Read the page of a feature before you change its code, and correct it in the same commit when the change makes it untrue. To find the page of a file: `node tools/docs-check.mjs --find <path>` (each page names the code it covers in its front matter). The rules for these pages are in `.claude/rules/design-docs.md`. How the parts fit together and where to start is in [../architecture/README.md](../architecture/README.md).
+One page per feature, each the current specification of that feature: how it behaves, how it is built, its security boundaries, its known limits. Read the page of a feature before you change its code, and correct it in the same commit when the change makes it untrue. To find the page of a file: `node scripts/tools/docs-check.mjs --find <path>` (each page names the code it covers in its front matter). The rules for these pages are in `.claude/rules/design-docs.md`. How the parts fit together and where to start is in [../architecture/README.md](../architecture/README.md).
 
 | Page | Feature |
 |---|---|

@@ -1,10 +1,10 @@
-// tools/ensure-frontend.mjs: `frontend/dist` is built only when it is missing or older than a source.
+// scripts/tools/ensure-frontend.mjs: `frontend/dist` is built only when it is missing or older than a source.
 import { mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { frontendIsStale } from '../../tools/ensure-frontend.mjs';
+import { frontendIsStale } from '../../scripts/tools/ensure-frontend.mjs';
 
 let dir = '';
 afterEach(() => {

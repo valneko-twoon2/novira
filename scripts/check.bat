@@ -9,12 +9,12 @@ rem Not included: Playwright (npm run e2e, slow) and the ignored live tests. Eac
 rem failed; the exit code is 1 when any failed.
 rem cargo test -p novira builds backend\target\debug\novira.exe; while novira is open Windows locks that file, so then the
 rem Rust checks build into novira-data\work\check-target instead (unless CARGO_TARGET_DIR is already set).
-rem For only the checks a change needs, use node tools\affected.mjs instead.
+rem For only the checks a change needs, use node scripts\tools\affected.mjs instead.
 setlocal EnableDelayedExpansion
 pushd "%~dp0.."
 set "PATH=%USERPROFILE%\.cargo\bin;%PATH%"
 rem Delete stale harness output under novira-data\work\ first (never fails the checks).
-node tools\prune-stale.mjs >nul 2>nul
+node scripts\tools\prune-stale.mjs >nul 2>nul
 if not defined CARGO_TARGET_DIR if exist backend\target\debug\novira.exe (
   node -e "const f=require('fs');try{f.closeSync(f.openSync(process.argv[1],'r+'))}catch{process.exit(1)}" backend\target\debug\novira.exe || (
     set "CARGO_TARGET_DIR=%CD%\novira-data\work\check-target"

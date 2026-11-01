@@ -1,5 +1,5 @@
 // The check that what drives or describes the screens names only test ids and screen-text keys that still exist
-// (tools/ui-refs.mjs): the repository passes, and a reference to a removed or renamed id or key is found.
+// (scripts/tools/ui-refs.mjs): the repository passes, and a reference to a removed or renamed id or key is found.
 import { describe, expect, it } from 'vitest';
 import {
   checkRefs,
@@ -11,7 +11,7 @@ import {
   templatePattern,
   testIdDefined,
   // @ts-expect-error -- plain ESM script without types
-} from '../../tools/ui-refs.mjs';
+} from '../../scripts/tools/ui-refs.mjs';
 
 const AREAS = new Set(['media', 'comic', 'params']);
 const SOURCES = [
@@ -52,9 +52,9 @@ describe('what counts as a reference', () => {
   });
 
   it('looks at the e2e specs, the frontend scripts, the tools, the docs and the skills, not at the app or itself', () => {
-    for (const path of ['frontend/e2e/comic.spec.ts', 'frontend/scripts/manual/scenes.mjs', 'tools/models-sweep-app.mjs', 'docs/design/navigation.md', '.claude/skills/verify-real-app/SKILL.md', 'AGENTS.md'])
+    for (const path of ['frontend/e2e/comic.spec.ts', 'frontend/scripts/manual/scenes.mjs', 'scripts/tools/models-sweep-app.mjs', 'docs/design/navigation.md', '.claude/skills/verify-real-app/SKILL.md', 'AGENTS.md'])
       expect(isReferenceSource(path), path).toBe(true);
-    for (const path of ['frontend/src/app/App.tsx', 'tools/ui-refs.mjs', 'frontend/src/app/App.test.tsx', 'backend/src/lib.rs']) expect(isReferenceSource(path), path).toBe(false);
+    for (const path of ['frontend/src/app/App.tsx', 'scripts/tools/ui-refs.mjs', 'frontend/src/app/App.test.tsx', 'backend/src/lib.rs']) expect(isReferenceSource(path), path).toBe(false);
   });
 });
 
@@ -92,12 +92,12 @@ describe('what counts as defined', () => {
 
 describe('the problems', () => {
   it('names the file, the line and what is missing', () => {
-    const files = [{ path: 'tools/check.mjs', text: "ok\nawait page.getByTestId('comic-plan-tab').click();\nmsg('comic.plan.title');" }];
+    const files = [{ path: 'scripts/tools/check.mjs', text: "ok\nawait page.getByTestId('comic-plan-tab').click();\nmsg('comic.plan.title');" }];
     expect(missingRefs(files, DEFS, KEYS)).toEqual([
-      'tools/check.mjs:2: test id "comic-plan-tab" is in no source of frontend/src; the screen changed, so change this reference',
-      'tools/check.mjs:3: message key "comic.plan.title" is not in the ja catalog; the text was renamed or removed, so change this reference',
+      'scripts/tools/check.mjs:2: test id "comic-plan-tab" is in no source of frontend/src; the screen changed, so change this reference',
+      'scripts/tools/check.mjs:3: message key "comic.plan.title" is not in the ja catalog; the text was renamed or removed, so change this reference',
     ]);
-    expect(missingRefs([{ path: 'tools/check.mjs', text: "page.getByTestId('media-video')" }], DEFS, KEYS)).toEqual([]);
+    expect(missingRefs([{ path: 'scripts/tools/check.mjs', text: "page.getByTestId('media-video')" }], DEFS, KEYS)).toEqual([]);
   });
 
   it('passes the repository itself', () => {

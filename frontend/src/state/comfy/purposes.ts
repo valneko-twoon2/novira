@@ -36,7 +36,7 @@ const WORDS: Partial<Record<PurposeId, string[]>> = {
   color: ['color', 'colour', 'grading', 'lut', 'tone', 'film grain', 'filter'],
   caption: ['caption', 'tagger', 'florence', 'vlm', 'ocr', 'image to text', 'describe'],
   light: ['relight', 'lighting', 'illumination'],
-  handy: ['utility', 'utilities', 'helper', 'tools', 'switch', 'logic', 'math', 'batch', 'loop', 'reroute', 'quality of life', 'workflow'],
+  handy: ['utility', 'utilities', 'helper', 'scripts', 'tools', 'switch', 'logic', 'math', 'batch', 'loop', 'reroute', 'quality of life', 'workflow'],
   audio: ['audio', 'voice', 'speech', 'tts', 'music', 'sound', 'whisper', 'vocal'],
   prompt: ['prompt', 'llm', 'gpt', 'ollama', 'translate', 'wildcard', 'text generation', 'chat'],
   model: ['loader', 'gguf', 'quantiz', 'nunchaku', 'checkpoint', 'diffusers', 'safetensors', 'merge'],

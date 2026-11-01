@@ -1,5 +1,5 @@
 {
-  "note": "The files the watermark needs, pinned by size and SHA-256. Read by provenance/files.rs and tools/fetch-trustmark.mjs. Hashes measured 2026-10-11 from the official downloads.",
+  "note": "The files the watermark needs, pinned by size and SHA-256. Read by provenance/files.rs and scripts/tools/fetch-trustmark.mjs. Hashes measured 2026-10-11 from the official downloads.",
   "files": [
     {
       "name": "encoder_P.onnx",

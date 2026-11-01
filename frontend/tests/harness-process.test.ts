@@ -1,4 +1,4 @@
-// What the harness knows about processes and its tools (tools/harness-process.mjs): the process list read from JSON,
+// What the harness knows about processes and its tools (scripts/tools/harness-process.mjs): the process list read from JSON,
 // the verification ComfyUI found by its command line, cargo's place, and the path helpers the guards use.
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -14,7 +14,7 @@ import {
   sameFile,
   verifyTarget,
   // @ts-expect-error -- plain ESM script without types
-} from '../../tools/harness-process.mjs';
+} from '../../scripts/tools/harness-process.mjs';
 
 const json = (o: unknown) => JSON.stringify(o);
 

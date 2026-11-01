@@ -1,8 +1,8 @@
-// The browser server's starter for checks (tools/server-run.mjs): where it builds, and that it never opens data outside the harness folder.
+// The browser server's starter for checks (scripts/tools/server-run.mjs): where it builds, and that it never opens data outside the harness folder.
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { serverLayout, startServer } from '../../tools/server-run.mjs';
+import { serverLayout, startServer } from '../../scripts/tools/server-run.mjs';
 
 const roots = { repo: 'E:/r/wt', main: 'E:/r/main', work: path.resolve('E:/r/main/novira-data/work'), models: 'E:/r/main/novira-data/models' };
 

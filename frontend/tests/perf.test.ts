@@ -1,4 +1,4 @@
-// The pure parts of the speed measurement (tools/perf.mjs): its options, the noise rule of a comparison, the metrics read
+// The pure parts of the speed measurement (scripts/tools/perf.mjs): its options, the noise rule of a comparison, the metrics read
 // from each part's output, the IPC table, and the process check that proves the app started no engine.
 import { describe, expect, it } from 'vitest';
 import {
@@ -21,7 +21,7 @@ import {
   startupUnit,
   stats,
   // @ts-expect-error -- plain ESM script without types
-} from '../../tools/perf.mjs';
+} from '../../scripts/tools/perf.mjs';
 
 describe('options', () => {
   it('has the defaults and passes the start-up options through', () => {

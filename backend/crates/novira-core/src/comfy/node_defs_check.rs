@@ -1,5 +1,5 @@
 //! Checks every prompt of the graph snapshots against the node definitions of a real ComfyUI
-//! (`__snapshots__/node-defs.json`, saved by `node tools/comfy-node-defs.mjs <URL>`): the node exists, the inputs
+//! (`__snapshots__/node-defs.json`, saved by `node scripts/tools/comfy-node-defs.mjs <URL>`): the node exists, the inputs
 //! are the ones the node has, none required is missing, a link points at an output of the right type, and a value is
 //! one of the choices and within the limits. This is what ComfyUI would say first when it validates the prompt,
 //! without a GPU.
@@ -143,7 +143,7 @@ fn every_snapshot_prompt_fits_the_node_definitions_of_a_real_comfyui() {
     assert!(checked >= 40, "only {checked} snapshots found");
     assert!(
         bad.is_empty(),
-        "ComfyUI {} would refuse these:\n{}\n(if a node is new, run `node tools/comfy-node-defs.mjs <URL>`)",
+        "ComfyUI {} would refuse these:\n{}\n(if a node is new, run `node scripts/tools/comfy-node-defs.mjs <URL>`)",
         defs["comfyui"],
         bad.join("\n")
     );

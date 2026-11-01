@@ -1,11 +1,11 @@
 // Runs the Playwright tests with browser coverage recording on, then builds the report (scripts/coverage-report.mjs).
 // Run `npm run coverage` first when the combined (unit + E2E) figure is wanted.
-// It is a heavy run, so it holds the e2e lock (tools/e2e-lock.mjs) like the other Playwright runs, and starts Playwright's
+// It is a heavy run, so it holds the e2e lock (scripts/tools/e2e-lock.mjs) like the other Playwright runs, and starts Playwright's
 // own CLI under node, with no shell between.
 import { spawnSync } from 'node:child_process';
 import { rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { acquire } from '../../tools/e2e-lock.mjs';
+import { acquire } from '../../scripts/tools/e2e-lock.mjs';
 
 const frontend = fileURLToPath(new URL('..', import.meta.url));
 const raw = fileURLToPath(new URL('../../novira-data/work/coverage/e2e-raw', import.meta.url));

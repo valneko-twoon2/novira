@@ -1,11 +1,11 @@
-// The GPU check run before a verification run on the real engine (tools/gpu-check.mjs): reading nvidia-smi, the
+// The GPU check run before a verification run on the real engine (scripts/tools/gpu-check.mjs): reading nvidia-smi, the
 // busy verdict and the lock state.
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { busyThreshold, judge, lockState, parseGpus } from '../../tools/gpu-check.mjs';
+import { busyThreshold, judge, lockState, parseGpus } from '../../scripts/tools/gpu-check.mjs';
 
 const gpu = (load: number) => [{ name: 'GPU', load, used: 1000, total: 12000 }];
 

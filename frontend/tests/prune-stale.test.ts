@@ -1,14 +1,14 @@
-// The stale-output policy of the harness (tools/prune-stale.mjs): which entry of novira-data/work/ is old enough to
+// The stale-output policy of the harness (scripts/tools/prune-stale.mjs): which entry of novira-data/work/ is old enough to
 // delete, what is never touched (links, anything in use, a wrong root), the `.last-used` marker, and the guards of
-// tools/verify-real-app.mjs that keep the isolated app away from the user's own data.
+// scripts/tools/verify-real-app.mjs that keep the isolated app away from the user's own data.
 import { existsSync, lutimesSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { MARKER, assertRoot, lockHeld, markUsed, namedByProcesses, planPrune, prune, ruleFor, verifyAppRunning, workRoot } from '../../tools/prune-stale.mjs';
+import { MARKER, assertRoot, lockHeld, markUsed, namedByProcesses, planPrune, prune, ruleFor, verifyAppRunning, workRoot } from '../../scripts/tools/prune-stale.mjs';
 // @ts-expect-error -- plain ESM script without types
-import { engineOff, guard, layout as verifyLayout, parseArgs as verifyArgs, shareModels, turnEngineOff } from '../../tools/verify-real-app.mjs';
+import { engineOff, guard, layout as verifyLayout, parseArgs as verifyArgs, shareModels, turnEngineOff } from '../../scripts/tools/verify-real-app.mjs';
 // @ts-expect-error -- plain ESM script without types
 import { pruneStale } from '../../.claude/hooks/commit-before-stop.mjs';
 

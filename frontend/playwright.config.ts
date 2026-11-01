@@ -33,7 +33,7 @@ export default defineConfig({
   testDir: 'e2e',
   outputDir: 'test-results',
   fullyParallel: true,
-  // Half the processors, never more than 6: more made the user's PC too slow to work on (tools/layout-scan.mjs keeps the same cap).
+  // Half the processors, never more than 6: more made the user's PC too slow to work on (scripts/tools/layout-scan.mjs keeps the same cap).
   workers: Math.max(1, Math.min(6, Math.floor(availableParallelism() / 2))),
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
@@ -92,7 +92,7 @@ export default defineConfig({
       expect: { toHaveScreenshot: { maxDiffPixels: 300, animations: 'disabled', caret: 'hide' } },
     },
     {
-      // The layout scan (`node tools/layout-scan.mjs`): every screen in ja and en, dark and light, at the size of the visual
+      // The layout scan (`node scripts/tools/layout-scan.mjs`): every screen in ja and en, dark and light, at the size of the visual
       // project, checked for layout faults and for text that does not fit (with its tooltips and the menus it opens).
       name: 'layout',
       testMatch: 'layout.spec.ts',

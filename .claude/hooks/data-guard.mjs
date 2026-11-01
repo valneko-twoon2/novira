@@ -5,13 +5,13 @@
 //   post  (PostToolUse, Bash / PowerShell): a script can write anywhere without naming the path on the command line, so the
 //         entries of novira-data/ and every file under novira-data/models/ are listed before a shell command and compared
 //         after it; what appeared is reported back (exit 2) so the agent moves it to novira-data/work/ at once.
-// Paths resolve against the main checkout (a worktree has no novira-data/ of its own; tools/harness-paths.mjs). When the
+// Paths resolve against the main checkout (a worktree has no novira-data/ of its own; scripts/tools/harness-paths.mjs). When the
 // Settings screen moved the user's data out of the repository, the folder it moved to is guarded the same way (its work/
 // stays open too: the move takes the harness's ComfyUI copy along).
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { harnessRoots } from '../../tools/harness-paths.mjs';
+import { harnessRoots } from '../../scripts/tools/harness-paths.mjs';
 
 /** Whether `file` is in `dataDir` (or one of several) but not in its work/ folder. Case and slashes do not matter (Windows). */
 export function isProtected(file, dataDir) {

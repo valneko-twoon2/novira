@@ -1,8 +1,8 @@
-# cargo-mutants configuration for the Rust backend (run through scripts\mutation.bat; see docs/architecture/overview/tooling.md).
+# cargo-mutants configuration for the Rust backend (run through scripts\checks\mutation.bat; see docs/architecture/overview/tooling.md).
 # Mutation testing is slow (hours) and is NOT part of scripts\check.bat or CI. It runs the whole novira-core test suite once per
 # mutant in a temporary copy of the repository, so target\ and a running novira.exe are never touched.
 
-# The package is chosen on the command line (scripts\mutation.bat passes -p novira-core): src-tauri is IPC glue without unit
+# The package is chosen on the command line (scripts\checks\mutation.bat passes -p novira-core): src-tauri is IPC glue without unit
 # tests of its own. An examine_globs entry here would make --file on the command line have no effect, so there is none.
 
 # Copy only what git tracks: novira-data\ (many GB of models, and the harness output in work\) and target\ stay out of the temporary copy. This is
