@@ -1,5 +1,6 @@
 // Connects backend events to the stores and loads the initial data.
 import { backend, perf } from '@/backend';
+import { watchForMissedEvents } from './backendCatchUp';
 import { useCanvas } from './canvas';
 import { restoreAndWatchCanvas } from './canvasPersistence';
 import { landPageInpaint } from './comic/pageInpaint';
@@ -91,6 +92,19 @@ async function start(): Promise<void> {
         }
         break;
       }
+      // Another page (or this one) changed what the backend keeps: every page shows it as the backend has it.
+      case 'boards_changed':
+        useGallery.getState().syncBoards(event.boards);
+        break;
+      case 'images_changed':
+        useGallery.getState().applyImageChanges(event.images, event.removed);
+        break;
+      case 'models_changed':
+        useModels.getState().syncModels(event.models);
+        break;
+      case 'workflows_changed':
+        useWorkflows.getState().setLibrary(event.workflows);
+        break;
       case 'model_install':
         useModels.getState().upsertInstallJob(event.job);
         break;
@@ -136,6 +150,7 @@ async function start(): Promise<void> {
   useEngine.getState().setStatus(data.engine);
   usePacks.getState().setAll(data.packs);
   useQueue.getState().setStatus(backend.queueStatus());
+  watchForMissedEvents();
   // After the gallery is in (layer pictures are looked up there) and after the backup-restore check above.
   await restoreAndWatchCanvas();
   await restoreAndWatchComics();

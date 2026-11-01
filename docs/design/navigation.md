@@ -6,6 +6,8 @@ covers:
   - frontend/src/app/GlobalHotkeys.tsx
   - frontend/src/app/Workspace.tsx
   - frontend/src/app/ComicWorkspace.tsx
+  - frontend/src/app/RightColumn.tsx
+  - frontend/src/features/agent/AgentHost.tsx
 ---
 # Navigation
 
@@ -16,6 +18,7 @@ How the user moves between the screens: the side bar, the number keys, and the m
 - Every screen is a `TabName` (`generate`, `canvas`, `comic`, `upscaling`, `workflows`, `models`, `browse`, `queue`, `extensions`) in `frontend/src/state/ui.ts`. The names are a contract: the queue origins, the assistant's screen names, the saved start tab and the per-screen centre view use them.
 - The side bar (`SideNav.tsx`) lists `NAV`, eight entries. The comic has none: `navOf` maps it to Generate, so the Generate entry stays lit on it. Extensions sits at the foot of the bar as a toggle button. Above it, in the desktop app and on the page `novira-server` serves to its own computer (not on a phone), a QR item opens the home network: open and close it, trust the network, the pairing code, and the phones asking to pair (`HomeLinkButton.tsx`, [browser-server-pairing.md](browser-server-pairing.md)).
 - Generate and Comic are two screens under one entry. The comic is the seventh icon (book) of the media row `MediaTabs.tsx` at the top of the left panel of both (mounted in `Workspace.tsx` and `ComicWorkspace.tsx`; test id `media-comic`). The other six icons pick a media kind on Generate; pressing one while the comic is shown also brings Generate back, and none of them is lit while the comic is. The entry and the key `1` open the mode shown last (`generateMode`, which `setTab` updates whenever one of the two is shown).
+- The assistant has no side bar entry. On Generate, Canvas, Upscaling and Workflows the right column (`RightColumn.tsx`) holds two tabs, Gallery then AI (`agent-open`), in one frame with a tab bar like the centre's; Canvas keeps its layers under them. The tab shown is the assistant's `open`, so whatever opens the assistant (its read-permission question, a question asked from the extension manager) shows the AI tab, and the column itself opens when the assistant does. The comic keeps its own column. Which screens hold the assistant is `ASSISTANT_IN_COLUMN` in `frontend/src/state/ui.ts`; on the others (Models, Browse, Queue, Extensions) an opened assistant floats over the screen in its window (`AgentHost.tsx`). Each screen's column has a chat of its own, so the draft and its attached pictures live in the store (`draftText`, `draftAttached`) and follow the user between screens.
 - Code that opens the comic (the assistant's navigate tool) sets the tab `comic`; nothing else changes for it. Upscaling is its own entry with the frame icon.
 - The number keys follow `NAV_HOTKEYS` (`GlobalHotkeys.tsx`): 1 Generate, 2 Canvas, 3 Upscaling, 4 Workflows, 5 Models, 6 Browse, 7 Queue, 8 Extensions. The comic has no key of its own.
 - The start-tab setting lists every `TabName`, the comic included (`restoreSettings` in `frontend/src/state/settings.ts`); opening it as the start tab also makes it the mode the Generate entry reopens.

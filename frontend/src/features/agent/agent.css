@@ -251,6 +251,11 @@
   border-bottom: 1px solid var(--border);
 }
 
+/* Set into a column, the bar is not a handle to drag. */
+.agent-win__head--docked {
+  cursor: default;
+}
+
 .agent-win__icon {
   color: var(--blue-400);
 }

@@ -217,7 +217,7 @@ async function signInOnDesktop(page: Page): Promise<void> {
   const win = page.getByTestId('agent-window');
   await win.getByTestId('agent-choose-claude').tap();
   await expect(win.getByTestId('agent-input')).toBeVisible({ timeout: 10_000 });
-  await win.getByRole('button', { name: msg('agent.close') }).tap();
+  await page.getByTestId('right-tab-gallery').tap();
   await page.setViewportSize(phoneSize);
   await expect(page.getByTestId('phone-shell')).toBeVisible();
 }

@@ -1,8 +1,8 @@
-// Three resizable columns for the image tabs: parameters | main view | gallery (and layers on canvas).
+// Three resizable columns for the image tabs: parameters | main view | gallery and assistant (and layers on canvas).
 import { CaretDoubleLeft, CaretDoubleRight } from '@phosphor-icons/react';
 import { useEffect } from 'react';
 import { Group, Panel, Separator, usePanelRef } from 'react-resizable-panels';
-import { CanvasView, LayersPanel } from '@/features/canvas/CanvasView';
+import { CanvasView } from '@/features/canvas/CanvasView';
 import { DraftsView } from '@/features/drafts/DraftsView';
 import { LogoPanel, LogoResults } from '@/features/logo/LogoView';
 import { AudioResults } from '@/features/media/AudioResults';
@@ -12,7 +12,6 @@ import { TextCanvas } from '@/features/text/TextCanvas';
 import { TextPanel } from '@/features/text/TextPanel';
 import { VideoPanel, VideoResults } from '@/features/video/VideoView';
 import { VoicePanel } from '@/features/voice/VoiceView';
-import { GalleryPanel } from '@/features/gallery/GalleryPanel';
 import { InvokeBar } from '@/features/invoke/InvokeBar';
 import { Launchpad } from '@/features/launchpad/Launchpad';
 import { ParametersPanel } from '@/features/params/ParametersPanel';
@@ -21,6 +20,7 @@ import { WorkflowEditor, WorkflowLibraryCard, WorkflowsLeftPanel } from '@/featu
 import { t, type MessageKey } from '@/i18n';
 import { useQueue } from '@/state/queue';
 import { ComicWorkspace } from './ComicWorkspace';
+import { RightColumn } from './RightColumn';
 import { MAIN_VIEWS, useUi, type MainView, type TabName } from '@/state/ui';
 import { ErrorBoundary, IconButton, ProgressBar } from '@/ui';
 
@@ -108,25 +108,7 @@ function ImageWorkspace({ tab }: { tab: TabName }) {
         }}
         className="workspace__right"
       >
-        {tab === 'canvas' ? (
-          <Group orientation="vertical">
-            <Panel id="gallery" minSize={160} defaultSize="55">
-              <ErrorBoundary area="gallery">
-                <GalleryPanel tab={tab} />
-              </ErrorBoundary>
-            </Panel>
-            <Separator className="resize-handle resize-handle--h" />
-            <Panel id="layers" minSize={160}>
-              <ErrorBoundary area="layers">
-                <LayersPanel tab={tab} />
-              </ErrorBoundary>
-            </Panel>
-          </Group>
-        ) : (
-          <ErrorBoundary area="gallery">
-            <GalleryPanel tab={tab} />
-          </ErrorBoundary>
-        )}
+        <RightColumn tab={tab} />
       </Panel>
     </Group>
   );

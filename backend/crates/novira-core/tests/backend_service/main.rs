@@ -35,6 +35,7 @@ mod old_data;
 mod queue;
 mod service_edges;
 mod settings;
+mod sync_events;
 mod worker;
 mod worker_edges;
 mod worker_paths;

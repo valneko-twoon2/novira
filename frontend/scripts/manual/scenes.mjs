@@ -827,7 +827,7 @@ export const SCENES = [
       await s.testid('agent-open').click();
       await s.testid('agent-choose-claude').click();
       await s.testid('agent-input').waitFor({ timeout: 10_000 });
-      await s.page.getByRole('button', { name: s.msg('agent.close') }).click();
+      await s.testid('right-tab-gallery').click();
       await onPhone(s);
       await s.testid('phone-chat-open').click();
       await s.page.getByRole('button', { name: s.msg('agent.suggestion.anime') }).click();

@@ -188,11 +188,15 @@ describe('App shell', () => {
     clear.mockRestore();
   });
 
-  it('opens the settings menu entries, the about box, the assistant and the developer log', async () => {
+  it('opens the settings menu entries, the about box, the assistant in the right column and the developer log', async () => {
     useSettings.getState().set({ showDevLog: true });
     await openApp();
-    fireEvent.click(screen.getByTestId('agent-open'));
+    // The assistant's tab in the right column (a tab turns on the press, as Radix tabs do).
+    fireEvent.mouseDown(screen.getByTestId('agent-open'));
     expect(useAgent.getState().open).toBe(true);
+    expect(screen.getAllByTestId('agent-window').length).toBeGreaterThan(0);
+    fireEvent.mouseDown(screen.getByTestId('right-tab-gallery'));
+    expect(useAgent.getState().open).toBe(false);
     fireEvent.click(screen.getByTestId('devlog-open'));
     expect(useDevLog.getState().open).toBe(true);
     fireEvent.click(screen.getByTestId('devlog-open'));

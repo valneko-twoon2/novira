@@ -629,8 +629,16 @@ export type BackendEvent =
   | { type: 'processor_state'; isPaused: boolean }
   | { type: 'invocation_progress'; progress: ProgressEvent }
   | { type: 'image_added'; image: ImageDTO; item: QueueItem | null }
+  /** The boards as they are now, after any page made, renamed, archived or deleted one. */
+  | { type: 'boards_changed'; boards: BoardDTO[] }
+  /** Pictures another page (or this one) changed or brought back (`images`), and the names that left the gallery. */
+  | { type: 'images_changed'; images: ImageDTO[]; removed: string[] }
   | { type: 'model_install'; job: ModelInstallJob }
   | { type: 'model_added'; model: ModelConfig }
+  /** The models as they are now, after one was edited or removed. */
+  | { type: 'models_changed'; models: ModelConfig[] }
+  /** The workflow library as it is now, after one was saved or deleted. */
+  | { type: 'workflows_changed'; workflows: SavedWorkflow[] }
   | { type: 'engine_status'; status: EngineStatus }
   | { type: 'pack'; kind: PackKind; status: PackStatus }
   /** Progress of installing a custom node pack, keyed by its GitHub address. */

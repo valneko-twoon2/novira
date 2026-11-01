@@ -102,8 +102,8 @@ const media =
     await scan(kind, ALL);
   };
 
-async function openAssistantChat(page: Page, provider: 'claude' | 'codex' = 'claude') {
-  await page.getByTestId('agent-open').click();
+async function openAssistantChat(page: Page, provider: 'claude' | 'codex' = 'claude', opener = 'agent-open') {
+  await page.getByTestId(opener).click();
   const win = page.getByTestId('agent-window');
   await win.getByTestId(`agent-choose-${provider}`).click();
   await expect(win.getByTestId('agent-input')).toBeVisible({ timeout: 10_000 });
@@ -252,7 +252,8 @@ const SURFACES: Record<string, Surface> = {
   },
   'assistant on the comic screen': async (page, _locale, scan) => {
     await showTab(page, 'comic');
-    await openAssistantChat(page);
+    // The comic screen keeps the assistant in its own column.
+    await openAssistantChat(page, 'claude', 'comic-side-tab-assistant');
     await scan('chat');
   },
   'question the assistant asks before it reads pictures or prompts': async (page, _locale, scan) => {
@@ -394,7 +395,7 @@ const PHONE_SURFACES: Record<string, Surface> = {
     await page.getByTestId('agent-open').click();
     await page.getByTestId('agent-choose-claude').click();
     await expect(page.getByTestId('agent-input')).toBeVisible({ timeout: 10_000 });
-    await page.getByTestId('agent-window').getByRole('button', { name: msg('agent.close', {}, locale) }).click();
+    await page.getByTestId('right-tab-gallery').click();
     await page.setViewportSize(phoneSize);
     await page.getByTestId('phone-chat-open').click();
     await expect(page.getByTestId('phone-chat')).toBeVisible();

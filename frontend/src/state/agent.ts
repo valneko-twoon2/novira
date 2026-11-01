@@ -134,6 +134,13 @@ interface AgentState {
   ask: (text: string, focus: string[]) => void;
   /** Sends the waiting question, if any. */
   flushAsk: () => Promise<void>;
+  /**
+   * The message being written and the pictures attached to it (not saved). Kept here, not in the chat, because each
+   * screen's column has a chat of its own: the draft follows the user from one screen to the next.
+   */
+  draftText: string;
+  draftAttached: string[];
+  setDraft: (draft: { text?: string; attached?: string[] }) => void;
 }
 
 const NO_MESSAGES: AgentMessage[] = [];
@@ -270,6 +277,9 @@ export const useAgent = create<AgentState>()(
           void backend.agentCancel().catch(() => {});
         },
         setOpen: (open) => set({ open }),
+        draftText: '',
+        draftAttached: [],
+        setDraft: ({ text, attached }) => set({ ...(text === undefined ? {} : { draftText: text }), ...(attached === undefined ? {} : { draftAttached: attached }) }),
         focus: [],
         pendingAsk: null,
         ask: (text, focus) => set({ open: true, currentId: null, focus, pendingAsk: text }),

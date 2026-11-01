@@ -338,9 +338,22 @@ fn event(v: &Value) -> BackendEvent {
             image: get(v, "image"),
             item: get(v, "item"),
         },
+        "boards_changed" => BackendEvent::BoardsChanged {
+            boards: get(v, "boards"),
+        },
+        "images_changed" => BackendEvent::ImagesChanged {
+            images: get(v, "images"),
+            removed: get(v, "removed"),
+        },
         "model_install" => BackendEvent::ModelInstall { job: get(v, "job") },
         "model_added" => BackendEvent::ModelAdded {
             model: get(v, "model"),
+        },
+        "models_changed" => BackendEvent::ModelsChanged {
+            models: get(v, "models"),
+        },
+        "workflows_changed" => BackendEvent::WorkflowsChanged {
+            workflows: get(v, "workflows"),
         },
         "log" => BackendEvent::Log {
             entry: get(v, "entry"),
@@ -384,8 +397,12 @@ pub fn backend_events(v: &Value) {
             Pack,
             NodePack,
             ImageAdded,
+            BoardsChanged,
+            ImagesChanged,
             ModelInstall,
             ModelAdded,
+            ModelsChanged,
+            WorkflowsChanged,
             Log,
             Backup,
             AgentToolCall,

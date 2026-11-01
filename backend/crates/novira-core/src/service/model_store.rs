@@ -557,6 +557,7 @@ impl Backend {
         *model = updated.clone();
         drop(s);
         self.db().put(Table::Models, key, 0, &updated)?;
+        self.emit_models();
         Ok(updated)
     }
 
@@ -593,7 +594,14 @@ impl Backend {
             };
             self.db().set_meta(HIDDEN_MODELS_META, &hidden)?;
         }
+        self.emit_models();
         Ok(())
+    }
+
+    /// Tells every page the models as they are now.
+    fn emit_models(&self) {
+        let models = self.state().models.clone();
+        self.emit(BackendEvent::ModelsChanged { models });
     }
 
     /// Model files in a folder, and whether each is already installed.

@@ -1011,11 +1011,29 @@ pub enum BackendEvent {
         image: ImageDTO,
         item: Option<QueueItem>,
     },
+    /// The boards changed (made, renamed, archived, deleted): the whole list as it is now, so every page shows the same.
+    BoardsChanged {
+        boards: Vec<BoardDTO>,
+    },
+    /// Pictures changed (board, star, kept as intermediate) or came back from the trash (`images`), or left the
+    /// gallery (`removed`, by name).
+    ImagesChanged {
+        images: Vec<ImageDTO>,
+        removed: Vec<String>,
+    },
     ModelInstall {
         job: ModelInstallJob,
     },
     ModelAdded {
         model: ModelConfig,
+    },
+    /// A model was edited or removed: the whole list as it is now.
+    ModelsChanged {
+        models: Vec<ModelConfig>,
+    },
+    /// A workflow of the user's was saved or deleted: the whole library as it is now.
+    WorkflowsChanged {
+        workflows: Vec<SavedWorkflow>,
     },
     /// A line of the app's log (developer log).
     Log {

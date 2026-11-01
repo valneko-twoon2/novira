@@ -1,7 +1,7 @@
-// The assistant's message box, shared by the floating window, the comic's column and the phone's chat screen: the
+// The assistant's message box, shared by the screens' right column, the floating window and the phone's chat screen: the
 // pictures attached to the next message (the paperclip, a drop or a paste), the "/" list of ready-made requests, the
-// text, and send (stop while the assistant works). The draft lives in `useDraft`, so a starting suggestion goes out the
-// same way. In the window the box's height is the one dragged from its top edge and Enter sends; on a phone the box
+// text, and send (stop while the assistant works). The draft lives in the store (`useDraft`), so it stays when the user
+// moves to another screen's column, and a starting suggestion goes out the same way. In the window the box's height is the one dragged from its top edge and Enter sends; on a phone the box
 // grows with its text and Enter starts a new line, as a phone's keyboard expects.
 import { ArrowUp, Stop, Warning } from '@phosphor-icons/react';
 import { useLayoutEffect, useRef, useState } from 'react';
@@ -28,18 +28,19 @@ export interface Draft {
 export function useDraft(): Draft {
   const busy = useAgent((s) => s.busy);
   const send = useAgent((s) => s.send);
-  const [text, setText] = useState('');
-  const [attached, setAttached] = useState<string[]>([]);
+  const text = useAgent((s) => s.draftText);
+  const attached = useAgent((s) => s.draftAttached);
+  const setDraft = useAgent((s) => s.setDraft);
+  const current = () => useAgent.getState().draftAttached;
   return {
     text,
-    setText,
+    setText: (value) => setDraft({ text: value }),
     attached,
-    attach: (names) => setAttached((current) => withAttached(current, names)),
-    detach: (name) => setAttached((current) => current.filter((n) => n !== name)),
+    attach: (names) => setDraft({ attached: withAttached(current(), names) }),
+    detach: (name) => setDraft({ attached: current().filter((n) => n !== name) }),
     submit: (value) => {
       if ((!value.trim() && !attached.length) || busy) return;
-      setText('');
-      setAttached([]);
+      setDraft({ text: '', attached: [] });
       void send(value, attached);
     },
   };

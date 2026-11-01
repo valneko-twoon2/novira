@@ -12,6 +12,8 @@ interface ModelsState {
   favorites: string[];
   toggleFavorite: (key: string) => void;
   setModels: (models: ModelConfig[]) => void;
+  /** Takes the backend's models as they are now; a picked model that is gone is unpicked. */
+  syncModels: (models: ModelConfig[]) => void;
   upsertModel: (model: ModelConfig) => void;
   removeModel: (key: string) => void;
   upsertInstallJob: (job: ModelInstallJob) => void;
@@ -26,6 +28,10 @@ export const useModels = create<ModelsState>()((set, get) => ({
   favorites: [],
   toggleFavorite: (key) => set({ favorites: get().favorites.includes(key) ? get().favorites.filter((k) => k !== key) : [...get().favorites, key] }),
   setModels: (models) => set({ models }),
+  syncModels: (models) => {
+    const picked = get().selectedKey;
+    set({ models, selectedKey: picked !== null && !models.some((m) => m.key === picked) ? null : picked });
+  },
   upsertModel: (model) => {
     const exists = get().models.some((m) => m.key === model.key);
     set({ models: exists ? get().models.map((m) => (m.key === model.key ? model : m)) : [...get().models, model] });

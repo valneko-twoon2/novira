@@ -40,6 +40,22 @@ export const MAIN_VIEWS: Partial<Record<TabName, MainView[]>> = {
   workflows: ['launchpad', 'editor', 'viewer'],
 };
 
+/**
+ * The screens whose right column holds the assistant in a tab beside the gallery (the comic screen has its own). On the
+ * others the assistant, when something opens it (asking about an extension), floats over the screen.
+ */
+export const ASSISTANT_IN_COLUMN: Record<TabName, boolean> = {
+  generate: true,
+  canvas: true,
+  comic: true,
+  upscaling: true,
+  workflows: true,
+  models: false,
+  browse: false,
+  queue: false,
+  extensions: false,
+};
+
 /** What the Generate tab makes: the left panel and the center area follow it. */
 export const MEDIA_KINDS = ['image', 'video', 'music', 'voice', 'logo', 'text'] as const;
 export type MediaKind = (typeof MEDIA_KINDS)[number];

@@ -13,6 +13,7 @@ impl Backend {
         self.db()
             .put(Table::Boards, &board.id, board.created_at, &board)?;
         self.state().boards.push(board.clone());
+        self.emit_boards();
         Ok(board)
     }
 
@@ -35,6 +36,7 @@ impl Backend {
         drop(s);
         self.db()
             .put(Table::Boards, &board.id, board.created_at, &board)?;
+        self.emit_boards();
         // The board's folder follows its name (and so may another board's that shared it).
         self.arrange_files(None);
         Ok(board)
@@ -73,10 +75,19 @@ impl Backend {
             moved.iter().map(|i| (i.name.as_str(), i.created_at, i)),
         )?;
         drop(db);
+        self.emit_boards();
         // The pictures of the board wait in the trash like any deleted picture.
-        self.move_to_trash(&trashed)?;
+        let trashing = self.move_to_trash(&trashed);
+        self.emit_images(moved, &deleted);
+        trashing?;
         self.arrange_files(None);
         Ok(deleted)
+    }
+
+    /// Tells every page the boards as they are now.
+    pub(super) fn emit_boards(&self) {
+        let boards = self.state().boards.clone();
+        self.emit(BackendEvent::BoardsChanged { boards });
     }
 }
 
