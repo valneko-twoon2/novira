@@ -149,7 +149,7 @@ for (const theme of THEMES) {
         await page.getByTestId('agent-open').tap();
         await page.getByTestId('agent-choose-claude').tap();
         await expect(page.getByTestId('agent-input')).toBeVisible({ timeout: 10_000 });
-        await page.getByTestId('agent-window').getByRole('button', { name: msg('agent.close') }).tap();
+        await page.getByTestId('right-tab-gallery').tap();
         await page.setViewportSize(phoneSize);
         await page.getByTestId('phone-chat-open').tap();
         const chat = page.getByTestId('phone-chat');

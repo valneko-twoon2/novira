@@ -19,8 +19,8 @@
   "app.views.editor": "Workflow Editor",
   "app.panels.hideLeft": "Hide left panel (T)",
   "app.panels.showLeft": "Show left panel (T)",
-  "app.panels.hideRight": "Hide gallery (G)",
-  "app.panels.showRight": "Show gallery (G)",
+  "app.panels.hideRight": "Hide right panel (G)",
+  "app.panels.showRight": "Show right panel (G)",
   "app.invoke.notAvailableOnTab": "Cannot invoke on this tab",
   "app.invoke.notReady": "Unable to invoke",
   "app.invoke.enqueued": "Added {count} item(s) to the queue",
@@ -34,7 +34,6 @@
   "app.tabs.short.browse": "Browse",
   "app.tabs.short.queue": "Queue",
   "app.views.drafts": "Drafts",
-  "app.tabs.short.agent": "AI",
   "app.devlog.title": "Developer log",
   "app.devlog.open": "Open the developer log",
   "app.devlog.close": "Close",
@@ -69,5 +68,8 @@
   "app.lan.public": "Windows calls this network public. Open it only if it is yours.",
   "app.lan.noNetwork": "No home network address was found.",
   "app.lan.unknownNetwork": "This network's gateway can't be identified, so it can't be opened.",
-  "app.lan.failed": "The home network action failed: {message}"
+  "app.lan.failed": "The home network action failed: {message}",
+  "app.right.label": "Gallery and agent",
+  "app.right.gallery": "Gallery",
+  "app.right.assistant": "AI"
 }

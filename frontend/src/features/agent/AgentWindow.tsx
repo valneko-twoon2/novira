@@ -22,8 +22,7 @@ const MIN_W = 320;
 const MIN_H = 360;
 
 export function AgentWindow() {
-  const { pos, size, status, setOpen, setPos, setSize, changeProvider } = useAgent();
-  const ready = agentReady(status);
+  const { pos, size, setOpen, setPos, setSize } = useAgent();
   const winRef = useRef<HTMLElement>(null);
   // Drag the window by its header (ignoring presses on the header's buttons).
   const startDrag = (e: ReactPointerEvent<HTMLElement>) => {
@@ -89,14 +88,26 @@ export function AgentWindow() {
       <header className="agent-win__head" onPointerDown={startDrag}>
         <Sparkle size={16} weight="fill" className="agent-win__icon" />
         <h2 className="agent-win__title">{t('agent.title')}</h2>
-        {backend.kind === 'mock' && <span className="ui-badge">{t('agent.mock')}</span>}
-        {ready && status?.provider && <span className="ui-badge" data-testid="agent-provider">{PROVIDER_NAMES[status.provider]}</span>}
-        <span className="agent-win__spacer" />
-        {ready && <IconButton size="xs" label={t('agent.changeProvider')} icon={<ArrowsLeftRight />} onClick={changeProvider} />}
+        <ProviderBar />
         <IconButton size="xs" label={t('agent.close')} icon={<X />} onClick={() => setOpen(false)} />
       </header>
       <AgentChat />
     </section>
+  );
+}
+
+/** The AI in use and the button that changes it (a badge says when the assistant is the browser's stand-in). */
+export function ProviderBar() {
+  const status = useAgent((s) => s.status);
+  const changeProvider = useAgent((s) => s.changeProvider);
+  const ready = agentReady(status);
+  return (
+    <>
+      {backend.kind === 'mock' && <span className="ui-badge">{t('agent.mock')}</span>}
+      {ready && status?.provider && <span className="ui-badge" data-testid="agent-provider">{PROVIDER_NAMES[status.provider]}</span>}
+      <span className="agent-win__spacer" />
+      {ready && <IconButton size="xs" label={t('agent.changeProvider')} icon={<ArrowsLeftRight />} onClick={changeProvider} />}
+    </>
   );
 }
 

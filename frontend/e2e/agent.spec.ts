@@ -2,7 +2,7 @@
 // rename, delete, reload).
 import { readFileSync } from 'node:fs';
 import type { Page } from '@playwright/test';
-import { expect, msg, openApp, test } from './fixtures';
+import { expect, msg, openApp, showTab, test } from './fixtures';
 
 /** Opens the assistant and signs in to Claude (the mock forgets the sign-in on reload). */
 async function openAssistant(page: Page): Promise<void> {
@@ -18,6 +18,35 @@ async function ask(page: Page, text: string, replies: number): Promise<void> {
   await win.getByTestId('agent-input').fill(text);
   await win.getByTestId('agent-send').click();
   await expect(win.locator('.agent-msg--assistant:not(.agent-msg--thinking)')).toHaveCount(replies, { timeout: 10_000 });
+}
+
+test('the assistant sits beside the gallery in the right column, keeps the draft across screens and floats elsewhere', async ({ page }) => {
+  await openApp(page);
+  await openAssistant(page);
+  // Generate's right column now shows the chat instead of the gallery, with the AI in use on its bar.
+  await expect(page.getByTestId('gallery-panel')).toHaveCount(0);
+  const win = page.getByTestId('agent-window');
+  await expect(win.getByTestId('agent-provider')).toHaveText('Claude');
+  await win.getByTestId('agent-input').fill('half written');
+  // Canvas shows the AI tab too, with the same draft.
+  await showTab(page, 'canvas');
+  await expect(page.getByTestId('agent-window')).toBeVisible();
+  await expect(page.getByTestId('agent-window').getByTestId('agent-input')).toHaveValue('half written');
+  // The Gallery tab brings the gallery back.
+  await page.getByTestId('right-tab-gallery').click();
+  await expect(page.getByTestId('gallery-panel')).toBeVisible();
+  await expect(page.getByTestId('agent-window')).toHaveCount(0);
+  // The extensions screen has no such column: a question asked there opens the floating window.
+  await askFromExtensions(page);
+  await expect(page.getByRole('dialog', { name: msg('agent.title') })).toBeVisible();
+});
+
+/** Asks the assistant about an extension search, on the screen whose assistant floats in its window. */
+async function askFromExtensions(page: Page): Promise<void> {
+  await page.getByTestId('tab-extensions').click();
+  await expect(page.getByTestId('extensions-tab')).toBeVisible();
+  await page.getByTestId('ex-search').fill('comfy');
+  await page.getByTestId('ex-ask-results').click();
 }
 
 test('a picture attached from disk goes to the gallery and the assistant writes a prompt from it', async ({ page }) => {
@@ -92,7 +121,7 @@ test('a question asked from the extension manager is sent after signing in, and 
   await expect(win.locator('.agent-msg--assistant')).toContainText('ComfyUI_IPAdapter_plus');
 });
 
-test('a request in flight can be cancelled, and the window size can be changed', async ({ page }) => {
+test('a request in flight can be cancelled, and the floating window size can be changed', async ({ page }) => {
   await openApp(page);
   await openAssistant(page);
   const win = page.getByTestId('agent-window');
@@ -101,7 +130,9 @@ test('a request in flight can be cancelled, and the window size can be changed',
   await win.getByTestId('agent-stop').click();
   await expect(win.locator('.agent-msg--assistant', { hasText: msg('agent.stopped') })).toBeVisible();
   await expect(win.getByTestId('agent-send')).toBeVisible();
-  // Dragging the top-left corner makes the window bigger.
+  // Dragging the top-left corner makes the floating window bigger.
+  await askFromExtensions(page);
+  await expect(win).toHaveAttribute('role', 'dialog');
   const before = (await win.boundingBox())!;
   const grip = (await win.getByTestId('agent-resize-nw').boundingBox())!;
   await page.mouse.move(grip.x + 4, grip.y + 4);

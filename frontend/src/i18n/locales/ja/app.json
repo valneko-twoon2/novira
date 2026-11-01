@@ -19,8 +19,8 @@
   "app.views.editor": "ワークフローエディタ",
   "app.panels.hideLeft": "左パネルを隠す (T)",
   "app.panels.showLeft": "左パネルを表示 (T)",
-  "app.panels.hideRight": "ギャラリーを隠す (G)",
-  "app.panels.showRight": "ギャラリーを表示 (G)",
+  "app.panels.hideRight": "右パネルを隠す (G)",
+  "app.panels.showRight": "右パネルを表示 (G)",
   "app.invoke.notAvailableOnTab": "このタブでは生成できません",
   "app.invoke.notReady": "生成できません",
   "app.invoke.enqueued": "{count} 件をキューに追加しました",
@@ -34,7 +34,6 @@
   "app.tabs.short.browse": "探す",
   "app.tabs.short.queue": "キュー",
   "app.views.drafts": "下書き",
-  "app.tabs.short.agent": "AI",
   "app.devlog.title": "開発者ログ",
   "app.devlog.open": "開発者ログを開く",
   "app.devlog.close": "閉じる",
@@ -69,5 +68,8 @@
   "app.lan.public": "Windows はこのネットワークを「パブリック」としています。自分のネットワークのときだけ開いてください。",
   "app.lan.noNetwork": "ホームネットワークのアドレスが見つかりません。",
   "app.lan.unknownNetwork": "このネットワークのゲートウェイを確認できないため、開けません。",
-  "app.lan.failed": "ホームネットワークの操作に失敗しました: {message}"
+  "app.lan.failed": "ホームネットワークの操作に失敗しました: {message}",
+  "app.right.label": "ギャラリーとエージェント",
+  "app.right.gallery": "ギャラリー",
+  "app.right.assistant": "AI"
 }

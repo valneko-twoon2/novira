@@ -5,7 +5,7 @@ This chapter explains how to organize pictures, how to find them, how to look at
 
 ## Reading the gallery
 
-The right panel is made of two parts, one above the other.
+Choose the **{{ui:app.right.gallery}}** tab at the top of the right panel to see the gallery (the **{{ui:app.right.assistant}}** tab beside it is the [agent](09-assistant-settings.md#the-agent)). The gallery is made of two parts, one above the other.
 
 - Top: **{{ui:gallery.boards.title}}**. They are something like folders for keeping pictures.
 - Bottom: Thumbnails of the pictures on the selected board.

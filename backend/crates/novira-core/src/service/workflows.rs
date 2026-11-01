@@ -87,6 +87,8 @@ impl Backend {
             Some(w) => *w = saved.clone(),
             None => s.workflows.push(saved.clone()),
         }
+        drop(s);
+        self.emit_workflows();
         Ok(saved)
     }
 
@@ -94,7 +96,14 @@ impl Backend {
     pub fn delete_workflow(&self, id: &str) -> Result<()> {
         self.db().delete(Table::Workflows, &[id])?;
         self.state().workflows.retain(|w| w.id != id);
+        self.emit_workflows();
         Ok(())
+    }
+
+    /// Tells every page the workflow library as it is now.
+    fn emit_workflows(&self) {
+        let workflows = self.state().workflows.clone();
+        self.emit(BackendEvent::WorkflowsChanged { workflows });
     }
 }
 

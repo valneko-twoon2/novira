@@ -93,7 +93,27 @@ impl Backend {
             let moved: Vec<String> = out.iter().map(|i| i.name.clone()).collect();
             self.arrange_files(Some(&moved));
         }
+        self.emit_images(out.clone(), &[]);
         Ok(out)
+    }
+
+    /// Tells every page which pictures changed (`changed`) and which of `gone` left the gallery. A name in `gone` that
+    /// is still in the gallery (its file could not be moved to the trash) is not said to be gone.
+    pub(super) fn emit_images(&self, changed: Vec<ImageDTO>, gone: &[String]) {
+        let removed: Vec<String> = {
+            let s = self.state();
+            gone.iter()
+                .filter(|n| !s.images.iter().any(|i| &i.name == *n))
+                .cloned()
+                .collect()
+        };
+        if changed.is_empty() && removed.is_empty() {
+            return;
+        }
+        self.emit(BackendEvent::ImagesChanged {
+            images: changed,
+            removed,
+        });
     }
 
     /// Takes pictures out of the gallery into the trash, where they wait to be brought back with `restore_images`.
@@ -111,7 +131,10 @@ impl Backend {
             s.images.retain(|i| !picked.contains(&i.name));
             gone
         };
-        self.move_to_trash(&trashed)?;
+        let trashing = self.move_to_trash(&trashed);
+        let left: Vec<String> = trashed.iter().map(|i| i.name.clone()).collect();
+        self.emit_images(Vec::new(), &left);
+        trashing?;
         let strays: Vec<&String> = names
             .iter()
             .filter(|n| !trashed.iter().any(|i| &i.name == *n))
@@ -224,6 +247,7 @@ impl Backend {
         drop(s);
         let names: Vec<String> = back.iter().map(|i| i.name.clone()).collect();
         self.arrange_files(Some(&names));
+        self.emit_images(back.clone(), &[]);
         Ok(back)
     }
 

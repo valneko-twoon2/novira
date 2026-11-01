@@ -6,6 +6,7 @@ covers:
   - frontend/src/state/uiStateMerge.ts
   - frontend/src/state/rehydrate.ts
   - frontend/src/state/liveStores.ts
+  - frontend/src/state/backendCatchUp.ts
 ---
 # The screen state, shared and live
 
@@ -23,6 +24,8 @@ What the pages keep under `novira.*` in the browser's storage (the Generate form
 - *Apply.* The changed keys are written into the storage, then the stores behind them read it again (`persist.rehydrate()`, through `rehydrate.ts`; the stores are listed once in `liveStores.ts`). Writes made while applying are not changes of the page, and the record of what is in step is taken afterwards, so the page does not send what it just received and two pages do not pass the same change back and forth. A page's own saves come back as events with its own `origin` and are not read.
 - *Before sending.* A page reads the backend's state and merges it first, so a save does not put an old copy of a key another page changed a moment ago over the new one. A failed send is tried again with the next change.
 - *Per page, not live.* These keys still travel with the saved state (the next start takes the backend's), but a running page does not change them from outside: `novira.settings` (language, theme, zoom and the rest of the preferences), `novira.gallery` (thumbnail size and view choices), `novira.agent` (assistant chats and their window), `novira.canvas`, `novira.workflows` and `novira.text` (documents under edit), `novira.extensions.railWidth`. A key no store has registered is never applied. All other `novira.*` keys follow: the Generate form (prompts, model, LoRAs, reference images, size, seed and the rest, `novira.params`), drafts, the image, logo, music, video, voice, text-style and character presets, the prompt book, wildcard lists and the video, music, voice, logo and manga-finish forms. A test lists the keys the sources write and fails when one is in neither group.
+
+**What the backend keeps, live.** The boards, the gallery's pictures, the models and the saved workflows live in the backend, not in a page's storage, so a change by one page reaches the others as an event (`backend/crates/novira-core/src/types.rs`, applied in `frontend/src/state/wiring.ts`): `boards_changed` (the whole list, after a board is made, renamed, archived or deleted; a page whose picked or auto-add board is gone falls back to Uncategorized), `images_changed` (the pictures whose board, star or helper flag changed or that came back from the trash, and the names that left the gallery; a name that was never there is not sent), `models_changed` (the whole list, after a model is edited or removed; a picked model that is gone is unpicked) and `workflows_changed` (the whole library, after a save or a delete). A new picture was already `image_added`, a new model `model_added`. The page that made the change gets the same event; applying it again changes nothing. A refused change sends nothing. A page over the network (a phone, a browser page) misses events while it sleeps or its socket is down, so when it is shown again or its socket reopens it reads them again with `bootstrap` and applies them the same way (`frontend/src/state/backendCatchUp.ts`); a picture that arrived during that read is kept.
 
 ## Boundaries
 

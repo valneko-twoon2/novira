@@ -49,7 +49,11 @@ interface GalleryState {
   addImage: (image: ImageDTO) => void;
   upsertImages: (images: ImageDTO[]) => void;
   removeImages: (names: string[]) => void;
+  /** Takes in what a page changed in the backend: `images` replace or join the gallery, `removed` leave it. */
+  applyImageChanges: (images: ImageDTO[], removed: string[]) => void;
   setBoards: (boards: BoardDTO[]) => void;
+  /** Takes the backend's boards as they are now; a picked or auto-add board that is gone falls back to Uncategorized. */
+  syncBoards: (boards: BoardDTO[]) => void;
   upsertBoard: (board: BoardDTO) => void;
   removeBoard: (id: string) => void;
   /** Move a deleted board's images to Uncategorized locally. */
@@ -116,7 +120,21 @@ export const useGallery = create<GalleryState>()(
           compareImageName: s.compareImageName && names.includes(s.compareImageName) ? null : s.compareImageName,
         });
       },
+      applyImageChanges: (images, removed) => {
+        if (removed.length) get().removeImages(removed);
+        if (!images.length) return;
+        const byName = new Map(images.map((i) => [i.name, i]));
+        const current = get().images;
+        const known = new Set(current.map((i) => i.name));
+        const joining = images.filter((i) => !known.has(i.name));
+        set({ images: [...joining, ...current.map((i) => byName.get(i.name) ?? i)] });
+      },
       setBoards: (boards) => set({ boards }),
+      syncBoards: (boards) => {
+        const s = get();
+        const kept = (id: BoardId) => (id === 'none' || boards.some((b) => b.id === id) ? id : 'none');
+        set({ boards, selectedBoardId: kept(s.selectedBoardId), autoAddBoardId: kept(s.autoAddBoardId) });
+      },
       upsertBoard: (board) => {
         const exists = get().boards.some((b) => b.id === board.id);
         set({ boards: exists ? get().boards.map((b) => (b.id === board.id ? board : b)) : [...get().boards, board] });

@@ -343,6 +343,7 @@ export class MockBackend implements BackendClient {
     await wait(LATENCY);
     const board: BoardDTO = { id: this.id('board'), name: boardName(name), archived: false, createdAt: this.now() };
     this.boards.push(board);
+    this.emitBoards();
     return { ...board };
   }
 
@@ -353,6 +354,7 @@ export class MockBackend implements BackendClient {
     // Validate before touching anything so a blank rename changes nothing.
     const name = patch.name === undefined ? undefined : boardName(patch.name);
     Object.assign(board, patch, name === undefined ? {} : { name });
+    this.emitBoards();
     return { ...board };
   }
 
@@ -360,14 +362,25 @@ export class MockBackend implements BackendClient {
     await wait(LATENCY);
     this.boards = this.boards.filter((b) => b.id !== id);
     const deleted: string[] = [];
+    const moved: ImageDTO[] = [];
     for (const img of this.images) {
       if (img.boardId !== id) continue;
       if (deleteImages) deleted.push(img.name);
-      else img.boardId = null;
+      else {
+        img.boardId = null;
+        moved.push({ ...img });
+      }
     }
     this.trash.push(...this.images.filter((i) => deleted.includes(i.name)));
     this.images = this.images.filter((i) => !deleted.includes(i.name));
+    this.emitBoards();
+    if (moved.length || deleted.length) this.emit({ type: 'images_changed', images: moved, removed: deleted });
     return { deletedImages: deleted };
+  }
+
+  /** Tells the pages the boards as they are now, like the backend after any board change. */
+  private emitBoards() {
+    this.emit({ type: 'boards_changed', boards: this.boards.map((b) => ({ ...b })) });
   }
 
   // Images -----------------------------------------------------------------
@@ -408,13 +421,16 @@ export class MockBackend implements BackendClient {
         out.push({ ...img });
       }
     }
+    if (out.length) this.emit({ type: 'images_changed', images: out.map((i) => ({ ...i })), removed: [] });
     return out;
   }
 
   async deleteImages(names: string[]) {
     await wait(LATENCY);
     this.trash.push(...this.images.filter((i) => names.includes(i.name)));
+    const removed = this.images.filter((i) => names.includes(i.name)).map((i) => i.name);
     this.images = this.images.filter((i) => !names.includes(i.name));
+    if (removed.length) this.emit({ type: 'images_changed', images: [], removed });
   }
 
   async restoreImages(names: string[]) {
@@ -424,6 +440,7 @@ export class MockBackend implements BackendClient {
     const boards = new Set(this.boards.map((b) => b.id));
     for (const img of back) if (img.boardId && !boards.has(img.boardId)) img.boardId = null;
     this.images = [...back, ...this.images].sort((a, b) => b.createdAt - a.createdAt);
+    if (back.length) this.emit({ type: 'images_changed', images: back.map((i) => ({ ...i })), removed: [] });
     return back.map((i) => ({ ...i }));
   }
 
@@ -1029,12 +1046,19 @@ export class MockBackend implements BackendClient {
     const model = this.models.find((m) => m.key === key);
     if (!model) throw new Error(`model not found: ${key}`);
     Object.assign(model, patch, { key });
+    this.emitModels();
     return { ...model };
   }
 
   async deleteModel(key: string) {
     await wait(LATENCY);
     this.models = this.models.filter((m) => m.key !== key);
+    this.emitModels();
+  }
+
+  /** Tells the pages the models as they are now, like the backend after a model is edited or removed. */
+  private emitModels() {
+    this.emit({ type: 'models_changed', models: this.models.map((m) => ({ ...m })) });
   }
 
   async scanFolder() {
@@ -1062,16 +1086,24 @@ export class MockBackend implements BackendClient {
     const existing = workflow.id ? this.workflows.find((w) => w.id === workflow.id && w.category === 'user') : undefined;
     if (existing) {
       Object.assign(existing, workflow, { updatedAt: this.now() });
+      this.emitWorkflows();
       return { ...existing };
     }
     const saved: SavedWorkflow = { ...workflow, id: this.id('wf'), category: 'user', updatedAt: this.now() };
     this.workflows.push(saved);
+    this.emitWorkflows();
     return { ...saved };
   }
 
   async deleteWorkflow(id: string) {
     await wait(LATENCY);
     this.workflows = this.workflows.filter((w) => w.id !== id);
+    this.emitWorkflows();
+  }
+
+  /** Tells the pages the workflow library as it is now, like the backend after a save or a delete. */
+  private emitWorkflows() {
+    this.emit({ type: 'workflows_changed', workflows: this.workflows.map((w) => ({ ...w })) });
   }
 
   // Comics -----------------------------------------------------------------

@@ -91,7 +91,6 @@ From left to right, the screen is laid out as follows.
 
 Near the bottom of the side navigation there are also the following.
 
-- **{{ui:app.tabs.short.agent}}**: Opens the agent window on top of the current screen.
 - **{{ui:app.nav.settings}}**: From its menu you open {{ui:app.nav.settings}}, {{ui:app.nav.hotkeys}} and {{ui:app.nav.about}}.
 - The "n" logo at the very top: Opens {{ui:app.nav.about}}.
 
@@ -104,7 +103,7 @@ How to use each of them is explained in the following chapters.
 - {{ui:app.tabs.upscaling}}, {{ui:app.tabs.workflows}}: [Upscaling and Workflows](06-upscaling-workflows.md)
 - Video, music, voice and so on: [Video, Music, Voice, Logos and Text](07-media.md)
 - {{ui:app.tabs.models}}, {{ui:app.tabs.browse}}: [Getting Models Ready](08-models.md)
-- {{ui:app.tabs.short.agent}}, {{ui:app.nav.settings}}: [The Agent and Settings](09-assistant-settings.md)
+- {{ui:agent.title}}, {{ui:app.nav.settings}}: [The Agent and Settings](09-assistant-settings.md)
 
 ### The tabs in the center (Start, Viewer, Drafts)
 
@@ -120,8 +119,8 @@ Other tabs have small tabs of their own too (for example, the {{ui:app.tabs.canv
 
 When you want to see an image larger, you can hide the left and right panels.
 
-- The small arrow buttons at the top edge of the center open and close the left panel and the gallery (the right panel).
-- On the keyboard, `T` toggles the left panel, `G` the gallery, and `F` both at once.
+- The small arrow buttons at the top edge of the center open and close the left panel and the right panel (the gallery and the agent).
+- On the keyboard, `T` toggles the left panel, `G` the right panel, and `F` both at once.
 - Drag the boundary between panels to change their width. The widths are remembered only while the app is open; when you start it again, they return to the original widths.
 
 > Single-letter shortcuts such as `T`, `G` and `F` do not work while you are typing in a field. Leave the field first, then press the key.

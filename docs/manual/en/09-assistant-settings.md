@@ -6,9 +6,9 @@ The settings screen, the keyboard shortcuts and the information about the app ar
 
 ## The agent
 
-![The agent window. The first screen, where you choose which AI to use and sign in](shot:agent)
+![The agent in the right panel. The first screen, where you choose which AI to use and sign in](shot:agent)
 
-When you press the **AI** button (**{{ui:agent.open}}**) in the navigation on the left, the **{{ui:agent.title}}** window opens. You can move the window by dragging its heading.
+Press the **{{ui:app.right.assistant}}** tab at the top of the right panel, and the **{{ui:agent.title}}** takes the gallery's place. It is there on the {{ui:app.tabs.generate}}, {{ui:app.tabs.canvas}}, {{ui:app.tabs.upscaling}} and {{ui:app.tabs.workflows}} screens, and the chat and the message you are writing stay when you move between them. The **{{ui:app.right.gallery}}** tab brings the gallery back. When you ask the agent something from the {{ui:app.nav.extensions}} screen, it opens in a window over the screen. You can move the window by dragging its heading.
 
 Instead of choosing models and LoRAs or setting the prompt and size yourself, you tell it what you want to make in words, such as "an anime-style girl standing on a beach at sunset", and the agent chooses the settings and fills them in for you.
 
@@ -24,7 +24,7 @@ If that command cannot be found on your computer, a message appears that says "T
 
 The service you use, and your contract with it, are those of whichever one you chose. For Claude and Codex, novira does not save API keys. What is exchanged (the text you sent, and what the agent read in the app for its work, such as the list of models, the settings and the comic or text that is open) is sent to the service you chose. The information of the gallery's pictures and the prompts of the Generate tab are read only when you allow it (see "Permission to read pictures and prompts" below).
 
-The AI you chose is shown in the heading at the top of the window. If you want to change it, press the **{{ui:agent.changeProvider}}** button at the top.
+The AI you chose is shown on the top row of the agent. If you want to change it, press the **{{ui:agent.changeProvider}}** button at the right of that row.
 
 ### Connecting to Ollama or another server
 
@@ -169,7 +169,7 @@ You can select the text of the chat by dragging and copy it. The button at the b
 
 > While you are waiting for a reply, you cannot send another message. Wait until the "{{ui:agent.thinking}}" display goes away, or cancel with the **{{ui:agent.stop}}** button that takes the place of the send button. What changed before you canceled stays, and **{{ui:agent.undo}}** puts it all back.
 
-Drag any of the four edges or four corners of the window to change its size. The bottom-right corner shows a mark for this. The size is remembered. When a reply comes with how the AI read your request, it shows as one line above the reply. Press it to open the whole account (**{{ui:agent.thoughts.label}}**). It is the AI's own short summary of how it read the request and why it chose what it did, not its raw internal thinking.
+Drag the edge between the panels to change the width of the right panel. A window opened over the screen changes its size when you drag any of its four edges or four corners. The bottom-right corner shows a mark for this. The size is remembered. When a reply comes with how the AI read your request, it shows as one line above the reply. Press it to open the whole account (**{{ui:agent.thoughts.label}}**). It is the AI's own short summary of how it read the request and why it chose what it did, not its raw internal thinking.
 
 ## Settings
 
@@ -305,7 +305,7 @@ Here are the commonly used ones. For all of them, check the list on the screen.
 | `Ctrl+Shift+X` | Clear the whole queue |
 | `Alt+A` | Move to the prompt field |
 | `T` | Open and close the left panel |
-| `G` | Open and close the gallery (the right panel) |
+| `G` | Open and close the right panel (the gallery and the agent) |
 | `F` | Open and close both panels together |
 | `1` to `9` | Go to the numbered tab |
 | `Shift+?` | Open the list of shortcuts |

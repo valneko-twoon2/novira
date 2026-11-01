@@ -1,9 +1,8 @@
 // Vertical tab bar on the far left (InvokeAI's VerticalNavBar).
-import { BoundingBox, Compass, Cube, FlowArrow, FrameCorners, Gear, Info, Keyboard, MagicWand, PuzzlePiece, Queue, Sparkle, Terminal } from '@phosphor-icons/react';
+import { BoundingBox, Compass, Cube, FlowArrow, FrameCorners, Gear, Info, Keyboard, MagicWand, PuzzlePiece, Queue, Terminal } from '@phosphor-icons/react';
 import type { ReactNode } from 'react';
 import { backend } from '@/backend';
 import { t, type MessageKey } from '@/i18n';
-import { useAgent } from '@/state/agent';
 import { useDevLog } from '@/state/devLog';
 import { useQueue } from '@/state/queue';
 import { useSettings } from '@/state/settings';
@@ -50,8 +49,6 @@ export function SideNav() {
   const setTab = useUi((s) => s.setTab);
   const openModal = useUi((s) => s.openModal);
   const pending = useQueue((s) => s.status.pending + s.status.inProgress);
-  const agentOpen = useAgent((s) => s.open);
-  const setAgentOpen = useAgent((s) => s.setOpen);
   const showDevLog = useSettings((s) => s.showDevLog);
   const devLogOpen = useDevLog((s) => s.open);
   const devLogErrors = useDevLog((s) => s.entries.filter((e) => e.level === 'error').length);
@@ -82,20 +79,6 @@ export function SideNav() {
           </Tooltip>
         ))}
         </div>
-        {/* The assistant is not a screen: it opens its window over the current one, and stays lit while open. */}
-        <Tooltip content={t('agent.title')} side="right">
-          <button
-            type="button"
-            aria-pressed={agentOpen}
-            aria-label={withVisibleText(t('agent.open'), t('app.tabs.short.agent'))}
-            data-testid="agent-open"
-            className={`sidenav__tab${agentOpen ? ' is-active' : ''}`}
-            onClick={() => setAgentOpen(!agentOpen)}
-          >
-            <Sparkle size={22} weight="regular" />
-            <span className="sidenav__label">{t('app.tabs.short.agent')}</span>
-          </button>
-        </Tooltip>
       </div>
       <div className="sidenav__spacer" />
       <HomeLinkButton />

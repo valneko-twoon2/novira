@@ -21,7 +21,7 @@ let uploaded = 0;
 
 function show(messages: AgentMessage[] = []) {
   send = vi.fn<(text: string, images?: readonly string[]) => Promise<SendResult>>().mockResolvedValue({ ok: true, cancelled: false, text: '' });
-  useAgent.setState({ sessions: [{ id: 's1', createdAt: 1, updatedAt: 1, messages }], currentId: 's1', busy: false, busySessionId: null, status: ready, pos: null, send });
+  useAgent.setState({ sessions: [{ id: 's1', createdAt: 1, updatedAt: 1, messages }], currentId: 's1', busy: false, busySessionId: null, status: ready, pos: null, send, draftText: '', draftAttached: [] });
   return render(
     <TooltipProvider>
       <AgentWindow />

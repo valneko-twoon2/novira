@@ -262,6 +262,63 @@
   position: relative;
 }
 
+/* The right column's tabs: the gallery and the assistant (app/RightColumn.tsx), in one frame with a tab bar like the
+   main area's. */
+.right-side {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--grad-panel);
+}
+
+.right-side > .ui-tabs__list {
+  flex-shrink: 0;
+  align-items: center;
+  height: 36px;
+  padding: 0 var(--space-2);
+  background: var(--grad-header);
+}
+
+.right-side > .ui-tabs__list > .ui-tabs__tab {
+  height: 26px;
+  border-bottom: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.right-side > .ui-tabs__list > .ui-tabs__tab:hover {
+  background: var(--bg-hover);
+}
+
+.right-side > .ui-tabs__list > .ui-tabs__tab[data-state='active'] {
+  background: var(--bg-active);
+  color: var(--blue-600);
+}
+
+/* The gallery sits in the column's frame instead of its own. */
+.right-side .gpanel {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.right-side__panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.right-side__panel[data-state='inactive'] {
+  display: none;
+}
+
 .panel {
   display: flex;
   flex-direction: column;
