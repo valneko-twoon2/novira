@@ -156,4 +156,6 @@ fn rebase(value: &mut Value, from: &str, to: &str) {
 }
 
 #[cfg(test)]
+mod fuzz;
+#[cfg(test)]
 mod tests;

@@ -21,7 +21,7 @@ The desktop app lets a phone on the home network use it as `novira-server` does 
 | The window | Its server has no listener on this computer: the window reaches the home network only through the nine `lan_*` commands, which the main window's capability lists, each a fixed management route with its arguments' length capped at the entry and their shape checked by the route. A device gets exactly what it gets from `novira-server`. |
 | Picture URLs | Only strings that start with the app's base (out) or `/novira-image/` (in) are written; the backend still checks every name it is given. |
 
-Tests: `backend/crates/novira-server/src/embedded/tests.rs` (the management calls and what is refused, a phone paired through them getting the built-in page and files, its commands and upload with this server's picture base, closing from the window, the URL rewriting) and `backend/src-tauri/src/home_network.rs` (the argument cap, both event sinks).
+Tests: `backend/crates/novira-server/src/embedded/tests.rs` (the management calls and what is refused, a phone paired through them getting the built-in page and files, its commands and upload with this server's picture base, closing from the window, the URL rewriting), `backend/crates/novira-server/src/embedded/fuzz.rs` (damaged management calls, generated JSON for the URL rewriting, damaged file paths of a paired phone; 300 cases each, more with `NOVIRA_FUZZ_ITERATIONS` and `NOVIRA_FUZZ_SEED`) and `backend/src-tauri/src/home_network.rs` (the argument cap, both event sinks).
 
 ## Known limits
 
