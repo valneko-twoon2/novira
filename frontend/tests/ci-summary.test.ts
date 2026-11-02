@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { cargoMarkdown, parseCargo, parsePlaywright, playwrightMarkdown, run } from '../../scripts/tools/ci-summary.mjs';
+import { cargoMarkdown, parseCargo, parsePlaywright, parseVitest, playwrightMarkdown, run, vitestMarkdown } from '../../scripts/tools/ci-summary.mjs';
 
 const CARGO = [
   '     Running unittests src\\lib.rs (target\\debug\\deps\\novira_core-aaa.exe)',
@@ -61,12 +61,31 @@ describe('ci-summary', () => {
     expect(playwrightMarkdown('E2E', { projects, files })).toContain('**1 passed, 1 failed, 1 flaky, 1 skipped**');
   });
 
+  it('counts a vitest report per folder and per file, whatever the path style', () => {
+    const report = {
+      testResults: [
+        { name: String.raw`E:\Code\novira\frontend\src\state\a.test.ts`, assertionResults: [{ status: 'passed' }, { status: 'failed' }] },
+        { name: '/home/runner/work/novira/frontend/src/state/b.test.ts', assertionResults: [{ status: 'passed' }, { status: 'pending' }] },
+        { name: '/home/runner/work/novira/frontend/tests/c.test.ts', assertionResults: [{ status: 'todo' }] },
+      ],
+    };
+    const { areas, files } = parseVitest(report);
+    expect(areas.get('src/state')).toEqual({ passed: 2, failed: 1, skipped: 1 });
+    expect(areas.get('tests/c.test.ts')).toEqual({ passed: 0, failed: 0, skipped: 1 });
+    expect([...files.keys()].sort()).toEqual(['src/state/a.test.ts', 'src/state/b.test.ts', 'tests/c.test.ts']);
+    const md = vitestMarkdown('vitest', { areas, files });
+    expect(md).toContain('**2 passed, 1 failed, 2 skipped** in 3 test files');
+    expect(md).toContain('| src/state | 2 | 1 | 1 |');
+    expect(vitestMarkdown('x', parseVitest({}))).toContain('**0 passed, 0 failed, 0 skipped** in 0 test files');
+  });
+
   it('says so, and does not throw, when an input is missing or is not JSON', () => {
     dir = mkdtempSync(join(tmpdir(), 'ci-summary-'));
     expect(run(['playwright', 'E2E', join(dir, 'none.json')])).toContain('No report to read');
     writeFileSync(join(dir, 'bad.json'), 'not json');
     expect(run(['playwright', 'E2E', join(dir, 'bad.json')])).toContain('No report to read');
     expect(run(['cargo', 'cargo test', join(dir, 'novira-core.log')])).toContain('`novira-core`: no log');
+    expect(run(['vitest', 'unit', join(dir, 'none.json')])).toContain('No report to read');
     expect(run(['bogus'])).toContain('usage');
   });
 

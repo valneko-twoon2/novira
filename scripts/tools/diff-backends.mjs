@@ -14,6 +14,12 @@ import { ensureBuilt, startServer } from './server-run.mjs';
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
+/** vitest's JSON report goes to the file named by NOVIRA_VITEST_JSON (CI turns it into the job summary); the list reporter stays. */
+function jsonReport() {
+  const file = process.env.NOVIRA_VITEST_JSON;
+  return file ? ['--reporter=default', '--reporter=json', `--outputFile.json=${file}`] : [];
+}
+
 async function main() {
   const build = process.argv.includes('--build');
   const unknown = process.argv.slice(2).find((a) => a !== '--build');
@@ -27,7 +33,7 @@ async function main() {
   try {
     const frontend = path.join(REPO, 'frontend');
     const vitest = path.join(frontend, 'node_modules', 'vitest', 'vitest.mjs');
-    const run = spawnSync(process.execPath, [vitest, 'run', '--config', 'vitest.difftest.config.ts'], {
+    const run = spawnSync(process.execPath, [vitest, 'run', '--config', 'vitest.difftest.config.ts', ...jsonReport()], {
       cwd: frontend,
       env: { ...process.env, NOVIRA_DIFF_ORIGIN: server.origin, NOVIRA_DIFF_TOKEN: server.token },
       stdio: 'inherit',

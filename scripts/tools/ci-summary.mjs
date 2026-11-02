@@ -1,7 +1,9 @@
 // Writes the breakdown of a CI run's tests as Markdown for the job summary ($GITHUB_STEP_SUMMARY), so a run shows how many
-// tests ran, not only that it passed. vitest prints its own summary; this adds what cargo and Playwright do not.
+// tests ran, not only that it passed. Every job has the same shape: a title, one bold line of counts, a table of the units
+// behind it (crate, project, folder) and a fold with the files.
 //   node scripts/tools/ci-summary.mjs cargo <title> <log>...      the output of `cargo test`, one log per crate (named by its file)
 //   node scripts/tools/ci-summary.mjs playwright <title> <json>   the JSON report of `playwright test --reporter=json`
+//   node scripts/tools/ci-summary.mjs vitest <title> <json>       the JSON report of `vitest run --reporter=json`
 // The Markdown goes to stdout. A missing or unreadable input gives a line saying so and still exits 0: a summary never fails a run.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -86,6 +88,40 @@ export function playwrightMarkdown(title, { projects, files }) {
   return out.join('\n');
 }
 
+/** Counts per folder and per test file from a vitest JSON report: `{ areas: Map, files: Map }`. The folder is the first two parts of the path under frontend/. Pure. */
+export function parseVitest(report) {
+  const areas = new Map();
+  const files = new Map();
+  const add = (map, key, status) => {
+    const c = map.get(key) ?? { passed: 0, failed: 0, skipped: 0 };
+    c[status] += 1;
+    map.set(key, c);
+  };
+  for (const file of report.testResults ?? []) {
+    const rel = String(file.name).replace(/\\/g, '/').replace(/^.*\/frontend\//, '');
+    const area = rel.split('/').slice(0, 2).join('/');
+    for (const t of file.assertionResults ?? []) {
+      const status = t.status === 'passed' ? 'passed' : t.status === 'failed' ? 'failed' : 'skipped';
+      add(areas, area, status);
+      add(files, rel, status);
+    }
+  }
+  return { areas, files };
+}
+
+const vsum = (map) => [...map.values()].reduce((t, c) => ({ passed: t.passed + c.passed, failed: t.failed + c.failed, skipped: t.skipped + c.skipped }), { passed: 0, failed: 0, skipped: 0 });
+const vline = (c) => `${c.passed} passed, ${c.failed} failed, ${c.skipped} skipped`;
+
+/** Markdown for a parsed vitest report. Pure. */
+export function vitestMarkdown(title, { areas, files }) {
+  const out = [`## ${title}`, '', `**${vline(vsum(areas))}** in ${files.size} test files`, '', '| folder | passed | failed | skipped |', '|---|---:|---:|---:|'];
+  for (const [name, c] of [...areas].sort((a, b) => a[0].localeCompare(b[0]))) out.push(`| ${name} | ${c.passed} | ${c.failed} | ${c.skipped} |`);
+  out.push('', `<details><summary>per test file (${files.size})</summary>`, '', '| file | passed | failed | skipped |', '|---|---:|---:|---:|');
+  for (const [name, c] of [...files].sort((a, b) => a[0].localeCompare(b[0]))) out.push(`| ${name} | ${c.passed} | ${c.failed} | ${c.skipped} |`);
+  out.push('', '</details>', '');
+  return out.join('\n');
+}
+
 function readOrNull(file) {
   try {
     return fs.readFileSync(file, 'utf8');
@@ -112,7 +148,15 @@ export function run(args) {
       return `## ${title}\n\nNo report to read (the step did not run or wrote no JSON).\n`;
     }
   }
-  return `usage: ci-summary.mjs cargo|playwright <title> <file>...\n`;
+  if (kind === 'vitest') {
+    const text = readOrNull(inputs[0]);
+    try {
+      return vitestMarkdown(title, parseVitest(JSON.parse(text ?? '')));
+    } catch {
+      return `## ${title}\n\nNo report to read (the step did not run or wrote no JSON).\n`;
+    }
+  }
+  return `usage: ci-summary.mjs cargo|playwright|vitest <title> <file>...\n`;
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) process.stdout.write(`${run(process.argv.slice(2))}\n`);

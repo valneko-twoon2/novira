@@ -97,7 +97,13 @@ jobs:
       # The runner has 4 cores: ten workers (vitest.config.ts) starve each other and four tests ran past the 5 s limit.
       - name: vitest
         working-directory: frontend
-        run: npx vitest run --maxWorkers=4 --testTimeout=30000
+        shell: bash
+        run: npx vitest run --maxWorkers=4 --testTimeout=30000 --reporter=default --reporter=json --outputFile.json="$RUNNER_TEMP/vitest.json"
+
+      - name: Count of tests
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: node scripts/tools/ci-summary.mjs vitest "vitest" "$RUNNER_TEMP/vitest.json" >> "$GITHUB_STEP_SUMMARY"
 
   clippy:
     runs-on: windows-latest
@@ -300,4 +306,11 @@ jobs:
       # The browser mock and the real backend (novira-server, no engine) get the same calls, and their answers are compared.
       - name: The mock against the real backend
         shell: cmd
+        env:
+          NOVIRA_VITEST_JSON: ${{ runner.temp }}\diff-backends.json
         run: node scripts/tools/diff-backends.mjs
+
+      - name: Count of tests
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: node scripts/tools/ci-summary.mjs vitest "The mock against the real backend" "$RUNNER_TEMP/diff-backends.json" >> "$GITHUB_STEP_SUMMARY"
