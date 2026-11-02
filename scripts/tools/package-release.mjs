@@ -5,7 +5,7 @@
 // `--check-tag v0.4.0` only checks that the tag names the version of backend/Cargo.toml (the release workflow runs it first).
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -81,6 +81,8 @@ function main() {
   writeFileSync(`${zip}.sha256`, `${sha} *${name}.zip\n`);
   console.log(`package-release: ${zip}`);
   console.log(`package-release: SHA-256 ${sha}`);
+  // The release workflow names its build artifact after the package (`steps.pack.outputs.name`).
+  if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `name=${name}\n`);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) main();

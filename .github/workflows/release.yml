@@ -21,6 +21,8 @@ jobs:
   build:
     runs-on: windows-latest
     timeout-minutes: 90
+    outputs:
+      name: ${{ steps.pack.outputs.name }}
     steps:
       - uses: actions/checkout@v4
 
@@ -64,12 +66,13 @@ jobs:
         run: node scripts\tools\release-smoke.mjs
 
       - name: Pack the zip
+        id: pack
         shell: cmd
         run: node scripts\tools\package-release.mjs
 
       - uses: actions/upload-artifact@v4
         with:
-          name: novira-windows-x64
+          name: ${{ steps.pack.outputs.name }}
           path: |
             artifacts/novira-*-windows-x64.zip
             artifacts/novira-*-windows-x64.zip.sha256
@@ -86,7 +89,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: novira-windows-x64
+          name: ${{ needs.build.outputs.name }}
           path: dist
 
       - name: Make the draft release

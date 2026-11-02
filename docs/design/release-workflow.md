@@ -16,7 +16,7 @@ GitHub builds the Windows release when a version tag is pushed, and leaves a dra
   2. `npm ci` and Playwright's Chromium (the smoke test drives them), with the npm cache and a cache of cargo's registry and `backend/target` keyed on `Cargo.lock` and the toolchain file.
   3. `scripts\release\package.bat build`: the frontend and the app and server in release mode into `artifacts\`.
   4. `scripts/tools/release-smoke.mjs` on what was built: the server on an empty folder and on each old-data fixture, and `novira.exe` with no engine ([development.md](../development.md)). Nothing uses the GPU. On the runner only, `novira.exe` is started by `scripts/tools/start-medium.ps1` with a normal user's token (the administrators' group deny-only, Medium integrity) from a `.cmd` the script writes into its work folder, which sets the variables and records the token's groups; on a desktop it is started directly.
-  5. `package-release.mjs`: `novira-<version>-windows-x64.zip` and its `.sha256`, uploaded as the build artifact.
+  5. `package-release.mjs`: `novira-<version>-windows-x64.zip` and its `.sha256`, uploaded as the build artifact of the same name (`novira-<version>-windows-x64`), which the draft job downloads.
 - **Draft job** (`ubuntu-latest`, tags only): `gh release create <tag> --draft --verify-tag` with the zip and the checksum, as a pre-release when the tag has a hyphen (`v0.5.0-beta.1`). The body only says it is a draft; the notes are written from [release-notes-template.md](../release-notes-template.md) and the release is published by a person. A rerun on a tag whose release exists only replaces the files (`--clobber`) and never changes its state.
 - `package.bat` does not wait for a key when `CI` is set (the runner has nobody to press one).
 
