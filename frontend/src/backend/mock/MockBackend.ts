@@ -334,7 +334,13 @@ export class MockBackend implements BackendClient {
     const { sampling: _sent, ...rest } = p;
     const drawn = ['txt2img', 'img2img', 'inpaint', 'outpaint', 'upscale', 'workflow'].includes(p.generationMode);
     const model = this.models.find((m) => m.key === p.modelKey);
-    const sampling = drawn && model ? fixedSampling(model) : undefined;
+    const fixed = drawn && model ? fixedSampling(model) : undefined;
+    // A sampler or noise schedule the picture names replaces the one the family fixed (the mock has no InvokeAI table,
+    // so for the rest it reads plain euler with the normal schedule).
+    const named = drawn && (p.samplerName || p.noiseSchedule);
+    const sampling = named
+      ? { sampler: p.samplerName || fixed?.sampler || 'euler', scheduler: p.noiseSchedule || fixed?.scheduler || 'normal' }
+      : fixed;
     return sampling ? { ...rest, sampling } : rest;
   }
 

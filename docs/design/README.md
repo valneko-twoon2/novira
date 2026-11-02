@@ -10,6 +10,7 @@ One page per feature, each the current specification of that feature: how it beh
 | [generation.md](generation.md) | The generation queue and worker, ComfyUI graphs for pictures, guidance (masks, control layers, reference images), the local engine, the GPU lock |
 | [model-families.md](model-families.md) | The newer image model families (Anima, Flux, SD3...): their loaders, encoders, VAE and control patches |
 | [drafts.md](drafts.md) | Drafts: candidates drawn part of the way, then finished one by one |
+| [generation-sampling.md](generation-sampling.md) | The sampler and noise schedule of a picture: the scheduler setting, a family's own, and the ComfyUI names a picture may choose |
 | [presets.md](presets.md) | Image presets, and the random preset run that queues pictures from several presets picked at random |
 | [media-generation.md](media-generation.md) | Video, music, voice and logo generation |
 | [workflows.md](workflows.md) | The node workflow editor: saved workflows, the editor state, saving and importing a workflow file |

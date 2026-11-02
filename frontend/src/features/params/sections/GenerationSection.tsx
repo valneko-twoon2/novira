@@ -1,6 +1,6 @@
 // "Generation" accordion: main model, LoRAs, scheduler, steps, CFG scale.
 import type { SchedulerName } from '@/backend';
-import { fixedSampling, SCHEDULERS, samplingLabel } from '@/backend';
+import { ENGINE_SAMPLERS, ENGINE_SCHEDULES, fixedSampling, SCHEDULERS, samplingLabel } from '@/backend';
 import { t, tCount } from '@/i18n';
 import { BASE_LABELS } from '@/state/models';
 import { useParams } from '@/state/params';
@@ -51,6 +51,7 @@ function SchedulerStepsCfg() {
           <RecommendedHint k="scheduler" />
         </>
       )}
+      <EngineSamplingFields />
       <Field label={t('params.generation.steps')} info={t('params.generation.stepsInfo')}>
         <SliderNumber
           value={steps}
@@ -78,6 +79,43 @@ function SchedulerStepsCfg() {
         />
       </Field>
       <RecommendedHint k="cfg" />
+    </>
+  );
+}
+
+const AUTO = 'auto';
+
+/** A ComfyUI sampler and noise schedule by their own names, over what the scheduler above or the model's family runs. */
+function EngineSamplingFields() {
+  const main = useMainModel();
+  const samplerName = useParams((s) => s.samplerName);
+  const noiseSchedule = useParams((s) => s.noiseSchedule);
+  const set = useParams((s) => s.set);
+  // An empty value reads as "nothing chosen" to the select, so auto has a value of its own.
+  const auto = { value: AUTO, label: t('params.generation.engineAuto') };
+  return (
+    <>
+      <Field label={t('params.generation.sampler')} info={t('params.generation.samplerInfo')}>
+        <Select<string>
+          value={samplerName ?? AUTO}
+          onChange={(v) => set({ samplerName: v === AUTO ? null : v })}
+          aria-label={t('params.generation.sampler')}
+          data-testid="sampler-name"
+          options={[auto, ...ENGINE_SAMPLERS.map((v) => ({ value: v, label: v }))]}
+        />
+      </Field>
+      {/* FLUX.2 takes its sigmas from its own scheduler node, so only its sampler can be chosen. */}
+      {main?.base !== 'flux2' && (
+        <Field label={t('params.generation.noiseSchedule')} info={t('params.generation.noiseScheduleInfo')}>
+          <Select<string>
+            value={noiseSchedule ?? AUTO}
+            onChange={(v) => set({ noiseSchedule: v === AUTO ? null : v })}
+            aria-label={t('params.generation.noiseSchedule')}
+            data-testid="noise-schedule"
+            options={[auto, ...ENGINE_SCHEDULES.map((v) => ({ value: v, label: v }))]}
+          />
+        </Field>
+      )}
     </>
   );
 }

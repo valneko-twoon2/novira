@@ -88,6 +88,10 @@ export interface ParamsState {
   vaeKey: string | null;
   vaePrecision: 'fp16' | 'fp32';
   scheduler: SchedulerName;
+  /** A ComfyUI sampler and noise schedule picked by their own names, in place of what `scheduler` or the model's family
+   * runs; null leaves that to them (`ENGINE_SAMPLERS`, `ENGINE_SCHEDULES`). */
+  samplerName: string | null;
+  noiseSchedule: string | null;
   steps: number;
   cfgScale: number;
   cfgRescale: number;
@@ -273,6 +277,8 @@ export const useParams = create<ParamsState>()(
       vaeKey: null,
       vaePrecision: 'fp32',
       scheduler: 'dpmpp_2m_k',
+      samplerName: null,
+      noiseSchedule: null,
       steps: 30,
       cfgScale: 7,
       cfgRescale: 0,
@@ -387,7 +393,9 @@ export const useParams = create<ParamsState>()(
           cfgScale: m.cfgScale,
           cfgRescale: m.cfgRescale,
           // A picture that records the sampling its family fixed did not use its scheduler setting: keep the current one.
-          ...(m.sampling ? {} : { scheduler: m.scheduler }),
+          ...(m.sampling && !m.samplerName && !m.noiseSchedule ? {} : { scheduler: m.scheduler }),
+          samplerName: m.samplerName ?? null,
+          noiseSchedule: m.noiseSchedule ?? null,
           width: m.width,
           height: m.height,
           aspectRatio: 'free',

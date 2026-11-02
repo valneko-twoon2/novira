@@ -345,5 +345,10 @@
   "params.i2i.dropHint": "描き直す元の画像をドロップ",
   "params.i2i.dropOverlay": "この画像から描き直す",
   "params.i2i.clear": "元画像を外す",
-  "params.refImage.openCanvas": "キャンバスで開く"
+  "params.refImage.openCanvas": "キャンバスで開く",
+  "params.generation.sampler": "サンプラー",
+  "params.generation.samplerInfo": "ノイズを取り除く計算方法。自動のときは、上のスケジューラーかモデルの標準が使われます。",
+  "params.generation.noiseSchedule": "ノイズスケジュール",
+  "params.generation.noiseScheduleInfo": "ステップごとにノイズを取る量の配分。自動のときは、上のスケジューラーかモデルの標準が使われます。",
+  "params.generation.engineAuto": "自動"
 }

@@ -116,7 +116,7 @@
 1. モデル名の欄をクリックします。
 2. 一覧から選びます。一覧はモデルの系統（FLUX、SDXL、SD1.X など）ごとに分かれています。数が多いときは、上の検索欄に名前の一部を入れて絞り込めます。
 
-Anima・Flux・FLUX.2・Chroma・Qwen-Image・Z-Image・SD3・HiDream・AuraFlow・HunyuanImage のモデルも、ここで選べます。本体・テキストエンコーダー・VAE が別々のファイルで配られているときは、テキストエンコーダーと VAE をインストール済みのモデルからアプリが名前で探して使います。足りないファイルがあるモデルをインストールすると、すぐに「{{ui:params.parts.title}}」と確認が出て、名前と大きさを見てから足りないファイルだけをインストールできます。あとで、と閉じた場合も、生成ボタンの下にそのモデルで足りないファイルの案内と、画面を移らずにそれらをインストールするボタンが出ます。5 GB を超えるときは、ボタンを押したあとにも確認が出ます。モデル画面の **{{ui:models.install.tab.starter}}** からもインストールできます。これらのモデルでも、マスク、コントロールレイヤー、高解像度化は使えます。参照画像は SD1.X と SDXL のモデルだけで使えます。スケジューラーは選べず、それぞれの系統で決まったサンプラーとスケジューラー（Anima なら `euler / simple`）で描きます。「{{ui:params.generation.scheduler}}」の欄には、実際に使う組み合わせが表示されます。
+Anima・Flux・FLUX.2・Chroma・Qwen-Image・Z-Image・SD3・HiDream・AuraFlow・HunyuanImage のモデルも、ここで選べます。本体・テキストエンコーダー・VAE が別々のファイルで配られているときは、テキストエンコーダーと VAE をインストール済みのモデルからアプリが名前で探して使います。足りないファイルがあるモデルをインストールすると、すぐに「{{ui:params.parts.title}}」と確認が出て、名前と大きさを見てから足りないファイルだけをインストールできます。あとで、と閉じた場合も、生成ボタンの下にそのモデルで足りないファイルの案内と、画面を移らずにそれらをインストールするボタンが出ます。5 GB を超えるときは、ボタンを押したあとにも確認が出ます。モデル画面の **{{ui:models.install.tab.starter}}** からもインストールできます。これらのモデルでも、マスク、コントロールレイヤー、高解像度化は使えます。参照画像は SD1.X と SDXL のモデルだけで使えます。「{{ui:params.generation.scheduler}}」で選んだものは使われず、それぞれの系統で決まったサンプラーとスケジューラー（Flux なら `euler / simple`）で描きます（Anima だけは、選んだスケジューラーで描きます）。「{{ui:params.generation.scheduler}}」の欄には、実際に使う組み合わせが表示されます。「{{ui:params.generation.sampler}}」と「{{ui:params.generation.noiseSchedule}}」を選ぶと、どの系統のモデルでも、選んだほうが優先されます。
 
 - **編集モデル。** FLUX Kontext と Qwen-Image-Edit は、渡した絵を書き換えます。元の絵をソース（画像から画像）に入れ、変えたい内容をプロンプトに書きます。FLUX Fill はマスクした部分を描き直します（マスク付きのインペイントかアウトペイントで使います）。これらのモデルでは、高解像度化・ドラフト・コントロールレイヤーは使えません。アプリは、ファイルの中身で、Kontext と Qwen の編集モデルはファイル名の `kontext` や `edit` という語で、普通のモデルと見分けます。名前を変えないでください。
 - **FLUX.2。** klein は少ないステップで動きます（蒸留版は CFG 1）。dev は CFG の値をガイダンスとして使います。元の絵をソース（画像から画像）に入れると、FLUX.2 がプロンプトに従って書き換えます。マスク・コントロールレイヤー・高解像度化は FLUX.2 では使えません（下書きは使えます）。
@@ -142,7 +142,7 @@ Anima・Flux・FLUX.2・Chroma・Qwen-Image・Z-Image・SD3・HiDream・AuraFlow
 | **{{ui:params.refImage.sectionLabel}}**（プロンプトのすぐ下） | 絵の雰囲気や登場人物を寄せるための画像（後述） |
 | **{{ui:params.i2i.title}}** | 元の絵をもとに描き直す（i2i）ときの元画像と、{{ui:params.image.strength}}（後述） |
 | **{{ui:params.image.title}}** | {{ui:params.image.aspect}}、幅と高さ。「{{ui:params.image.swap}}」「{{ui:params.image.lock}}」「{{ui:params.image.optimal}}」のボタンもあります |
-| **{{ui:params.generation.title}}** | LoRA（絵柄や人物を足す小さな追加モデル）、{{ui:params.generation.scheduler}}、{{ui:params.generation.steps}}、{{ui:params.generation.cfg}} |
+| **{{ui:params.generation.title}}** | LoRA（絵柄や人物を足す小さな追加モデル）、{{ui:params.generation.scheduler}}、{{ui:params.generation.sampler}}、{{ui:params.generation.noiseSchedule}}（ComfyUI の名前で直接選びます。「{{ui:params.generation.engineAuto}}」なら、スケジューラーかモデルの標準に従います。FLUX.2 ではサンプラーだけ）、{{ui:params.generation.steps}}、{{ui:params.generation.cfg}} |
 | **{{ui:params.hires.title}}** | 描いた絵を拡大して、もう一度描き直す 2 回目の生成（後述） |
 | **{{ui:params.advanced.title}}** | {{ui:params.advanced.vae}}、{{ui:params.advanced.clipSkip}}、{{ui:params.advanced.seamless}}（つなげても継ぎ目が出ない絵。SD1.X と SDXL のモデルで使え、拡張機能 ComfyUI-seamless-tiling を拡張機能の画面から入れておく必要があります）など |
 

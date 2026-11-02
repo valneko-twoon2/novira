@@ -3,6 +3,7 @@
 import { agentEndpointInput, agentEndpointTest, agentReply, agentRequest, agentStatus, agentToolAnswer } from './agent';
 import { enums } from './enums';
 import { FAMILY_SAMPLING } from '../../familySampling';
+import { ENGINE_SAMPLERS, ENGINE_SCHEDULES } from '../../engineSampling';
 import { backendEvents, bootstrap, engineSettings, engineSettingsPatch, engineStatus, hardwareInfo, packStatus } from './events';
 import { boardDto, boardPatch, imageDto, imageOptions, imagePatch } from './gallery';
 import {
@@ -25,6 +26,8 @@ export const SAMPLES: Record<string, unknown> = {
   enums,
   // Not a wire type: the app's own table of the samplers the backend fixes per family, checked against Rust's.
   'family-sampling': FAMILY_SAMPLING,
+  // Not a wire type either: the samplers and noise schedules a picture may name, checked against Rust's lists.
+  'engine-sampling': { samplers: ENGINE_SAMPLERS, schedules: ENGINE_SCHEDULES },
   'generation-metadata': generationMetadata,
   'enqueue-request': enqueueRequest,
   'queue-item': queueItem,

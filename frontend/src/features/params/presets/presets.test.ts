@@ -35,6 +35,17 @@ describe('generation presets', () => {
     expect(useParams.getState()).toMatchObject({ modelKey: 'kept', steps: 12 });
   });
 
+  it('keeps the sampler and noise schedule picked, and an older preset without them clears the current choice', () => {
+    useParams.setState({ samplerName: 'res_multistep', noiseSchedule: 'karras' });
+    const data = snapshotPresetData();
+    expect(data).toMatchObject({ samplerName: 'res_multistep', noiseSchedule: 'karras' });
+    useParams.setState({ samplerName: null, noiseSchedule: null });
+    applyPresetData(data);
+    expect(useParams.getState()).toMatchObject({ samplerName: 'res_multistep', noiseSchedule: 'karras' });
+    applyPresetData({ steps: 12 });
+    expect(useParams.getState()).toMatchObject({ samplerName: null, noiseSchedule: null, steps: 12 });
+  });
+
   it('keeps the high-resolution fix, the upscale and the inpaint settings, but not the picture to upscale', () => {
     useModels.setState({ models: [{ key: 'esrgan', name: '4x', base: 'any', type: 'spandrel_image_to_image', path: '4x.pth' }] as never });
     const p = useParams.getState();

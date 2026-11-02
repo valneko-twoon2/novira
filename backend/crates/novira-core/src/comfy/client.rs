@@ -973,6 +973,19 @@ impl Engine for ComfyEngine {
                     )));
                 }
             }
+            // A sampler or noise schedule the picture names itself: an older ComfyUI may not have it.
+            for (field, name) in [
+                ("sampler_name", &job.params.sampler_name),
+                ("scheduler", &job.params.noise_schedule),
+            ] {
+                if let Some(name) = name.as_deref().filter(|n| !n.is_empty()) {
+                    if !has(field, name) {
+                        return Err(EngineError::Failed(format!(
+                            "This ComfyUI has no {name} ({field})"
+                        )));
+                    }
+                }
+            }
         }
         Ok(())
     }

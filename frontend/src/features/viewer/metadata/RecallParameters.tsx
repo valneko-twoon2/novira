@@ -34,7 +34,14 @@ function rows(m: GenerationMetadata, loraName: (key: string) => string): Row[] {
     { label: 'gallery.meta.cfgRescale', value: m.cfgRescale, patch: { cfgRescale: m.cfgRescale } },
     // A model that runs its family's own sampling records it; the scheduler setting it was sent with was not used.
     m.sampling
-      ? { label: 'gallery.meta.sampling', value: samplingLabel(m.sampling) }
+      ? {
+          label: 'gallery.meta.sampling',
+          value: samplingLabel(m.sampling),
+          // A sampler or noise schedule the picture named is a setting to take back, with the scheduler it was drawn over.
+          ...(m.samplerName || m.noiseSchedule
+            ? { patch: { scheduler: m.scheduler, samplerName: m.samplerName ?? null, noiseSchedule: m.noiseSchedule ?? null } }
+            : {}),
+        }
       : { label: 'gallery.meta.scheduler', value: m.scheduler, patch: { scheduler: m.scheduler } },
     { label: 'gallery.meta.size', value: `${m.width}×${m.height}`, patch: { width: m.width, height: m.height, aspectRatio: 'free' } },
     { label: 'gallery.meta.clipSkip', value: m.clipSkip, patch: { clipSkip: m.clipSkip } },

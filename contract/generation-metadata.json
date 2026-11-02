@@ -118,7 +118,9 @@
     "whiteLines": 0.45
   },
   "sampling": {
-    "sampler": "euler",
-    "scheduler": "simple"
-  }
+    "sampler": "res_multistep",
+    "scheduler": "karras"
+  },
+  "samplerName": "res_multistep",
+  "noiseSchedule": "karras"
 }

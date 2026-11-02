@@ -208,6 +208,11 @@ export interface GenerationMetadata {
    * families (Anima, Flux...) always runs its family's own (`FAMILY_SAMPLING`), whatever `scheduler` says. Absent when
    * `scheduler` is what ran. */
   sampling?: Sampling;
+  /** Pictures: a ComfyUI sampler (`ENGINE_SAMPLERS`) to run in place of the one the `scheduler` setting or the model's
+   * family would. Absent when those decide. */
+  samplerName?: string;
+  /** Pictures: a ComfyUI noise schedule (`ENGINE_SCHEDULES`) in place of the one they would run. */
+  noiseSchedule?: string;
 }
 
 /** A ComfyUI sampler and scheduler by their node names (`euler`, `simple`), or the scheduler node a family's graph

@@ -766,3 +766,128 @@ fn the_sampling_is_fixed_for_picture_family_models_in_the_modes_the_picture_grap
         Some("Flux2Scheduler".to_string())
     );
 }
+
+#[test]
+fn a_sampler_and_noise_schedule_the_picture_names_win_on_every_family() {
+    let unet = r("diffusion_models", "model.safetensors");
+    let vae = r("vae", "vae.safetensors");
+    for f in [
+        Family::Anima,
+        Family::Flux,
+        Family::Chroma,
+        Family::QwenImage,
+        Family::ZImage,
+        Family::Sd3,
+        Family::Hidream,
+        Family::Auraflow,
+        Family::HunyuanImage,
+    ] {
+        let split = job(f);
+        let mut p = params(GenerationMode::Txt2img);
+        p.scheduler = "euler".into();
+        // Only the sampler: the family's own schedule stays.
+        p.sampler_name = Some("dpmpp_2m".into());
+        let g = build_any(&input(&p, &unet, Some(&vae), &split)).unwrap();
+        let k = node(&g, "KSampler");
+        assert_eq!(k["sampler_name"], "dpmpp_2m", "{f:?}");
+        assert_eq!(k["scheduler"], f.sampling().1, "{f:?}");
+        // Both, and the draft graph takes them too.
+        p.noise_schedule = Some("karras".into());
+        let g = build_any(&input(&p, &unet, Some(&vae), &split)).unwrap();
+        let k = node(&g, "KSampler");
+        assert_eq!(k["sampler_name"], "dpmpp_2m", "{f:?}");
+        assert_eq!(k["scheduler"], "karras", "{f:?}");
+        p.draft_at = Some(0.35);
+        let g = build_any(&input(&p, &unet, Some(&vae), &split)).unwrap();
+        let k = node(&g, "KSamplerAdvanced");
+        assert_eq!(k["sampler_name"], "dpmpp_2m", "{f:?}");
+        assert_eq!(k["scheduler"], "karras", "{f:?}");
+        // A name the engine does not list never reaches the prompt.
+        p.sampler_name = Some("nope".into());
+        assert!(build_any(&input(&p, &unet, Some(&vae), &split))
+            .unwrap_err()
+            .contains("Unknown sampler"));
+    }
+}
+
+#[test]
+fn flux2_takes_a_sampler_but_refuses_a_noise_schedule() {
+    let unet = r("diffusion_models", "model.safetensors");
+    let vae = r("vae", "vae.safetensors");
+    let split = job(Family::Flux2);
+    let mut p = params(GenerationMode::Txt2img);
+    p.sampler_name = Some("res_multistep".into());
+    let g = build_any(&input(&p, &unet, Some(&vae), &split)).unwrap();
+    assert_eq!(node(&g, "KSamplerSelect")["sampler_name"], "res_multistep");
+    assert_eq!(count(&g, "Flux2Scheduler"), 1);
+    p.noise_schedule = Some("karras".into());
+    assert!(build_any(&input(&p, &unet, Some(&vae), &split))
+        .unwrap_err()
+        .contains("noise schedule"));
+}
+
+#[test]
+fn the_recorded_sampling_is_what_the_picture_named_over_what_the_setting_or_family_ran() {
+    let of = |base: &str, kind: &str| -> ModelConfig {
+        serde_json::from_value(serde_json::json!({
+            "key": "m", "name": "m", "base": base, "type": kind, "format": "checkpoint",
+            "description": "", "path": "m", "size": 1, "source": "local"
+        }))
+        .unwrap()
+    };
+    let sampling = |s: &str, c: &str| {
+        Some(Sampling {
+            sampler: s.into(),
+            scheduler: c.into(),
+        })
+    };
+    let mut p = params(GenerationMode::Txt2img);
+    // Nothing named: what `fixed_sampling` says.
+    assert_eq!(ran_sampling(Some(&of("sdxl", "main")), &p), None);
+    assert_eq!(
+        ran_sampling(Some(&of("flux", "main")), &p),
+        sampling("euler", "simple")
+    );
+    p.sampler_name = Some("res_multistep".into());
+    // The SD family: over the setting's pair (dpmpp_2m_k is dpmpp_2m with karras).
+    assert_eq!(
+        ran_sampling(Some(&of("sdxl", "main")), &p),
+        sampling("res_multistep", "karras")
+    );
+    // A model that is not found is read as the SD family.
+    assert_eq!(ran_sampling(None, &p), sampling("res_multistep", "karras"));
+    // A picture family: over the family's own, not the setting.
+    assert_eq!(
+        ran_sampling(Some(&of("flux", "main")), &p),
+        sampling("res_multistep", "simple")
+    );
+    assert_eq!(
+        ran_sampling(Some(&of("flux2", "main")), &p),
+        sampling("res_multistep", "Flux2Scheduler")
+    );
+    // Anima follows the setting, which a named sampler then replaces.
+    assert_eq!(
+        ran_sampling(Some(&of("anima", "main")), &p),
+        sampling("res_multistep", "karras")
+    );
+    p.noise_schedule = Some("beta".into());
+    assert_eq!(
+        ran_sampling(Some(&of("sdxl", "main")), &p),
+        sampling("res_multistep", "beta")
+    );
+    // A video or a voice job is not drawn by the picture graph: nothing is recorded.
+    for mode in [
+        GenerationMode::Video,
+        GenerationMode::Music,
+        GenerationMode::Voice,
+        GenerationMode::Logo,
+        GenerationMode::Graph,
+    ] {
+        p.generation_mode = mode;
+        assert_eq!(
+            ran_sampling(Some(&of("sdxl", "main")), &p),
+            None,
+            "{mode:?}"
+        );
+    }
+}

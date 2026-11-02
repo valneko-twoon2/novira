@@ -12,6 +12,8 @@ export const PRESET_FIELDS = [
   'vaeKey',
   'vaePrecision',
   'scheduler',
+  'samplerName',
+  'noiseSchedule',
   'steps',
   'cfgScale',
   'cfgRescale',
@@ -90,6 +92,9 @@ export function presetPatch(p: ParamsFields, data: PresetData): Partial<ParamsFi
   // The models the upscale and the high-resolution fix use are checked the same way; the picture to upscale stays.
   const { upscale, hires, ...rest } = patch;
   return {
+    // A preset saved before the sampler could be named has no choice: it clears the current one.
+    samplerName: null,
+    noiseSchedule: null,
     ...rest,
     ...(upscale && {
       upscale: {

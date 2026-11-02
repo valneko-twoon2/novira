@@ -23,6 +23,7 @@
 //! - `pack_status` and the Face Rig / `node_defs` replies (ComfyUI's JSON passed through as `Value`) have no fixture.
 //! - f64 fields use non-integer values in the fixtures: serde writes `7.0`, and serde_json compares it unequal to `7`.
 mod both;
+mod engine_sampling;
 mod enums;
 mod family_sampling;
 mod inbound;
@@ -40,6 +41,7 @@ type Check = (&'static str, fn(&Value));
 
 const CHECKS: &[Check] = &[
     ("enums", enums::enums),
+    ("engine-sampling", engine_sampling::engine_sampling),
     ("family-sampling", family_sampling::family_sampling),
     ("generation-metadata", both::generation_metadata),
     ("enqueue-request", both::enqueue_request),

@@ -5,7 +5,9 @@
 //! graph (LoRAs, masks, control layers, the high-resolution fix, drafts) is shared with the SD family in `graph.rs`.
 use super::graph::{Builder, GraphInput};
 use crate::models::classify::Variant;
-use crate::types::{BaseModel, ComfyRef, GenerationMode, ModelConfig, ModelType, Sampling};
+use crate::types::{
+    BaseModel, ComfyRef, GenerationMetadata, GenerationMode, ModelConfig, ModelType, Sampling,
+};
 use serde_json::{json, Value};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -443,7 +445,20 @@ impl Family {
 /// diffusion model of a picture family in a mode the picture graph draws (`graph::build` and `variants::build`).
 /// `None` for the SD family, whose sampler is the setting, and for the jobs other graphs run.
 pub fn fixed_sampling(model: &ModelConfig, mode: GenerationMode) -> Option<Sampling> {
-    let drawn = matches!(
+    let family = drawn_family(model, mode)?;
+    if family.follows_scheduler_setting() {
+        return None;
+    }
+    let (sampler, scheduler) = family.picture_sampling();
+    Some(Sampling {
+        sampler: sampler.into(),
+        scheduler: scheduler.into(),
+    })
+}
+
+/// Whether the picture graph draws a job of `mode` (`graph::build` and `variants::build`).
+fn is_drawn(mode: GenerationMode) -> bool {
+    matches!(
         mode,
         GenerationMode::Txt2img
             | GenerationMode::Img2img
@@ -451,15 +466,34 @@ pub fn fixed_sampling(model: &ModelConfig, mode: GenerationMode) -> Option<Sampl
             | GenerationMode::Outpaint
             | GenerationMode::Upscale
             | GenerationMode::Workflow
-    );
-    if !drawn || !matches!(model.kind, ModelType::DiffusionModel | ModelType::Main) {
+    )
+}
+
+/// The picture family of a main or diffusion model in a mode the picture graph draws.
+fn drawn_family(model: &ModelConfig, mode: GenerationMode) -> Option<Family> {
+    if !is_drawn(mode) || !matches!(model.kind, ModelType::DiffusionModel | ModelType::Main) {
         return None;
     }
-    let family = Family::of(model.base)?;
-    if family.follows_scheduler_setting() {
+    Family::of(model.base)
+}
+
+/// The sampling a picture ran with, as it is recorded with the picture: [`fixed_sampling`], or, when the picture named
+/// its own sampler or noise schedule, that over what the setting or the family would run. `None` when the setting alone
+/// decided, or the picture graph did not draw the job (a video, a voice).
+pub fn ran_sampling(model: Option<&ModelConfig>, p: &GenerationMetadata) -> Option<Sampling> {
+    if !is_drawn(p.generation_mode) {
         return None;
     }
-    let (sampler, scheduler) = family.picture_sampling();
+    let fixed = model.and_then(|m| fixed_sampling(m, p.generation_mode));
+    if !super::engine_sampling::is_chosen(p) {
+        return fixed;
+    }
+    let base = match model.and_then(|m| drawn_family(m, p.generation_mode)) {
+        Some(f) if !f.follows_scheduler_setting() => f.picture_sampling(),
+        Some(f) => f.sampling_for(&p.scheduler)?,
+        None => super::graph::sampler_for(&p.scheduler)?,
+    };
+    let (sampler, scheduler) = super::engine_sampling::with_choice(base, p).ok()?;
     Some(Sampling {
         sampler: sampler.into(),
         scheduler: scheduler.into(),

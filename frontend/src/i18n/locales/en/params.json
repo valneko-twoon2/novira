@@ -345,5 +345,10 @@
   "params.i2i.dropHint": "Drop an image to draw over",
   "params.i2i.dropOverlay": "Draw over this image",
   "params.i2i.clear": "Remove the image",
-  "params.refImage.openCanvas": "Open on the canvas"
+  "params.refImage.openCanvas": "Open on the canvas",
+  "params.generation.sampler": "Sampler",
+  "params.generation.samplerInfo": "How each step is calculated. Auto uses the scheduler above or the model's own.",
+  "params.generation.noiseSchedule": "Noise schedule",
+  "params.generation.noiseScheduleInfo": "How much noise each step removes. Auto uses the scheduler above or the model's own.",
+  "params.generation.engineAuto": "Auto"
 }

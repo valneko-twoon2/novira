@@ -657,13 +657,13 @@ impl Backend {
             });
             return Ok(());
         }
-        // What ran, recorded with the picture: a model of the newer families ignores the scheduler setting.
-        let sampling = self
-            .state()
-            .models
-            .iter()
-            .find(|m| m.key == item.params.model_key)
-            .and_then(|m| crate::comfy::split::fixed_sampling(m, item.params.generation_mode));
+        // What ran, recorded with the picture: a model of the newer families ignores the scheduler setting, and a
+        // sampler or noise schedule the picture named itself replaces either.
+        let sampling = {
+            let state = self.state();
+            let model = state.models.iter().find(|m| m.key == item.params.model_key);
+            crate::comfy::split::ran_sampling(model, &item.params)
+        };
         let this = self.clone();
         let item = item.clone();
         let image =

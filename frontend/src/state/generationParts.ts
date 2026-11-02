@@ -22,6 +22,8 @@ export function generationMetadata(mode: GenerationMode, p: ParamsFields = usePa
     cfgScale: p.cfgScale,
     cfgRescale: p.cfgRescale,
     scheduler: p.scheduler,
+    ...(p.samplerName ? { samplerName: p.samplerName } : {}),
+    ...(p.noiseSchedule ? { noiseSchedule: p.noiseSchedule } : {}),
     width: p.width,
     height: p.height,
     clipSkip: p.clipSkip,

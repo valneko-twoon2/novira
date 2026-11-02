@@ -127,3 +127,22 @@ test('a prompt containing [oom] runs out of memory and offers a smaller retry an
   await page.getByTestId('settings-tab-generation').click();
   await expect(page.getByRole('switch', { name: msg('settings.lowMemory.label') })).toHaveAttribute('aria-checked', 'true');
 });
+
+test('a sampler and noise schedule picked by name are used, recorded with the picture and taken back', async ({ page }) => {
+  await openApp(page, '?scenario=empty');
+  const pick = async (testId: string, option: string) => {
+    await page.getByTestId(testId).click();
+    await page.getByRole('option', { name: option, exact: true }).click();
+  };
+  await pick('sampler-name', 'res_multistep');
+  await pick('noise-schedule', 'karras');
+  await generate(page, 'a lighthouse on a cliff at dusk');
+  await expect(page.getByTestId('viewer-image')).toBeVisible();
+  await page.getByTestId('toggle-metadata').click();
+  await expect(page.getByTestId('viewer-metadata')).toContainText('res_multistep / karras');
+
+  // Auto gives the choice back to the scheduler.
+  await pick('sampler-name', msg('params.generation.engineAuto'));
+  await pick('noise-schedule', msg('params.generation.engineAuto'));
+  await expect(page.getByTestId('sampler-name')).toContainText(msg('params.generation.engineAuto'));
+});

@@ -83,6 +83,8 @@ export async function buildCanvasRequest(s: Doc, p: ParamsState, prepend: boolea
     cfgScale: p.cfgScale,
     cfgRescale: p.cfgRescale,
     scheduler: p.scheduler,
+    ...(p.samplerName ? { samplerName: p.samplerName } : {}),
+    ...(p.noiseSchedule ? { noiseSchedule: p.noiseSchedule } : {}),
     width: s.bbox.width,
     height: s.bbox.height,
     clipSkip: p.clipSkip,

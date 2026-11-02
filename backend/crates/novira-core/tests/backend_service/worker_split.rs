@@ -268,3 +268,31 @@ async fn an_anima_checkpoint_with_parts_comfyui_cannot_read_gets_the_installed_o
     assert_eq!(split.text_encoders.len(), 1);
     assert!(jobs[0].vae.is_some());
 }
+
+#[tokio::test]
+async fn a_sampler_the_picture_named_is_recorded_as_what_ran() {
+    let dir = tempfile::tempdir().unwrap();
+    write_lora_and_checkpoint(&dir.path().join("models"));
+    let engine = Arc::new(FakeEngine::default());
+    let (backend, _) = open(dir.path(), engine.clone());
+    let key = main_key(&backend);
+    tokio::spawn(backend.clone().run_worker());
+    let mut req = request(&key, "a cat", 1);
+    req.params.scheduler = "dpmpp_2m_k".into();
+    req.params.sampler_name = Some("res_multistep".into());
+    backend.enqueue(req).unwrap();
+    wait_until(|| statuses(&backend) == vec![QueueItemStatus::Completed]).await;
+
+    // The setting's schedule (karras) stays, the sampler is the one named; both the choice and the setting are kept.
+    let meta = backend.bootstrap().images.remove(0).metadata.unwrap();
+    assert_eq!(
+        meta.sampling,
+        Some(Sampling {
+            sampler: "res_multistep".into(),
+            scheduler: "karras".into(),
+        })
+    );
+    assert_eq!(meta.sampler_name.as_deref(), Some("res_multistep"));
+    assert_eq!(meta.scheduler, "dpmpp_2m_k");
+    backend.shutdown();
+}

@@ -171,10 +171,15 @@ fn flux2(input: &GraphInput<'_>, split: &SplitJob) -> Result<BuiltGraph, String>
         let split = g.add("SplitSigmas", json!({ "sigmas": sigmas, "step": end }));
         sigmas = link(&split, 0);
     }
-    let sampler = g.add(
-        "KSamplerSelect",
-        json!({ "sampler_name": Family::Flux2.picture_sampling().0 }),
-    );
+    // The sigmas come from `Flux2Scheduler`, so only the sampler can be chosen.
+    if p.noise_schedule.as_deref().is_some_and(|s| !s.is_empty()) {
+        return Err(
+            "FLUX.2 takes its noise schedule from its own scheduler: leave it on auto".into(),
+        );
+    }
+    let (sampler_name, _) =
+        super::engine_sampling::with_choice(Family::Flux2.picture_sampling(), p)?;
+    let sampler = g.add("KSamplerSelect", json!({ "sampler_name": sampler_name }));
     let noise = g.add("RandomNoise", json!({ "noise_seed": p.seed }));
     let sampled = g.add(
         "SamplerCustomAdvanced",
@@ -229,7 +234,7 @@ pub(super) fn build(input: &GraphInput<'_>, split: &SplitJob) -> Result<BuiltGra
         clip = link(&id, 1);
     }
     let (width, height) = output_size(p);
-    let (sampler, scheduler) = split.family.sampling();
+    let (sampler, scheduler) = super::engine_sampling::with_choice(split.family.sampling(), p)?;
     let load = g.add("LoadImage", json!({ "image": source }));
     let text = |g: &mut Builder, t: &str, clip: &Value| {
         link(

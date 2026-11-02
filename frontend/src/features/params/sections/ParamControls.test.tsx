@@ -271,6 +271,32 @@ describe('ModelProfilePopover', () => {
   });
 });
 
+describe('GenerationSection sampler and noise schedule', () => {
+  it('picks a ComfyUI sampler and noise schedule on any model, and Auto gives the choice back', () => {
+    const models = [model('xl1', 'main', 'sdxl'), model('flux1', 'main', 'flux'), model('anima1', 'main', 'anima')];
+    useModels.setState({ models });
+    for (const key of ['xl1', 'flux1', 'anima1']) {
+      useParams.setState({ modelKey: key, samplerName: null, noiseSchedule: null });
+      const { unmount } = show(<GenerationSection showLoras={false} />);
+      choose(t('params.generation.sampler'), 'res_multistep');
+      choose(t('params.generation.noiseSchedule'), 'karras');
+      expect(state().samplerName, key).toBe('res_multistep');
+      expect(state().noiseSchedule, key).toBe('karras');
+      choose(t('params.generation.sampler'), t('params.generation.engineAuto'));
+      expect(state().samplerName, key).toBeNull();
+      unmount();
+    }
+  });
+
+  it('offers FLUX.2 only the sampler: its sigmas come from its own scheduler', () => {
+    useModels.setState({ models: [model('f2', 'main', 'flux2')] });
+    useParams.setState({ modelKey: 'f2' });
+    show(<GenerationSection showLoras={false} />);
+    expect(screen.getByLabelText(t('params.generation.sampler'))).toBeTruthy();
+    expect(screen.queryByLabelText(t('params.generation.noiseSchedule'))).toBeNull();
+  });
+});
+
 describe('GenerationSection scheduler', () => {
   it('shows the sampling a Flux model always runs, read-only, and the choice for an SDXL or an Anima model', () => {
     const flux = model('flux1', 'main', 'flux');

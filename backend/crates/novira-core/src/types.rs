@@ -343,6 +343,13 @@ pub struct GenerationMetadata {
     /// absent when `scheduler` is what ran.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sampling: Option<Sampling>,
+    /// Pictures: a ComfyUI sampler (`res_multistep`) to run in place of the one the `scheduler` setting or the model's
+    /// family would (`comfy::engine_sampling`). Absent when the setting decides.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sampler_name: Option<String>,
+    /// Pictures: a ComfyUI noise schedule (`karras`) in place of the one the setting or the family would run.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub noise_schedule: Option<String>,
     #[serde(flatten)]
     pub extra: Map<String, Value>,
 }

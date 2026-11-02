@@ -152,6 +152,15 @@ describe('recall', () => {
     expect(p().scheduler).toBe('euler_a');
   });
 
+  it('recalls the sampler and noise schedule a picture named, and clears them for one that did not', () => {
+    p().set({ scheduler: 'dpmpp_2m_k', samplerName: 'ddim', noiseSchedule: 'beta' });
+    // The setting was what ran for the rest, so it comes back with the choice.
+    p().recallAll(metadata({ scheduler: 'euler_a', samplerName: 'res_multistep', noiseSchedule: 'karras', sampling: { sampler: 'res_multistep', scheduler: 'karras' } }));
+    expect(p()).toMatchObject({ scheduler: 'euler_a', samplerName: 'res_multistep', noiseSchedule: 'karras' });
+    p().recallAll(metadata({ scheduler: 'euler_a' }));
+    expect(p()).toMatchObject({ samplerName: null, noiseSchedule: null });
+  });
+
   it('leaves the strength alone when the metadata has none', () => {
     p().set({ strength: 0.9 });
     p().recallAll(metadata());

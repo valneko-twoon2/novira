@@ -22,6 +22,8 @@ const IMAGE: Record<keyof ParamsFields, true | string> = {
   vaeKey: true,
   vaePrecision: true,
   scheduler: true,
+  samplerName: true,
+  noiseSchedule: true,
   steps: true,
   cfgScale: true,
   cfgRescale: true,

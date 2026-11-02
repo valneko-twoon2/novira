@@ -415,7 +415,7 @@ pub fn build(input: &GraphInput<'_>) -> Result<BuiltGraph, String> {
     if let Some(split) = input.split.filter(|s| super::variants::is_edit(s)) {
         return super::variants::build(input, split);
     }
-    let (sampler, scheduler) = match family {
+    let setting = match family {
         Some(f) if !f.follows_scheduler_setting() => f.sampling(),
         _ => family
             .map_or_else(
@@ -424,6 +424,8 @@ pub fn build(input: &GraphInput<'_>) -> Result<BuiltGraph, String> {
             )
             .ok_or_else(|| format!("Scheduler '{}' is not available in ComfyUI", p.scheduler))?,
     };
+    // A sampler or noise schedule the picture names itself replaces the setting's or the family's.
+    let (sampler, scheduler) = super::engine_sampling::with_choice(setting, p)?;
     if p.steps == 0 {
         return Err("Steps must be at least 1".into());
     }

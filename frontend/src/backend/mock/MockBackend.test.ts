@@ -143,6 +143,17 @@ describe('mock backend: generation', () => {
     expect((await images())[0]!.metadata?.sampling).toBeUndefined();
   });
 
+  it('records the sampler and noise schedule a picture named over the one its family fixes, and keeps the other half', async () => {
+    const { backend, settled } = await start();
+    const images = async () => (await backend.bootstrap()).images;
+    const [flux] = await backend.enqueue(request({}, { modelKey: 'main-flux-schnell', samplerName: 'res_multistep' }));
+    await settled(flux!.id);
+    expect((await images())[0]!.metadata).toMatchObject({ samplerName: 'res_multistep', sampling: { sampler: 'res_multistep', scheduler: 'simple' } });
+    const [xl] = await backend.enqueue(request({}, { samplerName: 'ddim', noiseSchedule: 'beta' }));
+    await settled(xl!.id);
+    expect((await images())[0]!.metadata?.sampling).toEqual({ sampler: 'ddim', scheduler: 'beta' });
+  });
+
   it('makes the same picture from the same seed and prompt', async () => {
     const a = await start();
     const b = await start();

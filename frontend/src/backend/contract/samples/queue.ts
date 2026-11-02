@@ -134,7 +134,9 @@ export const generationMetadata = {
   voice,
   hiresFix,
   mangaScreen,
-  sampling: { sampler: 'euler', scheduler: 'simple' },
+  sampling: { sampler: 'res_multistep', scheduler: 'karras' },
+  samplerName: 'res_multistep',
+  noiseSchedule: 'karras',
 } satisfies Required<GenerationMetadata>;
 
 export const comfyGraph = {

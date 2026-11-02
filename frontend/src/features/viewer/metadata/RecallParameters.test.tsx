@@ -89,6 +89,14 @@ describe('RecallParameters', () => {
     expect(within(r).queryByRole('button')).toBeNull();
   });
 
+  it('takes back the sampler and noise schedule the picture named, with the scheduler it was drawn over', () => {
+    useParams.setState({ scheduler: 'dpmpp_2m_k', samplerName: null, noiseSchedule: null });
+    show(metadata({ scheduler: 'euler_a', samplerName: 'res_multistep', sampling: { sampler: 'res_multistep', scheduler: 'normal' } }));
+    expect(row('gallery.meta.sampling').textContent).toContain('res_multistep / normal');
+    recall('gallery.meta.sampling');
+    expect(useParams.getState()).toMatchObject({ scheduler: 'euler_a', samplerName: 'res_multistep', noiseSchedule: null });
+  });
+
   it('finds the model by its name, and keeps the current one when none is installed', () => {
     useModels.setState({ models: [{ key: 'wai', name: 'waiIllustriousSDXL_v170', type: 'main', base: 'sdxl', path: '' } as never] });
     useParams.setState({ modelKey: 'current' });
