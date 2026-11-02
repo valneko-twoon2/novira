@@ -1,0 +1,50 @@
+{
+  "euler": {
+    "sampler": "euler",
+    "scheduler": "normal"
+  },
+  "euler_a": {
+    "sampler": "euler_ancestral",
+    "scheduler": "normal"
+  },
+  "euler_k": {
+    "sampler": "euler",
+    "scheduler": "karras"
+  },
+  "dpmpp_2m": {
+    "sampler": "dpmpp_2m",
+    "scheduler": "normal"
+  },
+  "dpmpp_2m_k": {
+    "sampler": "dpmpp_2m",
+    "scheduler": "karras"
+  },
+  "dpmpp_2m_sde_k": {
+    "sampler": "dpmpp_2m_sde",
+    "scheduler": "karras"
+  },
+  "dpmpp_sde_k": {
+    "sampler": "dpmpp_sde",
+    "scheduler": "karras"
+  },
+  "heun": {
+    "sampler": "heun",
+    "scheduler": "normal"
+  },
+  "lms": {
+    "sampler": "lms",
+    "scheduler": "normal"
+  },
+  "ddim": {
+    "sampler": "ddim",
+    "scheduler": "ddim_uniform"
+  },
+  "unipc": {
+    "sampler": "uni_pc",
+    "scheduler": "normal"
+  },
+  "lcm": {
+    "sampler": "lcm",
+    "scheduler": "sgm_uniform"
+  }
+}

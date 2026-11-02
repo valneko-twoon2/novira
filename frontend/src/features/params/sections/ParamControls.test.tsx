@@ -2,7 +2,7 @@
 // Smaller Generate-settings pieces: Advanced and High-resolution accordions, aspect buttons, LoRA cards, recommended hints, builder registration.
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ModelConfig } from '@/backend';
+import { runningSampling, type ModelConfig } from '@/backend';
 import { t } from '@/i18n';
 import { useModels } from '@/state/models';
 import { useParams } from '@/state/params';
@@ -282,7 +282,9 @@ describe('GenerationSection sampler and noise schedule', () => {
       choose(t('params.generation.noiseSchedule'), 'karras');
       expect(state().samplerName, key).toBe('res_multistep');
       expect(state().noiseSchedule, key).toBe('karras');
-      choose(t('params.generation.sampler'), t('params.generation.engineAuto'));
+      // Auto says what it stands for: the family's sampler, or the scheduler's.
+      const running = runningSampling(models.find((m) => m.key === key), state().scheduler)!;
+      choose(t('params.generation.sampler'), t('params.generation.engineAutoIs', { name: running.sampler }));
       expect(state().samplerName, key).toBeNull();
       unmount();
     }

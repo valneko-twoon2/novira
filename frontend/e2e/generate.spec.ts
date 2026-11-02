@@ -142,7 +142,10 @@ test('a sampler and noise schedule picked by name are used, recorded with the pi
   await expect(page.getByTestId('viewer-metadata')).toContainText('res_multistep / karras');
 
   // Auto gives the choice back to the scheduler.
-  await pick('sampler-name', msg('params.generation.engineAuto'));
-  await pick('noise-schedule', msg('params.generation.engineAuto'));
-  await expect(page.getByTestId('sampler-name')).toContainText(msg('params.generation.engineAuto'));
+  const auto = new RegExp(`^${msg('params.generation.engineAuto')}`);
+  await page.getByTestId('sampler-name').click();
+  await page.getByRole('option', { name: auto }).click();
+  await page.getByTestId('noise-schedule').click();
+  await page.getByRole('option', { name: auto }).click();
+  await expect(page.getByTestId('sampler-name')).toContainText(auto);
 });

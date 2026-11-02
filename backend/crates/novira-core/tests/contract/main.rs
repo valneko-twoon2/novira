@@ -28,6 +28,7 @@ mod enums;
 mod family_sampling;
 mod inbound;
 mod outbound;
+mod scheduler_sampling;
 mod share_backup;
 
 use serde::de::DeserializeOwned;
@@ -43,6 +44,7 @@ const CHECKS: &[Check] = &[
     ("enums", enums::enums),
     ("engine-sampling", engine_sampling::engine_sampling),
     ("family-sampling", family_sampling::family_sampling),
+    ("scheduler-sampling", scheduler_sampling::scheduler_sampling),
     ("generation-metadata", both::generation_metadata),
     ("enqueue-request", both::enqueue_request),
     ("queue-item", both::queue_item),

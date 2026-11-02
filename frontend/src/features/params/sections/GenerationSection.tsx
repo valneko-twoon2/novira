@@ -1,6 +1,6 @@
 // "Generation" accordion: main model, LoRAs, scheduler, steps, CFG scale.
 import type { SchedulerName } from '@/backend';
-import { ENGINE_SAMPLERS, ENGINE_SCHEDULES, fixedSampling, SCHEDULERS, samplingLabel } from '@/backend';
+import { ENGINE_SAMPLERS, ENGINE_SCHEDULES, fixedSampling, runningSampling, SCHEDULERS, samplingLabel } from '@/backend';
 import { t, tCount } from '@/i18n';
 import { BASE_LABELS } from '@/state/models';
 import { useParams } from '@/state/params';
@@ -90,9 +90,12 @@ function EngineSamplingFields() {
   const main = useMainModel();
   const samplerName = useParams((s) => s.samplerName);
   const noiseSchedule = useParams((s) => s.noiseSchedule);
+  const scheduler = useParams((s) => s.scheduler);
   const set = useParams((s) => s.set);
+  // Auto says what it will run: the model family's own, or what the scheduler above stands for.
+  const running = runningSampling(main, scheduler);
   // An empty value reads as "nothing chosen" to the select, so auto has a value of its own.
-  const auto = { value: AUTO, label: t('params.generation.engineAuto') };
+  const auto = (name?: string) => ({ value: AUTO, label: name ? t('params.generation.engineAutoIs', { name }) : t('params.generation.engineAuto') });
   return (
     <>
       <Field label={t('params.generation.sampler')} info={t('params.generation.samplerInfo')}>
@@ -101,7 +104,7 @@ function EngineSamplingFields() {
           onChange={(v) => set({ samplerName: v === AUTO ? null : v })}
           aria-label={t('params.generation.sampler')}
           data-testid="sampler-name"
-          options={[auto, ...ENGINE_SAMPLERS.map((v) => ({ value: v, label: v }))]}
+          options={[auto(running?.sampler), ...ENGINE_SAMPLERS.map((v) => ({ value: v, label: v }))]}
         />
       </Field>
       {/* FLUX.2 takes its sigmas from its own scheduler node, so only its sampler can be chosen. */}
@@ -112,7 +115,7 @@ function EngineSamplingFields() {
             onChange={(v) => set({ noiseSchedule: v === AUTO ? null : v })}
             aria-label={t('params.generation.noiseSchedule')}
             data-testid="noise-schedule"
-            options={[auto, ...ENGINE_SCHEDULES.map((v) => ({ value: v, label: v }))]}
+            options={[auto(running?.scheduler), ...ENGINE_SCHEDULES.map((v) => ({ value: v, label: v }))]}
           />
         </Field>
       )}

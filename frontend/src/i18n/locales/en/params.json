@@ -350,5 +350,6 @@
   "params.generation.samplerInfo": "How each step is calculated. Auto uses the scheduler above or the model's own.",
   "params.generation.noiseSchedule": "Noise schedule",
   "params.generation.noiseScheduleInfo": "How much noise each step removes. Auto uses the scheduler above or the model's own.",
-  "params.generation.engineAuto": "Auto"
+  "params.generation.engineAuto": "Auto",
+  "params.generation.engineAutoIs": "Auto ({name})"
 }

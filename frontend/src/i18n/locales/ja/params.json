@@ -350,5 +350,6 @@
   "params.generation.samplerInfo": "ノイズを取り除く計算方法。自動のときは、上のスケジューラーかモデルの標準が使われます。",
   "params.generation.noiseSchedule": "ノイズスケジュール",
   "params.generation.noiseScheduleInfo": "ステップごとにノイズを取る量の配分。自動のときは、上のスケジューラーかモデルの標準が使われます。",
-  "params.generation.engineAuto": "自動"
+  "params.generation.engineAuto": "自動",
+  "params.generation.engineAutoIs": "自動（{name}）"
 }

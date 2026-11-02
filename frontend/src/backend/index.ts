@@ -92,6 +92,7 @@ export { loadImage } from './mock/imageSynth';
 export { draftStep } from './draft';
 export { FAMILY_SAMPLING, fixedSampling, samplingLabel } from './familySampling';
 export { ENGINE_SAMPLERS, ENGINE_SCHEDULES } from './engineSampling';
+export { runningSampling, SCHEDULER_SAMPLING } from './schedulerSampling';
 export { canOpenNewWindow, openInNewWindow } from './openWindow';
 export type { LanApi, LanDevice, LanFailure, LanPending, LanResult, LanState, PairingCode } from './http/lan';
 export { perf } from './perf';

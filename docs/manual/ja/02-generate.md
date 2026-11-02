@@ -142,7 +142,7 @@ Anima・Flux・FLUX.2・Chroma・Qwen-Image・Z-Image・SD3・HiDream・AuraFlow
 | **{{ui:params.refImage.sectionLabel}}**（プロンプトのすぐ下） | 絵の雰囲気や登場人物を寄せるための画像（後述） |
 | **{{ui:params.i2i.title}}** | 元の絵をもとに描き直す（i2i）ときの元画像と、{{ui:params.image.strength}}（後述） |
 | **{{ui:params.image.title}}** | {{ui:params.image.aspect}}、幅と高さ。「{{ui:params.image.swap}}」「{{ui:params.image.lock}}」「{{ui:params.image.optimal}}」のボタンもあります |
-| **{{ui:params.generation.title}}** | LoRA（絵柄や人物を足す小さな追加モデル）、{{ui:params.generation.scheduler}}、{{ui:params.generation.sampler}}、{{ui:params.generation.noiseSchedule}}（ComfyUI の名前で直接選びます。「{{ui:params.generation.engineAuto}}」なら、スケジューラーかモデルの標準に従います。FLUX.2 ではサンプラーだけ）、{{ui:params.generation.steps}}、{{ui:params.generation.cfg}} |
+| **{{ui:params.generation.title}}** | LoRA（絵柄や人物を足す小さな追加モデル）、{{ui:params.generation.scheduler}}、{{ui:params.generation.sampler}}、{{ui:params.generation.noiseSchedule}}（ComfyUI の名前で直接選びます。「{{ui:params.generation.engineAuto}}」なら、スケジューラーかモデルの標準に従い、そのとき使われる名前が「自動（名前）」と出ます。FLUX.2 ではサンプラーだけ）、{{ui:params.generation.steps}}、{{ui:params.generation.cfg}} |
 | **{{ui:params.hires.title}}** | 描いた絵を拡大して、もう一度描き直す 2 回目の生成（後述） |
 | **{{ui:params.advanced.title}}** | {{ui:params.advanced.vae}}、{{ui:params.advanced.clipSkip}}、{{ui:params.advanced.seamless}}（つなげても継ぎ目が出ない絵。SD1.X と SDXL のモデルで使え、拡張機能 ComfyUI-seamless-tiling を拡張機能の画面から入れておく必要があります）など |
 

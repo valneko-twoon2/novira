@@ -4,6 +4,7 @@ import { agentEndpointInput, agentEndpointTest, agentReply, agentRequest, agentS
 import { enums } from './enums';
 import { FAMILY_SAMPLING } from '../../familySampling';
 import { ENGINE_SAMPLERS, ENGINE_SCHEDULES } from '../../engineSampling';
+import { SCHEDULER_SAMPLING } from '../../schedulerSampling';
 import { backendEvents, bootstrap, engineSettings, engineSettingsPatch, engineStatus, hardwareInfo, packStatus } from './events';
 import { boardDto, boardPatch, imageDto, imageOptions, imagePatch } from './gallery';
 import {
@@ -28,6 +29,8 @@ export const SAMPLES: Record<string, unknown> = {
   'family-sampling': FAMILY_SAMPLING,
   // Not a wire type either: the samplers and noise schedules a picture may name, checked against Rust's lists.
   'engine-sampling': { samplers: ENGINE_SAMPLERS, schedules: ENGINE_SCHEDULES },
+  // And the pair each scheduler name runs, which the screen shows as what "auto" means.
+  'scheduler-sampling': SCHEDULER_SAMPLING,
   'generation-metadata': generationMetadata,
   'enqueue-request': enqueueRequest,
   'queue-item': queueItem,
