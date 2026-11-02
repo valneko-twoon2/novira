@@ -11,6 +11,7 @@ import { AgentEndpointForm } from './AgentEndpointForm';
 import { AgentModelPicker } from './AgentModelPicker';
 import { ChatMessages } from './ChatMessages';
 import { Composer, ToolsBanner, useDraft } from './Composer';
+import { ContextMeter } from './ContextMeter';
 import { SessionList } from './SessionList';
 
 /** The sides and corners the window is resized from. */
@@ -144,6 +145,7 @@ export function AgentChat() {
         <>
           <ChatMessages onSuggest={draft.submit} />
           <ToolsBanner />
+          <ContextMeter />
           <Composer draft={draft} />
         </>
       )}

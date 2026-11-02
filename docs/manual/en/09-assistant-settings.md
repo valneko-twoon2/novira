@@ -162,6 +162,14 @@ A reply that changed settings or edits gets an **{{ui:agent.undo}}** button. Pre
 
 However, after you reopen the app, changes made before that cannot be undone (the button can no longer be pressed).
 
+### Checking how long the conversation is
+
+Within one chat the agent answers with the earlier exchange in mind. The names of the pictures you attached and the ones it showed are carried over too, and it looks at them again when it needs to.
+
+- Above the message box, the size of the conversation that goes with your next message is shown as "about N of N tokens". The number is an estimate.
+- When the conversation grows past the limit, the oldest messages stop being sent and "N older messages are no longer sent" appears. The agent knows nothing of the messages that are not sent.
+- To change the subject, start a new chat with {{ui:agent.session.new}} so the old conversation does not weigh on it.
+
 ### Chat history
 
 Your exchanges with the agent are kept as a "chat". When you press the chat's name at the top of the window, the **{{ui:agent.session.history}}** list opens.

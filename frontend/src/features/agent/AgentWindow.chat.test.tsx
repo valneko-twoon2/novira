@@ -3,7 +3,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { backend } from '@/backend';
-import { t } from '@/i18n';
+import { t, tCount } from '@/i18n';
 import { useAgent, type AgentMessage, type AgentToolLog } from '@/state/agent';
 import { TooltipProvider } from '@/ui';
 import { AgentWindow } from './AgentWindow';
@@ -111,6 +111,26 @@ describe('sending', () => {
     fireEvent.click(screen.getByTestId('agent-unqueue'));
     expect(useAgent.getState().queued).toEqual([]);
     expect(screen.queryByTestId('agent-msg-queued')).toBeNull();
+  });
+});
+
+describe('the context meter', () => {
+  it('shows what the next message carries once the chat has messages, and says when older ones no longer fit', async () => {
+    seed([]);
+    show();
+    await screen.findByTestId('agent-input');
+    expect(screen.queryByTestId('agent-context')).toBeNull();
+    cleanup();
+    seed([message(1, 'user', 'hi'), message(2, 'assistant', 'hello')]);
+    show();
+    expect((await screen.findByTestId('agent-context')).textContent).toContain(t('agent.context.usage', { used: '11', max: '30.0k' }));
+    expect(screen.getByTestId('agent-context').getAttribute('data-full')).toBeNull();
+    cleanup();
+    seed(Array.from({ length: 4 }, (_, i) => message(i + 1, i % 2 ? 'assistant' : 'user', 'あ'.repeat(40000))));
+    show();
+    const meter = await screen.findByTestId('agent-context');
+    expect(meter.getAttribute('data-full')).toBe('true');
+    expect(meter.textContent).toContain(tCount('agent.context.dropped', 2));
   });
 });
 

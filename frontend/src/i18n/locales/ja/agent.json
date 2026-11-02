@@ -153,5 +153,8 @@
   "agent.permission.web": "送るもの: 検索語「{query}」（公開サイト {site} へ）",
   "agent.permission.picture": "読むもの: ギャラリーの画像 1 枚（エージェントが試しに生成した画像など）",
   "agent.attach.open": "画像を大きく表示",
-  "agent.queued.remove": "順番待ちから外す"
+  "agent.queued.remove": "順番待ちから外す",
+  "agent.context.usage": "次の送信に付く会話: 約 {used} / {max} トークン",
+  "agent.context.dropped.one": "古い {count} 件は送られません",
+  "agent.context.dropped.other": "古い {count} 件は送られません"
 }

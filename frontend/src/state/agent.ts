@@ -7,7 +7,7 @@ import { persist } from 'zustand/middleware';
 import { AGENT_MAX_ATTACHMENTS, backend, type AgentEffort, type AgentEndpointInput, type AgentModelOption, type AgentProvider, type AgentStatus, type AgentToolCall } from '@/backend';
 import { EDIT_SCREENS, maxMessageId, newSessionId, persistedSessions, restoreSessions, type AgentMessage, type AgentSession, type AgentToolLog } from './agentSessions';
 import { extensionId } from './agentExtensions';
-import { earlierSettings, historyTurn } from './agentHistory';
+import { contextUsage, earlierSettings } from './agentHistory';
 import { agentEditor } from './agentRegistry';
 import { createToolRun, currentScreen, runAgentTool, webQuestion, type PermissionChoice, type ToolRun } from './agentTools';
 import { useParams } from './params';
@@ -333,7 +333,7 @@ export const useAgent = create<AgentState>()(
           const sessionId = session.id;
           // Only this session's earlier exchange goes with the request; failed replies are left out.
           // An answer carries a note of what it changed and whether it was undone (agentHistory.ts).
-          const history = session.messages.filter((m) => !m.error).map(historyTurn);
+          const history = contextUsage(session.messages).turns;
           cancelled = false;
           let failed = false;
           const run = createToolRun(askPermission, earlierSettings(session.messages));

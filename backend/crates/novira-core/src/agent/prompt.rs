@@ -19,6 +19,8 @@ How to work:
 
 Trial pictures (only when the line "trial pictures: allowed" is below):
 - When a request is about a look or a mood that words leave open (a style, an atmosphere, "make it cuter", "more like a summer day"), check that you understood before you go further: set the prompt, queue one picture with generate (target screen, trial true), look at it with view_picture and its queue id, and ask the user in one line whether this is what they mean and what to change. The picture is shown under your answer. Make one trial picture a request unless the user asks for more, and say that it is a trial.
+- When the user asks to get closer over several pictures ("try a few and bring it closer", "keep going until it looks like this"), work in a loop and do not stop after the first or second picture: draw a trial picture, look at it with view_picture, compare it with the target (an earlier picture of the chat is not in front of you: look at it again with view_picture and its name), change only what differs in the prompt or settings, and draw the next one. Go on for up to 5 pictures (the number the user gives, if any) and stop earlier only when it matches or two pictures in a row come no closer. Do not ask whether to continue between pictures. At the end say how many you drew and what you changed each time.
+- A picture the user attached or you showed in an earlier turn is noted in the history by its name: look at it again with view_picture when the request is about how it looks, and never say you cannot see it.
 - With "trial pictures: off", never draw on your own: ask in words.
 
 When the user corrects a result:
@@ -50,8 +52,9 @@ How to work:
 
 Your final answer (after the tool calls) is shown to the user in the chat column, which shows Markdown (bold, lists, headings, code); use it only where it helps reading. Write it in the user's language (the locale below), in a few lines: what you made and where the user should look first, and what you left for them. Begin it with <thoughts> and one to five short lines on how you read the request and why you chose what you did, then </thoughts>; those lines are a summary the user can open, not a transcript. Do not repeat the tool calls' data in the answer."##;
 
-/// The most turns of the conversation sent back with a request.
-const HISTORY_TURNS: usize = 10;
+/// The most turns of the conversation sent back with a request. The window already keeps the turns to a token budget
+/// (`fitHistory` in agentHistory.ts); this is only a stop against a request with an absurd history.
+const HISTORY_TURNS: usize = 400;
 
 /// The turns of the conversation that go with a request: the last `HISTORY_TURNS`, oldest first.
 pub fn recent_turns(request: &AgentRequest) -> Vec<&AgentTurn> {
@@ -121,12 +124,18 @@ mod tests {
     }
 
     #[test]
-    fn only_the_last_ten_turns_are_sent_in_order() {
+    fn the_turns_are_sent_in_order_and_only_an_absurd_history_is_cut() {
+        // The window keeps the history to a token budget; the backend does not cut a normal one.
         let p = build_prompt(&request(13));
-        assert!(!p.contains("turn 2\n"), "older turns are dropped");
         assert!(p.contains("assistant: turn 3\nuser: turn 4"));
         assert!(p.contains("user: turn 12\n"));
         assert!(p.find("turn 3").unwrap() < p.find("turn 12").unwrap());
+        let p = build_prompt(&request(HISTORY_TURNS + 3));
+        assert!(
+            !p.contains("turn 2\n"),
+            "older turns beyond the stop are dropped"
+        );
+        assert!(p.contains("turn 3\n"));
     }
 
     #[test]
@@ -198,6 +207,8 @@ mod tests {
         assert!(p.contains("A word in the negative prompt works against everyone"));
         // After a missed correction, rebuild from the requests; never claim a fix it has not seen.
         assert!(p.contains("do not patch your last version once more"));
+        assert!(p.contains("work in a loop and do not stop after the first or second picture"));
+        assert!(p.contains("never say you cannot see it"));
         assert!(p.contains("Never say a fault is fixed without having seen it"));
         // Corrections replace words instead of piling them up, and the answer says how the length changed.
         assert!(p.contains("A correction replaces words, it does not pile them up"));

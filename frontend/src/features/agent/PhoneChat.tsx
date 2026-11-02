@@ -11,6 +11,7 @@ import { ErrorBoundary, Spinner } from '@/ui';
 import { AgentModelPicker } from './AgentModelPicker';
 import { ChatMessages } from './ChatMessages';
 import { Composer, ToolsBanner, useDraft } from './Composer';
+import { ContextMeter } from './ContextMeter';
 import { SessionList } from './SessionList';
 import './agent.css';
 import './phoneChat.css';
@@ -102,6 +103,7 @@ export function PhoneChat() {
         <>
           <ChatMessages onSuggest={draft.submit} phone className="phone-chat__body" />
           <ToolsBanner />
+          <ContextMeter />
           <Composer draft={draft} phone />
         </>
       )}

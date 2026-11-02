@@ -494,8 +494,8 @@ describe('attached pictures', () => {
     expect(currentMessages(useAgent.getState()).at(-2)).toMatchObject({ role: 'user', text: 'like this', images: ['a.png', 'b.png'] });
     await useAgent.getState().send('   ', ['c.png']);
     expect(requests[1]).toMatchObject({ message: t('agent.attach.defaultAsk'), images: ['c.png'] });
-    // Earlier turns carry only their text.
-    expect(requests[1]!.history?.[0]).toEqual({ role: 'user', text: 'like this' });
+    // Earlier turns carry their text and the names of their pictures, not the pictures.
+    expect(requests[1]!.history?.[0]?.text).toMatch(/^like this\n\[The user attached the pictures a\.png, b\.png\./);
   });
 
   it('are left out when there are none, cut to the limit, and an empty message without pictures sends nothing', async () => {

@@ -19,6 +19,30 @@ export interface EarlierSettings {
   settings: Partial<ParamsFields>;
 }
 
+/** The most tokens (estimated) of the earlier conversation a request carries; the oldest turns beyond it are not sent. */
+export const CONTEXT_TOKENS = 30_000;
+
+/** A rough token count of a text in any language: about one token per three characters. */
+export const roughTokens = (text: string): number => Math.ceil([...text].length / 3);
+
+/** The newest turns that fit `CONTEXT_TOKENS` (the newest one always goes), oldest first, with what they cost and how many older ones were left out. */
+export function fitHistory(turns: readonly AgentTurn[], budget = CONTEXT_TOKENS): { turns: AgentTurn[]; tokens: number; dropped: number } {
+  const kept: AgentTurn[] = [];
+  let tokens = 0;
+  for (let i = turns.length - 1; i >= 0; i--) {
+    const cost = roughTokens(turns[i]!.text) + 4;
+    if (kept.length && tokens + cost > budget) break;
+    kept.unshift(turns[i]!);
+    tokens += cost;
+  }
+  return { turns: kept, tokens, dropped: turns.length - kept.length };
+}
+
+/** What the next message of a session would carry along of the earlier conversation (the same cut `send` makes). */
+export function contextUsage(messages: readonly AgentMessage[]) {
+  return fitHistory(messages.filter((m) => !m.error).map(historyTurn));
+}
+
 /** What one logged tool call did, in a few English words. */
 const NOTE: Record<ToolLogKind, (log: AgentToolLog) => string> = {
   model: (l) => `selected the model ${l.key ?? ''}`.trim(),
@@ -38,11 +62,15 @@ const NOTE: Record<ToolLogKind, (log: AgentToolLog) => string> = {
 };
 
 /** An earlier message as the model is shown it: an answer ends with what its tool calls did, and whether it was undone. */
-export function historyTurn(m: Pick<AgentMessage, 'role' | 'text' | 'tools' | 'undone'>): AgentTurn {
-  if (m.role === 'user' || !m.tools.length) return { role: m.role, text: m.text };
-  const notes = [`[This answer ${m.tools.map((l) => NOTE[l.kind](l)).join('; ')}.]`];
-  if (m.undone) notes.push('[The user undid these changes with the undo button: they are not in the app any more.]');
-  return { role: m.role, text: `${m.text}\n${notes.join('\n')}` };
+export function historyTurn(m: Pick<AgentMessage, 'role' | 'text' | 'tools' | 'undone' | 'images'>): AgentTurn {
+  const notes: string[] = [];
+  // The pictures themselves are not sent again: their names are, so the model can look at one again (view_picture).
+  if (m.images?.length) notes.push(`[${m.role === 'user' ? 'The user attached' : 'This answer showed'} the pictures ${m.images.join(', ')}. Look at one again with view_picture and its name when the request is about it.]`);
+  if (m.role === 'assistant' && m.tools.length) {
+    notes.push(`[This answer ${m.tools.map((l) => NOTE[l.kind](l)).join('; ')}.]`);
+    if (m.undone) notes.push('[The user undid these changes with the undo button: they are not in the app any more.]');
+  }
+  return { role: m.role, text: notes.length ? `${m.text}\n${notes.join('\n')}` : m.text };
 }
 
 /** The settings before each earlier request that changed them, oldest first (kept only while the app runs). */
