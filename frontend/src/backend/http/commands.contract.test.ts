@@ -3,6 +3,8 @@
 // (`backend/crates/novira-core/src/api.rs`): every command name must exist there (or be one the desktop shell implements
 // itself, which the server answers "not available in the browser yet"), and the argument names must be the layer's
 // parameters in camelCase.
+// A `Response` body is a Node `Blob`: jsdom's own Blob has no `stream()`, which Node 22's `Response` calls (Node 24's does not).
+import { Blob as NodeBlob } from 'node:buffer';
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { CALLS, camel, fixture, read } from '../calls.testkit';
 import { HttpBackend, isServedByServer, isServerImageUrl } from './HttpBackend';
@@ -106,7 +108,7 @@ beforeEach(() => {
         return json({ name: 'up.png', url: '/novira-image/full/up.png' });
       }
       // A picture of the page (the fixtures name desktop picture URLs) is read to be posted.
-      if (!url.startsWith('/api/')) return new Response(new Blob(['x']));
+      if (!url.startsWith('/api/')) return new Response(new NodeBlob(['x']) as unknown as Blob);
       const cmd = url.replace('/api/', '');
       calls.push({ cmd, body: JSON.parse(String(init.body)), method: String(init.method), url });
       const r = reply(cmd);
@@ -214,7 +216,7 @@ describe('HttpBackend', () => {
       'fetch',
       vi.fn(async (url: string, init: RequestInit) => {
         sent.push({ url, body: JSON.parse(String(init.body)) });
-        return new Response(new Blob(['zip']), {
+        return new Response(new NodeBlob(['zip']) as unknown as Blob, {
           headers: {
             'content-type': 'application/zip',
             'content-disposition': 'attachment; filename="novira-export-20261022-120000.zip"',
