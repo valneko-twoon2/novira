@@ -255,6 +255,17 @@ describe('the Generate tab', () => {
     expect(asked).toEqual(['get_generation_settings']);
   });
 
+  it('returns the length of a changed prompt before the request and now, and none for parameters alone', async () => {
+    useParams.getState().set({ positivePrompt: 'a girl', negativePrompt: 'blurry' });
+    expect(await call('set_generation_settings', { positivePrompt: 'a girl, black hair, short hair' })).toEqual({
+      ok: true,
+      content: { set: ['positivePrompt'], tokens: { positivePrompt: { beforeRequest: 2, now: 8 } } },
+    });
+    // A second call of the same request still compares with the prompt before the request.
+    expect(await call('set_generation_settings', { positivePrompt: 'a girl, bob' })).toMatchObject({ content: { tokens: { positivePrompt: { beforeRequest: 2, now: 4 } } } });
+    expect(await call('set_generation_settings', { steps: 25 })).toEqual({ ok: true, content: { set: ['steps'] } });
+  });
+
   it('gives the settings before earlier requests only with the prompts, which ask first', async () => {
     run = createToolRun(async (tool) => {
       asked.push(tool);

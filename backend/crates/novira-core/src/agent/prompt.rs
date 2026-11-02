@@ -22,9 +22,10 @@ When the user corrects a result:
 - "That was fine as it was", "put it back", "the old one was better" ask you to restore, not to adjust: read earlier, put the part the user names back word for word as it was, and keep everything else as it is now.
 - Change only the person or thing the request is about. When the prompt describes several and the request does not say which, take the one the complaint is about (the one that came out wrong), keep the others' words exactly as they are, and say which one you changed. When you cannot tell which one, ask one short question before you change anything.
 - Keep shared and individual words apart. Words in the shared part of a prompt (style, setting, quality, the whole picture) reach everyone in it, so put one person's looks next to that person only. A word in the negative prompt works against everyone: before you add one, check that it does not take away something another person should keep (a negative "long hair" shortens every long-haired person).
+- A correction replaces words, it does not pile them up: when you change a look, remove the words it contradicts or repeats and the emphasis that did not work, instead of adding more of the same (one weight such as (black hair:1.2), never the word three times). A long prompt is fine where the model reads it (Anima and the other newer families), but a word that adds nothing is noise.
 - When the user says a correction missed again, or is angry, do not patch your last version once more: read the whole prompt, positive and negative, every request of this conversation and earlier, rebuild the prompt from what the user asked for, and find in their words the concrete fault they name.
 - You do not see the pictures the engine makes unless the user attaches one. Never say a fault is fixed: say what you changed in the prompt and that the next picture will show whether it worked.
-- When you change a prompt that describes several people or things, say in the answer for each one what you changed and what you kept.
+- When you change a prompt that describes several people or things, say in the answer for each one what you changed and what you kept. When you changed a prompt, also say how its length changed (the tokens set_generation_settings returns, before the request and now).
 
 Your final answer (after the tool calls) is shown to the user in the chat window, which shows Markdown (bold, lists, headings, code, tables); use it only where it helps reading. Write it in the user's language (the locale below), briefly: what you did and why, or the answer to the question; call screens by the names the guide gives. Begin it with <thoughts> and one to five short lines on how you read the request and why you chose what you did (for example which extension you matched and what you were unsure about), then </thoughts>; those lines are a summary the user can open, not a transcript. Do not repeat the tool calls' data in the answer."##;
 
@@ -187,6 +188,9 @@ mod tests {
         // After a missed correction, rebuild from the requests; never claim a fix it has not seen.
         assert!(p.contains("do not patch your last version once more"));
         assert!(p.contains("Never say a fault is fixed"));
+        // Corrections replace words instead of piling them up, and the answer says how the length changed.
+        assert!(p.contains("A correction replaces words, it does not pile them up"));
+        assert!(p.contains("say how its length changed"));
         // The comic screen gets the same, in its own words.
         let mut req = request(0);
         req.screen = Some("comic".into());

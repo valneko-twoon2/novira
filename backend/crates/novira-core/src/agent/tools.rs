@@ -193,7 +193,7 @@ pub static TOOLS: &[ToolDef] = &[
     },
     ToolDef {
         name: "set_generation_settings",
-        description: "Sets the Generate tab's prompt boxes and parameters; every field is optional. positivePrompt and negativePrompt replace the whole box: send the full text, with every word you do not mean to change kept as it is. Prompts are written in English tags or sentences suitable for the chosen model, whatever language the user writes in. The scheduler is used by SD 1.x and SDXL models only: the newer families (Anima, Flux, Qwen-Image and the others) always run their own sampler, so leave it for them. Anima models break up below about 80% of their recommended steps (30 by default), so keep them at 24 or more.",
+        description: "Sets the Generate tab's prompt boxes and parameters; every field is optional. positivePrompt and negativePrompt replace the whole box: send the full text, with every word you do not mean to change kept as it is. For a changed prompt it returns tokens: its approximate token count before this request and now. Prompts are written in English tags or sentences suitable for the chosen model, whatever language the user writes in. The scheduler is used by SD 1.x and SDXL models only: the newer families (Anima, Flux, Qwen-Image and the others) always run their own sampler, so leave it for them. Anima models break up below about 80% of their recommended steps (30 by default), so keep them at 24 or more.",
         read_only: false,
         schema: || json!({"type": "object", "minProperties": 1, "properties": {
             "positivePrompt": {"type": "string", "maxLength": 8000},

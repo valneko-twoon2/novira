@@ -17,6 +17,7 @@ import { useGallery } from './gallery';
 import { enqueueActive } from './invoke';
 import { isDrawable, useModels } from './models';
 import { useParams, type ParamsFields } from './params';
+import { estimateTokens } from './prompts/promptTags';
 import { useQueue } from './queue';
 import { useSettings } from './settings';
 import { useUi, type MediaKind } from './ui';
@@ -321,7 +322,12 @@ const HANDLERS: Record<string, Handler> = {
       patch.seed !== undefined ? `seed ${patch.seed}` : '',
     ].filter(Boolean);
     if (parts.length) run.log.push({ kind: 'params', summary: parts.join(' / ') });
-    return done({ set: Object.keys(patch) });
+    // The prompts' length before the request and now, so the answer can say whether a correction made them grow.
+    const now = useParams.getState();
+    const tokens = Object.fromEntries(
+      (['positivePrompt', 'negativePrompt'] as const).filter((k) => k in patch).map((k) => [k, { beforeRequest: estimateTokens(run.snapshot?.[k] ?? ''), now: estimateTokens(now[k]) }]),
+    );
+    return done({ set: Object.keys(patch), ...(Object.keys(tokens).length ? { tokens } : {}) });
   },
 
   generate: async (args, run) => {
