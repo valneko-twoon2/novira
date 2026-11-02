@@ -94,9 +94,10 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      # The runner has 4 cores: ten workers (vitest.config.ts) starve each other and four tests ran past the 5 s limit.
       - name: vitest
         working-directory: frontend
-        run: npx vitest run
+        run: npx vitest run --maxWorkers=4 --testTimeout=30000
 
   clippy:
     runs-on: windows-latest
