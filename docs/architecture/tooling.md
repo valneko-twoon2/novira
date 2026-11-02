@@ -13,7 +13,7 @@ How the project is started, checked and guarded, and which file guards what. How
 | `server.bat` | Builds what changed (`ensure-frontend.mjs`), starts `novira-server` on `novira-data` with the engine and opens the browser (`fast` skips the build) |
 | `check.bat` | All fast checks: `npm run check` plus `cargo fmt --check`, clippy with `-D warnings`, `cargo test` |
 | `checks/full-check.bat` | All tests by hand: `check.bat`, `novira-server`, the mock against it (`diff-backends.mjs`), Playwright, layout scan (`full-check.mjs`) |
-| `checks/coverage.bat`, `checks/mutation.bat` | Coverage, mutation testing; reports in `novira-data/work/` |
+| `checks/coverage.bat`, `checks/mutation.bat` | Coverage, mutation testing |
 | `checks/manual.bat` | The manual: mock-app screenshots, then `novira-data/work/manual/<language>/` |
 | `release/package.bat` | Release build into `artifacts/`, then zip and `.sha256` (`package-release.mjs`); `build` skips the zip, for `release-smoke.mjs`; the release workflow runs the same steps |
 | `release/set-version.bat` | Sets the one version in `Cargo.toml`, `package.json` and the lock files (`set-version.mjs`) |
@@ -54,7 +54,7 @@ Rules (`.claude/rules/`) say what must hold; Claude Code loads one when a file u
 |---|---|
 | `i18n/`, `manual/` | Screen text, the manual |
 | `gatekeeper/`, `verify-real-app/` | Taking a subagent's branch into main; running the real app in isolation |
-| `testing/`, `test-mutation/`, `authoring-skills/`, `hardening-harness/` | Test cases; mutants; a skill; a guard |
+| `testing/`, `test-mutation/`, `authoring-skills/`, `hardening-harness/`, `release-notes/` | Test cases; mutants; a skill; a guard; a release |
 ## What guards what
 
 | Guard | Stops |

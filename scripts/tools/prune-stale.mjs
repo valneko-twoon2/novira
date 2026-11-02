@@ -25,7 +25,7 @@ const DAY = 24 * 60 * 60 * 1000;
 export const POLICY = [
   { kind: 'standing environment', names: /^(verify-data|verify-webview|comfy-copy|perf-data)$/, days: 30 },
   { kind: 'heavy cache', names: /^(check-target|perf-target|server-target|tsc)$/, days: 14 },
-  { kind: 'records and baselines', names: /^(perf|layout-scan)$/, days: 14 },
+  { kind: 'records and baselines', names: /^(perf|layout-scan|release-notes)$/, days: 14 },
   { kind: 'report or build', names: /^(coverage|mutation|manual|models-sweep|e2e-build)$/, days: 7 },
   { kind: 'scratch', names: /^/, days: 3 },
 ];

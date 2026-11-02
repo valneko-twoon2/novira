@@ -25,9 +25,9 @@ describe('prune policy', () => {
     expect(ruleFor('comfy-copy').days).toBe(30);
     expect(ruleFor('check-target').days).toBe(14);
     expect(ruleFor('perf-data').days).toBe(30);
-    for (const name of ['perf-target', 'perf', 'server-target', 'layout-scan']) expect(ruleFor(name).days).toBe(14);
+    for (const name of ['perf-target', 'perf', 'server-target', 'layout-scan', 'release-notes']) expect(ruleFor(name).days).toBe(14);
     for (const name of ['coverage', 'mutation', 'manual', 'models-sweep', 'e2e-build']) expect(ruleFor(name).days).toBe(7);
-    for (const name of ['live-test', 'verify-wf', 'verify-data2', 'shot.png', 'run.log', 'test1.mjs', 'x', 'perf-old']) expect(ruleFor(name).days).toBe(3);
+    for (const name of ['live-test', 'verify-wf', 'verify-data2', 'shot.png', 'run.log', 'test1.mjs', 'x', 'perf-old', 'release-notes-old']) expect(ruleFor(name).days).toBe(3);
   });
 
   it('deletes just over the limit and keeps just under it', () => {

@@ -42,7 +42,7 @@
 
 規則（`.claude/rules/`。`paths` に当たるファイルに触れると読まれる。ほかのエージェントは該当時に読む）: [frontend.md](.claude/rules/frontend.md)、[i18n.md](.claude/rules/i18n.md)、[manual.md](.claude/rules/manual.md)、[assistant.md](.claude/rules/assistant.md)、[comfyui.md](.claude/rules/comfyui.md)、[models.md](.claude/rules/models.md)（モデルの変更・導入の後は実アプリで全カテゴリを確かめる）、[security.md](.claude/rules/security.md)、[regression-tests.md](.claude/rules/regression-tests.md)（何のテストを回すか）、[test-maintenance.md](.claude/rules/test-maintenance.md)、[design-docs.md](.claude/rules/design-docs.md)、[architecture-map.md](.claude/rules/architecture-map.md)、[commit-messages.md](.claude/rules/commit-messages.md)。
 
-手順（`/名前`）: `/i18n`、`/manual`、`/testing`（テストケースの選び方）・`/test-mutation`、`/verify-real-app`、`/gatekeeper`（サブエージェントの成果を main に取り込む。依頼文の書き方もここ）、`/authoring-skills`（スキルを作る・直す）、`/hardening-harness`（繰り返す失敗を検査・フックで止める）。
+手順（`/名前`）: `/i18n`、`/manual`、`/testing`（テストケースの選び方）・`/test-mutation`、`/verify-real-app`、`/gatekeeper`（サブエージェントの成果を main に取り込む。依頼文の書き方もここ）、`/authoring-skills`（スキルを作る・直す）、`/hardening-harness`（繰り返す失敗を検査・フックで止める）、`/release-notes`（リリースノートを書き、指示があればタグを push して下書きを作る。ノートはコミットしない）。
 
 ## 3. 原則
 
