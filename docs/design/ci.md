@@ -14,6 +14,7 @@ GitHub runs the repository's checks on every push to a branch, so a change is ch
 - **`vitest` job** (`windows-latest`, Node 22, at most 30 minutes): `npm ci`, then `npx vitest run --maxWorkers=4 --testTimeout=30000` in `frontend/` (every unit and component test, not the Playwright specs). The runner has 4 cores, where the config's ten workers starved each other and four tests passed 5 s; the flags apply to the runner only, a test that sets its own limit keeps it.
 - **`clippy` job** (`windows-latest`, at most 60 minutes): `cargo clippy -p novira-core -p novira-server -p novira --tests -- -D warnings` in `backend/`, with cargo's registry and `backend/target` cached on `Cargo.lock` and the toolchain file. The app crate's build script builds the frontend, so Node and `npm ci` come first.
 - **`cargo-test` job** (`windows-latest`, at most 90 minutes): `cargo test --no-fail-fast` for `novira-core`, `novira-server` and `novira` (the Tauri shell, which also checks the command list against the capability), each step even when an earlier one failed, with the frontend installed first (the app crate builds it) and cargo cached like `clippy` under its own key.
+- **`e2e-chromium` job** (`windows-latest`, at most 60 minutes): `npx playwright test --project=chromium` in `frontend/`, the screen flows (including the a11y check) on the mock backend in Chromium, two workers (half the cores, `playwright.config.ts`) and one retry (`CI` is set). A failed run keeps `playwright-report/` and `test-results/` as an artifact for 7 days.
 - The `static` and `rust-format` jobs read the sources only: no build, no browser, no GPU.
 
 ## Boundaries
@@ -30,5 +31,5 @@ GitHub runs the repository's checks on every push to a branch, so a change is ch
 
 ## Not implemented
 
-- Next in line, each added once it is seen to pass on the runner: Playwright (`chromium`, then the visual regression, whose baselines are Windows images). Until then they stay in `scripts\check.bat` and `scripts\checks\full-check.bat`.
+- Next in line, each added once it is seen to pass on the runner: the Playwright `phone` and `webkit` projects, then the layout scan and the visual regression (whose baselines are Windows images), and `scripts/tools/diff-backends.mjs`. Until then they stay in `scripts\check.bat` and `scripts\checks\full-check.bat`.
 - No dependency audit runs (`npm audit`, `cargo audit`).

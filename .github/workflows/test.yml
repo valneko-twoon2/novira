@@ -1,7 +1,7 @@
 # The checks GitHub runs on every push to a branch (tags run release.yml instead). It starts with the checks that read the
 # sources and need no build, no browser and no Windows: types, lint, line ends, the product name, the docs and UI
-# references, the term list, the changelog and the Rust formatting, then vitest, clippy and cargo test. The others
-# (Playwright) are added one by one once they are seen to pass on the runner (docs/design/ci.md).
+# references, the term list, the changelog and the Rust formatting, then vitest, clippy, cargo test and the Playwright flows. The others
+# (phone, webkit, visual, layout scan) are added one by one once they are seen to pass on the runner (docs/design/ci.md).
 # Only actions of GitHub's own (actions/*) are used; nothing here has a secret or write access.
 name: test
 
@@ -174,3 +174,41 @@ jobs:
         working-directory: backend
         shell: cmd
         run: cargo test -p novira --no-fail-fast
+
+  e2e-chromium:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install the frontend packages and Chromium
+        working-directory: frontend
+        shell: cmd
+        run: |
+          call npm ci
+          if errorlevel 1 exit /b 1
+          call npx playwright install chromium
+
+      # The screen flows against the in-memory mock backend, with the a11y check (the `chromium` project; not the visual
+      # regression, the phone layouts or the layout scan). The config runs half the cores, so two workers here.
+      - name: Playwright chromium
+        working-directory: frontend
+        shell: cmd
+        run: npx playwright test --project=chromium
+
+      - name: Keep the report of a failed run
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-chromium
+          path: |
+            frontend/playwright-report
+            frontend/test-results
+          if-no-files-found: ignore
+          retention-days: 7
