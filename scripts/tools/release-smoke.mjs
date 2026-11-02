@@ -8,7 +8,7 @@
 //      and its window reaches the Generate tab.
 // Nothing starts ComfyUI or uses the GPU. Every data folder and the WebView2 profile are made inside
 // novira-data/work/release-smoke/ and deleted at the end; only the processes this script started are stopped. On a GitHub
-// runner only, novira.exe is started through runas with the administrators' rights taken off (see startLowered).
+// runner only, novira.exe is started with a normal user's token at Medium integrity (see startLowered).
 // Usage, from the repository root:  node scripts/tools/release-smoke.mjs [--artifacts <folder>]   (default: artifacts\)
 import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -160,17 +160,23 @@ function startDirect(exe, vars) {
 }
 
 /**
- * Starts the app through `runas /trustlevel:0x20000` (a token without the administrators' rights): WebView2 opened no
- * debugging port for the elevated app on the runner, from the environment or from its policy key (2026-11-02), while
- * the same build took the port on a desktop. runas keeps nothing of this script, so a .cmd sets the variables.
+ * Starts the app through start-medium.ps1 (the administrators' group deny-only, Medium integrity): WebView2 opened no
+ * debugging port for the elevated app on the runner, from the environment or from its policy key, nor for one with the
+ * group deny-only at High integrity (runas /trustlevel, 2026-11-02), while the same build took the port on a desktop.
+ * A .cmd sets the variables and records the token's groups.
  */
 async function startLowered(exe, vars, dir) {
   const script = path.join(dir, 'launch.cmd');
   const outFile = path.join(dir, 'output.txt');
   const groupsFile = path.join(dir, 'groups.txt');
   fs.writeFileSync(script, launchScript(exe, vars, outFile, groupsFile));
-  const said = run('runas', ['/trustlevel:0x20000', script]).trim();
-  if (said) log(`runas: ${said}`);
+  const started = spawnSync('powershell', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', path.join(REPO, 'scripts', 'tools', 'start-medium.ps1')], {
+    encoding: 'utf8',
+    windowsHide: true,
+    timeout: 60_000,
+    env: { ...process.env, SMOKE_SCRIPT: script },
+  });
+  if (started.status !== 0) log(`start-medium.ps1 failed (exit ${started.status}): ${tailOf(`${started.stdout ?? ''}${started.stderr ?? ''}`, 6)}`);
   // Only the novira.exe under the cmd.exe that runs this script's own launch.cmd: another novira.exe of the same path
   // (the person's own app started from artifacts\) must never be taken for it.
   let cmd;
