@@ -635,3 +635,24 @@ fn the_apps_data_folder_is_the_chosen_one_before_any_folder_beside_it() {
         AppData::Folder(app.join(DATA_DIR_NAME))
     );
 }
+
+#[test]
+fn a_folder_that_is_not_there_yet_is_resolved_through_its_existing_parent() {
+    let dir = tempfile::tempdir().unwrap();
+    let real = crate::plain_path(std::fs::canonicalize(dir.path()).unwrap());
+    // Below a folder that exists: its resolved form (a short name or a link replaced) plus the names below it.
+    assert_eq!(
+        resolve(&dir.path().join("a").join("b")),
+        real.join("a").join("b")
+    );
+    assert_eq!(resolve(dir.path()), real);
+    // A relative path with nothing existing in it stays as it is.
+    assert_eq!(
+        resolve(Path::new("no-such-folder-here/x")),
+        PathBuf::from("no-such-folder-here/x")
+    );
+    // Inside is decided on the resolved forms, also for a folder that is not there yet.
+    assert!(inside(&dir.path().join("a").join("b"), dir.path()));
+    assert!(!inside(dir.path(), &dir.path().join("a")));
+    assert!(!inside(dir.path(), dir.path()));
+}

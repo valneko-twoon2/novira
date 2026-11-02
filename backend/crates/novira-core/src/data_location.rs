@@ -66,24 +66,26 @@ pub fn clear(pointer: &Path) -> Result<(), String> {
     }
 }
 
+/// The path with every link and short (8.3) name of its existing part resolved: a folder that is not there yet is its
+/// nearest existing parent, resolved, plus the names below it. Resolving only the folders that exist would put a long
+/// name (`runneradmin`) for the parent beside a short one (`RUNNER~1`) for a child below it, and they would never match.
+fn resolve(p: &Path) -> PathBuf {
+    if let Ok(real) = std::fs::canonicalize(p) {
+        return crate::plain_path(real);
+    }
+    match (p.parent(), p.file_name()) {
+        (Some(parent), Some(name)) if !parent.as_os_str().is_empty() => resolve(parent).join(name),
+        _ => p.to_path_buf(),
+    }
+}
+
 fn same(a: &Path, b: &Path) -> bool {
-    let key = |p: &Path| {
-        std::fs::canonicalize(p)
-            .map(crate::plain_path)
-            .unwrap_or_else(|_| p.to_path_buf())
-            .to_string_lossy()
-            .to_lowercase()
-    };
+    let key = |p: &Path| resolve(p).to_string_lossy().to_lowercase();
     key(a) == key(b)
 }
 
 fn inside(child: &Path, parent: &Path) -> bool {
-    let key = |p: &Path| {
-        std::fs::canonicalize(p)
-            .map(crate::plain_path)
-            .unwrap_or_else(|_| p.to_path_buf())
-    };
-    let (child, parent) = (key(child), key(parent));
+    let (child, parent) = (resolve(child), resolve(parent));
     child != parent && child.starts_with(&parent)
 }
 
