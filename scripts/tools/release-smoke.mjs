@@ -23,7 +23,8 @@ import { engineOff } from './verify-real-app.mjs';
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const WORK = harnessRoots(REPO).work;
 const FIXTURES = path.join(REPO, 'backend', 'crates', 'novira-core', 'tests', 'fixtures');
-const CDP_PORT = 9334; // not verify-real-app's 9333, so a verification run going on is never driven by mistakeconst { chromium } = createRequire(path.join(REPO, 'frontend', 'package.json'))('@playwright/test');
+const CDP_PORT = 9334; // not verify-real-app's 9333, so a verification run going on is never driven by mistake
+const { chromium } = createRequire(path.join(REPO, 'frontend', 'package.json'))('@playwright/test');
 
 const log = (m) => console.log(`[release-smoke] ${m}`);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -155,7 +156,7 @@ function startDirect(exe, vars) {
   const app = spawn(exe, [], { env: { ...process.env, ...vars }, stdio: ['ignore', 'pipe', 'pipe'] });
   let text = '';
   for (const stream of [app.stdout, app.stderr]) stream.on('data', (chunk) => (text = (text + chunk).slice(-8000)));
-  return { pid: () => app.pid, exited: () => (app.exitCode === null ? null : `exit ${app.exitCode}`), output: () => text, groups: () => '' };
+  return { pid: () => app.pid, stop: () => stopTrees([app.pid]), exited: () => (app.exitCode === null ? null : `exit ${app.exitCode}`), output: () => text, groups: () => '' };
 }
 
 /**
@@ -170,18 +171,34 @@ async function startLowered(exe, vars, dir) {
   fs.writeFileSync(script, launchScript(exe, vars, outFile, groupsFile));
   const said = run('runas', ['/trustlevel:0x20000', script]).trim();
   if (said) log(`runas: ${said}`);
+  // Only the novira.exe under the cmd.exe that runs this script's own launch.cmd: another novira.exe of the same path
+  // (the person's own app started from artifacts\) must never be taken for it.
+  let cmd;
   let pid;
   for (const until = Date.now() + 15_000; !pid && Date.now() < until; ) {
-    const r = spawnSync('powershell', ['-NoProfile', '-NonInteractive', '-Command', 'Get-Process novira -ErrorAction SilentlyContinue | Where-Object Path -eq $env:SMOKE_EXE | Select-Object -First 1 -ExpandProperty Id'], {
-      encoding: 'utf8',
-      windowsHide: true,
-      env: { ...process.env, SMOKE_EXE: exe },
-    });
-    pid = Number(r.stdout?.trim()) || undefined;
+    const r = spawnSync(
+      'powershell',
+      [
+        '-NoProfile',
+        '-NonInteractive',
+        '-Command',
+        "$c = Get-CimInstance Win32_Process -Filter \"Name='cmd.exe'\" | Where-Object { ([string]$_.CommandLine).Contains($env:SMOKE_SCRIPT) } | Select-Object -First 1; if ($c) { $n = Get-CimInstance Win32_Process -Filter \"ParentProcessId=$($c.ProcessId) AND Name='novira.exe'\" | Select-Object -First 1; \"$($c.ProcessId) $($n.ProcessId)\" }",
+      ],
+      { encoding: 'utf8', windowsHide: true, env: { ...process.env, SMOKE_SCRIPT: script } },
+    );
+    const [c, n] = String(r.stdout ?? '').trim().split(/\s+/).map(Number);
+    cmd = c || cmd;
+    pid = n || undefined;
     if (!pid) await sleep(500);
   }
   const groups = () => readText(groupsFile).split(/\r?\n/).filter((l) => /Mandatory Label|BUILTIN\\Administrators/.test(l)).join('\n');
-  return { pid: () => pid, exited: () => (pid && alive(pid) ? null : pid ? 'exited' : 'never started'), output: () => readText(outFile).slice(-8000), groups };
+  return {
+    pid: () => pid,
+    stop: () => stopTrees([cmd, pid].filter(Boolean)),
+    exited: () => (pid && alive(pid) ? null : pid ? 'exited' : 'never started'),
+    output: () => readText(outFile).slice(-8000),
+    groups,
+  };
 }
 
 /** What the machine says about the debugging port and the programs that should be using it. */
@@ -320,7 +337,7 @@ async function appOnEmptyData(artifacts, root) {
     throw new Error(`${e.message}\n  ${appDiagnostics(app, data, webview)}`);
   } finally {
     await browser?.close().catch(() => undefined);
-    if (app.pid()) stopTrees([app.pid()]);
+    app.stop();
   }
 }
 
