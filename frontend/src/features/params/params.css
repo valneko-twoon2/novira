@@ -814,3 +814,51 @@
   gap: var(--space-1);
   justify-content: flex-end;
 }
+
+/* Random preset run (beside the preset card on the Generate tab) */
+.pp-run {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 240px;
+  max-width: 340px;
+}
+
+.pp-run__title {
+  font-weight: 600;
+}
+
+.pp-run__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 260px;
+  margin: 0;
+  padding: var(--space-1) 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.pp-run__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+}
+
+.pp-run__count {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--text-faint);
+  font-weight: 600;
+}
+
+.pp-run__count .ui-input {
+  width: 64px;
+}
+
+.pp-run__foot > .ui-btn {
+  flex: 1;
+}

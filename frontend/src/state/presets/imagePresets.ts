@@ -82,14 +82,14 @@ export function snapshotPresetData(): PresetData {
   });
 }
 
-export function applyPresetData(data: PresetData) {
+/** What a preset changes in the settings `p`: the fields it holds, with removed models replaced by the current ones. */
+export function presetPatch(p: ParamsFields, data: PresetData): Partial<ParamsFields> {
   const patch = pickFields(structuredClone(data), PRESET_FIELDS);
   // An unknown model (removed since the preset was saved) keeps the current one.
   if (patch.modelKey && !findModel(patch.modelKey)) delete patch.modelKey;
-  const p = useParams.getState();
   // The models the upscale and the high-resolution fix use are checked the same way; the picture to upscale stays.
   const { upscale, hires, ...rest } = patch;
-  p.set({
+  return {
     ...rest,
     ...(upscale && {
       upscale: {
@@ -102,7 +102,17 @@ export function applyPresetData(data: PresetData) {
       },
     }),
     ...(hires && { hires: { ...p.hires, ...hires, upscaleModelKey: installedOr(hires.upscaleModelKey, p.hires.upscaleModelKey) } }),
-  });
+  };
+}
+
+/** The settings `p` with a preset applied, as a copy: the form itself is not changed. */
+export function withPreset(p: ParamsFields, data: PresetData): ParamsFields {
+  return { ...p, ...presetPatch(p, data) };
+}
+
+export function applyPresetData(data: PresetData) {
+  const p = useParams.getState();
+  p.set(presetPatch(p, data));
 }
 
 export const imagePresets: PresetKind<PresetData> = {

@@ -28,7 +28,7 @@ export function PanelHeader({ tab, beforeModel }: { tab: TabName; beforeModel?: 
   const encoderMissing = reasons[0] !== undefined && reasons[0] === refImagesEncoderReason(refImages, models);
   return (
     <header className="pp-head" data-testid="panel-header">
-      <GenerationPresetBar />
+      <GenerationPresetBar random={tab === 'generate'} />
       <div className="pp-head__generate">
         <SeedRow />
         <InvokeControls tab={tab} />

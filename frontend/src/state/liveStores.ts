@@ -16,6 +16,7 @@ import { useParams } from './params';
 import { useImagePresets } from './presets/imagePresets';
 import { useLogoPresets } from './presets/logoPresets';
 import { useMusicPresets } from './presets/musicPresets';
+import { usePresetRun } from './presets/presetRun';
 import { useTextStylePresets } from './presets/textStylePresets';
 import { useVideoPresets } from './presets/videoPresets';
 import { useVoicePresets } from './presets/voicePresets';
@@ -44,6 +45,7 @@ const LIVE_STORES: readonly Persisted[] = [
   useParams,
   useDrafts,
   useImagePresets,
+  usePresetRun,
   useCharacters,
   useLogoPresets,
   useMusicPresets,

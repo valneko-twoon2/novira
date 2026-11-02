@@ -3,14 +3,13 @@ import { backend, batchSeed, randomSeed, type EnqueueRequest, type GenerationMet
 import { autoAddBoardId } from '@/state/invoke';
 import { findModel, modelsOfType, useModels } from '@/state/models';
 import { generationMetadata, txt2imgParts } from '@/state/generationParts';
-import { useParams } from '@/state/params';
+import { useParams, type DynamicPromptMode, type ParamsFields } from '@/state/params';
 import { useWildcards, wildcardMap } from '@/state/prompts/wildcards';
 import { expandPrompt, hasDynamicSyntax, MAX_DYNAMIC_PROMPTS, randomPrompt } from '@/state/prompts/dynamicPrompts';
 
 const NEGATIVE_SEED_MIX = 0x5bd1e995;
 
-function baseRequest(origin: QueueOrigin, params: GenerationMetadata, prepend: boolean): EnqueueRequest {
-  const p = useParams.getState();
+function baseRequest(origin: QueueOrigin, params: GenerationMetadata, prepend: boolean, p: ParamsFields = useParams.getState()): EnqueueRequest {
   return {
     origin,
     destination: 'gallery',
@@ -26,13 +25,13 @@ function baseRequest(origin: QueueOrigin, params: GenerationMetadata, prepend: b
  * The batches a request with dynamic prompts ({a|b} groups, __wildcards__) becomes. Every combination: one batch per
  * expanded prompt, each with the request's count. Random: one picture per count, each with its own seed (the
  * request's seed + i, or a random one) and the prompt that seed picks, so a picture drawn again with its seed gets
- * the same prompt.
+ * the same prompt. `mode` is the form's by default.
  */
-export function dynamicBatches(req: EnqueueRequest): EnqueueRequest[] {
+export function dynamicBatches(req: EnqueueRequest, mode: DynamicPromptMode = useParams.getState().dynamicPromptMode): EnqueueRequest[] {
   const template = req.params.positivePrompt;
   const negativeTemplate = req.params.negativePrompt ?? '';
   const lists = wildcardMap(useWildcards.getState().lists);
-  if (useParams.getState().dynamicPromptMode === 'random' && (hasDynamicSyntax(template) || hasDynamicSyntax(negativeTemplate))) {
+  if (mode === 'random' && (hasDynamicSyntax(template) || hasDynamicSyntax(negativeTemplate))) {
     return Array.from({ length: Math.max(1, req.iterations) }, (_, i) => {
       const seed = req.randomizeSeed ? randomSeed() : batchSeed(req.params.seed, i);
       // The negative picks from the seed too, mixed so it does not pick the same place as the positive.
@@ -59,15 +58,20 @@ async function withDynamicPrompts(req: EnqueueRequest): Promise<EnqueueRequest> 
   return first!;
 }
 
-export async function buildGenerateRequest(prepend: boolean): Promise<EnqueueRequest> {
-  const { params, refImages } = txt2imgParts();
+/** The Generate request settings `p` make (the form, or a preset applied to a copy of it), before dynamic prompts are expanded. */
+export function generateRequestOf(p: ParamsFields, prepend: boolean): EnqueueRequest {
+  const { params, refImages } = txt2imgParts([], p);
   // An image to draw over makes it image to image; the high-resolution fix then enlarges what is drawn over it.
-  const { initImage, strength } = useParams.getState();
+  const { initImage, strength } = p;
   if (initImage) {
     params.generationMode = 'img2img';
     params.strength = strength;
   }
-  return withDynamicPrompts({ ...baseRequest('generate', params, prepend), ...(refImages.length ? { refImages } : {}), ...(initImage ? { initImageUrl: initImage.url } : {}) });
+  return { ...baseRequest('generate', params, prepend, p), ...(refImages.length ? { refImages } : {}), ...(initImage ? { initImageUrl: initImage.url } : {}) };
+}
+
+export async function buildGenerateRequest(prepend: boolean): Promise<EnqueueRequest> {
+  return withDynamicPrompts(generateRequestOf(useParams.getState(), prepend));
 }
 
 export async function buildUpscaleRequest(prepend: boolean): Promise<EnqueueRequest> {
