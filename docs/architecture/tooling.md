@@ -4,7 +4,7 @@ How the project is started, checked and guarded, and which file guards what. How
 
 ## Launchers and tools
 
-`scripts/` holds what you run by hand: the Windows launchers (`.bat`); everyday ones at its top, long checks in `checks/`, the release in `release/`. `scripts/tools/` holds what AI sessions, the Git hooks and CI call, and the parts they share. `.githooks/` holds the Git hooks: a thin `sh` file per hook and its body in Node. `.github/workflows/` runs the checks on a branch push ([ci.md](../design/ci.md)) and builds the release on a tag ([release-workflow.md](../design/release-workflow.md)).
+`scripts/` holds what you run by hand: the Windows launchers (`.bat`); everyday ones at its top, long checks in `checks/`, the release in `release/`. `scripts/tools/` holds what AI sessions, the Git hooks and CI call. `.githooks/` holds the Git hooks: a thin `sh` file per hook and its body in Node. `.github/workflows/` runs the checks on a branch push ([ci.md](../design/ci.md)) and builds the release on a tag ([release-workflow.md](../design/release-workflow.md)).
 
 | In `scripts/` | What |
 |---|---|
@@ -21,7 +21,7 @@ How the project is started, checked and guarded, and which file guards what. How
 | In `` (and one spec) | What |
 |---|---|
 | `affected.mjs` | Only the checks the changed files need |
-| `typecheck.mjs`, `docs-check.mjs`, `ui-refs.mjs`, `visual-baselines.mjs`, `check-eol.mjs`, `fix-eol.mjs`, `eol.mjs`, `check-name.mjs`, `changelog.mjs` | Whole-repository checks: types, the map, stale doc code names, stale test ids and text keys, stale baselines, line ends, name spelling, the changelog |
+| `typecheck.mjs`, `docs-check.mjs`, `ui-refs.mjs`, `visual-baselines.mjs`, `check-eol.mjs`, `fix-eol.mjs`, `eol.mjs`, `check-name.mjs`, `changelog.mjs`, `ci-summary.mjs` | Whole-repository checks: types, the map, stale doc names, stale test ids and text keys, stale baselines, line ends, name spelling, the changelog, CI test counts |
 | `layout-scan.mjs`, `e2e-lock.mjs` | The layout scan (with text fit) and its pass record; the lock for one heavy Playwright run at a time |
 | `e2e/a11y.spec.ts` (`e2e/a11yKnown.ts`) | axe-core (WCAG A/AA, no contrast) on each main tab: fails beyond the known list, which only shrinks |
 | `worktree.mjs` | Makes and removes a subagent worktree |

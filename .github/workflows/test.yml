@@ -157,23 +157,29 @@ jobs:
           key: cargo-test-${{ runner.os }}-${{ hashFiles('backend/Cargo.lock', 'backend/rust-toolchain.toml') }}
           restore-keys: cargo-test-${{ runner.os }}-
 
-      # --no-fail-fast: every test binary runs, so one run shows every failing test.
+      # --no-fail-fast: every test binary runs, so one run shows every failing test. The output is also kept in a log per
+      # crate (tee), and the last step turns the logs into the count per test binary in the job summary.
       - name: cargo test novira-core
         working-directory: backend
-        shell: cmd
-        run: cargo test -p novira-core --no-fail-fast
+        shell: bash
+        run: cargo test -p novira-core --no-fail-fast 2>&1 | tee "$RUNNER_TEMP/novira-core.log"
 
       - name: cargo test novira-server
         if: ${{ !cancelled() }}
         working-directory: backend
-        shell: cmd
-        run: cargo test -p novira-server --no-fail-fast
+        shell: bash
+        run: cargo test -p novira-server --no-fail-fast 2>&1 | tee "$RUNNER_TEMP/novira-server.log"
 
       - name: cargo test novira
         if: ${{ !cancelled() }}
         working-directory: backend
-        shell: cmd
-        run: cargo test -p novira --no-fail-fast
+        shell: bash
+        run: cargo test -p novira --no-fail-fast 2>&1 | tee "$RUNNER_TEMP/novira.log"
+
+      - name: Count of tests
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: node scripts/tools/ci-summary.mjs cargo "cargo test" "$RUNNER_TEMP/novira-core.log" "$RUNNER_TEMP/novira-server.log" "$RUNNER_TEMP/novira.log" >> "$GITHUB_STEP_SUMMARY"
 
   e2e-chromium:
     runs-on: windows-latest
@@ -200,7 +206,14 @@ jobs:
       - name: Playwright chromium
         working-directory: frontend
         shell: cmd
-        run: npx playwright test --project=chromium
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}\playwright-chromium.json
+        run: npx playwright test --project=chromium --reporter=list,html,json
+
+      - name: Count of tests
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: node scripts/tools/ci-summary.mjs playwright "Playwright chromium" "$RUNNER_TEMP/playwright-chromium.json" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Keep the report of a failed run
         if: ${{ failure() }}
@@ -237,7 +250,14 @@ jobs:
       - name: Playwright phone and webkit
         working-directory: frontend
         shell: cmd
-        run: npx playwright test --project=phone --project=webkit
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}\playwright-phone.json
+        run: npx playwright test --project=phone --project=webkit --reporter=list,html,json
+
+      - name: Count of tests
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: node scripts/tools/ci-summary.mjs playwright "Playwright phone and webkit" "$RUNNER_TEMP/playwright-phone.json" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Keep the report of a failed run
         if: ${{ failure() }}
