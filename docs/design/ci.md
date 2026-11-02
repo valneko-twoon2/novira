@@ -13,6 +13,7 @@ GitHub runs the repository's checks on every push to a branch, so a change is ch
 - **`rust-format` job** (`ubuntu-latest`): `cargo fmt --all -- --check` in `backend/`, with the toolchain of `backend/rust-toolchain.toml`.
 - **`vitest` job** (`windows-latest`, Node 22, at most 30 minutes): `npm ci`, then `npx vitest run --maxWorkers=4 --testTimeout=30000` in `frontend/` (every unit and component test, not the Playwright specs). The runner has 4 cores, where the config's ten workers starved each other and four tests passed 5 s; the flags apply to the runner only, a test that sets its own limit keeps it.
 - **`clippy` job** (`windows-latest`, at most 60 minutes): `cargo clippy -p novira-core --tests -- -D warnings` in `backend/`, with cargo's registry and `backend/target` cached on `Cargo.lock` and the toolchain file.
+- **`cargo-test` job** (`windows-latest`, at most 90 minutes): `cargo test -p novira-core`, then `cargo test -p novira` (the Tauri shell, which also checks the command list against the capability), cached like `clippy` but under its own key. The second step runs even when the first failed.
 - The `static` and `rust-format` jobs read the sources only: no build, no browser, no GPU.
 
 ## Boundaries
@@ -29,5 +30,5 @@ GitHub runs the repository's checks on every push to a branch, so a change is ch
 
 ## Not implemented
 
-- Next in line, each added once it is seen to pass on the runner: `cargo test -p novira-core` and `-p novira` on a Windows runner, then Playwright (`chromium`, then the visual regression, whose baselines are Windows images). Until then they stay in `scripts\check.bat` and `scripts\checks\full-check.bat`.
+- Next in line, each added once it is seen to pass on the runner: `cargo test -p novira-server`, then Playwright (`chromium`, then the visual regression, whose baselines are Windows images). Until then they stay in `scripts\check.bat` and `scripts\checks\full-check.bat`.
 - No dependency audit runs (`npm audit`, `cargo audit`).
