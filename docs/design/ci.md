@@ -1,6 +1,9 @@
 ---
 covers:
   - .github/workflows/test.yml
+  - .github/workflows/audit.yml
+  - backend/.cargo/audit.toml
+  - scripts/tools/diff-backends.mjs
 ---
 # CI: checks on every push
 
@@ -16,7 +19,15 @@ GitHub runs the repository's checks on every push to a branch, so a change is ch
 - **`cargo-test` job** (`windows-latest`, at most 90 minutes): `cargo test --no-fail-fast` for `novira-core`, `novira-server` and `novira` (the Tauri shell, which also checks the command list against the capability), each step even when an earlier one failed, with the frontend installed first (the app crate builds it) and cargo cached like `clippy` under its own key.
 - **`e2e-chromium` job** (`windows-latest`, at most 60 minutes): `npx playwright test --project=chromium` in `frontend/`, the screen flows (including the a11y check) on the mock backend in Chromium, two workers (half the cores, `playwright.config.ts`) and one retry (`CI` is set). A failed run keeps `playwright-report/` and `test-results/` as an artifact for 7 days.
 - **`e2e-phone` job** (`windows-latest`, at most 60 minutes): `npx playwright test --project=phone --project=webkit`, the phone layout (`phone*.spec.ts`) in Chromium as a Pixel 7 and in WebKit as an iPhone 14; the same report artifact on failure.
+- **`diff-backends` job** (`windows-latest`, at most 60 minutes): `node scripts/tools/diff-backends.mjs`. It builds `novira-server` (no engine) into `novira-data/work/server-target` and the frontend's harness build, starts the server on an empty data folder, and runs `frontend/difftest/` against it and the browser mock. The server build is cached under its own key.
 - The `static` and `rust-format` jobs read the sources only: no build, no browser, no GPU.
+
+## Audit
+
+`.github/workflows/audit.yml` is a workflow of its own, so a new advisory does not fail every push. It runs every Monday (03:17 UTC) and on a branch push that changes `backend/Cargo.lock`, `frontend/package-lock.json`, `backend/.cargo/audit.toml` or the workflow, on `ubuntu-latest`:
+
+- `cargo audit` (cargo-audit 0.22.2, installed with `--locked` and cached) over `backend/Cargo.lock`. The advisories already judged are in `backend/.cargo/audit.toml`, each with its reason ([security.md](security.md), dependency findings); a new vulnerability fails the run. Unmaintained or unsound warnings do not.
+- `npm run audit` (`npm audit --omit=dev`) in `frontend/`, the dependencies that ship in the app.
 
 ## Boundaries
 
@@ -32,5 +43,5 @@ GitHub runs the repository's checks on every push to a branch, so a change is ch
 
 ## Not implemented
 
-- Next in line, each added once it is seen to pass on the runner: the layout scan and the visual regression (whose baselines are Windows images), and `scripts/tools/diff-backends.mjs`. Until then they stay in `scripts\check.bat` and `scripts\checks\full-check.bat`.
-- No dependency audit runs (`npm audit`, `cargo audit`).
+- Next in line, each added once it is seen to pass on the runner: the layout scan and the visual regression (whose baselines are Windows images). Until then they stay in `scripts\check.bat` and `scripts\checks\full-check.bat`.
+- No notice goes out when the weekly audit fails: it shows in the Actions tab.

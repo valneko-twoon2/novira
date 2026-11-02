@@ -1,6 +1,6 @@
 # The checks GitHub runs on every push to a branch (tags run release.yml instead). It starts with the checks that read the
 # sources and need no build, no browser and no Windows: types, lint, line ends, the product name, the docs and UI
-# references, the term list, the changelog and the Rust formatting, then vitest, clippy, cargo test and the Playwright flows and phone layouts. The others
+# references, the term list, the changelog and the Rust formatting, then vitest, clippy, cargo test and the Playwright flows and phone layouts, and the mock against the real backend. The others
 # (visual, layout scan) are added one by one once they are seen to pass on the runner (docs/design/ci.md).
 # Only actions of GitHub's own (actions/*) are used; nothing here has a secret or write access.
 name: test
@@ -249,3 +249,35 @@ jobs:
             frontend/test-results
           if-no-files-found: ignore
           retention-days: 7
+
+  diff-backends:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install the frontend packages
+        working-directory: frontend
+        run: npm ci
+
+      # The tool builds novira-server into novira-data/work/server-target and the frontend into its harness build.
+      - name: Cache the server build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            novira-data/work/server-target
+          key: cargo-diff-${{ runner.os }}-${{ hashFiles('backend/Cargo.lock', 'backend/rust-toolchain.toml') }}
+          restore-keys: cargo-diff-${{ runner.os }}-
+
+      # The browser mock and the real backend (novira-server, no engine) get the same calls, and their answers are compared.
+      - name: The mock against the real backend
+        shell: cmd
+        run: node scripts/tools/diff-backends.mjs
