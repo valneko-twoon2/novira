@@ -145,8 +145,8 @@ describe('what a request carries', () => {
       await useAgent.getState().send('where am I');
       expect(requests.at(-1)!.screen).toBe(screen);
     }
-    // The model reads the rest through the tools.
-    const allowed = ['message', 'locale', 'screen', 'history', 'focus', 'agentModel', 'effort'];
+    // The model reads the rest through the tools; the trial setting decides a rule, so it travels with the request.
+    const allowed = ['message', 'locale', 'screen', 'history', 'focus', 'agentModel', 'effort', 'trialPictures'];
     expect(Object.keys(requests[0]!).filter((k) => !allowed.includes(k))).toEqual([]);
     useUi.setState({ activeTab: 'generate', media: 'image' });
   });
@@ -230,6 +230,21 @@ describe('tool calls of a request', () => {
         { request: 'black hair', undone: true, settings: { positivePrompt: '2girls, bob cut' } },
       ],
     });
+  });
+
+  it('puts the pictures the assistant looked at under its answer and sends the trial setting', async () => {
+    useSettings.getState().set({ assistantReadAccess: 'always', assistantTrialPictures: false });
+    replyWith('like this?', async (call) => {
+      await call('view_picture', { name: 'trial.png' });
+    });
+    await useAgent.getState().send('more like summer');
+    expect(requests.at(-1)).toMatchObject({ trialPictures: false });
+    expect(currentMessages(useAgent.getState()).at(-1)).toMatchObject({ role: 'assistant', text: 'like this?', images: ['trial.png'] });
+    useSettings.getState().set({ assistantTrialPictures: true });
+    replyWith('ok');
+    await useAgent.getState().send('again');
+    expect(requests.at(-1)).toMatchObject({ trialPictures: true });
+    expect(currentMessages(useAgent.getState()).at(-1)).not.toHaveProperty('images');
   });
 
   it('undoes a reply in any session', async () => {

@@ -1016,6 +1016,8 @@ export interface AgentRequest {
   effort?: AgentEffort;
   /** Gallery pictures attached to this message (names, at most `AGENT_MAX_ATTACHMENTS`); the backend reads and sends them. */
   images?: string[];
+  /** Whether the assistant may draw a trial picture on its own to check what the user means (the setting). */
+  trialPictures?: boolean;
 }
 
 /** The most pictures one assistant message may carry (`attach::MAX_ATTACHMENTS` in the backend). */

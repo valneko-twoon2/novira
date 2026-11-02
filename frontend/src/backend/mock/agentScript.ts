@@ -22,5 +22,5 @@ export function data<T>(answer: MockToolAnswer): Partial<T> {
 
 /** Whether the backend would tag the call as reading the user's pictures or prompts (as `agent/tools.rs` does). */
 export function mockReadGated(tool: string, args: Record<string, unknown>): boolean {
-  return tool === 'list_gallery_images' || tool === 'get_image_info' || (tool === 'get_generation_settings' && args.includePrompts === true);
+  return tool === 'list_gallery_images' || tool === 'get_image_info' || tool === 'view_comic_page' || tool === 'view_picture' || (tool === 'get_generation_settings' && args.includePrompts === true);
 }

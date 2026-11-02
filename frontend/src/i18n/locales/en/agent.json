@@ -150,5 +150,6 @@
   "agent.attach.failed": "Could not attach the picture",
   "agent.attach.defaultAsk": "Write a prompt for making a picture like this one, and fill it in.",
   "agent.permission.webTitle": "The AI wants to look something up on Wikipedia",
-  "agent.permission.web": "What it sends: the search words \"{query}\" (to {site}, a public website)"
+  "agent.permission.web": "What it sends: the search words \"{query}\" (to {site}, a public website)",
+  "agent.permission.picture": "What it reads: one picture of the gallery (such as a trial picture the assistant generated)"
 }

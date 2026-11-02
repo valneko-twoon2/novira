@@ -33,7 +33,7 @@ export interface AgentMessage {
   id: number;
   role: 'user' | 'assistant';
   text: string;
-  /** Gallery pictures the user attached (user messages only). */
+  /** Gallery pictures the user attached, or the ones the assistant looked at (its trial pictures). */
   images?: string[];
   /** What the assistant's tool calls did (assistant messages only). */
   tools: AgentToolLog[];

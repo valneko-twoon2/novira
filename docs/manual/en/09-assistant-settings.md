@@ -62,7 +62,7 @@ From your text, the agent decides the following and fills it into the settings. 
 | Video, music, voice | Changes the settings of each of those screens |
 | Comic | On **{{ui:app.tabs.comic}}**, changes the panel layout, adds and cuts panels, and changes each panel's prompt and pose, and the balloons (see "Getting help with a comic" below) |
 | Pose | Places a figure for a pose you ask for in words, on **{{ui:app.tabs.canvas}}** (see [Drawing more on the canvas](05-canvas.md#making-a-pose-on-the-canvas)) |
-| Generating | Only when you ask, queues the current settings or the comic's panels for generation |
+| Generating | Only when you ask (and for a trial picture, below), queues the current settings or the comic's panels for generation |
 | Extension recommendations | Points you to extensions that suit what you want to do, which you can install from a button |
 | Questions about the app | Answers with the names of the screens and where to press |
 | Explaining extensions | Says what an extension does and how to use it (see "Asking about the app and extensions" below) |
@@ -70,6 +70,12 @@ From your text, the agent decides the following and fills it into the settings. 
 The agent looks at which screen you have open. For example, if you open **{{ui:media.tab.text}}** and say "make the text vertical", that text changes.
 
 The agent puts what it changes on the screen at once, while it works. While it works, what it has changed is listed under "{{ui:agent.thinking}}". It makes pictures or videos only when you ask (it queues them). Otherwise it only changes settings, so if the result looks good, press **{{ui:agent.generate}}** in its reply and it starts making right away. While a comic is open, a "Generate all pages" button also shows next to it. Pressing it queues every panel that has a prompt, on all pages (nothing is queued unless you press it). It does not delete pictures or install models or extensions (for extensions it only gives recommendations). Bold words, lists, tables and the like in its reply are shown as such, not as marks.
+
+### Asking back and trial pictures
+
+When your request leaves open something that changes the result a lot, such as which person to change, the background or the people, or the hair's style or its color, the agent asks back before it changes anything. Answer, and it changes it that way. When, after a correction, you say "the earlier one was better" or "she was fine as she was", the agent looks up how things were before it changed them in this chat and puts that part back (once the app is closed, the earlier state is no longer known).
+
+When you ask for a look that words hardly carry, such as "more like a summer day", the agent may generate one trial picture, look at it and ask whether that is what you mean. The trial picture appears under its answer. Looking at it asks for the same permission as "Permission to read pictures and prompts" below. To stop trial pictures, turn off **{{ui:settings.assistantTrial.label}}** in the settings (see "Settings" below).
 
 ### Getting help with a comic
 
@@ -198,6 +204,7 @@ When you choose **{{ui:app.nav.settings}}** from the **{{ui:app.nav.settingsMenu
 - **{{ui:settings.lowMemory.label}}**: for computers whose GPU has little memory. When it is on, models are not kept in GPU memory, so less memory is needed but making is slower. Switching it restarts the engine. While an item is being made, it applies the next time the engine starts. It cannot be used while the app is connected to an engine started elsewhere.
 - **{{ui:settings.assistantRead.label}}** (**{{ui:settings.section.assistant}}**): whether the agent may read the information of the gallery's pictures and the prompts of the Generate tab. Choose from **{{ui:settings.assistantRead.ask}}** (the default), **{{ui:settings.assistantRead.always}}** and **{{ui:settings.assistantRead.never}}**.
 - **{{ui:settings.assistantWeb.label}}** (**{{ui:settings.section.assistant}}**): whether the agent may look facts up on Wikipedia. It is asked and chosen the same way, apart from reading pictures.
+- **{{ui:settings.assistantTrial.label}}** (**{{ui:settings.section.assistant}}**): whether the agent may generate one trial picture on its own when a request is unclear. It is on at first.
 
 ### {{ui:settings.tab.gallery}}
 

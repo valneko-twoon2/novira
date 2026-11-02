@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { backend, type AgentToolCall } from '@/backend';
 import { registerAgentEditor, registerAgentModelSelector, registerAgentWorkflow, type AgentEditor } from './agentRegistry';
-import { createToolRun, currentScreen, DECLINED, DECLINED_WEB, isReadGated, MAX_ANSWER_CHARS, runAgentTool, TOOL_NAMES, webQuestion, type PermissionChoice, type ToolRun } from './agentTools';
+import { createToolRun, currentScreen, DECLINED, DECLINED_WEB, isReadGated, MAX_ANSWER_CHARS, PICTURE_WAIT_MS, runAgentTool, TOOL_NAMES, webQuestion, type PermissionChoice, type ToolRun } from './agentTools';
 import { useNodePacks } from './comfy/nodePacks';
 import { useRegistry } from './comfy/registry';
 import { useGallery } from './gallery';
@@ -73,14 +73,15 @@ describe('the tool list', () => {
   it('tags the same reads as the backend', () => {
     const rust = readFileSync(resolve(process.cwd(), '../backend/crates/novira-core/src/agent/tools.rs'), 'utf8');
     const body = rust.slice(rust.indexOf('pub fn is_read_gated'), rust.indexOf('pub fn check_call'));
-    expect([...body.matchAll(/"([a-z_]+)"/g)].map((m) => m[1]).sort()).toEqual(['get_generation_settings', 'get_image_info', 'list_gallery_images', 'lookup_reference', 'view_comic_page']);
+    expect([...body.matchAll(/"([a-z_]+)"/g)].map((m) => m[1]).sort()).toEqual(['get_generation_settings', 'get_image_info', 'list_gallery_images', 'lookup_reference', 'view_comic_page', 'view_picture']);
     expect(isReadGated('list_gallery_images', {})).toBe(true);
     expect(isReadGated('get_image_info', { name: 'a' })).toBe(true);
     expect(isReadGated('get_generation_settings', { includePrompts: true })).toBe(true);
     expect(isReadGated('get_generation_settings', {})).toBe(false);
     expect(isReadGated('lookup_reference', { query: 'kimono' })).toBe(true);
     expect(isReadGated('view_comic_page', { page: 1 })).toBe(true);
-    for (const tool of TOOL_NAMES.filter((t) => !['list_gallery_images', 'get_image_info', 'get_generation_settings', 'lookup_reference', 'view_comic_page'].includes(t))) expect(isReadGated(tool, { includePrompts: true })).toBe(false);
+    expect(isReadGated('view_picture', { queueId: 1 })).toBe(true);
+    for (const tool of TOOL_NAMES.filter((t) => !['list_gallery_images', 'get_image_info', 'get_generation_settings', 'lookup_reference', 'view_comic_page', 'view_picture'].includes(t))) expect(isReadGated(tool, { includePrompts: true })).toBe(false);
   });
 
   it('answers an unknown tool, a failing tool and an oversized answer with an error', async () => {
@@ -289,6 +290,53 @@ describe('the Generate tab', () => {
     expect(await call('generate', { target: 'screen' })).toEqual({ ok: true, content: { queued: [7, 8] } });
     expect(run.log).toEqual([{ kind: 'queued', count: 2 }]);
     expect(await call('generate', { target: 'screen' })).toEqual({ ok: false, content: 'Nothing was queued: No model' });
+  });
+
+  it('queues one trial picture only while the setting allows it', async () => {
+    enqueue.mockResolvedValue({ items: [{ id: 9 }] });
+    useSettings.getState().set({ assistantTrialPictures: true });
+    expect(await call('generate', { target: 'screen', trial: true })).toEqual({ ok: true, content: { queued: [9], note: expect.stringContaining('view_picture') } });
+    expect(enqueue).toHaveBeenLastCalledWith({ pictures: 1 });
+    // A plain generate keeps the count box.
+    await call('generate', { target: 'screen' });
+    expect(enqueue).toHaveBeenLastCalledWith({});
+    useSettings.getState().set({ assistantTrialPictures: false });
+    enqueue.mockClear();
+    expect(await call('generate', { target: 'screen', trial: true })).toEqual({ ok: false, content: expect.stringContaining('turned off') });
+    expect(enqueue).not.toHaveBeenCalled();
+    enqueue.mockReset();
+  });
+
+  it('shows a picture by name or waits for a queue item, asks first, and keeps it for the answer', async () => {
+    vi.useFakeTimers();
+    try {
+      useQueue.setState({ items: [{ id: 3, status: 'in_progress', error: null, imageName: null } as never] });
+      const waiting = call('view_picture', { queueId: 3 });
+      await vi.advanceTimersByTimeAsync(10);
+      useQueue.setState({ items: [{ id: 3, status: 'completed', error: null, imageName: 'trial.png' } as never] });
+      expect(await waiting).toEqual({ ok: true, content: { picture: 'trial.png', queueId: 3 } });
+      expect(asked).toEqual(['view_picture']);
+      expect(run.shown).toEqual(['trial.png']);
+      // Not finished within the wait: the model is told to ask again.
+      useQueue.setState({ items: [{ id: 4, status: 'pending', error: null, imageName: null } as never] });
+      const slow = call('view_picture', { queueId: 4 });
+      await vi.advanceTimersByTimeAsync(PICTURE_WAIT_MS + 10);
+      expect(await slow).toEqual({ ok: false, content: expect.stringContaining('not finished yet') });
+    } finally {
+      vi.useRealTimers();
+    }
+    useQueue.setState({ items: [{ id: 5, status: 'failed', error: 'oom', imageName: null } as never, { id: 6, status: 'canceled', error: null, imageName: null } as never] });
+    expect(await call('view_picture', { queueId: 5 })).toEqual({ ok: false, content: 'Queue item 5 failed: oom' });
+    expect(await call('view_picture', { queueId: 6 })).toEqual({ ok: false, content: 'Queue item 6 was canceled.' });
+    expect(await call('view_picture', { queueId: 99 })).toEqual({ ok: false, content: 'No queue item 99.' });
+    expect(await call('view_picture', {})).toEqual({ ok: false, content: 'Give queueId or name.' });
+    expect(await call('view_picture', { name: 'trial.png' })).toEqual({ ok: true, content: { picture: 'trial.png' } });
+    expect(await call('view_picture', { name: 'other.png' })).toMatchObject({ ok: true });
+    // A picture is listed once.
+    expect(run.shown).toEqual(['trial.png', 'other.png']);
+    answer = 'deny';
+    expect(await call('view_picture', { name: 'x.png' })).toEqual({ ok: false, content: DECLINED });
+    expect(run.shown).not.toContain('x.png');
   });
 
   it('tells the state of queue items by id', async () => {

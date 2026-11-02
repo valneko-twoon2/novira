@@ -67,6 +67,7 @@ pub fn agent_request(v: &Value) {
         agent_model,
         effort,
         images,
+        trial_pictures,
         attached,
     } = parse(v);
     assert!(
@@ -88,6 +89,7 @@ pub fn agent_request(v: &Value) {
         "focus": focus,
         "agentModel": agent_model,
         "effort": effort,
+        "trialPictures": trial_pictures,
         "images": images,
     });
     assert_eq!(wire, *v, "AgentRequest");

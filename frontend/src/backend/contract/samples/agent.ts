@@ -13,6 +13,7 @@ export const agentRequest = {
   agentModel: 'claude-opus-5-5',
   effort: 'high',
   images: ['0123456789abcdef0123456789abcdef.png'],
+  trialPictures: true,
 } satisfies Required<AgentRequest>;
 
 export const agentStatus = {

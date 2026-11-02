@@ -235,3 +235,33 @@ test('a server on another machine over plain http shows the unencrypted and the 
   await win.getByTestId('agent-endpoint-url').fill('http://127.0.0.1:11434/v1');
   await expect(win.getByTestId('agent-endpoint-warn-http')).toHaveCount(0);
 });
+
+test('the assistant draws one trial picture for a mood, shows it under its answer, and stops when the setting is off', async ({ page }) => {
+  await openApp(page);
+  await openAssistant(page);
+  const win = page.getByTestId('agent-window');
+  const replies = win.locator('.agent-msg--assistant:not(.agent-msg--thinking)');
+  await win.getByTestId('agent-input').fill('夏っぽい雰囲気にして');
+  await win.getByTestId('agent-send').click();
+  // Looking at the trial picture reads the gallery, so it asks first.
+  await win.getByTestId('agent-permission-once').click({ timeout: 20_000 });
+  await expect(replies).toHaveCount(1, { timeout: 30_000 });
+  await expect(replies.last()).toContainText('こんな雰囲気ですか');
+  await expect(replies.last().getByTestId('agent-msg-pictures').locator('img')).toHaveCount(1);
+  await expect(page.getByTestId('positive-prompt')).toHaveValue(/sunflower field/);
+
+  // With trial pictures turned off in the settings, the same request draws nothing on its own.
+  await page.getByRole('button', { name: msg('app.nav.settingsMenu') }).click();
+  await page.getByRole('menuitem', { name: msg('app.nav.settings') }).click();
+  await page.getByTestId('settings-tab-generation').click();
+  const toggle = page.getByRole('switch', { name: msg('settings.assistantTrial.label') });
+  await expect(toggle).toHaveAttribute('aria-checked', 'true');
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-checked', 'false');
+  await page.keyboard.press('Escape');
+  await win.getByTestId('agent-input').fill('夏っぽい雰囲気にして');
+  await win.getByTestId('agent-send').click();
+  await expect(replies).toHaveCount(2, { timeout: 10_000 });
+  await expect(replies.last()).not.toContainText('こんな雰囲気ですか');
+  await expect(replies.last().getByTestId('agent-msg-pictures')).toHaveCount(0);
+});

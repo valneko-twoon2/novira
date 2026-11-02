@@ -62,6 +62,8 @@ export interface SettingsValues {
   assistantReadAccess: ReadAccess;
   /** Whether the AI assistant may look facts up on Wikipedia (its search words leave the PC). Separate from reading pictures. */
   assistantWebAccess: ReadAccess;
+  /** Whether the AI assistant may draw a trial picture on its own to check what the user means (a GPU job; it then looks at it). */
+  assistantTrialPictures: boolean;
 }
 
 interface SettingsState extends SettingsValues {
@@ -93,6 +95,7 @@ export const SETTINGS_DEFAULTS: SettingsValues = {
   waitForEngine: true,
   assistantReadAccess: 'ask',
   assistantWebAccess: 'ask',
+  assistantTrialPictures: true,
 };
 
 const oneOf = <T>(v: unknown, options: readonly T[], fallback: T): T => options.find((o) => o === v) ?? fallback;
@@ -130,6 +133,7 @@ export function restoreSettings(saved: unknown): SettingsValues {
     waitForEngine: bool(s.waitForEngine, d.waitForEngine),
     assistantReadAccess: oneOf(s.assistantReadAccess, READ_ACCESS, d.assistantReadAccess),
     assistantWebAccess: oneOf(s.assistantWebAccess, READ_ACCESS, d.assistantWebAccess),
+    assistantTrialPictures: bool(s.assistantTrialPictures, d.assistantTrialPictures),
   };
 }
 

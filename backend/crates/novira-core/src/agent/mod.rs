@@ -123,6 +123,10 @@ pub struct AgentRequest {
     /// them and hands them to the provider with the message.
     #[serde(default)]
     pub images: Vec<String>,
+    /// Whether the assistant may draw a trial picture on its own to check what the user means (the user's setting; the
+    /// window refuses a trial when it is off).
+    #[serde(default)]
+    pub trial_pictures: bool,
     /// The attached pictures, read and prepared by the service (`attach::prepare`); never part of the wire request.
     #[serde(skip)]
     pub attached: Vec<AgentImage>,

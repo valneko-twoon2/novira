@@ -333,6 +333,7 @@ export const useAgent = create<AgentState>()(
               ...(images.length ? { images } : {}),
               ...(focus ? { focus: extensionId(focus) } : {}),
               ...agentOptions(get().status, get().choice),
+              trialPictures: useSettings.getState().assistantTrialPictures,
             });
             // The session was deleted while waiting: nothing to show the answer in (the changes stay).
             if (!get().sessions.some((s) => s.id === sessionId)) return { ok: true, cancelled: false, text: reply.text };
@@ -344,6 +345,8 @@ export const useAgent = create<AgentState>()(
                 text: reply.text,
                 ...(reply.thoughts?.length ? { thoughts: reply.thoughts } : {}),
                 tools: run.log,
+                // The pictures it looked at (its trial pictures) go under the answer.
+                ...(run.shown.length ? { images: [...run.shown] } : {}),
                 ...undoState(run),
               }),
             });
@@ -353,7 +356,7 @@ export const useAgent = create<AgentState>()(
             const text = cancelled ? t('agent.stopped') : String(err instanceof Error ? err.message : err);
             // A server that turned out not to take tools is shown so in the picker and the banner.
             if (get().status?.provider === 'openai') void get().refreshStatus();
-            set({ sessions: withMessage(get().sessions, sessionId, { id: nextId++, role: 'assistant', text, tools: run.log, ...undoState(run), ...(cancelled ? {} : { error: true }) }) });
+            set({ sessions: withMessage(get().sessions, sessionId, { id: nextId++, role: 'assistant', text, tools: run.log, ...(run.shown.length ? { images: [...run.shown] } : {}), ...undoState(run), ...(cancelled ? {} : { error: true }) }) });
             return { ok: false, cancelled, text };
           } finally {
             unsubscribe();

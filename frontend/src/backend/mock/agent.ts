@@ -172,11 +172,27 @@ async function pictureAgentReply(req: AgentRequest, call: MockToolCall): Promise
   };
 }
 
+/** The prompt of the mock's trial picture. */
+export const MOCK_TRIAL_PROMPT = '1girl, solo, summer, sunflower field, blue sky, bright light';
+
+/**
+ * A request for a mood on the image screen ("夏っぽく", "summer feel") while trial pictures are allowed: the mock sets a
+ * prompt, draws one trial picture, looks at it and asks whether that is what the user means, as a real assistant may.
+ */
+async function trialAgentReply(req: AgentRequest, call: MockToolCall): Promise<AgentReply | null> {
+  if (!req.trialPictures || (req.screen ?? 'generate') !== 'generate' || !/雰囲気|っぽく|summer feel|mood/i.test(req.message)) return null;
+  await call('set_generation_settings', { positivePrompt: MOCK_TRIAL_PROMPT });
+  const queued = data<{ queued: number[] }>(await call('generate', { target: 'screen', trial: true })).queued ?? [];
+  const seen = queued[0] === undefined ? {} : data<{ picture: string }>(await call('view_picture', { queueId: queued[0] }));
+  if (!seen.picture) return { text: req.locale === 'ja' ? 'プロンプトを書きましたが、試し描きはできませんでした。' : 'I wrote the prompt, but could not draw a trial picture.' };
+  return { text: req.locale === 'ja' ? '試しに 1 枚描きました。こんな雰囲気ですか？ 違うところを教えてください。' : 'I drew one trial picture. Is this the mood you mean? Tell me what to change.' };
+}
+
 /**
  * The rules, in order: pictures sent with the message come first; a question about an extension or the app is answered before anything is set; on the text, comic,
  * media and canvas screens the request is about them; then recommendations; else the picture's settings.
  */
-const RULES: MockRule[] = [pictureAgentReply, helpAgentReply, textAgentReply, comicAgentReply, mediaAgentReply, poseAgentReply, packAgentReply, imageAgentReply];
+const RULES: MockRule[] = [pictureAgentReply, trialAgentReply, helpAgentReply, textAgentReply, comicAgentReply, mediaAgentReply, poseAgentReply, packAgentReply, imageAgentReply];
 
 /** Answers a request by running the first rule that takes it. */
 export async function runMockAgent(req: AgentRequest, call: MockToolCall): Promise<AgentReply> {

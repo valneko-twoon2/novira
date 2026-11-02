@@ -2,7 +2,7 @@
 // and relays it here (`agent_tool_call`); this module reads or changes the app through the same appliers the editors
 // use (they check every operation and field again), keeps an undo snapshot before the first change of each kind, logs
 // what changed for the chat's chips, and asks the user before reading pictures or prompts, or looking something up on the web (the permission settings).
-import { backend, SCHEDULERS, type AgentScreen, type AgentToolCall, type GenerationMetadata, type ImageDTO, type ModelConfig } from '@/backend';
+import { backend, SCHEDULERS, type AgentScreen, type AgentToolCall, type GenerationMetadata, type ImageDTO, type ModelConfig, type QueueItem } from '@/backend';
 import { agentExtensions, extensionId, folderOfExtensionId, questionWords } from './agentExtensions';
 import { agentGuide } from './agentGuide';
 import { mangaGuide } from './comic/mangaGuide';
@@ -30,7 +30,7 @@ export const WEB_TOOL = 'lookup_reference';
 
 /** Tools that read the user's pictures or prompts, or send words to the web (the backend tags these too; either tag is enough to ask). */
 export function isReadGated(tool: string, args: unknown): boolean {
-  if (tool === 'list_gallery_images' || tool === 'get_image_info' || tool === 'view_comic_page' || tool === WEB_TOOL) return true;
+  if (tool === 'list_gallery_images' || tool === 'get_image_info' || tool === 'view_comic_page' || tool === 'view_picture' || tool === WEB_TOOL) return true;
   return tool === 'get_generation_settings' && isRecord(args) && args.includePrompts === true;
 }
 
@@ -64,6 +64,8 @@ export interface ToolRun {
   editSnapshots: Partial<Record<EditScreen, unknown>>;
   /** The Generate tab's settings before each earlier request of the chat changed them, oldest first. */
   earlier: EarlierSettings[];
+  /** Gallery pictures the assistant looked at with view_picture, shown under its answer. */
+  shown: string[];
   /** Whether a read of the user's pictures or prompts, or a look-up on the web, may go ahead (asks the user when its setting says so). */
   permit: (tool: string, args?: unknown) => Promise<boolean>;
 }
@@ -88,7 +90,7 @@ export function createToolRun(ask: (tool: string, args?: unknown) => Promise<Per
     queue = next.catch(() => undefined);
     return next;
   };
-  return { log: [], editSnapshots: {}, earlier, permit };
+  return { log: [], editSnapshots: {}, earlier, shown: [], permit };
 }
 
 /** What a tool answers: data (or a sentence) for the model, or an error it is told. */
@@ -219,6 +221,33 @@ async function newQueueItems(before: Set<number>): Promise<number[]> {
 
 type Handler = (args: Record<string, unknown>, run: ToolRun) => ToolResult | Promise<ToolResult>;
 
+/** How long view_picture waits for a queue item to finish (the relay gives a read-gated call 600 s, the question included). */
+export const PICTURE_WAIT_MS = 240_000;
+/** The most pictures shown under one answer. */
+const MAX_SHOWN = 8;
+
+/** The queue item once it has finished (completed, failed or canceled), or as it is when `ms` runs out; null when it is not in the queue. */
+function settledQueueItem(id: number, ms: number): Promise<QueueItem | null> {
+  const find = () => useQueue.getState().items.find((i) => i.id === id) ?? null;
+  const settled = (item: QueueItem | null) => !item || item.status === 'completed' || item.status === 'failed' || item.status === 'canceled';
+  if (settled(find())) return Promise.resolve(find());
+  return new Promise((resolve) => {
+    const stop = () => {
+      clearTimeout(timer);
+      unsubscribe();
+    };
+    const timer = setTimeout(() => {
+      stop();
+      resolve(find());
+    }, ms);
+    const unsubscribe = useQueue.subscribe(() => {
+      if (!settled(find())) return;
+      stop();
+      resolve(find());
+    });
+  });
+}
+
 /** The Generate tab's settings as get_generation_settings tells them (the prompts only when they may be read). */
 function settingsView(p: Partial<ParamsFields>, prompts: boolean) {
   return {
@@ -345,11 +374,32 @@ const HANDLERS: Record<string, Handler> = {
       run.log.push({ kind: 'queued', count: ids.length });
       return done({ queued: ids, note: 'The panels with a prompt were queued; get_queue_status tells their progress.' });
     }
-    const outcome = await enqueueActive();
+    // A trial picture is one picture the assistant draws on its own to check what the user means; the user can turn it off.
+    const trial = args.trial === true;
+    if (trial && !useSettings.getState().assistantTrialPictures) return fail('Trial pictures are turned off in the settings: ask the user in words instead.');
+    const outcome = await enqueueActive(trial ? { pictures: 1 } : {});
     if ('problems' in outcome) return fail(`Nothing was queued: ${outcome.problems.join(' ')}`);
     if ('error' in outcome) return fail(`Queuing failed: ${outcome.error}`);
     run.log.push({ kind: 'queued', count: outcome.items.length });
-    return done({ queued: outcome.items.map((i) => i.id) });
+    return done({ queued: outcome.items.map((i) => i.id), ...(trial ? { note: 'Look at it with view_picture and the queue id.' } : {}) });
+  },
+
+  // A gallery picture shown to the model (the backend reads it by its name) and under the answer; a queue id waits for it.
+  view_picture: async (args, run) => {
+    const id = num(args.queueId);
+    let picture = str(args.name);
+    if (id !== undefined) {
+      const item = await settledQueueItem(id, PICTURE_WAIT_MS);
+      if (!item) return fail(`No queue item ${id}.`);
+      if (item.status === 'failed') return fail(`Queue item ${id} failed: ${(item.error ?? '').slice(0, 300)}`);
+      if (item.status === 'canceled') return fail(`Queue item ${id} was canceled.`);
+      if (item.status !== 'completed') return fail(`Queue item ${id} is not finished yet: call view_picture again with the same id.`);
+      picture = item.imageName ?? undefined;
+      if (!picture) return fail(`Queue item ${id} made no picture.`);
+    }
+    if (!picture) return fail('Give queueId or name.');
+    if (!run.shown.includes(picture) && run.shown.length < MAX_SHOWN) run.shown.push(picture);
+    return done({ picture, ...(id !== undefined ? { queueId: id } : {}) });
   },
 
   get_queue_status: (args) => {

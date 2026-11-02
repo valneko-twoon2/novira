@@ -326,5 +326,7 @@
   "settings.hotkeys.gallery.undoDeleteDesc": "直前に削除した画像をギャラリーへ戻します",
   "settings.hotkeys.gallery.redoDelete": "もう一度削除する",
   "settings.hotkeys.gallery.redoDeleteDesc": "元に戻した削除をやり直します",
-  "settings.section.models": "モデル"
+  "settings.section.models": "モデル",
+  "settings.assistantTrial.label": "エージェントの試し描き",
+  "settings.assistantTrial.help": "依頼の意図が分かりにくいとき、エージェントが自分で 1 枚だけ試しに生成し、その画像を見て「こんな感じですか？」と確かめてよいかどうか。生成の時間がかかります。画像を見るときは「画像とプロンプトの読み取り」の設定に従います。"
 }

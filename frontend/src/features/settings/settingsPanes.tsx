@@ -151,6 +151,7 @@ export function GenerationPane() {
             data-testid="settings-assistant-web"
           />
         </Row>
+        <Toggle k="assistantTrialPictures" label={t('settings.assistantTrial.label')} help={t('settings.assistantTrial.help')} />
       </SectionBlock>
     </>
   );

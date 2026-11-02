@@ -61,6 +61,7 @@ const READ_WHAT: Record<string, MessageKey> = {
   get_image_info: 'agent.permission.image',
   get_generation_settings: 'agent.permission.prompts',
   view_comic_page: 'agent.permission.comicPage',
+  view_picture: 'agent.permission.picture',
 };
 
 /**

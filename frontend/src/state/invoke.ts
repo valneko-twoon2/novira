@@ -75,7 +75,7 @@ export function showsInvokeButtonOf(tab: BuilderKey): boolean {
 export type InvokeOutcome = { items: QueueItem[] } | { problems: string[] } | { error: string };
 
 /** Does what Invoke does on the screen that is open, without the notices (the assistant reports the outcome itself). */
-export async function enqueueActive(opts: { prepend?: boolean } = {}): Promise<InvokeOutcome> {
+export async function enqueueActive(opts: { prepend?: boolean; pictures?: number } = {}): Promise<InvokeOutcome> {
   const key = activeBuilderKey();
   const tab = useUi.getState().activeTab;
   const b = builders.get(key);
@@ -83,7 +83,9 @@ export async function enqueueActive(opts: { prepend?: boolean } = {}): Promise<I
   const reasons = b.readiness();
   if (reasons.length) return { problems: reasons };
   try {
-    const request = await b.build({ prepend: opts.prepend ?? false });
+    const built = await b.build({ prepend: opts.prepend ?? false });
+    // A set number of pictures (the assistant's trial picture) replaces the iterations box.
+    const request = opts.pictures === undefined ? built : { ...built, iterations: opts.pictures };
     const items = await backend.enqueue(request);
     b.onEnqueued?.(items);
     // Like InvokeAI, leave the launchpad so the progress preview is visible.
