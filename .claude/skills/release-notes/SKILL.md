@@ -1,6 +1,6 @@
 ---
 name: release-notes
-description: "Releases a novira version when the user runs /release-notes: checks [Unreleased] of CHANGELOG.md against the commits since the previous tag, turns it into the version's section, commits and pushes main, then tags that commit and pushes the tag; the release workflow builds the zip and makes the draft release titled with the tag, with the version's section as its body. Use when the user runs /release-notes, and only then (リリースノート, リリースして); it pushes a tag, so never on its own initiative."
+description: "Releases a novira version when the user runs /release-notes: writes [Unreleased] of CHANGELOG.md from the commits since the previous tag, turns it into the version's section, commits and pushes main, then tags that commit and pushes the tag; the release workflow builds the zip and makes the draft release titled with the tag, with the version's section as its body. Use when the user runs /release-notes, and only then (リリースノート, リリースして); it pushes a tag, so never on its own initiative."
 argument-hint: "The tag to release, for example v0.5.0 (default: v plus the version in backend/Cargo.toml)"
 user-invocable: true
 disable-model-invocation: true
@@ -15,7 +15,7 @@ The notes are the version's section of `CHANGELOG.md` (rule: [changelog.md](../.
 ```
 Release progress:
 - [ ] 1. Ready: tag checked, main pushed, tag not taken
-- [ ] 2. [Unreleased] checked against the commits
+- [ ] 2. [Unreleased] written from the commits
 - [ ] 3. Version section cut, committed, main pushed
 - [ ] 4. Tag pushed, workflow running
 - [ ] 5. Reported
@@ -33,13 +33,13 @@ Stop at the first failure, before changing anything:
 - `node scripts/tools/changelog.mjs --check` passes.
 - The range: previous tag `git describe --tags --abbrev=0`; `git log --no-merges --format="%h %s" <previous>..HEAD`.
 
-## 2. Check [Unreleased] against the commits
+## 2. Write [Unreleased] from the commits
 
-Each commit should have added its line (the rule), but check:
+`[Unreleased]` is empty between releases: nothing else writes `CHANGELOG.md` (the rule). Write every line now, from the commits of the range:
 
 1. Sort the commits by what the user of the app sees, not by the prefix alone; leave out everything about developing the app (the rule's list). A `test:` or `chore:` subject that says a defect of the app was fixed (直す, 不具合) can hold a product fix: read it.
-2. For each user-visible change with no line under `[Unreleased]`, add one, following the rule. When a subject does not say what the user can now do, read the commit (`git show --stat <id>`, then the relevant part); quote screen words from `frontend/src/i18n/locales/ja/`, numbers from the code.
-3. Remove lines for changes that were reverted, merge lines about the same thing, and keep it short: leave out small fixes a user would hardly notice.
+2. For each user-visible change, write one line under `[Unreleased]`, following the rule. When a subject does not say what the user can now do, read the commit (`git show --stat <id>`, then the relevant part); quote screen words from `frontend/src/i18n/locales/ja/`, numbers from the code.
+3. Skip changes that were reverted, merge lines about the same thing, and keep it short: leave out small fixes a user would hardly notice.
 4. A change you could not confirm is written cautiously or left out, and listed as a question in the report.
 
 ## 3. Cut the version and push main
@@ -60,7 +60,7 @@ If a step fails after the tag was pushed, do not delete or move the tag; report 
 
 - The workflow run (`gh run list --workflow release --limit 1`); the draft appears on the releases page when the run ends. Publishing the draft is the user's step on GitHub.
 - The version's section in a ```` ```markdown ```` block and the commit ID.
-- The range (`v0.4.0..HEAD`, N commits), the lines you added or changed in step 2, and what was left out, summarised by kind with counts.
+- The range (`v0.4.0..HEAD`, N commits) and what was left out, summarised by kind with counts.
 - The open questions. A change the user asks for afterwards: edit `CHANGELOG.md` on `main` (commit and push), then put the same text on the release with `gh release edit <tag> --notes-file <file>` from `node scripts/tools/changelog.mjs --notes <tag> --out novira-data/work/release-notes/<tag>.md`.
 
 ## Limits

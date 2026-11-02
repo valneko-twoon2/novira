@@ -1,5 +1,5 @@
 ---
-description: What goes into CHANGELOG.md and how it is written - Keep a Changelog 1.1.0, Japanese one-line bullets for the app's users, written in the same commit as the change
+description: What goes into CHANGELOG.md and how it is written - Keep a Changelog 1.1.0, Japanese one-line bullets for the app's users, written only when the user runs /release-notes
 paths:
   - "CHANGELOG.md"
   - "scripts/tools/changelog.mjs"
@@ -12,10 +12,9 @@ paths:
 
 ## When
 
-- A commit that changes what the user of the app sees adds its line under `## [Unreleased]` **in the same commit** (AGENTS.md section 4). A later commit that changes the same thing edits that line rather than adding another.
+- **Only when the user runs `/release-notes`.** No other work touches `CHANGELOG.md`: a feature, a fix or a removal does not add its line, and nothing is kept under `[Unreleased]` between releases (it stays empty). The skill writes the lines from the commits since the last tag, cuts the version's section and commits it.
 - Nothing about developing the app goes in, whatever its commit type: tests and test tools, CI and the workflows, hooks, skills, rules, `scripts/`, build and cargo settings, docs and the design pages, refactors. A `test:` or `chore:` commit that fixes a defect of the app does add its fix.
 - Leave out what a user would hardly notice, and accessibility-only fixes (screen-reader names, ARIA).
-- `/release-notes` turns `[Unreleased]` into the version's section; nobody else writes a version section or moves lines between versions.
 
 ## How
 

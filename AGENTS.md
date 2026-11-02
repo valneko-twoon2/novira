@@ -42,7 +42,7 @@
 
 規則（`.claude/rules/`。`paths` に当たるファイルに触れると読まれる。ほかのエージェントは該当時に読む）: [frontend.md](.claude/rules/frontend.md)、[i18n.md](.claude/rules/i18n.md)、[manual.md](.claude/rules/manual.md)、[assistant.md](.claude/rules/assistant.md)、[comfyui.md](.claude/rules/comfyui.md)、[models.md](.claude/rules/models.md)（モデルの変更・導入の後は実アプリで全カテゴリを確かめる）、[security.md](.claude/rules/security.md)、[regression-tests.md](.claude/rules/regression-tests.md)（何のテストを回すか）、[test-maintenance.md](.claude/rules/test-maintenance.md)、[design-docs.md](.claude/rules/design-docs.md)、[architecture-map.md](.claude/rules/architecture-map.md)、[commit-messages.md](.claude/rules/commit-messages.md)、[changelog.md](.claude/rules/changelog.md)。
 
-手順（`/名前`）: `/i18n`、`/manual`、`/testing`（テストケースの選び方）・`/test-mutation`、`/verify-real-app`、`/gatekeeper`（サブエージェントの成果を main に取り込む。依頼文の書き方もここ）、`/authoring-skills`（スキルを作る・直す）、`/hardening-harness`（繰り返す失敗を検査・フックで止める）、`/release-notes`（ユーザーが実行したときだけ。`CHANGELOG.md` の `[Unreleased]` を版の節にしてコミットし、タグを打って push する。下書きのリリースはワークフローが作る）。
+手順（`/名前`）: `/i18n`、`/manual`、`/testing`（テストケースの選び方）・`/test-mutation`、`/verify-real-app`、`/gatekeeper`（サブエージェントの成果を main に取り込む。依頼文の書き方もここ）、`/authoring-skills`（スキルを作る・直す）、`/hardening-harness`（繰り返す失敗を検査・フックで止める）、`/release-notes`（ユーザーが実行したときだけ。コミットから `CHANGELOG.md` を書いて版の節にし、コミットして、タグを打って push する。`CHANGELOG.md` はこのスキルのときだけ書く。下書きのリリースはワークフローが作る）。
 
 ## 3. 原則
 
@@ -66,7 +66,7 @@
 検証と差分の確認を終え、自分の変更をコミットしてから報告する（作業の区切りごとのコミットは常時許可。Stop フックが未コミットを 1 回差し戻す）。機能の追加・修正・削除には同じコミットで次を伴わせる。
 
 - テスト（[test-maintenance.md](.claude/rules/test-maintenance.md)。回す対象は `node scripts/tools/affected.mjs`、[regression-tests.md](.claude/rules/regression-tests.md)）
-- 文言は ja と en（[i18n.md](.claude/rules/i18n.md)）、利用者に見える変更ならマニュアル（[manual.md](.claude/rules/manual.md)）と `CHANGELOG.md` の `[Unreleased]` に 1 行（[changelog.md](.claude/rules/changelog.md)）
+- 文言は ja と en（[i18n.md](.claude/rules/i18n.md)）、利用者に見える変更ならマニュアル（[manual.md](.claude/rules/manual.md)）
 - AI アシスタントが知るべき変更ならそのプロンプト・文脈（[assistant.md](.claude/rules/assistant.md)）
 - 構造が変わるなら `docs/architecture/`（[architecture-map.md](.claude/rules/architecture-map.md)）、動き・境界・限界が変わるなら `docs/design/` の該当ページ
 - 不具合を直したら、同じ型の不具合を探す（ほかの画面、ほかのモデルのカテゴリ、ja と en の文言を `grep` や検査で）。見つけたものは同じ変更で直し、報告に探した範囲と件数を書く
