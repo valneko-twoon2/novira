@@ -32,5 +32,9 @@
   "presets.summary.videoModel.fast": "Fast model",
   "presets.summary.instrumental": "Instrumental",
   "presets.summary.designedVoice": "Described voice",
-  "presets.hint.logo": "Saves the style and shape (not the text in the logo)"
+  "presets.hint.logo": "Saves the style and shape (not the text in the logo)",
+  "presets.run.title": "Generate with random presets",
+  "presets.run.count": "Number of images",
+  "presets.run.queue": "Add to queue",
+  "presets.run.notReady": "'{name}': {reason}"
 }

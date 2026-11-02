@@ -1,4 +1,5 @@
 // The preset card at the top of a generator screen's left panel: PresetPicker bound to one kind's preset store.
+import type { ReactNode } from 'react';
 import { t } from '@/i18n';
 import { applyPreset, overwritePreset, savePreset, type Preset, type PresetKind } from '@/state/presets/presetStore';
 import { PresetPicker, type PresetItem } from './PresetPicker';
@@ -12,9 +13,11 @@ export interface PresetBarProps<D> {
   hint?: string;
   disabledReason?: string | null;
   testId: string;
+  /** More buttons of the screen, after the save button. */
+  actions?: ReactNode;
 }
 
-export function PresetBar<D>({ kind, summarize, nameOf, hint, disabledReason, testId }: PresetBarProps<D>) {
+export function PresetBar<D>({ kind, summarize, nameOf, hint, disabledReason, testId, actions }: PresetBarProps<D>) {
   const presets = kind.store((s) => s.presets);
   const selectedId = kind.store((s) => s.selectedId);
   const items: PresetItem[] = presets.map((p) => ({
@@ -31,6 +34,7 @@ export function PresetBar<D>({ kind, summarize, nameOf, hint, disabledReason, te
       hint={hint}
       disabledReason={disabledReason}
       testId={testId}
+      actions={actions}
       onApply={(id) => applyPreset(kind, id)}
       onSaveNew={(name) => savePreset(kind, name)}
       onOverwrite={(id) => overwritePreset(kind, id)}

@@ -4,13 +4,12 @@ import { t } from '@/i18n';
 import { refImagesEncoderReason, refImagesPackReason } from '@/state/comfy/packNeeds';
 import { modelPartsReason } from '@/state/modelParts';
 import { BASE_LABELS, isDrawable, useModels } from '@/state/models';
-import { hiresSize, useParams } from '@/state/params';
+import { hiresSize, useParams, type ParamsFields } from '@/state/params';
 import { useWildcards, wildcardMap } from '@/state/prompts/wildcards';
 import { MAX_WILDCARD_DEPTH, wildcardProblems } from '@/state/prompts/dynamicPrompts';
 
-/** Reasons shared by Generate and Canvas: model, LoRAs, reference images. */
-export function paramsReadiness(opts: { refImages: boolean }): string[] {
-  const p = useParams.getState();
+/** Reasons shared by Generate and Canvas: model, LoRAs, reference images. `p` is the form by default. */
+export function paramsReadiness(opts: { refImages: boolean }, p: ParamsFields = useParams.getState()): string[] {
   const models = useModels.getState().models;
   const reasons: string[] = [];
   const main = models.find((m) => m.key === p.modelKey && isDrawable(m));
@@ -45,8 +44,8 @@ export function paramsReadiness(opts: { refImages: boolean }): string[] {
 }
 
 /** Reasons the positive or the negative prompt cannot be expanded: wildcards without a usable list, lists that use themselves. */
-export function promptReadiness(): string[] {
-  const { positivePrompt, negativePrompt } = useParams.getState();
+export function promptReadiness(p: ParamsFields = useParams.getState()): string[] {
+  const { positivePrompt, negativePrompt } = p;
   const lists = wildcardMap(useWildcards.getState().lists);
   const reasons = [positivePrompt, negativePrompt].flatMap((prompt) => {
     const p = wildcardProblems(prompt, lists);
@@ -60,10 +59,10 @@ export function promptReadiness(): string[] {
   return [...new Set(reasons)];
 }
 
-/** The Generate tab: the shared reasons, the prompt, and the high-resolution fix's upscale model. */
-export function generateReadiness(): string[] {
-  const reasons = [...paramsReadiness({ refImages: true }), ...promptReadiness()];
-  const h = useParams.getState().hires;
+/** The Generate tab: the shared reasons, the prompt, and the high-resolution fix's upscale model. `p` is the form by default. */
+export function generateReadiness(p: ParamsFields = useParams.getState()): string[] {
+  const reasons = [...paramsReadiness({ refImages: true }, p), ...promptReadiness(p)];
+  const h = p.hires;
   if (h.enabled && h.upscaleModelKey && !useModels.getState().models.some((m) => m.key === h.upscaleModelKey)) {
     reasons.push(t('params.readiness.hiresNoModel'));
   }

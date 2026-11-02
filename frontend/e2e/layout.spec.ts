@@ -293,6 +293,14 @@ const SURFACES: Record<string, Surface> = {
     await expect(page.locator('.pp-dyn')).toBeVisible();
     await scan('popover');
   },
+  'random preset run popover with presets ticked': async (page, _locale, scan) => {
+    await page.getByTestId('preset-run-open').click();
+    const boxes = page.getByTestId('preset-run-list').locator('.ui-checkbox');
+    await boxes.first().click();
+    await boxes.last().click();
+    await expect(page.getByTestId('preset-run-queue')).toBeEnabled();
+    await scan('popover');
+  },
   'pose presets window with a category open': async (page, _locale, scan) => {
     await page.getByTestId('tab-canvas').click();
     await page.getByTestId('canvas-tool-pose').click();

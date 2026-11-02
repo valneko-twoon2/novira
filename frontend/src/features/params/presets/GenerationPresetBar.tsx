@@ -1,8 +1,10 @@
-// Top of the Generate left panel: saved image-generation presets (settings except seed and iterations).
+// Top of the Generate left panel: saved image-generation presets (settings except seed and iterations), and on the
+// Generate tab the random run of chosen presets.
 import { t } from '@/i18n';
 import { findModel } from '@/state/models';
 import { imagePresets, type PresetData } from '@/state/presets/imagePresets';
 import { PresetBar } from '@/ui';
+import { PresetRunButton } from './PresetRunButton';
 
 /** Model, size and steps, as far as the preset holds them. */
 export function summarizeImagePreset(data: PresetData): string {
@@ -13,6 +15,7 @@ export function summarizeImagePreset(data: PresetData): string {
   return parts.join(' · ');
 }
 
-export function GenerationPresetBar() {
-  return <PresetBar kind={imagePresets} summarize={summarizeImagePreset} hint={t('presets.hint.image')} testId="preset-bar" />;
+/** On the Generate tab the bar also runs chosen presets at random (`random`). */
+export function GenerationPresetBar({ random = false }: { random?: boolean }) {
+  return <PresetBar kind={imagePresets} summarize={summarizeImagePreset} hint={t('presets.hint.image')} testId="preset-bar" actions={random && <PresetRunButton />} />;
 }

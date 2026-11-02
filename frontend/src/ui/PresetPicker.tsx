@@ -2,7 +2,7 @@
 // opens a searchable list grouped into the user's and the built-in presets, with apply / overwrite / rename / delete
 // on each and "save the current settings" at the bottom. `compact` is the one-line form used under a prompt box.
 import { CaretDown, Check, DotsThree, FloppyDisk, FloppyDiskBack, PencilSimple, Play, Trash } from '@phosphor-icons/react';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { t } from '@/i18n';
 import { toast } from '@/state/toasts';
 import { withVisibleText } from './accessibleName';
@@ -36,6 +36,8 @@ export interface PresetPickerProps {
   disabledReason?: string | null;
   compact?: boolean;
   testId?: string;
+  /** More buttons of the screen, after the save button. */
+  actions?: ReactNode;
 }
 
 const GROUPS = () => [
@@ -179,6 +181,7 @@ export function PresetPicker(props: PresetPickerProps) {
         data-testid="preset-quick-save"
         onClick={() => setDialog({ mode: 'new' })}
       />
+      {props.actions}
       {dialog?.mode === 'new' && (
         <NameDialog
           title={t('presets.saveNewTitle')}

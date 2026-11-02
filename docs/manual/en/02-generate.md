@@ -232,6 +232,21 @@ Here is how to use them.
 - The "…" at the right of an item lets you **{{ui:presets.apply}}**, **{{ui:presets.overwrite}}**, **{{ui:presets.rename}}** and **{{ui:presets.delete}}**.
 - The list is divided into "{{ui:presets.group.mine}}" and "{{ui:presets.group.builtin}}". The built-in presets are samples that come with the app.
 
+### Running presets at random
+
+You can generate a batch while switching between several presets at random. Use it when you want many pictures in a row whose prompts and sizes differ a lot.
+
+1. Press the button with crossed arrows ({{ui:presets.run.title}}) to the right of the "{{ui:presets.label}}" card.
+2. Tick the presets to use.
+3. Enter the {{ui:presets.run.count}} in the "×" box and press **{{ui:presets.run.queue}}**.
+
+For each picture, one of the ticked presets is picked, each with the same chance, and the seed is random too. Settings a preset does not hold come from the current left panel. The left panel's settings do not change.
+
+- When the presets use different models, loading the model takes time at each switch.
+- When a prompt has dynamic prompts, each picture gets one prompt picked by its seed (not every combination).
+- When one of the ticked presets cannot be generated, its name and the reason are shown, and nothing can be added to the queue.
+- The ticks and the number are kept for the next time you open it.
+
 ## Prompt presets
 
 ![The prompt presets. Words and meanings are lined up by category, with Positive and Negative add buttons](shot:prompt-book)
