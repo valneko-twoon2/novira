@@ -173,7 +173,7 @@ Your exchanges with the agent are kept as a "chat". When you press the chat's na
 
 You can select the text of the chat by dragging and copy it. The button at the bottom right of each message (**{{ui:agent.copy}}**) copies the whole text of that message.
 
-> While you are waiting for a reply, you cannot send another message. Wait until the "{{ui:agent.thinking}}" display goes away, or cancel with the **{{ui:agent.stop}}** button that takes the place of the send button. What changed before you canceled stays, and **{{ui:agent.undo}}** puts it all back.
+> A message you send while a reply is still coming waits in line and is sent by itself when the reply ends. Waiting messages are shown faded, and the × takes one out. If the reply fails, the waiting messages go back into the input box. To stop, cancel with the **{{ui:agent.stop}}** button. What changed before you canceled stays, and **{{ui:agent.undo}}** puts it all back.
 
 Drag the edge between the panels to change the width of the right panel. A window opened over the screen changes its size when you drag any of its four edges or four corners. The bottom-right corner shows a mark for this. The size is remembered. When a reply comes with how the AI read your request, it shows as one line above the reply. Press it to open the whole account (**{{ui:agent.thoughts.label}}**). It is the AI's own short summary of how it read the request and why it chose what it did, not its raw internal thinking.
 

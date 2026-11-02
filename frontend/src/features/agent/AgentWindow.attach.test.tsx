@@ -9,6 +9,7 @@ import { useAgent, type AgentMessage, type SendResult } from '@/state/agent';
 import { IMAGE_MIME } from '@/state/dnd';
 import { useGallery } from '@/state/gallery';
 import { useToasts } from '@/state/toasts';
+import { useUi } from '@/state/ui';
 import { TooltipProvider } from '@/ui';
 import { AgentWindow } from './AgentWindow';
 
@@ -136,6 +137,18 @@ describe('sent messages', () => {
     show([{ id: 1, role: 'user', text: 'like this', images: ['g1.png', 'gone.png'], tools: [] }]);
     const pictures = screen.getByTestId('agent-msg-pictures');
     expect(within(pictures).getAllByRole('img').map((img) => img.getAttribute('src'))).toEqual(['t/g1.png', null]);
+  });
+
+  it('show a picture in the viewer when it is pressed, from a screen with no viewer too, and ignore one that is gone', () => {
+    show([{ id: 1, role: 'assistant', text: 'trial', images: ['g1.png', 'gone.png'], tools: [] }]);
+    useUi.setState({ activeTab: 'models', mainView: { ...useUi.getState().mainView, generate: 'launchpad' } });
+    const [first, gone] = within(screen.getByTestId('agent-msg-pictures')).getAllByRole('button');
+    fireEvent.click(gone!);
+    expect(useUi.getState().activeTab).toBe('models');
+    fireEvent.click(first!);
+    expect(useGallery.getState().selection).toEqual(['g1.png']);
+    expect(useUi.getState().activeTab).toBe('generate');
+    expect(useUi.getState().mainView.generate).toBe('viewer');
   });
 
   it('copy their text, and say so when the clipboard refuses', async () => {

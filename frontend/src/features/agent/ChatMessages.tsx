@@ -1,7 +1,7 @@
 // The conversation of the assistant's chat, shared by the floating window, the comic's column and the phone's chat screen:
 // the greeting with starting suggestions, each message (thoughts, pictures, text, copy, extension cards, applied-change
 // chips with undo), the spinner of a running request, the permission question, and the scroll to the latest.
-import { ArrowUUpLeft, CaretDown, CaretUp, Check, Copy, Eye, Globe, Lightbulb, Lightning } from '@phosphor-icons/react';
+import { ArrowUUpLeft, CaretDown, CaretUp, Check, Copy, Eye, Globe, Lightbulb, Lightning, X } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import { t, type MessageKey } from '@/i18n';
 import { currentMessages, isChange, useAgent, type AgentMessage, type AgentToolLog } from '@/state/agent';
@@ -71,12 +71,14 @@ const READ_WHAT: Record<string, MessageKey> = {
 export function ChatMessages({ onSuggest, phone = false, className }: { onSuggest: (text: string) => void; phone?: boolean; className?: string }) {
   const messages = useAgent(currentMessages);
   const thinking = useAgent((s) => s.busy && s.busySessionId === s.currentId);
+  const queued = useAgent((s) => s.queued);
+  const unqueue = useAgent((s) => s.unqueue);
   const onComic = useUi((s) => s.activeTab === 'comic') && !phone;
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: 'end' });
-  }, [messages, thinking]);
+  }, [messages, thinking, queued]);
 
   return (
     <div className={cx('agent-win__body', className)} data-testid="agent-messages">
@@ -99,6 +101,13 @@ export function ChatMessages({ onSuggest, phone = false, className }: { onSugges
       ))}
       {thinking && <Working />}
       {thinking && <PermissionPrompt />}
+      {queued.map((q) => (
+        <div key={q.id} className="agent-msg agent-msg--user is-queued" data-testid="agent-msg-queued">
+          {q.images.length ? <SentPictures names={q.images} /> : null}
+          <p className="agent-msg__text">{q.text || t('agent.attach.defaultAsk')}</p>
+          <IconButton className="agent-msg__copy" size="xs" label={t('agent.queued.remove')} icon={<X />} onClick={() => unqueue(q.id)} data-testid="agent-unqueue" />
+        </div>
+      ))}
       <div ref={endRef} />
     </div>
   );

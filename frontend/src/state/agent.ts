@@ -153,6 +153,17 @@ interface AgentState {
   draftText: string;
   draftAttached: string[];
   setDraft: (draft: { text?: string; attached?: string[] }) => void;
+  /** Messages written while the assistant was working (not saved): each is sent, in order, when the answer before it ends. */
+  queued: QueuedMessage[];
+  /** Puts a message behind the running request. */
+  queue: (text: string, images?: readonly string[]) => void;
+  unqueue: (id: number) => void;
+}
+
+export interface QueuedMessage {
+  id: number;
+  text: string;
+  images: string[];
 }
 
 const NO_MESSAGES: AgentMessage[] = [];
@@ -290,6 +301,13 @@ export const useAgent = create<AgentState>()(
           void backend.agentCancel().catch(() => {});
         },
         setOpen: (open) => set({ open }),
+        queued: [],
+        queue: (text, images = []) => {
+          const message = text.trim();
+          if (!message && !images.length) return;
+          set({ queued: [...get().queued, { id: nextId++, text: message, images: images.slice(0, AGENT_MAX_ATTACHMENTS) }] });
+        },
+        unqueue: (id) => set({ queued: get().queued.filter((q) => q.id !== id) }),
         draftText: '',
         draftAttached: [],
         setDraft: ({ text, attached }) => set({ ...(text === undefined ? {} : { draftText: text }), ...(attached === undefined ? {} : { draftAttached: attached }) }),
@@ -317,6 +335,7 @@ export const useAgent = create<AgentState>()(
           // An answer carries a note of what it changed and whether it was undone (agentHistory.ts).
           const history = session.messages.filter((m) => !m.error).map(historyTurn);
           cancelled = false;
+          let failed = false;
           const run = createToolRun(askPermission, earlierSettings(session.messages));
           activeRun = run;
           const unsubscribe = backend.subscribe((event) => {
@@ -357,12 +376,25 @@ export const useAgent = create<AgentState>()(
             // A server that turned out not to take tools is shown so in the picker and the banner.
             if (get().status?.provider === 'openai') void get().refreshStatus();
             set({ sessions: withMessage(get().sessions, sessionId, { id: nextId++, role: 'assistant', text, tools: run.log, ...(run.shown.length ? { images: [...run.shown] } : {}), ...undoState(run), ...(cancelled ? {} : { error: true }) }) });
+            failed = !cancelled;
             return { ok: false, cancelled, text };
           } finally {
             unsubscribe();
             if (activeRun === run) activeRun = null;
             answerQuestion?.('deny');
             set({ busy: false, busySessionId: null, working: [] });
+            // The next message written meanwhile goes out now. After a failure they go back to the box instead, so they
+            // are not sent into the same fault one by one.
+            const next = get().queued[0];
+            if (next) {
+              if (failed) {
+                const back = get().queued;
+                set({ queued: [], draftText: [...back.map((q) => q.text), get().draftText].filter(Boolean).join('\n'), draftAttached: [...new Set([...back.flatMap((q) => q.images), ...get().draftAttached])] });
+              } else {
+                set({ queued: get().queued.slice(1) });
+                void get().send(next.text, next.images);
+              }
+            }
           }
         },
         undo: (id) => {

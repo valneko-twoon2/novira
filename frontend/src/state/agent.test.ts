@@ -31,7 +31,7 @@ const setsPrompt = (positive: string) => replyWith(`set ${positive}`, (call) => 
 beforeEach(() => {
   localStorage.clear();
   requests = [];
-  useAgent.setState({ sessions: [], currentId: null, busy: false, busySessionId: null, permission: null, working: [] });
+  useAgent.setState({ sessions: [], currentId: null, busy: false, busySessionId: null, permission: null, working: [], queued: [], draftText: '', draftAttached: [] });
   useParams.getState().set({ positivePrompt: 'original', negativePrompt: '' });
   useSettings.getState().set({ assistantReadAccess: 'ask', assistantWebAccess: 'ask' });
 });
@@ -113,6 +113,37 @@ describe('agent sessions', () => {
     resolve({ text: 'done' });
     await pending;
     expect(useAgent.getState()).toMatchObject({ busy: false, busySessionId: null, sessions: [] });
+  });
+
+  it('sends the messages written while it works one after the other, as soon as each answer ends', async () => {
+    let resolve: (r: AgentReply) => void = () => {};
+    const chat = vi.spyOn(backend, 'agentChat').mockImplementationOnce(() => new Promise<AgentReply>((r) => (resolve = r))).mockResolvedValue({ text: 'next' });
+    const first = useAgent.getState().send('one');
+    useAgent.getState().queue('two');
+    useAgent.getState().queue('  ');
+    useAgent.getState().queue('three', ['a.png']);
+    expect(useAgent.getState().queued.map((q) => q.text)).toEqual(['two', 'three']);
+    resolve({ text: 'first' });
+    await first;
+    await vi.waitFor(() => expect(chat).toHaveBeenCalledTimes(3));
+    await vi.waitFor(() => expect(useAgent.getState().busy).toBe(false));
+    expect(chat.mock.calls.map(([r]) => r.message)).toEqual(['one', 'two', 'three']);
+    expect(chat.mock.calls[2]![0].images).toEqual(['a.png']);
+    expect(useAgent.getState().queued).toEqual([]);
+  });
+
+  it('takes a waiting message out of the line, and gives them back to the box when the request fails', async () => {
+    let fail: (e: Error) => void = () => {};
+    const chat = vi.spyOn(backend, 'agentChat').mockImplementation(() => new Promise<AgentReply>((_, r) => (fail = r)));
+    const first = useAgent.getState().send('one');
+    useAgent.getState().queue('two');
+    useAgent.getState().queue('three', ['a.png']);
+    useAgent.getState().unqueue(useAgent.getState().queued[0]!.id);
+    useAgent.getState().setDraft({ text: 'typing' });
+    fail(new Error('boom'));
+    await first;
+    expect(chat).toHaveBeenCalledTimes(1);
+    expect(useAgent.getState()).toMatchObject({ queued: [], draftText: 'three\ntyping', draftAttached: ['a.png'] });
   });
 
   it('keeps the reply in the session that asked even after switching to a new chat', async () => {

@@ -9,6 +9,7 @@ import { resolveDropImages } from '@/state/dnd';
 import { findImage, useGallery } from '@/state/gallery';
 import { autoAddBoardId } from '@/state/invoke';
 import { toast } from '@/state/toasts';
+import { MAIN_VIEWS, showViewer, useUi } from '@/state/ui';
 import { IconButton } from '@/ui';
 
 /** Whether a gallery name is a still picture (videos and sounds cannot be attached; an unknown name is left to the backend). */
@@ -92,13 +93,24 @@ export function AttachedStrip({ names, onRemove }: { names: readonly string[]; o
   );
 }
 
-/** The pictures a sent message carried. */
+/** Shows a picture of the chat in the viewer, like a double click on it in the gallery. */
+function showPicture(name: string) {
+  if (!findImage(name)) return;
+  useGallery.getState().setSelection([name]);
+  // A screen with no viewer (Models, for one) is left for the Generate tab's.
+  if (!MAIN_VIEWS[useUi.getState().activeTab]?.includes('viewer')) useUi.getState().setTab('generate');
+  showViewer();
+}
+
+/** The pictures a sent message carried; a press shows one in the viewer. */
 export function SentPictures({ names }: { names: readonly string[] }) {
   return (
     <ul className="agent-msg__pictures" data-testid="agent-msg-pictures">
       {names.map((name) => (
         <li key={name}>
-          <Thumb name={name} />
+          <button type="button" className="agent-msg__picture" aria-label={t('agent.attach.open')} onClick={() => showPicture(name)}>
+            <Thumb name={name} />
+          </button>
         </li>
       ))}
     </ul>

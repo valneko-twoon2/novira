@@ -151,5 +151,7 @@
   "agent.attach.defaultAsk": "この画像をもとに、生成用のプロンプトを考えて入れてください。",
   "agent.permission.webTitle": "AI が Wikipedia で調べものをしようとしています",
   "agent.permission.web": "送るもの: 検索語「{query}」（公開サイト {site} へ）",
-  "agent.permission.picture": "読むもの: ギャラリーの画像 1 枚（エージェントが試しに生成した画像など）"
+  "agent.permission.picture": "読むもの: ギャラリーの画像 1 枚（エージェントが試しに生成した画像など）",
+  "agent.attach.open": "画像を大きく表示",
+  "agent.queued.remove": "順番待ちから外す"
 }

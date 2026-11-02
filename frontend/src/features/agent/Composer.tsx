@@ -21,13 +21,14 @@ export interface Draft {
   attached: string[];
   attach: (names: readonly string[]) => void;
   detach: (name: string) => void;
-  /** Sends `value` with the attached pictures and clears the draft (nothing while the assistant works or with nothing to send). */
+  /** Sends `value` with the attached pictures and clears the draft (while the assistant works it goes in line behind the request; nothing with nothing to send). */
   submit: (value: string) => void;
 }
 
 export function useDraft(): Draft {
   const busy = useAgent((s) => s.busy);
   const send = useAgent((s) => s.send);
+  const queue = useAgent((s) => s.queue);
   const text = useAgent((s) => s.draftText);
   const attached = useAgent((s) => s.draftAttached);
   const setDraft = useAgent((s) => s.setDraft);
@@ -39,9 +40,10 @@ export function useDraft(): Draft {
     attach: (names) => setDraft({ attached: withAttached(current(), names) }),
     detach: (name) => setDraft({ attached: current().filter((n) => n !== name) }),
     submit: (value) => {
-      if ((!value.trim() && !attached.length) || busy) return;
+      if (!value.trim() && !attached.length) return;
       setDraft({ text: '', attached: [] });
-      void send(value, attached);
+      if (busy) queue(value, attached);
+      else void send(value, attached);
     },
   };
 }
@@ -109,7 +111,7 @@ export function Composer({ draft, phone = false }: { draft: Draft; phone?: boole
       {!phone && <InputGrip />}
       {dropping && <p className="agent-win__drop">{t('agent.attach.drop')}</p>}
       <AttachedStrip names={attached} onRemove={detach} />
-      <AttachButton disabled={busy} onPicked={attach} />
+      <AttachButton disabled={false} onPicked={attach} />
       {slashOpen && <SlashMenu items={slashItems} active={Math.min(slashActive, Math.max(0, slashItems.length - 1))} onPick={pickTemplate} onHover={setSlashActive} />}
       <Textarea
         ref={inputRef}
@@ -158,9 +160,8 @@ export function Composer({ draft, phone = false }: { draft: Draft; phone?: boole
           }
         }}
       />
-      {busy ? (
-        <IconButton type="button" label={t('agent.stop')} icon={<Stop weight="fill" />} variant="solid" onClick={cancel} data-testid="agent-stop" />
-      ) : (
+      {busy && <IconButton type="button" label={t('agent.stop')} icon={<Stop weight="fill" />} variant="solid" onClick={cancel} data-testid="agent-stop" />}
+      {(!busy || text.trim() || attached.length > 0) && (
         <IconButton type="submit" label={t('agent.send')} icon={<ArrowUp />} variant="solid" scheme="invoke" disabled={!text.trim() && !attached.length} data-testid="agent-send" />
       )}
     </form>

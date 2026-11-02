@@ -23,6 +23,7 @@ function seed(messages: AgentMessage[], over: Partial<ReturnType<typeof useAgent
     currentId: 's1',
     busy: false,
     busySessionId: null,
+    queued: [],
     status: ready,
     pos: null,
     ...over,
@@ -78,7 +79,7 @@ describe('sending', () => {
     expect(send).toHaveBeenCalledWith(t('agent.suggestion.anime'), []);
   });
 
-  it('sends on Enter, keeps Shift+Enter and composing for the text, and ignores an empty or busy send', async () => {
+  it('sends on Enter, keeps Shift+Enter and composing for the text, and ignores an empty send and queues one made while it works', async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     seed([message(1, 'user', 'hi')], { send });
     show();
@@ -103,6 +104,13 @@ describe('sending', () => {
     fireEvent.submit(input.closest('form')!);
     expect(send).toHaveBeenCalledTimes(2);
     expect(screen.getByText(t('agent.thinking'))).toBeTruthy();
+    // The message written meanwhile waits its turn, shown faded under the thinking, and can be taken out.
+    expect(input.value).toBe('');
+    expect(useAgent.getState().queued.map((q) => q.text)).toEqual(['while busy']);
+    expect(within(screen.getByTestId('agent-msg-queued')).getByText('while busy')).toBeTruthy();
+    fireEvent.click(screen.getByTestId('agent-unqueue'));
+    expect(useAgent.getState().queued).toEqual([]);
+    expect(screen.queryByTestId('agent-msg-queued')).toBeNull();
   });
 });
 
