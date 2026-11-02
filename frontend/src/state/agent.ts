@@ -17,7 +17,7 @@ export type { AgentMessage, AgentSession, AgentToolLog, EditScreen } from './age
 export { isChange } from './agentSessions';
 export { registerAgentEditor, registerAgentExtensionNodes, registerAgentModelSelector, registerAgentWorkflow, type AgentEditor } from './agentRegistry';
 
-/** The model and effort the user chose for one tool. An empty model is the tool's own default; an empty effort is the model's. */
+/** The model and effort the user chose for one tool. An empty model is the tool's default model; an empty effort is the model's. */
 export interface AgentChoice {
   model: string;
   effort: AgentEffort | '';
@@ -26,7 +26,7 @@ export interface AgentChoice {
 /** Every effort, from the lightest. */
 const ALL_EFFORTS: readonly AgentEffort[] = ['low', 'medium', 'high', 'xhigh', 'max', 'ultra'];
 
-/** The efforts of the tool's own default model (or a typed Claude name), and the one it starts at. */
+/** The efforts of a model the tool does not list (Codex without its list runs its own default), and the one it starts at. */
 const DEFAULT_MODEL_EFFORTS: Record<AgentProvider, { efforts: readonly AgentEffort[]; initial: AgentEffort }> = {
   claude: { efforts: ['low', 'medium', 'high', 'xhigh', 'max'], initial: 'high' },
   codex: { efforts: ['low', 'medium', 'high'], initial: 'medium' },
@@ -40,9 +40,20 @@ export function effortsFor(provider: AgentProvider, models: readonly AgentModelO
   return listed?.efforts.length ? { efforts: listed.efforts, initial: listed.defaultEffort } : DEFAULT_MODEL_EFFORTS[provider];
 }
 
-/** The effort a request goes with: the chosen one when the model takes it, else the model's starting effort. */
-export function effectiveEffort(provider: AgentProvider, models: readonly AgentModelOption[], choice: AgentChoice): AgentEffort {
-  const { efforts, initial } = effortsFor(provider, models, choice.model);
+/**
+ * The model a request runs on, so the picker always names the one that answers: the chosen one when the tool lists it,
+ * one saved under an old alias (`sonnet`) as the listed model of that name, else the tool's default; '' when it lists none.
+ */
+export function effectiveModel(status: Pick<AgentStatus, 'models' | 'defaultModel'> | null, choice: AgentChoice): string {
+  const models = status?.models ?? [];
+  const listed =
+    models.find((m) => m.id === choice.model) ?? (choice.model ? models.find((m) => m.id.split('-').includes(choice.model)) : undefined) ?? models.find((m) => m.id === status?.defaultModel);
+  return listed?.id ?? '';
+}
+
+/** The effort a request goes with on `model`: the chosen one when the model takes it, else the model's starting effort. */
+export function effectiveEffort(provider: AgentProvider, models: readonly AgentModelOption[], model: string, choice: AgentChoice): AgentEffort {
+  const { efforts, initial } = effortsFor(provider, models, model);
   return choice.effort && efforts.includes(choice.effort) ? choice.effort : initial;
 }
 
@@ -167,14 +178,15 @@ let activeRun: ToolRun | null = null;
 /** Answers the permission question on screen. */
 let answerQuestion: ((choice: PermissionChoice) => void) | null = null;
 
-/** The model (none for the tool's default) and effort of the tool in use for a request. */
+/** The model (none when the tool lists none) and effort of the tool in use for a request. */
 export function agentOptions(status: AgentStatus | null, choice: Record<AgentProvider, AgentChoice>): { agentModel?: string; effort?: AgentEffort } {
   const provider = status?.provider;
   if (!provider) return {};
   // A server's model is part of its saved settings, and it has no effort.
   if (provider === 'openai') return {};
   const picked = choice[provider];
-  return { ...(picked.model ? { agentModel: picked.model } : {}), effort: effectiveEffort(provider, status.models ?? [], picked) };
+  const model = effectiveModel(status, picked);
+  return { ...(model ? { agentModel: model } : {}), effort: effectiveEffort(provider, status.models ?? [], model, picked) };
 }
 
 /** The sessions with `message` added to session `id` (which then counts as the most recently used). */

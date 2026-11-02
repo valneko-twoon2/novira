@@ -146,13 +146,14 @@ async function imageAgentReply(req: AgentRequest, call: MockToolCall): Promise<A
   else if (wantsDetail) patch.steps = 40;
   await call('set_generation_settings', { positivePrompt: positive, negativePrompt: NEGATIVE[style], ...patch });
 
+  // In Markdown, as real models answer: the chat shows it as bold words and a list.
   const notes: string[] = [];
-  if (main) notes.push(ja ? `モデルは「${main.name}」` : `model: ${main.name}`);
-  if (picked.length) notes.push(ja ? `LoRAは「${picked.map((m) => m.name).join('」「')}」` : `LoRA: ${picked.map((m) => m.name).join(', ')}`);
+  if (main) notes.push(ja ? `- **モデル**: ${main.name}` : `- **Model**: ${main.name}`);
+  if (picked.length) notes.push(`- **LoRA**: ${picked.map((m) => m.name).join(', ')}`);
   const body = ja
-    ? `${notes.join('、')}を選びました（${REASON[style].ja}）。プロンプトとネガティブプロンプトも入れてあります。生成ボタンを押すか、下の「生成する」から始められます。`
-    : `I chose ${notes.join(', ')} (${REASON[style].en}) and filled in the prompt and negative prompt. Press Generate, or use the button below.`;
-  return { text: body };
+    ? [`次のように選びました（${REASON[style].ja}）。`, notes.join('\n'), 'プロンプトとネガティブプロンプトも入れてあります。生成ボタンを押すか、下の「生成する」から始められます。']
+    : [`I chose these (${REASON[style].en}):`, notes.join('\n'), 'I filled in the prompt and negative prompt. Press Generate, or use the button below.'];
+  return { text: body.filter(Boolean).join('\n\n') };
 }
 
 /** The prompt the mock "reads" from attached pictures: fixed, so tests and the manual's pictures stay the same. */

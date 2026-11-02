@@ -83,8 +83,6 @@
   "agent.template.howto.text": "En esta pantalla, ¿cómo hago esto?: ",
   "agent.template.music.label": "Preparar una canción",
   "agent.template.music.text": "Prepara una canción así: ",
-  "agent.model.customPlaceholder": "Nombre del modelo (p. ej., claude-opus-5-5)",
-  "agent.model.hint": "Se usa desde el próximo mensaje. Con Predeterminado, la herramienta elige el modelo. Los niveles de esfuerzo son los que admite el modelo elegido.",
   "agent.effort.ultra": "Ultra",
   "agent.inputResize": "Cambiar la altura del cuadro de mensaje (arrastre, o use las teclas arriba y abajo)",
   "agent.action.queued": "En cola para generar ({count})",

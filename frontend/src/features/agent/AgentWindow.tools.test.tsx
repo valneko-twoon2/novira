@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { backend, type AgentModelOption } from '@/backend';
 import { t } from '@/i18n';
-import { AGENT_INPUT_HEIGHT, agentOptions, useAgent } from '@/state/agent';
+import { AGENT_INPUT_HEIGHT, agentOptions, effectiveModel, useAgent } from '@/state/agent';
 import { TooltipProvider } from '@/ui';
 import { AgentWindow } from './AgentWindow';
 import { matchTemplates, slashQuery, SLASH_TEMPLATES } from './slashTemplates';
@@ -15,8 +15,11 @@ const show = () =>
       <AgentWindow />
     </TooltipProvider>,
   );
-const claudeModels: AgentModelOption[] = ['opus', 'sonnet'].map((id) => ({ id, name: id[0]!.toUpperCase() + id.slice(1), efforts: ['low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'high' }));
-const ready = { provider: 'claude' as const, installed: true, loggedIn: true, models: claudeModels };
+const claudeModels: AgentModelOption[] = [
+  ['claude-opus-5-5', 'Opus 5.5'],
+  ['claude-sonnet-5-5', 'Sonnet 5.5'],
+].map(([id, name]) => ({ id: id!, name: name!, efforts: ['low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'high' }));
+const ready = { provider: 'claude' as const, installed: true, loggedIn: true, models: claudeModels, defaultModel: 'claude-sonnet-5-5' };
 
 beforeAll(() => {
   Element.prototype.scrollIntoView = () => {};
@@ -104,18 +107,37 @@ describe('the "/" list', () => {
 describe('the model and effort', () => {
   it('are chosen per tool in the header, always with an effort, and go with the request of that tool only', async () => {
     show();
-    fireEvent.click(await screen.findByTestId('agent-model'));
+    // Before a choice the default model is the one named and pressed: there is no "default" and no typed name.
+    expect((await screen.findByTestId('agent-model')).textContent).toContain('Sonnet 5.5');
+    fireEvent.click(screen.getByTestId('agent-model'));
+    expect((await screen.findByTestId('agent-model-claude-sonnet-5-5')).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.queryByTestId('agent-model-default')).toBeNull();
+    expect(screen.queryByTestId('agent-model-custom')).toBeNull();
+    expect(screen.queryByTestId('agent-model-name')).toBeNull();
     // No "default" effort: the model's own starting effort is the one picked.
     expect(screen.queryByTestId('agent-effort-default')).toBeNull();
-    expect((await screen.findByTestId('agent-effort-high')).getAttribute('aria-pressed')).toBe('true');
-    fireEvent.click(screen.getByTestId('agent-model-opus'));
+    expect(screen.getByTestId('agent-effort-high').getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(screen.getByTestId('agent-model-claude-opus-5-5'));
     fireEvent.click(screen.getByTestId('agent-effort-max'));
-    await waitFor(() => expect(useAgent.getState().choice.claude).toEqual({ model: 'opus', effort: 'max' }));
-    expect(screen.getByTestId('agent-model').textContent).toContain('Opus');
+    await waitFor(() => expect(useAgent.getState().choice.claude).toEqual({ model: 'claude-opus-5-5', effort: 'max' }));
+    expect(screen.getByTestId('agent-model').textContent).toContain('Opus 5.5');
+    expect(screen.getByTestId('agent-model-claude-sonnet-5-5').getAttribute('aria-pressed')).toBe('false');
     const choice = useAgent.getState().choice;
-    expect(agentOptions(ready, choice)).toEqual({ agentModel: 'opus', effort: 'max' });
+    expect(agentOptions(ready, choice)).toEqual({ agentModel: 'claude-opus-5-5', effort: 'max' });
     expect(agentOptions({ ...ready, provider: 'codex', models: [] }, choice)).toEqual({ effort: 'medium' });
     expect(agentOptions(null, choice)).toEqual({});
+  });
+
+  it('runs the default model, named, until one is chosen, and reads a model saved under an old alias as its listed model', () => {
+    const none = { model: '', effort: '' as const };
+    expect(effectiveModel(ready, none)).toBe('claude-sonnet-5-5');
+    expect(agentOptions(ready, { claude: none, codex: none, openai: none })).toEqual({ agentModel: 'claude-sonnet-5-5', effort: 'high' });
+    expect(effectiveModel(ready, { model: 'opus', effort: '' })).toBe('claude-opus-5-5');
+    expect(effectiveModel(ready, { model: 'claude-opus-5-5', effort: '' })).toBe('claude-opus-5-5');
+    // A name the tool no longer lists runs the default; a tool that lists nothing runs its own.
+    expect(effectiveModel(ready, { model: 'claude-x', effort: '' })).toBe('claude-sonnet-5-5');
+    expect(effectiveModel({ models: [] }, { model: 'opus', effort: '' })).toBe('');
+    expect(effectiveModel(null, none)).toBe('');
   });
 
   it("offers the models Codex lists with each one's efforts, and falls back to a model's own effort when it lacks the chosen one", async () => {
@@ -125,15 +147,15 @@ describe('the model and effort', () => {
       { id: 'gpt-pro', name: 'GPT-Pro', efforts: ['low', 'medium', 'high', 'ultra'], defaultEffort: 'medium' },
       { id: 'gpt-mini', name: 'GPT-Mini', efforts: ['low', 'medium'], defaultEffort: 'low' },
     ];
-    const codex = { provider: 'codex' as const, installed: true, loggedIn: true, models };
+    const codex = { provider: 'codex' as const, installed: true, loggedIn: true, models, defaultModel: 'gpt-mini' };
     vi.spyOn(backend, 'agentStatus').mockResolvedValue(codex);
     useAgent.setState({ status: codex });
     show();
     fireEvent.click(await screen.findByTestId('agent-model'));
-    // The tool's own default model takes low to high, and a name cannot be typed for Codex.
-    expect(await screen.findByTestId('agent-effort-high')).toBeTruthy();
-    expect(screen.queryByTestId('agent-effort-ultra')).toBeNull();
-    expect(screen.queryByTestId('agent-model-custom')).toBeNull();
+    // The default model is named and takes only its own efforts.
+    expect((await screen.findByTestId('agent-model-gpt-mini')).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByTestId('agent-effort-low').getAttribute('aria-pressed')).toBe('true');
+    expect(screen.queryByTestId('agent-effort-high')).toBeNull();
     fireEvent.click(screen.getByTestId('agent-model-gpt-pro'));
     fireEvent.click(await screen.findByTestId('agent-effort-ultra'));
     expect(agentOptions(codex, useAgent.getState().choice)).toEqual({ agentModel: 'gpt-pro', effort: 'ultra' });

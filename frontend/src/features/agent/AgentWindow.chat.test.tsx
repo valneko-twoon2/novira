@@ -44,6 +44,31 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe('the text of a message', () => {
+  it("shows the assistant's Markdown as bold, lists, code and tables, and what the user typed and errors as they are", async () => {
+    const answer = '**足したもの**\n- **線と塗り**: clean lineart\n- `glossy hair`\n\n| a | b |\n|---|---|\n| 1 | <b>2</b> |\n\n<img src=x onerror=alert(1)>';
+    seed([
+      message(1, 'user', '**as typed**'),
+      message(2, 'assistant', answer, { thoughts: ['Read **this** as a style request.'] }),
+      message(3, 'assistant', '**failed**', { error: true }),
+    ]);
+    show();
+    const [, reply, failed] = await screen.findAllByTestId(/^agent-msg-/);
+    expect(screen.getByTestId('agent-msg-user').textContent).toContain('**as typed**');
+    expect(within(reply!).getByText('足したもの').tagName).toBe('STRONG');
+    const items = within(reply!).getAllByRole('listitem');
+    expect(items.map((li) => li.textContent)).toEqual(['線と塗り: clean lineart', 'glossy hair']);
+    expect(within(items[1]!).getByText('glossy hair').tagName).toBe('CODE');
+    expect(within(reply!).getAllByRole('columnheader').map((th) => th.textContent)).toEqual(['a', 'b']);
+    // HTML in an answer stays text: no element is made from it.
+    expect(within(reply!).getByText('<b>2</b>').tagName).toBe('TD');
+    expect(reply!.querySelector('img, b')).toBeNull();
+    expect(reply!.textContent).toContain('<img src=x onerror=alert(1)>');
+    expect(within(reply!).getByText('this').tagName).toBe('STRONG');
+    expect(failed!.textContent).toContain('**failed**');
+  });
+});
+
 describe('sending', () => {
   it('offers starting suggestions on an empty chat and sends the one picked', async () => {
     const send = vi.fn().mockResolvedValue(undefined);

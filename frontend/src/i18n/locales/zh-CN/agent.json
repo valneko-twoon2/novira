@@ -83,8 +83,6 @@
   "agent.template.howto.text": "在这个界面上，怎样才能做到下面的事：",
   "agent.template.music.label": "设置乐曲",
   "agent.template.music.text": "请设置成下面这样的乐曲：",
-  "agent.model.customPlaceholder": "模型名称（例如 claude-opus-5-5）",
-  "agent.model.hint": "从下一条消息开始生效。选择“默认”时由工具决定模型。思考深度仅限所选模型支持的选项。",
   "agent.effort.ultra": "超高",
   "agent.inputResize": "调整消息框的高度（拖动，或使用上下方向键）",
   "agent.action.queued": "已加入生成队列（{count}）",

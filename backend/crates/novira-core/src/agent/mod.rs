@@ -41,7 +41,7 @@ pub use endpoint::{
     AgentEndpointInfo, AgentEndpointInput, AgentEndpointTest, AgentToolsState, Endpoint,
     EndpointConfig, OLLAMA_URL,
 };
-pub use models::{models_of, AgentModelOption};
+pub use models::{default_model, models_of, AgentModelOption};
 pub use prompt::{build_prompt, build_system};
 pub use relay::{AgentToolAnswer, AgentToolCall, Relay};
 pub use reply::parse_reply;
@@ -80,6 +80,10 @@ pub struct AgentStatus {
     /// The models the user can choose for the tool, with their efforts; empty when the tool lists none (and for a
     /// server, whose models come from `agent_endpoint_models`).
     pub models: Vec<AgentModelOption>,
+    /// The model of `models` a request runs on until the user picks one (`models::default_model`); none when the tool
+    /// lists no model.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub default_model: Option<String>,
     /// The saved OpenAI-compatible server, shown whichever provider is selected so the form keeps its values.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub endpoint: Option<AgentEndpointInfo>,
@@ -108,8 +112,8 @@ pub struct AgentRequest {
     /// The id (`ext:<folder>`) of the extension the user asked about from the extension manager.
     #[serde(default)]
     pub focus: Option<String>,
-    /// The model the tool runs this request on (an alias such as `opus`, or a full model name); none is the tool's default.
-    /// Claude takes letters, digits and `.-_[]`; Codex only a model it listed itself (see `cli_model`).
+    /// The model the tool runs this request on, one the tool listed (see `cli_model`); none, or one it did not list, is
+    /// the tool's default model.
     #[serde(default)]
     pub agent_model: Option<String>,
     /// How hard the model thinks: one the chosen model takes (see `cli_effort`); none is the default.
@@ -124,58 +128,37 @@ pub struct AgentRequest {
     pub attached: Vec<AgentImage>,
 }
 
-/// Claude's model aliases, passed as fixed arguments (`--model <alias>`).
-pub const CLAUDE_MODEL_ALIASES: [&str; 4] = ["fable", "opus", "sonnet", "haiku"];
-
-/// How the chosen model reaches the tool. A program started through a `.cmd` file goes through cmd.exe, so only fixed
-/// words are ever arguments; a typed name goes in an environment variable instead (docs/design/security.md).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ModelChoice<'a> {
-    /// One of Claude's aliases: the argument `--model <alias>`.
-    Alias(&'static str),
-    /// Any other model name, in `ANTHROPIC_MODEL`. Only a short name of letters, digits and `.-_[]` is passed on.
-    Named(&'a str),
-    /// A model Codex listed for the account: the argument `-m <name>`, a plain name (see `models::is_plain_name`).
-    Listed(&'a str),
-}
-
-/// The model of a request for the tool, or none for its default. Codex's model can only be set by an argument, so it
-/// takes only a name of the models it listed (`listed`), which are plain names.
-pub fn cli_model<'a>(
-    provider: AgentProvider,
-    request: &'a AgentRequest,
-    listed: &[AgentModelOption],
-) -> Option<ModelChoice<'a>> {
-    let name = request.agent_model.as_deref()?.trim();
-    if provider == AgentProvider::Openai {
-        // A server's model is part of its saved settings, never taken from a request.
-        return None;
-    }
-    if provider == AgentProvider::Codex {
-        let known = listed.iter().any(|m| m.id == name) && models::is_plain_name(name);
-        return known.then_some(ModelChoice::Listed(name));
-    }
-    if let Some(alias) = CLAUDE_MODEL_ALIASES.iter().copied().find(|a| *a == name) {
-        return Some(ModelChoice::Alias(alias));
-    }
-    let plain = !name.is_empty()
-        && name.len() <= 64
-        && !name.starts_with('-')
-        && name
-            .chars()
-            .all(|c| c.is_ascii_alphanumeric() || ".-_[]".contains(c));
-    plain.then_some(ModelChoice::Named(name))
-}
-
-/// The effort of a request when the tool knows it: one the chosen model takes (`listed`), or for the tool's default
-/// model `low` to `max` for Claude and `low` to `high` for Codex.
-pub fn cli_effort(
+/// The model a request runs on: the one it names when the tool listed it, otherwise the tool's default
+/// (`models::default_model`), so the model the picker names is the one that answers; none when the tool lists no
+/// model (Codex without its list, a server, whose model is part of its saved settings). A program started through a
+/// `.cmd` file goes through cmd.exe, so only a listed plain name (`models::is_plain_name`) is ever an argument
+/// (docs/design/security.md).
+pub fn cli_model(
     provider: AgentProvider,
     request: &AgentRequest,
     listed: &[AgentModelOption],
+) -> Option<String> {
+    if provider == AgentProvider::Openai {
+        return None;
+    }
+    let asked = request.agent_model.as_deref().map(str::trim);
+    listed
+        .iter()
+        .find(|m| Some(m.id.as_str()) == asked)
+        .map(|m| m.id.clone())
+        .or_else(|| models::default_model(provider, listed))
+        .filter(|name| models::is_plain_name(name))
+}
+
+/// The effort of a request when the tool knows it: one its model (`model`, from `cli_model`) takes, or without a listed
+/// model (Codex running its own default) `low` to `max` for Claude and `low` to `high` for Codex.
+pub fn cli_effort(
+    provider: AgentProvider,
+    request: &AgentRequest,
+    model: Option<&str>,
+    listed: &[AgentModelOption],
 ) -> Option<&'static str> {
     let wanted = request.effort.as_deref()?.trim();
-    let model = request.agent_model.as_deref().map(str::trim);
     let allowed = |e: &str| match listed.iter().find(|m| Some(m.id.as_str()) == model) {
         Some(m) => m.efforts.iter().any(|x| x == e),
         None => match provider {
@@ -302,48 +285,47 @@ mod tests {
     }
 
     #[test]
-    fn only_plain_model_names_and_known_efforts_reach_the_tool() {
+    fn claude_runs_a_listed_model_or_its_default_and_known_efforts() {
         let claude = models_of(AgentProvider::Claude);
+        let model = |req: &AgentRequest| cli_model(AgentProvider::Claude, req, &claude);
         let mut req = request();
-        assert_eq!(cli_model(AgentProvider::Claude, &req, &claude), None);
-        req.agent_model = Some(" opus ".into());
-        assert_eq!(
-            cli_model(AgentProvider::Claude, &req, &claude),
-            Some(ModelChoice::Alias("opus"))
-        );
-        for named in ["sonnet[1m]", "claude-opus-5-5"] {
-            req.agent_model = Some(named.into());
-            assert_eq!(
-                cli_model(AgentProvider::Claude, &req, &claude),
-                Some(ModelChoice::Named(named))
-            );
-        }
-        for bad in [
+        assert_eq!(model(&req).as_deref(), Some("claude-sonnet-5-5"));
+        req.agent_model = Some(" claude-opus-5-5 ".into());
+        assert_eq!(model(&req).as_deref(), Some("claude-opus-5-5"));
+        // A name Claude does not list (an old alias, a typed name, anything unsafe) runs the default instead.
+        for other in [
+            "opus",
+            "sonnet[1m]",
+            "claude-x",
             "",
-            " ",
             "-x",
-            "a b",
-            "a;b",
             "a&b",
-            "a%b",
             "a\"b",
             &"m".repeat(65),
         ] {
-            req.agent_model = Some(bad.to_string());
+            req.agent_model = Some(other.to_string());
             assert_eq!(
-                cli_model(AgentProvider::Claude, &req, &claude),
-                None,
-                "{bad:?}"
+                model(&req).as_deref(),
+                Some("claude-sonnet-5-5"),
+                "{other:?}"
             );
         }
         req.agent_model = None;
         req.effort = Some("max".into());
         assert_eq!(
-            cli_effort(AgentProvider::Claude, &req, &claude),
+            cli_effort(AgentProvider::Claude, &req, model(&req).as_deref(), &claude),
             Some("max")
         );
         req.effort = Some("ultra".into());
-        assert_eq!(cli_effort(AgentProvider::Claude, &req, &claude), None);
+        assert_eq!(
+            cli_effort(AgentProvider::Claude, &req, model(&req).as_deref(), &claude),
+            None
+        );
+        assert_eq!(
+            cli_model(AgentProvider::Openai, &req, &claude),
+            None,
+            "a server's model is its own setting"
+        );
     }
 
     #[test]
@@ -356,37 +338,36 @@ mod tests {
         }];
         let mut req = request();
         req.agent_model = Some("gpt-6-sol".into());
-        assert_eq!(
-            cli_model(AgentProvider::Codex, &req, &listed),
-            Some(ModelChoice::Listed("gpt-6-sol"))
-        );
+        let model = cli_model(AgentProvider::Codex, &req, &listed);
+        assert_eq!(model.as_deref(), Some("gpt-6-sol"));
         req.effort = Some("ultra".into());
         assert_eq!(
-            cli_effort(AgentProvider::Codex, &req, &listed),
+            cli_effort(AgentProvider::Codex, &req, model.as_deref(), &listed),
             Some("ultra")
         );
         req.effort = Some("high".into());
         assert_eq!(
-            cli_effort(AgentProvider::Codex, &req, &listed),
+            cli_effort(AgentProvider::Codex, &req, model.as_deref(), &listed),
             None,
             "the model does not take high"
         );
-        // A name Codex did not list never becomes an argument, and its default model stops at high.
+        // A name Codex did not list never becomes an argument: the first listed model runs instead.
         for other in ["gpt-7", "gpt-6-sol & calc", ""] {
             req.agent_model = Some(other.into());
             assert_eq!(
-                cli_model(AgentProvider::Codex, &req, &listed),
-                None,
+                cli_model(AgentProvider::Codex, &req, &listed).as_deref(),
+                Some("gpt-6-sol"),
                 "{other:?}"
             );
         }
-        req.agent_model = None;
+        // Without a list, Codex runs its own default model, which stops at high.
+        assert_eq!(cli_model(AgentProvider::Codex, &req, &[]), None);
         assert_eq!(
-            cli_effort(AgentProvider::Codex, &req, &listed),
+            cli_effort(AgentProvider::Codex, &req, None, &[]),
             Some("high")
         );
         req.effort = Some("max".into());
-        assert_eq!(cli_effort(AgentProvider::Codex, &req, &listed), None);
+        assert_eq!(cli_effort(AgentProvider::Codex, &req, None, &[]), None);
     }
 
     #[test]

@@ -163,7 +163,11 @@ fn opening(request: &AgentRequest) -> Vec<Value> {
     if pictures.is_empty() {
         messages.push(json!({"role": "user", "content": request.message}));
     } else {
-        let text = format!("{}{}", request.message, attach::note(pictures.len()));
+        let text = format!(
+            "{}{}",
+            request.message,
+            attach::note(pictures.len(), &request.images)
+        );
         let mut content = vec![json!({"type": "text", "text": text})];
         content.extend(
             pictures

@@ -15,6 +15,7 @@ import { toast } from '@/state/toasts';
 import { useUi } from '@/state/ui';
 import { Button, cx, IconButton, Spinner, writeClipboardText } from '@/ui';
 import { SentPictures } from './Attachments';
+import { ChatMarkdown, InlineMarkdown } from './ChatMarkdown';
 import { PackSuggestions } from './PackSuggestions';
 
 const SUGGESTIONS = ['agent.suggestion.anime', 'agent.suggestion.photo', 'agent.suggestion.pixel', 'agent.suggestion.howto', 'agent.suggestion.extension'] as const;
@@ -109,13 +110,15 @@ function Thoughts({ lines }: { lines: string[] }) {
     <div className="agent-thoughts" data-testid="agent-thoughts">
       <button type="button" className="agent-thoughts__row" aria-expanded={open} title={open ? t('agent.thoughts.hide') : t('agent.thoughts.show')} onClick={() => setOpen(!open)}>
         <Lightbulb size={12} className="agent-thoughts__icon" />
-        <span className="agent-thoughts__line">{open ? t('agent.thoughts.label') : lines[0]}</span>
+        <span className="agent-thoughts__line">{open ? t('agent.thoughts.label') : <InlineMarkdown text={lines[0] ?? ''} />}</span>
         {open ? <CaretUp size={11} /> : <CaretDown size={11} />}
       </button>
       {open && (
         <ul className="agent-thoughts__list" data-testid="agent-thoughts-list">
           {lines.map((l, i) => (
-            <li key={i}>{l}</li>
+            <li key={i}>
+              <InlineMarkdown text={l} />
+            </li>
           ))}
         </ul>
       )}
@@ -200,7 +203,8 @@ function Bubble({ m, phone }: { m: AgentMessage; phone: boolean }) {
     <div className={cx('agent-msg', `agent-msg--${m.role}`, m.error && 'is-error')} data-testid={`agent-msg-${m.role}`}>
       {m.thoughts?.length ? <Thoughts lines={m.thoughts} /> : null}
       {m.images?.length ? <SentPictures names={m.images} /> : null}
-      <p className="agent-msg__text">{m.text}</p>
+      {/* The assistant writes Markdown; what the user typed, and an error, show as they are. */}
+      {m.role === 'assistant' && !m.error ? <ChatMarkdown className="agent-msg__text" text={m.text} /> : <p className="agent-msg__text">{m.text}</p>}
       <IconButton className="agent-msg__copy" size="xs" label={t('agent.copy')} icon={<Copy />} onClick={() => void copyMessage(m.text)} data-testid="agent-copy" />
       {packIds.length > 0 && <PackSuggestions ids={packIds} />}
       {changes.length > 0 && (

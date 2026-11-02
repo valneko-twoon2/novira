@@ -1,7 +1,7 @@
-//! The models each tool can run a chat turn on, with the thinking efforts each takes. Claude's are its fixed aliases.
-//! Codex keeps the models of the signed-in account in `models_cache.json` in its home folder (`CODEX_HOME`, or
+//! The models each tool can run a chat turn on, with the thinking efforts each takes, and the one a request runs on
+//! until the user picks another. Claude's are fixed full names, shown with their version. Codex keeps the models of the signed-in account in `models_cache.json` in its home folder (`CODEX_HOME`, or
 //! `.codex` in the user's folder); that file is outside data, so only short plain names and known efforts are kept.
-use super::{AgentProvider, CLAUDE_MODEL_ALIASES};
+use super::AgentProvider;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::path::{Path, PathBuf};
@@ -12,6 +12,15 @@ pub const EFFORTS: [&str; 6] = ["low", "medium", "high", "xhigh", "max", "ultra"
 const CLAUDE_EFFORTS: [&str; 5] = ["low", "medium", "high", "xhigh", "max"];
 /// The efforts offered for the tool's own default model, which every model takes.
 pub const DEFAULT_EFFORTS: [&str; 3] = ["low", "medium", "high"];
+/// Claude's models by full name (an alias such as `sonnet` hides which version answers), with the name the picker shows.
+const CLAUDE_MODELS: [(&str, &str); 4] = [
+    ("claude-fable-5-1", "Fable 5.1"),
+    ("claude-opus-5-5", "Opus 5.5"),
+    ("claude-sonnet-5-5", "Sonnet 5.5"),
+    ("claude-haiku-5-5", "Haiku 5.5"),
+];
+/// The Claude model a request runs on until the user picks one: the one the CLI takes when it is given none.
+const CLAUDE_DEFAULT: &str = "claude-sonnet-5-5";
 /// The most models listed, and the largest cache file read.
 const MAX_MODELS: usize = 40;
 const MAX_CACHE_BYTES: u64 = 4 * 1024 * 1024;
@@ -36,7 +45,7 @@ pub fn is_plain_name(name: &str) -> bool {
             .all(|c| c.is_ascii_alphanumeric() || ".-_".contains(c))
 }
 
-/// The models of a tool: Claude's aliases, or the models Codex lists for the account (none when it has no list).
+/// The models of a tool: Claude's, or the models Codex lists for the account (none when it has no list).
 pub fn models_of(provider: AgentProvider) -> Vec<AgentModelOption> {
     match provider {
         AgentProvider::Claude => claude_models(),
@@ -48,12 +57,23 @@ pub fn models_of(provider: AgentProvider) -> Vec<AgentModelOption> {
     }
 }
 
+/// The model a request of the tool runs on until the user picks one, so the picker always names it: Claude's default,
+/// or the first model Codex lists (its own order of priority); none when the tool lists no model.
+pub fn default_model(provider: AgentProvider, listed: &[AgentModelOption]) -> Option<String> {
+    let wanted = match provider {
+        AgentProvider::Claude => CLAUDE_DEFAULT,
+        AgentProvider::Codex => listed.first()?.id.as_str(),
+        AgentProvider::Openai => return None,
+    };
+    listed.iter().find(|m| m.id == wanted).map(|m| m.id.clone())
+}
+
 fn claude_models() -> Vec<AgentModelOption> {
-    CLAUDE_MODEL_ALIASES
+    CLAUDE_MODELS
         .iter()
-        .map(|alias| AgentModelOption {
-            id: (*alias).to_string(),
-            name: format!("{}{}", alias[..1].to_ascii_uppercase(), &alias[1..]),
+        .map(|(id, name)| AgentModelOption {
+            id: (*id).to_string(),
+            name: (*name).to_string(),
             efforts: CLAUDE_EFFORTS.iter().map(|e| (*e).to_string()).collect(),
             default_effort: "high".into(),
         })
@@ -153,14 +173,43 @@ mod tests {
     use serde_json::json;
 
     #[test]
-    fn claude_lists_its_aliases_with_their_efforts() {
+    fn claude_lists_full_names_shown_with_their_version_and_efforts() {
         let models = models_of(AgentProvider::Claude);
         assert_eq!(
             models.iter().map(|m| m.id.as_str()).collect::<Vec<_>>(),
-            CLAUDE_MODEL_ALIASES
+            [
+                "claude-fable-5-1",
+                "claude-opus-5-5",
+                "claude-sonnet-5-5",
+                "claude-haiku-5-5"
+            ]
         );
-        assert_eq!(models[1].name, "Opus");
+        assert_eq!(models[1].name, "Opus 5.5");
+        assert!(
+            models.iter().all(|m| is_plain_name(&m.id)),
+            "every name goes on as an argument"
+        );
         assert_eq!(models[0].efforts.last().map(String::as_str), Some("max"));
+    }
+
+    #[test]
+    fn the_default_model_is_one_the_tool_lists() {
+        let claude = models_of(AgentProvider::Claude);
+        assert_eq!(
+            default_model(AgentProvider::Claude, &claude).as_deref(),
+            Some("claude-sonnet-5-5")
+        );
+        assert_eq!(default_model(AgentProvider::Claude, &[]), None);
+        let codex = parse_codex_models(&json!({ "models": [
+            { "slug": "gpt-b", "visibility": "list", "priority": 2, "supported_reasoning_levels": ["low"] },
+            { "slug": "gpt-a", "visibility": "list", "priority": 1, "supported_reasoning_levels": ["low"] }
+        ]}));
+        assert_eq!(
+            default_model(AgentProvider::Codex, &codex).as_deref(),
+            Some("gpt-a")
+        );
+        assert_eq!(default_model(AgentProvider::Codex, &[]), None);
+        assert_eq!(default_model(AgentProvider::Openai, &claude), None);
     }
 
     #[test]

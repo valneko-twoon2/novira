@@ -10,7 +10,7 @@ export const agentRequest = {
   ],
   screen: 'workflows',
   focus: 'ext:ComfyUI-Foo',
-  agentModel: 'opus',
+  agentModel: 'claude-opus-5-5',
   effort: 'high',
   images: ['0123456789abcdef0123456789abcdef.png'],
 } satisfies Required<AgentRequest>;
@@ -20,6 +20,7 @@ export const agentStatus = {
   installed: true,
   loggedIn: false,
   models: [{ id: 'gpt-6-sol', name: 'GPT-6-Sol', efforts: ['low', 'medium', 'high', 'ultra'], defaultEffort: 'medium' }],
+  defaultModel: 'gpt-6-sol',
   endpoint: { baseUrl: 'http://192.168.1.5:11434/v1', model: 'qwen3:8b', hasKey: true, remote: true, insecure: true, tools: 'unsupported', toolsReason: 'qwen3:8b does not support tools' },
 } satisfies Required<AgentStatus>;
 

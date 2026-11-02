@@ -418,6 +418,7 @@ pub fn agent_status(v: &Value) {
         installed: get(v, "installed"),
         logged_in: get(v, "loggedIn"),
         models: get(v, "models"),
+        default_model: get(v, "defaultModel"),
         endpoint: get(v, "endpoint"),
     };
     assert_wire(&status, v, "AgentStatus");
