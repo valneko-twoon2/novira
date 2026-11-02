@@ -360,8 +360,13 @@ mod tests {
     fn the_network_category_is_read_through_com_without_panic() {
         // Mainly a check that the COM query runs and returns a value; a developer's machine is not a public network,
         // so the result is Some(false) (private/domain) or None (the query could not be made), never Some(true).
+        let public = network_is_public();
+        // GitHub's runners are cloud machines that Windows classes as a public network: there the query is only run.
+        if std::env::var_os("GITHUB_ACTIONS").is_some() {
+            return;
+        }
         assert_ne!(
-            network_is_public(),
+            public,
             Some(true),
             "this machine should not be classified as a public network"
         );

@@ -12,8 +12,28 @@ fn lock_owned_by(dir: &Path, record: &str) -> std::path::PathBuf {
     lock
 }
 
+/// Whether this program may open process id 4 for a query: an elevated program (GitHub's runners run as administrator)
+/// may, and then the System process can be described, so it is no example of one that cannot.
+fn system_process_can_be_inspected() -> bool {
+    use windows_sys::Win32::Foundation::CloseHandle;
+    use windows_sys::Win32::System::Threading::{OpenProcess, PROCESS_QUERY_LIMITED_INFORMATION};
+    // SAFETY: a plain Win32 call; the handle is closed at once.
+    unsafe {
+        let handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, 4);
+        if handle.is_null() {
+            return false;
+        }
+        CloseHandle(handle);
+        true
+    }
+}
+
 #[test]
 fn a_lock_owned_by_a_process_that_cannot_be_inspected_stays() {
+    if system_process_can_be_inspected() {
+        eprintln!("skipped: this program is elevated, so the System process can be inspected");
+        return;
+    }
     let dir = tempfile::tempdir().unwrap();
     // Process id 4 is the Windows kernel's "System" process: opening it for a query is refused to a normal program.
     let lock = lock_owned_by(dir.path(), "4 1");
