@@ -83,8 +83,6 @@
   "agent.template.howto.text": "Wie mache ich auf diesem Bildschirm Folgendes: ",
   "agent.template.music.label": "Song einrichten",
   "agent.template.music.text": "Richte einen Song wie diesen ein: ",
-  "agent.model.customPlaceholder": "Modellname (z. B. claude-opus-5-5)",
-  "agent.model.hint": "Gilt ab der nächsten Nachricht. Bei Standard wählt das Tool das Modell. Die Aufwandsstufen sind die, die das gewählte Modell unterstützt.",
   "agent.effort.ultra": "Ultra",
   "agent.inputResize": "Höhe des Nachrichtenfelds ändern (ziehen oder mit den Pfeiltasten nach oben und unten)",
   "agent.action.queued": "Zur Generierung eingereiht ({count})",

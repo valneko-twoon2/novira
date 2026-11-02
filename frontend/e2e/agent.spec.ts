@@ -121,6 +121,27 @@ test('a question asked from the extension manager is sent after signing in, and 
   await expect(win.locator('.agent-msg--assistant')).toContainText('ComfyUI_IPAdapter_plus');
 });
 
+test('the assistant names the model it runs on, and shows its answer in Markdown as bold words and a list', async ({ page }) => {
+  await openApp(page);
+  await openAssistant(page);
+  const win = page.getByTestId('agent-window');
+  // Before a choice the default model is named, with its version; there is no "default" and no typed name.
+  await expect(win.getByTestId('agent-model')).toContainText('Sonnet 5.5');
+  await win.getByTestId('agent-model').click();
+  const pop = page.getByTestId('agent-model-pop');
+  await expect(pop.getByTestId('agent-model-claude-sonnet-5-5')).toHaveAttribute('aria-pressed', 'true');
+  await expect(pop.getByTestId('agent-model-default')).toHaveCount(0);
+  await expect(pop.getByTestId('agent-model-custom')).toHaveCount(0);
+  await pop.getByTestId('agent-model-claude-opus-5-5').click();
+  await expect(win.getByTestId('agent-model')).toContainText('Opus 5.5');
+  await page.keyboard.press('Escape');
+  await ask(page, 'anime girl, watercolor', 1);
+  const reply = win.locator('.agent-msg--assistant:not(.agent-msg--thinking)');
+  await expect(reply.locator('li strong').first()).toBeVisible();
+  await expect(reply.locator('li')).not.toHaveCount(0);
+  await expect(reply).not.toContainText('**');
+});
+
 test('a request in flight can be cancelled, and the floating window size can be changed', async ({ page }) => {
   await openApp(page);
   await openAssistant(page);

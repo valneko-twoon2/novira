@@ -2,7 +2,7 @@
 // and relays it here (`agent_tool_call`); this module reads or changes the app through the same appliers the editors
 // use (they check every operation and field again), keeps an undo snapshot before the first change of each kind, logs
 // what changed for the chat's chips, and asks the user before reading pictures or prompts, or looking something up on the web (the permission settings).
-import { backend, SCHEDULERS, type AgentScreen, type AgentToolCall, type GenerationMetadata, type ImageDTO } from '@/backend';
+import { backend, SCHEDULERS, type AgentScreen, type AgentToolCall, type GenerationMetadata, type ImageDTO, type ModelConfig } from '@/backend';
 import { agentExtensions, extensionId, folderOfExtensionId, questionWords } from './agentExtensions';
 import { agentGuide } from './agentGuide';
 import { mangaGuide } from './comic/mangaGuide';
@@ -148,6 +148,29 @@ function installedPacks() {
   return useNodePacks.getState().packs?.installed ?? [];
 }
 
+/** A LoRA's trigger words as the model manager has them (trimmed, at most 12 of 100 characters). */
+const triggerWords = (m: ModelConfig) =>
+  (m.triggerPhrases ?? [])
+    .map((w) => w.trim().slice(0, 100))
+    .filter(Boolean)
+    .slice(0, 12);
+
+/** A model as the model manager has it, for the model: its trigger words, its default settings and the start of its notes. */
+function modelSummary(m: ModelConfig) {
+  const words = triggerWords(m);
+  const note = m.description.trim().slice(0, 200);
+  const d = m.defaultSettings;
+  return {
+    key: m.key,
+    name: m.name,
+    base: m.base,
+    type: m.type,
+    ...(words.length ? { triggerPhrases: words } : {}),
+    ...(d ? { defaults: { steps: d.steps, cfgScale: d.cfgScale, scheduler: d.scheduler, width: d.width, height: d.height } } : {}),
+    ...(note ? { note } : {}),
+  };
+}
+
 /** A picture's generation info in short, for the model. */
 function imageSummary(image: ImageDTO, withMeta: boolean) {
   const m = image.metadata;
@@ -214,7 +237,7 @@ const HANDLERS: Record<string, Handler> = {
     const models = useModels
       .getState()
       .models.filter((m) => !type || m.type === type)
-      .map((m) => ({ key: m.key, name: m.name, base: m.base, type: m.type }));
+      .map(modelSummary);
     return done({ models, selected: { modelKey: p.modelKey, loras: p.loras.map((l) => ({ key: l.key, weight: l.weight })) } });
   },
 
@@ -235,7 +258,8 @@ const HANDLERS: Record<string, Handler> = {
     useParams.getState().addLora(lora.key);
     useParams.getState().updateLora(lora.key, { weight });
     run.log.push({ kind: 'lora', key: lora.key, weight });
-    return done({ added: lora.key, weight });
+    const words = triggerWords(lora);
+    return done({ added: lora.key, weight, ...(words.length ? { triggerPhrases: words } : {}) });
   },
 
   get_generation_settings: (args) => {

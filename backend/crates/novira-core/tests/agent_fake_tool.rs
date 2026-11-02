@@ -74,6 +74,7 @@ async fn claude_is_logged_in_when_its_status_says_so() {
             installed: true,
             logged_in: true,
             models: models_of(AgentProvider::Claude),
+            default_model: Some("claude-sonnet-5-5".into()),
             endpoint: None,
         }
     );
@@ -148,6 +149,7 @@ async fn the_chosen_tool_is_remembered_and_reported() {
             installed: false,
             logged_in: false,
             models: Vec::new(),
+            default_model: None,
             endpoint: None,
         }
     );
@@ -334,43 +336,33 @@ fn a_tool_is_found_on_the_path_in_its_windows_script_forms() {
 #[tokio::test]
 async fn claude_runs_on_the_chosen_model_and_effort_and_drops_unsafe_names() {
     let dir = tempfile::tempdir().unwrap();
-    // The fake writes the arguments it was given and the model in its environment next to itself, then answers.
+    // The fake writes the arguments it was given next to itself, then answers.
     let tool = fake_tool(
         dir.path(),
         "claude-args",
-        r#"echo %* model=%ANTHROPIC_MODEL% > "%~dp0args.txt"& echo {"result":"ok","is_error":false}"#,
-        r#"echo "$@" "model=$ANTHROPIC_MODEL" > "$(dirname "$0")/args.txt"; echo '{"result":"ok","is_error":false}'"#,
+        r#"echo %* > "%~dp0args.txt"& echo {"result":"ok","is_error":false}"#,
+        r#"echo "$@" > "$(dirname "$0")/args.txt"; echo '{"result":"ok","is_error":false}'"#,
     );
     let args = || std::fs::read_to_string(dir.path().join("args.txt")).unwrap();
     let mut req = request();
-    req.agent_model = Some("opus".into());
+    req.agent_model = Some("claude-opus-5-5".into());
     req.effort = Some("high".into());
     chat(AgentProvider::Claude, Some(&tool), &req, tools())
         .await
         .unwrap();
     assert!(
-        args().contains("--model opus") && args().contains("--effort high"),
+        args().contains("--model claude-opus-5-5") && args().contains("--effort high"),
         "{}",
         args()
     );
-    // A typed name goes in the environment, never as an argument.
-    req.agent_model = Some("claude-opus-5-5".into());
-    chat(AgentProvider::Claude, Some(&tool), &req, tools())
-        .await
-        .unwrap();
-    assert!(
-        !args().contains("--model") && args().contains("model=claude-opus-5-5"),
-        "{}",
-        args()
-    );
-    // A name that is not a plain model name, and an effort the tool does not know, are not passed on.
+    // A name Claude does not list, and an effort the tool does not know, are not passed on: the default model runs.
     req.agent_model = Some("--dangerously-skip-permissions".into());
     req.effort = Some("turbo".into());
     chat(AgentProvider::Claude, Some(&tool), &req, tools())
         .await
         .unwrap();
     assert!(
-        !args().contains("--model")
+        args().contains("--model claude-sonnet-5-5")
             && !args().contains("--effort")
             && !args().contains("dangerously"),
         "{}",

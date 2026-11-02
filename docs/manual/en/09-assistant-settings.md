@@ -69,7 +69,7 @@ From your text, the agent decides the following and fills it into the settings. 
 
 The agent looks at which screen you have open. For example, if you open **{{ui:media.tab.text}}** and say "make the text vertical", that text changes.
 
-The agent puts what it changes on the screen at once, while it works. While it works, what it has changed is listed under "{{ui:agent.thinking}}". It makes pictures or videos only when you ask (it queues them). Otherwise it only changes settings, so if the result looks good, press **{{ui:agent.generate}}** in its reply and it starts making right away. While a comic is open, a "Generate all pages" button also shows next to it. Pressing it queues every panel that has a prompt, on all pages (nothing is queued unless you press it). It does not delete pictures or install models or extensions (for extensions it only gives recommendations).
+The agent puts what it changes on the screen at once, while it works. While it works, what it has changed is listed under "{{ui:agent.thinking}}". It makes pictures or videos only when you ask (it queues them). Otherwise it only changes settings, so if the result looks good, press **{{ui:agent.generate}}** in its reply and it starts making right away. While a comic is open, a "Generate all pages" button also shows next to it. Pressing it queues every panel that has a prompt, on all pages (nothing is queued unless you press it). It does not delete pictures or install models or extensions (for extensions it only gives recommendations). Bold words, lists, tables and the like in its reply are shown as such, not as marks.
 
 ### Getting help with a comic
 
@@ -120,11 +120,11 @@ This is its own setting, **{{ui:settings.assistantWeb.label}}**, under **{{ui:se
 
 Press the small brain-shaped button to the right of the chat's name to choose the **{{ui:agent.model.label}}** and the **{{ui:agent.effort.label}}** the agent uses. What you choose is used from the next message you send. Claude and Codex each remember their own choice.
 
-- For Claude, the model is chosen from **{{ui:agent.model.default}}**, Fable, Opus, Sonnet and Haiku. Press **{{ui:agent.model.custom}}** to type a model name directly. The thinking effort has 5 levels, from **{{ui:agent.effort.low}}** to **{{ui:agent.effort.max}}**.
-- For Codex, the model is chosen from **{{ui:agent.model.default}}** and the list of models Codex says your account can use (the list is read from what Codex saved on your PC; a name cannot be typed). Only the thinking efforts the chosen model takes are shown (some models take up to **{{ui:agent.effort.ultra}}**).
+- For Claude, the model is chosen from Fable 5.1, Opus 5.5, Sonnet 5.5 and Haiku 5.5. The version in the name is the one used. The thinking effort has 5 levels, from **{{ui:agent.effort.low}}** to **{{ui:agent.effort.max}}**.
+- For Codex, the model is chosen from the list of models Codex says your account can use (the list is read from what Codex saved on your PC). Only the thinking efforts the chosen model takes are shown (some models take up to **{{ui:agent.effort.ultra}}**).
 - For a server, the models the server lists are shown, and you can type a name. There is no thinking effort. The model is part of the server's settings, so choosing another one saves it.
 
-With **{{ui:agent.model.default}}**, the command decides the model. One thinking effort is always chosen. At first it is the model's standard effort, and when you switch to a model that does not take the current effort, it goes back to that model's standard effort.
+Until you choose, Sonnet 5.5 is chosen for Claude and the first model of the list for Codex, and the button shows its name. The model named on the button is always the one that answers (only when Codex has saved no list does it show **{{ui:agent.model.default}}**, and Codex decides the model). One thinking effort is always chosen. At first it is the model's standard effort, and when you switch to a model that does not take the current effort, it goes back to that model's standard effort.
 
 ### Changing the height of the message box
 

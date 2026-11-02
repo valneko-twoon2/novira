@@ -83,8 +83,6 @@
   "agent.template.howto.text": "在這個畫面上，要怎麼做到下面的事：",
   "agent.template.music.label": "設定樂曲",
   "agent.template.music.text": "請設定成下面這樣的樂曲：",
-  "agent.model.customPlaceholder": "模型名稱（例如 claude-opus-5-5）",
-  "agent.model.hint": "從下一則訊息開始套用。選擇「預設」時，由工具決定模型。可選的思考深度取決於所選的模型。",
   "agent.effort.ultra": "Ultra",
   "agent.inputResize": "調整訊息輸入框的高度（拖曳，或按上下鍵）",
   "agent.action.queued": "已加入生成佇列（{count}）",

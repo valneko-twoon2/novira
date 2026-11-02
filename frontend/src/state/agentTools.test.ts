@@ -198,7 +198,22 @@ describe('the editors', () => {
 
 describe('the Generate tab', () => {
   beforeEach(() => {
-    useModels.setState({ models: [{ key: 'm1', name: 'M', type: 'main', base: 'sdxl' } as never, { key: 'l1', name: 'L', type: 'lora', base: 'sdxl' } as never] });
+    useModels.setState({
+      models: [
+        { key: 'm1', name: 'M', type: 'main', base: 'sdxl', description: '', defaultSettings: { steps: 28, cfgScale: 5, vae: 'v' } } as never,
+        { key: 'l1', name: 'L', type: 'lora', base: 'sdxl', description: ` glossy style. ${'x'.repeat(300)}`, triggerPhrases: [' gl0ssy ', '', ...Array.from({ length: 14 }, (_, i) => `w${i}`)] } as never,
+      ],
+    });
+  });
+
+  it("lists what the model manager knows of each model: a LoRA's trigger words, the default settings, the start of the notes", async () => {
+    const answer = await call('list_models', {});
+    const [main, lora] = (answer.content as { models: Record<string, unknown>[] }).models;
+    expect(main).toEqual({ key: 'm1', name: 'M', base: 'sdxl', type: 'main', defaults: { steps: 28, cfgScale: 5 } });
+    expect(lora!.triggerPhrases).toEqual(['gl0ssy', ...Array.from({ length: 11 }, (_, i) => `w${i}`)]);
+    expect(lora!.note).toMatch(/^glossy style\. x+$/);
+    expect((lora!.note as string).length).toBe(200);
+    expect(lora).not.toHaveProperty('defaults');
   });
 
   it('lists the models and selects one with the registered selector, keeping the settings first', async () => {
@@ -217,7 +232,8 @@ describe('the Generate tab', () => {
 
   it('adds a LoRA with its weight', async () => {
     expect(await call('add_lora', { key: 'm1' })).toMatchObject({ ok: false });
-    await call('add_lora', { key: 'l1', weight: 0.6 });
+    // The answer carries the LoRA's trigger words, so they go into the prompt.
+    expect(await call('add_lora', { key: 'l1', weight: 0.6 })).toMatchObject({ ok: true, content: { added: 'l1', weight: 0.6, triggerPhrases: expect.arrayContaining(['gl0ssy']) } });
     expect(useParams.getState().loras.find((l) => l.key === 'l1')?.weight).toBe(0.6);
     expect(run.log).toEqual([{ kind: 'lora', key: 'l1', weight: 0.6 }]);
   });

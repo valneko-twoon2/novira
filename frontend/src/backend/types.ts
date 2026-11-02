@@ -857,8 +857,10 @@ export interface AgentStatus {
   provider: AgentProvider | null;
   installed: boolean;
   loggedIn: boolean;
-  /** The models the user can choose for the tool, with their efforts: Claude's aliases, or the models Codex lists. */
+  /** The models the user can choose for the tool, with their efforts: Claude's, or the models Codex lists. */
   models: AgentModelOption[];
+  /** The model of `models` a request runs on until the user picks one; absent when the tool lists none. */
+  defaultModel?: string;
   /** The saved OpenAI-compatible server (present once one is saved, whichever provider is selected). */
   endpoint?: AgentEndpointInfo;
 }

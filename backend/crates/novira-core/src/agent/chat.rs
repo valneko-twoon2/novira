@@ -33,7 +33,11 @@ pub async fn chat(
         .or_else(|| find_exe(name))
         .ok_or_else(|| format!("`{name}` is not installed on this PC"))?;
     let images = &request.attached;
-    let prompt = format!("{}{}", build_prompt(request), attach::note(images.len()));
+    let prompt = format!(
+        "{}{}",
+        build_prompt(request),
+        attach::note(images.len(), &request.images)
+    );
     let work = std::env::temp_dir().join(format!("novira-agent-{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&work).map_err(|e| e.to_string())?;
     let server = mcp::start(tools, MAX_TOOL_CALLS)
@@ -62,11 +66,12 @@ pub fn claude_mcp_config(link: &McpLink) -> Value {
 }
 
 /// Claude's arguments: print mode, no built-in tools, no settings or other MCP servers, only the app's tools allowed.
-/// Every argument is a fixed word except the configuration file's path in the request's temporary folder. With
+/// Every argument is a fixed word or a model Claude lists (`cli_model`), except the configuration file's path in the
+/// request's temporary folder. With
 /// `stream` the message comes as one stream-json line (`claude_message`, the form that carries pictures) and the
 /// answer as stream-json lines.
 pub fn claude_args(
-    model: Option<ModelChoice>,
+    model: Option<&str>,
     effort: Option<&str>,
     config: &Path,
     stream: bool,
@@ -104,9 +109,9 @@ pub fn claude_args(
     );
     args.push("--mcp-config".into());
     args.push(config.as_os_str().to_owned());
-    if let Some(ModelChoice::Alias(alias)) = model {
+    if let Some(model) = model {
         args.push("--model".into());
-        args.push(alias.into());
+        args.push(model.into());
     }
     if let Some(effort) = effort {
         args.push("--effort".into());
@@ -147,7 +152,7 @@ fn stream_result(stdout: &str) -> Option<Value> {
 /// from `TOKEN_ENV`. The URL is `http://127.0.0.1:<port>/mcp` (not TOML, so Codex takes it as text); the rest are fixed
 /// words, a model Codex listed, the attached pictures and the answer file in the request's temporary folder.
 pub fn codex_args(
-    model: Option<ModelChoice>,
+    model: Option<&str>,
     effort: Option<&str>,
     url: &str,
     images: &[PathBuf],
@@ -176,7 +181,7 @@ pub fn codex_args(
         args.push(setting.into());
     }
     // A model Codex listed itself, a plain name (letters, digits and .-_), so cmd.exe reads nothing into it.
-    if let Some(ModelChoice::Listed(name)) = model {
+    if let Some(name) = model {
         args.push("-m".into());
         args.push(name.into());
     }
@@ -207,11 +212,11 @@ async fn chat_in(
 ) -> Result<String, String> {
     let mut cmd = command(exe);
     cmd.current_dir(work);
-    // The model and the effort the user chose, each checked (see cli_model, cli_effort): fixed words as arguments, a
-    // typed model name in the environment.
+    // The model and the effort the user chose, each checked (see cli_model, cli_effort): only listed plain names and
+    // fixed words become arguments.
     let listed = super::models_of(provider);
     let model = cli_model(provider, request, &listed);
-    let effort = cli_effort(provider, request, &listed);
+    let effort = cli_effort(provider, request, model.as_deref(), &listed);
     let url = server.url();
     match provider {
         AgentProvider::Claude => {
@@ -223,10 +228,7 @@ async fn chat_in(
             std::fs::write(&config, claude_mcp_config(&link).to_string())
                 .map_err(|e| e.to_string())?;
             let stream = !images.is_empty();
-            cmd.args(claude_args(model, effort, &config, stream));
-            if let Some(ModelChoice::Named(name)) = model {
-                cmd.env("ANTHROPIC_MODEL", name);
-            }
+            cmd.args(claude_args(model.as_deref(), effort, &config, stream));
             let input = if stream {
                 claude_message(prompt, images)
             } else {
@@ -253,7 +255,7 @@ async fn chat_in(
                 std::fs::write(&file, &image.jpeg).map_err(|e| e.to_string())?;
                 files.push(file);
             }
-            cmd.args(codex_args(model, effort, &url, &files, &out));
+            cmd.args(codex_args(model.as_deref(), effort, &url, &files, &out));
             cmd.env(TOKEN_ENV, &server.token);
             let (ok, _, stderr) = run(cmd, prompt, Stdin::Close, CHAT_TIMEOUT).await?;
             let answer = std::fs::read_to_string(&out).unwrap_or_default();
@@ -279,7 +281,7 @@ mod tests {
     #[test]
     fn claude_gets_only_the_apps_server_and_its_tools_and_no_built_in_ones() {
         let args = strings(&claude_args(
-            Some(ModelChoice::Alias("opus")),
+            Some("claude-opus-5-5"),
             Some("high"),
             Path::new("C:/t/mcp.json"),
             false,
@@ -290,23 +292,16 @@ mod tests {
         assert_eq!(after("--allowedTools"), "mcp__novira");
         assert_eq!(after("--mcp-config"), "C:/t/mcp.json");
         assert!(args.contains(&"--strict-mcp-config".to_string()));
-        assert_eq!(after("--model"), "opus");
+        assert_eq!(after("--model"), "claude-opus-5-5");
         assert_eq!(after("--effort"), "high");
         assert_eq!(after("--output-format"), "json");
         assert!(!args.iter().any(|a| a == "--input-format"));
         assert!(!args
             .iter()
             .any(|a| a.contains("dangerously") || a.contains("bypass")));
-        // A typed model name never becomes an argument.
-        let named = strings(&claude_args(
-            Some(ModelChoice::Named("claude-x")),
-            None,
-            Path::new("c.json"),
-            false,
-        ));
-        assert!(!named
-            .iter()
-            .any(|a| a == "--model" || a == "claude-x" || a == "--effort"));
+        // Without a model (none listed) and an effort, neither is passed.
+        let plain = strings(&claude_args(None, None, Path::new("c.json"), false));
+        assert!(!plain.iter().any(|a| a == "--model" || a == "--effort"));
     }
 
     #[test]
@@ -325,7 +320,7 @@ mod tests {
     #[test]
     fn codex_gets_the_server_by_url_the_token_by_environment_and_stays_read_only() {
         let args = strings(&codex_args(
-            Some(ModelChoice::Listed("gpt-6-sol")),
+            Some("gpt-6-sol"),
             Some("medium"),
             "http://127.0.0.1:5/mcp",
             &[],

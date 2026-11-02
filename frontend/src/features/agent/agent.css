@@ -538,6 +538,92 @@
   white-space: pre-wrap;
 }
 
+/* The Markdown of an answer: compact blocks inside the bubble. */
+.agent-md {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.agent-md p,
+.agent-md ul,
+.agent-md ol,
+.agent-md blockquote,
+.agent-md pre {
+  margin: 0;
+}
+
+.agent-md ul,
+.agent-md ol {
+  padding-left: 1.4em;
+}
+
+.agent-md__heading {
+  margin-top: var(--space-1);
+  font-weight: 600;
+}
+
+.agent-md__heading.is-major {
+  font-size: var(--fs-md);
+}
+
+.agent-md blockquote {
+  padding-left: var(--space-2);
+  border-left: 2px solid var(--border-strong);
+  color: var(--text-muted);
+}
+
+.agent-md code {
+  padding: 0 3px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-elevated);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+.agent-md__code {
+  overflow-x: auto;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  white-space: pre;
+}
+
+.agent-md__code code {
+  padding: 0;
+  background: none;
+}
+
+.agent-md hr {
+  width: 100%;
+  margin: var(--space-1) 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.agent-md__table {
+  overflow-x: auto;
+}
+
+.agent-md table {
+  border-collapse: collapse;
+  font-size: var(--fs-xs);
+}
+
+.agent-md th,
+.agent-md td {
+  padding: 2px var(--space-2);
+  border: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.agent-md th {
+  background: var(--bg-elevated);
+  font-weight: 600;
+}
+
 .agent-msg__actions {
   display: flex;
   flex-direction: column;

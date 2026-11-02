@@ -13,7 +13,7 @@
   ],
   "screen": "workflows",
   "focus": "ext:ComfyUI-Foo",
-  "agentModel": "opus",
+  "agentModel": "claude-opus-5-5",
   "effort": "high",
   "images": [
     "0123456789abcdef0123456789abcdef.png"

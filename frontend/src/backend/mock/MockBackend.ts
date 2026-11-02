@@ -164,9 +164,14 @@ function readKeptComics(storage: Pick<Storage, 'getItem'> | null): Map<string, C
 /** Time between two sample pictures. */
 export const SEED_IMAGE_SPACING_MS = 9 * 60 * 60 * 1000;
 
-/** The models each tool offers in the mock: Claude's aliases, and two models such as Codex lists for an account. */
+/** The models each tool offers in the mock: Claude's, and two models such as Codex lists for an account. */
 const MOCK_AGENT_MODELS: Record<AgentProvider, AgentModelOption[]> = {
-  claude: ['fable', 'opus', 'sonnet', 'haiku'].map((id) => ({ id, name: id[0]!.toUpperCase() + id.slice(1), efforts: ['low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'high' })),
+  claude: [
+    ['claude-fable-5-1', 'Fable 5.1'],
+    ['claude-opus-5-5', 'Opus 5.5'],
+    ['claude-sonnet-5-5', 'Sonnet 5.5'],
+    ['claude-haiku-5-5', 'Haiku 5.5'],
+  ].map(([id, name]) => ({ id: id!, name: name!, efforts: ['low', 'medium', 'high', 'xhigh', 'max'], defaultEffort: 'high' })),
   codex: [
     { id: 'gpt-mock-pro', name: 'GPT-Mock-Pro', efforts: ['low', 'medium', 'high', 'xhigh', 'max', 'ultra'], defaultEffort: 'medium' },
     { id: 'gpt-mock-mini', name: 'GPT-Mock-Mini', efforts: ['low', 'medium', 'high'], defaultEffort: 'low' },
@@ -961,7 +966,8 @@ export class MockBackend implements BackendClient {
   async agentLogin(provider: AgentProvider): Promise<AgentStatus> {
     if (provider === 'openai') throw new Error('A server has no sign-in: enter its address and model instead');
     await wait(1200);
-    this.agent = { provider, installed: true, loggedIn: true, models: MOCK_AGENT_MODELS[provider] };
+    const models = MOCK_AGENT_MODELS[provider];
+    this.agent = { provider, installed: true, loggedIn: true, models, defaultModel: provider === 'claude' ? 'claude-sonnet-5-5' : models[0]?.id };
     return { ...this.agent };
   }
 

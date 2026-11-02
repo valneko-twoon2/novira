@@ -82,6 +82,7 @@ pub async fn status(data_dir: &Path, exe_override: Option<&Path>) -> AgentStatus
             installed: false,
             logged_in: false,
             models: Vec::new(),
+            default_model: None,
             endpoint: info,
         };
     };
@@ -92,6 +93,7 @@ pub async fn status(data_dir: &Path, exe_override: Option<&Path>) -> AgentStatus
             installed: true,
             logged_in: endpoint.is_some_and(|e| !e.base_url.is_empty() && !e.model.is_empty()),
             models: Vec::new(),
+            default_model: None,
             endpoint: info,
         };
     }
@@ -112,6 +114,7 @@ pub async fn status_of(provider: AgentProvider, exe_override: Option<&Path>) -> 
             installed: provider == AgentProvider::Openai,
             logged_in: false,
             models: Vec::new(),
+            default_model: None,
             endpoint: None,
         };
     };
@@ -137,11 +140,13 @@ pub async fn status_of(provider: AgentProvider, exe_override: Option<&Path>) -> 
         },
         _ => false,
     };
+    let models = super::models_of(provider);
     AgentStatus {
         provider: Some(provider),
         installed: true,
         logged_in,
-        models: super::models_of(provider),
+        default_model: super::default_model(provider, &models),
+        models,
         endpoint: None,
     }
 }

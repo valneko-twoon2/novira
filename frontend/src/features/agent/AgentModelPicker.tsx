@@ -1,11 +1,12 @@
 // The model and the thinking effort the assistant's tool runs on, chosen beside the chat's title. The models are the ones the
-// tool offers (Claude's aliases, the models Codex lists for the account), and Claude also takes a typed name. The efforts are
-// the chosen model's, one of them always picked. The choice is kept for each tool and goes with every message from the next one on.
+// tool offers (Claude's, named with their version; the models Codex lists for the account), and the one that answers is
+// always the one shown. The efforts are the chosen model's, one of them always picked. The choice is kept for each tool and
+// goes with every message from the next one on.
 import { Brain, CaretDown, Warning } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { backend, type AgentEndpointTest, type AgentProvider } from '@/backend';
 import { t } from '@/i18n';
-import { effectiveEffort, effortsFor, useAgent } from '@/state/agent';
+import { effectiveEffort, effectiveModel, effortsFor, useAgent } from '@/state/agent';
 import { Button, Popover, PopoverContent, PopoverTrigger, Spinner, TextInput } from '@/ui';
 import { TestResult } from './AgentEndpointForm';
 
@@ -130,18 +131,14 @@ export function AgentModelPicker({ provider }: { provider: AgentProvider }) {
 
 function CliModelPicker({ provider }: { provider: AgentProvider }) {
   const choice = useAgent((s) => s.choice[provider]);
-  const models = useAgent((s) => s.status?.models) ?? [];
+  const status = useAgent((s) => s.status);
   const setChoice = useAgent((s) => s.setChoice);
-  const canType = provider === 'claude';
-  const listed = models.find((m) => m.id === choice.model);
-  const [typing, setTyping] = useState(canType && choice.model !== '' && !listed);
-  const pick = (model: string) => {
-    setTyping(false);
-    setChoice(provider, { model });
-  };
-  const { efforts } = effortsFor(provider, models, choice.model);
-  const effort = effectiveEffort(provider, models, choice);
-  const modelName = listed?.name ?? (choice.model || t('agent.model.default'));
+  const models = status?.models ?? [];
+  // The model that answers is always named; only a tool that lists no model runs its own default.
+  const model = effectiveModel(status, choice);
+  const { efforts } = effortsFor(provider, models, model);
+  const effort = effectiveEffort(provider, models, model, choice);
+  const modelName = models.find((m) => m.id === model)?.name ?? t('agent.model.default');
   const summary = `${modelName} · ${t(`agent.effort.${effort}`)}`;
   return (
     <Popover>
@@ -154,30 +151,17 @@ function CliModelPicker({ provider }: { provider: AgentProvider }) {
       </PopoverTrigger>
       <PopoverContent side="bottom" align="end" className="agent-model-pop">
         <div className="agent-model-pop__body" data-testid="agent-model-pop">
-          <h3 className="agent-model-pop__title">{t('agent.model.label')}</h3>
-          <div className="agent-seg" role="group" aria-label={t('agent.model.label')}>
-            <button type="button" className="agent-seg__btn" aria-pressed={choice.model === '' && !typing} onClick={() => pick('')} data-testid="agent-model-default">
-              {t('agent.model.default')}
-            </button>
-            {models.map((m) => (
-              <button key={m.id} type="button" className="agent-seg__btn" aria-pressed={choice.model === m.id && !typing} onClick={() => pick(m.id)} data-testid={`agent-model-${m.id}`}>
-                {m.name}
-              </button>
-            ))}
-            {canType && (
-              <button type="button" className="agent-seg__btn" aria-pressed={typing} onClick={() => setTyping(true)} data-testid="agent-model-custom">
-                {t('agent.model.custom')}
-              </button>
-            )}
-          </div>
-          {typing && (
-            <TextInput
-              value={choice.model}
-              placeholder={t('agent.model.customPlaceholder')}
-              aria-label={t('agent.model.custom')}
-              onChange={(e) => setChoice(provider, { model: e.target.value })}
-              data-testid="agent-model-name"
-            />
+          {models.length > 0 && (
+            <>
+              <h3 className="agent-model-pop__title">{t('agent.model.label')}</h3>
+              <div className="agent-seg" role="group" aria-label={t('agent.model.label')}>
+                {models.map((m) => (
+                  <button key={m.id} type="button" className="agent-seg__btn" aria-pressed={model === m.id} onClick={() => setChoice(provider, { model: m.id })} data-testid={`agent-model-${m.id}`}>
+                    {m.name}
+                  </button>
+                ))}
+              </div>
+            </>
           )}
           <h3 className="agent-model-pop__title">{t('agent.effort.label')}</h3>
           <div className="agent-seg" role="group" aria-label={t('agent.effort.label')}>

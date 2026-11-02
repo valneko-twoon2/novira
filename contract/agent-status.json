@@ -15,6 +15,7 @@
       "defaultEffort": "medium"
     }
   ],
+  "defaultModel": "gpt-6-sol",
   "endpoint": {
     "baseUrl": "http://192.168.1.5:11434/v1",
     "model": "qwen3:8b",
