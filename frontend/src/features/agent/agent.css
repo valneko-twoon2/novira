@@ -1165,3 +1165,10 @@
 .agent-context[data-full] span:last-child {
   color: var(--warning-text, var(--text));
 }
+
+/* The app sent the next picture of a refinement by itself: a line in the middle of the chat. */
+.agent-msg--step {
+  align-self: center;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}

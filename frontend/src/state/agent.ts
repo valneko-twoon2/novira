@@ -8,6 +8,7 @@ import { AGENT_MAX_ATTACHMENTS, backend, type AgentEffort, type AgentEndpointInp
 import { EDIT_SCREENS, maxMessageId, newSessionId, persistedSessions, restoreSessions, type AgentMessage, type AgentSession, type AgentToolLog } from './agentSessions';
 import { extensionId } from './agentExtensions';
 import { contextUsage, earlierSettings } from './agentHistory';
+import { afterRequest, continuation, type Refinement } from './agentRefine';
 import { agentEditor } from './agentRegistry';
 import { createToolRun, currentScreen, runAgentTool, webQuestion, type PermissionChoice, type ToolRun } from './agentTools';
 import { useParams } from './params';
@@ -136,7 +137,9 @@ interface AgentState {
   setPos: (pos: { x: number; y: number }) => void;
   setOpen: (open: boolean) => void;
   /** Sends a message, with the gallery pictures (names) the user attached; a message of pictures alone asks for a prompt. */
-  send: (text: string, images?: readonly string[]) => Promise<SendResult>;
+  send: (text: string, images?: readonly string[], step?: { n: number; of: number }) => Promise<SendResult>;
+  /** The refinement the assistant started (refine tool): after each answer the app sends it back for the next picture until it finishes, the rounds run out, the user writes or stops. */
+  refining: (Refinement & { sessionId: string }) | null;
   undo: (id: number) => void;
   /** Extensions (folder names) the chat is about, chosen in the extension manager; kept for the follow-up questions. */
   focus: string[];
@@ -296,11 +299,13 @@ export const useAgent = create<AgentState>()(
         cancel: () => {
           if (!get().busy) return;
           cancelled = true;
+          set({ refining: null });
           // A question on screen is answered "no", so the waiting call ends at once.
           answerQuestion?.('deny');
           void backend.agentCancel().catch(() => {});
         },
         setOpen: (open) => set({ open }),
+        refining: null,
         queued: [],
         queue: (text, images = []) => {
           const message = text.trim();
@@ -320,10 +325,12 @@ export const useAgent = create<AgentState>()(
           set({ pendingAsk: null });
           await get().send(text);
         },
-        send: async (text, attached = []) => {
+        send: async (text, attached = [], step) => {
           const images = attached.slice(0, AGENT_MAX_ATTACHMENTS);
           const message = text.trim() || (images.length ? t('agent.attach.defaultAsk') : '');
           if (!message || get().busy) return { ok: false, cancelled: false, text: '' };
+          // What the user writes ends a refinement; the app's own message for the next picture does not.
+          if (!step) set({ refining: null });
           let session = currentSession(get());
           if (!session) {
             const now = Date.now();
@@ -336,12 +343,13 @@ export const useAgent = create<AgentState>()(
           const history = contextUsage(session.messages).turns;
           cancelled = false;
           let failed = false;
+          let proceed = false;
           const run = createToolRun(askPermission, earlierSettings(session.messages));
           activeRun = run;
           const unsubscribe = backend.subscribe((event) => {
             if (event.type === 'agent_tool_call') void onToolCall(event.call);
           });
-          set({ busy: true, busySessionId: sessionId, working: [], sessions: withMessage(get().sessions, sessionId, { id: nextId++, role: 'user', text: message, ...(images.length ? { images } : {}), tools: [] }) });
+          set({ busy: true, busySessionId: sessionId, working: [], sessions: withMessage(get().sessions, sessionId, { id: nextId++, role: 'user', text: message, ...(images.length ? { images } : {}), ...(step ? { step } : {}), tools: [] }) });
           try {
             const focus = get().focus[0];
             const reply = await backend.agentChat({
@@ -369,6 +377,9 @@ export const useAgent = create<AgentState>()(
                 ...undoState(run),
               }),
             });
+            const refining = afterRequest(get().refining, run.refine);
+            set({ refining: refining && { ...refining, sessionId } });
+            proceed = true;
             return { ok: true, cancelled: false, text: reply.text };
           } catch (err) {
             // A stopped request is not a failure: say so plainly. What it changed before stopping can still be undone.
@@ -382,7 +393,7 @@ export const useAgent = create<AgentState>()(
             unsubscribe();
             if (activeRun === run) activeRun = null;
             answerQuestion?.('deny');
-            set({ busy: false, busySessionId: null, working: [] });
+            set({ busy: false, busySessionId: null, working: [], ...(proceed ? {} : { refining: null }) });
             // The next message written meanwhile goes out now. After a failure they go back to the box instead, so they
             // are not sent into the same fault one by one.
             const next = get().queued[0];
@@ -391,8 +402,16 @@ export const useAgent = create<AgentState>()(
                 const back = get().queued;
                 set({ queued: [], draftText: [...back.map((q) => q.text), get().draftText].filter(Boolean).join('\n'), draftAttached: [...new Set([...back.flatMap((q) => q.images), ...get().draftAttached])] });
               } else {
-                set({ queued: get().queued.slice(1) });
+                set({ queued: get().queued.slice(1), refining: null });
                 void get().send(next.text, next.images);
+              }
+            } else if (proceed && get().refining) {
+              // The next picture of a refinement, in the chat it started in; the last one ends it.
+              const r = get().refining!;
+              if (r.round >= r.max || get().currentId !== r.sessionId) set({ refining: null });
+              else {
+                const c = continuation(r);
+                void get().send(c.text, [], { n: c.n, of: r.max });
               }
             }
           }

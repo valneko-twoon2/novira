@@ -162,6 +162,16 @@ A reply that changed settings or edits gets an **{{ui:agent.undo}}** button. Pre
 
 However, after you reopen the app, changes made before that cannot be undone (the button can no longer be pressed).
 
+### Drawing again and again until it fits
+
+Ask "make it like this picture" or "try a few and bring it closer" and the agent repeats trial pictures. After each picture it compares it with your target, changes only what differs and draws the next one.
+
+- When one answer ends, the app asks for the next picture by itself. The agent stops only when it judges the picture close enough, or when two pictures in a row came no closer.
+- It draws 30 pictures at most.
+- The chat shows "Getting closer: picture N of M".
+- To stop, press **{{ui:agent.stop}}** or send a new message. Your message goes out in place of the next picture.
+- With **{{ui:settings.assistantTrial.label}}** turned off, this does not start.
+
 ### Checking how long the conversation is
 
 Within one chat the agent answers with the earlier exchange in mind. The names of the pictures you attached and the ones it showed are carried over too, and it looks at them again when it needs to.

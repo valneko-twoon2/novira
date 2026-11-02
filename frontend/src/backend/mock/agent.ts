@@ -189,10 +189,28 @@ async function trialAgentReply(req: AgentRequest, call: MockToolCall): Promise<A
 }
 
 /**
+ * "Bring it closer over a few pictures" on the image screen: the mock starts a refinement of three pictures and draws the
+ * first; the app then sends it back with the automatic message for each next one, and the last one finishes it.
+ */
+async function refineAgentReply(req: AgentRequest, call: MockToolCall): Promise<AgentReply | null> {
+  const auto = /refinement picture (\d+) of (\d+)/.exec(req.message);
+  const first = !auto && req.trialPictures && (req.screen ?? 'generate') === 'generate' && /何枚か|近づけ|似せ|get closer|keep trying/i.test(req.message);
+  if (!auto && !first) return null;
+  const n = auto ? Number(auto[1]) : 1;
+  const of = auto ? Number(auto[2]) : 3;
+  if (first) await call('refine', { action: 'start', goal: req.message.slice(0, 100), maxRounds: of });
+  await call('set_generation_settings', { positivePrompt: `${MOCK_TRIAL_PROMPT}, take ${n}` });
+  const queued = data<{ queued: number[] }>(await call('generate', { target: 'screen', trial: true })).queued ?? [];
+  if (queued[0] !== undefined) await call('view_picture', { queueId: queued[0] });
+  if (n >= of) await call('refine', { action: 'finish', summary: 'close enough' });
+  return { text: req.locale === 'ja' ? `${n} 枚目を描きました。${n >= of ? 'ここまでにします。' : '続けます。'}` : `Drew picture ${n}. ${n >= of ? 'That is enough.' : 'Going on.'}` };
+}
+
+/**
  * The rules, in order: pictures sent with the message come first; a question about an extension or the app is answered before anything is set; on the text, comic,
  * media and canvas screens the request is about them; then recommendations; else the picture's settings.
  */
-const RULES: MockRule[] = [pictureAgentReply, trialAgentReply, helpAgentReply, textAgentReply, comicAgentReply, mediaAgentReply, poseAgentReply, packAgentReply, imageAgentReply];
+const RULES: MockRule[] = [refineAgentReply, pictureAgentReply, trialAgentReply, helpAgentReply, textAgentReply, comicAgentReply, mediaAgentReply, poseAgentReply, packAgentReply, imageAgentReply];
 
 /** Answers a request by running the first rule that takes it. */
 export async function runMockAgent(req: AgentRequest, call: MockToolCall): Promise<AgentReply> {

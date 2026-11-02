@@ -265,3 +265,20 @@ test('the assistant draws one trial picture for a mood, shows it under its answe
   await expect(replies.last()).not.toContainText('こんな雰囲気ですか');
   await expect(replies.last().getByTestId('agent-msg-pictures')).toHaveCount(0);
 });
+
+test('a refinement goes on by itself, one picture a round, until the assistant finishes', async ({ page }) => {
+  await openApp(page);
+  await openAssistant(page);
+  const win = page.getByTestId('agent-window');
+  await win.getByTestId('agent-input').fill('何枚か生成しながら近づけていって');
+  await win.getByTestId('agent-send').click();
+  // Looking at the pictures reads the gallery: allowed once for all of the rounds.
+  await win.getByTestId('agent-permission-always').click({ timeout: 20_000 });
+  const replies = win.locator('.agent-msg--assistant:not(.agent-msg--thinking)');
+  await expect(replies).toHaveCount(3, { timeout: 60_000 });
+  await expect(replies.last()).toContainText('ここまでにします');
+  // The app's own messages for the next pictures are notes with their numbers, not messages of the user.
+  await expect(win.getByTestId('agent-msg-step')).toHaveText([msg('agent.refine.step', { n: 2, of: 3 }), msg('agent.refine.step', { n: 3, of: 3 })]);
+  await expect(win.getByTestId('agent-msg-user')).toHaveCount(1);
+  for (let i = 0; i < 3; i++) await expect(replies.nth(i).getByTestId('agent-msg-pictures').locator('img')).toHaveCount(1);
+});

@@ -156,5 +156,6 @@
   "agent.queued.remove": "順番待ちから外す",
   "agent.context.usage": "次の送信に付く会話: 約 {used} / {max} トークン",
   "agent.context.dropped.one": "古い {count} 件は送られません",
-  "agent.context.dropped.other": "古い {count} 件は送られません"
+  "agent.context.dropped.other": "古い {count} 件は送られません",
+  "agent.refine.step": "近づける作業: {n} / {of} 枚目"
 }

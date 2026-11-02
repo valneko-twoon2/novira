@@ -100,3 +100,28 @@ describe('the mock assistant on the other screens', () => {
     expect(none.tools.tools()).not.toContain('recommend_packs');
   });
 });
+
+describe('the mock assistant in a refinement', () => {
+  const answers = { generate: { queued: [7] }, view_picture: { picture: 'x.png' } };
+
+  it('starts one for a request to get closer, and draws the first picture', async () => {
+    const { tools, reply } = await ask('何枚か生成しながら近づけていって', { trialPictures: true }, answers);
+    expect(tools.tools()).toEqual(['refine', 'set_generation_settings', 'generate', 'view_picture']);
+    expect(tools.args('refine')).toMatchObject({ action: 'start', maxRounds: 3 });
+    expect(reply.text).toContain('1 枚目');
+  });
+
+  it('draws the next picture for the app\'s automatic message and finishes on the last', async () => {
+    const middle = await ask('[Automatic message of the app: refinement picture 2 of 3.]', { trialPictures: true }, answers);
+    expect(middle.tools.tools()).toEqual(['set_generation_settings', 'generate', 'view_picture']);
+    expect(middle.reply.text).toContain('2 枚目');
+    const last = await ask('[Automatic message of the app: refinement picture 3 of 3.]', { trialPictures: true }, answers);
+    expect(last.tools.tools()).toEqual(['set_generation_settings', 'generate', 'view_picture', 'refine']);
+    expect(last.tools.args('refine')).toMatchObject({ action: 'finish' });
+  });
+
+  it('leaves a request alone when trial pictures are off', async () => {
+    const { tools } = await ask('何枚か生成しながら近づけていって', { trialPictures: false }, answers);
+    expect(tools.tools()).not.toContain('refine');
+  });
+});

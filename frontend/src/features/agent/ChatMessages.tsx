@@ -209,6 +209,8 @@ function Bubble({ m, phone }: { m: AgentMessage; phone: boolean }) {
   // The whole comic's panels (every page) when a comic is open; a separate button, so drawing everything is the user's choice.
   const comicPanels = useComic((s) => (s.activeProjectId && !phone ? comicPanelIds().length : 0));
   const onComic = useUi((s) => s.activeTab === 'comic') && !phone;
+  // The app's own message for the next picture of a refinement: a quiet note, not a message of the user.
+  if (m.step) return <div className="agent-msg--step" data-testid="agent-msg-step">{t('agent.refine.step', { n: m.step.n, of: m.step.of })}</div>;
   return (
     <div className={cx('agent-msg', `agent-msg--${m.role}`, m.error && 'is-error')} data-testid={`agent-msg-${m.role}`}>
       {m.thoughts?.length ? <Thoughts lines={m.thoughts} /> : null}

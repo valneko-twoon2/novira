@@ -45,6 +45,8 @@ export interface AgentMessage {
   editSnapshots?: Partial<Record<EditScreen, unknown>>;
   undone?: boolean;
   error?: boolean;
+  /** A message the app sent by itself for the next picture of a refinement (the chat shows its number, not its text). */
+  step?: { n: number; of: number };
 }
 
 export interface AgentSession {
@@ -90,6 +92,7 @@ function persistedMessage(m: AgentMessage): AgentMessage {
     tools: m.tools,
     ...(m.images?.length ? { images: m.images } : {}),
     ...(m.thoughts?.length ? { thoughts: m.thoughts } : {}),
+    ...(m.step ? { step: m.step } : {}),
     ...(m.undone ? { undone: true } : {}),
     ...(m.error ? { error: true } : {}),
   };
@@ -151,7 +154,7 @@ function restoreMessage(v: unknown): AgentMessage | null {
   const tools = Array.isArray(v.tools) ? v.tools.map(restoreLog).filter((l): l is AgentToolLog => !!l) : Array.isArray(v.actions) ? fromOldActions(v.actions) : [];
   const thoughts = Array.isArray(v.thoughts) ? v.thoughts.filter((x): x is string => typeof x === 'string') : [];
   const images = Array.isArray(v.images) ? v.images.filter((x): x is string => typeof x === 'string').slice(0, AGENT_MAX_ATTACHMENTS) : [];
-  return { id: v.id, role: v.role, text: v.text, tools, ...(images.length ? { images } : {}), ...(thoughts.length ? { thoughts } : {}), ...(v.undone === true ? { undone: true } : {}), ...(v.error === true ? { error: true } : {}) };
+  return { id: v.id, role: v.role, text: v.text, tools, ...(images.length ? { images } : {}), ...(thoughts.length ? { thoughts } : {}), ...(isRecord(v.step) && typeof v.step.n === 'number' && typeof v.step.of === 'number' ? { step: { n: v.step.n, of: v.step.of } } : {}), ...(v.undone === true ? { undone: true } : {}), ...(v.error === true ? { error: true } : {}) };
 }
 
 /** Sessions read back from storage; anything malformed is skipped rather than breaking the window. */

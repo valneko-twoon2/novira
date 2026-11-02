@@ -17,6 +17,7 @@ import { useGallery } from './gallery';
 import { enqueueActive } from './invoke';
 import { isDrawable, useModels } from './models';
 import { useParams, type ParamsFields } from './params';
+import { clampRounds, type RefineOutcome } from './agentRefine';
 import { estimateTokens } from './prompts/promptTags';
 import { useQueue } from './queue';
 import { useSettings } from './settings';
@@ -66,6 +67,8 @@ export interface ToolRun {
   earlier: EarlierSettings[];
   /** Gallery pictures the assistant looked at with view_picture, shown under its answer. */
   shown: string[];
+  /** What the assistant asked of the refinement loop in this request (refine tool), if anything. */
+  refine?: RefineOutcome;
   /** Whether a read of the user's pictures or prompts, or a look-up on the web, may go ahead (asks the user when its setting says so). */
   permit: (tool: string, args?: unknown) => Promise<boolean>;
 }
@@ -400,6 +403,20 @@ const HANDLERS: Record<string, Handler> = {
     if (!picture) return fail('Give queueId or name.');
     if (!run.shown.includes(picture) && run.shown.length < MAX_SHOWN) run.shown.push(picture);
     return done({ picture, ...(id !== undefined ? { queueId: id } : {}) });
+  },
+
+  refine: (args, run) => {
+    if (args.action === 'finish') {
+      run.refine = { action: 'finish' };
+      return done({ ok: true, note: 'The refinement is over.' });
+    }
+    if (!useSettings.getState().assistantTrialPictures) return fail('Trial pictures are turned off in the settings: ask the user in words instead.');
+    const goal = str(args.goal)?.trim();
+    if (!goal) return fail('Give the goal of the refinement.');
+    const targets = Array.isArray(args.targets) ? args.targets.filter((x): x is string => typeof x === 'string').slice(0, 4) : [];
+    const max = clampRounds(args.maxRounds);
+    run.refine = { action: 'start', goal, targets, max };
+    return done({ ok: true, rounds: max, note: 'Draw the first trial picture now. The app sends you back for each next one until you call finish.' });
   },
 
   get_queue_status: (args) => {

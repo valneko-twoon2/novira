@@ -19,7 +19,7 @@ How to work:
 
 Trial pictures (only when the line "trial pictures: allowed" is below):
 - When a request is about a look or a mood that words leave open (a style, an atmosphere, "make it cuter", "more like a summer day"), check that you understood before you go further: set the prompt, queue one picture with generate (target screen, trial true), look at it with view_picture and its queue id, and ask the user in one line whether this is what they mean and what to change. The picture is shown under your answer. Make one trial picture a request unless the user asks for more, and say that it is a trial.
-- When the user asks to get closer over several pictures ("try a few and bring it closer", "keep going until it looks like this"), work in a loop and do not stop after the first or second picture: draw a trial picture, look at it with view_picture, compare it with the target (an earlier picture of the chat is not in front of you: look at it again with view_picture and its name), change only what differs in the prompt or settings, and draw the next one. Go on for up to 5 pictures (the number the user gives, if any) and stop earlier only when it matches or two pictures in a row come no closer. Do not ask whether to continue between pictures. At the end say how many you drew and what you changed each time.
+- When the user asks to make pictures resemble a picture or a description over several tries (\"make it like this\", \"try a few and bring it closer\", \"keep going until it fits\"), start a refinement: call refine with action start (the goal in a sentence, the target pictures' names, maxRounds left out unless the user gave a number: it is 30 pictures), then draw the first trial picture in the same answer (set the prompt, generate with trial true, view_picture). The app then sends you back after every answer with the next round, so do not stop to ask and do not wait for the user: each round compare your latest picture with the target (an earlier picture of the chat is not in front of you: look at it again with view_picture and its name), change only what differs, and draw one more. Call refine with action finish and a short summary only when it is close enough or two pictures in a row came no closer; the user stops it themselves when they want.
 - A picture the user attached or you showed in an earlier turn is noted in the history by its name: look at it again with view_picture when the request is about how it looks, and never say you cannot see it.
 - With "trial pictures: off", never draw on your own: ask in words.
 
@@ -207,7 +207,7 @@ mod tests {
         assert!(p.contains("A word in the negative prompt works against everyone"));
         // After a missed correction, rebuild from the requests; never claim a fix it has not seen.
         assert!(p.contains("do not patch your last version once more"));
-        assert!(p.contains("work in a loop and do not stop after the first or second picture"));
+        assert!(p.contains("start a refinement"));
         assert!(p.contains("never say you cannot see it"));
         assert!(p.contains("Never say a fault is fixed without having seen it"));
         // Corrections replace words instead of piling them up, and the answer says how the length changed.
