@@ -124,7 +124,8 @@ function machineFacts() {
     '-NoProfile',
     '-NonInteractive',
     '-Command',
-    "Get-CimInstance Win32_Process | Where-Object { $_.Name -in 'novira.exe','msedgewebview2.exe' } | Select-Object -First 8 | ForEach-Object { '{0} pid={1} {2}' -f $_.Name, $_.ProcessId, $_.CommandLine }",
+    // The browser process of the WebView2 (no --type=) is the one that takes the debugging port; the helpers only repeat its flags.
+    "Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'novira.exe' -or ($_.Name -eq 'msedgewebview2.exe' -and $_.CommandLine -notmatch '--type=') } | Select-Object -First 4 | ForEach-Object { $c = [string]$_.CommandLine; '{0} pid={1} remote-debugging-port={2} length={3} head={4}' -f $_.Name, $_.ProcessId, ($c -match 'remote-debugging-port'), $c.Length, $c.Substring(0, [Math]::Min(200, $c.Length)) }",
   ]);
   const interactive = run('powershell', ['-NoProfile', '-NonInteractive', '-Command', '[Environment]::UserInteractive']).trim();
   return [
@@ -145,6 +146,12 @@ function appDiagnostics(app, output, data, webview) {
     // the folder is made by the runtime; none means it never started
   }
   parts.push(`WebView2 profile folder: ${profile.length ? `${profile.length} entries` : 'empty (the runtime did not start)'}`);
+  try {
+    // DevToolsActivePort is written by the browser process once the debugging port is open.
+    parts.push(`EBWebView: ${fs.readdirSync(path.join(webview, 'EBWebView')).slice(0, 30).join(', ')}`);
+  } catch {
+    parts.push('EBWebView: none');
+  }
   const out = tailOf(output.text);
   if (out) parts.push(`app output:\n${out}`);
   try {
