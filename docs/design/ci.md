@@ -25,9 +25,9 @@ GitHub runs the repository's checks on every push to a branch, so a change is ch
 ## Known limits
 
 - A failing check does not block a merge or a push: there is no branch protection yet.
-- The runner is Linux; the app is built and smoke-tested on Windows only by the release.
+- The `vitest` job runs on Linux, though the app is Windows-only: a test that assumes Windows paths or `cmd.exe` fails there and is then moved to a Windows runner or made portable, not skipped.
 
 ## Not implemented
 
-- Next in line, each added once it is seen to pass on the runner: vitest (`npx vitest run`), then `cargo clippy` and `cargo test -p novira-core` on a Windows runner, then Playwright (`chromium`, then the visual regression, whose baselines are Windows images). Until then they stay in `scripts\check.bat` and `scripts\checks\full-check.bat`.
+- Next in line, each added once it is seen to pass on the runner: `cargo test -p novira-core` and `-p novira` on a Windows runner, then Playwright (`chromium`, then the visual regression, whose baselines are Windows images). Until then they stay in `scripts\check.bat` and `scripts\checks\full-check.bat`.
 - No dependency audit runs (`npm audit`, `cargo audit`).
