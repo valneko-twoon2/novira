@@ -26,16 +26,20 @@ Release progress:
 ## 2. Sort and check
 
 1. Read `docs/release-notes-template.md` in full, including its top comment: it holds the writing rules (Japanese, screen words from the ja catalog, one-line bullets, section layout).
-2. `feat:` → 新機能, `fix:` → 修正, known gaps → 既知の制限. Leave out what a user cannot see (`docs:`, `chore:`, tests, the harness, refactors, release tooling). Merge related commits into one bullet.
+2. Sort by what the user sees, not by the prefix alone:
+   - 新機能: something the user can now do (a `fix:` that adds a choice or a screen goes here too). 修正: something that works better or no longer goes wrong. 既知の制限: known gaps.
+   - Leave out what a user cannot see: `docs:`, tests, the harness, refactors, and every `feat:`/`fix:`/`chore:` on CI, the smoke test, the release workflow, hooks, skills or `scripts/tools/`.
+   - A `test:` or `chore:` subject that says a defect was fixed (直す, 不具合) can hold a product fix: read it and keep the fix.
+   - Merge related commits into one bullet. A security fix says plainly what is now refused, without how to exploit it. Accessibility fixes (screen readers, keyboard) stay, merged into one bullet.
 3. When a subject does not say what the user can now do, read the commit (`git show --stat <id>`, then the relevant part). Quote button and screen names from `frontend/src/i18n/locales/ja/`. Take numbers (days, counts, defaults) from the code.
 4. A change you could not confirm goes into a question for the user, not into the notes as fact.
 
 ## 3. Write and show
 
-Write only the part of the template below its comment, filled in, to `novira-data/work/release-notes/<tag>.md` (LF, UTF-8). Drop empty sections. Then show the user:
+Write only the part of the template below its comment, filled in, to `novira-data/work/release-notes/<tag>.md` (LF, UTF-8; make the folder if it is missing). Drop empty sections. Keep the translation line of 既知の制限 while `frontend/src/i18n/locales/` has languages other than `ja` and `en` (their text is caught up later). Then show the user:
 
 - the notes in a ```` ```markdown ```` block, and the path of the file;
-- the range used (`v0.3.0..HEAD`, N commits) and the commits left out as invisible to users;
+- the range used (`v0.3.0..HEAD`, N commits) and the commits left out, summarised by kind with counts (list ids only for a left-out `feat:` or `fix:`);
 - the open questions.
 
 Revise the file when the user asks for changes. Stop here unless the user says to release.
