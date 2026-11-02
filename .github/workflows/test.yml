@@ -1,0 +1,79 @@
+# The checks GitHub runs on every push to a branch (tags run release.yml instead). It starts with the checks that read the
+# sources and need no build, no browser and no Windows: types, lint, line ends, the product name, the docs and UI
+# references, the term list, the changelog and the Rust formatting. The others (vitest, clippy, cargo test, Playwright)
+# are added one by one once they are seen to pass on the runner (docs/architecture/tooling.md, "CI").
+# Only actions of GitHub's own (actions/*) are used; nothing here has a secret or write access.
+name: test
+
+on:
+  push:
+    branches: ['**']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install the frontend packages
+        working-directory: frontend
+        run: npm ci
+
+      # Every check runs even when an earlier one failed, so one run shows all of them.
+      - name: Types
+        if: ${{ !cancelled() }}
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Lint (ESLint, stylelint)
+        if: ${{ !cancelled() }}
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Line ends
+        if: ${{ !cancelled() }}
+        run: node scripts/tools/check-eol.mjs
+
+      - name: Product name in lowercase
+        if: ${{ !cancelled() }}
+        run: node scripts/tools/check-name.mjs
+
+      - name: The map and the design pages
+        if: ${{ !cancelled() }}
+        run: node scripts/tools/docs-check.mjs
+
+      - name: Test ids and text keys the docs and scripts name
+        if: ${{ !cancelled() }}
+        run: node scripts/tools/ui-refs.mjs
+
+      - name: Terms
+        if: ${{ !cancelled() }}
+        run: node frontend/scripts/check-glossary.mjs
+
+      - name: Changelog
+        if: ${{ !cancelled() }}
+        run: node scripts/tools/changelog.mjs --check
+
+  rust-format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: cargo fmt --check
+        working-directory: backend
+        run: cargo fmt --all -- --check

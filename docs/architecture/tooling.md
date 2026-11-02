@@ -4,7 +4,7 @@ How the project is started, checked and guarded, and which file guards what. How
 
 ## Launchers and tools
 
-`scripts/` holds what you run by hand: the Windows launchers (`.bat`); everyday ones at its top, long checks in `checks/`, the release in `release/`. `scripts/tools/` holds what AI sessions, the Git hooks and CI call, and the parts they share. `.githooks/` holds the Git hooks: a thin `sh` file per hook and its body in Node. `.github/workflows/release.yml` builds the release ([release-workflow.md](../design/release-workflow.md)).
+`scripts/` holds what you run by hand: the Windows launchers (`.bat`); everyday ones at its top, long checks in `checks/`, the release in `release/`. `scripts/tools/` holds what AI sessions, the Git hooks and CI call, and the parts they share. `.githooks/` holds the Git hooks: a thin `sh` file per hook and its body in Node. `.github/workflows/` runs the checks on a branch push ([ci.md](../design/ci.md)) and builds the release on a tag ([release-workflow.md](../design/release-workflow.md)).
 
 | In `scripts/` | What |
 |---|---|
@@ -21,7 +21,7 @@ How the project is started, checked and guarded, and which file guards what. How
 | In `` (and one spec) | What |
 |---|---|
 | `affected.mjs` | Only the checks the changed files need |
-| `typecheck.mjs`, `docs-check.mjs`, `ui-refs.mjs`, `visual-baselines.mjs`, `check-eol.mjs`, `fix-eol.mjs`, `eol.mjs`, `check-name.mjs` | Whole-repository checks: types, the map, stale doc code names, stale test ids and text keys, stale baselines, line ends, name spelling |
+| `typecheck.mjs`, `docs-check.mjs`, `ui-refs.mjs`, `visual-baselines.mjs`, `check-eol.mjs`, `fix-eol.mjs`, `eol.mjs`, `check-name.mjs`, `changelog.mjs` | Whole-repository checks: types, the map, stale doc code names, stale test ids and text keys, stale baselines, line ends, name spelling, the changelog |
 | `layout-scan.mjs`, `e2e-lock.mjs` | The layout scan (with text fit) and its pass record; the lock for one heavy Playwright run at a time |
 | `e2e/a11y.spec.ts` (`e2e/a11yKnown.ts`) | axe-core (WCAG A/AA, no contrast) on each main tab: fails beyond the known list, which only shrinks |
 | `worktree.mjs` | Makes and removes a subagent worktree |
@@ -48,7 +48,7 @@ Rules (`.claude/rules/`) say what must hold; Claude Code loads one when a file u
 | `architecture-map.md`, `design-docs.md` | What the map holds and how big it may get; what a design page (the current specification of a feature) holds and when to update it |
 | `frontend.md`, `i18n.md`, `manual.md`, `assistant.md`, `comfyui.md`, `security.md` | The frontend's layers and look; screen text in every language; the manual; the AI assistant kept in step with features; pack settings; what to check at each boundary |
 | `models.md` | Model changes swept in the real app |
-| `regression-tests.md`, `test-maintenance.md`, `commit-messages.md` | Which tests to run; tests change with behaviour; the shape of a commit message |
+| `regression-tests.md`, `test-maintenance.md`, `commit-messages.md`, `changelog.md` | Which tests to run; tests change with behaviour; a commit message; `CHANGELOG.md` |
 
 | Skill | For |
 |---|---|
@@ -86,7 +86,7 @@ Rules (`.claude/rules/`) say what must hold; Claude Code loads one when a file u
 | `frontend/tests/rust-debuginfo.test.ts` | Rust debug info back: a profile's `debug`, `/DEBUG:NONE` gone from `backend/.cargo/config.toml`, a script setting `RUSTFLAGS` |
 | `cargo test -p novira --test window_config` | `dragDropEnabled` turned on (on Windows no HTML5 drag and drop reaches the page) |
 | `npm run coverage` (`checks/coverage.bat`) | frontend coverage falling below the floors in `frontend/vitest.config.ts`. Run by hand, not in `npm run check`. Rust: `checks/coverage.bat backend` fails below its line floor (`--fail-under-lines`). `npm run coverage:e2e` (`checks/coverage.bat e2e`) adds the browser coverage of the Playwright run (`frontend/scripts/coverage-report.mjs`) |
-| `checks/mutation.bat rust` (`cargo mutants`, config `backend/.cargo/mutants.toml`) | a test that does not notice a real change of the code (a surviving mutant). Not in `check.bat` or CI (a day for the crate; one file with `-- -f <path>`); equivalent mutants are excluded in the config with a reason | frontend (see its own part of `checks/mutation.bat`), code the tests never run (that is `checks/coverage.bat`) |
+| `checks/mutation.bat rust` (`cargo mutants`, config `backend/.cargo/mutants.toml`) | a test that does not notice a real change of the code (a surviving mutant). Not in `check.bat` or CI (a day for the crate; one file with `-- -f <path>`); equivalent mutants are excluded in the config with a reason |
 | `npx vitest run <file>.property.test.ts` (part of `npm run check`; fast-check, shared setup in `frontend/src/propertyTest.testkit.ts`) | hostile or random input reaching pure frontend logic and stores. In process only (`fetch` throws), fixed run count and seed (`NOVIRA_PBT_RUNS`, `NOVIRA_PBT_SEED`); a known bug is an `it.fails` test with a `known bug:` comment |
 | `prop_*` tests of novira-core (`--test prop_paths` and the others) | hostile or random input reaching a pure function or parser: a path that escapes its folder or names a device or another host; a prompt with a dangling link, a cycle or a null input; a parser that panics or overflows; a contract type that changes in a round trip. Fixed seed | only what the generators reach: no real engine, network or GPU, and a bug outside the generated shapes |
 | `backend/rustfmt.toml` (`newline_style = "Unix"`) | Rust line ends |
