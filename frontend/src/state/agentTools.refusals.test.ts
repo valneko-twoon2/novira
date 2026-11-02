@@ -81,7 +81,7 @@ describe('the Generate tab settings', () => {
   it('changes only the negative prompt and CFG when only those are given, after keeping the settings', async () => {
     useParams.getState().set({ positivePrompt: 'a cat', negativePrompt: 'blur', cfgScale: 7 });
     const before = settings();
-    expect(await call('set_generation_settings', { negativePrompt: 'lowres', cfgScale: 4.5 })).toEqual({ ok: true, content: { set: ['negativePrompt', 'cfgScale'] } });
+    expect(await call('set_generation_settings', { negativePrompt: 'lowres', cfgScale: 4.5 })).toEqual({ ok: true, content: { set: ['negativePrompt', 'cfgScale'], tokens: { negativePrompt: { beforeRequest: 1, now: 1 } } } });
     expect(settings()).toEqual({ ...before, negativePrompt: 'lowres', cfgScale: 4.5 });
     expect(run.snapshot).toMatchObject({ positivePrompt: 'a cat', negativePrompt: 'blur', cfgScale: 7 });
     expect(run.log).toEqual([{ kind: 'prompt' }, { kind: 'params', summary: 'CFG 4.5' }]);
