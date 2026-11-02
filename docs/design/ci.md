@@ -12,8 +12,8 @@ GitHub runs the repository's checks on every push to a branch, so a change is ch
 ## Behaviour
 
 - **Trigger.** A push to any branch. A tag push runs the release instead ([release-workflow.md](release-workflow.md)). A newer push to the same branch cancels the running check of the older one.
-- **`static` job** (`ubuntu-latest`, at most 20 minutes): `npm ci` in `frontend/`, then `npm run typecheck`, `npm run lint`, `scripts/tools/check-eol.mjs`, `scripts/tools/check-name.mjs`, `scripts/tools/docs-check.mjs`, `scripts/tools/ui-refs.mjs`, `frontend/scripts/check-glossary.mjs` and `scripts/tools/changelog.mjs --check`. Each runs even when an earlier one failed, so one run shows every failure.
-- **`rust-format` job** (`ubuntu-latest`): `cargo fmt --all -- --check` in `backend/`, with the toolchain of `backend/rust-toolchain.toml`.
+- **`static` job** (`ubuntu-24.04`, at most 20 minutes): `npm ci` in `frontend/`, then `npm run typecheck`, `npm run lint`, `scripts/tools/check-eol.mjs`, `scripts/tools/check-name.mjs`, `scripts/tools/docs-check.mjs`, `scripts/tools/ui-refs.mjs`, `frontend/scripts/check-glossary.mjs` and `scripts/tools/changelog.mjs --check`. Each runs even when an earlier one failed, so one run shows every failure.
+- **`rust-format` job** (`ubuntu-24.04`): `cargo fmt --all -- --check` in `backend/`, with the toolchain of `backend/rust-toolchain.toml`.
 - **`vitest` job** (`windows-latest`, Node 22, at most 30 minutes): `npm ci`, then `npx vitest run --maxWorkers=4 --testTimeout=30000` in `frontend/` (every unit and component test, not the Playwright specs). The runner has 4 cores, where the config's ten workers starved each other and four tests passed 5 s; the flags apply to the runner only, a test that sets its own limit keeps it.
 - **`clippy` job** (`windows-latest`, at most 60 minutes): `cargo clippy -p novira-core -p novira-server -p novira --tests -- -D warnings` in `backend/`, with cargo's registry and `backend/target` cached on `Cargo.lock` and the toolchain file. The app crate's build script builds the frontend, so Node and `npm ci` come first.
 - **`cargo-test` job** (`windows-latest`, at most 90 minutes): `cargo test --no-fail-fast` for `novira-core`, `novira-server` and `novira` (the Tauri shell, which also checks the command list against the capability), each step even when an earlier one failed, with the frontend installed first (the app crate builds it) and cargo cached like `clippy` under its own key.
@@ -24,7 +24,7 @@ GitHub runs the repository's checks on every push to a branch, so a change is ch
 
 ## Audit
 
-`.github/workflows/audit.yml` is a workflow of its own, so a new advisory does not fail every push. It runs every Monday (03:17 UTC) and on a branch push that changes `backend/Cargo.lock`, `frontend/package-lock.json`, `backend/.cargo/audit.toml` or the workflow, on `ubuntu-latest`:
+`.github/workflows/audit.yml` is a workflow of its own, so a new advisory does not fail every push. It runs every Monday (03:17 UTC) and on a branch push that changes `backend/Cargo.lock`, `frontend/package-lock.json`, `backend/.cargo/audit.toml` or the workflow, on `ubuntu-24.04`:
 
 - `cargo audit` (cargo-audit 0.22.2, installed with `--locked` and cached) over `backend/Cargo.lock`. The advisories already judged are in `backend/.cargo/audit.toml`, each with its reason ([security.md](security.md), dependency findings); a new vulnerability fails the run. Unmaintained or unsound warnings do not.
 - `npm run audit` (`npm audit --omit=dev`) in `frontend/`, the dependencies that ship in the app.
@@ -34,7 +34,7 @@ GitHub runs the repository's checks on every push to a branch, so a change is ch
 | Boundary | Guard |
 |---|---|
 | The token | `contents: read` only; no secret is used |
-| Actions | Only GitHub's own (`actions/*`), named by major version |
+| Actions | Only GitHub's own (`actions/*`), named by major version, at the releases that run on Node 24 (the older ones print a deprecation warning). `release.yml` is still on the older majors: it only runs on a tag, so a bump waits for a run that can check it |
 
 ## Known limits
 
