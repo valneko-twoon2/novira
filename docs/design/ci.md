@@ -11,7 +11,9 @@ GitHub runs the repository's checks on every push to a branch, so a change is ch
 - **Trigger.** A push to any branch. A tag push runs the release instead ([release-workflow.md](release-workflow.md)). A newer push to the same branch cancels the running check of the older one.
 - **`static` job** (`ubuntu-latest`, at most 20 minutes): `npm ci` in `frontend/`, then `npm run typecheck`, `npm run lint`, `scripts/tools/check-eol.mjs`, `scripts/tools/check-name.mjs`, `scripts/tools/docs-check.mjs`, `scripts/tools/ui-refs.mjs`, `frontend/scripts/check-glossary.mjs` and `scripts/tools/changelog.mjs --check`. Each runs even when an earlier one failed, so one run shows every failure.
 - **`rust-format` job** (`ubuntu-latest`): `cargo fmt --all -- --check` in `backend/`, with the toolchain of `backend/rust-toolchain.toml`.
-- These checks read the sources only: no build, no browser, no GPU, no Windows.
+- **`vitest` job** (`ubuntu-latest`, at most 30 minutes): `npm ci`, then `npx vitest run` in `frontend/` (every unit and component test, not the Playwright specs).
+- **`clippy` job** (`windows-latest`, at most 60 minutes): `cargo clippy -p novira-core --tests -- -D warnings` in `backend/`, with cargo's registry and `backend/target` cached on `Cargo.lock` and the toolchain file.
+- The `static` and `rust-format` jobs read the sources only: no build, no browser, no GPU.
 
 ## Boundaries
 
