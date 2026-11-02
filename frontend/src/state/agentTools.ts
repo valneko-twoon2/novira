@@ -7,6 +7,7 @@ import { agentExtensions, extensionId, folderOfExtensionId, questionWords } from
 import { agentGuide } from './agentGuide';
 import { mangaGuide } from './comic/mangaGuide';
 import { agentEditor, agentWorkflow, extensionNodes, selectAgentModel } from './agentRegistry';
+import type { EarlierSettings } from './agentHistory';
 import type { AgentToolLog, EditScreen } from './agentSessions';
 import { buildItems } from './comfy/extensionList';
 import { useNodePacks } from './comfy/nodePacks';
@@ -60,6 +61,8 @@ export interface ToolRun {
   snapshot?: Partial<ParamsFields>;
   /** Each editor's data before the request first changed it. */
   editSnapshots: Partial<Record<EditScreen, unknown>>;
+  /** The Generate tab's settings before each earlier request of the chat changed them, oldest first. */
+  earlier: EarlierSettings[];
   /** Whether a read of the user's pictures or prompts, or a look-up on the web, may go ahead (asks the user when its setting says so). */
   permit: (tool: string, args?: unknown) => Promise<boolean>;
 }
@@ -68,7 +71,7 @@ export interface ToolRun {
  * A request's tool state. `ask` shows the question in the chat window; the questions of parallel calls are asked one
  * after the other, and after "always allow" the next ones are not asked.
  */
-export function createToolRun(ask: (tool: string, args?: unknown) => Promise<PermissionChoice>): ToolRun {
+export function createToolRun(ask: (tool: string, args?: unknown) => Promise<PermissionChoice>, earlier: EarlierSettings[] = []): ToolRun {
   let queue: Promise<unknown> = Promise.resolve();
   const permit = (tool: string, args?: unknown): Promise<boolean> => {
     // "Always allow" for pictures never allows the web, and the other way round: each has its own setting.
@@ -84,7 +87,7 @@ export function createToolRun(ask: (tool: string, args?: unknown) => Promise<Per
     queue = next.catch(() => undefined);
     return next;
   };
-  return { log: [], editSnapshots: {}, permit };
+  return { log: [], editSnapshots: {}, earlier, permit };
 }
 
 /** What a tool answers: data (or a sentence) for the model, or an error it is told. */
@@ -215,6 +218,21 @@ async function newQueueItems(before: Set<number>): Promise<number[]> {
 
 type Handler = (args: Record<string, unknown>, run: ToolRun) => ToolResult | Promise<ToolResult>;
 
+/** The Generate tab's settings as get_generation_settings tells them (the prompts only when they may be read). */
+function settingsView(p: Partial<ParamsFields>, prompts: boolean) {
+  return {
+    modelKey: p.modelKey,
+    loras: p.loras?.map((l) => ({ key: l.key, weight: l.weight })),
+    steps: p.steps,
+    cfgScale: p.cfgScale,
+    width: p.width,
+    height: p.height,
+    scheduler: p.scheduler,
+    seed: p.seed,
+    ...(prompts ? { positivePrompt: p.positivePrompt, negativePrompt: p.negativePrompt } : {}),
+  };
+}
+
 const FORM_KINDS = ['video', 'music', 'voice'] as const;
 type FormKind = (typeof FORM_KINDS)[number];
 const formKind = (v: unknown): FormKind | undefined => FORM_KINDS.find((k) => k === v);
@@ -262,20 +280,15 @@ const HANDLERS: Record<string, Handler> = {
     return done({ added: lora.key, weight, ...(words.length ? { triggerPhrases: words } : {}) });
   },
 
-  get_generation_settings: (args) => {
+  get_generation_settings: (args, run) => {
     const p = useParams.getState();
+    const prompts = args.includePrompts === true;
     return done({
-      modelKey: p.modelKey,
-      loras: p.loras.map((l) => ({ key: l.key, weight: l.weight })),
-      steps: p.steps,
-      cfgScale: p.cfgScale,
-      width: p.width,
-      height: p.height,
-      scheduler: p.scheduler,
-      seed: p.seed,
+      ...settingsView(p, prompts),
       randomSeed: p.shouldRandomizeSeed,
       schedulers: SCHEDULERS,
-      ...(args.includePrompts === true ? { positivePrompt: p.positivePrompt, negativePrompt: p.negativePrompt } : {}),
+      // The versions before each earlier request of the chat, to put back what the user says was fine before.
+      ...(prompts && run.earlier.length ? { earlier: run.earlier.map((e) => ({ request: e.request, ...(e.undone ? { undone: true } : {}), settings: settingsView(e.settings, true) })) } : {}),
     });
   },
 

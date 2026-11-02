@@ -18,7 +18,8 @@ The assistant (`backend/crates/novira-core/src/agent/`, `frontend/src/state/agen
 | It knows or does | Source (the truth) | Reaches the model through |
 |---|---|---|
 | Its role and the rules for working and answering | `agent/prompt.rs` (`INSTRUCTIONS`; on the comic screen `COMIC_INSTRUCTIONS`, and for a step of the app's run the writer's or editor's rules, picked by `AgentRequest.role`) | the prompt |
-| The language, the screen, the extension asked about, the conversation | `send()` in `state/agent.ts`, `currentScreen()` in `state/agentTools.ts` | the prompt (`locale`, `screen`, `focus`, `history`) |
+| The language, the screen, the extension asked about, the conversation | `send()` in `state/agent.ts`, `currentScreen()` in `state/agentTools.ts`; each earlier answer's note of what it changed or the user undid (`historyTurn` in `state/agentHistory.ts`) | the prompt (`locale`, `screen`, `focus`, `history`) |
+| The Generate tab's settings before each earlier request of the chat | `earlierSettings` in `state/agentHistory.ts` (the undo snapshots) | `get_generation_settings` with `includePrompts` (`earlier`) |
 | Every tool: its name, what it is for and how to use it (formats, rules of the area), its arguments | `agent/tools.rs` (`TOOLS`: description and JSON schema) | `tools/list` (MCP), or the `tools` of a chat-completions request (`toolloop::tool_specs`) |
 | What a tool does in the app | a handler in `HANDLERS` of `state/agentTools.ts`, using the feature's own applier | `tools/call`, relayed to the window |
 | The data of an editor (comic, text, workflow, video, music, voice, canvas poses) | an editor registered with `registerAgentEditor` (`features/*/register.ts`, `state/agentRegistry.ts`) | `get_*` / `edit_*` / `set_*` tools |

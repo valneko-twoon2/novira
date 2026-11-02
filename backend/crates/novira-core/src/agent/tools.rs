@@ -187,13 +187,13 @@ pub static TOOLS: &[ToolDef] = &[
     },
     ToolDef {
         name: "get_generation_settings",
-        description: "The Generate tab's settings: model, LoRAs, steps, CFG, size, scheduler, seed. With includePrompts true it also returns the prompt boxes; reading them needs the user's permission (they may decline: then go on without them and do not ask again).",
+        description: "The Generate tab's settings: model, LoRAs, steps, CFG, size, scheduler, seed. With includePrompts true it also returns the prompt boxes, and earlier: the settings and prompts as they were before each earlier request of this chat that changed them, oldest first, each with the user's request (undone when the user undid it); use earlier to put back what the user says was fine before. Reading them needs the user's permission (they may decline: then go on without them and do not ask again).",
         read_only: true,
         schema: || json!({"type": "object", "properties": {"includePrompts": {"type": "boolean"}}, "additionalProperties": false}),
     },
     ToolDef {
         name: "set_generation_settings",
-        description: "Sets the Generate tab's prompt boxes and parameters; every field is optional. Prompts are written in English tags or sentences suitable for the chosen model, whatever language the user writes in. The scheduler is used by SD 1.x and SDXL models only: the newer families (Anima, Flux, Qwen-Image and the others) always run their own sampler, so leave it for them. Anima models break up below about 80% of their recommended steps (30 by default), so keep them at 24 or more.",
+        description: "Sets the Generate tab's prompt boxes and parameters; every field is optional. positivePrompt and negativePrompt replace the whole box: send the full text, with every word you do not mean to change kept as it is. Prompts are written in English tags or sentences suitable for the chosen model, whatever language the user writes in. The scheduler is used by SD 1.x and SDXL models only: the newer families (Anima, Flux, Qwen-Image and the others) always run their own sampler, so leave it for them. Anima models break up below about 80% of their recommended steps (30 by default), so keep them at 24 or more.",
         read_only: false,
         schema: || json!({"type": "object", "minProperties": 1, "properties": {
             "positivePrompt": {"type": "string", "maxLength": 8000},

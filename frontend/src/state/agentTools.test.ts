@@ -255,6 +255,24 @@ describe('the Generate tab', () => {
     expect(asked).toEqual(['get_generation_settings']);
   });
 
+  it('gives the settings before earlier requests only with the prompts, which ask first', async () => {
+    run = createToolRun(async (tool) => {
+      asked.push(tool);
+      return 'once';
+    }, [{ request: 'short hair', undone: true, settings: { positivePrompt: 'long hair', negativePrompt: 'blurry', modelKey: 'm1', loras: [{ id: 'x', key: 'l1', weight: 0.5, isEnabled: true } as never], steps: 30 } }]);
+    const plain = await call('get_generation_settings', {});
+    expect(plain.content).not.toHaveProperty('earlier');
+    expect(asked).toEqual([]);
+    expect(await call('get_generation_settings', { includePrompts: true })).toMatchObject({
+      ok: true,
+      content: { earlier: [{ request: 'short hair', undone: true, settings: { positivePrompt: 'long hair', negativePrompt: 'blurry', modelKey: 'm1', loras: [{ key: 'l1', weight: 0.5 }], steps: 30 } }] },
+    });
+    expect(asked).toEqual(['get_generation_settings']);
+    // Without earlier requests there is no list.
+    run = createToolRun(async () => 'once');
+    expect((await call('get_generation_settings', { includePrompts: true })).content).not.toHaveProperty('earlier');
+  });
+
   it('queues what the screen would, and reports why nothing was queued', async () => {
     enqueue.mockResolvedValueOnce({ items: [{ id: 7 }, { id: 8 }] }).mockResolvedValueOnce({ problems: ['No model'] });
     expect(await call('generate', { target: 'screen' })).toEqual({ ok: true, content: { queued: [7, 8] } });

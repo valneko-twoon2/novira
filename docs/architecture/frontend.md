@@ -37,7 +37,7 @@ Beyond the plain stores (`ui`, `settings`, `params`, `gallery`, `queue`, `models
 |---|---|
 | `invoke.ts` | The registry "build a request for this screen" |
 | `generationParts.ts` | The txt2img request parts shared by the Generate tab and the comic |
-| `agent*.ts` | The assistant: requests and permission question, its chat sessions, its tools as the window runs them (`agentTools.ts`, `agentRegistry.ts`), what it is told about each screen (`agentGuide.ts`) |
+| `agent*.ts` | The assistant: requests and permission question, its chat sessions and what it is told of their earlier turns (`agentHistory.ts`), its tools as the window runs them (`agentTools.ts`, `agentRegistry.ts`), what it is told about each screen (`agentGuide.ts`) |
 | `comfy/` | ComfyUI seen from the frontend: node definitions, pack installs and suggestions, the Registry list, and `graphJob.ts` / `runGraph.ts` to queue an app-written prompt and wait for its result |
 | `comic/` | Comic projects: document, store, layout, balloons, requests, persistence; a page's layers are Canvas layers in `page.canvas`, edited through one Canvas store per page (`pageCanvas.ts`, `paintMode.ts`) |
 | `pose/`, `poseSkeleton.ts` | The OpenPose skeleton math and presets, shared by the canvas and the comic |

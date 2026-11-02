@@ -206,6 +206,32 @@ describe('tool calls of a request', () => {
     expect(useAgent.getState().working).toEqual([]);
   });
 
+  it('tells the model what each answer changed, which one the user undid, and the settings before each request', async () => {
+    useSettings.getState().set({ assistantReadAccess: 'always' });
+    setsPrompt('2girls, bob cut');
+    await useAgent.getState().send('make the hair short');
+    setsPrompt('2girls, bob cut, black hair');
+    await useAgent.getState().send('black hair');
+    useAgent.getState().undo(currentMessages(useAgent.getState()).at(-1)!.id);
+    let read: unknown;
+    replyWith('put back', async (call) => {
+      read = (await call('get_generation_settings', { includePrompts: true })).content;
+    });
+    await useAgent.getState().send('the left girl was fine as she was');
+    const history = requests.at(-1)!.history!;
+    expect(history[1]).toEqual({ role: 'assistant', text: 'set 2girls, bob cut\n[This answer rewrote the prompt boxes of the Generate tab.]' });
+    expect(history[3]!.text).toContain('[The user undid these changes with the undo button');
+    expect(history[2]).toEqual({ role: 'user', text: 'black hair' });
+    // The first version is how the user had it; the undone request is marked.
+    expect(read).toMatchObject({
+      positivePrompt: '2girls, bob cut',
+      earlier: [
+        { request: 'make the hair short', settings: { positivePrompt: 'original' } },
+        { request: 'black hair', undone: true, settings: { positivePrompt: '2girls, bob cut' } },
+      ],
+    });
+  });
+
   it('undoes a reply in any session', async () => {
     setsPrompt('from chat one');
     await useAgent.getState().send('one');

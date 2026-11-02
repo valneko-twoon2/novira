@@ -18,6 +18,7 @@ One page per feature, each the current specification of that feature: how it beh
 | [browse.md](browse.md) | The Browse tab: searching Civitai and Hugging Face, adult-content filtering, opening their pages |
 | [extensions.md](extensions.md) | ComfyUI custom node packs, the ComfyUI Registry, installing ComfyUI and switching its version |
 | [assistant.md](assistant.md) | The AI assistant: providers, tools, the tool server, what it may read |
+| [assistant-history.md](assistant-history.md) | What the assistant is told about the earlier chat: notes of what each answer changed or the user undid, and the Generate settings before each request |
 | [assistant-models.md](assistant-models.md) | The model and thinking effort the assistant's command-line tool runs on: Claude's full names, Codex's list, the default the picker always names |
 | [assistant-pictures.md](assistant-pictures.md) | The pictures the assistant sees: attachments the user makes, and a drawn comic page on the comic screen after the user allows it |
 | [assistant-web-lookup.md](assistant-web-lookup.md) | The assistant's fact look-up on Wikipedia: the fixed hosts, the request, the limits, its own permission setting |
