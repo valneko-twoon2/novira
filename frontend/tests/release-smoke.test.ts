@@ -2,7 +2,7 @@
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { checkFixtureBootstrap, fixtureVersions, missingFiles, parseArgs, portIsExcluded, regValue, tailOf, usesPolicyKey } from '../../scripts/tools/release-smoke.mjs';
+import { checkFixtureBootstrap, fixtureVersions, launchScript, missingFiles, onRunner, parseArgs, portIsExcluded, tailOf } from '../../scripts/tools/release-smoke.mjs';
 
 const whole = {
   boards: [{ name: 'Scenery' }, { name: 'Portraits' }],
@@ -47,22 +47,27 @@ describe('release-smoke', () => {
     expect(portIsExcluded('no ranges here', 9334)).toBe(false);
   });
 
-  it('sets the policy key only on a GitHub runner, never on a person\'s machine', () => {
-    expect(usesPolicyKey({ GITHUB_ACTIONS: 'true' })).toBe(true);
-    expect(usesPolicyKey({})).toBe(false);
-    expect(usesPolicyKey({ GITHUB_ACTIONS: 'false' })).toBe(false);
-    expect(usesPolicyKey({ CI: 'true' })).toBe(false);
+  it('lowers the app\'s rights only on a GitHub runner, never on a person\'s machine', () => {
+    expect(onRunner({ GITHUB_ACTIONS: 'true' })).toBe(true);
+    expect(onRunner({})).toBe(false);
+    expect(onRunner({ GITHUB_ACTIONS: 'false' })).toBe(false);
+    expect(onRunner({ CI: 'true' })).toBe(false);
   });
 
-  it('reads a REG_SZ value from what reg query printed', () => {
-    const key = 'HKEY_CURRENT_USER\\Software\\Policies\\Microsoft\\Edge\\WebView2\\AdditionalBrowserArguments';
-    const out = ['', key, '    novira.exe    REG_SZ    --remote-debugging-port=9334 --lang=en', '', ''].join('\r\n');
-    expect(regValue(out, 'novira.exe')).toBe('--remote-debugging-port=9334 --lang=en');
-    expect(regValue(out, 'NOVIRA.EXE')).toBe('--remote-debugging-port=9334 --lang=en');
-    expect(regValue(out, 'other.exe')).toBeNull();
-    expect(regValue(`${key}\r\n    novira.exe    REG_SZ    \r\n`, 'novira.exe')).toBe('');
-    expect(regValue('ERROR: The system was unable to find the specified registry key or value.', 'novira.exe')).toBeNull();
-    expect(regValue(undefined, 'novira.exe')).toBeNull();
+  it('writes a .cmd that sets the variables, records the token and starts the app, and refuses .cmd syntax in a value', () => {
+    const script = launchScript('D:\\a\\artifacts\\novira.exe', { NOVIRA_DATA_DIR: 'D:\\w\\app data', WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: '--remote-debugging-port=9334' }, 'D:\\w\\out.txt', 'D:\\w\\groups.txt');
+    expect(script.split('\r\n')).toEqual([
+      '@echo off',
+      'set "NOVIRA_DATA_DIR=D:\\w\\app data"',
+      'set "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9334"',
+      'whoami /groups > "D:\\w\\groups.txt" 2>&1',
+      '"D:\\a\\artifacts\\novira.exe" > "D:\\w\\out.txt" 2>&1',
+      '',
+    ]);
+    for (const bad of ['a"b', '%PATH%', 'a&b', 'a|b', 'a>b', 'a^b', 'a!b', 'a\nb']) {
+      expect(() => launchScript('x.exe', { V: bad }, 'o', 'g')).toThrow(/refusing/);
+    }
+    expect(() => launchScript('x&y.exe', {}, 'o', 'g')).toThrow(/refusing/);
   });
 
   it('finds the committed old-data fixtures by version', () => {

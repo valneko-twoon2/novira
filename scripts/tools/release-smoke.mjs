@@ -8,7 +8,7 @@
 //      and its window reaches the Generate tab.
 // Nothing starts ComfyUI or uses the GPU. Every data folder and the WebView2 profile are made inside
 // novira-data/work/release-smoke/ and deleted at the end; only the processes this script started are stopped. On a GitHub
-// runner only, the debugging port is also set in WebView2's policy key for novira.exe, and put back after the app stops.
+// runner only, novira.exe is started through runas with the administrators' rights taken off (see startLowered).
 // Usage, from the repository root:  node scripts/tools/release-smoke.mjs [--artifacts <folder>]   (default: artifacts\)
 import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -23,12 +23,7 @@ import { engineOff } from './verify-real-app.mjs';
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const WORK = harnessRoots(REPO).work;
 const FIXTURES = path.join(REPO, 'backend', 'crates', 'novira-core', 'tests', 'fixtures');
-const CDP_PORT = 9334; // not verify-real-app's 9333, so a verification run going on is never driven by mistake
-// WebView2 reads browser flags for an exe from this policy key too. On the GitHub runner it dropped the
-// WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS of the app (the browser process had no --remote-debugging-port, 2026-11-02),
-// while the same build on a desktop took it.
-const POLICY_KEY = 'HKCU\\Software\\Policies\\Microsoft\\Edge\\WebView2\\AdditionalBrowserArguments';
-const { chromium } = createRequire(path.join(REPO, 'frontend', 'package.json'))('@playwright/test');
+const CDP_PORT = 9334; // not verify-real-app's 9333, so a verification run going on is never driven by mistakeconst { chromium } = createRequire(path.join(REPO, 'frontend', 'package.json'))('@playwright/test');
 
 const log = (m) => console.log(`[release-smoke] ${m}`);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -120,28 +115,73 @@ function run(command, args) {
 }
 
 /**
- * Whether the debugging port also goes through the policy key: only on a GitHub runner, which is thrown away after the
- * job. Never on a person's machine, where the value would open the port of their own novira.exe as well.
+ * Whether the app is started with its rights lowered: only on a GitHub runner, where the job runs as an administrator.
+ * On a person's machine the app starts as it always does.
  */
-export function usesPolicyKey(env = process.env) {
+export function onRunner(env = process.env) {
   return env.GITHUB_ACTIONS === 'true';
 }
 
-/** The data of the REG_SZ value `name` in what `reg query` printed, or null when it is not there. */
-export function regValue(text, name) {
-  for (const line of String(text ?? '').split(/\r?\n/)) {
-    const m = /^\s*(.+?)\s+REG_SZ\s+(.*?)\s*$/.exec(line);
-    if (m && m[1].toLowerCase() === name.toLowerCase()) return m[2];
-  }
-  return null;
+/**
+ * The .cmd that starts `exe` with `vars`, its output into `outFile`, after writing the groups of its token into
+ * `groupsFile` (they show whether the lowering took). A value a .cmd would read as syntax is refused.
+ */
+export function launchScript(exe, vars, outFile, groupsFile) {
+  const unsafe = /["%^&|<>!\r\n]/;
+  for (const value of [exe, outFile, groupsFile, ...Object.values(vars)]) if (unsafe.test(value)) throw new Error(`refusing to write ${value} into a .cmd`);
+  const lines = ['@echo off', ...Object.entries(vars).map(([name, value]) => `set "${name}=${value}"`), `whoami /groups > "${groupsFile}" 2>&1`, `"${exe}" > "${outFile}" 2>&1`];
+  return `${lines.join('\r\n')}\r\n`;
 }
 
-/** Sets the policy value of novira.exe to open the debugging port; returns what puts the value back as it was. */
-function openPortByPolicy() {
-  const before = regValue(run('reg', ['query', POLICY_KEY, '/v', 'novira.exe']), 'novira.exe');
-  const set = (data) => run('reg', ['add', POLICY_KEY, '/v', 'novira.exe', '/t', 'REG_SZ', '/d', data, '/f']);
-  log(`policy key: ${set(`--remote-debugging-port=${CDP_PORT}`).trim()}`);
-  return () => (before === null ? run('reg', ['delete', POLICY_KEY, '/v', 'novira.exe', '/f']) : set(before));
+function readText(file) {
+  try {
+    return fs.readFileSync(file, 'utf8');
+  } catch {
+    return '';
+  }
+}
+
+function alive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (e) {
+    return e.code === 'EPERM';
+  }
+}
+
+/** Starts the app as a child of this script; `exited` is null while it runs. */
+function startDirect(exe, vars) {
+  const app = spawn(exe, [], { env: { ...process.env, ...vars }, stdio: ['ignore', 'pipe', 'pipe'] });
+  let text = '';
+  for (const stream of [app.stdout, app.stderr]) stream.on('data', (chunk) => (text = (text + chunk).slice(-8000)));
+  return { pid: () => app.pid, exited: () => (app.exitCode === null ? null : `exit ${app.exitCode}`), output: () => text, groups: () => '' };
+}
+
+/**
+ * Starts the app through `runas /trustlevel:0x20000` (a token without the administrators' rights): WebView2 opened no
+ * debugging port for the elevated app on the runner, from the environment or from its policy key (2026-11-02), while
+ * the same build took the port on a desktop. runas keeps nothing of this script, so a .cmd sets the variables.
+ */
+async function startLowered(exe, vars, dir) {
+  const script = path.join(dir, 'launch.cmd');
+  const outFile = path.join(dir, 'output.txt');
+  const groupsFile = path.join(dir, 'groups.txt');
+  fs.writeFileSync(script, launchScript(exe, vars, outFile, groupsFile));
+  const said = run('runas', ['/trustlevel:0x20000', script]).trim();
+  if (said) log(`runas: ${said}`);
+  let pid;
+  for (const until = Date.now() + 15_000; !pid && Date.now() < until; ) {
+    const r = spawnSync('powershell', ['-NoProfile', '-NonInteractive', '-Command', 'Get-Process novira -ErrorAction SilentlyContinue | Where-Object Path -eq $env:SMOKE_EXE | Select-Object -First 1 -ExpandProperty Id'], {
+      encoding: 'utf8',
+      windowsHide: true,
+      env: { ...process.env, SMOKE_EXE: exe },
+    });
+    pid = Number(r.stdout?.trim()) || undefined;
+    if (!pid) await sleep(500);
+  }
+  const groups = () => readText(groupsFile).split(/\r?\n/).filter((l) => /Mandatory Label|BUILTIN\\Administrators/.test(l)).join('\n');
+  return { pid: () => pid, exited: () => (pid && alive(pid) ? null : pid ? 'exited' : 'never started'), output: () => readText(outFile).slice(-8000), groups };
 }
 
 /** What the machine says about the debugging port and the programs that should be using it. */
@@ -159,10 +199,8 @@ function machineFacts() {
   ]);
   const interactive = run('powershell', ['-NoProfile', '-NonInteractive', '-Command', '[Environment]::UserInteractive']).trim();
   const elevated = run('powershell', ['-NoProfile', '-NonInteractive', '-Command', '([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)']).trim();
-  const policies = ['HKLM', 'HKCU'].map((hive) => `${hive}: ${tailOf(run('reg', ['query', `${hive}\\Software\\Policies\\Microsoft\\Edge`, '/s']), 12, 1200) || 'none'}`);
   return [
-    `elevated: ${elevated || 'unknown'}`,
-    `Edge policies:\n${policies.join('\n')}`,
+    `this script is elevated: ${elevated || 'unknown'}`,
     `port ${CDP_PORT} in Windows' excluded ranges: ${portIsExcluded(run('netsh', ['int', 'ipv4', 'show', 'excludedportrange', 'protocol=tcp']), CDP_PORT) ? 'YES' : 'no'}`,
     `port ${CDP_PORT} in netstat: ${listening.length ? tailOf(listening.join('\n'), 4) : 'not listening'}`,
     `session is interactive: ${interactive || 'unknown'}`,
@@ -171,8 +209,9 @@ function machineFacts() {
 }
 
 /** What to read when the app's window did not come up: the runtime, the machine, the app's own output and log, and the profile folder. */
-function appDiagnostics(app, output, data, webview) {
-  const parts = [`WebView2 runtime: ${webview2Runtime()}`, `app: ${app.exitCode === null ? 'still running' : `exited ${app.exitCode}`}`, ...machineFacts()];
+function appDiagnostics(app, data, webview) {
+  const parts = [`WebView2 runtime: ${webview2Runtime()}`, `app: ${app.exited() ?? 'still running'}`, ...machineFacts()];
+  if (app.groups()) parts.push(`the app's token:\n${app.groups()}`);
   let profile = [];
   try {
     profile = fs.readdirSync(webview);
@@ -186,7 +225,7 @@ function appDiagnostics(app, output, data, webview) {
   } catch {
     parts.push('EBWebView: none');
   }
-  const out = tailOf(output.text);
+  const out = tailOf(app.output());
   if (out) parts.push(`app output:\n${out}`);
   try {
     const log = tailOf(fs.readFileSync(path.join(data, 'logs', 'novira.log'), 'utf8'));
@@ -256,16 +295,14 @@ async function appOnEmptyData(artifacts, root) {
   const data = freshFolder(root, 'app-data');
   const webview = freshFolder(root, 'app-webview');
   fs.writeFileSync(path.join(data, 'settings.json'), JSON.stringify(engineOff({}, 'http://127.0.0.1:9'), null, 2) + '\n');
-  const env = { ...process.env, NOVIRA_DATA_DIR: data, WEBVIEW2_USER_DATA_FOLDER: webview, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${CDP_PORT}` };
-  const restorePolicy = usesPolicyKey() ? openPortByPolicy() : () => undefined;
-  const app = spawn(path.join(artifacts, 'novira.exe'), [], { env, stdio: ['ignore', 'pipe', 'pipe'] });
-  const output = { text: '' };
-  for (const stream of [app.stdout, app.stderr]) stream.on('data', (chunk) => (output.text = (output.text + chunk).slice(-8000)));
+  const vars = { NOVIRA_DATA_DIR: data, WEBVIEW2_USER_DATA_FOLDER: webview, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${CDP_PORT}` };
+  const exe = path.join(artifacts, 'novira.exe');
+  const app = onRunner() ? await startLowered(exe, vars, freshFolder(root, 'app-launch')) : startDirect(exe, vars);
   let browser;
   try {
     const until = Date.now() + 60_000;
     while (!browser) {
-      if (app.exitCode !== null) throw new Error(`the app exited at start (exit ${app.exitCode})`);
+      if (app.exited()) throw new Error(`the app exited at start (${app.exited()})`);
       if (Date.now() > until) throw new Error('the app opened no window within 60 s');
       browser = await chromium.connectOverCDP(`http://127.0.0.1:${CDP_PORT}`).catch(() => undefined);
       if (!browser) await sleep(1000);
@@ -280,11 +317,10 @@ async function appOnEmptyData(artifacts, root) {
     page.on('pageerror', (e) => errors.push(e.message));
     await reachGenerate(page, errors);
   } catch (e) {
-    throw new Error(`${e.message}\n  ${appDiagnostics(app, output, data, webview)}`);
+    throw new Error(`${e.message}\n  ${appDiagnostics(app, data, webview)}`);
   } finally {
     await browser?.close().catch(() => undefined);
-    stopTrees([app.pid]);
-    restorePolicy();
+    if (app.pid()) stopTrees([app.pid()]);
   }
 }
 
