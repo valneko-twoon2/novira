@@ -38,9 +38,67 @@ export function fitHistory(turns: readonly AgentTurn[], budget = CONTEXT_TOKENS)
   return { turns: kept, tokens, dropped: turns.length - kept.length };
 }
 
-/** What the next message of a session would carry along of the earlier conversation (the same cut `send` makes). */
-export function contextUsage(messages: readonly AgentMessage[]) {
-  return fitHistory(messages.filter((m) => !m.error).map(historyTurn));
+/** The most tokens (estimated) the shortened older part of the conversation takes in a request. */
+export const DIGEST_TOKENS = 2_500;
+/** The most characters of an older message that its line in the shortened part keeps. */
+export const DIGEST_LINE_CHARS = 140;
+
+const turnCost = (turn: AgentTurn): number => roughTokens(turn.text) + 4;
+
+/** One line of an older message: its words on a single line, cut to `DIGEST_LINE_CHARS`. */
+function digestLine(turn: AgentTurn): string {
+  const flat = turn.text.replace(/\s+/g, ' ').trim();
+  const chars = [...flat];
+  const text = chars.length > DIGEST_LINE_CHARS ? `${chars.slice(0, DIGEST_LINE_CHARS).join('')}…` : flat;
+  return `${turn.role === 'user' ? 'You' : 'Assistant'}: ${text}`;
+}
+
+/** The older turns as one turn of a line each, the newest of them first in line for the room `DIGEST_TOKENS` leaves. */
+function digestOf(older: readonly AgentTurn[]): { turn: AgentTurn; omitted: number } {
+  const lines: string[] = [];
+  let tokens = 0;
+  for (let i = older.length - 1; i >= 0; i--) {
+    const line = digestLine(older[i]!);
+    const cost = roughTokens(line) + 1;
+    if (lines.length && tokens + cost > DIGEST_TOKENS) break;
+    lines.unshift(line);
+    tokens += cost;
+  }
+  const omitted = older.length - lines.length;
+  const head = `[The earlier part of this chat, shortened to a line per message${omitted ? `; ${omitted} still older messages are left out` : ''}:`;
+  return { turn: { role: 'user', text: `${head}\n${lines.join('\n')}]` }, omitted };
+}
+
+export interface HistoryFit {
+  turns: AgentTurn[];
+  tokens: number;
+  /** Older messages that are not sent whole any more. */
+  dropped: number;
+  /** Of those, the ones left out of the shortened part too. */
+  omitted: number;
+}
+
+/**
+ * The conversation within `budget`: the newest turns whole, and the older ones shortened to a line each in a turn of
+ * their own at the start (the token limit's brake), instead of being left out.
+ */
+export function compressHistory(turns: readonly AgentTurn[], budget = CONTEXT_TOKENS): HistoryFit {
+  // A chat that fits whole is sent whole; only when it does not, the older part gives room to the shortened one.
+  const whole = fitHistory(turns, budget);
+  if (!whole.dropped) return { ...whole, omitted: 0 };
+  const recent = fitHistory(turns, Math.max(0, budget - DIGEST_TOKENS));
+  const { turn, omitted } = digestOf(turns.slice(0, recent.dropped));
+  return { turns: [turn, ...recent.turns], tokens: recent.tokens + turnCost(turn), dropped: recent.dropped, omitted };
+}
+
+/**
+ * What the next message of a session would carry along of the earlier conversation (the same cut `send` makes): shortened
+ * to fit the budget while the token limit is on, whole while it is off.
+ */
+export function contextUsage(messages: readonly AgentMessage[], limit = true): HistoryFit {
+  const turns = messages.filter((m) => !m.error).map(historyTurn);
+  if (limit) return compressHistory(turns);
+  return { turns, tokens: turns.reduce((sum, turn) => sum + turnCost(turn), 0), dropped: 0, omitted: 0 };
 }
 
 /** What one logged tool call did, in a few English words. */

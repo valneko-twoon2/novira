@@ -177,7 +177,7 @@ Ask "make it like this picture" or "try a few and bring it closer" and the agent
 Within one chat the agent answers with the earlier exchange in mind. The names of the pictures you attached and the ones it showed are carried over too, and it looks at them again when it needs to.
 
 - Above the message box, the size of the conversation that goes with your next message is shown as "about N of N tokens". The number is an estimate.
-- When the conversation grows past the limit, the oldest messages stop being sent and "N older messages are no longer sent" appears. The agent knows nothing of the messages that are not sent.
+- While the "{{ui:agent.context.limit}}" switch on the same line is on (it is on at first), a conversation that is about to pass 30000 tokens has its older messages sent as a short summary of one line each. The newer messages are sent as they are, and the line says how many were summarized. The summary keeps only the first 140 characters or so, so exact wording is not kept. If the assistant forgets an earlier part you need, switch it off to send the whole conversation (a long one can pass the limit of the model you use).
 - To change the subject, start a new chat with {{ui:agent.session.new}} so the old conversation does not weigh on it.
 
 ### Chat history

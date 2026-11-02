@@ -155,7 +155,9 @@
   "agent.attach.open": "画像を大きく表示",
   "agent.queued.remove": "順番待ちから外す",
   "agent.context.usage": "次の送信に付く会話: 約 {used} / {max} トークン",
-  "agent.context.dropped.one": "古い {count} 件は送られません",
-  "agent.context.dropped.other": "古い {count} 件は送られません",
-  "agent.refine.step": "近づける作業: {n} / {of} 枚目"
+  "agent.refine.step": "近づける作業: {n} / {of} 枚目",
+  "agent.context.limit": "トークン制限",
+  "agent.context.usageOff": "次の送信に付く会話: 約 {used} トークン（制限なし）",
+  "agent.context.compressed.one": "古い {count} 件は短くまとめて送られます",
+  "agent.context.compressed.other": "古い {count} 件は短くまとめて送られます"
 }

@@ -282,3 +282,22 @@ test('a refinement goes on by itself, one picture a round, until the assistant f
   await expect(win.getByTestId('agent-msg-user')).toHaveCount(1);
   for (let i = 0; i < 3; i++) await expect(replies.nth(i).getByTestId('agent-msg-pictures').locator('img')).toHaveCount(1);
 });
+
+test('the token limit switch is in the chat, on at first, and stays as it was left after a reload', async ({ page }) => {
+  await openApp(page, '?scenario=empty');
+  await openAssistant(page);
+  const win = page.getByTestId('agent-window');
+  const limit = win.getByRole('switch', { name: msg('agent.context.limit') });
+  await expect(limit).toHaveAttribute('aria-checked', 'true');
+  await ask(page, 'hello', 1);
+  await expect(win.getByTestId('agent-context')).toContainText(msg('agent.context.limit'));
+  await limit.click();
+  await expect(limit).toHaveAttribute('aria-checked', 'false');
+  // The estimate now reads without a limit.
+  const [head, tail] = msg('agent.context.usageOff', { used: '@@' }).split('@@') as [string, string];
+  const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  await expect(win.getByTestId('agent-context')).toContainText(new RegExp(`${escape(head)}[\\d.]+k?${escape(tail)}`));
+  await page.reload();
+  await openAssistant(page);
+  await expect(win.getByRole('switch', { name: msg('agent.context.limit') })).toHaveAttribute('aria-checked', 'false');
+});

@@ -1,7 +1,7 @@
 // What the assistant is told about the earlier part of a chat: the note under each answer of what it changed, and the
 // settings before each earlier request.
 import { describe, expect, it } from 'vitest';
-import { contextUsage, EARLIER_MAX, earlierSettings, fitHistory, historyTurn, REQUEST_CHARS, roughTokens } from './agentHistory';
+import { compressHistory, contextUsage, DIGEST_LINE_CHARS, DIGEST_TOKENS, EARLIER_MAX, earlierSettings, fitHistory, historyTurn, REQUEST_CHARS, roughTokens } from './agentHistory';
 import { TOOL_LOG_KINDS, type AgentMessage } from './agentSessions';
 
 const user = (id: number, text: string, extra: Partial<AgentMessage> = {}): AgentMessage => ({ id, role: 'user', text, tools: [], ...extra });
@@ -98,5 +98,61 @@ describe('fitHistory', () => {
     expect(turns[1]!.text).toContain('[This answer rewrote');
     expect(tokens).toBeGreaterThan(roughTokens('hi'));
     expect(dropped).toBe(0);
+  });
+});
+
+describe('the token limit', () => {
+  const turn = (text: string, role: 'user' | 'assistant' = 'user') => ({ role, text });
+
+  it('keeps a chat that fits whole, with nothing shortened', () => {
+    const turns = [turn('hi'), turn('hello', 'assistant')];
+    expect(compressHistory(turns, 1000)).toEqual({ turns, tokens: 2 * 4 + roughTokens('hi') + roughTokens('hello'), dropped: 0, omitted: 0 });
+    expect(compressHistory([], 1000)).toEqual({ turns: [], tokens: 0, dropped: 0, omitted: 0 });
+  });
+
+  it('shortens the older turns to a line each in one turn at the start, and keeps the newest whole', () => {
+    const budget = DIGEST_TOKENS + 400;
+    const turns = Array.from({ length: 12 }, (_, i) => turn(`message ${i}: ` + 'あ'.repeat(900), i % 2 ? 'assistant' : 'user'));
+    const fit = compressHistory(turns, budget);
+    expect(fit.dropped).toBeGreaterThan(0);
+    expect(fit.omitted).toBe(0);
+    const [digest, ...rest] = fit.turns;
+    expect(digest!.role).toBe('user');
+    expect(rest).toEqual(turns.slice(fit.dropped));
+    // A line per shortened message, oldest first, each cut to its first characters.
+    const lines = digest!.text.split('\n').slice(1);
+    expect(lines).toHaveLength(fit.dropped);
+    expect(lines[0]).toMatch(/^You: message 0: /);
+    expect(lines[1]).toMatch(/^Assistant: message 1: /);
+    for (const line of lines) expect([...line].length).toBeLessThanOrEqual('Assistant: '.length + DIGEST_LINE_CHARS + 2);
+    // Everything sent, the shortened part included, stays within the budget.
+    expect(fit.tokens).toBeLessThanOrEqual(budget);
+  });
+
+  it('leaves the oldest messages out of the shortened part too when even their lines do not fit', () => {
+    const turns = Array.from({ length: 600 }, (_, i) => turn(`m${i} ` + 'x'.repeat(200), i % 2 ? 'assistant' : 'user'));
+    const fit = compressHistory(turns, DIGEST_TOKENS + 1000);
+    expect(fit.omitted).toBeGreaterThan(0);
+    const [digest] = fit.turns;
+    expect(digest!.text).toContain(`${fit.omitted} still older messages are left out`);
+    expect(digest!.text.split('\n').length - 1).toBe(fit.dropped - fit.omitted);
+    expect(fit.tokens).toBeLessThanOrEqual(DIGEST_TOKENS + 1000);
+  });
+
+  it('sends the newest turn whole even when it alone is over the budget', () => {
+    const turns = [turn('old'), turn('x'.repeat(9000))];
+    const fit = compressHistory(turns, 10);
+    expect(fit.turns.at(-1)).toBe(turns[1]);
+    expect(fit.turns[0]!.text).toContain('You: old');
+  });
+
+  it('sends the whole chat when the limit is off, and counts it', () => {
+    const messages = Array.from({ length: 4 }, (_, i) => (i % 2 ? answer(i + 1, { text: 'あ'.repeat(40000) }) : user(i + 1, 'あ'.repeat(40000))));
+    const on = contextUsage(messages, true);
+    expect(on.dropped).toBe(2);
+    const off = contextUsage(messages, false);
+    expect(off).toMatchObject({ dropped: 0, omitted: 0 });
+    expect(off.turns).toHaveLength(4);
+    expect(off.tokens).toBeGreaterThan(30_000);
   });
 });

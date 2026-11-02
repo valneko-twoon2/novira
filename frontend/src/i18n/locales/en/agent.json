@@ -155,7 +155,9 @@
   "agent.attach.open": "Show the picture larger",
   "agent.queued.remove": "Take out of the line",
   "agent.context.usage": "Sent with the next message: about {used} of {max} tokens",
-  "agent.context.dropped.one": "{count} older message is no longer sent",
-  "agent.context.dropped.other": "{count} older messages are no longer sent",
-  "agent.refine.step": "Getting closer: picture {n} of {of}"
+  "agent.refine.step": "Getting closer: picture {n} of {of}",
+  "agent.context.limit": "Token limit",
+  "agent.context.usageOff": "Sent with the next message: about {used} tokens (no limit)",
+  "agent.context.compressed.one": "{count} older message is sent shortened",
+  "agent.context.compressed.other": "{count} older messages are sent shortened"
 }

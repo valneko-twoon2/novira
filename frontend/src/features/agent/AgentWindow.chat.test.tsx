@@ -119,7 +119,10 @@ describe('the context meter', () => {
     seed([]);
     show();
     await screen.findByTestId('agent-input');
-    expect(screen.queryByTestId('agent-context')).toBeNull();
+    // Nothing to measure yet, but the token limit switch is there.
+    const empty = screen.getByTestId('agent-context');
+    expect(empty.querySelector('.agent-context__usage')).toBeNull();
+    expect(within(empty).getByRole('switch', { name: t('agent.context.limit') })).toBeTruthy();
     cleanup();
     seed([message(1, 'user', 'hi'), message(2, 'assistant', 'hello')]);
     show();
@@ -130,7 +133,23 @@ describe('the context meter', () => {
     show();
     const meter = await screen.findByTestId('agent-context');
     expect(meter.getAttribute('data-full')).toBe('true');
-    expect(meter.textContent).toContain(tCount('agent.context.dropped', 2));
+    expect(meter.textContent).toContain(tCount('agent.context.compressed', 2));
+  });
+
+  it('has a token limit switch that is on at first, and without it sends the whole chat and says no older message is shortened', async () => {
+    const long = Array.from({ length: 4 }, (_, i) => message(i + 1, i % 2 ? 'assistant' : 'user', 'あ'.repeat(40000)));
+    seed(long);
+    show();
+    const meter = await screen.findByTestId('agent-context');
+    const limit = within(meter).getByRole('switch', { name: t('agent.context.limit') });
+    expect(limit.getAttribute('aria-checked')).toBe('true');
+    expect(meter.textContent).toContain(tCount('agent.context.compressed', 2));
+    fireEvent.click(limit);
+    expect(useAgent.getState().tokenLimit).toBe(false);
+    expect(limit.getAttribute('aria-checked')).toBe('false');
+    expect(meter.getAttribute('data-full')).toBeNull();
+    expect(meter.textContent).not.toContain(tCount('agent.context.compressed', 2));
+    expect(meter.textContent).toContain(t('agent.context.usageOff', { used: '53.4k' }));
   });
 });
 

@@ -123,6 +123,9 @@ interface AgentState {
   setSize: (size: { w: number; h: number }) => void;
   /** Height (px) of the message box, which the user drags from its top edge. */
   inputHeight: number;
+  /** The token limit: older messages are shortened to fit `CONTEXT_TOKENS` (agentHistory.ts); off sends the chat whole. */
+  tokenLimit: boolean;
+  setTokenLimit: (on: boolean) => void;
   setInputHeight: (height: number) => void;
   /** Stops the request in flight: its tool calls end, and the changes it made so far can still be undone. */
   cancel: () => void;
@@ -295,6 +298,8 @@ export const useAgent = create<AgentState>()(
         size: null,
         setSize: (size) => set({ size }),
         inputHeight: AGENT_INPUT_HEIGHT.default,
+        tokenLimit: true,
+        setTokenLimit: (on) => set({ tokenLimit: on }),
         setInputHeight: (height) => set({ inputHeight: clampInputHeight(height) }),
         cancel: () => {
           if (!get().busy) return;
@@ -340,7 +345,7 @@ export const useAgent = create<AgentState>()(
           const sessionId = session.id;
           // Only this session's earlier exchange goes with the request; failed replies are left out.
           // An answer carries a note of what it changed and whether it was undone (agentHistory.ts).
-          const history = contextUsage(session.messages).turns;
+          const history = contextUsage(session.messages, get().tokenLimit).turns;
           cancelled = false;
           let failed = false;
           let proceed = false;
@@ -433,16 +438,18 @@ export const useAgent = create<AgentState>()(
       name: 'novira.agent',
       version: 1,
       // Undo snapshots are large and refer to this run's state, so only what the chat shows is kept.
-      partialize: (s) => ({ sessions: persistedSessions(s.sessions), currentId: s.currentId, size: s.size, inputHeight: s.inputHeight, choice: s.choice }),
+      partialize: (s) => ({ sessions: persistedSessions(s.sessions), currentId: s.currentId, size: s.size, inputHeight: s.inputHeight, tokenLimit: s.tokenLimit, choice: s.choice }),
       merge: (persisted, current) => {
-        const p = (persisted ?? {}) as { sessions?: unknown; currentId?: unknown; size?: { w?: unknown; h?: unknown }; inputHeight?: unknown; choice?: Partial<Record<AgentProvider, unknown>> };
+        const p = (persisted ?? {}) as { sessions?: unknown; currentId?: unknown; size?: { w?: unknown; h?: unknown }; inputHeight?: unknown; tokenLimit?: unknown; choice?: Partial<Record<AgentProvider, unknown>> };
         const sessions = restoreSessions(p.sessions);
         nextId = Math.max(nextId, maxMessageId(sessions) + 1);
         const currentId = typeof p.currentId === 'string' && sessions.some((s) => s.id === p.currentId) ? p.currentId : null;
         const size = typeof p.size?.w === 'number' && typeof p.size.h === 'number' ? { w: p.size.w, h: p.size.h } : null;
         const choice = { claude: readChoice(p.choice?.claude), codex: readChoice(p.choice?.codex), openai: NO_CHOICE };
         const inputHeight = typeof p.inputHeight === 'number' ? clampInputHeight(p.inputHeight) : AGENT_INPUT_HEIGHT.default;
-        return { ...current, sessions, currentId, size, inputHeight, choice };
+        // On unless the user switched it off.
+        const tokenLimit = p.tokenLimit !== false;
+        return { ...current, sessions, currentId, size, inputHeight, tokenLimit, choice };
       },
     },
   ),

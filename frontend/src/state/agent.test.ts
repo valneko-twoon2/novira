@@ -84,6 +84,21 @@ describe('agent sessions', () => {
     ]);
   });
 
+  it('shortens the older chat to fit the token limit, and sends it whole once the limit is off', async () => {
+    replyWith('あ'.repeat(60000));
+    await useAgent.getState().send('first');
+    await useAgent.getState().send('second');
+    await useAgent.getState().send('third');
+    // 3 questions and 3 answers, the answers too long to send them all whole: the older part is one shortened turn.
+    const limited = requests.at(-1)!.history!;
+    expect(limited[0]!.text).toMatch(/^\[The earlier part of this chat, shortened/);
+    expect(limited.length).toBeLessThan(5);
+    useAgent.getState().setTokenLimit(false);
+    await useAgent.getState().send('fourth');
+    expect(requests.at(-1)!.history).toHaveLength(6);
+    expect(requests.at(-1)!.history![0]).toEqual({ role: 'user', text: 'first' });
+  });
+
   it('switches only to a session that exists, renames and deletes sessions', async () => {
     replyWith('ok');
     await useAgent.getState().send('keep');
@@ -440,7 +455,7 @@ describe('agent session persistence', () => {
     await useAgent.getState().send('remember me');
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)!) as { version: number; state: Record<string, unknown> };
     expect(saved.version).toBe(1);
-    expect(Object.keys(saved.state).sort()).toEqual(['choice', 'currentId', 'inputHeight', 'sessions', 'size']);
+    expect(Object.keys(saved.state).sort()).toEqual(['choice', 'currentId', 'inputHeight', 'sessions', 'size', 'tokenLimit']);
     const { sessions, currentId } = saved.state as { sessions: { id: string; messages: Record<string, unknown>[] }[]; currentId: string };
     expect(currentId).toBe(sessions[0]!.id);
     expect(sessions[0]!.messages.map((m) => m.text)).toEqual(['remember me', 'set saved']);
@@ -448,6 +463,14 @@ describe('agent session persistence', () => {
     expect(sessions[0]!.messages[1]!.tools).toEqual([{ kind: 'prompt' }]);
     // The in-memory message still has its snapshot for undo.
     expect(currentMessages(useAgent.getState()).at(-1)!.snapshot).toBeDefined();
+  });
+
+  it('keeps the token limit switch, on unless it was switched off', async () => {
+    for (const [kept, read] of [[false, false], [true, true], [undefined, true], ['no', true]] as const) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, state: { sessions: [], currentId: null, tokenLimit: kept } }));
+      await useAgent.persist.rehydrate();
+      expect(useAgent.getState().tokenLimit, String(kept)).toBe(read);
+    }
   });
 
   it('reads back the height of the message box within its limits, and the default when none was kept', async () => {
