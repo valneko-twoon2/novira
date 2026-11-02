@@ -105,6 +105,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # The build script of the app crate (`novira`) builds the frontend into frontend/dist.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install the frontend packages
+        working-directory: frontend
+        run: npm ci
+
       - name: Cache cargo
         uses: actions/cache@v4
         with:
@@ -115,16 +126,26 @@ jobs:
           key: cargo-clippy-${{ runner.os }}-${{ hashFiles('backend/Cargo.lock', 'backend/rust-toolchain.toml') }}
           restore-keys: cargo-clippy-${{ runner.os }}-
 
-      - name: cargo clippy novira-core
+      - name: cargo clippy
         working-directory: backend
         shell: cmd
-        run: cargo clippy -p novira-core --tests -- -D warnings
+        run: cargo clippy -p novira-core -p novira-server -p novira --tests -- -D warnings
 
   cargo-test:
     runs-on: windows-latest
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install the frontend packages
+        working-directory: frontend
+        run: npm ci
 
       - name: Cache cargo
         uses: actions/cache@v4
@@ -136,13 +157,20 @@ jobs:
           key: cargo-test-${{ runner.os }}-${{ hashFiles('backend/Cargo.lock', 'backend/rust-toolchain.toml') }}
           restore-keys: cargo-test-${{ runner.os }}-
 
+      # --no-fail-fast: every test binary runs, so one run shows every failing test.
       - name: cargo test novira-core
         working-directory: backend
         shell: cmd
-        run: cargo test -p novira-core
+        run: cargo test -p novira-core --no-fail-fast
+
+      - name: cargo test novira-server
+        if: ${{ !cancelled() }}
+        working-directory: backend
+        shell: cmd
+        run: cargo test -p novira-server --no-fail-fast
 
       - name: cargo test novira
         if: ${{ !cancelled() }}
         working-directory: backend
         shell: cmd
-        run: cargo test -p novira
+        run: cargo test -p novira --no-fail-fast
