@@ -28,6 +28,7 @@ import { runCommand } from './e2e-lock.mjs';
 import { harnessRoots } from './harness-paths.mjs';
 import { isSweepTrigger } from './models-sweep-lib.mjs';
 import { isLayoutSource } from './layout-scan.mjs';
+import { pruneTarget } from './prune-target.mjs';
 import { referencesIn, testIdDefined, testIdsIn } from './ui-refs.mjs';
 import { isScreenSource } from './visual-baselines.mjs';
 
@@ -285,6 +286,7 @@ function main(argv) {
     env.CARGO_TARGET_DIR = join(harnessRoots(ROOT).work, 'check-target');
     console.log(`affected: novira.exe is open, so the Rust checks build into ${env.CARGO_TARGET_DIR}`);
   }
+  if (checks.some((c) => c.side === 'backend')) pruneTarget({ target: env.CARGO_TARGET_DIR ?? join(ROOT, 'backend', 'target'), log: (m) => console.log(`affected: ${m}`) });
   const failed = [];
   for (const c of checks) {
     console.log(`\n=== ${c.cmd.join(' ')} ===`);

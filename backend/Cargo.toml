@@ -18,8 +18,8 @@ futures-util = { version = "0.3", default-features = false, features = ["std", "
 result_large_err = "allow"
 
 # Debug builds are run rarely, and the debug info was most of target/ (about 48 GB of .pdb files across the test
-# binaries). Off for the whole dev profile, dependencies included: no variable view in a debugger; panics still print
-# their messages. Use `cargo test --config profile.dev.debug=true` for one run that needs it.
+# binaries). Off for every profile, dependencies included, and the linker writes no .pdb either (.cargo/config.toml);
+# frontend/tests/rust-debuginfo.test.ts keeps it so. Panics still print their messages.
 [profile.dev]
 debug = false
 

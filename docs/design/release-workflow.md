@@ -31,7 +31,7 @@ GitHub builds the Windows release when a version tag is pushed, and leaves a dra
 
 ## Known limits
 
-- On the runner the job is elevated, and WebView2 gave the elevated app no `--remote-debugging-port`, neither from `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS` nor from its policy key (`WEBVIEW2_USER_DATA_FOLDER` was taken), so the smoke test could not reach the window. Nor did it with the administrators' group deny-only at High integrity (`runas /trustlevel:0x20000`). Elevation is the only difference found from a desktop, where the same build takes the port; no Microsoft page says so. Whether a Medium-integrity start opens the port there is to be seen in the next run.
+- On the runner the job is elevated, and WebView2 gave the elevated app no `--remote-debugging-port`, neither from `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS` nor from its policy key (`WEBVIEW2_USER_DATA_FOLDER` was taken), so the smoke test could not reach the window. Nor did it with the administrators' group deny-only at High integrity (`runas /trustlevel:0x20000`). A start at Medium integrity opens it (run 41378550015). Why WebView2 ignores the flag at High integrity is not documented by Microsoft.
 - Actions are pinned by major version, not by commit, so a moved tag of an `actions/*` action is trusted.
 - The build is not code-signed. The zip's SHA-256 is the only integrity mark.
 

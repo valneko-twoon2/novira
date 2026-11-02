@@ -5,6 +5,11 @@
 # took 51-60 s with link.exe and 30-34 s with rust-lld (measured 2026-10-13); every test of the workspace passes either way.
 [target.x86_64-pc-windows-msvc]
 linker = "rust-lld.exe"
+# No .pdb for any build. `debug = false` alone still left one per linked binary (about 70 MB for each test binary,
+# 19 GB in backend/target/debug on 2026-11-02): the linker writes it from the debug info the standard library ships
+# with, and neither `strip` nor `split-debuginfo` stops that; only the linker's /DEBUG:NONE does. Kept by
+# frontend/tests/rust-debuginfo.test.ts. RUSTFLAGS in the environment would replace this list, so nothing sets it.
+rustflags = ["-C", "link-arg=/DEBUG:NONE"]
 
 [env]
 # `trustmark` turns on ort's `download-binaries`, which fetches a ~300 MB static ONNX Runtime at build time. novira

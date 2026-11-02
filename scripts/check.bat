@@ -37,6 +37,8 @@ if /i not "%CHECK_PART%"=="backend" (
 )
 
 if /i not "%CHECK_PART%"=="frontend" (
+  rem Past its size limit, the dev builds of the target folder are cleaned first (at most once a day; never fails the checks).
+  if defined CARGO_TARGET_DIR (node scripts\tools\prune-target.mjs --target "!CARGO_TARGET_DIR!") else (node scripts\tools\prune-target.mjs)
   pushd backend
   call :step "cargo fmt --check" cargo fmt --all -- --check
   call :step "cargo clippy novira-core" cargo clippy -p novira-core --tests -- -D warnings
