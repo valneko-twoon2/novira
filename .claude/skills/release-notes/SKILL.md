@@ -30,7 +30,7 @@ Release progress:
    - 新機能: something the user can now do (a `fix:` that adds a choice or a screen goes here too). 修正: something that works better or no longer goes wrong. 既知の制限: known gaps.
    - Leave out what a user cannot see: `docs:`, tests, the harness, refactors, and every `feat:`/`fix:`/`chore:` on CI, the smoke test, the release workflow, hooks, skills or `scripts/tools/`.
    - A `test:` or `chore:` subject that says a defect was fixed (直す, 不具合) can hold a product fix: read it and keep the fix.
-   - Merge related commits into one bullet. A security fix says plainly what is now refused, without how to exploit it. Accessibility fixes (screen readers, keyboard) stay, merged into one bullet.
+   - Keep it simple (the user's choice): one short line per bullet, what changed for the user and no mechanism; merge related commits; leave out small fixes a user would hardly notice and accessibility-only fixes (screen-reader names, ARIA). A security fix is one plain line (「〜の安全性を高めました。」).
 3. When a subject does not say what the user can now do, read the commit (`git show --stat <id>`, then the relevant part). Quote button and screen names from `frontend/src/i18n/locales/ja/`. Take numbers (days, counts, defaults) from the code.
 4. A change you could not confirm goes into a question for the user, not into the notes as fact.
 
