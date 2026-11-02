@@ -7,7 +7,8 @@
 //   4. novira.exe starts on an empty data folder with no engine (a closed loopback address, as verify-real-app --no-engine)
 //      and its window reaches the Generate tab.
 // Nothing starts ComfyUI or uses the GPU. Every data folder and the WebView2 profile are made inside
-// novira-data/work/release-smoke/ and deleted at the end; only the processes this script started are stopped.
+// novira-data/work/release-smoke/ and deleted at the end; only the processes this script started are stopped. On a GitHub
+// runner only, the debugging port is also set in WebView2's policy key for novira.exe, and put back after the app stops.
 // Usage, from the repository root:  node scripts/tools/release-smoke.mjs [--artifacts <folder>]   (default: artifacts\)
 import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -23,6 +24,10 @@ const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 const WORK = harnessRoots(REPO).work;
 const FIXTURES = path.join(REPO, 'backend', 'crates', 'novira-core', 'tests', 'fixtures');
 const CDP_PORT = 9334; // not verify-real-app's 9333, so a verification run going on is never driven by mistake
+// WebView2 reads browser flags for an exe from this policy key too. On the GitHub runner it dropped the
+// WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS of the app (the browser process had no --remote-debugging-port, 2026-11-02),
+// while the same build on a desktop took it.
+const POLICY_KEY = 'HKCU\\Software\\Policies\\Microsoft\\Edge\\WebView2\\AdditionalBrowserArguments';
 const { chromium } = createRequire(path.join(REPO, 'frontend', 'package.json'))('@playwright/test');
 
 const log = (m) => console.log(`[release-smoke] ${m}`);
@@ -114,6 +119,31 @@ function run(command, args) {
   return r.error ? `${command}: ${r.error.message}` : `${r.stdout ?? ''}${r.stderr ?? ''}`;
 }
 
+/**
+ * Whether the debugging port also goes through the policy key: only on a GitHub runner, which is thrown away after the
+ * job. Never on a person's machine, where the value would open the port of their own novira.exe as well.
+ */
+export function usesPolicyKey(env = process.env) {
+  return env.GITHUB_ACTIONS === 'true';
+}
+
+/** The data of the REG_SZ value `name` in what `reg query` printed, or null when it is not there. */
+export function regValue(text, name) {
+  for (const line of String(text ?? '').split(/\r?\n/)) {
+    const m = /^\s*(.+?)\s+REG_SZ\s+(.*?)\s*$/.exec(line);
+    if (m && m[1].toLowerCase() === name.toLowerCase()) return m[2];
+  }
+  return null;
+}
+
+/** Sets the policy value of novira.exe to open the debugging port; returns what puts the value back as it was. */
+function openPortByPolicy() {
+  const before = regValue(run('reg', ['query', POLICY_KEY, '/v', 'novira.exe']), 'novira.exe');
+  const set = (data) => run('reg', ['add', POLICY_KEY, '/v', 'novira.exe', '/t', 'REG_SZ', '/d', data, '/f']);
+  log(`policy key: ${set(`--remote-debugging-port=${CDP_PORT}`).trim()}`);
+  return () => (before === null ? run('reg', ['delete', POLICY_KEY, '/v', 'novira.exe', '/f']) : set(before));
+}
+
 /** What the machine says about the debugging port and the programs that should be using it. */
 function machineFacts() {
   if (process.platform !== 'win32') return [];
@@ -125,14 +155,18 @@ function machineFacts() {
     '-NonInteractive',
     '-Command',
     // The browser process of the WebView2 (no --type=) is the one that takes the debugging port; the helpers only repeat its flags.
-    "Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'novira.exe' -or ($_.Name -eq 'msedgewebview2.exe' -and $_.CommandLine -notmatch '--type=') } | Select-Object -First 4 | ForEach-Object { $c = [string]$_.CommandLine; '{0} pid={1} remote-debugging-port={2} length={3} head={4}' -f $_.Name, $_.ProcessId, ($c -match 'remote-debugging-port'), $c.Length, $c.Substring(0, [Math]::Min(200, $c.Length)) }",
+    "Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'novira.exe' -or ($_.Name -eq 'msedgewebview2.exe' -and $_.CommandLine -notmatch '--type=') } | Select-Object -First 4 | ForEach-Object { $c = [string]$_.CommandLine; '{0} pid={1} remote-debugging-port={2} {3}' -f $_.Name, $_.ProcessId, ($c -match 'remote-debugging-port'), $c }",
   ]);
   const interactive = run('powershell', ['-NoProfile', '-NonInteractive', '-Command', '[Environment]::UserInteractive']).trim();
+  const elevated = run('powershell', ['-NoProfile', '-NonInteractive', '-Command', '([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)']).trim();
+  const policies = ['HKLM', 'HKCU'].map((hive) => `${hive}: ${tailOf(run('reg', ['query', `${hive}\\Software\\Policies\\Microsoft\\Edge`, '/s']), 12, 1200) || 'none'}`);
   return [
+    `elevated: ${elevated || 'unknown'}`,
+    `Edge policies:\n${policies.join('\n')}`,
     `port ${CDP_PORT} in Windows' excluded ranges: ${portIsExcluded(run('netsh', ['int', 'ipv4', 'show', 'excludedportrange', 'protocol=tcp']), CDP_PORT) ? 'YES' : 'no'}`,
     `port ${CDP_PORT} in netstat: ${listening.length ? tailOf(listening.join('\n'), 4) : 'not listening'}`,
     `session is interactive: ${interactive || 'unknown'}`,
-    `programs:\n${tailOf(programs, 8, 1800) || 'none'}`,
+    `programs:\n${tailOf(programs, 8, 3000) || 'none'}`,
   ];
 }
 
@@ -223,6 +257,7 @@ async function appOnEmptyData(artifacts, root) {
   const webview = freshFolder(root, 'app-webview');
   fs.writeFileSync(path.join(data, 'settings.json'), JSON.stringify(engineOff({}, 'http://127.0.0.1:9'), null, 2) + '\n');
   const env = { ...process.env, NOVIRA_DATA_DIR: data, WEBVIEW2_USER_DATA_FOLDER: webview, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${CDP_PORT}` };
+  const restorePolicy = usesPolicyKey() ? openPortByPolicy() : () => undefined;
   const app = spawn(path.join(artifacts, 'novira.exe'), [], { env, stdio: ['ignore', 'pipe', 'pipe'] });
   const output = { text: '' };
   for (const stream of [app.stdout, app.stderr]) stream.on('data', (chunk) => (output.text = (output.text + chunk).slice(-8000)));
@@ -249,6 +284,7 @@ async function appOnEmptyData(artifacts, root) {
   } finally {
     await browser?.close().catch(() => undefined);
     stopTrees([app.pid]);
+    restorePolicy();
   }
 }
 

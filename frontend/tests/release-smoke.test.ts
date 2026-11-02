@@ -2,7 +2,7 @@
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { checkFixtureBootstrap, fixtureVersions, missingFiles, parseArgs, portIsExcluded, tailOf } from '../../scripts/tools/release-smoke.mjs';
+import { checkFixtureBootstrap, fixtureVersions, missingFiles, parseArgs, portIsExcluded, regValue, tailOf, usesPolicyKey } from '../../scripts/tools/release-smoke.mjs';
 
 const whole = {
   boards: [{ name: 'Scenery' }, { name: 'Portraits' }],
@@ -45,6 +45,24 @@ describe('release-smoke', () => {
     expect(portIsExcluded('', 9334)).toBe(false);
     expect(portIsExcluded(undefined, 9334)).toBe(false);
     expect(portIsExcluded('no ranges here', 9334)).toBe(false);
+  });
+
+  it('sets the policy key only on a GitHub runner, never on a person\'s machine', () => {
+    expect(usesPolicyKey({ GITHUB_ACTIONS: 'true' })).toBe(true);
+    expect(usesPolicyKey({})).toBe(false);
+    expect(usesPolicyKey({ GITHUB_ACTIONS: 'false' })).toBe(false);
+    expect(usesPolicyKey({ CI: 'true' })).toBe(false);
+  });
+
+  it('reads a REG_SZ value from what reg query printed', () => {
+    const key = 'HKEY_CURRENT_USER\\Software\\Policies\\Microsoft\\Edge\\WebView2\\AdditionalBrowserArguments';
+    const out = ['', key, '    novira.exe    REG_SZ    --remote-debugging-port=9334 --lang=en', '', ''].join('\r\n');
+    expect(regValue(out, 'novira.exe')).toBe('--remote-debugging-port=9334 --lang=en');
+    expect(regValue(out, 'NOVIRA.EXE')).toBe('--remote-debugging-port=9334 --lang=en');
+    expect(regValue(out, 'other.exe')).toBeNull();
+    expect(regValue(`${key}\r\n    novira.exe    REG_SZ    \r\n`, 'novira.exe')).toBe('');
+    expect(regValue('ERROR: The system was unable to find the specified registry key or value.', 'novira.exe')).toBeNull();
+    expect(regValue(undefined, 'novira.exe')).toBeNull();
   });
 
   it('finds the committed old-data fixtures by version', () => {
