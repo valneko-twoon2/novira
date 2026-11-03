@@ -376,6 +376,59 @@ pub fn skipped_requirements(repo: &GithubRepo) -> &'static [&'static str] {
     &[]
 }
 
+/// The distributions that each ship the `cv2` module, in one shared folder. A second one installed beside the first
+/// overwrites `cv2.pyd`, which the running ComfyUI holds open (Windows refuses: "access denied"), so it is left out.
+const OPENCV: &[&str] = &[
+    "opencv-python",
+    "opencv-python-headless",
+    "opencv-contrib-python",
+    "opencv-contrib-python-headless",
+];
+
+/// Whether `pip freeze` lists a distribution that already provides `cv2`.
+pub fn opencv_installed(freeze: &str) -> bool {
+    freeze
+        .lines()
+        .filter_map(pin)
+        .any(|(name, _)| OPENCV.contains(&requirement_name(&name).unwrap_or_default().as_str()))
+}
+
+/// The most bytes of pip's install report that are read (a normal one is a few hundred KB).
+const MAX_REPORT_BYTES: usize = 16 * 1024 * 1024;
+
+/// What pip's dry run (`--report`) would install, as `name==version` pins, with the OpenCV distributions left out when
+/// one is installed already (`cv2_present`). `None` when nothing has to be left out, or when an item cannot be pinned
+/// by name and version (a URL, a VCS checkout or a folder): pip then installs as it planned.
+pub fn plan_without_second_opencv(report: &str, cv2_present: bool) -> Option<Vec<String>> {
+    if !cv2_present || report.len() > MAX_REPORT_BYTES {
+        return None;
+    }
+    let report: serde_json::Value = serde_json::from_str(report).ok()?;
+    let mut pins = Vec::new();
+    let mut dropped = false;
+    for item in report["install"].as_array()? {
+        let name = item["metadata"]["name"].as_str()?;
+        let version = item["metadata"]["version"].as_str()?;
+        if OPENCV.contains(&requirement_name(name)?.as_str()) {
+            dropped = true;
+            continue;
+        }
+        if item["is_direct"].as_bool().unwrap_or(false) || !plain_pin(name) || !plain_pin(version) {
+            return None;
+        }
+        pins.push(format!("{name}=={version}"));
+    }
+    dropped.then_some(pins)
+}
+
+/// A name or version pip reported that can go into a `name==version` line as it is.
+fn plain_pin(s: &str) -> bool {
+    !s.is_empty()
+        && s.len() <= 100
+        && s.chars()
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.' | '+' | '!'))
+}
+
 /// The name a requirements line asks for, as pip compares names: lower case, with `-`, `_` and `.` alike. None for a
 /// blank line, a comment or an option (`-r other.txt`).
 fn requirement_name(line: &str) -> Option<String> {
@@ -680,27 +733,73 @@ pub async fn install_version(
             let mut freeze = Command::new(python);
             freeze.args(["-m", "pip", "freeze", "--disable-pip-version-check"]);
             confine(&mut freeze, data_dir);
-            let pins = constraints(&run(freeze, "Reading the installed libraries", cancel).await?);
+            let installed = run(freeze, "Reading the installed libraries", cancel).await?;
             let pins_file = work.join("constraints.txt");
-            std::fs::write(&pins_file, pins).map_err(|e| e.to_string())?;
-            let mut pip = Command::new(python);
-            pip.args(["-m", "pip", "install", "--disable-pip-version-check", "-c"])
-                .arg(&pins_file)
-                .args(extra);
-            if requirements.is_file() {
-                let skip = skipped_requirements(repo);
-                if skip.is_empty() {
-                    pip.arg("-r").arg(&requirements);
-                } else {
-                    let text = std::fs::read(&requirements).map_err(|e| e.to_string())?;
-                    let kept = without_requirements(&String::from_utf8_lossy(&text), skip);
-                    let kept_file = work.join("requirements.txt");
-                    std::fs::write(&kept_file, kept).map_err(|e| e.to_string())?;
-                    pip.arg("-r").arg(&kept_file);
+            std::fs::write(&pins_file, constraints(&installed)).map_err(|e| e.to_string())?;
+            let wanted = match requirements.is_file() {
+                false => None,
+                true => {
+                    let skip = skipped_requirements(repo);
+                    if skip.is_empty() {
+                        Some(requirements.clone())
+                    } else {
+                        let text = std::fs::read(&requirements).map_err(|e| e.to_string())?;
+                        let kept = without_requirements(&String::from_utf8_lossy(&text), skip);
+                        let kept_file = work.join("requirements.txt");
+                        std::fs::write(&kept_file, kept).map_err(|e| e.to_string())?;
+                        Some(kept_file)
+                    }
+                }
+            };
+            let pip_install = |extra_args: &[&str]| {
+                let mut pip = Command::new(python);
+                pip.args(["-m", "pip", "install", "--disable-pip-version-check"])
+                    .args(extra_args)
+                    .arg("-c")
+                    .arg(&pins_file)
+                    .args(extra);
+                if let Some(file) = &wanted {
+                    pip.arg("-r").arg(file);
+                }
+                confine(&mut pip, data_dir);
+                pip
+            };
+            // With cv2 already there, a dependency that asks for another OpenCV distribution (ultralytics asks for
+            // opencv-python) would overwrite the cv2.pyd ComfyUI holds open: plan first, and install the plan without it.
+            let mut planned = None;
+            if opencv_installed(&installed) {
+                let report_file = work.join("pip-plan.json");
+                let report = report_file.to_string_lossy().into_owned();
+                run(
+                    pip_install(&["--dry-run", "--quiet", "--report", &report]),
+                    "Planning the pack's libraries",
+                    cancel,
+                )
+                .await?;
+                let text = std::fs::read_to_string(&report_file).unwrap_or_default();
+                planned = plan_without_second_opencv(&text, true);
+            }
+            match planned {
+                None => {
+                    run(pip_install(&[]), "Installing the pack's libraries", cancel).await?;
+                }
+                Some(pins) if pins.is_empty() => {}
+                Some(pins) => {
+                    let mut pip = Command::new(python);
+                    pip.args([
+                        "-m",
+                        "pip",
+                        "install",
+                        "--disable-pip-version-check",
+                        "--no-deps",
+                        "-c",
+                    ])
+                    .arg(&pins_file)
+                    .args(&pins);
+                    confine(&mut pip, data_dir);
+                    run(pip, "Installing the pack's libraries", cancel).await?;
                 }
             }
-            confine(&mut pip, data_dir);
-            run(pip, "Installing the pack's libraries", cancel).await?;
         }
         if dest.join("install.py").is_file() {
             report(PackStatus::Installing {

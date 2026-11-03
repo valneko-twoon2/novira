@@ -350,3 +350,79 @@ fn a_work_folder_whose_pack_cannot_be_named_is_kept() {
     recover_installs(dir.path());
     assert!(dir.path().join("someone/previous").is_dir() && dir.path().join(".git").is_dir());
 }
+
+#[test]
+fn any_opencv_distribution_counts_as_cv2_being_there() {
+    assert!(opencv_installed(
+        "numpy==2.1\nopencv-python-headless==5.0.0.93\n"
+    ));
+    assert!(opencv_installed(
+        "OpenCV_Contrib.Python @ file:///x/opencv_contrib_python-4.10.0-cp313-win_amd64.whl\n"
+    ));
+    assert!(!opencv_installed("numpy==2.1\nopencv-tools==1.0\n"));
+    assert!(!opencv_installed(""));
+}
+
+/// A pip install report (`--report`, format 1) with the given items.
+fn plan(items: &[(&str, &str, bool)]) -> String {
+    let install: Vec<serde_json::Value> = items
+        .iter()
+        .map(|(name, version, direct)| {
+            serde_json::json!({
+                "download_info": {"url": format!("https://files.pythonhosted.org/{name}.whl"), "archive_info": {}},
+                "is_direct": direct,
+                "requested": false,
+                "metadata": {"name": name, "version": version}
+            })
+        })
+        .collect();
+    serde_json::json!({"version": "1", "install": install}).to_string()
+}
+
+#[test]
+fn a_second_opencv_is_left_out_of_the_plan_and_the_rest_is_pinned() {
+    // What ComfyUI-Impact-Subpack's requirements pulled in on 2026-11-03 next to opencv-python-headless 5.0.
+    let report = plan(&[
+        ("polars", "2.1.0", false),
+        ("opencv-python", "4.12.0.88", false),
+        ("ultralytics-thop", "2.2.4", false),
+        ("ultralytics", "8.3.162", false),
+    ]);
+    assert_eq!(
+        plan_without_second_opencv(&report, true).unwrap(),
+        [
+            "polars==2.1.0",
+            "ultralytics-thop==2.2.4",
+            "ultralytics==8.3.162"
+        ]
+    );
+    // Only OpenCV planned: nothing is left to install.
+    let only = plan(&[("opencv_contrib_python", "4.10.0.84", false)]);
+    assert_eq!(plan_without_second_opencv(&only, true), Some(vec![]));
+}
+
+#[test]
+fn the_plan_is_kept_as_pip_made_it_unless_an_opencv_must_go_and_every_item_pins() {
+    let report = plan(&[
+        ("opencv-python", "4.12.0.88", false),
+        ("polars", "2.1.0", false),
+    ]);
+    // No cv2 yet: the first OpenCV is welcome.
+    assert_eq!(plan_without_second_opencv(&report, false), None);
+    // No OpenCV in the plan.
+    assert_eq!(
+        plan_without_second_opencv(&plan(&[("polars", "2.1.0", false)]), true),
+        None
+    );
+    // An item from a URL or a checkout cannot be pinned by version: pip installs as planned.
+    let direct = plan(&[("opencv-python", "4.12.0.88", false), ("mine", "0.1", true)]);
+    assert_eq!(plan_without_second_opencv(&direct, true), None);
+    // A name or version that would not make a plain pin line.
+    let odd = plan(&[("opencv-python", "4.12", false), ("x", "1.0; rm", false)]);
+    assert_eq!(plan_without_second_opencv(&odd, true), None);
+    // Not a report, or too large to read.
+    assert_eq!(plan_without_second_opencv("not json", true), None);
+    assert_eq!(plan_without_second_opencv("{}", true), None);
+    let huge = " ".repeat(MAX_REPORT_BYTES + 1);
+    assert_eq!(plan_without_second_opencv(&huge, true), None);
+}
