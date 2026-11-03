@@ -10,7 +10,7 @@ import { useCharacterDialog } from '@/state/dialogs/character';
 import { useCutout } from '@/state/dialogs/cutout';
 import { useDeriveDialog } from '@/state/dialogs/derive';
 import { useFaceFixDialog } from '@/state/dialogs/facefix';
-import { useSegment } from '@/state/dialogs/segment';
+import { fixPartOnCanvas } from '@/state/partFix';
 import { useShareDialog } from '@/state/dialogs/share';
 import { useGallery } from '@/state/gallery';
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger, TooltipProvider } from '@/ui';
@@ -42,6 +42,8 @@ vi.mock('@/state/derive', async (original) => ({ ...(await original<typeof impor
 
 import { deriveFrom } from '@/state/derive';
 import { trimTransparent } from '@/state/trim';
+
+vi.mock('@/state/partFix', () => ({ fixPartOnCanvas: vi.fn() }));
 
 const initial = useGallery.getState();
 const image = (over: Partial<ImageDTO> = {}): ImageDTO =>
@@ -139,7 +141,7 @@ describe('SingleImageMenu', () => {
   it('opens the editing dialogs for the picture', async () => {
     showMenu(<SingleImageMenu image={image()} />);
     await choose(t('gallery.menu.segment'));
-    expect(useSegment.getState().imageName).toBe('a.png');
+    expect(fixPartOnCanvas).toHaveBeenCalledWith(expect.objectContaining({ name: 'a.png' }));
     await choose(t('cutout.menu'));
     expect(useCutout.getState().imageName).toBe('a.png');
     await choose(t('facefix.menu'));

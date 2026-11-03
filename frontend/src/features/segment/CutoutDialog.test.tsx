@@ -11,9 +11,9 @@ import { useGallery } from '@/state/gallery';
 import * as trim from '@/state/trim';
 import { TooltipProvider } from '@/ui';
 import { CutoutDialog } from './CutoutDialog';
-import { runJob } from './segmentJob';
+import { runJob } from '@/state/comfy/runGraph';
 
-vi.mock('./segmentJob', () => ({ runSegmentation: vi.fn(), runJob: vi.fn() }));
+vi.mock('@/state/comfy/runGraph', () => ({ runJob: vi.fn() }));
 
 const photo: ImageDTO = {
   name: 'photo.png',

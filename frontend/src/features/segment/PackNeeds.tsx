@@ -5,7 +5,7 @@ import { usePackNeeds } from '@/state/comfy/packNeeds';
 import { Button } from '@/ui';
 
 /** `id` is a catalog id; `message` is the sentence that says what the pack is needed for (it takes `{pack}`). */
-export function PackNeeds({ id, message, install, restart }: { id: 'sam2' | 'inpaintNodes' | 'rmbg'; message: MessageKey; install: MessageKey; restart: MessageKey }) {
+export function PackNeeds({ id, message, install, restart }: { id: 'rmbg'; message: MessageKey; install: MessageKey; restart: MessageKey }) {
   const need = usePackNeeds(id);
   return (
     <div className="seg__needs" data-testid="seg-needs">

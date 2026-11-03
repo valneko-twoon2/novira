@@ -454,16 +454,6 @@ export const SCENES = [
     },
   },
   {
-    id: 'segment',
-    query: EMPTY,
-    run: async (s) => {
-      await withPicture(s);
-      await s.testid('viewer-segment').click();
-      await s.testid('seg-stage').waitFor();
-      await s.shot(s.dialog());
-    },
-  },
-  {
     id: 'facefix',
     query: EMPTY,
     run: async (s) => {

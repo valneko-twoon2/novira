@@ -101,7 +101,7 @@
 | **{{ui:gallery.menu.sendToWorkflow}}** | 開いているワークフローに、画像の入力として足す |
 | **{{ui:gallery.menu.sendToText}}** | テキストの背景にする |
 | **{{ui:gallery.menu.upscale}}**（`Shift+U`） | アップスケールのタブに送る |
-| **{{ui:gallery.menu.segment}}** | 絵の一部を選んで、切り抜いたり描き直したりする |
+| **{{ui:gallery.menu.segment}}** | 絵をキャンバスで開き、直したい部分をブラシで塗って、消したり切り抜いたり描き直したりする |
 | **{{ui:gallery.derive.menu}}** | この絵の設定で、別のシードや少しだけ変えた絵を作る |
 | **{{ui:cutout.menu}}** | 背景を取り除く |
 | **{{ui:facefix.menu}}** | 顔を見つけて描き直す |

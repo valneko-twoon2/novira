@@ -10,7 +10,7 @@ import { useCutout } from '@/state/dialogs/cutout';
 import { useDeriveDialog } from '@/state/dialogs/derive';
 import { useFaceFixDialog } from '@/state/dialogs/facefix';
 import { useMangaDialog } from '@/state/dialogs/manga';
-import { useSegment } from '@/state/dialogs/segment';
+import { fixPartOnCanvas } from '@/state/partFix';
 import { useShareDialog } from '@/state/dialogs/share';
 import { useGallery } from '@/state/gallery';
 import { TooltipProvider } from '@/ui';
@@ -34,6 +34,8 @@ vi.mock('@/features/gallery/actions', () => actions);
 vi.mock('@/features/gallery/deleteRequest', () => ({ requestDeleteImages }));
 vi.mock('@/state/derive', async (original) => ({ ...(await original<typeof import('@/state/derive')>()), deriveFrom: vi.fn() }));
 import { deriveFrom } from '@/state/derive';
+
+vi.mock('@/state/partFix', () => ({ fixPartOnCanvas: vi.fn() }));
 
 const initial = useGallery.getState();
 const image = (over: Partial<ImageDTO> = {}): ImageDTO =>
@@ -92,7 +94,7 @@ describe('ViewerToolbar buttons', () => {
   it('opens the editing dialogs', () => {
     show(image());
     fireEvent.click(screen.getByTestId('viewer-segment'));
-    expect(useSegment.getState().imageName).toBe('a.png');
+    expect(fixPartOnCanvas).toHaveBeenCalledWith(expect.objectContaining({ name: 'a.png' }));
     fireEvent.click(screen.getByTestId('viewer-cutout'));
     expect(useCutout.getState().imageName).toBe('a.png');
     fireEvent.click(screen.getByTestId('viewer-facefix'));

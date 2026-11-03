@@ -1,8 +1,11 @@
-// Inpaint mask settings: optional denoise limit and noise level, mask style and opacity.
+// Inpaint mask settings: erase or cut out the painted part, optional denoise limit and noise level, mask style and opacity.
+import { Eraser, Scissors } from '@phosphor-icons/react';
+import { useState } from 'react';
 import { t } from '@/i18n';
 import { type InpaintEntity } from '@/state/canvas';
-import { useCanvasStore } from '@/state/canvasStoreContext';
-import { Field, SliderNumber, Switch } from '@/ui';
+import { useCanvasStore, useCanvasStoreApi } from '@/state/canvasStoreContext';
+import { Button, Field, SliderNumber, Switch } from '@/ui';
+import { cutOutMaskedPart, eraseMaskedPart } from '../../partFix';
 import { MaskStyleFields } from './MaskStyleFields';
 import { OpacityField } from './OpacityField';
 
@@ -19,9 +22,23 @@ function OptionalSlider({ label, value, onChange }: { label: string; value: numb
 
 export function InpaintSettings({ entity }: { entity: InpaintEntity }) {
   const update = useCanvasStore((s) => s.updateEntity);
+  const store = useCanvasStoreApi();
+  const [busy, setBusy] = useState<'erase' | 'cut' | null>(null);
   const id = entity.id;
+  const run = (what: 'erase' | 'cut') => {
+    setBusy(what);
+    void (what === 'erase' ? eraseMaskedPart(id, store) : cutOutMaskedPart(id, store)).finally(() => setBusy(null));
+  };
   return (
     <div className="canvas-settings">
+      <div className="canvas-settings__actions">
+        <Button size="sm" leftIcon={<Eraser size={14} />} isLoading={busy === 'erase'} disabled={busy !== null} onClick={() => run('erase')} data-testid="canvas-mask-erase">
+          {t('canvas.partFix.erase')}
+        </Button>
+        <Button size="sm" leftIcon={<Scissors size={14} />} isLoading={busy === 'cut'} disabled={busy !== null} onClick={() => run('cut')} data-testid="canvas-mask-cutout">
+          {t('canvas.partFix.cutOutAction')}
+        </Button>
+      </div>
       <OptionalSlider
         label={t('canvas.mask.denoiseLimit')}
         value={entity.denoiseLimit}

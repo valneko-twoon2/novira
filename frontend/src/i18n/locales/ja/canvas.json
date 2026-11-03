@@ -483,5 +483,17 @@
   "canvas.toast.slotLayer": "このレイヤーには描いたり動かしたりできません",
   "canvas.toast.rasterOnly": "ラスターレイヤーを選んでください",
   "canvas.toast.filterFailed": "フィルターをかけられませんでした",
-  "canvas.toast.bucketFailed": "塗りつぶせませんでした"
+  "canvas.toast.bucketFailed": "塗りつぶせませんでした",
+  "canvas.partFix.erase": "塗った部分を消す",
+  "canvas.partFix.cutOutAction": "塗った部分を切り抜いて保存",
+  "canvas.partFix.empty": "このマスクには、まだ何も塗られていません。ブラシで範囲を塗ってください。",
+  "canvas.partFix.erasing": "塗った部分を消しています…",
+  "canvas.partFix.erased": "消した結果を仮置きに出しました。採用するか破棄してください。",
+  "canvas.partFix.cutOut": "切り抜きをギャラリーに保存しました",
+  "canvas.partFix.failed": "塗った部分を処理できませんでした",
+  "canvas.partFix.eraseNeedsPack": "消すには、拡張機能 {pack} が必要です。",
+  "canvas.partFix.install": "インストール",
+  "canvas.partFix.restart": "ComfyUI を再起動する",
+  "canvas.partFix.lamaOffer": "モデル LaMa（約 200MB）を取得すると、より自然に消せます。",
+  "canvas.partFix.lamaGet": "LaMa を取得する"
 }

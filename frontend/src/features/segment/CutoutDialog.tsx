@@ -14,7 +14,7 @@ import { trimTransparent } from '@/state/trim';
 import { toast } from '@/state/toasts';
 import { Button, Modal, Select, SliderNumber, Spinner, cx } from '@/ui';
 import { PackNeeds } from './PackNeeds';
-import { runJob } from './segmentJob';
+import { runJob } from '@/state/comfy/runGraph';
 import { showResult } from './showResult';
 
 export function CutoutDialog() {

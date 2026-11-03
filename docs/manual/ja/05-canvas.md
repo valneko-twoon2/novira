@@ -94,7 +94,7 @@
 
 選んだレイヤーの下に、そのレイヤーの設定が開きます。
 
-- {{ui:canvas.add.inpaint}}: マスクの色や塗りの模様（画面での見え方のみ）、**{{ui:canvas.mask.denoiseLimit}}**（オンにして下げると、マスクの中でも元の絵を残しやすくなります）。右クリックの **{{ui:canvas.entityMenu.invertMask}}** で、生成範囲の中のマスクされた部分と空いた部分を入れ替えられます。
+- {{ui:canvas.add.inpaint}}: マスクの色や塗りの模様（画面での見え方のみ）、**{{ui:canvas.mask.denoiseLimit}}**（オンにして下げると、マスクの中でも元の絵を残しやすくなります）。右クリックの **{{ui:canvas.entityMenu.invertMask}}** で、生成範囲の中のマスクされた部分と空いた部分を入れ替えられます。**{{ui:canvas.partFix.erase}}** と **{{ui:canvas.partFix.cutOutAction}}** で、塗った部分を消したり切り抜いたりできます（[範囲を選んで直す](04-improve.md#範囲を選んで直す)）。
 - {{ui:canvas.add.control}}: 次の「{{ui:canvas.add.control}}」の項を見てください。
 
 ## どんなふうに描き直されるか
@@ -205,4 +205,4 @@
 - 1 つのレイヤーだけを保存するには、レイヤーを右クリックして、**{{ui:canvas.entityMenu.saveToGallery}}** を選びます。
 - **{{ui:canvas.settings.title}}** には、**{{ui:canvas.actions.clearCanvas}}**、**{{ui:canvas.actions.clearHistory}}**、**{{ui:canvas.actions.clearStaging}}** もあります。**{{ui:canvas.actions.clearCanvas}}** は、全部のレイヤーを消します。
 
-絵を直す機能は、[絵を直す・使い回す](04-improve.md) にもあります。「{{ui:gallery.menu.segment}}」の結果は、キャンバスに送って、さらに描き直せます。
+絵を直す機能は、[絵を直す・使い回す](04-improve.md) にもあります。「{{ui:gallery.menu.segment}}」は、絵をキャンバスで開いて、塗った部分を消したり切り抜いたりします。

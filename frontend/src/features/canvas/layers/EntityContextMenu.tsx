@@ -1,11 +1,12 @@
-// Right-click menu of an entity row: duplicate, arrange, flip, turn, scale, invert, random pose, convert, copy, save, export, delete.
+// Right-click menu of an entity row: duplicate, arrange, flip, turn, scale, invert, erase or cut out a mask's part, random pose, convert, copy, save, export, delete.
 // A slot row offers only the arrange items: the host draws the layer, so there is nothing else to do with it here.
-import { ArrowDown, ArrowLineDown, ArrowLineUp, ArrowUp, ArrowsLeftRight, Copy, CopySimple, FlipHorizontal, FlipVertical, FloppyDisk, Export, Circle, MagnifyingGlassMinus, MagnifyingGlassPlus, Shuffle, Trash, ArrowClockwise, ArrowCounterClockwise } from '@phosphor-icons/react';
+import { ArrowDown, ArrowLineDown, ArrowLineUp, ArrowUp, ArrowsLeftRight, Copy, CopySimple, FlipHorizontal, FlipVertical, FloppyDisk, Export, Circle, MagnifyingGlassMinus, MagnifyingGlassPlus, Shuffle, Trash, ArrowClockwise, ArrowCounterClockwise, Eraser, Scissors } from '@phosphor-icons/react';
 import { t } from '@/i18n';
 import { isSlot, type CanvasEntity, type EntityType, type FlipAxis } from '@/state/canvas';
 import { useCanvasStore, useCanvasStoreApi } from '@/state/canvasStoreContext';
 import { ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextSubMenu } from '@/ui';
 import { copyEntityToClipboard, exportEntityToFile, invertMask, randomizePoses, saveEntityToGallery, transformEntity } from '../actions';
+import { cutOutMaskedPart, eraseMaskedPart } from '../partFix';
 import { objectsBounds } from '@/ui/canvasDraw/bounds';
 import { ADD_LABEL } from '../names';
 
@@ -74,6 +75,16 @@ export function EntityContextMenu({ entity }: { entity: CanvasEntity }) {
         <ContextMenuItem icon={<Circle />} disabled={entity.isLocked} onSelect={() => void invertMask(entity.id, store)}>
           {t('canvas.entityMenu.invertMask')}
         </ContextMenuItem>
+      )}
+      {entity.type === 'inpaint' && (
+        <>
+          <ContextMenuItem icon={<Eraser />} disabled={!bounds} onSelect={() => void eraseMaskedPart(entity.id, store)}>
+            {t('canvas.partFix.erase')}
+          </ContextMenuItem>
+          <ContextMenuItem icon={<Scissors />} disabled={!bounds} onSelect={() => void cutOutMaskedPart(entity.id, store)}>
+            {t('canvas.partFix.cutOutAction')}
+          </ContextMenuItem>
+        </>
       )}
       {entity.type === 'control' && (
         <ContextMenuItem icon={<Shuffle />} disabled={entity.isLocked} onSelect={() => randomizePoses(entity.id, undefined, store)}>

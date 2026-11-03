@@ -72,7 +72,7 @@ import { savesSound, songSeconds, speechText } from './graphAudio';
 import { synthesizeVideo } from './videoSynth';
 import { imageSize, synthesize } from './imageSynth';
 import { mockPicture } from './mockPictures';
-import { pointsOf, sourceOf, synthMask } from './maskSynth';
+import { sourceOf } from './graphSource';
 import { batchSeed, randomSeed } from './random';
 import { isTextGraph, mockCaption } from './captionText';
 import { DEFAULT_WORKFLOWS } from '../defaultWorkflows';
@@ -537,7 +537,6 @@ export class MockBackend implements BackendClient {
     const p = item.params;
     if (p.generationMode === 'music' || p.generationMode === 'voice' || savesSound(item.comfyGraph)) return this.processAudio(item, run);
     if (isTextGraph(item.comfyGraph)) return this.processText(item, run);
-    if (item.comfyGraph && Object.values(item.comfyGraph.prompt).some((n) => n.class_type === 'Sam2Segmentation')) return this.processMask(item, run);
     if (item.comfyGraph && Object.values(item.comfyGraph.prompt).some((n) => n.class_type === 'INPAINT_MaskedFill' || n.class_type === 'INPAINT_InpaintWithModel' || n.class_type === 'SetLatentNoiseMask' || n.class_type === 'RMBG' || n.class_type === 'MangaFinish' || n.class_type === 'LoadVideo' || n.class_type === 'ImageUpscaleWithModel')) return this.processErase(item, run);
     // Like the backend graph: the high-resolution fix is a second pass of text or image to image, never of a draft.
     const hires = p.hiresFix;
@@ -587,34 +586,6 @@ export class MockBackend implements BackendClient {
       // With the high-resolution fix the stored size stays the first pass's (the setting the scale applies to).
       metadata: this.withSampling(hires ? { ...p } : { ...p, width, height }),
       workflow: item.workflow,
-    };
-    this.images.unshift(image);
-    this.setStatus(item, 'completed', { completedAt: this.now(), imageName: image.name });
-    this.emit({ type: 'image_added', image: { ...image }, item: { ...item } });
-  }
-
-  /** A segmentation prompt: a mask picture the size of the source, kept as a hidden helper result. */
-  private async processMask(item: QueueItem, run: { cancelled: boolean }) {
-    const graph = item.comfyGraph!;
-    const source = this.images.find((i) => i.name === sourceOf(graph));
-    if (!source) throw new Error('The picture was deleted');
-    await wait(this.stepDelay * 2);
-    if (run.cancelled) return;
-    const url = await synthMask(source.width, source.height, pointsOf(graph));
-    const image: ImageDTO = {
-      name: this.imageName(),
-      mediaType: 'image',
-      url,
-      thumbnailUrl: url,
-      width: source.width,
-      height: source.height,
-      createdAt: this.now(),
-      boardId: null,
-      starred: false,
-      isIntermediate: true,
-      category: 'general',
-      metadata: { ...item.params },
-      workflow: null,
     };
     this.images.unshift(image);
     this.setStatus(item, 'completed', { completedAt: this.now(), imageName: image.name });

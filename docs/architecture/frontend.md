@@ -57,7 +57,7 @@ Beyond the plain stores (`ui`, `settings`, `params`, `gallery`, `queue`, `models
 | `canvas/`, `text/`, `comic/`, `workflows/` | The Canvas tab, the Text tab, the Comic tab, the node editor and Extensions tab |
 | `gallery/`, `viewer/`, `queue/`, `share/` | Gallery, image viewer (its manga finish dialog is `viewer/manga/`), Queue tab, export for sharing (watermark switch, "check a picture") |
 | `models/`, `browse/` | The model manager, the Browse tab (Civitai, Hugging Face) |
-| `derive/`, `caption/`, `facefix/`, `pose/`, `xyplot/`, `batch/`, `finish/`, `segment/` | Dialogs over a picture, several pictures, a clip or a selection. `derive` redoes a picture with its stored settings, `caption` describes it as a prompt, `finish` smooths or enlarges a clip, `segment` makes a mask for cut-out, erase and inpaint. Most queue a graph through `state/comfy/graphJob.ts` |
+| `derive/`, `caption/`, `facefix/`, `pose/`, `xyplot/`, `batch/`, `finish/`, `segment/` | Dialogs over a picture, several pictures, a clip or a selection. `derive` redoes a picture with its stored settings, `caption` describes it as a prompt, `finish` smooths or enlarges a clip, `segment` removes the background (the RMBG cut-out). Most queue a graph through `state/comfy/graphJob.ts` |
 | `agent/`, `engine/`, `devlog/`, `splash/`, `settings/`, `downloads/` | What sits around every screen: the assistant, the engine banner, the developer log, the start-up screen and its gate, settings, the download dock |
 
 ## The browser mock

@@ -26,20 +26,11 @@
         "channel": "red"
       }
     },
-    "flip": {
-      "class_type": "InvertMask",
-      "inputs": {
-        "mask": [
-          "mask",
-          0
-        ]
-      }
-    },
     "grow": {
       "class_type": "INPAINT_ExpandMask",
       "inputs": {
         "mask": [
-          "flip",
+          "mask",
           0
         ],
         "grow": 12,

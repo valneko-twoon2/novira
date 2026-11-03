@@ -3,7 +3,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { installRecordingCanvases } from '@/backend/mock/canvas2dRecorder.testkit';
 import { audioUrl, synthMusic, synthSpeech, waveformThumbnail } from './audioSynth';
-import { pointsOf, sourceOf, synthMask } from './maskSynth';
+import { sourceOf } from './graphSource';
 import { synthesizeVideo } from './videoSynth';
 import type { ComfyGraph } from '../types';
 
@@ -56,53 +56,11 @@ describe('audioSynth', () => {
   });
 });
 
-describe('maskSynth', () => {
-  const graph = (inputs: Record<string, unknown>, image?: unknown): ComfyGraph =>
-    ({
-      prompt: {
-        a: { class_type: 'Sam2Segmentation', inputs },
-        ...(image ? { b: { class_type: 'LoadImage', inputs: { image } } } : {}),
-      },
-    }) as unknown as ComfyGraph;
-
-  it('reads the clicked points and the source picture from the graph', () => {
-    const g = graph({ coordinates_positive: '[{"x":1,"y":2}]', coordinates_negative: '[{"x":3,"y":4}]' }, { $image: 'cat.png' });
-    expect(pointsOf(g)).toEqual([
-      { x: 1, y: 2, include: true },
-      { x: 3, y: 4, include: false },
-    ]);
-    expect(sourceOf(g)).toBe('cat.png');
-  });
-
-  it('survives broken point lists and a missing picture', () => {
-    expect(pointsOf(graph({ coordinates_positive: 'not json' }))).toEqual([]);
-    expect(pointsOf({ prompt: {} } as unknown as ComfyGraph)).toEqual([]);
-    expect(sourceOf(graph({}))).toBeNull();
-  });
-
-  it('paints included blobs white and excluded blobs black on a black picture', async () => {
-    const canvases = installRecordingCanvases();
-    HTMLCanvasElement.prototype.toBlob = function (cb: BlobCallback) {
-      cb(null);
-    };
-    vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue('data:image/png;base64,BBBB');
-    const url = await synthMask(100, 80, [
-      { x: 10, y: 10, include: true },
-      { x: 20, y: 20, include: false },
-    ]);
-    expect(url).toBe('data:image/png;base64,BBBB');
-    const rec = canvases.all[0]!;
-    expect(rec.of('arc')).toHaveLength(2);
-    expect(rec.of('arc')[0]![2]).toBeCloseTo(80 * 0.18);
-    expect(rec.sets.filter((s) => s.name === 'fillStyle').map((s) => s.value)).toEqual(['#000', '#fff', '#000']);
-    canvases.restore();
-    vi.restoreAllMocks();
-  });
-
-  it('rejects when there is no canvas', async () => {
-    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
-    await expect(synthMask(10, 10, [])).rejects.toThrow('no canvas');
-    vi.restoreAllMocks();
+describe('graphSource', () => {
+  it('reads the source picture of a prompt, or null when it reads none', () => {
+    const graph = (image?: unknown): ComfyGraph => ({ prompt: image ? { b: { class_type: 'LoadImage', inputs: { image } } } : {} }) as unknown as ComfyGraph;
+    expect(sourceOf(graph({ $image: 'cat.png' }))).toBe('cat.png');
+    expect(sourceOf(graph())).toBeNull();
   });
 });
 

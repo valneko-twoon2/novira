@@ -101,7 +101,7 @@ When you right-click a thumbnail, a list of the operations available for that pi
 | **{{ui:gallery.menu.sendToWorkflow}}** | Adds it to the open workflow as an image input |
 | **{{ui:gallery.menu.sendToText}}** | Makes it the background of a text image |
 | **{{ui:gallery.menu.upscale}}** (`Shift+U`) | Sends it to the Upscaling tab |
-| **{{ui:gallery.menu.segment}}** | Selects a part of the picture so you can cut it out or repaint it |
+| **{{ui:gallery.menu.segment}}** | Opens the picture on the canvas so you can paint over a part and erase, cut out or repaint it |
 | **{{ui:gallery.derive.menu}}** | Makes other pictures with this picture's settings, using a different seed or slight changes |
 | **{{ui:cutout.menu}}** | Removes the background |
 | **{{ui:facefix.menu}}** | Finds faces and redraws them |

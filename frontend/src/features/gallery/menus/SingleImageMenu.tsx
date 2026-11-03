@@ -41,7 +41,7 @@ import { trimTransparent } from '@/state/trim';
 import { useGallery } from '@/state/gallery';
 import { useCharacterDialog } from '@/state/dialogs/character';
 import { useCutout } from '@/state/dialogs/cutout';
-import { useSegment } from '@/state/dialogs/segment';
+import { fixPartOnCanvas } from '@/state/partFix';
 import { useShareDialog } from '@/state/dialogs/share';
 import { useWatermarkCheckDialog } from '@/state/dialogs/watermark';
 import { isScreenShown, showViewer } from '@/state/ui';
@@ -170,7 +170,7 @@ export function SingleImageMenu({ image, phone = false }: { image: ImageDTO; pho
         </ContextMenuItem>
       )}
       {!phone && (
-        <ContextMenuItem icon={<Crosshair />} disabled={(image.mediaType ?? 'image') !== 'image'} onSelect={() => useSegment.getState().open(image.name)}>
+        <ContextMenuItem icon={<Crosshair />} disabled={(image.mediaType ?? 'image') !== 'image'} onSelect={() => fixPartOnCanvas(image)}>
           {t('gallery.menu.segment')}
         </ContextMenuItem>
       )}

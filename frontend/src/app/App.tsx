@@ -21,7 +21,7 @@ import { PoseDialog } from '@/features/pose';
 import { XyPlotDialog } from '@/features/xyplot';
 import { FinishDialog } from '@/features/finish';
 import { ShareDialog, WatermarkCheckDialog } from '@/features/share';
-import { CutoutDialog, SegmentDialog } from '@/features/segment';
+import { CutoutDialog } from '@/features/segment';
 import { AboutModal, HotkeysModal, SettingsModal } from '@/features/settings/Modals';
 import { Splash } from '@/features/splash/Splash';
 import { useSplashGate } from '@/features/splash/useSplashGate';
@@ -134,7 +134,6 @@ function DesktopShell() {
         <SettingsModal />
         <HotkeysModal />
         <AboutModal />
-        <SegmentDialog />
         <ImportDialog />
         <ModelPartsDialog />
         <CutoutDialog />

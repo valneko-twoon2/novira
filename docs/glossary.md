@@ -55,7 +55,7 @@ The window title and the screen text in every language are lowercase too. Commen
 | プリセット (Preset) | Saved settings that can be applied again | `presets.*` |
 | キャラクター (Character) | A saved set of reference pictures and words for one character | `character.*` |
 | ポーズ (Pose) | A stick figure whose joints you move to set the pose of a person | `pose.*` |
-| 範囲を選んで直す (Segment) | Click the parts of a picture to include or exclude, then repaint those parts | `segment.*` |
+| 範囲を選んで直す (Select and fix a part) | Open a picture on the canvas with an empty inpaint mask and the brush; the painted part is erased, cut out or redrawn | `state/partFix.ts`, `canvas.partFix.*` |
 | 顔を直す (Face fix) | Find faces, repaint them at higher resolution. Needs the Impact Pack extension | `facefix.*` |
 | 背景を除去 (Remove background) | Cut out the subject and make the background transparent | `cutout.*` |
 | 絵からプロンプトを作る (Caption) | Write tags or a sentence for a picture with Florence-2 | `caption.*` |

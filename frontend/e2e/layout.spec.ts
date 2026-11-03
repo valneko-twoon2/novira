@@ -164,7 +164,7 @@ const SURFACES: Record<string, Surface> = {
     await scan('menu');
   },
   'dialogs of the picture menu': async (page, locale, scan) => {
-    const items = ['gallery.menu.segment', 'gallery.menu.batch', 'gallery.derive.custom', 'facefix.menu', 'share.menu', 'share.check.title', 'xyplot.menu', 'gallery.menu.trim'];
+    const items = ['gallery.menu.batch', 'gallery.derive.custom', 'facefix.menu', 'share.menu', 'share.check.title', 'xyplot.menu', 'gallery.menu.trim'];
     for (const key of items) {
       await page.getByTestId('gallery-thumb').first().click({ button: 'right' });
       const item = page.getByRole('menuitem', { name: msg(key, {}, locale), exact: true });
@@ -185,7 +185,7 @@ const SURFACES: Record<string, Surface> = {
     await page.getByTestId('gallery-thumb').first().click();
     await page.getByRole('tab', { name: msg('app.views.viewer', {}, locale), exact: true }).click();
     await expect(page.getByTestId('viewer-toolbar')).toBeVisible();
-    const openers = ['segment', 'cutout', 'facefix', 'manga', 'caption', 'character', 'share', 'derive'].map((x) => `[data-testid="viewer-${x}"]`);
+    const openers = ['cutout', 'facefix', 'manga', 'caption', 'character', 'share', 'derive'].map((x) => `[data-testid="viewer-${x}"]`);
     await scan('viewer', { tooltips: true, openers });
   },
   'draft history': async (page, _locale, scan) => {

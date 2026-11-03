@@ -548,6 +548,12 @@
   flex: 1;
 }
 
+.canvas-settings__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
 .canvas-prompt {
   display: flex;
   align-items: flex-start;

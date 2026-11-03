@@ -94,7 +94,7 @@ In the list of layers, you can do the following.
 
 Under the selected layer, that layer's settings open.
 
-- {{ui:canvas.add.inpaint}}: The color and fill pattern of the mask (affects only how it looks on screen), and **{{ui:canvas.mask.denoiseLimit}}** (if you turn it on and lower it, the original picture is more likely to remain even inside the mask). In the mask's right-click menu, **{{ui:canvas.entityMenu.invertMask}}** swaps masked and clear areas inside the generation area.
+- {{ui:canvas.add.inpaint}}: The color and fill pattern of the mask (affects only how it looks on screen), and **{{ui:canvas.mask.denoiseLimit}}** (if you turn it on and lower it, the original picture is more likely to remain even inside the mask). In the mask's right-click menu, **{{ui:canvas.entityMenu.invertMask}}** swaps masked and clear areas inside the generation area. **{{ui:canvas.partFix.erase}}** and **{{ui:canvas.partFix.cutOutAction}}** erase or cut out the painted part ([Selecting a region and fixing it](04-improve.md#selecting-a-region-and-fixing-it)).
 - {{ui:canvas.add.control}}: See the next section, "{{ui:canvas.add.control}}".
 
 ## How it gets repainted
@@ -205,4 +205,4 @@ A **{{ui:canvas.add.regional}}** layer gives a prompt for the place you paint on
 - To save just one layer, right-click the layer and choose **{{ui:canvas.entityMenu.saveToGallery}}**.
 - **{{ui:canvas.settings.title}}** also has **{{ui:canvas.actions.clearCanvas}}**, **{{ui:canvas.actions.clearHistory}}** and **{{ui:canvas.actions.clearStaging}}**. **{{ui:canvas.actions.clearCanvas}}** deletes all the layers.
 
-There are also features for fixing pictures in [Fixing and Reusing Pictures](04-improve.md). The result of "{{ui:gallery.menu.segment}}" can be sent to the canvas and repainted further.
+There are also features for fixing pictures in [Fixing and Reusing Pictures](04-improve.md). "{{ui:gallery.menu.segment}}" opens a picture on the canvas, where you erase or cut out the part you painted.

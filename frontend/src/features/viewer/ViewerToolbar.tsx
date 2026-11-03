@@ -47,7 +47,7 @@ import { useGallery } from '@/state/gallery';
 import { useMangaDialog } from '@/state/dialogs/manga';
 import { useCharacterDialog } from '@/state/dialogs/character';
 import { useCutout } from '@/state/dialogs/cutout';
-import { useSegment } from '@/state/dialogs/segment';
+import { fixPartOnCanvas } from '@/state/partFix';
 import { useShareDialog } from '@/state/dialogs/share';
 import { Divider, IconButton, Menu, MenuContent, MenuItem, MenuTrigger, TOOLBAR_BUTTON_SIZE } from '@/ui';
 import { toggleCompare } from './useViewerHotkeys';
@@ -113,7 +113,7 @@ export function ViewerToolbar({ image }: { image: ImageDTO | undefined }) {
         </Menu>
         <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('gallery.menu.useAsReference')} icon={<Images />} disabled={none} onClick={act(addAsReference)} />
         <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('gallery.menu.upscale')} tooltip={tip(t('gallery.menu.upscale'), 'Shift+U')} icon={<ArrowsOut />} disabled={none} onClick={act(sendToUpscale)} />
-        <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('gallery.menu.segment')} icon={<Crosshair />} disabled={none || (image.mediaType ?? 'image') !== 'image'} onClick={act((i) => useSegment.getState().open(i.name))} data-testid="viewer-segment" />
+        <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('gallery.menu.segment')} icon={<Crosshair />} disabled={none || (image.mediaType ?? 'image') !== 'image'} onClick={act(fixPartOnCanvas)} data-testid="viewer-segment" />
         <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('cutout.menu')} icon={<Scissors />} disabled={none || (image.mediaType ?? 'image') !== 'image'} onClick={act((i) => useCutout.getState().open(i.name))} data-testid="viewer-cutout" />
         <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('facefix.menu')} icon={<Smiley />} disabled={none || (image.mediaType ?? 'image') !== 'image'} onClick={act((i) => useFaceFixDialog.getState().open(i.name))} data-testid="viewer-facefix" />
         <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('gallery.manga.menu')} icon={<DotsNine />} disabled={none || (image.mediaType ?? 'image') !== 'image'} onClick={act((i) => useMangaDialog.getState().open(i.name))} data-testid="viewer-manga" />

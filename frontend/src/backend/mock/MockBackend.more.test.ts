@@ -12,7 +12,6 @@ vi.mock('./imageSynth', async (original) => ({
   progressPreview: vi.fn(() => 'preview'),
   imageSize: vi.fn(async () => ({ width: 64, height: 48 })),
 }));
-vi.mock('./maskSynth', async (original) => ({ ...(await original<typeof import('./maskSynth')>()), synthMask: vi.fn(async () => 'mask:x') }));
 vi.mock('./shareBackup', async (original) => ({
   ...(await original<typeof import('./shareBackup')>()),
   exportInBrowser: vi.fn(async (images: unknown[]) => ({ count: images.length, skipped: 0, folder: '' })),
@@ -68,22 +67,16 @@ async function waitFor<T>(f: () => T | undefined): Promise<T> {
 describe('jobs on a picture', () => {
   it('fails a job whose picture was deleted, whatever the kind of job', async () => {
     const { backend, events } = await start();
-    for (const node of ['Sam2Segmentation', 'RMBG', 'PreviewAny']) {
+    for (const node of ['INPAINT_MaskedFill', 'RMBG', 'PreviewAny']) {
       const [item] = await backend.enqueue(request({ destination: 'intermediate', comfyGraph: graphOf('gone.png', node) }));
       const done = await waitFor(() => finished(events, item!.id));
       expect([node, done.status, done.error]).toEqual([node, 'failed', 'The picture was deleted']);
     }
   });
 
-  it('makes a mask picture from the clicks, and gives a cut-out the source picture again on the same board', async () => {
+  it('gives a cut-out the source picture again on the same board', async () => {
     const { backend, events } = await start();
     const source = await backend.uploadImage(new Blob(['a']), { boardId: null });
-    const [maskItem] = await backend.enqueue(request({ destination: 'intermediate', comfyGraph: graphOf(source.name, 'Sam2Segmentation') }));
-    const maskDone = await waitFor(() => finished(events, maskItem!.id));
-    expect(maskDone.status).toBe('completed');
-    const mask = events.find((e): e is Extract<BackendEvent, { type: 'image_added' }> => e.type === 'image_added' && e.item?.id === maskItem!.id)!;
-    expect(mask.image).toMatchObject({ url: 'mask:x', isIntermediate: true, width: source.width, height: source.height });
-
     const [cutItem] = await backend.enqueue(request({ boardId: null, comfyGraph: graphOf(source.name, 'RMBG') }));
     await waitFor(() => finished(events, cutItem!.id));
     const cut = events.find((e): e is Extract<BackendEvent, { type: 'image_added' }> => e.type === 'image_added' && e.item?.id === cutItem!.id)!;

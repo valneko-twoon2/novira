@@ -11,7 +11,7 @@ Most features are called up from a button on the toolbar above the viewer (the s
 | Make a few more with the same settings, or redo one with slight changes | **{{ui:gallery.derive.menu}}** | The model used for the original picture is installed |
 | Remove the background and keep only the person or object | **{{ui:cutout.menu}}** | The extension ComfyUI-RMBG |
 | Trim transparent margins | **{{ui:gallery.menu.trim}}** (right-click only) | Nothing |
-| Select part of a picture, then cut it out, erase it or repaint it | **{{ui:gallery.menu.segment}}** | An extension such as ComfyUI-segment-anything-2 |
+| Paint over part of a picture, then erase it, cut it out or repaint it | **{{ui:gallery.menu.segment}}** | To erase, the extension comfyui-inpaint-nodes |
 | Clean up small, misshapen faces | **{{ui:facefix.menu}}** | The extensions ComfyUI-Impact-Pack and ComfyUI-Impact-Subpack |
 | Turn a picture into a black-and-white manga page | **{{ui:gallery.manga.menu}}** (viewer toolbar only) | The extension ComfyUI-MangaScreen |
 | Write out a prompt from a picture | **{{ui:caption.menu}}** | The extension ComfyUI-Florence2 |
@@ -22,7 +22,7 @@ Most features are called up from a button on the toolbar above the viewer (the s
 
 ## When an extension is needed
 
-Removing backgrounds, selecting a region, fixing faces and so on work by adding "extensions" to the engine that makes the pictures (ComfyUI). If an extension is not installed, the dialog says "… needs the extension XXX." and buttons for installing it are shown.
+Removing backgrounds, fixing faces and so on work by adding "extensions" to the engine that makes the pictures (ComfyUI). If an extension is not installed, the dialog says "… needs the extension XXX." and buttons for installing it are shown.
 
 1. Press **{{ui:cutout.install}}**. It downloads and installs what is needed automatically.
 2. When installation finishes, the button changes to **{{ui:cutout.restart}}**. Press it and ComfyUI restarts.
@@ -103,27 +103,21 @@ A picture with a transparent background keeps transparent margins around the out
 
 ## Selecting a region and fixing it
 
-![The dialog for specifying with clicks what to select in the picture](shot:segment)
+You select the part to fix by painting over it with a brush. The picture opens on the [canvas](05-canvas.md), so you can zoom and move around while you paint fine details.
 
-You select the thing in the picture you have in mind with a click. You can then cut out, erase or repaint the selected part.
+1. Open the picture in the viewer and press **{{ui:gallery.menu.segment}}** (you can also choose it from the right-click menu in the gallery).
+2. The canvas opens with the picture and an empty **{{ui:canvas.add.inpaint}}** selected. The tool is **{{ui:canvas.tool.brush}}**.
+3. Paint the part you want to fix. Remove what you painted too much with **{{ui:canvas.tool.eraser}}**. To select the rest instead, right-click the mask and choose **{{ui:canvas.entityMenu.invertMask}}**.
+4. Choose what to do with the painted part. When the mask's row is selected, the buttons appear under it (they are also in the mask's right-click menu).
 
-1. Open the picture in the viewer and press **{{ui:gallery.menu.segment}}**.
-2. The first time only, the extension ComfyUI-segment-anything-2 is needed. Install it by following the guidance on the screen ([When an extension is needed](#when-an-extension-is-needed)).
-3. Click the thing you want to select. If something is missing, click another place to add it. To remove an area that spilled over, switch the button to **{{ui:segment.mode.exclude}}** and click, or right-click (or click while holding `Shift`). Clicking a point you set again cancels that point. **{{ui:segment.clear}}** lets you start over from the beginning.
-4. Press **{{ui:segment.run}}**. The selected area is shown in blue.
-5. If the blue area is right, choose the next operation. If you want to select the "rest" instead, turn on **{{ui:segment.invert}}**.
-
-| Button | What it does | What you need |
+| What you want | How | What you need |
 |---|---|---|
-| **{{ui:segment.cutout}}** | Cuts out only the selected part and saves it as a transparent picture. | Nothing |
-| **{{ui:segment.mosaic}}** | Turns the selected part into coarse blocks (mosaic) and saves the picture. The block size is the number beside the button. | Nothing |
-| **{{ui:segment.erase}}** | Erases the selected part, blending it into the surrounding picture. | The extension comfyui-inpaint-nodes. With the LaMa model (about 200MB), it erases naturally. Without it, you can still erase in a simple way. |
-| **{{ui:segment.redraw.title}}** | Repaints only the selected part according to a text instruction. The other parts do not change. | An image model |
-| **{{ui:segment.toCanvas}}** | Sends the picture and the selection to the [canvas](05-canvas.md). The selection becomes an inpaint mask. | Nothing |
+| Erase it, blending it into the surrounding picture | **{{ui:canvas.partFix.erase}}**. The result is put in staging on the canvas, so choose **{{ui:canvas.staging.accept}}** or discard it. | The extension comfyui-inpaint-nodes. With the LaMa model (about 200MB), it erases naturally. Without it, you can still erase in a simple way. |
+| Save only the painted part as a transparent picture | **{{ui:canvas.partFix.cutOutAction}}** | Nothing |
+| Repaint it according to a text instruction | Write a prompt and generate on the canvas as usual. Only the painted part is repainted. | An image model |
+| Apply a mosaic | Do not use the mask; trace over the part directly with the **{{ui:canvas.tool.mosaic}}** tool. | Nothing |
 
-When repainting, you write **what to draw** in text (for example: blue hair, red scarf). You are more likely to get the result you expect if you write in the style the model is good at (such as English tags for an anime-style model). The lower you set **{{ui:segment.redraw.strength}}**, the more of the original shapes and colors remain.
-
-The result is saved as a new picture on the same board as the original. The original picture does not change.
+The original picture does not change. A cut-out is saved to the gallery as a new picture.
 
 ## Fixing faces
 

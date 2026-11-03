@@ -24,7 +24,6 @@ import jaMusic from './locales/ja/music.json';
 import jaParams from './locales/ja/params.json';
 import jaPresets from './locales/ja/presets.json';
 import jaQueue from './locales/ja/queue.json';
-import jaSegment from './locales/ja/segment.json';
 import jaSettings from './locales/ja/settings.json';
 import jaSplash from './locales/ja/splash.json';
 import jaFirstrun from './locales/ja/firstrun.json';
@@ -60,7 +59,6 @@ import enMusic from './locales/en/music.json';
 import enParams from './locales/en/params.json';
 import enPresets from './locales/en/presets.json';
 import enQueue from './locales/en/queue.json';
-import enSegment from './locales/en/segment.json';
 import enSettings from './locales/en/settings.json';
 import enSplash from './locales/en/splash.json';
 import enFirstrun from './locales/en/firstrun.json';
@@ -98,7 +96,6 @@ export const ja = {
   ...jaModels,
   ...jaBrowse,
   ...jaQueue,
-  ...jaSegment,
   ...jaBatch,
   ...jaFinish,
   ...jaSettings,
@@ -142,7 +139,6 @@ export const en: Catalog = {
   ...enModels,
   ...enBrowse,
   ...enQueue,
-  ...enSegment,
   ...enBatch,
   ...enFinish,
   ...enSettings,

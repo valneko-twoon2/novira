@@ -31,3 +31,16 @@ describe('cutout models', () => {
     expect(cutoutModels({} as ComfyNodeDefs)).toEqual([]);
   });
 });
+
+// Snapshots of the whole prompts, so a change to them is seen in review. Update on purpose with `npx vitest run -u`.
+describe('cutout graph snapshots', () => {
+  const asJson = (x: unknown) => `${JSON.stringify(x, null, 2)}\n`;
+
+  it('remove the background', async () => {
+    await expect(asJson(buildCutoutGraph('photo.png', { model: 'RMBG-2.0', sensitivity: 1, edge: 0, background: 'alpha' }))).toMatchFileSnapshot('./__snapshots__/cutout/cutout.json');
+  });
+
+  it('remove the background and put a white one in its place', async () => {
+    await expect(asJson(buildCutoutGraph('photo.png', { model: 'RMBG-2.0', sensitivity: 1, edge: 0, background: 'white' }))).toMatchFileSnapshot('./__snapshots__/cutout/cutout-white.json');
+  });
+});

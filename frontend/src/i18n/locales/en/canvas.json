@@ -483,5 +483,17 @@
   "canvas.toast.slotLayer": "This layer cannot be drawn on or moved",
   "canvas.toast.rasterOnly": "Choose a raster layer",
   "canvas.toast.filterFailed": "The filter could not be applied",
-  "canvas.toast.bucketFailed": "The fill failed"
+  "canvas.toast.bucketFailed": "The fill failed",
+  "canvas.partFix.erase": "Erase painted part",
+  "canvas.partFix.cutOutAction": "Cut out painted part",
+  "canvas.partFix.empty": "Nothing is painted on this mask yet. Paint the part with the brush.",
+  "canvas.partFix.erasing": "Erasing the painted part…",
+  "canvas.partFix.erased": "The erased picture is in staging. Accept or discard it.",
+  "canvas.partFix.cutOut": "Cut-out saved to the gallery",
+  "canvas.partFix.failed": "Could not process the painted part",
+  "canvas.partFix.eraseNeedsPack": "Erasing needs the extension {pack}.",
+  "canvas.partFix.install": "Install",
+  "canvas.partFix.restart": "Restart ComfyUI",
+  "canvas.partFix.lamaOffer": "Get the LaMa model (about 200 MB) to erase more naturally.",
+  "canvas.partFix.lamaGet": "Get LaMa"
 }

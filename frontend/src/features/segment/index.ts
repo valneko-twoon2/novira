@@ -1,5 +1,4 @@
-// Entry point of the select-and-fix dialog the shell mounts.
+// Entry point of the remove-background dialog the shells mount.
 import './segment.css';
 
 export { CutoutDialog } from './CutoutDialog';
-export { SegmentDialog } from './SegmentDialog';
