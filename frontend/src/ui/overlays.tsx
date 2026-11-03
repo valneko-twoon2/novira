@@ -161,7 +161,7 @@ export const ContextMenuTrigger = RadixContextMenu.Trigger;
 export function ContextMenuContent({ children }: { children: ReactNode }) {
   return (
     <RadixContextMenu.Portal>
-      <RadixContextMenu.Content className="ui-menu">{children}</RadixContextMenu.Content>
+      <RadixContextMenu.Content className="ui-menu ui-menu--context">{children}</RadixContextMenu.Content>
     </RadixContextMenu.Portal>
   );
 }
@@ -173,6 +173,31 @@ export function ContextMenuItem({ icon, children, onSelect, disabled, danger, sh
       <span className="ui-menu__text">{children}</span>
       {shortcut && <span className="ui-menu__shortcut">{shortcut}</span>}
     </RadixContextMenu.Item>
+  );
+}
+
+/**
+ * A context menu item with a second, small item at its right (an icon only, named by `side.label`), for "do it now"
+ * beside "choose how first". Both close the menu; the keyboard steps through them like any items.
+ */
+export function ContextMenuSplitItem({
+  side,
+  ...item
+}: MenuItemProps & { side: { icon: ReactNode; label: string; onSelect: () => void; testId?: string } }) {
+  return (
+    <div className="ui-menu__split">
+      <ContextMenuItem {...item} />
+      <RadixContextMenu.Item
+        className="ui-menu__item ui-menu__side"
+        onSelect={side.onSelect}
+        disabled={item.disabled}
+        aria-label={side.label}
+        title={side.label}
+        data-testid={side.testId}
+      >
+        {side.icon}
+      </RadixContextMenu.Item>
+    </div>
   );
 }
 
@@ -193,7 +218,7 @@ export function ContextSubMenu({ icon, label, children }: { icon?: ReactNode; la
         <CaretRight size={12} />
       </RadixContextMenu.SubTrigger>
       <RadixContextMenu.Portal>
-        <RadixContextMenu.SubContent className="ui-menu" sideOffset={4}>
+        <RadixContextMenu.SubContent className="ui-menu ui-menu--context" sideOffset={4}>
           {children}
         </RadixContextMenu.SubContent>
       </RadixContextMenu.Portal>

@@ -103,8 +103,7 @@
 | **{{ui:gallery.menu.upscale}}**（`Shift+U`） | アップスケールのタブに送る |
 | **{{ui:gallery.menu.segment}}** | 絵をキャンバスで開き、直したい部分をブラシで塗って、消したり切り抜いたり描き直したりする |
 | **{{ui:gallery.derive.menu}}** | この絵の設定で、別のシードや少しだけ変えた絵を作る |
-| **{{ui:cutout.menu}}** | 背景を取り除く |
-| **{{ui:facefix.menu}}** | 顔を見つけて描き直す |
+| **{{ui:gallery.tools.heading}}** | {{ui:facefix.menu}}、{{ui:cutout.menu}}、{{ui:caption.menu}}、{{ui:canvas.poseFromImage.menu}}。選ぶと前回の設定ですぐに実行し、右の歯車で先に設定を開きます（[絵を直す・使い回す](04-improve.md)） |
 | **{{ui:gallery.menu.trim}}** | 透明な余白を詰めて、新しい透過画像として保存する |
 | **{{ui:character.menu}}** | 絵を人物として登録する |
 | **{{ui:gallery.menu.changeBoard}}** | 別のボードに移す |

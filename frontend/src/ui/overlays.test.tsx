@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { Modal, Section, Tab, TabList, TabPanel, Tabs } from './overlays';
+import { ContextMenu, ContextMenuContent, ContextMenuSplitItem, ContextMenuTrigger, Modal, Section, Tab, TabList, TabPanel, Tabs } from './overlays';
 
 afterEach(cleanup);
 
@@ -91,5 +91,44 @@ describe('Tabs', () => {
     expect(screen.getByRole('tabpanel').textContent).toBe('panel b');
     fireEvent.mouseDown(screen.getByRole('tab', { name: 'Third' }), { button: 0 });
     expect(screen.getByRole('tabpanel').textContent).toBe('panel b');
+  });
+});
+
+describe('ContextMenuSplitItem', () => {
+  const show = (disabled = false) => {
+    const main = vi.fn();
+    const side = vi.fn();
+    render(
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <div data-testid="target">target</div>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuSplitItem onSelect={main} disabled={disabled} side={{ icon: <span>gear</span>, label: 'Settings', onSelect: side, testId: 'side' }}>
+            Run
+          </ContextMenuSplitItem>
+        </ContextMenuContent>
+      </ContextMenu>,
+    );
+    fireEvent.contextMenu(screen.getByTestId('target'));
+    return { main, side };
+  };
+
+  it('runs the item or its side action, each on its own, and closes the menu', () => {
+    const first = show();
+    fireEvent.click(screen.getByText('Run'));
+    expect(first.main).toHaveBeenCalledTimes(1);
+    expect(first.side).not.toHaveBeenCalled();
+    expect(screen.queryByRole('menu')).toBeNull();
+    fireEvent.contextMenu(screen.getByTestId('target'));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Settings' }));
+    expect(first.side).toHaveBeenCalledTimes(1);
+    expect(first.main).toHaveBeenCalledTimes(1);
+  });
+
+  it('turns both off together', () => {
+    show(true);
+    expect(screen.getByTestId('side').getAttribute('aria-disabled')).toBe('true');
+    expect(screen.getByText('Run').closest('[role=menuitem]')?.getAttribute('aria-disabled')).toBe('true');
   });
 });

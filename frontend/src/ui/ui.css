@@ -612,6 +612,12 @@
   font-size: var(--fs-sm);
 }
 
+/* A long context menu (the picture menu) scrolls inside the window instead of running out of it. */
+.ui-menu--context {
+  max-height: var(--radix-context-menu-content-available-height);
+  overflow-y: auto;
+}
+
 .ui-menu__item {
   display: flex;
   align-items: center;
@@ -678,6 +684,22 @@
 
 .ui-menu__check {
   margin-left: auto;
+}
+
+.ui-menu__split {
+  display: flex;
+  gap: 2px;
+}
+
+.ui-menu__split > .ui-menu__item:first-child {
+  flex: 1;
+}
+
+.ui-menu__side {
+  justify-content: center;
+  width: 28px;
+  padding: 0;
+  color: var(--text-muted);
 }
 
 .ui-menu__sep {

@@ -59,6 +59,7 @@ The window title and the screen text in every language are lowercase too. Commen
 | 顔を直す (Face fix) | Find faces, repaint them at higher resolution. Needs the Impact Pack extension | `facefix.*` |
 | 背景を除去 (Remove background) | Cut out the subject and make the background transparent | `cutout.*` |
 | 絵からプロンプトを作る (Caption) | Write tags or a sentence for a picture with Florence-2 | `caption.*` |
+| 直す (Fix group), 画像のツール (Tool band) | The picture menu group of face fix, remove background, describe and read poses: an item runs at once with the last settings, its gear opens the band over the viewer's picture with the settings, the run and its result | `gallery.tools.*`, `state/imageTools/`, `features/viewer/tools/` |
 
 ## Comic
 

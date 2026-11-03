@@ -7,6 +7,7 @@
 // (the language, theme and zoom, the thumbnail size, the assistant chat and its window, the document under edit).
 import { useCharacters } from './characters';
 import { useDrafts } from './drafts';
+import { useImageToolSettings } from './imageTools/settings';
 import { useMangaFinish } from './mangaFinish';
 import { useLogo } from './media/logo';
 import { useMusic } from './media/music';
@@ -55,6 +56,7 @@ const LIVE_STORES: readonly Persisted[] = [
   usePromptBook,
   useWildcards,
   useMangaFinish,
+  useImageToolSettings,
   useLogo,
   useMusic,
   useVideo,

@@ -20,15 +20,26 @@ Most features are called up from a button on the toolbar above the viewer (the s
 | Choose from half-drawn candidates | The **{{ui:app.views.drafts}}** tab | Nothing |
 | Apply the same processing to many pictures | **{{ui:gallery.menu.batch}}** (choose several and right-click) | Depends on the processing |
 
+## Using the fixing tools
+
+The four tools {{ui:facefix.menu}}, {{ui:cutout.menu}}, {{ui:caption.menu}} and {{ui:canvas.poseFromImage.menu}} are grouped under **{{ui:gallery.tools.heading}}** in the right-click menu of a gallery picture. Each of them works in a band that opens above the picture in the viewer. The picture stays in the viewer, so you can zoom and move it while you check.
+
+- Choosing an item runs it at once with the settings of the last time. The picture appears in the viewer and the band shows the progress.
+- The gear button at the right of an item opens the settings in the band without running. Change the settings and press **{{ui:gallery.tools.run}}**. The changed settings are used the next time too.
+- The **{{ui:cutout.menu}}**, **{{ui:facefix.menu}}** and **{{ui:caption.menu}}** buttons on the viewer toolbar also open the settings in the band. Pressing the button again closes it.
+- The buttons on the left of the band switch to another tool.
+- When it finishes, the band shows the result and the settings used. **{{ui:gallery.tools.edit}}** goes back to the settings so you can change them and run again.
+- The work runs in the queue. Closing the band, or moving to another picture or screen, does not stop it. Only **{{ui:common.cancel}}** in the band stops it. A result that is a picture is saved to the gallery even when the band is closed.
+
 ## When an extension is needed
 
-Removing backgrounds, fixing faces and so on work by adding "extensions" to the engine that makes the pictures (ComfyUI). If an extension is not installed, the dialog says "… needs the extension XXX." and buttons for installing it are shown.
+Removing backgrounds, fixing faces and so on work by adding "extensions" to the engine that makes the pictures (ComfyUI). If an extension is not installed, the band says "… needs the extension XXX." and buttons for installing it are shown.
 
-1. Press **{{ui:cutout.install}}**. It downloads and installs what is needed automatically.
-2. When installation finishes, the button changes to **{{ui:cutout.restart}}**. Press it and ComfyUI restarts.
-3. After the restart, the same dialog can be used just as it is.
+1. Press **{{ui:gallery.tools.install}}**. It downloads and installs what is needed automatically. The install runs in the background and its progress shows in the downloads display. Closing the band does not stop it.
+2. When installation finishes, the button in the band changes to **{{ui:gallery.tools.restart}}**. Press it and ComfyUI restarts.
+3. After the restart, the tool can be used just as it is.
 
-The first time you use one, the models the extension uses also start downloading, so it takes a while. You need to be connected to the internet.
+The first time you use one, the models the extension uses also start downloading, so it takes a while. You need to be connected to the internet. This download runs inside the work you started, so closing the band does not stop it.
 
 > Some extensions take time and disk space to install. ComfyUI-Impact-Pack needs Git to install. On a computer without Git, installation fails. If a message appears, read it and then act on it.
 
@@ -77,19 +88,19 @@ In the following cases, the button cannot be pressed, or a notification appears 
 
 ## Removing a background
 
-![The dialog for removing a background](shot:cutout)
+![The background removed in the band of the viewer and compared with the original](shot:cutout)
 
 It automatically recognizes what is in the picture and makes a picture with the background removed. You do not need to specify anything by clicking.
 
-1. Open the picture in the viewer and press **{{ui:cutout.menu}}** with the scissors icon (it is also in the right-click menu).
-2. If needed, change the settings.
+1. Right-click a picture in the gallery and choose **{{ui:cutout.menu}}** under **{{ui:gallery.tools.heading}}**: it runs at once with the settings of the last time. To change the settings first, open the band with the gear at the right of the item, or with the scissors button on the viewer toolbar.
+2. In the band, change the settings if needed.
    - **{{ui:cutout.model}}**: Usually it is fine as it is.
    - **{{ui:cutout.sensitivity}}**: The lower you set it, the more of the parts with unclear boundaries it keeps.
    - **{{ui:cutout.edge}}**: A positive value widens the outline and a negative value shaves it.
    - **{{ui:cutout.background}}**: Choose **{{ui:cutout.background.alpha}}** or **{{ui:cutout.background.white}}**.
-3. Press **{{ui:cutout.run}}**.
+3. Press **{{ui:gallery.tools.run}}**.
 
-The finished picture is saved as a new picture on the same board as the original. **The original picture stays as it is.** If you are not happy with the result, change the settings and press **{{ui:cutout.again}}**. **{{ui:cutout.open}}** shows it in the viewer.
+The finished picture is saved as a new picture on the same board as the original. **The original picture stays as it is.** The viewer then compares the new picture with the original. If you are not happy with the result, press **{{ui:gallery.tools.edit}}**, change the settings and run it again.
 
 A white background is a good choice when you later want to use the picture as a reference image for a [character](#registering-and-using-a-character). The color of the background is less likely to carry over into the new pictures you make.
 
@@ -97,7 +108,7 @@ A white background is a good choice when you later want to use the picture as a 
 
 A picture with a transparent background keeps transparent margins around the outside of the picture. With **{{ui:gallery.menu.trim}}**, you save a new transparent picture cut tightly to the part that has content. It is handy when you use it as a sticker or as material.
 
-- Right-click a picture in the gallery and choose it. Right after removing a background, you can do the same thing from **{{ui:cutout.trim}}** in the dialog (it appears only when you made the background transparent).
+- Right-click a picture in the gallery and choose it. Right after removing a background, you can do the same thing from **{{ui:cutout.trim}}** in the band (it appears only when you made the background transparent).
 - A shadow so faint it is almost invisible is trimmed away as margin.
 - For a picture whose transparent area does not reach the edge of the picture, "There is no margin to trim." appears and nothing is saved. A picture that is transparent all over cannot be trimmed either.
 
@@ -121,20 +132,21 @@ The original picture does not change. A cut-out is saved to the gallery as a new
 
 ## Fixing faces
 
-![The dialog for fixing faces](shot:facefix)
+![The face fix settings open in the band of the viewer](shot:facefix)
 
 In wide shots, faces that appear small often come out misshapen. **{{ui:facefix.menu}}** automatically finds the faces in the picture, redraws only the faces at a high resolution, and puts them back in the original picture. Nothing other than the faces changes.
 
-1. Open the picture in the viewer and press **{{ui:facefix.menu}}** (it is also in the right-click menu).
-2. The first time only, the extensions ComfyUI-Impact-Pack and ComfyUI-Impact-Subpack are needed. Install them with **{{ui:facefix.install}}** and press **{{ui:facefix.restart}}**. The model that finds faces is prepared by the Subpack itself.
+1. Right-click a picture in the gallery and choose **{{ui:facefix.menu}}** under **{{ui:gallery.tools.heading}}**: it runs at once. To check the settings before running, open the band with the gear at the right of the item, or with the **{{ui:facefix.menu}}** button on the viewer toolbar.
+2. The first time only, the extensions ComfyUI-Impact-Pack and ComfyUI-Impact-Subpack are needed. Install them with **{{ui:gallery.tools.install}}** in the band and press **{{ui:gallery.tools.restart}}**. The model that finds faces is prepared by the Subpack itself.
 3. Check the settings.
    - **{{ui:facefix.model}}**: The model used for the original picture is selected.
+   - **{{ui:facefix.detector}}**: The model used to find the faces. Usually it is fine as it is.
    - **{{ui:facefix.prompt}}**: The original picture's prompt is filled in. Adding features of the face makes it more effective.
    - **{{ui:facefix.strength}}**: The lower it is, the closer to the original face; the higher it is, the more it redraws.
    - **{{ui:facefix.sensitivity}}**: Raising it picks up only clear faces, and lowering it also picks up small faces and profiles. However, it also becomes easier for it to pick up things that are not faces.
-4. Press **{{ui:facefix.run}}**.
+4. Press **{{ui:gallery.tools.run}}**.
 
-The result is saved on the same board as the original. Press **{{ui:facefix.open}}** to compare it with the original in the viewer. If you do not like it, change the settings and press **{{ui:facefix.again}}**.
+The result is saved on the same board as the original, and the viewer compares it with the original. If you do not like it, press **{{ui:gallery.tools.edit}}**, change the settings and run it again. The model and what to draw are remembered only while you work on the same picture.
 
 > A picture made with a LoRA is redrawn without the LoRA. Because of this, only the face may look slightly different in style.
 
@@ -160,18 +172,18 @@ Saving finishes the picture again with the values shown, so it takes as long as 
 
 ## Making a prompt from a picture
 
-![The dialog after it wrote out tags for a picture](shot:caption)
+![Tags written out for a picture in the band of the viewer](shot:caption)
 
 Looks at a picture and writes out a prompt (tags or a sentence) for drawing it. Use it when you want pictures close to one you like, or when you are not sure how to write the prompt.
 
-1. Choose the **{{ui:caption.menu}}** button in the viewer, or **{{ui:caption.menu}}** in the picture's right-click menu. You can also open it from the **{{ui:caption.fromPrompt}}** button above the prompt field on the Generate tab. You can drop a gallery picture or an image file from your computer on that button.
-2. Under **{{ui:caption.style}}**, choose **{{ui:caption.style.tags}}** or **{{ui:caption.style.sentence}}**.
-3. Press **{{ui:caption.run}}**.
-4. You can edit the words right there. Then press **{{ui:caption.replace}}**, **{{ui:caption.append}}** or **{{ui:caption.copy}}**.
+1. Right-click a picture in the gallery and choose **{{ui:caption.menu}}** under **{{ui:gallery.tools.heading}}**: it writes the words out at once. The **{{ui:caption.fromPrompt}}** button above the prompt field on the Generate tab does the same. That button uses the picture selected in the gallery, and when none is selected it opens a window to choose an image file. You can also drop a gallery picture or an image file from your computer on that button.
+2. To change the way it writes, press **{{ui:gallery.tools.edit}}** in the band and choose **{{ui:caption.style.tags}}** or **{{ui:caption.style.sentence}}** under **{{ui:caption.style}}**.
+3. Press **{{ui:gallery.tools.run}}**.
+4. You can edit the words right there in the band. Then press **{{ui:caption.replace}}**, **{{ui:caption.append}}** or **{{ui:caption.copy}}**.
 
 Replacing and adding work on "{{ui:params.prompt.positive}}" on the Generate tab. This feature adds no picture to the gallery.
 
-> This feature needs the extension ComfyUI-Florence2. When it is not installed, you can install it from the dialog (see "When an extension is needed" in this chapter). The first time you use it, the model for describing pictures (Florence-2 PromptGen) is downloaded.
+> This feature needs the extension ComfyUI-Florence2. When it is not installed, you can install it from the band (see "When an extension is needed" in this chapter). The first time you use it, the model for describing pictures (Florence-2 PromptGen) is downloaded.
 
 ## Registering and using a character
 

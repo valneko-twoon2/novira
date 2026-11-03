@@ -5,11 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ImageDTO } from '@/backend';
 import { t, tCount } from '@/i18n';
 import { useBatch } from '@/state/dialogs/batch';
-import { useCaptionDialog } from '@/state/dialogs/caption';
 import { useCharacterDialog } from '@/state/dialogs/character';
-import { useCutout } from '@/state/dialogs/cutout';
 import { useDeriveDialog } from '@/state/dialogs/derive';
-import { useFaceFixDialog } from '@/state/dialogs/facefix';
 import { fixPartOnCanvas } from '@/state/partFix';
 import { useShareDialog } from '@/state/dialogs/share';
 import { useGallery } from '@/state/gallery';
@@ -44,6 +41,9 @@ import { deriveFrom } from '@/state/derive';
 import { trimTransparent } from '@/state/trim';
 
 vi.mock('@/state/partFix', () => ({ fixPartOnCanvas: vi.fn() }));
+vi.mock('@/state/imageTools/actions', () => ({ quickRunTool: vi.fn(), openToolSettings: vi.fn() }));
+
+import { openToolSettings, quickRunTool } from '@/state/imageTools/actions';
 
 const initial = useGallery.getState();
 const image = (over: Partial<ImageDTO> = {}): ImageDTO =>
@@ -142,16 +142,41 @@ describe('SingleImageMenu', () => {
     showMenu(<SingleImageMenu image={image()} />);
     await choose(t('gallery.menu.segment'));
     expect(fixPartOnCanvas).toHaveBeenCalledWith(expect.objectContaining({ name: 'a.png' }));
-    await choose(t('cutout.menu'));
-    expect(useCutout.getState().imageName).toBe('a.png');
-    await choose(t('facefix.menu'));
-    expect(useFaceFixDialog.getState().imageName).toBe('a.png');
-    await choose(t('caption.menu'));
-    expect(useCaptionDialog.getState().imageName).toBe('a.png');
     await choose(t('character.menu'));
     expect(useCharacterDialog.getState().open).toBeTruthy();
     await choose(t('gallery.menu.trim'));
     expect(trimTransparent).toHaveBeenCalled();
+  });
+
+  it('runs a picture tool at once from the fix group, or opens its settings from the gear beside it', async () => {
+    showMenu(<SingleImageMenu image={image()} />);
+    expect(screen.getByText(t('gallery.tools.heading'))).toBeTruthy();
+    for (const [label, tool] of [
+      ['facefix.menu', 'facefix'],
+      ['cutout.menu', 'cutout'],
+      ['caption.menu', 'caption'],
+      ['canvas.poseFromImage.menu', 'pose'],
+    ] as const) {
+      await choose(t(label));
+      expect(quickRunTool).toHaveBeenLastCalledWith(tool, 'a.png');
+    }
+    expect(openToolSettings).not.toHaveBeenCalled();
+    fireEvent.click(await screen.findByTestId('menu-tool-settings-cutout'));
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+    expect(openToolSettings).toHaveBeenCalledWith('cutout', 'a.png');
+    expect(quickRunTool).toHaveBeenCalledTimes(4);
+  });
+
+  it('offers the picture tools only for a still picture, and no pose reading on a phone', async () => {
+    showMenu(<SingleImageMenu image={image({ mediaType: 'video' })} />);
+    const items = (await screen.findAllByRole('menuitem')).filter((i) => i.textContent === t('facefix.menu'));
+    expect(items[0]?.getAttribute('aria-disabled')).toBe('true');
+    expect(screen.getByTestId('menu-tool-settings-facefix').getAttribute('aria-disabled')).toBe('true');
+    cleanup();
+    showMenu(<SingleImageMenu image={image()} phone />);
+    await screen.findAllByRole('menu');
+    expect(screen.queryByText(t('canvas.poseFromImage.menu'))).toBeNull();
+    expect(screen.getByTestId('menu-tool-settings-caption')).toBeTruthy();
   });
 
   it('derives new pictures from it', async () => {

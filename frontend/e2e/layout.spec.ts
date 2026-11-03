@@ -164,7 +164,7 @@ const SURFACES: Record<string, Surface> = {
     await scan('menu');
   },
   'dialogs of the picture menu': async (page, locale, scan) => {
-    const items = ['gallery.menu.batch', 'gallery.derive.custom', 'facefix.menu', 'share.menu', 'share.check.title', 'xyplot.menu', 'gallery.menu.trim'];
+    const items = ['gallery.menu.batch', 'gallery.derive.custom', 'share.menu', 'share.check.title', 'xyplot.menu', 'gallery.menu.trim'];
     for (const key of items) {
       await page.getByTestId('gallery-thumb').first().click({ button: 'right' });
       const item = page.getByRole('menuitem', { name: msg(key, {}, locale), exact: true });
@@ -187,6 +187,25 @@ const SURFACES: Record<string, Surface> = {
     await expect(page.getByTestId('viewer-toolbar')).toBeVisible();
     const openers = ['cutout', 'facefix', 'manga', 'caption', 'character', 'share', 'derive'].map((x) => `[data-testid="viewer-${x}"]`);
     await scan('viewer', { tooltips: true, openers });
+  },
+  'tool band over the viewer, each tool and its results': async (page, locale, scan) => {
+    await page.getByTestId('gallery-thumb').first().click();
+    await page.getByRole('tab', { name: msg('app.views.viewer', {}, locale), exact: true }).click();
+    await page.getByTestId('viewer-facefix').click();
+    for (const tool of ['facefix', 'cutout', 'caption', 'pose']) {
+      await page.getByTestId(`tool-band-tool-${tool}`).click();
+      await expect(page.getByTestId('tool-band-run')).toBeVisible();
+      await scan(`${tool} settings`, { openers: true });
+    }
+    // A description, then a picture result compared with its original, each with the settings it used.
+    await page.getByTestId('tool-band-tool-caption').click();
+    await page.getByTestId('tool-band-run').click();
+    await expect(page.getByTestId('tool-band-text')).toBeVisible({ timeout: 20_000 });
+    await scan('description');
+    await page.getByTestId('tool-band-tool-cutout').click();
+    await page.getByTestId('tool-band-run').click();
+    await expect(page.getByTestId('tool-band-compare').or(page.getByTestId('tool-band-trim'))).toBeVisible({ timeout: 20_000 });
+    await scan('picture result');
   },
   'draft history': async (page, _locale, scan) => {
     await page.getByTestId('positive-prompt').fill('a lighthouse on a cliff');
@@ -331,21 +350,20 @@ const PHONE_SURFACES: Record<string, Surface> = {
     await page.getByTestId('phone-view-info').click();
     await scan('picture with info', ALL);
   },
-  'phone picture tools': async (page, locale, scan) => {
-    // The picture menu's dialogs take the whole screen, the picture above its settings.
+  'phone picture tools': async (page, _locale, scan) => {
+    // The gear of a tool in the picture menu opens its settings in the band over the picture, the switch on its own row.
     await page.getByTestId('phone-nav-images').click();
     await page.getByTestId('phone-thumb').nth(1).click();
-    for (const [key, testId, step] of [
-      ['facefix.menu', 'facefix-dialog', 'fix the face'],
-      ['cutout.menu', 'cutout-stage', 'remove background'],
-      ['caption.menu', 'caption-dialog', 'describe as a prompt'],
+    for (const [tool, step] of [
+      ['facefix', 'fix the face'],
+      ['cutout', 'remove background'],
+      ['caption', 'describe as a prompt'],
     ] as const) {
       await page.getByTestId('phone-view-menu').click();
-      await page.getByRole('menuitem', { name: msg(key, {}, locale), exact: true }).click();
-      await expect(page.getByTestId(testId)).toBeVisible();
+      await page.getByTestId(`menu-tool-settings-${tool}`).click();
+      await expect(page.getByTestId('tool-band')).toHaveAttribute('data-tool', tool);
+      await expect(page.getByTestId('tool-band-run')).toBeVisible();
       await scan(step, ALL);
-      await page.keyboard.press('Escape');
-      await expect(page.getByTestId(testId)).toBeHidden();
     }
   },
   'phone models tab': async (page, _locale, scan) => {

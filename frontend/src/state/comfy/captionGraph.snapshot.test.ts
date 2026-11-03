@@ -1,5 +1,5 @@
-// Snapshots of the ComfyUI prompt the describe-as-a-prompt dialog sends, so a change to it is seen in review.
-// Update them on purpose with `npx vitest run -u src/features/caption/captionGraph.snapshot.test.ts`.
+// Snapshots of the ComfyUI prompt the describe-as-a-prompt tool sends, so a change to it is seen in review.
+// Update them on purpose with `npx vitest run -u src/state/comfy/captionGraph.snapshot.test.ts`.
 import { describe, expect, it } from 'vitest';
 import { PREFERRED_CAPTION_MODEL, buildCaptionGraph } from '@/state/comfy/caption';
 

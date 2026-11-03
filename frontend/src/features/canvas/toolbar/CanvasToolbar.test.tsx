@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { t } from '@/i18n';
 import { useCanvas } from '@/state/canvas';
 import { usePose3dDialog } from '@/state/dialogs/pose3d';
-import { usePoseFromImageDialog } from '@/state/dialogs/poseFromImage';
+import { useGallery } from '@/state/gallery';
 import { TooltipProvider } from '@/ui';
 import { CanvasToolbar } from './CanvasToolbar';
 
@@ -18,7 +18,10 @@ vi.mock('../actions', async (importOriginal) => ({
 }));
 import { generateWithRandomPoses, randomizePoses, saveCanvasAsPsd, saveCanvasToGallery } from '../actions';
 
-const initial = { canvas: useCanvas.getState(), pose3d: usePose3dDialog.getState(), fromImage: usePoseFromImageDialog.getState() };
+vi.mock('@/state/imageTools/actions', () => ({ quickRunTool: vi.fn() }));
+import { quickRunTool } from '@/state/imageTools/actions';
+
+const initial = { canvas: useCanvas.getState(), pose3d: usePose3dDialog.getState(), gallery: useGallery.getState() };
 const state = () => useCanvas.getState();
 const show = () =>
   render(
@@ -31,7 +34,8 @@ beforeEach(() => {
   vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
   useCanvas.setState(initial.canvas, true);
   usePose3dDialog.setState(initial.pose3d, true);
-  usePoseFromImageDialog.setState(initial.fromImage, true);
+  useGallery.setState(initial.gallery, true);
+  vi.mocked(quickRunTool).mockClear();
   for (const fn of [saveCanvasToGallery, saveCanvasAsPsd, randomizePoses, generateWithRandomPoses]) vi.mocked(fn).mockClear();
 });
 afterEach(() => {
@@ -108,7 +112,7 @@ describe('pose tool options', () => {
     expect(screen.getByTestId('canvas-pose-random')).toBeTruthy();
   });
 
-  it('randomizes the selected layer and opens the two pose dialogs', () => {
+  it('randomizes the selected layer, opens the 3D pose dialog and reads the poses of the selected picture', () => {
     const id = state().addEntity('control');
     state().setTool('pose');
     show();
@@ -116,8 +120,18 @@ describe('pose tool options', () => {
     expect(randomizePoses).toHaveBeenCalledWith(id, undefined, useCanvas);
     fireEvent.click(screen.getByTestId('canvas-pose-3d'));
     expect(usePose3dDialog.getState().open).toBe(true);
+    act(() => useGallery.setState({ images: [{ name: 'photo.png', mediaType: 'image' } as never], selection: ['photo.png'] }));
     fireEvent.click(screen.getByTestId('canvas-pose-from-image'));
-    expect(usePoseFromImageDialog.getState().open).toBe(true);
+    expect(quickRunTool).toHaveBeenCalledWith('pose', 'photo.png');
+  });
+
+  it('asks for a file to read the poses of when no picture is selected', () => {
+    state().setTool('pose');
+    show();
+    const click = vi.spyOn(screen.getByTestId('canvas-pose-from-image-file') as HTMLInputElement, 'click').mockImplementation(() => undefined);
+    fireEvent.click(screen.getByTestId('canvas-pose-from-image'));
+    expect(click).toHaveBeenCalled();
+    expect(quickRunTool).not.toHaveBeenCalled();
   });
 
   it('generates a batch of the chosen size, limited to the maximum', () => {

@@ -5,7 +5,6 @@ import { PackDock } from '@/features/downloads/PackDock';
 import { EngineBanner } from '@/features/engine/EngineBanner';
 import { AgentHost } from '@/features/agent/AgentHost';
 import { PoseEditor3DDialog } from '@/features/canvas/pose3d/PoseEditor3DDialog';
-import { PoseFromImageDialog } from '@/features/canvas/PoseFromImageDialog';
 import { ModelBrowser } from '@/features/browse/ModelBrowser';
 import { ImportDialog } from '@/features/models/ImportDialog';
 import { ModelManager } from '@/features/models/ModelManager';
@@ -13,15 +12,12 @@ import { CharacterDialog } from '@/features/params/characters/CharacterDialog';
 import { ModelPartsDialog } from '@/features/params/model/ModelPartsDialog';
 import { QueueTab } from '@/features/queue/QueueTab';
 import { BatchDialog } from '@/features/batch';
-import { CaptionDialog } from '@/features/caption';
 import { DeriveDialog } from '@/features/derive';
-import { FaceFixDialog } from '@/features/facefix';
 import { MangaFinishDialog } from '@/features/viewer/manga';
 import { PoseDialog } from '@/features/pose';
 import { XyPlotDialog } from '@/features/xyplot';
 import { FinishDialog } from '@/features/finish';
 import { ShareDialog, WatermarkCheckDialog } from '@/features/share';
-import { CutoutDialog } from '@/features/segment';
 import { AboutModal, HotkeysModal, SettingsModal } from '@/features/settings/Modals';
 import { Splash } from '@/features/splash/Splash';
 import { useSplashGate } from '@/features/splash/useSplashGate';
@@ -136,22 +132,16 @@ function DesktopShell() {
         <AboutModal />
         <ImportDialog />
         <ModelPartsDialog />
-        <CutoutDialog />
         <CharacterDialog />
         <DeriveDialog />
-        <FaceFixDialog />
         <MangaFinishDialog />
         <PoseDialog />
-        <PoseFromImageDialog />
         <PoseEditor3DDialog />
         <XyPlotDialog />
         <BatchDialog />
         <FinishDialog />
         <ShareDialog />
         <WatermarkCheckDialog />
-      </ErrorBoundary>
-      <ErrorBoundary area="describe as a prompt">
-        <CaptionDialog />
       </ErrorBoundary>
       {showDevLog && devLogOpen && (
         <ErrorBoundary area="developer log">

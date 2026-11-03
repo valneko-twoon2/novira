@@ -27,25 +27,26 @@ import {
   Resize,
   ShareNetwork,
   Star,
+  SlidersHorizontal,
   TextAa,
   Trash,
 } from '@phosphor-icons/react';
+import type { ReactNode } from 'react';
 import type { ImageDTO } from '@/backend';
 import { t } from '@/i18n';
 import { DERIVE_CHOICES, canDerive, deriveFrom } from '@/state/derive';
-import { useCaptionDialog } from '@/state/dialogs/caption';
-import { usePoseFromImageDialog } from '@/state/dialogs/poseFromImage';
 import { useDeriveDialog } from '@/state/dialogs/derive';
-import { useFaceFixDialog } from '@/state/dialogs/facefix';
+import { openToolSettings, quickRunTool } from '@/state/imageTools/actions';
+import { TOOL_TEXT } from '@/state/imageTools/text';
+import type { ImageToolId } from '@/state/imageTools/tools';
 import { trimTransparent } from '@/state/trim';
 import { useGallery } from '@/state/gallery';
 import { useCharacterDialog } from '@/state/dialogs/character';
-import { useCutout } from '@/state/dialogs/cutout';
 import { fixPartOnCanvas } from '@/state/partFix';
 import { useShareDialog } from '@/state/dialogs/share';
 import { useWatermarkCheckDialog } from '@/state/dialogs/watermark';
 import { isScreenShown, showViewer } from '@/state/ui';
-import { ContextMenuItem, ContextMenuSeparator, ContextSubMenu } from '@/ui';
+import { ContextMenuItem, ContextMenuLabel, ContextMenuSeparator, ContextMenuSplitItem, ContextSubMenu } from '@/ui';
 import {
   addAsReference,
   copyImage,
@@ -66,6 +67,17 @@ import {
 import { CANVAS_TARGETS } from '../canvasTargets';
 import { requestDeleteImages } from '../deleteRequest';
 import { BoardMenuItems } from './BoardMenuItems';
+
+/** The picture tools of the "fix" group, in the order of the tool band; the phone has no canvas to put poses on. */
+const MENU_TOOLS: readonly ImageToolId[] = ['facefix', 'cutout', 'caption', 'pose'];
+const PHONE_TOOLS: readonly ImageToolId[] = ['facefix', 'cutout', 'caption'];
+
+const TOOL_ICONS: Record<ImageToolId, ReactNode> = {
+  facefix: <Smiley />,
+  cutout: <Scissors />,
+  caption: <ChatCenteredText />,
+  pose: <PersonSimple />,
+};
 
 /**
  * `phone` leaves out what only switches to a screen the phone layout has not (the viewer, the canvas, workflows, video,
@@ -184,23 +196,23 @@ export function SingleImageMenu({ image, phone = false }: { image: ImageDTO; pho
           {t('gallery.derive.custom')}
         </ContextMenuItem>
       </ContextSubMenu>
-      <ContextMenuItem icon={<Scissors />} disabled={(image.mediaType ?? 'image') !== 'image'} onSelect={() => useCutout.getState().open(image.name)}>
-        {t('cutout.menu')}
-      </ContextMenuItem>
-      <ContextMenuItem icon={<Smiley />} disabled={(image.mediaType ?? 'image') !== 'image'} onSelect={() => useFaceFixDialog.getState().open(image.name)}>
-        {t('facefix.menu')}
-      </ContextMenuItem>
-      <ContextMenuItem icon={<Crop />} disabled={(image.mediaType ?? 'image') !== 'image'} onSelect={() => void trimTransparent(image)}>
+      <ContextMenuSeparator />
+      <ContextMenuLabel>{t('gallery.tools.heading')}</ContextMenuLabel>
+      {(phone ? PHONE_TOOLS : MENU_TOOLS).map((tool) => (
+        <ContextMenuSplitItem
+          key={tool}
+          icon={TOOL_ICONS[tool]}
+          disabled={!isStill}
+          onSelect={() => void quickRunTool(tool, image.name)}
+          side={{ icon: <SlidersHorizontal />, label: t('gallery.tools.settings', { tool: t(TOOL_TEXT[tool].name) }), onSelect: () => openToolSettings(tool, image.name), testId: `menu-tool-settings-${tool}` }}
+        >
+          {t(TOOL_TEXT[tool].menu)}
+        </ContextMenuSplitItem>
+      ))}
+      <ContextMenuSeparator />
+      <ContextMenuItem icon={<Crop />} disabled={!isStill} onSelect={() => void trimTransparent(image)}>
         {t('gallery.menu.trim')}
       </ContextMenuItem>
-      <ContextMenuItem icon={<ChatCenteredText />} disabled={(image.mediaType ?? 'image') !== 'image'} onSelect={() => useCaptionDialog.getState().show(image.name)}>
-        {t('caption.menu')}
-      </ContextMenuItem>
-      {!phone && (
-        <ContextMenuItem icon={<PersonSimple />} disabled={(image.mediaType ?? 'image') !== 'image'} onSelect={() => usePoseFromImageDialog.getState().show(image.name)}>
-          {t('canvas.poseFromImage.menu')}
-        </ContextMenuItem>
-      )}
       <ContextMenuItem icon={<UserFocus />} disabled={(image.mediaType ?? 'image') !== 'image'} onSelect={() => useCharacterDialog.getState().open({ imageNames: [image.name] })}>
         {t('character.menu')}
       </ContextMenuItem>

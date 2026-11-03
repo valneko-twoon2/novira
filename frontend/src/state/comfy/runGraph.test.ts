@@ -21,6 +21,14 @@ describe('text jobs', () => {
     expect(await runTextJob(graphRequest(buildCaptionGraph(source.name, { style: 'tags', model: 'm' }), 'intermediate'))).toBe(text);
   });
 
+  it('tells the queue item id as soon as the job is queued', async () => {
+    const source = await backend.uploadImage(new Blob(['x']), { boardId: null });
+    const ids: number[] = [];
+    await runTextJob(graphRequest(buildCaptionGraph(source.name, { style: 'tags', model: 'm' }), 'intermediate'), undefined, (id) => ids.push(id));
+    expect(ids).toHaveLength(1);
+    expect(ids[0]).toBeGreaterThan(0);
+  });
+
   it('rejects with the reason when the job fails', async () => {
     await expect(runTextJob(graphRequest(buildCaptionGraph('no-such-picture.png', { style: 'tags', model: 'm' }), 'intermediate'))).rejects.toThrow(/deleted/);
   });

@@ -5,7 +5,6 @@ import { Cards, Compass, Cube, Images, ListBullets, MagicWand } from '@phosphor-
 import { Activity, useEffect, useRef, type ReactNode } from 'react';
 import { PhoneChatLayer } from '@/features/agent/PhoneChat';
 import { ModelBrowser } from '@/features/browse/ModelBrowser';
-import { CaptionDialog } from '@/features/caption';
 import { DraftsView } from '@/features/drafts/DraftsView';
 import { DeleteImagesModal } from '@/features/gallery/DeleteImagesModal';
 import { ImportDialog } from '@/features/models/ImportDialog';
@@ -13,12 +12,11 @@ import { ModelManager } from '@/features/models/ModelManager';
 import { CharacterDialog } from '@/features/params/characters/CharacterDialog';
 import { ModelPartsDialog } from '@/features/params/model/ModelPartsDialog';
 import { DeriveDialog } from '@/features/derive';
-import { FaceFixDialog } from '@/features/facefix';
 import { ShareDialog, WatermarkCheckDialog } from '@/features/share';
-import { CutoutDialog } from '@/features/segment';
 import { XyPlotDialog } from '@/features/xyplot';
 import { t } from '@/i18n';
 import { useAgent } from '@/state/agent';
+import { setToolViewer } from '@/state/imageTools/band';
 import { useQueue } from '@/state/queue';
 import { useUi } from '@/state/ui';
 import { cx, ErrorBoundary } from '@/ui';
@@ -63,6 +61,12 @@ export function PhoneShell() {
   const chatting = useAgent((s) => s.open);
   // Whatever the desktop layout had open; and again after each request of the assistant, whose tools open the screen
   // they change (a screen this layout has not), so the Generate button keeps drawing pictures.
+  // The picture tools show their picture and its result full screen here, as the desktop shows them in the viewer.
+  useEffect(() => {
+    const show = (name: string) => usePhone.getState().show({ kind: 'image', name });
+    setToolViewer({ showPicture: show, showResult: show });
+    return () => setToolViewer(null);
+  }, []);
   useEffect(() => {
     drawFromGenerate();
     return useAgent.subscribe((s, prev) => {
@@ -89,13 +93,10 @@ export function PhoneShell() {
         <ImportDialog />
         <CharacterDialog />
         <XyPlotDialog />
-        <CaptionDialog />
         {/* What the picture's menu opens. */}
         <ShareDialog />
         <WatermarkCheckDialog />
         <DeriveDialog />
-        <CutoutDialog />
-        <FaceFixDialog />
       </ErrorBoundary>
     </div>
   );
