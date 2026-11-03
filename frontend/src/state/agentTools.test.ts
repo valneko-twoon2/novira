@@ -267,6 +267,30 @@ describe('the Generate tab', () => {
     expect(await call('set_generation_settings', { steps: 25 })).toEqual({ ok: true, content: { set: ['steps'] } });
   });
 
+  it('refuses a prompt box over the token limit whole, and says the limit when asked for the settings', async () => {
+    run = createToolRun(async () => 'once', [], 4);
+    useParams.getState().set({ positivePrompt: 'a girl', negativePrompt: 'blurry', steps: 30 });
+    expect(await call('get_generation_settings', {})).toMatchObject({ ok: true, content: { promptTokenLimit: 4 } });
+    // 5 tokens: refused, and nothing of the call is set (the steps neither), no undo snapshot, no chip.
+    const refused = await call('set_generation_settings', { positivePrompt: 'a girl, black hair', steps: 12 });
+    expect(refused).toMatchObject({ ok: false, content: expect.stringContaining('positivePrompt has 5') });
+    expect(useParams.getState()).toMatchObject({ positivePrompt: 'a girl', steps: 30 });
+    expect(run.snapshot).toBeUndefined();
+    expect(run.log).toEqual([]);
+    expect(await call('set_generation_settings', { negativePrompt: 'blurry, low quality, bad' })).toMatchObject({ ok: false, content: expect.stringContaining('negativePrompt has 6') });
+    // Exactly at the limit goes through; parameters alone are never checked against it.
+    expect(await call('set_generation_settings', { positivePrompt: 'a girl, bob' })).toMatchObject({ ok: true });
+    expect(useParams.getState().positivePrompt).toBe('a girl, bob');
+    useParams.getState().set({ negativePrompt: 'blurry, low quality, worst quality' });
+    expect(await call('set_generation_settings', { steps: 20 })).toMatchObject({ ok: true });
+  });
+
+  it('lets any prompt length through while the token limit is off', async () => {
+    const long = Array.from({ length: 100 }, (_, i) => `tag${i}`).join(', ');
+    expect(await call('set_generation_settings', { positivePrompt: long })).toMatchObject({ ok: true });
+    expect(await call('get_generation_settings', {})).not.toMatchObject({ content: { promptTokenLimit: expect.anything() } });
+  });
+
   it('gives the settings before earlier requests only with the prompts, which ask first', async () => {
     run = createToolRun(async (tool) => {
       asked.push(tool);

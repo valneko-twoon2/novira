@@ -69,6 +69,8 @@ export interface ToolRun {
   shown: string[];
   /** What the assistant asked of the refinement loop in this request (refine tool), if anything. */
   refine?: RefineOutcome;
+  /** The most tokens (`estimateTokens`) a prompt box the assistant writes may have, while the user's token limit is on. */
+  promptTokenLimit?: number;
   /** Whether a read of the user's pictures or prompts, or a look-up on the web, may go ahead (asks the user when its setting says so). */
   permit: (tool: string, args?: unknown) => Promise<boolean>;
 }
@@ -77,7 +79,7 @@ export interface ToolRun {
  * A request's tool state. `ask` shows the question in the chat window; the questions of parallel calls are asked one
  * after the other, and after "always allow" the next ones are not asked.
  */
-export function createToolRun(ask: (tool: string, args?: unknown) => Promise<PermissionChoice>, earlier: EarlierSettings[] = []): ToolRun {
+export function createToolRun(ask: (tool: string, args?: unknown) => Promise<PermissionChoice>, earlier: EarlierSettings[] = [], promptTokenLimit?: number): ToolRun {
   let queue: Promise<unknown> = Promise.resolve();
   const permit = (tool: string, args?: unknown): Promise<boolean> => {
     // "Always allow" for pictures never allows the web, and the other way round: each has its own setting.
@@ -93,7 +95,7 @@ export function createToolRun(ask: (tool: string, args?: unknown) => Promise<Per
     queue = next.catch(() => undefined);
     return next;
   };
-  return { log: [], editSnapshots: {}, earlier, shown: [], permit };
+  return { log: [], editSnapshots: {}, earlier, shown: [], permit, ...(promptTokenLimit === undefined ? {} : { promptTokenLimit }) };
 }
 
 /** What a tool answers: data (or a sentence) for the model, or an error it is told. */
@@ -320,6 +322,7 @@ const HANDLERS: Record<string, Handler> = {
       ...settingsView(p, prompts),
       randomSeed: p.shouldRandomizeSeed,
       schedulers: SCHEDULERS,
+      ...(run.promptTokenLimit === undefined ? {} : { promptTokenLimit: run.promptTokenLimit }),
       // The versions before each earlier request of the chat, to put back what the user says was fine before.
       ...(prompts && run.earlier.length ? { earlier: run.earlier.map((e) => ({ request: e.request, ...(e.undone ? { undone: true } : {}), settings: settingsView(e.settings, true) })) } : {}),
     });
@@ -343,6 +346,13 @@ const HANDLERS: Record<string, Handler> = {
       ...(width !== undefined || height !== undefined ? { aspectRatio: 'free' as const } : {}),
     };
     if (!Object.keys(patch).length) return fail('Nothing to set.');
+    // The user's token limit: a prompt box over it is refused whole, before anything changes.
+    const limit = run.promptTokenLimit;
+    const over = limit === undefined ? [] : (['positivePrompt', 'negativePrompt'] as const).filter((k) => k in patch && estimateTokens(patch[k]!) > limit);
+    if (over.length)
+      return fail(
+        `Nothing was changed: the user's token limit allows at most ${limit} tokens per prompt box, and ${over.map((k) => `${k} has ${estimateTokens(patch[k]!)}`).join(', ')} (counted as words and punctuation marks). Shorten it: drop repeated, weak or contradicting words, keep what the request is about, then send it again.`,
+      );
     keepSettings(run);
     useParams.getState().set(patch);
     if ('positivePrompt' in patch || 'negativePrompt' in patch) run.log.push({ kind: 'prompt' });

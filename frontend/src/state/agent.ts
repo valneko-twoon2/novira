@@ -12,6 +12,7 @@ import { afterRequest, continuation, type Refinement } from './agentRefine';
 import { agentEditor } from './agentRegistry';
 import { createToolRun, currentScreen, runAgentTool, webQuestion, type PermissionChoice, type ToolRun } from './agentTools';
 import { useParams } from './params';
+import { CLIP_TOKEN_LIMIT } from './prompts/promptTags';
 import { useSettings } from './settings';
 import { t } from '@/i18n';
 
@@ -349,7 +350,7 @@ export const useAgent = create<AgentState>()(
           cancelled = false;
           let failed = false;
           let proceed = false;
-          const run = createToolRun(askPermission, earlierSettings(session.messages));
+          const run = createToolRun(askPermission, earlierSettings(session.messages), get().tokenLimit ? CLIP_TOKEN_LIMIT : undefined);
           activeRun = run;
           const unsubscribe = backend.subscribe((event) => {
             if (event.type === 'agent_tool_call') void onToolCall(event.call);

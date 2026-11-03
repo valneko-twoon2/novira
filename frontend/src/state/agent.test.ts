@@ -31,7 +31,7 @@ const setsPrompt = (positive: string) => replyWith(`set ${positive}`, (call) => 
 beforeEach(() => {
   localStorage.clear();
   requests = [];
-  useAgent.setState({ sessions: [], currentId: null, busy: false, busySessionId: null, permission: null, working: [], queued: [], draftText: '', draftAttached: [] });
+  useAgent.setState({ sessions: [], currentId: null, busy: false, busySessionId: null, permission: null, working: [], queued: [], draftText: '', draftAttached: [], tokenLimit: true });
   useParams.getState().set({ positivePrompt: 'original', negativePrompt: '' });
   useSettings.getState().set({ assistantReadAccess: 'ask', assistantWebAccess: 'ask' });
 });
@@ -97,6 +97,20 @@ describe('agent sessions', () => {
     await useAgent.getState().send('fourth');
     expect(requests.at(-1)!.history).toHaveLength(6);
     expect(requests.at(-1)!.history![0]).toEqual({ role: 'user', text: 'first' });
+  });
+
+  it('keeps the prompt the assistant writes within the CLIP limit while the token limit is on', async () => {
+    const long = Array.from({ length: 40 }, (_, i) => `tag${i}`).join(', ');
+    let answer: unknown;
+    replyWith('done', async (call) => {
+      answer = await call('set_generation_settings', { positivePrompt: long });
+    });
+    await useAgent.getState().send('a long prompt');
+    expect(answer).toEqual({ ok: false, content: expect.stringContaining('at most 77 tokens') });
+    expect(useParams.getState().positivePrompt).toBe('original');
+    useAgent.getState().setTokenLimit(false);
+    await useAgent.getState().send('a long prompt');
+    expect(useParams.getState().positivePrompt).toBe(long);
   });
 
   it('switches only to a session that exists, renames and deletes sessions', async () => {
