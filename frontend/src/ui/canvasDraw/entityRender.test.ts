@@ -176,7 +176,9 @@ describe('mosaic strokes', () => {
     ]);
     const out = renderEntity(e)!;
     const r = rec.of(out.canvas);
-    expect(r.sets.some((s) => s.name === 'globalCompositeOperation' && s.value === 'destination-out')).toBe(true);
+    // The picture is cut by the shape, then the mosaic is added ('lighter', not drawn over), so the soft edge stays opaque.
+    const ops = r.sets.filter((s) => s.name === 'globalCompositeOperation').map((s) => s.value);
+    expect(ops.slice(ops.indexOf('destination-out'), ops.indexOf('destination-out') + 2)).toEqual(['destination-out', 'lighter']);
     expect(r.of('drawImage').length).toBeGreaterThanOrEqual(2);
     const smoothingOff = rec.all.some((x) => x.sets.some((s) => s.name === 'imageSmoothingEnabled' && s.value === false));
     expect(smoothingOff).toBe(true);

@@ -69,10 +69,13 @@ function drawMosaic(ctx: CanvasRenderingContext2D, o: StrokeObject) {
   pctx.drawImage(grid, -sx, -sy);
   pctx.globalCompositeOperation = 'destination-in';
   pctx.drawImage(shape, 0, 0);
+  // Mix the two by the shape's coverage a: the picture keeps (1 - a) of itself and the mosaic adds a. Adding
+  // ('lighter') rather than drawing over ('source-over') keeps the soft edge opaque; drawing over would leave
+  // 1 - a + a² of the alpha there, a see-through ring along the stroke's outline.
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.globalCompositeOperation = 'destination-out';
   ctx.drawImage(shape, 0, 0);
-  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalCompositeOperation = 'lighter';
   ctx.drawImage(pixelated, 0, 0);
 }
 
