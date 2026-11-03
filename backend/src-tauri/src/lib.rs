@@ -6,6 +6,7 @@ pub mod events;
 pub mod first_run;
 pub mod home_network;
 pub mod image_scheme;
+pub mod navigation;
 pub mod startup;
 
 use novira_core::Backend;
@@ -193,6 +194,7 @@ pub fn run() {
     install_panic_hook();
     use_own_webview_profile();
     let app = tauri::Builder::default()
+        .plugin(navigation::guard())
         .setup(|app| {
             app.manage(first_run::FirstRun::default());
             app.manage(commands::LastExport::default());
@@ -386,6 +388,7 @@ pub fn run() {
             commands::face_rig_library,
             commands::face_rig_preview,
             commands::export_images,
+            commands::save_images,
             commands::reveal_export_folder,
             commands::watermark_status,
             commands::prepare_watermark,

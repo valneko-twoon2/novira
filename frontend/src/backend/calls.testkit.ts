@@ -131,6 +131,7 @@ export const CALLS: {
       removeInfo: true,
       watermark: false,
     }),
+  saveImages: (b) => b.saveImages(['a.png']),
   revealExportFolder: (b) => b.revealExportFolder(),
   watermarkStatus: (b) => b.watermarkStatus(),
   prepareWatermark: (b) => b.prepareWatermark(),

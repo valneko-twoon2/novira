@@ -137,7 +137,7 @@ export function ViewerToolbar({ image }: { image: ImageDTO | undefined }) {
           disabled={none}
           onClick={act((i) => void setStarred([i.name], !i.starred))}
         />
-        <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('common.download')} icon={<DownloadSimple />} disabled={none} onClick={act((i) => downloadImages([i]))} />
+        <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('common.download')} icon={<DownloadSimple />} disabled={none} onClick={act((i) => void downloadImages([i]))} />
         <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('share.menu')} icon={<ShareNetwork />} disabled={none || (image.mediaType ?? 'image') !== 'image'} onClick={act((i) => useShareDialog.getState().open([i.name]))} data-testid="viewer-share" />
         {canOpenInNewTab() && <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('gallery.menu.openInNewTab')} icon={<ArrowSquareOut />} disabled={none} onClick={act(openInNewTab)} />}
         <IconButton size={TOOLBAR_BUTTON_SIZE}

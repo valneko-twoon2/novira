@@ -40,14 +40,23 @@ export async function deleteImagesNow(names: string[]) {
   toast({ status: 'success', title: tCount('gallery.toast.deleted', names.length), actions: [{ label: t('gallery.undoDelete.action'), run: () => void undoDeletion(names) }] });
 }
 
-export function downloadImages(images: ImageDTO[]) {
-  for (const image of images) {
-    const a = document.createElement('a');
-    a.href = image.url;
-    a.download = image.name;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+/**
+ * Saves the originals as they are. The desktop app asks for a folder (a link to the picture would open it in place of
+ * the app, which has no way back) and then says where they went; a browser downloads them.
+ */
+export async function downloadImages(images: ImageDTO[]) {
+  if (!images.length) return;
+  try {
+    const result = await backend.saveImages(images.map((i) => i.name));
+    if (!result?.folder) return;
+    toast({
+      status: 'success',
+      title: tCount('gallery.toast.saved', result.count),
+      description: t('share.doneIn', { folder: result.folder }),
+      actions: [{ label: t('share.openFolder'), run: () => void backend.revealExportFolder().catch(() => undefined) }],
+    });
+  } catch (e) {
+    toast({ status: 'error', title: t('gallery.toast.saveFailed'), description: e instanceof Error ? e.message : String(e) });
   }
 }
 

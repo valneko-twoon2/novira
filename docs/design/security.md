@@ -25,7 +25,7 @@ Attackers considered: a malicious or compromised web page or model listing (data
 | Boundary | Guard |
 |---|---|
 | WebView to Rust (IPC) | Only novira's own commands are allowed (`backend/src-tauri/capabilities/default.json`; a test keeps it equal to the registered list in `backend/src-tauri/src/command_list.rs`). No fs, shell, http or opener plugin. The `main` window only; remote pages get no capability. |
-| WebView content | CSP in `backend/src-tauri/tauri.conf.json`: own origin for scripts and connections; pictures only from the image scheme and the model sites, media (a video cover in Browse) only from the image scheme and `https://*.civitai.com`; `object-src`, `frame-src`, `form-action` and `base-uri` closed. The UI renders data through React (no `innerHTML`); descriptions from Civitai are turned into plain text in the backend. |
+| WebView content | CSP in `backend/src-tauri/tauri.conf.json`: own origin for scripts and connections; pictures only from the image scheme and the model sites, media (a video cover in Browse) only from the image scheme and `https://*.civitai.com`; `object-src`, `frame-src`, `form-action` and `base-uri` closed. The UI renders data through React (no `innerHTML`); descriptions from Civitai are turned into plain text in the backend. The window has no back button, so it never leaves the app's origin (`backend/src-tauri/src/navigation.rs` refuses any other top-level navigation). |
 
 A command validates what it receives at the boundary, not in the caller; the WebView never sends or receives a file path (the shell opens native dialogs itself) and gets pictures by generated name only.
 

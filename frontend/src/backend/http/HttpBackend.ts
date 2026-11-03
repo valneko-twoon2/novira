@@ -4,7 +4,7 @@
 // not answer (the ones that need a native dialog) come back as "not available in the browser yet" errors.
 import type { BackendClient } from '../client';
 import { DEFAULT_WORKFLOWS } from '../defaultWorkflows';
-import { downloadBlob } from '../download';
+import { downloadBlob, downloadUrl } from '../download';
 import { perf } from '../perf';
 import type {
   AgentEndpointInput,
@@ -653,6 +653,12 @@ export class HttpBackend implements BackendClient {
       downloadBlob(await response.blob(), fileName);
       return result;
     });
+  }
+
+  /** The pictures are on the page's own origin, so a link to each one downloads it. */
+  async saveImages(names: string[]): Promise<ExportResult> {
+    for (const name of names) downloadUrl(`${IMAGE_URL_PREFIX}full/${encodeURIComponent(name)}`, name);
+    return { count: names.length, skipped: 0, watermarked: 0, folder: '' };
   }
 
   revealExportFolder() {

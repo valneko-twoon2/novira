@@ -73,6 +73,58 @@ impl Backend {
         .map_err(internal)?
     }
 
+    /// Checks a download request before the shell asks for a folder: 1 to `export::MAX_NAMES` valid names.
+    pub fn check_save(&self, names: &[String]) -> Result<()> {
+        if names.is_empty() || names.len() > export::MAX_NAMES {
+            return Err(BackendError::Invalid(format!(
+                "choose between 1 and {} items",
+                export::MAX_NAMES
+            )));
+        }
+        if let Some(bad) = names.iter().find(|n| !images::is_valid_name(n)) {
+            return Err(BackendError::Invalid(format!("invalid image name {bad}")));
+        }
+        Ok(())
+    }
+
+    /// The desktop app's download: copies each original as it is (pictures, videos and audio, with their embedded
+    /// settings) into `folder` (chosen by the user), as `<name>`, then `<stem>-2.<ext>`, never overwriting. Missing
+    /// files are skipped and counted.
+    pub async fn save_originals(
+        &self,
+        names: Vec<String>,
+        folder: PathBuf,
+    ) -> Result<ExportResult> {
+        self.check_save(&names)?;
+        if !folder.is_dir() {
+            return Err(BackendError::Invalid("the folder does not exist".into()));
+        }
+        let this = self.clone();
+        tokio::task::spawn_blocking(move || -> Result<ExportResult> {
+            let (mut count, mut skipped) = (0u32, 0u32);
+            for name in &names {
+                let Some(bytes) = this.inner.files.read_original(name) else {
+                    skipped += 1;
+                    continue;
+                };
+                // A valid name always has an extension.
+                let (stem, ext) = name.rsplit_once('.').unwrap_or((name.as_str(), ""));
+                export::write_unique(&folder, stem, ext, &bytes).map_err(|e| {
+                    BackendError::Internal(format!("cannot write into the folder: {e}"))
+                })?;
+                count += 1;
+            }
+            Ok(ExportResult {
+                count,
+                skipped,
+                watermarked: 0,
+                folder: folder.display().to_string(),
+            })
+        })
+        .await
+        .map_err(internal)?
+    }
+
     /// The same copies as `export_images`, for the browser to download: one picture as itself, several in a zip. The
     /// result's `folder` is empty (the browser decides where the download goes).
     pub async fn export_download(

@@ -130,6 +130,7 @@ pub const SHELL_ONLY: &[&str] = &[
     "open_source_page",
     "set_ui_zoom",
     "export_images",
+    "save_images",
     "reveal_export_folder",
     "prepare_watermark",
     "check_watermark_file",

@@ -281,6 +281,8 @@ Uploaded images go into **{{ui:gallery.view.assets}}** of the "{{ui:gallery.boar
 
 To save a picture's file, use the right-click menu or **{{ui:common.download}}** on the viewer toolbar. If you have chosen several pictures, they are saved together.
 
+In the desktop app a window opens to choose the folder, and the original files are copied there as they are (with their generation info). When a file of the same name is there, a number such as "-2" is added; nothing is overwritten. The notice after saving has **{{ui:share.openFolder}}** to open that folder. In a browser, the files go to the browser's downloads.
+
 ### Exporting for sharing
 
 ![The Export for sharing window: format (PNG, JPEG, WebP), quality, longest side and the switch that removes the generation info](shot:share-export)

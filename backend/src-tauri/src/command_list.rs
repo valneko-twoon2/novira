@@ -82,6 +82,7 @@ pub const COMMANDS: &[&str] = &[
     "face_rig_library",
     "face_rig_preview",
     "export_images",
+    "save_images",
     "reveal_export_folder",
     "watermark_status",
     "prepare_watermark",

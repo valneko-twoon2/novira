@@ -208,14 +208,37 @@ describe('copying', () => {
 });
 
 describe('downloadImages', () => {
-  it('clicks one temporary link per image, named after the image, and removes it again', () => {
-    const clicked: string[] = [];
+  it('hands the names to the backend and never opens the picture in the page', async () => {
+    const save = vi.spyOn(backend, 'saveImages').mockResolvedValue({ count: 2, skipped: 0, watermarked: 0, folder: '' });
+    const opened: string[] = [];
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
-      clicked.push(`${this.download}|${this.getAttribute('href')}`);
+      opened.push(this.href);
     });
-    downloadImages([image('a.png'), image('b.png')]);
-    expect(clicked).toEqual(['a.png|blob:a.png', 'b.png|blob:b.png']);
-    expect(document.querySelectorAll('a')).toHaveLength(0);
+    await downloadImages([image('a.png'), image('b.png')]);
+    expect(save).toHaveBeenCalledWith(['a.png', 'b.png']);
+    expect(opened).toEqual([]);
+    // A browser download (no folder) says nothing more.
+    expect(lastToast()).toBeUndefined();
+  });
+
+  it('says where the desktop app saved them and can open that folder', async () => {
+    vi.spyOn(backend, 'saveImages').mockResolvedValue({ count: 2, skipped: 0, watermarked: 0, folder: 'D:\\pictures' });
+    const reveal = vi.spyOn(backend, 'revealExportFolder').mockResolvedValue();
+    await downloadImages([image('a.png'), image('b.png')]);
+    expect(lastToast()).toMatchObject({ status: 'success', title: t('gallery.toast.saved.other', { count: 2 }), description: t('share.doneIn', { folder: 'D:\\pictures' }) });
+    lastToast()!.actions![0]!.run();
+    expect(reveal).toHaveBeenCalled();
+  });
+
+  it('says nothing when the folder dialog is cancelled or nothing is chosen, and reports a failure', async () => {
+    const save = vi.spyOn(backend, 'saveImages').mockResolvedValue(null);
+    await downloadImages([image('a.png')]);
+    await downloadImages([]);
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(lastToast()).toBeUndefined();
+    save.mockRejectedValue(new Error('cannot write into the folder'));
+    await downloadImages([image('a.png')]);
+    expect(lastToast()).toMatchObject({ status: 'error', title: t('gallery.toast.saveFailed'), description: 'cannot write into the folder' });
   });
 });
 

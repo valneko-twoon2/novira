@@ -39,6 +39,8 @@ The gallery keeps the pictures, videos and audio that novira makes or receives, 
 
 **Export for sharing.** The share dialog (`frontend/src/features/share/ShareDialog.tsx`) sends names and options to `export_images`. The command checks them first (1 to 10,000 valid names, options, watermark status). Then the shell opens a folder dialog (`backend/src-tauri/src/dialogs.rs`, rfd); cancelling returns `null`. The page never sends or receives a path. Copies are encoded again from the pixels (`backend/crates/novira-core/src/media/export.rs`): PNG, JPEG (quality 1 to 100, transparency on white) or lossless WebP. The longest side can be limited to 2048, 1536, 1024 or 16 to 16,384; pictures are never enlarged. Text chunks, EXIF and XMP of the original never survive. Unless "remove generation info" is on, a PNG copy keeps `novira_metadata` and `novira_workflow`; JPEG and WebP never do. Defaults (`frontend/src/features/share/shareOptions.ts`): PNG, quality 90, original size, info kept, watermark off; the last choices are kept for the session. Videos, audio and missing files are skipped and counted. Files are `<stem>.<ext>`, then `<stem>-2.<ext>`, never overwritten. The browser server (`POST /export/images`) makes the same copies (`export_download`) as one download: a picture as itself, several in a stored zip; over `export::MAX_DOWNLOAD_BYTES` it is refused, as both sides hold it in memory. "Open the folder" opens the last export's folder as the shell remembers it. "Open in new tab" is shown only in the browser build (`frontend/src/backend/openWindow.ts`).
 
+**Download.** `downloadImages` (menus, viewer) calls `save_images`: in the desktop app the shell asks for a folder and copies the originals unchanged (`save_originals`; 1 to 10,000 valid names, `-2` instead of overwriting); a browser downloads each from its own origin.
+
 **AI marks.** With the watermark switch on, each copy gets three marks in this order:
 
 1. A TrustMark watermark, variant P (BCH_5): 61 bits, a 16-bit marker `0x4E56` and a 45-bit random id (`payload.rs`), embedded after the resize at strength 1.0 (`watermark.rs`). Pictures of more than 4096 x 4096 pixels in all, or with a side under 2, are refused.
@@ -81,6 +83,5 @@ A board is a row of the `boards` table: an id (`board-` and 12 hex digits), a na
 
 ## Not implemented
 
-- Gallery download (`downloadImages` in `frontend/src/features/gallery/actions.ts`, also used by the viewer) saves through a browser link to the image URL. The desktop app has no native save dialog for it; whether WebView2 saves such a link was not verified in the real app.
 - Comic and PSD exports are drawn in the page and do not pass through the backend, so they carry no marks.
 - Board download (`downloadBoard` in `frontend/src/features/gallery/boards/boardActions.ts`) only shows a notice.

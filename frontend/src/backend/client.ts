@@ -237,7 +237,12 @@ export interface BackendClient {
   // never handles a path); null means the user cancelled that dialog.
   /** Writes clean copies of the pictures (videos and audio are skipped) into a folder the user chooses; the browser downloads them. */
   exportImages(names: string[], options: ExportOptions): Promise<ExportResult | null>;
-  /** Opens the folder of the last export (desktop only). */
+  /**
+   * The gallery's download: the originals as they are. The desktop app asks for a folder and copies them there (null
+   * when cancelled); a browser downloads each one (`folder` is empty).
+   */
+  saveImages(names: string[]): Promise<ExportResult | null>;
+  /** Opens the folder of the last export or download (desktop only). */
   revealExportFolder(): Promise<void>;
   /** Whether the export watermark's files are on this PC (they download in the background at start). */
   watermarkStatus(): Promise<WatermarkStatus>;

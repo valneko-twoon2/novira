@@ -239,5 +239,8 @@
   "gallery.undoDelete.failed": "Could not undo the delete",
   "gallery.redoDelete.label": "Delete again",
   "gallery.redoDelete.done.one": "{count} image deleted again",
-  "gallery.redoDelete.done.other": "{count} images deleted again"
+  "gallery.redoDelete.done.other": "{count} images deleted again",
+  "gallery.toast.saved.one": "Saved {count} item",
+  "gallery.toast.saved.other": "Saved {count} items",
+  "gallery.toast.saveFailed": "Could not save"
 }

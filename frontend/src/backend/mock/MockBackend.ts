@@ -79,6 +79,7 @@ import { DEFAULT_WORKFLOWS } from '../defaultWorkflows';
 import { perf, snakeCase } from '../perf';
 import { MOCK_USER_WORKFLOWS, SEED_BOARDS, SEED_IMAGES, SEED_MODELS, STARTER_MODELS } from './seedData';
 import { backupInfo, downloadMockBackup, exportFileName, exportInBrowser, mockWatermarkCheck, type MockWatermark } from './shareBackup';
+import { downloadUrl } from '../download';
 
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const LATENCY = 60;
@@ -1276,6 +1277,12 @@ export class MockBackend implements BackendClient {
       watermarked: options.watermark ? result.count : 0,
       skipped: result.skipped + (picked.length - found.length),
     };
+  }
+
+  async saveImages(names: string[]): Promise<ExportResult | null> {
+    const found = names.map((n) => this.images.find((i) => i.name === n)).filter((i): i is ImageDTO => !!i);
+    for (const image of found) downloadUrl(image.url, image.name);
+    return { count: found.length, skipped: names.length - found.length, watermarked: 0, folder: '' };
   }
 
   async revealExportFolder(): Promise<void> {

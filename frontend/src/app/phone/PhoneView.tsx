@@ -164,7 +164,7 @@ function PictureStage({ image, index, count, onStep }: { image: ImageDTO; index:
           <Star size={22} weight={image.starred ? 'fill' : 'regular'} />
           <span>{image.starred ? t('gallery.menu.unstar') : t('gallery.menu.star')}</span>
         </button>
-        <button type="button" className="phone-view__action" data-testid="phone-view-download" onClick={() => downloadImages([image])}>
+        <button type="button" className="phone-view__action" data-testid="phone-view-download" onClick={() => void downloadImages([image])}>
           <DownloadSimple size={22} />
           <span>{t('common.download')}</span>
         </button>

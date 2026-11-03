@@ -655,6 +655,27 @@ pub async fn export_images(
     Ok(Some(result))
 }
 
+/// The gallery's download: asks for a folder and copies the originals there as they are; `null` when the user cancels
+/// the dialog. (A link to the picture would make the WebView leave the app: the pictures are on another origin.)
+#[tauri::command]
+pub async fn save_images(
+    webview: tauri::Webview,
+    backend: State<'_, Backend>,
+    last: State<'_, LastExport>,
+    names: Vec<String>,
+) -> Res<Option<ExportResult>> {
+    backend.check_save(&names).map_err(msg)?;
+    let Some(folder) = crate::dialogs::pick_folder(&webview).await else {
+        return Ok(None);
+    };
+    let result = backend
+        .save_originals(names, folder.clone())
+        .await
+        .map_err(msg)?;
+    *last.0.lock_safe() = Some(folder);
+    Ok(Some(result))
+}
+
 #[tauri::command]
 pub fn watermark_status(backend: State<'_, Backend>) -> Res<WatermarkStatus> {
     guard(|| call::watermark_status(&backend))

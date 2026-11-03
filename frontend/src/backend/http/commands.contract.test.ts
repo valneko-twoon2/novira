@@ -14,6 +14,7 @@ const NOT_CALLED: Record<string, string> = {
   pack_status: 'pack states arrive with bootstrap and as `pack` events',
   upload_image: 'a picture is posted to /upload/image, not to /api',
   export_images: 'the copies come back as a download from /export/images, not from /api',
+  save_images: 'the originals download from the picture route of the page origin, not from /api',
   set_ui_zoom: 'the browser zooms by itself',
   first_run_info: 'the first-start screen exists only in the desktop app, before a backend does',
   first_run_choose: 'see first_run_info',
@@ -235,6 +236,19 @@ describe('HttpBackend', () => {
     );
     await expect(b.exportImages(['a.png'], options)).rejects.toThrow('choose fewer pictures');
     expect(clicked).toHaveLength(1);
+  });
+
+  it('downloads each original from the page origin, and sends no call', async () => {
+    const clicked: string[] = [];
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
+      clicked.push(`${this.download}|${this.getAttribute('href')}`);
+    });
+    onTestFinished(() => click.mockRestore());
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    expect(await new HttpBackend().saveImages(['a.png', 'b.mp4'])).toEqual({ count: 2, skipped: 0, watermarked: 0, folder: '' });
+    expect(clicked).toEqual(['a.png|/novira-image/full/a.png', 'b.mp4|/novira-image/full/b.mp4']);
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it('knows the picture route and the page the server marked', () => {

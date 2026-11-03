@@ -93,7 +93,7 @@ export function SingleImageMenu({ image, phone = false }: { image: ImageDTO; pho
           {t('gallery.menu.openInNewTab')}
         </ContextMenuItem>
       )}
-      <ContextMenuItem icon={<DownloadSimple />} onSelect={() => downloadImages([image])}>
+      <ContextMenuItem icon={<DownloadSimple />} onSelect={() => void downloadImages([image])}>
         {t('common.download')}
       </ContextMenuItem>
       <ContextMenuItem icon={<ShareNetwork />} disabled={!isStill} onSelect={() => useShareDialog.getState().open([image.name])}>

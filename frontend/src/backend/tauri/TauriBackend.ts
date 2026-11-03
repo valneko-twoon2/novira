@@ -568,6 +568,10 @@ export class TauriBackend implements BackendClient {
     return invoke<ExportResult | null>('export_images', { names, options });
   }
 
+  saveImages(names: string[]) {
+    return invoke<ExportResult | null>('save_images', { names });
+  }
+
   revealExportFolder() {
     return invoke<void>('reveal_export_folder');
   }

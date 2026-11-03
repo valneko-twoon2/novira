@@ -239,5 +239,8 @@
   "gallery.undoDelete.failed": "削除を元に戻せませんでした",
   "gallery.redoDelete.label": "もう一度削除する",
   "gallery.redoDelete.done.one": "{count} 枚の画像をもう一度削除しました",
-  "gallery.redoDelete.done.other": "{count} 枚の画像をもう一度削除しました"
+  "gallery.redoDelete.done.other": "{count} 枚の画像をもう一度削除しました",
+  "gallery.toast.saved.one": "{count} 件を保存しました",
+  "gallery.toast.saved.other": "{count} 件を保存しました",
+  "gallery.toast.saveFailed": "保存できませんでした"
 }

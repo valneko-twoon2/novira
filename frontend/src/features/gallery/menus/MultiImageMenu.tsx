@@ -23,7 +23,7 @@ export function MultiImageMenu({ names }: { names: string[] }) {
       <ContextMenuItem icon={<Star />} onSelect={() => void setStarred(names, false)}>
         {t('gallery.menu.unstarAll')}
       </ContextMenuItem>
-      <ContextMenuItem icon={<DownloadSimple />} onSelect={() => downloadImages(images())}>
+      <ContextMenuItem icon={<DownloadSimple />} onSelect={() => void downloadImages(images())}>
         {t('common.download')}
       </ContextMenuItem>
       <ContextMenuItem icon={<ShareNetwork />} onSelect={() => useShareDialog.getState().open(names)}>

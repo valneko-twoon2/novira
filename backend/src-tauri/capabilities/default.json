@@ -88,6 +88,7 @@
     "allow-face-rig-library",
     "allow-face-rig-preview",
     "allow-export-images",
+    "allow-save-images",
     "allow-reveal-export-folder",
     "allow-watermark-status",
     "allow-prepare-watermark",
