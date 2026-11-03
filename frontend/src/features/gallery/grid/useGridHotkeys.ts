@@ -1,6 +1,6 @@
 // Gallery keyboard shortcuts: arrows move (Shift extends), Delete, Ctrl+Z / Ctrl+Shift+Z (a deletion back and again), Ctrl+A, Ctrl+C, Escape.
 // Active while the viewer is the main view or the pointer is over the grid, so the canvas keeps its keys.
-import type { RefObject } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 import { useGallery } from '@/state/gallery';
 import { redoDeletion, undoDeletion } from '@/state/galleryUndo';
 import { useUi, type TabName } from '@/state/ui';
@@ -21,6 +21,14 @@ interface Options {
 export function useGridHotkeys({ tab, names, stepRow, gridRef, scrollToIndex }: Options) {
   const viewerActive = useUi((s) => s.mainView[tab] === 'viewer');
   const active = () => viewerActive || gridRef.current?.matches(':hover') === true;
+  // The grid was the last thing pressed: a picture just chosen there is what Ctrl+C means, even with the pointer moved
+  // away (over the canvas, say), until something else is pressed.
+  const lastPressed = useRef(false);
+  useEffect(() => {
+    const onDown = (e: PointerEvent) => (lastPressed.current = gridRef.current?.contains(e.target as Node) === true);
+    document.addEventListener('pointerdown', onDown, true);
+    return () => document.removeEventListener('pointerdown', onDown, true);
+  }, [gridRef]);
   const guard = (fn: (e: KeyboardEvent) => void) => (e: KeyboardEvent) => {
     if (!active()) return;
     e.preventDefault();
@@ -59,11 +67,13 @@ export function useGridHotkeys({ tab, names, stepRow, gridRef, scrollToIndex }: 
   );
   useHotkey(
     'mod+c',
-    guard(() => {
+    (e) => {
+      if (!active() && !lastPressed.current) return;
+      e.preventDefault();
       const g = useGallery.getState();
       const image = g.images.find((i) => i.name === g.viewerImageName);
       if (image) void copyImage(image);
-    }),
+    },
     opts,
   );
   useHotkey(

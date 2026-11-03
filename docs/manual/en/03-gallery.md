@@ -331,7 +331,7 @@ Files from File Explorer can be dropped onto the gallery, onto a board, onto a r
 | Choose all | `Ctrl+A` |
 | Clear the choice | `Esc` |
 | Delete the chosen pictures | `Delete` |
-| Copy the picture in the viewer | `Ctrl+C` |
+| Copy the picture in the viewer, or the one chosen in the gallery (on the canvas screen too, after pressing a picture in the gallery) | `Ctrl+C` |
 | Open and close the information panel | `I` |
 | Remix, prompt, seed, all | `R`, `P`, `S`, `A` |
 | Load the workflow | `W` |
