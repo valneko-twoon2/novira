@@ -96,7 +96,7 @@ interface UiState {
   settingsTab: string | null;
   /** Bumped to ask the prompt box to take focus. */
   focusPromptNonce: number;
-  /** Last user-set side panel widths in px (kept across tab switches). */
+  /** Last user-set side panel widths in px, fractions kept (every image screen takes them when it shows: Workspace.tsx). */
   panelWidths: { left: number; right: number };
   setPanelWidth: (side: 'left' | 'right', px: number) => void;
   setTab: (tab: TabName) => void;
@@ -136,7 +136,7 @@ export const useUi = create<UiState>()((set, get) => ({
   settingsTab: null,
   focusPromptNonce: 0,
   panelWidths: { left: 400, right: 400 },
-  setPanelWidth: (side, px) => set((s) => (Math.abs(s.panelWidths[side] - px) < 1 ? s : { panelWidths: { ...s.panelWidths, [side]: Math.round(px) } })),
+  setPanelWidth: (side, px) => set((s) => (Math.abs(s.panelWidths[side] - px) < 0.01 ? s : { panelWidths: { ...s.panelWidths, [side]: px } })),
   setTab: (activeTab) => {
     if (isScreenShown(activeTab)) set(isGenerateMode(activeTab) ? { activeTab, generateMode: activeTab } : { activeTab });
   },

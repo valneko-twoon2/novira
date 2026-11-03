@@ -1,6 +1,6 @@
 // Three resizable columns for the image tabs: parameters | main view | gallery and assistant (and layers on canvas).
 import { CaretDoubleLeft, CaretDoubleRight } from '@phosphor-icons/react';
-import { useEffect } from 'react';
+import { type RefObject, useEffect, useRef } from 'react';
 import { Group, Panel, Separator, usePanelRef } from 'react-resizable-panels';
 import { CanvasView } from '@/features/canvas/CanvasView';
 import { DraftsView } from '@/features/drafts/DraftsView';
@@ -48,6 +48,11 @@ function ImageWorkspace({ tab }: { tab: TabName }) {
   const { left: leftWidth, right: rightWidth } = useUi.getState().panelWidths;
   const left = usePanelRef();
   const right = usePanelRef();
+  // The library reports sizes as whole pixels (offsetWidth); the columns are kept to the fraction from the elements, or
+  // two screens differ by part of a pixel.
+  const leftEl = useRef<HTMLDivElement>(null);
+  const rightEl = useRef<HTMLDivElement>(null);
+  const widthOf = (el: RefObject<HTMLDivElement | null>) => el.current?.getBoundingClientRect().width ?? 0;
 
   useEffect(() => {
     const p = left.current;
@@ -61,12 +66,21 @@ function ImageWorkspace({ tab }: { tab: TabName }) {
     if (rightOpen && p.isCollapsed()) p.expand();
     if (!rightOpen && !p.isCollapsed()) p.collapse();
   }, [rightOpen, right]);
+  // Every image screen stays mounted (App's <Activity>) and sized its columns when it first opened; a hidden screen runs
+  // no effects, so this runs each time the screen shows and takes the widths last dragged on another screen.
+  useEffect(() => {
+    const widths = useUi.getState().panelWidths;
+    for (const [p, el, px] of [[left.current, leftEl, widths.left], [right.current, rightEl, widths.right]] as const) {
+      if (p && !p.isCollapsed() && Math.abs(widthOf(el) - px) >= 0.01) p.resize(px);
+    }
+  }, [left, right]);
 
   return (
     <Group orientation="horizontal" className="workspace">
       <Panel
         id="left"
         panelRef={left}
+        elementRef={leftEl}
         defaultSize={leftWidth}
         minSize={320}
         maxSize={640}
@@ -74,7 +88,7 @@ function ImageWorkspace({ tab }: { tab: TabName }) {
         collapsedSize={0}
         onResize={(size) => {
           setLeft(size.inPixels > 0);
-          if (size.inPixels > 0) setWidth('left', size.inPixels);
+          if (size.inPixels > 0) setWidth('left', widthOf(leftEl));
         }}
         className="workspace__left"
       >
@@ -97,6 +111,7 @@ function ImageWorkspace({ tab }: { tab: TabName }) {
       <Panel
         id="right"
         panelRef={right}
+        elementRef={rightEl}
         defaultSize={rightWidth}
         minSize={300}
         maxSize={720}
@@ -104,7 +119,7 @@ function ImageWorkspace({ tab }: { tab: TabName }) {
         collapsedSize={0}
         onResize={(size) => {
           setRight(size.inPixels > 0);
-          if (size.inPixels > 0) setWidth('right', size.inPixels);
+          if (size.inPixels > 0) setWidth('right', widthOf(rightEl));
         }}
         className="workspace__right"
       >

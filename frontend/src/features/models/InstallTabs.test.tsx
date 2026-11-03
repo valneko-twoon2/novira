@@ -28,6 +28,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
 
@@ -154,6 +155,19 @@ describe('InstallStarter', () => {
     { id: 's3', name: 'Done XL', base: 'sdxl', type: 'vae', description: 'ready', source: 'src/three' },
   ];
   const model = (source: string): ModelConfig => ({ key: source, name: source, base: 'sdxl', type: 'vae', format: 'diffusers', description: '', path: '', size: 0, source });
+
+  it('starts the cards at the smallest size on a phone, and at 160 on a PC', async () => {
+    vi.spyOn(backend, 'listStarterModels').mockResolvedValue(starters);
+    const size = () => screen.getByRole('slider', { name: t('models.thumbSize') }).getAttribute('aria-valuenow');
+    ui(<InstallStarter />);
+    await waitFor(() => expect(screen.getAllByTestId('mm-starter')).toHaveLength(3));
+    expect(size()).toBe('160');
+    cleanup();
+    vi.stubGlobal('matchMedia', (q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} }));
+    ui(<InstallStarter />);
+    await waitFor(() => expect(screen.getAllByTestId('mm-starter')).toHaveLength(3));
+    expect(size()).toBe('120');
+  });
 
   it('lists the starter models as cards and installs one, or a whole bundle', async () => {
     vi.spyOn(backend, 'listStarterModels').mockResolvedValue(starters);

@@ -113,6 +113,13 @@ describe('ModelManager list', () => {
     expect(screen.getByTestId('mm-grid').getAttribute('style')).toContain('--mm-thumb: 190px');
   });
 
+  it('starts the thumbnails at the smallest size on a phone', () => {
+    vi.stubGlobal('matchMedia', (q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} }));
+    show();
+    expect(screen.getByTestId('mm-grid').getAttribute('style')).toContain('--mm-thumb: 120px');
+    expect(screen.getByRole('slider', { name: t('models.thumbSize') }).getAttribute('aria-valuenow')).toBe('120');
+  });
+
   it('shows the favourites only, after a model is starred, and removes the star again', () => {
     show();
     fireEvent.click(within(screen.getAllByTestId('mm-item')[3]!).getByRole('button', { name: t('models.card.favorite') }));

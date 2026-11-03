@@ -32,6 +32,12 @@ test('the assistant sits beside the gallery in the right column, keeps the draft
   await showTab(page, 'canvas');
   await expect(page.getByTestId('agent-window')).toBeVisible();
   await expect(page.getByTestId('agent-window').getByTestId('agent-input')).toHaveValue('half written');
+  // The screens without the column do not get it floating just because it was left open.
+  for (const tab of ['models', 'browse']) {
+    await showTab(page, tab);
+    await expect(page.getByTestId('agent-window')).toHaveCount(0);
+  }
+  await showTab(page, 'canvas');
   // The Gallery tab brings the gallery back.
   await page.getByTestId('right-tab-gallery').click();
   await expect(page.getByTestId('gallery-panel')).toBeVisible();

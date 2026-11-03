@@ -8,7 +8,7 @@ The settings screen, the keyboard shortcuts and the information about the app ar
 
 ![The agent in the right panel. The first screen, where you choose which AI to use and sign in](shot:agent)
 
-Press the **{{ui:app.right.assistant}}** tab at the top of the right panel, and the **{{ui:agent.title}}** takes the gallery's place. It is there on the {{ui:app.tabs.generate}}, {{ui:app.tabs.canvas}}, {{ui:app.tabs.upscaling}} and {{ui:app.tabs.workflows}} screens, and the chat and the message you are writing stay when you move between them. The **{{ui:app.right.gallery}}** tab brings the gallery back. When you ask the agent something from the {{ui:app.nav.extensions}} screen, it opens in a window over the screen. You can move the window by dragging its heading.
+Press the **{{ui:app.right.assistant}}** tab at the top of the right panel, and the **{{ui:agent.title}}** takes the gallery's place. It is there on the {{ui:app.tabs.generate}}, {{ui:app.tabs.canvas}}, {{ui:app.tabs.upscaling}} and {{ui:app.tabs.workflows}} screens, and the chat and the message you are writing stay when you move between them. The **{{ui:app.right.gallery}}** tab brings the gallery back. When you ask the agent something from the {{ui:app.nav.extensions}} screen, it opens in a window over the screen. The window shows only on the screen you asked from: it does not follow you onto the {{ui:app.tabs.models}}, {{ui:app.tabs.browse}} or other screens. You can move the window by dragging its heading.
 
 Instead of choosing models and LoRAs or setting the prompt and size yourself, you tell it what you want to make in words, such as "an anime-style girl standing on a beach at sunset", and the agent chooses the settings and fills them in for you.
 

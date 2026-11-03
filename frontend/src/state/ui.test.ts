@@ -38,12 +38,14 @@ describe('ui store', () => {
     expect([ui().leftPanelOpen, ui().rightPanelOpen]).toEqual([true, true]);
   });
 
-  it('rounds panel widths and ignores sub-pixel changes', () => {
+  it('keeps a panel width to the fraction, so every screen gets the same columns, and ignores rounding noise', () => {
     ui().setPanelWidth('left', 321.6);
-    expect(ui().panelWidths).toEqual({ left: 322, right: 400 });
+    expect(ui().panelWidths).toEqual({ left: 321.6, right: 400 });
     const before = ui().panelWidths;
-    ui().setPanelWidth('left', 322.4);
+    ui().setPanelWidth('left', 321.605);
     expect(ui().panelWidths).toBe(before);
+    ui().setPanelWidth('left', 321.8);
+    expect(ui().panelWidths.left).toBe(321.8);
   });
 
   it('sets the main view per tab', () => {

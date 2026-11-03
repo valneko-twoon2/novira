@@ -55,8 +55,8 @@ On a phone the page takes a layout made for phones. It switches by itself on a n
 | **{{ui:phone.gallery}}** | Pick a **{{ui:phone.board}}** and its pictures show three to a row. Pictures being drawn come first. Tap one to open it full screen |
 | **{{ui:app.views.drafts}}** | The same as the drafts on the computer ([Choosing from drafts](04-improve.md#choosing-from-drafts)). The **{{ui:drafts.open}}** button of a candidate shows its picture full screen |
 | **{{ui:app.tabs.queue}}** | The items waiting in the queue, newest first. The tab's icon shows how many are waiting and being drawn |
-| **{{ui:app.tabs.models}}** | The same as the **{{ui:app.tabs.models}}** tab on the computer ([Getting models](08-models.md)) |
-| **{{ui:app.tabs.browse}}** | The same as the **{{ui:app.tabs.browse}}** tab on the computer. Search Civitai and Hugging Face for models and install them. Search and filters are inside the **{{ui:browse.menu}}** button at the top left; its **{{ui:browse.cardSize}}** slider changes how big the cards are |
+| **{{ui:app.tabs.models}}** | The same as the **{{ui:app.tabs.models}}** tab on the computer ([Getting models](08-models.md)). The screen is small, so the cards start at their smallest size |
+| **{{ui:app.tabs.browse}}** | The same as the **{{ui:app.tabs.browse}}** tab on the computer. Search Civitai and Hugging Face for models and install them. Search and filters are inside the **{{ui:browse.menu}}** button at the top left; its **{{ui:browse.cardSize}}** slider changes how big the cards are (they start at their smallest) |
 
 While a picture is being drawn, the title bar shows it in progress with its step. Tap it to watch it being drawn full screen. When it is done, it turns into the finished picture.
 

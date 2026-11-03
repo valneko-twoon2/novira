@@ -181,6 +181,7 @@
 .browse-card {
   display: flex;
   flex-direction: column;
+  container-type: inline-size;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--bg-panel);
@@ -394,6 +395,41 @@
 
 .browse-card__actions .browse-dl {
   flex: 1;
+}
+
+/* A narrow card (the smallest size, three across on a phone): what would not fit is left to the detail drawer, which
+   shows the picture count, the licence in words and the link to the site. */
+@container (max-width: 159px) {
+  .browse-count,
+  .browse-card__actions .ui-iconbtn,
+  .browse-card .browse-commercial__label {
+    display: none;
+  }
+
+  .browse-pill {
+    max-width: calc(100% - var(--space-2) * 2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .browse-card__name {
+    font-size: var(--fs-sm);
+    -webkit-line-clamp: 3;
+  }
+
+  .browse-card__meta {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+
+  .browse-card__creator {
+    flex-basis: 100%;
+  }
+
+  .browse-stat {
+    white-space: nowrap;
+  }
 }
 
 .browse-chips {

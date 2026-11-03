@@ -24,6 +24,8 @@ export interface BrowseFilters {
 /** The narrowest and widest a card in the grid can be, in pixels. */
 export const CARD_MIN = 100;
 export const CARD_MAX = 300;
+/** The card size a session starts with: the smallest on a phone, whose screen is small. */
+export const defaultCardSize = (): number => (isPhoneLayout() ? CARD_MIN : 220);
 
 interface BrowseState extends BrowseFilters {
   /** The card width the grid aims for (the cards stretch to fill the row). */
@@ -47,7 +49,7 @@ export const useBrowse = create<BrowseState>()((set) => ({
   safetensorsOnly: false,
   creator: '',
   price: '',
-  cardSize: isPhoneLayout() ? 150 : 220,
+  cardSize: defaultCardSize(),
   setCardSize: (cardSize) => set({ cardSize: Math.min(CARD_MAX, Math.max(CARD_MIN, cardSize)) }),
   selected: null,
   setFilter: (key, value) => set({ [key]: value } as Partial<BrowseState>),

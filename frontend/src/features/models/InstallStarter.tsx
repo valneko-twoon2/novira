@@ -9,11 +9,11 @@ import { BASE_LABELS, useModels } from '@/state/models';
 import { Button, EmptyState, IconButton, InstallSlot, InstallStatus, Select, Slider, Spinner, TextInput, cx, type SelectOption } from '@/ui';
 import { installModel, sourceState } from '@/state/modelInstall';
 import type { ViewMode } from './ModelGrid';
+import { initialThumb, THUMB_MIN } from './ModelToolbar';
 import { formatBytes, TYPE_KEYS } from './modelLabels';
 import { familiesIn, filterEntries, PURPOSE_KEYS, STARTER_PURPOSES, starterEntries, type StarterEntry, type StarterPurpose } from './starterCatalog';
 
 const BUNDLES: BaseModel[] = ['sd-1', 'sdxl', 'flux'];
-const THUMB_MIN = 120;
 const THUMB_MAX = 260;
 
 function RailItem({ active, icon, label, count, onClick, testId }: { active: boolean; icon?: ReactNode; label: string; count: number; onClick: () => void; testId: string }) {
@@ -38,7 +38,7 @@ export function InstallStarter() {
   const [purpose, setPurpose] = useState<StarterPurpose | null>(null);
   const [family, setFamily] = useState<BaseModel | 'all'>('all');
   const [view, setView] = useState<ViewMode>('grid');
-  const [thumb, setThumb] = useState(160);
+  const [thumb, setThumb] = useState(() => initialThumb(160));
   const models = useModels((s) => s.models);
   const jobs = useModels((s) => s.installJobs);
 

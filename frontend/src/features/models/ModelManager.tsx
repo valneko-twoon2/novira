@@ -9,7 +9,7 @@ import { ModelGrid } from './ModelGrid';
 import type { CategoryId } from './modelCategories';
 import { ModelRail } from './ModelRail';
 import { ModelStatusBar } from './ModelStatusBar';
-import { ModelToolbar, type ToolbarState } from './ModelToolbar';
+import { initialThumb, ModelToolbar, type ToolbarState } from './ModelToolbar';
 import { useInstallToasts } from './useInstallToasts';
 import './models.css';
 import './models-cards.css';
@@ -24,7 +24,7 @@ export function ModelManager(_props: { tab?: unknown }) {
   const favorites = useModels((s) => s.favorites);
   const selected = useModels((s) => s.models.find((m) => m.key === s.selectedKey) ?? null);
   const [category, setCategory] = useState<CategoryId>('all');
-  const [bar, setBar] = useState<ToolbarState>(INITIAL);
+  const [bar, setBar] = useState<ToolbarState>(() => ({ ...INITIAL, thumb: initialThumb(INITIAL.thumb) }));
   const openImport = () => useModelImport.getState().open();
 
   const shown = useMemo(

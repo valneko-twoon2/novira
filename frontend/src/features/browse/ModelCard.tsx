@@ -27,7 +27,8 @@ export function ModelCard({ model, onOpen }: { model: CivitaiModel; onOpen: () =
     >
       <div className="browse-card__media">
         <CoverCarousel model={model} />
-        <span className="browse-pill">
+        {/* Shortened on a narrow card (browse.css); the detail drawer names the kind and the base model in full. */}
+        <span className="browse-pill" data-truncate-ok>
           {model.kind} · {model.baseModel}
         </span>
         {paid && (

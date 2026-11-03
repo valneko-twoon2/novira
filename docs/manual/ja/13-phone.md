@@ -55,8 +55,8 @@ Windows が使っているネットワークを「パブリック」として扱
 | **{{ui:phone.gallery}}** | **{{ui:phone.board}}** を選ぶと、そのボードの絵が 3 列で並びます。描いている途中の絵は先頭に出ます。押すと全画面で開きます |
 | **{{ui:app.views.drafts}}** | パソコンの下書きと同じです（[下書きから選ぶ](04-improve.md#下書きから選ぶ)）。候補の **{{ui:drafts.open}}** ボタンで、その絵を全画面で見られます |
 | **{{ui:app.tabs.queue}}** | 順番待ちの項目が、新しい順に並びます。タブのアイコンには、待っている項目と描いている項目の数が出ます |
-| **{{ui:app.tabs.models}}** | パソコンの {{ui:app.tabs.models}} タブと同じです（[モデルを用意する](08-models.md)） |
-| **{{ui:app.tabs.browse}}** | パソコンの {{ui:app.tabs.browse}} タブと同じです。Civitai と Hugging Face でモデルを探して、インストールできます。検索と絞り込みは左上の **{{ui:browse.menu}}** ボタンの中にあり、そこの **{{ui:browse.cardSize}}** で一覧のカードの大きさを変えられます |
+| **{{ui:app.tabs.models}}** | パソコンの {{ui:app.tabs.models}} タブと同じです（[モデルを用意する](08-models.md)）。画面が小さいので、カードは最小の大きさから始まります |
+| **{{ui:app.tabs.browse}}** | パソコンの {{ui:app.tabs.browse}} タブと同じです。Civitai と Hugging Face でモデルを探して、インストールできます。検索と絞り込みは左上の **{{ui:browse.menu}}** ボタンの中にあり、そこの **{{ui:browse.cardSize}}** で一覧のカードの大きさを変えられます（最小の大きさから始まります） |
 
 絵を描いている間は、見出しのバーに途中の絵と進み具合が出ます。押すと、描かれていく様子を全画面で見られます。描き終わると、できた絵に変わります。
 

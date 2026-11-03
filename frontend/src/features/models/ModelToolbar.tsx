@@ -2,6 +2,7 @@
 import { Compass, MagnifyingGlass, Plus, Rows, SquaresFour } from '@phosphor-icons/react';
 import { t } from '@/i18n';
 import { BASE_LABELS } from '@/state/models';
+import { isPhoneLayout } from '@/state/layout';
 import { useUi } from '@/state/ui';
 import { Button, IconButton, Select, Slider, TextInput, type SelectOption } from '@/ui';
 import type { BaseFilter, SortKey } from './filterModels';
@@ -16,8 +17,11 @@ export interface ToolbarState {
   thumb: number;
 }
 
-const THUMB_MIN = 120;
+export const THUMB_MIN = 120;
 const THUMB_MAX = 260;
+
+/** The thumbnail size a screen opens with: the smallest on a phone, whose screen is small. */
+export const initialThumb = (desktop: number): number => (isPhoneLayout() ? THUMB_MIN : desktop);
 
 export function ModelToolbar({ state, onChange, onImport }: { state: ToolbarState; onChange: (patch: Partial<ToolbarState>) => void; onImport: () => void }) {
   const baseOptions: SelectOption<BaseFilter>[] = [

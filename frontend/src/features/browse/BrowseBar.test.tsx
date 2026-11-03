@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { t } from '@/i18n';
 import { TooltipProvider } from '@/ui';
 import { BrowseBar } from './BrowseBar';
-import { CARD_MAX, CARD_MIN, useBrowse } from './browseStore';
+import { CARD_MAX, CARD_MIN, defaultCardSize, useBrowse } from './browseStore';
 
 const initial = useBrowse.getState();
 
@@ -79,6 +79,12 @@ describe('BrowseBar', () => {
     useBrowse.getState().setCardSize(1);
     expect(useBrowse.getState().cardSize).toBe(CARD_MIN);
     expect(screen.getByTestId('browse-card-size')).toBeTruthy();
+  });
+
+  it('starts the cards at the smallest size on a phone', () => {
+    expect(defaultCardSize()).toBe(220);
+    vi.stubGlobal('matchMedia', (q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} }));
+    expect(defaultCardSize()).toBe(CARD_MIN);
   });
 
   it('folds the controls behind one button on a phone', () => {

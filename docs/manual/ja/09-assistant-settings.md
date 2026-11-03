@@ -8,7 +8,7 @@
 
 ![右のパネルのエージェント。使う AI を選んでログインする最初の画面](shot:agent)
 
-右のパネルの上の **{{ui:app.right.assistant}}** タブを押すと、ギャラリーと入れ替わって **{{ui:agent.title}}** が出ます。{{ui:app.tabs.generate}}・{{ui:app.tabs.canvas}}・{{ui:app.tabs.upscaling}}・{{ui:app.tabs.workflows}} の画面で使え、画面を移っても、チャットと書きかけの文はそのまま残ります。**{{ui:app.right.gallery}}** タブで、ギャラリーに戻ります。{{ui:app.nav.extensions}}の画面からエージェントに質問したときは、画面の上にウィンドウで開きます。ウィンドウは、見出しをドラッグして動かせます。
+右のパネルの上の **{{ui:app.right.assistant}}** タブを押すと、ギャラリーと入れ替わって **{{ui:agent.title}}** が出ます。{{ui:app.tabs.generate}}・{{ui:app.tabs.canvas}}・{{ui:app.tabs.upscaling}}・{{ui:app.tabs.workflows}} の画面で使え、画面を移っても、チャットと書きかけの文はそのまま残ります。**{{ui:app.right.gallery}}** タブで、ギャラリーに戻ります。{{ui:app.nav.extensions}}の画面からエージェントに質問したときは、画面の上にウィンドウで開きます。このウィンドウは質問した画面にだけ出て、{{ui:app.tabs.models}}・{{ui:app.tabs.browse}} などのほかの画面へ移っても出てきません。ウィンドウは、見出しをドラッグして動かせます。
 
 モデルや LoRA を選んだり、プロンプトやサイズを設定したりする代わりに、「夕焼けの海辺に立つアニメ風の少女」のように、作りたいものを文章で伝えると、エージェントが設定を選んで入力してくれます。
 
