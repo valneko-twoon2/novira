@@ -24,7 +24,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { checkGpu } from './gpu-check.mjs';
 import { harnessRoots } from './harness-paths.mjs';
-import { comfyNameOf, isSweepTrigger, markdownTable, overall, packRows, porcelainPaths, readCode, summaryLines, unscannedFolders, walkModels } from './models-sweep-lib.mjs';
+import { comfyNameOf, isSweepTrigger, markdownTable, overall, packRows, porcelainPaths, readCode, summaryLines, sweepRoots, unscannedFolders, walkModels } from './models-sweep-lib.mjs';
 import { acquire } from './e2e-lock.mjs';
 import { ensureBuilt, startServer } from './server-run.mjs';
 import { layout, shareModels } from './verify-real-app.mjs';
@@ -205,7 +205,7 @@ async function main(argv) {
   }
   if (!shareModels({ data }, ROOTS.models)) log(`${ROOTS.models} does not exist: only the data folder's own models are swept`);
   const code = readCode(REPO);
-  const roots = [path.join(data, 'models'), ...(fs.existsSync(ROOTS.models) ? [ROOTS.models] : [])];
+  const roots = sweepRoots(data, ROOTS.models);
   const files = roots.flatMap((r) => walkModels(r, code));
   // Pack folders (video/, music/...) are rows of their own, not "unscanned".
   const packDirs = new Set(code.packs.map((p) => p.dir));

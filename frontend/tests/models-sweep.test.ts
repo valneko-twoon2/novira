@@ -1,6 +1,7 @@
 // The model sweep (scripts/tools/models-sweep*.mjs): what it reads from the code agrees with the code, which models stand for their
 // kind, the graph and picture checks, the verdicts and the table, which changes need a sweep and when a record still covers
 // HEAD, the Stop hook's reminder, and the main checkout a worktree shares its harness folder with.
+import path from 'node:path';
 import { deflateSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { BASE_LABELS, isDrawable, isVideoModel, SPLIT_BASES, VIDEO_BASES } from '@/state/models';
@@ -28,6 +29,7 @@ import {
   representatives,
   summaryLines,
   sweepReminder,
+  sweepRoots,
   unscannedFolders,
   wireKind,
   // @ts-expect-error -- plain ESM script without types
@@ -473,5 +475,19 @@ describe('the main checkout a worktree shares', () => {
     files['L/novira/data-location.json'] = 'not json';
     expect(movedDataDir({ LOCALAPPDATA: 'L' }, read)).toBeNull();
     expect(movedDataDir({}, read)).toBeNull();
+  });
+});
+
+describe('the folders the sweep walks', () => {
+  it('walks every model root the isolated settings name, once each, and only folders that exist', () => {
+    const settings = JSON.stringify({ modelRoots: ['C:/moved/models', 'E:/repo/models', 'C:/Moved/Models', 'C:/gone', 7] });
+    const exists = (p: string) => !p.toLowerCase().includes('gone');
+    expect(sweepRoots('E:/work/verify-data', 'E:/repo/models', { read: () => settings, exists })).toEqual([path.join('E:/work/verify-data', 'models'), 'C:/moved/models', 'E:/repo/models']);
+    // No settings yet: the own folder and the shared one.
+    const none = () => {
+      throw new Error('no file');
+    };
+    expect(sweepRoots('E:/work/verify-data', 'E:/repo/models', { read: none, exists })).toEqual([path.join('E:/work/verify-data', 'models'), 'E:/repo/models']);
+    expect(sweepRoots('E:/work/verify-data', 'E:/repo/models', { read: () => '{"modelRoots": "C:/x"}', exists: () => false })).toEqual([]);
   });
 });

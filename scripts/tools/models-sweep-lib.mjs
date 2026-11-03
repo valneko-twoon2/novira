@@ -197,6 +197,28 @@ export function pickerOf(model, code) {
   return { picker: null, why: where[model.type] ?? 'no picker' };
 }
 
+/**
+ * The model folders the isolated app reads, in its order: the data folder's own `models`, then every `modelRoots`
+ * entry of its `settings.json` (the truth: the harness may have written more than one shared root there), then
+ * `shared`; each once, and only those that exist.
+ */
+export function sweepRoots(data, shared, { read = (f) => fs.readFileSync(f, 'utf8'), exists = fs.existsSync } = {}) {
+  let listed = [];
+  try {
+    const roots = JSON.parse(read(path.join(data, 'settings.json'))).modelRoots;
+    if (Array.isArray(roots)) listed = roots.filter((r) => typeof r === 'string' && r);
+  } catch {
+    // No settings yet: only the own folder and the shared one.
+  }
+  const seen = new Set();
+  return [path.join(data, 'models'), ...listed, shared].filter((r) => {
+    const key = path.resolve(r).toLowerCase();
+    if (seen.has(key) || !exists(r)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 /** The rail entry that lists a type on the Models screen. */
 export function railOf(type, rail) {
   return rail.find((r) => r.types.includes(type))?.id ?? null;
