@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { backend, type BoardDTO, type Packs } from '@/backend';
 import { useGallery } from './gallery';
+import { useQueue } from './queue';
 import { useWorkflows } from './workflows/workflows';
 import { startBackend } from './wiring';
 
@@ -20,7 +21,7 @@ const data = (): BootstrapData => ({
 afterEach(() => vi.restoreAllMocks());
 
 describe('startBackend', () => {
-  it('lets every caller wait for the same start-up, so a repeated call does not resolve before the data is loaded', async () => {
+  it('lets every caller wait for the same start-up, so a repeated call does not resolve before the data is loaded, and fills the queue', async () => {
     let finish: (d: BootstrapData) => void = () => undefined;
     const bootstrap = vi.spyOn(backend, 'bootstrap').mockImplementation(() => new Promise<BootstrapData>((resolve) => (finish = resolve)));
 
@@ -32,8 +33,12 @@ describe('startBackend', () => {
     expect(settled).toEqual([]);
     expect(bootstrap).toHaveBeenCalledTimes(1);
 
+    // A job another window (the PC, when this is a phone) is running already is in the queue from the start.
+    const running = { id: 4, status: 'in_progress' } as ReturnType<typeof backend.listQueue>[number];
+    vi.spyOn(backend, 'listQueue').mockReturnValue([running]);
     finish(data());
     await Promise.all([first, second]);
+    expect(useQueue.getState().items).toEqual([running]);
     expect(settled.sort()).toEqual(['first', 'second']);
     expect(useGallery.getState().boards).toEqual([board]);
     expect(useWorkflows.getState().library).toEqual([]);

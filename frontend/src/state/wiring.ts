@@ -149,6 +149,9 @@ async function start(): Promise<void> {
   useWorkflows.getState().setLibrary(data.workflows);
   useEngine.getState().setStatus(data.engine);
   usePacks.getState().setAll(data.packs);
+  // The jobs already there (another window or a phone may have queued them, or one is running): without them the
+  // queue shows only what changes from now on.
+  useQueue.getState().setItems(backend.listQueue());
   useQueue.getState().setStatus(backend.queueStatus());
   watchForMissedEvents();
   // After the gallery is in (layer pictures are looked up there) and after the backup-restore check above.
