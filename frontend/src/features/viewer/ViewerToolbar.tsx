@@ -40,13 +40,13 @@ import { CANVAS_TARGETS } from '@/features/gallery/canvasTargets';
 import { requestDeleteImages } from '@/features/gallery/deleteRequest';
 import { t } from '@/i18n';
 import { DERIVE_CHOICES, canDerive, deriveFrom } from '@/state/derive';
-import { useCaptionDialog } from '@/state/dialogs/caption';
 import { useDeriveDialog } from '@/state/dialogs/derive';
-import { useFaceFixDialog } from '@/state/dialogs/facefix';
 import { useGallery } from '@/state/gallery';
+import { toggleToolBand } from '@/state/imageTools/actions';
+import { useToolBand } from '@/state/imageTools/band';
+import type { ImageToolId } from '@/state/imageTools/tools';
 import { useMangaDialog } from '@/state/dialogs/manga';
 import { useCharacterDialog } from '@/state/dialogs/character';
-import { useCutout } from '@/state/dialogs/cutout';
 import { fixPartOnCanvas } from '@/state/partFix';
 import { useShareDialog } from '@/state/dialogs/share';
 import { Divider, IconButton, Menu, MenuContent, MenuItem, MenuTrigger, TOOLBAR_BUTTON_SIZE } from '@/ui';
@@ -59,9 +59,13 @@ function tip(label: string, key: string) {
 export function ViewerToolbar({ image }: { image: ImageDTO | undefined }) {
   const showMetadata = useGallery((s) => s.showMetadata);
   const comparing = useGallery((s) => s.compareImageName !== null);
+  // The tool the band shows, for the toolbar buttons that open it.
+  const bandTool = useToolBand((s) => (s.open ? s.tool : null));
   const none = !image;
   const noMeta = !image?.metadata;
   const act = (fn: (img: ImageDTO) => void) => () => image && fn(image);
+  const notStill = none || (image.mediaType ?? 'image') !== 'image';
+  const toolButton = (tool: ImageToolId) => ({ isActive: bandTool === tool, disabled: notStill, onClick: act((i) => toggleToolBand(tool, i.name)) });
   return (
     <div className="vtoolbar" data-testid="viewer-toolbar">
       <div className="vtoolbar__group">
@@ -114,10 +118,10 @@ export function ViewerToolbar({ image }: { image: ImageDTO | undefined }) {
         <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('gallery.menu.useAsReference')} icon={<Images />} disabled={none} onClick={act(addAsReference)} />
         <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('gallery.menu.upscale')} tooltip={tip(t('gallery.menu.upscale'), 'Shift+U')} icon={<ArrowsOut />} disabled={none} onClick={act(sendToUpscale)} />
         <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('gallery.menu.segment')} icon={<Crosshair />} disabled={none || (image.mediaType ?? 'image') !== 'image'} onClick={act(fixPartOnCanvas)} data-testid="viewer-segment" />
-        <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('cutout.menu')} icon={<Scissors />} disabled={none || (image.mediaType ?? 'image') !== 'image'} onClick={act((i) => useCutout.getState().open(i.name))} data-testid="viewer-cutout" />
-        <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('facefix.menu')} icon={<Smiley />} disabled={none || (image.mediaType ?? 'image') !== 'image'} onClick={act((i) => useFaceFixDialog.getState().open(i.name))} data-testid="viewer-facefix" />
+        <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('cutout.menu')} icon={<Scissors />} {...toolButton('cutout')} data-testid="viewer-cutout" />
+        <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('facefix.menu')} icon={<Smiley />} {...toolButton('facefix')} data-testid="viewer-facefix" />
         <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('gallery.manga.menu')} icon={<DotsNine />} disabled={none || (image.mediaType ?? 'image') !== 'image'} onClick={act((i) => useMangaDialog.getState().open(i.name))} data-testid="viewer-manga" />
-        <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('caption.menu')} icon={<ChatCenteredText />} disabled={none || (image.mediaType ?? 'image') !== 'image'} onClick={act((i) => useCaptionDialog.getState().show(i.name))} data-testid="viewer-caption" />
+        <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('caption.menu')} icon={<ChatCenteredText />} {...toolButton('caption')} data-testid="viewer-caption" />
         <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('character.menu')} icon={<UserFocus />} disabled={none || (image.mediaType ?? 'image') !== 'image'} onClick={act((i) => useCharacterDialog.getState().open({ imageNames: [i.name] }))} data-testid="viewer-character" />
         <IconButton size={TOOLBAR_BUTTON_SIZE}
           label={t('gallery.compare.toggle')}

@@ -861,14 +861,19 @@ body:has(.phone) .ui-modal__body {
   overscroll-behavior: contain;
 }
 
-/* The dialogs that show a picture with its settings beside it (fix the face, cut out, select a part, describe, pose): the
- * picture above, the settings under it. */
-body:has(.phone) :is(.ffx, .seg, .cap, .pose) {
+/* The pose dialog shows a picture with its settings beside it: the picture above, the settings under it. */
+body:has(.phone) .pose {
   grid-template-columns: minmax(0, 1fr);
 }
 
-body:has(.phone) :is(.ffx__stage, .seg__stage, .cap__stage) {
-  max-height: 45dvh;
+/* The picture tools' band over a picture opened full screen: the switch fills its row. */
+body:has(.phone) .toolband__switch {
+  flex: 1 1 auto;
+}
+
+body:has(.phone) .toolband__tool {
+  flex: 1;
+  justify-content: center;
 }
 
 body:has(.phone) .share__slider {

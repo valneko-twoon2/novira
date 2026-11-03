@@ -9,15 +9,20 @@ import { requestDeleteImages } from '@/features/gallery/deleteRequest';
 import { useElementSize } from '@/features/gallery/useElementSize';
 import { fitSize } from '@/features/viewer/FittedImage';
 import { LiveView } from '@/features/viewer/LiveView';
+import { ToolBand } from '@/features/viewer/tools/ToolBand';
 import { t } from '@/i18n';
 import { useGallery } from '@/state/gallery';
 import { useGeneratingItems } from '@/state/generating';
+import type { ImageToolId } from '@/state/imageTools/tools';
 import { useQueue } from '@/state/queue';
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger, cx } from '@/ui';
 import { usePhone, usePhoneImages, type PhoneView as View } from './phoneStore';
 import { usePictureGestures } from './usePictureGestures';
 
 const PAD = 12;
+
+/** The picture tools a phone offers: it has no canvas to put poses on. */
+const PHONE_TOOLS: readonly ImageToolId[] = ['facefix', 'cutout', 'caption'];
 
 export function PhoneView() {
   const view = usePhone((s) => s.view);
@@ -124,6 +129,7 @@ function PictureStage({ image, index, count, onStep }: { image: ImageDTO; index:
           <List size={22} weight="bold" />
         </button>
       </div>
+      <ToolBand shown={image.name} tools={PHONE_TOOLS} compare={false} />
       <ContextMenu>
         <ContextMenuTrigger asChild>
           <div className="phone-view__stage phone-view__stage--picture" ref={stageRef} {...handlers} data-testid="phone-view-stage">

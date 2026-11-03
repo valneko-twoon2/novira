@@ -37,7 +37,7 @@ The small buttons above the fields do the following. They are icons only; hold t
 | **{{ui:params.prompt.expand}}** | Edits positive and negative side by side in a large window |
 | **{{ui:params.prompt.textView}}** / **{{ui:params.prompt.tagView}}** | Switches the field between the plain text and a row of tags, one per word. Press a tag to open a popover: rewrite its words, change its strength with the slider, reset it to 1, or remove the tag. A tag whose strength changed is written into the prompt as `(smile:1.3)`. Type a word in the box below and press Enter to add a tag |
 | **{{ui:params.promptBook.open}}** | Opens the presets, words gathered together with their meanings (described below) |
-| **{{ui:caption.fromPrompt}}** | Looks at a picture and writes out words you can use as a prompt. You can also drop a gallery picture or an image file from your computer on this button (explained in [Fixing and Reusing Pictures](04-improve.md)) |
+| **{{ui:caption.fromPrompt}}** | Looks at the picture selected in the gallery (or, when none is, an image file you choose) and writes out words you can use as a prompt at once. The result shows in the band of the viewer. You can also drop a gallery picture or an image file from your computer on this button (explained in [Fixing and Reusing Pictures](04-improve.md)) |
 
 ### Token count
 

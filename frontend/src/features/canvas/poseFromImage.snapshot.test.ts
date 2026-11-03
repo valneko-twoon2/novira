@@ -1,4 +1,4 @@
-// Snapshot of the ComfyUI prompt the "make a pose from a picture" dialog sends, so a change to it is seen in review.
+// Snapshot of the ComfyUI prompt the pose reading tool sends, so a change to it is seen in review.
 // Update it on purpose with `npx vitest run -u src/features/canvas/poseFromImage.snapshot.test.ts`.
 import { describe, expect, it } from 'vitest';
 import { PACK_NODE_DEFS } from '@/backend/mock/comfyPackDefs';

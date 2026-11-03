@@ -38,6 +38,7 @@ Beyond the plain stores (`ui`, `settings`, `params`, `gallery`, `queue`, `models
 | `invoke.ts` | The registry "build a request for this screen" |
 | `generationParts.ts` | The txt2img request parts shared by the Generate tab and the comic |
 | `agent*.ts` | The assistant: requests and permission question, its chat sessions and what it is told of their earlier turns (`agentHistory.ts`), its tools as the window runs them (`agentTools.ts`, `agentRegistry.ts`), what it is told about each screen (`agentGuide.ts`) |
+| `imageTools/` | The picture tools of the viewer's tool band: their settings (kept), readiness, queue jobs and runs, which belong to no screen; the canvas registers where read poses go (`posePlacer.ts`), the phone layout how a picture is shown (`setToolViewer`) |
 | `comfy/` | ComfyUI seen from the frontend: node definitions, pack installs and suggestions, the Registry list, and `graphJob.ts` / `runGraph.ts` to queue an app-written prompt and wait for its result |
 | `comic/` | Comic projects: document, store, layout, balloons, requests, persistence; a page's layers are Canvas layers in `page.canvas`, edited through one Canvas store per page (`pageCanvas.ts`, `paintMode.ts`) |
 | `pose/`, `poseSkeleton.ts` | The OpenPose skeleton math and presets, shared by the canvas and the comic |
@@ -55,9 +56,9 @@ Beyond the plain stores (`ui`, `settings`, `params`, `gallery`, `queue`, `models
 | `params/`, `invoke/`, `launchpad/`, `drafts/` | The Generate and Upscaling left panels, the Invoke bar, the start pages per tab, drafts (a batch of half-drawn seeds) |
 | `media/`, `video/`, `music/`, `voice/`, `logo/` | The video, music, voice and logo screens; `media/` is what they share (preset card, seed row, model choice, model fit mark) |
 | `canvas/`, `text/`, `comic/`, `workflows/` | The Canvas tab, the Text tab, the Comic tab, the node editor and Extensions tab |
-| `gallery/`, `viewer/`, `queue/`, `share/` | Gallery, image viewer (its manga finish dialog is `viewer/manga/`), Queue tab, export for sharing (watermark switch, "check a picture") |
+| `gallery/`, `viewer/`, `queue/`, `share/` | Gallery, image viewer (its manga finish dialog is `viewer/manga/`; the tool band of the picture tools, fix the face, remove the background, describe, read poses, is `viewer/tools/`), Queue tab, export for sharing (watermark switch, "check a picture") |
 | `models/`, `browse/` | The model manager, the Browse tab (Civitai, Hugging Face) |
-| `derive/`, `caption/`, `facefix/`, `pose/`, `xyplot/`, `batch/`, `finish/`, `segment/` | Dialogs over a picture, several pictures, a clip or a selection. `derive` redoes a picture with its stored settings, `caption` describes it as a prompt, `finish` smooths or enlarges a clip, `segment` removes the background (the RMBG cut-out). Most queue a graph through `state/comfy/graphJob.ts` |
+| `derive/`, `pose/`, `xyplot/`, `batch/`, `finish/` | Dialogs over a picture, several pictures, a clip or a selection. `derive` redoes a picture with its stored settings, `finish` smooths or enlarges a clip. Most queue a graph through `state/comfy/graphJob.ts` |
 | `agent/`, `engine/`, `devlog/`, `splash/`, `settings/`, `downloads/` | What sits around every screen: the assistant, the engine banner, the developer log, the start-up screen and its gate, settings, the download dock |
 
 ## The browser mock

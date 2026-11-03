@@ -1,5 +1,5 @@
-// Registers the canvas Invoke builder, the shared importImage action, the bbox <-> params size sync and staging's
-// generating page.
+// Registers the canvas Invoke builder, the shared importImage action, where the pose tool puts poses, the bbox <-> params
+// size sync and staging's generating page.
 import type { QueueItem } from '@/backend';
 import { t } from '@/i18n';
 import { useQueue } from '@/state/queue';
@@ -7,12 +7,14 @@ import { useCanvas, type CanvasEntity, type CanvasState } from '@/state/canvas';
 import { useNodePacks } from '@/state/comfy/nodePacks';
 import { refImagesPackReason } from '@/state/comfy/packNeeds';
 import { registerDragSource } from '@/state/dnd';
+import { registerPosePlacer } from '@/state/imageTools/posePlacer';
 import { registerInvokeBuilder } from '@/state/invoke';
 import { findModel, useModels } from '@/state/models';
 import { useParams, type ParamsState } from '@/state/params';
 import { CANVAS_LAYER_DRAG, CANVAS_STAGED_DRAG } from './dragSources';
 import { registerAgentEditor } from '@/state/agent';
-import { entityAsGalleryImage, importImage, posesForAssistant, setPoses, stagedAsGalleryImage } from './actions';
+import { useUi } from '@/state/ui';
+import { entityAsGalleryImage, importImage, placeExtractedPoses, posesForAssistant, setPoses, stagedAsGalleryImage } from './actions';
 import { canvasRenderer } from './render/generationInputs';
 import { buildCanvasRequest } from './request';
 
@@ -64,6 +66,15 @@ export function registerCanvasFeature() {
     const { bbox, setBbox } = useCanvas.getState();
     if (bbox.width === p.width && bbox.height === p.height) return;
     setBbox({ ...bbox, width: p.width, height: p.height }, { history: false, syncParams: false });
+  });
+
+  // The poses the tool band reads from a picture go on a control layer, and the canvas shows.
+  registerPosePlacer((found, add) => {
+    if (!placeExtractedPoses(found, add)) return false;
+    const ui = useUi.getState();
+    ui.setTab('canvas');
+    ui.setMainView('canvas', 'canvas');
+    return true;
   });
 
   // The assistant can place and change poses on a control layer (and undo it with the rest of its answer).

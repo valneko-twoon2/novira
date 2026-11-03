@@ -1,0 +1,138 @@
+/* The tool band over the viewer's picture: the tool switch and the close button on the first row, the settings or the
+ * last run under them. */
+.toolband {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-panel);
+  font-size: var(--fs-sm);
+}
+
+.toolband__switch {
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  min-width: 0;
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.toolband__tool {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 28px;
+  padding: 0 var(--space-2);
+  border: none;
+  background: var(--bg-input);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.toolband__tool:hover {
+  background: var(--bg-hover);
+}
+
+.toolband__tool.is-active {
+  background: var(--grad-accent);
+  color: var(--white);
+}
+
+.toolband__body {
+  display: flex;
+  flex: 1 1 100%;
+  order: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  min-width: 0;
+  min-height: 30px;
+}
+
+.toolband__field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.toolband__field--wide {
+  flex: 1 1 240px;
+}
+
+.toolband__field--wide .ui-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.toolband__label {
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.toolband__select {
+  width: min(180px, 100%);
+}
+
+.toolband__field .ui-slidernum {
+  width: min(180px, 100%);
+}
+
+.toolband__close {
+  margin-left: auto;
+}
+
+.toolband__state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: 600;
+}
+
+.toolband__progress {
+  width: 120px;
+}
+
+.toolband__hint,
+.toolband__used {
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+}
+
+.toolband__error {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--red-300);
+}
+
+.toolband__needs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.toolband__text {
+  display: flex;
+  flex: 1 1 100%;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.toolband__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

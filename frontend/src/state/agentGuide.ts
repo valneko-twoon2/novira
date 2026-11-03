@@ -67,7 +67,7 @@ const FEATURES: { id: string; name: MessageKey; about: string }[] = [
     id: 'afterEffects',
     name: 'gallery.derive.menu',
     about:
-      'Actions on a finished picture, from the viewer toolbar or the right-click menu in the gallery: make it again with the same settings (derive), remove the background, trim transparent margins, fix a part (paint it on the canvas; erase, cut or redraw), fix a face, manga page, write a prompt from the picture (caption), register a character, compare settings in a grid (XY plot), and process many pictures at once (batch). Remove background needs the RMBG extension, erasing needs comfyui-inpaint-nodes, fix a face needs Impact Pack and Impact Subpack, caption needs Florence2; a dialog offers to install a missing one.',
+      'Actions on a finished picture, from the viewer toolbar or the right-click menu in the gallery: make it again with the same settings (derive), remove the background, trim transparent margins, fix a part (paint it on the canvas; erase, cut or redraw), fix a face, manga page, write a prompt from the picture (caption), register a character, compare settings in a grid (XY plot), and process many pictures at once (batch). Menu group Fix runs face fix, background removal, caption or pose reading at once; a viewer band has their settings. Needs RMBG, Impact Pack+Subpack, Florence2; erase needs comfyui-inpaint-nodes.',
   },
   {
     id: 'poses',

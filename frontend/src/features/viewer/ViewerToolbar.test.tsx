@@ -4,15 +4,13 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ImageDTO } from '@/backend';
 import { t } from '@/i18n';
-import { useCaptionDialog } from '@/state/dialogs/caption';
 import { useCharacterDialog } from '@/state/dialogs/character';
-import { useCutout } from '@/state/dialogs/cutout';
 import { useDeriveDialog } from '@/state/dialogs/derive';
-import { useFaceFixDialog } from '@/state/dialogs/facefix';
 import { useMangaDialog } from '@/state/dialogs/manga';
 import { fixPartOnCanvas } from '@/state/partFix';
 import { useShareDialog } from '@/state/dialogs/share';
 import { useGallery } from '@/state/gallery';
+import { useToolBand } from '@/state/imageTools/band';
 import { TooltipProvider } from '@/ui';
 import { ViewerToolbar } from './ViewerToolbar';
 
@@ -95,18 +93,23 @@ describe('ViewerToolbar buttons', () => {
     show(image());
     fireEvent.click(screen.getByTestId('viewer-segment'));
     expect(fixPartOnCanvas).toHaveBeenCalledWith(expect.objectContaining({ name: 'a.png' }));
-    fireEvent.click(screen.getByTestId('viewer-cutout'));
-    expect(useCutout.getState().imageName).toBe('a.png');
-    fireEvent.click(screen.getByTestId('viewer-facefix'));
-    expect(useFaceFixDialog.getState().imageName).toBe('a.png');
     fireEvent.click(screen.getByTestId('viewer-manga'));
     expect(useMangaDialog.getState().imageName).toBe('a.png');
-    fireEvent.click(screen.getByTestId('viewer-caption'));
-    expect(useCaptionDialog.getState().imageName).toBe('a.png');
     fireEvent.click(screen.getByTestId('viewer-character'));
     expect(useCharacterDialog.getState().open).toBeTruthy();
     fireEvent.click(screen.getByTestId('viewer-share'));
     expect(useShareDialog.getState().names).toEqual(['a.png']);
+  });
+
+  it('opens the tool band on a picture tool, and closes it with the same button', () => {
+    show(image());
+    for (const tool of ['cutout', 'facefix', 'caption'] as const) {
+      fireEvent.click(screen.getByTestId(`viewer-${tool}`));
+      expect(useToolBand.getState()).toMatchObject({ open: true, tool, imageName: 'a.png', mode: 'settings' });
+      expect(screen.getByTestId(`viewer-${tool}`).getAttribute('aria-pressed')).toBe('true');
+    }
+    fireEvent.click(screen.getByTestId('viewer-caption'));
+    expect(useToolBand.getState().open).toBe(false);
   });
 
   it('stars, unstars and deletes', () => {

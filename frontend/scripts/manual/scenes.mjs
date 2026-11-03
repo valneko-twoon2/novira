@@ -19,6 +19,11 @@ async function withPicture(s, prompt = PROMPT) {
   await s.testid('image-viewer').waitFor();
 }
 
+/** Waits until the tool band over the viewer shows the end of its run. */
+async function toolDone(s) {
+  await s.page.locator('[data-testid="tool-band-status"][data-status="done"]').waitFor();
+}
+
 /** Opens the settings menu at the bottom of the side navigation and chooses an entry. */
 async function fromSettingsMenu(s, itemKey) {
   await s.page.getByRole('button', { name: s.msg('app.nav.settingsMenu') }).click();
@@ -142,11 +147,10 @@ export const SCENES = [
     run: async (s) => {
       await withPicture(s, 'a girl standing with her arms raised, white background 19');
       await s.testid('gallery-thumb').first().click({ button: 'right' });
+      // The menu item reads the poses at once; the tool band over the viewer shows how many people it found.
       await s.menuItem('canvas.poseFromImage.menu').click();
-      await s.testid('pose-from-image-dialog').waitFor();
-      await s.testid('pose-from-image-run').click();
-      await s.testid('pose-from-image-result').waitFor();
-      await s.shot(s.dialog());
+      await toolDone(s);
+      await s.shot(s.testid('image-viewer'));
     },
   },
   {
@@ -448,9 +452,11 @@ export const SCENES = [
     query: EMPTY,
     run: async (s) => {
       await withPicture(s);
+      // The tool band's settings, then the result compared with the original.
       await s.testid('viewer-cutout').click();
-      await s.testid('cutout-stage').waitFor();
-      await s.shot(s.dialog());
+      await s.testid('tool-band-run').click();
+      await toolDone(s);
+      await s.shot(s.testid('image-viewer'));
     },
   },
   {
@@ -458,9 +464,10 @@ export const SCENES = [
     query: EMPTY,
     run: async (s) => {
       await withPicture(s, 'a girl with brown hair standing in a field');
+      // The tool band with the face fix settings over the picture.
       await s.testid('viewer-facefix').click();
-      await s.testid('facefix-dialog').waitFor();
-      await s.shot(s.dialog());
+      await s.testid('tool-band-run').waitFor();
+      await s.shot(s.testid('image-viewer'));
     },
   },
   {
@@ -481,10 +488,9 @@ export const SCENES = [
     run: async (s) => {
       await withPicture(s, 'a girl with blue hair smiling, white background');
       await s.testid('viewer-caption').click();
-      await s.testid('caption-dialog').waitFor();
-      await s.testid('caption-run').click();
-      await s.testid('caption-result').waitFor();
-      await s.shot(s.dialog());
+      await s.testid('tool-band-run').click();
+      await s.testid('tool-band-text').waitFor();
+      await s.shot(s.testid('image-viewer'));
     },
   },
   {

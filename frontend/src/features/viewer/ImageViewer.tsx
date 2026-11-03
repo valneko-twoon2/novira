@@ -1,4 +1,4 @@
-// Center image viewer: toolbar, image (or live progress / comparison), metadata overlay, info line.
+// Center image viewer: toolbar, the picture tools' band, image (or live progress / comparison), metadata overlay, info line.
 import { ImageSquare } from '@phosphor-icons/react';
 import { useRef } from 'react';
 import { useImage } from '@/features/gallery/useBoardImages';
@@ -11,6 +11,7 @@ import { CompareView } from './compare/CompareView';
 import { FittedImage } from './FittedImage';
 import { LiveView } from './LiveView';
 import { MetadataPanel } from './metadata/MetadataPanel';
+import { ToolBand } from './tools/ToolBand';
 import { useViewerHotkeys } from './useViewerHotkeys';
 import { ViewerNav } from './ViewerNav';
 import { ViewerToolbar } from './ViewerToolbar';
@@ -65,6 +66,7 @@ export function ImageViewer() {
   return (
     <div className="viewer" data-testid="image-viewer">
       <ViewerToolbar image={image} />
+      <ToolBand shown={comparing ? null : (image?.name ?? null)} />
       <div className="viewer__stage" ref={stageRef}>
         {content}
         {!comparing && !liveItem && <ViewerNav imageName={viewerName} />}

@@ -1,11 +1,10 @@
 // Positive and negative prompt boxes, always visible, each with its own preset row and prompt book button.
 import { ArrowsOutSimple, BookOpen, ChatCenteredText, Sparkle, Tag, TextT } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
-import { backend } from '@/backend';
 import { t } from '@/i18n';
-import { useCaptionDialog } from '@/state/dialogs/caption';
-import { findImage, useGallery } from '@/state/gallery';
-import { autoAddBoardId } from '@/state/invoke';
+import { quickRunTool } from '@/state/imageTools/actions';
+import { selectedStill, uploadPicture } from '@/state/imageTools/pickPicture';
+import { findImage } from '@/state/gallery';
 import { useParams } from '@/state/params';
 import { usePromptBook } from '@/state/prompts/promptBook';
 import type { PromptKind } from '@/state/prompts/promptBook';
@@ -50,22 +49,25 @@ export function PromptBoxes() {
   );
 }
 
-/** Opens "describe as a prompt" on a picture dropped on it, or on the picture selected in the gallery. */
+/**
+ * Describes a picture as a prompt at once: one dropped on it, the picture selected in the gallery, or a file picked
+ * here. The viewer shows the picture, and its tool band the words with the buttons that put them into the prompt.
+ */
 function CaptionButton() {
-  const showCaption = (name: string | null) => useCaptionDialog.getState().show(name);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const describe = (name: string) => void quickRunTool('caption', name);
+  const fromFile = (file: File | undefined) => {
+    if (file) void uploadPicture(file).then((name) => name && describe(name));
+  };
   return (
     <ImageDropZone
       className="pp-prompt__caption"
       label={t('caption.dropHere')}
-      onImages={(names) => showCaption(findImage(names[0] ?? null)?.name ?? null)}
-      onFiles={(files) => {
-        const f = files[0];
-        if (!f) return;
-        void backend.uploadImage(f, { boardId: autoAddBoardId(), category: 'user' }).then((image) => {
-          useGallery.getState().addImage(image);
-          showCaption(image.name);
-        });
+      onImages={(names) => {
+        const picked = findImage(names[0] ?? null);
+        if (picked && (picked.mediaType ?? 'image') === 'image') describe(picked.name);
       }}
+      onFiles={(files) => fromFile(files[0])}
     >
       <IconButton
         size="xs"
@@ -73,9 +75,21 @@ function CaptionButton() {
         icon={<ChatCenteredText />}
         data-testid="prompt-caption"
         onClick={() => {
-          const { selection } = useGallery.getState();
-          const picked = selection.length === 1 ? findImage(selection[0] ?? null) : undefined;
-          showCaption(picked && (picked.mediaType ?? 'image') === 'image' ? picked.name : null);
+          const picked = selectedStill();
+          if (picked) describe(picked);
+          else fileInput.current?.click();
+        }}
+      />
+      <input
+        ref={fileInput}
+        type="file"
+        accept="image/*"
+        hidden
+        data-testid="prompt-caption-file"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = '';
+          fromFile(file);
         }}
       />
     </ImageDropZone>

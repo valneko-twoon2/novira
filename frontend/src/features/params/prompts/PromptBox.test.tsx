@@ -4,7 +4,6 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { backend } from '@/backend';
 import { t } from '@/i18n';
-import { useCaptionDialog } from '@/state/dialogs/caption';
 import { useGallery } from '@/state/gallery';
 import { useModels } from '@/state/models';
 import { useParams } from '@/state/params';
@@ -14,12 +13,14 @@ import { useUi } from '@/state/ui';
 import { TooltipProvider } from '@/ui';
 import { PromptBoxes } from './PromptBox';
 
+vi.mock('@/state/imageTools/actions', () => ({ quickRunTool: vi.fn() }));
+import { quickRunTool } from '@/state/imageTools/actions';
+
 const initial = {
   params: useParams.getState(),
   gallery: useGallery.getState(),
   models: useModels.getState(),
   book: usePromptBook.getState(),
-  caption: useCaptionDialog.getState(),
   toasts: useToasts.getState(),
   ui: useUi.getState(),
 };
@@ -31,7 +32,7 @@ beforeEach(() => {
   useGallery.setState({ ...initial.gallery, images: [picture('a.png'), picture('v.mp4', 'video')], selection: [] }, true);
   useModels.setState(initial.models, true);
   usePromptBook.setState({ ...initial.book, open: false }, true);
-  useCaptionDialog.setState(initial.caption, true);
+  vi.mocked(quickRunTool).mockClear();
   useToasts.setState(initial.toasts, true);
   useUi.setState(initial.ui, true);
   render(
@@ -103,27 +104,43 @@ describe('the prompt boxes', () => {
 });
 
 describe('describing a picture', () => {
-  it('opens on the picture selected in the gallery, but not on a video or several', () => {
+  it('describes the picture selected in the gallery at once, or asks for a file when none or a video is selected', () => {
+    const fileInput = screen.getByTestId('prompt-caption-file') as HTMLInputElement;
+    const pick = vi.spyOn(fileInput, 'click').mockImplementation(() => undefined);
     fireEvent.click(screen.getByTestId('prompt-caption'));
-    expect(useCaptionDialog.getState().imageName).toBeNull();
+    expect(pick).toHaveBeenCalledTimes(1);
     act(() => useGallery.setState({ selection: ['a.png'] }));
     fireEvent.click(screen.getByTestId('prompt-caption'));
-    expect(useCaptionDialog.getState().imageName).toBe('a.png');
-    act(() => useCaptionDialog.getState().close());
+    expect(quickRunTool).toHaveBeenLastCalledWith('caption', 'a.png');
     act(() => useGallery.setState({ selection: ['v.mp4'] }));
     fireEvent.click(screen.getByTestId('prompt-caption'));
-    expect(useCaptionDialog.getState().imageName).toBeNull();
+    expect(pick).toHaveBeenCalledTimes(2);
+    expect(quickRunTool).toHaveBeenCalledTimes(1);
   });
 
-  it('opens on a picture dropped on the button, and uploads a dropped file first', async () => {
+  it('describes a picture dropped on the button, and uploads a dropped or picked file first', async () => {
     const zone = screen.getByTestId('prompt-caption').closest('.pp-prompt__caption')!;
     fireEvent.drop(zone, { dataTransfer: { types: ['application/x-novira-images'], files: [], getData: () => JSON.stringify(['a.png']) } });
-    await waitFor(() => expect(useCaptionDialog.getState().imageName).toBe('a.png'));
+    await waitFor(() => expect(quickRunTool).toHaveBeenLastCalledWith('caption', 'a.png'));
     const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue(picture('up.png'));
     const file = new File(['x'], 'x.png', { type: 'image/png' });
     fireEvent.drop(zone, { dataTransfer: { types: ['Files'], files: [file], getData: () => '' } });
-    await waitFor(() => expect(useCaptionDialog.getState().imageName).toBe('up.png'));
+    await waitFor(() => expect(quickRunTool).toHaveBeenLastCalledWith('caption', 'up.png'));
     expect(upload).toHaveBeenCalled();
     expect(useGallery.getState().images.some((i) => i.name === 'up.png')).toBe(true);
+    upload.mockResolvedValue(picture('picked.png'));
+    const input = screen.getByTestId('prompt-caption-file') as HTMLInputElement;
+    Object.defineProperty(input, 'files', { value: [file], configurable: true });
+    fireEvent.change(input);
+    await waitFor(() => expect(quickRunTool).toHaveBeenLastCalledWith('caption', 'picked.png'));
+  });
+
+  it('says so when the file cannot be uploaded, and describes nothing', async () => {
+    vi.spyOn(backend, 'uploadImage').mockRejectedValue(new Error('too large'));
+    const input = screen.getByTestId('prompt-caption-file') as HTMLInputElement;
+    Object.defineProperty(input, 'files', { value: [new File(['x'], 'x.png', { type: 'image/png' })], configurable: true });
+    fireEvent.change(input);
+    await waitFor(() => expect(useToasts.getState().toasts.at(-1)).toMatchObject({ status: 'error', title: t('gallery.tools.uploadFailed'), description: 'too large' }));
+    expect(quickRunTool).not.toHaveBeenCalled();
   });
 });

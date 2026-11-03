@@ -64,9 +64,9 @@ test('a picture from the gallery is read as a pose and put on the canvas', async
   await openApp(page);
   await page.getByTestId('gallery-thumb').first().click({ button: 'right' });
   await page.getByRole('menuitem', { name: msg('canvas.poseFromImage.menu') }).click();
-  await page.getByTestId('pose-from-image-run').click();
-  await expect(page.getByTestId('pose-from-image-result')).toBeVisible({ timeout: 20_000 });
-  await page.getByTestId('pose-from-image-replace').click();
+  // The menu item reads the poses at once; the tool band over the viewer shows the people found.
+  await expect(page.getByTestId('tool-band-place')).toBeVisible({ timeout: 20_000 });
+  await page.getByTestId('tool-band-place').click();
   await expect(page.getByTestId('canvas-stage')).toBeVisible();
   await expect(page.getByTestId('canvas-entity')).toHaveCount(1);
 });

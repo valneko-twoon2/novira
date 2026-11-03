@@ -1,11 +1,14 @@
 // Runs a ComfyUI prompt through the queue and waits for what it makes: a picture (`runJob`) or text (`runTextJob`).
 import { backend, type BackendEvent, type EnqueueRequest, type ImageDTO, type QueueItem } from '@/backend';
 
+/** Told the queue item's id as soon as the job is queued (to follow its progress, or to cancel it later). */
+export type OnQueued = (id: number) => void;
+
 /**
  * Queues the request and waits until `result` finds its outcome in a backend event of the job. Rejects with the
  * engine's message when the job fails, and with an AbortError when the signal is aborted (the job is cancelled).
  */
-function waitForJob<T>(request: EnqueueRequest, result: (event: BackendEvent, id: number) => { value: T } | null, signal?: AbortSignal): Promise<T> {
+function waitForJob<T>(request: EnqueueRequest, result: (event: BackendEvent, id: number) => { value: T } | null, signal?: AbortSignal, onQueued?: OnQueued): Promise<T> {
   return new Promise((resolve, reject) => {
     let id: number | null = null;
     const early: BackendEvent[] = [];
@@ -31,6 +34,7 @@ function waitForJob<T>(request: EnqueueRequest, result: (event: BackendEvent, id
     backend.enqueue(request).then(
       ([item]) => {
         id = item!.id;
+        onQueued?.(id);
         if (signal?.aborted) onAbort();
         early.splice(0).forEach(handle);
       },
@@ -40,8 +44,8 @@ function waitForJob<T>(request: EnqueueRequest, result: (event: BackendEvent, id
 }
 
 /** The picture a queued prompt makes; see `waitForJob` for how it ends otherwise. */
-export function runJob(request: EnqueueRequest, signal?: AbortSignal): Promise<ImageDTO> {
-  return waitForJob(request, (event, id) => (event.type === 'image_added' && event.item?.id === id ? { value: event.image } : null), signal);
+export function runJob(request: EnqueueRequest, signal?: AbortSignal, onQueued?: OnQueued): Promise<ImageDTO> {
+  return waitForJob(request, (event, id) => (event.type === 'image_added' && event.item?.id === id ? { value: event.image } : null), signal, onQueued);
 }
 
 /** The finished queue item of a job, from a status event. */
@@ -50,7 +54,7 @@ function completed(event: BackendEvent, id: number): QueueItem | null {
 }
 
 /** The text a queued prompt makes (its output node is ComfyUI's "Preview as Text"); no picture is stored. */
-export function runTextJob(request: EnqueueRequest, signal?: AbortSignal): Promise<string> {
+export function runTextJob(request: EnqueueRequest, signal?: AbortSignal, onQueued?: OnQueued): Promise<string> {
   return waitForJob(
     request,
     (event, id) => {
@@ -58,5 +62,6 @@ export function runTextJob(request: EnqueueRequest, signal?: AbortSignal): Promi
       return item ? { value: item.resultText ?? '' } : null;
     },
     signal,
+    onQueued,
   );
 }

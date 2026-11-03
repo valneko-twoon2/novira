@@ -1,5 +1,5 @@
-// Snapshot of the ComfyUI prompt the fix-the-face dialog sends, so a change to it is seen in review.
-// Update it on purpose with `npx vitest run -u src/features/facefix/faceFixGraph.snapshot.test.ts`.
+// Snapshot of the ComfyUI prompt the face fix tool sends, so a change to it is seen in review.
+// Update it on purpose with `npx vitest run -u src/state/comfy/faceFixGraph.snapshot.test.ts`.
 import { describe, expect, it } from 'vitest';
 import { buildFaceFixGraph } from '@/state/comfy/faceFix';
 

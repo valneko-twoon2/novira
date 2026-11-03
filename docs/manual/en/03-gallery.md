@@ -103,8 +103,7 @@ When you right-click a thumbnail, a list of the operations available for that pi
 | **{{ui:gallery.menu.upscale}}** (`Shift+U`) | Sends it to the Upscaling tab |
 | **{{ui:gallery.menu.segment}}** | Opens the picture on the canvas so you can paint over a part and erase, cut out or repaint it |
 | **{{ui:gallery.derive.menu}}** | Makes other pictures with this picture's settings, using a different seed or slight changes |
-| **{{ui:cutout.menu}}** | Removes the background |
-| **{{ui:facefix.menu}}** | Finds faces and redraws them |
+| **{{ui:gallery.tools.heading}}** | {{ui:facefix.menu}}, {{ui:cutout.menu}}, {{ui:caption.menu}}, {{ui:canvas.poseFromImage.menu}}. Choosing one runs it at once with the settings of the last time; the gear at its right opens the settings first (see [Fixing and Reusing Pictures](04-improve.md)) |
 | **{{ui:gallery.menu.trim}}** | Trims the transparent margins and saves the result as a new transparent image |
 | **{{ui:character.menu}}** | Registers the picture as a character |
 | **{{ui:gallery.menu.changeBoard}}** | Moves it to another board |
