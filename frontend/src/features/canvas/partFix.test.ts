@@ -6,14 +6,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { backend, type ComfyNodeDefs, type EnqueueRequest, type ImageDTO } from '@/backend';
 import { installRecordingCanvases } from '@/backend/mock/canvas2dRecorder.testkit';
 import { t } from '@/i18n';
-import { useCanvas } from '@/state/canvas';
+import { useCanvas, type CanvasState } from '@/state/canvas';
+import { useParams, type ParamsState } from '@/state/params';
 import { useComfyNodes } from '@/state/comfy/comfyNodes';
 import { ERASE_NODE } from '@/state/comfy/erase';
 import { useNodePacks } from '@/state/comfy/nodePacks';
 import { useGallery } from '@/state/gallery';
 import { usePacks } from '@/state/media/packs';
 import { useToasts } from '@/state/toasts';
-import { cutOutMaskedPart, eraseMaskedPart } from './partFix';
+import { cutOutMaskedPart, eraseMaskedPart, redrawMaskedPart } from './partFix';
 
 vi.mock('@/ui/canvasDraw/imageCache', () => ({
   getImage: () => null,
@@ -24,6 +25,12 @@ vi.mock('@/ui/canvasDraw/imageCache', () => ({
 
 const runJob = vi.fn<(r: EnqueueRequest) => Promise<ImageDTO>>();
 vi.mock('@/state/comfy/runGraph', () => ({ runJob: (r: EnqueueRequest) => runJob(r) }));
+
+// The redraw's request is the canvas Invoke's own (tested in request.test.ts); here only what it is given matters.
+const buildCanvasRequest = vi.fn(async (_doc: CanvasState, p: ParamsState) => ({ origin: 'canvas', destination: 'canvas', params: { positivePrompt: p.positivePrompt } }) as unknown as EnqueueRequest);
+vi.mock('./request', () => ({ buildCanvasRequest: (doc: CanvasState, p: ParamsState) => buildCanvasRequest(doc, p) }));
+const readiness = vi.fn((): string[] => []);
+vi.mock('./register', () => ({ canvasReadiness: () => readiness() }));
 
 const initial = { canvas: useCanvas.getState(), gallery: useGallery.getState(), toasts: useToasts.getState(), nodes: useComfyNodes.getState(), packs: usePacks.getState() };
 const c = () => useCanvas.getState();
@@ -62,6 +69,10 @@ beforeEach(() => {
   });
   vi.spyOn(backend, 'deleteImages').mockResolvedValue(undefined as never);
   runJob.mockReset();
+  buildCanvasRequest.mockClear();
+  readiness.mockReturnValue([]);
+  useParams.setState({ positivePrompt: 'a girl in a park' });
+  vi.spyOn(backend, 'enqueue').mockResolvedValue([] as never);
 });
 afterEach(() => {
   canvases.restore();
@@ -138,6 +149,53 @@ describe('erasing the painted part', () => {
     await eraseMaskedPart(raster);
     expect(lastToast()?.title).toBe(t('canvas.partFix.empty'));
     expect(runJob).not.toHaveBeenCalled();
+  });
+});
+
+describe('redrawing the painted part', () => {
+  it('queues a canvas generation with the instruction as its prompt and only this mask, shown even when hidden', async () => {
+    setUp();
+    const other = paintedMask();
+    const id = c().addEntity('inpaint', { objects: [{ kind: 'stroke', id: 's2', tool: 'brush', color: red, width: 10, points: [5, 5, 20, 20], clip: null }] });
+    c().updateEntity(id, { isEnabled: false });
+    useCanvas.setState({ groupHidden: { ...c().groupHidden, inpaint: true } });
+    await redrawMaskedPart(id, '  a blue ribbon ');
+    const [doc, params] = buildCanvasRequest.mock.calls[0]!;
+    expect(params.positivePrompt).toBe('a blue ribbon');
+    const masks = doc.entities.filter((e) => e.type === 'inpaint');
+    expect(masks.map((e) => [e.id, e.isEnabled])).toEqual([[id, true]]);
+    expect(masks.some((e) => e.id === other)).toBe(false);
+    expect(doc.groupHidden.inpaint).toBe(false);
+    expect(backend.enqueue).toHaveBeenCalledTimes(1);
+    expect(lastToast()).toMatchObject({ status: 'success', title: t('canvas.partFix.redrawing') });
+    // The Generate tab's prompt is left as it was.
+    expect(useParams.getState().positivePrompt).toBe('a girl in a park');
+  });
+
+  it('uses the Generate tab\'s prompt when the instruction is blank', async () => {
+    setUp();
+    await redrawMaskedPart(paintedMask(), '   ');
+    expect(buildCanvasRequest.mock.calls[0]![1].positivePrompt).toBe('a girl in a park');
+  });
+
+  it('queues nothing when nothing is painted or the canvas cannot be invoked, and says why', async () => {
+    setUp(() => [0, 0, 0, 255]);
+    await redrawMaskedPart(paintedMask(false), 'x');
+    expect(lastToast()?.title).toBe(t('canvas.partFix.empty'));
+    canvases.restore();
+
+    setUp();
+    readiness.mockReturnValue(['no model']);
+    await redrawMaskedPart(c().selectedEntityId!, 'x');
+    expect(lastToast()).toMatchObject({ status: 'warning', title: t('app.invoke.notReady'), description: 'no model' });
+    expect(backend.enqueue).not.toHaveBeenCalled();
+  });
+
+  it('reports a failed enqueue', async () => {
+    setUp();
+    vi.mocked(backend.enqueue).mockRejectedValue(new Error('queue full'));
+    await redrawMaskedPart(paintedMask(), 'x');
+    expect(lastToast()).toMatchObject({ status: 'error', description: 'queue full' });
   });
 });
 

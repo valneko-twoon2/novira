@@ -1,5 +1,5 @@
-// What an inpaint mask can do to the picture under it besides a generation: erase the painted part (filled from its
-// surroundings by ComfyUI, the result lands in staging) or cut it out as a picture of its own in the gallery.
+// What an inpaint mask can do to the picture under it: redraw the painted part from a written instruction, erase it
+// (filled from its surroundings by ComfyUI; both results land in staging) or cut it out as a picture of its own.
 import { backend, type ImageDTO } from '@/backend';
 import { t } from '@/i18n';
 import { useCanvas, type CanvasStore, type InpaintEntity } from '@/state/canvas';
@@ -17,8 +17,12 @@ import { toast } from '@/state/toasts';
 import { canvasToBlob, compositeRect, imageUrlsOf } from '@/ui/canvasDraw/composite';
 import { createCanvas, renderMaskShape } from '@/ui/canvasDraw/entityRender';
 import { preloadImages } from '@/ui/canvasDraw/imageCache';
+import { useParams } from '@/state/params';
+import { canvasReadiness } from './register';
 import { visibleEntities } from './render/composite';
+import { canvasRenderer } from './render/generationInputs';
 import { maskIsEmpty } from './render/maskPixels';
+import { buildCanvasRequest } from './request';
 
 function fail(title: string, err: unknown) {
   toast({ status: 'error', title, description: String(err instanceof Error ? err.message : err) });
@@ -28,8 +32,8 @@ function ctx2d(c: HTMLCanvasElement): CanvasRenderingContext2D {
   return c.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D;
 }
 
-/** The visible raster layers inside the bbox, and the mask's painted part there (white on black), or null when nothing is painted. */
-async function pictureAndMask(store: CanvasStore, id: string): Promise<{ picture: HTMLCanvasElement; mask: HTMLCanvasElement } | null> {
+/** The mask's painted part inside the bbox (white on black), or null when nothing is painted there. */
+async function maskOf(store: CanvasStore, id: string): Promise<HTMLCanvasElement | null> {
   const s = store.getState();
   const e = s.entities.find((x): x is InpaintEntity => x.id === id && x.type === 'inpaint');
   if (!e) return null;
@@ -40,7 +44,14 @@ async function pictureAndMask(store: CanvasStore, id: string): Promise<{ picture
   mctx.fillRect(0, 0, mask.width, mask.height);
   const shape = renderMaskShape(e, 255);
   if (shape) mctx.drawImage(shape.canvas, e.x + shape.x - s.bbox.x, e.y + shape.y - s.bbox.y, shape.width, shape.height);
-  if (maskIsEmpty(mctx.getImageData(0, 0, mask.width, mask.height).data)) return null;
+  return maskIsEmpty(mctx.getImageData(0, 0, mask.width, mask.height).data) ? null : mask;
+}
+
+/** The visible raster layers inside the bbox, and the mask's painted part there, or null when nothing is painted. */
+async function pictureAndMask(store: CanvasStore, id: string): Promise<{ picture: HTMLCanvasElement; mask: HTMLCanvasElement } | null> {
+  const mask = await maskOf(store, id);
+  if (!mask) return null;
+  const s = store.getState();
   const picture = await compositeRect(visibleEntities(s, ['raster']), s.bbox);
   return { picture, mask };
 }
@@ -100,6 +111,39 @@ export async function eraseMaskedPart(id: string, store: CanvasStore = useCanvas
     fail(t('canvas.partFix.failed'), err);
   } finally {
     if (helpers.length) void backend.deleteImages(helpers).catch(() => undefined);
+  }
+}
+
+/**
+ * Redraws only what this mask covers: a canvas generation with the Generate tab's settings, the instruction in place of
+ * its prompt (the prompt itself when the instruction is empty) and every other inpaint mask left out. The result is
+ * staged like any canvas generation. Only the Image tab's canvas has a staging area the queue reports to.
+ */
+export async function redrawMaskedPart(id: string, instruction: string): Promise<void> {
+  const store = useCanvas;
+  try {
+    if (!(await maskOf(store, id))) {
+      nothingPainted();
+      return;
+    }
+    const s = store.getState();
+    const p = useParams.getState();
+    const reasons = canvasReadiness(s, p);
+    if (reasons.length) {
+      toast({ status: 'warning', title: t('app.invoke.notReady'), description: reasons.join('\n') });
+      return;
+    }
+    // This mask alone, shown even when it or its group is hidden, so the generation redraws exactly what was painted.
+    const doc = {
+      ...s,
+      entities: s.entities.filter((e) => e.type !== 'inpaint' || e.id === id).map((e) => (e.id === id ? { ...e, isEnabled: true } : e)),
+      groupHidden: { ...s.groupHidden, inpaint: false },
+    };
+    const request = await buildCanvasRequest(doc, { ...p, positivePrompt: instruction.trim() || p.positivePrompt }, false, canvasRenderer);
+    await backend.enqueue(request);
+    toast({ status: 'success', title: t('canvas.partFix.redrawing') });
+  } catch (err) {
+    fail(t('canvas.partFix.failed'), err);
   }
 }
 

@@ -1,11 +1,11 @@
-// Inpaint mask settings: erase or cut out the painted part, optional denoise limit and noise level, mask style and opacity.
-import { Eraser, Scissors } from '@phosphor-icons/react';
+// Inpaint mask settings: redraw, erase or cut out the painted part, optional denoise limit and noise level, mask style and opacity.
+import { Eraser, PaintBrush, Scissors } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { t } from '@/i18n';
-import { type InpaintEntity } from '@/state/canvas';
+import { useCanvas, type InpaintEntity } from '@/state/canvas';
 import { useCanvasStore, useCanvasStoreApi } from '@/state/canvasStoreContext';
-import { Button, Field, SliderNumber, Switch } from '@/ui';
-import { cutOutMaskedPart, eraseMaskedPart } from '../../partFix';
+import { Button, Field, SliderNumber, Switch, Textarea } from '@/ui';
+import { cutOutMaskedPart, eraseMaskedPart, redrawMaskedPart } from '../../partFix';
 import { MaskStyleFields } from './MaskStyleFields';
 import { OpacityField } from './OpacityField';
 
@@ -23,15 +23,34 @@ function OptionalSlider({ label, value, onChange }: { label: string; value: numb
 export function InpaintSettings({ entity }: { entity: InpaintEntity }) {
   const update = useCanvasStore((s) => s.updateEntity);
   const store = useCanvasStoreApi();
-  const [busy, setBusy] = useState<'erase' | 'cut' | null>(null);
+  const [busy, setBusy] = useState<'redraw' | 'erase' | 'cut' | null>(null);
+  const [instruction, setInstruction] = useState('');
   const id = entity.id;
-  const run = (what: 'erase' | 'cut') => {
+  // A redraw is a canvas generation, whose result reaches only the Image tab's canvas.
+  const canRedraw = store === useCanvas;
+  const run = (what: 'redraw' | 'erase' | 'cut') => {
     setBusy(what);
-    void (what === 'erase' ? eraseMaskedPart(id, store) : cutOutMaskedPart(id, store)).finally(() => setBusy(null));
+    const job = what === 'redraw' ? redrawMaskedPart(id, instruction) : what === 'erase' ? eraseMaskedPart(id, store) : cutOutMaskedPart(id, store);
+    void job.finally(() => setBusy(null));
   };
   return (
     <div className="canvas-settings">
+      {canRedraw && (
+        <Textarea
+          value={instruction}
+          placeholder={t('canvas.partFix.instructionPlaceholder')}
+          aria-label={t('canvas.partFix.instruction')}
+          rows={2}
+          onChange={(e) => setInstruction(e.target.value)}
+          data-testid="canvas-mask-instruction"
+        />
+      )}
       <div className="canvas-settings__actions">
+        {canRedraw && (
+          <Button size="sm" leftIcon={<PaintBrush size={14} />} isLoading={busy === 'redraw'} disabled={busy !== null} onClick={() => run('redraw')} data-testid="canvas-mask-redraw">
+            {t('canvas.partFix.redraw')}
+          </Button>
+        )}
         <Button size="sm" leftIcon={<Eraser size={14} />} isLoading={busy === 'erase'} disabled={busy !== null} onClick={() => run('erase')} data-testid="canvas-mask-erase">
           {t('canvas.partFix.erase')}
         </Button>

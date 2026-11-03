@@ -108,13 +108,13 @@ You select the part to fix by painting over it with a brush. The picture opens o
 1. Open the picture in the viewer and press **{{ui:gallery.menu.segment}}** (you can also choose it from the right-click menu in the gallery).
 2. The canvas opens with the picture and an empty **{{ui:canvas.add.inpaint}}** selected. The tool is **{{ui:canvas.tool.brush}}**.
 3. Paint the part you want to fix. Remove what you painted too much with **{{ui:canvas.tool.eraser}}**. To select the rest instead, right-click the mask and choose **{{ui:canvas.entityMenu.invertMask}}**.
-4. Choose what to do with the painted part. When the mask's row is selected, the buttons appear under it (they are also in the mask's right-click menu).
+4. Choose what to do with the painted part. When the mask's row is selected, a text box and buttons appear under it (erasing and cutting out are also in the mask's right-click menu).
 
 | What you want | How | What you need |
 |---|---|---|
 | Erase it, blending it into the surrounding picture | **{{ui:canvas.partFix.erase}}**. The result is put in staging on the canvas, so choose **{{ui:canvas.staging.accept}}** or discard it. | The extension comfyui-inpaint-nodes. With the LaMa model (about 200MB), it erases naturally. Without it, you can still erase in a simple way. |
 | Save only the painted part as a transparent picture | **{{ui:canvas.partFix.cutOutAction}}** | Nothing |
-| Repaint it according to a text instruction | Write a prompt and generate on the canvas as usual. Only the painted part is repainted. | An image model |
+| Repaint it according to a text instruction | Write what to draw there, such as "a blue ribbon", in the text box and press **{{ui:canvas.partFix.redraw}}**. Only the painted part is redrawn, with the Generate tab's model and settings. With the text box blank, the Generate tab's prompt is used. The Generate tab's prompt is not changed. The result is put in staging, so choose **{{ui:canvas.staging.accept}}** or discard it. | An image model |
 | Apply a mosaic | Do not use the mask; trace over the part directly with the **{{ui:canvas.tool.mosaic}}** tool. | Nothing |
 
 The original picture does not change. A cut-out is saved to the gallery as a new picture.

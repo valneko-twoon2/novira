@@ -495,5 +495,9 @@
   "canvas.partFix.install": "Install",
   "canvas.partFix.restart": "Restart ComfyUI",
   "canvas.partFix.lamaOffer": "Get the LaMa model (about 200 MB) to erase more naturally.",
-  "canvas.partFix.lamaGet": "Get LaMa"
+  "canvas.partFix.lamaGet": "Get LaMa",
+  "canvas.partFix.redraw": "Redraw painted area",
+  "canvas.partFix.instruction": "What to draw",
+  "canvas.partFix.instructionPlaceholder": "How to redraw it. Blank uses the Generate tab's prompt",
+  "canvas.partFix.redrawing": "Redraw of the painted area queued. The result appears in staging."
 }

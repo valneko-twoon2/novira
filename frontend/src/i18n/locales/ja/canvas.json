@@ -495,5 +495,9 @@
   "canvas.partFix.install": "インストール",
   "canvas.partFix.restart": "ComfyUI を再起動する",
   "canvas.partFix.lamaOffer": "モデル LaMa（約 200MB）を取得すると、より自然に消せます。",
-  "canvas.partFix.lamaGet": "LaMa を取得する"
+  "canvas.partFix.lamaGet": "LaMa を取得する",
+  "canvas.partFix.redraw": "塗った部分を描き直す",
+  "canvas.partFix.instruction": "描き直す内容",
+  "canvas.partFix.instructionPlaceholder": "どう描き直すか。空なら生成タブのプロンプトを使います",
+  "canvas.partFix.redrawing": "塗った部分の描き直しをキューに入れました。結果は仮置きに出ます。"
 }
