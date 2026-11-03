@@ -125,6 +125,18 @@ describe('App shell', () => {
     expect(useUi.getState().activeTab).toBe('generate');
   });
 
+  it('switches on the press of the mouse button, not on its release, and leaves touch and modified presses to the click', async () => {
+    await openApp();
+    fireEvent.pointerDown(screen.getByTestId('tab-canvas'), { pointerType: 'mouse', button: 0 });
+    expect(useUi.getState().activeTab).toBe('canvas');
+    fireEvent.pointerDown(screen.getByTestId('tab-models'), { pointerType: 'touch', button: 0 });
+    fireEvent.pointerDown(screen.getByTestId('tab-models'), { pointerType: 'mouse', button: 2 });
+    fireEvent.pointerDown(screen.getByTestId('tab-models'), { pointerType: 'mouse', button: 0, ctrlKey: true });
+    expect(useUi.getState().activeTab).toBe('canvas');
+    fireEvent.click(screen.getByTestId('tab-models'));
+    expect(useUi.getState().activeTab).toBe('models');
+  });
+
   it('toggles the panels with T, G and F, and with the arrow buttons', async () => {
     await openApp();
     key('t');

@@ -70,6 +70,11 @@ export function SideNav() {
               aria-label={withVisibleText(t(TAB_LABEL_KEYS[tab]), t(SHORT_LABEL_KEYS[tab]))}
               data-testid={`tab-${tab}`}
               className={`sidenav__tab${active === tab ? ' is-active' : ''}`}
+              // A mouse switches on the press, not on the release: waiting for the button to come up read as a lag.
+              // Touch keeps the click, so a swipe over the bar does not switch; the keyboard's click comes through too.
+              onPointerDown={(e) => {
+                if (e.pointerType === 'mouse' && e.button === 0 && !e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey) setTab(tab === 'generate' ? generateMode : tab);
+              }}
               onClick={() => setTab(tab === 'generate' ? generateMode : tab)}
             >
               {ICONS[tab]}

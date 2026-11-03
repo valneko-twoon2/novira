@@ -102,6 +102,8 @@
 /* Flat, not button-like: the active tab is marked by brighter content and a thin bar on the edge. */
 .sidenav__tab.is-active {
   color: var(--text);
+  /* The tab just chosen lights at once; a fade made the switch look late. */
+  transition: none;
 }
 
 .sidenav__tab.is-active::before {
