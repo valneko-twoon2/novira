@@ -236,11 +236,25 @@ const INPAINT_COLOR: RGBA = { r: 224, g: 117, b: 117, a: 1 };
 let idSeq = 1;
 export const newId = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${idSeq++}`;
 
+type Staging = Pick<CanvasState, 'stagedImageNames' | 'stagedIndex' | 'stagingGenerating'>;
+
+/** Staging's pages: the results, and the generating page after them while a canvas job is to come. */
+export function stagedPageCount(s: Staging): number {
+  return s.stagedImageNames.length + (s.stagingGenerating ? 1 : 0);
+}
+
+/** The page staging shows (`stagedIndex` kept in range), and whether it is the generating page. */
+export function stagedPage(s: Staging): { index: number; generating: boolean } {
+  const index = Math.max(0, Math.min(s.stagedIndex, stagedPageCount(s) - 1));
+  return { index, generating: s.stagingGenerating && index === s.stagedImageNames.length };
+}
+
 export interface CanvasState extends Doc {
   // Shared contract
   stagedImageNames: string[];
   stagedIndex: number;
-  addStagedImage: (name: string) => void;
+  /** `fromQueue`: the result of a queued canvas generation (several may follow), not of a one-off action. */
+  addStagedImage: (name: string, opts?: { fromQueue?: boolean }) => void;
   importImage: (image: ImageDTO, target: CanvasImportTarget) => void;
 
   selectedEntityId: string | null;
@@ -259,6 +273,11 @@ export interface CanvasState extends Doc {
   groupHidden: Record<EntityType, boolean>;
   filterPreviews: Record<string, FilterPreview>;
   stagingShowResults: boolean;
+  /**
+   * A generation bound for this canvas is queued or running. Staging then has one more page after the results, the
+   * generating page (`stagedIndex === stagedImageNames.length`), and only that page shows the progress.
+   */
+  stagingGenerating: boolean;
   past: Doc[];
   future: Doc[];
   lastHistoryKey: string | null;
@@ -307,6 +326,7 @@ export interface CanvasState extends Doc {
   discardStaged: (index: number) => void;
   clearStaged: () => void;
   setStagingShowResults: (v: boolean) => void;
+  setStagingGenerating: (v: boolean) => void;
 }
 
 const roundTo8 = (v: number) => Math.max(64, Math.round(v / 8) * 8);
@@ -435,9 +455,14 @@ export function createCanvasStore({ persistKey, syncParams, limits, onLimit }: C
 
       stagedImageNames: [],
       stagedIndex: 0,
-      addStagedImage: (name) => {
-        const names = [...get().stagedImageNames, name];
-        set({ stagedImageNames: names, stagedIndex: names.length - 1, stagingShowResults: true });
+      addStagedImage: (name, opts = {}) => {
+        const { stagedImageNames: old, stagedIndex, stagingGenerating } = get();
+        const names = [...old, name];
+        // A queued result leaves someone looking at an earlier result where they are, and someone watching the generating
+        // page there while more are coming (the new result shows after the last one). A one-off result shows at once.
+        const keep = opts.fromQueue && stagedIndex < old.length;
+        const index = keep ? stagedIndex : opts.fromQueue && stagingGenerating ? names.length : names.length - 1;
+        set({ stagedImageNames: names, stagedIndex: index, stagingShowResults: true });
       },
       importImage: () => {
         // Replaced by registerCanvasFeature().
@@ -466,6 +491,7 @@ export function createCanvasStore({ persistKey, syncParams, limits, onLimit }: C
       groupHidden: { raster: false, control: false, inpaint: false, regional: false },
       filterPreviews: {},
       stagingShowResults: true,
+      stagingGenerating: false,
       past: [],
       future: [],
       lastHistoryKey: null,
@@ -653,16 +679,22 @@ export function createCanvasStore({ persistKey, syncParams, limits, onLimit }: C
         set({ filterPreviews: preview ? { ...rest, [id]: preview } : rest });
       },
       setStagedIndex: (i) => {
-        const n = get().stagedImageNames.length;
+        const n = stagedPageCount(get());
         if (!n) return;
         set({ stagedIndex: ((i % n) + n) % n });
       },
       discardStaged: (index) => {
         const names = get().stagedImageNames.filter((_, i) => i !== index);
-        set({ stagedImageNames: names, stagedIndex: Math.max(0, Math.min(get().stagedIndex, names.length - 1)) });
+        set({ stagedImageNames: names, stagedIndex: Math.max(0, Math.min(get().stagedIndex, names.length - (get().stagingGenerating ? 0 : 1))) });
       },
       clearStaged: () => set({ stagedImageNames: [], stagedIndex: 0 }),
       setStagingShowResults: (stagingShowResults) => set({ stagingShowResults }),
+      // A new generation opens on its page. When the last job ends the index is left alone: its result arrives right
+      // after (the job is reported done first) and is shown to whoever watched; readers clamp with stagedPage() meanwhile.
+      setStagingGenerating: (stagingGenerating) => {
+        if (stagingGenerating === get().stagingGenerating) return;
+        set(stagingGenerating ? { stagingGenerating, stagedIndex: get().stagedImageNames.length } : { stagingGenerating });
+      },
     };
   };
   if (!persistKey) return create<CanvasState>()((set, get) => init(set, get));

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SETTINGS_DEFAULTS } from './settings';
-import { createCanvasStore, isSlot, selectedEntity, useCanvas, type CanvasEntity, type RectObject, type StrokeObject } from './canvas';
+import { createCanvasStore, isSlot, selectedEntity, stagedPage, stagedPageCount, useCanvas,type CanvasEntity, type RectObject, type StrokeObject } from './canvas';
 import { useParams } from './params';
 
 const initialCanvas = useCanvas.getState();
@@ -358,6 +358,63 @@ describe('tools and staging', () => {
     expect([c().stagedImageNames, c().stagedIndex]).toEqual([['a'], 0]);
     c().discardStaged(0);
     expect([c().stagedImageNames, c().stagedIndex]).toEqual([[], 0]);
+  });
+});
+
+describe('the generating page of staging', () => {
+  const page = () => stagedPage(c());
+  // The backend reports a job done before its picture arrives, as the worker does.
+  const finishLast = (name: string) => {
+    c().setStagingGenerating(false);
+    c().addStagedImage(name, { fromQueue: true });
+  };
+
+  it('opens on the generating page, stays there while more come and shows the last result at the end', () => {
+    c().setStagingGenerating(true);
+    expect(page()).toEqual({ index: 0, generating: true });
+    c().addStagedImage('a', { fromQueue: true });
+    expect([stagedPageCount(c()), page()]).toEqual([2, { index: 1, generating: true }]);
+    finishLast('b');
+    expect([stagedPageCount(c()), page()]).toEqual([2, { index: 1, generating: false }]);
+    expect(c().stagedImageNames[page().index]).toBe('b');
+  });
+
+  it('leaves someone looking at a finished result on it while the next ones are made, the last included', () => {
+    c().setStagingGenerating(true);
+    c().addStagedImage('a', { fromQueue: true });
+    c().setStagedIndex(0);
+    expect(page()).toEqual({ index: 0, generating: false });
+    c().addStagedImage('b', { fromQueue: true });
+    expect(page().index).toBe(0);
+    finishLast('c');
+    expect(page()).toEqual({ index: 0, generating: false });
+  });
+
+  it('steps through the results and the generating page, wrapping around', () => {
+    c().setStagingGenerating(true);
+    c().addStagedImage('a', { fromQueue: true });
+    c().setStagedIndex(2);
+    expect(page().index).toBe(0);
+    c().setStagedIndex(-1);
+    expect(page()).toEqual({ index: 1, generating: true });
+  });
+
+  it('jumps to a new generation\'s page, and back into range when a job ends without a picture', () => {
+    c().addStagedImage('a');
+    c().addStagedImage('b');
+    c().setStagedIndex(0);
+    c().setStagingGenerating(true);
+    expect(page()).toEqual({ index: 2, generating: true });
+    c().setStagingGenerating(false);
+    expect(page()).toEqual({ index: 1, generating: false });
+  });
+
+  it('shows a one-off result (an erase) straight away, even while a generation runs', () => {
+    c().setStagingGenerating(true);
+    c().addStagedImage('a', { fromQueue: true });
+    c().addStagedImage('erased');
+    expect(page()).toEqual({ index: 1, generating: false });
+    expect(c().stagedImageNames[1]).toBe('erased');
   });
 });
 

@@ -76,6 +76,17 @@ describe('StagingToolbar', () => {
     expect(discardAllStaged).toHaveBeenCalledWith(useCanvas);
   });
 
+  it('counts the generating page after the results, with nothing to accept, save or discard on it', () => {
+    state().setStagingGenerating(true);
+    state().addStagedImage('a.png', { fromQueue: true });
+    show();
+    expect(screen.getByText('2/2')).toBeTruthy();
+    for (const b of [screen.getByTestId('canvas-staging-accept'), button(t('canvas.staging.saveToGallery')), button(t('canvas.staging.discard'))]) expect(b.hasAttribute('disabled')).toBe(true);
+    fireEvent.click(button(`${t('canvas.staging.prev')} (←)`));
+    expect(screen.getByText('1/2')).toBeTruthy();
+    expect(screen.getByTestId('canvas-staging-accept').hasAttribute('disabled')).toBe(false);
+  });
+
   it('toggles whether the staged results are drawn on the canvas', () => {
     state().addStagedImage('a.png');
     show();

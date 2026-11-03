@@ -120,7 +120,7 @@ A picture made on the canvas does not go into the canvas right away. It is shown
 
 | Button | What it does |
 |---|---|
-| Left and right arrows (`←` `→`) | When you made several, shows the next or previous picture. |
+| Left and right arrows (`←` `→`) | When you made several, shows the next or previous picture. While more are still being made, the last page is the generating page, and only that page shows the picture taking shape. While you look at a finished picture, the view does not change when the next one is done. |
 | **{{ui:canvas.staging.accept}}** (`Enter`) | Puts this picture into the canvas as a new raster layer. The other pictures are thrown away. |
 | **{{ui:canvas.staging.hideResults}}** | Hides the results so you can compare with the original picture. |
 | **{{ui:canvas.staging.saveToGallery}}** | Saves this picture to the gallery. |

@@ -152,3 +152,21 @@ describe('bbox and size parameters', () => {
     expect(useCanvas.getState().bbox).toBe(before);
   });
 });
+
+describe('staging\'s generating page', () => {
+  const job = (status: string, destination = 'canvas') => ({ id: 1, status, destination }) as never;
+
+  it('is there while a job bound for the canvas waits or runs, and goes once it has ended', async () => {
+    const { useQueue } = await import('@/state/queue');
+    useQueue.setState({ items: [job('pending')] });
+    expect(useCanvas.getState().stagingGenerating).toBe(true);
+    useQueue.setState({ items: [job('in_progress')] });
+    expect(useCanvas.getState().stagingGenerating).toBe(true);
+    for (const status of ['completed', 'failed', 'canceled']) {
+      useQueue.setState({ items: [job(status)] });
+      expect(useCanvas.getState().stagingGenerating).toBe(false);
+    }
+    useQueue.setState({ items: [job('in_progress', 'gallery')] });
+    expect(useCanvas.getState().stagingGenerating).toBe(false);
+  });
+});

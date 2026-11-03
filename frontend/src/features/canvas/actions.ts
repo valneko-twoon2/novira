@@ -1,7 +1,7 @@
 // Canvas commands that touch the backend or the gallery: save, merge, import, staging, filters, clipboard, poses.
 import { backend, type ImageDTO } from '@/backend';
 import { t } from '@/i18n';
-import { isSlot, newId, useCanvas, type CanvasEntity, type CanvasStore, type CanvasImportTarget, type ControlEntity, type EntityType, type PoseObject, type Rect } from '@/state/canvas';
+import { isSlot, newId, stagedPage, useCanvas, type CanvasEntity, type CanvasStore, type CanvasImportTarget, type ControlEntity, type EntityType, type PoseObject, type Rect } from '@/state/canvas';
 import { findImage, useGallery } from '@/state/gallery';
 import { autoAddBoardId, buildRequestFor, readinessOf } from '@/state/invoke';
 import { defaultRefModelKey, findModel, useModels } from '@/state/models';
@@ -516,9 +516,10 @@ export async function invertMask(id: string, store: CanvasStore = useCanvas) {
 
 // Staging --------------------------------------------------------------------
 
+/** The result on the page staging shows; none on the generating page. */
 function currentStagedImage(store: CanvasStore): ImageDTO | undefined {
   const s = store.getState();
-  return findImage(s.stagedImageNames[s.stagedIndex] ?? null);
+  return findImage(s.stagedImageNames[stagedPage(s).index] ?? null);
 }
 
 async function deleteIntermediates(names: string[]) {
@@ -545,9 +546,10 @@ export function acceptStaged(store: CanvasStore = useCanvas) {
 
 export function discardCurrentStaged(store: CanvasStore = useCanvas) {
   const s = store.getState();
-  const name = s.stagedImageNames[s.stagedIndex];
+  const { index } = stagedPage(s);
+  const name = s.stagedImageNames[index];
   if (name === undefined) return;
-  s.discardStaged(s.stagedIndex);
+  s.discardStaged(index);
   void deleteIntermediates([name]);
 }
 

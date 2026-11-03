@@ -17,9 +17,10 @@ import {
   type Rect,
   type Viewport,
 } from '@/state/canvas';
-import { findImage, useGallery } from '@/state/gallery';
+import { useGallery } from '@/state/gallery';
 import { useParams } from '@/state/params';
 import { useQueue } from '@/state/queue';
+import { overlayImageUrl } from './overlayImage';
 import { toast } from '@/state/toasts';
 import { wheelZoomFactor } from '@/ui/zoomMath';
 import { docToScreen, HANDLE_CURSORS, hitBbox, normalizeRect, resizeRect, screenToDoc, snap, zoomAt, type BboxHandle, type Point } from '../geometry';
@@ -151,17 +152,7 @@ export class StageController {
   }
 
   private overlayImageUrl(): string | null {
-    const q = useQueue.getState();
-    // Jobs bound for the canvas draw into the Image tab's store only.
-    if (this.store === useCanvas && q.progress?.progressImageUrl) {
-      const item = q.items.find((i) => i.id === q.progress?.itemId);
-      if (item?.destination === 'canvas') return q.progress.progressImageUrl;
-    }
-    const s = this.store.getState();
-    if (s.stagedImageNames.length && s.stagingShowResults) {
-      return findImage(s.stagedImageNames[s.stagedIndex] ?? null)?.url ?? null;
-    }
-    return null;
+    return overlayImageUrl(this.store.getState(), useQueue.getState(), this.store === useCanvas);
   }
 
   /** The view: the store's viewport, or over a host's document the host's box (the document fills it). */

@@ -77,7 +77,7 @@ async function start(): Promise<void> {
         if (item?.destination === 'canvas') {
           // A comic page's inpaint stays with the page that asked for it.
           if (landPageInpaint(item.id, image.name)) break;
-          useCanvas.getState().addStagedImage(image.name);
+          useCanvas.getState().addStagedImage(image.name, { fromQueue: true });
           break;
         }
         if (item && gallery.settings.autoSwitch) {

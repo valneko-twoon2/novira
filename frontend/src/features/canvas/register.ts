@@ -1,5 +1,8 @@
-// Registers the canvas Invoke builder, the shared importImage action and the bbox <-> params size sync.
+// Registers the canvas Invoke builder, the shared importImage action, the bbox <-> params size sync and staging's
+// generating page.
+import type { QueueItem } from '@/backend';
 import { t } from '@/i18n';
+import { useQueue } from '@/state/queue';
 import { useCanvas, type CanvasEntity, type CanvasState } from '@/state/canvas';
 import { useNodePacks } from '@/state/comfy/nodePacks';
 import { refImagesPackReason } from '@/state/comfy/packNeeds';
@@ -36,6 +39,11 @@ export function canvasReadiness(s: Pick<CanvasState, 'entities' | 'groupHidden'>
   return reasons;
 }
 
+/** Whether a generation bound for the canvas is still to come (queued or running). */
+export function canvasJobWaiting(items: QueueItem[]): boolean {
+  return items.some((i) => i.destination === 'canvas' && (i.status === 'pending' || i.status === 'in_progress'));
+}
+
 export function registerCanvasFeature() {
   if (registered) return;
   registered = true;
@@ -44,6 +52,11 @@ export function registerCanvasFeature() {
   // Layers and the staged result can be dragged onto any image target; they reach the gallery when dropped.
   registerDragSource(CANVAS_LAYER_DRAG, (id) => entityAsGalleryImage(id));
   registerDragSource(CANVAS_STAGED_DRAG, () => stagedAsGalleryImage());
+
+  // Staging has a generating page while a job bound for the canvas waits or runs.
+  const syncGenerating = (q: { items: QueueItem[] }) => useCanvas.getState().setStagingGenerating(canvasJobWaiting(q.items));
+  syncGenerating(useQueue.getState());
+  useQueue.subscribe((q, prev) => q.items !== prev.items && syncGenerating(q));
 
   // Keep the bbox size in sync with the width/height parameters.
   useParams.subscribe((p, prev) => {
