@@ -1,7 +1,7 @@
 // "Select and fix a part" on the mock backend: the picture opens on the canvas with an empty inpaint mask and the
 // brush, the painted part is cut out into the gallery, erased into staging or redrawn from an instruction.
 import type { Page } from '@playwright/test';
-import { expect, msg, openApp, test } from './fixtures';
+import { expect, msg, openApp, showTab, test } from './fixtures';
 
 async function openPartFix(page: Page) {
   await openApp(page);
@@ -52,6 +52,12 @@ test('a finished result stays on its page while the next ones are made, and the 
   await iterations.fill('3');
   await iterations.press('Tab');
   await page.getByTestId('canvas-mask-redraw').click();
+  // Held after the first job (it runs on; the other two wait), so a busy machine cannot finish the second one before
+  // the first result is looked at.
+  await showTab(page, 'queue');
+  await expect(page.locator('[data-testid="queue-item"][data-status="in_progress"]')).toHaveCount(1, { timeout: 20_000 });
+  await page.getByTestId('queue-pause').click();
+  await showTab(page, 'canvas');
 
   // The first result is in; the view stays on the generating page, where nothing can be accepted yet.
   const count = page.getByTestId('canvas-staging-count');
@@ -61,6 +67,9 @@ test('a finished result stays on its page while the next ones are made, and the 
   await expect(count).toHaveText('1/2');
   await expect(page.getByTestId('canvas-staging-accept')).toBeEnabled();
   // The others arrive without moving the view off the first result.
+  await showTab(page, 'queue');
+  await page.getByTestId('queue-resume').click();
+  await showTab(page, 'canvas');
   await expect(count).toHaveText('1/3', { timeout: 30_000 });
   await expect(page.getByTestId('canvas-staging-accept')).toBeEnabled();
 });
