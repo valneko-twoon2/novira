@@ -106,6 +106,8 @@ With the buttons at the top, you can do the following.
 - **{{ui:common.edit}}**: Fixes the name, description, base and type. Use it when the base or type was not judged correctly automatically.
 - **{{ui:common.delete}}**: Deletes the model (see below).
 
+When a model installed from Civitai has a newer version, its card gets a **{{ui:models.updates.tag}}** tag, and the name and date of the newer version show above the details. Press **{{ui:models.updates.open}}** to open the page of the newer version in your browser. The check runs by itself when you open the Models tab (if the last one is a day old or more), and a notice tells you when something new is found. To check at once, press the **{{ui:models.updates.check}}** button at the top. Only newer versions of the same base are offered, and paid versions are left out. The check sends the Civitai numbers of the models you installed to Civitai.
+
 ### Trigger phrases
 
 LoRAs and the like have words (trigger phrases) that take effect when you put them in the prompt. If you register them in **{{ui:models.triggers.title}}**, then when you choose that LoRA on the **{{ui:app.tabs.generate}}** screen, the words appear as buttons. Pressing one adds it to the prompt.
@@ -188,6 +190,8 @@ A card shows a sample image, the model's name, the author, the number of downloa
 - The icon at the right (**{{ui:browse.card.openCivitai}}**): Opens the distributor's site in your browser.
 
 When you press a card, the details open from the right. You can see the versions, the list of files (size and format), trigger words, tags, the description and the license. Choose a version and press **{{ui:browse.card.download}}** for the file you want to install. Pressing a trigger word copies it. Close it by pressing outside it or with `Esc`.
+
+The **{{ui:browse.samples.title}}** section of the details lists the example pictures of that version that share their settings. You can see the picture, the sampler, steps, CFG and size, the prompt, and the models and LoRAs it used (the ones you have not installed are dashed). Press **{{ui:browse.samples.use}}** to put the prompt and the settings into the Generate screen. A setting the example did not record stays as it is, and the model and LoRAs go in only if you have them installed; the notice names the ones you do not have. The settings are what the author wrote, so some examples have none, and some will not give the same picture as they are.
 
 When installing starts, a small box labeled **{{ui:browse.dock.title}}** appears at the lower left of the screen and you can see the progress. You can stop with **{{ui:browse.dock.cancel}}**, and clear the finished ones with **{{ui:browse.dock.clear}}**. A card that has finished installing changes to **{{ui:browse.card.installed}}** and is also added to the list on the **{{ui:app.tabs.models}}** tab.
 

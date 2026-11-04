@@ -222,3 +222,7 @@
   flex: 1;
   min-width: 0;
 }
+
+.mm-spin {
+  animation: ui-spin 1s linear infinite;
+}

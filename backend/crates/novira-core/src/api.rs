@@ -375,6 +375,14 @@ commands! {
     async search_civitai(b, params: SearchParams) -> SearchResult {
         b.search_civitai(params).await.map_err(msg)
     }
+    // The settings Civitai keeps with the example pictures of a model version.
+    async civitai_samples(b, version_id: String, include_nsfw: bool) -> Vec<crate::models::civitai::samples::Sample> {
+        b.civitai_samples(&version_id, include_nsfw).await.map_err(msg)
+    }
+    // The installed Civitai models that have a newer version.
+    async check_model_updates(b) -> Vec<crate::models::civitai::updates::ModelUpdate> {
+        b.check_model_updates().await.map_err(msg)
+    }
     sync node_packs(b) -> NodePacks {
         Ok(b.node_packs())
     }

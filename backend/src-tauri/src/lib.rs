@@ -332,6 +332,8 @@ pub fn run() {
             commands::scan_folder,
             commands::list_hugging_face_files,
             commands::search_civitai,
+            commands::civitai_samples,
+            commands::check_model_updates,
             commands::save_workflow,
             commands::delete_workflow,
             commands::list_comics,

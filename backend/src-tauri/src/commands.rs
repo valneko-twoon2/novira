@@ -9,6 +9,8 @@ use novira_core::agent::{
 use novira_core::api::{call, Res};
 use novira_core::backup::{BackupInfo, BackupSummary, RestoreOutcome};
 use novira_core::media::export::{ExportOptions, ExportResult};
+use novira_core::models::civitai::samples::Sample;
+use novira_core::models::civitai::updates::ModelUpdate;
 use novira_core::models::civitai::{SearchParams, SearchResult};
 use novira_core::packs::{PackKind, PackStatus};
 use novira_core::sync::LockExt;
@@ -228,6 +230,20 @@ pub async fn search_civitai(
     params: SearchParams,
 ) -> Res<SearchResult> {
     call::search_civitai(&backend, params).await
+}
+
+#[tauri::command]
+pub async fn civitai_samples(
+    backend: State<'_, Backend>,
+    version_id: String,
+    include_nsfw: bool,
+) -> Res<Vec<Sample>> {
+    call::civitai_samples(&backend, version_id, include_nsfw).await
+}
+
+#[tauri::command]
+pub async fn check_model_updates(backend: State<'_, Backend>) -> Res<Vec<ModelUpdate>> {
+    call::check_model_updates(&backend).await
 }
 
 #[tauri::command]

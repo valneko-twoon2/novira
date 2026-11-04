@@ -154,5 +154,11 @@
   "models.starter.purpose.upscale": "Upscaling",
   "models.starter.purpose.control": "Composition control",
   "models.starter.purpose.reference": "Reference images",
-  "models.starter.purpose.parts": "VAEs and encoders"
+  "models.starter.purpose.parts": "VAEs and encoders",
+  "models.updates.tag": "Update",
+  "models.updates.check": "Check for new versions",
+  "models.updates.found": "{count} models have a newer version",
+  "models.updates.failed": "Could not check for new versions",
+  "models.updates.detail": "A newer version, {name}, is out ({date})",
+  "models.updates.open": "Open on Civitai"
 }

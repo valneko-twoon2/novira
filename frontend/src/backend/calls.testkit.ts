@@ -63,6 +63,8 @@ export const CALLS: {
       period: 'all',
       includeNsfw: false,
     }),
+  civitaiSamples: (b) => b.civitaiSamples('128713', false),
+  checkModelUpdates: (b) => b.checkModelUpdates(),
   hardwareInfo: (b) => b.hardwareInfo(),
   listFonts: (b) => b.listFonts(),
   installPack: (b) => b.installPack('music'),

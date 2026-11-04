@@ -20,6 +20,7 @@ export const SEED_MODELS: ModelConfig[] = [
     path: 'sdxl/main/juggernautXL_v9.safetensors',
     size: 6.9 * GB,
     source: 'https://civitai.com/models/133005',
+    pageUrl: 'https://civitai.com/models/133005?modelVersionId=288982',
     defaultSettings: { steps: 30, cfgScale: 6, scheduler: 'dpmpp_2m_k', width: 1024, height: 1024 },
     coverImageUrls: [mockPicture('main-juggernaut-xl'), shape(640, 360, '#3b5b8c'), shape(360, 640, '#8c3b5b')],
     triggerPhrases: [],

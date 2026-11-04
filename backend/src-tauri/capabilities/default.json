@@ -34,6 +34,8 @@
     "allow-scan-folder",
     "allow-list-hugging-face-files",
     "allow-search-civitai",
+    "allow-civitai-samples",
+    "allow-check-model-updates",
     "allow-save-workflow",
     "allow-delete-workflow",
     "allow-list-comics",

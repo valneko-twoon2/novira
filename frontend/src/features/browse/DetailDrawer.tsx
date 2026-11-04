@@ -8,6 +8,7 @@ import { DownloadButton } from './DownloadButton';
 import { paidBadge, paidReason } from './paid';
 import { formatCount, formatSize } from './format';
 import { openOnCivitai } from './openCivitai';
+import { SamplesSection } from './SamplesSection';
 import { TriggerChips } from './TriggerChips';
 
 export function DetailDrawer({ model, onClose }: { model: CivitaiModel; onClose: () => void }) {
@@ -108,6 +109,8 @@ export function DetailDrawer({ model, onClose }: { model: CivitaiModel; onClose:
             <TriggerChips words={version.triggerWords} />
           </section>
         )}
+
+        {model.source !== 'huggingface' && <SamplesSection key={version.id} model={model} version={version} />}
 
         <section>
           <h3>{t('browse.detail.tags')}</h3>

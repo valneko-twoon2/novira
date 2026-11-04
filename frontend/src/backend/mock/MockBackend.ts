@@ -18,7 +18,9 @@ import type {
   BackupSummary,
   BoardDTO,
   CivitaiSearchParams,
+  CivitaiSample,
   CivitaiSearchResult,
+  ModelUpdate,
   ComfyNodeDefs,
   ComfyUiLocale,
   ComicRecord,
@@ -59,6 +61,7 @@ import { runMockAgent } from './agent';
 import { mockReadGated, type MockToolAnswer } from './agentScript';
 import { endpointInfo, noToolsMessage, noToolsReason, normalizeAddress, serverModels, testServer } from './agentEndpoint';
 import { HUGGINGFACE_MODELS, searchCivitaiModels } from './civitaiSearch';
+import { mockSamples, mockUpdates } from './civitaiSamples';
 import { MOCK_NODE_DEFS } from './comfyNodeDefs';
 import { MOCK_FACE_RIG_ANCHORS, MOCK_FACE_RIG_LIBRARY, MOCK_FACE_RIG_PLACEHOLDER } from './faceRigData';
 import { CORE_NODE_DEFS } from './comfyCoreDefs';
@@ -813,6 +816,17 @@ export class MockBackend implements BackendClient {
     await wait(250 + Math.floor(Math.random() * 150));
     if (/fail|error/i.test(params.query)) throw new Error('Civitai request failed (mock)');
     return searchCivitaiModels(params, params.source === 'huggingface' ? HUGGINGFACE_MODELS : undefined);
+  }
+
+  async civitaiSamples(versionId: string, _includeNsfw: boolean): Promise<CivitaiSample[]> {
+    await wait(150);
+    return mockSamples(versionId);
+  }
+
+  async checkModelUpdates(): Promise<ModelUpdate[]> {
+    await wait(150);
+    const flag = typeof location !== 'undefined' && new URLSearchParams(location.search).has('updates');
+    return mockUpdates(this.models, flag);
   }
 
   private packs: Packs = {

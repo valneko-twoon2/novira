@@ -1,8 +1,9 @@
 // Top toolbar: search, base filter, sort, view toggle, thumbnail size and the Find / Import buttons.
-import { Compass, MagnifyingGlass, Plus, Rows, SquaresFour } from '@phosphor-icons/react';
+import { ArrowsClockwise, Compass, MagnifyingGlass, Plus, Rows, SquaresFour } from '@phosphor-icons/react';
 import { t } from '@/i18n';
 import { BASE_LABELS } from '@/state/models';
 import { isPhoneLayout } from '@/state/layout';
+import { useModelUpdates } from '@/state/modelUpdates';
 import { useUi } from '@/state/ui';
 import { Button, IconButton, Select, Slider, TextInput, type SelectOption } from '@/ui';
 import type { BaseFilter, SortKey } from './filterModels';
@@ -34,6 +35,7 @@ export function ModelToolbar({ state, onChange, onImport }: { state: ToolbarStat
     { value: 'base', label: t('models.sort.base') },
     { value: 'type', label: t('models.sort.type') },
   ];
+  const checking = useModelUpdates((s) => s.checking);
   return (
     <div className="mm-toolbar">
       <div className="mm-search">
@@ -54,6 +56,14 @@ export function ModelToolbar({ state, onChange, onImport }: { state: ToolbarStat
         <Slider value={state.thumb} onChange={(thumb) => onChange({ thumb })} min={THUMB_MIN} max={THUMB_MAX} step={10} aria-label={t('models.thumbSize')} disabled={state.view === 'list'} />
       </div>
       <span className="mm-spacer" />
+      <IconButton
+        label={t('models.updates.check')}
+        icon={<ArrowsClockwise size={15} className={checking ? 'mm-spin' : undefined} />}
+        size="sm"
+        disabled={checking}
+        onClick={() => void useModelUpdates.getState().check()}
+        data-testid="mm-check-updates"
+      />
       <Button variant="outline" leftIcon={<Compass size={14} />} onClick={() => useUi.getState().setTab('browse')} data-testid="mm-find">
         {t('models.find')}
       </Button>

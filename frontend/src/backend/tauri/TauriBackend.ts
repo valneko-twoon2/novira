@@ -19,7 +19,9 @@ import type {
   BackupSummary,
   BoardDTO,
   CivitaiSearchParams,
+  CivitaiSample,
   CivitaiSearchResult,
+  ModelUpdate,
   ComfyNodeDefs,
   ComfyUiLocale,
   ComicRecord,
@@ -381,6 +383,14 @@ export class TauriBackend implements BackendClient {
     return invoke<CivitaiSearchResult>('search_civitai', {
       params: { ...params, cursor: params.cursor ?? null },
     });
+  }
+
+  civitaiSamples(versionId: string, includeNsfw: boolean) {
+    return invoke<CivitaiSample[]>('civitai_samples', { versionId, includeNsfw });
+  }
+
+  checkModelUpdates() {
+    return invoke<ModelUpdate[]>('check_model_updates');
   }
 
   // AI assistant ------------------------------------------------------------

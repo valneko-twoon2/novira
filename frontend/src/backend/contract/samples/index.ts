@@ -9,10 +9,12 @@ import { backendEvents, bootstrap, engineSettings, engineSettingsPatch, engineSt
 import { boardDto, boardPatch, imageDto, imageOptions, imagePatch } from './gallery';
 import {
   civitaiSearchParams,
+  civitaiSamples,
   civitaiSearchResult,
   modelConfig,
   modelInstallJob,
   modelPartsReport,
+  modelUpdates,
   scannedFile,
   starterModel,
 } from './models';
@@ -52,6 +54,8 @@ export const SAMPLES: Record<string, unknown> = {
   'scanned-file': scannedFile,
   'civitai-search-params': civitaiSearchParams,
   'civitai-search-result': civitaiSearchResult,
+  'civitai-samples': civitaiSamples,
+  'model-updates': modelUpdates,
   'saved-workflow': savedWorkflow,
   'workflow-input': workflowInput,
   'comic-record': comicRecord,

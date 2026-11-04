@@ -17,7 +17,8 @@ One page per feature, each the current specification of that feature: how it beh
 | [workflow-graphs.md](workflow-graphs.md) | Running a workflow graph: the ComfyUI prompt the editor compiles, ComfyUI's own nodes in the editor, the result (picture, text, sound, video) |
 | [models.md](models.md) | Model folders, install (including the folder scan), covers, keys and tokens |
 | [model-packs.md](model-packs.md) | Model packs (video, music, voice, inpaint, logo), the starter list, hardware and fit marks |
-| [browse.md](browse.md) | The Browse tab: searching Civitai and Hugging Face, adult-content filtering, opening their pages |
+| [browse.md](browse.md) | The Browse tab: searching Civitai and Hugging Face, the settings of a model's example pictures, adult-content filtering, opening their pages |
+| [model-updates.md](model-updates.md) | The notice that an installed Civitai model has a newer version |
 | [extensions.md](extensions.md) | ComfyUI custom node packs, the ComfyUI Registry, installing ComfyUI and switching its version |
 | [assistant.md](assistant.md) | The AI assistant: providers, tools, the tool server, what it may read |
 | [assistant-refine.md](assistant-refine.md) | The loop that keeps the assistant drawing trial pictures, up to 30, until it matches a picture or a description |

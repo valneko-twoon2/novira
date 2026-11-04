@@ -154,5 +154,11 @@
   "models.starter.purpose.upscale": "アップスケール",
   "models.starter.purpose.control": "構図の制御",
   "models.starter.purpose.reference": "参照画像",
-  "models.starter.purpose.parts": "VAE・エンコーダー"
+  "models.starter.purpose.parts": "VAE・エンコーダー",
+  "models.updates.tag": "新しい版",
+  "models.updates.check": "新しい版を確認",
+  "models.updates.found": "{count} 個のモデルに新しい版があります",
+  "models.updates.failed": "新しい版を確認できませんでした",
+  "models.updates.detail": "新しい版 {name} が出ています({date})",
+  "models.updates.open": "Civitai で開く"
 }

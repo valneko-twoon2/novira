@@ -1,11 +1,13 @@
 // Installed models, starter models, installs and the online model search.
 import type {
   CivitaiModel,
+  CivitaiSample,
   CivitaiSearchParams,
   CivitaiSearchResult,
   ModelConfig,
   ModelInstallJob,
   ModelPartsReport,
+  ModelUpdate,
   OwnedModelLicense,
   StarterModel,
 } from '../../types';
@@ -143,3 +145,53 @@ export const civitaiModel = {
 } satisfies Required<CivitaiModel>;
 
 export const civitaiSearchResult = { items: [civitaiModel], nextCursor: 'cursor-2' } satisfies Required<CivitaiSearchResult>;
+
+export const civitaiSamples = {
+  samples: [
+    {
+      id: '94080991',
+      imageUrl: 'https://image.civitai.com/a/width=512/94080991.jpeg',
+      prompt: 'a hiker on a mountain',
+      negativePrompt: 'blurry',
+      seed: 746810293,
+      steps: 25,
+      cfgScale: 7.5,
+      width: 512,
+      height: 768,
+      clipSkip: 2,
+      sampler: 'DPM++ 2M Karras',
+      resources: [
+        { kind: 'checkpoint', name: null, versionId: '128713', weight: null },
+        { kind: 'lora', name: 'detail-lora', versionId: null, weight: 0.65 },
+      ],
+    },
+    {
+      id: '2',
+      imageUrl: 'https://image.civitai.com/b/width=512/2.jpeg',
+      prompt: 'only a prompt',
+      negativePrompt: null,
+      seed: null,
+      steps: null,
+      cfgScale: null,
+      width: null,
+      height: null,
+      clipSkip: null,
+      sampler: null,
+      resources: [],
+    },
+  ] satisfies CivitaiSample[],
+};
+
+export const modelUpdates = {
+  updates: [
+    {
+      key: 'main-juggernaut-xl',
+      modelId: '133005',
+      installedVersionId: '288982',
+      latestVersionId: '357609',
+      latestName: 'v10',
+      publishedAt: 1700000000000,
+      pageUrl: 'https://civitai.com/models/133005?modelVersionId=357609',
+    },
+  ] satisfies ModelUpdate[],
+};

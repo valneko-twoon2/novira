@@ -1,12 +1,14 @@
 //! Types only sent to the frontend (`Serialize` only): each value is rebuilt from the fixture's fields with an
 //! exhaustive struct literal and must serialize to exactly the fixture.
-use crate::{assert_wire, get, keys};
+use crate::{assert_wire, get, keys, round_trip};
 use novira_core::agent::{
     AgentEndpointInfo, AgentEndpointTest, AgentReply, AgentStatus, AgentToolCall,
 };
 use novira_core::comfy::ui_locale::{ComfyUiFieldText, ComfyUiLocale, ComfyUiNodeText};
 use novira_core::engine::EngineStatus;
 use novira_core::hardware::HardwareInfo;
+use novira_core::models::civitai::samples::Sample;
+use novira_core::models::civitai::updates::ModelUpdate;
 use novira_core::models::civitai::{CivitaiFile, CivitaiModel, CivitaiVersion, SearchResult};
 use novira_core::packs::{PackStatus, Packs};
 use novira_core::types::*;
@@ -111,6 +113,16 @@ fn civitai_model(v: &Value) -> CivitaiModel {
             .map(civitai_version)
             .collect(),
     }
+}
+
+/// The example settings of a model version (`civitai_samples`): a complete one and one with only a prompt.
+pub fn civitai_samples(v: &Value) {
+    round_trip::<Vec<Sample>>(&v["samples"], "Sample");
+}
+
+/// The installed models that have a newer version (`check_model_updates`).
+pub fn model_updates(v: &Value) {
+    round_trip::<Vec<ModelUpdate>>(&v["updates"], "ModelUpdate");
 }
 
 pub fn civitai_search_result(v: &Value) {

@@ -3,6 +3,9 @@ use crate::models::install::civitai_api;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+pub mod samples;
+pub mod updates;
+
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SearchParams {

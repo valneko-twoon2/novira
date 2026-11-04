@@ -826,3 +826,68 @@ body:has(.dl-dock) .browse-dock {
   font-size: var(--fs-xs);
   overflow-wrap: anywhere;
 }
+
+.browse-samples {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.browse-samples__note {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.browse-sample {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.browse-sample__pic {
+  flex: none;
+  width: 72px;
+  height: 96px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  object-fit: cover;
+}
+
+.browse-sample__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.browse-sample__meta {
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+}
+
+.browse-sample__prompt {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  font-size: var(--fs-sm);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.browse-chip.is-missing {
+  border-style: dashed;
+  color: var(--text-faint);
+}

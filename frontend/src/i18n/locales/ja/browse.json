@@ -122,5 +122,17 @@
   "browse.paid.badgeUntil": "有料 〜{date}",
   "browse.paid.locked": "有料",
   "browse.paid.permanent": "この版は有料です。購入した場合も、キーでは判別できないため novira からはインストールできません。Civitai のページで入手してください。",
-  "browse.paid.early": "アーリーアクセス中で、{date} まで有料です。それ以降は無料になり、インストールできます。今は novira からはインストールできません。"
+  "browse.paid.early": "アーリーアクセス中で、{date} まで有料です。それ以降は無料になり、インストールできます。今は novira からはインストールできません。",
+  "browse.samples.title": "作例の設定",
+  "browse.samples.loading": "作例の設定を読み込み中…",
+  "browse.samples.failed": "作例の設定を読み込めませんでした",
+  "browse.samples.none": "設定が公開されている作例がありません",
+  "browse.samples.steps": "{n} ステップ",
+  "browse.samples.versionN": "Civitai バージョン {id}",
+  "browse.samples.installed": "インストール済み",
+  "browse.samples.notInstalled": "未インストール",
+  "browse.samples.use": "この設定で生成",
+  "browse.samples.applied": "作例の設定を反映しました",
+  "browse.samples.missing": "インストールされていないため反映していません: {names}",
+  "browse.samples.samplerUnknown": "サンプラー「{name}」は対応する設定がないため、今の設定のままです。"
 }
