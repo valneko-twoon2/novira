@@ -27,9 +27,13 @@ Follow this when reading or changing the source of `frontend/` or `backend/`. Fo
 
 | What changed | What to run |
 |---|---|
+| Any ts / tsx change, before committing | `npx eslint <changed files>` as well: the lint rules apply to tests too (a test helper named `open` trips `novira-security/no-window-open`; give it a name like renderSection). CI runs the whole lint and the whole vitest, so a pre-commit pass on the related tests alone is not a pass of CI |
+| Any ts / tsx change, before committing | `npx eslint <changed files>` as well: the lint rules apply to tests too (a test helper named `open` trips `novira-security/no-window-open`; give it a name like renderSection). CI runs the whole lint and the whole vitest, so a pass of the related tests alone is not a pass of CI |
 | ts / tsx in general, tests included | `npm run typecheck` (`scripts/tools/typecheck.mjs`, incremental; the pre-commit hook runs it too, so run it before committing a test file, not only vitest) |
 | Text, i18n, a new area | `affected.mjs` leaves out the tests of the ja/en screen text and the manual (`tests/i18n.test.ts`, `tests/i18n-glossary.test.ts`, `tests/manual.test.ts`) unless given `--text`; the pre-commit sync checks and `npm run check` still run them. Run them (`--text`) when the user asks, when a piece of work ends, or before a release |
 | `src/state/` | The store's `*.test.ts` and the tests of the features that use it |
+| A new `persist` store (a new `novira.*` key) | Name the key in `src/state/liveStores.ts` (a store in `LIVE_STORES`, or `LOCAL_ONLY_KEYS` for what one screen holds) and run `src/state/liveStores.test.ts`: it fails on a key in neither list. `affected.mjs` does not map a new store to it, so name it yourself |
+| A new `persist` store (a new `novira.*` key) | Name the key in `src/state/liveStores.ts` (a store in `LIVE_STORES`, or `LOCAL_ONLY_KEYS` for what one screen holds), and run `src/state/liveStores.test.ts`: it fails on a key in neither list. `affected.mjs` does not map a new store to it, so name it yourself |
 | `src/features/<feature>/` | That feature's `*.test.ts(x)` |
 | `src/backend/` (boundary, mock) | `typecheck` for type changes, plus the callers' tests. For the mock, `src/backend/mock/MockBackend.test.ts` |
 | The contract (`types.ts`, `client.ts`, `TauriBackend.ts`) | `npx vitest run src/backend/contract.test.ts src/backend/tauri`, and the backend's `cargo test -p novira-core --test contract` |
