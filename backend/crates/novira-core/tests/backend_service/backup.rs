@@ -29,7 +29,7 @@ async fn upload(backend: &novira_core::Backend, w: u32, board: Option<String>) -
 fn entry_names(zip: &Path) -> Vec<String> {
     let mut archive = zip::ZipArchive::new(std::fs::File::open(zip).unwrap()).unwrap();
     let mut names: Vec<String> = (0..archive.len())
-        .map(|i| archive.by_index(i).unwrap().name().to_string())
+        .map(|i| archive.by_index(i).unwrap().name().unwrap().to_string())
         .collect();
     names.sort();
     names

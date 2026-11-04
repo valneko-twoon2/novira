@@ -55,7 +55,10 @@ async fn a_picture_whose_thumbnail_is_gone_is_backed_up_without_it() {
         .await
         .unwrap();
     let archive = zip::ZipArchive::new(std::fs::File::open(&target).unwrap()).unwrap();
-    let names: Vec<&str> = archive.file_names().collect();
+    let names: Vec<String> = archive
+        .file_names()
+        .map(|n| n.unwrap().into_owned())
+        .collect();
     assert!(names.iter().any(|n| n.starts_with("outputs/")));
     assert!(!names.iter().any(|n| n.starts_with("thumbnails/")));
     backend.shutdown();

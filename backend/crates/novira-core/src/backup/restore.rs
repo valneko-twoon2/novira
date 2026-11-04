@@ -131,7 +131,10 @@ pub fn stage(
             let entry = archive
                 .by_index_raw(i)
                 .map_err(|e| format!("the backup is damaged: {e}"))?;
-            let name = entry.name().to_string();
+            let name = entry
+                .name()
+                .map_err(|e| format!("the backup is damaged: {e}"))?
+                .to_string();
             let kind = classify(&name)
                 .filter(|_| entry.enclosed_name().is_some() && !entry.is_symlink())
                 .ok_or_else(|| format!("unexpected file in the backup: {name}"))?;

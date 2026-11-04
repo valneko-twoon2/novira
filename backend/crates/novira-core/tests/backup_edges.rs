@@ -34,9 +34,12 @@ fn a_gallery_file_that_vanished_is_left_out_and_a_missing_database_fails_without
     write(&target, &contents, |done, total| last = (done, total)).unwrap();
     assert_eq!(last, (5, 5), "the left-out file still counts as done");
     let archive = zip::ZipArchive::new(std::fs::File::open(&target).unwrap()).unwrap();
-    let names: Vec<&str> = archive.file_names().collect();
-    assert!(names.contains(&"outputs/kept.png"));
-    assert!(!names.contains(&"outputs/gone.png"));
+    let names: Vec<String> = archive
+        .file_names()
+        .map(|n| n.unwrap().into_owned())
+        .collect();
+    assert!(names.iter().any(|n| n == "outputs/kept.png"));
+    assert!(!names.iter().any(|n| n == "outputs/gone.png"));
 
     // Without the database nothing can be written; the half-written file does not stay.
     let missing = dir.path().join("missing.sqlite");
