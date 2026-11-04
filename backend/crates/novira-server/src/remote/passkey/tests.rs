@@ -573,3 +573,143 @@ fn the_challenge_is_read_from_the_client_data() {
     assert_eq!(challenge_of(br#"{"challenge":"***"}"#), None);
     assert_eq!(decode(&encode(b"\xff\xfe")), Some(b"\xff\xfe".to_vec()));
 }
+
+/// A new passkey's parts with `id` as its credential id and `cose` after it (for the shapes a phone never sends).
+fn made_with(a: &Authenticator, flags: u8, id: Vec<u8>, cose: &[u8]) -> Result<NewKey, Refusal> {
+    let mut phone = Authenticator::new();
+    phone.id = id.clone();
+    let auth_data = [
+        &a.auth_data(RP, flags, None)[..],
+        &[0u8; 16],
+        &(id.len() as u16).to_be_bytes(),
+        &id,
+        cose,
+    ]
+    .concat();
+    let client_data = client_data("webauthn.create", &CHALLENGE, ORIGIN);
+    check_new(
+        party(),
+        &CHALLENGE,
+        &client_data,
+        &auth_data,
+        &id,
+        ES256,
+        &a.spki(),
+    )
+}
+
+const VERIFIED: u8 = USER_PRESENT | USER_VERIFIED;
+
+#[test]
+fn es256_is_cose_algorithm_minus_7_as_the_browser_reports_it() {
+    let a = Authenticator::new();
+    let m = a.create(party(), &CHALLENGE);
+    assert_eq!(ES256, -7);
+    assert!(check_new(
+        party(),
+        &CHALLENGE,
+        &m.client_data,
+        &m.auth_data,
+        &m.id,
+        -7,
+        &m.spki
+    )
+    .is_ok());
+}
+
+#[test]
+fn attested_data_without_the_attested_flag_is_refused() {
+    let a = Authenticator::new();
+    assert!(made_with(&a, VERIFIED | ATTESTED, vec![5; 16], &a.cose()).is_ok());
+    assert_eq!(
+        made_with(&a, VERIFIED, vec![5; 16], &a.cose()),
+        Err(Refusal::Malformed)
+    );
+}
+
+#[test]
+fn the_credential_id_is_1_to_1023_bytes() {
+    let a = Authenticator::new();
+    assert!(made_with(&a, VERIFIED | ATTESTED, vec![5; 1], &a.cose()).is_ok());
+    assert!(made_with(
+        &a,
+        VERIFIED | ATTESTED,
+        vec![5; MAX_CREDENTIAL_ID],
+        &a.cose()
+    )
+    .is_ok());
+    assert_eq!(
+        made_with(
+            &a,
+            VERIFIED | ATTESTED,
+            vec![5; MAX_CREDENTIAL_ID + 1],
+            &a.cose()
+        ),
+        Err(Refusal::WrongCredential)
+    );
+    assert_eq!(
+        made_with(&a, VERIFIED | ATTESTED, vec![], &a.cose()),
+        Err(Refusal::WrongCredential)
+    );
+    // A short one that is not the one named: the id is read where it is, and found wrong.
+    let mut short = a.auth_data(RP, VERIFIED | ATTESTED, None);
+    short.extend_from_slice(&[0u8; 16]);
+    short.extend_from_slice(&1u16.to_be_bytes());
+    short.push(9);
+    let client_data = client_data("webauthn.create", &CHALLENGE, ORIGIN);
+    assert_eq!(
+        check_new(
+            party(),
+            &CHALLENGE,
+            &client_data,
+            &short,
+            &[8],
+            ES256,
+            &a.spki()
+        ),
+        Err(Refusal::WrongCredential)
+    );
+}
+
+#[test]
+fn the_cose_key_must_name_es256_and_hold_x_and_y() {
+    let a = Authenticator::new();
+    let cose = a.cose();
+    let p = a.point();
+    let alg = [0x03, 0x26];
+    let x = [&[0x21, 0x58, 0x20][..], &p[1..33]].concat();
+    let y = [&[0x22, 0x58, 0x20][..], &p[33..]].concat();
+    for (missing, part) in [("alg", &alg[..]), ("x", &x[..]), ("y", &y[..])] {
+        let at = cose.windows(part.len()).position(|w| w == part).unwrap();
+        let mut without = cose.clone();
+        without[at] ^= 0xff;
+        assert_eq!(
+            made_with(&a, VERIFIED | ATTESTED, vec![5; 16], &without),
+            Err(Refusal::UnsupportedKey),
+            "{missing}"
+        );
+    }
+}
+
+#[test]
+fn the_key_is_read_after_the_credential_id_not_inside_it() {
+    let a = Authenticator::new();
+    let other = Authenticator::new();
+    let p = a.point();
+    let x = [&[0x21, 0x58, 0x20][..], &p[1..33]].concat();
+    let y = [&[0x22, 0x58, 0x20][..], &p[33..]].concat();
+    // An id that carries this key's x and y, before another phone's COSE key.
+    let id = [&x[..], &y[..], &[0x03, 0x26]].concat();
+    assert_eq!(
+        made_with(&a, VERIFIED | ATTESTED, id, &other.cose()),
+        Err(Refusal::UnsupportedKey)
+    );
+    // An id that ends with the first bytes of x, before a key that has the rest: x is not whole in the key.
+    let mut id = vec![5; 12];
+    id.extend_from_slice(&x[..4]);
+    let cose = [&x[4..], &y[..], &[0x03, 0x26]].concat();
+    assert_eq!(
+        made_with(&a, VERIFIED | ATTESTED, id, &cose),
+        Err(Refusal::UnsupportedKey)
+    );
+}
