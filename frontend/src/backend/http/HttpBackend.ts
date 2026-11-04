@@ -19,7 +19,9 @@ import type {
   BackupSummary,
   BoardDTO,
   CivitaiSearchParams,
+  CivitaiSample,
   CivitaiSearchResult,
+  ModelUpdate,
   ComfyNodeDefs,
   ComfyUiLocale,
   ComicRecord,
@@ -450,6 +452,14 @@ export class HttpBackend implements BackendClient {
     return this.call<CivitaiSearchResult>('search_civitai', {
       params: { ...params, cursor: params.cursor ?? null },
     });
+  }
+
+  civitaiSamples(versionId: string, includeNsfw: boolean) {
+    return this.call<CivitaiSample[]>('civitai_samples', { versionId, includeNsfw });
+  }
+
+  checkModelUpdates() {
+    return this.call<ModelUpdate[]>('check_model_updates', {});
   }
 
   // AI assistant ------------------------------------------------------------

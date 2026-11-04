@@ -3,6 +3,7 @@ import { DotsThree, PencilSimple, Star, Trash } from '@phosphor-icons/react';
 import type { ModelConfig } from '@/backend';
 import { t } from '@/i18n';
 import { BASE_LABELS } from '@/state/models';
+import { useModelUpdates } from '@/state/modelUpdates';
 import { CommercialTag, cx, Menu, MenuContent, MenuItem, MenuTrigger } from '@/ui';
 import { CoverImage } from './CoverImage';
 import { formatBytes, formatTag } from './modelLabels';
@@ -17,6 +18,7 @@ export interface ModelCardProps {
 }
 
 export function ModelCard({ model, selected, favorite, onSelect, onToggleFavorite, onDelete }: ModelCardProps) {
+  const hasUpdate = useModelUpdates((s) => s.updates.some((u) => u.key === model.key));
   return (
     <div className={cx('mm-card-item', selected && 'is-selected')} role="group" aria-label={model.name} data-testid="mm-item">
       {/* One button over the whole card selects it; the license tag, the star and the menu sit above it as its siblings. */}
@@ -37,6 +39,11 @@ export function ModelCard({ model, selected, favorite, onSelect, onToggleFavorit
         <div className="mm-card-item__badges">
           <span className="mm-tag mm-tag--accent">{BASE_LABELS[model.base]}</span>
           {formatTag(model) && <span className="mm-tag">{formatTag(model)}</span>}
+          {hasUpdate && (
+            <span className="mm-tag mm-tag--new" data-testid="mm-update-tag">
+              {t('models.updates.tag')}
+            </span>
+          )}
         </div>
         <div className={cx('mm-card-item__actions', favorite && 'has-favorite')}>
           <button

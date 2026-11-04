@@ -6,6 +6,7 @@ import { backend, type ModelConfig } from '@/backend';
 import { installRecordingCanvases } from '@/backend/mock/canvas2dRecorder.testkit';
 import { t } from '@/i18n';
 import { useModels } from '@/state/models';
+import { useModelUpdates } from '@/state/modelUpdates';
 import { useToasts } from '@/state/toasts';
 import { useUi } from '@/state/ui';
 import { TooltipProvider } from '@/ui';
@@ -209,5 +210,51 @@ describe('default settings editing', () => {
     expect(update.mock.calls[0]![1]).toEqual({
       defaultSettings: { vae: 'vae1', vaePrecision: 'fp32', scheduler: 'dpmpp_2m', steps: 35, cfgScale: 4.5, width: 768, height: 832 },
     });
+  });
+});
+
+describe('new versions of installed models', () => {
+  const initialUpdates = useModelUpdates.getState();
+  const update = (key: string) => ({ key, modelId: '1', installedVersionId: '2', latestVersionId: '3', latestName: 'v3', publishedAt: 0, pageUrl: 'https://civitai.com/models/1?modelVersionId=3' });
+  beforeEach(() => {
+    useModels.setState({ ...initial.models, models: MODELS }, true);
+    useModelUpdates.setState({ ...initialUpdates, updates: [], checkedAt: null, checking: false }, true);
+  });
+  afterEach(() => useModelUpdates.setState(initialUpdates, true));
+
+  it('asks Civitai when the screen opens and the answer is old, and marks the cards of the models with a new version', async () => {
+    const ask = vi.spyOn(backend, 'checkModelUpdates').mockResolvedValue([update('m2')]);
+    show();
+    await waitFor(() => expect(screen.getAllByTestId('mm-update-tag')).toHaveLength(1));
+    expect(ask).toHaveBeenCalledOnce();
+    expect(within(screen.getByRole('group', { name: 'Moon Light' })).getByTestId('mm-update-tag')).toBeTruthy();
+  });
+
+  it('does not ask again while the kept answer is fresh', async () => {
+    useModelUpdates.setState({ checkedAt: Date.now() });
+    const ask = vi.spyOn(backend, 'checkModelUpdates').mockResolvedValue([]);
+    show();
+    await screen.findByTestId('model-manager');
+    expect(ask).not.toHaveBeenCalled();
+  });
+
+  it('asks again when the toolbar button is pressed, and the button waits for the answer', async () => {
+    useModelUpdates.setState({ checkedAt: Date.now() });
+    let answer!: (u: ReturnType<typeof update>[]) => void;
+    const ask = vi.spyOn(backend, 'checkModelUpdates').mockReturnValue(new Promise((r) => (answer = r)));
+    show();
+    const button = screen.getByTestId('mm-check-updates') as HTMLButtonElement;
+    fireEvent.click(button);
+    expect(ask).toHaveBeenCalledOnce();
+    await waitFor(() => expect(button.disabled).toBe(true));
+    answer([update('m1')]);
+    await waitFor(() => expect(button.disabled).toBe(false));
+    expect(screen.getAllByTestId('mm-update-tag')).toHaveLength(1);
+  });
+
+  it('forgets the update of a model that is deleted', async () => {
+    useModelUpdates.setState({ checkedAt: Date.now(), updates: [update('m1'), update('gone')] });
+    show();
+    await waitFor(() => expect(useModelUpdates.getState().updates.map((u) => u.key)).toEqual(['m1']));
   });
 });

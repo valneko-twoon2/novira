@@ -1,5 +1,5 @@
 //! Talks to the real Civitai API. Run on purpose: `cargo test -p novira-core --test civitai_live -- --ignored --nocapture`.
-use novira_core::models::civitai::{search, SearchParams};
+use novira_core::models::civitai::{samples, search, updates, SearchParams};
 
 fn params(query: &str, cursor: Option<String>) -> SearchParams {
     SearchParams {
@@ -62,4 +62,60 @@ async fn real_search_returns_downloadable_models_with_covers_and_pages() {
         first.items[0].commercial
     );
     assert!(!text.items.is_empty());
+}
+
+/// A long-lived Civitai model (4384) and one of its older versions (128713, SD 1.5).
+const MODEL: &str = "4384";
+const VERSION: &str = "128713";
+
+fn client() -> reqwest::Client {
+    reqwest::Client::builder()
+        .user_agent("novira")
+        .build()
+        .unwrap()
+}
+
+#[tokio::test]
+#[ignore = "needs network"]
+async fn real_example_settings_of_a_version_are_read() {
+    let found = samples::fetch(&client(), VERSION, false, None)
+        .await
+        .unwrap();
+    assert!(!found.is_empty(), "no example shared its settings");
+    assert!(found.len() <= samples::SAMPLE_LIMIT);
+    for s in &found {
+        assert!(!s.prompt.is_empty());
+        assert!(s.image_url.starts_with("https://"), "{}", s.image_url);
+        assert_eq!(s.width.is_some(), s.height.is_some());
+    }
+    // Most examples record a sampler, steps, a size and the resources they used.
+    assert!(found
+        .iter()
+        .any(|s| s.sampler.is_some() && s.steps.is_some()));
+    assert!(found.iter().any(|s| s.width.is_some()));
+    assert!(found.iter().any(|s| !s.resources.is_empty()));
+    println!("{} examples; first: {:?}", found.len(), found[0]);
+}
+
+#[tokio::test]
+#[ignore = "needs network"]
+async fn real_older_version_is_reported_and_a_bad_id_is_refused() {
+    let http = client();
+    let installed = [updates::Installed {
+        key: "k".into(),
+        model_id: MODEL.into(),
+        version_id: VERSION.into(),
+    }];
+    let found = updates::check(&http, &installed, None).await.unwrap();
+    println!("{found:?}");
+    assert!(found.len() <= 1);
+    for u in &found {
+        assert_eq!(u.installed_version_id, VERSION);
+        assert_ne!(u.latest_version_id, VERSION);
+        assert!(u
+            .page_url
+            .starts_with("https://civitai.com/models/4384?modelVersionId="));
+    }
+    assert!(samples::fetch(&http, "1; drop", false, None).await.is_err());
+    assert!(updates::check(&http, &[], None).await.unwrap().is_empty());
 }

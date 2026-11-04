@@ -160,6 +160,8 @@ pub const SERVED: &[&str] = &[
     // Reads of the model sites, the pack registry and ComfyUI's releases (addresses fixed in the backend).
     "list_hugging_face_files",
     "search_civitai",
+    "civitai_samples",
+    "check_model_updates",
     "comfy_versions",
     "node_pack_versions",
     "registry_nodes",

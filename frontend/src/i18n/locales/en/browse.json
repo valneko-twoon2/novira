@@ -122,5 +122,17 @@
   "browse.paid.badgeUntil": "Paid until {date}",
   "browse.paid.locked": "Paid",
   "browse.paid.permanent": "This version is paid. Even if you bought it, novira cannot tell, so it cannot install it. Get it on Civitai's page.",
-  "browse.paid.early": "Early access: paid until {date}, free after that, when it can be installed. It cannot be installed from novira now."
+  "browse.paid.early": "Early access: paid until {date}, free after that, when it can be installed. It cannot be installed from novira now.",
+  "browse.samples.title": "Example settings",
+  "browse.samples.loading": "Loading example settings…",
+  "browse.samples.failed": "Could not load the example settings",
+  "browse.samples.none": "No example shares its settings",
+  "browse.samples.steps": "{n} steps",
+  "browse.samples.versionN": "Civitai version {id}",
+  "browse.samples.installed": "Installed",
+  "browse.samples.notInstalled": "Not installed",
+  "browse.samples.use": "Use these settings",
+  "browse.samples.applied": "Applied the example settings",
+  "browse.samples.missing": "Not installed, so not applied: {names}",
+  "browse.samples.samplerUnknown": "There is no setting for the sampler \"{name}\", so the current one stays."
 }

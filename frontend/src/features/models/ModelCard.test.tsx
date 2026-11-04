@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ModelConfig } from '@/backend';
 import { installRecordingCanvases } from '@/backend/mock/canvas2dRecorder.testkit';
 import { t } from '@/i18n';
+import { useModelUpdates } from '@/state/modelUpdates';
 import { ModelCard } from './ModelCard';
 
 const model: ModelConfig = {
@@ -134,5 +135,23 @@ describe('ModelCard structure', () => {
     // No interactive element sits inside another one: the only button holding other things is none.
     const select = document.querySelector('.mm-card-item__select')!;
     expect(select.children).toHaveLength(0);
+  });
+});
+
+describe('the update tag', () => {
+  const update = { key: 'm1', modelId: '1', installedVersionId: '2', latestVersionId: '3', latestName: 'v3', publishedAt: 0, pageUrl: 'https://civitai.com/models/1?modelVersionId=3' };
+  afterEach(() => useModelUpdates.setState({ updates: [] }));
+
+  it('is shown on the card of a model that has a newer version, and on no other', () => {
+    useModelUpdates.setState({ updates: [update] });
+    const { rerender } = render(<ModelCard model={model} selected={false} favorite={false} onSelect={vi.fn()} onToggleFavorite={vi.fn()} onDelete={vi.fn()} />);
+    expect(screen.getByTestId('mm-update-tag').textContent).toBe(t('models.updates.tag'));
+    rerender(<ModelCard model={{ ...model, key: 'other' }} selected={false} favorite={false} onSelect={vi.fn()} onToggleFavorite={vi.fn()} onDelete={vi.fn()} />);
+    expect(screen.queryByTestId('mm-update-tag')).toBeNull();
+  });
+
+  it('is not shown without an update', () => {
+    render(<ModelCard model={model} selected={false} favorite={false} onSelect={vi.fn()} onToggleFavorite={vi.fn()} onDelete={vi.fn()} />);
+    expect(screen.queryByTestId('mm-update-tag')).toBeNull();
   });
 });

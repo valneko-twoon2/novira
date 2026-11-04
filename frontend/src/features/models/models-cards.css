@@ -187,6 +187,12 @@
   color: var(--on-overlay);
 }
 
+.mm-tag--new {
+  border-color: transparent;
+  background: var(--success);
+  color: var(--on-overlay);
+}
+
 .mm-iconbtn {
   display: inline-flex;
   align-items: center;

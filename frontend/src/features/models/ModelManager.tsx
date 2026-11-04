@@ -1,6 +1,7 @@
 // Model Manager tab (Stability Matrix style): category rail, toolbar + card grid, detail panel, status bar.
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useModels } from '@/state/models';
+import { useModelUpdates } from '@/state/modelUpdates';
 import { filterModels } from './filterModels';
 import { useModelImport } from '@/state/dialogs/modelImport';
 import { CoverHint } from './CoverHint';
@@ -26,6 +27,14 @@ export function ModelManager(_props: { tab?: unknown }) {
   const [category, setCategory] = useState<CategoryId>('all');
   const [bar, setBar] = useState<ToolbarState>(INITIAL);
   const openImport = () => useModelImport.getState().open();
+
+  // Once a day, and when the screen opens, ask Civitai whether the installed models have a newer version.
+  useEffect(() => {
+    void useModelUpdates.getState().checkIfStale();
+  }, []);
+  useEffect(() => {
+    useModelUpdates.getState().forget(models.map((m) => m.key));
+  }, [models]);
 
   const shown = useMemo(
     () => filterModels(models, { category, search: bar.search, base: bar.base, sort: bar.sort, favorites }),

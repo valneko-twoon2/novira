@@ -1,9 +1,10 @@
 // Right-side detail panel for the selected model.
-import { ArrowSquareOut, ArrowsClockwise, Copy, PencilSimple, Trash, X } from '@phosphor-icons/react';
+import { ArrowCircleUp, ArrowSquareOut, ArrowsClockwise, Copy, PencilSimple, Trash, X } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { backend, type ModelConfig } from '@/backend';
 import { t } from '@/i18n';
 import { BASE_LABELS, useModels } from '@/state/models';
+import { useModelUpdates } from '@/state/modelUpdates';
 import { toast } from '@/state/toasts';
 import { Button, CommercialTag, IconButton, Modal, writeClipboardText } from '@/ui';
 import { ModelGallery } from './ModelGallery';
@@ -22,6 +23,7 @@ export function ModelDetail({ model }: { model: ModelConfig }) {
   const [converting, setConverting] = useState(false);
   const [busy, setBusy] = useState(false);
   const canConvert = model.type === 'main' && model.format === 'checkpoint';
+  const update = useModelUpdates((s) => s.updates.find((u) => u.key === model.key));
 
   // The system browser opens it, and only after the backend checked the address (https, a model site).
   const pageUrl = modelPageUrl(model);
@@ -32,6 +34,18 @@ export function ModelDetail({ model }: { model: ModelConfig }) {
       return;
     }
     backend.openSourcePage(pageUrl).catch((e: unknown) => {
+      toast({ status: 'error', title: t('browse.toast.openFailed'), description: e instanceof Error ? e.message : String(e) });
+    });
+  };
+
+  // The newer version's page, checked by the backend like the model's own.
+  const openUpdate = () => {
+    if (!update) return;
+    if (backend.kind === 'mock') {
+      toast({ status: 'info', title: t('browse.toast.openMock'), description: model.name }, 2200);
+      return;
+    }
+    backend.openSourcePage(update.pageUrl).catch((e: unknown) => {
       toast({ status: 'error', title: t('browse.toast.openFailed'), description: e instanceof Error ? e.message : String(e) });
     });
   };
@@ -70,6 +84,15 @@ export function ModelDetail({ model }: { model: ModelConfig }) {
           <span className="mm-tag">{t(TYPE_KEYS[model.type])}</span>
           {formatTag(model) && <span className="mm-tag">{formatTag(model)}</span>}
         </div>
+        {update && (
+          <div className="mm-update" role="note" data-testid="mm-update">
+            <ArrowCircleUp size={16} weight="fill" className="mm-update__icon" />
+            <span className="mm-update__text">{t('models.updates.detail', { name: update.latestName, date: new Date(update.publishedAt).toLocaleDateString() })}</span>
+            <Button size="sm" variant="outline" leftIcon={<ArrowSquareOut size={14} />} onClick={openUpdate} data-testid="mm-update-open">
+              {t('models.updates.open')}
+            </Button>
+          </div>
+        )}
         <div className="mm-detail__actions">
           {pageUrl && (
             <Button size="sm" variant="outline" leftIcon={<ArrowSquareOut size={14} />} onClick={openSource}>

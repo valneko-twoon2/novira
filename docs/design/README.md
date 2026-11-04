@@ -15,7 +15,8 @@ One page per feature, each the current specification of that feature: how it beh
 | [workflow-graphs.md](workflow-graphs.md) | Running a workflow graph: the ComfyUI prompt the editor compiles, ComfyUI's own nodes in the editor, the result (picture, text, sound, video) |
 | [models.md](models.md) | Model folders, install (including the folder scan), covers, keys and tokens |
 | [model-packs.md](model-packs.md) | Model packs (video, music, voice, inpaint, logo), the starter list, hardware and fit marks |
-| [browse.md](browse.md) | The Browse tab: searching Civitai and Hugging Face, adult-content filtering, opening their pages |
+| [browse.md](browse.md) | The Browse tab: searching Civitai and Hugging Face, the settings of a model's example pictures, adult-content filtering, opening their pages |
+| [model-updates.md](model-updates.md) | The notice that an installed Civitai model has a newer version |
 | [extensions.md](extensions.md) | ComfyUI custom node packs, the ComfyUI Registry, installing ComfyUI and switching its version |
 | [assistant.md](assistant.md) | The AI assistant: providers, tools, the tool server, what it may read |
 | [assistant-models.md](assistant-models.md) | The model and thinking effort the assistant's command-line tool runs on: Claude's full names, Codex's list, the default the picker always names |

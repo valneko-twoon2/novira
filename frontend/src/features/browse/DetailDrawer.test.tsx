@@ -119,3 +119,19 @@ describe('DetailDrawer', () => {
     expect(open).toHaveBeenCalledWith('m1');
   });
 });
+
+describe('DetailDrawer example settings', () => {
+  it('asks for the examples of the version shown', async () => {
+    const ask = vi.spyOn(backend, 'civitaiSamples').mockResolvedValue([]);
+    show();
+    await screen.findByText(t('browse.samples.none'));
+    expect(ask).toHaveBeenCalledExactlyOnceWith('v1', false);
+  });
+
+  it('is not shown, and nothing is asked, for a Hugging Face repository', () => {
+    const ask = vi.spyOn(backend, 'civitaiSamples').mockResolvedValue([]);
+    show(model({ source: 'huggingface' }));
+    expect(screen.queryByTestId('browse-samples')).toBeNull();
+    expect(ask).not.toHaveBeenCalled();
+  });
+});

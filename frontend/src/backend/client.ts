@@ -12,7 +12,9 @@ import type {
   BackupSummary,
   BoardDTO,
   CivitaiSearchParams,
+  CivitaiSample,
   CivitaiSearchResult,
+  ModelUpdate,
   ComfyNodeDefs,
   ComfyUiLocale,
   ComicRecord,
@@ -106,6 +108,10 @@ export interface BackendClient {
 
   // Online model search
   searchCivitai(params: CivitaiSearchParams): Promise<CivitaiSearchResult>;
+  /** The generation settings Civitai keeps with the example pictures of one model version (those with a prompt). */
+  civitaiSamples(versionId: string, includeNsfw: boolean): Promise<CivitaiSample[]>;
+  /** Asks Civitai whether the installed Civitai models have a newer version of the same base model. */
+  checkModelUpdates(): Promise<ModelUpdate[]>;
   /** Starts downloading the models of a pack (video, music, voice); progress arrives as `pack` events. */
   /** The graphics card and its memory (read when asked; `vramBytes` is `null` when unknown). */
   hardwareInfo(): Promise<HardwareInfo>;

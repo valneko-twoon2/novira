@@ -62,6 +62,8 @@ const CHECKS: &[Check] = &[
     ("queue-snapshot", outbound::queue_snapshot),
     ("scanned-file", outbound::scanned_file),
     ("civitai-search-result", outbound::civitai_search_result),
+    ("civitai-samples", outbound::civitai_samples),
+    ("model-updates", outbound::model_updates),
     ("node-packs", outbound::node_packs),
     ("comfy-ui-locale", outbound::comfy_ui_locale),
     ("engine-status", outbound::engine_status),

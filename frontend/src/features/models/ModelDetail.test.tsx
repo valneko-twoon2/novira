@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { backend, type ModelConfig } from '@/backend';
 import { t } from '@/i18n';
 import { useModels } from '@/state/models';
+import { useModelUpdates } from '@/state/modelUpdates';
 import { useToasts } from '@/state/toasts';
 import { installRecordingCanvases } from '@/backend/mock/canvas2dRecorder.testkit';
 import { TooltipProvider } from '@/ui';
@@ -230,5 +231,35 @@ describe('converting and deleting', () => {
     fireEvent.click(screen.getByTestId('mm-delete-confirm'));
     await waitFor(() => expect(lastToast()).toMatchObject({ status: 'error', description: 'in use' }));
     fireEvent.click(within(screen.getByRole('dialog')).getByText(t('common.cancel')));
+  });
+});
+
+describe('a newer version', () => {
+  const newer = { key: 'm1', modelId: '1', installedVersionId: '2', latestVersionId: '3', latestName: 'v3.0', publishedAt: Date.UTC(2026, 9, 20), pageUrl: 'https://civitai.com/models/1?modelVersionId=3' };
+  afterEach(() => useModelUpdates.setState({ updates: [] }));
+
+  it('is named above the actions, with a button to its page', () => {
+    useModelUpdates.setState({ updates: [newer] });
+    show();
+    const row = screen.getByTestId('mm-update');
+    expect(row.textContent).toContain('v3.0');
+    // The browser mock does not open pages: it says so.
+    fireEvent.click(within(row).getByTestId('mm-update-open'));
+    expect(lastToast()?.title).toBe(t('browse.toast.openMock'));
+  });
+
+  it('opens the newer version\'s page through the backend, which checks the address', () => {
+    useModelUpdates.setState({ updates: [newer] });
+    vi.spyOn(backend, 'kind', 'get').mockReturnValue('tauri');
+    const open = vi.spyOn(backend, 'openSourcePage').mockResolvedValue(undefined);
+    show();
+    fireEvent.click(screen.getByTestId('mm-update-open'));
+    expect(open).toHaveBeenCalledWith(newer.pageUrl);
+  });
+
+  it('is not shown for a model without an update', () => {
+    useModelUpdates.setState({ updates: [{ ...newer, key: 'other' }] });
+    show();
+    expect(screen.queryByTestId('mm-update')).toBeNull();
   });
 });

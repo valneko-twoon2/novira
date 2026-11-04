@@ -26,6 +26,8 @@ pub const COMMANDS: &[&str] = &[
     "scan_folder",
     "list_hugging_face_files",
     "search_civitai",
+    "civitai_samples",
+    "check_model_updates",
     "save_workflow",
     "delete_workflow",
     "list_comics",

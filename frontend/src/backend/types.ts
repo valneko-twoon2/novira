@@ -847,6 +847,49 @@ export interface CivitaiSearchResult {
   nextCursor: string | null;
 }
 
+/** A model, LoRA, embedding or VAE that an example picture was made with. */
+export interface CivitaiSampleResource {
+  /** `checkpoint`, `lora`, `embed`, `vae` or another word Civitai wrote, lower case. */
+  kind: string;
+  /** The name the picture recorded; null when it only recorded the version. */
+  name: string | null;
+  /** Civitai's id of the model version, when the picture recorded it. */
+  versionId: string | null;
+  weight: number | null;
+}
+
+/** The generation settings Civitai keeps with an example picture of a model version. Every setting may be missing. */
+export interface CivitaiSample {
+  id: string;
+  /** A small picture to tell the examples apart. */
+  imageUrl: string;
+  prompt: string;
+  negativePrompt: string | null;
+  seed: number | null;
+  steps: number | null;
+  cfgScale: number | null;
+  width: number | null;
+  height: number | null;
+  clipSkip: number | null;
+  /** Civitai's name for the sampler and scheduler together (`DPM++ 2M Karras`). */
+  sampler: string | null;
+  resources: CivitaiSampleResource[];
+}
+
+/** An installed Civitai model that has a newer version of the same base model. */
+export interface ModelUpdate {
+  /** The key of the installed model. */
+  key: string;
+  modelId: string;
+  installedVersionId: string;
+  latestVersionId: string;
+  latestName: string;
+  /** When the newer version came out (epoch ms). */
+  publishedAt: number;
+  /** The newer version's page on civitai.com; an address `openSourcePage` accepts. */
+  pageUrl: string;
+}
+
 // AI assistant ---------------------------------------------------------------
 
 /** What powers the assistant: the `claude` or `codex` command-line tool (the user signs in to it), or a server with an OpenAI-compatible chat API ('openai': Ollama, LM Studio, ...; the app runs the tool loop itself). */
