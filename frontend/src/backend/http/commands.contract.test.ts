@@ -29,6 +29,14 @@ const NOT_CALLED: Record<string, string> = {
   lan_approve: 'see lan_state',
   lan_deny: 'see lan_state',
   lan_revoke: 'see lan_state',
+  remote_state: 'the page of novira-server drives the remote listener over its routes (/remote/*: http/lan.ts)',
+  remote_enable: 'see remote_state',
+  remote_disable: 'see remote_state',
+  remote_code: 'see remote_state',
+  remote_approve: 'see remote_state',
+  remote_deny: 'see remote_state',
+  remote_revoke: 'see remote_state',
+  remote_forget: 'see remote_state',
 };
 
 const api = read('backend/crates/novira-core/src/api.rs');

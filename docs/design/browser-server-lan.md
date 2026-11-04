@@ -48,4 +48,4 @@ Tests: `backend/crates/novira-server/src/home_network.rs` (ranges, subnets, mask
 - The gateway's hardware address is not secret and can be copied by a rogue access point; it tells the owner's networks apart from other ones, it does not prove the gateway. It is read once a half minute, so a move to another network closes the listener within that time.
 - Windows asks once per program whether `novira-server.exe` (or `novira.exe`, for the app) may accept connections; allowing it on public networks is needed when Windows calls the home network public (Settings can set it to private instead).
 - Sessions end with the server, so the phone pairs again after each start.
-- Only IPv4. A phone reaching this computer through a VPN (Tailscale and the like) comes from another subnet and is refused. A new home address needs a restart of the listener (a new leaf).
+- Only IPv4. A phone reaching this computer through a VPN (Tailscale and the like) comes from another subnet and is refused by this listener; over Tailscale the remote listener answers it instead ([browser-server-remote.md](browser-server-remote.md)). A new home address needs a restart of the listener (a new leaf).

@@ -43,7 +43,8 @@ One page per feature, each the current specification of that feature: how it beh
 | [browser-server-start.md](browser-server-start.md) | Starting the browser server: its options, the data folder it opens (`--data`, `--app-data`), the launchers |
 | [browser-server-lan.md](browser-server-lan.md) | The browser server on the home network (opened on demand): the TLS-only listener and its local CA, who is answered, the subnet check |
 | [browser-server-pairing.md](browser-server-pairing.md) | Pairing a phone with the home-network listener: the pairing code and QR, the phone page, this computer's approval, sessions and their limits |
-| [browser-server-app.md](browser-server-app.md) | Phones and the desktop app: the home-network listener run inside the app, the window's `lan_*` commands, the built-in page and the picture URLs |
+| [browser-server-remote.md](browser-server-remote.md) | Phones away from home over Tailscale: the remote listener with Tailscale's certificate, enrolling a passkey after pairing, signing in with it, the log, turning off when unused |
+| [browser-server-app.md](browser-server-app.md) | Phones and the desktop app: the home-network and remote listeners run inside the app, the window's `lan_*` and `remote_*` commands, the built-in page and the picture URLs |
 | [release-workflow.md](release-workflow.md) | The release built on GitHub when a version tag is pushed: the checks before it, the smoke test, the draft release, what the workflow may do |
 | [ci.md](ci.md) | The checks GitHub runs on every branch push, and the order in which more are added |
 | [security.md](security.md) | What is common to all: what is at stake, the IPC and CSP boundaries, an index of each feature's boundaries, limits that belong to no feature, how to re-check |

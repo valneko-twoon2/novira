@@ -52,7 +52,7 @@ impl Bench {
             local: Some(SocketAddr::from((HOME, port))),
             peer: SocketAddr::from((peer, 50123)),
             mask: Some(Ipv4Addr::new(255, 255, 255, 0)),
-            tls,
+            listener: if tls { Listener::Home } else { Listener::Plain },
         }
     }
 
@@ -138,7 +138,7 @@ pub(crate) fn this_computer(b: &Bench) -> Ends {
         local: Some(b.server.addr),
         peer: SocketAddr::from((Ipv4Addr::LOCALHOST, 50124)),
         mask: None,
-        tls: false,
+        listener: Listener::Plain,
     }
 }
 

@@ -38,10 +38,38 @@ When Windows treats the network you are on as "Public", the screen shows a warni
 
 ### Which devices can connect, and a caution
 
-- Only devices on the same network as this computer (the same range of the same router) are answered. A phone away from home, or one going through a VPN, cannot connect.
+- Only devices on the same network as this computer (the same range of the same router) are answered. A phone away from home, or one going through a VPN, cannot connect. Away from home, use "Use it away from home" below.
 - Even a device on the same Wi-Fi cannot use it unless the computer allows it. Do not show the QR code to others. If the number differs, or you do not know the phone, press **{{ui:app.lan.deny}}**.
 - The connection is encrypted with https.
 - On a network you do not know (a café, for example), do not press **{{ui:app.tabs.short.homeLink}}**. The network you press it on is trusted, and the door opens.
+
+## Use it away from home
+
+With [Tailscale](https://tailscale.com/), a phone away from home can use novira on the computer too. No port on the router needs to be opened. The phone signs in with a passkey (face, finger or passcode) set up once at home.
+
+### Get ready
+
+1. Install Tailscale on the computer and the phone and sign in with the same account. Turn on two-step verification for the Tailscale account.
+2. In the Tailscale admin console (the DNS settings), turn on MagicDNS and HTTPS certificates.
+3. Do not put your real name or other words you want to keep private in the computer's Tailscale name. Making the certificate puts the computer's name and the tailnet's name in the public certificate logs (Certificate Transparency). The name alone lets no one in.
+
+### Turn it on and add a phone
+
+1. Press **{{ui:app.tabs.short.homeLink}}** in the left bar and open the **{{ui:app.lan.tabAway}}** tab.
+2. Turn on **{{ui:app.remote.switch}}**. When the computer's Tailscale name (like `pc.tail1234.ts.net`) shows, it is ready; when it cannot open, the reason shows. It stays on the next time novira starts.
+3. Turn Tailscale on on the phone, press **{{ui:app.remote.enrol}}** and scan the QR code. A phone is added only at home (the computer allows it).
+4. On the phone, check the name and press Start; when the number on the computer is the same, press **{{ui:app.lan.allow}}**.
+5. Press "Make a passkey" on the phone and confirm with your face, finger or passcode. The phone is listed under **{{ui:app.remote.passkeys}}**.
+
+### Open it away from home
+
+Turn Tailscale on on the phone, open the address from when you added it (`https://pc.tail1234.ts.net:port/`) and press "Sign in with a passkey". A bookmark helps. novira (or the browser version) must be open on the computer, and its Tailscale connected.
+
+- You can do what you can from the home Wi-Fi. Installing models and extensions, engine settings, keys and the agent's setup stay on the computer.
+- A sign-in ends after 30 minutes unused, or 4 hours after signing in. Sign in with the passkey again.
+- **{{ui:app.remote.log}}** shows when a phone was added, signed in or was refused, and which. If you see one you do not know, remove that phone and change your Tailscale password.
+- If you lose the phone, press the bin button under **{{ui:app.remote.passkeys}}** twice to remove it. Its sign-ins end at once. Remove the device in the Tailscale admin console too.
+- {{ui:app.remote.switch}} turns itself off after 14 days with no phone added and no sign-in.
 
 ## The phone screen
 

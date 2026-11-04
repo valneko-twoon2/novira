@@ -63,15 +63,17 @@ export function standInCover(key: string | number): string | undefined {
 /**
  * The home network of the page's own server, to open and close it, trust a network and approve phones: the server's on a
  * page that `novira-server` served, the app's commands in the desktop app (its own server runs inside it), the mock's (a
- * pretend one, `?lan`) in a plain browser. Whether this page may use it is answered by `state()` (a phone gets nothing).
+ * pretend one, `?lan`, with a pretend remote listener with `&remote`) in a plain browser. Whether this page may use it
+ * is answered by `state()` and `remoteState()` (a phone gets nothing).
  */
 export async function getLanApi(): Promise<LanApi | null> {
   const served = serverLanApi();
   if (served) return served;
   if (isTauri()) return tauriLanApi;
   if (backend.kind !== 'mock' || typeof location === 'undefined') return null;
-  const flag = new URLSearchParams(location.search).get('lan');
-  return flag === null ? null : (await import('./mock/mockLan')).mockLan(flag);
+  const search = new URLSearchParams(location.search);
+  const flag = search.get('lan');
+  return flag === null ? null : (await import('./mock/mockLan')).mockLan(flag, search.get('remote'));
 }
 
 /**
@@ -94,6 +96,6 @@ export { FAMILY_SAMPLING, fixedSampling, samplingLabel } from './familySampling'
 export { ENGINE_SAMPLERS, ENGINE_SCHEDULES } from './engineSampling';
 export { runningSampling, SCHEDULER_SAMPLING } from './schedulerSampling';
 export { canOpenNewWindow, openInNewWindow } from './openWindow';
-export type { LanApi, LanDevice, LanFailure, LanPending, LanResult, LanState, PairingCode } from './http/lan';
+export type { LanApi, LanDevice, LanFailure, LanPending, LanResult, LanState, PairingCode, RemoteLogLine, RemotePasskey, RemoteProblem, RemoteState } from './http/lan';
 export { perf } from './perf';
 export { randomSeed, batchSeed, mulberry32, MAX_SEED } from './mock/random';

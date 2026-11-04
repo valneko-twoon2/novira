@@ -49,6 +49,41 @@ test('a phone that asks while the popover is closed gets a prompt on this page',
   await expect(page.locator('[data-testid^="lan-device-"]')).toContainText('iPhone');
 });
 
+test('the away tab turns the remote listener on, adds a phone with its passkey, and removes it', async ({ page }) => {
+  await openApp(page, '?lan=open&remote');
+  await page.getByTestId('home-link-open').click();
+  // The home tab comes first, as before.
+  await expect(page.getByTestId('home-link-code')).toBeVisible();
+  await page.getByRole('tab', { name: msg('app.lan.tabAway') }).click();
+  await page.getByRole('switch', { name: msg('app.remote.switch') }).click();
+  await expect(page.getByTestId('remote-name')).toHaveText('pc.tail1234.ts.net');
+  await page.getByTestId('remote-enrol').click();
+  await expect(page.getByTestId('remote-code')).toBeVisible();
+  // The mock phone asks two seconds after the code.
+  const asking = page.locator('[data-testid^="remote-pending-"]');
+  await expect(asking).toHaveCount(1, { timeout: 15_000 });
+  await expect(asking).toContainText(/\d{3} \d{3}/);
+  await page.locator('[data-testid^="remote-allow-"]').click();
+  const passkey = page.locator('[data-testid^="remote-passkey-"]');
+  await expect(passkey).toContainText('iPhone');
+  await expect(page.getByTestId('remote-log')).toContainText(msg('app.remote.what.enrolled'));
+  // Removing takes a second press.
+  const forget = page.locator('[data-testid^="remote-forget-"]');
+  await forget.click();
+  await expect(passkey).toHaveCount(1);
+  await forget.click();
+  await expect(passkey).toHaveCount(0);
+});
+
+test('the away tab says why the remote listener cannot open', async ({ page }) => {
+  await openApp(page, '?lan=open&remote=missing');
+  await page.getByTestId('home-link-open').click();
+  await page.getByRole('tab', { name: msg('app.lan.tabAway') }).click();
+  await page.getByRole('switch', { name: msg('app.remote.switch') }).click();
+  await expect(page.getByTestId('remote-problem')).toHaveText(msg('app.remote.problem.tailscale_missing'));
+  await expect(page.getByTestId('remote-enrol')).toHaveCount(0);
+});
+
 test('a phone-sized window shows no home network at all', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/?lan=open');

@@ -136,6 +136,10 @@ struct Session {
     peer: IpAddr,
     created: Instant,
     last: Instant,
+    /// Made by this computer's approval and not used yet to make a passkey (the remote listener's enrolment: once).
+    may_enrol: bool,
+    /// The passkey it signed in with or made (the remote listener), so forgetting the passkey ends it.
+    passkey: Option<String>,
 }
 
 impl Session {
@@ -341,10 +345,77 @@ impl Pairing {
                     peer,
                     created: now,
                     last: now,
+                    may_enrol: true,
+                    passkey: None,
                 });
                 Status::Approved(secret)
             }
         }
+    }
+
+    /// A session for `peer` that signed in with the passkey `passkey` (no approval: the passkey vouches for it); its
+    /// secret, handed out once. `None` when as many devices are signed in as may be. The same passkey signing in again
+    /// from the same address replaces its earlier session.
+    pub fn grant(
+        &mut self,
+        now: Instant,
+        peer: IpAddr,
+        label: &str,
+        passkey: &str,
+    ) -> Option<String> {
+        self.prune(now);
+        self.sessions
+            .retain(|s| !(s.peer == peer && s.passkey.as_deref() == Some(passkey)));
+        if self.sessions.len() >= MAX_SESSIONS {
+            return None;
+        }
+        let secret = random_hex(32);
+        self.sessions.push(Session {
+            id: random_hex(8),
+            digest: digest(&secret),
+            label: label.to_string(),
+            peer,
+            created: now,
+            last: now,
+            may_enrol: false,
+            passkey: Some(passkey.to_string()),
+        });
+        Some(secret)
+    }
+
+    /// The name of the live session `wanted` of `peer` when it may still make a passkey.
+    pub fn enrolling(&mut self, now: Instant, peer: IpAddr, wanted: &Digest) -> Option<String> {
+        self.prune(now);
+        self.sessions
+            .iter()
+            .find(|s| &s.digest == wanted && s.peer == peer && s.may_enrol)
+            .map(|s| s.label.clone())
+    }
+
+    /// The session `wanted` of `peer` made the passkey `passkey`: it may not make another, and forgetting that passkey
+    /// ends it. False when it may not (any more).
+    pub fn enrolled(&mut self, now: Instant, peer: IpAddr, wanted: &Digest, passkey: &str) -> bool {
+        self.prune(now);
+        match self
+            .sessions
+            .iter_mut()
+            .find(|s| &s.digest == wanted && s.peer == peer && s.may_enrol)
+        {
+            Some(session) => {
+                session.may_enrol = false;
+                session.passkey = Some(passkey.to_string());
+                true
+            }
+            None => false,
+        }
+    }
+
+    /// Ends every session of the passkey `passkey`; whether there was one.
+    pub fn revoke_passkey(&mut self, passkey: &str) -> bool {
+        let before = self.sessions.len();
+        self.sessions
+            .retain(|s| s.passkey.as_deref() != Some(passkey));
+        self.sessions.len() != before
     }
 
     /// The session whose secret is `secret`, when it is alive and used from the address it was made for; the use
@@ -423,6 +494,15 @@ pub fn read_body(
     headers: &HeaderMap,
     body: &Bytes,
 ) -> Result<serde_json::Map<String, Value>, Response> {
+    read_body_up_to(headers, body, MAX_BODY)
+}
+
+/// [`read_body`] with another size limit (a passkey's answer is larger than a pairing request).
+pub fn read_body_up_to(
+    headers: &HeaderMap,
+    body: &Bytes,
+    limit: usize,
+) -> Result<serde_json::Map<String, Value>, Response> {
     let json_type = headers
         .get(header::CONTENT_TYPE)
         .and_then(|v| v.to_str().ok())
@@ -434,7 +514,7 @@ pub fn read_body(
             "the body must be application/json",
         ));
     }
-    if body.len() > MAX_BODY {
+    if body.len() > limit {
         return Err(crate::failure(
             StatusCode::PAYLOAD_TOO_LARGE,
             "bad_arguments",
@@ -509,4 +589,4 @@ pub fn session_set_cookie(port: u16, secret: &str) -> Option<HeaderValue> {
 }
 
 #[cfg(test)]
-mod tests;
+pub(crate) mod tests;

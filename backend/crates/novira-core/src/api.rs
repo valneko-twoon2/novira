@@ -150,6 +150,14 @@ pub const SHELL_ONLY: &[&str] = &[
     "lan_approve",
     "lan_deny",
     "lan_revoke",
+    "remote_state",
+    "remote_enable",
+    "remote_disable",
+    "remote_code",
+    "remote_approve",
+    "remote_deny",
+    "remote_revoke",
+    "remote_forget",
 ];
 
 macro_rules! commands {

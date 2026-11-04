@@ -364,7 +364,7 @@ async fn the_lan_routes_are_for_this_computer_with_its_token_only() {
                     status,
                     StatusCode::FORBIDDEN,
                     "{method} {path} tls={} {headers:?}",
-                    ends.tls
+                    ends.tls()
                 );
             }
         }

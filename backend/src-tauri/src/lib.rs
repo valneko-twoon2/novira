@@ -414,6 +414,14 @@ pub fn run() {
             home_network::lan_approve,
             home_network::lan_deny,
             home_network::lan_revoke,
+            home_network::remote_state,
+            home_network::remote_enable,
+            home_network::remote_disable,
+            home_network::remote_code,
+            home_network::remote_approve,
+            home_network::remote_deny,
+            home_network::remote_revoke,
+            home_network::remote_forget,
         ])
         .build(tauri::generate_context!())
         .expect("failed to start novira");

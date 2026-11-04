@@ -139,6 +139,8 @@
 /* The home network item's popover. The pairing code is dark on light in either theme, as a reader expects. */
 .lan-popover {
   width: 280px;
+  max-height: 85vh;
+  overflow-y: auto;
 }
 
 .lan {
@@ -228,6 +230,39 @@
 .lan__ok {
   flex: none;
   color: var(--success);
+}
+
+/* The QR item's tabs (home, away) and the away tab's parts. */
+.lan__tabs {
+  margin-bottom: var(--space-3);
+}
+
+.lan__switch {
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.lan__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.lan__heading {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.lan__line {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.lan__line.is-refused {
+  color: var(--warning-text);
 }
 
 .home-link__light {

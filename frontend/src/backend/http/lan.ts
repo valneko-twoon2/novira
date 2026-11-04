@@ -40,6 +40,37 @@ export type PairingCode = {
   expiresIn: number;
 };
 
+/** A phone that may sign in from away (the key itself never reaches the page). */
+export type RemotePasskey = { id: string; label: string; addedAt: string; lastUsedAt: string | null };
+
+/** One line of the remote listener's log, newest first. */
+export type RemoteLogLine = { at: string; what: 'enrolled' | 'signedIn' | 'refused'; label: string; peer: string };
+
+/** Why the remote listener is not open although it is on. */
+export type RemoteProblem = 'tailscale_missing' | 'tailscale_stopped' | 'https_disabled' | 'failed';
+
+/** What `GET /remote/state` answers: the listener for this computer's phones away from home, over Tailscale. */
+export type RemoteState = {
+  enabled: boolean;
+  open: boolean;
+  problem: RemoteProblem | null;
+  /** What failed, for `failed`. */
+  detail: string | null;
+  /** The tailnet name (`pc.tail1234.ts.net`), address, port and page address while open. */
+  name: string | null;
+  address: string | null;
+  port: number | null;
+  url: string | null;
+  codes: number;
+  /** Phones that ask to enrol, and the signed-in ones. */
+  pending: LanPending[];
+  devices: LanDevice[];
+  passkeys: RemotePasskey[];
+  log: RemoteLogLine[];
+  /** Unused this many days, it turns itself off. */
+  unusedDays: number;
+};
+
 /** Why a call did not do what it was asked: the server's `code` (`untrusted_network`, `unknown_network`, ...). */
 export type LanFailure = { ok: false; code: string; message: string; gatewayMac?: string };
 export type LanResult = { ok: true } | LanFailure;
@@ -59,6 +90,19 @@ export interface LanApi {
   deny(id: string): Promise<LanResult>;
   /** Ends a paired phone's session. */
   revoke(id: string): Promise<LanResult>;
+  /** The remote listener (away from home, over Tailscale), or null when this page has none to drive. */
+  remoteState(): Promise<RemoteState | null>;
+  /** Turns it on (kept for the next start) or off; the state comes back with `refresh`. */
+  remoteEnable(): Promise<LanResult>;
+  remoteDisable(): Promise<LanResult>;
+  /** A code for enrolling a phone, while it is open. */
+  remoteCode(): Promise<PairingCode | null>;
+  remoteApprove(id: string): Promise<LanResult>;
+  remoteDeny(id: string): Promise<LanResult>;
+  /** Ends a signed-in phone's session. */
+  remoteRevoke(id: string): Promise<LanResult>;
+  /** Forgets a passkey: that phone can no longer sign in. */
+  remoteForget(id: string): Promise<LanResult>;
 }
 
 /** What a management route answered: its HTTP status and JSON body (`null` when it had none); `null` when nothing did. */
@@ -77,6 +121,13 @@ function result(answer: LanAnswer): LanResult {
   return { ok: false, code: body.code ?? 'failed', message: body.error ?? `status ${answer.status}`, ...(body.gatewayMac ? { gatewayMac: body.gatewayMac } : {}) };
 }
 
+/** A pairing code from `answer`, when it is one whose modules fill its square. */
+function codeOf(answer: LanAnswer): PairingCode | null {
+  if (!ok(answer) || !answer.body) return null;
+  const code = answer.body as PairingCode;
+  return typeof code.modules === 'string' && code.modules.length === code.size * code.size ? code : null;
+}
+
 /** The home network's API over `call`: the routes of the page's own server, or the app's commands that run them. */
 export function lanApiOver(call: LanCall): LanApi {
   return {
@@ -88,15 +139,21 @@ export function lanApiOver(call: LanCall): LanApi {
     close: async () => result(await call('POST', '/lan/close')),
     trust: async (gatewayMac, label) => result(await call('POST', '/lan/trust', { gatewayMac, label })),
     untrust: async (gatewayMac) => result(await call('POST', '/lan/untrust', { gatewayMac })),
-    async pairingCode() {
-      const answer = await call('POST', '/pair/code');
-      if (!ok(answer) || !answer.body) return null;
-      const code = answer.body as PairingCode;
-      return typeof code.modules === 'string' && code.modules.length === code.size * code.size ? code : null;
-    },
+    pairingCode: async () => codeOf(await call('POST', '/pair/code')),
     approve: async (id) => result(await call('POST', '/pair/approve', { id })),
     deny: async (id) => result(await call('POST', '/pair/deny', { id })),
     revoke: async (id) => result(await call('POST', '/pair/revoke', { id })),
+    async remoteState() {
+      const answer = await call('GET', '/remote/state');
+      return ok(answer) && answer.body ? (answer.body as RemoteState) : null;
+    },
+    remoteEnable: async () => result(await call('POST', '/remote/enable')),
+    remoteDisable: async () => result(await call('POST', '/remote/disable')),
+    remoteCode: async () => codeOf(await call('POST', '/remote/code')),
+    remoteApprove: async (id) => result(await call('POST', '/remote/approve', { id })),
+    remoteDeny: async (id) => result(await call('POST', '/remote/deny', { id })),
+    remoteRevoke: async (id) => result(await call('POST', '/remote/revoke', { id })),
+    remoteForget: async (id) => result(await call('POST', '/remote/forget', { id })),
   };
 }
 

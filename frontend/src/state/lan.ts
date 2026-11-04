@@ -4,7 +4,7 @@
 // it is read only when something here changes it. A page with no home network of its own (a phone, the browser mock
 // without `?lan`) gets no state, so nothing shows.
 import { create } from 'zustand';
-import { getLanApi, type LanApi, type LanState } from '@/backend';
+import { getLanApi, type LanApi, type LanState, type RemoteState } from '@/backend';
 
 /** How often the state is read while the item's popover is open, and while only a phone could be asking. */
 export const FAST_MS = 2000;
@@ -14,6 +14,8 @@ interface LanStore {
   api: LanApi | null;
   /** The last state read; null when there is none (or this page has no home network). */
   state: LanState | null;
+  /** The remote listener's last state, read with it; null when this page has none to drive. */
+  remote: RemoteState | null;
   popoverOpen: boolean;
   init: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -35,6 +37,7 @@ export const useLan = create<LanStore>()((set, get) => {
   return {
     api: null,
     state: null,
+    remote: null,
     popoverOpen: false,
     init: () => {
       starting ??= (async () => {
@@ -47,7 +50,8 @@ export const useLan = create<LanStore>()((set, get) => {
     refresh: async () => {
       const { api } = get();
       if (!api) return;
-      set({ state: await api.state() });
+      const [state, remote] = await Promise.all([api.state(), api.remoteState()]);
+      set({ state, remote });
       schedule();
     },
     setPopoverOpen: (popoverOpen) => {
@@ -62,5 +66,5 @@ export const useLan = create<LanStore>()((set, get) => {
 export function resetLan(): void {
   clearTimeout(timer);
   starting = undefined;
-  useLan.setState({ api: null, state: null, popoverOpen: false });
+  useLan.setState({ api: null, state: null, remote: null, popoverOpen: false });
 }

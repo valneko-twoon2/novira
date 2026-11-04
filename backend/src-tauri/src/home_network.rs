@@ -28,12 +28,19 @@ pub fn start(
     });
     match novira_server::Ca::load_or_create(&data) {
         Ok(ca) => server.enable_lan(novira_server::Control::new(
-            data,
+            data.clone(),
             ca,
             novira_server::system_probe(),
         )),
         Err(e) => eprintln!("novira: {e}; the home network stays off"),
     }
+    // Inside the runtime, so a remote listener that is on opens at once.
+    tauri::async_runtime::block_on(async {
+        server.enable_remote(novira_server::RemoteControl::new(
+            data.clone(),
+            novira_server::tailnet_source(data),
+        ))
+    });
     (HomeNetwork(server), sink)
 }
 
@@ -141,6 +148,58 @@ pub async fn lan_revoke(app: tauri::AppHandle, id: String) -> Result<Value, Stri
 async fn decide(app: &tauri::AppHandle, route: &str, id: String) -> Result<Value, String> {
     checked("id", &id)?;
     Ok(manage(app, Method::POST, route, Some(json!({ "id": id }))).await)
+}
+
+/// `GET /remote/state`: on or off, open or why not, the tailnet name, the phones asking to enrol, the signed-in ones,
+/// the passkeys and the log.
+#[tauri::command]
+pub async fn remote_state(app: tauri::AppHandle) -> Value {
+    manage(&app, Method::GET, novira_server::REMOTE_STATE_ROUTE, None).await
+}
+
+/// Turns the remote listener on (kept for the next start) and opens it when Tailscale allows.
+#[tauri::command]
+pub async fn remote_enable(app: tauri::AppHandle) -> Value {
+    manage(&app, Method::POST, novira_server::REMOTE_ENABLE_ROUTE, None).await
+}
+
+#[tauri::command]
+pub async fn remote_disable(app: tauri::AppHandle) -> Value {
+    manage(
+        &app,
+        Method::POST,
+        novira_server::REMOTE_DISABLE_ROUTE,
+        None,
+    )
+    .await
+}
+
+/// A pairing code for enrolling a phone, while the remote listener is open.
+#[tauri::command]
+pub async fn remote_code(app: tauri::AppHandle) -> Value {
+    manage(&app, Method::POST, novira_server::REMOTE_CODE_ROUTE, None).await
+}
+
+#[tauri::command]
+pub async fn remote_approve(app: tauri::AppHandle, id: String) -> Result<Value, String> {
+    decide(&app, novira_server::REMOTE_APPROVE_ROUTE, id).await
+}
+
+#[tauri::command]
+pub async fn remote_deny(app: tauri::AppHandle, id: String) -> Result<Value, String> {
+    decide(&app, novira_server::REMOTE_DENY_ROUTE, id).await
+}
+
+/// Ends a signed-in phone's session.
+#[tauri::command]
+pub async fn remote_revoke(app: tauri::AppHandle, id: String) -> Result<Value, String> {
+    decide(&app, novira_server::REMOTE_REVOKE_ROUTE, id).await
+}
+
+/// Forgets a passkey: that phone can no longer sign in.
+#[tauri::command]
+pub async fn remote_forget(app: tauri::AppHandle, id: String) -> Result<Value, String> {
+    decide(&app, novira_server::REMOTE_FORGET_ROUTE, id).await
 }
 
 #[cfg(test)]

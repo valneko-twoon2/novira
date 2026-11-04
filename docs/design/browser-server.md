@@ -9,7 +9,7 @@ covers:
 ---
 # Browser server
 
-The real backend behind a plain web browser: novira without its window, and checks that drive `novira-core` from Chromium (Playwright). `backend/crates/novira-server/` is an HTTP server on this computer (or the home network: [browser-server-lan.md](browser-server-lan.md)); the frontend reaches it through a third `BackendClient`, `frontend/src/backend/http/HttpBackend.ts`, beside the Tauri client and the mock.
+The real backend behind a plain web browser: novira without its window, and checks that drive `novira-core` from Chromium (Playwright). `backend/crates/novira-server/` is an HTTP server on this computer (or the home network: [browser-server-lan.md](browser-server-lan.md); or the owner's phones away from home over Tailscale: [browser-server-remote.md](browser-server-remote.md)); the frontend reaches it through a third `BackendClient`, `frontend/src/backend/http/HttpBackend.ts`, beside the Tauri client and the mock.
 ## Behaviour
 
 ### One command layer for both shells
@@ -60,7 +60,7 @@ Every other command answers 501 "not available in the browser yet: <command>" (`
 
 | Boundary | Guard |
 |---|---|
-| Who can connect | The listener binds `127.0.0.1` (plain HTTP); the home network opens on demand (browser-server-lan.md). A page on another site, or a DNS name that points at 127.0.0.1, is refused by the `Host` check: on loopback only `127.0.0.1:<port>` and `localhost:<port>` pass. |
+| Who can connect | The listener binds `127.0.0.1` (plain HTTP); the home network opens on demand (browser-server-lan.md), the tailnet while the owner has it on (browser-server-remote.md). A page on another site, or a DNS name that points at 127.0.0.1, is refused by the `Host` check: on loopback only `127.0.0.1:<port>` and `localhost:<port>` pass. |
 | Which page may call | One `Host`, at most one `Origin` and one `Sec-Fetch-Site` (else 400). An `Origin` must be `http://<the request's own Host>` (`https://` on TLS); `Sec-Fetch-Site` must be `same-origin` or `none`. |
 | Token | A random 64-hex-digit token per start (two UUID v4) is required on every request: header `x-novira-token`, or the cookie `token_cookie` names per port (`HttpOnly`, `SameSite=Strict`, `Secure` on TLS only) set by the first page load. `?token=` counts only on `GET /`, which sets the cookie; the page then drops it from the address bar. A device on the home network uses a session instead (browser-server-pairing.md). Compared in constant time. The token is printed once to the starter's console and never logged. |
 | Events, uploads, exports | `/events`, `/upload/image` and `/export/images` pass the same checks as every route; the `Origin` check applies to the upgrade, so a page of another site cannot open the socket, post a picture or ask for an export. The upload takes `application/octet-stream` only and the export `application/json` only, which a cross-site form or `fetch` cannot send without a preflight. `connect-src` names `ws://<the request's checked Host>` beside `'self'`. |
