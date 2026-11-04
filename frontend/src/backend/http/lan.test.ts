@@ -62,6 +62,38 @@ describe('the home network calls', () => {
     expect(await httpLanApi.open()).toMatchObject({ ok: false, code: 'offline' });
   });
 
+  it('drive the remote listener over its routes', async () => {
+    const fetch = reply(200, { ok: true });
+    vi.stubGlobal('fetch', fetch);
+    await httpLanApi.remoteEnable();
+    await httpLanApi.remoteDisable();
+    await httpLanApi.remoteApprove('r1');
+    await httpLanApi.remoteDeny('r2');
+    await httpLanApi.remoteRevoke('r3');
+    await httpLanApi.remoteForget('k1');
+    expect(fetch.mock.calls.map(([path, init]) => [path, init?.method, init?.body])).toEqual([
+      ['/remote/enable', 'POST', undefined],
+      ['/remote/disable', 'POST', undefined],
+      ['/remote/approve', 'POST', JSON.stringify({ id: 'r1' })],
+      ['/remote/deny', 'POST', JSON.stringify({ id: 'r2' })],
+      ['/remote/revoke', 'POST', JSON.stringify({ id: 'r3' })],
+      ['/remote/forget', 'POST', JSON.stringify({ id: 'k1' })],
+    ]);
+    const state = { enabled: true, open: true, name: 'pc.tail1234.ts.net', passkeys: [], log: [] };
+    vi.stubGlobal('fetch', reply(200, state));
+    expect(await httpLanApi.remoteState()).toEqual(state);
+    // A server without the remote listener (404), or a phone (403): none.
+    for (const status of [403, 404]) {
+      vi.stubGlobal('fetch', reply(status, { code: 'no_remote_control' }));
+      expect(await httpLanApi.remoteState()).toBeNull();
+    }
+    const code = { url: 'https://pc.tail1234.ts.net:51500/remote#c0de', size: 2, modules: '1001', expiresIn: 120 };
+    vi.stubGlobal('fetch', reply(200, code));
+    expect(await httpLanApi.remoteCode()).toEqual(code);
+    vi.stubGlobal('fetch', reply(404, { code: 'not_open' }));
+    expect(await httpLanApi.remoteCode()).toBeNull();
+  });
+
   it('take a pairing code only when its modules fill the square', async () => {
     const good = { url: 'https://192.168.1.5:8124/pair#c0de', size: 2, modules: '1001', expiresIn: 120 };
     const fetch = reply(200, good);

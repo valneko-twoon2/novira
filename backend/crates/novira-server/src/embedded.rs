@@ -5,7 +5,9 @@
 //!
 //! The app's backend hands out picture URLs of its own scheme, which a phone's browser cannot load: here they are
 //! written with this server's base ([`IMAGE_URL_BASE`]) on the way out, and back on the way in.
-use crate::{event_feed, lan, new_state, pair, AppState, Ends, Frontend, IMAGE_URL_BASE};
+use crate::{
+    event_feed, lan, new_state, pair, remote, AppState, Ends, Frontend, Listener, IMAGE_URL_BASE,
+};
 use crate::{MAX_BODY_BYTES, TOKEN_HEADER};
 use axum::body::Body;
 use axum::extract::connect_info::ConnectInfo;
@@ -57,11 +59,17 @@ impl Embedded {
         *self.state.control.lock().unwrap_or_else(|e| e.into_inner()) = Some(Arc::new(control));
     }
 
+    /// Enables the remote listener (see [`crate::Server::enable_remote`]). Must run inside the async runtime for it to
+    /// open at once; otherwise the next half-minute look opens it.
+    pub fn enable_remote(&self, control: remote::Control) {
+        self.state.enable_remote(control);
+    }
+
     /// Runs `method path` of the management routes (`/lan/*`, `/pair/code`, `/pair/state`, `/pair/approve`,
-    /// `/pair/deny`, `/pair/revoke`) with `body` as its JSON body, as this computer. Any other path answers 404 without
-    /// reaching the router.
+    /// `/pair/deny`, `/pair/revoke`, `/remote/state` and the remote listener's others) with `body` as its JSON body, as
+    /// this computer. Any other path answers 404 without reaching the router.
     pub async fn manage(&self, method: Method, path: &str, body: Option<Value>) -> Managed {
-        if !(lan::is_management(path) || pair::is_management(path)) {
+        if !(lan::is_management(path) || pair::is_management(path) || remote::is_management(path)) {
             return Managed {
                 status: 404,
                 body: serde_json::json!({ "error": "not a management route", "code": "unknown" }),
@@ -86,7 +94,7 @@ impl Embedded {
             local: Some(HERE),
             peer: HERE,
             mask: None,
-            tls: false,
+            listener: Listener::Plain,
         }));
         let Ok(response) = crate::router(self.state.clone()).oneshot(request).await;
         let status = response.status().as_u16();
@@ -99,9 +107,10 @@ impl Embedded {
         }
     }
 
-    /// Closes the home-network listener, when open, and ends the server's tasks.
+    /// Closes the home-network and remote listeners, when open, and ends the server's tasks.
     pub async fn stop(&self) {
         crate::close_lan(&self.state).await;
+        remote::close(&self.state).await;
         let _ = self.state.shutdown.send(true);
     }
 }

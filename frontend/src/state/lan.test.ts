@@ -1,7 +1,7 @@
 // The home network store: read once, then every few seconds only while something could change without us (it is open, or
 // the popover is), and nothing for a page that has no home network.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { LanApi, LanState } from '@/backend';
+import type { LanApi, LanState, RemoteState } from '@/backend';
 
 const getLanApi = vi.fn<() => Promise<LanApi | null>>();
 vi.mock('@/backend', async (orig) => ({ ...(await orig<typeof import('@/backend')>()), getLanApi }));
@@ -22,9 +22,29 @@ const state = (open: boolean): LanState => ({
   trustedNetworks: [],
 });
 
-function api(read: () => LanState | null): LanApi & { state: ReturnType<typeof vi.fn> } {
-  return { state: vi.fn(async () => read()) } as unknown as LanApi & { state: ReturnType<typeof vi.fn> };
+function api(read: () => LanState | null, remote: () => RemoteState | null = () => null): LanApi & { state: ReturnType<typeof vi.fn>; remoteState: ReturnType<typeof vi.fn> } {
+  return { state: vi.fn(async () => read()), remoteState: vi.fn(async () => remote()) } as unknown as LanApi & {
+    state: ReturnType<typeof vi.fn>;
+    remoteState: ReturnType<typeof vi.fn>;
+  };
 }
+
+const away = (enabled: boolean): RemoteState => ({
+  enabled,
+  open: enabled,
+  problem: null,
+  detail: null,
+  name: enabled ? 'pc.tail1234.ts.net' : null,
+  address: null,
+  port: null,
+  url: null,
+  codes: 0,
+  pending: [],
+  devices: [],
+  passkeys: [],
+  log: [],
+  unusedDays: 14,
+});
 
 describe('the home network store', () => {
   beforeEach(() => {
@@ -73,6 +93,25 @@ describe('the home network store', () => {
     expect(useLan.getState().state?.open).toBe(false);
     await vi.advanceTimersByTimeAsync(60_000);
     expect(a.state).toHaveBeenCalledTimes(settled);
+  });
+
+  it('reads the remote listener with the home network, and none where the server has none', async () => {
+    let on = false;
+    const a = api(
+      () => state(true),
+      () => away(on),
+    );
+    getLanApi.mockResolvedValue(a);
+    await useLan.getState().init();
+    expect(useLan.getState().remote?.enabled).toBe(false);
+    on = true;
+    await vi.advanceTimersByTimeAsync(SLOW_MS);
+    expect(useLan.getState().remote?.name).toBe('pc.tail1234.ts.net');
+    expect(a.remoteState).toHaveBeenCalledTimes(a.state.mock.calls.length);
+    resetLan();
+    getLanApi.mockResolvedValue(api(() => state(false)));
+    await useLan.getState().init();
+    expect(useLan.getState().remote).toBeNull();
   });
 
   it('forgets the state of a server that stops answering', async () => {

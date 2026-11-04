@@ -25,6 +25,14 @@ const NOT_CALLED: Record<string, string> = {
   lan_approve: 'see lan_state',
   lan_deny: 'see lan_state',
   lan_revoke: 'see lan_state',
+  remote_state: 'see lan_state',
+  remote_enable: 'see lan_state',
+  remote_disable: 'see lan_state',
+  remote_code: 'see lan_state',
+  remote_approve: 'see lan_state',
+  remote_deny: 'see lan_state',
+  remote_revoke: 'see lan_state',
+  remote_forget: 'see lan_state',
 };
 
 /** Parameters that are not IPC arguments: injected state and the raw request (`upload_image` sends bytes). */

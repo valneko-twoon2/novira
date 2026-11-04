@@ -41,6 +41,7 @@ mod lan;
 #[cfg(test)]
 mod lan_tests;
 mod pair;
+mod remote;
 mod tls;
 mod trusted;
 pub use embedded::{embed, Embedded, Managed};
@@ -52,6 +53,15 @@ pub use pair::{
     REQUEST_ROUTE as PAIR_REQUEST_ROUTE, REVOKE_ROUTE as PAIR_REVOKE_ROUTE,
     SCRIPT_ROUTE as PAIR_SCRIPT_ROUTE, STATE_ROUTE as PAIR_STATE_ROUTE,
     STATUS_ROUTE as PAIR_STATUS_ROUTE,
+};
+pub use remote::tailnet::system_source as tailnet_source;
+pub use remote::{
+    Certified as TailnetCertified, Control as RemoteControl, Problem as TailnetProblem,
+    Source as TailnetSource, Tailnet, APPROVE_ROUTE as REMOTE_APPROVE_ROUTE,
+    CODE_ROUTE as REMOTE_CODE_ROUTE, DENY_ROUTE as REMOTE_DENY_ROUTE,
+    DISABLE_ROUTE as REMOTE_DISABLE_ROUTE, ENABLE_ROUTE as REMOTE_ENABLE_ROUTE,
+    FORGET_ROUTE as REMOTE_FORGET_ROUTE, REVOKE_ROUTE as REMOTE_REVOKE_ROUTE,
+    STATE_ROUTE as REMOTE_STATE_ROUTE,
 };
 pub use tls::{Ca, CA_NAME};
 pub use trusted::{mac_text, Mac};
@@ -233,37 +243,55 @@ fn csp(host: &str, tls: bool) -> String {
     format!("default-src 'self'; img-src 'self' data: blob: https://*.civitai.com https://huggingface.co https://*.hf.co https://raw.githubusercontent.com https://avatars.githubusercontent.com; connect-src 'self' {ws}://{host} data: blob:; style-src 'self' 'unsafe-inline'; media-src 'self' blob: https://*.civitai.com; font-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; frame-ancestors 'none'")
 }
 
+/// Which listener a connection came in on.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Listener {
+    /// Plain HTTP on loopback: this computer's own page.
+    Plain,
+    /// TLS on the home address: the phones of the home network (`lan.rs`).
+    Home,
+    /// TLS on the tailnet address: this computer's phones away from home (`remote.rs`).
+    Remote,
+}
+
 /// Both ends of a connection: the address it came in on decides the `Host` it may name, the far end whether it is
 /// answered. The subnet mask of the address it came in on is looked up once per connection, only for a non-loopback
-/// one; `tls` is whether it came in on the home-network (TLS) listener.
+/// one.
 #[derive(Clone, Copy, Debug)]
 struct Ends {
     local: Option<SocketAddr>,
     peer: SocketAddr,
     mask: Option<Ipv4Addr>,
-    tls: bool,
+    listener: Listener,
 }
 
 impl Ends {
     /// The ends of a freshly accepted connection: the address it came in on (for the `Host` it may name) and the far
-    /// end (for whether it is answered). The subnet mask is looked up once here, only for a non-loopback local address.
-    fn of(stream: &tokio::net::TcpStream, peer: SocketAddr, tls: bool) -> Ends {
+    /// end (for whether it is answered). The subnet mask is looked up once here, only for the home-network listener.
+    fn of(stream: &tokio::net::TcpStream, peer: SocketAddr, listener: Listener) -> Ends {
         let local = stream.local_addr().ok();
         let mask = match local.map(|l| l.ip()) {
-            Some(IpAddr::V4(ip)) if !ip.is_loopback() => home_network::subnet_mask_of(ip),
+            Some(IpAddr::V4(ip)) if !ip.is_loopback() && listener == Listener::Home => {
+                home_network::subnet_mask_of(ip)
+            }
             _ => None,
         };
         Ends {
             local,
             peer,
             mask,
-            tls,
+            listener,
         }
+    }
+
+    /// Whether the connection is TLS (the home-network and remote listeners).
+    fn tls(&self) -> bool {
+        self.listener != Listener::Plain
     }
 
     /// The scheme of the page's own origin on this connection.
     fn scheme(&self) -> &'static str {
-        if self.tls {
+        if self.tls() {
             "https"
         } else {
             "http"
@@ -271,9 +299,9 @@ impl Ends {
     }
 }
 
-/// Whether a connection is answered at all: from this computer when it came in on loopback, from the home network only
-/// on the TLS listener and only from the subnet of the address it came in on. The plain HTTP listener never answers
-/// another device.
+/// Whether a connection is answered at all: from this computer when it came in on loopback; from the home network only
+/// on its listener and only from the subnet of the address it came in on; from the tailnet only on the remote listener,
+/// between two tailnet addresses. The plain HTTP listener never answers another device.
 fn answers(ends: &Ends) -> bool {
     let Some(local) = ends.local else {
         return false;
@@ -282,13 +310,29 @@ fn answers(ends: &Ends) -> bool {
     if peer.is_loopback() {
         return local.ip().is_loopback();
     }
-    ends.tls && home_network::is_home_peer(peer, local.ip(), ends.mask)
+    match ends.listener {
+        Listener::Plain => false,
+        Listener::Home => home_network::is_home_peer(peer, local.ip(), ends.mask),
+        Listener::Remote => matches!(
+            (peer, local.ip()),
+            (IpAddr::V4(p), IpAddr::V4(l))
+                if remote::tailnet::is_tailnet_address(p) && remote::tailnet::is_tailnet_address(l)
+        ),
+    }
 }
 
-/// The `Host` values a request on this connection may carry: the address it came in on, plus `localhost` on loopback.
-/// A name other than these (a DNS name pointed at this computer) is refused.
-fn hosts_of(local: SocketAddr) -> Vec<String> {
+/// The `Host` values a request on this connection may carry: on the remote listener its tailnet name with the port;
+/// elsewhere the address it came in on, plus `localhost` on loopback. Anything else (a DNS name pointed at this
+/// computer, another port) is refused.
+fn hosts_of(state: &AppState, ends: &Ends, local: SocketAddr) -> Vec<String> {
     let port = local.port();
+    if ends.listener == Listener::Remote {
+        return state
+            .remote_view()
+            .filter(|view| view.port == port)
+            .map(|view| vec![format!("{}:{port}", view.name)])
+            .unwrap_or_default();
+    }
     match local.ip() {
         IpAddr::V4(ip) if ip.is_loopback() => {
             vec![format!("127.0.0.1:{port}"), format!("localhost:{port}")]
@@ -332,6 +376,14 @@ struct AppState {
     control: std::sync::Mutex<Option<Arc<lan::Control>>>,
     /// When a paired device was last heard from, or the listener opened (`lan.rs`: the idle close).
     lan_activity: std::sync::Mutex<std::time::Instant>,
+    /// The remote (tailnet) listener while it is open (`remote.rs`).
+    remote: std::sync::Mutex<Option<remote::Open>>,
+    /// The remote listener's pairing codes, requests to enrol and sessions, apart from the home network's.
+    remote_pairing: std::sync::Mutex<pair::Pairing>,
+    /// The challenges of the passkeys being made or used.
+    ceremonies: std::sync::Mutex<remote::Ceremonies>,
+    /// What the remote listener needs; set by `novira-server` and the app at every start.
+    remote_control: std::sync::Mutex<Option<Arc<remote::Control>>>,
 }
 
 /// Who a request was let in as, for a route that keeps a connection open (the event socket).
@@ -348,6 +400,33 @@ enum Caller {
 impl AppState {
     fn pairing(&self) -> std::sync::MutexGuard<'_, pair::Pairing> {
         self.pairing.lock().unwrap_or_else(|e| e.into_inner())
+    }
+
+    fn remote_pairing(&self) -> std::sync::MutexGuard<'_, pair::Pairing> {
+        self.remote_pairing
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+    }
+
+    /// The pairing and sessions of the listener a connection came in on (the plain one has the home network's, which
+    /// only refuse it).
+    fn pairing_of(&self, listener: Listener) -> std::sync::MutexGuard<'_, pair::Pairing> {
+        match listener {
+            Listener::Remote => self.remote_pairing(),
+            Listener::Plain | Listener::Home => self.pairing(),
+        }
+    }
+
+    /// Enables the remote listener with `control`; while it is on it opens now (and at every half-minute look).
+    fn enable_remote(self: &Arc<Self>, control: remote::Control) {
+        *self
+            .remote_control
+            .lock()
+            .unwrap_or_else(|e| e.into_inner()) = Some(Arc::new(control));
+        if let Ok(runtime) = tokio::runtime::Handle::try_current() {
+            let state = self.clone();
+            runtime.spawn(async move { remote::maintain(&state).await });
+        }
     }
 
     /// A new pairing code and the address that carries it, while the home-network listener is open.
@@ -470,6 +549,19 @@ impl Server {
         *self.state.control.lock().unwrap_or_else(|e| e.into_inner()) = Some(Arc::new(control));
     }
 
+    /// Enables the remote listener for this server: with `control` this computer's page can turn it on
+    /// (`/remote/enable`), and while it is on it opens on the tailnet now and at every start. Without it the `/remote/*`
+    /// routes answer 404.
+    pub fn enable_remote(&self, control: remote::Control) {
+        self.state.enable_remote(control);
+    }
+
+    /// Where the remote listener listens, while it is open.
+    pub fn remote_addr(&self) -> Option<SocketAddr> {
+        let open = self.state.remote_view()?;
+        Some(SocketAddr::from((open.address, open.port)))
+    }
+
     /// Opens the home-network listener on this computer's home address when the network is a trusted one.
     pub async fn open_lan_trusted(&self) -> Result<SocketAddr, lan::OpenError> {
         lan::open_trusted(&self.state).await
@@ -498,9 +590,10 @@ impl Server {
             .map(|lan| pair::session_cookie(lan.port))
     }
 
-    /// Stops accepting on both listeners and waits until the server's tasks have ended.
+    /// Stops accepting on every listener and waits until the server's tasks have ended.
     pub async fn stop(self) {
         close_lan(&self.state).await;
+        remote::close(&self.state).await;
         let _ = self.state.shutdown.send(true);
         self.accept.stop().await;
         let _ = self.watcher.await;
@@ -542,7 +635,7 @@ pub async fn start(backend: Backend, dist: PathBuf, port: u16) -> std::io::Resul
     backend.set_event_sink(event_feed(&state));
     // Open connections of this listener end on their own: the event sockets when the shutdown watch fires
     // (`Server::stop` sends it), others when they finish.
-    let accept = accept_loop(listener, router(state.clone()), None, None);
+    let accept = accept_loop(listener, router(state.clone()), None, None, Listener::Plain);
     let watcher = tokio::spawn(lan::watch(state.clone(), state.shutdown.subscribe()));
     Ok(Server {
         addr,
@@ -572,6 +665,10 @@ fn new_state(
         revoked: watch::channel(0).0,
         control: std::sync::Mutex::new(None),
         lan_activity: std::sync::Mutex::new(std::time::Instant::now()),
+        remote: std::sync::Mutex::new(None),
+        remote_pairing: std::sync::Mutex::new(pair::Pairing::default()),
+        ceremonies: std::sync::Mutex::new(remote::Ceremonies::default()),
+        remote_control: std::sync::Mutex::new(None),
     })
 }
 
@@ -616,6 +713,7 @@ async fn open_lan(
         router(state.clone()),
         Some(tokio_rustls::TlsAcceptor::from(config)),
         Some(closed.subscribe()),
+        Listener::Home,
     );
     let lan = Lan {
         address: options.address,
@@ -655,14 +753,15 @@ async fn close_lan(state: &Arc<AppState>) {
     state.revoked.send_modify(|n| *n += 1);
 }
 
-/// Accepts connections until stopped and serves each with `app`. `tls` makes it the home-network listener: every
-/// connection must complete a TLS handshake within the header timeout (plain HTTP there gets no answer), and `closed`
-/// ends its open connections at once.
+/// Accepts connections until stopped and serves each with `app` as connections of `kind`. With `tls` every connection
+/// must complete a TLS handshake within the header timeout (plain HTTP there gets no answer), and `closed` ends its
+/// open connections at once.
 fn accept_loop(
     listener: tokio::net::TcpListener,
     app: Router,
     tls: Option<tokio_rustls::TlsAcceptor>,
     closed: Option<watch::Receiver<bool>>,
+    kind: Listener,
 ) -> Accepting {
     let (stop, stopped) = oneshot::channel::<()>();
     let task = tokio::spawn(async move {
@@ -681,7 +780,7 @@ fn accept_loop(
             let Ok(permit) = connections.clone().try_acquire_owned() else {
                 continue;
             };
-            let ends = Ends::of(&stream, peer, tls.is_some());
+            let ends = Ends::of(&stream, peer, kind);
             let (app, tls, mut closed) = (app.clone(), tls.clone(), closed.clone());
             tokio::spawn(async move {
                 // Dropped when the connection ends; this is the slot the semaphore counted.
@@ -759,6 +858,20 @@ fn router(state: Arc<AppState>) -> Router {
         .route("/lan/close", post(lan::close_route))
         .route("/lan/trust", post(lan::trust_route))
         .route("/lan/untrust", post(lan::untrust_route))
+        .route(remote::PAGE_ROUTE, get(remote::page))
+        .route(remote::SCRIPT_ROUTE, get(remote::script))
+        .route(remote::SIGN_IN_BEGIN_ROUTE, post(remote::sign_in_begin))
+        .route(remote::SIGN_IN_FINISH_ROUTE, post(remote::sign_in_finish))
+        .route(remote::ENROL_BEGIN_ROUTE, post(remote::enrol_begin))
+        .route(remote::ENROL_FINISH_ROUTE, post(remote::enrol_finish))
+        .route(remote::STATE_ROUTE, get(remote::state_route))
+        .route(remote::ENABLE_ROUTE, post(remote::enable_route))
+        .route(remote::DISABLE_ROUTE, post(remote::disable_route))
+        .route(remote::CODE_ROUTE, post(remote::code_route))
+        .route(remote::APPROVE_ROUTE, post(remote::approve_route))
+        .route(remote::DENY_ROUTE, post(remote::deny_route))
+        .route(remote::REVOKE_ROUTE, post(remote::revoke_route))
+        .route(remote::FORGET_ROUTE, post(remote::forget_route))
         .route("/api/{command}", post(command))
         .route("/events", get(events))
         .route(UPLOAD_ROUTE, post(upload_image))
@@ -781,11 +894,11 @@ fn text(status: StatusCode, message: &str) -> Response {
 
 /// Compares without stopping at the first difference.
 fn same_secret(a: &str, b: &str) -> bool {
-    a.len() == b.len()
-        && a.bytes()
-            .zip(b.bytes())
-            .fold(0u8, |acc, (x, y)| acc | (x ^ y))
-            == 0
+    same_secret_bytes(a.as_bytes(), b.as_bytes())
+}
+
+fn same_secret_bytes(a: &[u8], b: &[u8]) -> bool {
+    a.len() == b.len() && a.iter().zip(b).fold(0u8, |acc, (x, y)| acc | (x ^ y)) == 0
 }
 
 fn cookie_token<'a>(headers: &'a HeaderMap, cookie: &str) -> Option<&'a str> {
@@ -840,7 +953,7 @@ async fn check_request(
         .and_then(|v| v.to_str().ok())
         .unwrap_or("")
         .to_string();
-    if !hosts_of(local).contains(&host) {
+    if !hosts_of(&state, &ends, local).contains(&host) {
         return text(StatusCode::FORBIDDEN, "this address is not served");
     }
     if let Some(origin) = headers.get(header::ORIGIN) {
@@ -850,9 +963,14 @@ async fn check_request(
     }
     if let Some(site) = headers.get("sec-fetch-site") {
         // A scanned QR code opens the pairing page from the camera app, which a browser calls cross-site. That one
-        // static, credential-free page may be reached by a top-level navigation; nothing else may.
+        // static, credential-free page of each listener may be reached by a top-level navigation; nothing else may.
+        let page = match ends.listener {
+            Listener::Home => Some(pair::PAGE_ROUTE),
+            Listener::Remote => Some(remote::PAGE_ROUTE),
+            Listener::Plain => None,
+        };
         let pairing_page_opened = request.method() == Method::GET
-            && request.uri().path() == pair::PAGE_ROUTE
+            && Some(request.uri().path()) == page
             && headers
                 .get("sec-fetch-mode")
                 .is_some_and(|mode| mode == "navigate");
@@ -864,15 +982,21 @@ async fn check_request(
     let get_page = request.method() == Method::GET && path == "/";
     let loopback = ends.peer.ip().is_loopback();
     // The pairing's management (codes, decisions, revocations) stays at this computer's keyboard.
-    if (pair::is_management(&path) || lan::is_management(&path)) && !loopback {
+    if (pair::is_management(&path) || lan::is_management(&path) || remote::is_management(&path))
+        && !loopback
+    {
         return text(
             StatusCode::FORBIDDEN,
             "pairing and the home network are managed on this computer only",
         );
     }
     // Public on the home-network listener: the CA's certificate, the pairing page and its two calls, which a phone
-    // uses before it has anything to prove.
-    let public = ends.tls && pair::is_public(request.method(), &path);
+    // uses before it has anything to prove. On the remote listener: its page, pairing to enrol, and signing in.
+    let public = match ends.listener {
+        Listener::Home => pair::is_public(request.method(), &path),
+        Listener::Remote => remote::is_public(request.method(), &path),
+        Listener::Plain => false,
+    };
     // This computer proves itself with the token of this start; a device only with the session it was given when this
     // computer approved its pairing, from the address it paired from (the token is no credential there).
     let caller = if public {
@@ -887,13 +1011,17 @@ async fn check_request(
     } else {
         cookie_token(headers, &pair::session_cookie(local.port()))
             .and_then(|secret| {
-                state
-                    .pairing()
-                    .session(std::time::Instant::now(), ends.peer.ip(), secret)
+                state.pairing_of(ends.listener).session(
+                    std::time::Instant::now(),
+                    ends.peer.ip(),
+                    secret,
+                )
             })
             .map(|digest| {
                 // A paired device in use keeps the home network open.
-                state.note_lan_activity();
+                if ends.listener == Listener::Home {
+                    state.note_lan_activity();
+                }
                 Caller::Session(digest)
             })
     };
@@ -905,10 +1033,15 @@ async fn check_request(
         request.extensions_mut().insert(caller);
         next.run(request).await
     } else if !loopback && get_page {
-        // A device without a session opening the app is sent to pair.
+        // A device without a session opening the app is sent to pair (at home) or to sign in (away).
+        let to = if ends.listener == Listener::Remote {
+            remote::PAGE_ROUTE
+        } else {
+            pair::PAGE_ROUTE
+        };
         Response::builder()
             .status(StatusCode::SEE_OTHER)
-            .header(header::LOCATION, pair::PAGE_ROUTE)
+            .header(header::LOCATION, to)
             .body(Body::empty())
             .unwrap_or_else(|_| text(StatusCode::UNAUTHORIZED, "this device is not paired"))
     } else if !loopback {
@@ -917,7 +1050,7 @@ async fn check_request(
         request.extensions_mut().insert(Caller::Token);
         // The address keeps its token in the response (no redirect to a bare `/`): the page itself drops it from the
         // address bar once loaded (`hideToken` in the frontend), and the cookie keeps a reload working.
-        let secure = if ends.tls { "; Secure" } else { "" };
+        let secure = if ends.tls() { "; Secure" } else { "" };
         let cookie = format!(
             "{}={}; Path=/; HttpOnly; SameSite=Strict{secure}",
             token_cookie(local.port()),
@@ -932,7 +1065,7 @@ async fn check_request(
         text(StatusCode::UNAUTHORIZED, "the token is missing or wrong")
     };
     let h = response.headers_mut();
-    if let Ok(policy) = HeaderValue::from_str(&csp(&host, ends.tls)) {
+    if let Ok(policy) = HeaderValue::from_str(&csp(&host, ends.tls())) {
         h.insert(header::CONTENT_SECURITY_POLICY, policy);
     }
     h.insert(
@@ -1125,7 +1258,7 @@ async fn pair_request(
     headers: HeaderMap,
     body: Bytes,
 ) -> Response {
-    if !ends.tls {
+    if !ends.tls() {
         return text(StatusCode::NOT_FOUND, "not found");
     }
     let body = match pair::read_body(&headers, &body) {
@@ -1136,9 +1269,12 @@ async fn pair_request(
         (Ok(code), Ok(label)) => (code, label),
         (Err(refusal), _) | (_, Err(refusal)) => return refusal,
     };
-    let asked = state
-        .pairing()
-        .request(std::time::Instant::now(), ends.peer.ip(), code, label);
+    let asked = state.pairing_of(ends.listener).request(
+        std::time::Instant::now(),
+        ends.peer.ip(),
+        code,
+        label,
+    );
     match asked {
         Ok(ticket) => json_response(
             StatusCode::OK,
@@ -1176,7 +1312,7 @@ async fn pair_status(
     headers: HeaderMap,
     body: Bytes,
 ) -> Response {
-    let (true, Some(local)) = (ends.tls, ends.local) else {
+    let (true, Some(local)) = (ends.tls(), ends.local) else {
         return text(StatusCode::NOT_FOUND, "not found");
     };
     let body = match pair::read_body(&headers, &body) {
@@ -1187,9 +1323,10 @@ async fn pair_status(
         Ok(poll) => poll,
         Err(refusal) => return refusal,
     };
-    let status = state
-        .pairing()
-        .status(std::time::Instant::now(), ends.peer.ip(), poll);
+    let status =
+        state
+            .pairing_of(ends.listener)
+            .status(std::time::Instant::now(), ends.peer.ip(), poll);
     match status {
         pair::Status::Pending => json_response(StatusCode::OK, &json!({ "state": "pending" })),
         pair::Status::Denied => json_response(StatusCode::OK, &json!({ "state": "denied" })),
@@ -1448,13 +1585,18 @@ async fn events(
     let mut stopped = state.shutdown.subscribe();
     // On the home-network listener the socket also ends when that listener closes (an upgraded socket outlives the
     // connection task the close ends).
-    let mut lan_closed = None;
-    if ends.tls {
-        let Some(lan) = state.lan_view() else {
-            return text(StatusCode::NOT_FOUND, "not answering the home network");
-        };
-        lan_closed = Some(lan.closed);
-    }
+    let lan_closed = match ends.listener {
+        Listener::Plain => None,
+        Listener::Home => match state.lan_view() {
+            Some(lan) => Some(lan.closed),
+            None => return text(StatusCode::NOT_FOUND, "not answering the home network"),
+        },
+        Listener::Remote => match state.remote_view() {
+            Some(open) => Some(open.closed),
+            None => return text(StatusCode::NOT_FOUND, "not answering the tailnet"),
+        },
+    };
+    let listener = ends.listener;
     // A device's socket lives only as long as its session: it is checked again when this computer revokes one, and
     // every minute (an open socket counts as use, up to the session's four hours).
     let session = match caller.map(|c| c.0) {
@@ -1476,13 +1618,15 @@ async fn events(
                 changed = revoked.changed() => if changed.is_err() { return; },
             }
             if !checker
-                .pairing()
+                .pairing_of(listener)
                 .touch(std::time::Instant::now(), peer, &digest)
             {
                 return;
             }
             // An open socket of a paired device is a device in use.
-            checker.note_lan_activity();
+            if listener == Listener::Home {
+                checker.note_lan_activity();
+            }
         }
     };
     upgrade.on_upgrade(move |mut socket: WebSocket| async move {

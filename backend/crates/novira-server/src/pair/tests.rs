@@ -370,11 +370,15 @@ fn the_routes_split_into_public_and_this_computers() {
     }
 }
 
-/// The page's strings: ja and en have the same keys, none empty, each one used by the script and each one the script
-/// uses defined.
 #[test]
 fn the_phone_page_has_the_same_strings_in_japanese_and_english() {
-    let strings: Value = serde_json::from_str(STRINGS).unwrap();
+    check_page_strings(STRINGS, include_str!("page.js"));
+}
+
+/// A phone page's strings (`strings`, for the script `source`): ja and en have the same keys, none empty, each one used
+/// by the script and each one the script uses defined. The remote listener's page is checked with it too.
+pub(crate) fn check_page_strings(strings: &str, source: &str) {
+    let strings: Value = serde_json::from_str(strings).unwrap();
     let keys = |lang: &str| {
         let map = strings[lang].as_object().unwrap();
         for (key, value) in map {
@@ -389,7 +393,6 @@ fn the_phone_page_has_the_same_strings_in_japanese_and_english() {
     };
     assert_eq!(keys("ja"), keys("en"));
     assert_eq!(strings.as_object().unwrap().len(), 2, "ja and en only");
-    let source = include_str!("page.js");
     let defined = keys("en");
     for key in &defined {
         assert!(
@@ -438,4 +441,52 @@ fn the_same_phone_pairing_again_replaces_its_earlier_session() {
     assert!(p.session(t0, ip(PHONE), &first).is_none());
     assert!(p.session(t0, ip(PHONE), &second).is_some());
     assert!(p.session(t0, ip(PHONE + 1), &other).is_some());
+}
+
+#[test]
+fn an_approved_session_may_make_one_passkey_and_a_signed_in_one_none() {
+    let mut p = Pairing::default();
+    let t0 = Instant::now();
+    let secret = paired(&mut p, t0, ip(PHONE));
+    let wanted = digest(&secret);
+    assert_eq!(
+        p.enrolling(t0, ip(PHONE), &wanted).as_deref(),
+        Some("phone")
+    );
+    // Only from its own address.
+    assert_eq!(p.enrolling(t0, ip(21), &wanted), None);
+    assert!(!p.enrolled(t0, ip(21), &wanted, "k1"));
+    assert!(p.enrolled(t0, ip(PHONE), &wanted, "k1"));
+    // Once.
+    assert_eq!(p.enrolling(t0, ip(PHONE), &wanted), None);
+    assert!(!p.enrolled(t0, ip(PHONE), &wanted, "k2"));
+    // A session that signed in with a passkey never may.
+    let signed_in = p.grant(t0, ip(22), "iPhone", "k1").unwrap();
+    assert!(p.session(t0, ip(22), &signed_in).is_some());
+    assert_eq!(p.enrolling(t0, ip(22), &digest(&signed_in)), None);
+    // Forgetting the passkey ends both its sessions (the one that made it and the one that signed in with it).
+    assert!(p.revoke_passkey("k1"));
+    assert!(p.session(t0, ip(PHONE), &secret).is_none());
+    assert!(p.session(t0, ip(22), &signed_in).is_none());
+    assert!(!p.revoke_passkey("k1"));
+}
+
+#[test]
+fn signing_in_again_replaces_the_session_and_the_cap_holds() {
+    let mut p = Pairing::default();
+    let t0 = Instant::now();
+    let first = p.grant(t0, ip(PHONE), "iPhone", "k1").unwrap();
+    let again = p.grant(t0, ip(PHONE), "iPhone", "k1").unwrap();
+    assert!(p.session(t0, ip(PHONE), &first).is_none());
+    assert!(p.session(t0, ip(PHONE), &again).is_some());
+    for n in 1..MAX_SESSIONS {
+        assert!(
+            p.grant(t0, ip(30 + n as u8), "x", &format!("k{n}x"))
+                .is_some(),
+            "{n}"
+        );
+    }
+    assert!(p.grant(t0, ip(100), "x", "full").is_none());
+    // A granted session lives by the same limits as a paired one.
+    assert!(p.session(t0 + SESSION_MAX, ip(PHONE), &again).is_none());
 }

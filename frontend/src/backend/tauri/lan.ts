@@ -15,6 +15,14 @@ export const LAN_COMMANDS: Record<string, string> = {
   '/pair/approve': 'lan_approve',
   '/pair/deny': 'lan_deny',
   '/pair/revoke': 'lan_revoke',
+  '/remote/state': 'remote_state',
+  '/remote/enable': 'remote_enable',
+  '/remote/disable': 'remote_disable',
+  '/remote/code': 'remote_code',
+  '/remote/approve': 'remote_approve',
+  '/remote/deny': 'remote_deny',
+  '/remote/revoke': 'remote_revoke',
+  '/remote/forget': 'remote_forget',
 };
 
 export const tauriLanApi: LanApi = lanApiOver(async (_method, path, body): Promise<LanAnswer> => {

@@ -227,14 +227,17 @@ pub(crate) async fn maintain(state: &Arc<AppState>, now: Instant) {
     }
 }
 
-/// Runs `maintain` every half minute until the server stops.
+/// Runs `maintain` (and the remote listener's, `remote::maintain`) every half minute until the server stops.
 pub(crate) async fn watch(state: Arc<AppState>, mut stopped: watch::Receiver<bool>) {
     let mut every = tokio::time::interval(MAINTENANCE_EVERY);
     every.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
     every.tick().await;
     loop {
         tokio::select! {
-            _ = every.tick() => maintain(&state, Instant::now()).await,
+            _ = every.tick() => {
+                maintain(&state, Instant::now()).await;
+                crate::remote::maintain(&state).await;
+            }
             // Subscribed before the task ran, and waiting for the value itself: a stop that comes first is still seen.
             _ = async { let _ = stopped.wait_for(|stopped| *stopped).await; } => break,
         }

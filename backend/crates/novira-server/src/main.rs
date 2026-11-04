@@ -4,7 +4,7 @@
 //! of the side bar, for a phone to pair with.
 use novira_core::data_location::AppData;
 use novira_core::startup::Refusal;
-use novira_server::{Ca, Control, Server};
+use novira_server::{Ca, Control, RemoteControl, Server};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
@@ -121,7 +121,8 @@ fn open_in_browser(url: &str) -> std::io::Result<()> {
 }
 
 /// Lets the page on this computer open the home network (`/lan/*`). It stays closed until then. A failure leaves the
-/// server on this computer only.
+/// server on this computer only. The remote listener (`/remote/*`) is enabled too; it opens on the tailnet only while
+/// this computer's owner has it on.
 fn allow_home_network(server: &Server, data: &Path) {
     match Ca::load_or_create(data) {
         Ok(ca) => server.enable_lan(Control::new(
@@ -131,6 +132,10 @@ fn allow_home_network(server: &Server, data: &Path) {
         )),
         Err(e) => eprintln!("novira-server: {e}; only this computer can open the page"),
     }
+    server.enable_remote(RemoteControl::new(
+        data.to_path_buf(),
+        novira_server::tailnet_source(data.to_path_buf()),
+    ));
 }
 
 #[tokio::main]

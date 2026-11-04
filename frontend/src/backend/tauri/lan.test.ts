@@ -45,11 +45,39 @@ describe('the desktop app home network calls', () => {
     await tauriLanApi.close();
     await tauriLanApi.state();
     await tauriLanApi.pairingCode();
+    await tauriLanApi.remoteState();
+    await tauriLanApi.remoteEnable();
+    await tauriLanApi.remoteDisable();
+    await tauriLanApi.remoteCode();
+    await tauriLanApi.remoteApprove('r1');
+    await tauriLanApi.remoteDeny('r2');
+    await tauriLanApi.remoteRevoke('r3');
+    await tauriLanApi.remoteForget('k1');
     for (const { cmd, payload } of calls) {
       const sent = Object.keys((payload ?? {}) as object).sort();
       expect(sent, cmd).toEqual([...(shell.get(cmd) ?? ['missing'])].sort());
     }
-    expect(calls.map((c) => c.cmd)).toEqual(['lan_trust', 'lan_untrust', 'lan_approve', 'lan_deny', 'lan_revoke', 'lan_open', 'lan_close', 'lan_state', 'lan_pair_code']);
+    expect(calls.map((c) => c.cmd)).toEqual([
+      'lan_trust',
+      'lan_untrust',
+      'lan_approve',
+      'lan_deny',
+      'lan_revoke',
+      'lan_open',
+      'lan_close',
+      'lan_state',
+      'lan_pair_code',
+      'remote_state',
+      'remote_enable',
+      'remote_disable',
+      'remote_code',
+      'remote_approve',
+      'remote_deny',
+      'remote_revoke',
+      'remote_forget',
+    ]);
+    // Every command of the shell was called.
+    expect(new Set(calls.map((c) => c.cmd))).toEqual(new Set(shell.keys()));
     expect(calls[0]!.payload).toEqual({ gatewayMac: '02:11:22:33:44:55', label: 'home' });
   });
 
