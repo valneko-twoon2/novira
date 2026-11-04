@@ -40,6 +40,7 @@ export const LOCAL_ONLY_KEYS: readonly string[] = [
   'novira.text',
   'novira.extensions.railWidth',
   'novira.mock.comics',
+  'novira.modelUpdates',
 ];
 
 const LIVE_STORES: readonly Persisted[] = [

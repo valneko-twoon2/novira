@@ -57,12 +57,12 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const open = () => render(<SamplesSection model={model} version={version} />);
+const renderSection = () => render(<SamplesSection model={model} version={version} />);
 
 describe('SamplesSection', () => {
   it('asks for the shown version and lists the examples with their settings and resources', async () => {
     const ask = vi.spyOn(backend, 'civitaiSamples').mockResolvedValue([sample()]);
-    open();
+    renderSection();
     expect(screen.getByText(t('browse.samples.loading'))).toBeTruthy();
     await screen.findByTestId('browse-sample');
     expect(ask).toHaveBeenCalledWith('288982', false);
@@ -76,7 +76,7 @@ describe('SamplesSection', () => {
 
   it('asks again for another version, and shows no example of the old one while it loads', async () => {
     const ask = vi.spyOn(backend, 'civitaiSamples').mockResolvedValueOnce([sample()]).mockReturnValueOnce(new Promise(() => {}));
-    const { rerender } = open();
+    const { rerender } = renderSection();
     await screen.findByTestId('browse-sample');
     rerender(<SamplesSection model={model} version={{ ...version, id: '999' }} />);
     expect(ask).toHaveBeenLastCalledWith('999', false);
@@ -87,21 +87,21 @@ describe('SamplesSection', () => {
   it('asks for the mature examples too when mature content is on', async () => {
     useBrowse.setState({ includeNsfw: true });
     const ask = vi.spyOn(backend, 'civitaiSamples').mockResolvedValue([]);
-    open();
+    renderSection();
     await screen.findByText(t('browse.samples.none'));
     expect(ask).toHaveBeenCalledWith('288982', true);
   });
 
   it('says so when no example shares its settings', async () => {
     vi.spyOn(backend, 'civitaiSamples').mockResolvedValue([]);
-    open();
+    renderSection();
     expect(await screen.findByText(t('browse.samples.none'))).toBeTruthy();
     expect(screen.queryByTestId('browse-sample')).toBeNull();
   });
 
   it('says so when the request fails, and asks again on retry', async () => {
     const ask = vi.spyOn(backend, 'civitaiSamples').mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce([sample()]);
-    open();
+    renderSection();
     await screen.findByText(t('browse.samples.failed'));
     fireEvent.click(screen.getByText(t('browse.status.retry')));
     await screen.findByTestId('browse-sample');
@@ -111,7 +111,7 @@ describe('SamplesSection', () => {
   it('puts the settings into the form, opens Generate, and names what is not installed', async () => {
     vi.spyOn(backend, 'civitaiSamples').mockResolvedValue([sample()]);
     useParams.setState({ loras: [{ key: 'old', weight: 1, isEnabled: true }] });
-    open();
+    renderSection();
     fireEvent.click(await screen.findByTestId('browse-sample-use'));
     const p = useParams.getState();
     expect(p.positivePrompt).toBe('a cozy cafe');
@@ -130,7 +130,7 @@ describe('SamplesSection', () => {
 
   it('reports success without a warning when everything was found', async () => {
     vi.spyOn(backend, 'civitaiSamples').mockResolvedValue([sample({ resources: [{ kind: 'checkpoint', name: null, versionId: '288982', weight: null }] })]);
-    open();
+    renderSection();
     fireEvent.click(await screen.findByTestId('browse-sample-use'));
     await waitFor(() => expect(useToasts.getState().toasts).toHaveLength(1));
     expect(useToasts.getState().toasts[0]!.status).toBe('success');
@@ -139,7 +139,7 @@ describe('SamplesSection', () => {
   it('leaves the form as it is except for what the sample records', async () => {
     vi.spyOn(backend, 'civitaiSamples').mockResolvedValue([sample({ negativePrompt: null, seed: null, steps: null, cfgScale: null, width: null, height: null, clipSkip: null, sampler: null, resources: [] })]);
     useParams.setState({ negativePrompt: 'mine', steps: 40, shouldRandomizeSeed: true });
-    open();
+    renderSection();
     fireEvent.click(await screen.findByTestId('browse-sample-use'));
     const p = useParams.getState();
     expect([p.positivePrompt, p.negativePrompt, p.steps, p.shouldRandomizeSeed]).toEqual(['a cozy cafe', 'mine', 40, true]);
@@ -148,7 +148,7 @@ describe('SamplesSection', () => {
 
   it('names a sampler it has no setting for', async () => {
     vi.spyOn(backend, 'civitaiSamples').mockResolvedValue([sample({ sampler: 'DPM++ 3M SDE Exponential', resources: [] })]);
-    open();
+    renderSection();
     fireEvent.click(await screen.findByTestId('browse-sample-use'));
     expect(useToasts.getState().toasts[0]!.description).toContain('DPM++ 3M SDE Exponential');
   });
