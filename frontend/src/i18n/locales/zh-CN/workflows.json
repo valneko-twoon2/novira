@@ -294,7 +294,7 @@
   "workflows.templates.tiledUpscale.title": "分块高清放大",
   "workflows.templates.tiledUpscale.desc": "将图像放大到 2048 后，逐块重绘以补充细节。",
   "workflows.templates.styleReference.title": "按参考图像的画风绘制",
-  "workflows.templates.styleReference.desc": "将参考图像的画风移植到提示词描述的图像上。需要在 ComfyUI 一侧准备 IPAdapter 模型。",
+  "workflows.templates.styleReference.desc": "将参考图像的画风移植到提示词描述的图像上。需要在 ComfyUI 一侧准备 IP-Adapter 模型。",
   "workflows.templates.needsPacks": "所需扩展包：{packs}",
   "workflows.templates.restartFirst": "重启 ComfyUI 后即可打开",
   "workflows.packs.whatToDo": "按用途查找",
@@ -531,5 +531,13 @@
   "workflows.nodeLibrary.hint": "双击可添加到中央，或拖到画布上任意位置放置。",
   "workflows.nodeLibrary.count.one": "{count} 个节点",
   "workflows.nodeLibrary.count.other": "{count} 个节点",
-  "workflows.nodeLibrary.section.core": "Comfy 节点"
+  "workflows.nodeLibrary.section.core": "Comfy 节点",
+  "workflows.packs.unavailable": "这个 ComfyUI 不由 novira 管理，请在该 ComfyUI 一侧安装扩展。",
+  "workflows.packs.restartNeeded": "扩展已更改。重启 ComfyUI 后即可使用。",
+  "workflows.packs.addressLabel": "扩展的 GitHub 地址",
+  "workflows.packs.others": "其他已安装的扩展",
+  "workflows.templates.installPacks": "安装扩展",
+  "workflows.packs.goalCount": "{count} 个扩展",
+  "workflows.packs.catalog.mangascreen": "把图像制成黑白漫画稿。线条、平涂面、真正的网点。",
+  "workflows.readiness.packGone": "“{node}”的扩展尚未安装。请从“扩展”标签页安装，或移除这个节点"
 }

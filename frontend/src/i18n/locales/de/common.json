@@ -53,5 +53,7 @@
   "common.font.installed": "Schriften auf diesem Computer",
   "common.font.search": "Schriften suchen",
   "common.font.noMatch": "Keine passende Schrift",
-  "common.font.standard": "Standard"
+  "common.font.standard": "Standard",
+  "common.desktopOnly": "In der Desktop-App verfügbar, nicht im Browser.",
+  "common.info": "Details anzeigen"
 }

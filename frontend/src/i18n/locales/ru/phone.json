@@ -1,1 +1,12 @@
-{}
+{
+  "phone.nav": "Экраны",
+  "phone.openLive": "Показать рисуемое изображение",
+  "phone.close": "Закрыть",
+  "phone.board": "Доска",
+  "phone.place": "{index} / {count}",
+  "phone.useSettings": "Использовать эти настройки",
+  "phone.gallery": "Галерея",
+  "phone.pictureMenu": "Меню этого изображения",
+  "phone.agentSetup": "Выберите ИИ агента и войдите в него на ПК, и он заработает и здесь.",
+  "phone.agentPlaceholder": "Опишите нужное изображение или задайте вопрос"
+}

@@ -13,5 +13,7 @@
   "facefix.running": "正在修復人臉…",
   "facefix.firstRun": "首次執行需要載入模型，會花較長時間。",
   "facefix.saved": "已儲存修復人臉後的圖像",
-  "facefix.failed": "無法修復人臉"
+  "facefix.failed": "無法修復人臉",
+  "facefix.prompt": "重繪內容",
+  "facefix.detector": "偵測臉部的模型"
 }

@@ -294,7 +294,7 @@
   "workflows.templates.tiledUpscale.title": "Ampliación detallada por teselas",
   "workflows.templates.tiledUpscale.desc": "Amplía una imagen a 2048 y la redibuja tesela a tesela para añadir detalle.",
   "workflows.templates.styleReference.title": "Dibujar con el estilo de una referencia",
-  "workflows.templates.styleReference.desc": "Lleva el estilo de una imagen de referencia a la imagen del prompt. ComfyUI necesita los modelos de IPAdapter.",
+  "workflows.templates.styleReference.desc": "Lleva el estilo de una imagen de referencia a la imagen del prompt. ComfyUI necesita los modelos de IP-Adapter.",
   "workflows.templates.needsPacks": "Requiere: {packs}",
   "workflows.templates.restartFirst": "Reinicie ComfyUI para abrirlo",
   "workflows.packs.whatToDo": "Buscar según lo que se quiere hacer",
@@ -531,5 +531,13 @@
   "workflows.nodeLibrary.hint": "Haga doble clic para añadirlo en el centro, o arrastre al lienzo para colocarlo donde quiera.",
   "workflows.nodeLibrary.count.one": "{count} nodo",
   "workflows.nodeLibrary.count.other": "{count} nodos",
-  "workflows.nodeLibrary.section.core": "Nodos de Comfy"
+  "workflows.nodeLibrary.section.core": "Nodos de Comfy",
+  "workflows.packs.unavailable": "novira no gestiona este ComfyUI, así que instale las extensiones en ese propio ComfyUI.",
+  "workflows.packs.restartNeeded": "Las extensiones cambiaron. Reinicie ComfyUI para usarlas.",
+  "workflows.packs.addressLabel": "Dirección de GitHub de la extensión",
+  "workflows.packs.others": "Otras extensiones instaladas",
+  "workflows.templates.installPacks": "Instalar extensiones",
+  "workflows.packs.goalCount": "{count} extensiones",
+  "workflows.packs.catalog.mangascreen": "Termina una imagen como página de manga en blanco y negro: líneas, tonos planos y trama real.",
+  "workflows.readiness.packGone": "La extensión de {node} no está instalada. Instálela desde la pestaña Extensiones o elimine el nodo"
 }

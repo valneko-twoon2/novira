@@ -294,7 +294,7 @@
   "workflows.templates.tiledUpscale.title": "以拼貼高精細放大",
   "workflows.templates.tiledUpscale.desc": "先將圖像放大到 2048，再逐一拼貼重新繪製以增添細節。",
   "workflows.templates.styleReference.title": "以參考圖像的畫風繪製",
-  "workflows.templates.styleReference.desc": "將參考圖像的畫風轉移到提示詞所描述的圖像上。ComfyUI 端需要有 IPAdapter 的模型。",
+  "workflows.templates.styleReference.desc": "將參考圖像的畫風轉移到提示詞所描述的圖像上。ComfyUI 端需要有 IP-Adapter 的模型。",
   "workflows.templates.needsPacks": "需要的擴充包：{packs}",
   "workflows.templates.restartFirst": "重新啟動 ComfyUI 後即可開啟",
   "workflows.packs.whatToDo": "從想做的事情尋找",
@@ -531,5 +531,13 @@
   "workflows.nodeLibrary.hint": "雙擊可新增到中央，或拖曳到畫布上任意位置。",
   "workflows.nodeLibrary.count.one": "{count} 個節點",
   "workflows.nodeLibrary.count.other": "{count} 個節點",
-  "workflows.nodeLibrary.section.core": "Comfy 節點"
+  "workflows.nodeLibrary.section.core": "Comfy 節點",
+  "workflows.packs.unavailable": "此 ComfyUI 不是由 novira 管理，請在該 ComfyUI 那邊安裝擴充功能。",
+  "workflows.packs.restartNeeded": "已變更擴充功能。重新啟動 ComfyUI 後即可使用。",
+  "workflows.packs.addressLabel": "擴充功能的 GitHub 位址",
+  "workflows.packs.others": "其他已安裝的擴充功能",
+  "workflows.templates.installPacks": "安裝擴充功能",
+  "workflows.packs.goalCount": "{count} 個擴充功能",
+  "workflows.packs.catalog.mangascreen": "將圖像完成為黑白漫畫稿。線條、平塗的面、真正的網點。",
+  "workflows.readiness.packGone": "「{node}」的擴充功能尚未安裝。請從「擴充」分頁安裝，或移除此節點"
 }

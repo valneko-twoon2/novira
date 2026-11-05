@@ -32,5 +32,9 @@
   "presets.summary.videoModel.fast": "Schnelles Modell",
   "presets.summary.instrumental": "Instrumental",
   "presets.summary.designedVoice": "Beschriebene Stimme",
-  "presets.hint.logo": "Speichert Stil und Form (nicht den Text im Logo)"
+  "presets.hint.logo": "Speichert Stil und Form (nicht den Text im Logo)",
+  "presets.run.title": "Mit zufälligen Voreinstellungen generieren",
+  "presets.run.count": "Anzahl der Bilder",
+  "presets.run.queue": "Zur Warteschlange hinzufügen",
+  "presets.run.notReady": "„{name}“: {reason}"
 }

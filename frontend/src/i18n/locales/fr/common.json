@@ -53,5 +53,7 @@
   "common.font.installed": "Polices de cet ordinateur",
   "common.font.search": "Rechercher des polices",
   "common.font.noMatch": "Aucune police ne correspond",
-  "common.font.standard": "Standard"
+  "common.font.standard": "Standard",
+  "common.desktopOnly": "Disponible dans l'application de bureau, pas dans un navigateur.",
+  "common.info": "Afficher les détails"
 }

@@ -1,1 +1,13 @@
-{}
+{
+  "firstrun.title": "초기 설정",
+  "firstrun.data.label": "데이터 폴더",
+  "firstrun.data.help": "만든 그림, 모델, 설정 등을 저장합니다.",
+  "firstrun.comfyui.label": "이미지 엔진(ComfyUI) 설치 위치",
+  "firstrun.comfyui.help": "수 GB의 여유 공간이 필요합니다. 용량에 여유가 있는 위치를 선택하세요.",
+  "firstrun.choose": "폴더 선택",
+  "firstrun.useDefault": "기본 위치로 되돌리기",
+  "firstrun.start": "이 위치에서 시작",
+  "firstrun.failed": "설정하지 못했습니다: {reason}",
+  "firstrun.moving.title": "데이터를 이동하는 중",
+  "firstrun.moving.body": "끝나면 novira가 자동으로 다시 열립니다."
+}

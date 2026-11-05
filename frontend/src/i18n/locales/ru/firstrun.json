@@ -1,1 +1,13 @@
-{}
+{
+  "firstrun.title": "Первоначальная настройка",
+  "firstrun.data.label": "Папка данных",
+  "firstrun.data.help": "Здесь хранятся ваши изображения, модели и настройки.",
+  "firstrun.comfyui.label": "Папка установки движка изображений (ComfyUI)",
+  "firstrun.comfyui.help": "Нужно несколько ГБ. Выберите место с запасом.",
+  "firstrun.choose": "Выбрать папку",
+  "firstrun.useDefault": "Использовать по умолчанию",
+  "firstrun.start": "Начать с этими папками",
+  "firstrun.failed": "Не удалось настроить: {reason}",
+  "firstrun.moving.title": "Перенос ваших данных",
+  "firstrun.moving.body": "novira откроется заново сам, когда всё будет готово."
+}

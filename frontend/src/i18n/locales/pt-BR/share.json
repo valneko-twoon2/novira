@@ -79,5 +79,8 @@
   "share.check.yes": "Presente",
   "share.check.no": "Nenhum",
   "share.check.note": "O esquema da marca d'água é público: qualquer pessoa pode gravar a mesma marca, e ela pode ser removida. Não encontrar nada não prova que uma imagem não foi feita com IA.",
-  "share.check.failed": "Não foi possível verificar a imagem"
+  "share.check.failed": "Não foi possível verificar a imagem",
+  "share.backup.create": "Criar",
+  "share.backup.createHelp": "Coloca a galeria (imagens, vídeos, sons), pastas, fluxos de trabalho, personagens, predefinições, projetos de quadrinhos, as conversas com o agente e as configurações em um único arquivo zip. Modelos e o mecanismo de imagens não são incluídos.",
+  "share.backup.restore": "Escolher um arquivo"
 }

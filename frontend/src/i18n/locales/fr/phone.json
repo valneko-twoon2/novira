@@ -1,1 +1,12 @@
-{}
+{
+  "phone.nav": "Écrans",
+  "phone.openLive": "Afficher l'image en cours de dessin",
+  "phone.close": "Fermer",
+  "phone.board": "Planche",
+  "phone.place": "{index} / {count}",
+  "phone.useSettings": "Utiliser ces réglages",
+  "phone.gallery": "Galerie",
+  "phone.pictureMenu": "Menu de cette image",
+  "phone.agentSetup": "Choisissez l'IA de l'agent et connectez-vous sur le PC : il fonctionne alors aussi ici.",
+  "phone.agentPlaceholder": "Décrivez l'image souhaitée ou posez une question"
+}

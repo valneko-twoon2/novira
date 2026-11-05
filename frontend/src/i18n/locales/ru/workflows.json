@@ -294,7 +294,7 @@
   "workflows.templates.tiledUpscale.title": "Детализирующий апскейл по тайлам",
   "workflows.templates.tiledUpscale.desc": "Увеличивает изображение до 2048 и перерисовывает его по тайлам, добавляя детали.",
   "workflows.templates.styleReference.title": "Рисовать в стиле референса",
-  "workflows.templates.styleReference.desc": "Переносит стиль референса на изображение по промпту. Для ComfyUI нужны модели IPAdapter.",
+  "workflows.templates.styleReference.desc": "Переносит стиль референса на изображение по промпту. Для ComfyUI нужны модели IP-Adapter.",
   "workflows.templates.needsPacks": "Нужно: {packs}",
   "workflows.templates.restartFirst": "Перезапустите ComfyUI, чтобы открыть",
   "workflows.packs.whatToDo": "Поиск по задаче",
@@ -531,5 +531,13 @@
   "workflows.nodeLibrary.hint": "Дважды щёлкните, чтобы добавить в центр, или перетащите на холст в любое место.",
   "workflows.nodeLibrary.count.one": "{count} узел",
   "workflows.nodeLibrary.count.other": "Узлов: {count}",
-  "workflows.nodeLibrary.section.core": "Узлы Comfy"
+  "workflows.nodeLibrary.section.core": "Узлы Comfy",
+  "workflows.packs.unavailable": "novira не управляет этим ComfyUI, поэтому устанавливайте расширения в самом этом ComfyUI.",
+  "workflows.packs.restartNeeded": "Расширения изменились. Перезапустите ComfyUI, чтобы использовать их.",
+  "workflows.packs.addressLabel": "Адрес расширения на GitHub",
+  "workflows.packs.others": "Другие установленные расширения",
+  "workflows.templates.installPacks": "Установить расширения",
+  "workflows.packs.goalCount": "Расширений: {count}",
+  "workflows.packs.catalog.mangascreen": "Оформляет изображение как чёрно-белую страницу манги: линии, плоские тона и настоящий скринтон.",
+  "workflows.readiness.packGone": "Расширение для {node} не установлено. Установите его на вкладке «Расширения» или удалите узел"
 }

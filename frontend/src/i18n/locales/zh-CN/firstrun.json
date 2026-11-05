@@ -1,1 +1,13 @@
-{}
+{
+  "firstrun.title": "初始设置",
+  "firstrun.data.label": "数据文件夹",
+  "firstrun.data.help": "用于存放生成的图像、模型、设置等。",
+  "firstrun.comfyui.label": "图像引擎（ComfyUI）的安装位置",
+  "firstrun.comfyui.help": "需要数 GB 的可用空间。请选择容量充足的位置。",
+  "firstrun.choose": "选择文件夹",
+  "firstrun.useDefault": "恢复为标准位置",
+  "firstrun.start": "在此位置开始",
+  "firstrun.failed": "无法完成设置：{reason}",
+  "firstrun.moving.title": "正在移动数据",
+  "firstrun.moving.body": "完成后 novira 会自动重新打开。"
+}

@@ -79,5 +79,8 @@
   "share.check.yes": "있음",
   "share.check.no": "없음",
   "share.check.note": "워터마크 방식은 공개되어 있어 누구나 같은 표시를 넣을 수 있고, 제거될 수도 있습니다. 아무것도 발견되지 않았다고 해서 AI로 만들지 않았다는 증거는 아닙니다.",
-  "share.check.failed": "이미지를 확인하지 못했습니다"
+  "share.check.failed": "이미지를 확인하지 못했습니다",
+  "share.backup.create": "만들기",
+  "share.backup.createHelp": "갤러리(이미지, 동영상, 음성), 보드, 워크플로, 캐릭터, 프리셋, 만화 프로젝트, 에이전트 채팅, 설정을 하나의 zip 파일로 묶습니다. 모델과 이미지 엔진은 포함되지 않습니다.",
+  "share.backup.restore": "파일 선택"
 }

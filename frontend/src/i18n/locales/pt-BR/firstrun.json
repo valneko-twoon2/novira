@@ -1,1 +1,13 @@
-{}
+{
+  "firstrun.title": "Configuração inicial",
+  "firstrun.data.label": "Pasta de dados",
+  "firstrun.data.help": "Suas imagens, modelos e configurações ficam guardados aqui.",
+  "firstrun.comfyui.label": "Pasta de instalação do mecanismo de imagens (ComfyUI)",
+  "firstrun.comfyui.help": "Ele precisa de vários GB. Escolha um lugar com bastante espaço.",
+  "firstrun.choose": "Escolher pasta",
+  "firstrun.useDefault": "Usar o padrão",
+  "firstrun.start": "Começar com estas pastas",
+  "firstrun.failed": "Não foi possível configurar: {reason}",
+  "firstrun.moving.title": "Movendo seus dados",
+  "firstrun.moving.body": "O novira reabre sozinho quando terminar."
+}

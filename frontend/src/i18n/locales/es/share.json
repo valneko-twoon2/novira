@@ -79,5 +79,8 @@
   "share.check.yes": "Presente",
   "share.check.no": "Ninguna",
   "share.check.note": "El esquema de la marca de agua es público: cualquiera puede escribir la misma marca, y se puede eliminar. No encontrar nada no prueba que una imagen no se haya creado con IA.",
-  "share.check.failed": "No se pudo comprobar la imagen"
+  "share.check.failed": "No se pudo comprobar la imagen",
+  "share.backup.create": "Crear",
+  "share.backup.createHelp": "Reúne en un solo archivo zip la galería (imágenes, vídeos, sonidos), los tableros, los flujos de trabajo, los personajes, los preajustes, los proyectos de cómic, los chats del agente y los ajustes. No incluye los modelos ni el motor de imágenes.",
+  "share.backup.restore": "Elegir un archivo"
 }

@@ -1,1 +1,13 @@
-{}
+{
+  "firstrun.title": "Configuration initiale",
+  "firstrun.data.label": "Dossier de données",
+  "firstrun.data.help": "Vos images, modèles et paramètres sont conservés ici.",
+  "firstrun.comfyui.label": "Dossier d'installation du moteur d'images (ComfyUI)",
+  "firstrun.comfyui.help": "Il faut plusieurs Go. Choisissez un endroit avec de la place.",
+  "firstrun.choose": "Choisir un dossier",
+  "firstrun.useDefault": "Utiliser celui par défaut",
+  "firstrun.start": "Commencer avec ces dossiers",
+  "firstrun.failed": "Impossible de configurer : {reason}",
+  "firstrun.moving.title": "Déplacement de vos données",
+  "firstrun.moving.body": "novira se rouvre tout seul à la fin."
+}

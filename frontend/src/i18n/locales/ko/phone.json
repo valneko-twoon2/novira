@@ -1,1 +1,12 @@
-{}
+{
+  "phone.nav": "화면 전환",
+  "phone.openLive": "생성 중인 그림을 크게 보기",
+  "phone.close": "닫기",
+  "phone.board": "보드",
+  "phone.place": "{index} / {count}",
+  "phone.useSettings": "이 설정으로 생성",
+  "phone.gallery": "갤러리",
+  "phone.pictureMenu": "이 이미지의 메뉴",
+  "phone.agentSetup": "PC에서 에이전트의 AI를 선택하고 로그인하면 여기서도 사용할 수 있습니다.",
+  "phone.agentPlaceholder": "만들고 싶은 그림이나 궁금한 점을 알려 주세요"
+}

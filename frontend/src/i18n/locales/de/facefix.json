@@ -13,5 +13,7 @@
   "facefix.running": "Gesicht wird korrigiert…",
   "facefix.firstRun": "Der erste Durchlauf dauert länger, da die Modelle geladen werden.",
   "facefix.saved": "Bild mit korrigierten Gesichtern gespeichert",
-  "facefix.failed": "Gesicht konnte nicht korrigiert werden"
+  "facefix.failed": "Gesicht konnte nicht korrigiert werden",
+  "facefix.prompt": "Was in die Gesichter gezeichnet werden soll",
+  "facefix.detector": "Gesichtserkennung"
 }

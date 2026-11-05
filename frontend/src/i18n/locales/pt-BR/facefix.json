@@ -13,5 +13,7 @@
   "facefix.running": "Corrigindo o rosto…",
   "facefix.firstRun": "A primeira execução demora mais enquanto os modelos carregam.",
   "facefix.saved": "Imagem com os rostos corrigidos salva",
-  "facefix.failed": "Não foi possível corrigir o rosto"
+  "facefix.failed": "Não foi possível corrigir o rosto",
+  "facefix.prompt": "O que desenhar nos rostos",
+  "facefix.detector": "Detector de rostos"
 }

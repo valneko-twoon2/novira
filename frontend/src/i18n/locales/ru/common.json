@@ -53,5 +53,7 @@
   "common.font.installed": "Шрифты на этом компьютере",
   "common.font.search": "Поиск шрифтов",
   "common.font.noMatch": "Подходящих шрифтов нет",
-  "common.font.standard": "Стандартный"
+  "common.font.standard": "Стандартный",
+  "common.desktopOnly": "Доступно в настольном приложении, не в браузере.",
+  "common.info": "Показать подробности"
 }

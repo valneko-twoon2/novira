@@ -1,1 +1,13 @@
-{}
+{
+  "firstrun.title": "Ersteinrichtung",
+  "firstrun.data.label": "Datenordner",
+  "firstrun.data.help": "Hier werden Ihre Bilder, Modelle und Einstellungen aufbewahrt.",
+  "firstrun.comfyui.label": "Installationsordner der Bild-Engine (ComfyUI)",
+  "firstrun.comfyui.help": "Sie benötigt mehrere GB. Wählen Sie einen Ort mit viel freiem Platz.",
+  "firstrun.choose": "Ordner wählen",
+  "firstrun.useDefault": "Standard verwenden",
+  "firstrun.start": "Mit diesen Ordnern starten",
+  "firstrun.failed": "Die Einrichtung ist fehlgeschlagen: {reason}",
+  "firstrun.moving.title": "Ihre Daten werden verschoben",
+  "firstrun.moving.body": "novira startet von selbst neu, sobald es fertig ist."
+}

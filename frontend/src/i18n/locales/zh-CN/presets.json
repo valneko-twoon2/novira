@@ -32,5 +32,9 @@
   "presets.summary.videoModel.fast": "快速模型",
   "presets.summary.instrumental": "纯音乐",
   "presets.summary.designedVoice": "用描述创建的声音",
-  "presets.hint.logo": "保存风格和形状（不含 Logo 中的文字）"
+  "presets.hint.logo": "保存风格和形状（不含 Logo 中的文字）",
+  "presets.run.title": "随机轮换预设进行生成",
+  "presets.run.count": "张数",
+  "presets.run.queue": "加入队列",
+  "presets.run.notReady": "“{name}”：{reason}"
 }

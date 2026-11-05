@@ -53,5 +53,7 @@
   "common.font.installed": "이 컴퓨터의 글꼴",
   "common.font.search": "글꼴 검색",
   "common.font.noMatch": "일치하는 글꼴이 없습니다",
-  "common.font.standard": "표준"
+  "common.font.standard": "표준",
+  "common.desktopOnly": "데스크톱 앱에서 사용할 수 있습니다. 브라우저에서는 사용할 수 없습니다.",
+  "common.info": "설명 보기"
 }

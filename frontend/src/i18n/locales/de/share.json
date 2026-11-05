@@ -79,5 +79,8 @@
   "share.check.yes": "Vorhanden",
   "share.check.no": "Keines",
   "share.check.note": "Das Wasserzeichen-Verfahren ist öffentlich: Jeder kann dasselbe Zeichen schreiben, und es lässt sich entfernen. Ein leeres Ergebnis beweist nicht, dass ein Bild nicht mit KI erstellt wurde.",
-  "share.check.failed": "Das Bild konnte nicht geprüft werden"
+  "share.check.failed": "Das Bild konnte nicht geprüft werden",
+  "share.backup.create": "Erstellen",
+  "share.backup.createHelp": "Packt die Galerie (Bilder, Videos, Töne), Boards, Workflows, Figuren, Voreinstellungen, Comic-Projekte, die Chats des Agenten und die Einstellungen in eine ZIP-Datei. Modelle und die Bild-Engine sind nicht enthalten.",
+  "share.backup.restore": "Datei wählen"
 }

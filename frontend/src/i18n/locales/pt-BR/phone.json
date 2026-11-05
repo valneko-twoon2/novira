@@ -1,1 +1,12 @@
-{}
+{
+  "phone.nav": "Telas",
+  "phone.openLive": "Mostrar a imagem sendo desenhada",
+  "phone.close": "Fechar",
+  "phone.board": "Pasta",
+  "phone.place": "{index} / {count}",
+  "phone.useSettings": "Usar estas configurações",
+  "phone.gallery": "Galeria",
+  "phone.pictureMenu": "Menu desta imagem",
+  "phone.agentSetup": "Escolha a IA do agente e faça login no PC, e ele funciona aqui também.",
+  "phone.agentPlaceholder": "Descreva a imagem que você quer ou faça uma pergunta"
+}

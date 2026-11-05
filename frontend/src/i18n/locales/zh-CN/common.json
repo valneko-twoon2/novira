@@ -53,5 +53,7 @@
   "common.font.installed": "这台电脑上的字体",
   "common.font.search": "搜索字体",
   "common.font.noMatch": "没有符合条件的字体",
-  "common.font.standard": "标准"
+  "common.font.standard": "标准",
+  "common.desktopOnly": "仅可在桌面应用中使用，无法在浏览器中使用。",
+  "common.info": "查看说明"
 }

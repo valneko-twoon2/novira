@@ -79,5 +79,8 @@
   "share.check.yes": "Présente",
   "share.check.no": "Aucune",
   "share.check.note": "Le schéma de filigrane est public : n'importe qui peut écrire la même marque, et elle peut être supprimée. Ne rien trouver ne prouve pas qu'une image n'a pas été créée avec une IA.",
-  "share.check.failed": "Impossible de vérifier l'image"
+  "share.check.failed": "Impossible de vérifier l'image",
+  "share.backup.create": "Créer",
+  "share.backup.createHelp": "Place la galerie (images, vidéos, sons), les planches, workflows, personnages, préréglages, projets de BD, les discussions avec l'agent et les paramètres dans un seul fichier zip. Les modèles et le moteur d'images ne sont pas inclus.",
+  "share.backup.restore": "Choisir un fichier"
 }

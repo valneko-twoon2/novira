@@ -1,1 +1,12 @@
-{}
+{
+  "phone.nav": "切換畫面",
+  "phone.openLive": "放大查看生成中的圖像",
+  "phone.close": "關閉",
+  "phone.board": "看板",
+  "phone.place": "{index} / {count}",
+  "phone.useSettings": "以此設定生成",
+  "phone.gallery": "圖庫",
+  "phone.pictureMenu": "此圖像的選單",
+  "phone.agentSetup": "在電腦上選擇助理的 AI 並登入後，這裡也能使用。",
+  "phone.agentPlaceholder": "請告訴我你想製作的圖像，或想詢問的事"
+}

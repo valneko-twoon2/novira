@@ -13,5 +13,7 @@
   "facefix.running": "正在修复人脸…",
   "facefix.firstRun": "首次运行需要加载模型，会花较长时间。",
   "facefix.saved": "已保存修复人脸后的图像",
-  "facefix.failed": "无法修复人脸"
+  "facefix.failed": "无法修复人脸",
+  "facefix.prompt": "重绘内容",
+  "facefix.detector": "检测人脸的模型"
 }

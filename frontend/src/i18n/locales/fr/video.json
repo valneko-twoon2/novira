@@ -48,5 +48,8 @@
   "video.light.tiledHint": "Évite le pic de mémoire à la toute fin. L'image est la même ; c'est un peu plus lent.",
   "video.light.finishHint": "Vous pouvez aussi créer un petit clip et l'agrandir ensuite avec « Finaliser… » sur le clip terminé.",
   "video.model.ownHint": "Un modèle {family} installé. L'encodeur de texte et le VAE sont recherchés par nom parmi les modèles installés ; s'il en manque un, le fichier nécessaire est indiqué.",
-  "video.problem.model": "Le modèle vidéo choisi n'est pas installé. Choisissez de nouveau un modèle"
+  "video.problem.model": "Le modèle vidéo choisi n'est pas installé. Choisissez de nouveau un modèle",
+  "video.mode.text": "t2v",
+  "video.mode.image": "i2v",
+  "video.empty.description": "Choisissez i2v pour animer une image de référence."
 }

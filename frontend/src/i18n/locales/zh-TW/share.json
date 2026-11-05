@@ -79,5 +79,8 @@
   "share.check.yes": "存在",
   "share.check.no": "無",
   "share.check.note": "浮水印的方式是公開的：任何人都能寫入相同的標記，也能將其移除。沒有發現浮水印，並不代表圖像不是以 AI 製作。",
-  "share.check.failed": "無法檢查圖像"
+  "share.check.failed": "無法檢查圖像",
+  "share.backup.create": "建立",
+  "share.backup.createHelp": "將圖庫（圖像、影片、音訊）、看板、工作流程、角色、預設、漫畫專案、助理的聊天與設定，打包成一個 zip 檔案。不包含模型與圖像引擎。",
+  "share.backup.restore": "選擇檔案"
 }

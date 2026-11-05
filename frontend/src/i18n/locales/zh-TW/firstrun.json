@@ -1,1 +1,13 @@
-{}
+{
+  "firstrun.title": "初始設定",
+  "firstrun.data.label": "資料資料夾",
+  "firstrun.data.help": "存放繪製的圖像、模型、設定等。",
+  "firstrun.comfyui.label": "圖像引擎（ComfyUI）的安裝位置",
+  "firstrun.comfyui.help": "需要數 GB 的可用空間。請選擇容量充裕的位置。",
+  "firstrun.choose": "選擇資料夾",
+  "firstrun.useDefault": "還原為預設位置",
+  "firstrun.start": "從這個位置開始",
+  "firstrun.failed": "無法完成設定：{reason}",
+  "firstrun.moving.title": "正在移動資料",
+  "firstrun.moving.body": "完成後 novira 會自動重新開啟。"
+}

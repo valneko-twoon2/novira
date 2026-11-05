@@ -79,5 +79,8 @@
   "share.check.yes": "有",
   "share.check.no": "无",
   "share.check.note": "水印方案是公开的：任何人都可以写入相同的水印，水印也可能被移除。未发现水印并不能证明图像不是用 AI 制作的。",
-  "share.check.failed": "无法检查图像"
+  "share.check.failed": "无法检查图像",
+  "share.backup.create": "创建",
+  "share.backup.createHelp": "将图库（图像、视频、音频）、画板、工作流、角色、预设、漫画项目、智能体的聊天和设置打包成一个 zip 文件。不包含模型和图像引擎。",
+  "share.backup.restore": "选择文件"
 }

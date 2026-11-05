@@ -48,5 +48,8 @@
   "video.light.tiledHint": "可抑制最後處理階段記憶體暫時暴增。畫質不變，但速度會稍慢。",
   "video.light.finishHint": "也可以先用較小的尺寸製作，再用完成影片的「完稿…」來放大。",
   "video.model.ownHint": "已安裝的 {family} 模型。文字編碼器與 VAE 會依名稱在已安裝的模型中尋找；缺少時會顯示需要的檔案。",
-  "video.problem.model": "所選的影片模型尚未安裝。請重新選擇模型"
+  "video.problem.model": "所選的影片模型尚未安裝。請重新選擇模型",
+  "video.mode.text": "t2v",
+  "video.mode.image": "i2v",
+  "video.empty.description": "改為「i2v」後，可以讓參考圖像動起來。"
 }

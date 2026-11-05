@@ -48,5 +48,8 @@
   "video.light.tiledHint": "Verhindert eine Speicherspitze ganz am Ende. Das Bild bleibt gleich; es ist etwas langsamer.",
   "video.light.finishHint": "Sie können auch einen kleinen Clip erstellen und ihn danach über „Fertigstellen…“ am fertigen Clip vergrößern.",
   "video.model.ownHint": "Ein installiertes {family}-Modell. Text-Encoder und VAE werden anhand des Namens unter den installierten Modellen gefunden; fehlt eines, wird die benötigte Datei angezeigt.",
-  "video.problem.model": "Das gewählte Videomodell ist nicht installiert. Wählen Sie erneut ein Modell"
+  "video.problem.model": "Das gewählte Videomodell ist nicht installiert. Wählen Sie erneut ein Modell",
+  "video.mode.text": "t2v",
+  "video.mode.image": "i2v",
+  "video.empty.description": "Wählen Sie i2v, um ein Referenzbild zu animieren."
 }

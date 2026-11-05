@@ -1,1 +1,12 @@
-{}
+{
+  "phone.nav": "切换界面",
+  "phone.openLive": "放大查看正在生成的图像",
+  "phone.close": "关闭",
+  "phone.board": "画板",
+  "phone.place": "{index} / {count}",
+  "phone.useSettings": "用此设置生成",
+  "phone.gallery": "图库",
+  "phone.pictureMenu": "此图像的菜单",
+  "phone.agentSetup": "在电脑上选择智能体使用的 AI 并登录后，这里也可以使用。",
+  "phone.agentPlaceholder": "告诉我你想画什么，或想问什么"
+}

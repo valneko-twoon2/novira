@@ -48,5 +48,8 @@
   "video.light.tiledHint": "抑制最后收尾阶段内存的瞬间激增。画质不变，速度稍慢。",
   "video.light.finishHint": "也可以先生成较小尺寸，再通过生成视频的“完善…”进行放大。",
   "video.model.ownHint": "已安装的 {family} 模型。文本编码器和 VAE 会按名称在已安装的模型中查找；缺少时会显示所需的文件。",
-  "video.problem.model": "所选的视频模型未安装。请重新选择模型"
+  "video.problem.model": "所选的视频模型未安装。请重新选择模型",
+  "video.mode.text": "t2v",
+  "video.mode.image": "i2v",
+  "video.empty.description": "选择“i2v”，可以让参考图像动起来。"
 }

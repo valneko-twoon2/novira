@@ -13,5 +13,7 @@
   "facefix.running": "얼굴을 고치는 중…",
   "facefix.firstRun": "처음에는 모델을 불러오느라 시간이 더 걸립니다.",
   "facefix.saved": "얼굴을 고친 이미지를 저장했습니다",
-  "facefix.failed": "얼굴을 고치지 못했습니다"
+  "facefix.failed": "얼굴을 고치지 못했습니다",
+  "facefix.prompt": "다시 그릴 내용",
+  "facefix.detector": "얼굴을 찾는 모델"
 }

@@ -294,7 +294,7 @@
   "workflows.templates.tiledUpscale.title": "Ampliação detalhada em blocos",
   "workflows.templates.tiledUpscale.desc": "Amplia uma imagem para 2048 e a redesenha bloco por bloco para acrescentar detalhes.",
   "workflows.templates.styleReference.title": "Desenhar no estilo de uma referência",
-  "workflows.templates.styleReference.desc": "Leva o estilo de uma imagem de referência para a imagem do prompt. O ComfyUI precisa dos modelos IPAdapter.",
+  "workflows.templates.styleReference.desc": "Leva o estilo de uma imagem de referência para a imagem do prompt. O ComfyUI precisa dos modelos IP-Adapter.",
   "workflows.templates.needsPacks": "Requer: {packs}",
   "workflows.templates.restartFirst": "Reinicie o ComfyUI para abrir",
   "workflows.packs.whatToDo": "Encontrar pelo que você quer fazer",
@@ -531,5 +531,13 @@
   "workflows.nodeLibrary.hint": "Clique duas vezes para adicionar ao meio, ou arraste para a tela para colocá-lo onde quiser.",
   "workflows.nodeLibrary.count.one": "{count} nó",
   "workflows.nodeLibrary.count.other": "{count} nós",
-  "workflows.nodeLibrary.section.core": "Nós do Comfy"
+  "workflows.nodeLibrary.section.core": "Nós do Comfy",
+  "workflows.packs.unavailable": "O novira não gerencia este ComfyUI, então instale as extensões no próprio ComfyUI.",
+  "workflows.packs.restartNeeded": "As extensões mudaram. Reinicie o ComfyUI para usá-las.",
+  "workflows.packs.addressLabel": "Endereço da extensão no GitHub",
+  "workflows.packs.others": "Outras extensões instaladas",
+  "workflows.templates.installPacks": "Instalar extensões",
+  "workflows.packs.goalCount": "{count} extensões",
+  "workflows.packs.catalog.mangascreen": "Finaliza uma imagem como página de mangá em preto e branco: traços, tons chapados e retícula real.",
+  "workflows.readiness.packGone": "A extensão de {node} não está instalada. Instale-a pela aba Extensões ou remova o nó"
 }

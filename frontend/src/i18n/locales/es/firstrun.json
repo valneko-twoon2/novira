@@ -1,1 +1,13 @@
-{}
+{
+  "firstrun.title": "Configuración inicial",
+  "firstrun.data.label": "Carpeta de datos",
+  "firstrun.data.help": "Aquí se guardan sus imágenes, modelos y ajustes.",
+  "firstrun.comfyui.label": "Carpeta de instalación del motor de imágenes (ComfyUI)",
+  "firstrun.comfyui.help": "Necesita varios GB. Elija un lugar con espacio de sobra.",
+  "firstrun.choose": "Elegir carpeta",
+  "firstrun.useDefault": "Usar la predeterminada",
+  "firstrun.start": "Empezar con estas carpetas",
+  "firstrun.failed": "No se pudo configurar: {reason}",
+  "firstrun.moving.title": "Moviendo sus datos",
+  "firstrun.moving.body": "novira se vuelve a abrir solo cuando termina."
+}

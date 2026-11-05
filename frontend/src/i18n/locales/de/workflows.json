@@ -294,7 +294,7 @@
   "workflows.templates.tiledUpscale.title": "Gekacheltes Detail-Upscaling",
   "workflows.templates.tiledUpscale.desc": "Vergrößert ein Bild auf 2048 und zeichnet es Kachel für Kachel neu, um Details hinzuzufügen.",
   "workflows.templates.styleReference.title": "Im Stil einer Referenz zeichnen",
-  "workflows.templates.styleReference.desc": "Überträgt den Stil eines Referenzbildes auf das Bild des Prompts. ComfyUI benötigt die IPAdapter-Modelle.",
+  "workflows.templates.styleReference.desc": "Überträgt den Stil eines Referenzbildes auf das Bild des Prompts. ComfyUI benötigt die IP-Adapter-Modelle.",
   "workflows.templates.needsPacks": "Benötigt: {packs}",
   "workflows.templates.restartFirst": "ComfyUI neu starten, um es zu öffnen",
   "workflows.packs.whatToDo": "Nach Vorhaben suchen",
@@ -531,5 +531,13 @@
   "workflows.nodeLibrary.hint": "Doppelklicken, um in der Mitte hinzuzufügen, oder auf die Leinwand ziehen, um es frei zu platzieren.",
   "workflows.nodeLibrary.count.one": "{count} Knoten",
   "workflows.nodeLibrary.count.other": "{count} Knoten",
-  "workflows.nodeLibrary.section.core": "Comfy-Knoten"
+  "workflows.nodeLibrary.section.core": "Comfy-Knoten",
+  "workflows.packs.unavailable": "novira verwaltet dieses ComfyUI nicht, installieren Sie Erweiterungen daher in diesem ComfyUI selbst.",
+  "workflows.packs.restartNeeded": "Die Erweiterungen haben sich geändert. Starten Sie ComfyUI neu, um sie zu verwenden.",
+  "workflows.packs.addressLabel": "GitHub-Adresse der Erweiterung",
+  "workflows.packs.others": "Weitere installierte Erweiterungen",
+  "workflows.templates.installPacks": "Erweiterungen installieren",
+  "workflows.packs.goalCount": "{count} Erweiterungen",
+  "workflows.packs.catalog.mangascreen": "Stellt ein Bild als Schwarz-Weiß-Manga-Seite fertig: Linien, flache Töne und echter Raster.",
+  "workflows.readiness.packGone": "Die Erweiterung für {node} ist nicht installiert. Installieren Sie sie im Tab Erweiterungen, oder entfernen Sie den Node"
 }

@@ -53,5 +53,7 @@
   "common.font.installed": "這台電腦上的字型",
   "common.font.search": "搜尋字型",
   "common.font.noMatch": "沒有符合的字型",
-  "common.font.standard": "標準"
+  "common.font.standard": "標準",
+  "common.desktopOnly": "此功能可在桌面應用程式中使用，無法在瀏覽器中使用。",
+  "common.info": "查看說明"
 }

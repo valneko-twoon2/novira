@@ -294,7 +294,7 @@
   "workflows.templates.tiledUpscale.title": "타일로 고해상도 확대",
   "workflows.templates.tiledUpscale.desc": "이미지를 2048로 확대한 뒤 타일마다 다시 그려 세부 묘사를 더합니다.",
   "workflows.templates.styleReference.title": "참조 이미지의 화풍으로 그리기",
-  "workflows.templates.styleReference.desc": "참조 이미지의 화풍을 프롬프트의 그림에 옮깁니다. IPAdapter 모델은 ComfyUI 쪽에 필요합니다.",
+  "workflows.templates.styleReference.desc": "참조 이미지의 화풍을 프롬프트의 그림에 옮깁니다. IP-Adapter 모델은 ComfyUI 쪽에 필요합니다.",
   "workflows.templates.needsPacks": "필요한 팩: {packs}",
   "workflows.templates.restartFirst": "ComfyUI를 다시 시작하면 열 수 있습니다",
   "workflows.packs.whatToDo": "하고 싶은 일로 찾기",
@@ -531,5 +531,13 @@
   "workflows.nodeLibrary.hint": "더블클릭하면 가운데에 추가되고, 캔버스로 드래그하면 원하는 위치에 놓을 수 있습니다.",
   "workflows.nodeLibrary.count.one": "노드 {count}개",
   "workflows.nodeLibrary.count.other": "노드 {count}개",
-  "workflows.nodeLibrary.section.core": "Comfy 노드"
+  "workflows.nodeLibrary.section.core": "Comfy 노드",
+  "workflows.packs.unavailable": "이 ComfyUI는 novira가 관리하지 않으므로 확장 기능은 해당 ComfyUI 쪽에서 설치하세요.",
+  "workflows.packs.restartNeeded": "확장 기능을 변경했습니다. ComfyUI를 다시 시작하면 사용할 수 있습니다.",
+  "workflows.packs.addressLabel": "확장 기능의 GitHub 주소",
+  "workflows.packs.others": "그 밖에 설치된 확장 기능",
+  "workflows.templates.installPacks": "확장 기능 설치",
+  "workflows.packs.goalCount": "확장 기능 {count}개",
+  "workflows.packs.catalog.mangascreen": "그림을 흑백 만화 원고로 마무리합니다. 선, 평평한 면, 진짜 스크린톤.",
+  "workflows.readiness.packGone": "「{node}」의 확장 기능이 설치되어 있지 않습니다. 「확장」 탭에서 설치하거나 이 노드를 제거하세요"
 }

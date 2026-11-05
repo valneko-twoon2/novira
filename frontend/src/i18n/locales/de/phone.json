@@ -1,1 +1,12 @@
-{}
+{
+  "phone.nav": "Bildschirme",
+  "phone.openLive": "Das entstehende Bild anzeigen",
+  "phone.close": "Schließen",
+  "phone.board": "Board",
+  "phone.place": "{index} / {count}",
+  "phone.useSettings": "Diese Einstellungen verwenden",
+  "phone.gallery": "Galerie",
+  "phone.pictureMenu": "Menü dieses Bildes",
+  "phone.agentSetup": "Wählen Sie am PC die KI des Agenten und melden Sie sich an, dann funktioniert er auch hier.",
+  "phone.agentPlaceholder": "Gewünschtes Bild beschreiben oder eine Frage stellen"
+}

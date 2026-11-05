@@ -32,5 +32,9 @@
   "presets.summary.videoModel.fast": "Modelo rápido",
   "presets.summary.instrumental": "Instrumental",
   "presets.summary.designedVoice": "Voz descrita",
-  "presets.hint.logo": "Salva o estilo e a forma (não o texto do logotipo)"
+  "presets.hint.logo": "Salva o estilo e a forma (não o texto do logotipo)",
+  "presets.run.title": "Gerar com predefinições aleatórias",
+  "presets.run.count": "Número de imagens",
+  "presets.run.queue": "Adicionar à fila",
+  "presets.run.notReady": "“{name}”: {reason}"
 }
