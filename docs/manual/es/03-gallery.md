@@ -257,7 +257,7 @@ Aparece una ventana de confirmación y, al pulsar «{{ui:common.delete}}», se e
 
 Una imagen eliminada no se borra de inmediato. Se conserva durante 14 días (500 imágenes como máximo), por lo que se puede deshacer una eliminación.
 
-- Pulse la campana de la esquina inferior derecha y luego **{{ui:gallery.undoDelete.action}}** en la notificación de la eliminación. Para no estorbar mientras elimina una imagen tras otra, las notificaciones de eliminación no aparecen en la pantalla: solo se guardan en la campana (su número aumenta).
+- Pulse la campana de la esquina inferior derecha y luego **{{ui:gallery.undoDelete.action}}** en la notificación de la eliminación. Para no estorbar mientras elimina una imagen tras otra, las notificaciones de eliminación no aparecen en la pantalla: solo se guardan en la campana (su número aumenta). Cada notificación muestra en pequeño las imágenes eliminadas.
 - O bien pulse el botón «{{ui:gallery.undoDelete.label}}» de la parte superior de la galería, o `Ctrl+Z` con el puntero sobre la galería (o con el visor abierto). Se pueden deshacer las últimas 30 eliminaciones, empezando por la más reciente.
 - Para volver a eliminar lo que se recuperó, pulse el botón «{{ui:gallery.redoDelete.label}}» o `Ctrl+Shift+Z` (`Ctrl+Y`).
 

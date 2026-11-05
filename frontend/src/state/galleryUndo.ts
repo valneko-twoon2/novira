@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { backend } from '@/backend';
 import { t, tCount } from '@/i18n';
 import { useGallery } from './gallery';
+import { keepMarks, liveMarks } from './pictureMarks';
 import { toast } from './toasts';
 
 /** How many deletions are remembered each way. */
@@ -43,7 +44,7 @@ export async function undoDeletion(names?: string[]): Promise<boolean> {
     const g = useGallery.getState();
     const names = new Set(back.map((i) => i.name));
     g.setImages([...back, ...g.images.filter((i) => !names.has(i.name))]);
-    toast({ status: 'success', quiet: true, title: tCount('gallery.undoDelete.done', back.length) });
+    toast({ status: 'success', quiet: true, title: tCount('gallery.undoDelete.done', back.length), pictures: liveMarks(back) });
     return true;
   } catch (err) {
     failed(err);
@@ -57,10 +58,12 @@ export async function redoDeletion(): Promise<boolean> {
   const entry = redo[redo.length - 1];
   if (!entry) return false;
   try {
+    const wanted = new Set(entry);
+    const marks = keepMarks(useGallery.getState().images.filter((i) => wanted.has(i.name)));
     await backend.deleteImages(entry);
     useGallery.getState().removeImages(entry);
     useGalleryUndo.setState((s) => ({ redo: s.redo.filter((e) => e !== entry), undo: cap([...s.undo, entry]) }));
-    toast({ status: 'success', quiet: true, title: tCount('gallery.redoDelete.done', entry.length) });
+    toast({ status: 'success', quiet: true, title: tCount('gallery.redoDelete.done', entry.length), pictures: await marks });
     return true;
   } catch (err) {
     failed(err);

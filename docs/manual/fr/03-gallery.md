@@ -257,7 +257,7 @@ Une fenêtre de confirmation s'affiche ; en appuyant sur « {{ui:common.delete}}
 
 Une image supprimée ne disparaît pas tout de suite : elle est conservée 14 jours (jusqu'à 500 images), ce qui permet d'annuler la suppression.
 
-- Appuyez sur la cloche en bas à droite de l'écran, puis sur **{{ui:gallery.undoDelete.action}}** dans la notification de la suppression. Pour ne pas gêner quand vous supprimez plusieurs images à la suite, les notifications de suppression n'apparaissent pas à l'écran : elles vont seulement sous la cloche (son nombre augmente).
+- Appuyez sur la cloche en bas à droite de l'écran, puis sur **{{ui:gallery.undoDelete.action}}** dans la notification de la suppression. Pour ne pas gêner quand vous supprimez plusieurs images à la suite, les notifications de suppression n'apparaissent pas à l'écran : elles vont seulement sous la cloche (son nombre augmente). Chaque notification affiche en petit les images supprimées.
 - Appuyez sur le bouton « {{ui:gallery.undoDelete.label}} » au-dessus de la galerie, ou sur `Ctrl+Z` pendant que le pointeur est sur la galerie (ou que la visionneuse est ouverte). Vous pouvez annuler jusqu'aux 30 dernières suppressions, de la plus récente à la plus ancienne.
 - Pour supprimer de nouveau une image restaurée, utilisez le bouton « {{ui:gallery.redoDelete.label}} » ou `Ctrl+Shift+Z` (`Ctrl+Y`).
 

@@ -257,7 +257,7 @@ A confirmation window appears, and pressing "{{ui:common.delete}}" deletes it.
 
 A deleted picture is not erased at once. It is kept for 14 days (500 pictures at most), so you can take a deletion back.
 
-- Press the bell at the bottom-right of the screen, then **{{ui:gallery.undoDelete.action}}** on the deletion's notification. So that they do not get in the way while you delete one picture after another, deletion notifications do not pop up on the screen; they only go under the bell (its number goes up).
+- Press the bell at the bottom-right of the screen, then **{{ui:gallery.undoDelete.action}}** on the deletion's notification. So that they do not get in the way while you delete one picture after another, deletion notifications do not pop up on the screen; they only go under the bell (its number goes up). Each notification shows the deleted pictures, small.
 - Or press the "{{ui:gallery.undoDelete.label}}" button at the top of the gallery, or `Ctrl+Z` while the pointer is over the gallery (or the viewer is open). The last 30 deletions can be taken back, newest first.
 - To delete again what you brought back, press the "{{ui:gallery.redoDelete.label}}" button, or `Ctrl+Shift+Z` (`Ctrl+Y`).
 

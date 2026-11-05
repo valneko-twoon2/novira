@@ -19,6 +19,13 @@ export function Toaster() {
             <div className="toast__body">
               <div className="toast__title">{toast.title}</div>
               {toast.description && <div className="toast__desc">{toast.description}</div>}
+              {toast.pictures && toast.pictures.length > 0 && (
+                <div className="notify-item__pictures">
+                  {toast.pictures.map((src, i) => (
+                    <img key={i} src={src} alt="" draggable={false} />
+                  ))}
+                </div>
+              )}
               {toast.actions && toast.actions.length > 0 && (
                 <div className="toast__actions">
                   {toast.actions.map((action, index) => (

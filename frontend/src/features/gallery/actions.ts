@@ -4,6 +4,7 @@ import { t, tCount } from '@/i18n';
 import { useCanvas, type CanvasImportTarget } from '@/state/canvas';
 import { useGallery, type BoardId } from '@/state/gallery';
 import { recordDeletion, undoDeletion } from '@/state/galleryUndo';
+import { keepMarks } from '@/state/pictureMarks';
 import { defaultRefModelKey } from '@/state/models';
 import { useVideo } from '@/state/media/video';
 import { useParams } from '@/state/params';
@@ -34,10 +35,13 @@ export async function setStarred(names: string[], starred: boolean) {
 
 export async function deleteImagesNow(names: string[]) {
   if (!names.length) return;
+  // Drawn before the files go to the trash, where their addresses no longer serve them.
+  const wanted = new Set(names);
+  const marks = keepMarks(useGallery.getState().images.filter((i) => wanted.has(i.name)));
   await backend.deleteImages(names);
   useGallery.getState().removeImages(names);
   recordDeletion(names);
-  toast({ status: 'success', quiet: true, title: tCount('gallery.toast.deleted', names.length), actions: [{ label: t('gallery.undoDelete.action'), run: () => void undoDeletion(names) }] });
+  toast({ status: 'success', quiet: true, title: tCount('gallery.toast.deleted', names.length), pictures: await marks, actions: [{ label: t('gallery.undoDelete.action'), run: () => void undoDeletion(names) }] });
 }
 
 /**

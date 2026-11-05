@@ -257,7 +257,7 @@ Aparece uma janela de confirmação; clicando em “{{ui:common.delete}}”, a i
 
 A imagem excluída não some na hora: ela é guardada por 14 dias (até 500 imagens), por isso a exclusão pode ser desfeita.
 
-- Clique no sino no canto inferior direito da tela e depois em **{{ui:gallery.undoDelete.action}}** na notificação da exclusão. Para não atrapalhar quando você exclui uma imagem atrás da outra, as notificações de exclusão não aparecem na tela: vão apenas para o sino (o número dele aumenta).
+- Clique no sino no canto inferior direito da tela e depois em **{{ui:gallery.undoDelete.action}}** na notificação da exclusão. Para não atrapalhar quando você exclui uma imagem atrás da outra, as notificações de exclusão não aparecem na tela: vão apenas para o sino (o número dele aumenta). Cada notificação mostra as imagens excluídas em tamanho pequeno.
 - Clique no botão “{{ui:gallery.undoDelete.label}}”, acima da galeria, ou pressione `Ctrl+Z` enquanto o ponteiro estiver sobre a galeria (ou enquanto o visualizador estiver aberto). É possível desfazer até as últimas 30 exclusões, da mais recente para a mais antiga.
 - Para excluir de novo uma imagem restaurada, use o botão “{{ui:gallery.redoDelete.label}}” ou `Ctrl+Shift+Z` (`Ctrl+Y`).
 

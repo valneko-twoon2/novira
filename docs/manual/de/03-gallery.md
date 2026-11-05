@@ -257,7 +257,7 @@ Es erscheint ein Bestätigungsfenster, und mit „{{ui:common.delete}}“ wird d
 
 Ein gelöschtes Bild wird nicht sofort gelöscht. Es bleibt 14 Tage erhalten (höchstens 500 Bilder), sodass Sie das Löschen zurücknehmen können.
 
-- Klicken Sie unten rechts auf die Glocke und dann in der Benachrichtigung über das Löschen auf **{{ui:gallery.undoDelete.action}}**. Damit sie beim Löschen mehrerer Bilder nicht im Weg sind, erscheinen Lösch-Benachrichtigungen nicht auf dem Bildschirm, sondern nur unter der Glocke (deren Zahl steigt).
+- Klicken Sie unten rechts auf die Glocke und dann in der Benachrichtigung über das Löschen auf **{{ui:gallery.undoDelete.action}}**. Damit sie beim Löschen mehrerer Bilder nicht im Weg sind, erscheinen Lösch-Benachrichtigungen nicht auf dem Bildschirm, sondern nur unter der Glocke (deren Zahl steigt). Jede Benachrichtigung zeigt die gelöschten Bilder klein an.
 - Oder klicken Sie oben in der Galerie auf die Schaltfläche „{{ui:gallery.undoDelete.label}}“ oder drücken Sie `Ctrl+Z`, solange sich der Zeiger über der Galerie befindet (oder der Betrachter geöffnet ist). Die letzten 30 Löschvorgänge lassen sich zurücknehmen, der neueste zuerst.
 - Um erneut zu löschen, was Sie zurückgeholt haben, klicken Sie auf die Schaltfläche „{{ui:gallery.redoDelete.label}}“ oder drücken Sie `Ctrl+Shift+Z` (`Ctrl+Y`).
 

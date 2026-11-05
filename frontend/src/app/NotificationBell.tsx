@@ -61,6 +61,13 @@ function NoticeRow({ notice }: { notice: Notice }) {
       <div className="notify-item__body">
         <div className="notify-item__title">{notice.title}</div>
         {notice.description && <div className="notify-item__desc">{notice.description}</div>}
+        {notice.pictures && notice.pictures.length > 0 && (
+          <div className="notify-item__pictures" data-testid="notification-pictures">
+            {notice.pictures.map((src, i) => (
+              <img key={i} src={src} alt="" draggable={false} />
+            ))}
+          </div>
+        )}
         {notice.actions && notice.actions.length > 0 && (
           <div className="notify-item__actions">
             {notice.actions.map((action, index) => (

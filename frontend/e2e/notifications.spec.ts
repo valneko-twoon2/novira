@@ -29,6 +29,8 @@ test('deletions go under the bell, which counts them and lists them when opened'
   const list = page.getByTestId('notification-list');
   await expect(list.getByRole('listitem')).toHaveCount(2);
   await expect(list.getByRole('listitem').first()).toContainText(msg('gallery.toast.deleted.one', { count: 1 }));
+  // Each deletion shows the picture it took away.
+  await expect(list.getByRole('listitem').first().getByTestId('notification-pictures').locator('img')).toHaveCount(1);
   await expect(page.getByTestId('notification-count')).toHaveCount(0);
 
   // Taking the latest deletion back from the list brings one picture back, and the button goes away.

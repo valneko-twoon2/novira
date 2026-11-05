@@ -711,6 +711,20 @@
   overflow-wrap: anywhere;
 }
 
+.notify-item__pictures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+
+.notify-item__pictures img {
+  height: 32px;
+  max-width: 64px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+
 .notify-item__actions {
   display: flex;
   flex-wrap: wrap;

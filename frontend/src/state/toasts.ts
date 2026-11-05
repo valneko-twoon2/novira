@@ -17,6 +17,8 @@ export interface Toast {
   title: string;
   description?: string;
   actions?: ToastAction[];
+  /** Small pictures of what the notification is about (deleted pictures), as addresses or data URLs (`state/pictureMarks.ts`). */
+  pictures?: string[];
   /**
    * Goes only into the bell's history, without popping up, while a bell is on screen: for notices that come in runs while
    * the user works (deleting pictures one after another), where a stack of toasts would cover what they work on.
