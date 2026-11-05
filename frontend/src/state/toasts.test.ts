@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useSettings } from './settings';
-import { toast, useToasts } from './toasts';
+import { HISTORY_LIMIT, toast, useToasts } from './toasts';
 
 beforeEach(() => {
   vi.useFakeTimers();
-  useToasts.setState({ toasts: [] });
+  useToasts.setState({ toasts: [], history: [], unread: 0, bells: 0 });
 });
 afterEach(() => vi.useRealTimers());
 
@@ -47,5 +47,60 @@ describe('toasts', () => {
     const a = toast({ status: 'info', title: 'a' });
     const b = toast({ status: 'info', title: 'b' });
     expect(a).not.toBe(b);
+  });
+});
+
+describe('notification history', () => {
+  const history = () => useToasts.getState().history.map((n) => n.title);
+
+  it('keeps every notification, newest first, after its toast has gone', () => {
+    toast({ status: 'info', title: 'a' }, 1000);
+    toast({ status: 'error', title: 'b' }, 1000);
+    vi.advanceTimersByTime(1000);
+    expect(titles()).toEqual([]);
+    expect(history()).toEqual(['b', 'a']);
+    expect(useToasts.getState().unread).toBe(2);
+  });
+
+  it('keeps only the newest notifications past the limit', () => {
+    for (let i = 1; i <= HISTORY_LIMIT + 2; i++) toast({ status: 'info', title: String(i) }, 0);
+    expect(history()).toHaveLength(HISTORY_LIMIT);
+    expect(history()[0]).toBe(String(HISTORY_LIMIT + 2));
+    expect(history().at(-1)).toBe('3');
+  });
+
+  it('puts a quiet notification only in the history while a bell is mounted', () => {
+    const detach = useToasts.getState().attachBell();
+    toast({ status: 'success', title: 'deleted', quiet: true });
+    expect(titles()).toEqual([]);
+    expect(history()).toEqual(['deleted']);
+    expect(useToasts.getState().unread).toBe(1);
+    detach();
+    toast({ status: 'success', title: 'deleted again', quiet: true }, 0);
+    expect(titles()).toEqual(['deleted again']);
+  });
+
+  it('runs an action once, from the toast or from the history', () => {
+    const run = vi.fn();
+    const id = toast({ status: 'success', title: 'deleted', actions: [{ label: 'Undo', run }] }, 0);
+    useToasts.getState().runAction(id, 0);
+    useToasts.getState().runAction(id, 0);
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(titles()).toEqual([]);
+    expect(useToasts.getState().history[0]?.actions).toBeUndefined();
+  });
+
+  it('marks everything read, forgets one notification or all of them', () => {
+    const a = toast({ status: 'info', title: 'a' }, 0);
+    toast({ status: 'info', title: 'b' }, 0);
+    useToasts.getState().markRead();
+    expect(useToasts.getState().unread).toBe(0);
+    useToasts.getState().forget(a);
+    expect(history()).toEqual(['b']);
+    expect(titles()).toEqual(['b']);
+    toast({ status: 'info', title: 'c' }, 0);
+    useToasts.getState().forget();
+    expect(history()).toEqual([]);
+    expect(useToasts.getState().unread).toBe(0);
   });
 });

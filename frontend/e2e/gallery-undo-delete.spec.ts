@@ -1,4 +1,4 @@
-// A deleted picture can be brought back (the toast, the header button, Ctrl+Z) and deleted again (the header button,
+// A deleted picture can be brought back (the notification under the bell, the header button, Ctrl+Z) and deleted again (the header button,
 // Ctrl+Shift+Z). The mock holds a deleted picture in its trash as the backend does.
 import type { Page } from '@playwright/test';
 import { expect, msg, openApp, test } from './fixtures';
@@ -12,7 +12,7 @@ async function deleteFirst(page: Page): Promise<void> {
   await page.getByTestId('confirm-delete-images').click();
 }
 
-test('the toast and the header button bring a deleted picture back, and delete it again', async ({ page }) => {
+test('the notification and the header button bring a deleted picture back, and delete it again', async ({ page }) => {
   await openApp(page);
   await expect(thumbs(page)).toHaveCount(4);
   await expect(page.getByTestId('gallery-undo-delete')).toBeDisabled();
@@ -22,8 +22,10 @@ test('the toast and the header button bring a deleted picture back, and delete i
   await expect(thumbs(page)).toHaveCount(3);
   await expect(page.getByTestId('gallery-undo-delete')).toBeEnabled();
 
-  // The toast's own button takes this deletion back.
-  await page.getByRole('button', { name: msg('gallery.undoDelete.action'), exact: true }).click();
+  // The deletion's notification goes under the bell, not into a toast; its own button takes this deletion back.
+  await expect(page.locator('.toast')).toHaveCount(0);
+  await page.getByTestId('notification-bell').click();
+  await page.getByTestId('notification-list').getByRole('button', { name: msg('gallery.undoDelete.action'), exact: true }).click();
   await expect(thumbs(page)).toHaveCount(4);
   await expect(page.getByTestId('gallery-count')).toHaveText('4');
   await expect(page.getByTestId('gallery-undo-delete')).toBeDisabled();

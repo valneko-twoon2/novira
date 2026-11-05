@@ -36,6 +36,7 @@ import { LanApprovals } from './LanApprovals';
 import { PhoneShell } from './phone/PhoneShell';
 import { registerFeatures } from './registerFeatures';
 import { UiZoom } from './UiZoom';
+import { NotificationBell } from './NotificationBell';
 import { SideNav } from './SideNav';
 import { Toaster } from './Toaster';
 import { Workspace } from './Workspace';
@@ -118,7 +119,15 @@ function DesktopShell() {
       <LanApprovals />
       <SideNav />
       <main className="app__content">
-        <Screens />
+        <div className="app__screens">
+          <Screens />
+        </div>
+        {/* The status bar, as in VS Code: the notification bell at its right end. */}
+        <footer className="app__status">
+          <ErrorBoundary area="notifications">
+            <NotificationBell />
+          </ErrorBoundary>
+        </footer>
       </main>
       <ErrorBoundary area="download dock">
         <PackDock />

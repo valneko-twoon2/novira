@@ -18,7 +18,7 @@ A deleted picture is kept for a while, so a deletion made by mistake can be undo
 
 **Keeping.** A picture stays 14 days, and at most 500 pictures stay; each deletion drops the older ones beyond that for good (`stale_in_trash`). Backups do not include the trash.
 
-**On the screen.** `state/galleryUndo.ts` keeps the last 30 deletions, each as the names of one deletion. The toast shown after a deletion has an "Undo" button for that deletion; the two buttons at the top of the gallery and Ctrl+Z / Ctrl+Shift+Z (also Ctrl+Y) take back the latest deletion and delete it again. The keys work while the viewer is open or the pointer is over the gallery, so the canvas keeps its own. A new deletion ends what could be deleted again. When the backend no longer holds the pictures, a warning says so.
+**On the screen.** `state/galleryUndo.ts` keeps the last 30 deletions, each as the names of one deletion. A deletion's notification goes only under the notification bell at the right end of the status bar (`app/NotificationBell.tsx`, `state/toasts.ts`: a `quiet` notification pops up no toast while a bell is mounted, so deleting one picture after another does not stack toasts over the gallery; the bell counts it, and the phone layout, which has no bell, still shows the toast), with an "Undo" button for that deletion that runs once; the two buttons at the top of the gallery and Ctrl+Z / Ctrl+Shift+Z (also Ctrl+Y) take back the latest deletion and delete it again. The keys work while the viewer is open or the pointer is over the gallery, so the canvas keeps its own. A new deletion ends what could be deleted again. When the backend no longer holds the pictures, a warning says so.
 
 ## Known limits
 

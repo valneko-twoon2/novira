@@ -43,7 +43,7 @@ export async function undoDeletion(names?: string[]): Promise<boolean> {
     const g = useGallery.getState();
     const names = new Set(back.map((i) => i.name));
     g.setImages([...back, ...g.images.filter((i) => !names.has(i.name))]);
-    toast({ status: 'success', title: tCount('gallery.undoDelete.done', back.length) });
+    toast({ status: 'success', quiet: true, title: tCount('gallery.undoDelete.done', back.length) });
     return true;
   } catch (err) {
     failed(err);
@@ -60,7 +60,7 @@ export async function redoDeletion(): Promise<boolean> {
     await backend.deleteImages(entry);
     useGallery.getState().removeImages(entry);
     useGalleryUndo.setState((s) => ({ redo: s.redo.filter((e) => e !== entry), undo: cap([...s.undo, entry]) }));
-    toast({ status: 'success', title: tCount('gallery.redoDelete.done', entry.length) });
+    toast({ status: 'success', quiet: true, title: tCount('gallery.redoDelete.done', entry.length) });
     return true;
   } catch (err) {
     failed(err);

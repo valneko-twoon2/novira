@@ -89,5 +89,11 @@
   "app.remote.what.enrolled": "登録",
   "app.remote.what.signedIn": "ログイン",
   "app.remote.what.refused": "拒否",
-  "app.remote.failed": "外出先の操作に失敗しました: {message}"
+  "app.remote.failed": "外出先の操作に失敗しました: {message}",
+  "app.notifications.title": "通知",
+  "app.notifications.clear": "すべて消す",
+  "app.notifications.empty": "通知はありません",
+  "app.notifications.remove": "この通知を消す",
+  "app.notifications.unread.one": "通知（未読 {count} 件）",
+  "app.notifications.unread.other": "通知（未読 {count} 件）"
 }

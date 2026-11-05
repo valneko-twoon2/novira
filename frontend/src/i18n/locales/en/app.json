@@ -89,5 +89,11 @@
   "app.remote.what.enrolled": "added",
   "app.remote.what.signedIn": "signed in",
   "app.remote.what.refused": "refused",
-  "app.remote.failed": "The away-from-home action failed: {message}"
+  "app.remote.failed": "The away-from-home action failed: {message}",
+  "app.notifications.title": "Notifications",
+  "app.notifications.clear": "Clear all",
+  "app.notifications.empty": "No notifications",
+  "app.notifications.remove": "Remove this notification",
+  "app.notifications.unread.one": "Notifications ({count} unread)",
+  "app.notifications.unread.other": "Notifications ({count} unread)"
 }

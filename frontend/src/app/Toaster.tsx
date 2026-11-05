@@ -8,6 +8,7 @@ const ICONS: Record<ToastStatus, typeof Info> = { info: Info, success: CheckCirc
 export function Toaster() {
   const toasts = useToasts((s) => s.toasts);
   const dismiss = useToasts((s) => s.dismiss);
+  const runAction = useToasts((s) => s.runAction);
   return (
     <div className="toaster" role="status" aria-live="polite">
       {toasts.map((toast) => {
@@ -20,16 +21,8 @@ export function Toaster() {
               {toast.description && <div className="toast__desc">{toast.description}</div>}
               {toast.actions && toast.actions.length > 0 && (
                 <div className="toast__actions">
-                  {toast.actions.map((action) => (
-                    <Button
-                      key={action.label}
-                      size="xs"
-                      variant="outline"
-                      onClick={() => {
-                        dismiss(toast.id);
-                        action.run();
-                      }}
-                    >
+                  {toast.actions.map((action, index) => (
+                    <Button key={action.label} size="xs" variant="outline" onClick={() => runAction(toast.id, index)}>
                       {action.label}
                     </Button>
                   ))}

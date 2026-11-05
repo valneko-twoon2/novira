@@ -37,7 +37,7 @@ export async function deleteImagesNow(names: string[]) {
   await backend.deleteImages(names);
   useGallery.getState().removeImages(names);
   recordDeletion(names);
-  toast({ status: 'success', title: tCount('gallery.toast.deleted', names.length), actions: [{ label: t('gallery.undoDelete.action'), run: () => void undoDeletion(names) }] });
+  toast({ status: 'success', quiet: true, title: tCount('gallery.toast.deleted', names.length), actions: [{ label: t('gallery.undoDelete.action'), run: () => void undoDeletion(names) }] });
 }
 
 /**
