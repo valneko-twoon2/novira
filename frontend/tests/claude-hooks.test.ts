@@ -7,11 +7,9 @@ import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM scripts without types
 import { contextFor } from '../../.claude/hooks/architecture-map.mjs';
 // @ts-expect-error -- plain ESM scripts without types
-import { shouldConvert } from '../../.claude/hooks/eol.mjs';
+import { badEol, rewritesFiles, shouldConvert } from '../../.claude/hooks/eol.mjs';
 // @ts-expect-error -- plain ESM scripts without types
 import { wantedEol, withEol } from '../../scripts/tools/eol.mjs';
-// @ts-expect-error -- plain ESM scripts without types
-import { badEol, rewritesFiles } from '../../.claude/hooks/eol-after-shell.mjs';
 // @ts-expect-error -- plain ESM scripts without types
 import { appeared, isProtected, listProtected, run as guard, shellWritesProtected } from '../../.claude/hooks/data-guard.mjs';
 // @ts-expect-error -- plain ESM scripts without types
@@ -105,6 +103,13 @@ describe('architecture-map hook', () => {
     expect(contextFor('SessionStart', join(root, 'frontend', 'src'))).toBeNull();
   });
 
+  it('registers the line-end hook for edits and for shell commands', () => {
+    const settings = JSON.parse(readFileSync(join(root, '.claude', 'settings.json'), 'utf8'));
+    const post = JSON.stringify(settings.hooks.PostToolUse);
+    expect(post).toContain('eol.mjs\\" edit');
+    expect(post).toContain('eol.mjs\\" shell');
+  });
+
   it('is registered for both events', () => {
     const settings = JSON.parse(readFileSync(join(root, '.claude', 'settings.json'), 'utf8'));
     for (const event of ['SessionStart', 'SubagentStart']) {
@@ -113,7 +118,7 @@ describe('architecture-map hook', () => {
   });
 });
 
-describe('eol-after-shell hook', () => {
+describe('line-end hook after a shell command', () => {
   it('looks only at shell commands that can rewrite files', () => {
     for (const cmd of ["sed -i 's/a/b/' x.ts", 'python fix.py', 'echo a > out.txt', 'node fix.cjs', 'Set-Content a.txt b']) expect(rewritesFiles(cmd), cmd).toBe(true);
     for (const cmd of ['git status', 'npm run check', 'ls -la', 'git log --oneline 2>&1', 'cargo test -p novira-core', undefined]) expect(rewritesFiles(cmd), String(cmd)).toBe(false);
@@ -168,6 +173,25 @@ describe('data-guard hook', () => {
     ];
     for (const cmd of refused) expect(shellWritesProtected(cmd, data, repo), cmd).toBe(true);
     for (const cmd of allowed) expect(shellWritesProtected(cmd, data, repo), cmd).toBe(false);
+  });
+
+  it('reads the folder name as text, not a path, in Markdown code, an option value and a path built towards work/', () => {
+    const allowed = [
+      // A script writing a manual chapter that mentions the folder by name.
+      "python - <<'EOF'\nopen('docs/manual/de/10.md','w').write('Daten in `novira-data` im Benutzerordner')\nEOF",
+      "python - <<'EOF'\nopen('.claude/rules/a.md','w').write('harness output in `novira-data/work/` and never `novira-data/models/`')\nEOF",
+      // A search that skips the folder, next to a removal elsewhere.
+      'git rm -q a.md && grep -rn x --exclude-dir=novira-data .',
+      "node -e \"fs.writeFileSync(path.join(root, 'novira-data', 'work', 'a.txt'), x)\"",
+    ];
+    const refused = [
+      'rm -rf novira-data',
+      'rm -rf "novira-data"',
+      "node -e \"fs.rmSync(path.join(root, 'novira-data', 'models'))\"",
+      "python - <<'EOF'\nopen('novira-data/settings.json','w')\nEOF",
+    ];
+    for (const cmd of allowed) expect(shellWritesProtected(cmd, data, repo), cmd).toBe(false);
+    for (const cmd of refused) expect(shellWritesProtected(cmd, data, repo), cmd).toBe(true);
   });
 
   it('reports what a shell command left in the data folder, and nothing for an unchanged one', () => {

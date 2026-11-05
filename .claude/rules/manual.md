@@ -34,7 +34,7 @@ When you add, change or remove a feature the user sees, update the manual **in t
 ## 3. How to translate
 
 - **Only ja and en are written with a change.** Then run `node frontend/scripts/manual-pending.mjs add`: it lists every changed chapter in `docs/manual/pending.json` for the other eight languages (and gives a language that lacks the file a copy of the English one). A chapter listed there is shown in English with a note and is not checked for structure. The pre-commit hook (`check-manual-sync.mjs`) stops a commit that changes a chapter in ja or en without en or ja, or without translating it or listing it as pending.
-- **Catching up** (when a piece of work ends, before a release, or when asked): the `/manual` skill has the steps and a ready brief for a helper.
+- **Catching up** (when a piece of work ends, before a release, or when asked): the `/manual` skill has the steps and a ready brief for a helper. `node frontend/scripts/manual-pending.mjs check <language> [chapter...]` tells whether a translation keeps the shape of ja before it is cleared.
 - Translate the ja chapter keeping the same structure. Do not change paragraph breaks, the number of table rows, the number of list items or the positions of images (tests stop this). Leave `{{ui:…}}`, `shot:` and URLs as they are.
 - Match terminology to the app's text in that language (what `{{ui:…}}` produces). Do not invent words the app does not have.
 - Translate each language's `_meta.json` too (`name` = the language's own name for itself, `title`, `subtitle`, `contents`, `language`).

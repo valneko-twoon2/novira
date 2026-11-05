@@ -1,4 +1,4 @@
-// The changelog (CHANGELOG.md, Keep a Changelog 1.1.0, .claude/rules/changelog.md): its shape, the notes of one version
+// The changelog (CHANGELOG.md, Keep a Changelog 1.1.0, .claude/skills/release-notes/SKILL.md): its shape, the notes of one version
 // for the release page, and the cut of a release.
 //   node scripts/tools/changelog.mjs --check                          the file has the shape below (pre-commit when it is staged, CI)
 //   node scripts/tools/changelog.mjs --notes <tag> [--out <file>]     the body of the version the tag v<version> names (the release workflow)
@@ -170,7 +170,7 @@ function main(argv) {
   if (command === '--check') {
     const errors = check(text);
     if (errors.length) {
-      console.error(`changelog: CHANGELOG.md is not in shape (.claude/rules/changelog.md):\n${errors.map((e) => `  ${e}`).join('\n')}`);
+      console.error(`changelog: CHANGELOG.md is not in shape (.claude/skills/release-notes/SKILL.md):\n${errors.map((e) => `  ${e}`).join('\n')}`);
       return 1;
     }
     return 0;

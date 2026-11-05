@@ -1,6 +1,6 @@
 // Claude Code SessionStart and SubagentStart hook: puts the entry page of the architecture map (docs/architecture/README.md)
 // in front of the main session and of every subagent at its start, as additional context. The built-in Explore and Plan
-// subagents do not read AGENTS.md, and an agent that does read it still skipped the map (.claude/rules/architecture-map.md).
+// subagents do not read AGENTS.md, and an agent that does read it still skipped the map (.claude/rules/docs.md).
 // It never fails a start: when the page cannot be read it prints nothing.
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -15,7 +15,7 @@ export function contextFor(event, root) {
   const file = join(root, ...PAGE);
   if (!existsSync(file)) return null;
   const page = readFileSync(file, 'utf8').replace(/\r\n/g, '\n').trim();
-  const additionalContext = `The architecture map of this repository (docs/architecture/README.md). Read it before you look for anything; frontend.md, backend.md and tooling.md in the same folder go deeper. It is a guide, not a list of files: search the tree for files.\n\n${page}`;
+  const additionalContext = `The architecture map of this repository (docs/architecture/README.md). Read it before you look for anything; frontend.md, backend.md, tooling.md and guards.md in the same folder go deeper. It is a guide, not a list of files: search the tree for files.\n\n${page}`;
   return { hookSpecificOutput: { hookEventName: event, additionalContext } };
 }
 

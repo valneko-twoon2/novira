@@ -23,8 +23,9 @@ What must hold (no hard-coded text, every language together, keys, what is not t
 Only when the user asks (languages other than ja and en wait for their word):
 
 1. `node frontend/scripts/i18n-todo.mjs --out <todo.json>` (or `npm run i18n:todo` for the counts). The file holds, per language, the missing keys with their ja and en texts.
-2. Translate each language's messages in one go (a helper may take a language each, with the same rules as above: terms as in that language's catalog, same `{placeholders}`). Write `{ "<area>": { "<key>": { "<language>": "…" } } }`.
-3. `node frontend/scripts/i18n-add.mjs <spec.json> --fill` adds only what the languages still lack and never touches ja and en. Then `npx vitest run tests/i18n.test.ts tests/i18n-glossary.test.ts`.
+2. Translate each language's messages in one go: a helper per language works well (about 600 messages each). The brief: the todo of that one language as input, the output shape `{ "<area>": { "<key>": { "<language>": "…" } } }`, the same `{placeholders}`, the terms of that language's catalog and `src/i18n/glossary.json`, what is never translated (section "Do not translate" of the rule), buttons as short as the English, and its own scratch folder (helpers share the scratchpad). Have it check that every key is there and the placeholders match before it reports.
+3. `node frontend/scripts/i18n-add.mjs <spec.json> --fill` adds only what the languages still lack and never touches ja and en.
+4. Check: `npx vitest run tests/i18n.test.ts tests/i18n-glossary.test.ts`, `NOVIRA_GLOSSARY_LOCALES=all node frontend/scripts/check-glossary.mjs` (the term list for every language; the commit hook checks ja and en only), and `node scripts/tools/layout-scan.mjs --locales <the languages>` for text that no longer fits. A long word that does not fit is shortened in that language (keep the meaning); a control that pushes another out of its box is a layout fault, fixed in the CSS (let the row wrap), not by cutting words.
 
 ## Add an area
 

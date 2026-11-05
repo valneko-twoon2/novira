@@ -1,6 +1,6 @@
 # Tooling: launchers, checks and guards
 
-How the project is started, checked and guarded, and which file guards what. How to run the checks for a change: [../verification.md](../verification.md). Up: [README.md](README.md).
+How the project is started and checked, and where the rules and skills are; what each guard stops is [guards.md](guards.md). How to run the checks for a change: [../verification.md](../verification.md). Up: [README.md](README.md).
 
 ## Launchers and tools
 
@@ -18,9 +18,10 @@ How the project is started, checked and guarded, and which file guards what. How
 | `release/package.bat` | Release build into `artifacts/`, then zip and `.sha256` (`package-release.mjs`); `build` skips the zip, for `release-smoke.mjs`; the release workflow runs the same steps |
 | `release/set-version.bat` | Sets the one version in `Cargo.toml`, `package.json` and the lock files (`set-version.mjs`) |
 
-| In `` (and one spec) | What |
+| In `scripts/tools/` (and one spec) | What |
 |---|---|
 | `affected.mjs` | Only the checks the changed files need |
+| `coverage-report.mjs` | One graphical coverage report of every part measured (ReportGenerator, pinned in `.config/dotnet-tools.json`) |
 | `typecheck.mjs`, `docs-check.mjs`, `ui-refs.mjs`, `visual-baselines.mjs`, `check-eol.mjs`, `fix-eol.mjs`, `eol.mjs`, `check-name.mjs`, `changelog.mjs`, `ci-summary.mjs` | Whole-repository checks: types, the map, stale doc names, stale test ids and text keys, stale baselines, line ends, name spelling, the changelog, CI test counts |
 | `layout-scan.mjs`, `e2e-lock.mjs` | The layout scan (with text fit) and its pass record; the lock for one heavy Playwright run at a time |
 | `e2e/a11y.spec.ts` (`e2e/a11yKnown.ts`) | axe-core (WCAG A/AA, no contrast) on each main tab: fails beyond the known list, which only shrinks |
@@ -45,48 +46,16 @@ Rules (`.claude/rules/`) say what must hold; Claude Code loads one when a file u
 
 | Rule | About |
 |---|---|
-| `architecture-map.md`, `design-docs.md` | What the map holds and how big it may get; what a design page (the current specification of a feature) holds and when to update it |
+| `docs.md` | What the map and a design page hold, when to update them |
 | `frontend.md`, `i18n.md`, `manual.md`, `assistant.md`, `comfyui.md`, `security.md` | The frontend's layers and look; screen text in every language; the manual; the AI assistant kept in step with features; pack settings; what to check at each boundary |
-| `models.md` | Model changes swept in the real app |
-| `regression-tests.md`, `test-maintenance.md`, `commit-messages.md`, `changelog.md` | Which tests to run; tests change with behaviour; a commit message; `CHANGELOG.md` |
+| `models.md`, `tests.md`, `commit-messages.md` | Model changes swept in the real app; tests change with behaviour and only affected ones run; a commit message |
 
 | Skill | For |
 |---|---|
-| `i18n/`, `manual/` | Screen text, the manual |
+| `i18n/`, `manual/` | Screen text, the manual (also catching up the other languages) |
 | `gatekeeper/`, `verify-real-app/` | Taking a subagent's branch into main; running the real app in isolation |
-| `testing/`, `test-mutation/`, `authoring-skills/`, `hardening-harness/`, `release-notes/` | Test cases; mutants; a skill; a guard; a release |
+| `testing/`, `hardening-harness/`, `release-notes/` | Test cases, coverage and mutants; a guard, a skill or a review of the harness; a release and its changelog |
+
 ## What guards what
 
-| Guard | Stops |
-|---|---|
-| `scripts/tools/typecheck.mjs` (`tsc`, incremental; pre-commit) | type errors in src, tests, e2e, configs; text keys ja lacks |
-| `frontend/tests/i18n.test.ts` | a key ja has and en lacks, a key or area another language has and ja does not, different placeholders, Japanese written straight into ts / tsx |
-| `frontend/scripts/check-glossary.mjs` (`src/i18n/glossary.json`, its test, pre-commit) | a word the term list forbids, in the ja/en catalogs and manual |
-| `frontend/tests/manual.test.ts` | a manual folder missing for an app language, chapters whose files or structure (headings, tables, lists, pictures) differ from `ja`, `{{ui:key}}` / links / picture ids that do not exist, scenes and pictures out of step |
-| `frontend/scripts/check-i18n-sync.mjs` (pre-commit) | a commit that changes a message in ja or en without the other, or leaves another language a text for a message that ja or en changed |
-| `frontend/scripts/check-manual-sync.mjs` (pre-commit) | a manual chapter changed in ja or en without the other, or neither translated nor listed in `docs/manual/pending.json` for another language |
-| ESLint | network access outside `src/backend/`, non-LF line ends, react-hooks rules; a union `switch` leaving a member to `default`; a model list filtered to type main |
-| ESLint `frontend/scripts/eslint-layers.mjs` | imports against the layer direction, one feature importing another (except `features/media` and `features/invoke`); listed exceptions may only shrink |
-| ESLint `frontend/scripts/eslint-test-hygiene.mjs` | committed `.only` tests |
-| `frontend/tests/structure.test.ts` | `utils/`, `misc/`, `helpers/` folders; layer exceptions that are no longer needed |
-| `frontend/tests/test-hygiene.test.ts` | `#[ignore]` outside `tests/*_live.rs`; prompt snapshots no test writes (frontend and `comfy/__snapshots__/graph/`) |
-| `comfy::node_defs_check` (in `cargo test -p novira-core --lib`) | a built graph a real ComfyUI would refuse (unknown node or input, missing input, wrong link, a choice or number it does not take; against `node-defs.json` from `scripts/tools/comfy-node-defs.mjs`). Not missing files or run-time failures |
-| ESLint `frontend/scripts/eslint-security.mjs`, `cargo test -p novira --test security` | HTML put straight into the DOM, `eval`, `window.open`, a looser CSP or capability, launches through a shell, SQL with values formatted in, committed secrets (details and limits in `.claude/rules/security.md`) |
-| stylelint | outside `tokens.css`: hex, `rgb()`, `hsl()` colours; a radius not `--radius-*`; a z-index over 9 not `--z-*` |
-| `npm run check:eol` | a text file with the wrong line ends, tracked or untracked (not ignored): LF expected, CRLF for `.bat` and `.cmd` |
-| `scripts/tools/docs-check.mjs` (`tests/docs-check.test.ts` in `npm run check` and CI; `--git` in pre-commit) | a folder, crate, launcher, tool, hook body, rule or skill no map page or AGENTS.md names; a backticked path or link of a map or design page that does not exist; a code name in backticks in `docs/` (not the manual), `.claude/` or AGENTS.md that no code has; a page over its limit; a design page without a matching `covers` list or missing from its index; a security boundary change without a design page in the commit; a **warning** when a commit changes code a design page covers and not the page |
-| `scripts/tools/ui-refs.mjs` (pre-commit; `tests/ui-refs.test.ts`; `verify-real-app.mjs` runs it on its test script before the build) | a test id or text key (forms in the tool's header) named by the e2e specs, `frontend/scripts/`, `scripts/tools/`, the docs or `.claude/` that no source of `frontend/src` or the ja catalog has. Not an id hidden in one build or held in a variable |
-| `.githooks/commit-msg.mjs` (`.githooks/commit-msg`; `tests/commit-msg.test.ts`) | a message breaking `.claude/rules/commit-messages.md`: a summary over 72 characters or ending in a full stop, a body over 8 one-line `- ` bullets of at most 100 characters, a named work branch (merge, revert, fixup and squash commits excepted). |
-| `.githooks/pre-commit` | staged line ends, type errors, languages out of step, forbidden terms, stale docs and UI references, layout source without a layout-scan pass, staged `novira-data/` (so also `novira-data/work/`), `out/`, `data/`, `outputs/`, `config.json`, `.env*` |
-| `frontend/scripts/oss-licenses.mjs` (pre-commit, when one of its inputs is staged: it regenerates and stages the notices) | a dependency or download added without a license text (a package with none is named) or a downloaded file in no entry of `oss-downloads.json` (the watermark files are read); the About list and the notices stay in step with the lockfiles |
-| `scripts/tools/visual-baselines.mjs` (`affected.mjs` uses its trigger rule; `tests/visual-baselines.test.ts`) | which changed files can alter a main screen; run `npm run e2e:visual` by hand (too heavy for pre-commit). Only the screens in `visual.spec.ts` |
-| `scripts/tools/layout-scan.mjs` (`e2e/layout.spec.ts`, rules `e2e/layoutRules.ts`, `e2e/textFit.ts`; run by `affected.mjs`) | on every screen of the mock, ja and en, dark and light: a control out of its box or the window, text cut off or shortened to "…", visible controls or cards closer than 1px or overlapping; a label that sticks out or wraps, a tooltip or menu out of the window. Pre-commit needs a recorded pass for what is staged |
-| Claude Code hooks (`.claude/hooks/`) | the map's entry page missing from a session or subagent (`architecture-map.mjs`); wrong line ends after an edit or a shell rewrite; uncommitted work at the end of a turn (`commit-before-stop.mjs` reminds once), model code committed with no sweep record for HEAD; a write into `novira-data/` (or where the app moved it) outside `work/` (`data-guard.mjs`: refused before, reported after); a finished worktree not removed with `scripts/tools/worktree.mjs remove`. The line-end and uncommitted-work hooks see all worktrees. |
-| `cargo test -p novira --test robustness` | `unwrap` / `expect` on locks (use `novira_core::sync`), synchronous commands that do not run through `commands::guard` (a panic on the main thread kills the app) |
-| `frontend/tests/rust-debuginfo.test.ts` | Rust debug info back: a profile's `debug`, `/DEBUG:NONE` gone from `backend/.cargo/config.toml`, a script setting `RUSTFLAGS` |
-| `cargo test -p novira --test window_config` | `dragDropEnabled` turned on (on Windows no HTML5 drag and drop reaches the page) |
-| `npm run coverage` (`checks/coverage.bat`) | frontend coverage falling below the floors in `frontend/vitest.config.ts`. Run by hand, not in `npm run check`. Rust: `checks/coverage.bat backend` fails below its line floor (`--fail-under-lines`). `npm run coverage:e2e` (`checks/coverage.bat e2e`) adds the browser coverage of the Playwright run (`frontend/scripts/coverage-report.mjs`) |
-| `checks/mutation.bat rust` (`cargo mutants`, config `backend/.cargo/mutants.toml`) | a test that does not notice a real change of the code (a surviving mutant). Not in `check.bat` or CI (a day for the crate; one file with `-- -f <path>`); equivalent mutants are excluded in the config with a reason |
-| `npx vitest run <file>.property.test.ts` (part of `npm run check`; fast-check, shared setup in `frontend/src/propertyTest.testkit.ts`) | hostile or random input reaching pure frontend logic and stores. In process only (`fetch` throws), fixed run count and seed (`NOVIRA_PBT_RUNS`, `NOVIRA_PBT_SEED`); a known bug is an `it.fails` test with a `known bug:` comment |
-| `prop_*` tests of novira-core (`--test prop_paths` and the others) | hostile or random input reaching a pure function or parser: a path that escapes its folder or names a device or another host; a prompt with a dangling link, a cycle or a null input; a parser that panics or overflows; a contract type that changes in a round trip. Fixed seed | only what the generators reach: no real engine, network or GPU, and a bug outside the generated shapes |
-| `backend/rustfmt.toml` (`newline_style = "Unix"`) | Rust line ends |
+The table of every guard and what it stops is its own page: [guards.md](guards.md).

@@ -67,4 +67,4 @@ Beyond the plain stores (`ui`, `settings`, `params`, `gallery`, `queue`, `models
 
 ## Outside `src/`
 
-`frontend/scripts/` holds the local lint rules and the scripts tied to the frontend (line ends, i18n and manual sync, `shot.mjs` for screenshots); `frontend/tests/` the whole-source tests; `frontend/e2e/` the Playwright flows, `visual.spec.ts` (baselines in `__screenshots__/`) and the layout scan with the text fit `layout.spec.ts` (rules in `layoutRules.ts`, `textFit.ts`). What each guard stops: [tooling.md](tooling.md).
+`frontend/scripts/` holds the local lint rules and the scripts tied to the frontend (line ends, i18n and manual sync, `shot.mjs` for screenshots); `frontend/tests/` the whole-source tests; `frontend/e2e/` the Playwright flows, `visual.spec.ts` (baselines in `__screenshots__/`) and the layout scan with the text fit `layout.spec.ts` (rules in `layoutRules.ts`, `textFit.ts`). What each guard stops: [guards.md](guards.md).

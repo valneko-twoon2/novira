@@ -40,5 +40,5 @@ Follow this when changing `frontend/src/`. The map of locations is [docs/archite
 
 - Screen text goes only in the i18n catalogs ([i18n.md](i18n.md)).
 - When you add, change or remove a user-visible feature, update the manual too ([manual.md](manual.md)).
-- Add, change or remove tests ([test-maintenance.md](test-maintenance.md)). What to run is in [regression-tests.md](regression-tests.md).
+- Add, change or remove tests ([tests.md](tests.md)). What to run is in [tests.md](tests.md).
 - When you rename or remove a test id or a screen text, change what names it outside `src/`: the e2e specs, the manual's scenes, the tools that drive the real app, the docs. `scripts/tools/ui-refs.mjs` (pre-commit) lists every reference left behind. Hiding something in one build only (`import.meta.env.MODE === 'production'`) it cannot see: the harness builds use the mode `HARNESS_MODE` (`scripts/tools/harness-paths.mjs`), so check what drives the app's own build.

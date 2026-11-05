@@ -1,12 +1,6 @@
----
-name: authoring-skills
-description: "Create or revise a Claude Code skill (a SKILL.md under .claude/skills) following Anthropic's skill authoring best practices: a third-person description that says what and when, a concise body under 500 lines, the right degree of freedom, references one level deep, workflows with checklists and feedback loops, and evaluations run before and after. Use when the user asks to make, write, add, improve or review a skill, or to turn a repeated procedure into one."
-argument-hint: "What the skill should do and when it should be used"
-user-invocable: true
-disable-model-invocation: false
----
+# Writing a skill
 
-Source: https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices. This page keeps only what to do; read the source when a case is not covered here.
+How to write or revise a skill (a `SKILL.md` under `.claude/skills/`). Source: https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices; this page keeps only what to do.
 
 Copy this checklist and tick it as you go:
 
@@ -65,7 +59,7 @@ Keep the frontmatter fields the other skills here use: `argument-hint`, `user-in
 Run, and fix until it prints OK:
 
 ```bash
-node .claude/skills/authoring-skills/scripts/check-skill.mjs .claude/skills/<name>
+node .claude/skills/hardening-harness/scripts/check-skill.mjs .claude/skills/<name>
 ```
 
 It checks the name, the description, the length, backslash paths, missing links and references more than one level deep. It cannot judge whether the text is right; step 5 does.
@@ -79,6 +73,6 @@ It checks the name, the description, the length, backslash paths, missing links 
 
 ## 6. Register it
 
-- Add the skill to the skill list in `AGENTS.md` (section 2) and to the skill table in `docs/architecture/tooling.md`.
+- Add the skill to the skill list in `AGENTS.md` and to the skill table in `docs/architecture/tooling.md`.
 - Run `node scripts/tools/docs-check.mjs` and, in `frontend/`, `npm run check:eol`.
 - Commit the skill folder with the registrations.

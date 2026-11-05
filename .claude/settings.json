@@ -45,7 +45,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/eol.mjs\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/eol.mjs\" edit",
             "timeout": 20,
             "statusMessage": "Fixing line ends"
           }
@@ -56,15 +56,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/eol-after-shell.mjs\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/eol.mjs\" shell",
             "timeout": 20,
             "statusMessage": "Checking line ends"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash|PowerShell",
-        "hooks": [
+          },
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/data-guard.mjs\" post",

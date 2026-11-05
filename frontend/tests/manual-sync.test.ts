@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { manualProblems } from '../scripts/check-manual-sync.mjs';
 // @ts-expect-error -- plain ESM script without types
 import { clearPending, markPending } from '../scripts/manual-pending.mjs';
+// @ts-expect-error -- plain ESM script without types
+import { translationProblems } from '../scripts/manual.mjs';
 
 const followers = ['ko', 'fr'];
 
@@ -40,5 +42,22 @@ describe('manualProblems', () => {
 
   it('has nothing to say about a commit that touches no ja or en chapter', () => {
     expect(manualProblems({ ko: ['12-comic.md'] }, {}, ['ko'])).toEqual([]);
+  });
+});
+
+
+describe('translationProblems', () => {
+  const ja = ['# 題', '', '段落。', '', '- 一', '- 二', '', '![絵](shot:viewer)', ''].join('\n');
+
+  it('passes a translation with the shape of ja, even with its paragraphs wrapped differently', () => {
+    const en = ['# Title', '', 'A paragraph', 'wrapped.', '', '- one', '- two', '', '![Picture](shot:viewer)', ''].join('\n');
+    expect(translationProblems(ja, en)).toEqual([]);
+  });
+
+  it('names the first block where the shape differs, and CRLF line ends', () => {
+    const bad = ['# Title', '', 'Some text.', '', '- one', '', '![Picture](shot:viewer)', ''].join('\r\n');
+    const problems = translationProblems(ja, bad) as string[];
+    expect(problems[0]).toContain('block 4');
+    expect(problems.join(' ')).toContain('CRLF');
   });
 });

@@ -10,7 +10,7 @@ disable-model-invocation: true
 
 Running `/release-notes` is the user's word to release: finish the changelog, commit and push it, tag that commit and push the tag. Do not stop to ask between the steps; stop only on a failed check below, and say why.
 
-The notes are the version's section of `CHANGELOG.md` (rule: [changelog.md](../../rules/changelog.md)). The release workflow reads them from the tagged commit, titles the draft with the tag and attaches the zip ([release-workflow.md](../../../docs/design/release-workflow.md)). Do not make the release with `gh` yourself.
+The notes are the version's section of `CHANGELOG.md`, written as section 6 below says. The release workflow reads them from the tagged commit, titles the draft with the tag and attaches the zip ([release-workflow.md](../../../docs/design/release-workflow.md)). Do not make the release with `gh` yourself.
 
 ```
 Release progress:
@@ -35,10 +35,10 @@ Stop at the first failure, before changing anything:
 
 ## 2. Write [Unreleased] from the commits
 
-`[Unreleased]` is empty between releases: nothing else writes `CHANGELOG.md` (the rule). Write every line now, from the commits of the range:
+`[Unreleased]` is empty between releases: nothing else writes `CHANGELOG.md`. Write every line now, from the commits of the range:
 
-1. Sort the commits by what the user of the app sees, not by the prefix alone; leave out everything about developing the app (the rule's list). A `test:` or `chore:` subject that says a defect of the app was fixed (直す, 不具合) can hold a product fix: read it.
-2. For each user-visible change, write one line under `[Unreleased]`, following the rule. When a subject does not say what the user can now do, read the commit (`git show --stat <id>`, then the relevant part); quote screen words from `frontend/src/i18n/locales/ja/`, numbers from the code.
+1. Sort the commits by what the user of the app sees, not by the prefix alone; leave out everything about developing the app (section 6). A `test:` or `chore:` subject that says a defect of the app was fixed (直す, 不具合) can hold a product fix: read it.
+2. For each user-visible change, write one line under `[Unreleased]`, as section 6 says. When a subject does not say what the user can now do, read the commit (`git show --stat <id>`, then the relevant part); quote screen words from `frontend/src/i18n/locales/ja/`, numbers from the code.
 3. Skip changes that were reverted, merge lines about the same thing, and keep it short: leave out small fixes a user would hardly notice.
 4. A change you could not confirm is written cautiously or left out, and listed as a question in the report.
 
@@ -62,6 +62,18 @@ If a step fails after the tag was pushed, do not delete or move the tag; report 
 - The version's section in a ```` ```markdown ```` block and the commit ID.
 - The range (`v0.4.0..HEAD`, N commits) and what was left out, summarised by kind with counts.
 - The open questions. A change the user asks for afterwards: edit `CHANGELOG.md` on `main` (commit and push), then put the same text on the release with `gh release edit <tag> --notes-file <file>` from `node scripts/tools/changelog.mjs --notes <tag> --out novira-data/work/release-notes/<tag>.md`.
+
+## 6. What goes into CHANGELOG.md, and how
+
+`CHANGELOG.md` is the record of what changed for the user of the app, version by version, in the shape of [Keep a Changelog 1.1.0](https://keepachangelog.com/ja/1.1.0/); the release page shows the version's section as it is.
+
+- Only this skill writes it. A feature, a fix or a removal does not add its line when it is made, and nothing waits under `[Unreleased]` between releases.
+- Nothing about developing the app goes in, whatever the commit type: tests and test tools, CI and workflows, hooks, skills, rules, `scripts/`, build and cargo settings, docs and design pages, refactors. A `test:` or `chore:` commit that fixes a defect of the app does add its fix. Leave out what a user would hardly notice, and accessibility-only fixes (screen-reader names, ARIA).
+- Under a version, only these headings, in this order, each at most once: `### Added` (what the user can now do), `### Changed` (works differently, a rename), `### Deprecated`, `### Removed`, `### Fixed` (what went wrong no longer does), `### Security`.
+- Bullets are Japanese, for users: one line each, no sub-bullets, no mechanism. Name screens and buttons with the words the app shows; merge related changes into one bullet. Added, Changed, Deprecated and Removed lines are short phrases ending in 「〜を追加。」「〜に変更。」「〜ように変更。」「〜を削除。」; Fixed lines are です/ます (「〜を直しました。」「〜ようにしました。」); a security fix is one plain line (「〜の安全性を高めました。」).
+- The introduction is one line naming the format; nothing else goes above `[Unreleased]`.
+
+`node scripts/tools/changelog.mjs --check` (pre-commit when the file is staged, the `test` workflow, `frontend/tests/changelog.test.ts`) refuses a file out of shape: the title, `[Unreleased]` first, versions newest first with real dates, only the headings above in order, one-line bullets, the compare links at the end. It cannot tell whether a change is missing or a bullet is true; step 2 does that.
 
 ## Limits
 

@@ -21,7 +21,7 @@ if (!existsSync(RAW)) {
 const report = new CoverageReport({
   name: 'novira E2E coverage',
   outputDir: E2E_DIR,
-  reports: [['lcovonly'], ['console-summary'], ['html']],
+  reports: [['lcovonly'], ['cobertura'], ['console-summary'], ['html']],
   entryFilter: (entry) => entry.url.includes('/src/'),
   sourceFilter: (path) => /src\/.+\.tsx?$/.test(path) && !/\.test\.tsx?$/.test(path),
   sourcePath: (path) => path.replace(/^.*?(?=src\/)/, ''),

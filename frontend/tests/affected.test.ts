@@ -1,4 +1,4 @@
-// The checks scripts/tools/affected.mjs chooses for a change (the tables of .claude/rules/regression-tests.md, done by a tool).
+// The checks scripts/tools/affected.mjs chooses for a change (the tables of .claude/rules/tests.md, done by a tool).
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
 import { modulesNamed, plan, readCoreTests, specsFor } from '../../scripts/tools/affected.mjs';

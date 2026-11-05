@@ -55,7 +55,7 @@ Windows locks a running `novira.exe`, so close the app before you start, rebuild
 | `cd backend && cargo test -p novira-core --lib` | The backend's unit tests |
 | `cd frontend && npm run e2e` | The screen flows in a browser (Playwright, on the mock). Run `npx playwright install chromium webkit` once first (WebKit runs the phone layout as an iPhone opens it) |
 
-Which checks fit which change is in [../.claude/rules/regression-tests.md](../.claude/rules/regression-tests.md). Running the real app, the engine or the model sweep is in [verification.md](verification.md).
+Which checks fit which change is in [../.claude/rules/tests.md](../.claude/rules/tests.md). Running the real app, the engine or the model sweep is in [verification.md](verification.md).
 
 ## Good to know
 

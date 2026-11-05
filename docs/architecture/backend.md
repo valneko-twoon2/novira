@@ -80,4 +80,4 @@ Unit tests sit in each `.rs` file (`mod tests`), or in `<name>/tests.rs` next to
 | other `*.rs` | Failure and waiting paths made real (a damaged database, a held file, a retry that runs out), the assistant with fake CLIs, export with the watermark |
 | `*_live.rs` | `#[ignore]`d: network, CLIs or a running ComfyUI; run by name when the change is about them |
 
-The shell has `backend/src-tauri/tests/` (`security/`, `window_config.rs`, `robustness.rs`). Which tests to run for a change: `.claude/rules/regression-tests.md`.
+The shell has `backend/src-tauri/tests/` (`security/`, `window_config.rs`, `robustness.rs`). Which tests to run for a change: `.claude/rules/tests.md`.

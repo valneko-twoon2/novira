@@ -3,14 +3,15 @@
 // so a manual change needs only ja and en, and the other languages are translated later in one batch.
 //   node frontend/scripts/manual-pending.mjs add             list every changed ja/en chapter (git status) as pending in the other languages
 //   node frontend/scripts/manual-pending.mjs add 12-comic.md the same for the named chapters
-//   node frontend/scripts/manual-pending.mjs clear ko 12-comic.md   a translation is done (several chapters, or "all" for the language)
+//   node frontend/scripts/manual-pending.mjs check ko 12-comic.md   whether a translation is ready to be cleared (shape of ja, LF, name)
+//   node frontend/scripts/manual-pending.mjs clear ko 12-comic.md   a translation is done (several chapters; none or "all" for every chapter)
 //   node frontend/scripts/manual-pending.mjs list
 // A chapter file a language does not have yet is created there as a copy of the English one.
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, existsSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { listChapters, listLocales, MANUAL_SOURCE, PRIMARY_LOCALES, readPending } from './manual.mjs';
+import { listChapters, listLocales, MANUAL_SOURCE, PRIMARY_LOCALES, readPending, translationProblems } from './manual.mjs';
 import { CHAPTER_NAME } from './locales.mjs';
 
 /** The pending list after `chapters` changed in ja or en: every other language that did not change them itself is behind. */
@@ -76,14 +77,24 @@ function main() {
     console.log(`manual-pending: ${chapters.length} chapter(s) marked as behind in ${followers.length} language(s).`);
   } else if (command === 'clear' && rest.length >= 1) {
     const [locale, ...files] = rest;
-    write(clearPending(pending, locale, files.length ? files : listChapters('ja')));
+    write(clearPending(pending, locale, files.length && !files.includes('all') ? files : listChapters('ja')));
     console.log(`manual-pending: cleared for ${locale}.`);
+  } else if (command === 'check' && rest.length >= 1) {
+    const [locale, ...files] = rest;
+    let failed = 0;
+    for (const file of files.length ? files : listChapters('ja')) {
+      const read = (l) => readFileSync(join(MANUAL_SOURCE, l, file), 'utf8');
+      const problems = translationProblems(read('ja'), read(locale));
+      failed += problems.length ? 1 : 0;
+      console.log(`${locale}/${file}: ${problems.length ? problems.join('; ') : 'ok'}`);
+    }
+    process.exitCode = failed ? 1 : 0;
   } else if (command === 'list') {
     const entries = Object.entries(pending);
     if (!entries.length) console.log('manual-pending: no language is behind.');
     for (const [locale, files] of entries) console.log(`${locale}: ${files.join(', ')}`);
   } else {
-    console.error('usage: node frontend/scripts/manual-pending.mjs add [chapter...] | clear <language|all> [chapter...] | list');
+    console.error('usage: node frontend/scripts/manual-pending.mjs add [chapter...] | check <language> [chapter...] | clear <language|all> [chapter...|all] | list');
     process.exitCode = 2;
   }
 }

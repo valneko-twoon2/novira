@@ -1,12 +1,6 @@
----
-name: test-mutation
-description: "Checks that the Rust backend's tests notice real changes, using cargo-mutants through scripts/checks/mutation.bat, one file at a time, and turns each missed mutant into a test or an exclusion with a reason. Use after writing or changing the tests of a novira-core module, when a module's tests seem weak, or the user asks for mutation testing (ミューテーション, テストが弱い)."
-argument-hint: "The Rust file to check, for example crates/novira-core/src/settings.rs (relative to backend/)"
-user-invocable: true
-disable-model-invocation: false
----
+# Mutation testing (Rust)
 
-What must hold is in `.claude/rules/regression-tests.md` (what to run) and `.claude/rules/test-maintenance.md` (never weaken a test to make it pass). The script is `scripts/checks/mutation.bat`, its settings are `backend/.cargo/mutants.toml`, and the tooling page describes both (`docs/architecture/tooling.md`). These are the steps.
+Checks that the Rust backend's tests notice real changes, with cargo-mutants through `scripts/checks/mutation.bat` (settings: `backend/.cargo/mutants.toml`). Never weaken a test to make a mutant disappear (`.claude/rules/tests.md`).
 
 ## 1. What it does and what it costs
 

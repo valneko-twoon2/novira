@@ -8,9 +8,8 @@
 //                                          code that a design page covers prints a warning when that page is not in the commit
 //   node scripts/tools/docs-check.mjs --find <path>...   the design pages that cover each path (read them before changing it)
 //
-// The map is a short guide, not a list of files, so it is checked for what it names and what it points at (.claude/rules/
-// architecture-map.md). A design page is the current specification of one feature; its `covers` list in the front matter says
-// which code it describes (.claude/rules/design-docs.md).
+// The map is a short guide, not a list of files, so it is checked for what it names and what it points at (.claude/rules/docs.md). A design page is the current specification of one feature; its `covers` list in the front matter says
+// which code it describes (.claude/rules/docs.md).
 //
 // What it cannot see: whether a page says the right thing, or whether a change inside a file needs a design note. It forces the
 // question: a new folder fails until a page names it, a moved file fails until the page that pointed at it is fixed, a boundary
@@ -49,7 +48,7 @@ const NAMED_PAGES = /^(docs\/(?!manual\/).+\.md|\.claude\/.+\.md|AGENTS\.md)$/;
 /** Names a page may write that no code of the repository has, each with the reason. */
 const OUTSIDE_NAMES = {
   ORT_DYLIB_PATH: 'the ort crate reads it; gallery-share.md says the app does not use it',
-  expected_behavior: 'a field of the evaluation JSON that the authoring-skills skill asks for',
+  expected_behavior: 'a field of the evaluation JSON that the hardening-harness skill asks for when a skill is written',
   ryugahama_yueilxl_v1: 'a LoRA file of the user, named in verification.md as what a check ran on',
 };
 
@@ -157,18 +156,20 @@ export function structureProblems(files, read) {
     const body = page.map(text).join('\n');
     // A whole name: `eol.mjs` written only inside `check-eol.mjs` does not count.
     const named = (name) => new RegExp(`(?<![\\w.-])${`${name}${suffix}`.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`).test(body);
-    for (const name of names) if (!named(name)) problems.push(`${page[0]}: does not mention ${what} "${name}${suffix}"; add it to the map (.claude/rules/architecture-map.md)`);
+    for (const name of names) if (!named(name)) problems.push(`${page[0]}: does not mention ${what} "${name}${suffix}"; add it to the map (.claude/rules/docs.md)`);
   };
   const entry = `${ARCH}/README.md`;
   const frontend = `${ARCH}/frontend.md`;
   const backend = `${ARCH}/backend.md`;
   const tooling = `${ARCH}/tooling.md`;
+  // The tooling page and its table of guards (split from it) describe the tools, hooks, rules and skills between them.
+  const guards = `${ARCH}/guards.md`;
 
   need([entry], foldersUnder(files, ''), 'the top-level folder');
-  need([entry, tooling], filesUnder(files, 'scripts/', '.bat'), 'the launcher', '');
+  need([entry, tooling, guards], filesUnder(files, 'scripts/', '.bat'), 'the launcher', '');
   // Everything the AI sessions, the hooks and CI call is described on the tooling page, and so are the Git hook bodies.
-  need([tooling], filesUnder(files, 'scripts/tools/', '.mjs'), 'the tool', '');
-  need([tooling], filesUnder(files, '.githooks/', '.mjs'), 'the Git hook body', '');
+  need([tooling, guards], filesUnder(files, 'scripts/tools/', '.mjs'), 'the tool', '');
+  need([tooling, guards], filesUnder(files, '.githooks/', '.mjs'), 'the Git hook body', '');
   need([frontend], foldersUnder(files, 'frontend/src/'), 'the source folder');
   need([frontend], foldersUnder(files, 'frontend/src/features/'), 'the feature folder');
   need([backend], foldersUnder(files, 'backend/crates/'), 'the crate');
@@ -179,8 +180,8 @@ export function structureProblems(files, read) {
   const skills = foldersUnder(files, '.claude/skills/');
   need(['AGENTS.md'], rules, 'the rule', '');
   need(['AGENTS.md'], skills.map((s) => `/${s}`), 'the skill', '');
-  need([tooling], rules, 'the rule', '');
-  need([tooling], skills, 'the skill');
+  need([tooling, guards], rules, 'the rule', '');
+  need([tooling, guards], skills, 'the skill');
 
   // What the pages point at exists: the paths they write and the links between them.
   const tracked = new Set(files);
@@ -214,7 +215,7 @@ export function structureProblems(files, read) {
   for (const page of archPages) {
     const size = Buffer.byteLength(text(page));
     const limit = page === entry ? ENTRY_LIMIT : PAGE_LIMIT;
-    if (size > limit) problems.push(`${page}: ${size} bytes (at most ${limit}); cut what a search of the code shows (file lists), keep what it does not (.claude/rules/architecture-map.md)`);
+    if (size > limit) problems.push(`${page}: ${size} bytes (at most ${limit}); cut what a search of the code shows (file lists), keep what it does not (.claude/rules/docs.md)`);
   }
 
   // A design page says which code it describes, names only code that exists, is in the index, and is not too long.
@@ -222,14 +223,14 @@ export function structureProblems(files, read) {
   for (const page of designPages) {
     const list = coversOf(text(page));
     if (list === null || list.length === 0) {
-      problems.push(`${page}: needs a "covers:" list in its front matter (the files or folders of code it describes; .claude/rules/design-docs.md)`);
+      problems.push(`${page}: needs a "covers:" list in its front matter (the files or folders of code it describes; .claude/rules/docs.md)`);
     } else {
       for (const entryPath of list) if (!files.some((f) => covers(entryPath, f))) problems.push(`${page}: covers "${entryPath}", which matches no file; fix the front matter`);
     }
     const base = page.split('/').pop();
     if (!index.includes(base)) problems.push(`${DESIGN}/README.md: does not list the page ${base}`);
     const size = Buffer.byteLength(text(page));
-    if (size > DESIGN_LIMIT) problems.push(`${page}: ${size} bytes (at most ${DESIGN_LIMIT}); split it by feature (.claude/rules/design-docs.md)`);
+    if (size > DESIGN_LIMIT) problems.push(`${page}: ${size} bytes (at most ${DESIGN_LIMIT}); split it by feature (.claude/rules/docs.md)`);
   }
   return problems;
 }

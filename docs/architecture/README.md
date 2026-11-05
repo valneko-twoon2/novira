@@ -1,6 +1,6 @@
 # Architecture
 
-Read this page before you look for anything. It says how the parts fit, which file is the source of truth for what, and where to start for the usual changes. It is a short guide, not a list of files: to find a file, search the tree (`Glob`, `grep`). Open [frontend.md](frontend.md) or [backend.md](backend.md) for the area you work in, [tooling.md](tooling.md) for checks and launchers. How the features work is in [../design/README.md](../design/README.md).
+Read this page before you look for anything. It says how the parts fit, which file is the source of truth for what, and where to start for the usual changes. It is a short guide, not a list of files: to find a file, search the tree (`Glob`, `grep`). Open [frontend.md](frontend.md) or [backend.md](backend.md) for the area you work in, [tooling.md](tooling.md) and [guards.md](guards.md) for launchers and checks. How the features work is in [../design/README.md](../design/README.md).
 
 ## The parts
 
@@ -49,7 +49,7 @@ src-tauri  ── commands.rs (validate) ──▶ novira-core::service ──�
 | The comic | `frontend/src/state/comic/`, `frontend/src/features/comic/`; saved by `backend/crates/novira-core/src/service/comics.rs` |
 | Export for sharing, the watermark | `backend/crates/novira-core/src/service/share.rs`, `media/export.rs`, `provenance/` |
 | What a feature does now, its boundaries and limits | `docs/design/README.md`; `node scripts/tools/docs-check.mjs --find <path>` names the page of a file |
-| How checks and launchers work | [tooling.md](tooling.md) |
+| How checks and launchers work | [tooling.md](tooling.md), [guards.md](guards.md) |
 
 ## Where things live
 
@@ -60,9 +60,9 @@ src-tauri  ── commands.rs (validate) ──▶ novira-core::service ──�
 | `contract/` | JSON fixtures of the wire types, checked by both sides |
 | `docs/` | `design/` each feature's specification and security, `manual/<language>/` the manual, `development.md`, `verification.md` |
 | `scripts/` | what you run by hand: the Windows launchers (`.bat`); in `tools/`, what AI sessions, Git hooks and CI call |
-| `.githooks/`, `.github/`, `.claude/` | the Git hooks (sh wrapper + Node body); the test and release workflows; Claude Code hooks, rules and skills ([tooling.md](tooling.md)) |
+| `.githooks/`, `.github/`, `.claude/`, `.config/` | the Git hooks (sh wrapper + Node body); the test and release workflows; Claude Code hooks, rules and skills; the pinned .NET tool of the coverage report ([tooling.md](tooling.md)) |
 | `novira-data/`, `data/`, `outputs/` | user data and generated files, never committed; `novira-data/work/` holds everything the harness generates (verification data, reports, builds, scratch) |
 
 ## Keeping it current
 
-This guide holds what a search of the code does not show: how the parts connect, where the truth is, where to start. Change it in the same commit when a part is added, removed or moved, a boundary changes, or a "where to start" row stops being true. Do not list files here; the tree is the list. `scripts/tools/docs-check.mjs` fails when a top-level folder, a crate, a feature folder, a rule or a skill is not named in these pages, when a path written in backticks no longer exists, and when the pages grow past their size limit ([the rule](../../.claude/rules/architecture-map.md)).
+This guide holds what a search of the code does not show: how the parts connect, where the truth is, where to start. Change it in the same commit when a part is added, removed or moved, a boundary changes, or a "where to start" row stops being true. Do not list files here; the tree is the list. `scripts/tools/docs-check.mjs` fails on a part no page names, a backticked path that no longer exists, and a page past its size limit ([the rule](../../.claude/rules/docs.md)).

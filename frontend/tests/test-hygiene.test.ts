@@ -1,4 +1,4 @@
-// Repository-wide checks on the tests themselves (.claude/rules/test-maintenance.md section 3), frontend and backend
+// Repository-wide checks on the tests themselves (.claude/rules/tests.md section 3), frontend and backend
 // in one place so `npm run check` and CI run them without a Rust build.
 //   - `#[ignore]` only in backend `tests/*_live.rs` (live tests that need the network or a real engine).
 //   - Every ComfyUI prompt snapshot file is still produced by a test case (frontend `__snapshots__/<builder>/` and

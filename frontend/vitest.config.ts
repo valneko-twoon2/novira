@@ -41,7 +41,7 @@ export default defineConfig({
         // Test support code (the recording canvas context), not app code.
         'src/**/*.testkit.ts',
       ],
-      reporter: ['text-summary', 'json-summary', 'html', 'lcovonly'],
+      reporter: ['text-summary', 'json-summary', 'html', 'lcovonly', 'cobertura'],
       reportsDirectory: '../novira-data/work/coverage/frontend',
       thresholds: { statements: 96, branches: 90, functions: 95, lines: 97 },
     },

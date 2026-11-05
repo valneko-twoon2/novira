@@ -9,7 +9,7 @@ import { escapeHtml, renderMarkdown, slugify } from '../scripts/manual/markdown.
 // @ts-expect-error -- plain ESM scripts without types
 import { SCENES } from '../scripts/manual/scenes.mjs';
 // @ts-expect-error -- plain ESM scripts without types
-import { chapterId, chapterPage, listChapters, listLocales, loadMessages, MANUAL_SOURCE, META_KEYS, PRIMARY_LOCALES, readPending, renderManual } from '../scripts/manual.mjs';
+import { chapterId, chapterPage, chapterShape, listChapters, listLocales, loadMessages, MANUAL_SOURCE, META_KEYS, PRIMARY_LOCALES, readPending, renderManual } from '../scripts/manual.mjs';
 
 interface Rendered {
   html: string;
@@ -129,27 +129,7 @@ describe('the manual of every language', () => {
   const read = (locale: string, file: string): string => readFileSync(join(MANUAL_SOURCE, locale, file), 'utf8');
   const sceneIds: string[] = SCENES.map((s: { id: string }) => s.id);
 
-  /** The shape of a chapter: its blocks, with the counts that a translation must keep (rows, items, pictures). */
-  const skeleton = (source: string): string[] => {
-    const lines = source.replace(/\r\n/g, '\n').split('\n');
-    const out: string[] = [];
-    let fence = false;
-    for (const line of lines) {
-      if (/^```/.test(line)) {
-        fence = !fence;
-        out.push('code');
-      } else if (fence) continue;
-      else if (/^#{1,4}\s/.test(line)) out.push(`h${(/^#+/.exec(line) as RegExpExecArray)[0].length}`);
-      else if (/^\|/.test(line)) out.push('row');
-      else if (/^\s*([-*]|\d+\.)\s/.test(line)) out.push(`li${/^\s*/.exec(line)![0].length}`);
-      else if (/^>/.test(line)) out.push('quote');
-      else if (/^!\[.*\]\(shot:[\w-]+\)\s*$/.test(line)) out.push(`pic:${/shot:([\w-]+)/.exec(line)![1]}`);
-      else if (/^---+\s*$/.test(line)) out.push('rule');
-      else if (line.trim() !== '') out.push('p');
-    }
-    // A run of paragraph lines is one paragraph: translations may wrap differently.
-    return out.filter((item, i) => !(item === 'p' && out[i - 1] === 'p'));
-  };
+  const skeleton = chapterShape as (source: string) => string[];
 
   it('has a folder for every language of the app, and for no other', () => {
     const folders = readdirSync(MANUAL_SOURCE, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort();

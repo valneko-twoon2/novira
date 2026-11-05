@@ -1,4 +1,4 @@
-// Picks the checks a change needs (the tables of .claude/rules/regression-tests.md) and runs them, so nobody chooses
+// Picks the checks a change needs (the tables of .claude/rules/tests.md) and runs them, so nobody chooses
 // tests from the table by hand and a test that imports a changed file is not forgotten.
 //
 // Usage (from the repository root):

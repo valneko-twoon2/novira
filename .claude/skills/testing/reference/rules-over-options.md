@@ -19,7 +19,7 @@ No pairwise generator is in the repository. Write the covering table by hand; do
 - One test per rule row, named after the rule (for example, "refuses a mask outside inpaint and outpaint").
 - For a count limit, assert the boundary as `backend/crates/novira-core/tests/backend_service/guidance_mutation.rs` does: the maximum is accepted and one more is refused.
 - Include hostile combinations: a mode that must not carry a mask, a count that does not match the list sent (the frontend is not trusted), a weight or a span outside its range.
-- Update a snapshot only after reading the JSON diff (`regression-tests.md` gives the command for each side).
+- Update a snapshot only after reading the JSON diff (`tests.md` gives the command for each side).
 - A rule is covered only when each row has a test. List the rows that have none, and why.
 
 Run: `cargo test -p novira-core --test backend_service guidance`, and `cargo test -p novira-core --lib comfy::` for graph building.

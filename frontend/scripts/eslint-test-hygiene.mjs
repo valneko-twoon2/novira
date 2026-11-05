@@ -1,4 +1,4 @@
-// ESLint rule that keeps focused tests out of the repository (.claude/rules/test-maintenance.md).
+// ESLint rule that keeps focused tests out of the repository (.claude/rules/tests.md).
 //
 // Scope: `it.only`, `test.only`, `describe.only`, `suite.only`, `bench.only` and `test.describe.only` (Playwright),
 // including chained forms such as `it.only.each` and `describe.skip.only`, in vitest and Playwright sources.

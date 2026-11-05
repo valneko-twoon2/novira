@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Checks a skill folder against Anthropic's skill authoring best practices.
-// Usage: node .claude/skills/authoring-skills/scripts/check-skill.mjs <skill folder>
+// Usage: node .claude/skills/hardening-harness/scripts/check-skill.mjs <skill folder>
 import { existsSync, readFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 

@@ -72,6 +72,46 @@ export function listChapters(locale, source = MANUAL_SOURCE) {
     .sort();
 }
 
+/** The shape of a chapter: its blocks, with the counts a translation must keep (headings, rows, list items, pictures). */
+export function chapterShape(text) {
+  const out = [];
+  let fence = false;
+  for (const line of text.replace(/\r\n/g, '\n').split('\n')) {
+    if (/^```/.test(line)) {
+      fence = !fence;
+      out.push('code');
+    } else if (fence) continue;
+    else if (/^#{1,4}\s/.test(line)) out.push(`h${/^#+/.exec(line)[0].length}`);
+    else if (/^\|/.test(line)) out.push('row');
+    else if (/^\s*([-*]|\d+\.)\s/.test(line)) out.push(`li${/^\s*/.exec(line)[0].length}`);
+    else if (/^>/.test(line)) out.push('quote');
+    else if (/^!\[.*\]\(shot:[\w-]+\)\s*$/.test(line)) out.push(`pic:${/shot:([\w-]+)/.exec(line)[1]}`);
+    else if (/^---+\s*$/.test(line)) out.push('rule');
+    else if (line.trim() !== '') out.push('p');
+  }
+  // A run of paragraph lines is one paragraph: translations may wrap differently.
+  return out.filter((item, i) => !(item === 'p' && out[i - 1] === 'p'));
+}
+
+/**
+ * What keeps a translated chapter from being up to date with the Japanese one, before it is cleared from the pending list:
+ * a different shape (reported at the first block that differs) and CRLF line ends. (The product name's spelling is checked for
+ * every file by scripts/tools/check-name.mjs.)
+ */
+export function translationProblems(ja, translated) {
+  const problems = [];
+  const a = chapterShape(ja);
+  const b = chapterShape(translated);
+  const at = a.findIndex((block, i) => block !== b[i]);
+  if (at >= 0 || a.length !== b.length) {
+    const i = at >= 0 ? at : Math.min(a.length, b.length);
+    const near = (s) => s.slice(Math.max(0, i - 2), i + 3).join(' ');
+    problems.push(`shape differs from ja at block ${i + 1}: ja [${near(a)}], this [${near(b)}]`);
+  }
+  if (translated.includes('\r')) problems.push('CRLF line ends; the manual is LF');
+  return problems;
+}
+
 export function readMeta(locale, source = MANUAL_SOURCE) {
   return JSON.parse(readFileSync(join(source, locale, '_meta.json'), 'utf8'));
 }

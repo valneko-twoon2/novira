@@ -45,7 +45,7 @@ Merge progress:
 | Line ends | `npm run check:eol` (in the branch), `git diff --stat` shows no file changed on every line |
 | Commit messages | Japanese, line 1 `<type>: ...` (feat, fix, docs, chore ...) at most 72 characters, no branch or tag names (`commit-messages.md`; the hook refuses the rest); only the subagent's own files |
 | Comments and test names | English (AGENTS.md section 0) |
-| Tests | Added or changed with the feature (`test-maintenance.md`); no `skip`, `only` or `#[ignore]` without a reason; no test file mixed over 500 lines |
+| Tests | Added or changed with the feature (`tests.md`); no `skip`, `only` or `#[ignore]` without a reason; no test file mixed over 500 lines |
 | Texts | ja and en in the same change; a new area registered in `catalog.ts` (ja and en); `tests/i18n.test.ts` passes |
 | Manual | A user-visible change has ja and en chapter text; `manual-pending.mjs add` was run; no shots were retaken |
 | Map | A new top-level, crate, feature or module folder, rule or skill is named in the map (`docs-check`); a changed IPC or boundary has the design page of its feature (`docs-check --find`); a change to behaviour has its page updated (`docs/design/`) |
@@ -63,7 +63,7 @@ Merge progress:
 
 ## 3. After the merge (the merged result, not the branch)
 
-1. Run what the merged files affect (`regression-tests.md`); after conflicts, the full set of the areas both sides touched (the reason goes in the report). Typecheck and lint always.
+1. Run what the merged files affect (`tests.md`); after conflicts, the full set of the areas both sides touched (the reason goes in the report). Typecheck and lint always.
 2. A failure that is also on a clean `main` is reported as existing, with the evidence (run it on `main`); any other failure is fixed before the report.
 3. A change that touches the engine, the queue, the GPU, models or packs is not verified until `/verify-real-app` ran, or the report says it was not.
 

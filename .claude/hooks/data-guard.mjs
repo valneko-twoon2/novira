@@ -37,10 +37,28 @@ function folderNames(dataDirs) {
   return [...new Set(['novira-data', ...dataDirs.map((d) => path.basename(path.resolve(d)).toLowerCase())])];
 }
 
+/**
+ * Whether a match of a folder name is text rather than a path the command acts on: inline code in the text a script writes
+ * (`novira-data` or `novira-data/models/`, in Markdown; in a shell, backticks run a command and never name a target), and,
+ * for the bare name only, an option's value (`--exclude-dir=novira-data`, which names what a search skips) and a path built
+ * in pieces whose next piece is the open work folder (`path.join(root, 'novira-data', 'work', ...)`). A name standing as a
+ * word of its own (`rm -rf novira-data`) stays a path.
+ */
+export function isTextMention(text, index, match) {
+  const before = text[index - 1] ?? '';
+  const after = text.slice(index + match.length);
+  if (before === '`' && after.startsWith('`')) return true;
+  if (/[\\/]/.test(match.replace(/^[A-Za-z]:/, ''))) return false;
+  if (before === '=') return true;
+  return /^["']\s*,\s*["']work["']/i.test(after);
+}
+
 /** Every path-like word of `text` that names a folder called novira-data (or one of `names`), with the rest of it (to the next space or quote). */
 export function dataPaths(text, names = ['novira-data']) {
   const name = names.map(escape).join('|');
-  return [...text.matchAll(new RegExp(`(?:[A-Za-z]:)?[^\\s"'\`=(,]*(?:${name})(?:[\\\\/][^\\s"'\`;|&),]*)?`, 'gi'))].map((m) => m[0]);
+  return [...text.matchAll(new RegExp(`(?:[A-Za-z]:)?[^\\s"'\`=(,]*(?:${name})(?:[\\\\/][^\\s"'\`;|&),]*)?`, 'gi'))]
+    .filter((m) => !isTextMention(text, m.index, m[0]))
+    .map((m) => m[0]);
 }
 
 /**
