@@ -481,7 +481,8 @@ export class StageController {
     const s = this.store.getState();
     if (e.ctrlKey && !e.deltaMode && Math.abs(e.deltaY) >= 50 && (s.tool === 'brush' || s.tool === 'eraser' || s.tool === 'mosaic')) {
       const cur = s.tool === 'brush' ? s.brushWidth : s.tool === 'mosaic' ? s.mosaicWidth : s.eraserWidth;
-      const next = cur * (e.deltaY < 0 ? 1.15 : 1 / 1.15);
+      // At least one step each way: a small width times 1.15 rounds back to itself and would never grow.
+      const next = e.deltaY < 0 ? Math.max(cur * 1.15, cur + 1) : Math.min(cur / 1.15, cur - 1);
       if (s.tool === 'brush') s.setBrushWidth(next);
       else if (s.tool === 'mosaic') s.setMosaicWidth(next);
       else s.setEraserWidth(next);

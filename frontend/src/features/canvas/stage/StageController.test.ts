@@ -428,6 +428,16 @@ describe('panning and zooming', () => {
     canvas.dispatchEvent(new WheelEvent('wheel', { ctrlKey: true, deltaY: -100, cancelable: true }));
     expect(state().mosaicWidth).toBeGreaterThan(40);
   });
+
+  it('grows a tiny width with ctrl + wheel instead of sticking', () => {
+    state().setTool('mosaic');
+    state().setMosaicWidth(1);
+    canvas.dispatchEvent(new WheelEvent('wheel', { ctrlKey: true, deltaY: -100, cancelable: true }));
+    expect(state().mosaicWidth).toBe(2);
+    canvas.dispatchEvent(new WheelEvent('wheel', { ctrlKey: true, deltaY: 100, cancelable: true }));
+    canvas.dispatchEvent(new WheelEvent('wheel', { ctrlKey: true, deltaY: 100, cancelable: true }));
+    expect(state().mosaicWidth).toBe(1);
+  });
 });
 
 describe('the staged picture', () => {
