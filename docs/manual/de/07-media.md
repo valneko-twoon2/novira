@@ -6,7 +6,7 @@ Alle Funktionen werden im linken Bedienfeld des Tabs **{{ui:app.tabs.generate}}*
 
 ## Umschalten, was erzeugt wird
 
-Ganz oben im linken Bedienfeld befindet sich ein Umschalter, der nur aus Symbolen besteht. Von links nach rechts sind das **{{ui:media.tab.image}}**, **{{ui:media.tab.video}}**, **{{ui:media.tab.music}}**, **{{ui:media.tab.voice}}**, **{{ui:media.tab.logo}}**, **{{ui:media.tab.text}}** und **{{ui:app.tabs.comic}}**. **{{ui:app.tabs.comic}}** ist der Bildschirm zum Erstellen von Comicseiten ([Comics zeichnen](12-comic.md)).
+Ganz oben im linken Bedienfeld befindet sich ein Umschalter, der nur aus Symbolen besteht. Von links nach rechts sind das **{{ui:media.tab.image}}**, **{{ui:media.tab.video}}**, **{{ui:media.tab.music}}**, **{{ui:media.tab.voice}}**, **{{ui:media.tab.logo}}**, **{{ui:media.tab.text}}** und **{{ui:app.tabs.comic}}**. Comicseiten erstellen Sie mit dem Symbol ganz rechts ([Comics zeichnen](12-comic.md)).
 
 Halten Sie die Maus über ein Symbol, um seinen Namen zu sehen. Beim Umschalten wechseln das linke Bedienfeld und die Anzeige in der Mitte zu der jeweiligen Art.
 
@@ -74,9 +74,17 @@ Sie können auch in der Galerie mit der rechten Maustaste auf ein Bild klicken u
 | {{ui:video.fps}} | Die Anzahl der Bilder pro Sekunde (8 bis 30) |
 | {{ui:video.lengthLabel}} | 1 bis 10 Sekunden. Die Zahl der Frames ergibt sich automatisch aus Länge und Bildrate |
 | {{ui:video.steps}}, {{ui:video.cfg}} | Feinabstimmung des Ergebnisses. Bei der Wahl eines Modells wechseln sie auf Werte, die zu diesem Modell passen |
-| {{ui:video.randomSeed}} | Schalten Sie es aus, können Sie den Seed festlegen und dieselbe Bewegung neu erzeugen |
+| {{ui:params.seed.label}} | In der Zeile oben links erzeugt der Würfel ({{ui:params.seed.random}}) jedes Mal einen neuen Seed; mit dem Schloss ({{ui:params.seed.fixed}}) lässt sich mit demselben Seed dieselbe Bewegung neu erzeugen |
 
 Für **{{ui:video.model.fast}}** müssen Sie **{{ui:pack.title.turbo}}** separat herunterladen. Dieses Modell hat eine nichtkommerzielle Lizenz.
+
+Die Liste unter **{{ui:video.model}}** enthält auch bereits installierte Videomodelle. Unterstützt werden Modelle von Wan 2.1 und Wan 2.2 (einschließlich VACE), HunyuanVideo und HunyuanVideo 1.5 sowie LTX-Video und LTX-2. Wenn Sie eines wählen, wechseln Schrittzahl, CFG, Bildrate und Größe auf Werte, die zu diesem Modell passen, und ein Download eines Videomodells ist nicht nötig. Textencoder und VAE werden anhand ihres Namens unter den installierten Modellen gesucht und verwendet. Fehlt etwas, schlägt die Erzeugung fehl und die nötigen Dateien werden angezeigt (Sie können sie über **{{ui:models.install.tab.starter}}** im Modellbildschirm gesammelt installieren).
+
+- Wans Text-zu-Video-Modelle können kein Bild animieren. Um ein Bild zu animieren, wählen Sie ein Bild-zu-Video-Modell von Wan.
+- Wan 2.2 14B besteht aus einem Paar von zwei Dateien, High-Noise und Low-Noise. Wählen Sie die High-Noise-Datei, wird die Low-Noise-Datei des Paares automatisch mitverwendet.
+- HunyuanVideo (1.0 und 1.5) und LTX-Video können sowohl aus Text als auch aus einem Bild erzeugen (HunyuanVideo 1.0 benötigt dafür ein Bild-zu-Video-Modell und die Bildverständnis-Datei `llava_llama3_vision`). LTX-2 erzeugt auch Ton, der im Video enthalten ist.
+- Mit Wans VACE-Modellen kann ein Bild als Referenz für das Video dienen. Wans Bild-zu-Video-Modell 2.1 benötigt zusätzlich die CLIP-Vision-Datei (`clip_vision_h`), die sich über die Starter-Modelle installieren lässt.
+- Wan-Modelle, die ein Steuervideo, Audio, Kamerabewegungen oder ein Pose-Video benötigen (Fun Control, S2V, Animate und andere), lassen sich hier nicht ausführen. Die Erzeugung schlägt fehl und das Fehlende wird angezeigt.
 
 ### Wenn die GPU wenig Speicher hat
 
@@ -160,7 +168,7 @@ Die Sprachen, die vorgelesen werden können, sind Japanisch, Englisch, Chinesisc
 
 ### Ergebnisse
 
-Die fertige Stimme erscheint mit einem Player in der Liste in der Mitte. Angezeigt werden auch die verwendete Stimme (bei einer aus Worten erzeugten Stimme „{{ui:audio.voice.designed}}“) und die Sprache. Sie gelangt ebenfalls in die Galerie.
+Die fertige Stimme erscheint mit einem Player in der Liste in der Mitte. Angezeigt werden auch die verwendete Stimme (bei der Stimme {{ui:audio.voice.designed}} steht dort „{{ui:audio.voice.designed}}“) und die Sprache. Sie gelangt ebenfalls in die Galerie.
 
 Die erste Erzeugung dauert etwas, weil das Modell geladen wird. Wenn Sie es eine Weile nicht verwenden, wird das Modell aus der GPU entfernt, und der Speicher steht wieder für andere Aufgaben zur Verfügung.
 

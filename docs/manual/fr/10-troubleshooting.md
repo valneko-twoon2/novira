@@ -5,7 +5,7 @@ Ce chapitre rassemble les causes des problèmes et ce qu'il faut essayer. Cherch
 Pour commencer, ces 2 éléments donnent souvent une piste sur la cause.
 
 - Onglet **{{ui:app.tabs.queue}}** : pour un élément en échec, la raison est indiquée (voir [plus bas](#échec-de-la-génération)).
-- {{ui:app.devlog.title}} : l'enregistrement interne de l'application (voir [L'assistant IA et les paramètres](09-assistant-settings.md)).
+- {{ui:app.devlog.title}} : l'enregistrement interne de l'application (voir [L'agent et les paramètres](09-assistant-settings.md)).
 
 ## Démarrage et moteur
 
@@ -113,7 +113,7 @@ Si la création échoue faute de mémoire, l'application le reconnaît et affich
 Les boutons de l'avis permettent d'essayer l'une des deux options.
 
 - **{{ui:queue.oom.retrySmaller}}** : recrée avec les mêmes réglages et la même seed, en conservant le rapport largeur/hauteur et en ramenant la surface à environ 75 %. N'apparaît que pour les images dont on fixe la taille (pas pour la vidéo, la musique, la voix, les logos ni l'agrandissement).
-- **{{ui:queue.oom.lowMemory}}** : active **{{ui:settings.lowMemory.label}}** (voir [L'assistant IA et les paramètres](09-assistant-settings.md)) et redémarre le moteur. S'il y a des éléments en cours de création, le réglage s'applique au prochain démarrage du moteur. N'apparaît pas s'il est déjà activé.
+- **{{ui:queue.oom.lowMemory}}** : active **{{ui:settings.lowMemory.label}}** (voir [L'agent et les paramètres](09-assistant-settings.md)) et redémarre le moteur. S'il y a des éléments en cours de création, le réglage s'applique au prochain démarrage du moteur. N'apparaît pas s'il est déjà activé.
 
 Après un échec dû au manque de mémoire, l'application demande au moteur de décharger les modèles chargés pour libérer de la mémoire. La création suivante repart donc du chargement du modèle et prend un peu plus de temps.
 
@@ -164,7 +164,7 @@ Si vous ne les trouvez toujours pas, vérifiez **{{ui:queue.col.destination}}** 
 
 Les images, les modèles et les enregistrements se trouvent tous dans un dossier nommé **`novira-data`**. Son emplacement est le suivant.
 
-- Version distribuée : le dossier choisi à l'installation. Par défaut, le dossier `novira-data` situé dans le même dossier que l'exécutable de l'application (`novira.exe`).
+- Version distribuée : le dossier `novira-data` situé dans le dossier utilisateur (`C:\Users\<nom d'utilisateur>`). Si un dossier `novira-data` existe déjà dans le même dossier que l'exécutable (`novira.exe`), comme auparavant, c'est celui-là qui reste utilisé.
 - Version de développement : le dossier `novira-data` situé à la racine du dépôt.
 
 On peut le déplacer ailleurs avec la variable d'environnement `NOVIRA_DATA_DIR`.
@@ -181,7 +181,7 @@ On peut le déplacer ailleurs avec la variable d'environnement `NOVIRA_DATA_DIR`
 | `logs` | Les journaux (voir plus bas) |
 | `settings.json` | Les réglages pour utilisateurs avancés (facultatif) |
 | `secrets` | Les clés d'API et les jetons (chiffrés) |
-| `agent.json` | Le type d'IA choisi dans l'assistant IA |
+| `agent.json` | Le type d'IA choisi dans l'agent |
 
 Le moteur installé par l'application (ComfyUI et Python) et ses données de travail se trouvent aussi dans le dossier de données.
 
@@ -189,7 +189,7 @@ Les réglages de l'écran de l'application (langue, thème, préréglages, histo
 
 ### Sauvegarde
 
-novira dispose d'une fonction pour créer une sauvegarde et d'une fonction pour restaurer à partir d'une sauvegarde. Pour protéger vos images importantes, utilisez la rubrique **{{ui:share.backup.section}}** de l'écran des paramètres (voir [L'assistant IA et les paramètres](09-assistant-settings.md#sauvegarde)). Une sauvegarde contient les images créées et ce que vous avez réglé ou enregistré dans l'application, mais pas les modèles ni le moteur de génération d'images. Si vous voulez aussi les conserver, copiez vous-même le dossier.
+novira dispose d'une fonction pour créer une sauvegarde et d'une fonction pour restaurer à partir d'une sauvegarde. Pour protéger vos images importantes, utilisez la rubrique **{{ui:share.backup.section}}** de l'écran des paramètres (voir [L'agent et les paramètres](09-assistant-settings.md#sauvegarde)). Une sauvegarde contient les images créées et ce que vous avez réglé ou enregistré dans l'application, mais pas les modèles ni le moteur de génération d'images. Si vous voulez aussi les conserver, copiez vous-même le dossier.
 
 1. Fermez l'application (vérifiez aussi qu'aucune création n'est en cours).
 2. Copiez le dossier `novira-data` en entier vers un autre disque, par exemple.
@@ -206,7 +206,7 @@ Les journaux se consultent à 3 endroits.
 
 | Endroit | Contenu |
 |---|---|
-| {{ui:app.devlog.title}} (dans l'application) | L'enregistrement interne de l'application, ainsi que les avertissements et erreurs de l'écran. Activez l'affichage dans les paramètres (voir [L'assistant IA et les paramètres](09-assistant-settings.md)) |
+| {{ui:app.devlog.title}} (dans l'application) | L'enregistrement interne de l'application, ainsi que les avertissements et erreurs de l'écran. Activez l'affichage dans les paramètres (voir [L'agent et les paramètres](09-assistant-settings.md)) |
 | `novira-data\logs\novira.log` | L'enregistrement de l'application elle-même. Quand il devient gros (plus de 2 Mo), il passe dans `novira.log.1` |
 | `novira-data\logs\comfyui.log` | L'enregistrement du moteur de génération d'images. La raison y figure quand il ne démarre pas ou quand une génération échoue |
 

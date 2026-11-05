@@ -164,7 +164,7 @@ Wird es dennoch nicht gefunden, im Tab **{{ui:app.tabs.queue}}** die Spalte **{{
 
 Bilder, Modelle und Aufzeichnungen liegen alle in einem Ordner namens **`novira-data`**. Der Speicherort ist wie folgt.
 
-- Ausgelieferte Version: der bei der Installation gewählte Ordner. Standardmäßig ist es `novira-data` im selben Ordner wie die ausführbare Datei der App (`novira.exe`).
+- Ausgelieferte Version: `novira-data` im Benutzerordner (`C:\Users\<Benutzername>`). Liegt wie früher bereits ein `novira-data` im selben Ordner wie die ausführbare Datei (`novira.exe`), wird dieses weiter verwendet.
 - Version in Entwicklung: `novira-data` im obersten Ordner des Repositorys.
 
 Mit der Umgebungsvariablen `NOVIRA_DATA_DIR` lässt sich ein anderer Ort festlegen.

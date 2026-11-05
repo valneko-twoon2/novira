@@ -5,7 +5,7 @@ Dieses Kapitel erklärt, wie Sie Bilder ordnen und finden, wie Sie sie im Betrac
 
 ## Die Galerie im Überblick
 
-Das rechte Bedienfeld besteht aus zwei Teilen übereinander.
+Wählen Sie oben im rechten Bedienfeld den Tab **{{ui:app.right.gallery}}**, um die Galerie zu sehen (der Tab **{{ui:app.right.assistant}}** daneben ist der [KI-Assistent](09-assistant-settings.md#ki-assistent)). Die Galerie besteht aus zwei Teilen übereinander.
 
 - Oben: **{{ui:gallery.boards.title}}**. Sie sind wie Ordner, in denen Bilder abgelegt werden.
 - Unten: Vorschaubilder der Bilder des gewählten Boards.
@@ -86,6 +86,7 @@ Ein Rechtsklick auf ein Vorschaubild zeigt eine Liste der Aktionen, die für die
 | **{{ui:gallery.menu.openInViewer}}** | Zeigt es groß im Betrachter in der Mitte |
 | **{{ui:common.download}}** | Speichert die Bilddatei |
 | **{{ui:share.menu}}** | Exportiert Kopien in einem gewählten Format und einer gewählten Größe (die Generierungsinfos lassen sich entfernen) |
+| **{{ui:share.check.title}}** | Prüft ein Bild auf ein Wasserzeichen, die Kennzeichnung als KI-erzeugt und Content Credentials |
 | **{{ui:common.copy}}** (`Ctrl+C`) | Kopiert das Bild in die Zwischenablage |
 | **{{ui:gallery.menu.compare}}** (`Alt+Klick`) | Vergleicht es mit dem im Betrachter gezeigten Bild |
 | **{{ui:gallery.menu.loadWorkflow}}** (`W`) | Öffnet den Workflow, mit dem das Bild erzeugt wurde |
@@ -100,17 +101,16 @@ Ein Rechtsklick auf ein Vorschaubild zeigt eine Liste der Aktionen, die für die
 | **{{ui:gallery.menu.sendToWorkflow}}** | Fügt es dem geöffneten Workflow als Bildeingabe hinzu |
 | **{{ui:gallery.menu.sendToText}}** | Macht es zum Hintergrund eines Textbilds |
 | **{{ui:gallery.menu.upscale}}** (`Shift+U`) | Sendet es an den Tab Upscaling |
-| **{{ui:gallery.menu.segment}}** | Wählt einen Teil des Bildes aus, den Sie ausschneiden oder neu zeichnen können |
+| **{{ui:gallery.menu.segment}}** | Öffnet das Bild auf der Leinwand, sodass Sie einen Teil übermalen und löschen, ausschneiden oder neu zeichnen können |
 | **{{ui:gallery.derive.menu}}** | Erzeugt mit den Einstellungen dieses Bildes weitere Bilder mit anderem Seed oder leichten Änderungen |
-| **{{ui:cutout.menu}}** | Entfernt den Hintergrund |
-| **{{ui:facefix.menu}}** | Findet Gesichter und zeichnet sie neu |
+| **{{ui:gallery.tools.heading}}** | {{ui:facefix.menu}}, {{ui:cutout.menu}}, {{ui:caption.menu}}, {{ui:canvas.poseFromImage.menu}}. Ein Klick führt den Eintrag sofort mit den Einstellungen vom letzten Mal aus; das Zahnrad rechts davon öffnet zuerst die Einstellungen (siehe [Bilder korrigieren und wiederverwenden](04-improve.md)) |
 | **{{ui:gallery.menu.trim}}** | Schneidet transparente Ränder ab und speichert das Ergebnis als neues transparentes Bild |
 | **{{ui:character.menu}}** | Registriert das Bild als Charakter |
 | **{{ui:gallery.menu.changeBoard}}** | Verschiebt es in ein anderes Board |
 | **{{ui:gallery.menu.star}}** / **{{ui:gallery.menu.unstar}}** | Markiert als Favorit oder entfernt die Markierung |
 | **{{ui:gallery.menu.delete}}** (`Del`) | Löscht das Bild |
 
-Wie „{{ui:gallery.menu.sendToCanvas}}“ und die Aktionen zum erneuten Erzeugen oder Verbessern von Bildern verwendet werden, erklären [Auf der Leinwand weiter zeichnen](05-canvas.md), [Bilder verbessern](04-improve.md), [Upscaling und Workflows](06-upscaling-workflows.md) und [Video, Musik, Stimme, Logos und Text](07-media.md).
+Wie „{{ui:gallery.menu.sendToCanvas}}“ und die Aktionen zum erneuten Erzeugen oder Verbessern von Bildern verwendet werden, erklären [Auf der Leinwand weiter zeichnen](05-canvas.md), [Bilder korrigieren und wiederverwenden](04-improve.md), [Upscaling und Workflows](06-upscaling-workflows.md) und [Video, Musik, Stimme, Logos und Text](07-media.md).
 
 > Nur bei Verwendung im Webbrowser eines Computers erscheint zusätzlich „{{ui:gallery.menu.openInNewTab}}“. In der Desktop-Version erscheint er nicht.
 
@@ -184,7 +184,7 @@ Die Werkzeugleiste über dem Bild enthält die Aktionen für dieses Bild. Wenn S
 |---|---|
 | Informationen | **{{ui:gallery.viewer.toggleMetadata}}** (`I`) |
 | Einstellungen laden | **{{ui:gallery.menu.remix}}** (`R`), **{{ui:gallery.menu.usePrompt}}** (`P`), **{{ui:gallery.menu.useSeed}}** (`S`), **{{ui:gallery.menu.useAll}}** (`A`), **{{ui:gallery.menu.loadWorkflow}}** (`W`), **{{ui:gallery.derive.menu}}** |
-| Senden und verbessern | **{{ui:gallery.menu.sendToCanvas}}**, **{{ui:gallery.menu.useAsReference}}**, **{{ui:gallery.menu.upscale}}** (`Shift+U`), **{{ui:gallery.menu.segment}}**, **{{ui:cutout.menu}}**, **{{ui:facefix.menu}}**, **{{ui:character.menu}}**, **{{ui:gallery.compare.toggle}}** (`C`) |
+| Senden und verbessern | **{{ui:gallery.menu.sendToCanvas}}**, **{{ui:gallery.menu.useAsReference}}**, **{{ui:gallery.menu.upscale}}** (`Shift+U`), **{{ui:gallery.menu.segment}}**, **{{ui:cutout.menu}}**, **{{ui:facefix.menu}}**, **{{ui:gallery.manga.menu}}**, **{{ui:character.menu}}**, **{{ui:gallery.compare.toggle}}** (`C`) |
 | Ordnen | **{{ui:gallery.menu.star}}**, **{{ui:common.download}}**, **{{ui:share.menu}}**, **{{ui:gallery.menu.delete}}** (`Del`) |
 
 Sie tun dasselbe wie die gleichnamigen Einträge im Rechtsklickmenü des Vorschaubilds. Bei einem Bild ohne Einstellungen (etwa einem hochgeladenen Bild) sind die Schaltflächen zum Laden der Einstellungen ausgegraut.
@@ -193,10 +193,10 @@ Sie tun dasselbe wie die gleichnamigen Einträge im Rechtsklickmenü des Vorscha
 
 ![Das Metadaten-Panel mit einer Liste aus Prompt, Modell, Seed, Schritten usw.](shot:viewer-metadata)
 
-Klicken Sie in der Werkzeugleiste auf die Schaltfläche **{{ui:gallery.viewer.toggleMetadata}}** (`I`), und über dem Bild öffnet sich ein Informationspanel. Mit einem erneuten Klick oder mit dem × oben rechts schließen Sie es.
+Klicken Sie in der Werkzeugleiste auf die Schaltfläche **{{ui:gallery.viewer.toggleMetadata}}** (`I`), und über dem Bild öffnet sich ein Informationspanel. Mit einem erneuten Klick, mit dem × oben rechts oder mit einem Klick außerhalb des Panels schließen Sie es. Sie können den Text im Panel durch Ziehen markieren und mit `Ctrl+C` kopieren (solange Text markiert ist, kopiert `Ctrl+C` den Text, nicht das Bild).
 Das Panel hat vier Tabs.
 
-- **{{ui:gallery.meta.tabRecall}}**: Die beim Erzeugen des Bildes verwendeten Einstellungen werden Eintrag für Eintrag aufgelistet (Prompt, Modell, Seed, Schritte, CFG-Skala, Scheduler, Größe, LoRA usw.). Mit der Pfeil-Schaltfläche rechts in jeder Zeile laden Sie **nur diesen Eintrag** in das linke Bedienfeld.
+- **{{ui:gallery.meta.tabRecall}}**: Die beim Erzeugen des Bildes verwendeten Einstellungen werden Eintrag für Eintrag aufgelistet (Prompt, Modell, Seed, Schritte, CFG-Skala, Scheduler, Größe, LoRA usw.). Mit der Pfeil-Schaltfläche rechts in jeder Zeile laden Sie **nur diesen Eintrag** in das linke Bedienfeld. Bei den Prompt-Zeilen kopiert die Schaltfläche links vom Pfeil den Prompt unverändert. Bei einem Bild eines Modells, dessen Familie den Scheduler vorgibt (Anima, Flux und so weiter), zeigt eine Zeile „{{ui:gallery.meta.sampling}}“ anstelle des Schedulers den Sampler und den Scheduler, die tatsächlich gelaufen sind. Diese Zeile lädt nichts, und „{{ui:gallery.menu.useAll}}“ behält Ihren aktuellen Scheduler.
 - **{{ui:gallery.meta.tabMetadata}}**: Zeigt den gespeicherten Inhalt unverändert an. Mit der Schaltfläche oben rechts können Sie ihn kopieren.
 - **{{ui:gallery.meta.tabDetails}}**: Dateiname, Größe, Erstellungsdatum und -uhrzeit, Board, ob das Bild einen Stern hat usw.
 - **{{ui:gallery.meta.tabWorkflow}}**: Bei einem mit einem Workflow erzeugten Bild wird dessen Inhalt angezeigt.
@@ -205,7 +205,7 @@ Welche Methode Sie zum Laden der Einstellungen wählen, hängt davon ab, wie vie
 
 | Methode | Was geladen wird |
 |---|---|
-| **{{ui:gallery.menu.useAll}}** | Alle Einstellungen, etwa Prompt, Modell, Seed und Größe. Der Seed wird fixiert |
+| **{{ui:gallery.menu.useAll}}** | Alle Einstellungen, etwa Prompt, Modell, Seed und Größe. Der Seed wird fixiert. Bei einem Bild, das in anderer Software erzeugt und importiert wurde, wird das Modell über seinen Namen gesucht (kleine Unterschiede in der Schreibweise wie `v17` und `v170` gelten als dasselbe Modell). Wird keines gefunden, bleibt das aktuelle Modell, und die Benachrichtigung sagt das |
 | **{{ui:gallery.menu.remix}}** | Alles außer dem Seed. Die aktuelle Seed-Einstellung (zufällig oder fixiert) bleibt unverändert. Verwenden Sie es, wenn Sie „ein anderes Bild mit denselben Einstellungen“ erzeugen möchten |
 | **{{ui:gallery.menu.usePrompt}}** | Nur den Prompt (positiv und negativ) |
 | **{{ui:gallery.menu.useSeed}}** | Nur den Seed. Der Seed wird fixiert |
@@ -255,7 +255,13 @@ Ein Bild lässt sich auf folgende Weisen löschen.
 
 Es erscheint ein Bestätigungsfenster, und mit „{{ui:common.delete}}“ wird das Bild gelöscht.
 
-> Ein gelöschtes Bild kann nicht wiederhergestellt werden. Es gibt auch keinen Papierkorb, aus dem sich Bilder zurückholen ließen.
+Ein gelöschtes Bild wird nicht sofort gelöscht. Es bleibt 14 Tage erhalten (höchstens 500 Bilder), sodass Sie das Löschen zurücknehmen können.
+
+- Klicken Sie unten rechts auf die Glocke und dann in der Benachrichtigung über das Löschen auf **{{ui:gallery.undoDelete.action}}**. Damit sie beim Löschen mehrerer Bilder nicht im Weg sind, erscheinen Lösch-Benachrichtigungen nicht auf dem Bildschirm, sondern nur unter der Glocke (deren Zahl steigt).
+- Oder klicken Sie oben in der Galerie auf die Schaltfläche „{{ui:gallery.undoDelete.label}}“ oder drücken Sie `Ctrl+Z`, solange sich der Zeiger über der Galerie befindet (oder der Betrachter geöffnet ist). Die letzten 30 Löschvorgänge lassen sich zurücknehmen, der neueste zuerst.
+- Um erneut zu löschen, was Sie zurückgeholt haben, klicken Sie auf die Schaltfläche „{{ui:gallery.redoDelete.label}}“ oder drücken Sie `Ctrl+Shift+Z` (`Ctrl+Y`).
+
+> Der Verlauf dessen, was Sie rückgängig machen können, wird beim Schließen der App vergessen. Ein Bild, das vor mehr als 14 Tagen gelöscht wurde, lässt sich nicht wiederherstellen. Auch das Löschen eines Boards samt Bildern lässt sich auf dieselbe Weise zurücknehmen; die Bilder kommen dann nach „{{ui:gallery.boards.uncategorized}}“, wenn das Board nicht mehr da ist.
 
 Wenn Sie im Bestätigungsfenster „{{ui:common.dontAskAgain}}“ ankreuzen, werden Bilder künftig ohne Bestätigung gelöscht. Um die Bestätigung zurückzuholen, aktivieren Sie in den **{{ui:app.nav.settings}}** „{{ui:settings.confirmOnDelete}}“.
 
@@ -274,6 +280,8 @@ Hochgeladene Bilder kommen in **{{ui:gallery.view.assets}}** des Boards „{{ui:
 
 Um die Datei eines Bildes zu speichern, verwenden Sie das Rechtsklickmenü oder **{{ui:common.download}}** in der Werkzeugleiste des Betrachters. Wenn Sie mehrere Bilder gewählt haben, werden sie gemeinsam gespeichert.
 
+In der Desktop-App öffnet sich ein Fenster zur Wahl des Ordners, und die Originaldateien werden unverändert dorthin kopiert (mit ihren Generierungsinfos). Liegt dort bereits eine Datei mit demselben Namen, wird eine Nummer wie „-2“ angehängt; es wird nichts überschrieben. Die Meldung nach dem Speichern enthält **{{ui:share.openFolder}}**, um diesen Ordner zu öffnen. Im Browser landen die Dateien in den Downloads des Browsers.
+
 ### Zum Teilen exportieren
 
 ![Das Fenster zum Exportieren zum Teilen: Format (PNG, JPEG, WebP), Qualität, Obergrenze der langen Seite und der Schalter, der die Generierungsinfos entfernt](shot:share-export)
@@ -283,10 +291,26 @@ Kopien von Bildern für soziale Netzwerke oder zur Weitergabe erstellen Sie übe
 - **{{ui:share.format}}**: Wählen Sie PNG, JPEG oder WebP. Bei JPEG können Sie die **{{ui:share.quality}}** (1 bis 100) festlegen, und transparente Bereiche werden weiß. WebP wird verlustfrei gespeichert.
 - **{{ui:share.size}}**: „{{ui:share.size.original}}“, 2048, 1536 oder 1024 px oder „{{ui:share.size.custom}}“, um eine Länge einzugeben. Kleinere Bilder werden nicht vergrößert.
 - **{{ui:share.removeInfo}}**: Anfangs aus. Wenn aktiviert, werden Prompt, Einstellungen und Workflow weggelassen, und das Bild wird aus seinen Pixeln neu gespeichert, sodass auch keine anderen eingebetteten Daten übrig bleiben. Ist sie aus, bleiben die Einstellungen nur bei PNG erhalten. Aktivieren Sie es, bevor Sie ein Bild weitergeben, wenn Sie den Prompt nicht zeigen möchten.
+- **{{ui:share.watermark}}**: Anfangs aus. Wenn aktiviert, erhalten die exportierten Bilder ein unsichtbares Wasserzeichen (TrustMark), die Kennzeichnung für mit KI erzeugte Medien (IPTC) und signierte Content Credentials (C2PA). Das Wasserzeichen trägt die Markierung von novira und eine Zufallszahl, die sich für jedes Bild unterscheidet; die App merkt sich, aus welchem Bild jede Zahl stammt.
 
-Nach einem Klick auf **{{ui:share.run}}** öffnet sich in der Desktop-Version ein Fenster zur Wahl des Zielordners. Der Dateiname ist der Dateiname aus der Galerie mit der neuen Dateiendung. Existiert bereits eine Datei mit diesem Namen, wird eine Nummer wie „-2“ oder „-3“ angehängt; es wird nichts überschrieben. Nach dem Export öffnet **{{ui:share.openFolder}}** diesen Ordner.
+Klicken Sie auf **{{ui:share.run}}**; in der Desktop-App öffnet sich ein Fenster zur Wahl des Zielordners. Jede Datei erhält den Dateinamen aus der Galerie mit der neuen Dateiendung; existiert bereits eine Datei mit diesem Namen, wird eine Nummer wie „-2“ oder „-3“ angehängt, und es wird nichts überschrieben. Danach öffnet **{{ui:share.openFolder}}** diesen Ordner.
 
-> Exportiert werden nur Bilder. Videos und Audio unter den gewählten Elementen werden ausgelassen. Im Browser landen die Dateien in den Downloads des Browsers.
+> Exportiert werden nur Bilder; Videos und Audio unter den gewählten Elementen werden ausgelassen. Im Browser landen die Dateien in den Downloads des Browsers: ein Bild unverändert, zwei oder mehr in einer ZIP-Datei. Ein Export umfasst insgesamt bis zu 1 GB; darüber werden Sie gebeten, weniger Bilder zu wählen.
+
+Die Dateien, die das Wasserzeichen braucht (insgesamt etwa 140 MB), werden beim Start der App automatisch heruntergeladen. Bis sie bereit sind, erscheint der Fortschritt unter dem Schalter, und **{{ui:share.run}}** lässt sich nicht klicken. Schlägt der Download fehl, klicken Sie auf **{{ui:share.watermarkRetry}}**.
+
+> Das Wasserzeichen sitzt im zentrierten Quadrat des Bildes. Es wurde geprüft, dass es erneutes Speichern als JPEG mit Qualität 80 und Halbieren der Größe übersteht, aber Zuschneiden, erneutes Erzeugen oder starke Bearbeitung können es entfernen. Das Verfahren ist öffentlich, sodass jeder dieselbe Markierung schreiben kann. Die Signatur wird auf diesem PC erstellt, daher zeigen andere Apps den Signierenden als nicht vertrauenswürdig an. Das Wasserzeichen benötigt das Microsoft Visual C++ Redistributable; ohne dieses wird ein Fehler angezeigt.
+
+### Auf ein Wasserzeichen prüfen
+
+Öffnen Sie die Prüfung mit **{{ui:share.check.title}}** im Rechtsklickmenü eines Vorschaubilds. Wählen Sie mit **{{ui:share.check.pick}}** eine Bilddatei (PNG, JPEG oder WebP), und das Fenster listet auf, was es gefunden hat. Öffnen Sie es über das Rechtsklickmenü, wird dieses Bild sofort geprüft. Im Browser lässt sich keine Datei zur Prüfung wählen.
+
+- **{{ui:share.check.watermark}}**: ob das Wasserzeichen von novira vorhanden ist, mit seiner Nummer.
+- **{{ui:share.check.original}}**: wenn die Nummer in den Exportprotokollen dieser App steht, das Originalbild und der Zeitpunkt des Exports; **{{ui:share.check.showOriginal}}** zeigt es im Betrachter.
+- **{{ui:share.check.credentials}}**: ob Content Credentials vorhanden sind, ob sich die Datei nach dem Signieren geändert hat, ob sie das Bild als KI-erzeugt ausweisen und wer sie signiert hat.
+- **{{ui:share.check.iptc}}**: ob die Kennzeichnung für mit KI erzeugte Medien vorhanden ist.
+
+> Wird kein Wasserzeichen gefunden, beweist das nicht, dass ein Bild nicht mit KI erzeugt wurde. Die Exportprotokolle liegen in der Datenbank dieser App, daher ist das Original eines Bildes, das novira auf einem anderen PC exportiert hat, nicht bekannt. Solange die Dateien für das Wasserzeichen nicht bereit sind, werden nur die übrigen Punkte geprüft.
 
 ## Drag & Drop
 
@@ -306,7 +330,7 @@ Dateien aus dem Explorer können Sie auf die Galerie, auf ein Board, auf ein Fel
 | Alle wählen | `Ctrl+A` |
 | Auswahl aufheben | `Esc` |
 | Gewählte Bilder löschen | `Delete` |
-| Bild im Betrachter kopieren | `Ctrl+C` |
+| Das Bild im Betrachter oder das in der Galerie gewählte Bild kopieren (auch auf dem Leinwand-Bildschirm, nachdem Sie ein Bild in der Galerie angeklickt haben) | `Ctrl+C` |
 | Informationspanel öffnen und schließen | `I` |
 | Remix, Prompt, Seed, alles | `R`, `P`, `S`, `A` |
 | Workflow laden | `W` |

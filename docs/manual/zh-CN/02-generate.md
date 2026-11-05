@@ -12,6 +12,8 @@
 
 点击后并不是马上开始绘制，而是先进入“{{ui:app.tabs.queue}}”（等待的队伍）。轮到时，会一张一张地绘制。
 
+所选的模型、提示词和设置，在关闭应用后也会保留，下次启动时可以直接继续使用。
+
 ## 写提示词
 
 ![在提示词中写了一句话、并将种子设为固定的生成标签页](shot:generate-prompt)
@@ -27,15 +29,15 @@
 - 多数模型使用英文更容易得到想要的效果。如果模型的说明中有书写方式的要求，请遵照。
 - 重要的词放在前面。
 
-输入栏上方的小按钮的作用如下。
+输入栏上方的小按钮的作用如下。按钮只有图标，光标移上去会显示名称。
 
 | 按钮 | 作用 |
 |---|---|
-| **{{ui:params.prompt.recommended}}** | 将适合当前所选模型的品质用词（`masterpiece, best quality` 等）添加到“{{ui:params.prompt.positive}}”的开头，将常用的想要避免的词添加到“{{ui:params.prompt.negative}}”的末尾。已经存在的词不会重复添加 |
+| **{{ui:params.prompt.recommended}}** | 把当前所选模型类型中广泛使用的品质用词添加到“{{ui:params.prompt.positive}}”，把想要避免的词添加到“{{ui:params.prompt.negative}}”的末尾。用标签书写的模型（Illustrious、NoobAI、Pony、Anima 等）会在开头添加 `masterpiece, best quality` 之类的标签，用句子书写的模型（FLUX、Qwen-Image 等）会在末尾添加表示品质的词。不使用反向提示词的模型（FLUX.1）不会添加反向提示词。已经存在的词不会重复添加 |
 | **{{ui:params.prompt.expand}}** | 在左右并排的大窗口中编辑正向和反向提示词 |
-| **{{ui:params.promptBook.open}}** | 打开带含义的单词收集列表（见后文） |
-| **{{ui:caption.fromPrompt}}** | 查看图像，写出可用作提示词的文字。也可以把图库中的图像或电脑里的图像文件拖到这个按钮上（在[修饰与复用图像](04-improve.md)中说明） |
-| 各输入栏的“预设” | 仅保存、调用提示词的文字（见后文） |
+| **{{ui:params.prompt.textView}}** / **{{ui:params.prompt.tagView}}** | 在原样的文字显示和按词排列的标签（tag）显示之间切换输入栏的显示方式。点击标签会打开弹出窗口，可以改写词语、用滑块改变强度、恢复为 1、删除标签。改变过强度的标签会以 `(smile:1.3)` 的形式写入提示词。在下方的输入栏中输入词语并按 Enter，可以添加标签 |
+| **{{ui:params.promptBook.open}}** | 打开按含义收集单词的预设（见后文） |
+| **{{ui:caption.fromPrompt}}** | 查看图库中选中的图像（没有选中时，则查看选择的图像文件），立即写出可用于提示词的词语。结果会显示在查看器的横条中。也可以把图库中的图像或电脑里的图像文件拖放到这个按钮上使用（在 [修饰与复用图像](04-improve.md) 中说明） |
 
 ### token 数
 
@@ -56,7 +58,7 @@ token 是模型读取文字时的分段单位。超过上限后，数字会变�
 当“{{ui:params.invoke.iterations}}”（见后文）为 2 或以上时，会生成“组合数 × 数量”张图。例如 2 种组合、数量为 3，就是 6 张。
 这种写法只能用于正向输入栏。在反向输入栏中，花括号会按原样当作文字处理。
 
-会展开成什么样的句子，可以用正向输入栏上方的 **{{ui:params.prompt.dynamicPreview}}** 按钮（`{ }` 图标）确认。点击后会显示组合的列表。
+会展开成什么样的句子，可以用正向输入栏上方的 **{{ui:params.prompt.dynamicPreview}}** 按钮（`{ }` 图标）确认。点击后会显示组合的列表。反向输入栏中也有同样的按钮，反向提示词中也可以写 `{a|b}` 和通配符。组合会由正向和反向的所有搭配生成。
 
 ### 通配符 `__名称__`
 
@@ -88,7 +90,7 @@ token 是模型读取文字时的分段单位。超过上限后，数字会变�
 - **{{ui:params.prompt.modeCombinatorial}}**（默认）：每种组合各生成设定张数的图像。
 - **{{ui:params.prompt.modeRandom}}**：按设定张数生成图像，每张选取一种组合。选哪一种由该图像的种子决定，因此用相同种子重画会得到相同的提示词。
 
-无论哪种方式，生成的图像都会保存实际使用的提示词。
+无论哪种选取方式，生成的图像都会保存实际使用的提示词。
 
 ## 种子
 
@@ -113,6 +115,13 @@ token 是模型读取文字时的分段单位。超过上限后，数字会变�
 
 1. 点击模型名称栏。
 2. 从列表中选择。列表按模型的系列（FLUX、SDXL、SD1.X 等）分组。数量很多时，可以在上方搜索栏中输入名称的一部分来筛选。
+
+Anima、Flux、FLUX.2、Chroma、Qwen-Image、Z-Image、SD3、HiDream、AuraFlow、HunyuanImage 的模型也可以在这里选择。主体、文本编码器、VAE 分成不同文件发布时，应用会按名称从已安装的模型中查找并使用文本编码器和 VAE。安装缺少文件的模型后，会立刻出现“{{ui:params.parts.title}}”和确认，查看名称和大小后，可以只安装缺少的文件。即使先关掉说“以后再说”，生成按钮下方也会出现该模型缺少文件的指引，以及无需离开当前界面就能安装这些文件的按钮。超过 5 GB 时，点击按钮后还会再出现一次确认。也可以从模型界面的 **{{ui:models.install.tab.starter}}** 安装。这些模型同样可以使用遮罩、控制图层和高分辨率修复。参考图像只能用于 SD1.X 和 SDXL 的模型。在“{{ui:params.generation.scheduler}}”中选择的内容不会被使用，而是按各系列固定的采样器和调度器绘制（Flux 是 `euler / simple`）（只有 Anima 按所选的调度器绘制）。“{{ui:params.generation.scheduler}}”栏中会显示实际使用的组合。选择了“{{ui:params.generation.sampler}}”和“{{ui:params.generation.noiseSchedule}}”时，无论哪个系列的模型，都以所选的为优先。
+
+- **编辑模型。** FLUX Kontext 和 Qwen-Image-Edit 会改写传入的图像。把原图放入源图像（图生图），在提示词中写下想改变的内容。FLUX Fill 会重画被遮罩的部分（用于带遮罩的局部重绘或扩图）。这些模型无法使用高分辨率修复、草稿和控制图层。应用根据文件内容来区分它们和普通模型，Kontext 和 Qwen 的编辑模型则根据文件名中的 `kontext` 或 `edit` 一词来区分。请不要修改名称。
+- **FLUX.2。** klein 只需很少的步数（蒸馏版 CFG 为 1）。dev 把 CFG 的值用作引导。把原图放入源图像（图生图）后，FLUX.2 会按提示词改写。FLUX.2 无法使用遮罩、控制图层和高分辨率修复（可以使用草稿）。
+- **量化（GGUF）模型。** 扩展名为 `.gguf` 的模型或文本编码器，由扩展 ComfyUI-GGUF 读取。请在扩展界面中安装一次（https://github.com/city96/ComfyUI-GGUF），然后重新启动引擎。在安装之前，生成会失败，并显示相关提示。
+- **需要其他输入的模型。** 需要控制用的视频、音频、镜头运动、姿势视频的模型（Wan Fun Control、Wan Animate、Flux Canny 等）目前还无法运行。生成会失败，并显示该模型所需的内容。
 3. 选中的模型会打上 ✓，卡片上的图像（封面图像）也会随之切换。
 
 列表下方的 **{{ui:app.tabs.short.models}}** 按钮可以跳转到{{ui:app.tabs.models}}标签页（管理已有模型），**{{ui:app.tabs.short.browse}}** 按钮可以跳转到{{ui:app.tabs.browse}}标签页（在网络上查找）。增加模型的方法在 [准备模型](08-models.md) 中介绍。
@@ -120,7 +129,7 @@ token 是模型读取文字时的分段单位。超过上限后，数字会变�
 如果模型登记了推荐设置（步数、CFG、调度器、尺寸），选择模型时会自动填入。
 切换到系列不同的模型时，与新模型不匹配的 LoRA 等会被移除（会通知移除了多少个）。
 
-点击模型栏下方的 **{{ui:params.profile.title}}** 按钮，会列出该模型的推荐值。当前设置与推荐值有偏差时，按钮会变成醒目的颜色，点击 **{{ui:params.profile.apply}}** 就能统一为推荐值。
+点击模型栏下方的 **{{ui:params.profile.title}}** 按钮，会列出该模型的推荐值。当前设置与推荐值有偏差时，按钮会变成醒目的颜色，点击 **{{ui:params.profile.apply}}** 就能统一为推荐值。步数的范围是从推荐值稍低一点到稍高一点。Anima 的模型在步数较少时画面容易崩坏（有时会被涂成一整片单色），所以范围的下限偏高（推荐值为 30 时，要在 24 以上）。
 
 > 一个模型都没有时，栏中会显示“{{ui:params.model.noModels}}”，无法生成。请先完成 [准备模型](08-models.md)。
 
@@ -131,10 +140,11 @@ token 是模型读取文字时的分段单位。超过上限后，数字会变�
 | 分区 | 包含的内容 |
 |---|---|
 | **{{ui:params.refImage.sectionLabel}}**（提示词的正下方） | 用来让图像的氛围或登场人物更接近的图像（见后文） |
+| **{{ui:params.i2i.title}}** | 以原图为基础重新绘制（i2i）时的原图，以及{{ui:params.image.strength}}（见后文） |
 | **{{ui:params.image.title}}** | {{ui:params.image.aspect}}、宽度和高度。还有“{{ui:params.image.swap}}”“{{ui:params.image.lock}}”“{{ui:params.image.optimal}}”按钮 |
-| **{{ui:params.generation.title}}** | LoRA（用于添加画风或人物的小型附加模型）、{{ui:params.generation.scheduler}}、{{ui:params.generation.steps}}、{{ui:params.generation.cfg}} |
+| **{{ui:params.generation.title}}** | LoRA（用于添加画风或人物的小型附加模型）、{{ui:params.generation.scheduler}}、{{ui:params.generation.sampler}}、{{ui:params.generation.noiseSchedule}}（直接按 ComfyUI 的名称选择。选“{{ui:params.generation.engineAuto}}”时，会遵循调度器或模型的默认值，此时使用的名称会显示为“自动（名称）”。FLUX.2 只有采样器）、{{ui:params.generation.steps}}、{{ui:params.generation.cfg}} |
 | **{{ui:params.hires.title}}** | 将画好的图像放大后再画一遍的第二遍生成（后述） |
-| **{{ui:params.advanced.title}}** | {{ui:params.advanced.vae}}、{{ui:params.advanced.clipSkip}}、{{ui:params.advanced.seamless}}（拼接后不出现接缝的图像）等 |
+| **{{ui:params.advanced.title}}** | {{ui:params.advanced.vae}}、{{ui:params.advanced.clipSkip}}、{{ui:params.advanced.seamless}}（拼接后不出现接缝的图像。可用于 SD1.X 和 SDXL 的模型，需要事先在扩展界面中安装扩展 ComfyUI-seamless-tiling）等 |
 
 拿不准的话，除尺寸外，保持选择模型时自动填入的内容即可。
 把光标移到项目名称（“{{ui:params.generation.steps}}”“{{ui:params.generation.cfg}}”等）上，会显示简短的说明。分区的标题处会以小字显示当前值的摘要。
@@ -193,7 +203,7 @@ token 是模型读取文字时的分段单位。超过上限后，数字会变�
 ![生成结束后的画面。中央的查看器中显示着图像，右侧的图库中也排列着](shot:generate-result)
 
 点击后，中央会立刻切换为查看器。
-绘制过程中，右侧图库上方会出现“{{ui:gallery.generating.title}}”横条，可以看到中途的图像、步数和进度。中央上边缘的细线也表示进度。
+绘制过程中，右侧图库上方会出现“{{ui:gallery.generating.title}}”横条，可以看到中途的图像、步数和进度。中央上边缘的细线也表示进度。同一张图也会作为小框排在图库的最前面。点击这个小框，可以在中央的查看器中放大查看中途的图像。生成结束后，会切换为生成好的图像。
 
 生成完成后，图像会加入图库，查看器中显示该图像。
 图像会保存到当前所选的（右侧面板中带有“{{ui:gallery.boards.autoBadge}}”标记的）画板中。关于画板，以及图像的整理、比较和重做，在 [图库与查看器](03-gallery.md) 中介绍。
@@ -211,8 +221,9 @@ token 是模型读取文字时的分段单位。超过上限后，数字会变�
 - 提示词（正向和反向）
 - 模型和各项设置（尺寸、步数、CFG、调度器、VAE 等）
 - LoRA 和参考图像
+- {{ui:params.hires.title}}、**{{ui:app.tabs.upscaling}}** 标签页的设置、局部重绘的设置（遮罩模糊、扩边等）、动态提示词的生成方式
 
-种子和数量不包含在内。
+种子、数量和要放大的图像不包含在内。
 
 使用方法如下。
 
@@ -221,15 +232,28 @@ token 是模型读取文字时的分段单位。超过上限后，数字会变�
 - 项目右侧的“…”中，可以进行 **{{ui:presets.apply}}**、**{{ui:presets.overwrite}}**、**{{ui:presets.rename}}**、**{{ui:presets.delete}}**。
 - 列表分为“{{ui:presets.group.mine}}”和“{{ui:presets.group.builtin}}”。内置预设是一开始就有的示例。
 
-除此之外，正向、反向各输入栏的上方也有“预设”栏。这里仅保存、调用提示词的文字。适合保存固定用语（品质用词，或想要避免的词的组合）。
+### 随机轮换预设
 
-## 提示词列表
+可以随机轮流使用多个预设，批量生成。想连续生成许多提示词和尺寸差别很大的图像时使用。
 
-![提示词列表。按分类排列着单词和含义，并有“正向”“反向”添加按钮](shot:prompt-book)
+1. 点击“{{ui:presets.label}}”卡片右侧的交叉箭头按钮（{{ui:presets.run.title}}）。
+2. 勾选要使用的预设。
+3. 在“×”栏中填入{{ui:presets.run.count}}，点击 **{{ui:presets.run.queue}}**。
+
+每生成一张，会以相同的概率从勾选的预设中选取一个，种子也是随机的。预设中没有包含的设置，会使用左侧面板当前的设置。左侧面板的设置不会改变。
+
+- 如果各预设的模型不同，每次切换都要花时间读取模型。
+- 提示词中有动态提示词时，每张图会根据种子选取一个提示词（不会生成所有组合）。
+- 勾选的预设中有任何一个处于无法生成的状态时，会显示其名称和原因，无法加入队列。
+- 勾选和数量在下次打开时仍会保留。
+
+## 提示词预设
+
+![提示词预设。按分类排列着单词和含义，并有“正向”“反向”添加按钮](shot:prompt-book)
 
 为了让你即使不记得英文单词也能组合出提示词，提供了 **{{ui:params.promptBook.open}}**。从正向、反向各输入栏上方的按钮打开。
 
-- 在左侧选择分类（发型、表情、服装、构图等），就只会列出该分类的单词。上方的搜索栏可以同时按单词、含义、分类、备注查找。
+- 在左侧选择分类（人数与人物、人物关系与互动、姿势、动作、表情、视线、构图、发型、服装等），就只会列出该分类的单词。上方的搜索栏可以同时按单词、含义、分类、备注查找。
 - 点击单词右侧的“{{ui:params.prompt.positive}}”“{{ui:params.prompt.negative}}”，该单词就会添加到提示词中。添加过的单词会打上勾，再点击一次就会取消。
 - 在最上方的输入栏中填入单词和含义，点击 **{{ui:params.promptBook.register}}**，就能添加自己的单词。单词右侧的铅笔用于编辑，垃圾桶用于删除。
 
@@ -250,7 +274,17 @@ token 是模型读取文字时的分段单位。超过上限后，数字会变�
 
 没有安装所需的模型或扩展时，框上会出现警告标记，小窗口和生成按钮下方会出现指引。可以通过指引中的按钮进行安装。
 
-> 参考图像是用来“向氛围靠拢”的。想“以这张图为基础重新绘制”时，请使用画布。请参阅 [在画布上补画](05-canvas.md)。
+> 参考图像是用来“向氛围靠拢”的。想“以这张图为基础重新绘制”时，请使用下面的 i2i。
+
+## i2i（以原图为基础重新绘制）
+
+在 **{{ui:params.i2i.title}}** 分区中放入图像，就会把它作为底稿重新绘制。想保留构图和色彩，同时按提示词做出改变时使用。
+
+1. 展开分区，把图库中的图像（或电脑里的图像文件）拖放到框中。也可以从参考图像小窗口的 **{{ui:params.refImage.openI2i}}** 放入。
+2. 宽度和高度会变成最接近所放图像形状的、模型擅长的尺寸。之后手动修改也可以。
+3. 用 **{{ui:params.image.strength}}** 决定重画的程度。越接近 0 越保持原图，越接近 1 越不在意原图。建议从 0.5 左右开始尝试。
+
+打开 {{ui:params.hires.title}} 后，会把从原图重画出的图像放大，再重画一遍。想取消时，点击框右上角的 ×。只想重画涂抹过的部分时，请使用 [在画布上补画](05-canvas.md)。
 
 ### 角色
 
@@ -280,7 +314,7 @@ token 是模型读取文字时的分段单位。超过上限后，数字会变�
 | **{{ui:queue.action.clear}}** | 清除所有项目。会弹出确认窗口 |
 
 点击下方列表中的行，会展开该项目的详细信息（时间、生成的图像、失败时的原因、设置的内容）。
-点击行右侧的 × 可以只取消该项目。失败或已取消的项目上会出现重做按钮。
+点击行右侧的 × 可以只取消该项目。失败或已取消的项目上会出现重试按钮。
 
 ## 快捷键
 
@@ -295,7 +329,7 @@ token 是模型读取文字时的分段单位。超过上限后，数字会变�
 | 移到提示词栏 | `Alt+A` |
 | 展开、收起左侧面板、右侧面板 | `T`、`G` |
 | 同时展开、收起左右面板 | `F` |
-| 切换标签页（从{{ui:app.tabs.generate}}到{{ui:app.tabs.queue}}的顺序） | `1` 到 `9` |
+| 切换标签页（按侧边导航的顺序，从{{ui:app.tabs.generate}}到{{ui:app.nav.extensions}}） | `1` 到 `9` |
 | 打开快捷键列表 | `Shift+?` |
 
 快捷键也可以在侧边导航的 **{{ui:app.nav.settings}}** 菜单中的“{{ui:app.nav.hotkeys}}”里确认。

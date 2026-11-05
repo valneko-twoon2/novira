@@ -16,7 +16,7 @@ Wenn Sie bei leerer Leinwand auf **{{ui:params.invoke.invoke}}** klicken, wird i
 
 Es gibt mehrere Möglichkeiten, ein Bild auf die Leinwand zu bringen.
 
-- Mit dem Pinsel zeichnen. Ist keine Ebene ausgewählt, wird automatisch eine {{ui:canvas.add.raster}} angelegt.
+- Mit dem Pinsel zeichnen (wählen Sie zuerst **{{ui:canvas.tool.brush}}** oder drücken Sie `B`). Ist keine Ebene ausgewählt, wird automatisch eine {{ui:canvas.add.raster}} angelegt.
 - Ein Bild aus der Galerie auf die Leinwand ziehen. Es erscheint ein Rahmen zur Wahl des Ziels (Raster, Control, Inpainting-Maske usw.); legen Sie das Bild dort ab.
 - `Ctrl+V` fügt ein Bild aus der Zwischenablage als neue Rasterebene ein (es wird dabei auch in der Galerie gespeichert).
 - Ein Bild in der Galerie mit der rechten Maustaste anklicken (im Betrachter über das Pinselsymbol) und unter **{{ui:gallery.menu.sendToCanvas}}** ein Ziel wählen.
@@ -30,11 +30,11 @@ Die Ziele sind folgende.
 | **{{ui:gallery.canvas.raster}}** | Fügt es der aktuellen Leinwand als Rasterebene hinzu. |
 | **{{ui:gallery.canvas.control}}** | Fügt es als Control-Ebene hinzu. |
 | **{{ui:gallery.canvas.inpaint}}** | Fügt es als Inpainting-Maske hinzu. |
-| **{{ui:gallery.canvas.regional}}** | Fügt es als Referenzbild für die regionale Steuerung hinzu (siehe [Regionale Steuerung ist noch nicht verfügbar](#regionale-steuerung-ist-noch-nicht-verfügbar)). |
+| **{{ui:gallery.canvas.regional}}** | Fügt es als Referenzbild für die regionale Steuerung hinzu (siehe [Regionale Steuerung](#regionale-steuerung)). |
 
 ## Werkzeuge
 
-Die Werkzeuge stehen in der Leiste oben. Sie lassen sich auch über Buchstabentasten auf der Tastatur umschalten.
+Die Werkzeuge stehen in der Leiste oben. Sie lassen sich auch über Buchstabentasten auf der Tastatur umschalten. Beim Start der App ist **{{ui:canvas.tool.view}}** gewählt, sodass Ziehen auf der Leinwand zunächst nur die Ansicht verschiebt und nichts zeichnet.
 
 | Werkzeug | Taste | Wofür es dient |
 |---|---|---|
@@ -48,6 +48,7 @@ Die Werkzeuge stehen in der Leiste oben. Sie lassen sich auch über Buchstabenta
 | **{{ui:canvas.tool.bbox}}** | `C` | Verschiebt den Generierungsbereich (Begrenzungsrahmen) und ändert seine Größe. |
 | **{{ui:canvas.tool.view}}** | `H` | Verschiebt die Ansicht. |
 | **{{ui:canvas.tool.colorPicker}}** | `I` | Nimmt eine Farbe aus dem Bild auf. |
+| **{{ui:canvas.tool.bucket}}** | `K` | Füllt den Bereich mit Farben, die der angeklickten nahekommen. **{{ui:canvas.toolbar.bucketTolerance}}** in der Leiste legt fest, wie nahe. |
 
 Außerdem sind folgende Bedienungen möglich.
 
@@ -79,7 +80,7 @@ Es gibt Ebenenarten mit unterschiedlichen Aufgaben.
 | **{{ui:canvas.add.raster}}** | Eine gewöhnliche Bildebene. Darauf zeichnen Sie und platzieren Bilder. Was hier liegt, wird zum „Originalbild“. |
 | **{{ui:canvas.add.control}}** | Ein Bild, das als Hinweis für Form, Linien, Pose usw. dient. Es wirkt als Anweisung für die Generierung und wird nicht Teil des Bildes selbst. |
 | **{{ui:canvas.add.inpaint}}** | Sie malen den Bereich aus, der „hier neu gezeichnet werden soll“. |
-| **{{ui:canvas.add.regional}}** | Eine Ebene, die für jede Stelle einen anderen Prompt vorgibt. In der aktuellen Desktop-Version kann sie nicht für die Generierung verwendet werden. |
+| **{{ui:canvas.add.regional}}** | Eine Ebene, die für jede Stelle einen anderen Prompt vorgibt (siehe [Regionale Steuerung](#regionale-steuerung)). |
 | **{{ui:canvas.add.globalRef}}** | Ein Referenzbild, dessen Stimmung das ganze Bild übernehmen soll. Es entspricht den Referenzbildern im Tab Generieren. |
 
 In der Ebenenliste sind folgende Bedienungen möglich.
@@ -93,7 +94,7 @@ In der Ebenenliste sind folgende Bedienungen möglich.
 
 Unter der ausgewählten Ebene öffnen sich deren Einstellungen.
 
-- {{ui:canvas.add.inpaint}}: Farbe und Füllmuster der Maske (betrifft nur die Darstellung auf dem Bildschirm) sowie **{{ui:canvas.mask.denoiseLimit}}** (wenn Sie es einschalten und senken, bleibt das Originalbild auch innerhalb der Maske eher erhalten). Im Rechtsklickmenü der Maske kehrt **{{ui:canvas.entityMenu.invertMask}}** sie innerhalb des Generierungsbereichs um.
+- {{ui:canvas.add.inpaint}}: Farbe und Füllmuster der Maske (betrifft nur die Darstellung auf dem Bildschirm) sowie **{{ui:canvas.mask.denoiseLimit}}** (wenn Sie es einschalten und senken, bleibt das Originalbild auch innerhalb der Maske eher erhalten). Im Rechtsklickmenü der Maske vertauscht **{{ui:canvas.entityMenu.invertMask}}** maskierte und freie Bereiche innerhalb des Generierungsbereichs. **{{ui:canvas.partFix.redraw}}**, **{{ui:canvas.partFix.erase}}** und **{{ui:canvas.partFix.cutOutAction}}** zeichnen den übermalten Teil nach einer Textanweisung neu, löschen ihn oder schneiden ihn aus ([Einen Bereich auswählen und korrigieren](04-improve.md#einen-bereich-auswählen-und-korrigieren)).
 - {{ui:canvas.add.control}}: siehe den nächsten Abschnitt „{{ui:canvas.add.control}}“.
 
 ## Wie neu gezeichnet wird
@@ -119,7 +120,7 @@ Ein auf der Leinwand erzeugtes Bild wird nicht sofort in die Leinwand übernomme
 
 | Schaltfläche | Was sie bewirkt |
 |---|---|
-| Pfeile links und rechts (`←` `→`) | Zeigen bei mehreren erzeugten Bildern das nächste oder vorherige an. |
+| Pfeile links und rechts (`←` `→`) | Zeigen bei mehreren erzeugten Bildern das nächste oder vorherige an. Solange weitere entstehen, ist die letzte Seite die Seite „wird erzeugt“, und nur auf dieser Seite sehen Sie, wie das Bild Gestalt annimmt. Betrachten Sie ein fertiges Bild, ändert sich die Ansicht nicht, wenn das nächste fertig wird. |
 | **{{ui:canvas.staging.accept}}** (`Enter`) | Übernimmt dieses Bild als neue Rasterebene in die Leinwand. Die übrigen Bilder werden verworfen. |
 | **{{ui:canvas.staging.hideResults}}** | Blendet die Ergebnisse aus, damit Sie sie mit dem Originalbild vergleichen können. |
 | **{{ui:canvas.staging.saveToGallery}}** | Speichert dieses Bild in der Galerie. |
@@ -176,11 +177,11 @@ Mit dem Werkzeug **{{ui:canvas.tool.pose}}** (`O`) können Sie eine Pose direkt 
 - Mit den Schaltflächen für die Zahl und den Blitz in der Leiste des Pose-Werkzeugs erzeugen Sie so viele Bilder hintereinander und ändern dabei jedes Mal die Pose (bis zu 16). Auch der Seed ändert sich mit jeder Pose, sodass Sie mit denselben Einstellungen Bilder in verschiedenen Haltungen erhalten. Ist das Erzeugen gerade nicht möglich, wird der Grund angezeigt und nichts startet.
 - Auf einer Ebene lassen sich beliebig viele Figuren platzieren. Spiegeln, Drehen und Vergrößern oder Verkleinern erledigen Sie über das Rechtsklickmenü der Ebene.
 - Sie können es auch in Worten verlangen. Öffnen Sie den KI-Assistenten, während der Tab **{{ui:app.tabs.canvas}}** geöffnet ist, und beschreiben Sie die Pose, etwa „eine laufende Pose“ oder „hebe die linke Hand“, dann wird eine Figur platziert (bis zu 4 Figuren). Sagen Sie danach „etwas weiter nach vorn gebeugt“, korrigiert er diese Pose. Die Pose ist nur eine Vermutung aus Ihren Worten; passt sie nicht, ziehen Sie die Gelenke, um sie zu korrigieren.
-- Eine Pose lässt sich auch aus einer Person in einem Bild erstellen. Klicken Sie ein Bild in der Galerie mit der rechten Maustaste an und wählen Sie **{{ui:canvas.poseFromImage.menu}}**, oder drücken Sie die gleichnamige Schaltfläche in der Leiste des Pose-Werkzeugs: Die Skelette der Personen werden gelesen und als Strichmännchen platziert (bis zu 4 Personen). Platzierte Posen lassen sich wie jede andere Pose korrigieren. Dafür wird die Erweiterung (comfyui_controlnet_aux) benötigt; fehlt sie, bietet der Dialog die Installation an. Beim ersten Mal dauert das Herunterladen der Modelle eine Weile. Eine zu kleine oder teilweise verdeckte Person wird möglicherweise nicht gefunden.
+- Eine Pose lässt sich auch aus einer Person in einem Bild erstellen. Klicken Sie ein Bild in der Galerie mit der rechten Maustaste an und wählen Sie **{{ui:canvas.poseFromImage.menu}}**: Die Skelette der Personen werden sofort gelesen, und das Band des Betrachters zeigt, wie viele Personen gefunden wurden. Klicken Sie auf **{{ui:canvas.poseFromImage.replace}}** oder **{{ui:canvas.poseFromImage.add}}**, um sie als Strichmännchen auf der Leinwand zu platzieren (bis zu 4 Personen). Die gleichnamige Schaltfläche in der Leiste des Pose-Werkzeugs verwendet das in der Galerie gewählte Bild; ist keines gewählt, öffnet sie ein Fenster zur Wahl einer Bilddatei. Platzierte Posen lassen sich wie jede andere Pose korrigieren. Dafür wird die Erweiterung (comfyui_controlnet_aux) benötigt; fehlt sie, bietet das Band die Installation an. Beim ersten Mal dauert das Herunterladen der Modelle eine Weile. Eine zu kleine oder teilweise verdeckte Person wird möglicherweise nicht gefunden.
 - Die Schaltfläche **{{ui:canvas.pose.presets}}** in der Leiste des Pose-Werkzeugs öffnet ein Fenster mit den Kategorien links und einer Karte je Pose rechts. Jede Karte zeigt die OpenPose-Figur in einem Rahmen in der Form des Erzeugungsbereichs. Die „{{ui:canvas.pose.group.panel}}“ (nah und fern, zwei Personen, Gruppen, Alltagsszenen, Drama und Gefühle) legen zusätzlich fest, wo die Personen stehen und wie groß sie sind, und ersetzen alle Posen der gewählten Ebene. Die „{{ui:canvas.pose.group.standard}}“ und die „{{ui:canvas.pose.group.manga}}“ ersetzen die erste Pose der gewählten Ebene an derselben Stelle und in derselben Größe; ist keine vorhanden, wird eine neue gesetzt. Eine Pose, die den Rahmen verlassen würde (erhobene Arme, Tritt), wird so verkleinert, dass sie hineinpasst.
 - Die Schaltfläche **{{ui:canvas.pose3d.menu}}** in der Leiste des Posen-Werkzeugs bearbeitet eine Pose in 3D (die erste Pose der gewählten Control-Ebene oder, falls keine da ist, eine stehende Figur). Beim Ziehen eines Gelenks bleibt die Knochenlänge erhalten, und ein Knochen kann von Ihnen weg oder auf Sie zu zeigen. Das Ziehen des Hintergrunds dreht den Körper, das Mausrad zoomt. Die Schaltflächen **{{ui:canvas.pose3d.front}}**, **{{ui:canvas.pose3d.side}}**, **{{ui:canvas.pose3d.back}}** und **{{ui:canvas.pose3d.top}}** drehen auf feste Ansichten. **{{ui:canvas.pose3d.apply}}** legt die jetzt sichtbare Form als Pose auf die Leinwand (die Tiefe wird gemerkt, sodass man sie erneut in 3D öffnen und weiterdrehen kann); Schließen ohne Übernehmen lässt die Pose, wie sie war. Die 3D-Ansicht braucht WebGL im Browser; fehlt es, weist der Dialog darauf hin.
 
-![Posen eines Bildes lesen, bevor sie auf die Leinwand kommen](shot:canvas-pose-from-image)
+![Das Band nach dem Lesen der Posen eines Bildes, bevor sie auf die Leinwand kommen](shot:canvas-pose-from-image)
 
 ![Das Fenster „Fertige Posen und Kompositionen“ mit der gewählten Kategorie „Zwei Personen“](shot:canvas-pose-presets)
 
@@ -188,14 +189,20 @@ Mit dem Werkzeug **{{ui:canvas.tool.pose}}** (`O`) können Sie eine Pose direkt 
 
 Wenn Sie eine Pose aus einem Foto herauslösen möchten, können Sie die Vorlage „{{ui:workflows.templates.poseControl.title}}“ unter [Workflows](06-upscaling-workflows.md) verwenden.
 
-## Regionale Steuerung ist noch nicht verfügbar
+## Regionale Steuerung
 
-**{{ui:canvas.add.regional}}** ist auf dem Bildschirm vorhanden, kann aber in der aktuellen Desktop-Version nicht für die Generierung verwendet werden. Ist eine bemalte Ebene für regionale Steuerung vorhanden, wird die Generierung abgelehnt, und es erscheint eine Fehlermeldung (auf Englisch). Blenden Sie beim Generieren auf der Leinwand die Ebene für regionale Steuerung aus oder löschen Sie sie.
+Eine Ebene **{{ui:canvas.add.regional}}** gibt einen Prompt für die Stelle vor, die Sie darauf bemalen. Malen Sie die Region und fügen Sie dann in den Einstellungen der Ebene einen positiven Prompt (was dort gezeichnet werden soll) oder einen negativen Prompt (was dort nicht erscheinen soll) hinzu. Der Prompt des ganzen Bildes gilt weiterhin überall; die Prompts der Ebene gelten zusätzlich innerhalb ihrer Region. Ist **auto negative** eingeschaltet, wird der positive Prompt der Ebene auch aus dem Rest des Bildes herausgehalten, sodass ein „red hat“ an seinem Platz bleibt.
+
+- Eine Ebene ohne Bemalung im Generierungsbereich oder ohne Prompt sagt nichts aus und wird weggelassen.
+- Es lassen sich höchstens 8 Ebenen gleichzeitig verwenden. Ausgeblendete Ebenen werden nicht verwendet.
+- Die regionale Steuerung funktioniert mit Modellen von SD1.X und SDXL. Bei den neueren Familien (Flux, Qwen-Image und ähnlichen) schlägt die Generierung fehl und sagt das; blenden Sie die Ebenen aus.
+- Die Referenzbilder, die einer regionalen Ebene hinzugefügt wurden, werden noch nicht verwendet.
 
 ## Speichern und Aufräumen
 
 - Um das Leinwandbild in der Galerie zu speichern, klicken Sie in der Leiste oben auf **{{ui:canvas.toolbar.saveToGallery}}** (das Disketten-Symbol). Die sichtbaren Rasterebenen im Generierungsbereich werden zusammengefasst und als ein Bild gespeichert.
+- Um die Leinwand als PSD-Datei zu speichern, die ihre Ebenen behält, klicken Sie auf **{{ui:canvas.toolbar.savePsd}}** (das Dokument-Symbol mit Pfeil nach unten). Der Generierungsbereich wird als Browser-Download gespeichert. Jede Rasterebene wird zu einer Ebene der PSD-Datei und behält Namen, Position, Deckkraft und Sichtbarkeit. Control-Ebenen kommen als ausgeblendete Ebenen hinein; Inpainting-Masken und regionale Steuerung werden weggelassen.
 - Um nur eine Ebene zu speichern, klicken Sie mit der rechten Maustaste auf die Ebene und wählen **{{ui:canvas.entityMenu.saveToGallery}}**.
 - Unter **{{ui:canvas.settings.title}}** finden Sie außerdem **{{ui:canvas.actions.clearCanvas}}**, **{{ui:canvas.actions.clearHistory}}** und **{{ui:canvas.actions.clearStaging}}**. **{{ui:canvas.actions.clearCanvas}}** löscht alle Ebenen.
 
-Funktionen zum Korrigieren von Bildern gibt es auch unter [Bilder verbessern und wiederverwenden](04-improve.md). Das Ergebnis von „{{ui:gallery.menu.segment}}“ lässt sich an die Leinwand senden und weiter neu zeichnen.
+Funktionen zum Korrigieren von Bildern gibt es auch unter [Bilder korrigieren und wiederverwenden](04-improve.md). „{{ui:gallery.menu.segment}}“ öffnet ein Bild auf der Leinwand, wo Sie den übermalten Teil neu zeichnen, löschen oder ausschneiden.

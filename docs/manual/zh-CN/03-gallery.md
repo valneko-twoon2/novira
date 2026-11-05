@@ -5,7 +5,7 @@
 
 ## 认识图库
 
-右侧面板由上下两部分组成。
+选择右侧面板上方的 **{{ui:app.right.gallery}}** 标签页，就会显示图库（旁边的 **{{ui:app.right.assistant}}** 标签页是 [AI 助手](09-assistant-settings.md#智能体 助手)）。图库由上下两部分组成。
 
 - 上方：**{{ui:gallery.boards.title}}**。类似用来收纳图像的文件夹。
 - 下方：所选画板中图像的缩略图。
@@ -86,6 +86,7 @@
 | **{{ui:gallery.menu.openInViewer}}** | 在中央的查看器中放大查看 |
 | **{{ui:common.download}}** | 保存图像的文件 |
 | **{{ui:share.menu}}** | 选择格式和大小导出副本（也可以移除生成信息） |
+| **{{ui:share.check.title}}** | 检查图像中包含的水印、AI 生成标识和内容凭证 |
 | **{{ui:common.copy}}**（`Ctrl+C`） | 把图像复制到剪贴板 |
 | **{{ui:gallery.menu.compare}}**（`Alt+点击`） | 与查看器中显示的图像对比 |
 | **{{ui:gallery.menu.loadWorkflow}}**（`W`） | 打开生成这张图像的工作流 |
@@ -100,10 +101,9 @@
 | **{{ui:gallery.menu.sendToWorkflow}}** | 作为图像输入添加到打开的工作流中 |
 | **{{ui:gallery.menu.sendToText}}** | 作为文本的背景 |
 | **{{ui:gallery.menu.upscale}}**（`Shift+U`） | 发送到放大标签页 |
-| **{{ui:gallery.menu.segment}}** | 选取图像的一部分，进行抠图或重绘 |
+| **{{ui:gallery.menu.segment}}** | 在画布中打开图像，用画笔涂抹想修改的部分，进行擦除、抠图或重绘 |
 | **{{ui:gallery.derive.menu}}** | 用这张图像的设置，生成不同种子或稍作改动的图像 |
-| **{{ui:cutout.menu}}** | 去除背景 |
-| **{{ui:facefix.menu}}** | 找到人脸并重新绘制 |
+| **{{ui:gallery.tools.heading}}** | {{ui:facefix.menu}}、{{ui:cutout.menu}}、{{ui:caption.menu}}、{{ui:canvas.poseFromImage.menu}}。选择后会立刻以上次的设置执行，点击右侧的齿轮则会先打开设置（[修饰与复用图像](04-improve.md)） |
 | **{{ui:gallery.menu.trim}}** | 去掉透明的空白边，另存为新的透明图像 |
 | **{{ui:character.menu}}** | 把图像注册为角色 |
 | **{{ui:gallery.menu.changeBoard}}** | 移到其他画板 |
@@ -184,7 +184,7 @@
 |---|---|
 | 信息 | **{{ui:gallery.viewer.toggleMetadata}}**（`I`） |
 | 载入设置 | **{{ui:gallery.menu.remix}}**（`R`）、**{{ui:gallery.menu.usePrompt}}**（`P`）、**{{ui:gallery.menu.useSeed}}**（`S`）、**{{ui:gallery.menu.useAll}}**（`A`）、**{{ui:gallery.menu.loadWorkflow}}**（`W`）、**{{ui:gallery.derive.menu}}** |
-| 发送、修饰 | **{{ui:gallery.menu.sendToCanvas}}**、**{{ui:gallery.menu.useAsReference}}**、**{{ui:gallery.menu.upscale}}**（`Shift+U`）、**{{ui:gallery.menu.segment}}**、**{{ui:cutout.menu}}**、**{{ui:facefix.menu}}**、**{{ui:character.menu}}**、**{{ui:gallery.compare.toggle}}**（`C`） |
+| 发送、修饰 | **{{ui:gallery.menu.sendToCanvas}}**、**{{ui:gallery.menu.useAsReference}}**、**{{ui:gallery.menu.upscale}}**（`Shift+U`）、**{{ui:gallery.menu.segment}}**、**{{ui:cutout.menu}}**、**{{ui:facefix.menu}}**、**{{ui:gallery.manga.menu}}**、**{{ui:character.menu}}**、**{{ui:gallery.compare.toggle}}**（`C`） |
 | 整理 | **{{ui:gallery.menu.star}}**、**{{ui:common.download}}**、**{{ui:share.menu}}**、**{{ui:gallery.menu.delete}}**（`Del`） |
 
 作用与缩略图右键菜单中同名的项目相同。对于没有设置的图像（上传的图像等），载入设置的按钮会变灰。
@@ -193,10 +193,10 @@
 
 ![元数据面板。提示词、模型、种子、步数等的列表](shot:viewer-metadata)
 
-点击工具栏的 **{{ui:gallery.viewer.toggleMetadata}}** 按钮（`I`），图像上方会打开信息面板。再点击一次，或点击右上角的 ×，即可关闭。
+点击工具栏的 **{{ui:gallery.viewer.toggleMetadata}}** 按钮（`I`），图像上方会打开信息面板。再点击一次、点击右上角的 ×，或点击面板之外的地方，即可关闭。面板中的文字可以拖动选中，再按 `Ctrl+C` 复制（选中文字期间的 `Ctrl+C` 复制的是文字，而不是图像）。
 面板中有 4 个标签页。
 
-- **{{ui:gallery.meta.tabRecall}}**：按项目列出生成这张图像时的设置（提示词、模型、种子、步数、CFG 比例、调度器、尺寸、LoRA 等）。用各行右侧的箭头按钮，可以把**仅该项目**载入左侧面板。
+- **{{ui:gallery.meta.tabRecall}}**：按项目列出生成这张图像时的设置（提示词、模型、种子、步数、CFG 比例、调度器、尺寸、LoRA 等）。用各行右侧的箭头按钮，可以把**仅该项目**载入左侧面板。提示词一行，用箭头左侧的按钮可以直接复制提示词。对于调度器已固定的系列模型（Anima、Flux 等）的图像，会显示“{{ui:gallery.meta.sampling}}”一行来代替调度器，可以看到实际使用的采样器和调度器。这一行无法载入，用“{{ui:gallery.menu.useAll}}”时调度器也保持当前状态。
 - **{{ui:gallery.meta.tabMetadata}}**：可以按原样查看记录的内容。用右上角的按钮可以复制。
 - **{{ui:gallery.meta.tabDetails}}**：文件名、尺寸、生成日期时间、画板、有无星标等。
 - **{{ui:gallery.meta.tabWorkflow}}**：如果是用工作流生成的图像，会显示其内容。
@@ -205,7 +205,7 @@
 
 | 方法 | 载入的内容 |
 |---|---|
-| **{{ui:gallery.menu.useAll}}** | 提示词、模型、种子、尺寸等全部设置。种子会变为固定 |
+| **{{ui:gallery.menu.useAll}}** | 提示词、模型、种子、尺寸等全部设置。种子会变为固定。对于用其他软件生成后导入的图像，会按名称查找模型（`v17` 和 `v170` 这类写法上的差别会视为同一个模型）。找不到时，会保持当前的模型，并通过通知告知 |
 | **{{ui:gallery.menu.remix}}** | 除种子之外的全部内容。当前的种子设置（随机还是固定）保持不变。想“用相同的设置生成另一张图像”时使用 |
 | **{{ui:gallery.menu.usePrompt}}** | 仅提示词（正向和反向） |
 | **{{ui:gallery.menu.useSeed}}** | 仅种子。种子会变为固定 |
@@ -255,7 +255,13 @@
 
 会弹出确认窗口，点击“{{ui:common.delete}}”就会删除。
 
-> 删除的图像无法恢复。没有类似回收站的存放处。
+删除的图像不会立刻消失，而是保留 14 天（最多 500 张），因此可以撤销删除。
+
+- 点击画面右下角的铃铛，再点击删除通知中的 **{{ui:gallery.undoDelete.action}}**。为了不妨碍连续删除的操作，删除的通知不会弹出在画面上，只会收进铃铛里（铃铛的数字会增加）。
+- 点击图库上方的“{{ui:gallery.undoDelete.label}}”按钮，或在指针位于图库上方期间（或打开着查看器期间）按 `Ctrl+Z`。可以从最新的开始，依次撤销最近 30 次以内的删除。
+- 想再次删除已恢复的图像时，使用“{{ui:gallery.redoDelete.label}}”按钮或 `Ctrl+Shift+Z`（`Ctrl+Y`）。
+
+> 可撤销的记录在关闭应用后就会丢失。删除已超过 14 天的图像无法恢复。连画板一起删除图像时，也可以同样撤销。如果画板已经不存在，图像会回到“{{ui:gallery.boards.uncategorized}}”。
 
 在确认窗口的“{{ui:common.dontAskAgain}}”上打勾，以后删除时就不再确认。想恢复确认时，请在 **{{ui:app.nav.settings}}** 中打开“{{ui:settings.confirmOnDelete}}”。
 
@@ -274,6 +280,8 @@
 
 保存图像的文件，请使用右键菜单，或查看器工具栏的 **{{ui:common.download}}**。选中多张图像时，会一并保存。
 
+桌面版会打开选择保存文件夹的窗口，并原样复制原始文件（包括生成信息）。已有同名文件时，会加上“-2”这样的编号，不会覆盖。保存后，可以从提示中的 **{{ui:share.openFolder}}** 打开该文件夹。在浏览器中打开时，会保存到浏览器的下载位置。
+
 ### 导出以分享
 
 ![导出以分享窗口。排列着格式（PNG、JPEG、WebP）、画质、长边上限和移除生成信息的开关](shot:share-export)
@@ -283,10 +291,26 @@
 - **{{ui:share.format}}**：从 PNG、JPEG、WebP 中选择。JPEG 可以设定 **{{ui:share.quality}}**（1～100），透明部分会变成白色。WebP 以无损方式保存。
 - **{{ui:share.size}}**：选择“{{ui:share.size.original}}”、2048、1536、1024 px，或用“{{ui:share.size.custom}}”输入长度。比它小的图像不会放大。
 - **{{ui:share.removeInfo}}**：一开始是关闭的。打开后，不包含提示词、设置和工作流，并根据像素重新保存图像，因此也不会残留其他嵌入信息。关闭时，只有 PNG 会保留设置。交给别人之前，如果不想让人看到提示词，请打开它。
+- **{{ui:share.watermark}}**：一开始是关闭的。打开后，会在导出的图像中加入不可见的水印（TrustMark）、表明由 AI 生成的信息（IPTC），以及带签名的内容凭证（C2PA）。水印中包含 novira 的标记和每张图像各不相同的随机编号，编号与原图的对应关系会记录在本应用中。
 
 点击 **{{ui:share.run}}** 后，桌面版会打开选择保存文件夹的窗口。文件名是图库的文件名加上新的扩展名；已有同名文件时，会加上“-2”“-3”这样的编号，不会覆盖。导出后，可以用 **{{ui:share.openFolder}}** 打开该文件夹。
 
-> 只能导出图像。所选项目中的视频和音频会被排除。在浏览器中打开时，会保存到浏览器的下载位置。
+> 只能导出图像。所选项目中的视频和音频会被排除。在浏览器中打开时，会保存到浏览器的下载位置。1 张时直接保存，2 张或更多时会打包成 1 个 zip。一次最多可导出合计 1 GB，超过时会提示减少张数。
+
+水印所用的文件（合计约 140 MB）会在应用启动时自动下载。准备完成之前，开关下方会显示进度，**{{ui:share.run}}** 无法点击。下载失败时，请点击 **{{ui:share.watermarkRetry}}**。
+
+> 水印会加在图像中央的正方形部分。已确认即使以画质 80 的 JPEG 重新保存，或缩小为一半大小，水印仍可读取，但裁剪、重新生成或强力处理可能会使其消失。水印采用的是公开的方式，所以任何人都能写入相同的水印。签名是在这台电脑上生成的，因此在其他应用中会显示为不受信任的签名者。水印处理需要 Microsoft Visual C++ 可再发行组件包，没有时会显示错误。
+
+### 检查水印
+
+从缩略图右键菜单的 **{{ui:share.check.title}}** 打开。用 **{{ui:share.check.pick}}** 选择图像文件（PNG、JPEG、WebP）后，会检查下面的内容并列出。从右键菜单打开时，会立刻检查那张图像。在浏览器中打开时，无法选择文件进行检查。
+
+- **{{ui:share.check.watermark}}**：有没有 novira 的水印。有的话会显示编号。
+- **{{ui:share.check.original}}**：如果编号在本应用的导出记录中，会显示原图和导出的日期时间，并可以用 **{{ui:share.check.showOriginal}}** 在查看器中显示。
+- **{{ui:share.check.credentials}}**：有没有内容凭证，签名之后有没有被改动，是否记录为 AI 生成，签名者是谁。
+- **{{ui:share.check.iptc}}**：有没有表明由 AI 生成的信息。
+
+> 即使没有找到水印，也不能证明不是用 AI 生成的。导出记录保存在本应用的数据库中，因此无法得知在其他电脑的 novira 中导出的图像的原图。水印所用文件的准备尚未完成时，只会检查水印以外的项目。
 
 ## 拖放
 
@@ -306,7 +330,7 @@
 | 全选 | `Ctrl+A` |
 | 取消选择 | `Esc` |
 | 删除所选图像 | `Delete` |
-| 复制查看器中的图像 | `Ctrl+C` |
+| 复制查看器中的图像，或图库中选中的图像（在画布界面中，点击过图库中的图像之后也有效） | `Ctrl+C` |
 | 展开、收起信息面板 | `I` |
 | 混编、提示词、种子、全部 | `R`、`P`、`S`、`A` |
 | 载入工作流 | `W` |

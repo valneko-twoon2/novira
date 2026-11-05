@@ -1,16 +1,18 @@
 # Crear imágenes
 
-Este capítulo explica cómo crear dibujos en la pestaña **{{ui:app.tabs.generate}}**.
-Para recorrer la pantalla, consulte [Primeros pasos](01-start.md); para ver y organizar las imágenes creadas, consulte [Galería y visor](03-gallery.md).
+Este capítulo explica cómo crear imágenes en la pestaña **{{ui:app.tabs.generate}}**.
+Para recorrer la pantalla, consulte [Primeros pasos](01-start.md); para ver y organizar las imágenes creadas, consulte [La galería y el visor](03-gallery.md).
 
 El procedimiento es siempre el mismo.
 
 1. Elegir el modelo
 2. Escribir el prompt
-3. Si hace falta, ajustar el tamaño, la semilla y otros parámetros
+3. Si hace falta, ajustar parámetros como el tamaño y la semilla
 4. Pulsar **{{ui:params.invoke.invoke}}**
 
-El dibujo no empieza a generarse en el instante de pulsar: primero entra en la «{{ui:app.tabs.queue}}» (la fila de espera). Cuando le llega el turno, se dibuja de una en una.
+La imagen no empieza a dibujarse en el instante de pulsar el botón. Primero entra en la «{{ui:app.tabs.queue}}» (la cola de espera). Cuando le llega el turno, las imágenes se dibujan de una en una.
+
+El modelo, los prompts y los ajustes que elija se conservan al cerrar la aplicación y se encuentran tal como estaban la próxima vez que la inicie.
 
 ## Escribir el prompt
 
@@ -19,283 +21,315 @@ El dibujo no empieza a generarse en el instante de pulsar: primero entra en la �
 En «{{ui:params.prompt.title}}», en el panel izquierdo, hay 2 campos.
 
 - **{{ui:params.prompt.positive}}**: aquí se escribe lo que se quiere que aparezca.
-- **{{ui:params.prompt.negative}}**: aquí se escribe lo que no se quiere que aparezca. Por ejemplo, `blurry, watermark` (borroso, marca de agua). Se puede generar aunque quede vacío.
+- **{{ui:params.prompt.negative}}**: aquí se escribe lo que no se quiere que aparezca. Por ejemplo, `blurry, watermark`. También se puede generar con el campo vacío.
 
 Pautas para escribir:
 
-- Separe palabras o frases cortas con comas (`,`).
+- Escriba palabras o frases cortas separadas por comas (`,`).
 - Con muchos modelos es más fácil obtener lo esperado escribiendo en inglés. Si la descripción del modelo indica cómo escribir, siga esa indicación.
 - Ponga las palabras importantes al principio.
 
-Los pequeños botones situados sobre el campo funcionan así:
+Los pequeños botones situados sobre los campos funcionan así. Solo tienen icono; deje el puntero encima para ver su nombre.
 
 | Botón | Función |
 |---|---|
-| **{{ui:params.prompt.recommended}}** | Añade palabras de calidad adecuadas al modelo elegido (como `masterpiece, best quality`) al principio de «{{ui:params.prompt.positive}}» y las palabras que suelen querer evitarse al final de «{{ui:params.prompt.negative}}». Las palabras que ya están no se añaden de nuevo |
-| **{{ui:params.prompt.expand}}** | Edita el prompt positivo y el negativo en una ventana grande, uno junto al otro |
-| **{{ui:params.promptBook.open}}** | Abre una lista de palabras reunidas con su significado (más adelante) |
-| **{{ui:caption.fromPrompt}}** | Mira una imagen y escribe palabras utilizables en el prompt. También funciona soltando sobre este botón una imagen de la galería o un archivo de imagen del ordenador (se explica en [Retocar y reutilizar imágenes](04-improve.md)) |
-| «Preajustes positivos» / «Preajustes negativos» de cada campo | Guarda y recupera solo el texto del prompt (más adelante) |
+| **{{ui:params.prompt.recommended}}** | Añade a «{{ui:params.prompt.positive}}» las palabras de calidad de uso general en la familia del modelo elegido, y al final de «{{ui:params.prompt.negative}}» las palabras que conviene evitar. Los modelos que se escriben con etiquetas (Illustrious, NoobAI, Pony, Anima, etc.) reciben al principio etiquetas como `masterpiece, best quality`; los que se escriben con frases (FLUX, Qwen-Image, etc.) reciben palabras de calidad al final. Los modelos que no usan prompt negativo (FLUX.1) no reciben palabras negativas. Las palabras que ya están no se añaden dos veces |
+| **{{ui:params.prompt.expand}}** | Edita el prompt positivo y el negativo, uno junto al otro, en una ventana grande |
+| **{{ui:params.prompt.textView}}** / **{{ui:params.prompt.tagView}}** | Cambia el campo entre texto normal y una fila de etiquetas, una por palabra. Al pulsar una etiqueta se abre un panel emergente: reescribir sus palabras, cambiar su intensidad con el control deslizante, restablecerla a 1 o quitar la etiqueta. Una etiqueta cuya intensidad ha cambiado se escribe en el prompt como `(smile:1.3)`. Escriba una palabra en el cuadro de abajo y pulse Intro para añadir una etiqueta |
+| **{{ui:params.promptBook.open}}** | Abre los preajustes, palabras reunidas con su significado (se explican más adelante) |
+| **{{ui:caption.fromPrompt}}** | Mira la imagen seleccionada en la galería (o, si no hay ninguna, un archivo de imagen que se elija) y escribe de una vez palabras utilizables como prompt. El resultado se muestra en la banda del visor. También se puede soltar sobre este botón una imagen de la galería o un archivo de imagen del ordenador (se explica en [Retocar y reutilizar imágenes](04-improve.md)) |
 
 ### Número de tokens
 
-El «0 / 77 tokens» situado sobre el campo es una estimación de la cantidad de palabras escritas.
-Un token es la unidad en que el modelo divide las palabras al leerlas. Si se supera el límite, el número cambia a un color de aviso. Según el modelo, la parte que sobrepasa el límite puede tener menos efecto.
-El número es aproximado, no exacto.
+El «0 / 77 tokens» situado sobre el campo es una medida aproximada de la cantidad escrita.
+Un token es una unidad con la que el modelo lee las palabras. Si se supera el límite, el número cambia a un color de aviso. Con algunos modelos, la parte que sobrepasa el límite puede tener menos efecto.
+El número es aproximado, no un recuento exacto.
 
-### Crear varias combinaciones a la vez `{red|blue}`
+### Crear varias combinaciones a la vez con `{red|blue}`
 
-Si en el campo positivo se escribe entre llaves con barras verticales (`|`) como en `{red|blue}`, se crea un dibujo distinto por cada opción.
+Si en el campo positivo se escriben llaves con opciones separadas por barras verticales (`|`), como `{red|blue}`, se crea una imagen distinta por cada opción.
 
-- Con `a {red|blue} flower` se obtienen 2 variantes: `a red flower` y `a blue flower`.
-- Con dos o más pares de llaves se obtienen todas las combinaciones. `a {red|blue} {cat|dog}` da 4 variantes.
-- También se pueden anidar llaves dentro de llaves.
-- Para usar una llave como carácter, anteponga `\` (`\{`).
-- El número de combinaciones es de 100 como máximo.
+- Con `a {red|blue} flower` se obtienen 2 versiones: `a red flower` y `a blue flower`.
+- Con dos o más pares de llaves se obtienen todas las combinaciones. `a {red|blue} {cat|dog}` da 4.
+- También se pueden poner llaves dentro de llaves.
+- Para usar una llave como carácter normal, anteponga `\` (`\{`).
+- El número de combinaciones tiene un máximo de 100.
 
-Si el «{{ui:params.invoke.iterations}}» (más adelante) es 2 o más, se crean tantos dibujos como combinaciones × número de imágenes. Por ejemplo, con 2 variantes y 3 imágenes son 6 dibujos.
-Esta sintaxis solo funciona en el campo positivo. En el campo negativo, las llaves se tratan como texto normal.
+Si «{{ui:params.invoke.iterations}}» (se explica más adelante) es 2 o más, el número de imágenes creadas es el de combinaciones por las iteraciones. Por ejemplo, 2 combinaciones con las iteraciones en 3 dan 6 imágenes.
+Esta sintaxis solo funciona en el campo positivo. En el campo negativo, las llaves se tratan como caracteres normales.
 
-Para comprobar en qué frases se expande, use el botón **{{ui:params.prompt.dynamicPreview}}** (icono `{ }`) situado sobre el campo positivo. Al pulsarlo aparece la lista de combinaciones.
+Para comprobar en qué textos se expande, use el botón **{{ui:params.prompt.dynamicPreview}}** (el icono `{ }`) situado sobre el campo positivo. Al pulsarlo aparece una lista de las combinaciones. El campo negativo tiene el mismo botón, y `{a|b}` y los comodines también funcionan en el prompt negativo. Las combinaciones son todos los pares de un positivo y un negativo.
 
-### Comodines `__nombre__`
+### Comodines `__name__`
 
-![Ventana de comodines. A la izquierda la lista de listas; a la derecha el nombre y los elementos de la lista elegida](shot:wildcards)
+![Ventana de comodines: las listas a la izquierda, el nombre y las entradas de la lista elegida a la derecha](shot:wildcards)
 
-Si en el campo positivo se escribe `__nombre__` (con dos guiones bajos delante y detrás del nombre), se inserta un elemento cada vez de la lista de «{{ui:params.wildcards.title}}» con ese nombre. Si se guardan las opciones de uso frecuente como lista, no hace falta escribir `{red|blue}` cada vez.
+Escriba `__name__` (dos guiones bajos antes y después del nombre) en el campo positivo, y las entradas de la lista «{{ui:params.wildcards.title}}» de ese nombre se colocan ahí de una en una. Si guarda en una lista las opciones que usa a menudo, ya no tendrá que escribir `{red|blue}` cada vez.
 
-- Con `1girl, __hair-color__` se crean tantos prompts como elementos tenga la lista hair-color.
-- Dentro de los elementos también se pueden escribir `{a|b}` u otros comodines. Los comodines dentro de comodines admiten hasta 6 niveles.
+- `1girl, __hair-color__` crea un prompt por cada entrada de la lista hair-color.
+- Las entradas pueden usar `{a|b}` y otros comodines. Los comodines dentro de comodines pueden anidarse hasta 6 niveles.
 - El límite de combinaciones (100) es el mismo que con `{ }`.
-- Si se escribe un nombre inexistente, una lista sin elementos o una lista que se usa a sí misma, **{{ui:params.invoke.invoke}}** no se puede pulsar y el motivo aparece debajo del botón.
+- Un nombre sin lista, una lista sin entradas o una lista que se usa a sí misma impiden pulsar **{{ui:params.invoke.invoke}}**, y el motivo aparece bajo el botón.
 
-Las listas se abren desde **{{ui:params.wildcards.open}}**, al final de la ventana del botón **{{ui:params.prompt.dynamicPreview}}**. Desde el principio hay 3: hair-color (color del pelo), expression (expresión) y time-of-day (momento del día).
+Abra las listas con **{{ui:params.wildcards.open}}**, en la parte inferior de la ventana del botón **{{ui:params.prompt.dynamicPreview}}**. La aplicación incluye tres listas: hair-color, expression y time-of-day.
 
-| Operación | Función |
+| Control | Función |
 |---|---|
 | **{{ui:params.wildcards.new}}** | Añade una lista vacía |
-| Campo «{{ui:params.wildcards.name}}» | Cambia el nombre de la lista. Se pueden usar letras, números, `-` y `_`, y el primer y el último carácter deben ser una letra o un número |
-| Campo «{{ui:params.wildcards.entries}}» | Se escribe un elemento por línea. Las líneas vacías y las que empiezan por `#` no cuentan como elementos |
-| **{{ui:params.wildcards.import}}** / **{{ui:params.wildcards.export}}** | Lee y escribe una lista como archivo .txt con un elemento por línea. El archivo importado se convierte en una lista nueva cuyo nombre es el del archivo |
+| El campo «{{ui:params.wildcards.name}}» | Cambia el nombre de la lista. Use letras, dígitos, `-` y `_`, empezando y terminando por una letra o un dígito |
+| El campo «{{ui:params.wildcards.entries}}» | Una entrada por línea. Las líneas vacías y las que empiezan por `#` no son entradas |
+| **{{ui:params.wildcards.import}}** / **{{ui:params.wildcards.export}}** | Lee o escribe una lista como archivo .txt con una entrada por línea. Un archivo importado se convierte en una lista nueva con el nombre del archivo |
 | **{{ui:common.delete}}** | Elimina la lista elegida |
 
-Las listas se guardan dentro de esta aplicación (en el ordenador que se está usando).
+Las listas se guardan dentro de la aplicación (en el ordenador que se está usando).
 
 ### Elegir al azar
 
 Cuando hay demasiadas combinaciones, cambie «{{ui:params.prompt.dynamicMode}}» en la ventana del botón **{{ui:params.prompt.dynamicPreview}}**.
 
-- **{{ui:params.prompt.modeCombinatorial}}** (ajuste inicial): por cada combinación se crean tantos dibujos como indique el número de imágenes.
-- **{{ui:params.prompt.modeRandom}}**: se crean tantos dibujos como indique el número de imágenes, y en cada uno se elige una combinación. La elección depende de la semilla de ese dibujo, así que al volver a dibujar con la misma semilla se obtiene el mismo prompt.
+- **{{ui:params.prompt.modeCombinatorial}}** (valor predeterminado): crea el número de imágenes indicado en las iteraciones por cada combinación.
+- **{{ui:params.prompt.modeRandom}}**: crea el número de imágenes indicado en las iteraciones, eligiendo una combinación para cada imagen. La elección depende de la semilla de la imagen, así que al volver a dibujar con la misma semilla se obtiene el mismo prompt.
 
-Con cualquiera de los dos métodos, la imagen creada guarda el prompt que realmente se usó.
+En ambos casos, cada imagen terminada conserva el prompt que realmente se usó.
 
 ## Semilla
 
-El dibujo se crea a partir de un número llamado «{{ui:params.seed.label}}». Con la misma semilla y los mismos ajustes se obtiene el mismo dibujo.
+Una imagen se crea a partir de un número llamado «{{ui:params.seed.label}}». Con la misma semilla y los mismos ajustes se obtiene la misma imagen.
 
-En la fila «{{ui:params.seed.label}}», en la parte superior del panel izquierdo, hay 2 botones.
+En la fila «{{ui:params.seed.label}}», cerca de la parte superior del panel izquierdo, hay 2 botones.
 
-- **{{ui:params.seed.random}}** (dado): en cada generación se usa una semilla nueva. El dibujo es distinto cada vez. Es el estado inicial.
-- **{{ui:params.seed.fixed}}** (candado): se dibuja con la semilla actual. Con los mismos ajustes, el dibujo es siempre el mismo. Es útil para ver qué cambia al modificar una sola palabra del prompt.
+- **{{ui:params.seed.random}}** (el dado): en cada generación se usa una semilla nueva. Se obtiene una imagen distinta cada vez. Es el valor predeterminado.
+- **{{ui:params.seed.fixed}}** (el candado): se dibuja con la semilla actual. Por muchas veces que se cree con los mismos ajustes, se obtiene la misma imagen. Es útil para ver qué cambia al modificar una sola palabra del prompt.
 
 Al fijarla, el campo numérico de la semilla y el botón «{{ui:params.seed.shuffle}}» quedan bloqueados (para evitar cambios accidentales).
-Para usar un número concreto, escríbalo en el campo numérico en el estado «{{ui:params.seed.random}}» y después cambie a «{{ui:params.seed.fixed}}».
-Para usar la semilla de un dibujo que gustó, abra ese dibujo en la galería y pulse «{{ui:gallery.menu.useSeed}}»: la semilla se carga y queda fijada (consulte [Galería y visor](03-gallery.md)).
+Para usar un número concreto, escríbalo en el campo numérico con «{{ui:params.seed.random}}» seleccionado y después cambie a «{{ui:params.seed.fixed}}».
+Para usar la semilla de una imagen que le gustó, abra esa imagen en la galería y pulse «{{ui:gallery.menu.useSeed}}»: la semilla se carga y queda fijada (consulte [La galería y el visor](03-gallery.md)).
 
-Si se aumenta el número de imágenes con la semilla fijada, a partir de la segunda imagen la semilla aumenta de uno en uno.
+Si se aumentan las iteraciones con la semilla fijada, a partir de la segunda imagen la semilla aumenta de uno en uno.
 
 ## Elegir el modelo
 
-![Lista de modelos abierta, dividida por familias como FLUX, SDXL y SD1.X](shot:model-picker)
+![La lista de modelos abierta, dividida por familias como FLUX, SDXL y SD1.X](shot:model-picker)
 
-En la tarjeta de modelo de la parte superior del panel izquierdo se elige el modelo con el que dibujar.
+Con la tarjeta de modelo, situada cerca de la parte superior del panel izquierdo, se elige el modelo que dibuja la imagen.
 
 1. Haga clic en el campo del nombre del modelo.
-2. Elija en la lista. La lista está dividida por familias de modelos (FLUX, SDXL, SD1.X, etc.). Si hay muchos, se puede filtrar escribiendo parte del nombre en el campo de búsqueda de arriba.
-3. El modelo elegido se marca con ✓ y la imagen de la tarjeta (la portada) cambia.
+2. Elija en la lista. La lista está dividida por familias de modelos (FLUX, SDXL, SD1.X, etc.). Cuando hay muchos, escriba parte de un nombre en el campo de búsqueda de arriba para acotar.
 
-Con el botón **{{ui:app.tabs.short.models}}** de debajo de la lista se pasa a la pestaña {{ui:app.tabs.models}} (gestión de los modelos disponibles), y con el botón **{{ui:app.tabs.short.browse}}** a la pestaña {{ui:app.tabs.browse}} (búsqueda en internet). La forma de conseguir más modelos se explica en [Preparar modelos](08-models.md).
+Aquí también se pueden elegir modelos de Anima, Flux, FLUX.2, Chroma, Qwen-Image, Z-Image, SD3, HiDream, AuraFlow y HunyuanImage. Cuando el modelo, el codificador de texto y el VAE se distribuyen como archivos separados, la aplicación busca el codificador de texto y el VAE por nombre entre los modelos instalados. Al instalar un modelo al que le falta alguno, la aplicación pregunta enseguida «{{ui:params.parts.title}}» y muestra los nombres y tamaños, para que se instalen solo los archivos que faltan. Si se cierra con «Ahora no», el panel Generar conserva una nota de lo que le falta al modelo y un botón que instala esos archivos sin salir de la pantalla; una descarga superior a 5 GB vuelve a pedir confirmación tras pulsarlo. Los modelos iniciales de la pantalla Modelos (**{{ui:models.install.tab.starter}}**) también los instalan. Las máscaras, las capas de control y la corrección de alta resolución también funcionan con estos modelos. Las imágenes de referencia funcionan solo con modelos SD1.X y SDXL. Lo que se elija en «{{ui:params.generation.scheduler}}» no se usa: cada familia dibuja con su propio muestreador y planificador (`euler / simple` para Flux; solo Anima dibuja con el planificador elegido), y el campo «{{ui:params.generation.scheduler}}» muestra el par que se ejecutará. Si se elige un «{{ui:params.generation.sampler}}» o un «{{ui:params.generation.noiseSchedule}}», prevalece en un modelo de cualquier familia.
 
-Si el modelo tiene ajustes recomendados registrados (pasos, CFG, scheduler, tamaño), se aplican automáticamente al elegirlo.
-Al cambiar a un modelo de otra familia, se quitan los LoRA y elementos similares que no encajan con el nuevo modelo (una notificación indica cuántos se quitaron).
+- **Modelos de edición.** FLUX Kontext y Qwen-Image-Edit modifican una imagen que se les da: coloque la imagen en el origen (imagen a imagen) y escriba en el prompt qué cambiar. FLUX Fill vuelve a dibujar la parte enmascarada (use inpaint u outpaint con máscara). Estos modelos no admiten la corrección de alta resolución, los borradores ni las capas de control. La aplicación los distingue de los modelos normales por lo que hay dentro del archivo o, en el caso de Kontext y los modelos de edición de Qwen, por la palabra `kontext` o `edit` en el nombre del archivo; no los renombre.
+- **FLUX.2.** Los modelos klein funcionan en pocos pasos (use CFG 1 con los destilados); dev usa el valor de CFG como guía. Coloque una imagen en el origen (imagen a imagen) y FLUX.2 la edita según el prompt. Las máscaras, las capas de control y la corrección de alta resolución no están disponibles con FLUX.2 (los borradores sí).
+- **Modelos cuantizados (GGUF).** Un archivo de modelo o de codificador de texto que termina en `.gguf` lo lee la extensión ComfyUI-GGUF. Instálela una vez desde la pantalla Extensiones (https://github.com/city96/ComfyUI-GGUF) y reinicie el motor; hasta entonces, la generación falla y lo indica.
+- **Modelos hechos para otras entradas.** Los modelos que necesitan un vídeo de control, audio, una trayectoria de cámara o un vídeo de pose (por ejemplo Wan Fun Control, Wan Animate, Flux Canny) todavía no se pueden ejecutar aquí. La generación falla e indica lo que necesita el modelo.
+3. El modelo elegido recibe una marca ✓, y la imagen de la tarjeta (la portada) también cambia.
 
-Al pulsar el botón **{{ui:params.profile.title}}** situado bajo el campo del modelo, aparece una lista con los valores recomendados para ese modelo. Si los ajustes actuales se alejan de lo recomendado, el botón cambia a un color llamativo, y con **{{ui:params.profile.apply}}** se pueden igualar a los valores recomendados.
+Bajo la lista, el botón **{{ui:app.tabs.short.models}}** lleva a la pestaña {{ui:app.tabs.models}} (gestionar los modelos disponibles) y el botón **{{ui:app.tabs.short.browse}}** lleva a la pestaña {{ui:app.tabs.browse}} (buscar en internet). Cómo añadir más modelos se explica en [Preparar modelos](08-models.md).
 
-> Si no hay ningún modelo instalado, en el campo aparece «{{ui:params.model.noModels}}» y no se puede generar. Complete antes [Preparar modelos](08-models.md).
+Si para el modelo hay ajustes recomendados registrados (pasos, CFG, planificador, tamaño), se rellenan automáticamente al elegirlo.
+Al cambiar a un modelo de otra familia, se quitan los LoRA y elementos similares que no encajan con el nuevo modelo (se indica cuántos se quitaron).
+
+Pulse el botón **{{ui:params.profile.title}}**, bajo el campo del modelo, para ver en una lista los valores recomendados de ese modelo. Si los ajustes actuales difieren de los recomendados, el botón toma un color más llamativo, y **{{ui:params.profile.apply}}** pone todo en los valores recomendados. Los pasos se comprueban con un intervalo que va desde un poco por debajo hasta un poco por encima del número recomendado. Los modelos Anima se deshacen con facilidad con muy pocos pasos (la imagen puede salir de un solo color plano), por lo que su límite inferior es más alto (24 o más cuando se recomienda 30).
+
+> Cuando no hay ningún modelo instalado, el campo indica «{{ui:params.model.noModels}}» y no se puede generar. Complete antes [Preparar modelos](08-models.md).
 
 ## Otros ajustes
 
-Debajo del prompt hay secciones con los ajustes agrupados. Se abren y se cierran con un clic.
+Bajo el prompt hay secciones que agrupan los ajustes. Se abren y se cierran haciendo clic.
 
 | Sección | Contenido |
 |---|---|
-| **{{ui:params.refImage.sectionLabel}}** (justo debajo del prompt) | Imágenes para acercar el ambiente o los personajes de un dibujo (más adelante) |
+| **{{ui:params.refImage.sectionLabel}}** (justo bajo el prompt) | Imágenes que sirven para orientar el ambiente o los personajes de una imagen (se explica más adelante) |
+| **{{ui:params.i2i.title}}** | La imagen sobre la que se dibuja al redibujar a partir de una imagen, y la {{ui:params.image.strength}} (se explica más adelante) |
 | **{{ui:params.image.title}}** | {{ui:params.image.aspect}}, ancho y alto. También están los botones «{{ui:params.image.swap}}», «{{ui:params.image.lock}}» y «{{ui:params.image.optimal}}» |
-| **{{ui:params.generation.title}}** | LoRA (pequeños modelos adicionales que añaden estilo o personajes), {{ui:params.generation.scheduler}}, {{ui:params.generation.steps}} y {{ui:params.generation.cfg}} |
-| **{{ui:params.hires.title}}** | Una segunda generación que amplía el dibujo y lo vuelve a pintar (más adelante) |
-| **{{ui:params.advanced.title}}** | {{ui:params.advanced.vae}}, {{ui:params.advanced.clipSkip}}, {{ui:params.advanced.seamless}} (dibujos que se pueden repetir sin que se vean las juntas), etc. |
+| **{{ui:params.generation.title}}** | LoRA (un pequeño modelo complementario que añade un estilo de dibujo o un personaje), {{ui:params.generation.scheduler}}, {{ui:params.generation.sampler}}, {{ui:params.generation.noiseSchedule}} (se eligen con los nombres propios de ComfyUI; «{{ui:params.generation.engineAuto}}» sigue el planificador o el propio del modelo y muestra el nombre que representa, como «Auto (nombre)»; FLUX.2 admite solo el muestreador), {{ui:params.generation.steps}}, {{ui:params.generation.cfg}} |
+| **{{ui:params.hires.title}}** | Una segunda pasada que amplía la imagen dibujada y la vuelve a dibujar (véase más abajo) |
+| **{{ui:params.advanced.title}}** | {{ui:params.advanced.vae}}, {{ui:params.advanced.clipSkip}}, {{ui:params.advanced.seamless}} (imágenes sin costuras visibles al repetirlas en mosaico; modelos SD1.X y SDXL, con la extensión ComfyUI-seamless-tiling instalada desde la pantalla Extensiones), etc. |
 
-Si hay dudas, excepto el tamaño, se pueden dejar los valores que se aplicaron al elegir el modelo.
-Al colocar el cursor sobre el nombre de un ajuste («{{ui:params.generation.steps}}», «{{ui:params.generation.cfg}}», etc.), aparece una breve explicación. En el encabezado de cada sección se muestra, en pequeño, un resumen de los valores actuales.
+Si tiene dudas, todo salvo el tamaño puede quedar como se rellenó al elegir el modelo.
+Deje el puntero sobre el nombre de un elemento («{{ui:params.generation.steps}}», «{{ui:params.generation.cfg}}», etc.) para ver una breve explicación. El encabezado de cada sección muestra un pequeño resumen de sus valores actuales.
 
-Cuanto mayor es el tamaño, más tiempo y más carga para el ordenador. Se recomienda probar primero con un tamaño pequeño y, si el resultado le gusta, agrandarlo con la [ampliación](06-upscaling-workflows.md).
+Cuanto mayor es el tamaño, más tarda y más carga el ordenador. Se recomienda probar primero con un tamaño pequeño y, si el resultado es bueno, ampliarlo con [Ampliación](06-upscaling-workflows.md).
 
 ## Corrección de alta resolución
 
-![Sección de corrección de alta resolución abierta y activada](shot:hires-fix)
+![La sección de corrección de alta resolución abierta y activada](shot:hires-fix)
 
-Si se dibuja desde el principio con un tamaño grande, es fácil que aparezcan dos personas o que las formas se deformen. **{{ui:params.hires.title}}** primero dibuja con el tamaño ajustado, lo amplía y lo vuelve a dibujar con la misma semilla y los mismos ajustes. En una sola generación se obtiene un dibujo grande y con los detalles bien definidos. Esta sección está en las pestañas {{ui:app.tabs.generate}} y {{ui:app.tabs.comic}}.
+Si se dibuja desde el principio con un tamaño grande, es frecuente que salgan dos personas en lugar de una o que las formas se deformen. **{{ui:params.hires.title}}** dibuja primero con el tamaño ajustado, amplía la imagen y la vuelve a dibujar con la misma semilla y los mismos ajustes. En una sola generación se obtiene una imagen grande y con detalle en todas partes. Esta sección está en las pestañas {{ui:app.tabs.generate}} y {{ui:app.tabs.comic}}.
 
-- **{{ui:params.hires.enable}}**: se usa al activarlo.
-- **{{ui:params.hires.scale}}**: de 1,25 a 2 veces. El tamaño final aparece en el encabezado de la sección y en la última fila.
-- **{{ui:params.hires.strength}}**: de 0,2 a 0,75. Con un valor bajo se conserva casi por completo el primer dibujo, y con uno alto se repinta mucho. El valor inicial es 0,45.
-- **{{ui:params.hires.method}}**: **{{ui:params.hires.methodSmooth}}** amplía sin usar un modelo. Si está instalado un modelo de ampliación de los que se usan en la pestaña {{ui:app.tabs.upscaling}}, también se puede elegir.
-- **{{ui:params.hires.steps}}**: los pasos de la segunda pasada. Con 0, se dibuja con el mismo número que en la primera.
+- **{{ui:params.hires.enable}}**: actívela para usarla.
+- **{{ui:params.hires.scale}}**: de 1,25 a 2 veces. El tamaño final se muestra en el encabezado de la sección y en la línea inferior.
+- **{{ui:params.hires.strength}}**: de 0,2 a 0,75. Un valor bajo conserva casi tal cual la primera imagen; uno alto la redibuja más. El valor predeterminado es 0,45.
+- **{{ui:params.hires.method}}**: **{{ui:params.hires.methodSmooth}}** amplía sin usar un modelo. Si hay modelos de ampliación instalados (los que usa la pestaña {{ui:app.tabs.upscaling}}), también se puede elegir uno de ellos.
+- **{{ui:params.hires.steps}}**: los pasos de la segunda pasada. Con 0 se usan los mismos que en la primera.
 
-Tarda el tiempo de dibujar dos veces. El avance se cuenta sumando las dos pasadas. Los LoRA y las imágenes de referencia también se usan en la segunda pasada.
+Tarda aproximadamente lo mismo que dibujar dos veces. El avance cuenta las dos pasadas juntas. Los LoRA y las imágenes de referencia también se usan en la segunda pasada.
 
-Cuando el resultado supera mucho el tamaño en que el modelo rinde mejor (un lado largo de unos 2048 px en SDXL y 1536 px en SD1.X), aparece un aviso bajo el botón de generar. Se puede generar, pero si el dibujo se deforma, reduzca el factor de ampliación.
+Cuando el resultado es mucho mayor de lo que el modelo dibuja bien (unos 2048 px en el lado largo para SDXL, 1536 px para SD1.X), aparece una nota bajo el botón de generar. Se puede generar igualmente; si la imagen se deforma, reduzca la escala.
 
-En la imagen se guardan el tamaño de la primera pasada y los valores de la «{{ui:params.hires.title}}». Al cargarla con «{{ui:gallery.menu.useAll}}» en la galería, la «{{ui:params.hires.title}}» también se aplica tal cual.
+La imagen conserva el tamaño de la primera pasada y los ajustes de {{ui:params.hires.title}}. Al cargarla con «{{ui:gallery.menu.useAll}}» en la galería, {{ui:params.hires.title}} queda como estaba.
 
-## Número de generaciones y botón de generar
+## Iteraciones y el botón Generar
 
-![Menú abierto al pulsar la flecha junto al botón de generar](shot:invoke-menu)
+![El menú abierto con la flecha situada junto al botón Generar](shot:invoke-menu)
 
-En la parte superior del panel izquierdo están agrupadas las operaciones de generación.
+Los controles para generar están reunidos cerca de la parte superior del panel izquierdo.
 
-- **{{ui:params.invoke.invoke}}** (botón azul): añade al final de la cola y genera. También se puede pulsar con `Ctrl+Enter`.
-- **El número junto a ×**: cuántas imágenes se crean en una operación. Con «3» se crean 3.
-- **Botón × rojo**: cancela lo que se está dibujando.
-- **∨** a la derecha de cada botón: menú de otras operaciones.
+- **{{ui:params.invoke.invoke}}** (el botón azul): añade al final de la cola y genera. También se puede pulsar `Ctrl+Enter`.
+- **El número junto a ×** (Iteraciones): cuántas imágenes se crean en una operación. Si se pone «3», se crean tres imágenes.
+- **El botón × rojo**: cancela lo que se está dibujando en ese momento.
+- **La ∨ a la derecha de cada botón**: un menú con otras operaciones.
 
-Cuando no se puede pulsar, el botón se pone gris y el motivo (por ejemplo, que no hay modelo elegido) aparece en la línea situada debajo. Al colocar el cursor sobre el botón se ve la lista de motivos.
+Cuando no se puede pulsar, el botón se pone gris y el motivo (por ejemplo, que no hay modelo seleccionado) aparece en la línea situada debajo. Deje el puntero sobre el botón para ver la lista de motivos.
 Mientras se dibuja, el botón cambia a «{{ui:params.invoke.generating}}» y muestra el avance (%) y el número de elementos que esperan en la cola.
 
-### Menú ∨ del botón de generar
+### El menú ∨ del botón Generar
 
-- **{{ui:params.invoke.addBack}}** (`Ctrl+Enter`): se dibuja en el orden en que se pulsó. Es igual que la generación normal.
-- **{{ui:params.invoke.addFront}}** (`Ctrl+Shift+Enter`): se cuela al principio de la fila de espera. Se usa para probar una sola imagen con urgencia.
-- **{{ui:xyplot.menu}}**: a partir de los ajustes actuales, coloca en una sola tabla dibujos en los que solo se cambian 1 o 2 ajustes. Se dibuja con la misma semilla, de modo que la única diferencia es lo que se cambió. Elija para el eje horizontal y el vertical, por ejemplo, la escala CFG, los pasos o el modelo, escriba los valores y pulse **{{ui:xyplot.run}}**.
+- **{{ui:params.invoke.addBack}}** (`Ctrl+Enter`): dibuja en el orden en que se pulsó. Es igual que una generación normal.
+- **{{ui:params.invoke.addFront}}** (`Ctrl+Shift+Enter`): se cuela al principio de la cola de espera. Úselo cuando tenga prisa y quiera probar solo una imagen.
+- **{{ui:xyplot.menu}}**: a partir de los ajustes actuales, alinea en una sola tabla imágenes con uno o dos ajustes cambiados. Se dibujan con la misma semilla, así que la única diferencia es el ajuste que se cambió. Elija la escala CFG, los pasos, el modelo u otro ajuste para los ejes horizontal y vertical, introduzca los valores y pulse **{{ui:xyplot.run}}**.
 
-### Menú de cancelar
+### El menú de cancelar
 
-Al pulsar ∨ a la derecha del botón × rojo aparece este menú.
+Pulse la ∨ situada a la derecha del botón × rojo para mostrar el siguiente menú.
 
 - **{{ui:params.invoke.cancelCurrent}}** (`Shift+X`)
-- **{{ui:params.invoke.clearQueue}}** (`Ctrl+Shift+X`): borra todo, tanto lo que espera como lo que se está dibujando. No pide confirmación.
-- **{{ui:params.invoke.pause}}** / **{{ui:params.invoke.resume}}**: detiene o reanuda el procesamiento de la cola.
+- **{{ui:params.invoke.clearQueue}}** (`Ctrl+Shift+X`): quita todo, tanto lo que espera como lo que se está dibujando. No aparece confirmación.
+- **{{ui:params.invoke.pause}}** / **{{ui:params.invoke.resume}}**: detiene y reanuda el procesamiento de la cola.
 - **{{ui:params.invoke.openQueue}}**
 
-## Ver el dibujo terminado
+## Ver la imagen terminada
 
-![Pantalla al terminar la generación. El dibujo se muestra en el visor central y también aparece en la galería de la derecha](shot:generate-result)
+![La pantalla al terminar la generación. La imagen se muestra en el visor central y también aparece en la galería de la derecha](shot:generate-result)
 
-Al pulsar, el centro cambia enseguida al visor.
-Mientras se dibuja, sobre la galería de la derecha aparece la banda «{{ui:gallery.generating.title}}», donde se ven el dibujo parcial, los pasos y el avance. La fina línea del borde superior central también indica el avance.
+En cuanto se pulsa el botón, el centro cambia al visor.
+Mientras se dibuja, sobre la galería de la derecha aparece una banda «{{ui:gallery.generating.title}}» donde se ven la imagen parcial, el número de paso y el avance. La fina línea del borde superior del centro también muestra el avance. La misma imagen aparece además como una pequeña celda al principio de la galería. Pulse la celda para ver en grande, en el visor central, la imagen parcial. Cuando termina el dibujo, la imagen terminada ocupa su lugar.
 
-Cuando termina, el dibujo se añade a la galería y aparece en el visor.
-El dibujo se guarda en el tablero que esté seleccionado en ese momento (el que lleva la marca «{{ui:gallery.boards.autoBadge}}» en el panel derecho). Los tableros, y cómo organizar, comparar y rehacer dibujos, se explican en [Galería y visor](03-gallery.md).
+Al terminar, la imagen se añade a la galería y se muestra en el visor.
+La imagen se guarda en el tablero seleccionado en ese momento (el marcado con «{{ui:gallery.boards.autoBadge}}» en el panel derecho). Los tableros y cómo organizar, comparar y rehacer imágenes se explican en [La galería y el visor](03-gallery.md).
 
-> Si le molesta que el visor cambie solo al dibujo nuevo, desactive «{{ui:gallery.settings.autoSwitch}}» en «{{ui:gallery.settings.title}}» (el botón del engranaje).
+> Si le molesta que el visor cambie solo a cada imagen nueva, desactive «{{ui:gallery.settings.autoSwitch}}» en {{ui:gallery.settings.title}} (el botón del engranaje).
 
 ## Preajustes
 
-![Lista de preajustes. Aparecen los preajustes integrados y los guardados](shot:presets)
+![La lista de preajustes, con preajustes integrados y preajustes guardados](shot:presets)
 
-Las combinaciones de ajustes de uso frecuente se pueden guardar como preajustes. Al pulsar la tarjeta «{{ui:presets.label}}», en la parte más alta del panel izquierdo, se abre la lista.
+Una combinación de ajustes que se usa a menudo puede guardarse como preajuste. Pulse la tarjeta «{{ui:presets.label}}» de la parte superior del panel izquierdo para abrir la lista.
 
-Un preajuste incluye en conjunto:
+Un preajuste guarda juntos los siguientes elementos.
 
-- El prompt (positivo y negativo)
-- El modelo y cada ajuste (tamaño, pasos, CFG, scheduler, VAE, etc.)
+- Los prompts (positivo y negativo)
+- El modelo y cada ajuste (tamaño, pasos, CFG, planificador, VAE, etc.)
 - Los LoRA y las imágenes de referencia
+- {{ui:params.hires.title}}, los ajustes de la pestaña **{{ui:app.tabs.upscaling}}**, los ajustes de inpaint (desenfoque de máscara, relleno, etc.) y cómo se crean los prompts dinámicos
 
-La semilla y el número de imágenes no se incluyen.
+No se incluyen la semilla, las iteraciones ni la imagen que se va a ampliar.
 
-Se usa así:
+Así se usan.
 
-- Al hacer clic en un elemento de la lista, se aplican esos ajustes (**{{ui:presets.apply}}**).
-- Con **{{ui:presets.saveNew}}** bajo la lista (o el botón de guardar junto a la tarjeta), los ajustes actuales se guardan con un nombre.
-- Con «…» a la derecha de un elemento se puede **{{ui:presets.apply}}**, **{{ui:presets.overwrite}}**, **{{ui:presets.rename}}** y **{{ui:presets.delete}}**.
-- La lista se divide en «{{ui:presets.group.mine}}» y «{{ui:presets.group.builtin}}». Los preajustes integrados son ejemplos que ya vienen incluidos.
+- Haga clic en un elemento de la lista y se aplican sus ajustes (**{{ui:presets.apply}}**).
+- Con **{{ui:presets.saveNew}}**, al final de la lista (o el botón de guardar junto a la tarjeta), se guardan con un nombre los ajustes actuales.
+- Los «…» a la derecha de un elemento permiten **{{ui:presets.apply}}**, **{{ui:presets.overwrite}}**, **{{ui:presets.rename}}** y **{{ui:presets.delete}}**.
+- La lista se divide en «{{ui:presets.group.mine}}» y «{{ui:presets.group.builtin}}». Los preajustes integrados son ejemplos que vienen con la aplicación.
 
-Aparte de esto, sobre los campos positivo y negativo también hay un campo de preajustes («Preajustes positivos» y «Preajustes negativos»). Este guarda y recupera solo el texto del prompt. Es adecuado para guardar frases hechas (conjuntos de palabras de calidad o de palabras que se quieren evitar).
+### Ejecutar preajustes al azar
 
-## Lista de prompts
+Se puede generar un lote alternando al azar entre varios preajustes. Úselo cuando quiera muchas imágenes seguidas cuyos prompts y tamaños sean muy distintos.
 
-![Lista de prompts. Palabras y significados por categoría, con botones para añadir al positivo o al negativo](shot:prompt-book)
+1. Pulse el botón con flechas cruzadas ({{ui:presets.run.title}}) situado a la derecha de la tarjeta «{{ui:presets.label}}».
+2. Marque los preajustes que se van a usar.
+3. Introduzca el {{ui:presets.run.count}} en el cuadro «×» y pulse **{{ui:presets.run.queue}}**.
 
-Para poder armar un prompt sin recordar palabras en inglés está la **{{ui:params.promptBook.open}}**. Se abre con el botón situado sobre los campos positivo y negativo.
+Para cada imagen se elige uno de los preajustes marcados, todos con la misma probabilidad, y la semilla también es aleatoria. Los ajustes que un preajuste no guarda se toman del panel izquierdo actual. Los ajustes del panel izquierdo no cambian.
 
-- Al elegir una categoría a la izquierda (peinado, expresión, ropa, composición, etc.), solo se muestran las palabras de esa categoría. En el campo de búsqueda superior se buscan a la vez palabras, significados, categorías y notas.
-- Al pulsar «{{ui:params.prompt.positive}}» o «{{ui:params.prompt.negative}}» a la derecha de una palabra, esa palabra se añade al prompt. La palabra añadida queda marcada, y al pulsar de nuevo se quita.
-- Si se escribe una palabra y su significado en el campo superior y se pulsa **{{ui:params.promptBook.register}}**, se añaden palabras propias. El lápiz a la derecha de la palabra sirve para editarla y la papelera para eliminarla.
+- Cuando los preajustes usan modelos distintos, cargar el modelo lleva tiempo en cada cambio.
+- Cuando un prompt tiene prompts dinámicos, a cada imagen le toca un prompt elegido según su semilla (no todas las combinaciones).
+- Cuando alguno de los preajustes marcados no se puede generar, se muestran su nombre y el motivo, y no se puede añadir nada a la cola.
+- Las marcas y el número se conservan para la próxima vez que lo abra.
+
+## Preajustes de prompt
+
+![Los preajustes de prompt. Palabras y significados ordenados por categoría, con botones de añadir Positivo y Negativo](shot:prompt-book)
+
+Para poder armar prompts aunque no se recuerden las palabras en inglés, existe **{{ui:params.promptBook.open}}**. Se abre desde el botón situado sobre los campos positivo y negativo.
+
+- Al elegir una categoría a la izquierda (personas, relaciones e interacciones, poses, movimientos, expresiones, mirada, composición, peinados, ropa, etc.), solo se listan las palabras de esa categoría. El campo de búsqueda de arriba busca a la vez en palabras, significados, categorías y notas.
+- Pulse «{{ui:params.prompt.positive}}» o «{{ui:params.prompt.negative}}» a la derecha de una palabra y la palabra se añade al prompt. Una palabra añadida recibe una marca de verificación, y al pulsarla de nuevo se quita.
+- Escriba una palabra y su significado en el campo de entrada de la parte superior y pulse **{{ui:params.promptBook.register}}** para añadir una palabra propia. El lápiz a la derecha de una palabra la edita, y la papelera la elimina.
 
 ## Imágenes de referencia
 
-**{{ui:params.refImage.sectionLabel}}** es una función para acercar el «ambiente» o el «estilo» de un dibujo existente a uno nuevo. No lo copia tal cual, sino que usa como guía los colores, el estilo y la impresión general.
+**{{ui:params.refImage.sectionLabel}}** es una función para orientar una imagen nueva hacia el «ambiente» o el «estilo» de una existente. No la copia exactamente. Usa como pistas la paleta de colores, el estilo de dibujo y la impresión general.
 
-1. Pulse el botón **＋** situado bajo el prompt para añadir un recuadro.
-2. Arrastre y suelte en ese recuadro un dibujo de la galería. También funciona soltar un archivo de imagen del ordenador.
-3. Al hacer clic en el recuadro, se abre una pequeña ventana de ajustes.
+1. Pulse el botón **＋** bajo el prompt para añadir un marco.
+2. Arrastre y suelte una imagen de la galería sobre ese marco. También se puede soltar un archivo de imagen del ordenador.
+3. Haga clic en el marco y se abre una pequeña ventana de ajustes.
 
-En la ventana se puede decidir lo siguiente:
+En la ventana pequeña se puede decidir lo siguiente.
 
-- **{{ui:params.refImage.model}}**: el modelo específico para imágenes de referencia (IP-Adapter). Hace falta uno que corresponda a la familia del modelo elegido.
-- **{{ui:params.refImage.methodLabel}}**: qué se usa como guía: todo, solo el estilo, solo la composición, etc. (no aparece en algunas familias de modelos).
-- **{{ui:params.refImage.weight}}**: la intensidad con que influye.
-- **{{ui:params.refImage.begin}}** y **{{ui:params.refImage.end}}**: desde qué punto hasta qué punto del proceso de dibujo actúa.
+- **{{ui:params.refImage.model}}**: el modelo específico para imágenes de referencia (IP-Adapter). Hace falta uno que encaje con la familia del modelo seleccionado.
+- **{{ui:params.refImage.methodLabel}}**: qué se usa como pista, como la imagen entera, solo el estilo o solo la composición (no aparece en algunas familias de modelos).
+- **{{ui:params.refImage.weight}}**: con cuánta fuerza se orienta.
+- **{{ui:params.refImage.begin}}** y **{{ui:params.refImage.end}}**: la parte del proceso de dibujo en la que surte efecto, del principio al final.
 
-Si no están instalados el modelo o la extensión necesarios, el recuadro muestra una marca de aviso, y en la ventana y bajo el botón de generar aparece una indicación. Desde el botón de la indicación se puede instalar.
+Cuando falta un modelo o una extensión necesarios, aparece una marca de aviso en el marco y una indicación en la ventana pequeña y bajo el botón Generar. Se puede instalar desde el botón de la indicación.
 
-> La imagen de referencia sirve para «acercar el ambiente». Si se quiere «rehacer el dibujo a partir de este», use el lienzo. Consulte [Añadir trazos en el lienzo](05-canvas.md).
+> Una imagen de referencia sirve para «orientar el ambiente». Cuando quiera «redibujar a partir de esta imagen», use imagen a imagen, que se explica a continuación.
 
-### Personaje
+## Imagen a imagen (redibujar a partir de una imagen)
 
-En el campo «{{ui:character.row.label}}», sobre las imágenes de referencia, se puede recuperar un personaje registrado (varios dibujos de la misma persona, con palabras sobre su aspecto).
-Al elegirlo, se configuran las imágenes de referencia de ese personaje y sus palabras de aspecto. El registro de personajes se explica en [Retocar y reutilizar imágenes](04-improve.md).
+Si se coloca una imagen en la sección **{{ui:params.i2i.title}}**, se dibuja encima tomándola como punto de partida. Úselo para conservar la composición y los colores de una imagen cambiándola según el prompt.
+
+1. Abra la sección y suelte una imagen de la galería (o un archivo de imagen del ordenador) en el marco. **{{ui:params.refImage.openI2i}}**, en la ventana pequeña de una imagen de referencia, también coloca una.
+2. El ancho y el alto cambian al tamaño que el modelo dibuja bien más cercano a la forma de la imagen. Después se pueden cambiar a mano.
+3. **{{ui:params.image.strength}}** decide cuánto se vuelve a dibujar. Cerca de 0 conserva la imagen tal cual; cerca de 1 la ignora. Alrededor de 0,5 es un buen punto de partida.
+
+Con {{ui:params.hires.title}} activada, la imagen dibujada sobre la suya se amplía y se vuelve a dibujar. Para quitar la imagen, pulse la × de la esquina superior derecha de su marco. Para redibujar solo una parte pintada, use [Añadir trazos en el lienzo](05-canvas.md).
+
+### Personajes
+
+En el campo «{{ui:character.row.label}}», situado sobre las imágenes de referencia, se pueden llamar personajes registrados (cualquier número de imágenes de un mismo personaje, con palabras que describen su aspecto).
+Al elegir uno, se establecen las imágenes de referencia y las palabras de aspecto de ese personaje. Cómo registrar un personaje se explica en [Retocar y reutilizar imágenes](04-improve.md).
 
 ## Cola
 
-![Pestaña Cola. Aparece una lista con el elemento en proceso y los que esperan](shot:queue)
+![La pestaña Cola. Se listan el elemento en proceso y los que esperan](shot:queue)
 
-En la pestaña **{{ui:app.tabs.queue}}** se puede ver y gestionar la cola de generación. Cuando hay elementos en espera, {{ui:app.tabs.queue}} en la navegación lateral muestra una insignia con su número.
+En la pestaña **{{ui:app.tabs.queue}}** se ve y se gestiona la cola de espera de generación. Cuando hay elementos esperando, aparece una insignia con un número en {{ui:app.tabs.queue}}, en la navegación lateral.
 
-En la parte superior de la pantalla hay lo siguiente:
+En la parte superior de la pantalla hay lo siguiente.
 
-- El estado del procesamiento («{{ui:queue.processor.running}}» o «{{ui:queue.processor.paused}}») y los botones de operación.
+- El estado del procesamiento («{{ui:queue.processor.running}}» o «{{ui:queue.processor.paused}}») y los botones de control.
 - El desglose del número de elementos ({{ui:queue.status.pending}}, {{ui:queue.status.inProgress}}, {{ui:queue.status.completed}}, {{ui:queue.status.failed}}, {{ui:queue.status.canceled}}).
-- En la parte superior derecha, el avance del elemento que se está dibujando.
+- En la parte superior derecha, el avance del elemento que se está dibujando ahora.
 
-Los botones funcionan así:
+Los botones funcionan así.
 
 | Botón | Función |
 |---|---|
-| **{{ui:queue.action.pause}}** / **{{ui:queue.action.resume}}** | Detiene o reanuda el procesamiento de la cola. Lo que ya se está dibujando continúa hasta el final |
-| **{{ui:queue.action.cancelCurrent}}** | Detiene lo que se está dibujando |
+| **{{ui:queue.action.pause}}** / **{{ui:queue.action.resume}}** | Detiene o reanuda el procesamiento de la cola de espera. Lo que se está dibujando ahora se termina tal cual |
+| **{{ui:queue.action.cancelCurrent}}** | Detiene lo que se está dibujando en este momento |
 | **{{ui:queue.action.cancelAllExceptCurrent}}** | Cancela todo lo que está esperando |
-| **{{ui:queue.action.prune}}** | Quita de la lista los elementos terminados (completados, fallidos y cancelados) |
+| **{{ui:queue.action.prune}}** | Quita de la lista los elementos terminados (completados, fallidos, cancelados) |
 | **{{ui:queue.action.clear}}** | Quita todos los elementos. Aparece una ventana de confirmación |
 
-Al hacer clic en una fila de la lista inferior se abre la información detallada de ese elemento (hora, dibujos creados, motivo del fallo si lo hubo y contenido de los ajustes).
-Con la × a la derecha de la fila se cancela solo ese elemento. En los elementos fallidos o cancelados aparece un botón para reintentar.
+Haga clic en una fila de la lista de abajo para abrir la información detallada de ese elemento (las horas, las imágenes creadas, el motivo si falló y el contenido de los ajustes).
+La × a la derecha de una fila cancela solo ese elemento. Los elementos que fallaron o se cancelaron tienen un botón de reintento.
 
 ## Atajos de teclado
 
-Los atajos que no funcionan mientras se escribe texto deben pulsarse después de salir del campo de entrada.
+Para los atajos que no funcionan mientras se escribe, salga del campo de entrada antes de pulsarlos.
 
-| Operación | Tecla |
+| Acción | Tecla |
 |---|---|
-| Generar (añadir al final de la cola) | `Ctrl+Enter` (también funciona mientras se escribe el prompt) |
-| Generar añadiendo al principio de la cola | `Ctrl+Shift+Enter` |
+| Generar (añadir al final de la cola) | `Ctrl+Enter` (funciona incluso al escribir el prompt) |
+| Añadir al principio de la cola y generar | `Ctrl+Shift+Enter` |
 | Cancelar lo que se está dibujando | `Shift+X` |
-| Borrar toda la cola (sin confirmación) | `Ctrl+Shift+X` |
+| Vaciar toda la cola (sin confirmación) | `Ctrl+Shift+X` |
 | Ir al campo del prompt | `Alt+A` |
-| Abrir o cerrar el panel izquierdo y el derecho | `T`, `G` |
-| Abrir o cerrar ambos paneles a la vez | `F` |
-| Cambiar de pestaña (de {{ui:app.tabs.generate}} a {{ui:app.tabs.queue}}, en ese orden) | `1` a `9` |
+| Mostrar u ocultar los paneles izquierdo y derecho | `T`, `G` |
+| Abrir y cerrar ambos paneles a la vez | `F` |
+| Cambiar de pestaña (en el orden de la navegación lateral, de {{ui:app.tabs.generate}} a {{ui:app.nav.extensions}}) | `1` a `9` |
 | Abrir la lista de atajos | `Shift+?` |
 
-Los atajos también se pueden consultar en «{{ui:app.nav.hotkeys}}», en el menú de **{{ui:app.nav.settings}}** de la navegación lateral.
+Los atajos también se pueden consultar en «{{ui:app.nav.hotkeys}}», dentro del menú **{{ui:app.nav.settings}}** de la navegación lateral.

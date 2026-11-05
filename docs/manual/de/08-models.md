@@ -21,7 +21,7 @@ Modelle werden je Familie gebaut, und Modelle verschiedener Familien lassen sich
 | FLUX | Die FLUX-Familie |
 | Any | Modelle, die nicht an eine Familie gebunden sind (z. B. Upscaler) |
 
-> In der aktuellen Desktop-Version lassen sich für die Bilderzeugung Modelle der Basis SD1.X, SD2.X und SDXL verwenden. FLUX und SD3.X erscheinen zwar in der Liste, doch beim Start einer Generierung mit diesen Modellen kommt ein Fehler, der besagt, dass diese Basis noch nicht unterstützt wird.
+> Außer SD1.X, SD2.X und SDXL lassen sich mit Modellen neuerer Familien (Anima, Flux, FLUX.2, Chroma, Qwen-Image, Z-Image, SD3, HiDream, AuraFlow, HunyuanImage, Hunyuan-DiT) Bilder erzeugen, und mit Modellen von Wan, HunyuanVideo und LTX-Video lassen sich im Videobildschirm Videos erzeugen. Modelle anderer Familien erscheinen zwar in der Liste, doch beim Erzeugen schlägt es fehl und der Name der Familie wird angezeigt. Wie man damit umgeht, steht im Kapitel „Bilder erzeugen“.
 
 Wenn die Basis von Modell und LoRA nicht zusammenpassen, lässt sich die Schaltfläche zum Starten im Bildschirm **{{ui:app.tabs.generate}}** nicht drücken, und der Grund wird angezeigt.
 
@@ -32,11 +32,11 @@ Wenn die Basis von Modell und LoRA nicht zusammenpassen, lässt sich die Schaltf
 | {{ui:models.rail.main}} ({{ui:models.type.main}}) | Der Hauptteil, der das Bild zeichnet |
 | {{ui:models.type.lora}} | Ein kleines Modell, das dem Hauptmodell hinzugefügt wird und einen Stil oder einen Charakter ergänzt |
 | {{ui:models.type.vae}} | Ein Baustein für den letzten Schliff von Farben und Details eines Bildes |
-| {{ui:models.type.controlnet}} | Legt die Form eines Bildes fest, etwa Pose oder Strichzeichnung |
+| {{ui:models.type.controlnet}}, {{ui:models.type.modelPatch}} | Legen die Form eines Bildes fest, etwa Pose oder Strichzeichnung (Model Patches gibt es für Anima, Qwen-Image und Z-Image) |
 | {{ui:models.type.ipAdapter}}, {{ui:models.type.clipVision}} | Übertragen die Stimmung eines Referenzbildes in die Generierung |
 | {{ui:models.rail.upscale}} | Dienen dazu, Bilder zu vergrößern |
-| {{ui:models.rail.encoders}} | Bausteine, die Text verstehen |
-| {{ui:models.rail.diffusion}} | Modelle für Video, etwa Wan, oder für spezielle Abläufe |
+| {{ui:models.rail.encoders}} | Bausteine, die Text verstehen (T5, Qwen, CLIP usw.; bei Anima oder Flux zusätzlich zum Hauptmodell nötig) |
+| {{ui:models.rail.diffusion}} | Modelle wie Flux, Wan, Anima und Qwen-Image, die als einzelnes Hauptmodell verteilt werden. Bei der Installation werden Typ und Familie anhand des Inhalts bestimmt |
 
 Modelle für Video, Musik, Stimme und Logos erscheinen nicht in dieser Liste. Sie werden jeweils in ihrem eigenen Bildschirm heruntergeladen ([Video, Musik, Stimme, Logos](07-media.md)).
 
@@ -56,7 +56,7 @@ Mit **{{ui:models.rail.title}}** links lässt sich die Liste nach Typ eingrenzen
 
 In der Leiste oben lässt sich nach Namen eingrenzen (**{{ui:models.searchPlaceholder}}**), nach Basis eingrenzen, mit **{{ui:models.sort.label}}** ordnen ({{ui:models.sort.name}}, {{ui:models.sort.size}}, {{ui:models.sort.base}}, {{ui:models.sort.type}}), zwischen **{{ui:models.view.grid}}** und **{{ui:models.view.list}}** wechseln und die Größe der Vorschaubilder anpassen.
 
-Unten links auf einer Karte stehen Labels für die Basis (SDXL usw.) und das Format. Fährt man mit der Maus über eine Karte, erscheinen ein Stern (Favorit) und ein Menü.
+Unten links auf einer Karte stehen Labels für die Basis (SDXL usw.) und das Format. Bei Modellen mit bekannter Lizenz steht oben links außerdem ein Lizenz-Label ([Lizenz-Labels](#lizenz-labels)); ein Klick darauf öffnet den Lizenzinhalt direkt, ohne die Karte auszuwählen. Bei kleinen Karten schrumpft das Label zu einem bloßen Zeichen. Fährt man mit der Maus über eine Karte, erscheinen ein Stern (Favorit) und ein Menü.
 
 Unten rechts im Bildschirm werden die Anzahl der Modelle und ihre Gesamtgröße angezeigt.
 
@@ -71,19 +71,18 @@ Beim Drücken von **{{ui:models.import}}** öffnet sich der Bildschirm **{{ui:mo
 
 | Tab | Bedienung |
 |---|---|
-| {{ui:models.install.tab.source}} | Die Adresse eines Modells oder den Speicherort einer Datei auf dem Computer eingeben und **{{ui:models.install.install}}** drücken |
-| {{ui:models.install.tab.scan}} | Den Speicherort eines Ordners eingeben und **{{ui:models.install.scan}}** drücken; die darin enthaltenen Modelle werden aufgelistet. Mit **{{ui:models.install.installAll}}** lassen sich alle auf einmal installieren |
-| {{ui:models.install.tab.starter}} | Die App hat Modelle ausgewählt und aufgelistet, die zu Beginn nützlich sind. Modelle, von denen sie abhängen (z. B. ein VAE), werden mitinstalliert |
+| {{ui:models.install.tab.source}} | Die Adresse eines Modells eingeben und **{{ui:models.install.install}}** drücken |
+| {{ui:models.install.tab.scan}} | **{{ui:models.install.scan}}** drücken, im geöffneten Dialog einen Ordner wählen; die darin enthaltenen Modelle werden aufgelistet. Mit **{{ui:models.install.installAll}}** lassen sich alle auf einmal installieren. Dateien auf dem Computer werden von hier aus installiert. Im Browser ist das nicht verfügbar |
+| {{ui:models.install.tab.starter}} | Die App hat Modelle ausgewählt und aufgelistet, die zu Beginn nützlich sind. Modelle, von denen sie abhängen (z. B. ein VAE), werden mitinstalliert. Auch die Modellpakete für Video, Musik, Stimme, Logos und die Löschfunktion stehen hier. Wie im Modellbildschirm werden sie als Karten angezeigt und lassen sich links mit **{{ui:models.starter.purposes}}** (Bilder erzeugen, Video, Upscaling usw.) und oben mit der Liste **{{ui:models.starter.allFamilies}}** (Anima, SDXL usw.) eingrenzen. Wählen Sie eine Familie, erscheinen auch die dafür nötigen VAEs und Encoder |
 | {{ui:models.install.tab.huggingface}} | Ein Feld zum Suchen anhand des Hugging-Face-Repository-Namens (`Autor/Name`) |
 
 In das Feld **{{ui:models.install.tab.source}}** lässt sich Folgendes eingeben.
 
 - Die Adresse der Seite eines Modells auf Civitai
 - Eine direkte Adresse zu einer Modelldatei (beginnt mit `https://`)
-- Der Speicherort einer Datei auf dem Computer (in der Form `C:\models\model.safetensors`)
 - Eine Datei von Hugging Face (in der Form `Autor/Name::Dateiname`)
 
-Wird eine Datei auf dem Computer angegeben, wird sie in den Modellordner der App übernommen (auf demselben Laufwerk wächst der Speicherbedarf kaum, auf einem anderen Laufwerk wird sie kopiert).
+Geben Sie den Speicherort einer Datei auf dem Computer ein (in der Form `C:\models\model.safetensors`), wird stattdessen angezeigt, dass Sie **{{ui:models.install.tab.scan}}** verwenden sollen. Die dort gewählte Datei wird in den Modellordner der App übernommen (auf demselben Laufwerk wächst der Speicherbedarf kaum, auf einem anderen Laufwerk wird sie kopiert).
 
 > Im Tab **{{ui:models.install.tab.huggingface}}** wird nach Eingabe des Repos (`Autor/Name`) und einem Klick auf **{{ui:models.install.hfLookup}}** eine Liste der einzelnen Modelldateien (`.safetensors`, `.gguf`, `.ckpt`, `.pt`, `.pth`) des Repos angezeigt. Dateien in Ordnern einer Diffusers-Pipeline wie `unet` und `vae` erscheinen nicht. Ist ein Hugging-Face-Token hinterlegt, wird die Liste damit abgerufen.
 
@@ -97,13 +96,17 @@ Eine Datei, die noch heruntergeladen wird, gelangt erst nach Abschluss in den Mo
 
 Beim Drücken einer Karte öffnen sich rechts die Details. Zum Schließen wird oben rechts **{{ui:models.detail.close}}** gedrückt.
 
-Die Details zeigen den Namen, die Labels für Basis und Typ, die Beschreibung, **{{ui:models.details.size}}**, **{{ui:models.details.path}}** (kopierbar), **{{ui:models.details.license}}** und **{{ui:models.details.source}}**.
+Die Details zeigen den Namen, die Labels für Basis und Typ, die Beschreibung, **{{ui:models.details.size}}**, **{{ui:models.details.path}}** (kopierbar), **{{ui:models.details.license}}**, **{{ui:models.details.source}}** und **{{ui:models.details.page}}** (die Adresse des ursprünglichen Modells; ein Klick öffnet sie im Browser).
+
+Hat ein Modell mehrere Bilder, wechseln Sie mit den Pfeilen links und rechts des Bildes zwischen ihnen, und unten rechts steht, das wievielte Bild es ist (bei von Civitai installierten Modellen sind es die Bilder der ursprünglichen Seite).
 
 Mit den Schaltflächen oben lässt sich Folgendes tun.
 
 - **{{ui:models.detail.openSource}}**: Öffnet die Seite des Anbieters im Browser (nur bei Modellen mit Adresse).
 - **{{ui:common.edit}}**: Korrigiert Name, Beschreibung, Basis und Typ. Nutzen Sie das, wenn Basis oder Typ nicht automatisch richtig erkannt wurden.
 - **{{ui:common.delete}}**: Löscht das Modell (siehe unten).
+
+Gibt es für ein von Civitai installiertes Modell eine neue Version, erhält die Karte das Label **{{ui:models.updates.tag}}**, und über den Details stehen Name und Datum der neuen Version. Mit **{{ui:models.updates.open}}** öffnet sich die Seite der neuen Version im Browser. Neue Versionen werden beim Öffnen des Tabs Modelle automatisch geprüft (wenn die letzte Prüfung mindestens einen Tag zurückliegt), und neue Funde werden auch per Benachrichtigung gemeldet. Wenn Sie sofort prüfen möchten, drücken Sie oben die Schaltfläche **{{ui:models.updates.check}}**. Berücksichtigt werden nur neue Versionen mit derselben Basis, kostenpflichtige Versionen werden nicht angezeigt. Bei der Prüfung werden die Civitai-Nummern der installierten Modelle an Civitai gesendet.
 
 ### Triggerwörter
 
@@ -136,9 +139,9 @@ Modelle haben vom Anbieter festgelegte Nutzungsbedingungen (eine Lizenz). novira
 
 | Label | Bedeutung |
 |---|---|
-| {{ui:browse.commercial.allowed}} | Der Verkauf der erzeugten Bilder und die Nutzung in Generierungsdiensten sind erlaubt |
-| {{ui:browse.commercial.limited}} | Die kommerzielle Nutzung ist an Bedingungen geknüpft (z. B. nur der Verkauf erzeugter Bilder) |
-| {{ui:browse.commercial.denied}} | Die kommerzielle Nutzung ist nicht erlaubt. Sie ist auf den privaten Gebrauch beschränkt |
+| {{ui:browse.commercial.allowed}} | Der Verkauf erzeugter Bilder, die Nutzung in Generierungsdiensten und der Verkauf des Modells selbst sind alle erlaubt |
+| {{ui:browse.commercial.limited}} | Nur ein Teil der kommerziellen Nutzungen ist erlaubt (dieses Label steht auch, wenn manche Angaben fehlen) |
+| {{ui:browse.commercial.denied}} | Weder der Verkauf erzeugter Bilder noch die Nutzung in Generierungsdiensten noch der Verkauf des Modells selbst sind erlaubt |
 
 Beim Drücken eines Labels erscheint die Liste **{{ui:browse.permission.title}}**. Dort ist zu sehen, ob z. B. „{{ui:browse.permission.sellImages}}“, „{{ui:browse.permission.sellModel}}“ und „{{ui:browse.permission.shareMerges}}“ jeweils erlaubt, nicht erlaubt oder nicht angegeben sind.
 
@@ -173,8 +176,9 @@ Mit den Menüs rechts lassen sich die Ergebnisse eingrenzen.
 |---|---|
 | {{ui:browse.base.label}} | {{ui:browse.base.sdxlCompat}}, {{ui:browse.base.illustrious}}, {{ui:browse.base.noobai}}, {{ui:browse.base.sdxl}}, {{ui:browse.base.pony}}, {{ui:browse.base.sd15}}, {{ui:browse.base.flux}}, {{ui:browse.base.anima}} usw. |
 | {{ui:browse.sort.label}} | {{ui:browse.sort.downloads}}, {{ui:browse.sort.rating}}, {{ui:browse.sort.newest}} |
-| {{ui:browse.period.label}} | Gesamte Zeit, Jahr, Monat, Woche, Tag (nur bei Civitai) |
+| {{ui:browse.period.label}} | Gesamte Zeit, 1 Jahr, 1 Monat, 1 Woche, 24 Stunden (nur bei Civitai). Kostenpflichtige Versionen tragen auf der Karte die Angabe „{{ui:browse.paid.badge}}“. Bei Modellen im Early Access steht auch, ab wann sie kostenlos werden. Kostenpflichtige Versionen lassen sich nicht installieren (die Schaltfläche ist nicht anklickbar), weil die App auch bei einem Kauf nicht erkennen kann, dass sie gekauft wurden. Beziehen Sie sie über die Civitai-Seite |
 | {{ui:browse.nsfw.label}} | Standardmäßig aus. Wenn eingeschaltet, erscheinen auch Modelle für Erwachsene |
+| **{{ui:browse.filter.button}}** | Ein Klick öffnet ein Feld, in dem sich nach folgenden Punkten eingrenzen lässt: was die Lizenz erlaubt (Verkauf erzeugter Bilder, Nutzung in Generierungsdiensten usw.; es erscheinen nur Modelle, die alles Angehakte erlauben), die Art des Checkpoints, der Preis ({{ui:browse.filter.free}}, {{ui:browse.filter.paid}}), nur Modelle mit einer Datei im safetensors-Format und der Autor (der Name muss genau übereinstimmen). Auf der Schaltfläche steht, wie viele Filter aktiv sind, und mit **{{ui:browse.filter.reset}}** setzen Sie sie zurück (nur bei Civitai) |
 
 Beim Scrollen bis ans Ende werden weitere Ergebnisse geladen. Mit **{{ui:browse.status.loadMore}}** lässt sich ebenfalls nachladen. Konnte nichts abgerufen werden, **{{ui:browse.status.retry}}** drücken.
 
@@ -187,8 +191,12 @@ Eine Karte zeigt ein Beispielbild, den Namen des Modells, den Autor, die Anzahl 
 
 Beim Drücken einer Karte öffnen sich von rechts die Details. Zu sehen sind Versionen, die Dateiliste (Größe und Format), Triggerwörter, Tags, die Beschreibung und die Lizenz. Eine Version wählen und bei der gewünschten Datei **{{ui:browse.card.download}}** drücken. Ein Druck auf ein Triggerwort kopiert es. Geschlossen wird durch einen Klick daneben oder mit `Esc`.
 
+Unter **{{ui:browse.samples.title}}** in den Details stehen die Beispielbilder dieser Version, deren Einstellungen veröffentlicht sind. Zu sehen sind das Bild, Sampler, Schrittzahl, CFG und Größe, der Prompt sowie das verwendete Modell und die LoRAs (nicht installierte sind gepunktet umrandet). Mit **{{ui:browse.samples.use}}** werden Prompt und Einstellungen in den Generierungsbildschirm übernommen. Einstellungen, die das Beispiel nicht aufgezeichnet hat, bleiben unverändert, und Modell und LoRAs werden nur übernommen, soweit sie installiert sind. Was nicht installiert ist, wird in der Benachrichtigung mit Namen genannt. Die Einstellungen stammen von den Urhebern, daher fehlen sie bei manchen Beispielen, oder das Bild wird damit nicht unverändert reproduziert.
+
 Beginnt der Download, erscheint unten links im Bildschirm ein kleines Feld mit der Bezeichnung **{{ui:browse.dock.title}}**, in dem der Fortschritt zu sehen ist. Mit **{{ui:browse.dock.cancel}}** lässt er sich stoppen, und fertige Einträge lassen sich mit **{{ui:browse.dock.clear}}** entfernen. Eine Karte, deren Download abgeschlossen ist, wechselt zu **{{ui:browse.card.installed}}** und wird auch der Liste im Tab **{{ui:app.tabs.models}}** hinzugefügt.
 
 > Beim Herunterladen eines Modells, für das eine Anmeldung nötig ist, den Civitai-API-Schlüssel unter **{{ui:settings.title}}** eintragen. Bei Modellen auf Hugging Face, für die eine Zugriffsanfrage nötig ist, tragen Sie das Hugging-Face-Token ein. Beides wird verschlüsselt auf diesem Computer gespeichert und nicht auf dem Bildschirm angezeigt. Einzelheiten unter [KI-Assistent und Einstellungen](09-assistant-settings.md).
+
+> Damit Bilder und Nutzungsbedingungen lokaler Modelle von Civitai geholt werden, schalten Sie unter **{{ui:settings.title}}** im Tab **{{ui:settings.tab.engine}}** die Option **{{ui:settings.engine.civitai.label}}** ein. Weil dabei der Hash der Modelldatei an Civitai gesendet wird, ist sie standardmäßig aus. Die Umschaltung gilt ab dem nächsten Start. Gibt es bei ausgeschalteter Option Modelle ohne Bild, erscheint oberhalb des Tabs **{{ui:app.tabs.models}}** ein Hinweis, über **{{ui:models.coverHint.open}}** lassen sich die Einstellungen öffnen.
 
 Um mit der Bilderzeugung fortzufahren, geht es weiter bei [Bilder erzeugen](02-generate.md).

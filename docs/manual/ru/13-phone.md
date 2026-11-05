@@ -1,64 +1,126 @@
-# Using it from a phone
+# Использование со смартфона
 
-You can use novira on your computer from the browser of a phone on your home Wi-Fi. The computer draws the pictures; the phone only shows the screen and takes your taps. Settings, drafts, history and the rest are the same as when you open it on the computer.
+Через браузер смартфона, подключённого к домашнему Wi-Fi, можно пользоваться novira на компьютере. Картинки рисует компьютер, а смартфон только показывает экран и принимает ваши нажатия. Настройки, черновики, история и остальное такие же, как при открытии на компьютере. Если экраны смартфона и компьютера открыты одновременно, промпт, модель, LoRA, настройки создания, пресеты, сборник промптов и черновики, изменённые на одном, примерно через 1–2 секунды отражаются и на других открытых экранах. Настройки отображения (язык, тема, размер экрана и т. п.), содержимое правки на холсте и в рабочих процессах и разговоры с ассистентом относятся к конкретному экрану и подстраиваются при следующем открытии. Связь шифруется, а смартфон подключается после того, как вы разрешите это на компьютере.
 
-## Connecting
+## Подключение
 
-1. Close the novira app. Only one program at a time can use the data folder.
-2. In File Explorer, open the app's folder (the one with `server.bat`), type `cmd` in the address bar at the top and press Enter. A Command Prompt opens in that folder.
-3. Type `server.bat` and press Enter. The same screen also opens in the computer's browser.
-4. The Command Prompt shows an address for your home network and a QR code. Scan the QR code with the camera of a phone on the same Wi-Fi as the computer, and open the address it finds.
+1. Нажмите **{{ui:app.tabs.short.homeLink}}** на левой панели приложения novira. Сеть, в которой вы нажали, запоминается как домашняя, и открывается «окно» для подключения.
+2. Появляется QR-код. Отсканируйте его камерой смартфона, подключённого к тому же Wi-Fi, что и компьютер, и откройте появившийся адрес. Если вы открыли его в приложении для чтения QR-кодов, можно перед подключением заново открыть адрес в Safari или Chrome. Код действует 2 минуты и используется одним смартфоном один раз. Когда срок истёк, нажмите **{{ui:app.lan.newCode}}**.
+3. На смартфоне, который подключается впервые, браузер выдаёт предупреждение о сертификате. Установите сертификат по инструкции ниже («Установка сертификата»).
+4. На экране смартфона проверьте название устройства и нажмите «Подключиться». На смартфоне появляется 6-значный код подтверждения. Тот же номер появляется и на компьютере, на экране **{{ui:app.tabs.short.homeLink}}** (если он не открыт, то в уведомлении в углу экрана). Если номера совпадают, нажмите **{{ui:app.lan.allow}}**. На смартфоне откроется novira.
 
-To stop, press Ctrl+C in the Command Prompt, or close its window.
+Если закрыть приложение, «окно» тоже закрывается, и подключённые смартфоны при следующем открытии подключаются заново.
 
-The address carries a pass code (a token) that changes at every start. After a restart, scan the new QR code.
+### Подключение из браузерной версии
 
-### When Windows asks
+Так же можно подключиться и из браузерной версии, не открывая приложение. Закройте приложение (папкой данных может пользоваться только одна программа за раз), откройте в Проводнике папку приложения (папку, где лежит `server.bat`), введите в адресной строке вверху `cmd` и нажмите Enter. В открывшейся командной строке введите `server.bat` и нажмите Enter, и тот же экран откроется в браузере компьютера. Нажмите **{{ui:app.tabs.short.homeLink}}** на левой панели. Чтобы остановить, нажмите в командной строке Ctrl+C или закройте её окно.
 
-At the first start, Windows asks whether novira-server may communicate. Allow it on private networks.
+### Установка сертификата
 
-If the phone still cannot connect, check whether the computer treats the current network as "Public". In Windows Settings, under "Network & internet", open the properties of the Wi-Fi (or cable) connection you use and set the network profile type to "Private network".
+novira шифрует связь со смартфоном сертификатом, созданным на этом компьютере (novira local CA). Пока смартфон не знает этого сертификата, браузер предупреждает, что соединение «небезопасно». Сертификат нужно один раз установить на смартфон в самом начале. Откройте «Установить сертификат» в нижней части экрана смартфона и скачайте сертификат по ссылке.
 
-### Which devices can connect, and a caution
+- iPhone: нажмите ссылку, нажмите «Разрешить» и установите профиль через пункт «Профиль загружен» в самом верху приложения «Настройки». Затем в «Настройки», «Основные», «Об этом устройстве», «Доверие сертификатам» включите novira local CA. Если забыть этот последний шаг, предупреждение не исчезнет, даже когда сертификат установлен.
+- Android (Chrome): в «Настройки», «Безопасность», «Установка сертификата», «Сертификат ЦС» выберите скачанный сертификат. Firefox не использует сертификаты, установленные позже. Открывайте в Chrome.
 
-- Only devices on the same network as this computer (the same range of the same router) are answered. A phone away from home, or one going through a VPN, cannot connect.
-- Even a device on the same Wi-Fi cannot use it without the token in the address. Do not show the QR code or the address to others.
-- The connection is not encrypted (http). That is why the phone's browser says "Not secure". Use it on a home Wi-Fi with a password, never on a shared one such as a café's.
+### Когда окно закрывается
 
-## The phone screen
+Кнопки, которая закрывает «окно» в домашнюю сеть, нет. Даже если закрыть всплывающее окно, подключённые смартфоны продолжают работать.
 
-On a phone the page takes a layout made for phones. It switches by itself on a narrow screen, and stays so when you turn the phone on its side. A title bar runs along the top, and four tabs along the foot.
+- Если 30 минут никто не пользуется и нет ни ожидающего кода, ни ожидающего подтверждения, оно закрывается само.
+- Оно закрывается само и тогда, когда сеть перестала быть доверенной, например при переходе на другой Wi-Fi.
+- Подключённые смартфоны можно отключать по одному крестиком в списке. Если смартфон не используется 30 минут или прошло 4 часа с момента подключения, соединение смартфона разрывается.
 
-![The phone's Generate tab: model, prompts, aspect, seed, iterations and the Generate button at the foot](shot:phone-generate)
+### Если Windows задаёт вопрос
 
-| Tab | What you can do |
+При первом открытии «окна» Windows спрашивает, разрешить ли связь novira (в браузерной версии — novira-server). Разрешите связь в частных сетях.
+
+Если Windows считает используемую сеть «общедоступной», на экране появляется предупреждение. Открывайте «окно» только в своей сети. Если смартфон не подключается, откройте в «Параметрах» Windows раздел «Сеть и Интернет», откройте свойства используемого Wi-Fi (или проводного подключения) и выберите тип сетевого профиля «Частная сеть».
+
+### Подключаемые устройства и предостережения
+
+- Отвечает только устройствам из той же сети, что и этот компьютер (тот же диапазон того же роутера). Со смартфона вне дома или со смартфона, работающего через VPN, подключиться нельзя. Вне дома пользуйтесь способом из следующего раздела «Использование вне дома».
+- Даже устройству из того же Wi-Fi нельзя пользоваться, пока вы не разрешите это на компьютере. Не показывайте QR-код другим людям. Если код подтверждения не совпадает или смартфон вам незнаком, нажмите **{{ui:app.lan.deny}}**.
+- Связь шифруется по https.
+- В незнакомых сетях (например, в кафе) не нажимайте **{{ui:app.tabs.short.homeLink}}**. Сеть, в которой вы нажали, становится доверенной, и «окно» открывается.
+
+## Использование вне дома
+
+С помощью [Tailscale](https://tailscale.com/) novira на компьютере можно использовать и со смартфона вне дома. Открывать порты роутера не нужно. Смартфон входит с помощью ключа доступа (лицо, отпечаток пальца, код-пароль), который вы один раз регистрируете дома.
+
+### Подготовка
+
+1. Установите Tailscale на компьютер и смартфон и войдите в одну и ту же учётную запись. Включите для учётной записи Tailscale двухэтапную аутентификацию.
+2. В панели управления Tailscale (настройки DNS) включите MagicDNS и HTTPS-сертификаты.
+3. Не включайте в имя компьютера в Tailscale настоящее имя и другие слова, которые не хотите раскрывать. При создании сертификата имя компьютера и имя tailnet попадают в публичный журнал сертификатов (Certificate Transparency). Одно имя не даёт доступа внутрь.
+
+### Включение и регистрация смартфона
+
+1. Нажмите **{{ui:app.tabs.short.homeLink}}** на левой панели и откройте вкладку **{{ui:app.lan.tabAway}}**.
+2. Включите **{{ui:app.remote.switch}}**. Если показано имя компьютера в Tailscale (вида `pc.tail1234.ts.net`), всё готово. Если открыть не удалось, показывается причина. Включённая настройка сохраняется и при следующем открытии novira.
+3. Включите Tailscale на смартфоне, нажмите **{{ui:app.remote.enrol}}** и отсканируйте появившийся QR-код. Зарегистрировать смартфон можно только дома (потому что нужно разрешение на компьютере).
+4. На смартфоне проверьте имя и нажмите «Начать регистрацию». Если номер подтверждения, показанный на компьютере, совпадает, нажмите **{{ui:app.lan.allow}}**.
+5. Нажмите появившееся на смартфоне «Создать ключ доступа» и подтвердите лицом, отпечатком пальца или код-паролем. Зарегистрированные устройства выстраиваются в **{{ui:app.remote.passkeys}}**.
+
+### Открытие вне дома
+
+Включите Tailscale на смартфоне, откройте адрес, использованный при регистрации (`https://pc.tail1234.ts.net:номер порта/`), и нажмите «Войти с ключом доступа». Удобно добавить его в закладки. Нужно, чтобы на компьютере были открыты novira (или браузерная версия) и подключён Tailscale.
+
+- Возможности те же, что при подключении через домашний Wi-Fi. Установка моделей и расширений, настройки движка, ключи и настройки ассистента доступны только на компьютере.
+- Вход сбрасывается, если 30 минут не пользоваться или если с входа прошло 4 часа. Войдите снова с ключом доступа.
+- В **{{ui:app.remote.log}}** показаны дата, время и устройство регистраций, входов и отказов. Если там есть что-то незнакомое, удалите регистрацию этого устройства и смените пароль Tailscale.
+- Если вы потеряли смартфон, дважды нажмите кнопку с корзиной в **{{ui:app.remote.passkeys}}**, чтобы удалить регистрацию. Вход с этого устройства тоже сразу прекратится. Отключите это устройство и в панели управления Tailscale.
+- {{ui:app.remote.switch}} автоматически выключается, если 14 дней нет ни регистраций, ни входов.
+
+## Экран смартфона
+
+На смартфоне открывается экран, сделанный для смартфонов. На узком экране он включается автоматически и остаётся таким же при повороте набок. Вверху расположена панель со знаком приложения (и рисуемой картинкой) и кнопкой ассистента, а внизу — 6 вкладок.
+
+![Вкладка создания на смартфоне. Пресеты, сид и кнопка создания, модель и промпт стоят друг под другом](shot:phone-generate)
+
+| Вкладка | Что можно делать |
 |---|---|
-| **{{ui:app.tabs.generate}}** | Set the {{ui:params.model.label}}, the {{ui:params.prompt.positive}} and {{ui:params.prompt.negative}} prompts, the {{ui:params.image.aspect}}, the {{ui:params.seed.label}} and the {{ui:params.invoke.iterations}}, then make the pictures with the **{{ui:params.invoke.invoke}}** button at the foot. When it cannot make them, the reason shows above the button |
-| **{{ui:gallery.view.images}}** | Pick a **{{ui:phone.board}}** and its pictures show three to a row. Pictures being drawn come first. Tap one to open it full screen |
-| **{{ui:app.views.drafts}}** | The same as the drafts on the computer ([Choosing from drafts](04-improve.md#choosing-from-drafts)). The **{{ui:drafts.open}}** button of a candidate shows its picture full screen |
-| **{{ui:app.tabs.queue}}** | The items waiting in the queue, newest first. The tab's icon shows how many are waiting and being drawn |
+| **{{ui:app.tabs.generate}}** | Те же элементы, что на левой панели компьютера, выстроены сверху вниз в том же порядке ([Создание изображений](02-generate.md)). Пресеты, {{ui:params.seed.label}} и кнопка **{{ui:params.invoke.invoke}}**, модель, промпт, референсы, коррекция высокого разрешения и подробные настройки используются так же, как на компьютере. Строка с {{ui:params.seed.label}} и кнопкой **{{ui:params.invoke.invoke}}** при прокрутке остаётся вверху |
+| **{{ui:phone.gallery}}** | Если выбрать **{{ui:phone.board}}**, картинки этой доски выстраиваются по три в ряд. Картинки, которые рисуются сейчас, идут первыми. Нажатие открывает картинку на весь экран |
+| **{{ui:app.views.drafts}}** | То же, что черновики на компьютере ([Выбор из черновиков](04-improve.md#выбор-из-черновиков)). Кнопка **{{ui:drafts.open}}** у варианта показывает его картинку на весь экран |
+| **{{ui:app.tabs.queue}}** | Элементы, ожидающие в очереди, начиная с новых. На значке вкладки показано число ожидающих и рисуемых элементов |
+| **{{ui:app.tabs.models}}** | То же, что вкладка {{ui:app.tabs.models}} на компьютере ([Управление моделями и их поиск](08-models.md)). Экран маленький, поэтому карточки начинаются с минимального размера |
+| **{{ui:app.tabs.browse}}** | То же, что вкладка {{ui:app.tabs.browse}} на компьютере. Можно искать и устанавливать модели с Civitai и Hugging Face. Поиск и фильтры находятся внутри кнопки **{{ui:browse.menu}}** слева вверху, и там же с помощью **{{ui:browse.cardSize}}** меняется размер карточек в списке (начинается с минимального размера) |
 
-LoRAs, reference images and the advanced settings are not on the phone's **{{ui:app.tabs.generate}}** tab. What you set on the computer is used as it is.
+Пока рисуется картинка, в панели заголовка показаны промежуточная картинка и ход выполнения. Если нажать на неё, можно на весь экран смотреть, как картинка рисуется. Когда рисование заканчивается, она меняется на готовую картинку.
 
-While a picture is being drawn, the title bar shows it in progress with its step. Tap it to watch it being drawn full screen. When it is done, it turns into the finished picture.
+Если нажать модель на вкладке **{{ui:app.tabs.models}}**, сведения о ней, как и на вкладке **{{ui:app.tabs.browse}}**, открываются на весь экран. Кнопка **{{ui:models.detail.close}}** вверху возвращает к списку. Список под кнопкой **{{ui:params.promptBook.open}}** под промптом тоже открывается на весь экран, а стрелка слева вверху возвращает назад.
 
-### Full screen
+Если открыть список моделей, LoRA, пресетов и т. п., клавиатура не появляется. Когда нужно ввести текст, нажмите на строку поиска.
 
-![A picture open full screen, with its prompts, model and other information](shot:phone-picture)
+### Просмотр на весь экран
 
-- Spread two fingers to zoom in, pinch to zoom out. Move a zoomed picture with one finger.
-- When it is not zoomed, swipe sideways to go to the next picture of the board. The side buttons do the same.
-- Tap twice to switch between zoomed in and the full picture.
-- The **{{ui:gallery.viewer.toggleMetadata}}** button shows the prompts, model, seed and size.
-- The buttons at the foot are **{{ui:gallery.menu.star}}**, **{{ui:common.download}}**, **{{ui:phone.useSettings}}** (puts the picture's settings in the Generate tab) and **{{ui:common.delete}}**. Whether it asks before deleting follows **{{ui:settings.confirmOnDelete}}** in Settings.
+![Картинка, открытая на весь экран, и информация о промпте и модели](shot:phone-picture)
 
-### Working with the queue
+- Если раздвинуть два пальца, картинка увеличивается, если свести — уменьшается. Увеличенную картинку можно двигать одним пальцем.
+- Если картинка не увеличена, проведите пальцем в сторону, и откроется соседняя картинка доски. Это можно сделать и кнопками слева и справа.
+- Двойное нажатие переключает между увеличенным и исходным размером.
+- Кнопка **{{ui:gallery.viewer.toggleMetadata}}** показывает промпт, модель, сид и размер.
+- Кнопка с тремя линиями справа вверху (**{{ui:phone.pictureMenu}}**) открывает то же меню, что открывается на компьютере щелчком правой кнопки по картинке. Оно открывается и долгим нажатием на картинку. Пункты, которые отправляют картинку туда, где нет на экране смартфона (холст, рабочие процессы и т. п.), не показываются.
+- Кнопками внизу можно **{{ui:gallery.menu.star}}**, **{{ui:common.download}}**, **{{ui:phone.useSettings}}** (подставляет настройки этой картинки на вкладку создания) и **{{ui:common.delete}}**. Подтверждение перед удалением определяется параметром **{{ui:settings.confirmOnDelete}}** в настройках.
 
-![The phone's Queue tab: an item being drawn and one waiting](shot:phone-queue)
+### Работа с очередью
 
-- **{{ui:queue.action.pause}}** at the top (**{{ui:queue.action.resume}}** while paused) stops and restarts the queue.
-- **{{ui:queue.action.prune}}** removes the finished items (completed, failed, canceled) from the list.
-- An item waiting or being drawn can be canceled with the × on its right. A failed or canceled item can be run again with the **{{ui:queue.action.retry}}** button on its right.
-- Tap an item being drawn or a finished one to open its picture full screen.
+![Вкладка очереди на смартфоне. Рисуемый элемент и ожидающие элементы](shot:phone-queue)
 
-Everything that is not on the four tabs, such as the canvas, workflows, comics, models, settings and the agent, is used on the computer.
+- Кнопка **{{ui:queue.action.pause}}** вверху (при остановке — **{{ui:queue.action.resume}}**) останавливает и возобновляет обработку очереди.
+- **{{ui:queue.action.prune}}** убирает из списка завершённые элементы (выполненные, с ошибкой, отменённые).
+- Ожидающий и рисуемый элементы можно отменить крестиком справа. Элемент с ошибкой и отменённый можно запустить заново кнопкой **{{ui:queue.action.retry}}** справа.
+- Если нажать рисуемый или готовый элемент, его картинка откроется на весь экран.
+
+### Разговор с ассистентом
+
+![Ассистент на смартфоне. Просьба и то, что ассистент настроил](shot:phone-chat)
+
+Если нажать кнопку с искрами (**{{ui:agent.open}}**) в панели заголовка, ассистент открывается на весь экран. Возможности те же, что на компьютере ([ИИ-ассистент](09-assistant-settings.md#ии-ассистент)).
+
+- В поле внизу напишите, какую картинку хотите создать или о чём спросить, и отправьте кнопкой отправки справа. Enter делает перенос строки. Кнопкой со скрепкой слева можно прикрепить фото со смартфона.
+- Настройки, которые изменил ассистент, попадают на вкладку **{{ui:app.tabs.generate}}** смартфона. Кнопкой **{{ui:agent.generate}}** под ответом можно сразу создать картинку, а кнопкой **{{ui:agent.undo}}** вернуть всё назад.
+- Кнопками справа в верхней панели открывается **{{ui:agent.session.history}}** или начинается **{{ui:agent.session.new}}**. Стрелка слева возвращает на прежний экран.
+- Выбирать ИИ и входить в аккаунт нужно на экране компьютера. Если это ещё не сделано, смартфон сообщит об этом.
+
+Всё, чего нет на 6 вкладках, например холст, рабочие процессы, комикс и настройки, используется на компьютере.

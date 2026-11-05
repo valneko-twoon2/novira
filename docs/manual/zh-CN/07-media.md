@@ -6,7 +6,7 @@
 
 ## 切换要生成的内容
 
-左侧面板的最上方，有一排只有图标的切换按钮。从左到右依次是 **{{ui:media.tab.image}}**、**{{ui:media.tab.video}}**、**{{ui:media.tab.music}}**、**{{ui:media.tab.voice}}**、**{{ui:media.tab.logo}}**、**{{ui:media.tab.text}}**、**{{ui:app.tabs.comic}}**。**{{ui:app.tabs.comic}}** 是制作漫画页面的界面（[绘制漫画](12-comic.md)）。
+左侧面板的最上方，有一排只有图标的切换按钮。从左到右依次是 **{{ui:media.tab.image}}**、**{{ui:media.tab.video}}**、**{{ui:media.tab.music}}**、**{{ui:media.tab.voice}}**、**{{ui:media.tab.logo}}**、**{{ui:media.tab.text}}**、**{{ui:app.tabs.comic}}**。漫画页面用最右边的图标制作（[绘制漫画](12-comic.md)）。
 
 把鼠标移到图标上会显示名称。切换后，左侧面板和中间的显示，会变成该类型专用的内容。
 
@@ -40,7 +40,7 @@
 
 下载只在最开始进行一次。进度会显示在卡片上，在任何画面的左下角“{{ui:media.downloads.title}}”框中也能看到，中途也可以 **{{ui:common.cancel}}**。失败时，卡片上会显示原因，按钮会变为 **{{ui:pack.retry}}**。
 
-能知道下载大小的，还会显示剩余时间（“还剩约 2 分”）。剩余时间是根据下载速度估算的，刚开始的一小段时间不会显示。不知道大小的，或者在安装处理中，会显示从开始起经过的时间。下载扩展时，可以从框中的 **{{ui:media.downloads.manage}}** 打开已安装扩展的列表。
+能知道下载大小的，还会显示剩余时间（“还剩约 ○ 分”）。剩余时间是根据下载速度估算的，刚开始的一小段时间不会显示。不知道大小的，或者在安装处理中，会显示从开始起经过的时间（“已过 ○ 分”）。下载扩展时，可以从框中的 **{{ui:media.downloads.manage}}** 打开已安装扩展的列表。
 
 安装完成后，卡片会消失。只有语音，因为会一并安装朗读用的引擎，所以需要多花一点时间。
 
@@ -74,9 +74,17 @@
 | {{ui:video.fps}} | 每秒的帧数（8～30） |
 | {{ui:video.lengthLabel}} | 1～10 秒。帧数由长度和帧率自动决定 |
 | {{ui:video.steps}}、{{ui:video.cfg}} | 完成效果的细致调整。选择模型后，会切换为适合该模型的值 |
-| {{ui:video.randomSeed}} | 关闭后，可以确定种子，重新生成相同的动作 |
+| {{ui:params.seed.label}} | 在左上方的一行中，保持骰子（{{ui:params.seed.random}}）时每次都会使用新的种子；改为锁（{{ui:params.seed.fixed}}）后，可以用相同的种子重新生成相同的动作 |
 
 要使用 **{{ui:video.model.fast}}**，需要另外下载 **{{ui:pack.title.turbo}}**。这个模型是非商用许可。
+
+**{{ui:video.model}}** 的列表中，也会列出已安装的视频模型。支持 Wan 2.1 和 Wan 2.2（包括 VACE）、HunyuanVideo 和 HunyuanVideo 1.5、LTX-Video 和 LTX-2 的模型。选择后，会切换为适合该模型的步数、CFG、帧率和尺寸，也不需要下载视频模型。文本编码器和 VAE，会按名称从已安装的模型中查找并使用。缺少时生成会失败，并显示所需的文件（可以在模型界面的 **{{ui:models.install.tab.starter}}** 中一并安装）。
+
+- Wan 的文字生成视频模型，无法让图像动起来。要让图像动起来，请选择 Wan 的图像生成视频模型。
+- Wan 2.2 的 14B，由高噪声和低噪声 2 个文件组成 1 套。选择高噪声的文件后，会一并使用这套中低噪声的文件。
+- HunyuanVideo（1.0 和 1.5）和 LTX-Video，既可以从文字生成，也可以从图像生成（HunyuanVideo 1.0 需要图像生成视频的模型，以及视觉用的文件 `llava_llama3_vision`）。LTX-2 还会生成声音，并放入视频中。
+- Wan 的 VACE 模型，可以把图片用作视频的参照。Wan 2.1 的图像生成视频模型，还需要 CLIP vision 的文件（`clip_vision_h`）（可以从入门模型中安装）。
+- 需要控制用的视频、音频、镜头运动、姿势视频的 Wan 模型（Fun Control、S2V、Animate 等），在这里无法运行。生成会失败，并显示所需的内容。
 
 ### GPU 显存较少时
 

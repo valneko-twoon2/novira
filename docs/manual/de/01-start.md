@@ -29,7 +29,7 @@ novira besteht aus vier Teilen.
 Sie müssen die Engine nicht selbst installieren. novira installiert sie automatisch beim ersten Start.
 Die Engine und ihre Komponenten (etwa Python) landen nur im Datenordner von novira. Andere Orte auf Ihrem Computer und eine bereits vorhandene Python-Installation bleiben unverändert.
 
-Der Datenordner heißt `novira-data` und liegt im Ordner der App. Nutzen Sie diesen Ordner, wenn Sie Ihre Bilder und Modelle verschieben oder sichern möchten.
+Beim ersten Start der App fragt ein Bildschirm, wo der Datenordner und die Engine (ComfyUI) installiert werden. Klicken Sie auf „{{ui:firstrun.start}}“, um die Standardorte zu behalten, oder klicken Sie in einer Zeile auf „{{ui:firstrun.choose}}“, um einen anderen Ordner zu wählen. Beides lässt sich später in den Einstellungen unter Engine ändern. Nutzen Sie den Datenordner, wenn Sie Ihre Bilder und Modelle verschieben oder sichern möchten.
 
 > Die Bilderzeugung nutzt die GPU (Grafikkarte). Standardmäßig installiert novira die Engine für NVIDIA-GPUs.
 
@@ -37,7 +37,7 @@ Ein Modell legt fest, in welchem Stil gemalt wird. Für den Anfang brauchen Sie 
 
 ## Beim ersten Start
 
-Beim Öffnen der App erscheint zuerst der Startbildschirm (das Logo und Seifenblasen mit Bildern, die langsam vorbeischweben).
+Beim Öffnen der App erscheint zuerst der Startbildschirm mit dem Logo.
 Darunter zeigt eine Karte, was die App gerade tut.
 
 Beim allerersten Start beginnt die Installation der Bild-Engine. Die Karte zeigt nacheinander drei Phasen.
@@ -49,6 +49,8 @@ Beim allerersten Start beginnt die Installation der Bild-Engine. Die Karte zeigt
 > {{ui:engine.firstRunNote}}
 
 Die Installation erfolgt nur einmal. Ab dem zweiten Start ist der Startbildschirm nach wenigen Sekunden vorbei, und die Engine startet sofort.
+
+Solange der Download läuft, öffnet die Schaltfläche **{{ui:splash.open}}** unter der Karte die App schon vor dem Ende des Downloads. Der Download läuft im Hintergrund weiter, und das Banner am oberen Rand zeigt den Fortschritt. Bilder lassen sich erst erzeugen, wenn die Engine bereit ist.
 
 Sobald die Engine bereit ist, verschwindet der Startbildschirm, und die Hauptansicht öffnet sich.
 Während Daten geladen werden, sehen Sie „{{ui:splash.wait.heading.loading}}“, und während die Engine und die für die Bearbeitung nötigen Informationen geladen werden, sehen Sie „{{ui:splash.wait.heading.preparing}}“.
@@ -73,24 +75,23 @@ Von links nach rechts ist der Bildschirm so aufgebaut.
 - Das linke Bedienfeld: das **Parameter-Bedienfeld**. Es enthält die Einstellungen zum Erzeugen eines Bildes, etwa Prompt und Modell.
 - Die Mitte: die **Hauptansicht**. Sie ist der Arbeitsbereich, der sich je nach Tab ändert, zum Beispiel Startansicht, Bildbetrachter oder Leinwand.
 - Das rechte Bedienfeld: die **Galerie**. Sie zeigt Boards (etwa wie Ordner) und Vorschaubilder der erzeugten Bilder.
+- Das rechte Ende der schmalen Leiste ganz unten: die **Glocke** ({{ui:app.notifications.title}}). Sie zeigt die bisherigen Benachrichtigungen. Gibt es noch ungesehene, steht ihre Anzahl daneben.
 
 ### Seitennavigation (Tabs)
 
 | Tab | Wofür er dient | Zifferntaste |
 |---|---|---|
-| **{{ui:app.tabs.generate}}** | Bilder erzeugen. Über die Symbole oben wechseln Sie auch zu Video, Musik, Stimme, Logos, Text und Comics | `1` |
+| **{{ui:app.tabs.generate}}** | Bilder erzeugen. Über die Symbole oben wechseln Sie auch zu Video, Musik, Stimme, Logos und Text. Das letzte Symbol dieser Reihe, **{{ui:app.tabs.comic}}**, wechselt zum Erstellen von Comicseiten (die Taste `1` öffnet, was von beiden Sie zuletzt benutzt haben) | `1` |
 | **{{ui:app.tabs.canvas}}** | Bilder platzieren, weiter zeichnen oder nur einen Teil neu zeichnen | `2` |
-| **{{ui:app.tabs.comic}}** | Comicseiten erstellen: Anordnung der Bildfelder, ein Bild je Bildfeld, Sprechblasen und Erzähltext. Öffnet sich auch über das Symbol ganz rechts oben im Tab {{ui:app.tabs.generate}} | `3` |
-| **{{ui:app.tabs.upscaling}}** | Ein Bild vergrößern und dabei feine Details ergänzen | `4` |
-| **{{ui:app.tabs.workflows}}** | Bausteine (Nodes) verbinden und ein eigenes Generierungsverfahren aufbauen | `5` |
-| **{{ui:app.tabs.models}}** | Vorhandene Modelle auflisten, installieren und löschen | `6` |
-| **{{ui:app.tabs.browse}}** | Im Internet nach Modellen suchen und sie übernehmen | `7` |
-| **{{ui:app.tabs.queue}}** | Die Warteschlange der Generierung ansehen und anhalten. Ein Zähler zeigt, wie viele warten | `8` |
-| **{{ui:app.nav.extensions}}** | ComfyUI-Erweiterungen suchen sowie installieren oder entfernen | `0` |
+| **{{ui:app.tabs.upscaling}}** | Ein Bild vergrößern und dabei feine Details ergänzen | `3` |
+| **{{ui:app.tabs.workflows}}** | Bausteine (Nodes) verbinden und ein eigenes Generierungsverfahren aufbauen | `4` |
+| **{{ui:app.tabs.models}}** | Vorhandene Modelle auflisten, installieren und löschen | `5` |
+| **{{ui:app.tabs.browse}}** | Im Internet nach Modellen suchen und sie übernehmen | `6` |
+| **{{ui:app.tabs.queue}}** | Die Warteschlange der Generierung ansehen und anhalten. Ein Zähler zeigt, wie viele warten | `7` |
+| **{{ui:app.nav.extensions}}** | ComfyUI-Erweiterungen suchen sowie installieren oder entfernen | `8` |
 
 Nahe dem unteren Rand der Seitennavigation gibt es außerdem Folgendes.
 
-- **{{ui:app.tabs.short.agent}}**: Öffnet das Fenster des KI-Assistenten über dem aktuellen Bildschirm.
 - **{{ui:app.nav.settings}}**: Über das Menü öffnen Sie {{ui:app.nav.settings}}, {{ui:app.nav.hotkeys}} und {{ui:app.nav.about}}.
 - Das „n“-Logo ganz oben: Öffnet {{ui:app.nav.about}}.
 
@@ -103,7 +104,7 @@ Die Bedienung der einzelnen Bereiche wird in den folgenden Kapiteln erklärt.
 - {{ui:app.tabs.upscaling}}, {{ui:app.tabs.workflows}}: [Upscaling und Workflows](06-upscaling-workflows.md)
 - Video, Musik, Stimme und mehr: [Video, Musik, Stimme, Logos und Text](07-media.md)
 - {{ui:app.tabs.models}}, {{ui:app.tabs.browse}}: [Modelle bereitstellen](08-models.md)
-- {{ui:app.tabs.short.agent}}, {{ui:app.nav.settings}}: [Der KI-Assistent und die Einstellungen](09-assistant-settings.md)
+- {{ui:agent.title}}, {{ui:app.nav.settings}}: [Der KI-Assistent und die Einstellungen](09-assistant-settings.md)
 
 ### Die Tabs in der Mitte (Start, Betrachter, Entwürfe)
 

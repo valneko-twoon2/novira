@@ -6,7 +6,7 @@ Tout se fait depuis le panneau de gauche de l'onglet **{{ui:app.tabs.generate}}*
 
 ## Choisir ce que l'on crée
 
-Tout en haut du panneau de gauche se trouve un sélecteur composé uniquement d'icônes. De gauche à droite : **{{ui:media.tab.image}}**, **{{ui:media.tab.video}}**, **{{ui:media.tab.music}}**, **{{ui:media.tab.voice}}**, **{{ui:media.tab.logo}}**, **{{ui:media.tab.text}}** et **{{ui:app.tabs.comic}}**. **{{ui:app.tabs.comic}}** est l'écran pour créer des pages de BD ([Dessiner une BD](12-comic.md)).
+Tout en haut du panneau de gauche se trouve un sélecteur composé uniquement d'icônes. De gauche à droite : **{{ui:media.tab.image}}**, **{{ui:media.tab.video}}**, **{{ui:media.tab.music}}**, **{{ui:media.tab.voice}}**, **{{ui:media.tab.logo}}**, **{{ui:media.tab.text}}** et **{{ui:app.tabs.comic}}**. Les pages de BD se créent avec l'icône tout à droite ([Dessiner une BD](12-comic.md)).
 
 Le nom s'affiche quand on survole une icône avec la souris. Quand on change, le panneau de gauche et l'affichage central passent à ceux du type choisi.
 
@@ -44,7 +44,7 @@ Lorsque la taille du téléchargement est connue, le temps restant s'affiche aus
 
 Une fois l'installation terminée, la carte disparaît. Pour la voix, le moteur de lecture est installé en même temps, ce qui prend un peu plus de temps.
 
-> Avant le téléchargement, la préparation du moteur de création d'images (ComfyUI) doit être terminée. Si rien n'avance, consultez [En cas de problème](10-troubleshooting.md).
+> Avant le téléchargement, la préparation du moteur de création d'images (ComfyUI) doit être terminée. Si rien n'avance, consultez [Dépannage](10-troubleshooting.md).
 
 ## Créer une vidéo
 
@@ -74,9 +74,17 @@ Vous pouvez aussi faire un clic droit sur une image de la galerie et choisir **{
 | {{ui:video.fps}} | Nombre d'images par seconde (8 à 30) |
 | {{ui:video.lengthLabel}} | De 1 à 10 secondes. Le nombre d'images est déterminé automatiquement à partir de la durée et de la fréquence d'images |
 | {{ui:video.steps}}, {{ui:video.cfg}} | Réglages fins du rendu. Quand vous choisissez un modèle, les valeurs passent à celles qui lui conviennent |
-| {{ui:video.randomSeed}} | Si vous le désactivez, vous pouvez fixer la seed et recréer le même mouvement |
+| {{ui:params.seed.label}} | Dans la ligne en haut à gauche, avec le dé ({{ui:params.seed.random}}), la seed est nouvelle à chaque fois ; avec le cadenas ({{ui:params.seed.fixed}}), vous pouvez fixer la seed et recréer le même mouvement |
 
 Pour utiliser **{{ui:video.model.fast}}**, il faut télécharger séparément **{{ui:pack.title.turbo}}**. Ce modèle est sous licence non commerciale.
+
+La liste **{{ui:video.model}}** contient aussi les modèles vidéo déjà installés. Les modèles Wan 2.1 et Wan 2.2 (VACE compris), HunyuanVideo et HunyuanVideo 1.5, LTX-Video et LTX-2 sont pris en charge. Quand vous en choisissez un, le nombre d'étapes, le CFG, la fréquence d'images et la taille passent à ce qui lui convient, et le téléchargement du modèle vidéo n'est pas nécessaire. L'encodeur de texte et le VAE sont recherchés par leur nom parmi les modèles installés. S'ils manquent, la génération échoue et les fichiers nécessaires s'affichent (vous pouvez les installer d'un coup depuis **{{ui:models.install.tab.starter}}** dans l'écran des modèles).
+
+- Les modèles Wan de texte vers vidéo ne peuvent pas animer une image. Pour animer une image, choisissez un modèle Wan d'image vers vidéo.
+- Le Wan 2.2 14B forme un ensemble de deux fichiers, bruit élevé et bruit faible. Si vous choisissez le fichier à bruit élevé, le fichier à bruit faible de l'ensemble est utilisé avec lui.
+- HunyuanVideo (1.0 et 1.5) et LTX-Video peuvent créer à partir d'un texte comme d'une image (HunyuanVideo 1.0 nécessite un modèle d'image vers vidéo et le fichier de vision `llava_llama3_vision`). LTX-2 crée aussi le son, qui est intégré à la vidéo.
+- Les modèles Wan VACE peuvent utiliser un dessin comme référence pour la vidéo. Le modèle Wan 2.1 d'image vers vidéo nécessite aussi le fichier CLIP vision (`clip_vision_h`) (vous pouvez l'installer depuis les modèles de démarrage).
+- Les modèles Wan qui exigent une vidéo de contrôle, un son, un mouvement de caméra ou une vidéo de pose (Fun Control, S2V, Animate, etc.) ne peuvent pas être exécutés ici. La génération échoue et ce qui est nécessaire s'affiche.
 
 ### Quand la mémoire du GPU est faible
 
@@ -160,7 +168,7 @@ Les langues de lecture sont le japonais, l'anglais, le chinois, le coréen, l'al
 
 ### Résultat
 
-La voix créée apparaît dans la liste centrale avec un lecteur. La voix utilisée (« {{ui:audio.voice.designed}} » si elle a été créée à partir d'une description) et la langue s'affichent aussi. Elle entre également dans la galerie.
+La voix créée apparaît dans la liste centrale avec un lecteur. La voix utilisée (« {{ui:audio.voice.designed}} » quand c'est {{ui:audio.voice.designed}}) et la langue s'affichent aussi. Elle entre également dans la galerie.
 
 La première génération prend un peu de temps, car le modèle doit être chargé. Si vous n'utilisez pas la fonction pendant un moment, le modèle quitte le GPU et la mémoire est rendue aux autres tâches.
 

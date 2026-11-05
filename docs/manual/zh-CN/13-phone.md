@@ -1,64 +1,126 @@
-# Using it from a phone
+# 从手机使用
 
-You can use novira on your computer from the browser of a phone on your home Wi-Fi. The computer draws the pictures; the phone only shows the screen and takes your taps. Settings, drafts, history and the rest are the same as when you open it on the computer.
+连接了家里 Wi-Fi 的手机，可以用浏览器使用电脑上的 novira。画图的是电脑，手机只负责显示界面和接受操作。设置、草稿、历史等，与在电脑上打开时相同。同时打开着手机和电脑的界面时，在其中一方更改的提示词、模型、LoRA、生成设置、预设、提示词集和草稿，会在 1～2 秒左右反映到其他打开着的界面上。语言、主题、界面大小等显示设置，画布和工作流编辑中的内容，以及智能体的对话，属于各个界面自己的内容，会在下次打开时对齐。通信是加密的，手机要在电脑上获得许可后才能连接。
 
-## Connecting
+## 连接方法
 
-1. Close the novira app. Only one program at a time can use the data folder.
-2. In File Explorer, open the app's folder (the one with `server.bat`), type `cmd` in the address bar at the top and press Enter. A Command Prompt opens in that folder.
-3. Type `server.bat` and press Enter. The same screen also opens in the computer's browser.
-4. The Command Prompt shows an address for your home network and a QR code. Scan the QR code with the camera of a phone on the same Wi-Fi as the computer, and open the address it finds.
+1. 点击 novira 应用左侧栏中的 **{{ui:app.tabs.short.homeLink}}**。点击时所处的网络会被记为家里的网络，并打开入口。
+2. 会出现二维码。用连接了与电脑相同 Wi-Fi 的手机的相机扫描，打开出现的地址。用二维码扫描应用打开时，也可以在连接之前，用 Safari 或 Chrome 重新打开。二维码 2 分钟后过期，并且只能供 1 台手机使用一次。过期后点击 **{{ui:app.lan.newCode}}**。
+3. 第一次使用的手机，浏览器会给出证书警告。请按下面“安装证书”的步骤安装证书。
+4. 在手机的界面上确认设备名称，点击“连接”。手机上会出现 6 位确认数字。电脑的 **{{ui:app.tabs.short.homeLink}}** 界面（未打开时，是屏幕角落的通知）上也会出现相同的数字，一致的话，点击 **{{ui:app.lan.allow}}**。手机上就会打开 novira。
 
-To stop, press Ctrl+C in the Command Prompt, or close its window.
+关闭应用后入口也会关闭，已连接的手机下次打开时，需要重新连接。
 
-The address carries a pass code (a token) that changes at every start. After a restart, scan the new QR code.
+### 从浏览器版连接
 
-### When Windows asks
+不打开应用，也可以从浏览器版同样地连接。先关闭应用（数据文件夹同一时间只能被一个程序使用），在资源管理器中打开应用的文件夹（有 `server.bat` 的文件夹），在上方的地址栏中输入 `cmd` 并按 Enter。在打开的命令提示符中输入 `server.bat` 并按 Enter，电脑的浏览器中会打开相同的界面，然后点击左侧栏的 **{{ui:app.tabs.short.homeLink}}**。要停止时，在命令提示符中按 Ctrl+C，或关闭该窗口。
 
-At the first start, Windows asks whether novira-server may communicate. Allow it on private networks.
+### 安装证书
 
-If the phone still cannot connect, check whether the computer treats the current network as "Public". In Windows Settings, under "Network & internet", open the properties of the Wi-Fi (or cable) connection you use and set the network profile type to "Private network".
+novira 用在这台电脑上制作的证书（novira local CA）来加密与手机的通信。在手机不认识这张证书期间，浏览器会警告“不安全”。只需在最开始，把证书安装到手机上一次。打开手机界面下方的“安装证书”，通过链接下载证书。
 
-### Which devices can connect, and a caution
+- iPhone：点击链接并点击“允许”，然后从设置应用最上方的“已下载描述文件”进行安装。之后，在设置的“通用”“关于本机”“证书信任设置”中，打开 novira local CA。如果忘了这最后一步，即使安装了证书，警告也不会消失。
+- Android（Chrome）：在设置的“安全”“安装证书”“CA 证书”中，选择下载的证书。Firefox 不使用后来安装的证书。请用 Chrome 打开。
 
-- Only devices on the same network as this computer (the same range of the same router) are answered. A phone away from home, or one going through a VPN, cannot connect.
-- Even a device on the same Wi-Fi cannot use it without the token in the address. Do not show the QR code or the address to others.
-- The connection is not encrypted (http). That is why the phone's browser says "Not secure". Use it on a home Wi-Fi with a password, never on a shared one such as a café's.
+### 关闭时
 
-## The phone screen
+没有用来关闭家庭网络入口的按钮。即使关闭弹窗，已连接的手机也可以照常使用。
 
-On a phone the page takes a layout made for phones. It switches by itself on a narrow screen, and stays so when you turn the phone on its side. A title bar runs along the top, and four tabs along the foot.
+- 30 分钟内没有人使用，也没有等待中的二维码和等待批准的请求时，会自动关闭。
+- 换到其他 Wi-Fi 等，不再是信任的网络时，也会自动关闭。
+- 已连接的手机，可以在列表中用 × 逐台断开。30 分钟不使用，或连接后过了 4 小时，手机的连接就会断开。
 
-![The phone's Generate tab: model, prompts, aspect, seed, iterations and the Generate button at the foot](shot:phone-generate)
+### Windows 询问时
 
-| Tab | What you can do |
+第一次打开入口时，Windows 会询问是否允许 novira（浏览器版是 novira-server）通信。请允许在专用网络中通信。
+
+当 Windows 把正在使用的网络视为“公用”时，界面上会出现提示。请只在自己的网络中打开。从手机连不上时，请在 Windows 的“设置”的“网络和 Internet”中，打开所用 Wi-Fi（或有线）的属性，把网络配置文件类型设为“专用网络”。
+
+### 能连接的设备与注意事项
+
+- 会响应的，只有与这台电脑在同一网络（同一路由器的同一范围）中的设备。外出时，或通过 VPN 的手机无法连接。外出时，请使用下一节“外出时使用”的方法。
+- 即使是同一个 Wi-Fi 中的设备，没有在电脑上获得许可也无法使用。请不要把二维码给别人看。确认数字不一致时，或遇到没有印象的手机，请点击 **{{ui:app.lan.deny}}**。
+- 通信用 https 加密。
+- 在不认识的网络（咖啡馆等）中，请不要点击 **{{ui:app.tabs.short.homeLink}}**。点击时所处的网络会被信任，并打开入口。
+
+## 外出时使用
+
+使用 [Tailscale](https://tailscale.com/)，外出时的手机也可以使用电脑上的 novira。不需要在路由器上开放端口。手机用在家里注册过一次的通行密钥（面容、指纹、密码）登录。
+
+### 准备
+
+1. 在电脑和手机上安装 Tailscale，用同一个账户登录。请为 Tailscale 的账户开启两步验证。
+2. 在 Tailscale 的管理界面（DNS 的设置）中，打开 MagicDNS 和 HTTPS 证书。
+3. 请不要在电脑的 Tailscale 名称中，放入真名等不想被人知道的词语。制作证书后，电脑的名称和 tailnet 的名称，会登载在证书的公开日志（Certificate Transparency）中。只凭名称无法进入。
+
+### 打开并注册手机
+
+1. 点击左侧栏的 **{{ui:app.tabs.short.homeLink}}**，打开 **{{ui:app.lan.tabAway}}** 标签页。
+2. 打开 **{{ui:app.remote.switch}}**。出现电脑在 Tailscale 中的名称（类似 `pc.tail1234.ts.net` 的名称），就说明准备好了。无法打开时，会显示原因。打开的设置，下次打开 novira 时也会保持。
+3. 打开手机的 Tailscale，扫描点击 **{{ui:app.remote.enrol}}** 后出现的二维码。注册只能在家里进行（因为要在电脑上许可）。
+4. 在手机上确认名称并点击“开始注册”，电脑上出现的确认数字相同的话，点击 **{{ui:app.lan.allow}}**。
+5. 点击手机上出现的“创建通行密钥”，用面容、指纹或密码确认。注册的设备会排列在 **{{ui:app.remote.passkeys}}** 中。
+
+### 外出时打开
+
+打开手机的 Tailscale，打开注册时的地址（`https://pc.tail1234.ts.net:端口号/`），点击“用通行密钥登录”。加上书签会很方便。需要电脑上打开着 novira（或浏览器版），并且电脑的 Tailscale 处于连接状态。
+
+- 能做的事，与从家里的 Wi-Fi 连接时相同。模型和扩展的安装、引擎的设置、密钥、智能体的设置，只能在电脑上进行。
+- 登录在 30 分钟不使用，或登录后过了 4 小时，就会失效。请再次用通行密钥登录。
+- **{{ui:app.remote.log}}** 中，会显示注册、登录、拒绝的日期时间和设备。如果有没有印象的记录，请删除该设备的注册，并同时更改 Tailscale 的密码。
+- 丢失手机时，请点击 **{{ui:app.remote.passkeys}}** 的垃圾桶按钮 2 次来删除注册。该设备的登录也会立即失效。也请在 Tailscale 的管理界面中移除该设备。
+- {{ui:app.remote.switch}}在 14 天内既没有注册也没有登录时，会自动关闭。
+
+## 手机的界面
+
+用手机打开时，会变为面向手机的界面。在窄屏上会自动切换，横过来使用时也一样。上方是应用标志（以及正在画的图）和智能体按钮的栏，下方排列着 6 个标签页。
+
+![手机的生成标签页。预设、种子和生成按钮、模型、提示词纵向排列](shot:phone-generate)
+
+| 标签页 | 能做什么 |
 |---|---|
-| **{{ui:app.tabs.generate}}** | Set the {{ui:params.model.label}}, the {{ui:params.prompt.positive}} and {{ui:params.prompt.negative}} prompts, the {{ui:params.image.aspect}}, the {{ui:params.seed.label}} and the {{ui:params.invoke.iterations}}, then make the pictures with the **{{ui:params.invoke.invoke}}** button at the foot. When it cannot make them, the reason shows above the button |
-| **{{ui:gallery.view.images}}** | Pick a **{{ui:phone.board}}** and its pictures show three to a row. Pictures being drawn come first. Tap one to open it full screen |
-| **{{ui:app.views.drafts}}** | The same as the drafts on the computer ([Choosing from drafts](04-improve.md#choosing-from-drafts)). The **{{ui:drafts.open}}** button of a candidate shows its picture full screen |
-| **{{ui:app.tabs.queue}}** | The items waiting in the queue, newest first. The tab's icon shows how many are waiting and being drawn |
+| **{{ui:app.tabs.generate}}** | 与电脑左侧面板相同的部件，按相同的顺序纵向排列（[生成图像](02-generate.md)）。预设、{{ui:params.seed.label}}和 **{{ui:params.invoke.invoke}}** 按钮、模型、提示词、参考图像，直到高分辨率修正和详细设置，都能像在电脑上一样使用。{{ui:params.seed.label}}和 **{{ui:params.invoke.invoke}}** 按钮所在的一行，滚动时也会留在上方 |
+| **{{ui:phone.gallery}}** | 选择 **{{ui:phone.board}}** 后，该画板的图像会按 3 列排列。正在画的图像显示在最前面。点击后全屏打开 |
+| **{{ui:app.views.drafts}}** | 与电脑的草稿相同（[从草稿中挑选](04-improve.md#从草稿中挑选)）。候选图的 **{{ui:drafts.open}}** 按钮，可以全屏查看该图像 |
+| **{{ui:app.tabs.queue}}** | 排队中的项目，按从新到旧的顺序排列。标签页的图标上，会显示等待中的项目和正在画的项目的数量 |
+| **{{ui:app.tabs.models}}** | 与电脑的 {{ui:app.tabs.models}} 标签页相同（[管理与查找模型](08-models.md)）。因为屏幕小，卡片从最小的大小开始 |
+| **{{ui:app.tabs.browse}}** | 与电脑的 {{ui:app.tabs.browse}} 标签页相同。可以在 Civitai 和 Hugging Face 上查找并安装模型。搜索和筛选在左上方的 **{{ui:browse.menu}}** 按钮中，在那里用 **{{ui:browse.cardSize}}** 可以改变列表中卡片的大小（从最小的大小开始） |
 
-LoRAs, reference images and the advanced settings are not on the phone's **{{ui:app.tabs.generate}}** tab. What you set on the computer is used as it is.
+正在画图期间，标题栏会显示中途的图像和进度。点击后，可以全屏观看逐渐画出来的样子。画完后，会变为完成的图像。
 
-While a picture is being drawn, the title bar shows it in progress with its step. Tap it to watch it being drawn full screen. When it is done, it turns into the finished picture.
+在 **{{ui:app.tabs.models}}** 标签页中点击模型，与 **{{ui:app.tabs.browse}}** 标签页一样，详情会占满整个屏幕展开。用上方的 **{{ui:models.detail.close}}** 回到列表。提示词下方的 **{{ui:params.promptBook.open}}** 按钮的列表，也会全屏打开，用左上方的箭头返回。
 
-### Full screen
+打开模型、LoRA、预设等列表时，不会弹出键盘。想输入时，请点击搜索栏。
 
-![A picture open full screen, with its prompts, model and other information](shot:phone-picture)
+### 全屏查看
 
-- Spread two fingers to zoom in, pinch to zoom out. Move a zoomed picture with one finger.
-- When it is not zoomed, swipe sideways to go to the next picture of the board. The side buttons do the same.
-- Tap twice to switch between zoomed in and the full picture.
-- The **{{ui:gallery.viewer.toggleMetadata}}** button shows the prompts, model, seed and size.
-- The buttons at the foot are **{{ui:gallery.menu.star}}**, **{{ui:common.download}}**, **{{ui:phone.useSettings}}** (puts the picture's settings in the Generate tab) and **{{ui:common.delete}}**. Whether it asks before deleting follows **{{ui:settings.confirmOnDelete}}** in Settings.
+![全屏打开的图像，以及提示词和模型的信息](shot:phone-picture)
 
-### Working with the queue
+- 用 2 根手指张开是放大，捏合是缩小。放大后的图像可以用 1 根手指移动。
+- 未放大时横向滑动，会移到画板中相邻的图像。也可以用左右按钮移动。
+- 点击 2 次，可以在放大和原始大小之间切换。
+- 用 **{{ui:gallery.viewer.toggleMetadata}}** 按钮，显示提示词、模型、种子、大小。
+- 右上方的三条横线按钮（**{{ui:phone.pictureMenu}}**），会打开与在电脑上右键点击图像时相同的菜单。长按图像也会打开。发送到画布、工作流等手机界面上没有的位置的项目不会出现。
+- 用下方的按钮，可以 **{{ui:gallery.menu.star}}**、**{{ui:common.download}}**、**{{ui:phone.useSettings}}**（把该图像的设置填入生成标签页）、**{{ui:common.delete}}**。删除前的确认，遵循设置中的 **{{ui:settings.confirmOnDelete}}**。
 
-![The phone's Queue tab: an item being drawn and one waiting](shot:phone-queue)
+### 操作队列
 
-- **{{ui:queue.action.pause}}** at the top (**{{ui:queue.action.resume}}** while paused) stops and restarts the queue.
-- **{{ui:queue.action.prune}}** removes the finished items (completed, failed, canceled) from the list.
-- An item waiting or being drawn can be canceled with the × on its right. A failed or canceled item can be run again with the **{{ui:queue.action.retry}}** button on its right.
-- Tap an item being drawn or a finished one to open its picture full screen.
+![手机的队列标签页。正在画的项目和等待中的项目](shot:phone-queue)
 
-Everything that is not on the four tabs, such as the canvas, workflows, comics, models, settings and the agent, is used on the computer.
+- 用上方的 **{{ui:queue.action.pause}}**（暂停时是 **{{ui:queue.action.resume}}**），可以暂停或继续排队的处理。
+- 用 **{{ui:queue.action.prune}}**，可以把已结束的项目（完成、失败、取消）从列表中清除。
+- 等待中的项目和正在画的项目，可以用右侧的 × 取消。失败的项目和取消的项目，可以用右侧的 **{{ui:queue.action.retry}}** 按钮重新进行。
+- 点击正在画的项目或已完成的项目，会全屏打开该图像。
+
+### 与智能体对话
+
+![手机的智能体。请求，以及智能体设置的内容](shot:phone-chat)
+
+点击标题栏中的闪光按钮（**{{ui:agent.open}}**），智能体会占满整个屏幕打开。能做的事与电脑相同（[智能体](09-assistant-settings.md#智能体)）。
+
+- 在下方的栏中写下想画的图或想问的事，用右侧的发送按钮发送。Enter 是换行。用左侧的回形针按钮，可以附上手机里的照片。
+- 智能体更改的设置，会填入手机的 **{{ui:app.tabs.generate}}** 标签页。用回答下方的 **{{ui:agent.generate}}** 可以立即生成，用 **{{ui:agent.undo}}** 可以恢复原状。
+- 用上方栏右侧的按钮，可以打开 **{{ui:agent.session.history}}**，或开始 **{{ui:agent.session.new}}**。用左侧的箭头回到原来的界面。
+- 选择要使用的 AI 并登录，要在电脑的界面上进行。尚未进行时，手机上会显示这一点。
+
+画布、工作流、漫画、设置等，6 个标签页中没有的内容，请在电脑上使用。

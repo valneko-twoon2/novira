@@ -5,7 +5,7 @@
 
 ## 갤러리 보는 법
 
-오른쪽 패널은 위아래 2개 부분으로 이루어져 있습니다.
+오른쪽 패널 위의 **{{ui:app.right.gallery}}** 탭을 선택하면 갤러리가 나옵니다(옆의 **{{ui:app.right.assistant}}** 탭은 [AI 어시스턴트](09-assistant-settings.md#에이전트)입니다). 갤러리는 위아래 2개 부분으로 이루어져 있습니다.
 
 - 위: **{{ui:gallery.boards.title}}**. 그림을 넣어 두는 폴더 같은 것입니다.
 - 아래: 선택한 보드의 그림 썸네일입니다.
@@ -86,6 +86,7 @@
 | **{{ui:gallery.menu.openInViewer}}** | 가운데 뷰어에서 크게 본다 |
 | **{{ui:common.download}}** | 그림 파일을 저장한다 |
 | **{{ui:share.menu}}** | 형식과 크기를 골라 사본을 내보낸다 (생성 정보를 제거할 수도 있다) |
+| **{{ui:share.check.title}}** | 그림에 들어 있는 워터마크, AI 생성 표시, 콘텐츠 인증 정보를 조사한다 |
 | **{{ui:common.copy}}**(`Ctrl+C`) | 그림을 클립보드에 복사한다 |
 | **{{ui:gallery.menu.compare}}**(`Alt+클릭`) | 뷰어에 나와 있는 그림과 비교한다 |
 | **{{ui:gallery.menu.loadWorkflow}}**(`W`) | 그 그림을 만든 워크플로를 연다 |
@@ -100,10 +101,9 @@
 | **{{ui:gallery.menu.sendToWorkflow}}** | 열려 있는 워크플로에 이미지 입력으로 추가한다 |
 | **{{ui:gallery.menu.sendToText}}** | 텍스트의 배경으로 삼는다 |
 | **{{ui:gallery.menu.upscale}}**(`Shift+U`) | 업스케일 탭으로 보낸다 |
-| **{{ui:gallery.menu.segment}}** | 그림의 일부를 선택해서 오려 내거나 다시 그린다 |
+| **{{ui:gallery.menu.segment}}** | 그림을 캔버스에서 열고, 고치고 싶은 부분을 브러시로 칠해서 지우거나 오려 내거나 다시 그린다 |
 | **{{ui:gallery.derive.menu}}** | 이 그림의 설정으로 다른 시드나 조금만 바꾼 그림을 만든다 |
-| **{{ui:cutout.menu}}** | 배경을 제거한다 |
-| **{{ui:facefix.menu}}** | 얼굴을 찾아서 다시 그린다 |
+| **{{ui:gallery.tools.heading}}** | {{ui:facefix.menu}}, {{ui:cutout.menu}}, {{ui:caption.menu}}, {{ui:canvas.poseFromImage.menu}}. 선택하면 이전 설정으로 바로 실행하고, 오른쪽의 톱니바퀴로 먼저 설정을 엽니다([그림 수정하고 다시 쓰기](04-improve.md)) |
 | **{{ui:gallery.menu.trim}}** | 투명한 여백을 줄이고 새 투명 이미지로 저장한다 |
 | **{{ui:character.menu}}** | 그림을 캐릭터로 등록한다 |
 | **{{ui:gallery.menu.changeBoard}}** | 다른 보드로 옮긴다 |
@@ -184,7 +184,7 @@
 |---|---|
 | 정보 | **{{ui:gallery.viewer.toggleMetadata}}**(`I`) |
 | 설정 불러오기 | **{{ui:gallery.menu.remix}}**(`R`), **{{ui:gallery.menu.usePrompt}}**(`P`), **{{ui:gallery.menu.useSeed}}**(`S`), **{{ui:gallery.menu.useAll}}**(`A`), **{{ui:gallery.menu.loadWorkflow}}**(`W`), **{{ui:gallery.derive.menu}}** |
-| 보내기와 수정하기 | **{{ui:gallery.menu.sendToCanvas}}**, **{{ui:gallery.menu.useAsReference}}**, **{{ui:gallery.menu.upscale}}**(`Shift+U`), **{{ui:gallery.menu.segment}}**, **{{ui:cutout.menu}}**, **{{ui:facefix.menu}}**, **{{ui:character.menu}}**, **{{ui:gallery.compare.toggle}}**(`C`) |
+| 보내기와 수정하기 | **{{ui:gallery.menu.sendToCanvas}}**, **{{ui:gallery.menu.useAsReference}}**, **{{ui:gallery.menu.upscale}}**(`Shift+U`), **{{ui:gallery.menu.segment}}**, **{{ui:cutout.menu}}**, **{{ui:facefix.menu}}**, **{{ui:gallery.manga.menu}}**, **{{ui:character.menu}}**, **{{ui:gallery.compare.toggle}}**(`C`) |
 | 정리 | **{{ui:gallery.menu.star}}**, **{{ui:common.download}}**, **{{ui:share.menu}}**, **{{ui:gallery.menu.delete}}**(`Del`) |
 
 기능은 썸네일의 오른쪽 클릭 메뉴에서 같은 이름의 항목과 같습니다. 설정이 없는 그림(업로드한 이미지 등)에서는 설정을 불러오는 버튼이 회색이 됩니다.
@@ -193,10 +193,10 @@
 
 ![메타데이터 패널. 프롬프트, 모델, 시드, 스텝 수 등의 목록](shot:viewer-metadata)
 
-도구 모음의 **{{ui:gallery.viewer.toggleMetadata}}** 버튼(`I`)을 누르면 그림 위에 정보 패널이 열립니다. 한 번 더 누르거나 오른쪽 위의 ×로 닫습니다.
+도구 모음의 **{{ui:gallery.viewer.toggleMetadata}}** 버튼(`I`)을 누르면 그림 위에 정보 패널이 열립니다. 한 번 더 누르거나 오른쪽 위의 ×나 패널 바깥을 눌러 닫습니다. 패널의 글자는 드래그로 선택한 뒤 `Ctrl+C`로 복사할 수 있습니다(글자를 선택하고 있는 동안의 `Ctrl+C`는 그림이 아니라 글자를 복사합니다).
 패널에는 4개의 탭이 있습니다.
 
-- **{{ui:gallery.meta.tabRecall}}**: 그림을 만들었을 때의 설정이 항목별로 나열됩니다(프롬프트, 모델, 시드, 스텝 수, CFG 스케일, 스케줄러, 크기, LoRA 등). 각 행 오른쪽의 화살표 버튼으로 **그 항목만** 왼쪽 패널에 불러올 수 있습니다.
+- **{{ui:gallery.meta.tabRecall}}**: 그림을 만들었을 때의 설정이 항목별로 나열됩니다(프롬프트, 모델, 시드, 스텝 수, CFG 스케일, 스케줄러, 크기, LoRA 등). 각 행 오른쪽의 화살표 버튼으로 **그 항목만** 왼쪽 패널에 불러올 수 있습니다. 프롬프트 행은 화살표 왼쪽의 버튼으로 프롬프트를 그대로 복사할 수 있습니다. 스케줄러가 정해져 있는 계열의 모델(Anima, Flux 등)로 만든 그림에서는 스케줄러 대신 '{{ui:gallery.meta.sampling}}' 행이 나와서 실제로 사용한 샘플러와 스케줄러를 알 수 있습니다. 이 행은 불러올 수 없으며, '{{ui:gallery.menu.useAll}}'으로도 스케줄러는 지금 그대로입니다.
 - **{{ui:gallery.meta.tabMetadata}}**: 기록된 내용을 그대로 볼 수 있습니다. 오른쪽 위의 버튼으로 복사할 수 있습니다.
 - **{{ui:gallery.meta.tabDetails}}**: 파일 이름, 크기, 만든 일시, 보드, 별표 여부 등입니다.
 - **{{ui:gallery.meta.tabWorkflow}}**: 워크플로로 만든 그림이라면 그 내용이 나옵니다.
@@ -205,7 +205,7 @@
 
 | 방법 | 불러오는 것 |
 |---|---|
-| **{{ui:gallery.menu.useAll}}** | 프롬프트, 모델, 시드, 크기 등 설정 전부. 시드는 고정됩니다 |
+| **{{ui:gallery.menu.useAll}}** | 프롬프트, 모델, 시드, 크기 등 설정 전부. 시드는 고정됩니다. 다른 소프트웨어로 만들어 가져온 그림은 모델을 이름으로 찾습니다(`v17`과 `v170` 같은 표기 차이는 같은 모델로 봅니다). 찾지 못했을 때는 지금의 모델 그대로 두고, 알림으로 그렇게 알려 줍니다 |
 | **{{ui:gallery.menu.remix}}** | 시드 이외의 전부. 현재 시드 설정(무작위인지 고정인지)은 그대로 남습니다. '같은 설정으로 다른 그림을 만들고 싶을' 때 사용합니다 |
 | **{{ui:gallery.menu.usePrompt}}** | 프롬프트(포지티브와 네거티브)만 |
 | **{{ui:gallery.menu.useSeed}}** | 시드만. 시드는 고정됩니다 |
@@ -255,7 +255,13 @@
 
 확인 창이 나오며 '{{ui:common.delete}}'를 누르면 삭제됩니다.
 
-> 삭제한 그림은 되돌릴 수 없습니다. 휴지통 같은 보관 장소는 없습니다.
+삭제한 그림은 바로 사라지지 않고 14일 동안(500장까지) 보관되므로 삭제를 취소할 수 있습니다.
+
+- 화면 오른쪽 아래의 종을 누르고, 삭제 알림의 **{{ui:gallery.undoDelete.action}}**을(를) 누릅니다. 연달아 삭제하는 작업에 방해가 되지 않도록, 삭제 알림은 화면에 뜨지 않고 종에만 쌓입니다(종의 숫자가 늘어납니다).
+- 갤러리 위의 '{{ui:gallery.undoDelete.label}}' 버튼을 누르거나, 포인터를 갤러리 위에 둔 동안(또는 뷰어를 연 동안) `Ctrl+Z`를 누릅니다. 직전 30번까지의 삭제를 새것부터 차례로 취소할 수 있습니다.
+- 되돌린 그림을 다시 삭제하고 싶을 때는 '{{ui:gallery.redoDelete.label}}' 버튼이나 `Ctrl+Shift+Z`(`Ctrl+Y`)를 사용합니다.
+
+> 취소할 수 있는 기록은 앱을 닫으면 잊습니다. 삭제하고 14일이 지난 그림은 되돌릴 수 없습니다. 보드째 그림을 삭제한 경우에도 같은 방법으로 취소할 수 있습니다. 보드가 없어졌을 때는 그림이 '{{ui:gallery.boards.uncategorized}}'로 돌아갑니다.
 
 확인 창의 '{{ui:common.dontAskAgain}}'에 체크하면 이후로는 확인 없이 삭제합니다. 확인을 되돌리고 싶을 때는 **{{ui:app.nav.settings}}**의 '{{ui:settings.confirmOnDelete}}'을 켭니다.
 
@@ -274,6 +280,8 @@
 
 그림 파일을 저장하려면 오른쪽 클릭 메뉴나 뷰어 도구 모음의 **{{ui:common.download}}**를 사용합니다. 여러 그림을 선택하고 있을 때는 한꺼번에 저장됩니다.
 
+데스크톱 버전에서는 저장할 폴더를 고르는 창이 열리고, 원본 파일이 그대로(생성 정보도 포함해서) 복사됩니다. 같은 이름의 파일이 있을 때는 '-2'처럼 번호를 붙이며 덮어쓰지 않습니다. 저장한 뒤에 나오는 알림에서 **{{ui:share.openFolder}}**로 그 폴더를 열 수 있습니다. 브라우저에서 열고 있을 때는 브라우저의 다운로드에 저장됩니다.
+
 ### 공유용으로 내보내기
 
 ![공유용으로 내보내기 창. 형식(PNG·JPEG·WebP), 화질, 긴 변 최대, 생성 정보를 제거하는 스위치가 있다](shot:share-export)
@@ -283,10 +291,26 @@ SNS에 올리거나 다른 사람에게 건넬 그림의 사본은 오른쪽 클
 - **{{ui:share.format}}**: PNG·JPEG·WebP 중에서 고릅니다. JPEG에서는 **{{ui:share.quality}}**(1~100)을 정할 수 있고, 투명한 부분은 흰색이 됩니다. WebP는 손실 없이 저장합니다.
 - **{{ui:share.size}}**: '{{ui:share.size.original}}', 2048·1536·1024 px, 또는 '{{ui:share.size.custom}}'으로 길이를 입력합니다. 그보다 작은 그림은 확대하지 않습니다.
 - **{{ui:share.removeInfo}}**: 처음에는 꺼져 있습니다. 켜면 프롬프트·설정·워크플로를 포함하지 않고, 그림을 픽셀에서 다시 저장하므로 다른 내장 정보도 남지 않습니다. 꺼져 있을 때는 PNG만 설정을 남깁니다. 남에게 건네기 전에 프롬프트를 보여 주고 싶지 않다면 켜 주세요.
+- **{{ui:share.watermark}}**: 처음에는 꺼져 있습니다. 켜면 내보내는 그림에 눈에 보이지 않는 워터마크(TrustMark), AI로 만든 그림임을 나타내는 정보(IPTC), 서명이 있는 콘텐츠 인증 정보(C2PA)를 넣습니다. 워터마크에는 novira의 표시와 그림마다 다른 무작위 번호가 들어가며, 번호와 원본 그림의 쌍은 이 앱에 기록됩니다.
 
 **{{ui:share.run}}**를 누르면 데스크톱 버전에서는 저장할 폴더를 고르는 창이 열립니다. 파일 이름은 갤러리의 파일 이름에 새 확장자를 붙인 것이며, 같은 이름의 파일이 있으면 '-2', '-3'처럼 번호를 붙이고 덮어쓰지 않습니다. 내보낸 뒤에는 **{{ui:share.openFolder}}**로 그 폴더를 열 수 있습니다.
 
-> 내보낼 수 있는 것은 이미지뿐입니다. 선택한 것 중 동영상과 오디오는 제외됩니다. 브라우저에서 열었을 때는 브라우저의 다운로드에 저장됩니다.
+> 내보낼 수 있는 것은 이미지뿐입니다. 선택한 것 중 동영상과 오디오는 제외됩니다. 브라우저에서 열었을 때는 브라우저의 다운로드에 저장됩니다. 1장이면 그대로, 2장 이상이면 하나의 zip으로 묶습니다. 한 번에 내보낼 수 있는 것은 합쳐서 1GB까지이며, 넘으면 장수를 줄이라고 표시됩니다.
+
+워터마크에 사용하는 파일(합쳐서 약 140MB)은 앱을 시작할 때 자동으로 다운로드됩니다. 준비가 끝날 때까지는 스위치 아래에 진행 상황이 나오고 **{{ui:share.run}}** 버튼은 누를 수 없습니다. 다운로드에 실패했을 때는 **{{ui:share.watermarkRetry}}**를 누르세요.
+
+> 워터마크는 그림 가운데의 정사각형 부분에 들어갑니다. 화질 80의 JPEG로 다시 저장하거나 절반 크기로 줄여도 읽을 수 있음을 확인했지만, 잘라내기, 다시 만들기, 강한 가공으로 사라질 수 있습니다. 워터마크는 공개된 방식이므로 누구든 같은 것을 써넣을 수 있습니다. 서명은 이 PC에서 만든 것이므로 다른 앱에서는 신뢰되지 않은 서명자로 표시됩니다. 워터마크 처리에는 Microsoft Visual C++ 재배포 가능 패키지가 필요하며, 없으면 오류가 표시됩니다.
+
+### 워터마크 조사하기
+
+썸네일의 오른쪽 클릭 메뉴의 **{{ui:share.check.title}}**로 엽니다. **{{ui:share.check.pick}}**으로 그림 파일(PNG·JPEG·WebP)을 선택하면 다음을 조사해서 목록으로 보여 줍니다. 오른쪽 클릭 메뉴에서 열었을 때는 그 그림을 바로 조사합니다. 브라우저에서 열었을 때는 파일을 선택해서 조사할 수 없습니다.
+
+- **{{ui:share.check.watermark}}**: novira의 워터마크가 있는지. 있으면 번호를 표시합니다.
+- **{{ui:share.check.original}}**: 번호가 이 앱의 내보내기 기록에 있으면 원본 그림과 내보낸 일시를 표시하고, **{{ui:share.check.showOriginal}}**으로 뷰어에 띄울 수 있습니다.
+- **{{ui:share.check.credentials}}**: 콘텐츠 인증 정보가 있는지, 서명 이후에 변경되지 않았는지, AI 생성으로 기록되어 있는지, 서명자는 누구인지.
+- **{{ui:share.check.iptc}}**: AI로 만든 그림임을 나타내는 정보가 있는지.
+
+> 워터마크가 발견되지 않아도 AI로 만들지 않았다는 증명은 되지 않습니다. 내보내기 기록은 이 앱의 데이터베이스에 있으므로, 다른 PC의 novira에서 내보낸 그림의 원본 그림은 알 수 없습니다. 워터마크에 사용하는 파일의 준비가 끝나지 않았을 때는 워터마크 이외의 항목만 조사합니다.
 
 ## 드래그 앤 드롭
 
@@ -306,7 +330,7 @@ SNS에 올리거나 다른 사람에게 건넬 그림의 사본은 오른쪽 클
 | 모두 선택한다 | `Ctrl+A` |
 | 선택을 해제한다 | `Esc` |
 | 선택한 그림을 삭제한다 | `Delete` |
-| 뷰어의 그림을 복사한다 | `Ctrl+C` |
+| 뷰어의 그림이나 갤러리에서 선택한 그림을 복사한다(캔버스 화면에서도 갤러리의 그림을 누른 뒤라면 동작합니다) | `Ctrl+C` |
 | 정보 패널을 열고 닫는다 | `I` |
 | 리믹스, 프롬프트, 시드, 전부 | `R`, `P`, `S`, `A` |
 | 워크플로를 불러온다 | `W` |

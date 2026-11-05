@@ -1,64 +1,126 @@
-# Using it from a phone
+# 스마트폰에서 사용하기
 
-You can use novira on your computer from the browser of a phone on your home Wi-Fi. The computer draws the pictures; the phone only shows the screen and takes your taps. Settings, drafts, history and the rest are the same as when you open it on the computer.
+집 Wi-Fi에 연결한 스마트폰의 브라우저에서 PC의 novira를 사용할 수 있습니다. 그림을 그리는 것은 PC이고, 스마트폰은 화면을 띄워 조작할 뿐입니다. 설정, 초안, 기록 등은 PC에서 열었을 때와 같습니다. 스마트폰과 PC의 화면을 동시에 열어 두었을 때는 한쪽에서 바꾼 프롬프트, 모델, LoRA, 생성 설정, 프리셋, 프롬프트 모음, 초안이 1~2초 정도 만에 열려 있는 다른 화면에도 반영됩니다. 언어, 테마, 화면 크기 등의 표시 설정, 캔버스나 워크플로를 편집 중인 내용, 에이전트의 대화는 화면마다 따로이며 다음에 열 때 맞춰집니다. 통신은 암호화되며, 스마트폰은 PC에서 허가한 뒤에 연결됩니다.
 
-## Connecting
+## 연결 방법
 
-1. Close the novira app. Only one program at a time can use the data folder.
-2. In File Explorer, open the app's folder (the one with `server.bat`), type `cmd` in the address bar at the top and press Enter. A Command Prompt opens in that folder.
-3. Type `server.bat` and press Enter. The same screen also opens in the computer's browser.
-4. The Command Prompt shows an address for your home network and a QR code. Scan the QR code with the camera of a phone on the same Wi-Fi as the computer, and open the address it finds.
+1. novira 앱의 왼쪽 바에 있는 **{{ui:app.tabs.short.homeLink}}** 버튼을 누릅니다. 누른 네트워크는 집의 것으로 기억되고 창구가 열립니다.
+2. QR 코드가 나옵니다. PC와 같은 Wi-Fi에 연결한 스마트폰의 카메라로 읽고, 나온 주소를 엽니다. QR 코드 리더 앱으로 열었을 때는 연결하기 전에 Safari나 Chrome에서 다시 열어도 됩니다. 코드는 2분 만에 기한이 끝나며 스마트폰 1대에서 한 번만 쓸 수 있습니다. 기한이 끝나면 **{{ui:app.lan.newCode}}** 버튼을 누릅니다.
+3. 처음 연결하는 스마트폰에서는 브라우저가 인증서 경고를 띄웁니다. 다음의 '인증서 설치하기' 순서로 인증서를 설치하세요.
+4. 스마트폰 화면에서 기기의 이름을 확인하고 '연결'을 누릅니다. 스마트폰에 6자리 확인 번호가 나옵니다. PC의 **{{ui:app.tabs.short.homeLink}}** 화면(열려 있지 않으면 화면 모서리의 알림)에도 같은 번호가 나오므로, 같으면 **{{ui:app.lan.allow}}** 버튼을 누릅니다. 스마트폰에서 novira가 열립니다.
 
-To stop, press Ctrl+C in the Command Prompt, or close its window.
+앱을 닫으면 창구도 닫히고, 연결되어 있던 스마트폰은 다음에 열 때 다시 연결해야 합니다.
 
-The address carries a pass code (a token) that changes at every start. After a restart, scan the new QR code.
+### 브라우저 버전에서 연결하기
 
-### When Windows asks
+앱을 열지 않고 브라우저 버전에서도 똑같이 연결할 수 있습니다. 앱을 닫고(데이터 폴더를 사용할 수 있는 것은 한 번에 1개의 프로그램뿐입니다), 탐색기에서 앱의 폴더(`server.bat`이 있는 폴더)를 열고 위쪽 주소 칸에 `cmd`를 입력해 Enter를 누릅니다. 열린 명령 프롬프트에 `server.bat`을 입력해 Enter를 누르면 PC의 브라우저에 같은 화면이 열리므로 왼쪽 바의 **{{ui:app.tabs.short.homeLink}}** 버튼을 누릅니다. 멈출 때는 명령 프롬프트에서 Ctrl+C를 누르거나 그 창을 닫습니다.
 
-At the first start, Windows asks whether novira-server may communicate. Allow it on private networks.
+### 인증서 설치하기
 
-If the phone still cannot connect, check whether the computer treats the current network as "Public". In Windows Settings, under "Network & internet", open the properties of the Wi-Fi (or cable) connection you use and set the network profile type to "Private network".
+novira는 이 PC에서 만든 인증서(novira local CA)로 스마트폰과의 통신을 암호화합니다. 스마트폰이 이 인증서를 모르는 동안에는 브라우저가 '안전하지 않음'이라고 경고합니다. 맨 처음에 한 번만 스마트폰에 인증서를 설치합니다. 스마트폰 화면 아래에 있는 '인증서 설치'를 열고 링크로 인증서를 다운로드합니다.
 
-### Which devices can connect, and a caution
+- iPhone: 링크를 누르고 '허용'을 누른 다음, 설정 앱 맨 위의 '프로파일이 다운로드되었습니다'에서 설치합니다. 그런 다음 설정의 '일반', '정보', '인증서 신뢰 설정'에서 novira local CA를 켭니다. 이 마지막 순서를 잊으면 인증서를 설치해도 경고가 사라지지 않습니다.
+- Android(Chrome): 설정의 '보안', '인증서 설치', 'CA 인증서'에서 다운로드한 인증서를 선택합니다. Firefox는 나중에 설치한 인증서를 사용하지 않습니다. Chrome으로 여세요.
 
-- Only devices on the same network as this computer (the same range of the same router) are answered. A phone away from home, or one going through a VPN, cannot connect.
-- Even a device on the same Wi-Fi cannot use it without the token in the address. Do not show the QR code or the address to others.
-- The connection is not encrypted (http). That is why the phone's browser says "Not secure". Use it on a home Wi-Fi with a password, never on a shared one such as a café's.
+### 닫을 때
 
-## The phone screen
+집 네트워크로의 창구를 닫는 버튼은 없습니다. 팝업을 닫아도 연결된 스마트폰은 그대로 사용할 수 있습니다.
 
-On a phone the page takes a layout made for phones. It switches by itself on a narrow screen, and stays so when you turn the phone on its side. A title bar runs along the top, and four tabs along the foot.
+- 30분 동안 아무도 사용하지 않고 기다리는 코드도 승인 대기도 없을 때는 자동으로 닫힙니다.
+- 다른 Wi-Fi로 옮기는 등 신뢰한 네트워크가 아니게 되었을 때도 자동으로 닫힙니다.
+- 연결된 스마트폰은 목록의 ×로 1대씩 끊을 수 있습니다. 사용하지 않은 채 30분이 지나거나 연결하고 나서 4시간이 지나면 스마트폰의 연결은 끊깁니다.
 
-![The phone's Generate tab: model, prompts, aspect, seed, iterations and the Generate button at the foot](shot:phone-generate)
+### Windows가 물어보면
 
-| Tab | What you can do |
+처음 창구를 열었을 때 Windows가 novira(브라우저 버전에서는 novira-server)의 통신을 허용할지 물어봅니다. 프라이빗 네트워크에서의 통신을 허용합니다.
+
+Windows가 사용 중인 네트워크를 '퍼블릭'으로 취급하고 있을 때는 화면에 주의 문구가 나옵니다. 자신의 네트워크일 때만 여세요. 스마트폰에서 연결되지 않을 때는 Windows의 '설정'의 '네트워크 및 인터넷'에서 사용 중인 Wi-Fi(또는 유선)의 속성을 열고 네트워크 프로필 종류를 '프라이빗 네트워크'로 합니다.
+
+### 연결되는 기기와 주의
+
+- 응답하는 것은 이 PC와 같은 네트워크(같은 라우터의 같은 범위)에 있는 기기뿐입니다. 외출 중이거나 VPN을 거친 스마트폰에서는 연결되지 않습니다. 외출 중에는 다음의 '외출 중에 사용하기' 방법을 사용합니다.
+- 같은 Wi-Fi의 기기라도 PC에서 허가하지 않으면 사용할 수 없습니다. QR 코드는 남에게 보이지 마세요. 확인 번호가 다를 때나 짐작 가는 바가 없는 스마트폰은 **{{ui:app.lan.deny}}** 버튼을 누릅니다.
+- 통신은 https로 암호화됩니다.
+- 모르는 네트워크(카페 등)에서는 **{{ui:app.tabs.short.homeLink}}** 버튼을 누르지 마세요. 누른 네트워크는 신뢰되고 창구가 열립니다.
+
+## 외출 중에 사용하기
+
+[Tailscale](https://tailscale.com/)을 사용하면 외출 중인 스마트폰에서도 PC의 novira를 사용할 수 있습니다. 라우터의 포트를 열 필요는 없습니다. 스마트폰은 집에서 한 번 등록한 패스키(얼굴·지문·패스코드)로 로그인합니다.
+
+### 준비하기
+
+1. PC와 스마트폰에 Tailscale을 설치하고 같은 계정으로 로그인합니다. Tailscale 계정에는 2단계 인증을 설정하세요.
+2. Tailscale 관리 화면(DNS 설정)에서 MagicDNS와 HTTPS 인증서를 켭니다.
+3. PC의 Tailscale상의 이름에 본명 등 알려지고 싶지 않은 말을 넣지 마세요. 인증서를 만들면 PC의 이름과 tailnet의 이름이 인증서의 공개 로그(Certificate Transparency)에 실립니다. 이름만으로는 안에 들어올 수 없습니다.
+
+### 켜고 스마트폰 등록하기
+
+1. 왼쪽 바의 **{{ui:app.tabs.short.homeLink}}** 버튼을 누르고 **{{ui:app.lan.tabAway}}** 탭을 엽니다.
+2. **{{ui:app.remote.switch}}** 스위치를 켭니다. PC의 Tailscale 이름(`pc.tail1234.ts.net` 같은 이름)이 나오면 준비가 된 것입니다. 열 수 없을 때는 이유가 나옵니다. 켠 설정은 다음에 novira를 열 때도 이어집니다.
+3. 스마트폰의 Tailscale을 켜고 **{{ui:app.remote.enrol}}** 버튼을 눌러 나온 QR 코드를 읽습니다. 등록은 집에서만 할 수 있습니다(PC에서 허가하기 때문입니다).
+4. 스마트폰에서 이름을 확인하고 '등록 시작'을 누른 다음, PC에 나온 확인 번호가 같으면 **{{ui:app.lan.allow}}** 버튼을 누릅니다.
+5. 스마트폰에 나오는 '패스키 만들기'를 누르고 얼굴·지문·패스코드로 확인합니다. 등록한 기기가 **{{ui:app.remote.passkeys}}** 목록에 나열됩니다.
+
+### 외출 중에 열기
+
+스마트폰의 Tailscale을 켜고, 등록했을 때의 주소(`https://pc.tail1234.ts.net:포트 번호/`)를 열고 '패스키로 로그인'을 누릅니다. 북마크해 두면 편리합니다. PC에서 novira(또는 브라우저 버전)가 열려 있고 PC의 Tailscale이 연결되어 있어야 합니다.
+
+- 할 수 있는 일은 집 Wi-Fi에서 연결했을 때와 같습니다. 모델이나 확장 기능의 설치, 엔진 설정, 키, 에이전트 설정은 PC에서만 할 수 있습니다.
+- 로그인은 사용하지 않은 채 30분이 지나거나 로그인하고 나서 4시간이 지나면 끊깁니다. 다시 패스키로 로그인합니다.
+- **{{ui:app.remote.log}}** 항목에 등록·로그인·거부의 일시와 기기가 나옵니다. 짐작 가는 바가 없는 것이 있으면 그 기기의 등록을 지우고 Tailscale 비밀번호도 바꾸세요.
+- 스마트폰을 잃어버렸을 때는 **{{ui:app.remote.passkeys}}** 목록의 휴지통 버튼을 2번 눌러 등록을 지웁니다. 그 기기의 로그인도 바로 끊깁니다. Tailscale 관리 화면에서도 그 기기를 제거하세요.
+- {{ui:app.remote.switch}} 스위치는 14일 동안 등록도 로그인도 없으면 자동으로 꺼집니다.
+
+## 스마트폰 화면
+
+스마트폰으로 열면 스마트폰용 화면이 됩니다. 폭이 좁은 화면에서 자동으로 전환되며 가로 방향으로 해도 같습니다. 위쪽에 앱 마크(와 그리고 있는 그림)와 에이전트 버튼이 있는 바, 아래쪽에 6개의 탭이 나열됩니다.
+
+![스마트폰의 생성 탭. 프리셋, 시드와 생성 버튼, 모델, 프롬프트가 세로로 나열된다](shot:phone-generate)
+
+| 탭 | 할 수 있는 일 |
 |---|---|
-| **{{ui:app.tabs.generate}}** | Set the {{ui:params.model.label}}, the {{ui:params.prompt.positive}} and {{ui:params.prompt.negative}} prompts, the {{ui:params.image.aspect}}, the {{ui:params.seed.label}} and the {{ui:params.invoke.iterations}}, then make the pictures with the **{{ui:params.invoke.invoke}}** button at the foot. When it cannot make them, the reason shows above the button |
-| **{{ui:gallery.view.images}}** | Pick a **{{ui:phone.board}}** and its pictures show three to a row. Pictures being drawn come first. Tap one to open it full screen |
-| **{{ui:app.views.drafts}}** | The same as the drafts on the computer ([Choosing from drafts](04-improve.md#choosing-from-drafts)). The **{{ui:drafts.open}}** button of a candidate shows its picture full screen |
-| **{{ui:app.tabs.queue}}** | The items waiting in the queue, newest first. The tab's icon shows how many are waiting and being drawn |
+| **{{ui:app.tabs.generate}}** | PC의 왼쪽 패널과 같은 부품이 같은 순서로 세로로 나열됩니다([이미지 만들기](02-generate.md)). 프리셋, {{ui:params.seed.label}}과 **{{ui:params.invoke.invoke}}** 버튼, 모델, 프롬프트, 참조 이미지, 고해상도 보정이나 상세 설정까지 PC와 똑같이 사용할 수 있습니다. {{ui:params.seed.label}}과 **{{ui:params.invoke.invoke}}** 버튼의 줄은 스크롤해도 위에 남습니다 |
+| **{{ui:phone.gallery}}** | **{{ui:phone.board}}** 항목을 선택하면 그 보드의 그림이 3열로 나열됩니다. 그리고 있는 도중의 그림은 맨 앞에 나옵니다. 누르면 전체 화면으로 열립니다 |
+| **{{ui:app.views.drafts}}** | PC의 초안과 같습니다([초안에서 고르기](04-improve.md#초안에서-고르기)). 후보의 **{{ui:drafts.open}}** 버튼으로 그 그림을 전체 화면으로 볼 수 있습니다 |
+| **{{ui:app.tabs.queue}}** | 대기 중인 항목이 새로운 순서로 나열됩니다. 탭의 아이콘에는 기다리는 항목과 그리고 있는 항목의 수가 나옵니다 |
+| **{{ui:app.tabs.models}}** | PC의 {{ui:app.tabs.models}} 탭과 같습니다([모델 준비하기](08-models.md)). 화면이 작으므로 카드는 가장 작은 크기로 시작합니다 |
+| **{{ui:app.tabs.browse}}** | PC의 {{ui:app.tabs.browse}} 탭과 같습니다. Civitai와 Hugging Face에서 모델을 찾아 설치할 수 있습니다. 검색과 좁히기는 왼쪽 위의 **{{ui:browse.menu}}** 버튼 안에 있으며, 거기의 **{{ui:browse.cardSize}}** 항목에서 목록 카드의 크기를 바꿀 수 있습니다(가장 작은 크기로 시작합니다) |
 
-LoRAs, reference images and the advanced settings are not on the phone's **{{ui:app.tabs.generate}}** tab. What you set on the computer is used as it is.
+그림을 그리고 있는 동안에는 제목 바에 도중의 그림과 진행 상황이 나옵니다. 누르면 그려지는 모습을 전체 화면으로 볼 수 있습니다. 다 그리면 완성된 그림으로 바뀝니다.
 
-While a picture is being drawn, the title bar shows it in progress with its step. Tap it to watch it being drawn full screen. When it is done, it turns into the finished picture.
+**{{ui:app.tabs.models}}** 탭에서 모델을 누르면 **{{ui:app.tabs.browse}}** 탭과 마찬가지로 상세가 화면 가득 열립니다. 위쪽의 **{{ui:models.detail.close}}** 버튼으로 목록으로 돌아갑니다. 프롬프트 아래의 **{{ui:params.promptBook.open}}** 버튼의 목록도 전체 화면으로 열리며 왼쪽 위의 화살표로 돌아갑니다.
 
-### Full screen
+모델, LoRA, 프리셋 등의 목록을 열어도 키보드는 나오지 않습니다. 입력하고 싶을 때는 검색칸을 누르세요.
 
-![A picture open full screen, with its prompts, model and other information](shot:phone-picture)
+### 전체 화면으로 보기
 
-- Spread two fingers to zoom in, pinch to zoom out. Move a zoomed picture with one finger.
-- When it is not zoomed, swipe sideways to go to the next picture of the board. The side buttons do the same.
-- Tap twice to switch between zoomed in and the full picture.
-- The **{{ui:gallery.viewer.toggleMetadata}}** button shows the prompts, model, seed and size.
-- The buttons at the foot are **{{ui:gallery.menu.star}}**, **{{ui:common.download}}**, **{{ui:phone.useSettings}}** (puts the picture's settings in the Generate tab) and **{{ui:common.delete}}**. Whether it asks before deleting follows **{{ui:settings.confirmOnDelete}}** in Settings.
+![전체 화면으로 연 그림과 프롬프트나 모델의 정보](shot:phone-picture)
 
-### Working with the queue
+- 두 손가락으로 벌리면 확대, 오므리면 축소됩니다. 확대한 그림은 한 손가락으로 움직일 수 있습니다.
+- 확대하지 않았을 때 옆으로 쓸면 보드의 이웃 그림으로 이동합니다. 좌우 버튼으로도 이동할 수 있습니다.
+- 두 번 두드리면 확대와 원래 크기가 전환됩니다.
+- **{{ui:gallery.viewer.toggleMetadata}}** 버튼으로 프롬프트, 모델, 시드, 크기를 표시합니다.
+- 오른쪽 위의 세 줄 버튼(**{{ui:phone.pictureMenu}}**)으로 PC에서 그림을 오른쪽 클릭했을 때와 같은 메뉴가 열립니다. 그림을 길게 눌러도 열립니다. 캔버스나 워크플로처럼 스마트폰 화면에 없는 곳으로 보내는 항목은 나오지 않습니다.
+- 아래의 버튼으로 **{{ui:gallery.menu.star}}**, **{{ui:common.download}}**, **{{ui:phone.useSettings}}**(그 그림의 설정을 생성 탭에 넣기), **{{ui:common.delete}}** 작업을 할 수 있습니다. 삭제 전의 확인은 설정의 **{{ui:settings.confirmOnDelete}}** 항목을 따릅니다.
 
-![The phone's Queue tab: an item being drawn and one waiting](shot:phone-queue)
+### 대기열 조작하기
 
-- **{{ui:queue.action.pause}}** at the top (**{{ui:queue.action.resume}}** while paused) stops and restarts the queue.
-- **{{ui:queue.action.prune}}** removes the finished items (completed, failed, canceled) from the list.
-- An item waiting or being drawn can be canceled with the × on its right. A failed or canceled item can be run again with the **{{ui:queue.action.retry}}** button on its right.
-- Tap an item being drawn or a finished one to open its picture full screen.
+![스마트폰의 대기열 탭. 그리고 있는 항목과 기다리는 항목](shot:phone-queue)
 
-Everything that is not on the four tabs, such as the canvas, workflows, comics, models, settings and the agent, is used on the computer.
+- 위쪽의 **{{ui:queue.action.pause}}** 버튼(멈춰 있을 때는 **{{ui:queue.action.resume}}**)으로 대기 중인 처리를 멈추거나 다시 시작합니다.
+- **{{ui:queue.action.prune}}** 버튼으로 끝난 항목(완료·실패·취소)을 목록에서 지웁니다.
+- 기다리는 항목과 그리고 있는 항목은 오른쪽의 ×로 취소할 수 있습니다. 실패한 항목과 취소한 항목은 오른쪽의 **{{ui:queue.action.retry}}** 버튼으로 다시 시도할 수 있습니다.
+- 그리고 있는 항목이나 완성된 항목을 누르면 그 그림이 전체 화면으로 열립니다.
+
+### 에이전트와 대화하기
+
+![스마트폰의 에이전트. 요청과 에이전트가 설정한 내용](shot:phone-chat)
+
+제목 바의 반짝이 버튼(**{{ui:agent.open}}**)을 누르면 에이전트가 화면 가득 열립니다. 할 수 있는 일은 PC와 같습니다([에이전트](09-assistant-settings.md#에이전트)).
+
+- 아래 칸에 만들고 싶은 그림이나 묻고 싶은 것을 쓰고 오른쪽의 전송 버튼으로 보냅니다. Enter는 줄바꿈이 됩니다. 왼쪽의 클립 버튼으로 스마트폰의 사진을 붙일 수 있습니다.
+- 에이전트가 바꾼 설정은 스마트폰의 **{{ui:app.tabs.generate}}** 탭에 들어갑니다. 답변 아래의 **{{ui:agent.generate}}** 버튼으로 바로 생성할 수 있고 **{{ui:agent.undo}}** 버튼으로 되돌릴 수 있습니다.
+- 위쪽 바의 오른쪽 버튼으로 **{{ui:agent.session.history}}** 목록을 열거나 **{{ui:agent.session.new}}** 버튼으로 새 채팅을 시작합니다. 왼쪽 화살표로 원래 화면으로 돌아갑니다.
+- 사용할 AI를 선택하고 로그인하는 것은 PC 화면에서 합니다. 아직이라면 스마트폰에 그 점이 나옵니다.
+
+캔버스, 워크플로, 만화, 설정 등 6개의 탭에 없는 것은 PC에서 사용합니다.

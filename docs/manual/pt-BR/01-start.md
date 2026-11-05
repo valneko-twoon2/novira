@@ -29,7 +29,7 @@ O novira é formado por 4 partes:
 Não é preciso instalar o mecanismo manualmente. O novira o instala sozinho na primeira inicialização.
 O mecanismo e seus componentes (como o Python) ficam apenas dentro da pasta de dados do novira. Nenhum outro local do computador nem qualquer Python já existente é alterado.
 
-A pasta de dados se chama `novira-data` e fica dentro da pasta do app. É ela que se usa para mover ou fazer backup de imagens e modelos.
+Na primeira inicialização, aparece uma tela para escolher a pasta de dados e o local onde o mecanismo (ComfyUI) será instalado. Se os locais padrão servirem, clique em “{{ui:firstrun.start}}”. Para mudar, escolha a pasta em cada “{{ui:firstrun.choose}}”. Os dois locais podem ser alterados depois em “Mecanismo”, nas configurações. Para mover ou fazer backup de imagens e modelos, use a pasta de dados.
 
 > A geração de imagens usa a GPU (placa de vídeo). Por padrão, é instalado o mecanismo para GPUs NVIDIA.
 
@@ -37,7 +37,7 @@ O modelo define o estilo do desenho, e é necessário ter um modelo desde o come
 
 ## Na primeira inicialização
 
-Ao abrir o app, aparece primeiro a tela de abertura (o logotipo e bolhas de imagem flutuando devagar).
+Ao abrir o app, aparece primeiro a tela de abertura (o logotipo).
 Abaixo dela, um cartão mostra o que está sendo feito no momento.
 
 Na primeira inicialização, começa a instalação do mecanismo de geração de imagens. O cartão mostra 3 etapas, em sequência:
@@ -49,6 +49,8 @@ Na primeira inicialização, começa a instalação do mecanismo de geração de
 > {{ui:engine.firstRunNote}}
 
 A instalação acontece uma única vez. Nas próximas vezes, a tela de abertura dura alguns segundos e o mecanismo começa a funcionar logo.
+
+Enquanto o botão **{{ui:splash.open}}** estiver visível abaixo da tela de abertura, é possível abrir o app mesmo com o download em andamento. O download continua em segundo plano, e o progresso pode ser acompanhado na faixa que aparece no alto. Mesmo assim, não é possível criar imagens até que o mecanismo esteja pronto.
 
 Quando o mecanismo fica pronto, a tela de abertura desaparece e a tela principal é aberta.
 Enquanto os dados são carregados, aparece “{{ui:splash.wait.heading.loading}}”; enquanto se aguarda o carregamento das informações do mecanismo e da edição, aparece “{{ui:splash.wait.heading.preparing}}”.
@@ -73,24 +75,23 @@ A tela é organizada da esquerda para a direita, assim:
 - O painel da esquerda: o **painel de parâmetros**. Contém as configurações para criar imagens, como o prompt e o modelo.
 - O centro: a **visualização principal**. É o espaço de trabalho de cada aba, como a tela inicial, o visualizador de imagens e a tela de desenho.
 - O painel da direita: a **galeria**. Mostra as pastas, parecidas com as do computador, e as miniaturas das imagens criadas.
+- A ponta direita da faixa fina bem embaixo: o **sino** ({{ui:app.notifications.title}}). Ele reúne as notificações até agora. Quando há notificações ainda não vistas, mostra quantas são.
 
 ### Navegação lateral (abas)
 
 | Aba | Para que serve | Tecla numérica |
 |---|---|---|
-| **{{ui:app.tabs.generate}}** | Criar imagens. Os ícones no alto também permitem alternar para vídeo, música, voz, logotipo, texto e quadrinhos | `1` |
+| **{{ui:app.tabs.generate}}** | Criar imagens. Os ícones no alto também permitem alternar para vídeo, música, voz, logotipo e texto. O ícone **{{ui:app.tabs.comic}}**, na extremidade direita dessa fileira, abre a tela de criação de páginas de quadrinhos (a tecla `1` abre a que foi usada por último) | `1` |
 | **{{ui:app.tabs.canvas}}** | Colocar uma imagem, desenhar por cima ou redesenhar só uma parte | `2` |
-| **{{ui:app.tabs.comic}}** | Criar páginas de quadrinho: distribuição dos quadros, uma imagem por quadro, balões e legendas. Também abre pelo ícone mais à direita no alto da aba {{ui:app.tabs.generate}} | `3` |
-| **{{ui:app.tabs.upscaling}}** | Aumentar a imagem e acrescentar detalhes finos | `4` |
-| **{{ui:app.tabs.workflows}}** | Conectar componentes (nós) para montar o seu próprio processo de geração | `5` |
-| **{{ui:app.tabs.models}}** | Lista dos modelos que você tem, instalação e exclusão | `6` |
-| **{{ui:app.tabs.browse}}** | Procurar e trazer modelos da internet | `7` |
-| **{{ui:app.tabs.queue}}** | Ver e interromper a fila de geração. Um selo mostra quantos itens estão esperando | `8` |
-| **{{ui:app.nav.extensions}}** | Procurar extensões do ComfyUI e instalá-las ou removê-las | `0` |
+| **{{ui:app.tabs.upscaling}}** | Aumentar a imagem e acrescentar detalhes finos | `3` |
+| **{{ui:app.tabs.workflows}}** | Conectar componentes (nós) para montar o seu próprio processo de geração | `4` |
+| **{{ui:app.tabs.models}}** | Lista dos modelos que você tem, instalação e exclusão | `5` |
+| **{{ui:app.tabs.browse}}** | Procurar e trazer modelos da internet | `6` |
+| **{{ui:app.tabs.queue}}** | Ver e interromper a fila de geração. Um selo mostra quantos itens estão esperando | `7` |
+| **{{ui:app.nav.extensions}}** | Procurar extensões do ComfyUI e instalá-las ou removê-las | `8` |
 
 Na parte de baixo da navegação lateral também há:
 
-- **{{ui:app.tabs.short.agent}}**: abre a janela do assistente de IA sobre a tela atual.
 - **{{ui:app.nav.settings}}**: no menu, abre {{ui:app.nav.settings}}, {{ui:app.nav.hotkeys}} e {{ui:app.nav.about}}.
 - O logotipo “n” no alto: abre {{ui:app.nav.about}}.
 
@@ -103,7 +104,7 @@ Cada uma dessas partes é explicada nos próximos capítulos.
 - {{ui:app.tabs.upscaling}} e {{ui:app.tabs.workflows}}: [Ampliação e fluxos de trabalho](06-upscaling-workflows.md)
 - Vídeo, música, voz e outros: [Vídeo, música, voz, logotipo e texto](07-media.md)
 - {{ui:app.tabs.models}} e {{ui:app.tabs.browse}}: [Preparar modelos](08-models.md)
-- {{ui:app.tabs.short.agent}} e {{ui:app.nav.settings}}: [Assistente de IA e configurações](09-assistant-settings.md)
+- {{ui:agent.title}} e {{ui:app.nav.settings}}: [Assistente de IA e configurações](09-assistant-settings.md)
 
 ### Abas do centro (início, visualizador e rascunhos)
 
@@ -119,7 +120,7 @@ As outras abas também têm suas próprias pequenas abas (na aba {{ui:app.tabs.c
 
 Para ver a imagem em um espaço maior, é possível ocultar os painéis da esquerda e da direita.
 
-- Os pequenos botões de seta na borda superior do centro abrem e fecham o painel esquerdo e o direito.
+- Os pequenos botões de seta na borda superior do centro abrem e fecham o painel esquerdo e o direito (galeria e assistente de IA).
 - No teclado, `T` alterna o painel esquerdo, `G` o direito e `F` os dois ao mesmo tempo.
 - Arrastar a divisa entre os painéis muda a largura deles. A largura fica memorizada enquanto o app estiver aberto; ao abri-lo de novo, ela volta à largura inicial.
 

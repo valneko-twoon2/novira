@@ -5,7 +5,7 @@
 首先，查看下面 2 项，往往能抓住原因的线索。
 
 - **{{ui:app.tabs.queue}}** 标签页：失败的项目中会显示原因（参见[下文](#生成失败)）。
-- {{ui:app.devlog.title}}：应用内部的记录（参见 [助手与设置](09-assistant-settings.md)）。
+- {{ui:app.devlog.title}}：应用内部的记录（参见 [智能体、设置、快捷键](09-assistant-settings.md)）。
 
 ## 启动与引擎
 
@@ -64,7 +64,7 @@ novira 使用“图像生成引擎”（ComfyUI，以及运行它的 Python）�
 | {{ui:params.readiness.upscaleNoImage}} | 选择要放大的图像 |
 | {{ui:params.readiness.upscaleNoModel}} | 选择放大用的模型。没有安装时，可以从{{ui:app.tabs.models}}标签页的 **{{ui:models.install.tab.starter}}** 中安装 |
 | {{ui:video.problem.prompt}}、{{ui:music.problem.tags}}、{{ui:voice.problem.text}}、{{ui:logo.problem.text}} | 必填栏为空。请填写 |
-| {{ui:video.problem.image}} | 在“图生视频（i2i）”时，没有选择要让其动起来的图像 |
+| {{ui:video.problem.image}} | 在“i2v”（从图像生成）时，没有选择要让其动起来的图像 |
 | {{ui:voice.problem.description}} | 在“用文字创建声音”时，声音的描述为空 |
 | {{ui:video.problem.pack}}、{{ui:music.problem.pack}}、{{ui:voice.problem.pack}}、{{ui:logo.problem.pack}} | 没有安装专用的模型。请看下一项 |
 
@@ -113,7 +113,7 @@ novira 使用“图像生成引擎”（ComfyUI，以及运行它的 Python）�
 可以用提示中的按钮尝试以下任一做法：
 
 - **{{ui:queue.oom.retrySmaller}}**：保持相同的设置和种子，在保持长宽比的同时把面积缩小到约 75%，重新生成。只对指定尺寸生成的图像显示（视频、音乐、语音、Logo 和放大不显示）。
-- **{{ui:queue.oom.lowMemory}}**：开启 **{{ui:settings.lowMemory.label}}**（参阅 [助手与设置](09-assistant-settings.md)）并重启引擎。有正在生成的项目时，将在下次启动引擎时生效。已经开启时不会显示。
+- **{{ui:queue.oom.lowMemory}}**：开启 **{{ui:settings.lowMemory.label}}**（参阅 [智能体、设置、快捷键](09-assistant-settings.md)）并重启引擎。有正在生成的项目时，将在下次启动引擎时生效。已经开启时不会显示。
 
 因显存不足而失败后，应用会请求引擎卸载已加载的模型并释放显存。因此，下一次生成要从重新加载模型开始，会多花一点时间。
 
@@ -164,7 +164,7 @@ novira 使用“图像生成引擎”（ComfyUI，以及运行它的 Python）�
 
 图像、模型、记录，全部都放在名为 **`novira-data`** 的文件夹中。位置如下。
 
-- 发行版：安装时选择的文件夹。初始值为与应用的可执行文件（`novira.exe`）相同的文件夹中的 `novira-data`。
+- 发行版：用户文件夹（`C:\Users\<用户名>`）中的 `novira-data`。如果像以前那样，在可执行文件（`novira.exe`）所在的文件夹中已有 `novira-data`，则继续使用那一个。
 - 开发中的版本：仓库最上层文件夹中的 `novira-data`。
 
 可以用环境变量 `NOVIRA_DATA_DIR` 改到其他位置。
@@ -181,7 +181,7 @@ novira 使用“图像生成引擎”（ComfyUI，以及运行它的 Python）�
 | `logs` | 日志（见下文） |
 | `settings.json` | 面向高级用户的设置（没有也没关系） |
 | `secrets` | API 密钥和令牌（已加密） |
-| `agent.json` | 在 AI 助手中选择的 AI 的类型 |
+| `agent.json` | 在智能体中选择的 AI 的类型 |
 
 应用安装的引擎（ComfyUI 和 Python），以及它们的工作用数据，也放在数据文件夹中。
 
@@ -189,7 +189,7 @@ novira 使用“图像生成引擎”（ComfyUI，以及运行它的 Python）�
 
 ### 备份
 
-novira 有创建备份的功能，也有从备份恢复的功能。要保护重要的图像，请使用设置中的 **{{ui:share.backup.section}}**（参见 [助手与设置](09-assistant-settings.md#备份)）。备份中包含制作的图像，以及在应用内设置、登记的内容，但不包含模型和图像生成引擎。如果也想保留它们，请自己复制文件夹。
+novira 有创建备份的功能，也有从备份恢复的功能。要保护重要的图像，请使用设置中的 **{{ui:share.backup.section}}**（参见 [智能体、设置、快捷键](09-assistant-settings.md#备份)）。备份中包含制作的图像，以及在应用内设置、登记的内容，但不包含模型和图像生成引擎。如果也想保留它们，请自己复制文件夹。
 
 1. 关闭应用（同时确认没有正在生成的内容）。
 2. 把 `novira-data` 文件夹整个复制到其他磁盘等位置。
@@ -206,7 +206,7 @@ novira 有创建备份的功能，也有从备份恢复的功能。要保护重�
 
 | 位置 | 内容 |
 |---|---|
-| {{ui:app.devlog.title}}（应用内） | 应用内部的记录，以及界面的警告和错误。在设置中打开显示（[助手与设置](09-assistant-settings.md)） |
+| {{ui:app.devlog.title}}（应用内） | 应用内部的记录，以及界面的警告和错误。在设置中打开显示（[智能体、设置、快捷键](09-assistant-settings.md)） |
 | `novira-data\logs\novira.log` | 应用自身的记录。变大之后（超过 2 MB），会转移到 `novira.log.1` |
 | `novira-data\logs\comfyui.log` | 图像生成引擎的记录。无法启动或生成失败时，会出现原因 |
 

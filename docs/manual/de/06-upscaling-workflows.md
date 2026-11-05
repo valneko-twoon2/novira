@@ -6,14 +6,14 @@ Dieses Kapitel erklärt den Tab **{{ui:app.tabs.upscaling}}**, der Bilder vergr�
 
 ![Der Tab Upscaling. In der Mitte stehen eine Ablagefläche für ein Bild und Karten mit den Schritten](shot:upscaling)
 
-Der Tab **{{ui:app.tabs.upscaling}}** vergrößert ein Bild und fügt dabei feine Details hinzu. Das Bild wird nicht einfach gestreckt. Zuerst wird es mit einem Upscaling-Modell vergrößert, danach werden mit dem Prompt und einem Tile-ControlNet die feinen Stellen neu gezeichnet.
+Öffnen Sie **{{ui:app.tabs.upscaling}}** mit dem Rahmen-Symbol in der Seitenleiste links (auch die Taste 3 öffnet ihn). Er vergrößert ein Bild und fügt dabei feine Details hinzu. Das Bild wird nicht einfach gestreckt. Zuerst wird es mit einem Upscaling-Modell vergrößert, danach werden mit dem Prompt und einem Tile-ControlNet die feinen Stellen neu gezeichnet. Ein großes Bild wird in Kacheln etwa von der Größe des Originalbilds aufgeteilt, und jede Kachel wird neu gezeichnet und mit den anderen zusammengefügt. Das Modell zeichnet in einer Größe, die es gut beherrscht, sodass das Bild nicht zerfällt, und die Zeit wächst ungefähr mit der Zahl der Kacheln. Jede Kachel wird mit dem ganzen Prompt gezeichnet; nennt der Prompt eine Person, können deshalb kleine Figuren oder Gesichter in Kacheln mit Himmel oder Hintergrund auftauchen. Senken Sie dann **{{ui:params.upscale.creativity}}** oder lassen Sie im Prompt nur Wörter zu Qualität und Textur stehen.
 
 ### Was Sie dafür brauchen
 
 Sie benötigen die folgenden zwei Modelle. Sind sie nicht installiert, erscheint im linken Bedienfeld ein Hinweis. Über die Schaltfläche **{{ui:params.upscale.openModels}}** gelangen Sie zur Modellansicht. Wie Sie sie installieren, steht im Kapitel [Modelle](08-models.md).
 
 - {{ui:params.upscale.model}} (ein Modell zum Vergrößern von Bildern, etwa Real-ESRGAN)
-- Ein {{ui:params.upscale.tileControlnet}}, das zum ausgewählten Hauptmodell passt
+- Ein {{ui:params.upscale.tileControlnet}}, das zum ausgewählten Hauptmodell passt (es wird für Sie gewählt, wenn es installiert ist. Familien ohne eines, etwa Anima und Qwen-Image, zeichnen ohne Tile-ControlNet neu; **{{ui:params.upscale.structure}}** hat dann keine Wirkung, senken Sie also **{{ui:params.upscale.creativity}}**, um die Formen zu erhalten)
 
 Ist kein Upscaling-Modell installiert, listet das linke Bedienfeld Kandidaten auf. Wählen Sie eines der mit **{{ui:media.choice.recommended}}** markierten aus und installieren Sie es mit **{{ui:models.install.install}}**.
 
@@ -25,7 +25,7 @@ Ist kein Upscaling-Modell installiert, listet das linke Bedienfeld Kandidaten au
 4. Stellen Sie das Ergebnis mit den folgenden zwei Reglern ein.
    - **{{ui:params.upscale.creativity}}**: Je höher der Wert, desto weiter weicht das Ergebnis vom Originalbild ab und desto mehr neue Details kommen hinzu.
    - **{{ui:params.upscale.structure}}**: Je höher der Wert, desto stärker bleiben Formen und Anordnung des Originalbilds erhalten.
-5. Wählen Sie das **{{ui:params.upscale.tileControlnet}}**. Bei Bedarf wählen Sie auch das **{{ui:params.upscale.postProcessing}}** (es veredelt das gezeichnete Bild, danach wird es auf die Ausgabegröße angepasst).
+5. Prüfen Sie das **{{ui:params.upscale.tileControlnet}}** (ein passendes ist bereits gewählt). Bei Bedarf wählen Sie auch das **{{ui:params.upscale.postProcessing}}** (es veredelt das gezeichnete Bild, danach wird es auf die Ausgabegröße angepasst).
 6. Klicken Sie auf **{{ui:params.invoke.invoke}}**.
 
 Das fertige Bild landet in der Galerie.
@@ -34,7 +34,7 @@ Das fertige Bild landet in der Galerie.
 - Der Prompt beeinflusst die hinzugefügten Details. Wenn Sie den Prompt des Originalbilds eingeben, passt die Richtung des Bildes eher.
 - Weicht das vergrößerte Bild zu stark vom Original ab, senken Sie **{{ui:params.upscale.creativity}}** und erhöhen Sie **{{ui:params.upscale.structure}}**.
 
-> Um mehrere Bilder auf einmal zu vergrößern, wählen Sie in der Galerie mehrere aus und verwenden **{{ui:gallery.menu.batch}}** im Rechtsklickmenü ([Bilder verbessern und wiederverwenden](04-improve.md)). Dabei wird nur mit dem Upscaling-Modell vergrößert.
+> Um mehrere Bilder auf einmal zu vergrößern, wählen Sie in der Galerie mehrere aus und verwenden **{{ui:gallery.menu.batch}}** im Rechtsklickmenü ([Bilder korrigieren und wiederverwenden](04-improve.md)). Dabei wird nur mit dem Upscaling-Modell vergrößert.
 
 ## Workflows
 
@@ -47,14 +47,18 @@ Für den Anfang empfiehlt es sich, unter **{{ui:workflows.panel.templates}}** (s
 Der Bildschirm besteht aus zwei Teilen.
 
 - Mitte: der **{{ui:app.views.editor}}**. Hier ordnen Sie Nodes an und verbinden sie mit Linien.
-- Linkes Bedienfeld: fünf Tabs, **{{ui:workflows.panel.workflow}}** (das Formular), **{{ui:workflows.panel.templates}}**, **{{ui:workflows.panel.packs}}**, **{{ui:workflows.panel.details}}** und **{{ui:workflows.panel.data}}**.
+- Linkes Bedienfeld: sechs Tabs, **{{ui:workflows.panel.workflow}}** (das Formular), **{{ui:workflows.panel.nodes}}**, **{{ui:workflows.panel.templates}}**, **{{ui:workflows.panel.packs}}**, **{{ui:workflows.panel.details}}** und **{{ui:workflows.panel.data}}**.
 
 Um einen Workflow auszuführen, klicken Sie oben im linken Bedienfeld auf **{{ui:params.invoke.invoke}}**. Gibt es ein Problem, etwa keinen Ausgabe-Node (wie „{{ui:workflows.nodes.save_image.title}}“) oder kein ausgewähltes Modell, wird der Grund angezeigt, warum nicht generiert werden kann.
 
+Jeder Node, den Sie verbinden, nimmt am Lauf teil. **{{ui:workflows.nodes.controlnet.title}}**, **{{ui:workflows.nodes.ip_adapter.title}}**, **{{ui:workflows.nodes.img_resize.title}}**, **{{ui:workflows.nodes.canny_edge_detection.title}}** und die übrigen arbeiten so, wie Sie sie verbunden haben. **{{ui:workflows.nodes.ip_adapter.title}}** benötigt eine Erweiterung und ein Modell (einen Bild-Encoder). Noch nicht ausführbar sind **{{ui:workflows.nodes.collect.title}}**, **{{ui:workflows.nodes.iterate.title}}** und **{{ui:workflows.nodes.range.title}}**, die Box-Unschärfe und ein Rechen-Node, der von einem **{{ui:workflows.nodes.rand_int.title}}** gespeist wird. Der Grund steht in der Liste der Probleme darüber.
+
 ### Nodes hinzufügen und verbinden
 
-1. Klicken Sie links oben im Editor auf **{{ui:workflows.toolbar.addNode}}** (＋). Die Liste öffnet sich auch mit `Shift+A` oder `Space` auf der Tastatur.
-2. Wählen Sie in der Liste einen Node aus. Mit Wörtern im Suchfeld oben können Sie die Auswahl eingrenzen. Die Liste links grenzt sie nach Art der eingebauten Nodes oder nach installierter Erweiterung ein.
+Der Tab **{{ui:workflows.panel.nodes}}** des linken Bedienfelds listet jeden Node auf, den Sie hinzufügen können, in der Reihenfolge von ComfyUI. Unter den Überschriften **{{ui:workflows.nodeLibrary.section.core}}** und **{{ui:workflows.picker.extensions}}** gibt es Ordner nach Art (Modell, Bild, Video usw.), in derselben Reihenfolge wie in ComfyUI, und die eigenen eingebauten Nodes der App liegen im Ordner ihrer Art; öffnen Sie einen, um die Ordner und Nodes darin zu sehen. Unter **{{ui:workflows.picker.extensions}}** hat jede Erweiterung einen Ordner mit ihrem Namen und ihren Kategorien darin. Eine Suche listet die passenden Nodes zusammen mit dem Ordner auf, in dem jeder liegt. Doppelklicken Sie auf einen Node (oder wählen Sie ihn und drücken Sie `Enter`), um ihn in die Mitte der Arbeitsfläche zu setzen, oder ziehen Sie ihn auf die Arbeitsfläche, um ihn dort abzulegen, wo Sie loslassen. So können Sie weiter hinzufügen, ohne dass eine Liste den Bildschirm verdeckt. Die anderen Wege folgen unten.
+
+1. Drücken Sie auf der Tastatur `Shift+A` oder `Space`, um eine Liste zur Auswahl eines Nodes zu öffnen.
+2. Wählen Sie in der Liste einen Node aus. Mit Wörtern im Suchfeld oben können Sie die Auswahl eingrenzen. Die Liste links grenzt sie nach Art der eingebauten Nodes, nach Art der eigenen Nodes von ComfyUI oder nach installierter Erweiterung ein.
 3. Ziehen Sie von einem Kreis (Ausgang) auf der rechten Seite eines Nodes zu einem Kreis (Eingang) auf der linken Seite eines anderen Nodes, um beide zu verbinden. Verbunden werden können nur Anschlüsse derselben Art.
 
 ![Die Liste beim Hinzufügen eines Nodes](shot:workflows-add-node)
@@ -69,14 +73,24 @@ Beim Verbinden helfen einige praktische Funktionen.
 
 Die Einstellwerte eines Nodes geben Sie direkt im Node ein. Der Wert eines verbundenen Eingangs stammt von dem, womit er verbunden ist.
 
+### Musik und Video in einem Workflow erzeugen
+
+Der Tab **{{ui:workflows.panel.nodes}}** des linken Bedienfelds und die Liste links neben der Node-Liste haben eine Gruppe **{{ui:workflows.picker.core}}**. Sie enthält die Nodes, die ComfyUI von Anfang an hat, nach Art sortiert (Audio, Video, Sampling usw.), und die Nodes, die Musik und Video erzeugen, gehören dazu. Sie lassen sich frei mit den eingebauten Nodes kombinieren.
+
+- Öffnen Sie die Vorlagen **{{ui:workflows.templates.musicAceStep.title}}**, **{{ui:workflows.templates.videoWan22.title}}** oder **{{ui:workflows.templates.videoWan22Image.title}}**, dann laufen sie sofort. Sie verwenden die Modelle, die Sie im Tab Musik und im Tab Video heruntergeladen haben.
+- Wählen Sie das Format am Node, der das Ergebnis speichert (Save Audio oder Save Video). Die Einstellungen, die das Format braucht, etwa die Qualität einer MP3-Datei, erscheinen darunter.
+- Die erzeugte Musik oder das Video kommt in die Galerie. Die Galerie verarbeitet MP3, WAV und FLAC für Musik und MP4 für Video. Wählen Sie Opus, WebM oder ein anderes Format, meldet eine Nachricht, dass das Format nicht erhalten bleiben kann, und der Lauf hält an.
+- Mit dem Node Load Audio oder Load Video können Sie Musik oder ein Video aus der Galerie wählen und verbinden.
+- Der Node **{{ui:workflows.nodes.voice_speak.title}}** (Gruppe **{{ui:workflows.categories.audio}}**) erzeugt einen Ton aus einem vorgelesenen Text. Er nutzt die Engine des Tabs Stimme (Qwen3-TTS), die zuvor installiert sein muss. Verbinden Sie den Ton mit einem Node, der Ton annimmt: Save Audio speichert ihn als MP3 oder in einem anderen Format, und das Audio von Create Video legt die Stimme auf ein Video (ein Ton, der länger als das Video ist, wird am Ende des Videos abgeschnitten). Die Vorlagen **{{ui:workflows.templates.voiceRead.title}}** und **{{ui:workflows.templates.videoNarration.title}}** funktionieren unverändert.
+- Ein Seed, mit dem kein „Zufällige Ganzzahl“ verbunden ist, liefert jedes Mal dasselbe Ergebnis. Die Vorlagen haben von Anfang an einen verbunden.
+- Die Namen, Felder und Ordner der eigenen Nodes von ComfyUI verwenden dieselben Wörter wie die eigenen Bildschirme von ComfyUI in Ihrer Sprache. Wörter, für die ComfyUI keine Übersetzung hat (etwa die Nodes von Erweiterungen), bleiben Englisch. Wie viele Nodes es gibt, hängt von der Version von ComfyUI ab.
+
 ### Die Schaltflächenleiste
 
 Das sind die Schaltflächen links oben im Editor.
 
 | Schaltfläche | Was sie bewirkt |
 |---|---|
-| **{{ui:workflows.toolbar.addNode}}** | Fügt einen Node hinzu. |
-| **{{ui:workflows.toolbar.library}}** | Öffnet die Liste der Workflows. |
 | **{{ui:workflows.toolbar.new}}** | Beginnt einen leeren Workflow. |
 | **{{ui:workflows.toolbar.save}}** (`Ctrl+S`) | Speichert. Beim ersten Speichern werden Sie nach einem Namen gefragt. |
 | **{{ui:workflows.toolbar.optimize}}** | Fasst doppelte Nodes zusammen, entfernt Nodes ohne Verbindung zu einer Ausgabe sowie unnötige Verbindungen und ordnet alles von links nach rechts neu an. Das lässt sich auch rückgängig machen. |
@@ -84,7 +98,7 @@ Das sind die Schaltflächen links oben im Editor.
 
 Mit dem Zahnrad **{{ui:workflows.settings.title}}** rechts oben schalten Sie unter anderem die Anzeige der Minimap und das Einrasten am Raster um.
 
-**{{ui:workflows.settings.autoTidy}}** ist von Anfang an eingeschaltet. Wenn Sie Nodes oder Linien hinzufügen oder entfernen, ordnet es nach kurzer Zeit die Nodes automatisch von links nach rechts an und fasst doppelte Nodes zusammen, die dieselbe Aufgabe erfüllen. Wird etwas zusammengefasst, erscheint eine Benachrichtigung, und `Ctrl+Z` stellt es wieder her. Nodes ohne Verbindung werden nicht automatisch entfernt. Wenn Sie selbst anordnen möchten, schalten Sie es aus.
+**{{ui:workflows.settings.autoTidy}}** ist von Anfang an ausgeschaltet. Wenn Sie es einschalten und dann Nodes oder Linien hinzufügen oder entfernen, ordnet es nach kurzer Zeit die Nodes automatisch von links nach rechts an und fasst doppelte Nodes zusammen, die dieselbe Aufgabe erfüllen. Wird etwas zusammengefasst, erscheint eine Benachrichtigung, und `Ctrl+Z` stellt es wieder her. Nodes ohne Verbindung werden nicht automatisch entfernt. Wenn Sie selbst anordnen möchten, schalten Sie es aus.
 
 Gibt es ungespeicherte Änderungen, erscheint neben dem Namen ein Punkt. Wechseln Sie zu einem anderen Workflow, werden Sie gefragt, ob die Änderungen verworfen werden dürfen.
 
@@ -104,7 +118,7 @@ Im Tab **{{ui:workflows.panel.details}}** können Sie Name, Autor, Tags, Beschre
 
 ![Die Workflow-Bibliothek](shot:workflows-library)
 
-Klicken Sie auf **{{ui:workflows.library.button}}**, um die Liste zu öffnen.
+Klicken Sie oben im linken Bedienfeld über der Schaltfläche zum Generieren auf die Karte **{{ui:workflows.library.button}}** (sie zeigt den Namen des geöffneten Workflows), um die Liste zu öffnen.
 
 - **{{ui:workflows.library.recent}}**: Zuletzt geöffnete Workflows.
 - **{{ui:workflows.library.yours}}**: Von Ihnen selbst gespeicherte Workflows.
@@ -129,7 +143,7 @@ Der Tab **{{ui:workflows.panel.templates}}** listet Vorlagen für häufig genutz
 - Mit **{{ui:workflows.templates.add}}** fügen Sie sie rechts neben dem aktuellen Editorinhalt ein.
 - Modelle und Bilder wählen Sie nach dem Öffnen aus.
 
-Bei einer Vorlage, die Erweiterungen benötigt, erscheint ein Feld „Benötigt“. Klicken Sie auf **{{ui:workflows.templates.installPacks}}**, um sie zu installieren, und starten Sie ComfyUI mit der Schaltfläche **{{ui:workflows.templates.restartFirst}}** neu, dann lässt sie sich öffnen.
+Bei einer Vorlage, die Erweiterungen benötigt, erscheint ein Feld „Benötigt“. Klicken Sie auf **{{ui:workflows.templates.installPacks}}**, um sie zu installieren, und starten Sie ComfyUI mit der Schaltfläche **{{ui:workflows.templates.restartFirst}}** neu, dann lässt sie sich öffnen. Eine Vorlage aus den eigenen Nodes von ComfyUI lässt sich öffnen, sobald ComfyUI läuft.
 
 Die mitgelieferten Vorlagen sind folgende.
 
@@ -142,6 +156,11 @@ Die mitgelieferten Vorlagen sind folgende.
 | **{{ui:workflows.templates.upscale.title}}** | Vergrößert ein Bild mit einem Upscaling-Modell in hoher Auflösung. | Keine |
 | **{{ui:workflows.templates.controlnetCanny.title}}** | Extrahiert die Umrisse eines Bildes und zeichnet etwas Neues, das diese Form beibehält. | Keine |
 | **{{ui:workflows.templates.imageToVideo.title}}** | Bringt ein einzelnes Bild in Bewegung und erzeugt ein kurzes Video. | Keine (ein Videomodell ist nötig) |
+| **{{ui:workflows.templates.videoWan22.title}}** | Erzeugt mit den eigenen Nodes von ComfyUI aus Text ein kurzes Video. Länge, Größe und Sampler können Sie ändern. | Keine (ein Videomodell ist nötig) |
+| **{{ui:workflows.templates.videoWan22Image.title}}** | Derselbe Aufbau, das Video entsteht aus einem Bild, das Sie wählen. | Keine (ein Videomodell ist nötig) |
+| **{{ui:workflows.templates.musicAceStep.title}}** | Erzeugt aus Stil-Tags und Songtext ein Lied. | Keine (ein Musikmodell ist nötig) |
+| **{{ui:workflows.templates.voiceRead.title}}** | Liest einen Text vor und speichert den Ton als MP3. | Keine (die Stimm-Engine und Modelle sind nötig) |
+| **{{ui:workflows.templates.videoNarration.title}}** | Nimmt ein Video aus der Galerie, legt einen vorgelesenen Text als Ton darauf und speichert es als neues Video. | Keine (die Stimm-Engine und Modelle sind nötig) |
 | **{{ui:workflows.templates.filmGrain.title}}** | Fügt einem erzeugten Bild fotografisches Korn hinzu. | ComfyUI-NKD-Basic-Tools |
 | **{{ui:workflows.templates.faceRig.title}}** | Ändert Ausdruck, Blickrichtung und Kopfrichtung in einem Gesichtsfoto. | ComfyUI-NKD-Basic-Tools |
 | **{{ui:workflows.templates.tiledUpscale.title}}** | Vergrößert auf 2048 und zeichnet dann kachelweise neu, um Details hinzuzufügen. | ComfyUI_UltimateSDUpscale |
@@ -170,7 +189,7 @@ Manche Erweiterungen tragen einen Warnhinweis, etwa dass Git benötigt wird, das
 
 Was nicht im Katalog steht, können Sie mit **{{ui:workflows.packs.byAddress}}** installieren, indem Sie eine GitHub-Adresse eingeben (in der Form https://github.com/Benutzername/Name). Weitere installierte Erweiterungen erscheinen unter **{{ui:workflows.packs.others}}**. Eine nicht benötigte Erweiterung entfernen Sie mit **{{ui:workflows.packs.remove}}** (zur Bestätigung ein zweites Mal klicken).
 
-Die Erweiterungen lassen sich jederzeit einsehen, nicht nur im Workflows-Bildschirm. Klicken Sie in der linken Seitenleiste auf **{{ui:app.nav.extensions}}** (das Puzzleteil-Symbol), um die **{{ui:workflows.packs.mgr.title}}** zu öffnen. Die veröffentlichten Erweiterungen erscheinen als Karten; grenzen Sie sie mit **{{ui:workflows.packs.mgr.installed}}**, **{{ui:workflows.packs.mgr.notInstalled}}** oder einem Zweck in der Liste links ein oder suchen Sie im Feld oben nach Name, Autor oder Beschreibung. **{{ui:workflows.packs.mgr.sort.label}}** beginnt mit den meisten **{{ui:workflows.packs.mgr.sort.downloads}}**. Eine Karte zeigt Autor, Version, Aktualisierungsdatum und Downloadanzahl, bei bereits installierten außerdem **{{ui:workflows.packs.installed}}**. Eine noch nicht installierte Erweiterung fügen Sie mit **{{ui:workflows.packs.install}}** auf ihrer Karte hinzu. Klicken Sie auf eine Karte, um rechts ihre Details zu öffnen, die **{{ui:workflows.packs.mgr.license}}** und die Quelle zu prüfen und bei Bedarf mit **{{ui:workflows.packs.remove}}** zu entfernen. Eine Erweiterung, die nicht in der Liste steht, installieren Sie, indem Sie oben unter **{{ui:workflows.packs.mgr.addTitle}}** ihre GitHub-Adresse eingeben. Nach dem Hinzufügen oder Entfernen von Erweiterungen klicken Sie im selben Bildschirm auf **{{ui:workflows.packs.restart}}**, um die Änderung zu übernehmen. In den Details jeder Karte gibt es die Schaltfläche **{{ui:agent.ask.button}}**, und **{{ui:agent.ask.resultsButton}}** erscheint, wenn Sie ein Wort in das Suchfeld eingeben. Klicken Sie darauf, und der KI-Assistent erklärt, was die Erweiterung tut und wie man sie verwendet (siehe [KI-Assistent und Einstellungen](09-assistant-settings.md)).
+Die Erweiterungen lassen sich jederzeit einsehen, nicht nur im Workflows-Bildschirm. Klicken Sie in der linken Seitenleiste auf **{{ui:app.nav.extensions}}** (das Puzzleteil-Symbol), um die **{{ui:workflows.packs.mgr.title}}** zu öffnen. Die veröffentlichten Erweiterungen erscheinen als Karten; grenzen Sie sie mit **{{ui:workflows.packs.mgr.installed}}**, **{{ui:workflows.packs.mgr.notInstalled}}** oder einem Zweck in der Liste links ein oder suchen Sie im Feld oben nach Name, Autor oder Beschreibung. **{{ui:workflows.packs.mgr.sort.label}}** steht anfangs auf **{{ui:workflows.packs.mgr.sort.downloads}}**, sodass die am häufigsten heruntergeladenen zuerst kommen. Eine Karte zeigt Autor, Version, Aktualisierungsdatum und Downloadanzahl, bei bereits installierten außerdem **{{ui:workflows.packs.installed}}**. Eine noch nicht installierte Erweiterung fügen Sie mit **{{ui:workflows.packs.install}}** auf ihrer Karte hinzu. Klicken Sie auf eine Karte, um rechts ihre Details zu öffnen, die **{{ui:workflows.packs.mgr.license}}** und die Quelle zu prüfen und bei Bedarf mit **{{ui:workflows.packs.remove}}** zu entfernen. Eine Erweiterung, die nicht in der Liste steht, installieren Sie, indem Sie oben unter **{{ui:workflows.packs.mgr.addTitle}}** ihre GitHub-Adresse eingeben. Nach dem Hinzufügen oder Entfernen von Erweiterungen klicken Sie im selben Bildschirm auf **{{ui:workflows.packs.restart}}**, um die Änderung zu übernehmen. In den Details jeder Karte gibt es die Schaltfläche **{{ui:agent.ask.button}}**, und **{{ui:agent.ask.resultsButton}}** erscheint, wenn Sie ein Wort in das Suchfeld eingeben. Klicken Sie darauf, und der KI-Assistent erklärt, was die Erweiterung tut und wie man sie verwendet (siehe [Der KI-Assistent und die Einstellungen](09-assistant-settings.md)).
 
 Die Details zeigen die aktuell installierte **{{ui:workflows.packs.version.label}}**. **{{ui:workflows.packs.version.change}}** erscheint nur, wenn das Repository der Erweiterung Versionen veröffentlicht; klicken Sie darauf, um die wählbaren Versionen zu sehen, und auf **{{ui:workflows.packs.version.apply}}**, um zu einer zu wechseln. Die aktuell installierte Version ist mit **{{ui:workflows.packs.installed}}** markiert. Eine Erweiterung ohne veröffentlichte Versionen hat diese Schaltfläche nicht. Um die Änderung zu übernehmen, klicken Sie im selben Bildschirm auf **{{ui:workflows.packs.restart}}**. Eine Version, von der bekannt ist, dass eine andere Erweiterung oder ComfyUI sie nicht unterstützt, ist mit **{{ui:workflows.packs.version.deprecated}}** markiert, zusammen mit dem Namen dessen, was sie nicht unterstützt. Bei einer Erweiterung, die Sie selbst installiert haben, lässt sich die Version von hier aus nicht ändern.
 
@@ -180,4 +199,4 @@ Auch die Version von ComfyUI können Sie im selben Bildschirm ändern. Klicken S
 
 > Sind Sie mit einem ComfyUI verbunden, das nicht von der App verwaltet wird, können Sie von diesem Bildschirm aus nichts installieren. Installieren Sie direkt in diesem ComfyUI.
 
-Funktionen, die Erweiterungen nutzen, wie „{{ui:cutout.menu}}“ und „{{ui:facefix.menu}}“ in [Bilder verbessern und wiederverwenden](04-improve.md), führen Sie bei Bedarf auf dieselbe Weise durch die Installation.
+Funktionen, die Erweiterungen nutzen, wie „{{ui:cutout.menu}}“ und „{{ui:facefix.menu}}“ in [Bilder korrigieren und wiederverwenden](04-improve.md), führen Sie bei Bedarf auf dieselbe Weise durch die Installation.

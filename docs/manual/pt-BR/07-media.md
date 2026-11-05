@@ -6,7 +6,7 @@ Tudo isso é usado no painel esquerdo da aba **{{ui:app.tabs.generate}}**. Para 
 
 ## Alternar o que será criado
 
-No alto do painel esquerdo há um seletor só com ícones. Da esquerda para a direita, são **{{ui:media.tab.image}}**, **{{ui:media.tab.video}}**, **{{ui:media.tab.music}}**, **{{ui:media.tab.voice}}**, **{{ui:media.tab.logo}}**, **{{ui:media.tab.text}}** e **{{ui:app.tabs.comic}}**. **{{ui:app.tabs.comic}}** é a tela para criar páginas de quadrinho ([Desenhar quadrinhos](12-comic.md)).
+No alto do painel esquerdo há um seletor só com ícones. Da esquerda para a direita, são **{{ui:media.tab.image}}**, **{{ui:media.tab.video}}**, **{{ui:media.tab.music}}**, **{{ui:media.tab.voice}}**, **{{ui:media.tab.logo}}**, **{{ui:media.tab.text}}** e **{{ui:app.tabs.comic}}**. As páginas de quadrinho são criadas com o ícone mais à direita ([Desenhar quadrinhos](12-comic.md)).
 
 Ao passar o mouse sobre um ícone, o nome aparece. Ao alternar, o painel esquerdo e a exibição central mudam para os desse tipo.
 
@@ -74,9 +74,17 @@ Também é possível clicar com o botão direito em uma imagem da galeria e esco
 | {{ui:video.fps}} | Número de quadros por segundo (8 a 30) |
 | {{ui:video.lengthLabel}} | De 1 a 10 segundos. O número de quadros é definido automaticamente a partir da duração e da taxa de quadros |
 | {{ui:video.steps}}, {{ui:video.cfg}} | Ajustes finos do resultado. Ao escolher o modelo, mudam para valores adequados a ele |
-| {{ui:video.randomSeed}} | Se desativado, é possível fixar a seed e recriar o mesmo movimento |
+| {{ui:params.seed.label}} | Na linha do canto superior esquerdo, com o dado ({{ui:params.seed.random}}) a seed é nova a cada vez; com o cadeado ({{ui:params.seed.fixed}}) é possível recriar o mesmo movimento com a mesma seed |
 
 Para usar **{{ui:video.model.fast}}**, é preciso baixar separadamente **{{ui:pack.title.turbo}}**. Esse modelo tem licença não comercial.
+
+A lista de **{{ui:video.model}}** também mostra os modelos de vídeo já instalados. Há suporte para os modelos Wan 2.1 e Wan 2.2 (incluindo VACE), HunyuanVideo e HunyuanVideo 1.5, LTX-Video e LTX-2. Ao escolher um deles, o número de passos, o CFG, a taxa de quadros e o tamanho mudam para valores adequados a ele, e não é preciso baixar o modelo de vídeo. O codificador de texto e o VAE são procurados pelo nome entre os modelos instalados. Se faltar algum, a geração falha e os arquivos necessários são exibidos (é possível instalá-los de uma vez em **{{ui:models.install.tab.starter}}**, na tela de modelos).
+
+- Os modelos Wan de texto para vídeo não animam uma imagem. Para animar uma imagem, escolha um modelo Wan de imagem para vídeo.
+- O Wan 2.2 de 14B forma um par de 2 arquivos: ruído alto e ruído baixo. Ao escolher o arquivo de ruído alto, o arquivo de ruído baixo do par é usado junto.
+- HunyuanVideo (1.0 e 1.5) e LTX-Video criam tanto a partir de texto quanto de imagem (o HunyuanVideo 1.0 precisa de um modelo de imagem para vídeo e do arquivo de visão `llava_llama3_vision`). O LTX-2 também cria som, que vai incluído no vídeo.
+- Os modelos Wan VACE podem usar uma imagem como referência do vídeo. O modelo Wan 2.1 de imagem para vídeo também precisa do arquivo CLIP vision (`clip_vision_h`), que pode ser instalado pelos modelos iniciais.
+- Os modelos Wan que exigem vídeo de controle, áudio, movimento de câmera ou vídeo de pose (Fun Control, S2V, Animate etc.) não funcionam aqui. A geração falha e o que falta é exibido.
 
 ### Quando a memória da GPU é pequena
 
@@ -160,7 +168,7 @@ Os idiomas que podem ser lidos são japonês, inglês, chinês, coreano, alemão
 
 ### Resultado
 
-O áudio criado aparece na lista central, com um player. Também são exibidos a voz usada (para uma voz criada por descrição, “{{ui:audio.voice.designed}}”) e o idioma. Ele também entra na galeria.
+O áudio criado aparece na lista central, com um player. Também são exibidos a voz usada (quando for {{ui:audio.voice.designed}}, “{{ui:audio.voice.designed}}”) e o idioma. Ele também entra na galeria.
 
 A primeira geração demora um pouco para carregar o modelo. Se ficar um tempo sem uso, o modelo sai da GPU e a memória volta para outras tarefas.
 

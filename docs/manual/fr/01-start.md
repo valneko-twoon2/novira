@@ -11,9 +11,9 @@ En gros, vous pouvez faire ceci :
 - Créer des images à partir de texte (c'est le sujet principal de ce guide)
 - Retravailler une image existante, repeindre seulement une partie de celle-ci ou l'agrandir
 - Créer des vidéos, de la musique, de la voix, des logos et des images contenant du texte
-- Demander de l'aide à l'assistant IA pour les réglages et les prompts
+- Demander de l'aide à l'agent pour les réglages et les prompts
 
-> Le dessin se fait sur votre propre ordinateur. Les fonctions qui utilisent Internet, comme la recherche et le téléchargement de modèles ou l'assistant IA, ne se connectent que lorsque vous choisissez de les utiliser.
+> Le dessin se fait sur votre propre ordinateur. Les fonctions qui utilisent Internet, comme la recherche et le téléchargement de modèles ou l'agent, ne se connectent que lorsque vous choisissez de les utiliser.
 
 ## Comment les images sont créées
 
@@ -23,21 +23,21 @@ novira se compose de quatre éléments.
 |---|---|
 | novira (cette application) | Les écrans, la galerie, la file d'attente et la gestion des modèles |
 | Moteur de génération d'images (ComfyUI) | La partie qui dessine réellement. novira l'installe et le démarre lui-même |
-| Modèles | Les données d'entraînement utilisées pour dessiner. Chacun est un fichier de plusieurs Go, que l'on obtient séparément du moteur |
+| Modèles | Les données d'entraînement utilisées pour dessiner. Chacun est un fichier de plusieurs Go, que l'on prépare séparément du moteur |
 | Dossier de données | L'endroit où sont conservés vos images, vos modèles, le moteur lui-même, etc. |
 
 Vous n'avez pas besoin d'installer le moteur vous-même. novira l'installe automatiquement au premier démarrage.
 Le moteur et ses composants (comme Python) sont placés uniquement dans le dossier de données de novira. Rien n'est modifié ailleurs sur votre ordinateur, et le Python que vous possédez déjà n'est pas touché.
 
-Le dossier de données s'appelle `novira-data` et se trouve dans le dossier de l'application. Utilisez ce dossier pour déplacer ou sauvegarder vos images et vos modèles.
+Au premier démarrage, un écran vous demande où placer le dossier de données et où installer le moteur (ComfyUI). Si les emplacements par défaut vous conviennent, appuyez sur « {{ui:firstrun.start}} ». Pour les changer, choisissez un dossier avec chacun des boutons « {{ui:firstrun.choose}} ». Vous pourrez modifier les deux plus tard dans « Moteur », dans les paramètres. Utilisez le dossier de données pour déplacer ou sauvegarder vos images et vos modèles.
 
 > La génération d'images utilise le GPU (la carte graphique). Par défaut, novira installe le moteur pour les GPU NVIDIA.
 
-Un modèle détermine « dans quel style graphique dessiner ». Il en faut un pour commencer. La façon d'en ajouter un est expliquée dans [Préparer les modèles](08-models.md).
+Un modèle détermine « dans quel style graphique dessiner ». Il en faut un pour commencer. La façon de l'installer est expliquée dans [Préparer les modèles](08-models.md).
 
 ## Au premier démarrage
 
-À l'ouverture de l'application, l'écran d'accueil apparaît d'abord (le logo et des bulles d'images qui flottent lentement).
+À l'ouverture de l'application, l'écran d'accueil (le logo) apparaît d'abord.
 En dessous, une carte indique ce que fait l'application en ce moment.
 
 Au premier démarrage, l'installation du moteur de génération d'images commence. La carte affiche trois étapes dans l'ordre.
@@ -50,8 +50,10 @@ Au premier démarrage, l'installation du moteur de génération d'images commenc
 
 L'installation n'a lieu qu'une seule fois. À partir du deuxième démarrage, l'écran d'accueil disparaît en quelques secondes et le moteur démarre aussitôt.
 
+Tant que le bouton **{{ui:splash.open}}** est affiché sous l'écran d'accueil, vous pouvez ouvrir l'application même au milieu du téléchargement. Le téléchargement continue en arrière-plan, et vous pouvez suivre sa progression dans la bannière qui apparaît en haut. En revanche, vous ne pouvez pas créer d'images tant que le moteur n'est pas prêt.
+
 Lorsque le moteur est prêt, l'écran d'accueil disparaît et l'écran principal s'ouvre.
-Pendant le chargement des données, vous verrez « {{ui:splash.wait.heading.loading}} », et pendant le chargement du moteur et des informations nécessaires à l'édition, vous verrez « {{ui:splash.wait.heading.preparing}} ».
+Pendant le chargement des données, vous verrez « {{ui:splash.wait.heading.loading}} », et pendant l'attente du chargement du moteur et des informations nécessaires à l'édition, vous verrez « {{ui:splash.wait.heading.preparing}} ».
 
 ### Messages en haut de l'écran
 
@@ -73,24 +75,23 @@ De gauche à droite, l'écran est organisé comme suit.
 - Le panneau de gauche : le **panneau des paramètres**. Il contient les réglages pour créer une image, comme le prompt et le modèle.
 - Le centre : la **vue principale**. C'est la zone de travail qui change selon l'onglet, comme l'écran de démarrage, la visionneuse d'images et la toile.
 - Le panneau de droite : la **galerie**. Elle affiche les planches (un peu comme des dossiers) et les miniatures des images que vous avez créées.
+- L'extrémité droite de la fine bande tout en bas : la **cloche** ({{ui:app.notifications.title}}). Elle rassemble les notifications reçues jusqu'ici. S'il en reste de non lues, leur nombre s'affiche.
 
 ### Navigation latérale (onglets)
 
 | Onglet | À quoi il sert | Touche numérique |
 |---|---|---|
-| **{{ui:app.tabs.generate}}** | Créer des images. Les icônes du haut permettent aussi de passer à la vidéo, à la musique, à la voix, aux logos, au texte et à la BD | `1` |
+| **{{ui:app.tabs.generate}}** | Créer des images. Les icônes du haut permettent aussi de passer à la vidéo, à la musique, à la voix, aux logos et au texte. L'icône **{{ui:app.tabs.comic}}**, à l'extrémité droite de cette rangée d'icônes, ouvre l'écran de création de pages de BD (la touche `1` ouvre celui que vous avez utilisé en dernier) | `1` |
 | **{{ui:app.tabs.canvas}}** | Placer des images, dessiner dessus ou repeindre seulement une partie | `2` |
-| **{{ui:app.tabs.comic}}** | Créer des pages de BD : mise en page des cases, une image par case, bulles et récitatifs. S'ouvre aussi avec l'icône la plus à droite en haut de l'onglet {{ui:app.tabs.generate}} | `3` |
-| **{{ui:app.tabs.upscaling}}** | Agrandir une image tout en ajoutant des détails fins | `4` |
-| **{{ui:app.tabs.workflows}}** | Relier des éléments (nœuds) pour construire votre propre procédure de génération | `5` |
-| **{{ui:app.tabs.models}}** | Lister, installer et supprimer les modèles que vous possédez | `6` |
-| **{{ui:app.tabs.browse}}** | Rechercher des modèles sur Internet et les importer | `7` |
-| **{{ui:app.tabs.queue}}** | Voir et arrêter la file d'attente de génération. Un badge indique combien d'éléments attendent | `8` |
-| **{{ui:app.nav.extensions}}** | Rechercher des extensions ComfyUI, puis les installer ou les retirer | `0` |
+| **{{ui:app.tabs.upscaling}}** | Agrandir une image tout en ajoutant des détails fins | `3` |
+| **{{ui:app.tabs.workflows}}** | Relier des éléments (nœuds) pour construire votre propre procédure de génération | `4` |
+| **{{ui:app.tabs.models}}** | Lister, installer et supprimer les modèles que vous possédez | `5` |
+| **{{ui:app.tabs.browse}}** | Rechercher des modèles sur Internet et les importer | `6` |
+| **{{ui:app.tabs.queue}}** | Voir et arrêter la file d'attente de génération. Un badge indique combien d'éléments attendent | `7` |
+| **{{ui:app.nav.extensions}}** | Rechercher des extensions ComfyUI, puis les installer ou les retirer | `8` |
 
 Vers le bas de la navigation latérale, on trouve aussi ce qui suit.
 
-- **{{ui:app.tabs.short.agent}}** : Ouvre la fenêtre de l'assistant IA par-dessus l'écran actuel.
 - **{{ui:app.nav.settings}}** : Son menu permet d'ouvrir {{ui:app.nav.settings}}, {{ui:app.nav.hotkeys}} et {{ui:app.nav.about}}.
 - Le logo « n » tout en haut : Ouvre {{ui:app.nav.about}}.
 
@@ -103,7 +104,7 @@ L'utilisation de chacun est expliquée dans les chapitres suivants.
 - {{ui:app.tabs.upscaling}}, {{ui:app.tabs.workflows}} : [Mise à l'échelle et workflows](06-upscaling-workflows.md)
 - Vidéo, musique, voix, etc. : [Vidéo, musique, voix, logo et texte](07-media.md)
 - {{ui:app.tabs.models}}, {{ui:app.tabs.browse}} : [Préparer les modèles](08-models.md)
-- {{ui:app.tabs.short.agent}}, {{ui:app.nav.settings}} : [L'assistant IA et les paramètres](09-assistant-settings.md)
+- {{ui:agent.title}}, {{ui:app.nav.settings}} : [L'agent et les paramètres](09-assistant-settings.md)
 
 ### Les onglets du centre (Démarrer, Visionneuse, Brouillons)
 
@@ -119,7 +120,7 @@ Les autres onglets ont eux aussi leurs propres petits onglets (par exemple, l'on
 
 Pour voir une image plus grande, vous pouvez masquer les panneaux de gauche et de droite.
 
-- Les petits boutons en forme de flèche au bord supérieur du centre ouvrent et ferment les panneaux de gauche et de droite.
+- Les petits boutons en forme de flèche au bord supérieur du centre ouvrent et ferment le panneau de gauche et celui de droite (la galerie et l'agent).
 - Au clavier, `T` bascule le panneau de gauche, `G` celui de droite et `F` les deux à la fois.
 - Faites glisser la limite entre les panneaux pour modifier leur largeur. Les largeurs sont mémorisées tant que l'application est ouverte ; au redémarrage, les panneaux reprennent leur largeur d'origine.
 

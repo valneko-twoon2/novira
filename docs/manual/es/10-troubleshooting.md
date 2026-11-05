@@ -5,7 +5,7 @@ Este capítulo reúne las causas de que algo vaya mal y qué probar. Conviene bu
 Primero, fijarse en los dos puntos siguientes suele dar una pista sobre la causa.
 
 - La pestaña **{{ui:app.tabs.queue}}**: un elemento fallido muestra su motivo (véase [más abajo](#fallos-de-generación)).
-- {{ui:app.devlog.title}}: un registro de los aspectos internos de la aplicación (véase [Asistente de IA y ajustes](09-assistant-settings.md)).
+- {{ui:app.devlog.title}}: un registro de los aspectos internos de la aplicación (véase [El agente, los ajustes y los atajos](09-assistant-settings.md)).
 
 ## Inicio y motor
 
@@ -113,7 +113,7 @@ Cuando un trabajo falla por falta de memoria, la aplicación lo reconoce y muest
 Los botones del aviso permiten probar una de estas opciones:
 
 - **{{ui:queue.oom.retrySmaller}}**: lo crea de nuevo con los mismos ajustes y la misma semilla, con aproximadamente el 75 % del área y la misma relación de aspecto. Aparece solo para imágenes creadas con un tamaño elegido (no para vídeo, música, voz, logotipos ni ampliación).
-- **{{ui:queue.oom.lowMemory}}**: activa **{{ui:settings.lowMemory.label}}** (véase [Asistente de IA y ajustes](09-assistant-settings.md)) y reinicia el motor. Si hay un elemento en proceso de creación, se aplica la próxima vez que se inicie el motor. No aparece cuando el modo ya está activado.
+- **{{ui:queue.oom.lowMemory}}**: activa **{{ui:settings.lowMemory.label}}** (véase [El agente, los ajustes y los atajos](09-assistant-settings.md)) y reinicia el motor. Si hay un elemento en proceso de creación, se aplica la próxima vez que se inicie el motor. No aparece cuando el modo ya está activado.
 
 Después de que un trabajo falle por falta de memoria, la aplicación pide al motor que descargue sus modelos y libere la memoria. Por eso el siguiente trabajo empieza volviendo a cargar su modelo y tarda un poco más.
 
@@ -164,7 +164,7 @@ Si aun así no se encuentra, se comprueba el **{{ui:queue.col.destination}}** de
 
 Las imágenes, los modelos y los registros van a una carpeta llamada **`novira-data`**. La ubicación es la siguiente.
 
-- Versión distribuida: la carpeta elegida al instalar. De forma predeterminada, `novira-data` dentro de la misma carpeta que el ejecutable de la aplicación (`novira.exe`).
+- Versión distribuida: `novira-data` dentro de su carpeta de usuario (`C:\Users\<su nombre>`). Si ya hay un `novira-data` en la misma carpeta que el ejecutable de la aplicación (`novira.exe`), como ocurría antes, se sigue usando ese.
 - Versión en desarrollo: `novira-data` dentro de la carpeta superior del repositorio.
 
 Se puede cambiar a otra ubicación con la variable de entorno `NOVIRA_DATA_DIR`.
@@ -189,7 +189,7 @@ Los ajustes de pantalla de la aplicación (idioma, tema, preajustes, el historia
 
 ### Copias de seguridad
 
-novira tiene una función para crear una copia de seguridad y otra para restaurar desde ella. Para proteger las imágenes importantes, hay que usar la sección **{{ui:share.backup.section}}** de los ajustes (véase [Asistente de IA y ajustes](09-assistant-settings.md#copia-de-seguridad)). Una copia de seguridad contiene las imágenes creadas y lo que se ha configurado o registrado en la aplicación, pero no los modelos ni el motor de generación de imágenes. Si también se quieren conservar, hay que copiar la carpeta manualmente.
+novira tiene una función para crear una copia de seguridad y otra para restaurar desde ella. Para proteger las imágenes importantes, hay que usar la sección **{{ui:share.backup.section}}** de los ajustes (véase [El agente, los ajustes y los atajos](09-assistant-settings.md#copia-de-seguridad)). Una copia de seguridad contiene las imágenes creadas y lo que se ha configurado o registrado en la aplicación, pero no los modelos ni el motor de generación de imágenes. Si también se quieren conservar, hay que copiar la carpeta manualmente.
 
 1. Cerrar la aplicación (comprobando también que no se esté creando nada).
 2. Copiar la carpeta `novira-data` entera a otra unidad o similar.
@@ -206,7 +206,7 @@ Los registros se pueden ver en tres lugares.
 
 | Lugar | Qué contiene |
 |---|---|
-| {{ui:app.devlog.title}} (dentro de la aplicación) | Los registros internos de la aplicación, y los avisos y errores en pantalla. Su visualización se activa en los ajustes ([Asistente de IA y ajustes](09-assistant-settings.md)) |
+| {{ui:app.devlog.title}} (dentro de la aplicación) | Los registros internos de la aplicación, y los avisos y errores en pantalla. Su visualización se activa en los ajustes ([El agente, los ajustes y los atajos](09-assistant-settings.md)) |
 | `novira-data\logs\novira.log` | El registro propio de la aplicación. Cuando crece (más de 2 MB), pasa a `novira.log.1` |
 | `novira-data\logs\comfyui.log` | El registro del motor de generación de imágenes. El motivo aparece aquí cuando no puede iniciarse o cuando falla la generación |
 

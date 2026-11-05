@@ -11,23 +11,35 @@
 | 用相同的设置再生成几张，或稍作改动后重新生成 | **{{ui:gallery.derive.menu}}** | 生成原图所用的模型已经安装 |
 | 去掉背景，只留下人物或物体 | **{{ui:cutout.menu}}** | 扩展 ComfyUI-RMBG |
 | 去掉透明的空白边 | **{{ui:gallery.menu.trim}}**（仅右键菜单） | 无 |
-| 选取图像的一部分，进行抠图、擦除、重绘 | **{{ui:gallery.menu.segment}}** | 扩展 ComfyUI-segment-anything-2 等 |
+| 涂抹图像的一部分，进行擦除、抠图、重绘 | **{{ui:gallery.menu.segment}}** | 擦除时需要扩展 comfyui-inpaint-nodes |
 | 修复画得很小而崩坏的人脸 | **{{ui:facefix.menu}}** | 扩展 ComfyUI-Impact-Pack 和 ComfyUI-Impact-Subpack |
+| 把图像做成黑白漫画稿 | **{{ui:gallery.manga.menu}}**（仅查看器的工具栏） | 扩展 ComfyUI-MangaScreen |
 | 从图像写出提示词 | **{{ui:caption.menu}}** | 扩展 ComfyUI-Florence2 |
 | 注册角色，在其他图像中也使用 | **{{ui:character.menu}}** | 参考图像用的扩展（IP-Adapter） |
 | 把改了设置的图像并排放进一张表中 | **{{ui:xyplot.menu}}** | 无 |
 | 从画到一半的候选图中挑选 | **{{ui:app.views.drafts}}** 标签页 | 无 |
 | 对许多张图像进行相同的处理 | **{{ui:gallery.menu.batch}}**（选中多张后右键点击） | 因处理而异 |
 
+## 修饰工具的使用方法
+
+{{ui:facefix.menu}}、{{ui:cutout.menu}}、{{ui:caption.menu}}、{{ui:canvas.poseFromImage.menu}} 这 4 项，在图库中图像的右键菜单里，汇集在 **{{ui:gallery.tools.heading}}** 之下。它们都在查看器上方打开的横条中使用。图像仍显示在查看器中，所以可以一边放大、移动一边确认。
+
+- 选择项目后，会立刻以上次的设置执行。查看器中显示该图像，横条中显示进度。
+- 点击项目右侧的齿轮按钮，不执行而在横条中打开设置。修改设置后点击 **{{ui:gallery.tools.run}}**。修改过的设置，下次执行时也会使用。
+- 点击查看器工具栏的 **{{ui:cutout.menu}}**、**{{ui:facefix.menu}}**、**{{ui:caption.menu}}** 按钮，也可以打开横条中的设置。再点击一次就会关闭。
+- 用横条左侧的按钮，可以切换到其他工具。
+- 结束后，横条中会显示结果和使用的设置。点击 **{{ui:gallery.tools.edit}}** 就回到设置，可以修改后再次执行。
+- 处理在队列中进行。即使关闭横条，或切换到别的图像、别的界面，也不会停止。只有横条里的 **{{ui:common.cancel}}** 才能让它停止。生成图像的处理，即使关闭横条，结果也会保存到图库。
+
 ## 需要扩展时
 
-去除背景、选取范围的功能、修复人脸的功能等，需要在生成图像的引擎（ComfyUI）中添加“扩展”才能运行。没有安装扩展时，对话框中会显示“……需要扩展 ○○。”，并排列出安装按钮。
+去除背景、修复人脸等功能，需要在生成图像的引擎（ComfyUI）中添加“扩展”才能运行。没有安装扩展时，横条中会显示“……需要扩展 ○○。”，并排列出安装按钮。
 
-1. 点击 **{{ui:cutout.install}}**。会自动下载并安装所需内容。
-2. 安装完成后，按钮会变为 **{{ui:cutout.restart}}**。点击后 ComfyUI 会重新启动。
-3. 重启完成后，同一个对话框就可以直接使用了。
+1. 点击 **{{ui:gallery.tools.install}}**。会自动下载并安装所需内容。安装在后台进行，下载的显示中会出现进度。即使关闭横条也不会停止。
+2. 安装完成后，横条中的按钮会变为 **{{ui:gallery.tools.restart}}**。点击后 ComfyUI 会重新启动。
+3. 重启完成后，这个工具就可以直接使用了。
 
-首次使用时，还会开始下载扩展所用的模型，因此会花费一些时间。需要连接互联网。
+首次使用时，还会开始下载扩展所用的模型，因此会花费一些时间。需要连接互联网。这个下载在所执行的处理中进行，所以即使关闭横条也不会停止。
 
 > 扩展中有些在安装时需要较多时间和空间。ComfyUI-Impact-Pack 的安装需要 Git。在没有安装 Git 的电脑上，安装会失败。出现提示信息时，请阅读后再处理。
 
@@ -76,19 +88,19 @@
 
 ## 去除背景
 
-![去除背景的对话框](shot:cutout)
+![在查看器的横条中去除背景，并与原图对比](shot:cutout)
 
 自动识别画面中的主体，生成去除了背景的图像。不需要用点击来指定。
 
-1. 在查看器中打开图像，点击剪刀图标的 **{{ui:cutout.menu}}**（右键菜单中也有）。
-2. 如有需要，修改设置。
+1. 右键点击图库中的图像，在 **{{ui:gallery.tools.heading}}** 中选择 **{{ui:cutout.menu}}**，会立刻以上次的设置执行。想先修改设置时，点击项目右侧的齿轮，或查看器工具栏的剪刀按钮，打开横条。
+2. 如有需要，在横条中修改设置。
    - **{{ui:cutout.model}}**：通常保持原样即可。
    - **{{ui:cutout.sensitivity}}**：调得越低，边界模糊的部分也会保留得越多。
    - **{{ui:cutout.edge}}**：正值使轮廓扩大，负值使轮廓缩小。
    - **{{ui:cutout.background}}**：选择 **{{ui:cutout.background.alpha}}** 或 **{{ui:cutout.background.white}}**。
-3. 点击 **{{ui:cutout.run}}**。
+3. 点击 **{{ui:gallery.tools.run}}**。
 
-生成好的图像，会作为新图像保存到与原图相同的画板中。**原图会保留。** 对结果不满意时，修改设置后点击 **{{ui:cutout.again}}**。用 **{{ui:cutout.open}}** 可以在查看器中显示。
+生成好的图像，会作为新图像保存到与原图相同的画板中。**原图会保留。** 查看器会变为将生成的图像与原图对比的显示。对结果不满意时，点击 **{{ui:gallery.tools.edit}}** 修改设置，再次执行。
 
 白色背景适合之后用作 [角色](#注册并使用角色) 的参考图像。背景的颜色不容易渗入新生成的图像中。
 
@@ -96,69 +108,82 @@
 
 去除了背景的图像，在图像外侧会留有透明的空白边。使用 **{{ui:gallery.menu.trim}}**，就会把图像裁切到刚好贴合有内容的部分，并保存为新的透明图像。用作贴纸或素材时很方便。
 
-- 在图库中右键点击图像来选择。刚去除背景后，也可以通过对话框中的 **{{ui:cutout.trim}}**（仅在把背景设为透明时才会出现）做同样的事。
+- 在图库中右键点击图像来选择。刚去除背景后，也可以通过横条中的 **{{ui:cutout.trim}}**（仅在把背景设为透明时才会出现）做同样的事。
 - 淡到几乎看不见的阴影，会作为空白边被裁掉。
 - 对于透明部分没有延伸到图像边缘的图像，会提示“没有可裁掉的边距”，不会保存任何内容。整个都是透明的图像也无法裁切。
 
 ## 选取范围后修饰
 
-![用点击来指定选取图像哪里的对话框](shot:segment)
+用画笔涂抹想修改的部分来选取。图像会在 [画布](05-canvas.md) 中打开，因此可以一边放大、移动一边细致地涂抹。
 
-用点击来选取图像中“就是这个”的东西。可以对选中的部分进行抠图、擦除、重绘。
+1. 在查看器中打开图像，点击 **{{ui:gallery.menu.segment}}**（也可以从图库的右键菜单中选择）。
+2. 画布会在选中该图像和空的 **{{ui:canvas.add.inpaint}}** 的状态下打开。工具是 **{{ui:canvas.tool.brush}}**。
+3. 涂抹想修改的部分。涂多了的地方，用 **{{ui:canvas.tool.eraser}}** 擦掉。想选取剩下的部分时，右键点击遮罩，选择 **{{ui:canvas.entityMenu.invertMask}}**。
+4. 选择对涂抹的部分做什么。选中遮罩一行后，其下方会出现输入栏和按钮（擦除和抠图，在遮罩的右键菜单中也有）。
 
-1. 在查看器中打开图像，点击 **{{ui:gallery.menu.segment}}**。
-2. 仅首次需要扩展 ComfyUI-segment-anything-2。请按照画面中的指引安装（[需要扩展时](#需要扩展时)）。
-3. 点击想选取的东西。不足的地方，点击其他位置来补充。选多了的地方，把按钮切换为 **{{ui:segment.mode.exclude}}** 后点击，或右键点击（或按住 `Shift` 点击）来排除。再次点击已指定的点，可以取消那个指定。用 **{{ui:segment.clear}}** 可以从头重来。
-4. 点击 **{{ui:segment.run}}**。选中的范围会以蓝色显示。
-5. 蓝色范围没问题的话，选择下一步操作。相反，想选“剩下的部分”时，打开 **{{ui:segment.invert}}**。
-
-| 按钮 | 能做什么 | 需要的内容 |
+| 想做的事 | 操作 | 需要的内容 |
 |---|---|---|
-| **{{ui:segment.cutout}}** | 只抠出选中的部分，保存为透明的图像。 | 无 |
-| **{{ui:segment.mosaic}}** | 把选中的部分做成粗方块（马赛克）并保存。方块大小用旁边的数字调整。 | 无 |
-| **{{ui:segment.erase}}** | 把选中的部分与周围的画面融合并擦除。 | 扩展 comfyui-inpaint-nodes。有模型 LaMa（约 200MB）时能擦除得更自然。没有也可以做简易擦除。 |
-| **{{ui:segment.redraw.title}}** | 只用文字指示来重新绘制选中的部分。其他部分不会改变。 | 图像用的模型 |
-| **{{ui:segment.toCanvas}}** | 把图像和选取范围发送到 [画布](05-canvas.md)。选取范围会成为局部重绘遮罩。 | 无 |
+| 与周围的画面融合并擦除 | **{{ui:canvas.partFix.erase}}**。结果会暂放在画布上，请选择 **{{ui:canvas.staging.accept}}** 或放弃。 | 扩展 comfyui-inpaint-nodes。有模型 LaMa（约 200MB）时能擦除得更自然。没有也可以做简易擦除。 |
+| 只把涂抹的部分保存为透明的图像 | **{{ui:canvas.partFix.cutOutAction}}** | 无 |
+| 用文字指示重新绘制 | 在输入栏中写下要重画的内容，例如“蓝色蝴蝶结”，然后点击 **{{ui:canvas.partFix.redraw}}**。用生成标签页的模型和设置，只重画涂抹的部分。输入栏为空时，使用生成标签页的提示词。生成标签页的提示词不会被改写。结果会暂放，请选择 **{{ui:canvas.staging.accept}}** 或放弃。 | 图像用的模型 |
+| 打马赛克 | 不使用遮罩，直接用 **{{ui:canvas.tool.mosaic}}** 工具涂抹。 | 无 |
 
-重绘时，用文字写下 **要画什么**（例如：blue hair, red scarf）。按照模型擅长的写法（动漫风格的模型用英文标签等）来写，更容易得到想要的效果。把 **{{ui:segment.redraw.strength}}** 调得越低，越保留原来的形状和颜色。
-
-结果会作为新图像保存到与原图相同的画板中。原图不会改变。
+原图不会改变。抠出的图像会作为新图像保存到图库。
 
 ## 修复人脸
 
-![修复人脸的对话框](shot:facefix)
+![在查看器的横条中打开修复人脸的设置](shot:facefix)
 
 在远景的图像中，画得很小的人脸经常会崩坏。**{{ui:facefix.menu}}** 会自动找到图像中的人脸，只用高分辨率重新绘制人脸，再放回原图。人脸以外的部分不会改变。
 
-1. 在查看器中打开图像，点击 **{{ui:facefix.menu}}**（右键菜单中也有）。
-2. 仅首次需要扩展 ComfyUI-Impact-Pack 和 ComfyUI-Impact-Subpack。用 **{{ui:facefix.install}}** 安装，再点击 **{{ui:facefix.restart}}**。用于找到人脸的模型，由 Subpack 自行准备。
+1. 右键点击图库中的图像，在 **{{ui:gallery.tools.heading}}** 中选择 **{{ui:facefix.menu}}**，会立刻执行。想先确认设置再执行时，点击项目右侧的齿轮，或查看器工具栏的 **{{ui:facefix.menu}}** 按钮，打开横条。
+2. 仅首次需要扩展 ComfyUI-Impact-Pack 和 ComfyUI-Impact-Subpack。用横条中的 **{{ui:gallery.tools.install}}** 安装，再点击 **{{ui:gallery.tools.restart}}**。用于找到人脸的模型，由 Subpack 自行准备。
 3. 确认设置。
    - **{{ui:facefix.model}}**：已选中生成原图所用的模型。
+   - **{{ui:facefix.detector}}**：用于找到人脸的模型。通常保持原样即可。
    - **{{ui:facefix.prompt}}**：已填入原图的提示词。添加人脸的特征会有效果。
    - **{{ui:facefix.strength}}**：越低越接近原来的人脸，越高则重绘得越多。
    - **{{ui:facefix.sensitivity}}**：调高则只识别确定的人脸，调低则连小脸和侧脸也会识别。不过，也更容易把不是人脸的东西识别进来。
-4. 点击 **{{ui:facefix.run}}**。
+4. 点击 **{{ui:gallery.tools.run}}**。
 
-结果会保存到与原图相同的画板中。点击 **{{ui:facefix.open}}**，可以在查看器中与原图对比。不满意时，修改设置后点击 **{{ui:facefix.again}}**。
+结果会保存到与原图相同的画板中，查看器会变为与原图对比的显示。不满意时，点击 **{{ui:gallery.tools.edit}}** 修改设置，再次执行。模型和重绘的内容，只在用于同一张图像期间会被记住。
 
 > 使用了 LoRA 生成的图像，会在不带 LoRA 的情况下重新绘制。因此，可能只有人脸的画风看起来略有不同。
 
 > 出现“找不到人脸检测模型（YOLO）”时，请重启 ComfyUI，或重新安装扩展。
 
+## 把图像做成漫画稿
+
+查看器工具栏的 **{{ui:gallery.manga.menu}}** 会把打开的图像变成保留清晰线条的黑白漫画稿。阴影会变成平涂面和真正的网点，黑色大块中的主要线条会被细细地留白。生成图像时始终得到的是普通的彩色图像，这一加工是之后对喜欢的图像进行的操作。
+
+1. 在查看器中打开图像，点击 **{{ui:gallery.manga.menu}}**。左侧会显示原图。
+2. 仅首次需要扩展 ComfyUI-MangaScreen。未安装时会出现指引，请点击 **{{ui:gallery.manga.installPack}}**，安装之后点击 **{{ui:gallery.manga.restartEngine}}**。在安装完成之前，下面的按钮无法点击。
+3. 如有需要，修改数值（会为下次记住）。
+   - **{{ui:gallery.manga.screenLines}}**：横向排列的网点行数。120 偏粗，200 为标准，300 偏细。
+   - **{{ui:gallery.manga.whitePoint}}**：比这更亮的地方会变成纸张的白色。调低后，皮肤和明亮头发的网点会消失。
+   - **{{ui:gallery.manga.blackPoint}}**：比这更暗的地方会变成黑色大块。调高后，黑色的面会增多。
+   - **{{ui:gallery.manga.gradation}}**：把平滑变深的阴影不分层级，而用网点的大小来表现。设为 0 时只有平涂面。
+   - **{{ui:gallery.manga.whiteLines}}**：把黑色大块中的线条留白的程度。0 为无效。
+   用 **{{ui:gallery.manga.reset}}** 可以恢复所有数值。
+4. 点击 **{{ui:gallery.manga.tryRun}}**，右侧会显示结果，可以与原图对比。仅试用不会保存任何内容。
+5. 满意的话，点击 **{{ui:gallery.manga.save}}**。加工好的图像会作为新图像保存到与原图相同的画板中，原图不会改变。用 **{{ui:gallery.manga.open}}** 可以打开那张图像。
+
+保存时会用当前看到的数值重新加工，所以耗时与试用相同。
+
 ## 从图像生成提示词
 
-![查看图像后写出标签的对话框](shot:caption)
+![在查看器的横条中查看图像并写出标签](shot:caption)
 
 查看图像，写出画出这张图的提示词（标签或句子）。想画出与喜欢的图相近的图，或不知道提示词该怎么写时使用。
 
-1. 选择查看器的 **{{ui:caption.menu}}** 按钮，或图像右键菜单中的 **{{ui:caption.menu}}**。也可以从生成标签页提示词栏上方的 **{{ui:caption.fromPrompt}}** 按钮打开。可以把图库中的图像或电脑里的图像文件拖到这个按钮上。
-2. 在 **{{ui:caption.style}}** 中选择 **{{ui:caption.style.tags}}** 或 **{{ui:caption.style.sentence}}**。
-3. 按下 **{{ui:caption.run}}**。
-4. 生成的文字可以当场修改。然后按下 **{{ui:caption.replace}}**、**{{ui:caption.append}}** 或 **{{ui:caption.copy}}**。
+1. 右键点击图库中的图像，在 **{{ui:gallery.tools.heading}}** 中选择 **{{ui:caption.menu}}**，会立刻写出。从生成标签页提示词栏上方的 **{{ui:caption.fromPrompt}}** 按钮也一样。这个按钮会使用图库中选中的图像，没有选中时则打开选择图像文件的界面。也可以把图库中的图像或电脑里的图像文件拖放到这个按钮上使用。
+2. 想改变写法时，点击横条中的 **{{ui:gallery.tools.edit}}**，在 **{{ui:caption.style}}** 中选择 **{{ui:caption.style.tags}}** 或 **{{ui:caption.style.sentence}}**。
+3. 点击 **{{ui:gallery.tools.run}}**。
+4. 生成的文字可以在横条中当场修改。然后点击 **{{ui:caption.replace}}**、**{{ui:caption.append}}** 或 **{{ui:caption.copy}}** 中的一个。
 
 替换或追加的对象是生成标签页的“{{ui:params.prompt.positive}}”。这个功能不会在图库中增加图像。
 
-> 这个功能需要扩展 ComfyUI-Florence2。未安装时可以从对话框安装（参见本章的“需要扩展时”）。第一次使用时，会开始下载用于描述的模型（Florence-2 PromptGen）。
+> 这个功能需要扩展 ComfyUI-Florence2。未安装时可以从横条安装（参见本章的“需要扩展时”）。第一次使用时，会开始下载用于描述的模型（Florence-2 PromptGen）。
 
 ## 注册并使用角色
 
@@ -200,6 +225,10 @@
 > 这是让图像“接近”同一个角色的功能，并不能得到完全相同的脸。发型、颜色、服装等比较容易保持，但脸部轮廓会略有变化。想保持的特征，写在外观描述词里会更有效。
 
 > 使用参考图像，需要扩展 ComfyUI_IPAdapter_plus 和参考图像用的模型。没有安装时，可以从生成标签页的参考图像栏中安装。模型请看 [模型](08-models.md) 一章。
+
+## 为角色选择 LoRA
+
+在角色的编辑对话框中，可以从 **{{ui:lora.section}}** 中选择 LoRA。选择后，可以开关 **{{ui:lora.use}}** 并修改 **{{ui:lora.weight}}**，使用角色时，LoRA 和触发词会被加入提示词。LoRA 的训练在另一个应用 novira-train 中进行。
 
 ## 用对比网格比较设置
 
@@ -243,12 +272,12 @@
 
 ![草稿标签页中排列着画到一半的候选图](shot:drafts)
 
-图像会因种子的不同而变化很大。草稿是这样一个功能：用许多种子只画“到一半”，再只把喜欢的构图像到最后。可以节省时间。
+图像会因种子的不同而变化很大。草稿是这样一个功能：用许多种子只画“到一半”，再只把喜欢的构图画到最后。可以节省时间。
 
 打开 **{{ui:app.tabs.generate}}** 标签页中央的 **{{ui:app.views.drafts}}** 标签页。
 
-1. 选择 **{{ui:drafts.model}}**。起初选中的是生成标签页的模型。
-2. 确定 **{{ui:drafts.count}}**（1～24 张。起初为 8 张）。
+1. 选择 **{{ui:drafts.model}}**。起初选中的是生成标签页的模型。生成标签页中可以选择的图像模型，除了 SDXL 和 SD1.X，Anima、Flux、FLUX.2、Z-Image 等只有主体的模型也可以选择。编辑用的模型（Flux Fill、Flux Kontext、Qwen-Image-Edit）是用来修改原图的，所以不在列表中，已选中时，其名称会显示在下方。
+2. 确定 **{{ui:drafts.count}}**（1～24 张。起初为 4 张，可以在设置的 **{{ui:settings.draftCount.label}}** 中更改）。数量和位置，即使切换到其他界面，在关闭应用之前也会保持在界面上设定的值。
 3. 确定 **{{ui:drafts.position}}**（25～60%。起初为 35%）。越小越快完成，但图像越粗糙。
 4. 点击 **{{ui:drafts.start}}**。
 
@@ -260,9 +289,15 @@
 
 > 虽说是“{{ui:manual.drafts.finish}}”，但并不是从中途恢复。而是用相同的种子，从头到尾重新绘制。因此，到完成所需的时间与普通生成相同。得到的是在草稿中看到的构图的图像。
 
-> 草稿只能用于用文字生成图像的生成。放入了参考图像等时，会出现提示信息而无法开始。草稿的图像不会排列在图库的列表中。
+> 草稿可以用于用文字生成图像的生成，以及在 **{{ui:params.i2i.title}}** 中放入图像的重新绘制。在{{ui:params.i2i.title}}中，会根据 **{{ui:params.image.strength}}** 在实际要画的步数中，画到按位置比例确定的地方。草稿的图像不会排列在图库的列表中。
 
-草稿会按“开始的顺序”排列在上方的标签页中。不需要时，用标签页的 ✕ 关闭。
+草稿会按“开始的顺序”排列在上方的标签页中。标签页中只会排列最新的 5 个。所有草稿都可以在用标签页左侧的“历史”按钮打开的 **{{ui:drafts.history.title}}** 界面中查看。
+
+- 在左侧的列中选择期间（{{ui:drafts.history.period.today}}、{{ui:drafts.history.period.yesterday}}、{{ui:drafts.history.period.week}}、{{ui:drafts.history.period.older}}）和模型，就只会排列对应的草稿。在上方的栏中，可以用提示词或模型名称中的词语来查找。
+- 草稿按日期分开，排列着当时画的图像、时刻、尺寸，以及草稿和完成的张数。
+- 用 **{{ui:drafts.history.open}}** 打开该草稿，用 **{{ui:drafts.history.reuse}}** 把该草稿的设置恢复到生成栏中。
+
+不需要时，用标签页或历史中的 ✕ 关闭。在历史界面的“{{ui:drafts.closeOlder}}”中，也可以把标签页中没有的旧草稿一并关闭。
 
 ## 批量处理
 

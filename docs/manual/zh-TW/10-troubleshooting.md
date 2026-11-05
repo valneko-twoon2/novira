@@ -64,7 +64,7 @@ novira 為了製作圖像等內容，會使用「圖像生成引擎」（ComfyUI
 | {{ui:params.readiness.upscaleNoImage}} | 選擇要放大的圖像 |
 | {{ui:params.readiness.upscaleNoModel}} | 選擇放大用的模型。沒有安裝時，可以從{{ui:app.tabs.models}}分頁的 **{{ui:models.install.tab.starter}}** 安裝 |
 | {{ui:video.problem.prompt}}、{{ui:music.problem.tags}}、{{ui:voice.problem.text}}、{{ui:logo.problem.text}} | 必填的欄位是空的。請輸入 |
-| {{ui:video.problem.image}} | 在「從圖像（i2i）」時，沒有選擇要讓它動起來的圖像 |
+| {{ui:video.problem.image}} | 在「從圖像」時，沒有選擇要讓它動起來的圖像 |
 | {{ui:voice.problem.description}} | 在「用文字製作聲音」時，聲音的說明是空的 |
 | {{ui:video.problem.pack}}、{{ui:music.problem.pack}}、{{ui:voice.problem.pack}}、{{ui:logo.problem.pack}} | 沒有安裝專用的模型。請見下一個項目 |
 
@@ -113,7 +113,7 @@ novira 為了製作圖像等內容，會使用「圖像生成引擎」（ComfyUI
 可以用提示中的按鈕嘗試以下其中一種做法：
 
 - **{{ui:queue.oom.retrySmaller}}**：維持相同的設定與種子，在保持長寬比的同時把面積縮小到約 75%，再製作一次。只對指定尺寸製作的圖像顯示（影片、音樂、語音、Logo 與放大不顯示）。
-- **{{ui:queue.oom.lowMemory}}**：開啟 **{{ui:settings.lowMemory.label}}**（請見 [助理與設定](09-assistant-settings.md)）並重新啟動引擎。有正在製作的項目時，會在下次啟動引擎時生效。已經開啟時不會顯示。
+- **{{ui:queue.oom.lowMemory}}**：開啟 **{{ui:settings.lowMemory.label}}**（請見[助理與設定](09-assistant-settings.md)）並重新啟動引擎。有正在製作的項目時，會在下次啟動引擎時生效。已經開啟時不會顯示。
 
 因記憶體不足而失敗後，應用程式會請引擎卸除已載入的模型並釋放記憶體。因此下一次製作要從重新載入模型開始，會多花一點時間。
 
@@ -164,7 +164,7 @@ novira 為了製作圖像等內容，會使用「圖像生成引擎」（ComfyUI
 
 圖像、模型、記載，全部都放在名為 **`novira-data`** 的資料夾中。位置如下。
 
-- 發行版：安裝時選擇的資料夾。預設值為與應用程式的執行檔（`novira.exe`）相同資料夾中的 `novira-data`。
+- 發行版：使用者資料夾（`C:\Users\<使用者名稱>`）中的 `novira-data`。如果像以前一樣，執行檔（`novira.exe`）所在的資料夾中已經有 `novira-data`，則會繼續使用那一個。
 - 開發中的版本：儲存庫最上層資料夾中的 `novira-data`。
 
 可以用環境變數 `NOVIRA_DATA_DIR`，改成其他位置。
@@ -181,7 +181,7 @@ novira 為了製作圖像等內容，會使用「圖像生成引擎」（ComfyUI
 | `logs` | 記錄（請見下方） |
 | `settings.json` | 給進階使用者的設定（沒有也沒關係） |
 | `secrets` | API 金鑰與權杖（已加密） |
-| `agent.json` | 在 AI 助理中選擇的 AI 種類 |
+| `agent.json` | 在助理中選擇的 AI 種類 |
 
 應用程式安裝的引擎（ComfyUI 與 Python），以及它的作業用資料，也都放在資料資料夾中。
 
@@ -189,7 +189,7 @@ novira 為了製作圖像等內容，會使用「圖像生成引擎」（ComfyUI
 
 ### 備份
 
-novira 有建立備份的功能，也有從備份還原的功能。要保護重要的圖像，請使用設定中的 **{{ui:share.backup.section}}**（請見 [助理與設定](09-assistant-settings.md#備份)）。備份中包含製作的圖像，以及在應用程式內設定、登錄的內容，但不包含模型與圖像生成引擎。若也想保留它們，請自己複製資料夾。
+novira 有建立備份的功能，也有從備份還原的功能。要保護重要的圖像，請使用設定畫面的 **{{ui:share.backup.section}}**（請見[助理與設定](09-assistant-settings.md#備份)）。備份中包含製作的圖像，以及在應用程式內設定、登錄的內容，但不包含模型與圖像生成引擎。若也想保留它們，請自己複製資料夾。
 
 1. 關閉應用程式（也要確認沒有製作中的項目）。
 2. 將 `novira-data` 資料夾整個複製到其他磁碟機等處。

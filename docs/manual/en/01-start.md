@@ -75,6 +75,7 @@ From left to right, the screen is laid out as follows.
 - The left panel: the **parameters panel**. It holds the settings for making a picture, such as the prompt and the model.
 - The center: the **main view**. It is the work area that changes with the tab, such as the start screen, the image viewer and the canvas.
 - The right panel: the **gallery**. It shows boards (something like folders) and thumbnails of the images you have made.
+- The right end of the thin strip at the very bottom: the **bell** ({{ui:app.notifications.title}}). It lists the notifications so far. When some have not been seen yet, it shows how many.
 
 ### Side navigation (tabs)
 

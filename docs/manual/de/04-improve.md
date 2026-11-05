@@ -1,8 +1,8 @@
-# Bilder verbessern und wiederverwenden
+# Bilder korrigieren und wiederverwenden
 
-Dieses Kapitel fasst die Funktionen zusammen, die Sie brauchen, wenn Sie denken: „Dieses fertige Bild möchte ich noch ein wenig verbessern“, „Ich möchte ein paar weitere in derselben Stimmung“ oder „Diesen Charakter möchte ich auch in einer anderen Szene verwenden“.
+Dieses Kapitel fasst die Funktionen zusammen, die Sie brauchen, wenn Sie denken: „Dieses fertige Bild möchte ich noch ein wenig korrigieren“, „Ich möchte ein paar weitere in derselben Stimmung“ oder „Diesen Charakter möchte ich auch in einer anderen Szene verwenden“.
 
-Die meisten Funktionen rufen Sie über eine Schaltfläche der Werkzeugleiste über dem Betrachter (der Ansicht, die ein Bild groß zeigt) oder über das Menü auf, das Sie mit einem Rechtsklick auf ein Bild in der Galerie erhalten. Setzen Sie die Maus auf eine Schaltfläche der Werkzeugleiste, um ihren Namen zu sehen. Die Grundlagen zu Betrachter und Galerie finden Sie unter [Galerie](03-gallery.md).
+Die meisten Funktionen rufen Sie über eine Schaltfläche der Werkzeugleiste über dem Betrachter (der Ansicht, die ein Bild groß zeigt) oder über das Menü auf, das Sie mit einem Rechtsklick auf ein Bild in der Galerie erhalten. Setzen Sie die Maus auf eine Schaltfläche der Werkzeugleiste, um ihren Namen zu sehen. Die Grundlagen zu Betrachter und Galerie finden Sie unter [Die Galerie und der Betrachter](03-gallery.md).
 
 ## Was wofür verwendet wird
 
@@ -11,23 +11,35 @@ Die meisten Funktionen rufen Sie über eine Schaltfläche der Werkzeugleiste üb
 | Mit denselben Einstellungen ein paar weitere erzeugen oder eines leicht verändert neu machen | **{{ui:gallery.derive.menu}}** | Das für das Originalbild verwendete Modell ist installiert |
 | Den Hintergrund entfernen und nur die Person oder das Objekt behalten | **{{ui:cutout.menu}}** | Die Erweiterung ComfyUI-RMBG |
 | Transparente Ränder abschneiden | **{{ui:gallery.menu.trim}}** (nur per Rechtsklick) | Nichts |
-| Einen Teil eines Bildes auswählen und ausschneiden, löschen oder neu zeichnen | **{{ui:gallery.menu.segment}}** | Eine Erweiterung wie ComfyUI-segment-anything-2 |
+| Einen Teil eines Bildes übermalen und dann löschen, ausschneiden oder neu zeichnen | **{{ui:gallery.menu.segment}}** | Zum Löschen die Erweiterung comfyui-inpaint-nodes |
 | Kleine, verzerrte Gesichter korrigieren | **{{ui:facefix.menu}}** | Die Erweiterungen ComfyUI-Impact-Pack und ComfyUI-Impact-Subpack |
+| Ein Bild in eine schwarz-weiße Manga-Seite verwandeln | **{{ui:gallery.manga.menu}}** (nur in der Werkzeugleiste des Betrachters) | Die Erweiterung ComfyUI-MangaScreen |
 | Aus einem Bild einen Prompt schreiben lassen | **{{ui:caption.menu}}** | Die Erweiterung ComfyUI-Florence2 |
 | Einen Charakter registrieren und in anderen Bildern verwenden | **{{ui:character.menu}}** | Die Erweiterung für Referenzbilder (IP-Adapter) |
 | Bilder mit geänderten Einstellungen in einer Tabelle nebeneinanderstellen | **{{ui:xyplot.menu}}** | Nichts |
 | Aus halb gezeichneten Kandidaten auswählen | Der Tab **{{ui:app.views.drafts}}** | Nichts |
 | Dieselbe Verarbeitung auf viele Bilder anwenden | **{{ui:gallery.menu.batch}}** (mehrere wählen und rechtsklicken) | Hängt von der Verarbeitung ab |
 
+## Die Korrekturwerkzeuge verwenden
+
+Die vier Werkzeuge {{ui:facefix.menu}}, {{ui:cutout.menu}}, {{ui:caption.menu}} und {{ui:canvas.poseFromImage.menu}} sind im Rechtsklickmenü eines Galeriebildes unter **{{ui:gallery.tools.heading}}** zusammengefasst. Jedes arbeitet in einem Band, das sich über dem Bild im Betrachter öffnet. Das Bild bleibt im Betrachter, sodass Sie es beim Prüfen zoomen und verschieben können.
+
+- Die Wahl eines Eintrags führt ihn sofort mit den Einstellungen vom letzten Mal aus. Das Bild erscheint im Betrachter, und das Band zeigt den Fortschritt.
+- Die Zahnrad-Schaltfläche rechts neben einem Eintrag öffnet die Einstellungen im Band, ohne etwas auszuführen. Ändern Sie die Einstellungen und klicken Sie auf **{{ui:gallery.tools.run}}**. Die geänderten Einstellungen gelten auch beim nächsten Mal.
+- Die Schaltflächen **{{ui:cutout.menu}}**, **{{ui:facefix.menu}}** und **{{ui:caption.menu}}** in der Werkzeugleiste des Betrachters öffnen die Einstellungen ebenfalls im Band. Ein erneuter Klick auf die Schaltfläche schließt es.
+- Die Schaltflächen links im Band wechseln zu einem anderen Werkzeug.
+- Nach dem Abschluss zeigt das Band das Ergebnis und die verwendeten Einstellungen. **{{ui:gallery.tools.edit}}** geht zu den Einstellungen zurück, damit Sie sie ändern und erneut ausführen können.
+- Die Arbeit läuft in der Warteschlange. Das Schließen des Bandes oder der Wechsel zu einem anderen Bild oder Bildschirm hält sie nicht an. Nur **{{ui:common.cancel}}** im Band hält sie an. Ein Ergebnis, das ein Bild ist, wird auch bei geschlossenem Band in der Galerie gespeichert.
+
 ## Wenn eine Erweiterung nötig ist
 
-Hintergrund entfernen, Bereiche auswählen, Gesichter korrigieren und Ähnliches funktionieren, indem der Bild-Engine ComfyUI „Erweiterungen“ hinzugefügt werden. Ist eine Erweiterung nicht installiert, steht im Dialog „… benötigt die Erweiterung XXX.“, und es werden Schaltflächen zum Installieren angezeigt.
+Hintergrund entfernen, Gesichter korrigieren und Ähnliches funktionieren, indem der Bild-Engine (ComfyUI) „Erweiterungen“ hinzugefügt werden. Ist eine Erweiterung nicht installiert, steht im Band „… benötigt die Erweiterung XXX.“, und es werden Schaltflächen zum Installieren angezeigt.
 
-1. Klicken Sie auf **{{ui:cutout.install}}**. Das Nötige wird automatisch heruntergeladen und installiert.
-2. Nach der Installation wechselt die Schaltfläche zu **{{ui:cutout.restart}}**. Klicken Sie darauf, und ComfyUI wird neu gestartet.
-3. Nach dem Neustart lässt sich derselbe Dialog unverändert verwenden.
+1. Klicken Sie auf **{{ui:gallery.tools.install}}**. Das Nötige wird automatisch heruntergeladen und installiert. Die Installation läuft im Hintergrund, und ihr Fortschritt erscheint in der Download-Anzeige. Das Schließen des Bandes hält sie nicht an.
+2. Nach der Installation wechselt die Schaltfläche im Band zu **{{ui:gallery.tools.restart}}**. Klicken Sie darauf, und ComfyUI wird neu gestartet.
+3. Nach dem Neustart lässt sich das Werkzeug unverändert verwenden.
 
-Bei der ersten Verwendung beginnt auch der Download der Modelle, die die Erweiterung nutzt, daher dauert es eine Weile. Sie müssen mit dem Internet verbunden sein.
+Bei der ersten Verwendung beginnt auch der Download der Modelle, die die Erweiterung nutzt, daher dauert es eine Weile. Sie müssen mit dem Internet verbunden sein. Dieser Download läuft innerhalb der von Ihnen gestarteten Arbeit, das Schließen des Bandes hält ihn also nicht an.
 
 > Manche Erweiterungen brauchen für die Installation Zeit und Speicherplatz. ComfyUI-Impact-Pack benötigt für die Installation Git. Auf einem Computer ohne Git schlägt die Installation fehl. Wenn eine Meldung erscheint, lesen Sie sie, bevor Sie handeln.
 
@@ -71,24 +83,24 @@ Als Richtwert: Bei etwa 0,25 entsteht ein Bild, das fast gleich dem Original ist
 
 In den folgenden Fällen lässt sich die Schaltfläche nicht anklicken, oder es erscheint eine Benachrichtigung und es wird nichts erzeugt.
 
-- Wenn das Bild nicht aus einem Text erzeugt wurde (dazu zählen auch Bild-zu-Bild, Inpainting und Outpainting). Vergrößerte Bilder, Videos, Audio und Ähnliches sind ausgenommen.
+- Wenn das Bild nicht erzeugt wurde, also nicht aus einem Text entstand (Bild zu Bild, Inpainting und Outpainting zählen ebenfalls als erzeugt). Vergrößerte Bilder, Videos, Audio und Ähnliches sind ausgenommen.
 - Wenn das für das Originalbild verwendete Modell nicht installiert ist. Es erscheint eine Benachrichtigung mit dem Namen des Modells.
 
 ## Hintergrund entfernen
 
-![Der Dialog zum Entfernen des Hintergrunds](shot:cutout)
+![Der entfernte Hintergrund im Band des Betrachters, verglichen mit dem Original](shot:cutout)
 
 Erkennt automatisch, was im Bild zu sehen ist, und erzeugt ein Bild ohne Hintergrund. Sie müssen nichts per Klick markieren.
 
-1. Öffnen Sie das Bild im Betrachter und klicken Sie auf **{{ui:cutout.menu}}** mit dem Scheren-Symbol (es steht auch im Rechtsklickmenü).
-2. Ändern Sie bei Bedarf die Einstellungen.
+1. Klicken Sie in der Galerie mit der rechten Maustaste auf ein Bild und wählen Sie unter **{{ui:gallery.tools.heading}}** den Eintrag **{{ui:cutout.menu}}**: Er wird sofort mit den Einstellungen vom letzten Mal ausgeführt. Um zuerst die Einstellungen zu ändern, öffnen Sie das Band mit dem Zahnrad rechts neben dem Eintrag oder mit der Scheren-Schaltfläche in der Werkzeugleiste des Betrachters.
+2. Ändern Sie im Band bei Bedarf die Einstellungen.
    - **{{ui:cutout.model}}**: Meist ist die Voreinstellung in Ordnung.
    - **{{ui:cutout.sensitivity}}**: Je niedriger der Wert, desto mehr von den Bereichen mit unklarer Grenze bleibt erhalten.
    - **{{ui:cutout.edge}}**: Ein positiver Wert erweitert die Kontur, ein negativer Wert schneidet sie ab.
    - **{{ui:cutout.background}}**: Wählen Sie **{{ui:cutout.background.alpha}}** oder **{{ui:cutout.background.white}}**.
-3. Klicken Sie auf **{{ui:cutout.run}}**.
+3. Klicken Sie auf **{{ui:gallery.tools.run}}**.
 
-Das fertige Bild wird als neues Bild im selben Board wie das Original gespeichert. **Das Originalbild bleibt erhalten.** Wenn Sie mit dem Ergebnis nicht zufrieden sind, ändern Sie die Einstellungen und klicken Sie auf **{{ui:cutout.again}}**. Mit **{{ui:cutout.open}}** zeigen Sie es im Betrachter an.
+Das fertige Bild wird als neues Bild im selben Board wie das Original gespeichert. **Das Originalbild bleibt erhalten.** Der Betrachter vergleicht dann das neue Bild mit dem Original. Sind Sie mit dem Ergebnis nicht zufrieden, klicken Sie auf **{{ui:gallery.tools.edit}}**, ändern Sie die Einstellungen und führen Sie es erneut aus.
 
 Ein weißer Hintergrund eignet sich gut, wenn Sie das Bild später als Referenzbild für einen [Charakter](#charakter-registrieren-und-verwenden) nutzen möchten. Die Hintergrundfarbe überträgt sich dann seltener auf neu erzeugte Bilder.
 
@@ -96,69 +108,82 @@ Ein weißer Hintergrund eignet sich gut, wenn Sie das Bild später als Referenzb
 
 Ein Bild mit transparentem Hintergrund behält um das Bild herum transparente Ränder. Mit **{{ui:gallery.menu.trim}}** speichern Sie ein neues transparentes Bild, das genau auf den Teil mit Inhalt zugeschnitten ist. Das ist praktisch, wenn Sie es als Sticker oder Material verwenden.
 
-- Klicken Sie in der Galerie mit der rechten Maustaste auf ein Bild und wählen Sie den Eintrag. Direkt nach dem Entfernen eines Hintergrunds geht dasselbe auch über **{{ui:cutout.trim}}** im Dialog (er erscheint nur, wenn Sie den Hintergrund transparent gemacht haben).
+- Klicken Sie in der Galerie mit der rechten Maustaste auf ein Bild und wählen Sie den Eintrag. Direkt nach dem Entfernen eines Hintergrunds geht dasselbe auch über **{{ui:cutout.trim}}** im Band (er erscheint nur, wenn Sie den Hintergrund transparent gemacht haben).
 - Ein Schatten, der so schwach ist, dass er kaum sichtbar ist, wird als Rand abgeschnitten.
 - Bei einem Bild, dessen transparenter Bereich nicht bis an den Bildrand reicht, erscheint „Es gibt keinen Rand zuzuschneiden.“ und nichts wird gespeichert. Auch ein vollständig transparentes Bild lässt sich nicht zuschneiden.
 
 ## Einen Bereich auswählen und korrigieren
 
-![Der Dialog, in dem per Klick festgelegt wird, was im Bild ausgewählt wird](shot:segment)
+Den zu korrigierenden Teil wählen Sie aus, indem Sie ihn mit einem Pinsel übermalen. Das Bild öffnet sich auf der [Leinwand](05-canvas.md), sodass Sie beim Malen feiner Details zoomen und sich bewegen können.
 
-Sie wählen das gemeinte Objekt im Bild per Klick aus. Den ausgewählten Teil können Sie dann ausschneiden, löschen oder neu zeichnen.
+1. Öffnen Sie das Bild im Betrachter und klicken Sie auf **{{ui:gallery.menu.segment}}** (Sie können es auch im Rechtsklickmenü der Galerie wählen).
+2. Die Leinwand öffnet sich mit dem Bild und einer leeren, gewählten **{{ui:canvas.add.inpaint}}**. Das Werkzeug ist der **{{ui:canvas.tool.brush}}**.
+3. Übermalen Sie den Teil, den Sie korrigieren möchten. Zu viel Übermaltes entfernen Sie mit dem **{{ui:canvas.tool.eraser}}**. Um stattdessen den Rest auszuwählen, klicken Sie mit der rechten Maustaste auf die Maske und wählen **{{ui:canvas.entityMenu.invertMask}}**.
+4. Wählen Sie, was mit dem übermalten Teil geschehen soll. Ist die Zeile der Maske gewählt, erscheinen darunter ein Textfeld und Schaltflächen (Löschen und Ausschneiden stehen auch im Rechtsklickmenü der Maske).
 
-1. Öffnen Sie das Bild im Betrachter und klicken Sie auf **{{ui:gallery.menu.segment}}**.
-2. Nur beim ersten Mal wird die Erweiterung ComfyUI-segment-anything-2 benötigt. Installieren Sie sie nach den Hinweisen auf dem Bildschirm ([Wenn eine Erweiterung nötig ist](#wenn-eine-erweiterung-nötig-ist)).
-3. Klicken Sie auf das Objekt, das Sie auswählen möchten. Fehlt etwas, klicken Sie an einer anderen Stelle, um es hinzuzufügen. Ragt die Auswahl über das Ziel hinaus, schalten Sie die Schaltfläche auf **{{ui:segment.mode.exclude}}** um und klicken dort, oder klicken Sie mit der rechten Maustaste (oder bei gedrückter Taste `Shift`). Ein erneuter Klick auf einen gesetzten Punkt hebt diesen Punkt wieder auf. Mit **{{ui:segment.clear}}** fangen Sie von vorn an.
-4. Klicken Sie auf **{{ui:segment.run}}**. Der ausgewählte Bereich wird blau angezeigt.
-5. Wenn der blaue Bereich stimmt, wählen Sie die nächste Aktion. Möchten Sie stattdessen den „Rest“ auswählen, aktivieren Sie **{{ui:segment.invert}}**.
-
-| Schaltfläche | Was sie bewirkt | Was nötig ist |
+| Ziel | Vorgehen | Was nötig ist |
 |---|---|---|
-| **{{ui:segment.cutout}}** | Schneidet nur den ausgewählten Teil aus und speichert ihn als transparentes Bild. | Nichts |
-| **{{ui:segment.mosaic}}** | Verwandelt den ausgewählten Teil in grobe Blöcke (Mosaik) und speichert das Bild. Die Blockgröße stellen Sie mit der Zahl daneben ein. | Nichts |
-| **{{ui:segment.erase}}** | Entfernt den ausgewählten Teil und gleicht die Stelle an das umgebende Bild an. | Die Erweiterung comfyui-inpaint-nodes. Mit dem Modell LaMa (ca. 200 MB) wirkt das Entfernen natürlicher. Ohne es ist auch ein einfaches Entfernen möglich. |
-| **{{ui:segment.redraw.title}}** | Zeichnet nur den ausgewählten Teil nach einer Textanweisung neu. Die übrigen Teile ändern sich nicht. | Ein Bildmodell |
-| **{{ui:segment.toCanvas}}** | Sendet das Bild und die Auswahl an die [Leinwand](05-canvas.md). Die Auswahl wird zur Inpainting-Maske. | Nichts |
+| Löschen und in das umgebende Bild einfügen | **{{ui:canvas.partFix.erase}}**. Das Ergebnis liegt auf der Leinwand im Staging, wählen Sie also **{{ui:canvas.staging.accept}}** oder verwerfen Sie es. | Die Erweiterung comfyui-inpaint-nodes. Mit dem Modell LaMa (ca. 200 MB) wirkt das Löschen natürlich. Ohne es ist auch ein einfaches Löschen möglich. |
+| Nur den übermalten Teil als transparentes Bild speichern | **{{ui:canvas.partFix.cutOutAction}}** | Nichts |
+| Nach einer Textanweisung neu zeichnen | Schreiben Sie in das Textfeld, was dort gezeichnet werden soll, etwa „a blue ribbon“, und klicken Sie auf **{{ui:canvas.partFix.redraw}}**. Nur der übermalte Teil wird neu gezeichnet, mit dem Modell und den Einstellungen des Tabs Generieren. Bei leerem Textfeld wird der Prompt des Tabs Generieren verwendet. Der Prompt des Tabs Generieren wird nicht geändert. Das Ergebnis liegt im Staging, wählen Sie also **{{ui:canvas.staging.accept}}** oder verwerfen Sie es. | Ein Bildmodell |
+| Ein Mosaik anwenden | Verwenden Sie die Maske nicht; fahren Sie mit dem Werkzeug **{{ui:canvas.tool.mosaic}}** direkt über den Teil. | Nichts |
 
-Beim Neuzeichnen schreiben Sie als Text, **was gezeichnet werden soll** (zum Beispiel: blue hair, red scarf). Das Ergebnis passt eher zu Ihren Erwartungen, wenn Sie so formulieren, wie das Modell es gut versteht (bei einem Anime-Modell etwa mit englischen Tags). Je niedriger Sie **{{ui:segment.redraw.strength}}** einstellen, desto mehr von den ursprünglichen Formen und Farben bleibt erhalten.
-
-Das Ergebnis wird als neues Bild im selben Board wie das Original gespeichert. Das Originalbild ändert sich nicht.
+Das Originalbild ändert sich nicht. Ein Ausschnitt wird als neues Bild in der Galerie gespeichert.
 
 ## Gesichter korrigieren
 
-![Der Dialog zum Korrigieren von Gesichtern](shot:facefix)
+![Die Einstellungen der Gesichtskorrektur, geöffnet im Band des Betrachters](shot:facefix)
 
-Bei Bildern mit kleinen, weit entfernten Figuren werden die Gesichter oft verzerrt. **{{ui:facefix.menu}}** findet die Gesichter im Bild automatisch, zeichnet nur die Gesichter in hoher Auflösung neu und setzt sie wieder in das Originalbild ein. Außer den Gesichtern ändert sich nichts.
+Bei Weitwinkelaufnahmen werden kleine Gesichter oft verzerrt. **{{ui:facefix.menu}}** findet die Gesichter im Bild automatisch, zeichnet nur die Gesichter in hoher Auflösung neu und setzt sie wieder in das Originalbild ein. Außer den Gesichtern ändert sich nichts.
 
-1. Öffnen Sie das Bild im Betrachter und klicken Sie auf **{{ui:facefix.menu}}** (es steht auch im Rechtsklickmenü).
-2. Nur beim ersten Mal werden die Erweiterungen ComfyUI-Impact-Pack und ComfyUI-Impact-Subpack benötigt. Installieren Sie sie mit **{{ui:facefix.install}}** und klicken Sie auf **{{ui:facefix.restart}}**. Das Modell zum Finden von Gesichtern stellt das Subpack selbst bereit.
+1. Klicken Sie in der Galerie mit der rechten Maustaste auf ein Bild und wählen Sie unter **{{ui:gallery.tools.heading}}** den Eintrag **{{ui:facefix.menu}}**: Er wird sofort ausgeführt. Um die Einstellungen vor dem Ausführen zu prüfen, öffnen Sie das Band mit dem Zahnrad rechts neben dem Eintrag oder mit der Schaltfläche **{{ui:facefix.menu}}** in der Werkzeugleiste des Betrachters.
+2. Nur beim ersten Mal werden die Erweiterungen ComfyUI-Impact-Pack und ComfyUI-Impact-Subpack benötigt. Installieren Sie sie mit **{{ui:gallery.tools.install}}** im Band und klicken Sie auf **{{ui:gallery.tools.restart}}**. Das Modell zum Finden von Gesichtern stellt das Subpack selbst bereit.
 3. Prüfen Sie die Einstellungen.
    - **{{ui:facefix.model}}**: Das für das Originalbild verwendete Modell ist gewählt.
+   - **{{ui:facefix.detector}}**: Das Modell, mit dem die Gesichter gefunden werden. Meist ist die Voreinstellung in Ordnung.
    - **{{ui:facefix.prompt}}**: Der Prompt des Originalbilds ist eingetragen. Wenn Sie Merkmale des Gesichts ergänzen, wirkt es besser.
    - **{{ui:facefix.strength}}**: Je niedriger, desto näher am ursprünglichen Gesicht; je höher, desto stärker wird neu gezeichnet.
    - **{{ui:facefix.sensitivity}}**: Ein höherer Wert erfasst nur eindeutige Gesichter, ein niedrigerer Wert auch kleine Gesichter und Profile. Dann werden aber auch eher Dinge erfasst, die keine Gesichter sind.
-4. Klicken Sie auf **{{ui:facefix.run}}**.
+4. Klicken Sie auf **{{ui:gallery.tools.run}}**.
 
-Das Ergebnis wird im selben Board wie das Original gespeichert. Mit **{{ui:facefix.open}}** öffnen Sie es im Betrachter zum Vergleich mit dem Original. Wenn es Ihnen nicht gefällt, ändern Sie die Einstellungen und klicken Sie auf **{{ui:facefix.again}}**.
+Das Ergebnis wird im selben Board wie das Original gespeichert, und der Betrachter vergleicht es mit dem Original. Wenn es Ihnen nicht gefällt, klicken Sie auf **{{ui:gallery.tools.edit}}**, ändern Sie die Einstellungen und führen Sie es erneut aus. Das Modell und das, was gezeichnet werden soll, werden nur gemerkt, solange Sie am selben Bild arbeiten.
 
 > Ein mit einer LoRA erzeugtes Bild wird ohne die LoRA neu gezeichnet. Deshalb kann nur das Gesicht stilistisch leicht abweichend aussehen.
 
 > Wenn „Das Gesichtserkennungsmodell (YOLO) wurde nicht gefunden.“ erscheint, starten Sie ComfyUI neu oder installieren Sie die Erweiterungen erneut.
 
+## Ein Bild als Manga-Seite fertigstellen
+
+**{{ui:gallery.manga.menu}}** in der Werkzeugleiste des Betrachters verwandelt das geöffnete Bild in eine schwarz-weiße Manga-Seite mit klaren Linien. Schattierungen werden zu flachen Tönen und echten Rasterpunkten, und die Hauptlinien innerhalb tiefschwarzer Flächen werden dünn und weiß ausgespart. Das Zeichnen selbst erzeugt immer das normale Farbbild; die Fertigstellung ist ein Schritt, den Sie danach an einem Bild vornehmen, das Ihnen gefällt.
+
+1. Öffnen Sie das Bild im Betrachter und klicken Sie auf **{{ui:gallery.manga.menu}}**. Das Original wird links angezeigt.
+2. Nur beim ersten Mal wird die Erweiterung ComfyUI-MangaScreen benötigt. Ist sie nicht installiert, erscheint ein Hinweis; klicken Sie auf **{{ui:gallery.manga.installPack}}** und dann auf **{{ui:gallery.manga.restartEngine}}**. Die Schaltflächen darunter warten, bis sie installiert ist.
+3. Ändern Sie bei Bedarf die Werte (sie werden für das nächste Mal gemerkt):
+   - **{{ui:gallery.manga.screenLines}}**: Reihen von Punkten über die Breite. 120 ist grob, 200 normal, 300 fein.
+   - **{{ui:gallery.manga.whitePoint}}**: Heller als dieser Wert wird papierweiß. Senken Sie ihn, um den Raster von Haut und hellem Haar zu entfernen.
+   - **{{ui:gallery.manga.blackPoint}}**: Dunkler als dieser Wert wird tiefschwarz. Erhöhen Sie ihn für mehr Schwarz.
+   - **{{ui:gallery.manga.gradation}}**: Weiche Schatten lassen ihre Punkte mit der Dunkelheit wachsen, statt in Stufen geschnitten zu werden. 0 behält nur flache Flächen.
+   - **{{ui:gallery.manga.whiteLines}}**: Wie viele Linien innerhalb tiefschwarzer Flächen weiß ausgespart werden. 0 schaltet es aus.
+   **{{ui:gallery.manga.reset}}** setzt alle Werte zurück.
+4. Klicken Sie auf **{{ui:gallery.manga.tryRun}}**, um das Ergebnis rechts neben dem Original zu sehen. Ein Versuch speichert nichts.
+5. Klicken Sie auf **{{ui:gallery.manga.save}}**, wenn es Ihnen gefällt. Die Seite wird als neues Bild im selben Board wie das Original gespeichert, und das Original ändert sich nicht. Mit **{{ui:gallery.manga.open}}** sehen Sie sie an.
+
+Das Speichern stellt das Bild mit den angezeigten Werten erneut fertig, es dauert also so lange wie ein Versuch.
+
 ## Aus einem Bild einen Prompt erstellen
 
-![Der Dialog, nachdem er Tags für ein Bild geschrieben hat](shot:caption)
+![Im Band des Betrachters für ein Bild geschriebene Tags](shot:caption)
 
 Die Funktion betrachtet ein Bild und erstellt einen Prompt (Tags oder einen Satz), mit dem sich das Bild zeichnen lässt. Nutzen Sie es, wenn Sie Bilder erzeugen möchten, die einem Bild ähneln, das Ihnen gefällt, oder wenn Sie nicht sicher sind, wie man einen Prompt schreibt.
 
-1. Wählen Sie die Schaltfläche **{{ui:caption.menu}}** im Betrachter oder **{{ui:caption.menu}}** im Rechtsklickmenü des Bildes. Sie können es auch über die Schaltfläche **{{ui:caption.fromPrompt}}** über dem Prompt-Feld im Tab Generieren öffnen. Auf diese Schaltfläche können Sie ein Bild aus der Galerie oder eine Bilddatei von Ihrem Computer ziehen.
-2. Wählen Sie unter **{{ui:caption.style}}** entweder **{{ui:caption.style.tags}}** oder **{{ui:caption.style.sentence}}**.
-3. Klicken Sie auf **{{ui:caption.run}}**.
-4. Die Wörter lassen sich direkt dort bearbeiten. Klicken Sie dann auf **{{ui:caption.replace}}**, **{{ui:caption.append}}** oder **{{ui:caption.copy}}**.
+1. Klicken Sie in der Galerie mit der rechten Maustaste auf ein Bild und wählen Sie unter **{{ui:gallery.tools.heading}}** den Eintrag **{{ui:caption.menu}}**: Die Wörter werden sofort aufgeschrieben. Die Schaltfläche **{{ui:caption.fromPrompt}}** über dem Prompt-Feld im Tab Generieren tut dasselbe. Diese Schaltfläche verwendet das in der Galerie gewählte Bild; ist keines gewählt, öffnet sie ein Fenster zur Wahl einer Bilddatei. Auf diese Schaltfläche können Sie auch ein Bild aus der Galerie oder eine Bilddatei von Ihrem Computer ziehen.
+2. Um die Schreibweise zu ändern, klicken Sie im Band auf **{{ui:gallery.tools.edit}}** und wählen unter **{{ui:caption.style}}** entweder **{{ui:caption.style.tags}}** oder **{{ui:caption.style.sentence}}**.
+3. Klicken Sie auf **{{ui:gallery.tools.run}}**.
+4. Die Wörter lassen sich direkt im Band bearbeiten. Klicken Sie dann auf **{{ui:caption.replace}}**, **{{ui:caption.append}}** oder **{{ui:caption.copy}}**.
 
 Ersetzen und Hinzufügen wirken auf „{{ui:params.prompt.positive}}“ im Tab Generieren. Diese Funktion fügt der Galerie kein Bild hinzu.
 
-> Diese Funktion benötigt die Erweiterung ComfyUI-Florence2. Ist sie nicht installiert, können Sie sie über den Dialog installieren (siehe „Wenn eine Erweiterung nötig ist“ in diesem Kapitel). Bei der ersten Verwendung beginnt der Download des Modells zum Beschreiben von Bildern (Florence-2 PromptGen).
+> Diese Funktion benötigt die Erweiterung ComfyUI-Florence2. Ist sie nicht installiert, können Sie sie über das Band installieren (siehe „Wenn eine Erweiterung nötig ist“ in diesem Kapitel). Bei der ersten Verwendung beginnt der Download des Modells zum Beschreiben von Bildern (Florence-2 PromptGen).
 
 ## Charakter registrieren und verwenden
 
@@ -201,6 +226,10 @@ Um einen registrierten Charakter zu bearbeiten oder zu löschen, verwenden Sie d
 
 > Für Referenzbilder benötigen Sie die Erweiterung ComfyUI_IPAdapter_plus und ein Modell für Referenzbilder. Sind sie nicht installiert, können Sie sie über das Feld für Referenzbilder im Tab Generieren installieren. Zu den Modellen siehe das Kapitel [Modelle](08-models.md).
 
+## Eine LoRA für einen Charakter wählen
+
+Wählen Sie im Bearbeitungsdialog des Charakters unter **{{ui:lora.section}}** eine LoRA. Danach können Sie **{{ui:lora.use}}** ein- und ausschalten und **{{ui:lora.weight}}** ändern; bei der Verwendung des Charakters werden die LoRA und ihr Trigger-Wort dem Prompt hinzugefügt. Das Training von LoRAs findet in der separaten App novira-train statt.
+
 ## Einstellungen mit einem Vergleichsraster vergleichen
 
 ![Der Dialog des Vergleichsrasters](shot:xyplot)
@@ -222,7 +251,7 @@ Die folgenden Einstellungen lassen sich ändern.
 | {{ui:xyplot.axis.cfgScale}} | Zahlen (1 bis 30) |
 | {{ui:xyplot.axis.steps}} | Ganze Zahlen (1 bis 150) |
 | {{ui:xyplot.axis.seed}} | Ganze Zahlen |
-| {{ui:xyplot.axis.strength}} | Zahlen (0,05 bis 1). Wirkt nur beim Erzeugen aus einem Bild (Bild-zu-Bild). |
+| {{ui:xyplot.axis.strength}} | Zahlen (0,05 bis 1). Wirkt nur beim Erzeugen aus einem Bild (Bild zu Bild). |
 | {{ui:xyplot.axis.scheduler}} | Aus einer Liste wählen |
 | {{ui:xyplot.axis.model}} | Modelle derselben Familie aus einer Liste wählen |
 | {{ui:xyplot.axis.prompt}} | Eines pro Zeile schreiben. Sie werden dem Prompt hinzugefügt |
@@ -247,8 +276,8 @@ Ein Bild verändert sich stark mit dem Seed. Entwürfe sind eine Funktion, bei d
 
 Öffnen Sie in der Mitte des Tabs **{{ui:app.tabs.generate}}** den Tab **{{ui:app.views.drafts}}**.
 
-1. Wählen Sie **{{ui:drafts.model}}**. Anfangs ist das Modell des Tabs Generieren gewählt.
-2. Legen Sie **{{ui:drafts.count}}** fest (1 bis 24 Bilder; anfangs 8).
+1. Wählen Sie **{{ui:drafts.model}}**. Anfangs ist das Modell des Tabs Generieren gewählt. Jedes Bildmodell, das der Tab Generieren anbietet, lässt sich wählen: SDXL und SD1.X, aber auch die Modelle, die ohne ihre Text-Encoder und VAEs geliefert werden, wie Anima, Flux, FLUX.2 und Z-Image. Bearbeitungsmodelle (Flux Fill, Flux Kontext, Qwen-Image-Edit) verändern nur ein Bild, das Sie ihnen geben, und stehen daher nicht in der Liste; wenn Sie welche haben, werden ihre Namen darunter angezeigt.
+2. Legen Sie **{{ui:drafts.count}}** fest (1 bis 24 Bilder; anfangs 4, was Sie mit **{{ui:settings.draftCount.label}}** in den Einstellungen ändern können). Anzahl und Position bleiben beim Wechsel zu anderen Bildschirmen so, wie Sie sie eingestellt haben, bis Sie die App schließen.
 3. Legen Sie **{{ui:drafts.position}}** fest (25 bis 60 %; anfangs 35 %). Je kleiner der Wert, desto schneller geht es, aber desto gröber sind die Bilder.
 4. Klicken Sie auf **{{ui:drafts.start}}**.
 
@@ -260,9 +289,15 @@ Bis zum Ende gezeichnete Bilder kommen wie bei einer normalen Generierung in die
 
 > Obwohl es „{{ui:manual.drafts.finish}}“ heißt, wird nicht aus der Mitte fortgesetzt. Mit demselben Seed wird von Anfang bis Ende neu gezeichnet. Deshalb dauert das Fertigstellen genauso lange wie eine normale Generierung. Sie erhalten ein Bild mit der Komposition, die Sie im Entwurf gesehen haben.
 
-> Entwürfe lassen sich nur bei der Generierung verwenden, die Bilder aus Text erzeugt. Sind Referenzbilder o. Ä. eingestellt, erscheint eine Meldung, und Sie können nicht starten. Entwurfsbilder werden nicht in der Galerieliste aufgelistet.
+> Entwürfe lassen sich bei der Generierung aus Text verwenden und beim Neuzeichnen eines Bildes, das in den Abschnitt **{{ui:params.i2i.title}}** gelegt wurde. Bei {{ui:params.i2i.title}} wird ein Entwurf bis zur Position gezeichnet, bezogen auf die tatsächlich gezeichneten Schritte, die von der **{{ui:params.image.strength}}** abhängen. Entwurfsbilder werden nicht in der Galerieliste aufgelistet.
 
-Entwürfe werden „in der Reihenfolge, in der Sie sie gestartet haben“ in den Tabs oben aufgelistet. Wenn Sie einen nicht mehr brauchen, schließen Sie ihn mit dem ✕ am Tab.
+Entwürfe werden „in der Reihenfolge, in der Sie sie gestartet haben“ in den Tabs oben aufgelistet. Nur die neuesten 5 bleiben als Tabs. Jeder Entwurf steht auf dem Bildschirm **{{ui:drafts.history.title}}**, den die Schaltfläche „Verlauf“ links neben den Tabs öffnet.
+
+- Wählen Sie in der linken Spalte einen Zeitraum ({{ui:drafts.history.period.today}}, {{ui:drafts.history.period.yesterday}}, {{ui:drafts.history.period.week}}, {{ui:drafts.history.period.older}}) und ein Modell, um nur diese Entwürfe zu sehen. Das Feld oben findet Entwürfe anhand von Wörtern ihres Prompts oder von Modellnamen.
+- Die Entwürfe sind nach Tagen getrennt und zeigen die damals gezeichneten Bilder, die Uhrzeit, die Größe und wie viele Entwürfe und fertige Bilder es gibt.
+- **{{ui:drafts.history.open}}** öffnet einen Entwurf, und **{{ui:drafts.history.reuse}}** setzt seine Einstellungen wieder in das Formular des Tabs Generieren.
+
+Wenn Sie einen nicht mehr brauchen, schließen Sie ihn mit dem ✕ an seinem Tab oder im Verlauf, oder schließen Sie alle älteren, die keine Tabs sind, auf einmal mit „{{ui:drafts.closeOlder}}“ auf dem Verlaufsbildschirm.
 
 ## Gesammelt verarbeiten
 
@@ -274,7 +309,7 @@ Hintergrundentfernung oder Vergrößerung können Sie auf mehrere gewählte Bild
 2. Klicken Sie mit der rechten Maustaste auf ein gewähltes Bild und wählen Sie **{{ui:gallery.menu.batch}}**.
 3. Wählen Sie die Verarbeitung.
    - **{{ui:batch.op.removeBackground.title}}**: Macht den Hintergrund transparent. Die Erweiterung ComfyUI-RMBG wird benötigt. Ist sie nicht installiert, erscheint eine Schaltfläche zum Installieren.
-   - **{{ui:batch.op.upscale.title}}**: Vergrößert mit einem Upscaling-Modell. Haben Sie kein Modell, installieren Sie eines über den Tab [Modelle](08-models.md).
+   - **{{ui:batch.op.upscale.title}}**: Vergrößert mit einem Upscaling-Modell. Haben Sie kein Modell, installieren Sie eines über den Bildschirm [Modelle](08-models.md).
 4. Klicken Sie auf **{{ui:batch.run}}**.
 
 Jedes Bild kommt als eigener Eintrag in die Warteschlange. Den Fortschritt sehen Sie im Tab **{{ui:app.tabs.queue}}**. Die Ergebnisse kommen als neue Bilder in dasselbe Board wie die Originalbilder. Die Originalbilder ändern sich nicht.

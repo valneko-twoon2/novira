@@ -12,6 +12,8 @@ Der Ablauf ist immer derselbe.
 
 Das Bild wird nicht in dem Moment gezeichnet, in dem Sie klicken. Zuerst kommt es in die „{{ui:app.tabs.queue}}“ (die Reihe der wartenden Einträge). Wenn es an der Reihe ist, werden die Bilder nacheinander gezeichnet.
 
+Das gewählte Modell, die Prompts und die Einstellungen bleiben beim Schließen der App erhalten und sind beim nächsten Start so da, wie sie waren.
+
 ## Einen Prompt schreiben
 
 ![Der Tab Generieren mit einem Satz im Prompt und festgelegtem Seed](shot:generate-prompt)
@@ -27,15 +29,15 @@ Einige Faustregeln fürs Schreiben.
 - Bei vielen Modellen liefert Englisch eher das erwartete Ergebnis. Gibt die Beschreibung des Modells eine Schreibweise vor, richten Sie sich danach.
 - Setzen Sie die wichtigen Wörter weiter nach vorn.
 
-Die kleinen Schaltflächen über den Feldern bewirken Folgendes.
+Die kleinen Schaltflächen über den Feldern bewirken Folgendes. Es sind nur Symbole; halten Sie den Zeiger darüber, um den Namen zu sehen.
 
 | Schaltfläche | Funktion |
 |---|---|
-| **{{ui:params.prompt.recommended}}** | Fügt Qualitätswörter, die zum gewählten Modell passen (etwa `masterpiece, best quality`), an den Anfang von „{{ui:params.prompt.positive}}“ ein und häufig vermiedene Wörter an das Ende von „{{ui:params.prompt.negative}}“. Bereits vorhandene Wörter werden nicht doppelt eingefügt |
+| **{{ui:params.prompt.recommended}}** | Fügt die Qualitätswörter, die für die Familie des gewählten Modells weit verbreitet sind, zu „{{ui:params.prompt.positive}}“ hinzu und die zu vermeidenden Wörter ans Ende von „{{ui:params.prompt.negative}}“. Modelle, die mit Tags arbeiten (Illustrious, NoobAI, Pony, Anima und so weiter), erhalten Tags wie `masterpiece, best quality` am Anfang; Modelle, die mit Sätzen arbeiten (FLUX, Qwen-Image und so weiter), erhalten Qualitätswörter am Ende. Modelle ohne Negativ-Prompt (FLUX.1) erhalten keine Negativwörter. Bereits vorhandene Wörter werden nicht doppelt eingefügt |
 | **{{ui:params.prompt.expand}}** | Bearbeitet Positiv und Negativ nebeneinander in einem großen Fenster |
+| **{{ui:params.prompt.textView}}** / **{{ui:params.prompt.tagView}}** | Schaltet das Feld zwischen dem reinen Text und einer Reihe von Tags um, eines pro Wort. Klicken Sie auf einen Tag, um ein Popover zu öffnen: Sie können seine Wörter umschreiben, seine Stärke mit dem Regler ändern, sie auf 1 zurücksetzen oder den Tag entfernen. Ein Tag mit geänderter Stärke wird als `(smile:1.3)` in den Prompt geschrieben. Tippen Sie unten ein Wort in das Feld und drücken Sie Enter, um einen Tag hinzuzufügen |
 | **{{ui:params.promptBook.open}}** | Öffnet eine Liste gesammelter Wörter samt Bedeutung (siehe unten) |
-| **{{ui:caption.fromPrompt}}** | Betrachtet ein Bild und schreibt Wörter auf, die sich als Prompt verwenden lassen. Auf diese Schaltfläche können Sie auch ein Galeriebild oder eine Bilddatei von Ihrem Computer ziehen (erklärt unter [Bilder verbessern und wiederverwenden](04-improve.md)) |
-| „Positiv-Vorgaben“ / „Negativ-Vorgaben“ an jedem Feld | Speichert und ruft nur den Text des Prompts auf (siehe unten) |
+| **{{ui:caption.fromPrompt}}** | Betrachtet das in der Galerie gewählte Bild (oder, wenn keines gewählt ist, eine Bilddatei, die Sie auswählen) und schreibt sofort Wörter auf, die sich als Prompt verwenden lassen. Das Ergebnis erscheint im Band des Betrachters. Auf diese Schaltfläche können Sie auch ein Galeriebild oder eine Bilddatei von Ihrem Computer ziehen (erklärt unter [Bilder korrigieren und wiederverwenden](04-improve.md)) |
 
 ### Token-Anzahl
 
@@ -53,10 +55,10 @@ Schreiben Sie im positiven Feld geschweifte Klammern mit Auswahlmöglichkeiten, 
 - Um eine geschweifte Klammer als normales Zeichen zu verwenden, setzen Sie `\` davor (`\{`).
 - Die Anzahl der Kombinationen ist auf 100 begrenzt.
 
-Liegt der Wert von „{{ui:params.invoke.iterations}}“ (siehe unten) bei 2 oder mehr, ergibt sich die Gesamtzahl aus Kombinationen mal Anzahl. Zum Beispiel ergeben 2 Kombinationen bei einer Anzahl von 3 insgesamt 6 Bilder.
+Liegt der Wert von „{{ui:params.invoke.iterations}}“ (siehe unten) bei 2 oder mehr, ergibt sich die Gesamtzahl aus Kombinationen mal Durchläufe. Zum Beispiel ergeben 2 Kombinationen bei 3 Durchläufen insgesamt 6 Bilder.
 Diese Syntax funktioniert nur im positiven Feld. Im negativen Feld werden geschweifte Klammern als gewöhnliche Zeichen behandelt.
 
-Mit der Schaltfläche **{{ui:params.prompt.dynamicPreview}}** (dem Symbol `{ }`) über dem positiven Feld prüfen Sie, welche Texte daraus entstehen. Ein Klick darauf zeigt eine Liste der Kombinationen.
+Mit der Schaltfläche **{{ui:params.prompt.dynamicPreview}}** (dem Symbol `{ }`) über dem positiven Feld prüfen Sie, welche Texte daraus entstehen. Ein Klick darauf zeigt eine Liste der Kombinationen. Das negative Feld hat dieselbe Schaltfläche, und `{a|b}` sowie Wildcards funktionieren auch im negativen Prompt. Die Kombinationen sind alle Paare aus einem positiven und einem negativen Prompt.
 
 ### Wildcards `__name__`
 
@@ -85,8 +87,8 @@ Die Listen werden in der App gespeichert (auf dem Computer, den Sie benutzen).
 
 Gibt es zu viele Kombinationen, schalten Sie im Fenster der Schaltfläche **{{ui:params.prompt.dynamicPreview}}** den Eintrag „{{ui:params.prompt.dynamicMode}}“ um.
 
-- **{{ui:params.prompt.modeCombinatorial}}** (Standard): Erzeugt für jede Kombination die eingestellte Anzahl Bilder.
-- **{{ui:params.prompt.modeRandom}}**: Erzeugt die eingestellte Anzahl Bilder und wählt für jedes eine Kombination aus. Die Auswahl folgt dem Seed des Bildes, sodass erneutes Zeichnen mit demselben Seed denselben Prompt ergibt.
+- **{{ui:params.prompt.modeCombinatorial}}** (Standard): Erzeugt für jede Kombination die bei den Durchläufen eingestellte Anzahl Bilder.
+- **{{ui:params.prompt.modeRandom}}**: Erzeugt die bei den Durchläufen eingestellte Anzahl Bilder und wählt für jedes eine Kombination aus. Die Auswahl folgt dem Seed des Bildes, sodass erneutes Zeichnen mit demselben Seed denselben Prompt ergibt.
 
 In beiden Fällen behält jedes fertige Bild den Prompt, der tatsächlich verwendet wurde.
 
@@ -103,7 +105,7 @@ Ist der Seed festgelegt, sind das Zahlenfeld für den Seed und die Schaltfläche
 Möchten Sie eine bestimmte Zahl verwenden, tippen Sie sie in das Zahlenfeld, während „{{ui:params.seed.random}}“ gewählt ist, und wechseln dann zu „{{ui:params.seed.fixed}}“.
 Möchten Sie den Seed eines Bildes verwenden, das Ihnen gefällt, öffnen Sie es in der Galerie und klicken auf „{{ui:gallery.menu.useSeed}}“. Der Seed wird übernommen und festgelegt (siehe [Die Galerie und der Betrachter](03-gallery.md)).
 
-Erhöhen Sie bei festem Seed die Anzahl, erhalten das zweite und alle weiteren Bilder einen Seed, der jeweils um eins höher ist.
+Erhöhen Sie bei festem Seed die Durchläufe, erhalten das zweite und alle weiteren Bilder einen Seed, der jeweils um eins höher ist.
 
 ## Ein Modell wählen
 
@@ -113,6 +115,13 @@ Mit der Modellkarte oben im linken Bedienfeld wählen Sie das Modell, das das Bi
 
 1. Klicken Sie auf das Feld mit dem Modellnamen.
 2. Wählen Sie aus der Liste. Die Liste ist nach Modellfamilien gegliedert (FLUX, SDXL, SD1.X und so weiter). Bei vielen Einträgen geben Sie einen Teil des Namens in das Suchfeld oben ein, um sie einzugrenzen.
+
+Auch Modelle von Anima, Flux, FLUX.2, Chroma, Qwen-Image, Z-Image, SD3, HiDream, AuraFlow und HunyuanImage lassen sich hier wählen. Werden das Modell, der Text-Encoder und das VAE als getrennte Dateien angeboten, sucht die App den Text-Encoder und das VAE anhand des Namens unter den installierten Modellen. Installieren Sie ein Modell, dem eines davon fehlt, fragt die App sofort „{{ui:params.parts.title}}“ und zeigt Namen und Größen, sodass Sie nur die fehlenden Dateien installieren können. Schließen Sie das Fenster mit „Nicht jetzt“, merkt sich das Bedienfeld Generieren, was dem Modell fehlt, und bietet eine Schaltfläche, die diese Dateien installiert, ohne den Bildschirm zu verlassen; bei einem Download über 5 GB fragt sie nach dem Klick noch einmal. Die Starter-Modelle auf dem Bildschirm Modelle (**{{ui:models.install.tab.starter}}**) installieren sie ebenfalls. Masken, Control-Ebenen und der Hires-Fix funktionieren auch mit diesen Modellen. Referenzbilder funktionieren nur mit Modellen von SD1.X und SDXL. Was Sie unter „{{ui:params.generation.scheduler}}“ wählen, wird nicht verwendet: Jede Familie zeichnet mit ihrem eigenen Sampler und Scheduler (`euler / simple` bei Flux; nur Anima zeichnet mit dem gewählten Scheduler), und das Feld „{{ui:params.generation.scheduler}}“ zeigt das Paar, das tatsächlich läuft. Wählen Sie einen „{{ui:params.generation.sampler}}“ oder einen „{{ui:params.generation.noiseSchedule}}“, gilt diese Wahl bei Modellen jeder Familie.
+
+- **Bearbeitungsmodelle.** FLUX Kontext und Qwen-Image-Edit verändern ein Bild, das Sie ihnen geben: Legen Sie das Bild in die Quelle (Bild zu Bild) und schreiben Sie im Prompt, was geändert werden soll. FLUX Fill zeichnet den maskierten Teil neu (nutzen Sie Inpaint oder Outpaint mit einer Maske). Diese Modelle unterstützen weder den Hires-Fix noch Entwürfe oder Control-Ebenen. Die App erkennt sie an ihrem Dateiinhalt, bei Kontext und den Qwen-Bearbeitungsmodellen am Wort `kontext` oder `edit` im Dateinamen; benennen Sie sie nicht um.
+- **FLUX.2.** Die klein-Modelle laufen in wenigen Schritten (bei den destillierten nehmen Sie CFG 1); dev verwendet den CFG-Wert als Guidance. Legen Sie ein Bild in die Quelle (Bild zu Bild), bearbeitet FLUX.2 es nach dem Prompt. Masken, Control-Ebenen und der Hires-Fix sind mit FLUX.2 nicht verfügbar (Entwürfe schon).
+- **Quantisierte (GGUF-)Modelle.** Eine Modell- oder Text-Encoder-Datei, die auf `.gguf` endet, wird von der Erweiterung ComfyUI-GGUF gelesen. Installieren Sie sie einmal auf dem Bildschirm Erweiterungen (https://github.com/city96/ComfyUI-GGUF) und starten Sie die Engine neu; bis dahin schlägt die Generierung fehl und sagt das auch.
+- **Modelle für andere Eingaben.** Modelle, die ein Control-Video, Audio, einen Kamerapfad oder ein Pose-Video brauchen (zum Beispiel Wan Fun Control, Wan Animate, Flux Canny), lassen sich hier noch nicht ausführen. Die Generierung schlägt fehl und nennt, was das Modell braucht.
 3. Das gewählte Modell erhält ein ✓, und auch das Bild der Karte (das Titelbild) ändert sich.
 
 Unter der Liste führt die Schaltfläche **{{ui:app.tabs.short.models}}** zum Tab {{ui:app.tabs.models}} (Verwaltung Ihrer Modelle), und die Schaltfläche **{{ui:app.tabs.short.browse}}** führt zum Tab {{ui:app.tabs.browse}} (Suche im Internet). Wie Sie weitere Modelle hinzufügen, steht unter [Modelle bereitstellen](08-models.md).
@@ -120,7 +129,7 @@ Unter der Liste führt die Schaltfläche **{{ui:app.tabs.short.models}}** zum Ta
 Sind für das Modell empfohlene Einstellungen (Schritte, CFG, Scheduler, Größe) hinterlegt, werden sie bei der Wahl automatisch eingetragen.
 Wechseln Sie zu einem Modell einer anderen Familie, werden LoRAs und Ähnliches, die nicht zum neuen Modell passen, entfernt (Sie erfahren, wie viele es waren).
 
-Mit der Schaltfläche **{{ui:params.profile.title}}** unter dem Modellfeld sehen Sie die empfohlenen Werte für dieses Modell als Liste. Weichen Ihre aktuellen Einstellungen von den empfohlenen ab, wird die Schaltfläche auffälliger gefärbt, und **{{ui:params.profile.apply}}** setzt alles auf die empfohlenen Werte.
+Mit der Schaltfläche **{{ui:params.profile.title}}** unter dem Modellfeld sehen Sie die empfohlenen Werte für dieses Modell als Liste. Weichen Ihre aktuellen Einstellungen von den empfohlenen ab, wird die Schaltfläche auffälliger gefärbt, und **{{ui:params.profile.apply}}** setzt alles auf die empfohlenen Werte. Die Schritte werden gegen einen Bereich von etwas unter bis etwas über der empfohlenen Zahl geprüft. Anima-Modelle zerfallen bei zu wenigen Schritten leicht (das Bild kann einfarbig flach werden), deshalb liegt ihre Untergrenze höher (24 oder mehr, wenn 30 empfohlen ist).
 
 > Ist kein Modell installiert, steht im Feld „{{ui:params.model.noModels}}“, und Sie können nicht generieren. Schließen Sie zuerst [Modelle bereitstellen](08-models.md) ab.
 
@@ -131,10 +140,11 @@ Unter dem Prompt gibt es Abschnitte, die Einstellungen gruppieren. Per Klick las
 | Abschnitt | Inhalt |
 |---|---|
 | **{{ui:params.refImage.sectionLabel}}** (direkt unter dem Prompt) | Bilder, mit denen Stimmung oder Figuren eines Bildes gesteuert werden (siehe unten) |
+| **{{ui:params.i2i.title}}** | Das Bild, über das beim Neuzeichnen nach einem Bild gezeichnet wird, und die {{ui:params.image.strength}} (siehe unten) |
 | **{{ui:params.image.title}}** | {{ui:params.image.aspect}}, Breite und Höhe. Dazu die Schaltflächen „{{ui:params.image.swap}}“, „{{ui:params.image.lock}}“ und „{{ui:params.image.optimal}}“ |
-| **{{ui:params.generation.title}}** | LoRA (ein kleines Zusatzmodell, das einen Zeichenstil oder eine Figur hinzufügt), {{ui:params.generation.scheduler}}, {{ui:params.generation.steps}}, {{ui:params.generation.cfg}} |
+| **{{ui:params.generation.title}}** | LoRA (ein kleines Zusatzmodell, das einen Zeichenstil oder eine Figur hinzufügt), {{ui:params.generation.scheduler}}, {{ui:params.generation.sampler}}, {{ui:params.generation.noiseSchedule}} (gewählt nach den eigenen Namen von ComfyUI; „{{ui:params.generation.engineAuto}}“ folgt dem Scheduler oder dem des Modells und zeigt den Namen, für den es steht, als „Auto (Name)“; FLUX.2 nimmt nur den Sampler), {{ui:params.generation.steps}}, {{ui:params.generation.cfg}} |
 | **{{ui:params.hires.title}}** | Ein zweiter Durchgang, der das gezeichnete Bild vergrößert und erneut zeichnet (siehe unten) |
-| **{{ui:params.advanced.title}}** | {{ui:params.advanced.vae}}, {{ui:params.advanced.clipSkip}}, {{ui:params.advanced.seamless}} (Bilder, die gekachelt keine Naht zeigen) und mehr |
+| **{{ui:params.advanced.title}}** | {{ui:params.advanced.vae}}, {{ui:params.advanced.clipSkip}}, {{ui:params.advanced.seamless}} (Bilder, die gekachelt keine Naht zeigen; Modelle von SD1.X und SDXL sowie die Erweiterung ComfyUI-seamless-tiling, installiert über den Bildschirm Erweiterungen) und mehr |
 
 Wenn Sie unsicher sind, kann alles außer der Größe so bleiben, wie es bei der Modellwahl eingetragen wurde.
 Halten Sie den Zeiger über einen Namen („{{ui:params.generation.steps}}“, „{{ui:params.generation.cfg}}“ und so weiter), um eine kurze Erklärung zu sehen. Die Überschrift jedes Abschnitts zeigt eine kleine Zusammenfassung seiner aktuellen Werte.
@@ -166,7 +176,7 @@ Das Bild behält die Größe des ersten Durchgangs und die {{ui:params.hires.tit
 Die Bedienelemente zum Generieren befinden sich oben im linken Bedienfeld.
 
 - **{{ui:params.invoke.invoke}}** (die blaue Schaltfläche): Hängt ans Ende der Warteschlange an und generiert. Sie können auch `Ctrl+Enter` drücken.
-- **Die Zahl neben ×**: Wie viele Bilder in einem Vorgang erzeugt werden. Bei „3“ entstehen drei Bilder.
+- **Die Zahl neben ×** (Durchläufe): Wie viele Bilder in einem Vorgang erzeugt werden. Bei „3“ entstehen drei Bilder.
 - **Die rote Schaltfläche ×**: Bricht ab, was gerade gezeichnet wird.
 - **Das ∨ rechts neben jeder Schaltfläche**: Ein Menü mit weiteren Vorgängen.
 
@@ -193,7 +203,7 @@ Klicken Sie auf das ∨ rechts neben der roten Schaltfläche ×, um das folgende
 ![Der Bildschirm nach Abschluss der Generierung. Das Bild wird im Betrachter in der Mitte angezeigt und steht auch in der Galerie rechts](shot:generate-result)
 
 Sobald Sie klicken, wechselt die Mitte zum Betrachter.
-Beim Zeichnen erscheint über der Galerie rechts ein Band „{{ui:gallery.generating.title}}“, in dem Sie das entstehende Bild, die Schrittzahl und den Fortschritt sehen. Auch die dünne Linie am oberen Rand der Mitte zeigt den Fortschritt.
+Beim Zeichnen erscheint über der Galerie rechts ein Band „{{ui:gallery.generating.title}}“, in dem Sie das entstehende Bild, die Schrittzahl und den Fortschritt sehen. Auch die dünne Linie am oberen Rand der Mitte zeigt den Fortschritt. Dasselbe Bild erscheint zudem als kleine Zelle am Anfang der Galerie. Klicken Sie auf die Zelle, um das entstehende Bild groß im Betrachter in der Mitte zu sehen. Wenn das Zeichnen endet, tritt das fertige Bild an ihre Stelle.
 
 Danach wird das Bild zur Galerie hinzugefügt und im Betrachter angezeigt.
 Das Bild wird im aktuell gewählten Board gespeichert (dem mit „{{ui:gallery.boards.autoBadge}}“ im rechten Bedienfeld). Boards sowie das Ordnen, Vergleichen und Wiederholen von Bildern werden unter [Die Galerie und der Betrachter](03-gallery.md) erklärt.
@@ -211,8 +221,9 @@ Eine Vorgabe enthält Folgendes zusammen.
 - Die Prompts (positiv und negativ)
 - Das Modell und die einzelnen Einstellungen (Größe, Schritte, CFG, Scheduler, VAE und so weiter)
 - LoRAs und Referenzbilder
+- {{ui:params.hires.title}}, die Einstellungen des Tabs **{{ui:app.tabs.upscaling}}**, die Inpaint-Einstellungen (Maskenunschärfe, Auffüllen und so weiter) und die Art, wie dynamische Prompts erzeugt werden
 
-Seed und Anzahl sind nicht enthalten.
+Seed, Durchläufe und das zu vergrößernde Bild sind nicht enthalten.
 
 So verwenden Sie sie.
 
@@ -221,15 +232,28 @@ So verwenden Sie sie.
 - Über das „…“ rechts neben einem Eintrag können Sie **{{ui:presets.apply}}**, **{{ui:presets.overwrite}}**, **{{ui:presets.rename}}** und **{{ui:presets.delete}}** wählen.
 - Die Liste gliedert sich in „{{ui:presets.group.mine}}“ und „{{ui:presets.group.builtin}}“. Die mitgelieferten Vorgaben sind Beispiele, die zur App gehören.
 
-Unabhängig davon gibt es über dem positiven und dem negativen Feld jeweils auch ein Vorgabenfeld. Es speichert und ruft nur den Text des Prompts auf. Es eignet sich, um feste Wendungen zu speichern (Zusammenstellungen von Qualitätswörtern oder von Wörtern, die man vermeiden möchte).
+### Vorgaben zufällig ausführen
 
-## Die Prompt-Liste
+Sie können einen Stapel erzeugen und dabei zufällig zwischen mehreren Vorgaben wechseln. Das eignet sich, wenn Sie viele Bilder hintereinander möchten, deren Prompts und Größen sich stark unterscheiden.
+
+1. Klicken Sie auf die Schaltfläche mit den gekreuzten Pfeilen ({{ui:presets.run.title}}) rechts neben der Karte „{{ui:presets.label}}“.
+2. Haken Sie die gewünschten Vorgaben an.
+3. Geben Sie die {{ui:presets.run.count}} in das Feld „×“ ein und klicken Sie auf **{{ui:presets.run.queue}}**.
+
+Für jedes Bild wird eine der angehakten Vorgaben mit gleicher Wahrscheinlichkeit gewählt, und auch der Seed ist zufällig. Einstellungen, die eine Vorgabe nicht enthält, kommen aus dem aktuellen linken Bedienfeld. Die Einstellungen des linken Bedienfelds ändern sich nicht.
+
+- Verwenden die Vorgaben verschiedene Modelle, dauert das Laden des Modells bei jedem Wechsel.
+- Enthält ein Prompt dynamische Prompts, erhält jedes Bild einen nach seinem Seed gewählten Prompt (nicht alle Kombinationen).
+- Lässt sich eine der angehakten Vorgaben nicht generieren, werden ihr Name und der Grund angezeigt, und nichts kann in die Warteschlange gestellt werden.
+- Die Haken und die Zahl bleiben für das nächste Öffnen erhalten.
+
+## Prompt-Vorgaben
 
 ![Die Prompt-Liste. Wörter und Bedeutungen sind nach Kategorien geordnet, mit den Schaltflächen Positiv und Negativ zum Hinzufügen](shot:prompt-book)
 
 Damit Sie Prompts auch aufbauen können, wenn Sie englische Wörter nicht im Kopf haben, gibt es die **{{ui:params.promptBook.open}}**. Öffnen Sie sie mit der Schaltfläche über dem positiven und dem negativen Feld.
 
-- Wählen Sie links eine Kategorie (Frisuren, Ausdrücke, Kleidung, Bildaufbau und so weiter), werden nur die Wörter dieser Kategorie aufgelistet. Das Suchfeld oben durchsucht Wörter, Bedeutungen, Kategorien und Notizen gleichzeitig.
+- Wählen Sie links eine Kategorie (Personen, Beziehungen und Interaktionen, Posen, Bewegungen, Ausdrücke, Blick, Bildaufbau, Frisuren, Kleidung und so weiter), werden nur die Wörter dieser Kategorie aufgelistet. Das Suchfeld oben durchsucht Wörter, Bedeutungen, Kategorien und Notizen gleichzeitig.
 - Klicken Sie rechts neben einem Wort auf „{{ui:params.prompt.positive}}“ oder „{{ui:params.prompt.negative}}“, wird das Wort zum Prompt hinzugefügt. Ein hinzugefügtes Wort erhält ein Häkchen, und ein erneuter Klick entfernt es.
 - Tippen Sie ein Wort und seine Bedeutung in das Eingabefeld ganz oben und klicken Sie auf **{{ui:params.promptBook.register}}**, um ein eigenes Wort hinzuzufügen. Der Stift rechts neben einem Wort bearbeitet es, der Papierkorb löscht es.
 
@@ -250,12 +274,22 @@ Im kleinen Fenster legen Sie Folgendes fest.
 
 Ist ein erforderliches Modell oder eine Erweiterung nicht installiert, erscheint am Rahmen ein Warnzeichen, und im kleinen Fenster sowie unter der Schaltfläche Starten steht ein Hinweis. Über die Schaltfläche im Hinweis können Sie es installieren.
 
-> Ein Referenzbild dient dazu, „die Stimmung zu lenken“. Wenn Sie „auf Grundlage dieses Bildes neu zeichnen“ möchten, nutzen Sie die Leinwand. Siehe [Auf der Leinwand weiter zeichnen](05-canvas.md).
+> Ein Referenzbild dient dazu, „die Stimmung zu lenken“. Wenn Sie „auf Grundlage dieses Bildes neu zeichnen“ möchten, nutzen Sie Bild zu Bild, das als Nächstes beschrieben wird.
+
+## Bild zu Bild (nach einem Bild neu zeichnen)
+
+Legen Sie ein Bild in den Abschnitt **{{ui:params.i2i.title}}**, wird es als Ausgangspunkt übermalt. Nutzen Sie das, um Anordnung und Farben eines Bildes zu behalten und es dem Prompt anzupassen.
+
+1. Öffnen Sie den Abschnitt und legen Sie ein Galeriebild (oder eine Bilddatei von Ihrem Computer) auf dem Rahmen ab. Auch **{{ui:params.refImage.openI2i}}** im kleinen Fenster eines Referenzbildes legt eines dort ab.
+2. Breite und Höhe wechseln zu der Größe, die das Modell gut zeichnet und die der Form des Bildes am nächsten kommt. Sie können sie danach von Hand ändern.
+3. Die **{{ui:params.image.strength}}** bestimmt, wie viel neu gezeichnet wird. Nahe 0 bleibt das Bild, wie es ist; nahe 1 wird es ignoriert. Um 0,5 ist ein guter Anfang.
+
+Ist der {{ui:params.hires.title}} eingeschaltet, wird das über Ihr Bild gezeichnete Bild vergrößert und erneut gezeichnet. Um das Bild zu entfernen, klicken Sie auf das × oben rechts an seinem Rahmen. Um nur einen bemalten Teil neu zu zeichnen, nutzen Sie [Auf der Leinwand weiter zeichnen](05-canvas.md).
 
 ### Charaktere
 
 Im Feld „{{ui:character.row.label}}“ über den Referenzbildern rufen Sie registrierte Charaktere auf (beliebig viele Bilder derselben Figur samt Wörtern, die ihr Aussehen beschreiben).
-Wählen Sie einen aus, werden dessen Referenzbilder und Aussehen-Wörter gesetzt. Wie ein Charakter registriert wird, steht unter [Bilder verbessern](04-improve.md).
+Wählen Sie einen aus, werden dessen Referenzbilder und Aussehen-Wörter gesetzt. Wie ein Charakter registriert wird, steht unter [Bilder korrigieren und wiederverwenden](04-improve.md).
 
 ## Warteschlange
 
@@ -295,7 +329,7 @@ Bei Kürzeln, die beim Tippen nicht funktionieren, verlassen Sie vor dem Drücke
 | Zum Prompt-Feld wechseln | `Alt+A` |
 | Linkes und rechtes Bedienfeld öffnen und schließen | `T`, `G` |
 | Beide Bedienfelder zusammen öffnen und schließen | `F` |
-| Tabs wechseln (der Reihe nach von {{ui:app.tabs.generate}} bis {{ui:app.tabs.queue}}) | `1` bis `9` |
+| Tabs wechseln (der Reihe nach in der Seitennavigation, von {{ui:app.tabs.generate}} bis {{ui:app.nav.extensions}}) | `1` bis `9` |
 | Die Liste der Kürzel öffnen | `Shift+?` |
 
 Die Kürzel sehen Sie auch unter „{{ui:app.nav.hotkeys}}“ im Menü **{{ui:app.nav.settings}}** der Seitennavigation.

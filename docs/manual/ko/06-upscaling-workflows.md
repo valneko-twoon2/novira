@@ -1,21 +1,21 @@
 # 업스케일과 워크플로
 
-이 장에서는 그림을 크게 만드는 **{{ui:app.tabs.upscaling}}** 탭과 처리를 직접 연결해서 만드는 **{{ui:app.tabs.workflows}}** 탭을 설명합니다.
+이 장에서는 그림을 크게 만드는 **{{ui:app.tabs.upscaling}}**과 처리를 직접 연결해서 만드는 **{{ui:app.tabs.workflows}}** 탭을 설명합니다.
 
 ## 업스케일
 
-![업스케일 탭. 가운데에 그림을 놓는 곳과 순서 카드가 나열되어 있다](shot:upscaling)
+![업스케일 화면. 가운데에 그림을 놓는 곳과 순서 카드가 나열되어 있다](shot:upscaling)
 
-**{{ui:app.tabs.upscaling}}** 탭은 그림을 크게 만들면서 세부를 덧그립니다. 단순히 늘리는 것이 아니라 먼저 확대용 모델로 크게 만든 뒤 프롬프트와 타일 ControlNet을 사용해서 세밀한 곳을 다시 그립니다.
+**{{ui:app.tabs.upscaling}}**은 왼쪽 사이드바의 틀 아이콘으로 엽니다(숫자 키 3으로도 열립니다). 그림을 크게 만들면서 세부를 덧그립니다. 단순히 늘리는 것이 아니라 먼저 확대용 모델로 크게 만든 뒤 프롬프트와 타일 ControlNet을 사용해서 세밀한 곳을 다시 그립니다. 큰 그림은 원본 그림과 비슷한 크기의 구획으로 나누어 구획마다 다시 그린 뒤 이어 붙입니다. 모델이 잘 그리는 크기로 그리므로 무너지기 어렵고, 걸리는 시간은 대략 구획의 수에 비례합니다. 어느 구획이든 프롬프트 전체로 그리므로, 인물을 쓴 프롬프트 그대로면 하늘이나 배경 구획에 작은 사람 그림자나 얼굴이 덧그려지는 경우가 있습니다. 그럴 때는 **{{ui:params.upscale.creativity}}**를 낮추거나 프롬프트를 화질이나 질감에 관한 말로만 구성하세요.
 
 ### 사용하는 것
 
-다음 2가지 모델이 필요합니다. 설치되어 있지 않을 때는 왼쪽 패널에 주의가 나옵니다. '{{ui:params.upscale.openModels}}' 버튼에서 모델 화면으로 이동할 수 있습니다. 설치 방법은 [모델](08-models.md) 장을 보세요.
+다음 2가지 모델을 사용합니다. 설치되어 있지 않을 때는 왼쪽 패널에 주의가 나옵니다. '{{ui:params.upscale.openModels}}' 버튼에서 모델 화면으로 이동할 수 있습니다. 설치 방법은 [모델](08-models.md) 장을 보세요.
 
 - {{ui:params.upscale.model}}(Real-ESRGAN 등 그림을 확대하기 위한 모델)
-- 선택한 메인 모델에 맞는 {{ui:params.upscale.tileControlnet}}
+- 선택한 메인 모델에 맞는 {{ui:params.upscale.tileControlnet}}(맞는 것이 있으면 자동으로 선택됩니다. Anima나 Qwen-Image처럼 맞는 것이 없는 계열에서는 타일 ControlNet 없이 다시 그립니다. 이때 **{{ui:params.upscale.structure}}**는 효과가 없으므로 형태를 유지하고 싶을 때는 **{{ui:params.upscale.creativity}}**를 낮춥니다)
 
-확대 모델이 하나도 설치되어 있지 않으면 왼쪽 패널에 후보가 나열됩니다. **{{ui:media.choice.recommended}}** 표시가 붙은 것부터 골라 **{{ui:models.install.install}}**로 설치하세요.
+확대 모델이 하나도 설치되어 있지 않으면 왼쪽 패널에 후보가 나열됩니다. **{{ui:media.choice.recommended}}** 표시가 붙은 것부터 골라 **{{ui:models.install.install}}**로 설치할 수 있습니다.
 
 ### 순서
 
@@ -25,14 +25,14 @@
 4. 완성도를 다음 2개의 슬라이더로 조정합니다.
    - **{{ui:params.upscale.creativity}}**: 높을수록 원본 그림에서 멀어지며 새로운 세부를 덧그립니다.
    - **{{ui:params.upscale.structure}}**: 높을수록 원본 그림의 형태와 배치를 유지합니다.
-5. **{{ui:params.upscale.tileControlnet}}**을 선택합니다. 필요하면 **{{ui:params.upscale.postProcessing}}**(그려진 그림을 다듬은 뒤, 출력 크기에 맞춥니다)도 선택합니다.
+5. **{{ui:params.upscale.tileControlnet}}**을 확인합니다(맞는 것이 있으면 선택되어 있습니다). 필요하면 **{{ui:params.upscale.postProcessing}}**(그려진 그림을 이 모델로 다듬은 뒤, 출력 크기에 맞춥니다)도 선택합니다.
 6. **{{ui:params.invoke.invoke}}** 버튼을 누릅니다.
 
 완성된 그림은 갤러리에 들어갑니다.
 
-- 출력 크기는 한 변이 8192px까지입니다. 그것을 넘으면 경고가 나오므로 배율을 낮추세요.
-- 프롬프트는 덧그리는 세부에 영향을 줍니다. 원본 그림의 프롬프트를 넣어 두면 원본과 방향이 맞기 쉬워집니다.
-- 확대한 뒤의 그림이 원본과 너무 다를 때는 **{{ui:params.upscale.creativity}}**을 낮추고 **{{ui:params.upscale.structure}}**를 올립니다.
+- 출력 크기는 한 변이 8192픽셀까지입니다. 그것을 넘으면 경고가 나오므로 배율을 낮추세요.
+- 프롬프트는 덧그리는 세부에 영향을 줍니다. 원본 그림의 프롬프트를 입력해 두면 그림의 방향이 맞기 쉬워집니다.
+- 확대한 뒤의 그림이 원본과 너무 다를 때는 **{{ui:params.upscale.creativity}}**를 낮추고 **{{ui:params.upscale.structure}}**를 올립니다.
 
 > 여러 그림을 한 번에 확대하고 싶을 때는 갤러리에서 여러 장을 선택하고 오른쪽 클릭에서 **{{ui:gallery.menu.batch}}**를 사용합니다([그림 수정하고 다시 쓰기](04-improve.md)). 이쪽은 확대용 모델만으로 크게 만듭니다.
 
@@ -47,14 +47,18 @@
 화면은 다음 2가지로 이루어져 있습니다.
 
 - 가운데: **{{ui:app.views.editor}}**. 노드를 늘어놓고 선으로 연결합니다.
-- 왼쪽 패널: **{{ui:workflows.panel.workflow}}**(폼), **{{ui:workflows.panel.templates}}**, **{{ui:workflows.panel.packs}}**, **{{ui:workflows.panel.details}}**, **{{ui:workflows.panel.data}}**의 5개 탭.
+- 왼쪽 패널: **{{ui:workflows.panel.workflow}}**(폼), **{{ui:workflows.panel.nodes}}**, **{{ui:workflows.panel.templates}}**, **{{ui:workflows.panel.packs}}**, **{{ui:workflows.panel.details}}**, **{{ui:workflows.panel.data}}**의 6개 탭.
 
 워크플로를 실행하려면 왼쪽 패널 위에 있는 **{{ui:params.invoke.invoke}}** 버튼을 누릅니다. 출력 노드('{{ui:workflows.nodes.save_image.title}}' 등)가 없거나 모델이 선택되어 있지 않은 등의 문제가 있을 때는 생성할 수 없는 이유가 표시됩니다.
 
+연결한 노드는 모두 실행에 사용됩니다. **{{ui:workflows.nodes.controlnet.title}}**, **{{ui:workflows.nodes.ip_adapter.title}}**, **{{ui:workflows.nodes.img_resize.title}}**, **{{ui:workflows.nodes.canny_edge_detection.title}}** 등도 연결한 대로 동작합니다. **{{ui:workflows.nodes.ip_adapter.title}}**에는 확장 기능과 모델(이미지 인코더)이 필요합니다. 아직 실행할 수 없는 것은 **{{ui:workflows.nodes.collect.title}}**, **{{ui:workflows.nodes.iterate.title}}**, **{{ui:workflows.nodes.range.title}}**와 박스 블러, 그리고 **{{ui:workflows.nodes.rand_int.title}}**를 연결한 계산 노드입니다. 사용할 수 없는 이유는 위의 문제 표시에 나옵니다.
+
 ### 노드를 추가하고 연결하기
 
-1. 편집기 왼쪽 위의 **{{ui:workflows.toolbar.addNode}}**(＋)를 누릅니다. 키보드의 `Shift+A` 또는 `Space`로도 열립니다.
-2. 목록에서 노드를 선택합니다. 위쪽 검색란에 말을 입력해서 좁힐 수 있습니다. 왼쪽의 분류에서 기본 노드의 종류별로, 또는 설치한 확장 기능별로 좁혀 볼 수 있습니다.
+왼쪽 패널의 **{{ui:workflows.panel.nodes}}** 탭에는 추가할 수 있는 노드가 ComfyUI와 같은 분류로 나열됩니다. **{{ui:workflows.nodeLibrary.section.core}}**와 **{{ui:workflows.picker.extensions}}** 제목 아래에 종류별 폴더(모델, 이미지, 동영상 등)가 ComfyUI와 같은 순서로 나열되며, novira 고유의 기본 노드도 같은 종류의 폴더에 들어 있습니다. 열면 안의 폴더와 노드가 나옵니다. **{{ui:workflows.picker.extensions}}**는 확장 기능 이름의 폴더 안에 그 확장 기능의 카테고리가 들어 있습니다. 검색하면 맞는 노드가 어느 폴더에 있는지와 함께 나열됩니다. 노드를 더블클릭(또는 선택하고 `Enter`)하면 캔버스 한가운데에, 캔버스로 드래그하면 그 위치에 노드가 들어갑니다. 화면을 가리는 목록을 열지 않고 계속 추가할 수 있습니다. 다음 방법으로도 추가할 수 있습니다.
+
+1. 키보드의 `Shift+A` 또는 `Space`를 누르면 노드를 고르는 목록이 열립니다.
+2. 목록에서 노드를 선택합니다. 위쪽 검색란에 말을 입력해서 좁힐 수 있습니다. 왼쪽의 분류에서 기본 노드의 종류별로, ComfyUI 본체 노드의 종류별로, 또는 설치한 확장 기능별로 좁혀 볼 수 있습니다.
 3. 노드 오른쪽에 있는 동그라미(출력)에서 다른 노드 왼쪽의 동그라미(입력)까지 드래그해서 연결합니다. 연결할 수 있는 것은 같은 종류끼리뿐입니다.
 
 ![노드를 추가할 때의 목록](shot:workflows-add-node)
@@ -69,14 +73,24 @@
 
 노드의 설정값은 노드 안에서 직접 입력합니다. 연결한 입력의 값은 연결한 곳에서 옵니다.
 
+### 음악이나 동영상을 워크플로로 만들기
+
+왼쪽 패널의 **{{ui:workflows.panel.nodes}}** 탭과 노드를 추가하는 목록의 왼쪽에는 **{{ui:workflows.picker.core}}** 분류가 있습니다. ComfyUI가 처음부터 가지고 있는 노드가 종류(오디오, 동영상, 샘플링 등)별로 나열되며, 음악이나 동영상을 만드는 노드도 여기에 있습니다. 기본 노드와 자유롭게 조합할 수 있습니다.
+
+- 템플릿 **{{ui:workflows.templates.musicAceStep.title}}**, **{{ui:workflows.templates.videoWan22.title}}**, **{{ui:workflows.templates.videoWan22Image.title}}**를 열면 바로 실행할 수 있습니다. 모델은 음악 탭과 동영상 탭에서 내려받은 것을 사용합니다.
+- 결과를 저장하는 노드(Save Audio나 Save Video)에서 형식을 선택합니다. MP3의 음질처럼 선택한 형식에 필요한 설정은 그 아래에 나옵니다.
+- 만든 음악이나 동영상은 갤러리에 들어갑니다. 갤러리가 다룰 수 있는 형식은 음악이 MP3·WAV·FLAC, 동영상이 MP4입니다. Opus나 WebM 등을 선택하면 저장할 수 없는 형식이라는 메시지가 나오고 멈춥니다.
+- 갤러리의 음악이나 동영상은 Load Audio나 Load Video 노드에서 선택해서 연결합니다.
+- **{{ui:workflows.nodes.voice_speak.title}}** 노드(분류는 **{{ui:workflows.categories.audio}}**)는 문장을 소리 내어 읽은 음성을 만듭니다. 음성 탭과 같은 엔진(Qwen3-TTS)이며 미리 설치해 두어야 합니다. 만든 음성은 음성을 받는 노드에 연결합니다. Save Audio에 연결하면 MP3 등으로 저장할 수 있고, Create Video의 오디오에 연결하면 동영상에 목소리를 입힐 수 있습니다(음성이 동영상보다 길면 동영상의 길이에서 잘립니다). 템플릿 **{{ui:workflows.templates.voiceRead.title}}**과 **{{ui:workflows.templates.videoNarration.title}}**을 그대로 사용할 수 있습니다.
+- '무작위 정수'를 연결하지 않은 시드는 언제나 같은 결과가 됩니다. 템플릿에는 처음부터 연결되어 있습니다.
+- ComfyUI 본체 노드의 이름, 항목, 폴더의 이름은 ComfyUI 자체 화면과 같은 말로 나옵니다. ComfyUI에 번역이 없는 말(확장 기능의 노드 등)은 영어 그대로입니다. 사용할 수 있는 노드의 수는 ComfyUI의 버전에 따라 달라집니다.
+
 ### 버튼 배치
 
 편집기 왼쪽 위의 버튼입니다.
 
 | 버튼 | 하는 일 |
 |---|---|
-| **{{ui:workflows.toolbar.addNode}}** | 노드를 추가합니다. |
-| **{{ui:workflows.toolbar.library}}** | 워크플로 목록을 엽니다. |
 | **{{ui:workflows.toolbar.new}}** | 빈 워크플로를 시작합니다. |
 | **{{ui:workflows.toolbar.save}}**(`Ctrl+S`) | 저장합니다. 처음 저장할 때는 이름을 묻습니다. |
 | **{{ui:workflows.toolbar.optimize}}** | 중복되는 노드를 합치고 출력에 연결되지 않은 노드와 불필요한 연결을 지운 뒤 왼쪽에서 오른쪽으로 다시 배열합니다. 되돌릴 수도 있습니다. |
@@ -84,7 +98,7 @@
 
 오른쪽 위 톱니바퀴의 **{{ui:workflows.settings.title}}**에서는 미니맵 표시, 격자에 맞추기 등을 전환할 수 있습니다.
 
-**{{ui:workflows.settings.autoTidy}}**는 처음부터 켜져 있습니다. 노드나 선을 추가하거나 지우면 잠시 뒤 노드를 왼쪽에서 오른쪽으로 자동으로 다시 배열하고 같은 기능의 중복된 노드를 합칩니다. 합쳤을 때는 알림이 나오며 `Ctrl+Z`로 되돌릴 수 있습니다. 연결되지 않은 노드는 자동으로는 지워지지 않습니다. 직접 배열하고 싶을 때는 끄세요.
+**{{ui:workflows.settings.autoTidy}}**는 처음에는 꺼져 있습니다. 켜면 노드나 선을 추가하거나 지웠을 때 잠시 뒤 노드를 왼쪽에서 오른쪽으로 자동으로 다시 배열하고 같은 기능의 중복된 노드를 합칩니다. 합쳤을 때는 알림이 나오며 `Ctrl+Z`로 되돌릴 수 있습니다. 연결되지 않은 노드는 자동으로는 지워지지 않습니다. 직접 배열하고 싶을 때는 꺼진 채로 두세요.
 
 저장하지 않은 변경이 있으면 이름 옆에 점이 나옵니다. 다른 워크플로로 전환할 때는 버려도 되는지 묻습니다.
 
@@ -104,11 +118,11 @@
 
 ![워크플로 라이브러리](shot:workflows-library)
 
-**{{ui:workflows.library.button}}**를 누르면 목록이 열립니다.
+왼쪽 패널 맨 위, 생성 버튼 위에 있는 **{{ui:workflows.library.button}}** 카드(지금 열려 있는 워크플로의 이름이 나옵니다)를 누르면 목록이 열립니다.
 
 - **{{ui:workflows.library.recent}}**: 최근에 연 것.
 - **{{ui:workflows.library.yours}}**: 직접 저장한 것.
-- **{{ui:workflows.library.defaults}}**: 처음부터 들어 있는 기본 워크플로입니다. 먼저 **{{ui:workflows.library.copyToMine}}**해서 고칩니다.
+- **{{ui:workflows.library.defaults}}**: 처음부터 들어 있는 견본. 견본은 **{{ui:workflows.library.copyToMine}}**으로 내 것으로 복사한 뒤에 고칩니다.
 
 검색, 태그로 좁히기, 정렬 순서 변경을 할 수 있습니다. **{{ui:workflows.library.open}}**로 열고 휴지통 버튼으로 삭제합니다. **{{ui:workflows.library.new}}**와 **{{ui:workflows.library.upload}}**도 여기에 있습니다.
 
@@ -129,7 +143,7 @@
 - **{{ui:workflows.templates.add}}**를 누르면 현재 편집기의 오른쪽에 추가합니다.
 - 모델이나 이미지는 연 뒤에 선택합니다.
 
-확장 기능이 필요한 템플릿에는 '필요한 팩' 항목이 나옵니다. **{{ui:workflows.templates.installPacks}}**를 눌러 설치하고 **{{ui:workflows.templates.restartFirst}}** 버튼으로 ComfyUI를 다시 시작하면 열 수 있게 됩니다.
+확장 기능이 필요한 템플릿에는 '필요한 확장 기능' 항목이 나옵니다. **{{ui:workflows.templates.installPacks}}**를 눌러 설치하고 **{{ui:workflows.templates.restartFirst}}** 버튼으로 ComfyUI를 다시 시작하면 열 수 있게 됩니다. ComfyUI 본체의 노드로 구성한 템플릿은 ComfyUI가 실행되면 열 수 있게 됩니다.
 
 준비되어 있는 템플릿은 다음과 같습니다.
 
@@ -142,6 +156,11 @@
 | **{{ui:workflows.templates.upscale.title}}** | 확대용 모델로 그림을 고해상도로 크게 만듭니다. | 없음 |
 | **{{ui:workflows.templates.controlnetCanny.title}}** | 그림의 윤곽선을 뽑아서 그 형태를 유지한 채 새로 그립니다. | 없음 |
 | **{{ui:workflows.templates.imageToVideo.title}}** | 1장의 그림에 움직임을 주어 짧은 동영상으로 만듭니다. | 없음(동영상용 모델이 필요합니다) |
+| **{{ui:workflows.templates.videoWan22.title}}** | ComfyUI 본체의 노드로 문장에서 짧은 동영상을 만듭니다. 길이, 크기, 샘플러도 자유롭게 바꿀 수 있습니다. | 없음(동영상용 모델이 필요합니다) |
+| **{{ui:workflows.templates.videoWan22Image.title}}** | 같은 구성으로 선택한 그림에서 동영상을 만듭니다. | 없음(동영상용 모델이 필요합니다) |
+| **{{ui:workflows.templates.musicAceStep.title}}** | 스타일 태그와 가사로 곡을 만듭니다. | 없음(음악용 모델이 필요합니다) |
+| **{{ui:workflows.templates.voiceRead.title}}** | 문장을 읽은 음성을 만들어 MP3로 저장합니다. | 없음(음성 엔진과 모델이 필요합니다) |
+| **{{ui:workflows.templates.videoNarration.title}}** | 갤러리의 동영상을 선택하고, 읽은 음성을 그 동영상의 음성으로 삼아 새 동영상으로 저장합니다. | 없음(음성 엔진과 모델이 필요합니다) |
 | **{{ui:workflows.templates.filmGrain.title}}** | 만든 그림에 사진 같은 입자를 더합니다. | ComfyUI-NKD-Basic-Tools |
 | **{{ui:workflows.templates.faceRig.title}}** | 얼굴 사진의 표정, 시선, 목의 방향을 바꿉니다. | ComfyUI-NKD-Basic-Tools |
 | **{{ui:workflows.templates.tiledUpscale.title}}** | 2048로 확대한 뒤 타일마다 다시 그려서 세부를 더합니다. | ComfyUI_UltimateSDUpscale |
@@ -156,7 +175,7 @@
 
 캐릭터를 사용하는 템플릿은 [캐릭터를 등록해서 사용하기](04-improve.md#캐릭터를-등록해서-사용하기) 기능을 워크플로로 세밀하게 조정하고 싶을 때를 위한 것입니다. 보통은 생성 탭에서 등록한 캐릭터를 사용하면 충분합니다. 막대 인간의 자세는 [캔버스](05-canvas.md)의 '{{ui:pose.title}}'로 만들 수 있습니다.
 
-## 확장 기능(노드 팩)
+## 확장 기능(커스텀 노드)
 
 **{{ui:workflows.panel.packs}}** 탭에서는 ComfyUI에 확장 기능을 추가하거나 제거합니다. 확장 기능은 노드를 늘리기 위한 추가 부품입니다. 설치한 노드는 노드 추가 목록의 **{{ui:workflows.categories.extension}}**에 나옵니다.
 
@@ -170,11 +189,11 @@
 
 카탈로그에 없는 것은 **{{ui:workflows.packs.byAddress}}**에서 GitHub 주소(https://github.com/사용자명/이름 형태)를 입력해서 설치할 수 있습니다. 그 밖에 설치되어 있는 확장 기능은 **{{ui:workflows.packs.others}}**에 나옵니다. 필요 없는 확장 기능은 **{{ui:workflows.packs.remove}}**로 제거할 수 있습니다(확인을 위해 한 번 더 누릅니다).
 
-확장 기능은 워크플로 화면이 아니어도 언제든 볼 수 있습니다. 왼쪽 사이드바의 **{{ui:app.nav.extensions}}**(퍼즐 아이콘)을 누르면 **{{ui:workflows.packs.mgr.title}}**가 열립니다. 공개된 확장 기능이 카드로 나열되며, 왼쪽 목록의 **{{ui:workflows.packs.mgr.installed}}**·**{{ui:workflows.packs.mgr.notInstalled}}**·목적별로 좁히거나 위쪽 입력란에서 이름·제작자·설명으로 검색할 수 있습니다. **{{ui:workflows.packs.mgr.sort.label}}**은 처음에는 **{{ui:workflows.packs.mgr.sort.downloads}}**가 많은 순입니다. 카드에는 제작자·버전·업데이트 날짜·다운로드 수가 표시되고, 설치된 것에는 **{{ui:workflows.packs.installed}}**이 표시됩니다. 설치되지 않은 것은 카드의 **{{ui:workflows.packs.install}}**로 설치할 수 있습니다. 카드를 누르면 오른쪽에 상세가 열리고, **{{ui:workflows.packs.mgr.license}}**와 배포처를 확인하거나 **{{ui:workflows.packs.remove}}**를 할 수 있습니다. 목록에 없는 확장 기능은 위쪽의 **{{ui:workflows.packs.mgr.addTitle}}**에 GitHub 주소를 입력해 설치할 수 있습니다. 설치하거나 제거한 뒤에는 같은 화면의 **{{ui:workflows.packs.restart}}**을 누르면 반영됩니다. 각 카드의 상세 정보에는 **{{ui:agent.ask.button}}** 버튼이 있고, 검색창에 단어를 입력하면 **{{ui:agent.ask.resultsButton}}**도 나타납니다. 누르면 AI 어시스턴트가 그 확장 기능이 무엇을 하는지, 어떻게 쓰는지 설명합니다([AI 어시스턴트와 설정](09-assistant-settings.md) 참조).
+설치한 확장 기능은 워크플로 화면이 아니어도 언제든 볼 수 있습니다. 왼쪽 사이드바의 **{{ui:app.nav.extensions}}**(퍼즐 아이콘)을 누르면 **{{ui:workflows.packs.mgr.title}}**가 열립니다. 공개된 확장 기능이 카드로 나열되며, 왼쪽 목록의 **{{ui:workflows.packs.mgr.installed}}**·**{{ui:workflows.packs.mgr.notInstalled}}**·목적별로 좁히거나 위쪽 입력란에서 이름·제작자·설명으로 검색할 수 있습니다. **{{ui:workflows.packs.mgr.sort.label}}**은 처음에는 **{{ui:workflows.packs.mgr.sort.downloads}}**가 많은 순입니다. 카드에는 제작자·버전·업데이트 날짜·다운로드 수가 표시되고, 설치된 것에는 **{{ui:workflows.packs.installed}}**이 표시됩니다. 설치되지 않은 것은 카드의 **{{ui:workflows.packs.install}}**로 설치할 수 있습니다. 카드를 누르면 오른쪽에 상세가 열리고, **{{ui:workflows.packs.mgr.license}}**와 배포처를 확인하거나 **{{ui:workflows.packs.remove}}**를 할 수 있습니다. 목록에 없는 확장 기능은 위쪽의 **{{ui:workflows.packs.mgr.addTitle}}**에 GitHub 주소를 입력해 설치할 수 있습니다. 설치하거나 제거한 뒤에는 같은 화면에 나오는 **{{ui:workflows.packs.restart}}**을 누르면 반영됩니다. 각 카드의 상세 정보에는 **{{ui:agent.ask.button}}** 버튼이 있고, 검색창에 단어를 입력하면 **{{ui:agent.ask.resultsButton}}**도 나타납니다. 누르면 AI 어시스턴트가 그 확장 기능이 무엇을 하는지, 어떻게 쓰는지 설명합니다([AI 어시스턴트와 설정](09-assistant-settings.md) 참조).
 
-상세의 **{{ui:workflows.packs.version.label}}**에는 지금 설치된 버전이 표시됩니다. 그 확장 기능의 저장소가 버전을 공개하고 있을 때만 **{{ui:workflows.packs.version.change}}**이 나타나며, 누르면 고를 수 있는 버전이 나열되고 **{{ui:workflows.packs.version.apply}}**으로 그 버전으로 바꿉니다. 지금 설치된 버전에는 **{{ui:workflows.packs.installed}}**이 표시됩니다. 버전을 공개하지 않는 확장 기능에는 이 버튼이 나오지 않습니다. 반영하려면 같은 화면의 **{{ui:workflows.packs.restart}}**을 누르세요. 다른 확장 기능이나 ComfyUI가 지원하지 않는다고 알려진 버전에는 **{{ui:workflows.packs.version.deprecated}}**이 표시되고, 무엇이 지원하지 않는지도 함께 적힙니다. 직접 넣은 확장 기능은 여기에서 버전을 바꿀 수 없습니다.
+상세의 **{{ui:workflows.packs.version.label}}**에는 지금 설치된 버전이 표시됩니다. 그 확장 기능의 저장소가 버전을 공개하고 있을 때만 **{{ui:workflows.packs.version.change}}**이 나타나며, 누르면 고를 수 있는 버전이 나열되고 **{{ui:workflows.packs.version.apply}}**으로 그 버전으로 바꿉니다. 지금 설치된 버전에는 **{{ui:workflows.packs.installed}}**이 표시됩니다. 버전을 공개하지 않는 확장 기능에는 이 버튼이 나오지 않습니다. 반영하려면 같은 화면의 **{{ui:workflows.packs.restart}}**을 누르세요. 다른 확장 기능이나 ComfyUI가 지원하지 않는다고 알려진 버전에는 **{{ui:workflows.packs.version.deprecated}}**이 표시되고, 무엇이 지원하지 않는지도 함께 적힙니다. 직접 설치한 확장 기능은 여기에서 버전을 바꿀 수 없습니다.
 
-ComfyUI의 버전도 같은 화면에서 바꿀 수 있습니다. 목록 맨 앞의 **{{ui:workflows.packs.version.comfyTitle}}** 카드를 누르고, 오른쪽의 **{{ui:workflows.packs.version.change}}**으로 고를 수 있는 버전을 나열합니다. **{{ui:workflows.packs.version.apply}}**을 누른 뒤 한 번 더 **{{ui:workflows.packs.version.confirm}}**를 누르면 전환이 시작됩니다. 설치된 확장 기능을 모두 다시 설치하므로 몇 분이 걸리고, 끝날 때까지 이미지를 만들 수 없습니다. 새 버전이 시작되지 않으면 원래 버전으로 돌아갑니다.
+ComfyUI의 버전도 같은 화면에서 바꿀 수 있습니다. 목록 맨 앞의 **{{ui:workflows.packs.version.comfyTitle}}** 카드를 누르고, 오른쪽에 나오는 **{{ui:workflows.packs.version.change}}**으로 고를 수 있는 버전을 나열합니다. **{{ui:workflows.packs.version.apply}}**을 누른 뒤 한 번 더 **{{ui:workflows.packs.version.confirm}}**를 누르면 전환이 시작됩니다. 설치된 확장 기능을 모두 다시 설치하므로 몇 분이 걸리고, 끝날 때까지 이미지를 만들 수 없습니다. 새 버전이 시작되지 않으면 원래 버전으로 돌아갑니다.
 
 > 확장 기능은 이 컴퓨터에서 동작하는 프로그램입니다. 출처를 알 수 없는 것은 설치하지 마세요.
 

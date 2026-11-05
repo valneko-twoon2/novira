@@ -5,7 +5,7 @@ Este capítulo reúne as causas de quando algo dá errado e o que tentar. Procur
 Primeiro, observar os dois itens a seguir costuma dar uma pista da causa.
 
 - A aba **{{ui:app.tabs.queue}}**: um item que falhou mostra o motivo (veja [abaixo](#a-geração-falha)).
-- {{ui:app.devlog.title}}: o registro interno do app (veja [O assistente e as configurações](09-assistant-settings.md)).
+- {{ui:app.devlog.title}}: o registro interno do app (veja [O agente, as configurações e os atalhos](09-assistant-settings.md)).
 
 ## Inicialização e o mecanismo
 
@@ -113,7 +113,7 @@ Quando um trabalho falha por falta de memória, o app reconhece isso e mostra o 
 Os botões do aviso permitem tentar uma destas opções:
 
 - **{{ui:queue.oom.retrySmaller}}**: cria de novo com as mesmas configurações e a mesma seed, em cerca de 75% da área, com a mesma proporção. Aparece apenas para imagens criadas em um tamanho escolhido (não para vídeo, música, voz, logotipos ou ampliação).
-- **{{ui:queue.oom.lowMemory}}**: liga **{{ui:settings.lowMemory.label}}** (veja [O assistente e as configurações](09-assistant-settings.md)) e reinicia o mecanismo. Enquanto um item está sendo criado, vale a partir da próxima vez que o mecanismo for iniciado. Não aparece quando o modo já está ligado.
+- **{{ui:queue.oom.lowMemory}}**: liga **{{ui:settings.lowMemory.label}}** (veja [O agente, as configurações e os atalhos](09-assistant-settings.md)) e reinicia o mecanismo. Enquanto um item está sendo criado, vale a partir da próxima vez que o mecanismo for iniciado. Não aparece quando o modo já está ligado.
 
 Depois que um trabalho falha por falta de memória, o app pede ao mecanismo que descarregue seus modelos e libere a memória. Por isso, o trabalho seguinte começa carregando o modelo de novo e demora um pouco mais.
 
@@ -164,7 +164,7 @@ Se ainda não encontrar, confira o **{{ui:queue.col.destination}}** do item na a
 
 Imagens, modelos e registros vão todos para uma pasta chamada **`novira-data`**. O local é o seguinte.
 
-- Versão distribuída: a pasta escolhida na instalação. O padrão é `novira-data` dentro da mesma pasta do executável do app (`novira.exe`).
+- Versão distribuída: `novira-data` dentro da pasta do usuário (`C:\Users\<nome de usuário>`). Se já existir um `novira-data` na mesma pasta do executável (`novira.exe`), como era antes, ele continua sendo usado.
 - Versão em desenvolvimento: `novira-data` dentro da pasta principal do repositório.
 
 É possível mudar para outro local com a variável de ambiente `NOVIRA_DATA_DIR`.
@@ -181,7 +181,7 @@ Imagens, modelos e registros vão todos para uma pasta chamada **`novira-data`**
 | `logs` | Logs (veja abaixo) |
 | `settings.json` | Configurações para usuários avançados (não há problema se não existir) |
 | `secrets` | Chaves de API e tokens (criptografados) |
-| `agent.json` | O tipo de IA escolhido para o assistente de IA |
+| `agent.json` | O tipo de IA escolhido no agente |
 
 O mecanismo que o app instalou (ComfyUI e Python) e seus dados de trabalho também ficam dentro da pasta de dados.
 
@@ -189,7 +189,7 @@ As configurações da tela do app (idioma, tema, predefinições, o histórico d
 
 ### Backups
 
-O novira tem um recurso que cria um backup e um recurso que restaura a partir de um backup. Para proteger imagens importantes para você, use a parte **{{ui:share.backup.section}}** das configurações (veja [O assistente e as configurações](09-assistant-settings.md#backup)). Um backup contém as imagens que você criou e o que você configurou ou registrou no app, mas não os modelos nem o mecanismo de geração de imagens. Se você quer guardar esses também, copie a pasta por conta própria.
+O novira tem um recurso que cria um backup e um recurso que restaura a partir de um backup. Para proteger imagens importantes para você, use a parte **{{ui:share.backup.section}}** das configurações (veja [O agente, as configurações e os atalhos](09-assistant-settings.md#backup)). Um backup contém as imagens que você criou e o que você configurou ou registrou no app, mas não os modelos nem o mecanismo de geração de imagens. Se você quer guardar esses também, copie a pasta por conta própria.
 
 1. Feche o app (verifique também se nada está sendo criado).
 2. Copie a pasta `novira-data` inteira para outra unidade ou similar.
@@ -206,7 +206,7 @@ Os logs podem ser vistos em três lugares.
 
 | Lugar | O que guarda |
 |---|---|
-| {{ui:app.devlog.title}} (dentro do app) | Os registros internos do app, e avisos e erros na tela. A exibição é ligada nas configurações ([O assistente e as configurações](09-assistant-settings.md)) |
+| {{ui:app.devlog.title}} (dentro do app) | Os registros internos do app, e avisos e erros na tela. A exibição é ligada nas configurações ([O agente, as configurações e os atalhos](09-assistant-settings.md)) |
 | `novira-data\logs\novira.log` | O log do próprio app. Quando fica grande (mais de 2 MB), passa para `novira.log.1` |
 | `novira-data\logs\comfyui.log` | O log do mecanismo de geração de imagens. O motivo aparece aqui quando ele não consegue iniciar ou quando a geração falha |
 
