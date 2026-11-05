@@ -334,7 +334,7 @@
   "workflows.packs.catalog.detailDaemon": "Acrescenta detalhes finos e textura durante a amostragem, deixando imagens chapadas mais nítidas.",
   "workflows.packs.catalog.florence2": "Descreve uma imagem em palavras. Encontra coisas pelo nome e cria máscaras.",
   "workflows.packs.catalog.wd14": "Extrai as tags de uma imagem em estilo anime.",
-  "workflows.packs.catalog.kjnodes": "Um grande conjunto de pequenos auxiliares: máscaras, lotes, redimensionamento, correspondência de cor.",
+  "workflows.packs.catalog.kjnodes": "Pequenos auxiliares: máscaras, lotes, redimensionar, ajuste de cor.",
   "workflows.packs.catalog.essentials": "Nós do dia a dia que faltam no núcleo: redimensionar, cortar, ferramentas de máscara, matemática.",
   "workflows.packs.catalog.was": "Uma grande suíte de filtros de imagem, mesclagens, ferramentas de texto e número, listas.",
   "workflows.templates.faceDetailer.title": "Encontrar e redesenhar rostos",

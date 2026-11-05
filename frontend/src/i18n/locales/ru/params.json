@@ -144,7 +144,7 @@
   "params.refImage.restartEngine": "Перезапустите ComfyUI, чтобы использовать",
   "params.readiness.upscaleNoImage": "Нет изображения для апскейла",
   "params.readiness.upscaleNoModel": "Модель апскейла не выбрана",
-  "params.invoke.invoke": "Сгенерировать",
+  "params.invoke.invoke": "Создать",
   "params.invoke.generating": "Генерация",
   "params.invoke.tooltip": "Добавить в очередь и сгенерировать",
   "params.invoke.cannotInvoke": "Запуск невозможен",

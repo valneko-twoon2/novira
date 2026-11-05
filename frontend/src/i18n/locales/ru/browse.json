@@ -70,7 +70,7 @@
   "browse.toast.failed": "Не удалось начать загрузку",
   "browse.toast.openMock": "В тестовом режиме Civitai не открывается",
   "browse.commercial.allowed": "Коммерция разрешена",
-  "browse.commercial.limited": "Ограниченное использование",
+  "browse.commercial.limited": "Ограничено",
   "browse.commercial.denied": "Без коммерции",
   "browse.commercial.denied.hint": "Коммерческое использование не разрешено. Только для личных целей.",
   "browse.toast.openFailed": "Не удалось открыть страницу Civitai",
