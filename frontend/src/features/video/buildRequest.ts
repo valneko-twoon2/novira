@@ -1,7 +1,7 @@
 // Turns the video form into a queue request (shared by the video screen and the workflow graph builder's tests).
 import { randomSeed, type EnqueueRequest } from '@/backend';
 import { findImage } from '@/state/gallery';
-import { autoAddBoardId } from '@/state/invoke';
+import { generationBoardId } from '@/state/invoke';
 import { findModel } from '@/state/models';
 import { framesFor, type VideoForm } from '@/state/media/video';
 
@@ -52,7 +52,7 @@ export function buildVideoRequest(form: VideoForm): EnqueueRequest {
     iterations: 1,
     randomizeSeed: false,
     prepend: false,
-    boardId: autoAddBoardId(),
+    boardId: generationBoardId(),
     initImageUrl: source?.url ?? null,
   };
 }

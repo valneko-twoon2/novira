@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { backend, type EnqueueRequest, type QueueItem } from '@/backend';
 import { t } from '@/i18n';
 import { useGallery } from './gallery';
+import { useQueue } from './queue';
 import { toast } from './toasts';
 import { showViewer, useUi, type MediaKind, type TabName } from './ui';
 
@@ -108,6 +109,17 @@ export async function invoke(opts: { prepend?: boolean } = {}) {
 export function autoAddBoardId(): string | null {
   const id = useGallery.getState().autoAddBoardId;
   return id === 'none' ? null : id;
+}
+
+/**
+ * Board a generation goes to. While earlier pictures of the gallery are still waiting or drawing, a run of Invokes keeps
+ * the board the first of them chose, even if another board is picked meanwhile; a board that is gone, or nothing queued,
+ * falls back to the auto-add board (`autoAddBoardId`).
+ */
+export function generationBoardId(): string | null {
+  const first = useQueue.getState().items.find((i) => (i.status === 'pending' || i.status === 'in_progress') && i.destination === 'gallery');
+  if (first && (first.boardId === null || useGallery.getState().boards.some((b) => b.id === first.boardId))) return first.boardId;
+  return autoAddBoardId();
 }
 
 /** Re-renders when any registered builder's inputs change. */

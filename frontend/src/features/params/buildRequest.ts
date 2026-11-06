@@ -1,6 +1,6 @@
 // Turns the parameter store into a queue batch (GenerationMetadata + EnqueueRequest).
 import { backend, batchSeed, randomSeed, type EnqueueRequest, type GenerationMetadata, type QueueOrigin } from '@/backend';
-import { autoAddBoardId } from '@/state/invoke';
+import { generationBoardId } from '@/state/invoke';
 import { findModel, modelsOfType, useModels } from '@/state/models';
 import { generationMetadata, txt2imgParts } from '@/state/generationParts';
 import { useParams, type DynamicPromptMode, type ParamsFields } from '@/state/params';
@@ -17,7 +17,7 @@ function baseRequest(origin: QueueOrigin, params: GenerationMetadata, prepend: b
     iterations: p.iterations,
     randomizeSeed: p.shouldRandomizeSeed,
     prepend,
-    boardId: autoAddBoardId(),
+    boardId: generationBoardId(),
   };
 }
 

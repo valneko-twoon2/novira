@@ -1,6 +1,6 @@
 // Turns the logo form into a queue request (shared by the logo screen and its tests).
 import { randomSeed, type EnqueueRequest, type ImageDTO } from '@/backend';
-import { autoAddBoardId } from '@/state/invoke';
+import { generationBoardId } from '@/state/invoke';
 import { LOGO_LIMITS, LOGO_SIZES, type LogoForm } from '@/state/media/logo';
 
 /** The model is distilled for 8 steps without guidance. */
@@ -56,7 +56,7 @@ export function buildLogoRequest(form: LogoForm): EnqueueRequest {
     iterations: Math.min(LOGO_LIMITS.count.max, Math.max(LOGO_LIMITS.count.min, Math.round(form.count))),
     randomizeSeed: form.randomizeSeed,
     prepend: false,
-    boardId: autoAddBoardId(),
+    boardId: generationBoardId(),
     initImageUrl: null,
   };
 }

@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { backend, type BackendClient, type EnqueueRequest, type QueueItem } from '@/backend';
 import { useGallery } from './gallery';
-import { autoAddBoardId, buildRequestFor, invoke, registerInvokeBuilder, type InvokeBuilder } from './invoke';
+import { useQueue } from './queue';
+import { autoAddBoardId, buildRequestFor, generationBoardId, invoke, registerInvokeBuilder, type InvokeBuilder } from './invoke';
 import { useToasts } from './toasts';
 import { useUi } from './ui';
 
@@ -106,5 +107,39 @@ describe('autoAddBoardId', () => {
     expect(autoAddBoardId()).toBeNull();
     useGallery.getState().setAutoAddBoard('b1');
     expect(autoAddBoardId()).toBe('b1');
+  });
+});
+
+describe('generationBoardId', () => {
+  const board = (id: string) => ({ id, name: id, archived: false, createdAt: 0 });
+  const item = (over: Partial<QueueItem>) => ({ id: 1, status: 'pending', destination: 'gallery', boardId: 'b1', ...over }) as QueueItem;
+  beforeEach(() => {
+    useGallery.setState({ boards: [board('b1'), board('b2')] });
+    useGallery.getState().setAutoAddBoard('b2');
+    useQueue.setState({ items: [] });
+  });
+  afterEach(() => useQueue.setState({ items: [] }));
+
+  it('follows the auto-add board when nothing waits or draws', () => {
+    expect(generationBoardId()).toBe('b2');
+    useQueue.setState({ items: [item({ status: 'completed' }), item({ id: 2, status: 'failed' })] });
+    expect(generationBoardId()).toBe('b2');
+  });
+
+  it('keeps the board the first waiting or drawing picture chose', () => {
+    useQueue.setState({ items: [item({ status: 'in_progress' }), item({ id: 2, boardId: 'b2' })] });
+    expect(generationBoardId()).toBe('b1');
+    useQueue.setState({ items: [item({ boardId: null })] });
+    expect(generationBoardId()).toBeNull();
+  });
+
+  it('ignores items that do not go to the gallery', () => {
+    useQueue.setState({ items: [item({ destination: 'canvas' }), item({ id: 2, destination: 'intermediate' })] });
+    expect(generationBoardId()).toBe('b2');
+  });
+
+  it('falls back to the auto-add board when the first board is gone', () => {
+    useQueue.setState({ items: [item({ boardId: 'deleted' })] });
+    expect(generationBoardId()).toBe('b2');
   });
 });

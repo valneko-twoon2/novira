@@ -1,6 +1,6 @@
 // Turns the voice form into a queue request.
 import { randomSeed, type EnqueueRequest } from '@/backend';
-import { autoAddBoardId } from '@/state/invoke';
+import { generationBoardId } from '@/state/invoke';
 import type { VoiceForm } from '@/state/media/voice';
 
 const VOICE_MODEL_NAME = 'Qwen3-TTS';
@@ -46,7 +46,7 @@ export function buildVoiceRequest(form: VoiceForm): EnqueueRequest {
     iterations: 1,
     randomizeSeed: false,
     prepend: false,
-    boardId: autoAddBoardId(),
+    boardId: generationBoardId(),
     initImageUrl: null,
   };
 }

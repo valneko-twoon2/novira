@@ -2,7 +2,7 @@
 // control layers' pictures and the global reference images. The pixels come from a CanvasRenderer.
 import type { ControlLayerInput, ControlType, EnqueueRequest, GenerationMetadata, GenerationMode, RegionalLayerInput } from '@/backend';
 import type { CanvasState, ControlEntity } from '@/state/canvas';
-import { autoAddBoardId } from '@/state/invoke';
+import { generationBoardId } from '@/state/invoke';
 import { findModel } from '@/state/models';
 import { refImageInputs, type ParamsState } from '@/state/params';
 import { pickGenerationMode } from './generationMode';
@@ -104,7 +104,7 @@ export async function buildCanvasRequest(s: Doc, p: ParamsState, prepend: boolea
     iterations: p.iterations,
     randomizeSeed: p.shouldRandomizeSeed,
     prepend,
-    boardId: autoAddBoardId(),
+    boardId: generationBoardId(),
     initImageUrl,
     maskImageUrl,
     controlLayers,

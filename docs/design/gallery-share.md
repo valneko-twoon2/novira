@@ -53,16 +53,16 @@ Each marked copy adds a `watermarks` row: the 12-digit hex id, the gallery pictu
 
 **Checking a picture.** `check_watermark_file` opens the shell's dialog and returns `null` on cancel (the picker is hidden on the browser server, which has no dialog); `check_watermark_image` takes a gallery name. The check is opened from the picture's right-click menu; the share form has no link to it. Both run `images::check_limits` first (`backend/crates/novira-core/src/service/share.rs`). The result says whether the watermark was checked, whether it is a novira mark and its id; for a known id it gives the original's name, whether that picture is still in the gallery, and the export time. It also reports the C2PA state (present, valid, trusted, AI source, signer, made by this installation) and the XMP source type. The gallery picture menu opens it.
 
-**Signing key.** The first watermarked export makes a local CA and an ES256 leaf certificate valid for about ten years, named "novira", with no user, account or PC name. The CA key is dropped at once. The leaf key and chain are saved with DPAPI for the current Windows user in `novira-data/secrets/c2pa-signing.key` (`backend/crates/novira-core/src/secret.rs`). An unreadable saved value is replaced; a check only loads it. The key never reaches the page.
+**Signing key.** The first watermarked export makes a local CA and an ES256 leaf certificate valid for about ten years, named "novira". The CA key is dropped at once. The leaf key and chain are saved with DPAPI for the current Windows user in `novira-data/secrets/c2pa-signing.key` (`backend/crates/novira-core/src/secret.rs`).
 
 ### Boards
 
-A board is a row of the `boards` table: an id (`board-` and 12 hex digits), a name, an `archived` flag and `createdAt` (`backend/crates/novira-core/src/service/boards.rs`). A picture belongs to one board by its `boardId`; `null` is Uncategorized. The page computes the counts and covers (`frontend/src/features/gallery/boards/useBoardStats.ts`): intermediate pictures are left out, `general` pictures count as images and the others as assets.
+A board is a row of the `boards` table: an id (`board-` and 12 hex digits), a name, `archived` and `createdAt` (`backend/crates/novira-core/src/service/boards.rs`). A picture belongs to one board by its `boardId`; `null` is Uncategorized. The page computes the counts and covers (`frontend/src/features/gallery/boards/useBoardStats.ts`): intermediate pictures are left out; `general` ones count as images, the rest as assets.
 
-- Create and rename trim the name and refuse a blank one, changing nothing. No length limit is checked.
-- Archiving sets only the flag. Archived boards are hidden unless the show-archived setting is on; with them hidden, archiving the selected board selects Uncategorized. Archiving the auto-add board clears it (`frontend/src/features/gallery/boards/boardActions.ts`).
-- With the auto-assign setting on (the default), selecting a board makes it the target of new pictures from generation, uploads and the canvas (`autoAddBoardId()`, `frontend/src/state/invoke.ts`). The backend does not check that a `boardId` names an existing board.
-- `delete_board(id, deleteImages)` removes the board. Each of its pictures either loses the board (`boardId` null) or is deleted with its files, and the deleted names are returned. The dialog counts non-intermediate pictures, but deletion also takes intermediate ones that carry the board id.
+- Create and rename trim the name and refuse a blank one. No length limit is checked.
+- Archiving sets only the flag. Archived boards are hidden unless the show-archived setting is on; archiving the selected board then selects Uncategorized. Archiving the auto-add board clears it (`frontend/src/features/gallery/boards/boardActions.ts`).
+- With the auto-assign setting on (the default), selecting a board makes it the target of new pictures from generation, uploads and the canvas (`autoAddBoardId()`, `frontend/src/state/invoke.ts`). While a gallery picture waits or draws, every Invoke keeps the board of the first one, not a newly picked board (`generationBoardId()`); a deleted board or an empty queue falls back to the auto-add board. The backend does not check that a `boardId` names an existing board.
+- `delete_board(id, deleteImages)` removes the board. Each of its pictures either loses the board (`boardId` null) or is deleted with its files, and the deleted names are returned. The dialog counts non-intermediate pictures; deletion also takes intermediate ones.
 
 ## Boundaries
 

@@ -2,7 +2,7 @@
 import { randomSeed, type ClipVisionModel, type EnqueueRequest, type GenerationMetadata, type LoRAParam, type SchedulerName } from '@/backend';
 import { t } from '@/i18n';
 import { findImage } from '@/state/gallery';
-import { autoAddBoardId } from '@/state/invoke';
+import { generationBoardId } from '@/state/invoke';
 import { catalogPackName, encoderMissing, IPADAPTER_PACK, packMissing } from '@/state/comfy/packNeeds';
 import { findModel, useModels } from '@/state/models';
 import { useParams } from '@/state/params';
@@ -193,7 +193,7 @@ function buildVideoRequest(g: EditorGraph, video: WorkflowNode, workflow: unknow
     iterations: 1,
     randomizeSeed: false,
     prepend: opts.prepend,
-    boardId: autoAddBoardId(),
+    boardId: generationBoardId(),
     initImageUrl: source?.url ?? null,
     workflow,
   };
@@ -255,7 +255,7 @@ function buildComfyRequest(g: EditorGraph, workflow: unknown, opts: { prepend: b
 function saveBoardId(g: EditorGraph): string | null {
   const save = g.nodes.find((n) => n.data.type === 'save_image');
   const board = save?.data.inputs.board;
-  return !save || board === 'auto' || board === undefined ? autoAddBoardId() : board === 'none' || board === null ? null : String(board);
+  return !save || board === 'auto' || board === undefined ? generationBoardId() : board === 'none' || board === null ? null : String(board);
 }
 
 /** The queue request for the graph: the ComfyUI prompt it compiles to, or the video request of a graph with a Generate Video node. */

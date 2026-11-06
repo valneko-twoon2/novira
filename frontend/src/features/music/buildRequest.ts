@@ -1,6 +1,6 @@
 // Turns the music form into a queue request.
 import { randomSeed, type EnqueueRequest } from '@/backend';
-import { autoAddBoardId } from '@/state/invoke';
+import { generationBoardId } from '@/state/invoke';
 import type { MusicForm } from '@/state/media/music';
 
 const MUSIC_MODEL_NAME = 'ACE-Step 1.5';
@@ -45,7 +45,7 @@ export function buildMusicRequest(form: MusicForm): EnqueueRequest {
     iterations: 1,
     randomizeSeed: false,
     prepend: false,
-    boardId: autoAddBoardId(),
+    boardId: generationBoardId(),
     initImageUrl: null,
   };
 }
