@@ -34,7 +34,12 @@ export function NotificationBell() {
       <PopoverContent side="top" align="end" className="notify-panel">
         <div className="notify-panel__head">
           <span className="notify-panel__title">{t('app.notifications.title')}</span>
-          <Button size="xs" variant="ghost" leftIcon={<Trash size={12} />} disabled={!history.length} onClick={() => useToasts.getState().forget()}>
+          <Button size="xs" variant="ghost" leftIcon={<Trash size={12} />} disabled={!history.length}
+            onClick={() => {
+              useToasts.getState().forget();
+              setOpen(false);
+            }}
+          >
             {t('app.notifications.clear')}
           </Button>
         </div>

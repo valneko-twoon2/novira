@@ -42,7 +42,9 @@ describe('notification bell', () => {
     expect(run).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('button', { name: 'Undo' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: t('app.notifications.clear') }));
-    expect(screen.getByText(t('app.notifications.empty'))).toBeTruthy();
+    expect(screen.queryByText(t('app.notifications.empty'))).toBeNull();
+    expect(screen.queryByTestId('notification-list')).toBeNull();
+    expect(useToasts.getState().history).toEqual([]);
   });
 
   it('stops holding quiet notifications back once it is unmounted', () => {

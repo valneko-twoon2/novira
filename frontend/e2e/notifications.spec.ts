@@ -39,6 +39,10 @@ test('deletions go under the bell, which counts them and lists them when opened'
   await expect(list.getByRole('listitem').first().getByRole('button', { name: msg('gallery.undoDelete.action'), exact: true })).toHaveCount(0);
 
   await page.getByRole('button', { name: msg('app.notifications.clear') }).click();
+  // Clearing closes the popup.
+  await expect(list).toHaveCount(0);
+  await expect(page.getByRole('button', { name: msg('app.notifications.clear') })).toHaveCount(0);
+  await page.getByTestId('notification-bell').click();
   await expect(page.getByText(msg('app.notifications.empty'))).toBeVisible();
 });
 
