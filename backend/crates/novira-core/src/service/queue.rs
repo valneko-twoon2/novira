@@ -35,6 +35,9 @@ impl Backend {
                 ));
             }
         }
+        // Held until the items are saved and announced: the worker may pick one up as soon as it is in the state, and its
+        // moves must come after the item's own "pending" event and save.
+        let _transition = self.transition();
         let mut s = self.state();
         let batch_id = new_id("batch");
         let t = now();
@@ -104,6 +107,13 @@ impl Backend {
     }
 
     fn persist_items(&self, items: &[QueueItem]) -> Result<()> {
+        #[cfg(test)]
+        {
+            let hook = self.inner.persist_hook.lock_safe().clone();
+            if let Some(hook) = hook {
+                hook();
+            }
+        }
         let ids: Vec<String> = items.iter().map(|q| q.id.to_string()).collect();
         self.db().put_many(
             Table::Queue,
@@ -115,19 +125,42 @@ impl Backend {
         Ok(())
     }
 
-    /// Updates an item, persists it and tells the frontend. `None` when the item is gone (e.g. queue cleared).
-    pub(super) fn set_status(
+    /// The lock that orders the queue's changes (see `Inner::queue_transition`).
+    fn transition(&self) -> std::sync::MutexGuard<'_, ()> {
+        self.inner.queue_transition.lock_safe()
+    }
+
+    /// Moves an item from a status in `from` to `status`, persists it and tells the frontend, all under the transition
+    /// lock: the events of an item follow its states, and a removed item is never written back. `None` when nothing
+    /// moved: the item is gone (queue cleared) or its status is not in `from`, so a finished item never moves again.
+    fn move_item(
         &self,
         id: u64,
+        from: &[QueueItemStatus],
         status: QueueItemStatus,
         f: impl FnOnce(&mut QueueItem),
     ) -> Option<QueueItem> {
-        let mut s = self.state();
-        let item = s.queue.iter_mut().find(|q| q.id == id)?;
-        item.status = status;
-        f(item);
-        let item = item.clone();
-        drop(s);
+        let _transition = self.transition();
+        self.move_item_locked(id, from, status, f)
+    }
+
+    fn move_item_locked(
+        &self,
+        id: u64,
+        from: &[QueueItemStatus],
+        status: QueueItemStatus,
+        f: impl FnOnce(&mut QueueItem),
+    ) -> Option<QueueItem> {
+        let item = {
+            let mut s = self.state();
+            let item = s.queue.iter_mut().find(|q| q.id == id)?;
+            if !from.contains(&item.status) {
+                return None;
+            }
+            item.status = status;
+            f(item);
+            item.clone()
+        };
         if let Err(e) = self.persist_items(std::slice::from_ref(&item)) {
             crate::applog::warn("queue", e.to_string());
         }
@@ -135,7 +168,35 @@ impl Backend {
         Some(item)
     }
 
+    /// The worker takes a pending item: pending to in progress, only if it is still pending (a cancel or a clear may have
+    /// come first, then the job must not run).
+    pub(super) fn start_item(&self, id: u64) -> Option<QueueItem> {
+        self.move_item(
+            id,
+            &[QueueItemStatus::Pending],
+            QueueItemStatus::InProgress,
+            |q| q.started_at = Some(now()),
+        )
+    }
+
+    /// Ends an unfinished item (`status` is completed, failed or canceled). `None` when it was already ended or removed.
+    pub(super) fn set_status(
+        &self,
+        id: u64,
+        status: QueueItemStatus,
+        f: impl FnOnce(&mut QueueItem),
+    ) -> Option<QueueItem> {
+        self.move_item(
+            id,
+            &[QueueItemStatus::Pending, QueueItemStatus::InProgress],
+            status,
+            f,
+        )
+    }
+
     pub fn cancel_queue_item(&self, id: u64) {
+        // One step under the lock: the check, the token and the move, so the worker cannot start the item in between.
+        let _transition = self.transition();
         let token = {
             let s = self.state();
             let Some(item) = s.queue.iter().find(|q| q.id == id) else {
@@ -155,9 +216,12 @@ impl Backend {
         if let Some(t) = token {
             t.cancel();
         }
-        self.set_status(id, QueueItemStatus::Canceled, |q| {
-            q.completed_at = Some(now())
-        });
+        self.move_item_locked(
+            id,
+            &[QueueItemStatus::Pending, QueueItemStatus::InProgress],
+            QueueItemStatus::Canceled,
+            |q| q.completed_at = Some(now()),
+        );
     }
 
     pub fn cancel_batch(&self, batch_id: &str) {
@@ -174,6 +238,7 @@ impl Backend {
     }
 
     pub fn clear_queue(&self) -> Result<()> {
+        let _transition = self.transition();
         let mut s = self.state();
         if let Some((_, t)) = &s.running {
             t.cancel();
@@ -186,6 +251,7 @@ impl Backend {
     }
 
     pub fn prune_queue(&self) -> Result<()> {
+        let _transition = self.transition();
         let mut s = self.state();
         let removed: Vec<String> = s
             .queue
@@ -301,4 +367,231 @@ fn check_retry_size(size: RetrySize, params: &GenerationMetadata) -> Result<()> 
         )));
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::engine::ProgressFn;
+    use std::sync::mpsc;
+    use std::time::Duration;
+
+    /// An engine that never runs anything: these tests move items by hand, with no worker.
+    struct NoEngine;
+
+    #[async_trait::async_trait]
+    impl Engine for NoEngine {
+        async fn generate(
+            &self,
+            _job: &EngineJob,
+            _progress: ProgressFn<'_>,
+            _cancel: &CancellationToken,
+        ) -> std::result::Result<EngineOutput, EngineError> {
+            Err(EngineError::Cancelled)
+        }
+    }
+
+    fn open(dir: &std::path::Path) -> Backend {
+        Backend::open_with_engine(
+            BackendConfig {
+                data_dir: dir.to_path_buf(),
+                image_url_base: "http://novira-image.localhost".into(),
+                settings: Settings {
+                    gpu_lock: String::new(),
+                    ..Settings::default()
+                },
+            },
+            Arc::new(NoEngine),
+        )
+        .unwrap()
+    }
+
+    fn one_item(b: &Backend) -> u64 {
+        let req: EnqueueRequest = serde_json::from_value(serde_json::json!({
+            "origin": "generate", "destination": "gallery", "iterations": 1, "randomizeSeed": false,
+            "prepend": false, "boardId": null,
+            "params": {
+                "generationMode": "txt2img", "positivePrompt": "p", "negativePrompt": "", "modelKey": "none",
+                "modelName": "Base", "vaeKey": null, "seed": 10, "steps": 3, "cfgScale": 7, "cfgRescale": 0,
+                "scheduler": "euler", "width": 512, "height": 512, "clipSkip": 0, "seamlessX": false,
+                "seamlessY": false, "loras": []
+            }
+        }))
+        .unwrap();
+        b.enqueue(req).unwrap()[0].id
+    }
+
+    /// The statuses announced for an item, in the order the listener got them.
+    fn record(b: &Backend) -> Arc<Mutex<Vec<QueueItemStatus>>> {
+        let seen = Arc::new(Mutex::new(Vec::new()));
+        let sink = seen.clone();
+        b.set_event_sink(Arc::new(move |e| {
+            if let BackendEvent::QueueItemStatusChanged { item } = e {
+                sink.lock().unwrap().push(item.status);
+            }
+        }));
+        seen
+    }
+
+    fn status_of(b: &Backend, id: u64) -> Option<QueueItemStatus> {
+        b.queue_snapshot()
+            .items
+            .iter()
+            .find(|q| q.id == id)
+            .map(|q| q.status)
+    }
+
+    /// Holds the thread named `mover` inside the queue's save until `go` is sent; `reached` says it is there.
+    fn hold_mover(b: &Backend) -> (mpsc::Receiver<()>, mpsc::Sender<()>) {
+        let (reached_tx, reached_rx) = mpsc::channel::<()>();
+        let (go_tx, go_rx) = mpsc::channel::<()>();
+        let (reached_tx, go_rx) = (Mutex::new(reached_tx), Mutex::new(go_rx));
+        *b.inner.persist_hook.lock().unwrap() = Some(Arc::new(move || {
+            if std::thread::current().name() == Some("mover") {
+                reached_tx.lock().unwrap().send(()).unwrap();
+                go_rx.lock().unwrap().recv().unwrap();
+            }
+        }));
+        (reached_rx, go_tx)
+    }
+
+    fn mover<T: Send + 'static>(
+        f: impl FnOnce() -> T + Send + 'static,
+    ) -> std::thread::JoinHandle<T> {
+        std::thread::Builder::new()
+            .name("mover".into())
+            .spawn(f)
+            .unwrap()
+    }
+
+    #[test]
+    fn events_of_an_item_follow_its_states_when_a_cancel_overtakes_a_start() {
+        let dir = tempfile::tempdir().unwrap();
+        let b = open(dir.path());
+        let id = one_item(&b);
+        let seen = record(&b);
+        let (reached, go) = hold_mover(&b);
+        // The start is held after it changed the state and before it saved and announced.
+        let start = {
+            let b = b.clone();
+            mover(move || b.set_status(id, QueueItemStatus::InProgress, |_| {}))
+        };
+        reached.recv().unwrap();
+        let cancel = {
+            let b = b.clone();
+            std::thread::spawn(move || b.cancel_queue_item(id))
+        };
+        // The cancel must wait for the start's announcement (it cannot finish first); give it time to show if it does.
+        std::thread::sleep(Duration::from_millis(200));
+        go.send(()).unwrap();
+        start.join().unwrap();
+        cancel.join().unwrap();
+        assert_eq!(status_of(&b, id), Some(QueueItemStatus::Canceled));
+        assert_eq!(
+            *seen.lock().unwrap(),
+            vec![QueueItemStatus::InProgress, QueueItemStatus::Canceled],
+            "the last event must be the final status"
+        );
+    }
+
+    #[test]
+    fn a_clear_during_a_save_is_not_undone_by_the_late_save() {
+        let dir = tempfile::tempdir().unwrap();
+        let b = open(dir.path());
+        let id = one_item(&b);
+        let (reached, go) = hold_mover(&b);
+        let cancel = {
+            let b = b.clone();
+            mover(move || b.cancel_queue_item(id))
+        };
+        reached.recv().unwrap();
+        let (done_tx, done_rx) = mpsc::channel();
+        let clear = {
+            let b = b.clone();
+            std::thread::spawn(move || {
+                b.clear_queue().unwrap();
+                done_tx.send(()).unwrap();
+            })
+        };
+        // A clear that is not ordered after the held save finishes at once; one that waits for it does not.
+        let _ = done_rx.recv_timeout(Duration::from_millis(300));
+        go.send(()).unwrap();
+        cancel.join().unwrap();
+        clear.join().unwrap();
+        assert!(b.queue_snapshot().items.is_empty());
+        drop(b);
+        let again = open(dir.path());
+        assert!(
+            again.queue_snapshot().items.is_empty(),
+            "the cleared item came back after a restart"
+        );
+    }
+
+    #[test]
+    fn a_finished_item_never_moves_again_and_announces_nothing_more() {
+        let dir = tempfile::tempdir().unwrap();
+        let b = open(dir.path());
+        let id = one_item(&b);
+        let seen = record(&b);
+        b.cancel_queue_item(id);
+        // The worker took the item just before the cancel: its start and its end must not change the canceled item.
+        assert!(b
+            .set_status(id, QueueItemStatus::InProgress, |_| {})
+            .is_none());
+        assert!(b
+            .set_status(id, QueueItemStatus::Completed, |_| {})
+            .is_none());
+        b.cancel_queue_item(id);
+        assert_eq!(status_of(&b, id), Some(QueueItemStatus::Canceled));
+        assert_eq!(*seen.lock().unwrap(), vec![QueueItemStatus::Canceled]);
+    }
+
+    /// A job cancelled while it finished (the cancel came after the worker's last look at its token): the item stays
+    /// canceled, the picture is kept, and the picture is announced with the item as the state holds it.
+    #[test]
+    fn a_picture_saved_after_a_cancel_is_announced_with_the_canceled_item() {
+        let dir = tempfile::tempdir().unwrap();
+        let b = open(dir.path());
+        let id = one_item(&b);
+        let item = b.queue_snapshot().items[0].clone();
+        let log = Arc::new(Mutex::new(Vec::new()));
+        let sink = log.clone();
+        b.set_event_sink(Arc::new(move |e| {
+            if let BackendEvent::ImageAdded { item, .. } = e {
+                sink.lock().unwrap().push(item);
+            }
+        }));
+        b.cancel_queue_item(id);
+        let mut png = std::io::Cursor::new(Vec::new());
+        image::DynamicImage::ImageRgb8(image::RgbImage::new(8, 8))
+            .write_to(&mut png, image::ImageFormat::Png)
+            .unwrap();
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        rt.block_on(b.save_result(&item, EngineOutput::Image(png.into_inner())))
+            .unwrap();
+        assert_eq!(b.bootstrap().images.len(), 1, "the picture is kept");
+        let announced = log.lock().unwrap()[0]
+            .clone()
+            .expect("the item is still in the queue");
+        assert_eq!(announced.status, QueueItemStatus::Canceled);
+        assert_eq!(announced.image_name, None);
+        assert_eq!(status_of(&b, id), Some(QueueItemStatus::Canceled));
+        // The text of a cancelled job is dropped: the item stays as it is.
+        rt.block_on(b.save_result(&item, EngineOutput::Text("t".into())))
+            .unwrap();
+        assert_eq!(b.queue_snapshot().items[0].result_text, None);
+        // A cleared item has no snapshot to announce.
+        b.clear_queue().unwrap();
+        let mut png = std::io::Cursor::new(Vec::new());
+        image::DynamicImage::ImageRgb8(image::RgbImage::new(8, 8))
+            .write_to(&mut png, image::ImageFormat::Png)
+            .unwrap();
+        rt.block_on(b.save_result(&item, EngineOutput::Image(png.into_inner())))
+            .unwrap();
+        assert_eq!(log.lock().unwrap().len(), 2);
+        assert!(log.lock().unwrap()[1].is_none());
+    }
 }

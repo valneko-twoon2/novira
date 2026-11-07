@@ -40,9 +40,14 @@ impl Backend {
                     _ = self.inner.shutdown.cancelled() => return,
                 }
             };
-            self.set_status(item.id, QueueItemStatus::InProgress, |q| {
-                q.started_at = Some(now())
-            });
+            // Only from pending: an item cancelled (or cleared) since it was taken is not run.
+            if self.start_item(item.id).is_none() {
+                self.state().running = None;
+                if self.inner.shutdown.is_cancelled() {
+                    return;
+                }
+                continue;
+            }
             // A panic inside one job fails that job; it must not end the worker (the queue would stall for good).
             let result = std::panic::AssertUnwindSafe(self.process(&item, &token))
                 .catch_unwind()
@@ -53,22 +58,16 @@ impl Backend {
                 Ok(()) => {}
                 Err(EngineError::Cancelled) => {
                     // Cancelled by the user (already marked) or by shutdown (mark it now).
-                    let still_running = self
-                        .state()
-                        .queue
-                        .iter()
-                        .any(|q| q.id == item.id && q.status == QueueItemStatus::InProgress);
-                    if still_running {
-                        let msg = if self.inner.shutdown.is_cancelled() {
-                            Some(INTERRUPTED.to_string())
-                        } else {
-                            None
-                        };
-                        self.set_status(item.id, QueueItemStatus::Canceled, |q| {
-                            q.completed_at = Some(now());
-                            q.error = msg;
-                        });
-                    }
+                    // Nothing happens when the item is already ended: set_status moves unfinished items only.
+                    let msg = if self.inner.shutdown.is_cancelled() {
+                        Some(INTERRUPTED.to_string())
+                    } else {
+                        None
+                    };
+                    self.set_status(item.id, QueueItemStatus::Canceled, |q| {
+                        q.completed_at = Some(now());
+                        q.error = msg;
+                    });
                 }
                 Err(EngineError::Failed(msg)) => {
                     crate::applog::error("queue", format!("job {} failed: {msg}", item.id));
@@ -633,7 +632,7 @@ impl Backend {
         Ok(())
     }
 
-    async fn save_result(
+    pub(super) async fn save_result(
         &self,
         item: &QueueItem,
         output: EngineOutput,
@@ -644,7 +643,8 @@ impl Backend {
             ));
         }
         if let EngineOutput::Text(text) = output {
-            // Text (a picture described as a prompt) is handed to the frontend; nothing goes to the gallery.
+            // Text (a picture described as a prompt) is handed to the frontend; nothing goes to the gallery. The text of a
+            // job cancelled meanwhile is dropped: the item stays canceled.
             self.set_status(item.id, QueueItemStatus::Completed, |q| {
                 q.completed_at = Some(now());
                 q.result_text = Some(text);
@@ -780,10 +780,15 @@ impl Backend {
             .map_err(|e| EngineError::Failed(format!("Cannot save the result: {e}")))?;
         self.insert_image(&image)
             .map_err(|e| EngineError::Failed(e.to_string()))?;
-        let done = self.set_status(item.id, QueueItemStatus::Completed, |q| {
-            q.completed_at = Some(now());
-            q.image_name = Some(image.name.clone());
-        });
+        // A job cancelled while it finished keeps its canceled status (a finished item never moves), so the picture is
+        // announced with the item as it is now: canceled, without an image name. The frontend still routes the picture
+        // by the item's parameters (draft, comic). `None` only when the item was cleared or pruned.
+        let done = self
+            .set_status(item.id, QueueItemStatus::Completed, |q| {
+                q.completed_at = Some(now());
+                q.image_name = Some(image.name.clone());
+            })
+            .or_else(|| self.state().queue.iter().find(|q| q.id == item.id).cloned());
         self.emit(BackendEvent::ImageAdded { image, item: done });
         Ok(())
     }

@@ -30,11 +30,8 @@ The frontend mock keeps the same statuses (`frontend/src/backend/mock/MockBacken
 8. Frontend: store tests in `frontend/src/state/` for how a status is shown, and `frontend/src/backend/mock/MockBackend.test.ts` for the mock's moves, which must match the table.
 9. A change to the worker, to cancelling a running job, or to a pack or model install is not verified by these tests. Confirm it on the real engine (`/verify-real-app`).
 
-Known races found by `tests/prop_queue_worker.rs` (not fixed; the test waits for each move's event and checks events per item only, so these do not fail it):
+Races found by `tests/prop_queue_worker.rs` and fixed with one transition lock (`Inner::queue_transition`, taken by every status move, enqueue, clear and prune across the state change, the save and the event): events of an item reach listeners in the order of its states; a finished item never moves again (the worker's start is a compare-and-set from pending, so a job cancelled before it started does not run); a removed item is never written back by a late save. The pinned, timing-free proofs are the three unit tests at the end of `service/queue.rs`; the property test also fires bursts of cancels, clears and a finish-then-clear without waiting. Run it with `node scripts/tools/repeat-test.mjs --times 20 -- cargo test -p novira-core --test prop_queue_worker` (from `backend/`) after any change to the queue or worker.
 
-- `set_status` updates the status, releases the lock and then emits, so events of two threads can arrive out of order: the last event of an item can say `InProgress` while its status is `Canceled`.
-- Between the worker taking the job and `set_status(InProgress)` the item is still `pending`: a cancel in that window is overwritten by `InProgress` and set back to `Canceled`, and both sides can emit `Canceled`.
-- The status is visible before it is saved, so a `clear` or `prune` straight after can be followed by a late save that writes the removed row back (it returned as `failed` after a restart).
-- The position of a prepended item is not saved: after a restart the queue is listed, and runs, in id order.
+Known and not fixed: the position of a prepended item is not saved: after a restart the queue is listed, and runs, in id order.
 
 Run: `cargo test -p novira-core --test backend_service queue` (or `worker`), and `npx vitest run src/backend/mock/MockBackend.test.ts` plus the store tests in `frontend/`.
