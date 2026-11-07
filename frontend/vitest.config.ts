@@ -1,5 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
+// @ts-expect-error -- plain ESM script without types
+import { coverageDir } from '../scripts/tools/harness-paths.mjs';
 
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -42,7 +44,7 @@ export default defineConfig({
         'src/**/*.testkit.ts',
       ],
       reporter: ['text-summary', 'json-summary', 'html', 'lcovonly', 'cobertura'],
-      reportsDirectory: '../novira-data/work/coverage/frontend',
+      reportsDirectory: `${coverageDir(here('..'))}/frontend`,
       thresholds: { statements: 96, branches: 90, functions: 95, lines: 97 },
     },
   },

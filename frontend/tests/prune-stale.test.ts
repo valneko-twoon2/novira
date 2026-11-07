@@ -1,12 +1,12 @@
-// The stale-output policy of the harness (scripts/tools/prune-stale.mjs): which entry of novira-data/work/ is old enough to
-// delete, what is never touched (links, anything in use, a wrong root), the `.last-used` marker, and the guards of
+// The stale-output policy of the harness (scripts/tools/prune-stale.mjs): which entry of novira-data/work/ and logs/ is old
+// enough to delete, what is never touched (links, anything in use, a wrong root), the `.last-used` marker, and the guards of
 // scripts/tools/verify-real-app.mjs that keep the isolated app away from the user's own data.
 import { existsSync, lutimesSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { MARKER, assertRoot, lockHeld, markUsed, namedByProcesses, planPrune, prune, ruleFor, verifyAppRunning, workRoot } from '../../scripts/tools/prune-stale.mjs';
+import { MARKER, assertRoot, lockHeld, markUsed, namedByProcesses, planPrune, prune, pruneAll, ruleFor, verifyAppRunning, workRoot } from '../../scripts/tools/prune-stale.mjs';
 // @ts-expect-error -- plain ESM script without types
 import { engineOff, guard, layout as verifyLayout, parseArgs as verifyArgs, shareModels, turnEngineOff } from '../../scripts/tools/verify-real-app.mjs';
 // @ts-expect-error -- plain ESM script without types
@@ -28,6 +28,16 @@ describe('prune policy', () => {
     for (const name of ['perf-target', 'perf', 'server-target', 'layout-scan', 'release-notes']) expect(ruleFor(name).days).toBe(14);
     for (const name of ['coverage', 'mutation', 'manual', 'models-sweep', 'e2e-build']) expect(ruleFor(name).days).toBe(7);
     for (const name of ['live-test', 'verify-wf', 'verify-data2', 'shot.png', 'run.log', 'test1.mjs', 'x', 'perf-old', 'release-notes-old']) expect(ruleFor(name).days).toBe(3);
+  });
+
+  it('gives what lives in logs/ the days of its kind in novira-data/work/', () => {
+    for (const name of ['coverage', 'mutation', 'models-sweep', 'perf', 'full-check', 'fuzz']) expect(ruleFor(name, true).days, name).toBe(ruleFor(name).days);
+    for (const name of ['e2e', 'e2e-novira-wt-x', 'playwright-report']) expect(ruleFor(name, true).days, name).toBe(ruleFor('coverage').days);
+  });
+
+  it('has no rule for any other name in logs/, and keeps it however old', () => {
+    for (const name of ['notes', 'e2e-', 'e2efoo', 'x-e2e', 'full-check-old', 'verify-data', 'manual', 'old.txt']) expect(ruleFor(name, true), name).toBeUndefined();
+    expect(actions([entry('notes', 999), entry('coverage', 8)], { inLogs: true })).toEqual({ notes: 'keep', coverage: 'delete' });
   });
 
   it('deletes just over the limit and keeps just under it', () => {
@@ -81,8 +91,8 @@ describe('prune on disk', () => {
     const when = new Date(Date.now() - days * DAY);
     utimesSync(path, when, when);
   };
-  const folder = (name: string, days: number, files = ['f.txt']) => {
-    const dir = join(work, name);
+  const folderIn = (root: string, name: string, days: number, files = ['f.txt']) => {
+    const dir = join(root, name);
     mkdirSync(dir, { recursive: true });
     for (const f of files) {
       writeFileSync(join(dir, f), 'x');
@@ -91,6 +101,7 @@ describe('prune on disk', () => {
     age(dir, days);
     return dir;
   };
+  const folder = (name: string, days: number, files?: string[]) => folderIn(work, name, days, files);
   const none = () => [];
 
   it('refuses a root that is not exactly <repo>/novira-data/work', () => {
@@ -198,6 +209,106 @@ describe('prune on disk', () => {
 
   it('is run by the Stop hook and reports only what it deleted', () => {
     expect(pruneStale(join(repo, 'missing.mjs'))).toEqual([]);
+  });
+
+  describe('of logs/', () => {
+    let logs: string;
+    beforeEach(() => {
+      logs = join(repo, 'logs');
+      mkdirSync(logs);
+    });
+
+    it('accepts exactly <repo>/logs as a root, never a folder that only looks like it', () => {
+      expect(() => assertRoot(logs, repo)).not.toThrow();
+      for (const bad of [join(logs, 'coverage'), join(repo, 'logs2'), join(repo, 'frontend', 'logs'), join(repo, 'novira-data', 'logs')]) {
+        expect(() => prune({ repo, root: bad, processes: none })).toThrow(/refusing/);
+      }
+    });
+
+    it('deletes only the stale entries it knows, by the age of their kind', () => {
+      const ages: Array<[string, number]> = [
+        ['coverage', 8],
+        ['mutation', 6],
+        ['models-sweep', 8],
+        ['e2e', 8],
+        ['e2e-novira-wt-x', 8],
+        ['playwright-report', 8],
+        ['perf', 13],
+        ['full-check', 4],
+        ['fuzz', 2],
+        ['notes', 400],
+      ];
+      for (const [name, days] of ages) folderIn(logs, name, days);
+      writeFileSync(join(logs, 'old.txt'), 'x');
+      age(join(logs, 'old.txt'), 400);
+      const done = prune({ repo, root: logs, processes: none });
+      expect(done.deleted.sort()).toEqual(['coverage', 'e2e', 'e2e-novira-wt-x', 'full-check', 'models-sweep', 'playwright-report']);
+      expect(done.kept.sort()).toEqual(['fuzz', 'mutation', 'notes', 'old.txt', 'perf']);
+      expect(existsSync(join(logs, 'notes', 'f.txt'))).toBe(true);
+      expect(existsSync(join(logs, 'old.txt'))).toBe(true);
+    });
+
+    it('ages the coverage history with its entry, so a new run keeps an old history', () => {
+      const coverage = folderIn(logs, 'coverage', 30);
+      folderIn(coverage, 'history', 30);
+      age(coverage, 30);
+      expect(prune({ repo, root: logs, processes: none, dryRun: true }).deleted).toEqual(['coverage']);
+      mkdirSync(join(coverage, 'report'));
+      expect(prune({ repo, root: logs, processes: none }).kept).toEqual(['coverage']);
+      expect(existsSync(join(coverage, 'history', 'f.txt'))).toBe(true);
+    });
+
+    it('measures the age from the .last-used marker, as in novira-data/work/', () => {
+      markUsed(folderIn(logs, 'perf', 60));
+      expect(prune({ repo, root: logs, processes: none }).kept).toEqual(['perf']);
+    });
+
+    it('never follows a link, and refuses a logs/ that is one', () => {
+      const outside = join(repo, 'outside');
+      mkdirSync(outside);
+      writeFileSync(join(outside, 'keep.txt'), 'precious');
+      symlinkSync(outside, join(logs, 'e2e'), 'junction');
+      lutimesSync(join(logs, 'e2e'), new Date(Date.now() - 10 * DAY), new Date(Date.now() - 10 * DAY));
+      expect(prune({ repo, root: logs, processes: none }).skipped).toEqual(['e2e']);
+      expect(existsSync(join(outside, 'keep.txt'))).toBe(true);
+      rmSync(logs, { recursive: true });
+      symlinkSync(outside, logs, 'junction');
+      expect(() => prune({ repo, root: logs, processes: none })).toThrow(/is a link/);
+      expect(existsSync(join(outside, 'keep.txt'))).toBe(true);
+    });
+
+    it('keeps what a running process names, and everything when the processes cannot be listed', () => {
+      const e2e = folderIn(logs, 'e2e', 10);
+      expect(prune({ repo, root: logs, processes: () => [proc('node.exe', 'x', `node ${join(e2e, 'trace.zip')}`)] }).skipped).toEqual(['e2e']);
+      expect(prune({ repo, root: logs, processes: () => null }).skipped).toEqual(['e2e']);
+      expect(existsSync(e2e)).toBe(true);
+    });
+
+    it('prunes novira-data/work/ and logs/ together from one list of the processes', () => {
+      folder('old-scratch', 10);
+      folderIn(logs, 'fuzz', 10);
+      folderIn(logs, 'notes', 10);
+      let asked = 0;
+      const processes = () => {
+        asked += 1;
+        return [];
+      };
+      expect(pruneAll({ repo, processes })).toEqual({ deleted: ['old-scratch', 'fuzz'], skipped: [], kept: ['notes'] });
+      expect(asked).toBe(1);
+    });
+
+    it('prunes novira-data/work/ alone when logs/ does not exist', () => {
+      rmSync(logs, { recursive: true });
+      folder('old-scratch', 10);
+      expect(pruneAll({ repo, processes: none }).deleted).toEqual(['old-scratch']);
+      expect(existsSync(logs)).toBe(false);
+    });
+
+    it('deletes nothing in either folder while the processes cannot be listed', () => {
+      folder('old-scratch', 10);
+      folderIn(logs, 'fuzz', 10);
+      expect(pruneAll({ repo, processes: () => null })).toEqual({ deleted: [], skipped: ['old-scratch', 'fuzz'], kept: [] });
+    });
   });
 });
 

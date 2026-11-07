@@ -22,7 +22,7 @@ import { gpuFreeOrExplain } from './gpu-check.mjs';
 import { buildHarnessDist, harnessRoots } from './harness-paths.mjs';
 import { cargoCommand, isInside, listProcesses, processAlive as alive, pythonsWith, sameFile, stopTrees, verifyTarget } from './harness-process.mjs';
 import { checkRefs } from './ui-refs.mjs';
-import { markUsed, prune } from './prune-stale.mjs';
+import { markUsed, pruneAll } from './prune-stale.mjs';
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 // From a worktree too, the harness folder and the shared models are the main checkout's (scripts/tools/harness-paths.mjs).
@@ -69,8 +69,8 @@ export function parseArgs(argv) {
   return { test: path.resolve(positional[0]), build: has('--build'), keep: has('--keep'), release: has('--release'), noEngine: has('--no-engine') };
 }
 
-// Everything the harness generates lives under the main checkout's novira-data/work/ (scripts/tools/prune-stale.mjs deletes what
-// goes stale there).
+// The verification data and its engine live under the main checkout's novira-data/work/ (scripts/tools/prune-stale.mjs deletes
+// what goes stale there).
 const WORK = ROOTS.work;
 // The user's models, shared with the isolated app through `modelRoots` (nothing is copied or linked).
 const SHARED_MODELS = ROOTS.models;
@@ -251,10 +251,10 @@ function removeExe(L) {
   return removed;
 }
 
-// Deletes stale output under novira-data/work/ before the run (scripts/tools/prune-stale.mjs); never fails the run.
+// Deletes stale output under novira-data/work/ and logs/ before the run (scripts/tools/prune-stale.mjs); never fails the run.
 function pruneStale() {
   try {
-    prune({ repo: ROOTS.main, log });
+    pruneAll({ repo: ROOTS.main, log });
   } catch (e) {
     log(`pruning stale output failed: ${e.message}`);
   }

@@ -1,8 +1,8 @@
 // The whole test suite in one run, to be started by hand now and then (there is no CI): what scripts\check.bat runs, plus
 // what it leaves out because it is slow: the browser server's tests, the mock compared with the real backend, every
 // Playwright project (the screen flows, the phone layout in Chromium and WebKit, the visual regression) and the layout
-// scan. Every step runs even when an earlier one failed. The result goes to novira-data/work/full-check/<time>.md (step,
-// result, minutes, the last lines of a failed step) and the exit code is 1 when any step failed.
+// scan. Every step runs even when an earlier one failed. The result goes to logs/full-check/<time>.md of the main checkout
+// (step, result, minutes, the last lines of a failed step) and the exit code is 1 when any step failed.
 // Nothing here uses the GPU, the network beyond what the tests' fakes serve on loopback, or the user's data folder.
 // Usage, from the repository root:  node scripts/tools/full-check.mjs [--no-browser] [--list]   (scripts\checks\full-check.bat)
 //   --no-browser  skips the Playwright steps and the layout scan
@@ -91,7 +91,7 @@ async function main() {
     console.log(`\n[full-check] === ${step.name} ===`);
     results.push(await run(step));
   }
-  const dir = path.join(harnessRoots(REPO).work, 'full-check');
+  const dir = path.join(harnessRoots(REPO).logs, 'full-check');
   fs.mkdirSync(dir, { recursive: true });
   const file = path.join(dir, `${startedAt.replaceAll(':', '')}.md`);
   fs.writeFileSync(file, formatReport(results, startedAt));

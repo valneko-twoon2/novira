@@ -1,7 +1,8 @@
 // Where the harness writes and which models it shares, the same from the main checkout and from any Git worktree of it.
 // A worktree has no novira-data/ of its own, so everything resolves against the main checkout (the first entry of
-// `git worktree list`): its novira-data/work/ holds the standing environment (verification data, ComfyUI copy) and its
-// novira-data/models/ (or that of the data folder the app moved to) is shared read-only through the `modelRoots` setting.
+// `git worktree list`): its novira-data/work/ holds the standing environment (verification data, ComfyUI copy), its logs/
+// the test results and reports a person reads, and its novira-data/models/ (or that of the data folder the app moved to)
+// is shared read-only through the `modelRoots` setting.
 // Nothing is linked: a junction to the models once let a folder removal follow it.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -25,6 +26,25 @@ export function checkoutEntry(kind, repo = HERE, work = harnessRoots(repo).work)
   const abs = path.resolve(repo);
   const id = createHash('sha256').update(abs.toLowerCase()).digest('hex').slice(0, 8);
   return path.join(work, kind, `${path.basename(abs)}-${id}`);
+}
+
+/** The folder of test results and reports at the top of a checkout (git-ignored). harnessRoots().logs is the main checkout's. */
+export function logsDir(repo = HERE) {
+  return path.join(repo, 'logs');
+}
+
+/** Where the coverage runs of a checkout write: its own logs/, also in a worktree (they measure that checkout's sources). */
+export function coverageDir(repo = HERE) {
+  return path.join(logsDir(repo), 'coverage');
+}
+
+/**
+ * Playwright's output folder, in the main checkout's logs/: `e2e`, or `e2e-<folder name>` from a worktree. Playwright wipes
+ * this folder when a run starts, so two checkouts must not share one.
+ */
+export function e2eOutputDir(roots = harnessRoots()) {
+  const worktree = path.resolve(roots.repo).toLowerCase() !== path.resolve(roots.main).toLowerCase();
+  return path.join(roots.logs, worktree ? `e2e-${path.basename(path.resolve(roots.repo))}` : 'e2e');
 }
 
 /** Where a checkout's harness build of the frontend lives. */
@@ -74,12 +94,13 @@ export function movedDataDir(env = process.env, read = (f) => fs.readFileSync(f,
 }
 
 /**
- * `{ repo, main, work, models, moved }`: this checkout, the main one, its harness folder, its shared model folder and the
- * data folder the user's app moved to (or null). The models are the main checkout's novira-data/models, or the moved
- * data folder's when that one is gone (the move takes the models along). The harness folder stays in the repository.
+ * `{ repo, main, work, logs, models, moved }`: this checkout, the main one, its harness folder, its folder of test results
+ * and reports, its shared model folder and the data folder the user's app moved to (or null). The models are the main
+ * checkout's novira-data/models, or the moved data folder's when that one is gone (the move takes the models along). The
+ * harness folder stays in the repository.
  */
 export function harnessRoots(repo = HERE, main = mainCheckout(repo), moved = movedDataDir(), exists = fs.existsSync) {
   const own = path.join(main, 'novira-data', 'models');
   const models = !exists(own) && moved && exists(path.join(moved, 'models')) ? path.join(moved, 'models') : own;
-  return { repo: path.resolve(repo), main, work: path.join(main, 'novira-data', 'work'), models, moved };
+  return { repo: path.resolve(repo), main, work: path.join(main, 'novira-data', 'work'), logs: logsDir(main), models, moved };
 }

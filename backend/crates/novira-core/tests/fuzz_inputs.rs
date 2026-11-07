@@ -5,7 +5,7 @@
 //!
 //! Runs on stable Rust in the ordinary test run with a fixed seed and 200 cases per reader. A longer search:
 //! `NOVIRA_FUZZ_ITERATIONS=20000 NOVIRA_FUZZ_SEED=<n> cargo test -p novira-core --test fuzz_inputs`. An input that
-//! panics is saved to `novira-data/work/fuzz/<reader>-<seed>-<case>.bin`; a finding is pinned as an ordinary test.
+//! panics is saved to `logs/fuzz/<reader>-<seed>-<case>.bin`; a finding is pinned as an ordinary test.
 use novira_core::backup::restore::{stage, STAGING};
 use novira_core::backup::{DATABASE, MANIFEST, UI_STATE};
 use novira_core::db::Db;
@@ -120,7 +120,7 @@ fn fuzz(reader: &str, seeds: &[Vec<u8>], mut read: impl FnMut(&[u8])) {
         let outcome = std::panic::catch_unwind(AssertUnwindSafe(|| read(&input)));
         let took = started.elapsed();
         if outcome.is_err() || took > SLOWEST {
-            let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../novira-data/work/fuzz");
+            let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../logs/fuzz");
             let _ = std::fs::create_dir_all(&dir);
             let file = dir.join(format!("{reader}-{seed}-{case}.bin"));
             let _ = std::fs::write(&file, &input);

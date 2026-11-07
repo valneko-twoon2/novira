@@ -10,7 +10,7 @@
 //! reaches a website, starts a program or touches the Windows Credential Manager.
 //!
 //! Fixed seed, 300 calls in the ordinary run; longer: `NOVIRA_FUZZ_ITERATIONS=5000 NOVIRA_FUZZ_SEED=<n>`. An input that
-//! fails is saved to `novira-data/work/fuzz/api-<seed>-<case>.json`; a finding is pinned as an ordinary test.
+//! fails is saved to `logs/fuzz/api-<seed>-<case>.json`; a finding is pinned as an ordinary test.
 use super::common::*;
 use novira_core::api::{self, CallError};
 use novira_core::types::QueueItemStatus;
@@ -353,7 +353,7 @@ fn tree(dir: &Path) -> Vec<PathBuf> {
 }
 
 fn fail(seed: u64, case: u64, name: &str, args: &Value, what: String) -> ! {
-    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../novira-data/work/fuzz");
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../logs/fuzz");
     let _ = std::fs::create_dir_all(&dir);
     let file = dir.join(format!("api-{seed}-{case}.json"));
     let _ = std::fs::write(

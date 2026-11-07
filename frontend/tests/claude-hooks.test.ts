@@ -81,6 +81,7 @@ describe('line-end hook', () => {
     expect(shouldConvert('E:/repo/frontend/src/a.ts', root)).toBe(true);
     expect(shouldConvert('E:/repo/frontend/node_modules/x/a.js', root)).toBe(false);
     expect(shouldConvert('E:/repo/target/debug/a.txt', root)).toBe(false);
+    expect(shouldConvert('E:/repo/logs/coverage/report/index.html', root)).toBe(false);
     expect(shouldConvert('E:/other/a.ts', root)).toBe(false);
     expect(shouldConvert('D:/elsewhere/a.ts', root)).toBe(false);
   });
@@ -134,6 +135,7 @@ describe('line-end hook after a shell command', () => {
       'i/lf    w/lf    attr/text eol=crlf\tscripts/bad.bat',
       'i/-text w/-text attr/-text\tlogo.png',
       'i/lf    w/crlf  attr/text=auto eol=lf\tfrontend/node_modules/x/a.js',
+      'i/      w/crlf  attr/text=auto eol=lf\tlogs/e2e/report.md',
     ].join('\n');
     expect(badEol(listing)).toEqual(['src/a.ts', 'docs/b.md', 'new.txt', 'scripts/bad.bat']);
   });
@@ -278,7 +280,7 @@ describe('commit-before-stop hook', () => {
   });
 
   it('lists changed paths and leaves out generated folders and user data', () => {
-    const porcelain = [' M frontend/src/a.ts', '?? docs/new.md', 'R  old.md -> new.md', ' M novira-data/work/x.json', '?? frontend/node_modules/y.js', ' M data/user.db'].join('\n');
+    const porcelain = [' M frontend/src/a.ts', '?? docs/new.md', 'R  old.md -> new.md', ' M novira-data/work/x.json', '?? logs/e2e/x.json', '?? frontend/node_modules/y.js', ' M data/user.db'].join('\n');
     expect(pending(porcelain)).toEqual(['frontend/src/a.ts', 'docs/new.md', 'new.md']);
   });
 

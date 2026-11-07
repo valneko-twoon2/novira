@@ -133,7 +133,7 @@ describe('what the pages point at exists', () => {
   });
 
   it('leaves other backticks and fenced blocks alone', () => {
-    const body = '`cargo test -p novira` `frontend` `novira-data/`\n\n```text\nfrontend/dist and `backend/ghost/` inside a fence\n```';
+    const body = '`cargo test -p novira` `frontend` `novira-data/` `logs/coverage/report/index.html`\n\n```text\nfrontend/dist and `backend/ghost/` inside a fence\n```';
     expect(problems(TREE, withPage(body))).toEqual([]);
   });
 

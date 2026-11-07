@@ -11,7 +11,7 @@ A commit message says what the commit is, so a reader of `git log` can find it. 
 
 ## Before committing
 
-Stage only your own files (`git status` first, `git diff --cached` after). Run `npm run check:eol` in `frontend/`. `data/`, `outputs/`, `out/`, `novira-data/` (with the harness output in `novira-data/work/`), `config.json`, `.env*`, API keys and generated files are never committed (the pre-commit hook refuses them). A subagent's work branch is deleted after the merge (see `/gatekeeper`).
+Stage only your own files (`git status` first, `git diff --cached` after). Run `npm run check:eol` in `frontend/`. `data/`, `outputs/`, `out/`, `logs/`, `novira-data/` (with the harness output in `novira-data/work/`), `config.json`, `.env*`, API keys and generated files are never committed (the pre-commit hook refuses them). A subagent's work branch is deleted after the merge (see `/gatekeeper`).
 
 ## Shape
 

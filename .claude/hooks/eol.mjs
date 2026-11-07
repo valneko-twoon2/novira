@@ -15,9 +15,9 @@ import { pathToFileURL } from 'node:url';
 import { wantedEol, withEol } from '../../scripts/tools/eol.mjs';
 import { rootHolding, worktreeRoots } from './worktrees.mjs';
 
-const GENERATED = /(^|[\\/])(node_modules|target|\.git|dist|test-results)([\\/]|$)/;
+const GENERATED = /(^|[\\/])(node_modules|target|\.git|dist|logs)([\\/]|$)/;
 const REWRITES = /\b(?:sed|awk|perl|python3?|tee|Set-Content|Out-File|Add-Content|WriteAllText)\b|(?<![<>=\d&|-])>{1,2}(?!&)\s*[^\s&|]|node\s+(?:-e|\S*\.(?:cjs|mjs|js))/;
-const SKIP = /(^|\/)(node_modules|target|\.git|dist|test-results|novira-data)\//;
+const SKIP = /(^|\/)(node_modules|target|\.git|dist|logs|novira-data)\//;
 const BINARY = /\.(png|jpe?g|webp|gif|ico|icns|woff2?|ttf|zip|gz|dll|exe|bin|onnx|psd|pdf|mp[34]|wav|webm|svg)$/i;
 
 /** Whether an edited file is one this hook converts: inside the repository, outside generated folders. */

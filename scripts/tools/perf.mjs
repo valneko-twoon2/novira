@@ -17,7 +17,7 @@
 // Data: --data (default <work>/perf-data, a copy of real data) is copied to <work>/perf/source with its model roots
 // written as this system's paths: the database stores them with backslashes, and a root written with forward slashes
 // made every open read all model headers again (about 250 ms), which a user's app does not do.
-// Results: <work>/perf/<name>.json and <name>.md (and latest.json); --save keeps the result as <work>/perf/baselines/<name>.json;
+// Results: <logs>/perf/<name>.json and <name>.md (and latest.json); --save keeps the result as <work>/perf/baselines/<name>.json;
 // --compare prints the medians against a baseline and flags what moved beyond the noise (judge()). Each part notes the
 // processor load before and during it, since a busy machine moves every number. The probe of `app`
 // is this file again, run by verify-real-app with NOVIRA_PERF_PROBE set.
@@ -288,6 +288,7 @@ const log = (msg) => console.log(`[perf] ${msg}`);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ROOTS = harnessRoots(REPO);
 const PERF_DIR = path.join(ROOTS.work, 'perf');
+const RESULTS = path.join(ROOTS.logs, 'perf');
 const TARGET = path.join(ROOTS.work, 'perf-target');
 
 function run(cmd, args, opts = {}) {
@@ -399,7 +400,7 @@ function report(result, comparison) {
 }
 
 function loadResult(nameOrFile, dir) {
-  const candidates = [nameOrFile, path.join(dir, `${nameOrFile}.json`), path.join(PERF_DIR, `${nameOrFile}.json`)];
+  const candidates = [nameOrFile, path.join(dir, `${nameOrFile}.json`), path.join(RESULTS, `${nameOrFile}.json`)];
   const file = candidates.find((f) => fs.existsSync(f) && fs.statSync(f).isFile());
   if (!file) throw new Error(`no result ${nameOrFile} (looked for ${candidates.slice(1).join(', ')})`);
   return JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -424,7 +425,9 @@ async function main(argv) {
     return 0;
   }
   fs.mkdirSync(baselines, { recursive: true });
+  fs.mkdirSync(RESULTS, { recursive: true });
   markUsed(PERF_DIR);
+  markUsed(RESULTS);
   if (fs.existsSync(TARGET)) markUsed(TARGET);
   const base = opts.compare ? loadResult(opts.compare, baselines) : null;
   const parts = opts.command === 'all' ? PARTS : [opts.command];
@@ -448,10 +451,10 @@ async function main(argv) {
     log(`${part}: ${Object.keys(r.metrics).length} metrics in ${Math.round((Date.now() - started) / 1000)} s; processors ${idle} % busy before, ${result.load[part].during} % during (with the measurement itself)`);
   }
   const comparison = base ? { baseline: opts.compare, rows: compareMetrics(base.metrics, result.metrics), load: loadLine(base.load, result.load) } : null;
-  const file = path.join(PERF_DIR, `${name}.json`);
+  const file = path.join(RESULTS, `${name}.json`);
   fs.writeFileSync(file, JSON.stringify(result, null, 1));
-  fs.writeFileSync(path.join(PERF_DIR, 'latest.json'), JSON.stringify(result, null, 1));
-  fs.writeFileSync(path.join(PERF_DIR, `${name}.md`), report(result, comparison));
+  fs.writeFileSync(path.join(RESULTS, 'latest.json'), JSON.stringify(result, null, 1));
+  fs.writeFileSync(path.join(RESULTS, `${name}.md`), report(result, comparison));
   if (parts.includes('app')) console.log(`\n${ipcTable(ipcRows(result.metrics))}`);
   if (comparison) printComparison(comparison.rows, opts.compare, comparison.load);
   if (opts.save) {

@@ -1,8 +1,8 @@
 @echo off
 rem novira dev launcher: runs the app against the Vite dev server (hot reload for the frontend, real backend).
 rem Frontend edits show up on save; only Rust edits recompile. Needs tauri-cli (installed on first run).
-rem Data stays in novira-data\ in the repository root; what the harness generates (verification data, reports, builds)
-rem lives under novira-data\work\ and is pruned when stale (scripts/tools/prune-stale.mjs). If novira is already open, close it first (Windows locks the exe).
+rem Data stays in novira-data\ in the repository root; what the harness generates lives under novira-data\work\ (verification data, builds)
+rem and logs\ (test results) and is pruned when stale (scripts/tools/prune-stale.mjs). If novira is already open, close it first (Windows locks the exe).
 setlocal
 pushd "%~dp0.."
 rem Put cargo first: a long PATH gets cut off at its end by cmd.

@@ -1,7 +1,7 @@
 // Measures the start-up of a production frontend build in Chromium (Playwright), and optionally its screen switches: the
 // timings, the long tasks, the heap and the backend calls of each start. Several builds are compared by interleaving their
 // runs (the machine is shared, so one build is never measured in a quiet minute and the other in a busy one); medians are
-// reported. Outputs go to novira-data/work/perf/ of the main checkout.
+// reported. Results go to logs/perf/ of the main checkout, the copies of the data it runs on to novira-data/work/perf/ there.
 //
 //   node scripts/tools/perf-startup.mjs [--via server|mock] [--dist <label>=<folder>]... [--runs 7] [--switch] [--keep-floor]
 //                               [--data <folder>] [--exe <novira-server.exe>] [--cpu <rate>] [--out <name>] [--trace]
@@ -372,12 +372,15 @@ async function measureSwitches(browser, url, opts) {
   return out;
 }
 
-/** Measures as `opts` (parseArgs) say; writes <work>/perf/<out>.json and returns `{ file, summary, raw }`. */
+/** Measures as `opts` (parseArgs) say; writes <logs>/perf/<out>.json and returns `{ file, summary, raw }`. */
 export async function runStartup(opts) {
   const roots = harnessRoots(REPO);
   const perfDir = path.join(roots.work, 'perf');
-  fs.mkdirSync(perfDir, { recursive: true });
-  markUsed(perfDir);
+  const results = path.join(roots.logs, 'perf');
+  for (const dir of [perfDir, results]) {
+    fs.mkdirSync(dir, { recursive: true });
+    markUsed(dir);
+  }
   if (!opts.dists.length) opts.dists.push({ label: 'current', dir: path.join(REPO, 'frontend', 'dist') });
   for (const d of opts.dists) if (!fs.existsSync(path.join(d.dir, 'index.html'))) throw new Error(`no index.html in ${d.dir} (npm run build)`);
   const require = createRequire(path.join(REPO, 'frontend', 'package.json'));
@@ -407,8 +410,8 @@ export async function runStartup(opts) {
         if (run % 2) order.reverse();
         for (const i of order) {
           const d = opts.dists[i];
-          const traceFile = opts.trace && run === 0 ? path.join(perfDir, `${opts.out ?? 'startup'}-${d.label}.trace.json`) : null;
-          const r = await measureStart(browser, servers[i].url, { ...opts, traceFile, shotOnFail: path.join(perfDir, `${opts.out ?? 'startup'}-${d.label}-fail.png`) });
+          const traceFile = opts.trace && run === 0 ? path.join(results, `${opts.out ?? 'startup'}-${d.label}.trace.json`) : null;
+          const r = await measureStart(browser, servers[i].url, { ...opts, traceFile, shotOnFail: path.join(results, `${opts.out ?? 'startup'}-${d.label}-fail.png`) });
           if (traceFile) {
             raw[d.label].trace = traceSummary(JSON.parse(fs.readFileSync(traceFile, 'utf8')).traceEvents, 0, (r.marks.thumbsAll ?? r.now) + 500);
             console.log(`[perf] ${d.label} trace: ${JSON.stringify(raw[d.label].trace)}`);
@@ -435,7 +438,7 @@ export async function runStartup(opts) {
       }];
     }));
     const name = opts.out ?? `startup-${opts.via}-${new Date().toISOString().replace(/[:.]/g, '-')}`;
-    const file = path.join(perfDir, `${name}.json`);
+    const file = path.join(results, `${name}.json`);
     fs.writeFileSync(file, JSON.stringify({ opts: { ...opts, dists: opts.dists }, summary, raw }, null, 1));
     console.log(JSON.stringify(Object.fromEntries(Object.entries(summary).map(([k, v]) => [k, { start: v.start, switches: v.switches }])), null, 1));
     console.log(`[perf] written ${file}`);

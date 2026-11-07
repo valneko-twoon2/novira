@@ -10,7 +10,7 @@
 //! data folder by design) and every command that reaches a website or starts a program.
 //!
 //! Fixed seed, 300 requests in the ordinary run; longer: `NOVIRA_FUZZ_ITERATIONS=5000 NOVIRA_FUZZ_SEED=<n>`. A failing
-//! request is saved to `novira-data/work/fuzz/http-<seed>-<case>.txt`.
+//! request is saved to `logs/fuzz/http-<seed>-<case>.txt`.
 mod common;
 use common::*;
 use novira_server::TOKEN_HEADER;
@@ -413,7 +413,7 @@ async fn exchange_raw(addr: SocketAddr, raw: &[u8]) -> Result<(u16, Vec<u8>), St
 }
 
 fn fail(seed: u64, case: u64, request: &Request, what: String) -> ! {
-    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../novira-data/work/fuzz");
+    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../logs/fuzz");
     let _ = std::fs::create_dir_all(&dir);
     let file = dir.join(format!("http-{seed}-{case}.txt"));
     let _ = std::fs::write(&file, request.raw());

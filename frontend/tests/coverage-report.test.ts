@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
 import { pickInputs, reportArgs } from '../../scripts/tools/coverage-report.mjs';
 
-const root = join('C:', 'work', 'coverage');
+const root = join('C:', 'logs', 'coverage');
 
 describe('coverage report', () => {
   it('reads the Cobertura file of a run when there is one, and its lcov file otherwise', () => {

@@ -24,7 +24,8 @@
 | `frontend/` | UI（React 19 + TypeScript + Vite）。ブラウザではメモリ上のモック、アプリでは Rust のバックエンドへつながる |
 | `backend/crates/novira-core/` | バックエンド本体（ライブラリ）。SQLite、画像、キュー、モデル、ComfyUI のインストールと起動、拡張機能、AI アシスタント |
 | `backend/src-tauri/` | Tauri 2 の薄いシェル（IPC、画像の URL スキーム、ウィンドウ） |
-| `novira-data/` | ユーザーのデータ（`NOVIRA_DATA_DIR` で変更）。ハーネスが使えるのは `novira-data/work/` だけ |
+| `novira-data/` | ユーザーのデータ（`NOVIRA_DATA_DIR` で変更）。この中でハーネスが使えるのは `novira-data/work/` だけ |
+| `logs/` | テスト結果とレポート（git の対象外） |
 
 起動は `scripts\start.bat`（壊れたら `scripts\start.bat clean`）、フロントを頻繁に直すなら `scripts\dev.bat`。`make` は無い。
 
@@ -76,7 +77,7 @@
 安全
 
 - **ユーザーが動かしているアプリ（`novira.exe` とその ComfyUI）を止めない。** 検証は隔離した別のデータフォルダで行う。
-- **ハーネスが作るものは `novira-data/work/` の下だけに置く**（検証用データ、レポート、ビルド、一時ファイル。`out/` は使わない。data-guard フック）。古くなったものは `scripts/tools/prune-stale.mjs` が消す。
+- **テスト結果とレポートはリポジトリ直下の `logs/`（git の対象外）に置き、ハーネスが作るほかのものは `novira-data/work/` の下だけに置く**（検証用データ、ビルド、一時ファイル。`out/` は使わない。data-guard フック）。古くなったものは `scripts/tools/prune-stale.mjs` が消す。
 - **GPU を使う作業の前に GPU ロック（`NOVIRA_GPU_LOCK`）を取る。** ユーザーが GPU を使っているときは生成しない（[verification.md](docs/verification.md)）。
 - **worktree は `node scripts/tools/worktree.mjs add <名前>` で作り、取り込んだらその場で `node scripts/tools/worktree.mjs remove <パス>` で消す。** 手で `git worktree remove` しない（`node_modules` の junction をたどって本体の中身が消える。残ると Stop フックが差し戻す）。
 - **push してよいのは、取り込んだ後の `main` だけ**（常時許可）。別ブランチの push、`--force`、`--no-verify`、履歴の書き換えはユーザーが明示したときだけ。

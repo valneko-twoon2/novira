@@ -1,4 +1,4 @@
-// Turns the browser coverage recorded by the end-to-end tests (E2E_COVERAGE=1, novira-data/work/coverage/e2e-raw/*.json) into a report,
+// Turns the browser coverage recorded by the end-to-end tests (E2E_COVERAGE=1, logs/coverage/e2e-raw/*.json) into a report,
 // and adds it to the unit-test coverage: `node scripts/coverage-report.mjs`. Both are mapped back to src/ through source maps.
 // The combined figure counts a line as covered when either run executed it; statements and branches cannot be merged
 // that way (the two tools split them differently), so only lines are combined.
@@ -6,9 +6,10 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { fileURLToPath } from 'node:url';
 import { join, relative, resolve } from 'node:path';
 import { CoverageReport } from 'monocart-coverage-reports';
+import { coverageDir } from '../../scripts/tools/harness-paths.mjs';
 
 const FRONTEND = fileURLToPath(new URL('..', import.meta.url));
-const OUT = resolve(FRONTEND, '..', 'novira-data', 'work', 'coverage');
+const OUT = coverageDir();
 const RAW = join(OUT, 'e2e-raw');
 const E2E_DIR = join(OUT, 'e2e');
 const UNIT_LCOV = join(OUT, 'frontend', 'lcov.info');

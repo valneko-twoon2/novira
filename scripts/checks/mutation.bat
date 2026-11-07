@@ -1,6 +1,6 @@
 @echo off
 rem Mutation testing: changes the code a little (a mutant), runs the tests, and reports mutants the tests did not notice.
-rem It takes hours, so it is NOT part of scripts\check.bat or CI. Nothing in the sources is changed; reports go to novira-data\work\mutation\ (not committed).
+rem It takes hours, so it is NOT part of scripts\check.bat or CI. Nothing in the sources is changed; reports go to logs\mutation\ (not committed).
 rem   rust:     cargo-mutants on backend\crates\novira-core with backend\.cargo\mutants.toml. Mutants run in a temporary copy of the
 rem             repository, so target\ and a running novira.exe are not touched. First run installs cargo-mutants.
 rem Usage: scripts\checks\mutation.bat rust                              the whole crate (about a day; prefer one file at a time)
@@ -37,7 +37,8 @@ if errorlevel 1 (
   echo Installing cargo-mutants...
   cargo install cargo-mutants --locked
 )
-cargo mutants -p novira-core --jobs 2 -o ..\novira-data\work\mutation\rust %MUT_EXTRA%
+if not exist ..\logs\mutation mkdir ..\logs\mutation
+cargo mutants -p novira-core --jobs 2 -o ..\logs\mutation\rust %MUT_EXTRA%
 popd
 rem Exit code 2 means some mutants were missed, 3 means timeouts; both are findings, not failures of the run.
 if errorlevel 4 set "MUT_FAILED=%MUT_FAILED% [rust]"
@@ -51,7 +52,7 @@ if defined MUT_FAILED (
   endlocal
   exit /b 1
 )
-echo Reports: novira-data\work\mutation\rust\mutants.out\outcomes.json  (missed.txt, caught.txt, timeout.txt, unviable.txt)
+echo Reports: logs\mutation\rust\mutants.out\outcomes.json  (missed.txt, caught.txt, timeout.txt, unviable.txt)
 popd
 endlocal
 exit /b 0
