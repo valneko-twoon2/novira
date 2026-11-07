@@ -76,9 +76,12 @@ describe('screens the app build hides', () => {
     vi.stubEnv('MODE', 'production');
     expect(isScreenShown('video')).toBe(false);
     expect(isScreenShown('canvas')).toBe(true);
+    expect(isScreenShown('logo')).toBe(true);
+    ui().setMedia('logo');
+    expect(ui().media).toBe('logo');
     ui().setMedia('video');
     ui().setTab('comic');
-    expect([ui().activeTab, ui().media, ui().generateMode]).toEqual(['generate', 'image', 'generate']);
+    expect([ui().activeTab, ui().media, ui().generateMode]).toEqual(['generate', 'logo', 'generate']);
     ui().setTab('canvas');
     expect(ui().activeTab).toBe('canvas');
     vi.stubEnv('MODE', 'harness');
