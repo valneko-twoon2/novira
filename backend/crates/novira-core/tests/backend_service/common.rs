@@ -12,8 +12,18 @@ use tokio_util::sync::CancellationToken;
 
 pub(crate) const BASE: &str = "http://novira-image.localhost";
 
+/// Lets a test decide when, and how, each job of a `FakeEngine` ends (see `prop_queue_worker.rs`).
+#[derive(Default)]
+pub(crate) struct Gate {
+    /// What the waiting job should do once woken: `Some(true)` finishes it, `Some(false)` fails it.
+    pub(crate) outcome: Mutex<Option<bool>>,
+    pub(crate) wake: tokio::sync::Notify,
+}
+
 #[derive(Default)]
 pub(crate) struct FakeEngine {
+    /// When set, `generate` waits here until the test gives an outcome (or the job is cancelled).
+    pub(crate) gate: Option<Arc<Gate>>,
     pub(crate) jobs: Mutex<Vec<EngineJob>>,
     /// When set, `generate` waits for cancellation instead of finishing.
     pub(crate) block: bool,
@@ -86,6 +96,20 @@ impl Engine for FakeEngine {
         cancel: &CancellationToken,
     ) -> Result<EngineOutput, EngineError> {
         self.jobs.lock().unwrap().push(job.clone());
+        if let Some(gate) = &self.gate {
+            loop {
+                if let Some(finish) = gate.outcome.lock().unwrap().take() {
+                    if !finish {
+                        return Err(EngineError::Failed("engine failed".into()));
+                    }
+                    break;
+                }
+                tokio::select! {
+                    _ = cancel.cancelled() => return Err(EngineError::Cancelled),
+                    _ = gate.wake.notified() => {}
+                }
+            }
+        }
         if job.params.positive_prompt.contains("[fail]") {
             return Err(EngineError::Failed("engine failed".into()));
         }
