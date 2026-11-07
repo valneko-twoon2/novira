@@ -1,6 +1,6 @@
 // The checks of the versioned Git pre-commit hook (.githooks/pre-commit), kept fast so every commit can run them:
 //   1. refuse user data, verification output, personal settings and secrets in the index
-//      (novira-data/ with everything under novira-data/work/, data/, outputs/, out/, any config.json, .env and .env.*), even when forced past .gitignore;
+//      (novira-data/ with everything under novira-data/work/, logs/, data/, outputs/, out/, any config.json, .env and .env.*), even when forced past .gitignore;
 //   2. line ends of the staged files (scripts/tools/check-eol.mjs --staged), and the product name written "novira" in lowercase
 //      everywhere (scripts/tools/check-name.mjs --staged);
 //   3. the languages stay in step: ja and en change together, other languages keep no out-of-date text, and a manual chapter
@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url';
 import { gateMessage, indexFingerprint, readPasses } from '../scripts/tools/layout-scan.mjs';
 
 const FORBIDDEN = [
-  { test: /^(novira-data|data|outputs|out)\//, why: 'user data or generated output' },
+  { test: /^(novira-data|logs|data|outputs|out)\//, why: 'user data or generated output' },
   { test: /(^|\/)config\.json$/, why: 'personal settings' },
   { test: /(^|\/)\.env(\.[^/]*)?$/, why: 'environment file (may hold API keys)' },
 ];

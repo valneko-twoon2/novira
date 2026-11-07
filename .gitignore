@@ -10,6 +10,9 @@ config.json
 .env
 .env.*
 
+# Test results and reports
+/logs/
+
 # Logs and temporary files
 *.log
 *.tmp

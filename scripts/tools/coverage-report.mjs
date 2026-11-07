@@ -1,12 +1,12 @@
 // One graphical coverage report for the whole repository, built by ReportGenerator (a .NET tool pinned in
-// .config/dotnet-tools.json) from what the coverage runs leave in novira-data/work/coverage/:
+// .config/dotnet-tools.json) from what the coverage runs leave in logs/coverage/:
 //   frontend/  the vitest run (`npm run coverage`)
 //   e2e/       the Playwright run (`npm run coverage:e2e`)
 //   backend/   cargo llvm-cov (`scripts\checks\coverage.bat backend`)
 // Each run writes Cobertura XML, whose packages (folders) become the report's groups; an lcov file is the fallback (it
 // has no packages, so every file lands in one flat group). It takes the runs that exist (a line counts as covered when any
 // run executed it), and writes the HTML report with its
-// charts to novira-data/work/coverage/report/index.html. Each run is also kept in coverage/history/, so the report shows
+// charts to logs/coverage/report/index.html. Each run is also kept in coverage/history/, so the report shows
 // how the figures moved over the runs. Nothing is measured here; run the coverage first.
 //   node scripts/tools/coverage-report.mjs [--open]
 // Needs the .NET SDK (`dotnet`); the tool itself is fetched by `dotnet tool restore` on the first run.
@@ -14,6 +14,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { coverageDir } from './harness-paths.mjs';
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -51,10 +52,10 @@ export function reportArgs({ reports, target, history, sourceDirs, tag }) {
 
 function main() {
   // Where the coverage runs of this checkout write (frontend/vitest.config.ts, coverage.bat), also in a worktree.
-  const coverage = path.join(REPO, 'novira-data', 'work', 'coverage');
+  const coverage = coverageDir(REPO);
   const found = pickInputs(coverage, existsSync);
   if (!found.length) {
-    console.error('coverage-report: no coverage in novira-data/work/coverage/. Run scripts\\checks\\coverage.bat (or npm run coverage in frontend/) first.');
+    console.error('coverage-report: no coverage in logs/coverage/. Run scripts\\checks\\coverage.bat (or npm run coverage in frontend/) first.');
     process.exit(1);
   }
   const dotnet = (args) => spawnSync('dotnet', args, { cwd: REPO, stdio: 'inherit', env: { ...process.env, DOTNET_CLI_TELEMETRY_OPTOUT: '1', DOTNET_NOLOGO: '1' } });

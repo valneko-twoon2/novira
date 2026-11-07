@@ -1,6 +1,8 @@
 // The model sweep (scripts/tools/models-sweep*.mjs): what it reads from the code agrees with the code, which models stand for their
 // kind, the graph and picture checks, the verdicts and the table, which changes need a sweep and when a record still covers
 // HEAD, the Stop hook's reminder, and the main checkout a worktree shares its harness folder with.
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { deflateSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
@@ -25,6 +27,7 @@ import {
   porcelainPaths,
   railOf,
   readCode,
+  readRecords,
   recordCoversHead,
   representatives,
   summaryLines,
@@ -37,7 +40,7 @@ import {
 // @ts-expect-error -- plain ESM script without types
 import { mergeRuns, parseArgs } from '../../scripts/tools/models-sweep.mjs';
 // @ts-expect-error -- plain ESM script without types
-import { harnessRoots, mainCheckout, movedDataDir } from '../../scripts/tools/harness-paths.mjs';
+import { coverageDir, e2eOutputDir, harnessRoots, logsDir, mainCheckout, movedDataDir } from '../../scripts/tools/harness-paths.mjs';
 // @ts-expect-error -- plain ESM script without types
 import { reminder, sweepReminders } from '../../.claude/hooks/commit-before-stop.mjs';
 
@@ -438,6 +441,23 @@ describe('the Stop hook and the sweep', () => {
     };
     expect(sweepReminders(['E:/main'], { git: broken, records: [] })).toEqual([]);
   });
+
+  it('reads the records of <logs>/models-sweep/, newest first, skipping what is half written', () => {
+    const logs = mkdtempSync(path.join(tmpdir(), 'novira-sweep-records-'));
+    try {
+      expect(readRecords(logs)).toEqual([]);
+      const write = (name: string, text: string) => {
+        mkdirSync(path.join(logs, 'models-sweep', name), { recursive: true });
+        writeFileSync(path.join(logs, 'models-sweep', name, 'sweep.json'), text);
+      };
+      write('20261101-010000', JSON.stringify({ startedAt: '2026-11-01T01:00:00Z', head: 'old' }));
+      write('20261102-010000', JSON.stringify({ startedAt: '2026-11-02T01:00:00Z', head: 'new' }));
+      write('20261103-010000', '{ half');
+      expect(readRecords(logs).map((r: { head: string }) => r.head)).toEqual(['new', 'old']);
+    } finally {
+      rmSync(logs, { recursive: true, force: true });
+    }
+  });
 });
 
 describe('the main checkout a worktree shares', () => {
@@ -450,6 +470,21 @@ describe('the main checkout a worktree shares', () => {
     const roots = harnessRoots('E:/Code/novira-wt-x', 'E:/Code/novira', null, () => true);
     expect(roots.work.replaceAll('\\', '/')).toBe('E:/Code/novira/novira-data/work');
     expect(roots.models.replaceAll('\\', '/')).toBe('E:/Code/novira/novira-data/models');
+    expect(roots.logs.replaceAll('\\', '/')).toBe('E:/Code/novira/logs');
+  });
+
+  it('gives each checkout its own Playwright folder in the logs/ of the main checkout', () => {
+    const dir = (repo: string) => e2eOutputDir(harnessRoots(repo, 'E:/Code/novira', null, () => true)).replaceAll('\\', '/');
+    expect(dir('E:/Code/novira')).toBe('E:/Code/novira/logs/e2e');
+    expect(dir('E:/Code/novira-wt-x')).toBe('E:/Code/novira/logs/e2e-novira-wt-x');
+    expect(dir('E:/Code/novira/.claude/worktrees/y')).toBe('E:/Code/novira/logs/e2e-y');
+    // The same folder written with another letter case or a trailing slash is not a worktree.
+    expect(dir('e:/code/novira/')).toBe('E:/Code/novira/logs/e2e');
+  });
+
+  it('keeps the coverage of a checkout in its own logs/, also in a worktree', () => {
+    expect(logsDir('E:/Code/novira-wt-x').replaceAll('\\', '/')).toBe('E:/Code/novira-wt-x/logs');
+    expect(coverageDir('E:/Code/novira-wt-x').replaceAll('\\', '/')).toBe('E:/Code/novira-wt-x/logs/coverage');
   });
 
   it('shares the models of a data folder the app moved out of the repository, and keeps the harness folder in it', () => {

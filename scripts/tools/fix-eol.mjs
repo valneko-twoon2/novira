@@ -10,7 +10,7 @@ import { wantedEol, withEol } from './eol.mjs';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const TEXT = /\.(ts|tsx|mts|cts|js|mjs|cjs|json|css|html|md|txt|svg|yml|yaml|rs|toml|bat|cmd|lock|sh)$/i;
 /** Folders never walked: dependencies, build output, user data and generated files, other repositories. */
-const SKIP = new Set(['node_modules', 'dist', '.git', 'test-results', 'playwright-report', 'target', 'novira-data', 'artifacts', '.reference', 'coverage']);
+const SKIP = new Set(['node_modules', 'dist', '.git', 'logs', 'target', 'novira-data', 'artifacts', '.reference', 'coverage']);
 
 /** The file or folder a command-line path names (see the header), or null. */
 export function locate(arg, from = process.env.INIT_CWD || process.cwd(), root = ROOT) {

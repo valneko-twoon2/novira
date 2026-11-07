@@ -78,7 +78,7 @@ export function treeFingerprint(root = ROOT) {
   return fingerprint(paths.map((p, i) => [p, blobs[i]]));
 }
 
-/** Where the record lives: in the main checkout's novira-data/work/ (scripts/tools/harness-paths.mjs), like everything the harness writes. */
+/** Where the record lives: in the main checkout's novira-data/work/ (scripts/tools/harness-paths.mjs), with what else the tools read back. */
 export function recordPath(root = ROOT) {
   return join(harnessRoots(root).work, 'layout-scan', 'passes.json');
 }

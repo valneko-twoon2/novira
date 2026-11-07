@@ -61,8 +61,9 @@ src-tauri  ── commands.rs (validate) ──▶ novira-core::service ──�
 | `docs/` | `design/` each feature's specification and security, `manual/<language>/` the manual, `development.md`, `verification.md` |
 | `scripts/` | what you run by hand: the Windows launchers (`.bat`); in `tools/`, what AI sessions, Git hooks and CI call |
 | `.githooks/`, `.github/`, `.claude/`, `.config/` | the Git hooks (sh wrapper + Node body); the test and release workflows; Claude Code hooks, rules and skills; the pinned .NET tool of the coverage report ([tooling.md](tooling.md)) |
-| `novira-data/`, `data/`, `outputs/` | user data and generated files, never committed; `novira-data/work/` holds everything the harness generates (verification data, reports, builds, scratch) |
+| `novira-data/`, `data/`, `outputs/` | user data and generated files, never committed; `novira-data/work/` holds what the harness generates (verification data, builds, scratch) |
+| `logs/` | test results and reports, git-ignored |
 
 ## Keeping it current
 
-This guide holds what a search of the code does not show: how the parts connect, where the truth is, where to start. Change it in the same commit when a part is added, removed or moved, a boundary changes, or a "where to start" row stops being true. Do not list files here; the tree is the list. `scripts/tools/docs-check.mjs` fails on a part no page names, a backticked path that no longer exists, and a page past its size limit ([the rule](../../.claude/rules/docs.md)).
+This guide holds what a search of the code does not show: how the parts connect, where the truth is, where to start. Change it in the same commit when a part is added, removed or moved, a boundary changes, or a "where to start" row stops being true. `scripts/tools/docs-check.mjs` fails on a part no page names, a backticked path that no longer exists, and a page past its size limit ([the rule](../../.claude/rules/docs.md)).

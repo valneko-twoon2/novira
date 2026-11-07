@@ -1,8 +1,11 @@
 // Shared fixtures for the end-to-end tests: error collection, app start-up and catalog lookups.
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test as base, expect, type Page } from '@playwright/test';
+// @ts-expect-error -- plain ESM script without types
+import { coverageDir } from '../../scripts/tools/harness-paths.mjs';
 
 type Locale = 'ja' | 'en' | 'zh-CN' | 'zh-TW' | 'ko' | 'ru' | 'es' | 'pt-BR' | 'fr' | 'de';
 
@@ -117,9 +120,9 @@ export const test = base.extend<Fixtures>({
       await page.coverage.startJSCoverage({ resetOnNavigation: false });
       await use();
       const entries = await page.coverage.stopJSCoverage();
-      const dir = fileURLToPath(new URL('../../novira-data/work/coverage/e2e-raw/', import.meta.url));
+      const dir = join(coverageDir(), 'e2e-raw');
       mkdirSync(dir, { recursive: true });
-      writeFileSync(`${dir}${randomUUID()}.json`, JSON.stringify(entries.filter((e) => e.url.includes('/src/'))));
+      writeFileSync(join(dir, `${randomUUID()}.json`), JSON.stringify(entries.filter((e) => e.url.includes('/src/'))));
     },
     { auto: true },
   ],

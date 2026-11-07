@@ -476,9 +476,9 @@ export function recordCoversHead(record, changedSince, blobAtHead) {
   return changedSince.filter(isSweepTrigger).every((p) => record.dirty?.[p] !== undefined && record.dirty[p] === blobAtHead(p));
 }
 
-/** The sweep records under `<work>/models-sweep/`, newest first (each run's `sweep.json`). Unreadable ones are skipped. */
-export function readRecords(work) {
-  const dir = path.join(work, 'models-sweep');
+/** The sweep records under `<logs>/models-sweep/`, newest first (each run's `sweep.json`). Unreadable ones are skipped. */
+export function readRecords(logs) {
+  const dir = path.join(logs, 'models-sweep');
   if (!fs.existsSync(dir)) return [];
   const out = [];
   for (const name of fs.readdirSync(dir)) {

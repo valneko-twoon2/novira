@@ -6,12 +6,18 @@ import { availableParallelism } from 'node:os';
 import { join } from 'node:path';
 import { chromium, defineConfig, devices } from '@playwright/test';
 // @ts-expect-error -- plain ESM script without types
+import { e2eOutputDir, harnessRoots } from '../scripts/tools/harness-paths.mjs';
+// @ts-expect-error -- plain ESM script without types
 import { serverMode } from './scripts/e2e-server.mjs';
 
 // E2E_PORT lets parallel checkouts (git worktrees) run their own server instead of reusing another one's.
 const PORT = Number(process.env.E2E_PORT) || 5180;
 const BASE_URL = `http://localhost:${PORT}/`;
 const SERVER: 'build' | 'dev' = serverMode();
+const ROOTS = harnessRoots();
+// Through the variable, not the reporter's `outputFolder`: CI passes `--reporter=list,html,json`, which replaces the list
+// below with its options (.github/workflows/test.yml).
+process.env.PLAYWRIGHT_HTML_OUTPUT_DIR ??= join(ROOTS.logs, 'playwright-report');
 
 /**
  * The browser to launch. NOVIRA_CHROMIUM names one. Otherwise, when the Chromium build this Playwright expects is not installed
@@ -31,7 +37,7 @@ function browserPath(): string | undefined {
 
 export default defineConfig({
   testDir: 'e2e',
-  outputDir: 'test-results',
+  outputDir: e2eOutputDir(ROOTS),
   fullyParallel: true,
   // Half the processors, never more than 6: more made the user's PC too slow to work on (scripts/tools/layout-scan.mjs keeps the same cap).
   workers: Math.max(1, Math.min(6, Math.floor(availableParallelism() / 2))),

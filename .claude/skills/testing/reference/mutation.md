@@ -14,7 +14,7 @@ Run it when a module's tests were written or changed in a way that could leave a
 
 1. Pick one file under `backend/crates/novira-core/src/`. Start with the file you changed. Look at the `tests/mutation_*.rs` files for the area first; they show what was already found.
 2. From the repository root run `scripts\checks\mutation.bat rust -- -f crates\novira-core\src\<path>.rs`. It takes long, so start it in the background and read the result when it finishes.
-3. Read the results in `novira-data\work\mutation\rust\mutants.out\`: `missed.txt`, `caught.txt`, `timeout.txt`, `unviable.txt`.
+3. Read the results in `logs\mutation\rust\mutants.out\`: `missed.txt`, `caught.txt`, `timeout.txt`, `unviable.txt`.
 
 ## 3. Handle each missed mutant
 

@@ -1,19 +1,20 @@
-// Deletes stale harness output. Everything the harness generates (verification data, reports, builds, scratch scripts and
-// pictures) lives directly inside <repo>/novira-data/work/; an entry that has not been used for longer than its limit is
-// deleted by default (docs/architecture/tooling.md, "Stale output"). The age is measured from the `.last-used` marker file
-// inside the entry (the harness writes it each time it uses the entry; `markUsed`), or, without a marker, from the newest
-// top-level modification time of the entry.
+// Deletes stale harness output. What the harness generates lives directly inside two folders of <repo>: novira-data/work/
+// (verification data, builds, scratch scripts and pictures) and logs/ (test results and reports); an entry that has not
+// been used for longer than its limit is deleted by default (docs/architecture/tooling.md, "Stale output"). The age is
+// measured from the `.last-used` marker file inside the entry (the harness writes it each time it uses the entry;
+// `markUsed`), or, without a marker, from the newest top-level modification time of the entry.
 //   node scripts/tools/prune-stale.mjs [--dry-run] [--quiet]
 //     --dry-run  list what would be deleted, delete nothing
 //     --quiet    print only the deletions (the Stop hook uses it)
-// Safety: it only deletes entries directly inside <repo>/novira-data/work/ and refuses to run for any other root; it never
-// follows a symlink or junction (an entry that is a link, or has one in its first levels, is skipped and reported); it
-// skips what is in use (a data folder whose `novira.lock` cannot be shown free, anything a running process names on its
-// command line) and deletes nothing while a verification `novira.exe` is running. When unsure, it keeps.
+// Safety: it only deletes entries directly inside those two folders and refuses to run for any other root; in logs/ only
+// the entries POLICY names for it, so anything else put there stays; it never follows a symlink or junction (an entry that
+// is a link, or has one in its first levels, is skipped and reported); it skips what is in use (a data folder whose
+// `novira.lock` cannot be shown free, anything a running process names on its command line) and deletes nothing while a
+// verification `novira.exe` is running. When unsure, it keeps.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { mainCheckout } from './harness-paths.mjs';
+import { logsDir, mainCheckout } from './harness-paths.mjs';
 import { listProcesses, verifyTarget } from './harness-process.mjs';
 
 export { verifyTarget };
@@ -21,40 +22,45 @@ export { verifyTarget };
 export const MARKER = '.last-used';
 const DAY = 24 * 60 * 60 * 1000;
 
-/** The age limits, first match wins. Anything that matches no earlier row is short-lived scratch (logs, pictures, one-off scripts, `live*`, other `verify-*`). */
+/**
+ * The age limits, first match wins. `names` are the entries of novira-data/work/, where anything that matches no earlier row
+ * is short-lived scratch (logs, pictures, one-off scripts, `live*`, other `verify-*`). `logs` are the entries of logs/, where
+ * a name no row has is left alone.
+ */
 export const POLICY = [
   { kind: 'standing environment', names: /^(verify-data|verify-webview|comfy-copy|perf-data)$/, days: 30 },
   { kind: 'heavy cache', names: /^(check-target|perf-target|server-target|tsc)$/, days: 14 },
-  { kind: 'records and baselines', names: /^(perf|layout-scan|release-notes)$/, days: 14 },
-  { kind: 'report or build', names: /^(coverage|mutation|manual|models-sweep|e2e-build)$/, days: 7 },
-  { kind: 'scratch', names: /^/, days: 3 },
+  { kind: 'records and baselines', names: /^(perf|layout-scan|release-notes)$/, logs: /^perf$/, days: 14 },
+  { kind: 'report or build', names: /^(coverage|mutation|manual|models-sweep|e2e-build)$/, logs: /^(coverage|mutation|models-sweep|playwright-report|e2e(-.+)?)$/, days: 7 },
+  { kind: 'scratch', names: /^/, logs: /^(full-check|fuzz)$/, days: 3 },
 ];
 
-/** The policy row of an entry name. */
-export function ruleFor(name) {
-  return POLICY.find((row) => row.names.test(name));
+/** The policy row of an entry of novira-data/work/, or with `inLogs` of logs/ (undefined for a name logs/ has no row for). */
+export function ruleFor(name, inLogs = false) {
+  return POLICY.find((row) => (inLogs ? row.logs : row.names)?.test(name));
 }
 
-/** The only folder this script may delete from: <repo>/novira-data/work. */
+/** One of the two folders this script may delete from, with logsDir() of harness-paths.mjs: <repo>/novira-data/work. */
 export function workRoot(repo) {
   return path.join(path.resolve(repo), 'novira-data', 'work');
 }
 
 const same = (a, b) => path.resolve(a).toLowerCase() === path.resolve(b).toLowerCase();
 
-/** Throws unless `root` is exactly <repo>/novira-data/work. */
+/** Throws unless `root` is exactly <repo>/novira-data/work or <repo>/logs. */
 export function assertRoot(root, repo) {
-  if (!root || !same(root, workRoot(repo))) throw new Error(`refusing: ${root} is not ${workRoot(repo)}`);
+  if (!root || ![workRoot(repo), logsDir(repo)].some((allowed) => same(root, allowed))) throw new Error(`refusing: ${root} is neither ${workRoot(repo)} nor ${logsDir(repo)}`);
 }
 
 /**
  * The verdict for each entry; pure. An entry is `{ name, usedAt (ms), link (it is, or holds near its top, a symlink or junction), busy (a reason it is in use, or '') }`.
- * Returns `[{ name, action: 'delete' | 'keep' | 'skip', reason, ageDays, limitDays }]`.
+ * Returns `[{ name, action: 'delete' | 'keep' | 'skip', reason, ageDays, limitDays }]`. With `inLogs` the entries are those of logs/.
  */
-export function planPrune(entries, now, { verifyRunning = false } = {}) {
+export function planPrune(entries, now, { verifyRunning = false, inLogs = false } = {}) {
   return entries.map((entry) => {
-    const rule = ruleFor(entry.name);
+    const rule = ruleFor(entry.name, inLogs);
     const ageDays = Math.max(0, (now - entry.usedAt) / DAY);
+    if (!rule) return { name: entry.name, action: 'keep', reason: 'not an entry the harness makes in logs/', ageDays, limitDays: null };
     const verdict = (action, reason) => ({ name: entry.name, action, reason, ageDays, limitDays: rule.days });
     if (ageDays <= rule.days) return verdict('keep', 'within its limit');
     if (entry.link) return verdict('skip', 'is or contains a link (never followed)');
@@ -140,11 +146,12 @@ export function namedByProcesses(procs, root, names) {
 }
 
 /**
- * Prunes `<repo>/novira-data/work`. Options: `dryRun`, `now`, `log` (one line per verdict worth showing), `processes` (a function returning the
+ * Prunes one folder: `<repo>/novira-data/work`, or `<repo>/logs` as `root`. Options: `dryRun`, `now`, `log` (one line per verdict worth showing), `processes` (a function returning the
  * processes (scripts/tools/harness-process.mjs), or null; default: the real list, asked only when something is old enough to delete). Returns `{ deleted, skipped, kept }`.
  */
 export function prune({ repo, root = workRoot(repo), dryRun = false, now = Date.now(), log = () => {}, processes = listProcesses } = {}) {
   assertRoot(root, repo);
+  const inLogs = same(root, logsDir(repo));
   const result = { deleted: [], skipped: [], kept: [] };
   if (!fs.existsSync(root)) return result;
   if (fs.lstatSync(root).isSymbolicLink()) throw new Error(`refusing: ${root} is a link`);
@@ -154,7 +161,7 @@ export function prune({ repo, root = workRoot(repo), dryRun = false, now = Date.
     const link = stat.isSymbolicLink() || (stat.isDirectory() && holdsLink(full));
     return { name, full, usedAt: link ? stat.mtimeMs : usedAtOf(full, stat), link, busy: '' };
   });
-  const old = planPrune(entries, now).filter((v) => v.action === 'delete');
+  const old = planPrune(entries, now, { inLogs }).filter((v) => v.action === 'delete');
   let verifyRunning = false;
   if (old.length > 0) {
     const procs = processes();
@@ -169,7 +176,7 @@ export function prune({ repo, root = workRoot(repo), dryRun = false, now = Date.
       }
     }
   }
-  for (const verdict of planPrune(entries, now, { verifyRunning })) {
+  for (const verdict of planPrune(entries, now, { verifyRunning, inLogs })) {
     const full = path.join(root, verdict.name);
     const days = `${verdict.ageDays.toFixed(1)} d / ${verdict.limitDays} d`;
     if (verdict.action === 'keep') result.kept.push(verdict.name);
@@ -193,6 +200,14 @@ export function prune({ repo, root = workRoot(repo), dryRun = false, now = Date.
   return result;
 }
 
+/** Prunes both folders of `repo` (the options of prune()), asking for the processes at most once: the Stop hook gives the whole run 6 s. */
+export function pruneAll({ repo, processes = listProcesses, ...options }) {
+  let listed;
+  const once = () => (listed ??= [processes()])[0];
+  const parts = [workRoot(repo), logsDir(repo)].map((root) => prune({ ...options, repo, root, processes: once }));
+  return Object.fromEntries(['deleted', 'skipped', 'kept'].map((key) => [key, parts.flatMap((part) => part[key])]));
+}
+
 const isMain = process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
 if (isMain) {
   const args = process.argv.slice(2);
@@ -201,11 +216,11 @@ if (isMain) {
     console.error('usage: node scripts/tools/prune-stale.mjs [--dry-run] [--quiet]');
     process.exitCode = 2;
   } else {
-    // From a worktree too, the harness folder is the main checkout's.
+    // From a worktree too, the harness folders are the main checkout's.
     const repo = mainCheckout(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..'));
     const quiet = args.includes('--quiet');
     try {
-      const done = prune({ repo, dryRun: args.includes('--dry-run'), log: (m) => (quiet && !/^(deleted|would delete)/.test(m) ? undefined : console.log(`[prune-stale] ${m}`)) });
+      const done = pruneAll({ repo, dryRun: args.includes('--dry-run'), log: (m) => (quiet && !/^(deleted|would delete)/.test(m) ? undefined : console.log(`[prune-stale] ${m}`)) });
       if (!quiet) console.log(`[prune-stale] ${done.deleted.length} ${args.includes('--dry-run') ? 'to delete' : 'deleted'}, ${done.skipped.length} skipped, ${done.kept.length} kept`);
     } catch (e) {
       console.error(`[prune-stale] ${e.message}`);

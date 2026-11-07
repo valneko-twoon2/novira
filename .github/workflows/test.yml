@@ -227,8 +227,8 @@ jobs:
         with:
           name: playwright-chromium
           path: |
-            frontend/playwright-report
-            frontend/test-results
+            logs/playwright-report
+            logs/e2e
           if-no-files-found: ignore
           retention-days: 7
 
@@ -271,8 +271,8 @@ jobs:
         with:
           name: playwright-phone
           path: |
-            frontend/playwright-report
-            frontend/test-results
+            logs/playwright-report
+            logs/e2e
           if-no-files-found: ignore
           retention-days: 7
 

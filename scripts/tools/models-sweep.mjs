@@ -15,7 +15,7 @@
 // free and NOVIRA_GPU_LOCK set, one model per kind and base also gets (d) one short job from its screen and (e) the graph ComfyUI received checked for that file, and the picture for
 // blankness; otherwise d and e are "not run" with the reason, never "pass". Model files on disk that the app does not list are
 // rows of their own, and folders of the shared model root that novira reads as neither a category nor a pack are named. Each model pack (video, music, voice...; found in every model root) is a row too, with checks a and b only.
-// Output: novira-data/work/models-sweep/<time>/ of the main checkout: sweep.md (the table), sweep.json (the record the Stop hook
+// Output: logs/models-sweep/<time>/ of the main checkout: sweep.md (the table), sweep.json (the record the Stop hook
 // reads: the commit swept and the uncommitted model files), and the screenshots, graphs and pictures of each run.
 // Environment: NOVIRA_GPU_LOCK (needed for d and e), NOVIRA_VERIFY_DATA, NOVIRA_VERIFY_TARGET (as verify-real-app.mjs).
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
@@ -220,7 +220,7 @@ async function main(argv) {
     if (g.busy) gpuWhy = `not run (GPU busy): ${g.why}`;
   }
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
-  const out = path.join(ROOTS.work, 'models-sweep', stamp);
+  const out = path.join(ROOTS.logs, 'models-sweep', stamp);
   fs.mkdirSync(out, { recursive: true });
   const record = { version: 1, ...sweptState(), startedAt: new Date().toISOString(), filter: { category: opts.category, model: opts.model }, lookup: opts.lookup, via: opts.via, gpu: gpuWhy ?? 'ran', complete: false };
   fs.writeFileSync(path.join(out, 'sweep.json'), JSON.stringify(record, null, 2));

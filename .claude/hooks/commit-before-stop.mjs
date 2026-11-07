@@ -13,8 +13,8 @@ import { readRecords, recordCoversHead, sweepReminder } from '../../scripts/tool
 import { finished, isFresh, parseWorktrees } from '../../scripts/tools/worktree.mjs';
 import { worktreeRoots } from './worktrees.mjs';
 
-// novira-data/ (user data, and novira-data/work/ where the harness writes) is never reported as pending.
-const SKIP = /(^|\/)(node_modules|target|\.git|dist|test-results|novira-data|data|outputs)\//;
+// novira-data/ (user data, and novira-data/work/ where the harness writes) and logs/ (test results) are never reported as pending.
+const SKIP = /(^|\/)(node_modules|target|\.git|dist|logs|novira-data|data|outputs)\//;
 
 /** The changed paths of `git status --porcelain` (staged, modified and new files) outside generated and user-data folders. */
 export function pending(porcelain) {
@@ -83,7 +83,7 @@ export function sweepReminders(roots, { git, records }) {
   return out;
 }
 
-/** Runs scripts/tools/prune-stale.mjs (stale harness output under novira-data/work/); returns the lines of what it deleted. Never throws, gives up after 6 s. */
+/** Runs scripts/tools/prune-stale.mjs (stale harness output under novira-data/work/ and logs/); returns the lines of what it deleted. Never throws, gives up after 6 s. */
 export function pruneStale(script = fileURLToPath(new URL('../../scripts/tools/prune-stale.mjs', import.meta.url))) {
   try {
     const run = spawnSync(process.execPath, [script, '--quiet'], { encoding: 'utf8', timeout: 6000, windowsHide: true });
@@ -129,7 +129,7 @@ if (isMain)
         fresh: isFresh,
       }).map((t) => t.path);
       const input = JSON.parse(raw || '{}');
-      const sweep = changed.length || leftover.length || inMerge || input?.stop_hook_active ? [] : sweepReminders(roots, { git, records: readRecords(harnessRoots(roots[0]).work) });
+      const sweep = changed.length || leftover.length || inMerge || input?.stop_hook_active ? [] : sweepReminders(roots, { git, records: readRecords(harnessRoots(roots[0]).logs) });
       const text = reminder(input, changed, inMerge, leftover, sweep);
       if (!text) return;
       process.stderr.write(text + '\n');

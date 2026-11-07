@@ -4,8 +4,8 @@
 // The same build is what the verification app embeds and the browser server serves (scripts/tools/harness-paths.mjs,
 // buildHarnessDist): it is minified like the app's, in the harness mode, so it keeps what the app's build leaves out.
 //
-// The build goes to novira-data/work/e2e-build/<checkout>/ of the main checkout (everything the harness writes lives
-// there) and is reused while its inputs are the same: a stamp holds the mode and the hash of every file the build reads
+// The build goes to novira-data/work/e2e-build/<checkout>/ of the main checkout (the harness's builds all live there)
+// and is reused while its inputs are the same: a stamp holds the mode and the hash of every file the build reads
 // (src/, public/, index.html, the configs, the lockfile and the license texts the About dialog imports). Unlike the app's
 // build (`npm run build` into dist/) it keeps public/ (the mock's pictures). A lock directory beside the build keeps two
 // runs of one checkout from writing it at once.

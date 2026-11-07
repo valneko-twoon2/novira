@@ -13,7 +13,7 @@ rem For only the checks a change needs, use node scripts\tools\affected.mjs inst
 setlocal EnableDelayedExpansion
 pushd "%~dp0.."
 set "PATH=%USERPROFILE%\.cargo\bin;%PATH%"
-rem Delete stale harness output under novira-data\work\ first (never fails the checks).
+rem Delete stale harness output under novira-data\work\ and logs\ first (never fails the checks).
 node scripts\tools\prune-stale.mjs >nul 2>nul
 if not defined CARGO_TARGET_DIR if exist backend\target\debug\novira.exe (
   node -e "const f=require('fs');try{f.closeSync(f.openSync(process.argv[1],'r+'))}catch{process.exit(1)}" backend\target\debug\novira.exe || (

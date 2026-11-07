@@ -4,11 +4,13 @@
 // own CLI under node, with no shell between.
 import { spawnSync } from 'node:child_process';
 import { rmSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { acquire } from '../../scripts/tools/e2e-lock.mjs';
+import { coverageDir } from '../../scripts/tools/harness-paths.mjs';
 
 const frontend = fileURLToPath(new URL('..', import.meta.url));
-const raw = fileURLToPath(new URL('../../novira-data/work/coverage/e2e-raw', import.meta.url));
+const raw = join(coverageDir(), 'e2e-raw');
 rmSync(raw, { recursive: true, force: true });
 const env = { ...process.env, E2E_COVERAGE: '1' };
 const run = (args) => spawnSync(process.execPath, args, { cwd: frontend, stdio: 'inherit', env }).status ?? 1;

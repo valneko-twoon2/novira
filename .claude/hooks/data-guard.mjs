@@ -1,4 +1,4 @@
-// Claude Code hook: the harness writes only under novira-data/work/ (AGENTS.md). The rest of novira-data/ is the user's:
+// Claude Code hook: inside novira-data/ the harness writes only under novira-data/work/ (AGENTS.md). The rest of it is the user's:
 // their database, pictures, settings and the model folder that checks share read-only. Two layers:
 //   pre   (PreToolUse, Write / Edit / MultiEdit / NotebookEdit / Bash / PowerShell): refuses an edit of a file there, and a
 //         shell command that names a path there together with something that writes, moves or deletes.
@@ -141,7 +141,7 @@ export function run(mode, input, roots = harnessRoots()) {
   if (mode === 'pre' && !SHELLS.has(tool)) {
     const file = args.file_path ?? args.notebook_path;
     if (file && isProtected(file, dataDirs)) {
-      refuse(`AGENTS.md: the harness writes only under novira-data/work/. ${file} is the user's data; write it under ${roots.work} instead.`);
+      refuse(`AGENTS.md: inside novira-data/ the harness writes only under novira-data/work/. ${file} is the user's data; write it under ${roots.work} instead.`);
     }
     return;
   }
