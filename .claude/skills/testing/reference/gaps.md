@@ -11,7 +11,7 @@ Rules for all of them (`.claude/rules/tests.md`, `security.md`, `AGENTS.md`):
 
 | Technique | Priority | Effort | Needs user OK | Section |
 |---|---|---|---|---|
-| Race exploration, repeat runs | 1 | low | no (a loop script: ask) | 1a |
+| Race exploration, repeat runs | 1 | low | the script exists (`scripts/tools/repeat-test.mjs`); a nightly CI run needs a yes | 1a |
 | Race exploration, shuttle/loom | 1 | high | yes (dependency, code seam) | 1b |
 | Fault injection (files, disk, network) | 2 | medium | yes for failpoints/seams, no for new tests on existing seams | 2 |
 | Crash-point exhaustive test for installs (restore and data move have it) | 2 | medium | yes (a step limit or count seam) | 2 |

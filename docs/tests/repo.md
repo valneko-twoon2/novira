@@ -9,6 +9,7 @@
 | 文書とマニュアルの検査 / Docs and manual checks | 地図とデザインページがコードと合っていること、文書が挙げるテスト ID と文言キー、用語表、全言語のカタログ、マニュアルの章の揃い | `scripts/tools/docs-check.mjs`、`scripts/tools/ui-refs.mjs`、`frontend/scripts/check-glossary.mjs`、`frontend/tests/i18n.test.ts`、`frontend/tests/manual.test.ts` | `node scripts/tools/docs-check.mjs`、`npx vitest run tests/i18n.test.ts tests/manual.test.ts` | `static`、`vitest` |
 | テストの衛生 / Test hygiene | 雑多なフォルダーが無いこと、実行時以外の `#[ignore]` が無いこと、孤立したスナップショットが無いこと、フォーカスされたテストが無いこと | `frontend/tests/test-hygiene.test.ts`、`frontend/tests/structure.test.ts`、`frontend/scripts/eslint-test-hygiene.mjs` | `npx vitest run tests/test-hygiene.test.ts tests/structure.test.ts` | `vitest`、`static` |
 | 影響範囲の分析 / Test-impact analysis | 変更したファイルから必要な検査を選び、すべて回す | `scripts/tools/affected.mjs` | `node scripts/tools/affected.mjs`（`--list`、`--e2e`） | `manual` |
+| 反復実行 / Repeat run | 1 つのコマンドを N 回（既定 20）、必要なら並列で走らせ、不安定なテストや競合を探す。失敗した回の出力は `logs/repeat-test/` に残る。回数で不安定さを証明するものではない | `scripts/tools/repeat-test.mjs`、`frontend/tests/repeat-test.test.ts` | `node scripts/tools/repeat-test.mjs --times 20 -- <command>` | `manual` |
 | カバレッジ / Coverage | フロントエンドの文、分岐、関数、行を下限と比べる。`novira-core` の行、関数、領域を測る。1 枚の報告にまとめる。Rust の分岐と条件は測らない（一部） | `frontend/vitest.config.ts`、`scripts/checks/coverage.bat`、`scripts/tools/coverage-report.mjs` | `scripts\checks\coverage.bat` | `manual` |
 
 ## この層にも関わる手法

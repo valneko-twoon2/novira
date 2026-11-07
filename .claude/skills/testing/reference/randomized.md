@@ -12,9 +12,9 @@ How to add each kind of randomized test in novira, and how to prove it can fail.
 | Request fuzz | A new HTTP route or check in `novira-server` | yes (`http_fuzz.rs`) | 7 |
 | Differential | A call added or changed in `MockBackend` or the backend | yes | 8 |
 | Monkey | A new screen or dialog | yes, mock and browser only | 9 |
-| Metamorphic | Output is hard to state exactly (resize, crop, export, watermark, graph builder) | no | 10 |
-| Model-based, pairing state machine | `novira-server/src/pair.rs` changes | no (example tests only) | 11 |
-| Model-based, queue with worker races | `service/queue.rs` or `worker.rs` changes | no (`prop_queue.rs` pauses the worker) | 12 |
+| Metamorphic | Output is hard to state exactly (resize, crop, export, watermark, graph builder) | yes (`meta_graph.rs`, `meta_media.rs`; watermark not testable without the model) | 10 |
+| Model-based, pairing state machine | `novira-server/src/pair.rs` changes | yes (`src/pair/model_tests/`) | 11 |
+| Model-based, queue with worker races | `service/queue.rs` or `worker.rs` changes | yes (`prop_queue_worker.rs`) | 12 |
 | Coverage-guided fuzz (cargo-fuzz) | A reader that parses a binary format and has been fuzzed by mutation already | no | 13 |
 
 ## 1. Shared rules (as practised here)
@@ -141,7 +141,7 @@ Existing: `frontend/e2e/monkey.spec.ts` (chromium project): `TABS` (generate, co
 
 Run (in `frontend/`): `npx playwright test e2e/monkey.spec.ts --project=chromium` (under `node scripts/tools/e2e-lock.mjs -- ...` for a longer run; at most 6 workers); deeper: `NOVIRA_MONKEY_SEED=<n> NOVIRA_MONKEY_ACTIONS=300 NOVIRA_MONKEY_TRACE=1 npx playwright test e2e/monkey.spec.ts --project=chromium`. Mock and browser only: IPC, the shell and the real engine are not covered (`/verify-real-app`).
 
-## 10. Metamorphic test (missing)
+## 10. Metamorphic test (exists: `meta_graph.rs`, `meta_media.rs`; the design below is the pattern for a new one)
 
 Needed when the exact output is hard to state but a relation between two runs is easy: image processing, export, watermark, graph building. Status: no such test; only round trips in `prop_roundtrip.rs`. Add them as proptest files for Rust (section 2 steps) and `*.property.test.ts` for the frontend (section 3). No oracle file is needed: both runs are the code under test.
 
@@ -164,7 +164,7 @@ Relations to implement (the function names are from the source; open them before
 
 Run: `cargo test -p novira-core --test prop_<area>` or `npx vitest run <file>.property.test.ts`; same override variables as in section 1.
 
-## 11. Model-based test of the pairing state machine (missing)
+## 11. Model-based test of the pairing state machine (exists: `backend/crates/novira-server/src/pair/model_tests/`; the design below is the pattern)
 
 Needed when `backend/crates/novira-server/src/pair.rs` changes (codes, requests, sessions, rate limit). Status: example tests only in `src/pair/tests.rs` (clock moved by hand with `Instant`, helpers `ip()`, `paired()`, `pending_id()`); no proptest in `novira-server`.
 
@@ -181,7 +181,7 @@ Steps:
 
 Run: `cargo test -p novira-server pair::` (inside `src`) or `--test prop_pair` (integration file); deeper: `PROPTEST_CASES=4096 PROPTEST_SEED=<n>`. Whether `lan.rs` and `remote.rs` hold a similar state machine worth the same treatment is unconfirmed.
 
-## 12. Model-based test of the queue with worker races (missing)
+## 12. Model-based test of the queue with worker races (exists: `backend/crates/novira-core/tests/prop_queue_worker.rs` with `Gate` in `tests/backend_service/common.rs`; the design below is the pattern)
 
 Needed when `service/queue.rs` or `worker.rs` changes. Status: `prop_queue.rs` pauses the worker, so start, finish, fail, cancel-running and restart are not explored; `tests/backend_service/` has example tests for each, and the race tests such as `tests/model_install_locked.rs` use `thread::spawn` without exploring orders. Transition rules to check are in [state-machines.md](state-machines.md).
 

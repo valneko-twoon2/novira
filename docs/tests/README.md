@@ -41,15 +41,16 @@ CI のジョブは、`.github/workflows/test.yml`（`static`、`rust-format`、`
 | スナップショット / Snapshot | [Logic](logic.md)、[Core](core.md) |
 | 性質ベース・モデルベース・状態遷移 / Property-based, model-based, state transition | [Logic](logic.md)、[Core](core.md) |
 | ファジング（バイト列・コマンド・リクエスト） / Fuzzing (bytes, commands, requests) | [Core](core.md)、[Server](server.md) |
-| 差分テスト / Differential | [Mock](mock.md) |
+| 差分テスト / Differential | [Mock](mock.md)、[Wire](wire.md) |
 | クラッシュ時の整合性・旧データ / Crash consistency, old data | [Core](core.md)、[Build](build.md) |
 | E2E・モンキー・ブラウザー横断・見た目・レイアウト・アクセシビリティ / End-to-end, monkey, cross-browser, visual, layout, accessibility | [UI](ui.md) |
 | リリース確認・依存関係の監査 / Release smoke, dependency audit | [Build](build.md) |
 | セキュリティ・秘密情報 / Security, secret scan | [Shell](shell.md)、[Core](core.md) |
 | 実エンジン・実アプリ・モデル一括確認・性能の測定 / Real-engine, real-app, models sweep, performance | [App](app.md) |
 | 型・lint・文書・テストの衛生・影響分析・カバレッジ / Type, lint, docs, test hygiene, impact analysis, coverage | [Repo](repo.md) |
+| メタモルフィック / Metamorphic | [Core](core.md) |
 | ミューテーション / Mutation | [Core](core.md) |
 
 ## 未実装
 
-メタモルフィックテスト、競合の探索（loom、shuttle）と不安定テストの反復実行、カバレッジ誘導のファジング、段階ごとの停止と再起動（復元とデータ移動以外）、長時間運転とリークの検査、サーバーの負荷試験、外部の静的解析、依存のライセンスと出所の検査、秘密スキャナー、擬似ローカライズ、実エンジンの出力比較、インストーラーの試験、Firefox、Miri、形式手法。
+競合の探索（loom、shuttle）と不安定テストの夜間反復、カバレッジ誘導のファジング、段階ごとの停止と再起動（復元とデータ移動以外）、長時間運転とリークの検査、サーバーの負荷試験、外部の静的解析、依存のライセンスと出所の検査、秘密スキャナー、擬似ローカライズ、実エンジンの出力比較、インストーラーの試験、Firefox、Miri、形式手法。

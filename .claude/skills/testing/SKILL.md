@@ -23,17 +23,17 @@ Each row is a kind of test, what it finds, when the project needs it, and where 
 | State transition | a move that should be refused is allowed, or the reverse | adds or changes a status or event | yes | [state-machines.md](reference/state-machines.md) |
 | Decision table, pairwise | a fault that needs two inputs together | makes a rule read two or more inputs | yes | [rules-over-options.md](reference/rules-over-options.md) |
 | Property | a failure on an input nobody wrote | parses, encodes, sorts, splits, validates | yes | [randomized.md](reference/randomized.md) |
-| Model-based | a wrong state after a sequence of calls | changes a store, queue, cache or session | yes (queue and store, worker not running) | [randomized.md](reference/randomized.md) |
+| Model-based | a wrong state after a sequence of calls | changes a store, queue, cache or session | yes (queue with its worker, store, pairing) | [randomized.md](reference/randomized.md) |
 | Fuzz: bytes, commands, requests | a crash or hang after bad input passed the first check | reads a file, a command argument or an HTTP request | yes (command fuzz partly) | [randomized.md](reference/randomized.md) |
 | Differential | the mock and the real backend disagree | changes `MockBackend` or a backend command | yes | [randomized.md](reference/randomized.md) |
-| Metamorphic | a wrong result where no right answer is known | changes image processing, export, watermark or graph building | no | [randomized.md](reference/randomized.md) |
+| Metamorphic | a wrong result where no right answer is known | changes image processing, export, watermark or graph building | yes (graph builder, export; watermark needs the model) | [randomized.md](reference/randomized.md) |
 | Monkey | a crash after an operation order nobody tried | adds a screen | yes (mock only) | [randomized.md](reference/randomized.md) |
 | Integration, contract, snapshot | wrong wiring, a drifted interface, an unintended change of a large output | touches storage, the engine, the wire types or a graph | yes | [systems.md](reference/systems.md) |
 | E2E, cross-browser, visual, accessibility | a broken flow, an engine-specific bug, a changed look, a screen that cannot be used | adds or changes a screen | yes (visual and layout scan not in CI) | [systems.md](reference/systems.md) |
 | Crash-time, old data, release smoke | half-written state, a new version that breaks old data, a broken build | writes in several steps, changes stored data, changes the build | partly (step-k tests for restore and data move only) | [systems.md](reference/systems.md) |
 | Performance, audit | slowdown, a vulnerable dependency or leaked key | speeds up or adds a dependency | partly | [systems.md](reference/systems.md) |
 | Mutation, coverage, hollow and flaky tests | tests that pass whatever the code does | wrote or changed tests | partly | [quality.md](reference/quality.md), [mutation.md](reference/mutation.md) |
-| Race exploration, fault injection, soak, load | a failure that depends on timing, on a failing disk or network, or on time | changes the worker, the queue, a lock, an install or a listener | no | [gaps.md](reference/gaps.md) |
+| Race exploration, fault injection, soak, load | a failure that depends on timing, on a failing disk or network, or on time | changes the worker, the queue, a lock, an install or a listener | partly (`scripts/tools/repeat-test.mjs` for repeated runs; the rest no) | [gaps.md](reference/gaps.md) |
 | Static analysis, supply chain, pseudo-locale, a11y beyond axe, flaky handling, Miri, installer, output regression | what the kinds above cannot see | the user asks, or a survey names it | no | [gaps.md](reference/gaps.md) |
 
 A change usually needs several rows: a new limit is a boundary case and, if it reads outside data, a property and a hostile input. A change to the worker, to cancelling a running job, or to a pack or model install is not verified by these tests: confirm it on the real engine (`/verify-real-app`).
