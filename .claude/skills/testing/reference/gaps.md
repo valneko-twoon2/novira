@@ -15,11 +15,11 @@ Rules for all of them (`.claude/rules/tests.md`, `security.md`, `AGENTS.md`):
 | Race exploration, shuttle/loom | 1 | high | yes (dependency, code seam) | 1b |
 | Fault injection (files, disk, network) | 2 | medium | yes for failpoints/seams, no for new tests on existing seams | 2 |
 | Crash-point exhaustive test for installs (restore and data move have it) | 2 | medium | yes (a step limit or count seam) | 2 |
-| CodeQL / semgrep, cargo-deny, gitleaks | 3 | low to medium | yes (tool, CI) | 3 |
+| CodeQL / semgrep (cargo-deny and gitleaks exist: `supply-chain.yml`, manual and weekly) | 3 | low to medium | yes (tool, CI) | 3 |
 | Flaky-test handling | 4 | low | yes (CI) | 4 |
 | Pseudo-localisation, long-text stress | 5 | medium | yes (build config) | 5 |
 | Existing manual checks into CI | 6 | low each | yes (CI) | 6 |
-| Accessibility beyond axe | 7 | medium | no | 7 |
+| Accessibility beyond axe (keyboard, motion, zoom, contrast exist: `e2e/a11y*.spec.ts`) | 7 | done | - | 7 |
 | Soak and leak with the fake engine | 8 | medium | script: ask | 8 |
 | Miri, sanitizers | 10 | low value | yes | 9 |
 | Installer, in-place update | 11 | low value | no for tests | 10 |
@@ -92,7 +92,7 @@ Place: new tests join `affected.mjs` by module name (`restore`, `download`); the
 
 Why: ESLint security rules and `source_scan` are string scans (limits listed in `security.md`, section 3); a data-flow scanner and a licence/source gate add what they cannot see. `audit.yml` already covers advisories.
 
-Status: absent: CodeQL, semgrep, cargo-deny, gitleaks. Own scans: `backend/src-tauri/tests/security/secrets.rs` (known shapes, no history).
+Status: cargo-deny and gitleaks exist (`.github/workflows/supply-chain.yml`, `backend/deny.toml`, `.gitleaks.toml`; manual and weekly, not on push until seen to pass on the runner). Absent: CodeQL, semgrep. Own scans: `backend/src-tauri/tests/security/secrets.rs` (known shapes, no history).
 
 Choice and conditions (put these to the user):
 - CodeQL: supports JavaScript/TypeScript and, newer, Rust (check the current support and whether the repository's plan allows it: unconfirmed whether the repository is public). It needs `github/codeql-action`, which is not `actions/*`; `docs/design/ci.md` (Boundaries) allows only `actions/*`, so this widens that rule: ask. Results show in the Security tab and a push is not blocked.

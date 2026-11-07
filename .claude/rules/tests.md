@@ -28,7 +28,7 @@ Follow this when changing `frontend/` or `backend/`. How to choose the cases (pa
 | A call added or changed in `MockBackend` or the backend | The difference test (`frontend/difftest/`, `node scripts/tools/diff-backends.mjs`) agrees, or the call is left out with the reason |
 | A write in several steps (restore, install, move, migrate) | A test that fails one step and checks the data is whole and no leftover remains (`tests/restore_stage_failures.rs` is the shape) |
 | A change to what is stored on disk | A copy of the old data folder still opens (`tests/backend_service/old_data.rs`); a new fixture at the release that changes the stored form |
-| A new screen or dialog | Add it to the lists of the monkey run (`RUNS` in `e2e/monkey.spec.ts`), the axe check (`TABS` or `SURFACES` in `e2e/a11y.spec.ts`) and the layout scan (`e2e/layout.spec.ts`) |
+| A new screen or dialog | Add it to the lists of the monkey run (`RUNS` in `e2e/monkey.spec.ts`), the axe check (`TABS` or `SURFACES` in `e2e/a11y.spec.ts`), the keyboard check (`LAYERS` and `TABS` in `e2e/a11yKeyboard.spec.ts`) and the layout scan (`e2e/layout.spec.ts`) |
 
 Where tests go: `*.test.ts(x)` next to the code (vitest); whole-source rules in `frontend/tests/`; flows in `frontend/e2e/*.spec.ts` (Playwright on the mock); `#[cfg(test)]` in each `.rs` (a long file: `mod tests;` with `<name>/tests.rs` beside it); Rust integration in `backend/crates/novira-core/tests/`; `tests/*_live.rs` (`#[ignore]`) touches external services or the real engine and runs only when asked. One responsibility per test file; split a file that would mix areas or pass about 500 lines.
 

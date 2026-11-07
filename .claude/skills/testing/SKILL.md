@@ -29,12 +29,12 @@ Each row is a kind of test, what it finds, when the project needs it, and where 
 | Metamorphic | a wrong result where no right answer is known | changes image processing, export, watermark or graph building | yes (graph builder, export; watermark needs the model) | [randomized.md](reference/randomized.md) |
 | Monkey | a crash after an operation order nobody tried | adds a screen | yes (mock only) | [randomized.md](reference/randomized.md) |
 | Integration, contract, snapshot | wrong wiring, a drifted interface, an unintended change of a large output | touches storage, the engine, the wire types or a graph | yes | [systems.md](reference/systems.md) |
-| E2E, cross-browser, visual, accessibility | a broken flow, an engine-specific bug, a changed look, a screen that cannot be used | adds or changes a screen | yes (visual and layout scan not in CI) | [systems.md](reference/systems.md) |
+| E2E, cross-browser, visual, accessibility | a broken flow, an engine-specific bug, a changed look, a screen that cannot be used | adds or changes a screen | yes (visual and layout scan not in CI; keyboard, motion, zoom and contrast checks exist) | [systems.md](reference/systems.md) |
 | Crash-time, old data, release smoke | half-written state, a new version that breaks old data, a broken build | writes in several steps, changes stored data, changes the build | partly (step-k tests for restore and data move only) | [systems.md](reference/systems.md) |
 | Performance, audit | slowdown, a vulnerable dependency or leaked key | speeds up or adds a dependency | partly | [systems.md](reference/systems.md) |
 | Mutation, coverage, hollow and flaky tests | tests that pass whatever the code does | wrote or changed tests | partly | [quality.md](reference/quality.md), [mutation.md](reference/mutation.md) |
 | Race exploration, fault injection, soak, load | a failure that depends on timing, on a failing disk or network, or on time | changes the worker, the queue, a lock, an install or a listener | partly (`scripts/tools/repeat-test.mjs` for repeated runs; the rest no) | [gaps.md](reference/gaps.md) |
-| Static analysis, supply chain, pseudo-locale, a11y beyond axe, flaky handling, Miri, installer, output regression | what the kinds above cannot see | the user asks, or a survey names it | no | [gaps.md](reference/gaps.md) |
+| Static analysis (CodeQL, semgrep), pseudo-locale, flaky handling in CI, Miri, installer, output regression | what the kinds above cannot see | the user asks, or a survey names it | no (cargo-deny and gitleaks exist) | [gaps.md](reference/gaps.md) |
 
 A change usually needs several rows: a new limit is a boundary case and, if it reads outside data, a property and a hostile input. A change to the worker, to cancelling a running job, or to a pack or model install is not verified by these tests: confirm it on the real engine (`/verify-real-app`).
 
