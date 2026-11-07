@@ -1,7 +1,10 @@
 //! A model-based property test of the queue together with its worker. Unlike `prop_queue.rs` (worker paused), the worker
 //! runs here and the test decides how every job ends through the fake engine's gate: finish, fail, or cancel while it
 //! runs. A restart (a graceful close, or a crash that drops the worker mid-job) reopens the same data folder.
-//! After every operation the queue must equal a plain model, and every event must be a legal move of one item.
+//! After every operation the queue must equal a plain model, and the events of each item must be the legal path of the
+//! state machine: pending, in progress, then one terminal status, nothing after it, nothing twice, and the last event
+//! is the final status. Most operations wait for the queue to settle; the burst operations do not, they fire several
+//! moves back to back while the worker is picking up or finishing a job, where the model still predicts the result.
 //! Waiting uses the backend's events with a deadline; there is no sleep.
 //! Run: `cargo test -p novira-core --test prop_queue_worker`.
 #![allow(dead_code)]
@@ -15,7 +18,7 @@ use novira_core::Backend;
 use prop_common::check_up_to;
 use proptest::prelude::*;
 use proptest::test_runner::TestCaseError;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::sync::watch;
@@ -44,14 +47,38 @@ enum Op {
     Resume,
     Finish,
     Fail,
+    /// Moves fired back to back, without waiting for the worker in between (it may be picking up the first pending item
+    /// at that moment). `resume` starts with a resume, so the cancels race the worker's start of a job.
+    Burst {
+        resume: bool,
+        moves: Vec<Op>,
+    },
+    /// The running job ends and the queue is cleared at once: the worker's save of the end races the clear.
+    FinishThenClear {
+        finish: bool,
+    },
     /// Close the backend on the same folder again; `graceful` shuts the worker down, otherwise it is dropped mid-job.
     Restart {
         graceful: bool,
     },
 }
 
+/// The moves a burst may hold: every one has the same end state whether or not the worker got in first.
+fn quick_op() -> impl Strategy<Value = Op> {
+    prop_oneof![
+        3 => (0usize..8).prop_map(Op::Cancel),
+        2 => Just(Op::CancelRunning),
+        3 => (0usize..8).prop_map(Op::CancelBatch),
+        1 => Just(Op::Prune),
+        1 => Just(Op::Clear),
+    ]
+}
+
 fn op() -> impl Strategy<Value = Op> {
     prop_oneof![
+        3 => (any::<bool>(), prop::collection::vec(quick_op(), 1..4))
+            .prop_map(|(resume, moves)| Op::Burst { resume, moves }),
+        2 => any::<bool>().prop_map(|finish| Op::FinishThenClear { finish }),
         4 => (1u32..4, any::<bool>()).prop_map(|(iterations, prepend)| Op::Enqueue { iterations, prepend }),
         2 => (0usize..8).prop_map(Op::Cancel),
         2 => Just(Op::CancelRunning),
@@ -111,11 +138,10 @@ impl Model {
         }
     }
 
-    fn stop(&mut self, id: u64, cancelled: &mut HashSet<u64>) {
+    fn stop(&mut self, id: u64) {
         for m in self.items.iter_mut().filter(|m| m.id == id) {
             if matches!(m.status, Pending | InProgress) {
                 m.status = Canceled;
-                cancelled.insert(id);
             }
         }
     }
@@ -176,17 +202,13 @@ fn actual(b: &Backend) -> Vec<Item> {
         .collect()
 }
 
-/// What the events seen so far allow for one item: pending, in progress, then one terminal status. Events of different
-/// items are not ordered against each other (the queue emits after it unlocks, so the worker's next start can be
-/// logged before the cancel that freed it), so only the events of each single item are checked here; "at most one in
-/// progress" is checked on the snapshots, which are taken under the queue's lock.
+/// What the events seen so far allow for one item: pending, in progress, then one terminal status, and nothing after
+/// that. The events of different items are not checked against each other (a cancel of one item and the start of the
+/// next may be announced in either order); "at most one in progress" is checked on the snapshots, which are taken
+/// under the queue's lock. A retry is a new item, so it starts its own path.
 #[derive(Default)]
 struct Events {
     last: HashMap<u64, QueueItemStatus>,
-    /// Items the test cancelled while they were pending or running: they end canceled, never completed or failed.
-    /// Their events may repeat or interleave: a cancel reaches the item both from the caller and from the worker,
-    /// and a worker that picked the item a moment before the cancel marks it in progress once more.
-    cancelled: HashSet<u64>,
 }
 
 impl Events {
@@ -195,13 +217,6 @@ impl Events {
         for e in events {
             let Ev::Item(id, st) = e;
             let prev = self.last.insert(id, st);
-            if self.cancelled.contains(&id) {
-                prop_assert!(
-                    matches!(st, InProgress | Canceled),
-                    "item {id} was cancelled but became {st:?}"
-                );
-                continue;
-            }
             let legal = matches!(
                 (prev, st),
                 (None, Pending)
@@ -228,13 +243,11 @@ async fn settle(
         seen.drain(&run.log)?;
         let in_progress = now.iter().filter(|m| m.status == InProgress).count();
         prop_assert!(in_progress <= 1, "{step}: {in_progress} items in progress");
-        // A move shows in the state before the queue has saved it and told anyone; the event comes last, so the next
-        // operation starts only once every move is saved (an operation racing a save is a separate, known gap).
-        // A cancelled item is left out: its events can arrive out of order (a late "in progress" after "canceled").
+        // A move shows in the state a moment before its event; the last event of every item must be its final status.
         let announced = model
             .items
             .iter()
-            .all(|m| seen.cancelled.contains(&m.id) || seen.last.get(&m.id) == Some(&m.status));
+            .all(|m| seen.last.get(&m.id) == Some(&m.status));
         if now == model.items && announced {
             let snap = run.b.queue_snapshot().status;
             let count = |s: QueueItemStatus| now.iter().filter(|m| m.status == s).count() as u32;
@@ -292,7 +305,7 @@ async fn one_case(ops: Vec<Op>) -> Result<(), TestCaseError> {
                 Err(e) => return Err(e),
             }
         } else {
-            apply(&mut run, &mut model, &mut seen, &mut last_id, op).await
+            apply(&mut run, &mut model, &mut last_id, op).await
         };
         if result.is_ok() {
             model.kick();
@@ -304,6 +317,10 @@ async fn one_case(ops: Vec<Op>) -> Result<(), TestCaseError> {
     }
     run.b.shutdown();
     let _ = run.worker.await;
+    if result.is_ok() {
+        // The close may end a running job; whatever it announces must still be a legal move.
+        result = seen.drain(&run.log);
+    }
     result
 }
 
@@ -335,7 +352,7 @@ async fn restart(
     for m in &model.items {
         seen.last.insert(m.id, m.status);
     }
-    // Known: the order of a prepended item is not saved, so a reopened queue lists (and runs) the items by id.
+    // The order of a prepended item is not saved (see state-machines.md), so a reopened queue lists (and runs) the items by id.
     model.items.sort_by_key(|m| m.id);
     // Pending items wait for an explicit resume; with none left the worker is not held back.
     model.paused = model.items.iter().any(|m| m.status == Pending);
@@ -343,10 +360,54 @@ async fn restart(
     Ok(start(dir))
 }
 
+/// The moves that act on the queue at once and whose result does not depend on what the worker does meanwhile.
+fn quick(run: &Run, model: &mut Model, op: &Op) {
+    match *op {
+        Op::Cancel(i) => {
+            if let Some(at) = model.pick(i) {
+                let id = model.items[at].id;
+                run.b.cancel_queue_item(id);
+                model.stop(id);
+            }
+        }
+        Op::CancelRunning => {
+            if let Some(id) = model.running() {
+                run.b.cancel_queue_item(id);
+                model.stop(id);
+            }
+        }
+        Op::CancelBatch(i) => {
+            if let Some(at) = model.pick(i) {
+                let batch = model.items[at].batch.clone();
+                run.b.cancel_batch(&batch);
+                let ids: Vec<u64> = model
+                    .items
+                    .iter()
+                    .filter(|m| m.batch == batch)
+                    .map(|m| m.id)
+                    .collect();
+                for id in ids {
+                    model.stop(id);
+                }
+            }
+        }
+        Op::Prune => {
+            run.b.prune_queue().unwrap();
+            model
+                .items
+                .retain(|m| matches!(m.status, Pending | InProgress));
+        }
+        Op::Clear => {
+            run.b.clear_queue().unwrap();
+            model.items.clear();
+        }
+        _ => unreachable!("not a quick move"),
+    }
+}
+
 async fn apply(
     run: &mut Run,
     model: &mut Model,
-    seen: &mut Events,
     last_id: &mut u64,
     op: &Op,
 ) -> Result<(), TestCaseError> {
@@ -383,33 +444,8 @@ async fn apply(
             };
             model.items.splice(at..at, new);
         }
-        Op::Cancel(i) => {
-            if let Some(at) = model.pick(i) {
-                let id = model.items[at].id;
-                run.b.cancel_queue_item(id);
-                model.stop(id, &mut seen.cancelled);
-            }
-        }
-        Op::CancelRunning => {
-            if let Some(id) = model.running() {
-                run.b.cancel_queue_item(id);
-                model.stop(id, &mut seen.cancelled);
-            }
-        }
-        Op::CancelBatch(i) => {
-            if let Some(at) = model.pick(i) {
-                let batch = model.items[at].batch.clone();
-                run.b.cancel_batch(&batch);
-                let ids: Vec<u64> = model
-                    .items
-                    .iter()
-                    .filter(|m| m.batch == batch)
-                    .map(|m| m.id)
-                    .collect();
-                for id in ids {
-                    model.stop(id, &mut seen.cancelled);
-                }
-            }
+        Op::Cancel(_) | Op::CancelRunning | Op::CancelBatch(_) | Op::Prune | Op::Clear => {
+            quick(run, model, op)
         }
         Op::CancelUnknown => {
             run.b.cancel_queue_item(u64::MAX);
@@ -436,16 +472,6 @@ async fn apply(
                 }
             }
         }
-        Op::Prune => {
-            run.b.prune_queue().unwrap();
-            model
-                .items
-                .retain(|m| matches!(m.status, Pending | InProgress));
-        }
-        Op::Clear => {
-            run.b.clear_queue().unwrap();
-            model.items.clear();
-        }
         Op::Pause => {
             run.b.pause_processor();
             model.paused = true;
@@ -462,6 +488,33 @@ async fn apply(
                 model.end_running(if finish { Completed } else { Failed });
             }
         }
+        Op::Burst { resume, ref moves } => {
+            if resume {
+                run.b.resume_processor();
+                model.paused = false;
+                model.kick();
+            }
+            for m in moves {
+                quick(run, model, m);
+                model.kick();
+            }
+        }
+        Op::FinishThenClear { finish } => {
+            if model.running().is_some() {
+                *run.gate.outcome.lock().unwrap() = Some(finish);
+                run.gate.wake.notify_one();
+                // Clear only once the engine has taken the outcome, so the job is on its way to being saved and the clear
+                // races that save; an outcome the job never took would be handed to the next job.
+                let deadline = Instant::now() + DEADLINE;
+                while run.gate.outcome.lock().unwrap().is_some() {
+                    if Instant::now() > deadline {
+                        return Err(TestCaseError::fail("the engine did not take the outcome"));
+                    }
+                    tokio::task::yield_now().await; // no sleep: the engine is on another thread
+                }
+            }
+            quick(run, model, &Op::Clear);
+        }
         Op::Restart { .. } => unreachable!("a restart replaces the whole run, see `restart`"),
     }
     Ok(())
@@ -474,7 +527,7 @@ fn the_queue_and_its_worker_follow_a_plain_model_through_any_sequence_of_moves()
         .enable_all()
         .build()
         .unwrap();
-    check_up_to(32, prop::collection::vec(op(), 1..20), |ops| {
+    check_up_to(128, prop::collection::vec(op(), 1..20), |ops| {
         rt.block_on(one_case(ops))
     });
 }

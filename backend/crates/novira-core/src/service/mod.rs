@@ -133,6 +133,14 @@ struct Inner {
     gpu_lock: Option<PathBuf>,
     db: Mutex<Db>,
     state: Mutex<State>,
+    /// Serialises every change of the queue (status moves, enqueue, clear, prune) from the change of the state through its
+    /// save to its event, so the events of an item arrive in the order of its states and a late save cannot bring back a
+    /// removed item. Taken before `state` and `db`; the event sinks only forward events and never call back into the backend.
+    queue_transition: Mutex<()>,
+    /// Unit tests only (compiled out of every real build): runs at the start of a queue save, so a test can hold one
+    /// thread there while another one moves the queue.
+    #[cfg(test)]
+    persist_hook: Mutex<Option<Arc<dyn Fn() + Send + Sync>>>,
     files: ImageFiles,
     engine: Arc<dyn Engine>,
     voice: Arc<dyn VoiceEngine>,
@@ -481,6 +489,9 @@ impl Backend {
             gpu_lock,
             db: Mutex::new(db),
             state: Mutex::new(state),
+            queue_transition: Mutex::new(()),
+            #[cfg(test)]
+            persist_hook: Mutex::new(None),
             files,
             engine,
             voice,

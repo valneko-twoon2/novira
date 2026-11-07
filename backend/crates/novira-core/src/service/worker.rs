@@ -40,9 +40,14 @@ impl Backend {
                     _ = self.inner.shutdown.cancelled() => return,
                 }
             };
-            self.set_status(item.id, QueueItemStatus::InProgress, |q| {
-                q.started_at = Some(now())
-            });
+            // Only from pending: an item cancelled (or cleared) since it was taken is not run.
+            if self.start_item(item.id).is_none() {
+                self.state().running = None;
+                if self.inner.shutdown.is_cancelled() {
+                    return;
+                }
+                continue;
+            }
             // A panic inside one job fails that job; it must not end the worker (the queue would stall for good).
             let result = std::panic::AssertUnwindSafe(self.process(&item, &token))
                 .catch_unwind()
@@ -53,22 +58,16 @@ impl Backend {
                 Ok(()) => {}
                 Err(EngineError::Cancelled) => {
                     // Cancelled by the user (already marked) or by shutdown (mark it now).
-                    let still_running = self
-                        .state()
-                        .queue
-                        .iter()
-                        .any(|q| q.id == item.id && q.status == QueueItemStatus::InProgress);
-                    if still_running {
-                        let msg = if self.inner.shutdown.is_cancelled() {
-                            Some(INTERRUPTED.to_string())
-                        } else {
-                            None
-                        };
-                        self.set_status(item.id, QueueItemStatus::Canceled, |q| {
-                            q.completed_at = Some(now());
-                            q.error = msg;
-                        });
-                    }
+                    // Nothing happens when the item is already ended: set_status moves unfinished items only.
+                    let msg = if self.inner.shutdown.is_cancelled() {
+                        Some(INTERRUPTED.to_string())
+                    } else {
+                        None
+                    };
+                    self.set_status(item.id, QueueItemStatus::Canceled, |q| {
+                        q.completed_at = Some(now());
+                        q.error = msg;
+                    });
                 }
                 Err(EngineError::Failed(msg)) => {
                     crate::applog::error("queue", format!("job {} failed: {msg}", item.id));
