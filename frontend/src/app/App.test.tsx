@@ -166,7 +166,7 @@ describe('App shell', () => {
 
   it('renders the other media in the generate tab and the canvas layout with the layers panel', async () => {
     await openApp();
-    for (const media of ['video', 'text', 'music', 'voice', 'logo', 'image'] as const) {
+    for (const media of ['video', 'text', 'music', 'voice', 'image'] as const) {
       act(() => useUi.getState().setMedia(media));
       expect(useUi.getState().media).toBe(media);
     }

@@ -85,48 +85,41 @@ async fn a_video_cannot_be_used_as_a_source_image() {
 }
 
 #[tokio::test]
-async fn a_logo_needs_the_logo_pack_and_loads_its_three_files() {
+async fn a_logo_of_an_older_version_still_loads_lists_and_opens() {
     let dir = tempfile::tempdir().unwrap();
     let engine = Arc::new(FakeEngine::default());
     let (backend, _events) = open(dir.path(), engine.clone());
-    tokio::spawn(backend.clone().run_worker());
-    let logo_request = || {
-        let mut req = request("", "A logo with the text \"NOVA\"", 1);
-        req.params.generation_mode = GenerationMode::Logo;
-        req.params.steps = 8;
-        req
-    };
+    let mut old = request("z-image-turbo", "A logo with the text \"NOVA\"", 1).params;
+    old.generation_mode = GenerationMode::Logo;
+    let metadata = serde_json::to_string(&old).unwrap();
+    let picture = novira_core::media::images::with_text(
+        &png(16, 16),
+        novira_core::media::images::METADATA_KEY,
+        &metadata,
+    )
+    .unwrap();
+    let logo = backend
+        .upload_image(
+            picture,
+            ImageOptions {
+                board_id: None,
+                is_intermediate: None,
+                category: Some(ImageCategory::Other),
+            },
+        )
+        .await
+        .unwrap();
+    drop(backend);
 
-    backend.enqueue(logo_request()).unwrap();
-    wait_until(|| statuses(&backend) == vec![QueueItemStatus::Failed]).await;
-    let reason = backend.queue_snapshot().items[0].error.clone().unwrap();
-    assert!(reason.contains("logo model is not installed"), "{reason}");
-    assert!(matches!(
-        backend.pack_status(PackKind::Logo),
-        PackStatus::Missing { .. }
-    ));
-
-    let models = dir.path().join("models");
-    for f in packs::files(PackKind::Logo) {
-        let path = packs::file_path(&models, PackKind::Logo, f);
-        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
-        std::fs::write(path, b"x").unwrap();
-    }
-    backend.enqueue(logo_request()).unwrap();
-    wait_until(|| statuses(&backend).last() == Some(&QueueItemStatus::Completed)).await;
-    let job = engine.jobs.lock().unwrap().last().unwrap().clone();
-    assert_eq!(job.checkpoint.name, "z-image-turbo-fp8-e4m3fn.safetensors");
+    let (backend, _events) = open(dir.path(), engine);
+    let listed = backend.bootstrap().images.into_iter().next().unwrap();
+    assert_eq!(listed.name, logo.name);
+    assert_eq!(listed.category, ImageCategory::Other);
     assert_eq!(
-        job.text_encoder.unwrap().name,
-        "qwen_3_4b_fp8_mixed.safetensors"
+        listed.metadata.unwrap().generation_mode,
+        GenerationMode::Logo
     );
-    assert_eq!(job.vae.unwrap().name, "ae.safetensors");
-    assert!(job.loras.is_empty());
-
-    // The finished logo is an asset, not a general picture.
-    let logo = backend.bootstrap().images.into_iter().next().unwrap();
-    assert_eq!(logo.category, ImageCategory::Other);
-    assert_eq!(logo.metadata.unwrap().generation_mode, GenerationMode::Logo);
+    assert!(backend.read_image("full", &logo.name).is_some());
 }
 
 fn write_music_pack(models: &Path) {

@@ -328,5 +328,6 @@
   "settings.hotkeys.gallery.redoDeleteDesc": "Löscht erneut, was Sie zurückgeholt haben",
   "settings.section.models": "Modelle",
   "settings.assistantTrial.label": "Probebilder des Assistenten",
-  "settings.assistantTrial.help": "Ob der Assistent bei einer unklaren Anfrage von sich aus ein Probebild generieren, es ansehen und nachfragen darf, ob es das Gemeinte ist. Das Generieren dauert. Das Ansehen des Bildes folgt der Einstellung „Bilder und Prompts lesen“."
+  "settings.assistantTrial.help": "Ob der Assistent bei einer unklaren Anfrage von sich aus ein Probebild generieren, es ansehen und nachfragen darf, ob es das Gemeinte ist. Das Generieren dauert. Das Ansehen des Bildes folgt der Einstellung „Bilder und Prompts lesen“.",
+  "settings.tab.text": "Text"
 }

@@ -328,5 +328,6 @@
   "settings.hotkeys.gallery.redoDeleteDesc": "Deletes again what you brought back",
   "settings.section.models": "Models",
   "settings.assistantTrial.label": "Assistant's trial pictures",
-  "settings.assistantTrial.help": "Whether the assistant may generate one trial picture on its own when a request is unclear, look at it, and ask whether that is what you mean. Generating takes time. Looking at the picture follows the \"Reading pictures and prompts\" setting."
+  "settings.assistantTrial.help": "Whether the assistant may generate one trial picture on its own when a request is unclear, look at it, and ask whether that is what you mean. Generating takes time. Looking at the picture follows the \"Reading pictures and prompts\" setting.",
+  "settings.tab.text": "Text"
 }

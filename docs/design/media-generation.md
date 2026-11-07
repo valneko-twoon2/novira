@@ -2,7 +2,6 @@
 covers:
   - backend/crates/novira-core/src/comfy/video.rs
   - backend/crates/novira-core/src/comfy/music.rs
-  - backend/crates/novira-core/src/comfy/logo.rs
   - backend/crates/novira-core/src/comfy/client.rs
   - backend/crates/novira-core/src/voice/**
   - backend/crates/novira-core/src/packs.rs
@@ -14,17 +13,17 @@ covers:
   - frontend/src/features/video/buildRequest.ts
   - frontend/src/features/music/buildRequest.ts
   - frontend/src/features/voice/buildRequest.ts
-  - frontend/src/features/logo/buildRequest.ts
 ---
-# Media generation: video, music, logo and voice
+# Media generation: video, music and voice
 
-The generation modes besides pictures. Video makes a clip from text or animates a gallery picture (Wan 2.2 TI2V 5B, or its 4-step Turbo model). Music makes a song from style tags and lyrics (ACE-Step 1.5 turbo). Logo draws lettering with Z-Image-Turbo. Voice reads text aloud with Qwen3-TTS. Video, music and logo are ComfyUI jobs built from core nodes; voice runs in its own Python worker process, started with ComfyUI's Python. Their model files are model packs downloaded on request (see models.md).
+The generation modes besides pictures. Video makes a clip from text or animates a gallery picture (Wan 2.2 TI2V 5B, or its 4-step Turbo model). Music makes a song from style tags and lyrics (ACE-Step 1.5 turbo). Voice reads text aloud with Qwen3-TTS. Video and music are ComfyUI jobs built from core nodes; voice runs in its own Python worker process, started with ComfyUI's Python. Their model files are model packs downloaded on request (see models.md).
 
 ## Behaviour
 
 ### Shared
 
-- The modes are the `GenerationMode` values `video`, `music`, `logo` and `voice` (`backend/crates/novira-core/src/types.rs`). The queue worker sends `voice` to `process_voice` (`backend/crates/novira-core/src/service/worker.rs`). `comfy::graph::build` (`backend/crates/novira-core/src/comfy/graph.rs`) hands the other three to their own graph files.
+- The modes are the `GenerationMode` values `video`, `music` and `voice` (`backend/crates/novira-core/src/types.rs`). The queue worker sends `voice` to `process_voice` (`backend/crates/novira-core/src/service/worker.rs`). `comfy::graph::build` (`backend/crates/novira-core/src/comfy/graph.rs`) hands the other two to their own graph files.
+- `GenerationMode` also keeps `logo`, the mode of a Logo screen that no longer exists: the pictures it made carry it in their metadata and still load, list and open, among the gallery's assets (`category: other`). A job of that mode (a row an older version left in the queue) fails with `LOGO_REMOVED` in the worker's `engine_job`, and `comfy::graph::build` refuses it too. The files of its pack stay where they are: a `logo` folder in a model root is not scanned, gets no section in `extra_model_paths.yaml`, and is never deleted.
 - Every job takes the GPU lock when one is configured, voice included (`gpu_guard`). An out-of-memory failure is marked on the queue item for every engine, the voice worker included.
 - Packs are defined in `backend/crates/novira-core/src/packs.rs`. A ComfyUI pack lives under `<data>/models/<kind>/` (it is also found under `<root>/<kind>/` of any `modelRoots` folder, read only; see model-packs.md), and ComfyUI reads it through the `novira_<kind>` sections of `extra_model_paths.yaml`. The voice pack is not a ComfyUI pack. Pack downloads use the fixed Hugging Face and GitHub addresses in that file and send no token.
 - `install_pack` (`backend/crates/novira-core/src/service/pack_store.rs`) starts a download in the background; a second request for a running pack is ignored. Cancelling resets the status to what is on disk. Progress arrives as `pack` events and in `bootstrap`.
@@ -58,15 +57,6 @@ The generation modes besides pictures. Video makes a clip from text or animates 
 - Result: `EngineOutput::Audio`, read from the history's `audio` output and stored as `<uuid>.flac` with `mediaType: audio`. Only WAV is decoded for its thumbnail; for FLAC the waveform picture is drawn from the file's bytes.
 - Measured once on an RTX 4070 Ti: a 30 s instrumental in about 26 s.
 
-### Logo
-
-- Model pack: Z-Image-Turbo, 8-bit build, about 12 GB. Files: `z-image-turbo-fp8-e4m3fn.safetensors` (diffusion, a T5B repack), `qwen_3_4b_fp8_mixed.safetensors` (text encoder) and `ae.safetensors` (VAE) (`LOGO_FILES`). The user installs it with the button on the Logo screen.
-- Graph (`backend/crates/novira-core/src/comfy/logo.rs`): UNETLoader, ModelSamplingAuraFlow (shift 3), CLIPLoader of type `lumina2`, VAELoader, CLIPTextEncode, ConditioningZeroOut as the negative, EmptySD3LatentImage, KSampler (res_multistep, simple), VAEDecode and SaveImage (prefix `logo/novira`). No custom node pack is used.
-- Steps are capped at 30, CFG is clamped to 1 to 5, and width and height are rounded to multiples of 16 within 256 to 2048. A prompt is required. LoRAs and the base-model check do not apply.
-- The form sends 8 steps and CFG 1, offers the sizes 1024x1024, 1536x768 and 768x1536, 1 to 4 candidates per press, and up to 60 characters of lettering. It writes an English prompt around the lettering in double quotes (`buildLogoPrompt` in `frontend/src/features/logo/buildRequest.ts`).
-- Result: a PNG stored through the picture path with `category: other`, so it is listed among the gallery's assets.
-- Run on a real ComfyUI on 2026-10-06 with the 8-bit files: English lettering was correct and Japanese came out garbled. The Logo screen says so.
-
 ### Voice
 
 - Model: Qwen3-TTS, Apache-2.0 according to `backend/crates/novira-core/src/voice/mod.rs`. Two 1.7B repositories are downloaded: `Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice` for preset mode (built-in speakers; the form lists nine) and `Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign` for design mode (a voice described in words; the form requires the description). The form offers 10 languages besides `Auto`.
@@ -90,4 +80,4 @@ Absent from the current code:
 - Continuing, covering or editing an existing song (the music graph takes no audio input).
 - Voice cloning from a recording (only the two models above).
 - Voice on the CPU or on other GPUs (the worker uses `cuda:0`), and streamed speech (each request returns the whole clip).
-- LoRAs for video, music or logo.
+- LoRAs for video or music.

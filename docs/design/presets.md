@@ -38,5 +38,5 @@ No boundary of its own: the run uses the same `enqueue` command as Invoke, and t
 
 ## Not implemented
 
-- Weights per preset, an endless run, and running presets on the other screens (Canvas, Upscaling, comic, video, music, voice, logo).
+- Weights per preset, an endless run, and running presets on the other screens (Canvas, Upscaling, comic, video, music, voice).
 - The AI assistant cannot start a run; its guide only explains it.

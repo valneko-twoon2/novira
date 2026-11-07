@@ -32,7 +32,6 @@
   "presets.summary.videoModel.fast": "高速模型",
   "presets.summary.instrumental": "純音樂",
   "presets.summary.designedVoice": "用描述製作的聲音",
-  "presets.hint.logo": "儲存風格與形狀（不含 Logo 中的文字）",
   "presets.run.title": "隨機輪流使用預設來生成",
   "presets.run.count": "張數",
   "presets.run.queue": "加入佇列",

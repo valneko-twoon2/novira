@@ -328,5 +328,6 @@
   "settings.hotkeys.gallery.redoDeleteDesc": "重做被撤销的删除",
   "settings.section.models": "模型",
   "settings.assistantTrial.label": "智能体的试画",
-  "settings.assistantTrial.help": "当请求的意图不明确时，是否允许智能体自己试着生成 1 张，并看着这张图像确认“是这样的感觉吗？”。生成需要时间。查看图像时遵循“读取图像和提示词”的设置。"
+  "settings.assistantTrial.help": "当请求的意图不明确时，是否允许智能体自己试着生成 1 张，并看着这张图像确认“是这样的感觉吗？”。生成需要时间。查看图像时遵循“读取图像和提示词”的设置。",
+  "settings.tab.text": "文本"
 }

@@ -10,7 +10,7 @@ In broad terms, you can do the following:
 
 - Make images from text (this is the focus of this guide)
 - Rework an existing image, repaint just one part of it, or enlarge it
-- Make video, music, voice, logos and images with text in them
+- Make video, music, voice and images with text in them
 - Ask the agent for help with settings and prompts
 
 > Drawing happens on your own computer. Features that use the internet, such as searching for and downloading models or the agent, only connect when you choose to use them.
@@ -81,7 +81,7 @@ From left to right, the screen is laid out as follows.
 
 | Tab | What it is for | Number key |
 |---|---|---|
-| **{{ui:app.tabs.generate}}** | Make images. The icons at the top also let you switch to video, music, voice, logos and text. The last icon in that row, **{{ui:app.tabs.comic}}**, switches to making comic pages (the key `1` opens whichever of the two you used last) | `1` |
+| **{{ui:app.tabs.generate}}** | Make images. The icons at the top also let you switch to video, music, voice and text. The last icon in that row, **{{ui:app.tabs.comic}}**, switches to making comic pages (the key `1` opens whichever of the two you used last) | `1` |
 | **{{ui:app.tabs.canvas}}** | Place images, draw more onto them, or repaint just one part | `2` |
 | **{{ui:app.tabs.upscaling}}** | Enlarge an image while adding fine detail | `3` |
 | **{{ui:app.tabs.workflows}}** | Connect parts (nodes) to build your own generation procedure | `4` |
@@ -102,7 +102,7 @@ How to use each of them is explained in the following chapters.
 - {{ui:app.tabs.canvas}}: [Drawing More on the Canvas](05-canvas.md)
 - {{ui:app.tabs.comic}}: [Drawing Comics](12-comic.md)
 - {{ui:app.tabs.upscaling}}, {{ui:app.tabs.workflows}}: [Upscaling and Workflows](06-upscaling-workflows.md)
-- Video, music, voice and so on: [Video, Music, Voice, Logos and Text](07-media.md)
+- Video, music, voice and so on: [Video, Music, Voice and Text](07-media.md)
 - {{ui:app.tabs.models}}, {{ui:app.tabs.browse}}: [Getting Models Ready](08-models.md)
 - {{ui:agent.title}}, {{ui:app.nav.settings}}: [The Agent and Settings](09-assistant-settings.md)
 

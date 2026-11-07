@@ -251,7 +251,7 @@
 | {{ui:settings.engine.comfyui.label}} | 正在使用的 ComfyUI。通常位于数据文件夹中的 `comfyui`，会显示该位置。在设置文件中指定了其他 ComfyUI 时，会显示那个位置。用 **{{ui:settings.engine.comfyui.change}}** 可以更改应用所安装的 ComfyUI 的存放位置。所选文件夹是空的话，下次启动时会重新安装（这是很大的下载）。如果是已经安装过的文件夹，就直接使用。旧位置的文件不会自动删除。要放回数据文件夹中时，请选择其中的 `comfyui` |
 | {{ui:settings.engine.package.label}} | **{{ui:settings.engine.package.nvidia}}** 或 **{{ui:settings.engine.package.amd}}**。下次下载 ComfyUI 时（第一次安装或切换版本）会使用。ComfyUI 已安装时选择其他类型，会出现确认。确认后，下次启动 novira 时，会按所选的类型重新安装 ComfyUI（下载很大，需要花费时间） |
 | {{ui:settings.engine.timeout.label}} | 启动 ComfyUI 后等待其响应的秒数。可以从 30 秒选到 1800 秒。电脑较慢时请调长 |
-| {{ui:settings.engine.modelRoots.label}} | 除了数据文件夹的 models 之外，用来查找模型的文件夹。点击 **{{ui:settings.engine.modelRoots.add}}** 会打开选择文件夹的窗口。能识别 ComfyUI 和 Stability Matrix 的文件夹结构。视频、音乐、语音、Logo、擦除的追加模型也会从这里找到（只读取，新安装时总是放入数据文件夹）。最多可以添加 16 个。无法添加数据文件夹中的，以及已有的文件夹。用 × 按钮移除。在浏览器中打开时，无法添加，只能移除 |
+| {{ui:settings.engine.modelRoots.label}} | 除了数据文件夹的 models 之外，用来查找模型的文件夹。点击 **{{ui:settings.engine.modelRoots.add}}** 会打开选择文件夹的窗口。能识别 ComfyUI 和 Stability Matrix 的文件夹结构。视频、音乐、语音、擦除的追加模型也会从这里找到（只读取，新安装时总是放入数据文件夹）。最多可以添加 16 个。无法添加数据文件夹中的，以及已有的文件夹。用 × 按钮移除。在浏览器中打开时，无法添加，只能移除 |
 
 ### {{ui:settings.tab.accounts}}
 

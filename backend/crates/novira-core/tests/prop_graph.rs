@@ -121,7 +121,7 @@ struct Case {
 
 const MODES: &[&str] = &[
     "txt2img", "img2img", "inpaint", "outpaint", "upscale", "workflow", "graph", "video", "music",
-    "voice", "logo",
+    "voice",
 ];
 const SCHEDULERS: &[&str] = &[
     "euler",
@@ -292,7 +292,7 @@ impl Case {
         self.vae = true;
         self.encoder = true;
         self.init = !matches!(mode.as_str(), "txt2img" | "workflow")
-            && !matches!(mode.as_str(), "video" | "music" | "logo")
+            && !matches!(mode.as_str(), "video" | "music")
             || self.init && mode == "video";
         self.mask = matches!(mode.as_str(), "inpaint" | "outpaint");
         if !image_mode {
@@ -437,7 +437,7 @@ fn counts_that_do_not_match_the_guidance_are_refused_not_built() {
 
 #[test]
 fn every_mode_builds_a_plain_job_with_no_guidance() {
-    for mode in ["txt2img", "video", "music", "logo"] {
+    for mode in ["txt2img", "video", "music"] {
         let c = Case {
             params: json!({
                 "generationMode": mode, "positivePrompt": "a cat", "negativePrompt": "", "modelKey": "m", "modelName": "M",

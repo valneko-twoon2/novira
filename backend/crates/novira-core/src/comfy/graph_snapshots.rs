@@ -681,22 +681,6 @@ fn video_from_image_turbo_fp8_tiled() {
     );
 }
 
-#[test]
-fn logo() {
-    let mut p = params(GenerationMode::Logo);
-    p.positive_prompt =
-        "A minimal logo with the text \"NOVIRA\", flat vector, centered, white background".into();
-    p.steps = 8;
-    p.cfg_scale = 1.0;
-    let models = Models {
-        checkpoint: r("diffusion_models", "z-image-turbo-fp8-e4m3fn.safetensors"),
-        vae: Some(r("vae", "ae.safetensors")),
-        text_encoder: Some(r("text_encoders", "qwen_3_4b_fp8_mixed.safetensors")),
-        ..Models::image()
-    };
-    snapshot_built("logo", &models, &p, None);
-}
-
 fn music_params(music: MusicParams) -> GenerationMetadata {
     let mut p = params(GenerationMode::Music);
     p.positive_prompt = "city pop, warm, female vocals".into();

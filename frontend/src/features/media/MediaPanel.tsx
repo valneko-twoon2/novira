@@ -1,4 +1,4 @@
-// The frame of a media screen's left panel (video, music, voice, logo): the preset card, the seed row and the Generate bar
+// The frame of a media screen's left panel (video, music, voice): the preset card, the seed row and the Generate bar
 // (the same pieces, in the same order and spacing, as the Generate tab's header), then the form.
 import type { ReactNode } from 'react';
 import type { PackKind } from '@/backend';

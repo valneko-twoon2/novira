@@ -1,26 +1,58 @@
 {
   "de": [
-    "03-gallery.md"
+    "01-start.md",
+    "03-gallery.md",
+    "07-media.md",
+    "08-models.md",
+    "10-troubleshooting.md"
   ],
   "es": [
-    "03-gallery.md"
+    "01-start.md",
+    "03-gallery.md",
+    "07-media.md",
+    "08-models.md",
+    "10-troubleshooting.md"
   ],
   "fr": [
-    "03-gallery.md"
+    "01-start.md",
+    "03-gallery.md",
+    "07-media.md",
+    "08-models.md",
+    "10-troubleshooting.md"
   ],
   "ko": [
-    "03-gallery.md"
+    "01-start.md",
+    "03-gallery.md",
+    "07-media.md",
+    "08-models.md",
+    "10-troubleshooting.md"
   ],
   "pt-BR": [
-    "03-gallery.md"
+    "01-start.md",
+    "03-gallery.md",
+    "07-media.md",
+    "08-models.md",
+    "10-troubleshooting.md"
   ],
   "ru": [
-    "03-gallery.md"
+    "01-start.md",
+    "03-gallery.md",
+    "07-media.md",
+    "08-models.md",
+    "10-troubleshooting.md"
   ],
   "zh-CN": [
-    "03-gallery.md"
+    "01-start.md",
+    "03-gallery.md",
+    "07-media.md",
+    "08-models.md",
+    "10-troubleshooting.md"
   ],
   "zh-TW": [
-    "03-gallery.md"
+    "01-start.md",
+    "03-gallery.md",
+    "07-media.md",
+    "08-models.md",
+    "10-troubleshooting.md"
   ]
 }

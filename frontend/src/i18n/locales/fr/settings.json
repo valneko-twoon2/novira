@@ -328,5 +328,6 @@
   "settings.hotkeys.gallery.redoDeleteDesc": "Supprime à nouveau ce que vous avez remis",
   "settings.section.models": "Modèles",
   "settings.assistantTrial.label": "Images d'essai de l'assistant",
-  "settings.assistantTrial.help": "Indique si l'assistant peut générer de lui-même une image d'essai quand une demande est floue, la regarder, puis demander si c'est bien ce que vous voulez dire. La génération prend du temps. La lecture de l'image suit le réglage « Lecture des images et des prompts »."
+  "settings.assistantTrial.help": "Indique si l'assistant peut générer de lui-même une image d'essai quand une demande est floue, la regarder, puis demander si c'est bien ce que vous voulez dire. La génération prend du temps. La lecture de l'image suit le réglage « Lecture des images et des prompts ».",
+  "settings.tab.text": "Texte"
 }

@@ -251,7 +251,7 @@
 | {{ui:settings.engine.comfyui.label}} | 使用中的 ComfyUI。平常位於資料夾中的 `comfyui`，並會顯示該位置。以設定檔指定了其他 ComfyUI 時，會顯示該位置。用 **{{ui:settings.engine.comfyui.change}}** 可以更改應用程式安裝的 ComfyUI 的存放位置。所選的資料夾是空的，下次啟動時會重新安裝（下載量很大）。已經是安裝完成的資料夾，則直接使用。舊位置的檔案不會自動刪除。要回到資料夾中時，請選擇其中的 `comfyui` |
 | {{ui:settings.engine.package.label}} | **{{ui:settings.engine.package.nvidia}}** 或 **{{ui:settings.engine.package.amd}}**。下次下載 ComfyUI 時（第一次安裝或版本切換）會使用。已安裝 ComfyUI 時，如果選擇其他種類，會出現確認。確認後，下次啟動 novira 時，會以所選的種類重新安裝 ComfyUI（下載量很大，需要時間） |
 | {{ui:settings.engine.timeout.label}} | 啟動 ComfyUI 之後，等待回應的秒數。可以從 30 秒選到 1800 秒。速度慢的電腦請調長 |
-| {{ui:settings.engine.modelRoots.label}} | 除了資料資料夾的 models 之外，用來尋找模型的資料夾。按下 **{{ui:settings.engine.modelRoots.add}}** 會開啟選擇資料夾的視窗。可以辨識 ComfyUI 或 Stability Matrix 的資料夾形式。影片、音樂、語音、Logo、消除的追加模型也能從這裡找到（只讀取，新安裝時一律放入資料資料夾）。最多可以新增 16 個。資料資料夾之中，以及已經存在的資料夾無法新增。用 × 按鈕移除。在瀏覽器中開啟時，無法新增，只能移除 |
+| {{ui:settings.engine.modelRoots.label}} | 除了資料資料夾的 models 之外，用來尋找模型的資料夾。按下 **{{ui:settings.engine.modelRoots.add}}** 會開啟選擇資料夾的視窗。可以辨識 ComfyUI 或 Stability Matrix 的資料夾形式。影片、音樂、語音、消除的追加模型也能從這裡找到（只讀取，新安裝時一律放入資料資料夾）。最多可以新增 16 個。資料資料夾之中，以及已經存在的資料夾無法新增。用 × 按鈕移除。在瀏覽器中開啟時，無法新增，只能移除 |
 
 ### {{ui:settings.tab.accounts}}
 

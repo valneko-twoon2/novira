@@ -199,7 +199,7 @@
   "gallery.viewer.zoomFit": "Fit to View",
   "gallery.menu.sendToVideo": "Make a video from this image",
   "gallery.menu.sendToWorkflow": "Add to the workflow as an image",
-  "gallery.menu.sendToText": "Use as the text (logo) background",
+  "gallery.menu.sendToText": "Use as the text background",
   "gallery.toast.sentToVideo": "Set as the video's source image",
   "gallery.toast.sentToText": "Set as the text background",
   "gallery.meta.hiresFix": "High-resolution fix",

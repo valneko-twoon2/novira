@@ -1,18 +1,18 @@
-# Video, Music, Voice, Logos and Text
+# Video, Music, Voice and Text
 
-Besides images, novira can make video, music, voice and logos, and you can also add text and speech bubbles to images.
+Besides images, novira can make video, music and voice, and you can also add text and speech bubbles to images.
 
 All of them are used from the left panel of the **{{ui:app.tabs.generate}}** tab. Please read [Making Images](02-generate.md) first for how to use images.
 
 ## Switching what you make
 
-At the very top of the left panel there is a row of icons only. From the left, they are **{{ui:media.tab.image}}**, **{{ui:media.tab.video}}**, **{{ui:media.tab.music}}**, **{{ui:media.tab.voice}}**, **{{ui:media.tab.logo}}**, **{{ui:media.tab.text}}**, and **{{ui:app.tabs.comic}}**. Comic pages are made with the last one ([Drawing Comics](12-comic.md)).
+At the very top of the left panel there is a row of icons only. From the left, they are **{{ui:media.tab.image}}**, **{{ui:media.tab.video}}**, **{{ui:media.tab.music}}**, **{{ui:media.tab.voice}}**, **{{ui:media.tab.text}}**, and **{{ui:app.tabs.comic}}**. Comic pages are made with the last one ([Drawing Comics](12-comic.md)).
 
 Hover the mouse over an icon to see its name. When you switch, the left panel and the display in the middle change to ones for that kind.
 
 ## Common features
 
-The screens for video, music, voice and logos have the same layout.
+The screens for video, music and voice have the same layout.
 
 - At the very top of the left panel, there is a **{{ui:presets.label}}** that lets you call up a whole set of settings at once.
 - Below it is the button that starts making. If something is missing, the button cannot be pressed and the reason appears right below it.
@@ -24,7 +24,7 @@ The screens for video, music, voice and logos have the same layout.
 
 ### Downloading the models you need first
 
-Video, music, voice and logos each need their own models. If they are not installed, a "model card" appears in the left panel. Press **{{ui:pack.install}}** and the app brings them in automatically.
+Video, music and voice each need their own models. If they are not installed, a "model card" appears in the left panel. Press **{{ui:pack.install}}** and the app brings them in automatically.
 
 | What you make | Card name | Approximate size |
 |---|---|---|
@@ -32,7 +32,6 @@ Video, music, voice and logos each need their own models. If they are not instal
 | Video (fast version) | {{ui:pack.title.turbo}} | Files shared with the standard version are not fetched twice |
 | Music | {{ui:pack.title.music}} | About 10 GB |
 | Voice | {{ui:pack.title.voice}} | About 9 GB |
-| Logo | {{ui:pack.title.logo}} | About 12 GB |
 
 The sizes are approximate. For the exact size, look at the number shown on the card.
 
@@ -172,27 +171,6 @@ The finished voice is lined up in the center list with a player. The voice used 
 
 The first generation takes a little time to load the model. If you do not use it for a while, the model is removed from the GPU and the memory returns to other work.
 
-## Making logos
-
-![The logo screen. The logo text, style, shape and the number of candidates are lined up on the left](shot:media-logo)
-
-It makes candidates for a logo with text in it.
-
-### How to make it
-
-1. Choose **{{ui:media.tab.logo}}** in the left panel.
-2. If it is your first time, press **{{ui:pack.install}}** on the **{{ui:pack.title.logo}}** card.
-3. In **{{ui:logo.text}}**, enter the text to put in the logo (up to 60 characters).
-4. In **{{ui:logo.style}}**, write the mood, colors and shape. Japanese or English is fine. For example, something like "minimal, blue and white, geometric".
-5. With **{{ui:logo.size}}**, choose the shape from **{{ui:logo.size.square}}**, **{{ui:logo.size.wide}}** and **{{ui:logo.size.tall}}**.
-6. Choose the **{{ui:logo.countLabel}}** from 1 to 4 and press **{{ui:params.invoke.invoke}}**.
-
-### Results and layering text
-
-The logos made are lined up in the center as candidates. In the gallery, they go into **{{ui:gallery.view.assets}}** rather than **{{ui:gallery.view.images}}**. When you open the logo screen, the gallery on the right automatically switches to the assets view.
-
-English text comes out accurately, but Japanese can come out distorted. In that case, press **{{ui:logo.layText}}** on a candidate you like. It switches to **{{ui:media.tab.text}}**, and that logo becomes the background, so you can layer any text you like on it.
-
 ## Text (words and speech bubbles)
 
 ![The text screen. On the left, the buttons for adding text, the background, layers and text styles; in the center, the image being edited](shot:media-text)
@@ -254,7 +232,7 @@ When it is done, press **{{ui:text.save}}**. It goes into the gallery as a PNG i
 
 ## Presets
 
-The screens for video, music, voice, logos and text also have presets of the same form as for images. When you choose from **{{ui:presets.label}}** at the upper left of the screen, the settings you saved go in all at once.
+The screens for video, music, voice and text also have presets of the same form as for images. When you choose from **{{ui:presets.label}}** at the upper left of the screen, the settings you saved go in all at once.
 
 To save your own settings, press the save button next to the preset (**{{ui:presets.saveNew}}**) and give it a name. What you saved is lined up under **{{ui:presets.group.mine}}**. From the "…" menu of each item in the list, you can also **{{ui:presets.overwrite}}**, **{{ui:presets.rename}}** and **{{ui:presets.delete}}**. The ones prepared from the start are under **{{ui:presets.group.builtin}}**.
 
@@ -265,9 +243,8 @@ What is saved differs slightly by screen.
 | Video | The prompt, model, size, length and quality settings | The seed and the source image |
 | Music | The style tags and the song settings | The lyrics and the seed |
 | Voice | The language and the voice (voice and speaking style, or the voice description) | The text to read aloud |
-| Logo | The style words, the shape and the number of candidates | The text to put in the logo |
 | Text | The style of the text | The contents of the text |
 
-The presets that come with the app are three for video, "Quick preview", "Standard 832x480" and "Vertical, low VRAM"; two for music, "Lo-fi instrumental" and "J-pop song"; two for voice, "Calm narrator" and "Energetic announcer"; and five for logos.
+The presets that come with the app are three for video, "Quick preview", "Standard 832x480" and "Vertical, low VRAM"; two for music, "Lo-fi instrumental" and "J-pop song"; and two for voice, "Calm narrator" and "Energetic announcer".
 
 For how to find and install models, go to [Models](08-models.md).

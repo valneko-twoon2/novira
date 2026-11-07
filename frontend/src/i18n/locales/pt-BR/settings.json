@@ -328,5 +328,6 @@
   "settings.hotkeys.gallery.redoDeleteDesc": "Exclui de novo o que você trouxe de volta",
   "settings.section.models": "Modelos",
   "settings.assistantTrial.label": "Imagens de teste do assistente",
-  "settings.assistantTrial.help": "Se o assistente pode gerar por conta própria uma imagem de teste quando um pedido não é claro, olhá-la e perguntar se é isso que você quer dizer. Gerar leva tempo. Olhar a imagem segue a configuração “Leitura de imagens e prompts”."
+  "settings.assistantTrial.help": "Se o assistente pode gerar por conta própria uma imagem de teste quando um pedido não é claro, olhá-la e perguntar se é isso que você quer dizer. Gerar leva tempo. Olhar a imagem segue a configuração “Leitura de imagens e prompts”.",
+  "settings.tab.text": "Texto"
 }

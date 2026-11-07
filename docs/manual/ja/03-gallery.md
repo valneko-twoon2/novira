@@ -19,7 +19,7 @@
 - 上向きの矢印のボタン：{{ui:gallery.upload}}
 
 **{{ui:gallery.view.images}}** には、novira で作った絵（動画や音声も含みます）が入ります。
-**{{ui:gallery.view.assets}}** には、アップロードした画像や、ロゴのように「作品とは別の素材」として扱うものが入ります。見当たらない絵があるときは、もう一方を見てみてください。
+**{{ui:gallery.view.assets}}** には、アップロードした画像や、以前の版で作ったロゴのように「作品とは別の素材」として扱うものが入ります。見当たらない絵があるときは、もう一方を見てみてください。
 
 サムネイルの大きさは、歯車のボタンのスライダーで変えられます。
 動画や音声のサムネイルには再生のマークが付いていて、カーソルをのせて横に動かすと、その位置の場面を確かめられます。
@@ -122,7 +122,7 @@
 | **{{ui:gallery.menu.star}}** / **{{ui:gallery.menu.unstar}}** | スターを付ける・外す |
 | **{{ui:gallery.menu.delete}}**（`Del`） | 絵を削除する |
 
-「{{ui:gallery.menu.sendToCanvas}}」や、絵を作り直す・直す操作の使いかたは、[キャンバスで描き足す](05-canvas.md)、[画像を直す](04-improve.md)、[拡大とワークフロー](06-upscaling-workflows.md)、[動画・音楽・音声・ロゴ・テキスト](07-media.md) で説明します。
+「{{ui:gallery.menu.sendToCanvas}}」や、絵を作り直す・直す操作の使いかたは、[キャンバスで描き足す](05-canvas.md)、[画像を直す](04-improve.md)、[拡大とワークフロー](06-upscaling-workflows.md)、[動画・音楽・音声・テキスト](07-media.md) で説明します。
 
 > パソコンのブラウザで開いているときだけ、「{{ui:gallery.menu.openInNewTab}}」も出ます。デスクトップ版には出ません。
 

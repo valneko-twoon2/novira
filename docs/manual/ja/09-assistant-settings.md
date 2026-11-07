@@ -251,7 +251,7 @@ Claude と Codex のほかに、このパソコンやネットワーク上で動
 | {{ui:settings.engine.comfyui.label}} | 使っている ComfyUI です。ふだんはデータフォルダの中の `comfyui` にあり、その場所が出ます。設定ファイルでほかの ComfyUI を指定したときは、その場所が出ます。**{{ui:settings.engine.comfyui.change}}** で、アプリがインストールする ComfyUI の置き場所を変えられます。選んだフォルダが空なら、次の起動で新しくインストールします（大きなダウンロードです）。すでにインストール済みのフォルダならそのまま使います。古い場所のファイルは自動では消えません。データフォルダの中に戻すときは、その中の `comfyui` を選びます |
 | {{ui:settings.engine.package.label}} | **{{ui:settings.engine.package.nvidia}}** か **{{ui:settings.engine.package.amd}}**。次に ComfyUI をダウンロードするとき（初めてのインストールや版の切り替え）に使われます。ComfyUI がインストールされているときに、別の種類を選ぶと確認が出ます。確認すると、次に novira を起動したときに、選んだ種類で ComfyUI をインストールし直します（ダウンロードは大きく、時間がかかります） |
 | {{ui:settings.engine.timeout.label}} | ComfyUI を起動してから応答するまで待つ秒数です。30 秒から 1800 秒まで選べます。遅いパソコンでは長くします |
-| {{ui:settings.engine.modelRoots.label}} | データフォルダの models のほかに、モデルを探すフォルダです。**{{ui:settings.engine.modelRoots.add}}** を押すとフォルダを選ぶ窓が開きます。ComfyUI や Stability Matrix のフォルダの形が分かります。動画・音楽・音声・ロゴ・消去の追加モデルもここから見つかります（読むだけで、新しく入れるときはいつもデータフォルダに入ります）。16 個まで足せます。データフォルダの中や、すでにあるフォルダは足せません。× のボタンで外します。ブラウザで開いているときは、足すことはできず、外すことだけできます |
+| {{ui:settings.engine.modelRoots.label}} | データフォルダの models のほかに、モデルを探すフォルダです。**{{ui:settings.engine.modelRoots.add}}** を押すとフォルダを選ぶ窓が開きます。ComfyUI や Stability Matrix のフォルダの形が分かります。動画・音楽・音声・消去の追加モデルもここから見つかります（読むだけで、新しく入れるときはいつもデータフォルダに入ります）。16 個まで足せます。データフォルダの中や、すでにあるフォルダは足せません。× のボタンで外します。ブラウザで開いているときは、足すことはできず、外すことだけできます |
 
 ### {{ui:settings.tab.accounts}}
 

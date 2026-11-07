@@ -63,7 +63,7 @@ fn open(dir: &Path) -> (Backend, Events) {
 }
 
 /// The packs whose files all come from Hugging Face and each sit in their own folder.
-const KINDS: [PackKind; 3] = [PackKind::Video, PackKind::Music, PackKind::Logo];
+const KINDS: [PackKind; 2] = [PackKind::Video, PackKind::Music];
 
 #[derive(Debug, Clone)]
 enum Op {
@@ -76,9 +76,9 @@ enum Op {
 
 fn op() -> impl Strategy<Value = Op> {
     prop_oneof![
-        4 => (0usize..3).prop_map(Op::Install),
-        3 => (0usize..3, 0usize..3).prop_map(|(k, i)| Op::Remove(k, i)),
-        2 => (0usize..3, 0usize..3).prop_map(|(k, i)| Op::Put(k, i)),
+        4 => (0..KINDS.len()).prop_map(Op::Install),
+        3 => (0..KINDS.len(), 0usize..3).prop_map(|(k, i)| Op::Remove(k, i)),
+        2 => (0..KINDS.len(), 0usize..3).prop_map(|(k, i)| Op::Put(k, i)),
         2 => any::<bool>().prop_map(Op::Server),
         1 => Just(Op::Restart),
     ]

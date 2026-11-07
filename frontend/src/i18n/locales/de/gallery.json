@@ -196,7 +196,7 @@
   "gallery.viewer.zoomFit": "Einpassen",
   "gallery.menu.sendToVideo": "Video aus diesem Bild erstellen",
   "gallery.menu.sendToWorkflow": "Als Bild zum Workflow hinzufügen",
-  "gallery.menu.sendToText": "Als Texthintergrund (Logo) verwenden",
+  "gallery.menu.sendToText": "Als Texthintergrund verwenden",
   "gallery.toast.sentToVideo": "Als Quellbild des Videos festgelegt",
   "gallery.toast.sentToText": "Als Texthintergrund festgelegt",
   "gallery.meta.hiresFix": "Hires-Fix",

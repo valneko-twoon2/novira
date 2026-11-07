@@ -328,5 +328,6 @@
   "settings.hotkeys.gallery.redoDeleteDesc": "되돌린 삭제를 다시 실행합니다",
   "settings.section.models": "모델",
   "settings.assistantTrial.label": "에이전트의 시험 생성",
-  "settings.assistantTrial.help": "요청의 의도가 불분명할 때 에이전트가 직접 1장만 시험 삼아 생성하고, 그 이미지를 보고 「이런 느낌인가요?」라고 확인해도 되는지 설정합니다. 생성에 시간이 걸립니다. 이미지를 볼 때는 「이미지와 프롬프트 읽기」 설정을 따릅니다."
+  "settings.assistantTrial.help": "요청의 의도가 불분명할 때 에이전트가 직접 1장만 시험 삼아 생성하고, 그 이미지를 보고 「이런 느낌인가요?」라고 확인해도 되는지 설정합니다. 생성에 시간이 걸립니다. 이미지를 볼 때는 「이미지와 프롬프트 읽기」 설정을 따릅니다.",
+  "settings.tab.text": "텍스트"
 }

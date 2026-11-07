@@ -9,7 +9,6 @@ mod graph_snapshots;
 #[cfg(test)]
 mod graph_snapshots_families;
 pub mod install;
-pub mod logo;
 pub mod music;
 #[cfg(test)]
 mod node_defs_check;

@@ -17,7 +17,7 @@ covers:
 ---
 # Generation
 
-Generation makes the pictures: a queue of jobs that run one at a time, the ComfyUI graphs they send to the engine, the checks that refuse requests the engine cannot run, and the ComfyUI process the app owns. Video, music, logo and voice are queue jobs too (see media-generation.md); the engine's install is in extensions.md.
+Generation makes the pictures: a queue of jobs that run one at a time, the ComfyUI graphs they send to the engine, the checks that refuse requests the engine cannot run, and the ComfyUI process the app owns. Video, music and voice are queue jobs too (see media-generation.md); the engine's install is in extensions.md.
 
 ## Behaviour
 

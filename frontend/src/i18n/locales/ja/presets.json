@@ -32,7 +32,6 @@
   "presets.summary.videoModel.fast": "高速モデル",
   "presets.summary.instrumental": "インスト",
   "presets.summary.designedVoice": "説明で作った声",
-  "presets.hint.logo": "文字のスタイルと形を保存します（ロゴに入れる文字は除く）",
   "presets.run.title": "プリセットをランダムに回して生成",
   "presets.run.count": "枚数",
   "presets.run.queue": "キューに追加",

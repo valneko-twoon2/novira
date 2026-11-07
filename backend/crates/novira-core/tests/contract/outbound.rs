@@ -315,7 +315,6 @@ pub fn bootstrap(v: &Value) {
             music: pack(&packs["music"]),
             voice: pack(&packs["voice"]),
             inpaint: pack(&packs["inpaint"]),
-            logo: pack(&packs["logo"]),
         },
     };
     assert_wire(&boot, v, "Bootstrap");

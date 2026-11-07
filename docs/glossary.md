@@ -94,7 +94,7 @@ In the code, "pack" is used for two different things; the screens say 拡張機�
 | おすすめの拡張機能 (Suggested extension) | A custom node pack that novira suggests, with a description in every language. The screens call it an extension too, not a pack | `PACK_CATALOG` in `state/comfy/packCatalog.ts` |
 | カスタムノード (Custom node) | The ComfyUI term for the same thing as an extension | ComfyUI |
 | ComfyUI レジストリ (ComfyUI Registry) | The public index of custom node packs that the extension manager searches | `comfy/registry.rs` |
-| *Model pack* (モデルセット) | Extra model files that video, music, voice and logo need, downloaded on request. The screen titles them 動画のモデル, 音楽のモデル and so on | `packs.rs` |
+| *Model pack* (モデルセット) | Extra model files that video, music and voice need, downloaded on request. The screen titles them 動画のモデル, 音楽のモデル and so on | `packs.rs` |
 
 ## Install
 

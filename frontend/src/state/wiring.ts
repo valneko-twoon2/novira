@@ -82,7 +82,7 @@ async function start(): Promise<void> {
         }
         if (item && gallery.settings.autoSwitch) {
           const boardId = image.boardId ?? 'none';
-          // Assets (logos) are listed under the assets view, pictures under the images view.
+          // Assets are listed under the assets view, pictures under the images view.
           const view = image.category === 'general' ? 'images' : 'assets';
           if (gallery.selectedBoardId !== boardId || gallery.view !== view) {
             useGallery.setState({ selectedBoardId: boardId, view, page: 0 });

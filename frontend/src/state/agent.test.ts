@@ -195,7 +195,7 @@ describe('what a request carries', () => {
     replyWith('ok');
     const screens: [Partial<ReturnType<typeof useUi.getState>>, string][] = [
       [{ activeTab: 'generate', media: 'image' }, 'generate'],
-      [{ activeTab: 'generate', media: 'logo' }, 'logo'],
+      [{ activeTab: 'generate', media: 'text' }, 'text'],
       [{ activeTab: 'generate', media: 'music' }, 'music'],
       [{ activeTab: 'models' }, 'models'],
       [{ activeTab: 'extensions' }, 'extensions'],

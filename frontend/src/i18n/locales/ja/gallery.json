@@ -199,7 +199,7 @@
   "gallery.viewer.zoomFit": "画面に合わせる",
   "gallery.menu.sendToVideo": "この画像から動画を作る",
   "gallery.menu.sendToWorkflow": "ワークフローに画像として追加",
-  "gallery.menu.sendToText": "テキスト（ロゴ）の背景にする",
+  "gallery.menu.sendToText": "テキストの背景にする",
   "gallery.toast.sentToVideo": "動画の元画像にしました",
   "gallery.toast.sentToText": "テキストの背景にしました",
   "gallery.meta.hiresFix": "高解像度補正",

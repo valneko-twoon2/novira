@@ -196,7 +196,7 @@
   "gallery.viewer.zoomFit": "Ajuster à la vue",
   "gallery.menu.sendToVideo": "Créer une vidéo à partir de cette image",
   "gallery.menu.sendToWorkflow": "Ajouter au workflow comme image",
-  "gallery.menu.sendToText": "Utiliser comme fond du texte (logo)",
+  "gallery.menu.sendToText": "Utiliser comme fond du texte",
   "gallery.toast.sentToVideo": "Définie comme image source de la vidéo",
   "gallery.toast.sentToText": "Définie comme fond du texte",
   "gallery.meta.hiresFix": "Correction haute résolution",

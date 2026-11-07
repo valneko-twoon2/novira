@@ -11,7 +11,7 @@ import { chordLabel, cx, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger
 import { CancelControls } from './CancelControls';
 import './invoke.css';
 
-/** `tab` is a tab, or the kind of media on the Generate tab (video, music, voice, logo); `label` replaces the word on the button. */
+/** `tab` is a tab, or the kind of media on the Generate tab (video, music, voice); `label` replaces the word on the button. */
 export function InvokeControls({ tab, label }: { tab: BuilderKey; label?: string }) {
   const reasons = useReadiness(tab);
   const ready = reasons.length === 0;

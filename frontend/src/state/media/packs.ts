@@ -10,7 +10,7 @@ interface PacksState {
 }
 
 export const usePacks = create<PacksState>()((set, get) => ({
-  packs: { video: { state: 'ready' }, turbo: { state: 'ready' }, music: { state: 'ready' }, voice: { state: 'ready' }, inpaint: { state: 'ready' }, logo: { state: 'ready' } },
+  packs: { video: { state: 'ready' }, turbo: { state: 'ready' }, music: { state: 'ready' }, voice: { state: 'ready' }, inpaint: { state: 'ready' } },
   setPack: (kind, status) => set({ packs: { ...get().packs, [kind]: status } }),
   setAll: (packs) => set({ packs }),
 }));

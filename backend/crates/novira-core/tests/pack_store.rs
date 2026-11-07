@@ -140,13 +140,13 @@ async fn packs_start_as_missing_and_follow_the_files_on_disk() {
 async fn a_pack_with_every_file_in_place_becomes_ready_without_downloading() {
     let dir = tempfile::tempdir().unwrap();
     let (backend, events, _) = open(dir.path(), None);
-    write_all(&dir.path().join("models"), PackKind::Logo);
-    backend.install_pack(PackKind::Logo).await.unwrap();
+    write_all(&dir.path().join("models"), PackKind::Video);
+    backend.install_pack(PackKind::Video).await.unwrap();
     // A second request while it runs is ignored.
-    backend.install_pack(PackKind::Logo).await.unwrap();
-    wait_until(|| backend.pack_status(PackKind::Logo) == PackStatus::Ready).await;
+    backend.install_pack(PackKind::Video).await.unwrap();
+    wait_until(|| backend.pack_status(PackKind::Video) == PackStatus::Ready).await;
     assert_eq!(
-        pack_events(&events, PackKind::Logo).last(),
+        pack_events(&events, PackKind::Video).last(),
         Some(&PackStatus::Ready)
     );
 }

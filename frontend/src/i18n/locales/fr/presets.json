@@ -32,7 +32,6 @@
   "presets.summary.videoModel.fast": "Modèle rapide",
   "presets.summary.instrumental": "Instrumental",
   "presets.summary.designedVoice": "Voix décrite",
-  "presets.hint.logo": "Enregistre le style et la forme (pas le texte du logo)",
   "presets.run.title": "Générer avec des préréglages aléatoires",
   "presets.run.count": "Nombre d'images",
   "presets.run.queue": "Ajouter à la file",

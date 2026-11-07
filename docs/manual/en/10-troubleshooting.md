@@ -52,7 +52,7 @@ The time to wait between the engine starting and its answering is 3 minutes by d
 
 ### The Generate button cannot be pressed
 
-When you hover the mouse over the Generate button on the **{{ui:app.tabs.generate}}** screen, a list of reasons appears under **{{ui:params.invoke.cannotInvoke}}**. On the video, music, voice and logo screens, the reasons are lined up under the button. When you fix the reasons shown one by one, the button can be pressed.
+When you hover the mouse over the Generate button on the **{{ui:app.tabs.generate}}** screen, a list of reasons appears under **{{ui:params.invoke.cannotInvoke}}**. On the video, music and voice screens, the reasons are lined up under the button. When you fix the reasons shown one by one, the button can be pressed.
 
 | Reason shown | How to fix it |
 |---|---|
@@ -63,12 +63,12 @@ When you hover the mouse over the Generate button on the **{{ui:app.tabs.generat
 | Reference images need the extension … | Install the extension from the guidance in the reference image field ([An extension is missing](#an-extension-is-missing)) |
 | {{ui:params.readiness.upscaleNoImage}} | Choose an image to upscale |
 | {{ui:params.readiness.upscaleNoModel}} | Choose a model for upscaling. If none is installed, you can install one from **{{ui:models.install.tab.starter}}** on the {{ui:app.tabs.models}} tab |
-| {{ui:video.problem.prompt}}, {{ui:music.problem.tags}}, {{ui:voice.problem.text}}, {{ui:logo.problem.text}} | A required field is empty. Fill it in |
+| {{ui:video.problem.prompt}}, {{ui:music.problem.tags}}, {{ui:voice.problem.text}} | A required field is empty. Fill it in |
 | {{ui:video.problem.image}} | In "From image (i2i)" mode, no image to animate has been chosen |
 | {{ui:voice.problem.description}} | In "Describe a voice" mode, the description of the voice is empty |
-| {{ui:video.problem.pack}}, {{ui:music.problem.pack}}, {{ui:voice.problem.pack}}, {{ui:logo.problem.pack}} | The dedicated models are not installed. Go to the next item |
+| {{ui:video.problem.pack}}, {{ui:music.problem.pack}}, {{ui:voice.problem.pack}} | The dedicated models are not installed. Go to the next item |
 
-### The models for video, music, voice or logos are not installed
+### The models for video, music or voice are not installed
 
 A card appears in the left panel of each screen, so press **{{ui:pack.install}}**. You cannot make anything until the installation is done.
 
@@ -76,7 +76,7 @@ A card appears in the left panel of each screen, so press **{{ui:pack.install}}*
 - For voice, the engine for reading aloud is installed too. The image generation engine must have finished getting ready first.
 - The fast video model is a separate download from the standard video model.
 
-For details, please see [Video, Music, Voice, Logos and Text](07-media.md).
+For details, please see [Video, Music, Voice and Text](07-media.md).
 
 ### No model is installed
 
@@ -106,13 +106,13 @@ Images, video and music use your computer's GPU. If other apps (games, video edi
 
 When memory is short, the error may include the letters "OOM" (meaning out of memory).
 
-When a job fails for lack of memory, the app recognizes it and shows the notice **{{ui:queue.oom.title}}**. It appears above the gallery, under the failed item in the **{{ui:app.tabs.queue}}** tab, on the video, music, voice and logo screens, and as a notification at the bottom right.
+When a job fails for lack of memory, the app recognizes it and shows the notice **{{ui:queue.oom.title}}**. It appears above the gallery, under the failed item in the **{{ui:app.tabs.queue}}** tab, on the video, music and voice screens, and as a notification at the bottom right.
 
 ![The notice for running out of GPU memory, with the buttons Retry smaller and Turn on low-memory mode and restart](shot:out-of-memory)
 
 The buttons of the notice let you try one of these:
 
-- **{{ui:queue.oom.retrySmaller}}**: makes it again with the same settings and seed, at about 75% of the area with the same aspect ratio. It appears only for images made at a chosen size (not for video, music, voice, logos or upscaling).
+- **{{ui:queue.oom.retrySmaller}}**: makes it again with the same settings and seed, at about 75% of the area with the same aspect ratio. It appears only for images made at a chosen size (not for video, music, voice or upscaling).
 - **{{ui:queue.oom.lowMemory}}**: turns on **{{ui:settings.lowMemory.label}}** (see [The Agent and Settings](09-assistant-settings.md)) and restarts the engine. While an item is being made, it applies the next time the engine starts. It does not appear when the mode is already on.
 
 After a job fails for lack of memory, the app asks the engine to unload its models and free the memory. The next job therefore starts by loading its model again and takes a little longer.
@@ -129,7 +129,7 @@ The voice model is removed from the GPU when you have not used it for a while. M
 
 ### Generation fails
 
-When making an image, video, music or the like fails, the item on the **{{ui:app.tabs.queue}}** tab becomes **{{ui:queue.status.failed}}**. Press the item to open it, and the reason appears in **{{ui:queue.detail.error}}**. On the video, music, voice and logo screens, a failure display and its reason also appear near the top of the center (up to the latest 3).
+When making an image, video, music or the like fails, the item on the **{{ui:app.tabs.queue}}** tab becomes **{{ui:queue.status.failed}}**. Press the item to open it, and the reason appears in **{{ui:queue.detail.error}}**. On the video, music and voice screens, a failure display and its reason also appear near the top of the center (up to the latest 3).
 
 Once you know the reason, you can try again with the same settings using the **{{ui:queue.action.retry}}** button of the item.
 
@@ -144,7 +144,8 @@ The text of the reason comes from inside the engine or the app, so it may be in 
 | ... models are not supported by the ComfyUI backend yet | FLUX and SD3.X models cannot be used for generating images yet. Choose an SDXL or SD1.X model |
 | Reference images need the ... custom node pack | The extension needed for reference images is not installed |
 | This ComfyUI is too old for video / music | The engine you are using lacks features needed for video or music. This does not happen with the engine the app installed. If you prepared the engine yourself, update it |
-| The video / music / logo models are not installed yet | The dedicated models are not installed. Download them from each screen |
+| The video / music models are not installed yet | The dedicated models are not installed. Download them from each screen |
+| Logos can no longer be made | A logo job left in the queue by an earlier version. The logo screen is gone: lay text over a picture on **{{ui:media.tab.text}}** instead |
 | ComfyUI has no ... node; install the custom node pack | The extension for a node used in the workflow is not installed |
 | Interrupted because novira was closed | The app was closed partway through making it. Make it again |
 
@@ -153,7 +154,7 @@ The text of the reason comes from inside the engine or the app, so it may be in 
 If making shows **{{ui:queue.status.completed}}** but nothing appears in the gallery, check the following.
 
 - **A different board**: New images go to the board marked **{{ui:gallery.boards.autoBadge}}** (by default, **{{ui:gallery.boards.uncategorized}}**). If you have a different board open, they do not appear there. Switch boards, or choose again the board that new images go to with **{{ui:gallery.boards.setAutoAdd}}**.
-- **Logos go into "Assets"**: Logos go into **{{ui:gallery.view.assets}}**, not **{{ui:gallery.view.images}}**.
+- **Logos made with an earlier version are in "Assets"**: They are in **{{ui:gallery.view.assets}}**, not **{{ui:gallery.view.images}}**.
 - **How video and audio look**: Video lines up as a thumbnail with a ▶, and audio with a ♪. They are hidden if a search or filter is left on.
 
 If you still cannot find it, check the **{{ui:queue.col.destination}}** of the item on the **{{ui:app.tabs.queue}}** tab. An item whose output destination is **{{ui:queue.destination.canvas}}** appears on the canvas, not in the gallery.

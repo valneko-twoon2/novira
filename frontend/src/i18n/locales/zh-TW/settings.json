@@ -328,5 +328,6 @@
   "settings.hotkeys.gallery.redoDeleteDesc": "重做已復原的刪除",
   "settings.section.models": "模型",
   "settings.assistantTrial.label": "助理的試畫",
-  "settings.assistantTrial.help": "當請求的意圖不明確時，是否允許助理自己試著生成 1 張，看過該圖像後確認「是這樣的感覺嗎？」。生成會花一些時間。查看圖像時，依「圖像與提示詞的讀取」的設定。"
+  "settings.assistantTrial.help": "當請求的意圖不明確時，是否允許助理自己試著生成 1 張，看過該圖像後確認「是這樣的感覺嗎？」。生成會花一些時間。查看圖像時，依「圖像與提示詞的讀取」的設定。",
+  "settings.tab.text": "文字"
 }

@@ -57,14 +57,14 @@ export const ASSISTANT_IN_COLUMN: Record<TabName, boolean> = {
 };
 
 /** What the Generate tab makes: the left panel and the center area follow it. */
-export const MEDIA_KINDS = ['image', 'video', 'music', 'voice', 'logo', 'text'] as const;
+export const MEDIA_KINDS = ['image', 'video', 'music', 'voice', 'text'] as const;
 export type MediaKind = (typeof MEDIA_KINDS)[number];
 
 /**
  * Screens left out of the app's own build for now (Vite mode `production`); the dev server, the tests and every harness
  * build (mode `harness`, scripts/tools/harness-paths.mjs) show them all. Empty this set to bring them back.
  */
-export const HIDDEN_TABS: ReadonlySet<MediaKind | TabName> = new Set<MediaKind | TabName>(['video', 'music', 'voice', 'text', 'comic']);
+export const HIDDEN_TABS: ReadonlySet<MediaKind | TabName> = new Set<MediaKind | TabName>(['video', 'music', 'voice', 'comic']);
 
 /**
  * Whether a screen can be opened in this build. The store refuses to open a hidden one, so no way in (an icon, the
@@ -77,7 +77,7 @@ export function isScreenShown(screen: MediaKind | TabName): boolean {
 /** The kinds made by a queue job of their own: not the image form's pictures, not the text editor's layers. */
 export type GeneratedMedia = Exclude<MediaKind, 'image' | 'text'>;
 // A Record, so a new kind of media does not compile until it is put here or left out above.
-const GENERATED: Record<GeneratedMedia, true> = { video: true, music: true, voice: true, logo: true };
+const GENERATED: Record<GeneratedMedia, true> = { video: true, music: true, voice: true };
 export const GENERATED_MEDIA = Object.keys(GENERATED) as GeneratedMedia[];
 
 export type ModalName = 'settings' | 'hotkeys' | 'about' | 'workflowLibrary' | null;

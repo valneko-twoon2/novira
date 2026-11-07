@@ -145,7 +145,7 @@ describe('InstallStarter', () => {
     // The card size slider measures itself.
     vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
     const missing = { state: 'missing', totalBytes: 1e9 } as const;
-    usePacks.setState({ packs: { video: missing, turbo: missing, music: missing, voice: missing, inpaint: missing, logo: missing } });
+    usePacks.setState({ packs: { video: missing, turbo: missing, music: missing, voice: missing, inpaint: missing } });
     vi.spyOn(backend, 'installPack').mockResolvedValue(undefined);
   });
 
@@ -201,16 +201,16 @@ describe('InstallStarter', () => {
       { id: 'wan', name: 'Wan 2.1', base: 'wan', type: 'diffusion_model', description: '', source: 'w' },
     ];
     vi.spyOn(backend, 'listStarterModels').mockResolvedValue(list);
-    usePacks.setState({ packs: { ...usePacks.getState().packs, logo: { state: 'missing', totalBytes: 6e9 }, video: { state: 'ready' } } });
+    usePacks.setState({ packs: { ...usePacks.getState().packs, inpaint: { state: 'missing', totalBytes: 6e9 }, video: { state: 'ready' } } });
     ui(<InstallStarter />);
     await waitFor(() => expect(screen.getAllByTestId('mm-starter')).toHaveLength(4));
     // Every pack is listed beside the models: an installed one says so, a missing one offers its install.
-    expect(screen.getAllByTestId('mm-starter-pack')).toHaveLength(6);
-    expect(within(screen.getByTestId('mm-starter-purpose-logo')).getByText('1')).toBeTruthy();
-    fireEvent.click(screen.getByTestId('mm-starter-purpose-logo'));
+    expect(screen.getAllByTestId('mm-starter-pack')).toHaveLength(5);
+    expect(within(screen.getByTestId('mm-starter-purpose-erase')).getByText('1')).toBeTruthy();
+    fireEvent.click(screen.getByTestId('mm-starter-purpose-erase'));
     expect(screen.queryAllByTestId('mm-starter')).toHaveLength(0);
-    fireEvent.click(screen.getByTestId('mm-starter-pack-install-logo'));
-    expect(backend.installPack).toHaveBeenCalledWith('logo');
+    fireEvent.click(screen.getByTestId('mm-starter-pack-install-inpaint'));
+    expect(backend.installPack).toHaveBeenCalledWith('inpaint');
     // Video: the Wan model and the two video packs.
     fireEvent.click(screen.getByTestId('mm-starter-purpose-video'));
     expect(screen.getAllByTestId('mm-starter')).toHaveLength(1);

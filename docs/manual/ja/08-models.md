@@ -38,7 +38,7 @@
 | {{ui:models.rail.encoders}} | 文章を理解する部品（T5、Qwen、CLIP など。Anima や Flux のように、本体とは別に必要なもの） |
 | {{ui:models.rail.diffusion}} | Flux・Wan・Anima・Qwen-Image など、本体だけ単独で配られているモデル。インストールするときは中身を見て種類と系統を判別します |
 
-動画・音楽・音声・ロゴ用のモデルは、この一覧には出ません。それぞれの画面からダウンロードします（[動画・音楽・音声・ロゴ](07-media.md)）。
+動画・音楽・音声用のモデルは、この一覧には出ません。それぞれの画面からダウンロードします（[動画・音楽・音声・テキスト](07-media.md)）。
 
 ## モデルタブ
 
@@ -73,7 +73,7 @@
 |---|---|
 | {{ui:models.install.tab.source}} | モデルのアドレスを入力して **{{ui:models.install.install}}** を押します |
 | {{ui:models.install.tab.scan}} | **{{ui:models.install.scan}}** を押して開くダイアログでフォルダを選ぶと、中のモデルが並びます。**{{ui:models.install.installAll}}** でまとめてインストールできます。パソコン内のファイルはここからインストールします。ブラウザで開いているときは使えません |
-| {{ui:models.install.tab.starter}} | 最初にインストールしておくと便利なモデルを、アプリが選んで並べています。依存するモデル（VAE など）も一緒にインストールされます。動画・音楽・音声・ロゴ・消す機能のモデルパックも並びます。モデル画面と同じくカードで並び、左の **{{ui:models.starter.purposes}}**（画像を作る、動画、アップスケールなど）と、上の **{{ui:models.starter.allFamilies}}** の一覧（Anima、SDXL など）で絞り込めます。系統を選ぶと、その系統に必要な VAE やエンコーダーも一緒に並びます |
+| {{ui:models.install.tab.starter}} | 最初にインストールしておくと便利なモデルを、アプリが選んで並べています。依存するモデル（VAE など）も一緒にインストールされます。動画・音楽・音声・消す機能のモデルパックも並びます。モデル画面と同じくカードで並び、左の **{{ui:models.starter.purposes}}**（画像を作る、動画、アップスケールなど）と、上の **{{ui:models.starter.allFamilies}}** の一覧（Anima、SDXL など）で絞り込めます。系統を選ぶと、その系統に必要な VAE やエンコーダーも一緒に並びます |
 | {{ui:models.install.tab.huggingface}} | Hugging Face のリポジトリ名（`作者/名前`）で探す欄です |
 
 **{{ui:models.install.tab.source}}** の欄に入力できるのは、次のものです。

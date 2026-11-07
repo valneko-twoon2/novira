@@ -11,7 +11,7 @@ Follow this when changing `frontend/src/`. The map of locations is [docs/archite
 ## 1. Layers
 
 - From the bottom, the layers are `backend/` (the boundary, including the mock) → `state/` (zustand, wiring, registries) → `ui/` (shared components) → `features/<feature>/` (screens) → `app/` (composition). An upper layer imports only lower layers. `i18n/` and `theme/` import no layer.
-- A feature stays inside `features/<name>/`. Features do not import each other (except `features/media`, shared by video, music, audio and logo, and `features/invoke`, the Invoke buttons every generator screen shows). Coordination goes through `state/` stores and registries (for example `registerInvokeBuilder`, `registerAgentEditor`).
+- A feature stays inside `features/<name>/`. Features do not import each other (except `features/media`, shared by video, music and audio, and `features/invoke`, the Invoke buttons every generator screen shows). Coordination goes through `state/` stores and registries (for example `registerInvokeBuilder`, `registerAgentEditor`).
 - ESLint (`scripts/eslint-layers.mjs`) checks layer boundaries. **Do not add to the exceptions list.** Move the shared thing to a lower layer or a registry.
 - External connections (`fetch` etc.) live only in `src/backend/`.
 - One file, one responsibility. Do not create catch-all folders (`utils/`, `misc/`, `helpers/`); `tests/structure.test.ts` stops this.

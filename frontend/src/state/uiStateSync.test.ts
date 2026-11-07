@@ -63,6 +63,16 @@ describe('adopting the backend state at start-up', () => {
     expect(storage.getItem('other-site')).toBe('kept');
   });
 
+  it('keeps the saved keys of a store that is gone, so a state from an older version loads as it is', async () => {
+    const old = { 'novira.logo': '{"state":{"form":{"text":"NOVA"}},"version":1}', 'novira.logoPresets': '{"state":{"presets":[]},"version":0}', 'novira.settings': 'mine' };
+    vi.spyOn(backend, 'adoptUiState').mockResolvedValue(JSON.stringify(old));
+    const save = vi.spyOn(backend, 'saveUiState').mockResolvedValue();
+    await adoptBackendUiState(storage);
+    for (const [key, value] of Object.entries(old)) expect(storage.getItem(key)).toBe(value);
+    await vi.advanceTimersByTimeAsync(DELAY * 3);
+    expect(save).not.toHaveBeenCalled();
+  });
+
   it('leaves the storage alone and sends nothing when the backend cannot be read', async () => {
     storage.setItem('novira.settings', 'mine');
     vi.spyOn(backend, 'adoptUiState').mockRejectedValue(new Error('locked'));

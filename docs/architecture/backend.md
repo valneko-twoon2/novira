@@ -36,7 +36,7 @@ The shell (`backend/src-tauri/src/`): `commands.rs` holds the IPC commands (thin
 | Folder | What |
 |---|---|
 | `service/` | What the frontend's `BackendClient` calls: one module per area on one shared state (`mod.rs`). `queue.rs`, `worker.rs` and `guidance.rs` are the job path; `model_store.rs`, `pack_store.rs`, `node_pack_store.rs` the installs; `engine_settings.rs`, `memory.rs`, `keys.rs`, `backups.rs`, `share.rs`, `assistant.rs`, `canvas.rs`, `comics.rs`, `workflows.rs`, `boards.rs`, `gallery.rs`, `browse.rs` the rest |
-| `comfy/` | ComfyUI as the engine: installed, started and owned by the app (`install.rs`, `process.rs`: loopback only), the HTTP and WebSocket client (`client.rs`), and the prompt builders (`graph.rs` for pictures, `video.rs`, `music.rs`, `logo.rs`, `user_graph.rs` for the workflow editor). `node_packs.rs` and `registry.rs` are extension packs and the ComfyUI Registry. Snapshot tests of built prompts are in `comfy/__snapshots__/graph/` |
+| `comfy/` | ComfyUI as the engine: installed, started and owned by the app (`install.rs`, `process.rs`: loopback only), the HTTP and WebSocket client (`client.rs`), and the prompt builders (`graph.rs` for pictures, `video.rs`, `music.rs`, `user_graph.rs` for the workflow editor). `node_packs.rs` and `registry.rs` are extension packs and the ComfyUI Registry. Snapshot tests of built prompts are in `comfy/__snapshots__/graph/` |
 | `models/` | Model folders under `novira-data/models`, safetensors header → kind, the installed list, install from a source, Civitai and Hugging Face search, the adult-content filter |
 | `agent/` | The AI assistant through the `claude` / `codex` CLI or an OpenAI-compatible server. It acts through the app's tools: `tools.rs` (names, schemas, checks), `mcp.rs` (the loopback tool server, `dispatch` is the one path every tool call takes), `relay.rs` (calls to the window and its answers), `prompt.rs` (what it is told) |
 | `voice/` | The voice engine: Qwen3-TTS in a worker process, its installer |
@@ -48,7 +48,7 @@ The shell (`backend/src-tauri/src/`): `commands.rs` holds the IPC commands (thin
 
 ## How a job runs
 
-The screen asks `queue` to enqueue a request; `guidance.rs` checks the mask, control layers and reference images and resolves models and pictures. The worker (`worker.rs`) takes pending jobs, builds a prompt with `comfy/graph.rs` (or `video`, `music`, `logo`, `user_graph`), sends it through `comfy/client.rs`, follows progress, stores the results (pictures, files, text) and emits events. The shell forwards the events to the window, and `frontend/src/state/wiring.ts` puts them into the stores. A queue item moves through pending, in progress, then completed, failed or canceled; pause, cancel, retry and restart are in `queue.rs` (the `/testing` skill has the transition tables).
+The screen asks `queue` to enqueue a request; `guidance.rs` checks the mask, control layers and reference images and resolves models and pictures. The worker (`worker.rs`) takes pending jobs, builds a prompt with `comfy/graph.rs` (or `video`, `music`, `user_graph`), sends it through `comfy/client.rs`, follows progress, stores the results (pictures, files, text) and emits events. The shell forwards the events to the window, and `frontend/src/state/wiring.ts` puts them into the stores. A queue item moves through pending, in progress, then completed, failed or canceled; pause, cancel, retry and restart are in `queue.rs` (the `/testing` skill has the transition tables).
 
 ## Data on disk
 

@@ -309,7 +309,7 @@ fn preview_frames_that_are_cut_short_give_no_picture() {
 // Jobs that cannot be built ----------------------------------------------------------------------------------------
 
 #[tokio::test]
-async fn logo_and_video_jobs_with_something_missing_are_refused_before_anything_is_sent() {
+async fn logo_and_video_jobs_that_cannot_run_are_refused_before_anything_is_sent() {
     let url = serve(healthy()).await;
     let engine = engine(&url);
     let with_models = |mode: &str, encoder: bool, vae: bool| {
@@ -330,10 +330,9 @@ async fn logo_and_video_jobs_with_something_missing_are_refused_before_anything_
     };
     let refused = |r: Result<(), EngineError>| r.unwrap_err().to_string();
     assert!(
-        refused(engine.validate(&with_models("logo", false, true)).await)
-            .contains("logo text encoder")
+        refused(engine.validate(&with_models("logo", true, true)).await)
+            .contains("can no longer be made")
     );
-    assert!(refused(engine.validate(&with_models("logo", true, false)).await).contains("logo VAE"));
     let mut video = with_models("video", true, true);
     video.params.scheduler = "no-such-scheduler".into();
     assert!(refused(engine.validate(&video).await).contains("is not available in ComfyUI"));

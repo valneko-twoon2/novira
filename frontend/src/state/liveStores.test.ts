@@ -7,6 +7,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { backend } from '@/backend';
 import type { BackendEvent } from '@/backend';
 import { LOCAL_ONLY_KEYS, liveKeys } from './liveStores';
+import { canRehydrate } from './rehydrate';
 import { useDrafts, type DraftGroup } from './drafts';
 import { useMangaFinish } from './mangaFinish';
 import { useParams } from './params';
@@ -101,6 +102,13 @@ describe('a running page follows another page', () => {
 });
 
 describe('which keys follow another page', () => {
+  it('has no store for the saved keys of the removed logo screen, so a change of them is never taken or retried', () => {
+    for (const key of ['novira.logo', 'novira.logoPresets']) {
+      expect(liveKeys()).not.toContain(key);
+      expect(canRehydrate(key)).toBe(false);
+    }
+  });
+
   /** Every `novira.*` text the sources name outside the tests: the keys the app writes to the storage. */
   function sourceKeys(): string[] {
     const found = new Set<string>();

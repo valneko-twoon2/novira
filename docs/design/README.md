@@ -12,11 +12,11 @@ One page per feature, each the current specification of that feature: how it beh
 | [drafts.md](drafts.md) | Drafts: candidates drawn part of the way, then finished one by one |
 | [generation-sampling.md](generation-sampling.md) | The sampler and noise schedule of a picture: the scheduler setting, a family's own, and the ComfyUI names a picture may choose |
 | [presets.md](presets.md) | Image presets, and the random preset run that queues pictures from several presets picked at random |
-| [media-generation.md](media-generation.md) | Video, music, voice and logo generation |
+| [media-generation.md](media-generation.md) | Video, music and voice generation |
 | [workflows.md](workflows.md) | The node workflow editor: saved workflows, the editor state, saving and importing a workflow file |
 | [workflow-graphs.md](workflow-graphs.md) | Running a workflow graph: the ComfyUI prompt the editor compiles, ComfyUI's own nodes in the editor, the result (picture, text, sound, video) |
 | [models.md](models.md) | Model folders, install (including the folder scan), covers, keys and tokens |
-| [model-packs.md](model-packs.md) | Model packs (video, music, voice, inpaint, logo), the starter list, hardware and fit marks |
+| [model-packs.md](model-packs.md) | Model packs (video, music, voice, inpaint), the starter list, hardware and fit marks |
 | [browse.md](browse.md) | The Browse tab: searching Civitai and Hugging Face, the settings of a model's example pictures, adult-content filtering, opening their pages |
 | [model-updates.md](model-updates.md) | The notice that an installed Civitai model has a newer version |
 | [extensions.md](extensions.md) | ComfyUI custom node packs, the ComfyUI Registry, installing ComfyUI and switching its version |

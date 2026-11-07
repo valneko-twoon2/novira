@@ -3,8 +3,6 @@
 //! - Video: Wan 2.2 "TI2V 5B" (diffusion model, text encoder, VAE).
 //! - Turbo: the 4-step distilled Wan 2.2 5B (one diffusion model; it reuses the video pack's text encoder and VAE).
 //! - Music: ACE-Step 1.5 turbo, one all-in-one checkpoint.
-//! - Logo: Z-Image-Turbo in 8-bit (diffusion model, Qwen3-4B text encoder, VAE; about 12 GB), an 8-step image model that
-//!   draws legible text.
 //!
 //! A pack lives under `<models>/<kind>/` instead of the normal model folders, so its files never show up in the lists
 //! of image models; ComfyUI sees them through one extra `extra_model_paths.yaml` section per pack. (The voice engine
@@ -24,26 +22,23 @@ pub enum PackKind {
     Music,
     Voice,
     Inpaint,
-    Logo,
 }
 
 impl PackKind {
-    pub const ALL: [PackKind; 6] = [
+    pub const ALL: [PackKind; 5] = [
         PackKind::Video,
         PackKind::Turbo,
         PackKind::Music,
         PackKind::Voice,
         PackKind::Inpaint,
-        PackKind::Logo,
     ];
 
     /// The packs ComfyUI loads files from (the voice engine runs outside ComfyUI).
-    pub const COMFY: [PackKind; 5] = [
+    pub const COMFY: [PackKind; 4] = [
         PackKind::Video,
         PackKind::Turbo,
         PackKind::Music,
         PackKind::Inpaint,
-        PackKind::Logo,
     ];
 
     /// Folder under the models folder.
@@ -54,7 +49,6 @@ impl PackKind {
             Self::Music => "music",
             Self::Voice => "voice",
             Self::Inpaint => "inpaint",
-            Self::Logo => "logo",
         }
     }
 }
@@ -160,39 +154,6 @@ pub const INPAINT_FILES: [PackFile; 1] = [PackFile {
     approx_bytes: 205_669_692,
 }];
 
-/// Z-Image-Turbo (Apache-2.0) in 8-bit floats, so the pack is about 12 GB instead of the 21 GB of the bf16 files: the
-/// diffusion model is a community repack (T5B), the text encoder and VAE are Comfy-Org's. ComfyUI upcasts the weights
-/// layer by layer, so the node graph is the same as for bf16.
-pub const LOGO_FILES: [PackFile; 3] = [
-    PackFile {
-        folder: "diffusion_models",
-        file: "z-image-turbo-fp8-e4m3fn.safetensors",
-        repo: "T5B/Z-Image-Turbo-FP8",
-        path: "z-image-turbo-fp8-e4m3fn.safetensors",
-        approx_bytes: 6_154_974_440,
-        url: None,
-        home: None,
-    },
-    PackFile {
-        folder: "text_encoders",
-        file: "qwen_3_4b_fp8_mixed.safetensors",
-        repo: "Comfy-Org/z_image_turbo",
-        path: "split_files/text_encoders/qwen_3_4b_fp8_mixed.safetensors",
-        approx_bytes: 5_631_994_051,
-        url: None,
-        home: None,
-    },
-    PackFile {
-        folder: "vae",
-        file: "ae.safetensors",
-        repo: "Comfy-Org/z_image_turbo",
-        path: "split_files/vae/ae.safetensors",
-        approx_bytes: 335_304_388,
-        url: None,
-        home: None,
-    },
-];
-
 /// The files of a ComfyUI pack; the voice engine has none.
 pub fn files(kind: PackKind) -> &'static [PackFile] {
     match kind {
@@ -201,7 +162,6 @@ pub fn files(kind: PackKind) -> &'static [PackFile] {
         PackKind::Music => &MUSIC_FILES,
         PackKind::Voice => &[],
         PackKind::Inpaint => &INPAINT_FILES,
-        PackKind::Logo => &LOGO_FILES,
     }
 }
 
@@ -241,7 +201,6 @@ pub struct Packs {
     pub music: PackStatus,
     pub voice: PackStatus,
     pub inpaint: PackStatus,
-    pub logo: PackStatus,
 }
 
 pub fn pack_root(models_dir: &Path, kind: PackKind) -> PathBuf {
@@ -324,18 +283,6 @@ pub fn video_vae_ref() -> ComfyRef {
 
 pub fn music_checkpoint_ref() -> ComfyRef {
     pack_ref(PackKind::Music, "checkpoints")
-}
-
-pub fn logo_unet_ref() -> ComfyRef {
-    pack_ref(PackKind::Logo, "diffusion_models")
-}
-
-pub fn logo_text_encoder_ref() -> ComfyRef {
-    pack_ref(PackKind::Logo, "text_encoders")
-}
-
-pub fn logo_vae_ref() -> ComfyRef {
-    pack_ref(PackKind::Logo, "vae")
 }
 
 /// The `extra_model_paths.yaml` sections that let ComfyUI load the pack files.
@@ -557,34 +504,6 @@ mod tests {
     }
 
     #[test]
-    fn the_logo_model_is_the_8_bit_build_with_its_own_folders() {
-        let yaml = extra_paths_yaml(Path::new("D:/data/models"));
-        let logo = yaml.split("novira_logo:").nth(1).unwrap();
-        for folder in ["diffusion_models", "text_encoders", "vae"] {
-            assert!(logo.contains(&format!("  {folder}: {folder}")), "{folder}");
-        }
-        assert!(LOGO_FILES
-            .iter()
-            .all(|f| url_of(f).starts_with("https://huggingface.co/")
-                && f.file.ends_with(".safetensors")));
-        assert_eq!(
-            logo_text_encoder_ref().name,
-            "qwen_3_4b_fp8_mixed.safetensors"
-        );
-        // The 8-bit files keep the pack near 12 GB; the bf16 ones were 21 GB.
-        let total: u64 = LOGO_FILES.iter().map(|f| f.approx_bytes).sum();
-        assert!((11_000_000_000..13_000_000_000).contains(&total), "{total}");
-        let dir = tempfile::tempdir().unwrap();
-        assert!(!is_installed(dir.path(), PackKind::Logo));
-        write_all(dir.path(), PackKind::Logo);
-        assert!(dir
-            .path()
-            .join("logo/diffusion_models/z-image-turbo-fp8-e4m3fn.safetensors")
-            .is_file());
-        assert_eq!(disk_status(dir.path(), PackKind::Logo), PackStatus::Ready);
-    }
-
-    #[test]
     fn the_erase_model_has_its_own_folder_and_a_direct_address() {
         let yaml = extra_paths_yaml(Path::new("D:/data/models"));
         assert!(
@@ -696,7 +615,7 @@ mod tests {
             ) && !video.contains("diffusion_models")
         );
         // A pack folder the shared root lacks gets no section; a root with no packs adds nothing.
-        assert!(!yaml.contains("novira_logo_1") && !yaml.contains("novira_inpaint_1"));
+        assert!(!yaml.contains("novira_inpaint_1"));
         let none = tempfile::tempdir().unwrap();
         assert_eq!(
             extra_paths_yaml_in(&[own.path().to_path_buf(), none.path().to_path_buf()]),
@@ -704,6 +623,24 @@ mod tests {
         );
         assert_eq!(extra_paths_yaml_in(&[]), "");
         assert_eq!(before, walk(shared.path()));
+    }
+
+    #[test]
+    fn the_folder_a_removed_pack_left_behind_is_left_alone() {
+        let own = tempfile::tempdir().unwrap();
+        let shared = tempfile::tempdir().unwrap();
+        for root in [own.path(), shared.path()] {
+            let vae = root.join("logo/vae");
+            std::fs::create_dir_all(&vae).unwrap();
+            std::fs::write(vae.join("ae.safetensors"), b"x").unwrap();
+        }
+        let before = (walk(own.path()), walk(shared.path()));
+        let yaml = extra_paths_yaml_in(&[own.path().to_path_buf(), shared.path().to_path_buf()]);
+        assert!(!yaml.contains("logo"), "{yaml}");
+        prepare_dirs(own.path()).unwrap();
+        assert!(own.path().join("logo/vae/ae.safetensors").is_file());
+        assert_eq!(before.1, walk(shared.path()));
+        assert!(walk(own.path()).len() > before.0.len());
     }
 
     fn walk(dir: &Path) -> Vec<PathBuf> {

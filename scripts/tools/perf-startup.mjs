@@ -29,7 +29,7 @@ export const ENGINE_GRACE_MS = 12_000;
 export const SPLASH_FLOOR_MS = 1800;
 /** The screens a switch run visits, in order, by the test id of their entry. */
 export const SWITCH_STEPS = ['tab-canvas', 'tab-upscaling', 'tab-workflows', 'tab-models', 'tab-browse', 'tab-queue', 'tab-extensions', 'tab-generate',
-  'media-video', 'media-music', 'media-voice', 'media-logo', 'media-text', 'media-comic', 'media-image'];
+  'media-video', 'media-music', 'media-voice', 'media-text', 'media-comic', 'media-image'];
 
 /** The median of numbers (the upper middle for an even count); null for none. */
 export function median(values) {

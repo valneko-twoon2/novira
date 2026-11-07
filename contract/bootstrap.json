@@ -484,10 +484,6 @@
     "inpaint": {
       "state": "error",
       "message": "network"
-    },
-    "logo": {
-      "state": "missing",
-      "totalBytes": 100
     }
   }
 }

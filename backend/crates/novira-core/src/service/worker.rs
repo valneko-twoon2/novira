@@ -157,13 +157,19 @@ impl Backend {
 
     fn engine_job(&self, item: &QueueItem) -> std::result::Result<EngineJob, EngineError> {
         let p = &item.params;
+        // Only a job left in the queue by an older version names this mode; its pictures keep it in their metadata.
+        if p.generation_mode == GenerationMode::Logo {
+            return Err(EngineError::Failed(
+                crate::comfy::graph::LOGO_REMOVED.into(),
+            ));
+        }
         {
             let s = self.state();
             if let Some(m) = s.models.iter().find(|m| {
                 m.key == p.model_key
                     && !matches!(
                         p.generation_mode,
-                        GenerationMode::Video | GenerationMode::Music | GenerationMode::Logo
+                        GenerationMode::Video | GenerationMode::Music
                     )
             }) {
                 let split_family = matches!(m.kind, ModelType::DiffusionModel | ModelType::Main)
@@ -190,7 +196,6 @@ impl Backend {
         }
         let is_video = p.generation_mode == GenerationMode::Video;
         let is_music = p.generation_mode == GenerationMode::Music;
-        let is_logo = p.generation_mode == GenerationMode::Logo;
         let turbo = is_video && p.model_key == packs::TURBO_KEY;
         // A video model the user installed (Wan 2.1, HunyuanVideo, LTX-Video...) is named by its key; no key, or the
         // Turbo key, is the pack's own model.
@@ -211,11 +216,6 @@ impl Backend {
                     .into(),
             ));
         }
-        if is_logo && !packs::is_installed_in(&self.inner.roots, PackKind::Logo) {
-            return Err(EngineError::Failed(
-                "The logo model is not installed yet. Install it on the Logo screen first".into(),
-            ));
-        }
         if is_music && !packs::is_installed_in(&self.inner.roots, PackKind::Music) {
             return Err(EngineError::Failed(
                 "The music model is not installed yet. Install it on the Music screen first".into(),
@@ -229,22 +229,18 @@ impl Backend {
             packs::video_unet_ref()
         } else if is_music {
             packs::music_checkpoint_ref()
-        } else if is_logo {
-            packs::logo_unet_ref()
         } else {
             self.resolve_model(&p.model_key, "Main")?
         };
         let split = if own_video.is_some() {
             own_video
-        } else if is_video || is_music || is_logo {
+        } else if is_video || is_music {
             None
         } else {
             self.split_job(&p.model_key)?
         };
         let vae = if is_video && split.is_none() {
             Some(packs::video_vae_ref())
-        } else if is_logo {
-            Some(packs::logo_vae_ref())
         } else if is_music {
             None
         } else if let Some(key) = p.vae_key.as_deref() {
@@ -261,8 +257,6 @@ impl Backend {
         };
         let text_encoder = if is_video && split.is_none() {
             Some(packs::video_text_encoder_ref())
-        } else if is_logo {
-            Some(packs::logo_text_encoder_ref())
         } else {
             None
         };
@@ -270,7 +264,7 @@ impl Backend {
         for l in p
             .loras
             .iter()
-            .filter(|l| l.is_enabled && !is_video && !is_music && !is_logo)
+            .filter(|l| l.is_enabled && !is_video && !is_music)
         {
             loras.push((self.resolve_model(&l.key, "LoRA")?, l.weight));
         }
@@ -776,12 +770,7 @@ impl Backend {
                     is_intermediate: to_canvas
                         || item.destination == QueueDestination::Intermediate
                         || item.params.draft_at.is_some(),
-                    // Logos are kept with the assets, not among the generated pictures.
-                    category: if item.params.generation_mode == GenerationMode::Logo {
-                        ImageCategory::Other
-                    } else {
-                        ImageCategory::General
-                    },
+                    category: ImageCategory::General,
                     metadata: Some(metadata),
                     workflow: item.workflow.clone(),
                 }))

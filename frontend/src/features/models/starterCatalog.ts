@@ -1,18 +1,17 @@
-// How the Starter Models tab sorts what it offers: by what it is for (making pictures, video, a logo, upscaling...) and by
+// How the Starter Models tab sorts what it offers: by what it is for (making pictures, video, upscaling...) and by
 // the family it belongs to (Anima, SDXL, Wan...). The starter models come from the backend; the media packs (video,
-// music, voice, logo...) are downloaded by their own mechanism and listed here beside them.
+// music, voice...) are downloaded by their own mechanism and listed here beside them.
 import type { BaseModel, PackKind, StarterModel } from '@/backend';
 import type { MessageKey } from '@/i18n';
 import { BASE_ORDER, VIDEO_BASES } from '@/state/models';
 
-export const STARTER_PURPOSES = ['picture', 'edit', 'video', 'logo', 'music', 'voice', 'erase', 'upscale', 'control', 'reference', 'parts'] as const;
+export const STARTER_PURPOSES = ['picture', 'edit', 'video', 'music', 'voice', 'erase', 'upscale', 'control', 'reference', 'parts'] as const;
 export type StarterPurpose = (typeof STARTER_PURPOSES)[number];
 
 export const PURPOSE_KEYS: Record<StarterPurpose, MessageKey> = {
   picture: 'models.starter.purpose.picture',
   edit: 'models.starter.purpose.edit',
   video: 'models.starter.purpose.video',
-  logo: 'models.starter.purpose.logo',
   music: 'models.starter.purpose.music',
   voice: 'models.starter.purpose.voice',
   erase: 'models.starter.purpose.erase',
@@ -31,7 +30,6 @@ export type StarterEntry =
 const PACKS: Record<PackKind, { purpose: StarterPurpose; families: BaseModel[] }> = {
   video: { purpose: 'video', families: ['wan'] },
   turbo: { purpose: 'video', families: ['wan'] },
-  logo: { purpose: 'logo', families: ['z-image'] },
   music: { purpose: 'music', families: [] },
   voice: { purpose: 'voice', families: [] },
   inpaint: { purpose: 'erase', families: [] },

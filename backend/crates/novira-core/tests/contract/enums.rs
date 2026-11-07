@@ -111,7 +111,7 @@ pub fn enums(v: &Value) {
             [Full, Style, Composition, StyleStrong, StylePrecise]
         ),
         check_enum!(v, ClipVisionModel, [VitH, VitG, VitL]),
-        check_enum!(v, PackKind, [Video, Turbo, Music, Voice, Inpaint, Logo]),
+        check_enum!(v, PackKind, [Video, Turbo, Music, Voice, Inpaint]),
         check_enum!(v, AgentProvider, [Claude, Codex, Openai]),
         check_enum!(v, AgentToolsState, [Unknown, Supported, Unsupported]),
         check_enum!(v, ComfyuiMode, [Owned, Url, Folder]),

@@ -1,7 +1,7 @@
-// Tabs at the top of the Generate and Comic left panels: what to make (image, video, music, voice, logo, text) and the
-// comic. The first six pick a media kind on the Generate tab; the comic switches the whole workspace. Icons only, so the
+// Tabs at the top of the Generate and Comic left panels: what to make (image, video, music, voice, text) and the
+// comic. The first five pick a media kind on the Generate tab; the comic switches the whole workspace. Icons only, so the
 // row fits whatever the language; the name is the tooltip and the accessible label.
-import { BookOpenText, FilmSlate, ImageSquare, MicrophoneStage, MusicNotes, Shapes, TextAa } from '@phosphor-icons/react';
+import { BookOpenText, FilmSlate, ImageSquare, MicrophoneStage, MusicNotes, TextAa } from '@phosphor-icons/react';
 import type { ReactNode } from 'react';
 import { t, type MessageKey } from '@/i18n';
 import { isScreenShown, MEDIA_KINDS, useUi, type MediaKind } from '@/state/ui';
@@ -13,7 +13,6 @@ const ICONS: Record<MediaKind, ReactNode> = {
   video: <FilmSlate size={20} />,
   music: <MusicNotes size={20} />,
   voice: <MicrophoneStage size={20} />,
-  logo: <Shapes size={20} />,
   text: <TextAa size={20} />,
 };
 
@@ -22,7 +21,6 @@ const LABELS: Record<MediaKind, MessageKey> = {
   video: 'media.tab.video',
   music: 'media.tab.music',
   voice: 'media.tab.voice',
-  logo: 'media.tab.logo',
   text: 'media.tab.text',
 };
 

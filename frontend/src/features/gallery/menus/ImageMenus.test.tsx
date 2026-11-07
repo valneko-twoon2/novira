@@ -57,6 +57,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
 function showMenu(menu: React.ReactNode) {
@@ -120,6 +121,14 @@ describe('SingleImageMenu', () => {
     }
     await choose(t('gallery.menu.loadWorkflow'));
     expect(actions.loadImageWorkflow).toHaveBeenCalled();
+  });
+
+  it('offers the text editor in the app build, which shows it, and not the video screen it hides', async () => {
+    vi.stubEnv('MODE', 'production');
+    showMenu(<SingleImageMenu image={image()} />);
+    const menu = (await screen.findAllByRole('menu'))[0]!;
+    expect(within(menu).getByText(t('gallery.menu.sendToText'))).toBeTruthy();
+    expect(within(menu).queryByText(t('gallery.menu.sendToVideo'))).toBeNull();
   });
 
   it('sends the picture to the other tabs', async () => {

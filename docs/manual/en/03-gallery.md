@@ -19,7 +19,7 @@ The row above the thumbnails has the following.
 - The upward arrow button: {{ui:gallery.upload}}
 
 **{{ui:gallery.view.images}}** holds the pictures made in novira (including video and audio).
-**{{ui:gallery.view.assets}}** holds images you uploaded and things such as logos that are treated as "material separate from your works". If a picture seems to be missing, look at the other one.
+**{{ui:gallery.view.assets}}** holds images you uploaded and things such as logos made with an earlier version that are treated as "material separate from your works". If a picture seems to be missing, look at the other one.
 
 You can change the size of the thumbnails with the slider on the gear button.
 Thumbnails for video and audio carry a play mark, and if you hover over one and move the cursor sideways, you can check the scene at that position.
@@ -122,7 +122,7 @@ When you right-click a thumbnail, a list of the operations available for that pi
 | **{{ui:gallery.menu.star}}** / **{{ui:gallery.menu.unstar}}** | Adds or removes a star |
 | **{{ui:gallery.menu.delete}}** (`Del`) | Deletes the picture |
 
-How to use "{{ui:gallery.menu.sendToCanvas}}" and the operations for remaking or improving a picture are explained in [Drawing More on the Canvas](05-canvas.md), [Fixing and Reusing Pictures](04-improve.md), [Upscaling and Workflows](06-upscaling-workflows.md) and [Video, Music, Voice, Logos and Text](07-media.md).
+How to use "{{ui:gallery.menu.sendToCanvas}}" and the operations for remaking or improving a picture are explained in [Drawing More on the Canvas](05-canvas.md), [Fixing and Reusing Pictures](04-improve.md), [Upscaling and Workflows](06-upscaling-workflows.md) and [Video, Music, Voice and Text](07-media.md).
 
 > Only when you are using it in a computer's web browser does "{{ui:gallery.menu.openInNewTab}}" also appear. It does not appear in the desktop version.
 

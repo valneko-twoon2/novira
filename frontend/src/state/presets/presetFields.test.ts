@@ -2,13 +2,11 @@
 // are typed over the form, so a field added to a form does not compile until it is placed (the video presets once
 // forgot the installed model: a preset made with Wan came back on the standard model).
 import { describe, expect, it } from 'vitest';
-import type { LogoForm } from '../media/logo';
 import type { MusicForm } from '../media/music';
 import type { VideoForm } from '../media/video';
 import type { VoiceForm } from '../media/voice';
 import type { ParamsFields } from '../params';
 import { PRESET_FIELDS } from './imagePresets';
-import { LOGO_PRESET_FIELDS } from './logoPresets';
 import { MUSIC_PRESET_FIELDS } from './musicPresets';
 import { VIDEO_PRESET_FIELDS } from './videoPresets';
 import { VOICE_PRESET_FIELDS } from './voicePresets';
@@ -95,15 +93,6 @@ const VOICE: Record<keyof VoiceForm, true | string> = {
   instruct: true,
 };
 
-const LOGO: Record<keyof LogoForm, true | string> = {
-  text: 'the lettering belongs to each logo',
-  style: true,
-  size: true,
-  count: true,
-  seed: SEED,
-  randomizeSeed: SEED,
-};
-
 const kept = (table: Record<string, true | string>) => Object.keys(table).filter((k) => table[k] === true).sort();
 
 describe('what a preset keeps', () => {
@@ -112,7 +101,6 @@ describe('what a preset keeps', () => {
     ['video', VIDEO, VIDEO_PRESET_FIELDS],
     ['music', MUSIC, MUSIC_PRESET_FIELDS],
     ['voice', VOICE, VOICE_PRESET_FIELDS],
-    ['logo', LOGO, LOGO_PRESET_FIELDS],
   ] as const)('%s: saves exactly the fields marked true', (_kind, table, fields) => {
     expect([...fields].sort()).toEqual(kept(table));
   });
