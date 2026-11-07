@@ -26,6 +26,7 @@ How the project is started and checked, and where the rules and skills are; what
 | `layout-scan.mjs`, `e2e-lock.mjs` | The layout scan (with text fit) and its pass record; the lock for one heavy Playwright run at a time |
 | `e2e/a11y.spec.ts` (`e2e/a11yKnown.ts`) | axe-core (WCAG A/AA, no contrast) on each main tab: fails beyond the known list, which only shrinks |
 | `worktree.mjs` | Makes and removes a subagent worktree |
+| `repeat-test.mjs` | Runs one command N times (default 20, `--parallel` for load) to catch a flaky or racy test; the first failure's output is kept in `logs/repeat-test/` |
 | `prune-stale.mjs` | Deletes stale entries of `novira-data/work/` and `logs/` (below) |
 | `prune-target.mjs` | Daily, before the Rust checks: `cargo clean --profile dev` past 50 GB, unless a program runs from it |
 | `verify-real-app.mjs`, `models-live.mjs`, `gpu-check.mjs`, `harness-paths.mjs`, `harness-process.mjs`, `server-run.mjs` | The real app (or browser server), or one engine job, isolated (`docs/verification.md`); a worktree uses the main checkout's `novira-data/` and `logs/`; they stop when the GPU is busy. Shared: paths, the harness build (every screen in), processes, cargo |
