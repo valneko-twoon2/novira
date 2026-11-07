@@ -3541,6 +3541,7 @@ dependencies = [
  "hyper-util",
  "image",
  "novira-core",
+ "proptest",
  "qrcode",
  "rcgen",
  "ring",
