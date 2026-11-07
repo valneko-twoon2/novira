@@ -20,6 +20,13 @@
   flex-basis: 92px;
 }
 
+/* The smallest window at the largest zoom: the label takes a row of its own (see ui.css). */
+@media (max-width: 320px) {
+  .pp .ui-field--horizontal > .ui-field__label {
+    flex-basis: 100%;
+  }
+}
+
 .pp-spacer {
   flex: 1;
 }

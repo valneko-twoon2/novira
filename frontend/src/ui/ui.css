@@ -422,6 +422,17 @@
   flex: 0 0 96px;
 }
 
+/* At the smallest window and the largest zoom (240 CSS pixels) a label and its control do not fit side by side: stack them. */
+@media (max-width: 320px) {
+  .ui-field--horizontal {
+    flex-wrap: wrap;
+  }
+
+  .ui-field--horizontal > .ui-field__label {
+    flex-basis: 100%;
+  }
+}
+
 .ui-field--vertical {
   flex-direction: column;
   gap: var(--space-1);
