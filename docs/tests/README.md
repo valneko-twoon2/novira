@@ -35,20 +35,20 @@ CI のジョブは、`.github/workflows/test.yml`（`static`、`rust-format`、`
 
 | 手法 | 層 |
 |---|---|
-| 単体、部品 | [Logic](logic.md)、[UI](ui.md)、[Core](core.md)、[Mock](mock.md)、[Shell](shell.md) |
-| 結合 | [Core](core.md)、[Server](server.md) |
-| 契約、ノード定義の契約 | [Wire](wire.md)、[Core](core.md) |
-| スナップショット | [Logic](logic.md)、[Core](core.md) |
-| 性質ベース、モデルベース、状態遷移 | [Logic](logic.md)、[Core](core.md) |
-| ファジング（バイト列、コマンド、リクエスト） | [Core](core.md)、[Server](server.md) |
-| 差分（モックと本物） | [Mock](mock.md) |
-| クラッシュ時の整合性、旧データ | [Core](core.md)、[Build](build.md) |
-| E2E、モンキー、ブラウザー横断、見た目、レイアウト、アクセシビリティ | [UI](ui.md) |
-| リリース確認、依存関係の監査 | [Build](build.md) |
-| セキュリティ、秘密情報 | [Shell](shell.md)、[Core](core.md) |
-| 実エンジン、実アプリ、モデル一括確認、性能の測定 | [App](app.md) |
-| 型、lint、文書、テストの衛生、影響分析、カバレッジ | [Repo](repo.md) |
-| ミューテーション | [Core](core.md) |
+| 単体・部品テスト / Unit, component | [Logic](logic.md)、[UI](ui.md)、[Core](core.md)、[Mock](mock.md)、[Shell](shell.md) |
+| 結合テスト / Integration | [Core](core.md)、[Server](server.md) |
+| 契約・ノード定義の契約 / Contract, node-definition contract | [Wire](wire.md)、[Core](core.md) |
+| スナップショット / Snapshot | [Logic](logic.md)、[Core](core.md) |
+| 性質ベース・モデルベース・状態遷移 / Property-based, model-based, state transition | [Logic](logic.md)、[Core](core.md) |
+| ファジング（バイト列・コマンド・リクエスト） / Fuzzing (bytes, commands, requests) | [Core](core.md)、[Server](server.md) |
+| 差分テスト / Differential | [Mock](mock.md) |
+| クラッシュ時の整合性・旧データ / Crash consistency, old data | [Core](core.md)、[Build](build.md) |
+| E2E・モンキー・ブラウザー横断・見た目・レイアウト・アクセシビリティ / End-to-end, monkey, cross-browser, visual, layout, accessibility | [UI](ui.md) |
+| リリース確認・依存関係の監査 / Release smoke, dependency audit | [Build](build.md) |
+| セキュリティ・秘密情報 / Security, secret scan | [Shell](shell.md)、[Core](core.md) |
+| 実エンジン・実アプリ・モデル一括確認・性能の測定 / Real-engine, real-app, models sweep, performance | [App](app.md) |
+| 型・lint・文書・テストの衛生・影響分析・カバレッジ / Type, lint, docs, test hygiene, impact analysis, coverage | [Repo](repo.md) |
+| ミューテーション / Mutation | [Core](core.md) |
 
 ## 未実装
 

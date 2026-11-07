@@ -4,7 +4,7 @@
 
 | 手法 | ここで確かめること | 場所 | 実行 | CI |
 |---|---|---|---|---|
-| 契約 | 両側が、通信で使うすべての型について同じ JSON のサンプルを読み書きする。IPC のコマンド一覧が、権限ファイルと等しいことも確かめる | `contract/`、`frontend/src/backend/contract.test.ts`、`frontend/src/backend/tauri/commands.contract.test.ts`、`backend/crates/novira-core/tests/contract/` | `npx vitest run src/backend/contract.test.ts src/backend/tauri`、`cargo test -p novira-core --test contract` | `vitest`、`cargo-test` |
+| 契約テスト / Contract | 両側が、通信で使うすべての型について同じ JSON のサンプルを読み書きする。IPC のコマンド一覧が、権限ファイルと等しいことも確かめる | `contract/`、`frontend/src/backend/contract.test.ts`、`frontend/src/backend/tauri/commands.contract.test.ts`、`backend/crates/novira-core/tests/contract/` | `npx vitest run src/backend/contract.test.ts src/backend/tauri`、`cargo test -p novira-core --test contract` | `vitest`、`cargo-test` |
 
 サンプルを変えたら `CONTRACT_UPDATE=1 npx vitest run src/backend/contract.test.ts` で作り直し、差分を読んでから Rust 側の検査も回す。
 
