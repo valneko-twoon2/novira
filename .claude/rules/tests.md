@@ -23,6 +23,12 @@ Follow this when changing `frontend/` or `backend/`. How to choose the cases (pa
 | A rename or move | Move the tests, their names and `describe` blocks too (tests sit next to the code) |
 | The contract (`types.ts`, `types.rs`) | Align `contract/samples/` and the Rust checks; regenerate the fixtures with `CONTRACT_UPDATE=1` |
 | Graph-building code | A snapshot (`*.snapshot.test.ts`; Rust `graph_snapshots*.rs`, also checked against `node-defs.json`) |
+| Code that parses, validates or reads outside data (a file, a model header, a command argument, a request, the engine's reply) | Hostile-input cases (`security.md`) and a property test (proptest `tests/prop_*.rs`, fast-check `*.property.test.ts`); a new file format or reader also gets a case in `tests/fuzz_inputs.rs`, a new command one in `tests/backend_service/api_fuzz.rs`, a new HTTP route one in `backend/crates/novira-server/tests/http_fuzz.rs` |
+| A store, queue, session or other state with a lifecycle | A transition table with a test per reachable cell (`/testing`, `state-machines.md`); the queue and stores also the model-based test (`tests/prop_queue.rs`, `prop_db.rs`) |
+| A call added or changed in `MockBackend` or the backend | The difference test (`frontend/difftest/`, `node scripts/tools/diff-backends.mjs`) agrees, or the call is left out with the reason |
+| A write in several steps (restore, install, move, migrate) | A test that fails one step and checks the data is whole and no leftover remains (`tests/restore_stage_failures.rs` is the shape) |
+| A change to what is stored on disk | A copy of the old data folder still opens (`tests/backend_service/old_data.rs`); a new fixture at the release that changes the stored form |
+| A new screen or dialog | Add it to the lists of the monkey run (`RUNS` in `e2e/monkey.spec.ts`), the axe check (`TABS` or `SURFACES` in `e2e/a11y.spec.ts`) and the layout scan (`e2e/layout.spec.ts`) |
 
 Where tests go: `*.test.ts(x)` next to the code (vitest); whole-source rules in `frontend/tests/`; flows in `frontend/e2e/*.spec.ts` (Playwright on the mock); `#[cfg(test)]` in each `.rs` (a long file: `mod tests;` with `<name>/tests.rs` beside it); Rust integration in `backend/crates/novira-core/tests/`; `tests/*_live.rs` (`#[ignore]`) touches external services or the real engine and runs only when asked. One responsibility per test file; split a file that would mix areas or pass about 500 lines.
 
