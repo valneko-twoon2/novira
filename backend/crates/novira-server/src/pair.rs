@@ -589,4 +589,6 @@ pub fn session_set_cookie(port: u16, secret: &str) -> Option<HeaderValue> {
 }
 
 #[cfg(test)]
+mod model_tests;
+#[cfg(test)]
 pub(crate) mod tests;
