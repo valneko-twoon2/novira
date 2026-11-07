@@ -111,16 +111,21 @@ const DESIGNED: { name: string; reason: string; explains: (s: Seen) => boolean }
     reason: 'Rust reads an absent Option field, or one with #[serde(default)], as None or the default; TypeScript declares the key required (or the default is written back).',
     explains: ({ c, ts, rust }) => {
       if (!rust.accept) return false;
-      const dropped = c.mutations.some((m) => ['drop', 'strip-half'].includes(nameOf(m)));
+      const dropped = c.mutations.some((m) => ['drop', 'strip-half', 'wrong-type'].includes(nameOf(m)));
       if (!dropped) return false;
       if (!ts.accept) return ts.got === 'missing';
       return subset(ts.out, rust.out); // Rust wrote the default back where TypeScript leaves the key out
     },
   },
   {
+    name: 'rust-keeps-the-graph-as-json',
+    reason: 'EnqueueRequest and QueueItem keep `comfyGraph.prompt` as serde_json::Value (the engine own JSON, passed through); TypeScript describes each node, and Rust refuses a bad node only later, when the engine does.',
+    explains: ({ fixture, c, ts, rust }) => ['enqueue-request', 'queue-item'].includes(fixture) && rust.accept && !ts.accept && ts.path.startsWith('/comfyGraph/prompt') && c.mutations.some((m) => touches(m, ts.path)),
+  },
+  {
     name: 'rust-string-where-ts-union',
     reason: 'Rust keeps some enums as String (scheduler, category, site, quality, the settings package; listed in tests/contract/main.rs); TypeScript has the union of literals and refuses any other text.',
-    explains: ({ c, ts, rust }) => rust.accept && !ts.accept && ts.got === 'string' && c.mutations.some((m) => ['enum-unknown', 'empty-string', 'enum-swap'].includes(nameOf(m)) && touches(m, ts.path)),
+    explains: ({ c, ts, rust }) => rust.accept && !ts.accept && ts.got === 'string' && c.mutations.some((m) => ['enum-unknown', 'empty-string', 'enum-swap', 'wrong-type'].includes(nameOf(m)) && touches(m, ts.path)),
   },
   {
     name: 'rust-keeps-unknown-fields',
@@ -133,8 +138,8 @@ const DESIGNED: { name: string; reason: string; explains: (s: Seen) => boolean }
     // plainly the wrong shape is accepted. A fix needs a custom Deserialize (or a check of the JSON kind) per type, which
     // is more than one line, so it is reported and left.
     name: 'known-bug-rust-reads-an-array-as-a-struct',
-    reason: 'Rust accepts [] (all fields optional) where the type is an object.',
-    explains: ({ c, ts, rust }) => rust.accept && !ts.accept && ts.path === '' && ts.got === 'array' && c.mutations.some((m) => nameOf(m) === 'wrong-type' && pointerOf(m) === '/'),
+    reason: 'Rust accepts [] (all fields optional) where the type is an object, at the top or nested.',
+    explains: ({ c, ts, rust }) => rust.accept && !ts.accept && ts.got === 'array' && c.mutations.some((m) => nameOf(m) === 'wrong-type' && touches(m, ts.path)),
   },
   {
     name: 'ts-has-no-integer-type',

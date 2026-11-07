@@ -208,9 +208,9 @@ function main() {
   const count = Number(opt('--cases', DEFAULT_CASES));
   const seed = Number(opt('--seed', DEFAULT_SEED));
   if (!Number.isInteger(count) || count < 1 || count > 5000 || !Number.isInteger(seed)) throw new Error('bad --cases or --seed');
-  const work = harnessRoots(REPO).work;
+  const works = [harnessRoots(REPO).work, path.join(REPO, 'novira-data', 'work')];
   const custom = path.relative(path.join(REPO, 'contract', 'corpus'), out) !== '';
-  if (custom && !path.resolve(out).startsWith(work + path.sep)) throw new Error('--out must be a folder under the harness work folder (novira-data/work/)');
+  if (custom && !works.some((w) => out.startsWith(w + path.sep))) throw new Error('--out must be a folder under the harness work folder (novira-data/work/)');
   fs.mkdirSync(out, { recursive: true });
   for (const [fixture, cases] of Object.entries(generate(path.join(REPO, 'contract'), { seed, count }))) {
     fs.writeFileSync(path.join(out, `${fixture}.jsonl`), toLines(cases));
