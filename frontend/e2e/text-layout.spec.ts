@@ -55,3 +55,37 @@ test('the run button comes first in the left column and the candidates appear un
   await page.getByTestId('text-layers').getByText(msg('text.layers.clear')).click();
   await expect(strip).toHaveCount(0);
 });
+
+test('the quick bar sits over the selected layer, edits it, and steps aside while the layer is dragged', async ({ page }) => {
+  await openText(page);
+  await page.getByTestId('text-add-text').click();
+  const bar = page.getByTestId('text-bar');
+  await expect(bar).toBeVisible();
+
+  // Over the layer: the bar's bottom edge is above the letters' center, which is the center of the sheet.
+  const sheet = await page.getByTestId('text-overlay').boundingBox();
+  const barBox = await bar.boundingBox();
+  expect(barBox!.y + barBox!.height).toBeLessThan(sheet!.y + sheet!.height / 2);
+
+  // A size typed in the bar is the size in the layer's own settings.
+  const quick = bar.getByRole('spinbutton', { name: msg('text.size') });
+  await quick.fill('200');
+  await quick.blur();
+  await expect(page.getByTestId('text-props').getByRole('spinbutton', { name: msg('text.size') })).toHaveValue('200');
+
+  // Dragging hides the bar until the pointer is released.
+  const x = sheet!.x + sheet!.width / 2;
+  const y = sheet!.y + sheet!.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + 40, y + 30, { steps: 4 });
+  await expect(bar).toHaveCount(0);
+  await page.mouse.up();
+  await expect(bar).toBeVisible();
+
+  // Duplicate and delete are in the bar too.
+  await bar.getByRole('button', { name: msg('text.layer.duplicate') }).click();
+  await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(2);
+  await page.getByTestId('text-bar').getByRole('button', { name: msg('text.layer.delete') }).click();
+  await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(1);
+});
