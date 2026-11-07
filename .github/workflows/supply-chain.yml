@@ -1,0 +1,64 @@
+# Two supply-chain checks beside audit.yml: `cargo deny` (licences, banned or wildcard dependencies, unknown registries
+# and git sources, from backend/deny.toml) and `gitleaks` (a secret in the files or in the whole git history, from
+# .gitleaks.toml). Advisories stay with audit.yml and backend/.cargo/audit.toml.
+# It runs by hand and weekly only, not on a push: a new check joins the push checks once it is seen to pass on the
+# runner (docs/design/ci.md). The tools are version-pinned release binaries whose sha256 is checked before they run.
+# Only actions of GitHub's own (actions/*) are used; nothing here has a secret or write access.
+name: supply-chain
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '43 3 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supply-chain-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cargo-deny:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install cargo-deny 0.20.2
+        run: |
+          set -euo pipefail
+          name=cargo-deny-0.20.2-x86_64-unknown-linux-musl
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/$name.tar.gz" "https://github.com/EmbarkStudios/cargo-deny/releases/download/0.20.2/$name.tar.gz"
+          echo "9f12ed4c49936e09b48bf862b595cde2fe64fcbd9d74dfacac6131ca824c8d5f  $RUNNER_TEMP/$name.tar.gz" | sha256sum -c -
+          mkdir "$RUNNER_TEMP/cargo-deny"
+          tar -xzf "$RUNNER_TEMP/$name.tar.gz" -C "$RUNNER_TEMP/cargo-deny" --strip-components=1 "$name/cargo-deny"
+          echo "$RUNNER_TEMP/cargo-deny" >> "$GITHUB_PATH"
+
+      # The toolchain file of backend/ is what cargo reads here, as in the other Rust jobs.
+      - name: cargo deny (bans, licenses, sources)
+        working-directory: backend
+        run: cargo-deny --locked check --hide-inclusion-graph bans licenses sources
+
+  gitleaks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      # The whole history, so a secret that was committed and later removed is found too.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Install gitleaks 8.30.1
+        run: |
+          set -euo pipefail
+          name=gitleaks_8.30.1_linux_x64
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/$name.tar.gz" "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/$name.tar.gz"
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  $RUNNER_TEMP/$name.tar.gz" | sha256sum -c -
+          mkdir "$RUNNER_TEMP/gitleaks"
+          tar -xzf "$RUNNER_TEMP/$name.tar.gz" -C "$RUNNER_TEMP/gitleaks" gitleaks
+          echo "$RUNNER_TEMP/gitleaks" >> "$GITHUB_PATH"
+
+      # --redact keeps a found value out of the public run log.
+      - name: gitleaks (history and tree)
+        run: gitleaks detect --source . --config .gitleaks.toml --no-banner --redact

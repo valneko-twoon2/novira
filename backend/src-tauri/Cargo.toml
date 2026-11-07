@@ -4,6 +4,7 @@ version.workspace = true
 description = "novira desktop shell"
 edition = "2021"
 license = "Apache-2.0"
+publish = false
 
 [lints]
 workspace = true

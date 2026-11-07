@@ -1,0 +1,44 @@
+# cargo-deny policy (docs/design/ci.md, "Supply chain"): bans, licenses and sources only. Advisories stay with
+# `cargo audit` and .cargo/audit.toml, so the judged list has one home. Run by hand:
+#   cargo deny --manifest-path backend/Cargo.toml check bans licenses sources
+# Written for cargo-deny 0.20 (the version the supply-chain workflow pins).
+
+# The app ships on Windows only, so the graph is the Windows one; the Linux and macOS crates in Cargo.lock (GTK, objc2)
+# never reach a build and are not judged.
+[graph]
+targets = [{ triple = "x86_64-pc-windows-msvc" }]
+
+[licenses]
+# The licences of everything in the Windows graph, checked against `cargo deny list` and the notices that ship with the
+# app (frontend/src/features/settings/ossLicenses.json). A crate under any other licence fails the run: that is a
+# decision for the owner, not an entry to add here.
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Unicode-3.0",
+    "BSD-3-Clause",
+    "BSD-2-Clause",
+    "ISC",
+    "Zlib",
+    "MPL-2.0",
+    "Unlicense",
+    "CC0-1.0",
+    "0BSD",
+    "BSL-1.0",
+    "MIT-0",
+    "CDLA-Permissive-2.0",
+]
+confidence-threshold = 0.9
+
+[bans]
+# Two versions of one crate are common while a dependency tree moves; they are shown, not failed.
+multiple-versions = "warn"
+wildcards = "deny"
+# The workspace crates depend on each other by path, which is a wildcard version to cargo-deny.
+allow-wildcard-paths = true
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []
