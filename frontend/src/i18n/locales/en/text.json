@@ -7,7 +7,7 @@
   "text.zoom.in": "Zoom in",
   "text.zoom.out": "Zoom out",
   "text.zoom.fit": "Fit to screen",
-  "text.hint.empty": "Use Add text or a speech bubble on the left to put text on the image.",
+  "text.hint.empty": "Use Add text or Add bubble above to put text on the picture.",
   "text.add.text": "Add text",
   "text.add.bubble": "Add a speech bubble",
   "text.defaultText": "LOGO",
@@ -95,7 +95,6 @@
   "text.bubble.tail.hint": "Drag the round handle on the canvas to move the tip of the pointer.",
   "text.bubble.shuffle": "Reshuffle the spikes",
   "text.bubble.autoFit": "Shrink the text to fit the bubble",
-  "text.rich.title": "Finish with AI",
   "text.rich.look": "Look",
   "text.rich.look.gold": "Gold",
   "text.rich.look.fire": "Fire",
@@ -119,5 +118,7 @@
   "text.rich.stale": "The text changed, so this fill is not used.",
   "text.rich.redo": "Redo",
   "text.rich.clear": "Back to the plain fill",
-  "text.rich.failed": "Could not finish the text"
+  "text.rich.failed": "Could not finish the text",
+  "text.rich.select": "Select a text layer to finish it.",
+  "text.rich.details": "Finish details"
 }

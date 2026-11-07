@@ -125,6 +125,19 @@ const SURFACES: Record<string, Surface> = {
   'music screen': media('music'),
   'voice screen': media('voice'),
   'text screen': media('text'),
+  // A text layer and a bubble, the layer finished with AI: the layer stack in the right column, the candidates strip and the folded sections.
+  'text screen with layers and candidates': async (page, _locale, scan) => {
+    await page.getByTestId('media-text').click();
+    await page.getByTestId('text-add-text').click();
+    await page.getByTestId('text-add-bubble').click();
+    await page.getByRole('menuitem').first().click();
+    await page.getByTestId('text-layers').locator('li').last().getByRole('button').first().click();
+    await page.getByTestId('text-rich-run').click();
+    await expect(page.getByTestId('text-candidates')).toBeVisible({ timeout: 30_000 });
+    await expandSections(page);
+    await settle(page);
+    await scan('text layers', ALL);
+  },
   'settings menu': async (page, locale, scan) => {
     await openSettingsMenu(page, locale);
     await scan('menu');

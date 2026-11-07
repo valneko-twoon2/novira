@@ -173,7 +173,7 @@
 
 ## テキスト（文字と吹き出し）
 
-![テキストの画面。左に文字を追加するボタン・背景・レイヤー・文字のスタイル、真ん中に編集中の画像が出る](shot:media-text)
+![テキストの画面。左に仕上げるボタンと文字の設定、真ん中に追加ボタンと編集中の画像、右にレイヤーが出る](shot:media-text)
 
 **{{ui:media.tab.text}}** は、画像に文字や吹き出しを入れて、画像として保存する編集画面です。文字と吹き出しを描くだけなら、モデルのダウンロードも画像を作る処理も要らず、すぐに使えます。文字をリッチに仕上げたいときだけ、AI を使います（[AI で仕上げる](#ai-で仕上げる)）。
 
@@ -189,8 +189,10 @@
 
 ### 文字と吹き出しを足す
 
+真ん中の画面の上にあるボタンで足します。
+
 - **{{ui:text.add.text}}**：文字のレイヤーを足します。
-- **{{ui:text.add.bubble}}**：吹き出しを足します。形は **{{ui:text.shape.round}}**・**{{ui:text.shape.box}}**・**{{ui:text.shape.cloud}}**・**{{ui:text.shape.burst}}**・**{{ui:text.shape.whisper}}**・**{{ui:text.shape.narration}}** から選びます。
+- **{{ui:text.add.bubble}}**：吹き出しを足します。メニューから、形を **{{ui:text.shape.round}}**・**{{ui:text.shape.box}}**・**{{ui:text.shape.cloud}}**・**{{ui:text.shape.burst}}**・**{{ui:text.shape.whisper}}**・**{{ui:text.shape.narration}}** の中から選びます。
 
 足したものは、画面の中でドラッグして動かせます。選ぶと四隅に丸いつまみが出て、ドラッグで大きさを変えられます。吹き出しには「{{ui:text.bubble.tail}}」があり、先のつまみをドラッグして向きを変えます。
 
@@ -198,13 +200,13 @@
 
 ### レイヤー
 
-足した文字と吹き出しは、**{{ui:text.layers.title}}** に重なりの順で並びます。一覧の上にあるものほど手前です。
+足した文字と吹き出しは、右の列のギャラリーの下にある **{{ui:text.layers.title}}** に、重なりの順で並びます。一覧の上にあるものほど手前です。
 
 1 つずつ、**{{ui:text.layer.hide}}**、**{{ui:text.layer.lock}}**、**{{ui:text.layer.up}}**・**{{ui:text.layer.down}}** での順番の入れ替え、**{{ui:text.layer.duplicate}}**、**{{ui:text.layer.delete}}** ができます。**{{ui:text.layers.clear}}** で、まとめて消せます。
 
 ### 文字を整える
 
-レイヤーを選ぶと、その下に設定が出ます。
+レイヤーを選ぶと、左の列に設定の欄が出ます。
 
 | 項目 | 内容 |
 |---|---|
@@ -228,19 +230,19 @@
 
 ### AI で仕上げる
 
-文字のレイヤーを選ぶと、設定の下に **{{ui:text.rich.title}}** が出ます（吹き出しには出ません）。金や炎のような仕上がりに、文字を AI に塗らせます。
+金や炎のような仕上がりに、文字を AI に塗らせます。左の列の一番上に **{{ui:text.rich.run}}** のボタンがあり、文字のレイヤーを選んでいるときに押せます（吹き出しや何も選んでいないときは押せません）。
 
 1. **{{ui:text.rich.look}}** を選びます（{{ui:text.rich.look.gold}}・{{ui:text.rich.look.fire}}・{{ui:text.rich.look.ice}}・{{ui:text.rich.look.neon}}・{{ui:text.rich.look.stone}}・{{ui:text.rich.look.candy}}・{{ui:text.rich.look.chrome}}）。もう一度押すと外れます。
 2. 足したい要素があれば、**{{ui:text.rich.words}}** に英語のタグで書きます（例：dragon scales, sparkles）。
-3. **{{ui:text.rich.run}}** を押します。**{{ui:text.rich.count}}** の数だけ、順番に絵ができます。途中で **{{ui:text.rich.cancel}}** を押すと止まります。
+3. **{{ui:text.rich.run}}** を押します。ボタンの右の数（**{{ui:text.rich.count}}**）だけ、順番に絵ができます。途中で、その右の **{{ui:text.rich.cancel}}** を押すと止まります。
 
-できた絵は **{{ui:text.rich.candidates}}** に並び、押したものが文字の塗りになります。縁取りと影は、これまでどおり文字のスタイルから描かれるので、色や太さは作り直さずに変えられます。大きさを変えても作り直しは要りません。
+できた絵は、画面の下の **{{ui:text.rich.candidates}}** の帯に並び、押したものが文字の塗りになります。縁取りと影は、これまでどおり文字のスタイルから描かれるので、色や太さは作り直さずに変えられます。大きさを変えても作り直しは要りません。
 
 | 項目 | 内容 |
 |---|---|
 | {{ui:text.rich.model}} | 描くモデル。**{{ui:text.rich.model.auto}}** なら、文字の輪郭を読む ControlNet が入っているモデルを選びます |
-| {{ui:text.rich.strength}} | 大きいほど絵が派手になり、文字の形からは離れやすくなります |
-| {{ui:text.rich.spill}} | 炎や光が文字の外へはみ出す広さ。0 なら文字の中だけです |
+| {{ui:text.rich.strength}}（**{{ui:text.rich.details}}** の中） | 大きいほど絵が派手になり、文字の形からは離れやすくなります |
+| {{ui:text.rich.spill}}（**{{ui:text.rich.details}}** の中） | 炎や光が文字の外へはみ出す広さ。0 なら文字の中だけです |
 
 文字の内容や書体、字間などを変えると、その絵は使われなくなり（元の塗りに戻って見えます）、**{{ui:text.rich.redo}}** が出ます。変更を元に戻せば、絵もそのまま戻ります。**{{ui:text.rich.clear}}** で、AI の塗りを外せます。
 

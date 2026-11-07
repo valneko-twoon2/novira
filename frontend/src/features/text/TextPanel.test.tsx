@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
-// The Text tab's side panel: adding layers, the background, the layer list and the property controls of text and bubbles.
+// The Text tab's side panel with the add buttons (canvas toolbar) and the layer list (right column) it works with: adding layers, the
+// background, the layer list and the property controls of text and bubbles.
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { t } from '@/i18n';
@@ -7,6 +8,8 @@ import { useGallery } from '@/state/gallery';
 import { useTextEditor } from '@/state/text/textEditor';
 import { EMPTY_SCENE, type BubbleLayer, type TextLayer } from '@/state/text/textModel';
 import { TooltipProvider } from '@/ui';
+import { TextAddBar } from './TextAddBar';
+import { TextLayersPanel } from './TextLayersPanel';
 import { TextPanel } from './TextPanel';
 
 const initial = { editor: useTextEditor.getState(), gallery: useGallery.getState() };
@@ -21,7 +24,9 @@ beforeEach(() => {
   useGallery.setState({ ...initial.gallery, images: [], viewerImageName: null }, true);
   render(
     <TooltipProvider>
+      <TextAddBar />
       <TextPanel />
+      <TextLayersPanel />
     </TooltipProvider>,
   );
 });
@@ -38,6 +43,11 @@ const setNum = (label: string, value: number) => {
   fireEvent.blur(input);
 };
 const color = (label: string) => screen.getAllByLabelText(label).find((e) => (e as HTMLInputElement).type === 'color') as HTMLInputElement;
+/** Adds a bubble of a shape through the toolbar's menu. */
+const addBubble = (shape: string) => {
+  fireEvent.pointerDown(screen.getByTestId('text-add-bubble'), { button: 0, ctrlKey: false });
+  fireEvent.click(screen.getByRole('menuitem', { name: t(`text.shape.${shape}` as 'text.shape.round') }));
+};
 const click = (label: string) => fireEvent.click(screen.getByText(label));
 const check = (label: string) => fireEvent.click(screen.getAllByLabelText(label).find((e) => (e as HTMLInputElement).type === 'checkbox')!);
 
@@ -48,7 +58,7 @@ describe('adding layers', () => {
     expect(state().selectedId).toBe(layers()[0]!.id);
     expect(screen.getByTestId('text-props')).toBeTruthy();
     expect(screen.queryByTestId('bubble-controls')).toBeNull();
-    for (const shape of ['round', 'box', 'cloud', 'burst', 'whisper', 'narration']) fireEvent.click(screen.getByTestId(`text-add-${shape}`));
+    for (const shape of ['round', 'box', 'cloud', 'burst', 'whisper', 'narration']) addBubble(shape);
     expect(layers().map((l) => l.type)).toEqual(['text', 'bubble', 'bubble', 'bubble', 'bubble', 'bubble', 'bubble']);
     expect(screen.getByTestId('bubble-controls')).toBeTruthy();
   });
@@ -90,7 +100,7 @@ describe('the layer list', () => {
   it('selects, hides, locks, reorders, duplicates and deletes layers, and clears them all', () => {
     expect(screen.getByText(t('text.layers.empty'))).toBeTruthy();
     fireEvent.click(screen.getByTestId('text-add-text'));
-    fireEvent.click(screen.getByTestId('text-add-round'));
+    addBubble('round');
     const [first, second] = layers();
     fireEvent.click(screen.getByTestId(`text-layer-${first!.id}`));
     expect(state().selectedId).toBe(first!.id);
@@ -192,7 +202,7 @@ describe('text properties', () => {
 });
 
 describe('bubble properties', () => {
-  beforeEach(() => fireEvent.click(screen.getByTestId('text-add-burst')));
+  beforeEach(() => addBubble('burst'));
 
   it('edits the size, colours and border', () => {
     // The background size boxes may share these labels, so look inside the bubble controls.
@@ -227,7 +237,7 @@ describe('bubble properties', () => {
   });
 
   it('hides the pointer controls for a narration box', () => {
-    fireEvent.click(screen.getByTestId('text-add-narration'));
+    addBubble('narration');
     expect(screen.queryByLabelText(t('text.bubble.tail'))).toBeNull();
     expect(screen.queryByText(t('text.bubble.shuffle'))).toBeNull();
   });

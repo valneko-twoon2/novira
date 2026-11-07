@@ -173,7 +173,7 @@ The first generation takes a little time to load the model. If you do not use it
 
 ## Text (words and speech bubbles)
 
-![The text screen. On the left, the buttons for adding text, the background, layers and text styles; in the center, the image being edited](shot:media-text)
+![The text screen. On the left, the finish button and the text settings; in the center, the add buttons and the image being edited; on the right, the layers](shot:media-text)
 
 **{{ui:media.tab.text}}** is an editing screen where you add text and speech bubbles to an image and save it as an image. Drawing text and bubbles needs no model download and no image-making processing, so you can use it right away. AI is used only when you want the text to look rich ([Finishing with AI](#finishing-with-ai)).
 
@@ -189,8 +189,10 @@ There is also a way to right-click an image in the gallery and choose **{{ui:gal
 
 ### Adding text and speech bubbles
 
+Use the buttons at the top of the center screen.
+
 - **{{ui:text.add.text}}**: Adds a text layer.
-- **{{ui:text.add.bubble}}**: Adds a speech bubble. Choose the shape from **{{ui:text.shape.round}}**, **{{ui:text.shape.box}}**, **{{ui:text.shape.cloud}}**, **{{ui:text.shape.burst}}**, **{{ui:text.shape.whisper}}** and **{{ui:text.shape.narration}}**.
+- **{{ui:text.add.bubble}}**: Adds a speech bubble. From the menu, choose the shape: **{{ui:text.shape.round}}**, **{{ui:text.shape.box}}**, **{{ui:text.shape.cloud}}**, **{{ui:text.shape.burst}}**, **{{ui:text.shape.whisper}}** and **{{ui:text.shape.narration}}**.
 
 What you add can be moved by dragging it on the screen. When you select it, round handles appear at the four corners, and you can change its size by dragging them. A speech bubble has a "{{ui:text.bubble.tail}}" (its tail), and you change its direction by dragging the handle at its tip.
 
@@ -198,13 +200,13 @@ What you add can be moved by dragging it on the screen. When you select it, roun
 
 ### Layers
 
-The text and speech bubbles you add are lined up in **{{ui:text.layers.title}}** in order of stacking. The higher in the list, the closer to the front.
+The text and speech bubbles you add are lined up in **{{ui:text.layers.title}}**, under the gallery in the right column, in order of stacking. The higher in the list, the closer to the front.
 
 For each one, you can **{{ui:text.layer.hide}}**, **{{ui:text.layer.lock}}**, change the order with **{{ui:text.layer.up}}** and **{{ui:text.layer.down}}**, **{{ui:text.layer.duplicate}}** and **{{ui:text.layer.delete}}**. **{{ui:text.layers.clear}}** removes them all at once.
 
 ### Adjusting the text
 
-When you select a layer, its settings appear below.
+When you select a layer, its settings appear in the left column.
 
 | Item | What it is |
 |---|---|
@@ -228,19 +230,19 @@ You can also save your own styles (font, fill, stroke, shadow, letter spacing).
 
 ### Finishing with AI
 
-When you select a text layer, **{{ui:text.rich.title}}** appears under its settings (not for speech bubbles). The AI paints the letters to look like gold, fire and the like.
+The AI paints the letters to look like gold, fire and the like. The **{{ui:text.rich.run}}** button is at the top of the left column; you can press it while a text layer is selected (not for a speech bubble, and not when nothing is selected).
 
 1. Choose a **{{ui:text.rich.look}}** ({{ui:text.rich.look.gold}}, {{ui:text.rich.look.fire}}, {{ui:text.rich.look.ice}}, {{ui:text.rich.look.neon}}, {{ui:text.rich.look.stone}}, {{ui:text.rich.look.candy}} or {{ui:text.rich.look.chrome}}). Press it again to clear it.
 2. To add something, write it in **{{ui:text.rich.words}}** as English tags (for example: dragon scales, sparkles).
-3. Press **{{ui:text.rich.run}}**. Pictures are made one after another, as many as **{{ui:text.rich.count}}**. **{{ui:text.rich.cancel}}** stops it.
+3. Press **{{ui:text.rich.run}}**. Pictures are made one after another, as many as the number to its right (**{{ui:text.rich.count}}**). The **{{ui:text.rich.cancel}}** button beside it stops it.
 
-The pictures line up under **{{ui:text.rich.candidates}}**, and the one you press becomes the fill of the letters. The outline and the shadow are still drawn from the text style, so you can change their color or thickness without making the picture again. Resizing the text needs no new picture either.
+The pictures line up in the **{{ui:text.rich.candidates}}** strip under the canvas, and the one you press becomes the fill of the letters. The outline and the shadow are still drawn from the text style, so you can change their color or thickness without making the picture again. Resizing the text needs no new picture either.
 
 | Item | What it does |
 |---|---|
 | {{ui:text.rich.model}} | The model that paints. **{{ui:text.rich.model.auto}}** picks one that has a ControlNet reading the outline of the letters |
-| {{ui:text.rich.strength}} | The higher it is, the showier the picture and the easier it drifts from the letter shapes |
-| {{ui:text.rich.spill}} | How far flames or light may leave the letters. 0 keeps it inside the letters |
+| {{ui:text.rich.strength}} (inside **{{ui:text.rich.details}}**) | The higher it is, the showier the picture and the easier it drifts from the letter shapes |
+| {{ui:text.rich.spill}} (inside **{{ui:text.rich.details}}**) | How far flames or light may leave the letters. 0 keeps it inside the letters |
 
 If you change the content, font or spacing of the text, that picture is no longer used (the plain fill shows) and **{{ui:text.rich.redo}}** appears. Undoing the change brings the picture back as it was. **{{ui:text.rich.clear}}** takes the AI fill off.
 

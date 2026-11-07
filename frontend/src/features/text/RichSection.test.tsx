@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
-// The "finish with AI" section: looks, the notes about what is missing, and the candidates of a layer.
+// The "finish with AI" form in the left column: looks, the notes about what is missing, the run row and the folded details.
 import { cleanup, fireEvent, render as renderBare, screen } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ModelConfig } from '@/backend';
+import { t } from '@/i18n';
 import { useGallery } from '@/state/gallery';
 import { useModels } from '@/state/models';
 import { RICH_FORM_DEFAULTS, useRichForm } from '@/state/text/richForm';
@@ -73,31 +74,35 @@ describe('RichSection', () => {
     expect((screen.getByTestId('text-rich-run') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('shows no candidates for a plain layer and the list for one with an AI fill', () => {
-    const { unmount } = render(<RichSection layer={layer(false)} />);
-    expect(screen.queryAllByTestId('text-rich-candidate')).toHaveLength(0);
-    expect(screen.queryByTestId('text-rich-clear')).toBeNull();
-    unmount();
-    render(<RichSection layer={layer(true)} />);
-    const items = screen.getAllByTestId('text-rich-candidate');
-    expect(items).toHaveLength(2);
-    expect(items[0]!.getAttribute('aria-pressed')).toBe('true');
-    expect(items[1]!.getAttribute('aria-pressed')).toBe('false');
-    expect(screen.queryByTestId('text-rich-stale')).toBeNull();
-  });
-
-  it('offers a new run when the lettering changed since the picture was made', () => {
-    render(<RichSection layer={{ ...layer(true), text: 'changed' }} />);
-    expect(screen.getByTestId('text-rich-stale')).toBeTruthy();
-    expect(screen.getByTestId('text-rich-redo')).toBeTruthy();
-  });
-
-  it('shows the running state with a cancel button', () => {
+  it('keeps the cancel button off until a run is going, then enables it', () => {
     const l = layer(false);
+    const { unmount } = render(<RichSection layer={l} />);
+    expect((screen.getByTestId('text-rich-cancel') as HTMLButtonElement).disabled).toBe(true);
+    unmount();
     useRichRun.setState({ running: { [l.id]: { done: 0, total: 2 } } });
     render(<RichSection layer={l} />);
-    expect(screen.getByTestId('text-rich-cancel')).toBeTruthy();
+    expect((screen.getByTestId('text-rich-cancel') as HTMLButtonElement).disabled).toBe(false);
     expect((screen.getByTestId('text-rich-run') as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('waits for a text layer: the form stays, the run is off and the note says what to select', () => {
+    render(<RichSection layer={null} />);
+    expect((screen.getByTestId('text-rich-run') as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByText(t('text.rich.select'))).toBeTruthy();
+    fireEvent.click(screen.getByTestId('text-rich-look-ice'));
+    expect(useRichForm.getState().form.look).toBe('ice');
+  });
+
+  it('folds the strength and the spill into the details and sets the count', () => {
+    render(<RichSection layer={layer(false)} />);
+    expect(screen.queryByLabelText(t('text.rich.strength'))).toBeNull();
+    fireEvent.click(screen.getByText(t('text.rich.details')));
+    expect(screen.getAllByLabelText(t('text.rich.strength')).length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText(t('text.rich.spill')).length).toBeGreaterThan(0);
+    const count = screen.getByLabelText(t('text.rich.count')) as HTMLInputElement;
+    fireEvent.change(count, { target: { value: '3' } });
+    fireEvent.blur(count);
+    expect(useRichForm.getState().form.count).toBe(3);
   });
 
   it('keeps the chosen model only while it is installed', () => {

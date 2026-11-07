@@ -7,7 +7,7 @@
   "text.zoom.in": "拡大",
   "text.zoom.out": "縮小",
   "text.zoom.fit": "画面に合わせる",
-  "text.hint.empty": "左の「文字を追加」か吹き出しで、画像にテキストを入れます。",
+  "text.hint.empty": "上の「文字を追加」か「吹き出しを追加」で、画像にテキストを入れます。",
   "text.add.text": "文字を追加",
   "text.add.bubble": "吹き出しを追加",
   "text.defaultText": "LOGO",
@@ -95,7 +95,6 @@
   "text.bubble.tail.hint": "画面の丸いつまみをドラッグして、しっぽの先を動かします。",
   "text.bubble.shuffle": "ギザギザの形を変える",
   "text.bubble.autoFit": "文字を吹き出しに合わせて縮める",
-  "text.rich.title": "AI で仕上げる",
   "text.rich.look": "質感",
   "text.rich.look.gold": "金",
   "text.rich.look.fire": "炎",
@@ -119,5 +118,7 @@
   "text.rich.stale": "文字を変えたため、この塗りは使っていません。",
   "text.rich.redo": "作り直す",
   "text.rich.clear": "元の塗りに戻す",
-  "text.rich.failed": "仕上げに失敗しました"
+  "text.rich.failed": "仕上げに失敗しました",
+  "text.rich.select": "文字のレイヤーを選ぶと仕上げられます。",
+  "text.rich.details": "仕上げの詳細"
 }
