@@ -121,5 +121,9 @@
   "text.rich.failed": "Could not finish the text",
   "text.rich.select": "Select a text layer to finish it.",
   "text.rich.details": "Finish details",
-  "text.bar": "Controls for the selected layer"
+  "text.bar": "Controls for the selected layer",
+  "text.template": "Templates",
+  "text.template.hint": "Saves the text and bubble layers and where they are. The background picture is not saved; a template is placed to fit the picture you have",
+  "text.template.summary": "{texts} text · {bubbles} bubbles · {width}×{height}",
+  "text.style": "Text style"
 }

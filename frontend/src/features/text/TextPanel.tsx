@@ -1,4 +1,4 @@
-// Left panel of the Text tab, in the order of the Generate screen: the preset, then the AI finish (run button first), then
+// Left panel of the Text tab, in the order of the Generate screen: the template card, then the AI finish (run button first), then
 // the folded sections of the selected layer and of the background. Adding layers is in the canvas toolbar, the layer stack in
 // the right column, the candidates under the canvas.
 import { t } from '@/i18n';
@@ -8,6 +8,7 @@ import { Button, NumberInput, Section, Select } from '@/ui';
 import { LayerProperties } from './LayerProperties';
 import { RichSection } from './RichSection';
 import { TextPresetBar } from './TextPresetBar';
+import { TextScenePresetBar } from './TextScenePresetBar';
 import './text.css';
 
 const SIZES = [
@@ -25,12 +26,13 @@ export function TextPanel() {
   return (
     <div className="tx-panel" data-testid="text-panel">
       <header className="pp-head tx-add">
-        <TextPresetBar />
+        <TextScenePresetBar />
       </header>
       <div className="tx-panel__body">
         <RichSection layer={selected?.type === 'text' ? selected : null} />
         {selected && (
           <Section title={t(selected.type === 'text' ? 'text.layer.text' : 'text.layer.bubble')}>
+            {selected.type === 'text' && <TextPresetBar />}
             <LayerProperties key={selected.id} layer={selected} />
           </Section>
         )}

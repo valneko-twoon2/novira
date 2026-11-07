@@ -6,6 +6,7 @@
 // the backend's), but a running page never has them changed from outside, because they hold what one screen is doing
 // (the language, theme and zoom, the thumbnail size, the assistant chat and its window, the document under edit).
 import { useRichForm } from './text/richForm';
+import { useTextSources } from './text/textSources';
 import { useCharacters } from './characters';
 import { useDrafts } from './drafts';
 import { useImageToolSettings } from './imageTools/settings';
@@ -17,6 +18,7 @@ import { useParams } from './params';
 import { useImagePresets } from './presets/imagePresets';
 import { useMusicPresets } from './presets/musicPresets';
 import { usePresetRun } from './presets/presetRun';
+import { useTextScenePresets } from './presets/textScenePresets';
 import { useTextStylePresets } from './presets/textStylePresets';
 import { useVideoPresets } from './presets/videoPresets';
 import { useVoicePresets } from './presets/voicePresets';
@@ -50,6 +52,7 @@ const LIVE_STORES: readonly Persisted[] = [
   useCharacters,
   useMusicPresets,
   useTextStylePresets,
+  useTextScenePresets,
   useVideoPresets,
   useVoicePresets,
   usePromptBook,
@@ -58,6 +61,7 @@ const LIVE_STORES: readonly Persisted[] = [
   useImageToolSettings,
   useMusic,
   useRichForm,
+  useTextSources,
   useVideo,
   useVoice,
 ];

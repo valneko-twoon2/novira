@@ -263,5 +263,7 @@
   "gallery.tools.restart": "Restart ComfyUI to load it",
   "gallery.tools.finished": "\"{tool}\" has finished",
   "gallery.tools.used": "Settings used",
-  "gallery.tools.uploadFailed": "Could not load the picture"
+  "gallery.tools.uploadFailed": "Could not load the picture",
+  "gallery.menu.editInText": "Edit in Text",
+  "gallery.toast.editedInText": "Opened the layers it was saved from in the Text screen"
 }

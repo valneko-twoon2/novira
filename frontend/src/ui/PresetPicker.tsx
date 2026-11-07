@@ -28,7 +28,7 @@ export interface PresetPickerProps {
   onOverwrite: (id: string) => void;
   onRename: (id: string, name: string) => void;
   onDelete: (id: string) => void;
-  /** Accessible name of the card. */
+  /** The card's caption and accessible name ("Presets" on the generator screens; a screen with two kinds names each). */
   label: string;
   /** What a preset of this screen holds, shown at the top of the list. */
   hint?: string;
@@ -66,9 +66,9 @@ export function PresetPicker(props: PresetPickerProps) {
       <CaretDown size={12} />
     </button>
   ) : (
-    <button type="button" className="ui-preset__card" aria-label={withVisibleText(props.label, [t('presets.label'), current ? current.name : t('presets.choose'), current?.summary].filter(Boolean).join(''))} data-testid="preset-trigger">
+    <button type="button" className="ui-preset__card" aria-label={withVisibleText(props.label, [props.label, current ? current.name : t('presets.choose'), current?.summary].filter(Boolean).join(''))} data-testid="preset-trigger">
       <span className="ui-preset__text">
-        <span className="ui-preset__caption">{t('presets.label')}</span>
+        <span className="ui-preset__caption">{props.label}</span>
         <span className={cx('ui-preset__name', !current && 'is-placeholder')}>{current ? current.name : t('presets.choose')}</span>
         {current?.summary && <span className="ui-preset__summary">{current.summary}</span>}
       </span>

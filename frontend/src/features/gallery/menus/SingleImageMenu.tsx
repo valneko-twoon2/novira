@@ -45,6 +45,7 @@ import { useCharacterDialog } from '@/state/dialogs/character';
 import { fixPartOnCanvas } from '@/state/partFix';
 import { useShareDialog } from '@/state/dialogs/share';
 import { useWatermarkCheckDialog } from '@/state/dialogs/watermark';
+import { useTextSources } from '@/state/text/textSources';
 import { isScreenShown, showViewer } from '@/state/ui';
 import { ContextMenuItem, ContextMenuLabel, ContextMenuSeparator, ContextMenuSplitItem, ContextSubMenu } from '@/ui';
 import {
@@ -58,6 +59,7 @@ import {
   openInNewTab,
   recall,
   sendToCanvas,
+  editInText,
   sendToText,
   sendToUpscale,
   sendToVideo,
@@ -86,6 +88,8 @@ const TOOL_ICONS: Record<ImageToolId, ReactNode> = {
 export function SingleImageMenu({ image, phone = false }: { image: ImageDTO; phone?: boolean }) {
   const hasMeta = image.metadata !== null;
   const isStill = (image.mediaType ?? 'image') === 'image';
+  // Pictures saved from the Text tab keep their layers, to open again.
+  const hasTextScene = useTextSources((s) => s.sources.some((x) => x.imageName === image.name));
   const g = useGallery.getState;
   return (
     <>
@@ -169,6 +173,11 @@ export function SingleImageMenu({ image, phone = false }: { image: ImageDTO; pho
       {!phone && (
         <ContextMenuItem icon={<FlowArrow />} disabled={!isStill} onSelect={() => sendToWorkflow(image)}>
           {t('gallery.menu.sendToWorkflow')}
+        </ContextMenuItem>
+      )}
+      {!phone && isScreenShown('text') && hasTextScene && (
+        <ContextMenuItem icon={<TextAa />} onSelect={() => editInText(image)}>
+          {t('gallery.menu.editInText')}
         </ContextMenuItem>
       )}
       {!phone && isScreenShown('text') && (

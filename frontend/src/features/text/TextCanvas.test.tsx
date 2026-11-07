@@ -8,6 +8,7 @@ import { t } from '@/i18n';
 import { useGallery } from '@/state/gallery';
 import { useTextEditor } from '@/state/text/textEditor';
 import { EMPTY_SCENE } from '@/state/text/textModel';
+import { useTextSources } from '@/state/text/textSources';
 import { toast } from '@/state/toasts';
 import { TooltipProvider } from '@/ui';
 import { installRecordingCanvases } from '@/backend/mock/canvas2dRecorder.testkit';
@@ -275,6 +276,8 @@ describe('TextCanvas toolbar', () => {
     fireEvent.click(screen.getByTestId('text-save'));
     await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.objectContaining({ status: 'success' })));
     expect(upload).toHaveBeenCalledWith(blob, expect.objectContaining({ category: 'user' }));
+    // The layers are kept under the saved picture's name, to open again from the gallery; a failed save keeps nothing.
+    expect(useTextSources.getState().sceneOf('saved.png')?.layers).toHaveLength(1);
 
     upload.mockRejectedValue(new Error('disk full'));
     fireEvent.click(screen.getByTestId('text-save'));

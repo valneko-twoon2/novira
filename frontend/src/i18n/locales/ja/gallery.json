@@ -263,5 +263,7 @@
   "gallery.tools.restart": "ComfyUI を再起動して読み込む",
   "gallery.tools.finished": "「{tool}」が終わりました",
   "gallery.tools.used": "使った設定",
-  "gallery.tools.uploadFailed": "画像を読み込めませんでした"
+  "gallery.tools.uploadFailed": "画像を読み込めませんでした",
+  "gallery.menu.editInText": "テキストで編集",
+  "gallery.toast.editedInText": "テキスト画面で、保存したときのレイヤーを開きました"
 }
