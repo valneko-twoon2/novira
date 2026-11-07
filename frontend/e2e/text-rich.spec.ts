@@ -41,6 +41,26 @@ test('finishing a text layer makes candidates, and a changed text asks for a new
   await expect(candidates).toHaveCount(0);
 });
 
+test('a busy button draws its spinner in the label color, so it shows on the blue fills', async ({ page }) => {
+  await openText(page);
+  // The mock run ends too fast to catch the spinner, so a busy button of each blue scheme is put on the page with the app's styles.
+  const colors = await page.evaluate(() =>
+    ['invoke', 'accent'].map((scheme) => {
+      const button = document.createElement('button');
+      button.className = `ui-btn ui-btn--solid ui-btn--${scheme}`;
+      button.disabled = true;
+      const spinner = document.createElement('span');
+      spinner.className = 'ui-spinner';
+      button.append(spinner);
+      document.body.append(button);
+      const result = { label: getComputedStyle(button).color, ring: getComputedStyle(spinner).borderTopColor };
+      button.remove();
+      return result;
+    }),
+  );
+  for (const { label, ring } of colors) expect(ring).toBe(label);
+});
+
 test('the picture can be saved with the AI fill and a failed run changes nothing', async ({ page }) => {
   await openText(page);
   await page.getByTestId('text-rich-run').click();

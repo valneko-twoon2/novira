@@ -510,6 +510,12 @@
   animation: ui-spin 0.7s linear infinite;
 }
 
+/* Inside a button the spinner takes the label's color: a blue ring vanishes on the blue invoke and accent fills. */
+button .ui-spinner {
+  border-color: currentcolor;
+  border-right-color: transparent;
+}
+
 @keyframes ui-spin {
   to {
     transform: rotate(360deg);
