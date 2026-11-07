@@ -463,3 +463,71 @@ async fn a_restored_picture_goes_back_to_its_folder_and_a_start_arranges_flat_fi
     assert!(backend.read_image("full", &img.name).is_some());
     backend.shutdown();
 }
+
+#[tokio::test]
+async fn a_subfolder_belongs_to_one_board_cannot_nest_and_goes_with_its_board() {
+    let dir = tempfile::tempdir().unwrap();
+    let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+    let board = backend.create_board("Cats").unwrap();
+    let sub = backend
+        .create_board_in("Kittens", Some(board.id.clone()))
+        .unwrap();
+    assert_eq!(sub.parent_id.as_deref(), Some(board.id.as_str()));
+    assert!(matches!(
+        backend.create_board_in("Deeper", Some(sub.id.clone())),
+        Err(novira_core::BackendError::Invalid(_))
+    ));
+    assert!(matches!(
+        backend.create_board_in("Lost", Some("board-missing".into())),
+        Err(novira_core::BackendError::NotFound(_))
+    ));
+    let inside = backend
+        .upload_image(
+            png(8, 8),
+            ImageOptions {
+                board_id: Some(sub.id.clone()),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+    let on_disk = dir.path().join("outputs").join("Cats").join("Kittens");
+    assert_eq!(std::fs::read_dir(&on_disk).unwrap().count(), 1);
+    drop(backend);
+
+    // The subfolder and its picture survive a restart.
+    let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+    let boot = backend.bootstrap();
+    assert_eq!(boot.boards.len(), 2);
+    assert!(backend.read_image("full", &inside.name).is_some());
+
+    let deleted = backend.delete_board(&board.id, true).unwrap();
+    assert_eq!(deleted, std::slice::from_ref(&inside.name));
+    assert!(backend.bootstrap().boards.is_empty());
+    assert!(!on_disk.exists());
+}
+
+#[tokio::test]
+async fn deleting_a_board_keeps_the_pictures_of_its_subfolders_uncategorized() {
+    let dir = tempfile::tempdir().unwrap();
+    let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+    let board = backend.create_board("Cats").unwrap();
+    let sub = backend
+        .create_board_in("Kittens", Some(board.id.clone()))
+        .unwrap();
+    let inside = backend
+        .upload_image(
+            png(8, 8),
+            ImageOptions {
+                board_id: Some(sub.id.clone()),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+    assert!(backend.delete_board(&board.id, false).unwrap().is_empty());
+    let boot = backend.bootstrap();
+    assert!(boot.boards.is_empty());
+    let kept = boot.images.iter().find(|i| i.name == inside.name).unwrap();
+    assert_eq!(kept.board_id, None);
+}

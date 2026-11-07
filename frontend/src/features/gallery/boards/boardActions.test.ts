@@ -24,6 +24,23 @@ describe('board actions', () => {
     expect(g().boards.map((b) => b.id)).toEqual(['b1']);
   });
 
+  it('creates a subfolder of the given board', async () => {
+    const make = vi.spyOn(backend, 'createBoard').mockResolvedValue(board('s1', { parentId: 'b1' }));
+    await createBoard('b1');
+    expect(make).toHaveBeenCalledWith(expect.any(String), 'b1');
+    expect(g().boards[0]?.parentId).toBe('b1');
+  });
+
+  it('takes the subfolders and their pictures along when a board is deleted, keeping the pictures uncategorized', async () => {
+    g().setBoards([board('b1'), board('s1', { parentId: 'b1' }), board('b2')]);
+    useGallery.setState({ selectedBoardId: 's1', autoAddBoardId: 's1' });
+    vi.spyOn(backend, 'deleteBoard').mockResolvedValue({ deletedImages: [] });
+    await deleteBoard('b1', false);
+    expect(g().boards.map((x) => x.id)).toEqual(['b2']);
+    expect(g().selectedBoardId).toBe('none');
+    expect(g().autoAddBoardId).toBe('none');
+  });
+
   it('renames with the trimmed name and ignores a blank one without calling the backend', async () => {
     g().setBoards([board('b1')]);
     const update = vi.spyOn(backend, 'updateBoard').mockImplementation(async (id, patch) => board(id, { name: patch.name ?? id }));

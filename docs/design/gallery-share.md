@@ -57,12 +57,12 @@ Each marked copy adds a `watermarks` row: the 12-digit hex id, the gallery pictu
 
 ### Boards
 
-A board is a row of the `boards` table: an id (`board-` and 12 hex digits), a name, `archived` and `createdAt` (`backend/crates/novira-core/src/service/boards.rs`). A picture belongs to one board by its `boardId`; `null` is Uncategorized. The page computes the counts and covers (`frontend/src/features/gallery/boards/useBoardStats.ts`): intermediate pictures are left out; `general` ones count as images, the rest as assets.
+A board is a row of the `boards` table: an id (`board-` and 12 hex digits), a name, `archived`, `createdAt` and `parentId` (a subfolder's board; `backend/crates/novira-core/src/service/boards.rs`). A picture belongs to one board by its `boardId`; `null` is Uncategorized. The page computes the counts and covers (`frontend/src/features/gallery/boards/useBoardStats.ts`): intermediate pictures are left out; `general` ones count as images, the rest as assets.
 
-- Create and rename trim the name and refuse a blank one. No length limit is checked.
-- Archiving sets only the flag. Archived boards are hidden unless the show-archived setting is on; archiving the selected board then selects Uncategorized. Archiving the auto-add board clears it (`frontend/src/features/gallery/boards/boardActions.ts`).
-- With the auto-assign setting on (the default), selecting a board makes it the target of new pictures from generation, uploads and the canvas (`autoAddBoardId()`, `frontend/src/state/invoke.ts`). While a gallery picture waits or draws, every Invoke keeps the board of the first one, not a newly picked board (`generationBoardId()`); a deleted board or an empty queue falls back to the auto-add board. The backend does not check that a `boardId` names an existing board.
-- `delete_board(id, deleteImages)` removes the board. Each of its pictures either loses the board (`boardId` null) or is deleted with its files, and the deleted names are returned. The dialog counts non-intermediate pictures; deletion also takes intermediate ones.
+- Create and rename trim the name and refuse a blank one.
+- Archiving sets only the flag. Archived boards are hidden unless show-archived is on; archiving the selected board then selects Uncategorized. Archiving the auto-add board clears it (`frontend/src/features/gallery/boards/boardActions.ts`).
+- With the auto-assign setting on (the default), selecting a board makes it the target of new pictures from generation, uploads and the canvas (`autoAddBoardId()`, `frontend/src/state/invoke.ts`). While a gallery picture waits or draws, every Invoke keeps the board of the first one, not a newly picked board (`generationBoardId()`); a deleted board or an empty queue falls back to the auto-add board. The backend does not check that `boardId` names a board.
+- `delete_board(id, deleteImages)` removes the board and its subfolders. Each of its pictures either loses the board (`boardId` null) or is deleted with its files, and the deleted names are returned. The dialog counts non-intermediate pictures; deletion also takes intermediate ones.
 
 ## Boundaries
 

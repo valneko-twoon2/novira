@@ -354,9 +354,12 @@ export class MockBackend implements BackendClient {
 
   // Boards -----------------------------------------------------------------
 
-  async createBoard(name: string): Promise<BoardDTO> {
+  async createBoard(name: string, parentId: string | null = null): Promise<BoardDTO> {
     await wait(LATENCY);
-    const board: BoardDTO = { id: this.id('board'), name: boardName(name), archived: false, createdAt: this.now() };
+    const parent = parentId === null ? null : this.boards.find((b) => b.id === parentId);
+    if (parentId !== null && !parent) throw new Error(`board not found: ${parentId}`);
+    if (parent?.parentId) throw new Error('A subfolder cannot hold subfolders');
+    const board: BoardDTO = { id: this.id('board'), name: boardName(name), archived: false, createdAt: this.now(), parentId };
     this.boards.push(board);
     this.emitBoards();
     return { ...board };
@@ -375,11 +378,13 @@ export class MockBackend implements BackendClient {
 
   async deleteBoard(id: string, deleteImages: boolean) {
     await wait(LATENCY);
-    this.boards = this.boards.filter((b) => b.id !== id);
+    // A board takes its subfolders with it.
+    const gone = new Set(this.boards.filter((b) => b.id === id || b.parentId === id).map((b) => b.id));
+    this.boards = this.boards.filter((b) => !gone.has(b.id));
     const deleted: string[] = [];
     const moved: ImageDTO[] = [];
     for (const img of this.images) {
-      if (img.boardId !== id) continue;
+      if (!img.boardId || !gone.has(img.boardId)) continue;
       if (deleteImages) deleted.push(img.name);
       else {
         img.boardId = null;

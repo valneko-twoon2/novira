@@ -2,6 +2,7 @@
 import { backend, canOpenNewWindow, openInNewWindow, type ImageDTO } from '@/backend';
 import { t, tCount } from '@/i18n';
 import { useCanvas, type CanvasImportTarget } from '@/state/canvas';
+import { boardLabel } from '@/state/boardTree';
 import { useGallery, type BoardId } from '@/state/gallery';
 import { recordDeletion, undoDeletion } from '@/state/galleryUndo';
 import { keepMarks } from '@/state/pictureMarks';
@@ -17,7 +18,9 @@ import { writeClipboardText } from '@/ui';
 
 export function boardName(id: BoardId): string {
   if (id === 'none') return t('gallery.boards.uncategorized');
-  return useGallery.getState().boards.find((b) => b.id === id)?.name ?? t('gallery.boards.uncategorized');
+  const { boards } = useGallery.getState();
+  const board = boards.find((b) => b.id === id);
+  return board ? boardLabel(boards, board) : t('gallery.boards.uncategorized');
 }
 
 export async function moveImagesToBoard(names: string[], boardId: BoardId) {

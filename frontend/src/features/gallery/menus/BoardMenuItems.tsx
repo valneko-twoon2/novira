@@ -1,6 +1,7 @@
 // Board list used by the "Change board" submenus.
 import { Check } from '@phosphor-icons/react';
 import { t } from '@/i18n';
+import { boardLabel, boardTree } from '@/state/boardTree';
 import { useGallery, type BoardId } from '@/state/gallery';
 import { ContextMenuItem } from '@/ui';
 
@@ -8,7 +9,7 @@ export function BoardMenuItems({ current, onPick }: { current: BoardId | null; o
   const boards = useGallery((s) => s.boards);
   const items: { id: BoardId; name: string }[] = [
     { id: 'none', name: t('gallery.boards.uncategorized') },
-    ...boards.filter((b) => !b.archived).map((b) => ({ id: b.id, name: b.name })),
+    ...boardTree(boards, (b) => !b.archived).map(({ board }) => ({ id: board.id, name: boardLabel(boards, board) })),
   ];
   return (
     <>

@@ -3,6 +3,7 @@ import { CaretDown, MagnifyingGlass, Plus, X } from '@phosphor-icons/react';
 import { useMemo, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
 import type { BoardDTO } from '@/backend';
 import { t } from '@/i18n';
+import { boardTree } from '@/state/boardTree';
 import { useGallery, type BoardId } from '@/state/gallery';
 import { cx, IconButton, TextInput } from '@/ui';
 import { boardName } from '../actions';
@@ -28,9 +29,10 @@ export function BoardsSection() {
 
   const visible = useMemo(() => {
     const q = boardSearch.trim().toLowerCase();
-    return boards
-      .filter((b) => (showArchived || !b.archived) && (!q || b.name.toLowerCase().includes(q)))
-      .sort((a, b) => b.createdAt - a.createdAt);
+    // A subfolder follows its board: it is hidden with an archived board, and a search that finds it shows it under its board.
+    const archivedIds = new Set(boards.filter((b) => b.archived).map((b) => b.id));
+    const shown = (b: BoardDTO) => showArchived || (!b.archived && !(b.parentId && archivedIds.has(b.parentId)));
+    return boardTree(boards, (b) => shown(b) && (!q || b.name.toLowerCase().includes(q)));
   }, [boards, boardSearch, showArchived]);
   const showNone = !boardSearch.trim() || t('gallery.boards.uncategorized').toLowerCase().includes(boardSearch.trim().toLowerCase());
 
@@ -52,11 +54,19 @@ export function BoardsSection() {
     setListHeight(Math.max(MIN_LIST, drag.current.h + e.clientY - drag.current.y));
   };
 
-  const row = (id: BoardId, board: BoardDTO | null) => (
+  const addSubfolder = async (parent: BoardDTO) => {
+    const board = await createBoard(parent.id);
+    g().selectBoard(board.id);
+    setRenamingId(board.id);
+  };
+
+  const row = (id: BoardId, board: BoardDTO | null, sub = false) => (
     <BoardRow
       key={id}
       id={id}
       board={board}
+      sub={sub}
+      onAddSubfolder={() => board && void addSubfolder(board)}
       stats={stats.get(id)}
       renaming={renamingId === id}
       onRename={() => setRenamingId(id)}
@@ -102,7 +112,7 @@ export function BoardsSection() {
           )}
           <div className="gboards__list" role="listbox" aria-label={t('gallery.boards.title')} style={{ '--gboards-h': `${listHeight}px` } as CSSProperties}>
             {showNone && row('none', null)}
-            {visible.map((b) => row(b.id, b))}
+            {visible.map(({ board, depth }) => row(board.id, board, depth === 1))}
             {!visible.length && !showNone && <div className="gboards__empty">{t('gallery.boards.noMatch')}</div>}
           </div>
           <div
@@ -118,7 +128,8 @@ export function BoardsSection() {
       )}
       <DeleteBoardModal
         board={deleting}
-        imageCount={deleting ? (stats.get(deleting.id)?.images ?? 0) + (stats.get(deleting.id)?.assets ?? 0) : 0}
+        imageCount={deleting ? [deleting, ...boards.filter((b) => b.parentId === deleting.id)].reduce((n, b) => n + (stats.get(b.id)?.images ?? 0) + (stats.get(b.id)?.assets ?? 0), 0) : 0}
+        hasSubfolders={!!deleting && boards.some((b) => b.parentId === deleting.id)}
         onClose={() => setDeleting(null)}
       />
     </div>

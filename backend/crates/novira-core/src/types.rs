@@ -483,6 +483,9 @@ pub struct BoardDTO {
     pub name: String,
     pub archived: bool,
     pub created_at: i64,
+    /// The board this one is a subfolder of. A subfolder holds pictures only and has no subfolders of its own.
+    #[serde(default)]
+    pub parent_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]

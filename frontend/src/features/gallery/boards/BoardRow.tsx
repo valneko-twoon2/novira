@@ -1,6 +1,6 @@
 // One board in the boards list: cover, name (double-click to rename), counts, auto-add badge,
 // context menu and drop target for gallery images / OS files.
-import { Archive, ArrowCounterClockwise, DownloadSimple, FolderSimple, PlusCircle, Trash, Tray } from '@phosphor-icons/react';
+import { Archive, ArrowCounterClockwise, DownloadSimple, FolderPlus, FolderSimple, PlusCircle, Trash, Tray } from '@phosphor-icons/react';
 import { useEffect, useRef, useState, type DragEvent } from 'react';
 import { backend, type BoardDTO } from '@/backend';
 import { t } from '@/i18n';
@@ -15,13 +15,16 @@ interface Props {
   id: BoardId;
   board: BoardDTO | null;
   stats: BoardStats | undefined;
+  /** A subfolder: drawn inside its board's list. */
+  sub: boolean;
   renaming: boolean;
+  onAddSubfolder: () => void;
   onRenameDone: () => void;
   onRename: () => void;
   onDelete: () => void;
 }
 
-export function BoardRow({ id, board, stats, renaming, onRenameDone, onRename, onDelete }: Props) {
+export function BoardRow({ id, board, stats, sub, renaming, onAddSubfolder, onRenameDone, onRename, onDelete }: Props) {
   const selected = useGallery((s) => s.selectedBoardId === id);
   const isAutoAdd = useGallery((s) => s.autoAddBoardId === id);
   const [over, setOver] = useState(false);
@@ -52,7 +55,7 @@ export function BoardRow({ id, board, stats, renaming, onRenameDone, onRename, o
     <ContextMenu>
       <ContextMenuTrigger asChild>
         <div
-          className={cx('gboard', selected && 'is-selected', over && 'is-over', board?.archived && 'is-archived')}
+          className={cx('gboard', sub && 'is-sub', selected && 'is-selected', over && 'is-over', board?.archived && 'is-archived')}
           role="option"
           aria-selected={selected}
           data-testid="board-row"
@@ -104,6 +107,11 @@ export function BoardRow({ id, board, stats, renaming, onRenameDone, onRename, o
         )}
         {board && (
           <>
+            {!sub && (
+              <ContextMenuItem icon={<FolderPlus />} onSelect={onAddSubfolder}>
+                {t('gallery.boards.addSubfolder')}
+              </ContextMenuItem>
+            )}
             <ContextMenuItem icon={<FolderSimple />} onSelect={onRename}>
               {t('common.rename')}
             </ContextMenuItem>

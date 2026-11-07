@@ -24,6 +24,7 @@ export const boardDto = {
   name: 'Favourites',
   archived: true,
   createdAt: 1700000000000,
+  parentId: 'board-0',
 } satisfies Required<BoardDTO>;
 
 export const boardPatch = { name: 'Renamed', archived: false } satisfies Required<BoardPatch>;
