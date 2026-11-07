@@ -118,7 +118,7 @@ export function SingleImageMenu({ image, phone = false }: { image: ImageDTO; pho
       <ContextMenuItem icon={<MagnifyingGlass />} disabled={!isStill} onSelect={() => useWatermarkCheckDialog.getState().show(image.name)}>
         {t('share.check.title')}
       </ContextMenuItem>
-      <ContextMenuItem icon={<Copy />} onSelect={() => void copyImage(image)} shortcut="Ctrl+C">
+      <ContextMenuItem icon={<Copy />} disabled={!isStill} onSelect={() => void copyImage(image)} shortcut="Ctrl+C">
         {t('common.copy')}
       </ContextMenuItem>
       {!phone && (
