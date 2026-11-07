@@ -1,0 +1,40 @@
+{"id":"agent-endpoint-input-0","kind":"sample","mutations":[],"value":{"baseUrl":"http://127.0.0.1:11434/v1","model":"llama3.2","apiKey":"sk-test"},"rust":{"accept":true}}
+{"id":"agent-endpoint-input-1","kind":"valid","mutations":["empty-string /model"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","model":"","apiKey":"sk-test"},"rust":{"accept":true}}
+{"id":"agent-endpoint-input-2","kind":"damaged","mutations":["drop /model","enum-unknown /apiKey"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","apiKey":"zz-unknown"},"rust":{"accept":true}}
+{"id":"agent-endpoint-input-3","kind":"damaged","mutations":["empty-string /apiKey","enum-unknown /apiKey"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","model":"llama3.2","apiKey":"zz-unknown"},"rust":{"accept":true}}
+{"id":"agent-endpoint-input-4","kind":"damaged","mutations":["enum-unknown /apiKey","empty-string /baseUrl"],"value":{"baseUrl":"","model":"llama3.2","apiKey":"zz-unknown"},"rust":{"accept":true}}
+{"id":"agent-endpoint-input-5","kind":"valid","mutations":["drop /model"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","apiKey":"sk-test"},"rust":{"accept":true}}
+{"id":"agent-endpoint-input-6","kind":"damaged","mutations":["unknown-field /"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","model":"llama3.2","apiKey":"sk-test","zzUnknown":1},"rust":{"accept":true}}
+{"id":"agent-endpoint-input-7","kind":"valid","mutations":["drop /baseUrl"],"value":{"model":"llama3.2","apiKey":"sk-test"},"rust":{"accept":false}}
+{"id":"agent-endpoint-input-8","kind":"damaged","mutations":["wrong-type /model","empty-string /baseUrl"],"value":{"baseUrl":"","model":{},"apiKey":"sk-test"},"rust":{"accept":false}}
+{"id":"agent-endpoint-input-9","kind":"damaged","mutations":["wrong-type /"],"value":1,"rust":{"accept":false}}
+{"id":"agent-endpoint-input-10","kind":"damaged","mutations":["null /apiKey","drop /model"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","apiKey":null},"rust":{"accept":true}}
+{"id":"agent-endpoint-input-11","kind":"valid","mutations":["empty-string /apiKey"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","model":"llama3.2","apiKey":""},"rust":{"accept":true}}
+{"id":"agent-endpoint-input-12","kind":"valid","mutations":["empty-string /baseUrl"],"value":{"baseUrl":"","model":"llama3.2","apiKey":"sk-test"},"rust":{"accept":true}}
+{"id":"agent-endpoint-input-13","kind":"valid","mutations":["drop /apiKey"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","model":"llama3.2"},"rust":{"accept":true}}
+{"id":"agent-endpoint-input-14","kind":"damaged","mutations":["wrong-type /baseUrl","enum-unknown /apiKey"],"value":{"baseUrl":42,"model":"llama3.2","apiKey":"zz-unknown"},"rust":{"accept":false}}
+{"id":"agent-endpoint-input-15","kind":"damaged","mutations":["wrong-type /apiKey","unknown-field /"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","model":"llama3.2","apiKey":{},"zzUnknown":1},"rust":{"accept":false}}
+{"id":"agent-endpoint-input-16","kind":"damaged","mutations":["wrong-type /apiKey"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","model":"llama3.2","apiKey":{}},"rust":{"accept":false}}
+{"id":"agent-endpoint-input-17","kind":"damaged","mutations":["wrong-type /baseUrl","wrong-type /"],"value":"x","rust":{"accept":false}}
+{"id":"agent-endpoint-input-18","kind":"damaged","mutations":["wrong-type /","number-shift /"],"value":2,"rust":{"accept":false}}
+{"id":"agent-endpoint-input-19","kind":"damaged","mutations":["wrong-type /baseUrl"],"value":{"baseUrl":true,"model":"llama3.2","apiKey":"sk-test"},"rust":{"accept":false}}
+{"id":"agent-endpoint-input-20","kind":"damaged","mutations":["strip-half /","enum-unknown /apiKey"],"value":{"apiKey":"zz-unknown"},"rust":{"accept":false}}
+{"id":"agent-endpoint-input-21","kind":"damaged","mutations":["null /model","empty-string /apiKey"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","model":null,"apiKey":""},"rust":{"accept":false}}
+{"id":"agent-endpoint-input-22","kind":"damaged","mutations":["unknown-field /","number-zero /zzUnknown"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","model":"llama3.2","apiKey":"sk-test","zzUnknown":0},"rust":{"accept":true}}
+{"id":"agent-endpoint-input-23","kind":"valid","mutations":["empty-string /model","empty-string /baseUrl"],"value":{"baseUrl":"","model":"","apiKey":"sk-test"},"rust":{"accept":true}}
+{"id":"agent-endpoint-input-24","kind":"damaged","mutations":["drop /apiKey","null /baseUrl"],"value":{"baseUrl":null,"model":"llama3.2"},"rust":{"accept":false}}
+{"id":"agent-endpoint-input-25","kind":"damaged","mutations":["null /baseUrl","enum-unknown /model"],"value":{"baseUrl":null,"model":"zz-unknown","apiKey":"sk-test"},"rust":{"accept":false}}
+{"id":"agent-endpoint-input-26","kind":"damaged","mutations":["null /baseUrl"],"value":{"baseUrl":null,"model":"llama3.2","apiKey":"sk-test"},"rust":{"accept":false}}
+{"id":"agent-endpoint-input-27","kind":"damaged","mutations":["drop /baseUrl","wrong-type /model"],"value":{"model":42,"apiKey":"sk-test"},"rust":{"accept":false}}
+{"id":"agent-endpoint-input-28","kind":"damaged","mutations":["null /apiKey"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","model":"llama3.2","apiKey":null},"rust":{"accept":true}}
+{"id":"agent-endpoint-input-29","kind":"damaged","mutations":["enum-unknown /baseUrl"],"value":{"baseUrl":"zz-unknown","model":"llama3.2","apiKey":"sk-test"},"rust":{"accept":true}}
+{"id":"agent-endpoint-input-30","kind":"damaged","mutations":["wrong-type /apiKey","wrong-type /model"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","model":[],"apiKey":[]},"rust":{"accept":false}}
+{"id":"agent-endpoint-input-31","kind":"damaged","mutations":["wrong-type /baseUrl","wrong-type /model"],"value":{"baseUrl":42,"model":true,"apiKey":"sk-test"},"rust":{"accept":false}}
+{"id":"agent-endpoint-input-32","kind":"damaged","mutations":["drop /model","unknown-field /"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","apiKey":"sk-test","zzUnknown":1},"rust":{"accept":true}}
+{"id":"agent-endpoint-input-33","kind":"damaged","mutations":["wrong-type /baseUrl"],"value":{"baseUrl":{},"model":"llama3.2","apiKey":"sk-test"},"rust":{"accept":false}}
+{"id":"agent-endpoint-input-34","kind":"damaged","mutations":["wrong-type /"],"value":[],"rust":{"accept":false}}
+{"id":"agent-endpoint-input-35","kind":"damaged","mutations":["wrong-type /apiKey"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","model":"llama3.2","apiKey":[]},"rust":{"accept":false}}
+{"id":"agent-endpoint-input-36","kind":"damaged","mutations":["unknown-field /","out-of-range /zzUnknown"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","model":"llama3.2","apiKey":"sk-test","zzUnknown":4294967296},"rust":{"accept":true}}
+{"id":"agent-endpoint-input-37","kind":"damaged","mutations":["wrong-type /model"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","model":{},"apiKey":"sk-test"},"rust":{"accept":false}}
+{"id":"agent-endpoint-input-38","kind":"damaged","mutations":["wrong-type /apiKey"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","model":"llama3.2","apiKey":true},"rust":{"accept":false}}
+{"id":"agent-endpoint-input-39","kind":"damaged","mutations":["enum-unknown /model"],"value":{"baseUrl":"http://127.0.0.1:11434/v1","model":"zz-unknown","apiKey":"sk-test"},"rust":{"accept":true}}

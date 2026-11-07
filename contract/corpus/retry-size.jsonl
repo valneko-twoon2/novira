@@ -1,0 +1,40 @@
+{"id":"retry-size-0","kind":"sample","mutations":[],"value":{"width":448,"height":640},"rust":{"accept":true,"same":true}}
+{"id":"retry-size-1","kind":"damaged","mutations":["null /width","number-shift /height"],"value":{"width":null,"height":641},"rust":{"accept":false}}
+{"id":"retry-size-2","kind":"damaged","mutations":["unknown-field /","out-of-range /zzUnknown"],"value":{"width":448,"height":640,"zzUnknown":-0.5},"rust":{"accept":true,"out":{"width":448,"height":640}}}
+{"id":"retry-size-3","kind":"valid","mutations":["drop /width"],"value":{"height":640},"rust":{"accept":false}}
+{"id":"retry-size-4","kind":"damaged","mutations":["unknown-field /"],"value":{"width":448,"height":640,"zzUnknown":1},"rust":{"accept":true,"out":{"width":448,"height":640}}}
+{"id":"retry-size-5","kind":"valid","mutations":["number-shift /width","number-shift /width"],"value":{"width":450,"height":640},"rust":{"accept":true,"same":true}}
+{"id":"retry-size-6","kind":"valid","mutations":["number-shift /width"],"value":{"width":449,"height":640},"rust":{"accept":true,"same":true}}
+{"id":"retry-size-7","kind":"damaged","mutations":["wrong-type /"],"value":1,"rust":{"accept":false}}
+{"id":"retry-size-8","kind":"damaged","mutations":["null /height"],"value":{"width":448,"height":null},"rust":{"accept":false}}
+{"id":"retry-size-9","kind":"valid","mutations":["number-zero /height","number-shift /height"],"value":{"width":448,"height":1},"rust":{"accept":true,"same":true}}
+{"id":"retry-size-10","kind":"damaged","mutations":["wrong-type /"],"value":"x","rust":{"accept":false}}
+{"id":"retry-size-11","kind":"damaged","mutations":["wrong-type /","out-of-range /"],"value":4294967296,"rust":{"accept":false}}
+{"id":"retry-size-12","kind":"damaged","mutations":["wrong-type /width"],"value":{"width":[],"height":640},"rust":{"accept":false}}
+{"id":"retry-size-13","kind":"damaged","mutations":["out-of-range /width"],"value":{"width":1e+30,"height":640},"rust":{"accept":false}}
+{"id":"retry-size-14","kind":"damaged","mutations":["wrong-type /","number-zero /"],"value":0,"rust":{"accept":false}}
+{"id":"retry-size-15","kind":"damaged","mutations":["null /height","unknown-field /"],"value":{"width":448,"height":null,"zzUnknown":1},"rust":{"accept":false}}
+{"id":"retry-size-16","kind":"damaged","mutations":["unknown-field /","null /width"],"value":{"width":null,"height":640,"zzUnknown":1},"rust":{"accept":false}}
+{"id":"retry-size-17","kind":"damaged","mutations":["out-of-range /height"],"value":{"width":448,"height":4294967296},"rust":{"accept":false}}
+{"id":"retry-size-18","kind":"damaged","mutations":["wrong-type /width"],"value":{"width":true,"height":640},"rust":{"accept":false}}
+{"id":"retry-size-19","kind":"damaged","mutations":["wrong-type /height"],"value":{"width":448,"height":[]},"rust":{"accept":false}}
+{"id":"retry-size-20","kind":"damaged","mutations":["unknown-field /","out-of-range /height"],"value":{"width":448,"height":-1,"zzUnknown":1},"rust":{"accept":false}}
+{"id":"retry-size-21","kind":"valid","mutations":["drop /height"],"value":{"width":448},"rust":{"accept":false}}
+{"id":"retry-size-22","kind":"damaged","mutations":["unknown-field /","number-zero /height"],"value":{"width":448,"height":0,"zzUnknown":1},"rust":{"accept":true,"out":{"width":448,"height":0}}}
+{"id":"retry-size-23","kind":"damaged","mutations":["out-of-range /width"],"value":{"width":-0.5,"height":640},"rust":{"accept":false}}
+{"id":"retry-size-24","kind":"damaged","mutations":["unknown-field /","drop /width"],"value":{"height":640,"zzUnknown":1},"rust":{"accept":false}}
+{"id":"retry-size-25","kind":"damaged","mutations":["null /width"],"value":{"width":null,"height":640},"rust":{"accept":false}}
+{"id":"retry-size-26","kind":"damaged","mutations":["drop /height","null /width"],"value":{"width":null},"rust":{"accept":false}}
+{"id":"retry-size-27","kind":"damaged","mutations":["out-of-range /height"],"value":{"width":448,"height":-0.5},"rust":{"accept":false}}
+{"id":"retry-size-28","kind":"damaged","mutations":["null /width","wrong-type /"],"value":[],"rust":{"accept":false}}
+{"id":"retry-size-29","kind":"damaged","mutations":["unknown-field /","drop /height"],"value":{"width":448,"zzUnknown":1},"rust":{"accept":false}}
+{"id":"retry-size-30","kind":"damaged","mutations":["drop /width","null /height"],"value":{"height":null},"rust":{"accept":false}}
+{"id":"retry-size-31","kind":"damaged","mutations":["out-of-range /width","drop /height"],"value":{"width":4294967296},"rust":{"accept":false}}
+{"id":"retry-size-32","kind":"damaged","mutations":["out-of-range /height"],"value":{"width":448,"height":-1},"rust":{"accept":false}}
+{"id":"retry-size-33","kind":"valid","mutations":["number-zero /width"],"value":{"width":0,"height":640},"rust":{"accept":true,"same":true}}
+{"id":"retry-size-34","kind":"damaged","mutations":["wrong-type /height"],"value":{"width":448,"height":"1"},"rust":{"accept":false}}
+{"id":"retry-size-35","kind":"valid","mutations":["drop /height","number-shift /width"],"value":{"width":449},"rust":{"accept":false}}
+{"id":"retry-size-36","kind":"damaged","mutations":["wrong-type /width"],"value":{"width":{},"height":640},"rust":{"accept":false}}
+{"id":"retry-size-37","kind":"valid","mutations":["number-zero /width","number-zero /height"],"value":{"width":0,"height":0},"rust":{"accept":true,"same":true}}
+{"id":"retry-size-38","kind":"damaged","mutations":["out-of-range /width"],"value":{"width":4294967296,"height":640},"rust":{"accept":false}}
+{"id":"retry-size-39","kind":"damaged","mutations":["out-of-range /width"],"value":{"width":0.5,"height":640},"rust":{"accept":false}}

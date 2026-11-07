@@ -1,0 +1,40 @@
+{"id":"image-patch-0","kind":"sample","mutations":[],"value":{"boardId":"board-2","starred":true,"isIntermediate":false},"rust":{"accept":true,"same":true}}
+{"id":"image-patch-1","kind":"damaged","mutations":["enum-unknown /boardId"],"value":{"boardId":"zz-unknown","starred":true,"isIntermediate":false},"rust":{"accept":true,"same":true}}
+{"id":"image-patch-2","kind":"valid","mutations":["bool-flip /isIntermediate"],"value":{"boardId":"board-2","starred":true,"isIntermediate":true},"rust":{"accept":true,"same":true}}
+{"id":"image-patch-3","kind":"valid","mutations":["drop /isIntermediate"],"value":{"boardId":"board-2","starred":true},"rust":{"accept":true,"same":true}}
+{"id":"image-patch-4","kind":"valid","mutations":["strip-half /"],"value":{"starred":true},"rust":{"accept":true,"same":true}}
+{"id":"image-patch-5","kind":"valid","mutations":["drop /starred"],"value":{"boardId":"board-2","isIntermediate":false},"rust":{"accept":true,"same":true}}
+{"id":"image-patch-6","kind":"damaged","mutations":["drop /starred","wrong-type /isIntermediate"],"value":{"boardId":"board-2","isIntermediate":1},"rust":{"accept":false}}
+{"id":"image-patch-7","kind":"valid","mutations":["strip-half /","drop /isIntermediate"],"value":{"boardId":"board-2"},"rust":{"accept":true,"same":true}}
+{"id":"image-patch-8","kind":"damaged","mutations":["null /starred"],"value":{"boardId":"board-2","starred":null,"isIntermediate":false},"rust":{"accept":true,"out":{"boardId":"board-2","isIntermediate":false}}}
+{"id":"image-patch-9","kind":"damaged","mutations":["wrong-type /isIntermediate"],"value":{"boardId":"board-2","starred":true,"isIntermediate":"true"},"rust":{"accept":false}}
+{"id":"image-patch-10","kind":"damaged","mutations":["null /boardId"],"value":{"boardId":null,"starred":true,"isIntermediate":false},"rust":{"accept":true,"same":true}}
+{"id":"image-patch-11","kind":"damaged","mutations":["wrong-type /","number-zero /"],"value":0,"rust":{"accept":false}}
+{"id":"image-patch-12","kind":"valid","mutations":["empty-string /boardId"],"value":{"boardId":"","starred":true,"isIntermediate":false},"rust":{"accept":true,"same":true}}
+{"id":"image-patch-13","kind":"damaged","mutations":["null /isIntermediate"],"value":{"boardId":"board-2","starred":true,"isIntermediate":null},"rust":{"accept":true,"out":{"boardId":"board-2","starred":true}}}
+{"id":"image-patch-14","kind":"valid","mutations":["bool-flip /isIntermediate","strip-half /"],"value":{"isIntermediate":true},"rust":{"accept":true,"same":true}}
+{"id":"image-patch-15","kind":"damaged","mutations":["wrong-type /starred"],"value":{"boardId":"board-2","starred":"true","isIntermediate":false},"rust":{"accept":false}}
+{"id":"image-patch-16","kind":"valid","mutations":["bool-flip /starred"],"value":{"boardId":"board-2","starred":false,"isIntermediate":false},"rust":{"accept":true,"same":true}}
+{"id":"image-patch-17","kind":"damaged","mutations":["unknown-field /"],"value":{"boardId":"board-2","starred":true,"isIntermediate":false,"zzUnknown":1},"rust":{"accept":true,"out":{"boardId":"board-2","starred":true,"isIntermediate":false}}}
+{"id":"image-patch-18","kind":"damaged","mutations":["drop /starred","unknown-field /"],"value":{"boardId":"board-2","isIntermediate":false,"zzUnknown":1},"rust":{"accept":true,"out":{"boardId":"board-2","isIntermediate":false}}}
+{"id":"image-patch-19","kind":"damaged","mutations":["strip-half /","unknown-field /"],"value":{"zzUnknown":1},"rust":{"accept":true,"out":{}}}
+{"id":"image-patch-20","kind":"valid","mutations":["strip-half /"],"value":{"starred":true,"isIntermediate":false},"rust":{"accept":true,"same":true}}
+{"id":"image-patch-21","kind":"damaged","mutations":["wrong-type /","enum-unknown /"],"value":"zz-unknown","rust":{"accept":false}}
+{"id":"image-patch-22","kind":"damaged","mutations":["wrong-type /starred"],"value":{"boardId":"board-2","starred":[],"isIntermediate":false},"rust":{"accept":false}}
+{"id":"image-patch-23","kind":"valid","mutations":["drop /starred","bool-flip /isIntermediate"],"value":{"boardId":"board-2","isIntermediate":true},"rust":{"accept":true,"same":true}}
+{"id":"image-patch-24","kind":"damaged","mutations":["null /isIntermediate","null /starred"],"value":{"boardId":"board-2","starred":null,"isIntermediate":null},"rust":{"accept":true,"out":{"boardId":"board-2"}}}
+{"id":"image-patch-25","kind":"damaged","mutations":["drop /starred","null /isIntermediate"],"value":{"boardId":"board-2","isIntermediate":null},"rust":{"accept":true,"out":{"boardId":"board-2"}}}
+{"id":"image-patch-26","kind":"valid","mutations":["drop /isIntermediate","bool-flip /starred"],"value":{"boardId":"board-2","starred":false},"rust":{"accept":true,"same":true}}
+{"id":"image-patch-27","kind":"damaged","mutations":["drop /boardId","null /starred"],"value":{"starred":null,"isIntermediate":false},"rust":{"accept":true,"out":{"isIntermediate":false}}}
+{"id":"image-patch-28","kind":"damaged","mutations":["wrong-type /isIntermediate"],"value":{"boardId":"board-2","starred":true,"isIntermediate":0},"rust":{"accept":false}}
+{"id":"image-patch-29","kind":"damaged","mutations":["wrong-type /isIntermediate"],"value":{"boardId":"board-2","starred":true,"isIntermediate":1},"rust":{"accept":false}}
+{"id":"image-patch-30","kind":"damaged","mutations":["wrong-type /starred"],"value":{"boardId":"board-2","starred":1,"isIntermediate":false},"rust":{"accept":false}}
+{"id":"image-patch-31","kind":"damaged","mutations":["wrong-type /isIntermediate","strip-half /"],"value":{"starred":true,"isIntermediate":0},"rust":{"accept":false}}
+{"id":"image-patch-32","kind":"damaged","mutations":["wrong-type /"],"value":1,"rust":{"accept":false}}
+{"id":"image-patch-33","kind":"damaged","mutations":["wrong-type /starred"],"value":{"boardId":"board-2","starred":0,"isIntermediate":false},"rust":{"accept":false}}
+{"id":"image-patch-34","kind":"damaged","mutations":["wrong-type /"],"value":"x","rust":{"accept":false}}
+{"id":"image-patch-35","kind":"valid","mutations":["bool-flip /starred","drop /boardId"],"value":{"starred":false,"isIntermediate":false},"rust":{"accept":true,"same":true}}
+{"id":"image-patch-36","kind":"damaged","mutations":["wrong-type /isIntermediate","number-shift /isIntermediate"],"value":{"boardId":"board-2","starred":true,"isIntermediate":2},"rust":{"accept":false}}
+{"id":"image-patch-37","kind":"damaged","mutations":["null /isIntermediate","drop /boardId"],"value":{"starred":true,"isIntermediate":null},"rust":{"accept":true,"out":{"starred":true}}}
+{"id":"image-patch-38","kind":"damaged","mutations":["wrong-type /starred","wrong-type /isIntermediate"],"value":{"boardId":"board-2","starred":[],"isIntermediate":0},"rust":{"accept":false}}
+{"id":"image-patch-39","kind":"damaged","mutations":["wrong-type /boardId"],"value":{"boardId":{},"starred":true,"isIntermediate":false},"rust":{"accept":false}}
