@@ -1,6 +1,6 @@
 # Proving that tests are good
 
-A test that passes proves nothing until you know it would fail on wrong code. This page is how to find out in novira: mutation testing, fault injection for the test harnesses a mutation tool cannot reach, the signs of a hollow test, flaky tests, and how to read the coverage report. It extends `SKILL.md` section 4. What each existing technique checks is in [docs/test-techniques.md](../../../../docs/test-techniques.md).
+A test that passes proves nothing until you know it would fail on wrong code. This page is how to find out in novira: mutation testing, fault injection for the test harnesses a mutation tool cannot reach, the signs of a hollow test, flaky tests, and how to read the coverage report. It extends `SKILL.md` section 4. What each existing technique checks is in [docs/tests/README.md](../../../../docs/tests/README.md).
 
 Rules for everything below: never weaken, skip or delete a test to make a result pass, never lower a coverage floor, never exclude a file from coverage, never commit a fault you injected, and write the result per file in the report. One file's result says nothing about the others.
 

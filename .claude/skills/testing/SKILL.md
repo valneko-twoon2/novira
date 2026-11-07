@@ -6,7 +6,7 @@ user-invocable: true
 disable-model-invocation: false
 ---
 
-What must hold (which tests to change, which to run, which hostile inputs to try) is in `.claude/rules/tests.md` and `.claude/rules/security.md`; read them first. This skill is how to choose the kind of test and the cases, write them, and check what they reach. `docs/test-techniques.md` lists what the repository already has, by layer.
+What must hold (which tests to change, which to run, which hostile inputs to try) is in `.claude/rules/tests.md` and `.claude/rules/security.md`; read them first. This skill is how to choose the kind of test and the cases, write them, and check what they reach. `docs/tests/README.md` lists what the repository already has, by layer.
 
 ## 1. Read what exists
 
@@ -80,7 +80,7 @@ Measured: frontend statements, branches, functions and lines (floors in `fronten
 
 ## 6. Adding a kind the project lacks
 
-A kind marked "no" in section 2 is added only from its recipe in [gaps.md](reference/gaps.md) (or the "no" part of [randomized.md](reference/randomized.md) and [systems.md](reference/systems.md)), and only after the user agrees to what the recipe marks as needing confirmation: a new dependency or tool, a CI change, or a change to the code to give the test a seam (a stage hook, a switchable lock). Tell the user the kind, the files and the workflow it touches, and the effort, then proceed on a yes. Add one kind at a time, with its own test of the test (it fails when the fault is injected), its row in `docs/test-techniques.md`, and its place in `affected.mjs` or CI as the recipe says. CI grows one check at a time, each after it is seen to pass on the runner (`docs/design/ci.md`). Formal methods (model checking, Kani, proofs) are on hold at the user's request; do not start them unasked.
+A kind marked "no" in section 2 is added only from its recipe in [gaps.md](reference/gaps.md) (or the "no" part of [randomized.md](reference/randomized.md) and [systems.md](reference/systems.md)), and only after the user agrees to what the recipe marks as needing confirmation: a new dependency or tool, a CI change, or a change to the code to give the test a seam (a stage hook, a switchable lock). Tell the user the kind, the files and the workflow it touches, and the effort, then proceed on a yes. Add one kind at a time, with its own test of the test (it fails when the fault is injected), its row in the layer page under `docs/tests/`, and its place in `affected.mjs` or CI as the recipe says. CI grows one check at a time, each after it is seen to pass on the runner (`docs/design/ci.md`). Formal methods (model checking, Kani, proofs) are on hold at the user's request; do not start them unasked.
 
 ## 7. Report
 

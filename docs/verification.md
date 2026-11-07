@@ -19,7 +19,7 @@ A change that touches only `AGENTS.md`, `README.md`, `docs/`, `.claude/rules/` o
 
 ## Kinds of tests
 
-What each technique checks, in which part of the product, and which CI job runs it: [test-techniques.md](test-techniques.md).
+What each technique checks, in which part of the product, and which CI job runs it: [tests/README.md](tests/README.md).
 
 | Kind | Where | Run | Update on purpose |
 |---|---|---|---|

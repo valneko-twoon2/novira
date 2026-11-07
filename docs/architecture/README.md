@@ -58,7 +58,7 @@ src-tauri  ── commands.rs (validate) ──▶ novira-core::service ──�
 | `frontend/` | the UI, its tests (`tests/`, `e2e/`) and the scripts tied to it |
 | `backend/` | the Cargo workspace: `crates/novira-core/`, `crates/novira-server/`, `src-tauri/` |
 | `contract/` | JSON fixtures of the wire types, checked by both sides |
-| `docs/` | `design/` each feature's specification and security, `manual/<language>/` the manual, `development.md`, `verification.md`, `test-techniques.md` |
+| `docs/` | `design/` feature specs and security, `manual/<language>/` the manual, `development.md`, `verification.md`, `tests/` test techniques |
 | `scripts/` | what you run by hand: the Windows launchers (`.bat`); in `tools/`, what AI sessions, Git hooks and CI call |
 | `.githooks/`, `.github/`, `.claude/`, `.config/` | the Git hooks (sh wrapper + Node body); the test and release workflows; Claude Code hooks, rules and skills; the pinned .NET tool of the coverage report ([tooling.md](tooling.md)) |
 | `novira-data/`, `data/`, `outputs/` | user data and generated files, never committed; `novira-data/work/` holds what the harness generates (verification data, builds, scratch) |

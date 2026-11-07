@@ -9,7 +9,7 @@
 | ユーザーに向けた文すべて（回答、途中経過、ツール実行の前後の一言、確認・質問、エラーの説明、報告）。英語の進行文（「Let me…」など）も書かない | **日本語** |
 | サブエージェントへの依頼文 | 英語でよい。「報告は日本語で書く」と書き、受け取った報告はユーザーに渡す部分を日本語でまとめ直す |
 | コミットメッセージ | **日本語**。1 行目は `feat:`・`fix:`・`docs:`・`chore:` などの種類から（[commit-messages.md](.claude/rules/commit-messages.md)。commit-msg フック） |
-| `docs/`（`docs/manual/<言語>/` はその言語）、`.claude/`、コードの識別子とコメント、テスト名 | **英語** |
+| `docs/`（`docs/manual/<言語>/` はその言語。`docs/tests/` だけは日本語で、ほかは日本語化の途中）、`.claude/`、コードの識別子とコメント、テスト名 | **英語** |
 | `AGENTS.md`・`README.md`・`CHANGELOG.md` | 日本語 |
 | 画面に表示する文言 | **i18n のカタログだけ**。ja と en を同じ変更で書く（[i18n.md](.claude/rules/i18n.md)。pre-commit） |
 
