@@ -6,6 +6,7 @@ import { useTextEditor } from '@/state/text/textEditor';
 import { BUBBLE_SHAPES, type Layer } from '@/state/text/textModel';
 import { Button, cx, IconButton, NumberInput, Select } from '@/ui';
 import { SHAPE_LABELS, LayerProperties } from './LayerProperties';
+import { RichSection } from './RichSection';
 import { TextPresetBar } from './TextPresetBar';
 import './text.css';
 
@@ -33,6 +34,7 @@ export function TextPanel() {
             <LayerProperties key={selected.id} layer={selected} />
           </section>
         )}
+        {selected?.type === 'text' && <RichSection key={selected.id} layer={selected} />}
       </div>
     </div>
   );

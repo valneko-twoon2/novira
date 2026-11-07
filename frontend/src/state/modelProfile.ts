@@ -1,6 +1,6 @@
 // Recommended values of a main model ("profile"): its default settings, else a base-specific fallback.
 import { fixedSampling, type ModelConfig, type Sampling, type SchedulerName } from '@/backend';
-import type { ParamsState } from '@/state/params';
+import type { ParamsState } from './params';
 import { recommendedPrompts } from './recommendedPrompts';
 
 export interface ModelProfile {

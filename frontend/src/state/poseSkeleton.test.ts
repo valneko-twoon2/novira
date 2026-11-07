@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pickDepthModel, pickPoseModel, POSE_COLORS, POSE_JOINT_NAMES, POSE_LIMBS, POSE_MIRROR, poseLimbColor, poseStick } from './poseSkeleton';
+import { pickDepthModel, pickLineModel, pickPoseModel, POSE_COLORS, POSE_JOINT_NAMES, POSE_LIMBS, POSE_MIRROR, poseLimbColor, poseStick } from './poseSkeleton';
 
 describe('the OpenPose skeleton', () => {
   it('has 18 joints, 17 limbs between them and a colour for each', () => {
@@ -52,6 +52,23 @@ describe('pickPoseModel', () => {
     expect(pickPoseModel([model('canny-sdxl')], 'sdxl')).toBeNull();
     expect(pickPoseModel([model('openpose-lora', 'sdxl', 'lora')], 'sdxl')).toBeNull();
     expect(pickPoseModel([], null)).toBeNull();
+  });
+});
+
+describe('pickLineModel', () => {
+  const model = (name: string, base = 'sdxl', type = 'controlnet') => ({ name, base, type, path: '', source: '' });
+
+  it('prefers a model made for line art or canny edges, then a union model, and only one that fits the main model', () => {
+    const models = [model('openpose-sdxl'), model('controlnet-union-promax-sdxl'), model('canny-sdxl'), model('lineart-sd1', 'sd-1')];
+    expect(pickLineModel(models, 'sdxl')?.name).toBe('canny-sdxl');
+    expect(pickLineModel(models.filter((m) => m.name !== 'canny-sdxl'), 'sdxl')?.name).toBe('controlnet-union-promax-sdxl');
+    expect(pickLineModel(models, 'sd-1')?.name).toBe('lineart-sd1');
+  });
+
+  it('is null when nothing can read lines, and ignores models that are not ControlNets', () => {
+    expect(pickLineModel([model('openpose-sdxl')], 'sdxl')).toBeNull();
+    expect(pickLineModel([model('lineart-lora', 'sdxl', 'lora')], 'sdxl')).toBeNull();
+    expect(pickLineModel([], null)).toBeNull();
   });
 });
 

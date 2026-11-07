@@ -6,7 +6,7 @@ import { useModels } from '@/state/models';
 import { useParams } from '@/state/params';
 import { useToasts } from '@/state/toasts';
 import { applyRecommended, selectMainModel } from './selectMainModel';
-import { modelProfile } from './modelProfile';
+import { modelProfile } from '@/state/modelProfile';
 
 const model = (key: string, base: BaseModel, type: ModelConfig['type'] = 'main', defaults?: ModelConfig['defaultSettings']): ModelConfig => ({
   key,

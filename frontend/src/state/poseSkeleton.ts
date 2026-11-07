@@ -81,6 +81,11 @@ export function pickPoseModel<M extends ControlModel>(models: M[], mainBase: str
   return pickControlModel(models, mainBase, /openpose/i);
 }
 
+/** The models that can read a line drawing, best first: a model named for line art or canny edges, then a union ControlNet. */
+export function pickLineModel<M extends ControlModel>(models: M[], mainBase: string | null): M | null {
+  return pickControlModel(models, mainBase, /lineart|canny/i);
+}
+
 /** The models that can read a depth map, best first: a model named for depth, then a union ControlNet. */
 export function pickDepthModel<M extends ControlModel>(models: M[], mainBase: string | null): M | null {
   return pickControlModel(models, mainBase, /depth/i);

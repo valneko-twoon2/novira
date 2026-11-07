@@ -29,6 +29,7 @@ One page per feature, each the current specification of that feature: how it beh
 | [gallery-share.md](gallery-share.md) | The gallery's files and boards, the image scheme, export for sharing, the watermark and content credentials |
 | [gallery-files.md](gallery-files.md) | Where the gallery's files are under `outputs/`: a folder per board, drafts apart, file names with the time |
 | [gallery-trash.md](gallery-trash.md) | Deleting pictures: the trash that keeps them for 14 days, and undo and redo of a deletion |
+| [text-rich.md](text-rich.md) | The Text tab's "finish with AI": a text layer's letters painted by an image-to-image run (looks, line ControlNet, cut to the letters, candidates, stale pictures) |
 | [image-tools.md](image-tools.md) | The picture tools (fix the face, remove the background, describe as a prompt, read poses): the "Fix" group of the picture menu that runs at once, the tool band over the viewer, runs that go on when the band closes |
 | [gallery-view.md](gallery-view.md) | The gallery grid and the viewer on a picture being drawn: the cell at the start of the grid, the large live picture |
 | [comic-canvas.md](comic-canvas.md) | The saved canvas document and comic projects, the font list |

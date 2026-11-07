@@ -9,7 +9,7 @@ import { DEFAULT_HIRES, useParams } from '@/state/params';
 import { useWildcards } from '@/state/prompts/wildcards';
 import { buildGenerateRequest, buildUpscaleRequest, dynamicBatches } from './buildRequest';
 import { autoSelectModels } from './model/autoSelect';
-import { modelProfile, profileMismatches } from './model/modelProfile';
+import { modelProfile, profileMismatches } from '@/state/modelProfile';
 import { applyRecommended } from './model/selectMainModel';
 import { generateReadiness, generateWarnings, paramsReadiness, upscaleReadiness } from './readiness';
 

@@ -46,12 +46,47 @@ interface LayerBase {
   locked: boolean;
 }
 
+/** What the AI painted for a text layer: it takes the place of the fill; the outlines and the shadow stay drawn from the style. */
+export interface RichFill {
+  /** The stored picture, a hidden gallery image (isIntermediate), transparent outside the letters. */
+  imageName: string;
+  /** Every picture made for this lettering, newest first; `imageName` is one of them. At most RICH_CANDIDATES_MAX. */
+  candidates: string[];
+  /** The picture's box around the layer's centre, in image pixels, at `fontSize`. */
+  width: number;
+  height: number;
+  /** The font size it was made at: the box scales with the layer, so resizing costs no new job. */
+  fontSize: number;
+  /** `richSourceKey` of the layer it was made for. */
+  sourceKey: string;
+}
+
+export const RICH_CANDIDATES_MAX = 12;
+
 export interface TextLayer extends LayerBase {
   type: 'text';
   text: string;
   style: TextStyle;
   /** Arc of a horizontal text line: -100 (smile) to 100 (arch); 0 is straight. */
   bend: number;
+  /** An AI-painted fill (absent: the style's own fill). Old saved scenes have none. */
+  rich?: RichFill;
+}
+
+/**
+ * What the shape of the letters depends on: colours, position, rotation, opacity and the font size are left out on purpose.
+ * The letter spacing counts as a share of the font size in steps of 2% of an em, because the corner handles scale the style
+ * with rounding and must not make a picture stale.
+ */
+export function richSourceKey(layer: TextLayer): string {
+  const s = layer.style;
+  const spacing = Math.round((s.letterSpacing / s.fontSize) * 50);
+  return JSON.stringify([layer.text, s.fontFamily, s.fontWeight, s.lineHeight, s.align, s.vertical, layer.bend, spacing]);
+}
+
+/** True when the layer has an AI fill that was made for the lettering it has now. */
+export function richIsCurrent(layer: TextLayer): boolean {
+  return layer.rich !== undefined && layer.rich.sourceKey === richSourceKey(layer);
 }
 
 export const BUBBLE_SHAPES = ['round', 'box', 'cloud', 'burst', 'whisper', 'narration'] as const;
