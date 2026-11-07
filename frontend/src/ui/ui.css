@@ -480,7 +480,7 @@
   padding: 0 6px;
   border-radius: var(--radius-sm);
   background: var(--base-700);
-  color: var(--text-muted);
+  color: var(--base-200);
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -503,7 +503,7 @@
 }
 
 .ui-badge--success {
-  background: var(--green-500);
+  background: var(--success-solid);
   color: var(--base-950);
 }
 

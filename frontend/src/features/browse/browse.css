@@ -314,7 +314,7 @@
   left: var(--space-2);
   padding: 2px 7px;
   border-radius: var(--radius-pill);
-  background: var(--yellow-600);
+  background: var(--yellow-700);
   color: var(--white);
   font-size: var(--fs-xs);
   font-weight: 600;

@@ -111,6 +111,10 @@
   font-variant-numeric: tabular-nums;
 }
 
+.mm-rail__item.is-active .mm-rail__count {
+  color: var(--text-muted);
+}
+
 .mm-rail__divider {
   height: 1px;
   margin: var(--space-2);

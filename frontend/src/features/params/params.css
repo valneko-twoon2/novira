@@ -713,7 +713,7 @@
   border: 1px solid var(--warning);
   border-radius: var(--radius);
   background: var(--bg-input);
-  color: var(--warning);
+  color: var(--warning-text);
   font-size: var(--fs-xs);
 }
 
