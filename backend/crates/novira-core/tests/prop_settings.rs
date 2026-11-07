@@ -5,9 +5,7 @@
 //! Run: `cargo test -p novira-core --test prop_settings`.
 mod prop_common;
 
-use novira_core::settings::{
-    check_package, check_start_timeout, Settings, SETTINGS_FILE, START_TIMEOUT_SECS,
-};
+use novira_core::settings::{check_package, check_start_timeout, Settings, SETTINGS_FILE};
 use prop_common::{any_text, check, check_up_to, json_value, nasty_string};
 use proptest::prelude::*;
 use serde_json::{json, Map, Value};
@@ -185,7 +183,7 @@ fn the_start_timeout_and_package_checks_accept_exactly_their_range() {
         |secs| {
             prop_assert_eq!(
                 check_start_timeout(secs).is_ok(),
-                START_TIMEOUT_SECS.contains(&secs)
+                (30..=1800).contains(&secs)
             );
             Ok(())
         },
