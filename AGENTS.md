@@ -24,7 +24,7 @@
 | `frontend/` | UI（React 19 + TypeScript + Vite）。ブラウザではメモリ上のモック、アプリでは Rust のバックエンドへつながる |
 | `backend/crates/novira-core/` | バックエンド本体（ライブラリ）。SQLite、画像、キュー、モデル、ComfyUI のインストールと起動、拡張機能、AI アシスタント |
 | `backend/src-tauri/` | Tauri 2 の薄いシェル（IPC、画像の URL スキーム、ウィンドウ） |
-| `novira-data/` | ユーザーのデータ（`NOVIRA_DATA_DIR` で変更）。ハーネスが使えるのは `novira-data/work/` だけ |
+| `novira-data/` | ユーザーのデータ（`NOVIRA_DATA_DIR` で変更）。この中でハーネスが使えるのは `novira-data/work/` だけ |
 | `logs/` | テスト結果とレポート（git の対象外） |
 
 起動は `scripts\start.bat`（壊れたら `scripts\start.bat clean`）、フロントを頻繁に直すなら `scripts\dev.bat`。`make` は無い。
