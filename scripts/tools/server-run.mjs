@@ -4,7 +4,7 @@
 // (settings.json `modelRoots`), the GPU lock comes from NOVIRA_GPU_LOCK like the app's.
 //
 //   import { startServer, ensureBuilt } from './server-run.mjs';
-//   ensureBuilt({ build: false });
+//   ensureBuilt();
 //   const server = await startServer({ data });   // server.url carries the token; server.origin is http://127.0.0.1:<port>
 //   ... drive server.url with Playwright ...
 //   await server.stop();
@@ -27,19 +27,18 @@ export function serverLayout(env = process.env, roots = ROOTS, repo = REPO) {
 
 /**
  * Brings the harness build of the frontend up to date (reused when its sources are unchanged; never frontend/dist, which
- * may be the user's app build) and builds the server when it is missing (or always with `build`). Throws when a build fails.
+ * may be the user's app build) and builds the server. Cargo is always asked, and does nothing when the server is current: an
+ * exe that is merely there can be another commit's (a restored CI cache, a branch switch). Throws when a build fails.
  */
-export function ensureBuilt({ build = false, layout = serverLayout(), repo = REPO } = {}) {
+export function ensureBuilt({ layout = serverLayout(), repo = REPO, exec = spawnSync, buildDist = buildHarnessDist } = {}) {
   const run = (name, cmd, args, cwd, env) => {
-    const r = spawnSync(cmd, args, { cwd, env, stdio: 'inherit' });
+    const r = exec(cmd, args, { cwd, env, stdio: 'inherit' });
     if (r.status !== 0) throw new Error(`${name} failed (exit ${r.status ?? r.signal})`);
   };
   log('building the frontend (the harness build, reused when current)');
-  buildHarnessDist(repo);
-  if (build || !fs.existsSync(layout.exe)) {
-    log(`building the server into ${layout.target}`);
-    run('server build', cargoCommand(), ['build', '-p', 'novira-server', '-j', '4'], path.join(repo, 'backend'), { ...process.env, CARGO_TARGET_DIR: layout.target });
-  }
+  buildDist(repo);
+  log(`building the server into ${layout.target}`);
+  run('server build', cargoCommand(), ['build', '-p', 'novira-server', '-j', '4'], path.join(repo, 'backend'), { ...process.env, CARGO_TARGET_DIR: layout.target });
 }
 
 /** Stops python processes whose command line names this data folder (the engine the server started for it). */

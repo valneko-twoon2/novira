@@ -6,7 +6,7 @@
 //                               [--lookup] [--lookup-wait <seconds>] [--via app|server]
 // --via server (default app) runs the same checks through novira-server and Playwright's Chromium instead of the desktop window
 // (scripts/tools/server-run.mjs; docs/design/browser-server.md): what a browser cannot see (native dialogs, the novira-image:// scheme,
-// WebView2 rendering) is not checked, see docs/verification.md.
+// WebView2 rendering) is not checked, see docs/verification.md. The server is always built, so --build only matters for the window.
 // It runs the isolated app (scripts/tools/verify-real-app.mjs) with the Civitai lookup off, and drives it with scripts/tools/models-sweep-app.mjs.
 // With --lookup it runs a second round with the lookup ON. That round SENDS THE HASH OF EVERY MODEL FILE to Civitai (the shared
 // model folder included), so it never runs by itself, also not with --model or --category: only on request. Without it the check
@@ -108,7 +108,7 @@ async function runPhaseWith(phase, { out, data, roots, opts, gpu, build, keep })
   let status;
   if (opts.via === 'server') {
     // One heavy browser run at a time (e2e lock); the server opens the data folder itself, so the app must not be running on it.
-    ensureBuilt({ build });
+    ensureBuilt();
     const release = await acquire({ what: `models-sweep via server (${phase})` });
     const server = await startServer({ data });
     try {
