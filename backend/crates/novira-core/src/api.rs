@@ -84,7 +84,7 @@ fn take<T: serde::de::DeserializeOwned>(
 ) -> Result<T, CallError> {
     let key = camel(snake);
     let value = args.remove(&key).unwrap_or(Value::Null);
-    serde_json::from_value(value).map_err(|e| CallError::BadArguments(format!("{key}: {e}")))
+    crate::strict::from_value(value).map_err(|e| CallError::BadArguments(format!("{key}: {e}")))
 }
 
 /// The JSON text of a command's result. Written straight to text: going through a `Value` first made a large answer

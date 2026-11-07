@@ -553,7 +553,7 @@ impl Backend {
             }
         }
         let updated: ModelConfig =
-            serde_json::from_value(v).map_err(|e| BackendError::Invalid(e.to_string()))?;
+            crate::strict::from_value(v).map_err(|e| BackendError::Invalid(e.to_string()))?;
         *model = updated.clone();
         drop(s);
         self.db().put(Table::Models, key, 0, &updated)?;

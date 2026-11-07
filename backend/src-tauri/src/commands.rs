@@ -13,6 +13,7 @@ use novira_core::models::civitai::samples::Sample;
 use novira_core::models::civitai::updates::ModelUpdate;
 use novira_core::models::civitai::{SearchParams, SearchResult};
 use novira_core::packs::{PackKind, PackStatus};
+use novira_core::strict::Strict;
 use novira_core::sync::LockExt;
 use novira_core::types::*;
 use novira_core::unfinished::UnfinishedDownload;
@@ -46,8 +47,12 @@ pub fn create_board(
 }
 
 #[tauri::command]
-pub fn update_board(backend: State<'_, Backend>, id: String, patch: BoardPatch) -> Res<BoardDTO> {
-    guard(|| call::update_board(&backend, id, patch))
+pub fn update_board(
+    backend: State<'_, Backend>,
+    id: String,
+    patch: Strict<BoardPatch>,
+) -> Res<BoardDTO> {
+    guard(|| call::update_board(&backend, id, patch.0))
 }
 
 #[tauri::command]
@@ -69,7 +74,7 @@ pub async fn upload_image(
         return Err("upload_image expects the image bytes as the request body".into());
     };
     let opts: ImageOptions = match request.headers().get(UPLOAD_OPTIONS_HEADER) {
-        Some(v) => serde_json::from_str(v.to_str().map_err(|e| e.to_string())?)
+        Some(v) => novira_core::strict::from_str(v.to_str().map_err(|e| e.to_string())?)
             .map_err(|e| e.to_string())?,
         None => ImageOptions::default(),
     };
@@ -80,9 +85,9 @@ pub async fn upload_image(
 pub fn update_images(
     backend: State<'_, Backend>,
     names: Vec<String>,
-    patch: ImagePatch,
+    patch: Strict<ImagePatch>,
 ) -> Res<Vec<ImageDTO>> {
-    guard(|| call::update_images(&backend, names, patch))
+    guard(|| call::update_images(&backend, names, patch.0))
 }
 
 #[tauri::command]
@@ -96,8 +101,11 @@ pub fn restore_images(backend: State<'_, Backend>, names: Vec<String>) -> Res<Ve
 }
 
 #[tauri::command]
-pub fn enqueue(backend: State<'_, Backend>, request: EnqueueRequest) -> Res<Vec<QueueItem>> {
-    guard(|| call::enqueue(&backend, request))
+pub fn enqueue(
+    backend: State<'_, Backend>,
+    request: Strict<EnqueueRequest>,
+) -> Res<Vec<QueueItem>> {
+    guard(|| call::enqueue(&backend, request.0))
 }
 
 #[tauri::command]
@@ -134,9 +142,9 @@ pub fn resume_processor(backend: State<'_, Backend>) -> Res<()> {
 pub fn retry_queue_item(
     backend: State<'_, Backend>,
     id: u64,
-    size: Option<RetrySize>,
+    size: Option<Strict<RetrySize>>,
 ) -> Res<Option<QueueItem>> {
-    guard(|| call::retry_queue_item(&backend, id, size))
+    guard(|| call::retry_queue_item(&backend, id, size.map(|s| s.0)))
 }
 
 #[tauri::command]
@@ -231,8 +239,9 @@ pub async fn list_hugging_face_files(
 #[tauri::command]
 pub async fn search_civitai(
     backend: State<'_, Backend>,
-    params: SearchParams,
+    params: Strict<SearchParams>,
 ) -> Res<SearchResult> {
+    let params = params.0;
     call::search_civitai(&backend, params).await
 }
 
@@ -314,7 +323,11 @@ pub async fn face_rig_library(backend: State<'_, Backend>) -> Res<Value> {
 }
 
 #[tauri::command]
-pub async fn face_rig_preview(backend: State<'_, Backend>, request: FaceRigPreview) -> Res<Value> {
+pub async fn face_rig_preview(
+    backend: State<'_, Backend>,
+    request: Strict<FaceRigPreview>,
+) -> Res<Value> {
+    let request = request.0;
     call::face_rig_preview(&backend, request).await
 }
 
@@ -344,9 +357,9 @@ pub fn engine_settings(backend: State<'_, Backend>) -> Res<EngineSettings> {
 #[tauri::command]
 pub fn set_engine_settings(
     backend: State<'_, Backend>,
-    patch: EngineSettingsPatch,
+    patch: Strict<EngineSettingsPatch>,
 ) -> Res<EngineSettings> {
-    guard(|| call::set_engine_settings(&backend, patch))
+    guard(|| call::set_engine_settings(&backend, patch.0))
 }
 
 /// Asks for a folder and adds it to the extra model folders; `null` when the user cancels the dialog.
@@ -438,35 +451,42 @@ pub async fn agent_login(backend: State<'_, Backend>, provider: AgentProvider) -
 #[tauri::command]
 pub async fn agent_endpoint_save(
     backend: State<'_, Backend>,
-    input: AgentEndpointInput,
+    input: Strict<AgentEndpointInput>,
 ) -> Res<AgentStatus> {
+    let input = input.0;
     call::agent_endpoint_save(&backend, input).await
 }
 
 #[tauri::command]
 pub async fn agent_endpoint_models(
     backend: State<'_, Backend>,
-    input: AgentEndpointInput,
+    input: Strict<AgentEndpointInput>,
 ) -> Res<Vec<String>> {
+    let input = input.0;
     call::agent_endpoint_models(&backend, input).await
 }
 
 #[tauri::command]
 pub async fn agent_endpoint_test(
     backend: State<'_, Backend>,
-    input: AgentEndpointInput,
+    input: Strict<AgentEndpointInput>,
 ) -> Res<AgentEndpointTest> {
+    let input = input.0;
     call::agent_endpoint_test(&backend, input).await
 }
 
 #[tauri::command]
-pub async fn agent_chat(backend: State<'_, Backend>, request: AgentRequest) -> Res<AgentReply> {
+pub async fn agent_chat(
+    backend: State<'_, Backend>,
+    request: Strict<AgentRequest>,
+) -> Res<AgentReply> {
+    let request = request.0;
     call::agent_chat(&backend, request).await
 }
 
 #[tauri::command]
-pub fn agent_tool_result(backend: State<'_, Backend>, answer: AgentToolAnswer) -> Res<()> {
-    guard(|| call::agent_tool_result(&backend, answer))
+pub fn agent_tool_result(backend: State<'_, Backend>, answer: Strict<AgentToolAnswer>) -> Res<()> {
+    guard(|| call::agent_tool_result(&backend, answer.0))
 }
 
 #[tauri::command]
@@ -545,8 +565,11 @@ pub fn set_civitai_key(backend: State<'_, Backend>, key: Option<String>) -> Res<
 }
 
 #[tauri::command]
-pub fn save_workflow(backend: State<'_, Backend>, workflow: WorkflowInput) -> Res<SavedWorkflow> {
-    guard(|| call::save_workflow(&backend, workflow))
+pub fn save_workflow(
+    backend: State<'_, Backend>,
+    workflow: Strict<WorkflowInput>,
+) -> Res<SavedWorkflow> {
+    guard(|| call::save_workflow(&backend, workflow.0))
 }
 
 /// Smallest and largest zoom of the whole UI (Ctrl+- / Ctrl++ in the desktop app).
@@ -661,8 +684,9 @@ pub async fn export_images(
     backend: State<'_, Backend>,
     last: State<'_, LastExport>,
     names: Vec<String>,
-    options: ExportOptions,
+    options: Strict<ExportOptions>,
 ) -> Res<Option<ExportResult>> {
+    let options = options.0;
     backend.check_export(&names, &options).map_err(msg)?;
     let Some(folder) = crate::dialogs::pick_folder(&webview).await else {
         return Ok(None);
@@ -915,6 +939,38 @@ mod tests {
             checked += 1;
         }
         assert_eq!(checked, novira_core::api::NAMES.len());
+    }
+
+    #[test]
+    fn a_command_argument_that_is_a_struct_is_read_strictly() {
+        // serde alone reads a JSON array as the fields of a struct in order; `Strict<T>` refuses it (novira_core::strict).
+        let code = include_str!("commands.rs");
+        let command =
+            regex::Regex::new(r"#\[tauri::command\]\s*pub (?:async )?fn (\w+)\(([^)]*)\)").unwrap();
+        let param = regex::Regex::new(r"(?:^|,)\s*(\w+)\s*:\s*([^,]+)").unwrap();
+        let wire = regex::Regex::new(
+            r"\b(BoardPatch|ImagePatch|EnqueueRequest|RetrySize|SearchParams|FaceRigPreview|EngineSettingsPatch|AgentEndpointInput|AgentRequest|AgentToolAnswer|WorkflowInput|ExportOptions)\b",
+        )
+        .unwrap();
+        let mut loose = Vec::new();
+        let mut strict = 0;
+        for c in command.captures_iter(code) {
+            for p in param.captures_iter(&c[2]) {
+                let ty = p[2].trim();
+                if wire.is_match(ty) {
+                    if ty.contains("Strict<") {
+                        strict += 1;
+                    } else {
+                        loose.push(format!("{}({})", &c[1], &p[1]));
+                    }
+                }
+            }
+        }
+        assert!(
+            loose.is_empty(),
+            "wrap these arguments in Strict<..>: {loose:?}"
+        );
+        assert!(strict >= 13, "{strict}");
     }
 
     #[test]

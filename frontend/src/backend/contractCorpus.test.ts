@@ -133,15 +133,6 @@ const DESIGNED: { name: string; reason: string; explains: (s: Seen) => boolean }
     explains: ({ c, ts, rust }) => rust.accept && ts.accept && kinds(c).includes('unknown-field') && subset(ts.out, rust.out),
   },
   {
-    // known bug: serde's derived Deserialize reads a JSON array as the struct's fields in order, so `[]` is an empty
-    // patch and `["pkg", 30]` is a patch with two fields. Nothing sends an array; the cost is that IPC input that is
-    // plainly the wrong shape is accepted. A fix needs a custom Deserialize (or a check of the JSON kind) per type, which
-    // is more than one line, so it is reported and left.
-    name: 'known-bug-rust-reads-an-array-as-a-struct',
-    reason: 'Rust accepts [] (all fields optional) where the type is an object, at the top or nested.',
-    explains: ({ c, ts, rust }) => rust.accept && !ts.accept && ts.got === 'array' && c.mutations.some((m) => nameOf(m) === 'wrong-type' && touches(m, ts.path)),
-  },
-  {
     name: 'ts-has-no-integer-type',
     reason: 'Rust refuses a number outside u32/u64/i64 or with a fraction; the TypeScript type is `number` and cannot say integer or range.',
     explains: ({ c, ts, rust }) => !rust.accept && ts.accept && kinds(c).includes('out-of-range'),

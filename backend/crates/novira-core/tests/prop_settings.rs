@@ -236,11 +236,14 @@ fn a_document_with_swapped_types_is_an_error_or_loads_and_never_panics() {
         put(dir.path(), &bad);
         assert!(Settings::load(dir.path()).is_err(), "{bad}");
     }
-    // An empty array reads as all defaults and an array is read field by field in order (a serde quirk of a struct
-    // with `default`); nothing in the app writes either.
-    let dir = tempfile::tempdir().unwrap();
-    put(dir.path(), &json!([]));
-    assert_eq!(Settings::load(dir.path()).unwrap(), Settings::default());
+    // An array is refused whatever it holds: serde alone would read `[]` as all defaults and `[null]` as a first field
+    // (`novira_core::strict`); nothing in the app writes one.
+    for array in [json!([]), json!([null]), json!([1, 2, 3])] {
+        let dir = tempfile::tempdir().unwrap();
+        put(dir.path(), &array);
+        let error = Settings::load(dir.path()).unwrap_err();
+        assert!(error.contains("sequence"), "{array}: {error}");
+    }
     let dir = tempfile::tempdir().unwrap();
     put(dir.path(), &Value::Null);
     assert!(Settings::load(dir.path()).is_err());
