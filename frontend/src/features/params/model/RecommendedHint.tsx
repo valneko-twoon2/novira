@@ -3,7 +3,7 @@ import { Check } from '@phosphor-icons/react';
 import { t } from '@/i18n';
 import { useParams } from '@/state/params';
 import { schedulerLabel } from '../labels';
-import { modelProfile } from './modelProfile';
+import { modelProfile } from '@/state/modelProfile';
 import { useMainModel } from './useMainModel';
 
 export type RecommendedKey = 'steps' | 'cfg' | 'scheduler' | 'width' | 'height';

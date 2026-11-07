@@ -2,7 +2,7 @@
 import type { ModelConfig } from '@/backend';
 import { useParams } from '@/state/params';
 import type { PromptKind } from '@/state/prompts/promptBook';
-import { recommendedPrompts } from '../model/recommendedPrompts';
+import { recommendedPrompts } from '@/state/recommendedPrompts';
 import { withTagsFirst, withTagsLast } from '@/state/prompts/promptTags';
 
 export const getPrompt = (kind: PromptKind): string => {

@@ -4,7 +4,7 @@ import { t } from '@/i18n';
 import { modelsOfType, useModels } from '@/state/models';
 import { ASPECT_RATIOS, useParams, type AspectRatioId, type ParamsFields } from '@/state/params';
 import { toast } from '@/state/toasts';
-import { modelProfile } from './modelProfile';
+import { modelProfile } from '@/state/modelProfile';
 
 function aspectOf(width: number, height: number): AspectRatioId {
   const ratio = width / height;

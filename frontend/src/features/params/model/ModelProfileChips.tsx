@@ -6,7 +6,7 @@ import { useParams } from '@/state/params';
 import { toast } from '@/state/toasts';
 import { Button, Popover, PopoverContent, PopoverTrigger } from '@/ui';
 import { schedulerLabel } from '../labels';
-import { modelProfile, profileMismatches, type ProfileKey } from './modelProfile';
+import { modelProfile, profileMismatches, type ProfileKey } from '@/state/modelProfile';
 import { applyRecommended } from './selectMainModel';
 
 export function ModelProfilePopover({ model }: { model: ModelConfig }) {

@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
@@ -35,11 +35,23 @@ export function themeBoot(): Plugin {
   };
 }
 
+/**
+ * Where `node_modules` really is. A git worktree links it to the main checkout's, which is outside `..`: the dev server
+ * would answer 403 for the fonts it serves from there. (Nothing to add in the main checkout, where it is inside.)
+ */
+function installedPackages(): string[] {
+  try {
+    return [realpathSync(here('node_modules'))];
+  } catch {
+    return [];
+  }
+}
+
 export default defineConfig({
   plugins: [woff2Only(), themeBoot(), react()],
   resolve: { alias: { '@': here('src') } },
   // The license files live at the repository root and the About dialog imports them as text (`?raw`).
-  server: { fs: { allow: [here('..')] } },
+  server: { fs: { allow: [here('..'), ...installedPackages()] } },
   // `public/` holds the browser mock's pictures, which the desktop app never shows: the build leaves them out (the dev server still serves them).
   // Its `theme-boot.js` is written by `themeBoot`.
   build: {

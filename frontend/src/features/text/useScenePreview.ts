@@ -8,6 +8,7 @@ import { checkerboard, measureCtx, paintSelection } from './canvasDraw';
 import { ensureFont } from '@/state/fonts';
 import type { Half } from './hit';
 import { layerHalfSize, renderScene } from './render';
+import { useRichPictures } from './richPictures';
 
 export interface ScenePreview {
   /** The background picture once loaded. */
@@ -26,6 +27,7 @@ export function useScenePreview(
   const halves = useRef(new Map<string, Half>());
   const [base, setBase] = useState<HTMLImageElement | null>(null);
   const [fontsTick, setFontsTick] = useState(0);
+  const rich = useRichPictures(scene);
   const dpr = typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1;
 
   // Background picture.
@@ -72,7 +74,7 @@ export function useScenePreview(
     if (!ctx) return;
     const transparent = scene.background.kind === 'color' && !scene.background.color;
     const noPicture = scene.background.kind === 'image' && !base;
-    renderScene(ctx, scene, base, cssScale * dpr, transparent || noPicture ? checkerboard : undefined);
+    renderScene(ctx, scene, base, cssScale * dpr, transparent || noPicture ? checkerboard : undefined, rich);
     const mctx = measureCtx();
     halves.current = new Map(scene.layers.map((l) => [l.id, layerHalfSize(mctx, l)]));
 
@@ -82,7 +84,7 @@ export function useScenePreview(
     const layer = scene.layers.find((l) => l.id === selectedId);
     const half = layer && halves.current.get(layer.id);
     if (layer && half && layer.visible) paintSelection(octx, layer, half, cssScale, dpr);
-  }, [scene, base, cssScale, dpr, selectedId, fontsTick, canvas, overlay]);
+  }, [scene, base, rich, cssScale, dpr, selectedId, fontsTick, canvas, overlay]);
 
   return { base, halves };
 }

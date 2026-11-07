@@ -2,7 +2,7 @@
 import { bubbleGeometry, type Cmd } from './bubble';
 import { fontCss } from '@/state/fonts';
 import { fitFontSize, layoutText, type Measure, type TextBlock } from './layout';
-import type { BubbleLayer, Layer, Scene, TextLayer, TextStyle } from '@/state/text/textModel';
+import { richIsCurrent, type BubbleLayer, type Layer, type Scene, type TextLayer, type TextStyle } from '@/state/text/textModel';
 import { unitChar } from './vertical';
 
 function measureWith(ctx: CanvasRenderingContext2D, style: TextStyle): Measure {
@@ -41,6 +41,12 @@ export function layerHalfSize(ctx: CanvasRenderingContext2D, layer: Layer): { hw
   const { block, style } = layoutLayer(ctx, layer);
   const pad = (style.stroke?.width ?? 0) + (style.outline?.width ?? 0) + 2;
   return { hw: block.width / 2 + pad, hh: block.height / 2 + pad };
+}
+
+/** Half size of a text layer's letters alone (no outline padding), for the frame of an AI fill. */
+export function letterHalfSize(ctx: CanvasRenderingContext2D, layer: TextLayer): { hw: number; hh: number } {
+  const { block } = layoutLayer(ctx, layer);
+  return { hw: block.width / 2, hh: block.height / 2 };
 }
 
 function trace(ctx: CanvasRenderingContext2D, cmds: Cmd[]): void {
@@ -150,8 +156,42 @@ function fillOf(ctx: CanvasRenderingContext2D, style: TextStyle, block: TextBloc
   return g;
 }
 
+/** The AI picture that takes the place of a layer's fill, and the box it covers around the layer's centre in image pixels. */
+interface RichPaint {
+  picture: CanvasImageSource;
+  width: number;
+  height: number;
+}
+
+/** The pictures of AI fills by stored image name: what `renderScene` paints in place of the fill of a layer that has one. */
+export type RichPictures = ReadonlyMap<string, CanvasImageSource>;
+
+/** The AI fill of a layer to paint now: it must be current and its picture loaded; otherwise the style's own fill shows. */
+function richPaintOf(layer: TextLayer, pictures: RichPictures | undefined): RichPaint | undefined {
+  const rich = layer.rich;
+  if (!rich || !pictures || !richIsCurrent(layer)) return undefined;
+  const picture = pictures.get(rich.imageName);
+  if (!picture) return undefined;
+  const k = layer.style.fontSize / rich.fontSize;
+  return { picture, width: rich.width * k, height: rich.height * k };
+}
+
+/**
+ * The glyphs of a text layer in solid white, centred on the middle of the canvas at `scale` (picture pixels per image pixel),
+ * with no outline, shadow, rotation or opacity: the shape "finish with AI" gives the model and cuts its picture by.
+ */
+export function drawWhiteGlyphs(ctx: CanvasRenderingContext2D, layer: TextLayer, scale: number): void {
+  ctx.save();
+  ctx.translate(ctx.canvas.width / 2, ctx.canvas.height / 2);
+  ctx.scale(scale, scale);
+  const laid = layoutLayer(ctx, layer);
+  ctx.fillStyle = '#ffffff';
+  drawGlyphs(ctx, laid.block, laid.style, layer.bend, 'fill');
+  ctx.restore();
+}
+
 /** Outer outline, inner outline, then the fill; the shadow belongs to the outermost shape. */
-function paintBlock(ctx: CanvasRenderingContext2D, laid: LaidOut, bend: number): void {
+function paintBlock(ctx: CanvasRenderingContext2D, laid: LaidOut, bend: number, rich?: RichPaint): void {
   const { block, style } = laid;
   ctx.lineJoin = 'round';
   ctx.miterLimit = 2;
@@ -182,6 +222,11 @@ function paintBlock(ctx: CanvasRenderingContext2D, laid: LaidOut, bend: number):
     ctx.strokeStyle = style.stroke.color;
     ctx.lineWidth = 2 * style.stroke.width;
     withShadow(() => drawGlyphs(ctx, block, style, bend, 'stroke'));
+  }
+  if (rich) {
+    // The picture is transparent outside the letters (and the look it spilled), so what is under it shows through.
+    withShadow(() => ctx.drawImage(rich.picture, -rich.width / 2, -rich.height / 2, rich.width, rich.height));
+    return;
   }
   ctx.fillStyle = fillOf(ctx, style, block);
   withShadow(() => drawGlyphs(ctx, block, style, bend, 'fill'));
@@ -219,17 +264,17 @@ function drawBubble(ctx: CanvasRenderingContext2D, layer: BubbleLayer): void {
   if (layer.text.trim() !== '') paintBlock(ctx, layoutLayer(ctx, layer), 0);
 }
 
-function drawLayerContent(ctx: CanvasRenderingContext2D, layer: Layer): void {
+function drawLayerContent(ctx: CanvasRenderingContext2D, layer: Layer, pictures?: RichPictures): void {
   ctx.translate(layer.x, layer.y);
   ctx.rotate((layer.rotation * Math.PI) / 180);
   if (layer.type === 'bubble') drawBubble(ctx, layer);
-  else if ((layer as TextLayer).text !== '') paintBlock(ctx, layoutLayer(ctx, layer), layer.bend);
+  else if ((layer as TextLayer).text !== '') paintBlock(ctx, layoutLayer(ctx, layer), layer.bend, richPaintOf(layer, pictures));
 }
 
-function drawLayer(ctx: CanvasRenderingContext2D, layer: Layer, scene: Scene): void {
+function drawLayer(ctx: CanvasRenderingContext2D, layer: Layer, scene: Scene, pictures?: RichPictures): void {
   if (layer.opacity >= 1) {
     ctx.save();
-    drawLayerContent(ctx, layer);
+    drawLayerContent(ctx, layer, pictures);
     ctx.restore();
     return;
   }
@@ -241,7 +286,7 @@ function drawLayer(ctx: CanvasRenderingContext2D, layer: Layer, scene: Scene): v
   const sctx = sheet.getContext('2d');
   if (!sctx) return;
   sctx.scale(scale, scale);
-  drawLayerContent(sctx, layer);
+  drawLayerContent(sctx, layer, pictures);
   ctx.save();
   ctx.globalAlpha = layer.opacity;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -251,7 +296,8 @@ function drawLayer(ctx: CanvasRenderingContext2D, layer: Layer, scene: Scene): v
 
 /**
  * Draws the scene at `scale` (1 = image pixels). `base` is the background picture of an image background. `underlay`
- * paints behind everything in device pixels (the preview's checkerboard); an export passes none.
+ * paints behind everything in device pixels (the preview's checkerboard); an export passes none. `rich` holds the loaded pictures of
+ * AI fills; a layer whose picture is not there (yet) is drawn with its own fill.
  */
 export function renderScene(
   ctx: CanvasRenderingContext2D,
@@ -259,6 +305,7 @@ export function renderScene(
   base: CanvasImageSource | null,
   scale = 1,
   underlay?: (ctx: CanvasRenderingContext2D) => void,
+  rich?: RichPictures,
 ): void {
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -273,7 +320,7 @@ export function renderScene(
     ctx.drawImage(base, 0, 0, scene.width, scene.height);
   }
   for (const layer of scene.layers) {
-    if (layer.visible) drawLayer(ctx, layer, scene);
+    if (layer.visible) drawLayer(ctx, layer, scene, rich);
   }
   ctx.restore();
 }

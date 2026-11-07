@@ -5,6 +5,7 @@
 // The keys of `LOCAL_ONLY_KEYS` stay per page: they still travel with the saved state (the next start of a page takes
 // the backend's), but a running page never has them changed from outside, because they hold what one screen is doing
 // (the language, theme and zoom, the thumbnail size, the assistant chat and its window, the document under edit).
+import { useRichForm } from './text/richForm';
 import { useCharacters } from './characters';
 import { useDrafts } from './drafts';
 import { useImageToolSettings } from './imageTools/settings';
@@ -56,6 +57,7 @@ const LIVE_STORES: readonly Persisted[] = [
   useMangaFinish,
   useImageToolSettings,
   useMusic,
+  useRichForm,
   useVideo,
   useVoice,
 ];
