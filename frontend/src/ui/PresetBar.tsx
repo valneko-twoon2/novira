@@ -11,13 +11,15 @@ export interface PresetBarProps<D> {
   /** Display name, e.g. a translated name for a built-in preset. */
   nameOf?: (preset: Preset<D>) => string;
   hint?: string;
+  /** The card's caption; "Presets" unless the screen has more than one kind. */
+  label?: string;
   disabledReason?: string | null;
   testId: string;
   /** More buttons of the screen, after the save button. */
   actions?: ReactNode;
 }
 
-export function PresetBar<D>({ kind, summarize, nameOf, hint, disabledReason, testId, actions }: PresetBarProps<D>) {
+export function PresetBar<D>({ kind, summarize, nameOf, hint, label, disabledReason, testId, actions }: PresetBarProps<D>) {
   const presets = kind.store((s) => s.presets);
   const selectedId = kind.store((s) => s.selectedId);
   const items: PresetItem[] = presets.map((p) => ({
@@ -30,7 +32,7 @@ export function PresetBar<D>({ kind, summarize, nameOf, hint, disabledReason, te
     <PresetPicker
       items={items}
       selectedId={selectedId}
-      label={t('presets.label')}
+      label={label ?? t('presets.label')}
       hint={hint}
       disabledReason={disabledReason}
       testId={testId}

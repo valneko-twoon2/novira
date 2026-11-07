@@ -10,6 +10,8 @@ import { useDeriveDialog } from '@/state/dialogs/derive';
 import { fixPartOnCanvas } from '@/state/partFix';
 import { useShareDialog } from '@/state/dialogs/share';
 import { useGallery } from '@/state/gallery';
+import { EMPTY_SCENE } from '@/state/text/textModel';
+import { useTextSources } from '@/state/text/textSources';
 import { ContextMenu, ContextMenuContent, ContextMenuTrigger, TooltipProvider } from '@/ui';
 import * as actions from '../actions';
 import { requestDeleteImages } from '../deleteRequest';
@@ -27,6 +29,7 @@ vi.mock('../actions', () => ({
   openInNewTab: vi.fn(),
   recall: vi.fn(),
   sendToCanvas: vi.fn(),
+  editInText: vi.fn(),
   sendToText: vi.fn(),
   sendToUpscale: vi.fn(),
   sendToVideo: vi.fn(),
@@ -129,6 +132,18 @@ describe('SingleImageMenu', () => {
     const menu = (await screen.findAllByRole('menu'))[0]!;
     expect(within(menu).getByText(t('gallery.menu.sendToText'))).toBeTruthy();
     expect(within(menu).queryByText(t('gallery.menu.sendToVideo'))).toBeNull();
+  });
+
+  it('offers to edit a picture in Text only when its layers are kept', async () => {
+    useTextSources.setState({ sources: [] });
+    showMenu(<SingleImageMenu image={image()} />);
+    const plain = (await screen.findAllByRole('menu'))[0]!;
+    expect(within(plain).queryByText(t('gallery.menu.editInText'))).toBeNull();
+    cleanup();
+    useTextSources.setState({ sources: [{ imageName: 'a.png', scene: EMPTY_SCENE }] });
+    showMenu(<SingleImageMenu image={image()} />);
+    await choose(t('gallery.menu.editInText'));
+    expect(actions.editInText).toHaveBeenCalledWith(expect.objectContaining({ name: 'a.png' }));
   });
 
   it('sends the picture to the other tabs', async () => {

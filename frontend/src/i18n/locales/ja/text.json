@@ -121,5 +121,9 @@
   "text.rich.failed": "仕上げに失敗しました",
   "text.rich.select": "文字のレイヤーを選ぶと仕上げられます。",
   "text.rich.details": "仕上げの詳細",
-  "text.bar": "選んだレイヤーの操作"
+  "text.bar": "選んだレイヤーの操作",
+  "text.template": "テンプレート",
+  "text.template.hint": "文字と吹き出しのレイヤーと、その配置を保存します。背景の画像は保存せず、呼び出すと今の画像に合わせて置きます",
+  "text.template.summary": "文字 {texts} · 吹き出し {bubbles} · {width}×{height}",
+  "text.style": "文字の見た目"
 }

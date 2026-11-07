@@ -2,6 +2,7 @@
 import { backend } from '@/backend';
 import { useGallery } from '@/state/gallery';
 import { autoAddBoardId } from '@/state/invoke';
+import { useTextSources } from '@/state/text/textSources';
 import type { Scene } from '@/state/text/textModel';
 import { ensureFont } from '@/state/fonts';
 import { renderScene } from './render';
@@ -22,4 +23,6 @@ export async function saveSceneToGallery(scene: Scene, base: CanvasImageSource |
   if (!blob) throw new Error('empty image');
   const image = await backend.uploadImage(blob, { boardId: autoAddBoardId(), category: 'user' });
   useGallery.getState().addImage(image);
+  // The layers of this picture, so the gallery can open them again.
+  useTextSources.getState().remember(image.name, scene);
 }

@@ -5,10 +5,12 @@ import type { ImageDTO } from '@/backend';
 import { useCanvas } from '@/state/canvas';
 import { useVideo } from '@/state/media/video';
 import { useTextEditor } from '@/state/text/textEditor';
+import { EMPTY_SCENE, newTextLayer } from '@/state/text/textModel';
+import { useTextSources } from '@/state/text/textSources';
 import { useToasts } from '@/state/toasts';
 import { useUi } from '@/state/ui';
 import { useWorkflows } from '@/state/workflows/workflows';
-import { canOpenInNewTab, copyImage, openInNewTab, sendToCanvas, sendToText, sendToVideo, sendToWorkflow } from './actions';
+import { canOpenInNewTab, copyImage, editInText, openInNewTab, sendToCanvas, sendToText, sendToVideo, sendToWorkflow } from './actions';
 
 const initial = { toasts: useToasts.getState(), ui: useUi.getState() };
 const image = (name: string): ImageDTO =>
@@ -51,6 +53,31 @@ describe('sending a picture to another screen', () => {
     expect(useUi.getState().media).toBe('text');
     expect(setBackground).toHaveBeenCalledWith({ kind: 'image', imageName: 't' }, { width: 640, height: 480 });
     expect(lastToast()?.status).toBe('success');
+  });
+
+  it('opens the layers a picture was saved from in the text editor, as one undo step', () => {
+    useUi.getState().setTab('upscaling');
+    const saved = { ...EMPTY_SCENE, layers: [newTextLayer(EMPTY_SCENE, 'Saved')] };
+    useTextSources.setState({ sources: [{ imageName: 's.png', scene: saved }] });
+    useTextEditor.setState({ scene: { ...EMPTY_SCENE, layers: [] }, selectedId: 'x', past: [], future: [] });
+    expect(editInText(image('s.png'))).toBe(true);
+    expect(useTextEditor.getState().scene.layers[0]).toMatchObject({ text: 'Saved' });
+    expect(useTextEditor.getState().selectedId).toBeNull();
+    expect(useUi.getState().activeTab).toBe('generate');
+    expect(useUi.getState().media).toBe('text');
+    expect(lastToast()?.status).toBe('success');
+    useTextEditor.getState().undo();
+    expect(useTextEditor.getState().scene.layers).toHaveLength(0);
+  });
+
+  it('does nothing for a picture whose layers are gone', () => {
+    useTextSources.setState({ sources: [] });
+    useUi.getState().setTab('upscaling');
+    useTextEditor.setState({ scene: { ...EMPTY_SCENE, layers: [] }, selectedId: null, past: [], future: [] });
+    expect(editInText(image('unknown.png'))).toBe(false);
+    expect(useUi.getState().activeTab).toBe('upscaling');
+    expect(useTextEditor.getState().past).toHaveLength(0);
+    expect(lastToast()).toBeUndefined();
   });
 
   it('adds it as an image input of the workflow being edited', () => {

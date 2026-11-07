@@ -15,6 +15,7 @@ import { useVoice } from './media/voice';
 import { useParams } from './params';
 import { useImagePresets } from './presets/imagePresets';
 import { useMusicPresets } from './presets/musicPresets';
+import { useTextScenePresets } from './presets/textScenePresets';
 import { useTextStylePresets } from './presets/textStylePresets';
 import { useVideoPresets } from './presets/videoPresets';
 import { useVoicePresets } from './presets/voicePresets';
@@ -45,6 +46,7 @@ const STORES: [string, Persisted][] = [
   ['imagePresets', useImagePresets],
   ['musicPresets', useMusicPresets],
   ['textStylePresets', useTextStylePresets],
+  ['textScenePresets', useTextScenePresets],
   ['videoPresets', useVideoPresets],
   ['voicePresets', useVoicePresets],
   ['promptBook', usePromptBook],

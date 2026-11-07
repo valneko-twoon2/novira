@@ -89,3 +89,61 @@ test('the quick bar sits over the selected layer, edits it, and steps aside whil
   await page.getByTestId('text-bar').getByRole('button', { name: msg('text.layer.delete') }).click();
   await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(1);
 });
+
+test('a laid-out scene is saved as a template and put back on an emptied sheet', async ({ page }) => {
+  await openText(page);
+  await page.getByTestId('text-add-text').click();
+  await page.getByTestId('text-content').fill('TITLE');
+  await page.getByTestId('text-add-bubble').click();
+  await page.getByRole('menuitem', { name: msg('text.shape.round') }).click();
+  await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(2);
+
+  // Saved from the card at the top of the left column, under its own name.
+  const card = page.getByTestId('text-templates');
+  await expect(card).toContainText(msg('text.template'));
+  await card.getByTestId('preset-quick-save').click();
+  await page.getByTestId('name-dialog-input').fill('Title card');
+  await page.getByTestId('name-dialog-ok').click();
+  await expect(card).toContainText('Title card');
+
+  // Emptied and put back: both layers return, with the words they had.
+  await page.getByTestId('text-layers').getByText(msg('text.layers.clear')).click();
+  await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(0);
+  await card.getByTestId('preset-trigger').click();
+  await page.getByTestId('preset-list').getByText('Title card').click();
+  await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(2);
+  await expect(page.getByTestId('text-layers')).toContainText('TITLE');
+
+  // One undo takes the template back off.
+  await page.getByTestId('text-canvas').getByRole('button', { name: msg('text.undo') }).click();
+  await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(0);
+});
+
+test('a picture saved from the Text tab opens its layers again from the gallery', async ({ page }) => {
+  await openText(page);
+  await page.getByTestId('text-add-text').click();
+  await page.getByTestId('text-content').fill('SAVED WORDS');
+  await page.getByTestId('text-save').click();
+  await expect(page.getByText(msg('text.saved'))).toBeVisible();
+
+  // The name the picture was saved under is the one the layers are kept for.
+  const saved = await page.evaluate(() => {
+    const sources: { imageName: string }[] = JSON.parse(localStorage.getItem('novira.textSources') ?? '{}').state?.sources ?? [];
+    return sources.at(-1)?.imageName ?? '';
+  });
+  expect(saved).not.toBe('');
+
+  await page.getByTestId('text-layers').getByText(msg('text.layers.clear')).click();
+  await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(0);
+  // A picture saved from the Text tab is an asset (category user), so it is in the assets view.
+  await page.getByTestId('gallery-view-assets').click();
+  await page.locator(`[data-testid="gallery-thumb"][data-image-name="${saved}"]`).click({ button: 'right' });
+  await page.getByRole('menuitem', { name: msg('gallery.menu.editInText') }).click();
+  await expect(page.getByTestId('text-layers')).toContainText('SAVED WORDS');
+
+  // A picture that did not come from the Text tab has no such item.
+  await page.getByTestId('gallery-view-images').click();
+  await page.locator(`[data-testid="gallery-thumb"]:not([data-image-name="${saved}"])`).first().click({ button: 'right' });
+  await expect(page.getByRole('menuitem', { name: msg('gallery.menu.sendToText') })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: msg('gallery.menu.editInText') })).toHaveCount(0);
+});

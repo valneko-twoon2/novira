@@ -224,9 +224,11 @@ Everything else is set in the left column.
 
 For speech bubbles, you can also adjust the size, fill color, outline and pointer. With the **{{ui:text.shape.burst}}** shape, **{{ui:text.bubble.shuffle}}** changes the jagged points. If you turn on **{{ui:text.bubble.autoFit}}**, the text shrinks so that it fits inside the bubble.
 
-### Style presets
+### Templates and style presets
 
-The preset at the very top of the left panel holds logo-like styles: **{{ui:text.preset.plain}}**, **{{ui:text.preset.pop}}**, **{{ui:text.preset.sfx}}**, **{{ui:text.preset.gold}}**, **{{ui:text.preset.sticker}}** and **{{ui:text.preset.soft}}**. If you select a text layer and then use one, that style is applied.
+**{{ui:text.template}}**, at the very top of the left column, saves the text and bubble layers and how they are laid out, all at once. Save a layout you made, and next time call it up and just retype the words. The background picture is not saved. If you call one up on a picture, the layers are placed to fit that picture's size. One undo takes it back.
+
+When you select a text layer, the **{{ui:text.style}}** preset appears at the top of its settings. It holds logo-like styles: **{{ui:text.preset.plain}}**, **{{ui:text.preset.pop}}**, **{{ui:text.preset.sfx}}**, **{{ui:text.preset.gold}}**, **{{ui:text.preset.sticker}}** and **{{ui:text.preset.soft}}**. If you select a text layer and then use one, that style is applied.
 
 You can also save your own styles (font, fill, stroke, shadow, letter spacing).
 
@@ -255,7 +257,9 @@ If you change the content, font or spacing of the text, that picture is no longe
 
 ### Saving
 
-When you are done, press **{{ui:text.save}}**. It goes into the gallery as a PNG image at the size of the background. Even after saving, what you edited on the screen stays, so you can keep fixing it.
+When you are done, press **{{ui:text.save}}**. It goes into the **{{ui:gallery.view.assets}}** of the gallery as a PNG image at the size of the background. Even after saving, what you edited on the screen stays, so you can keep fixing it.
+
+Right-click a saved picture and choose **{{ui:gallery.menu.editInText}}**: the layers it was saved from open as they were, and you can fix the words and save again (as a new picture). The layers are remembered for the 30 newest pictures saved on this computer.
 
 ## Presets
 
@@ -270,7 +274,7 @@ What is saved differs slightly by screen.
 | Video | The prompt, model, size, length and quality settings | The seed and the source image |
 | Music | The style tags and the song settings | The lyrics and the seed |
 | Voice | The language and the voice (voice and speaking style, or the voice description) | The text to read aloud |
-| Text | The style of the text | The contents of the text |
+| Text | A template holds the text and bubble layers and their layout (not the background picture). A text style holds the font, fill, stroke, shadow and letter spacing | A style does not hold the contents of the text |
 
 The presets that come with the app are three for video, "Quick preview", "Standard 832x480" and "Vertical, low VRAM"; two for music, "Lo-fi instrumental" and "J-pop song"; and two for voice, "Calm narrator" and "Energetic announcer".
 

@@ -23,6 +23,7 @@ export function TextPresetBar() {
         const look = p.builtin ? LOGO_BY_ID.get(p.id) : undefined;
         return look ? t(`text.preset.${look}`) : p.name;
       }}
+      label={t('text.style')}
       hint={t('presets.hint.text')}
       disabledReason={hasTextLayer ? null : t('presets.text.selectLayer')}
       testId="text-presets"

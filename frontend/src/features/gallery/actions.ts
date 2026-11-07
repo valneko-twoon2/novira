@@ -11,6 +11,7 @@ import { useVideo } from '@/state/media/video';
 import { useParams } from '@/state/params';
 import { recalledModelNote, type RecalledModel } from '@/state/recallModel';
 import { useTextEditor } from '@/state/text/textEditor';
+import { useTextSources } from '@/state/text/textSources';
 import { toast } from '@/state/toasts';
 import { useUi } from '@/state/ui';
 import { useWorkflows } from '@/state/workflows/workflows';
@@ -140,6 +141,18 @@ export function sendToText(image: ImageDTO) {
   useTextEditor.getState().setBackground({ kind: 'image', imageName: image.name }, { width: image.width, height: image.height });
   openGenerateMedia('text');
   toast({ status: 'success', title: t('gallery.toast.sentToText') });
+}
+
+/** Opens the layers a picture saved from the Text tab was made from (one undo step), on the Text screen. False when its scene is gone. */
+export function editInText(image: ImageDTO): boolean {
+  const scene = useTextSources.getState().sceneOf(image.name);
+  if (!scene) return false;
+  const editor = useTextEditor.getState();
+  editor.checkpoint();
+  useTextEditor.setState({ scene, selectedId: null });
+  openGenerateMedia('text');
+  toast({ status: 'success', title: t('gallery.toast.editedInText') });
+  return true;
 }
 
 /** Adds the picture as an image input node of the workflow being edited. */
