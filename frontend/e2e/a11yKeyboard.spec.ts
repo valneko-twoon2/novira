@@ -4,8 +4,8 @@
 // listed in a11yKeyboardKnown.ts; the lists only get shorter (an entry that no longer happens fails the run until it is removed).
 import type { Page } from '@playwright/test';
 import { expect, msg, openApp, showTab, test } from './fixtures';
-import { expectedTabStops, readFocus, type FocusInfo } from './a11yKeyboard';
-import { KNOWN_NO_FOCUS_RING, KNOWN_UNREACHED, KNOWN_ESCAPE } from './a11yKeyboardKnown';
+import { expectedTabStops, readFocus, tabbedOutControls, type FocusInfo } from './a11yKeyboard';
+import { KNOWN_NO_FOCUS_RING, KNOWN_UNREACHED, KNOWN_TABBED_OUT, KNOWN_ESCAPE } from './a11yKeyboardKnown';
 
 const TABS = ['generate', 'comic', 'canvas', 'upscaling', 'workflows', 'models', 'browse', 'queue'] as const;
 /** Tab presses per screen; the loop ends earlier when focus comes back to where it started. */
@@ -74,6 +74,8 @@ for (const tab of TABS) {
 
     const visited = new Set(stops.map((s) => s.key));
     ratchet('control not reached by Tab', tab, [...new Set(expected.filter((k) => !visited.has(k)))].sort(), KNOWN_UNREACHED[tab]);
+
+    ratchet('control taken out of the Tab order', tab, [...new Set(await tabbedOutControls(page))].sort(), KNOWN_TABBED_OUT[tab]);
 
     let back = 0;
     for (let i = 1; i < stops.length; i++) if (stops[i]!.top < stops[i - 1]!.top - 200 && stops[i]!.left < stops[i - 1]!.left) back++;

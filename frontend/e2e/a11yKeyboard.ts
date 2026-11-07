@@ -80,3 +80,22 @@ export function expectedTabStops(page: Page): Promise<string[]> {
     return out;
   });
 }
+
+/** The keys of visible buttons, links and fields that were taken out of the Tab order with tabindex="-1" and are not an item of a group that moves by arrow keys. */
+export function tabbedOutControls(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const out: string[] = [];
+    const group = '[role="tablist"], [role="toolbar"], [role="radiogroup"], [role="menu"], [role="listbox"], [role="tree"], [role="grid"], [role="slider"], [role="combobox"], [data-radix-collection-item]';
+    for (const el of document.querySelectorAll('button[tabindex="-1"], a[href][tabindex="-1"], input[tabindex="-1"], select[tabindex="-1"], textarea[tabindex="-1"]')) {
+      if ((el as HTMLButtonElement).disabled) continue;
+      if (el.closest(group) || el.closest('[inert], [aria-hidden="true"], [hidden]')) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 1 || r.height < 1 || getComputedStyle(el).visibility === 'hidden') continue;
+      const id = el.getAttribute('data-testid');
+      const cls = typeof el.className === 'string' ? el.className.trim().split(/\s+/).filter(Boolean)[0] ?? '' : '';
+      const label = el.getAttribute('aria-label') || (el.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 24);
+      out.push(`${el.tagName.toLowerCase()}${id ? `[${id}]` : cls ? `.${cls}` : ''}${!id && label ? `"${label}"` : ''}`);
+    }
+    return out;
+  });
+}
