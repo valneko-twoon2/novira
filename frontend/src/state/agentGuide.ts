@@ -61,7 +61,7 @@ const FEATURES: { id: string; name: MessageKey; about: string }[] = [
     id: 'gallery',
     name: 'app.tabs.generate',
     about:
-      'The right panel on most tabs: boards (folders, each with one level of subfolders shown as tiles) and thumbnails of everything made. Click to open in the viewer, right-click for a menu, select several for batch actions, search, filter by date, star, delete, upload, download, export clean or AI-watermarked copies.',
+      'The right panel on most tabs: boards (folders) and thumbnails of everything made. Click to open in the viewer, right-click for a menu, select several for batch actions, search, filter by date, star, delete, upload, download, export clean or AI-watermarked copies.',
   },
   {
     id: 'afterEffects',
