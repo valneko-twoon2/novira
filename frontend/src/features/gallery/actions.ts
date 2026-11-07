@@ -1,10 +1,11 @@
 // Imperative image actions shared by the gallery menus, hotkeys and the viewer toolbar.
-import { backend, canOpenNewWindow, openInNewWindow, type ImageDTO } from '@/backend';
+import { backend, canOpenNewWindow, openInNewWindow, readImageBlob, type ImageDTO } from '@/backend';
 import { t, tCount } from '@/i18n';
 import { useCanvas, type CanvasImportTarget } from '@/state/canvas';
 import { boardLabel } from '@/state/boardTree';
 import { useGallery, type BoardId } from '@/state/gallery';
 import { recordDeletion, undoDeletion } from '@/state/galleryUndo';
+import { describeError, devLog } from '@/state/devLog';
 import { keepMarks } from '@/state/pictureMarks';
 import { defaultRefModelKey } from '@/state/models';
 import { useVideo } from '@/state/media/video';
@@ -15,7 +16,7 @@ import { useTextSources } from '@/state/text/textSources';
 import { toast } from '@/state/toasts';
 import { useUi } from '@/state/ui';
 import { useWorkflows } from '@/state/workflows/workflows';
-import { writeClipboardText } from '@/ui';
+import { canWriteClipboardImage, writeClipboardImage, writeClipboardText } from '@/ui';
 
 export function boardName(id: BoardId): string {
   if (id === 'none') return t('gallery.boards.uncategorized');
@@ -75,34 +76,71 @@ export function openInNewTab(image: ImageDTO) {
   openInNewWindow(image.url);
 }
 
-function toPngBlob(url: string): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      const c = document.createElement('canvas');
-      c.width = img.naturalWidth;
-      c.height = img.naturalHeight;
-      c.getContext('2d')?.drawImage(img, 0, 0);
-      c.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png');
-    };
-    if (/^https?:/.test(url)) img.crossOrigin = 'anonymous';
-    img.onerror = () => reject(new Error('image load failed'));
-    img.src = url;
-  });
+const PNG = 'image/png';
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+
+async function isPng(blob: Blob): Promise<boolean> {
+  const head = new Uint8Array(await blob.slice(0, PNG_SIGNATURE.length).arrayBuffer());
+  return PNG_SIGNATURE.every((b, i) => head[i] === b);
+}
+
+/** Re-encodes any picture the browser can decode as a PNG, off the page's main thread where the browser allows it. */
+async function convertToPng(source: Blob): Promise<Blob> {
+  if (typeof createImageBitmap === 'function' && typeof OffscreenCanvas !== 'undefined') {
+    try {
+      const bitmap = await createImageBitmap(source);
+      try {
+        const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+        canvas.getContext('2d')?.drawImage(bitmap, 0, 0);
+        return await canvas.convertToBlob({ type: PNG });
+      } finally {
+        bitmap.close();
+      }
+    } catch {
+      // Fall back to a canvas on the page.
+    }
+  }
+  const url = URL.createObjectURL(source);
+  try {
+    return await new Promise<Blob>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth;
+        c.height = img.naturalHeight;
+        c.getContext('2d')?.drawImage(img, 0, 0);
+        c.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), PNG);
+      };
+      img.onerror = () => reject(new Error('image load failed'));
+      img.src = url;
+    });
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+/**
+ * The picture as a PNG. Stored pictures already are PNG (the backend converts every import), so their bytes are used as
+ * they are; anything else is converted.
+ */
+async function pngOf(url: string): Promise<Blob> {
+  const blob = await readImageBlob(url);
+  if (await isPng(blob)) return blob.type === PNG ? blob : new Blob([blob], { type: PNG });
+  return convertToPng(blob);
 }
 
 export async function copyImage(image: ImageDTO) {
-  const clip = typeof navigator !== 'undefined' ? navigator.clipboard : undefined;
-  if (!clip || typeof ClipboardItem === 'undefined') {
+  if (!canWriteClipboardImage()) {
     toast({ status: 'warning', title: t('gallery.toast.copyUnavailable') });
     return;
   }
   try {
-    const blob = await toPngBlob(image.url);
-    await clip.write([new ClipboardItem({ 'image/png': blob })]);
+    // Asked for before the picture is read, inside the user's key press or click (see `writeClipboardImage`).
+    await writeClipboardImage(pngOf(image.url));
     toast({ status: 'success', title: t('gallery.toast.copied') });
-  } catch {
-    toast({ status: 'error', title: t('gallery.toast.copyFailed') });
+  } catch (e) {
+    devLog('error', 'gallery', `copying ${image.name} to the clipboard failed: ${describeError(e)}`);
+    toast({ status: 'error', title: t('gallery.toast.copyFailed'), description: e instanceof Error ? e.message : String(e) });
   }
 }
 

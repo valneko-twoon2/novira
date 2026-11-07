@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { writeClipboardText } from './clipboard';
+import { canWriteClipboardImage, writeClipboardImage, writeClipboardText } from './clipboard';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -34,5 +34,26 @@ describe('writeClipboardText', () => {
     Object.defineProperty(document, 'execCommand', { configurable: true, value: () => false });
     await expect(writeClipboardText('x')).rejects.toThrow();
     expect(document.querySelector('textarea')).toBeNull();
+  });
+});
+
+describe('writeClipboardImage', () => {
+  it('asks the clipboard in the same turn, handing it the picture that is still being made', async () => {
+    const write = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal('ClipboardItem', class { constructor(public items: Record<string, Blob | Promise<Blob>>) {} });
+    vi.stubGlobal('navigator', { clipboard: { write } });
+    const pending = new Promise<Blob>(() => undefined);
+    void writeClipboardImage(pending);
+    expect(write).toHaveBeenCalledTimes(1);
+    expect((write.mock.calls[0]?.[0] as { items: Record<string, unknown> }[])[0]?.items['image/png']).toBe(pending);
+  });
+
+  it('refuses where the page has no picture clipboard, and does not touch the clipboard', async () => {
+    const write = vi.fn();
+    vi.stubGlobal('ClipboardItem', undefined);
+    vi.stubGlobal('navigator', { clipboard: { write } });
+    expect(canWriteClipboardImage()).toBe(false);
+    await expect(writeClipboardImage(new Blob(['x']))).rejects.toThrow('not available');
+    expect(write).not.toHaveBeenCalled();
   });
 });

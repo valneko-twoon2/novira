@@ -219,17 +219,20 @@ describe('handing out and copying a layer', () => {
   });
 
   it('copies the layer to the clipboard as a PNG', async () => {
-    const write = vi.fn().mockResolvedValue(undefined);
+    // As the browser does: the write settles when the picture the item holds does, and fails when that fails.
+    const write = vi.fn(async (items: { items: Record<string, Promise<Blob>> }[]) => void (await items[0]?.items['image/png']));
     vi.stubGlobal('ClipboardItem', class { constructor(public items: unknown) {} });
     vi.stubGlobal('navigator', { clipboard: { write } });
-    await copyEntityToClipboard(layer());
+    const copying = copyEntityToClipboard(layer());
+    // Asked for in the same turn as the click, before the layer is drawn.
     expect(write).toHaveBeenCalledTimes(1);
+    await copying;
     expect(lastToast()?.status).toBe('success');
     await copyEntityToClipboard('missing');
     expect(write).toHaveBeenCalledTimes(1);
     await copyEntityToClipboard(layer('raster', []));
     expect(lastToast()?.status).toBe('warning');
-    write.mockRejectedValue(new Error('denied'));
+    write.mockRejectedValueOnce(new Error('denied'));
     await copyEntityToClipboard(layer());
     expect(lastToast()).toMatchObject({ status: 'error', description: 'denied' });
     vi.unstubAllGlobals();
