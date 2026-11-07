@@ -6,7 +6,7 @@ import * as RadixPopover from '@radix-ui/react-popover';
 import * as RadixSelect from '@radix-ui/react-select';
 import * as RadixTabs from '@radix-ui/react-tabs';
 import { CaretDown, CaretRight, Check, X } from '@phosphor-icons/react';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { isPhoneLayout } from '@/state/layout';
 import { cx } from './controls';
 
@@ -267,6 +267,17 @@ export function PopoverContent({
 
 // Modal --------------------------------------------------------------------
 
+/**
+ * The element focus should come back to when a dialog closes. A dialog opened from a menu item starts while that item is
+ * focused, and the item is gone by the time it closes, so Radix would leave focus on the page; then the menu's own trigger
+ * (named by the menu's aria-labelledby) is the opener.
+ */
+function openerOf(active: Element | null): HTMLElement | null {
+  const menu = active?.closest('[role="menu"]');
+  const trigger = menu ? document.getElementById(menu.getAttribute('aria-labelledby') ?? '') : active;
+  return trigger instanceof HTMLElement ? trigger : null;
+}
+
 export function Modal({
   open,
   onOpenChange,
@@ -284,11 +295,12 @@ export function Modal({
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   closeLabel: string;
 }) {
+  const opener = useRef<HTMLElement | null>(null);
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
       <RadixDialog.Portal>
         <RadixDialog.Overlay className="ui-modal__overlay" />
-        <RadixDialog.Content className={cx('ui-modal', `ui-modal--${size}`)} aria-describedby={undefined}>
+        <RadixDialog.Content className={cx('ui-modal', `ui-modal--${size}`)} aria-describedby={undefined} onOpenAutoFocus={() => { opener.current = openerOf(document.activeElement); }} onCloseAutoFocus={(e) => { const el = opener.current; opener.current = null; if (el?.isConnected) { e.preventDefault(); el.focus(); } }}>
           <div className="ui-modal__header">
             <RadixDialog.Title className="ui-modal__title">{title}</RadixDialog.Title>
             <RadixDialog.Close className="ui-btn ui-iconbtn ui-btn--base ui-btn--ghost ui-btn--sm" aria-label={closeLabel}>

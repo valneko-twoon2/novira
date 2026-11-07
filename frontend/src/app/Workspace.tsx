@@ -21,7 +21,7 @@ import { useQueue } from '@/state/queue';
 import { ComicWorkspace } from './ComicWorkspace';
 import { RightColumn } from './RightColumn';
 import { MAIN_VIEWS, useUi, type MainView, type TabName } from '@/state/ui';
-import { ErrorBoundary, IconButton, ProgressBar } from '@/ui';
+import { cx, ErrorBoundary, IconButton, ProgressBar } from '@/ui';
 
 const VIEW_LABEL_KEYS: Record<MainView, MessageKey> = {
   launchpad: 'app.views.launchpad',
@@ -89,7 +89,7 @@ function ImageWorkspace({ tab }: { tab: TabName }) {
           setLeft(size.inPixels > 0);
           if (size.inPixels > 0) setWidth('left', widthOf(leftEl));
         }}
-        className="workspace__left"
+        className={cx('workspace__left', !leftOpen && 'is-collapsed')}
       >
         <div className="panel">
           <ErrorBoundary area="left panel" resetKeys={[media]}>
@@ -120,7 +120,7 @@ function ImageWorkspace({ tab }: { tab: TabName }) {
           setRight(size.inPixels > 0);
           if (size.inPixels > 0) setWidth('right', widthOf(rightEl));
         }}
-        className="workspace__right"
+        className={cx('workspace__right', !rightOpen && 'is-collapsed')}
       >
         <RightColumn tab={tab} />
       </Panel>

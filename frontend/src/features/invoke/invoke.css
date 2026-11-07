@@ -23,6 +23,17 @@
   min-width: 0;
 }
 
+/* At the smallest window and the largest zoom (240 CSS pixels) the Invoke button takes a row of its own. */
+@media (max-width: 320px) {
+  .ib {
+    flex-wrap: wrap;
+  }
+
+  .ib__split:first-child {
+    flex-basis: 100%;
+  }
+}
+
 .ib__invoke-wrap {
   display: flex;
   flex: 1;

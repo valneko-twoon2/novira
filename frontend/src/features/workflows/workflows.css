@@ -76,6 +76,15 @@
   box-shadow: none;
 }
 
+/* A node takes focus (tabindex 0); the plain rule above clears the shadow, so draw the ring again for the keyboard. */
+.wf-editor .react-flow__node:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.wf-editor .react-flow__attribution a {
+  color: var(--text-muted);
+}
+
 .wf-controls {
   overflow: hidden;
   border: 1px solid var(--border);
@@ -295,7 +304,7 @@
   padding: 0 var(--space-2);
   border-radius: var(--radius-sm);
   background: var(--bg-active);
-  color: var(--accent);
+  color: var(--blue-600);
   font-weight: 600;
 }
 
@@ -501,6 +510,13 @@
 
 .wf-edge.is-invalid {
   stroke-dasharray: 3 3;
+}
+
+/* The OS "reduce motion" preference stops the running dashes (the dashed look stays). */
+@media (prefers-reduced-motion: reduce) {
+  .wf-edge.is-animated {
+    animation: none;
+  }
 }
 
 @keyframes wf-dash {

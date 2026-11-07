@@ -422,6 +422,17 @@
   flex: 0 0 96px;
 }
 
+/* At the smallest window and the largest zoom (240 CSS pixels) a label and its control do not fit side by side: stack them. */
+@media (max-width: 320px) {
+  .ui-field--horizontal {
+    flex-wrap: wrap;
+  }
+
+  .ui-field--horizontal > .ui-field__label {
+    flex-basis: 100%;
+  }
+}
+
 .ui-field--vertical {
   flex-direction: column;
   gap: var(--space-1);
@@ -469,7 +480,7 @@
   padding: 0 6px;
   border-radius: var(--radius-sm);
   background: var(--base-700);
-  color: var(--text-muted);
+  color: var(--base-200);
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -492,7 +503,7 @@
 }
 
 .ui-badge--success {
-  background: var(--green-500);
+  background: var(--success-solid);
   color: var(--base-950);
 }
 

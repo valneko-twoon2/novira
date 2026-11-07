@@ -21,7 +21,7 @@
 
   /* Blues (accent). 200/300 are used as text on light surfaces, so they are mid-tone */
   --blue-200: #dbe8fd;
-  --blue-300: #2f6feb;
+  --blue-300: #2862e0;
   --blue-400: #4a8bf3;
   --blue-500: #2f6feb;
   --blue-600: #2459d1;
@@ -32,6 +32,7 @@
   --yellow-400: #d9a400;
   --yellow-500: #c99700;
   --yellow-600: #a67c00;
+  --yellow-700: #946e00;
 
   --red-300: #c9344f;
   --red-400: #dc4560;
@@ -80,10 +81,11 @@
   --success-soft: rgb(43 182 115 / 14%);
   --success-text: #167a4a;
   --warning-soft: rgb(232 133 26 / 15%);
-  --warning-text: #a85a08;
+  --warning-text: #9a5207;
   --danger-soft: rgb(210 58 86 / 12%);
   --danger-text: #b02a44;
   --success: var(--green-500);
+  --success-solid: #167a4a;
   --warning: var(--orange-400);
 
   --bg-app: var(--base-950);
@@ -98,7 +100,7 @@
   --border-strong: rgb(0 0 0 / 22%);
   --text: var(--base-50);
   --text-muted: var(--base-300);
-  --text-faint: var(--base-400);
+  --text-faint: #6a6a6a;
 
   /* Corner radii: every border-radius in the app is one of these (stylelint stops a raw value outside this file). */
   --radius-xs: 2px;
@@ -199,6 +201,7 @@
   --nav-text: rgb(255 255 255 / 92%);
   --nav-hover: rgb(255 255 255 / 12%);
 
+  --success-solid: var(--green-500);
   --success-soft: rgb(43 182 115 / 20%);
   --success-text: #6fe3a8;
   --warning-soft: rgb(232 133 26 / 22%);
@@ -206,6 +209,7 @@
   --danger-soft: rgb(240 80 110 / 20%);
   --danger-text: #ff8aa0;
 
+  --text-faint: #858585;
   --bg-panel: #0a0a0a;
   --bg-surface: #121212;
   --bg-elevated: #1c1c1c;

@@ -194,6 +194,12 @@
   white-space: nowrap;
 }
 
+/* On the tinted selected row the faint grey is too weak. */
+.gboard.is-selected .gboard__meta,
+.gboard.is-over .gboard__meta {
+  color: var(--text-muted);
+}
+
 .gboard__rename {
   height: 22px;
   font-size: var(--fs-sm);
