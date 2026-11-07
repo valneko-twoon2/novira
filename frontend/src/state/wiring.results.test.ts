@@ -1,5 +1,5 @@
-// Where the gallery goes when a finished result arrives: pictures to the images view, assets to the assets view; a
-// comic page's inpaint result to the page that asked.
+// Where the gallery goes when a finished result arrives: every queue result is a picture, so it is listed under the images
+// view; a comic page's inpaint result goes to the page that asked.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { backend, type BackendEvent, type ImageDTO, type Packs, type QueueItem } from '@/backend';
 import { useCanvas } from './canvas';
