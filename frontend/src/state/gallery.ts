@@ -141,14 +141,19 @@ export const useGallery = create<GalleryState>()(
       },
       removeBoard: (id) => {
         const s = get();
+        // The subfolders go with their board.
+        const gone = (b: string) => b === id || s.boards.some((x) => x.id === b && x.parentId === id);
         set({
-          boards: s.boards.filter((b) => b.id !== id),
-          selectedBoardId: s.selectedBoardId === id ? 'none' : s.selectedBoardId,
-          autoAddBoardId: s.autoAddBoardId === id ? 'none' : s.autoAddBoardId,
+          boards: s.boards.filter((b) => !gone(b.id)),
+          selectedBoardId: gone(s.selectedBoardId) ? 'none' : s.selectedBoardId,
+          autoAddBoardId: gone(s.autoAddBoardId) ? 'none' : s.autoAddBoardId,
         });
       },
-      detachBoardImages: (boardId) =>
-        set({ images: get().images.map((i) => (i.boardId === boardId ? { ...i, boardId: null } : i)) }),
+      detachBoardImages: (boardId) => {
+        const s = get();
+        const gone = (b: string | null) => b === boardId || s.boards.some((x) => x.id === b && x.parentId === boardId);
+        set({ images: s.images.map((i) => (gone(i.boardId) ? { ...i, boardId: null } : i)) });
+      },
       selectBoard: (id) => {
         const s = get();
         set({

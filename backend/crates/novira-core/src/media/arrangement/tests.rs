@@ -8,6 +8,7 @@ fn board(id: &str, name: &str, created_at: i64) -> BoardDTO {
         name: name.into(),
         archived: false,
         created_at,
+        parent_id: None,
     }
 }
 
@@ -62,6 +63,77 @@ fn boards_of_the_same_folder_name_are_told_apart_and_the_older_keeps_the_plain_o
         "the uncategorized folder keeps its name"
     );
     assert_eq!(folders["b5"], "Portraits");
+}
+
+#[test]
+fn a_subfolder_sits_inside_its_board_and_is_told_apart_from_its_siblings_only() {
+    let mut cat = board("c1", "Cats", 2);
+    cat.parent_id = Some("b1".into());
+    let mut cat2 = board("c2", "cats", 3);
+    cat2.parent_id = Some("b1".into());
+    let mut same = board("c3", "Sea", 4);
+    same.parent_id = Some("b2".into());
+    let mut orphan = board("c4", "Lost", 5);
+    orphan.parent_id = Some("gone".into());
+    let mut deep = board("c5", "Deep", 6);
+    deep.parent_id = Some("c1".into());
+    let folders = folder_names(&[
+        board("b1", "Sea", 1),
+        board("b2", "Land", 1),
+        cat,
+        cat2,
+        same,
+        orphan,
+        deep,
+    ]);
+    assert_eq!(folders["c1"], "Sea/Cats");
+    assert_eq!(folders["c2"], "Sea/cats (2)");
+    assert_eq!(
+        folders["c3"], "Land/Sea",
+        "a sibling name is free in another board"
+    );
+    assert_eq!(
+        folders["c4"], "Lost",
+        "a subfolder without its board sits at the top"
+    );
+    assert_eq!(
+        folders["c5"], "Deep",
+        "a subfolder of a subfolder sits at the top"
+    );
+    let image = picture(NAME, Some("c1"), false);
+    assert_eq!(
+        place_of(&image, &folders),
+        Path::new("Sea").join("Cats").join(file_name(NAME, 0))
+    );
+}
+
+#[test]
+fn a_file_in_a_subfolder_is_found_again_and_an_emptied_subfolder_is_removed() {
+    let dir = tempfile::tempdir().unwrap();
+    let files = ImageFiles::new(dir.path()).unwrap();
+    let outputs = dir.path().join("outputs");
+    std::fs::write(outputs.join(NAME), b"png").unwrap();
+    let image = picture(NAME, Some("c1"), false);
+    let mut cats = board("c1", "Cats", 2);
+    cats.parent_id = Some("b1".into());
+    let boards = [board("b1", "Sea", 1), cats];
+    files.index();
+    arrange(&files, &boards, [&image]);
+    let placed = outputs.join("Sea").join("Cats").join(file_name(NAME, 0));
+    assert!(placed.is_file());
+    assert_eq!(files.index(), 1);
+    assert_eq!(files.read_original(NAME).unwrap(), b"png");
+
+    let loose = picture(NAME, None, false);
+    arrange(&files, &boards, [&loose]);
+    assert!(outputs
+        .join(UNCATEGORIZED)
+        .join(file_name(NAME, 0))
+        .is_file());
+    assert!(
+        !outputs.join("Sea").exists(),
+        "both emptied folders are gone"
+    );
 }
 
 #[test]

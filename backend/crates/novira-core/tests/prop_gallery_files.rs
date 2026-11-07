@@ -52,6 +52,7 @@ fn board(id: usize, name: String, created_at: i64) -> BoardDTO {
         name,
         archived: false,
         created_at,
+        parent_id: None,
     }
 }
 

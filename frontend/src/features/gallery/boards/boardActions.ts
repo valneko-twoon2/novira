@@ -5,8 +5,9 @@ import { useGallery } from '@/state/gallery';
 import { recordDeletion, undoDeletion } from '@/state/galleryUndo';
 import { toast } from '@/state/toasts';
 
-export async function createBoard(): Promise<BoardDTO> {
-  const board = await backend.createBoard(t('gallery.boards.newBoardName'));
+/** A new board, or a subfolder of the board `parentId`. */
+export async function createBoard(parentId: string | null = null): Promise<BoardDTO> {
+  const board = await backend.createBoard(t(parentId ? 'gallery.boards.newSubfolderName' : 'gallery.boards.newBoardName'), parentId);
   useGallery.getState().upsertBoard(board);
   return board;
 }

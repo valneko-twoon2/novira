@@ -297,6 +297,8 @@ export interface BoardDTO {
   name: string;
   archived: boolean;
   createdAt: number;
+  /** The board this one is a subfolder of; a subfolder holds pictures only and has no subfolders of its own. */
+  parentId?: string | null;
 }
 
 export type QueueItemStatus = 'pending' | 'in_progress' | 'completed' | 'failed' | 'canceled';

@@ -295,8 +295,8 @@ commands! {
     sync bootstrap(b) -> Bootstrap {
         Ok(b.bootstrap())
     }
-    sync create_board(b, name: String) -> BoardDTO {
-        b.create_board(&name).map_err(msg)
+    sync create_board(b, name: String, parent_id: Option<String>) -> BoardDTO {
+        b.create_board_in(&name, parent_id).map_err(msg)
     }
     sync update_board(b, id: String, patch: BoardPatch) -> BoardDTO {
         b.update_board(&id, patch).map_err(msg)

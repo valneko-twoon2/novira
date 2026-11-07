@@ -4,6 +4,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { t } from '@/i18n';
 import { useGeneratingItems } from '@/state/generating';
+import { isSubfolder, subfoldersOf } from '@/state/boardTree';
 import { useGallery } from '@/state/gallery';
 import type { TabName } from '@/state/ui';
 import { Button, ContextMenu, ContextMenuContent, ContextMenuTrigger, EmptyState } from '@/ui';
@@ -13,9 +14,11 @@ import { SingleImageMenu } from '../menus/SingleImageMenu';
 import { useBoardImages } from '../useBoardImages';
 import { useElementSize } from '../useElementSize';
 import { buildGridLayout, verticalStep } from './layout';
+import { FolderTile } from './FolderTile';
 import { LiveThumbnail } from './LiveThumbnail';
 import { clickImage } from './selection';
 import { Thumbnail } from './Thumbnail';
+import { useBoardStats } from '../boards/useBoardStats';
 import { useGridHotkeys } from './useGridHotkeys';
 
 const GAP = 4;
@@ -47,7 +50,25 @@ export function ImageGrid({ tab, onUploadClick }: { tab: TabName; onUploadClick:
     () => (view === 'images' && !search.trim() && !dateFilter ? generating.filter((i) => (i.boardId ?? 'none') === selectedBoardId) : []),
     [generating, view, search, dateFilter, selectedBoardId],
   );
-  const liveHeight = live.length ? Math.ceil(live.length / cols) * (cell + GAP) : 0;
+
+  // The subfolders of the open board come first, each as its latest picture; inside a subfolder the way back to its board.
+  const boards = useGallery((s) => s.boards);
+  const showArchived = useGallery((s) => s.settings.showArchivedBoards);
+  const stats = useBoardStats();
+  const folders = useMemo(() => {
+    if (search.trim() || dateFilter) return [];
+    const open = boards.find((b) => b.id === selectedBoardId);
+    if (!open) return [];
+    if (isSubfolder(boards, open)) {
+      const parent = boards.find((b) => b.id === open.parentId);
+      return parent ? [{ up: true, id: parent.id, name: parent.name }] : [];
+    }
+    return subfoldersOf(boards, open.id)
+      .filter((b) => showArchived || !b.archived)
+      .map((b) => ({ up: false, id: b.id, name: b.name }));
+  }, [boards, selectedBoardId, search, dateFilter, showArchived]);
+  const foldersHeight = folders.length ? Math.ceil(folders.length / cols) * (cell + GAP) : 0;
+  const liveHeight = (live.length ? Math.ceil(live.length / cols) * (cell + GAP) : 0) + foldersHeight;
 
   const virtualizer = useVirtualizer({
     count: layout.rows.length,
@@ -105,6 +126,21 @@ export function ImageGrid({ tab, onUploadClick }: { tab: TabName; onUploadClick:
           ref={scrollRef}
           data-testid="gallery-grid"
         >
+          {folders.length > 0 && (
+            <div className="ggrid__live" style={{ gap: GAP, paddingBottom: GAP }} data-testid="gallery-folders">
+              {folders.map((f) => (
+                <FolderTile
+                  key={f.id}
+                  boardId={f.id}
+                  name={f.name}
+                  up={f.up}
+                  size={cell}
+                  count={f.up ? undefined : (stats.get(f.id)?.images ?? 0) + (stats.get(f.id)?.assets ?? 0)}
+                  cover={f.up ? null : (stats.get(f.id)?.cover ?? null)}
+                />
+              ))}
+            </div>
+          )}
           {live.length > 0 && (
             <div className="ggrid__live" style={{ gap: GAP, paddingBottom: GAP }} data-testid="gallery-live">
               {live.map((item) => (
@@ -112,7 +148,7 @@ export function ImageGrid({ tab, onUploadClick }: { tab: TabName; onUploadClick:
               ))}
             </div>
           )}
-          {!list.length && !live.length && empty}
+          {!list.length && !live.length && !folders.length && empty}
           <div className="ggrid__inner" style={{ height: virtualizer.getTotalSize() }}>
             {virtualizer.getVirtualItems().map((row) => {
               const entry = layout.rows[row.index];

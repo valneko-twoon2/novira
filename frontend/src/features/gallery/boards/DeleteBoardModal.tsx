@@ -4,7 +4,7 @@ import { t, tCount } from '@/i18n';
 import { Button, Modal } from '@/ui';
 import { deleteBoard } from './boardActions';
 
-export function DeleteBoardModal({ board, imageCount, onClose }: { board: BoardDTO | null; imageCount: number; onClose: () => void }) {
+export function DeleteBoardModal({ board, imageCount, hasSubfolders = false, onClose }: { board: BoardDTO | null; imageCount: number; hasSubfolders?: boolean; onClose: () => void }) {
   const run = (withImages: boolean) => {
     if (board) void deleteBoard(board.id, withImages);
     onClose();
@@ -33,6 +33,7 @@ export function DeleteBoardModal({ board, imageCount, onClose }: { board: BoardD
       <div className="gal-confirm">
         <p>{tCount('gallery.boards.deleteMessage', imageCount)}</p>
         <p className="gal-confirm__hint">{t('gallery.boards.deleteHint')}</p>
+        {hasSubfolders && <p className="gal-confirm__hint">{t('gallery.boards.deleteSubfoldersHint')}</p>}
       </div>
     </Modal>
   );

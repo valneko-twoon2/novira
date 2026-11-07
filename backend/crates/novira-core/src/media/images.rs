@@ -95,43 +95,33 @@ impl ImageFiles {
         )
     }
 
-    /// Finds every original under `outputs/` (one folder down) by the name its file name holds, so a picture opens
-    /// wherever its file was put. Returns how many it found.
+    /// Finds every original under `outputs/` (up to two folders down: a board's folder and a subfolder in it) by the
+    /// name its file name holds, so a picture opens wherever its file was put. Returns how many it found.
     pub fn index(&self) -> usize {
         let mut found = HashMap::new();
-        let Ok(top) = std::fs::read_dir(&self.originals) else {
-            return 0;
+        Self::index_dir(&self.originals, Path::new(""), 0, &mut found);
+        let n = found.len();
+        *self.placed.lock_safe() = found;
+        n
+    }
+
+    fn index_dir(dir: &Path, rel: &Path, depth: u8, found: &mut HashMap<String, PathBuf>) {
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            return;
         };
-        for entry in top.flatten() {
+        for entry in entries.flatten() {
             let Ok(kind) = entry.file_type() else {
                 continue;
             };
             let file = entry.file_name();
             if kind.is_file() {
                 if let Some(name) = file.to_str().and_then(crate::media::arrangement::name_in) {
-                    found.insert(name.to_string(), PathBuf::from(&file));
+                    found.insert(name.to_string(), rel.join(&file));
                 }
-            } else if kind.is_dir() {
-                let Ok(inner) = std::fs::read_dir(entry.path()) else {
-                    continue;
-                };
-                for f in inner.flatten() {
-                    let inner_name = f.file_name();
-                    if !f.file_type().is_ok_and(|k| k.is_file()) {
-                        continue;
-                    }
-                    if let Some(name) = inner_name
-                        .to_str()
-                        .and_then(crate::media::arrangement::name_in)
-                    {
-                        found.insert(name.to_string(), Path::new(&file).join(&inner_name));
-                    }
-                }
+            } else if kind.is_dir() && depth < 2 {
+                Self::index_dir(&entry.path(), &rel.join(&file), depth + 1, found);
             }
         }
-        let n = found.len();
-        *self.placed.lock_safe() = found;
-        n
     }
 
     /// Moves a picture's original to `rel` under `outputs/` (a folder and a file name). True when it moved; false when it
@@ -160,17 +150,23 @@ impl ImageFiles {
         Ok(true)
     }
 
-    /// Removes the folders of `outputs/` that no file is left in (a board renamed or emptied).
+    /// Removes the folders of `outputs/` that no file is left in (a board renamed or emptied), subfolders first.
     pub fn remove_empty_folders(&self) {
-        let Ok(top) = std::fs::read_dir(&self.originals) else {
-            return;
-        };
-        for entry in top.flatten() {
-            if entry.file_type().is_ok_and(|k| k.is_dir()) {
-                // Fails, as wanted, while anything is inside.
-                let _ = std::fs::remove_dir(entry.path());
+        fn walk(dir: &Path, depth: u8) {
+            let Ok(entries) = std::fs::read_dir(dir) else {
+                return;
+            };
+            for entry in entries.flatten() {
+                if entry.file_type().is_ok_and(|k| k.is_dir()) {
+                    if depth < 1 {
+                        walk(&entry.path(), depth + 1);
+                    }
+                    // Fails, as wanted, while anything is inside.
+                    let _ = std::fs::remove_dir(entry.path());
+                }
             }
         }
+        walk(&self.originals, 0);
     }
 
     pub fn thumbnail_path(&self, name: &str) -> Option<PathBuf> {

@@ -5,6 +5,7 @@ import { ImageBroken, Star } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import type { QueueItem } from '@/backend';
 import { t } from '@/i18n';
+import { boardLabel, boardTree } from '@/state/boardTree';
 import { useGallery } from '@/state/gallery';
 import { useGeneratingItems } from '@/state/generating';
 import { useQueue } from '@/state/queue';
@@ -75,7 +76,7 @@ function BoardBar({ count }: { count: number }) {
   const showArchived = useGallery((s) => s.settings.showArchivedBoards);
   const options = [
     { value: 'none', label: t('gallery.boards.uncategorized') },
-    ...boards.filter((b) => showArchived || !b.archived || b.id === boardId).map((b) => ({ value: b.id, label: b.name })),
+    ...boardTree(boards, (b) => showArchived || !b.archived || b.id === boardId).map(({ board }) => ({ value: board.id, label: boardLabel(boards, board) })),
   ];
   return (
     <div className="phone-imgs__bar">

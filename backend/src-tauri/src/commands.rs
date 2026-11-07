@@ -35,8 +35,12 @@ pub fn bootstrap(backend: State<'_, Backend>) -> Res<Bootstrap> {
 }
 
 #[tauri::command]
-pub fn create_board(backend: State<'_, Backend>, name: String) -> Res<BoardDTO> {
-    guard(|| call::create_board(&backend, name))
+pub fn create_board(
+    backend: State<'_, Backend>,
+    name: String,
+    parent_id: Option<String>,
+) -> Res<BoardDTO> {
+    guard(|| call::create_board(&backend, name, parent_id))
 }
 
 #[tauri::command]

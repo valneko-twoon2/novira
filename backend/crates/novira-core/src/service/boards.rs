@@ -3,12 +3,32 @@ use super::*;
 
 impl Backend {
     pub fn create_board(&self, name: &str) -> Result<BoardDTO> {
+        self.create_board_in(name, None)
+    }
+
+    /// Creates a board, or a subfolder of `parent_id` (a board that is not a subfolder itself).
+    pub fn create_board_in(&self, name: &str, parent_id: Option<String>) -> Result<BoardDTO> {
         let name = board_name(name)?;
+        if let Some(parent) = &parent_id {
+            let s = self.state();
+            match s.boards.iter().find(|b| &b.id == parent) {
+                None => {
+                    return Err(BackendError::NotFound(format!("board not found: {parent}")));
+                }
+                Some(b) if b.parent_id.is_some() => {
+                    return Err(BackendError::Invalid(
+                        "A subfolder cannot hold subfolders".into(),
+                    ));
+                }
+                Some(_) => {}
+            }
+        }
         let board = BoardDTO {
             id: new_id("board"),
             name,
             archived: false,
             created_at: now(),
+            parent_id,
         };
         self.db()
             .put(Table::Boards, &board.id, board.created_at, &board)?;
@@ -44,13 +64,20 @@ impl Backend {
 
     pub fn delete_board(&self, id: &str, delete_images: bool) -> Result<Vec<String>> {
         let mut s = self.state();
-        s.boards.retain(|b| b.id != id);
+        // A board takes its subfolders with it.
+        let gone_boards: Vec<String> = s
+            .boards
+            .iter()
+            .filter(|b| b.id == id || b.parent_id.as_deref() == Some(id))
+            .map(|b| b.id.clone())
+            .collect();
+        s.boards.retain(|b| !gone_boards.contains(&b.id));
         let mut deleted = Vec::new();
         let mut moved = Vec::new();
         for img in s
             .images
             .iter_mut()
-            .filter(|i| i.board_id.as_deref() == Some(id))
+            .filter(|i| i.board_id.as_ref().is_some_and(|b| gone_boards.contains(b)))
         {
             if delete_images {
                 deleted.push(img.name.clone());
@@ -69,7 +96,8 @@ impl Backend {
         s.images.retain(|i| !gone.contains(&i.name));
         drop(s);
         let mut db = self.db();
-        db.delete(Table::Boards, &[id])?;
+        let gone_ids: Vec<&str> = gone_boards.iter().map(String::as_str).collect();
+        db.delete(Table::Boards, &gone_ids)?;
         db.put_many(
             Table::Images,
             moved.iter().map(|i| (i.name.as_str(), i.created_at, i)),

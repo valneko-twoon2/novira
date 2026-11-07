@@ -64,7 +64,8 @@ export interface BackendClient {
   }>;
 
   // Boards
-  createBoard(name: string): Promise<BoardDTO>;
+  /** A board, or a subfolder of `parentId` (a board that is not a subfolder itself). */
+  createBoard(name: string, parentId?: string | null): Promise<BoardDTO>;
   updateBoard(id: string, patch: Partial<Pick<BoardDTO, 'name' | 'archived'>>): Promise<BoardDTO>;
   deleteBoard(id: string, deleteImages: boolean): Promise<{ deletedImages: string[] }>;
 

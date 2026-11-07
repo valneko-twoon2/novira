@@ -39,32 +39,55 @@ pub fn safe_folder(name: &str) -> String {
     trimmed
 }
 
-/// The folder of each board, by id. Two boards whose names make the same folder (or a board named like the uncategorized
-/// or drafts folder) are told apart by " (2)", " (3)" and so on, the older board keeping the plain name.
+/// The folder of each board, by id, relative to `outputs/`. Two boards whose names make the same folder (or a board named
+/// like the uncategorized or drafts folder) are told apart by " (2)", " (3)" and so on, the older board keeping the
+/// plain name. A subfolder sits inside its board's folder (`<board>/<subfolder>`) and is told apart from its siblings
+/// only; one whose board is gone sits at the top like a board.
 pub fn folder_names(boards: &[BoardDTO]) -> HashMap<String, String> {
-    let mut taken: HashSet<String> = [UNCATEGORIZED, DRAFTS]
-        .iter()
-        .map(|n| n.to_lowercase())
-        .collect();
     let mut ordered: Vec<&BoardDTO> = boards.iter().collect();
     ordered.sort_by(|a, b| {
         a.created_at
             .cmp(&b.created_at)
             .then_with(|| a.id.cmp(&b.id))
     });
+    let is_top = |b: &BoardDTO| {
+        b.parent_id
+            .as_ref()
+            .is_none_or(|p| !boards.iter().any(|x| &x.id == p && x.parent_id.is_none()))
+    };
     let mut out = HashMap::new();
-    for board in ordered {
-        let base = safe_folder(&board.name);
-        let mut folder = base.clone();
-        let mut n = 2;
-        while taken.contains(&folder.to_lowercase()) {
-            folder = format!("{base} ({n})");
-            n += 1;
-        }
-        taken.insert(folder.to_lowercase());
+    let mut taken: HashSet<String> = [UNCATEGORIZED, DRAFTS]
+        .iter()
+        .map(|n| n.to_lowercase())
+        .collect();
+    for board in ordered.iter().filter(|b| is_top(b)) {
+        let folder = unique(&safe_folder(&board.name), &mut taken);
         out.insert(board.id.clone(), folder);
     }
+    let mut siblings: HashMap<&str, HashSet<String>> = HashMap::new();
+    for board in ordered.iter().filter(|b| !is_top(b)) {
+        let Some(parent) = board.parent_id.as_deref() else {
+            continue;
+        };
+        let inside = unique(
+            &safe_folder(&board.name),
+            siblings.entry(parent).or_default(),
+        );
+        out.insert(board.id.clone(), format!("{}/{inside}", out[parent]));
+    }
     out
+}
+
+/// `base`, or `base (2)`, `base (3)`... when `taken` (lowercase) has it already; the result is added to `taken`.
+fn unique(base: &str, taken: &mut HashSet<String>) -> String {
+    let mut folder = base.to_string();
+    let mut n = 2;
+    while taken.contains(&folder.to_lowercase()) {
+        folder = format!("{base} ({n})");
+        n += 1;
+    }
+    taken.insert(folder.to_lowercase());
+    folder
 }
 
 /// `<YYYYMMDD_HHMMSS>_<name>`, in local time.
@@ -112,20 +135,17 @@ pub fn arrange<'a>(
     pictures: impl IntoIterator<Item = &'a ImageDTO>,
 ) {
     let folders = folder_names(boards);
-    let mut moved = false;
     for image in pictures {
         match files.move_to(&image.name, &place_of(image, &folders)) {
-            Ok(true) => moved = true,
-            Ok(false) => {}
+            Ok(_) => {}
             Err(e) => crate::applog::warn(
                 "gallery",
                 format!("{} was not moved into its folder: {e}", image.name),
             ),
         }
     }
-    if moved {
-        files.remove_empty_folders();
-    }
+    // Also folders a deleted board left empty, whose pictures went to the trash.
+    files.remove_empty_folders();
 }
 
 #[cfg(test)]

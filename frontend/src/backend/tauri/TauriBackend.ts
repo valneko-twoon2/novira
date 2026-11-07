@@ -169,8 +169,8 @@ export class TauriBackend implements BackendClient {
 
   // Boards -----------------------------------------------------------------
 
-  createBoard(name: string) {
-    return invoke<BoardDTO>('create_board', { name });
+  createBoard(name: string, parentId: string | null = null) {
+    return invoke<BoardDTO>('create_board', { name, parentId });
   }
 
   updateBoard(id: string, patch: Partial<Pick<BoardDTO, 'name' | 'archived'>>) {

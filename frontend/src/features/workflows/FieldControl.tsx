@@ -2,6 +2,7 @@
 import { X } from '@phosphor-icons/react';
 import { backend, type SchedulerName } from '@/backend';
 import { t } from '@/i18n';
+import { boardLabel, boardTree } from '@/state/boardTree';
 import { useGallery } from '@/state/gallery';
 import { modelsOfType, useModels } from '@/state/models';
 import { useWorkflows } from '@/state/workflows/workflows';
@@ -89,7 +90,7 @@ function ControlFor({ input, value, label, onChange }: { input: InputTemplate; v
       const options: SelectOption[] = [
         { value: 'auto', label: t('workflows.field.boardAuto') },
         { value: 'none', label: t('workflows.field.boardNone') },
-        ...boards.filter((b) => !b.archived).map((b) => ({ value: b.id, label: b.name })),
+        ...boardTree(boards, (b) => !b.archived).map(({ board }) => ({ value: board.id, label: boardLabel(boards, board) })),
       ];
       return <Select value={typeof value === 'string' ? value : 'auto'} onChange={onChange} options={options} aria-label={label} />;
     }

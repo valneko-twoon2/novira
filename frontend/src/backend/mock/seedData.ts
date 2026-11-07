@@ -114,9 +114,9 @@ export const STARTER_MODELS: StarterModel[] = [
 ];
 
 export const SEED_BOARDS: BoardDTO[] = [
-  { id: 'board-landscapes', name: 'Landscapes', archived: false, createdAt: 1759500000000 },
-  { id: 'board-characters', name: 'Characters', archived: false, createdAt: 1759510000000 },
-  { id: 'board-old', name: 'Old experiments', archived: true, createdAt: 1759400000000 },
+  { id: 'board-landscapes', name: 'Landscapes', archived: false, createdAt: 1759500000000, parentId: null },
+  { id: 'board-characters', name: 'Characters', archived: false, createdAt: 1759510000000, parentId: null },
+  { id: 'board-old', name: 'Old experiments', archived: true, createdAt: 1759400000000, parentId: null },
 ];
 
 export interface SeedImageSpec {
