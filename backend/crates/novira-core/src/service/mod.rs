@@ -155,6 +155,8 @@ struct Inner {
     /// does not, because a download's size must be the size of its file.
     search_http: reqwest::Client,
     installs: Mutex<Vec<Install>>,
+    /// The SHA-256 of each model file hashed for a Civitai lookup in this run (`model_store::FileHashes`).
+    file_hashes: model_store::FileHashes,
     /// State of each model pack's download, and the token that stops a running one.
     packs: Mutex<HashMap<PackKind, PackStatus>>,
     pack_cancel: Mutex<HashMap<PackKind, CancellationToken>>,
@@ -502,6 +504,7 @@ impl Backend {
             http,
             search_http,
             installs: Mutex::new(Vec::new()),
+            file_hashes: Default::default(),
             packs: Mutex::new(packs),
             pack_cancel: Mutex::new(HashMap::new()),
             node_pack_jobs: Mutex::new(HashMap::new()),
