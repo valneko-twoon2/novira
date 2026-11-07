@@ -4,7 +4,7 @@ import { CaretDown, Check, DotsThree, PencilSimple, Plus, Trash, UserFocus } fro
 import { t, tCount } from '@/i18n';
 import { CHARACTER_CFG, MAX_REFERENCE_IMAGES, useCharacters } from '@/state/characters';
 import { useCharacterDialog } from '@/state/dialogs/character';
-import { useGallery } from '@/state/gallery';
+import { imagesNamed, useGallery } from '@/state/gallery';
 import { toast } from '@/state/toasts';
 import { Button, IconButton, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, PressAgainMenuItem, SearchPicker, cx } from '@/ui';
 import { applyCharacter, type AppliedCharacter } from './applyCharacter';
@@ -29,7 +29,7 @@ export function CharacterRow() {
 
   const registerSelected = () => {
     const { selection, images } = useGallery.getState();
-    const picked = images.filter((i) => selection.includes(i.name) && (i.mediaType ?? 'image') === 'image');
+    const picked = imagesNamed(images, selection).filter((i) => (i.mediaType ?? 'image') === 'image');
     if (!picked.length) {
       toast({ status: 'info', title: t('character.noSelection') });
       return;

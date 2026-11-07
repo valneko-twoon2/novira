@@ -11,7 +11,7 @@ import { graphRequest } from '@/state/comfy/graphJob';
 import { runJob } from '@/state/comfy/runGraph';
 import { useCharacterDialog } from '@/state/dialogs/character';
 import { useModels } from '@/state/models';
-import { findImage, useGallery } from '@/state/gallery';
+import { findImage, imagesNamed, useGallery } from '@/state/gallery';
 import { toast } from '@/state/toasts';
 import { Button, IconButton, Modal, Select, SliderNumber, Switch, TextInput, Textarea } from '@/ui';
 import './characters.css';
@@ -59,7 +59,7 @@ export function CharacterDialog() {
   /** The pictures selected in the gallery that the character does not hold yet. */
   const images = useGallery((s) => s.images);
   const selection = useGallery((s) => s.selection);
-  const addable = useMemo(() => images.filter((i) => selection.includes(i.name) && (i.mediaType ?? 'image') === 'image' && !names.includes(i.name)), [images, selection, names]);
+  const addable = useMemo(() => imagesNamed(images, selection).filter((i) => (i.mediaType ?? 'image') === 'image' && !names.includes(i.name)), [images, selection, names]);
 
   const addSelected = () => {
     if (!addable.length) {

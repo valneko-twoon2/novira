@@ -6,7 +6,7 @@ import { backend } from '@/backend';
 import { t, tCount, type MessageKey } from '@/i18n';
 import { useBatch } from '@/state/dialogs/batch';
 import { useComfyNodes } from '@/state/comfy/comfyNodes';
-import { useGallery } from '@/state/gallery';
+import { imagesNamed, useGallery } from '@/state/gallery';
 import { graphRequest } from '@/state/comfy/graphJob';
 import { useModels } from '@/state/models';
 import { usePackNeeds } from '@/state/comfy/packNeeds';
@@ -39,7 +39,7 @@ export function BatchDialog() {
   const names = useBatch((s) => s.names);
   const close = useBatch((s) => s.close);
   const all = useGallery((s) => s.images);
-  const pictures = useMemo(() => (names ? all.filter((i) => names.includes(i.name) && (i.mediaType ?? 'image') === 'image') : []), [names, all]);
+  const pictures = useMemo(() => (names ? imagesNamed(all, names).filter((i) => (i.mediaType ?? 'image') === 'image') : []), [names, all]);
   const [op, setOp] = useState<BatchOp>('removeBackground');
   const [upscalerKey, setUpscalerKey] = useState<string | null>(null);
   const models = useModels((s) => s.models);
