@@ -21,6 +21,7 @@ The shell (`backend/src-tauri/src/`): `commands.rs` holds the IPC commands (thin
 | File | What |
 |---|---|
 | `api.rs` | The one command layer both shells call: every command written once (name, named JSON arguments, checks), as a typed function for Tauri and as `dispatch` for the browser server |
+| `strict.rs` (`strict/`) | `from_value`, `from_str` and `Strict<T>`: read JSON into a wire type refusing an array where a struct is expected (serde alone reads it as positional fields); used by `dispatch`, the Tauri struct arguments and the loaders of `settings.json`, database rows and the data folder pointer |
 | `startup.rs`, `image_serve.rs` | Opening the data folder under its lock (one process per folder); what a picture URL path serves (`/<full|thumb>/<name>`) |
 | `types.rs` (and `types/`) | The wire types, mirrored by `frontend/src/backend/types.ts`; unit tests in `types/tests.rs` |
 | `engine.rs` | The `Engine` trait, jobs, outputs, status |

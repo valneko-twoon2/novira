@@ -24,7 +24,7 @@ struct Verdict {
 }
 
 fn read_write<T: Serialize + DeserializeOwned>(v: &Value) -> Verdict {
-    match serde_json::from_value::<T>(v.clone()) {
+    match novira_core::strict::from_value::<T>(v.clone()) {
         Ok(t) => Verdict {
             accept: true,
             out: Some(serde_json::to_value(&t).unwrap()),
@@ -39,7 +39,7 @@ fn read_write<T: Serialize + DeserializeOwned>(v: &Value) -> Verdict {
 }
 
 fn read_only<T: DeserializeOwned>(v: &Value) -> Verdict {
-    match serde_json::from_value::<T>(v.clone()) {
+    match novira_core::strict::from_value::<T>(v.clone()) {
         Ok(_) => Verdict {
             accept: true,
             out: None,
@@ -177,14 +177,28 @@ fn rust_verdicts_of_the_corpus_are_current() {
     println!("corpus: {accepted} accepted, {refused} refused");
 }
 
-/// known bug: serde's derived `Deserialize` reads a JSON array as the fields of the struct in order, so a list is
-/// accepted where the wire type is an object (`[]` is an empty patch). The corpus found it (`contractCorpus.test.ts`
-/// names it `known-bug-rust-reads-an-array-as-a-struct`). When a type refuses arrays, this test fails: flip it.
+/// serde's derived `Deserialize` would read a JSON array as the fields of a struct in order (`[]` an empty patch,
+/// `["pkg", 30, true]` a three-field one). Every entry point reads through `novira_core::strict`, which refuses it, at
+/// the top and nested; the corpus readers above do the same, so Rust and `types.ts` agree on arrays.
 #[test]
-fn known_bug_a_json_array_is_read_as_a_positional_struct() {
-    assert!(read_only::<EngineSettingsPatch>(&json!([])).accept);
-    let positional: EngineSettingsPatch = serde_json::from_value(json!(["pkg", 30, true])).unwrap();
-    assert_eq!(positional.comfyui_package.as_deref(), Some("pkg"));
-    assert_eq!(positional.comfyui_start_timeout_secs, Some(30));
-    assert_eq!(positional.civitai_lookup, Some(true));
+fn a_json_array_is_refused_where_the_type_is_a_struct() {
+    for array in [json!([]), json!([1, 2, 3]), json!(["pkg", 30, true])] {
+        assert!(!read_only::<EngineSettingsPatch>(&array).accept, "{array}");
+        assert!(!read_write::<BoardPatch>(&array).accept, "{array}");
+    }
+    // Nested: the sample model with its `defaultSettings` struct replaced by an array.
+    let mut model = crate::fixture("model-config");
+    assert!(read_write::<ModelConfig>(&model).accept);
+    assert!(
+        model["defaultSettings"].is_object(),
+        "the sample must hold the nested struct"
+    );
+    model["defaultSettings"] = json!([]);
+    assert!(!read_write::<ModelConfig>(&model).accept);
+    assert!(serde_json::from_value::<ModelConfig>(model).is_ok());
+    // What serde alone does with the same values is the defect this guards against.
+    assert!(serde_json::from_value::<EngineSettingsPatch>(json!([])).is_ok());
+    // An object still reads, and an array is still read where the field is a list.
+    assert!(read_only::<EngineSettingsPatch>(&json!({"comfyuiPackage": "pkg"})).accept);
+    assert!(read_only::<EngineSettingsPatch>(&json!({})).accept);
 }

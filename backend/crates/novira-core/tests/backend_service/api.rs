@@ -166,3 +166,40 @@ fn an_address_with_a_query_goes_to_the_browser_whole_and_never_to_explorer() {
         assert_eq!(args.len(), 2);
     }
 }
+
+#[tokio::test]
+async fn a_json_array_is_refused_where_an_argument_is_a_struct() {
+    let dir = tempfile::tempdir().unwrap();
+    let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+    // serde alone reads these as the fields in order (`[]` an empty patch, `["pkg", 30, true]` a full one).
+    for patch in [json!([]), json!([1, 2, 3]), json!(["pkg", 30, true])] {
+        let refused = dispatch(&backend, "set_engine_settings", json!({ "patch": patch })).await;
+        assert!(
+            matches!(refused, Err(CallError::BadArguments(ref m)) if m.starts_with("patch:")),
+            "{patch}: {refused:?}"
+        );
+    }
+    let refused = dispatch(
+        &backend,
+        "update_images",
+        json!({"names": ["a.png"], "patch": []}),
+    )
+    .await;
+    assert!(
+        matches!(refused, Err(CallError::BadArguments(_))),
+        "{refused:?}"
+    );
+    // The object form still works, and the stored settings are untouched by the refused calls.
+    let engine = dispatch(&backend, "engine_settings", json!({}))
+        .await
+        .unwrap();
+    let kept = dispatch(
+        &backend,
+        "set_engine_settings",
+        json!({"patch": {"civitaiLookup": false}}),
+    )
+    .await
+    .unwrap();
+    assert_eq!(kept["civitaiLookup"], json!(false));
+    assert_eq!(kept["comfyuiPackage"], engine["comfyuiPackage"]);
+}

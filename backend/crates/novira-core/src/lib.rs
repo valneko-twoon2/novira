@@ -23,6 +23,7 @@ pub mod secret;
 pub mod service;
 pub mod settings;
 pub mod startup;
+pub mod strict;
 pub mod sync;
 mod test_timing;
 pub mod types;

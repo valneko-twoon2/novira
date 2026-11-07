@@ -66,7 +66,7 @@ impl Settings {
         let path = data_dir.join(SETTINGS_FILE);
         match std::fs::read_to_string(&path) {
             Ok(text) => {
-                serde_json::from_str(&text).map_err(|e| format!("invalid {SETTINGS_FILE}: {e}"))
+                crate::strict::from_str(&text).map_err(|e| format!("invalid {SETTINGS_FILE}: {e}"))
             }
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(Self::default()),
             Err(e) => Err(format!("cannot read {SETTINGS_FILE}: {e}")),
@@ -263,6 +263,20 @@ fn path_key(path: &Path) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_settings_file_whose_root_is_not_an_object_is_refused() {
+        // serde alone would read `[]` as the defaults and `[null]` as a first field, hiding a damaged file.
+        for text in ["[]", "[null]", "[1, 2, 3]", "\"text\"", "7", "null"] {
+            let dir = tempfile::tempdir().unwrap();
+            std::fs::write(dir.path().join(SETTINGS_FILE), text).unwrap();
+            let err = Settings::load(dir.path()).unwrap_err();
+            assert!(err.starts_with("invalid settings.json"), "{text}: {err}");
+        }
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join(SETTINGS_FILE), "{}").unwrap();
+        assert_eq!(Settings::load(dir.path()).unwrap(), Settings::default());
+    }
 
     #[test]
     fn a_comfyui_folder_that_is_not_a_plain_full_folder_path_is_refused() {

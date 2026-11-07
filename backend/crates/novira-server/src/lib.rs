@@ -1545,7 +1545,8 @@ async fn export_images(
         .and_then(|mut v| {
             let names = serde_json::from_value::<Vec<String>>(v.get_mut("names")?.take()).ok()?;
             let options =
-                serde_json::from_value::<ExportOptions>(v.get_mut("options")?.take()).ok()?;
+                novira_core::strict::from_value::<ExportOptions>(v.get_mut("options")?.take())
+                    .ok()?;
             Some((names, options))
         });
     let Some((names, options)) = parsed else {

@@ -41,7 +41,7 @@ pub fn pointer_path(dev: bool) -> Option<PathBuf> {
 /// The pointer's content; `None` when there is no pointer, it is unreadable or it names no folder.
 pub fn read(pointer: &Path) -> Option<Location> {
     let text = std::fs::read_to_string(pointer).ok()?;
-    let location: Location = serde_json::from_str(&text).ok()?;
+    let location: Location = crate::strict::from_str(&text).ok()?;
     (location.data_dir.is_absolute()).then_some(location)
 }
 

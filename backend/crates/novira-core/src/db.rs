@@ -94,7 +94,7 @@ impl Db {
         rows.sort_unstable_by(|a, b| (a.0, &a.1).cmp(&(b.0, &b.1)));
         let mut out = Vec::with_capacity(rows.len());
         for (_, id, data) in rows {
-            match serde_json::from_str(&data) {
+            match crate::strict::from_str(&data) {
                 Ok(v) => out.push(v),
                 Err(e) => crate::applog::warn(
                     "database",
@@ -115,7 +115,7 @@ impl Db {
                 |r| r.get(0),
             )
             .optional()?;
-        Ok(data.and_then(|d| match serde_json::from_str(&d) {
+        Ok(data.and_then(|d| match crate::strict::from_str(&d) {
             Ok(v) => Some(v),
             Err(e) => {
                 crate::applog::warn(

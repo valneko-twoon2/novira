@@ -7,7 +7,7 @@
 {"id":"engine-settings-patch-6","kind":"damaged","mutations":["wrong-type /civitaiLookup"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":300,"civitaiLookup":1},"rust":{"accept":false}}
 {"id":"engine-settings-patch-7","kind":"damaged","mutations":["wrong-type /"],"value":"x","rust":{"accept":false}}
 {"id":"engine-settings-patch-8","kind":"valid","mutations":["strip-half /"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":300},"rust":{"accept":true}}
-{"id":"engine-settings-patch-9","kind":"damaged","mutations":["drop /civitaiLookup","wrong-type /"],"value":[],"rust":{"accept":true}}
+{"id":"engine-settings-patch-9","kind":"damaged","mutations":["drop /civitaiLookup","wrong-type /"],"value":[],"rust":{"accept":false}}
 {"id":"engine-settings-patch-10","kind":"damaged","mutations":["out-of-range /comfyuiStartTimeoutSecs","number-zero /comfyuiStartTimeoutSecs"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":0,"civitaiLookup":true},"rust":{"accept":true}}
 {"id":"engine-settings-patch-11","kind":"valid","mutations":["strip-half /"],"value":{},"rust":{"accept":true}}
 {"id":"engine-settings-patch-12","kind":"damaged","mutations":["wrong-type /civitaiLookup"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":300,"civitaiLookup":[]},"rust":{"accept":false}}
