@@ -545,4 +545,53 @@ mod tests {
         assert_eq!(status_of(&b, id), Some(QueueItemStatus::Canceled));
         assert_eq!(*seen.lock().unwrap(), vec![QueueItemStatus::Canceled]);
     }
+
+    /// A job cancelled while it finished (the cancel came after the worker's last look at its token): the item stays
+    /// canceled, the picture is kept, and the picture is announced with the item as the state holds it.
+    #[test]
+    fn a_picture_saved_after_a_cancel_is_announced_with_the_canceled_item() {
+        let dir = tempfile::tempdir().unwrap();
+        let b = open(dir.path());
+        let id = one_item(&b);
+        let item = b.queue_snapshot().items[0].clone();
+        let log = Arc::new(Mutex::new(Vec::new()));
+        let sink = log.clone();
+        b.set_event_sink(Arc::new(move |e| {
+            if let BackendEvent::ImageAdded { item, .. } = e {
+                sink.lock().unwrap().push(item);
+            }
+        }));
+        b.cancel_queue_item(id);
+        let mut png = std::io::Cursor::new(Vec::new());
+        image::DynamicImage::ImageRgb8(image::RgbImage::new(8, 8))
+            .write_to(&mut png, image::ImageFormat::Png)
+            .unwrap();
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        rt.block_on(b.save_result(&item, EngineOutput::Image(png.into_inner())))
+            .unwrap();
+        assert_eq!(b.bootstrap().images.len(), 1, "the picture is kept");
+        let announced = log.lock().unwrap()[0]
+            .clone()
+            .expect("the item is still in the queue");
+        assert_eq!(announced.status, QueueItemStatus::Canceled);
+        assert_eq!(announced.image_name, None);
+        assert_eq!(status_of(&b, id), Some(QueueItemStatus::Canceled));
+        // The text of a cancelled job is dropped: the item stays as it is.
+        rt.block_on(b.save_result(&item, EngineOutput::Text("t".into())))
+            .unwrap();
+        assert_eq!(b.queue_snapshot().items[0].result_text, None);
+        // A cleared item has no snapshot to announce.
+        b.clear_queue().unwrap();
+        let mut png = std::io::Cursor::new(Vec::new());
+        image::DynamicImage::ImageRgb8(image::RgbImage::new(8, 8))
+            .write_to(&mut png, image::ImageFormat::Png)
+            .unwrap();
+        rt.block_on(b.save_result(&item, EngineOutput::Image(png.into_inner())))
+            .unwrap();
+        assert_eq!(log.lock().unwrap().len(), 2);
+        assert!(log.lock().unwrap()[1].is_none());
+    }
 }

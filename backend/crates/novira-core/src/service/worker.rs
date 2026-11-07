@@ -632,7 +632,7 @@ impl Backend {
         Ok(())
     }
 
-    async fn save_result(
+    pub(super) async fn save_result(
         &self,
         item: &QueueItem,
         output: EngineOutput,
@@ -643,7 +643,8 @@ impl Backend {
             ));
         }
         if let EngineOutput::Text(text) = output {
-            // Text (a picture described as a prompt) is handed to the frontend; nothing goes to the gallery.
+            // Text (a picture described as a prompt) is handed to the frontend; nothing goes to the gallery. The text of a
+            // job cancelled meanwhile is dropped: the item stays canceled.
             self.set_status(item.id, QueueItemStatus::Completed, |q| {
                 q.completed_at = Some(now());
                 q.result_text = Some(text);
@@ -779,10 +780,15 @@ impl Backend {
             .map_err(|e| EngineError::Failed(format!("Cannot save the result: {e}")))?;
         self.insert_image(&image)
             .map_err(|e| EngineError::Failed(e.to_string()))?;
-        let done = self.set_status(item.id, QueueItemStatus::Completed, |q| {
-            q.completed_at = Some(now());
-            q.image_name = Some(image.name.clone());
-        });
+        // A job cancelled while it finished keeps its canceled status (a finished item never moves), so the picture is
+        // announced with the item as it is now: canceled, without an image name. The frontend still routes the picture
+        // by the item's parameters (draft, comic). `None` only when the item was cleared or pruned.
+        let done = self
+            .set_status(item.id, QueueItemStatus::Completed, |q| {
+                q.completed_at = Some(now());
+                q.image_name = Some(image.name.clone());
+            })
+            .or_else(|| self.state().queue.iter().find(|q| q.id == item.id).cloned());
         self.emit(BackendEvent::ImageAdded { image, item: done });
         Ok(())
     }
