@@ -1,0 +1,35 @@
+# gitleaks configuration (docs/design/ci.md, "Supply chain"). The default rules stay on; only findings that were looked
+# at one by one and are not secrets are listed here. Each entry matches the file AND the exact value, so the same
+# shape in another place, or a real key in the same file, is still reported.
+title = "novira"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Fake key a test feeds to the fake server to prove the key never reaches an error message"
+condition = "AND"
+paths = ['''backend/crates/novira-core/tests/agent_endpoint/connection\.rs''']
+regexes = ['''sk-very-secret-1234567890''']
+
+[[allowlists]]
+description = "Dummy Civitai key (counting digits) a test posts to the served commands to check it is stored and never echoed"
+condition = "AND"
+paths = ['''backend/crates/novira-server/tests/served\.rs''']
+regexes = ['''0123456789abcdef0123456789abcdef''']
+
+[[allowlists]]
+description = "Model catalogue id of the mock backend (a VAE named vae-sdxl-fp16), a field called key but not a credential"
+condition = "AND"
+paths = ['''frontend/src/backend/mock/seedData\.ts''']
+regexes = ['''vae-sdxl-fp16''']
+
+[[allowlists]]
+description = "Name of a ComfyUI custom node pack (HiDream_O1-ComfyUI) in the purpose assignment data, not a credential"
+condition = "AND"
+paths = ['''frontend/src/state/comfy/purposeData/assignments/h\.json''']
+regexes = ['''HiDream_O1-ComfyUI''']
+
+[[allowlists]]
+description = "The user's data folder is never tracked; it only matters for a scan without git on a developer machine"
+paths = ['''(^|/)novira-data/''']

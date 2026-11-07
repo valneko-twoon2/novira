@@ -4,6 +4,7 @@ version.workspace = true
 description = "novira backend over HTTP for a plain web browser: this computer only, or the home network, opened on demand"
 edition = "2021"
 license = "Apache-2.0"
+publish = false
 
 [lints]
 workspace = true

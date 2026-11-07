@@ -4,6 +4,7 @@ version.workspace = true
 description = "novira backend: storage, queue, ComfyUI adapter and model management (no Tauri dependency)"
 edition = "2021"
 license = "Apache-2.0"
+publish = false
 
 [lints]
 workspace = true
