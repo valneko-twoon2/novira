@@ -67,3 +67,24 @@ export function parseUiState(json: string): Record<string, string> | null {
   }
   return out;
 }
+
+/**
+ * The saved state of `storage` as key to text: what `parseUiState(collectUiState(storage))` gives, without writing the
+ * state out as JSON and reading it back. The state runs to hundreds of kilobytes on a used PC (drafts, chats, the prompt
+ * book) and the sync reads it after every change; only a state that could be near the size limit is measured as JSON.
+ */
+export function readUiState(storage: Storage): Record<string, string> | null {
+  const out: Record<string, string> = {};
+  // The longest JSON the state can take: every character escaped (six characters), two quotes, a colon and a comma.
+  let longest = 2;
+  for (let i = 0; i < storage.length; i++) {
+    const key = storage.key(i);
+    if (!key?.startsWith(PERSIST_PREFIX)) continue;
+    const value = storage.getItem(key);
+    if (value === null) continue;
+    if (key.length > MAX_KEY_CHARS) return null;
+    out[key] = value;
+    longest += 6 * (key.length + value.length) + 6;
+  }
+  return longest <= MAX_UI_STATE_CHARS ? out : parseUiState(collectUiState(storage));
+}

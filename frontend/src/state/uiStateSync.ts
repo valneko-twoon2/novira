@@ -11,7 +11,7 @@
 import { backend } from '@/backend';
 import { canRehydrate, rehydrateKeys } from './rehydrate';
 import { planRemote, sameState, type KeyText } from './uiStateMerge';
-import { applyUiState, collectUiState, parseUiState, PERSIST_PREFIX } from './uiStateStorage';
+import { applyUiState, collectUiState, parseUiState, PERSIST_PREFIX, readUiState } from './uiStateStorage';
 
 /** Marks a storage that has been synced with a backend (not a `novira.*` key, so it is not part of the state). */
 const SYNCED_FLAG = 'novira-ui-synced';
@@ -59,7 +59,7 @@ function watch(storage: Storage): () => void {
   let timer: ReturnType<typeof setTimeout> | undefined;
   let pullTimer: ReturnType<typeof setTimeout> | undefined;
   // `theirs` is what the backend held the last time this page read or wrote it, `mine` what the storage held then.
-  const start = parseUiState(collectUiState(storage)) ?? {};
+  const start = readUiState(storage) ?? {};
   let theirs: KeyText = { ...start };
   let mine: KeyText = { ...start };
   const written = new Map<string, number>();
@@ -67,7 +67,7 @@ function watch(storage: Storage): () => void {
   let lastRevision = 0;
   let work: Promise<void> = Promise.resolve();
 
-  const local = () => parseUiState(collectUiState(storage)) ?? {};
+  const local = () => readUiState(storage) ?? {};
 
   /** Reads the backend's state and takes what changed there into the storage and the running stores. */
   const pull = async (): Promise<void> => {
@@ -126,8 +126,9 @@ function watch(storage: Storage): () => void {
     timer = undefined;
     if (sameState(local(), mine)) return;
     if (read) await queuePull();
+    // The text goes to the backend; what it holds is read from the storage itself, at the same moment.
     const state = collectUiState(storage);
-    const sent = parseUiState(state) ?? {};
+    const sent = readUiState(storage) ?? {};
     if (sameState(sent, mine)) return;
     try {
       await backend.saveUiState(state, origin);

@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { backend } from '@/backend';
 import { adoptBackendUiState } from './uiStateSync';
+import { collectUiState } from './uiStateStorage';
 
 /** A storage of its own, so the methods `watch` replaces are the ones of this class and no other test sees them. */
 class MemoryStorage implements Storage {
@@ -129,6 +130,24 @@ describe('sending changes to the backend', () => {
     storage.setItem('novira.a', '1');
     await vi.advanceTimersByTimeAsync(DELAY * 2);
     expect(save).toHaveBeenCalledTimes(2);
+  });
+
+  it('reads the page\'s own state without writing it out as JSON and parsing it back', async () => {
+    // A used PC holds hundreds of kilobytes (drafts, chats, the prompt book); only the backend's answer is parsed.
+    const drafts = 'd'.repeat(100_000);
+    storage.setItem('novira.drafts', drafts);
+    const held = collectUiState(storage);
+    vi.spyOn(backend, 'adoptUiState').mockResolvedValue(held);
+    const save = vi.spyOn(backend, 'saveUiState').mockResolvedValue();
+    await adoptBackendUiState(storage);
+    const parse = vi.spyOn(JSON, 'parse');
+    storage.setItem('novira.settings', 'changed');
+    await vi.advanceTimersByTimeAsync(DELAY * 2);
+    const bigParses = parse.mock.calls.filter(([text]) => typeof text === 'string' && text.length >= drafts.length).length;
+    parse.mockRestore();
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(save.mock.calls[0]![0])).toEqual({ 'novira.drafts': drafts, 'novira.settings': 'changed' });
+    expect(bigParses).toBe(1); // the backend's answer, read before the save so another page's change is not lost
   });
 
   it('sends at once when the page is hidden', async () => {
