@@ -29,7 +29,7 @@
 | 実行 | 手元で回すコマンドと、深く回すための環境変数 |
 | CI | 回す GitHub Actions のジョブ。`manual` は workflow のどれも回さない |
 
-CI のジョブは、`.github/workflows/test.yml`（`static`、`rust-format`、`vitest`、`clippy`、`cargo-test`、`e2e-chromium`、`e2e-phone`、`diff-backends`）、`.github/workflows/audit.yml`（`audit`）、`.github/workflows/release.yml`（`build`）にある。
+CI のジョブは、`.github/workflows/test.yml`（`static`、`rust-format`、`vitest`、`clippy`、`cargo-test`、`e2e-chromium`、`e2e-phone`、`diff-backends`）、`.github/workflows/audit.yml`（`audit`）、`.github/workflows/supply-chain.yml`（`cargo-deny`、`gitleaks`）、`.github/workflows/release.yml`（`build`）にある。
 
 ## 手法と層
 

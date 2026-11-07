@@ -1,12 +1,13 @@
 # Two supply-chain checks beside audit.yml: `cargo deny` (licences, banned or wildcard dependencies, unknown registries
 # and git sources, from backend/deny.toml) and `gitleaks` (a secret in the files or in the whole git history, from
 # .gitleaks.toml). Advisories stay with audit.yml and backend/.cargo/audit.toml.
-# It runs by hand and weekly only, not on a push: a new check joins the push checks once it is seen to pass on the
-# runner (docs/design/ci.md). The tools are version-pinned release binaries whose sha256 is checked before they run.
+# It runs on every push to a branch, by hand and every Monday (it passed on the runner first, docs/design/ci.md). The
+# tools are version-pinned release binaries whose sha256 is checked before they run.
 # Only actions of GitHub's own (actions/*) are used; nothing here has a secret or write access.
 name: supply-chain
 
 on:
+  push:
   workflow_dispatch:
   schedule:
     - cron: '43 3 * * 1'

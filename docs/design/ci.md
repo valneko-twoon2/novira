@@ -36,7 +36,7 @@ GitHub runs the repository's checks on every push to a branch, so a change is ch
 
 ## Supply chain
 
-`.github/workflows/supply-chain.yml` is a third workflow. It is **not** run on a push yet: it starts by hand (workflow_dispatch) and every Monday (03:43 UTC), so a new check is seen to pass on the runner before it joins the push checks. Both jobs run on `ubuntu-24.04` with the version-pinned release binary of the tool, downloaded from GitHub's releases and checked against a sha256 written in the workflow before it runs (no third-party action, no `cargo install`):
+`.github/workflows/supply-chain.yml` is a third workflow. It runs on a push to any branch, by hand (workflow_dispatch) and every Monday (03:43 UTC; GitHub starts a schedule on the default branch only). Both jobs run on `ubuntu-24.04` with the version-pinned release binary of the tool, downloaded from GitHub's releases and checked against a sha256 written in the workflow before it runs (no third-party action, no `cargo install`):
 
 - `cargo-deny` (0.20.2, at most 20 minutes): `cargo-deny --locked check bans licenses sources` in `backend/` with `backend/deny.toml`. The graph is the Windows one (the app ships on Windows only). Licences are an allow-list of what the graph carries; any other licence fails. A wildcard version, an unknown registry and any git source fail; two versions of one crate only warn. The workspace crates are `publish = false`, which lets cargo-deny take their path dependencies as local. Advisories are not checked here: they stay with `cargo audit` and `backend/.cargo/audit.toml`.
 - `gitleaks` (8.30.1, at most 10 minutes): `gitleaks detect --source . --redact` over the whole history (`fetch-depth: 0`) and the tree, with `.gitleaks.toml`: the default rules plus four allowlist entries, each tied to one file and one value and giving its reason (test fixtures and catalogue ids, looked at one by one), and the untracked `novira-data/` folder. `--redact` keeps a found value out of the run log. The own scan of committed secrets (`cargo test -p novira --test security`, `secrets`) stays; this adds the history and the many key formats of the default rules.
@@ -60,5 +60,4 @@ By hand: `cargo deny --manifest-path backend/Cargo.toml check bans licenses sour
 
 - Next in line, each added once it is seen to pass on the runner: the layout scan and the visual regression (whose baselines are Windows images). Until then they stay in `scripts\check.bat` and `scripts\checks\full-check.bat`.
 - No notice goes out when the weekly audit or supply-chain run fails: it shows in the Actions tab.
-- The supply-chain workflow does not run on a push. It passed once on the runner (both jobs, on a trial branch made from `main`); it joins the push checks when the user decides, and until a manual run from the default branch is possible it needs the file on `main`.
 - CodeQL and semgrep are not used: CodeQL needs `github/codeql-action`, which would widen the actions rule above.
