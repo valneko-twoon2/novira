@@ -3,7 +3,7 @@
 // opens it full screen; one waiting or running can be cancelled, one that failed or was cancelled tried again.
 import { ArrowCounterClockwise, Broom, ListBullets, Pause, Play, Warning, X } from '@phosphor-icons/react';
 import { backend, type QueueItem } from '@/backend';
-import { DESTINATION_KEYS, STATUS_KEYS } from '@/features/queue/queueFormat';
+import { DESTINATION_KEYS, STATUS_KEYS, canRetry as retryable } from '@/features/queue/queueFormat';
 import { t, tCount } from '@/i18n';
 import { useGallery } from '@/state/gallery';
 import { useQueue } from '@/state/queue';
@@ -67,7 +67,7 @@ function QueueCard({ item }: { item: QueueItem }) {
   const image = useGallery((s) => (item.imageName ? s.images.find((i) => i.name === item.imageName) : undefined));
   const progress = useQueue((s) => (s.progress?.itemId === item.id ? s.progress : null));
   const canCancel = item.status === 'pending' || item.status === 'in_progress';
-  const canRetry = item.status === 'failed' || item.status === 'canceled';
+  const canRetry = retryable(item);
   const running = item.status === 'in_progress';
   const opens = running ? item.destination === 'gallery' : !!image;
   const open = () => {

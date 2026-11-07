@@ -246,7 +246,7 @@ pub enum GenerationMode {
     Music,
     /// Speech read out from text.
     Voice,
-    /// A logo drawn by the logo pack's model (Z-Image-Turbo) from a prompt that names the text to show.
+    /// A logo from the screen that has been removed. Kept so the pictures it made still load; a job of this mode fails.
     Logo,
 }
 

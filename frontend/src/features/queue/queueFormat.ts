@@ -28,6 +28,11 @@ export function formatTime(ms: number | null): string {
   return new Date(ms).toLocaleTimeString(getLocale(), { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
+/** A failed or canceled job can be queued again, except one of the removed logo mode, which would fail the same way. */
+export function canRetry(item: QueueItem): boolean {
+  return (item.status === 'failed' || item.status === 'canceled') && item.params.generationMode !== 'logo';
+}
+
 /** Seconds between start and completion, or null when not finished/started. */
 export function durationSeconds(item: QueueItem): number | null {
   if (item.startedAt === null || item.completedAt === null) return null;

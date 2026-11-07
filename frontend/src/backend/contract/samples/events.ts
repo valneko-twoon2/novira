@@ -69,7 +69,6 @@ export const bootstrap = {
     music: packStatus.downloading,
     voice: packStatus.installing,
     inpaint: packStatus.error,
-    logo: packStatus.missing,
   },
 } satisfies Required<Bootstrap>;
 

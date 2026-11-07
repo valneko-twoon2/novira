@@ -52,7 +52,7 @@ novira は、画像などを作るために「画像生成エンジン」（Comf
 
 ### 生成ボタンが押せない
 
-**{{ui:app.tabs.generate}}** 画面の生成ボタンにマウスを重ねると、**{{ui:params.invoke.cannotInvoke}}** という理由の一覧が出ます。動画・音楽・音声・ロゴの画面では、ボタンの下に理由が並びます。出ている理由を 1 つずつ直すと、ボタンが押せるようになります。
+**{{ui:app.tabs.generate}}** 画面の生成ボタンにマウスを重ねると、**{{ui:params.invoke.cannotInvoke}}** という理由の一覧が出ます。動画・音楽・音声の画面では、ボタンの下に理由が並びます。出ている理由を 1 つずつ直すと、ボタンが押せるようになります。
 
 | 出る理由 | 直し方 |
 |---|---|
@@ -63,12 +63,12 @@ novira は、画像などを作るために「画像生成エンジン」（Comf
 | 参照画像には拡張機能 ○○ が必要です | 参照画像の欄の案内から、拡張機能をインストールします（[拡張機能が足りない](#拡張機能が足りない)） |
 | {{ui:params.readiness.upscaleNoImage}} | アップスケールする画像を選びます |
 | {{ui:params.readiness.upscaleNoModel}} | アップスケール用のモデルを選びます。インストールされていないときは、{{ui:app.tabs.models}}タブの **{{ui:models.install.tab.starter}}** からインストールできます |
-| {{ui:video.problem.prompt}}、{{ui:music.problem.tags}}、{{ui:voice.problem.text}}、{{ui:logo.problem.text}} | 必須の欄が空です。入力します |
+| {{ui:video.problem.prompt}}、{{ui:music.problem.tags}}、{{ui:voice.problem.text}} | 必須の欄が空です。入力します |
 | {{ui:video.problem.image}} | 「画像から」のときに、動かす画像が選ばれていません |
 | {{ui:voice.problem.description}} | 「声を言葉で作る」のときに、声の説明が空です |
-| {{ui:video.problem.pack}}、{{ui:music.problem.pack}}、{{ui:voice.problem.pack}}、{{ui:logo.problem.pack}} | 専用のモデルがインストールされていません。次の項目へ |
+| {{ui:video.problem.pack}}、{{ui:music.problem.pack}}、{{ui:voice.problem.pack}} | 専用のモデルがインストールされていません。次の項目へ |
 
-### 動画・音楽・音声・ロゴのモデルがインストールされていない
+### 動画・音楽・音声のモデルがインストールされていない
 
 それぞれの画面の左パネルにカードが出ているので、**{{ui:pack.install}}** を押します。インストールが終わるまでは作れません。
 
@@ -76,7 +76,7 @@ novira は、画像などを作るために「画像生成エンジン」（Comf
 - 音声は、読み上げ用のエンジンもインストールします。画像生成エンジンの準備が先に済んでいる必要があります。
 - 高速な動画モデルは、標準の動画モデルとは別のダウンロードです。
 
-くわしくは [動画・音楽・音声・ロゴ](07-media.md) をご覧ください。
+くわしくは [動画・音楽・音声・テキスト](07-media.md) をご覧ください。
 
 ### モデルがインストールされていない
 
@@ -106,13 +106,13 @@ novira は、画像などを作るために「画像生成エンジン」（Comf
 
 メモリが足りないと、エラーに「OOM」（メモリ不足の意味）の文字が出ることがあります。
 
-メモリが足りずに失敗したときは、アプリがそれを見分けて、**{{ui:queue.oom.title}}** という知らせを出します。知らせは、ギャラリーの上、**{{ui:app.tabs.queue}}** タブの失敗した項目の下、動画・音楽・音声・ロゴの画面、画面の右下の通知に出ます。
+メモリが足りずに失敗したときは、アプリがそれを見分けて、**{{ui:queue.oom.title}}** という知らせを出します。知らせは、ギャラリーの上、**{{ui:app.tabs.queue}}** タブの失敗した項目の下、動画・音楽・音声の画面、画面の右下の通知に出ます。
 
 ![GPU のメモリが足りないときの知らせ。小さくして再試行と、省メモリモードにして再起動のボタンが並ぶ](shot:out-of-memory)
 
 知らせのボタンで、次のどちらかを試せます。
 
-- **{{ui:queue.oom.retrySmaller}}**：同じ設定とシードのまま、縦横の比を保って面積を約 75% にし、もう一度作ります。サイズを決めて作る画像にだけ出ます（動画・音楽・音声・ロゴ・アップスケールには出ません）。
+- **{{ui:queue.oom.retrySmaller}}**：同じ設定とシードのまま、縦横の比を保って面積を約 75% にし、もう一度作ります。サイズを決めて作る画像にだけ出ます（動画・音楽・音声・アップスケールには出ません）。
 - **{{ui:queue.oom.lowMemory}}**：**{{ui:settings.lowMemory.label}}**（[エージェント・設定](09-assistant-settings.md) を参照）をオンにして、エンジンを再起動します。作成中の項目があるときは、エンジンを次に起動したときから使われます。すでにオンのときは出ません。
 
 メモリが足りずに失敗したあと、アプリはエンジンに、読み込んだモデルを外してメモリを空けるよう頼みます。そのため、次の作成はモデルの読み込みからになり、少し時間がかかります。
@@ -129,7 +129,7 @@ novira は、画像などを作るために「画像生成エンジン」（Comf
 
 ### 生成に失敗する
 
-画像・動画・音楽などの作成が失敗すると、**{{ui:app.tabs.queue}}** タブの項目が **{{ui:queue.status.failed}}** になります。項目を押して開くと、**{{ui:queue.detail.error}}** に理由が出ます。動画・音楽・音声・ロゴの画面では、真ん中の上のほうにも、失敗した表示と理由が出ます（直近の 3 件まで）。
+画像・動画・音楽などの作成が失敗すると、**{{ui:app.tabs.queue}}** タブの項目が **{{ui:queue.status.failed}}** になります。項目を押して開くと、**{{ui:queue.detail.error}}** に理由が出ます。動画・音楽・音声の画面では、真ん中の上のほうにも、失敗した表示と理由が出ます（直近の 3 件まで）。
 
 理由が分かったら、項目の **{{ui:queue.action.retry}}** ボタンで、同じ設定のままやり直せます。
 
@@ -144,7 +144,8 @@ novira は、画像などを作るために「画像生成エンジン」（Comf
 | ... models are not supported by the ComfyUI backend yet | FLUX や SD3.X のモデルは、まだ画像の生成に使えません。SDXL や SD1.X のモデルを選びます |
 | Reference images need the ... custom node pack | 参照画像に必要な拡張機能がインストールされていません |
 | This ComfyUI is too old for video / music | 動画や音楽に必要な機能が、使っているエンジンにありません。アプリがインストールしたエンジンなら起こりません。自分で用意したエンジンなら更新します |
-| The video / music / logo models are not installed yet | 専用のモデルがインストールされていません。それぞれの画面からダウンロードします |
+| The video / music models are not installed yet | 専用のモデルがインストールされていません。それぞれの画面からダウンロードします |
+| Logos can no longer be made | 以前の版のキューに残っていたロゴの作成です。ロゴの画面はなくなりました。**{{ui:media.tab.text}}** で画像に文字を重ねてください |
 | ComfyUI has no ... node; install the custom node pack | ワークフローで使うノードの拡張機能がインストールされていません |
 | Interrupted because novira was closed | 作成の途中で、アプリが閉じられました。もう一度作ります |
 
@@ -153,7 +154,7 @@ novira は、画像などを作るために「画像生成エンジン」（Comf
 作成が **{{ui:queue.status.completed}}** なのに、ギャラリーに出ないときは、次を確かめます。
 
 - **ボードが違う**：新しい画像は、**{{ui:gallery.boards.autoBadge}}** の印が付いたボード（初期状態では **{{ui:gallery.boards.uncategorized}}**）に入ります。別のボードを開いていると、そこには出ません。ボードを切り替えるか、新しい画像を入れるボードを **{{ui:gallery.boards.setAutoAdd}}** で選び直します。
-- **ロゴは「アセット」に入る**：ロゴは **{{ui:gallery.view.images}}** ではなく **{{ui:gallery.view.assets}}** のほうに入ります。
+- **以前の版で作ったロゴは「アセット」にある**：ロゴは **{{ui:gallery.view.images}}** ではなく **{{ui:gallery.view.assets}}** のほうに入っています。
 - **動画と音声の見え方**：動画は ▶、音声は ♪ の付いたサムネイルで並びます。検索や絞り込みが残っていると隠れます。
 
 それでも見つからないときは、**{{ui:app.tabs.queue}}** タブで項目の **{{ui:queue.col.destination}}** を確かめます。出力先が **{{ui:queue.destination.canvas}}** の項目は、ギャラリーではなくキャンバスに出ます。
@@ -184,6 +185,8 @@ novira は、画像などを作るために「画像生成エンジン」（Comf
 | `agent.json` | エージェントで選んだ AI の種類 |
 
 アプリがインストールしたエンジン（ComfyUI と Python）と、その作業用のデータも、データフォルダの中に入ります。
+
+> 以前の版でロゴの画面のモデルをインストールしていた場合は、`models` の中に `logo` フォルダ（約 12 GB）が残ります。今の版はこのフォルダを使わず、消すこともありません。いらなければ、アプリを閉じてから自分で消して構いません。
 
 アプリの画面の設定（言語・テーマ・プリセット・AI のチャットの履歴など）は、`novira-data` ではなく、アプリの画面側の保存領域に入っています。
 

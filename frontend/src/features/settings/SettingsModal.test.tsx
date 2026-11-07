@@ -77,12 +77,16 @@ describe('the tabs', () => {
     expect(modal().queryByText(APP_VERSION, { exact: false })).toBeNull();
   });
 
-  it('leaves out the comic and text tab in the app build, where those screens are hidden', () => {
+  it('in the app build, where only the comic screen is hidden, keeps the text settings and leaves out the comic ones', () => {
     cleanup();
     vi.stubEnv('MODE', 'production');
     show();
-    expect(screen.queryByTestId('settings-tab-comicText')).toBeNull();
     expect(screen.getByTestId('settings-tab-engine')).toBeTruthy();
+    expect(screen.getByTestId('settings-tab-comicText').textContent).toBe(t('settings.tab.text'));
+    openTab('comicText');
+    expect(screen.getByTestId('settings-text-font')).toBeTruthy();
+    expect(screen.queryByTestId('settings-comic-font')).toBeNull();
+    expect(screen.queryByTestId('settings-comic-size')).toBeNull();
   });
 
   it('opens again on the tab last open', () => {

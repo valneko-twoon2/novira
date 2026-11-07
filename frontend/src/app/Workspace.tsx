@@ -4,7 +4,6 @@ import { type RefObject, useEffect, useRef } from 'react';
 import { Group, Panel, Separator, usePanelRef } from 'react-resizable-panels';
 import { CanvasView } from '@/features/canvas/CanvasView';
 import { DraftsView } from '@/features/drafts/DraftsView';
-import { LogoPanel, LogoResults } from '@/features/logo/LogoView';
 import { AudioResults } from '@/features/media/AudioResults';
 import { MediaTabs } from '@/features/media/MediaTabs';
 import { MusicPanel } from '@/features/music/MusicView';
@@ -142,7 +141,6 @@ function LeftBody({ tab }: { tab: TabName }) {
       {media === 'text' && <TextPanel />}
       {media === 'music' && <MusicPanel />}
       {media === 'voice' && <VoicePanel />}
-      {media === 'logo' && <LogoPanel />}
     </>
   );
 }
@@ -199,7 +197,6 @@ function MainArea({ tab }: { tab: TabName }) {
       </div>
       <div className="mainarea__body">
         {otherMedia && media === 'video' && <VideoResults />}
-        {otherMedia && media === 'logo' && <LogoResults />}
         {otherMedia && media === 'text' && <TextCanvas />}
         {otherMedia && (media === 'music' || media === 'voice') && <AudioResults kind={media} />}
         {!otherMedia && view === 'launchpad' && <Launchpad tab={tab} />}

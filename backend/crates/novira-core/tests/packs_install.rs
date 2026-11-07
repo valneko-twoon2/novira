@@ -97,7 +97,7 @@ async fn an_install_into_a_place_that_is_not_a_folder_is_an_error() {
     let err = install_files(
         &reqwest::Client::new(),
         &blocked,
-        PackKind::Logo,
+        PackKind::Music,
         &CancellationToken::new(),
         &|_| {},
     )
@@ -107,13 +107,13 @@ async fn an_install_into_a_place_that_is_not_a_folder_is_an_error() {
     // The folder for downloads cannot be made either when the pack's own folder is a file.
     let models = dir.path().join("models2");
     prepare_dirs(&models).unwrap();
-    let logo = models.join(PackKind::Logo.dir());
-    std::fs::remove_dir_all(&logo).unwrap();
-    std::fs::write(&logo, b"file").unwrap();
+    let music = models.join(PackKind::Music.dir());
+    std::fs::remove_dir_all(&music).unwrap();
+    std::fs::write(&music, b"file").unwrap();
     assert!(install_files(
         &reqwest::Client::new(),
         &models,
-        PackKind::Logo,
+        PackKind::Music,
         &CancellationToken::new(),
         &|_| {},
     )

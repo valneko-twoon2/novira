@@ -9,13 +9,11 @@ import { useAgent } from './agent';
 import { useCanvas } from './canvas';
 import { useDrafts } from './drafts';
 import { useGallery } from './gallery';
-import { useLogo } from './media/logo';
 import { useMusic } from './media/music';
 import { useVideo } from './media/video';
 import { useVoice } from './media/voice';
 import { useParams } from './params';
 import { useImagePresets } from './presets/imagePresets';
-import { useLogoPresets } from './presets/logoPresets';
 import { useMusicPresets } from './presets/musicPresets';
 import { useTextStylePresets } from './presets/textStylePresets';
 import { useVideoPresets } from './presets/videoPresets';
@@ -40,13 +38,11 @@ const STORES: [string, Persisted][] = [
   ['canvas', useCanvas],
   ['drafts', useDrafts],
   ['gallery', useGallery],
-  ['logo', useLogo],
   ['music', useMusic],
   ['video', useVideo],
   ['voice', useVoice],
   ['params', useParams],
   ['imagePresets', useImagePresets],
-  ['logoPresets', useLogoPresets],
   ['musicPresets', useMusicPresets],
   ['textStylePresets', useTextStylePresets],
   ['videoPresets', useVideoPresets],

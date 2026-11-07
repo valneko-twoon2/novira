@@ -196,7 +196,7 @@
   "gallery.viewer.zoomFit": "화면에 맞추기",
   "gallery.menu.sendToVideo": "이 이미지로 동영상 만들기",
   "gallery.menu.sendToWorkflow": "워크플로에 이미지로 추가",
-  "gallery.menu.sendToText": "텍스트(로고) 배경으로 사용",
+  "gallery.menu.sendToText": "텍스트 배경으로 사용",
   "gallery.toast.sentToVideo": "동영상의 원본 이미지로 설정했습니다",
   "gallery.toast.sentToText": "텍스트 배경으로 설정했습니다",
   "gallery.meta.hiresFix": "고해상도 보정",

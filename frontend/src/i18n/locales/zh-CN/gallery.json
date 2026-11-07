@@ -196,7 +196,7 @@
   "gallery.viewer.zoomFit": "适应屏幕",
   "gallery.menu.sendToVideo": "用此图像生成视频",
   "gallery.menu.sendToWorkflow": "作为图像添加到工作流",
-  "gallery.menu.sendToText": "设为文本（Logo）的背景",
+  "gallery.menu.sendToText": "设为文本的背景",
   "gallery.toast.sentToVideo": "已设为视频的源图像",
   "gallery.toast.sentToText": "已设为文本的背景",
   "gallery.meta.hiresFix": "高分辨率修复",

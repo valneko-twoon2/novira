@@ -11,7 +11,7 @@ import { useSettings } from '@/state/settings';
 import { GENERATED_MEDIA } from '@/state/ui';
 import { OutOfMemoryNotice, ProgressBar, Spinner } from '@/ui';
 
-/** Video, music, speech and logos show their failures on their own screens. */
+/** Video, music and speech show their failures on their own screens. */
 const MEDIA_MODES: ReadonlySet<GenerationMode> = new Set<GenerationMode>(GENERATED_MEDIA);
 
 export function GeneratingStrip() {

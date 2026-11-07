@@ -1,5 +1,5 @@
-// The card that offers a kind of media's extra models for download (video, music, voice, logo) and shows the progress.
-import { Eraser, FilmSlate, Lightning, MicrophoneStage, MusicNotes, Sparkle } from '@phosphor-icons/react';
+// The card that offers a kind of media's extra models for download (video, music, voice) and shows the progress.
+import { Eraser, FilmSlate, Lightning, MicrophoneStage, MusicNotes } from '@phosphor-icons/react';
 import { useEffect, type ReactNode } from 'react';
 import { backend, type PackKind } from '@/backend';
 import { t } from '@/i18n';
@@ -16,7 +16,6 @@ const ICONS: Record<PackKind, ReactNode> = {
   music: <MusicNotes size={20} />,
   voice: <MicrophoneStage size={20} />,
   inpaint: <Eraser size={20} />,
-  logo: <Sparkle size={20} />,
 };
 
 /** Nothing once the pack is installed. */

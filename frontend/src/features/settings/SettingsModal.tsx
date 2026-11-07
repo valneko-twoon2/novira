@@ -22,6 +22,8 @@ const PANES = {
 export type SettingsTab = keyof typeof PANES;
 /** The tabs of this build: the comic and text settings only where those screens can be opened (`isScreenShown`). */
 const tabIds = () => (Object.keys(PANES) as SettingsTab[]).filter((id) => id !== 'comicText' || isScreenShown('comic') || isScreenShown('text'));
+/** A tab's name; a build without the comic screen does not name it. */
+const tabLabel = (id: SettingsTab): MessageKey => (id === 'comicText' && !isScreenShown('comic') ? 'settings.tab.text' : PANES[id].label);
 
 /** The tab open when the modal was last closed, so it opens there again (kept for the session only). */
 let lastTab: SettingsTab = 'general';
@@ -68,7 +70,7 @@ function SettingsBody() {
             onClick={() => choose(id)}
             data-testid={`settings-tab-${id}`}
           >
-            {t(PANES[id].label)}
+            {t(tabLabel(id))}
           </button>
         ))}
       </nav>

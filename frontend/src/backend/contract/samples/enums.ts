@@ -64,7 +64,7 @@ export const enums = {
   ControlMode: allOf<ControlMode>()(['balanced', 'more_prompt', 'more_control']),
   RefImageMethod: allOf<RefImageMethod>()(['full', 'style', 'composition', 'style_strong', 'style_precise']),
   ClipVisionModel: allOf<ClipVisionModel>()(['ViT-H', 'ViT-G', 'ViT-L']),
-  PackKind: allOf<PackKind>()(['video', 'turbo', 'music', 'voice', 'inpaint', 'logo']),
+  PackKind: allOf<PackKind>()(['video', 'turbo', 'music', 'voice', 'inpaint']),
   AgentProvider: allOf<AgentProvider>()(['claude', 'codex', 'openai']),
   AgentToolsState: allOf<AgentToolsState>()(['unknown', 'supported', 'unsupported']),
   ComfyuiMode: allOf<ComfyuiMode>()(['owned', 'url', 'folder']),

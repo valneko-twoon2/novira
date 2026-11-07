@@ -7,7 +7,7 @@ import { FRAME_MARGIN_RANGE, FRAME_WIDTH_RANGE, PAGE_SIZES, READING_DIRECTIONS }
 import { useGallery, type GallerySettings } from '@/state/gallery';
 import { COMIC_PANELS_RANGE, DRAFT_COUNT_RANGE, DRAFT_POSITION_RANGE, READ_ACCESS, TOAST_SECONDS_RANGE, UNDO_LIMIT_RANGE, useSettings, type SettingsValues, type StartTab } from '@/state/settings';
 import { toast } from '@/state/toasts';
-import { NAV, type TabName } from '@/state/ui';
+import { isScreenShown, NAV, type TabName } from '@/state/ui';
 import { sanitizeUiZoom, UI_ZOOM_STEPS } from '@/state/uiZoom';
 import { Button, FontPicker, Select, SliderNumber, Switch } from '@/ui';
 import { CivitaiKeyControl, HuggingFaceTokenControl } from './CivitaiKeyControl';
@@ -227,40 +227,46 @@ export function EditPane() {
   );
 }
 
+/** The comic rows only where the comic screen can be opened: this pane also holds the settings of the Text screen. */
 export function ComicTextPane() {
   const s = useSettings();
+  const comic = isScreenShown('comic');
   return (
     <>
       <SectionBlock title={t('settings.section.fonts')}>
-        <Row label={t('settings.comicFont.label')}>
-          <div className="st-select st-font">
-            <FontPicker value={s.comicFont || null} onChange={(font) => s.set({ comicFont: font ?? '' })} defaultLabel={t('common.font.standard')} label={t('settings.comicFont.label')} testId="settings-comic-font" />
-          </div>
-        </Row>
+        {comic && (
+          <Row label={t('settings.comicFont.label')}>
+            <div className="st-select st-font">
+              <FontPicker value={s.comicFont || null} onChange={(font) => s.set({ comicFont: font ?? '' })} defaultLabel={t('common.font.standard')} label={t('settings.comicFont.label')} testId="settings-comic-font" />
+            </div>
+          </Row>
+        )}
         <Row label={t('settings.textFont.label')}>
           <div className="st-select st-font">
             <FontPicker value={s.textFont || null} onChange={(font) => s.set({ textFont: font ?? '' })} defaultLabel={t('common.font.standard')} label={t('settings.textFont.label')} testId="settings-text-font" />
           </div>
         </Row>
       </SectionBlock>
-      <SectionBlock title={t('settings.section.comicPage')}>
-        <Row label={t('comic.page.size')}>
-          <Select className="st-select" value={s.comicPageSize} onChange={(v) => s.set({ comicPageSize: v })} options={PAGE_SIZES.map((p) => ({ value: p, label: p }))} aria-label={t('comic.page.size')} data-testid="settings-comic-size" />
-        </Row>
-        <Row label={t('comic.page.direction')}>
-          <Select
-            className="st-select"
-            value={s.comicDirection}
-            onChange={(v) => s.set({ comicDirection: v })}
-            options={READING_DIRECTIONS.map((d) => ({ value: d, label: t(`comic.page.direction.${d}`) }))}
-            aria-label={t('comic.page.direction')}
-            data-testid="settings-comic-direction"
-          />
-        </Row>
-        <NumberRow k="comicPanelCount" label={t('settings.comicPage.panels')} range={COMIC_PANELS_RANGE} testId="settings-comic-panels" />
-        <NumberRow k="comicFrameMm" label={t('comic.page.frameWidth')} range={FRAME_WIDTH_RANGE} />
-        <NumberRow k="comicMarginMm" label={t('comic.page.margin')} range={FRAME_MARGIN_RANGE} />
-      </SectionBlock>
+      {comic && (
+        <SectionBlock title={t('settings.section.comicPage')}>
+          <Row label={t('comic.page.size')}>
+            <Select className="st-select" value={s.comicPageSize} onChange={(v) => s.set({ comicPageSize: v })} options={PAGE_SIZES.map((p) => ({ value: p, label: p }))} aria-label={t('comic.page.size')} data-testid="settings-comic-size" />
+          </Row>
+          <Row label={t('comic.page.direction')}>
+            <Select
+              className="st-select"
+              value={s.comicDirection}
+              onChange={(v) => s.set({ comicDirection: v })}
+              options={READING_DIRECTIONS.map((d) => ({ value: d, label: t(`comic.page.direction.${d}`) }))}
+              aria-label={t('comic.page.direction')}
+              data-testid="settings-comic-direction"
+            />
+          </Row>
+          <NumberRow k="comicPanelCount" label={t('settings.comicPage.panels')} range={COMIC_PANELS_RANGE} testId="settings-comic-panels" />
+          <NumberRow k="comicFrameMm" label={t('comic.page.frameWidth')} range={FRAME_WIDTH_RANGE} />
+          <NumberRow k="comicMarginMm" label={t('comic.page.margin')} range={FRAME_MARGIN_RANGE} />
+        </SectionBlock>
+      )}
     </>
   );
 }

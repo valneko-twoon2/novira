@@ -20,7 +20,7 @@ const TAB_NAME: Record<TabName, MessageKey> = {
 
 const TAB_ABOUT: Record<TabName, string> = {
   generate:
-    'Side bar tab (key 1). Makes pictures from a prompt: prompt, model, LoRAs and size are in the left panel, the Invoke button starts it, results fill the gallery on the right. Left panel top: a row of icons for image, video, music, voice, logo, text on a picture and, last, the Comic (book icon). Centre views: Start, Viewer, Drafts.',
+    'Side bar tab (key 1). Makes pictures from a prompt: prompt, model, LoRAs and size are in the left panel, the Invoke button starts it, results fill the gallery on the right. Left panel top: a row of icons for image, video, music, voice, text on a picture and, last, the Comic (book icon). Centre views: Start, Viewer, Drafts.',
   canvas:
     'Side bar tab (key 2). A work table: put pictures on layers, paint, and redraw only a part (inpaint) or extend the picture (outpaint) inside the generation box; accept or discard the result before it is kept. Has control layers and a pose maker. Saves to the gallery or as PSD.',
   comic:
@@ -42,7 +42,6 @@ const MEDIA_NAME: Record<MediaKind, MessageKey> = {
   video: 'media.tab.video',
   music: 'media.tab.music',
   voice: 'media.tab.voice',
-  logo: 'media.tab.logo',
   text: 'media.tab.text',
 };
 
@@ -51,7 +50,6 @@ const MEDIA_ABOUT: Record<MediaKind, string> = {
   video: 'Icon at the top of the Generate tab left panel. Makes a short clip from a prompt (or from a picture). Needs the video model, downloaded once from a card in the left panel. Choices: size, length, frame rate, standard or fast model.',
   music: 'Icon at the top of the Generate tab left panel. Makes a song from style tags and lyrics (or an instrumental). Needs the music model, downloaded once from a card.',
   voice: 'Icon at the top of the Generate tab left panel. Reads text aloud with a preset speaker or a voice described in words. Needs the voice model, downloaded once from a card.',
-  logo: 'Icon at the top of the Generate tab left panel. Makes candidates of a logo with the given letters in a chosen style. Needs the logo model, downloaded once from a card.',
   text: 'Icon at the top of the Generate tab left panel. An editor for letters and speech bubbles on a picture: layers, fonts, outlines, shadows, bubble shapes and tails, ready-made styles.',
 };
 

@@ -38,7 +38,7 @@ src-tauri  ── commands.rs (validate) ──▶ novira-core::service ──�
 | A wire type | `frontend/src/backend/types.ts`, `backend/crates/novira-core/src/types.rs`, `contract/` |
 | Screen text or a language | `frontend/src/i18n/locales/` (the `/i18n` skill) |
 | The queue, job states, the worker | `backend/crates/novira-core/src/service/queue.rs` and `worker.rs`; on the screen side `frontend/src/state/queue.ts` and `wiring.ts` (backend events into stores) |
-| A ComfyUI graph (what a job asks the engine to run) | `backend/crates/novira-core/src/comfy/`: `graph.rs` for pictures, `video.rs`, `music.rs`, `logo.rs`; the screen's request is built through the registry in `frontend/src/state/invoke.ts` |
+| A ComfyUI graph (what a job asks the engine to run) | `backend/crates/novira-core/src/comfy/`: `graph.rs` for pictures, `video.rs`, `music.rs`; the screen's request is built through the registry in `frontend/src/state/invoke.ts` |
 | ComfyUI's install or process, extension packs | `backend/crates/novira-core/src/comfy/` (`install.rs`, `process.rs`, `node_packs.rs`), `service/node_pack_store.rs`; `frontend/src/state/comfy/` |
 | Models (install, classify, Civitai, Hugging Face) | `backend/crates/novira-core/src/models/`, `service/model_store.rs`; `frontend/src/features/models/`, `browse/` |
 | A setting | `backend/crates/novira-core/src/settings.rs`; the engine ones also `service/engine_settings.rs` and `frontend/src/features/settings/` |

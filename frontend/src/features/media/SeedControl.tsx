@@ -1,5 +1,5 @@
 // The seed row at the top of a generator screen's left panel: random / fixed switch, number box and a re-roll button.
-// The Generate tab and the video, music and logo screens share it, so the row looks and works the same on each.
+// The Generate tab and the video and music screens share it, so the row looks and works the same on each.
 import { DiceFive, LockSimple, Shuffle } from '@phosphor-icons/react';
 import { MAX_SEED } from '@/backend';
 import { t } from '@/i18n';

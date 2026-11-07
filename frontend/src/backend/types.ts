@@ -143,6 +143,7 @@ export interface LoRAParam {
 
 /**
  * `graph`: a workflow run as a ComfyUI prompt (it uses nodes of custom node packs).
+ * `logo` stays for the pictures of a removed screen, which carry it in their metadata; a job of that mode fails.
  */
 export type GenerationMode = 'txt2img' | 'img2img' | 'inpaint' | 'outpaint' | 'upscale' | 'workflow' | 'graph' | 'video' | 'music' | 'voice' | 'logo';
 
@@ -680,7 +681,7 @@ export interface HardwareInfo {
 }
 
 /** The extra models a kind of media (or the erase tool, `inpaint`; the fast video model, `turbo`) needs; each is downloaded on request. */
-export type PackKind = 'video' | 'turbo' | 'music' | 'voice' | 'inpaint' | 'logo';
+export type PackKind = 'video' | 'turbo' | 'music' | 'voice' | 'inpaint';
 
 export type PackStatus =
   | { state: 'missing'; totalBytes: number }
@@ -1077,7 +1078,7 @@ export const AGENT_MAX_ATTACHMENTS = 4;
 export type AgentEffort = 'low' | 'medium' | 'high' | 'xhigh' | 'max' | 'ultra';
 
 /** The side bar's tabs, and on the Generate tab the screen of the kind being made (`generate` is images). */
-export type AgentScreen = 'generate' | 'canvas' | 'comic' | 'upscaling' | 'workflows' | 'models' | 'browse' | 'queue' | 'extensions' | 'text' | 'video' | 'music' | 'voice' | 'logo';
+export type AgentScreen = 'generate' | 'canvas' | 'comic' | 'upscaling' | 'workflows' | 'models' | 'browse' | 'queue' | 'extensions' | 'text' | 'video' | 'music' | 'voice';
 
 /** The assistant's final answer. What it changed on the way, the frontend knows: it ran the tool calls. */
 export interface AgentReply {

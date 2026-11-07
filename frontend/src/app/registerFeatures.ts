@@ -2,7 +2,6 @@
 // `registerFeatures.test.ts` checks that every screen ends up with what it needs, so a new screen cannot be forgotten here.
 import { registerCanvasFeature } from '@/features/canvas/register';
 import { registerComicFeature } from '@/features/comic';
-import { registerLogoFeature } from '@/features/logo/register';
 import { registerMusicFeature } from '@/features/music/register';
 import { registerParamsFeature } from '@/features/params/register';
 import { registerTextFeature } from '@/features/text/register';
@@ -18,6 +17,5 @@ export function registerFeatures() {
   registerVideoFeature();
   registerMusicFeature();
   registerVoiceFeature();
-  registerLogoFeature();
   registerTextFeature();
 }

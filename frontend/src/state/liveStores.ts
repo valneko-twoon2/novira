@@ -9,13 +9,11 @@ import { useCharacters } from './characters';
 import { useDrafts } from './drafts';
 import { useImageToolSettings } from './imageTools/settings';
 import { useMangaFinish } from './mangaFinish';
-import { useLogo } from './media/logo';
 import { useMusic } from './media/music';
 import { useVideo } from './media/video';
 import { useVoice } from './media/voice';
 import { useParams } from './params';
 import { useImagePresets } from './presets/imagePresets';
-import { useLogoPresets } from './presets/logoPresets';
 import { useMusicPresets } from './presets/musicPresets';
 import { usePresetRun } from './presets/presetRun';
 import { useTextStylePresets } from './presets/textStylePresets';
@@ -49,7 +47,6 @@ const LIVE_STORES: readonly Persisted[] = [
   useImagePresets,
   usePresetRun,
   useCharacters,
-  useLogoPresets,
   useMusicPresets,
   useTextStylePresets,
   useVideoPresets,
@@ -58,7 +55,6 @@ const LIVE_STORES: readonly Persisted[] = [
   useWildcards,
   useMangaFinish,
   useImageToolSettings,
-  useLogo,
   useMusic,
   useVideo,
   useVoice,

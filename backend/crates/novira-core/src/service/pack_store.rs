@@ -19,7 +19,6 @@ impl Backend {
             music: self.pack_status(PackKind::Music),
             voice: self.pack_status(PackKind::Voice),
             inpaint: self.pack_status(PackKind::Inpaint),
-            logo: self.pack_status(PackKind::Logo),
         }
     }
 

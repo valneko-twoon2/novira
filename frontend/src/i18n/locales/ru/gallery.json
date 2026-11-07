@@ -196,7 +196,7 @@
   "gallery.viewer.zoomFit": "Вписать в окно",
   "gallery.menu.sendToVideo": "Сделать видео из этого изображения",
   "gallery.menu.sendToWorkflow": "Добавить в процесс как изображение",
-  "gallery.menu.sendToText": "Использовать как фон текста (логотипа)",
+  "gallery.menu.sendToText": "Использовать как фон текста",
   "gallery.toast.sentToVideo": "Задано как исходное изображение видео",
   "gallery.toast.sentToText": "Задано как фон текста",
   "gallery.meta.hiresFix": "Исправление высокого разрешения",

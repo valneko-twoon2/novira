@@ -54,7 +54,7 @@ Beyond the plain stores (`ui`, `settings`, `params`, `gallery`, `queue`, `models
 | Folders | What |
 |---|---|
 | `params/`, `invoke/`, `launchpad/`, `drafts/` | The Generate and Upscaling left panels, the Invoke bar, the start pages per tab, drafts (a batch of half-drawn seeds) |
-| `media/`, `video/`, `music/`, `voice/`, `logo/` | The video, music, voice and logo screens; `media/` is what they share (preset card, seed row, model choice, model fit mark) |
+| `media/`, `video/`, `music/`, `voice/` | The video, music and voice screens; `media/` is what they share (preset card, seed row, model choice, model fit mark) |
 | `canvas/`, `text/`, `comic/`, `workflows/` | The Canvas tab, the Text tab, the Comic tab, the node editor and Extensions tab |
 | `gallery/`, `viewer/`, `queue/`, `share/` | Gallery, image viewer (its manga finish dialog is `viewer/manga/`; the tool band of the picture tools, fix the face, remove the background, describe, read poses, is `viewer/tools/`), Queue tab, export for sharing (watermark switch, "check a picture") |
 | `models/`, `browse/` | The model manager, the Browse tab (Civitai, Hugging Face) |

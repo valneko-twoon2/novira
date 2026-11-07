@@ -31,7 +31,7 @@ The gallery keeps the pictures, videos and audio that novira makes or receives, 
 
 **Upload.** The page sends raw bytes and options (board, intermediate flag, category) in a header. Before decoding, `images::check_limits` refuses a file over 256 MiB, a side over 20,000 pixels, more than 100,000,000 pixels, and any format other than PNG, JPEG, WebP, GIF or BMP (detected from the content). A PNG is kept byte for byte once its chunks and pixels are checked; other formats are re-encoded as PNG.
 
-**Gallery state.** Pictures made for the canvas, as intermediates or as drafts (`draftAt`) get `isIntermediate` and are left out of the board view (`frontend/src/state/gallery.ts`). Logos get category `other`.
+**Gallery state.** Pictures made for the canvas, as intermediates or as drafts (`draftAt`) get `isIntermediate` and are left out of the board view (`frontend/src/state/gallery.ts`). Logos keep category `other`.
 
 **Video and audio.** A video is stored as `.mp4` with `mediaType: video`; its thumbnail is the first frame. Music is saved as FLAC and speech as WAV (`backend/crates/novira-core/src/service/worker.rs`); both keep their settings in the database row only. `store_audio` refuses bytes that are not WAV, FLAC or MP3. The audio thumbnail is a 256 x 144 PNG of 48 bars: a 16-bit PCM WAV is drawn from its loudness, other files from a pattern of their bytes. No current job writes MP3. The scheme answers `Range` requests (206 or 416), so media can seek.
 

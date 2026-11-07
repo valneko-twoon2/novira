@@ -32,7 +32,6 @@
   "presets.summary.videoModel.fast": "Быстрая модель",
   "presets.summary.instrumental": "Инструментал",
   "presets.summary.designedVoice": "Описанный голос",
-  "presets.hint.logo": "Сохраняет стиль и форму (кроме текста логотипа)",
   "presets.run.title": "Генерация со случайными пресетами",
   "presets.run.count": "Количество изображений",
   "presets.run.queue": "В очередь",

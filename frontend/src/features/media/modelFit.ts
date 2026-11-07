@@ -18,7 +18,6 @@ export const PACK_NEEDS: Record<PackKind, Need> = {
   music: { minGb: 6, goodGb: 8 },
   voice: { minGb: 4, goodGb: 8 },
   inpaint: { minGb: 2, goodGb: 4 },
-  logo: { minGb: 8, goodGb: 12 },
 };
 
 /** Memory is rounded to whole GB first: a "12 GB" card reports a little under 12 GiB. */

@@ -2,7 +2,7 @@
 // so the media screens look like the image screens.
 import { expect, openApp, test } from './fixtures';
 
-const MEDIA = ['video', 'music', 'voice', 'logo', 'text'] as const;
+const MEDIA = ['video', 'music', 'voice', 'text'] as const;
 
 /** Border width, corner radius and whether the background is painted, of what the visible main area holds. */
 async function frameOfScreen(page: import('@playwright/test').Page) {

@@ -1,5 +1,5 @@
-// Where the gallery goes when a finished result arrives: pictures to the images view, assets (logos) to the assets view; a
-// comic page's inpaint result to the page that asked.
+// Where the gallery goes when a finished result arrives: every queue result is a picture, so it is listed under the images
+// view; a comic page's inpaint result goes to the page that asked.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { backend, type BackendEvent, type ImageDTO, type Packs, type QueueItem } from '@/backend';
 import { useCanvas } from './canvas';
@@ -20,7 +20,7 @@ const image = (name: string, category: ImageDTO['category']): ImageDTO =>
 const item = { params: {}, origin: 'generate', destination: 'gallery' } as unknown as QueueItem;
 
 describe('a finished result', () => {
-  it('switches the gallery to the view that lists it', async () => {
+  it('switches the gallery to the images view that lists a queue result', async () => {
     let emit: (e: BackendEvent) => void = () => undefined;
     vi.spyOn(backend, 'subscribe').mockImplementation((listener) => {
       emit = listener;
@@ -35,15 +35,12 @@ describe('a finished result', () => {
       packs: {} as Packs,
     } as BootstrapData);
     await startBackend();
-    useGallery.setState({ view: 'images', selectedBoardId: 'none' });
+    useGallery.setState({ view: 'assets', selectedBoardId: 'none' });
     useGallery.setState({ settings: { ...useGallery.getState().settings, autoSwitch: true } });
-
-    emit({ type: 'image_added', image: image('logo.png', 'other'), item });
-    expect(useGallery.getState().view).toBe('assets');
-    expect(useGallery.getState().selection).toEqual(['logo.png']);
 
     emit({ type: 'image_added', image: image('pic.png', 'general'), item });
     expect(useGallery.getState().view).toBe('images');
+    expect(useGallery.getState().selection).toEqual(['pic.png']);
 
     // The result of a comic page's inpaint is staged on that page, not on the Image tab; an item no page asked for is the tab's.
     resetPageCanvases();

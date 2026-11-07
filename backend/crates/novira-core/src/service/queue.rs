@@ -242,6 +242,12 @@ impl Backend {
                 _ => return Ok(None),
             }
         };
+        // A job of the removed logo mode fails every time, so a retry is refused rather than queued.
+        if item.params.generation_mode == GenerationMode::Logo {
+            return Err(BackendError::Invalid(
+                crate::comfy::graph::LOGO_REMOVED.into(),
+            ));
+        }
         let mut params = item.params;
         if let Some(size) = size {
             check_retry_size(size, &params)?;

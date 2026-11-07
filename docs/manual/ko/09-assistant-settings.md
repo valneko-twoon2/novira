@@ -251,7 +251,7 @@ Claude와 Codex 외에, 이 PC나 네트워크 상에서 동작하는 OpenAI 호
 | {{ui:settings.engine.comfyui.label}} | 사용 중인 ComfyUI입니다. 평소에는 데이터 폴더 안의 `comfyui`에 있으며 그 위치가 나옵니다. 설정 파일로 다른 ComfyUI를 지정했을 때는 그 위치가 나옵니다. **{{ui:settings.engine.comfyui.change}}** 버튼으로 앱이 설치하는 ComfyUI의 보관 위치를 바꿀 수 있습니다. 선택한 폴더가 비어 있으면 다음 시작 때 새로 설치합니다(큰 다운로드입니다). 이미 설치된 폴더라면 그대로 사용합니다. 이전 위치의 파일은 자동으로 지워지지 않습니다. 데이터 폴더 안으로 되돌릴 때는 그 안의 `comfyui`를 선택합니다 |
 | {{ui:settings.engine.package.label}} | **{{ui:settings.engine.package.nvidia}}** 또는 **{{ui:settings.engine.package.amd}}**. 다음에 ComfyUI를 다운로드할 때(첫 설치나 버전 전환) 사용됩니다. ComfyUI가 설치되어 있을 때 다른 종류를 선택하면 확인 창이 나옵니다. 확인하면 다음에 novira를 시작할 때 선택한 종류로 ComfyUI를 다시 설치합니다(다운로드가 크고 시간이 걸립니다) |
 | {{ui:settings.engine.timeout.label}} | ComfyUI를 시작하고 응답할 때까지 기다리는 초 수입니다. 30초부터 1800초까지 고를 수 있습니다. 느린 PC에서는 길게 합니다 |
-| {{ui:settings.engine.modelRoots.label}} | 데이터 폴더의 models 외에 모델을 찾을 폴더입니다. **{{ui:settings.engine.modelRoots.add}}** 버튼을 누르면 폴더를 선택하는 창이 열립니다. ComfyUI나 Stability Matrix의 폴더 형태를 알아봅니다. 동영상, 음악, 음성, 로고, 지우기의 추가 모델도 여기서 찾을 수 있습니다(읽기만 하며 새로 설치할 때는 항상 데이터 폴더에 들어갑니다). 16개까지 추가할 수 있습니다. 데이터 폴더 안이나 이미 있는 폴더는 추가할 수 없습니다. × 버튼으로 뺍니다. 브라우저에서 열고 있을 때는 추가할 수 없고 빼는 것만 할 수 있습니다 |
+| {{ui:settings.engine.modelRoots.label}} | 데이터 폴더의 models 외에 모델을 찾을 폴더입니다. **{{ui:settings.engine.modelRoots.add}}** 버튼을 누르면 폴더를 선택하는 창이 열립니다. ComfyUI나 Stability Matrix의 폴더 형태를 알아봅니다. 동영상, 음악, 음성, 지우기의 추가 모델도 여기서 찾을 수 있습니다(읽기만 하며 새로 설치할 때는 항상 데이터 폴더에 들어갑니다). 16개까지 추가할 수 있습니다. 데이터 폴더 안이나 이미 있는 폴더는 추가할 수 없습니다. × 버튼으로 뺍니다. 브라우저에서 열고 있을 때는 추가할 수 없고 빼는 것만 할 수 있습니다 |
 
 ### {{ui:settings.tab.accounts}}
 

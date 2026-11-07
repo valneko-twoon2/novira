@@ -124,7 +124,6 @@ const SURFACES: Record<string, Surface> = {
   'video screen': media('video'),
   'music screen': media('music'),
   'voice screen': media('voice'),
-  'logo screen': media('logo'),
   'text screen': media('text'),
   'settings menu': async (page, locale, scan) => {
     await openSettingsMenu(page, locale);

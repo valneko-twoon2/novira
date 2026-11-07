@@ -57,7 +57,7 @@ describe('familiesOf', () => {
     expect(shown.map((e) => (e.kind === 'model' ? e.model.id : e.pack))).toEqual(['anima', 'qwen3']);
     const purposes = filterEntries(entries, null, null).map((e) => STARTER_PURPOSES.indexOf(e.purpose));
     expect(purposes).toEqual([...purposes].sort((a, b) => a - b));
-    expect(filterEntries(entries, 'logo', null).map((e) => e.kind === 'pack' && e.pack)).toEqual(['logo']);
+    expect(filterEntries(entries, 'erase', null).map((e) => e.kind === 'pack' && e.pack)).toEqual(['inpaint']);
     expect(filterEntries(entries, 'video', 'wan').map((e) => e.kind === 'pack' && e.pack)).toEqual(['video', 'turbo']);
   });
 });

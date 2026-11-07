@@ -230,6 +230,15 @@ describe('mock backend: generation', () => {
     expect((await backend.lowMemoryMode()).pendingRestart).toBe(false);
   });
 
+  it('fails a job of the removed logo mode with a clear message, as the worker does', async () => {
+    const { backend, settled } = await start();
+    const [item] = await backend.enqueue(request({}, { generationMode: 'logo' }));
+    const done = await settled(item!.id);
+    expect(done.status).toBe('failed');
+    expect(done.error).toMatch(/can no longer be made/);
+    await expect(backend.retryQueueItem(item!.id)).rejects.toThrow(/can no longer be made/);
+  });
+
   it('fails a voice item with nothing to read', async () => {
     const { backend, settled } = await start();
     const [item] = await backend.enqueue(request({}, { generationMode: 'voice', voice: { text: '  ' } as GenerationMetadata['voice'] }));

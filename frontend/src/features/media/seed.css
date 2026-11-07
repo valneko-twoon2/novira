@@ -1,4 +1,4 @@
-/* The seed row shared by the Generate tab and the video, music and logo screens. */
+/* The seed row shared by the Generate tab and the video and music screens. */
 .pp-seed {
   display: flex;
   align-items: center;

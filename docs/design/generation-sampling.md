@@ -18,7 +18,7 @@ What a picture is sampled with, and how a user may choose it.
 
 ## Boundaries
 - Any name outside the two lists is refused before it reaches the prompt (`with_choice`), whatever the screen sent.
-- Video, music, voice and logo graphs do not read the choice.
+- Video, music and voice graphs do not read the choice.
 
 ## Known limits
 - Nothing checks that a sampler suits a model: a name picked for a family that its template does not use (for example an SDE sampler on a flow model) runs and may give a poor picture.

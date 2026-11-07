@@ -17,7 +17,6 @@ import jaEngine from './locales/ja/engine.json';
 import jaGallery from './locales/ja/gallery.json';
 import jaManual from './locales/ja/manual.json';
 import jaCutout from './locales/ja/cutout.json';
-import jaLogo from './locales/ja/logo.json';
 import jaMedia from './locales/ja/media.json';
 import jaModels from './locales/ja/models.json';
 import jaMusic from './locales/ja/music.json';
@@ -52,7 +51,6 @@ import enEngine from './locales/en/engine.json';
 import enGallery from './locales/en/gallery.json';
 import enManual from './locales/en/manual.json';
 import enCutout from './locales/en/cutout.json';
-import enLogo from './locales/en/logo.json';
 import enMedia from './locales/en/media.json';
 import enModels from './locales/en/models.json';
 import enMusic from './locales/en/music.json';
@@ -82,7 +80,6 @@ export const ja = {
   ...jaMedia,
   ...jaCutout,
 
-  ...jaLogo,
   ...jaDrafts,
   ...jaPhone,
   ...jaAgent,
@@ -125,7 +122,6 @@ export const en: Catalog = {
   ...enEngine,
   ...enMedia,
   ...enCutout,
-  ...enLogo,
   ...enDrafts,
   ...enPhone,
   ...enAgent,

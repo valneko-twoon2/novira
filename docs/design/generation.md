@@ -17,7 +17,7 @@ covers:
 ---
 # Generation
 
-Generation makes the pictures: a queue of jobs that run one at a time, the ComfyUI graphs they send to the engine, the checks that refuse requests the engine cannot run, and the ComfyUI process the app owns. Video, music, logo and voice are queue jobs too (see media-generation.md); the engine's install is in extensions.md.
+Generation makes the pictures: a queue of jobs that run one at a time, the ComfyUI graphs they send to the engine, the checks that refuse requests the engine cannot run, and the ComfyUI process the app owns. Video, music and voice are queue jobs too (see media-generation.md); the engine's install is in extensions.md.
 
 ## Behaviour
 
@@ -30,7 +30,7 @@ Generation makes the pictures: a queue of jobs that run one at a time, the Comfy
 - A text output (a graph job ending in `PreviewAny`) completes with `resultText` and no picture. A graph job can also end in a sound or a video, stored like the Music and Video tabs' results ([workflow-graphs.md](workflow-graphs.md)). A failure whose text says the device ran out of memory is marked `errorKind: out_of_memory`. A panic fails only that job, with "Internal error: ..." as its text.
 - Pause (`pause_processor`, `resume_processor`) only decides whether the next job starts; a running job finishes.
 - Cancel (`cancel_queue_item`, `cancel_batch`): a pending or running item becomes `canceled` at once. A running job's token is cancelled, which also ends a wait for the GPU lock; the engine removes the prompt from ComfyUI's queue and posts an interrupt naming its prompt id (`ComfyEngine::interrupt`).
-- Retry (`retry_queue_item`): a failed or canceled item is queued again as a new item at the end, with the same parameters and seed. A picture made from a prompt may get a smaller size: multiples of 8, at least 64, not larger than before (`check_retry_size`).
+- Retry (`retry_queue_item`): a failed or canceled item is queued again as a new item at the end, with the same parameters and seed. A picture made from a prompt may get a smaller size: multiples of 8, at least 64, not larger than before (`check_retry_size`). Not for the removed `logo` mode.
 - `clear_queue` removes every item (cancelling a running one); `prune_queue` removes finished items only.
 - Restart: at start-up an `in_progress` item becomes `failed` with "Interrupted because novira was closed" and is not run again. Pending items are kept, and the processor starts paused if any exist (`service/mod.rs`). A job still running at shutdown becomes `canceled` with the same text.
 

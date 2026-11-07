@@ -73,12 +73,12 @@ async fn packs_in_a_shared_root_are_ready_and_comfy_is_told_where_they_are() {
     let data = tempfile::tempdir().unwrap();
     let shared = tempfile::tempdir().unwrap();
     write_all(shared.path(), PackKind::Music);
-    write_all(shared.path(), PackKind::Logo);
+    write_all(shared.path(), PackKind::Inpaint);
     let before = walk(shared.path());
     let backend = open(data.path(), shared.path());
     let all = backend.packs();
     assert_eq!(all.music, PackStatus::Ready);
-    assert_eq!(all.logo, PackStatus::Ready);
+    assert_eq!(all.inpaint, PackStatus::Ready);
     assert!(matches!(all.video, PackStatus::Missing { .. }));
     let yaml = std::fs::read_to_string(data.path().join("extra_model_paths.yaml")).unwrap();
     assert!(
@@ -86,7 +86,7 @@ async fn packs_in_a_shared_root_are_ready_and_comfy_is_told_where_they_are() {
         "{yaml}"
     );
     assert!(
-        yaml.contains("novira_logo_1:") && !yaml.contains("novira_video_1:"),
+        yaml.contains("novira_inpaint_1:") && !yaml.contains("novira_video_1:"),
         "{yaml}"
     );
     assert!(yaml.contains(&*shared.path().to_string_lossy()), "{yaml}");

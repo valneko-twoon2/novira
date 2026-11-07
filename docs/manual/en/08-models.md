@@ -38,7 +38,7 @@ If the bases of the model and the LoRA do not match, the Generate button on the 
 | {{ui:models.rail.encoders}} | Parts that understand text (T5, Qwen, CLIP and so on; what Anima or Flux need besides the model itself) |
 | {{ui:models.rail.diffusion}} | Models handed out as the model body alone, such as Flux, Wan, Anima and Qwen-Image. When you install one, novira reads the file to tell its kind and family |
 
-Models for video, music, voice and logos do not appear in this list. You download them from each of their own screens ([Video, Music, Voice, Logos and Text](07-media.md)).
+Models for video, music and voice do not appear in this list. You download them from each of their own screens ([Video, Music, Voice and Text](07-media.md)).
 
 ## The Models tab
 
@@ -73,7 +73,7 @@ When you press **{{ui:models.import}}**, the **{{ui:models.import.title}}** scre
 |---|---|
 | {{ui:models.install.tab.source}} | Enter the address of a model and press **{{ui:models.install.install}}** |
 | {{ui:models.install.tab.scan}} | Press **{{ui:models.install.scan}}** and choose a folder in the dialog that opens, and the models inside are listed. **{{ui:models.install.installAll}}** brings them all in at once. Files on your computer are installed from here. Not available in a browser |
-| {{ui:models.install.tab.starter}} | The app has chosen and lined up models that are handy to have at first. Models they depend on (such as a VAE) are installed too. The model packs for video, music, voice, logos and erasing are listed as well. They are shown as cards, as in the Models screen. Narrow them with **{{ui:models.starter.purposes}}** on the left (making pictures, video, upscaling and so on) and the **{{ui:models.starter.allFamilies}}** list at the top (Anima, SDXL and so on). Picking a family also lists the VAEs and encoders it needs |
+| {{ui:models.install.tab.starter}} | The app has chosen and lined up models that are handy to have at first. Models they depend on (such as a VAE) are installed too. The model packs for video, music, voice and erasing are listed as well. They are shown as cards, as in the Models screen. Narrow them with **{{ui:models.starter.purposes}}** on the left (making pictures, video, upscaling and so on) and the **{{ui:models.starter.allFamilies}}** list at the top (Anima, SDXL and so on). Picking a family also lists the VAEs and encoders it needs |
 | {{ui:models.install.tab.huggingface}} | A field for searching by Hugging Face repository name (`author/name`) |
 
 What you can enter in the **{{ui:models.install.tab.source}}** field is the following.

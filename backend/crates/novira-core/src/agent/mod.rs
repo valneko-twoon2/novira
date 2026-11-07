@@ -106,7 +106,7 @@ pub struct AgentRequest {
     #[serde(default)]
     pub history: Vec<AgentTurn>,
     /// What the user is looking at: a tab (`generate`, `canvas`, `comic`, `upscaling`, `workflows`, `models`,
-    /// `browse`, `queue`, `extensions`) or, on the Generate tab, `text`, `video`, `music`, `voice` or `logo`.
+    /// `browse`, `queue`, `extensions`) or, on the Generate tab, `text`, `video`, `music` or `voice`.
     #[serde(default)]
     pub screen: Option<String>,
     /// The id (`ext:<folder>`) of the extension the user asked about from the extension manager.

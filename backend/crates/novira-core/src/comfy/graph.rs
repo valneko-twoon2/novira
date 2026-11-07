@@ -240,6 +240,9 @@ pub fn draft_schedule(steps: u32, denoise: f64) -> (u32, u32) {
 
 /// The longest side an upscale may have.
 pub const MAX_UPSCALE_SIDE: u32 = 8192;
+/// What a job of the removed logo mode fails with: only a queue row from an older version can still name it.
+pub const LOGO_REMOVED: &str =
+    "Logos can no longer be made. Lay lettering over a picture on the Text screen instead";
 
 /// Output size: the requested size, scaled for upscaling, snapped to multiples of 8.
 pub fn output_size(p: &GenerationMetadata) -> (u32, u32) {
@@ -395,7 +398,7 @@ pub fn build(input: &GraphInput<'_>) -> Result<BuiltGraph, String> {
         return super::music::build(input);
     }
     if p.generation_mode == GenerationMode::Logo {
-        return super::logo::build(input);
+        return Err(LOGO_REMOVED.into());
     }
     // Seamless tiling pads the model's and the VAE's convolutions in a circle (the seamless tiling pack); the SD family's
     // networks are made of them, the newer families' transformers are not.

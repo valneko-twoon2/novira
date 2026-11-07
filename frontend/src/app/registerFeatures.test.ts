@@ -20,7 +20,6 @@ const INVOKE: Record<BuilderKey, true | string> = {
   video: true,
   music: true,
   voice: true,
-  logo: true,
   models: 'manages model files; it makes nothing',
   browse: 'finds models to download; it makes nothing',
   queue: 'shows the queue; it makes nothing',

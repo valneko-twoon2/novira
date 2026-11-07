@@ -261,6 +261,13 @@ describe('selectBoardImages with dates', () => {
     expect(names({ settings: asc })).toEqual(['oct4-late', 'oct5-starred', 'oct5-midnight', 'oct5-noon', 'oct6', 'oct7-starred']);
   });
 
+  it('keeps the logos of an older version in the assets view', () => {
+    const logo = image('logo.png', { category: 'other', metadata: { generationMode: 'logo' } as ImageDTO['metadata'] });
+    const shown = (view: 'images' | 'assets') => filterBoardImages({ images: [image('a'), logo], selectedBoardId: 'none', view, search: '' }).map((i) => i.name);
+    expect(shown('assets')).toEqual(['logo.png']);
+    expect(shown('images')).toEqual(['a']);
+  });
+
   it('leaves the date filter out of filterBoardImages (the calendar counts every day)', () => {
     expect(filterBoardImages(state({ dateFilter: { from: '2026-10-07', to: '2026-10-07' } }))).toHaveLength(images.length);
   });

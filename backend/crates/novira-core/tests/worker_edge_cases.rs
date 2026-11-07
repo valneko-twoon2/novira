@@ -106,8 +106,34 @@ async fn a_model_of_a_base_the_backend_cannot_run_fails_the_job_with_its_name() 
     );
 }
 
+// The Logo screen is gone but the mode stays, for its pictures: a row an older version left in the queue must not hang it.
 #[tokio::test]
-async fn video_music_and_logo_jobs_need_their_packs() {
+async fn a_logo_job_left_in_the_queue_fails_with_a_clear_message_and_the_queue_goes_on() {
+    let dir = tempfile::tempdir().unwrap();
+    write_lora_and_checkpoint(&dir.path().join("models"));
+    let engine = Arc::new(FakeEngine::default());
+    let (backend, _) = open_with(dir.path(), engine.clone(), settings());
+    tokio::spawn(backend.clone().run_worker());
+    let mut req = request("z-image-turbo", "A logo with the text \"NOVA\"", 1);
+    req.params.generation_mode = GenerationMode::Logo;
+    let err = fails_with(&backend, req).await;
+    assert!(err.contains("can no longer be made"), "{err}");
+    assert!(engine.jobs.lock().unwrap().is_empty());
+    // Retrying it would fail the same way, so the retry is refused and nothing is queued.
+    let failed = backend.queue_snapshot().items[0].id;
+    let retry = backend.retry_queue_item(failed, None).unwrap_err();
+    assert!(
+        retry.to_string().contains("can no longer be made"),
+        "{retry}"
+    );
+    assert_eq!(backend.queue_snapshot().items.len(), 1);
+    let key = main_key(&backend);
+    backend.enqueue(request(&key, "a cat", 1)).unwrap();
+    wait_until(|| statuses(&backend).last() == Some(&QueueItemStatus::Completed)).await;
+}
+
+#[tokio::test]
+async fn video_and_music_jobs_need_their_packs() {
     let dir = tempfile::tempdir().unwrap();
     let (backend, _) = open_with(dir.path(), Arc::new(FakeEngine::default()), settings());
     tokio::spawn(backend.clone().run_worker());
@@ -127,7 +153,6 @@ async fn video_music_and_logo_jobs_need_their_packs() {
             "music",
             "music model is not installed",
         ),
-        (GenerationMode::Logo, "logo", "logo model is not installed"),
     ] {
         let mut req = request(key, "a cat", 1);
         req.params.generation_mode = mode;

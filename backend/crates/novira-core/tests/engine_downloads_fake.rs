@@ -154,32 +154,32 @@ async fn a_pack_file_is_downloaded_and_moved_into_place_and_a_refusal_is_explain
         .iter()
         .any(|s| matches!(s, PackStatus::Downloading { file, .. } if file == f.file)));
     // A file that needs a login says so; a connection that drops half-way is reported and leaves nothing behind.
-    let logo = &files(PackKind::Logo)[0];
-    let logo_path = format!("/{}/resolve/main/{}", logo.repo, logo.path);
-    site().put(&logo_path, Route::status(401));
+    let video = &files(PackKind::Video)[0];
+    let video_path = format!("/{}/resolve/main/{}", video.repo, video.path);
+    site().put(&video_path, Route::status(401));
     let models = tempfile::tempdir().unwrap();
     let err = install_files(
         &client(),
         models.path(),
-        PackKind::Logo,
+        PackKind::Video,
         &CancellationToken::new(),
         &|_| {},
     )
     .await
     .unwrap_err();
     assert!(err.contains("needs an API key"), "{err}");
-    site().put(&logo_path, Route::bytes("only a bit").announcing(1000));
+    site().put(&video_path, Route::bytes("only a bit").announcing(1000));
     let err = install_files(
         &client(),
         models.path(),
-        PackKind::Logo,
+        PackKind::Video,
         &CancellationToken::new(),
         &|_| {},
     )
     .await
     .unwrap_err();
     assert!(err.contains("Download"), "{err}");
-    assert!(!file_path(models.path(), PackKind::Logo, logo).exists());
+    assert!(!file_path(models.path(), PackKind::Video, video).exists());
 }
 
 fn fake_python(dir: &Path) -> PathBuf {

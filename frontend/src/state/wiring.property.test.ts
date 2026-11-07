@@ -36,7 +36,7 @@ beforeAll(async () => {
 afterAll(() => vi.useRealTimers());
 afterEach(() => vi.restoreAllMocks());
 
-const KINDS: PackKind[] = ['video', 'turbo', 'music', 'voice', 'inpaint', 'logo'];
+const KINDS: PackKind[] = ['video', 'turbo', 'music', 'voice', 'inpaint'];
 const URLS = ['https://github.com/a/one', 'https://github.com/a/two'];
 const itemId = fc.integer({ min: 1, max: 6 });
 const imageName = fc.integer({ min: 0, max: 8 }).map((n) => `img${n}`);

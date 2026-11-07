@@ -132,11 +132,6 @@ const MOCK_PACK_FILES: Record<PackKind, { file: string; size: number }[]> = {
     { file: 'Qwen3-TTS-12Hz-1.7B-VoiceDesign', size: 4_500_000_000 },
   ],
   inpaint: [{ file: 'big-lama.pt', size: 205_669_692 }],
-  logo: [
-    { file: 'z_image_turbo_bf16.safetensors', size: 12_300_000_000 },
-    { file: 'qwen_3_4b.safetensors', size: 8_000_000_000 },
-    { file: 'ae.safetensors', size: 335_000_000 },
-  ],
 };
 
 /** What a prompt holding `[oom]` fails with: the text ComfyUI sends when the GPU runs out of memory. */
@@ -543,6 +538,8 @@ export class MockBackend implements BackendClient {
 
   private async process(item: QueueItem, run: { cancelled: boolean }) {
     const p = item.params;
+    // Like the backend worker: only a request left over from an older version can still name this mode.
+    if (p.generationMode === 'logo') throw new Error('Logos can no longer be made. Lay lettering over a picture on the Text screen instead');
     if (p.generationMode === 'music' || p.generationMode === 'voice' || savesSound(item.comfyGraph)) return this.processAudio(item, run);
     if (isTextGraph(item.comfyGraph)) return this.processText(item, run);
     if (item.comfyGraph && Object.values(item.comfyGraph.prompt).some((n) => n.class_type === 'INPAINT_MaskedFill' || n.class_type === 'INPAINT_InpaintWithModel' || n.class_type === 'SetLatentNoiseMask' || n.class_type === 'RMBG' || n.class_type === 'MangaFinish' || n.class_type === 'LoadVideo' || n.class_type === 'ImageUpscaleWithModel')) return this.processErase(item, run);
@@ -589,8 +586,7 @@ export class MockBackend implements BackendClient {
       boardId: item.destination === 'canvas' ? null : item.boardId,
       starred: false,
       isIntermediate: item.destination === 'canvas' || p.draftAt !== undefined,
-      // Logos are kept with the assets.
-      category: p.generationMode === 'logo' ? 'other' : 'general',
+      category: 'general',
       // With the high-resolution fix the stored size stays the first pass's (the setting the scale applies to).
       metadata: this.withSampling(hires ? { ...p } : { ...p, width, height }),
       workflow: item.workflow,
@@ -694,6 +690,7 @@ export class MockBackend implements BackendClient {
   async retryQueueItem(id: number, size?: RetrySize) {
     const item = this.queue.find((q) => q.id === id);
     if (!item || (item.status !== 'failed' && item.status !== 'canceled')) return null;
+    if (item.params.generationMode === 'logo') throw new Error('Logos can no longer be made. Lay lettering over a picture on the Text screen instead');
     const params = { ...item.params };
     if (size) {
       if (!RESIZABLE_MODES.has(params.generationMode)) throw new Error('Only pictures made from a prompt can be retried at another size');
@@ -840,7 +837,6 @@ export class MockBackend implements BackendClient {
     music: { state: 'missing', totalBytes: 10_000_000_000 },
     voice: { state: 'missing', totalBytes: 9_400_000_000 },
     inpaint: { state: 'missing', totalBytes: 205_669_692 },
-    logo: { state: 'missing', totalBytes: 20_635_000_000 },
   };
   private packInstalls = new Map<PackKind, { cancelled: boolean }>();
 

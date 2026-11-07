@@ -96,7 +96,7 @@ describe('the model packs', () => {
   const pack = (kind: string) => packs.find((p) => p.kind === kind)!;
 
   it('reads every pack kind, its folder and its files from packs.rs, and the voice models from the voice engine', () => {
-    expect(packs.map((p) => p.kind).sort()).toEqual(['inpaint', 'logo', 'music', 'turbo', 'video', 'voice']);
+    expect(packs.map((p) => p.kind).sort()).toEqual(['inpaint', 'music', 'turbo', 'video', 'voice']);
     expect(pack('music').files).toEqual([{ folder: 'checkpoints', file: expect.stringContaining('ace_step'), home: null }]);
     expect(pack('video').files.map((f) => f.folder)).toEqual(['diffusion_models', 'text_encoders', 'vae']);
     expect(pack('turbo').files.filter((f) => f.home === 'video')).toHaveLength(2);
@@ -142,10 +142,10 @@ describe('the model packs', () => {
   it('adds one row per pack to the merged table, narrowed by --model and --category', () => {
     const off = { status: 0, data: { models: [], results: {}, packs: status('missing') } };
     const base = { off, on: { status: 0, data: null }, lookup: false, gpuWhy: null, files: [], code, roots: ['E:/s'], has: () => false };
-    expect(mergeRuns(base).filter((r: { type: string }) => r.type === 'pack')).toHaveLength(6);
+    expect(mergeRuns(base).filter((r: { type: string }) => r.type === 'pack')).toHaveLength(5);
     expect(mergeRuns({ ...base, filter: { model: 'music' } }).map((r: { name: string }) => r.name)).toEqual(['music pack']);
     expect(mergeRuns({ ...base, filter: { category: 'loras' } })).toEqual([]);
-    expect(mergeRuns({ ...base, filter: { category: 'packs' } })).toHaveLength(6);
+    expect(mergeRuns({ ...base, filter: { category: 'packs' } })).toHaveLength(5);
   });
 });
 
@@ -161,6 +161,14 @@ describe('model files and their folders', () => {
 
   it('names the folders of a root that novira does not scan, not the categories', () => {
     expect(unscannedFolders(['checkpoints', 'video', 'Lora', 'music', '.downloads', 'VAE'], code.categories)).toEqual(['music', 'video']);
+  });
+
+  it('only names the folder a removed pack left behind: it has no pack row, so it cannot fail the sweep', () => {
+    expect(unscannedFolders(['checkpoints', 'logo'], code.categories)).toEqual(['logo']);
+    expect(code.packs.map((p: { dir: string }) => p.dir)).not.toContain('logo');
+    const off = { status: 0, data: { models: [], results: {}, packs: {} } };
+    const rows = mergeRuns({ off, on: { status: 0, data: null }, lookup: false, gpuWhy: null, files: [], code, roots: ['E:/s'], has: (f: string) => f.includes('/logo/') });
+    expect(rows.filter((r: { base: string }) => r.base === 'logo')).toEqual([]);
   });
 
   it('fails a file listed as another kind than its folder holds, a kind without a base, and a base the name contradicts', () => {

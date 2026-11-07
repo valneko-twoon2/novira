@@ -32,7 +32,6 @@
   "presets.summary.videoModel.fast": "고속 모델",
   "presets.summary.instrumental": "연주곡",
   "presets.summary.designedVoice": "설명으로 만든 목소리",
-  "presets.hint.logo": "스타일과 모양을 저장합니다 (로고 문구는 제외)",
   "presets.run.title": "프리셋을 무작위로 돌려 생성",
   "presets.run.count": "장수",
   "presets.run.queue": "대기열에 추가",

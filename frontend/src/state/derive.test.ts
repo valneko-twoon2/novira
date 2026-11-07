@@ -62,6 +62,8 @@ describe('canDerive', () => {
     expect(canDerive(picture({ metadata: { ...metadata, generationMode: 'inpaint' } }))).toBe(true);
     expect(canDerive(picture({ metadata: { ...metadata, generationMode: 'upscale' } }))).toBe(false);
     expect(canDerive(picture({ metadata: { ...metadata, generationMode: 'graph' } }))).toBe(false);
+    // A logo of an older version: its screen is gone, the picture stays.
+    expect(canDerive(picture({ metadata: { ...metadata, generationMode: 'logo' } }))).toBe(false);
     expect(canDerive(picture({ metadata: null }))).toBe(false);
     expect(canDerive(picture({ metadata: { ...metadata, modelKey: '' } }))).toBe(false);
     expect(canDerive(picture({ mediaType: 'video' }))).toBe(false);

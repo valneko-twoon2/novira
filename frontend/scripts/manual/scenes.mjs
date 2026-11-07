@@ -340,14 +340,6 @@ export const SCENES = [
     },
   },
   {
-    id: 'media-logo',
-    run: async (s) => {
-      await s.testid('media-logo').click();
-      await s.testid('logo-text').waitFor();
-      await s.shot();
-    },
-  },
-  {
     id: 'media-text',
     run: async (s) => {
       await s.testid('media-text').click();

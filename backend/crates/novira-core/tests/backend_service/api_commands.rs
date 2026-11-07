@@ -194,7 +194,7 @@ async fn the_model_pack_and_setting_commands_work_by_name() {
     )
     .await
     .unwrap();
-    for kind in ["video", "turbo", "music", "voice", "inpaint", "logo"] {
+    for kind in ["video", "turbo", "music", "voice", "inpaint"] {
         call(&backend, "pack_status", json!({"kind": kind}))
             .await
             .unwrap();

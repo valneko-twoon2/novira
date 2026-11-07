@@ -328,5 +328,6 @@
   "settings.hotkeys.gallery.redoDeleteDesc": "Vuelve a eliminar lo que había recuperado",
   "settings.section.models": "Modelos",
   "settings.assistantTrial.label": "Imágenes de prueba del asistente",
-  "settings.assistantTrial.help": "Si el asistente puede generar por su cuenta una imagen de prueba cuando una petición no está clara, mirarla y preguntar si es lo que usted quiere decir. Generar lleva tiempo. Mirar la imagen sigue el ajuste \"Lectura de imágenes y prompts\"."
+  "settings.assistantTrial.help": "Si el asistente puede generar por su cuenta una imagen de prueba cuando una petición no está clara, mirarla y preguntar si es lo que usted quiere decir. Generar lleva tiempo. Mirar la imagen sigue el ajuste \"Lectura de imágenes y prompts\".",
+  "settings.tab.text": "Texto"
 }
