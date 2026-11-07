@@ -8,9 +8,4 @@ export const KNOWN_NO_FOCUS_RING: Record<string, string[]> = {
 export const KNOWN_UNREACHED: Record<string, string[]> = {};
 export const KNOWN_TABBED_OUT: Record<string, string[]> = {};
 /** Per dialog or menu: 'does not close' (Escape) or 'focus not returned' (to the opener). */
-export const KNOWN_ESCAPE: Record<string, string[]> = {
-  // The dialog is opened from a menu item; the menu is gone by then, so Radix has no trigger to give focus back to.
-  'settings dialog': ['focus not returned'],
-  'hotkeys dialog': ['focus not returned'],
-  'about dialog': ['focus not returned'],
-};
+export const KNOWN_ESCAPE: Record<string, string[]> = {};
