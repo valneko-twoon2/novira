@@ -263,7 +263,12 @@ fn changing_the_seed_changes_only_seed_inputs() {
             seed: r.seed ^ 0x5bd1_e995,
             ..r.clone()
         })?;
-        only_inputs(&base, &other, |_, input| input.contains("seed"), "the seed")?;
+        only_inputs(
+            &base,
+            &other,
+            |class, input| class.contains("Sampler") && input.contains("seed"),
+            "the seed",
+        )?;
         prop_assert_eq!(base.total_steps, other.total_steps);
         Ok(())
     });
@@ -280,7 +285,9 @@ fn changing_the_steps_changes_only_step_inputs() {
         only_inputs(
             &base,
             &other,
-            |_, input| input.contains("step"),
+            |class, input| {
+                (class.contains("Sampler") || class.contains("Scheduler")) && input.contains("step")
+            },
             "the steps",
         )?;
         prop_assert!(other.total_steps > base.total_steps);
@@ -299,7 +306,10 @@ fn changing_the_guidance_scale_changes_only_cfg_inputs() {
         only_inputs(
             &base,
             &other,
-            |_, input| input == "cfg" || input == "guidance",
+            |class, input| {
+                (class.contains("Sampler") || class.contains("Guid"))
+                    && (input == "cfg" || input == "guidance")
+            },
             "cfg",
         )?;
         prop_assert_eq!(base.total_steps, other.total_steps);
