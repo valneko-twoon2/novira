@@ -1,0 +1,40 @@
+{"id":"engine-settings-patch-0","kind":"sample","mutations":[],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":300,"civitaiLookup":true},"rust":{"accept":true}}
+{"id":"engine-settings-patch-1","kind":"damaged","mutations":["wrong-type /comfyuiStartTimeoutSecs"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":true,"civitaiLookup":true},"rust":{"accept":false}}
+{"id":"engine-settings-patch-2","kind":"damaged","mutations":["unknown-field /"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":300,"civitaiLookup":true,"zzUnknown":1},"rust":{"accept":false}}
+{"id":"engine-settings-patch-3","kind":"valid","mutations":["enum-swap /comfyuiPackage","number-zero /comfyuiStartTimeoutSecs"],"value":{"comfyuiPackage":"amd","comfyuiStartTimeoutSecs":0,"civitaiLookup":true},"rust":{"accept":true}}
+{"id":"engine-settings-patch-4","kind":"damaged","mutations":["null /civitaiLookup","null /civitaiLookup"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":300,"civitaiLookup":null},"rust":{"accept":true}}
+{"id":"engine-settings-patch-5","kind":"damaged","mutations":["enum-unknown /comfyuiPackage"],"value":{"comfyuiPackage":"zz-unknown","comfyuiStartTimeoutSecs":300,"civitaiLookup":true},"rust":{"accept":true}}
+{"id":"engine-settings-patch-6","kind":"damaged","mutations":["wrong-type /civitaiLookup"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":300,"civitaiLookup":1},"rust":{"accept":false}}
+{"id":"engine-settings-patch-7","kind":"damaged","mutations":["wrong-type /"],"value":"x","rust":{"accept":false}}
+{"id":"engine-settings-patch-8","kind":"valid","mutations":["strip-half /"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":300},"rust":{"accept":true}}
+{"id":"engine-settings-patch-9","kind":"damaged","mutations":["drop /civitaiLookup","wrong-type /"],"value":[],"rust":{"accept":true}}
+{"id":"engine-settings-patch-10","kind":"damaged","mutations":["out-of-range /comfyuiStartTimeoutSecs","number-zero /comfyuiStartTimeoutSecs"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":0,"civitaiLookup":true},"rust":{"accept":true}}
+{"id":"engine-settings-patch-11","kind":"valid","mutations":["strip-half /"],"value":{},"rust":{"accept":true}}
+{"id":"engine-settings-patch-12","kind":"damaged","mutations":["wrong-type /civitaiLookup"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":300,"civitaiLookup":[]},"rust":{"accept":false}}
+{"id":"engine-settings-patch-13","kind":"damaged","mutations":["wrong-type /comfyuiStartTimeoutSecs","wrong-type /civitaiLookup"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":true,"civitaiLookup":1},"rust":{"accept":false}}
+{"id":"engine-settings-patch-14","kind":"damaged","mutations":["null /comfyuiStartTimeoutSecs"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":null,"civitaiLookup":true},"rust":{"accept":true}}
+{"id":"engine-settings-patch-15","kind":"damaged","mutations":["wrong-type /"],"value":1,"rust":{"accept":false}}
+{"id":"engine-settings-patch-16","kind":"damaged","mutations":["null /comfyuiPackage","number-zero /comfyuiStartTimeoutSecs"],"value":{"comfyuiPackage":null,"comfyuiStartTimeoutSecs":0,"civitaiLookup":true},"rust":{"accept":true}}
+{"id":"engine-settings-patch-17","kind":"damaged","mutations":["wrong-type /comfyuiStartTimeoutSecs","drop /comfyuiPackage"],"value":{"comfyuiStartTimeoutSecs":{},"civitaiLookup":true},"rust":{"accept":false}}
+{"id":"engine-settings-patch-18","kind":"damaged","mutations":["null /comfyuiPackage"],"value":{"comfyuiPackage":null,"comfyuiStartTimeoutSecs":300,"civitaiLookup":true},"rust":{"accept":true}}
+{"id":"engine-settings-patch-19","kind":"damaged","mutations":["drop /comfyuiStartTimeoutSecs","enum-unknown /comfyuiPackage"],"value":{"comfyuiPackage":"zz-unknown","civitaiLookup":true},"rust":{"accept":true}}
+{"id":"engine-settings-patch-20","kind":"valid","mutations":["drop /comfyuiStartTimeoutSecs","enum-swap /comfyuiPackage"],"value":{"comfyuiPackage":"amd","civitaiLookup":true},"rust":{"accept":true}}
+{"id":"engine-settings-patch-21","kind":"damaged","mutations":["wrong-type /comfyuiStartTimeoutSecs"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":[],"civitaiLookup":true},"rust":{"accept":false}}
+{"id":"engine-settings-patch-22","kind":"damaged","mutations":["unknown-field /","drop /civitaiLookup"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":300,"zzUnknown":1},"rust":{"accept":false}}
+{"id":"engine-settings-patch-23","kind":"valid","mutations":["strip-half /"],"value":{"comfyuiStartTimeoutSecs":300},"rust":{"accept":true}}
+{"id":"engine-settings-patch-24","kind":"valid","mutations":["bool-flip /civitaiLookup"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":300,"civitaiLookup":false},"rust":{"accept":true}}
+{"id":"engine-settings-patch-25","kind":"damaged","mutations":["wrong-type /","empty-string /"],"value":"","rust":{"accept":false}}
+{"id":"engine-settings-patch-26","kind":"valid","mutations":["enum-swap /comfyuiPackage","number-shift /comfyuiStartTimeoutSecs"],"value":{"comfyuiPackage":"amd","comfyuiStartTimeoutSecs":301,"civitaiLookup":true},"rust":{"accept":true}}
+{"id":"engine-settings-patch-27","kind":"valid","mutations":["enum-swap /comfyuiPackage"],"value":{"comfyuiPackage":"amd","comfyuiStartTimeoutSecs":300,"civitaiLookup":true},"rust":{"accept":true}}
+{"id":"engine-settings-patch-28","kind":"damaged","mutations":["wrong-type /civitaiLookup","strip-half /"],"value":{"comfyuiPackage":"nvidia"},"rust":{"accept":true}}
+{"id":"engine-settings-patch-29","kind":"damaged","mutations":["wrong-type /civitaiLookup"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":300,"civitaiLookup":"true"},"rust":{"accept":false}}
+{"id":"engine-settings-patch-30","kind":"damaged","mutations":["unknown-field /","null /zzUnknown"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":300,"civitaiLookup":true,"zzUnknown":null},"rust":{"accept":false}}
+{"id":"engine-settings-patch-31","kind":"damaged","mutations":["wrong-type /comfyuiPackage"],"value":{"comfyuiPackage":[],"comfyuiStartTimeoutSecs":300,"civitaiLookup":true},"rust":{"accept":false}}
+{"id":"engine-settings-patch-32","kind":"damaged","mutations":["enum-unknown /comfyuiPackage","drop /comfyuiPackage"],"value":{"comfyuiStartTimeoutSecs":300,"civitaiLookup":true},"rust":{"accept":true}}
+{"id":"engine-settings-patch-33","kind":"damaged","mutations":["drop /comfyuiStartTimeoutSecs","wrong-type /comfyuiPackage"],"value":{"comfyuiPackage":true,"civitaiLookup":true},"rust":{"accept":false}}
+{"id":"engine-settings-patch-34","kind":"valid","mutations":["empty-string /comfyuiPackage"],"value":{"comfyuiPackage":"","comfyuiStartTimeoutSecs":300,"civitaiLookup":true},"rust":{"accept":true}}
+{"id":"engine-settings-patch-35","kind":"valid","mutations":["drop /comfyuiStartTimeoutSecs"],"value":{"comfyuiPackage":"nvidia","civitaiLookup":true},"rust":{"accept":true}}
+{"id":"engine-settings-patch-36","kind":"damaged","mutations":["wrong-type /comfyuiPackage"],"value":{"comfyuiPackage":42,"comfyuiStartTimeoutSecs":300,"civitaiLookup":true},"rust":{"accept":false}}
+{"id":"engine-settings-patch-37","kind":"damaged","mutations":["null /civitaiLookup","number-shift /comfyuiStartTimeoutSecs"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":301,"civitaiLookup":null},"rust":{"accept":true}}
+{"id":"engine-settings-patch-38","kind":"damaged","mutations":["unknown-field /","enum-unknown /comfyuiPackage"],"value":{"comfyuiPackage":"zz-unknown","comfyuiStartTimeoutSecs":300,"civitaiLookup":true,"zzUnknown":1},"rust":{"accept":false}}
+{"id":"engine-settings-patch-39","kind":"damaged","mutations":["wrong-type /civitaiLookup"],"value":{"comfyuiPackage":"nvidia","comfyuiStartTimeoutSecs":300,"civitaiLookup":0},"rust":{"accept":false}}

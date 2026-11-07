@@ -1,0 +1,40 @@
+{"id":"board-patch-0","kind":"sample","mutations":[],"value":{"name":"Renamed","archived":false},"rust":{"accept":true,"same":true}}
+{"id":"board-patch-1","kind":"valid","mutations":["drop /name"],"value":{"archived":false},"rust":{"accept":true,"out":{"name":null,"archived":false}}}
+{"id":"board-patch-2","kind":"damaged","mutations":["null /name"],"value":{"name":null,"archived":false},"rust":{"accept":true,"same":true}}
+{"id":"board-patch-3","kind":"damaged","mutations":["bool-flip /archived","null /archived"],"value":{"name":"Renamed","archived":null},"rust":{"accept":true,"same":true}}
+{"id":"board-patch-4","kind":"damaged","mutations":["unknown-field /"],"value":{"name":"Renamed","archived":false,"zzUnknown":1},"rust":{"accept":true,"out":{"name":"Renamed","archived":false}}}
+{"id":"board-patch-5","kind":"valid","mutations":["bool-flip /archived"],"value":{"name":"Renamed","archived":true},"rust":{"accept":true,"same":true}}
+{"id":"board-patch-6","kind":"damaged","mutations":["wrong-type /name"],"value":{"name":42,"archived":false},"rust":{"accept":false}}
+{"id":"board-patch-7","kind":"damaged","mutations":["wrong-type /"],"value":1,"rust":{"accept":false}}
+{"id":"board-patch-8","kind":"damaged","mutations":["wrong-type /name"],"value":{"name":true,"archived":false},"rust":{"accept":false}}
+{"id":"board-patch-9","kind":"damaged","mutations":["unknown-field /","null /name"],"value":{"name":null,"archived":false,"zzUnknown":1},"rust":{"accept":true,"out":{"name":null,"archived":false}}}
+{"id":"board-patch-10","kind":"valid","mutations":["drop /archived"],"value":{"name":"Renamed"},"rust":{"accept":true,"out":{"name":"Renamed","archived":null}}}
+{"id":"board-patch-11","kind":"damaged","mutations":["wrong-type /archived"],"value":{"name":"Renamed","archived":"true"},"rust":{"accept":false}}
+{"id":"board-patch-12","kind":"damaged","mutations":["unknown-field /","drop /archived"],"value":{"name":"Renamed","zzUnknown":1},"rust":{"accept":true,"out":{"name":"Renamed","archived":null}}}
+{"id":"board-patch-13","kind":"damaged","mutations":["wrong-type /"],"value":[],"rust":{"accept":false}}
+{"id":"board-patch-14","kind":"damaged","mutations":["wrong-type /archived"],"value":{"name":"Renamed","archived":[]},"rust":{"accept":false}}
+{"id":"board-patch-15","kind":"damaged","mutations":["wrong-type /name"],"value":{"name":[],"archived":false},"rust":{"accept":false}}
+{"id":"board-patch-16","kind":"damaged","mutations":["drop /archived","null /name"],"value":{"name":null},"rust":{"accept":true,"out":{"name":null,"archived":null}}}
+{"id":"board-patch-17","kind":"damaged","mutations":["enum-unknown /name"],"value":{"name":"zz-unknown","archived":false},"rust":{"accept":true,"same":true}}
+{"id":"board-patch-18","kind":"valid","mutations":["empty-string /name"],"value":{"name":"","archived":false},"rust":{"accept":true,"same":true}}
+{"id":"board-patch-19","kind":"damaged","mutations":["wrong-type /"],"value":"x","rust":{"accept":false}}
+{"id":"board-patch-20","kind":"damaged","mutations":["null /archived","unknown-field /"],"value":{"name":"Renamed","archived":null,"zzUnknown":1},"rust":{"accept":true,"out":{"name":"Renamed","archived":null}}}
+{"id":"board-patch-21","kind":"damaged","mutations":["bool-flip /archived","unknown-field /"],"value":{"name":"Renamed","archived":true,"zzUnknown":1},"rust":{"accept":true,"out":{"name":"Renamed","archived":true}}}
+{"id":"board-patch-22","kind":"damaged","mutations":["empty-string /name","unknown-field /"],"value":{"name":"","archived":false,"zzUnknown":1},"rust":{"accept":true,"out":{"name":"","archived":false}}}
+{"id":"board-patch-23","kind":"damaged","mutations":["unknown-field /","strip-half /"],"value":{"zzUnknown":1},"rust":{"accept":true,"out":{"name":null,"archived":null}}}
+{"id":"board-patch-24","kind":"valid","mutations":["drop /archived","drop /name"],"value":{},"rust":{"accept":true,"out":{"name":null,"archived":null}}}
+{"id":"board-patch-25","kind":"damaged","mutations":["drop /name","wrong-type /archived"],"value":{"archived":"true"},"rust":{"accept":false}}
+{"id":"board-patch-26","kind":"damaged","mutations":["bool-flip /archived","wrong-type /archived"],"value":{"name":"Renamed","archived":0},"rust":{"accept":false}}
+{"id":"board-patch-27","kind":"valid","mutations":["empty-string /name","bool-flip /archived"],"value":{"name":"","archived":true},"rust":{"accept":true,"same":true}}
+{"id":"board-patch-28","kind":"damaged","mutations":["empty-string /name","null /archived"],"value":{"name":"","archived":null},"rust":{"accept":true,"same":true}}
+{"id":"board-patch-29","kind":"damaged","mutations":["null /name","bool-flip /archived"],"value":{"name":null,"archived":true},"rust":{"accept":true,"same":true}}
+{"id":"board-patch-30","kind":"damaged","mutations":["wrong-type /name"],"value":{"name":{},"archived":false},"rust":{"accept":false}}
+{"id":"board-patch-31","kind":"damaged","mutations":["wrong-type /archived","null /name"],"value":{"name":null,"archived":[]},"rust":{"accept":false}}
+{"id":"board-patch-32","kind":"damaged","mutations":["unknown-field /","enum-unknown /name"],"value":{"name":"zz-unknown","archived":false,"zzUnknown":1},"rust":{"accept":true,"out":{"name":"zz-unknown","archived":false}}}
+{"id":"board-patch-33","kind":"damaged","mutations":["unknown-field /","drop /name"],"value":{"archived":false,"zzUnknown":1},"rust":{"accept":true,"out":{"name":null,"archived":false}}}
+{"id":"board-patch-34","kind":"damaged","mutations":["null /archived","wrong-type /name"],"value":{"name":{},"archived":null},"rust":{"accept":false}}
+{"id":"board-patch-35","kind":"damaged","mutations":["wrong-type /","enum-unknown /"],"value":"zz-unknown","rust":{"accept":false}}
+{"id":"board-patch-36","kind":"damaged","mutations":["wrong-type /archived"],"value":{"name":"Renamed","archived":1},"rust":{"accept":false}}
+{"id":"board-patch-37","kind":"valid","mutations":["drop /name","bool-flip /archived"],"value":{"archived":true},"rust":{"accept":true,"out":{"name":null,"archived":true}}}
+{"id":"board-patch-38","kind":"damaged","mutations":["null /name","wrong-type /archived"],"value":{"name":null,"archived":"true"},"rust":{"accept":false}}
+{"id":"board-patch-39","kind":"damaged","mutations":["wrong-type /archived","null /name"],"value":{"name":null,"archived":0},"rust":{"accept":false}}

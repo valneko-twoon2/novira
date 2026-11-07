@@ -1,0 +1,40 @@
+{"id":"image-options-0","kind":"sample","mutations":[],"value":{"boardId":"board-1","isIntermediate":true,"category":"mask"},"rust":{"accept":true,"same":true}}
+{"id":"image-options-1","kind":"damaged","mutations":["wrong-type /category"],"value":{"boardId":"board-1","isIntermediate":true,"category":true},"rust":{"accept":false}}
+{"id":"image-options-2","kind":"valid","mutations":["empty-string /boardId"],"value":{"boardId":"","isIntermediate":true,"category":"mask"},"rust":{"accept":true,"same":true}}
+{"id":"image-options-3","kind":"valid","mutations":["bool-flip /isIntermediate"],"value":{"boardId":"board-1","isIntermediate":false,"category":"mask"},"rust":{"accept":true,"same":true}}
+{"id":"image-options-4","kind":"damaged","mutations":["wrong-type /category"],"value":{"boardId":"board-1","isIntermediate":true,"category":42},"rust":{"accept":false}}
+{"id":"image-options-5","kind":"damaged","mutations":["wrong-type /"],"value":1,"rust":{"accept":false}}
+{"id":"image-options-6","kind":"damaged","mutations":["drop /boardId","unknown-field /"],"value":{"isIntermediate":true,"category":"mask","zzUnknown":1},"rust":{"accept":true,"out":{"boardId":null,"isIntermediate":true,"category":"mask"}}}
+{"id":"image-options-7","kind":"valid","mutations":["empty-string /category"],"value":{"boardId":"board-1","isIntermediate":true,"category":""},"rust":{"accept":false}}
+{"id":"image-options-8","kind":"damaged","mutations":["null /isIntermediate"],"value":{"boardId":"board-1","isIntermediate":null,"category":"mask"},"rust":{"accept":true,"same":true}}
+{"id":"image-options-9","kind":"damaged","mutations":["enum-unknown /category"],"value":{"boardId":"board-1","isIntermediate":true,"category":"zz-unknown"},"rust":{"accept":false}}
+{"id":"image-options-10","kind":"valid","mutations":["drop /boardId"],"value":{"isIntermediate":true,"category":"mask"},"rust":{"accept":true,"out":{"boardId":null,"isIntermediate":true,"category":"mask"}}}
+{"id":"image-options-11","kind":"valid","mutations":["drop /isIntermediate"],"value":{"boardId":"board-1","category":"mask"},"rust":{"accept":true,"out":{"boardId":"board-1","isIntermediate":null,"category":"mask"}}}
+{"id":"image-options-12","kind":"damaged","mutations":["wrong-type /","number-zero /"],"value":0,"rust":{"accept":false}}
+{"id":"image-options-13","kind":"valid","mutations":["drop /category"],"value":{"boardId":"board-1","isIntermediate":true},"rust":{"accept":true,"out":{"boardId":"board-1","isIntermediate":true,"category":null}}}
+{"id":"image-options-14","kind":"damaged","mutations":["enum-unknown /boardId"],"value":{"boardId":"zz-unknown","isIntermediate":true,"category":"mask"},"rust":{"accept":true,"same":true}}
+{"id":"image-options-15","kind":"damaged","mutations":["bool-flip /isIntermediate","enum-unknown /boardId"],"value":{"boardId":"zz-unknown","isIntermediate":false,"category":"mask"},"rust":{"accept":true,"same":true}}
+{"id":"image-options-16","kind":"damaged","mutations":["wrong-type /"],"value":[],"rust":{"accept":false}}
+{"id":"image-options-17","kind":"damaged","mutations":["null /category"],"value":{"boardId":"board-1","isIntermediate":true,"category":null},"rust":{"accept":true,"same":true}}
+{"id":"image-options-18","kind":"valid","mutations":["strip-half /"],"value":{"category":"mask"},"rust":{"accept":true,"out":{"boardId":null,"isIntermediate":null,"category":"mask"}}}
+{"id":"image-options-19","kind":"damaged","mutations":["unknown-field /","drop /isIntermediate"],"value":{"boardId":"board-1","category":"mask","zzUnknown":1},"rust":{"accept":true,"out":{"boardId":"board-1","isIntermediate":null,"category":"mask"}}}
+{"id":"image-options-20","kind":"damaged","mutations":["wrong-type /isIntermediate","enum-unknown /isIntermediate"],"value":{"boardId":"board-1","isIntermediate":"zz-unknown","category":"mask"},"rust":{"accept":false}}
+{"id":"image-options-21","kind":"damaged","mutations":["wrong-type /boardId"],"value":{"boardId":[],"isIntermediate":true,"category":"mask"},"rust":{"accept":false}}
+{"id":"image-options-22","kind":"damaged","mutations":["strip-half /","wrong-type /category"],"value":{"category":true},"rust":{"accept":false}}
+{"id":"image-options-23","kind":"damaged","mutations":["wrong-type /","enum-unknown /"],"value":"zz-unknown","rust":{"accept":false}}
+{"id":"image-options-24","kind":"damaged","mutations":["unknown-field /"],"value":{"boardId":"board-1","isIntermediate":true,"category":"mask","zzUnknown":1},"rust":{"accept":true,"out":{"boardId":"board-1","isIntermediate":true,"category":"mask"}}}
+{"id":"image-options-25","kind":"damaged","mutations":["wrong-type /boardId"],"value":{"boardId":{},"isIntermediate":true,"category":"mask"},"rust":{"accept":false}}
+{"id":"image-options-26","kind":"damaged","mutations":["wrong-type /isIntermediate"],"value":{"boardId":"board-1","isIntermediate":0,"category":"mask"},"rust":{"accept":false}}
+{"id":"image-options-27","kind":"damaged","mutations":["bool-flip /isIntermediate","null /boardId"],"value":{"boardId":null,"isIntermediate":false,"category":"mask"},"rust":{"accept":true,"same":true}}
+{"id":"image-options-28","kind":"valid","mutations":["empty-string /category","strip-half /"],"value":{},"rust":{"accept":true,"out":{"boardId":null,"isIntermediate":null,"category":null}}}
+{"id":"image-options-29","kind":"damaged","mutations":["null /boardId"],"value":{"boardId":null,"isIntermediate":true,"category":"mask"},"rust":{"accept":true,"same":true}}
+{"id":"image-options-30","kind":"damaged","mutations":["drop /category","wrong-type /boardId"],"value":{"boardId":[],"isIntermediate":true},"rust":{"accept":false}}
+{"id":"image-options-31","kind":"valid","mutations":["drop /category","empty-string /boardId"],"value":{"boardId":"","isIntermediate":true},"rust":{"accept":true,"out":{"boardId":"","isIntermediate":true,"category":null}}}
+{"id":"image-options-32","kind":"damaged","mutations":["wrong-type /","wrong-type /"],"value":"x","rust":{"accept":false}}
+{"id":"image-options-33","kind":"damaged","mutations":["drop /boardId","wrong-type /category"],"value":{"isIntermediate":true,"category":{}},"rust":{"accept":false}}
+{"id":"image-options-34","kind":"damaged","mutations":["enum-unknown /category","wrong-type /isIntermediate"],"value":{"boardId":"board-1","isIntermediate":0,"category":"zz-unknown"},"rust":{"accept":false}}
+{"id":"image-options-35","kind":"valid","mutations":["enum-swap /category"],"value":{"boardId":"board-1","isIntermediate":true,"category":"other"},"rust":{"accept":true,"same":true}}
+{"id":"image-options-36","kind":"damaged","mutations":["empty-string /boardId","wrong-type /category"],"value":{"boardId":"","isIntermediate":true,"category":true},"rust":{"accept":false}}
+{"id":"image-options-37","kind":"valid","mutations":["bool-flip /isIntermediate","empty-string /boardId"],"value":{"boardId":"","isIntermediate":false,"category":"mask"},"rust":{"accept":true,"same":true}}
+{"id":"image-options-38","kind":"valid","mutations":["enum-swap /category"],"value":{"boardId":"board-1","isIntermediate":true,"category":"control"},"rust":{"accept":true,"same":true}}
+{"id":"image-options-39","kind":"damaged","mutations":["empty-string /category","unknown-field /"],"value":{"boardId":"board-1","isIntermediate":true,"category":"","zzUnknown":1},"rust":{"accept":false}}
