@@ -187,13 +187,12 @@ describe('copying', () => {
   });
 
   it('reports a failed image copy when the picture cannot be loaded', async () => {
-    vi.stubGlobal('ClipboardItem', class {});
-    vi.stubGlobal('navigator', { clipboard: { write: vi.fn() } });
-    vi.spyOn(HTMLImageElement.prototype, 'src', 'set').mockImplementation(function (this: HTMLImageElement) {
-      queueMicrotask(() => this.onerror?.(new Event('error')));
-    });
+    vi.stubGlobal('ClipboardItem', class { constructor(public items: Record<string, Promise<Blob>>) {} });
+    // As the browser does: the write fails when the picture it was given fails.
+    vi.stubGlobal('navigator', { clipboard: { write: vi.fn(async (items: { items: Record<string, Promise<Blob>> }[]) => void (await items[0]?.items['image/png'])) } });
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
     await copyImage(image('a'));
-    expect(lastToast()?.status).toBe('error');
+    expect(lastToast()).toMatchObject({ status: 'error', description: 'Failed to fetch' });
   });
 
   it('copies text and reports success, or failure when the clipboard refuses', async () => {

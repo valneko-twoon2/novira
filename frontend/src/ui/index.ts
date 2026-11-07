@@ -13,7 +13,7 @@ export { FontPicker } from './FontPicker';
 export { PresetPicker, type PresetItem } from './PresetPicker';
 export { PresetBar } from './PresetBar';
 export { ZoomControls } from './ZoomControls';
-export { writeClipboardText } from './clipboard';
+export { canWriteClipboardImage, writeClipboardImage, writeClipboardText } from './clipboard';
 export { ZOOM_HOTKEYS } from './zoomHotkeys';
 export { ErrorBoundary } from './ErrorBoundary';
 export { PressAgainButton, PressAgainIconButton, PressAgainMenuItem } from './PressAgain';

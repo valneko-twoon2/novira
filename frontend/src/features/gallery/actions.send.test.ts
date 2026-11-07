@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// The "send to ..." actions, opening in a new tab, and the successful image copy.
+// The "send to ..." actions, opening in a new tab, and copying a picture to the clipboard.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ImageDTO } from '@/backend';
 import { useCanvas } from '@/state/canvas';
@@ -7,6 +7,7 @@ import { useVideo } from '@/state/media/video';
 import { useTextEditor } from '@/state/text/textEditor';
 import { EMPTY_SCENE, newTextLayer } from '@/state/text/textModel';
 import { useTextSources } from '@/state/text/textSources';
+import { useDevLog } from '@/state/devLog';
 import { useToasts } from '@/state/toasts';
 import { useUi } from '@/state/ui';
 import { useWorkflows } from '@/state/workflows/workflows';
@@ -98,32 +99,107 @@ describe('opening in a new tab', () => {
 });
 
 describe('copying a picture', () => {
-  it('writes a PNG to the clipboard and reports success', async () => {
-    const write = vi.fn().mockResolvedValue(undefined);
-    vi.stubGlobal('ClipboardItem', class { constructor(public items: Record<string, Blob>) {} });
+  const PNG_HEAD = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  const png = (type = 'image/png') => new Blob([new Uint8Array([...PNG_HEAD, 1, 2, 3])], { type });
+  const jpeg = () => new Blob([new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3, 4, 5, 6])], { type: 'image/jpeg' });
+  const answer = (blob: Blob, status = 200) => vi.fn().mockResolvedValue({ ok: status < 400, status, blob: async () => blob });
+
+  /** The clipboard as the browser has it: the item keeps what it was given, and `write` hands that to the test. */
+  function stubClipboard(write = vi.fn().mockResolvedValue(undefined)) {
+    vi.stubGlobal('ClipboardItem', class { constructor(public items: Record<string, Blob | Promise<Blob>>) {} });
     vi.stubGlobal('navigator', { clipboard: { write } });
-    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: vi.fn() } as unknown as CanvasRenderingContext2D);
-    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((cb) => cb(new Blob(['png'], { type: 'image/png' })));
-    vi.spyOn(HTMLImageElement.prototype, 'src', 'set').mockImplementation(function (this: HTMLImageElement) {
-      queueMicrotask(() => this.onload?.(new Event('load')));
-    });
-    await copyImage(image('c'));
+    return write;
+  }
+  type Items = { items: Record<string, Promise<Blob>> }[];
+  /** The picture the first write was given: a promise, settled when the picture has been read. */
+  const givenItem = (write: ReturnType<typeof vi.fn>): Promise<Blob> => ((write.mock.calls[0]?.[0] ?? []) as Items)[0]?.items['image/png'] ?? Promise.reject(new Error('nothing was written'));
+
+  it('asks the clipboard at once, before the picture has been read, and reports success when it is on the clipboard', async () => {
+    const write = stubClipboard();
+    let release: (b: Blob) => void = () => undefined;
+    vi.stubGlobal('fetch', vi.fn(() => new Promise((resolve) => (release = (b) => resolve({ ok: true, status: 200, blob: async () => b })))));
+    const done = copyImage(image('c'));
     expect(write).toHaveBeenCalledTimes(1);
+    expect(lastToast()).toBeUndefined();
+    release(png());
+    await done;
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('loads a remote picture with cross-origin access and reports a failed PNG conversion', async () => {
-    vi.stubGlobal('ClipboardItem', class {});
-    vi.stubGlobal('navigator', { clipboard: { write: vi.fn() } });
-    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
-    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((cb) => cb(null));
-    let crossOrigin: string | null = null;
+  it('puts the stored PNG on the clipboard as it is, without decoding or encoding it', async () => {
+    const write = stubClipboard();
+    const stored = png('application/octet-stream');
+    const fetchMock = answer(stored);
+    vi.stubGlobal('fetch', fetchMock);
+    const toBlob = vi.spyOn(HTMLCanvasElement.prototype, 'toBlob');
+    const bitmap = vi.fn();
+    vi.stubGlobal('createImageBitmap', bitmap);
+    await copyImage(image('p'));
+    const given = await givenItem(write);
+    expect(fetchMock).toHaveBeenCalledWith('blob:p');
+    expect(given.type).toBe('image/png');
+    expect(given.size).toBe(stored.size);
+    expect(toBlob).not.toHaveBeenCalled();
+    expect(bitmap).not.toHaveBeenCalled();
+  });
+
+  it('converts a picture that is not a PNG, off the main thread', async () => {
+    const write = stubClipboard();
+    vi.stubGlobal('fetch', answer(jpeg()));
+    const close = vi.fn();
+    vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({ width: 8, height: 6, close }));
+    const drawn = vi.fn();
+    const converted = new Blob(['converted'], { type: 'image/png' });
+    vi.stubGlobal('OffscreenCanvas', class { constructor(public width: number, public height: number) {} getContext() { return { drawImage: drawn }; } convertToBlob = vi.fn().mockResolvedValue(converted); });
+    await copyImage(image('j'));
+    expect(await givenItem(write)).toBe(converted);
+    expect(drawn).toHaveBeenCalledTimes(1);
+    expect(close).toHaveBeenCalledTimes(1);
+    expect(lastToast()?.status).toBe('success');
+  });
+
+  it('converts through a canvas on the page where there is no OffscreenCanvas', async () => {
+    const write = stubClipboard();
+    vi.stubGlobal('fetch', answer(jpeg()));
+    vi.stubGlobal('createImageBitmap', undefined);
+    vi.stubGlobal('OffscreenCanvas', undefined);
+    URL.createObjectURL = vi.fn(() => 'blob:source');
+    URL.revokeObjectURL = vi.fn();
+    const converted = new Blob(['canvas'], { type: 'image/png' });
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: vi.fn() } as unknown as CanvasRenderingContext2D);
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((cb) => cb(converted));
     vi.spyOn(HTMLImageElement.prototype, 'src', 'set').mockImplementation(function (this: HTMLImageElement) {
-      crossOrigin = this.crossOrigin;
       queueMicrotask(() => this.onload?.(new Event('load')));
     });
-    await copyImage({ ...image('r'), url: 'https://example.test/r.png' });
-    expect(crossOrigin).toBe('anonymous');
+    await copyImage(image('j'));
+    expect(await givenItem(write)).toBe(converted);
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:source');
+    expect(lastToast()?.status).toBe('success');
+  });
+
+  it('says the copy failed, with the reason, and writes the reason to the developer log, when the picture cannot be read', async () => {
+    stubClipboard(vi.fn((items: Items) => (items[0]?.items['image/png'] ?? Promise.resolve()).then(() => undefined)));
+    vi.stubGlobal('fetch', answer(new Blob([]), 404));
+    await copyImage(image('gone'));
+    expect(lastToast()).toMatchObject({ status: 'error', description: expect.stringContaining('404') });
+    expect(useDevLog.getState().entries.at(-1)).toMatchObject({ level: 'error', source: 'gallery', message: expect.stringContaining('gone') });
+  });
+
+  it('reports a clipboard that refuses the write, naming the browser error in the developer log', async () => {
+    stubClipboard(vi.fn().mockRejectedValue(Object.assign(new Error('Document is not focused.'), { name: 'NotAllowedError' })));
+    vi.stubGlobal('fetch', answer(png()));
+    await copyImage(image('n'));
     expect(lastToast()?.status).toBe('error');
+    expect(useDevLog.getState().entries.at(-1)?.message).toContain('NotAllowedError');
+  });
+
+  it('warns, and does not read the picture, where the browser has no picture clipboard', async () => {
+    vi.stubGlobal('ClipboardItem', undefined);
+    vi.stubGlobal('navigator', { clipboard: { write: vi.fn() } });
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    await copyImage(image('u'));
+    expect(lastToast()?.status).toBe('warning');
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

@@ -96,6 +96,7 @@ export { FAMILY_SAMPLING, fixedSampling, samplingLabel } from './familySampling'
 export { ENGINE_SAMPLERS, ENGINE_SCHEDULES } from './engineSampling';
 export { runningSampling, SCHEDULER_SAMPLING } from './schedulerSampling';
 export { canOpenNewWindow, openInNewWindow } from './openWindow';
+export { readImageBlob } from './imageBlob';
 export type { LanApi, LanDevice, LanFailure, LanPending, LanResult, LanState, PairingCode, RemoteLogLine, RemotePasskey, RemoteProblem, RemoteState } from './http/lan';
 export { perf } from './perf';
 export { randomSeed, batchSeed, mulberry32, MAX_SEED } from './mock/random';

@@ -8,8 +8,10 @@ import { defaultRefModelKey, findModel, useModels } from '@/state/models';
 import { useParams } from '@/state/params';
 import type { ExtractedPoses } from '@/state/comfy/poseExtract';
 import { pickPoseModel, POSE_CONTROL } from '@/state/poseSkeleton';
+import { describeError, devLog } from '@/state/devLog';
 import { toast } from '@/state/toasts';
 import { useUi } from '@/state/ui';
+import { canWriteClipboardImage, writeClipboardImage } from '@/ui';
 import { objectsBounds } from '@/ui/canvasDraw/bounds';
 import { canvasToBlob, canvasToUrl, compositeRect, contentBounds, imageUrlsOf } from '@/ui/canvasDraw/composite';
 import { createCanvas, renderEntity } from '@/ui/canvasDraw/entityRender';
@@ -145,18 +147,29 @@ export async function entityAsGalleryImage(id: string, store: CanvasStore = useC
 export async function copyEntityToClipboard(id: string, store: CanvasStore = useCanvas) {
   const e = store.getState().entities.find((x) => x.id === id);
   if (!e) return;
+  if (!canWriteClipboardImage()) {
+    fail(t('canvas.toast.copyFailed'), new Error(t('canvas.toast.clipboardUnsupported')));
+    return;
+  }
+  let empty = false;
   try {
-    const canvas = await entityCanvas(e, store);
-    if (!canvas) {
-      toast({ status: 'warning', title: t('canvas.toast.entityEmpty') });
-      return;
-    }
-    const blob = await canvasToBlob(canvas);
-    if (typeof ClipboardItem === 'undefined' || !navigator.clipboard?.write) throw new Error(t('canvas.toast.clipboardUnsupported'));
-    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    // Asked for before the layer is drawn, inside the user's click, so that a slow draw does not outlast the browser's permission to write.
+    await writeClipboardImage(
+      entityCanvas(e, store).then((canvas) => {
+        if (!canvas) {
+          empty = true;
+          throw new Error(t('canvas.toast.entityEmpty'));
+        }
+        return canvasToBlob(canvas);
+      }),
+    );
     toast({ status: 'success', title: t('canvas.toast.copied') });
   } catch (err) {
-    fail(t('canvas.toast.copyFailed'), err);
+    if (empty) toast({ status: 'warning', title: t('canvas.toast.entityEmpty') });
+    else {
+      devLog('error', 'canvas', `copying a layer to the clipboard failed: ${describeError(err)}`);
+      fail(t('canvas.toast.copyFailed'), err);
+    }
   }
 }
 
