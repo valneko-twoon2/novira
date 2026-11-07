@@ -1,6 +1,8 @@
 //! Serving stored pictures by name, for every shell: `/<full|thumb>/<image name>`. URLs carry names only, never paths;
 //! anything unknown is a 404. The decision is a pure function so it is tested without a window or a socket.
+use crate::media::images;
 use crate::Backend;
+use std::io::{Read, Seek, SeekFrom};
 
 pub struct Served {
     pub status: u16,
@@ -51,30 +53,64 @@ pub fn serve(backend: &Backend, path: &str, range: Option<&str>) -> Served {
     let [variant, name] = parts[..] else {
         return not_found;
     };
-    let Some((body, content_type)) = backend.read_image(variant, name) else {
+    let Some(file) = backend.open_image(variant, name) else {
         return not_found;
     };
+    // The length and the bytes come from the same open file, so a picture replaced meanwhile cannot mix two files.
+    let Ok(len) = file.metadata().map(|m| m.len()) else {
+        return not_found;
+    };
+    answer(file, len, range).unwrap_or(not_found)
+}
+
+/// Bytes enough to tell the type (`images::sniff_content_type` looks at 12 at most).
+const SNIFF_BYTES: usize = 16;
+
+/// The answer to a request for a file of `len` bytes, reading from it only what the answer carries and the first
+/// `SNIFF_BYTES`: a range of a 200 MB video read the whole file before (about 0.1 s and 200 MB of memory a request).
+fn answer<R: Read + Seek>(mut file: R, len: u64, range: Option<&str>) -> std::io::Result<Served> {
+    let len = usize::try_from(len).map_err(std::io::Error::other)?;
+    let mut head = Vec::with_capacity(SNIFF_BYTES);
+    (&mut file)
+        .take(SNIFF_BYTES as u64)
+        .read_to_end(&mut head)?;
+    let content_type = images::sniff_content_type(&head);
     // Audio and video elements ask for pieces of a file (to play from the middle, or to know the length).
-    match range.and_then(|r| parse_range(r, body.len())) {
-        Some(Ok((start, end))) => Served {
-            status: 206,
-            content_type,
-            content_range: Some(format!("bytes {start}-{end}/{}", body.len())),
-            body: body[start..=end].to_vec(),
-        },
+    Ok(match range.and_then(|r| parse_range(r, len)) {
+        Some(Ok((start, end))) => {
+            let want = end - start + 1;
+            file.seek(SeekFrom::Start(start as u64))?;
+            let mut body = Vec::with_capacity(want);
+            file.take(want as u64).read_to_end(&mut body)?;
+            if body.len() != want {
+                return Err(std::io::ErrorKind::UnexpectedEof.into());
+            }
+            Served {
+                status: 206,
+                content_type,
+                content_range: Some(format!("bytes {start}-{end}/{len}")),
+                body,
+            }
+        }
         Some(Err(())) => Served {
             status: 416,
             content_type: "text/plain",
-            content_range: Some(format!("bytes */{}", body.len())),
+            content_range: Some(format!("bytes */{len}")),
             body: Vec::new(),
         },
-        None => Served {
-            status: 200,
-            content_type,
-            body,
-            content_range: None,
-        },
-    }
+        None => {
+            // The head is already read; the rest follows it.
+            let mut body = head;
+            body.reserve(len.saturating_sub(body.len()));
+            file.read_to_end(&mut body)?;
+            Served {
+                status: 200,
+                content_type,
+                body,
+                content_range: None,
+            }
+        }
+    })
 }
 
 #[cfg(test)]
@@ -154,6 +190,116 @@ mod tests {
             Some("bytes=999999-"),
         );
         assert_eq!(beyond.status, 416);
+
+        // A video in the gallery's folder: a piece from its end, read from the file itself.
+        let name = "0123456789abcdef0123456789abcdef.mp4";
+        let body = video(1 << 20);
+        std::fs::write(dir.path().join("outputs").join(name), &body).unwrap();
+        let tail = serve(&backend, &format!("/full/{name}"), Some("bytes=-1000"));
+        assert_eq!((tail.status, tail.content_type), (206, "video/mp4"));
+        assert_eq!(tail.body, body[body.len() - 1000..]);
+        assert_eq!(
+            tail.content_range,
+            Some(format!(
+                "bytes {}-{}/{}",
+                body.len() - 1000,
+                body.len() - 1,
+                body.len()
+            ))
+        );
+        assert_eq!(serve(&backend, &format!("/full/{name}"), None).body, body);
+        // A folder with a picture's name is no picture.
+        std::fs::create_dir(
+            dir.path()
+                .join("outputs")
+                .join("fedcba9876543210fedcba9876543210.png"),
+        )
+        .unwrap();
+        assert_eq!(
+            serve(&backend, "/full/fedcba9876543210fedcba9876543210.png", None).status,
+            404
+        );
+    }
+
+    /// Counts the bytes read through it.
+    struct Counting {
+        inner: std::io::Cursor<Vec<u8>>,
+        read: usize,
+    }
+
+    impl Read for Counting {
+        fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+            let n = self.inner.read(buf)?;
+            self.read += n;
+            Ok(n)
+        }
+    }
+
+    impl Seek for Counting {
+        fn seek(&mut self, pos: SeekFrom) -> std::io::Result<u64> {
+            self.inner.seek(pos)
+        }
+    }
+
+    fn video(len: usize) -> Vec<u8> {
+        let mut body: Vec<u8> = (0..len).map(|i| (i % 251) as u8).collect();
+        body[..12].copy_from_slice(b"\0\0\0\x18ftypisom");
+        body
+    }
+
+    #[test]
+    fn a_range_reads_only_its_own_bytes_and_the_head_of_the_file() {
+        let body = video(4 << 20);
+        let len = body.len() as u64;
+        for (range, piece) in [
+            ("bytes=3000000-3000099", 3_000_000..=3_000_099),
+            // The end of the file, which a player asks for when the index of a video is there.
+            ("bytes=-100", body.len() - 100..=body.len() - 1),
+            ("bytes=0-1", 0..=1),
+        ] {
+            let mut file = Counting {
+                inner: std::io::Cursor::new(body.clone()),
+                read: 0,
+            };
+            let served = answer(&mut file, len, Some(range)).unwrap();
+            assert_eq!((served.status, served.content_type), (206, "video/mp4"));
+            assert_eq!(served.body, body[piece.clone()], "{range}");
+            assert_eq!(
+                served.content_range,
+                Some(format!("bytes {}-{}/{len}", piece.start(), piece.end()))
+            );
+            assert!(
+                file.read <= served.body.len() + SNIFF_BYTES,
+                "{range} read {} bytes for a piece of {}",
+                file.read,
+                served.body.len()
+            );
+        }
+        // A whole answer reads the file once; a refused range only its head.
+        let mut file = Counting {
+            inner: std::io::Cursor::new(body.clone()),
+            read: 0,
+        };
+        let whole = answer(&mut file, len, None).unwrap();
+        assert_eq!((whole.status, whole.body == body), (200, true));
+        assert_eq!(file.read, body.len());
+        let mut file = Counting {
+            inner: std::io::Cursor::new(body.clone()),
+            read: 0,
+        };
+        let refused = answer(&mut file, len, Some("bytes=99999999-")).unwrap();
+        assert_eq!(refused.status, 416);
+        assert!(file.read <= SNIFF_BYTES, "{}", file.read);
+        // A file shorter than the head is still typed and served whole.
+        let mut tiny = Counting {
+            inner: std::io::Cursor::new(b"\x89PNG".to_vec()),
+            read: 0,
+        };
+        let short = answer(&mut tiny, 4, None).unwrap();
+        assert_eq!(
+            (short.status, short.body.as_slice()),
+            (200, &b"\x89PNG"[..])
+        );
     }
 
     #[test]

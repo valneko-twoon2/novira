@@ -284,6 +284,16 @@ impl Backend {
         Some((bytes, ct))
     }
 
+    /// The file behind a picture URL (`full` or `thumb`), opened, for the image URL scheme to read only the part a
+    /// request asks for.
+    pub fn open_image(&self, variant: &str, name: &str) -> Option<std::fs::File> {
+        match variant {
+            "full" => self.inner.files.open_original(name),
+            "thumb" => self.inner.files.open_thumbnail(name),
+            _ => None,
+        }
+    }
+
     /// The stored image an URL from this backend points at.
     pub(super) fn image_name_from_url(&self, url: &str) -> Option<String> {
         let rest = url.strip_prefix(&self.inner.image_url_base)?;

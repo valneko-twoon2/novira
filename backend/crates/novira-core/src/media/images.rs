@@ -314,6 +314,15 @@ impl ImageFiles {
     pub fn read_thumbnail(&self, name: &str) -> Option<Vec<u8>> {
         std::fs::read(self.thumbnail_path(name)?).ok()
     }
+
+    /// The original opened for reading, so a caller can read just a part of it (a range of a video).
+    pub fn open_original(&self, name: &str) -> Option<std::fs::File> {
+        std::fs::File::open(self.original_path(name)?).ok()
+    }
+
+    pub fn open_thumbnail(&self, name: &str) -> Option<std::fs::File> {
+        std::fs::File::open(self.thumbnail_path(name)?).ok()
+    }
 }
 
 fn write_atomic(path: &Path, bytes: &[u8]) -> std::io::Result<()> {
