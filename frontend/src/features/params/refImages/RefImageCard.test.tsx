@@ -46,6 +46,16 @@ describe('a reference image card', () => {
     expect(screen.getByTestId('ref-image').getAttribute('aria-label')).toBe(t('params.refImage.title', { index: 2 }));
   });
 
+  it('shows the gallery thumbnail in the 48 px card, not the picture itself', () => {
+    useGallery.setState({ images: [{ name: 'a.png', url: '/novira-image/a.png', thumbnailUrl: '/novira-image/thumb/a.png' } as ImageDTO] });
+    show({ imageName: 'a.png', imageUrl: '/novira-image/a.png', modelKey: 'ip' });
+    expect(document.querySelector('.pp-ref__thumb img')?.getAttribute('src')).toBe('/novira-image/thumb/a.png');
+    cleanup();
+    // A picture the gallery does not hold (a page-only address) is shown from its own address.
+    show({ imageName: 'gone.png', imageUrl: 'blob:gone', modelKey: 'ip' });
+    expect(document.querySelector('.pp-ref__thumb img')?.getAttribute('src')).toBe('blob:gone');
+  });
+
   it('warns about a missing picture and a missing model, and greys out a disabled one', () => {
     show({ imageName: null, imageUrl: null, modelKey: 'gone', isEnabled: false });
     const warn = document.querySelector('.pp-ref__warn')!;

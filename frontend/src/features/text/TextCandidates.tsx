@@ -26,7 +26,11 @@ export function TextCandidates() {
   const plan = useMemo(() => richPlan(models, modelKey, generateKey), [models, modelKey, generateKey]);
   if (!layer?.rich) return null;
   const stale = !richIsCurrent(layer);
-  const urlOf = (name: string) => images.find((i) => i.name === name)?.url;
+  // A cell is 120 px wide: the thumbnail (at most 256 px) is enough, the picture itself is drawn on the canvas.
+  const urlOf = (name: string) => {
+    const image = images.find((i) => i.name === name);
+    return image ? image.thumbnailUrl || image.url : undefined;
+  };
   return (
     <div className="tx-cands" data-testid="text-candidates">
       <div className="tx-cands__list" role="group" aria-label={t('text.rich.candidates')}>

@@ -241,3 +241,11 @@ export function findImage(name: string | null): ImageDTO | undefined {
   if (!name) return undefined;
   return useGallery.getState().images.find((i) => i.name === name);
 }
+
+/**
+ * The thumbnail (at most 256 px) of a gallery picture, for a box too small for the picture itself: a generated picture is
+ * megabytes to load and decode. `undefined` when the gallery does not hold it (the caller shows its own address then).
+ */
+export function useThumbnailUrl(name: string | null): string | undefined {
+  return useGallery((s) => (name ? s.images.find((i) => i.name === name)?.thumbnailUrl || undefined : undefined));
+}

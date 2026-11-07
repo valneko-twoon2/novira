@@ -282,6 +282,13 @@ describe('RefImagesGroup', () => {
     expect(useParams.getState().refImages).toHaveLength(2);
   });
 
+  it('shows the gallery thumbnail in a row, not the picture itself', () => {
+    useGallery.setState({ images: [{ name: 'a.png', url: 'blob:a', thumbnailUrl: 'blob:thumb-a', width: 1, height: 1 } as never] });
+    useParams.getState().addRefImage({ modelKey: null, imageName: 'a.png', imageUrl: 'blob:a' });
+    group();
+    expect(document.querySelector('.canvas-entity__row img')!.getAttribute('src')).toBe('blob:thumb-a');
+  });
+
   it('edits the weight and the range of the selected reference image', () => {
     useParams.getState().addRefImage({ modelKey: null });
     const id = useParams.getState().refImages[0]!.id;
