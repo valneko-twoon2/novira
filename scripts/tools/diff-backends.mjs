@@ -2,9 +2,11 @@
 // every end-to-end test runs on, and the real Rust backend, reached through novira-server as the browser reaches it. The
 // same calls go to both and their answers are compared (frontend/difftest/). A difference means the mock no longer
 // behaves like the app, so a screen flow the end-to-end tests pass can still fail in the app.
-// It starts novira-server (built when missing, scripts/tools/server-run.mjs) on an empty data folder in novira-data/work/ with
-// no engine, runs the comparison and stops the server; the data folder is deleted. Nothing uses the GPU or the network.
-// Usage, from the repository root:  node scripts/tools/diff-backends.mjs [--build]   (--build rebuilds the server first)
+// It builds novira-server (scripts/tools/server-run.mjs; cargo does nothing when it is current) so the comparison is always
+// against this checkout's backend: a server left by another commit, as CI's cache restores it, answers for that commit.
+// It starts the server on an empty data folder in novira-data/work/ with no engine, runs the comparison and stops the
+// server; the data folder is deleted. Nothing uses the GPU or the network.
+// Usage, from the repository root:  node scripts/tools/diff-backends.mjs
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -21,10 +23,9 @@ function jsonReport() {
 }
 
 async function main() {
-  const build = process.argv.includes('--build');
-  const unknown = process.argv.slice(2).find((a) => a !== '--build');
+  const unknown = process.argv[2];
   if (unknown) throw new Error(`unknown option ${unknown}`);
-  ensureBuilt({ build });
+  ensureBuilt();
   const data = path.join(harnessRoots(REPO).work, 'diff-backends');
   fs.rmSync(data, { recursive: true, force: true });
   fs.mkdirSync(data, { recursive: true });

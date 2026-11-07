@@ -1,8 +1,9 @@
 // The browser server's starter for checks (scripts/tools/server-run.mjs): where it builds, and that it never opens data outside the harness folder.
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { serverLayout, startServer } from '../../scripts/tools/server-run.mjs';
+import { ensureBuilt, serverLayout, startServer } from '../../scripts/tools/server-run.mjs';
 
 const roots = { repo: 'E:/r/wt', main: 'E:/r/main', work: path.resolve('E:/r/main/novira-data/work'), models: 'E:/r/main/novira-data/models' };
 
@@ -18,6 +19,22 @@ describe('server-run', () => {
 
   it('lets NOVIRA_SERVER_TARGET move the build', () => {
     expect(serverLayout({ NOVIRA_SERVER_TARGET: 'E:/t/x' }, roots, 'E:/r/wt').target).toBe(path.resolve('E:/t/x'));
+  });
+
+  it('asks cargo even when a server is there: a cache can bring back one of another commit', () => {
+    const layout = { target: 'E:/t/server', exe: fileURLToPath(import.meta.url), dist: 'E:/t/dist' };
+    const built: { args: string[]; cwd: string; target: string }[] = [];
+    const exec = (_cmd: string, args: string[], o: { cwd: string; env: NodeJS.ProcessEnv }) => {
+      built.push({ args, cwd: o.cwd, target: o.env.CARGO_TARGET_DIR ?? '' });
+      return { status: 0 };
+    };
+    ensureBuilt({ layout, repo: 'E:/r/wt', exec, buildDist: () => undefined });
+    expect(built).toEqual([{ args: ['build', '-p', 'novira-server', '-j', '4'], cwd: path.join('E:/r/wt', 'backend'), target: 'E:/t/server' }]);
+  });
+
+  it('stops when the server does not build', () => {
+    const layout = { target: 'E:/t/server', exe: 'E:/t/server/novira-server.exe', dist: 'E:/t/dist' };
+    expect(() => ensureBuilt({ layout, repo: 'E:/r/wt', exec: () => ({ status: 101 }), buildDist: () => undefined })).toThrow(/server build failed \(exit 101\)/);
   });
 
   it.each(['E:/r/main/novira-data', 'E:/r/main/novira-data/work', 'E:/elsewhere/data', 'E:/r/main/novira-data/work/../models'])('refuses the data folder %s', async (data) => {
