@@ -35,7 +35,8 @@ function PackNeeds() {
 export function FinishDialog() {
   const name = useFinish((s) => s.name);
   const close = useFinish((s) => s.close);
-  const clip = useGallery((s) => s.images.find((i) => i.name === name));
+  // The dialog stays mounted: closed, it looks through no picture when the gallery changes.
+  const clip = useGallery((s) => (name ? s.images.find((i) => i.name === name) : undefined));
   const defs = useComfyNodes((s) => s.defs);
   const hasRife = !!defs?.[RIFE_NODE];
   const models = useModels((s) => s.models);

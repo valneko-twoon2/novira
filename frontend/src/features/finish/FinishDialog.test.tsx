@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { backend, type EnqueueRequest, type ImageDTO } from '@/backend';
 import { MOCK_NODE_DEFS } from '@/backend/mock/comfyNodeDefs';
@@ -70,6 +70,23 @@ describe('finish dialog', () => {
     cleanup();
     useFinish.getState().close();
     vi.restoreAllMocks();
+  });
+
+  it('looks at no picture while closed, however often the gallery changes', () => {
+    // The dialog stays mounted; the gallery holds thousands of pictures and changes with every click.
+    let reads = 0;
+    const images = new Proxy(Array.from({ length: 500 }, (_, i) => ({ ...clip, name: `${i}.mp4` })), {
+      get(target, key, receiver) {
+        if (typeof key === 'string' && /^\d+$/.test(key)) reads++;
+        return Reflect.get(target, key, receiver) as unknown;
+      },
+    });
+    mount();
+    act(() => useGallery.setState({ images }));
+    reads = 0;
+    for (const name of ['1.mp4', '2.mp4', '3.mp4']) act(() => useGallery.getState().setSelection([name]));
+    expect(reads).toBe(0);
+    expect(screen.queryByTestId('finish-run')).toBeNull();
   });
 
   it('queues the finished clip on the source board with the doubled rate', async () => {
