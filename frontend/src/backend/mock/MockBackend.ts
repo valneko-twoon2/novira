@@ -690,6 +690,7 @@ export class MockBackend implements BackendClient {
   async retryQueueItem(id: number, size?: RetrySize) {
     const item = this.queue.find((q) => q.id === id);
     if (!item || (item.status !== 'failed' && item.status !== 'canceled')) return null;
+    if (item.params.generationMode === 'logo') throw new Error('Logos can no longer be made. Lay lettering over a picture on the Text screen instead');
     const params = { ...item.params };
     if (size) {
       if (!RESIZABLE_MODES.has(params.generationMode)) throw new Error('Only pictures made from a prompt can be retried at another size');

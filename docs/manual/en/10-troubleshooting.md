@@ -186,6 +186,8 @@ You can change it to another location with the environment variable `NOVIRA_DATA
 
 The engine the app installed (ComfyUI and Python) and its working data also go inside the data folder.
 
+> If you installed the models of the Logo screen in an earlier version, a `logo` folder (about 12 GB) stays inside `models`. This version does not use that folder and never deletes it. If you do not need it, close the app and delete it yourself.
+
 The app's screen settings (language, theme, presets, the history of AI chats and so on) are not kept in `novira-data`. They are stored on the screen side of the app instead.
 
 ### Backups

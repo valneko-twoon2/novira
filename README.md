@@ -44,6 +44,7 @@ novira は、プロンプトとモデルから絵を描くアプリです。絵�
 | [絵を直す](docs/manual/ja/04-improve.md) | 作り直し、背景の除去、範囲を選んだ描き直し、顔の修正、絵からのプロンプト作成ができます。キャラクターの登録や比較グリッドも使えます |
 | [キャンバス](docs/manual/ja/05-canvas.md) | レイヤーと描画ツールで、絵を描き足したり描き直したりします。コントロールレイヤーやポーズ（棒人間）も使えます |
 | [アップスケールとワークフロー](docs/manual/ja/06-upscaling-workflows.md) | 絵を大きくします。ノードをつないで、自分だけの生成手順（ワークフロー）を作れます。ComfyUI の拡張機能も入れられます |
+| [テキスト](docs/manual/ja/07-media.md#テキスト文字と吹き出し) | 絵の上に文字や吹き出しを重ねます。フォント、縁取り、影、スタイルのプリセットが使えます |
 | [モデル](docs/manual/ja/08-models.md) | 入れたモデルを種類ごとに管理します。Civitai と Hugging Face でモデルを探して、インストールできます |
 | [AI エージェント](docs/manual/ja/09-assistant-settings.md) | Claude Code や Codex、OpenAI 互換のサーバーにつないで、設定やプロンプトを相談できます |
 | [スマホから使う](docs/manual/ja/13-phone.md) | 家の Wi-Fi のスマホから、ブラウザで操作できます |

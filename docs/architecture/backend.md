@@ -31,7 +31,7 @@ The shell (`backend/src-tauri/src/`): `commands.rs` holds the IPC commands (thin
 | `sync.rs` | Lock helpers that survive a panic (`lock_safe`, `read_safe`, `write_safe`); no `unwrap` on a lock |
 | `child_job.rs` | A Windows job object: ComfyUI and the voice worker die with the app, even when it is killed |
 | `gpu_lock.rs`, `hardware.rs`, `fonts.rs` | The GPU lock directory and its owner record; the card and its memory; the installed font families |
-| `applog.rs`, `unfinished.rs`, `packs.rs`, `test_timing.rs` | The log (stderr, `logs/novira.log`, developer log events); partial files of interrupted downloads; model packs of ComfyUI files (video, music, LaMa, Z-Image-Turbo); debug-only shortened waits for tests |
+| `applog.rs`, `unfinished.rs`, `packs.rs`, `test_timing.rs` | The log (stderr, `logs/novira.log`, developer log events); partial files of interrupted downloads; model packs of ComfyUI files (video, turbo video, music, LaMa); debug-only shortened waits for tests |
 
 | Folder | What |
 |---|---|

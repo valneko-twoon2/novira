@@ -119,6 +119,14 @@ async fn a_logo_job_left_in_the_queue_fails_with_a_clear_message_and_the_queue_g
     let err = fails_with(&backend, req).await;
     assert!(err.contains("can no longer be made"), "{err}");
     assert!(engine.jobs.lock().unwrap().is_empty());
+    // Retrying it would fail the same way, so the retry is refused and nothing is queued.
+    let failed = backend.queue_snapshot().items[0].id;
+    let retry = backend.retry_queue_item(failed, None).unwrap_err();
+    assert!(
+        retry.to_string().contains("can no longer be made"),
+        "{retry}"
+    );
+    assert_eq!(backend.queue_snapshot().items.len(), 1);
     let key = main_key(&backend);
     backend.enqueue(request(&key, "a cat", 1)).unwrap();
     wait_until(|| statuses(&backend).last() == Some(&QueueItemStatus::Completed)).await;

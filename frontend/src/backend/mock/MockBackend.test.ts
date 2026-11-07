@@ -236,6 +236,7 @@ describe('mock backend: generation', () => {
     const done = await settled(item!.id);
     expect(done.status).toBe('failed');
     expect(done.error).toMatch(/can no longer be made/);
+    await expect(backend.retryQueueItem(item!.id)).rejects.toThrow(/can no longer be made/);
   });
 
   it('fails a voice item with nothing to read', async () => {

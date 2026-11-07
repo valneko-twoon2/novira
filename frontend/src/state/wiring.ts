@@ -82,10 +82,9 @@ async function start(): Promise<void> {
         }
         if (item && gallery.settings.autoSwitch) {
           const boardId = image.boardId ?? 'none';
-          // Assets are listed under the assets view, pictures under the images view.
-          const view = image.category === 'general' ? 'images' : 'assets';
-          if (gallery.selectedBoardId !== boardId || gallery.view !== view) {
-            useGallery.setState({ selectedBoardId: boardId, view, page: 0 });
+          // Every queue result is a picture (category general), so it is listed under the images view.
+          if (gallery.selectedBoardId !== boardId || gallery.view !== 'images') {
+            useGallery.setState({ selectedBoardId: boardId, view: 'images', page: 0 });
           }
           gallery.setSelection([image.name]);
           if (useUi.getState().activeTab === item.origin) showViewer(item.origin);

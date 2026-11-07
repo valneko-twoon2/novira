@@ -7,11 +7,11 @@ import { isOutOfMemory } from '@/state/outOfMemory';
 import { toast } from '@/state/toasts';
 import { IconButton, OutOfMemoryNotice, cx } from '@/ui';
 import { QueueItemDetail } from './QueueItemDetail';
-import { DESTINATION_KEYS, ORIGIN_KEYS, STATUS_KEYS, durationSeconds, formatTime, shortId } from './queueFormat';
+import { DESTINATION_KEYS, ORIGIN_KEYS, STATUS_KEYS, canRetry as retryable, durationSeconds, formatTime, shortId } from './queueFormat';
 
 export function QueueRow({ item, expanded, onToggle }: { item: QueueItem; expanded: boolean; onToggle: () => void }) {
   const canCancel = item.status === 'pending' || item.status === 'in_progress';
-  const canRetry = item.status === 'failed' || item.status === 'canceled';
+  const canRetry = retryable(item);
   const duration = durationSeconds(item);
   const p = item.params;
 

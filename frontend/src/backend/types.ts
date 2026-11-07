@@ -143,8 +143,8 @@ export interface LoRAParam {
 
 /**
  * `graph`: a workflow run as a ComfyUI prompt (it uses nodes of custom node packs).
+ * `logo` stays for the pictures of a removed screen, which carry it in their metadata; a job of that mode fails.
  */
-/** `logo` stays for the pictures of a removed screen, which carry it in their metadata; a job of that mode fails. */
 export type GenerationMode = 'txt2img' | 'img2img' | 'inpaint' | 'outpaint' | 'upscale' | 'workflow' | 'graph' | 'video' | 'music' | 'voice' | 'logo';
 
 /** Parameters recorded in image metadata and recalled with "Use All". */

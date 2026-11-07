@@ -77,6 +77,11 @@ describe('a queue row', () => {
     await waitFor(() => expect(useToasts.getState().toasts).toHaveLength(1));
   });
 
+  it('offers no retry for a failed job of the removed logo mode, which would fail the same way', () => {
+    show(make({ status: 'failed', params: { positivePrompt: 'NOVA', seed: 1, modelName: 'M', width: 8, height: 8, generationMode: 'logo' } as never }));
+    expect(byLabel(t('queue.action.retry'))).toBeNull();
+  });
+
   it('says nothing when there was nothing to retry', async () => {
     useToasts.setState({ toasts: [] });
     const retry = vi.spyOn(backend, 'retryQueueItem').mockResolvedValue(null as never);
