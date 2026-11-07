@@ -1,11 +1,11 @@
-// Left panel of the Text tab: text-style presets, add layers, choose the background, manage the layer stack, edit the selected layer.
-import { ArrowDown, ArrowUp, ChatCircle, Copy, Eye, EyeSlash, Lock, LockOpen, TextT, Trash } from '@phosphor-icons/react';
+// Left panel of the Text tab, in the order of the Generate screen: the preset, then the AI finish (run button first), then
+// the folded sections of the selected layer and of the background. Adding layers is in the canvas toolbar, the layer stack in
+// the right column, the candidates under the canvas.
 import { t } from '@/i18n';
 import { findImage, useGallery } from '@/state/gallery';
 import { useTextEditor } from '@/state/text/textEditor';
-import { BUBBLE_SHAPES, type Layer } from '@/state/text/textModel';
-import { Button, cx, IconButton, NumberInput, Select } from '@/ui';
-import { SHAPE_LABELS, LayerProperties } from './LayerProperties';
+import { Button, NumberInput, Section, Select } from '@/ui';
+import { LayerProperties } from './LayerProperties';
 import { RichSection } from './RichSection';
 import { TextPresetBar } from './TextPresetBar';
 import './text.css';
@@ -24,46 +24,21 @@ export function TextPanel() {
   const selected = scene.layers.find((l) => l.id === selectedId) ?? null;
   return (
     <div className="tx-panel" data-testid="text-panel">
-      <AddRow />
+      <header className="pp-head tx-add">
+        <TextPresetBar />
+      </header>
       <div className="tx-panel__body">
-        <BackgroundSection />
-        <LayerList layers={scene.layers} selectedId={selectedId} />
+        <RichSection layer={selected?.type === 'text' ? selected : null} />
         {selected && (
-          <section className="tx-section">
-            <h3 className="tx-section__title">{t(selected.type === 'text' ? 'text.layer.text' : 'text.layer.bubble')}</h3>
+          <Section title={t(selected.type === 'text' ? 'text.layer.text' : 'text.layer.bubble')}>
             <LayerProperties key={selected.id} layer={selected} />
-          </section>
+          </Section>
         )}
-        {selected?.type === 'text' && <RichSection key={selected.id} layer={selected} />}
+        <Section title={t('text.bg.title')}>
+          <BackgroundSection />
+        </Section>
       </div>
     </div>
-  );
-}
-
-function AddRow() {
-  const addText = useTextEditor((s) => s.addText);
-  const addBubble = useTextEditor((s) => s.addBubble);
-  return (
-    <header className="pp-head tx-add">
-      <TextPresetBar />
-      <div className="pp-head__generate">
-        <Button variant="solid" scheme="invoke" size="lg" leftIcon={<TextT weight="bold" />} onClick={() => addText(t('text.defaultText'))} data-testid="text-add-text">
-          {t('text.add.text')}
-        </Button>
-      </div>
-      <div className="tx-add__bubbles" role="group" aria-label={t('text.add.bubble')}>
-        <span className="tx-label">
-          <ChatCircle size={14} /> {t('text.add.bubble')}
-        </span>
-        <div className="tx-add__row">
-          {BUBBLE_SHAPES.map((shape) => (
-            <button key={shape} type="button" className="tx-chip" onClick={() => addBubble(shape, t('text.defaultBubble'))} data-testid={`text-add-${shape}`}>
-              {t(SHAPE_LABELS[shape])}
-            </button>
-          ))}
-        </div>
-      </div>
-    </header>
   );
 }
 
@@ -77,8 +52,7 @@ function BackgroundSection() {
   const kind = bg.kind === 'image' ? 'image' : bg.color ? 'color' : 'transparent';
   const size = SIZES.find((s) => s.width === scene.width && s.height === scene.height)?.value ?? null;
   return (
-    <section className="tx-section" data-testid="text-background">
-      <h3 className="tx-section__title">{t('text.bg.title')}</h3>
+    <div className="tx-props" data-testid="text-background">
       <div className="tx-seg" role="group" aria-label={t('text.bg.title')}>
         <button type="button" aria-pressed={kind === 'image'} className={kind === 'image' ? 'is-on' : ''} disabled={!viewer && kind !== 'image'} onClick={() => viewer && setBackground({ kind: 'image', imageName: viewer.name }, { width: viewer.width, height: viewer.height })}>
           {t('text.bg.image')}
@@ -117,39 +91,6 @@ function BackgroundSection() {
           <NumberInput value={scene.height} min={64} max={4096} onChange={(h) => resize(scene.width, h)} aria-label={t('text.bg.height')} />
         </div>
       )}
-    </section>
-  );
-}
-
-function LayerList({ layers, selectedId }: { layers: Layer[]; selectedId: string | null }) {
-  const { select, update, remove, duplicate, reorder, clear } = useTextEditor.getState();
-  return (
-    <section className="tx-section" data-testid="text-layers">
-      <h3 className="tx-section__title">
-        {t('text.layers.title')}
-        {layers.length > 0 && (
-          <button type="button" className="tx-link" onClick={() => clear()}>
-            {t('text.layers.clear')}
-          </button>
-        )}
-      </h3>
-      {layers.length === 0 && <p className="tx-note">{t('text.layers.empty')}</p>}
-      <ul className="tx-layers">
-        {[...layers].reverse().map((l) => (
-          <li key={l.id} className={cx('tx-layer', l.id === selectedId && 'is-selected', !l.visible && 'is-hidden')}>
-            <button type="button" className="tx-layer__main" onClick={() => select(l.id)} data-testid={`text-layer-${l.id}`}>
-              {l.type === 'text' ? <TextT size={14} /> : <ChatCircle size={14} />}
-              <span className="tx-layer__name">{l.text.split('\n')[0] || t(l.type === 'text' ? 'text.layer.text' : 'text.layer.bubble')}</span>
-            </button>
-            <IconButton label={t(l.visible ? 'text.layer.hide' : 'text.layer.show')} icon={l.visible ? <Eye /> : <EyeSlash />} size="xs" onClick={() => update(l.id, { visible: !l.visible })} />
-            <IconButton label={t(l.locked ? 'text.layer.unlock' : 'text.layer.lock')} icon={l.locked ? <Lock /> : <LockOpen />} size="xs" onClick={() => update(l.id, { locked: !l.locked })} />
-            <IconButton label={t('text.layer.up')} icon={<ArrowUp />} size="xs" onClick={() => reorder(l.id, 'up')} />
-            <IconButton label={t('text.layer.down')} icon={<ArrowDown />} size="xs" onClick={() => reorder(l.id, 'down')} />
-            <IconButton label={t('text.layer.duplicate')} icon={<Copy />} size="xs" onClick={() => duplicate(l.id)} />
-            <IconButton label={t('text.layer.delete')} icon={<Trash />} size="xs" onClick={() => remove(l.id)} />
-          </li>
-        ))}
-      </ul>
-    </section>
+    </div>
   );
 }

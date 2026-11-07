@@ -1,11 +1,12 @@
 // The right column of the image screens: the gallery and the assistant in two tabs, gallery first. The assistant is set
 // into the column here instead of floating over the screen; the tab shown is the assistant's `open`, so whatever opens
 // the assistant (its permission question, a question from another screen) shows its tab. The Canvas tab keeps its
-// layers under them, always shown.
+// layers under them, always shown; the Text screen keeps its layers there too.
 import { Group, Panel, Separator } from 'react-resizable-panels';
 import { AgentDock } from '@/features/agent/AgentDock';
 import { LayersPanel } from '@/features/canvas/CanvasView';
 import { GalleryPanel } from '@/features/gallery/GalleryPanel';
+import { TextLayersPanel } from '@/features/text/TextLayersPanel';
 import { t } from '@/i18n';
 import { useAgent } from '@/state/agent';
 import { useUi, type TabName } from '@/state/ui';
@@ -17,7 +18,9 @@ useAgent.subscribe((s, before) => {
 });
 
 export function RightColumn({ tab }: { tab: TabName }) {
-  if (tab !== 'canvas') return <GalleryAndAssistant tab={tab} />;
+  const media = useUi((s) => s.media);
+  const textLayers = tab === 'generate' && media === 'text';
+  if (tab !== 'canvas' && !textLayers) return <GalleryAndAssistant tab={tab} />;
   return (
     <Group orientation="vertical">
       <Panel id="gallery" minSize={160} defaultSize="55">
@@ -26,7 +29,7 @@ export function RightColumn({ tab }: { tab: TabName }) {
       <Separator className="resize-handle resize-handle--h" />
       <Panel id="layers" minSize={160}>
         <ErrorBoundary area="layers">
-          <LayersPanel tab={tab} />
+          {textLayers ? <TextLayersPanel /> : <LayersPanel tab={tab} />}
         </ErrorBoundary>
       </Panel>
     </Group>

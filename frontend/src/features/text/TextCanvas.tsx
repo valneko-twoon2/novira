@@ -7,6 +7,8 @@ import { useTextEditor } from '@/state/text/textEditor';
 import { toast } from '@/state/toasts';
 import { Button, IconButton, ImageDropZone } from '@/ui';
 import { saveSceneToGallery } from './saveScene';
+import { TextAddBar } from './TextAddBar';
+import { TextCandidates } from './TextCandidates';
 import { useCanvasEditing } from './useCanvasEditing';
 import { useScenePreview } from './useScenePreview';
 import './text.css';
@@ -66,9 +68,10 @@ export function TextCanvas() {
   return (
     <div className="tx-main" data-testid="text-canvas">
       <div className="tx-toolbar">
+        <TextAddBar />
+        <span className="tx-toolbar__sep" />
         <IconButton label={t('text.undo')} icon={<ArrowCounterClockwise />} size="sm" disabled={!canUndo} onClick={() => store.getState().undo()} />
         <IconButton label={t('text.redo')} icon={<ArrowClockwise />} size="sm" disabled={!canRedo} onClick={() => store.getState().redo()} />
-        <span className="tx-toolbar__sep" />
         <IconButton label={t('text.zoom.out')} icon={<MagnifyingGlassMinus />} size="sm" onClick={() => stepZoom(-1)} />
         <span className="tx-toolbar__zoom">{Math.round(cssScale * 100)}%</span>
         <IconButton label={t('text.zoom.in')} icon={<MagnifyingGlassPlus />} size="sm" onClick={() => stepZoom(1)} />
@@ -97,6 +100,7 @@ export function TextCanvas() {
           {scene.layers.length === 0 && <p className="tx-hint">{t('text.hint.empty')}</p>}
         </div>
       </ImageDropZone>
+      <TextCandidates />
     </div>
   );
 }
