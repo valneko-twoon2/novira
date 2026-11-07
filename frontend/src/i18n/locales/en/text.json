@@ -120,5 +120,6 @@
   "text.rich.clear": "Back to the plain fill",
   "text.rich.failed": "Could not finish the text",
   "text.rich.select": "Select a text layer to finish it.",
-  "text.rich.details": "Finish details"
+  "text.rich.details": "Finish details",
+  "text.bar": "Controls for the selected layer"
 }

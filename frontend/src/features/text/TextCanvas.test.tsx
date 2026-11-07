@@ -123,6 +123,29 @@ describe('TextCanvas editing', () => {
     pointer('pointerup', 6, 6);
   });
 
+  it('shows the quick bar over the selected layer, hides it while the layer is dragged, and shows it again', () => {
+    renderCanvas();
+    const id = add(() => state().addText('Hi'));
+    expect(screen.getByTestId('text-bar')).toBeTruthy();
+    const { x, y } = state().scene.layers.find((l) => l.id === id)!;
+    pointer('pointerdown', x, y);
+    expect(screen.queryByTestId('text-bar')).toBeNull();
+    pointer('pointermove', x + 10, y + 10);
+    expect(screen.queryByTestId('text-bar')).toBeNull();
+    pointer('pointerup', x + 10, y + 10);
+    expect(screen.getByTestId('text-bar')).toBeTruthy();
+  });
+
+  it('has no quick bar for nothing selected or a hidden layer', () => {
+    renderCanvas();
+    const id = add(() => state().addText('Hi'));
+    act(() => state().update(id, { visible: false }));
+    expect(screen.queryByTestId('text-bar')).toBeNull();
+    act(() => state().update(id, { visible: true }));
+    act(() => state().select(null));
+    expect(screen.queryByTestId('text-bar')).toBeNull();
+  });
+
   it('ignores other mouse buttons and shows the right cursor while hovering', () => {
     renderCanvas();
     const id = add(() => state().addText('Hi'));

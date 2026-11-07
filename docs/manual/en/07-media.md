@@ -206,7 +206,9 @@ For each one, you can **{{ui:text.layer.hide}}**, **{{ui:text.layer.lock}}**, ch
 
 ### Adjusting the text
 
-When you select a layer, its settings appear in the left column.
+When you select a layer, a small bar appears right over it. There you can change the font, the size and the colors (the text color and the outline color; for a speech bubble, the fill and the border) on the spot. **{{ui:text.layer.duplicate}}** and **{{ui:text.layer.delete}}** are here too. The bar steps aside while you drag the layer.
+
+Everything else is set in the left column.
 
 | Item | What it is |
 |---|---|

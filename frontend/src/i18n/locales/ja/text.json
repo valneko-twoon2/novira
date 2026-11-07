@@ -120,5 +120,6 @@
   "text.rich.clear": "元の塗りに戻す",
   "text.rich.failed": "仕上げに失敗しました",
   "text.rich.select": "文字のレイヤーを選ぶと仕上げられます。",
-  "text.rich.details": "仕上げの詳細"
+  "text.rich.details": "仕上げの詳細",
+  "text.bar": "選んだレイヤーの操作"
 }

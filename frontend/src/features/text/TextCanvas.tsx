@@ -6,7 +6,10 @@ import { findImage } from '@/state/gallery';
 import { useTextEditor } from '@/state/text/textEditor';
 import { toast } from '@/state/toasts';
 import { Button, IconButton, ImageDropZone } from '@/ui';
+import { measureCtx } from './canvasDraw';
+import { layerHalfSize } from './render';
 import { saveSceneToGallery } from './saveScene';
+import { TextFloatingBar } from './TextFloatingBar';
 import { TextAddBar } from './TextAddBar';
 import { TextCandidates } from './TextCandidates';
 import { useCanvasEditing } from './useCanvasEditing';
@@ -27,6 +30,8 @@ export function TextCanvas() {
   const [area, setArea] = useState({ width: 0, height: 0 });
   const [zoom, setZoom] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  // The quick bar hides while a layer is dragged, so it never covers what is being placed.
+  const [dragging, setDragging] = useState(false);
 
   // CSS pixels per image pixel: fitted to the area unless zoomed by hand.
   const fit = area.width > 0 ? Math.min((area.width - 32) / scene.width, (area.height - 32) / scene.height, 1) : 1;
@@ -44,6 +49,8 @@ export function TextCanvas() {
 
   const { base, halves } = useScenePreview(scene, selectedId, cssScale, canvas, overlay);
   const pointer = useCanvasEditing(overlay, halves, scene, cssScale);
+  const selected = scene.layers.find((l) => l.id === selectedId && l.visible) ?? null;
+  const selectedHalf = selected ? layerHalfSize(measureCtx(), selected) : null;
 
   const stepZoom = (dir: 1 | -1) => {
     const current = zoom ?? fit;
@@ -95,7 +102,8 @@ export function TextCanvas() {
         <div className="tx-scroll" ref={stage}>
           <div className="tx-sheet" style={{ width: cssW, height: cssH }}>
             <canvas ref={canvas} className="tx-canvas" style={{ width: cssW, height: cssH }} />
-            <canvas ref={overlay} className="tx-canvas tx-overlay" style={{ width: cssW, height: cssH }} {...pointer} data-testid="text-overlay" />
+            <canvas ref={overlay} className="tx-canvas tx-overlay" style={{ width: cssW, height: cssH }} {...pointer} onPointerDown={(e) => { pointer.onPointerDown(e); setDragging(true); }} onPointerUp={(e) => { pointer.onPointerUp(e); setDragging(false); }} onPointerCancel={(e) => { pointer.onPointerCancel(e); setDragging(false); }} data-testid="text-overlay" />
+            {selected && selectedHalf && !dragging && <TextFloatingBar layer={selected} half={selectedHalf} scale={cssScale} sheet={{ width: cssW, height: cssH }} />}
           </div>
           {scene.layers.length === 0 && <p className="tx-hint">{t('text.hint.empty')}</p>}
         </div>
