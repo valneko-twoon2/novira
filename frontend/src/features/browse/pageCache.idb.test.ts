@@ -27,7 +27,8 @@ function makeIdb(opts: { openFails?: 'error' | 'blocked' | 'throw'; getFails?: b
       }
       return settle(rows.get(k));
     },
-    getAll: () => settle([...rows.values()]),
+    getAll: vi.fn(() => settle([...rows.values()])),
+    count: () => settle(rows.size),
     put: (v: { key: string; savedAt: number }) => {
       rows.set(v.key, v);
       return settle(undefined);
@@ -49,7 +50,7 @@ function makeIdb(opts: { openFails?: 'error' | 'blocked' | 'throw'; getFails?: b
     });
     return req;
   });
-  return { rows, open, db };
+  return { rows, open, db, store };
 }
 
 async function load() {
@@ -93,6 +94,21 @@ describe('pageCache with IndexedDB', () => {
     expect(idb.rows.has('k0')).toBe(false);
     expect(idb.rows.has('k1')).toBe(false);
     expect(idb.rows.has('k31')).toBe(true);
+  });
+
+  it('reads the saved pages back only when a write takes them past the limit', async () => {
+    // Each saved page holds a page of models with their descriptions: reading all 30 back on every search is wasted.
+    const idb = makeIdb();
+    vi.stubGlobal('indexedDB', idb);
+    const { writeCachedPage } = await load();
+    for (let i = 0; i < 30; i++) await writeCachedPage(`k${i}`, { items: [], next: null }, 100 + i);
+    await writeCachedPage('k5', { items: [], next: 'again' }, 200);
+    expect(idb.store.getAll).not.toHaveBeenCalled();
+    await writeCachedPage('k30', { items: [], next: null }, 201);
+    expect(idb.store.getAll).toHaveBeenCalledTimes(1);
+    expect(idb.rows.size).toBe(30);
+    expect(idb.rows.has('k0')).toBe(false);
+    expect(idb.rows.get('k5')).toMatchObject({ next: 'again' });
   });
 
   it('reads nothing when the get request fails', async () => {

@@ -69,6 +69,8 @@ export async function writeCachedPage(key: string, page: CachedPage, now = Date.
     if (!db) return;
     const store = db.transaction(STORE, 'readwrite').objectStore(STORE);
     store.put({ key, savedAt: now, items: page.items, next: page.next } satisfies Entry);
+    // Every saved page is read back only when there are too many: each holds a page of models with their descriptions.
+    if (((await done(store.count())) ?? 0) <= MAX_ENTRIES) return;
     const all = (await done<unknown[]>(store.getAll())) ?? [];
     const old = all.filter(isPage).sort((a, b) => b.savedAt - a.savedAt).slice(MAX_ENTRIES);
     for (const e of old) store.delete(e.key);
