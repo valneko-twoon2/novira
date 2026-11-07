@@ -72,6 +72,52 @@ async fn pictures_are_served_by_name_only() {
 }
 
 #[tokio::test]
+async fn a_frontend_file_the_browser_already_has_is_not_sent_again() {
+    let f = Fixture::start().await;
+    let first = f.get("/assets/app.js", &[]).await;
+    assert_eq!(first.status, 200);
+    let tag = first.header("etag").expect("a validator").to_string();
+    assert_eq!(first.header("cache-control"), Some("no-cache"));
+    // The browser asks with the tag it has: no body comes back.
+    for asked in [
+        tag.clone(),
+        format!("W/{tag}"),
+        format!("\"other\", {tag}"),
+        "*".into(),
+    ] {
+        let again = f.get("/assets/app.js", &[("If-None-Match", &asked)]).await;
+        assert_eq!((again.status, again.body.len()), (304, 0), "{asked}");
+        assert_eq!(again.header("etag"), Some(tag.as_str()));
+    }
+    // Another tag, or a file changed by a new build, is sent whole with its new tag.
+    let other = f
+        .get("/assets/app.js", &[("If-None-Match", "\"other\"")])
+        .await;
+    assert_eq!(
+        (other.status, other.body.as_slice()),
+        (200, &b"console.log(1)"[..])
+    );
+    std::fs::write(f.dist().join("assets").join("app.js"), "console.log(22)").unwrap();
+    let rebuilt = f.get("/assets/app.js", &[("If-None-Match", &tag)]).await;
+    assert_eq!(
+        (rebuilt.status, rebuilt.body.as_slice()),
+        (200, &b"console.log(22)"[..])
+    );
+    assert_ne!(rebuilt.header("etag"), Some(tag.as_str()));
+    // The tag is no credential: without the token the file is refused as before.
+    let anonymous = send(
+        f.server.addr,
+        "GET",
+        "/assets/app.js",
+        &[("Host", f.host.as_str()), ("If-None-Match", &tag)],
+        b"",
+    )
+    .await;
+    assert_eq!(anonymous.status, 401);
+    f.stop().await;
+}
+
+#[tokio::test]
 async fn only_files_of_the_frontend_folder_are_served() {
     let f = Fixture::start().await;
     let js = f.get("/assets/app.js", &[]).await;

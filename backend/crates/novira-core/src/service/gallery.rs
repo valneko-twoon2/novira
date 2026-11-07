@@ -6,7 +6,8 @@ impl Backend {
     pub async fn upload_image(&self, bytes: Vec<u8>, opts: ImageOptions) -> Result<ImageDTO> {
         let this = self.clone();
         let image = tokio::task::spawn_blocking(move || -> Result<ImageDTO> {
-            let png = images::to_png(&bytes).map_err(|e| BackendError::Invalid(e.to_string()))?;
+            let images::DecodedPng { png, pixels } =
+                images::to_png_decoded(&bytes).map_err(|e| BackendError::Invalid(e.to_string()))?;
             let metadata = images::read_text(&png, images::METADATA_KEY)
                 .and_then(|t| serde_json::from_str(&t).ok());
             let workflow = images::read_text(&png, images::WORKFLOW_KEY)
@@ -15,7 +16,7 @@ impl Backend {
             let (width, height) = this
                 .inner
                 .files
-                .store(&name, &png)
+                .store_decoded(&name, &png, &pixels)
                 .map_err(|e| BackendError::Invalid(e.to_string()))?;
             Ok(this.image_dto(ImageDTO {
                 name,
@@ -282,6 +283,16 @@ impl Backend {
         };
         let ct = images::sniff_content_type(&bytes);
         Some((bytes, ct))
+    }
+
+    /// The file behind a picture URL (`full` or `thumb`), opened, for the image URL scheme to read only the part a
+    /// request asks for.
+    pub fn open_image(&self, variant: &str, name: &str) -> Option<std::fs::File> {
+        match variant {
+            "full" => self.inner.files.open_original(name),
+            "thumb" => self.inner.files.open_thumbnail(name),
+            _ => None,
+        }
     }
 
     /// The stored image an URL from this backend points at.

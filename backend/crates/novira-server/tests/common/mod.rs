@@ -161,6 +161,11 @@ impl Fixture {
         }
     }
 
+    /// The stand-in for `frontend/dist` the server serves.
+    pub fn dist(&self) -> std::path::PathBuf {
+        self._site.path().join("dist")
+    }
+
     /// A request with the right `Host` and the token header, plus `extra` headers.
     pub async fn get(&self, path: &str, extra: &[(&str, &str)]) -> Reply {
         let mut headers = vec![

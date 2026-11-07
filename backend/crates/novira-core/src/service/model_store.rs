@@ -43,8 +43,12 @@ fn license_ref_of_source(source: &str) -> Option<LicenseRef> {
 }
 
 /// The SHA-256 of a file, as Civitai spells it.
+#[cfg(test)]
 fn file_sha256(path: &Path) -> std::io::Result<String> {
-    let mut file = std::fs::File::open(path)?;
+    sha256_of(std::fs::File::open(path)?)
+}
+
+fn sha256_of(mut file: impl Read) -> std::io::Result<String> {
     let mut hasher = Sha256::new();
     let mut buf = vec![0u8; 1 << 20];
     loop {
@@ -61,7 +65,46 @@ fn file_sha256(path: &Path) -> std::io::Result<String> {
         .collect())
 }
 
+/// The hashes of model files read in this run, by path, each with the size and modification time of the file it was
+/// read from. The cover lookup and then the license lookup at start ask for the same files (a model put in the folder
+/// by hand needs both), and a 6.5 GB checkpoint takes about 7 s to hash from a warm cache, longer from a disk.
+#[derive(Default)]
+pub(super) struct FileHashes(Mutex<HashMap<PathBuf, (u64, std::time::SystemTime, String)>>);
+
+impl FileHashes {
+    /// The SHA-256 of the file at `path`, read again only when its size or modification time changed.
+    fn sha256(&self, path: &Path) -> std::io::Result<String> {
+        // The size, the time and the bytes come from one open file.
+        let file = std::fs::File::open(path)?;
+        let meta = file.metadata()?;
+        let stamp = meta.modified().ok().map(|at| (meta.len(), at));
+        if let (Some((len, at)), Some((known_len, known_at, hash))) =
+            (stamp, self.0.lock_safe().get(path))
+        {
+            if (len, at) == (*known_len, *known_at) {
+                return Ok(hash.clone());
+            }
+        }
+        let hash = sha256_of(file)?;
+        if let Some((len, at)) = stamp {
+            self.0
+                .lock_safe()
+                .insert(path.to_path_buf(), (len, at, hash.clone()));
+        }
+        Ok(hash)
+    }
+}
+
 impl Backend {
+    /// `FileHashes::sha256` off the async threads.
+    async fn model_file_sha256(&self, path: PathBuf) -> Option<String> {
+        let this = self.clone();
+        tokio::task::spawn_blocking(move || this.inner.file_hashes.sha256(&path))
+            .await
+            .ok()?
+            .ok()
+    }
+
     pub fn list_starter_models(&self) -> Vec<StarterModel> {
         starter::starter_models()
     }
@@ -358,7 +401,7 @@ impl Backend {
             if self.inner.shutdown.is_cancelled() {
                 return;
             }
-            let Ok(Ok(hash)) = tokio::task::spawn_blocking(move || file_sha256(&path)).await else {
+            let Some(hash) = self.model_file_sha256(path).await else {
                 continue;
             };
             let url = format!("{}/model-versions/by-hash/{hash}", install::civitai_api());
@@ -433,8 +476,7 @@ impl Backend {
                 let Some(path) = path.map(Path::to_path_buf) else {
                     return Ok(None);
                 };
-                let Ok(Ok(hash)) = tokio::task::spawn_blocking(move || file_sha256(&path)).await
-                else {
+                let Some(hash) = self.model_file_sha256(path).await else {
                     return Ok(None);
                 };
                 let url = format!("{}/model-versions/by-hash/{hash}", install::civitai_api());
@@ -681,6 +723,38 @@ mod tests {
             license_ref_of_source("https://example.com/a.safetensors"),
             None
         );
+    }
+
+    #[test]
+    fn a_model_file_is_hashed_again_only_when_its_size_or_time_changed() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("a.safetensors");
+        std::fs::write(&path, b"abc").unwrap();
+        let hashes = FileHashes::default();
+        let abc = hashes.sha256(&path).unwrap();
+        assert_eq!(abc, file_sha256(&path).unwrap());
+        let at = std::fs::metadata(&path).unwrap().modified().unwrap();
+        let rewrite = |bytes: &[u8], at: std::time::SystemTime| {
+            std::fs::write(&path, bytes).unwrap();
+            std::fs::File::options()
+                .write(true)
+                .open(&path)
+                .unwrap()
+                .set_modified(at)
+                .unwrap();
+        };
+        // The same size and time: the kept hash answers, the file is not read again (its new bytes are not seen).
+        rewrite(b"abd", at);
+        assert_eq!(hashes.sha256(&path).unwrap(), abc);
+        // Another time, or another size, is read again.
+        rewrite(b"abd", at + std::time::Duration::from_secs(5));
+        assert_eq!(hashes.sha256(&path).unwrap(), file_sha256(&path).unwrap());
+        rewrite(b"abcd", at);
+        assert_eq!(hashes.sha256(&path).unwrap(), file_sha256(&path).unwrap());
+        assert_ne!(hashes.sha256(&path).unwrap(), abc);
+        // A file that is gone is an error, not the old hash.
+        std::fs::remove_file(&path).unwrap();
+        assert!(hashes.sha256(&path).is_err());
     }
 
     #[test]

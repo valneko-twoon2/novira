@@ -34,7 +34,7 @@ Routes (`backend/crates/novira-server/src/lib.rs`):
 | `POST /export/images` | the `names` and `options` of `export_images` as JSON (else 415, bad JSON 400); the answer is the download, its `ExportResult` in `x-novira-export` (`gallery-share.md`) |
 | `GET /events` | a WebSocket upgrade; each backend event (what the desktop sends on `novira://event`) is one JSON text message. The server only sends; what the page sends is ignored |
 | `GET /novira-image/<full\|thumb>/<name>` | a picture by name, through `image_serve::serve` (the same name checks and Range answers as the desktop scheme); picture URLs the backend hands out are relative to the page (`/novira-image/...`) |
-| any other `GET` | a file of `--dist` of a known type (script, style, picture, font, ...) |
+| any other `GET` | a file of `--dist` of a known type (script, style, picture, font, ...), `no-cache` with an `ETag` (size and time of the file; a digest of the built-in one in the app): a matching `If-None-Match` gets an empty 304 |
 
 Commands answered now (`SERVED`, in groups):
 

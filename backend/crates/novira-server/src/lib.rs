@@ -1769,6 +1769,9 @@ fn content_type(path: &FsPath) -> Option<&'static str> {
 }
 
 /// A file of the built frontend. Only files of a known type inside the folder; no listing, no fallback to the page.
+/// Each answer carries an `ETag`, and a request naming it in `If-None-Match` gets an empty 304: `no-cache` makes the
+/// browser ask on every load, and without a validator it downloaded every script again (the first screen's alone are
+/// 764 KB), which a phone on the home network or away pays for each time it opens the app.
 async fn static_file(State(state): State<Arc<AppState>>, request: Request) -> Response {
     let not_found = || text(StatusCode::NOT_FOUND, "not found");
     let Some(segments) = safe_segments(request.uri().path()) else {
@@ -1777,7 +1780,12 @@ async fn static_file(State(state): State<Arc<AppState>>, request: Request) -> Re
     let Some(kind) = content_type(FsPath::new(&segments.join("/"))) else {
         return not_found();
     };
-    let bytes = match &state.frontend {
+    let known = request
+        .headers()
+        .get(header::IF_NONE_MATCH)
+        .and_then(|v| v.to_str().ok())
+        .map(str::to_string);
+    let (tag, bytes) = match &state.frontend {
         Frontend::Folder(dist) => {
             let path = segments.iter().fold(dist.clone(), |p, s| p.join(s));
             // Resolved paths must stay inside the folder (a link inside it could point out).
@@ -1787,21 +1795,80 @@ async fn static_file(State(state): State<Arc<AppState>>, request: Request) -> Re
             if !real.starts_with(&root) || !real.is_file() {
                 return not_found();
             }
-            tokio::fs::read(&real).await.ok()
+            // The tag and the bytes come from one open file.
+            let Ok(mut file) = tokio::fs::File::open(&real).await else {
+                return not_found();
+            };
+            let Ok(meta) = file.metadata().await else {
+                return not_found();
+            };
+            let tag = file_tag(&meta);
+            if known.as_deref().is_some_and(|k| tag_matches(k, &tag)) {
+                return not_modified(&tag);
+            }
+            let mut bytes = Vec::new();
+            let read = tokio::io::AsyncReadExt::read_to_end(&mut file, &mut bytes).await;
+            (tag, read.ok().map(|_| bytes))
         }
-        Frontend::Embedded(read) => read(&segments.join("/")),
+        Frontend::Embedded(read) => {
+            let Some(bytes) = read(&segments.join("/")) else {
+                return not_found();
+            };
+            let tag = content_tag(&bytes);
+            if known.as_deref().is_some_and(|k| tag_matches(k, &tag)) {
+                return not_modified(&tag);
+            }
+            (tag, Some(bytes))
+        }
     };
     match bytes {
         Some(bytes) => (
             [
                 (header::CONTENT_TYPE, kind),
                 (header::CACHE_CONTROL, "no-cache"),
+                (header::ETAG, tag.as_str()),
             ],
             bytes,
         )
             .into_response(),
         None => not_found(),
     }
+}
+
+/// The validator of a frontend file in the folder: its size and modification time (a build rewrites both).
+fn file_tag(meta: &std::fs::Metadata) -> String {
+    let nanos = meta
+        .modified()
+        .ok()
+        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+        .map_or(0, |d| d.as_nanos());
+    format!("\"{:x}-{nanos:x}\"", meta.len())
+}
+
+/// The validator of a frontend file built into the app: a digest of its bytes.
+fn content_tag(bytes: &[u8]) -> String {
+    let digest = ring::digest::digest(&ring::digest::SHA256, bytes);
+    let hex: String = digest.as_ref()[..12]
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect();
+    format!("\"{hex}\"")
+}
+
+/// Whether an `If-None-Match` value names `tag` (a list, weak tags compared by their opaque part, or `*`).
+fn tag_matches(if_none_match: &str, tag: &str) -> bool {
+    if_none_match.split(',').map(str::trim).any(|candidate| {
+        candidate == "*" || candidate.strip_prefix("W/").unwrap_or(candidate) == tag
+    })
+}
+
+fn not_modified(tag: &str) -> Response {
+    Response::builder()
+        .status(StatusCode::NOT_MODIFIED)
+        .header(header::CACHE_CONTROL, "no-cache")
+        .header(header::ETAG, tag)
+        .body(Body::empty())
+        .unwrap_or_else(|_| text(StatusCode::INTERNAL_SERVER_ERROR, "error"))
 }
 
 #[cfg(test)]

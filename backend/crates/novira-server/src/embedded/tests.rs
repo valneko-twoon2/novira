@@ -194,6 +194,12 @@ async fn a_paired_phone_gets_the_app_from_the_built_in_files() {
         .to_str()
         .unwrap()
         .starts_with("text/javascript"));
+    // Opened again, the phone names the tag it has and gets no body.
+    let tag = headers[header::ETAG].to_str().unwrap().to_string();
+    let asked = [("cookie", cookie.as_str()), ("if-none-match", tag.as_str())];
+    let (status, again, script) = a.device(port, "GET", "/assets/app.js", &asked, "").await;
+    assert_eq!((status, script.as_str()), (StatusCode::NOT_MODIFIED, ""));
+    assert_eq!(again[header::ETAG].to_str().unwrap(), tag);
     // No fallback to the page for a file that is not there, and no file of an unknown type.
     for missing in ["/assets/none.js", "/assets/app.exe", "/../index.html"] {
         let (status, _, _) = a.device(port, "GET", missing, &with, "").await;
