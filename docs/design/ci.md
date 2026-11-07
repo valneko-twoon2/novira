@@ -60,5 +60,5 @@ By hand: `cargo deny --manifest-path backend/Cargo.toml check bans licenses sour
 
 - Next in line, each added once it is seen to pass on the runner: the layout scan and the visual regression (whose baselines are Windows images). Until then they stay in `scripts\check.bat` and `scripts\checks\full-check.bat`.
 - No notice goes out when the weekly audit or supply-chain run fails: it shows in the Actions tab.
-- The supply-chain workflow has not run on GitHub yet and does not run on a push; it joins the push checks after a manual run passes.
+- The supply-chain workflow does not run on a push. It passed once on the runner (both jobs, on a trial branch made from `main`); it joins the push checks when the user decides, and until a manual run from the default branch is possible it needs the file on `main`.
 - CodeQL and semgrep are not used: CodeQL needs `github/codeql-action`, which would widen the actions rule above.
