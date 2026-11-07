@@ -179,19 +179,36 @@ impl ImageFiles {
         })
     }
 
+    /// Where a picture's original and thumbnail go, or the error of a name novira does not make.
+    fn targets(&self, name: &str, what: &str) -> Result<(PathBuf, PathBuf), ImageError> {
+        match (self.original_path(name), self.thumbnail_path(name)) {
+            (Some(a), Some(b)) if what != "video" || is_video(name) => Ok((a, b)),
+            _ => Err(ImageError::Decode(format!("invalid {what} name {name}"))),
+        }
+    }
+
     /// Stores a PNG and its thumbnail; returns the pixel size.
     pub fn store(&self, name: &str, png: &[u8]) -> Result<(u32, u32), ImageError> {
-        let (orig, thumb_path) = match (self.original_path(name), self.thumbnail_path(name)) {
-            (Some(a), Some(b)) => (a, b),
-            _ => return Err(ImageError::Decode(format!("invalid image name {name}"))),
-        };
+        self.targets(name, "image")?;
         let decoded =
             image::load_from_memory(png).map_err(|e| ImageError::Decode(e.to_string()))?;
-        let (w, h) = decoded.dimensions();
-        let thumb = make_thumbnail(&decoded)?;
+        self.store_decoded(name, png, &decoded)
+    }
+
+    /// `store` of a PNG whose pixels `to_png_decoded` already decoded: the thumbnail is made from `pixels`, so the PNG
+    /// is not decoded a second time (8 ms for a 1024 px picture, 32 ms for a 2048 px one). `pixels` must be the PNG's
+    /// own; its text chunks may differ.
+    pub fn store_decoded(
+        &self,
+        name: &str,
+        png: &[u8],
+        pixels: &image::DynamicImage,
+    ) -> Result<(u32, u32), ImageError> {
+        let (orig, thumb_path) = self.targets(name, "image")?;
+        let thumb = make_thumbnail(pixels)?;
         write_atomic(&orig, png)?;
         write_atomic(&thumb_path, &thumb)?;
-        Ok((w, h))
+        Ok(pixels.dimensions())
     }
 
     /// Stores a video as-is, with a still frame (PNG) for its thumbnail; returns the size of that frame.
@@ -201,17 +218,24 @@ impl ImageFiles {
         mp4: &[u8],
         frame_png: &[u8],
     ) -> Result<(u32, u32), ImageError> {
-        let (orig, thumb_path) = match (self.original_path(name), self.thumbnail_path(name)) {
-            (Some(a), Some(b)) if is_video(name) => (a, b),
-            _ => return Err(ImageError::Decode(format!("invalid video name {name}"))),
-        };
+        self.targets(name, "video")?;
         let decoded =
             image::load_from_memory(frame_png).map_err(|e| ImageError::Decode(e.to_string()))?;
-        let (w, h) = decoded.dimensions();
-        let thumb = make_thumbnail(&decoded)?;
+        self.store_video_decoded(name, mp4, &decoded)
+    }
+
+    /// `store_video` with the still frame already decoded (see `store_decoded`).
+    pub fn store_video_decoded(
+        &self,
+        name: &str,
+        mp4: &[u8],
+        frame: &image::DynamicImage,
+    ) -> Result<(u32, u32), ImageError> {
+        let (orig, thumb_path) = self.targets(name, "video")?;
+        let thumb = make_thumbnail(frame)?;
         write_atomic(&orig, mp4)?;
         write_atomic(&thumb_path, &thumb)?;
-        Ok((w, h))
+        Ok(frame.dimensions())
     }
 
     /// Stores an audio file with a picture of its waveform for a thumbnail; returns the size of that picture.
@@ -404,20 +428,38 @@ pub fn check_limits(bytes: &[u8]) -> Result<(), ImageError> {
 
 /// Returns PNG bytes: a PNG is kept byte-for-byte, other formats are decoded and re-encoded.
 pub fn to_png(bytes: &[u8]) -> Result<Vec<u8>, ImageError> {
+    to_png_decoded(bytes).map(|d| d.png)
+}
+
+/// A picture made ready to store: its PNG bytes and the pixels decoded on the way.
+pub struct DecodedPng {
+    pub png: Vec<u8>,
+    pub pixels: image::DynamicImage,
+}
+
+/// `to_png` that also hands back the pixels it decoded, for `ImageFiles::store_decoded`.
+pub fn to_png_decoded(bytes: &[u8]) -> Result<DecodedPng, ImageError> {
     check_limits(bytes)?;
     if bytes.starts_with(PNG_SIGNATURE) {
         // Refused here, not when it is served: a truncated file, and one whose chunks are whole but whose pixels do not
         // decode (found by tests/fuzz_inputs.rs). The bytes are kept as they are, with their text chunks.
         chunks(bytes).ok_or_else(|| ImageError::Decode("broken PNG".into()))?;
-        image::load_from_memory_with_format(bytes, image::ImageFormat::Png)
+        let pixels = image::load_from_memory_with_format(bytes, image::ImageFormat::Png)
             .map_err(|e| ImageError::Decode(e.to_string()))?;
-        return Ok(bytes.to_vec());
+        return Ok(DecodedPng {
+            png: bytes.to_vec(),
+            pixels,
+        });
     }
-    let img = image::load_from_memory(bytes).map_err(|e| ImageError::Decode(e.to_string()))?;
+    let pixels = image::load_from_memory(bytes).map_err(|e| ImageError::Decode(e.to_string()))?;
     let mut out = std::io::Cursor::new(Vec::new());
-    img.write_to(&mut out, image::ImageFormat::Png)
+    pixels
+        .write_to(&mut out, image::ImageFormat::Png)
         .map_err(|e| ImageError::Decode(e.to_string()))?;
-    Ok(out.into_inner())
+    Ok(DecodedPng {
+        png: out.into_inner(),
+        pixels,
+    })
 }
 
 struct Chunk<'a> {
@@ -655,6 +697,60 @@ mod tests {
         for bad in ["../x.png", "a/b.png", "x.jpg", ".png", "a\\b.png", ""] {
             assert!(!is_valid_name(bad), "{bad}");
         }
+    }
+
+    #[test]
+    fn the_pixels_handed_back_are_the_ones_the_stored_png_decodes_to() {
+        let img = image::DynamicImage::ImageRgb8(image::RgbImage::from_fn(7, 5, |x, y| {
+            image::Rgb([x as u8 * 30, y as u8 * 40, 200])
+        }));
+        let mut formats = ACCEPTED_FORMATS.to_vec();
+        formats.retain(|f| *f != image::ImageFormat::Png);
+        let mut inputs = vec![tiny_png(9, 4)];
+        for format in formats {
+            let mut out = std::io::Cursor::new(Vec::new());
+            img.write_to(&mut out, format).unwrap();
+            inputs.push(out.into_inner());
+        }
+        for bytes in inputs {
+            let decoded = to_png_decoded(&bytes).unwrap();
+            assert_eq!(decoded.png, to_png(&bytes).unwrap());
+            assert_eq!(
+                image::load_from_memory(&decoded.png).unwrap(),
+                decoded.pixels
+            );
+        }
+    }
+
+    #[test]
+    fn a_picture_stored_with_its_pixels_is_not_decoded_again() {
+        let dir = tempfile::tempdir().unwrap();
+        let files = ImageFiles::new(dir.path()).unwrap();
+        let name = new_name();
+        // Pixels that differ from the PNG's own show which ones the thumbnail was made from.
+        let pixels = image::DynamicImage::ImageRgb8(image::RgbImage::from_pixel(
+            40,
+            20,
+            image::Rgb([0, 0, 255]),
+        ));
+        let png = tiny_png(600, 300);
+        assert_eq!(files.store_decoded(&name, &png, &pixels).unwrap(), (40, 20));
+        assert_eq!(files.read_original(&name).unwrap(), png);
+        let thumb = image::load_from_memory(&files.read_thumbnail(&name).unwrap())
+            .unwrap()
+            .to_rgb8();
+        let [r, g, b] = thumb.get_pixel(0, 0).0;
+        assert!(b > 200 && r < 40 && g < 40, "{r} {g} {b}");
+        let video = new_video_name();
+        assert_eq!(
+            files
+                .store_video_decoded(&video, b"\0\0\0\x18ftyp", &pixels)
+                .unwrap(),
+            (40, 20)
+        );
+        // The name checks stay.
+        assert!(files.store_decoded("../x.png", &png, &pixels).is_err());
+        assert!(files.store_video_decoded(&name, b"mp4", &pixels).is_err());
     }
 
     #[test]

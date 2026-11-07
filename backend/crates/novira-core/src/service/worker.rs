@@ -694,7 +694,8 @@ impl Backend {
                         unreachable!("handled above")
                     }
                 };
-                let png = images::to_png(&png).map_err(|e| e.to_string())?;
+                let images::DecodedPng { png, pixels } =
+                    images::to_png_decoded(&png).map_err(|e| e.to_string())?;
                 let size = image::ImageReader::new(std::io::Cursor::new(&png))
                     .with_guessed_format()
                     .map_err(|e| e.to_string())?
@@ -718,7 +719,7 @@ impl Backend {
                     let (width, height) = this
                         .inner
                         .files
-                        .store_video(&name, &mp4, &png)
+                        .store_video_decoded(&name, &mp4, &pixels)
                         .map_err(|e| e.to_string())?;
                     return Ok(this.image_dto(ImageDTO {
                         name,
@@ -750,7 +751,7 @@ impl Backend {
                 let (width, height) = this
                     .inner
                     .files
-                    .store(&name, &tagged)
+                    .store_decoded(&name, &tagged, &pixels)
                     .map_err(|e| e.to_string())?;
                 let to_canvas = item.destination == QueueDestination::Canvas;
                 Ok(this.image_dto(ImageDTO {
