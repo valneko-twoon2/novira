@@ -126,6 +126,16 @@ describe('copying a picture', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
+  it('puts nothing on the clipboard for a video or a sound, and says nothing', async () => {
+    const write = stubClipboard();
+    const fetchMock = answer(png());
+    vi.stubGlobal('fetch', fetchMock);
+    for (const mediaType of ['video', 'audio'] as const) await copyImage({ ...image('v'), mediaType });
+    expect(write).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(lastToast()).toBeUndefined();
+  });
+
   it('puts the stored PNG on the clipboard as it is, without decoding or encoding it', async () => {
     const write = stubClipboard();
     const stored = png('application/octet-stream');

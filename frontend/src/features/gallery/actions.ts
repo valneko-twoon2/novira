@@ -130,6 +130,8 @@ async function pngOf(url: string): Promise<Blob> {
 }
 
 export async function copyImage(image: ImageDTO) {
+  // Only a still picture goes on the clipboard as a picture; a video or a sound has no PNG to give (Ctrl+C on one does nothing).
+  if ((image.mediaType ?? 'image') !== 'image') return;
   if (!canWriteClipboardImage()) {
     toast({ status: 'warning', title: t('gallery.toast.copyUnavailable') });
     return;
