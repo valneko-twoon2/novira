@@ -65,6 +65,14 @@ describe('TextCandidates', () => {
     expect(screen.queryByTestId('text-rich-stale')).toBeNull();
   });
 
+  it('shows each candidate by its thumbnail, and by its picture when it has none', () => {
+    useGallery.setState({ images: [{ name: 'a.png', url: 'http://x/a.png', thumbnailUrl: 'http://x/thumb/a.png' }, { name: 'b.png', url: 'http://x/b.png', thumbnailUrl: '' }] as never });
+    select(layer(true));
+    render(<TextCandidates />);
+    const srcs = screen.getAllByTestId('text-rich-candidate').map((b) => b.querySelector('img')?.getAttribute('src'));
+    expect(srcs).toEqual(['http://x/thumb/a.png', 'http://x/b.png']);
+  });
+
   it('offers a new run when the lettering changed since the picture was made', () => {
     select({ ...layer(true), text: 'changed' });
     render(<TextCandidates />);

@@ -1,6 +1,7 @@
 // A reference image thumbnail; drop a gallery image on it, click to edit its settings.
 import { ImageSquare, Warning } from '@phosphor-icons/react';
 import { t } from '@/i18n';
+import { useThumbnailUrl } from '@/state/gallery';
 import { useModels } from '@/state/models';
 import { useParams, type RefImage } from '@/state/params';
 import { cx, ImageDropZone, Popover, PopoverContent, PopoverTrigger, Tooltip } from '@/ui';
@@ -10,6 +11,8 @@ import { imageFromNames, uploadFirst } from './useImageDrop';
 export function RefImageCard({ refImage, index }: { refImage: RefImage; index: number }) {
   const update = useParams((s) => s.updateRefImage);
   const hasModel = useModels((s) => s.models.some((m) => m.key === refImage.modelKey));
+  // The card is 48 px: the thumbnail, not the picture (the settings it opens show the picture itself).
+  const thumb = useThumbnailUrl(refImage.imageName);
   const warnings: string[] = [];
   if (!refImage.imageName) warnings.push(t('params.refImage.warnNoImage'));
   if (!hasModel) warnings.push(t('params.refImage.warnNoModel'));
@@ -31,7 +34,7 @@ export function RefImageCard({ refImage, index }: { refImage: RefImage; index: n
             aria-label={t('params.refImage.title', { index: index + 1 })}
             data-testid="ref-image"
           >
-            {refImage.imageUrl ? <img src={refImage.imageUrl} alt="" draggable={false} /> : <ImageSquare size={22} />}
+            {refImage.imageUrl ? <img src={thumb ?? refImage.imageUrl} alt="" draggable={false} /> : <ImageSquare size={22} />}
           </button>
         </PopoverTrigger>
         <PopoverContent side="right" align="start" className="pp-refpop">

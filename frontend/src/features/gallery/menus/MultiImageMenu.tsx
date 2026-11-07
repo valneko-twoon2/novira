@@ -3,14 +3,14 @@ import { DownloadSimple, FolderSimple, ShareNetwork, Stack, Star, Trash } from '
 import { t, tCount } from '@/i18n';
 import { useBatch } from '@/state/dialogs/batch';
 import { useShareDialog } from '@/state/dialogs/share';
-import { useGallery } from '@/state/gallery';
+import { imagesNamed, useGallery } from '@/state/gallery';
 import { ContextMenuItem, ContextMenuLabel, ContextMenuSeparator, ContextSubMenu } from '@/ui';
 import { downloadImages, moveImagesToBoard, setStarred } from '../actions';
 import { requestDeleteImages } from '../deleteRequest';
 import { BoardMenuItems } from './BoardMenuItems';
 
 export function MultiImageMenu({ names }: { names: string[] }) {
-  const images = () => useGallery.getState().images.filter((i) => names.includes(i.name));
+  const images = () => imagesNamed(useGallery.getState().images, names);
   return (
     <>
       <ContextMenuLabel>{tCount('gallery.menu.selectedCount', names.length)}</ContextMenuLabel>

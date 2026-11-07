@@ -2,6 +2,7 @@
 import { Eye, EyeSlash, ImageSquare, Plus, Trash } from '@phosphor-icons/react';
 import { t } from '@/i18n';
 import { useCanvasStore } from '@/state/canvasStoreContext';
+import { useThumbnailUrl } from '@/state/gallery';
 import { useParams, type RefImage, type RefImageMethod } from '@/state/params';
 import { cx, Field, IconButton, Select, SliderNumber } from '@/ui';
 import { METHOD_LABEL } from '../names';
@@ -70,11 +71,13 @@ function RefImageRow({ refImage, index }: { refImage: RefImage; index: number })
   const select = useCanvasStore((s) => s.select);
   const update = useParams((s) => s.updateRefImage);
   const remove = useParams((s) => s.removeRefImage);
+  // The row's picture is 36 px: the thumbnail, not the picture (the settings below show the picture itself).
+  const thumb = useThumbnailUrl(refImage.imageName);
   return (
     <div className={cx('canvas-entity', selected && 'is-selected', !refImage.isEnabled && 'is-disabled')}>
       <div className="canvas-entity__row" role="button" tabIndex={0} aria-pressed={selected} onClick={() => select(refImage.id)}>
         <span className="canvas-thumb canvas-thumb--img">
-          {refImage.imageUrl ? <img src={refImage.imageUrl} alt="" draggable={false} /> : <ImageSquare size={18} />}
+          {refImage.imageUrl ? <img src={thumb ?? refImage.imageUrl} alt="" draggable={false} /> : <ImageSquare size={18} />}
         </span>
         <span className="canvas-entity__name">{t('canvas.ref.defaultName', { number: index + 1 })}</span>
         <span className="canvas-entity__actions">

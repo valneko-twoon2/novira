@@ -113,11 +113,13 @@ export const useGallery = create<GalleryState>()(
       },
       removeImages: (names) => {
         const s = get();
+        // Looked up in a set: a deleted selection or board can hold thousands of names, checked against every picture.
+        const gone = new Set(names);
         set({
-          images: s.images.filter((i) => !names.includes(i.name)),
-          selection: s.selection.filter((n) => !names.includes(n)),
-          viewerImageName: s.viewerImageName && names.includes(s.viewerImageName) ? null : s.viewerImageName,
-          compareImageName: s.compareImageName && names.includes(s.compareImageName) ? null : s.compareImageName,
+          images: s.images.filter((i) => !gone.has(i.name)),
+          selection: s.selection.filter((n) => !gone.has(n)),
+          viewerImageName: s.viewerImageName && gone.has(s.viewerImageName) ? null : s.viewerImageName,
+          compareImageName: s.compareImageName && gone.has(s.compareImageName) ? null : s.compareImageName,
         });
       },
       applyImageChanges: (images, removed) => {
@@ -226,7 +228,24 @@ export function selectBoardImages(s: BoardImagesInput & Pick<GalleryState, 'date
   return s.settings.groupByDate ? groupByDay(list, s.settings.sortDirection).flatMap((g) => g.items) : list;
 }
 
+/**
+ * The pictures of `images` named in `names`, in the order of `images`. The names are looked up in a set, so picking a
+ * selection of thousands out of the whole gallery stays one pass.
+ */
+export function imagesNamed(images: readonly ImageDTO[], names: Iterable<string>): ImageDTO[] {
+  const wanted = new Set(names);
+  return images.filter((i) => wanted.has(i.name));
+}
+
 export function findImage(name: string | null): ImageDTO | undefined {
   if (!name) return undefined;
   return useGallery.getState().images.find((i) => i.name === name);
+}
+
+/**
+ * The thumbnail (at most 256 px) of a gallery picture, for a box too small for the picture itself: a generated picture is
+ * megabytes to load and decode. `undefined` when the gallery does not hold it (the caller shows its own address then).
+ */
+export function useThumbnailUrl(name: string | null): string | undefined {
+  return useGallery((s) => (name ? s.images.find((i) => i.name === name)?.thumbnailUrl || undefined : undefined));
 }

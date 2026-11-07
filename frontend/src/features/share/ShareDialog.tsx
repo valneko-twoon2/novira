@@ -6,7 +6,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { backend, type ExportResult, type WatermarkStatus } from '@/backend';
 import { t, tCount } from '@/i18n';
 import { useShareDialog } from '@/state/dialogs/share';
-import { useGallery } from '@/state/gallery';
+import { imagesNamed, useGallery } from '@/state/gallery';
 import { toast } from '@/state/toasts';
 import { Button, Modal, NumberInput, Select, SliderNumber, Switch } from '@/ui';
 import {
@@ -91,7 +91,7 @@ export function ShareDialog() {
   const names = useShareDialog((s) => s.names);
   const close = useShareDialog((s) => s.close);
   const all = useGallery((s) => s.images);
-  const { pictures, others } = useMemo(() => splitMedia(names ? all.filter((i) => names.includes(i.name)) : []), [names, all]);
+  const { pictures, others } = useMemo(() => splitMedia(names ? imagesNamed(all, names) : []), [names, all]);
   const [form, setFormState] = useState<ShareForm>(lastForm);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<ExportResult | null>(null);

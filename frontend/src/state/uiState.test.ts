@@ -2,7 +2,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { backend } from '@/backend';
 import { useToasts } from './toasts';
+import { memoryStorage } from '@/propertyTest.testkit';
 import { applyUiState, clearSavedState, collectUiState, PERSIST_PREFIX, takeRestoredUiState } from './uiState';
+import { MAX_UI_STATE_CHARS, readUiState } from './uiStateStorage';
 
 beforeEach(() => {
   localStorage.clear();
@@ -57,6 +59,24 @@ describe('saved screen state', () => {
     localStorage.clear();
     applyUiState(saved, localStorage);
     expect(collectUiState(localStorage)).toBe(saved);
+  });
+});
+
+describe('reading the saved state without JSON', () => {
+  it('reads the app keys and refuses a key longer than the backend takes', () => {
+    expect(readUiState(memoryStorage({ 'novira.a': '1', 'novira.b': '"x"', other: 'y' }))).toEqual({ 'novira.a': '1', 'novira.b': '"x"' });
+    expect(readUiState(memoryStorage({ [`novira.${'k'.repeat(193)}`]: '1' }))).toEqual({ [`novira.${'k'.repeat(193)}`]: '1' });
+    expect(readUiState(memoryStorage({ [`novira.${'k'.repeat(194)}`]: '1' }))).toBeNull();
+  });
+
+  it('measures a state near the size limit as JSON: under it is read, over it (escapes counted) is refused', () => {
+    // Six million plain characters could be over the limit if every one were escaped; written out they are not.
+    const plain = 'a'.repeat(6_000_000);
+    expect(readUiState(memoryStorage({ 'novira.big': plain }))?.['novira.big']).toBe(plain);
+    // The same count of control characters is six times as long as JSON: over the limit, as the backend would say.
+    const escaped = '\u0001'.repeat(6_000_000);
+    expect(collectUiState(memoryStorage({ 'novira.big': escaped })).length).toBeGreaterThan(MAX_UI_STATE_CHARS);
+    expect(readUiState(memoryStorage({ 'novira.big': escaped }))).toBeNull();
   });
 });
 

@@ -4,6 +4,7 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { check, junkJson, junkStored, memoryStorage, blockExternalNetwork } from '@/propertyTest.testkit';
 import { applyUiState, collectUiState, PERSIST_PREFIX, persistedKeys } from './uiState';
+import { parseUiState, readUiState } from './uiStateStorage';
 
 blockExternalNetwork();
 
@@ -46,6 +47,18 @@ describe('saved screen state (properties)', () => {
         expect(prefixed.length).toBe(count);
         for (const k of Object.keys(after)) expect(typeof after[k]).toBe('string');
         for (const [k, v] of Object.entries(before)) if (!k.startsWith(PERSIST_PREFIX)) expect(after[k]).toBe(v);
+      }),
+    );
+  });
+
+  it('readUiState gives what collecting the state as JSON and parsing it back gives', () => {
+    // Any UTF-16 unit: control characters, quotes, backslashes and lone surrogates are escaped in JSON.
+    const text = fc.string({ unit: fc.integer({ min: 0, max: 0xffff }).map((c) => String.fromCharCode(c)), maxLength: 40 });
+    const anyKey = fc.oneof(key, fc.integer({ min: 190, max: 210 }).map((n) => `${PERSIST_PREFIX}${'k'.repeat(n)}`));
+    check(
+      fc.property(fc.dictionary(anyKey, text, { maxKeys: 8 }), (initial) => {
+        const storage = memoryStorage(initial);
+        expect(readUiState(storage)).toEqual(parseUiState(collectUiState(storage)));
       }),
     );
   });
