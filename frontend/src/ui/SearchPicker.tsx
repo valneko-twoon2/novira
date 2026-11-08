@@ -31,8 +31,8 @@ export interface SearchPickerProps<T> {
   emptyText: ReactNode;
   /** Shown when the search matches nothing. */
   noMatchText: ReactNode;
-  /** Above the search box. */
-  header?: ReactNode;
+  /** Above the search box; a function gets `close` (a choice of its own, such as "automatic"). */
+  header?: ReactNode | ((close: () => void) => ReactNode);
   footer?: (close: () => void) => ReactNode;
   className?: string;
   listTestId?: string;
@@ -76,7 +76,7 @@ export function SearchPicker<T>({
     <Popover open={open} onOpenChange={(o) => (o ? setOpen(true) : close())}>
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent side="bottom" align="start" className={cx('pp-picker', className)}>
-        {header}
+        {typeof header === 'function' ? header(close) : header}
         <label className="pp-picker__search">
           <MagnifyingGlass size={14} />
           <TextInput value={query} autoFocus={!isPhoneLayout()} placeholder={searchLabel} aria-label={searchLabel} onChange={(e) => setQuery(e.target.value)} />

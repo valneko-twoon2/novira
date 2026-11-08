@@ -31,6 +31,24 @@ const openList = () => {
 };
 
 describe('ModelPicker', () => {
+  it('offers "automatic" first when asked, current while no model is chosen, and picks it', () => {
+    const onAuto = vi.fn();
+    render(<ModelPicker models={models} value={null} onPick={vi.fn()} placeholder="Pick one" auto={{ label: 'Automatic', onPick: onAuto }} testId="picker" aria-label="Model" />);
+    expect(screen.getByTestId('picker').textContent).toContain('Automatic');
+    expect(screen.getByTestId('picker').querySelector('.ui-select__placeholder')).toBeNull();
+    fireEvent.click(screen.getByTestId('picker'));
+    const auto = screen.getByTestId('picker-auto');
+    expect(auto.className).toContain('is-current');
+    fireEvent.click(auto);
+    expect(onAuto).toHaveBeenCalledOnce();
+    expect(screen.queryByTestId('model-picker-list')).toBeNull();
+    cleanup();
+    render(<ModelPicker models={models} value="m3" onPick={vi.fn()} placeholder="Pick one" auto={{ label: 'Automatic', onPick: onAuto }} testId="picker" />);
+    expect(screen.getByTestId('picker').textContent).toContain('Old One');
+    fireEvent.click(screen.getByTestId('picker'));
+    expect(screen.getByTestId('picker-auto').className).not.toContain('is-current');
+  });
+
   it('shows the placeholder without a value and the model name with one', () => {
     show(null);
     expect(screen.getByTestId('picker').textContent).toContain('Pick one');

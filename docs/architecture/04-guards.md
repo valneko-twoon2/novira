@@ -16,6 +16,7 @@
 | ESLint `frontend/scripts/eslint-layers.mjs` | レイヤーの向きに反する import、機能が別の機能を import すること（`features/media` と `features/invoke` を除く）。列挙された例外は減る方向にだけ変えられる |
 | ESLint `frontend/scripts/eslint-test-hygiene.mjs` | コミットされた `.only` テスト |
 | `frontend/tests/structure.test.ts` | `utils/`、`misc/`、`helpers/` フォルダ、もう要らないレイヤーの例外 |
+| `frontend/tests/generate-parity.test.ts` | 生成画面と違う部品でメインモデルを選ばせる画面（`Select` に名前で並べたもの。`ModelPicker` を使う） |
 | `frontend/tests/test-hygiene.test.ts` | `tests/*_live.rs` の外の `#[ignore]`、どのテストも書かないプロンプトのスナップショット（フロントと `comfy/__snapshots__/graph/`） |
 | `comfy::node_defs_check`（`cargo test -p novira-core --lib` の中） | 本物の ComfyUI が拒むグラフ（未知のノードや入力、足りない入力、誤ったリンク、受け付けない選択肢や数値。`scripts/tools/comfy-node-defs.mjs` による `node-defs.json` に対して）。ファイル不足や実行時の失敗は止めない |
 | ESLint `frontend/scripts/eslint-security.mjs`、`cargo test -p novira --test security` | DOM への HTML の直接挿入、`eval`、`window.open`、緩めた CSP や capability、シェル経由の起動、値を整形して作る SQL、コミットされた秘密（詳細と限界は `.claude/rules/security.md`） |

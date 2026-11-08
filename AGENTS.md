@@ -87,6 +87,7 @@
 
 - **製品名は常に小文字の `novira`**（文頭・見出しでも。サーバーは `novira-server`。`scripts/tools/check-name.mjs`）。
 - **画面に不要な補助ラベルや説明文を置かない。** 説明はレイアウトに任せる。
+- **新しい画面・パネル・フォームは生成画面に合わせる。** 生成画面と同じものは同じ部品・並び・見た目にする（シードの行、件数つきの実行ボタン、モデルのカードと `ModelPicker`、プロンプト欄、折りたたみの詳細）。違う形にするのは、ユーザーがその場所について別の形を指示したときだけ（[frontend.md](.claude/rules/frontend.md)。`frontend/tests/generate-parity.test.ts`）。
 - **改行は LF**（`.bat`・`.cmd` は CRLF。フックが直し、`npm run check:eol` が検査する）。
 
 ## 4. 完了条件

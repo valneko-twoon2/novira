@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // The "finish with AI" form in the left column: looks, the notes about what is missing, the run row and the folded details.
-import { cleanup, fireEvent, render as renderBare, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render as renderBare, screen, within } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ModelConfig } from '@/backend';
@@ -125,6 +125,21 @@ describe('RichSection', () => {
   it('keeps the chosen model only while it is installed', () => {
     useRichForm.setState({ form: { ...RICH_FORM_DEFAULTS, modelKey: 'gone' } });
     render(<RichSection layer={layer(false)} />);
-    expect(screen.getByRole('combobox', { name: 'モデル' }).textContent).toContain('おまかせ');
+    expect(screen.getByTestId('text-rich-model').textContent).toContain(t('text.rich.model.auto'));
+  });
+
+  it('picks the model with the picker and card of the Generate screen, and goes back to automatic', () => {
+    useModels.setState({ models: [model('wai', 'main', 'sdxl', 'wai'), model('nova', 'main', 'sdxl', 'nova'), model('cn', 'controlnet', 'sdxl', 'union-promax')] });
+    render(<RichSection layer={layer(false)} />);
+    expect(screen.getByTestId('text-rich-model-card').querySelector('.pp-cover')).not.toBeNull();
+    fireEvent.click(screen.getByTestId('text-rich-model'));
+    const list = screen.getByTestId('model-picker-list');
+    fireEvent.click(within(list).getByText('nova'));
+    expect(useRichForm.getState().form.modelKey).toBe('nova');
+    expect(screen.getByTestId('text-rich-model').textContent).toContain('nova');
+    fireEvent.click(screen.getByTestId('text-rich-model'));
+    fireEvent.click(screen.getByTestId('text-rich-model-auto'));
+    expect(useRichForm.getState().form.modelKey).toBeNull();
+    expect(screen.getByTestId('text-rich-model').textContent).toContain(t('text.rich.model.auto'));
   });
 });

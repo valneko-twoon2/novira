@@ -385,6 +385,24 @@
   width: 64px;
 }
 
+/* The model card, as the Generate screen's: the model's picture beside the picker. */
+.tx-model {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-surface);
+}
+
+.tx-model__main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .tx-rich__prompt {
   display: flex;
   flex-direction: column;

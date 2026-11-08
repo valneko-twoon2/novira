@@ -1,5 +1,5 @@
-// "Generate with AI" in the left column, in the order of the Generate screen: the seed, the run button with the count, the model, the
-// look and words, then the folded details. The candidates it makes are in the strip under the canvas (TextCandidates).
+// "Generate with AI" in the left column, in the order and with the parts of the Generate screen: the seed, the run button with the
+// count, the model card (its picture and the same model picker, with "automatic" first), the look and words, then the folded details. The candidates it makes are in the strip under the canvas (TextCandidates).
 import { Lightning, Stop } from '@phosphor-icons/react';
 import { useMemo } from 'react';
 import { randomSeed } from '@/backend';
@@ -10,7 +10,7 @@ import { useParams } from '@/state/params';
 import { RICH_COUNT, useRichForm } from '@/state/text/richForm';
 import { RICH_LOOK_IDS, type RichLookId } from '@/state/text/richLooks';
 import type { TextLayer } from '@/state/text/textModel';
-import { Button, Field, IconButton, NumberInput, Section, Select, SliderNumber, Textarea } from '@/ui';
+import { Button, CoverImage, Field, IconButton, ModelPicker, NumberInput, Section, SliderNumber, Textarea } from '@/ui';
 import { richPlan } from './richRequest';
 import { cancelRich, runRich, useRichRun } from './richRun';
 
@@ -23,8 +23,6 @@ const LOOK_LABELS: Record<RichLookId, MessageKey> = {
   candy: 'text.rich.look.candy',
   chrome: 'text.rich.look.chrome',
 };
-
-const AUTO = 'auto';
 
 /** `layer` is the selected text layer, or null when something else (or nothing) is selected: the form stays, the run waits. */
 export function RichSection({ layer }: { layer: TextLayer | null }) {
@@ -78,14 +76,22 @@ export function RichSection({ layer }: { layer: TextLayer | null }) {
           </p>
         )
       )}
-      <Field label={t('text.rich.model')}>
-        <Select
-          value={form.modelKey && drawable.some((m) => m.key === form.modelKey) ? form.modelKey : AUTO}
-          onChange={(v) => setForm({ modelKey: v === AUTO ? null : v })}
-          options={[{ value: AUTO, label: t('text.rich.model.auto') }, ...drawable.map((m) => ({ value: m.key, label: m.name }))]}
-          aria-label={t('text.rich.model')}
-        />
-      </Field>
+      <section className="tx-model" data-testid="text-rich-model-card">
+        {/* The picture is of the model that will paint: the chosen one, or the one "automatic" picks. */}
+        <CoverImage model={plan.model ?? undefined} zoomable />
+        <div className="tx-model__main">
+          <ModelPicker
+            models={drawable}
+            value={form.modelKey && drawable.some((m) => m.key === form.modelKey) ? form.modelKey : null}
+            onPick={(m) => setForm({ modelKey: m.key })}
+            auto={{ label: t('text.rich.model.auto'), onPick: () => setForm({ modelKey: null }) }}
+            placeholder={t('params.model.noModels')}
+            disabled={!drawable.length}
+            aria-label={t('text.rich.model')}
+            testId="text-rich-model"
+          />
+        </div>
+      </section>
       <div className="tx-rich__prompt">
         <div className="tx-add__row" role="group" aria-label={t('text.rich.look')}>
           {RICH_LOOK_IDS.map((id) => (

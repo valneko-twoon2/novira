@@ -12,7 +12,7 @@ import { useImageToolSettings } from '@/state/imageTools/settings';
 import { TOOL_RANGES, type ImageToolId } from '@/state/imageTools/tools';
 import { checkpointModels, useModels } from '@/state/models';
 import { useParams } from '@/state/params';
-import { InfoMark, Select, SliderNumber, TextInput } from '@/ui';
+import { InfoMark, ModelPicker, Select, SliderNumber, TextInput } from '@/ui';
 
 function Field({ label, info, wide, children }: { label: string; info?: string; wide?: boolean; children: ReactNode }) {
   return (
@@ -37,13 +37,14 @@ function FaceFixFields({ image }: { image: ImageDTO }) {
   return (
     <>
       <Field label={t('facefix.model')}>
-        <Select
-          className="toolband__select"
+        <ModelPicker
+          models={mains}
           value={faceFixModel(image, face, { models }, formModel)}
-          onChange={(modelKey) => setFace({ modelKey })}
-          options={mains.map((m) => ({ value: m.key, label: m.name }))}
+          onPick={(m) => setFace({ modelKey: m.key })}
+          placeholder={t('params.model.noModels')}
+          disabled={!mains.length}
           aria-label={t('facefix.model')}
-          data-testid="tool-band-face-model"
+          testId="tool-band-face-model"
         />
       </Field>
       <Field label={t('facefix.detector')}>

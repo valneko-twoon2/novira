@@ -163,6 +163,15 @@ describe('the band', () => {
     openBand('facefix');
     fireEvent.change(screen.getByTestId('tool-band-face-prompt'), { target: { value: 'red eyes' } });
     expect(useToolBand.getState().face.prompt).toBe('red eyes');
+    // The model is picked with the Generate screen's picker.
+    fireEvent.click(screen.getByTestId('tool-band-face-model'));
+    const items = screen.getByTestId('model-picker-list').querySelectorAll('.pp-picker__item');
+    const last = items[items.length - 1] as HTMLElement;
+    const name = last.textContent ?? '';
+    fireEvent.click(last);
+    const picked = useModels.getState().models.find((m) => m.key === useToolBand.getState().face.modelKey);
+    expect(picked?.name).toBe(name);
+    expect(screen.getByTestId('tool-band-face-model').textContent).toContain(name);
     fireEvent.click(screen.getByTestId('tool-band-tool-caption'));
     expect(screen.getByTestId('tool-band-caption-style')).toBeTruthy();
   });

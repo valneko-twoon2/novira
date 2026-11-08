@@ -17,6 +17,7 @@ export function ModelPicker({
   disabled,
   testId,
   shortcuts = true,
+  auto,
   'aria-label': ariaLabel,
 }: {
   models: ModelConfig[];
@@ -27,18 +28,40 @@ export function ModelPicker({
   testId?: string;
   /** The buttons to the model manager and the online search under the list; a layout without those screens leaves them out. */
   shortcuts?: boolean;
+  /** A first choice above the list that leaves the model to the app ("automatic"); it is the current one while `value` is null. */
+  auto?: { label: string; onPick: () => void };
   'aria-label'?: string;
 }) {
   const setTab = useUi((s) => s.setTab);
   const current = models.find((m) => m.key === value);
+  const isAuto = auto !== undefined && !current;
+  const shown = current ? current.name : isAuto ? auto.label : placeholder;
 
   return (
     <SearchPicker
       trigger={
-        <button type="button" className="ui-select" disabled={disabled} aria-label={ariaLabel && `${ariaLabel}: ${current ? current.name : placeholder}`} data-testid={testId}>
-          <span className="ui-select__value">{current ? current.name : <span className="ui-select__placeholder">{placeholder}</span>}</span>
+        <button type="button" className="ui-select" disabled={disabled} aria-label={ariaLabel && `${ariaLabel}: ${shown}`} data-testid={testId}>
+          <span className="ui-select__value">{current || isAuto ? shown : <span className="ui-select__placeholder">{placeholder}</span>}</span>
           <CaretDown size={12} />
         </button>
+      }
+      header={
+        auto
+          ? (close) => (
+              <button
+                type="button"
+                className={cx('pp-picker__item', 'pp-picker__auto', isAuto && 'is-current')}
+                onClick={() => {
+                  auto.onPick();
+                  close();
+                }}
+                data-testid={testId && `${testId}-auto`}
+              >
+                <span className="pp-picker__name">{auto.label}</span>
+                {isAuto && <Check size={12} />}
+              </button>
+            )
+          : undefined
       }
       items={models}
       itemKey={(m) => m.key}
