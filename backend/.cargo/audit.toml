@@ -6,14 +6,6 @@ ignore = [
     # `rsa` (via `c2pa`) only verifies RSA-signed manifests from outside; the attack recovers a private key from timing of
     # private-key operations, and novira holds no RSA key (it signs with ES256). No fixed release exists.
     "RUSTSEC-2023-0071",
-    # `zip` 8.6.0: symlink and SUID handling when a whole archive is extracted to disk. novira reads entries one by one
-    # (backups, exports, content credentials) and never extracts a whole archive. Ends with `zip` 9, which waits on `c2pa`.
-    "RUSTSEC-2026-0367",
-    "RUSTSEC-2026-0368",
-    "RUSTSEC-2026-0369",
-    # `crypto-bigint` 0.5 timing, reached by `c2pa`'s ES256 signing on export through `elliptic-curve`. Ends with 0.7, which
-    # waits on `c2pa`.
-    "RUSTSEC-2026-0387",
     # `webpki-root-certs` is in Cargo.lock but in no compiled dependency tree.
     "RUSTSEC-2026-0383",
 ]

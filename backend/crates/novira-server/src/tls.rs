@@ -162,17 +162,6 @@ impl Ca {
         &self.der
     }
 
-    /// The SHA-256 fingerprint of the certificate, as a phone's certificate details show it (`AB:CD:...`).
-    pub fn fingerprint(&self) -> String {
-        let digest = ring::digest::digest(&ring::digest::SHA256, &self.der);
-        digest
-            .as_ref()
-            .iter()
-            .map(|b| format!("{b:02X}"))
-            .collect::<Vec<_>>()
-            .join(":")
-    }
-
     /// A leaf certificate for `san` (serverAuth, 90 days) signed by this CA, with its private key.
     pub fn leaf_for(
         &self,
@@ -330,15 +319,9 @@ mod tests {
     }
 
     #[test]
-    fn the_ca_is_named_in_lowercase_and_its_fingerprint_is_sha256() {
+    fn the_ca_is_named_in_lowercase_and_its_pem_holds_its_der() {
         let ca = Ca::generate().unwrap();
         assert_eq!(CA_NAME, "novira local CA");
-        let fp = ca.fingerprint();
-        assert_eq!(fp.len(), 32 * 3 - 1, "{fp}");
-        assert!(fp
-            .split(':')
-            .all(|b| b.len() == 2 && b.chars().all(|c| c.is_ascii_hexdigit())));
-        assert_ne!(fp, Ca::generate().unwrap().fingerprint());
         assert!(ca.pem().starts_with("-----BEGIN CERTIFICATE-----"));
         assert_eq!(pem_body(ca.pem()).as_deref(), Some(ca.der().as_ref()));
     }

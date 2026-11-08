@@ -77,7 +77,7 @@ describe('the tabs', () => {
     expect(modal().queryByText(APP_VERSION, { exact: false })).toBeNull();
   });
 
-  it('in the app build, where only the comic screen is hidden, keeps the text settings and leaves out the comic ones', () => {
+  it('in the app build, where the comic screen is hidden (with video, music and voice), keeps the text settings and leaves out the comic ones', () => {
     cleanup();
     vi.stubEnv('MODE', 'production');
     show();
