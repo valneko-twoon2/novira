@@ -40,6 +40,23 @@ beforeEach(() => {
 });
 
 describe('RichSection', () => {
+  it('shows the seed row of the Generate screen and keeps its choices in the form', () => {
+    render(<RichSection layer={layer(false)} />);
+    expect(screen.getByText(t('params.seed.label'))).toBeTruthy();
+    expect(useRichForm.getState().form.randomSeed).toBe(true);
+    fireEvent.click(screen.getByTestId('seed-fixed'));
+    expect(useRichForm.getState().form.randomSeed).toBe(false);
+    const box = screen.getByRole('spinbutton', { name: t('params.seed.label') });
+    fireEvent.change(box, { target: { value: '1234' } });
+    fireEvent.blur(box);
+    expect(useRichForm.getState().form.seed).toBe(1234);
+  });
+
+  it('names the run button as the Generate screen does', () => {
+    render(<RichSection layer={layer(false)} />);
+    expect(screen.getByTestId('text-rich-run').textContent).toBe(t('params.invoke.invoke'));
+  });
+
   it('chooses a look and unchooses it by pressing it again', () => {
     render(<RichSection layer={layer(false)} />);
     fireEvent.click(screen.getByTestId('text-rich-look-fire'));

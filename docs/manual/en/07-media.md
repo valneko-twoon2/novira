@@ -234,11 +234,11 @@ You can also save your own styles (font, fill, stroke, shadow, letter spacing).
 
 ### Finishing with AI
 
-The AI paints the letters to look like gold, fire and the like. The **{{ui:text.rich.run}}** button is at the top of the left column; you can press it while a text layer is selected (not for a speech bubble, and not when nothing is selected).
+The AI paints the letters to look like gold, fire and the like. The **{{ui:params.invoke.invoke}}** button is at the top of the left column, under the **{{ui:params.seed.label}}** row (it works as on the Generate screen: random or fixed, each picture takes the next number); you can press it while a text layer is selected (not for a speech bubble, and not when nothing is selected).
 
 1. Choose a **{{ui:text.rich.look}}** ({{ui:text.rich.look.gold}}, {{ui:text.rich.look.fire}}, {{ui:text.rich.look.ice}}, {{ui:text.rich.look.neon}}, {{ui:text.rich.look.stone}}, {{ui:text.rich.look.candy}} or {{ui:text.rich.look.chrome}}). Press it again to clear it.
 2. To add something, write it in **{{ui:text.rich.words}}** as English tags (for example: dragon scales, sparkles).
-3. Press **{{ui:text.rich.run}}**. Pictures are made one after another, as many as the number to its right (**{{ui:text.rich.count}}**). The **{{ui:text.rich.cancel}}** button beside it stops it.
+3. Press **{{ui:params.invoke.invoke}}**. Pictures are made one after another, as many as the number to its right (**{{ui:text.rich.count}}**). The **{{ui:text.rich.cancel}}** button beside it stops it.
 
 The pictures line up in the **{{ui:text.rich.candidates}}** strip under the canvas, and the one you press becomes the fill of the letters. The outline and the shadow are still drawn from the text style, so you can change their color or thickness without making the picture again. Resizing the text needs no new picture either.
 

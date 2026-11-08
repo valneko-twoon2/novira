@@ -16,9 +16,13 @@ export interface RichForm {
   spill: number;
   /** How many pictures one press makes. */
   count: number;
+  /** The seed of the first picture; the next ones take seed + 1, + 2 ... (as a batch on the Generate screen). */
+  seed: number;
+  /** True when every run draws a new seed (the number then shows the one the last run used). */
+  randomSeed: boolean;
 }
 
-export const RICH_FORM_DEFAULTS: RichForm = { look: null, words: '', modelKey: null, strength: 50, spill: 0, count: 2 };
+export const RICH_FORM_DEFAULTS: RichForm = { look: null, words: '', modelKey: null, strength: 50, spill: 0, count: 2, seed: 0, randomSeed: true };
 export const RICH_COUNT = { min: 1, max: 4 };
 
 interface RichFormState {

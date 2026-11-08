@@ -27,7 +27,7 @@
   "video.clipLength.one": "{count} 秒",
   "video.clipLength.other": "{count} 秒",
   "video.delete": "この動画を削除",
-  "video.guide.title": "動画をつくる手順",
+  "video.guide.title": "動画を作る手順",
   "video.guide.step1": "動画モデル（約 18GB）をダウンロードします。最初に一度だけ必要です。",
   "video.guide.step2": "下のボタンで動画用のグラフを開きます。自分で作るときは、エディターの「ノードを追加」から「動画」の「動画を生成」を置きます。",
   "video.guide.step3": "プロンプトを入れます。画像から動かしたいときは「画像」ノードをつなぎ、左のパネルで画像を選びます。",

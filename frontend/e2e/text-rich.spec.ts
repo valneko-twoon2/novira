@@ -1,4 +1,4 @@
-// "AI で仕上げる" on the Text screen: a look is chosen and the run paints the letters; the candidates, the stale notice after a text
+// "Generate with AI" on the Text screen: a look is chosen and the run paints the letters; the candidates, the stale notice after a text
 // change, undo, going back to the plain fill, a failed run and saving a picture that has the AI fill.
 import { expect, msg, openApp, test } from './fixtures';
 
@@ -39,6 +39,22 @@ test('finishing a text layer makes candidates, and a changed text asks for a new
   // Back to the plain fill removes the AI picture from the layer.
   await page.getByTestId('text-rich-clear').click();
   await expect(candidates).toHaveCount(0);
+});
+
+test('the seed row of the Generate screen: a random run shows the seed it used, and a fixed seed stays as it is', async ({ page }) => {
+  await openText(page);
+  const seed = page.getByRole('spinbutton', { name: msg('params.seed.label') });
+  const candidates = page.getByTestId('text-rich-candidate');
+  await page.getByTestId('text-rich-run').click();
+  await expect(candidates).toHaveCount(2, { timeout: 30_000 });
+  // The random run left its seed in the (now disabled) box; fixing it keeps that number.
+  const used = await seed.inputValue();
+  await page.getByTestId('seed-fixed').click();
+  await expect(seed).toHaveValue(used);
+  await page.getByTestId('text-rich-clear').click();
+  await page.getByTestId('text-rich-run').click();
+  await expect(candidates).toHaveCount(2, { timeout: 30_000 });
+  await expect(seed).toHaveValue(used);
 });
 
 test('a busy button draws its spinner in the label color, so it shows on the blue fills', async ({ page }) => {

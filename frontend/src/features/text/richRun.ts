@@ -2,7 +2,7 @@
 // candidate, cuts each result to the letters and puts it on the layer as its fill. The picture is an intermediate (hidden from
 // the boards); the layer keeps its name, so the lettering stays editable and the outlines stay vector.
 import { create } from 'zustand';
-import { backend, loadImage, randomSeed, type ImageDTO } from '@/backend';
+import { backend, batchSeed, loadImage, randomSeed, type ImageDTO } from '@/backend';
 import { t } from '@/i18n';
 import { ensureFont } from '@/state/fonts';
 import { useGallery } from '@/state/gallery';
@@ -127,6 +127,9 @@ export async function runRich(layerId: string): Promise<void> {
   const plan = richPlan(useModels.getState().models, form.modelKey, useParams.getState().modelKey);
   if (!plan.model) return;
   const model = plan.model;
+  // A random seed is drawn per run and shown in the seed box afterwards, so a picture that pleased can be made again.
+  const firstSeed = form.randomSeed ? randomSeed() : form.seed;
+  if (form.randomSeed) useRichForm.getState().setForm({ seed: firstSeed });
   const controller = new AbortController();
   controllers.set(layerId, controller);
   const total = form.count;
@@ -162,7 +165,7 @@ export async function runRich(layerId: string): Promise<void> {
         look,
         words: form.words,
         strength: form.strength,
-        seed: randomSeed(),
+        seed: batchSeed(firstSeed, i),
         sourceUrl: source.url,
         lineUrl,
         width: frame.width,

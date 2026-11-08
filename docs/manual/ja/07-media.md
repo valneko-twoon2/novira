@@ -234,11 +234,11 @@
 
 ### AI で仕上げる
 
-金や炎のような仕上がりに、文字を AI に塗らせます。左の列の一番上に **{{ui:text.rich.run}}** のボタンがあり、文字のレイヤーを選んでいるときに押せます（吹き出しや何も選んでいないときは押せません）。
+金や炎のような仕上がりに、文字を AI に塗らせます。左の列の上に **{{ui:params.invoke.invoke}}** のボタンがあり、文字のレイヤーを選んでいるときに押せます（吹き出しや何も選んでいないときは押せません）。その上の **{{ui:params.seed.label}}** は生成の画面と同じで、ランダムか固定かを選べます。固定のとき、絵ごとに番号が 1 ずつ増えます。
 
 1. **{{ui:text.rich.look}}** を選びます（{{ui:text.rich.look.gold}}・{{ui:text.rich.look.fire}}・{{ui:text.rich.look.ice}}・{{ui:text.rich.look.neon}}・{{ui:text.rich.look.stone}}・{{ui:text.rich.look.candy}}・{{ui:text.rich.look.chrome}}）。もう一度押すと外れます。
 2. 足したい要素があれば、**{{ui:text.rich.words}}** に英語のタグで書きます（例：dragon scales, sparkles）。
-3. **{{ui:text.rich.run}}** を押します。ボタンの右の数（**{{ui:text.rich.count}}**）だけ、順番に絵ができます。途中で、その右の **{{ui:text.rich.cancel}}** を押すと止まります。
+3. **{{ui:params.invoke.invoke}}** を押します。ボタンの右の数（**{{ui:text.rich.count}}**）だけ、順番に絵ができます。途中で、その右の **{{ui:text.rich.cancel}}** を押すと止まります。
 
 できた絵は、画面の下の **{{ui:text.rich.candidates}}** の帯に並び、押したものが文字の塗りになります。縁取りと影は、これまでどおり文字のスタイルから描かれるので、色や太さは作り直さずに変えられます。大きさを変えても作り直しは要りません。
 

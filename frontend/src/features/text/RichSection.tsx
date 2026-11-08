@@ -1,7 +1,9 @@
-// "AI で仕上げる" in the left column, in the order of the Generate screen: the run button with the count, the model, the
+// "Generate with AI" in the left column, in the order of the Generate screen: the seed, the run button with the count, the model, the
 // look and words, then the folded details. The candidates it makes are in the strip under the canvas (TextCandidates).
-import { MagicWand, Stop } from '@phosphor-icons/react';
+import { Lightning, Stop } from '@phosphor-icons/react';
 import { useMemo } from 'react';
+import { randomSeed } from '@/backend';
+import { SeedControl } from '@/features/media/SeedControl';
 import { t, type MessageKey } from '@/i18n';
 import { useModels, drawableModels } from '@/state/models';
 import { useParams } from '@/state/params';
@@ -38,18 +40,25 @@ export function RichSection({ layer }: { layer: TextLayer | null }) {
 
   return (
     <div className="tx-rich" data-testid="text-rich">
+      <SeedControl
+        seed={form.seed}
+        random={form.randomSeed}
+        onSeed={(seed) => setForm({ seed })}
+        onRandom={(randomSeed) => setForm({ randomSeed })}
+        onShuffle={() => setForm({ seed: randomSeed() })}
+      />
       <div className="tx-run">
         <Button
           variant="solid"
           scheme="invoke"
           size="lg"
-          leftIcon={<MagicWand weight="bold" />}
+          leftIcon={<Lightning weight="fill" />}
           isLoading={running}
           disabled={!plan.model || empty || running}
           onClick={() => layer && void runRich(layer.id)}
           data-testid="text-rich-run"
         >
-          {t('text.rich.run')}
+          {t('params.invoke.invoke')}
         </Button>
         <div className="tx-run__count">
           <span aria-hidden>×</span>
