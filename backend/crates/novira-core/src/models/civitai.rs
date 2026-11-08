@@ -541,7 +541,25 @@ fn file(version_id: &str, f: &Value) -> Option<CivitaiFile> {
     })
 }
 
-fn model(m: &Value, include_nsfw: bool) -> Option<CivitaiModel> {
+/// The downloads and thumbs-up of the versions in an answer, added up; `None` when a version has no stats. Asked for some
+/// base models, Civitai lists only the versions of those and orders the models by these sums, not by the model's totals
+/// (checked against the live API 2026-11-08: Anima LoRAs by the downloads of their Anima versions).
+fn version_totals(m: &Value) -> Option<(u64, u64)> {
+    let versions = m["modelVersions"].as_array().filter(|v| !v.is_empty())?;
+    versions.iter().try_fold((0u64, 0u64), |(d, l), v| {
+        let stats = v["stats"].as_object()?;
+        Some((
+            d + stats.get("downloadCount")?.as_u64()?,
+            l + stats
+                .get("thumbsUpCount")
+                .and_then(Value::as_u64)
+                .unwrap_or(0),
+        ))
+    })
+}
+
+/// `by_base`: the search named base models, so the counts shown are those of the versions listed (the ones the order uses).
+fn model(m: &Value, include_nsfw: bool, by_base: bool) -> Option<CivitaiModel> {
     let kind = kind_of(m["type"].as_str()?)?;
     let versions: Vec<CivitaiVersion> = m["modelVersions"]
         .as_array()
@@ -582,6 +600,15 @@ fn model(m: &Value, include_nsfw: bool) -> Option<CivitaiModel> {
     };
     let images = image_urls(&m["modelVersions"][0], include_nsfw);
     let stats = &m["stats"];
+    let totals = (
+        stats["downloadCount"].as_u64().unwrap_or(0),
+        stats["thumbsUpCount"].as_u64().unwrap_or(0),
+    );
+    let (downloads, likes) = if by_base {
+        version_totals(m).unwrap_or(totals)
+    } else {
+        totals
+    };
     Some(CivitaiModel {
         id: m["id"].as_u64()?.to_string(),
         name: m["name"].as_str()?.to_string(),
@@ -591,8 +618,8 @@ fn model(m: &Value, include_nsfw: bool) -> Option<CivitaiModel> {
             .as_str()
             .unwrap_or_default()
             .to_string(),
-        downloads: stats["downloadCount"].as_u64().unwrap_or(0),
-        likes: stats["thumbsUpCount"].as_u64().unwrap_or(0),
+        downloads,
+        likes,
         rating: stats["rating"].as_f64().unwrap_or(0.0),
         rating_count: stats["ratingCount"].as_u64().unwrap_or(0),
         created_at: first.created_at,
@@ -611,10 +638,23 @@ fn model(m: &Value, include_nsfw: bool) -> Option<CivitaiModel> {
 }
 
 pub fn map_response(body: &Value, include_nsfw: bool) -> SearchResult {
+    map_answer(body, include_nsfw, false)
+}
+
+/// [`map_response`] for an answer to a search that named base models (see [`version_totals`]).
+pub fn map_response_by_base(body: &Value, include_nsfw: bool) -> SearchResult {
+    map_answer(body, include_nsfw, true)
+}
+
+fn map_answer(body: &Value, include_nsfw: bool, by_base: bool) -> SearchResult {
     SearchResult {
         items: body["items"]
             .as_array()
-            .map(|a| a.iter().filter_map(|m| model(m, include_nsfw)).collect())
+            .map(|a| {
+                a.iter()
+                    .filter_map(|m| model(m, include_nsfw, by_base))
+                    .collect()
+            })
             .unwrap_or_default(),
         next_cursor: match &body["metadata"]["nextCursor"] {
             Value::String(s) => Some(s.clone()),
@@ -651,20 +691,47 @@ fn multi_cursors(cursor: Option<&str>, bases: &[String]) -> Vec<(String, Option<
         .collect()
 }
 
-/// Orders merged results the way the sort does (the answers of each request are in that order already). Equal ones keep their order.
-fn merge(mut items: Vec<CivitaiModel>, sort: &str) -> Vec<CivitaiModel> {
-    let mut seen = std::collections::HashSet::new();
-    items.retain(|m| seen.insert(m.id.clone()));
-    if sort == "rating" {
-        items.sort_by(|a, b| {
-            b.rating
-                .total_cmp(&a.rating)
-                .then(b.rating_count.cmp(&a.rating_count))
-        });
-    } else {
-        items.sort_by_key(|m| std::cmp::Reverse(m.downloads));
+/// Orders merged results the way the sort does (the answers of each request are in that order already). A model found under
+/// two base models is one card: its versions together, its counts added up (each answer counted only its own versions).
+/// "Highest rated" is ordered by thumbs-up, what Civitai orders it by and what the card shows (Civitai sends no rating any
+/// more). Equal ones keep their order.
+fn merge(items: Vec<CivitaiModel>, sort: &str) -> Vec<CivitaiModel> {
+    let mut out: Vec<CivitaiModel> = Vec::with_capacity(items.len());
+    for m in items {
+        match out.iter_mut().find(|o| o.id == m.id) {
+            Some(o) => {
+                // The same answer twice adds nothing; another base model's versions add their counts (a version has
+                // one base model, so two answers never share part of their versions).
+                if m.versions
+                    .iter()
+                    .all(|v| o.versions.iter().any(|x| x.id == v.id))
+                {
+                    continue;
+                }
+                o.downloads += m.downloads;
+                o.likes += m.likes;
+                for v in m.versions {
+                    if !o.versions.iter().any(|x| x.id == v.id) {
+                        o.versions.push(v);
+                    }
+                }
+                o.versions.sort_by_key(|v| std::cmp::Reverse(v.created_at));
+                // What the card says of "the" version follows the newest one, as for a model from one answer.
+                if let Some(first) = o.versions.first() {
+                    o.base_model = first.base_model.clone();
+                    o.created_at = first.created_at;
+                    o.trigger_words = first.trigger_words.clone();
+                }
+            }
+            None => out.push(m),
+        }
     }
-    items
+    if sort == "rating" {
+        out.sort_by_key(|m| std::cmp::Reverse(m.likes));
+    } else {
+        out.sort_by_key(|m| std::cmp::Reverse(m.downloads));
+    }
+    out
 }
 
 async fn fetch(
@@ -672,6 +739,7 @@ async fn fetch(
     query: Vec<(String, String)>,
     api_key: Option<&str>,
     include_nsfw: bool,
+    by_base: bool,
 ) -> Result<SearchResult, String> {
     let mut req = http.get(format!("{}/models", civitai_api())).query(&query);
     if let Some(k) = api_key {
@@ -688,7 +756,7 @@ async fn fetch(
         .json()
         .await
         .map_err(|e| format!("Unexpected Civitai response: {e}"))?;
-    Ok(map_response(&body, include_nsfw))
+    Ok(map_answer(&body, include_nsfw, by_base))
 }
 
 pub async fn search(
@@ -698,7 +766,14 @@ pub async fn search(
 ) -> Result<SearchResult, String> {
     let all = bases(params);
     if !splits(params, &all) {
-        let mut found = fetch(http, query(params), api_key, params.include_nsfw).await?;
+        let mut found = fetch(
+            http,
+            query(params),
+            api_key,
+            params.include_nsfw,
+            !all.is_empty(),
+        )
+        .await?;
         found.items.retain(|m| keep(m, params));
         return Ok(found);
     }
@@ -723,7 +798,12 @@ pub async fn search(
             &share,
             cursor.as_deref(),
         );
-        async move { (base, fetch(http, q, api_key, params.include_nsfw).await) }
+        async move {
+            (
+                base,
+                fetch(http, q, api_key, params.include_nsfw, true).await,
+            )
+        }
     });
     let answers = futures_util::future::join_all(requests).await;
     let mut items = Vec::new();

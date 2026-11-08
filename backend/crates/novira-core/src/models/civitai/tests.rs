@@ -19,9 +19,23 @@ fn params() -> SearchParams {
     }
 }
 
-fn model_with(id: &str, downloads: u64, rating: f64) -> CivitaiModel {
-    let m = &json!({"id": id.parse::<u64>().unwrap(), "name": id, "type": "LORA", "stats": {"downloadCount": downloads, "rating": rating, "ratingCount": 1}, "modelVersions": [{"id": 1, "baseModel": "Pony", "files": [{"id": 9, "name": "a.safetensors", "sizeKB": 1.0, "metadata": {}}]}]});
-    model(m, true).unwrap()
+fn model_with(id: &str, downloads: u64, likes: u64) -> CivitaiModel {
+    let m = &json!({"id": id.parse::<u64>().unwrap(), "name": id, "type": "LORA", "stats": {"downloadCount": downloads, "thumbsUpCount": likes}, "modelVersions": [{"id": 1, "baseModel": "Pony", "files": [{"id": 9, "name": "a.safetensors", "sizeKB": 1.0, "metadata": {}}]}]});
+    model(m, true, false).unwrap()
+}
+
+/// A model as Civitai answers a search for some base models: the model's totals over every version, and only the listed
+/// versions (`(id, base, downloads, likes, published)`) with their own stats.
+fn answer_model(id: u64, total: u64, versions: &[(u64, &str, u64, u64, &str)]) -> Value {
+    json!({
+        "id": id, "name": format!("m{id}"), "type": "LORA",
+        "stats": {"downloadCount": total, "thumbsUpCount": total / 10},
+        "modelVersions": versions.iter().map(|(vid, base, d, l, at)| json!({
+            "id": vid, "baseModel": base, "publishedAt": at,
+            "stats": {"downloadCount": d, "thumbsUpCount": l},
+            "files": [{"id": vid * 10, "name": "a.safetensors", "sizeKB": 1.0, "metadata": {}}]
+        })).collect::<Vec<_>>()
+    })
 }
 
 #[test]
@@ -98,19 +112,85 @@ fn the_cursor_of_a_split_search_keeps_one_cursor_per_base_model() {
 #[test]
 fn merged_answers_follow_the_sort_and_drop_repeats() {
     let items = vec![
-        model_with("1", 10, 4.0),
-        model_with("2", 30, 3.0),
-        model_with("1", 10, 4.0),
-        model_with("3", 20, 5.0),
+        model_with("1", 10, 40),
+        model_with("2", 30, 30),
+        model_with("1", 10, 40),
+        model_with("3", 20, 50),
     ];
     let by = |sort: &str| {
         merge(items.clone(), sort)
             .into_iter()
-            .map(|m| m.id)
+            .map(|m| (m.id, m.downloads))
             .collect::<Vec<_>>()
     };
-    assert_eq!(by("downloads"), ["2", "3", "1"]);
-    assert_eq!(by("rating"), ["3", "1", "2"]);
+    let ids = |sort: &str| by(sort).into_iter().map(|(id, _)| id).collect::<Vec<_>>();
+    assert_eq!(ids("downloads"), ["2", "3", "1"]);
+    // Highest rated follows the thumbs-up the card shows: Civitai sends no rating any more.
+    assert_eq!(ids("rating"), ["3", "1", "2"]);
+    // The same answer twice counts once.
+    assert!(by("downloads").contains(&("1".to_string(), 10)));
+}
+
+#[test]
+fn asked_for_a_base_model_a_card_counts_the_versions_of_that_base_the_order_uses() {
+    // Civitai's answer for Anima LoRAs by downloads (the shape of 2026-11-08): the order follows the Anima versions, while
+    // the second model's total (all its versions, other bases too) is the largest.
+    let body = json!({"items": [
+        answer_model(1, 80_968, &[(11, "Anima", 61_542, 3_000, "2026-10-01T00:00:00Z"), (12, "Anima", 19_427, 300, "2026-09-01T00:00:00Z")]),
+        answer_model(2, 180_872, &[(21, "Anima", 36_186, 2_000, "2026-10-01T00:00:00Z"), (22, "Anima", 21_478, 1_000, "2026-09-01T00:00:00Z")]),
+        answer_model(3, 47_687, &[(31, "Anima", 47_687, 2_515, "2026-10-01T00:00:00Z")]),
+    ]});
+    let by_base = map_response_by_base(&body, false).items;
+    let downloads: Vec<u64> = by_base.iter().map(|m| m.downloads).collect();
+    assert_eq!(downloads, [80_969, 57_664, 47_687]);
+    assert!(
+        downloads.windows(2).all(|w| w[0] >= w[1]),
+        "the cards read in the order Civitai sent them"
+    );
+    assert_eq!(by_base[1].likes, 3_000);
+    // Without a base model the model's own totals stand (Civitai orders by those then).
+    let all = map_response(&body, false).items;
+    assert_eq!(all[1].downloads, 180_872);
+    assert_eq!(all[1].likes, 18_087);
+}
+
+#[test]
+fn a_version_without_stats_leaves_the_models_totals() {
+    let mut m = answer_model(
+        1,
+        500,
+        &[
+            (11, "Anima", 100, 5, "2026-10-01T00:00:00Z"),
+            (12, "Anima", 50, 2, "2026-09-01T00:00:00Z"),
+        ],
+    );
+    m["modelVersions"][1]
+        .as_object_mut()
+        .unwrap()
+        .remove("stats");
+    assert_eq!(model(&m, false, true).unwrap().downloads, 500);
+    m["modelVersions"] = json!([]);
+    assert_eq!(version_totals(&m), None);
+}
+
+#[test]
+fn a_model_found_under_two_base_models_is_one_card_with_both_counts_and_versions() {
+    let pony = map_response_by_base(&json!({"items": [answer_model(1, 9_000, &[(11, "Pony", 3_000, 30, "2026-08-01T00:00:00Z")])]}), false).items;
+    let il = map_response_by_base(
+        &json!({"items": [
+            answer_model(2, 4_000, &[(21, "Illustrious", 4_000, 40, "2026-07-01T00:00:00Z")]),
+            answer_model(1, 9_000, &[(12, "Illustrious", 2_500, 25, "2026-10-01T00:00:00Z")]),
+        ]}),
+        false,
+    )
+    .items;
+    let merged = merge(pony.into_iter().chain(il).collect(), "downloads");
+    let ids: Vec<&str> = merged.iter().map(|m| m.id.as_str()).collect();
+    assert_eq!(ids, ["1", "2"]);
+    assert_eq!((merged[0].downloads, merged[0].likes), (5_500, 55));
+    // Both versions, the newest first (the one an install takes).
+    let versions: Vec<&str> = merged[0].versions.iter().map(|v| v.id.as_str()).collect();
+    assert_eq!(versions, ["12", "11"]);
 }
 
 #[test]
@@ -160,7 +240,7 @@ fn the_answer_is_cut_to_the_permissions_and_files_asked_for() {
     let mk = |commercial: Value, derivatives: Value, format: &str| {
         let m = &json!({"id": 1, "name": "m", "type": "LORA", "allowCommercialUse": commercial, "allowDerivatives": derivatives,
                 "modelVersions": [{"id": 1, "baseModel": "Pony", "files": [{"id": 9, "name": "a", "sizeKB": 1.0, "metadata": {"format": format}}]}]});
-        model(m, true).unwrap()
+        model(m, true, false).unwrap()
     };
     let mut p = params();
     p.licenses = vec!["sellImages".into(), "shareMerges".into()];
@@ -469,7 +549,7 @@ fn the_pictures_to_page_through_and_the_model_page_come_from_the_version() {
 /// A model whose newest version carries `paidAccess` as the API answers it.
 fn model_with_paid_access(id: &str, paid_access: serde_json::Value) -> CivitaiModel {
     let m = &json!({"id": id.parse::<u64>().unwrap(), "name": id, "type": "LORA", "stats": {}, "modelVersions": [{"id": 1, "baseModel": "Pony", "paidAccess": paid_access, "files": [{"id": 9, "name": "a.safetensors", "sizeKB": 1.0, "metadata": {}}]}]});
-    model(m, true).unwrap()
+    model(m, true, false).unwrap()
 }
 
 #[test]
