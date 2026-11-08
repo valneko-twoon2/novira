@@ -65,5 +65,5 @@ When you add a check, deliberately introduce a violation and confirm it fails be
 ## 5. Reporting
 
 - Write the security-related change (which boundary, what), the checks you ran and their results. If something was not run, write why.
-- If there is a new known limit or an accepted risk, update "Known limits" of the design page of that feature (`docs/design/README.md`; in [docs/design/01-app/01-core/03-security.md](../../docs/design/01-app/01-core/03-security.md) only when it belongs to no feature) in the same work (in English). If you added a boundary or protection, update the "Boundaries" table of that page too.
+- If there is a new known limit or an accepted risk, update "Known limits" of the design page of that feature (`docs/design/README.md`; in [docs/design/01-app/01-core/03-security.md](../../docs/design/01-app/01-core/03-security.md) only when it belongs to no feature) in the same work (in Japanese). If you added a boundary or protection, update the "Boundaries" table of that page too.
 - Report vulnerabilities you find, whether or not you fixed them. Do not push ahead with a large fix on your own; ask first.
