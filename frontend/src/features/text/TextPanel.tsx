@@ -4,7 +4,7 @@
 import { t } from '@/i18n';
 import { findImage, useGallery } from '@/state/gallery';
 import { useTextEditor } from '@/state/text/textEditor';
-import { Button, NumberInput, Section, Select } from '@/ui';
+import { Button, ColorInput, NumberInput, Section, Select } from '@/ui';
 import { LayerProperties } from './LayerProperties';
 import { RichSection } from './RichSection';
 import { TextPresetBar } from './TextPresetBar';
@@ -75,7 +75,7 @@ function BackgroundSection() {
         </Button>
       )}
       {kind === 'color' && bg.kind === 'color' && bg.color && (
-        <input type="color" className="tx-color__swatch" value={bg.color} aria-label={t('text.color')} onChange={(e) => setBackground({ kind: 'color', color: e.target.value })} />
+        <ColorInput className="tx-color__swatch" value={bg.color} aria-label={t('text.color')} onChange={(color) => setBackground({ kind: 'color', color })} />
       )}
       {kind !== 'image' && (
         <div className="tx-inline">

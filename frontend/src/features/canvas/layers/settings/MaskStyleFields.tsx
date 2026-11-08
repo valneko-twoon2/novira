@@ -2,7 +2,7 @@
 import { t } from '@/i18n';
 import { MASK_FILLS, type MaskEntity, type MaskFill } from '@/state/canvas';
 import { useCanvasStore } from '@/state/canvasStoreContext';
-import { Field, Select } from '@/ui';
+import { ColorInput, Field, Select } from '@/ui';
 import { fromHex, toHex } from '../../color';
 import { FILL_LABEL } from '../../names';
 
@@ -11,12 +11,11 @@ export function MaskStyleFields({ entity }: { entity: MaskEntity }) {
   return (
     <>
       <Field label={t('canvas.mask.color')}>
-        <input
-          type="color"
+        <ColorInput
           className="canvas-color__input canvas-color__input--sm"
           value={toHex(entity.color)}
           aria-label={t('canvas.mask.color')}
-          onChange={(e) => update(entity.id, { color: fromHex(e.target.value) }, { history: `color:${entity.id}` })}
+          onChange={(hex) => update(entity.id, { color: fromHex(hex) }, { history: `color:${entity.id}` })}
         />
       </Field>
       <Field label={t('canvas.mask.fillStyle')}>

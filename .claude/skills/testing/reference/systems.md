@@ -197,11 +197,13 @@ Steps:
 2. After the change: `node scripts/tools/perf.mjs all --compare before`. Read the load line first; repeat a run that flags something while the machine was busy. Compare only on the same machine.
 3. Report the metrics that moved with their numbers. The recorder is `frontend/src/backend/perf.ts` (a new call is measured automatically).
 
-A failing budget does not exist. To add one: (a) keep a committed budget file (metric name to maximum, for stable metrics such as response sizes in bytes and counts, not milliseconds), (b) a `perf.mjs budget` subcommand that fails when a result exceeds it, with a test in `frontend/tests/perf.test.ts`, (c) a CI step. Time budgets on a shared runner are noisy; start with sizes and counts only. A CI step and a committed budget need user confirmation.
+Screen budgets exist for the front end (below). For the backend and IPC a failing budget does not exist. To add one: (a) keep a committed budget file (metric name to maximum, for stable metrics such as response sizes in bytes and counts, not milliseconds), (b) a `perf.mjs budget` subcommand that fails when a result exceeds it, with a test in `frontend/tests/perf.test.ts`, (c) a CI step. Time budgets on a shared runner are noisy; start with sizes and counts only. A CI step and a committed budget need user confirmation.
 
 Prove it can fail: add a deliberate 50 ms sleep to a command and see `--compare` flag it.
 
-CI: none.
+Screen time budgets: `frontend/e2e/perf-budget.spec.ts` times the frequent actions of the screens on the mock (a text colour dragged fast, Image and Text switching, main screen switching, adding a layer) in the Playwright dev build at a 2x display. `frontend/e2e/perfBudget.ts` holds the helpers: costInPage runs a self-contained action in the page N times and returns, per run, the time its code ran (`blocked`) and the time until the second frame (`painted`); withinBudget fails with the action, the milliseconds and "Look at: <files>". A budget is about three times what was measured, set on the median, so a slow runner does not trip it. Add one for a new action that fires often (per pointer move, per key, per input event) or switches a screen: measure first (print `costs`), set the limit, then prove it fails by undoing the fix. When a budget fails: profile before editing (`page.context().newCDPSession(page)`, `Profiler.start` with a 200 microsecond interval, `Profiler.stop`, sum self time per function), look for work done once per event instead of once per frame, and for a screen rebuilt on a switch. The native colour picker fires an `input` event per pointer move; use `ColorInput` from `@/ui`, not a bare `<input type="color">`.
+
+CI: `e2e-chromium` runs the budget spec with the other specs.
 
 ## 12. Dependency and secret audit
 

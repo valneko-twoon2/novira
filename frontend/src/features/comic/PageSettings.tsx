@@ -19,7 +19,7 @@ import {
 } from '@/state/comic/document';
 import { MAX_PANELS_PER_PAGE } from '@/state/comic/layout';
 import { useComic } from '@/state/comic/store';
-import { Button, Field, IconButton, NumberInput, Popover, PopoverContent, PopoverTrigger, Select, SliderNumber, TOOLBAR_BUTTON_SIZE } from '@/ui';
+import { Button, ColorInput, Field, IconButton, NumberInput, Popover, PopoverContent, PopoverTrigger, Select, SliderNumber, TOOLBAR_BUTTON_SIZE } from '@/ui';
 
 export function PageSettings({ page, project }: { page: ComicPage; project: ComicProject }) {
   const store = useComic.getState;
@@ -82,12 +82,11 @@ export function PageSettings({ page, project }: { page: ComicPage; project: Comi
             />
           </Field>
           <Field label={t('comic.page.frameColor')} orientation="vertical">
-            <input
-              type="color"
+            <ColorInput
               className="comic-color"
               value={page.frameColor}
               aria-label={t('comic.page.frameColor')}
-              onChange={(e) => store().setPageLayout(page.id, { frameColor: e.target.value })}
+              onChange={(frameColor) => store().setPageLayout(page.id, { frameColor })}
               data-testid="comic-frame-color"
             />
           </Field>

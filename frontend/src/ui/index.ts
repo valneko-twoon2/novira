@@ -1,5 +1,6 @@
 export * from './controls';
 export * from './overlays';
+export { ColorInput } from './ColorInput';
 export { ImageDropZone } from './ImageDropZone';
 export { InstallSlot, InstallStatus } from './InstallStatus';
 export { useHotkey, chordLabel } from './useHotkey';

@@ -1,7 +1,7 @@
 // Fill color swatch with a picker popover: color input, alpha, hex and preset swatches.
 import { t } from '@/i18n';
 import { useCanvasStore } from '@/state/canvasStoreContext';
-import { Popover, PopoverContent, PopoverTrigger, SliderNumber, TextInput, Tooltip } from '@/ui';
+import { ColorInput, Popover, PopoverContent, PopoverTrigger, SliderNumber, TextInput, Tooltip } from '@/ui';
 import { rgbaCss } from '@/ui/canvasDraw/rgbaCss';
 import { fromHex, PRESET_COLORS, toHex } from '../color';
 
@@ -19,12 +19,11 @@ export function FillColor() {
       </Tooltip>
       <PopoverContent className="canvas-color" align="start">
         <div className="canvas-color__row">
-          <input
-            type="color"
+          <ColorInput
             className="canvas-color__input"
             value={toHex(color)}
             aria-label={t('canvas.toolbar.fillColor')}
-            onChange={(e) => setColor(fromHex(e.target.value, color.a))}
+            onChange={(hex) => setColor(fromHex(hex, color.a))}
           />
           <TextInput
             className="canvas-color__hex"

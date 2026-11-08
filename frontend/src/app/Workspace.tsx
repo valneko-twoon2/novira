@@ -1,6 +1,6 @@
 // Three resizable columns for the image tabs: parameters | main view | gallery and assistant (and layers on canvas).
 import { CaretDoubleLeft, CaretDoubleRight } from '@phosphor-icons/react';
-import { type RefObject, useEffect, useRef } from 'react';
+import { Activity, type ReactNode, type RefObject, useEffect, useRef } from 'react';
 import { Group, Panel, Separator, usePanelRef } from 'react-resizable-panels';
 import { CanvasView } from '@/features/canvas/CanvasView';
 import { DraftsView } from '@/features/drafts/DraftsView';
@@ -20,7 +20,7 @@ import { t, type MessageKey } from '@/i18n';
 import { useQueue } from '@/state/queue';
 import { ComicWorkspace } from './ComicWorkspace';
 import { RightColumn } from './RightColumn';
-import { MAIN_VIEWS, useUi, type MainView, type TabName } from '@/state/ui';
+import { MAIN_VIEWS, MEDIA_KINDS, useUi, type MainView, type MediaKind, type TabName } from '@/state/ui';
 import { cx, ErrorBoundary, IconButton, ProgressBar } from '@/ui';
 
 const VIEW_LABEL_KEYS: Record<MainView, MessageKey> = {
@@ -136,13 +136,32 @@ function LeftBody({ tab }: { tab: TabName }) {
   return (
     <>
       <MediaTabs />
-      {media === 'image' && <div className="panel__scroll"><ParametersPanel tab={tab} /></div>}
-      {media === 'video' && <VideoPanel />}
-      {media === 'text' && <TextPanel />}
-      {media === 'music' && <MusicPanel />}
-      {media === 'voice' && <VoicePanel />}
+      <OpenedMedia media={media} render={(m) => <LeftMedia media={m} tab={tab} />} />
     </>
   );
+}
+
+function LeftMedia({ media, tab }: { media: MediaKind; tab: TabName }) {
+  if (media === 'image') return <div className="panel__scroll"><ParametersPanel tab={tab} /></div>;
+  if (media === 'video') return <VideoPanel />;
+  if (media === 'text') return <TextPanel />;
+  if (media === 'music') return <MusicPanel />;
+  if (media === 'voice') return <VoicePanel />;
+  return null;
+}
+
+/**
+ * What each kind of media shows, kept mounted once opened and hidden while another kind shows (`<Activity>`, as the tabs
+ * are in App): switching between Image and Text built the other side again, which was most of the time of the switch.
+ */
+function OpenedMedia({ media, render }: { media: MediaKind; render: (media: MediaKind) => ReactNode }) {
+  const opened = useRef(new Set<MediaKind>());
+  opened.current.add(media);
+  return MEDIA_KINDS.filter((m) => opened.current.has(m)).map((m) => (
+    <Activity key={m} mode={m === media ? 'visible' : 'hidden'}>
+      {render(m)}
+    </Activity>
+  ));
 }
 
 function MainArea({ tab }: { tab: TabName }) {
@@ -196,15 +215,23 @@ function MainArea({ tab }: { tab: TabName }) {
         />
       </div>
       <div className="mainarea__body">
-        {otherMedia && media === 'video' && <VideoResults />}
-        {otherMedia && media === 'text' && <TextCanvas />}
-        {otherMedia && (media === 'music' || media === 'voice') && <AudioResults kind={media} />}
-        {!otherMedia && view === 'launchpad' && <Launchpad tab={tab} />}
-        {!otherMedia && view === 'viewer' && <ImageViewer />}
-        {!otherMedia && view === 'canvas' && <CanvasView tab={tab} />}
-        {!otherMedia && view === 'editor' && <WorkflowEditor tab={tab} />}
-        {!otherMedia && view === 'drafts' && <DraftsView />}
+        <OpenedMedia media={tab === 'generate' ? media : 'image'} render={(m) => <MainMedia media={m} tab={tab} view={view} />} />
       </div>
     </div>
+  );
+}
+
+function MainMedia({ media, tab, view }: { media: MediaKind; tab: TabName; view: MainView | undefined }) {
+  if (media === 'video') return <VideoResults />;
+  if (media === 'text') return <TextCanvas />;
+  if (media === 'music' || media === 'voice') return <AudioResults kind={media} />;
+  return (
+    <>
+      {view === 'launchpad' && <Launchpad tab={tab} />}
+      {view === 'viewer' && <ImageViewer />}
+      {view === 'canvas' && <CanvasView tab={tab} />}
+      {view === 'editor' && <WorkflowEditor tab={tab} />}
+      {view === 'drafts' && <DraftsView />}
+    </>
   );
 }

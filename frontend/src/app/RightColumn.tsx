@@ -20,18 +20,25 @@ useAgent.subscribe((s, before) => {
 export function RightColumn({ tab }: { tab: TabName }) {
   const media = useUi((s) => s.media);
   const textLayers = tab === 'generate' && media === 'text';
-  if (tab !== 'canvas' && !textLayers) return <GalleryAndAssistant tab={tab} />;
+  const layers = tab === 'canvas' || textLayers;
+  if (tab !== 'canvas' && tab !== 'generate') return <GalleryAndAssistant tab={tab} />;
+  // On the Generate tab the column is the same tree whether it has layers (Text) or not (Image), so the gallery, which is
+  // the heaviest part of a switch between the two, stays mounted instead of being built again.
   return (
     <Group orientation="vertical">
-      <Panel id="gallery" minSize={160} defaultSize="55">
+      <Panel id="gallery" minSize={layers ? 160 : 0} defaultSize={layers ? '55' : '100'}>
         <GalleryAndAssistant tab={tab} />
       </Panel>
-      <Separator className="resize-handle resize-handle--h" />
-      <Panel id="layers" minSize={160}>
-        <ErrorBoundary area="layers">
-          {textLayers ? <TextLayersPanel /> : <LayersPanel tab={tab} />}
-        </ErrorBoundary>
-      </Panel>
+      {layers && (
+        <>
+          <Separator className="resize-handle resize-handle--h" />
+          <Panel id="layers" minSize={160}>
+            <ErrorBoundary area="layers">
+              {textLayers ? <TextLayersPanel /> : <LayersPanel tab={tab} />}
+            </ErrorBoundary>
+          </Panel>
+        </>
+      )}
     </Group>
   );
 }
