@@ -12,7 +12,7 @@ covers:
 
 一覧に戻る: [README.md](README.md)
 
-動画・音楽・音声の生成画面が共有する仕組み。画面ごとの動作は [動画](../04-media-screens/01-video.md)・[音楽](../04-media-screens/02-music.md)・[音声](../04-media-screens/03-voice.md)、画像は [01-generation.md](../01-pictures/01-generation.md)、テキストは [03-text](../../04-gallery/03-text/README.md) にある。動画と音楽はコアノードで組んだ ComfyUI のジョブで、音声は ComfyUI の Python で起動する専用の Python ワーカープロセスで動く。モデルファイルは、要求に応じてダウンロードするモデルパック（[01-models.md](../03-models/01-models.md) を参照）。
+動画・音楽・音声の生成画面が共有する仕組み。画面ごとの動作は [動画](../04-media-screens/01-video.md)・[音楽](../04-media-screens/02-music.md)・[音声](../04-media-screens/03-voice.md)、画像は [01-generation.md](../01-pictures/01-generation.md)、テキストは [04-text-screen.md](../04-media-screens/04-text-screen.md) と [05-text-rich.md](../04-media-screens/05-text-rich.md) にある。動画と音楽はコアノードで組んだ ComfyUI のジョブで、音声は ComfyUI の Python で起動する専用の Python ワーカープロセスで動く。モデルファイルは、要求に応じてダウンロードするモデルパック（[01-models.md](../03-models/01-models.md) を参照）。
 
 ## 動作
 
