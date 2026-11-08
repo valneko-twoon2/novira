@@ -12,7 +12,7 @@ The originals of the gallery are kept under `outputs/` in folders a person can r
 
 **File names.** `<YYYYMMDD_HHMMSS>_<name>`, the time the picture was made in local time. The whole name stays in the file name, so `ImageFiles::index` finds every file again by its name at start, wherever it is, up to two folders down (or flat, as an older version kept it).
 
-**When files move.** At start (after the index), after a picture is stored, after its board or `isIntermediate` changes, after a board is renamed or deleted, and after a picture comes back from the trash, `arrangement::arrange` moves each file that is not where it belongs and removes folders left empty, subfolders first, also those a deleted board left behind. A file already at the place is never replaced; a file that cannot be moved stays and still opens.
+**When files move.** At start (after the index), after a picture is stored, after its board or `isIntermediate` changes, after a board is renamed or deleted, and after a picture comes back from the trash, `arrangement::arrange` moves each file that is not where it belongs and removes the folders those files left once they are empty (also one a picture sent to the trash left, at once). Only the folders left are looked at, so storing a picture does not list the whole gallery; at start and after a board is renamed or deleted `arrange_all` also lists every folder and removes any left empty, subfolders first, also those a deleted board left behind. A file already at the place is never replaced; a file that cannot be moved stays and still opens.
 
 ## Known limits
 
