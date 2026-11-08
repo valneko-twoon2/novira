@@ -94,11 +94,6 @@ export function ModelDetail({ model }: { model: ModelConfig }) {
           </div>
         )}
         <div className="mm-detail__actions">
-          {pageUrl && (
-            <Button size="sm" variant="outline" leftIcon={<ArrowSquareOut size={14} />} onClick={openSource}>
-              {t('models.detail.openSource')}
-            </Button>
-          )}
           {canConvert && (
             <Button size="sm" variant="outline" leftIcon={<ArrowsClockwise size={14} />} onClick={() => setConverting(true)}>
               {t('models.convert')}

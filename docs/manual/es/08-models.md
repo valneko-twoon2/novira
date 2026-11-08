@@ -102,7 +102,6 @@ Cuando un modelo tiene varias imágenes, las flechas a ambos lados de la imagen 
 
 Con los botones de la parte superior se puede hacer lo siguiente.
 
-- **{{ui:models.detail.openSource}}**: abre la página original del modelo en el navegador (solo para los modelos cuya página se conoce).
 - **{{ui:common.edit}}**: corrige el nombre, la descripción, la base y el tipo. Úselo cuando la base o el tipo no se hayan juzgado correctamente de forma automática.
 - **{{ui:common.delete}}**: elimina el modelo (véase más abajo).
 

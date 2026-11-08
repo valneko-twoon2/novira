@@ -70,17 +70,17 @@ describe('ModelDetail facts', () => {
     expect(document.querySelector('.mm-detail__desc')).toBeNull();
     expect(screen.queryByTestId('mm-default-settings')).toBeNull();
     expect(screen.queryByTestId('mm-trigger-phrases')).toBeNull();
-    expect(screen.queryByText(t('models.detail.openSource'))).toBeNull();
+    expect(screen.queryByTestId('mm-page-link')).toBeNull();
   });
 
-  it('opens the source page through the backend, or only says so in the browser mock', () => {
+  it('opens the page of the URL row through the backend, or only says so in the browser mock', () => {
     const open = vi.spyOn(backend, 'openSourcePage').mockResolvedValue(undefined);
     show();
-    fireEvent.click(screen.getByText(t('models.detail.openSource')));
+    fireEvent.click(screen.getByTestId('mm-page-link'));
     expect(lastToast()?.status).toBe('info');
     expect(open).not.toHaveBeenCalled();
     vi.spyOn(backend, 'kind', 'get').mockReturnValue('tauri' as never);
-    fireEvent.click(screen.getByText(t('models.detail.openSource')));
+    fireEvent.click(screen.getByTestId('mm-page-link'));
     expect(open).toHaveBeenCalledWith(model.source);
   });
 
@@ -88,7 +88,7 @@ describe('ModelDetail facts', () => {
     vi.spyOn(backend, 'kind', 'get').mockReturnValue('tauri' as never);
     vi.spyOn(backend, 'openSourcePage').mockRejectedValue(new Error('blocked'));
     show();
-    fireEvent.click(screen.getByText(t('models.detail.openSource')));
+    fireEvent.click(screen.getByTestId('mm-page-link'));
     await waitFor(() => expect(lastToast()).toMatchObject({ status: 'error', description: 'blocked' }));
   });
 

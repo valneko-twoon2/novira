@@ -102,7 +102,6 @@ Hat ein Modell mehrere Bilder, wechseln Sie mit den Pfeilen links und rechts des
 
 Mit den Schaltflächen oben lässt sich Folgendes tun.
 
-- **{{ui:models.detail.openSource}}**: Öffnet die Seite des Anbieters im Browser (nur bei Modellen mit Adresse).
 - **{{ui:common.edit}}**: Korrigiert Name, Beschreibung, Basis und Typ. Nutzen Sie das, wenn Basis oder Typ nicht automatisch richtig erkannt wurden.
 - **{{ui:common.delete}}**: Löscht das Modell (siehe unten).
 

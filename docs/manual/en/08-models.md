@@ -102,7 +102,6 @@ When a model has several pictures, the arrows on either side of the picture swit
 
 With the buttons at the top, you can do the following.
 
-- **{{ui:models.detail.openSource}}**: Opens the original page of the model in your browser (only for models whose page is known).
 - **{{ui:common.edit}}**: Fixes the name, description, base and type. Use it when the base or type was not judged correctly automatically.
 - **{{ui:common.delete}}**: Deletes the model (see below).
 

@@ -102,7 +102,6 @@ Quand un modèle a plusieurs images, les flèches gauche et droite de l'image pe
 
 Les boutons du haut permettent ceci.
 
-- **{{ui:models.detail.openSource}}** : ouvre dans le navigateur la page du modèle d'origine (seulement pour les modèles dont la page est connue).
 - **{{ui:common.edit}}** : corrige le nom, la description, la base et le type. À utiliser quand la base ou le type n'ont pas été reconnus correctement.
 - **{{ui:common.delete}}** : supprime le modèle (voir plus bas).
 

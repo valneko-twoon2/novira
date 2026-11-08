@@ -102,7 +102,6 @@ Quando o modelo tem várias imagens, é possível alternar com as setas à esque
 
 Com os botões na parte superior, é possível fazer o seguinte.
 
-- **{{ui:models.detail.openSource}}**: abre a página do modelo original no navegador (somente para modelos cuja página é conhecida).
 - **{{ui:common.edit}}**: corrige o nome, a descrição, a base e o tipo. Use quando a base ou o tipo não tiver sido identificado corretamente de forma automática.
 - **{{ui:common.delete}}**: exclui o modelo (veja abaixo).
 
