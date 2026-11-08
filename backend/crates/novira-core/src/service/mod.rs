@@ -428,8 +428,18 @@ impl Backend {
 
         // A job that was running when the app closed did not finish; leftover pending jobs wait for an explicit resume.
         // Never below an id that was given before, also when the queue was cleared since (older data has no such record).
-        let given = db.meta(NEXT_QUEUE_ID_META)?.and_then(|v| v.parse::<u64>().ok()).unwrap_or(1);
-        state.next_item_id = state.queue.iter().map(|q| q.id).max().unwrap_or(0).saturating_add(1).max(given);
+        let given = db
+            .meta(NEXT_QUEUE_ID_META)?
+            .and_then(|v| v.parse::<u64>().ok())
+            .unwrap_or(1);
+        state.next_item_id = state
+            .queue
+            .iter()
+            .map(|q| q.id)
+            .max()
+            .unwrap_or(0)
+            .saturating_add(1)
+            .max(given);
         let t = now();
         for item in &mut state.queue {
             if item.status == QueueItemStatus::InProgress {

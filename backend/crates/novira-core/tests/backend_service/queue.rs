@@ -443,5 +443,8 @@ async fn an_item_id_is_never_given_twice_after_the_queue_is_cleared_and_the_app_
     let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
     assert!(backend.queue_snapshot().items.is_empty());
     let after_restart = backend.enqueue(request("m", "three", 1)).unwrap();
-    assert!(after_restart[0].id > after_clear[0].id, "ids do not restart at 1 after a restart on an empty queue");
+    assert!(
+        after_restart[0].id > after_clear[0].id,
+        "ids do not restart at 1 after a restart on an empty queue"
+    );
 }
