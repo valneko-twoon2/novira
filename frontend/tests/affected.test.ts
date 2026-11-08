@@ -60,7 +60,7 @@ describe('affected checks: frontend', () => {
   });
 
   it('checks the test ids and text keys named outside the app when a component, the ja catalog or a script naming them changes', () => {
-    for (const path of ['frontend/src/features/media/MediaTabs.tsx', 'frontend/src/i18n/locales/ja/media.json', 'frontend/e2e/comic.spec.ts', 'frontend/scripts/manual/scenes.mjs', 'scripts/tools/models-sweep-app.mjs', 'docs/design/navigation.md']) {
+    for (const path of ['frontend/src/features/media/MediaTabs.tsx', 'frontend/src/i18n/locales/ja/media.json', 'frontend/e2e/comic.spec.ts', 'frontend/scripts/manual/scenes.mjs', 'scripts/tools/models-sweep-app.mjs', 'docs/design/01-app/02-screens/01-navigation.md']) {
       expect(commands(run([path])).some((c) => c.includes('tests/ui-refs.test.ts')), path).toBe(true);
     }
     for (const path of ['frontend/src/i18n/locales/en/media.json', 'docs/manual/ja/02-generate.md', 'frontend/src/ui/Button.css']) {

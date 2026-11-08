@@ -4,6 +4,7 @@
 // skills choose those. Every gate that applies runs even when an earlier one failed, so one commit shows all of them.
 // Usage (the hook calls it): node scripts/tools/commit-gates.mjs [--list] [<path>...]   (no paths: the staged files)
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -42,7 +43,8 @@ function envOf(gate, base = process.env, root = ROOT) {
   const env = { ...base, PATH: `${join(homedir(), '.cargo', 'bin')}${sep}${base.PATH ?? base.Path ?? ''}` };
   if (gate.rust) {
     env.CARGO_TARGET_DIR = join(harnessRoots(root).work, 'check-target');
-    env.NOVIRA_SKIP_FRONTEND_BUILD = '1';
+    // The app crate's build script needs frontend/dist; it builds the screens itself when it is missing (a fresh worktree has none).
+    if (existsSync(join(root, 'frontend', 'dist', 'index.html'))) env.NOVIRA_SKIP_FRONTEND_BUILD = '1';
   }
   return env;
 }

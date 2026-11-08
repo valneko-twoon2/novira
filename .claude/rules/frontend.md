@@ -6,7 +6,7 @@ paths:
 
 # Frontend structure and look
 
-Follow this when changing `frontend/src/`. The map of locations is [docs/architecture/frontend.md](../../docs/architecture/frontend.md).
+Follow this when changing `frontend/src/`. The map of locations is [docs/architecture/01-frontend.md](../../docs/architecture/01-frontend.md).
 
 ## 1. Layers
 

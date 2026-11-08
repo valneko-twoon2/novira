@@ -24,7 +24,7 @@ cd novira\frontend
 npm ci
 ```
 
-`npm ci` also points Git at the hooks in `.githooks/` (the `prepare` script). The hooks check line ends, the layout of the screens, the documentation and the commit message before a commit is accepted (see [architecture/tooling.md](architecture/tooling.md)).
+`npm ci` also points Git at the hooks in `.githooks/` (the `prepare` script). The hooks check line ends, the layout of the screens, the documentation and the commit message before a commit is accepted (see [architecture/tooling.md](architecture/03-tooling.md)).
 
 Then run `scripts\start.bat` from the repository root. The first build compiles every Rust dependency and takes several minutes; later builds only redo what changed. On its first start the app installs its own ComfyUI into `novira-data\`; the first picture also needs a model (see the first chapter of the manual, [manual/en/01-start.md](manual/en/01-start.md)).
 
@@ -47,7 +47,7 @@ Windows locks a running `novira.exe`, so close the app before you start, rebuild
 | `node scripts\tools\affected.mjs` | Runs only the checks the changed files need. Start here |
 | `scripts\release\set-version.bat` | Sets the app's version (asks for it, or `set-version.bat 0.2.0`) in `Cargo.toml`, `package.json` and the lock files | You prepare a release |
 | `node scripts\tools\release-smoke.mjs` | Starts what `package.bat build` put in `artifacts\`: the server on an empty data folder and on each old-data fixture, and the app with no engine, each until its main screen or its data answers. Nothing uses the GPU; its folders are deleted after | You publish a release, before the zip |
-| `scripts\release\package.bat` | Builds the release into `artifacts\` and packs it into the zip for a release page, with its SHA-256 (the programs and licence texts only; `package.bat build` stops before the zip); the notes are the version's section of `CHANGELOG.md`. Pushing a tag `v<version>` makes GitHub do the same and leave a draft release ([release-workflow.md](design/release-workflow.md)) | You publish a release |
+| `scripts\release\package.bat` | Builds the release into `artifacts\` and packs it into the zip for a release page, with its SHA-256 (the programs and licence texts only; `package.bat build` stops before the zip); the notes are the version's section of `CHANGELOG.md`. Pushing a tag `v<version>` makes GitHub do the same and leave a draft release ([release-workflow.md](design/01-app/04-release/01-release-workflow.md)) | You publish a release |
 | `scripts\check.bat` | Every fast check: typecheck, lint, unit tests and line ends on the frontend, `cargo fmt`, clippy and `cargo test` on the backend (`frontend` or `backend` for one side) |
 | `scripts\checks\full-check.bat` | Every test there is, by hand now and then (no CI runs the tests): `check.bat`, the browser server's tests, the mock compared with the real backend, every Playwright project and the layout scan, about half an hour; the report goes to `logs\full-check\` (`--no-browser` skips the browser steps) |
 | `cd frontend && npm run check` | The frontend part alone |

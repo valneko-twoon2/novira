@@ -7,7 +7,7 @@
 //   and takes the keys that changed there into its storage and its running stores (`uiStateMerge.ts`, `rehydrate.ts`).
 // The backend's state wins at start-up. A page that was never synced hands over what its storage has: it becomes the
 // backend's state when the backend has none, and the backend keeps it aside when it has one
-// (`docs/design/settings-engine.md`).
+// (`docs/design/01-app/03-engine/01-settings-engine.md`).
 import { backend } from '@/backend';
 import { canRehydrate, rehydrateKeys } from './rehydrate';
 import { planRemote, sameState, type KeyText } from './uiStateMerge';

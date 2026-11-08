@@ -23,12 +23,12 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const ARCH = 'docs/architecture';
 const DESIGN = 'docs/design';
 
-/** Bytes of the entry page of the map, which agents read at the start of a task. */
-export const ENTRY_LIMIT = 7000;
-/** Bytes of any other map page. */
-export const PAGE_LIMIT = 14000;
-/** Bytes of a design page; a longer one is split by feature. */
-export const DESIGN_LIMIT = 14000;
+/** Characters of the entry page of the map, which agents read at the start of a task (the pages are Japanese, so characters, not bytes). */
+export const ENTRY_LIMIT = 4500;
+/** Characters of any other map page. */
+export const PAGE_LIMIT = 9000;
+/** Characters of a design page; a longer one is split by feature. */
+export const DESIGN_LIMIT = 9000;
 
 /** Where a path written in a page starts when it is a repository path; anything else in backticks is not checked. */
 const ROOTS = ['frontend/', 'backend/', 'contract/', 'docs/', 'scripts/', '.claude/', '.githooks/'];
@@ -133,9 +133,34 @@ export function covers(entry, path) {
   return new RegExp(`^${source}$`).test(path);
 }
 
-/** The design pages among the tracked files (the index is not one). */
+/** The design pages among the tracked files: every page of the area / topic folders (a folder's README.md is its index, not a page). */
 function designPagesOf(files) {
-  return files.filter((f) => f.startsWith(`${DESIGN}/`) && f.endsWith('.md') && f !== `${DESIGN}/README.md` && !f.slice(DESIGN.length + 1).includes('/'));
+  return files.filter((f) => f.startsWith(`${DESIGN}/`) && f.endsWith('.md') && posix.basename(f) !== 'README.md');
+}
+
+/** The README.md of the design folder and of every folder under it: each exists and names every page and folder directly in it. */
+export function designIndexProblems(files, read) {
+  const problems = [];
+  const under = files.filter((f) => f.startsWith(`${DESIGN}/`));
+  const dirs = new Set([DESIGN]);
+  for (const f of under) for (let d = posix.dirname(f); d.startsWith(DESIGN); d = posix.dirname(d)) dirs.add(d);
+  for (const dir of [...dirs].sort()) {
+    const readme = `${dir}/README.md`;
+    if (!files.includes(readme)) {
+      problems.push(`${dir}: needs a README.md that lists what is in it`);
+      continue;
+    }
+    const body = read(readme) ?? '';
+    const children = new Set();
+    for (const f of under) {
+      if (!f.startsWith(`${dir}/`)) continue;
+      const rest = f.slice(dir.length + 1);
+      if (rest === 'README.md' || !(rest.includes('/') || rest.endsWith('.md'))) continue;
+      children.add(rest.split('/')[0]);
+    }
+    for (const child of [...children].sort()) if (!body.includes(child)) problems.push(`${readme}: does not list ${child}`);
+  }
+  return problems;
 }
 
 /** `[{ page, covers }]` of every design page, for the staged check and `--find`. */
@@ -159,11 +184,11 @@ export function structureProblems(files, read) {
     for (const name of names) if (!named(name)) problems.push(`${page[0]}: does not mention ${what} "${name}${suffix}"; add it to the map (.claude/rules/docs.md)`);
   };
   const entry = `${ARCH}/README.md`;
-  const frontend = `${ARCH}/frontend.md`;
-  const backend = `${ARCH}/backend.md`;
-  const tooling = `${ARCH}/tooling.md`;
+  const frontend = `${ARCH}/01-frontend.md`;
+  const backend = `${ARCH}/02-backend.md`;
+  const tooling = `${ARCH}/03-tooling.md`;
   // The tooling page and its table of guards (split from it) describe the tools, hooks, rules and skills between them.
-  const guards = `${ARCH}/guards.md`;
+  const guards = `${ARCH}/04-guards.md`;
 
   need([entry], foldersUnder(files, ''), 'the top-level folder');
   need([entry, tooling, guards], filesUnder(files, 'scripts/', '.bat'), 'the launcher', '');
@@ -186,7 +211,7 @@ export function structureProblems(files, read) {
   // What the pages point at exists: the paths they write and the links between them.
   const tracked = new Set(files);
   const exists = (path) => tracked.has(path) || files.some((f) => f.startsWith(`${path}/`));
-  for (const page of [...archPages, ...designPages, ...(tracked.has(`${DESIGN}/README.md`) ? [`${DESIGN}/README.md`] : [])]) {
+  for (const page of [...archPages, ...designPages, ...files.filter((f) => f.startsWith(`${DESIGN}/`) && posix.basename(f) === 'README.md')]) {
     const body = text(page);
     for (const path of pathsIn(body)) {
       if (UNTRACKED_OK.test(path) || NOT_A_PATH.test(path)) continue;
@@ -213,13 +238,13 @@ export function structureProblems(files, read) {
 
   // The map stays small enough to be read whole: the entry page is read at the start of every task.
   for (const page of archPages) {
-    const size = Buffer.byteLength(text(page));
+    const size = text(page).length;
     const limit = page === entry ? ENTRY_LIMIT : PAGE_LIMIT;
-    if (size > limit) problems.push(`${page}: ${size} bytes (at most ${limit}); cut what a search of the code shows (file lists), keep what it does not (.claude/rules/docs.md)`);
+    if (size > limit) problems.push(`${page}: ${size} characters (at most ${limit}); cut what a search of the code shows (file lists), keep what it does not (.claude/rules/docs.md)`);
   }
 
   // A design page says which code it describes, names only code that exists, is in the index, and is not too long.
-  const index = text(`${DESIGN}/README.md`);
+  problems.push(...designIndexProblems(files, read));
   for (const page of designPages) {
     const list = coversOf(text(page));
     if (list === null || list.length === 0) {
@@ -227,10 +252,8 @@ export function structureProblems(files, read) {
     } else {
       for (const entryPath of list) if (!files.some((f) => covers(entryPath, f))) problems.push(`${page}: covers "${entryPath}", which matches no file; fix the front matter`);
     }
-    const base = page.split('/').pop();
-    if (!index.includes(base)) problems.push(`${DESIGN}/README.md: does not list the page ${base}`);
-    const size = Buffer.byteLength(text(page));
-    if (size > DESIGN_LIMIT) problems.push(`${page}: ${size} bytes (at most ${DESIGN_LIMIT}); split it by feature (.claude/rules/docs.md)`);
+    const size = text(page).length;
+    if (size > DESIGN_LIMIT) problems.push(`${page}: ${size} characters (at most ${DESIGN_LIMIT}); split it by feature (.claude/rules/docs.md)`);
   }
   return problems;
 }
@@ -243,7 +266,7 @@ export function stagedProblems(changes) {
   const hasDesign = changes.some((c) => c.status !== 'D' && c.path.startsWith(`${DESIGN}/`) && c.path.endsWith('.md'));
   const boundary = changes.find((c) => c.status !== 'D' && BOUNDARY.some((re) => re.test(c.path)));
   if (boundary && !hasDesign) {
-    problems.push(`${boundary.path}: a security boundary changed (IPC commands, capabilities, CSP or window config); a design page must be in the same commit: re-read the page of the feature (node scripts/tools/docs-check.mjs --find ${boundary.path}) and ${DESIGN}/security.md, and update what no longer holds`);
+    problems.push(`${boundary.path}: a security boundary changed (IPC commands, capabilities, CSP or window config); a design page must be in the same commit: re-read the page of the feature (node scripts/tools/docs-check.mjs --find ${boundary.path}) and ${DESIGN}/01-app/01-core/03-security.md, and update what no longer holds`);
   }
   return problems;
 }

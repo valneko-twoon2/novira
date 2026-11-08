@@ -103,7 +103,7 @@ Steps:
 
 Prove it can fail: change a colour token or a margin locally; `npm run e2e:visual` must fail and write the diff image to `logs/e2e/`. Revert.
 
-CI: none (baselines are Windows images; `docs/design/ci.md` says visual and layout scan are added one at a time once they pass on the runner). Adding the visual job to `test.yml` is a CI change: needs user confirmation.
+CI: none (baselines are Windows images; `docs/design/01-app/04-release/02-ci.md` says visual and layout scan are added one at a time once they pass on the runner). Adding the visual job to `test.yml` is a CI change: needs user confirmation.
 
 ## 6. Cross browser and device
 
@@ -217,8 +217,8 @@ Steps for a new finding:
 
 Missing, each needs user confirmation (new tool and CI change), shown here so it can be added in one step:
 - cargo-deny (licences, banned crates, sources, duplicate versions): add `backend/deny.toml` (`[licenses] allow = [...]`, `[sources] unknown-registry = "deny"`, `[bans]`), then a job in `audit.yml` in the style of the `cargo-audit` job: cache `~/.cargo/bin/cargo-deny` with key `cargo-deny-<version>-${{ runner.os }}`, `cargo install cargo-deny --version <pinned> --locked` when not cached, `working-directory: backend`, `run: cargo deny check`; add `backend/deny.toml` to the workflow's `paths`. Pin an exact version at least two weeks old.
-- gitleaks (secrets in the files and history): a job that downloads the pinned release binary of a given version and checksum (only actions of GitHub's own, `actions/*`, are allowed by `docs/design/ci.md`, so no third-party action), runs `gitleaks detect --source . --redact`, with an allowlist file `.gitleaks.toml` for fixtures. Full history needs `fetch-depth: 0` on checkout.
-- Update `docs/design/ci.md` (its `covers` list names `audit.yml` and `audit.toml`) in the same commit.
+- gitleaks (secrets in the files and history): a job that downloads the pinned release binary of a given version and checksum (only actions of GitHub's own, `actions/*`, are allowed by `docs/design/01-app/04-release/02-ci.md`, so no third-party action), runs `gitleaks detect --source . --redact`, with an allowlist file `.gitleaks.toml` for fixtures. Full history needs `fetch-depth: 0` on checkout.
+- Update `docs/design/01-app/04-release/02-ci.md` (its `covers` list names `audit.yml` and `audit.toml`) in the same commit.
 
 Prove it can fail: run the tool locally against a deliberately bad input in a scratch folder under `novira-data/work/` (a licence not on the list, a fake token), not in the repository.
 

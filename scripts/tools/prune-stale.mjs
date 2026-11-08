@@ -1,6 +1,6 @@
 // Deletes stale harness output. What the harness generates lives directly inside two folders of <repo>: novira-data/work/
 // (verification data, builds, scratch scripts and pictures) and logs/ (test results and reports); an entry that has not
-// been used for longer than its limit is deleted by default (docs/architecture/tooling.md, "Stale output"). The age is
+// been used for longer than its limit is deleted by default (docs/architecture/03-tooling.md, "Stale output"). The age is
 // measured from the `.last-used` marker file inside the entry (the harness writes it each time it uses the entry;
 // `markUsed`), or, without a marker, from the newest top-level modification time of the entry.
 //   node scripts/tools/prune-stale.mjs [--dry-run] [--quiet]

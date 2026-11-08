@@ -94,7 +94,7 @@ describe('architecture-map hook', () => {
     for (const event of ['SessionStart', 'SubagentStart']) {
       const answer = contextFor(event, root);
       expect(answer.hookSpecificOutput.hookEventName).toBe(event);
-      expect(answer.hookSpecificOutput.additionalContext).toContain('# Architecture');
+      expect(answer.hookSpecificOutput.additionalContext).toContain('# アーキテクチャ');
       expect(answer.hookSpecificOutput.additionalContext).not.toContain('\r');
     }
   });

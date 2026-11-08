@@ -1,4 +1,4 @@
-// Starts novira-server (the browser server, docs/design/browser-server.md) on an isolated data folder for a check that drives
+// Starts novira-server (the browser server, docs/design/06-server/01-local/01-browser-server.md) on an isolated data folder for a check that drives
 // the real backend from Chromium, and stops it again with the engine it started. The twin of scripts/tools/verify-real-app.mjs for
 // the browser path: same data folder rules (strictly inside novira-data/work/ of the main checkout), same shared models
 // (settings.json `modelRoots`), the GPU lock comes from NOVIRA_GPU_LOCK like the app's.

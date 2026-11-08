@@ -136,7 +136,7 @@ pub struct AgentRequest {
 /// (`models::default_model`), so the model the picker names is the one that answers; none when the tool lists no
 /// model (Codex without its list, a server, whose model is part of its saved settings). A program started through a
 /// `.cmd` file goes through cmd.exe, so only a listed plain name (`models::is_plain_name`) is ever an argument
-/// (docs/design/security.md).
+/// (docs/design/01-app/01-core/03-security.md).
 pub fn cli_model(
     provider: AgentProvider,
     request: &AgentRequest,

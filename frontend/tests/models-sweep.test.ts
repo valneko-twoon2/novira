@@ -375,7 +375,7 @@ describe('when a sweep is due', () => {
       'backend/crates/novira-core/src/comfy/__snapshots__/graph/a.json',
       'frontend/src/features/models/CoverImage.test.tsx',
       'frontend/src/state/queue.ts',
-      'docs/design/models.md',
+      'docs/design/02-generation/03-models/01-models.md',
       'frontend/src/features/models/ModelManager.css',
       'frontend/src/ui/CoverImage.CSS',
     ]) {

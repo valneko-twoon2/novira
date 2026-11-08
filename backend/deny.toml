@@ -1,4 +1,4 @@
-# cargo-deny policy (docs/design/ci.md, "Supply chain"): bans, licenses and sources only. Advisories stay with
+# cargo-deny policy (docs/design/01-app/04-release/02-ci.md, "Supply chain"): bans, licenses and sources only. Advisories stay with
 # `cargo audit` and .cargo/audit.toml, so the judged list has one home. Run by hand:
 #   cargo deny --manifest-path backend/Cargo.toml check bans licenses sources
 # Written for cargo-deny 0.20 (the version the supply-chain workflow pins).

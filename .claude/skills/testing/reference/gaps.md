@@ -7,7 +7,7 @@ Rules for all of them (`.claude/rules/tests.md`, `security.md`, `AGENTS.md`):
 - A new dependency, a new tool, a CI change, or rewriting production code to add a seam always needs the user's yes first. Ask with the name, the version, what it costs (build time, size, licence) and what it replaces. Tests only, in a new test file, need no yes.
 - Work in a worktree (`node scripts/tools/worktree.mjs add <name>`). Scratch output goes to `novira-data/work/`, reports to `logs/`. Never touch the user's running `novira.exe` or the GPU (take `NOVIRA_GPU_LOCK` for any real-engine run).
 - Prove every new check can fail: break the code on purpose, see it fail, revert. Write that in the report.
-- A new check enters CI only after it has passed on the runner (`docs/design/ci.md`, "add one at a time"). Change `docs/design/ci.md` (its `covers` list too) in the same commit as a workflow.
+- A new check enters CI only after it has passed on the runner (`docs/design/01-app/04-release/02-ci.md`, "add one at a time"). Change `docs/design/01-app/04-release/02-ci.md` (its `covers` list too) in the same commit as a workflow.
 
 | Technique | Priority | Effort | Needs user OK | Section |
 |---|---|---|---|---|
@@ -95,7 +95,7 @@ Why: ESLint security rules and `source_scan` are string scans (limits listed in 
 Status: cargo-deny and gitleaks exist (`.github/workflows/supply-chain.yml`, `backend/deny.toml`, `.gitleaks.toml`; manual and weekly, not on push until seen to pass on the runner). Absent: CodeQL, semgrep. Own scans: `backend/src-tauri/tests/security/secrets.rs` (known shapes, no history).
 
 Choice and conditions (put these to the user):
-- CodeQL: supports JavaScript/TypeScript and, newer, Rust (check the current support and whether the repository's plan allows it: unconfirmed whether the repository is public). It needs `github/codeql-action`, which is not `actions/*`; `docs/design/ci.md` (Boundaries) allows only `actions/*`, so this widens that rule: ask. Results show in the Security tab and a push is not blocked.
+- CodeQL: supports JavaScript/TypeScript and, newer, Rust (check the current support and whether the repository's plan allows it: unconfirmed whether the repository is public). It needs `github/codeql-action`, which is not `actions/*`; `docs/design/01-app/04-release/02-ci.md` (Boundaries) allows only `actions/*`, so this widens that rule: ask. Results show in the Security tab and a push is not blocked.
 - semgrep: `pip install semgrep==<pinned>` in the workflow, rules in a committed `.semgrep/` folder (no registry download, no account). Strong on TypeScript, weak on Rust. No third-party action.
 - gitleaks: download the pinned release binary and check its SHA-256 in the script (no third-party action); `gitleaks git` needs `fetch-depth: 0`.
 - cargo-deny: same install pattern as `audit.yml` (`cargo install cargo-deny --version <pinned> --locked`, cached).
@@ -122,7 +122,7 @@ Steps for cargo-deny (the one with most value):
 
 Oracle: a licence outside the list, a git dependency, a wildcard version, a planted `sk-ant-...` string fail the run. Prove it: add a throwaway dependency with a GPL licence, or a fake token in a scratch commit on a scratch branch.
 
-Place: not `affected.mjs` (a dependency change already runs the whole side). Pre-commit: no (slow, network). Update `docs/design/ci.md` (Audit section and `covers`) and `docs/architecture/tooling.md` if a script is added.
+Place: not `affected.mjs` (a dependency change already runs the whole side). Pre-commit: no (slow, network). Update `docs/design/01-app/04-release/02-ci.md` (Audit section and `covers`) and `docs/architecture/03-tooling.md` if a script is added.
 
 ## 4. Flaky-test handling
 
@@ -161,7 +161,7 @@ Place: manual, like `--locales all`. Not in pre-commit. Later a CI step after se
 
 ## 6. Existing manual checks into CI, one at a time
 
-Why: `docs/design/ci.md` says what is "next in line" and why each waits. Each step below is one commit: first run it on the runner by workflow_dispatch or a branch push, read it, only then make it a standing job.
+Why: `docs/design/01-app/04-release/02-ci.md` says what is "next in line" and why each waits. Each step below is one commit: first run it on the runner by workflow_dispatch or a branch push, read it, only then make it a standing job.
 
 Order and precondition:
 1. Layout scan (ja, en). Precondition: no baselines, so it only needs the browser and the harness build. Command: `node scripts/tools/layout-scan.mjs` on `windows-latest` under the e2e lock; two minutes with 6 workers, the runner has 4 cores, so cap workers (`--workers 2`; the config caps at 6). It records passes in `novira-data/work/`, which does not matter on CI. Unconfirmed: whether the script runs without the local build cache; try it.
@@ -171,7 +171,7 @@ Order and precondition:
 
 Oracle: the job is green on the runner twice in a row. Prove it: break a rule on a scratch branch and see the job go red.
 
-Place: `.github/workflows/test.yml` for 1 to 3 (update the header comment and `docs/design/ci.md`, "Not implemented"); a workflow of its own for 4.
+Place: `.github/workflows/test.yml` for 1 to 3 (update the header comment and `docs/design/01-app/04-release/02-ci.md`, "Not implemented"); a workflow of its own for 4.
 
 ## 7. Accessibility beyond axe
 

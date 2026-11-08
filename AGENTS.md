@@ -9,7 +9,8 @@
 | ユーザーに向けた文すべて（回答、途中経過、ツール実行の前後の一言、確認・質問、エラーの説明、報告）。英語の進行文（「Let me…」など）も書かない | **日本語** |
 | サブエージェントへの依頼文 | 英語でよい。「報告は日本語で書く」と書き、受け取った報告はユーザーに渡す部分を日本語でまとめ直す |
 | コミットメッセージ | **日本語**。1 行目は `feat:`・`fix:`・`docs:`・`chore:` などの種類から（[commit-messages.md](.claude/rules/commit-messages.md)。commit-msg フック） |
-| `docs/`（`docs/manual/<言語>/` はその言語。`docs/tests/` だけは日本語で、ほかは日本語化の途中）、`.claude/`、コードの識別子とコメント、テスト名 | **英語** |
+| `docs/architecture/`・`docs/design/`・`docs/tests/` | **日本語** |
+| `docs/manual/<言語>/` はその言語。ほかの `docs/`（日本語化の途中）、`.claude/`、コードの識別子とコメント、テスト名 | **英語** |
 | `AGENTS.md`・`README.md`・`CHANGELOG.md` | 日本語 |
 | 画面に表示する文言 | **i18n のカタログだけ**。ja と en を同じ変更で書く（[i18n.md](.claude/rules/i18n.md)。pre-commit） |
 
@@ -35,9 +36,9 @@
 
 | 知りたいこと | 読むもの |
 |---|---|
-| 構造、何の検査が何を止めるか | [docs/architecture/](docs/architecture/README.md)（[frontend.md](docs/architecture/frontend.md)・[backend.md](docs/architecture/backend.md)・[tooling.md](docs/architecture/tooling.md)・[guards.md](docs/architecture/guards.md)） |
+| 構造、何の検査が何を止めるか | [docs/architecture/](docs/architecture/README.md)（[frontend.md](docs/architecture/01-frontend.md)・[backend.md](docs/architecture/02-backend.md)・[tooling.md](docs/architecture/03-tooling.md)・[guards.md](docs/architecture/04-guards.md)） |
 | 用語 | [docs/glossary.md](docs/glossary.md) |
-| 機能ごとの現行仕様、安全上の方針 | [docs/design/README.md](docs/design/README.md)、[security.md](docs/design/security.md) |
+| 機能ごとの現行仕様、安全上の方針 | [docs/design/README.md](docs/design/README.md)、[security.md](docs/design/01-app/01-core/03-security.md) |
 | 検証のしかた、実アプリの隔離実行、GPU ロック | [docs/verification.md](docs/verification.md) |
 | 契約・設定・依存の正本 | `frontend/src/backend/types.ts`・`client.ts`、`backend/crates/novira-core/src/types.rs`、`settings.rs`、`frontend/package.json`、`backend/Cargo.toml` |
 

@@ -1,4 +1,4 @@
-// ESLint plugin with the frontend's security rules (see .claude/rules/security.md and docs/design/security.md).
+// ESLint plugin with the frontend's security rules (see .claude/rules/security.md and docs/design/01-app/01-core/03-security.md).
 //
 // Scope: syntactic checks on the source. It catches the direct forms of HTML injection and dynamic code:
 //   - `dangerouslySetInnerHTML` in JSX

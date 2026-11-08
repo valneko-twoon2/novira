@@ -131,7 +131,7 @@ scripts\start.bat
 - ComfyUI はこのパソコンの中（`127.0.0.1`）だけで動かし、ネットワークには公開しません。
 - ComfyUI の拡張機能やモデルは、入れたものをそのまま動かします。信頼できる配布元のものだけを入れてください。
 
-守っている範囲と、分かっている制限は [docs/design/security.md](docs/design/security.md)（英語）にまとめています。
+守っている範囲と、分かっている制限は [docs/design/01-app/01-core/03-security.md](docs/design/01-app/01-core/03-security.md)（英語）にまとめています。
 
 ## ドキュメント
 

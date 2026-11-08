@@ -1,10 +1,10 @@
-# Architecture
+# アーキテクチャ
 
-Read this page before you look for anything. It says how the parts fit, which file is the source of truth for what, and where to start for the usual changes. It is a short guide, not a list of files: to find a file, search the tree (`Glob`, `grep`). Open [frontend.md](frontend.md) or [backend.md](backend.md) for the area you work in, [tooling.md](tooling.md) and [guards.md](guards.md) for launchers and checks. How the features work is in [../design/README.md](../design/README.md).
+最初に読む。つながり、正本、変更の入口を示す。探索は `Glob`・`grep`。分野ごとは [01-frontend.md](01-frontend.md)・[02-backend.md](02-backend.md)、起動と検査は [03-tooling.md](03-tooling.md)・[04-guards.md](04-guards.md)。機能は [設計](../design/README.md)。
 
-## The parts
+## 部品
 
-A desktop app that makes pictures, video, music and voice. The UI reproduces InvokeAI v6; generation runs on a ComfyUI that the app installs and starts itself.
+画像・動画・音楽・音声を作るアプリ。画面は InvokeAI v6 の再現、生成はアプリ自身がインストール・起動する ComfyUI。
 
 ```text
 WebView (frontend/dist)
@@ -15,55 +15,52 @@ src-tauri  ── commands.rs (validate) ──▶ novira-core::service ──�
    └─ novira-image:// (names only)          └─ novira-data/ (SQLite, outputs, models, comfyui, secrets, logs)
 ```
 
-- `frontend/` is the UI (React 19, TypeScript, Vite). It only knows the `BackendClient` interface: inside the app that is Rust over Tauri IPC, in a browser it is an in-memory mock (`frontend/src/backend/mock/`) that stands in for everything right of the WebView.
-- `backend/crates/novira-core/` is the whole backend as a library with no Tauri in it, so it is tested without a window. `backend/src-tauri/` is the thin shell: it validates what the WebView sends and calls the service.
-- The frontend and the backend meet only at the contract (below). A picture or a file path never crosses it: the WebView gets names, and native dialogs are opened by the shell.
+- `frontend/`: UI（React 19、TypeScript、Vite）。知るのは `BackendClient` だけ。アプリでは Rust（Tauri IPC）、ブラウザではメモリ上のモック（`frontend/src/backend/mock/`）が WebView より右の代わり。
+- `backend/crates/novira-core/`: バックエンド全体のライブラリ。Tauri を含まず、ウィンドウなしでテストする。`backend/src-tauri/` は薄いシェルで、WebView の入力を検証してサービスを呼ぶ。
+- 接点は契約だけ。画像やパスは越えず、WebView には名前だけ渡す。ネイティブダイアログはシェルが開く。
 
-## Source of truth
+## 正本
 
-| What | Where |
+| 何 | どこ |
 |---|---|
-| Wire types between the two sides | `frontend/src/backend/types.ts` and `backend/crates/novira-core/src/types.rs`, kept equal by the JSON fixtures in `contract/` (checked by both sides) |
-| The calls the frontend can make | `frontend/src/backend/client.ts`; on the Rust side `backend/crates/novira-core/src/api.rs` (every backend-only command, written once for both shells) and `backend/src-tauri/src/command_list.rs` (a test keeps `capabilities/default.json` equal to it, and the list equal to `api.rs` plus the shell-only commands) |
-| Settings | `backend/crates/novira-core/src/settings.rs` (the `Settings` type) |
-| Screen text | `frontend/src/i18n/locales/<language>/<area>.json`, `ja` first; registered in `frontend/src/i18n/catalog.ts` |
-| Dependencies, scripts | `frontend/package.json`, `backend/Cargo.toml` |
-| Terms of the screens and the code | [../glossary.md](../glossary.md) |
+| ワイヤ型 | `frontend/src/backend/types.ts` と `backend/crates/novira-core/src/types.rs`。`contract/` の JSON フィクスチャで等しく保つ（両側が検査） |
+| フロントの呼び出し | `frontend/src/backend/client.ts`。Rust 側は `backend/crates/novira-core/src/api.rs`（バックエンド専用の全コマンド。共用）と `backend/src-tauri/src/command_list.rs`（テストが `capabilities/default.json` と、`api.rs` + シェル専用コマンドとの一致を保つ） |
+| 設定 | `backend/crates/novira-core/src/settings.rs`（`Settings` 型） |
+| 画面の文言 | `frontend/src/i18n/locales/<language>/<area>.json`（`ja` が先。`/i18n`）、`frontend/src/i18n/catalog.ts` に登録 |
+| 依存、スクリプト | `frontend/package.json`、`backend/Cargo.toml` |
+| 用語 | [../glossary.md](../glossary.md) |
 
-## Where to start
+## 変更の入口
 
-| To change | Start at |
+| 変えるもの | 入口 |
 |---|---|
-| A new call from the screens to the backend | `backend/crates/novira-core/src/api.rs`, `backend/src-tauri/src/commands.rs` and `command_list.rs`, `backend/crates/novira-server/src/lib.rs` (`SERVED`), `backend/src-tauri/capabilities/default.json`, the matching module in `backend/crates/novira-core/src/service/`, then the types on both sides and the samples in `contract/` |
-| A wire type | `frontend/src/backend/types.ts`, `backend/crates/novira-core/src/types.rs`, `contract/` |
-| Screen text or a language | `frontend/src/i18n/locales/` (the `/i18n` skill) |
-| The queue, job states, the worker | `backend/crates/novira-core/src/service/queue.rs` and `worker.rs`; on the screen side `frontend/src/state/queue.ts` and `wiring.ts` (backend events into stores) |
-| A ComfyUI graph (what a job asks the engine to run) | `backend/crates/novira-core/src/comfy/`: `graph.rs` for pictures, `video.rs`, `music.rs`; the screen's request is built through the registry in `frontend/src/state/invoke.ts` |
-| ComfyUI's install or process, extension packs | `backend/crates/novira-core/src/comfy/` (`install.rs`, `process.rs`, `node_packs.rs`), `service/node_pack_store.rs`; `frontend/src/state/comfy/` |
-| Models (install, classify, Civitai, Hugging Face) | `backend/crates/novira-core/src/models/`, `service/model_store.rs`; `frontend/src/features/models/`, `browse/` |
-| A setting | `backend/crates/novira-core/src/settings.rs`; the engine ones also `service/engine_settings.rs` and `frontend/src/features/settings/` |
-| The AI assistant | `backend/crates/novira-core/src/agent/` (what it is told, its tools); `frontend/src/state/agentGuide.ts` and `agentTools.ts` (the rule `.claude/rules/assistant.md`); the comic's `scene` operation: `frontend/src/state/comic/scene.ts` |
-| A new screen | `frontend/src/features/<name>/` with a `register.ts` that plugs into the registries in `frontend/src/state/`; mounted from `frontend/src/app/Workspace.tsx` or `SideNav.tsx` |
-| A shared control, a colour | `frontend/src/ui/`; raw colours only in `frontend/src/theme/tokens.css` |
-| What the browser mock answers | `frontend/src/backend/mock/` (`MockBackend.ts`, `mockEngine.ts`) |
-| The comic | `frontend/src/state/comic/`, `frontend/src/features/comic/`; saved by `backend/crates/novira-core/src/service/comics.rs` |
-| Export for sharing, the watermark | `backend/crates/novira-core/src/service/share.rs`, `media/export.rs`, `provenance/` |
-| What a feature does now, its boundaries and limits | `docs/design/README.md`; `node scripts/tools/docs-check.mjs --find <path>` names the page of a file |
-| How checks and launchers work | [tooling.md](tooling.md), [guards.md](guards.md) |
+| 画面からバックエンドへの新規呼び出し | `backend/crates/novira-core/src/api.rs`、`backend/src-tauri/src/commands.rs` と `command_list.rs`、`backend/crates/novira-server/src/lib.rs`（`SERVED`）、`backend/src-tauri/capabilities/default.json`、`backend/crates/novira-core/src/service/` の該当モジュール、次に両側の型、`contract/` のサンプル |
+| キュー、ジョブの状態、ワーカー | `backend/crates/novira-core/src/service/queue.rs`・`worker.rs`。画面側 `frontend/src/state/queue.ts`・`wiring.ts`（イベントをストアへ） |
+| ComfyUI のグラフ | `backend/crates/novira-core/src/comfy/`（`graph.rs` 画像、`video.rs`、`music.rs`）。画面の要求は `frontend/src/state/invoke.ts` のレジストリ経由 |
+| ComfyUI のインストール・プロセス、拡張機能 | `backend/crates/novira-core/src/comfy/`（`install.rs`・`process.rs`・`node_packs.rs`）、`service/node_pack_store.rs`、`frontend/src/state/comfy/` |
+| モデル（インストール、分類、Civitai、Hugging Face） | `backend/crates/novira-core/src/models/`、`service/model_store.rs`、`frontend/src/features/models/`・`browse/` |
+| 設定項目 | `settings.rs`。エンジン設定は `service/engine_settings.rs`、`frontend/src/features/settings/` も |
+| AI アシスタント | `backend/crates/novira-core/src/agent/`（指示、道具）、`frontend/src/state/agentGuide.ts`・`agentTools.ts`（規則 `.claude/rules/assistant.md`）、コミックの `scene` 操作は `frontend/src/state/comic/scene.ts` |
+| 新しい画面 | `frontend/src/features/<name>/` に `register.ts` を置き、`frontend/src/state/` のレジストリへつなぐ。載せるのは `frontend/src/app/Workspace.tsx` か `SideNav.tsx` |
+| 共通部品、色 | `frontend/src/ui/`。生の色は `frontend/src/theme/tokens.css` だけ |
+| モックの返答 | `frontend/src/backend/mock/`（`MockBackend.ts`、`mockEngine.ts`） |
+| コミック | `frontend/src/state/comic/`、`frontend/src/features/comic/`。保存は `backend/crates/novira-core/src/service/comics.rs` |
+| 共有用の書き出し、透かし | `backend/crates/novira-core/src/service/share.rs`、`media/export.rs`、`provenance/` |
+| 機能の現行の動き、境界、限界 | `docs/design/README.md`。ページは `node scripts/tools/docs-check.mjs --find <path>` |
 
-## Where things live
+## フォルダ
 
-| Folder | What |
+| フォルダ | 中身 |
 |---|---|
-| `frontend/` | the UI, its tests (`tests/`, `e2e/`) and the scripts tied to it |
-| `backend/` | the Cargo workspace: `crates/novira-core/`, `crates/novira-server/`, `src-tauri/` |
-| `contract/` | JSON fixtures of the wire types, checked by both sides |
-| `docs/` | `design/` feature specs and security, `manual/<language>/` the manual, `development.md`, `verification.md`, `tests/` test techniques |
-| `scripts/` | what you run by hand: the Windows launchers (`.bat`); in `tools/`, what AI sessions, Git hooks and CI call |
-| `.githooks/`, `.github/`, `.claude/`, `.config/` | the Git hooks (sh wrapper + Node body); the test and release workflows; Claude Code hooks, rules and skills; the pinned .NET tool of the coverage report ([tooling.md](tooling.md)) |
-| `novira-data/`, `data/`, `outputs/` | user data and generated files, never committed; `novira-data/work/` holds what the harness generates (verification data, builds, scratch) |
-| `logs/` | test results and reports, git-ignored |
+| `frontend/` | UI、テスト（`tests/`、`e2e/`）、スクリプト |
+| `backend/` | Cargo ワークスペース（`crates/novira-core/`、`crates/novira-server/`、`src-tauri/`） |
+| `contract/` | ワイヤ型の JSON フィクスチャ。両側が検査 |
+| `docs/` | `design/` 機能仕様・安全、`manual/<language>/` マニュアル、`development.md`、`verification.md`、`tests/` テスト技法 |
+| `scripts/` | 手で動かす Windows ランチャー（`.bat`）。`tools/` は AI・Git フック・CI が呼ぶもの |
+| `.githooks/`、`.github/`、`.claude/`、`.config/` | Git フック（sh + Node）、テスト・リリースの ワークフロー、Claude Code のフック・規則・スキル、カバレッジ用の固定 .NET ツール（[03-tooling.md](03-tooling.md)） |
+| `novira-data/`、`data/`、`outputs/` | ユーザーデータと生成物（非コミット）。`novira-data/work/` はハーネス生成物（検証データ、ビルド、一時） |
+| `logs/` | テスト結果とレポート。git の対象外 |
 
-## Keeping it current
+## 更新
 
-This guide holds what a search of the code does not show: how the parts connect, where the truth is, where to start. Change it in the same commit when a part is added, removed or moved, a boundary changes, or a "where to start" row stops being true. `scripts/tools/docs-check.mjs` fails on a part no page names, a backticked path that no longer exists, and a page past its size limit ([the rule](../../.claude/rules/docs.md)).
+検索で分からないこと（つながり、正本、入口）だけを置く。部品の追加・削除・移動、境界の変更、入口の行の誤りは同じコミットで直す。`scripts/tools/docs-check.mjs` は、名前のない部品、存在しない backtick のパス、上限超過のページで失敗する（[規則](../../.claude/rules/docs.md)）。

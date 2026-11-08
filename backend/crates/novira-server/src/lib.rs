@@ -7,8 +7,8 @@
 //! WebSocket of the backend's events, and with the home network the local CA's certificate at `/ca.crt` and the pairing
 //! of a phone under `/pair` (`pair.rs`). Everything else is refused.
 //!
-//! Boundary (`docs/design/browser-server.md`, `docs/design/browser-server-lan.md`,
-//! `docs/design/browser-server-pairing.md`): it listens on `127.0.0.1` over plain HTTP, and for the home network on a
+//! Boundary (`docs/design/06-server/01-local/01-browser-server.md`, `docs/design/06-server/02-network/01-browser-server-lan.md`,
+//! `docs/design/06-server/02-network/02-browser-server-pairing.md`): it listens on `127.0.0.1` over plain HTTP, and for the home network on a
 //! second port of the home address over TLS only, answering there only its own subnet. Every request must carry a
 //! `Host` (and `Origin`, when sent) that is the address the connection came in on, so a web page on another site, or a
 //! DNS name pointed at this computer, cannot use it; and this computer's requests the token of this start (a header, or
@@ -99,7 +99,7 @@ const MAX_CONNECTIONS: usize = 512;
 const HEADER_READ_TIMEOUT: Duration = Duration::from_secs(15);
 
 /// Commands answered now. The rest of the shared layer, and the commands only the desktop shell implements, answer
-/// "not available in the browser yet". Why each group is served or left out: `docs/design/browser-server.md`.
+/// "not available in the browser yet". Why each group is served or left out: `docs/design/06-server/01-local/01-browser-server.md`.
 pub const SERVED: &[&str] = &[
     // Reads.
     "bootstrap",
@@ -205,7 +205,7 @@ pub const SERVED: &[&str] = &[
 /// gallery, boards, workflows, the screen state, the reads and a chat with the assistant already set up here (its
 /// `claude`/`codex` runs with its own tools off and acts only through the app's tools, none of which installs or
 /// deletes); anything that changes this computer, installs or leaks stays at its keyboard. Why:
-/// `docs/design/browser-server-lan.md`.
+/// `docs/design/06-server/02-network/01-browser-server-lan.md`.
 pub const LOOPBACK_ONLY: &[&str] = &[
     // Installs, downloads, packs, the engine's version and restart: code runs here, or a large download starts.
     "install_model",

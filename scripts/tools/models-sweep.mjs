@@ -5,7 +5,7 @@
 //   node scripts/tools/models-sweep.mjs [--category <folder|type|rail|base>] [--model <part of the name>] [--no-gpu] [--build]
 //                               [--lookup] [--lookup-wait <seconds>] [--via app|server]
 // --via server (default app) runs the same checks through novira-server and Playwright's Chromium instead of the desktop window
-// (scripts/tools/server-run.mjs; docs/design/browser-server.md): what a browser cannot see (native dialogs, the novira-image:// scheme,
+// (scripts/tools/server-run.mjs; docs/design/06-server/01-local/01-browser-server.md): what a browser cannot see (native dialogs, the novira-image:// scheme,
 // WebView2 rendering) is not checked, see docs/verification.md. The server is always built, so --build only matters for the window.
 // It runs the isolated app (scripts/tools/verify-real-app.mjs) with the Civitai lookup off, and drives it with scripts/tools/models-sweep-app.mjs.
 // With --lookup it runs a second round with the lookup ON. That round SENDS THE HASH OF EVERY MODEL FILE to Civitai (the shared

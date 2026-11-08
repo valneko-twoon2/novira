@@ -10,7 +10,7 @@ disable-model-invocation: true
 
 Running `/release-notes` is the user's word to release: finish the changelog, commit and push it, tag that commit and push the tag. Do not stop to ask between the steps; stop only on a failed check below, and say why.
 
-The notes are the version's section of `CHANGELOG.md`, written as section 6 below says. The release workflow reads them from the tagged commit, titles the draft with the tag and attaches the zip ([release-workflow.md](../../../docs/design/release-workflow.md)). Do not make the release with `gh` yourself.
+The notes are the version's section of `CHANGELOG.md`, written as section 6 below says. The release workflow reads them from the tagged commit, titles the draft with the tag and attaches the zip ([release-workflow.md](../../../docs/design/01-app/04-release/01-release-workflow.md)). Do not make the release with `gh` yourself.
 
 ```
 Release progress:

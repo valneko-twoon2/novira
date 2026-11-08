@@ -1,4 +1,4 @@
-# gitleaks configuration (docs/design/ci.md, "Supply chain"). The default rules stay on; only findings that were looked
+# gitleaks configuration (docs/design/01-app/04-release/02-ci.md, "Supply chain"). The default rules stay on; only findings that were looked
 # at one by one and are not secrets are listed here. Each entry matches the file AND the exact value, so the same
 # shape in another place, or a real key in the same file, is still reported.
 title = "novira"

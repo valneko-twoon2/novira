@@ -1,5 +1,5 @@
 # Builds the Windows release the way scripts\release\package.bat does by hand, and leaves a DRAFT release for a person to
-# read and publish (docs/design/release-workflow.md). It runs only when a tag v<version> is pushed. The release is titled
+# read and publish (docs/design/01-app/04-release/01-release-workflow.md). It runs only when a tag v<version> is pushed. The release is titled
 # with the tag, and its body is the tag's section of CHANGELOG.md (scripts/tools/changelog.mjs --notes).
 # Only actions of GitHub's own (actions/*) are used, and every value that comes from outside (the tag name) reaches a
 # script through an environment variable, never pasted into the script text.

@@ -9,7 +9,7 @@ const names = (paths: string[]): string[] => (gatesFor(paths) as Gate[]).map((g)
 
 describe('commit gates', () => {
   it('runs nothing for documents only, and the phone layouts for screen text (a longer text moves the layout)', () => {
-    expect(names(['docs/design/drafts.md', 'README.md', 'docs/manual/ja/07-media.md'])).toEqual([]);
+    expect(names(['docs/design/02-generation/01-pictures/05-drafts.md', 'README.md', 'docs/manual/ja/07-media.md'])).toEqual([]);
     expect(names(['frontend/src/i18n/locales/ja/params.json'])).toEqual(['e2e-phone']);
   });
 
