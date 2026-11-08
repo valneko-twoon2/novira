@@ -6,6 +6,7 @@ import { persist } from 'zustand/middleware';
 import { backend, draftStep, type EnqueueRequest, type GenerationMetadata, type ImageDTO, type ModelConfig, type QueueItem, type RefImageInput } from '@/backend';
 import { buildRequestFor } from './invoke';
 import { useGallery } from './gallery';
+import { ensureAllDetails, ensureDetails } from './galleryDetails';
 import { BASE_ORDER, drawableModels, findModel } from './models';
 import { useQueue } from './queue';
 
@@ -185,6 +186,8 @@ export function repairGroups(groups: DraftGroup[], images: ImageDTO[]): DraftGro
 interface DraftsState {
   groups: DraftGroup[];
   currentId: string | null;
+  /** Whether the batches stored by an older version were checked for another job's pictures (`repairGroups`). */
+  repaired: boolean;
   /** Selected candidate ids of the current group. */
   selection: string[];
   busy: boolean;
@@ -240,6 +243,7 @@ export const useDrafts = create<DraftsState>()(
     (set, get) => ({
       groups: [],
       currentId: null,
+      repaired: false,
       selection: [],
       busy: false,
       setCurrent: (id) => set({ currentId: id, selection: [] }),
@@ -386,7 +390,7 @@ export const useDrafts = create<DraftsState>()(
     {
       name: 'novira.drafts',
       version: 1,
-      partialize: (s) => ({ groups: s.groups, currentId: s.currentId }),
+      partialize: (s) => ({ groups: s.groups, currentId: s.currentId, repaired: s.repaired }),
     },
   ),
 );
@@ -396,11 +400,32 @@ useQueue.subscribe((s, prev) => {
   if (s.items !== prev.items) useDrafts.getState().sync(s.items);
 });
 
-// Once the gallery is known, mend the batches stored by an older version that mixed up pictures.
-let repaired = false;
-useGallery.subscribe((g) => {
-  if (repaired || g.images.length === 0) return;
-  repaired = true;
-  const groups = repairGroups(useDrafts.getState().groups, g.images);
-  if (groups !== useDrafts.getState().groups) useDrafts.setState({ groups });
-});
+// Once the gallery is known, mend the batches stored by an older version that mixed up pictures (once: the result is kept).
+// The gallery holds summaries without settings, so the candidates' pictures are read first to see whether any is wrong; only
+// then are all the settings read, to find the right ones.
+async function repairStored(): Promise<void> {
+  const state = useDrafts.getState();
+  if (state.repaired) return;
+  const names = state.groups.flatMap((g) => g.candidates.flatMap((c) => [c.imageName, c.finalImageName])).filter((n): n is string => n !== null);
+  await ensureDetails(names);
+  let groups = state.groups;
+  if (repairGroups(groups, useGallery.getState().images) !== groups) {
+    await ensureAllDetails();
+    groups = repairGroups(groups, useGallery.getState().images);
+  }
+  // Batches started while this ran are kept as they are.
+  const now = useDrafts.getState().groups;
+  const mended = new Map(groups.map((g) => [g.id, g]));
+  useDrafts.setState({ groups: now.map((g) => mended.get(g.id) ?? g), repaired: true });
+}
+
+let repairing = false;
+/** Starts the check when there is something to check: the gallery and the stored batches both arrive on their own time. */
+function tryRepair() {
+  const d = useDrafts.getState();
+  if (repairing || d.repaired || d.groups.length === 0 || useGallery.getState().images.length === 0) return;
+  repairing = true;
+  void repairStored().catch(() => (repairing = false));
+}
+useGallery.subscribe(tryRepair);
+useDrafts.subscribe(tryRepair);

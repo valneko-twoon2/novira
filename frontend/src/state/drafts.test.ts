@@ -272,3 +272,19 @@ describe('repairGroups', () => {
     expect(repairGroups(early, [picture('old.png', {}, 10)])[0]!.candidates[0]).toMatchObject({ imageName: null });
   });
 });
+
+describe('the one-time repair of stored batches', () => {
+  it('reads the candidates pictures, finds the right ones and marks the batches as checked', async () => {
+    const { useGallery } = await import('./gallery');
+    const own = { name: 'mine.png', createdAt: 1_000_100, metadata: { seed: 5, positivePrompt: 'fox', modelKey: 'm', draftAt: 0.35 } } as ImageDTO;
+    const stranger = { name: 'stranger.png', createdAt: 5_000_000, metadata: { seed: 99, positivePrompt: 'cat', modelKey: 'm', draftAt: 0.35 } } as ImageDTO;
+    vi.spyOn(backend, 'getImageDetails').mockResolvedValue([own, stranger]);
+    const stored: DraftGroup = { ...group(candidate({ status: 'ready', imageName: 'stranger.png' })), createdAt: 1_000_000, params: { steps: 28, positivePrompt: 'fox', modelKey: 'm' } as DraftGroup['params'] };
+    useDrafts.setState({ groups: [stored], repaired: false });
+    const summaries = [{ ...own, metadata: null }, { ...stranger, metadata: null }] as ImageDTO[];
+    (await import('./galleryDetails')).markSummaries(summaries);
+    useGallery.setState({ images: summaries });
+    await vi.waitFor(() => expect(useDrafts.getState().repaired).toBe(true));
+    expect(useDrafts.getState().groups[0]!.candidates[0]!.imageName).toBe('mine.png');
+  });
+});
