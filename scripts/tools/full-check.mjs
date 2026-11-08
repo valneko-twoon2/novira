@@ -1,4 +1,4 @@
-// The whole test suite in one run, to be started by hand now and then (there is no CI): what scripts\check.bat runs, plus
+// The whole test suite in one run, to be started by hand now and then (CI runs most of it on every push; this adds the layout scan and every Playwright project in one report): what scripts\check.bat runs, plus
 // what it leaves out because it is slow: the browser server's tests, the mock compared with the real backend, every
 // Playwright project (the screen flows, the phone layout in Chromium and WebKit, the visual regression) and the layout
 // scan. Every step runs even when an earlier one failed. The result goes to logs/full-check/<time>.md of the main checkout

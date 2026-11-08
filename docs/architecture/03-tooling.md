@@ -6,7 +6,7 @@
 
 ## ランチャーとツール
 
-`scripts/` は手で動かすものを置く: Windows のランチャー（`.bat`）で、日常のものは最上位、長い検査は `checks/`、リリースは `release/`。`scripts/tools/` は AI セッション、Git フック、CI が呼ぶものを置く。`.githooks/` は Git フックで、フックごとに薄い `sh` ファイルと、その本体の Node を置く。`.github/workflows/` はブランチの push で検査を回し（[02-ci.md](../design/01-app/04-release/02-ci.md)）、タグでリリースをビルドする（[01-release-workflow.md](../design/01-app/04-release/01-release-workflow.md)）。
+`scripts/` は手で動かすものを置く: Windows のランチャー（`.bat`）で、日常のものは最上位、長い検査は `checks/`、リリースは `release/`。`scripts/tools/` は AI セッション、Git フック、CI が呼ぶものを置く。ほかの場所のツールは `scripts/tools/` の表の後ろにまとめた。
 
 | `scripts/` の中 | 中身 |
 |---|---|
@@ -20,14 +20,13 @@
 | `release/package.bat` | リリースビルドを `artifacts/` へ出し、zip と `.sha256` を作る（`package-release.mjs`）。`build` は zip を作らず、`release-smoke.mjs` 用。リリースのワークフローも同じ手順を踏む |
 | `release/set-version.bat` | `Cargo.toml`、`package.json`、ロックファイルの唯一のバージョンを設定する（`set-version.mjs`） |
 
-| `scripts/tools/` の中（と spec 1 つ） | 中身 |
+| `scripts/tools/` の中 | 中身 |
 |---|---|
-| `checks.mjs` | 検査を回す唯一の入口（fmt、clippy、cargo-test、lint、typecheck、vitest、e2e、phone、diff-backends、layout、docs）。場所、PATH、Rust のビルド先（`novira-data/work/check-target`）、e2e ロックを整え、引数はそのまま渡す。生の `cargo test` や `npx vitest` は `.claude/hooks/use-checks.mjs` が止めて、このツールの呼び方を返す |
+| `checks.mjs` | 検査を回す唯一の入口（`--list` で一覧。fmt、clippy、cargo-test、lint、typecheck、vitest、e2e、phone、diff-backends、layout、docs）。場所、PATH、Rust のビルド先（`novira-data/work/check-target`）、e2e ロックを整え、引数はそのまま渡す。生の `cargo test` や `npx vitest` は `.claude/hooks/use-checks.mjs` が止めて、このツールの呼び方を返す |
 | `affected.mjs` | 変更したファイルに必要な検査だけ |
 | `coverage-report.mjs` | 計測した全部分を 1 つにまとめたグラフィカルなカバレッジレポート（ReportGenerator。`.config/dotnet-tools.json` で固定） |
-| `typecheck.mjs`、`commit-gates.mjs`、`docs-check.mjs`、`ui-refs.mjs`、`visual-baselines.mjs`、`check-eol.mjs`、`fix-eol.mjs`、`eol.mjs`、`check-name.mjs`、`changelog.mjs`、`ci-summary.mjs` | リポジトリ全体の検査: 型、コミットが通すべき CI ジョブ（整形、clippy、lint、バックエンド、スマホ）、地図、古くなったドキュメント上の名前、古くなったテスト ID と文言キー、古くなった基準画像、改行、名前の綴り、変更履歴、CI のテスト数 |
+| `typecheck.mjs`、`commit-gates.mjs`、`docs-check.mjs`、`ui-refs.mjs`、`visual-baselines.mjs`、`check-eol.mjs`、`fix-eol.mjs`、`eol.mjs`、`check-name.mjs`、`changelog.mjs`、`ci-summary.mjs` | リポジトリ全体の検査: 型、コミットが通すべき CI ジョブ（Rust の整形、clippy、lint、モックと本物のバックエンドの比較、スマホ）、地図と設計ページ、存在しないテスト ID と文言キー、画面を変えうる変更の判定（基準画像）、改行、名前の綴り、変更履歴の形、CI のテスト数 |
 | `layout-scan.mjs`、`e2e-lock.mjs` | レイアウトスキャン（テキストの収まりを含む）とその合格記録。重い Playwright の実行を一度に 1 つにするロック |
-| `e2e/a11y.spec.ts`（`e2e/a11yKnown.ts`） | 主要な各タブに axe-core（WCAG A/AA、コントラストは除く）。既知の一覧を超えると失敗し、一覧は減る方向にだけ変えられる |
 | `worktree.mjs` | サブエージェントの worktree を作って消す |
 | `repeat-test.mjs` | 1 つのコマンドを N 回（既定 20、`--parallel` で負荷をかける）実行し、不安定なテストや競合するテストを捕まえる。最初の失敗の出力は `logs/repeat-test/` に残る |
 | `prune-stale.mjs` | `novira-data/work/` と `logs/` の古い項目を消す（下記） |
@@ -36,9 +35,15 @@
 | `models-sweep.mjs`、`models-sweep-app.mjs`、`models-sweep-lib.mjs` | インストール済みの全モデルを、隔離したアプリか（`--via server` では）Chromium で確かめる（`.claude/rules/models.md`） |
 | `perf.mjs`（`perf-startup.mjs`、`backend/crates/novira-core/examples/backend_timing.rs` を実行） | バックエンド、フロントの起動、本物のアプリの IPC の速さを、保存した基準と比べる |
 | `fetch-trustmark.mjs`、`comfy-node-defs.mjs` | 透かしの固定ファイル（ハッシュ検査つき）、保存した ComfyUI のノード定義 |
-| `.githooks/` | `pre-commit` と `commit-msg`（sh のラッパー。`npm install` で有効になる）が `pre-commit.mjs` / `commit-msg.mjs` を実行する |
+| `package-release.mjs`、`set-version.mjs`、`release-smoke.mjs`（`start-medium.ps1`） | `package.bat` と `set-version.bat` の本体。`release-smoke.mjs` は `package.bat build` の出力が起動して主画面に着くかを確かめる（`start-medium.ps1` は CI の管理者権限の実行から通常権限でアプリを起動する） |
+| `diff-backends.mjs`、`full-check.mjs`、`ensure-frontend.mjs` | モックと `novira-server` の比較、`full-check.bat` の本体、`frontend/dist` が古いときだけのビルド |
+
+| `scripts/tools/` の外 | 中身 |
+|---|---|
+| `.githooks/` | Git フック。`pre-commit` と `commit-msg`（sh のラッパー。`npm install` で有効になる）が `pre-commit.mjs` / `commit-msg.mjs` を実行する |
+| `.github/workflows/` | `test.yml` はブランチの push で検査を回し（[02-ci.md](../design/01-app/04-release/02-ci.md)）、`release.yml` はタグでリリースをビルドする（[01-release-workflow.md](../design/01-app/04-release/01-release-workflow.md)）。`supply-chain.yml` と `audit.yml` は依存の検査（[04-guards.md](04-guards.md)） |
 | `frontend/scripts/` | フロントに結びつくスクリプト: ローカルの lint 規則（`eslint-*.mjs`）、テキストとマニュアルの検査、`shot.mjs`、`e2e-server.mjs`（レイアウトスキャンのキャッシュ済みビルド、`novira-data/work/e2e-build/`） |
-| `.claude/hooks/`、`.claude/settings.json` | Claude Code のフック（下記） |
+| `.claude/hooks/`、`.claude/settings.json` | Claude Code のフック（[04-guards.md](04-guards.md)） |
 
 ### 古い出力
 

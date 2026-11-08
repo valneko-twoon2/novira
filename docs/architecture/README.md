@@ -34,7 +34,7 @@ src-tauri  ── commands.rs (validate) ──▶ novira-core::service ──�
 
 | 変えるもの | 入口 |
 |---|---|
-| 画面からバックエンドへの新規呼び出し | `backend/crates/novira-core/src/api.rs`、`backend/src-tauri/src/commands.rs` と `command_list.rs`、`backend/crates/novira-server/src/lib.rs`（`SERVED`）、`backend/src-tauri/capabilities/default.json`、`backend/crates/novira-core/src/service/` の該当モジュール、次に両側の型、`contract/` のサンプル |
+| 画面からバックエンドへの新規呼び出し | `frontend/src/backend/client.ts` と実装（`tauri/`・`http/`・`mock/`）、`backend/crates/novira-core/src/api.rs`、`backend/src-tauri/src/commands.rs` と `command_list.rs`、`backend/crates/novira-server/src/lib.rs`（`SERVED`）、`backend/src-tauri/capabilities/default.json`、`backend/crates/novira-core/src/service/` の該当モジュール、次に両側の型、`contract/` のサンプル |
 | キュー、ジョブの状態、ワーカー | `backend/crates/novira-core/src/service/queue.rs`・`worker.rs`。画面側 `frontend/src/state/queue.ts`・`wiring.ts`（イベントをストアへ） |
 | ComfyUI のグラフ | `backend/crates/novira-core/src/comfy/`（`graph.rs` 画像、`video.rs`、`music.rs`）。画面の要求は `frontend/src/state/invoke.ts` のレジストリ経由 |
 | ComfyUI のインストール・プロセス、拡張機能 | `backend/crates/novira-core/src/comfy/`（`install.rs`・`process.rs`・`node_packs.rs`）、`service/node_pack_store.rs`、`frontend/src/state/comfy/` |
@@ -58,7 +58,8 @@ src-tauri  ── commands.rs (validate) ──▶ novira-core::service ──�
 | `docs/` | `design/` 機能仕様・安全、`manual/<language>/` マニュアル、`development.md`、`verification.md`、`tests/` テスト技法 |
 | `scripts/` | 手で動かす Windows ランチャー（`.bat`）。`tools/` は AI・Git フック・CI が呼ぶもの |
 | `.githooks/`、`.github/`、`.claude/`、`.config/` | Git フック（sh + Node）、テスト・リリースの ワークフロー、Claude Code のフック・規則・スキル、カバレッジ用の固定 .NET ツール（[03-tooling.md](03-tooling.md)） |
-| `novira-data/`、`data/`、`outputs/` | ユーザーデータと生成物（非コミット）。`novira-data/work/` はハーネス生成物（検証データ、ビルド、一時） |
+| `novira-data/` | ユーザーデータと生成物（非コミット）。`novira-data/work/` はハーネス生成物（検証データ、ビルド、一時） |
+| `artifacts/` | リリースビルドの出力（非コミット） |
 | `logs/` | テスト結果とレポート。git の対象外 |
 
 ## 更新

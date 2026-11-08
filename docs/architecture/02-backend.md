@@ -14,7 +14,7 @@ Cargo ワークスペースの根は `backend/`（`Cargo.toml`、`Cargo.lock`、
 | `novira-server` | `backend/crates/novira-server/` | このコンピューター上で、普通の Web ブラウザ向けに HTTP で出す本物のバックエンド（テストや検査は Playwright で動かす）。さらにページからの要求で開く、家庭内ネットワーク向けの TLS 専用リスナー（ローカル CA が証明書に署名する。要求で開き、持ち主が信頼したネットワークでだけ開く。スマホがペアリングし、このコンピューターが承認する）。持ち主がオンにしている間は、外出先のスマホ向けに Tailscale アドレス上に 3 つ目の TLS リスナーも開く（Tailscale の証明書、パスキー。`src/remote/`）。`frontend/dist` を配信し、`novira_core::api` を通して `POST /api/<command>`、画像のアップロードと名前による画像、バックエンドのイベントを WebSocket（`/events`）で出す。起動ごとのトークン、`Host`/`Origin` の検査。`build.rs` が Windows の exe にアプリの製品名・バージョン・アイコンを付ける。[01-browser-server.md](../design/06-server/01-local/01-browser-server.md) |
 | `novira` | `backend/src-tauri/` | 薄い Tauri 2 のシェル: ウィンドウ設定、IPC コマンド、capabilities、`novira-image://` URL スキーム。WebView が送るものを検証してサービスを呼ぶ。アプリの中でスマホ向けの家庭内ネットワークリスナーを動かすため `novira-server` をリンクする |
 
-シェル（`backend/src-tauri/src/`）: `commands.rs` は IPC コマンド（薄く、共有レイヤーの `novira_core::api::call` を呼ぶ。同期のものは `commands::guard` を通すので panic でメインスレッドは死なない。ダイアログとウィンドウのコマンドはここに書く）、`command_list.rs` は登録した名前、`dialogs.rs` はネイティブのフォルダ・保存・開くダイアログ（シェル自身が開くので、WebView はパスを送らず受け取らない）、`events.rs` はバックエンドのイベントから `novira://event` チャンネルへの橋渡し、`image_scheme.rs` は画像の URL スキーム（名前だけでパスは使わない。判断は `novira_core::image_serve`）、`home_network.rs` はアプリ内のスマホ向けサーバー（`novira_server::embed`。家庭内ネットワークのリスナーだけ）と QR 項目の `lan_*` コマンド、`startup.rs` は起動に失敗したときに出すダイアログ（データフォルダのロックで 2 つ目のコピーを断るのは `novira_core::startup`）。
+シェル（`backend/src-tauri/src/`）: `commands.rs` は IPC コマンド（薄く、共有レイヤーの `novira_core::api::call` を呼ぶ。同期のものは `commands::guard` を通すので panic でメインスレッドは死なない。ダイアログとウィンドウのコマンドはここに書く）、`command_list.rs` は登録した名前、`dialogs.rs` はネイティブのフォルダ・保存・開くダイアログ（シェル自身が開くので、WebView はパスを送らず受け取らない）、`events.rs` はバックエンドのイベントから `novira://event` チャンネルへの橋渡し、`image_scheme.rs` は画像の URL スキーム（名前だけでパスは使わない。判断は `novira_core::image_serve`）、`home_network.rs` はアプリ内のスマホ向けサーバー（`novira_server::embed`。家庭内ネットワークのリスナーだけ）と QR 項目の `lan_*` コマンド、`navigation.rs` はウィンドウをアプリ自身のページに留める（外へ出るナビゲーションを拒む）、`startup.rs` は起動に失敗したときに出すダイアログ（データフォルダのロックで 2 つ目のコピーを断るのは `novira_core::startup`）。
 
 ## novira-core
 
@@ -55,7 +55,7 @@ Cargo ワークスペースの根は `backend/`（`Cargo.toml`、`Cargo.lock`、
 
 ## ディスク上のデータ
 
-`novira-data/`（デバッグビルドではリポジトリの根、リリースビルドではユーザーフォルダ。すでにある場合は実行ファイルの隣。`NOVIRA_DATA_DIR` で変えられる）:
+`novira-data/`（`NOVIRA_DATA_DIR`、次に設定画面か初回起動で選んだフォルダ（`data_location/` のポインター）、なければ既定: デバッグビルドではリポジトリの根、リリースビルドではユーザーフォルダ（実行ファイルの隣にすでにあればそこ））:
 
 ```text
 novira-data/

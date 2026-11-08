@@ -1,4 +1,4 @@
-# cargo-mutants configuration for the Rust backend (run through scripts\checks\mutation.bat; see docs/architecture/overview/tooling.md).
+# cargo-mutants configuration for the Rust backend (run through scripts\checks\mutation.bat; see docs/architecture/03-tooling.md).
 # Mutation testing is slow (hours) and is NOT part of scripts\check.bat or CI. It runs the whole novira-core test suite once per
 # mutant in a temporary copy of the repository, so target\ and a running novira.exe are never touched.
 

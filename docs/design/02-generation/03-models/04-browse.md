@@ -30,7 +30,7 @@ Browse タブは Civitai と Hugging Face でモデルを検索し、そのペ�
 |---|---|
 | ページを開く | `open_civitai_page` は数値の id、`open_huggingface_page` は平易な文字の `owner/repo`、`open_source_page` はホストが `SOURCE_SITES` にある（またはそのサブドメインの）`https` アドレスを取る（拡張機能マネージャーのソースリンク、このアプリについてダイアログのホームページ）。同梱のオープンソース一覧のホームページがすべてその一覧にあることをテストが保つ。ブラウザはアドレスを 1 つの引数として起動し、シェルは通さない。 |
 
-- **有料バージョン。** Civitai のバージョンは `paidAccess`（`permanent`、または早期アクセスの `endsAt`）を持つ。それらでも `availability` は `Public` のままなので、判断材料にならない。`CivitaiVersion.paid` と `paid_until`（エポック ms。恒久的に有料のバージョンはなし）がこれを保持し、`is_paid_at(now)` がまだ支払いを求めるかを返すので、終わった早期アクセスは再び無料になる。`price` フィルタ（`free`、`paid`。`civitai.rs` の `keep`）は最新バージョンを見る。カードはバッジ（「Paid」、または「Paid until <date>」）を出し、詳細は早期アクセスの終わりを示し、ダウンロードボタンは有料のバージョンではすべてロックされる。API キーでは購入者とそれ以外を区別できないので、アプリは試みない（`features/browse/paid.ts`、`DownloadButton.tsx`）。Hugging Face にはない。
+- **有料バージョン。** Civitai のバージョンは `paidAccess`（`permanent`、または早期アクセスの `endsAt`）を持つ。それらでも `availability` は `Public` のままなので、判断材料にならない。`CivitaiVersion.paid` と `paid_until`（エポック ms。恒久的に有料のバージョンはなし）がこれを保持し、`is_paid_at(now)` がまだ支払いを求めるかを返すので、終わった早期アクセスは再び無料になる。`price` フィルタ（`free`、`paid`。`civitai.rs` の `keep`）は最新バージョンを見る。カードはバッジ（「有料」、または「有料 〜{date}」）を出し、詳細は早期アクセスの終わりを示し、ダウンロードボタンは有料のバージョンではすべてロックされる。API キーでは購入者とそれ以外を区別できないので、アプリは試みない（`features/browse/paid.ts`、`DownloadButton.tsx`）。Hugging Face にはない。
 
 ## 既知の限界
 

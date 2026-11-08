@@ -16,10 +16,10 @@ covers:
 ### 保存したワークフロー
 
 - 保存するのはユーザーのワークフローだけ。`workflows` テーブル（`backend/crates/novira-core/src/db.rs` の `Table::Workflows`）に 1 件 1 行で、`updated_at` 順に並べ、`bootstrap`（`service/mod.rs`）のためにメモリにも持つ。ワイヤ型 `SavedWorkflow`（`types.rs`）は、id・名前・説明・作者・タグ・カテゴリ（`user` か `default`）・`updatedAt`・`graph`（任意の JSON）を持つ。
-- `save_workflow`（`service/workflows.rs`）は、与えられた id の保存済みユーザーワークフローを更新する。それ以外の入力（id がない、または組み込みのものなど保存済みユーザーワークフローでない id）は、`wf-` と 16 進 12 桁の新しい id で作成する。保存のたびに `updated_at` を更新する。先にメモリを変え、次に行を書く。
-- `delete_workflow` はテーブルから、次にメモリから削除する。未知の id では何もしない。解析できなくなった行は、起動時（`Db::load`）に飛ばしてログに残す。
+- `save_workflow`（`service/workflows.rs`）は、与えられた id の保存済みユーザーワークフローを更新する。それ以外の入力（id がない、または組み込みのものなど保存済みユーザーワークフローでない id）は、`wf-` と 16 進 12 桁の新しい id で作成する。保存のたびに `updated_at` を更新する。
+- `delete_workflow` は行を削除する。未知の id では何もしない。解析できなくなった行は、起動時（`Db::load`）に飛ばしてログに残す。
 - `save_workflow` は何かを保存する前に入力を検査する（`backend/crates/novira-core/src/service/workflows.rs` の `check`）。名前は 1〜200 文字（空白のみは不可）、作者は 200 文字まで、説明は 20000 文字まで、タグは 50 個まで・各 100 文字まででどれも制御文字を含まない（説明は改行とタブを含められる）、グラフは 32 MiB まで（`MAX_WORKFLOW_BYTES`。キャンバスとコミックのドキュメントと同じ上限。[01-comic-canvas.md](../../05-comic/01-canvas/01-comic-canvas.md) を参照）の JSON オブジェクト。拒否された保存はフィールド名を示すエラーを返し、何も保存しない。グラフ内部の形はフロントエンドのもので、バックエンドはそのまま保持する。
-- データベースを先に書き、次にメモリの一覧を書く。書き込みが失敗しても一覧は元のまま。
+- データベースを先に書き、次にメモリの一覧を書く。書き込みが失敗しても一覧は元のまま（`delete_workflow` も同じ順）。
 
 ### 組み込みワークフロー
 
@@ -37,7 +37,7 @@ covers:
 
 ### ノードの追加
 
-- 左パネルのノードタブ（`NodeLibrary.tsx`）は ComfyUI のノードライブラリと同じ構成（`nodeTree.ts`）。2 つの区画（ノード: アプリ独自のものと ComfyUI のものを 1 つのツリーに置き、アプリ独自のものは種類ごとに合う ComfyUI のフォルダへ振り分ける（`BUILTIN_PATH`）、と拡張機能のノード）があり、最初の区画は ComfyUI のカテゴリの各部分ごとのフォルダのツリー、拡張機能のノードは拡張機能（名前）ごとのフォルダの中にそのカテゴリを置く（拡張機能の名前を繰り返すだけのカテゴリは省く）。フォルダとノードは ComfyUI がノードを並べる順（`comfyOrder`）、フォルダと見出しの名前は ComfyUI 自身の言葉をアプリの言語で使う（[03-workflow-graphs.md](03-workflow-graphs.md)）。フォルダは閉じた状態で始まる。検索すると、パス付きの一致のフラットな一覧を出す。ダブルクリックか Enter でノードをキャンバスの中央に追加し、追加するたびに 30 px ずつずらす（`nodeAdder.ts`。エディタが登録する）。ドラッグは `NODE_MIME` を運び、エディタがドロップした位置に置く。
+- 左パネルのノードタブ（`NodeLibrary.tsx`）は ComfyUI のノードライブラリと同じ構成（`nodeTree.ts`）。2 つの区画（ノード: アプリ独自のものと ComfyUI のものを 1 つのツリーに置き、アプリ独自のものは種類ごとに合う ComfyUI のフォルダへ振り分ける（`BUILTIN_PATH`）、と拡張機能のノード）があり、最初の区画は ComfyUI のカテゴリの各部分ごとのフォルダのツリー、拡張機能のノードは拡張機能（名前）ごとのフォルダの中にそのカテゴリを置く（拡張機能の名前を繰り返すだけのカテゴリは省く）。フォルダとノードは ComfyUI がノードを並べる順（`comfyOrder`）、フォルダと見出しの名前は ComfyUI 自身の言葉をアプリの言語で使う（[03-workflow-graphs.md](03-workflow-graphs.md)）。フォルダは閉じた状態で始まる。検索すると、パス付きの一致のフラットな一覧を出す。ダブルクリックか Enter でノードをキャンバスの中央に追加し、追加するたびに 30 px ずつずらす（8 回で元の位置に戻る）（`nodeAdder.ts`。エディタが登録する）。ドラッグは `NODE_MIME` を運び、エディタがドロップした位置に置く。
 - ピッカーダイアログ（`NodePicker.tsx`）は、`Shift+A` か `Space`、および何もない所へ落とした接続のために残している（このときは合うノードだけを出す）。どちらも `nodeCatalog.ts` の検索を使う。
 
 ### 保存とファイル
@@ -48,7 +48,7 @@ covers:
 
 ### 足りないパックが要るファイル
 
-- 未インストールのパックのノードだけで失敗するファイル（未知の型がすべて `comfy:` で始まる。`frontend/src/features/workflows/packRequirements.ts`）は、`frontend/src/state/workflows/workflowImport.ts` で待機する。`frontend/src/features/workflows/ImportNeedsPacks.tsx` がそのパックを、ファイルにあるアドレスかアプリがそのフォルダについて知っているアドレスとともに一覧し、インストールを、フォルダがインストール済みなら再起動を提案する。アドレスのないパックは「不明な取得元」と表示する。
+- 未インストールのパックのノードだけで失敗するファイル（未知の型がすべて `comfy:` で始まる。`frontend/src/features/workflows/packRequirements.ts`）は、`frontend/src/state/workflows/workflowImport.ts` で待機する。`frontend/src/features/workflows/ImportNeedsPacks.tsx` がそのパックを、ファイルにあるアドレスかアプリがそのフォルダについて知っているアドレスとともに一覧し、インストールを、フォルダがインストール済みなら再起動を提案する。アドレスのないパックは「入手先が分かりません。拡張タブで探してください」と表示する。
 - インストールは拡張機能のインストール経路を使う。バックエンドが受け付けるのは `https://github.com/<owner>/<repo>` だけ（`parse_github`、`backend/crates/novira-core/src/comfy/node_packs.rs`）。
 - ComfyUI のノード定義が再読み込みされたとき、待機中のファイルが読めるようになっていれば自動で開く（`register.ts` が `useComfyNodes` を購読する）。待機はメモリ上だけで、再起動すると失われる。
 
