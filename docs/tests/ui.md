@@ -15,6 +15,7 @@
 | モーション低減 / Reduced motion | 「動きを減らす」設定で、見える要素に 0.2 秒を超える動きや無限のアニメーションが残らないこと | `frontend/e2e/a11yMotion.spec.ts`、`frontend/e2e/a11yMotionKnown.ts` | `npx playwright test e2e/a11yMotion.spec.ts --project=chromium` | `e2e-chromium` |
 | 拡大表示 / Zoom | UI の拡大率の両端と最小ウィンドウで、横スクロールが出ないこと、ナビがウィンドウ内にあること、はみ出し件数が既知の上限以下であること。ズームを適用するのはデスクトップのシェルだけなので、ブラウザーでは「ウィンドウ ÷ 拡大率」の表示領域で代用する | `frontend/e2e/a11yZoom.spec.ts`、`frontend/e2e/a11yZoomKnown.ts` | `npx playwright test e2e/a11yZoom.spec.ts --project=chromium` | `e2e-chromium` |
 | 色のコントラスト / Contrast | 暗色と明色で、単色の背景の上の文字が 4.5（大きい文字は 3）以上であること。背景画像やグラデーションの上の文字は測らない。測れた文字が 15 件未満なら落とす | `frontend/e2e/a11yContrast.spec.ts`、`frontend/e2e/a11yContrast.ts`、`frontend/e2e/a11yContrastKnown.ts` | `npx playwright test e2e/a11yContrast.spec.ts --project=chromium` | `e2e-chromium` |
+| 画面操作の時間予算 / Time budget | 頻繁に起きる操作（文字色をピッカーで速くドラッグする、画像とテキストの画面の切り替え、メイン画面の切り替え、レイヤーの追加）の時間を中央値で測り、予算（測った値の約 3 倍）を超えたら、操作名と見るべきファイルを添えて落とす。開発ビルドのモックで、表示倍率 2 倍で測る | `frontend/e2e/perf-budget.spec.ts`、`frontend/e2e/perfBudget.ts` | `npx playwright test e2e/perf-budget.spec.ts --project=chromium` | `e2e-chromium` |
 
 新しい画面やダイアログは、モンキーの `RUNS`、アクセシビリティの `TABS` か `SURFACES`、キーボード検査の `LAYERS` と `TABS`、レイアウト走査の一覧に足す（`.claude/rules/tests.md`）。
 
