@@ -66,7 +66,13 @@ impl Backend {
                 .collect();
             (s.boards.clone(), pictures)
         };
-        crate::media::arrangement::arrange(&self.inner.files, &boards, &pictures);
+        // Every picture (a board renamed or deleted) also clears the folders a deleted board left; a few pictures look only
+        // at the folders they left.
+        if names.is_none() {
+            crate::media::arrangement::arrange_all(&self.inner.files, &boards, &pictures);
+        } else {
+            crate::media::arrangement::arrange(&self.inner.files, &boards, &pictures);
+        }
     }
 
     pub fn update_images(&self, names: &[String], patch: ImagePatch) -> Result<Vec<ImageDTO>> {
@@ -254,13 +260,11 @@ impl Backend {
 
     /// Deletes for good what has been in the trash longer than `TRASH_KEEP_MS`, and the oldest beyond `TRASH_KEEP_COUNT`.
     pub(super) fn purge_trash(&self) {
-        let Ok(rows) = self.db().load::<TrashedImage>(Table::Trash) else {
+        // A trashed row is stored under the time it was trashed at (`move_to_trash`), so the ids and times are read
+        // without parsing the pictures' records (a delete asks twice).
+        let Ok(times) = self.db().ids_and_sorts(Table::Trash) else {
             return;
         };
-        let times: Vec<(String, i64)> = rows
-            .iter()
-            .map(|r| (r.image.name.clone(), r.trashed_at))
-            .collect();
         let stale = stale_in_trash(times, now(), TRASH_KEEP_MS, TRASH_KEEP_COUNT);
         if stale.is_empty() {
             return;

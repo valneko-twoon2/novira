@@ -111,13 +111,21 @@ impl Backend {
 
     /// The starter files the installed model `model_key` needs but the library does not hold (see `models::parts`).
     pub fn model_parts(&self, model_key: &str) -> Result<ModelPartsReport> {
-        let s = self.state();
-        let model = s
+        // The file is read with the state unlocked.
+        let model = self
+            .state()
             .models
             .iter()
             .find(|m| m.key == model_key)
+            .cloned()
             .ok_or_else(|| BackendError::NotFound(format!("model not found: {model_key}")))?;
-        Ok(crate::models::parts::missing_parts(&s.models, model))
+        let header = classify::read_header(std::path::Path::new(&model.path));
+        let s = self.state();
+        Ok(crate::models::parts::missing_parts_with(
+            &s.models,
+            &model,
+            header.as_ref(),
+        ))
     }
 
     pub fn install_model(&self, source: &str, name: Option<String>) -> Result<ModelInstallJob> {

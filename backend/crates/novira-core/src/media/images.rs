@@ -127,12 +127,17 @@ impl ImageFiles {
     /// Moves a picture's original to `rel` under `outputs/` (a folder and a file name). True when it moved; false when it
     /// is there already or has no file. A file already at `rel` is never replaced.
     pub fn move_to(&self, name: &str, rel: &Path) -> std::io::Result<bool> {
+        self.move_from(name, rel).map(|left| left.is_some())
+    }
+
+    /// `move_to`, answering the folder the file left (`Some`) or that it did not move (`None`).
+    pub fn move_from(&self, name: &str, rel: &Path) -> std::io::Result<Option<PathBuf>> {
         let Some(from) = self.original_path(name) else {
-            return Ok(false);
+            return Ok(None);
         };
         let to = self.originals.join(rel);
         if from == to || !from.is_file() {
-            return Ok(false);
+            return Ok(None);
         }
         if to.exists() {
             return Err(std::io::Error::new(
@@ -147,7 +152,30 @@ impl ImageFiles {
         self.placed
             .lock_safe()
             .insert(name.to_string(), rel.to_path_buf());
-        Ok(true)
+        Ok(Some(
+            from.parent().map(Path::to_path_buf).unwrap_or_default(),
+        ))
+    }
+
+    /// Removes the given folders of `outputs/` when nothing is left in them, and the folder above one that went (down to
+    /// `outputs/` itself, never beyond). Used after files left them: it looks at those folders only, where
+    /// `remove_empty_folders` lists every folder of the gallery.
+    pub fn remove_if_empty(&self, dirs: &[PathBuf]) {
+        let mut tried = std::collections::HashSet::new();
+        for dir in dirs {
+            let mut at = dir.as_path();
+            while at != self.originals
+                && at.starts_with(&self.originals)
+                && tried.insert(at.to_path_buf())
+            {
+                // Fails, as wanted, while anything is inside.
+                if std::fs::remove_dir(at).is_err() {
+                    break;
+                }
+                let Some(up) = at.parent() else { break };
+                at = up;
+            }
+        }
     }
 
     /// Removes the folders of `outputs/` that no file is left in (a board renamed or emptied), subfolders first.
@@ -291,6 +319,10 @@ impl ImageFiles {
         // It comes back to `outputs/<name>`, and `arrangement` puts it in its folder again.
         if moved {
             self.placed.lock_safe().remove(name);
+            // Its folder may be empty now (the next pass over the whole gallery used to find that).
+            if let Some(dir) = from[0].parent() {
+                self.remove_if_empty(&[dir.to_path_buf()]);
+            }
         }
         moved
     }

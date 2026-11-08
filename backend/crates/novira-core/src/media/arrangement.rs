@@ -127,24 +127,41 @@ pub fn place_of(image: &ImageDTO, folders: &HashMap<String, String>) -> PathBuf 
     PathBuf::from(folder).join(file_name(&image.name, image.created_at))
 }
 
-/// Moves each picture's file to where it belongs (only those not there yet), then removes folders left empty. A file
-/// that cannot be moved stays where it is and still opens.
+/// Moves each picture's file to where it belongs (only those not there yet), then removes the folders the files left
+/// when nothing else is in them. A file that cannot be moved stays where it is and still opens. Only the folders left
+/// are looked at, so a few pictures do not cost a listing of the whole gallery (`arrange_all` does).
 pub fn arrange<'a>(
     files: &ImageFiles,
     boards: &[BoardDTO],
     pictures: impl IntoIterator<Item = &'a ImageDTO>,
 ) {
     let folders = folder_names(boards);
+    let mut left = Vec::new();
     for image in pictures {
-        match files.move_to(&image.name, &place_of(image, &folders)) {
-            Ok(_) => {}
+        match files.move_from(&image.name, &place_of(image, &folders)) {
+            Ok(Some(dir)) => {
+                if !left.contains(&dir) {
+                    left.push(dir);
+                }
+            }
+            Ok(None) => {}
             Err(e) => crate::applog::warn(
                 "gallery",
                 format!("{} was not moved into its folder: {e}", image.name),
             ),
         }
     }
-    // Also folders a deleted board left empty, whose pictures went to the trash.
+    files.remove_if_empty(&left);
+}
+
+/// `arrange` for every picture, then removes every folder of `outputs/` left empty, also one a deleted board left whose
+/// pictures went to the trash.
+pub fn arrange_all<'a>(
+    files: &ImageFiles,
+    boards: &[BoardDTO],
+    pictures: impl IntoIterator<Item = &'a ImageDTO>,
+) {
+    arrange(files, boards, pictures);
     files.remove_empty_folders();
 }
 

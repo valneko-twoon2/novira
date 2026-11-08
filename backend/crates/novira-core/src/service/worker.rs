@@ -335,9 +335,14 @@ impl Backend {
     ) -> std::result::Result<Option<crate::comfy::split::SplitJob>, EngineError> {
         use crate::comfy::split::{pick, Family, Loader, SplitJob, WanKind};
         use crate::models::classify;
-        let s = self.state();
-        let Some(m) = s.models.iter().find(|m| m.key == model_key) else {
-            return Ok(None);
+        // The model is copied out so the file is read with the state unlocked: a header is a disk read (a checkpoint on a
+        // slow drive takes long enough to hold up every screen call that needs the state).
+        let m = {
+            let s = self.state();
+            match s.models.iter().find(|m| m.key == model_key) {
+                Some(m) => m.clone(),
+                None => return Ok(None),
+            }
         };
         if !matches!(m.kind, ModelType::DiffusionModel | ModelType::Main) {
             return Ok(None);
@@ -346,6 +351,7 @@ impl Backend {
             return Ok(None);
         };
         let header = classify::read_header(std::path::Path::new(&m.path));
+        let s = self.state();
         let loader = crate::models::parts::loader_of(m.kind, m.base, header.as_ref());
         let name = m.comfy.as_ref().map(|c| c.name.clone()).unwrap_or_default();
         let variant = classify::detect_variant(m.base, header.as_ref(), &name);

@@ -45,6 +45,17 @@ fn starter_for(list: &[StarterModel], kind: ModelType, need: &Need) -> Option<St
 /// What `model` needs beyond itself that is not among `models`: the starter entries that install it, and the wording
 /// of what has no entry. Nothing for a model that is not of a split family or that carries its parts.
 pub fn missing_parts(models: &[ModelConfig], model: &ModelConfig) -> ModelPartsReport {
+    let header = classify::read_header(std::path::Path::new(&model.path));
+    missing_parts_with(models, model, header.as_ref())
+}
+
+/// `missing_parts` with the model's header already read, so a caller that holds a lock on the models reads the file
+/// before taking it.
+pub fn missing_parts_with(
+    models: &[ModelConfig],
+    model: &ModelConfig,
+    header: Option<&classify::Header>,
+) -> ModelPartsReport {
     let mut report = ModelPartsReport {
         model_key: model.key.clone(),
         model_name: model.name.clone(),
@@ -57,16 +68,15 @@ pub fn missing_parts(models: &[ModelConfig], model: &ModelConfig) -> ModelPartsR
     let Some(family) = Family::of(model.base).or_else(|| Family::of_video(model.base)) else {
         return report;
     };
-    let header = classify::read_header(std::path::Path::new(&model.path));
-    let loader = loader_of(model.kind, model.base, header.as_ref());
+    let loader = loader_of(model.kind, model.base, header);
     let name = model
         .comfy
         .as_ref()
         .map(|c| c.name.clone())
         .unwrap_or_default();
-    let variant = classify::detect_variant(model.base, header.as_ref(), &name);
+    let variant = classify::detect_variant(model.base, header, &name);
     let wan = (family == Family::Wan)
-        .then(|| match &header {
+        .then(|| match header {
             Some(h) => classify::wan_in_channels(h).and_then(WanKind::from_channels),
             None => WanKind::from_name(&name),
         })
