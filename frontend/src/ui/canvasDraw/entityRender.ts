@@ -219,8 +219,8 @@ function styleKey(e: CanvasEntity, preview: FilterPreview | undefined): string {
   return '';
 }
 
-/** Raw render without tint or effects (used by filters, export and thumbnails of masks as shapes). */
-function renderObjects(objects: CanvasObject[], maskMode = false): Rendered | null {
+/** Where the canvas of these objects sits and how big it is, or null when there is nothing to draw. */
+function frameOf(objects: CanvasObject[]): { x: number; y: number; width: number; height: number } | null {
   const b = objectsBounds(objects);
   if (!b) return null;
   const x = Math.floor(b.x);
@@ -228,12 +228,73 @@ function renderObjects(objects: CanvasObject[], maskMode = false): Rendered | nu
   const width = Math.min(MAX_DIM, Math.ceil(b.x + b.width) - x);
   const height = Math.min(MAX_DIM, Math.ceil(b.y + b.height) - y);
   if (width <= 0 || height <= 0) return null;
-  const canvas = createCanvas(width, height);
+  return { x, y, width, height };
+}
+
+/** Raw render without tint or effects (used by filters, export and thumbnails of masks as shapes). */
+function renderObjects(objects: CanvasObject[], maskMode = false): Rendered | null {
+  const f = frameOf(objects);
+  if (!f) return null;
+  const canvas = createCanvas(f.width, f.height);
   const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-  ctx.translate(-x, -y);
+  ctx.translate(-f.x, -f.y);
   drawObjects(ctx, objects, maskMode);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  return { canvas, x, y, width, height };
+  return { canvas, ...f };
+}
+
+/**
+ * Raw renders kept so that a new object is drawn onto the last result instead of redrawing every object. A mosaic
+ * stroke copies the whole canvas four times, so redrawing them all on each stroke made a long session slower and slower.
+ */
+interface RawEntry {
+  objects: CanvasObject[];
+  maskMode: boolean;
+  version: number;
+  out: Rendered | null;
+}
+const RAW_KEEP = 16;
+const recentRaw: RawEntry[] = [];
+
+/** The objects of `prefix` are the first of `objects`, the very same ones. */
+function startsWith(objects: CanvasObject[], prefix: CanvasObject[]): boolean {
+  return prefix.length <= objects.length && prefix.every((o, i) => o === objects[i]);
+}
+
+/** `objects` drawn onto `prev` (a render of the first of them), or from scratch when that cannot be reused. */
+function renderFrom(prev: RawEntry | undefined, objects: CanvasObject[], maskMode: boolean): Rendered | null {
+  const f = frameOf(objects);
+  if (!f) return null;
+  const old = prev?.out;
+  // A canvas cut at the size limit lost what lay beyond it: draw those objects again.
+  if (!prev || !old || old.width >= MAX_DIM || old.height >= MAX_DIM || f.width >= MAX_DIM || f.height >= MAX_DIM) return renderObjects(objects, maskMode);
+  const canvas = createCanvas(f.width, f.height);
+  const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+  ctx.drawImage(old.canvas, old.x - f.x, old.y - f.y);
+  ctx.translate(-f.x, -f.y);
+  drawObjects(ctx, objects.slice(prev.objects.length), maskMode);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  return { canvas, ...f };
+}
+
+/** The raw render of an entity's objects, kept for the next one; do not draw on the canvas it returns. */
+function renderRaw(objects: CanvasObject[], maskMode: boolean): RawEntry {
+  const version = imageVersion();
+  const same = (r: RawEntry) => r.maskMode === maskMode && r.version === version && startsWith(objects, r.objects);
+  // The longest kept prefix is the closest one.
+  let prev: RawEntry | undefined;
+  for (const r of recentRaw) if (same(r) && (!prev || r.objects.length > prev.objects.length)) prev = r;
+  if (prev && prev.objects.length === objects.length) return prev;
+  const entry: RawEntry = { objects, maskMode, version, out: renderFrom(prev, objects, maskMode) };
+  recentRaw.push(entry);
+  if (recentRaw.length > RAW_KEEP) recentRaw.shift();
+  return entry;
+}
+
+function copyOf(r: Rendered): Rendered {
+  const canvas = createCanvas(r.width, r.height);
+  (canvas.getContext('2d') as CanvasRenderingContext2D).drawImage(r.canvas, 0, 0);
+  return { ...r, canvas };
 }
 
 /** A mask layer's shape in one opaque grey (the generation mask), not cached. */
@@ -275,7 +336,11 @@ export function renderEntity(e: CanvasEntity, opts: { extra?: CanvasObject | nul
     if (img) ctx.drawImage(img, 0, 0, preview.width, preview.height);
     out = { canvas, x: preview.x, y: preview.y, width: preview.width, height: preview.height };
   } else {
-    out = renderObjects(extra ? [...e.objects, extra] : e.objects, isMask);
+    // The drawn objects come from the last render; the in-progress one is added on a copy, so a drag costs one stroke.
+    const raw = renderRaw(e.objects, isMask);
+    out = extra ? renderFrom(raw, [...e.objects, extra], isMask) : raw.out;
+    // The tint and the effect change the pixels: do that on a copy and keep the raw render for the next object.
+    if (out && out === raw.out && (isMask || (e.type === 'control' && e.withTransparencyEffect))) out = copyOf(out);
   }
   if (out) {
     const ctx = out.canvas.getContext('2d') as CanvasRenderingContext2D;

@@ -46,7 +46,6 @@
   "params.image.bboxHint": "生成范围（边界框）",
   "params.image.bboxWidth": "范围宽度",
   "params.image.bboxHeight": "范围高度",
-  "params.image.strength": "降噪强度",
   "params.image.strengthInfo": "对原图改变多少。0 为保持原样，1 为完全重绘。",
   "params.seed.label": "种子",
   "params.seed.info": "相同的种子和设置会生成相同的图像。",

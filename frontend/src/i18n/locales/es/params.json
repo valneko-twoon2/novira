@@ -46,7 +46,6 @@
   "params.image.bboxHint": "Cuadro delimitador",
   "params.image.bboxWidth": "Ancho",
   "params.image.bboxHeight": "Alto",
-  "params.image.strength": "Intensidad de eliminación de ruido",
   "params.image.strengthInfo": "Cuánto se modifica la imagen. 0 la deja igual, 1 la redibuja por completo.",
   "params.seed.label": "Semilla",
   "params.seed.info": "La misma semilla con los mismos ajustes produce la misma imagen.",

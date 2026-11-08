@@ -46,7 +46,6 @@
   "params.image.bboxHint": "생성 범위 (바운딩 박스)",
   "params.image.bboxWidth": "범위 너비",
   "params.image.bboxHeight": "범위 높이",
-  "params.image.strength": "디노이징 강도",
   "params.image.strengthInfo": "원본 이미지를 얼마나 바꿀지 정합니다. 0이면 원본 그대로, 1이면 완전히 다시 그립니다.",
   "params.seed.label": "시드",
   "params.seed.info": "같은 시드와 설정으로는 같은 이미지가 생성됩니다.",

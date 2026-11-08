@@ -122,7 +122,9 @@ describe('renderEntity', () => {
 
   it('draws mask strokes white so the tint decides the colour', () => {
     const out = renderEntity(inpaint([stroke()]))!;
-    expect(rec.of(out.canvas).sets.find((s) => s.name === 'strokeStyle')!.value).toBe('#ffffff');
+    // The strokes go onto the kept raw canvas; the tint is applied on a copy.
+    expect(rec.all.some((x) => x.sets.some((s) => s.name === 'strokeStyle' && s.value === '#ffffff'))).toBe(true);
+    expect(out.canvas).toBeTruthy();
   });
 
   it('shows a control layer\'s filter preview instead of its pixels', () => {
@@ -182,6 +184,38 @@ describe('mosaic strokes', () => {
     expect(r.of('drawImage').length).toBeGreaterThanOrEqual(2);
     const smoothingOff = rec.all.some((x) => x.sets.some((s) => s.name === 'imageSmoothingEnabled' && s.value === false));
     expect(smoothingOff).toBe(true);
+  });
+
+  it('draws only the new stroke when one is added, so many mosaics do not get slower', () => {
+    const lighter = () => rec.all.reduce((n, x) => n + x.sets.filter((s) => s.name === 'globalCompositeOperation' && s.value === 'lighter').length, 0);
+    const objects: CanvasObject[] = [{ kind: 'rect', id: 'r', x: 0, y: 0, width: 64, height: 64, color: red }];
+    renderEntity(raster([...objects]));
+    for (let i = 1; i <= 6; i++) {
+      objects.push(stroke({ id: `m${i}`, tool: 'mosaic', block: 8, points: [5 + i, 5 + i] }));
+      const before = lighter();
+      renderEntity(raster([...objects]));
+      // One mosaic's work (one 'lighter' mix) per new stroke, however many came before.
+      expect(lighter() - before).toBe(1);
+    }
+  });
+
+  it('draws an in-progress stroke on a copy and leaves the kept render alone', () => {
+    const objects: CanvasObject[] = [{ kind: 'rect', id: 'r', x: 0, y: 0, width: 64, height: 64, color: red }];
+    const e = raster(objects);
+    const settled = renderEntity(e)!;
+    const calls = rec.of(settled.canvas).calls.length;
+    const dragged = renderEntity(e, { extra: stroke({ tool: 'mosaic', points: [5, 5, 50, 50] }) })!;
+    expect(dragged.canvas).not.toBe(settled.canvas);
+    expect(rec.of(settled.canvas).calls).toHaveLength(calls);
+  });
+
+  it('keeps the pictures of a layer that grows to the left and up', () => {
+    const rect: CanvasObject = { kind: 'rect', id: 'r', x: 20, y: 20, width: 20, height: 20, color: red };
+    renderEntity(raster([rect]));
+    const out = renderEntity(raster([rect, stroke({ id: 'b', points: [0, 0, 4, 4], width: 4 })]))!;
+    expect(out.x).toBeLessThan(20);
+    // The earlier render is copied to where it belongs in the larger canvas.
+    expect(rec.of(out.canvas).of('drawImage')[0]!.slice(1)).toEqual([20 - out.x, 20 - out.y]);
   });
 
   it('draws a dragged mosaic along its path', () => {

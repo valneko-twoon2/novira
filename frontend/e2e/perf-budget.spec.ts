@@ -105,3 +105,32 @@ test('adding a text layer stays within its budget', async ({ page }) => {
   );
   withinBudget(ADD_LAYER, median(costs.map((c) => c.painted)));
 });
+
+const MOSAIC_GROWTH: Budget = {
+  what: 'Painting a mosaic stroke after many others (the last strokes against the first, in one layer)',
+  ms: 2,
+  look: 'ui/canvasDraw/entityRender.ts (a new stroke must be drawn onto the last render, not every object again: drawMosaic copies the whole canvas four times)',
+};
+
+// Measured about 1x (flat); 3x or more when every stroke redrew all the earlier mosaics.
+test('painting more mosaic strokes does not make each one slower', async ({ page }) => {
+  await openApp(page);
+  await page.getByTestId('gallery-thumb').first().dragTo(page.locator('.pp-refs'));
+  await page.getByTestId('ref-image').click();
+  await page.getByTestId('ref-to-canvas').click();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('canvas-entity')).toHaveCount(1);
+  await page.getByTestId('canvas-tool-mosaic').click();
+  const box = (await page.getByTestId('canvas-stage').boundingBox())!;
+  const [cx, cy] = [box.x + box.width / 2, box.y + box.height / 2];
+  const times: number[] = [];
+  for (let i = 0; i < 14; i++) {
+    const start = Date.now();
+    await page.mouse.move(cx - 80, cy + (i % 7) * 10);
+    await page.mouse.down();
+    await page.mouse.move(cx + 80, cy + (i % 7) * 10, { steps: 8 });
+    await page.mouse.up();
+    times.push(Date.now() - start);
+  }
+  withinBudget(MOSAIC_GROWTH, median(times.slice(-5)) / Math.max(1, median(times.slice(0, 5))));
+});

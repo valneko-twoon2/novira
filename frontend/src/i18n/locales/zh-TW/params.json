@@ -46,7 +46,6 @@
   "params.image.bboxHint": "生成範圍（邊界框）",
   "params.image.bboxWidth": "範圍寬度",
   "params.image.bboxHeight": "範圍高度",
-  "params.image.strength": "降噪強度",
   "params.image.strengthInfo": "要改變原圖多少。0 為維持原樣，1 為完全重新繪製。",
   "params.seed.label": "種子",
   "params.seed.info": "相同的種子與設定會生成相同的圖像。",

@@ -46,7 +46,6 @@
   "params.image.bboxHint": "Caixa delimitadora",
   "params.image.bboxWidth": "Largura",
   "params.image.bboxHeight": "Altura",
-  "params.image.strength": "Força de remoção de ruído",
   "params.image.strengthInfo": "Quanto a imagem é alterada. 0 mantém como está, 1 redesenha por completo.",
   "params.seed.label": "Seed",
   "params.seed.info": "A mesma seed e os mesmos ajustes produzem a mesma imagem.",

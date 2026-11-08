@@ -46,7 +46,6 @@
   "params.image.bboxHint": "Cadre de sélection",
   "params.image.bboxWidth": "Largeur",
   "params.image.bboxHeight": "Hauteur",
-  "params.image.strength": "Force du débruitage",
   "params.image.strengthInfo": "Ampleur de la modification de l'image. 0 la conserve telle quelle, 1 la redessine entièrement.",
   "params.seed.label": "Seed",
   "params.seed.info": "Une même seed avec les mêmes réglages produit la même image.",

@@ -49,7 +49,7 @@
   "params.image.bboxHint": "Bounding box",
   "params.image.bboxWidth": "Width",
   "params.image.bboxHeight": "Height",
-  "params.image.strength": "Denoising strength",
+  "params.image.strength": "Change amount",
   "params.image.strengthInfo": "How much the image is changed. 0 keeps it as is, 1 redraws it completely.",
   "params.seed.label": "Seed",
   "params.seed.info": "The same seed and settings produce the same image.",

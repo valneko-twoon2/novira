@@ -46,7 +46,6 @@
   "params.image.bboxHint": "Рамка области",
   "params.image.bboxWidth": "Ширина",
   "params.image.bboxHeight": "Высота",
-  "params.image.strength": "Сила шумоподавления",
   "params.image.strengthInfo": "Насколько изменяется изображение. 0 оставляет его как есть, 1 перерисовывает полностью.",
   "params.seed.label": "Сид",
   "params.seed.info": "Одинаковые сид и настройки дают одно и то же изображение.",

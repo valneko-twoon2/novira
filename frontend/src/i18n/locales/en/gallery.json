@@ -140,7 +140,7 @@
   "gallery.meta.seed": "Seed",
   "gallery.meta.size": "Size",
   "gallery.meta.steps": "Steps",
-  "gallery.meta.strength": "Denoising strength",
+  "gallery.meta.strength": "Change amount",
   "gallery.meta.structure": "Structure",
   "gallery.meta.tabDetails": "Image details",
   "gallery.meta.tabMetadata": "Metadata",

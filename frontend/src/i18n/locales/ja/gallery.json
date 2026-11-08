@@ -140,7 +140,7 @@
   "gallery.meta.seed": "シード",
   "gallery.meta.size": "サイズ",
   "gallery.meta.steps": "ステップ数",
-  "gallery.meta.strength": "ノイズ除去の強さ",
+  "gallery.meta.strength": "変化量",
   "gallery.meta.structure": "構造",
   "gallery.meta.tabDetails": "画像の詳細",
   "gallery.meta.tabMetadata": "メタデータ",

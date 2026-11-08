@@ -46,7 +46,6 @@
   "params.image.bboxHint": "Begrenzungsrahmen",
   "params.image.bboxWidth": "Breite",
   "params.image.bboxHeight": "Höhe",
-  "params.image.strength": "Denoising-Stärke",
   "params.image.strengthInfo": "Wie stark das Bild verändert wird. 0 behält es bei, 1 zeichnet es komplett neu.",
   "params.seed.label": "Seed",
   "params.seed.info": "Derselbe Seed mit denselben Einstellungen ergibt dasselbe Bild.",

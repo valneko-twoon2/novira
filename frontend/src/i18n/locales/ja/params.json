@@ -49,7 +49,7 @@
   "params.image.bboxHint": "生成範囲（バウンディングボックス）",
   "params.image.bboxWidth": "範囲の幅",
   "params.image.bboxHeight": "範囲の高さ",
-  "params.image.strength": "ノイズ除去の強さ",
+  "params.image.strength": "変化量",
   "params.image.strengthInfo": "元の画像をどれだけ変えるか。0 で元のまま、1 で完全に描き直します。",
   "params.seed.label": "シード",
   "params.seed.info": "同じシードと設定からは同じ画像が生成されます。",
