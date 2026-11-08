@@ -3,8 +3,9 @@
 // remembers which queue items belong to which candidate and what the user decided.
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { backend, draftStep, type EnqueueRequest, type GenerationMetadata, type ModelConfig, type QueueItem, type RefImageInput } from '@/backend';
+import { backend, draftStep, type EnqueueRequest, type GenerationMetadata, type ImageDTO, type ModelConfig, type QueueItem, type RefImageInput } from '@/backend';
 import { buildRequestFor } from './invoke';
+import { useGallery } from './gallery';
 import { BASE_ORDER, drawableModels, findModel } from './models';
 import { useQueue } from './queue';
 
@@ -93,6 +94,20 @@ function statusOf(item: QueueItem | undefined, hasImage: boolean): DraftStatus {
   return 'failed';
 }
 
+/** How long before a group's own clock its items may have been made (the batch is queued, then the group is stored). */
+const ITEM_BEFORE_GROUP_MS = 60_000;
+
+/**
+ * Whether a queue item is the one a candidate asked for. Items are named by id, and an id that was given before (the
+ * queue was cleared, older versions restarted the numbers) can belong to an unrelated job now: its picture would then
+ * replace the candidate's. The seed, the draft position and the time tell them apart.
+ */
+export function isItemOf(item: QueueItem | undefined, group: DraftGroup, candidate: DraftCandidate, kind: 'draft' | 'final'): item is QueueItem {
+  if (!item) return false;
+  if (item.params.seed !== candidate.seed || item.createdAt < group.createdAt - ITEM_BEFORE_GROUP_MS) return false;
+  return kind === 'draft' ? item.params.draftAt !== undefined : item.params.draftAt === undefined;
+}
+
 /** Applies the queue's view of each candidate's items to the groups; returns the same array when nothing changed. */
 export function syncGroups(groups: DraftGroup[], items: QueueItem[]): DraftGroup[] {
   const byId = new Map(items.map((i) => [i.id, i]));
@@ -100,8 +115,11 @@ export function syncGroups(groups: DraftGroup[], items: QueueItem[]): DraftGroup
   const next = groups.map((g) => {
     let groupChanged = false;
     const candidates = g.candidates.map((c) => {
-      const draft = c.itemId === null ? undefined : byId.get(c.itemId);
-      const final = c.finalItemId === null ? undefined : byId.get(c.finalItemId);
+      const found = c.itemId === null ? undefined : byId.get(c.itemId);
+      const foundFinal = c.finalItemId === null ? undefined : byId.get(c.finalItemId);
+      // An id that now names another job is as good as gone: the candidate keeps what it had.
+      const draft = isItemOf(found, g, c, 'draft') ? found : undefined;
+      const final = isItemOf(foundFinal, g, c, 'final') ? foundFinal : undefined;
       const imageName = draft?.imageName ?? c.imageName;
       const finalImageName = final?.imageName ?? c.finalImageName;
       const status = c.itemId === null ? c.status : statusOf(draft, !!imageName);
@@ -111,6 +129,51 @@ export function syncGroups(groups: DraftGroup[], items: QueueItem[]): DraftGroup
       if (same) return c;
       groupChanged = true;
       return { ...c, status, finalStatus, imageName, finalImageName, error };
+    });
+    if (!groupChanged) return g;
+    changed = true;
+    return { ...g, candidates };
+  });
+  return changed ? next : groups;
+}
+
+/** Whether a stored picture is the one a candidate drew: its own seed, draft or finished, and made after its batch was started. */
+function pictureIsOf(image: ImageDTO, group: DraftGroup, candidate: DraftCandidate, kind: 'draft' | 'final'): boolean {
+  const m = image.metadata;
+  if (!m || m.seed !== candidate.seed || image.createdAt < group.createdAt - ITEM_BEFORE_GROUP_MS) return false;
+  return kind === 'draft' ? m.draftAt !== undefined : m.draftAt === undefined;
+}
+
+/**
+ * Mends batches that took another job's picture (the queue numbers were given twice, see `isItemOf`). A picture that is
+ * not the candidate's is replaced by the candidate's own one found in the gallery by seed, prompt, model and time, or let go
+ * when there is none, so the candidate shows nothing (a finished picture can be drawn again) instead of a stranger's.
+ * Returns the same array when every picture is right.
+ */
+export function repairGroups(groups: DraftGroup[], images: ImageDTO[]): DraftGroup[] {
+  const byName = new Map(images.map((i) => [i.name, i]));
+  let changed = false;
+  const next = groups.map((g) => {
+    let groupChanged = false;
+    const own = (c: DraftCandidate, kind: 'draft' | 'final') =>
+      images
+        .filter((i) => pictureIsOf(i, g, c, kind) && i.metadata?.positivePrompt === g.params.positivePrompt && i.metadata?.modelKey === g.params.modelKey)
+        .sort((a, b) => a.createdAt - b.createdAt)[0];
+    const candidates = g.candidates.map((c) => {
+      let out = c;
+      // A picture whose settings are not known yet (not read from the backend) cannot be judged, so it is left as it is.
+      const draft = c.imageName ? byName.get(c.imageName) : undefined;
+      if (draft?.metadata && !pictureIsOf(draft, g, c, 'draft')) {
+        const found = own(c, 'draft');
+        out = found ? { ...out, imageName: found.name } : { ...out, imageName: null, status: 'failed', error: null };
+      }
+      const final = c.finalImageName ? byName.get(c.finalImageName) : undefined;
+      if (final?.metadata && !pictureIsOf(final, g, c, 'final')) {
+        const found = own(c, 'final');
+        out = found ? { ...out, finalImageName: found.name } : { ...out, finalImageName: null, finalItemId: null, finalStatus: null };
+      }
+      if (out !== c) groupChanged = true;
+      return out;
     });
     if (!groupChanged) return g;
     changed = true;
@@ -331,4 +394,13 @@ export const useDrafts = create<DraftsState>()(
 // Keep the candidates in step with the queue.
 useQueue.subscribe((s, prev) => {
   if (s.items !== prev.items) useDrafts.getState().sync(s.items);
+});
+
+// Once the gallery is known, mend the batches stored by an older version that mixed up pictures.
+let repaired = false;
+useGallery.subscribe((g) => {
+  if (repaired || g.images.length === 0) return;
+  repaired = true;
+  const groups = repairGroups(useDrafts.getState().groups, g.images);
+  if (groups !== useDrafts.getState().groups) useDrafts.setState({ groups });
 });

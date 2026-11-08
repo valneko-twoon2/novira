@@ -403,3 +403,23 @@ async fn pruned_and_cleared_items_stay_gone_after_a_restart() {
         "nothing waits, so the processor is not paused"
     );
 }
+
+/// Draft groups and other stored references name queue items by id, so an id given once is never given again: not after
+/// the queue is cleared or pruned, and not after a restart on an empty queue.
+#[tokio::test]
+async fn an_item_id_is_never_given_twice_after_the_queue_is_cleared_and_the_app_restarted() {
+    let dir = tempfile::tempdir().unwrap();
+    let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+    let first = backend.enqueue(request("m", "one", 3)).unwrap();
+    let last = first.iter().map(|q| q.id).max().unwrap();
+    backend.clear_queue().unwrap();
+    let after_clear = backend.enqueue(request("m", "two", 1)).unwrap();
+    assert!(after_clear[0].id > last, "cleared ids are not reused");
+    backend.clear_queue().unwrap();
+    drop(backend);
+
+    let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+    assert!(backend.queue_snapshot().items.is_empty());
+    let after_restart = backend.enqueue(request("m", "three", 1)).unwrap();
+    assert!(after_restart[0].id > after_clear[0].id, "ids do not restart at 1 after a restart on an empty queue");
+}

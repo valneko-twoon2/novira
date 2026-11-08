@@ -74,7 +74,7 @@ describe('groups and selection', () => {
 
   it('follows the queue through the queue store', () => {
     useDrafts.setState({ groups: [group('a', [candidate(1)])] });
-    useQueue.setState({ items: [{ id: 1, status: 'completed', imageName: 'done.png', error: null } as QueueItem] });
+    useQueue.setState({ items: [{ id: 1, status: 'completed', imageName: 'done.png', error: null, createdAt: 1, params: { seed: 11, draftAt: 0.35 } } as QueueItem] });
     expect(state().groups[0]!.candidates[0]).toMatchObject({ status: 'ready', imageName: 'done.png' });
     useQueue.setState({ items: [] });
   });

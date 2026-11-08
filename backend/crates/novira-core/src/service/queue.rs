@@ -115,13 +115,19 @@ impl Backend {
             }
         }
         let ids: Vec<String> = items.iter().map(|q| q.id.to_string()).collect();
-        self.db().put_many(
+        let mut db = self.db();
+        db.put_many(
             Table::Queue,
             items
                 .iter()
                 .zip(&ids)
                 .map(|(q, id)| (id.as_str(), q.id as i64, q)),
         )?;
+        // The next id is kept apart from the rows: clearing or pruning the queue must not let an id be given twice, since
+        // draft groups and other stored references name the items by id.
+        if let Some(last) = items.iter().map(|q| q.id).max() {
+            db.set_meta(NEXT_QUEUE_ID_META, &(last + 1).to_string())?;
+        }
         Ok(())
     }
 

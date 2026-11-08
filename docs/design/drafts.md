@@ -23,6 +23,10 @@ Drafts draw many candidates with the same settings and different seeds only part
 |---|---|
 | The request sent to the queue | The same checks as any generation job (generation.md); the draft position and steps are checked again when the graph is built |
 
+## Tying a candidate to its queue item
+
+A candidate names its queue items by id. The backend never gives an id twice (`queue_next_id` in the meta table survives clearing the queue and restarts; before this, ids restarted at 1 once the queue was empty), and `syncGroups` takes an item as the candidate's only when its seed, its draft position (a draft has one, the finished picture has none) and its time (not before the batch) fit (`isItemOf`). Batches stored by a version that reused ids are mended once the gallery is known (`repairGroups`): a picture whose own settings show it is another job's is replaced by the candidate's own picture found by seed, prompt, model and time, or let go. A picture whose settings are not read yet is left alone.
+
 ## Known limits
 
 - Continue draws the whole picture again from step 0: it takes as long as a normal run.

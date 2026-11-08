@@ -63,6 +63,8 @@ const SEED_SPAN: u64 = MAX_SEED + 1;
 const HIDDEN_MODELS_META: &str = "hidden_models";
 /// Set once the stored LoRA bases were checked against the current detection (`registry::corrected_lora_bases`); bump
 /// the number when the detection of a LoRA's family is fixed again.
+/// The next queue item id, kept so that ids are not given twice after the queue is cleared.
+pub(crate) const NEXT_QUEUE_ID_META: &str = "queue_next_id";
 const LORA_BASES_CHECKED_META: &str = "lora_bases_checked_1";
 /// Set once the records stored without a family were checked against the current detection (`registry::corrected_any_bases`);
 /// bump the number when the detection learns a family it did not tell before.
@@ -415,7 +417,9 @@ impl Backend {
         watch.lap("model writes");
 
         // A job that was running when the app closed did not finish; leftover pending jobs wait for an explicit resume.
-        state.next_item_id = state.queue.iter().map(|q| q.id).max().unwrap_or(0) + 1;
+        // Never below an id that was given before, also when the queue was cleared since (older data has no such record).
+        let given = db.meta(NEXT_QUEUE_ID_META)?.and_then(|v| v.parse::<u64>().ok()).unwrap_or(1);
+        state.next_item_id = state.queue.iter().map(|q| q.id).max().unwrap_or(0).saturating_add(1).max(given);
         let t = now();
         for item in &mut state.queue {
             if item.status == QueueItemStatus::InProgress {

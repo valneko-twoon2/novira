@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { backend, draftStep, type EnqueueRequest, type QueueItem, type RefImageInput } from '@/backend';
-import type { GenerationMetadata, ModelConfig } from '@/backend';
+import type { GenerationMetadata, ImageDTO, ModelConfig } from '@/backend';
 import { registerInvokeBuilder } from './invoke';
 import { useModels } from './models';
-import { draftModels, draftRefusal, modelsWithoutDrafts, syncGroups, useDrafts, withModel, type DraftGroup } from './drafts';
+import { draftModels, draftRefusal, modelsWithoutDrafts, repairGroups, syncGroups, useDrafts, withModel, type DraftGroup } from './drafts';
 
 const candidate = (over: Partial<DraftGroup['candidates'][number]> = {}): DraftGroup['candidates'][number] => ({
   id: 'c1',
@@ -28,8 +28,11 @@ const group = (c = candidate()): DraftGroup => ({
   candidates: [c],
 });
 
-const item = (id: number, status: QueueItem['status'], imageName: string | null = null, error: string | null = null) =>
-  ({ id, status, imageName, error }) as QueueItem;
+/** A queue item of the candidate (seed 5): a draft stops at `draftAt`, a finished picture has none. */
+const item = (id: number, status: QueueItem['status'], imageName: string | null = null, error: string | null = null, over: Partial<QueueItem> & { draftAt?: number } = {}) => {
+  const { draftAt = id === 2 ? undefined : 0.35, ...rest } = over;
+  return { id, status, imageName, error, createdAt: 1, params: { seed: 5, ...(draftAt === undefined ? {} : { draftAt }) }, ...rest } as QueueItem;
+};
 
 describe('draftStep', () => {
   it('keeps the draft readable and leaves at least two steps', () => {
@@ -57,6 +60,22 @@ describe('syncGroups', () => {
     const next = syncGroups(groups, [item(1, 'completed', 'a.png'), item(2, 'completed', 'b.png')]);
     expect(next[0]!.candidates[0]).toMatchObject({ finalStatus: 'ready', finalImageName: 'b.png' });
     expect(syncGroups(next, [item(1, 'completed', 'a.png'), item(2, 'completed', 'b.png')])).toBe(next);
+  });
+
+  it('does not take the picture of an unrelated job that now has the same id', () => {
+    // The queue was cleared and its numbers started again: id 1 is another job (another seed, a plain picture, an older time).
+    const own = candidate({ status: 'ready', imageName: 'draft.png' });
+    const other = [
+      item(1, 'completed', 'other.png', null, { params: { seed: 99, draftAt: 0.35 } as QueueItem['params'] }),
+      item(1, 'completed', 'plain.png', null, { draftAt: undefined, params: { seed: 5 } as QueueItem['params'] }),
+      item(1, 'completed', 'old.png', null, { createdAt: -120_000 }),
+    ];
+    for (const stranger of other) {
+      expect(syncGroups([group(own)], [stranger])).toEqual([group(own)]);
+    }
+    const final = candidate({ status: 'ready', imageName: 'draft.png', finalItemId: 2, finalStatus: 'queued' });
+    const next = syncGroups([group(final)], [item(1, 'completed', 'draft.png'), item(2, 'completed', 'final.png', null, { draftAt: 0.35 })]);
+    expect(next[0]!.candidates[0]).toMatchObject({ finalImageName: null });
   });
 
   it('records why a draft failed', () => {
@@ -223,5 +242,33 @@ describe('draft batches with reference images', () => {
     const g = useDrafts.getState().groups.at(-1)!;
     await useDrafts.getState().finish(g.id, [g.candidates[0]!.id]);
     expect(enqueue.mock.calls.map(([r]) => r.params.hiresFix)).toEqual([undefined, hiresFix]);
+  });
+});
+
+describe('repairGroups', () => {
+  const g = (c: DraftGroup['candidates'][number]): DraftGroup => ({ ...group(c), createdAt: 1_000_000, params: { steps: 28, positivePrompt: 'fox', modelKey: 'm' } as DraftGroup['params'] });
+  const picture = (name: string, over: Partial<GenerationMetadata> = {}, createdAt = 1_000_100): ImageDTO =>
+    ({ name, createdAt, metadata: { seed: 5, positivePrompt: 'fox', modelKey: 'm', draftAt: 0.35, ...over } }) as ImageDTO;
+
+  it('leaves the pictures that are the candidate own, and ones whose settings are not known yet', () => {
+    const groups = [g(candidate({ status: 'ready', imageName: 'own.png' })), g(candidate({ status: 'ready', imageName: 'unread.png' }))];
+    expect(repairGroups(groups, [picture('own.png'), { name: 'unread.png', createdAt: 1, metadata: null } as ImageDTO])).toBe(groups);
+  });
+
+  it('swaps in the candidate own picture when the picture of another job took its place', () => {
+    const stranger = picture('stranger.png', { seed: 99 }, 5_000_000);
+    const groups = [g(candidate({ status: 'ready', imageName: 'stranger.png' }))];
+    const fixed = repairGroups(groups, [stranger, picture('mine.png')]);
+    expect(fixed[0]!.candidates[0]).toMatchObject({ imageName: 'mine.png', status: 'ready' });
+  });
+
+  it('lets the picture go when the candidate own is not there, and a finished picture can be drawn again', () => {
+    const plain = picture('plain.png', { draftAt: undefined });
+    const groups = [g(candidate({ status: 'ready', imageName: 'plain.png', finalItemId: 2, finalImageName: 'plain.png', finalStatus: 'ready' }))];
+    const c = repairGroups(groups, [plain])[0]!.candidates[0]!;
+    expect(c).toMatchObject({ imageName: null, status: 'failed' });
+    expect(c.finalImageName).toBe('plain.png');
+    const early = [g(candidate({ status: 'ready', imageName: 'old.png' }))];
+    expect(repairGroups(early, [picture('old.png', {}, 10)])[0]!.candidates[0]).toMatchObject({ imageName: null });
   });
 });
