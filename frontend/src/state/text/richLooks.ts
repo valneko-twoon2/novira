@@ -1,5 +1,5 @@
 // The looks of "finish with AI": the words the model reads, and the colours of the lit base it starts from. Picked by eye on
-// real runs (a gold, fire, ice, neon, stone, candy and chrome lettering of four test words, docs/design/04-gallery/03-text/02-text-rich.md).
+// real runs (a gold, fire, ice, neon, stone, candy and chrome lettering of four test words, docs/design/02-generation/04-media-screens/05-text-rich.md).
 
 export const RICH_LOOK_IDS = ['gold', 'fire', 'ice', 'neon', 'stone', 'candy', 'chrome'] as const;
 export type RichLookId = (typeof RICH_LOOK_IDS)[number];
