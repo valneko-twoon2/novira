@@ -44,3 +44,4 @@
 - 契約、ラウンドトリップ: [04-wire.md](04-wire.md)
 - 実エンジンでの実行: [09-app.md](09-app.md)
 - 旧データのリリース確認: [08-build.md](08-build.md)
+- キューの仕様のモデル検査: [11-formal.md](11-formal.md)

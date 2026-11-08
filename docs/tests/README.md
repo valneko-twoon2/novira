@@ -16,6 +16,7 @@
 | Build | ビルドと配布 | [08-build.md](08-build.md) |
 | App | 本物のエンジンを含むアプリ全体 | [09-app.md](09-app.md) |
 | Repo | リポジトリの道具、文書、規則 | [10-repo.md](10-repo.md) |
+| Formal | 仕様の総当たり検査（形式検証） | [11-formal.md](11-formal.md) |
 
 各ページの表は、その層を主な対象とする手法の行を持つ。複数の層にまたがる手法は、主な層のページに行があり、ほかの層のページでは末尾の「この層にも関わる手法」から探せる。
 
@@ -50,7 +51,8 @@ CI のジョブは、`.github/workflows/test.yml`（`static`、`rust-format`、`
 | 型・lint・文書・テストの衛生・影響分析・カバレッジ / Type, lint, docs, test hygiene, impact analysis, coverage | [Repo](10-repo.md) |
 | メタモルフィック / Metamorphic | [Core](05-core.md) |
 | ミューテーション / Mutation | [Core](05-core.md) |
+| 形式検証・モデル検査 / Formal verification, model checking | [Formal](11-formal.md) |
 
 ## 未実装
 
-競合の探索（loom、shuttle）と不安定テストの夜間反復、カバレッジ誘導のファジング、段階ごとの停止と再起動（復元とデータ移動以外。ComfyUI とモデルの導入）、長時間運転とリークの検査、サーバーの負荷試験、外部の静的解析（CodeQL、semgrep）、擬似ローカライズ、実エンジンの出力比較、インストーラーの試験、Firefox、Miri、形式手法。
+競合の探索（loom、shuttle）と不安定テストの夜間反復、カバレッジ誘導のファジング、段階ごとの停止と再起動（復元とデータ移動以外。ComfyUI とモデルの導入）、長時間運転とリークの検査、サーバーの負荷試験、外部の静的解析（CodeQL、semgrep）、擬似ローカライズ、実エンジンの出力比較、インストーラーの試験、Firefox、Miri、コードの形式検証（Kani。[11-formal.md](11-formal.md)）。

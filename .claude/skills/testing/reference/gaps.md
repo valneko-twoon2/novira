@@ -26,7 +26,7 @@ Rules for all of them (`.claude/rules/tests.md`, `security.md`, `AGENTS.md`):
 | Load of `novira-server` | 12 | low to medium | no | 11 |
 | Real-engine output regression, GPU matrix | 13 | medium | no (manual, GPU lock) | 12 |
 | Doc tests, secret-leak check, budgets, canary | 14 | low each | canary: yes (CI) | 13 |
-| Formal methods | — | — | ON HOLD | 14 |
+| Formal methods (TLA+ for the queue is in; Kani and the pairing spec are left) | 9 | medium | Kani: yes (WSL, tools) | 14 |
 
 ## 1a. Race exploration, cheap version: repeat runs
 
@@ -256,6 +256,13 @@ Each is one test file or one script; none needs a CI change unless noted.
 - Memory and power budget. `perf.mjs` only reports. Add a budget file (`scripts/tools/perf-budget.json`, new) and a `--budget` option failing when idle working set of `novira-server` after start, or CPU time over a 60 s idle window (`Get-Process | Select CPU`, delta), exceeds a limit set at 1.5 times the first measured value. Idle CPU is the power proxy on a laptop (wake-ups); `powercfg /energy` needs admin: do not. Same machine only (`docs/verification.md`, "Measuring speed"). Ask before adding the option.
 - External-service canary. `*_live.rs` (`civitai_live.rs`, `huggingface_live.rs`, `node_packs_live.rs`, `media_live.rs`, `watermark_live.rs`, `agent_live.rs`, `agent_endpoint_live.rs`; `models_live.rs` needs a GPU, `home_network_live.rs` a network) are `#[ignore]`. Safe candidates for a schedule: `civitai_live`, `huggingface_live` (public endpoints, no key; never pass a key into CI). A weekly workflow `canary.yml` (ask) on `ubuntu-24.04` or Windows: `cargo test -p novira-core --test civitai_live --test huggingface_live -- --ignored`. A failure means the service changed its shape or is down; the notice is only the Actions tab (like `audit.yml`), unless the user allows an issue (needs `issues: write`, a widened permission: ask). Allow one retry before red.
 
-## 14. Formal methods: ON HOLD
+## 14. Formal methods: the queue spec is in, the rest is open
 
-TLA+/Quint (model checking the pairing machine in `backend/crates/novira-server/src/pair.rs` and the queue), Kani (bounded proofs of small functions) and Verus (proofs) are on hold by the user ("put formal methods aside for now"). Do not add tools, specs or annotations for them and do not write recipes. Their properties are listed in the study notes and can be tested today with proptest and `prop_queue.rs` instead (model-based tests with time steps for `pair.rs`, which takes `Instant` as an argument so its clock can be faked).
+The user lifted the hold on 2026-11-08 and asked for it to be learned as well as used. What exists and the reasoning (when to prefer it to proptest) is `docs/tests/11-formal.md`; read it first.
+
+Done: `backend/crates/novira-core/formal/Queue.tla` (+ `Queue.cfg`) models the queue and the worker; `node scripts/tools/checks.mjs tla` runs TLC (it fetches a portable JDK 17 and `tla2tools.jar` into `novira-data/work/tools` once). Proved to fail: three deliberate breaks of the spec each produced a violation (no pending check at start, overwriting an ended item, the id counter reset by a clear). When `queue.rs` or `worker.rs` changes how an item moves, change the spec in the same commit.
+
+Left:
+- Kani on `backend/crates/novira-server/src/pair.rs`: Kani does not run on native Windows; use the WSL Ubuntu, which has no Rust and no `cc` and needs `sudo apt install build-essential` (the user's password). `pair.rs` depends on `ring`, whose C build Kani must compile; if that fails, extract the pure decisions (`alive`, `allow`, `clean_label`, the single-use rule) into a function without `ring` and prove those. Ask before installing anything.
+- A TLA+ spec of the pairing machine (code, request, approval, session, revoke, expiry).
+- Quint and Verus are not planned: Quint only restates TLA+, and Verus costs more than this size of project repays.

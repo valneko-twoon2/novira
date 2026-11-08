@@ -22,9 +22,10 @@
 
 | `scripts/tools/` の中 | 中身 |
 |---|---|
-| `checks.mjs` | 検査を回す唯一の入口（`--list` で一覧。fmt、clippy、cargo-test、lint、typecheck、vitest、e2e、phone、diff-backends、layout、docs）。場所、PATH、Rust のビルド先（`novira-data/work/check-target`）、e2e ロックを整え、引数はそのまま渡す。生の `cargo test` や `npx vitest` は `.claude/hooks/use-checks.mjs` が止めて、このツールの呼び方を返す |
+| `checks.mjs` | 検査を回す唯一の入口（`--list` で一覧。fmt、clippy、cargo-test、lint、typecheck、vitest、e2e、phone、diff-backends、layout、docs、tla）。場所、PATH、Rust のビルド先（`novira-data/work/check-target`）、e2e ロックを整え、引数はそのまま渡す。生の `cargo test` や `npx vitest` は `.claude/hooks/use-checks.mjs` が止めて、このツールの呼び方を返す |
 | `affected.mjs` | 変更したファイルに必要な検査だけ |
 | `coverage-report.mjs` | 計測した全部分を 1 つにまとめたグラフィカルなカバレッジレポート（ReportGenerator。`.config/dotnet-tools.json` で固定） |
+| `tla.mjs` | `backend/crates/novira-core/formal/` の TLA+ 仕様を TLC でモデル検査する（`checks.mjs tla`）。初回だけ持ち運べる JDK 17 と `tla2tools.jar` を `novira-data/work/tools/` に取得する（[形式検証](../tests/11-formal.md)） |
 | `typecheck.mjs`、`commit-gates.mjs`、`docs-check.mjs`、`ui-refs.mjs`、`visual-baselines.mjs`、`check-eol.mjs`、`fix-eol.mjs`、`eol.mjs`、`check-name.mjs`、`changelog.mjs`、`ci-summary.mjs` | リポジトリ全体の検査: 型、コミットが通すべき CI ジョブ（Rust の整形、clippy、lint、モックと本物のバックエンドの比較、スマホ）、地図と設計ページ、存在しないテスト ID と文言キー、画面を変えうる変更の判定（基準画像）、改行、名前の綴り、変更履歴の形、CI のテスト数 |
 | `layout-scan.mjs`、`e2e-lock.mjs` | レイアウトスキャン（テキストの収まりを含む）とその合格記録。重い Playwright の実行を一度に 1 つにするロック |
 | `worktree.mjs` | サブエージェントの worktree を作って消す |

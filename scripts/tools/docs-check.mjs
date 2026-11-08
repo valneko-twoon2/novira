@@ -45,7 +45,7 @@ const NOT_A_PATH = /^tools\/(list|call)$/;
 const NOT_CODE = /(^docs\/|\.test\.|\.spec\.|\.testkit\.|\/tests?\/|\/e2e\/|__snapshots__|\.md$)/;
 
 /** Where the names of the code live: the sources of every part, their configs and the launchers (not the screen texts). */
-const CODE_FILE = /\.(tsx?|mjs|cjs|js|rs|toml|css|bat|ps1|json|sh)$/;
+const CODE_FILE = /\.(tsx?|mjs|cjs|js|rs|toml|css|bat|ps1|json|sh|tla)$/;
 // Frontend tests are left out: a check of the docs quotes removed names as its examples (tests/docs-check.test.ts).
 const NOT_CODE_FILE = /\/i18n\/locales\/|__snapshots__\/|\.test\.tsx?$|^frontend\/tests\//;
 /** The pages whose code names are checked: everything written for developers and agents (the manual is for users). */

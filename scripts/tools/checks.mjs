@@ -39,6 +39,7 @@ export const CHECKS = {
   'diff-backends': { cwd: '.', about: 'the mock against the real backend (novira-server, no engine)', cmd: (a) => ['node', 'scripts/tools/diff-backends.mjs', ...a] },
   layout: { cwd: '.', about: 'the layout scan of every screen (about three minutes; takes the e2e lock itself)', cmd: (a) => ['node', 'scripts/tools/layout-scan.mjs', ...a] },
   docs: { cwd: '.', about: 'the map and the design pages against the tree', cmd: (a) => ['node', 'scripts/tools/docs-check.mjs', ...a] },
+  tla: { cwd: '.', about: 'TLC model-checks the TLA+ specs in backend/crates/novira-core/formal (a few seconds; fetches a portable JDK once)', cmd: (a) => ['node', 'scripts/tools/tla.mjs', ...a] },
 };
 
 /** A path argument written from the repository root, as the command (run in `cwd`) sees it. */

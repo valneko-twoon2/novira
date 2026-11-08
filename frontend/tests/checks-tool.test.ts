@@ -13,7 +13,7 @@ const run = (name: string, args: string[] = []): string[] => specOf(name, args).
 
 describe('checks tool', () => {
   it('knows every check CI and the commit gates name, and says what each does', () => {
-    for (const name of ['fmt', 'clippy', 'cargo-test', 'lint', 'typecheck', 'vitest', 'e2e', 'phone', 'diff-backends', 'layout', 'docs']) {
+    for (const name of ['fmt', 'clippy', 'cargo-test', 'lint', 'typecheck', 'vitest', 'e2e', 'phone', 'diff-backends', 'layout', 'docs', 'tla']) {
       expect(CHECKS[name], name).toBeTruthy();
       expect(CHECKS[name].about.length, name).toBeGreaterThan(10);
     }
