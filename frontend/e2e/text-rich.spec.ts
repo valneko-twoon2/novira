@@ -42,6 +42,8 @@ test('finishing a text layer makes candidates, and a changed text asks for a new
 });
 
 test('the seed row of the Generate screen: a random run shows the seed it used, and a fixed seed stays as it is', async ({ page }) => {
+  // Two runs, each given 30 s: under a full parallel run the test's own 30 s ran out before the second one ended.
+  test.setTimeout(90_000);
   await openText(page);
   const seed = page.getByRole('spinbutton', { name: msg('params.seed.label') });
   const candidates = page.getByTestId('text-rich-candidate');
@@ -78,6 +80,8 @@ test('a busy button draws its spinner in the label color, so it shows on the blu
 });
 
 test('the picture can be saved with the AI fill and a failed run changes nothing', async ({ page }) => {
+  // Two waits of 30 s each, as in the seed test.
+  test.setTimeout(90_000);
   await openText(page);
   await page.getByTestId('text-rich-run').click();
   await expect(page.getByTestId('text-rich-candidate')).toHaveCount(2, { timeout: 30_000 });
