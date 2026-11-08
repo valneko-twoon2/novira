@@ -1,22 +1,22 @@
-# Setting up a development environment
+# 開発環境の用意
 
-How to get the source running on a Windows PC, which launcher to use for what, and where to go next. How the parts fit is in [architecture/README.md](architecture/README.md); how to check a change is in [verification.md](verification.md); the rules for working in the repository are in [../AGENTS.md](../AGENTS.md).
+Windows PC でソースを動かす手順、ランチャーの使い分け、次に読むもの。部品のつながりは [architecture/README.md](architecture/README.md)、変更の確かめ方は [verification.md](verification.md)、リポジトリでの作業規則は [../AGENTS.md](../AGENTS.md)。
 
-## What you need
+## 必要なもの
 
-| Tool | Why |
+| ツール | 理由 |
 |---|---|
-| Windows 11 | The launchers are `.bat` files and the app is built for Windows |
-| Git | The repository, and the hooks it installs |
-| Node.js 22 or later | The frontend and the Node tools (`engines` in `frontend/package.json`) |
-| Rust (stable, through rustup) | `backend/rust-toolchain.toml` picks the stable channel with `rustfmt` and `clippy` |
-| Microsoft C++ Build Tools | The linker Rust needs on Windows (the "Desktop development with C++" workload) |
-| WebView2 runtime | The window shows the UI through it; Windows 11 already has it |
-| A GPU (to generate) | ComfyUI draws on it. The app installs the NVIDIA build by default; the AMD one can be chosen in Settings, Engine. Screen work on the mock needs none |
+| Windows 11 | ランチャーは `.bat` で、アプリは Windows 向けにビルドする |
+| Git | リポジトリと、それが入れるフック |
+| Node.js 22 以降 | フロントエンドと Node 製のツール（`frontend/package.json` の `engines`） |
+| Rust（stable、rustup 経由） | `backend/rust-toolchain.toml` が `rustfmt` と `clippy` つきの stable チャンネルを選ぶ |
+| Microsoft C++ Build Tools | Windows で Rust が必要とするリンカー（「C++ によるデスクトップ開発」ワークロード） |
+| WebView2 ランタイム | ウィンドウはこれで UI を表示する。Windows 11 には入っている |
+| GPU（生成するとき） | ComfyUI が使う。アプリは既定で NVIDIA 向けのビルドをインストールし、AMD 向けは設定のエンジンで選べる。モックでの画面作業には要らない |
 
-`cargo` must be on the `PATH`; the launchers add `%USERPROFILE%\.cargo\bin` themselves. `scripts\dev.bat` installs `tauri-cli` (version 2) on its first run, which takes a few minutes.
+`cargo` は `PATH` に通す。ランチャーは `%USERPROFILE%\.cargo\bin` を自分で追加する。`scripts\dev.bat` は初回に `tauri-cli`（バージョン 2）をインストールし、数分かかる。
 
-## First setup
+## 最初の準備
 
 ```bat
 git clone https://github.com/valneko-twoon2/novira.git
@@ -24,43 +24,43 @@ cd novira\frontend
 npm ci
 ```
 
-`npm ci` also points Git at the hooks in `.githooks/` (the `prepare` script). The hooks check line ends, the layout of the screens, the documentation and the commit message before a commit is accepted (see [architecture/tooling.md](architecture/03-tooling.md)).
+`npm ci` は Git のフックの場所を `.githooks/` に向ける（`prepare` スクリプト）。フックはコミットが受理される前に、行末、画面のレイアウト、ドキュメント、コミットメッセージを検査する（[architecture/tooling.md](architecture/03-tooling.md) を参照）。
 
-Then run `scripts\start.bat` from the repository root. The first build compiles every Rust dependency and takes several minutes; later builds only redo what changed. On its first start the app installs its own ComfyUI into `novira-data\`; the first picture also needs a model (see the first chapter of the manual, [manual/en/01-start.md](manual/en/01-start.md)).
+次にリポジトリのルートで `scripts\start.bat` を実行する。最初のビルドは Rust の依存をすべてコンパイルするので数分かかり、2 回目以降は変更分だけをやり直す。アプリは初回の起動で自分の ComfyUI を `novira-data\` へインストールする。最初の 1 枚にはモデルも要る（マニュアルの第 1 章、[manual/en/01-start.md](manual/en/01-start.md) を参照）。
 
-## Ways to run it
+## 実行のしかた
 
-| Launcher | What it runs | Use it when |
+| ランチャー | 動かすもの | 使うとき |
 |---|---|---|
-| `cd frontend && npm run dev` | The UI alone in a browser (http://localhost:5173/) on an in-memory mock backend | You work on screens and do not need the engine. Nothing is generated; the mock answers the same way every time |
-| `scripts\dev.bat` | The desktop app on the Vite dev server (`cargo tauri dev`), with the real backend | You edit the frontend often: a saved edit shows at once, only Rust edits recompile |
-| `scripts\start.bat` | The desktop app, built once (`start.bat fast` opens it without building) | You want the app as a user sees it |
-| `scripts\server.bat` | The backend alone as a local web server, opened in your browser (`server.bat fast` skips the build; a phone on the home Wi-Fi is let in from the QR item of the page) | You work on the browser version, or want the real backend without a window |
-| `scripts\start.bat clean` | A clean rebuild of the frontend and the app, then opens it (`start.bat clean full` also rebuilds every dependency) | The app looks broken although the sources are fine, for example unstyled HTML |
+| `cd frontend && npm run dev` | UI だけをブラウザ（http://localhost:5173/）で、メモリ上のモックのバックエンドにつないで動かす | 画面を作っていて、エンジンが要らないとき。何も生成されず、モックは毎回同じ返事をする |
+| `scripts\dev.bat` | Vite の開発サーバー上のデスクトップアプリ（`cargo tauri dev`）。バックエンドは本物 | フロントエンドをよく直すとき。保存した変更がすぐ見え、再コンパイルされるのは Rust の変更だけ |
+| `scripts\start.bat` | 一度ビルドしたデスクトップアプリ（`start.bat fast` はビルドせずに開く） | 利用者が見るとおりのアプリが要るとき |
+| `scripts\server.bat` | バックエンドだけをローカルの Web サーバーとして動かし、ブラウザで開く（`server.bat fast` はビルドを省く。家の Wi-Fi にいるスマホは、ページの QR の項目から入れる） | ブラウザ版を作るとき、ウィンドウなしで本物のバックエンドが要るとき |
+| `scripts\start.bat clean` | フロントエンドとアプリをきれいに再ビルドして開く（`start.bat clean full` は依存もすべて再ビルドする） | ソースは正しいのにアプリが壊れて見えるとき（例: スタイルのない HTML） |
 
-Windows locks a running `novira.exe`, so close the app before you start, rebuild or check with a launcher. All of them keep the data in `novira-data\` in the repository root; set `NOVIRA_DATA_DIR` to use another folder. Only one process can use a data folder at a time, so the app and the browser server cannot run together on the same one.
+Windows は実行中の `novira.exe` をロックするので、ランチャーで起動・再ビルド・検査をする前にアプリを閉じる。どのランチャーもデータをリポジトリのルートの `novira-data\` に置く。別のフォルダを使うなら `NOVIRA_DATA_DIR` を設定する。1 つのデータフォルダを使えるプロセスは同時に 1 つだけなので、アプリとブラウザ用サーバーは同じフォルダで一緒に動かせない。
 
-## Checking your work
+## 作業の確かめ方
 
-| Command | What it does |
+| コマンド | 内容 |
 |---|---|
-| `node scripts\tools\affected.mjs` | Runs only the checks the changed files need. Start here |
-| `scripts\release\set-version.bat` | Sets the app's version (asks for it, or `set-version.bat 0.2.0`) in `Cargo.toml`, `package.json` and the lock files | You prepare a release |
-| `node scripts\tools\release-smoke.mjs` | Starts what `package.bat build` put in `artifacts\`: the server on an empty data folder and on each old-data fixture, and the app with no engine, each until its main screen or its data answers. Nothing uses the GPU; its folders are deleted after | You publish a release, before the zip |
-| `scripts\release\package.bat` | Builds the release into `artifacts\` and packs it into the zip for a release page, with its SHA-256 (the programs and licence texts only; `package.bat build` stops before the zip); the notes are the version's section of `CHANGELOG.md`. Pushing a tag `v<version>` makes GitHub do the same and leave a draft release ([release-workflow.md](design/01-app/04-release/01-release-workflow.md)) | You publish a release |
-| `scripts\check.bat` | Every fast check: typecheck, lint, unit tests and line ends on the frontend, `cargo fmt`, clippy and `cargo test` on the backend (`frontend` or `backend` for one side) |
-| `scripts\checks\full-check.bat` | Every test there is, by hand now and then (no CI runs the tests): `check.bat`, the browser server's tests, the mock compared with the real backend, every Playwright project and the layout scan, about half an hour; the report goes to `logs\full-check\` (`--no-browser` skips the browser steps) |
-| `cd frontend && npm run check` | The frontend part alone |
-| `cd frontend && npx vitest run <path>` | One frontend test file |
-| `cd backend && cargo test -p novira-core --lib` | The backend's unit tests |
-| `cd frontend && npm run e2e` | The screen flows in a browser (Playwright, on the mock). Run `npx playwright install chromium webkit` once first (WebKit runs the phone layout as an iPhone opens it) |
+| `node scripts\tools\affected.mjs` | 変更したファイルに必要な検査だけを回す。ここから始める |
+| `scripts\release\set-version.bat` | アプリのバージョンを `Cargo.toml`、`package.json`、ロックファイルに設定する（尋ねてくる。`set-version.bat 0.2.0` でも可） | リリースを準備するとき |
+| `node scripts\tools\release-smoke.mjs` | `package.bat build` が `artifacts\` に作ったものを起動する。空のデータフォルダと古いデータのフィクスチャごとにサーバーを、エンジンなしでアプリを起動し、それぞれメイン画面かデータの応答が出るまで確かめる。GPU は使わず、作ったフォルダは終わると消す | リリースを公開するとき、zip の前 |
+| `scripts\release\package.bat` | リリースを `artifacts\` にビルドし、リリースページ用の zip と SHA-256 にまとめる（プログラムとライセンス文だけ。`package.bat build` は zip の手前で止まる）。ノートは `CHANGELOG.md` のそのバージョンの節。タグ `v<version>` を push すると GitHub が同じことをして下書きのリリースを残す（[release-workflow.md](design/01-app/04-release/01-release-workflow.md)） | リリースを公開するとき |
+| `scripts\check.bat` | 速い検査すべて。フロントエンドは型検査、lint、単体テスト、行末、バックエンドは `cargo fmt`、clippy、`cargo test`（`frontend` か `backend` で片側だけ） |
+| `scripts\checks\full-check.bat` | あるテストすべて。ときどき手で回す（CI はテストを回さない）。`check.bat`、ブラウザ用サーバーのテスト、モックと本物のバックエンドの比較、Playwright の全プロジェクト、レイアウトのスキャンで約 30 分。レポートは `logs\full-check\` に出る（`--no-browser` でブラウザの手順を省く） |
+| `cd frontend && npm run check` | フロントエンドの部分だけ |
+| `cd frontend && npx vitest run <path>` | フロントエンドのテストファイル 1 つ |
+| `cd backend && cargo test -p novira-core --lib` | バックエンドの単体テスト |
+| `cd frontend && npm run e2e` | ブラウザでの画面の流れ（Playwright、モック上）。先に一度 `npx playwright install chromium webkit` を実行する（WebKit は iPhone が開くとおりにスマホのレイアウトを動かす） |
 
-Which checks fit which change is in [../.claude/rules/tests.md](../.claude/rules/tests.md). Running the real app, the engine or the model sweep is in [verification.md](verification.md).
+どの変更にどの検査が合うかは [../.claude/rules/tests.md](../.claude/rules/tests.md)。実アプリ、エンジン、モデルの総当たりの実行は [verification.md](verification.md)。
 
-## Good to know
+## 知っておくこと
 
-- **Where things are.** `frontend/` is the UI, `backend/` the Rust workspace (`crates/novira-core` is the backend as a library, `src-tauri` the thin desktop shell, `crates/novira-server` the browser server), `contract/` the sample JSON both sides check, `scripts/` the launchers, `scripts/tools/` the checks and helpers. [architecture/README.md](architecture/README.md) says where to start for each kind of change.
-- **Screen text** goes only in the catalogs under `frontend/src/i18n/locales/`, Japanese and English together. See [../.claude/rules/i18n.md](../.claude/rules/i18n.md).
-- **Generated files:** test results and reports go to `logs\`, the rest (verification data, builds, scratch) under `novira-data\work\`. Neither is committed, and both are cleaned when stale.
-- **Commit messages** are in Japanese and start with a Conventional Commits type (`feat:`, `fix:`, `docs:`, `chore:` ...): a first line of at most 72 characters, then up to eight short bullets ([../.claude/rules/commit-messages.md](../.claude/rules/commit-messages.md)). The commit hook refuses a message that does not follow it.
-- **Ports.** The dev server uses 5173; the launchers stop a leftover Vite on that port before they start.
+- **ものの場所。** `frontend/` が UI、`backend/` が Rust のワークスペース（`crates/novira-core` がライブラリとしてのバックエンド、`src-tauri` が薄いデスクトップシェル、`crates/novira-server` がブラウザ用サーバー）、`contract/` が両側で検査する JSON のサンプル、`scripts/` がランチャー、`scripts/tools/` が検査と補助。変更の種類ごとの出発点は [architecture/README.md](architecture/README.md) にある。
+- **画面の文言** は `frontend/src/i18n/locales/` のカタログだけに、日本語と英語を一緒に書く。[../.claude/rules/i18n.md](../.claude/rules/i18n.md) を参照。
+- **生成されるファイル:** テスト結果とレポートは `logs\`、残り（検証用データ、ビルド、一時ファイル）は `novira-data\work\` の下。どちらもコミットせず、古くなると片付けられる。
+- **コミットメッセージ** は日本語で、Conventional Commits の種類（`feat:`、`fix:`、`docs:`、`chore:` など）で始める。1 行目は 72 文字以内、続けて短い箇条書きを 8 行まで（[../.claude/rules/commit-messages.md](../.claude/rules/commit-messages.md)）。従わないメッセージはコミットのフックが拒否する。
+- **ポート。** 開発サーバーは 5173 を使う。ランチャーは起動前に、そのポートに残った Vite を止める。

@@ -20,6 +20,7 @@
 
 | `scripts/tools/` の中（と spec 1 つ） | 中身 |
 |---|---|
+| `checks.mjs` | 検査を回す唯一の入口（fmt、clippy、cargo-test、lint、typecheck、vitest、e2e、phone、diff-backends、layout、docs）。場所、PATH、Rust のビルド先（`novira-data/work/check-target`）、e2e ロックを整え、引数はそのまま渡す。生の `cargo test` や `npx vitest` は `.claude/hooks/use-checks.mjs` が止めて、このツールの呼び方を返す |
 | `affected.mjs` | 変更したファイルに必要な検査だけ |
 | `coverage-report.mjs` | 計測した全部分を 1 つにまとめたグラフィカルなカバレッジレポート（ReportGenerator。`.config/dotnet-tools.json` で固定） |
 | `typecheck.mjs`、`commit-gates.mjs`、`docs-check.mjs`、`ui-refs.mjs`、`visual-baselines.mjs`、`check-eol.mjs`、`fix-eol.mjs`、`eol.mjs`、`check-name.mjs`、`changelog.mjs`、`ci-summary.mjs` | リポジトリ全体の検査: 型、コミットが通すべき CI ジョブ（整形、clippy、lint、バックエンド、スマホ）、地図、古くなったドキュメント上の名前、古くなったテスト ID と文言キー、古くなった基準画像、改行、名前の綴り、変更履歴、CI のテスト数 |

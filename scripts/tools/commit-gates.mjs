@@ -2,14 +2,11 @@
 // `clippy`, the lint of `static`, `diff-backends` and `e2e-phone`, each only when a staged file can change its result. The
 // three long ones of CI (vitest, cargo test, the Playwright flows in Chromium) are not run here: `affected.mjs` and the
 // skills choose those. Every gate that applies runs even when an earlier one failed, so one commit shows all of them.
+// The commands and their environment are those of scripts/tools/checks.mjs (the `check` of a gate is its name there).
 // Usage (the hook calls it): node scripts/tools/commit-gates.mjs [--list] [<path>...]   (no paths: the staged files)
 import { execFileSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import { homedir } from 'node:os';
-import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { acquire, runCommand } from './e2e-lock.mjs';
-import { harnessRoots } from './harness-paths.mjs';
+import { runCheck, specOf } from './checks.mjs';
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 
@@ -21,47 +18,24 @@ const DIFF = [RUST, /^frontend\/(src\/backend\/|difftest\/)/, /^contract\//, /^s
 const PHONE = /^frontend\/(src\/|e2e\/(phone|fixtures)|playwright\.config\.ts$)/;
 
 /**
- * The gates the staged `paths` call for, in the order they run. `cmd` is the command, `cwd` its folder from the repository
- * root, `lock` true for a Playwright run (one heavy browser run at a time on the machine), `rust` for a cargo build.
+ * The gates the staged `paths` call for, in the order they run. `name` is the CI job it stands for and `check` the check of
+ * scripts/tools/checks.mjs it runs.
  */
 export function gatesFor(paths) {
   const any = (re) => paths.some((p) => re.test(p));
   const gates = [];
   if (any(RUST)) {
-    gates.push({ name: 'rust-format', why: 'Rust changed', cmd: ['cargo', 'fmt', '--all', '--', '--check'], cwd: 'backend', fix: 'cargo fmt --all' });
-    gates.push({ name: 'clippy', why: 'Rust changed', cmd: ['cargo', 'clippy', '-p', 'novira-core', '-p', 'novira-server', '-p', 'novira', '--tests', '--', '-D', 'warnings'], cwd: 'backend', rust: true });
+    gates.push({ name: 'rust-format', check: 'fmt', why: 'Rust changed', fix: 'node scripts/tools/checks.mjs fmt --fix' });
+    gates.push({ name: 'clippy', check: 'clippy', why: 'Rust changed' });
   }
-  if (any(FRONTEND_LINT)) gates.push({ name: 'lint', why: 'frontend ts, js or css changed', cmd: ['npm', 'run', 'lint'], cwd: 'frontend' });
-  if (DIFF.some(any)) gates.push({ name: 'diff-backends', why: 'the contract, the mock or the Rust changed', cmd: ['node', 'scripts/tools/diff-backends.mjs'], cwd: '.' });
-  if (any(PHONE)) gates.push({ name: 'e2e-phone', why: 'screens or phone specs changed', cmd: ['npx', 'playwright', 'test', '--project=phone', '--project=webkit', '--reporter=line'], cwd: 'frontend', lock: true });
+  if (any(FRONTEND_LINT)) gates.push({ name: 'lint', check: 'lint', why: 'frontend ts, js or css changed' });
+  if (DIFF.some(any)) gates.push({ name: 'diff-backends', check: 'diff-backends', why: 'the contract, the mock or the Rust changed' });
+  if (any(PHONE)) gates.push({ name: 'e2e-phone', check: 'phone', why: 'screens or phone specs changed', args: ['--reporter=line'] });
   return gates;
-}
-
-/** The environment of a gate: cargo on PATH, and Rust builds in the harness folder so the user's running app is never touched. */
-function envOf(gate, base = process.env, root = ROOT) {
-  const sep = process.platform === 'win32' ? ';' : ':';
-  const env = { ...base, PATH: `${join(homedir(), '.cargo', 'bin')}${sep}${base.PATH ?? base.Path ?? ''}` };
-  if (gate.rust) {
-    env.CARGO_TARGET_DIR = join(harnessRoots(root).work, 'check-target');
-    // The app crate's build script needs frontend/dist; it builds the screens itself when it is missing (a fresh worktree has none).
-    if (existsSync(join(root, 'frontend', 'dist', 'index.html'))) env.NOVIRA_SKIP_FRONTEND_BUILD = '1';
-  }
-  return env;
 }
 
 function stagedPaths() {
   return execFileSync('git', ['diff', '--cached', '--name-only', '--diff-filter=ACMR', '-z'], { encoding: 'utf8', cwd: ROOT }).split('\0').filter(Boolean);
-}
-
-async function runGate(gate) {
-  const opts = { cwd: join(ROOT, gate.cwd), env: envOf(gate) };
-  if (!gate.lock) return runCommand(gate.cmd, opts);
-  const release = await acquire({ what: gate.cmd.join(' ') });
-  try {
-    return runCommand(gate.cmd, opts);
-  } finally {
-    release();
-  }
 }
 
 async function main(argv) {
@@ -69,20 +43,20 @@ async function main(argv) {
   const given = argv.filter((a) => !a.startsWith('--'));
   const gates = gatesFor(given.length ? given : stagedPaths());
   if (list) {
-    for (const g of gates) console.log(`${g.name}: ${g.cmd.join(' ')}  (${g.why})`);
+    for (const g of gates) console.log(`${g.name}: ${specOf(g.check, g.args ?? []).cmd.join(' ')}  (${g.why})`);
     return 0;
   }
   const failed = [];
   for (const g of gates) {
     console.log(`commit-gates: ${g.name} (${g.why})`);
     const started = Date.now();
-    const status = await runGate(g);
+    const status = await runCheck(g.check, g.args ?? [], { log: () => {} });
     console.log(`commit-gates: ${g.name} ${status === 0 ? 'passed' : 'FAILED'} in ${Math.round((Date.now() - started) / 1000)} s`);
     if (status !== 0) failed.push(g);
   }
   if (failed.length) {
     const fix = failed.find((g) => g.fix);
-    console.error(`commit-gates: ${failed.map((g) => g.name).join(', ')} failed. They are the CI jobs of the same names; fix what they report${fix ? ` (format with \`${fix.fix}\` in backend/)` : ''} and commit again.`);
+    console.error(`commit-gates: ${failed.map((g) => g.name).join(', ')} failed. They are the CI jobs of the same names; fix what they report${fix ? ` (format with \`${fix.fix}\`)` : ''} and commit again.`);
     return 1;
   }
   return 0;

@@ -1,116 +1,116 @@
-# Glossary
+# 用語集
 
-The words used on the screens (Japanese, as the app shows them), what each one means, and the names used in the code and files behind it. Where one word means two things, both are listed. The Japanese screen words come from the catalog `frontend/src/i18n/locales/ja/`; a name in `code font` is a code or file name.
+画面で使う言葉（日本語。アプリの表示どおり）、それぞれの意味、その裏にあるコードやファイルの名前。1 つの言葉が 2 つの意味を持つときは両方を挙げる。画面の日本語は `frontend/src/i18n/locales/ja/` のカタログによる。`code font` の名前はコードまたはファイルの名前。
 
-When a screen word changes, update its row here (`/i18n` skill). This page says what a word means. Which word to use for a concept in ja and en, and the variants that must not be used (導入 for installing, "pack" for an extension, British spellings, misspelt names such as HuggingFace), are in the terminology list `frontend/src/i18n/glossary.json`, which a test and the pre-commit hook check; they are not repeated here.
+画面の言葉を変えたら、ここの行も更新する（`/i18n` スキル）。このページは言葉の意味を説明する。ある概念に ja と en でどの言葉を使うか、使ってはいけない言い換え（インストールに導入、拡張機能に "pack"、英国式の綴り、HuggingFace のような誤った名前）は、用語リスト `frontend/src/i18n/glossary.json` にあり、テストと pre-commit フックが検査する。ここでは繰り返さない。
 
-## Product name
+## 製品名
 
-| Term | Meaning | Spelling |
+| 用語 | 意味 | 表記 |
 |---|---|---|
-| novira | The name of this app. The logo on the About screen is lowercase too | Always lowercase `novira`, in every language, in docs, comments, tests and commit messages, even at the start of a sentence. Do not write "novira" |
+| novira | このアプリの名前。「novira について」画面のロゴも小文字 | どの言語でも、ドキュメント、コメント、テスト、コミットメッセージでも、文頭でも、常に小文字の `novira`。大文字を使った綴りは書かない |
 
-Names built from it keep the lowercase form: `novira.exe`, the data folder `novira-data/` (`NOVIRA_DATA_DIR` overrides it), the backend crate `novira-core`, and `novira` as the window title.
+これを含む名前は小文字のまま: `novira.exe`、データフォルダ `novira-data/`（`NOVIRA_DATA_DIR` で変更できる）、バックエンドのクレート `novira-core`、ウィンドウタイトルの `novira`。
 
-The window title and the screen text in every language are lowercase too. Comments, tests and the architecture pages may still say "novira".
+ウィンドウタイトルと、どの言語の画面の文言も小文字。コメント、テスト、architecture のページは "novira" と書いてよいことがある。
 
-## Screens
+## 画面
 
-| Screen word | Meaning | Code / where |
+| 画面の言葉 | 意味 | コード・場所 |
 |---|---|---|
-| 生成 (Generate) | Write a prompt and make images | `features/invoke`, `features/params` |
-| キャンバス (Canvas) | Paint and compose on one surface, with layers | `features/canvas`, `state/canvas.ts` |
-| 漫画 (Comic) | Comic pages made of a project: pages, panels with their own pictures and poses, balloons and captions. A project is saved as one database row | `features/comic`, `state/comic/`, `comics` table |
-| アップスケール (Upscaling) | Enlarge an image with an upscaling workflow | `features/launchpad/UpscalingLaunchpad.tsx` |
-| ワークフロー (Workflows) | Node graphs you edit and save; the graph sent to ComfyUI is built from them | `features/workflows`, `comfy/` (backend) |
-| モデル (Models) | The model files you have, install and remove them | `features/models` |
-| キュー (Queue) | The generation jobs, waiting or running, with their status | `features/queue`, `QueueItem` in `types.rs` |
-| 探す (Browse) | Find models on the internet (Civitai, Hugging Face) and bring them in | `features/browse` |
-| ギャラリー (Gallery) | The pictures novira holds, shown as images or assets and grouped in boards: the whole right side panel on the desktop (boards and pictures together), and the Gallery tab on a phone | `features/gallery`, `app/phone` |
-| AI アシスタント (AI assistant) | A chat window that answers questions and can set some of the forms for you | `features/agent`, `backend/crates/novira-core/src/agent/` |
-| 設定 (Settings) | App settings; the About dialog is opened from the settings menu | `features/settings` |
-| 拡張機能の管理 (Extension manager) | Install, update and remove ComfyUI custom node packs | `features/workflows/ExtensionsTab.tsx` |
-| novira について (About) | Version, open-source list, license | `features/settings/AboutModal.tsx` |
+| 生成 (Generate) | プロンプトを書いて画像を作る | `features/invoke`, `features/params` |
+| キャンバス (Canvas) | 1 つの面にレイヤーで描き、合成する | `features/canvas`, `state/canvas.ts` |
+| 漫画 (Comic) | プロジェクトでできた漫画のページ。ページ、それぞれ自分の絵とポーズを持つコマ、吹き出し、ナレーション。プロジェクトは 1 つのデータベース行として保存する | `features/comic`, `state/comic/`, `comics` テーブル |
+| アップスケール (Upscaling) | アップスケールのワークフローで画像を拡大する | `features/launchpad/UpscalingLaunchpad.tsx` |
+| ワークフロー (Workflows) | 編集・保存できるノードグラフ。ComfyUI に送るグラフはここから組み立てる | `features/workflows`, `comfy/`（バックエンド） |
+| モデル (Models) | 持っているモデルファイル。インストールと削除 | `features/models` |
+| キュー (Queue) | 待機中か処理中の生成ジョブと、その状態 | `features/queue`, `types.rs` の `QueueItem` |
+| 探す (Browse) | インターネット（Civitai、Hugging Face）でモデルを探して取り込む | `features/browse` |
+| ギャラリー (Gallery) | novira が持つ画像を、画像またはアセットとして表示し、ボードでまとめる。デスクトップでは右側のパネル全体（ボードと画像を一緒に）、スマホではギャラリーのタブ | `features/gallery`, `app/phone` |
+| AI アシスタント (AI assistant) | 質問に答え、いくつかのフォームを代わりに設定できるチャット画面 | `features/agent`, `backend/crates/novira-core/src/agent/` |
+| 設定 (Settings) | アプリの設定。「novira について」ダイアログは設定メニューから開く | `features/settings` |
+| 拡張機能の管理 (Extension manager) | ComfyUI のカスタムノードパックのインストール、更新、削除 | `features/workflows/ExtensionsTab.tsx` |
+| novira について (About) | バージョン、オープンソース一覧、ライセンス | `features/settings/AboutModal.tsx` |
 
-## Gallery
+## ギャラリー
 
-| Screen word | Meaning | Code |
+| 画面の言葉 | 意味 | コード |
 |---|---|---|
-| 画像 (Images) | Pictures in the gallery's images view (category `General`) | `ImageCategory::General` |
-| アセット (Assets) | Pictures that are not generated results: uploads, masks, control images and other inputs | any `ImageCategory` other than `General` |
-| ボード (Board) | A named group of pictures in the gallery. A board can be set to receive new pictures automatically (自動) | `gallery.boards.*` |
-| アーカイブ (Archive) | Hides a board from the list without deleting it | `gallery.boards.archive` |
+| 画像 (Images) | ギャラリーの画像ビューにある画像（カテゴリ `General`） | `ImageCategory::General` |
+| アセット (Assets) | 生成結果ではない画像。アップロード、マスク、制御用の画像などの入力 | `General` 以外の `ImageCategory` すべて |
+| ボード (Board) | ギャラリーの、名前をつけた画像のまとまり。新しい画像を自動で受け取るよう設定できる（自動） | `gallery.boards.*` |
+| アーカイブ (Archive) | ボードを削除せずに一覧から隠す | `gallery.boards.archive` |
 
-## Generation
+## 生成
 
-| Screen word | Meaning | Code |
+| 画面の言葉 | 意味 | コード |
 |---|---|---|
-| ジョブ / キューの項目 (Job, queue item) | One generation request in the queue | `QueueItem` in `types.rs` |
-| 待機中 (Pending) / 処理中 (In progress) / 完了 (Completed) / 失敗 (Failed) / キャンセル (Canceled) | The statuses of a queue item | `queue.status.*` |
-| 一時停止中 (Paused) | The queue processor is paused; running work is not started | `queue.processor.paused` |
-| 下書き (Draft) | A rough picture stopped partway through the steps, to choose a seed before a full run | `GenerationMetadata.draftAt` |
-| まとめて処理 (Batch) | Run one operation (remove the background, upscale, and so on) on many pictures | `batch.*` |
-| 比較グリッド (XY plot) | A table of pictures that change one or two settings across its columns and rows | `xyplot.*` |
-| シード (Seed) | The number that fixes the random starting noise; the same seed with the same settings gives the same picture | `seed` |
-| プリセット (Preset) | Saved settings that can be applied again | `presets.*` |
-| キャラクター (Character) | A saved set of reference pictures and words for one character | `character.*` |
-| ポーズ (Pose) | A stick figure whose joints you move to set the pose of a person | `pose.*` |
-| 範囲を選んで直す (Select and fix a part) | Open a picture on the canvas with an empty inpaint mask and the brush; the painted part is erased, cut out or redrawn | `state/partFix.ts`, `canvas.partFix.*` |
-| 顔を直す (Face fix) | Find faces, repaint them at higher resolution. Needs the Impact Pack extension | `facefix.*` |
-| 背景を除去 (Remove background) | Cut out the subject and make the background transparent | `cutout.*` |
-| 絵からプロンプトを作る (Caption) | Write tags or a sentence for a picture with Florence-2 | `caption.*` |
-| 直す (Fix group), 画像のツール (Tool band) | The picture menu group of face fix, remove background, describe and read poses: an item runs at once with the last settings, its gear opens the band over the viewer's picture with the settings, the run and its result | `gallery.tools.*`, `state/imageTools/`, `features/viewer/tools/` |
+| ジョブ / キューの項目 (Job, queue item) | キューにある 1 件の生成リクエスト | `types.rs` の `QueueItem` |
+| 待機中 (Pending) / 処理中 (In progress) / 完了 (Completed) / 失敗 (Failed) / キャンセル (Canceled) | キューの項目の状態 | `queue.status.*` |
+| 一時停止中 (Paused) | キューの処理が一時停止している。実行中の作業は始まらない | `queue.processor.paused` |
+| 下書き (Draft) | ステップの途中で止めた粗い絵。本番の実行の前にシードを選ぶためのもの | `GenerationMetadata.draftAt` |
+| まとめて処理 (Batch) | 1 つの操作（背景の除去、アップスケールなど）を多数の画像に実行する | `batch.*` |
+| 比較グリッド (XY plot) | 1 つか 2 つの設定を列と行で変えた画像の表 | `xyplot.*` |
+| シード (Seed) | 乱数の開始ノイズを固定する数。同じ設定で同じシードなら同じ画像になる | `seed` |
+| プリセット (Preset) | もう一度適用できる、保存した設定 | `presets.*` |
+| キャラクター (Character) | 1 人のキャラクターについて保存した、参照画像と言葉のセット | `character.*` |
+| ポーズ (Pose) | 関節を動かして人物のポーズを決める棒人間 | `pose.*` |
+| 範囲を選んで直す (Select and fix a part) | 空のインペイントマスクとブラシつきで画像をキャンバスに開く。塗った部分を消す、切り抜く、描き直す | `state/partFix.ts`, `canvas.partFix.*` |
+| 顔を直す (Face fix) | 顔を見つけ、高い解像度で描き直す。拡張機能の Impact Pack が要る | `facefix.*` |
+| 背景を除去 (Remove background) | 被写体を切り抜き、背景を透明にする | `cutout.*` |
+| 絵からプロンプトを作る (Caption) | Florence-2 で画像のタグか文を書く | `caption.*` |
+| 直す (Fix group), 画像のツール (Tool band) | 顔を直す、背景を除去、説明の作成、ポーズの読み取りをまとめた画像メニューのグループ。項目は前回の設定ですぐ実行する。歯車を押すと、ビューアの画像の上に設定、実行、結果のバンドが開く | `gallery.tools.*`, `state/imageTools/`, `features/viewer/tools/` |
 
-## Comic
+## 漫画
 
-| Screen word | Meaning | Code |
+| 画面の言葉 | 意味 | コード |
 |---|---|---|
-| プロジェクト (Project) | One comic under one name, with its pages. The list of projects is in the left panel | `ComicProject`, `comics` table |
-| ページ (Page) | One sheet of a comic. Its panels are laid out automatically by their number | `ComicPage`, `state/comic/layout.ts` |
-| コマ (Panel) | One frame of a page, with its own prompt, picture and optional pose | `ComicPanel` |
-| 吹き出し (Balloon) | Speech in a balloon with a tail, placed on a panel | `ComicBubble` with kind `speech` |
-| ナレーション (Caption) | Narration in a plain box, placed on a panel | `ComicBubble` with kind `caption` |
-| 3D ラフ (3D rough) | A panel laid out in 3D: mannequins, boxes, boards, cylinders and a floor seen through a camera, baked into the panel's pose picture and a depth map | `ComicRough`, `state/comic/rough.ts` |
+| プロジェクト (Project) | 1 つの名前の下にある 1 つの漫画と、そのページ。プロジェクトの一覧は左のパネルにある | `ComicProject`, `comics` テーブル |
+| ページ (Page) | 漫画の 1 枚。コマは番号で自動的に配置される | `ComicPage`, `state/comic/layout.ts` |
+| コマ (Panel) | ページの 1 つの枠。自分のプロンプト、画像、任意のポーズを持つ | `ComicPanel` |
+| 吹き出し (Balloon) | しっぽのある吹き出しの中のセリフ。コマの上に置く | 種類 `speech` の `ComicBubble` |
+| ナレーション (Caption) | 飾りのない箱の中のナレーション。コマの上に置く | 種類 `caption` の `ComicBubble` |
+| 3D ラフ (3D rough) | 3D で配置したコマ。マネキン、箱、板、円柱、床をカメラ越しに見て、コマのポーズ画像と深度マップに焼き込む | `ComicRough`, `state/comic/rough.ts` |
 
-## Models
+## モデル
 
-| Screen word | Meaning | Code |
+| 画面の言葉 | 意味 | コード |
 |---|---|---|
-| モデル (Model) | A model file: checkpoint, LoRA, VAE, ControlNet, upscaler and so on | `models` table, `models/` |
-| ベース (Base) | The family a model belongs to, for example SD1.X or SDXL. A LoRA works only with models of its base | `lora.modelHint` |
-| 種類 (Kind) | What a model does: チェックポイント (checkpoint), LoRA, VAE, ControlNet, アップスケーラー (upscaler) | `models.type.*`, `models.rail.*` |
-| トリガーワード (Trigger word) | Word in the prompt that calls up a LoRA | `lora.trigger` |
-| ライセンスの札 (License tag) | The commercial-use tag on a model, summarizing its license | `CommercialTag` |
-| 変換 (Convert) | Turn a checkpoint into the Diffusers format | `models.convertConfirm` |
+| モデル (Model) | モデルファイル。チェックポイント、LoRA、VAE、ControlNet、アップスケーラーなど | `models` テーブル, `models/` |
+| ベース (Base) | モデルが属する系統（例: SD1.X、SDXL）。LoRA は同じベースのモデルとだけ使える | `lora.modelHint` |
+| 種類 (Kind) | モデルの役割: チェックポイント (checkpoint)、LoRA、VAE、ControlNet、アップスケーラー (upscaler) | `models.type.*`, `models.rail.*` |
+| トリガーワード (Trigger word) | LoRA を呼び出すプロンプト中の言葉 | `lora.trigger` |
+| ライセンスの札 (License tag) | モデルの商用利用の札。ライセンスを要約する | `CommercialTag` |
+| 変換 (Convert) | チェックポイントを Diffusers 形式にする | `models.convertConfirm` |
 
-## Engine and extensions
+## エンジンと拡張機能
 
-In the code, "pack" is used for two different things; the screens say 拡張機能 (extension) for the first and name the second by what it is for.
+コードでは "pack" が 2 つの別のものに使われる。画面では、1 つめを拡張機能と言い、2 つめは用途で呼ぶ。
 
-| Screen word | Meaning | Code |
+| 画面の言葉 | 意味 | コード |
 |---|---|---|
-| エンジン (Engine) | The image generation engine: ComfyUI with Python, downloaded and started by novira | `novira-core/src/engine.rs`, `comfy/`, `novira-data/comfyui/` |
-| 拡張機能 (Extension) | A ComfyUI custom node pack, installed into ComfyUI | `comfy/node_packs.rs` |
-| おすすめの拡張機能 (Suggested extension) | A custom node pack that novira suggests, with a description in every language. The screens call it an extension too, not a pack | `PACK_CATALOG` in `state/comfy/packCatalog.ts` |
-| カスタムノード (Custom node) | The ComfyUI term for the same thing as an extension | ComfyUI |
-| ComfyUI レジストリ (ComfyUI Registry) | The public index of custom node packs that the extension manager searches | `comfy/registry.rs` |
-| *Model pack* (モデルセット) | Extra model files that video, music and voice need, downloaded on request. The screen titles them 動画のモデル, 音楽のモデル and so on | `packs.rs` |
+| エンジン (Engine) | 画像生成のエンジン。Python つきの ComfyUI で、novira がダウンロードして起動する | `novira-core/src/engine.rs`, `comfy/`, `novira-data/comfyui/` |
+| 拡張機能 (Extension) | ComfyUI にインストールするカスタムノードパック | `comfy/node_packs.rs` |
+| おすすめの拡張機能 (Suggested extension) | novira がすすめるカスタムノードパック。全言語の説明つき。画面ではこれも pack ではなく拡張機能と呼ぶ | `state/comfy/packCatalog.ts` の `PACK_CATALOG` |
+| カスタムノード (Custom node) | 拡張機能と同じものを指す ComfyUI の用語 | ComfyUI |
+| ComfyUI レジストリ (ComfyUI Registry) | 拡張機能の管理が検索する、カスタムノードパックの公開インデックス | `comfy/registry.rs` |
+| *Model pack* (モデルセット) | 動画、音楽、音声が必要とする追加のモデルファイル。求めに応じてダウンロードする。画面では 動画のモデル、音楽のモデル などの題で出る | `packs.rs` |
 
-## Install
+## インストール
 
-| Word | Meaning | Note |
+| 言葉 | 意味 | 備考 |
 |---|---|---|
-| インストール (Install) | Put an engine, extension or model on this PC | ダウンロード (Download) is the transfer itself: its progress, and a file saved by the browser |
-| データフォルダ (Data folder) | Everything novira keeps: pictures, models, the engine, settings. `novira-data/` by default (in the user folder in a release build) | `NOVIRA_DATA_DIR` overrides it |
+| インストール (Install) | エンジン、拡張機能、モデルをこの PC に置く | ダウンロード (Download) は転送そのもの。その進み具合と、ブラウザが保存するファイル |
+| データフォルダ (Data folder) | novira が保つものすべて: 画像、モデル、エンジン、設定。既定は `novira-data/`（リリースビルドではユーザーフォルダの中） | `NOVIRA_DATA_DIR` で変更できる |
 
-## Modes and parts of the code
+## モードとコードの部品
 
-| Term | Meaning |
+| 用語 | 意味 |
 |---|---|
-| モック (Mock) | Browser mode. Pictures are made-up samples, nothing reaches the files or the network, and data is lost on reload |
-| デスクトップアプリ (Desktop app) | The Tauri window with the Rust backend |
-| `novira-core` | The backend library: storage, queue, ComfyUI adapter, models, assistant. It has no Tauri code |
-| `src-tauri` | The thin Tauri shell: IPC commands, image URLs, window settings |
-| `BackendClient` / `TauriBackend` / `MockBackend` | The frontend's one interface to the backend, its desktop implementation and its browser mock. See `frontend/src/backend/client.ts` |
-| contract | The types sent between frontend and backend: `frontend/src/backend/types.ts` and `backend/crates/novira-core/src/types.rs` |
-| 規則 (rule) / スキル (skill) | Working rules in `.claude/rules/` and procedures in `.claude/skills/` for coding agents |
+| モック (Mock) | ブラウザのモード。画像は作り物のサンプルで、ファイルにもネットワークにも何も届かず、再読み込みでデータは消える |
+| デスクトップアプリ (Desktop app) | Rust のバックエンドを持つ Tauri のウィンドウ |
+| `novira-core` | バックエンドのライブラリ。ストレージ、キュー、ComfyUI アダプター、モデル、アシスタント。Tauri のコードは含まない |
+| `src-tauri` | 薄い Tauri シェル。IPC コマンド、画像の URL、ウィンドウ設定 |
+| `BackendClient` / `TauriBackend` / `MockBackend` | フロントエンドからバックエンドへの唯一のインターフェースと、そのデスクトップ実装、ブラウザのモック。`frontend/src/backend/client.ts` を参照 |
+| contract | フロントエンドとバックエンドの間で送る型: `frontend/src/backend/types.ts` と `backend/crates/novira-core/src/types.rs` |
+| 規則 (rule) / スキル (skill) | コーディングエージェント向けの、`.claude/rules/` の作業規則と `.claude/skills/` の手順 |

@@ -47,7 +47,7 @@
 | 規則 | いつ |
 |---|---|
 | [frontend.md](.claude/rules/frontend.md)、[i18n.md](.claude/rules/i18n.md)、[manual.md](.claude/rules/manual.md) | 画面のコード、文言、マニュアル |
-| [tests.md](.claude/rules/tests.md) | コードを変えるとき：テストを伴わせ、影響する検査だけ回す |
+| [tests.md](.claude/rules/tests.md) | コードを変えるとき：テストを伴わせ、影響する検査だけ回す。検査は `node scripts/tools/checks.mjs <名前>` で回す（生の cargo・npx は止まる） |
 | [assistant.md](.claude/rules/assistant.md) | AI アシスタントの道具・プロンプト・案内 |
 | [comfyui.md](.claude/rules/comfyui.md)、[models.md](.claude/rules/models.md) | エンジンとの連携、モデル（変更・インストールの後は実アプリで全カテゴリを確かめる） |
 | [security.md](.claude/rules/security.md) | IPC、URL、ファイルパス、プロセス起動、外部データ、秘密情報、依存 |

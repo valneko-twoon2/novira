@@ -37,6 +37,17 @@
             "statusMessage": "Checking the data folder"
           }
         ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/use-checks.mjs\"",
+            "timeout": 10,
+            "statusMessage": "Checking how the check is run"
+          }
+        ]
       }
     ],
     "PostToolUse": [

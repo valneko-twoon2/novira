@@ -2,9 +2,11 @@
 // each only when a staged file can change its result (scripts/tools/commit-gates.mjs; the hook runs it).
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error a plain .mjs tool with no types
+import { specOf } from '../../scripts/tools/checks.mjs';
+// @ts-expect-error a plain .mjs tool with no types
 import { gatesFor } from '../../scripts/tools/commit-gates.mjs';
 
-type Gate = { name: string; lock?: boolean };
+type Gate = { name: string; check: string };
 const names = (paths: string[]): string[] => (gatesFor(paths) as Gate[]).map((g) => g.name);
 
 describe('commit gates', () => {
@@ -36,6 +38,8 @@ describe('commit gates', () => {
 
   it('runs only the Playwright gate under the e2e lock', () => {
     const gates = gatesFor(['backend/a.rs', 'frontend/src/a.tsx']) as Gate[];
-    expect(gates.filter((g) => g.lock).map((g) => g.name)).toEqual(['e2e-phone']);
+    expect(gates.filter((g) => specOf(g.check).lock).map((g) => g.name)).toEqual(['e2e-phone']);
+    // Every gate runs a check of the tool that sets its folder and environment.
+    expect(gates.every((g) => specOf(g.check).cmd.length > 0)).toBe(true);
   });
 });
