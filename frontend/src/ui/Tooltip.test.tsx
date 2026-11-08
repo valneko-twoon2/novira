@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
-// The tooltip: closed it is only handlers on its control; it opens on focus at once and on hover after the delay.
+// The tooltip: closed it is only handlers on its control; it opens on a shown (keyboard) focus at once and on hover after the
+// delay. jsdom, like a browser, counts a focus after a key press as `:focus-visible` and one after a click as not, so `focus()`
+// here presses Tab first.
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { createRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -19,6 +21,12 @@ afterEach(() => {
 });
 
 const button = () => screen.getByRole('button', { name: 'go' });
+/** A keyboard focus: Tab, then the focus it moves. */
+const focus = () => {
+  fireEvent.keyDown(document, { key: 'Tab' });
+  act(() => button().focus());
+};
+const blur = () => act(() => button().blur());
 
 describe('Tooltip', () => {
   it('adds nothing but handlers and its state while closed', () => {
@@ -38,15 +46,34 @@ describe('Tooltip', () => {
         <button type="button">go</button>
       </Tooltip>,
     );
-    fireEvent.focus(button());
+    focus();
     const tip = screen.getByRole('tooltip');
     expect(tip.textContent).toBe('Go there');
     expect(tip.className).toBe('ui-tooltip');
     expect(button().getAttribute('aria-describedby')).toBe(tip.id);
     expect(button().getAttribute('data-state')).toBe('delayed-open');
     expect(tip.style.visibility).toBe('');
-    fireEvent.blur(button());
+    blur();
     expect(screen.queryByRole('tooltip')).toBeNull();
+  });
+
+  it('does not open on a focus the browser does not show, as when a dialog closed by the mouse gives the focus back', () => {
+    render(
+      <Tooltip content="Go there">
+        <button type="button">go</button>
+      </Tooltip>,
+    );
+    const el = button();
+    const real = Element.prototype.matches;
+    const matches = vi.spyOn(el, 'matches').mockImplementation((selector) => selector !== ':focus-visible' && real.call(el, selector));
+    focus();
+    expect(screen.queryByRole('tooltip')).toBeNull();
+    expect(button().getAttribute('data-state')).toBe('closed');
+    // Hovering it still shows the tooltip.
+    fireEvent.pointerMove(button());
+    act(() => vi.advanceTimersByTime(400));
+    expect(screen.getByRole('tooltip').textContent).toBe('Go there');
+    matches.mockRestore();
   });
 
   it('opens on hover after 400 ms, closes on leaving, and opens the next one at once for a moment', () => {
@@ -89,15 +116,16 @@ describe('Tooltip', () => {
         <button type="button">go</button>
       </Tooltip>,
     );
-    fireEvent.focus(button());
+    focus();
     expect(screen.getByRole('tooltip')).toBeTruthy();
     fireEvent.pointerDown(button());
     expect(screen.queryByRole('tooltip')).toBeNull();
-    fireEvent.focus(button());
+    blur();
+    focus();
     expect(screen.queryByRole('tooltip')).toBeNull();
     fireEvent.pointerUp(document);
-    fireEvent.blur(button());
-    fireEvent.focus(button());
+    blur();
+    focus();
     expect(screen.getByRole('tooltip')).toBeTruthy();
   });
 
@@ -107,11 +135,11 @@ describe('Tooltip', () => {
         <button type="button">go</button>
       </Tooltip>,
     );
-    fireEvent.focus(button());
+    focus();
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(screen.queryByRole('tooltip')).toBeNull();
-    fireEvent.blur(button());
-    fireEvent.focus(button());
+    blur();
+    focus();
     fireEvent.click(button());
     expect(screen.queryByRole('tooltip')).toBeNull();
   });
@@ -129,7 +157,7 @@ describe('Tooltip', () => {
     );
     expect(ref.current).toBe(button());
     expect(button().getAttribute('data-state')).toBe('open');
-    fireEvent.focus(button());
+    focus();
     expect(onFocus).toHaveBeenCalledOnce();
     expect(screen.getByRole('tooltip')).toBeTruthy();
     fireEvent.click(button());
@@ -143,7 +171,7 @@ describe('Tooltip', () => {
       </Tooltip>,
     );
     expect(button().hasAttribute('data-state')).toBe(false);
-    fireEvent.focus(button());
+    focus();
     expect(screen.queryByRole('tooltip')).toBeNull();
   });
 });

@@ -557,6 +557,16 @@ test('the tooltip sweep shows the tooltip of each trigger a pointer can reach an
   expect(await page.locator('[tabindex]').count()).toBe(0);
 });
 
+// The app's own tooltips open only on a keyboard focus, and the scans reach each screen with mouse clicks: the sweep must
+// still open them there, or every tooltip check passes on nothing.
+test('the tooltip sweep opens the tooltips of the app itself after a mouse click', async ({ page }) => {
+  await openApp(page);
+  await page.getByTestId('tab-queue').click();
+  const swept = await sweepTooltips(page);
+  expect(swept.shown.length).toBeGreaterThan(0);
+  expect(await page.locator('.ui-tooltip').count()).toBe(0);
+});
+
 // The opener check opens an opener repeated down a list once, still opens one of the same name in another box, and leaves
 // out what `skip` names (the shared parts on every screen but the Generate tab).
 test('the opener check opens a repeated opener once and leaves out the skipped parts', async ({ page }) => {

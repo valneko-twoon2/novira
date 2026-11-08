@@ -3,6 +3,8 @@
 // (Radix's tooltip mounted a popper, a portal and a presence per control, and rendered each one twice when it attached,
 // which was a fifth of the time of a screen switch.) It behaves as Radix's did: `data-state` on the control, a delay of
 // 400 ms that is skipped for 300 ms after another tooltip closed, closed by a press, a click, Escape, leaving or a scroll.
+// Focus opens it only when the browser shows that focus (`:focus-visible`): a dialog closed with the mouse gives the focus
+// back to the button that opened it, and a tooltip popping up there would be noise.
 import {
   cloneElement,
   isValidElement,
@@ -61,6 +63,16 @@ interface TriggerProps {
 function setRef<T>(ref: Ref<T> | undefined, value: T | null) {
   if (typeof ref === 'function') ref(value);
   else if (ref) (ref as { current: T | null }).current = value;
+}
+
+/** Whether the focus on `el` is one the browser shows: from the keyboard, not given by a script after a mouse press. */
+function focusShown(el: HTMLElement): boolean {
+  try {
+    return el.matches(':focus-visible');
+  } catch {
+    // An engine without the selector: show it, as before.
+    return true;
+  }
 }
 
 /** The control's own handler first, then the tooltip's (as Radix's Slot composes them). */
@@ -138,8 +150,8 @@ function TooltipTrigger({ content, side, children }: { content: ReactNode; side:
       hide();
     }),
     onClick: both(own.onClick, hide),
-    onFocus: both(own.onFocus, () => {
-      if (!pressing.current) show();
+    onFocus: both(own.onFocus, (e) => {
+      if (!pressing.current && focusShown(e.currentTarget)) show();
     }),
     onBlur: both(own.onBlur, hide),
   });

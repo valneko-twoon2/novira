@@ -132,7 +132,7 @@ export interface TooltipSweep {
 
 /**
  * Shows every tooltip of the page, one at a time, and checks each. Runs in the page (one call for the whole screen): a
- * Radix tooltip opens at once when its trigger takes focus (hover waits 400 ms) and closes when it loses it, so each
+ * A tooltip opens at once when its trigger takes a keyboard focus (hover waits 400 ms) and closes when it loses it, so each
  * trigger is focused (a span gets a `tabindex` for the moment), the tooltip is measured once it is placed, and the trigger
  * is blurred. A trigger counts only when a pointer could reach it (the topmost element at its centre is it or inside it),
  * as with hovering. Every trigger is shown, also one whose label another has (two fields of one name can show different
@@ -185,6 +185,9 @@ async function sweepTooltipsInPage(fit: (args: FitArgs) => FitProblem[], { label
 
 /** Shows every tooltip the page offers now and checks each (see sweepTooltipsInPage); `skip` leaves out the triggers inside it. */
 export async function sweepTooltips(page: Page, skip?: string): Promise<TooltipSweep> {
+  // A tooltip opens on a focus the browser shows (`:focus-visible`), and a script's focus after a mouse click is not one;
+  // a key press first makes the sweep's focus a keyboard one. Shift alone is no shortcut.
+  await page.keyboard.press('Shift');
   const arg = JSON.stringify({ labels: LABELS, short: SHORT, skip: skip ?? null });
   return page.evaluate(`(${sweepTooltipsInPage.toString()})(${fitProblemsInPage.toString()}, ${arg})`) as Promise<TooltipSweep>;
 }

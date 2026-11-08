@@ -29,6 +29,8 @@ test('the settings rows have an i instead of a sub text, and a plain row has nei
   await page.getByTestId('settings-tab-generation').click();
   const lowMemory = page.locator('.st-row', { hasText: msg('settings.lowMemory.label') });
   await expect(lowMemory.locator('.st-row__help')).toHaveCount(0);
+  // A keyboard focus shows it too (the key press makes the focus a keyboard one, as Tab would).
+  await page.keyboard.press('Shift');
   await lowMemory.getByTestId('info-mark').focus();
   await expect(page.getByRole('tooltip')).toHaveText(msg('settings.lowMemory.help'));
   // The draft count is plain: no i, no sub text.
