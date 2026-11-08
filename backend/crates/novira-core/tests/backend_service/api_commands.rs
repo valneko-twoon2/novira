@@ -99,6 +99,7 @@ async fn the_board_image_and_queue_commands_work_by_name() {
     call(&backend, "cancel_batch", json!({"batchId": "none"}))
         .await
         .unwrap();
+    call(&backend, "cancel_pending", json!({})).await.unwrap();
     let retried = call(
         &backend,
         "retry_queue_item",

@@ -14,7 +14,7 @@ import { useLowMemory } from './lowMemory';
 import { offerPartsFor } from './modelParts';
 import { useModels } from './models';
 import { isOutOfMemory, reportOutOfMemory } from './outOfMemory';
-import { useQueue } from './queue';
+import { mergeProgress, useQueue } from './queue';
 import { applyStartTab, useSettings } from './settings';
 import { showViewer, useUi } from './ui';
 import { takeRestoredUiState } from './uiState';
@@ -63,7 +63,7 @@ async function start(): Promise<void> {
         queue.setStatus(backend.queueStatus());
         break;
       case 'invocation_progress':
-        queue.setProgress(event.progress);
+        queue.setProgress(mergeProgress(queue.progress, event.progress));
         break;
       case 'image_added': {
         const { image, item } = event;

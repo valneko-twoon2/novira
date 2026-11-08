@@ -44,11 +44,13 @@ describe('QueueControls', () => {
 
   it('cancels the running item, and every pending item', async () => {
     const cancel = vi.spyOn(backend, 'cancelQueueItem').mockResolvedValue(undefined as never);
+    const cancelPending = vi.spyOn(backend, 'cancelPending').mockResolvedValue(undefined as never);
     fireEvent.click(button(t('queue.action.cancelCurrent')));
     expect(cancel).toHaveBeenCalledWith(1);
+    // The pending ones go in one call, not one call each (every call is a round trip to the backend).
     fireEvent.click(button(t('queue.action.cancelAllExceptCurrent')));
-    await waitFor(() => expect(cancel).toHaveBeenCalledTimes(3));
-    expect(cancel.mock.calls.map((c) => c[0])).toEqual([1, 2, 3]);
+    await waitFor(() => expect(cancelPending).toHaveBeenCalledTimes(1));
+    expect(cancel).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(lastToast()?.title).toBe(tCount('queue.toast.canceledPending', 2)));
   });
 

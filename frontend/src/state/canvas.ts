@@ -2,7 +2,7 @@
 // Shared contract used by other features: stagedImageNames, stagedIndex, addStagedImage, importImage.
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { ControlMode, ImageDTO } from '@/backend';
+import { holdLayerUrls, type ControlMode, type ImageDTO } from '@/backend';
 import { ASPECT_RATIOS, useParams, type RefImageMethod } from './params';
 import { undoLimit } from './settings';
 import { POSE_JOINT_NAMES, POSE_MIRROR } from './poseSkeleton';
@@ -697,17 +697,52 @@ export function createCanvasStore({ persistKey, syncParams, limits, onLimit }: C
       },
     };
   };
-  if (!persistKey) return create<CanvasState>()((set, get) => init(set, get));
-  return create<CanvasState>()(
-    persist((set, get) => init(set, get), {
-      name: persistKey,
-      partialize: persistedSlice,
-      merge: (persisted, current) => {
-        const p = (persisted ?? {}) as Partial<CanvasState>;
-        return { ...current, ...p, settings: { ...current.settings, ...p.settings } };
-      },
-    }),
-  );
+  const store = persistKey
+    ? create<CanvasState>()(
+        persist((set, get) => init(set, get), {
+          name: persistKey,
+          partialize: persistedSlice,
+          merge: (persisted, current) => {
+            const p = (persisted ?? {}) as Partial<CanvasState>;
+            return { ...current, ...p, settings: { ...current.settings, ...p.settings } };
+          },
+        }),
+      )
+    : create<CanvasState>()((set, get) => init(set, get));
+  watchLayerUrls(store);
+  return store;
+}
+
+const SWEEP_AFTER_MS = 1500;
+let storeSeq = 0;
+
+/** Every URL a layer, an undo or redo step or a filter preview of the store can still show. */
+function urlsInUse(s: CanvasState): Set<string> {
+  const urls = new Set<string>();
+  const add = (entities: CanvasEntity[]) => {
+    for (const e of entities) for (const o of e.objects) if (o.kind === 'image' && o.url) urls.add(o.url);
+  };
+  add(s.entities);
+  for (const d of s.past) add(d.entities);
+  for (const d of s.future) add(d.entities);
+  for (const p of Object.values(s.filterPreviews)) urls.add(p.url);
+  return urls;
+}
+
+/**
+ * Reports the store's URLs in use a moment after its layers, history or previews last changed (strokes change them many times a
+ * second), so a picture nothing shows any more gives its memory back instead of living until the page closes.
+ */
+function watchLayerUrls(store: StoreApi<CanvasState>): void {
+  const owner = `canvas-${storeSeq++}`;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  store.subscribe((s, prev) => {
+    if (s.entities === prev.entities && s.past === prev.past && s.future === prev.future && s.filterPreviews === prev.filterPreviews) return;
+    clearTimeout(timer);
+    timer = setTimeout(() => holdLayerUrls(owner, urlsInUse(store.getState())), SWEEP_AFTER_MS);
+  });
+  // Reported at once too, so the canvas counts as a holder before any picture is made for it.
+  holdLayerUrls(owner, urlsInUse(store.getState()));
 }
 
 /** The Image tab's canvas: tool settings persisted, bbox size kept in step with the left form. */

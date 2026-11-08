@@ -1,5 +1,5 @@
 // Canvas commands that touch the backend or the gallery: save, merge, import, staging, filters, clipboard, poses.
-import { backend, type ImageDTO } from '@/backend';
+import { backend, oneShotUrl, type ImageDTO } from '@/backend';
 import { t } from '@/i18n';
 import { isSlot, newId, stagedPage, useCanvas, type CanvasEntity, type CanvasStore, type CanvasImportTarget, type ControlEntity, type EntityType, type PoseObject, type Rect } from '@/state/canvas';
 import { findImage, useGallery } from '@/state/gallery';
@@ -13,7 +13,7 @@ import { toast } from '@/state/toasts';
 import { useUi } from '@/state/ui';
 import { canWriteClipboardImage, writeClipboardImage } from '@/ui';
 import { objectsBounds } from '@/ui/canvasDraw/bounds';
-import { canvasToBlob, canvasToUrl, compositeRect, contentBounds, imageUrlsOf } from '@/ui/canvasDraw/composite';
+import { canvasToBlob, canvasToOneShotUrl, canvasToUrl, compositeRect, contentBounds, imageUrlsOf } from '@/ui/canvasDraw/composite';
 import { createCanvas, renderEntity } from '@/ui/canvasDraw/entityRender';
 import { preloadImages } from '@/ui/canvasDraw/imageCache';
 import { rgbaCss } from '@/ui/canvasDraw/rgbaCss';
@@ -33,7 +33,7 @@ function fail(title: string, err: unknown) {
 }
 
 async function saveCanvasImage(canvas: HTMLCanvasElement): Promise<ImageDTO> {
-  const url = await canvasToUrl(canvas);
+  const url = await canvasToOneShotUrl(canvas);
   const image = await backend.saveImageFromUrl(url, { boardId: autoAddBoardId() });
   useGallery.getState().addImage(image);
   return image;
@@ -251,7 +251,7 @@ export function importImage(image: ImageDTO, target: CanvasImportTarget, store: 
 /** Add a picture from the clipboard as a new raster layer. It is saved to the gallery first, because layers hold gallery images. */
 export async function pasteImageBlob(blob: Blob, store: CanvasStore = useCanvas) {
   try {
-    const image = await backend.saveImageFromUrl(URL.createObjectURL(blob), { boardId: autoAddBoardId() });
+    const image = await backend.saveImageFromUrl(oneShotUrl(blob), { boardId: autoAddBoardId() });
     useGallery.getState().addImage(image);
     importImage(image, 'raster', store);
   } catch (err) {

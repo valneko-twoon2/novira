@@ -3,7 +3,7 @@
 import type { CanvasEntity, CanvasState } from '@/state/canvas';
 import type { InfillMethod } from '@/state/params';
 import type { Coverage } from '../geometry';
-import { canvasToUrl, compositeRect, imageUrlsOf } from '@/ui/canvasDraw/composite';
+import { canvasToOneShotUrl, compositeRect, imageUrlsOf } from '@/ui/canvasDraw/composite';
 import { createCanvas, renderControlImage, renderMaskShape, type Rendered } from '@/ui/canvasDraw/entityRender';
 import { preloadImages } from '@/ui/canvasDraw/imageCache';
 import { rasterCoverage, visibleEntities } from './composite';
@@ -88,8 +88,8 @@ async function sourceAndMask(s: Doc, opts: { outpaint: boolean; infill: Infill }
   }
   const source = opts.outpaint ? fillTransparent(composite, opts.infill) : composite;
   return {
-    initImageUrl: await canvasToUrl(source),
-    maskImageUrl: maskIsEmpty(maskData.data) ? null : await canvasToUrl(mask),
+    initImageUrl: await canvasToOneShotUrl(source),
+    maskImageUrl: maskIsEmpty(maskData.data) ? null : await canvasToOneShotUrl(mask),
   };
 }
 
@@ -103,7 +103,7 @@ async function controlImage(s: Doc, e: CanvasEntity): Promise<string> {
   ctx.fillRect(0, 0, out.width, out.height);
   const r = renderControlImage(e, preview);
   if (r) drawAt(ctx, e, r, s);
-  return canvasToUrl(out);
+  return canvasToOneShotUrl(out);
 }
 
 async function regionMask(s: Doc, e: CanvasEntity): Promise<string> {
@@ -114,7 +114,7 @@ async function regionMask(s: Doc, e: CanvasEntity): Promise<string> {
   ctx.fillRect(0, 0, out.width, out.height);
   const r = renderMaskShape(e, maskGrey(null));
   if (r) drawAt(ctx, e, r, s);
-  return canvasToUrl(out);
+  return canvasToOneShotUrl(out);
 }
 
 export const canvasRenderer: CanvasRenderer = {

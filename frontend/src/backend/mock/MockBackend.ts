@@ -665,6 +665,10 @@ export class MockBackend implements BackendClient {
     for (const item of this.queue.filter((q) => q.batchId === batchId)) await this.cancelQueueItem(item.id);
   }
 
+  async cancelPending() {
+    for (const item of this.queue.filter((q) => q.status === 'pending')) this.setStatus(item, 'canceled', { completedAt: this.now() });
+  }
+
   async clearQueue() {
     if (this.running) this.running.cancelled = true;
     this.queue = [];

@@ -19,6 +19,7 @@
     "allow-enqueue",
     "allow-cancel-queue-item",
     "allow-cancel-batch",
+    "allow-cancel-pending",
     "allow-clear-queue",
     "allow-prune-queue",
     "allow-pause-processor",

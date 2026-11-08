@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { emit } from '@tauri-apps/api/event';
 import { clearMocks, mockIPC } from '@tauri-apps/api/mocks';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { oneShotUrl } from '../oneShotUrl';
 import type { BackendEvent, EnqueueRequest, GenerationMetadata, QueueItem } from '../types';
 import { EVENT_CHANNEL, isBackendImageUrl, isTauri, TauriBackend } from './TauriBackend';
 
@@ -190,6 +191,34 @@ describe('TauriBackend', () => {
     expect(calls.filter((c) => c.cmd === 'upload_image')).toHaveLength(1);
     const enq = calls.find((c) => c.cmd === 'enqueue')?.payload as { request: EnqueueRequest };
     expect(enq.request.referencePictures).toEqual([STORED, STORED]);
+  });
+
+  it('revokes the one-shot pictures it read, stores one named by two jobs once, and leaves other blob URLs alone', async () => {
+    let n = 0;
+    const revoked: string[] = [];
+    URL.createObjectURL = () => `blob:one-shot/${n++}`;
+    URL.revokeObjectURL = (url: string) => void revoked.push(url);
+    const fetched: string[] = [];
+    vi.stubGlobal('fetch', async (url: string) => (fetched.push(url), { blob: async () => new Blob(['x']) }));
+    try {
+      const b = new TauriBackend();
+      await b.bootstrap();
+      const once = oneShotUrl(new Blob(['a']));
+      const layer = 'blob:a-layer-picture';
+      const request = (initImageUrl: string): EnqueueRequest => ({ origin: 'canvas', destination: 'canvas', params, iterations: 1, randomizeSeed: false, prepend: false, boardId: null, initImageUrl });
+      await b.enqueue(request(once));
+      // A grid of jobs from one canvas names the same URL again: it is not read (it is gone) and not uploaded again.
+      await b.enqueue(request(once));
+      expect(fetched).toEqual([once]);
+      expect(revoked).toEqual([once]);
+      expect(calls.filter((c) => c.cmd === 'upload_image')).toHaveLength(1);
+      // A blob URL the page still uses (a layer's picture) is read but never revoked.
+      await b.enqueue(request(layer));
+      expect(fetched).toEqual([once, layer]);
+      expect(revoked).toEqual([once]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('sends empty guidance when a request has none', async () => {

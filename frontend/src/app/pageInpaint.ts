@@ -2,14 +2,14 @@
 // page as drawn (panels, balloons and the user's rasters under the generation box), the mask comes from the store's inpaint
 // layers as on the Canvas. The result is staged on the page's store (`landPageInpaint`) and accepted into a new raster
 // layer with the Canvas's own staging actions. It is put together here since the comic feature does not import the Canvas one.
-import { backend } from '@/backend';
+import { backend, releaseOneShotUrl } from '@/backend';
 import { canvasReadiness } from '@/features/canvas/register';
 import { canvasRenderer, type CanvasRenderer } from '@/features/canvas/render/generationInputs';
 import { buildCanvasRequest } from '@/features/canvas/request';
 import { drawPage, preparePage } from '@/features/comic/pageRender';
 import { t } from '@/i18n';
 import { objectsBounds } from '@/ui/canvasDraw/bounds';
-import { canvasToUrl, hasContent } from '@/ui/canvasDraw/composite';
+import { canvasToOneShotUrl, hasContent } from '@/ui/canvasDraw/composite';
 import { createCanvas } from '@/ui/canvasDraw/entityRender';
 import type { CanvasStore, Rect } from '@/state/canvas';
 import { findImage } from '@/state/gallery';
@@ -35,12 +35,14 @@ function pageRenderer(pageId: string, store: CanvasStore): CanvasRenderer {
       const page = findPage(pageId);
       if (!page) throw new Error('page gone');
       const mask = await canvasRenderer.sourceAndMask(s, { ...opts, outpaint: false });
+      // Its init picture is replaced by the page below and would never be read.
+      releaseOneShotUrl(mask.initImageUrl);
       const live = store.getState();
       const prepared = await preparePage({ ...page, canvas: { entities: live.entities, bbox: live.bbox } }, (name) => findImage(name)?.url);
       const whole = drawPage(prepared);
       const crop = createCanvas(s.bbox.width, s.bbox.height);
       (crop.getContext('2d') as CanvasRenderingContext2D).drawImage(whole, -s.bbox.x, -s.bbox.y);
-      return { initImageUrl: await canvasToUrl(crop), maskImageUrl: mask.maskImageUrl };
+      return { initImageUrl: await canvasToOneShotUrl(crop), maskImageUrl: mask.maskImageUrl };
     },
   };
 }

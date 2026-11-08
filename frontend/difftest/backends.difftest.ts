@@ -157,6 +157,7 @@ describe.runIf(ORIGIN && TOKEN)('the mock answers as the real backend does', () 
     const calls = (b: BackendClient) => [
       () => b.cancelQueueItem(987654),
       () => b.cancelBatch('no-such-batch'),
+      () => b.cancelPending(),
       () => b.retryQueueItem(987654),
       () => b.pruneQueue(),
       () => b.updateModel('no-such-model', { name: 'x' }),

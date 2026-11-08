@@ -333,6 +333,10 @@ commands! {
         b.cancel_batch(&batch_id);
         Ok(())
     }
+    sync cancel_pending(b) -> () {
+        b.cancel_pending();
+        Ok(())
+    }
     sync clear_queue(b) -> () {
         b.clear_queue().map_err(msg)
     }

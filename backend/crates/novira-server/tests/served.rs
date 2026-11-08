@@ -39,6 +39,7 @@ async fn a_job_is_queued_and_the_queue_controls_work() {
         f.post("queue_snapshot", "").await.json()["status"]["canceled"],
         json!(1)
     );
+    assert_eq!(f.post("cancel_pending", "").await.status, 200);
     assert_eq!(f.post("prune_queue", "").await.status, 200);
     assert_eq!(f.post("clear_queue", "").await.status, 200);
     assert_eq!(

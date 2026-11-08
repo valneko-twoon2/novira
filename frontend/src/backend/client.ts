@@ -85,6 +85,8 @@ export interface BackendClient {
   enqueue(request: EnqueueRequest): Promise<QueueItem[]>;
   cancelQueueItem(id: number): Promise<void>;
   cancelBatch(batchId: string): Promise<void>;
+  /** Cancels every item still waiting in one call; the running one goes on. */
+  cancelPending(): Promise<void>;
   clearQueue(): Promise<void>;
   pruneQueue(): Promise<void>;
   pauseProcessor(): Promise<void>;

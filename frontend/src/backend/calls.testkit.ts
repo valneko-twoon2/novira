@@ -41,6 +41,7 @@ export const CALLS: {
     }),
   cancelQueueItem: (b) => b.cancelQueueItem(1),
   cancelBatch: (b) => b.cancelBatch('batch-1'),
+  cancelPending: (b) => b.cancelPending(),
   clearQueue: (b) => b.clearQueue(),
   pruneQueue: (b) => b.pruneQueue(),
   pauseProcessor: (b) => b.pauseProcessor(),

@@ -119,6 +119,11 @@ pub fn cancel_batch(backend: State<'_, Backend>, batch_id: String) -> Res<()> {
 }
 
 #[tauri::command]
+pub fn cancel_pending(backend: State<'_, Backend>) -> Res<()> {
+    guard(|| call::cancel_pending(&backend))
+}
+
+#[tauri::command]
 pub fn clear_queue(backend: State<'_, Backend>) -> Res<()> {
     guard(|| call::clear_queue(&backend))
 }

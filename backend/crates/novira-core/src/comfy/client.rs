@@ -1167,7 +1167,6 @@ impl ComfyEngine {
         });
 
         let mut step = 0;
-        let mut preview: Option<String> = None;
         let mut last_poll = Instant::now();
         loop {
             let poll_every = if ws.is_some() {
@@ -1202,10 +1201,12 @@ impl ComfyEngine {
                         let (shown, of) =
                             shown_progress(&built.passes, total, step, node.as_deref(), value, max);
                         step = shown;
+                        // The picture rides on its own frame's event (below): sending it again with every step
+                        // would carry the same data URL twice through the event channel. The window keeps the last one.
                         progress(EngineProgress {
                             step: shown,
                             total_steps: of,
-                            preview: preview.clone(),
+                            preview: None,
                             message: "denoise".into(),
                         });
                     }
@@ -1218,11 +1219,10 @@ impl ComfyEngine {
                 },
                 Next::Ws(Some(Ok(Message::Binary(b)))) => {
                     if let Some(url) = parse_preview(&b) {
-                        preview = Some(url);
                         progress(EngineProgress {
                             step,
                             total_steps: total,
-                            preview: preview.clone(),
+                            preview: Some(url),
                             message: "denoise".into(),
                         });
                     }

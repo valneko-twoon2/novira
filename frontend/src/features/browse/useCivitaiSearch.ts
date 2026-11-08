@@ -4,7 +4,10 @@ import { backend, type CivitaiModel, type CivitaiSearchParams, type CivitaiSearc
 import { readCachedPage, writeCachedPage } from './pageCache';
 
 // First pages by search params, so returning to a search already seen shows at once (and, from the disk cache, after a restart).
-const firstPages = new Map<string, { items: CivitaiModel[]; next: string | null }>();
+const firstPages = new Map<string, { items: CivitaiModel[]; next: string | null; at: number }>();
+/** A first page this young is shown as it is when the tab is opened again: the sites' lists do not change in a few minutes, and a search
+ * costs a request to the site (and one more for the page after it) each time. Older ones show at once and are searched again. */
+export const FRESH_MS = 5 * 60 * 1000;
 
 /** The next page after the ones shown. A search split by base model can bring a model again on a later page, and cards are keyed by id. */
 function appendNew(prev: CivitaiModel[], next: CivitaiModel[]): CivitaiModel[] {
@@ -27,7 +30,7 @@ export function useCivitaiSearch(params: Omit<CivitaiSearchParams, 'cursor'>, en
   // The page after the last one shown, asked for as soon as the last one arrived, so scrolling down finds it there.
   const ahead = useRef<{ key: string; cursor: string; page: Promise<CivitaiSearchResult> } | null>(null);
 
-  const run = useCallback((append: boolean) => {
+  const run = useCallback((append: boolean, force = false) => {
     const id = ++token.current;
     let answered = false;
     let fromDisk = false;
@@ -37,6 +40,8 @@ export function useCivitaiSearch(params: Omit<CivitaiSearchParams, 'cursor'>, en
       cursor.current = hit?.next ?? null;
       setItems(hit?.items ?? []);
       setStatus(hit ? 'ready' : 'loading');
+      // Seen a moment ago: nothing to ask. A retry (`force`) always asks.
+      if (hit && !force && Date.now() - hit.at < FRESH_MS) return;
       // Not seen since the app started: the page saved on disk shows until the search answers (it always runs again).
       if (!hit) {
         void readCachedPage(paramsKey).then((saved) => {
@@ -60,7 +65,7 @@ export function useCivitaiSearch(params: Omit<CivitaiSearchParams, 'cursor'>, en
         answered = true;
         cursor.current = res.nextCursor;
         if (!append) {
-          firstPages.set(paramsKey, { items: res.items, next: res.nextCursor });
+          firstPages.set(paramsKey, { items: res.items, next: res.nextCursor, at: Date.now() });
           void writeCachedPage(paramsKey, { items: res.items, next: res.nextCursor });
         }
         setItems((prev) => (append ? appendNew(prev, res.items) : appendNew([], res.items)));
@@ -97,6 +102,6 @@ export function useCivitaiSearch(params: Omit<CivitaiSearchParams, 'cursor'>, en
   const loadMore = useCallback(() => {
     if (cursor.current !== null) run(true);
   }, [run]);
-  const retry = useCallback(() => run(false), [run]);
+  const retry = useCallback(() => run(false, true), [run]);
   return { items, status, error, loadingMore, hasMore, loadMore, retry };
 }

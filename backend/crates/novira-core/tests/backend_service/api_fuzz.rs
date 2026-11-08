@@ -85,6 +85,7 @@ fn commands(model: &str) -> Vec<(&'static str, Value)> {
         ("enqueue", json!({ "request": enqueue })),
         ("cancel_queue_item", json!({"id": 1})),
         ("cancel_batch", json!({"batchId": "b"})),
+        ("cancel_pending", json!({})),
         ("clear_queue", json!({})),
         ("prune_queue", json!({})),
         ("pause_processor", json!({})),

@@ -45,6 +45,14 @@ describe('backend events', () => {
     expect(useQueue.getState().progress).toMatchObject({ itemId: 3 });
   });
 
+  it('keeps the last picture of an item through the steps that carry none, and drops it for another item', async () => {
+    emit({ type: 'invocation_progress', progress: { itemId: 3, step: 1, progressImageUrl: 'data:image/png;base64,AAAA' } } as never);
+    emit({ type: 'invocation_progress', progress: { itemId: 3, step: 2, progressImageUrl: null } } as never);
+    expect(useQueue.getState().progress).toMatchObject({ step: 2, progressImageUrl: 'data:image/png;base64,AAAA' });
+    emit({ type: 'invocation_progress', progress: { itemId: 4, step: 0, progressImageUrl: null } } as never);
+    expect(useQueue.getState().progress?.progressImageUrl).toBeNull();
+  });
+
   it('keeps the model list and the install jobs up to date', async () => {
     emit({ type: 'model_added', model: { key: 'm9', name: 'New', type: 'main', base: 'sdxl' } } as never);
     expect(useModels.getState().models.some((m) => m.key === 'm9')).toBe(true);
