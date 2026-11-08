@@ -75,12 +75,15 @@ const statusesOf = (events: BackendEvent[], id: number) =>
 
 describe('mock backend: start-up', () => {
   it('starts with the sample boards and pictures by default', async () => {
-    const { boot } = await start('default');
+    const { boot, backend } = await start('default');
     expect(boot.boards.map((b) => b.id)).toEqual(SEED_BOARDS.map((b) => b.id));
     expect(boot.images).toHaveLength(SEED_IMAGES.length);
     expect(boot.engine).toEqual({ state: 'ready' });
     // Newest first, and each picture keeps the prompt and seed it was made from.
-    const newest = boot.images[0]!;
+    // The start-up answer is a summary; the details are read per picture.
+    expect(boot.imagesSummary).toBe(true);
+    expect(boot.images.every((i) => i.metadata === null && i.workflow === null)).toBe(true);
+    const newest = (await backend.getImageDetails([boot.images[0]!.name]))[0]!;
     const lastSpec = SEED_IMAGES[SEED_IMAGES.length - 1]!;
     expect(newest.metadata).toMatchObject({ positivePrompt: lastSpec.prompt, seed: lastSpec.seed });
     expect(boot.images.every((i, k) => k === 0 || i.createdAt < boot.images[k - 1]!.createdAt)).toBe(true);
@@ -134,7 +137,7 @@ describe('mock backend: generation', () => {
 
   it('records the sampling a newer family runs in place of the scheduler setting, as the backend does', async () => {
     const { backend, settled } = await start();
-    const images = async () => (await backend.bootstrap()).images;
+    const images = async () => backend.getImageDetails((await backend.bootstrap()).images.map((i) => i.name));
     const [flux] = await backend.enqueue(request({}, { modelKey: 'main-flux-schnell', scheduler: 'euler_a' }));
     await settled(flux!.id);
     expect((await images())[0]!.metadata).toMatchObject({ scheduler: 'euler_a', sampling: { sampler: 'euler', scheduler: 'simple' } });
@@ -145,7 +148,7 @@ describe('mock backend: generation', () => {
 
   it('records the sampler and noise schedule a picture named over the one its family fixes, and keeps the other half', async () => {
     const { backend, settled } = await start();
-    const images = async () => (await backend.bootstrap()).images;
+    const images = async () => backend.getImageDetails((await backend.bootstrap()).images.map((i) => i.name));
     const [flux] = await backend.enqueue(request({}, { modelKey: 'main-flux-schnell', samplerName: 'res_multistep' }));
     await settled(flux!.id);
     expect((await images())[0]!.metadata).toMatchObject({ samplerName: 'res_multistep', sampling: { sampler: 'res_multistep', scheduler: 'simple' } });

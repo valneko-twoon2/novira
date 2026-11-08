@@ -65,6 +65,7 @@ const COMMANDS: &[(&str, &str)] = &[
     ),
     ("delete_images", r#"{"names":["a.png"]}"#),
     ("restore_images", r#"{"names":["a.png"]}"#),
+    ("get_image_details", r#"{"names":["a.png"]}"#),
     ("list_comics", "{}"),
     ("save_comic", r#"{"id":"c1","document":{"pages":[]}}"#),
     ("delete_comic", r#"{"id":"c1"}"#),

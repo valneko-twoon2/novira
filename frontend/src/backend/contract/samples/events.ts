@@ -59,7 +59,9 @@ export const engineSettingsPatch = {
 export const bootstrap = {
   models: [modelConfig],
   boards: [boardDto],
-  images: [imageDto],
+  // The gallery as a summary: no metadata, no workflow (`get_image_details` reads them).
+  images: [{ ...imageDto, metadata: null, workflow: null }],
+  imagesSummary: true,
   workflows: [savedWorkflow],
   queue: queueSnapshot,
   engine: engineStatus.ready,

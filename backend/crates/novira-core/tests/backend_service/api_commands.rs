@@ -69,6 +69,15 @@ async fn the_board_image_and_queue_commands_work_by_name() {
         .await
         .unwrap();
     assert_eq!(restored.as_array().unwrap().len(), 1);
+    // `bootstrap` sends the gallery as summaries; the details are read per picture.
+    let boot = call(&backend, "bootstrap", json!({})).await.unwrap();
+    assert_eq!(boot["imagesSummary"], true);
+    let listed = &boot["images"][0];
+    assert!(listed["metadata"].is_null() && listed["workflow"].is_null());
+    let details = call(&backend, "get_image_details", json!({"names": names}))
+        .await
+        .unwrap();
+    assert_eq!(details[0]["name"], listed["name"]);
     let removed = call(
         &backend,
         "delete_board",
@@ -239,6 +248,18 @@ async fn the_model_pack_and_setting_commands_work_by_name() {
     )
     .await
     .unwrap();
+    // With `removed` the state is a patch over the stored one.
+    call(
+        &backend,
+        "save_ui_state",
+        json!({"state": "{\"novira.y\":\"2\"}", "origin": "page", "removed": ["novira.x"]}),
+    )
+    .await
+    .unwrap();
+    let patched = call(&backend, "adopt_ui_state", json!({"local": null}))
+        .await
+        .unwrap();
+    assert_eq!(patched, json!("{\"novira.y\":\"2\"}"));
     let saved = call(
         &backend,
         "save_workflow",

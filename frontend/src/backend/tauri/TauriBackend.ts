@@ -77,6 +77,8 @@ export interface Bootstrap {
   models: ModelConfig[];
   boards: BoardDTO[];
   images: ImageDTO[];
+  /** True: `images` carry no `metadata` or `workflow` (read per picture with `get_image_details`). */
+  imagesSummary: boolean;
   workflows: SavedWorkflow[];
   queue: { items: QueueItem[]; status: QueueStatus };
   engine: EngineStatus;
@@ -164,6 +166,7 @@ export class TauriBackend implements BackendClient {
       models: data.models,
       boards: data.boards,
       images: data.images,
+      imagesSummary: data.imagesSummary,
       workflows: [...builtIn.map((w) => ({ ...w })), ...data.workflows],
       engine: data.engine,
       packs: data.packs,
@@ -226,6 +229,10 @@ export class TauriBackend implements BackendClient {
 
   restoreImages(names: string[]) {
     return invoke<ImageDTO[]>('restore_images', { names });
+  }
+
+  getImageDetails(names: string[]) {
+    return invoke<ImageDTO[]>('get_image_details', { names });
   }
 
   // Queue ------------------------------------------------------------------
@@ -477,8 +484,8 @@ export class TauriBackend implements BackendClient {
     return invoke<string | null>('adopt_ui_state', { local });
   }
 
-  saveUiState(state: string, origin?: string) {
-    return invoke<void>('save_ui_state', { state, origin });
+  saveUiState(state: string, origin?: string, removed?: string[]) {
+    return invoke<void>('save_ui_state', { state, origin, removed });
   }
 
   nodeDefs() {

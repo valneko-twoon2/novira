@@ -241,6 +241,13 @@ pub(crate) fn statuses(b: &Backend) -> Vec<QueueItemStatus> {
     b.queue_snapshot().items.iter().map(|q| q.status).collect()
 }
 
+/// The gallery's pictures with their `metadata` and `workflow`: `bootstrap` sends summaries, so a test that reads what a job
+/// stored asks for the whole pictures.
+pub(crate) fn full_images(b: &Backend) -> Vec<ImageDTO> {
+    let names: Vec<String> = b.bootstrap().images.into_iter().map(|i| i.name).collect();
+    b.image_details(&names)
+}
+
 pub(crate) fn main_key(b: &Backend) -> String {
     b.bootstrap()
         .models

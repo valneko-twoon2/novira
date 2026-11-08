@@ -4,17 +4,23 @@
 // takes it as those events would have. The desktop app's window hears every event, so it does not need this.
 import { backend, type BoardDTO, type ImageDTO, type ModelConfig, type SavedWorkflow } from '@/backend';
 import { useGallery } from './gallery';
+import { mergeSummaries } from './galleryDetails';
 import { useModels } from './models';
 import { useWorkflows } from './workflows/workflows';
 
 /** Takes the backend's boards, pictures, models and workflows. `known` are the pictures the page had when it asked. */
-export function applyCatchUp(data: { boards: BoardDTO[]; images: ImageDTO[]; models: ModelConfig[]; workflows: SavedWorkflow[] }, known: ReadonlySet<string>): void {
+export function applyCatchUp(
+  data: { boards: BoardDTO[]; images: ImageDTO[]; imagesSummary?: boolean; models: ModelConfig[]; workflows: SavedWorkflow[] },
+  known: ReadonlySet<string>,
+): void {
   const gallery = useGallery.getState();
   gallery.syncBoards(data.boards);
+  // Summaries have no details: a picture this page already read keeps them.
+  const images = data.imagesSummary ? mergeSummaries(data.images, gallery.images) : data.images;
   // A picture that arrived while the backend was being read is not in its answer, and stays.
   const there = new Set(data.images.map((i) => i.name));
   const removed = [...known].filter((name) => !there.has(name));
-  gallery.applyImageChanges(data.images, removed);
+  gallery.applyImageChanges(images, removed);
   useModels.getState().syncModels(data.models);
   useWorkflows.getState().setLibrary(data.workflows);
 }

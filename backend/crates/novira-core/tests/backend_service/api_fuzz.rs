@@ -82,6 +82,7 @@ fn commands(model: &str) -> Vec<(&'static str, Value)> {
         ),
         ("delete_images", json!({"names": ["a.png"]})),
         ("restore_images", json!({"names": ["a.png"]})),
+        ("get_image_details", json!({"names": ["a.png"]})),
         ("enqueue", json!({ "request": enqueue })),
         ("cancel_queue_item", json!({"id": 1})),
         ("cancel_batch", json!({"batchId": "b"})),
@@ -143,6 +144,10 @@ fn commands(model: &str) -> Vec<(&'static str, Value)> {
         (
             "save_ui_state",
             json!({"state": "{\"novira.theme\":\"light\"}", "origin": null}),
+        ),
+        (
+            "save_ui_state",
+            json!({"state": "{\"novira.theme\":\"light\"}", "origin": null, "removed": ["novira.old"]}),
         ),
         ("list_unfinished_downloads", json!({})),
         (

@@ -72,8 +72,14 @@ beforeEach(async () => {
     return () => undefined;
   });
   adopt = vi.spyOn(backend, 'adoptUiState').mockImplementation(() => Promise.resolve(JSON.stringify(remote)));
-  save = vi.spyOn(backend, 'saveUiState').mockImplementation((state) => {
-    remote = parseUiState(state) ?? remote;
+  // As the backend does: a save with `removed` is a patch over what it holds.
+  save = vi.spyOn(backend, 'saveUiState').mockImplementation((state, _origin, removed) => {
+    const sent = parseUiState(state) ?? {};
+    if (removed === undefined) remote = parseUiState(state) ?? remote;
+    else {
+      remote = { ...remote, ...sent };
+      for (const key of removed) delete remote[key];
+    }
     return Promise.resolve();
   });
   await adoptBackendUiState(storage);
@@ -140,13 +146,17 @@ describe('taking another page state while running', () => {
     expect(remote['novira.a']).toBe('typed here');
   });
 
-  it('takes the other page news before sending, so that its keys are not overwritten with old ones', async () => {
+  it('does not overwrite what another page saved in a key this page did not change: only changed keys are sent', async () => {
     storage.setItem('novira.b', 'b1');
     // The other page saved a moment ago, and its event has not reached this page yet.
     remote['novira.a'] = 'a1';
     await vi.advanceTimersByTimeAsync(SAVE_DELAY + 50);
     expect(save).toHaveBeenCalledTimes(1);
-    expect(parseUiState(save.mock.calls[0]![0] as string)).toMatchObject({ 'novira.a': 'a1', 'novira.b': 'b1' });
+    expect(parseUiState(save.mock.calls[0]![0] as string)).toEqual({ 'novira.b': 'b1' });
+    expect(remote).toMatchObject({ 'novira.a': 'a1', 'novira.b': 'b1' });
+    // Its event arrives later and the page takes the key.
+    emit(event('page-other', NEWS));
+    await vi.advanceTimersByTimeAsync(PULL_DELAY + 10);
     expect(storage.getItem('novira.a')).toBe('a1');
     expect(rehydrated).toEqual(['novira.a']);
   });

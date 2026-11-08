@@ -306,6 +306,7 @@ pub fn bootstrap(v: &Value) {
         models: get(v, "models"),
         boards: get(v, "boards"),
         images: get(v, "images"),
+        images_summary: get(v, "imagesSummary"),
         workflows: get(v, "workflows"),
         queue: snapshot(&v["queue"]),
         engine: engine(&v["engine"]),

@@ -56,9 +56,7 @@ async fn queued_jobs_run_in_order_and_store_images_with_metadata() {
 
     let snapshot = backend.queue_snapshot();
     let first = &snapshot.items[0];
-    let image = backend
-        .bootstrap()
-        .images
+    let image = full_images(&backend)
         .into_iter()
         .find(|i| Some(&i.name) == first.image_name.as_ref())
         .unwrap();
@@ -238,7 +236,7 @@ async fn state_survives_a_restart_and_unfinished_jobs_are_not_resumed_silently()
 
     // Deleting the board can keep or delete its images.
     assert!(backend.delete_board(&board.id, false).unwrap().is_empty());
-    assert_eq!(backend.bootstrap().images[0].board_id, None);
+    assert_eq!(full_images(&backend)[0].board_id, None);
     backend
         .delete_images(std::slice::from_ref(&img.name))
         .unwrap();

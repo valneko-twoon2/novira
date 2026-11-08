@@ -14,6 +14,7 @@ import { useNodePacks } from './comfy/nodePacks';
 import { agentPacks } from './comfy/packCatalog';
 import { useRegistry } from './comfy/registry';
 import { useGallery } from './gallery';
+import { ensureAllDetails, ensureDetails } from './galleryDetails';
 import { enqueueActive } from './invoke';
 import { isDrawable, useModels } from './models';
 import { useParams, type ParamsFields } from './params';
@@ -511,18 +512,24 @@ const HANDLERS: Record<string, Handler> = {
     return edit(run, 'canvas', [{ people, add: args.add === true }], { kind: 'pose', count: people.length });
   },
 
-  list_gallery_images: (args) => {
+  list_gallery_images: async (args) => {
     const limit = Math.min(50, Math.max(1, num(args.limit) ?? 20));
     const offset = Math.max(0, num(args.offset) ?? 0);
     const search = (str(args.search) ?? '').toLowerCase();
+    // The gallery holds summaries (no prompts): a search reads them all, a plain list only the page it answers with.
+    if (search) await ensureAllDetails();
     const images = useGallery
       .getState()
       .images.filter((i) => !i.isIntermediate && (args.starredOnly !== true || i.starred) && (!search || (i.metadata?.positivePrompt ?? '').toLowerCase().includes(search)))
       .sort((a, b) => b.createdAt - a.createdAt);
-    return done({ total: images.length, images: images.slice(offset, offset + limit).map((i) => imageSummary(i, false)) });
+    const page = images.slice(offset, offset + limit);
+    await ensureDetails(page.map((i) => i.name));
+    const byName = new Map(useGallery.getState().images.map((i) => [i.name, i]));
+    return done({ total: images.length, images: page.map((i) => imageSummary(byName.get(i.name) ?? i, false)) });
   },
 
-  get_image_info: (args) => {
+  get_image_info: async (args) => {
+    await ensureDetails([String(args.name)]);
     const image = useGallery.getState().images.find((i) => i.name === args.name && !i.isIntermediate);
     if (!image) return fail(`No picture is named ${String(args.name)}: use a name from list_gallery_images.`);
     return done({ ...imageSummary(image, true), ...(image.metadata ? { generation: metadataOf(image.metadata) } : {}) });

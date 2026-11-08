@@ -60,6 +60,8 @@ use open_timing::Stopwatch;
 pub const MAX_SEED: u64 = 4_294_967_295;
 /// How many seeds there are; seed arithmetic wraps modulo this.
 const SEED_SPAN: u64 = MAX_SEED + 1;
+/// The most pictures one `image_details` call answers.
+pub const MAX_IMAGE_DETAILS: usize = 2000;
 const HIDDEN_MODELS_META: &str = "hidden_models";
 /// Set once the stored LoRA bases were checked against the current detection (`registry::corrected_lora_bases`); bump
 /// the number when the detection of a LoRA's family is fixed again.
@@ -612,7 +614,10 @@ impl Backend {
         Bootstrap {
             models: s.models.clone(),
             boards: s.boards.clone(),
-            images: s.images.clone(),
+            // The grid's fields only: the metadata and workflows are most of the bytes (9 MB of 12.6 MB for 9000 pictures)
+            // and are read for the pictures a page needs, with `image_details`.
+            images: s.images.iter().map(ImageDTO::summary).collect(),
+            images_summary: true,
             workflows: s.workflows.clone(),
             queue: QueueSnapshot {
                 items: s.queue.clone(),
@@ -621,6 +626,22 @@ impl Backend {
             engine: self.inner.engine.status(),
             packs: self.packs(),
         }
+    }
+
+    /// The whole pictures (with `metadata` and `workflow`) named, in the order asked; a name the gallery does not hold is left
+    /// out. At most `MAX_IMAGE_DETAILS` names are answered.
+    pub fn image_details(&self, names: &[String]) -> Vec<ImageDTO> {
+        let s = self.state();
+        let wanted: std::collections::HashSet<&str> = names
+            .iter()
+            .take(MAX_IMAGE_DETAILS)
+            .map(String::as_str)
+            .collect();
+        s.images
+            .iter()
+            .filter(|i| wanted.contains(i.name.as_str()))
+            .cloned()
+            .collect()
     }
 
     /// The downloads that were interrupted and left a partial file in the data folder (Settings → Data).

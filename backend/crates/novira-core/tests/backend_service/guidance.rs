@@ -147,9 +147,7 @@ async fn the_worker_resolves_guidance_models_and_reads_their_pictures() {
     wait_until(|| statuses(&backend) == vec![QueueItemStatus::Completed]).await;
 
     // The finished picture remembers its reference images and control layers, so it can be derived again.
-    let made = backend
-        .bootstrap()
-        .images
+    let made = full_images(&backend)
         .into_iter()
         .find(|i| i.metadata.is_some())
         .expect("the generated picture");
@@ -281,9 +279,7 @@ async fn regional_layers_are_kept_with_the_item_read_by_the_worker_and_remembere
     // A blank prompt is no prompt.
     assert_eq!(regions[0].negative, None);
     assert!(regions[0].auto_negative);
-    let made = backend
-        .bootstrap()
-        .images
+    let made = full_images(&backend)
         .into_iter()
         .find(|i| i.metadata.is_some())
         .expect("the generated picture");
@@ -375,9 +371,7 @@ async fn a_union_controlnet_is_told_what_its_picture_shows_and_the_picture_remem
         .collect();
     assert_eq!(kinds, vec![Some("openpose"), None, None]);
     // The picture keeps the kind, so a picture derived from it tells the model again.
-    let made = backend
-        .bootstrap()
-        .images
+    let made = full_images(&backend)
         .into_iter()
         .find(|i| i.metadata.is_some())
         .expect("the generated picture");

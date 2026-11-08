@@ -24,6 +24,7 @@ mod guidance;
 mod guidance_edges;
 mod guidance_failures;
 mod guidance_mutation;
+mod image_details;
 mod keys_failures;
 mod low_memory_off;
 mod media;
