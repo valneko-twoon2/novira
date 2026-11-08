@@ -21,6 +21,9 @@
 //   6. the license notices are current: when a dependency, a download or a license text is staged, the notices and the About
 //      list are regenerated and staged too (frontend/scripts/oss-licenses.mjs). A package with no license text, or a
 //      downloaded file that no entry of oss-downloads.json covers, stops the commit.
+//   7. the gates of the CI jobs that are not long (scripts/tools/commit-gates.mjs): the Rust format and clippy, the frontend lint, the
+//      mock against the real backend and the phone layouts, each only when a staged file can change its result. The long ones
+//      (vitest, cargo test, the Chromium flows) are not run here: `affected.mjs` and the skills choose those.
 // `npm install` in frontend/ turns the hook on (the `prepare` script runs `git config core.hooksPath .githooks`). Run by hand: `node .githooks/pre-commit.mjs`.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -86,5 +89,7 @@ function layout() {
 
 const changelog = staged.some((path) => /^(CHANGELOG\.md|scripts\/tools\/changelog\.mjs)$/.test(path)) ? run('../scripts/tools/changelog.mjs', '--check') : 0;
 const types = run('../scripts/tools/typecheck.mjs', '--staged');
+// The quick checks come first: a commit they refuse does not wait for the gates.
 const fast = eol || name || i18n || glossary || docs || changelog || types || layout() || licenses();
-process.exit(fast);
+if (fast) process.exit(fast);
+process.exit(run('../scripts/tools/commit-gates.mjs'));

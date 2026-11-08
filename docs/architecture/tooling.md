@@ -22,7 +22,7 @@ How the project is started and checked, and where the rules and skills are; what
 |---|---|
 | `affected.mjs` | Only the checks the changed files need |
 | `coverage-report.mjs` | One graphical coverage report of every part measured (ReportGenerator, pinned in `.config/dotnet-tools.json`) |
-| `typecheck.mjs`, `docs-check.mjs`, `ui-refs.mjs`, `visual-baselines.mjs`, `check-eol.mjs`, `fix-eol.mjs`, `eol.mjs`, `check-name.mjs`, `changelog.mjs`, `ci-summary.mjs` | Whole-repository checks: types, the map, stale doc names, stale test ids and text keys, stale baselines, line ends, name spelling, the changelog, CI test counts |
+| `typecheck.mjs`, `commit-gates.mjs`, `docs-check.mjs`, `ui-refs.mjs`, `visual-baselines.mjs`, `check-eol.mjs`, `fix-eol.mjs`, `eol.mjs`, `check-name.mjs`, `changelog.mjs`, `ci-summary.mjs` | Whole-repository checks: types, the CI jobs a commit must pass (format, clippy, lint, backends, phone), the map, stale doc names, stale test ids and text keys, stale baselines, line ends, name spelling, the changelog, CI test counts |
 | `layout-scan.mjs`, `e2e-lock.mjs` | The layout scan (with text fit) and its pass record; the lock for one heavy Playwright run at a time |
 | `e2e/a11y.spec.ts` (`e2e/a11yKnown.ts`) | axe-core (WCAG A/AA, no contrast) on each main tab: fails beyond the known list, which only shrinks |
 | `worktree.mjs` | Makes and removes a subagent worktree |

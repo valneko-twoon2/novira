@@ -57,6 +57,8 @@ What `affected.mjs` does not decide for you:
 | `api.rs`, `novira-server`, `frontend/src/backend/http/` | `cargo test -p novira-server`, `cargo test -p novira-core --test backend_service api::`, `npx vitest run src/backend/http` |
 | `src-tauri` (commands, capability) | `cargo test -p novira` and `npx vitest run src/backend/tauri` |
 
+The pre-commit hook itself runs the CI jobs that are not long (`scripts/tools/commit-gates.mjs`: Rust format and clippy, lint, `diff-backends`, `e2e-phone`, each when a staged file can change its result), so a commit can take a few minutes; vitest, cargo test and the Chromium flows stay with `affected.mjs`.
+
 Finish with `npm run lint` (eslint and stylelint) in `frontend/`. `cargo` missing from PATH: add `%USERPROFILE%\.cargo\bin` (`affected.mjs` and `check.bat` do). While the user's `novira.exe` is open, Rust builds go to `novira-data/work/check-target`.
 
 A change that touches the engine, the queue worker, the GPU, model files or packs is not verified by unit tests: run it on the real engine (`/verify-real-app`; the model sweep for a model change, [models.md](models.md)).
