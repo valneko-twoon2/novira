@@ -61,7 +61,9 @@ fn lora() -> Vec<u8> {
     out
 }
 
-/// Serves `body` for every request on a free loopback port.
+/// Serves `body` for every request on a free loopback port. The body follows the headers after a pause: the part file is
+/// made when the headers arrive, so it exists for that long, and the holder (which polls for it) cannot miss it on a slow
+/// machine, where the whole install used to finish between two polls.
 fn serve(body: Vec<u8>) -> String {
     let listener = TcpListener::bind("127.0.0.1:0").unwrap();
     let port = listener.local_addr().unwrap().port();
@@ -76,6 +78,8 @@ fn serve(body: Vec<u8>) -> String {
                     "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
                     body.len()
                 );
+                let _ = s.flush();
+                std::thread::sleep(Duration::from_millis(400));
                 let _ = s.write_all(&body);
             });
         }
