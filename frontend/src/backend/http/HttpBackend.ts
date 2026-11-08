@@ -198,6 +198,7 @@ export class HttpBackend implements BackendClient {
       models: data.models,
       boards: data.boards,
       images: data.images,
+      imagesSummary: data.imagesSummary,
       workflows: [...builtIn.map((w) => ({ ...w })), ...data.workflows],
       engine: data.engine,
       packs: data.packs,
@@ -270,6 +271,10 @@ export class HttpBackend implements BackendClient {
 
   restoreImages(names: string[]) {
     return this.call<ImageDTO[]>('restore_images', { names });
+  }
+
+  getImageDetails(names: string[]) {
+    return this.call<ImageDTO[]>('get_image_details', { names });
   }
 
   // Queue ------------------------------------------------------------------
@@ -540,8 +545,8 @@ export class HttpBackend implements BackendClient {
     return this.call<string | null>('adopt_ui_state', { local });
   }
 
-  saveUiState(state: string, origin?: string) {
-    return this.call<void>('save_ui_state', { state, origin });
+  saveUiState(state: string, origin?: string, removed?: string[]) {
+    return this.call<void>('save_ui_state', { state, origin, removed });
   }
 
   nodeDefs() {

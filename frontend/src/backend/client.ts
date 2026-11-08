@@ -60,6 +60,11 @@ export interface BackendClient {
     models: ModelConfig[];
     boards: BoardDTO[];
     images: ImageDTO[];
+    /**
+     * True when `images` are summaries: the grid's fields only, `metadata` and `workflow` left out (they are most of what
+     * the whole gallery weighs). Read them for the pictures that are opened, selected or searched with `getImageDetails`.
+     */
+    imagesSummary?: boolean;
     workflows: SavedWorkflow[];
     engine: EngineStatus;
     packs: Packs;
@@ -80,6 +85,8 @@ export interface BackendClient {
   deleteImages(names: string[]): Promise<void>;
   /** Brings deleted pictures back; the ones the trash no longer holds are left out of the answer. */
   restoreImages(names: string[]): Promise<ImageDTO[]>;
+  /** The whole pictures (with `metadata` and `workflow`) named, at most 2000 a call; names the gallery does not hold are left out. */
+  getImageDetails(names: string[]): Promise<ImageDTO[]>;
 
   // Queue
   enqueue(request: EnqueueRequest): Promise<QueueItem[]>;
@@ -172,8 +179,12 @@ export interface BackendClient {
    * only by a page that was never synced) as its state.
    */
   adoptUiState(local: string | null): Promise<string | null>;
-  /** Replaces the saved screen state (a JSON object of `novira.*` keys with text values, at most 32 MiB). */
-  saveUiState(state: string, origin?: string): Promise<void>;
+  /**
+   * Replaces the saved screen state (a JSON object of `novira.*` keys with text values, at most 32 MiB). With `removed`
+   * (even empty) `state` is only the keys that changed, put over what the backend holds, and `removed` are dropped from
+   * it: a page sends what it changed, not a state of hundreds of kilobytes after every click.
+   */
+  saveUiState(state: string, origin?: string, removed?: string[]): Promise<void>;
   // Comics
   /** Every saved comic project, oldest change first. */
   listComics(): Promise<ComicRecord[]>;

@@ -103,6 +103,8 @@ const HEADER_READ_TIMEOUT: Duration = Duration::from_secs(15);
 pub const SERVED: &[&str] = &[
     // Reads.
     "bootstrap",
+    // What `bootstrap` leaves out of the gallery (metadata, workflow); a phone opens a picture with it.
+    "get_image_details",
     "queue_snapshot",
     "list_starter_models",
     "model_parts",

@@ -69,8 +69,12 @@ function watch(storage: Storage): () => void {
 
   const local = () => readUiState(storage) ?? {};
 
+  /** Another page may have saved since this page last read the backend's state (an event, a wake-up, a reopened socket). */
+  let stale = false;
+
   /** Reads the backend's state and takes what changed there into the storage and the running stores. */
   const pull = async (): Promise<void> => {
+    stale = false;
     const text = await backend.adoptUiState(null);
     const remote = text === null ? null : parseUiState(text);
     if (remote === null) return;
@@ -114,6 +118,7 @@ function watch(storage: Storage): () => void {
     return work;
   };
   const schedulePull = (delay: number) => {
+    stale = true;
     if (pullTimer !== undefined) clearTimeout(pullTimer);
     pullTimer = setTimeout(() => {
       pullTimer = undefined;
@@ -121,18 +126,25 @@ function watch(storage: Storage): () => void {
     }, delay);
   };
 
-  /** Writes the state to the backend. `read` first takes in what other pages saved meanwhile, so it is not overwritten. */
+  /**
+   * Sends what this page changed to the backend: the keys whose text differs from `mine`, and the keys that are gone, not
+   * the whole state (hundreds of kilobytes on a used PC, after every click). The backend puts them over its own state,
+   * so a key another page saved meanwhile is not overwritten; a key both changed goes to the later writer. `read` first
+   * takes in what other pages saved, when they did (`stale`): a page alone on the backend does not read at all.
+   */
   const send = async (read: boolean) => {
     timer = undefined;
     if (sameState(local(), mine)) return;
-    if (read) await queuePull();
-    // The text goes to the backend; what it holds is read from the storage itself, at the same moment.
-    const state = collectUiState(storage);
-    const sent = readUiState(storage) ?? {};
+    if (read && (stale || pullTimer !== undefined)) await queuePull();
+    const sent = local();
     if (sameState(sent, mine)) return;
+    const changes: KeyText = {};
+    for (const [key, text] of Object.entries(sent)) if (mine[key] !== text) changes[key] = text;
+    const removed = Object.keys(mine).filter((key) => sent[key] === undefined);
     try {
-      await backend.saveUiState(state, origin);
-      theirs = { ...sent };
+      await backend.saveUiState(JSON.stringify(changes), origin, removed);
+      theirs = { ...theirs, ...changes };
+      for (const key of removed) delete theirs[key];
       mine = { ...sent };
     } catch (e) {
       // `mine` stays as it was, so the next change sends again.

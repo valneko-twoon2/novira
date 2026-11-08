@@ -273,7 +273,9 @@ export class MockBackend implements BackendClient {
     return {
       models: this.models.map((m) => ({ ...m })),
       boards: this.boards.map((b) => ({ ...b })),
-      images: this.images.map((i) => ({ ...i })),
+      // As the backend answers: the grid's fields only; the rest is read with `getImageDetails`.
+      images: this.images.map((i) => ({ ...i, metadata: null, workflow: null })),
+      imagesSummary: true,
       workflows: this.workflows.map((w) => ({ ...w })),
       engine: this.engineInstall ? ({ state: 'downloading', bytes: 0, totalBytes: 2_400_000_000 } as const) : ({ state: 'ready' } as const),
       packs: { ...this.packs },
@@ -457,6 +459,12 @@ export class MockBackend implements BackendClient {
     this.images = [...back, ...this.images].sort((a, b) => b.createdAt - a.createdAt);
     if (back.length) this.emit({ type: 'images_changed', images: back.map((i) => ({ ...i })), removed: [] });
     return back.map((i) => ({ ...i }));
+  }
+
+  async getImageDetails(names: string[]) {
+    await wait(LATENCY);
+    const wanted = new Set(names.slice(0, 2000));
+    return this.images.filter((i) => wanted.has(i.name)).map((i) => ({ ...i }));
   }
 
   // Queue ------------------------------------------------------------------
@@ -1168,9 +1176,18 @@ export class MockBackend implements BackendClient {
     return null;
   }
 
-  async saveUiState(state: string) {
+  async saveUiState(state: string, _origin?: string, removed?: string[]) {
     checkUiState(state);
-    this.uiState = state;
+    if (removed === undefined) {
+      this.uiState = state;
+      return;
+    }
+    // Only the keys a page changed: put over what is held, and the removed ones dropped.
+    const merged = { ...(jsonObject(this.uiState ?? '{}') ?? {}), ...(jsonObject(state) ?? {}) };
+    for (const key of removed) delete merged[key];
+    const text = JSON.stringify(merged);
+    checkUiState(text);
+    this.uiState = text;
   }
 
   /**

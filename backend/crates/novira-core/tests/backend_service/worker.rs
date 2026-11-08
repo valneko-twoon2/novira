@@ -38,7 +38,7 @@ async fn results_for_the_canvas_or_drafts_are_hidden_and_gallery_results_keep_th
     wait_until(|| statuses(&backend) == vec![QueueItemStatus::Completed; 3]).await;
 
     let snapshot = backend.queue_snapshot();
-    let images = backend.bootstrap().images;
+    let images = full_images(&backend);
     let image_of = |id: u64| {
         let name = snapshot
             .items
@@ -109,7 +109,7 @@ async fn a_hires_fix_resolves_its_upscale_model_and_stores_the_first_pass_size()
         job.upscale_model.map(|r| r.name),
         Some("4x-test.pth".to_string())
     );
-    let image = backend.bootstrap().images.remove(0);
+    let image = full_images(&backend).remove(0);
     // The picture is the enlarged one; its settings keep the size the scale applies to.
     assert_eq!((image.width, image.height), (96, 96));
     let meta = image.metadata.unwrap();

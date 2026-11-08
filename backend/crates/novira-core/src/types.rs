@@ -466,6 +466,27 @@ pub struct ImageDTO {
     pub workflow: Option<Value>,
 }
 
+impl ImageDTO {
+    /// The fields the grid needs, without the `metadata` and the `workflow` (see `Bootstrap::images_summary`).
+    pub fn summary(&self) -> ImageDTO {
+        ImageDTO {
+            name: self.name.clone(),
+            media_type: self.media_type,
+            url: self.url.clone(),
+            thumbnail_url: self.thumbnail_url.clone(),
+            width: self.width,
+            height: self.height,
+            created_at: self.created_at,
+            board_id: self.board_id.clone(),
+            starred: self.starred,
+            is_intermediate: self.is_intermediate,
+            category: self.category,
+            metadata: None,
+            workflow: None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum MediaType {
@@ -952,7 +973,11 @@ pub struct QueueSnapshot {
 pub struct Bootstrap {
     pub models: Vec<ModelConfig>,
     pub boards: Vec<BoardDTO>,
+    /// The gallery as summaries (`ImageDTO::summary`) when `images_summary` is true.
     pub images: Vec<ImageDTO>,
+    /// True: `images` carry no `metadata` and no `workflow`, which are most of what a large gallery weighs; a page reads
+    /// them for the pictures it needs with `get_image_details`.
+    pub images_summary: bool,
     pub workflows: Vec<SavedWorkflow>,
     pub queue: QueueSnapshot,
     pub engine: crate::engine::EngineStatus,

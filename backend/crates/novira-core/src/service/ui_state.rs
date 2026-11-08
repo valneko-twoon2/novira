@@ -112,6 +112,45 @@ impl Backend {
             .is_some_and(|s| s["state"]["theme"] == "light")
     }
 
+    /// Puts `changes` (a JSON object of `novira.*` keys with text values) over the saved screen state and drops the keys in
+    /// `removed`, then tells every open page like `save_ui_state`. A page sends only what it changed, so a click does not
+    /// move the state of hundreds of kilobytes; it also cannot overwrite a key another page saved meanwhile.
+    pub fn patch_ui_state(
+        &self,
+        changes: &str,
+        removed: &[String],
+        origin: Option<&str>,
+    ) -> Result<()> {
+        check(changes)?;
+        let Ok(Value::Object(add)) = serde_json::from_str::<Value>(changes) else {
+            return Err(BackendError::Invalid(
+                "the screen state must be a JSON object".into(),
+            ));
+        };
+        let db = self.db();
+        let mut state: serde_json::Map<String, Value> = match db.meta(UI_STATE_META)? {
+            Some(saved) => match serde_json::from_str::<Value>(&saved) {
+                Ok(Value::Object(map)) => map,
+                _ => serde_json::Map::new(),
+            },
+            None => serde_json::Map::new(),
+        };
+        for key in removed {
+            state.remove(key);
+        }
+        state.extend(add);
+        let merged = serde_json::to_string(&Value::Object(state))
+            .map_err(|e| BackendError::Invalid(e.to_string()))?;
+        check(&merged)?;
+        db.set_meta(UI_STATE_META, &merged)?;
+        drop(db);
+        self.emit(BackendEvent::UiStateChanged {
+            origin: clean_origin(origin),
+            revision: next_revision(),
+        });
+        Ok(())
+    }
+
     /// Replaces the saved screen state, then tells every open page with a `ui_state_changed` event (the state itself
     /// is not in it: a page reads it with `adopt_ui_state`). `origin` is the saving page's own id, so that page can
     /// tell the event is its own echo.

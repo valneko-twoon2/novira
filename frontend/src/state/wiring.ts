@@ -9,6 +9,7 @@ import { onComicImage, onComicQueueItem } from './comic/results';
 import { useDevLog } from './devLog';
 import { useEngine } from './engine';
 import { useGallery } from './gallery';
+import { markSummaries, watchGalleryDetails } from './galleryDetails';
 import './liveStores';
 import { useLowMemory } from './lowMemory';
 import { offerPartsFor } from './modelParts';
@@ -145,6 +146,10 @@ async function start(): Promise<void> {
   useModels.getState().setModels(data.models);
   useGallery.getState().setBoards(data.boards);
   useGallery.getState().setImages(data.images);
+  if (data.imagesSummary) {
+    markSummaries(data.images);
+    watchGalleryDetails();
+  }
   useWorkflows.getState().setLibrary(data.workflows);
   useEngine.getState().setStatus(data.engine);
   usePacks.getState().setAll(data.packs);

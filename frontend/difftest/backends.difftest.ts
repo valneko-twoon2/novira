@@ -60,6 +60,12 @@ describe.runIf(ORIGIN && TOKEN)('the mock answers as the real backend does', () 
       () => b.loadCanvas(),
       () => b.saveUiState('{"novira.theme":"light"}'),
       () => b.adoptUiState(null),
+      // Only the keys a page changed: put over the stored state, and the removed ones dropped.
+      () => b.saveUiState('{"novira.y":"2"}', undefined, ['novira.theme', 'novira.never']),
+      () => b.adoptUiState(null),
+      () => b.saveUiState('{"novira.z":"3"}', undefined, []),
+      () => b.adoptUiState(null),
+      () => b.saveUiState('{"novira.q":1}', undefined, []),
       () => b.saveUiState('{"theme":"light"}'),
       () => b.saveUiState('{"novira.x":1}'),
     ]);
@@ -79,6 +85,10 @@ describe.runIf(ORIGIN && TOKEN)('the mock answers as the real backend does', () 
         () => b.updateImages([a.name, 'nobody.png'], { boardId: null }),
         () => b.updateImages([c.name], { boardId: board.id }),
         () => gallery(),
+        // The start-up answer is a summary; the whole pictures are read per name, and a name that is not there is left out.
+        () => b.bootstrap().then((boot) => boot.imagesSummary),
+        () => b.getImageDetails([c.name, 'nobody.png', a.name]).then(newestFirst),
+        () => b.getImageDetails([]),
         () => b.deleteImages([a.name]),
         () => gallery(),
         () => b.restoreImages([a.name, 'nobody.png']).then(newestFirst),

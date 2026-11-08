@@ -33,6 +33,7 @@ export const CALLS: {
   updateImages: (b) => b.updateImages(['a.png'], { starred: true }),
   deleteImages: (b) => b.deleteImages(['a.png']),
   restoreImages: (b) => b.restoreImages(['a.png']),
+  getImageDetails: (b) => b.getImageDetails(['a.png']),
   enqueue: (b) =>
     b.enqueue({
       ...(fixture('enqueue-request') as Parameters<BackendClient['enqueue']>[0]),
@@ -99,7 +100,7 @@ export const CALLS: {
   loadCanvas: (b) => b.loadCanvas(),
   saveCanvas: (b) => b.saveCanvas('{"version":1}'),
   adoptUiState: (b) => b.adoptUiState(null),
-  saveUiState: (b) => b.saveUiState('{"novira.settings":"{}"}', 'page-1'),
+  saveUiState: (b) => b.saveUiState('{"novira.settings":"{}"}', 'page-1', ['novira.old']),
   nodeDefs: (b) => b.nodeDefs(),
   comfyUiLocale: (b) => b.comfyUiLocale('ja'),
   nodePacks: (b) => b.nodePacks(),

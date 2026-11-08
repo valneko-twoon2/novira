@@ -200,7 +200,7 @@ async fn an_anima_picture_runs_and_records_the_scheduler_setting_with_no_fixed_s
     wait_until(|| statuses(&backend) == vec![QueueItemStatus::Completed]).await;
 
     // Anima follows the setting, so nothing fixed is recorded: the setting is what ran.
-    let meta = backend.bootstrap().images.remove(0).metadata.unwrap();
+    let meta = full_images(&backend).remove(0).metadata.unwrap();
     assert_eq!(meta.sampling, None);
     assert_eq!(meta.scheduler, "euler_a");
     backend.shutdown();
@@ -223,7 +223,7 @@ async fn an_sd_picture_records_no_fixed_sampling_even_when_one_was_sent() {
     backend.enqueue(req).unwrap();
     wait_until(|| statuses(&backend) == vec![QueueItemStatus::Completed]).await;
 
-    let meta = backend.bootstrap().images.remove(0).metadata.unwrap();
+    let meta = full_images(&backend).remove(0).metadata.unwrap();
     assert_eq!(meta.sampling, None);
     assert_eq!(meta.scheduler, "euler_a");
     backend.shutdown();
@@ -284,7 +284,7 @@ async fn a_sampler_the_picture_named_is_recorded_as_what_ran() {
     wait_until(|| statuses(&backend) == vec![QueueItemStatus::Completed]).await;
 
     // The setting's schedule (karras) stays, the sampler is the one named; both the choice and the setting are kept.
-    let meta = backend.bootstrap().images.remove(0).metadata.unwrap();
+    let meta = full_images(&backend).remove(0).metadata.unwrap();
     assert_eq!(
         meta.sampling,
         Some(Sampling {

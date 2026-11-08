@@ -68,7 +68,9 @@ async fn opens_with_everything_it_held(version: &str) {
             .map(|b| b.id.clone())
     };
     assert_eq!(boot.images.len(), 3);
-    let in_board = |id: Option<String>| boot.images.iter().find(|i| i.board_id == id).unwrap();
+    // The start-up answer is a summary; the prompts are read per picture.
+    let whole = full_images(&backend);
+    let in_board = |id: Option<String>| whole.iter().find(|i| i.board_id == id).unwrap();
     let starred = in_board(board("Portraits"));
     assert!(starred.starred);
     assert_eq!(
@@ -149,7 +151,7 @@ async fn opens_with_everything_it_held(version: &str) {
         .enqueue(request(&main.key, "after the update", 1))
         .unwrap();
     wait_until(|| statuses(&backend).last() == Some(&QueueItemStatus::Completed)).await;
-    assert_eq!(backend.bootstrap().images.len(), 5);
+    assert_eq!(full_images(&backend).len(), 5);
     backend.shutdown();
 }
 

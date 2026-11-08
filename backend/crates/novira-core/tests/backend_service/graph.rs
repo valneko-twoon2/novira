@@ -65,7 +65,7 @@ async fn graph_jobs_resolve_models_and_read_pictures_before_the_engine_runs() {
     assert_eq!(g.images.len(), 1);
     assert_eq!(g.images[0].0, photo.name);
     assert!(image::load_from_memory(&g.images[0].1).is_ok());
-    let saved = backend.bootstrap().images;
+    let saved = full_images(&backend);
     assert!(saved.iter().any(|i| i.workflow.is_some()
         && i.metadata
             .as_ref()
@@ -102,7 +102,7 @@ async fn a_graph_that_saves_sound_or_video_lands_in_the_gallery_as_that() {
         .unwrap();
     backend.enqueue(graph_of("SaveVideo", "video")).unwrap();
     wait_until(|| statuses(&backend) == vec![QueueItemStatus::Completed; 2]).await;
-    let saved = backend.bootstrap().images;
+    let saved = full_images(&backend);
     let of = |kind: MediaType| saved.iter().find(|i| i.media_type == kind);
     let sound = of(MediaType::Audio).expect("the sound is in the gallery");
     assert!(sound.name.ends_with(".flac"), "{}", sound.name);
@@ -201,7 +201,7 @@ async fn a_helper_job_keeps_its_picture_hidden_from_the_gallery() {
     );
     backend.enqueue(req).unwrap();
     wait_until(|| statuses(&backend) == vec![QueueItemStatus::Completed]).await;
-    let images = backend.bootstrap().images;
+    let images = full_images(&backend);
     assert_eq!(images.len(), 1);
     assert!(images[0].is_intermediate, "a helper result is not shown");
 }

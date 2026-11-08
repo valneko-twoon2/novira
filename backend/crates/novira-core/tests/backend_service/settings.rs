@@ -224,6 +224,65 @@ async fn the_screen_state_is_shared_through_the_database_and_the_backends_wins()
 }
 
 #[tokio::test]
+async fn a_patch_of_the_screen_state_changes_only_its_keys_and_is_announced() {
+    let dir = tempfile::tempdir().unwrap();
+    let (backend, events) = open(dir.path(), Arc::new(FakeEngine::default()));
+    let state = |backend: &novira_core::Backend| -> serde_json::Value {
+        serde_json::from_str(&backend.adopt_ui_state(None).unwrap().unwrap()).unwrap()
+    };
+    backend
+        .save_ui_state(r#"{"novira.a":"1","novira.b":"2","novira.c":"3"}"#, None)
+        .unwrap();
+    // A key put over, a key added and a key removed; the key it does not name stays as it is.
+    backend
+        .patch_ui_state(
+            r#"{"novira.a":"one","novira.d":"4"}"#,
+            &["novira.b".to_string(), "novira.never".to_string()],
+            Some("page-A"),
+        )
+        .unwrap();
+    assert_eq!(
+        state(&backend),
+        serde_json::json!({"novira.a":"one","novira.c":"3","novira.d":"4"})
+    );
+    // It is announced like a save, with the saver's id.
+    let last = events
+        .lock()
+        .unwrap()
+        .iter()
+        .rev()
+        .find_map(|e| match e {
+            BackendEvent::UiStateChanged { origin, .. } => Some(origin.clone()),
+            _ => None,
+        })
+        .unwrap();
+    assert_eq!(last, "page-A");
+    // A patch on a backend with no state yet makes the state.
+    let fresh = tempfile::tempdir().unwrap();
+    let (other, _) = open(fresh.path(), Arc::new(FakeEngine::default()));
+    other
+        .patch_ui_state(r#"{"novira.a":"1"}"#, &[], None)
+        .unwrap();
+    assert_eq!(state(&other), serde_json::json!({"novira.a":"1"}));
+    // The same checks as a save: only `novira.*` keys with text values, not too long a key, not too large a state.
+    for bad in ["[1]", "not json", r#"{"other":"x"}"#, r#"{"novira.a":1}"#] {
+        assert!(backend.patch_ui_state(bad, &[], None).is_err(), "{bad}");
+    }
+    let long_key = format!(r#"{{"novira.{}":"x"}}"#, "k".repeat(300));
+    assert!(backend.patch_ui_state(&long_key, &[], None).is_err());
+    let nearly = format!(
+        r#"{{"novira.x":"{}"}}"#,
+        "a".repeat(novira_core::service::ui_state::MAX_UI_STATE_BYTES - 100)
+    );
+    backend.patch_ui_state(&nearly, &[], None).unwrap();
+    // The patch fits alone and not over what is stored: refused, and the stored state stays.
+    let before = backend.adopt_ui_state(None).unwrap();
+    let more = format!(r#"{{"novira.y":"{}"}}"#, "b".repeat(1000));
+    assert!(backend.patch_ui_state(&more, &[], None).is_err());
+    assert_eq!(backend.adopt_ui_state(None).unwrap(), before);
+}
+
+#[tokio::test]
 async fn the_saved_theme_is_read_for_the_window_frame() {
     let dir = tempfile::tempdir().unwrap();
     let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));

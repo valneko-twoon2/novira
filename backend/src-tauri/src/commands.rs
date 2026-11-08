@@ -638,6 +638,11 @@ pub fn save_canvas(backend: State<'_, Backend>, document: String) -> Res<()> {
 }
 
 #[tauri::command]
+pub fn get_image_details(backend: State<'_, Backend>, names: Vec<String>) -> Res<Vec<ImageDTO>> {
+    guard(|| call::get_image_details(&backend, names))
+}
+
+#[tauri::command]
 pub fn adopt_ui_state(backend: State<'_, Backend>, local: Option<String>) -> Res<Option<String>> {
     guard(|| call::adopt_ui_state(&backend, local))
 }
@@ -647,8 +652,9 @@ pub fn save_ui_state(
     backend: State<'_, Backend>,
     state: String,
     origin: Option<String>,
+    removed: Option<Vec<String>>,
 ) -> Res<()> {
-    guard(|| call::save_ui_state(&backend, state, origin))
+    guard(|| call::save_ui_state(&backend, state, origin, removed))
 }
 
 // Unfinished downloads (Settings → Data) -----------------------------------------

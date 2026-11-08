@@ -48,9 +48,7 @@ async fn video_needs_the_pack_and_is_stored_as_an_mp4_with_a_thumbnail() {
     assert_eq!(job.text_encoder.as_ref().unwrap().folder, "text_encoders");
     assert_eq!(job.vae.as_ref().unwrap().folder, "vae");
 
-    let image = backend
-        .bootstrap()
-        .images
+    let image = full_images(&backend)
         .into_iter()
         .find(|i| i.media_type == MediaType::Video)
         .unwrap();
@@ -72,9 +70,7 @@ async fn a_video_cannot_be_used_as_a_source_image() {
     tokio::spawn(backend.clone().run_worker());
     backend.enqueue(video_request(None)).unwrap();
     wait_until(|| statuses(&backend) == vec![QueueItemStatus::Completed]).await;
-    let video = backend
-        .bootstrap()
-        .images
+    let video = full_images(&backend)
         .into_iter()
         .find(|i| i.media_type == MediaType::Video)
         .unwrap();
@@ -112,7 +108,7 @@ async fn a_logo_of_an_older_version_still_loads_lists_and_opens() {
     drop(backend);
 
     let (backend, _events) = open(dir.path(), engine);
-    let listed = backend.bootstrap().images.into_iter().next().unwrap();
+    let listed = full_images(&backend).into_iter().next().unwrap();
     assert_eq!(listed.name, logo.name);
     assert_eq!(listed.category, ImageCategory::Other);
     assert_eq!(
@@ -171,9 +167,7 @@ async fn music_needs_the_pack_and_is_stored_as_audio_with_a_waveform_thumbnail()
     assert!(job.checkpoint.name.contains("ace_step"));
     assert!(job.vae.is_none() && job.loras.is_empty());
 
-    let image = backend
-        .bootstrap()
-        .images
+    let image = full_images(&backend)
         .into_iter()
         .find(|i| i.media_type == MediaType::Audio)
         .unwrap();
@@ -262,9 +256,7 @@ async fn speech_is_made_by_the_voice_engine_and_stored_as_a_wav() {
 
     backend.enqueue(voice_request("こんにちは")).unwrap();
     wait_until(|| statuses(&backend) == vec![QueueItemStatus::Completed]).await;
-    let image = backend
-        .bootstrap()
-        .images
+    let image = full_images(&backend)
         .into_iter()
         .find(|i| i.media_type == MediaType::Audio)
         .unwrap();

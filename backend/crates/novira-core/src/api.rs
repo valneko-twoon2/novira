@@ -322,6 +322,10 @@ commands! {
     sync restore_images(b, names: Vec<String>) -> Vec<ImageDTO> {
         b.restore_images(&names).map_err(msg)
     }
+    // The whole pictures (with `metadata` and `workflow`) of the names; `bootstrap` sends the gallery without them.
+    sync get_image_details(b, names: Vec<String>) -> Vec<ImageDTO> {
+        Ok(b.image_details(&names))
+    }
     sync enqueue(b, request: EnqueueRequest) -> Vec<QueueItem> {
         b.enqueue(request).map_err(msg)
     }
@@ -549,8 +553,14 @@ commands! {
     }
     // Saves the screen state. The backend checks the size limit and the shape (an object of `novira.*` keys with text) first,
     // then tells the open pages (`ui_state_changed`, carrying `origin`, the saving page's own id).
-    sync save_ui_state(b, state: String, origin: Option<String>) -> () {
-        b.save_ui_state(&state, origin.as_deref()).map_err(msg)
+    // `removed` present (even empty): `state` holds only the keys a page changed, put over the stored state, and `removed` are
+    // dropped from it; absent: `state` replaces the stored state.
+    sync save_ui_state(b, state: String, origin: Option<String>, removed: Option<Vec<String>>) -> () {
+        match removed {
+            Some(removed) => b.patch_ui_state(&state, &removed, origin.as_deref()),
+            None => b.save_ui_state(&state, origin.as_deref()),
+        }
+        .map_err(msg)
     }
     // Unfinished downloads (Settings -> Data): only the files the backend lists can be deleted; the paths the caller
     // sends are matched against that list.
