@@ -55,7 +55,7 @@ Avec [Tailscale](https://tailscale.com/), vous pouvez aussi utiliser novira sur 
 
 ### Activer et enregistrer le téléphone
 
-1. Cliquez sur **{{ui:app.tabs.short.homeLink}}** dans la barre de gauche et ouvrez l'onglet **{{ui:app.lan.tabAway}}**.
+1. Cliquez sur **{{ui:app.tabs.short.homeLink}}** dans la barre de gauche et ouvrez l'onglet **{{ui:app.lan.menuAway}}**.
 2. Activez **{{ui:app.remote.switch}}**. Quand le nom de l'ordinateur sur Tailscale (un nom comme `pc.tail1234.ts.net`) s'affiche, tout est prêt. Si l'ouverture est impossible, la raison s'affiche. Le réglage activé est conservé à la prochaine ouverture de novira.
 3. Activez Tailscale sur le téléphone, puis scannez le code QR qui s'affiche quand vous cliquez sur **{{ui:app.remote.enrol}}**. L'enregistrement ne peut se faire que chez vous (car il faut l'autoriser sur l'ordinateur).
 4. Sur le téléphone, vérifiez le nom et appuyez sur « Commencer l'enregistrement ». Si le numéro de confirmation affiché sur l'ordinateur est identique, cliquez sur **{{ui:app.lan.allow}}**.

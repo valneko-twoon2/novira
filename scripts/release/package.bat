@@ -54,7 +54,7 @@ rem artifacts\server.bat is written here: it starts the server of a release fold
 > artifacts\server.bat echo @echo off
 >> artifacts\server.bat echo rem novira browser server, from the release folder: starts novira-server.exe on the data folder novira.exe opens
 >> artifacts\server.bat echo rem ^(the one chosen in novira, else its default^) with the image engine, and opens the page in the default browser. Ctrl-C stops it.
->> artifacts\server.bat echo rem The server listens on 127.0.0.1 only; the home network ^(a phone on the same Wi-Fi^) opens from the QR item of its page.
+>> artifacts\server.bat echo rem The server listens on 127.0.0.1 only; the home network ^(a phone on the same Wi-Fi^) opens from the network item of its page.
 >> artifacts\server.bat echo rem The address it prints carries this start's token.
 >> artifacts\server.bat echo rem Close novira ^(novira.exe^) first: only one program can hold the data folder.
 >> artifacts\server.bat echo setlocal

@@ -2,7 +2,7 @@
 rem novira browser server launcher: starts only the server (no app window) and opens the page in the default browser.
 rem   scripts\server.bat        build the frontend and the server (npm and cargo only redo what changed), then start with the image engine
 rem   scripts\server.bat fast   start without building
-rem The server listens on 127.0.0.1 only; the home network (a phone on the same Wi-Fi) opens from the QR item of the page
+rem The server listens on 127.0.0.1 only; the home network (a phone on the same Wi-Fi) opens from the network item of the page
 rem it shows. The address it prints carries this start's token. Ctrl-C stops it.
 rem Data stays in novira-data\ in the repository root, the folder the app uses: close novira first (one process per folder).
 setlocal

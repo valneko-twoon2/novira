@@ -1,5 +1,5 @@
 // The home network store: read once, then every few seconds only while something could change without us (it is open, or
-// the popover is), and nothing for a page that has no home network.
+// the dialog is), and nothing for a page that has no home network.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LanApi, LanState, RemoteState } from '@/backend';
 
@@ -76,17 +76,17 @@ describe('the home network store', () => {
     expect(a.state).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps reading while open, faster while the popover is open, and stops when it is closed again', async () => {
+  it('keeps reading while open, faster while the dialog is open, and stops when it is closed again', async () => {
     let open = true;
     const a = api(() => state(open));
     getLanApi.mockResolvedValue(a);
     await useLan.getState().init();
     await vi.advanceTimersByTimeAsync(SLOW_MS * 2);
     expect(a.state).toHaveBeenCalledTimes(3);
-    useLan.getState().setPopoverOpen(true);
+    useLan.getState().setDialogOpen(true);
     await vi.advanceTimersByTimeAsync(FAST_MS * 3);
     expect(a.state.mock.calls.length).toBeGreaterThanOrEqual(6);
-    useLan.getState().setPopoverOpen(false);
+    useLan.getState().setDialogOpen(false);
     open = false;
     await vi.advanceTimersByTimeAsync(SLOW_MS);
     const settled = a.state.mock.calls.length;

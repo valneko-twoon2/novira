@@ -8,7 +8,7 @@ import { useQueue } from '@/state/queue';
 import { useSettings } from '@/state/settings';
 import { NAV, NAV_HOTKEYS, navOf, useUi, type NavName } from '@/state/ui';
 import { Badge, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, Tooltip, withVisibleText } from '@/ui';
-import { HomeLinkButton } from './HomeLinkButton';
+import { NetworkButton } from './NetworkButton';
 
 const ICONS: Record<NavName, ReactNode> = {
   generate: <MagicWand size={22} weight="regular" />,
@@ -86,7 +86,7 @@ export function SideNav() {
         </div>
       </div>
       <div className="sidenav__spacer" />
-      <HomeLinkButton />
+      <NetworkButton />
       {showDevLog && (
         <Tooltip content={t('app.devlog.open')} side="right">
           <button

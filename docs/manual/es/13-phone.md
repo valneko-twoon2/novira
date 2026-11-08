@@ -55,7 +55,7 @@ Con [Tailscale](https://tailscale.com/), un móvil fuera de casa también puede 
 
 ### Activarlo y añadir un móvil
 
-1. Pulse **{{ui:app.tabs.short.homeLink}}** en la barra izquierda y abra la pestaña **{{ui:app.lan.tabAway}}**.
+1. Pulse **{{ui:app.tabs.short.homeLink}}** en la barra izquierda y abra la pestaña **{{ui:app.lan.menuAway}}**.
 2. Active **{{ui:app.remote.switch}}**. Cuando se muestra el nombre de Tailscale del ordenador (como `pc.tail1234.ts.net`), está listo; cuando no se puede abrir, se muestra el motivo. Se queda activado la próxima vez que se inicie novira.
 3. Active Tailscale en el móvil, pulse **{{ui:app.remote.enrol}}** y escanee el código QR. Un móvil solo se añade en casa (el ordenador lo permite).
 4. En el móvil, compruebe el nombre y pulse Iniciar; cuando el número del ordenador sea el mismo, pulse **{{ui:app.lan.allow}}**.

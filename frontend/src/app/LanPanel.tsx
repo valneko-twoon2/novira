@@ -1,7 +1,7 @@
-// What the side bar's QR item shows: the home network of this computer's own server. Pressing the item opens it (and
+// What the side bar's network item shows as "at home": the home network of this computer's own server. Pressing the item opens it (and
 // trusts the network it is on, since pressing is the owner's choice); open, it shows the pairing code with the time left,
 // the phones that ask to pair (with the number the phone shows too), and the paired ones. It has no close button: the
-// popover only hides, and the home network closes by itself when unused. A button opens it again only after a failure.
+// dialog only hides, and the home network closes by itself when unused. A button opens it again only after a failure.
 import { Check, X } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import type { LanApi, LanResult, LanState, PairingCode } from '@/backend';
@@ -48,7 +48,7 @@ export function LanPanel({ api, state }: { api: LanApi; state: LanState }) {
     const made = await api.pairingCode();
     setCode(made ? { code: made, madeAt: Date.now() } : null);
   };
-  // A code is made when the popover opens on an open home network, and a second counts down while one is shown.
+  // A code is made when the dialog opens on an open home network, and a second counts down while one is shown.
   useEffect(() => {
     if (state.open && !code) void newCode();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `newCode` only reads `api`, which does not change here.

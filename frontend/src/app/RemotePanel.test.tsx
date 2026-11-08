@@ -5,12 +5,13 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LanApi } from '@/backend';
 import { createMockLan } from '@/backend/mock/mockLan';
+import { t } from '@/i18n';
 import { resetLan, useLan } from '@/state/lan';
 
 const { getLanApi } = vi.hoisted(() => ({ getLanApi: vi.fn<() => Promise<LanApi | null>>() }));
 vi.mock('@/backend', async (orig) => ({ ...(await orig<typeof import('@/backend')>()), getLanApi }));
 
-const { HomeLinkButton } = await import('./HomeLinkButton');
+const { NetworkButton } = await import('./NetworkButton');
 const { RemotePanel, shortTime } = await import('./RemotePanel');
 
 /** The panel over `lan`, re-rendered from the store as it is read again. */
@@ -110,7 +111,7 @@ describe('RemotePanel', () => {
   });
 });
 
-describe('the QR item with a remote listener', () => {
+describe('the network item with a remote listener', () => {
   beforeEach(() => resetLan());
   afterEach(() => {
     cleanup();
@@ -118,21 +119,37 @@ describe('the QR item with a remote listener', () => {
     getLanApi.mockReset();
   });
 
-  it('has the home and away tabs only when the server has the remote listener', async () => {
-    for (const [remote, tabs] of [
-      ['none', 0],
-      ['off', 2],
-    ] as const) {
-      cleanup();
-      resetLan();
-      getLanApi.mockResolvedValue(createMockLan('open', Date.now, remote));
-      await act(async () => {
-        render(<HomeLinkButton />);
-      });
-      await click(await screen.findByTestId('home-link-open'));
-      // The home tab comes first: the home network's code shows as before.
-      expect(await screen.findByTestId('home-link-code')).not.toBeNull();
-      expect(screen.queryAllByRole('tab')).toHaveLength(tabs);
-    }
+  const mount = async (remote: 'none' | 'off') => {
+    getLanApi.mockResolvedValue(createMockLan('open', Date.now, remote));
+    await act(async () => {
+      render(<NetworkButton />);
+    });
+    return await screen.findByTestId('home-link-open');
+  };
+  const choose = async (name: string) => {
+    fireEvent.keyDown(await screen.findByTestId('home-link-open'), { key: 'Enter' });
+    await click(await screen.findByRole('menuitem', { name }));
+  };
+
+  it('opens the home dialog at once when the server has no remote listener', async () => {
+    await click(await mount('none'));
+    expect(await screen.findByTestId('home-link-code')).not.toBeNull();
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.getByRole('dialog').textContent).toContain(t('app.lan.menuHome'));
+  });
+
+  it('asks home or away first when it has one, and each choice is a dialog of its own', async () => {
+    await mount('off');
+    await choose(t('app.lan.menuHome'));
+    expect(await screen.findByTestId('home-link-code')).not.toBeNull();
+    expect(screen.queryByRole('switch')).toBeNull();
+    expect(screen.getByRole('dialog').textContent).toContain(t('app.lan.menuHome'));
+    await click(screen.getByRole('button', { name: t('common.close') }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await choose(t('app.lan.menuAway'));
+    expect(await screen.findByRole('switch', { name: t('app.remote.switch') })).not.toBeNull();
+    expect(screen.queryByTestId('home-link-code')).toBeNull();
+    expect(screen.getByRole('dialog').textContent).toContain(t('app.lan.menuAway'));
+    expect(screen.queryAllByRole('tab')).toHaveLength(0);
   });
 });

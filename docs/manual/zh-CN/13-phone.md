@@ -55,7 +55,7 @@ novira 用在这台电脑上制作的证书（novira local CA）来加密与手�
 
 ### 打开并注册手机
 
-1. 点击左侧栏的 **{{ui:app.tabs.short.homeLink}}**，打开 **{{ui:app.lan.tabAway}}** 标签页。
+1. 点击左侧栏的 **{{ui:app.tabs.short.homeLink}}**，打开 **{{ui:app.lan.menuAway}}** 标签页。
 2. 打开 **{{ui:app.remote.switch}}**。出现电脑在 Tailscale 中的名称（类似 `pc.tail1234.ts.net` 的名称），就说明准备好了。无法打开时，会显示原因。打开的设置，下次打开 novira 时也会保持。
 3. 打开手机的 Tailscale，扫描点击 **{{ui:app.remote.enrol}}** 后出现的二维码。注册只能在家里进行（因为要在电脑上许可）。
 4. 在手机上确认名称并点击“开始注册”，电脑上出现的确认数字相同的话，点击 **{{ui:app.lan.allow}}**。

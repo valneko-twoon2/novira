@@ -54,7 +54,7 @@
   "app.tabs.short.comic": "Comic",
   "app.views.comic": "Page",
   "app.nav.homeLink": "Open on a phone",
-  "app.tabs.short.homeLink": "QR",
+  "app.tabs.short.homeLink": "Network",
   "app.lan.open": "Open",
   "app.lan.timeLeft": "{time} left",
   "app.lan.expired": "Expired",
@@ -72,8 +72,6 @@
   "app.right.label": "Gallery and agent",
   "app.right.gallery": "Gallery",
   "app.right.assistant": "AI",
-  "app.lan.tabHome": "Home Wi-Fi",
-  "app.lan.tabAway": "Away",
   "app.remote.switch": "Use away from home",
   "app.remote.problem.tailscale_missing": "Tailscale is not installed. Install it on the PC and the phone and sign in with the same account.",
   "app.remote.problem.tailscale_stopped": "Tailscale is off or signed out.",
@@ -95,5 +93,7 @@
   "app.notifications.empty": "No notifications",
   "app.notifications.remove": "Remove this notification",
   "app.notifications.unread.one": "Notifications ({count} unread)",
-  "app.notifications.unread.other": "Notifications ({count} unread)"
+  "app.notifications.unread.other": "Notifications ({count} unread)",
+  "app.lan.menuHome": "At home",
+  "app.lan.menuAway": "Away"
 }

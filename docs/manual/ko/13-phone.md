@@ -55,7 +55,7 @@ Windows가 사용 중인 네트워크를 '퍼블릭'으로 취급하고 있을 �
 
 ### 켜고 스마트폰 등록하기
 
-1. 왼쪽 바의 **{{ui:app.tabs.short.homeLink}}** 버튼을 누르고 **{{ui:app.lan.tabAway}}** 탭을 엽니다.
+1. 왼쪽 바의 **{{ui:app.tabs.short.homeLink}}** 버튼을 누르고 **{{ui:app.lan.menuAway}}** 탭을 엽니다.
 2. **{{ui:app.remote.switch}}** 스위치를 켭니다. PC의 Tailscale 이름(`pc.tail1234.ts.net` 같은 이름)이 나오면 준비가 된 것입니다. 열 수 없을 때는 이유가 나옵니다. 켠 설정은 다음에 novira를 열 때도 이어집니다.
 3. 스마트폰의 Tailscale을 켜고 **{{ui:app.remote.enrol}}** 버튼을 눌러 나온 QR 코드를 읽습니다. 등록은 집에서만 할 수 있습니다(PC에서 허가하기 때문입니다).
 4. 스마트폰에서 이름을 확인하고 '등록 시작'을 누른 다음, PC에 나온 확인 번호가 같으면 **{{ui:app.lan.allow}}** 버튼을 누릅니다.

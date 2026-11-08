@@ -55,7 +55,7 @@ Com o [Tailscale](https://tailscale.com/), também é possível usar o novira do
 
 ### Ativar e registrar o celular
 
-1. Pressione **{{ui:app.tabs.short.homeLink}}**, na barra à esquerda, e abra a aba **{{ui:app.lan.tabAway}}**.
+1. Pressione **{{ui:app.tabs.short.homeLink}}**, na barra à esquerda, e abra a aba **{{ui:app.lan.menuAway}}**.
 2. Ative **{{ui:app.remote.switch}}**. Quando o nome do computador no Tailscale (como `pc.tail1234.ts.net`) aparece, está tudo pronto. Se não for possível abrir, o motivo é exibido. O que foi ativado continua na próxima vez que você abrir o novira.
 3. Ative o Tailscale no celular e leia o código QR que aparece ao pressionar **{{ui:app.remote.enrol}}**. O registro só pode ser feito em casa (porque é autorizado no computador).
 4. No celular, confira o nome e pressione “Iniciar o registro”; se o número de confirmação que aparece no computador for o mesmo, pressione **{{ui:app.lan.allow}}**.

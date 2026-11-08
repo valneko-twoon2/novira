@@ -55,7 +55,7 @@ Mit [Tailscale](https://tailscale.com/) können Sie novira auf Ihrem Computer au
 
 ### Einschalten und das Smartphone registrieren
 
-1. Klicken Sie in der linken Leiste auf **{{ui:app.tabs.short.homeLink}}** und öffnen Sie den Tab **{{ui:app.lan.tabAway}}**.
+1. Klicken Sie in der linken Leiste auf **{{ui:app.tabs.short.homeLink}}** und öffnen Sie den Tab **{{ui:app.lan.menuAway}}**.
 2. Schalten Sie **{{ui:app.remote.switch}}** ein. Erscheint der Tailscale-Name des Computers (ein Name wie `pc.tail1234.ts.net`), ist alles bereit. Lässt er sich nicht öffnen, erscheint der Grund. Die eingeschaltete Einstellung bleibt auch beim nächsten Öffnen von novira erhalten.
 3. Schalten Sie Tailscale auf dem Smartphone ein, klicken Sie auf **{{ui:app.remote.enrol}}** und scannen Sie den erscheinenden QR-Code. Die Registrierung ist nur zu Hause möglich (weil Sie sie am Computer erlauben).
 4. Prüfen Sie auf dem Smartphone den Namen und tippen Sie auf „Registrierung starten“. Stimmt die am Computer erscheinende Bestätigungsnummer überein, klicken Sie auf **{{ui:app.lan.allow}}**.

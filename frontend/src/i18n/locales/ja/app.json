@@ -54,7 +54,7 @@
   "app.tabs.short.comic": "漫画",
   "app.views.comic": "ページ",
   "app.nav.homeLink": "スマホで開く",
-  "app.tabs.short.homeLink": "QR",
+  "app.tabs.short.homeLink": "ネットワーク",
   "app.lan.open": "開く",
   "app.lan.timeLeft": "あと {time}",
   "app.lan.expired": "期限切れ",
@@ -72,8 +72,6 @@
   "app.right.label": "ギャラリーとエージェント",
   "app.right.gallery": "ギャラリー",
   "app.right.assistant": "AI",
-  "app.lan.tabHome": "家の Wi-Fi",
-  "app.lan.tabAway": "外出先",
   "app.remote.switch": "外出先から使う",
   "app.remote.problem.tailscale_missing": "Tailscale が入っていません。PC とスマホに入れて、同じアカウントでログインしてください。",
   "app.remote.problem.tailscale_stopped": "Tailscale がオフか、ログインしていません。",
@@ -95,5 +93,7 @@
   "app.notifications.empty": "通知はありません",
   "app.notifications.remove": "この通知を消す",
   "app.notifications.unread.one": "通知（未読 {count} 件）",
-  "app.notifications.unread.other": "通知（未読 {count} 件）"
+  "app.notifications.unread.other": "通知（未読 {count} 件）",
+  "app.lan.menuHome": "自宅",
+  "app.lan.menuAway": "外出先"
 }

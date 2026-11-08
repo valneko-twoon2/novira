@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-// The prompt for a phone that asks to pair while the popover is closed: one toast per request, with the number, answered
-// from the toast; the popover takes over while it is open; and nothing for a page that has no home network.
+// The prompt for a phone that asks to pair while the dialog is closed: one toast per request, with the number, answered
+// from the toast; the dialog takes over while it is open; and nothing for a page that has no home network.
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LanApi } from '@/backend';
@@ -87,7 +87,7 @@ describe('LanApprovals', () => {
     });
     expect((await lan.state())?.pending.map((p) => p.id)).not.toContain(pending?.id);
     expect(toasts()).toHaveLength(1);
-    // The other one is answered elsewhere (the popover, or the phone gave up): its toast goes.
+    // The other one is answered elsewhere (the dialog, or the phone gave up): its toast goes.
     const [left] = (await lan.state())?.pending ?? [];
     await lan.deny(left?.id ?? '');
     await act(async () => {
@@ -96,18 +96,18 @@ describe('LanApprovals', () => {
     expect(toasts()).toEqual([]);
   });
 
-  it('leaves the requests to the popover while it is open', async () => {
+  it('leaves the requests to the dialog while it is open', async () => {
     const lan = createMockLan('open');
     lan.askToPair('iPhone', '192.168.1.20');
     getLanApi.mockResolvedValue(lan);
     await mount();
     expect(toasts()).toHaveLength(1);
     await act(async () => {
-      useLan.getState().setPopoverOpen(true);
+      useLan.getState().setDialogOpen(true);
     });
     expect(toasts()).toEqual([]);
     await act(async () => {
-      useLan.getState().setPopoverOpen(false);
+      useLan.getState().setDialogOpen(false);
     });
     expect(toasts()).toHaveLength(1);
   });

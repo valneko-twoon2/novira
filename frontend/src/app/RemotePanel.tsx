@@ -1,4 +1,4 @@
-// The "away" tab of the side bar's QR item: the remote listener of this computer's own server, for its phones away from
+// The "away" dialog of the side bar's network item: the remote listener of this computer's own server, for its phones away from
 // home over Tailscale. A switch turns it on or off (kept for the next start); on and not open, it says why (Tailscale
 // missing or off, HTTPS certificates off). Open, a phone is added with a code it scans at home: it asks, this computer
 // allows it after comparing the number, and the phone makes a passkey it signs in with from then on. The phones signed in

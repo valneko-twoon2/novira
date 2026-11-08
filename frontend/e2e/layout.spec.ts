@@ -301,14 +301,14 @@ const SURFACES: Record<string, Surface> = {
     await expect(page.getByTestId('agent-effort-ultra')).toBeVisible();
     await scan('effort');
   },
-  'home network popover, open with the public-network warning': async (page, _locale, scan) => {
+  'home network dialog, open with the public-network warning': async (page, _locale, scan) => {
     await openApp(page, '?lan=public');
     await page.getByTestId('home-link-open').click();
     await expect(page.getByTestId('lan-public')).toBeVisible();
     await expect(page.getByTestId('home-link-code')).toBeVisible();
     await scan('public');
   },
-  'home network popover, open with a phone asking and one paired': async (page, _locale, scan) => {
+  'home network dialog, open with a phone asking and one paired': async (page, _locale, scan) => {
     await openApp(page, '?lan=open');
     await page.getByTestId('home-link-open').click();
     await expect(page.getByTestId('home-link-code')).toBeVisible();
@@ -318,19 +318,19 @@ const SURFACES: Record<string, Surface> = {
     await expect(page.locator('[data-testid^="lan-device-"]')).toHaveCount(1);
     await scan('paired');
   },
-  'home network popover, away tab with a phone asking to enrol, a passkey and the log': async (page, locale, scan) => {
+  'away dialog with a phone asking to enrol, a passkey and the log': async (page, locale, scan) => {
     await openApp(page, '?lan=open&remote=on');
     await page.getByTestId('home-link-open').click();
-    await page.getByRole('tab', { name: msg('app.lan.tabAway', {}, locale) }).click();
+    await page.getByRole('menuitem', { name: msg('app.lan.menuAway', {}, locale) }).click();
     await expect(page.getByTestId('remote-log')).toBeVisible();
     await page.getByTestId('remote-enrol').click();
     await expect(page.locator('[data-testid^="remote-pending-"]')).toHaveCount(1, { timeout: 15_000 });
     await scan('asking');
   },
-  'home network popover, away tab that cannot open': async (page, locale, scan) => {
+  'away dialog that cannot open': async (page, locale, scan) => {
     await openApp(page, '?lan=open&remote=missing');
     await page.getByTestId('home-link-open').click();
-    await page.getByRole('tab', { name: msg('app.lan.tabAway', {}, locale) }).click();
+    await page.getByRole('menuitem', { name: msg('app.lan.menuAway', {}, locale) }).click();
     await page.getByRole('switch', { name: msg('app.remote.switch', {}, locale) }).click();
     await expect(page.getByTestId('remote-problem')).toBeVisible();
     await scan('problem');

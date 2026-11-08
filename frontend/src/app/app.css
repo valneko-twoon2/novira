@@ -156,13 +156,7 @@
   flex: 1;
 }
 
-/* The home network item's popover. The pairing code is dark on light in either theme, as a reader expects. */
-.lan-popover {
-  width: 280px;
-  max-height: 85vh;
-  overflow-y: auto;
-}
-
+/* The network item's dialogs. The pairing code is dark on light in either theme, as a reader expects. */
 .lan {
   display: flex;
   flex-direction: column;

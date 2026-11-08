@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// The side bar's QR item and its popover: absent without a home network, then open or closed, trusting a network once,
+// The side bar's network item and its dialog: absent without a home network, then open or closed, trusting a network once,
 // the pairing code with its countdown, and approving, refusing and disconnecting phones (against the mock's home network).
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -11,13 +11,13 @@ import { useToasts } from '@/state/toasts';
 const { getLanApi } = vi.hoisted(() => ({ getLanApi: vi.fn<() => Promise<LanApi | null>>() }));
 vi.mock('@/backend', async (orig) => ({ ...(await orig<typeof import('@/backend')>()), getLanApi }));
 
-const { HomeLinkButton } = await import('./HomeLinkButton');
+const { NetworkButton } = await import('./NetworkButton');
 const { clock, groupedNumber, qrPath } = await import('./LanPanel');
 
 async function show(lan: LanApi | null) {
   getLanApi.mockResolvedValue(lan);
   await act(async () => {
-    render(<HomeLinkButton />);
+    render(<NetworkButton />);
   });
 }
 
@@ -48,7 +48,7 @@ describe('the pieces of the panel', () => {
   });
 });
 
-describe('HomeLinkButton', () => {
+describe('NetworkButton', () => {
   beforeEach(() => {
     resetLan();
     useToasts.setState({ toasts: [] });

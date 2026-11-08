@@ -4,7 +4,7 @@ You can use novira on your computer from the browser of a phone on your home Wi-
 
 ## Connecting
 
-1. In the novira app, press **{{ui:app.tabs.short.homeLink}}** in the bar on the left. The network you are on is remembered as your home network, and the door opens.
+1. In the novira app, press **{{ui:app.tabs.short.homeLink}}** in the bar on the left (if a menu opens, choose **{{ui:app.lan.menuHome}}**). The network you are on is remembered as your home network, and the door opens.
 2. A QR code appears. Scan it with the camera of a phone on the same Wi-Fi as the computer, and open the address it finds. If a QR reader app opened it, you may open it again in Safari or Chrome before you connect. The code expires after 2 minutes and works for one phone only. When it runs out, press **{{ui:app.lan.newCode}}**.
 3. On a phone you have not used before, the browser shows a certificate warning. Follow "Installing the certificate" below to install the certificate.
 4. On the phone, check the name of the device and press "Connect". The phone shows a 6-digit code. The same number appears on the computer, in the **{{ui:app.tabs.short.homeLink}}** screen (or as a notice in the corner of the screen when it is not open); if they match, press **{{ui:app.lan.allow}}**. novira opens on the phone.
@@ -55,7 +55,7 @@ With [Tailscale](https://tailscale.com/), a phone away from home can use novira 
 
 ### Turn it on and add a phone
 
-1. Press **{{ui:app.tabs.short.homeLink}}** in the left bar and open the **{{ui:app.lan.tabAway}}** tab.
+1. Press **{{ui:app.tabs.short.homeLink}}** in the left bar and choose **{{ui:app.lan.menuAway}}** from the menu.
 2. Turn on **{{ui:app.remote.switch}}**. When the computer's Tailscale name (like `pc.tail1234.ts.net`) shows, it is ready; when it cannot open, the reason shows. It stays on the next time novira starts.
 3. Turn Tailscale on on the phone, press **{{ui:app.remote.enrol}}** and scan the QR code. A phone is added only at home (the computer allows it).
 4. On the phone, check the name and press Start; when the number on the computer is the same, press **{{ui:app.lan.allow}}**.

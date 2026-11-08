@@ -55,7 +55,7 @@ Windows 把使用中的網路視為「公用」時，畫面上會出現提醒。
 
 ### 開啟並登錄手機
 
-1. 按下左側列的 **{{ui:app.tabs.short.homeLink}}**，開啟 **{{ui:app.lan.tabAway}}** 分頁。
+1. 按下左側列的 **{{ui:app.tabs.short.homeLink}}**，開啟 **{{ui:app.lan.menuAway}}** 分頁。
 2. 開啟 **{{ui:app.remote.switch}}**。顯示電腦在 Tailscale 中的名稱（像 `pc.tail1234.ts.net` 的名稱）就表示準備好了。無法開啟時會顯示原因。開啟的設定，下次開啟 novira 時也會持續。
 3. 開啟手機的 Tailscale，掃描按下 **{{ui:app.remote.enrol}}** 後出現的 QR code。登錄只能在家中進行（因為要在電腦上允許）。
 4. 在手機上確認名稱並按下「開始登錄」，電腦上出現的確認碼一致的話，請按 **{{ui:app.lan.allow}}**。

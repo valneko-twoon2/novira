@@ -1,6 +1,6 @@
-// The home network item of the side bar against the mock's pretend home network (`?lan`): absent by default, trusting the
-// network once, opening, the pairing code, a phone asking (in the popover, and as a prompt when the popover is closed),
-// and none of it on a phone-sized window.
+// The network item of the side bar against the mock's pretend home network (`?lan`): absent by default, trusting the
+// network once, opening, the pairing code, a phone asking (in the dialog, and as a prompt when the dialog is closed), the
+// menu that chooses between home and away, and none of it on a phone-sized window.
 import { expect, msg, openApp, test } from './fixtures';
 
 test('the item is absent unless the page has a home network of its own', async ({ page }) => {
@@ -15,7 +15,7 @@ test('pressing the item opens a closed home network, trusting it, and shows its 
   await expect(page.getByTestId('lan-expires')).toBeVisible();
 });
 
-test('a phone that asks is allowed in the popover, listed, and disconnected', async ({ page }) => {
+test('a phone that asks is allowed in the dialog, listed, and disconnected', async ({ page }) => {
   await openApp(page, '?lan=open');
   await page.getByTestId('home-link-open').click();
   await expect(page.getByTestId('home-link-code')).toBeVisible();
@@ -32,9 +32,9 @@ test('a phone that asks is allowed in the popover, listed, and disconnected', as
   await expect(device).toHaveCount(0);
 });
 
-test('a phone that asks while the popover is closed gets a prompt on this page', async ({ page }) => {
+test('a phone that asks while the dialog is closed gets a prompt on this page', async ({ page }) => {
   await openApp(page, '?lan=open');
-  // A code is made and the popover closed; the phone asks.
+  // A code is made and the dialog closed; the phone asks.
   await page.getByTestId('home-link-open').click();
   await expect(page.getByTestId('home-link-code')).toBeVisible();
   await page.keyboard.press('Escape');
@@ -49,12 +49,16 @@ test('a phone that asks while the popover is closed gets a prompt on this page',
   await expect(page.locator('[data-testid^="lan-device-"]')).toContainText('iPhone');
 });
 
-test('the away tab turns the remote listener on, adds a phone with its passkey, and removes it', async ({ page }) => {
+test('the away dialog turns the remote listener on, adds a phone with its passkey, and removes it', async ({ page }) => {
   await openApp(page, '?lan=open&remote');
+  // With a remote listener the item asks which one first: each choice is a dialog of its own.
   await page.getByTestId('home-link-open').click();
-  // The home tab comes first, as before.
+  await page.getByRole('menuitem', { name: msg('app.lan.menuHome') }).click();
   await expect(page.getByTestId('home-link-code')).toBeVisible();
-  await page.getByRole('tab', { name: msg('app.lan.tabAway') }).click();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('lan-panel')).toHaveCount(0);
+  await page.getByTestId('home-link-open').click();
+  await page.getByRole('menuitem', { name: msg('app.lan.menuAway') }).click();
   await page.getByRole('switch', { name: msg('app.remote.switch') }).click();
   await expect(page.getByTestId('remote-name')).toHaveText('pc.tail1234.ts.net');
   await page.getByTestId('remote-enrol').click();
@@ -75,10 +79,10 @@ test('the away tab turns the remote listener on, adds a phone with its passkey, 
   await expect(passkey).toHaveCount(0);
 });
 
-test('the away tab says why the remote listener cannot open', async ({ page }) => {
+test('the away dialog says why the remote listener cannot open', async ({ page }) => {
   await openApp(page, '?lan=open&remote=missing');
   await page.getByTestId('home-link-open').click();
-  await page.getByRole('tab', { name: msg('app.lan.tabAway') }).click();
+  await page.getByRole('menuitem', { name: msg('app.lan.menuAway') }).click();
   await page.getByRole('switch', { name: msg('app.remote.switch') }).click();
   await expect(page.getByTestId('remote-problem')).toHaveText(msg('app.remote.problem.tailscale_missing'));
   await expect(page.getByTestId('remote-enrol')).toHaveCount(0);
