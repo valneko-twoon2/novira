@@ -25,7 +25,7 @@ export function QueueControls() {
     toast({ status: 'success', title: tCount('queue.toast.pruned', finished) });
   };
   const cancelPending = async () => {
-    for (const item of pending) await backend.cancelQueueItem(item.id);
+    await backend.cancelPending();
     toast({ status: 'info', title: tCount('queue.toast.canceledPending', pending.length) });
   };
 

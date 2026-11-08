@@ -5,6 +5,7 @@
 import type { BackendClient } from '../client';
 import { DEFAULT_WORKFLOWS } from '../defaultWorkflows';
 import { downloadBlob, downloadUrl } from '../download';
+import { releaseOneShotUrl, storeOnce } from '../oneShotUrl';
 import { perf } from '../perf';
 import type {
   AgentEndpointInput,
@@ -254,6 +255,8 @@ export class HttpBackend implements BackendClient {
 
   async saveImageFromUrl(url: string, opts: ImageOptions) {
     const blob = await (await fetch(url)).blob();
+    // A URL made for this hand-over is not needed any more (see oneShotUrl.ts).
+    releaseOneShotUrl(url);
     return this.upload(blob, { ...opts, category: opts.category ?? 'general' });
   }
 
@@ -277,7 +280,7 @@ export class HttpBackend implements BackendClient {
   /** A picture rendered in the page (canvas flatten, mask, blob) stored as a hidden image the backend can read. */
   private async stored(url: string, category: ImageDTO['category']): Promise<string> {
     if (isServerImageUrl(url)) return url;
-    return (await this.saveImageFromUrl(url, { boardId: null, isIntermediate: true, category })).url;
+    return storeOnce(url, category, async () => (await this.saveImageFromUrl(url, { boardId: null, isIntermediate: true, category })).url);
   }
 
   async enqueue(request: EnqueueRequest): Promise<QueueItem[]> {
@@ -317,6 +320,9 @@ export class HttpBackend implements BackendClient {
 
   cancelBatch(batchId: string) {
     return this.call<void>('cancel_batch', { batchId });
+  }
+  cancelPending() {
+    return this.call<void>('cancel_pending', {});
   }
 
   clearQueue() {

@@ -317,6 +317,7 @@ pub fn run() {
             commands::enqueue,
             commands::cancel_queue_item,
             commands::cancel_batch,
+            commands::cancel_pending,
             commands::clear_queue,
             commands::prune_queue,
             commands::pause_processor,

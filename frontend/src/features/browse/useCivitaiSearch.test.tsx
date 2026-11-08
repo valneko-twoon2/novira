@@ -2,7 +2,7 @@
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { backend, type CivitaiModel, type CivitaiSearchParams, type CivitaiSearchResult } from '@/backend';
-import { useCivitaiSearch } from './useCivitaiSearch';
+import { FRESH_MS, useCivitaiSearch } from './useCivitaiSearch';
 
 type Params = Omit<CivitaiSearchParams, 'cursor'>;
 
@@ -80,11 +80,13 @@ describe('useCivitaiSearch', () => {
     expect(ids(result.current.items)).toEqual(['new']);
   });
 
-  it('shows a search seen before at once, and still refreshes it', async () => {
+  it('shows a search seen long ago at once, and refreshes it', async () => {
+    const now = vi.spyOn(Date, 'now').mockReturnValue(1_000_000);
     const search = vi.spyOn(backend, 'searchCivitai').mockResolvedValue(page(['a'], 'c2'));
     const first = renderHook(() => useCivitaiSearch(params('cached')));
     await waitFor(() => expect(first.result.current.status).toBe('ready'));
     first.unmount();
+    now.mockReturnValue(1_000_000 + FRESH_MS + 1);
     let resolveSecond!: (r: CivitaiSearchResult) => void;
     search.mockImplementationOnce(() => new Promise((resolve) => (resolveSecond = resolve)));
     const second = renderHook(() => useCivitaiSearch(params('cached')));
@@ -93,6 +95,30 @@ describe('useCivitaiSearch', () => {
     expect(second.result.current.hasMore).toBe(true);
     await act(async () => resolveSecond(page(['fresh'], null)));
     expect(ids(second.result.current.items)).toEqual(['fresh']);
+  });
+
+  it('does not search again when the tab is opened again within a few minutes, and a retry still does', async () => {
+    const now = vi.spyOn(Date, 'now').mockReturnValue(5_000_000);
+    const search = vi.spyOn(backend, 'searchCivitai').mockResolvedValue(page(['a'], 'c2'));
+    const first = renderHook(() => useCivitaiSearch(params('reopened')));
+    await waitFor(() => expect(first.result.current.status).toBe('ready'));
+    // The first search and the page asked for ahead of it.
+    expect(search).toHaveBeenCalledTimes(2);
+    first.unmount();
+    now.mockReturnValue(5_000_000 + FRESH_MS - 1);
+    const second = renderHook(() => useCivitaiSearch(params('reopened')));
+    expect(second.result.current.status).toBe('ready');
+    expect(ids(second.result.current.items)).toEqual(['a']);
+    expect(second.result.current.hasMore).toBe(true);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(search).toHaveBeenCalledTimes(2);
+    // More pages are still asked for when wanted, from the saved cursor.
+    search.mockResolvedValueOnce(page(['b'], null));
+    act(() => second.result.current.loadMore());
+    await waitFor(() => expect(ids(second.result.current.items)).toEqual(['a', 'b']));
+    expect(search.mock.calls.at(-1)![0].cursor).toBe('c2');
+    act(() => second.result.current.retry());
+    await waitFor(() => expect(search.mock.calls.some((c, i) => i >= 3 && c[0].cursor === null)).toBe(true));
   });
 
   it('asks for the next page as soon as a page arrives, and uses that answer when more is wanted', async () => {

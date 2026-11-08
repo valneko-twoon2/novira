@@ -5,6 +5,7 @@ import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import type { BackendClient } from '../client';
 import { DEFAULT_WORKFLOWS } from '../defaultWorkflows';
+import { releaseOneShotUrl, storeOnce } from '../oneShotUrl';
 import { perf } from '../perf';
 import type {
   AgentEndpointInput,
@@ -207,6 +208,8 @@ export class TauriBackend implements BackendClient {
 
   async saveImageFromUrl(url: string, opts: ImageOptions) {
     const blob = await (await fetch(url)).blob();
+    // A URL made for this hand-over is not needed any more (see oneShotUrl.ts).
+    releaseOneShotUrl(url);
     return this.upload(blob, { ...opts, category: opts.category ?? 'general' });
   }
 
@@ -230,7 +233,7 @@ export class TauriBackend implements BackendClient {
   /** A picture rendered in the page (canvas flatten, mask, blob) stored as a hidden image the backend can read. */
   private async stored(url: string, category: ImageDTO['category']): Promise<string> {
     if (isBackendImageUrl(url)) return url;
-    return (await this.saveImageFromUrl(url, { boardId: null, isIntermediate: true, category })).url;
+    return storeOnce(url, category, async () => (await this.saveImageFromUrl(url, { boardId: null, isIntermediate: true, category })).url);
   }
 
   async enqueue(request: EnqueueRequest): Promise<QueueItem[]> {
@@ -258,6 +261,9 @@ export class TauriBackend implements BackendClient {
 
   cancelBatch(batchId: string) {
     return invoke<void>('cancel_batch', { batchId });
+  }
+  cancelPending() {
+    return invoke<void>('cancel_pending');
   }
 
   clearQueue() {

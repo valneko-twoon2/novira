@@ -97,6 +97,7 @@ export { ENGINE_SAMPLERS, ENGINE_SCHEDULES } from './engineSampling';
 export { runningSampling, SCHEDULER_SAMPLING } from './schedulerSampling';
 export { canOpenNewWindow, openInNewWindow } from './openWindow';
 export { readImageBlob } from './imageBlob';
+export { holdLayerUrls, layerUrl, layerUrlCount, oneShotUrl, oneShotUrlCount, releaseOneShotUrl } from './oneShotUrl';
 export type { LanApi, LanDevice, LanFailure, LanPending, LanResult, LanState, PairingCode, RemoteLogLine, RemotePasskey, RemoteProblem, RemoteState } from './http/lan';
 export { perf } from './perf';
 export { randomSeed, batchSeed, mulberry32, MAX_SEED } from './mock/random';

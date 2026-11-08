@@ -385,6 +385,17 @@ describe('mock backend: queue control', () => {
     expect(backend.queueStatus()).toMatchObject({ canceled: 3, total: 3 });
   });
 
+  it('cancels every waiting item in one call and leaves the running one', async () => {
+    const { backend } = await start();
+    backend.setStepDelay(20);
+    const running = await backend.enqueue(request({}, { steps: 50 }));
+    await vi.waitFor(() => expect(backend.listQueue()[0]!.status).toBe('in_progress'));
+    await backend.enqueue(request({ iterations: 3 }));
+    await backend.cancelPending();
+    expect(backend.listQueue().map((q) => q.status)).toEqual(['in_progress', 'canceled', 'canceled', 'canceled']);
+    await backend.cancelQueueItem(running[0]!.id);
+  });
+
   it('cancels the running item without producing an image', async () => {
     const { backend, events } = await start();
     backend.setStepDelay(20);

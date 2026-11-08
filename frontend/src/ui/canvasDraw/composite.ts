@@ -1,4 +1,5 @@
 // Offscreen compositing of canvas layers: flatten them inside a rect, their content bounds, export to blobs and URLs.
+import { layerUrl, oneShotUrl } from '@/backend';
 import type { CanvasEntity, FilterPreview, Rect } from '@/state/canvas';
 import { objectsBounds } from './bounds';
 import { blendOperation, createCanvas, renderEntity } from './entityRender';
@@ -55,6 +56,12 @@ export function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png'));
 }
 
+/** A URL for a picture that goes to the backend once (saved, or the input of a job): the backend revokes it after reading it. */
+export async function canvasToOneShotUrl(canvas: HTMLCanvasElement): Promise<string> {
+  return oneShotUrl(await canvasToBlob(canvas));
+}
+
+/** A URL for a picture that becomes (part of) a layer: the canvas store revokes it when no layer, undo step or preview shows it. */
 export async function canvasToUrl(canvas: HTMLCanvasElement): Promise<string> {
-  return URL.createObjectURL(await canvasToBlob(canvas));
+  return layerUrl(await canvasToBlob(canvas));
 }

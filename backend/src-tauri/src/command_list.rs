@@ -11,6 +11,7 @@ pub const COMMANDS: &[&str] = &[
     "enqueue",
     "cancel_queue_item",
     "cancel_batch",
+    "cancel_pending",
     "clear_queue",
     "prune_queue",
     "pause_processor",

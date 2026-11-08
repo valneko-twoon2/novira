@@ -243,6 +243,27 @@ impl Backend {
         }
     }
 
+    /// Cancels every item that is still waiting, in one step under the transition lock (the running one is left alone, and an
+    /// item the worker takes meanwhile is not cancelled half way: the move only leaves Pending).
+    pub fn cancel_pending(&self) {
+        let _transition = self.transition();
+        let ids: Vec<u64> = self
+            .state()
+            .queue
+            .iter()
+            .filter(|q| q.status == QueueItemStatus::Pending)
+            .map(|q| q.id)
+            .collect();
+        for id in ids {
+            self.move_item_locked(
+                id,
+                &[QueueItemStatus::Pending],
+                QueueItemStatus::Canceled,
+                |q| q.completed_at = Some(now()),
+            );
+        }
+    }
+
     pub fn clear_queue(&self) -> Result<()> {
         let _transition = self.transition();
         let mut s = self.state();

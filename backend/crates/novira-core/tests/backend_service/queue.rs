@@ -365,6 +365,30 @@ async fn cancel_touches_only_active_items_and_a_batch_cancels_together() {
 }
 
 #[tokio::test]
+async fn cancel_pending_cancels_every_waiting_item_in_one_call_and_nothing_else() {
+    let dir = tempfile::tempdir().unwrap();
+    let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
+    backend.pause_processor();
+    let done = backend.enqueue(request("m", "done", 1)).unwrap();
+    backend.cancel_queue_item(done[0].id);
+    backend.enqueue(request("m", "a", 3)).unwrap();
+    let before = backend.queue_snapshot().items[0].completed_at;
+    backend.cancel_pending();
+    assert_eq!(
+        statuses(&backend),
+        [QueueItemStatus::Canceled; 4],
+        "every waiting item is canceled"
+    );
+    let items = backend.queue_snapshot().items;
+    assert!(items[1..].iter().all(|q| q.completed_at.is_some()));
+    // The item that was already canceled keeps its time, and a second call changes nothing.
+    assert_eq!(items[0].completed_at, before);
+    backend.cancel_pending();
+    assert_eq!(backend.queue_snapshot().items[0].completed_at, before);
+    assert_eq!(backend.queue_snapshot().status.canceled, 4);
+}
+
+#[tokio::test]
 async fn pruned_and_cleared_items_stay_gone_after_a_restart() {
     let dir = tempfile::tempdir().unwrap();
     let (backend, events) = open(dir.path(), Arc::new(FakeEngine::default()));
