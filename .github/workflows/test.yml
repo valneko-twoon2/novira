@@ -1,7 +1,7 @@
 # The checks GitHub runs on every push to a branch (tags run release.yml instead). It starts with the checks that read the
 # sources and need no build, no browser and no Windows: types, lint, line ends, the product name, the docs and UI
 # references, the term list, the changelog and the Rust formatting, then vitest, clippy, cargo test and the Playwright flows and phone layouts, and the mock against the real backend. The others
-# (visual, layout scan) are added one by one once they are seen to pass on the runner (docs/design/ci.md).
+# (visual, layout scan) are added one by one once they are seen to pass on the runner (docs/design/01-app/04-release/02-ci.md).
 # Only actions of GitHub's own (actions/*) are used; nothing here has a secret or write access.
 name: test
 

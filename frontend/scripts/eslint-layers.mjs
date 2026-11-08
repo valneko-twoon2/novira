@@ -1,4 +1,4 @@
-// ESLint rule for the frontend's layer boundaries (.claude/rules/frontend.md, docs/architecture/frontend.md).
+// ESLint rule for the frontend's layer boundaries (.claude/rules/frontend.md, docs/architecture/01-frontend.md).
 //
 // Layers, from the bottom: backend/ -> state/ -> ui/ -> features/<name>/ -> app/. A file may import its own layer and
 // the layers below it; i18n/ and theme/ are leaves that import none of the layers. A feature never imports another

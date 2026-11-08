@@ -6,16 +6,16 @@
 
 | 層 | 対象 | ページ |
 |---|---|---|
-| UI | フロントエンドの画面と部品 | [ui.md](ui.md) |
-| Logic | フロントエンドの状態と純粋なロジック（ストア、関数） | [logic.md](logic.md) |
-| Mock | ブラウザで動くメモリ上のモックバックエンド | [mock.md](mock.md) |
-| Wire | フロントエンドとバックエンドの間の契約 | [wire.md](wire.md) |
-| Core | バックエンド本体（`novira-core`） | [core.md](core.md) |
-| Server | ブラウザ用サーバー（`novira-server`） | [server.md](server.md) |
-| Shell | Tauri のシェル（`src-tauri`） | [shell.md](shell.md) |
-| Build | ビルドと配布 | [build.md](build.md) |
-| App | 本物のエンジンを含むアプリ全体 | [app.md](app.md) |
-| Repo | リポジトリの道具、文書、規則 | [repo.md](repo.md) |
+| UI | フロントエンドの画面と部品 | [01-ui.md](01-ui.md) |
+| Logic | フロントエンドの状態と純粋なロジック（ストア、関数） | [02-logic.md](02-logic.md) |
+| Mock | ブラウザで動くメモリ上のモックバックエンド | [03-mock.md](03-mock.md) |
+| Wire | フロントエンドとバックエンドの間の契約 | [04-wire.md](04-wire.md) |
+| Core | バックエンド本体（`novira-core`） | [05-core.md](05-core.md) |
+| Server | ブラウザ用サーバー（`novira-server`） | [06-server.md](06-server.md) |
+| Shell | Tauri のシェル（`src-tauri`） | [07-shell.md](07-shell.md) |
+| Build | ビルドと配布 | [08-build.md](08-build.md) |
+| App | 本物のエンジンを含むアプリ全体 | [09-app.md](09-app.md) |
+| Repo | リポジトリの道具、文書、規則 | [10-repo.md](10-repo.md) |
 
 各ページの表は、その層を主な対象とする手法の行を持つ。複数の層にまたがる手法は、主な層のページに行があり、ほかの層のページでは末尾の「この層にも関わる手法」から探せる。
 
@@ -35,21 +35,21 @@ CI のジョブは、`.github/workflows/test.yml`（`static`、`rust-format`、`
 
 | 手法 | 層 |
 |---|---|
-| 単体・部品テスト / Unit, component | [Logic](logic.md)、[UI](ui.md)、[Core](core.md)、[Mock](mock.md)、[Shell](shell.md) |
-| 結合テスト / Integration | [Core](core.md)、[Server](server.md) |
-| 契約・ノード定義の契約 / Contract, node-definition contract | [Wire](wire.md)、[Core](core.md) |
-| スナップショット / Snapshot | [Logic](logic.md)、[Core](core.md) |
-| 性質ベース・モデルベース・状態遷移 / Property-based, model-based, state transition | [Logic](logic.md)、[Core](core.md) |
-| ファジング（バイト列・コマンド・リクエスト） / Fuzzing (bytes, commands, requests) | [Core](core.md)、[Server](server.md) |
-| 差分テスト / Differential | [Mock](mock.md)、[Wire](wire.md) |
-| クラッシュ時の整合性・旧データ / Crash consistency, old data | [Core](core.md)、[Build](build.md) |
-| E2E・モンキー・ブラウザー横断・見た目・レイアウト・アクセシビリティ / End-to-end, monkey, cross-browser, visual, layout, accessibility | [UI](ui.md) |
-| リリース確認・依存関係の監査 / Release smoke, dependency audit | [Build](build.md) |
-| セキュリティ・秘密情報 / Security, secret scan | [Shell](shell.md)、[Core](core.md) |
-| 実エンジン・実アプリ・モデル一括確認・性能の測定 / Real-engine, real-app, models sweep, performance | [App](app.md) |
-| 型・lint・文書・テストの衛生・影響分析・カバレッジ / Type, lint, docs, test hygiene, impact analysis, coverage | [Repo](repo.md) |
-| メタモルフィック / Metamorphic | [Core](core.md) |
-| ミューテーション / Mutation | [Core](core.md) |
+| 単体・部品テスト / Unit, component | [Logic](02-logic.md)、[UI](01-ui.md)、[Core](05-core.md)、[Mock](03-mock.md)、[Shell](07-shell.md) |
+| 結合テスト / Integration | [Core](05-core.md)、[Server](06-server.md) |
+| 契約・ノード定義の契約 / Contract, node-definition contract | [Wire](04-wire.md)、[Core](05-core.md) |
+| スナップショット / Snapshot | [Logic](02-logic.md)、[Core](05-core.md) |
+| 性質ベース・モデルベース・状態遷移 / Property-based, model-based, state transition | [Logic](02-logic.md)、[Core](05-core.md) |
+| ファジング（バイト列・コマンド・リクエスト） / Fuzzing (bytes, commands, requests) | [Core](05-core.md)、[Server](06-server.md) |
+| 差分テスト / Differential | [Mock](03-mock.md)、[Wire](04-wire.md) |
+| クラッシュ時の整合性・旧データ / Crash consistency, old data | [Core](05-core.md)、[Build](08-build.md) |
+| E2E・モンキー・ブラウザー横断・見た目・レイアウト・アクセシビリティ / End-to-end, monkey, cross-browser, visual, layout, accessibility | [UI](01-ui.md) |
+| リリース確認・依存関係の監査 / Release smoke, dependency audit | [Build](08-build.md) |
+| セキュリティ・秘密情報 / Security, secret scan | [Shell](07-shell.md)、[Core](05-core.md) |
+| 実エンジン・実アプリ・モデル一括確認・性能の測定 / Real-engine, real-app, models sweep, performance | [App](09-app.md) |
+| 型・lint・文書・テストの衛生・影響分析・カバレッジ / Type, lint, docs, test hygiene, impact analysis, coverage | [Repo](10-repo.md) |
+| メタモルフィック / Metamorphic | [Core](05-core.md) |
+| ミューテーション / Mutation | [Core](05-core.md) |
 
 ## 未実装
 

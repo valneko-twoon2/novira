@@ -47,12 +47,12 @@ describe('what counts as a reference', () => {
         '4 message media.tab.…',
       ].sort(),
     );
-    expect(referencesIn('docs/design/navigation.md', 'the comic icon (test id `media-comic`)', AREAS)).toHaveLength(1);
+    expect(referencesIn('docs/design/01-app/02-screens/01-navigation.md', 'the comic icon (test id `media-comic`)', AREAS)).toHaveLength(1);
     expect(referencesIn('docs/design/x.ts', 'the comic icon (test id `media-comic`)', AREAS)).toHaveLength(0);
   });
 
   it('looks at the e2e specs, the frontend scripts, the tools, the docs and the skills, not at the app or itself', () => {
-    for (const path of ['frontend/e2e/comic.spec.ts', 'frontend/scripts/manual/scenes.mjs', 'scripts/tools/models-sweep-app.mjs', 'docs/design/navigation.md', '.claude/skills/verify-real-app/SKILL.md', 'AGENTS.md'])
+    for (const path of ['frontend/e2e/comic.spec.ts', 'frontend/scripts/manual/scenes.mjs', 'scripts/tools/models-sweep-app.mjs', 'docs/design/01-app/02-screens/01-navigation.md', '.claude/skills/verify-real-app/SKILL.md', 'AGENTS.md'])
       expect(isReferenceSource(path), path).toBe(true);
     for (const path of ['frontend/src/app/App.tsx', 'scripts/tools/ui-refs.mjs', 'frontend/src/app/App.test.tsx', 'backend/src/lib.rs']) expect(isReferenceSource(path), path).toBe(false);
   });

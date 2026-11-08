@@ -1,4 +1,4 @@
-// The refinement loop (docs/design/assistant-refine.md): when the user asks to get closer to a picture over several
+// The refinement loop (docs/design/03-assistant/01-core/03-assistant-refine.md): when the user asks to get closer to a picture over several
 // tries, the assistant starts it with the refine tool and the app sends it back after each answer until it finishes or
 // the rounds are used up, so the loop does not depend on the model choosing to go on.
 

@@ -27,7 +27,7 @@ uuid = { version = "1", features = ["v4"] }
 # has no dependencies.
 qrcode = { version = "0.14", default-features = false }
 # TLS on the home-network listener (Apache-2.0/ISC/MIT). Only the ring provider (no aws-lc, no C build), no logging;
-# 0.23.46 is the first release without the rustls advisories of 2026 (docs/design/security.md).
+# 0.23.46 is the first release without the rustls advisories of 2026 (docs/design/01-app/01-core/03-security.md).
 rustls = { version = "0.23.46", default-features = false, features = ["ring", "std", "tls12"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12"] }
 # The "novira local CA" and the certificate it signs for the home address (MIT/Apache-2.0, the version novira-core

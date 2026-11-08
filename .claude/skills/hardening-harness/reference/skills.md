@@ -11,7 +11,7 @@ Skill progress:
 - [ ] 3. Body drafted (concise, right freedom, one-level references)
 - [ ] 4. check-skill.mjs passes
 - [ ] 5. Evaluations run in a fresh agent, skill revised
-- [ ] 6. Registered in AGENTS.md and docs/architecture/tooling.md, docs-check passes
+- [ ] 6. Registered in AGENTS.md and docs/architecture/03-tooling.md, docs-check passes
 ```
 
 ## 1. Find the gap first
@@ -73,6 +73,6 @@ It checks the name, the description, the length, backslash paths, missing links 
 
 ## 6. Register it
 
-- Add the skill to the skill list in `AGENTS.md` and to the skill table in `docs/architecture/tooling.md`.
+- Add the skill to the skill list in `AGENTS.md` and to the skill table in `docs/architecture/03-tooling.md`.
 - Run `node scripts/tools/docs-check.mjs` and, in `frontend/`, `npm run check:eol`.
 - Commit the skill folder with the registrations.

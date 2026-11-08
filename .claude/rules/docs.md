@@ -8,11 +8,11 @@ paths:
 
 # The map and the design pages
 
-Both say what is true now, in English, with paths in backticks from the repository root so the machine can check they exist. Neither copies a value, a contract or a setting (name where it lives), keeps a "Last updated" line or tells history: git has that.
+Both say what is true now, in Japanese, with paths in backticks from the repository root so the machine can check they exist. Neither copies a value, a contract or a setting (name where it lives), keeps a "Last updated" line or tells history: git has that.
 
 ## 1. The map (`docs/architecture/`)
 
-Five pages, read at the start of a task (the hooks `SessionStart` and `SubagentStart` put `README.md` in front of every session and subagent, `.claude/hooks/architecture-map.mjs`): `README.md` (how the parts fit, the source of truth, where to start; under 7000 bytes), `frontend.md`, `backend.md`, `tooling.md`, `guards.md` (each under 14000 bytes). It holds only what a search of the code does not show; a list of files is what made the earlier, larger map go unread.
+Five pages, read at the start of a task (the hooks `SessionStart` and `SubagentStart` put `README.md` in front of every session and subagent, `.claude/hooks/architecture-map.mjs`): `README.md` (how the parts fit, the source of truth, where to start; under 4500 characters), `01-frontend.md`, `02-backend.md`, `03-tooling.md`, `04-guards.md` (each under 9000 characters). The README comes last in a file list because the pages are numbered (the manual does the same). It holds only what a search of the code does not show; a list of files is what made the earlier, larger map go unread.
 
 | In | Out |
 |---|---|
@@ -24,16 +24,16 @@ Five pages, read at the start of a task (the hooks `SessionStart` and `SubagentS
 | Changed | Page |
 |---|---|
 | A top-level folder, the flow between the parts, a source of truth, a "where to start" row | `README.md` |
-| `frontend/src/` layers, a new `src/` or `features/` folder, registries, the mock | `frontend.md` |
-| A crate, a `novira-core/src/` folder, the shell, data on disk, how a job runs | `backend.md` |
-| A launcher, a script, a hook, a rule, a skill | `tooling.md` (a rule or skill also in `AGENTS.md`) |
-| A guard and what it stops | `guards.md` |
+| `frontend/src/` layers, a new `src/` or `features/` folder, registries, the mock | `01-frontend.md` |
+| A crate, a `novira-core/src/` folder, the shell, data on disk, how a job runs | `02-backend.md` |
+| A launcher, a script, a hook, a rule, a skill | `03-tooling.md` (a rule or skill also in `AGENTS.md`) |
+| A guard and what it stops | `04-guards.md` |
 
-Change it in the same commit as: a part added, removed or moved; a boundary or dependency direction changed; a "where to start" row no longer true. A page over its limit is cut first (file lists, a row per file); splitting it into a new page, or a new area that fits no page, is the user's decision (the guards table left `tooling.md` that way).
+Change it in the same commit as: a part added, removed or moved; a boundary or dependency direction changed; a "where to start" row no longer true. A page over its limit is cut first (file lists, a row per file); splitting it into a new page, or a new area that fits no page, is the user's decision (the guards table left `03-tooling.md` that way).
 
 ## 2. Design pages (`docs/design/`)
 
-One page per feature: how it behaves, how it is built, its security boundaries, its known limits. Read the pages of the code you will change first: `node scripts/tools/docs-check.mjs --find <path>...` (none named: nothing to read). The index is `docs/design/README.md`; `security.md` holds what every feature shares.
+One page per feature: how it behaves, how it is built, its security boundaries, its known limits. Read the pages of the code you will change first: `node scripts/tools/docs-check.mjs --find <path>...` (none named: nothing to read). The pages sit in two folder levels, area then topic (`docs/design/<NN-area>/<NN-topic>/<NN-page>.md`); the numbers give the order, so a folder's `README.md` comes last. Every folder, `docs/design/` itself included, has a `README.md` that names everything directly in it (the page's one line, the folder's scope). `01-app/01-core/03-security.md` holds what every feature shares. A new page takes the next free number of its topic folder (never renumber the others); a new topic or area gets a folder, a README and a line in its parent's README.
 
 ```text
 ---
@@ -49,8 +49,8 @@ one paragraph: what the feature is for
 ## Not implemented    only what is really missing
 ```
 
-`covers` is how a changed file finds its page (`dir/**` crosses folders, `*` does not); each entry must match a tracked file. A page over 14000 bytes is split by feature, keeping a feature's frontend and backend together. A new feature gets a page and a line in the index. Update the page in the same commit as a change that makes it untrue; a boundary change (IPC commands, capabilities, CSP, window config) needs its page in the commit.
+`covers` is how a changed file finds its page (`dir/**` crosses folders, `*` does not); each entry must match a tracked file. A page over 9000 characters is split by feature, keeping a feature's frontend and backend together. A new feature gets a page and a line in its topic folder's README. Update the page in the same commit as a change that makes it untrue; a boundary change (IPC commands, capabilities, CSP, window config) needs its page in the commit.
 
 ## 3. What the machine checks
 
-`scripts/tools/docs-check.mjs` (`tests/docs-check.test.ts`; `--git` in pre-commit) fails when a top-level folder, crate, `frontend/src/` or feature folder, `novira-core/src/` folder, launcher, rule or skill is named by no page (`AGENTS.md` for rules and skills); a backticked path or link points nowhere; a code name in backticks is in no code; a page is over its limit; a design page has no `covers` that matches, or is missing from the index; a security boundary file is committed without a design page. It **warns** when a commit changes code a page covers without the page: re-read it and fix it if it no longer holds. It cannot tell whether a page says the right thing; read the paragraph around your change again.
+`scripts/tools/docs-check.mjs` (`tests/docs-check.test.ts`; `--git` in pre-commit) fails when a top-level folder, crate, `frontend/src/` or feature folder, `novira-core/src/` folder, launcher, rule or skill is named by no page (`AGENTS.md` for rules and skills); a backticked path or link points nowhere; a code name in backticks is in no code; a page is over its limit; a design page has no `covers` that matches; a design folder has no `README.md` or its README does not name something in the folder; a security boundary file is committed without a design page. It **warns** when a commit changes code a page covers without the page: re-read it and fix it if it no longer holds. It cannot tell whether a page says the right thing; read the paragraph around your change again.

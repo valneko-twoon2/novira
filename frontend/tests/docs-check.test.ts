@@ -19,13 +19,17 @@ import {
 
 const QUEUE = 'backend/crates/novira-core/src/service/queue.rs';
 const PAGES: Record<string, string> = {
-  'docs/architecture/README.md': '# Architecture\n\nfrontend/ backend/ docs/ .claude/ scripts/ scripts/tools/ .githooks/ start.bat [tooling](tooling.md)\n',
-  'docs/architecture/frontend.md': '# frontend\n\napp/ features/ gallery/ viewer/\n',
-  'docs/architecture/backend.md': '# backend\n\ncrates/ novira-core/ service/ comfy/\n',
-  'docs/architecture/tooling.md': '# tooling\n\nrules/i18n.md skills/i18n/ start.bat check.mjs pre-commit.mjs\n',
-  'docs/design/README.md': '# Design\n\n[generation](generation.md) [security](security.md)\n',
-  'docs/design/generation.md': `---\ncovers:\n  - ${QUEUE}\n  - backend/crates/novira-core/src/comfy/**\n---\n# Generation\n`,
-  'docs/design/security.md': '---\ncovers:\n  - backend/src-tauri/capabilities/**\n---\n# Security\n',
+  'docs/architecture/README.md': '# Architecture\n\nfrontend/ backend/ docs/ .claude/ scripts/ scripts/tools/ .githooks/ start.bat [tooling](03-tooling.md)\n',
+  'docs/architecture/01-frontend.md': '# frontend\n\napp/ features/ gallery/ viewer/\n',
+  'docs/architecture/02-backend.md': '# backend\n\ncrates/ novira-core/ service/ comfy/\n',
+  'docs/architecture/03-tooling.md': '# tooling\n\nrules/i18n.md skills/i18n/ start.bat check.mjs pre-commit.mjs\n',
+  'docs/design/README.md': '# Design\n\n[01-app/](01-app/README.md) [02-generation/](02-generation/README.md)\n',
+  'docs/design/01-app/README.md': '# App\n\n[01-core/](01-core/README.md)\n',
+  'docs/design/01-app/01-core/README.md': '# Core\n\n[03-security.md](03-security.md)\n',
+  'docs/design/02-generation/README.md': '# Generation\n\n[01-pictures/](01-pictures/README.md)\n',
+  'docs/design/02-generation/01-pictures/README.md': '# Pictures\n\n[01-generation.md](01-generation.md)\n',
+  'docs/design/02-generation/01-pictures/01-generation.md': `---\ncovers:\n  - ${QUEUE}\n  - backend/crates/novira-core/src/comfy/**\n---\n# Generation\n`,
+  'docs/design/01-app/01-core/03-security.md': '---\ncovers:\n  - backend/src-tauri/capabilities/**\n---\n# Security\n',
   'AGENTS.md': 'i18n.md /i18n\n',
 };
 const TREE = [
@@ -79,7 +83,7 @@ describe('the map against the tree', () => {
   });
 
   it('wants the whole name: a tool written only inside a longer name is not described', () => {
-    const pages = { ...PAGES, 'docs/architecture/tooling.md': `${PAGES['docs/architecture/tooling.md']} check-eol.mjs` };
+    const pages = { ...PAGES, 'docs/architecture/03-tooling.md': `${PAGES['docs/architecture/03-tooling.md']} check-eol.mjs` };
     expect(problems([...TREE, 'scripts/tools/eol.mjs'], pages).join('\n')).toContain('"eol.mjs"');
     expect(problems([...TREE, 'scripts/tools/check-eol.mjs'], pages)).toEqual([]);
   });
@@ -92,7 +96,7 @@ describe('the map against the tree', () => {
 
 describe('the code names the pages write exist', () => {
   const CODE = { ...PAGES, 'frontend/src/app/App.tsx': 'export function useQueueStore() {}\nconst MAX_ITEMS = 3;\nlet page_size = 1;' };
-  const withPage = (body: string) => ({ ...CODE, 'docs/design/generation.md': `${PAGES['docs/design/generation.md']}${body}\n` });
+  const withPage = (body: string) => ({ ...CODE, 'docs/design/02-generation/01-pictures/01-generation.md': `${PAGES['docs/design/02-generation/01-pictures/01-generation.md']}${body}\n` });
 
   it('reads camelCase, PascalCase with a capital inside, snake_case and UPPER_SNAKE names, not plain words or fenced examples', () => {
     const names = codeNamesIn('`useQueueStore()` `PlaceSection` `page_size` `MAX_ITEMS` `cast` `Settings` `a b`\n```\n`inFence`\n```\n`afterFence`');
@@ -102,7 +106,7 @@ describe('the code names the pages write exist', () => {
 
   it('fails for a removed component or constant, naming the page and the line', () => {
     const found = problems([...TREE], withPage('The cast edits them (`PlaceSection`), capped at `MAX_PLACES`.')).join('\n');
-    expect(found).toContain('docs/design/generation.md:7: names `PlaceSection`');
+    expect(found).toContain('docs/design/02-generation/01-pictures/01-generation.md:7: names `PlaceSection`');
     expect(found).toContain('names `MAX_PLACES`');
   });
 
@@ -118,11 +122,11 @@ describe('the code names the pages write exist', () => {
 });
 
 describe('what the pages point at exists', () => {
-  const withPage = (body: string) => ({ ...PAGES, 'docs/architecture/frontend.md': `# frontend\n\napp/ features/ gallery/ viewer/\n\n${body}\n` });
+  const withPage = (body: string) => ({ ...PAGES, 'docs/architecture/01-frontend.md': `# frontend\n\napp/ features/ gallery/ viewer/\n\n${body}\n` });
 
   it('fails for a path written in backticks that is not in the tree, and names the page', () => {
     const found = problems(TREE, withPage('See `frontend/src/features/gallery/Gone.tsx` and `frontend/src/app/App.tsx`.')).join('\n');
-    expect(found).toContain('docs/architecture/frontend.md: names the path "frontend/src/features/gallery/Gone.tsx"');
+    expect(found).toContain('docs/architecture/01-frontend.md: names the path "frontend/src/features/gallery/Gone.tsx"');
     expect(found).not.toContain('App.tsx"');
   });
 
@@ -139,13 +143,13 @@ describe('what the pages point at exists', () => {
 
   it('fails for a link to a page or file that does not exist, and accepts one that does', () => {
     expect(problems(TREE, withPage('[gone](nothing.md) [web](https://example.com) [anchor](#top)')).join('\n')).toContain('links to "nothing.md"');
-    expect(problems(TREE, withPage('[up](README.md) [design](../design/security.md#x) [rule](../../.claude/rules/i18n.md)'))).toEqual([]);
+    expect(problems(TREE, withPage('[up](README.md) [design](../design/01-app/01-core/03-security.md#x) [rule](../../.claude/rules/i18n.md)'))).toEqual([]);
   });
 
   it('checks the design pages the same way', () => {
-    const pages = { ...PAGES, 'docs/design/generation.md': `${PAGES['docs/design/generation.md']}\nSee \`${QUEUE}\` and \`backend/crates/novira-core/src/gone.rs\`.\n` };
+    const pages = { ...PAGES, 'docs/design/02-generation/01-pictures/01-generation.md': `${PAGES['docs/design/02-generation/01-pictures/01-generation.md']}\nSee \`${QUEUE}\` and \`backend/crates/novira-core/src/gone.rs\`.\n` };
     const found = problems(TREE, pages).join('\n');
-    expect(found).toContain('docs/design/generation.md: names the path "backend/crates/novira-core/src/gone.rs"');
+    expect(found).toContain('docs/design/02-generation/01-pictures/01-generation.md: names the path "backend/crates/novira-core/src/gone.rs"');
     expect(found).not.toContain('queue.rs"');
   });
 });
@@ -153,17 +157,17 @@ describe('what the pages point at exists', () => {
 describe('the map stays small enough to read', () => {
   it('refuses an entry page over its limit and another page over the larger limit', () => {
     const entry = { ...PAGES, 'docs/architecture/README.md': `${PAGES['docs/architecture/README.md']}${'x'.repeat(ENTRY_LIMIT)}\n` };
-    expect(problems(TREE, entry).join('\n')).toContain(`docs/architecture/README.md: ${Buffer.byteLength(entry['docs/architecture/README.md'])} bytes (at most ${ENTRY_LIMIT})`);
-    const other = { ...PAGES, 'docs/architecture/backend.md': `${PAGES['docs/architecture/backend.md']}${'x'.repeat(ENTRY_LIMIT)}\n` };
+    expect(problems(TREE, entry).join('\n')).toContain(`docs/architecture/README.md: ${entry['docs/architecture/README.md'].length} characters (at most ${ENTRY_LIMIT})`);
+    const other = { ...PAGES, 'docs/architecture/02-backend.md': `${PAGES['docs/architecture/02-backend.md']}${'x'.repeat(ENTRY_LIMIT)}\n` };
     expect(problems(TREE, other)).toEqual([]);
-    const big = { ...PAGES, 'docs/architecture/backend.md': `${PAGES['docs/architecture/backend.md']}${'x'.repeat(PAGE_LIMIT)}\n` };
-    expect(problems(TREE, big).join('\n')).toContain('docs/architecture/backend.md:');
+    const big = { ...PAGES, 'docs/architecture/02-backend.md': `${PAGES['docs/architecture/02-backend.md']}${'x'.repeat(PAGE_LIMIT)}\n` };
+    expect(problems(TREE, big).join('\n')).toContain('docs/architecture/02-backend.md:');
   });
 });
 
 describe('the design pages', () => {
   it('reads the covers list of the front matter', () => {
-    expect(coversOf(PAGES['docs/design/generation.md'])).toEqual([QUEUE, 'backend/crates/novira-core/src/comfy/**']);
+    expect(coversOf(PAGES['docs/design/02-generation/01-pictures/01-generation.md'])).toEqual([QUEUE, 'backend/crates/novira-core/src/comfy/**']);
     expect(coversOf('# no front matter\n')).toBeNull();
     expect(coversOf('---\ntitle: x\n---\n# t\n')).toEqual([]);
     expect(coversOf('---\r\ncovers:\r\n  - a/b.rs\r\nother: 1\r\n---\r\n')).toEqual(['a/b.rs']);
@@ -182,17 +186,30 @@ describe('the design pages', () => {
   it('fails for a page with no covers, a covers entry that matches nothing, a page missing from the index and a page that is too long', () => {
     const pages = {
       ...PAGES,
-      'docs/design/models.md': '# Models\n',
-      'docs/design/extensions.md': '---\ncovers:\n  - backend/crates/novira-core/src/ghost/**\n---\n# Extensions\n',
-      'docs/design/generation.md': `${PAGES['docs/design/generation.md']}${'x'.repeat(DESIGN_LIMIT)}\n`,
+      'docs/design/02-generation/03-models/README.md': '# Models\n',
+      'docs/design/01-app/03-engine/README.md': '# Engine\n',
+      'docs/design/02-generation/03-models/01-models.md': '# Models\n',
+      'docs/design/01-app/03-engine/02-extensions.md': '---\ncovers:\n  - backend/crates/novira-core/src/ghost/**\n---\n# Extensions\n',
+      'docs/design/02-generation/01-pictures/01-generation.md': `${PAGES['docs/design/02-generation/01-pictures/01-generation.md']}${'x'.repeat(DESIGN_LIMIT)}\n`,
     };
-    const found = problems([...TREE, 'docs/design/models.md', 'docs/design/extensions.md'], pages).join('\n');
-    expect(found).toContain('docs/design/models.md: needs a "covers:" list');
-    expect(found).toContain('docs/design/extensions.md: covers "backend/crates/novira-core/src/ghost/**", which matches no file');
-    expect(found).toContain('does not list the page models.md');
-    expect(found).toContain('does not list the page extensions.md');
-    expect(found).toContain('docs/design/generation.md:');
+    const found = problems([...TREE, 'docs/design/02-generation/03-models/README.md', 'docs/design/01-app/03-engine/README.md', 'docs/design/02-generation/03-models/01-models.md', 'docs/design/01-app/03-engine/02-extensions.md'], pages).join('\n');
+    expect(found).toContain('docs/design/02-generation/03-models/01-models.md: needs a "covers:" list');
+    expect(found).toContain('docs/design/01-app/03-engine/02-extensions.md: covers "backend/crates/novira-core/src/ghost/**", which matches no file');
+    expect(found).toContain('docs/design/02-generation/03-models/README.md: does not list 01-models.md');
+    expect(found).toContain('docs/design/01-app/03-engine/README.md: does not list 02-extensions.md');
+    expect(found).toContain('docs/design/02-generation/01-pictures/01-generation.md:');
     expect(found).toContain(`(at most ${DESIGN_LIMIT})`);
+  });
+
+  it('wants a README.md in every design folder that names everything directly in it', () => {
+    const fresh = 'docs/design/03-new/01-topic/01-page.md';
+    const found = problems([...TREE, fresh], { ...PAGES, [fresh]: '---\ncovers:\n  - frontend/src/app/App.tsx\n---\n' + '# Page\n' }).join('\n');
+    expect(found).toContain('docs/design/03-new: needs a README.md');
+    expect(found).toContain('docs/design/03-new/01-topic: needs a README.md');
+    expect(found).toContain('docs/design/README.md: does not list 03-new');
+    const more = 'docs/design/01-app/01-core/04-more.md';
+    const half = problems([...TREE, more], { ...PAGES, [more]: '---\ncovers:\n  - frontend/src/app/App.tsx\n---\n' + '# More\n' }).join('\n');
+    expect(half).toContain('docs/design/01-app/01-core/README.md: does not list 04-more.md');
   });
 
   it('does not ask a design page for a "Last updated" line', () => {
@@ -201,9 +218,9 @@ describe('the design pages', () => {
 
   it('finds the pages that cover a path', () => {
     const pages = designCovers(TREE, (p: string) => PAGES[p] ?? null);
-    expect(pagesCovering(QUEUE, pages)).toEqual(['docs/design/generation.md']);
-    expect(pagesCovering('backend/crates/novira-core/src/comfy/graph.rs', pages)).toEqual(['docs/design/generation.md']);
-    expect(pagesCovering('backend\\src-tauri\\capabilities\\default.json', pages)).toEqual(['docs/design/security.md']);
+    expect(pagesCovering(QUEUE, pages)).toEqual(['docs/design/02-generation/01-pictures/01-generation.md']);
+    expect(pagesCovering('backend/crates/novira-core/src/comfy/graph.rs', pages)).toEqual(['docs/design/02-generation/01-pictures/01-generation.md']);
+    expect(pagesCovering('backend\\src-tauri\\capabilities\\default.json', pages)).toEqual(['docs/design/01-app/01-core/03-security.md']);
     expect(pagesCovering('frontend/src/app/App.tsx', pages)).toEqual([]);
   });
 });
@@ -216,8 +233,8 @@ describe('the staged change', () => {
     const boundary = change('backend/src-tauri/src/command_list.rs');
     expect(stagedProblems([boundary])[0]).toContain('a design page must be in the same commit');
     expect(stagedProblems([change('backend/src-tauri/capabilities/default.json')])).toHaveLength(1);
-    expect(stagedProblems([boundary, change('docs/design/assistant.md')])).toEqual([]);
-    expect(stagedProblems([boundary, change('docs/design/assistant.md', 'D')])).toHaveLength(1);
+    expect(stagedProblems([boundary, change('docs/design/03-assistant/01-core/01-assistant.md')])).toEqual([]);
+    expect(stagedProblems([boundary, change('docs/design/03-assistant/01-core/01-assistant.md', 'D')])).toHaveLength(1);
   });
 
   it('lets other files through', () => {
@@ -227,11 +244,11 @@ describe('the staged change', () => {
   it('warns when code that a page covers changes and the page is not in the commit', () => {
     const found = stagedWarnings([change(QUEUE)], pages);
     expect(found).toHaveLength(1);
-    expect(found[0]).toContain('docs/design/generation.md covers code in this commit (backend/crates/novira-core/src/service/queue.rs)');
+    expect(found[0]).toContain('docs/design/02-generation/01-pictures/01-generation.md covers code in this commit (backend/crates/novira-core/src/service/queue.rs)');
   });
 
   it('does not warn when the page is in the commit, for tests, for a deleted file or for code no page covers', () => {
-    expect(stagedWarnings([change(QUEUE), change('docs/design/generation.md')], pages)).toEqual([]);
+    expect(stagedWarnings([change(QUEUE), change('docs/design/02-generation/01-pictures/01-generation.md')], pages)).toEqual([]);
     expect(stagedWarnings([change('backend/crates/novira-core/src/comfy/graph.test.ts')], pages)).toEqual([]);
     expect(stagedWarnings([change(QUEUE, 'D')], pages)).toEqual([]);
     expect(stagedWarnings([change('frontend/src/app/App.tsx')], pages)).toEqual([]);

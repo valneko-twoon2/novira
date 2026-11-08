@@ -14,7 +14,7 @@ describe('needsTypecheck', () => {
   });
 
   it('does not start for other files of the frontend or files outside it', () => {
-    for (const p of ['frontend/src/theme/tokens.css', 'frontend/scripts/manual.mjs', 'scripts/tools/affected.mjs', 'docs/architecture/tooling.md', 'backend/src-tauri/tauri.conf.json', 'contract/settings.json', 'xfrontend/a.ts']) {
+    for (const p of ['frontend/src/theme/tokens.css', 'frontend/scripts/manual.mjs', 'scripts/tools/affected.mjs', 'docs/architecture/03-tooling.md', 'backend/src-tauri/tauri.conf.json', 'contract/settings.json', 'xfrontend/a.ts']) {
       expect(needsTypecheck([p]), p).toBe(false);
     }
     expect(needsTypecheck([])).toBe(false);

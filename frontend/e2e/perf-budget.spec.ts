@@ -1,7 +1,7 @@
 // Time budgets of the frequent actions, on the mock backend in a development build (slower than the app's own build, so the
 // limits are loose: they catch a screen that does several times more work than it did, not a few milliseconds). Each failure
 // names the action and where to look (see perfBudget.ts). The numbers measured when the budgets were set are in the test
-// names' comments; docs/tests/ui.md lists what is covered.
+// names' comments; docs/tests/01-ui.md lists what is covered.
 import { expect, openApp, test } from './fixtures';
 import { costInPage, median, withinBudget, type Budget } from './perfBudget';
 

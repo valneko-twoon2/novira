@@ -66,7 +66,7 @@ Read a reference file when the change adds or changes a status, an event on a st
 ### When a test finds a bug
 
 1. Decide from the spec whether the test or the code is wrong; when the spec is unclear, ask.
-2. Keep the failing test as the regression test. Fix the code if the task includes it and show the test passing; otherwise keep the test as `it.fails` with a `known bug:` comment (`docs/architecture/guards.md`) and say why in the report. Marking a property hides every other failure of it: pin the failing case as an example and mark that, and keep the property running on the inputs not involved.
+2. Keep the failing test as the regression test. Fix the code if the task includes it and show the test passing; otherwise keep the test as `it.fails` with a `known bug:` comment (`docs/architecture/04-guards.md`) and say why in the report. Marking a property hides every other failure of it: pin the failing case as an example and mark that, and keep the property running on the inputs not involved.
 3. Look for the same bug elsewhere: the same operator or pattern, sibling functions, the same rule's other limits, the other screens, models and locales. Report what you searched, how many you found and how many you fixed (`AGENTS.md` section 4).
 4. Never change an expected value to match the code's output.
 
@@ -80,7 +80,7 @@ Measured: frontend statements, branches, functions and lines (floors in `fronten
 
 ## 6. Adding a kind the project lacks
 
-A kind marked "no" in section 2 is added only from its recipe in [gaps.md](reference/gaps.md) (or the "no" part of [randomized.md](reference/randomized.md) and [systems.md](reference/systems.md)), and only after the user agrees to what the recipe marks as needing confirmation: a new dependency or tool, a CI change, or a change to the code to give the test a seam (a stage hook, a switchable lock). Tell the user the kind, the files and the workflow it touches, and the effort, then proceed on a yes. Add one kind at a time, with its own test of the test (it fails when the fault is injected), its row in the layer page under `docs/tests/`, and its place in `affected.mjs` or CI as the recipe says. CI grows one check at a time, each after it is seen to pass on the runner (`docs/design/ci.md`). Formal methods (model checking, Kani, proofs) are on hold at the user's request; do not start them unasked.
+A kind marked "no" in section 2 is added only from its recipe in [gaps.md](reference/gaps.md) (or the "no" part of [randomized.md](reference/randomized.md) and [systems.md](reference/systems.md)), and only after the user agrees to what the recipe marks as needing confirmation: a new dependency or tool, a CI change, or a change to the code to give the test a seam (a stage hook, a switchable lock). Tell the user the kind, the files and the workflow it touches, and the effort, then proceed on a yes. Add one kind at a time, with its own test of the test (it fails when the fault is injected), its row in the layer page under `docs/tests/`, and its place in `affected.mjs` or CI as the recipe says. CI grows one check at a time, each after it is seen to pass on the runner (`docs/design/01-app/04-release/02-ci.md`). Formal methods (model checking, Kani, proofs) are on hold at the user's request; do not start them unasked.
 
 ## 7. Report
 

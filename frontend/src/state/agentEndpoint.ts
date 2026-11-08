@@ -1,5 +1,5 @@
 // The OpenAI-compatible server the assistant can use (Ollama, LM Studio, ...): presets for the form, and a light reading
-// of the typed address for the warnings. The backend checks the address for real and makes every call (docs/design/security.md).
+// of the typed address for the warnings. The backend checks the address for real and makes every call (docs/design/01-app/01-core/03-security.md).
 
 /** Where an address points, as far as the form's warnings go. */
 export type AddressKind = 'invalid' | 'local' | 'remote-https' | 'remote-http';

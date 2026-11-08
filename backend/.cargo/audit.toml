@@ -1,4 +1,4 @@
-# The advisories `cargo audit` knows and the project has judged (docs/design/security.md, "Known limits", dependency
+# The advisories `cargo audit` knows and the project has judged (docs/design/01-app/01-core/03-security.md, "Known limits", dependency
 # findings). A new advisory is not in this list, so the audit workflow fails on it. Each entry names why it is accepted
 # and what ends it; remove it when that happens.
 [advisories]

@@ -15,7 +15,7 @@ export function contextFor(event, root) {
   const file = join(root, ...PAGE);
   if (!existsSync(file)) return null;
   const page = readFileSync(file, 'utf8').replace(/\r\n/g, '\n').trim();
-  const additionalContext = `The architecture map of this repository (docs/architecture/README.md). Read it before you look for anything; frontend.md, backend.md, tooling.md and guards.md in the same folder go deeper. It is a guide, not a list of files: search the tree for files.\n\n${page}`;
+  const additionalContext = `The architecture map of this repository (docs/architecture/README.md). Read it before you look for anything; 01-frontend.md, 02-backend.md, 03-tooling.md and 04-guards.md in the same folder go deeper. It is a guide, not a list of files: search the tree for files.\n\n${page}`;
   return { hookSpecificOutput: { hookEventName: event, additionalContext } };
 }
 

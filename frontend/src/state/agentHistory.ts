@@ -1,4 +1,4 @@
-// What the assistant is told about the earlier part of a chat (docs/design/assistant-history.md): each earlier turn, an
+// What the assistant is told about the earlier part of a chat (docs/design/03-assistant/02-context/01-assistant-history.md): each earlier turn, an
 // answer with a note of what its tool calls did and whether the user undid them, and the Generate tab's settings as they
 // were before each earlier request changed them, so "that was fine as it was" can be put back word for word.
 import type { AgentTurn } from '@/backend';
