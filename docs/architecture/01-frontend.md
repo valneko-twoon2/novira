@@ -1,5 +1,7 @@
 # frontend/
 
+一覧に戻る: [README.md](README.md)
+
 UI の作り: レイヤーとその向き、画面どうしのつなぎ方、機能フォルダの役割、ブラウザのモックの仕組み。上: [README.md](README.md)。変更するときにエージェントが従う規則: `.claude/rules/frontend.md`。
 
 React 19 + TypeScript + Vite。InvokeAI v6 の画面と操作を再現する。デスクトップアプリでは Tauri IPC で Rust のバックエンドと、ブラウザではメモリ上のモックと話す。見た目の方針: フラットな面と青のアクセント 1 色（ダークテーマは既定で純黒）、グラデーションと発光は使わない。

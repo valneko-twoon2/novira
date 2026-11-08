@@ -16,7 +16,9 @@ covers:
 ---
 # ComfyUI の拡張機能
 
-拡張機能は、ComfyUI が自前のノードに加えて読み込むカスタムノードの集まり。ここでは、novira 自身がインストールして動かす ComfyUI のリリースも扱う。この機能は、GitHub から拡張機能をインストール・更新・削除・再起動し、ComfyUI Registry の拡張機能を一覧し、ComfyUI のパッケージをインストール・切り替える。モデルファイルは 01-models.md、拡張機能のノードを使うグラフは 01-generation.md に書いてある。
+一覧に戻る: [README.md](README.md)
+
+拡張機能は、ComfyUI が自前のノードに加えて読み込むカスタムノードの集まり。ここでは、novira 自身がインストールして動かす ComfyUI のリリースも扱う。この機能は、GitHub から拡張機能をインストール・更新・削除・再起動し、ComfyUI Registry の拡張機能を一覧し、ComfyUI のパッケージをインストール・切り替える。モデルファイルは [01-models.md](../../02-generation/03-models/01-models.md)、拡張機能のノードを使うグラフは [01-generation.md](../../02-generation/01-pictures/01-generation.md) に書いてある。
 
 ## 動作
 
@@ -39,14 +41,14 @@ covers:
 - アーカイブは `.part` の名前でダウンロードし、完成したら名前を変えて、`.unpacking` フォルダに展開し、`portable` フォルダを所定の場所に移す。展開に失敗しても、完成したアーカイブは残す。ただし 7-Zip が壊れていると報告したときは削除して取り直す。各移動は、Windows がアクセスを拒む間（ウイルス対策が新しいファイルを握る）、1 秒おきに最大 60 回試す。
 - 進捗は `engine_status` で報告する: `downloading`（バイト数つき）、`extracting`、`starting`、`ready`、`error`。
 - インストール元のパッケージは `portable/novira-package.txt` に書く。この記録が無いインストールは、最初に必要になったとき、設定が指すパッケージのものとみなす（`adopt_package`）。
-- パッケージの変更: 記録が設定と別のパッケージを指しているとき、次の起動（ComfyUI が初めて必要になったとき）に、設定のパッケージから同じ ComfyUI バージョンを下で述べる切り替えでインストールし、そのあと起動する。新しいパッケージが起動しないときは古いものを戻す。設定は変更を保存する前に確認を求める（01-settings-engine.md を参照）。
+- パッケージの変更: 記録が設定と別のパッケージを指しているとき、次の起動（ComfyUI が初めて必要になったとき）に、設定のパッケージから同じ ComfyUI バージョンを下で述べる切り替えでインストールし、そのあと起動する。新しいパッケージが起動しないときは古いものを戻す。設定は変更を保存する前に確認を求める（[01-settings-engine.md](01-settings-engine.md) を参照）。
 - バージョンの切り替え: `comfy_versions` は `comfyanonymous/ComfyUI` の最新 50 リリースを、ドラフト、プレリリース、プレーンなタグでない名前を除いて返す。`switch_comfy_version`（`comfy/switch.rs`）は、ジョブの進行中や拡張機能のインストール中は拒否し、novira が作ったインストールにだけ働く。ComfyUI を止め、現在の `portable` フォルダを `.previous` として残してリリースパッケージをインストールし、古い拡張機能のフォルダを新しい `custom_nodes` に移す（両方にフォルダがあるときは新しいパッケージのコピーを残す。`__pycache__` は移さない）。マーカーのある拡張機能はすべて記録したタグで入れ直し（手で置いたものは移すが入れ直さない）、ComfyUI を起動して、`.previous` を削除する（先に `.previous-discarded` に名前を変える）。入れ直しに失敗した拡張機能はフォルダ名で報告し、切り替えは取り消さない。ComfyUI が起動しないときや切り替えがキャンセルされたときは、拡張機能のフォルダを `.previous` に戻し、それを元に戻し、古いバージョンを起動して、エラーでそう伝える。`.previous` が残っている起動（切り替えが途中で切れたもの）は、エンジンを起動する前に同じ方法で戻す（`install::recover_switch`）。
 - 拡張機能の Python の手順（展開、pip、`install.py`）は、データフォルダの `cache` フォルダの下にキャッシュ（`PIP_CACHE_DIR`、`HF_HOME`、`TORCH_HOME`、`TEMP`、`TMP`）を置き、コンソールウィンドウなしで動かす（`node_packs.rs` の `confine`）。
 
 ### 生成で拡張機能が要るもの
 
 - 参照画像には `ComfyUI_IPAdapter_plus`（ノード `IPAdapterAdvanced`）が要る。`validate` は何かをアップロードする前にそのノードを確かめるので、拡張機能の無いジョブはすぐ失敗する。参照画像の通知（`frontend/src/features/params/refImages/RefImagePackNeeds.tsx`）はインストールを勧め、そのあと再起動を求める。
-- マンガ仕上げ（ビューアの「マンガ原稿に仕上げる」）: すでにある画像への手順で、描画の一部にはならない。`frontend/src/features/viewer/manga/` が `graphRequest` と `runJob` でグラフのジョブを走らせる（専用の IPC コマンドはない）。`LoadImage` から、ComfyUI-MangaScreen 拡張機能の `MangaFinish` ノード 1 つ（スクリーン線、白点、黒点、階調、白線。ノードのトーンとペンの既定は固定）を経て `SaveImage` へ。試行は `intermediate` の画像になるのでギャラリーの一覧には出ない。保存は同じグラフを `gallery` の保存先で元の画像のボードに走らせ、元のプロンプト、モデル、シードとワークフロー名「Manga finish」を引き継ぐ新しい通常の画像にする（元は変えない）。値は `useMangaFinish`（`state/mangaFinish.ts`、`novira.mangaFinish` に保存）。拡張機能は `ComfyUI-MangaScreen`（MIT、カタログ id `mangascreen`）で、無いとき、またはインストール済みでも未読み込みのときは、ダイアログがインストール、続いて再起動を示し、試行と保存を無効にする。ワイヤ型には `GenerationMetadata.mangaScreen` が残り、`graph.rs` も `MANGA_NODE` を組み立てるが、どの画面ももうこれを送らない。フォームの `manga` キーと漫画の保存済み `manga` 描画設定は、読んでも無視する。
+- マンガ仕上げ（ビューアのツールバーの「マンガ原稿に仕上げる」）: すでにある画像への手順で、描画の一部にはならない。`frontend/src/features/viewer/manga/` が `graphRequest` と `runJob` でグラフのジョブを走らせる（専用の IPC コマンドはない）。`LoadImage` から、ComfyUI-MangaScreen 拡張機能の `MangaFinish` ノード 1 つ（スクリーン線、白点、黒点、階調、白線。ノードのトーンとペンの既定は固定）を経て `SaveImage` へ。試行は `intermediate` の画像になるのでギャラリーの一覧には出ない。保存は同じグラフを `gallery` の保存先で元の画像のボードに走らせ、元のプロンプト、モデル、シードを引き継ぎ、ワークフロー名がダイアログの題（ja では「マンガ原稿に仕上げる」）の新しい通常の画像にする（元は変えない）。値は `useMangaFinish`（`state/mangaFinish.ts`、`novira.mangaFinish` に保存）。拡張機能は `ComfyUI-MangaScreen`（MIT、カタログ id `mangascreen`）で、無いとき、またはインストール済みでも未読み込みのときは、ダイアログがインストール、続いて再起動を示し、試行と保存を無効にする。ワイヤ型には `GenerationMetadata.mangaScreen` が残り、`graph.rs` も `MANGA_NODE` を組み立てるが、どの画面ももうこれを送らない。フォームの `manga` キーと漫画の保存済み `manga` 描画設定は、読んでも無視する。
 
 ## 境界
 
@@ -59,7 +61,7 @@ covers:
 
 - ComfyUI のパッケージと `7zr.exe` は、公式のホストから HTTPS で取得し、署名やハッシュの別個の検査はしない。
 - 参照画像は、サードパーティのカスタムノードの拡張機能（ComfyUI_IPAdapter_plus。`frontend/src/state/comfy/packCatalog.ts` で `unmaintained` と記されている）のノードを ComfyUI の Python の中で動かす。インストールするのは利用者が求めたときだけで、利用者がタグを選ばない限り GitHub リポジトリの既定ブランチから入れる。
-- レジストリの拡張機能の説明と、インストール済みの拡張機能のノードの説明は第三者が書いたもので、`search_extensions` を通してアシスタントのモデルに届く（01-assistant.md を参照）。指示はそれをデータとして扱うが、モデルが悪意あるテキストに惑わされることはありうる。被害は限られる。アシスタントはインストールも削除も実行もできず、利用者がカードのインストールボタンを押すまで何もインストールされず、要求の変更はすべてすぐ元に戻せる。惑わされたモデルは、利用者が許可していれば、設定とエディタを変え、生成をキューに入れ、プロンプトを読むことはできる。
+- レジストリの拡張機能の説明と、インストール済みの拡張機能のノードの説明は第三者が書いたもので、`search_extensions` を通してアシスタントのモデルに届く（[01-assistant.md](../../03-assistant/01-core/01-assistant.md) を参照）。指示はそれをデータとして扱うが、モデルが悪意あるテキストに惑わされることはありうる。被害は限られる。アシスタントはインストールも削除も実行もできず、利用者がカードのインストールボタンを押すまで何もインストールされず、要求の変更はすべてすぐ元に戻せる。惑わされたモデルは、利用者が許可していれば、設定とエディタを変え、生成をキューに入れ、プロンプトを読むことはできる。
 
 ## 未実装
 

@@ -6,6 +6,8 @@ covers:
 ---
 # 外出先のスマホ（リモートのリスナー）
 
+一覧に戻る: [README.md](README.md)
+
 ブラウザ用サーバー（[01-browser-server.md](../01-local/01-browser-server.md)）は、この PC の持ち主自身のスマホが外出先から使えるよう、Tailscale 経由の 3 つ目のリスナーを開ける。この PC の tailnet アドレスで、Tailscale が MagicDNS 名に作る証明書を使うので、スマホのブラウザは何もインストールせずに信頼する。スマホが入れるのは、1 度作った passkey があるときだけで、その作成は、家でスマホがペアリングするのと同じようにこの PC でペアリングした後に行う（[02-browser-server-pairing.md](02-browser-server-pairing.md)）。以後は tailnet のどこからでも、顔・指紋・コードでサインインする。デスクトップアプリは、家庭内ネットワークと同じようにこれを自分の中で動かす（[04-browser-server-app.md](04-browser-server-app.md)）。この PC の持ち主がオンにするまではオフ。
 
 ## 動作
@@ -27,7 +29,7 @@ covers:
 | 資格情報 | 端末が入れるのはセッションがあるときだけ。この PC の承認によるもの（passkey を 1 つ作れる）か、passkey のサインインによるもので、いずれも作られたアドレスから使う。起動トークンはここでは資格情報ではない。公開ルートは `GET /remote`、`GET /remote.js`、`POST /pair/request`、`/pair/status`、`/remote/sign-in/begin`、`/remote/sign-in/finish`。`/remote/enrol/*` に届くのは、まだ登録できるセッションだけ（403 `not_enrolling`）。 |
 | passkey | relying party は tailnet 名、origin はこのリスナーのもの。ユーザー検証はどちらのときも必須。チャレンジは 1 回限りで、アドレスと目的に結びつく。断られたサインインは理由によらず同じ 403 `refused`。入れる者はストアの公開鍵が決め、passkey がストアに入るのは承認された登録を通ったときだけ。 |
 | 管理 | `/remote/state` などが答えるのは、ペアリングのものと同じく、トークン付きのループバックの相手だけ（端末は 403）。画面は鍵の素材を受け取らない。 |
-| 端末が実行できるもの | 家のスマホと同じ。`LOOPBACK_ONLY` は断る（01-browser-server-lan.md）。 |
+| 端末が実行できるもの | 家のスマホと同じ。`LOOPBACK_ONLY` は断る（[01-browser-server-lan.md](01-browser-server-lan.md)）。 |
 | Tailscale | プログラムのパスは 1 つに固定し、固定の引数と、報告された名前（検査済み）を付けて直接実行し、タイムアウトを置く。証明書の鍵はディスクに残らない。 |
 | 本体 | `application/json`、passkey のルートでは最大 4 KiB、フィールドは base64url。 |
 

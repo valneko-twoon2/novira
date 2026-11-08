@@ -17,7 +17,9 @@ covers:
 ---
 # 生成
 
-生成は画像を作る。1 つずつ実行するジョブのキュー、ComfyUI のグラフ、実行できない依頼を断る検査、アプリが持つ ComfyUI プロセスからなる。動画・音楽・音声もキューのジョブである（01-media-generation.md を参照）。エンジンのインストールは 02-extensions.md にある。
+一覧に戻る: [README.md](README.md)
+
+生成は画像を作る。1 つずつ実行するジョブのキュー、ComfyUI のグラフ、実行できない依頼を断る検査、アプリが持つ ComfyUI プロセスからなる。動画・音楽・音声もキューのジョブである（[01-media-generation.md](../02-media-workflows/01-media-generation.md) を参照）。エンジンのインストールは [02-extensions.md](../../01-app/03-engine/02-extensions.md) にある。
 
 ## 動作
 
@@ -52,15 +54,15 @@ covers:
 - メモリ不足の失敗の後は、次のジョブの前に `POST /free` で ComfyUI のモデルを解放する。
 - 実アプリでの確認: インペイントとアウトペイントはマスク外の画素を 8 ビット 1 段階以内で保ち、canny のコントロールレイヤーは元画像の輪郭に沿った。
 
-- 新しいモデルファミリー（Anima、Flux、Chroma、Qwen-Image、Z-Image、SD3、HiDream、AuraFlow）は同じグラフを使い、ローダー、シフト、潜在、サンプラーはファミリー固有になる。03-model-families.md を参照。
+- 新しいモデルファミリー（Anima、Flux、Chroma、Qwen-Image、Z-Image、SD3、HiDream、AuraFlow）は同じグラフを使い、ローダー、シフト、潜在、サンプラーはファミリー固有になる。[03-model-families.md](03-model-families.md) を参照。
 
 ### 下書き
 
-- `draftAt` を持つジョブは途中で止まる。下書きビューとその規則は 05-drafts.md にある。
+- `draftAt` を持つジョブは途中で止まる。下書きビューとその規則は [05-drafts.md](05-drafts.md) にある。
 
 ### ガイダンスの検査
 
-- 追加時（`service/guidance.rs`、`check`）: コントロールレイヤーは 8、参照画像は 8、参照用の画像（`referencePictures`、FLUX.2 のみ。03-model-families.md）は 4 まで。ガイダンスは 4 つのモード（テキストから画像、画像から画像、インペイント、アウトペイント）だけ。マスクはインペイントとアウトペイントだけで、両方で必須、元画像があるときだけ。`controlLayerCount` と `refImageCount` は送った画像の数と等しい。コントロールの重みは 0 から 2、参照の重みは -1 から 2。開始と終了は 0 から 1 で、開始は終了より後にならない。
+- 追加時（`service/guidance.rs`、`check`）: コントロールレイヤーは 8、参照画像は 8、参照用の画像（`referencePictures`、FLUX.2 のみ。[03-model-families.md](03-model-families.md)）は 4 まで。ガイダンスは 4 つのモード（テキストから画像、画像から画像、インペイント、アウトペイント）だけ。マスクはインペイントとアウトペイントだけで、両方で必須、元画像があるときだけ。`controlLayerCount` と `refImageCount` は送った画像の数と等しい。コントロールの重みは 0 から 2、参照の重みは -1 から 2。開始と終了は 0 から 1 で、開始は終了より後にならない。
 - ワーカー（`job_guidance`）: コントロールモデルは種類が ControlNet、参照モデルは種類が IP-Adapter で、どちらもメインモデルのベースに合う（同じベース、またはどちらかが `Any`）。CLIP vision モデルはインストール済みであること。ベースが SD 1.5、SD 2、SDXL、any のどれでもないメインモデルは、`comfy/split.rs` にレシピのあるファミリーでない限り断る（`engine_job`）。コントロールモデルはモデルパッチでもよい。
 - ガイダンスの画像は `novira-data/outputs/` から読み、動画や音声は使えない。動画は元画像にもできない。
 - シームレスタイリング（`seamlessX`、`seamlessY`）はシームレスタイリングパックのノードを使う。LoRA と参照画像の後で、モデルのコピーに `SeamlessTile`（`enable`、`x_only` か `y_only`）を置き、すべてのデコード（高解像度修正は両パス）で `VAEDecode` の代わりに `CircularVAEDecode` を使う。新しいファミリーのモデルは断る。`validate` は足りないパックとそのアドレスを示す（`split::packs_needed`。GGUF パックのノードも含む）。
@@ -74,7 +76,7 @@ covers:
 - 停止: 終了時に、アプリが持つプロセスを止める。Windows ではジョブオブジェクトにも入り、アプリが落ちても止まる（`child_job.rs`）。
 - `comfyuiUrl` があれば、アプリはそのサーバーへつなぎ、何も開始も停止もしない。
 - 低メモリモード（`lowMemoryMode`、`service/memory.rs`）: アプリが持つ ComfyUI は、ユーザーの VRAM オプションの代わりに `--novram` で起動する（`--cpu` ではない）。切り替えるとジョブが走っていなければ ComfyUI を再起動し、走っていれば次の起動で反映する。
-- 完成した画像は `outputs/<uuid>.png` として書き、設定を `novira_metadata` テキストチャンクに入れる（`media/images.rs`）。新しいファミリーのモデルでは、ワーカーが実行した組を `sampling` として加える（03-model-families.md）。
+- 完成した画像は `outputs/<uuid>.png` として書き、設定を `novira_metadata` テキストチャンクに入れる（`media/images.rs`）。新しいファミリーのモデルでは、ワーカーが実行した組を `sampling` として加える（[03-model-families.md](03-model-families.md)）。
 
 ## 境界
 

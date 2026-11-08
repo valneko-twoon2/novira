@@ -7,6 +7,8 @@ covers:
 ---
 # スマホとデスクトップアプリ
 
+一覧に戻る: [README.md](README.md)
+
 デスクトップアプリは、`novira-server` と同じように、家庭内ネットワークのスマホから使える（[01-browser-server-lan.md](01-browser-server-lan.md)、[02-browser-server-pairing.md](02-browser-server-pairing.md)）。サイドバーの QR の項目が家庭内ネットワークを開き、スマホがコードを読み取り、アプリが許可する。このために、`novira-server` のサーバーがアプリの中で、家庭内ネットワークのリスナーだけを付けて動く。
 
 ## 動作

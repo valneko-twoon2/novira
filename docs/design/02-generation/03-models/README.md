@@ -1,5 +1,7 @@
 # モデル
 
+一覧に戻る: [../README.md](../README.md)
+
 ComfyUI が読み込むモデルファイルの管理、メディア用のモデルパック、Civitai と Hugging Face の検索、新バージョンの通知を扱う。
 
 | ページ | 内容 |

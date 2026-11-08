@@ -7,6 +7,8 @@ covers:
 ---
 # リリースのワークフロー
 
+一覧に戻る: [README.md](README.md)
+
 バージョンタグを push すると、GitHub が Windows 向けのリリースをビルドし、タグ名を題名、`CHANGELOG.md` のそのタグの節をノートとするドラフトのリリースを残す。人が読んで公開する。同じビルドは `scripts\release\package.bat` から手でも動く。ワークフローは、このスクリプトをまっさらなマシンで動かすもの。
 
 ## 動作

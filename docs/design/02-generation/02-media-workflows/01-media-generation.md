@@ -16,7 +16,9 @@ covers:
 ---
 # メディア生成: 動画・音楽・音声
 
-画像以外の生成モード。動画はテキストから、またはギャラリーの画像を動かしてクリップを作る（Wan 2.2 TI2V 5B、またはその 4 ステップの Turbo モデル）。音楽はスタイルタグと歌詞から曲を作る（ACE-Step 1.5 turbo）。音声は Qwen3-TTS でテキストを読み上げる。動画と音楽はコアノードで組んだ ComfyUI のジョブで、音声は ComfyUI の Python で起動する専用の Python ワーカープロセスで動く。モデルファイルは、要求に応じてダウンロードするモデルパック（01-models.md を参照）。
+一覧に戻る: [README.md](README.md)
+
+画像以外の生成モード。動画はテキストから、またはギャラリーの画像を動かしてクリップを作る（Wan 2.2 TI2V 5B、またはその 4 ステップの Turbo モデル）。音楽はスタイルタグと歌詞から曲を作る（ACE-Step 1.5 turbo）。音声は Qwen3-TTS でテキストを読み上げる。動画と音楽はコアノードで組んだ ComfyUI のジョブで、音声は ComfyUI の Python で起動する専用の Python ワーカープロセスで動く。モデルファイルは、要求に応じてダウンロードするモデルパック（[01-models.md](../03-models/01-models.md) を参照）。
 
 ## 動作
 
@@ -25,7 +27,7 @@ covers:
 - モードは `GenerationMode` の値 `video`・`music`・`voice`（`backend/crates/novira-core/src/types.rs`）。キューのワーカーは `voice` を `process_voice`（`backend/crates/novira-core/src/service/worker.rs`）へ送る。残り二つは `comfy::graph::build`（`backend/crates/novira-core/src/comfy/graph.rs`）がそれぞれのグラフファイルへ渡す。
 - `GenerationMode` には、もう存在しないロゴ画面のモード `logo` も残している。そのモードで作った画像はメタデータにこれを持ち、ギャラリーのアセット（`category: other`）として読み込み・一覧・表示ができる。このモードのジョブ（旧版がキューに残した行）はワーカーの `engine_job` で `LOGO_REMOVED` により失敗し、`comfy::graph::build` も拒否する。そのパックのファイルはそのまま残す。モデルルート内の `logo` フォルダはスキャンせず、`extra_model_paths.yaml` に節を作らず、削除もしない。
 - すべてのジョブは、設定されていれば GPU ロックを取る（音声も含む。`gpu_guard`）。メモリ不足による失敗は、音声ワーカーを含むすべてのエンジンでキュー項目に印を付ける。
-- パックは `backend/crates/novira-core/src/packs.rs` で定義する。ComfyUI のパックは `<data>/models/<kind>/` に置く（`modelRoots` のフォルダの `<root>/<kind>/` にあるものも読み取り専用で見つける。02-model-packs.md を参照）。ComfyUI は `extra_model_paths.yaml` の `novira_<kind>` 節から読む。音声パックは ComfyUI のパックではない。パックのダウンロードは、そのファイルにある Hugging Face と GitHub の固定アドレスを使い、トークンは送らない。
+- パックは `backend/crates/novira-core/src/packs.rs` で定義する。ComfyUI のパックは `<data>/models/<kind>/` に置く（`modelRoots` のフォルダの `<root>/<kind>/` にあるものも読み取り専用で見つける。[02-model-packs.md](../03-models/02-model-packs.md) を参照）。ComfyUI は `extra_model_paths.yaml` の `novira_<kind>` 節から読む。音声パックは ComfyUI のパックではない。パックのダウンロードは、そのファイルにある Hugging Face と GitHub の固定アドレスを使い、トークンは送らない。
 - `install_pack`（`backend/crates/novira-core/src/service/pack_store.rs`）はダウンロードをバックグラウンドで始める。実行中のパックへの 2 回目の要求は無視する。キャンセルすると、状態をディスク上の実態に戻す。進捗は `pack` イベントと `bootstrap` で届く。
 - 結果はギャラリーの項目になる（`backend/crates/novira-core/src/service/worker.rs` の `save_result`）。動画と音声のファイルはそのまま `<data>/outputs/` に保存する。設定はデータベースの行だけが持ち、サムネイルは静止画。`novira-image` スキームは `Range` 要求に答えるので、音声と動画はシークできる。
 - 音声ファイルは `mp3`・`wav`・`flac`（`backend/crates/novira-core/src/media/audio.rs`）。先頭バイトが WAV・FLAC・MP3 のものだけ保存する。
@@ -41,8 +43,8 @@ covers:
 - サイズ: 最も近い 32 の倍数に丸め、最小 64。バックエンドは上限を設けない。フォームは 7 種類のサイズを出し、最大は 1024x576。
 - ステップ数: バックエンドは 1 以上。フォームは 4〜50 ステップ、CFG 1〜12 を許す。標準プリセットは 20 ステップ・CFG 5、Turbo プリセットは 4 ステップ・CFG 1。
 - 動画は元画像にできない。ジョブの開始時にワーカーが拒否し、その前にフォームが拒否する。
-- `validate` は Wan22ImageToVideoLatent ノードを必須とする（`backend/crates/novira-core/src/comfy/client.rs`）。
-- インストール済みの動画モデル（Wan 2.1、Wan 2.2 A14B のペア、HunyuanVideo、LTX-Video）は専用のグラフを使い、パックは要らない。03-model-families.md を参照。
+- `validate` は Wan22ImageToVideoLatent ノード（パーツに分けて読み込むモデルでは、そのファミリーの動画ノード）を必須とする（`backend/crates/novira-core/src/comfy/client.rs`）。
+- インストール済みの動画モデル（Wan 2.1、Wan 2.2 A14B のペア、HunyuanVideo、LTX-Video）は専用のグラフを使い、パックは要らない。[03-model-families.md](../01-pictures/03-model-families.md) を参照。
 - 結果: `EngineOutput::Video`。`<uuid>.mp4` として `mediaType: video` で保存する。
 - RTX 4070 Ti で 1 回計測: 画像から作る 704x704・20 ステップの 2 秒クリップが約 74 秒。パックのインストールは約 18 分。
 

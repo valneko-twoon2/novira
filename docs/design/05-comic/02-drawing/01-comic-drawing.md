@@ -19,6 +19,8 @@ covers:
 ---
 # コミックのコマの絵
 
+一覧に戻る: [README.md](README.md)
+
 コミックのコマが絵を得る仕組み。コマを描くキューのジョブ、登場人物を同じに保つ言葉と参照画像、複数人のコマの領域、ポーズ、コマが持つ以前の絵、絵の一部の描き直し。保存文書は [01-comic-canvas.md](../01-canvas/01-comic-canvas.md) に、アシスタントの `scene` 操作は [03-comic-scene.md](03-comic-scene.md) にある。
 
 ## 動作

@@ -19,11 +19,13 @@ covers:
 ---
 # ギャラリーと共有
 
-ギャラリーは、novira が作る、または受け取る画像、動画、音声を、サムネイルと埋め込み設定つきで保つ。共有用の書き出しは、ユーザーが選んだフォルダにコピーを書き、各コピーに AI 製の印（不可視の透かし、XMP のラベル、署名つき C2PA 資格情報）を付けられる。チェックはその印を読み戻す。生成は 01-media-generation.md、バックアップは 01-settings-engine.md にある。
+一覧に戻る: [README.md](README.md)
+
+ギャラリーは、novira が作る、または受け取る画像、動画、音声を、サムネイルと埋め込み設定つきで保つ。共有用の書き出しは、ユーザーが選んだフォルダにコピーを書き、各コピーに AI 製の印（不可視の透かし、XMP のラベル、署名つき C2PA 資格情報）を付けられる。チェックはその印を読み戻す。生成は [01-media-generation.md](../../02-generation/02-media-workflows/01-media-generation.md)、バックアップは [01-settings-engine.md](../../01-app/03-engine/01-settings-engine.md) にある。
 
 ## 動作
 
-**ファイルと名前。** 原本は `novira-data/outputs/<uuid>.png`、`<uuid>.mp4`（動画）、`<uuid>.flac|wav|mp3`（音声）。サムネイルは `novira-data/thumbnails/<stem>.thumb`で、品質 85 の JPEG、透明のある画像は PNG、256 x 256 に収める。名前が有効なのは（`images::is_valid_name`、`backend/crates/novira-core/src/media/images.rs`）、80 文字以内、上記の拡張子のいずれか、文字・数字・`-`・`_`・`.` のみ、先頭がドットでない、Windows のデバイス名でない、のとき。
+**ファイルと名前。** 原本は `novira-data/outputs/` の下の `<uuid>.png`、`<uuid>.mp4`（動画）、`<uuid>.flac|wav|mp3`（音声）。フォルダ分けとファイル名の時刻は [01-gallery-files.md](01-gallery-files.md)。サムネイルは `novira-data/thumbnails/<stem>.thumb`で、品質 85 の JPEG、透明のある画像は PNG、256 x 256 に収める。名前が有効なのは（`images::is_valid_name`、`backend/crates/novira-core/src/media/images.rs`）、80 文字以内、上記の拡張子のいずれか、文字・数字・`-`・`_`・`.` のみ、先頭がドットでない、Windows のデバイス名でない、のとき。
 
 **埋め込み設定。** 生成した PNG は `IEND` の前に UTF-8 の `iTXt` チャンクを持つ。`novira_metadata`（JSON の生成パラメーター）と、ジョブにあれば `novira_workflow`。ピクセルデータは再エンコードしない。そのような PNG をアップロードすると両方が復元される。
 
@@ -31,13 +33,13 @@ covers:
 
 **アップロード。** ページは生のバイト列とオプション（ボード、中間フラグ、カテゴリ）をヘッダーで送る。デコードの前に `images::check_limits` が、256 MiB を超えるファイル、20,000 ピクセルを超える辺、100,000,000 ピクセルを超える総数、PNG、JPEG、WebP、GIF、BMP 以外の形式（内容から判定）を拒否する。PNG はチャンクとピクセルの検査後にバイト単位でそのまま保ち、ほかの形式は PNG に再エンコードする。
 
-**ギャラリーの状態。** キャンバス用、中間画像、下書き（`draftAt`）として作った画像には `isIntermediate` が付き、ボードのビューから外れる（`frontend/src/state/gallery.ts`）。ロゴはカテゴリ `other` を保つ。
+**ギャラリーの状態。** キャンバス用、中間画像、下書き（`draftAt`）として作った画像には `isIntermediate` が付き、ボードのビューから外れる（`frontend/src/state/gallery.ts`）。
 
 **動画と音声。** 動画は `mediaType: video` の `.mp4` として保存し、サムネイルは最初のフレーム。音楽は FLAC、音声合成は WAV で保存する（`backend/crates/novira-core/src/service/worker.rs`）。どちらも設定はデータベースの行にだけ保つ。`store_audio` は WAV、FLAC、MP3 以外のバイト列を拒否する。音声のサムネイルは 48 本のバーの 256 x 144 の PNG で、16 ビット PCM の WAV は音量から、ほかのファイルはバイトのパターンから描く。今のジョブは MP3 を書かない。スキームは `Range` リクエストに応じる（206 か 416）ので、メディアはシークできる。
 
 **画像 URL。** ページが受け取るのは名前だけ。Windows では `http://novira-image.localhost/full/<name>` か `/thumb/<name>`、それ以外では `novira-image://localhost/...`。`backend/src-tauri/src/image_scheme.rs` が配信し（判定は `backend/crates/novira-core/src/image_serve.rs`）、未知または無効な名前は 404。CSP は `img-src` と `media-src` で許可する。
 
-**共有用の書き出し。** 共有ダイアログ（`frontend/src/features/share/ShareDialog.tsx`）は名前とオプションを `export_images` に送る。コマンドはまずそれらを検査する（有効な名前 1〜10,000 件、オプション、透かしの状態）。その後シェルがフォルダのダイアログ（`backend/src-tauri/src/dialogs.rs`、rfd）を開き、キャンセルは `null` を返す。ページはパスを送受信しない。コピーはピクセルから再エンコードする（`backend/crates/novira-core/src/media/export.rs`）。PNG、JPEG（品質 1〜100、透明は白の上）、可逆 WebP。長辺は 2048、1536、1024、または 16〜16,384 に制限でき、拡大はしない。元のテキストチャンク、EXIF、XMP は残らない。「生成情報を削除」がオンでなければ、PNG のコピーは `novira_metadata` と `novira_workflow` を保ち、JPEG と WebP は保たない。既定（`frontend/src/features/share/shareOptions.ts`）は PNG、品質 90、元のサイズ、情報あり、透かしなしで、最後の選択はセッション中保つ。動画、音声、存在しないファイルはスキップして数える。ファイル名は `<stem>.<ext>`、次に `<stem>-2.<ext>`で、上書きしない。ブラウザサーバー（`POST /export/images`）は同じコピー（`export_download`）を 1 回のダウンロードとして作る。画像 1 枚はそのまま、複数は無圧縮の zip。両側がメモリに保持するので、`export::MAX_DOWNLOAD_BYTES` を超えると拒否する。「フォルダを開く」はシェルが覚えている直近の書き出しのフォルダを開く。「新しいタブで開く」はブラウザ版でだけ表示する（`frontend/src/backend/openWindow.ts`）。
+**共有用の書き出し。** 共有ダイアログ（`frontend/src/features/share/ShareDialog.tsx`）は名前とオプションを `export_images` に送る。コマンドはまずそれらを検査する（有効な名前 1〜10,000 件、オプション、透かしの状態）。その後シェルがフォルダのダイアログ（`backend/src-tauri/src/dialogs.rs`、rfd）を開き、キャンセルは `null` を返す。ページはパスを送受信しない。コピーはピクセルから再エンコードする（`backend/crates/novira-core/src/media/export.rs`）。PNG、JPEG（品質 1〜100、透明は白の上）、可逆 WebP。長辺は 2048、1536、1024、または 16〜16,384 に制限でき、拡大はしない。元のテキストチャンク、EXIF、XMP は残らない。「生成情報を削除」がオンでなければ、PNG のコピーは `novira_metadata` と `novira_workflow` を保ち、JPEG と WebP は保たない。既定（`frontend/src/features/share/shareOptions.ts`）は PNG、品質 90、元のサイズ、情報あり、透かしなしで、最後の選択はセッション中保つ。動画、音声、存在しないファイルはスキップして数える。ファイル名は `<stem>.<ext>`、次に `<stem>-2.<ext>` で、上書きしない。ブラウザサーバー（`POST /export/images`）は同じコピー（`export_download`）を 1 回のダウンロードとして作る。画像 1 枚はそのまま、複数は無圧縮の zip。両側がメモリに保持するので、`export::MAX_DOWNLOAD_BYTES` を超えると拒否する。「フォルダを開く」はシェルが覚えている直近の書き出しのフォルダを開く。「新しいタブで開く」はブラウザ版でだけ表示する（`frontend/src/backend/openWindow.ts`）。
 
 **ダウンロード。** `downloadImages`（メニュー、ビューア）は `save_images` を呼ぶ。デスクトップアプリではシェルがフォルダを尋ね、原本をそのままコピーする（`save_originals`。有効な名前 1〜10,000 件、上書きせず `-2`）。ブラウザは各画像を自身のオリジンからダウンロードする。
 
@@ -51,7 +53,7 @@ covers:
 
 **透かしのファイル。** 固定のサイズとハッシュは「境界」を参照。ファイルは同梱フォルダ、次にデータフォルダから探し、起動時（`backend/src-tauri/src/lib.rs`）か `prepare_watermark` でダウンロードする。状態は `missing`、`downloading`、`ready`、`failed`（`provenance/mod.rs`）。コードは GPU の実行プロバイダーを設定しない。
 
-**画像のチェック。** `check_watermark_file` はシェルのダイアログを開き、キャンセルで `null` を返す（ダイアログのないブラウザサーバーでは選択を隠す）。`check_watermark_image` はギャラリーの名前を受け取る。チェックは画像の右クリックメニューから開き、共有フォームにそこへのリンクはない。どちらも先に `images::check_limits` を実行する（`backend/crates/novira-core/src/service/share.rs`）。結果は、透かしを確認したか、novira の印か、その id を示し、既知の id では元の名前、その画像がまだギャラリーにあるか、書き出し時刻を示す。C2PA の状態（あり、有効、信頼済み、AI ソース、署名者、このインストールが作ったか）と XMP のソース種別も報告する。ギャラリーの画像メニューから開く。
+**画像のチェック。** `check_watermark_file` はシェルのダイアログを開き、キャンセルで `null` を返す（ダイアログのないブラウザサーバーでは選択を隠す）。`check_watermark_image` はギャラリーの名前を受け取る。チェックは画像の右クリックメニューから開き、共有フォームにそこへのリンクはない。どちらも先に `images::check_limits` を実行する（`backend/crates/novira-core/src/service/share.rs`）。結果は、透かしを確認したか、novira の印か、その id を示し、既知の id では元の名前、その画像がまだギャラリーにあるか、書き出し時刻を示す。C2PA の状態（あり、有効、信頼済み、AI ソース、署名者、このインストールが作ったか）と XMP のソース種別も報告する。
 
 **署名キー。** 透かしつきの最初の書き出しで、ローカルの CA と、約 10 年有効な ES256 のリーフ証明書（名前は「novira」）を作る。CA の鍵はすぐ破棄する。リーフの鍵とチェーンは、現在の Windows ユーザーの DPAPI で `novira-data/secrets/c2pa-signing.key` に保存する（`backend/crates/novira-core/src/secret.rs`）。
 
@@ -60,9 +62,9 @@ covers:
 ボードは `boards` テーブルの行: id（`board-` と 16 進 12 桁）、名前、`archived`、`createdAt`、`parentId`（サブフォルダのボード。`backend/crates/novira-core/src/service/boards.rs`）。画像は `boardId` で 1 つのボードに属し、`null` は未分類。ページが枚数とカバーを計算する（`frontend/src/features/gallery/boards/useBoardStats.ts`）。中間画像は除き、`general` は画像、それ以外はアセットとして数える。
 
 - 作成と名前変更は名前をトリムし、空白のみを拒否する。
-- アーカイブはフラグを立てるだけ。アーカイブ済みのボードは、アーカイブ表示がオンでなければ隠れ、選択中のボードをアーカイブすると未分類が選択される。自動追加のボードをアーカイブすると、その設定が解除される（`frontend/src/features/gallery/boards/boardActions.ts`）。
+- アーカイブはフラグを立てるだけ。アーカイブ済みのボードは、アーカイブ表示がオンでなければ隠れ、そのとき選択中のボードをアーカイブすると未分類が選択される。自動追加のボードをアーカイブすると、その設定が解除される（`frontend/src/features/gallery/boards/boardActions.ts`）。
 - 自動割り当ての設定がオン（既定）なら、ボードを選ぶと、生成、アップロード、キャンバスからの新しい画像の宛先になる（`autoAddBoardId()`、`frontend/src/state/invoke.ts`）。ギャラリーの画像が待機中または描画中のあいだ、Invoke は新しく選んだボードではなく最初の 1 件のボードを保つ（`generationBoardId()`）。ボードが削除されたか、キューが空なら、自動追加のボードに戻る。バックエンドは `boardId` がボードを指すかを検査しない。
-- `delete_board(id, deleteImages)` はボードとそのサブフォルダを削除する。各画像は、ボードを失う（`boardId` が null）か、ファイルごと削除され、削除された名前が返る。ダイアログは中間でない画像を数えるが、削除は中間画像も対象にする。
+- `delete_board(id, deleteImages)` はボードとそのサブフォルダを削除する。各画像は、ボードを失う（`boardId` が null）か、画像ごとゴミ箱へ送られ（[03-gallery-trash.md](03-gallery-trash.md)）、ゴミ箱へ送った名前が返る。ダイアログは中間でない画像を数えるが、削除は中間画像も対象にする。
 
 ## 境界
 

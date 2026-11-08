@@ -6,6 +6,8 @@ covers:
 ---
 # ブラウザ用サーバーの起動
 
+一覧に戻る: [README.md](README.md)
+
 `novira-server`（[01-browser-server.md](01-browser-server.md)）の起動のしかた。オプション、開くデータフォルダ、起動するランチャーを扱う。
 
 ## 動作

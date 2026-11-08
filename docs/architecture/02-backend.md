@@ -1,5 +1,7 @@
 # backend/
 
+一覧に戻る: [README.md](README.md)
+
 Rust 側の作り: 3 つのクレート、`novira-core` の各モジュールの役割、ジョブの流れ、データの置き場、テストのしかた。上: [README.md](README.md)。詳しい仕組み: [../design/README.md](../design/README.md)。何をどう守るか: [03-security.md](../design/01-app/01-core/03-security.md)。境界を変える規則: `.claude/rules/security.md`。
 
 Cargo ワークスペースの根は `backend/`（`Cargo.toml`、`Cargo.lock`、`rust-toolchain.toml`、`rustfmt.toml`、ビルド出力は `target/`）。Rust バックエンドは、アプリが Tauri の中で動くとき `frontend/src/backend/mock/` のモックに代わり、すべてをアプリの隣の `novira-data/` に保存し、自分でインストールして起動した ComfyUI を動かす。

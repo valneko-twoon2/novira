@@ -30,6 +30,11 @@ export const PAGE_LIMIT = 9000;
 /** Characters of a design page; a longer one is split by feature. */
 export const DESIGN_LIMIT = 9000;
 
+/** The length a page is measured by: its characters without the targets of its links (the navigation does not count as prose). */
+export function proseLength(body) {
+  return body.replace(/\]\([^)\n]*\)/g, ']').length;
+}
+
 /** Where a path written in a page starts when it is a repository path; anything else in backticks is not checked. */
 const ROOTS = ['frontend/', 'backend/', 'contract/', 'docs/', 'scripts/', '.claude/', '.githooks/'];
 /** Paths a page may name that are not tracked: build output. */
@@ -163,6 +168,21 @@ export function designIndexProblems(files, read) {
   return problems;
 }
 
+/**
+ * Every page can be left for its list: a design page and an architecture page link to the README.md of their folder, the README.md
+ * of a design folder to the README.md above it (the list of tests does the same: 一覧に戻る). The top READMEs have nowhere to go back to.
+ */
+export function backLinkProblems(files, read) {
+  const problems = [];
+  for (const f of files) {
+    if (!f.endsWith('.md') || !(f.startsWith(`${DESIGN}/`) || f.startsWith(`${ARCH}/`))) continue;
+    if (f === `${DESIGN}/README.md` || f === `${ARCH}/README.md`) continue;
+    const target = posix.basename(f) === 'README.md' ? '../README.md' : 'README.md';
+    if (!(read(f) ?? '').includes(`](${target})`)) problems.push(`${f}: needs a link back to the list: \`一覧に戻る: [${target}](${target})\` under the title`);
+  }
+  return problems;
+}
+
 /** `[{ page, covers }]` of every design page, for the staged check and `--find`. */
 export function designCovers(files, read) {
   return designPagesOf(files).map((page) => ({ page, covers: coversOf(read(page) ?? '') ?? [] }));
@@ -238,13 +258,13 @@ export function structureProblems(files, read) {
 
   // The map stays small enough to be read whole: the entry page is read at the start of every task.
   for (const page of archPages) {
-    const size = text(page).length;
+    const size = proseLength(text(page));
     const limit = page === entry ? ENTRY_LIMIT : PAGE_LIMIT;
     if (size > limit) problems.push(`${page}: ${size} characters (at most ${limit}); cut what a search of the code shows (file lists), keep what it does not (.claude/rules/docs.md)`);
   }
 
   // A design page says which code it describes, names only code that exists, is in the index, and is not too long.
-  problems.push(...designIndexProblems(files, read));
+  problems.push(...designIndexProblems(files, read), ...backLinkProblems(files, read));
   for (const page of designPages) {
     const list = coversOf(text(page));
     if (list === null || list.length === 0) {
@@ -252,7 +272,7 @@ export function structureProblems(files, read) {
     } else {
       for (const entryPath of list) if (!files.some((f) => covers(entryPath, f))) problems.push(`${page}: covers "${entryPath}", which matches no file; fix the front matter`);
     }
-    const size = text(page).length;
+    const size = proseLength(text(page));
     if (size > DESIGN_LIMIT) problems.push(`${page}: ${size} characters (at most ${DESIGN_LIMIT}); split it by feature (.claude/rules/docs.md)`);
   }
   return problems;

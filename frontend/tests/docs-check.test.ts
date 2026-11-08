@@ -10,6 +10,7 @@ import {
   DESIGN_LIMIT,
   ENTRY_LIMIT,
   PAGE_LIMIT,
+  proseLength,
   pagesCovering,
   stagedProblems,
   stagedWarnings,
@@ -20,16 +21,16 @@ import {
 const QUEUE = 'backend/crates/novira-core/src/service/queue.rs';
 const PAGES: Record<string, string> = {
   'docs/architecture/README.md': '# Architecture\n\nfrontend/ backend/ docs/ .claude/ scripts/ scripts/tools/ .githooks/ start.bat [tooling](03-tooling.md)\n',
-  'docs/architecture/01-frontend.md': '# frontend\n\napp/ features/ gallery/ viewer/\n',
-  'docs/architecture/02-backend.md': '# backend\n\ncrates/ novira-core/ service/ comfy/\n',
-  'docs/architecture/03-tooling.md': '# tooling\n\nrules/i18n.md skills/i18n/ start.bat check.mjs pre-commit.mjs\n',
+  'docs/architecture/01-frontend.md': '# frontend\n\n一覧に戻る: [README.md](README.md)\n\napp/ features/ gallery/ viewer/\n',
+  'docs/architecture/02-backend.md': '# backend\n\n一覧に戻る: [README.md](README.md)\n\ncrates/ novira-core/ service/ comfy/\n',
+  'docs/architecture/03-tooling.md': '# tooling\n\n一覧に戻る: [README.md](README.md)\n\nrules/i18n.md skills/i18n/ start.bat check.mjs pre-commit.mjs\n',
   'docs/design/README.md': '# Design\n\n[01-app/](01-app/README.md) [02-generation/](02-generation/README.md)\n',
-  'docs/design/01-app/README.md': '# App\n\n[01-core/](01-core/README.md)\n',
-  'docs/design/01-app/01-core/README.md': '# Core\n\n[03-security.md](03-security.md)\n',
-  'docs/design/02-generation/README.md': '# Generation\n\n[01-pictures/](01-pictures/README.md)\n',
-  'docs/design/02-generation/01-pictures/README.md': '# Pictures\n\n[01-generation.md](01-generation.md)\n',
-  'docs/design/02-generation/01-pictures/01-generation.md': `---\ncovers:\n  - ${QUEUE}\n  - backend/crates/novira-core/src/comfy/**\n---\n# Generation\n`,
-  'docs/design/01-app/01-core/03-security.md': '---\ncovers:\n  - backend/src-tauri/capabilities/**\n---\n# Security\n',
+  'docs/design/01-app/README.md': '# App\n\n一覧に戻る: [../README.md](../README.md)\n\n[01-core/](01-core/README.md)\n',
+  'docs/design/01-app/01-core/README.md': '# Core\n\n一覧に戻る: [../README.md](../README.md)\n\n[03-security.md](03-security.md)\n',
+  'docs/design/02-generation/README.md': '# Generation\n\n一覧に戻る: [../README.md](../README.md)\n\n[01-pictures/](01-pictures/README.md)\n',
+  'docs/design/02-generation/01-pictures/README.md': '# Pictures\n\n一覧に戻る: [../README.md](../README.md)\n\n[01-generation.md](01-generation.md)\n',
+  'docs/design/02-generation/01-pictures/01-generation.md': `---\ncovers:\n  - ${QUEUE}\n  - backend/crates/novira-core/src/comfy/**\n---\n# Generation\n\n一覧に戻る: [README.md](README.md)\n`,
+  'docs/design/01-app/01-core/03-security.md': '---\ncovers:\n  - backend/src-tauri/capabilities/**\n---\n# Security\n\n一覧に戻る: [README.md](README.md)\n',
   'AGENTS.md': 'i18n.md /i18n\n',
 };
 const TREE = [
@@ -106,7 +107,7 @@ describe('the code names the pages write exist', () => {
 
   it('fails for a removed component or constant, naming the page and the line', () => {
     const found = problems([...TREE], withPage('The cast edits them (`PlaceSection`), capped at `MAX_PLACES`.')).join('\n');
-    expect(found).toContain('docs/design/02-generation/01-pictures/01-generation.md:7: names `PlaceSection`');
+    expect(found).toContain('docs/design/02-generation/01-pictures/01-generation.md:9: names `PlaceSection`');
     expect(found).toContain('names `MAX_PLACES`');
   });
 
@@ -122,7 +123,7 @@ describe('the code names the pages write exist', () => {
 });
 
 describe('what the pages point at exists', () => {
-  const withPage = (body: string) => ({ ...PAGES, 'docs/architecture/01-frontend.md': `# frontend\n\napp/ features/ gallery/ viewer/\n\n${body}\n` });
+  const withPage = (body: string) => ({ ...PAGES, 'docs/architecture/01-frontend.md': `# frontend\n\n一覧に戻る: [README.md](README.md)\n\napp/ features/ gallery/ viewer/\n\n${body}\n` });
 
   it('fails for a path written in backticks that is not in the tree, and names the page', () => {
     const found = problems(TREE, withPage('See `frontend/src/features/gallery/Gone.tsx` and `frontend/src/app/App.tsx`.')).join('\n');
@@ -157,7 +158,7 @@ describe('what the pages point at exists', () => {
 describe('the map stays small enough to read', () => {
   it('refuses an entry page over its limit and another page over the larger limit', () => {
     const entry = { ...PAGES, 'docs/architecture/README.md': `${PAGES['docs/architecture/README.md']}${'x'.repeat(ENTRY_LIMIT)}\n` };
-    expect(problems(TREE, entry).join('\n')).toContain(`docs/architecture/README.md: ${entry['docs/architecture/README.md'].length} characters (at most ${ENTRY_LIMIT})`);
+    expect(problems(TREE, entry).join('\n')).toContain(`docs/architecture/README.md: ${proseLength(entry['docs/architecture/README.md'])} characters (at most ${ENTRY_LIMIT})`);
     const other = { ...PAGES, 'docs/architecture/02-backend.md': `${PAGES['docs/architecture/02-backend.md']}${'x'.repeat(ENTRY_LIMIT)}\n` };
     expect(problems(TREE, other)).toEqual([]);
     const big = { ...PAGES, 'docs/architecture/02-backend.md': `${PAGES['docs/architecture/02-backend.md']}${'x'.repeat(PAGE_LIMIT)}\n` };
@@ -210,6 +211,17 @@ describe('the design pages', () => {
     const more = 'docs/design/01-app/01-core/04-more.md';
     const half = problems([...TREE, more], { ...PAGES, [more]: '---\ncovers:\n  - frontend/src/app/App.tsx\n---\n' + '# More\n' }).join('\n');
     expect(half).toContain('docs/design/01-app/01-core/README.md: does not list 04-more.md');
+  });
+
+  it('wants every page to link back to its list, and a folder README to the list above it', () => {
+    const lonely = { ...PAGES, 'docs/design/02-generation/01-pictures/01-generation.md': (PAGES['docs/design/02-generation/01-pictures/01-generation.md'] ?? '').replace(/一覧に戻る.*/, ''), 'docs/design/01-app/01-core/README.md': '# Core\n\n[03-security.md](03-security.md)\n', 'docs/architecture/02-backend.md': '# backend\n\ncrates/ novira-core/ service/ comfy/\n' };
+    const found = problems(TREE, lonely).join('\n');
+    expect(found).toContain('docs/design/02-generation/01-pictures/01-generation.md: needs a link back to the list');
+    expect(found).toContain('docs/design/01-app/01-core/README.md: needs a link back to the list: `一覧に戻る: [../README.md](../README.md)`');
+    expect(found).toContain('docs/architecture/02-backend.md: needs a link back to the list');
+    // The top READMEs have no list above them.
+    expect(found).not.toContain('docs/design/README.md: needs a link');
+    expect(found).not.toContain('docs/architecture/README.md: needs a link');
   });
 
   it('does not ask a design page for a "Last updated" line', () => {

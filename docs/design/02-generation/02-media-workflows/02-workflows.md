@@ -7,6 +7,8 @@ covers:
 ---
 # ワークフロー
 
+一覧に戻る: [README.md](README.md)
+
 ワークフロータブのノードワークフローエディタ、それが保存するワークフロー、グラフを実行するもの。グラフの実行、エディタが出す ComfyUI のノード、結果に対してバックエンドが行うことは [03-workflow-graphs.md](03-workflow-graphs.md)、パックのインストールは [02-extensions.md](../../01-app/03-engine/02-extensions.md)、アシスタントの編集は [01-assistant.md](../../03-assistant/01-core/01-assistant.md) にある。
 
 ## 動作

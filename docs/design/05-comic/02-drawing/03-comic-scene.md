@@ -4,6 +4,8 @@ covers:
 ---
 # コミックのシーン（scene 操作）
 
+一覧に戻る: [README.md](README.md)
+
 アシスタントがコマを 1 つの `scene` 操作として書く方法と、アプリがそれから作るもの。コマの描き方は [01-comic-drawing.md](01-comic-drawing.md) に、ページレイアウトは [03-comic-pages.md](../01-canvas/03-comic-pages.md) にある。
 
 ## 動作

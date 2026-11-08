@@ -1,5 +1,7 @@
 # ガード: 何が何を止めるか
 
+一覧に戻る: [README.md](README.md)
+
 リポジトリの機械による検査すべてと、それが止めるもの。散文で書いた規則でここに行がないものは、ガードにする候補（`/hardening-harness` スキル）。変更に対して検査を回す方法: [../verification.md](../verification.md)。ランチャーとツール自体: [03-tooling.md](03-tooling.md)。上: [README.md](README.md)。
 
 | ガード | 止めるもの |
