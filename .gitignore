@@ -28,3 +28,6 @@ Thumbs.db
 *.onnx
 onnxruntime.dll
 *.tsbuildinfo
+
+# Backups that WinMerge and TortoiseGit leave next to a file they changed
+*.bak
