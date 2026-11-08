@@ -67,6 +67,9 @@ const LORA_BASES_CHECKED_META: &str = "lora_bases_checked_1";
 /// Set once the records stored without a family were checked against the current detection (`registry::corrected_any_bases`);
 /// bump the number when the detection learns a family it did not tell before.
 const ANY_BASES_CHECKED_META: &str = "any_bases_checked_2";
+/// The checkpoint files already read for `layout::move_misfiled` (`layout::Checked`); bump the number when what it tells
+/// apart changes (`MISFILED_KINDS`, `classify::detect_kind`), so every file is read once again.
+const MISFILED_CHECKED_META: &str = "misfiled_checked_1";
 const EXTRA_MODEL_PATHS: &str = "extra_model_paths.yaml";
 const INTERRUPTED: &str = "Interrupted because novira was closed";
 
@@ -366,14 +369,19 @@ impl Backend {
         watch.lap("image urls");
         // Every original goes in the folder of its board (pictures an older version stored flat, a board renamed).
         files.index();
-        crate::media::arrangement::arrange(&files, &state.boards, &state.images);
+        crate::media::arrangement::arrange_all(&files, &state.boards, &state.images);
         watch.lap("gallery folders");
 
         // Models: the files on disk decide what is listed; stored records keep the user's edits.
         let stored: Vec<ModelConfig> = db.load(Table::Models)?;
         watch.lap("stored models");
         // Files an older version saved under the wrong kind (an IP-Adapter among the checkpoints) go where they belong.
-        layout::move_misfiled(&models_dir);
+        let mut checked = layout::Checked::from_json(db.meta(MISFILED_CHECKED_META)?.as_deref());
+        let before = checked.to_json();
+        layout::move_misfiled(&models_dir, &mut checked);
+        if checked.to_json() != before {
+            db.set_meta(MISFILED_CHECKED_META, &checked.to_json())?;
+        }
         watch.lap("misfiled models");
         let found = layout::scan_roots(&roots);
         watch.lap("model scan");

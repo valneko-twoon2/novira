@@ -171,21 +171,71 @@ const MISFILED_KINDS: &[ModelType] = &[
     ModelType::ModelPatch,
 ];
 
+/// The checkpoint files `move_misfiled` has read and found in place, by path under the models folder, with the size and
+/// the modification time (milliseconds) they had. A file with the same stamp is not read again: reading every
+/// checkpoint's header at each start was the longest wait of the start on a library of hundreds of them. Kept between
+/// starts as JSON; a record that does not parse is an empty one (every file is read once, as before the record existed).
+#[derive(Default, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct Checked(std::collections::BTreeMap<String, (u64, i64)>);
+
+impl Checked {
+    /// The record kept as `json`; an empty one when it is missing or damaged.
+    pub fn from_json(json: Option<&str>) -> Self {
+        json.and_then(|j| serde_json::from_str(j).ok())
+            .unwrap_or_default()
+    }
+
+    pub fn to_json(&self) -> String {
+        serde_json::to_string(self).unwrap_or_default()
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+}
+
+/// A file's size and modification time in milliseconds, or `None` when either cannot be told.
+fn stamp_of(file: &Path) -> Option<(u64, i64)> {
+    let meta = std::fs::metadata(file).ok()?;
+    let at = meta.modified().ok()?;
+    let ms = at.duration_since(std::time::UNIX_EPOCH).ok()?.as_millis();
+    Some((meta.len(), i64::try_from(ms).ok()?))
+}
+
 /// Moves files that sit in the checkpoints folder of `models_dir` but hold another kind of model (an IP-Adapter
 /// downloaded as a "Checkpoint") into that kind's folder, so they stop appearing among the main models. A file whose name is
-/// taken in the target folder stays. Returns the moves made, as (from, to).
-pub fn move_misfiled(models_dir: &Path) -> Vec<(PathBuf, PathBuf)> {
+/// taken in the target folder stays. Returns the moves made, as (from, to). `checked` is what an earlier run read: a file
+/// with the stamp it holds is not read again, and the record is brought up to date (files that left are dropped).
+pub fn move_misfiled(models_dir: &Path, checked: &mut Checked) -> Vec<(PathBuf, PathBuf)> {
     let mut moved = Vec::new();
+    let mut next = Checked::default();
     let Some(main) = category_for_kind(ModelType::Main) else {
         return moved;
     };
     for alias in main.aliases {
         for file in walk(&models_dir.join(alias)) {
-            let Some(kind) = crate::models::classify::read_header(&file)
+            let key = file
+                .strip_prefix(models_dir)
+                .unwrap_or(&file)
+                .to_string_lossy()
+                .replace('\\', "/");
+            let stamp = stamp_of(&file);
+            if let Some(s) = stamp.filter(|s| checked.0.get(&key) == Some(s)) {
+                next.0.insert(key, s);
+                continue;
+            }
+            let misfiled = crate::models::classify::read_header(&file)
                 .as_ref()
                 .and_then(crate::models::classify::detect_kind)
-                .filter(|k| MISFILED_KINDS.contains(k))
-            else {
+                .filter(|k| MISFILED_KINDS.contains(k));
+            let Some(kind) = misfiled else {
+                if let Some(s) = stamp {
+                    next.0.insert(key, s);
+                }
                 continue;
             };
             let (Some(cat), Some(name)) = (category_for_kind(kind), file.file_name()) else {
@@ -200,6 +250,7 @@ pub fn move_misfiled(models_dir: &Path) -> Vec<(PathBuf, PathBuf)> {
             }
         }
     }
+    *checked = next;
     moved
 }
 
@@ -291,7 +342,8 @@ mod tests {
             &["image_proj.proj.weight"],
         );
         touch(&m.join("ipadapter/dup.safetensors"), 3);
-        let moved = move_misfiled(m);
+        let mut checked = Checked::default();
+        let moved = move_misfiled(m, &mut checked);
         assert_eq!(moved.len(), 3);
         assert!(m.join("vae/ae.safetensors").is_file());
         assert!(m.join("ipadapter/ipa.safetensors").is_file());
@@ -300,7 +352,127 @@ mod tests {
         assert!(m.join("checkpoints/dup.safetensors").is_file());
         assert!(!m.join("checkpoints/ipa.safetensors").exists());
         // Nothing left to move the second time.
-        assert_eq!(move_misfiled(m).len(), 0);
+        assert_eq!(move_misfiled(m, &mut checked).len(), 0);
+    }
+
+    /// Writes `keys` as the header of `p` again, and gives the file the size and modification time it had before.
+    fn rewrite_keeping_stamp(p: &Path, keys: &[&str]) {
+        let before = std::fs::metadata(p).unwrap();
+        let at = before.modified().unwrap();
+        safetensors(p, keys);
+        // Same length: the keys must be the same length as the old ones (the tests pick them so).
+        assert_eq!(std::fs::metadata(p).unwrap().len(), before.len());
+        std::fs::File::options()
+            .write(true)
+            .open(p)
+            .unwrap()
+            .set_modified(at)
+            .unwrap();
+    }
+
+    #[test]
+    fn a_checkpoint_read_once_is_not_read_again_until_its_size_or_time_changes() {
+        let d = tempfile::tempdir().unwrap();
+        let m = d.path();
+        let file = m.join("checkpoints/real.safetensors");
+        safetensors(&file, &["model.diffusion_model.input_blocks.0.0.weight"]);
+        let mut checked = Checked::default();
+        assert!(move_misfiled(m, &mut checked).is_empty());
+        assert_eq!(checked.len(), 1);
+        // The file becomes an IP-Adapter in place with the same size and time: the record answers, nothing is read, so
+        // nothing moves (the proof that the header was not read).
+        let real = "model.diffusion_model.input_blocks.0.0.weight";
+        let ip = format!("{:x<1$}", "image_proj.proj.weight", real.len());
+        rewrite_keeping_stamp(&file, &[ip.as_str()]);
+        assert!(move_misfiled(m, &mut checked).is_empty());
+        assert!(file.is_file());
+        // A new modification time reads it again, and the IP-Adapter goes where it belongs.
+        let later = std::fs::metadata(&file).unwrap().modified().unwrap()
+            + std::time::Duration::from_secs(5);
+        std::fs::File::options()
+            .write(true)
+            .open(&file)
+            .unwrap()
+            .set_modified(later)
+            .unwrap();
+        assert_eq!(move_misfiled(m, &mut checked).len(), 1);
+        assert!(m.join("ipadapter/real.safetensors").is_file());
+        // The moved file is no longer in the record.
+        assert!(checked.is_empty());
+    }
+
+    #[test]
+    fn a_changed_size_reads_the_file_again() {
+        let d = tempfile::tempdir().unwrap();
+        let m = d.path();
+        let file = m.join("checkpoints/x.safetensors");
+        safetensors(&file, &["model.diffusion_model.input_blocks.0.0.weight"]);
+        let mut checked = Checked::default();
+        move_misfiled(m, &mut checked);
+        safetensors(
+            &file,
+            &["image_proj.proj.weight", "ip_adapter.1.to_k_ip.weight"],
+        );
+        assert_eq!(move_misfiled(m, &mut checked).len(), 1);
+    }
+
+    #[test]
+    fn a_misfiled_file_that_could_not_move_is_read_again_next_time() {
+        let d = tempfile::tempdir().unwrap();
+        let m = d.path();
+        safetensors(
+            &m.join("checkpoints/dup.safetensors"),
+            &["image_proj.proj.weight"],
+        );
+        touch(&m.join("ipadapter/dup.safetensors"), 3);
+        let mut checked = Checked::default();
+        assert!(move_misfiled(m, &mut checked).is_empty());
+        assert!(checked.is_empty());
+        std::fs::remove_file(m.join("ipadapter/dup.safetensors")).unwrap();
+        assert_eq!(move_misfiled(m, &mut checked).len(), 1);
+    }
+
+    #[test]
+    fn files_that_left_are_dropped_from_the_record() {
+        let d = tempfile::tempdir().unwrap();
+        let m = d.path();
+        safetensors(
+            &m.join("checkpoints/a.safetensors"),
+            &["model.diffusion_model.input_blocks.0.0.weight"],
+        );
+        safetensors(
+            &m.join("checkpoints/b.safetensors"),
+            &["model.diffusion_model.input_blocks.0.0.weight"],
+        );
+        let mut checked = Checked::default();
+        move_misfiled(m, &mut checked);
+        assert_eq!(checked.len(), 2);
+        std::fs::remove_file(m.join("checkpoints/a.safetensors")).unwrap();
+        move_misfiled(m, &mut checked);
+        assert_eq!(checked.len(), 1);
+    }
+
+    #[test]
+    fn a_damaged_or_missing_record_is_an_empty_one_and_a_kept_one_round_trips() {
+        assert_eq!(Checked::from_json(None), Checked::default());
+        assert_eq!(Checked::from_json(Some("not json")), Checked::default());
+        assert_eq!(Checked::from_json(Some("[1,2]")), Checked::default());
+        assert_eq!(Checked::from_json(Some(r#"{"a":"b"}"#)), Checked::default());
+        let d = tempfile::tempdir().unwrap();
+        safetensors(
+            &d.path().join("checkpoints/a.safetensors"),
+            &["model.diffusion_model.input_blocks.0.0.weight"],
+        );
+        let mut checked = Checked::default();
+        move_misfiled(d.path(), &mut checked);
+        assert_eq!(Checked::from_json(Some(&checked.to_json())), checked);
+        // A damaged record reads every file again: an IP-Adapter is found even with a stale stamp elsewhere.
+        let mut empty = Checked::from_json(Some("{{"));
+        safetensors(
+            &d.path().join("checkpoints/ipa.safetensors"),
+            &["image_proj.proj.weight"],
+        );
+        assert_eq!(move_misfiled(d.path(), &mut empty).len(), 1);
     }
 
     #[test]

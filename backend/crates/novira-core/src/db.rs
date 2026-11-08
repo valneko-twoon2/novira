@@ -105,6 +105,18 @@ impl Db {
         Ok(out)
     }
 
+    /// The id and `sort` of every row, without reading or parsing the data (for a caller that needs only the time a row
+    /// was written under, such as the trash).
+    pub fn ids_and_sorts(&self, table: Table) -> rusqlite::Result<Vec<(String, i64)>> {
+        let mut stmt = self
+            .conn
+            .prepare(&format!("SELECT id, sort FROM {}", table.name()))?;
+        let rows = stmt
+            .query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, i64>(1)?)))?
+            .collect::<rusqlite::Result<Vec<_>>>()?;
+        Ok(rows)
+    }
+
     /// One row by id, or `None` when there is none or it no longer parses (reported like `load`).
     pub fn get<T: DeserializeOwned>(&self, table: Table, id: &str) -> rusqlite::Result<Option<T>> {
         let data: Option<String> = self
@@ -218,6 +230,31 @@ mod tests {
     struct Row {
         id: String,
         n: u32,
+    }
+
+    #[test]
+    fn ids_and_sorts_list_every_row_even_one_whose_data_does_not_parse() {
+        let db = Db::in_memory().unwrap();
+        db.put(
+            Table::Trash,
+            "a",
+            5,
+            &Row {
+                id: "a".into(),
+                n: 1,
+            },
+        )
+        .unwrap();
+        db.conn
+            .execute(
+                "INSERT INTO trash (id, sort, data) VALUES ('broken', 9, 'not json')",
+                [],
+            )
+            .unwrap();
+        let mut rows = db.ids_and_sorts(Table::Trash).unwrap();
+        rows.sort();
+        assert_eq!(rows, vec![("a".to_string(), 5), ("broken".to_string(), 9)]);
+        assert!(db.ids_and_sorts(Table::Boards).unwrap().is_empty());
     }
 
     #[test]

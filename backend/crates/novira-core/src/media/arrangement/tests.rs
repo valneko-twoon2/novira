@@ -208,3 +208,81 @@ fn a_file_already_at_the_place_is_never_replaced() {
         .move_to("ffffffffffffffffffffffffffffffff.png", &rel)
         .unwrap());
 }
+
+#[test]
+fn arranging_a_few_pictures_looks_only_at_the_folders_they_left() {
+    let dir = tempfile::tempdir().unwrap();
+    let files = ImageFiles::new(dir.path()).unwrap();
+    let outputs = dir.path().join("outputs");
+    // A folder that was empty before and has nothing to do with the pictures arranged stays, as only `arrange_all`
+    // lists every folder; the folder the picture leaves goes.
+    std::fs::create_dir_all(outputs.join("Old board")).unwrap();
+    std::fs::create_dir_all(outputs.join("Sea")).unwrap();
+    std::fs::write(outputs.join("Sea").join(file_name(NAME, 0)), b"png").unwrap();
+    let image = picture(NAME, None, false);
+    files.index();
+    arrange(&files, &[board("b1", "Sea", 1)], [&image]);
+    assert!(outputs
+        .join(UNCATEGORIZED)
+        .join(file_name(NAME, 0))
+        .is_file());
+    assert!(
+        !outputs.join("Sea").exists(),
+        "the folder the picture left is removed"
+    );
+    assert!(
+        outputs.join("Old board").is_dir(),
+        "an unrelated empty folder is not looked at"
+    );
+    // The pass over the whole gallery removes it too.
+    arrange_all(&files, &[board("b1", "Sea", 1)], [&image]);
+    assert!(!outputs.join("Old board").exists());
+}
+
+#[test]
+fn a_folder_that_still_holds_something_stays_when_one_picture_leaves() {
+    let dir = tempfile::tempdir().unwrap();
+    let files = ImageFiles::new(dir.path()).unwrap();
+    let outputs = dir.path().join("outputs");
+    let other = "fedcba9876543210fedcba9876543210.png";
+    std::fs::create_dir_all(outputs.join("Sea")).unwrap();
+    std::fs::write(outputs.join("Sea").join(file_name(NAME, 0)), b"a").unwrap();
+    std::fs::write(outputs.join("Sea").join(file_name(other, 0)), b"b").unwrap();
+    files.index();
+    arrange(
+        &files,
+        &[board("b1", "Sea", 1)],
+        [&picture(NAME, None, false)],
+    );
+    assert!(outputs.join("Sea").join(file_name(other, 0)).is_file());
+    assert!(outputs
+        .join(UNCATEGORIZED)
+        .join(file_name(NAME, 0))
+        .is_file());
+}
+
+#[test]
+fn trashing_the_last_picture_of_a_folder_removes_the_folder_and_never_outputs_itself() {
+    let dir = tempfile::tempdir().unwrap();
+    let files = ImageFiles::new(dir.path()).unwrap();
+    let outputs = dir.path().join("outputs");
+    std::fs::create_dir_all(outputs.join("Sea").join("Cats")).unwrap();
+    std::fs::write(
+        outputs.join("Sea").join("Cats").join(file_name(NAME, 0)),
+        b"png",
+    )
+    .unwrap();
+    files.index();
+    assert!(files.trash(NAME));
+    assert!(
+        !outputs.join("Sea").exists(),
+        "the emptied subfolder and its parent are gone"
+    );
+    assert!(outputs.is_dir());
+    // A flat file (an older version's) leaves no folder to remove, and `outputs/` stays.
+    let flat = "0000000000000000000000000000000a.png";
+    std::fs::write(outputs.join(flat), b"x").unwrap();
+    files.index();
+    assert!(files.trash(flat));
+    assert!(outputs.is_dir());
+}
