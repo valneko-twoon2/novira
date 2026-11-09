@@ -64,17 +64,10 @@ export function RichSection({ layer }: { layer: TextLayer | null }) {
         </div>
         <IconButton label={t('text.rich.cancel')} icon={<Stop weight="bold" />} size="md" disabled={!running} onClick={() => layer && cancelRich(layer.id)} data-testid="text-rich-cancel" />
       </div>
-      {!layer && <p className="tx-note">{t('text.rich.select')}</p>}
-      {!plan.model ? (
+      {!plan.model && (
         <p className="tx-note" data-testid="text-rich-nomodel">
           {t('text.rich.noModel')}
         </p>
-      ) : (
-        !plan.control && (
-          <p className="tx-note" data-testid="text-rich-nocontrol">
-            {t('text.rich.noControl')}
-          </p>
-        )
       )}
       <section className="tx-model" data-testid="text-rich-model-card">
         {/* The picture is of the model that will paint: the chosen one, or the one "automatic" picks. */}

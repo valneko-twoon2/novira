@@ -26,7 +26,6 @@ test('layers are added in the canvas toolbar and listed in the right column', as
   await layers.locator('li').first().getByRole('button').first().click();
   await expect(page.getByTestId('text-props')).toBeVisible();
   await expect(page.getByTestId('text-rich-run')).toBeDisabled();
-  await expect(page.getByText(msg('text.rich.select'))).toBeVisible();
 
   await layers.getByText(msg('text.layers.clear')).click();
   await expect(layers.locator('li')).toHaveCount(0);

@@ -69,14 +69,13 @@ describe('RichSection', () => {
   it('says nothing about missing parts when a model and a line ControlNet are there', () => {
     render(<RichSection layer={layer(false)} />);
     expect(screen.queryByTestId('text-rich-nomodel')).toBeNull();
-    expect(screen.queryByTestId('text-rich-nocontrol')).toBeNull();
     expect((screen.getByTestId('text-rich-run') as HTMLButtonElement).disabled).toBe(false);
   });
 
-  it('notes the missing ControlNet and keeps the button usable', () => {
+  it('keeps the button usable without a line ControlNet and adds no note', () => {
     useModels.setState({ models: [model('wai', 'main', 'sdxl')] });
     render(<RichSection layer={layer(false)} />);
-    expect(screen.getByTestId('text-rich-nocontrol')).toBeTruthy();
+    expect(screen.getByTestId('text-rich').querySelector('.tx-note')).toBeNull();
     expect((screen.getByTestId('text-rich-run') as HTMLButtonElement).disabled).toBe(false);
   });
 
@@ -102,10 +101,9 @@ describe('RichSection', () => {
     expect((screen.getByTestId('text-rich-run') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('waits for a text layer: the form stays, the run is off and the note says what to select', () => {
+  it('waits for a text layer: the form stays and the run is off', () => {
     render(<RichSection layer={null} />);
     expect((screen.getByTestId('text-rich-run') as HTMLButtonElement).disabled).toBe(true);
-    expect(screen.getByText(t('text.rich.select'))).toBeTruthy();
     fireEvent.click(screen.getByTestId('text-rich-look-ice'));
     expect(useRichForm.getState().form.look).toBe('ice');
   });
