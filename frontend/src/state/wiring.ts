@@ -145,11 +145,10 @@ async function start(): Promise<void> {
   perf.mark('bootstrap-received');
   useModels.getState().setModels(data.models);
   useGallery.getState().setBoards(data.boards);
+  // Marked before the gallery is set: what listens to the gallery reads the details of the pictures still marked as summaries.
+  if (data.imagesSummary) markSummaries(data.images);
   useGallery.getState().setImages(data.images);
-  if (data.imagesSummary) {
-    markSummaries(data.images);
-    watchGalleryDetails();
-  }
+  if (data.imagesSummary) watchGalleryDetails();
   useWorkflows.getState().setLibrary(data.workflows);
   useEngine.getState().setStatus(data.engine);
   usePacks.getState().setAll(data.packs);

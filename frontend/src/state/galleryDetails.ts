@@ -26,6 +26,11 @@ export function summaryCount(): number {
   return summaries.size;
 }
 
+/** Whether a picture's details are still to be read (a failed read leaves it so). */
+export function isSummary(name: string): boolean {
+  return summaries.has(name);
+}
+
 /**
  * The backend's gallery as it is now, from a `bootstrap` that answered with summaries, put over what this page holds: a picture
  * whose details this page already has keeps them (the answer has none), the others stay summaries.

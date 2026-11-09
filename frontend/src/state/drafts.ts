@@ -6,7 +6,7 @@ import { persist } from 'zustand/middleware';
 import { backend, draftStep, type EnqueueRequest, type GenerationMetadata, type ImageDTO, type ModelConfig, type QueueItem, type RefImageInput } from '@/backend';
 import { buildRequestFor } from './invoke';
 import { useGallery } from './gallery';
-import { ensureAllDetails, ensureDetails } from './galleryDetails';
+import { ensureAllDetails, ensureDetails, isSummary, summaryCount } from './galleryDetails';
 import { BASE_ORDER, drawableModels, findModel } from './models';
 import { useQueue } from './queue';
 
@@ -187,7 +187,7 @@ interface DraftsState {
   groups: DraftGroup[];
   currentId: string | null;
   /** Whether the batches stored by an older version were checked for another job's pictures (`repairGroups`). */
-  repaired: boolean;
+  picturesRepaired: boolean;
   /** Selected candidate ids of the current group. */
   selection: string[];
   busy: boolean;
@@ -243,7 +243,7 @@ export const useDrafts = create<DraftsState>()(
     (set, get) => ({
       groups: [],
       currentId: null,
-      repaired: false,
+      picturesRepaired: false,
       selection: [],
       busy: false,
       setCurrent: (id) => set({ currentId: id, selection: [] }),
@@ -390,7 +390,7 @@ export const useDrafts = create<DraftsState>()(
     {
       name: 'novira.drafts',
       version: 1,
-      partialize: (s) => ({ groups: s.groups, currentId: s.currentId, repaired: s.repaired }),
+      partialize: (s) => ({ groups: s.groups, currentId: s.currentId, picturesRepaired: s.picturesRepaired }),
     },
   ),
 );
@@ -405,27 +405,30 @@ useQueue.subscribe((s, prev) => {
 // then are all the settings read, to find the right ones.
 async function repairStored(): Promise<void> {
   const state = useDrafts.getState();
-  if (state.repaired) return;
+  if (state.picturesRepaired) return;
   const names = state.groups.flatMap((g) => g.candidates.flatMap((c) => [c.imageName, c.finalImageName])).filter((n): n is string => n !== null);
   await ensureDetails(names);
-  let groups = state.groups;
-  if (repairGroups(groups, useGallery.getState().images) !== groups) {
-    await ensureAllDetails();
-    groups = repairGroups(groups, useGallery.getState().images);
-  }
-  // Batches started while this ran are kept as they are.
+  const images = () => useGallery.getState().images;
+  if (repairGroups(state.groups, images()) !== state.groups) await ensureAllDetails();
+  // A picture that could not be read cannot be judged: the check is left for a later start.
+  if (names.some(isSummary) || (repairGroups(state.groups, images()) !== state.groups && summaryCount() > 0)) return;
+  // From the batches as they are now, not as they were before the reads: pictures may have arrived meanwhile. Batches started
+  // meanwhile are kept as they are.
+  const started = new Set(state.groups.map((g) => g.id));
   const now = useDrafts.getState().groups;
-  const mended = new Map(groups.map((g) => [g.id, g]));
-  useDrafts.setState({ groups: now.map((g) => mended.get(g.id) ?? g), repaired: true });
+  const mended = new Map(repairGroups(now.filter((g) => started.has(g.id)), images()).map((g) => [g.id, g]));
+  useDrafts.setState({ groups: now.map((g) => mended.get(g.id) ?? g), picturesRepaired: true });
 }
 
 let repairing = false;
 /** Starts the check when there is something to check: the gallery and the stored batches both arrive on their own time. */
 function tryRepair() {
   const d = useDrafts.getState();
-  if (repairing || d.repaired || d.groups.length === 0 || useGallery.getState().images.length === 0) return;
+  if (repairing || d.picturesRepaired || d.groups.length === 0 || useGallery.getState().images.length === 0) return;
   repairing = true;
-  void repairStored().catch(() => (repairing = false));
+  void repairStored()
+    .catch(() => undefined)
+    .finally(() => (repairing = false));
 }
 useGallery.subscribe(tryRepair);
 useDrafts.subscribe(tryRepair);

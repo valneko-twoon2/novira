@@ -280,11 +280,45 @@ describe('the one-time repair of stored batches', () => {
     const stranger = { name: 'stranger.png', createdAt: 5_000_000, metadata: { seed: 99, positivePrompt: 'cat', modelKey: 'm', draftAt: 0.35 } } as ImageDTO;
     vi.spyOn(backend, 'getImageDetails').mockResolvedValue([own, stranger]);
     const stored: DraftGroup = { ...group(candidate({ status: 'ready', imageName: 'stranger.png' })), createdAt: 1_000_000, params: { steps: 28, positivePrompt: 'fox', modelKey: 'm' } as DraftGroup['params'] };
-    useDrafts.setState({ groups: [stored], repaired: false });
+    useDrafts.setState({ groups: [stored], picturesRepaired: false });
     const summaries = [{ ...own, metadata: null }, { ...stranger, metadata: null }] as ImageDTO[];
     (await import('./galleryDetails')).markSummaries(summaries);
     useGallery.setState({ images: summaries });
-    await vi.waitFor(() => expect(useDrafts.getState().repaired).toBe(true));
+    await vi.waitFor(() => expect(useDrafts.getState().picturesRepaired).toBe(true));
+    expect(useDrafts.getState().groups[0]!.candidates[0]!.imageName).toBe('mine.png');
+  });
+
+  it('leaves the check for a later start when the pictures could not be read', async () => {
+    const { useGallery } = await import('./gallery');
+    const name = 'unread.png';
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.spyOn(backend, 'getImageDetails').mockRejectedValue(new Error('offline'));
+    const stored: DraftGroup = { ...group(candidate({ status: 'ready', imageName: name })), params: { steps: 28, positivePrompt: 'fox', modelKey: 'm' } as DraftGroup['params'] };
+    const summaries = [{ name, createdAt: 1, metadata: null }] as ImageDTO[];
+    (await import('./galleryDetails')).markSummaries(summaries);
+    useDrafts.setState({ groups: [stored], picturesRepaired: false });
+    useGallery.setState({ images: summaries });
+    await vi.waitFor(() => expect(backend.getImageDetails).toHaveBeenCalled());
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(useDrafts.getState().picturesRepaired).toBe(false);
+    expect(useDrafts.getState().groups[0]!.candidates[0]!.imageName).toBe(name);
+  });
+
+  it('keeps what arrived while the pictures were being read', async () => {
+    const { useGallery } = await import('./gallery');
+    const own = { name: 'mine.png', createdAt: 1_000_100, metadata: { seed: 5, positivePrompt: 'fox', modelKey: 'm', draftAt: 0.35 } } as ImageDTO;
+    const stranger = { name: 'stranger.png', createdAt: 5_000_000, metadata: { seed: 99, positivePrompt: 'cat', modelKey: 'm', draftAt: 0.35 } } as ImageDTO;
+    const held: DraftGroup = { ...group(candidate({ status: 'ready', imageName: 'stranger.png' })), id: 'old', createdAt: 1_000_000, params: { steps: 28, positivePrompt: 'fox', modelKey: 'm' } as DraftGroup['params'] };
+    vi.spyOn(backend, 'getImageDetails').mockImplementation(async () => {
+      useDrafts.setState((s) => ({ groups: s.groups.map((g) => ({ ...g, params: { ...g.params, steps: 30 } })) }));
+      return [own, stranger];
+    });
+    const summaries = [{ ...own, metadata: null }, { ...stranger, metadata: null }] as ImageDTO[];
+    (await import('./galleryDetails')).markSummaries(summaries);
+    useDrafts.setState({ groups: [held], picturesRepaired: false });
+    useGallery.setState({ images: summaries });
+    await vi.waitFor(() => expect(useDrafts.getState().picturesRepaired).toBe(true));
+    expect(useDrafts.getState().groups[0]!.params.steps).toBe(30);
     expect(useDrafts.getState().groups[0]!.candidates[0]!.imageName).toBe('mine.png');
   });
 });
