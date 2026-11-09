@@ -54,7 +54,7 @@ const flush = () => new Promise((r) => setTimeout(r, 0));
 async function invoke(prepend = false) {
   const request = await comicInvokeBuilder.build({ prepend });
   const items = await backend.enqueue(request);
-  comicInvokeBuilder.onEnqueued!(items);
+  comicInvokeBuilder.onEnqueued!(items, {} as never);
   return { request, items };
 }
 

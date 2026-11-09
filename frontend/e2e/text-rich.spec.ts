@@ -1,4 +1,4 @@
-// "Generate with AI" on the Text screen: a look is chosen and the run paints the letters; the candidates, the stale notice after a text
+// "Generate with AI" on the Text screen: the prompt and the run paint the letters; the candidates, the stale notice after a text
 // change, undo, going back to the plain fill, a failed run and saving a picture that has the AI fill.
 import { expect, msg, openApp, test } from './fixtures';
 
@@ -9,14 +9,16 @@ async function openText(page: Parameters<typeof openApp>[0]) {
   await expect(page.getByTestId('text-panel')).toBeVisible();
   await page.getByTestId('text-add-text').click();
   await expect(page.getByTestId('text-rich')).toBeVisible();
+  const count = page.getByRole('spinbutton', { name: msg('params.invoke.iterations') });
+  await count.fill('2');
+  await count.blur();
 }
 
 test('finishing a text layer makes candidates, and a changed text asks for a new run', async ({ page }) => {
   await openText(page);
-  await page.getByTestId('text-rich-look-gold').click();
-  await expect(page.getByTestId('text-rich-look-gold')).toHaveAttribute('aria-pressed', 'true');
+  await page.getByTestId('positive-prompt').fill('gold, sparkles');
 
-  await page.getByTestId('text-rich-run').click();
+  await page.getByTestId('invoke-button').click();
   const candidates = page.getByTestId('text-rich-candidate');
   await expect(candidates).toHaveCount(2, { timeout: 30_000 });
   await expect(candidates.first()).toHaveAttribute('aria-pressed', 'true');
@@ -47,14 +49,14 @@ test('the seed row of the Generate screen: a random run shows the seed it used, 
   await openText(page);
   const seed = page.getByRole('spinbutton', { name: msg('params.seed.label') });
   const candidates = page.getByTestId('text-rich-candidate');
-  await page.getByTestId('text-rich-run').click();
+  await page.getByTestId('invoke-button').click();
   await expect(candidates).toHaveCount(2, { timeout: 30_000 });
   // The random run left its seed in the (now disabled) box; fixing it keeps that number.
   const used = await seed.inputValue();
   await page.getByTestId('seed-fixed').click();
   await expect(seed).toHaveValue(used);
   await page.getByTestId('text-rich-clear').click();
-  await page.getByTestId('text-rich-run').click();
+  await page.getByTestId('invoke-button').click();
   await expect(candidates).toHaveCount(2, { timeout: 30_000 });
   await expect(seed).toHaveValue(used);
 });
@@ -83,15 +85,38 @@ test('the picture can be saved with the AI fill and a failed run changes nothing
   // Two waits of 30 s each, as in the seed test.
   test.setTimeout(90_000);
   await openText(page);
-  await page.getByTestId('text-rich-run').click();
+  await page.getByTestId('invoke-button').click();
   await expect(page.getByTestId('text-rich-candidate')).toHaveCount(2, { timeout: 30_000 });
   await page.getByTestId('text-save').click();
   await expect(page.getByText(msg('text.saved'))).toBeVisible();
 
   await page.getByTestId('text-rich-clear').click();
-  await page.getByTestId('text-rich-words').fill('[fail]');
-  await page.getByTestId('text-rich-run').click();
+  await page.getByTestId('positive-prompt').fill('[fail]');
+  await page.getByTestId('invoke-button').click();
   await expect(page.getByText(msg('text.rich.failed'))).toBeVisible({ timeout: 30_000 });
   await expect(page.getByTestId('text-rich-candidate')).toHaveCount(0);
-  await expect(page.getByTestId('text-rich-run')).toBeEnabled();
+  await expect(page.getByTestId('invoke-button')).toBeEnabled();
+});
+
+test('the Text screen has the queue controls of the Generate screen: the count decides how many are made, and the caret adds to the front', async ({ page }) => {
+  await openText(page);
+  const count = page.getByRole('spinbutton', { name: msg('params.invoke.iterations') });
+  await count.fill('3');
+  await count.blur();
+  await page.getByRole('button', { name: msg('params.invoke.moreOptions') }).click();
+  await page.getByRole('menuitem', { name: msg('params.invoke.addFront') }).click();
+  await expect(page.getByTestId('text-rich-candidate')).toHaveCount(3, { timeout: 30_000 });
+  await page.getByRole('button', { name: msg('params.invoke.queueMenu') }).click();
+  await expect(page.getByRole('menuitem', { name: msg('params.invoke.openQueue') })).toBeVisible();
+});
+
+test('the prompts of the Text screen are its own: the image form keeps what it had', async ({ page }) => {
+  await openText(page);
+  await page.getByTestId('positive-prompt').fill('molten gold');
+  await page.getByTestId('negative-prompt').fill('blurry');
+  await expect(page.getByTestId('positive-open-book')).toHaveCount(0);
+  await page.getByTestId('media-image').click();
+  await expect(page.getByTestId('positive-prompt')).not.toHaveValue('molten gold');
+  await page.getByTestId('media-text').click();
+  await expect(page.getByTestId('positive-prompt')).toHaveValue('molten gold');
 });

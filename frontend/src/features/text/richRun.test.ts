@@ -3,7 +3,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { useTextEditor } from '@/state/text/textEditor';
 import { EMPTY_SCENE, richSourceKey, type TextLayer } from '@/state/text/textModel';
-import { cancelRich, clearRich, pickRichCandidate, runRich, useRichRun } from './richRun';
+import { clearRich, pickRichCandidate, runRich, useRichRun } from './richRun';
 
 function setup(withRich = true): TextLayer {
   useTextEditor.setState({ scene: EMPTY_SCENE, selectedId: null, past: [], future: [] });
@@ -61,15 +61,13 @@ describe('clearRich', () => {
   });
 });
 
-describe('runRich and cancelRich', () => {
+describe('runRich', () => {
   it('does nothing for an empty text, a missing layer or when no model can draw', async () => {
     const { id } = setup(false);
     useTextEditor.getState().update(id, { text: '   ' });
     await runRich(id);
     await runRich('missing');
     expect(useRichRun.getState().running).toEqual({});
-    cancelRich(id);
-    cancelRich('missing');
     useTextEditor.getState().update(id, { text: 'NOVIRA' });
     await runRich(id);
     expect(current(id).rich).toBeUndefined();

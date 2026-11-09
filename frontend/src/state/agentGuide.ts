@@ -50,7 +50,7 @@ const MEDIA_ABOUT: Record<MediaKind, string> = {
   video: 'Icon at the top of the Generate tab left panel. Makes a short clip from a prompt (or from a picture). Needs the video model, downloaded once from a card in the left panel. Choices: size, length, frame rate, standard or fast model.',
   music: 'Icon at the top of the Generate tab left panel. Makes a song from style tags and lyrics (or an instrumental). Needs the music model, downloaded once from a card.',
   voice: 'Icon at the top of the Generate tab left panel. Reads text aloud with a preset speaker or a voice described in words. Needs the voice model, downloaded once from a card.',
-  text: 'Icon at the top of the Generate tab left panel. An editor for letters and speech bubbles on a picture: layers, fonts, outlines, shadows, bubble shapes and tails, ready-made styles. A text layer can also be painted by AI (gold, fire, ice...; "Finish with AI" in the left panel).',
+  text: 'Icon at the top of the Generate tab left panel. An editor for letters and speech bubbles on a picture: layers, fonts, outlines, shadows, bubble shapes and tails, ready-made styles. A text layer can also be painted by AI: select it, write in the prompt boxes and press Generate in the left panel.',
 };
 
 /** Features that are not a tab: where they are and what they need. */

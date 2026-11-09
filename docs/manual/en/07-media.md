@@ -224,9 +224,9 @@ Everything else is set in the left column.
 
 For speech bubbles, you can also adjust the size, fill color, outline and pointer. With the **{{ui:text.shape.burst}}** shape, **{{ui:text.bubble.shuffle}}** changes the jagged points. If you turn on **{{ui:text.bubble.autoFit}}**, the text shrinks so that it fits inside the bubble.
 
-### Templates and style presets
+### Presets and style presets
 
-**{{ui:text.template}}**, at the very top of the left column, saves the text and bubble layers and how they are laid out, all at once. Save a layout you made, and next time call it up and just retype the words. The background picture is not saved. If you call one up on a picture, the layers are placed to fit that picture's size. One undo takes it back.
+**{{ui:presets.label}}**, at the very top of the left column, saves the text and bubble layers and how they are laid out, all at once. Save a layout you made, and next time call it up and just retype the words. The background picture is not saved. If you call one up on a picture, the layers are placed to fit that picture's size. One undo takes it back.
 
 When you select a text layer, the **{{ui:text.style}}** preset appears at the top of its settings. It holds logo-like styles: **{{ui:text.preset.plain}}**, **{{ui:text.preset.pop}}**, **{{ui:text.preset.sfx}}**, **{{ui:text.preset.gold}}**, **{{ui:text.preset.sticker}}** and **{{ui:text.preset.soft}}**. If you select a text layer and then use one, that style is applied.
 
@@ -234,11 +234,10 @@ You can also save your own styles (font, fill, stroke, shadow, letter spacing).
 
 ### Finishing with AI
 
-The AI paints the letters to look like gold, fire and the like. The **{{ui:params.invoke.invoke}}** button is at the top of the left column, under the **{{ui:params.seed.label}}** row (it works as on the Generate screen: random or fixed, each picture takes the next number); you can press it while a text layer is selected (not for a speech bubble, and not when nothing is selected).
+The AI paints the letters. The **{{ui:params.invoke.invoke}}** button is at the top of the left column, under the **{{ui:params.seed.label}}** row (it works as on the Generate screen: random or fixed, each picture takes the next number); you can press it while a text layer is selected (not for a speech bubble, and not when nothing is selected).
 
-1. Choose a **{{ui:text.rich.look}}** ({{ui:text.rich.look.gold}}, {{ui:text.rich.look.fire}}, {{ui:text.rich.look.ice}}, {{ui:text.rich.look.neon}}, {{ui:text.rich.look.stone}}, {{ui:text.rich.look.candy}} or {{ui:text.rich.look.chrome}}). Press it again to clear it.
-2. To add something, write it in **{{ui:text.rich.words}}** as English tags (for example: dragon scales, sparkles).
-3. Press **{{ui:params.invoke.invoke}}**. Pictures are made one after another, as many as the number to its right (**{{ui:text.rich.count}}**). The **{{ui:text.rich.cancel}}** button beside it stops it.
+1. Write what to paint in **{{ui:params.prompt.positive}}** as English tags (for example: gold, dragon scales, sparkles). Put what you do not want in **{{ui:params.prompt.negative}}**.
+2. Press **{{ui:params.invoke.invoke}}**. Pictures are made one after another, as many as the number to its right. The queue menu and the cancel button work as on the Generate screen.
 
 The pictures line up in the **{{ui:text.rich.candidates}}** strip under the canvas, and the one you press becomes the fill of the letters. The outline and the shadow are still drawn from the text style, so you can change their color or thickness without making the picture again. Resizing the text needs no new picture either.
 

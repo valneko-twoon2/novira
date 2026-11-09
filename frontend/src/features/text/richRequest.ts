@@ -4,7 +4,6 @@ import { modelProfile } from '@/state/modelProfile';
 import { drawableModels } from '@/state/models';
 import { pickLineModel } from '@/state/poseSkeleton';
 import { recommendedPrompts } from '@/state/recommendedPrompts';
-import { RICH_LOOKS, type RichLookId } from '@/state/text/richLooks';
 
 export interface RichPlan {
   /** The model that paints, or null when none can draw. */
@@ -54,15 +53,23 @@ const parts = (text: string) =>
 /** `base` followed by the words of `extra` that it does not have yet, comma separated. */
 function joinWords(base: string, extra: string[]): string {
   const seen = new Set(parts(base).map((w) => w.toLowerCase()));
-  const added = extra.filter((w) => !seen.has(w.toLowerCase()));
+  const added = extra.filter((w) => {
+    const key = w.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   return [...parts(base), ...added].join(', ');
 }
 
 export interface RichRequestInput {
   model: ModelConfig;
   control: ModelConfig | null;
-  look: RichLookId | null;
   words: string;
+  negative: string;
+  /** How many pictures the batch makes; each takes the next seed. */
+  iterations: number;
+  prepend: boolean;
   /** 0..100. */
   strength: number;
   seed: number;
@@ -73,31 +80,31 @@ export interface RichRequestInput {
   height: number;
 }
 
-/** The prompts: the quality words of the model's family, the look's words and the user's words; the negative keeps letters of its own out. */
-export function richPrompts(model: ModelConfig, look: RichLookId | null, words: string): { positive: string; negative: string } {
+/** The prompts: the quality words of the model's family and the user's words; the negative keeps letters of its own out. */
+export function richPrompts(model: ModelConfig, words: string, negative = ''): { positive: string; negative: string } {
   const rec = recommendedPrompts(model);
-  const described = [look ? RICH_LOOKS[look].words : '', ...parts(words)].filter(Boolean).join(', ');
+  const described = parts(words).join(', ');
   const positive = rec.place === 'first' ? [rec.positive, described] : [described, rec.positive];
   return {
     positive: positive.filter(Boolean).join(', '),
     // A family that reads no negative prompt is given none.
-    negative: rec.negative === '' ? '' : joinWords(rec.negative, NEGATIVE_EXTRA),
+    negative: rec.negative === '' ? '' : joinWords(rec.negative, [...NEGATIVE_EXTRA, ...parts(negative)]),
   };
 }
 
-/** The queue request of one picture: an image-to-image run of the lit base (with the line ControlNet when there is one), kept as an intermediate. */
+/** The queue request of a batch: an image-to-image run of the lit base (with the line ControlNet when there is one), kept as an intermediate. */
 export function buildRichRequest(input: RichRequestInput): EnqueueRequest {
   const { model, control } = input;
   const profile = modelProfile(model);
-  const { positive, negative } = richPrompts(model, input.look, input.words);
+  const { positive, negative } = richPrompts(model, input.words, input.negative);
   const controlLayers: ControlLayerInput[] =
     control && input.lineUrl ? [{ imageUrl: input.lineUrl, modelKey: control.key, weight: 1, beginEnd: [0, 1], controlMode: 'balanced', controlType: 'lineart' }] : [];
   return {
     origin: 'generate',
     destination: 'intermediate',
-    iterations: 1,
+    iterations: input.iterations,
     randomizeSeed: false,
-    prepend: false,
+    prepend: input.prepend,
     boardId: null,
     initImageUrl: input.sourceUrl,
     params: {

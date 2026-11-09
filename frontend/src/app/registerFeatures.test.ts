@@ -20,11 +20,11 @@ const INVOKE: Record<BuilderKey, true | string> = {
   video: true,
   music: true,
   voice: true,
+  text: true,
   models: 'manages model files; it makes nothing',
   browse: 'finds models to download; it makes nothing',
   queue: 'shows the queue; it makes nothing',
   extensions: 'manages ComfyUI extensions; it makes nothing',
-  text: 'the text editor places its layers itself; Invoke must not queue the image form from behind it',
 };
 
 describe('the registries after start-up', () => {

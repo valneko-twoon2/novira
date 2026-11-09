@@ -3,7 +3,7 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { useGallery } from '@/state/gallery';
 import { redoDeletion, undoDeletion } from '@/state/galleryUndo';
-import { useUi, type TabName } from '@/state/ui';
+import { useUi, viewerShownOn, type TabName } from '@/state/ui';
 import { useHotkey } from '@/ui';
 import { copyImage } from '../actions';
 import { requestDeleteImages } from '../deleteRequest';
@@ -19,7 +19,7 @@ interface Options {
 }
 
 export function useGridHotkeys({ tab, names, stepRow, gridRef, scrollToIndex }: Options) {
-  const viewerActive = useUi((s) => s.mainView[tab] === 'viewer');
+  const viewerActive = useUi((s) => viewerShownOn(s, tab));
   const active = () => viewerActive || gridRef.current?.matches(':hover') === true;
   // The grid was the last thing pressed: a picture just chosen there is what Ctrl+C means, even with the pointer moved
   // away (over the canvas, say), until something else is pressed.

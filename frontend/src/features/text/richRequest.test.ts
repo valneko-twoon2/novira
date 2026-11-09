@@ -70,45 +70,52 @@ describe('richDenoise', () => {
 });
 
 describe('richPrompts', () => {
-  it('puts the quality words in front for a tag model, then the look and the user words', () => {
-    const { positive, negative } = richPrompts(sdxl, 'gold', 'dragon scales, , sparkles');
+  it('puts the quality words in front for a tag model, then the user words', () => {
+    const { positive, negative } = richPrompts(sdxl, 'dragon scales, , sparkles');
     expect(positive.startsWith('masterpiece')).toBe(true);
-    expect(positive).toContain('golden metal lettering');
     expect(positive.endsWith('dragon scales, sparkles')).toBe(true);
     expect(negative).toContain('photo frame');
     expect(negative).toContain('mirror image');
   });
 
   it('does not repeat a negative word the family already has', () => {
-    const words = richPrompts(sdxl, null, '').negative.split(', ');
+    const words = richPrompts(sdxl, '').negative.split(', ');
     expect(new Set(words.map((w) => w.toLowerCase())).size).toBe(words.length);
   });
 
   it('puts the quality words after the description for a model that reads sentences', () => {
     const flux = model('flux', 'flux', 'main', 'flux-dev');
-    const { positive } = richPrompts(flux, 'ice', 'blue');
-    expect(positive.startsWith('ice letters')).toBe(true);
+    const { positive } = richPrompts(flux, 'blue');
+    expect(positive.startsWith('blue')).toBe(true);
     expect(positive.indexOf('blue')).toBeLessThan(positive.length - 1);
   });
 
   it('gives no negative to a family that reads none', () => {
     const flux = model('flux', 'flux', 'main', 'flux-dev');
-    expect(richPrompts(flux, 'fire', '').negative).toBe('');
+    expect(richPrompts(flux, '', 'blurry').negative).toBe('');
   });
 
-  it('works with no look and no words', () => {
-    expect(richPrompts(sdxl, null, '').positive.length).toBeGreaterThan(0);
+  it('adds the user\'s negative words, each once', () => {
+    const words = richPrompts(sdxl, '', 'blurry, text').negative.split(', ');
+    expect(words).toContain('blurry');
+    expect(words.filter((w) => w === 'text')).toHaveLength(1);
+  });
+
+  it('works with no words', () => {
+    expect(richPrompts(sdxl, '').positive.length).toBeGreaterThan(0);
   });
 });
 
 describe('buildRichRequest', () => {
-  const base = { model: sdxl, look: 'neon' as const, words: '', strength: 50, seed: 7, sourceUrl: 'img://base', lineUrl: 'img://line', width: 1024, height: 576 };
+  const base = { model: sdxl, words: '', negative: '', iterations: 3, prepend: true, strength: 50, seed: 7, sourceUrl: 'img://base', lineUrl: 'img://line', width: 1024, height: 576 };
 
   it('queues an image-to-image run kept as an intermediate, with the line ControlNet', () => {
     const r = buildRichRequest({ ...base, control: lineXl });
     expect(r.origin).toBe('generate');
     expect(r.destination).toBe('intermediate');
-    expect(r.iterations).toBe(1);
+    expect(r.iterations).toBe(3);
+    expect(r.prepend).toBe(true);
+    expect(r.randomizeSeed).toBe(false);
     expect(r.initImageUrl).toBe('img://base');
     expect(r.params.generationMode).toBe('img2img');
     expect(r.params.strength).toBeCloseTo(0.8);

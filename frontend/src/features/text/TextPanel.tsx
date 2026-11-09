@@ -1,12 +1,13 @@
-// Left panel of the Text tab, in the order of the Generate screen: the template card, then the AI finish (run button first), then
-// the folded sections of the selected layer and of the background. Adding layers is in the canvas toolbar, the layer stack in
-// the right column, the candidates under the canvas.
+// Left panel of the Text tab, in the order of the Generate screen: the preset card, the seed row, the Generate bar and the model
+// card in the header, then the prompts, the folded details and the sections of the selected layer and of the background.
+// Adding layers is in the canvas toolbar, the layer stack in the right column, the candidates under the canvas.
+import type { ReactNode } from 'react';
 import { t } from '@/i18n';
 import { findImage, useGallery } from '@/state/gallery';
 import { useTextEditor } from '@/state/text/textEditor';
 import { Button, ColorInput, NumberInput, Section, Select } from '@/ui';
 import { LayerProperties } from './LayerProperties';
-import { RichSection } from './RichSection';
+import { RichDetails, RichHeader } from './RichSection';
 import { TextPresetBar } from './TextPresetBar';
 import { TextScenePresetBar } from './TextScenePresetBar';
 import './text.css';
@@ -19,17 +20,20 @@ const SIZES = [
   { value: '2048x2048', width: 2048, height: 2048 },
 ];
 
-export function TextPanel() {
+/** `prompts` is the Generate screen's prompt section, put in by the app (a feature does not import another). */
+export function TextPanel({ prompts }: { prompts?: ReactNode }) {
   const scene = useTextEditor((s) => s.scene);
   const selectedId = useTextEditor((s) => s.selectedId);
   const selected = scene.layers.find((l) => l.id === selectedId) ?? null;
   return (
     <div className="tx-panel" data-testid="text-panel">
-      <header className="pp-head tx-add">
+      <header className="pp-head">
         <TextScenePresetBar />
+        <RichHeader />
       </header>
-      <div className="tx-panel__body">
-        <RichSection layer={selected?.type === 'text' ? selected : null} />
+      <div className="pp-body">
+        {prompts}
+        <RichDetails />
         {selected && (
           <Section title={t(selected.type === 'text' ? 'text.layer.text' : 'text.layer.bubble')}>
             {selected.type === 'text' && <TextPresetBar />}

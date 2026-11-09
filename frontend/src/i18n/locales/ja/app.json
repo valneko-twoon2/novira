@@ -15,6 +15,7 @@
   "app.tabs.queue": "キュー",
   "app.views.launchpad": "スタート",
   "app.views.viewer": "ビューア",
+  "app.views.text": "テキスト",
   "app.views.canvas": "キャンバス",
   "app.views.editor": "ワークフローエディタ",
   "app.panels.hideLeft": "左パネルを隠す (T)",

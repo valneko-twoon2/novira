@@ -25,7 +25,7 @@ test('layers are added in the canvas toolbar and listed in the right column', as
   // A press on the bubble's row (the newest is on top) selects it: the left column shows its settings and the AI run waits for a text layer.
   await layers.locator('li').first().getByRole('button').first().click();
   await expect(page.getByTestId('text-props')).toBeVisible();
-  await expect(page.getByTestId('text-rich-run')).toBeDisabled();
+  await expect(page.getByTestId('invoke-button')).toBeDisabled();
 
   await layers.getByText(msg('text.layers.clear')).click();
   await expect(layers.locator('li')).toHaveCount(0);
@@ -34,7 +34,10 @@ test('layers are added in the canvas toolbar and listed in the right column', as
 test('the run button comes first in the left column and the candidates appear under the canvas', async ({ page }) => {
   await openText(page);
   await page.getByTestId('text-add-text').click();
-  const run = page.getByTestId('text-rich-run');
+  const count = page.getByRole('spinbutton', { name: msg('params.invoke.iterations') });
+  await count.fill('2');
+  await count.blur();
+  const run = page.getByTestId('invoke-button');
   const panel = page.getByTestId('text-panel');
   // Above the layer's own settings: no scrolling to reach it.
   const runBox = await run.boundingBox();
@@ -99,7 +102,7 @@ test('a laid-out scene is saved as a template and put back on an emptied sheet',
 
   // Saved from the card at the top of the left column, under its own name.
   const card = page.getByTestId('text-templates');
-  await expect(card).toContainText(msg('text.template'));
+  await expect(card).toContainText(msg('presets.label'));
   await card.getByTestId('preset-quick-save').click();
   await page.getByTestId('name-dialog-input').fill('Title card');
   await page.getByTestId('name-dialog-ok').click();
@@ -145,4 +148,19 @@ test('a picture saved from the Text tab opens its layers again from the gallery'
   await page.locator(`[data-testid="gallery-thumb"]:not([data-image-name="${saved}"])`).first().click({ button: 'right' });
   await expect(page.getByRole('menuitem', { name: msg('gallery.menu.sendToText') })).toBeVisible();
   await expect(page.getByRole('menuitem', { name: msg('gallery.menu.editInText') })).toHaveCount(0);
+});
+
+test('the viewer opens beside the editor, from its tab and from a picture in the gallery, and the editor comes back as it was', async ({ page }) => {
+  await openText(page);
+  await page.getByTestId('text-add-text').click();
+  await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(1);
+  await page.getByTestId('view-viewer').click();
+  await expect(page.getByTestId('text-canvas')).toHaveCount(0);
+  await page.getByTestId('view-text').click();
+  await expect(page.getByTestId('text-canvas')).toBeVisible();
+  await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(1);
+
+  await page.locator('.gthumb:visible').first().dblclick();
+  await expect(page.getByTestId('view-viewer')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByTestId('text-canvas')).toHaveCount(0);
 });

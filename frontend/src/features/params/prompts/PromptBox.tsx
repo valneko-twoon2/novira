@@ -5,21 +5,21 @@ import { t } from '@/i18n';
 import { quickRunTool } from '@/state/imageTools/actions';
 import { selectedStill, uploadPicture } from '@/state/imageTools/pickPicture';
 import { findImage } from '@/state/gallery';
-import { useParams } from '@/state/params';
 import { usePromptBook } from '@/state/prompts/promptBook';
 import type { PromptKind } from '@/state/prompts/promptBook';
+import type { PromptSource } from '@/state/prompts/promptSource';
 import { toast } from '@/state/toasts';
 import { useUi } from '@/state/ui';
 import { Button, cx, IconButton, ImageDropZone, Textarea } from '@/ui';
-import { useMainModel } from '../model/useMainModel';
 import { BigPromptEditor } from './BigPromptEditor';
 import { DynamicPromptsButton } from './DynamicPromptsButton';
-import { applyRecommendedPrompts, setPrompt } from './promptActions';
+import { applyRecommendedPrompts, imagePromptSource } from './promptActions';
 import { PromptTagView } from './PromptTagView';
 import { TokenCounter } from './TokenCounter';
 
-export function PromptBoxes() {
-  const model = useMainModel();
+/** `source` is whose prompts the boxes hold; the image form's unless a screen has its own. */
+export function PromptBoxes({ source = imagePromptSource }: { source?: PromptSource }) {
+  const model = source.useModel();
   const [big, setBig] = useState(false);
   return (
     <section className="pp-prompts" data-testid="prompts">
@@ -34,7 +34,7 @@ export function PromptBoxes() {
           title={t('params.prompt.recommendedHint')}
           data-testid="prompt-recommended"
           onClick={() => {
-            applyRecommendedPrompts(model);
+            applyRecommendedPrompts(model, source);
             toast({ status: 'success', title: t('params.prompt.recommendedApplied') });
           }}
         >
@@ -42,9 +42,9 @@ export function PromptBoxes() {
         </Button>
         <IconButton size="xs" label={t('params.prompt.expand')} icon={<ArrowsOutSimple />} data-testid="prompt-expand" onClick={() => setBig(true)} />
       </header>
-      <PromptField kind="positive" />
-      <PromptField kind="negative" />
-      {big && <BigPromptEditor onClose={() => setBig(false)} />}
+      <PromptField kind="positive" source={source} />
+      <PromptField kind="negative" source={source} />
+      {big && <BigPromptEditor source={source} onClose={() => setBig(false)} />}
     </section>
   );
 }
@@ -96,8 +96,8 @@ function CaptionButton() {
   );
 }
 
-function PromptField({ kind }: { kind: PromptKind }) {
-  const text = useParams((s) => (kind === 'positive' ? s.positivePrompt : s.negativePrompt));
+function PromptField({ kind, source }: { kind: PromptKind; source: PromptSource }) {
+  const text = source.useText(kind);
   const nonce = useUi((s) => s.focusPromptNonce);
   const openBook = usePromptBook((s) => s.openBook);
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -105,8 +105,8 @@ function PromptField({ kind }: { kind: PromptKind }) {
   const [tagView, setTagView] = useState(false);
 
   useEffect(() => {
-    if (positive && nonce > 0) ref.current?.focus();
-  }, [positive, nonce]);
+    if (positive && source.generateTools && nonce > 0) ref.current?.focus();
+  }, [positive, source, nonce]);
 
   return (
     <div className={cx('pp-prompt', `pp-prompt--${kind}`)}>
@@ -134,11 +134,11 @@ function PromptField({ kind }: { kind: PromptKind }) {
             onClick={() => setTagView(true)}
           />
         </span>
-        {positive && <CaptionButton />}
-        <DynamicPromptsButton kind={kind} />
-        <IconButton size="xs" label={t('params.promptBook.open')} icon={<BookOpen />} data-testid={`${kind}-open-book`} onClick={() => openBook(kind)} />
+        {source.generateTools && positive && <CaptionButton />}
+        {source.generateTools && <DynamicPromptsButton kind={kind} />}
+        {source.generateTools && <IconButton size="xs" label={t('params.promptBook.open')} icon={<BookOpen />} data-testid={`${kind}-open-book`} onClick={() => openBook(kind)} />}
       </div>
-      {tagView && <PromptTagView kind={kind} value={text} onChange={(v) => setPrompt(kind, v)} />}
+      {tagView && <PromptTagView kind={kind} value={text} onChange={(v) => source.set(kind, v)} />}
       <Textarea
         ref={ref}
         hidden={tagView}
@@ -147,7 +147,7 @@ function PromptField({ kind }: { kind: PromptKind }) {
         placeholder={positive ? t('params.prompt.positivePlaceholder') : t('params.prompt.negativePlaceholder')}
         aria-label={positive ? t('params.prompt.positive') : t('params.prompt.negative')}
         data-testid={`${kind}-prompt`}
-        onChange={(e) => setPrompt(kind, e.target.value)}
+        onChange={(e) => source.set(kind, e.target.value)}
       />
     </div>
   );

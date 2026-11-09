@@ -16,8 +16,10 @@ export interface InvokeBuilder {
   build: (opts: { prepend: boolean }) => Promise<EnqueueRequest>;
   /** Store subscriptions that affect readiness (re-evaluated on change). */
   subscribe?: (onChange: () => void) => () => void;
-  /** Called with the queue items the last build made, so the screen can keep track of them. */
-  onEnqueued?: (items: QueueItem[]) => void;
+  /** Called with the queue items a build made and the request it built, so the screen can keep track of them. */
+  onEnqueued?: (items: QueueItem[], built: EnqueueRequest) => void;
+  /** Called when the backend refused what a build made, so the screen can let go of what the build prepared. */
+  onEnqueueFailed?: (built: EnqueueRequest) => void;
   /** False when the build makes one picture whatever the iterations box says, so the box is not shown for this screen. */
   countsPictures?: boolean;
   /** False when the screen draws with its own buttons, so the Invoke button is not shown there (the Invoke shortcut still works). */
@@ -83,16 +85,19 @@ export async function enqueueActive(opts: { prepend?: boolean; pictures?: number
   if (!b) return { problems: [t('app.invoke.notAvailableOnTab')] };
   const reasons = b.readiness();
   if (reasons.length) return { problems: reasons };
+  let made: EnqueueRequest | null = null;
   try {
     const built = await b.build({ prepend: opts.prepend ?? false });
+    made = built;
     // A set number of pictures (the assistant's trial picture) replaces the iterations box.
     const request = opts.pictures === undefined ? built : { ...built, iterations: opts.pictures };
     const items = await backend.enqueue(request);
-    b.onEnqueued?.(items);
+    b.onEnqueued?.(items, built);
     // Like InvokeAI, leave the launchpad so the progress preview is visible.
     if (key === tab && request.destination === 'gallery' && useUi.getState().mainView[tab] === 'launchpad') showViewer(tab);
     return { items };
   } catch (err) {
+    if (made) b.onEnqueueFailed?.(made);
     return { error: String(err instanceof Error ? err.message : err) };
   }
 }

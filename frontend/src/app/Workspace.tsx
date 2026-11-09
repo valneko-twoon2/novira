@@ -9,18 +9,20 @@ import { MediaTabs } from '@/features/media/MediaTabs';
 import { MusicPanel } from '@/features/music/MusicView';
 import { TextCanvas } from '@/features/text/TextCanvas';
 import { TextPanel } from '@/features/text/TextPanel';
+import { textPromptSource } from '@/features/text/textPromptSource';
 import { VideoPanel, VideoResults } from '@/features/video/VideoView';
 import { VoicePanel } from '@/features/voice/VoiceView';
 import { InvokeBar } from '@/features/invoke/InvokeBar';
 import { Launchpad } from '@/features/launchpad/Launchpad';
 import { ParametersPanel } from '@/features/params/ParametersPanel';
+import { PromptBoxes } from '@/features/params/prompts/PromptBox';
 import { ImageViewer } from '@/features/viewer/ImageViewer';
 import { WorkflowEditor, WorkflowLibraryCard, WorkflowsLeftPanel } from '@/features/workflows/WorkflowEditor';
 import { t, type MessageKey } from '@/i18n';
 import { useQueue } from '@/state/queue';
 import { ComicWorkspace } from './ComicWorkspace';
 import { RightColumn } from './RightColumn';
-import { MAIN_VIEWS, MEDIA_KINDS, useUi, type MainView, type MediaKind, type TabName } from '@/state/ui';
+import { MAIN_VIEWS, MEDIA_KINDS, TEXT_VIEWS, useUi, type MainView, type MediaKind, type TabName, type TextView } from '@/state/ui';
 import { cx, ErrorBoundary, IconButton, ProgressBar } from '@/ui';
 
 const VIEW_LABEL_KEYS: Record<MainView, MessageKey> = {
@@ -30,6 +32,7 @@ const VIEW_LABEL_KEYS: Record<MainView, MessageKey> = {
   comic: 'app.views.comic',
   editor: 'app.views.editor',
   drafts: 'app.views.drafts',
+  text: 'app.views.text',
 };
 
 export function Workspace({ tab }: { tab: TabName }) {
@@ -144,7 +147,7 @@ function LeftBody({ tab }: { tab: TabName }) {
 function LeftMedia({ media, tab }: { media: MediaKind; tab: TabName }) {
   if (media === 'image') return <div className="panel__scroll"><ParametersPanel tab={tab} /></div>;
   if (media === 'video') return <VideoPanel />;
-  if (media === 'text') return <TextPanel />;
+  if (media === 'text') return <TextPanel prompts={<PromptBoxes source={textPromptSource} />} />;
   if (media === 'music') return <MusicPanel />;
   if (media === 'voice') return <VoicePanel />;
   return null;
@@ -167,9 +170,12 @@ function OpenedMedia({ media, render }: { media: MediaKind; render: (media: Medi
 function MainArea({ tab }: { tab: TabName }) {
   const media = useUi((s) => s.media);
   const otherMedia = tab === 'generate' && media !== 'image';
-  const views = otherMedia ? [] : (MAIN_VIEWS[tab] ?? ['viewer']);
-  const view = useUi((s) => s.mainView[tab]);
-  const setView = useUi((s) => s.setMainView);
+  const textScreen = tab === 'generate' && media === 'text';
+  const views: readonly MainView[] = textScreen ? TEXT_VIEWS : otherMedia ? [] : (MAIN_VIEWS[tab] ?? ['viewer']);
+  const view = useUi((s) => (textScreen ? s.textView : s.mainView[tab]));
+  const setMainView = useUi((s) => s.setMainView);
+  const setTextView = useUi((s) => s.setTextView);
+  const setView = (v: MainView) => (textScreen ? setTextView(v as TextView) : setMainView(tab, v));
   const leftOpen = useUi((s) => s.leftPanelOpen);
   const rightOpen = useUi((s) => s.rightPanelOpen);
   const toggleLeft = useUi((s) => s.toggleLeft);
@@ -200,7 +206,7 @@ function MainArea({ tab }: { tab: TabName }) {
             aria-selected={view === v}
             data-testid={`view-${v}`}
             className={`mainarea__tab${view === v ? ' is-active' : ''}`}
-            onClick={() => setView(tab, v)}
+            onClick={() => setView(v)}
           >
             {t(VIEW_LABEL_KEYS[v])}
           </button>
@@ -215,15 +221,29 @@ function MainArea({ tab }: { tab: TabName }) {
         />
       </div>
       <div className="mainarea__body">
-        <OpenedMedia media={tab === 'generate' ? media : 'image'} render={(m) => <MainMedia media={m} tab={tab} view={view} />} />
+        <OpenedMedia media={tab === 'generate' ? media : 'image'} render={(m) => <MainMedia media={m} tab={tab} />} />
       </div>
     </div>
   );
 }
 
-function MainMedia({ media, tab, view }: { media: MediaKind; tab: TabName; view: MainView | undefined }) {
+function TextMain() {
+  const view = useUi((s) => s.textView);
+  return (
+    <>
+      {/* The editor stays mounted behind the viewer, as a screen does behind another. */}
+      <Activity mode={view === 'text' ? 'visible' : 'hidden'}>
+        <TextCanvas />
+      </Activity>
+      {view === 'viewer' && <ImageViewer />}
+    </>
+  );
+}
+
+function MainMedia({ media, tab }: { media: MediaKind; tab: TabName }) {
+  const view = useUi((s) => s.mainView[tab]);
   if (media === 'video') return <VideoResults />;
-  if (media === 'text') return <TextCanvas />;
+  if (media === 'text') return <TextMain />;
   if (media === 'music' || media === 'voice') return <AudioResults kind={media} />;
   return (
     <>

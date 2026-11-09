@@ -1,10 +1,13 @@
 // Lets the AI assistant read and change the text editor's scene.
 import { registerAgentEditor } from '@/state/agent';
+import { registerInvokeBuilder } from '@/state/invoke';
 import { useTextEditor } from '@/state/text/textEditor';
 import type { Scene } from '@/state/text/textModel';
 import { applyTextOps, textContext } from './aiOps';
+import { attachRich, buildSelectedRich, dropRich, richReadiness, subscribeRichReadiness } from './richRun';
 
 export function registerTextFeature() {
+  registerInvokeBuilder('text', { readiness: richReadiness, subscribe: subscribeRichReadiness, build: ({ prepend }) => buildSelectedRich(prepend), onEnqueued: attachRich, onEnqueueFailed: dropRich });
   registerAgentEditor('text', {
     context: () => {
       const s = useTextEditor.getState();

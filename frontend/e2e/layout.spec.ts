@@ -132,7 +132,7 @@ const SURFACES: Record<string, Surface> = {
     await page.getByTestId('text-add-bubble').click();
     await page.getByRole('menuitem').first().click();
     await page.getByTestId('text-layers').locator('li').last().getByRole('button').first().click();
-    await page.getByTestId('text-rich-run').click();
+    await page.getByTestId('invoke-button').click();
     await expect(page.getByTestId('text-candidates')).toBeVisible({ timeout: 30_000 });
     await expandSections(page);
     await settle(page);

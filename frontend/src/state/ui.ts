@@ -30,7 +30,11 @@ export const NAV_HOTKEYS: Record<NavName, string> = {
 };
 
 /** Views shown in the center panel of a tab (InvokeAI v6 dock tabs). */
-export type MainView = 'launchpad' | 'viewer' | 'canvas' | 'editor' | 'drafts' | 'comic';
+export type MainView = 'launchpad' | 'viewer' | 'canvas' | 'editor' | 'drafts' | 'comic' | 'text';
+
+/** What the center panel of the Text screen shows. */
+export const TEXT_VIEWS = ['text', 'viewer'] as const satisfies readonly MainView[];
+export type TextView = (typeof TEXT_VIEWS)[number];
 
 export const MAIN_VIEWS: Partial<Record<TabName, MainView[]>> = {
   generate: ['launchpad', 'viewer', 'drafts'],
@@ -87,6 +91,8 @@ interface UiState {
   /** The mode the Generate entry opens: the last of Generate and Comic that was shown. */
   generateMode: GenerateMode;
   mainView: Record<TabName, MainView>;
+  textView: TextView;
+  setTextView: (view: TextView) => void;
   media: MediaKind;
   setMedia: (media: MediaKind) => void;
   leftPanelOpen: boolean;
@@ -126,6 +132,8 @@ export const useUi = create<UiState>()((set, get) => ({
     queue: 'viewer',
     extensions: 'viewer',
   },
+  textView: 'text',
+  setTextView: (textView) => set({ textView }),
   media: 'image',
   setMedia: (media) => {
     if (isScreenShown(media)) set({ media });
@@ -159,5 +167,15 @@ export const useUi = create<UiState>()((set, get) => ({
 export function showViewer(tab?: TabName) {
   const ui = useUi.getState();
   const target = tab ?? ui.activeTab;
+  // Only a picture the user opened: a job that ends must not take the Text screen away from its editor.
+  if (tab === undefined && target === 'generate' && ui.media === 'text') {
+    ui.setTextView('viewer');
+    return;
+  }
   if (MAIN_VIEWS[target]?.includes('viewer')) ui.setMainView(target, 'viewer');
+}
+
+/** Whether a tab's center panel is showing the image viewer now. */
+export function viewerShownOn(s: Pick<UiState, 'mainView' | 'media' | 'textView'>, tab: TabName): boolean {
+  return tab === 'generate' && s.media === 'text' ? s.textView === 'viewer' : s.mainView[tab] === 'viewer';
 }

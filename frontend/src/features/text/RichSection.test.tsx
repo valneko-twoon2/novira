@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-// The "finish with AI" form in the left column: looks, the notes about what is missing, the run row and the folded details.
-import { cleanup, fireEvent, render as renderBare, screen, within } from '@testing-library/react';
+// The AI form of the Text screen with the Generate screen's parts: the seed row, the Generate bar with its queue controls, the model card and the folded details.
+import { act, cleanup, fireEvent, render as renderBare, screen, within } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ModelConfig } from '@/backend';
@@ -8,23 +8,26 @@ import { t } from '@/i18n';
 import { useGallery } from '@/state/gallery';
 import { useModels } from '@/state/models';
 import { RICH_FORM_DEFAULTS, useRichForm } from '@/state/text/richForm';
-import { newTextLayer, richSourceKey, type TextLayer } from '@/state/text/textModel';
+import { useTextEditor } from '@/state/text/textEditor';
+import { EMPTY_SCENE, newBubbleLayer, newTextLayer } from '@/state/text/textModel';
 import { TooltipProvider } from '@/ui';
-import { RichSection } from './RichSection';
+import { registerTextFeature } from './register';
+import { RichDetails, RichHeader } from './RichSection';
 import { useRichRun } from './richRun';
+
+registerTextFeature();
 
 const model = (key: string, type: ModelConfig['type'], base: ModelConfig['base'], name = key): ModelConfig => ({ key, name, base, type, format: 'checkpoint', description: '', path: `${name}.safetensors`, size: 1, source: '' });
 
-function layer(rich: boolean, text = 'NOVIRA'): TextLayer {
-  const base = newTextLayer({ width: 400, height: 300 }, 'NOVIRA');
-  return {
-    ...base,
-    text,
-    ...(rich ? { rich: { imageName: 'a.png', candidates: ['a.png', 'b.png'], width: 300, height: 100, fontSize: base.style.fontSize, sourceKey: richSourceKey(base) } } : {}),
-  };
+const size = { width: 400, height: 300 };
+
+function selectText(text = 'NOVIRA') {
+  const layer = { ...newTextLayer(size, 'NOVIRA'), text };
+  useTextEditor.setState({ scene: { ...EMPTY_SCENE, layers: [layer] }, selectedId: layer.id, past: [], future: [] });
 }
 
 const render = (ui: ReactElement) => renderBare(<TooltipProvider>{ui}</TooltipProvider>);
+const invokeButton = () => screen.getByTestId('invoke-button') as HTMLButtonElement;
 
 afterEach(() => {
   cleanup();
@@ -35,15 +38,15 @@ beforeEach(() => {
   vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
   useRichForm.setState({ form: RICH_FORM_DEFAULTS });
   useRichRun.setState({ running: {} });
-  useGallery.setState({ images: [{ name: 'a.png', url: 'http://x/a.png' }, { name: 'b.png', url: 'http://x/b.png' }] as never });
+  useGallery.setState({ images: [] as never });
   useModels.setState({ models: [model('wai', 'main', 'sdxl', 'wai'), model('cn', 'controlnet', 'sdxl', 'union-promax')] });
+  selectText();
 });
 
-describe('RichSection', () => {
+describe('RichHeader', () => {
   it('shows the seed row of the Generate screen and keeps its choices in the form', () => {
-    render(<RichSection layer={layer(false)} />);
+    render(<RichHeader />);
     expect(screen.getByText(t('params.seed.label'))).toBeTruthy();
-    expect(useRichForm.getState().form.randomSeed).toBe(true);
     fireEvent.click(screen.getByTestId('seed-fixed'));
     expect(useRichForm.getState().form.randomSeed).toBe(false);
     const box = screen.getByRole('spinbutton', { name: t('params.seed.label') });
@@ -52,92 +55,79 @@ describe('RichSection', () => {
     expect(useRichForm.getState().form.seed).toBe(1234);
   });
 
-  it('names the run button as the Generate screen does', () => {
-    render(<RichSection layer={layer(false)} />);
-    expect(screen.getByTestId('text-rich-run').textContent).toBe(t('params.invoke.invoke'));
+  it('has the Generate bar of the Generate screen: the caret, the count and the queue controls', () => {
+    render(<RichHeader />);
+    expect(invokeButton().textContent).toContain(t('params.invoke.invoke'));
+    expect(screen.getByLabelText(t('params.invoke.moreOptions'))).toBeTruthy();
+    expect(screen.getByRole('spinbutton', { name: t('params.invoke.iterations') })).toBeTruthy();
+    expect(screen.getByLabelText(t('params.invoke.queueMenu'))).toBeTruthy();
+    expect(screen.getByLabelText(t('params.invoke.cancelCurrent'))).toBeTruthy();
   });
 
-  it('chooses a look and unchooses it by pressing it again', () => {
-    render(<RichSection layer={layer(false)} />);
-    fireEvent.click(screen.getByTestId('text-rich-look-fire'));
-    expect(useRichForm.getState().form.look).toBe('fire');
-    expect(screen.getByTestId('text-rich-look-fire').getAttribute('aria-pressed')).toBe('true');
-    fireEvent.click(screen.getByTestId('text-rich-look-fire'));
-    expect(useRichForm.getState().form.look).toBeNull();
-  });
-
-  it('says nothing about missing parts when a model and a line ControlNet are there', () => {
-    render(<RichSection layer={layer(false)} />);
+  it('adds no note when a line ControlNet is missing, and the button stays usable', () => {
+    useModels.setState({ models: [model('wai', 'main', 'sdxl')] });
+    render(<RichHeader />);
     expect(screen.queryByTestId('text-rich-nomodel')).toBeNull();
-    expect((screen.getByTestId('text-rich-run') as HTMLButtonElement).disabled).toBe(false);
+    expect(invokeButton().disabled).toBe(false);
   });
 
-  it('keeps the button usable without a line ControlNet and adds no note', () => {
-    useModels.setState({ models: [model('wai', 'main', 'sdxl')] });
-    render(<RichSection layer={layer(false)} />);
-    expect(screen.getByTestId('text-rich').querySelector('.tx-note')).toBeNull();
-    expect((screen.getByTestId('text-rich-run') as HTMLButtonElement).disabled).toBe(false);
-  });
-
-  it('disables the button and says why when no model can draw, and for an empty text', () => {
+  it('says why when no model can draw', () => {
     useModels.setState({ models: [] });
-    const { unmount } = render(<RichSection layer={layer(false)} />);
+    render(<RichHeader />);
     expect(screen.getByTestId('text-rich-nomodel')).toBeTruthy();
-    expect((screen.getByTestId('text-rich-run') as HTMLButtonElement).disabled).toBe(true);
-    unmount();
-    useModels.setState({ models: [model('wai', 'main', 'sdxl')] });
-    render(<RichSection layer={layer(false, '  ')} />);
-    expect((screen.getByTestId('text-rich-run') as HTMLButtonElement).disabled).toBe(true);
+    expect(invokeButton().disabled).toBe(true);
   });
 
-  it('keeps the cancel button off until a run is going, then enables it', () => {
-    const l = layer(false);
-    const { unmount } = render(<RichSection layer={l} />);
-    expect((screen.getByTestId('text-rich-cancel') as HTMLButtonElement).disabled).toBe(true);
-    unmount();
-    useRichRun.setState({ running: { [l.id]: { done: 0, total: 2 } } });
-    render(<RichSection layer={l} />);
-    expect((screen.getByTestId('text-rich-cancel') as HTMLButtonElement).disabled).toBe(false);
-    expect((screen.getByTestId('text-rich-run') as HTMLButtonElement).disabled).toBe(true);
+  it.each([
+    ['an empty text', () => selectText('  ')],
+    ['no selection', () => useTextEditor.setState({ selectedId: null })],
+    ['a bubble', () => {
+      const bubble = newBubbleLayer(size, 'round', '');
+      useTextEditor.setState({ scene: { ...EMPTY_SCENE, layers: [bubble] }, selectedId: bubble.id });
+    }],
+  ])('waits for a text layer with words, with no note on the panel: %s', (_name, arrange) => {
+    arrange();
+    render(<RichHeader />);
+    expect(invokeButton().disabled).toBe(true);
+    expect(screen.queryByText(t('text.rich.select'))).toBeNull();
   });
 
-  it('waits for a text layer: the form stays and the run is off', () => {
-    render(<RichSection layer={null} />);
-    expect((screen.getByTestId('text-rich-run') as HTMLButtonElement).disabled).toBe(true);
-    fireEvent.click(screen.getByTestId('text-rich-look-ice'));
-    expect(useRichForm.getState().form.look).toBe('ice');
-  });
-
-  it('folds the strength and the spill into the details and sets the count', () => {
-    render(<RichSection layer={layer(false)} />);
-    expect(screen.queryByLabelText(t('text.rich.strength'))).toBeNull();
-    fireEvent.click(screen.getByText(t('text.rich.details')));
-    expect(screen.getAllByLabelText(t('text.rich.strength')).length).toBeGreaterThan(0);
-    expect(screen.getAllByLabelText(t('text.rich.spill')).length).toBeGreaterThan(0);
-    const count = screen.getByLabelText(t('text.rich.count')) as HTMLInputElement;
-    fireEvent.change(count, { target: { value: '3' } });
-    fireEvent.blur(count);
-    expect(useRichForm.getState().form.count).toBe(3);
+  it('turns the button on when a text layer gets selected', () => {
+    useTextEditor.setState({ selectedId: null });
+    render(<RichHeader />);
+    expect(invokeButton().disabled).toBe(true);
+    act(() => selectText());
+    expect(invokeButton().disabled).toBe(false);
   });
 
   it('keeps the chosen model only while it is installed', () => {
     useRichForm.setState({ form: { ...RICH_FORM_DEFAULTS, modelKey: 'gone' } });
-    render(<RichSection layer={layer(false)} />);
+    render(<RichHeader />);
     expect(screen.getByTestId('text-rich-model').textContent).toContain(t('text.rich.model.auto'));
   });
 
-  it('picks the model with the picker and card of the Generate screen, and goes back to automatic', () => {
+  it('picks the model with the card and picker of the Generate screen, and goes back to automatic', () => {
     useModels.setState({ models: [model('wai', 'main', 'sdxl', 'wai'), model('nova', 'main', 'sdxl', 'nova'), model('cn', 'controlnet', 'sdxl', 'union-promax')] });
-    render(<RichSection layer={layer(false)} />);
-    expect(screen.getByTestId('text-rich-model-card').querySelector('.pp-cover')).not.toBeNull();
+    render(<RichHeader />);
+    const card = screen.getByTestId('text-rich-model-card');
+    expect(card.classList.contains('pp-model')).toBe(true);
+    expect(card.querySelector('.pp-model__row .pp-cover')).not.toBeNull();
     fireEvent.click(screen.getByTestId('text-rich-model'));
-    const list = screen.getByTestId('model-picker-list');
+    const list = screen.getByRole('dialog');
     fireEvent.click(within(list).getByText('nova'));
     expect(useRichForm.getState().form.modelKey).toBe('nova');
-    expect(screen.getByTestId('text-rich-model').textContent).toContain('nova');
     fireEvent.click(screen.getByTestId('text-rich-model'));
     fireEvent.click(screen.getByTestId('text-rich-model-auto'));
     expect(useRichForm.getState().form.modelKey).toBeNull();
-    expect(screen.getByTestId('text-rich-model').textContent).toContain(t('text.rich.model.auto'));
+  });
+});
+
+describe('RichDetails', () => {
+  it('folds the strength and the spill', () => {
+    render(<RichDetails />);
+    expect(screen.queryByLabelText(t('text.rich.strength'))).toBeNull();
+    fireEvent.click(screen.getByText(t('text.rich.details')));
+    expect(screen.getAllByLabelText(t('text.rich.strength')).length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText(t('text.rich.spill')).length).toBeGreaterThan(0);
   });
 });

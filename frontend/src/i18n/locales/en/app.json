@@ -15,6 +15,7 @@
   "app.tabs.queue": "Queue",
   "app.views.launchpad": "Start",
   "app.views.viewer": "Viewer",
+  "app.views.text": "Text",
   "app.views.canvas": "Canvas",
   "app.views.editor": "Workflow Editor",
   "app.panels.hideLeft": "Hide left panel (T)",
