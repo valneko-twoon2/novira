@@ -60,5 +60,6 @@
   "queue.oom.retrySmallerHint": "{width}×{height} で再試行します（面積は約 75%）",
   "queue.oom.lowMemory": "省メモリモードにして再起動",
   "queue.oom.toast.retried": "項目 #{id} を {width}×{height} で再試行します",
-  "queue.oom.toast.retryFailed": "再試行できませんでした"
+  "queue.oom.toast.retryFailed": "再試行できませんでした",
+  "queue.destination.candidates": "候補"
 }

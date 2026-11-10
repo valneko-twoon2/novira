@@ -303,14 +303,14 @@ export interface BoardDTO {
   name: string;
   archived: boolean;
   createdAt: number;
-  /** The board this one is a subfolder of; a subfolder holds pictures only and has no subfolders of its own. */
+  /** The board this one is a subfolder of; a subfolder can hold subfolders too (up to 8 levels, `backend/boardNesting.ts`). */
   parentId?: string | null;
 }
 
 export type QueueItemStatus = 'pending' | 'in_progress' | 'completed' | 'failed' | 'canceled';
 export type QueueOrigin = 'generate' | 'canvas' | 'upscaling' | 'workflows';
 /** `intermediate`: a helper result the app uses itself (a selection mask); stored hidden, never shown or staged. */
-export type QueueDestination = 'gallery' | 'canvas' | 'intermediate';
+export type QueueDestination = 'gallery' | 'canvas' | 'intermediate' | 'candidates';
 /** A failure the app explains and offers a way out of: `out_of_memory` = the GPU ran out of memory. */
 export type QueueErrorKind = 'out_of_memory';
 

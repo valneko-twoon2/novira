@@ -267,5 +267,6 @@
   "gallery.menu.editInText": "テキストで編集",
   "gallery.toast.editedInText": "テキスト画面で、保存したときのレイヤーを開きました",
   "gallery.boards.collapse": "サブフォルダを折りたたむ",
-  "gallery.boards.expand": "サブフォルダを開く"
+  "gallery.boards.expand": "サブフォルダを開く",
+  "gallery.settings.newToCandidates": "生成した絵をまず候補に置く"
 }

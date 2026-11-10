@@ -1,5 +1,5 @@
 // Turns the parameter store into a queue batch (GenerationMetadata + EnqueueRequest).
-import { backend, batchSeed, randomSeed, type EnqueueRequest, type GenerationMetadata, type QueueOrigin } from '@/backend';
+import { backend, batchSeed, randomSeed, type EnqueueRequest, type GenerationMetadata, type QueueItem, type QueueOrigin } from '@/backend';
 import { generationBoardId } from '@/state/invoke';
 import { findModel, modelsOfType, useModels } from '@/state/models';
 import { generationMetadata, txt2imgParts } from '@/state/generationParts';
@@ -54,8 +54,19 @@ export function dynamicBatches(req: EnqueueRequest, mode: DynamicPromptMode = us
 async function withDynamicPrompts(req: EnqueueRequest): Promise<EnqueueRequest> {
   const [first, ...rest] = dynamicBatches(req);
   const ordered = req.prepend ? [...rest].reverse() : rest;
-  for (const batch of ordered) await backend.enqueue(batch);
+  for (const batch of ordered) {
+    const made = await backend.enqueue(batch);
+    if (batch.destination === 'candidates') extraHeld.push(...made);
+  }
   return first!;
+}
+
+/** What the extra batches of a dynamic-prompts run queued for the Candidates view, until the press of Invoke is registered as one batch. */
+const extraHeld: QueueItem[] = [];
+
+/** Takes the items the extra batches queued for the Candidates view, in the order they were queued. */
+export function takeExtraHeld(): QueueItem[] {
+  return extraHeld.splice(0).sort((a, b) => a.id - b.id);
 }
 
 /** The Generate request settings `p` make (the form, or a preset applied to a copy of it), before dynamic prompts are expanded. */
@@ -70,8 +81,10 @@ export function generateRequestOf(p: ParamsFields, prepend: boolean): EnqueueReq
   return { ...baseRequest('generate', params, prepend, p), ...(refImages.length ? { refImages } : {}), ...(initImage ? { initImageUrl: initImage.url } : {}) };
 }
 
-export async function buildGenerateRequest(prepend: boolean): Promise<EnqueueRequest> {
-  return withDynamicPrompts(generateRequestOf(useParams.getState(), prepend));
+/** `held`: the pictures wait in the Candidates view (the `candidates` destination) instead of going to a board. */
+export async function buildGenerateRequest(prepend: boolean, held = false): Promise<EnqueueRequest> {
+  const request = generateRequestOf(useParams.getState(), prepend);
+  return withDynamicPrompts(held ? { ...request, destination: 'candidates' } : request);
 }
 
 export async function buildUpscaleRequest(prepend: boolean): Promise<EnqueueRequest> {

@@ -17,7 +17,7 @@ Most features are called up from a button on the toolbar above the viewer (the s
 | Write out a prompt from a picture | **{{ui:caption.menu}}** | The extension ComfyUI-Florence2 |
 | Register a character and use it in other pictures | **{{ui:character.menu}}** | The extension for reference images (IP-Adapter) |
 | Line up pictures with changed settings in one table | **{{ui:xyplot.menu}}** | Nothing |
-| Choose from half-drawn candidates | The **{{ui:app.views.drafts}}** tab | Nothing |
+| Choose from generated pictures or half-drawn candidates | The **{{ui:app.views.drafts}}** tab | Nothing |
 | Apply the same processing to many pictures | **{{ui:gallery.menu.batch}}** (choose several and right-click) | Depends on the processing |
 
 ## Using the fixing tools
@@ -298,6 +298,16 @@ Drafts line up in the tabs at the top "in the order you started them". Only the 
 - **{{ui:drafts.history.open}}** opens a draft, and **{{ui:drafts.history.reuse}}** puts its settings back in the Generate form.
 
 When you no longer need one, close it with the ✕ on its tab or in the history, or close all the older ones that are not tabs at once with "{{ui:drafts.closeOlder}}" on the history screen.
+
+### Choosing among generated pictures
+
+The pictures you make on the **{{ui:app.tabs.generate}}** tab first line up in this **{{ui:app.views.drafts}}** tab. They do not go to a board, so a lot of generating does not flood your boards.
+
+- When you start generating from the start screen, the center switches to the **{{ui:app.views.drafts}}** tab. Each press adds one tab at the top. The pictures line up in the order they are finished and show "{{ui:drafts.badge.finished}}".
+- Click the pictures you want to choose (click again to deselect), then press "Move N pictures to “board name”" at the bottom right. They go to the board that was selected when you started generating. Dragging a picture onto a board in the gallery on the right moves it to that board too.
+- Double-click a picture to see it large in the viewer.
+- Send the pictures you do not want to the trash together with "{{ui:drafts.discardRest}}" at the bottom. Closing the tab with its ✕ also sends the rest to the trash. Pictures you take back with "Undo" in the notice return to their old board.
+- If you want generated pictures to go to a board at once, turn off "{{ui:gallery.settings.newToCandidates}}" in {{ui:gallery.settings.title}} (the gear button).
 
 ## Processing in bulk
 

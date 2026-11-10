@@ -173,7 +173,7 @@
 | **{{ui:workflows.templates.characterReference.title}}** | 把角色的图像换成白色背景作为参考图像，统一头发、眼睛和服装，绘制新的场景。CFG 设为适合参考图像的较低值。 | ComfyUI-RMBG 和 ComfyUI_IPAdapter_plus |
 | **{{ui:workflows.templates.characterPose.title}}** | 角色的外观取自参考图像，姿态取自火柴人（OpenPose）来绘制。 | 上面 2 个，再加上 comfyui_controlnet_aux 和 OpenPose 用的 ControlNet 模型 |
 
-使用角色的模板，适合想用工作流细致调整 [注册并使用角色](04-improve.md#注册并使用角色) 这一功能的时候。通常情况下，使用在生成标签页中注册的角色就足够了。火柴人的姿态，可以在 [画布](05-canvas.md) 的“{{ui:pose.title}}”中制作。
+使用角色的模板，适合想用工作流细致调整 [注册并使用角色](04-improve.md) 这一功能的时候。通常情况下，使用在生成标签页中注册的角色就足够了。火柴人的姿态，可以在 [画布](05-canvas.md) 的“{{ui:pose.title}}”中制作。
 
 ## 扩展（自定义节点）
 

@@ -202,13 +202,12 @@ Anima・Flux・FLUX.2・Chroma・Qwen-Image・Z-Image・SD3・HiDream・AuraFlow
 
 ![生成が終わった画面。中央のビューアに絵が表示され、右のギャラリーにも並んでいる](shot:generate-result)
 
-押すと、すぐに中央がビューアに切り替わります。
+押すと、スタート画面のときは、中央が **{{ui:app.views.drafts}}** タブに切り替わります（ビューアを開いているときは、そのままです）。
 描いている間は、右のギャラリーの上に「{{ui:gallery.generating.title}}」の帯が出て、途中経過の絵とステップ数、進み具合が見えます。中央の上端の細い線も、進み具合を示します。同じ絵はギャラリーの先頭にも小さな枠として並びます。この枠を押すと、中央のビューアで途中経過の絵を大きく見られます。生成が終わると、できた絵に切り替わります。
 
-できあがると、絵がギャラリーに加わります。ビューアの表示は変わりません。
-絵は、いま選んでいる（右パネルで「{{ui:gallery.boards.autoBadge}}」の印が付いている）ボードに保存されます。ボードのことや、絵の整理・比較・やり直しは [ギャラリーとビューア](03-gallery.md) で説明します。
+できあがった絵は、まず **{{ui:app.views.drafts}}** タブに並びます。要る絵だけを選んで、いま選んでいる（右パネルで「{{ui:gallery.boards.autoBadge}}」の印が付いている）ボードへ入れます（[下書きから選ぶ](04-improve.md)で説明します）。ボードのことや、絵の整理・比較・やり直しは [ギャラリーとビューア](03-gallery.md) で説明します。
 
-> できあがった絵を自動でビューアに出したいときは、{{ui:gallery.settings.title}}（歯車のボタン）で「{{ui:gallery.settings.autoSwitch}}」をオンにしてください。初めはオフです。
+> できあがった絵をすぐボードに入れたいときは、{{ui:gallery.settings.title}}（歯車のボタン）で「{{ui:gallery.settings.newToCandidates}}」をオフにしてください。そのうえで、絵を自動でビューアにも出したいときは「{{ui:gallery.settings.autoSwitch}}」をオンにします。初めは、「{{ui:gallery.settings.newToCandidates}}」がオン、「{{ui:gallery.settings.autoSwitch}}」がオフです。
 
 ## プリセット
 

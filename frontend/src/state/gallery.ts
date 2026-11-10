@@ -13,6 +13,8 @@ export interface GallerySettings {
   thumbnailSize: number;
   /** A finished picture opens in the viewer, and the gallery goes to its board. */
   showNewInViewer: boolean;
+  /** The image form's pictures wait in the Candidates view until the user moves them to a board; off sends them straight to the board. */
+  newPicturesToCandidates: boolean;
   autoAssignBoardOnClick: boolean;
   starredFirst: boolean;
   sortDirection: 'desc' | 'asc';
@@ -99,6 +101,7 @@ export const useGallery = create<GalleryState>()(
       settings: {
         thumbnailSize: 90,
         showNewInViewer: false,
+        newPicturesToCandidates: true,
         autoAssignBoardOnClick: true,
         starredFirst: true,
         sortDirection: 'desc',

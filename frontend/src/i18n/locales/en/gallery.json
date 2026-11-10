@@ -267,5 +267,6 @@
   "gallery.menu.editInText": "Edit in Text",
   "gallery.toast.editedInText": "Opened the layers it was saved from in the Text screen",
   "gallery.boards.collapse": "Fold subfolders",
-  "gallery.boards.expand": "Show subfolders"
+  "gallery.boards.expand": "Show subfolders",
+  "gallery.settings.newToCandidates": "Put new pictures in Candidates first"
 }

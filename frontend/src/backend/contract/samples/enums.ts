@@ -59,7 +59,7 @@ export const enums = {
   MediaType: allOf<MediaType>()(['image', 'video', 'audio']),
   QueueItemStatus: allOf<QueueItemStatus>()(['pending', 'in_progress', 'completed', 'failed', 'canceled']),
   QueueOrigin: allOf<QueueOrigin>()(['generate', 'canvas', 'upscaling', 'workflows']),
-  QueueDestination: allOf<QueueDestination>()(['gallery', 'canvas', 'intermediate']),
+  QueueDestination: allOf<QueueDestination>()(['gallery', 'canvas', 'intermediate', 'candidates']),
   QueueErrorKind: allOf<QueueErrorKind>()(['out_of_memory']),
   ControlMode: allOf<ControlMode>()(['balanced', 'more_prompt', 'more_control']),
   RefImageMethod: allOf<RefImageMethod>()(['full', 'style', 'composition', 'style_strong', 'style_precise']),

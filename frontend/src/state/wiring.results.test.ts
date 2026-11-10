@@ -46,6 +46,13 @@ describe('a finished result', () => {
     expect(useGallery.getState().view).toBe('assets');
     useGallery.setState({ settings: { ...useGallery.getState().settings, showNewInViewer: true } });
 
+    // A picture held for the Candidates view joins the gallery's list (hidden from the boards) and moves nothing, whatever the setting says.
+    useGallery.setState({ view: 'assets', selectedBoardId: 'none', selection: [] });
+    emit({ type: 'image_added', image: { ...image('held.png', 'general'), isIntermediate: true }, item: { ...item, destination: 'candidates' } as QueueItem });
+    expect(useGallery.getState().images.map((i) => i.name)).toContain('held.png');
+    expect(useGallery.getState().selection).toEqual([]);
+    expect(useGallery.getState().view).toBe('assets');
+
     emit({ type: 'image_added', image: image('pic.png', 'general'), item });
     expect(useGallery.getState().view).toBe('images');
     expect(useGallery.getState().selection).toEqual(['pic.png']);

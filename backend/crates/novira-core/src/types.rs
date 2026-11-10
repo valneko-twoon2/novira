@@ -504,7 +504,7 @@ pub struct BoardDTO {
     pub name: String,
     pub archived: bool,
     pub created_at: i64,
-    /// The board this one is a subfolder of. A subfolder holds pictures only and has no subfolders of its own.
+    /// The board this one is a subfolder of; a subfolder can hold subfolders too (`service::MAX_BOARD_DEPTH` levels).
     #[serde(default)]
     pub parent_id: Option<String>,
 }
@@ -542,6 +542,9 @@ pub enum QueueDestination {
     Canvas,
     /// A helper result (for example a selection mask) the app uses itself: stored hidden, never shown or staged.
     Intermediate,
+    /// A picture the user has not accepted yet: stored hidden from the boards (with the board it would go to) until the
+    /// Candidates view moves it there.
+    Candidates,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

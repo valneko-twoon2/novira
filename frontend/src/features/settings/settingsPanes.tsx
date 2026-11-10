@@ -163,7 +163,7 @@ export function GalleryPane() {
   const images = useGallery((st) => st.images);
   const intermediates = images.filter((i) => i.isIntermediate).map((i) => i.name);
   const [clearing, setClearing] = useState(false);
-  const toggle = (key: 'showNewInViewer' | 'autoAssignBoardOnClick' | 'starredFirst' | 'alwaysShowImageSizeBadge' | 'showArchivedBoards' | 'groupByDate', label: string) => (
+  const toggle = (key: 'showNewInViewer' | 'newPicturesToCandidates' | 'autoAssignBoardOnClick' | 'starredFirst' | 'alwaysShowImageSizeBadge' | 'showArchivedBoards' | 'groupByDate', label: string) => (
     <Row label={label}>
       <Switch checked={g[key]} onChange={(v) => set({ [key]: v })} aria-label={label} data-testid={`settings-gallery-${key}`} />
     </Row>
@@ -206,6 +206,7 @@ export function GalleryPane() {
         {toggle('showArchivedBoards', t('gallery.settings.showArchived'))}
       </SectionBlock>
       <SectionBlock title={t('settings.section.galleryActions')}>
+        {toggle('newPicturesToCandidates', t('gallery.settings.newToCandidates'))}
         {toggle('showNewInViewer', t('gallery.settings.autoSwitch'))}
         {toggle('autoAssignBoardOnClick', t('gallery.settings.autoAssign'))}
         <Toggle k="confirmOnDelete" label={t('settings.confirmOnDelete')} />

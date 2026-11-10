@@ -229,7 +229,7 @@
 
 ### {{ui:settings.tab.gallery}}
 
-- **{{ui:gallery.settings.thumbnailSize}}**、**{{ui:gallery.settings.sort}}**、**{{ui:gallery.settings.starredFirst}}**、**{{ui:gallery.settings.groupByDate}}**、**{{ui:gallery.settings.alwaysShowSize}}**、**{{ui:gallery.settings.showArchived}}**、**{{ui:gallery.settings.autoSwitch}}**、**{{ui:gallery.settings.autoAssign}}**：與用圖庫的齒輪按鈕開啟的 **{{ui:gallery.settings.title}}** 是相同的項目。在哪一邊更改，結果都一樣。
+- **{{ui:gallery.settings.thumbnailSize}}**、**{{ui:gallery.settings.sort}}**、**{{ui:gallery.settings.starredFirst}}**、**{{ui:gallery.settings.groupByDate}}**、**{{ui:gallery.settings.alwaysShowSize}}**、**{{ui:gallery.settings.showArchived}}**、**{{ui:gallery.settings.newToCandidates}}**、**{{ui:gallery.settings.autoSwitch}}**、**{{ui:gallery.settings.autoAssign}}**：與用圖庫的齒輪按鈕開啟的 **{{ui:gallery.settings.title}}** 是相同的項目。在哪一邊更改，結果都一樣。
 - **{{ui:settings.confirmOnDelete}}**：刪除圖像之前，先顯示確認。在確認畫面選擇「{{ui:common.dontAskAgain}}」時，這裡也會變成關閉。
 - **{{ui:settings.clearIntermediates}}**：刪除畫布的中間結果等不會顯示在圖庫的圖像。要刪除的數量會顯示在按鈕上。
 

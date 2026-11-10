@@ -173,7 +173,7 @@ Os templates disponíveis são estes:
 | **{{ui:workflows.templates.characterReference.title}}** | Coloca o desenho do personagem sobre fundo branco como imagem de referência, uniformiza cabelo, olhos e roupas e desenha uma nova cena. O CFG vem com um valor baixo, adequado à imagem de referência. | ComfyUI-RMBG e ComfyUI_IPAdapter_plus |
 | **{{ui:workflows.templates.characterPose.title}}** | Desenha com a aparência do personagem tirada da imagem de referência e a postura tirada do boneco de palitos (OpenPose). | As 2 acima, mais comfyui_controlnet_aux e um modelo ControlNet para OpenPose |
 
-Os templates que usam personagens servem para quando se quer ajustar com precisão, num fluxo de trabalho, o recurso de [registrar e usar um personagem](04-improve.md#registrar-e-usar-um-personagem). Normalmente basta usar na aba de geração o personagem registrado. A postura do boneco de palitos pode ser criada em “{{ui:pose.title}}”, na [Tela](05-canvas.md).
+Os templates que usam personagens servem para quando se quer ajustar com precisão, num fluxo de trabalho, o recurso de [registrar e usar um personagem](04-improve.md). Normalmente basta usar na aba de geração o personagem registrado. A postura do boneco de palitos pode ser criada em “{{ui:pose.title}}”, na [Tela](05-canvas.md).
 
 ## Extensões (nós personalizados)
 

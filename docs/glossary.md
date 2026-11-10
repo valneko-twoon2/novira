@@ -49,6 +49,7 @@
 | 待機中 (Pending) / 処理中 (In progress) / 完了 (Completed) / 失敗 (Failed) / キャンセル (Canceled) | キューの項目の状態 | `queue.status.*` |
 | 一時停止中 (Paused) | キューの処理が一時停止している。実行中の作業は始まらない | `queue.processor.paused` |
 | 下書き (Draft) | ステップの途中で止めた粗い絵。本番の実行の前にシードを選ぶためのもの | `GenerationMetadata.draftAt` |
+| 候補 (Candidates) | 生成した絵がボードに入る前に置かれる場所と画面。下書きもここに並ぶ。要る絵だけをボードへ入れる | `QueueDestination` の `candidates`、`app.views.drafts` |
 | まとめて処理 (Batch) | 1 つの操作（背景の除去、アップスケールなど）を多数の画像に実行する | `batch.*` |
 | 比較グリッド (XY plot) | 1 つか 2 つの設定を列と行で変えた画像の表 | `xyplot.*` |
 | シード (Seed) | 乱数の開始ノイズを固定する数。同じ設定で同じシードなら同じ画像になる | `seed` |

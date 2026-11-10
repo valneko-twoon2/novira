@@ -81,7 +81,7 @@ Windows가 사용 중인 네트워크를 '퍼블릭'으로 취급하고 있을 �
 |---|---|
 | **{{ui:app.tabs.generate}}** | PC의 왼쪽 패널과 같은 부품이 같은 순서로 세로로 나열됩니다([이미지 만들기](02-generate.md)). 프리셋, {{ui:params.seed.label}}과 **{{ui:params.invoke.invoke}}** 버튼, 모델, 프롬프트, 참조 이미지, 고해상도 보정이나 상세 설정까지 PC와 똑같이 사용할 수 있습니다. {{ui:params.seed.label}}과 **{{ui:params.invoke.invoke}}** 버튼의 줄은 스크롤해도 위에 남습니다 |
 | **{{ui:phone.gallery}}** | **{{ui:phone.board}}** 항목을 선택하면 그 보드의 그림이 3열로 나열됩니다. 그리고 있는 도중의 그림은 맨 앞에 나옵니다. 누르면 전체 화면으로 열립니다 |
-| **{{ui:app.views.drafts}}** | PC의 초안과 같습니다([초안에서 고르기](04-improve.md#초안에서-고르기)). 후보의 **{{ui:drafts.open}}** 버튼으로 그 그림을 전체 화면으로 볼 수 있습니다 |
+| **{{ui:app.views.drafts}}** | PC의 초안과 같습니다([초안에서 고르기](04-improve.md)). 후보의 **{{ui:drafts.open}}** 버튼으로 그 그림을 전체 화면으로 볼 수 있습니다 |
 | **{{ui:app.tabs.queue}}** | 대기 중인 항목이 새로운 순서로 나열됩니다. 탭의 아이콘에는 기다리는 항목과 그리고 있는 항목의 수가 나옵니다 |
 | **{{ui:app.tabs.models}}** | PC의 {{ui:app.tabs.models}} 탭과 같습니다([모델 준비하기](08-models.md)). 화면이 작으므로 카드는 가장 작은 크기로 시작합니다 |
 | **{{ui:app.tabs.browse}}** | PC의 {{ui:app.tabs.browse}} 탭과 같습니다. Civitai와 Hugging Face에서 모델을 찾아 설치할 수 있습니다. 검색과 좁히기는 왼쪽 위의 **{{ui:browse.menu}}** 버튼 안에 있으며, 거기의 **{{ui:browse.cardSize}}** 항목에서 목록 카드의 크기를 바꿀 수 있습니다(가장 작은 크기로 시작합니다) |

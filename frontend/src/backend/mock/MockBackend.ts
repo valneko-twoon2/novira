@@ -594,7 +594,7 @@ export class MockBackend implements BackendClient {
       createdAt: this.now(),
       boardId: item.destination === 'canvas' ? null : item.boardId,
       starred: false,
-      isIntermediate: item.destination === 'canvas' || p.draftAt !== undefined,
+      isIntermediate: item.destination === 'canvas' || item.destination === 'candidates' || p.draftAt !== undefined,
       category: 'general',
       // With the high-resolution fix the stored size stays the first pass's (the setting the scale applies to).
       metadata: this.withSampling(hires ? { ...p } : { ...p, width, height }),

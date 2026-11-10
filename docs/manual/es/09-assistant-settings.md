@@ -229,7 +229,7 @@ Al elegir **{{ui:app.nav.settings}}** en **{{ui:app.nav.settingsMenu}}**, en la 
 
 ### {{ui:settings.tab.gallery}}
 
-- **{{ui:gallery.settings.thumbnailSize}}**, **{{ui:gallery.settings.sort}}**, **{{ui:gallery.settings.starredFirst}}**, **{{ui:gallery.settings.groupByDate}}**, **{{ui:gallery.settings.alwaysShowSize}}**, **{{ui:gallery.settings.showArchived}}**, **{{ui:gallery.settings.autoSwitch}}**, **{{ui:gallery.settings.autoAssign}}**: los mismos elementos que **{{ui:gallery.settings.title}}**, que abre el botón del engranaje de la galería. Cambiarlos en cualquiera de los dos sitios los cambia en ambos.
+- **{{ui:gallery.settings.thumbnailSize}}**, **{{ui:gallery.settings.sort}}**, **{{ui:gallery.settings.starredFirst}}**, **{{ui:gallery.settings.groupByDate}}**, **{{ui:gallery.settings.alwaysShowSize}}**, **{{ui:gallery.settings.showArchived}}**, **{{ui:gallery.settings.newToCandidates}}**, **{{ui:gallery.settings.autoSwitch}}**, **{{ui:gallery.settings.autoAssign}}**: los mismos elementos que **{{ui:gallery.settings.title}}**, que abre el botón del engranaje de la galería. Cambiarlos en cualquiera de los dos sitios los cambia en ambos.
 - **{{ui:settings.confirmOnDelete}}**: muestra una confirmación antes de eliminar una imagen. También se desactiva al elegir «{{ui:common.dontAskAgain}}» en la pantalla de confirmación.
 - **{{ui:settings.clearIntermediates}}**: elimina las imágenes que no aparecen en la galería, como los resultados intermedios del lienzo. El número que se eliminará se muestra en el botón.
 

@@ -17,7 +17,7 @@ function Row({ label, children }: { label: ReactNode; children: ReactNode }) {
 export function GallerySettingsPopover() {
   const s = useGallery((st) => st.settings);
   const set = (patch: Partial<GallerySettings>) => useGallery.getState().setSettings(patch);
-  const toggle = (key: 'showNewInViewer' | 'autoAssignBoardOnClick' | 'starredFirst' | 'alwaysShowImageSizeBadge' | 'showArchivedBoards' | 'groupByDate', label: string) => (
+  const toggle = (key: 'showNewInViewer' | 'newPicturesToCandidates' | 'autoAssignBoardOnClick' | 'starredFirst' | 'alwaysShowImageSizeBadge' | 'showArchivedBoards' | 'groupByDate', label: string) => (
     <Row label={label}>
       <Switch checked={s[key]} onChange={(v) => set({ [key]: v })} aria-label={label} />
     </Row>
@@ -33,6 +33,7 @@ export function GallerySettingsPopover() {
           <span>{t('gallery.settings.thumbnailSize')}</span>
           <Slider value={s.thumbnailSize} min={45} max={256} step={1} onChange={(v) => set({ thumbnailSize: v })} aria-label={t('gallery.settings.thumbnailSize')} />
         </div>
+        {toggle('newPicturesToCandidates', t('gallery.settings.newToCandidates'))}
         {toggle('showNewInViewer', t('gallery.settings.autoSwitch'))}
         {toggle('autoAssignBoardOnClick', t('gallery.settings.autoAssign'))}
         {toggle('alwaysShowImageSizeBadge', t('gallery.settings.alwaysShowSize'))}

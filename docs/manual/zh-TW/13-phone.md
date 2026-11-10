@@ -81,7 +81,7 @@ Windows 把使用中的網路視為「公用」時，畫面上會出現提醒。
 |---|---|
 | **{{ui:app.tabs.generate}}** | 與電腦左側面板相同的元件，以相同的順序縱向排列（[製作圖像](02-generate.md)）。預設、{{ui:params.seed.label}}與 **{{ui:params.invoke.invoke}}** 按鈕、模型、提示詞、參考圖像，乃至高解析度修正與詳細設定，都能像在電腦上一樣使用。{{ui:params.seed.label}}與 **{{ui:params.invoke.invoke}}** 按鈕那一列，即使捲動也會留在上方 |
 | **{{ui:phone.gallery}}** | 選擇 **{{ui:phone.board}}**，該看板的圖像會以 3 欄排列。繪製中的圖像會顯示在最前面。按下會以全螢幕開啟 |
-| **{{ui:app.views.drafts}}** | 與電腦的草稿相同（[從草稿中挑選](04-improve.md#從草稿中挑選)）。用候選項的 **{{ui:drafts.open}}** 按鈕，可以用全螢幕查看那張圖像 |
+| **{{ui:app.views.drafts}}** | 與電腦的草稿相同（[從草稿中挑選](04-improve.md)）。用候選項的 **{{ui:drafts.open}}** 按鈕，可以用全螢幕查看那張圖像 |
 | **{{ui:app.tabs.queue}}** | 排隊中的項目，依新到舊排列。分頁的圖示上會顯示等待中與繪製中的項目數量 |
 | **{{ui:app.tabs.models}}** | 與電腦的{{ui:app.tabs.models}}分頁相同（[管理與搜尋模型](08-models.md)）。因為畫面較小，卡片從最小的大小開始 |
 | **{{ui:app.tabs.browse}}** | 與電腦的{{ui:app.tabs.browse}}分頁相同。可以在 Civitai 與 Hugging Face 搜尋並安裝模型。搜尋與篩選位於左上方的 **{{ui:browse.menu}}** 按鈕中，在其中的 **{{ui:browse.cardSize}}** 可以改變清單中卡片的大小（從最小的大小開始） |

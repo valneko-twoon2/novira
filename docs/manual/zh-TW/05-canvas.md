@@ -94,7 +94,7 @@
 
 所選圖層的下方，會展開該圖層的設定。
 
-- {{ui:canvas.add.inpaint}}: 遮罩的顏色與塗抹的花紋（僅影響畫面上的顯示）、**{{ui:canvas.mask.denoiseLimit}}**（開啟後調低，即使在遮罩之中也更容易保留原圖）。右鍵的 **{{ui:canvas.entityMenu.invertMask}}**，可以對調生成範圍中被遮罩的部分與空白的部分。用 **{{ui:canvas.partFix.redraw}}**・**{{ui:canvas.partFix.erase}}**・**{{ui:canvas.partFix.cutOutAction}}**，可以用文字指示重畫塗抹的部分、消除，或去背（[選取範圍來修飾](04-improve.md#選取範圍來修飾)）。
+- {{ui:canvas.add.inpaint}}: 遮罩的顏色與塗抹的花紋（僅影響畫面上的顯示）、**{{ui:canvas.mask.denoiseLimit}}**（開啟後調低，即使在遮罩之中也更容易保留原圖）。右鍵的 **{{ui:canvas.entityMenu.invertMask}}**，可以對調生成範圍中被遮罩的部分與空白的部分。用 **{{ui:canvas.partFix.redraw}}**・**{{ui:canvas.partFix.erase}}**・**{{ui:canvas.partFix.cutOutAction}}**，可以用文字指示重畫塗抹的部分、消除，或去背（[選取範圍來修飾](04-improve.md)）。
 - {{ui:canvas.add.control}}: 請見後面的「{{ui:canvas.add.control}}」一節。
 
 ## 會怎麼重畫

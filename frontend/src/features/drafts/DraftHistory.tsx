@@ -150,8 +150,8 @@ function HistoryCard({ group: g, n, isCurrent, onOpen }: { group: DraftGroup; n:
           <span>
             {g.params.width}×{g.params.height}
           </span>
-          <span>{tCount('drafts.history.drafts', g.candidates.length)}</span>
-          {finished > 0 && <span>{tCount('drafts.history.finished', finished)}</span>}
+          <span>{tCount(g.kind === 'generation' ? 'drafts.history.pictures' : 'drafts.history.drafts', g.candidates.length)}</span>
+          {finished > 0 && g.kind !== 'generation' && <span>{tCount('drafts.history.finished', finished)}</span>}
         </span>
       </button>
       <div className="dh-card__actions">
@@ -162,7 +162,7 @@ function HistoryCard({ group: g, n, isCurrent, onOpen }: { group: DraftGroup; n:
           {t('drafts.history.reuse')}
         </Button>
         <span className="dh-card__spacer" />
-        <IconButton size="xs" label={t('drafts.closeGroup')} icon={<X />} onClick={() => useDrafts.getState().closeGroup(g.id)} data-testid="drafts-history-close" />
+        <IconButton size="xs" label={t(g.kind === 'generation' ? 'drafts.closeGroupHeld' : 'drafts.closeGroup')} icon={<X />} onClick={() => useDrafts.getState().closeGroup(g.id)} data-testid="drafts-history-close" />
       </div>
     </div>
   );

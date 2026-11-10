@@ -73,6 +73,8 @@ async function start(): Promise<void> {
         if (item) onComicImage(item, image);
         // Drafts live in the Drafts view; they do not move the gallery or the viewer.
         if (item?.params.draftAt !== undefined) break;
+        // Pictures held for the Candidates view stay there, like drafts, until the user moves them to a board.
+        if (item?.destination === 'candidates') break;
         // A helper result (a selection mask) is for the feature that asked; nothing else reacts to it.
         if (item?.destination === 'intermediate') break;
         if (item?.destination === 'canvas') {

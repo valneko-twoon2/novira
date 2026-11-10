@@ -12,8 +12,11 @@ export interface InvokeBuilder {
   readiness: () => string[];
   /** Hints shown next to Invoke that do not block it (for example a size the model may not draw well). */
   warnings?: () => string[];
-  /** Build the batch. May be async (e.g. canvas compositing). */
-  build: (opts: { prepend: boolean }) => Promise<EnqueueRequest>;
+  /**
+   * Build the batch. May be async (e.g. canvas compositing). `held`: the pictures are to wait in the Candidates view (the
+   * `candidates` destination); only the image form's builder takes it, and it then registers them in `onEnqueued`.
+   */
+  build: (opts: { prepend: boolean; held?: boolean }) => Promise<EnqueueRequest>;
   /** Store subscriptions that affect readiness (re-evaluated on change). */
   subscribe?: (onChange: () => void) => () => void;
   /** Called with the queue items a build made and the request it built, so the screen can keep track of them. */
@@ -87,14 +90,20 @@ export async function enqueueActive(opts: { prepend?: boolean; pictures?: number
   if (reasons.length) return { problems: reasons };
   let made: EnqueueRequest | null = null;
   try {
-    const built = await b.build({ prepend: opts.prepend ?? false });
+    // The image form's pictures wait in the Candidates view unless the setting sends them straight to a board.
+    const held = key === 'generate' && useGallery.getState().settings.newPicturesToCandidates;
+    const built = await b.build({ prepend: opts.prepend ?? false, held });
     made = built;
     // A set number of pictures (the assistant's trial picture) replaces the iterations box.
     const request = opts.pictures === undefined ? built : { ...built, iterations: opts.pictures };
     const items = await backend.enqueue(request);
     b.onEnqueued?.(items, built);
     // Like InvokeAI, leave the launchpad so the progress preview is visible.
-    if (key === tab && request.destination === 'gallery' && useUi.getState().mainView[tab] === 'launchpad') showViewer(tab);
+    if (key === tab && useUi.getState().mainView[tab] === 'launchpad') {
+      if (request.destination === 'gallery') showViewer(tab);
+      // Where the pictures will be, so the start screen is left for them.
+      else if (request.destination === 'candidates') useUi.getState().setMainView(tab, 'drafts');
+    }
     return { items };
   } catch (err) {
     if (made) b.onEnqueueFailed?.(made);
@@ -122,7 +131,7 @@ export function autoAddBoardId(): string | null {
  * falls back to the auto-add board (`autoAddBoardId`).
  */
 export function generationBoardId(): string | null {
-  const first = useQueue.getState().items.find((i) => (i.status === 'pending' || i.status === 'in_progress') && i.destination === 'gallery');
+  const first = useQueue.getState().items.find((i) => (i.status === 'pending' || i.status === 'in_progress') && (i.destination === 'gallery' || i.destination === 'candidates'));
   if (first && (first.boardId === null || useGallery.getState().boards.some((b) => b.id === first.boardId))) return first.boardId;
   return autoAddBoardId();
 }

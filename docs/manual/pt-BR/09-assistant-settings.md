@@ -229,7 +229,7 @@ Ao escolher **{{ui:app.nav.settings}}** no **{{ui:app.nav.settingsMenu}}**, no c
 
 ### {{ui:settings.tab.gallery}}
 
-- **{{ui:gallery.settings.thumbnailSize}}**, **{{ui:gallery.settings.sort}}**, **{{ui:gallery.settings.starredFirst}}**, **{{ui:gallery.settings.groupByDate}}**, **{{ui:gallery.settings.alwaysShowSize}}**, **{{ui:gallery.settings.showArchived}}**, **{{ui:gallery.settings.autoSwitch}}**, **{{ui:gallery.settings.autoAssign}}**: são os mesmos itens de **{{ui:gallery.settings.title}}**, que se abre com o botão de engrenagem da galeria. Mudar em qualquer um dos dois tem o mesmo efeito.
+- **{{ui:gallery.settings.thumbnailSize}}**, **{{ui:gallery.settings.sort}}**, **{{ui:gallery.settings.starredFirst}}**, **{{ui:gallery.settings.groupByDate}}**, **{{ui:gallery.settings.alwaysShowSize}}**, **{{ui:gallery.settings.showArchived}}**, **{{ui:gallery.settings.newToCandidates}}**, **{{ui:gallery.settings.autoSwitch}}**, **{{ui:gallery.settings.autoAssign}}**: são os mesmos itens de **{{ui:gallery.settings.title}}**, que se abre com o botão de engrenagem da galeria. Mudar em qualquer um dos dois tem o mesmo efeito.
 - **{{ui:settings.confirmOnDelete}}**: mostra uma confirmação antes de apagar uma imagem. Quando você escolhe “{{ui:common.dontAskAgain}}” na tela de confirmação, esta opção também é desligada.
 - **{{ui:settings.clearIntermediates}}**: apaga as imagens que não aparecem na galeria, como os resultados intermediários da tela. O número de itens a apagar aparece no botão.
 

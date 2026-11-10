@@ -34,11 +34,35 @@ describe('invoke', () => {
     const b = builder();
     registerInvokeBuilder('generate', b);
     useUi.setState({ activeTab: 'generate', mainView: { ...initialUi.mainView, generate: 'launchpad' } });
+    useGallery.setState({ settings: { ...initialGallery.settings, newPicturesToCandidates: false } });
     await invoke({ prepend: true });
-    expect(b.build).toHaveBeenCalledWith({ prepend: true });
+    expect(b.build).toHaveBeenCalledWith({ prepend: true, held: false });
     expect(enqueue).toHaveBeenCalledOnce();
     expect(useUi.getState().mainView.generate).toBe('viewer');
     expect(statuses()).toEqual(['success']);
+  });
+
+  it('asks the image form to hold its pictures for the Candidates view, and leaves the launchpad for that view', async () => {
+    const b = builder({ build: vi.fn(async () => request('candidates')) });
+    registerInvokeBuilder('generate', b);
+    useUi.setState({ activeTab: 'generate', mainView: { ...initialUi.mainView, generate: 'launchpad' } });
+    await invoke();
+    expect(b.build).toHaveBeenCalledWith({ prepend: false, held: true });
+    expect(useUi.getState().mainView.generate).toBe('drafts');
+  });
+
+  it('holds nothing for the other screens: only the image form takes the Candidates view', async () => {
+    const b = builder();
+    registerInvokeBuilder('upscaling', b);
+    useUi.setState({ activeTab: 'upscaling' });
+    await invoke();
+    expect(b.build).toHaveBeenCalledWith({ prepend: false, held: false });
+  });
+
+  it('keeps a run of Invokes on the board the first picture chose, whether it waits for a board or for the Candidates view', () => {
+    useGallery.setState({ ...initialGallery, boards: [{ id: 'b1' }] as never });
+    useQueue.setState({ items: [{ id: 1, status: 'pending', destination: 'candidates', boardId: 'b1' }] as unknown as QueueItem[] });
+    expect(generationBoardId()).toBe('b1');
   });
 
   it('stays on the launchpad when the batch goes to the canvas', async () => {

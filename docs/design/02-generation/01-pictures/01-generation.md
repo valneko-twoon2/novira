@@ -58,7 +58,7 @@ covers:
 
 ### 下書き
 
-- `draftAt` を持つジョブは途中で止まる。下書きビューとその規則は [05-drafts.md](05-drafts.md) にある。
+- `draftAt` を持つジョブは途中で止まる。候補ビュー（宛先 `candidates` の生成も含む）とその規則は [05-drafts.md](05-drafts.md) にある。
 
 ### ガイダンスの検査
 

@@ -173,7 +173,7 @@
 | **{{ui:workflows.templates.characterReference.title}}** | 캐릭터의 그림을 흰 배경으로 만들어 참조 이미지로 삼고, 머리카락, 눈, 옷을 맞춰서 새 장면을 그립니다. CFG는 참조 이미지에 맞는 낮은 값으로 되어 있습니다. | ComfyUI-RMBG와 ComfyUI_IPAdapter_plus |
 | **{{ui:workflows.templates.characterPose.title}}** | 캐릭터의 외모는 참조 이미지에서, 자세는 막대 인간(OpenPose)에서 가져와 그립니다. | 위의 2가지에 comfyui_controlnet_aux와 OpenPose용 ControlNet 모델 |
 
-캐릭터를 사용하는 템플릿은 [캐릭터를 등록해서 사용하기](04-improve.md#캐릭터를-등록해서-사용하기) 기능을 워크플로로 세밀하게 조정하고 싶을 때를 위한 것입니다. 보통은 생성 탭에서 등록한 캐릭터를 사용하면 충분합니다. 막대 인간의 자세는 [캔버스](05-canvas.md)의 '{{ui:pose.title}}'로 만들 수 있습니다.
+캐릭터를 사용하는 템플릿은 [캐릭터를 등록해서 사용하기](04-improve.md) 기능을 워크플로로 세밀하게 조정하고 싶을 때를 위한 것입니다. 보통은 생성 탭에서 등록한 캐릭터를 사용하면 충분합니다. 막대 인간의 자세는 [캔버스](05-canvas.md)의 '{{ui:pose.title}}'로 만들 수 있습니다.
 
 ## 확장 기능(커스텀 노드)
 

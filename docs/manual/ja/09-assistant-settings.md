@@ -229,7 +229,7 @@ Claude と Codex のほかに、このパソコンやネットワーク上で動
 
 ### {{ui:settings.tab.gallery}}
 
-- **{{ui:gallery.settings.thumbnailSize}}**、**{{ui:gallery.settings.sort}}**、**{{ui:gallery.settings.starredFirst}}**、**{{ui:gallery.settings.groupByDate}}**、**{{ui:gallery.settings.alwaysShowSize}}**、**{{ui:gallery.settings.showArchived}}**、**{{ui:gallery.settings.autoSwitch}}**、**{{ui:gallery.settings.autoAssign}}**：ギャラリーの歯車のボタンで開く **{{ui:gallery.settings.title}}** と同じ項目です。どちらで変えても同じように変わります。
+- **{{ui:gallery.settings.thumbnailSize}}**、**{{ui:gallery.settings.sort}}**、**{{ui:gallery.settings.starredFirst}}**、**{{ui:gallery.settings.groupByDate}}**、**{{ui:gallery.settings.alwaysShowSize}}**、**{{ui:gallery.settings.showArchived}}**、**{{ui:gallery.settings.newToCandidates}}**、**{{ui:gallery.settings.autoSwitch}}**、**{{ui:gallery.settings.autoAssign}}**：ギャラリーの歯車のボタンで開く **{{ui:gallery.settings.title}}** と同じ項目です。どちらで変えても同じように変わります。
 - **{{ui:settings.confirmOnDelete}}**：画像を消す前に、確認を出します。確認の画面で「{{ui:common.dontAskAgain}}」を選んだときも、ここがオフになります。
 - **{{ui:settings.clearIntermediates}}**：キャンバスの途中結果など、ギャラリーに出ない画像を消します。消す数がボタンに出ます。
 

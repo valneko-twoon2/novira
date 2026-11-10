@@ -1,14 +1,19 @@
-// Draft sessions: one batch of candidates (same settings, different seeds) drawn only part of the way, so the
-// user can pick the promising ones and have only those drawn to the end. The queue holds the real work; this store
-// remembers which queue items belong to which candidate and what the user decided.
+// Candidate sessions. A draft batch is candidates (same settings, different seeds) drawn only part of the way, so the
+// user can pick the promising ones and have only those drawn to the end. A generation batch is what one press of Invoke
+// made, kept out of the boards until the user moves the pictures they want there. The queue holds the real work; this
+// store remembers which queue items belong to which candidate and what the user decided.
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { backend, draftStep, type EnqueueRequest, type GenerationMetadata, type ImageDTO, type ModelConfig, type QueueItem, type RefImageInput } from '@/backend';
+import { t, tCount } from '@/i18n';
+import { boardLabel } from './boardTree';
 import { buildRequestFor } from './invoke';
 import { useGallery } from './gallery';
 import { ensureAllDetails, ensureDetails, isSummary, summaryCount } from './galleryDetails';
+import { recordDeletion, undoDeletion } from './galleryUndo';
 import { BASE_ORDER, drawableModels, findModel } from './models';
 import { useQueue } from './queue';
+import { toast } from './toasts';
 
 export type Verdict = 'keep' | 'reject' | null;
 export type DraftStatus = 'queued' | 'running' | 'ready' | 'failed';
@@ -30,6 +35,11 @@ export interface DraftCandidate {
 
 export interface DraftGroup {
   id: string;
+  /**
+   * `generation`: what one press of Invoke made, every candidate a picture drawn to the end (its `finalItemId`; there is no
+   * draft step). Absent: a batch of drafts.
+   */
+  kind?: 'generation';
   createdAt: number;
   /** Settings of the batch without the draft position. */
   params: GenerationMetadata;
@@ -125,7 +135,7 @@ export function syncGroups(groups: DraftGroup[], items: QueueItem[]): DraftGroup
       const finalImageName = final?.imageName ?? c.finalImageName;
       const status = c.itemId === null ? c.status : statusOf(draft, !!imageName);
       const finalStatus = c.finalItemId === null ? null : statusOf(final, !!finalImageName);
-      const error = draft?.error ?? (status === 'failed' ? c.error : null);
+      const error = draft?.error ?? (status === 'failed' ? c.error : (final?.error ?? (finalStatus === 'failed' ? c.error : null)));
       const same = status === c.status && finalStatus === c.finalStatus && imageName === c.imageName && finalImageName === c.finalImageName && error === c.error;
       if (same) return c;
       groupChanged = true;
@@ -205,6 +215,42 @@ interface DraftsState {
   finish: (groupId: string, candidateIds: string[]) => Promise<void>;
   /** Runs the failed drafts again with the same seeds. */
   retryFailed: (groupId: string) => Promise<void>;
+  /** Keeps what one press of Invoke queued (to the `candidates` destination) as a batch of its own, with the pictures it makes. */
+  addGeneration: (items: QueueItem[], request: EnqueueRequest) => void;
+  /** Moves the chosen finished pictures of a generation batch to the board it was made for, and out of the batch. */
+  adopt: (groupId: string, candidateIds: string[]) => Promise<void>;
+  /** Throws away what is left of a generation batch (its pictures go to the trash) and closes it. */
+  discardRest: (groupId: string) => Promise<void>;
+}
+
+/** The pictures of a generation batch that are still held back: not moved to a board, not deleted. */
+export function heldPictures(group: DraftGroup, images: ImageDTO[]): ImageDTO[] {
+  const names = new Set(group.candidates.map((c) => c.finalImageName).filter((n): n is string => n !== null));
+  return images.filter((i) => names.has(i.name) && i.isIntermediate);
+}
+
+/** The board a generation batch's pictures go to: the one it was made for, or Uncategorized when that board is gone. */
+function boardOfGroup(group: DraftGroup): string | null {
+  return group.boardId && useGallery.getState().boards.some((b) => b.id === group.boardId) ? group.boardId : null;
+}
+
+/** Stops what is still waiting or drawing in a generation batch and trashes the pictures held back; they can be taken back from the toast. */
+async function throwAway(group: DraftGroup): Promise<void> {
+  try {
+    for (const c of group.candidates) {
+      if (c.finalItemId !== null && (c.finalStatus === 'queued' || c.finalStatus === 'running')) await backend.cancelQueueItem(c.finalItemId).catch(() => undefined);
+    }
+    const names = heldPictures(group, useGallery.getState().images).map((i) => i.name);
+    if (!names.length) return;
+    // Visible again before they go to the trash, so taking them back brings them to their board and not to a hidden place.
+    await backend.updateImages(names, { isIntermediate: false });
+    await backend.deleteImages(names);
+    useGallery.getState().removeImages(names);
+    recordDeletion(names);
+    toast({ status: 'success', quiet: true, title: tCount('gallery.toast.deleted', names.length), actions: [{ label: t('gallery.undoDelete.action'), run: () => void undoDeletion(names) }] });
+  } catch (err) {
+    toast({ status: 'error', title: t('drafts.discardFailed'), description: err instanceof Error ? err.message : String(err) });
+  }
 }
 
 /** The settings of a draft drawn again: the group's settings stopping at its position, without the second pass. */
@@ -257,6 +303,8 @@ export const useDrafts = create<DraftsState>()(
         }),
       closeGroup: (id) => get().closeGroups([id]),
       closeGroups: (ids) => {
+        // The pictures a closed generation batch still holds back would be hidden for good: they go to the trash.
+        for (const g of get().groups) if (g.kind === 'generation' && ids.includes(g.id)) void throwAway(g);
         const groups = get().groups.filter((g) => !ids.includes(g.id));
         const wasCurrent = ids.includes(get().currentId ?? '');
         set({ groups, currentId: wasCurrent ? (groups[groups.length - 1]?.id ?? null) : get().currentId, selection: wasCurrent ? [] : get().selection });
@@ -313,6 +361,69 @@ export const useDrafts = create<DraftsState>()(
         } finally {
           set({ busy: false });
         }
+      },
+      addGeneration: (items, request) => {
+        if (!items.length) return;
+        const group: DraftGroup = {
+          id: uid(),
+          createdAt: Date.now(),
+          kind: 'generation',
+          params: { ...items[0]!.params },
+          boardId: request.boardId,
+          position: 1,
+          candidates: items.map((it, i) => ({
+            id: `${uid()}-${i}`,
+            seed: it.params.seed,
+            itemId: null,
+            imageName: null,
+            status: 'ready',
+            error: null,
+            finalItemId: it.id,
+            finalImageName: null,
+            finalStatus: 'queued',
+            verdict: null,
+          })),
+        };
+        set({ groups: [...get().groups, group], currentId: group.id, selection: [] });
+      },
+      adopt: async (groupId, candidateIds) => {
+        const group = get().groups.find((g) => g.id === groupId);
+        if (!group) return;
+        const held = new Set(heldPictures(group, useGallery.getState().images).map((i) => i.name));
+        const picked = group.candidates.filter((c) => candidateIds.includes(c.id) && c.finalImageName !== null && held.has(c.finalImageName));
+        if (!picked.length) return;
+        set({ busy: true });
+        try {
+          const boardId = boardOfGroup(group);
+          const updated = await backend.updateImages(
+            picked.map((c) => c.finalImageName!),
+            { boardId, isIntermediate: false },
+          );
+          useGallery.getState().upsertImages(updated);
+          const gone = new Set(picked.map((c) => c.id));
+          const rest = group.candidates.filter((c) => !gone.has(c.id));
+          const { boards } = useGallery.getState();
+          const board = boards.find((b) => b.id === boardId);
+          toast({ status: 'success', title: tCount('gallery.toast.moved', updated.length, { board: board ? boardLabel(boards, board) : t('gallery.boards.uncategorized') }) });
+          const groups = get().groups.flatMap((g) => (g.id !== groupId ? [g] : rest.length ? [{ ...g, candidates: rest }] : []));
+          set({
+            groups,
+            currentId: get().currentId === groupId && !rest.length ? (groups.at(-1)?.id ?? null) : get().currentId,
+            selection: get().selection.filter((s) => !gone.has(s)),
+          });
+        } catch (err) {
+          toast({ status: 'error', title: t('drafts.adoptFailed'), description: err instanceof Error ? err.message : String(err) });
+        } finally {
+          set({ busy: false });
+        }
+      },
+      discardRest: async (groupId) => {
+        const group = get().groups.find((g) => g.id === groupId);
+        if (!group) return;
+        // Closed first, so a second press finds nothing; the pictures follow.
+        const groups = get().groups.filter((g) => g.id !== groupId);
+        set({ groups, currentId: get().currentId === groupId ? (groups.at(-1)?.id ?? null) : get().currentId, selection: [] });
+        await throwAway(group);
       },
       finish: async (groupId, candidateIds) => {
         const group = get().groups.find((g) => g.id === groupId);

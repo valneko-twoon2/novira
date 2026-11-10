@@ -173,7 +173,7 @@ Die mitgelieferten Vorlagen sind folgende.
 | **{{ui:workflows.templates.characterReference.title}}** | Setzt das Bild eines Charakters auf weißen Hintergrund, verwendet es als Referenzbild, gleicht Haare, Augen und Kleidung darauf ab und zeichnet eine neue Szene. CFG ist auf einen niedrigeren Wert eingestellt, der zu Referenzbildern passt. | ComfyUI-RMBG und ComfyUI_IPAdapter_plus |
 | **{{ui:workflows.templates.characterPose.title}}** | Zeichnet mit dem Aussehen des Charakters aus einem Referenzbild und der Haltung aus einer Strichfigur (OpenPose). | Die beiden oben genannten sowie comfyui_controlnet_aux und ein ControlNet-Modell für OpenPose |
 
-Die Vorlagen mit Charakteren sind für den Fall gedacht, dass Sie die Funktion aus [Charakter registrieren und verwenden](04-improve.md#charakter-registrieren-und-verwenden) per Workflow feinjustieren möchten. Normalerweise genügt es, einen im Tab Generieren registrierten Charakter zu verwenden. Eine Strichfigur-Haltung erstellen Sie mit „{{ui:pose.title}}“ in der [Leinwand](05-canvas.md).
+Die Vorlagen mit Charakteren sind für den Fall gedacht, dass Sie die Funktion aus [Charakter registrieren und verwenden](04-improve.md) per Workflow feinjustieren möchten. Normalerweise genügt es, einen im Tab Generieren registrierten Charakter zu verwenden. Eine Strichfigur-Haltung erstellen Sie mit „{{ui:pose.title}}“ in der [Leinwand](05-canvas.md).
 
 ## Erweiterungen (Node-Pakete)
 

@@ -173,7 +173,7 @@ Voici les modèles proposés.
 | **{{ui:workflows.templates.characterReference.title}}** | Met le dessin d'un personnage sur fond blanc pour en faire une image de référence, harmonise les cheveux, les yeux et les vêtements, et dessine une nouvelle scène. Le CFG est réglé sur une valeur plutôt basse, adaptée aux images de référence. | ComfyUI-RMBG et ComfyUI_IPAdapter_plus |
 | **{{ui:workflows.templates.characterPose.title}}** | Dessine en prenant l'apparence du personnage dans l'image de référence et la posture dans un bonhomme en fil de fer (OpenPose). | Les deux ci-dessus, plus comfyui_controlnet_aux et un modèle ControlNet pour OpenPose |
 
-Les modèles qui utilisent des personnages servent quand vous voulez ajuster finement avec un workflow la fonction décrite dans [Enregistrer et utiliser un personnage](04-improve.md#enregistrer-et-utiliser-un-personnage). Normalement, il suffit d'utiliser un personnage enregistré dans l'onglet Générer. La posture du bonhomme en fil de fer peut être créée avec « {{ui:pose.title}} » dans la [toile](05-canvas.md).
+Les modèles qui utilisent des personnages servent quand vous voulez ajuster finement avec un workflow la fonction décrite dans [Enregistrer et utiliser un personnage](04-improve.md). Normalement, il suffit d'utiliser un personnage enregistré dans l'onglet Générer. La posture du bonhomme en fil de fer peut être créée avec « {{ui:pose.title}} » dans la [toile](05-canvas.md).
 
 ## Extensions (nœuds personnalisés)
 

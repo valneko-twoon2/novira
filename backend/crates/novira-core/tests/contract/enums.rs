@@ -102,7 +102,11 @@ pub fn enums(v: &Value) {
             [Pending, InProgress, Completed, Failed, Canceled]
         ),
         check_enum!(v, QueueOrigin, [Generate, Canvas, Upscaling, Workflows]),
-        check_enum!(v, QueueDestination, [Gallery, Canvas, Intermediate]),
+        check_enum!(
+            v,
+            QueueDestination,
+            [Gallery, Canvas, Intermediate, Candidates]
+        ),
         check_enum!(v, QueueErrorKind, [OutOfMemory]),
         check_enum!(v, ControlMode, [Balanced, MorePrompt, MoreControl]),
         check_enum!(

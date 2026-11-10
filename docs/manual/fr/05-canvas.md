@@ -94,7 +94,7 @@ Dans la liste des calques, vous pouvez faire ce qui suit.
 
 Sous le calque sélectionné s'ouvrent les réglages de ce calque.
 
-- {{ui:canvas.add.inpaint}} : La couleur et le motif de remplissage du masque (uniquement leur aspect à l'écran), et **{{ui:canvas.mask.denoiseLimit}}** (si vous l'activez et l'abaissez, l'image d'origine est plus facilement conservée même à l'intérieur du masque). Avec **{{ui:canvas.entityMenu.invertMask}}** du clic droit, vous échangez la partie masquée et la partie libre à l'intérieur de la zone de génération. **{{ui:canvas.partFix.redraw}}**, **{{ui:canvas.partFix.erase}}** et **{{ui:canvas.partFix.cutOutAction}}** permettent de redessiner la partie peinte à partir d'une instruction écrite, de l'effacer ou de la détourer ([Sélectionner une zone et la corriger](04-improve.md#sélectionner-une-zone-et-la-corriger)).
+- {{ui:canvas.add.inpaint}} : La couleur et le motif de remplissage du masque (uniquement leur aspect à l'écran), et **{{ui:canvas.mask.denoiseLimit}}** (si vous l'activez et l'abaissez, l'image d'origine est plus facilement conservée même à l'intérieur du masque). Avec **{{ui:canvas.entityMenu.invertMask}}** du clic droit, vous échangez la partie masquée et la partie libre à l'intérieur de la zone de génération. **{{ui:canvas.partFix.redraw}}**, **{{ui:canvas.partFix.erase}}** et **{{ui:canvas.partFix.cutOutAction}}** permettent de redessiner la partie peinte à partir d'une instruction écrite, de l'effacer ou de la détourer ([Sélectionner une zone et la corriger](04-improve.md)).
 - {{ui:canvas.add.control}} : Voir la rubrique « {{ui:canvas.add.control}} » plus bas.
 
 ## Comment l'image est redessinée

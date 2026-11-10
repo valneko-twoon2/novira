@@ -97,7 +97,8 @@
   "QueueDestination": [
     "gallery",
     "canvas",
-    "intermediate"
+    "intermediate",
+    "candidates"
   ],
   "QueueErrorKind": [
     "out_of_memory"

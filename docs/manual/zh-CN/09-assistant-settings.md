@@ -229,7 +229,7 @@
 
 ### {{ui:settings.tab.gallery}}
 
-- **{{ui:gallery.settings.thumbnailSize}}**、**{{ui:gallery.settings.sort}}**、**{{ui:gallery.settings.starredFirst}}**、**{{ui:gallery.settings.groupByDate}}**、**{{ui:gallery.settings.alwaysShowSize}}**、**{{ui:gallery.settings.showArchived}}**、**{{ui:gallery.settings.autoSwitch}}**、**{{ui:gallery.settings.autoAssign}}**：与点击图库的齿轮按钮打开的 **{{ui:gallery.settings.title}}** 相同的项目。在哪里更改，效果都一样。
+- **{{ui:gallery.settings.thumbnailSize}}**、**{{ui:gallery.settings.sort}}**、**{{ui:gallery.settings.starredFirst}}**、**{{ui:gallery.settings.groupByDate}}**、**{{ui:gallery.settings.alwaysShowSize}}**、**{{ui:gallery.settings.showArchived}}**、**{{ui:gallery.settings.newToCandidates}}**、**{{ui:gallery.settings.autoSwitch}}**、**{{ui:gallery.settings.autoAssign}}**：与点击图库的齿轮按钮打开的 **{{ui:gallery.settings.title}}** 相同的项目。在哪里更改，效果都一样。
 - **{{ui:settings.confirmOnDelete}}**：删除图像之前，显示确认。在确认界面中选择“{{ui:common.dontAskAgain}}”时，这里也会变为关闭。
 - **{{ui:settings.clearIntermediates}}**：删除画布的中途结果等不会出现在图库中的图像。要删除的数量会显示在按钮上。
 

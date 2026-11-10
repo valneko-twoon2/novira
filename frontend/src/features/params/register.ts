@@ -1,12 +1,13 @@
 // Registers the Invoke builders for the Generate and Upscaling tabs and default model selection.
 import { registerAgentModelSelector } from '@/state/agent';
 import { useNodePacks } from '@/state/comfy/nodePacks';
+import { useDrafts } from '@/state/drafts';
 import { registerInvokeBuilder } from '@/state/invoke';
 import { refreshModelParts, useModelParts } from '@/state/modelParts';
 import { useModels } from '@/state/models';
 import { useParams } from '@/state/params';
 import { useWildcards } from '@/state/prompts/wildcards';
-import { buildGenerateRequest, buildUpscaleRequest } from './buildRequest';
+import { buildGenerateRequest, buildUpscaleRequest, takeExtraHeld } from './buildRequest';
 import { autoSelectModels } from './model/autoSelect';
 import { generateReadiness, generateWarnings, upscaleReadiness } from './readiness';
 import { selectMainModel } from './model/selectMainModel';
@@ -35,7 +36,15 @@ export function registerParamsFeature() {
   registerInvokeBuilder('generate', {
     readiness: generateReadiness,
     warnings: generateWarnings,
-    build: ({ prepend }) => buildGenerateRequest(prepend),
+    build: ({ prepend, held }) => buildGenerateRequest(prepend, held),
+    // The pictures held for the Candidates view are one batch there, with what the extra dynamic-prompt batches queued.
+    onEnqueued: (items, built) => {
+      if (built.destination === 'candidates') useDrafts.getState().addGeneration([...takeExtraHeld(), ...items].sort((a, b) => a.id - b.id), built);
+    },
+    onEnqueueFailed: (built) => {
+      const extra = built.destination === 'candidates' ? takeExtraHeld() : [];
+      if (extra.length) useDrafts.getState().addGeneration(extra, built);
+    },
     subscribe: subscribeInputs,
   });
   registerInvokeBuilder('upscaling', {

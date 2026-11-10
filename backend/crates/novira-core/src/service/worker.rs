@@ -776,6 +776,7 @@ impl Backend {
                     starred: false,
                     is_intermediate: to_canvas
                         || item.destination == QueueDestination::Intermediate
+                        || item.destination == QueueDestination::Candidates
                         || item.params.draft_at.is_some(),
                     category: ImageCategory::General,
                     metadata: Some(metadata),

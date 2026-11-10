@@ -229,7 +229,7 @@ When you choose **{{ui:app.nav.settings}}** from the **{{ui:app.nav.settingsMenu
 
 ### {{ui:settings.tab.gallery}}
 
-- **{{ui:gallery.settings.thumbnailSize}}**, **{{ui:gallery.settings.sort}}**, **{{ui:gallery.settings.starredFirst}}**, **{{ui:gallery.settings.groupByDate}}**, **{{ui:gallery.settings.alwaysShowSize}}**, **{{ui:gallery.settings.showArchived}}**, **{{ui:gallery.settings.autoSwitch}}**, **{{ui:gallery.settings.autoAssign}}**: the same items as the **{{ui:gallery.settings.title}}** that the gallery's gear button opens. Changing them in either place changes them in both.
+- **{{ui:gallery.settings.thumbnailSize}}**, **{{ui:gallery.settings.sort}}**, **{{ui:gallery.settings.starredFirst}}**, **{{ui:gallery.settings.groupByDate}}**, **{{ui:gallery.settings.alwaysShowSize}}**, **{{ui:gallery.settings.showArchived}}**, **{{ui:gallery.settings.newToCandidates}}**, **{{ui:gallery.settings.autoSwitch}}**, **{{ui:gallery.settings.autoAssign}}**: the same items as the **{{ui:gallery.settings.title}}** that the gallery's gear button opens. Changing them in either place changes them in both.
 - **{{ui:settings.confirmOnDelete}}**: Shows a confirmation before deleting an image. This also becomes off when you choose "{{ui:common.dontAskAgain}}" on the confirmation screen.
 - **{{ui:settings.clearIntermediates}}**: Deletes images that do not appear in the gallery, such as intermediate results from the canvas. The number to be deleted is shown on the button.
 

@@ -229,7 +229,7 @@ Dans **{{ui:app.nav.settingsMenu}}**, en bas à gauche, choisissez **{{ui:app.na
 
 ### {{ui:settings.tab.gallery}}
 
-- **{{ui:gallery.settings.thumbnailSize}}**, **{{ui:gallery.settings.sort}}**, **{{ui:gallery.settings.starredFirst}}**, **{{ui:gallery.settings.groupByDate}}**, **{{ui:gallery.settings.alwaysShowSize}}**, **{{ui:gallery.settings.showArchived}}**, **{{ui:gallery.settings.autoSwitch}}**, **{{ui:gallery.settings.autoAssign}}** : ce sont les mêmes éléments que **{{ui:gallery.settings.title}}**, qui s'ouvre avec le bouton en forme d'engrenage de la galerie. Un changement fait à l'un ou à l'autre endroit a le même effet.
+- **{{ui:gallery.settings.thumbnailSize}}**, **{{ui:gallery.settings.sort}}**, **{{ui:gallery.settings.starredFirst}}**, **{{ui:gallery.settings.groupByDate}}**, **{{ui:gallery.settings.alwaysShowSize}}**, **{{ui:gallery.settings.showArchived}}**, **{{ui:gallery.settings.newToCandidates}}**, **{{ui:gallery.settings.autoSwitch}}**, **{{ui:gallery.settings.autoAssign}}** : ce sont les mêmes éléments que **{{ui:gallery.settings.title}}**, qui s'ouvre avec le bouton en forme d'engrenage de la galerie. Un changement fait à l'un ou à l'autre endroit a le même effet.
 - **{{ui:settings.confirmOnDelete}}** : affiche une confirmation avant de supprimer une image. Si vous choisissez « {{ui:common.dontAskAgain}} » dans l'écran de confirmation, ce réglage passe aussi à désactivé.
 - **{{ui:settings.clearIntermediates}}** : supprime les images qui n'apparaissent pas dans la galerie, comme les résultats intermédiaires de la toile. Le nombre d'éléments à supprimer s'affiche sur le bouton.
 

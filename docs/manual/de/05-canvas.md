@@ -94,7 +94,7 @@ In der Ebenenliste sind folgende Bedienungen möglich.
 
 Unter der ausgewählten Ebene öffnen sich deren Einstellungen.
 
-- {{ui:canvas.add.inpaint}}: Farbe und Füllmuster der Maske (betrifft nur die Darstellung auf dem Bildschirm) sowie **{{ui:canvas.mask.denoiseLimit}}** (wenn Sie es einschalten und senken, bleibt das Originalbild auch innerhalb der Maske eher erhalten). Im Rechtsklickmenü der Maske vertauscht **{{ui:canvas.entityMenu.invertMask}}** maskierte und freie Bereiche innerhalb des Generierungsbereichs. **{{ui:canvas.partFix.redraw}}**, **{{ui:canvas.partFix.erase}}** und **{{ui:canvas.partFix.cutOutAction}}** zeichnen den übermalten Teil nach einer Textanweisung neu, löschen ihn oder schneiden ihn aus ([Einen Bereich auswählen und korrigieren](04-improve.md#einen-bereich-auswählen-und-korrigieren)).
+- {{ui:canvas.add.inpaint}}: Farbe und Füllmuster der Maske (betrifft nur die Darstellung auf dem Bildschirm) sowie **{{ui:canvas.mask.denoiseLimit}}** (wenn Sie es einschalten und senken, bleibt das Originalbild auch innerhalb der Maske eher erhalten). Im Rechtsklickmenü der Maske vertauscht **{{ui:canvas.entityMenu.invertMask}}** maskierte und freie Bereiche innerhalb des Generierungsbereichs. **{{ui:canvas.partFix.redraw}}**, **{{ui:canvas.partFix.erase}}** und **{{ui:canvas.partFix.cutOutAction}}** zeichnen den übermalten Teil nach einer Textanweisung neu, löschen ihn oder schneiden ihn aus ([Einen Bereich auswählen und korrigieren](04-improve.md)).
 - {{ui:canvas.add.control}}: siehe den nächsten Abschnitt „{{ui:canvas.add.control}}“.
 
 ## Wie neu gezeichnet wird

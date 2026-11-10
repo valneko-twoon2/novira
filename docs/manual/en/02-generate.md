@@ -202,13 +202,12 @@ Press the ∨ to the right of the red × button to show the following menu.
 
 ![The screen after generation finishes. The picture is shown in the viewer in the center and also lined up in the gallery on the right](shot:generate-result)
 
-As soon as you press the button, the center switches to the viewer.
+When you press the button from the start screen, the center switches to the **{{ui:app.views.drafts}}** tab (if the viewer is open, it stays as it is).
 While drawing, a "{{ui:gallery.generating.title}}" band appears above the gallery on the right, and you can see the picture in progress, the step count and how far along it is. The thin line at the top edge of the center also shows the progress. The same picture also appears as a small cell at the start of the gallery. Press the cell to see the picture in progress large in the viewer in the center. When the drawing ends, the finished picture takes its place.
 
-When it is finished, the picture joins the gallery. The viewer stays as it is.
-The picture is saved to the board that is currently selected (the one marked "{{ui:gallery.boards.autoBadge}}" in the right panel). Boards, and organizing, comparing and redoing pictures, are explained in [The Gallery and the Viewer](03-gallery.md).
+When it is finished, the picture first lines up in the **{{ui:app.views.drafts}}** tab. You choose only the pictures you want and move them to the board that is currently selected (the one marked "{{ui:gallery.boards.autoBadge}}" in the right panel; see [Choosing from drafts](04-improve.md)). Boards, and organizing, comparing and redoing pictures, are explained in [The Gallery and the Viewer](03-gallery.md).
 
-> To have each finished picture open in the viewer by itself, turn on "{{ui:gallery.settings.autoSwitch}}" in {{ui:gallery.settings.title}} (the gear button). It is off at first.
+> To have finished pictures go to a board at once, turn off "{{ui:gallery.settings.newToCandidates}}" in {{ui:gallery.settings.title}} (the gear button). If you also want each picture to open in the viewer by itself, turn on "{{ui:gallery.settings.autoSwitch}}". At first "{{ui:gallery.settings.newToCandidates}}" is on and "{{ui:gallery.settings.autoSwitch}}" is off.
 
 ## Presets
 

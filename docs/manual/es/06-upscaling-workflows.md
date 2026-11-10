@@ -173,7 +173,7 @@ Las plantillas que se ofrecen son las siguientes.
 | **{{ui:workflows.templates.characterReference.title}}** | Pone la imagen de un personaje sobre fondo blanco para usarla como imagen de referencia, ajusta el pelo, los ojos y la ropa y dibuja una escena nueva. El CFG se fija en un valor más bajo adecuado para imágenes de referencia. | ComfyUI-RMBG y ComfyUI_IPAdapter_plus |
 | **{{ui:workflows.templates.characterPose.title}}** | Dibuja con el aspecto del personaje tomado de una imagen de referencia y la postura tomada de una figura de palos (OpenPose). | Las dos anteriores, más comfyui_controlnet_aux y un modelo ControlNet para OpenPose |
 
-Las plantillas que usan personajes son para cuando se quiere afinar con un flujo de trabajo la función de [Registrar y usar un personaje](04-improve.md#registrar-y-usar-un-personaje). Normalmente basta con usar un personaje registrado en la pestaña Generar. Una postura de figura de palos se puede crear con «{{ui:pose.title}}» en el [Lienzo](05-canvas.md).
+Las plantillas que usan personajes son para cuando se quiere afinar con un flujo de trabajo la función de [Registrar y usar un personaje](04-improve.md). Normalmente basta con usar un personaje registrado en la pestaña Generar. Una postura de figura de palos se puede crear con «{{ui:pose.title}}» en el [Lienzo](05-canvas.md).
 
 ## Extensiones (nodos personalizados)
 

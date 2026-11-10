@@ -94,7 +94,7 @@ Na lista de camadas, é possível fazer o seguinte:
 
 Abaixo da camada selecionada, abrem-se as configurações dela.
 
-- {{ui:canvas.add.inpaint}}: a cor da máscara e o padrão do preenchimento (só a aparência na tela) e **{{ui:canvas.mask.denoiseLimit}}** (ativado e reduzido, facilita manter a imagem original mesmo dentro da máscara). Com **{{ui:canvas.entityMenu.invertMask}}**, no botão direito, troca-se a parte mascarada pela parte livre dentro da área de geração. Com **{{ui:canvas.partFix.redraw}}**, **{{ui:canvas.partFix.erase}}** e **{{ui:canvas.partFix.cutOutAction}}**, a parte pintada pode ser redesenhada por uma instrução em texto, apagada ou recortada ([Selecionar uma região e corrigi-la](04-improve.md#selecionar-uma-região-e-corrigi-la)).
+- {{ui:canvas.add.inpaint}}: a cor da máscara e o padrão do preenchimento (só a aparência na tela) e **{{ui:canvas.mask.denoiseLimit}}** (ativado e reduzido, facilita manter a imagem original mesmo dentro da máscara). Com **{{ui:canvas.entityMenu.invertMask}}**, no botão direito, troca-se a parte mascarada pela parte livre dentro da área de geração. Com **{{ui:canvas.partFix.redraw}}**, **{{ui:canvas.partFix.erase}}** e **{{ui:canvas.partFix.cutOutAction}}**, a parte pintada pode ser redesenhada por uma instrução em texto, apagada ou recortada ([Selecionar uma região e corrigi-la](04-improve.md)).
 - {{ui:canvas.add.control}}: veja o item “{{ui:canvas.add.control}}”, mais adiante.
 
 ## Como a imagem é refeita

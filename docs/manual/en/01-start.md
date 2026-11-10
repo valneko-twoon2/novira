@@ -112,7 +112,7 @@ At the top of the center of the {{ui:app.tabs.generate}} tab there are three sma
 
 - **{{ui:app.views.launchpad}}**: A guide to getting started. It shows cards such as "{{ui:params.launchpad.generate.textTitle}}" and "{{ui:params.launchpad.generate.refTitle}}", along with shortcut hints.
 - **{{ui:app.views.viewer}}**: The place to look at an image large. When you pick an image in the gallery, it is shown here.
-- **{{ui:app.views.drafts}}**: A screen that lines up many half-drawn candidates made with the same settings but different seeds, so you can finish drawing only the ones you like.
+- **{{ui:app.views.drafts}}**: Where the pictures you generate line up first, so you move only the ones you want to a board. It can also line up many half-drawn candidates (drafts) made with the same settings but different seeds, so you can finish drawing only the ones you like.
 
 Other tabs have small tabs of their own too (for example, the {{ui:app.tabs.canvas}} tab has {{ui:app.views.canvas}}).
 

@@ -27,7 +27,8 @@ export function boardName(id: BoardId): string {
 
 export async function moveImagesToBoard(names: string[], boardId: BoardId) {
   if (!names.length) return;
-  const updated = await backend.updateImages(names, { boardId: boardId === 'none' ? null : boardId });
+  // A picture held in the Candidates view (hidden from the boards) is accepted by moving it to one.
+  const updated = await backend.updateImages(names, { boardId: boardId === 'none' ? null : boardId, isIntermediate: false });
   useGallery.getState().upsertImages(updated);
   toast({ status: 'success', title: tCount('gallery.toast.moved', updated.length, { board: boardName(boardId) }) });
 }

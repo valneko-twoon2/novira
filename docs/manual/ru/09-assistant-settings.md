@@ -229,7 +229,7 @@ novira не запускает ИИ сама: для ответов ассист
 
 ### {{ui:settings.tab.gallery}}
 
-- **{{ui:gallery.settings.thumbnailSize}}**, **{{ui:gallery.settings.sort}}**, **{{ui:gallery.settings.starredFirst}}**, **{{ui:gallery.settings.groupByDate}}**, **{{ui:gallery.settings.alwaysShowSize}}**, **{{ui:gallery.settings.showArchived}}**, **{{ui:gallery.settings.autoSwitch}}**, **{{ui:gallery.settings.autoAssign}}**: те же пункты, что в **{{ui:gallery.settings.title}}**, который открывается кнопкой с шестерёнкой в галерее. Где бы вы их ни меняли, изменение действует одинаково.
+- **{{ui:gallery.settings.thumbnailSize}}**, **{{ui:gallery.settings.sort}}**, **{{ui:gallery.settings.starredFirst}}**, **{{ui:gallery.settings.groupByDate}}**, **{{ui:gallery.settings.alwaysShowSize}}**, **{{ui:gallery.settings.showArchived}}**, **{{ui:gallery.settings.newToCandidates}}**, **{{ui:gallery.settings.autoSwitch}}**, **{{ui:gallery.settings.autoAssign}}**: те же пункты, что в **{{ui:gallery.settings.title}}**, который открывается кнопкой с шестерёнкой в галерее. Где бы вы их ни меняли, изменение действует одинаково.
 - **{{ui:settings.confirmOnDelete}}**: показывает подтверждение перед удалением изображения. Этот пункт выключается и тогда, когда в окне подтверждения выбрано «{{ui:common.dontAskAgain}}».
 - **{{ui:settings.clearIntermediates}}**: удаляет изображения, не отображаемые в галерее, например промежуточные результаты холста. Количество удаляемого показано на кнопке.
 

@@ -1,5 +1,5 @@
 // Drafts view: draw many seeds only part of the way, look at them side by side, and finish only the ones you like.
-import { ArrowsOut, Check, Lightning, Star, X } from '@phosphor-icons/react';
+import { ArrowsOut, Check, FolderPlus, Lightning, Star, Trash, X } from '@phosphor-icons/react';
 import { useState } from 'react';
 import type { ImageDTO } from '@/backend';
 import { t, tCount } from '@/i18n';
@@ -7,6 +7,7 @@ import {
   canFinish,
   draftModels,
   draftStepOf,
+  heldPictures,
   modelsWithoutDrafts,
   POSITION_MAX,
   POSITION_MIN,
@@ -14,7 +15,9 @@ import {
   type DraftCandidate,
   type DraftGroup,
 } from '@/state/drafts';
+import { boardLabel } from '@/state/boardTree';
 import { useDraftForm } from '@/state/draftForm';
+import { setDragImages } from '@/state/dnd';
 import { useGallery } from '@/state/gallery';
 import { useModels } from '@/state/models';
 import { useParams } from '@/state/params';
@@ -121,13 +124,22 @@ function GroupGrid({ group, onOpen }: { group: DraftGroup; onOpen: ((imageName: 
   const toggle = useDrafts((s) => s.toggleSelect);
   const clear = useDrafts((s) => s.clearSelection);
   const finish = useDrafts((s) => s.finish);
+  const adopt = useDrafts((s) => s.adopt);
+  const discardRest = useDrafts((s) => s.discardRest);
   const retryFailed = useDrafts((s) => s.retryFailed);
+  const boards = useGallery((s) => s.boards);
+  const generation = group.kind === 'generation';
   const [page, setPage] = useState(0);
   const pages = Math.max(1, Math.ceil(group.candidates.length / PER_PAGE));
   const shown = group.candidates.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
   const finishable = group.candidates.filter((c) => selection.includes(c.id) && canFinish(c, !!c.finalImageName && images.some((i) => i.name === c.finalImageName)));
   const failed = group.candidates.filter((c) => c.status === 'failed').length;
   const step = draftStepOf(group);
+  // A generation batch: what can move to the board is a picture that is done and still held back.
+  const held = new Set(heldPictures(group, images).map((i) => i.name));
+  const adoptable = group.candidates.filter((c) => selection.includes(c.id) && c.finalImageName !== null && held.has(c.finalImageName));
+  const board = boards.find((b) => b.id === group.boardId);
+  const boardName = board ? boardLabel(boards, board) : t('gallery.boards.uncategorized');
 
   return (
     <>
@@ -149,7 +161,7 @@ function GroupGrid({ group, onOpen }: { group: DraftGroup; onOpen: ((imageName: 
           </span>
         )}
         <span className="dv-spacer" />
-        {failed > 0 && (
+        {failed > 0 && !generation && (
           <Button size="sm" variant="outline" disabled={busy} onClick={() => void retryFailed(group.id)}>
             {tCount('drafts.retry', failed)}
           </Button>
@@ -157,16 +169,35 @@ function GroupGrid({ group, onOpen }: { group: DraftGroup; onOpen: ((imageName: 
         <Button size="sm" variant="ghost" disabled={selection.length === 0} onClick={clear}>
           {t('drafts.clearSelection')}
         </Button>
-        <Button
-          size="sm"
-          variant="solid"
-          scheme="invoke"
-          disabled={busy || finishable.length === 0}
-          onClick={() => void finish(group.id, finishable.map((c) => c.id))}
-          data-testid="drafts-finish"
-        >
-          {tCount('drafts.finish', finishable.length)}
-        </Button>
+        {generation ? (
+          <>
+            <Button size="sm" variant="outline" leftIcon={<Trash size={14} />} disabled={busy} onClick={() => void discardRest(group.id)} data-testid="drafts-discard">
+              {t('drafts.discardRest')}
+            </Button>
+            <Button
+              size="sm"
+              variant="solid"
+              scheme="invoke"
+              leftIcon={<FolderPlus size={14} />}
+              disabled={busy || adoptable.length === 0}
+              onClick={() => void adopt(group.id, adoptable.map((c) => c.id))}
+              data-testid="drafts-adopt"
+            >
+              {tCount('drafts.adopt', adoptable.length, { board: boardName })}
+            </Button>
+          </>
+        ) : (
+          <Button
+            size="sm"
+            variant="solid"
+            scheme="invoke"
+            disabled={busy || finishable.length === 0}
+            onClick={() => void finish(group.id, finishable.map((c) => c.id))}
+            data-testid="drafts-finish"
+          >
+            {tCount('drafts.finish', finishable.length)}
+          </Button>
+        )}
       </div>
     </>
   );
@@ -191,19 +222,24 @@ function Cell({
 }) {
   const mark = useDrafts((s) => s.mark);
   const { image, finished } = pictureOf(c, images);
+  const generation = group.kind === 'generation';
   const working = c.status === 'queued' || c.status === 'running' || c.finalStatus === 'queued' || c.finalStatus === 'running';
   const failed = c.status === 'failed' || c.finalStatus === 'failed';
+  // A picture of a generation batch is drawn to the end at once: it is waiting, being drawn, or done.
   const badge = failed
     ? t('drafts.badge.failed')
     : finished
       ? t('drafts.badge.finished')
-      : c.finalStatus
-        ? t('drafts.badge.finishing')
-        : c.status === 'queued'
-          ? t('drafts.badge.queued')
-          : c.status === 'running'
-            ? t('drafts.badge.drawing')
-            : t('drafts.badge.draft', { percent: Math.round(group.position * 100), steps: group.params.steps, step });
+      : generation
+        ? t(c.finalStatus === 'running' ? 'drafts.badge.generating' : 'drafts.badge.queued')
+        : c.finalStatus
+          ? t('drafts.badge.finishing')
+          : c.status === 'queued'
+            ? t('drafts.badge.queued')
+            : c.status === 'running'
+              ? t('drafts.badge.drawing')
+              : t('drafts.badge.draft', { percent: Math.round(group.position * 100), steps: group.params.steps, step });
+  const ready = generation ? c.finalStatus === 'ready' && !!image : c.status === 'ready';
   const openLarge = () => {
     if (!image) return;
     if (onOpen) {
@@ -222,14 +258,17 @@ function Cell({
         tabIndex={0}
         aria-pressed={selected}
         aria-label={`seed ${c.seed}`}
-        onClick={() => c.status === 'ready' && onToggle()}
+        onClick={() => ready && onToggle()}
         onKeyDown={(e) => {
           if (e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
-            if (c.status === 'ready') onToggle();
+            if (ready) onToggle();
           }
         }}
         onDoubleClick={openLarge}
+        // A held picture can be dragged onto a board in the gallery, like a picture of the gallery.
+        draggable={generation && !!image}
+        onDragStart={(e) => image && setDragImages(e, [image.name])}
       >
         {image ? <img src={image.thumbnailUrl || image.url} alt="" draggable={false} /> : failed ? null : <Spinner size={18} />}
         {image && working && (

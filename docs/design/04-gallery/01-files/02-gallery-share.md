@@ -33,7 +33,7 @@ covers:
 
 **アップロード。** ページは生のバイト列とオプション（ボード、中間フラグ、カテゴリ）をヘッダーで送る。デコードの前に `images::check_limits` が、256 MiB を超えるファイル、20,000 ピクセルを超える辺、100,000,000 ピクセルを超える総数、PNG、JPEG、WebP、GIF、BMP 以外の形式（内容から判定）を拒否する。PNG はチャンクとピクセルの検査後にバイト単位でそのまま保ち、ほかの形式は PNG に再エンコードする。
 
-**ギャラリーの状態。** キャンバス用、中間画像、下書き（`draftAt`）として作った画像には `isIntermediate` が付き、ボードのビューから外れる（`frontend/src/state/gallery.ts`）。
+**ギャラリーの状態。** キャンバス用、中間画像、下書き（`draftAt`）、候補（宛先 `candidates`。[05-drafts.md](../../02-generation/01-pictures/05-drafts.md)）として作った画像には `isIntermediate` が付き、ボードのビューから外れる（`frontend/src/state/gallery.ts`）。
 
 **動画と音声。** 動画は `mediaType: video` の `.mp4` として保存し、サムネイルは最初のフレーム。音楽は FLAC、音声合成は WAV で保存する（`backend/crates/novira-core/src/service/worker.rs`）。どちらも設定はデータベースの行にだけ保つ。`store_audio` は WAV、FLAC、MP3 以外のバイト列を拒否する。音声のサムネイルは 48 本のバーの 256 x 144 の PNG で、16 ビット PCM の WAV は音量から、ほかのファイルはバイトのパターンから描く。今のジョブは MP3 を書かない。スキームは `Range` リクエストに応じる（206 か 416）ので、メディアはシークできる。
 

@@ -2,7 +2,7 @@
 // rename, delete, reload).
 import { readFileSync } from 'node:fs';
 import type { Page } from '@playwright/test';
-import { expect, msg, openApp, showTab, test } from './fixtures';
+import { expect, galleryDefaults, msg, openApp, showTab, test } from './fixtures';
 
 /** Opens the assistant and signs in to Claude (the mock forgets the sign-in on reload). */
 async function openAssistant(page: Page): Promise<void> {
@@ -270,6 +270,19 @@ test('the assistant draws one trial picture for a mood, shows it under its answe
   await expect(replies).toHaveCount(2, { timeout: 10_000 });
   await expect(replies.last()).not.toContainText('こんな雰囲気ですか');
   await expect(replies.last().getByTestId('agent-msg-pictures')).toHaveCount(0);
+});
+
+test('a trial picture made while new pictures wait in Candidates is still shown under the answer', async ({ page }) => {
+  await galleryDefaults(page, { newPicturesToCandidates: true });
+  await openApp(page);
+  await openAssistant(page);
+  const win = page.getByTestId('agent-window');
+  const replies = win.locator('.agent-msg--assistant:not(.agent-msg--thinking)');
+  await win.getByTestId('agent-input').fill('夏っぽい雰囲気にして');
+  await win.getByTestId('agent-send').click();
+  await win.getByTestId('agent-permission-once').click({ timeout: 20_000 });
+  await expect(replies).toHaveCount(1, { timeout: 30_000 });
+  await expect(replies.last().getByTestId('agent-msg-pictures').locator('img')).toHaveCount(1);
 });
 
 test('a refinement goes on by itself, one picture a round, until the assistant finishes', async ({ page }) => {

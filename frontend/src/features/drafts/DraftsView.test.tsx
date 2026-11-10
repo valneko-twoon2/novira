@@ -393,3 +393,64 @@ describe('candidates', () => {
     act(() => useDrafts.setState({ busy: true }));
   });
 });
+
+describe('a generation batch', () => {
+  const made = (over: Partial<DraftCandidate> = {}) => candidate(1, { itemId: null, imageName: null, finalItemId: 1, finalImageName: 'g1.png', finalStatus: 'ready', ...over });
+  const batch = (candidates: DraftCandidate[], boardId: string | null = null): DraftGroup => ({ ...group('g', candidates), kind: 'generation', position: 1, boardId });
+  const held = (name: string, isIntermediate = true) => ({ ...(picture(name) as object), isIntermediate }) as never;
+  const showBatch = (g: DraftGroup, images: unknown[]) => {
+    useDrafts.setState({ groups: [g], currentId: g.id });
+    useGallery.setState({ images: images as never });
+    show();
+  };
+
+  it('shows each picture as finished, waiting or generating, never as a draft with a step', () => {
+    showBatch(batch([made(), made({ id: 'c2', finalItemId: 2, finalImageName: null, finalStatus: 'running' }), made({ id: 'c3', finalItemId: 3, finalImageName: null, finalStatus: 'queued' })]), [held('g1.png')]);
+    expect(screen.getAllByTestId('draft-cell').map((c) => within(c).getByText(/./, { selector: '.dv-badge' }).textContent)).toEqual([t('drafts.badge.finished'), t('drafts.badge.generating'), t('drafts.badge.queued')]);
+  });
+
+  it('offers moving the chosen pictures to the board and throwing the rest away, and not finishing drafts', () => {
+    const adopt = vi.fn().mockResolvedValue(undefined);
+    const discard = vi.fn().mockResolvedValue(undefined);
+    useDrafts.setState({ adopt, discardRest: discard });
+    showBatch(batch([made(), made({ id: 'c2', finalImageName: 'g2.png' })]), [held('g1.png'), held('g2.png')]);
+    expect(screen.queryByTestId('drafts-finish')).toBeNull();
+    expect(screen.getByTestId('drafts-adopt').hasAttribute('disabled')).toBe(true);
+    fireEvent.click(screen.getAllByRole('button', { name: /seed/ })[0]!);
+    expect(screen.getByTestId('drafts-adopt').textContent).toContain(tCount('drafts.adopt', 1, { board: t('gallery.boards.uncategorized') }));
+    fireEvent.click(screen.getByTestId('drafts-adopt'));
+    expect(adopt).toHaveBeenCalledWith('g', ['c1']);
+    fireEvent.click(screen.getByTestId('drafts-discard'));
+    expect(discard).toHaveBeenCalledWith('g');
+  });
+
+  it('names the board the pictures were made for', () => {
+    useGallery.setState({ boards: [{ id: 'b1', name: 'Cats', archived: false, createdAt: 1, parentId: null }] as never });
+    showBatch(batch([made()], 'b1'), [held('g1.png')]);
+    fireEvent.click(screen.getAllByRole('button', { name: /seed/ })[0]!);
+    expect(screen.getByTestId('drafts-adopt').textContent).toContain('Cats');
+  });
+
+  it('does not select a picture that is not drawn yet, or one that is already on a board', () => {
+    showBatch(batch([made({ finalImageName: null, finalStatus: 'running' }), made({ id: 'c2', finalImageName: 'g2.png' })]), [held('g2.png', false)]);
+    const [waiting, onBoard] = screen.getAllByRole('button', { name: /seed/ });
+    fireEvent.click(waiting!);
+    fireEvent.click(onBoard!);
+    expect(useDrafts.getState().selection).toEqual(['c2']);
+    // Chosen, but already on a board: the move has nothing to move.
+    expect(screen.getByTestId('drafts-adopt').hasAttribute('disabled')).toBe(true);
+  });
+
+  it('lets a finished picture be dragged onto a board, and a waiting one not', () => {
+    showBatch(batch([made(), made({ id: 'c2', finalImageName: null, finalStatus: 'queued' })]), [held('g1.png')]);
+    const [done, waiting] = screen.getAllByRole('button', { name: /seed/ });
+    expect(done!.getAttribute('draggable')).toBe('true');
+    expect(waiting!.getAttribute('draggable')).not.toBe('true');
+  });
+
+  it('closes with a label that says the rest goes to the trash', () => {
+    showBatch(batch([made()]), [held('g1.png')]);
+    expect(screen.getAllByRole('button', { name: t('drafts.closeGroupHeld') }).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('button', { name: t('drafts.closeGroup') })).toBeNull();
+  });
+});

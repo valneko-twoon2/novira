@@ -76,7 +76,7 @@ const FEATURES: { id: string; name: MessageKey; about: string }[] = [
   {
     id: 'drafts',
     name: 'app.views.drafts',
-    about: 'A view on the Generate tab: many half-drawn candidates with the same settings and different seeds; finish only the ones you like. Works from text and from an i2i source picture. Any picture model but edit ones.',
+    about: 'View on the Generate tab, named Candidates. Invoke pictures wait here (unless the gallery setting for it is off); the user moves only the wanted ones to a board. Also drafts: half-drawn candidates with different seeds, finished only if liked (text or i2i, not edit models).',
   },
   {
     id: 'assistant',

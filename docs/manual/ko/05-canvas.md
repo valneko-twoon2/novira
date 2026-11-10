@@ -94,7 +94,7 @@
 
 선택한 레이어 아래에 그 레이어의 설정이 열립니다.
 
-- {{ui:canvas.add.inpaint}}: 마스크의 색이나 칠하기 무늬(화면에서 보이는 모양만), **{{ui:canvas.mask.denoiseLimit}}**(켜고 내리면 마스크 안에서도 원본 그림이 남기 쉬워집니다). 오른쪽 클릭의 **{{ui:canvas.entityMenu.invertMask}}**으로 생성 범위 안의 마스크 영역과 빈 영역을 서로 바꿀 수 있습니다. **{{ui:canvas.partFix.redraw}}**, **{{ui:canvas.partFix.erase}}**, **{{ui:canvas.partFix.cutOutAction}}**으로 칠한 부분을 문장 지시로 다시 그리거나, 지우거나, 오려 낼 수 있습니다([범위를 선택해서 수정하기](04-improve.md#범위를-선택해서-수정하기)).
+- {{ui:canvas.add.inpaint}}: 마스크의 색이나 칠하기 무늬(화면에서 보이는 모양만), **{{ui:canvas.mask.denoiseLimit}}**(켜고 내리면 마스크 안에서도 원본 그림이 남기 쉬워집니다). 오른쪽 클릭의 **{{ui:canvas.entityMenu.invertMask}}**으로 생성 범위 안의 마스크 영역과 빈 영역을 서로 바꿀 수 있습니다. **{{ui:canvas.partFix.redraw}}**, **{{ui:canvas.partFix.erase}}**, **{{ui:canvas.partFix.cutOutAction}}**으로 칠한 부분을 문장 지시로 다시 그리거나, 지우거나, 오려 낼 수 있습니다([범위를 선택해서 수정하기](04-improve.md)).
 - {{ui:canvas.add.control}}: 다음 '{{ui:canvas.add.control}}' 항목을 보세요.
 
 ## 어떤 식으로 다시 그려지는지

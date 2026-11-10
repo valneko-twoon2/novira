@@ -173,7 +173,7 @@
 | **{{ui:workflows.templates.characterReference.title}}** | 將角色的圖像改成白色背景作為參考圖像，統一頭髮、眼睛與服裝，繪製新的場景。CFG 是適合參考圖像的偏低數值。 | ComfyUI-RMBG 與 ComfyUI_IPAdapter_plus |
 | **{{ui:workflows.templates.characterPose.title}}** | 角色的外觀取自參考圖像，姿態取自火柴人（OpenPose）來繪製。 | 上面 2 個，加上 comfyui_controlnet_aux 與 OpenPose 用的 ControlNet 模型 |
 
-使用角色的範本，是為了想用工作流程細部調整[登錄並使用角色](04-improve.md#登錄並使用角色)的功能時而準備的。通常使用在生成分頁登錄的角色就足夠了。火柴人的姿勢，可以用[畫布](05-canvas.md)的「{{ui:pose.title}}」來製作。
+使用角色的範本，是為了想用工作流程細部調整[登錄並使用角色](04-improve.md)的功能時而準備的。通常使用在生成分頁登錄的角色就足夠了。火柴人的姿勢，可以用[畫布](05-canvas.md)的「{{ui:pose.title}}」來製作。
 
 ## 擴充功能（自訂節點）
 

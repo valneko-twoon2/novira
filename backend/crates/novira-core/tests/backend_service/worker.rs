@@ -16,7 +16,8 @@ async fn enqueue_refuses_source_images_that_are_not_stored() {
 }
 
 #[tokio::test]
-async fn results_for_the_canvas_or_drafts_are_hidden_and_gallery_results_keep_their_board() {
+async fn results_for_the_canvas_drafts_or_candidates_are_hidden_and_gallery_results_keep_their_board(
+) {
     let dir = tempfile::tempdir().unwrap();
     write_lora_and_checkpoint(&dir.path().join("models"));
     let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
@@ -31,11 +32,13 @@ async fn results_for_the_canvas_or_drafts_are_hidden_and_gallery_results_keep_th
     to_canvas.destination = QueueDestination::Canvas;
     let mut draft = to_gallery.clone();
     draft.params.draft_at = Some(0.5);
-    let ids: Vec<u64> = [to_gallery, to_canvas, draft]
+    let mut held = to_gallery.clone();
+    held.destination = QueueDestination::Candidates;
+    let ids: Vec<u64> = [to_gallery, to_canvas, draft, held]
         .into_iter()
         .map(|r| backend.enqueue(r).unwrap()[0].id)
         .collect();
-    wait_until(|| statuses(&backend) == vec![QueueItemStatus::Completed; 3]).await;
+    wait_until(|| statuses(&backend) == vec![QueueItemStatus::Completed; 4]).await;
 
     let snapshot = backend.queue_snapshot();
     let images = full_images(&backend);
@@ -69,6 +72,21 @@ async fn results_for_the_canvas_or_drafts_are_hidden_and_gallery_results_keep_th
     let draft = image_of(ids[2]);
     assert!(draft.is_intermediate);
     assert_eq!(draft.board_id.as_deref(), Some(board.id.as_str()));
+    // A candidate is hidden from the boards but keeps the board it will go to when the user accepts it.
+    let held = image_of(ids[3]);
+    assert!(held.is_intermediate);
+    assert_eq!(held.board_id.as_deref(), Some(board.id.as_str()));
+    let accepted = backend
+        .update_images(
+            std::slice::from_ref(&held.name),
+            novira_core::types::ImagePatch {
+                is_intermediate: Some(false),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+    assert!(!accepted[0].is_intermediate);
+    assert_eq!(accepted[0].board_id.as_deref(), Some(board.id.as_str()));
     backend.shutdown();
 }
 

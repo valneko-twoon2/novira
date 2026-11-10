@@ -112,7 +112,7 @@ novira は、次の 4 つの部品でできています。
 
 - **{{ui:app.views.launchpad}}**：始めかたの案内です。「{{ui:params.launchpad.generate.textTitle}}」「{{ui:params.launchpad.generate.refTitle}}」などのカードと、ショートカットのヒントが出ます。
 - **{{ui:app.views.viewer}}**：画像を大きく見る場所です。ギャラリーで画像を選ぶと、ここに表示されます。
-- **{{ui:app.views.drafts}}**：同じ設定でシードだけを変えて、途中まで描いた候補をたくさん並べ、気に入ったものだけを最後まで描く画面です。
+- **{{ui:app.views.drafts}}**：生成した絵が最初に並ぶ場所です。要る絵だけをボードへ入れます。同じ設定でシードだけを変えて、途中まで描いた候補（下書き）をたくさん並べ、気に入ったものだけを最後まで描くこともできます。
 
 ほかのタブにも、そのタブ用の小さなタブがあります（{{ui:app.tabs.canvas}}なら {{ui:app.views.canvas}} など）。
 

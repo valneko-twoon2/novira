@@ -54,9 +54,10 @@ describe('moving, starring and deleting', () => {
     useGallery.setState({ images: [image('a')] });
     const update = vi.spyOn(backend, 'updateImages').mockResolvedValue([image('a', { boardId: 'b1' })]);
     await moveImagesToBoard(['a'], 'b1');
-    expect(update).toHaveBeenLastCalledWith(['a'], { boardId: 'b1' });
+    // Moving a picture also takes it out of the Candidates view's hold.
+    expect(update).toHaveBeenLastCalledWith(['a'], { boardId: 'b1', isIntermediate: false });
     await moveImagesToBoard(['a'], 'none');
-    expect(update).toHaveBeenLastCalledWith(['a'], { boardId: null });
+    expect(update).toHaveBeenLastCalledWith(['a'], { boardId: null, isIntermediate: false });
     expect(useGallery.getState().images[0]?.boardId).toBe('b1');
     expect(lastToast()?.status).toBe('success');
   });

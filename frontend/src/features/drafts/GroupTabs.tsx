@@ -26,7 +26,7 @@ export function GroupTabs({ groups, currentId }: { groups: DraftGroup[]; current
           <button type="button" role="tab" aria-selected={g.id === currentId} onClick={() => setCurrent(g.id)}>
             {t('drafts.group', { n: split + i + 1, model: g.params.modelName })}
           </button>
-          <IconButton size="xs" label={t('drafts.closeGroup')} icon={<X />} onClick={() => closeGroup(g.id)} />
+          <IconButton size="xs" label={t(g.kind === 'generation' ? 'drafts.closeGroupHeld' : 'drafts.closeGroup')} icon={<X />} onClick={() => closeGroup(g.id)} />
         </span>
       ))}
     </div>

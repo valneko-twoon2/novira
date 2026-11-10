@@ -166,7 +166,8 @@
 歯車のボタンでは、並びかたや見た目を変えられます。
 
 - {{ui:gallery.settings.thumbnailSize}}
-- {{ui:gallery.settings.autoSwitch}}：絵ができたとき、その絵をビューアに出し、ギャラリーもその絵のボードへ移ります。初めはオフです。
+- {{ui:gallery.settings.newToCandidates}}：オンのとき、生成した絵は、ボードではなく **{{ui:app.views.drafts}}** タブに並びます。初めはオンです。
+- {{ui:gallery.settings.autoSwitch}}：絵がボードに入ったとき、その絵をビューアに出し、ギャラリーもそのボードへ移ります。初めはオフです。
 - {{ui:gallery.settings.autoAssign}}
 - {{ui:gallery.settings.alwaysShowSize}}
 - {{ui:gallery.settings.showArchived}}

@@ -94,7 +94,7 @@ En la lista de capas se puede hacer lo siguiente.
 
 Bajo la capa seleccionada se abren los ajustes de esa capa.
 
-- {{ui:canvas.add.inpaint}}: el color y el patrón de relleno de la máscara (afectan solo a cómo se ve en pantalla) y **{{ui:canvas.mask.denoiseLimit}}** (si se activa y se baja, es más probable que la imagen original se conserve incluso dentro de la máscara). En el menú del clic derecho de la máscara, **{{ui:canvas.entityMenu.invertMask}}** intercambia las zonas enmascaradas y las libres dentro del área de generación. **{{ui:canvas.partFix.redraw}}**, **{{ui:canvas.partFix.erase}}** y **{{ui:canvas.partFix.cutOutAction}}** vuelven a dibujar la parte pintada según una instrucción de texto, la borran o la recortan ([Seleccionar una zona y retocarla](04-improve.md#seleccionar-una-zona-y-retocarla)).
+- {{ui:canvas.add.inpaint}}: el color y el patrón de relleno de la máscara (afectan solo a cómo se ve en pantalla) y **{{ui:canvas.mask.denoiseLimit}}** (si se activa y se baja, es más probable que la imagen original se conserve incluso dentro de la máscara). En el menú del clic derecho de la máscara, **{{ui:canvas.entityMenu.invertMask}}** intercambia las zonas enmascaradas y las libres dentro del área de generación. **{{ui:canvas.partFix.redraw}}**, **{{ui:canvas.partFix.erase}}** y **{{ui:canvas.partFix.cutOutAction}}** vuelven a dibujar la parte pintada según una instrucción de texto, la borran o la recortan ([Seleccionar una zona y retocarla](04-improve.md)).
 - {{ui:canvas.add.control}}: véase la sección siguiente, «{{ui:canvas.add.control}}».
 
 ## Cómo se repinta

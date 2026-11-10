@@ -81,7 +81,7 @@ novira 用在这台电脑上制作的证书（novira local CA）来加密与手�
 |---|---|
 | **{{ui:app.tabs.generate}}** | 与电脑左侧面板相同的部件，按相同的顺序纵向排列（[生成图像](02-generate.md)）。预设、{{ui:params.seed.label}}和 **{{ui:params.invoke.invoke}}** 按钮、模型、提示词、参考图像，直到高分辨率修正和详细设置，都能像在电脑上一样使用。{{ui:params.seed.label}}和 **{{ui:params.invoke.invoke}}** 按钮所在的一行，滚动时也会留在上方 |
 | **{{ui:phone.gallery}}** | 选择 **{{ui:phone.board}}** 后，该画板的图像会按 3 列排列。正在画的图像显示在最前面。点击后全屏打开 |
-| **{{ui:app.views.drafts}}** | 与电脑的草稿相同（[从草稿中挑选](04-improve.md#从草稿中挑选)）。候选图的 **{{ui:drafts.open}}** 按钮，可以全屏查看该图像 |
+| **{{ui:app.views.drafts}}** | 与电脑的草稿相同（[从草稿中挑选](04-improve.md)）。候选图的 **{{ui:drafts.open}}** 按钮，可以全屏查看该图像 |
 | **{{ui:app.tabs.queue}}** | 排队中的项目，按从新到旧的顺序排列。标签页的图标上，会显示等待中的项目和正在画的项目的数量 |
 | **{{ui:app.tabs.models}}** | 与电脑的 {{ui:app.tabs.models}} 标签页相同（[管理与查找模型](08-models.md)）。因为屏幕小，卡片从最小的大小开始 |
 | **{{ui:app.tabs.browse}}** | 与电脑的 {{ui:app.tabs.browse}} 标签页相同。可以在 Civitai 和 Hugging Face 上查找并安装模型。搜索和筛选在左上方的 **{{ui:browse.menu}}** 按钮中，在那里用 **{{ui:browse.cardSize}}** 可以改变列表中卡片的大小（从最小的大小开始） |

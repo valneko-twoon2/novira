@@ -229,7 +229,7 @@ Wird **{{ui:app.nav.settings}}** über das **{{ui:app.nav.settingsMenu}}** unten
 
 ### {{ui:settings.tab.gallery}}
 
-- **{{ui:gallery.settings.thumbnailSize}}**, **{{ui:gallery.settings.sort}}**, **{{ui:gallery.settings.starredFirst}}**, **{{ui:gallery.settings.groupByDate}}**, **{{ui:gallery.settings.alwaysShowSize}}**, **{{ui:gallery.settings.showArchived}}**, **{{ui:gallery.settings.autoSwitch}}**, **{{ui:gallery.settings.autoAssign}}**: Dieselben Einträge wie unter **{{ui:gallery.settings.title}}**, das sich mit der Zahnrad-Schaltfläche der Galerie öffnet. Die Änderung wirkt gleich, egal wo sie vorgenommen wird.
+- **{{ui:gallery.settings.thumbnailSize}}**, **{{ui:gallery.settings.sort}}**, **{{ui:gallery.settings.starredFirst}}**, **{{ui:gallery.settings.groupByDate}}**, **{{ui:gallery.settings.alwaysShowSize}}**, **{{ui:gallery.settings.showArchived}}**, **{{ui:gallery.settings.newToCandidates}}**, **{{ui:gallery.settings.autoSwitch}}**, **{{ui:gallery.settings.autoAssign}}**: Dieselben Einträge wie unter **{{ui:gallery.settings.title}}**, das sich mit der Zahnrad-Schaltfläche der Galerie öffnet. Die Änderung wirkt gleich, egal wo sie vorgenommen wird.
 - **{{ui:settings.confirmOnDelete}}**: Zeigt vor dem Löschen eines Bildes eine Bestätigung. Auch wenn im Bestätigungsbildschirm „{{ui:common.dontAskAgain}}“ gewählt wird, wird dieser Schalter ausgeschaltet.
 - **{{ui:settings.clearIntermediates}}**: Löscht Bilder, die nicht in der Galerie erscheinen, etwa Zwischenergebnisse der Leinwand. Die Anzahl der zu löschenden Bilder steht auf der Schaltfläche.
 

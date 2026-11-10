@@ -166,7 +166,8 @@ While a filter is active, a tag showing the period appears above the gallery. Yo
 The gear button lets you change how pictures are arranged and how things look.
 
 - {{ui:gallery.settings.thumbnailSize}}
-- {{ui:gallery.settings.autoSwitch}}: When a picture is finished, it opens in the viewer and the gallery goes to its board. It is off at first.
+- {{ui:gallery.settings.newToCandidates}}: When it is on, the pictures you generate line up in the **{{ui:app.views.drafts}}** tab instead of a board. It is on at first.
+- {{ui:gallery.settings.autoSwitch}}: When a picture goes into a board, it opens in the viewer and the gallery goes to that board. It is off at first.
 - {{ui:gallery.settings.autoAssign}}
 - {{ui:gallery.settings.alwaysShowSize}}
 - {{ui:gallery.settings.showArchived}}

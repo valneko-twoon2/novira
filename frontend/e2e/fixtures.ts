@@ -44,9 +44,29 @@ export function msg(key: string, vars: Record<string, string | number> = {}, loc
  * Opens the app (optionally with a query string such as `?scenario=empty`) and waits until the start-up screen is gone.
  * The shell appears only after the backend's start-up data (gallery, workflow library) is in the stores.
  */
+let defaultsSeq = 0;
+
+/**
+ * Sets gallery settings (`novira.gallery`) the first time the page opens, before the app starts, and leaves them alone on a
+ * reload, so a setting the test changes stays changed. Calls made later win over earlier ones.
+ */
+export async function galleryDefaults(page: Page, patch: Record<string, unknown>): Promise<void> {
+  const marker = `e2e-gallery-defaults-${defaultsSeq++}`;
+  await page.addInitScript(
+    ([key, settings]) => {
+      if (sessionStorage.getItem(key as string)) return;
+      sessionStorage.setItem(key as string, '1');
+      const saved = JSON.parse(localStorage.getItem('novira.gallery') ?? 'null') ?? { state: {}, version: 0 };
+      saved.state = { ...saved.state, settings: { ...saved.state?.settings, ...(settings as object) } };
+      localStorage.setItem('novira.gallery', JSON.stringify(saved));
+    },
+    [marker, patch] as const,
+  );
+}
+
 /** Call before `openApp` in a flow that expects a finished picture to open in the viewer (off in a fresh app). */
 export async function showNewInViewer(page: Page): Promise<void> {
-  await page.addInitScript(() => localStorage.setItem('novira.gallery', JSON.stringify({ state: { settings: { showNewInViewer: true } }, version: 0 })));
+  await galleryDefaults(page, { showNewInViewer: true });
 }
 
 export async function openApp(page: Page, query = ''): Promise<void> {
@@ -104,6 +124,9 @@ export const test = base.extend<Fixtures>({
   page: async ({ page }, provide) => {
     const byTestId = page.getByTestId.bind(page);
     page.getByTestId = (testId) => byTestId(testId).filter({ visible: true });
+    // The specs written before the Candidates view expect a generated picture on its board at once: they start with the
+    // setting off. `e2e/candidates.spec.ts` turns it back on, which is how the app starts.
+    await galleryDefaults(page, { newPicturesToCandidates: false });
     await provide(page);
   },
   errors: [

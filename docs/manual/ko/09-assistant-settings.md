@@ -229,7 +229,7 @@ Claude와 Codex 외에, 이 PC나 네트워크 상에서 동작하는 OpenAI 호
 
 ### {{ui:settings.tab.gallery}}
 
-- **{{ui:gallery.settings.thumbnailSize}}**, **{{ui:gallery.settings.sort}}**, **{{ui:gallery.settings.starredFirst}}**, **{{ui:gallery.settings.groupByDate}}**, **{{ui:gallery.settings.alwaysShowSize}}**, **{{ui:gallery.settings.showArchived}}**, **{{ui:gallery.settings.autoSwitch}}**, **{{ui:gallery.settings.autoAssign}}**: 갤러리의 톱니바퀴 버튼으로 여는 **{{ui:gallery.settings.title}}** 화면과 같은 항목입니다. 어느 쪽에서 바꿔도 똑같이 바뀝니다.
+- **{{ui:gallery.settings.thumbnailSize}}**, **{{ui:gallery.settings.sort}}**, **{{ui:gallery.settings.starredFirst}}**, **{{ui:gallery.settings.groupByDate}}**, **{{ui:gallery.settings.alwaysShowSize}}**, **{{ui:gallery.settings.showArchived}}**, **{{ui:gallery.settings.newToCandidates}}**, **{{ui:gallery.settings.autoSwitch}}**, **{{ui:gallery.settings.autoAssign}}**: 갤러리의 톱니바퀴 버튼으로 여는 **{{ui:gallery.settings.title}}** 화면과 같은 항목입니다. 어느 쪽에서 바꿔도 똑같이 바뀝니다.
 - **{{ui:settings.confirmOnDelete}}**: 이미지를 지우기 전에 확인 창을 띄웁니다. 확인 화면에서 '{{ui:common.dontAskAgain}}'을 선택했을 때도 여기가 꺼집니다.
 - **{{ui:settings.clearIntermediates}}**: 캔버스의 중간 결과 등 갤러리에 나오지 않는 이미지를 지웁니다. 지울 개수가 버튼에 나옵니다.
 

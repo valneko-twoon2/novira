@@ -60,5 +60,6 @@
   "queue.oom.retrySmallerHint": "Retry at {width}×{height} (about 75% of the area)",
   "queue.oom.lowMemory": "Turn on low-memory mode and restart",
   "queue.oom.toast.retried": "Retrying item #{id} at {width}×{height}",
-  "queue.oom.toast.retryFailed": "Could not retry"
+  "queue.oom.toast.retryFailed": "Could not retry",
+  "queue.destination.candidates": "Candidates"
 }

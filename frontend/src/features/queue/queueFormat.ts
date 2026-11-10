@@ -21,6 +21,7 @@ export const DESTINATION_KEYS: Record<QueueDestination, MessageKey> = {
   gallery: 'queue.destination.gallery',
   canvas: 'queue.destination.canvas',
   intermediate: 'queue.destination.intermediate',
+  candidates: 'queue.destination.candidates',
 };
 
 export function formatTime(ms: number | null): string {
