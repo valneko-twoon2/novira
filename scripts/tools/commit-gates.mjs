@@ -1,5 +1,6 @@
 // The checks every commit must pass besides the quick ones of .githooks/pre-commit.mjs: the same as the CI jobs `rust-format`,
-// `clippy`, the lint of `static`, `diff-backends` and `e2e-phone`, each only when a staged file can change its result. The
+// `clippy`, the lint of `static`, `diff-backends` and `e2e-phone`, each only when a staged file can change its result, and the
+// visual regression (`visual`, every screen in both themes, about two minutes), which runs on every commit. The
 // three long ones of CI (vitest, cargo test, the Playwright flows in Chromium) are not run here: `affected.mjs` and the
 // skills choose those. Every gate that applies runs even when an earlier one failed, so one commit shows all of them.
 // The commands and their environment are those of scripts/tools/checks.mjs (the `check` of a gate is its name there).
@@ -31,6 +32,8 @@ export function gatesFor(paths) {
   if (any(FRONTEND_LINT)) gates.push({ name: 'lint', check: 'lint', why: 'frontend ts, js or css changed' });
   if (DIFF.some(any)) gates.push({ name: 'diff-backends', check: 'diff-backends', why: 'the contract, the mock or the Rust changed' });
   if (any(PHONE)) gates.push({ name: 'e2e-phone', check: 'phone', why: 'screens or phone specs changed', args: ['--reporter=line'] });
+  // Always: a change that looks harmless (a shared style, a rewording, a dependency) can move any screen.
+  gates.push({ name: 'visual', check: 'e2e', why: 'every commit', args: ['--project=visual', '--reporter=line'] });
   return gates;
 }
 

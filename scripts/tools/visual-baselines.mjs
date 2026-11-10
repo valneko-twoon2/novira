@@ -1,6 +1,6 @@
-// Which changed files can alter what the main screens show, so the visual regression (e2e/visual.spec.ts) is due:
-// scripts/tools/affected.mjs names `npm run e2e:visual` for them. Nothing runs it on its own (the pre-commit hook does not: it is
-// heavy); run it by hand and update the baselines in the same commit when a change is intended.
+// Which changed files can alter what the main screens show, so the visual regression (e2e/visual/) is due:
+// scripts/tools/affected.mjs names `npm run e2e:visual` for them. The pre-commit hook runs it on every commit anyway
+// (scripts/tools/commit-gates.mjs); update the baselines in the same commit when a change is intended.
 
 /** Source that decides what the screens show: components, styles, i18n catalogs, the mock data and the page itself. */
 const SCREEN_SOURCE = /^frontend\/(src\/.+\.(tsx?|css)|src\/i18n\/locales\/.+\.json|index\.html)$/;

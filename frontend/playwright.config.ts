@@ -59,7 +59,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testIgnore: ['visual.spec.ts', 'layout.spec.ts', 'phone*.spec.ts'],
+      testIgnore: ['visual/**', 'layout.spec.ts', 'phone*.spec.ts'],
       use: { ...devices['Desktop Chrome'], viewport: { width: 1600, height: 960 } },
     },
     {
@@ -67,6 +67,8 @@ export default defineConfig({
       // network. Pixel 7 is a Chromium phone, so the one browser Playwright installs runs it.
       name: 'phone',
       testMatch: 'phone*.spec.ts',
+      // The phone shots of the visual regression (`visual/phone.spec.ts`) belong to the `visual` project.
+      testIgnore: 'visual/**',
       use: { ...devices['Pixel 7'] },
     },
     {
@@ -76,13 +78,17 @@ export default defineConfig({
       // time per case.
       name: 'webkit',
       testMatch: 'phone*.spec.ts',
+      // The phone shots of the visual regression (`visual/phone.spec.ts`) belong to the `visual` project.
+      testIgnore: 'visual/**',
       timeout: 60_000,
       use: { ...devices['iPhone 14'] },
     },
     {
       // Visual regression (`npm run e2e:visual`). Pinned scale, locale and time zone so pixels and dates match the baselines.
       name: 'visual',
-      testMatch: 'visual.spec.ts',
+      testMatch: 'visual/*.spec.ts',
+      // One folder per screen and theme: e2e/__screenshots__/visual/<screen>/<theme>/<shot>-<platform>.png (see e2e/visual/shared.ts).
+      snapshotPathTemplate: '{testDir}/__screenshots__/visual/{arg}-{platform}{ext}',
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1600, height: 960 },
@@ -95,7 +101,7 @@ export default defineConfig({
       // (1273 to 1613 px, measured on win32) pass. Unchanged code differs by 0 px on all 22 screens (two runs), so 300 px
       // is well above the noise and about a quarter of the smallest one-item change. The settings dialog dims the side bar
       // and the colour threshold (default 0.2) ignores a tab change there, so the settings dialog also checks the side bar on its own at threshold 0.
-      expect: { toHaveScreenshot: { maxDiffPixels: 300, animations: 'disabled', caret: 'hide' } },
+      expect: { toHaveScreenshot: { maxDiffPixels: 20, animations: 'disabled', caret: 'hide' } },
     },
     {
       // The layout scan (`node scripts/tools/layout-scan.mjs`): every screen in ja and en, dark and light, at the size of the visual

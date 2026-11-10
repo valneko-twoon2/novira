@@ -24,7 +24,7 @@ describe('the files that can change a main screen', () => {
       'frontend/src/features/params/labels.property.test.ts',
       'frontend/src/propertyTest.testkit.ts',
       'frontend/src/vite-env.d.ts',
-      'frontend/e2e/visual.spec.ts',
+      'frontend/e2e/visual/generate.spec.ts',
       'scripts/tools/docs-check.mjs',
       'docs/architecture/README.md',
       'backend/crates/novira-core/src/lib.rs',

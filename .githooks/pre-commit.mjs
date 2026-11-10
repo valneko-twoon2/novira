@@ -15,7 +15,7 @@
 //   4d. the changelog keeps the Keep a Changelog shape when CHANGELOG.md or its checker is staged (scripts/tools/changelog.mjs --check).
 //   4c. the frontend type-checks (scripts/tools/typecheck.mjs --staged: tsc over src, the tests, the e2e specs and the configs,
 //      incremental, when a ts / tsx / mts or a JSON of frontend/ is staged; it reads the working tree).
-//   5. (the visual regression is not run here: it is heavy. Run `npm run e2e:visual` by hand when needed.)
+//   5. (the visual regression is not run here but by scripts/tools/commit-gates.mjs, on every commit.)
 //      The layout scan is not run here either, but a commit that changes layout source needs a recorded pass of
 //      `node scripts/tools/layout-scan.mjs` on exactly what is staged (scripts/tools/layout-scan.mjs; checking the record only hashes files).
 //   6. the license notices are current: when a dependency, a download or a license text is staged, the notices and the About

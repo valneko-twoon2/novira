@@ -91,13 +91,13 @@ CI: `e2e-chromium` (one retry, `forbidOnly`). A retry that passes hides a flaky 
 
 ## 5. Visual regression
 
-Needed when a main screen's look changes (css, `src/ui/`, `src/app/`, a feature's tsx). A new screen gets a shot in `frontend/e2e/visual.spec.ts` (`.claude/rules/tests.md`).
+Needed when a main screen's look changes (css, `src/ui/`, `src/app/`, a feature's tsx). A new screen gets a spec in `frontend/e2e/visual/` (`.claude/rules/tests.md`).
 
-Existing: `frontend/e2e/visual.spec.ts` (project `visual`, dark and light, fixed clock, masks for time text, `maxDiffPixels: 300` in `playwright.config.ts`), baselines `frontend/e2e/__screenshots__/visual.spec.ts/<name>-<platform>.png` (`-win32` from Windows, `-linux` from the cloud container). The look-scan without baselines: `node scripts/tools/layout-scan.mjs` (`e2e/layout.spec.ts`, rules in `e2e/layoutRules.ts`, `e2e/textFit.ts`).
+Existing: `frontend/e2e/visual/<screen>.spec.ts` (project `visual`; helpers in `visual/shared.ts`: both themes, fixed clock, masks for time text; `maxDiffPixels: 20` in `playwright.config.ts`; the screens that exist only in the desktop app, such as the network item, are opened with `?lan` by `openDesktop`), baselines `frontend/e2e/__screenshots__/visual/<screen>/<dark|light>/<shot>-<platform>.png` (`-win32` from Windows, `-linux` from the cloud container). The look-scan without baselines: `node scripts/tools/layout-scan.mjs` (`e2e/layout.spec.ts`, rules in `e2e/layoutRules.ts`, `e2e/textFit.ts`).
 
 Steps:
-1. Add the screen to `visual.spec.ts` the way its neighbours do (theme loop, `settle(page)`, mask what varies).
-2. Look at the change by eye first (`node scripts/shot.mjs` in `frontend/` (`frontend/scripts/shot.mjs`), dark and light). Then `npm run e2e:visual -- --update-snapshots` in `frontend/`. Open every changed PNG. Commit only the baselines of this platform's suffix that you looked at; the other platform's set is refreshed when it runs there.
+1. Add the screen as a spec in `frontend/e2e/visual/` the way its neighbours do (`inEachTheme`, `snap(page, <screen>, theme, <shot>, <part>)`: the whole screen and each part that carries a state of its own; screens hidden in the production build (video, music, voice, comic) are not shot; mask what varies).
+2. Look at the change by eye first (`node scripts/shot.mjs` in `frontend/` (`frontend/scripts/shot.mjs`), dark and light). Then `npm run e2e:visual -- --update-snapshots=changed` in `frontend/`. Open every changed PNG. Commit only the baselines of this platform's suffix that you looked at; the other platform's set is refreshed when it runs there.
 3. Run `node scripts/tools/layout-scan.mjs` from the repository root (ja and en, dark and light, about two minutes). A fault is fixed, or the place carries `data-truncate-ok`, `data-touch-ok` or `data-layout-ignore` with a reason. Pre-commit refuses layout source without a recorded pass for exactly what is staged (`layout-scan.mjs --check`).
 4. A removed screen: delete its baselines.
 

@@ -12,6 +12,12 @@
   box-shadow: 0 4px 8px -6px var(--border-strong);
 }
 
+/* The preset card at the top is as wide on every screen. The Generate screen has two buttons beside it (save and the random
+   run); the card of a screen with one keeps the second place empty, so the combobox does not change size between screens. */
+.pp-head > .ui-preset:not(:has(> .ui-iconbtn ~ .ui-iconbtn)) {
+  padding-inline-end: calc(var(--space-2) + 28px);
+}
+
 .pp-head__generate {
   display: flex;
   flex-direction: column;

@@ -16,7 +16,7 @@ Follow this when changing `frontend/` or `backend/`. How to choose the cases (pa
 
 | Change | Tests |
 |---|---|
-| A feature added | Tests of the new behaviour: the normal case and at least one failure, empty or boundary case. A new screen flow (tab, dialog, generation steps) gets a Playwright spec that is run; a new screen also one shot in `e2e/visual.spec.ts` |
+| A feature added | Tests of the new behaviour: the normal case and at least one failure, empty or boundary case. A new screen flow (tab, dialog, generation steps) gets a Playwright spec that is run; a new screen also a spec of its own in `e2e/visual/` (both themes, the whole screen and its parts) |
 | A bug fixed | A test that fails before the fix and passes after |
 | A spec changed | Rewrite the tests to the new spec; do not just copy the new output into the expected values |
 | A feature or code removed | Delete the tests that checked only it, and their fixtures, mocks, helpers, snapshots and baseline images |
@@ -54,12 +54,12 @@ What `affected.mjs` does not decide for you:
 | A new `persist` store (a new `novira.*` key) | Name the key in `src/state/liveStores.ts` (`LIVE_STORES`, or `LOCAL_ONLY_KEYS`) and run `src/state/liveStores.test.ts` |
 | A graph snapshot that changed on purpose | `npx vitest run -u <file>` (Rust: `UPDATE_SNAPSHOTS=1`) and read the JSON diff |
 | A screen flow | The specs of the area (`npx playwright test e2e/<spec> --project=chromium`); a worktree sets its own `E2E_PORT`; a whole project runs under `node scripts/tools/e2e-lock.mjs -- ...`; cases that time out together are rerun with `--workers=2` before they count as failures |
-| Look (css, layout, shared components) | `node scripts/tools/layout-scan.mjs` (pre-commit refuses layout source without a pass on exactly what is staged; `--locales all` when the user asks or after translating); `npm run e2e:visual` by hand, and commit updated baselines with the change after looking at them; check by eye with `node scripts/shot.mjs` |
+| Look (css, layout, shared components) | `node scripts/tools/layout-scan.mjs` (pre-commit refuses layout source without a pass on exactly what is staged; `--locales all` when the user asks or after translating); the visual regression runs on every commit (`commit-gates.mjs`), and a change that moves a picture commits the updated baselines (`npm run e2e:visual -- --update-snapshots=changed`) after looking at every changed one; check by eye with `node scripts/shot.mjs` |
 | A Rust file with logic | `cargo fmt --all`, `cargo clippy -p novira-core --tests`; then mutation testing of that file (`/testing`) |
 | `api.rs`, `novira-server`, `frontend/src/backend/http/` | `cargo test -p novira-server`, `cargo test -p novira-core --test backend_service api::`, `npx vitest run src/backend/http` |
 | `src-tauri` (commands, capability) | `cargo test -p novira` and `npx vitest run src/backend/tauri` |
 
-The pre-commit hook itself runs the CI jobs that are not long (`scripts/tools/commit-gates.mjs`: Rust format and clippy, lint, `diff-backends`, `e2e-phone`, each when a staged file can change its result), so a commit can take a few minutes; vitest, cargo test and the Chromium flows stay with `affected.mjs`.
+The pre-commit hook itself runs the CI jobs that are not long (`scripts/tools/commit-gates.mjs`: Rust format and clippy, lint, `diff-backends`, `e2e-phone`, each when a staged file can change its result, and the visual regression on every commit), so a commit can take a few minutes; vitest, cargo test and the Chromium flows stay with `affected.mjs`.
 
 Finish with `npm run lint` (eslint and stylelint) in `frontend/`. `cargo` missing from PATH: add `%USERPROFILE%\.cargo\bin` (`affected.mjs` and `check.bat` do). While the user's `novira.exe` is open, Rust builds go to `novira-data/work/check-target`.
 

@@ -227,7 +227,7 @@ export function plan(paths, { e2e = false, text = false, core = readCoreTests(),
 }
 
 /** Specs of their own projects, never a feature's flow. */
-const NOT_FLOWS = new Set(['visual.spec.ts', 'layout.spec.ts']);
+const NOT_FLOWS = new Set(['layout.spec.ts']);
 
 /**
  * The Playwright specs of a feature folder: those whose file name starts with the feature's name, and those that name a
