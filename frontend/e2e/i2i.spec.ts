@@ -42,7 +42,7 @@ test('the high-resolution fix enlarges the picture drawn over a source', async (
   const width = Number(await page.getByRole('spinbutton', { name: msg('common.width') }).inputValue());
   const height = Number(await page.getByRole('spinbutton', { name: msg('common.height') }).inputValue());
   const enlarged = (v: number) => Math.round((v * 1.5) / 8) * 8;
-  await expect(page.getByTestId('hires-output')).toContainText(`${enlarged(width)}×${enlarged(height)}`);
+  await expect(page.getByRole('button', { name: msg('params.hires.title') })).toContainText(`${enlarged(width)}×${enlarged(height)}`);
 
   await page.getByTestId('invoke-button').click();
   await expect(page.getByTestId('gallery-thumb')).toHaveCount(before + 1);

@@ -203,7 +203,7 @@ El texto en inglés sale con exactitud, pero el japonés puede salir deformado. 
 
 Con **{{ui:text.bg.title}}** se elige sobre qué se coloca el texto.
 
-- **{{ui:text.bg.image}}**: Usa una imagen como fondo. Muestre una imagen en la galería y pulse **{{ui:text.bg.useViewer}}**, o suelte una imagen en esta pantalla. Se guarda con el mismo tamaño que la imagen.
+- **{{ui:text.bg.image}}**: Usa una imagen como fondo. Muestre una imagen en la galería y pulse **{{ui:text.bg.image}}**, o suelte una imagen en esta pantalla. Se guarda con el mismo tamaño que la imagen.
 - **{{ui:text.bg.color}}**: Un fondo de un solo color. Para el tamaño, elija de la lista, como 1024×1024 o 1920×1080, o introduzca el ancho y el alto como números.
 - **{{ui:text.bg.transparent}}**: Sin fondo. Se puede crear solo el texto como una imagen transparente.
 

@@ -203,7 +203,7 @@ Le texte en anglais est rendu avec précision, mais le japonais peut être défo
 
 Avec **{{ui:text.bg.title}}**, vous choisissez sur quoi le texte sera placé.
 
-- **{{ui:text.bg.image}}** : une image sert d'arrière-plan. Affichez une image dans la galerie, puis cliquez sur **{{ui:text.bg.useViewer}}**, ou déposez une image sur cet écran. Elle est enregistrée à la même taille que l'image.
+- **{{ui:text.bg.image}}** : une image sert d'arrière-plan. Affichez une image dans la galerie, puis cliquez sur **{{ui:text.bg.image}}**, ou déposez une image sur cet écran. Elle est enregistrée à la même taille que l'image.
 - **{{ui:text.bg.color}}** : un arrière-plan uni. Choisissez la taille dans la liste (1024×1024, 1920×1080, etc.) ou saisissez la largeur et la hauteur en nombres.
 - **{{ui:text.bg.transparent}}** : pas d'arrière-plan. Vous pouvez créer le texte seul, sur une image transparente.
 

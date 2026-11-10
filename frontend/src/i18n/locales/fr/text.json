@@ -21,7 +21,6 @@
   "text.bg.image": "Image",
   "text.bg.color": "Couleur",
   "text.bg.transparent": "Transparent",
-  "text.bg.useViewer": "Utiliser l'image affichée",
   "text.bg.imageNote": "Image d'arrière-plan : {name} (enregistrée à sa taille d'origine)",
   "text.bg.drop": "Déposez une image ici pour l'utiliser comme arrière-plan",
   "text.bg.size": "Taille de la toile",

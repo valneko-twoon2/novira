@@ -22,7 +22,6 @@
   "text.bg.image": "Image",
   "text.bg.color": "Color",
   "text.bg.transparent": "Transparent",
-  "text.bg.useViewer": "Use the image being viewed",
   "text.bg.imageNote": "Background image: {name} (saved at the image's own size)",
   "text.bg.drop": "Drop an image here to use it as the background",
   "text.bg.size": "Canvas size",

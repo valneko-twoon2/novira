@@ -72,7 +72,7 @@ describe('background', () => {
     expect(state().scene.background).toEqual({ kind: 'color', color: '#336699' });
     click(t('text.bg.transparent'));
     expect(state().scene.background).toEqual({ kind: 'color', color: null });
-    // No picture in the viewer: the image button is off and nothing is offered.
+    // No picture in the viewer: the image button is off.
     expect((screen.getByText(t('text.bg.image')) as HTMLButtonElement).disabled).toBe(true);
     expect(screen.queryByTestId('text-use-viewer')).toBeNull();
 
@@ -80,10 +80,11 @@ describe('background', () => {
 
   it('uses the picture open in the viewer as the background and sizes the canvas to it', () => {
     act(() => useGallery.setState({ images: [{ name: 'v.png', url: 'u', width: 800, height: 600 } as never], viewerImageName: 'v.png' }));
-    fireEvent.click(screen.getByTestId('text-use-viewer'));
+    // There is no extra button for it: the Image choice takes the picture of the viewer.
+    expect(screen.queryByTestId('text-use-viewer')).toBeNull();
+    click(t('text.bg.image'));
     expect(state().scene).toMatchObject({ width: 800, height: 600, background: { kind: 'image', imageName: 'v.png' } });
     expect(screen.getByText(t('text.bg.imageNote', { name: 'v.png' }))).toBeTruthy();
-    expect(screen.queryByTestId('text-use-viewer')).toBeNull();
     click(t('text.bg.color'));
     click(t('text.bg.image'));
     expect(state().scene.background.kind).toBe('image');

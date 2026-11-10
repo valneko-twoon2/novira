@@ -33,7 +33,7 @@
 
 | 按钮 | 作用 |
 |---|---|
-| **{{ui:params.prompt.recommended}}** | 把当前所选模型类型中广泛使用的品质用词添加到“{{ui:params.prompt.positive}}”，把想要避免的词添加到“{{ui:params.prompt.negative}}”的末尾。用标签书写的模型（Illustrious、NoobAI、Pony、Anima 等）会在开头添加 `masterpiece, best quality` 之类的标签，用句子书写的模型（FLUX、Qwen-Image 等）会在末尾添加表示品质的词。不使用反向提示词的模型（FLUX.1）不会添加反向提示词。已经存在的词不会重复添加 |
+| **{{ui:params.prompt.recommendedPositive}}** / **{{ui:params.prompt.recommendedNegative}}** | 把当前所选模型类型中广泛使用的品质用词添加到“{{ui:params.prompt.positive}}”，把想要避免的词添加到“{{ui:params.prompt.negative}}”的末尾。用标签书写的模型（Illustrious、NoobAI、Pony、Anima 等）会在开头添加 `masterpiece, best quality` 之类的标签，用句子书写的模型（FLUX、Qwen-Image 等）会在末尾添加表示品质的词。不使用反向提示词的模型（FLUX.1）不会添加反向提示词。已经存在的词不会重复添加 |
 | **{{ui:params.prompt.expand}}** | 在左右并排的大窗口中编辑正向和反向提示词 |
 | **{{ui:params.prompt.textView}}** / **{{ui:params.prompt.tagView}}** | 在原样的文字显示和按词排列的标签（tag）显示之间切换输入栏的显示方式。点击标签会打开弹出窗口，可以改写词语、用滑块改变强度、恢复为 1、删除标签。改变过强度的标签会以 `(smile:1.3)` 的形式写入提示词。在下方的输入栏中输入词语并按 Enter，可以添加标签 |
 | **{{ui:params.promptBook.open}}** | 打开按含义收集单词的预设（见后文） |

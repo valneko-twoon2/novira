@@ -55,7 +55,6 @@
   "params.seed.info": "The same seed and settings produce the same image.",
   "params.seed.shuffle": "Shuffle seed",
   "params.seed.random": "Random",
-  "params.seed.badge": "Seed {seed}",
   "params.generation.title": "Generation",
   "params.generation.scheduler": "Scheduler",
   "params.generation.schedulerInfo": "The algorithm used to remove noise step by step.",
@@ -201,8 +200,6 @@
   "params.launchpad.tips.structure": "Structure: higher keeps the original shapes and layout.",
   "params.launchpad.tips.upscaleSize": "Keep the output at 8192 px per side or less.",
   "params.prompt.title": "Prompts",
-  "params.prompt.recommended": "Recommended",
-  "params.prompt.recommendedHint": "Adds the selected model's quality tags and a basic negative prompt",
   "params.prompt.recommendedApplied": "Added the recommended prompts",
   "params.prompt.expand": "Edit in large editor",
   "params.prompt.bigTitle": "Edit prompts",
@@ -264,8 +261,6 @@
   "params.hires.methodSmooth": "Smooth (no model)",
   "params.hires.steps": "Pass 2 steps",
   "params.hires.stepsInfo": "0 uses as many steps as the first pass.",
-  "params.hires.output": "Result: {width}×{height} (second pass {steps} steps)",
-  "params.hires.outputSameSteps": "Result: {width}×{height} (second pass with the same steps)",
   "params.readiness.hiresNoModel": "The upscale model of the high-resolution fix is not installed",
   "params.readiness.hiresLarge": "{width}×{height} may be too large for a {base} model (about {max} px on the long side is comfortable). Lower the scale if the picture breaks up.",
   "params.readiness.wildcardUnknown": "There is no wildcard list {name}",
@@ -351,5 +346,9 @@
   "params.generation.noiseSchedule": "Noise schedule",
   "params.generation.noiseScheduleInfo": "How much noise each step removes. Auto uses the scheduler above or the model's own.",
   "params.generation.engineAuto": "Auto",
-  "params.generation.engineAutoIs": "Auto ({name})"
+  "params.generation.engineAutoIs": "Auto ({name})",
+  "params.prompt.recommendedPositive": "Add the recommended quality tags",
+  "params.prompt.recommendedNegative": "Add the recommended negative words",
+  "params.image.optimalDone": "Set to {width}×{height}, the best size for the model",
+  "params.image.optimalSame": "Already the best size for the model ({width}×{height})"
 }

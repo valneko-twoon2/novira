@@ -1,6 +1,7 @@
 // Positive and negative prompt boxes, always visible, each with its own preset row and prompt book button.
 import { ArrowsOutSimple, BookOpen, ChatCenteredText, Sparkle, Tag, TextT } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
+import type { ModelConfig } from '@/backend';
 import { t } from '@/i18n';
 import { quickRunTool } from '@/state/imageTools/actions';
 import { selectedStill, uploadPicture } from '@/state/imageTools/pickPicture';
@@ -10,7 +11,7 @@ import type { PromptKind } from '@/state/prompts/promptBook';
 import type { PromptSource } from '@/state/prompts/promptSource';
 import { toast } from '@/state/toasts';
 import { useUi } from '@/state/ui';
-import { Button, cx, IconButton, ImageDropZone, Section, Textarea } from '@/ui';
+import { cx, IconButton, ImageDropZone, Section, Textarea } from '@/ui';
 import { BigPromptEditor } from './BigPromptEditor';
 import { DynamicPromptsButton } from './DynamicPromptsButton';
 import { applyRecommendedPrompts, imagePromptSource } from './promptActions';
@@ -23,31 +24,12 @@ export function PromptBoxes({ source = imagePromptSource }: { source?: PromptSou
   const [big, setBig] = useState(false);
   // Alt+A goes to the prompt, so a folded prompt opens for it.
   const focusNonce = useUi((s) => s.focusPromptNonce);
-  const actions = (
-    <>
-      <Button
-          size="xs"
-          variant="ghost"
-          scheme="accent"
-          leftIcon={<Sparkle weight="fill" />}
-          title={t('params.prompt.recommendedHint')}
-          data-testid="prompt-recommended"
-          onClick={() => {
-            applyRecommendedPrompts(model, source);
-            toast({ status: 'success', title: t('params.prompt.recommendedApplied') });
-          }}
-        >
-          {t('params.prompt.recommended')}
-        </Button>
-        <IconButton size="xs" label={t('params.prompt.expand')} icon={<ArrowsOutSimple />} data-testid="prompt-expand" onClick={() => setBig(true)} />
-    </>
-  );
   return (
     <div className="pp-prompts" data-testid="prompts">
-      <Section title={t('params.prompt.title')} openOn={source.generateTools ? focusNonce : undefined} actions={actions}>
+      <Section title={t('params.prompt.title')} openOn={source.generateTools ? focusNonce : undefined}>
         <div className="pp-prompts__fields">
-          <PromptField kind="positive" source={source} />
-          <PromptField kind="negative" source={source} />
+          <PromptField kind="positive" source={source} model={model} onExpand={() => setBig(true)} />
+          <PromptField kind="negative" source={source} model={model} onExpand={() => setBig(true)} />
         </div>
       </Section>
       {big && <BigPromptEditor source={source} onClose={() => setBig(false)} />}
@@ -102,7 +84,7 @@ function CaptionButton() {
   );
 }
 
-function PromptField({ kind, source }: { kind: PromptKind; source: PromptSource }) {
+function PromptField({ kind, source, model, onExpand }: { kind: PromptKind; source: PromptSource; model: ModelConfig | undefined; onExpand: () => void }) {
   const text = source.useText(kind);
   const nonce = useUi((s) => s.focusPromptNonce);
   const openBook = usePromptBook((s) => s.openBook);
@@ -143,7 +125,18 @@ function PromptField({ kind, source }: { kind: PromptKind; source: PromptSource 
         {source.generateTools && positive && <CaptionButton />}
         {source.generateTools && <DynamicPromptsButton kind={kind} />}
         {source.generateTools && <IconButton size="xs" label={t('params.promptBook.open')} icon={<BookOpen />} data-testid={`${kind}-open-book`} onClick={() => openBook(kind)} />}
+        <IconButton
+          size="xs"
+          label={t(positive ? 'params.prompt.recommendedPositive' : 'params.prompt.recommendedNegative')}
+          icon={<Sparkle weight="fill" />}
+          data-testid={`${kind}-recommended`}
+          onClick={() => {
+            applyRecommendedPrompts(model, source, kind);
+            toast({ status: 'success', title: t('params.prompt.recommendedApplied') });
+          }}
+        />
       </div>
+      <div className="pp-prompt__body">
       {tagView && <PromptTagView kind={kind} value={text} onChange={(v) => source.set(kind, v)} />}
       <Textarea
         ref={ref}
@@ -155,6 +148,8 @@ function PromptField({ kind, source }: { kind: PromptKind; source: PromptSource 
         data-testid={`${kind}-prompt`}
         onChange={(e) => source.set(kind, e.target.value)}
       />
+      <IconButton size="xs" className="pp-prompt__expand" label={t('params.prompt.expand')} icon={<ArrowsOutSimple />} data-testid={`${kind}-expand`} onClick={onExpand} />
+      </div>
     </div>
   );
 }

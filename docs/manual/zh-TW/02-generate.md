@@ -33,7 +33,7 @@
 
 | 按鈕 | 作用 |
 |---|---|
-| **{{ui:params.prompt.recommended}}** | 將所選模型的類型中廣泛使用的品質詞彙加到「{{ui:params.prompt.positive}}」，並將想避開的詞彙加到「{{ui:params.prompt.negative}}」的最後。以標籤書寫的模型（Illustrious、NoobAI、Pony、Anima 等），會在最前面加上 `masterpiece, best quality` 這類標籤；以句子書寫的模型（FLUX、Qwen-Image 等），則在最後加上表示品質的詞彙。不使用反向提示詞的模型（FLUX.1）不會加上反向提示詞。已經存在的詞彙不會重複加入 |
+| **{{ui:params.prompt.recommendedPositive}}** / **{{ui:params.prompt.recommendedNegative}}** | 將所選模型的類型中廣泛使用的品質詞彙加到「{{ui:params.prompt.positive}}」，並將想避開的詞彙加到「{{ui:params.prompt.negative}}」的最後。以標籤書寫的模型（Illustrious、NoobAI、Pony、Anima 等），會在最前面加上 `masterpiece, best quality` 這類標籤；以句子書寫的模型（FLUX、Qwen-Image 等），則在最後加上表示品質的詞彙。不使用反向提示詞的模型（FLUX.1）不會加上反向提示詞。已經存在的詞彙不會重複加入 |
 | **{{ui:params.prompt.expand}}** | 在左右並排的大視窗中編輯正向與反向提示詞 |
 | **{{ui:params.prompt.textView}}** / **{{ui:params.prompt.tagView}}** | 將欄位的顯示方式，在純文字顯示與逐詞標籤（tag）排列之間切換。按下標籤會開啟彈出視窗，可以改寫詞彙、用滑桿改變強度、恢復為 1，或刪除標籤。改變過強度的標籤，會以 `(smile:1.3)` 的形式寫進提示詞。在下方的輸入欄輸入詞彙後按 Enter，即可新增標籤 |
 | **{{ui:params.promptBook.open}}** | 開啟附帶意思、收集單字的預設（後述） |

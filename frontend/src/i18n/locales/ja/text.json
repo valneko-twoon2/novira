@@ -22,7 +22,6 @@
   "text.bg.image": "画像",
   "text.bg.color": "色",
   "text.bg.transparent": "透明",
-  "text.bg.useViewer": "表示中の画像を背景にする",
   "text.bg.imageNote": "背景の画像: {name}（画像と同じ大きさで保存します）",
   "text.bg.drop": "ここに画像をドロップすると背景になります",
   "text.bg.size": "キャンバスの大きさ",

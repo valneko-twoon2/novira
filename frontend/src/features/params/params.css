@@ -151,6 +151,23 @@
   color: var(--warning);
 }
 
+/* The large-editor button sits in the corner of the box, so the heading keeps room for its own buttons. */
+.pp-prompt__body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.pp-prompt__expand {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+}
+
+.pp-prompt__body .pp-prompt__input {
+  padding-right: calc(var(--space-2) + 24px);
+}
+
 .pp-prompt__input {
   min-height: 140px;
   background: var(--bg-input);

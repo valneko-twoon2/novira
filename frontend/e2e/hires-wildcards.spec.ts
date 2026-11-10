@@ -7,7 +7,7 @@ test('the high-resolution fix makes a larger picture from the Generate tab', asy
   await openApp(page, '?scenario=empty');
   await page.getByRole('button', { name: msg('params.hires.title') }).click();
   await page.getByRole('switch', { name: msg('params.hires.enable') }).click();
-  await expect(page.getByTestId('hires-output')).toContainText('1536×1536');
+  await expect(page.getByRole('button', { name: msg('params.hires.title') })).toContainText('1536×1536');
   await page.getByTestId('positive-prompt').fill('a lighthouse on a cliff at dusk');
   await page.getByTestId('invoke-button').click();
   await expect(page.getByTestId('gallery-thumb')).toHaveCount(1);

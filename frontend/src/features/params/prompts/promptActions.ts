@@ -28,10 +28,13 @@ export const imagePromptSource: PromptSource = {
 /**
  * Adds the model family's quality words to the positive prompt (in front for a tag model, after the description for a
  * model that reads sentences) and its usual negative words to the end of the negative one; words already there stay once.
+ * `kind` limits it to one of the two prompts (each prompt has its own button); none does both.
  */
-export function applyRecommendedPrompts(model: ModelConfig | undefined, source: PromptSource = imagePromptSource) {
+export function applyRecommendedPrompts(model: ModelConfig | undefined, source: PromptSource = imagePromptSource, kind?: PromptKind) {
   const r = recommendedPrompts(model);
-  const positive = source.get('positive');
-  source.set('positive', r.place === 'first' ? withTagsFirst(positive, r.positive) : withTagsLast(positive, r.positive));
-  if (r.negative) source.set('negative', withTagsLast(source.get('negative'), r.negative));
+  if (kind !== 'negative') {
+    const positive = source.get('positive');
+    source.set('positive', r.place === 'first' ? withTagsFirst(positive, r.positive) : withTagsLast(positive, r.positive));
+  }
+  if (kind !== 'positive' && r.negative) source.set('negative', withTagsLast(source.get('negative'), r.negative));
 }

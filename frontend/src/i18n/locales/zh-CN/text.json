@@ -21,7 +21,6 @@
   "text.bg.image": "图像",
   "text.bg.color": "颜色",
   "text.bg.transparent": "透明",
-  "text.bg.useViewer": "将当前显示的图像设为背景",
   "text.bg.imageNote": "背景图像：{name}（以与图像相同的大小保存）",
   "text.bg.drop": "将图像拖放到此处即可作为背景",
   "text.bg.size": "画布大小",

@@ -55,7 +55,6 @@
   "params.seed.info": "同じシードと設定からは同じ画像が生成されます。",
   "params.seed.shuffle": "シードをランダムにする",
   "params.seed.random": "ランダム",
-  "params.seed.badge": "シード {seed}",
   "params.generation.title": "生成",
   "params.generation.scheduler": "スケジューラー",
   "params.generation.schedulerInfo": "ノイズを取り除いていく手順の種類。",
@@ -201,8 +200,6 @@
   "params.launchpad.tips.structure": "構造: 上げると元の形や配置をしっかり保ちます。",
   "params.launchpad.tips.upscaleSize": "出力は1辺 8192 px までにしてください。",
   "params.prompt.title": "プロンプト",
-  "params.prompt.recommended": "おすすめ",
-  "params.prompt.recommendedHint": "選択中モデルの品質タグと基本ネガティブを足します",
   "params.prompt.recommendedApplied": "おすすめのプロンプトを足しました",
   "params.prompt.expand": "大きく編集",
   "params.prompt.bigTitle": "プロンプトを大きく編集",
@@ -264,8 +261,6 @@
   "params.hires.methodSmooth": "なめらか（モデルなし）",
   "params.hires.steps": "描き直しステップ",
   "params.hires.stepsInfo": "0 にすると 1 回目と同じステップ数で描き直します。",
-  "params.hires.output": "仕上がり: {width}×{height}（2 回目 {steps} ステップ）",
-  "params.hires.outputSameSteps": "仕上がり: {width}×{height}（2 回目は 1 回目と同じステップ数）",
   "params.readiness.hiresNoModel": "高解像度補正のアップスケールモデルが見つかりません",
   "params.readiness.hiresLarge": "仕上がり {width}×{height} は {base} のモデルには大きいかもしれません（長い辺 {max} px ほどまでが目安）。絵が崩れたら拡大率を下げてください。",
   "params.readiness.wildcardUnknown": "ワイルドカード {name} のリストがありません",
@@ -351,5 +346,9 @@
   "params.generation.noiseSchedule": "ノイズスケジュール",
   "params.generation.noiseScheduleInfo": "ステップごとにノイズを取る量の配分。自動のときは、上のスケジューラーかモデルの標準が使われます。",
   "params.generation.engineAuto": "自動",
-  "params.generation.engineAutoIs": "自動（{name}）"
+  "params.generation.engineAutoIs": "自動（{name}）",
+  "params.prompt.recommendedPositive": "おすすめの品質タグを足す",
+  "params.prompt.recommendedNegative": "おすすめのネガティブを足す",
+  "params.image.optimalDone": "モデルに最適な {width}×{height} にしました",
+  "params.image.optimalSame": "すでにモデルに最適なサイズです（{width}×{height}）"
 }

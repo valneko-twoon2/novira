@@ -33,8 +33,8 @@ The small buttons above the fields do the following. They are icons only; hold t
 
 | Button | What it does |
 |---|---|
-| **{{ui:params.prompt.recommended}}** | Adds the quality words widely used with the selected model's family to "{{ui:params.prompt.positive}}", and the words to avoid to the end of "{{ui:params.prompt.negative}}". Models written in tags (Illustrious, NoobAI, Pony, Anima and so on) get tags such as `masterpiece, best quality` at the start; models written in sentences (FLUX, Qwen-Image and so on) get quality words at the end. Models that do not use a negative prompt (FLUX.1) get no negative words. Words that are already there are not added twice |
-| **{{ui:params.prompt.expand}}** | Edits positive and negative side by side in a large window |
+| **{{ui:params.prompt.recommendedPositive}}** / **{{ui:params.prompt.recommendedNegative}}** | One sits in the heading of each of "{{ui:params.prompt.positive}}" and "{{ui:params.prompt.negative}}". The first adds the quality words widely used with the selected model's family to the positive prompt; the second adds the words to avoid to the end of the negative one. Models written in tags (Illustrious, NoobAI, Pony, Anima and so on) get tags such as `masterpiece, best quality` at the start; models written in sentences (FLUX, Qwen-Image and so on) get quality words at the end. Models that do not use a negative prompt (FLUX.1) get no negative words. Words that are already there are not added twice |
+| **{{ui:params.prompt.expand}}** | Beside each field's heading. Edits positive and negative side by side in a large window |
 | **{{ui:params.prompt.textView}}** / **{{ui:params.prompt.tagView}}** | Switches the field between the plain text and a row of tags, one per word. Press a tag to open a popover: rewrite its words, change its strength with the slider, reset it to 1, or remove the tag. A tag whose strength changed is written into the prompt as `(smile:1.3)`. Type a word in the box below and press Enter to add a tag |
 | **{{ui:params.promptBook.open}}** | Opens the presets, words gathered together with their meanings (described below) |
 | **{{ui:caption.fromPrompt}}** | Looks at the picture selected in the gallery (or, when none is, an image file you choose) and writes out words you can use as a prompt at once. The result shows in the band of the viewer. You can also drop a gallery picture or an image file from your computer on this button (explained in [Fixing and Reusing Pictures](04-improve.md)) |
@@ -158,7 +158,7 @@ The larger the size, the longer it takes and the heavier the load on your comput
 Drawing at a large size from the start often gives two people instead of one, or broken shapes. **{{ui:params.hires.title}}** first draws at the size you set, enlarges the picture, and then draws it again with the same seed and settings. One generation gives a large picture with detail throughout. This section is on the {{ui:app.tabs.generate}} tab and the {{ui:app.tabs.comic}} tab.
 
 - **{{ui:params.hires.enable}}**: turn it on to use it.
-- **{{ui:params.hires.scale}}**: 1.25 to 2 times. The final size shows in the section heading and on the bottom line.
+- **{{ui:params.hires.scale}}**: 1.25 to 2 times. The final size shows in the section heading.
 - **{{ui:params.hires.strength}}**: 0.2 to 0.75. Low keeps the first picture almost as it is; high redraws more. The default is 0.45.
 - **{{ui:params.hires.method}}**: **{{ui:params.hires.methodSmooth}}** enlarges without a model. If upscale models (the ones the {{ui:app.tabs.upscaling}} tab uses) are installed, you can pick one of them too.
 - **{{ui:params.hires.steps}}**: the steps of the second pass. 0 uses as many as the first pass.

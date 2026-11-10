@@ -21,7 +21,6 @@
   "text.bg.image": "Imagem",
   "text.bg.color": "Cor",
   "text.bg.transparent": "Transparente",
-  "text.bg.useViewer": "Usar a imagem em exibição",
   "text.bg.imageNote": "Imagem de fundo: {name} (salva no tamanho da própria imagem)",
   "text.bg.drop": "Solte uma imagem aqui para usá-la como fundo",
   "text.bg.size": "Tamanho da tela",

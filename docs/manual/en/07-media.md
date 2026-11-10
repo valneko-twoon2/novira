@@ -181,7 +181,7 @@ The first generation takes a little time to load the model. If you do not use it
 
 With **{{ui:text.bg.title}}**, you choose what the text is placed on.
 
-- **{{ui:text.bg.image}}**: Uses an image as the background. Show an image in the gallery and press **{{ui:text.bg.useViewer}}**, or drop an image onto this screen. It is saved at the same size as the image.
+- **{{ui:text.bg.image}}**: Uses an image as the background. Show an image in the gallery and press this button, or drop an image onto this screen. It is saved at the same size as the image.
 - **{{ui:text.bg.color}}**: A single-color background. For the size, choose from the list, such as 1024×1024 or 1920×1080, or enter the width and height as numbers.
 - **{{ui:text.bg.transparent}}**: No background. You can make just the text as a transparent image.
 

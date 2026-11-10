@@ -2,6 +2,7 @@
 import { ArrowsLeftRight, LockSimple, LockSimpleOpen, Sparkle } from '@phosphor-icons/react';
 import { t } from '@/i18n';
 import { ASPECT_RATIOS, useParams, type AspectRatioId } from '@/state/params';
+import { toast } from '@/state/toasts';
 import { Field, IconButton, Select } from '@/ui';
 import { optimalDimension } from '../labels';
 import { useMainModel } from '../model/useMainModel';
@@ -16,6 +17,14 @@ export function AspectControls() {
   const p = useParams.getState;
   const set = useParams((s) => s.set);
   const base = useMainModel()?.base;
+  // The button always answers: a size that already is the model's best would otherwise look like a button that does nothing.
+  const optimize = () => {
+    const { width, height } = p();
+    p().optimizeSize(optimalDimension(base));
+    const after = p();
+    const same = after.width === width && after.height === height;
+    toast({ status: 'success', title: t(same ? 'params.image.optimalSame' : 'params.image.optimalDone', { width: after.width, height: after.height }) });
+  };
   return (
     <Field label={t('params.image.aspect')}>
       <Select
@@ -31,7 +40,7 @@ export function AspectControls() {
         isActive={locked}
         onClick={() => set({ aspectLocked: !locked })}
       />
-      <IconButton label={t('params.image.optimal')} icon={<Sparkle />} onClick={() => p().optimizeSize(optimalDimension(base))} />
+      <IconButton label={t('params.image.optimal')} icon={<Sparkle />} onClick={optimize} />
     </Field>
   );
 }

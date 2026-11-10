@@ -73,11 +73,6 @@ export function HiresSection() {
             aria-label={t('params.hires.steps')}
           />
         </Field>
-        {h.enabled && (
-          <p className="pp-hint" data-testid="hires-output">
-            {h.steps === 0 ? t('params.hires.outputSameSteps', { width: out.width, height: out.height }) : t('params.hires.output', { width: out.width, height: out.height, steps: h.steps })}
-          </p>
-        )}
         {h.enabled &&
           warnings.map((w) => (
             <div key={w} className="pp-inline-warning" role="status">

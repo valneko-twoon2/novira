@@ -33,7 +33,7 @@
 
 | 버튼 | 기능 |
 |---|---|
-| **{{ui:params.prompt.recommended}}** | 선택한 모델의 종류에서 널리 쓰이는 품질 단어를 '{{ui:params.prompt.positive}}'에, 피하고 싶은 단어를 '{{ui:params.prompt.negative}}'의 맨 끝에 추가합니다. 태그로 쓰는 모델(Illustrious, NoobAI, Pony, Anima 등)은 `masterpiece, best quality` 같은 태그를 맨 앞에, 문장으로 쓰는 모델(FLUX, Qwen-Image 등)은 품질을 나타내는 말을 맨 끝에 추가합니다. 네거티브를 쓰지 않는 모델(FLUX.1)에는 네거티브를 추가하지 않습니다. 이미 들어 있는 단어는 중복해서 추가하지 않습니다 |
+| **{{ui:params.prompt.recommendedPositive}}** / **{{ui:params.prompt.recommendedNegative}}** | 선택한 모델의 종류에서 널리 쓰이는 품질 단어를 '{{ui:params.prompt.positive}}'에, 피하고 싶은 단어를 '{{ui:params.prompt.negative}}'의 맨 끝에 추가합니다. 태그로 쓰는 모델(Illustrious, NoobAI, Pony, Anima 등)은 `masterpiece, best quality` 같은 태그를 맨 앞에, 문장으로 쓰는 모델(FLUX, Qwen-Image 등)은 품질을 나타내는 말을 맨 끝에 추가합니다. 네거티브를 쓰지 않는 모델(FLUX.1)에는 네거티브를 추가하지 않습니다. 이미 들어 있는 단어는 중복해서 추가하지 않습니다 |
 | **{{ui:params.prompt.expand}}** | 포지티브와 네거티브를 좌우로 나란히 놓은 큰 창에서 편집합니다 |
 | **{{ui:params.prompt.textView}}** / **{{ui:params.prompt.tagView}}** | 입력란의 표시 방식을 글자 그대로의 표시와 단어별 태그(라벨)의 나열 사이에서 전환합니다. 태그를 누르면 팝업이 열리며, 단어를 고치거나, 슬라이더로 강도를 바꾸거나, 1로 되돌리거나, 태그를 지울 수 있습니다. 강도를 바꾼 태그는 `(smile:1.3)` 형태로 프롬프트에 쓰입니다. 아래 입력란에 단어를 입력하고 Enter를 누르면 태그를 추가할 수 있습니다 |
 | **{{ui:params.promptBook.open}}** | 단어를 뜻과 함께 모아 둔 프리셋을 엽니다 (뒤에서 설명) |

@@ -6,6 +6,7 @@ import { runningSampling, type ModelConfig } from '@/backend';
 import { t } from '@/i18n';
 import { useModels } from '@/state/models';
 import { useParams } from '@/state/params';
+import { useToasts } from '@/state/toasts';
 import { TooltipProvider } from '@/ui';
 import { ModelProfilePopover } from '../model/ModelProfileChips';
 import { RecommendedHint } from '../model/RecommendedHint';
@@ -103,7 +104,6 @@ describe('HiresSection', () => {
     useParams.setState({ modelKey: 'main1' });
     show(<HiresSection />);
     fireEvent.click(screen.getByText(t('params.hires.title')));
-    expect(screen.queryByTestId('hires-output')).toBeNull();
     fireEvent.click(screen.getByLabelText(t('params.hires.enable')));
     expect(state().hires.enabled).toBe(true);
     setNum(t('params.hires.scale'), 1.5);
@@ -113,16 +113,18 @@ describe('HiresSection', () => {
     expect(state().hires).toMatchObject({ scale: 1.5, strength: 0.4, steps: 10, upscaleModelKey: 'up1' });
     choose(t('params.hires.method'), t('params.hires.methodSmooth'));
     expect(state().hires.upscaleModelKey).toBeNull();
-    expect(screen.getByTestId('hires-output').textContent).toBe(t('params.hires.output', { width: state().width * 1.5, height: state().height * 1.5, steps: 10 }));
+    // The size it ends at is shown in the section's header only; there is no line under the steps.
+    expect(screen.getByText(`${state().width * 1.5}×${state().height * 1.5}`)).toBeTruthy();
+    expect(screen.queryByTestId('hires-output')).toBeNull();
   });
 
-  it('says the steps are shared when the second pass has none, and shows size warnings only while enabled', () => {
+  it('shows the size it ends at in the header, also when the second pass has no steps of its own', () => {
     useModels.setState({ models: [model('main1', 'main')] });
     useParams.setState({ modelKey: 'main1', width: 4096, height: 4096 });
     state().setHires({ enabled: true, steps: 0 });
     show(<HiresSection />);
-    expect(screen.getByTestId('hires-output').textContent).toContain(String(state().hires.scale * 4096));
-    expect(screen.getByTestId('hires-output').textContent).toBe(t('params.hires.outputSameSteps', { width: 4096 * state().hires.scale, height: 4096 * state().hires.scale }));
+    expect(screen.getByText(`${4096 * state().hires.scale}×${4096 * state().hires.scale}`)).toBeTruthy();
+    expect(screen.queryByTestId('hires-output')).toBeNull();
   });
 });
 
@@ -152,6 +154,10 @@ describe('AspectControls', () => {
     expect(state().aspectLocked).toBe(false);
     fireEvent.click(screen.getByLabelText(t('params.image.optimal')));
     expect(Math.max(state().width, state().height)).toBeLessThanOrEqual(1024);
+    // It says what it did, and says so when the size already was the best one.
+    expect(useToasts.getState().toasts.at(-1)?.title).toBe(t('params.image.optimalDone', { width: state().width, height: state().height }));
+    fireEvent.click(screen.getByLabelText(t('params.image.optimal')));
+    expect(useToasts.getState().toasts.at(-1)?.title).toBe(t('params.image.optimalSame', { width: state().width, height: state().height }));
     choose(t('params.image.aspect'), '1:1');
     expect(state().aspectRatio).toBe('1:1');
     expect(state().width).toBe(state().height);

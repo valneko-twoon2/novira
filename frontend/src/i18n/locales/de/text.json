@@ -21,7 +21,6 @@
   "text.bg.image": "Bild",
   "text.bg.color": "Farbe",
   "text.bg.transparent": "Transparent",
-  "text.bg.useViewer": "Angezeigtes Bild verwenden",
   "text.bg.imageNote": "Hintergrundbild: {name} (wird in der Größe des Bildes gespeichert)",
   "text.bg.drop": "Bild hier ablegen, um es als Hintergrund zu verwenden",
   "text.bg.size": "Leinwandgröße",

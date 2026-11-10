@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { t } from '@/i18n';
 import { findImage, useGallery } from '@/state/gallery';
 import { useTextEditor } from '@/state/text/textEditor';
-import { Button, ColorInput, NumberInput, Section, Select } from '@/ui';
+import { ColorInput, NumberInput, Section, Select } from '@/ui';
 import { LayerProperties } from './LayerProperties';
 import { RichDetails, RichHeader } from './RichSection';
 import { TextPresetBar } from './TextPresetBar';
@@ -72,11 +72,6 @@ function BackgroundSection() {
       </div>
       {kind === 'image' && (
         <p className="tx-note">{t('text.bg.imageNote', { name: bg.kind === 'image' ? bg.imageName : '' })}</p>
-      )}
-      {kind !== 'image' && viewer && (
-        <Button size="sm" onClick={() => setBackground({ kind: 'image', imageName: viewer.name }, { width: viewer.width, height: viewer.height })} data-testid="text-use-viewer">
-          {t('text.bg.useViewer')}
-        </Button>
       )}
       {kind === 'color' && bg.kind === 'color' && bg.color && (
         <ColorInput className="tx-color__swatch" value={bg.color} aria-label={t('text.color')} onChange={(color) => setBackground({ kind: 'color', color })} />

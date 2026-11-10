@@ -60,13 +60,28 @@ describe('the prompt boxes', () => {
     expect(document.activeElement).toBe(screen.getByTestId('positive-prompt'));
   });
 
-  it('applies the recommended prompts and says so', () => {
-    fireEvent.click(screen.getByTestId('prompt-recommended'));
+  it('adds the recommended words to the prompt whose button is pressed, and says so', () => {
+    fireEvent.click(screen.getByTestId('negative-recommended'));
+    expect(useParams.getState().negativePrompt).not.toBe('');
+    expect(useParams.getState().positivePrompt).toBe('');
     expect(useToasts.getState().toasts.at(-1)?.title).toBe(t('params.prompt.recommendedApplied'));
+    fireEvent.click(screen.getByTestId('positive-recommended'));
+    expect(useParams.getState().positivePrompt).not.toBe('');
+  });
+
+  it('keeps the section header to its title: the buttons sit in each prompt\'s own heading', () => {
+    const header = screen.getByTestId('prompts').querySelector('.ui-section__header')!;
+    expect(header.querySelectorAll('button')).toHaveLength(1);
+    for (const kind of ['positive', 'negative']) {
+      const head = screen.getByTestId(`${kind}-prompt`).closest('.pp-prompt')!.querySelector('.pp-prompt__head')!;
+      expect(head.querySelector(`[data-testid="${kind}-recommended"]`)).toBeTruthy();
+      expect(head.querySelector(`[data-testid="${kind}-expand"]`)).toBeNull();
+      expect(screen.getByTestId(`${kind}-prompt`).closest('.pp-prompt__body')!.querySelector(`[data-testid="${kind}-expand"]`)).toBeTruthy();
+    }
   });
 
   it('edits both prompts in the big editor, and closes it', async () => {
-    fireEvent.click(screen.getByTestId('prompt-expand'));
+    fireEvent.click(screen.getByTestId('positive-expand'));
     fireEvent.change(screen.getByTestId('big-positive'), { target: { value: 'long positive' } });
     fireEvent.change(screen.getByTestId('big-negative'), { target: { value: 'long negative' } });
     expect(useParams.getState()).toMatchObject({ positivePrompt: 'long positive', negativePrompt: 'long negative' });

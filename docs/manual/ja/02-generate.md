@@ -33,8 +33,8 @@
 
 | ボタン | 働き |
 |---|---|
-| **{{ui:params.prompt.recommended}}** | 選んでいるモデルの種類で広く使われている品質の言葉を「{{ui:params.prompt.positive}}」に、避けたい言葉を「{{ui:params.prompt.negative}}」の最後に足します。タグで書くモデル（Illustrious、NoobAI、Pony、Anima など）は `masterpiece, best quality` のようなタグを先頭に、文で書くモデル（FLUX、Qwen-Image など）は品質を表す言葉を最後に足します。ネガティブを使わないモデル（FLUX.1）には、ネガティブを足しません。すでに入っている言葉は、重ねて足しません |
-| **{{ui:params.prompt.expand}}** | ポジティブとネガティブを、左右に並べた大きな窓で編集します |
+| **{{ui:params.prompt.recommendedPositive}}** / **{{ui:params.prompt.recommendedNegative}}** | 「{{ui:params.prompt.positive}}」と「{{ui:params.prompt.negative}}」の見出しに 1 つずつあります。選んでいるモデルの種類で広く使われている品質の言葉を「{{ui:params.prompt.positive}}」に、避けたい言葉を「{{ui:params.prompt.negative}}」の最後に、それぞれ足します。タグで書くモデル（Illustrious、NoobAI、Pony、Anima など）は `masterpiece, best quality` のようなタグを先頭に、文で書くモデル（FLUX、Qwen-Image など）は品質を表す言葉を最後に足します。ネガティブを使わないモデル（FLUX.1）には、ネガティブを足しません。すでに入っている言葉は、重ねて足しません |
+| **{{ui:params.prompt.expand}}** | 各欄の見出しにあります。ポジティブとネガティブを、左右に並べた大きな窓で編集します |
 | **{{ui:params.prompt.textView}}** / **{{ui:params.prompt.tagView}}** | 欄の見せ方を、文字のままの表示と、言葉ごとの札（タグ）の並びとで切り替えます。札を押すとポップアップが開き、言葉を書き換えたり、スライダーで強度を変えたり、1 に戻したり、札を消したりできます。強度を変えた札は `(smile:1.3)` の形でプロンプトに書かれます。下の入力欄に言葉を打って Enter で札を足せます |
 | **{{ui:params.promptBook.open}}** | 単語を意味つきで集めたプリセットを開きます（後述） |
 | **{{ui:caption.fromPrompt}}** | ギャラリーで選んでいる絵（選んでいなければ、選んだ画像ファイル）を見て、プロンプトに使える言葉をすぐに書き出します。結果はビューアの帯に出ます。ギャラリーの絵やパソコンの画像ファイルを、このボタンにドロップしても使えます（[絵を直す・使い回す](04-improve.md) で説明します） |
@@ -158,7 +158,7 @@ Anima・Flux・FLUX.2・Chroma・Qwen-Image・Z-Image・SD3・HiDream・AuraFlow
 最初から大きなサイズで描くと、人物が 2 人になったり、形が崩れたりしやすくなります。**{{ui:params.hires.title}}** は、まず設定したサイズで描き、それを拡大してから、同じシードと設定でもう一度描き直します。1 回の生成で、細部まで描かれた大きな絵ができます。この区画は {{ui:app.tabs.generate}} タブと {{ui:app.tabs.comic}} タブにあります。
 
 - **{{ui:params.hires.enable}}**：オンにすると使います。
-- **{{ui:params.hires.scale}}**：1.25〜2 倍です。仕上がりの大きさは、区画の見出しと、いちばん下の行に出ます。
+- **{{ui:params.hires.scale}}**：1.25〜2 倍です。仕上がりの大きさは、区画の見出しに出ます。
 - **{{ui:params.hires.strength}}**：0.2〜0.75 です。低いと 1 回目の絵をほぼ保ち、高いと大きく描き直します。はじめは 0.45 です。
 - **{{ui:params.hires.method}}**：**{{ui:params.hires.methodSmooth}}** は、モデルを使わずに拡大します。{{ui:app.tabs.upscaling}} タブで使うアップスケールモデルがインストールされていれば、それも選べます。
 - **{{ui:params.hires.steps}}**：2 回目のステップ数です。0 のときは 1 回目と同じ数で描きます。

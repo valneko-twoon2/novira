@@ -13,12 +13,10 @@ export function ImageSection({ tab }: { tab: TabName }) {
   const height = useParams((s) => s.height);
   const aspect = useParams((s) => s.aspectRatio);
   const strength = useParams((s) => s.strength);
-  const random = useParams((s) => s.shouldRandomizeSeed);
-  const seed = useParams((s) => s.seed);
   const set = useParams((s) => s.set);
   const setDimension = useParams((s) => s.setDimension);
   const isCanvas = tab === 'canvas';
-  const badges = [`${width}×${height}`, aspect !== 'free' ? aspectLabel(aspect) : null, random ? null : t('params.seed.badge', { seed })];
+  const badges = [`${width}×${height}`, aspect !== 'free' ? aspectLabel(aspect) : null];
   return (
     <Section title={t('params.image.title')} badges={badges} defaultOpen>
       {isCanvas && <div className="pp-subhead">{t('params.image.bboxHint')}</div>}

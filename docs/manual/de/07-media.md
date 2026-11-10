@@ -203,7 +203,7 @@ Englischer Text wird genau wiedergegeben, japanischer kann verzerrt ausfallen. K
 
 Mit **{{ui:text.bg.title}}** wählen Sie, worauf der Text platziert wird.
 
-- **{{ui:text.bg.image}}**: Verwendet ein Bild als Hintergrund. Zeigen Sie ein Bild in der Galerie an und klicken Sie auf **{{ui:text.bg.useViewer}}**, oder legen Sie ein Bild auf diesem Bildschirm ab. Es wird in derselben Größe wie das Bild gespeichert.
+- **{{ui:text.bg.image}}**: Verwendet ein Bild als Hintergrund. Zeigen Sie ein Bild in der Galerie an und klicken Sie auf **{{ui:text.bg.image}}**, oder legen Sie ein Bild auf diesem Bildschirm ab. Es wird in derselben Größe wie das Bild gespeichert.
 - **{{ui:text.bg.color}}**: Ein einfarbiger Hintergrund. Wählen Sie die Größe aus der Liste, etwa 1024×1024 oder 1920×1080, oder geben Sie Breite und Höhe als Zahlen ein.
 - **{{ui:text.bg.transparent}}**: Kein Hintergrund. So können Sie nur den Text als transparentes Bild erzeugen.
 
