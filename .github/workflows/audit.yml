@@ -3,7 +3,7 @@
 # of ours, and on a push of a branch that changes a lock file. The advisories already judged are listed with their reasons
 # in backend/.cargo/audit.toml; a new one fails the run (docs/design/01-app/04-release/02-ci.md).
 # Only actions of GitHub's own (actions/*) are used; nothing here has a secret or write access.
-name: audit
+name: Audit
 
 on:
   schedule:

@@ -4,7 +4,7 @@
 # It runs on every push to a branch, by hand and every Monday (it passed on the runner first, docs/design/01-app/04-release/02-ci.md). The
 # tools are version-pinned release binaries whose sha256 is checked before they run.
 # Only actions of GitHub's own (actions/*) are used; nothing here has a secret or write access.
-name: supply-chain
+name: Supply chain
 
 on:
   push:

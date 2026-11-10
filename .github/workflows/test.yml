@@ -1,22 +1,55 @@
-# The checks GitHub runs on every push to a branch (tags run release.yml instead). It starts with the checks that read the
+# The checks GitHub runs on every push to a branch (tags run release.yml instead), and every night on the default branch.
+# The long jobs run only when the push changed what they read (scripts/tools/ci-scope.mjs); the default branch, the night
+# and a manual run run all of them. It starts with the checks that read the
 # sources and need no build, no browser and no Windows: types, lint, line ends, the product name, the docs and UI
 # references, the term list, the changelog and the Rust formatting, then vitest, clippy, cargo test and the Playwright flows and phone layouts, and the mock against the real backend. The others
 # (visual, layout scan) are added one by one once they are seen to pass on the runner (docs/design/01-app/04-release/02-ci.md).
 # Only actions of GitHub's own (actions/*) are used; nothing here has a secret or write access.
-name: test
+name: Test
 
 on:
   push:
     branches: ['**']
+  schedule:
+    - cron: '23 18 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: test-${{ github.ref }}
+  group: test-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  # Which of the long jobs this push needs. The cheap jobs (static, rust-format) always run.
+  changes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      vitest: ${{ steps.scope.outputs.vitest }}
+      rust: ${{ steps.scope.outputs.rust }}
+      e2e: ${{ steps.scope.outputs.e2e }}
+      diff: ${{ steps.scope.outputs.diff }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Which jobs the changed files need
+        id: scope
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: node scripts/tools/ci-scope.mjs | tee -a "$GITHUB_OUTPUT"
+
   static:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -79,6 +112,8 @@ jobs:
         run: cargo fmt --all -- --check
 
   vitest:
+    needs: changes
+    if: ${{ needs.changes.outputs.vitest == 'true' }}
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
@@ -106,6 +141,8 @@ jobs:
         run: node scripts/tools/ci-summary.mjs vitest "vitest" "$RUNNER_TEMP/vitest.json" >> "$GITHUB_STEP_SUMMARY"
 
   clippy:
+    needs: changes
+    if: ${{ needs.changes.outputs.rust == 'true' }}
     runs-on: windows-latest
     timeout-minutes: 60
     steps:
@@ -138,6 +175,8 @@ jobs:
         run: cargo clippy -p novira-core -p novira-server -p novira --tests -- -D warnings
 
   cargo-test:
+    needs: changes
+    if: ${{ needs.changes.outputs.rust == 'true' }}
     runs-on: windows-latest
     timeout-minutes: 90
     steps:
@@ -188,6 +227,8 @@ jobs:
         run: node scripts/tools/ci-summary.mjs cargo "cargo test" "$RUNNER_TEMP/novira-core.log" "$RUNNER_TEMP/novira-server.log" "$RUNNER_TEMP/novira.log" >> "$GITHUB_STEP_SUMMARY"
 
   e2e-chromium:
+    needs: changes
+    if: ${{ needs.changes.outputs.e2e == 'true' }}
     runs-on: windows-latest
     timeout-minutes: 60
     steps:
@@ -233,6 +274,8 @@ jobs:
           retention-days: 7
 
   e2e-phone:
+    needs: changes
+    if: ${{ needs.changes.outputs.e2e == 'true' }}
     runs-on: windows-latest
     timeout-minutes: 60
     steps:
@@ -277,6 +320,8 @@ jobs:
           retention-days: 7
 
   diff-backends:
+    needs: changes
+    if: ${{ needs.changes.outputs.diff == 'true' }}
     runs-on: windows-latest
     timeout-minutes: 60
     steps:
@@ -314,3 +359,41 @@ jobs:
         if: ${{ !cancelled() }}
         shell: bash
         run: node scripts/tools/ci-summary.mjs vitest "The mock against the real backend" "$RUNNER_TEMP/diff-backends.json" >> "$GITHUB_STEP_SUMMARY"
+
+  # Only at night: the screen flows three times without a retry, so a flow that passes only on its second try shows up.
+  flaky:
+    if: ${{ github.event_name == 'schedule' }}
+    runs-on: windows-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install the frontend packages and Chromium
+        working-directory: frontend
+        shell: cmd
+        run: |
+          call npm ci
+          if errorlevel 1 exit /b 1
+          call npx playwright install chromium
+
+      - name: Playwright chromium, three times without a retry
+        working-directory: frontend
+        shell: cmd
+        run: npx playwright test --project=chromium --repeat-each=3 --retries=0 --reporter=list,html
+
+      - name: Keep the report of a failed run
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-flaky
+          path: |
+            logs/playwright-report
+            logs/e2e
+          if-no-files-found: ignore
+          retention-days: 7

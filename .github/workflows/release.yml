@@ -3,7 +3,7 @@
 # with the tag, and its body is the tag's section of CHANGELOG.md (scripts/tools/changelog.mjs --notes).
 # Only actions of GitHub's own (actions/*) are used, and every value that comes from outside (the tag name) reaches a
 # script through an environment variable, never pasted into the script text.
-name: release
+name: Release
 
 on:
   push:
