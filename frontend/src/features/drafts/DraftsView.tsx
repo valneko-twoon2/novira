@@ -21,6 +21,7 @@ import { setDragImages } from '@/state/dnd';
 import { useGallery } from '@/state/gallery';
 import { useModels } from '@/state/models';
 import { useParams } from '@/state/params';
+import { useQueue } from '@/state/queue';
 import { DRAFT_COUNT_RANGE, useSettings } from '@/state/settings';
 import { toast } from '@/state/toasts';
 import { showViewer } from '@/state/ui';
@@ -223,6 +224,10 @@ function Cell({
   const mark = useDrafts((s) => s.mark);
   const { image, finished } = pictureOf(c, images);
   const generation = group.kind === 'generation';
+  // The picture being drawn right now, as the grid of the gallery shows it: what it looks like so far and the step.
+  const liveItemId = c.finalStatus === 'running' ? c.finalItemId : c.status === 'running' ? c.itemId : null;
+  const live = useQueue((s) => (liveItemId !== null && s.progress?.itemId === liveItemId ? s.progress : null));
+  const antialias = useSettings((s) => s.antialiasProgressImages);
   const working = c.status === 'queued' || c.status === 'running' || c.finalStatus === 'queued' || c.finalStatus === 'running';
   const failed = c.status === 'failed' || c.finalStatus === 'failed';
   // A picture of a generation batch is drawn to the end at once: it is waiting, being drawn, or done.
@@ -270,7 +275,13 @@ function Cell({
         draggable={generation && !!image}
         onDragStart={(e) => image && setDragImages(e, [image.name])}
       >
-        {image ? <img src={image.thumbnailUrl || image.url} alt="" draggable={false} /> : failed ? null : <Spinner size={18} />}
+        {image ? (
+          <img src={image.thumbnailUrl || image.url} alt="" draggable={false} />
+        ) : live?.progressImageUrl ? (
+          <img src={live.progressImageUrl} alt="" draggable={false} style={antialias ? undefined : { imageRendering: 'pixelated' }} />
+        ) : failed ? null : (
+          <Spinner size={18} />
+        )}
         {image && working && (
           <span className="dv-busy">
             <Spinner size={12} />
@@ -312,7 +323,7 @@ function Cell({
       </div>
       <div className="dv-meta">
         <span className="dv-badge" title={c.error ?? undefined}>
-          {badge}
+          {live && !finished ? `${badge} ${live.step}/${live.totalSteps}` : badge}
         </span>
         <span className="dv-seed">seed {c.seed}</span>
         <IconButton

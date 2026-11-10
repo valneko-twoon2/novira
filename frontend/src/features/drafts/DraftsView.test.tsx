@@ -6,6 +6,7 @@ import { t, tCount } from '@/i18n';
 import { useDraftForm } from '@/state/draftForm';
 import { useDrafts, type DraftCandidate, type DraftGroup } from '@/state/drafts';
 import { useGallery } from '@/state/gallery';
+import { useQueue } from '@/state/queue';
 import { useModels } from '@/state/models';
 import { useParams } from '@/state/params';
 import { SETTINGS_DEFAULTS, useSettings } from '@/state/settings';
@@ -407,6 +408,19 @@ describe('a generation batch', () => {
   it('shows each picture as finished, waiting or generating, never as a draft with a step', () => {
     showBatch(batch([made(), made({ id: 'c2', finalItemId: 2, finalImageName: null, finalStatus: 'running' }), made({ id: 'c3', finalItemId: 3, finalImageName: null, finalStatus: 'queued' })]), [held('g1.png')]);
     expect(screen.getAllByTestId('draft-cell').map((c) => within(c).getByText(/./, { selector: '.dv-badge' }).textContent)).toEqual([t('drafts.badge.finished'), t('drafts.badge.generating'), t('drafts.badge.queued')]);
+  });
+
+  it('shows the picture being drawn with its step, like the grid of the gallery, and ignores the progress of other jobs', () => {
+    showBatch(batch([made({ finalImageName: null, finalStatus: 'running', finalItemId: 7 })]), []);
+    const cell = () => screen.getByTestId('draft-cell');
+    expect(cell().querySelector('img')).toBeNull();
+    act(() => useQueue.getState().setProgress({ itemId: 7, step: 12, totalSteps: 30, progressImageUrl: 'blob:live' } as never));
+    expect(cell().querySelector('img')?.getAttribute('src')).toBe('blob:live');
+    expect(within(cell()).getByText('12/30', { exact: false })).toBeTruthy();
+    // Another job's progress is not this picture's.
+    act(() => useQueue.getState().setProgress({ itemId: 8, step: 3, totalSteps: 30, progressImageUrl: 'blob:other' } as never));
+    expect(cell().querySelector('img')).toBeNull();
+    act(() => useQueue.getState().setProgress(null));
   });
 
   it('offers moving the chosen pictures to the board and throwing the rest away, and not finishing drafts', () => {
