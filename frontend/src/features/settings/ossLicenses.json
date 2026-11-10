@@ -1456,12 +1456,6 @@
     },
     {
       "name": "foldhash",
-      "version": "0.1.5",
-      "license": "Zlib",
-      "url": "https://github.com/orlp/foldhash"
-    },
-    {
-      "name": "foldhash",
       "version": "0.2.0",
       "license": "Zlib",
       "url": "https://github.com/orlp/foldhash"
@@ -1582,21 +1576,15 @@
     },
     {
       "name": "hashbrown",
-      "version": "0.15.5",
-      "license": "MIT OR Apache-2.0",
-      "url": "https://github.com/rust-lang/hashbrown"
-    },
-    {
-      "name": "hashbrown",
       "version": "0.17.1",
       "license": "MIT OR Apache-2.0",
       "url": "https://github.com/rust-lang/hashbrown"
     },
     {
       "name": "hashlink",
-      "version": "0.10.0",
+      "version": "0.12.2",
       "license": "MIT OR Apache-2.0",
-      "url": "https://github.com/kyren/hashlink"
+      "url": "https://github.com/djc/hashlink"
     },
     {
       "name": "heck",
@@ -1924,7 +1912,7 @@
     },
     {
       "name": "libsqlite3-sys",
-      "version": "0.35.0",
+      "version": "0.39.1",
       "license": "MIT",
       "url": "https://github.com/rusqlite/rusqlite"
     },
@@ -2704,7 +2692,7 @@
     },
     {
       "name": "rusqlite",
-      "version": "0.37.0",
+      "version": "0.41.1",
       "license": "MIT",
       "url": "https://github.com/rusqlite/rusqlite"
     },
