@@ -431,14 +431,18 @@ describe('a generation batch', () => {
     expect(screen.getByTestId('drafts-adopt').textContent).toContain('Cats');
   });
 
-  it('does not select a picture that is not drawn yet, or one that is already on a board', () => {
-    showBatch(batch([made({ finalImageName: null, finalStatus: 'running' }), made({ id: 'c2', finalImageName: 'g2.png' })]), [held('g2.png', false)]);
-    const [waiting, onBoard] = screen.getAllByRole('button', { name: /seed/ });
+  it('does not select a picture that is not drawn yet', () => {
+    showBatch(batch([made({ finalImageName: null, finalStatus: 'running' }), made({ id: 'c2', finalImageName: 'g2.png' })]), [held('g2.png')]);
+    const [waiting, finished] = screen.getAllByRole('button', { name: /seed/ });
     fireEvent.click(waiting!);
-    fireEvent.click(onBoard!);
+    expect(useDrafts.getState().selection).toEqual([]);
+    fireEvent.click(finished!);
     expect(useDrafts.getState().selection).toEqual(['c2']);
-    // Chosen, but already on a board: the move has nothing to move.
-    expect(screen.getByTestId('drafts-adopt').hasAttribute('disabled')).toBe(true);
+  });
+
+  it('shows no picture that is already on a board (it was taken there by a drag)', () => {
+    showBatch(batch([made(), made({ id: 'c2', finalImageName: 'g2.png' })]), [held('g1.png'), held('g2.png', false)]);
+    expect(screen.getAllByRole('button', { name: /seed/ })).toHaveLength(1);
   });
 
   it('lets a finished picture be dragged onto a board, and a waiting one not', () => {

@@ -3,7 +3,7 @@
 // the pictures they want there.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { backend, type EnqueueRequest, type GenerationMetadata, type ImageDTO, type QueueItem } from '@/backend';
-import { heldPictures, syncGroups, useDrafts, type DraftGroup } from './drafts';
+import { dropAdopted, heldPictures, syncGroups, useDrafts, type DraftGroup } from './drafts';
 import { useGallery } from './gallery';
 import { useGalleryUndo } from './galleryUndo';
 import { useToasts } from './toasts';
@@ -96,7 +96,8 @@ describe('moving pictures to the board', () => {
   it('moves nothing that is not held back, not finished, or not asked for, and keeps the batch when the move fails', async () => {
     made(['a.png', 'b.png']);
     const update = vi.spyOn(backend, 'updateImages').mockRejectedValue(new Error('disk'));
-    useGallery.setState({ images: [picture('a.png', { isIntermediate: false }), picture('b.png')] });
+    // The gallery does not hold a.png (not known, or deleted): it is not held back, so nothing is moved.
+    useGallery.setState({ images: [picture('b.png')] });
     await state().adopt(only().id, [only().candidates[0]!.id]);
     expect(update).not.toHaveBeenCalled();
     await state().adopt(only().id, ['nobody']);
@@ -164,3 +165,36 @@ describe('throwing away what is left', () => {
 function only2(): DraftGroup {
   return { id: 'x', createdAt: 0, params: {} as GenerationMetadata, boardId: null, position: 0.4, candidates: [] };
 }
+
+describe('a held picture taken to a board by hand', () => {
+  const made = (names: string[]) => {
+    state().addGeneration(names.map((_, i) => item(i + 1)), request);
+    useDrafts.setState({ groups: state().groups.map((g) => ({ ...g, candidates: g.candidates.map((c, i) => ({ ...c, finalStatus: 'ready' as const, finalImageName: names[i]! })) })) });
+    useGallery.setState({ images: names.map((n) => picture(n)) });
+  };
+
+  it('leaves the batch when the picture is shown on a board (dragged onto it), the others stay', () => {
+    made(['a.png', 'b.png']);
+    useGallery.getState().upsertImages([picture('a.png', { isIntermediate: false })]);
+    expect(only().candidates.map((c) => c.finalImageName)).toEqual(['b.png']);
+  });
+
+  it('closes the batch when its last picture is taken, and keeps the selection of those that remain', () => {
+    made(['a.png', 'b.png']);
+    const [first, second] = only().candidates;
+    useDrafts.setState({ selection: [first!.id, second!.id] });
+    useGallery.getState().upsertImages([picture('a.png', { isIntermediate: false })]);
+    expect(state().selection).toEqual([second!.id]);
+    useGallery.getState().upsertImages([picture('b.png', { isIntermediate: false })]);
+    expect(state()).toMatchObject({ groups: [], currentId: null, selection: [] });
+  });
+
+  it('keeps a picture the gallery does not know yet or still holds back, and batches of drafts', () => {
+    made(['a.png']);
+    const groups = state().groups;
+    expect(dropAdopted(groups, [])).toBe(groups);
+    expect(dropAdopted(groups, [picture('a.png')])).toBe(groups);
+    const drafts = [{ ...groups[0]!, kind: undefined }];
+    expect(dropAdopted(drafts, [picture('a.png', { isIntermediate: false })])).toBe(drafts);
+  });
+});

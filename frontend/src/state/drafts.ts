@@ -229,6 +229,24 @@ export function heldPictures(group: DraftGroup, images: ImageDTO[]): ImageDTO[] 
   return images.filter((i) => names.has(i.name) && i.isIntermediate);
 }
 
+/**
+ * Lets go of the candidates of generation batches whose finished picture was taken to a board some other way (dragged onto a
+ * board, moved from the gallery): the picture is in the gallery now, so it is no longer held back. A picture the gallery does
+ * not know yet stays. A batch left empty closes. Returns the same array when nothing changed. Pure.
+ */
+export function dropAdopted(groups: DraftGroup[], images: ImageDTO[]): DraftGroup[] {
+  const shown = new Set(images.filter((i) => !i.isIntermediate).map((i) => i.name));
+  let changed = false;
+  const next = groups.flatMap((g) => {
+    if (g.kind !== 'generation') return [g];
+    const rest = g.candidates.filter((c) => c.finalImageName === null || !shown.has(c.finalImageName));
+    if (rest.length === g.candidates.length) return [g];
+    changed = true;
+    return rest.length ? [{ ...g, candidates: rest }] : [];
+  });
+  return changed ? next : groups;
+}
+
 /** The board a generation batch's pictures go to: the one it was made for, or Uncategorized when that board is gone. */
 function boardOfGroup(group: DraftGroup): string | null {
   return group.boardId && useGallery.getState().boards.some((b) => b.id === group.boardId) ? group.boardId : null;
@@ -543,3 +561,17 @@ function tryRepair() {
 }
 useGallery.subscribe(tryRepair);
 useDrafts.subscribe(tryRepair);
+
+// A held picture taken to a board by hand (a drag onto a board) leaves its batch.
+useGallery.subscribe((s, prev) => {
+  if (s.images === prev.images) return;
+  const { groups, currentId, selection } = useDrafts.getState();
+  const next = dropAdopted(groups, s.images);
+  if (next === groups) return;
+  const alive = new Set(next.flatMap((g) => g.candidates.map((c) => c.id)));
+  useDrafts.setState({
+    groups: next,
+    currentId: next.some((g) => g.id === currentId) ? currentId : (next.at(-1)?.id ?? null),
+    selection: selection.filter((id) => alive.has(id)),
+  });
+});
