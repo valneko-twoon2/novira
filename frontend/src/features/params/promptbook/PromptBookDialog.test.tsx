@@ -123,3 +123,44 @@ describe('closing', () => {
     expect(state().open).toBe(false);
   });
 });
+
+describe('a long book', () => {
+  const observers: { fire: () => void }[] = [];
+  beforeEach(() => {
+    cleanup();
+    observers.length = 0;
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(private readonly report: (entries: { isIntersecting: boolean }[]) => void) {
+          observers.push({ fire: () => report([{ isIntersecting: true }]) });
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    usePromptBook.setState({ entries: Array.from({ length: 130 }, (_, i) => entry(String(i), `tag${i}`, 'c')), open: true });
+    render(
+      <TooltipProvider>
+        <PromptBookDialog />
+      </TooltipProvider>,
+    );
+  });
+
+  it('draws the first rows, adds more as the end comes near and stops at the last', () => {
+    expect(items()).toHaveLength(60);
+    act(() => observers.at(-1)!.fire());
+    expect(items()).toHaveLength(120);
+    act(() => observers.at(-1)!.fire());
+    expect(items()).toHaveLength(130);
+    expect(document.querySelector('.pb-list__more')).toBeNull();
+  });
+
+  it('starts again from the first rows on a new search, and finds words not drawn yet', () => {
+    act(() => observers.at(-1)!.fire());
+    fireEvent.change(screen.getByTestId('pb-search'), { target: { value: 'tag129' } });
+    expect(items()).toEqual(['tag129']);
+    fireEvent.change(screen.getByTestId('pb-search'), { target: { value: '' } });
+    expect(items()).toHaveLength(60);
+  });
+});

@@ -32,8 +32,12 @@ test('a menu item runs the tool at once, the viewer compares the result, and the
 
   // Change the settings and run again: a second result, with the settings it used.
   await page.getByTestId('tool-band-edit').click();
+  const slider = page.getByTestId('tool-band').locator('.ui-slidernum').first();
+  const before = await slider.boundingBox();
   await page.getByTestId('tool-band-cutout-background').click();
   await page.getByRole('option', { name: msg('cutout.background.white') }).click();
+  // The choice does not move what stands beside it.
+  expect((await slider.boundingBox())?.x).toBe(before?.x);
   await page.getByTestId('tool-band-run').click();
   await expect(page.getByTestId('gallery-thumb')).toHaveCount(3, { timeout: 20_000 });
   await expect(status(page)).toHaveAttribute('data-status', 'done');
@@ -50,6 +54,12 @@ test('the gear beside a menu item opens the settings in the band without running
   await page.getByTestId('gallery-thumb').first().click({ button: 'right' });
   await page.getByTestId('menu-tool-settings-facefix').click();
   await expect(page.getByTestId('tool-band')).toHaveAttribute('data-tool', 'facefix');
+  // Run stands at the right end of the band for every tool.
+  const run = await page.getByTestId('tool-band-run').boundingBox();
+  await page.getByTestId('tool-band-tool-caption').click();
+  await expect(page.getByTestId('tool-band')).toHaveAttribute('data-tool', 'caption');
+  expect((await page.getByTestId('tool-band-run').boundingBox())?.x).toBe(run?.x);
+  await page.getByTestId('tool-band-tool-facefix').click();
   // The picture's own prompt is the starting point, and nothing has run.
   await expect(page.getByTestId('tool-band-face-prompt')).toHaveValue('a girl with brown hair standing in a field');
   await expect(page.getByTestId('gallery-thumb')).toHaveCount(1);

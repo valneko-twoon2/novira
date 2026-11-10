@@ -1,6 +1,8 @@
 // Image to image on the Generate tab: a gallery picture put in its section is drawn over, at the trained size nearest
 // its shape (and enlarged by the high-resolution fix when it is on), and the reference image settings send a picture there too.
-import { expect, msg, openApp, test } from './fixtures';
+import { expect, msg, openApp, showNewInViewer, test } from './fixtures';
+
+test.beforeEach(({ page }) => showNewInViewer(page));
 
 test('a gallery picture dropped on the image to image section is drawn over at a size of its shape', async ({ page }) => {
   await openApp(page);

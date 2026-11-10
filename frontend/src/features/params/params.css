@@ -89,15 +89,9 @@
 }
 
 /* Prompts */
-.pp-prompts {
+.pp-prompts__fields {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-}
-
-.pp-prompts__head {
-  display: flex;
-  align-items: center;
   gap: var(--space-2);
 }
 
@@ -229,21 +223,11 @@
 }
 
 /* Reference images */
-.pp-refs {
+.pp-refs__body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2);
-  border-radius: var(--radius);
-  background: var(--bg-surface);
-}
-
-.pp-refs__label {
-  flex-basis: 100%;
-  color: var(--text-muted);
-  font-size: var(--fs-xs);
-  font-weight: 600;
 }
 
 .pp-refs__add {
@@ -255,12 +239,14 @@
 .pp-refs__needs {
   display: flex;
   flex-basis: 100%;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--space-2);
 }
 
 .pp-refs__needs p {
+  flex: 1 1 200px;
   margin: 0;
   color: var(--text-muted);
   font-size: var(--fs-xs);

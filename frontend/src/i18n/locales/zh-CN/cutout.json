@@ -6,8 +6,6 @@
   "cutout.edge": "轮廓粗细",
   "cutout.edgeHint": "正值会扩大轮廓，负值会收缩轮廓。",
   "cutout.background": "背景",
-  "cutout.background.alpha": "透明",
-  "cutout.background.white": "纯白",
   "cutout.running": "正在去除背景…",
   "cutout.firstRun": "首次使用需要下载抠图模型，会花一些时间。",
   "cutout.trim": "裁掉边距并保存",

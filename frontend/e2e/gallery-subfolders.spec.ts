@@ -32,7 +32,7 @@ test('a subfolder is made, takes a picture, shows as a tile in its board and ope
   await expect(page.getByTestId('gallery-folder').locator('img')).toHaveCount(1);
   await expect(page.getByTestId('gallery-folder')).toContainText('1');
 
-  // The tile opens the folder, which shows the way back instead of its own tiles.
+  // The tile opens the folder, which shows the way back.
   await page.getByTestId('gallery-folder').click();
   await expect(thumbs(page)).toHaveCount(1);
   await expect(page.getByTestId('gallery-folder')).toHaveCount(0);
@@ -40,17 +40,34 @@ test('a subfolder is made, takes a picture, shows as a tile in its board and ope
   await expect(thumbs(page)).toHaveCount(2);
 });
 
-test('a subfolder cannot hold subfolders, and deleting its board deletes it', async ({ page }) => {
+test('a subfolder holds subfolders, a board folds them away, and deleting it deletes all of them', async ({ page }) => {
   await openApp(page);
   await makeFolder(page, 'Landscapes', 'Night');
-  await board(page, 'Night').click({ button: 'right' });
-  await expect(page.getByRole('menuitem', { name: msg('gallery.boards.addSubfolder') })).toHaveCount(0);
-  await page.keyboard.press('Escape');
+  await makeFolder(page, 'Night', 'Stars');
+  await expect(board(page, 'Stars')).toHaveClass(/is-sub/);
+
+  // Folding hides everything inside and stays after a reload; opening brings it back.
+  const landscapes = board(page, 'Landscapes');
+  await landscapes.getByTestId('board-fold').click();
+  await expect(board(page, 'Night')).toHaveCount(0);
+  await expect(board(page, 'Stars')).toHaveCount(0);
+  await landscapes.getByTestId('board-fold').click();
+  await expect(board(page, 'Stars')).toBeVisible();
 
   await board(page, 'Landscapes').click({ button: 'right' });
   await page.getByRole('menuitem', { name: msg('gallery.boards.delete') }).click();
   await expect(page.getByText(msg('gallery.boards.deleteSubfoldersHint'))).toBeVisible();
   await page.getByRole('button', { name: msg('gallery.boards.deleteBoardOnly') }).click();
+  await expect(board(page, 'Stars')).toHaveCount(0);
   await expect(board(page, 'Night')).toHaveCount(0);
   await expect(board(page, 'Landscapes')).toHaveCount(0);
+});
+
+test('a finished picture stays out of the viewer until the setting is on', async ({ page }) => {
+  await openApp(page);
+  const before = await page.getByTestId('gallery-thumb').count();
+  await page.getByTestId('prompts').getByRole('textbox').first().fill('a quiet picture');
+  await page.getByTestId('invoke-button').click();
+  await expect.poll(() => page.getByTestId('gallery-thumb').count(), { timeout: 20_000 }).toBeGreaterThan(before);
+  await expect(page.getByTestId('gallery-thumb').locator('.is-selected, [aria-selected=true]')).toHaveCount(0);
 });

@@ -16,17 +16,23 @@ describe('erase prompt', () => {
     expect(g.prompt.fill!.inputs.fill).toBe('telea');
     expect(g.prompt.source!.inputs.image).toEqual({ $image: 'photo.png' });
     expect(g.prompt.cover!.inputs.image).toEqual({ $image: 'mask.png' });
-    expect(g.prompt.grow!.inputs.mask).toEqual(['mask', 0]);
+    expect(g.prompt.fill!.inputs.mask).toEqual(['mask', 0]);
     expect(g.prompt.model).toBeUndefined();
     expect(g.outputs).toEqual(['save']);
     links(g);
+  });
+
+  it('erases what was painted and nothing around it: no node grows the mask', () => {
+    for (const lama of [null, 'big-lama.pt']) {
+      expect(Object.values(buildEraseGraph('photo.png', 'mask.png', { lama }).prompt).map((n) => n.class_type)).not.toContain('INPAINT_ExpandMask');
+    }
   });
 
   it('uses LaMa when it is installed', () => {
     const g = buildEraseGraph('photo.png', 'mask.png', { lama: 'big-lama.pt' });
     expect(g.prompt.model!.inputs.model_name).toBe('big-lama.pt');
     expect(g.prompt.fill!.class_type).toBe('INPAINT_InpaintWithModel');
-    expect(g.prompt.fill!.inputs.mask).toEqual(['grow', 0]);
+    expect(g.prompt.fill!.inputs.mask).toEqual(['mask', 0]);
     links(g);
   });
 

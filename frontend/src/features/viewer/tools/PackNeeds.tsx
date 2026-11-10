@@ -9,7 +9,14 @@ export function PackNeeds({ pack, message }: { pack: string; message: MessageKey
   const need = usePackNeeds(pack);
   return (
     <div className="toolband__needs" data-testid="tool-band-needs" data-pack={pack}>
-      <span>{t(message, { pack: need.name })}</span>
+      <span className="toolband__needs-text">
+        {t(message, { pack: need.name })}
+        {need.error && (
+          <span className="toolband__error" role="alert">
+            {need.error}
+          </span>
+        )}
+      </span>
       {need.has ? (
         <Button variant="solid" leftIcon={<ArrowClockwise size={14} />} isLoading={need.restarting} onClick={need.restart} data-testid="tool-band-restart">
           {t('gallery.tools.restart')}
@@ -18,11 +25,6 @@ export function PackNeeds({ pack, message }: { pack: string; message: MessageKey
         <Button variant="solid" leftIcon={<DownloadSimple size={14} />} isLoading={need.busy} onClick={need.install} data-testid="tool-band-install">
           {t('gallery.tools.install')}
         </Button>
-      )}
-      {need.error && (
-        <span className="toolband__error" role="alert">
-          {need.error}
-        </span>
       )}
     </div>
   );

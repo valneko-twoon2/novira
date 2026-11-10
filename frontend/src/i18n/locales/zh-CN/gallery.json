@@ -149,7 +149,6 @@
   "gallery.search.placeholder": "按名称或提示词搜索…",
   "gallery.settings.alwaysShowSize": "始终显示图像尺寸",
   "gallery.settings.autoAssign": "自动添加到点击的画板",
-  "gallery.settings.autoSwitch": "自动切换到新图像",
   "gallery.settings.groupByDate": "按日期分组",
   "gallery.settings.showArchived": "显示已归档的画板",
   "gallery.settings.sort": "排序",

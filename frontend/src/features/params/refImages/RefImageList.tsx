@@ -4,7 +4,7 @@ import { Plus } from '@phosphor-icons/react';
 import { t } from '@/i18n';
 import { defaultRefModelKey } from '@/state/models';
 import { useParams } from '@/state/params';
-import { IconButton, ImageDropZone } from '@/ui';
+import { IconButton, ImageDropZone, Section } from '@/ui';
 import { CharacterRow } from '../characters/CharacterRow';
 import { RefImageCard } from './RefImageCard';
 import { RefImagePackNeeds } from './RefImagePackNeeds';
@@ -22,20 +22,24 @@ export function RefImageList() {
       onImages={(names) => add(imageFromNames(names))}
       onFiles={(files) => void uploadFirst(files).then(add)}
     >
-      <CharacterRow />
-      <span className="pp-refs__label">{t('params.refImage.sectionLabel')}</span>
-      {refs.map((r, i) => (
-        <RefImageCard key={r.id} refImage={r} index={i} />
-      ))}
-      <IconButton
-        className="pp-refs__add"
-        variant="outline"
-        label={t('params.refImage.add')}
-        icon={<Plus />}
-        data-testid="add-ref-image"
-        onClick={() => addDefaultRefImage()}
-      />
-      <RefImagePackNeeds />
+      {/* A picture dropped on the folded section, or a character that brings pictures, opens it. */}
+      <Section title={t('params.refImage.sectionLabel')} badges={refs.length ? [String(refs.length)] : undefined} openOn={refs.length}>
+        <div className="pp-refs__body">
+          <CharacterRow />
+          {refs.map((r, i) => (
+            <RefImageCard key={r.id} refImage={r} index={i} />
+          ))}
+          <IconButton
+            className="pp-refs__add"
+            variant="outline"
+            label={t('params.refImage.add')}
+            icon={<Plus />}
+            data-testid="add-ref-image"
+            onClick={() => addDefaultRefImage()}
+          />
+          <RefImagePackNeeds />
+        </div>
+      </Section>
     </ImageDropZone>
   );
 }

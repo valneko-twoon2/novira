@@ -71,6 +71,7 @@ export function PromptBookDialog() {
             </span>
           </div>
           <PromptBookList
+            key={`${category ?? ''}|${query}`}
             entries={shown}
             total={entries.length}
             isUsed={(tag, kind) => hasTag(kind === 'positive' ? positive : negative, tag)}

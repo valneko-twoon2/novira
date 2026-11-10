@@ -1,12 +1,51 @@
 //! Boards.
 use super::*;
 
+/// How many levels boards can nest, a top board being the first. Windows paths limit how deep a board's folder can go.
+/// `frontend/src/backend/boardNesting.ts` holds the same number for its menu (a test compares them).
+pub const MAX_BOARD_DEPTH: usize = 8;
+
+/// The level of a board, a top board being 1. Stops at a loop, which no call can make.
+fn board_level(boards: &[BoardDTO], id: &str) -> usize {
+    let mut level = 1;
+    let mut current = boards.iter().find(|b| b.id == id);
+    while let Some(parent) = current
+        .and_then(|b| b.parent_id.as_deref())
+        .and_then(|p| boards.iter().find(|b| b.id == p))
+    {
+        level += 1;
+        if level > boards.len() {
+            break;
+        }
+        current = Some(parent);
+    }
+    level
+}
+
+/// The ids of a board and of everything inside it, however deep; empty when there is no such board.
+fn with_descendants(boards: &[BoardDTO], id: &str) -> Vec<String> {
+    if !boards.iter().any(|b| b.id == id) {
+        return Vec::new();
+    }
+    let mut out = vec![id.to_string()];
+    let mut at = 0;
+    while at < out.len() {
+        for b in boards {
+            if b.parent_id.as_deref() == Some(out[at].as_str()) && !out.contains(&b.id) {
+                out.push(b.id.clone());
+            }
+        }
+        at += 1;
+    }
+    out
+}
+
 impl Backend {
     pub fn create_board(&self, name: &str) -> Result<BoardDTO> {
         self.create_board_in(name, None)
     }
 
-    /// Creates a board, or a subfolder of `parent_id` (a board that is not a subfolder itself).
+    /// Creates a board, or a subfolder of `parent_id` (up to `MAX_BOARD_DEPTH` levels).
     pub fn create_board_in(&self, name: &str, parent_id: Option<String>) -> Result<BoardDTO> {
         let name = board_name(name)?;
         if let Some(parent) = &parent_id {
@@ -15,10 +54,10 @@ impl Backend {
                 None => {
                     return Err(BackendError::NotFound(format!("board not found: {parent}")));
                 }
-                Some(b) if b.parent_id.is_some() => {
-                    return Err(BackendError::Invalid(
-                        "A subfolder cannot hold subfolders".into(),
-                    ));
+                Some(b) if board_level(&s.boards, &b.id) >= MAX_BOARD_DEPTH => {
+                    return Err(BackendError::Invalid(format!(
+                        "Boards cannot nest more than {MAX_BOARD_DEPTH} levels"
+                    )));
                 }
                 Some(_) => {}
             }
@@ -64,13 +103,8 @@ impl Backend {
 
     pub fn delete_board(&self, id: &str, delete_images: bool) -> Result<Vec<String>> {
         let mut s = self.state();
-        // A board takes its subfolders with it.
-        let gone_boards: Vec<String> = s
-            .boards
-            .iter()
-            .filter(|b| b.id == id || b.parent_id.as_deref() == Some(id))
-            .map(|b| b.id.clone())
-            .collect();
+        // A board takes everything inside it with it.
+        let gone_boards = with_descendants(&s.boards, id);
         s.boards.retain(|b| !gone_boards.contains(&b.id));
         let mut deleted = Vec::new();
         let mut moved = Vec::new();

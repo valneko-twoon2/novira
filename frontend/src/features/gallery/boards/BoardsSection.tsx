@@ -3,7 +3,7 @@ import { CaretDown, MagnifyingGlass, Plus, X } from '@phosphor-icons/react';
 import { useMemo, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
 import type { BoardDTO } from '@/backend';
 import { t } from '@/i18n';
-import { boardTree } from '@/state/boardTree';
+import { ancestorsOf, boardTree, canHoldSubfolder, withDescendants } from '@/state/boardTree';
 import { useGallery, type BoardId } from '@/state/gallery';
 import { cx, IconButton, TextInput } from '@/ui';
 import { boardName } from '../actions';
@@ -22,6 +22,7 @@ export function BoardsSection() {
   const showArchived = useGallery((s) => s.settings.showArchivedBoards);
   const stats = useBoardStats();
   const [searchOpen, setSearchOpen] = useState(false);
+  const folded = useGallery((s) => s.settings.foldedBoards);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<BoardDTO | null>(null);
   const [listHeight, setListHeight] = useState(176);
@@ -29,11 +30,10 @@ export function BoardsSection() {
 
   const visible = useMemo(() => {
     const q = boardSearch.trim().toLowerCase();
-    // A subfolder follows its board: it is hidden with an archived board, and a search that finds it shows it under its board.
-    const archivedIds = new Set(boards.filter((b) => b.archived).map((b) => b.id));
-    const shown = (b: BoardDTO) => showArchived || (!b.archived && !(b.parentId && archivedIds.has(b.parentId)));
-    return boardTree(boards, (b) => shown(b) && (!q || b.name.toLowerCase().includes(q)));
-  }, [boards, boardSearch, showArchived]);
+    // A subfolder follows its board: it is hidden with an archived board, and a search that finds it shows it under its board, folded or not.
+    const shown = (b: BoardDTO) => showArchived || (!b.archived && !ancestorsOf(boards, b).some((x) => x.archived));
+    return boardTree(boards, (b) => shown(b) && (!q || b.name.toLowerCase().includes(q)), q ? new Set() : new Set(folded));
+  }, [boards, boardSearch, showArchived, folded]);
   const showNone = !boardSearch.trim() || t('gallery.boards.uncategorized').toLowerCase().includes(boardSearch.trim().toLowerCase());
 
   const g = useGallery.getState;
@@ -54,18 +54,25 @@ export function BoardsSection() {
     setListHeight(Math.max(MIN_LIST, drag.current.h + e.clientY - drag.current.y));
   };
 
+  const setFolded = (id: string, fold: boolean) => g().setSettings({ foldedBoards: fold ? [...folded.filter((x) => x !== id), id] : folded.filter((x) => x !== id) });
+
   const addSubfolder = async (parent: BoardDTO) => {
+    setFolded(parent.id, false);
     const board = await createBoard(parent.id);
     g().selectBoard(board.id);
     setRenamingId(board.id);
   };
 
-  const row = (id: BoardId, board: BoardDTO | null, sub = false) => (
+  const row = (id: BoardId, board: BoardDTO | null, depth = 0, hasChildren = false) => (
     <BoardRow
       key={id}
       id={id}
       board={board}
-      sub={sub}
+      depth={depth}
+      canAddSubfolder={!!board && canHoldSubfolder(boards, board)}
+      hasChildren={hasChildren}
+      folded={folded.includes(id)}
+      onFold={(fold) => setFolded(id, fold)}
       onAddSubfolder={() => board && void addSubfolder(board)}
       stats={stats.get(id)}
       renaming={renamingId === id}
@@ -112,7 +119,7 @@ export function BoardsSection() {
           )}
           <div className="gboards__list" role="listbox" aria-label={t('gallery.boards.title')} style={{ '--gboards-h': `${listHeight}px` } as CSSProperties}>
             {showNone && row('none', null)}
-            {visible.map(({ board, depth }) => row(board.id, board, depth === 1))}
+            {visible.map(({ board, depth, hasChildren }) => row(board.id, board, depth, hasChildren))}
             {!visible.length && !showNone && <div className="gboards__empty">{t('gallery.boards.noMatch')}</div>}
           </div>
           <div
@@ -128,7 +135,7 @@ export function BoardsSection() {
       )}
       <DeleteBoardModal
         board={deleting}
-        imageCount={deleting ? [deleting, ...boards.filter((b) => b.parentId === deleting.id)].reduce((n, b) => n + (stats.get(b.id)?.images ?? 0) + (stats.get(b.id)?.assets ?? 0), 0) : 0}
+        imageCount={deleting ? boards.filter((b) => withDescendants(boards, deleting.id).has(b.id)).reduce((n, b) => n + (stats.get(b.id)?.images ?? 0) + (stats.get(b.id)?.assets ?? 0), 0) : 0}
         hasSubfolders={!!deleting && boards.some((b) => b.parentId === deleting.id)}
         onClose={() => setDeleting(null)}
       />

@@ -97,8 +97,8 @@ fn a_subfolder_sits_inside_its_board_and_is_told_apart_from_its_siblings_only() 
         "a subfolder without its board sits at the top"
     );
     assert_eq!(
-        folders["c5"], "Deep",
-        "a subfolder of a subfolder sits at the top"
+        folders["c5"], "Sea/Cats/Deep",
+        "a subfolder of a subfolder sits inside it"
     );
     let image = picture(NAME, Some("c1"), false);
     assert_eq!(
@@ -285,4 +285,37 @@ fn trashing_the_last_picture_of_a_folder_removes_the_folder_and_never_outputs_it
     files.index();
     assert!(files.trash(flat));
     assert!(outputs.is_dir());
+}
+
+#[test]
+fn a_parent_made_in_the_same_instant_as_its_subfolder_still_comes_first() {
+    let mut inner = board("a", "Inner", 1);
+    inner.parent_id = Some("z".into());
+    let folders = folder_names(&[inner, board("z", "Outer", 1)]);
+    assert_eq!(folders["a"], "Outer/Inner");
+}
+
+#[test]
+fn a_deep_board_keeps_its_folder_path_short_and_the_first_two_levels_their_names() {
+    let name = "n".repeat(60);
+    let mut boards = vec![board("l0", &name, 0)];
+    for level in 1..8 {
+        let mut b = board(&format!("l{level}"), &name, level);
+        b.parent_id = Some(format!("l{}", level - 1));
+        boards.push(b);
+    }
+    let folders = folder_names(&boards);
+    assert_eq!(folders["l1"], format!("{name}/{name}"));
+    let deepest = &folders["l7"];
+    assert_eq!(deepest.matches('/').count(), 7);
+    assert!(deepest.chars().count() <= 121 + 6 * 7, "{deepest}");
+}
+
+#[test]
+fn boards_in_a_loop_get_no_folder_and_do_not_hang() {
+    let mut a = board("a", "A", 1);
+    a.parent_id = Some("b".into());
+    let mut b = board("b", "B", 2);
+    b.parent_id = Some("a".into());
+    assert!(folder_names(&[a, b]).is_empty());
 }

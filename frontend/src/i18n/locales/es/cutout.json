@@ -6,8 +6,6 @@
   "cutout.edge": "Ancho del contorno",
   "cutout.edgeHint": "Un valor positivo ensancha el contorno; uno negativo lo recorta.",
   "cutout.background": "Fondo",
-  "cutout.background.alpha": "Transparente",
-  "cutout.background.white": "Blanco liso",
   "cutout.running": "Quitando el fondo…",
   "cutout.firstRun": "La primera vez tarda más porque se descarga el modelo de recorte.",
   "cutout.trim": "Recortar el margen y guardar",

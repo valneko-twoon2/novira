@@ -14,6 +14,10 @@ pub const UNCATEGORIZED: &str = "未分類";
 pub const DRAFTS: &str = "_下書き";
 /// Longest folder name taken from a board name, in characters.
 const MAX_FOLDER_CHARS: usize = 60;
+/// A folder below the second level is shortened to keep the path within this many characters...
+const MAX_DEEP_PATH_CHARS: usize = 100;
+/// ...but always keeps this many of its name.
+const MIN_DEEP_FOLDER_CHARS: usize = 6;
 
 /// A board name as a folder name Windows accepts: no `<>:"/\|?*` or control characters, no dot or space at the end,
 /// not a reserved device name, not empty and not too long.
@@ -53,7 +57,7 @@ pub fn folder_names(boards: &[BoardDTO]) -> HashMap<String, String> {
     let is_top = |b: &BoardDTO| {
         b.parent_id
             .as_ref()
-            .is_none_or(|p| !boards.iter().any(|x| &x.id == p && x.parent_id.is_none()))
+            .is_none_or(|p| !boards.iter().any(|x| &x.id == p))
     };
     let mut out = HashMap::new();
     let mut taken: HashSet<String> = [UNCATEGORIZED, DRAFTS]
@@ -65,17 +69,39 @@ pub fn folder_names(boards: &[BoardDTO]) -> HashMap<String, String> {
         out.insert(board.id.clone(), folder);
     }
     let mut siblings: HashMap<&str, HashSet<String>> = HashMap::new();
-    for board in ordered.iter().filter(|b| !is_top(b)) {
-        let Some(parent) = board.parent_id.as_deref() else {
-            continue;
-        };
-        let inside = unique(
-            &safe_folder(&board.name),
-            siblings.entry(parent).or_default(),
-        );
-        out.insert(board.id.clone(), format!("{}/{inside}", out[parent]));
+    // Level by level, so a parent has its folder before what is inside it, whatever order they were made in.
+    let mut waiting: Vec<&BoardDTO> = ordered.iter().filter(|b| !is_top(b)).copied().collect();
+    while !waiting.is_empty() {
+        let (ready, later): (Vec<&BoardDTO>, Vec<&BoardDTO>) = waiting
+            .into_iter()
+            .partition(|b| b.parent_id.as_deref().is_some_and(|p| out.contains_key(p)));
+        if ready.is_empty() {
+            break;
+        }
+        for board in ready {
+            let Some(parent) = board.parent_id.as_deref() else {
+                continue;
+            };
+            let room = folder_room(&out[parent]);
+            let name: String = board.name.chars().take(room).collect();
+            let inside = unique(&safe_folder(&name), siblings.entry(parent).or_default());
+            out.insert(board.id.clone(), format!("{}/{inside}", out[parent]));
+        }
+        waiting = later;
     }
     out
+}
+
+/// How many characters of a board's name its folder may use inside `parent`: the whole name while the path is short (every
+/// board made before boards could nest deeper keeps its folder), less once the path grows, so a deep board's files stay
+/// inside what Windows can open.
+fn folder_room(parent: &str) -> usize {
+    if parent.chars().filter(|c| *c == '/').count() == 0 {
+        return MAX_FOLDER_CHARS;
+    }
+    MAX_DEEP_PATH_CHARS
+        .saturating_sub(parent.chars().count() + 1)
+        .clamp(MIN_DEEP_FOLDER_CHARS, MAX_FOLDER_CHARS)
 }
 
 /// `base`, or `base (2)`, `base (3)`... when `taken` (lowercase) has it already; the result is added to `taken`.

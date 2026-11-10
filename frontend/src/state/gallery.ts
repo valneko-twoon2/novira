@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { BoardDTO, ImageDTO } from '@/backend';
+import { withDescendants } from './boardTree';
 import { groupByDay, inRange, type DateRange } from './dateFilter';
 
 /** `'none'` is the built-in "Uncategorized" board. */
@@ -10,13 +11,16 @@ export type GalleryView = 'images' | 'assets';
 
 export interface GallerySettings {
   thumbnailSize: number;
-  autoSwitch: boolean;
+  /** A finished picture opens in the viewer, and the gallery goes to its board. */
+  showNewInViewer: boolean;
   autoAssignBoardOnClick: boolean;
   starredFirst: boolean;
   sortDirection: 'desc' | 'asc';
   alwaysShowImageSizeBadge: boolean;
   showArchivedBoards: boolean;
   boardsListOpen: boolean;
+  /** Boards whose subfolders are folded away in the boards list. */
+  foldedBoards: string[];
   pageSize: number;
   /** Insert a header before each day's pictures in the grid. */
   groupByDate: boolean;
@@ -94,13 +98,14 @@ export const useGallery = create<GalleryState>()(
       showMetadata: false,
       settings: {
         thumbnailSize: 90,
-        autoSwitch: true,
+        showNewInViewer: false,
         autoAssignBoardOnClick: true,
         starredFirst: true,
         sortDirection: 'desc',
         alwaysShowImageSizeBadge: false,
         showArchivedBoards: false,
         boardsListOpen: true,
+        foldedBoards: [],
         pageSize: 60,
         groupByDate: false,
       },
@@ -143,8 +148,9 @@ export const useGallery = create<GalleryState>()(
       },
       removeBoard: (id) => {
         const s = get();
-        // The subfolders go with their board.
-        const gone = (b: string) => b === id || s.boards.some((x) => x.id === b && x.parentId === id);
+        // What is inside goes with its board.
+        const ids = withDescendants(s.boards, id);
+        const gone = (b: string) => ids.has(b);
         set({
           boards: s.boards.filter((b) => !gone(b.id)),
           selectedBoardId: gone(s.selectedBoardId) ? 'none' : s.selectedBoardId,
@@ -153,8 +159,8 @@ export const useGallery = create<GalleryState>()(
       },
       detachBoardImages: (boardId) => {
         const s = get();
-        const gone = (b: string | null) => b === boardId || s.boards.some((x) => x.id === b && x.parentId === boardId);
-        set({ images: s.images.map((i) => (gone(i.boardId) ? { ...i, boardId: null } : i)) });
+        const ids = withDescendants(s.boards, boardId);
+        set({ images: s.images.map((i) => (i.boardId && ids.has(i.boardId) ? { ...i, boardId: null } : i)) });
       },
       selectBoard: (id) => {
         const s = get();

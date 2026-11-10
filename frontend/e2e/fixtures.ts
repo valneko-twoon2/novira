@@ -44,6 +44,11 @@ export function msg(key: string, vars: Record<string, string | number> = {}, loc
  * Opens the app (optionally with a query string such as `?scenario=empty`) and waits until the start-up screen is gone.
  * The shell appears only after the backend's start-up data (gallery, workflow library) is in the stores.
  */
+/** Call before `openApp` in a flow that expects a finished picture to open in the viewer (off in a fresh app). */
+export async function showNewInViewer(page: Page): Promise<void> {
+  await page.addInitScript(() => localStorage.setItem('novira.gallery', JSON.stringify({ state: { settings: { showNewInViewer: true } }, version: 0 })));
+}
+
 export async function openApp(page: Page, query = ''): Promise<void> {
   await page.goto(`/${query}`);
   await expect(page.locator('.app')).toBeVisible({ timeout: 20_000 });

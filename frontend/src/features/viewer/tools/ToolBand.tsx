@@ -13,17 +13,17 @@ import { TOOL_TEXT } from '@/state/imageTools/text';
 import { IMAGE_TOOLS, type ImageToolId } from '@/state/imageTools/tools';
 import { findImage, useGallery } from '@/state/gallery';
 import { useModels } from '@/state/models';
-import { Button, cx, ErrorBoundary, IconButton, Spinner } from '@/ui';
+import { Button, cx, ErrorBoundary, IconButton, Spinner, Tooltip } from '@/ui';
 import { PackNeeds } from './PackNeeds';
 import { ToolFields } from './ToolFields';
 import { ToolRunView } from './ToolRunView';
 import './toolBand.css';
 
 const ICONS: Record<ImageToolId, ReactNode> = {
-  facefix: <Smiley size={14} />,
-  cutout: <Scissors size={14} />,
-  caption: <ChatCenteredText size={14} />,
-  pose: <PersonSimple size={14} />,
+  facefix: <Smiley size={16} />,
+  cutout: <Scissors size={16} />,
+  caption: <ChatCenteredText size={16} />,
+  pose: <PersonSimple size={16} />,
 };
 
 /**
@@ -86,8 +86,12 @@ function Band({ shown, tools, compare }: { shown: string | null; tools: readonly
   else
     body = (
       <>
-        <ToolFields tool={tool} image={image} />
+        <div className="toolband__fields">
+          <ToolFields tool={tool} image={image} />
+        </div>
+        {/* The right end of the band, for every tool: the same place as the install button when a pack is missing. */}
         <Button
+          className="toolband__action"
           variant="solid"
           scheme="invoke"
           leftIcon={<Play size={14} weight="fill" />}
@@ -107,18 +111,19 @@ function Band({ shown, tools, compare }: { shown: string | null; tools: readonly
     <section className="toolband" aria-label={t('gallery.tools.band')} data-testid="tool-band" data-tool={tool}>
       <div className="toolband__switch" role="radiogroup" aria-label={t('gallery.tools.band')}>
         {tools.map((id) => (
-          <button
-            key={id}
-            type="button"
-            role="radio"
-            aria-checked={tool === id}
-            className={cx('toolband__tool', tool === id && 'is-active')}
-            data-testid={`tool-band-tool-${id}`}
-            onClick={() => useToolBand.getState().setTool(id)}
-          >
-            {ICONS[id]}
-            <span>{t(TOOL_TEXT[id].name)}</span>
-          </button>
+          <Tooltip key={id} content={t(TOOL_TEXT[id].name)}>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={tool === id}
+              aria-label={t(TOOL_TEXT[id].name)}
+              className={cx('toolband__tool', tool === id && 'is-active')}
+              data-testid={`tool-band-tool-${id}`}
+              onClick={() => useToolBand.getState().setTool(id)}
+            >
+              {ICONS[id]}
+            </button>
+          </Tooltip>
         ))}
       </div>
       <div className="toolband__body">{body}</div>

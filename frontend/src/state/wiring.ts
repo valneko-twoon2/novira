@@ -81,7 +81,7 @@ async function start(): Promise<void> {
           useCanvas.getState().addStagedImage(image.name, { fromQueue: true });
           break;
         }
-        if (item && gallery.settings.autoSwitch) {
+        if (item && gallery.settings.showNewInViewer) {
           const boardId = image.boardId ?? 'none';
           // Every queue result is a picture (category general), so it is listed under the images view.
           if (gallery.selectedBoardId !== boardId || gallery.view !== 'images') {

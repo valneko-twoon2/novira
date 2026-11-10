@@ -1,9 +1,13 @@
 // Entries of the prompt book: click toggles the tag in the target prompt; edit / delete per entry.
 import { Check, PencilSimple, Plus, Trash } from '@phosphor-icons/react';
+import { useEffect, useRef, useState } from 'react';
 import { t } from '@/i18n';
 import type { PromptBookEntry } from '@/state/prompts/promptBook';
 import type { PromptKind } from '@/state/prompts/promptBook';
 import { cx, IconButton, PressAgainIconButton } from '@/ui';
+
+/** Rows drawn at first and added each time the end of the list comes near: a book holds a thousand words or more. */
+const ROWS_AT_A_TIME = 60;
 
 export function PromptBookList({
   entries,
@@ -20,10 +24,23 @@ export function PromptBookList({
   onEdit: (entry: PromptBookEntry) => void;
   onDelete: (entry: PromptBookEntry) => void;
 }) {
+  // Without IntersectionObserver (tests in jsdom) nothing would ever add rows, so all are drawn.
+  const [limit, setLimit] = useState(typeof IntersectionObserver === 'undefined' ? Infinity : ROWS_AT_A_TIME);
+  const list = useRef<HTMLDivElement>(null);
+  const more = useRef<HTMLDivElement>(null);
+  const hasMore = entries.length > limit;
+  // A new observer per step: it reports at once, so a tall window that still shows the end gets the next rows too.
+  useEffect(() => {
+    if (!hasMore || !more.current) return;
+    const observer = new IntersectionObserver(([entry]) => entry?.isIntersecting && setLimit((n) => n + ROWS_AT_A_TIME), { root: list.current, rootMargin: '400px' });
+    observer.observe(more.current);
+    return () => observer.disconnect();
+  }, [hasMore, limit]);
+
   if (!entries.length) return <p className="pb-empty">{total ? t('params.promptBook.noMatch') : t('params.promptBook.empty')}</p>;
   return (
-    <div className="pb-list" data-testid="pb-list">
-      {entries.map((e) => {
+    <div ref={list} className="pb-list" data-testid="pb-list">
+      {entries.slice(0, limit).map((e) => {
         const usedPos = isUsed(e.tag, 'positive');
         const usedNeg = isUsed(e.tag, 'negative');
         return (
@@ -67,6 +84,7 @@ export function PromptBookList({
           </article>
         );
       })}
+      {hasMore && <div ref={more} className="pb-list__more" />}
     </div>
   );
 }

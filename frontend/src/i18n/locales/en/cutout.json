@@ -7,11 +7,12 @@
   "cutout.edgeHint": "Positive widens the outline, negative trims it.",
   "cutout.background": "Background",
   "cutout.background.alpha": "Transparent",
-  "cutout.background.white": "Plain white",
+  "cutout.background.white": "White",
   "cutout.running": "Removing the background…",
   "cutout.firstRun": "The first time takes a while because the cutout model is downloaded.",
   "cutout.trim": "Trim the margin and save",
   "cutout.saved": "Saved the picture without its background to the gallery",
   "cutout.failed": "Could not remove the background",
-  "cutout.needsPack": "Removing the background needs the extension {pack}."
+  "cutout.needsPack": "Removing the background needs the extension {pack}.",
+  "cutout.modelHint": "RMBG-2.0 is strong on complex backgrounds and fine detail. INSPYRENET is made for photos of people and runs fast. BEN balances speed and accuracy, and BEN2 is its improved version."
 }

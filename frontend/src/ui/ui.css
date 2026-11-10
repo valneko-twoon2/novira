@@ -1271,10 +1271,14 @@ button.browse-commercial:focus-visible {
   flex-shrink: 0;
 }
 
+/* One height for every picture, so the window does not resize and the arrows stay under the pointer while stepping through. */
 .pp-zoom {
   position: relative;
   display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   place-items: center;
+  height: min(640px, 70vh);
 }
 
 .pp-zoom__arrow {
@@ -1315,7 +1319,7 @@ button.browse-commercial:focus-visible {
 .pp-zoom img {
   display: block;
   max-width: 100%;
-  max-height: 70vh;
+  max-height: 100%;
   border-radius: var(--radius);
 }
 

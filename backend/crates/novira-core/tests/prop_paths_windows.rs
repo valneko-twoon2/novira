@@ -270,7 +270,7 @@ fn folders_of_boards_stay_inside_outputs_and_differ_even_when_the_names_differ_o
                     depth += 1;
                     prop_assert!(one_plain_component(part) && !is_device(part), "{path:?}");
                 }
-                prop_assert!(depth <= 2, "{path:?}");
+                prop_assert!(depth <= boards.len(), "{path:?}");
                 if depth == 1 {
                     prop_assert!(
                         tops.insert(path.to_lowercase()),

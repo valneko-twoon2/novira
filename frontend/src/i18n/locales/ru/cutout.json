@@ -6,8 +6,6 @@
   "cutout.edge": "Ширина контура",
   "cutout.edgeHint": "Положительное значение расширяет контур, отрицательное — сужает.",
   "cutout.background": "Фон",
-  "cutout.background.alpha": "Прозрачный",
-  "cutout.background.white": "Белый",
   "cutout.running": "Удаление фона…",
   "cutout.firstRun": "При первом запуске это занимает время, так как загружается модель вырезания.",
   "cutout.trim": "Обрезать поля и сохранить",

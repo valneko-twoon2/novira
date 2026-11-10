@@ -1,7 +1,9 @@
 // Image generation through the queue on the mock backend: success, determinism and failure.
 // Every test starts from `?scenario=empty`, so the gallery count is exact (no seeded images, no virtualised rows).
 import type { Page } from '@playwright/test';
-import { expect, msg, openApp, test } from './fixtures';
+import { expect, msg, openApp, showNewInViewer, test } from './fixtures';
+
+test.beforeEach(({ page }) => showNewInViewer(page));
 
 async function generate(page: Page, prompt: string): Promise<void> {
   await page.getByTestId('positive-prompt').fill(prompt);

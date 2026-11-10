@@ -59,13 +59,11 @@ export function ImageGrid({ tab, onUploadClick }: { tab: TabName; onUploadClick:
     if (search.trim() || dateFilter) return [];
     const open = boards.find((b) => b.id === selectedBoardId);
     if (!open) return [];
-    if (isSubfolder(boards, open)) {
-      const parent = boards.find((b) => b.id === open.parentId);
-      return parent ? [{ up: true, id: parent.id, name: parent.name }] : [];
-    }
-    return subfoldersOf(boards, open.id)
+    const parent = isSubfolder(boards, open) ? boards.find((b) => b.id === open.parentId) : undefined;
+    const inside = subfoldersOf(boards, open.id)
       .filter((b) => showArchived || !b.archived)
       .map((b) => ({ up: false, id: b.id, name: b.name }));
+    return parent ? [{ up: true, id: parent.id, name: parent.name }, ...inside] : inside;
   }, [boards, selectedBoardId, search, dateFilter, showArchived]);
   const foldersHeight = folders.length ? Math.ceil(folders.length / cols) * (cell + GAP) : 0;
   const liveHeight = (live.length ? Math.ceil(live.length / cols) * (cell + GAP) : 0) + foldersHeight;

@@ -1,6 +1,7 @@
 {
   "de": [
     "01-start.md",
+    "02-generate.md",
     "03-gallery.md",
     "07-media.md",
     "08-models.md",
@@ -8,6 +9,7 @@
   ],
   "es": [
     "01-start.md",
+    "02-generate.md",
     "03-gallery.md",
     "07-media.md",
     "08-models.md",
@@ -15,6 +17,7 @@
   ],
   "fr": [
     "01-start.md",
+    "02-generate.md",
     "03-gallery.md",
     "07-media.md",
     "08-models.md",
@@ -22,6 +25,7 @@
   ],
   "ko": [
     "01-start.md",
+    "02-generate.md",
     "03-gallery.md",
     "07-media.md",
     "08-models.md",
@@ -29,6 +33,7 @@
   ],
   "pt-BR": [
     "01-start.md",
+    "02-generate.md",
     "03-gallery.md",
     "07-media.md",
     "08-models.md",
@@ -36,6 +41,7 @@
   ],
   "ru": [
     "01-start.md",
+    "02-generate.md",
     "03-gallery.md",
     "07-media.md",
     "08-models.md",
@@ -43,6 +49,7 @@
   ],
   "zh-CN": [
     "01-start.md",
+    "02-generate.md",
     "03-gallery.md",
     "07-media.md",
     "08-models.md",
@@ -50,6 +57,7 @@
   ],
   "zh-TW": [
     "01-start.md",
+    "02-generate.md",
     "03-gallery.md",
     "07-media.md",
     "08-models.md",

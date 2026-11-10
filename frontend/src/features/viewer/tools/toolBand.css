@@ -27,9 +27,10 @@
 .toolband__tool {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  justify-content: center;
+  width: 32px;
   height: 28px;
-  padding: 0 var(--space-2);
+  padding: 0;
   border: none;
   background: var(--bg-input);
   color: var(--text-muted);
@@ -53,18 +54,40 @@
   flex: 1 1 100%;
   order: 1;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-end;
   gap: var(--space-2) var(--space-3);
   min-width: 0;
   min-height: 30px;
 }
 
+.toolband__fields {
+  display: flex;
+  flex: 1 1 0;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-2) var(--space-3);
+  min-width: min(240px, 100%);
+}
+
+/* A label over its control, so every control of a row starts on the same line. */
 .toolband__field {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
   gap: var(--space-1);
   min-width: 0;
+}
+
+.toolband__head {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 18px;
+}
+
+/* What the band offers next stays at its right end, whichever tool or state is showing. */
+.toolband__action {
+  flex: none;
+  margin-left: auto;
 }
 
 .toolband__field--wide {
@@ -72,7 +95,7 @@
 }
 
 .toolband__field--wide .ui-input {
-  flex: 1;
+  width: 100%;
   min-width: 0;
 }
 
@@ -81,12 +104,19 @@
   white-space: nowrap;
 }
 
+/* Fixed widths: the chosen item must not move what stands beside the control. */
 .toolband__select {
-  width: min(180px, 100%);
+  width: 180px;
+  max-width: 100%;
+}
+
+.toolband__select--short {
+  width: 96px;
 }
 
 .toolband__field .ui-slidernum {
-  width: min(180px, 100%);
+  width: 180px;
+  max-width: 100%;
 }
 
 .toolband__close {
@@ -119,9 +149,19 @@
 
 .toolband__needs {
   display: flex;
+  flex: 1 1 100%;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-2);
+}
+
+.toolband__needs-text {
+  display: flex;
+  flex: 1 1 200px;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
 }
 
 .toolband__text {

@@ -1,5 +1,6 @@
 // In-memory backend that behaves like the InvokeAI server: a queue processor with step progress,
 // boards, images, model installs and workflows. Nothing touches disk or the network.
+import { canHoldSubfolder, MAX_BOARD_DEPTH, withDescendants } from '../boardNesting';
 import { MockEngine } from './mockEngine';
 import type { BackendClient } from '../client';
 import type {
@@ -355,7 +356,7 @@ export class MockBackend implements BackendClient {
     await wait(LATENCY);
     const parent = parentId === null ? null : this.boards.find((b) => b.id === parentId);
     if (parentId !== null && !parent) throw new Error(`board not found: ${parentId}`);
-    if (parent?.parentId) throw new Error('A subfolder cannot hold subfolders');
+    if (parent && !canHoldSubfolder(this.boards, parent)) throw new Error(`Boards cannot nest more than ${MAX_BOARD_DEPTH} levels`);
     const board: BoardDTO = { id: this.id('board'), name: boardName(name), archived: false, createdAt: this.now(), parentId };
     this.boards.push(board);
     this.emitBoards();
@@ -375,8 +376,8 @@ export class MockBackend implements BackendClient {
 
   async deleteBoard(id: string, deleteImages: boolean) {
     await wait(LATENCY);
-    // A board takes its subfolders with it.
-    const gone = new Set(this.boards.filter((b) => b.id === id || b.parentId === id).map((b) => b.id));
+    // A board takes everything inside it with it.
+    const gone = this.boards.some((b) => b.id === id) ? withDescendants(this.boards, id) : new Set<string>();
     this.boards = this.boards.filter((b) => !gone.has(b.id));
     const deleted: string[] = [];
     const moved: ImageDTO[] = [];

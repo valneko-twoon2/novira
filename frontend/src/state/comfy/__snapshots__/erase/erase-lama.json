@@ -26,18 +26,6 @@
         "channel": "red"
       }
     },
-    "grow": {
-      "class_type": "INPAINT_ExpandMask",
-      "inputs": {
-        "mask": [
-          "mask",
-          0
-        ],
-        "grow": 12,
-        "blur": 6,
-        "blur_type": "gaussian"
-      }
-    },
     "model": {
       "class_type": "INPAINT_LoadInpaintModel",
       "inputs": {
@@ -52,7 +40,7 @@
           0
         ],
         "mask": [
-          "grow",
+          "mask",
           0
         ],
         "inpaint_model": [

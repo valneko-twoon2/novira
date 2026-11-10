@@ -6,8 +6,6 @@
   "cutout.edge": "Konturbreite",
   "cutout.edgeHint": "Positive Werte verbreitern die Kontur, negative beschneiden sie.",
   "cutout.background": "Hintergrund",
-  "cutout.background.alpha": "Transparent",
-  "cutout.background.white": "Einfarbig weiß",
   "cutout.running": "Hintergrund wird entfernt…",
   "cutout.firstRun": "Beim ersten Mal dauert es länger, da das Freistellungsmodell heruntergeladen wird.",
   "cutout.trim": "Rand beschneiden und speichern",

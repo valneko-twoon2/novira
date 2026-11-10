@@ -1,7 +1,7 @@
 // One board in the boards list: cover, name (double-click to rename), counts, auto-add badge,
 // context menu and drop target for gallery images / OS files.
-import { Archive, ArrowCounterClockwise, DownloadSimple, FolderPlus, FolderSimple, PlusCircle, Trash, Tray } from '@phosphor-icons/react';
-import { useEffect, useRef, useState, type DragEvent } from 'react';
+import { Archive, ArrowCounterClockwise, CaretRight, DownloadSimple, FolderPlus, FolderSimple, PlusCircle, Trash, Tray } from '@phosphor-icons/react';
+import { useEffect, useRef, useState, type CSSProperties, type DragEvent } from 'react';
 import { backend, type BoardDTO } from '@/backend';
 import { t } from '@/i18n';
 import { hasDragImages, resolveDropImages } from '@/state/dnd';
@@ -15,8 +15,14 @@ interface Props {
   id: BoardId;
   board: BoardDTO | null;
   stats: BoardStats | undefined;
-  /** A subfolder: drawn inside its board's list. */
-  sub: boolean;
+  /** How deep it sits: 0 for a board, more for a subfolder, drawn further in. */
+  depth: number;
+  /** A subfolder can still be made inside it. */
+  canAddSubfolder: boolean;
+  /** It has subfolders, so it shows the control that folds them away. */
+  hasChildren: boolean;
+  folded: boolean;
+  onFold: (fold: boolean) => void;
   renaming: boolean;
   onAddSubfolder: () => void;
   onRenameDone: () => void;
@@ -24,7 +30,7 @@ interface Props {
   onDelete: () => void;
 }
 
-export function BoardRow({ id, board, stats, sub, renaming, onAddSubfolder, onRenameDone, onRename, onDelete }: Props) {
+export function BoardRow({ id, board, stats, depth, canAddSubfolder, hasChildren, folded, onFold, renaming, onAddSubfolder, onRenameDone, onRename, onDelete }: Props) {
   const selected = useGallery((s) => s.selectedBoardId === id);
   const isAutoAdd = useGallery((s) => s.autoAddBoardId === id);
   const [over, setOver] = useState(false);
@@ -55,11 +61,12 @@ export function BoardRow({ id, board, stats, sub, renaming, onAddSubfolder, onRe
     <ContextMenu>
       <ContextMenuTrigger asChild>
         <div
-          className={cx('gboard', sub && 'is-sub', selected && 'is-selected', over && 'is-over', board?.archived && 'is-archived')}
+          className={cx('gboard', depth > 0 && 'is-sub', selected && 'is-selected', over && 'is-over', board?.archived && 'is-archived')}
           role="option"
           aria-selected={selected}
           data-testid="board-row"
           data-board-id={id}
+          style={depth > 0 ? ({ '--gboard-depth': depth } as CSSProperties) : undefined}
           onClick={() => useGallery.getState().selectBoard(id)}
           onDragOver={onDragOver}
           onDragEnter={onDragOver}
@@ -68,6 +75,26 @@ export function BoardRow({ id, board, stats, sub, renaming, onAddSubfolder, onRe
           }}
           onDrop={onDrop}
         >
+          {hasChildren ? (
+            // Not in the tab order: the rows themselves are reached with the pointer, and a focusable control inside an option is invalid.
+            <button
+              type="button"
+              tabIndex={-1}
+              className={cx('gboard__fold', !folded && 'is-open')}
+              aria-expanded={!folded}
+              aria-label={t(folded ? 'gallery.boards.expand' : 'gallery.boards.collapse')}
+              title={t(folded ? 'gallery.boards.expand' : 'gallery.boards.collapse')}
+              data-testid="board-fold"
+              onClick={(e) => {
+                e.stopPropagation();
+                onFold(!folded);
+              }}
+            >
+              <CaretRight size={12} />
+            </button>
+          ) : (
+            <span className="gboard__fold-space" />
+          )}
           <div className="gboard__cover">
             {stats?.cover ? <img src={stats.cover.thumbnailUrl} alt="" draggable={false} /> : board ? <FolderSimple size={18} /> : <Tray size={18} />}
           </div>
@@ -107,7 +134,7 @@ export function BoardRow({ id, board, stats, sub, renaming, onAddSubfolder, onRe
         )}
         {board && (
           <>
-            {!sub && (
+            {canAddSubfolder && (
               <ContextMenuItem icon={<FolderPlus />} onSelect={onAddSubfolder}>
                 {t('gallery.boards.addSubfolder')}
               </ContextMenuItem>

@@ -6,8 +6,6 @@
   "cutout.edge": "윤곽 두께",
   "cutout.edgeHint": "양수는 윤곽을 넓히고 음수는 줄입니다.",
   "cutout.background": "배경",
-  "cutout.background.alpha": "투명하게",
-  "cutout.background.white": "흰색으로",
   "cutout.running": "배경을 제거하는 중…",
   "cutout.firstRun": "처음에는 누끼용 모델을 받아야 해서 시간이 조금 걸립니다.",
   "cutout.trim": "여백을 잘라 저장",

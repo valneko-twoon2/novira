@@ -373,3 +373,8 @@
 .pb-screen .pb-target {
   height: 40px;
 }
+
+.pb-list__more {
+  flex: none;
+  height: 1px;
+}

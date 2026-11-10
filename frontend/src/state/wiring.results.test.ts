@@ -36,7 +36,15 @@ describe('a finished result', () => {
     } as BootstrapData);
     await startBackend();
     useGallery.setState({ view: 'assets', selectedBoardId: 'none' });
-    useGallery.setState({ settings: { ...useGallery.getState().settings, autoSwitch: true } });
+    useGallery.setState({ settings: { ...useGallery.getState().settings, showNewInViewer: true } });
+
+    // Off, which is how the app starts: a finished picture joins the gallery and leaves the viewer and the selection alone.
+    useGallery.setState({ settings: { ...useGallery.getState().settings, showNewInViewer: false } });
+    emit({ type: 'image_added', image: image('quiet.png', 'general'), item });
+    expect(useGallery.getState().images.map((i) => i.name)).toContain('quiet.png');
+    expect(useGallery.getState().selection).toEqual([]);
+    expect(useGallery.getState().view).toBe('assets');
+    useGallery.setState({ settings: { ...useGallery.getState().settings, showNewInViewer: true } });
 
     emit({ type: 'image_added', image: image('pic.png', 'general'), item });
     expect(useGallery.getState().view).toBe('images');

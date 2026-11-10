@@ -1,5 +1,7 @@
 // Registering a picture as a character from the viewer, then using it from the Generate tab.
-import { expect, openApp, test } from './fixtures';
+import { expect, openApp, showNewInViewer, test } from './fixtures';
+
+test.beforeEach(({ page }) => showNewInViewer(page));
 
 test('a picture is registered as a character and then sets up a reference image and the look words', async ({ page }) => {
   await openApp(page, '?scenario=empty');

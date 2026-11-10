@@ -153,7 +153,7 @@
   "gallery.search.placeholder": "Search by name or prompt…",
   "gallery.settings.alwaysShowSize": "Always show image dimensions",
   "gallery.settings.autoAssign": "Auto-assign board on click",
-  "gallery.settings.autoSwitch": "Auto-switch to new images",
+  "gallery.settings.autoSwitch": "Show finished images in the viewer",
   "gallery.settings.groupByDate": "Group by date",
   "gallery.settings.showArchived": "Show archived boards",
   "gallery.settings.sort": "Sort direction",
@@ -265,5 +265,7 @@
   "gallery.tools.used": "Settings used",
   "gallery.tools.uploadFailed": "Could not load the picture",
   "gallery.menu.editInText": "Edit in Text",
-  "gallery.toast.editedInText": "Opened the layers it was saved from in the Text screen"
+  "gallery.toast.editedInText": "Opened the layers it was saved from in the Text screen",
+  "gallery.boards.collapse": "Fold subfolders",
+  "gallery.boards.expand": "Show subfolders"
 }

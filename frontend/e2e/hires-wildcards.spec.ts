@@ -1,5 +1,7 @@
 // The high-resolution fix (a second pass of text to image) and wildcard lists in prompts, on the mock backend.
-import { expect, msg, openApp, test } from './fixtures';
+import { expect, msg, openApp, showNewInViewer, test } from './fixtures';
+
+test.beforeEach(({ page }) => showNewInViewer(page));
 
 test('the high-resolution fix makes a larger picture from the Generate tab', async ({ page }) => {
   await openApp(page, '?scenario=empty');

@@ -149,7 +149,6 @@
   "gallery.search.placeholder": "이름이나 프롬프트로 검색…",
   "gallery.settings.alwaysShowSize": "이미지 크기 항상 표시",
   "gallery.settings.autoAssign": "클릭한 보드에 자동 추가",
-  "gallery.settings.autoSwitch": "새 이미지로 자동 전환",
   "gallery.settings.groupByDate": "날짜별로 구분",
   "gallery.settings.showArchived": "보관된 보드 표시",
   "gallery.settings.sort": "정렬",

@@ -1,6 +1,8 @@
 // Zooming and panning a still image in the viewer, with the canvas's gestures and shortcuts.
 import type { Page } from '@playwright/test';
-import { expect, msg, openApp, test } from './fixtures';
+import { expect, msg, openApp, showNewInViewer, test } from './fixtures';
+
+test.beforeEach(({ page }) => showNewInViewer(page));
 
 async function generate(page: Page, prompt: string): Promise<void> {
   await page.getByTestId('positive-prompt').fill(prompt);

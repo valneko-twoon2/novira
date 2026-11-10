@@ -465,7 +465,7 @@ async fn a_restored_picture_goes_back_to_its_folder_and_a_start_arranges_flat_fi
 }
 
 #[tokio::test]
-async fn a_subfolder_belongs_to_one_board_cannot_nest_and_goes_with_its_board() {
+async fn a_subfolder_belongs_to_one_board_nests_to_the_limit_and_goes_with_its_board() {
     let dir = tempfile::tempdir().unwrap();
     let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
     let board = backend.create_board("Cats").unwrap();
@@ -473,8 +473,14 @@ async fn a_subfolder_belongs_to_one_board_cannot_nest_and_goes_with_its_board() 
         .create_board_in("Kittens", Some(board.id.clone()))
         .unwrap();
     assert_eq!(sub.parent_id.as_deref(), Some(board.id.as_str()));
+    let mut deepest = sub.clone();
+    for level in 3..=novira_core::service::MAX_BOARD_DEPTH {
+        deepest = backend
+            .create_board_in(&format!("Level {level}"), Some(deepest.id.clone()))
+            .unwrap();
+    }
     assert!(matches!(
-        backend.create_board_in("Deeper", Some(sub.id.clone())),
+        backend.create_board_in("Too deep", Some(deepest.id.clone())),
         Err(novira_core::BackendError::Invalid(_))
     ));
     assert!(matches!(
@@ -498,7 +504,7 @@ async fn a_subfolder_belongs_to_one_board_cannot_nest_and_goes_with_its_board() 
     // The subfolder and its picture survive a restart.
     let (backend, _) = open(dir.path(), Arc::new(FakeEngine::default()));
     let boot = backend.bootstrap();
-    assert_eq!(boot.boards.len(), 2);
+    assert_eq!(boot.boards.len(), novira_core::service::MAX_BOARD_DEPTH);
     assert!(backend.read_image("full", &inside.name).is_some());
 
     let deleted = backend.delete_board(&board.id, true).unwrap();

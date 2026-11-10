@@ -147,7 +147,7 @@ export function ToolRunView({ run, compare }: { run: ToolRun; compare: boolean }
         </span>
       )}
       {run.status !== 'running' && (
-        <Button variant="ghost" leftIcon={<PencilSimple size={14} />} onClick={() => useToolBand.getState().setMode('settings')} data-testid="tool-band-edit">
+        <Button className="toolband__action" variant="ghost" leftIcon={<PencilSimple size={14} />} onClick={() => useToolBand.getState().setMode('settings')} data-testid="tool-band-edit">
           {t('gallery.tools.edit')}
         </Button>
       )}

@@ -17,8 +17,10 @@ import { InfoMark, ModelPicker, Select, SliderNumber, TextInput } from '@/ui';
 function Field({ label, info, wide, children }: { label: string; info?: string; wide?: boolean; children: ReactNode }) {
   return (
     <div className={wide ? 'toolband__field toolband__field--wide' : 'toolband__field'}>
-      <span className="toolband__label">{label}</span>
-      {info && <InfoMark info={info} />}
+      <span className="toolband__head">
+        <span className="toolband__label">{label}</span>
+        {info && <InfoMark info={info} />}
+      </span>
       {children}
     </div>
   );
@@ -75,7 +77,7 @@ function CutoutFields() {
   const models = cutoutModels(useComfyNodes((x) => x.defs));
   return (
     <>
-      <Field label={t('cutout.model')}>
+      <Field label={t('cutout.model')} info={t('cutout.modelHint')}>
         <Select
           className="toolband__select"
           value={s.model && models.includes(s.model) ? s.model : (models[0] ?? null)}
@@ -86,7 +88,7 @@ function CutoutFields() {
       </Field>
       <Field label={t('cutout.background')}>
         <Select
-          className="toolband__select"
+          className="toolband__select toolband__select--short"
           value={s.background}
           onChange={(v) => set('cutout', { background: v === 'white' ? 'white' : 'alpha' })}
           options={[

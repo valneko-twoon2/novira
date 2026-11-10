@@ -10,7 +10,7 @@ import type { PromptKind } from '@/state/prompts/promptBook';
 import type { PromptSource } from '@/state/prompts/promptSource';
 import { toast } from '@/state/toasts';
 import { useUi } from '@/state/ui';
-import { Button, cx, IconButton, ImageDropZone, Textarea } from '@/ui';
+import { Button, cx, IconButton, ImageDropZone, Section, Textarea } from '@/ui';
 import { BigPromptEditor } from './BigPromptEditor';
 import { DynamicPromptsButton } from './DynamicPromptsButton';
 import { applyRecommendedPrompts, imagePromptSource } from './promptActions';
@@ -21,12 +21,11 @@ import { TokenCounter } from './TokenCounter';
 export function PromptBoxes({ source = imagePromptSource }: { source?: PromptSource }) {
   const model = source.useModel();
   const [big, setBig] = useState(false);
-  return (
-    <section className="pp-prompts" data-testid="prompts">
-      <header className="pp-prompts__head">
-        <h3 className="pp-title">{t('params.prompt.title')}</h3>
-        <span className="pp-spacer" />
-        <Button
+  // Alt+A goes to the prompt, so a folded prompt opens for it.
+  const focusNonce = useUi((s) => s.focusPromptNonce);
+  const actions = (
+    <>
+      <Button
           size="xs"
           variant="ghost"
           scheme="accent"
@@ -41,11 +40,18 @@ export function PromptBoxes({ source = imagePromptSource }: { source?: PromptSou
           {t('params.prompt.recommended')}
         </Button>
         <IconButton size="xs" label={t('params.prompt.expand')} icon={<ArrowsOutSimple />} data-testid="prompt-expand" onClick={() => setBig(true)} />
-      </header>
-      <PromptField kind="positive" source={source} />
-      <PromptField kind="negative" source={source} />
+    </>
+  );
+  return (
+    <div className="pp-prompts" data-testid="prompts">
+      <Section title={t('params.prompt.title')} openOn={source.generateTools ? focusNonce : undefined} actions={actions}>
+        <div className="pp-prompts__fields">
+          <PromptField kind="positive" source={source} />
+          <PromptField kind="negative" source={source} />
+        </div>
+      </Section>
       {big && <BigPromptEditor source={source} onClose={() => setBig(false)} />}
-    </section>
+    </div>
   );
 }
 

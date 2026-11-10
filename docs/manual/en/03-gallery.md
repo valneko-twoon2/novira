@@ -36,10 +36,11 @@ A board is a container for dividing up and organizing pictures. "{{ui:gallery.bo
 
 ### Subfolders
 
-When pictures of one kind pile up, you can sort them into subfolders inside a board. A subfolder is one level only; you cannot make a subfolder inside a subfolder.
+When pictures of one kind pile up, you can sort them into subfolders inside a board. A subfolder can hold subfolders too (up to 8 levels, counting the board).
 
 - **Create**: Right-click a board and choose "{{ui:gallery.boards.addSubfolder}}". You can type the name right there. In the boards area it sits under its board, indented a little.
-- **Look**: When you open a board, its subfolders are lined up as tiles before the pictures. A tile shows the newest picture in that folder, the folder's name and how many pictures it holds. Click a tile to open that folder. Inside, the first tile, the way back, takes you to the board again.
+- **Fold**: Press the arrow at the left of a board that has subfolders and they leave the list. Press it again to bring them back. The list stays folded the next time you start the app.
+- **View**: When you open a board, its subfolders are lined up as tiles before the pictures. A tile shows the newest picture in that folder, the folder's name and how many pictures it holds. Click a tile to open that folder. Inside, the first tile, the way back, takes you to the board again.
 - **Put pictures in**: Drag pictures onto a tile or onto the subfolder in the boards area, or right-click a picture, choose "{{ui:gallery.menu.changeBoard}}" and pick "Board / Subfolder". The pictures in a subfolder are not in the board's own list.
 - **Make it the destination**: Click a subfolder and, like a board, new pictures are saved there.
 - **Rename, archive, delete**: The same as a board. Deleting a board deletes its subfolders with it. If you choose "{{ui:gallery.boards.deleteBoardOnly}}", the pictures in the subfolders move to "{{ui:gallery.boards.uncategorized}}" too.
@@ -165,7 +166,7 @@ While a filter is active, a tag showing the period appears above the gallery. Yo
 The gear button lets you change how pictures are arranged and how things look.
 
 - {{ui:gallery.settings.thumbnailSize}}
-- {{ui:gallery.settings.autoSwitch}}: When a picture is finished, it is shown automatically.
+- {{ui:gallery.settings.autoSwitch}}: When a picture is finished, it opens in the viewer and the gallery goes to its board. It is off at first.
 - {{ui:gallery.settings.autoAssign}}
 - {{ui:gallery.settings.alwaysShowSize}}
 - {{ui:gallery.settings.showArchived}}

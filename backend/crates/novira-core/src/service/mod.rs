@@ -53,6 +53,7 @@ pub mod ui_state;
 mod worker;
 mod workflows;
 
+pub use boards::MAX_BOARD_DEPTH;
 pub use open_timing::OpenTimings;
 use open_timing::Stopwatch;
 

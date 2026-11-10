@@ -2,7 +2,9 @@
 // page as a new picture next to it. Opening and using it must not scroll the page itself (the old checkbox left the lower
 // half of the window blank).
 import type { Page } from '@playwright/test';
-import { expect, openApp, test } from './fixtures';
+import { expect, openApp, showNewInViewer, test } from './fixtures';
+
+test.beforeEach(({ page }) => showNewInViewer(page));
 
 const scrollTop = (page: Page) => page.evaluate(() => document.scrollingElement!.scrollTop);
 

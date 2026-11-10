@@ -134,3 +134,24 @@ test('painting more mosaic strokes does not make each one slower', async ({ page
   }
   withinBudget(MOSAIC_GROWTH, median(times.slice(-5)) / Math.max(1, median(times.slice(0, 5))));
 });
+
+const PROMPT_BOOK_OPEN: Budget = {
+  what: 'Opening the prompt book with the about 1000 words of the seed',
+  ms: 300,
+  look: 'features/params/promptbook/PromptBookList.tsx (only the rows near the visible part may be rendered)',
+};
+
+// Measured 60-140 ms; 530-690 ms when every word of the book was drawn at once.
+test('opening the prompt book stays within its budget', async ({ page }) => {
+  await openApp(page);
+  await expect(page.getByTestId('positive-open-book')).toBeVisible();
+  const costs = await costInPage(
+    page,
+    (run) => {
+      if (run % 2 === 0) document.querySelector<HTMLElement>('[data-testid=positive-open-book]')!.click();
+      else document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    },
+    12,
+  );
+  withinBudget(PROMPT_BOOK_OPEN, median(costs.filter((_, i) => i % 2 === 0).map((c) => c.painted)));
+});

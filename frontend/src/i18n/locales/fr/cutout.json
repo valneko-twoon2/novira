@@ -6,8 +6,6 @@
   "cutout.edge": "Épaisseur du contour",
   "cutout.edgeHint": "Une valeur positive élargit le contour, une valeur négative le réduit.",
   "cutout.background": "Arrière-plan",
-  "cutout.background.alpha": "Transparent",
-  "cutout.background.white": "Blanc uni",
   "cutout.running": "Suppression de l'arrière-plan…",
   "cutout.firstRun": "La première fois est plus longue car le modèle de détourage est téléchargé.",
   "cutout.trim": "Rogner les marges et enregistrer",

@@ -30,10 +30,13 @@ test('the enlarged picture of the Generate tab model goes through every picture'
   const zoom = page.getByTestId('cover-zoom');
   await expect(zoom).toBeVisible();
   await expect(page.getByTestId('cover-zoom-count')).toHaveText('1 / 3');
+  // Every picture gets the same window, so the arrows stay under the pointer.
+  const firstBox = await zoom.boundingBox();
   const firstSrc = await zoom.locator('img').getAttribute('src');
 
   await page.getByTestId('cover-zoom-next').click();
   await expect(page.getByTestId('cover-zoom-count')).toHaveText('2 / 3');
+  expect((await zoom.boundingBox())?.height).toBe(firstBox?.height);
   expect(await zoom.locator('img').getAttribute('src')).not.toBe(firstSrc);
   await page.getByTestId('cover-zoom-next').click();
   await page.getByTestId('cover-zoom-next').click();
