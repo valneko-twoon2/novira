@@ -11,8 +11,9 @@ import { isImageDrag } from '@/state/dnd';
 import { cx, IconButton, Textarea } from '@/ui';
 import { AttachButton, AttachedStrip, droppedPictures, storeFiles, withAttached } from './Attachments';
 import { InputGrip } from './InputGrip';
+import { SlashHelp } from './SlashHelp';
 import { SlashMenu } from './SlashMenu';
-import { matchTemplates, slashQuery, type SlashTemplate } from './slashTemplates';
+import { expandCommand, HELP_COMMAND, matchTemplates, parseCommand, slashQuery, type SlashTemplate } from './slashTemplates';
 
 /** The message being written and the pictures that go with it. */
 export interface Draft {
@@ -63,17 +64,32 @@ export function Composer({ draft, phone = false }: { draft: Draft; phone?: boole
   const query = slashQuery(text);
   const slashOpen = query !== null && slashClosedFor !== text;
   const slashItems = slashOpen ? matchTemplates(query) : [];
-  const pickTemplate = (tpl: SlashTemplate) => {
-    const filled = t(tpl.text);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const showHelp = () => {
+    setText('');
+    setSlashActive(0);
+    setHelpOpen(true);
+  };
+  // Only the command stays in the box, like a slash command in a terminal: the rest is written after it.
+  const completeTemplate = (tpl: SlashTemplate) => {
+    const filled = `/${tpl.id} `;
     setText(filled);
     setSlashActive(0);
-    // The sentence is to be finished: the caret goes to its end.
     requestAnimationFrame(() => {
       const el = inputRef.current;
       if (!el) return;
       el.focus();
       el.setSelectionRange(filled.length, filled.length);
     });
+  };
+  // Choosing `/help` has nothing to complete, so it opens at once; Tab still only completes it, as for any command.
+  const pickTemplate = (tpl: SlashTemplate) => {
+    if (tpl.id === HELP_COMMAND) showHelp();
+    else completeTemplate(tpl);
+  };
+  const sendText = () => {
+    if (parseCommand(text)?.template.id === HELP_COMMAND) showHelp();
+    else submit(expandCommand(text));
   };
 
   // On a phone the box is as tall as its text (phone.css caps it, and it scrolls inside beyond that).
@@ -89,7 +105,7 @@ export function Composer({ draft, phone = false }: { draft: Draft; phone?: boole
       className={cx('agent-win__input', dropping && 'is-dropping')}
       onSubmit={(e) => {
         e.preventDefault();
-        submit(text);
+        sendText();
       }}
       onDragOver={(e) => {
         if (!isImageDrag(e)) return;
@@ -113,6 +129,7 @@ export function Composer({ draft, phone = false }: { draft: Draft; phone?: boole
       <AttachedStrip names={attached} onRemove={detach} />
       <AttachButton disabled={false} onPicked={attach} />
       {slashOpen && <SlashMenu items={slashItems} active={Math.min(slashActive, Math.max(0, slashItems.length - 1))} onPick={pickTemplate} onHover={setSlashActive} />}
+      {helpOpen && !slashOpen && <SlashHelp onClose={() => setHelpOpen(false)} />}
       <Textarea
         ref={inputRef}
         value={text}
@@ -126,6 +143,7 @@ export function Composer({ draft, phone = false }: { draft: Draft; phone?: boole
         onChange={(e) => {
           setText(e.target.value);
           setSlashActive(0);
+          setHelpOpen(false);
         }}
         onPaste={(e) => {
           const files = [...e.clipboardData.files].filter((f) => f.type.startsWith('image/'));
@@ -134,6 +152,12 @@ export function Composer({ draft, phone = false }: { draft: Draft; phone?: boole
           void storeFiles(files).then(attach);
         }}
         onKeyDown={(e) => {
+          if (helpOpen && e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            setHelpOpen(false);
+            return;
+          }
           if (slashOpen && !e.nativeEvent.isComposing) {
             if (e.key === 'Escape') {
               e.preventDefault();
@@ -148,7 +172,12 @@ export function Composer({ draft, phone = false }: { draft: Draft; phone?: boole
               return;
             }
             const chosen = slashItems[Math.min(slashActive, slashItems.length - 1)];
-            if (chosen && (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey))) {
+            if (chosen && e.key === 'Tab') {
+              e.preventDefault();
+              completeTemplate(chosen);
+              return;
+            }
+            if (chosen && e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
               pickTemplate(chosen);
               return;
@@ -156,7 +185,7 @@ export function Composer({ draft, phone = false }: { draft: Draft; phone?: boole
           }
           if (!phone && e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
             e.preventDefault();
-            submit(text);
+            sendText();
           }
         }}
       />

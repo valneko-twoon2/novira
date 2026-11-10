@@ -3,7 +3,7 @@
   "agent.title": "Agent",
   "agent.mock": "Mock",
   "agent.close": "Close",
-  "agent.placeholder": "Describe the image you want, or ask a question (Enter to send)",
+  "agent.placeholder": "Describe the image you want, or ask a question (Enter to send, / for templates, /help for help)",
   "agent.send": "Send",
   "agent.thinking": "Thinking…",
   "agent.greeting": "Tell me what you want to create. I will pick and set the model, LoRAs, prompt, size and more. You can also ask me how to use the app, or what an extension does.",
@@ -159,5 +159,10 @@
   "agent.context.limit": "Token limit",
   "agent.context.usageOff": "Sent with the next message: about {used} tokens (no limit)",
   "agent.context.compressed.one": "{count} older message is sent shortened",
-  "agent.context.compressed.other": "{count} older messages are sent shortened"
+  "agent.context.compressed.other": "{count} older messages are sent shortened",
+  "agent.template.group.extensions": "Extensions",
+  "agent.template.group.help": "Help",
+  "agent.template.help.label": "Show what the commands do",
+  "agent.template.help.title": "Commands",
+  "agent.template.help.usage": "Type / at the start of the box to open the list, and keep typing to narrow it. Tab puts just the command in the box; write the rest after it and press Enter to send."
 }

@@ -1,7 +1,6 @@
 {
   "agent.mock": "模拟",
   "agent.close": "关闭",
-  "agent.placeholder": "告诉我你想画什么，或提出问题（按 Enter 发送）",
   "agent.send": "发送",
   "agent.thinking": "正在思考…",
   "agent.greeting": "告诉我你想画什么。模型、LoRA、提示词、尺寸等将由我来选择并设置。也可以向我询问应用的用法，或某个扩展的作用。",

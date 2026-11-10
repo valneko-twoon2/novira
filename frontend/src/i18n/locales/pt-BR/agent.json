@@ -1,7 +1,6 @@
 {
   "agent.mock": "Simulado",
   "agent.close": "Fechar",
-  "agent.placeholder": "Descreva a imagem desejada ou faça uma pergunta (Enter para enviar)",
   "agent.send": "Enviar",
   "agent.thinking": "Pensando…",
   "agent.greeting": "Diga o que você quer criar. Eu escolho e configuro o modelo, as LoRAs, o prompt, o tamanho e mais. Também é possível perguntar como usar o app ou o que uma extensão faz.",

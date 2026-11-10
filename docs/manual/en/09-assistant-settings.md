@@ -138,9 +138,11 @@ Drag the wide bar on the top edge of the message box up to make the box taller, 
 
 ### Calling up a template
 
-Type "/" at the start of the input box and a list of templates for requests you often make opens. Type letters after the "/" and the list narrows to those whose name, command or text contains them (for example "/comic").
+Type "/" at the start of the input box and a list of templates for requests you often make opens, divided by feature. Type letters after the "/" and the list narrows to the commands that start with them. When no command does, those whose name or text contains them stay (for example "/comic" or "/pose").
 
-Choose with the up and down arrow keys, and confirm with Enter or Tab. Pressing a row in the list also confirms it. The text of the chosen template goes into the input box, so add the rest and then send it (choosing it does not send it). The Esc key closes the list.
+Choose with the up and down arrow keys, and confirm with Enter or Tab. Pressing a row in the list also confirms it. Only the command, such as "/pose", stays in the input box, so write the rest after it and press Enter to send. When it is sent, the command is replaced by the template's text (choosing it does not send it). The Esc key closes the list.
+
+Choose "/help" to open, above the input box, what each command does and the text it sends. This is not sent to the assistant. The Esc key or the close button closes it.
 
 ### Asking about the app and extensions
 

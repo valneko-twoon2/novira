@@ -966,7 +966,20 @@
   padding: var(--space-2) var(--space-3) var(--space-1);
   color: var(--text-faint);
   font-size: var(--fs-xs);
+}
+
+.agent-slash__head--help {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: var(--space-1);
+  color: var(--text);
+  font-size: var(--fs-sm);
   font-weight: 600;
+}
+
+.agent-slash--help {
+  max-height: 360px;
 }
 
 .agent-slash__empty {
@@ -980,7 +993,38 @@
   margin: 0;
   padding: 0 var(--space-1) var(--space-1);
   overflow-y: auto;
-  list-style: none;
+}
+
+.agent-slash__group {
+  padding: var(--space-2) var(--space-2) var(--space-1);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.agent-slash__usage {
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.agent-slash__help-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-2);
+}
+
+.agent-slash__help-row .agent-slash__cmd {
+  flex: 0 0 8em;
+}
+
+.agent-slash__help-main {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .agent-slash__item {
@@ -1001,24 +1045,16 @@
   color: var(--blue-500);
 }
 
-.agent-slash__main {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-width: 0;
-}
-
 .agent-slash__label {
+  flex: 1 1 auto;
+  min-width: 0;
   color: var(--text);
   font-size: var(--fs-sm);
 }
 
 .agent-slash__text {
-  overflow: hidden;
   color: var(--text-faint);
   font-size: var(--fs-xs);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .agent-slash__cmd {

@@ -138,9 +138,11 @@ Arrastar para cima a alça horizontal na borda superior do campo de entrada o de
 
 ### Chamar modelos de texto
 
-Ao digitar “/” no início do campo de entrada, abre-se uma lista de modelos de texto com formas de pedir usadas com frequência. Se você digitar letras depois de “/”, a lista é filtrada apenas para os que contêm essas letras no nome, no comando ou no texto (por exemplo, “/quadrinho” ou “/comic”).
+Ao digitar “/” no início do campo de entrada, abre-se uma lista de modelos de texto com formas de pedir usadas com frequência, dividida por função. Se você digitar letras depois de “/”, a lista é filtrada para os comandos que começam com elas. Se nenhum começar assim, ficam os que contêm essas letras no nome ou no texto (por exemplo, “/comic” ou “/pose”).
 
-Escolha com as setas para cima e para baixo e confirme com Enter ou Tab. Pressionar uma linha da lista também confirma. O texto do modelo escolhido entra no campo de entrada; continue escrevendo e depois envie (só escolher não envia). A tecla Esc fecha a lista.
+Escolha com as setas para cima e para baixo e confirme com Enter ou Tab. Pressionar uma linha da lista também confirma. Só o comando, como “/pose”, fica no campo de entrada; escreva o restante depois dele e pressione Enter para enviar. Ao enviar, o comando é substituído pelo texto do modelo (só escolher não envia). A tecla Esc fecha a lista.
+
+Escolha “/help” para abrir, acima do campo de entrada, o que cada comando faz e o texto que ele envia. Isso não é enviado ao agente. A tecla Esc ou o botão de fechar o fecha.
 
 ### Perguntar sobre o app e as extensões
 

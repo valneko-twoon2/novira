@@ -7,7 +7,7 @@ import { t } from '@/i18n';
 import { AGENT_INPUT_HEIGHT, agentOptions, effectiveModel, useAgent } from '@/state/agent';
 import { TooltipProvider } from '@/ui';
 import { AgentWindow } from './AgentWindow';
-import { matchTemplates, slashQuery, SLASH_TEMPLATES } from './slashTemplates';
+import { expandCommand, groupTemplates, matchTemplates, parseCommand, slashQuery, visibleGroups, visibleTemplates } from './slashTemplates';
 
 const show = () =>
   render(
@@ -50,37 +50,102 @@ afterEach(() => {
 });
 
 describe('slashQuery and matchTemplates', () => {
-  it('reads the words after a slash at the start only, until a line break', () => {
+  it('reads the words after a slash at the start only, until a line break or a whole command and a space', () => {
     expect(slashQuery('/comic lay')).toBe('comic lay');
     expect(slashQuery('/')).toBe('');
+    expect(slashQuery('/pose')).toBe('pose');
     expect(slashQuery('a /comic')).toBeNull();
     expect(slashQuery('/comic\nmore')).toBeNull();
+    expect(slashQuery('/pose ')).toBeNull();
+    expect(slashQuery('/pose waving')).toBeNull();
   });
 
   it('keeps every template for no words, and those holding every word in their command, name or sentence', () => {
-    expect(matchTemplates('')).toHaveLength(SLASH_TEMPLATES.length);
+    expect(matchTemplates('')).toHaveLength(visibleTemplates().length);
     expect(matchTemplates('COMIC').map((x) => x.id)).toEqual(['comic-layout', 'comic-story', 'comic-dialogue']);
     expect(matchTemplates('comic dialogue').map((x) => x.id)).toEqual(['comic-dialogue']);
     expect(matchTemplates(t('agent.template.pose.label')).map((x) => x.id)).toContain('pose');
     expect(matchTemplates('zzzz-no-such')).toEqual([]);
   });
+
+  it('puts the commands that start with the word before a sentence that holds it by chance', () => {
+    const chance = { id: 'extension', label: 'agent.template.extension.label', text: 'agent.template.pose.text' } as const;
+    const help = { id: 'help', label: 'agent.template.help.label' } as const;
+    expect(matchTemplates('he', [chance, help]).map((x) => x.id)).toEqual(['help']);
+    expect(matchTemplates('help').map((x) => x.id)).toEqual(['help']);
+  });
+
+  it('lists the templates under their feature, in the order the arrow keys walk them', () => {
+    const groups = groupTemplates(visibleTemplates());
+    expect(groups.map((g) => g.id)).toEqual(['image', 'comic', 'music', 'workflow', 'extensions', 'help']);
+    expect(groups.flatMap((g) => g.templates)).toEqual(visibleTemplates());
+    expect(groupTemplates(matchTemplates('comic')).map((g) => g.id)).toEqual(['comic']);
+    expect(groupTemplates([])).toEqual([]);
+  });
+
+  it('leaves out the templates of the screens the app build hides, also as typed commands', () => {
+    vi.stubEnv('MODE', 'production');
+    try {
+      const ids = visibleTemplates().map((x) => x.id);
+      expect(ids.filter((id) => id.startsWith('comic') || id === 'music')).toEqual([]);
+      expect(ids).toEqual(expect.arrayContaining(['image', 'pose', 'workflow', 'extension', 'help']));
+      expect(visibleGroups().map((g) => g.id)).toEqual(['image', 'workflow', 'extensions', 'help']);
+      expect(parseCommand('/music calm')).toBeNull();
+      expect(expandCommand('/music calm')).toBe('/music calm');
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('turns a command into its sentence with what was written after it', () => {
+    expect(expandCommand('/pose ')).toBe(t('agent.template.pose.text'));
+    expect(expandCommand('/pose waving')).toBe(`${t('agent.template.pose.text')}waving`);
+    expect(expandCommand('/POSE a\nb')).toBe(`${t('agent.template.pose.text')}a\nb`);
+    // The sentence of /improve ends in a full stop, so the fixed text and the rest stay apart in every language.
+    expect(expandCommand('/improve warm').endsWith('warm')).toBe(true);
+    expect(expandCommand('/no-such words')).toBe('/no-such words');
+    expect(expandCommand('plain /pose')).toBe('plain /pose');
+    expect(expandCommand('/help')).toBe('/help');
+  });
 });
 
 describe('the "/" list', () => {
-  it('opens on a slash, narrows as letters follow, moves with the arrows and fills the box on Enter without sending', async () => {
+  it('shows one line per command with no sentence under it, under the heading of its feature', async () => {
+    show();
+    const input = (await screen.findByTestId('agent-input')) as HTMLTextAreaElement;
+    fireEvent.change(input, { target: { value: '/' } });
+    expect(screen.getAllByRole('group').map((g) => g.getAttribute('aria-labelledby'))).toContain('agent-slash-group-comic');
+    expect(screen.getByText(t('media.tab.music'))).toBeTruthy();
+    expect(screen.queryByText(t('agent.template.pose.text'))).toBeNull();
+  });
+
+  it('opens on a slash, narrows as letters follow, moves with the arrows and leaves the command on Enter without sending', async () => {
     show();
     const input = (await screen.findByTestId('agent-input')) as HTMLTextAreaElement;
     fireEvent.change(input, { target: { value: '/' } });
     expect(screen.getByTestId('agent-slash')).toBeTruthy();
-    expect(screen.getAllByRole('option')).toHaveLength(SLASH_TEMPLATES.length);
+    expect(screen.getAllByRole('option')).toHaveLength(visibleTemplates().length);
     fireEvent.change(input, { target: { value: '/comic' } });
     expect(screen.getAllByRole('option')).toHaveLength(3);
     fireEvent.keyDown(input, { key: 'ArrowDown' });
     expect(screen.getByTestId('agent-slash-comic-story').getAttribute('aria-selected')).toBe('true');
     fireEvent.keyDown(input, { key: 'Enter' });
-    expect(input.value).toBe(t('agent.template.comicStory.text'));
+    expect(input.value).toBe('/comic-story ');
     expect(screen.queryByTestId('agent-slash')).toBeNull();
     expect(useAgent.getState().send).not.toHaveBeenCalled();
+  });
+
+  it('leaves only the command on Tab, and sends its sentence with what was written after it', async () => {
+    show();
+    const input = (await screen.findByTestId('agent-input')) as HTMLTextAreaElement;
+    fireEvent.change(input, { target: { value: '/po' } });
+    fireEvent.keyDown(input, { key: 'Tab' });
+    expect(input.value).toBe('/pose ');
+    expect(screen.queryByTestId('agent-slash')).toBeNull();
+    fireEvent.change(input, { target: { value: '/pose waving' } });
+    expect(screen.queryByTestId('agent-slash')).toBeNull();
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(useAgent.getState().send).toHaveBeenCalledWith(`${t('agent.template.pose.text')}waving`, []);
   });
 
   it('takes a template by a click, and Escape closes the list for that text', async () => {
@@ -88,10 +153,50 @@ describe('the "/" list', () => {
     const input = (await screen.findByTestId('agent-input')) as HTMLTextAreaElement;
     fireEvent.change(input, { target: { value: '/pose' } });
     fireEvent.click(screen.getByTestId('agent-slash-pose'));
-    expect(input.value).toBe(t('agent.template.pose.text'));
+    expect(input.value).toBe('/pose ');
     fireEvent.change(input, { target: { value: '/wor' } });
     fireEvent.keyDown(input, { key: 'Escape' });
     expect(screen.queryByTestId('agent-slash')).toBeNull();
+  });
+
+  it('opens the help from the list, sends nothing, and closes it with Escape, typing or its button', async () => {
+    show();
+    const input = (await screen.findByTestId('agent-input')) as HTMLTextAreaElement;
+    const openHelp = () => {
+      fireEvent.change(input, { target: { value: '/help' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+      expect(input.value).toBe('');
+      expect(screen.getByTestId('agent-slash-help-panel')).toBeTruthy();
+    };
+    openHelp();
+    expect(screen.getByText('/pose')).toBeTruthy();
+    expect(screen.getByText(t('agent.template.pose.text'))).toBeTruthy();
+    fireEvent.keyDown(input, { key: 'Escape' });
+    expect(screen.queryByTestId('agent-slash-help-panel')).toBeNull();
+    openHelp();
+    fireEvent.change(input, { target: { value: 'a' } });
+    expect(screen.queryByTestId('agent-slash-help-panel')).toBeNull();
+    openHelp();
+    fireEvent.click(screen.getByTestId('agent-slash-help-close'));
+    expect(screen.queryByTestId('agent-slash-help-panel')).toBeNull();
+    expect(useAgent.getState().send).not.toHaveBeenCalled();
+  });
+
+  it('opens the help from a typed "/help " too, and never sends it', async () => {
+    show();
+    const input = (await screen.findByTestId('agent-input')) as HTMLTextAreaElement;
+    fireEvent.change(input, { target: { value: '/he' } });
+    fireEvent.keyDown(input, { key: 'Tab' });
+    expect(input.value).toBe('/help ');
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(screen.getByTestId('agent-slash-help-panel')).toBeTruthy();
+    expect(useAgent.getState().send).not.toHaveBeenCalled();
+  });
+
+  it('names the slash commands and /help in the empty box', async () => {
+    show();
+    const input = (await screen.findByTestId('agent-input')) as HTMLTextAreaElement;
+    expect(input.placeholder).toContain('/help');
   });
 
   it('says when nothing matches, and Enter then sends the text as it is', async () => {

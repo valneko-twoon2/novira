@@ -3,7 +3,7 @@
   "agent.title": "エージェント",
   "agent.mock": "モック",
   "agent.close": "閉じる",
-  "agent.placeholder": "作りたい絵や、聞きたいことを伝えてください（Enterで送信）",
+  "agent.placeholder": "作りたい絵や、聞きたいことを伝えてください（Enter で送信、/ でテンプレート、/help で説明）",
   "agent.send": "送信",
   "agent.thinking": "考えています…",
   "agent.greeting": "作りたい絵を教えてください。モデル・LoRA・プロンプト・サイズなどを、こちらで選んで設定します。アプリの使い方や、拡張機能についての質問にも答えます。",
@@ -159,5 +159,10 @@
   "agent.context.limit": "トークン制限",
   "agent.context.usageOff": "次の送信に付く会話: 約 {used} トークン（制限なし）",
   "agent.context.compressed.one": "古い {count} 件は短くまとめて送られます",
-  "agent.context.compressed.other": "古い {count} 件は短くまとめて送られます"
+  "agent.context.compressed.other": "古い {count} 件は短くまとめて送られます",
+  "agent.template.group.extensions": "拡張機能",
+  "agent.template.group.help": "ヘルプ",
+  "agent.template.help.label": "コマンドの説明を見る",
+  "agent.template.help.title": "コマンドの説明",
+  "agent.template.help.usage": "入力欄の先頭に / を打つと一覧が開き、続けて入力すると絞り込めます。Tab でコマンドだけを入力欄に残せるので、続きを書いて Enter で送ります。"
 }

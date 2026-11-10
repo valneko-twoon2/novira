@@ -138,9 +138,11 @@ Faites glisser vers le haut la poignée allongée au bord supérieur du champ de
 
 ### Appeler un modèle de demande
 
-Tapez « / » au début du champ de saisie pour ouvrir la liste des modèles de demandes fréquentes. Continuez à taper après le « / » pour ne garder que ceux dont le nom, la commande ou le texte contient ces caractères (par exemple « /BD » ou « /comic »).
+Tapez « / » au début du champ de saisie pour ouvrir la liste des modèles de demandes fréquentes, classés par fonction. Continuez à taper après le « / » pour ne garder que les commandes qui commencent par ces caractères. Si aucune ne convient, ceux dont le nom ou le texte contient ces caractères restent (par exemple « /comic » ou « /pose »).
 
-Choisissez avec les flèches haut et bas, puis validez avec Entrée ou Tab. Un clic sur une ligne de la liste valide aussi. Le texte du modèle choisi est placé dans le champ de saisie : complétez-le, puis envoyez-le (le choisir ne l'envoie pas). La touche Échap ferme la liste.
+Choisissez avec les flèches haut et bas, puis validez avec Entrée ou Tab. Un clic sur une ligne de la liste valide aussi. Seule la commande, par exemple « /pose », reste dans le champ de saisie : écrivez la suite après elle et appuyez sur Entrée pour envoyer. À l'envoi, la commande est remplacée par le texte du modèle (le choisir ne l'envoie pas). La touche Échap ferme la liste.
+
+Choisissez « /help » pour ouvrir, au-dessus du champ de saisie, l'explication de chaque commande et le texte qu'elle envoie. Rien n'est envoyé à l'assistant. La touche Échap ou le bouton de fermeture la ferme.
 
 ### Poser des questions sur l'utilisation ou les extensions
 

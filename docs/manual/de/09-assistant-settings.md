@@ -138,9 +138,11 @@ Ziehen Sie den länglichen Griff am oberen Rand des Eingabefelds nach oben, wird
 
 ### Vorlagen aufrufen
 
-Wenn Sie am Anfang des Eingabefelds „/“ tippen, öffnet sich eine Liste mit Vorlagen für häufige Anfragen. Wenn Sie nach dem „/“ weitertippen, bleiben nur die Vorlagen, deren Name, Befehl oder Text diese Zeichen enthält (zum Beispiel „/Comic“ oder „/comic“).
+Wenn Sie am Anfang des Eingabefelds „/“ tippen, öffnet sich eine nach Funktionen gegliederte Liste mit Vorlagen für häufige Anfragen. Wenn Sie nach dem „/“ weitertippen, bleiben nur die Befehle, die mit diesen Zeichen beginnen. Beginnt kein Befehl damit, bleiben die Vorlagen, deren Name oder Text diese Zeichen enthält (zum Beispiel „/comic“ oder „/Pose“).
 
-Wählen Sie mit den Pfeiltasten nach oben und unten, und bestätigen Sie mit Enter oder Tab. Ein Klick auf eine Zeile der Liste bestätigt ebenfalls. Der Text der gewählten Vorlage kommt ins Eingabefeld; ergänzen Sie den Rest, und senden Sie dann (das Bestätigen allein sendet nichts). Die Esc-Taste schließt die Liste.
+Wählen Sie mit den Pfeiltasten nach oben und unten, und bestätigen Sie mit Enter oder Tab. Ein Klick auf eine Zeile der Liste bestätigt ebenfalls. Im Eingabefeld bleibt nur der Befehl, etwa „/pose“; schreiben Sie den Rest dahinter und senden Sie mit Enter. Beim Senden wird der Befehl durch den Text der Vorlage ersetzt (das Bestätigen allein sendet nichts). Die Esc-Taste schließt die Liste.
+
+Wählen Sie „/help“, öffnet sich über dem Eingabefeld eine Erklärung jedes Befehls mit dem Text, den er sendet. Sie wird nicht an den Assistenten gesendet. Die Esc-Taste oder die Schaltfläche zum Schließen schließt sie.
 
 ### Fragen zur App und zu Erweiterungen
 

@@ -39,6 +39,7 @@ covers:
 - エディターは `edit_*` に、コンテキスト全体の代わりに短い `answer` を返してよい（コミックは `comicAnswer`）。
 - 元に戻す: リクエストは各種類の最初の変更の前に Generate の設定と各エディターのデータを保持し、1 回答につき 1 回の元に戻すで復元する（`frontend/src/state/agent.ts` の `undo`）。キュー済みのジョブと保存済みの画像は戻らない。モデルに伝える過去の答えと設定: [01-assistant-history.md](../02-context/01-assistant-history.md)。
 - リクエスト実行中に書いたメッセージは `queued` で待ち（`state/agent.ts`、薄く表示、削除可）、終了後に送られる。失敗後は待ちのメッセージが入力欄に戻り、停止では保たれる。
+- 「/」のコマンド（`frontend/src/features/agent/slashTemplates.ts`）: 定型の依頼を機能ごとの区分で一覧に出す。確定すると入力欄には `/コマンド ` だけが残り、送信のときに定型文と続きの文へ置きかえる（`expandCommand`。モデルに届くのは文章だけ）。`/help` は入力欄の上に説明を開くだけで何も送らない。ビルドが隠している画面（`isScreenShown`）の区分は一覧にも入力にも現れず、打っても普通の文として送られる。
 - 同時に 1 リクエストだけ動き（`backend/crates/novira-core/src/service/assistant.rs`）、15 分（`CHAT_TIMEOUT`）以内。`agent_cancel` で終わり、それまでの変更は元に戻せる。
 
 ## 境界

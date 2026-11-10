@@ -138,9 +138,11 @@ Arrastre hacia arriba la barra ancha del borde superior del cuadro de mensaje pa
 
 ### Invocar una plantilla
 
-Escriba «/» al principio del cuadro de entrada y se abre una lista de plantillas para las peticiones que hace a menudo. Escriba letras tras la «/» y la lista se reduce a las que contienen esas letras en su nombre, comando o texto (por ejemplo «/comic»).
+Escriba «/» al principio del cuadro de entrada y se abre una lista de plantillas para las peticiones que hace a menudo, dividida por funciones. Escriba letras tras la «/» y la lista se reduce a los comandos que empiezan por ellas. Si ninguno empieza así, quedan las plantillas que contienen esas letras en su nombre o texto (por ejemplo «/comic» o «/pose»).
 
-Elija con las teclas de flecha arriba y abajo, y confirme con Intro o Tab. Pulsar una fila de la lista también la confirma. El texto de la plantilla elegida pasa al cuadro de entrada, así que añada el resto y luego envíelo (elegirla no la envía). La tecla Esc cierra la lista.
+Elija con las teclas de flecha arriba y abajo, y confirme con Intro o Tab. Pulsar una fila de la lista también la confirma. En el cuadro de entrada solo queda el comando, como «/pose»: escriba el resto detrás y pulse Intro para enviarlo. Al enviar, el comando se sustituye por el texto de la plantilla (elegirla no la envía). La tecla Esc cierra la lista.
+
+Elija «/help» para abrir, sobre el cuadro de entrada, qué hace cada comando y el texto que envía. No se envía al agente. La tecla Esc o el botón de cerrar lo cierra.
 
 ### Preguntar sobre la aplicación y las extensiones
 

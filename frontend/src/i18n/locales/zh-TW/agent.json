@@ -1,7 +1,6 @@
 {
   "agent.mock": "模擬",
   "agent.close": "關閉",
-  "agent.placeholder": "告訴我你想製作的圖像，或提出問題（按 Enter 傳送）",
   "agent.send": "傳送",
   "agent.thinking": "思考中…",
   "agent.greeting": "請告訴我你想製作的圖像。模型、LoRA、提示詞、尺寸等都會由我來選擇並設定。也可以向我詢問應用程式的用法，或某個擴充功能的作用。",

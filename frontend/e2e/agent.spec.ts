@@ -307,3 +307,33 @@ test('the token limit switch is in the chat, on at first, and stays as it was le
   await openAssistant(page);
   await expect(win.getByRole('switch', { name: msg('agent.context.limit') })).toHaveAttribute('aria-checked', 'false');
 });
+
+test('the "/" list is grouped by feature, Tab leaves only the command, sending expands it, and /help explains the commands', async ({ page }) => {
+  await openApp(page);
+  await openAssistant(page);
+  const win = page.getByTestId('agent-window');
+  const input = win.getByTestId('agent-input');
+  await expect(input).toHaveAttribute('placeholder', msg('agent.placeholder'));
+
+  await input.fill('/');
+  const list = win.getByTestId('agent-slash');
+  await expect(list.getByRole('group').filter({ hasText: msg('agent.template.group.help') })).toContainText('/help');
+  await expect(list).not.toContainText(msg('agent.template.pose.text').trim());
+
+  await input.fill('/po');
+  await input.press('Tab');
+  await expect(input).toHaveValue('/pose ');
+  await expect(list).toHaveCount(0);
+  await input.pressSequentially('waving');
+  await input.press('Enter');
+  await expect(win.locator('.agent-msg--user').last()).toContainText(`${msg('agent.template.pose.text')}waving`);
+  await expect(input).toHaveValue('');
+
+  await input.fill('/help');
+  await input.press('Enter');
+  const help = win.getByTestId('agent-slash-help-panel');
+  await expect(help).toContainText('/pose');
+  await expect(help).toContainText(msg('agent.template.pose.text').trim());
+  await input.press('Escape');
+  await expect(help).toHaveCount(0);
+});
