@@ -38,7 +38,7 @@ ring = "0.17"
 # The certificates' validity dates (MIT/Apache-2.0, the version and features novira-core uses).
 chrono = { version = "0.4", default-features = false, features = ["std", "clock"] }
 # The base64url that WebAuthn writes a passkey's bytes in (MIT/Apache-2.0, already in the lock file).
-base64 = "0.22"
+base64 = "0.23"
 
 [target.'cfg(windows)'.dependencies]
 # The subnet mask of the address a home-network connection came in on (`GetIpAddrTable`), and the hardware address of

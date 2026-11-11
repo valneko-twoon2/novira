@@ -3489,7 +3489,7 @@ version = "0.5.0"
 dependencies = [
  "async-trait",
  "axum",
- "base64 0.22.1",
+ "base64 0.23.1",
  "c2pa",
  "chrono",
  "crc32fast",
@@ -3522,7 +3522,7 @@ name = "novira-server"
 version = "0.5.0"
 dependencies = [
  "axum",
- "base64 0.22.1",
+ "base64 0.23.1",
  "chrono",
  "futures-util",
  "hyper",
