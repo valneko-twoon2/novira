@@ -1,5 +1,5 @@
 # Code scanning with CodeQL (docs/design/01-app/04-release/02-ci.md). It runs on every push to main (a merge), on every
-# pull request to main, and every week on main. The results are in the Security tab.
+# pull request to main (a draft only once it is ready for review), and every week on main. The results are in the Security tab.
 # It replaces GitHub's "default setup" (it cannot take the config that leaves the tests out): turn that off before this workflow's first run.
 # The languages are those of the default setup. Nothing is built (`build-mode: none`). Only actions of GitHub's own are used.
 name: CodeQL
@@ -9,6 +9,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    # A draft runs nothing until it is ready for review (the Test workflow does the same).
+    types: [opened, synchronize, reopened, ready_for_review]
   schedule:
     - cron: '29 4 * * 2'
 
@@ -22,6 +24,7 @@ concurrency:
 jobs:
   analyze:
     name: analyze (${{ matrix.language }})
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:
