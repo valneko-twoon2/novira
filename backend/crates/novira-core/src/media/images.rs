@@ -95,7 +95,7 @@ impl ImageFiles {
         )
     }
 
-    /// Finds every original under `outputs/` (up to two folders down: a board's folder and a subfolder in it) by the
+    /// Finds every original under `outputs/` (as many folders down as boards can nest: one folder per level) by the
     /// name its file name holds, so a picture opens wherever its file was put. Returns how many it found.
     pub fn index(&self) -> usize {
         let mut found = HashMap::new();
@@ -118,7 +118,7 @@ impl ImageFiles {
                 if let Some(name) = file.to_str().and_then(crate::media::arrangement::name_in) {
                     found.insert(name.to_string(), rel.join(&file));
                 }
-            } else if kind.is_dir() && depth < 2 {
+            } else if kind.is_dir() && usize::from(depth) < crate::service::MAX_BOARD_DEPTH {
                 Self::index_dir(&entry.path(), &rel.join(&file), depth + 1, found);
             }
         }
@@ -186,7 +186,7 @@ impl ImageFiles {
             };
             for entry in entries.flatten() {
                 if entry.file_type().is_ok_and(|k| k.is_dir()) {
-                    if depth < 1 {
+                    if usize::from(depth) + 2 <= crate::service::MAX_BOARD_DEPTH {
                         walk(&entry.path(), depth + 1);
                     }
                     // Fails, as wanted, while anything is inside.

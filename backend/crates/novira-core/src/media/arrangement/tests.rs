@@ -319,3 +319,55 @@ fn boards_in_a_loop_get_no_folder_and_do_not_hang() {
     b.parent_id = Some("a".into());
     assert!(folder_names(&[a, b]).is_empty());
 }
+
+/// A file `levels` folders below `outputs/`, named the way the arrangement names it.
+fn nested_file(dir: &Path, levels: usize) -> std::path::PathBuf {
+    let mut folder = dir.join("outputs");
+    for n in 0..levels {
+        folder = folder.join(format!("level{n}"));
+    }
+    std::fs::create_dir_all(&folder).unwrap();
+    let file = folder.join(file_name(NAME, 0));
+    std::fs::write(&file, b"png").unwrap();
+    file
+}
+
+#[test]
+fn a_file_in_a_board_nested_three_levels_deep_is_found_by_its_name() {
+    // A board three levels down lives in `outputs/<board>/<sub>/<subsub>/`; its pictures must open from there.
+    let dir = tempfile::tempdir().unwrap();
+    let files = ImageFiles::new(dir.path()).unwrap();
+    nested_file(dir.path(), 3);
+    assert_eq!(files.index(), 1);
+    assert_eq!(files.read_original(NAME).unwrap(), b"png");
+}
+
+#[test]
+fn a_file_is_found_at_every_level_boards_can_nest_to() {
+    for levels in 1..=crate::service::MAX_BOARD_DEPTH {
+        let dir = tempfile::tempdir().unwrap();
+        let files = ImageFiles::new(dir.path()).unwrap();
+        nested_file(dir.path(), levels);
+        assert_eq!(files.index(), 1, "{levels} levels");
+        assert!(files.read_original(NAME).is_some(), "{levels} levels");
+    }
+}
+
+#[test]
+fn empty_folders_are_removed_at_every_level_boards_can_nest_to_and_a_folder_with_a_file_stays() {
+    let dir = tempfile::tempdir().unwrap();
+    let files = ImageFiles::new(dir.path()).unwrap();
+    let outputs = dir.path().join("outputs");
+    // Eight levels, all empty, beside a branch that keeps a picture three levels down.
+    let mut deep = outputs.join("empty0");
+    for n in 1..crate::service::MAX_BOARD_DEPTH {
+        deep = deep.join(format!("empty{n}"));
+    }
+    std::fs::create_dir_all(&deep).unwrap();
+    let kept = outputs.join("keep0").join("keep1").join("keep2");
+    std::fs::create_dir_all(&kept).unwrap();
+    std::fs::write(kept.join(file_name(NAME, 0)), b"png").unwrap();
+    files.remove_empty_folders();
+    assert!(!outputs.join("empty0").exists(), "the empty branch is gone");
+    assert!(kept.join(file_name(NAME, 0)).is_file());
+}
