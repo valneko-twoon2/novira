@@ -37,7 +37,7 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: node scripts/tools/changelog.mjs --notes "$TAG" --out "$RUNNER_TEMP/notes/release-notes.md"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: release-notes
           path: ${{ runner.temp }}/notes/release-notes.md
@@ -81,7 +81,7 @@ jobs:
         shell: cmd
         run: node scripts\tools\package-release.mjs
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.pack.outputs.name }}
           path: |
