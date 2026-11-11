@@ -28,14 +28,14 @@ describe('halvingLines', () => {
   const wide: Shape = [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 0.2 }, { x: 0, y: 0.2 }];
   const tall: Shape = [{ x: 0, y: 0 }, { x: 0.2, y: 0 }, { x: 0.2, y: 1 }, { x: 0, y: 1 }];
 
-  it('cuts a wide panel with an upright line through its middle first, and a level one second', () => {
+  it('cuts a wide panel with an upright line through its middle first, and a level one second', { tags: ['condition'] }, () => {
     const [first, second] = halvingLines(wide, aspect);
     expect(first![0].x).toBeCloseTo(0.5);
     expect(first![1].x).toBeCloseTo(0.5);
     expect(second![0].y).toBeCloseTo(0.1);
   });
 
-  it('cuts a tall panel with a level line first', () => {
+  it('cuts a tall panel with a level line first', { tags: ['equivalence'] }, () => {
     const [first] = halvingLines(tall, aspect);
     expect(first![0].y).toBeCloseTo(0.5);
     expect(first![1].y).toBeCloseTo(0.5);
@@ -49,7 +49,7 @@ describe('moveEdge', () => {
     [{ x: 0.1, y: 0.5 }, { x: 0.9, y: 0.5 }, { x: 0.9, y: 0.9 }, { x: 0.1, y: 0.9 }],
   ];
 
-  it('slides a shared edge for both panels, keeping the page whole', () => {
+  it('slides a shared edge for both panels, keeping the page whole', { tags: ['equivalence'] }, () => {
     const moved = moveEdge(page, 0, 2, { x: 0, y: 0.1 })!;
     expect(moved).not.toBeNull();
     expect(shapeBox(moved[0]!).height).toBeCloseTo(0.5);
@@ -57,17 +57,17 @@ describe('moveEdge', () => {
     expect(allValid(moved)).toBe(true);
   });
 
-  it('refuses a slide that would turn a panel inside out', () => {
+  it('refuses a slide that would turn a panel inside out', { tags: ['error-guessing'] }, () => {
     expect(moveEdge(page, 0, 2, { x: 0, y: 0.5 })).toBeNull();
   });
 
-  it('refuses an edge that does not exist', () => {
+  it('refuses an edge that does not exist', { tags: ['error-guessing'] }, () => {
     expect(moveEdge(page, 5, 0, { x: 0, y: 0.1 })).toBeNull();
   });
 });
 
 describe('addPanel', () => {
-  it('leaves a page of one big panel as it is drawn and lays the new panel over it, selected', () => {
+  it('leaves a page of one big panel as it is drawn and lays the new panel over it, selected', { tags: ['condition'] }, () => {
     const page = seed(1);
     const drawn = frameOutlines(current());
     const id = useComic.getState().addPanel(page.id);
@@ -79,7 +79,7 @@ describe('addPanel', () => {
     expect(useComic.getState().selectedPanelId).toBe(id);
   });
 
-  it('keeps every panel of a reshaped page, as one undo step', () => {
+  it('keeps every panel of a reshaped page, as one undo step', { tags: ['state-transition'] }, () => {
     const page = seed(2);
     useComic.getState().splitPanel(page.id, 0, { x: 0.3, y: -1 }, { x: 0.3, y: 2 });
     const before = pageShapes(current());
@@ -91,7 +91,7 @@ describe('addPanel', () => {
     expect(current().free).toBe(false);
   });
 
-  it('adds nothing to a full page', () => {
+  it('adds nothing to a full page', { tags: ['error-guessing'] }, () => {
     const page = seed(MAX_PANELS_PER_PAGE);
     expect(useComic.getState().addPanel(page.id)).toBeNull();
     expect(current().panels).toHaveLength(MAX_PANELS_PER_PAGE);
@@ -99,7 +99,7 @@ describe('addPanel', () => {
 });
 
 describe('halvePanel', () => {
-  it('cuts the largest panel in half when none is given, and selects the new one', () => {
+  it('cuts the largest panel in half when none is given, and selects the new one', { tags: ['boundary'] }, () => {
     const page = seed(2);
     useComic.getState().splitPanel(page.id, 0, { x: 0.3, y: -1 }, { x: 0.3, y: 2 });
     const before = pageShapes(current());
@@ -113,7 +113,7 @@ describe('halvePanel', () => {
     expect(shapeArea(after[largest]!)).toBeCloseTo(shapeArea(before[largest]!) / 2, 3);
   });
 
-  it('cuts the given panel, as one undo step', () => {
+  it('cuts the given panel, as one undo step', { tags: ['state-transition'] }, () => {
     const page = seed(3);
     useComic.getState().halvePanel(page.id, 2);
     expect(current().panels).toHaveLength(4);
@@ -121,13 +121,13 @@ describe('halvePanel', () => {
     expect(current().panels).toHaveLength(3);
   });
 
-  it('adds nothing to a full page', () => {
+  it('adds nothing to a full page', { tags: ['error-guessing'] }, () => {
     const page = seed(MAX_PANELS_PER_PAGE);
     expect(useComic.getState().halvePanel(page.id, 0)).toBeNull();
     expect(current().panels).toHaveLength(MAX_PANELS_PER_PAGE);
   });
 
-  it('cuts nothing from a panel too small to make two panels, either way across', () => {
+  it('cuts nothing from a panel too small to make two panels, either way across', { tags: ['error-guessing'] }, () => {
     const page = seed(2);
     // A thin strip under a big panel: each half of it would be smaller than a panel may be.
     const strip: Shape = [{ x: 0.1, y: 0.8 }, { x: 0.9, y: 0.8 }, { x: 0.9, y: 0.805 }, { x: 0.1, y: 0.805 }];
@@ -143,7 +143,7 @@ describe('halvePanel', () => {
 });
 
 describe('the store moveEdge', () => {
-  it('stops the slide at the page margin and says how far it went', () => {
+  it('stops the slide at the page margin and says how far it went', { tags: ['condition'] }, () => {
     const page = seed(2);
     const top = pageShapes(current())[0]!;
     // The top edge of the first panel, slid far up: it only reaches the margin.
@@ -154,7 +154,7 @@ describe('the store moveEdge', () => {
     expect(moved!.y).toBeGreaterThanOrEqual(-0.5);
   });
 
-  it('moves a shared edge, and the panels stay a valid page', () => {
+  it('moves a shared edge, and the panels stay a valid page', { tags: ['condition'] }, () => {
     const page = seed(2);
     const shape = pageShapes(current())[0]!;
     const bottom = shape.findIndex((p, i) => p.y === Math.max(...shape.map((q) => q.y)) && shape[(i + 1) % shape.length]!.y === p.y);
@@ -175,7 +175,7 @@ describe('the balloon editor', () => {
     return { page, a, b };
   }
 
-  it('opens on a balloon, follows another balloon, and closes when no balloon is chosen', () => {
+  it('opens on a balloon, follows another balloon, and closes when no balloon is chosen', { tags: ['condition'] }, () => {
     const { a, b } = withBubbles();
     useComic.getState().openBubbleEditor('panel-0', a.id);
     expect(useComic.getState()).toMatchObject({ bubbleEditor: true, selectedPanelId: 'panel-0', selectedBubbleId: a.id });
@@ -185,7 +185,7 @@ describe('the balloon editor', () => {
     expect(useComic.getState().bubbleEditor).toBe(false);
   });
 
-  it('closes when another panel is chosen or its balloon is removed', () => {
+  it('closes when another panel is chosen or its balloon is removed', { tags: ['condition'] }, () => {
     const { a } = withBubbles();
     useComic.getState().openBubbleEditor('panel-0', a.id);
     useComic.getState().selectPanel('panel-1');
@@ -195,7 +195,7 @@ describe('the balloon editor', () => {
     expect(useComic.getState().bubbleEditor).toBe(false);
   });
 
-  it('closes by itself and keeps the balloon chosen', () => {
+  it('closes by itself and keeps the balloon chosen', { tags: ['condition'] }, () => {
     const { a } = withBubbles();
     useComic.getState().openBubbleEditor('panel-0', a.id);
     useComic.getState().closeBubbleEditor();
@@ -204,7 +204,7 @@ describe('the balloon editor', () => {
 });
 
 describe('removePanel', () => {
-  it('deletes a panel of an automatic page and lays the rest out again', () => {
+  it('deletes a panel of an automatic page and lays the rest out again', { tags: ['regression'] }, () => {
     const page = seed(3);
     expect(useComic.getState().removePanel(page.id, 1)).toBe(true);
     expect(current().panels.map((p) => p.id)).toEqual(['panel-0', 'panel-2']);
@@ -213,7 +213,7 @@ describe('removePanel', () => {
     expect(current().panels).toHaveLength(3);
   });
 
-  it('gives the area of a panel on a reshaped page to its nearest neighbour, keeping the page whole', () => {
+  it('gives the area of a panel on a reshaped page to its nearest neighbour, keeping the page whole', { tags: ['condition'] }, () => {
     const page = seed(3);
     useComic.getState().halvePanel(page.id, 2);
     const before = pageShapes(current());
@@ -227,7 +227,7 @@ describe('removePanel', () => {
     expect(useComic.getState().selectedPanelId).toBeNull();
   });
 
-  it('passes over a neighbour that only touches the panel at a corner, and gives the area to the next one', () => {
+  it('passes over a neighbour that only touches the panel at a corner, and gives the area to the next one', { tags: ['condition'] }, () => {
     // A tiled page of four in a square, read left to right: top left, top right, bottom left, bottom right.
     const box = (x: number, y: number): Shape => [{ x, y }, { x: x + 0.4, y }, { x: x + 0.4, y: y + 0.4 }, { x, y: y + 0.4 }];
     const page = seed(4);
@@ -241,7 +241,7 @@ describe('removePanel', () => {
     expect(allValid(current().shapes!)).toBe(true);
   });
 
-  it('keeps the last panel and refuses a panel that is not there', () => {
+  it('keeps the last panel and refuses a panel that is not there', { tags: ['error-guessing'] }, () => {
     const page = seed(1);
     expect(useComic.getState().removePanel(page.id, 0)).toBe(false);
     const two = seed(2);
@@ -254,13 +254,13 @@ describe('mergeShapes', () => {
   const left: Shape = [{ x: 0, y: 0 }, { x: 0.5, y: 0 }, { x: 0.5, y: 1 }, { x: 0, y: 1 }];
   const right: Shape = [{ x: 0.5, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0.5, y: 1 }];
 
-  it('joins two panels that share an edge into one, whichever way each runs round', () => {
+  it('joins two panels that share an edge into one, whichever way each runs round', { tags: ['equivalence'] }, () => {
     const joined = mergeShapes(left, [...right].reverse())!;
     expect(joined).toHaveLength(4);
     expect(shapeArea(joined)).toBeCloseTo(1);
   });
 
-  it('refuses panels that only touch at a corner or are apart', () => {
+  it('refuses panels that only touch at a corner or are apart', { tags: ['error-guessing'] }, () => {
     const corner: Shape = [{ x: 0.5, y: 1 }, { x: 1, y: 1 }, { x: 1, y: 1.5 }, { x: 0.5, y: 1.5 }];
     expect(mergeShapes(left, corner)).toBeNull();
     expect(mergeShapes(left, [{ x: 2, y: 0 }, { x: 3, y: 0 }, { x: 3, y: 1 }, { x: 2, y: 1 }])).toBeNull();

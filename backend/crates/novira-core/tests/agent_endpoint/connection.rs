@@ -10,6 +10,7 @@ fn endpoint(base: &str, key: Option<&str>) -> Endpoint {
     Endpoint::new(base, key.and_then(ApiKey::new)).unwrap()
 }
 
+// tags: scenario
 #[tokio::test]
 async fn the_model_list_is_read_sorted_and_sent_with_the_key_as_a_header() {
     let fake = Fake::start().await;
@@ -31,6 +32,7 @@ async fn the_model_list_is_read_sorted_and_sent_with_the_key_as_a_header() {
     assert_eq!(fake.seen()[1].authorization, None);
 }
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn a_server_without_a_model_list_or_with_an_odd_one_is_an_error_not_an_empty_list() {
     let fake = Fake::start().await;
@@ -44,6 +46,7 @@ async fn a_server_without_a_model_list_or_with_an_odd_one_is_an_error_not_an_emp
     assert!(endpoint(&fake.base, None).list_models().await.is_err());
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn nothing_listening_is_reported_as_a_connection_failure() {
     // Port 9 (discard) is closed on a normal PC; the address is valid but nothing answers.
@@ -55,6 +58,7 @@ async fn nothing_listening_is_reported_as_a_connection_failure() {
     assert!(err.message.contains("cannot connect"), "{err}");
 }
 
+// tags: scenario
 #[tokio::test]
 async fn test_connection_passes_when_the_model_exists_and_makes_a_valid_tool_call() {
     let fake = Fake::start().await;
@@ -82,6 +86,7 @@ async fn test_connection_passes_when_the_model_exists_and_makes_a_valid_tool_cal
     );
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn test_connection_sends_the_whole_request_once_and_fails_when_the_server_cuts_it_short() {
     let fake = Fake::start().await;
@@ -121,6 +126,7 @@ async fn test_connection_sends_the_whole_request_once_and_fails_when_the_server_
     );
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn test_connection_says_so_when_the_server_rejects_tools() {
     let fake = Fake::start().await;
@@ -134,6 +140,7 @@ async fn test_connection_says_so_when_the_server_rejects_tools() {
         .contains("does not support tools"));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn test_connection_says_so_when_the_model_answers_in_words_or_calls_wrongly() {
     let fake = Fake::start().await;
@@ -167,6 +174,7 @@ async fn test_connection_says_so_when_the_model_answers_in_words_or_calls_wrongl
         .contains("could not take a tool's result"));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn test_connection_tells_a_missing_model_and_an_unreachable_server() {
     let fake = Fake::start().await;
@@ -189,6 +197,7 @@ async fn test_connection_tells_a_missing_model_and_an_unreachable_server() {
     assert!(none.reachable && none.tools == AgentToolsState::Unknown && none.error.is_some());
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn the_key_never_appears_in_an_error_even_when_the_server_echoes_it() {
     let fake = Fake::start().await;
@@ -215,6 +224,7 @@ async fn the_key_never_appears_in_an_error_even_when_the_server_echoes_it() {
     assert!(!err.message.contains(key));
 }
 
+// tags: state-transition, decision-table
 #[tokio::test]
 async fn a_redirect_to_another_origin_is_not_followed_and_the_key_does_not_follow_it() {
     let target = Fake::start().await;
@@ -231,6 +241,7 @@ async fn a_redirect_to_another_origin_is_not_followed_and_the_key_does_not_follo
     );
 }
 
+// tags: state-transition, decision-table
 #[tokio::test]
 async fn a_redirect_inside_the_same_origin_is_followed() {
     let fake = Fake::start().await;
@@ -244,6 +255,7 @@ async fn a_redirect_inside_the_same_origin_is_followed() {
     assert_eq!(fake.seen().last().unwrap().path, "/elsewhere");
 }
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn an_answer_over_the_size_cap_is_refused() {
     let fake = Fake::start().await;
@@ -255,6 +267,7 @@ async fn an_answer_over_the_size_cap_is_refused() {
     assert!(err.message.contains("too large"), "{err}");
 }
 
+// tags: boundary, state-transition
 #[tokio::test]
 async fn a_server_that_does_not_answer_in_time_is_stopped() {
     let fake = Fake::start().await;

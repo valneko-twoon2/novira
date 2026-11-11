@@ -15,7 +15,7 @@ async function ask(message: string, over: Partial<AgentRequest> = {}, answers: R
 }
 
 describe('the mock assistant on the Generate tab', () => {
-  it('reads the models, picks an anime model and fills both prompts for an anime request', async () => {
+  it('reads the models, picks an anime model and fills both prompts for an anime request', { tags: ['scenario'] }, async () => {
     const { tools } = await ask('夕焼けの海辺に立つアニメ風の少女');
     expect(tools.tools()).toEqual(['list_models', 'select_model', 'set_generation_settings']);
     expect(tools.args('select_model')).toEqual({ key: 'main-noobai-xl' });
@@ -23,18 +23,18 @@ describe('the mock assistant on the Generate tab', () => {
     expect(tools.args('set_generation_settings')?.negativePrompt).toContain('lowres');
   });
 
-  it('adds a LoRA that matches the chosen base', async () => {
+  it('adds a LoRA that matches the chosen base', { tags: ['condition'] }, async () => {
     const { tools } = await ask('ドット絵の猫');
     expect(tools.args('add_lora')).toMatchObject({ key: 'lora-pixel-art-xl' });
   });
 
-  it('asks for more detail, changing nothing, when nothing is recognized', async () => {
+  it('asks for more detail, changing nothing, when nothing is recognized', { tags: ['condition'] }, async () => {
     const { reply, tools } = await ask('あれをお願い');
     expect(tools.calls).toEqual([]);
     expect(reply.text).toContain('もう少し教えて');
   });
 
-  it('answers in English when asked to', async () => {
+  it('answers in English when asked to', { tags: ['condition'] }, async () => {
     const { reply } = await ask('a photo of a cat', { locale: 'en' });
     expect(reply.text).toMatch(/^I chose/);
   });
@@ -43,14 +43,14 @@ describe('the mock assistant on the Generate tab', () => {
 describe('the mock assistant answering questions', () => {
   const foo = { id: 'ext:ComfyUI-Foo', name: 'ComfyUI-Foo', about: 'Draws foo', installed: false };
 
-  it('looks up the extension asked about from the manager and offers to install one that is missing', async () => {
+  it('looks up the extension asked about from the manager and offers to install one that is missing', { tags: ['condition'] }, async () => {
     const { reply, tools } = await ask('what is this', { locale: 'en', focus: foo.id }, { search_extensions: { extensions: [foo] } });
     expect(tools.args('search_extensions')).toEqual({ ids: [foo.id] });
     expect(reply.text).toContain('Draws foo');
     expect(tools.args('recommend_packs')).toEqual({ ids: [foo.id] });
   });
 
-  it('names the nodes of an installed extension and does not recommend it again', async () => {
+  it('names the nodes of an installed extension and does not recommend it again', { tags: ['condition'] }, async () => {
     const installed = { ...foo, installed: true, nodes: [{ name: 'Foo Draw', inputs: [], outputs: [] }] };
     const { reply, tools } = await ask('what does ComfyUI-Foo do', { locale: 'en' }, { search_extensions: { extensions: [installed] } });
     expect(tools.args('search_extensions')).toEqual({ query: 'what does ComfyUI-Foo do' });
@@ -58,13 +58,13 @@ describe('the mock assistant answering questions', () => {
     expect(tools.tools()).not.toContain('recommend_packs');
   });
 
-  it('answers a question about a screen from the guide', async () => {
+  it('answers a question about a screen from the guide', { tags: ['condition'] }, async () => {
     const guide = [{ id: 'tab.models', name: 'Models', about: 'Lists the installed models' }];
     const { reply } = await ask('Where is Models?', { locale: 'en' }, { get_app_guide: guide, search_extensions: { extensions: [] } });
     expect(reply.text).toContain('Lists the installed models');
   });
 
-  it('reads the recent pictures only with permission, and says so when it is declined', async () => {
+  it('reads the recent pictures only with permission, and says so when it is declined', { tags: ['condition'] }, async () => {
     const pictures = { total: 2, images: [{ name: 'a.png', prompt: 'a cat' }] };
     const allowed = await ask('最近の画像を見て', {}, { list_gallery_images: pictures });
     expect(allowed.reply.text).toContain('a cat');
@@ -74,7 +74,7 @@ describe('the mock assistant answering questions', () => {
 });
 
 describe('the mock assistant on the other screens', () => {
-  it('places a named pose on the canvas, and leaves other screens and words alone', async () => {
+  it('places a named pose on the canvas, and leaves other screens and words alone', { tags: ['condition'] }, async () => {
     const { tools } = await ask('a pose with both arms up', { locale: 'en', screen: 'canvas' });
     expect(tools.args('set_pose')).toEqual({ people: [expect.objectContaining({ rArm: expect.any(Object), lArm: expect.any(Object) })] });
     expect((await ask('座っているポーズ', { screen: 'canvas' })).tools.tools()).toContain('set_pose');
@@ -82,13 +82,13 @@ describe('the mock assistant on the other screens', () => {
     expect((await ask('a standing person', { locale: 'en', screen: 'canvas' })).tools.tools()).not.toContain('set_pose');
   });
 
-  it('fills the music, video and voice forms on their screens', async () => {
+  it('fills the music, video and voice forms on their screens', { tags: ['equivalence'] }, async () => {
     expect((await ask('明るいポップな曲', { screen: 'music' })).tools.args('set_form')).toMatchObject({ kind: 'music', fields: { tags: 'pop, upbeat' } });
     expect((await ask('海を走る船', { screen: 'video' })).tools.args('set_form')).toMatchObject({ kind: 'video', fields: { prompt: '海を走る船' } });
     expect((await ask('こんにちは', { screen: 'voice' })).tools.args('set_form')).toMatchObject({ kind: 'voice', fields: { text: 'こんにちは' } });
   });
 
-  it('recommends only offered packs that are not installed yet', async () => {
+  it('recommends only offered packs that are not installed yet', { tags: ['condition'] }, async () => {
     const packs = [
       { id: 'rmbg', name: 'RMBG', goals: [], about: '', installed: false },
       { id: 'sam2', name: 'SAM2', goals: [], about: '', installed: true },
@@ -104,14 +104,14 @@ describe('the mock assistant on the other screens', () => {
 describe('the mock assistant in a refinement', () => {
   const answers = { generate: { queued: [7] }, view_picture: { picture: 'x.png' } };
 
-  it('starts one for a request to get closer, and draws the first picture', async () => {
+  it('starts one for a request to get closer, and draws the first picture', { tags: ['scenario'] }, async () => {
     const { tools, reply } = await ask('何枚か生成しながら近づけていって', { trialPictures: true }, answers);
     expect(tools.tools()).toEqual(['refine', 'set_generation_settings', 'generate', 'view_picture']);
     expect(tools.args('refine')).toMatchObject({ action: 'start', maxRounds: 3 });
     expect(reply.text).toContain('1 枚目');
   });
 
-  it('draws the next picture for the app\'s automatic message and finishes on the last', async () => {
+  it('draws the next picture for the app\'s automatic message and finishes on the last', { tags: ['state-transition'] }, async () => {
     const middle = await ask('[Automatic message of the app: refinement picture 2 of 3.]', { trialPictures: true }, answers);
     expect(middle.tools.tools()).toEqual(['set_generation_settings', 'generate', 'view_picture']);
     expect(middle.reply.text).toContain('2 枚目');
@@ -120,7 +120,7 @@ describe('the mock assistant in a refinement', () => {
     expect(last.tools.args('refine')).toMatchObject({ action: 'finish' });
   });
 
-  it('leaves a request alone when trial pictures are off', async () => {
+  it('leaves a request alone when trial pictures are off', { tags: ['condition'] }, async () => {
     const { tools } = await ask('何枚か生成しながら近づけていって', { trialPictures: false }, answers);
     expect(tools.tools()).not.toContain('refine');
   });

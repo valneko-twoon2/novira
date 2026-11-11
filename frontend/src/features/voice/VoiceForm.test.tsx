@@ -37,24 +37,24 @@ afterEach(() => {
 });
 
 describe('the voice form', () => {
-  it('writes the text', () => {
+  it('writes the text', { tags: ['scenario'] }, () => {
     fireEvent.change(screen.getByTestId('voice-text'), { target: { value: 'Good morning' } });
     expect(form().text).toBe('Good morning');
   });
 
-  it('chooses the language from the list', () => {
+  it('chooses the language from the list', { tags: ['scenario'] }, () => {
     choose(t('voice.language'), t('voice.lang.Japanese'));
     expect(form().language).toBe('Japanese');
   });
 
-  it('chooses the speaker in preset mode, and writes the style', () => {
+  it('chooses the speaker in preset mode, and writes the style', { tags: ['scenario'] }, () => {
     choose(t('voice.speaker'), t('voice.speaker.Ryan'));
     expect(form().speaker).toBe('Ryan');
     fireEvent.change(screen.getByTestId('voice-style'), { target: { value: 'whispering' } });
     expect(form().instruct).toBe('whispering');
   });
 
-  it('marks the mode in use and swaps the speaker for the description in design mode', () => {
+  it('marks the mode in use and swaps the speaker for the description in design mode', { tags: ['scenario'] }, () => {
     expect(screen.getByTestId('voice-mode-preset').getAttribute('aria-selected')).toBe('true');
     fireEvent.click(screen.getByTestId('voice-mode-design'));
     expect(form().mode).toBe('design');

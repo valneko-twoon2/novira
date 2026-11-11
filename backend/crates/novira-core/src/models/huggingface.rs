@@ -535,6 +535,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn query_uses_tags_for_the_kind_and_base_and_the_hub_sort_names() {
         let q = query(&params("LoRA"));
@@ -549,6 +550,7 @@ mod tests {
         assert!(vae.iter().any(|(k, v)| k == "search" && v == "anime vae"));
     }
 
+    // tags: state-transition
     #[test]
     fn the_install_list_keeps_single_model_files_that_the_installer_accepts() {
         let siblings = json!([
@@ -566,6 +568,7 @@ mod tests {
         );
     }
 
+    // tags: equivalence
     #[test]
     fn only_single_model_files_outside_pipeline_folders_are_offered() {
         let siblings = json!([
@@ -592,6 +595,7 @@ mod tests {
         assert_eq!(files[1].name, "style.safetensors");
     }
 
+    // tags: equivalence
     #[test]
     fn a_repository_maps_to_the_browse_shape() {
         let body = json!([
@@ -640,6 +644,7 @@ mod tests {
         );
     }
 
+    // tags: equivalence
     #[test]
     fn permissions_by_license() {
         let of = |l: Option<&str>| -> Vec<Option<bool>> {
@@ -658,6 +663,7 @@ mod tests {
         assert_eq!(of(None).len(), 6);
     }
 
+    // tags: equivalence
     #[test]
     fn license_levels() {
         let commercial = |l: Option<&str>| commercial_of(&permissions(l));
@@ -673,6 +679,7 @@ mod tests {
         assert_eq!(commercial(None), "limited");
     }
 
+    // tags: condition
     #[test]
     fn the_next_page_cursor_comes_from_the_link_header() {
         let link =

@@ -29,6 +29,7 @@ fn pending_id(p: &mut Pairing, now: Instant) -> String {
         .to_string()
 }
 
+// tags: boundary, state-transition
 #[test]
 fn a_code_is_good_for_one_request_within_two_minutes() {
     let mut p = Pairing::default();
@@ -72,6 +73,7 @@ fn a_code_is_good_for_one_request_within_two_minutes() {
     }
 }
 
+// tags: boundary
 #[test]
 fn only_the_newest_codes_stay_good() {
     let mut p = Pairing::default();
@@ -87,6 +89,7 @@ fn only_the_newest_codes_stay_good() {
     }
 }
 
+// tags: boundary
 #[test]
 fn an_address_gets_five_requests_a_minute() {
     let mut p = Pairing::default();
@@ -113,6 +116,7 @@ fn an_address_gets_five_requests_a_minute() {
         .is_ok());
 }
 
+// tags: boundary
 #[test]
 fn the_rate_limit_follows_a_bounded_number_of_addresses() {
     let mut p = Pairing::default();
@@ -130,6 +134,7 @@ fn the_rate_limit_follows_a_bounded_number_of_addresses() {
     assert!(p.request(t0 + RATE_WINDOW, ip(PHONE), &code, "a").is_ok());
 }
 
+// tags: boundary, equivalence
 #[test]
 fn a_device_name_is_one_to_forty_plain_characters() {
     let mut p = Pairing::default();
@@ -168,6 +173,7 @@ fn a_device_name_is_one_to_forty_plain_characters() {
     );
 }
 
+// tags: condition
 #[test]
 fn the_phone_learns_the_decision_with_its_secret_from_its_address_only() {
     let mut p = Pairing::default();
@@ -199,6 +205,7 @@ fn the_phone_learns_the_decision_with_its_secret_from_its_address_only() {
     }
 }
 
+// tags: state-transition
 #[test]
 fn a_denied_or_forgotten_request_gives_no_session() {
     let mut p = Pairing::default();
@@ -239,6 +246,7 @@ fn a_denied_or_forgotten_request_gives_no_session() {
     assert!(!p.approve(t0, "nope") && !p.deny(t0, ""));
 }
 
+// tags: boundary
 #[test]
 fn too_many_waiting_requests_are_refused() {
     let mut p = Pairing::default();
@@ -259,6 +267,7 @@ fn too_many_waiting_requests_are_refused() {
     assert!(p.request(later, ip(PHONE), &code, "a").is_ok());
 }
 
+// tags: boundary, state-transition
 #[test]
 fn a_session_is_bound_to_its_address_and_ends_idle_or_at_four_hours() {
     let mut p = Pairing::default();
@@ -286,6 +295,7 @@ fn a_session_is_bound_to_its_address_and_ends_idle_or_at_four_hours() {
     assert!(p.session(t1 + SESSION_MAX, ip(PHONE), &secret).is_none());
 }
 
+// tags: state-transition
 #[test]
 fn this_computer_revokes_one_device_or_all() {
     let mut p = Pairing::default();
@@ -306,6 +316,7 @@ fn this_computer_revokes_one_device_or_all() {
     );
 }
 
+// tags: boundary
 #[test]
 fn the_number_of_paired_devices_is_capped() {
     let mut p = Pairing::default();
@@ -319,6 +330,7 @@ fn the_number_of_paired_devices_is_capped() {
     assert!(!p.approve(t0, &id));
 }
 
+// tags: condition
 #[test]
 fn the_session_cookie_is_named_per_port_and_locked_down() {
     assert_eq!(session_cookie(8443), "novira_session_8443");
@@ -336,6 +348,7 @@ fn the_session_cookie_is_named_per_port_and_locked_down() {
     }
 }
 
+// tags: equivalence
 #[test]
 fn the_routes_split_into_public_and_this_computers() {
     use axum::http::Method;
@@ -370,6 +383,7 @@ fn the_routes_split_into_public_and_this_computers() {
     }
 }
 
+// tags: condition
 #[test]
 fn the_phone_page_has_the_same_strings_in_japanese_and_english() {
     check_page_strings(STRINGS, include_str!("page.js"));
@@ -417,6 +431,7 @@ pub(crate) fn check_page_strings(strings: &str, source: &str) {
     assert_eq!(source.matches("__STRINGS__").count(), 1);
 }
 
+// tags: condition
 #[tokio::test]
 async fn the_script_carries_its_strings_and_the_page_loads_it_as_a_file() {
     let body = script_source();
@@ -430,6 +445,7 @@ async fn the_script_carries_its_strings_and_the_page_loads_it_as_a_file() {
     );
 }
 
+// tags: state-transition
 #[test]
 fn the_same_phone_pairing_again_replaces_its_earlier_session() {
     let mut p = Pairing::default();
@@ -443,6 +459,7 @@ fn the_same_phone_pairing_again_replaces_its_earlier_session() {
     assert!(p.session(t0, ip(PHONE + 1), &other).is_some());
 }
 
+// tags: decision-table
 #[test]
 fn an_approved_session_may_make_one_passkey_and_a_signed_in_one_none() {
     let mut p = Pairing::default();
@@ -471,6 +488,7 @@ fn an_approved_session_may_make_one_passkey_and_a_signed_in_one_none() {
     assert!(!p.revoke_passkey("k1"));
 }
 
+// tags: state-transition, boundary
 #[test]
 fn signing_in_again_replaces_the_session_and_the_cap_holds() {
     let mut p = Pairing::default();

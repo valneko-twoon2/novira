@@ -17,7 +17,7 @@ beforeEach(() => {
 });
 
 describe('video graphs', () => {
-  it('the built-in video graphs are valid and ready to invoke when the models are installed', () => {
+  it('the built-in video graphs are valid and ready to invoke when the models are installed', { tags: ['state-transition'] }, () => {
     for (const id of ['default-video-t2v']) {
       const g = graphOf(id);
       expect(invalidEdges(g.nodes, g.edges), id).toEqual([]);
@@ -26,12 +26,12 @@ describe('video graphs', () => {
     expect(graphOf('default-video-i2v')).not.toBeNull();
   });
 
-  it('asks for the video models before invoking', () => {
+  it('asks for the video models before invoking', { tags: ['condition'] }, () => {
     usePacks.getState().setPack('video', { state: 'missing', totalBytes: 1 });
     expect(readinessReasons(graphOf('default-video-t2v')).length).toBe(1);
   });
 
-  it('text to video becomes a video request without a source image', () => {
+  it('text to video becomes a video request without a source image', { tags: ['error-guessing', 'state-transition'] }, () => {
     const g = graphOf('default-video-t2v');
     const req = buildRequest(g, {}, { prepend: false });
     expect(req.params.generationMode).toBe('video');
@@ -40,7 +40,7 @@ describe('video graphs', () => {
     expect(req.initImageUrl).toBeNull();
   });
 
-  it('image to video sends the chosen image and takes the size from it', () => {
+  it('image to video sends the chosen image and takes the size from it', { tags: ['condition'] }, () => {
     const g = graphOf('default-video-i2v');
     const imageNode = g.nodes.find((n) => n.data.type === 'image')!;
     imageNode.data.inputs.image = 'a.png';
@@ -50,7 +50,7 @@ describe('video graphs', () => {
     expect(req.params).toMatchObject({ width: 640, height: 384 });
   });
 
-  it('the Generate Video node is an output node in its own category', () => {
+  it('the Generate Video node is an output node in its own category', { tags: ['condition'] }, () => {
     const t = NODE_TEMPLATES.find((n) => n.type === 'video_generate');
     expect(t).toMatchObject({ category: 'video', isOutput: true });
   });

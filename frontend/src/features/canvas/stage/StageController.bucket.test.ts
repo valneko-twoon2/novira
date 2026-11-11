@@ -59,7 +59,7 @@ afterEach(() => {
 });
 
 describe('the bucket tool', () => {
-  it('fills inside the generation box on a stage of its own', () => {
+  it('fills inside the generation box on a stage of its own', { tags: ['condition'] }, () => {
     make(false);
     press(40 + 30, 20 + 50);
     expect(filled).toHaveBeenCalledTimes(1);
@@ -71,13 +71,13 @@ describe('the bucket tool', () => {
     expect(area).toEqual({ x: 8, y: 16, width: 128, height: 64 });
   });
 
-  it('fills inside the whole document over a host\'s document, in document pixels', () => {
+  it('fills inside the whole document over a host\'s document, in document pixels', { tags: ['condition'] }, () => {
     make(true);
     press(40 + 50, 20 + 100);
     expect(filled).toHaveBeenCalledWith('ink', { x: 100, y: 200 }, { x: 0, y: 0, width: 1000, height: 1400 }, store);
   });
 
-  it('warns when no layer is chosen, and when the layer is a slot', () => {
+  it('warns when no layer is chosen, and when the layer is a slot', { tags: ['condition'] }, () => {
     make(true);
     store.getState().select(null);
     press(100, 100);
@@ -90,7 +90,7 @@ describe('the bucket tool', () => {
     expect(useToasts.getState().toasts.at(-1)?.status).toBe('warning');
   });
 
-  it('does not fill from a locked layer', () => {
+  it('does not fill from a locked layer', { tags: ['condition'] }, () => {
     make(true);
     store.setState({ entities: [{ ...ink, isLocked: true }] });
     press(100, 100);

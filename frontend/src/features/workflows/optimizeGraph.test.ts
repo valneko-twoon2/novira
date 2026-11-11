@@ -44,7 +44,7 @@ function textToImageEdges(model = 'model'): WorkflowEdge[] {
 }
 
 describe('optimizeGraph: merging duplicates', () => {
-  it('merges a duplicate node and rewires its outgoing edges to the kept one', () => {
+  it('merges a duplicate node and rewires its outgoing edges to the kept one', { tags: ['boundary'] }, () => {
     const nodes = [...textToImage(), node('main_model_loader', 'model2', { model: 'm1' })];
     // The negative prompt and the decoder take their inputs from the second, identical loader.
     const fromSecond = (e: WorkflowEdge) => e.source === 'model' && (e.target === 'neg' || e.target === 'decode');
@@ -55,7 +55,7 @@ describe('optimizeGraph: merging duplicates', () => {
     expect(links(out)).toEqual(links(graph(textToImage(), textToImageEdges())));
   });
 
-  it('merges chains: identical nodes fed by merged duplicates merge too', () => {
+  it('merges chains: identical nodes fed by merged duplicates merge too', { tags: ['condition'] }, () => {
     const nodes = [
       node('main_model_loader', 'm-a', { model: 'm1' }),
       node('main_model_loader', 'm-b', { model: 'm1' }),
@@ -90,7 +90,7 @@ describe('optimizeGraph: merging duplicates', () => {
     expect(summary.edgesRemoved).toBe(1);
   });
 
-  it('keeps the node that comes first in the graph', () => {
+  it('keeps the node that comes first in the graph', { tags: ['boundary'] }, () => {
     const nodes = [node('integer', 'first', { value: 3 }), node('integer', 'second', { value: 3 }), node('integer_math', 'sum')];
     const edges = [edge('second', 'value', 'sum', 'a'), edge('first', 'value', 'sum', 'b')];
     const { graph: out } = optimizeGraph(graph(nodes, edges));
@@ -98,7 +98,7 @@ describe('optimizeGraph: merging duplicates', () => {
     expect(links(out)).toEqual(['first.value>sum.a', 'first.value>sum.b']);
   });
 
-  it('never merges output nodes', () => {
+  it('never merges output nodes', { tags: ['condition'] }, () => {
     const nodes = [...textToImage(), node('save_image', 'save2'), node('l2i', 'decode2')];
     const edges = [...textToImageEdges(), edge('decode', 'image', 'save2', 'image'), edge('denoise', 'latents', 'decode2', 'latents'), edge('model', 'vae', 'decode2', 'vae')];
     const { graph: out, summary } = optimizeGraph(graph(nodes, edges));
@@ -107,7 +107,7 @@ describe('optimizeGraph: merging duplicates', () => {
     expect(ids(out)).toContain('decode2');
   });
 
-  it('does not merge nodes whose values, labels or connections differ', () => {
+  it('does not merge nodes whose values, labels or connections differ', { tags: ['condition'] }, () => {
     const nodes = [
       node('integer', 'a', { value: 1 }),
       node('integer', 'b', { value: 2 }),
@@ -119,7 +119,7 @@ describe('optimizeGraph: merging duplicates', () => {
     expect(optimizeGraph(graph(nodes, edges)).summary.merged).toBe(0);
   });
 
-  it('ignores the stored value of an input that is connected', () => {
+  it('ignores the stored value of an input that is connected', { tags: ['condition'] }, () => {
     const nodes = [node('integer', 'v', { value: 5 }), node('integer_math', 'x', { a: 1 }), node('integer_math', 'y', { a: 99 }), node('integer_math', 'z')];
     const edges = [edge('v', 'value', 'x', 'a'), edge('v', 'value', 'y', 'a'), edge('x', 'value', 'z', 'a'), edge('y', 'value', 'z', 'b')];
     const { graph: out, summary } = optimizeGraph(graph(nodes, edges));
@@ -127,7 +127,7 @@ describe('optimizeGraph: merging duplicates', () => {
     expect(ids(out)).toEqual(['v', 'x', 'z']);
   });
 
-  it('never merges random nodes, and merges seeded nodes only with equal fixed seeds', () => {
+  it('never merges random nodes, and merges seeded nodes only with equal fixed seeds', { tags: ['regression'] }, () => {
     const nodes = [
       node('rand_int', 'r1'),
       node('rand_int', 'r2'),
@@ -143,7 +143,7 @@ describe('optimizeGraph: merging duplicates', () => {
     expect(ids(out)).toEqual(['n1', 'n3', 'n4', 'r1', 'r2', 'sum']);
   });
 
-  it('does not merge nodes with cache turned off or with fields in the linear form', () => {
+  it('does not merge nodes with cache turned off or with fields in the linear form', { tags: ['condition'] }, () => {
     const nodes = [
       node('integer', 'a', { value: 1 }, { useCache: false }),
       node('integer', 'b', { value: 1 }),
@@ -157,7 +157,7 @@ describe('optimizeGraph: merging duplicates', () => {
     expect(out.form).toEqual(form);
   });
 
-  it('with onlyWired, leaves a duplicate alone until its output is connected', () => {
+  it('with onlyWired, leaves a duplicate alone until its output is connected', { tags: ['condition'] }, () => {
     const nodes = [node('integer', 'a', { value: 1 }), node('integer', 'b', { value: 1 }), node('integer_math', 'x')];
     const edges = [edge('a', 'value', 'x', 'a')];
     expect(optimizeGraph(graph(nodes, edges), { onlyWired: true }).summary.merged).toBe(0);
@@ -167,7 +167,7 @@ describe('optimizeGraph: merging duplicates', () => {
 });
 
 describe('optimizeGraph: dead nodes', () => {
-  it('removes nodes whose results never reach an output, with their edges and form fields', () => {
+  it('removes nodes whose results never reach an output, with their edges and form fields', { tags: ['state-transition'] }, () => {
     const nodes = [...textToImage(), node('compel', 'unused', { prompt: 'x' }), node('integer', 'lonely', { value: 3 }), node('img_blur', 'blur')];
     const edges = [...textToImageEdges(), edge('model', 'clip', 'unused', 'clip'), edge('decode', 'image', 'blur', 'image')];
     const form = [
@@ -180,14 +180,14 @@ describe('optimizeGraph: dead nodes', () => {
     expect(out.form).toEqual([{ nodeId: 'pos', fieldName: 'prompt' }]);
   });
 
-  it('removes nothing when the graph has no output node', () => {
+  it('removes nothing when the graph has no output node', { tags: ['boundary', 'state-transition'] }, () => {
     const nodes = [node('main_model_loader', 'model', { model: 'm1' }), node('compel', 'pos', { prompt: 'a' }), node('integer', 'lonely')];
     const { graph: out, summary } = optimizeGraph(graph(nodes, [edge('model', 'clip', 'pos', 'clip')]));
     expect(summary.removed).toBe(0);
     expect(ids(out)).toEqual(['lonely', 'model', 'pos']);
   });
 
-  it('keeps nodes of types that are not loaded, and what feeds them', () => {
+  it('keeps nodes of types that are not loaded, and what feeds them', { tags: ['condition'] }, () => {
     const unknown: WorkflowNode = { ...node('integer', 'pack'), data: { ...node('integer', 'pack').data, type: 'comfy:NotInstalled' } };
     const nodes = [...textToImage(), node('integer', 'feeds-pack'), unknown];
     const edges = [...textToImageEdges(), edge('feeds-pack', 'value', 'pack', 'whatever')];
@@ -197,14 +197,14 @@ describe('optimizeGraph: dead nodes', () => {
     expect(ids(out)).toContain('feeds-pack');
   });
 
-  it('removeDead: false keeps unconnected nodes', () => {
+  it('removeDead: false keeps unconnected nodes', { tags: ['condition'] }, () => {
     const nodes = [...textToImage(), node('integer', 'lonely')];
     expect(optimizeGraph(graph(nodes, textToImageEdges()), { removeDead: false }).summary.removed).toBe(0);
   });
 });
 
 describe('optimizeGraph: edges', () => {
-  it('drops duplicate edges and edges whose node or handle no longer exists', () => {
+  it('drops duplicate edges and edges whose node or handle no longer exists', { tags: ['regression'] }, () => {
     const edges = [
       ...textToImageEdges(),
       edge('decode', 'image', 'save', 'image'),
@@ -219,7 +219,7 @@ describe('optimizeGraph: edges', () => {
 });
 
 describe('optimizeGraph: layout and stability', () => {
-  it('lays the graph out left to right in columns from the top-left corner', () => {
+  it('lays the graph out left to right in columns from the top-left corner', { tags: ['condition'] }, () => {
     const nodes = textToImage().map((n, i) => ({ ...n, position: { x: 1000 - i * 90, y: 500 + ((i * 137) % 300) } }));
     const { graph: out } = optimizeGraph(graph(nodes, textToImageEdges()));
     for (const e of out.edges) expect(pos(out, e.source).x).toBeLessThan(pos(out, e.target).x);
@@ -231,7 +231,7 @@ describe('optimizeGraph: layout and stability', () => {
     expect(Math.min(...out.nodes.map((n) => n.position.y))).toBe(Math.min(...nodes.map((n) => n.position.y)));
   });
 
-  it('is deterministic and does not depend on where the nodes were', () => {
+  it('is deterministic and does not depend on where the nodes were', { tags: ['decision-table'] }, () => {
     const a = textToImage().map((n, i) => ({ ...n, position: { x: i * 10, y: 0 } }));
     const b = textToImage().map((n, i) => ({ ...n, position: { x: (6 - i) * 10, y: i === 3 ? 0 : 400 + i } }));
     const outA = optimizeGraph(graph(a, textToImageEdges())).graph;
@@ -240,7 +240,7 @@ describe('optimizeGraph: layout and stability', () => {
     expect(optimizeGraph(graph(a, textToImageEdges())).graph).toEqual(outA);
   });
 
-  it('is idempotent: optimizing twice equals optimizing once', () => {
+  it('is idempotent: optimizing twice equals optimizing once', { tags: ['condition'] }, () => {
     const nodes = [...textToImage(), node('main_model_loader', 'model2', { model: 'm1' }), node('integer', 'lonely')];
     const edges = [...textToImageEdges(), edge('model2', 'vae', 'decode', 'vae'), edge('decode', 'image', 'save', 'image')];
     const once = optimizeGraph(graph(nodes, edges));
@@ -251,7 +251,7 @@ describe('optimizeGraph: layout and stability', () => {
     expect(twice.graph).toBe(once.graph);
   });
 
-  it('reports no change for an empty graph', () => {
+  it('reports no change for an empty graph', { tags: ['boundary'] }, () => {
     const empty = graph([], []);
     expect(optimizeGraph(empty)).toEqual({ graph: empty, summary: { merged: 0, removed: 0, edgesRemoved: 0, moved: 0 }, changed: false });
   });

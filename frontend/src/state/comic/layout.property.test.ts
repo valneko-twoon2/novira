@@ -18,7 +18,7 @@ const aspect = fc.constantFrom(...PAGE_SIZES).map((size) => pageAspect(size));
 const overlap = (a: Box, b: Box) => Math.max(0, Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y));
 
 describe('layoutFor', () => {
-  it('gives one box per panel (at most the limit), whatever the count and columns', () => {
+  it('gives one box per panel (at most the limit), whatever the count and columns', { tags: ['boundary'] }, () => {
     check(
       fc.property(fc.integer({ min: -5, max: 60 }), fc.integer({ min: -2, max: 6 }), direction, aspect, (n, c, d, a) => {
         const boxes = layoutFor(n, c, d, a);
@@ -27,7 +27,7 @@ describe('layoutFor', () => {
     );
   });
 
-  it('keeps every box inside the page with a real size, and no two boxes overlap', () => {
+  it('keeps every box inside the page with a real size, and no two boxes overlap', { tags: ['boundary'] }, () => {
     check(
       fc.property(count, columns, direction, aspect, (n, c, d, a) => {
         const boxes = layoutFor(n, c, d, a);
@@ -44,7 +44,7 @@ describe('layoutFor', () => {
     );
   });
 
-  it('mirrors the whole layout for a page read from the right, leaving the heights alone', () => {
+  it('mirrors the whole layout for a page read from the right, leaving the heights alone', { tags: ['condition'] }, () => {
     check(
       fc.property(count, columns, aspect, (n, c, a) => {
         const ltr = layoutFor(n, c, 'ltr', a);
@@ -62,7 +62,7 @@ describe('layoutFor', () => {
 });
 
 describe('panelPixels', () => {
-  it('gives sides that are multiples of 64 between 256 and 2048', () => {
+  it('gives sides that are multiples of 64 between 256 and 2048', { tags: ['condition'] }, () => {
     check(
       fc.property(
         fc.record({ x: fc.double({ min: 0, max: 1, noNaN: true }), y: fc.double({ min: 0, max: 1, noNaN: true }), width: fc.double({ min: 0.01, max: 1, noNaN: true }), height: fc.double({ min: 0.01, max: 1, noNaN: true }) }),

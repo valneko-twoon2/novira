@@ -16,7 +16,7 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('the library card', () => {
-  it('names the library and the open workflow, and says so when it has no name yet', () => {
+  it('names the library and the open workflow, and says so when it has no name yet', { tags: ['state-transition', 'scenario'] }, () => {
     useWorkflows.getState().setMeta({ name: 'My flow' });
     render(<WorkflowLibraryCard />);
     expect(screen.getByTestId('wf-open-library').textContent).toContain(t('workflows.library.button'));
@@ -25,7 +25,7 @@ describe('the library card', () => {
     expect(screen.getByTestId('wf-library-name').textContent).toBe(t('workflows.untitled'));
   });
 
-  it('marks unsaved changes', () => {
+  it('marks unsaved changes', { tags: ['scenario'] }, () => {
     render(<WorkflowLibraryCard />);
     act(() => useWorkflows.setState({ isTouched: false }));
     expect(screen.queryByTestId('wf-library-unsaved')).toBeNull();
@@ -33,7 +33,7 @@ describe('the library card', () => {
     expect(screen.getByTestId('wf-library-unsaved')).toBeTruthy();
   });
 
-  it('opens the library dialog, not a list of presets', () => {
+  it('opens the library dialog, not a list of presets', { tags: ['state-transition', 'scenario'] }, () => {
     render(<WorkflowLibraryCard />);
     fireEvent.click(screen.getByTestId('wf-open-library'));
     expect(useUi.getState().modal).toBe('workflowLibrary');

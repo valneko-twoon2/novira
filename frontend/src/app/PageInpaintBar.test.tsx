@@ -22,7 +22,7 @@ const mount = (pageId = 'p1') =>
   );
 
 describe('PageInpaintBar', () => {
-  it('queues the inpaint of its page, and is disabled until that settles', async () => {
+  it('queues the inpaint of its page, and is disabled until that settles', { tags: ['state-transition'] }, async () => {
     let finish!: (v: boolean) => void;
     queuePageInpaint.mockReturnValue(new Promise<boolean>((r) => (finish = r)));
     mount('page-7');
@@ -34,7 +34,7 @@ describe('PageInpaintBar', () => {
     expect(run().disabled).toBe(false);
   });
 
-  it('is usable again when the queue found nothing to do', async () => {
+  it('is usable again when the queue found nothing to do', { tags: ['error-guessing'] }, async () => {
     queuePageInpaint.mockResolvedValue(false);
     mount();
     await act(async () => {
@@ -44,7 +44,7 @@ describe('PageInpaintBar', () => {
     expect(run().disabled).toBe(false);
   });
 
-  it('puts the staging bar inline next to the button', () => {
+  it('puts the staging bar inline next to the button', { tags: ['condition'] }, () => {
     queuePageInpaint.mockResolvedValue(true);
     mount();
     expect(screen.getByTestId('staging').getAttribute('data-inline')).toBe('true');

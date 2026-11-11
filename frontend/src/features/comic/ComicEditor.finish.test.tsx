@@ -43,7 +43,7 @@ afterEach(() => {
 });
 
 describe('the stacking buttons', () => {
-  it('appear for a selected panel of a free page and move it in the stack', () => {
+  it('appear for a selected panel of a free page and move it in the stack', { tags: ['scenario'] }, () => {
     show();
     const id = page().id;
     act(() => useComic.getState().selectPanel(page().panels[0]!.id));
@@ -58,7 +58,7 @@ describe('the stacking buttons', () => {
 });
 
 describe('the reset menu', () => {
-  it('puts back a picture view by part, and everything at once', async () => {
+  it('puts back a picture view by part, and everything at once', { tags: ['decision-table'] }, async () => {
     show();
     const panelId = page().panels[0]!.id;
     act(() => {
@@ -74,7 +74,7 @@ describe('the reset menu', () => {
     expect(page().panels[0]!.imageView).toMatchObject({ rotation: 0, scale: 1, cx: 0.5 });
   });
 
-  it('offers the panel parts only on a free page', () => {
+  it('offers the panel parts only on a free page', { tags: ['scenario'] }, () => {
     show();
     const panelId = page().panels[0]!.id;
     act(() => useComic.getState().selectPanel(panelId));
@@ -83,7 +83,7 @@ describe('the reset menu', () => {
 });
 
 describe('the finishing effect on the page', () => {
-  it('filters the page and, for the e-book, lays its paper over it', () => {
+  it('filters the page and, for the e-book, lays its paper over it', { tags: ['scenario'] }, () => {
     show();
     const crop = () => document.querySelector<HTMLElement>('.comic-page__crop')!;
     expect(crop().style.filter).toBe('');
@@ -113,7 +113,7 @@ describe('a press on the selected picture of a free page', () => {
     return { shape, c, width, outline: screen.getByTestId('comic-picture-handles') };
   }
 
-  it('carries the panel when it lands inside the panel', () => {
+  it('carries the panel when it lands inside the panel', { tags: ['scenario'] }, () => {
     const { shape, c, outline } = setup();
     fireEvent.pointerDown(outline, { pointerId: 1, clientX: c.x * 1000, clientY: c.y * 1000 });
     fireEvent.pointerMove(outline, { pointerId: 1, buttons: 1, clientX: c.x * 1000 - 40, clientY: c.y * 1000 });
@@ -122,7 +122,7 @@ describe('a press on the selected picture of a free page', () => {
     expect(page().panels[1]!.imageView.cx).toBe(0.5);
   });
 
-  it('moves the picture instead when Alt is held, or when it lands outside the panel', () => {
+  it('moves the picture instead when Alt is held, or when it lands outside the panel', { tags: ['scenario'] }, () => {
     const { shape, c, width, outline } = setup();
     fireEvent.pointerDown(outline, { pointerId: 1, clientX: c.x * 1000, clientY: c.y * 1000, altKey: true });
     fireEvent.pointerMove(outline, { pointerId: 1, clientX: c.x * 1000 + 100, clientY: c.y * 1000 });
@@ -140,7 +140,7 @@ describe('a press on the selected picture of a free page', () => {
 });
 
 describe('the blank parts of the page', () => {
-  it('let go of the selection when the paper outside the panels is pressed', () => {
+  it('let go of the selection when the paper outside the panels is pressed', { tags: ['scenario'] }, () => {
     show();
     const id = page().panels[0]!.id;
     act(() => useComic.getState().selectPanel(id));

@@ -24,7 +24,7 @@ function reading(say: Record<string, unknown>) {
 }
 
 describe('the Read Aloud node', () => {
-  it('compiles to a sound loaded from the speech the backend makes, and a sound ends at the node that saves it', () => {
+  it('compiles to a sound loaded from the speech the backend makes, and a sound ends at the node that saves it', { tags: ['condition'] }, () => {
     const { graph } = compileComfyPrompt(reading({ text: ' Good morning ', language: 'English', speaker: 'Ryan' }));
     expect(graph.prompt.say).toEqual({
       class_type: 'LoadAudio',
@@ -34,7 +34,7 @@ describe('the Read Aloud node', () => {
     expect(graph.outputs).toEqual(['save']);
   });
 
-  it('takes the text from a String node, and refuses a text that comes from a node ComfyUI runs', () => {
+  it('takes the text from a String node, and refuses a text that comes from a node ComfyUI runs', { tags: ['error-guessing'] }, () => {
     const nodes = [node('string', 'words', { value: 'From a node' }), ...reading({}).nodes];
     const edges = [makeEdge('words', 'value', 'say', 'text'), makeEdge('say', 'audio', 'save', 'audio')];
     expect(compileComfyPrompt({ nodes, edges }).graph.prompt.say!.inputs.audio).toMatchObject({ $speech: { text: 'From a node' } });
@@ -43,7 +43,7 @@ describe('the Read Aloud node', () => {
     expect(() => compileComfyPrompt({ nodes: [blank, ...reading({}).nodes], edges: [makeEdge('blank', 'IMAGE', 'say', 'text'), makeEdge('say', 'audio', 'save', 'audio')] })).toThrow(ComfyGraphError);
   });
 
-  it('needs the text, and the description of a voice described in words', () => {
+  it('needs the text, and the description of a voice described in words', { tags: ['condition'] }, () => {
     const reason = (say: Record<string, unknown>) => {
       try {
         compileComfyPrompt(reading(say));
@@ -58,7 +58,7 @@ describe('the Read Aloud node', () => {
     expect(reason({ text: 'Hi', mode: 'preset' })).toBeNull();
   });
 
-  it('reads with the Voice tab\'s language and speaker when the node holds none, and still needs a text it never held', () => {
+  it('reads with the Voice tab\'s language and speaker when the node holds none, and still needs a text it never held', { tags: ['condition'] }, () => {
     const compiled = (drop: string[], say: Record<string, unknown> = { text: 'Hi' }) => {
       const g = reading(say);
       for (const field of drop) delete g.nodes[0]!.data.inputs[field];
@@ -70,7 +70,7 @@ describe('the Read Aloud node', () => {
     expect(compiled(['instruct'], { text: 'Hi', mode: 'design' })).toThrow(expect.objectContaining({ reason: 'missingInput', nodeId: 'say', field: 'instruct' }));
   });
 
-  it('sends the description of a preset voice as its style and drops a mode it does not know', () => {
+  it('sends the description of a preset voice as its style and drops a mode it does not know', { tags: ['decision-table'] }, () => {
     const say = (inputs: Record<string, unknown>) => compileComfyPrompt(reading(inputs)).graph.prompt.say!.inputs.audio as { $speech: Record<string, string> };
     expect(say({ text: 'Hi', instruct: 'whisper' }).$speech).toMatchObject({ mode: 'preset', instruct: 'whisper' });
     expect(say({ text: 'Hi', mode: 'shout' }).$speech.mode).toBe('preset');
@@ -78,7 +78,7 @@ describe('the Read Aloud node', () => {
 });
 
 describe('the ready-made voice graphs', () => {
-  it('read a text aloud and save it as an MP3', () => {
+  it('read a text aloud and save it as an MP3', { tags: ['condition'] }, () => {
     const g = graphOf('voiceRead');
     const { graph } = compileComfyPrompt(g);
     const save = g.nodes.find((n) => n.data.type === 'comfy:SaveAudioAdvanced')!.id;
@@ -86,7 +86,7 @@ describe('the ready-made voice graphs', () => {
     expect(graph.prompt[save]!.inputs).toMatchObject({ format: 'mp3', 'format.quality': '128k' });
   });
 
-  it('put the speech on a video of the gallery and save the result as a video with a first frame', () => {
+  it('put the speech on a video of the gallery and save the result as a video with a first frame', { tags: ['boundary'] }, () => {
     const g = graphOf('videoNarration');
     expect(readinessReasons(g).join()).toMatch(/選べるファイルがありません|ComfyUI の一覧にありません|file/i);
     g.nodes.find((n) => n.data.type === 'comfy:LoadVideo')!.data.inputs.file = 'clip.mp4';
@@ -100,7 +100,7 @@ describe('the ready-made voice graphs', () => {
 });
 
 describe('running a graph that reads aloud', () => {
-  it('waits for the voice engine to be installed', () => {
+  it('waits for the voice engine to be installed', { tags: ['state-transition'] }, () => {
     const g = graphOf('voiceRead');
     const ready = usePacks.getState().packs.voice;
     try {
@@ -113,7 +113,7 @@ describe('running a graph that reads aloud', () => {
     }
   });
 
-  it('tells the gallery the text that was read and the voice engine, and needs no sampler', () => {
+  it('tells the gallery the text that was read and the voice engine, and needs no sampler', { tags: ['condition'] }, () => {
     const req = buildRequest(graphOf('voiceRead'), {}, { prepend: false });
     expect(req.params).toMatchObject({ generationMode: 'graph', positivePrompt: expect.stringContaining('Hello!'), modelName: 'Qwen3-TTS' });
     expect(req.randomizeSeed).toBe(false);

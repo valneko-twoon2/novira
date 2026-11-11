@@ -54,7 +54,7 @@ beforeEach(() => {
 afterEach(() => setToolViewer(null));
 
 describe('a picture result', () => {
-  it('is shown beside its original while the band shows the tool on that picture', async () => {
+  it('is shown beside its original while the band shows the tool on that picture', { tags: ['scenario'] }, async () => {
     const job = pendingJob<ImageDTO>();
     vi.mocked(runJob).mockImplementation(job.impl);
     useToolBand.getState().show('cutout', 'photo.png', 'status');
@@ -67,7 +67,7 @@ describe('a picture result', () => {
     expect(lastToast()).toMatchObject({ status: 'success', title: t('cutout.saved') });
   });
 
-  it('keeps running when the band closes, and then only says it was saved', async () => {
+  it('keeps running when the band closes, and then only says it was saved', { tags: ['state-transition'] }, async () => {
     const job = pendingJob<ImageDTO>();
     vi.mocked(runJob).mockImplementation(job.impl);
     useToolBand.getState().show('facefix', 'photo.png', 'status');
@@ -81,7 +81,7 @@ describe('a picture result', () => {
     expect(lastToast()).toMatchObject({ status: 'success', title: t('facefix.saved') });
   });
 
-  it('is not shown beside its original when the band moved on to another picture', async () => {
+  it('is not shown beside its original when the band moved on to another picture', { tags: ['condition'] }, async () => {
     const job = pendingJob<ImageDTO>();
     vi.mocked(runJob).mockImplementation(job.impl);
     useToolBand.getState().show('cutout', 'photo.png', 'status');
@@ -94,7 +94,7 @@ describe('a picture result', () => {
 });
 
 describe('ending otherwise', () => {
-  it('cancels the job only through cancelToolRun', async () => {
+  it('cancels the job only through cancelToolRun', { tags: ['state-transition'] }, async () => {
     const job = pendingJob<ImageDTO>();
     vi.mocked(runJob).mockImplementation(job.impl);
     useToolBand.getState().show('cutout', 'photo.png', 'status');
@@ -107,7 +107,7 @@ describe('ending otherwise', () => {
     expect(useToolRuns.getState().runs.cutout?.status).toBe('canceled');
   });
 
-  it('keeps the reason of a failure, and makes it a notice when the band does not show it', async () => {
+  it('keeps the reason of a failure, and makes it a notice when the band does not show it', { tags: ['error-guessing'] }, async () => {
     vi.mocked(runJob).mockRejectedValue(new Error('out of memory'));
     useToolBand.getState().show('facefix', 'photo.png', 'status');
     await startToolRun('facefix', 'photo.png');
@@ -118,7 +118,7 @@ describe('ending otherwise', () => {
     expect(lastToast()).toMatchObject({ status: 'error', title: t('facefix.failed'), description: 'out of memory' });
   });
 
-  it('starts nothing for a picture that is no longer in the gallery', async () => {
+  it('starts nothing for a picture that is no longer in the gallery', { tags: ['condition'] }, async () => {
     await startToolRun('cutout', 'gone.png');
     expect(useToolRuns.getState().runs.cutout).toBeUndefined();
     expect(runJob).not.toHaveBeenCalled();
@@ -126,14 +126,14 @@ describe('ending otherwise', () => {
 });
 
 describe('text results', () => {
-  it('tidies a description, and says it finished when the band does not show it', async () => {
+  it('tidies a description, and says it finished when the band does not show it', { tags: ['condition'] }, async () => {
     vi.mocked(runTextJob).mockResolvedValue('1girl,  smile, 1girl');
     await startToolRun('caption', 'photo.png');
     expect(useToolRuns.getState().runs.caption?.result).toEqual({ kind: 'text', text: '1girl, smile' });
     expect(lastToast()).toMatchObject({ status: 'success', title: t('gallery.tools.finished', { tool: t('gallery.tools.name.caption') }) });
   });
 
-  it('reads the people of a pose answer, and fails on an answer that is not one', async () => {
+  it('reads the people of a pose answer, and fails on an answer that is not one', { tags: ['error-guessing'] }, async () => {
     vi.mocked(runTextJob).mockResolvedValue(JSON.stringify([{ canvas_width: 100, canvas_height: 50, people: [] }]));
     useToolBand.getState().show('pose', 'photo.png', 'status');
     await startToolRun('pose', 'photo.png');
@@ -143,7 +143,7 @@ describe('text results', () => {
     expect(useToolRuns.getState().runs.pose).toMatchObject({ status: 'failed', error: 'not json' });
   });
 
-  it('puts a description into the prompt in place of it or after it', () => {
+  it('puts a description into the prompt in place of it or after it', { tags: ['condition'] }, () => {
     useParams.setState({ positivePrompt: 'masterpiece' });
     applyDescription('1girl', 'append');
     expect(useParams.getState().positivePrompt).toBe('masterpiece, 1girl');
@@ -153,7 +153,7 @@ describe('text results', () => {
 });
 
 describe('knowing a result picture', () => {
-  it('from the queue item as soon as the job completes, and from the run once it has its result', async () => {
+  it('from the queue item as soon as the job completes, and from the run once it has its result', { tags: ['condition'] }, async () => {
     const job = pendingJob<ImageDTO>();
     vi.mocked(runJob).mockImplementation(job.impl);
     const run = startToolRun('cutout', 'photo.png');
@@ -169,7 +169,7 @@ describe('knowing a result picture', () => {
 });
 
 describe('several runs', () => {
-  it('shows the newest run of a tool; an older one still ends without taking its place', async () => {
+  it('shows the newest run of a tool; an older one still ends without taking its place', { tags: ['scenario'] }, async () => {
     const first = pendingJob<ImageDTO>();
     const second = pendingJob<ImageDTO>();
     vi.mocked(runJob).mockImplementationOnce(first.impl).mockImplementationOnce(second.impl);

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { formatColor, parseColor } from './color';
 
 describe('colour strings', () => {
-  it('reads hex and rgb forms', () => {
+  it('reads hex and rgb forms', { tags: ['equivalence'] }, () => {
     expect(parseColor('#FFD23F')).toEqual({ hex: '#ffd23f', alpha: 1 });
     expect(parseColor('#fa0')).toEqual({ hex: '#ffaa00', alpha: 1 });
     expect(parseColor('rgba(0, 0, 0, 0.45)')).toEqual({ hex: '#000000', alpha: 0.45 });
@@ -10,12 +10,12 @@ describe('colour strings', () => {
     expect(parseColor('not a colour')).toEqual({ hex: '#000000', alpha: 1 });
   });
 
-  it('writes opaque colours as hex and translucent ones as rgba', () => {
+  it('writes opaque colours as hex and translucent ones as rgba', { tags: ['condition'] }, () => {
     expect(formatColor({ hex: '#112233', alpha: 1 })).toBe('#112233');
     expect(formatColor({ hex: '#112233', alpha: 0.5 })).toBe('rgba(17, 34, 51, 0.5)');
   });
 
-  it('round-trips a translucent colour', () => {
+  it('round-trips a translucent colour', { tags: ['condition'] }, () => {
     expect(parseColor(formatColor({ hex: '#336699', alpha: 0.4 }))).toEqual({ hex: '#336699', alpha: 0.4 });
   });
 });

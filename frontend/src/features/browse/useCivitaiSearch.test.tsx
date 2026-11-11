@@ -18,7 +18,7 @@ afterEach(() => {
 });
 
 describe('useCivitaiSearch', () => {
-  it('loads the first page and reports whether there is more', async () => {
+  it('loads the first page and reports whether there is more', { tags: ['boundary', 'scenario'] }, async () => {
     vi.spyOn(backend, 'searchCivitai').mockResolvedValue(page(['a', 'b'], 'c2'));
     const { result } = renderHook(() => useCivitaiSearch(params('first')));
     expect(result.current.status).toBe('loading');
@@ -27,7 +27,7 @@ describe('useCivitaiSearch', () => {
     expect(result.current.hasMore).toBe(true);
   });
 
-  it('has no more pages when the backend returns no cursor', async () => {
+  it('has no more pages when the backend returns no cursor', { tags: ['scenario'] }, async () => {
     vi.spyOn(backend, 'searchCivitai').mockResolvedValue(page(['a'], null));
     const { result } = renderHook(() => useCivitaiSearch(params('lastpage')));
     await waitFor(() => expect(result.current.status).toBe('ready'));
@@ -37,7 +37,7 @@ describe('useCivitaiSearch', () => {
     expect(search).toHaveBeenCalledTimes(1);
   });
 
-  it('appends the next page with the cursor of the previous one', async () => {
+  it('appends the next page with the cursor of the previous one', { tags: ['boundary', 'scenario'] }, async () => {
     const search = vi.spyOn(backend, 'searchCivitai').mockResolvedValueOnce(page(['a'], 'c2')).mockResolvedValueOnce(page(['b'], null));
     const { result } = renderHook(() => useCivitaiSearch(params('paging')));
     await waitFor(() => expect(result.current.status).toBe('ready'));
@@ -50,7 +50,7 @@ describe('useCivitaiSearch', () => {
     expect(search.mock.calls[1]![0].cursor).toBe('c2');
   });
 
-  it('reports an error with its message, and retry searches again from the first page', async () => {
+  it('reports an error with its message, and retry searches again from the first page', { tags: ['regression', 'error-guessing'] }, async () => {
     const search = vi.spyOn(backend, 'searchCivitai').mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(page(['a'], null));
     const { result } = renderHook(() => useCivitaiSearch(params('failing')));
     await waitFor(() => expect(result.current.status).toBe('error'));
@@ -61,14 +61,14 @@ describe('useCivitaiSearch', () => {
     expect(search).toHaveBeenCalledTimes(2);
   });
 
-  it('reports a plain string rejection as the error text', async () => {
+  it('reports a plain string rejection as the error text', { tags: ['error-guessing', 'scenario'] }, async () => {
     vi.spyOn(backend, 'searchCivitai').mockRejectedValue('rate limited');
     const { result } = renderHook(() => useCivitaiSearch(params('stringerr')));
     await waitFor(() => expect(result.current.status).toBe('error'));
     expect(result.current.error).toBe('rate limited');
   });
 
-  it('ignores the answer to an earlier search once the parameters changed', async () => {
+  it('ignores the answer to an earlier search once the parameters changed', { tags: ['scenario'] }, async () => {
     let resolveOld!: (r: CivitaiSearchResult) => void;
     vi.spyOn(backend, 'searchCivitai').mockImplementation((p) =>
       p.query === 'stale-old' ? new Promise((resolve) => (resolveOld = resolve)) : Promise.resolve(page(['new'], null)),
@@ -80,7 +80,7 @@ describe('useCivitaiSearch', () => {
     expect(ids(result.current.items)).toEqual(['new']);
   });
 
-  it('shows a search seen long ago at once, and refreshes it', async () => {
+  it('shows a search seen long ago at once, and refreshes it', { tags: ['scenario'] }, async () => {
     const now = vi.spyOn(Date, 'now').mockReturnValue(1_000_000);
     const search = vi.spyOn(backend, 'searchCivitai').mockResolvedValue(page(['a'], 'c2'));
     const first = renderHook(() => useCivitaiSearch(params('cached')));
@@ -97,7 +97,7 @@ describe('useCivitaiSearch', () => {
     expect(ids(second.result.current.items)).toEqual(['fresh']);
   });
 
-  it('does not search again when the tab is opened again within a few minutes, and a retry still does', async () => {
+  it('does not search again when the tab is opened again within a few minutes, and a retry still does', { tags: ['regression', 'boundary'] }, async () => {
     const now = vi.spyOn(Date, 'now').mockReturnValue(5_000_000);
     const search = vi.spyOn(backend, 'searchCivitai').mockResolvedValue(page(['a'], 'c2'));
     const first = renderHook(() => useCivitaiSearch(params('reopened')));
@@ -121,7 +121,7 @@ describe('useCivitaiSearch', () => {
     await waitFor(() => expect(search.mock.calls.some((c, i) => i >= 3 && c[0].cursor === null)).toBe(true));
   });
 
-  it('asks for the next page as soon as a page arrives, and uses that answer when more is wanted', async () => {
+  it('asks for the next page as soon as a page arrives, and uses that answer when more is wanted', { tags: ['scenario'] }, async () => {
     const search = vi.spyOn(backend, 'searchCivitai').mockResolvedValueOnce(page(['a'], 'c2')).mockResolvedValueOnce(page(['b'], 'c3')).mockResolvedValueOnce(page(['c'], null));
     const { result } = renderHook(() => useCivitaiSearch(params('ahead')));
     await waitFor(() => expect(result.current.status).toBe('ready'));
@@ -134,7 +134,7 @@ describe('useCivitaiSearch', () => {
     expect(search.mock.calls.map((c) => c[0].cursor)).toEqual([null, 'c2', 'c3']);
   });
 
-  it('asks again when the page asked for ahead of time failed', async () => {
+  it('asks again when the page asked for ahead of time failed', { tags: ['regression', 'error-guessing'] }, async () => {
     const search = vi.spyOn(backend, 'searchCivitai').mockResolvedValueOnce(page(['a'], 'c2')).mockRejectedValueOnce(new Error('busy')).mockResolvedValueOnce(page(['b'], null));
     const { result } = renderHook(() => useCivitaiSearch(params('ahead-fails')));
     await waitFor(() => expect(result.current.status).toBe('ready'));
@@ -144,7 +144,7 @@ describe('useCivitaiSearch', () => {
     expect(search).toHaveBeenCalledTimes(3);
   });
 
-  it('does not use a page asked for ahead for another search', async () => {
+  it('does not use a page asked for ahead for another search', { tags: ['scenario'] }, async () => {
     const search = vi.spyOn(backend, 'searchCivitai').mockImplementation((p) => Promise.resolve(p.query === 'ahead-x' ? page(['x'], p.cursor ? null : 'cx') : page(['y'], null)));
     const { result, rerender } = renderHook(({ q }) => useCivitaiSearch(params(q)), { initialProps: { q: 'ahead-x' } });
     await waitFor(() => expect(search).toHaveBeenCalledTimes(2));
@@ -153,7 +153,7 @@ describe('useCivitaiSearch', () => {
     expect(result.current.hasMore).toBe(false);
   });
 
-  it('shows a model once even when a later page, or the same page, brings it again', async () => {
+  it('shows a model once even when a later page, or the same page, brings it again', { tags: ['regression'] }, async () => {
     vi.spyOn(backend, 'searchCivitai').mockResolvedValueOnce(page(['a', 'a', 'b'], 'c2')).mockResolvedValueOnce(page(['b', 'c'], null));
     const { result } = renderHook(() => useCivitaiSearch(params('dupes')));
     await waitFor(() => expect(result.current.status).toBe('ready'));

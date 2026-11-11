@@ -4,6 +4,7 @@ use novira_core::types::*;
 use novira_core::{Backend, BackendConfig, BackendError, Settings};
 use std::sync::Arc;
 
+// tags: error-guessing
 #[tokio::test]
 async fn an_out_of_memory_failure_is_marked_and_keeps_the_engine_text() {
     let dir = tempfile::tempdir().unwrap();
@@ -24,6 +25,7 @@ async fn an_out_of_memory_failure_is_marked_and_keeps_the_engine_text() {
     backend.shutdown();
 }
 
+// tags: boundary
 #[tokio::test]
 async fn a_smaller_retry_keeps_the_request_and_checks_the_size() {
     let dir = tempfile::tempdir().unwrap();
@@ -60,6 +62,7 @@ async fn a_smaller_retry_keeps_the_request_and_checks_the_size() {
     backend.shutdown();
 }
 
+// tags: boundary
 #[tokio::test]
 async fn a_smaller_retry_is_only_for_pictures_made_at_a_size() {
     let dir = tempfile::tempdir().unwrap();
@@ -85,6 +88,7 @@ async fn a_smaller_retry_is_only_for_pictures_made_at_a_size() {
         .is_some());
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn low_memory_mode_is_saved_and_restarts_a_running_engine() {
     let dir = tempfile::tempdir().unwrap();
@@ -118,6 +122,7 @@ async fn low_memory_mode_is_saved_and_restarts_a_running_engine() {
     assert_eq!(*engine.restarts.lock().unwrap(), 1);
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn low_memory_mode_waits_for_the_next_start_while_a_job_runs() {
     let dir = tempfile::tempdir().unwrap();
@@ -140,6 +145,7 @@ async fn low_memory_mode_waits_for_the_next_start_while_a_job_runs() {
     backend.shutdown();
 }
 
+// tags: scenario
 #[tokio::test]
 async fn low_memory_mode_is_read_at_start_and_reported_for_an_external_server() {
     let dir = tempfile::tempdir().unwrap();

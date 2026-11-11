@@ -10,7 +10,7 @@ const item = (id: number, status: QueueItem['status']) => ({ id, status }) as Qu
 const progress = (itemId: number, url: string | null) => ({ itemId, step: 1, totalSteps: 4, progressImageUrl: url, message: 'denoise' });
 
 describe('mergeProgress', () => {
-  it('takes a new picture, keeps the last one through a step with none, and starts clean for another item', () => {
+  it('takes a new picture, keeps the last one through a step with none, and starts clean for another item', { tags: ['condition'] }, () => {
     expect(mergeProgress(progress(1, 'a'), progress(1, 'b')).progressImageUrl).toBe('b');
     expect(mergeProgress(progress(1, 'a'), progress(1, null)).progressImageUrl).toBe('a');
     expect(mergeProgress(progress(1, 'a'), progress(2, null)).progressImageUrl).toBeNull();
@@ -20,7 +20,7 @@ describe('mergeProgress', () => {
 });
 
 describe('queue store', () => {
-  it('appends unknown items and replaces known ones in place', () => {
+  it('appends unknown items and replaces known ones in place', { tags: ['error-guessing'] }, () => {
     useQueue.getState().setItems([item(1, 'pending'), item(2, 'pending')]);
     useQueue.getState().upsertItem(item(1, 'in_progress'));
     useQueue.getState().upsertItem(item(3, 'pending'));

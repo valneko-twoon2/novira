@@ -7,7 +7,7 @@ const defsWith = (names: string[]) => ({ [DETECTOR_NODE]: { input: { required: {
 const options = { modelKey: 'sdxl-key', prompt: '1girl, smile', negative: 'blurry', detector: 'bbox/face_yolov8m.pt', strength: 0.4, sensitivity: 0.5, steps: 20, cfg: 5, scheduler: 'dpmpp_2m_k' } as const;
 
 describe('face fix prompt', () => {
-  it('loads the picture and the detector, redraws the faces with the picture\'s model, and saves one picture', () => {
+  it('loads the picture and the detector, redraws the faces with the picture\'s model, and saves one picture', { tags: ['scenario'] }, () => {
     const g = buildFaceFixGraph('photo.png', options);
     expect(g.prompt.source!.inputs.image).toEqual({ $image: 'photo.png' });
     expect(g.prompt.ckpt!.inputs.ckpt_name).toEqual({ $model: 'sdxl-key' });
@@ -21,7 +21,7 @@ describe('face fix prompt', () => {
     expect(g.outputs).toEqual(['save']);
   });
 
-  it('lets the backend choose the seed and translate the scheduler', () => {
+  it('lets the backend choose the seed and translate the scheduler', { tags: ['condition'] }, () => {
     const face = buildFaceFixGraph('photo.png', options).prompt.face!;
     expect(face.inputs.seed).toEqual({ $seed: true });
     expect(face.inputs.sampler_name).toEqual({ $sampler_name: 'dpmpp_2m_k' });
@@ -30,11 +30,11 @@ describe('face fix prompt', () => {
 });
 
 describe('face detectors', () => {
-  it('lists the box detectors the loaded node offers, the ones for faces first, without the segmentation ones', () => {
+  it('lists the box detectors the loaded node offers, the ones for faces first, without the segmentation ones', { tags: ['condition'] }, () => {
     expect(faceDetectors(defsWith(['bbox/hand_yolov8s.pt', 'segm/person_yolov8m-seg.pt', 'bbox/face_yolov8m.pt']))).toEqual(['bbox/face_yolov8m.pt', 'bbox/hand_yolov8s.pt']);
   });
 
-  it('is empty while the pack is not loaded or has no box detector', () => {
+  it('is empty while the pack is not loaded or has no box detector', { tags: ['boundary'] }, () => {
     expect(faceDetectors(null)).toEqual([]);
     expect(faceDetectors({} as ComfyNodeDefs)).toEqual([]);
     expect(faceDetectors(defsWith(['segm/person_yolov8m-seg.pt']))).toEqual([]);

@@ -8,14 +8,14 @@ const same = (a: RigState | undefined, b: RigState) => expect(serializeRig(a!)).
 const smile: RigState = { w: { au12: 1 }, p: { happy: 0.6 }, rot: [0, 20, 0] };
 
 describe('face rig animation poses', () => {
-  it('blends axes, presets and head turn, treating a missing axis as 0', () => {
+  it('blends axes, presets and head turn, treating a missing axis as 0', { tags: ['error-guessing', 'boundary'] }, () => {
     const half = blendRig(EMPTY_RIG, smile, 0.5);
     expect(half.w.au12).toBe(0.5);
     expect(half.p.happy).toBeCloseTo(0.3);
     expect(half.rot[1]).toBe(10);
   });
 
-  it('eases from one keyframe to the next and ends on the last one', () => {
+  it('eases from one keyframe to the next and ends on the last one', { tags: ['boundary'] }, () => {
     const poses = animationPoses([EMPTY_RIG, smile], { seconds: 1, fps: 10, loop: false });
     expect(poses).toHaveLength(11);
     same(poses[0], EMPTY_RIG);
@@ -25,7 +25,7 @@ describe('face rig animation poses', () => {
     expect(w[1]! - w[0]!).toBeLessThan(w[6]! - w[5]!);
   });
 
-  it('returns to the first keyframe when it loops, without repeating it', () => {
+  it('returns to the first keyframe when it loops, without repeating it', { tags: ['boundary'] }, () => {
     const poses = animationPoses([EMPTY_RIG, smile], { seconds: 0.5, fps: 10, loop: true });
     expect(poses).toHaveLength(10);
     same(poses[0], EMPTY_RIG);
@@ -33,7 +33,7 @@ describe('face rig animation poses', () => {
     expect(poses[9]!.w.au12!).toBeGreaterThan(0);
   });
 
-  it('has nothing to animate with fewer than two keyframes, and caps the frame count', () => {
+  it('has nothing to animate with fewer than two keyframes, and caps the frame count', { tags: ['boundary'] }, () => {
     expect(animationPoses([], { seconds: 1, fps: 10, loop: true })).toEqual([]);
     expect(animationPoses([smile], { seconds: 1, fps: 10, loop: true })).toEqual([smile]);
     const long = animationPoses([EMPTY_RIG, smile, EMPTY_RIG, smile], { seconds: 3, fps: 24, loop: true });
@@ -49,7 +49,7 @@ describe('face rig GIF', () => {
     return { data, width: 8, height: 8 };
   };
 
-  it('writes a looping GIF with one frame per picture at the frame delay', () => {
+  it('writes a looping GIF with one frame per picture at the frame delay', { tags: ['boundary', 'decision-table'] }, () => {
     const bytes = encodeGif([frame(0), frame(100), frame(200)], 10);
     expect(String.fromCharCode(...bytes.slice(0, 6))).toBe('GIF89a');
     expect(bytes[bytes.length - 1]).toBe(0x3b);
@@ -65,7 +65,7 @@ describe('face rig GIF', () => {
     expect(() => encodeGif([], 10)).toThrow();
   });
 
-  it('offers a video only where the browser can record one', async () => {
+  it('offers a video only where the browser can record one', { tags: ['boundary'] }, async () => {
     // jsdom has no MediaRecorder.
     expect(videoType()).toBeNull();
     await expect(encodeVideo([{ data: new Uint8ClampedArray(4), width: 1, height: 1 }], 10, new AbortController().signal)).rejects.toThrow('cannot record');

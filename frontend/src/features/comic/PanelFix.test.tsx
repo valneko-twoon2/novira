@@ -51,7 +51,7 @@ afterEach(() => {
 });
 
 describe('PanelFix', () => {
-  it('shows the strip and the surface only while the panel is marked', () => {
+  it('shows the strip and the surface only while the panel is marked', { tags: ['scenario'] }, () => {
     show();
     expect(screen.queryByTestId('comic-fix-bar')).toBeNull();
     expect(screen.queryByTestId('comic-fix-surface')).toBeNull();
@@ -62,7 +62,7 @@ describe('PanelFix', () => {
     expect(screen.queryByTestId('comic-fix-bar')).toBeNull();
   });
 
-  it('paints strokes in fractions of the panel, and Redraw queues them with the words and ends the marking', async () => {
+  it('paints strokes in fractions of the panel, and Redraw queues them with the words and ends the marking', { tags: ['scenario'] }, async () => {
     show();
     fireEvent.click(screen.getByTestId('comic-fix'));
     expect((screen.getByTestId('comic-fix-go') as HTMLButtonElement).disabled).toBe(true);
@@ -78,7 +78,7 @@ describe('PanelFix', () => {
     await waitFor(() => expect(useComicFix.getState().panelId).toBeNull());
   });
 
-  it('keeps the marking when nothing could be queued', async () => {
+  it('keeps the marking when nothing could be queued', { tags: ['scenario'] }, async () => {
     redrawPart.mockResolvedValueOnce(false);
     show();
     fireEvent.click(screen.getByTestId('comic-fix'));
@@ -90,7 +90,7 @@ describe('PanelFix', () => {
     expect(useComicFix.getState().panelId).toBe('panel-0');
   });
 
-  it('ends the marking when another panel is selected', () => {
+  it('ends the marking when another panel is selected', { tags: ['scenario'] }, () => {
     useComicFix.getState().start('panel-0');
     show('panel-1');
     expect(useComicFix.getState().panelId).toBeNull();

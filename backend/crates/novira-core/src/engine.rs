@@ -304,6 +304,7 @@ mod tests {
         }
     }
 
+    // tags: state-transition
     #[test]
     fn status_is_tagged_by_state_with_camel_case_fields() {
         assert_eq!(
@@ -334,6 +335,7 @@ mod tests {
         }
     }
 
+    // tags: error-guessing
     #[tokio::test]
     async fn default_methods_accept_jobs_and_refuse_pack_routes() {
         let engine = Minimal;
@@ -353,6 +355,7 @@ mod tests {
         assert!(!engine.low_memory_pending());
     }
 
+    // tags: equivalence
     #[test]
     fn out_of_memory_texts_are_recognised() {
         for text in [

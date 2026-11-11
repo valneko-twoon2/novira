@@ -5,13 +5,13 @@ import { getLocale, loadedCatalog, LOCALES, localeReady, onLocaleChange, setLoca
 afterEach(() => setLocale('ja'));
 
 describe('setLocale', () => {
-  it('switches to ja and en at once, before anything is awaited', () => {
+  it('switches to ja and en at once, before anything is awaited', { tags: ['condition'] }, () => {
     void setLocale('en');
     expect(getLocale()).toBe('en');
     expect(t('settings.language.label')).toBe(en['settings.language.label']);
   });
 
-  it('keeps the language shown until the chosen one has loaded, then tells the listeners once', async () => {
+  it('keeps the language shown until the chosen one has loaded, then tells the listeners once', { tags: ['state-transition'] }, async () => {
     // The first tests here: no language but ja and en has been loaded yet.
     const seen: Locale[] = [];
     const off = onLocaleChange((l) => seen.push(l));
@@ -28,14 +28,14 @@ describe('setLocale', () => {
     }
   });
 
-  it('ends on the language chosen last when a slower load finishes after it', async () => {
+  it('ends on the language chosen last when a slower load finishes after it', { tags: ['state-transition'] }, async () => {
     const first = setLocale('ko');
     void setLocale('en');
     await first;
     expect(getLocale()).toBe('en');
   });
 
-  it('switches to every shipped locale and renders its catalog', async () => {
+  it('switches to every shipped locale and renders its catalog', { tags: ['equivalence'] }, async () => {
     for (const locale of LOCALES) {
       await setLocale(locale);
       expect(getLocale()).toBe(locale);
@@ -43,14 +43,14 @@ describe('setLocale', () => {
     }
   });
 
-  it('falls back to ja for a saved language this build does not ship', async () => {
+  it('falls back to ja for a saved language this build does not ship', { tags: ['error-guessing'] }, async () => {
     await setLocale('en');
     await setLocale('xx' as Locale);
     expect(getLocale()).toBe('ja');
     expect(t('settings.language.label')).toBe('言語');
   });
 
-  it('shows the English text for a message a language has not been given yet, then the Japanese', async () => {
+  it('shows the English text for a message a language has not been given yet, then the Japanese', { tags: ['condition'] }, async () => {
     await setLocale('fr');
     const fr = loadedCatalog('fr') as Record<string, string>;
     const saved = fr['settings.language.label'];

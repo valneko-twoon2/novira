@@ -39,7 +39,7 @@ function counted(names: string[]): { list: string[]; reads: () => number } {
 }
 
 describe('gallery work against the size of the gallery', () => {
-  it('removes a thousand pictures from two thousand reading each name about once', () => {
+  it('removes a thousand pictures from two thousand reading each name about once', { tags: ['equivalence'] }, () => {
     const images = gallery();
     const names = images.filter((_, i) => i % 2 === 0).map((i) => i.name);
     useGallery.setState({ images, selection: names.slice(), viewerImageName: names[0]!, compareImageName: images[1]!.name });
@@ -54,7 +54,7 @@ describe('gallery work against the size of the gallery', () => {
     expect(reads()).toBeLessThanOrEqual(2 * PICKED);
   });
 
-  it('takes a removal the backend reports (images_changed) the same way', () => {
+  it('takes a removal the backend reports (images_changed) the same way', { tags: ['condition'] }, () => {
     const images = gallery();
     useGallery.setState({ images });
     const { list, reads } = counted(images.slice(0, PICKED).map((i) => i.name));
@@ -63,7 +63,7 @@ describe('gallery work against the size of the gallery', () => {
     expect(reads()).toBeLessThanOrEqual(2 * PICKED);
   });
 
-  it('picks the named pictures in gallery order, reading each name about once', () => {
+  it('picks the named pictures in gallery order, reading each name about once', { tags: ['equivalence'] }, () => {
     const images = gallery();
     const wanted = images.filter((_, i) => i % 2 === 1).reverse();
     const { list, reads } = counted(wanted.map((i) => i.name));
@@ -72,7 +72,7 @@ describe('gallery work against the size of the gallery', () => {
     expect(reads()).toBeLessThanOrEqual(2 * PICKED);
   });
 
-  it('picks nothing for no names and ignores names the gallery does not hold', () => {
+  it('picks nothing for no names and ignores names the gallery does not hold', { tags: ['condition'] }, () => {
     const images = gallery().slice(0, 3);
     expect(imagesNamed(images, [])).toEqual([]);
     expect(imagesNamed(images, ['gone.png', images[2]!.name]).map((i) => i.name)).toEqual([images[2]!.name]);

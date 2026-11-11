@@ -3,6 +3,7 @@ mod common;
 use common::*;
 use novira_server::{IMAGE_URL_BASE, TOKEN_HEADER};
 
+// tags: condition
 #[tokio::test]
 async fn pictures_are_served_by_name_only() {
     let f = Fixture::start().await;
@@ -71,6 +72,7 @@ async fn pictures_are_served_by_name_only() {
     f.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn a_frontend_file_the_browser_already_has_is_not_sent_again() {
     let f = Fixture::start().await;
@@ -117,6 +119,7 @@ async fn a_frontend_file_the_browser_already_has_is_not_sent_again() {
     f.stop().await;
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn only_files_of_the_frontend_folder_are_served() {
     let f = Fixture::start().await;

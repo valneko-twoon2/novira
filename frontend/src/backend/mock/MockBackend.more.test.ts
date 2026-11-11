@@ -65,7 +65,7 @@ async function waitFor<T>(f: () => T | undefined): Promise<T> {
 }
 
 describe('jobs on a picture', () => {
-  it('fails a job whose picture was deleted, whatever the kind of job', async () => {
+  it('fails a job whose picture was deleted, whatever the kind of job', { tags: ['error-guessing'] }, async () => {
     const { backend, events } = await start();
     for (const node of ['INPAINT_MaskedFill', 'RMBG', 'PreviewAny']) {
       const [item] = await backend.enqueue(request({ destination: 'intermediate', comfyGraph: graphOf('gone.png', node) }));
@@ -74,7 +74,7 @@ describe('jobs on a picture', () => {
     }
   });
 
-  it('gives a cut-out the source picture again on the same board', async () => {
+  it('gives a cut-out the source picture again on the same board', { tags: ['condition'] }, async () => {
     const { backend, events } = await start();
     const source = await backend.uploadImage(new Blob(['a']), { boardId: null });
     const [cutItem] = await backend.enqueue(request({ boardId: null, comfyGraph: graphOf(source.name, 'RMBG') }));
@@ -85,7 +85,7 @@ describe('jobs on a picture', () => {
     expect(cut.image.isIntermediate).toBe(false);
   });
 
-  it('reads a text aloud into an audio clip', async () => {
+  it('reads a text aloud into an audio clip', { tags: ['condition'] }, async () => {
     const canvases = installRecordingCanvases();
     vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue('data:image/png;base64,AAAA');
     const { backend, events } = await start();
@@ -98,7 +98,7 @@ describe('jobs on a picture', () => {
     canvases.restore();
   });
 
-  it('turns a graph that saves a sound into an audio clip that keeps the graph, reading aloud when the graph asks for it', async () => {
+  it('turns a graph that saves a sound into an audio clip that keeps the graph, reading aloud when the graph asks for it', { tags: ['condition'] }, async () => {
     const { backend, events } = await start();
     const prompt = (audio: unknown): ComfyGraph['prompt'] => ({
       src: { class_type: 'LoadAudio', inputs: { audio } },
@@ -126,7 +126,7 @@ describe('models, node packs and the face rig', () => {
     return promise;
   };
 
-  it('installs a model to the end: downloading, then running, then a model on the list', async () => {
+  it('installs a model to the end: downloading, then running, then a model on the list', { tags: ['state-transition'] }, async () => {
     const { backend, events } = await start();
     const job = await settle(backend.installModel('https://example.com/models/fancy.safetensors', 'Fancy'));
     expect(job.name).toBe('Fancy');
@@ -137,7 +137,7 @@ describe('models, node packs and the face rig', () => {
     expect(events.some((e) => e.type === 'model_added' && e.model.name === 'Fancy')).toBe(true);
   });
 
-  it('reports the files an Anima model lacks, and none once they are installed', async () => {
+  it('reports the files an Anima model lacks, and none once they are installed', { tags: ['condition'] }, async () => {
     const { backend, events } = await start();
     const keyOf = (name: string) => events.flatMap((e) => (e.type === 'model_added' && e.model.name === name ? [e.model.key] : []))[0]!;
     const job = await settle(backend.installModel('circlestone-labs/Anima::split_files/diffusion_models/anima-base-v1.0.safetensors', 'Anima Base 1.0'));
@@ -158,7 +158,7 @@ describe('models, node packs and the face rig', () => {
     await gone;
   });
 
-  it('hands out copies of the starter models, and the Civitai search can fail or search Hugging Face', async () => {
+  it('hands out copies of the starter models, and the Civitai search can fail or search Hugging Face', { tags: ['error-guessing'] }, async () => {
     const { backend } = await start();
     const starters = await settle(backend.listStarterModels());
     starters[0]!.name = 'changed';
@@ -171,7 +171,7 @@ describe('models, node packs and the face rig', () => {
     expect(Array.isArray((await hf).items)).toBe(true);
   });
 
-  it('installs a node pack from a GitHub address, marks the engine for restart, and removes it again', async () => {
+  it('installs a node pack from a GitHub address, marks the engine for restart, and removes it again', { tags: ['state-transition'] }, async () => {
     const { backend, events } = await start();
     await backend.installNodePack('https://github.com/someone/ComfyUI-Fancy.git');
     await backend.installNodePack('https://github.com/someone/ComfyUI-Fancy');
@@ -189,7 +189,7 @@ describe('models, node packs and the face rig', () => {
     await missing;
   });
 
-  it('switches the ComfyUI version through the engine states and refuses a version that is not plain', async () => {
+  it('switches the ComfyUI version through the engine states and refuses a version that is not plain', { tags: ['state-transition'] }, async () => {
     const { backend, events } = await start();
     const releases = backend.comfyVersions();
     await vi.advanceTimersByTimeAsync(500);
@@ -204,7 +204,7 @@ describe('models, node packs and the face rig', () => {
     expect((await packs).comfyVersion).toBe('0.3.40');
   });
 
-  it('lists versions for a GitHub address only, and refuses a version that is not a plain tag', async () => {
+  it('lists versions for a GitHub address only, and refuses a version that is not a plain tag', { tags: ['equivalence'] }, async () => {
     const { backend } = await start();
     const listing = backend.nodePackVersions('https://github.com/someone/ComfyUI-Fancy');
     await vi.advanceTimersByTimeAsync(500);
@@ -216,7 +216,7 @@ describe('models, node packs and the face rig', () => {
     await expect(backend.installNodePack('https://github.com/someone/ComfyUI-Fancy', '../evil')).rejects.toThrow('Not a version tag');
   });
 
-  it('lists the registry most downloaded first, only with GitHub addresses', async () => {
+  it('lists the registry most downloaded first, only with GitHub addresses', { tags: ['condition'] }, async () => {
     const { backend } = await start();
     const list = backend.registryNodes(false);
     await vi.advanceTimersByTimeAsync(500);
@@ -226,7 +226,7 @@ describe('models, node packs and the face rig', () => {
     expect(nodes.every((n) => n.repository.startsWith('https://github.com/'))).toBe(true);
   });
 
-  it('describes a repository by its GitHub address only', async () => {
+  it('describes a repository by its GitHub address only', { tags: ['condition'] }, async () => {
     const { backend } = await start();
     const info = backend.nodePackInfo('https://github.com/someone/ComfyUI-Fancy');
     await vi.advanceTimersByTimeAsync(500);
@@ -237,7 +237,7 @@ describe('models, node packs and the face rig', () => {
     await expect(backend.nodePackInfo('https://example.com/a/b')).rejects.toThrow('Not a GitHub repository address');
   });
 
-  it('refuses an address that is not GitHub, reports a failing pack and cancels one in progress', async () => {
+  it('refuses an address that is not GitHub, reports a failing pack and cancels one in progress', { tags: ['error-guessing'] }, async () => {
     const { backend, events } = await start();
     await expect(backend.installNodePack('https://example.com/a/b')).rejects.toThrow('Not a GitHub repository address');
     await backend.installNodePack('https://github.com/someone/fail-pack');
@@ -250,7 +250,7 @@ describe('models, node packs and the face rig', () => {
     expect(events.flatMap((e) => (e.type === 'node_pack' && e.url.endsWith('slow-pack') ? [e.status.state] : [])).at(-1)).toBe('missing');
   });
 
-  it('lists the node definitions (as a copy) and the face rig library', async () => {
+  it('lists the node definitions (as a copy) and the face rig library', { tags: ['condition'] }, async () => {
     const { backend } = await start();
     const defs = await settle(backend.nodeDefs());
     expect(Object.keys(defs).length).toBeGreaterThan(5);
@@ -259,7 +259,7 @@ describe('models, node packs and the face rig', () => {
     expect(await settle(backend.faceRigLibrary())).toBeTruthy();
   });
 
-  it('asks for a frame first, then previews the picture it was given (a placeholder when the mock does not hold it)', async () => {
+  it('asks for a frame first, then previews the picture it was given (a placeholder when the mock does not hold it)', { tags: ['scenario'] }, async () => {
     const { backend } = await start();
     expect(await settle(backend.faceRigPreview({ nodeKey: 'n1' } as never), 100)).toEqual({ needsFrame: true });
     const unknown = await settle(backend.faceRigPreview({ nodeKey: 'n1', image: 'gone.png' } as never), 100);
@@ -275,7 +275,7 @@ describe('models, node packs and the face rig', () => {
 describe('exports and backups', () => {
   const options: ExportOptions = { format: 'png', quality: 90, maxSide: null, removeInfo: true, watermark: false };
 
-  it('refuses an empty choice and counts the pictures that no longer exist as skipped', async () => {
+  it('refuses an empty choice and counts the pictures that no longer exist as skipped', { tags: ['error-guessing'] }, async () => {
     const { backend } = await start();
     const source = await backend.uploadImage(new Blob(['a']), { boardId: null });
     await expect(backend.exportImages([], options)).rejects.toThrow('Choose at least one picture');
@@ -283,7 +283,7 @@ describe('exports and backups', () => {
     await expect(backend.revealExportFolder()).resolves.toBeUndefined();
   });
 
-  it('pretends to watermark: the last marked copy is what a file check finds, a gallery picture has no marks', async () => {
+  it('pretends to watermark: the last marked copy is what a file check finds, a gallery picture has no marks', { tags: ['condition'] }, async () => {
     const { backend } = await start();
     const source = await backend.uploadImage(new Blob(['a']), { boardId: null });
     expect(await backend.watermarkStatus()).toEqual({ state: 'ready' });
@@ -299,7 +299,7 @@ describe('exports and backups', () => {
     await expect(backend.checkWatermarkImage('gone.png')).rejects.toThrow('no picture');
   });
 
-  it('makes a backup, reports it as the one to restore, and forgets it after confirming', async () => {
+  it('makes a backup, reports it as the one to restore, and forgets it after confirming', { tags: ['scenario'] }, async () => {
     vi.useFakeTimers();
     try {
       const { backend, events } = await start();

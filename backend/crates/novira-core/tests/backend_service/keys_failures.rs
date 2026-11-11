@@ -2,6 +2,7 @@
 use super::common::*;
 use std::sync::Arc;
 
+// tags: error-guessing
 #[test]
 fn keys_that_cannot_be_saved_are_refused_and_not_kept() {
     let dir = tempfile::tempdir().unwrap();

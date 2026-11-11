@@ -2,6 +2,7 @@
 //! unused days, the daily certificate and a real TLS handshake.
 use super::*;
 
+// tags: state-transition
 #[tokio::test]
 async fn turning_it_on_opens_it_on_the_tailnet_and_off_closes_it() {
     let a = Away::start().await;
@@ -33,6 +34,7 @@ async fn turning_it_on_opens_it_on_the_tailnet_and_off_closes_it() {
     a.stop().await;
 }
 
+// tags: state-transition, error-guessing
 #[tokio::test]
 async fn a_problem_with_tailscale_is_named_and_it_opens_once_fixed() {
     let a = Away::start().await;
@@ -87,6 +89,7 @@ async fn a_problem_with_tailscale_is_named_and_it_opens_once_fixed() {
     a.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn only_tailnet_addresses_that_name_the_listener_are_answered() {
     let a = Away::start().await;
@@ -157,6 +160,7 @@ async fn only_tailnet_addresses_that_name_the_listener_are_answered() {
     a.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn a_phone_without_a_session_is_sent_to_sign_in_and_gets_nothing_else() {
     let a = Away::start().await;
@@ -192,6 +196,7 @@ async fn a_phone_without_a_session_is_sent_to_sign_in_and_gets_nothing_else() {
     a.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn its_management_is_this_computers_only() {
     let a = Away::start().await;
@@ -223,6 +228,7 @@ async fn its_management_is_this_computers_only() {
     a.stop().await;
 }
 
+// tags: boundary, state-transition
 #[tokio::test]
 async fn it_turns_itself_off_after_two_weeks_unused() {
     let a = Away::start().await;
@@ -240,6 +246,7 @@ async fn it_turns_itself_off_after_two_weeks_unused() {
     a.stop().await;
 }
 
+// tags: boundary
 #[tokio::test]
 async fn a_fresh_certificate_is_asked_for_once_a_day() {
     let a = Away::start().await;
@@ -255,6 +262,7 @@ async fn a_fresh_certificate_is_asked_for_once_a_day() {
     a.stop().await;
 }
 
+// tags: condition
 #[test]
 fn the_phone_page_has_the_same_strings_in_japanese_and_english() {
     crate::pair::tests::check_page_strings(STRINGS, include_str!("../page.js"));
@@ -264,6 +272,7 @@ fn the_phone_page_has_the_same_strings_in_japanese_and_english() {
 }
 
 /// A real TLS client on loopback: the listener shows the certificate Tailscale gave for its name, and answers its page.
+// tags: scenario
 #[tokio::test]
 async fn the_listener_speaks_tls_with_the_tailnet_certificate() {
     use tokio::io::{AsyncReadExt as _, AsyncWriteExt as _};

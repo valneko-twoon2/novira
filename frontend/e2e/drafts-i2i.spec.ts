@@ -1,7 +1,7 @@
 // Drafts from image to image: with a picture in the i2i section the drafts draw over it, and a finished one too.
 import { expect, msg, openApp, test } from './fixtures';
 
-test('drafts start from the image to image source and a chosen one is finished over it', async ({ page }) => {
+test('drafts start from the image to image source and a chosen one is finished over it', { tag: ['@scenario'] }, async ({ page }) => {
   test.slow();
   await openApp(page);
   await page.getByRole('button', { name: msg('params.i2i.title'), exact: true }).click();

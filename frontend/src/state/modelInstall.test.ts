@@ -13,7 +13,7 @@ afterEach(() => {
 });
 
 describe('starting an install', () => {
-  it('counts the source as installing while the request is on its way, and drops a second request for it', async () => {
+  it('counts the source as installing while the request is on its way, and drops a second request for it', { tags: ['condition'] }, async () => {
     let answer: (j: ModelInstallJob) => void = () => {};
     const request = vi.fn(() => new Promise<ModelInstallJob>((resolve) => (answer = resolve)));
     const { result } = renderHook(() => useInstallState('civitai:1/2'));
@@ -34,7 +34,7 @@ describe('starting an install', () => {
     expect(result.current.kind).toBe('queued');
   });
 
-  it('lets the source be asked for again after the request failed', async () => {
+  it('lets the source be asked for again after the request failed', { tags: ['error-guessing'] }, async () => {
     const failing = vi.fn().mockRejectedValue(new Error('no'));
     await expect(startInstall('s', failing)).rejects.toThrow('no');
     const { result } = renderHook(() => useInstallState('s'));
@@ -42,7 +42,7 @@ describe('starting an install', () => {
     await expect(startInstall('s', () => Promise.resolve(job('s')))).resolves.toBe(true);
   });
 
-  it('installModel asks the backend once for two quick presses', async () => {
+  it('installModel asks the backend once for two quick presses', { tags: ['scenario'] }, async () => {
     const ask = vi.spyOn(backend, 'installModel').mockImplementation(() => new Promise((r) => setTimeout(() => r(job('x.safetensors')), 5)));
     await Promise.all([installModel('x.safetensors'), installModel('x.safetensors')]);
     expect(ask).toHaveBeenCalledTimes(1);

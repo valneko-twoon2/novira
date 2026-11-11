@@ -20,30 +20,30 @@ afterEach(() => {
 });
 
 describe('e2e lock', () => {
-  it('is held while its process lives on this machine, and stale once it is gone', () => {
+  it('is held while its process lives on this machine, and stale once it is gone', { tags: ['state-transition'] }, () => {
     expect(isStale(owner(), NOW, NOW, () => true, 'here')).toBe(false);
     expect(isStale(owner(), NOW, NOW, () => false, 'here')).toBe(true);
     expect(isStale(owner({ pid: 'x' }), NOW, NOW, () => true, 'here')).toBe(true);
   });
 
-  it('trusts another machine only until the age limit, and takes over any lock older than it', () => {
+  it('trusts another machine only until the age limit, and takes over any lock older than it', { tags: ['boundary'] }, () => {
     expect(isStale(owner({ host: 'there' }), NOW, NOW, () => false, 'here')).toBe(false);
     expect(isStale(owner({ at: new Date(NOW - OLD_MS - 1).toISOString() }), NOW, NOW, () => true, 'here')).toBe(true);
     expect(isStale(owner({ at: new Date(NOW - OLD_MS + 60_000).toISOString() }), NOW, NOW, () => true, 'here')).toBe(false);
     expect(isStale(owner({ at: 'not a date' }), NOW, NOW, () => true, 'here')).toBe(true);
   });
 
-  it('waits a minute for the owner record of a lock just made, then takes it over', () => {
+  it('waits a minute for the owner record of a lock just made, then takes it over', { tags: ['state-transition'] }, () => {
     expect(isStale(null, NOW - 30_000, NOW)).toBe(false);
     expect(isStale(null, NOW - 61_000, NOW)).toBe(true);
   });
 
-  it('lives in the main checkout work folder unless NOVIRA_E2E_LOCK names one', () => {
+  it('lives in the main checkout work folder unless NOVIRA_E2E_LOCK names one', { tags: ['condition'] }, () => {
     expect(lockPath({ NOVIRA_E2E_LOCK: 'X:/lock' })).toBe('X:/lock');
     expect(lockPath({}).replaceAll('\\', '/')).toMatch(/\/novira-data\/work\/e2e-lock$/);
   });
 
-  it('is taken, described, released, and waits while another live process holds it', async () => {
+  it('is taken, described, released, and waits while another live process holds it', { tags: ['state-transition'] }, async () => {
     dir = mkdtempSync(join(tmpdir(), 'e2e-lock-'));
     const lock = join(dir, 'lock');
     const release = await acquire({ dir: lock, what: 'test run', log: () => {} });
@@ -56,7 +56,7 @@ describe('e2e lock', () => {
     expect(describeLock(lock)).toContain('free');
   });
 
-  it('takes over a lock whose process is gone', async () => {
+  it('takes over a lock whose process is gone', { tags: ['state-transition'] }, async () => {
     dir = mkdtempSync(join(tmpdir(), 'e2e-lock-'));
     const lock = join(dir, 'lock');
     mkdirSync(lock);
@@ -71,7 +71,7 @@ describe('e2e lock', () => {
 });
 
 describe('taking over a stale lock', () => {
-  it('removes the lock that was judged stale, and puts back a fresh one another waiter made meanwhile', () => {
+  it('removes the lock that was judged stale, and puts back a fresh one another waiter made meanwhile', { tags: ['state-transition'] }, () => {
     dir = mkdtempSync(join(tmpdir(), 'e2e-lock-'));
     const lock = join(dir, 'lock');
     const stale = owner({ pid: 1, at: '2026-01-01T00:00:00.000Z' });
@@ -90,12 +90,12 @@ describe('taking over a stale lock', () => {
 });
 
 describe('the command line a command is run with', () => {
-  it('quotes an argument with a space or a character cmd.exe acts on, and leaves a plain one alone', () => {
+  it('quotes an argument with a space or a character cmd.exe acts on, and leaves a plain one alone', { tags: ['condition'] }, () => {
     expect(commandLine(['npx', 'playwright', 'test', '--grep', 'a b', 'x&y', '--workers=2', ''])).toBe('npx playwright test --grep "a b" "x&y" "--workers=2" ""');
     expect(() => commandLine(['node', 'say "hi"'])).toThrow(/double quote/);
   });
 
-  it.runIf(process.platform === 'win32')('keeps each argument whole through cmd.exe and runs nothing after &', () => {
+  it.runIf(process.platform === 'win32')('keeps each argument whole through cmd.exe and runs nothing after &', { tags: ['condition'] }, () => {
     const line = commandLine([process.execPath, '-e', 'console.log(JSON.stringify(process.argv.slice(1)))', 'a b', 'c&echo INJECTED']);
     const out = spawnSync(line, { shell: true, encoding: 'utf8' }).stdout;
     expect(out.trim()).toBe(JSON.stringify(['a b', 'c&echo INJECTED']));
@@ -103,7 +103,7 @@ describe('the command line a command is run with', () => {
 });
 
 describe('e2e server', () => {
-  it('serves the build to a run of the layout project only, the dev server otherwise', () => {
+  it('serves the build to a run of the layout project only, the dev server otherwise', { tags: ['condition'] }, () => {
     expect(serverMode({}, ['node', 'playwright', 'test', '--project=layout'])).toBe('build');
     expect(serverMode({}, ['node', 'playwright', 'test', '--project', 'layout', '--workers=8'])).toBe('build');
     expect(serverMode({}, ['node', 'playwright', 'test', '--project=layout', '--project=chromium'])).toBe('dev');
@@ -111,14 +111,14 @@ describe('e2e server', () => {
     expect(serverMode({}, ['node', 'playwright', 'test'])).toBe('dev');
   });
 
-  it('follows E2E_SERVER, except that browser coverage always needs the dev server', () => {
+  it('follows E2E_SERVER, except that browser coverage always needs the dev server', { tags: ['condition'] }, () => {
     expect(serverMode({ E2E_SERVER: 'build' }, ['node', 'playwright', 'test'])).toBe('build');
     expect(serverMode({ E2E_SERVER: 'dev' }, ['node', 'playwright', 'test', '--project=layout'])).toBe('dev');
     expect(serverMode({ E2E_SERVER: 'nonsense' }, ['node', 'playwright', 'test', '--project=layout'])).toBe('build');
     expect(serverMode({ E2E_SERVER: 'build', E2E_COVERAGE: '1' }, ['node', 'playwright', 'test', '--project=layout'])).toBe('dev');
   });
 
-  it('rebuilds when a file of the inputs changes, appears or is renamed, and not otherwise', () => {
+  it('rebuilds when a file of the inputs changes, appears or is renamed, and not otherwise', { tags: ['condition'] }, () => {
     dir = mkdtempSync(join(tmpdir(), 'e2e-build-'));
     mkdirSync(join(dir, 'src', 'ui'), { recursive: true });
     writeFileSync(join(dir, 'src', 'ui', 'a.css'), 'a{}');
@@ -141,7 +141,7 @@ describe('e2e server', () => {
     expect(inputsHash(dir, inputs)).not.toBe(changed);
   });
 
-  it('keeps one build per checkout inside the work folder', () => {
+  it('keeps one build per checkout inside the work folder', { tags: ['condition'] }, () => {
     const a = buildDir('E:/Code/novira-wt-a').replaceAll('\\', '/');
     const b = buildDir('E:/Code/novira-wt-b').replaceAll('\\', '/');
     expect(a).toMatch(/\/novira-data\/work\/e2e-build\/novira-wt-a-[0-9a-f]{8}$/);

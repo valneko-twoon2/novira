@@ -52,7 +52,7 @@ const click = (label: string) => fireEvent.click(screen.getByText(label));
 const check = (label: string) => fireEvent.click(screen.getAllByLabelText(label).find((e) => (e as HTMLInputElement).type === 'checkbox')!);
 
 describe('adding layers', () => {
-  it('adds text and each kind of bubble, selecting the new layer and showing its properties', () => {
+  it('adds text and each kind of bubble, selecting the new layer and showing its properties', { tags: ['scenario'] }, () => {
     fireEvent.click(screen.getByTestId('text-add-text'));
     expect(layers()).toHaveLength(1);
     expect(state().selectedId).toBe(layers()[0]!.id);
@@ -65,7 +65,7 @@ describe('adding layers', () => {
 });
 
 describe('background', () => {
-  it('switches between a colour, transparent and a picture from the viewer', () => {
+  it('switches between a colour, transparent and a picture from the viewer', { tags: ['scenario'] }, () => {
     click(t('text.bg.color'));
     expect(state().scene.background).toEqual({ kind: 'color', color: '#ffffff' });
     fireEvent.change(color(t('text.color')), { target: { value: '#336699' } });
@@ -78,7 +78,7 @@ describe('background', () => {
 
   });
 
-  it('uses the picture open in the viewer as the background and sizes the canvas to it', () => {
+  it('uses the picture open in the viewer as the background and sizes the canvas to it', { tags: ['scenario'] }, () => {
     act(() => useGallery.setState({ images: [{ name: 'v.png', url: 'u', width: 800, height: 600 } as never], viewerImageName: 'v.png' }));
     // There is no extra button for it: the Image choice takes the picture of the viewer.
     expect(screen.queryByTestId('text-use-viewer')).toBeNull();
@@ -90,7 +90,7 @@ describe('background', () => {
     expect(state().scene.background.kind).toBe('image');
   });
 
-  it('resizes the canvas from the number boxes', () => {
+  it('resizes the canvas from the number boxes', { tags: ['scenario'] }, () => {
     setNum(t('text.bg.width'), 640);
     setNum(t('text.bg.height'), 480);
     expect(state().scene).toMatchObject({ width: 640, height: 480 });
@@ -98,7 +98,7 @@ describe('background', () => {
 });
 
 describe('the layer list', () => {
-  it('selects, hides, locks, reorders, duplicates and deletes layers, and clears them all', () => {
+  it('selects, hides, locks, reorders, duplicates and deletes layers, and clears them all', { tags: ['scenario'] }, () => {
     expect(screen.getByText(t('text.layers.empty'))).toBeTruthy();
     fireEvent.click(screen.getByTestId('text-add-text'));
     addBubble('round');
@@ -129,7 +129,7 @@ describe('the layer list', () => {
 describe('text properties', () => {
   beforeEach(() => fireEvent.click(screen.getByTestId('text-add-text')));
 
-  it('edits the wording, position, rotation and opacity', () => {
+  it('edits the wording, position, rotation and opacity', { tags: ['scenario'] }, () => {
     fireEvent.change(screen.getByTestId('text-content'), { target: { value: 'New\nlines' } });
     expect(text().text).toBe('New\nlines');
     setNum(t('text.position.x'), 100);
@@ -139,7 +139,7 @@ describe('text properties', () => {
     expect(text()).toMatchObject({ x: 100, y: 200, rotation: 15, opacity: 0.5 });
   });
 
-  it('edits the size, spacing, line height and bend', () => {
+  it('edits the size, spacing, line height and bend', { tags: ['scenario'] }, () => {
     setNum(t('text.size'), 80);
     setNum(t('text.letterSpacing'), 4);
     setNum(t('text.lineHeight'), 1.5);
@@ -148,7 +148,7 @@ describe('text properties', () => {
     expect(text().bend).toBe(40);
   });
 
-  it('switches between a solid and a gradient fill and edits the colours', () => {
+  it('switches between a solid and a gradient fill and edits the colours', { tags: ['scenario'] }, () => {
     fireEvent.change(color(t('text.color')), { target: { value: '#ff0000' } });
     expect(text().style.fill).toEqual({ kind: 'solid', color: '#ff0000' });
     fireEvent.click(within(screen.getByRole('group', { name: t('text.fill') })).getByText(t('text.fill.gradient')));
@@ -160,7 +160,7 @@ describe('text properties', () => {
     expect(text().style.fill).toEqual({ kind: 'solid', color: '#00ff00' });
   });
 
-  it('turns the inner outline, the outer outline and the shadow on, edits and off again', () => {
+  it('turns the inner outline, the outer outline and the shadow on, edits and off again', { tags: ['scenario'] }, () => {
     // The new text starts with an inner outline.
     expect(text().style.stroke).not.toBeNull();
     check(t('text.stroke'));
@@ -189,7 +189,7 @@ describe('text properties', () => {
     expect(text().style.shadow).toBeNull();
   });
 
-  it('sets the alignment and the writing direction', () => {
+  it('sets the alignment and the writing direction', { tags: ['scenario'] }, () => {
     const align = () => screen.getByRole('group', { name: t('text.align') });
     fireEvent.click(within(align()).getByText(t('text.align.left')));
     expect(text().style.align).toBe('left');
@@ -205,7 +205,7 @@ describe('text properties', () => {
 describe('bubble properties', () => {
   beforeEach(() => addBubble('burst'));
 
-  it('edits the size, colours and border', () => {
+  it('edits the size, colours and border', { tags: ['scenario'] }, () => {
     // The background size boxes may share these labels, so look inside the bubble controls.
     const box = within(screen.getByTestId('bubble-controls'));
     for (const [label, value] of [[t('text.bubble.width'), 300], [t('text.bubble.height'), 260]] as const) {
@@ -219,7 +219,7 @@ describe('bubble properties', () => {
     expect(bubble()).toMatchObject({ width: 300, height: 260, fill: '#eeeeee', border: { color: '#101010', width: 6 } });
   });
 
-  it('edits the pointer, shuffles a burst and toggles auto-fit', () => {
+  it('edits the pointer, shuffles a burst and toggles auto-fit', { tags: ['scenario'] }, () => {
     expect(bubble().tail.enabled).toBe(true);
     setNum(t('text.bubble.tail.curve'), 50);
     setNum(t('text.bubble.tail.width'), 120);
@@ -237,7 +237,7 @@ describe('bubble properties', () => {
     vi.restoreAllMocks();
   });
 
-  it('hides the pointer controls for a narration box', () => {
+  it('hides the pointer controls for a narration box', { tags: ['condition'] }, () => {
     addBubble('narration');
     expect(screen.queryByLabelText(t('text.bubble.tail'))).toBeNull();
     expect(screen.queryByText(t('text.bubble.shuffle'))).toBeNull();

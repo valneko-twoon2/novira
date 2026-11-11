@@ -53,12 +53,12 @@ const fail = (run: () => unknown): ComfyGraphError => {
 describe('model loaders', () => {
   const base = () => [node('main_model_loader', 'ckpt', { model: 'm-key' }), node('lora_loader', 'lora', { lora: 'l-key', weight: 0.5 })];
 
-  it('compiles a LoRA without a text encoder to the model-only loader', () => {
+  it('compiles a LoRA without a text encoder to the model-only loader', { tags: ['error-guessing'] }, () => {
     const { graph } = through(base(), [makeEdge('ckpt', 'unet', 'lora', 'unet')], 'lora', 'unet');
     expect(graph.prompt.lora).toEqual({ class_type: 'LoraLoaderModelOnly', inputs: { model: ['ckpt', 0], lora_name: { $model: 'l-key' }, strength_model: 0.5 } });
   });
 
-  it('compiles a LoRA with a text encoder to the full loader and exposes both outputs', () => {
+  it('compiles a LoRA with a text encoder to the full loader and exposes both outputs', { tags: ['decision-table'] }, () => {
     const { graph } = through(base(), [makeEdge('ckpt', 'unet', 'lora', 'unet'), makeEdge('ckpt', 'clip', 'lora', 'clip')], 'lora', 'clip');
     expect(graph.prompt.lora).toEqual({
       class_type: 'LoraLoader',
@@ -67,18 +67,18 @@ describe('model loaders', () => {
     expect(graph.prompt.grain!.inputs.image).toEqual(['lora', 1]);
   });
 
-  it('names the missing model input of a LoRA', () => {
+  it('names the missing model input of a LoRA', { tags: ['error-guessing'] }, () => {
     expect(fail(() => through(base(), [], 'lora', 'unet'))).toMatchObject({ reason: 'missingInput', nodeId: 'lora', field: 'unet' });
   });
 
-  it('compiles a VAE loader', () => {
+  it('compiles a VAE loader', { tags: ['condition'] }, () => {
     const { graph } = through([node('vae_loader', 'vae', { vae_model: 'v-key' })], [], 'vae', 'vae');
     expect(graph.prompt.vae).toEqual({ class_type: 'VAELoader', inputs: { vae_name: { $model: 'v-key' } } });
   });
 });
 
 describe('pictures and their sizes', () => {
-  it('uses the size of a gallery picture it knows', () => {
+  it('uses the size of a gallery picture it knows', { tags: ['condition'] }, () => {
     useGallery.setState({ images: [{ name: 'a.png', width: 640, height: 480 } as ImageDTO] });
     const { graph } = through([picture()], [], 'src', 'width', 'intensity');
     expect(graph.prompt.src).toEqual({ class_type: 'LoadImage', inputs: { image: { $image: 'a.png' } } });
@@ -86,13 +86,13 @@ describe('pictures and their sizes', () => {
     expect(graph.prompt['src:size']).toBeUndefined();
   });
 
-  it('asks ComfyUI to measure a picture it does not know', () => {
+  it('asks ComfyUI to measure a picture it does not know', { tags: ['condition'] }, () => {
     const { graph } = through([picture()], [], 'src', 'height', 'intensity');
     expect(graph.prompt['src:size']).toEqual({ class_type: 'GetImageSize', inputs: { image: ['src', 0] } });
     expect(graph.prompt.grain!.inputs.intensity).toEqual(['src:size', 1]);
   });
 
-  it('passes a connected picture through and measures that one', () => {
+  it('passes a connected picture through and measures that one', { tags: ['boundary'] }, () => {
     const nodes = [picture(), node('image', 'again')];
     const edges = [makeEdge('src', 'image', 'again', 'image')];
     const out = through(nodes, edges, 'again', 'image');
@@ -103,22 +103,22 @@ describe('pictures and their sizes', () => {
     expect(sized.graph.prompt.grain!.inputs.intensity).toEqual(['again:size', 0]);
   });
 
-  it('names a picture node that has no picture', () => {
+  it('names a picture node that has no picture', { tags: ['condition'] }, () => {
     expect(fail(() => through([node('image', 'src')], [], 'src', 'image'))).toMatchObject({ reason: 'missingInput', nodeId: 'src', field: 'image' });
   });
 
-  it('blurs with the radius and sigma limited to what ComfyUI accepts', () => {
+  it('blurs with the radius and sigma limited to what ComfyUI accepts', { tags: ['boundary'] }, () => {
     const nodes = [picture(), node('img_blur', 'blur', { radius: 40, blur_type: 'gaussian' })];
     const { graph } = through(nodes, [makeEdge('src', 'image', 'blur', 'image')], 'blur', 'image');
     expect(graph.prompt.blur).toEqual({ class_type: 'ImageBlur', inputs: { image: ['src', 0], blur_radius: 31, sigma: 10 } });
   });
 
-  it('cannot run a box blur', () => {
+  it('cannot run a box blur', { tags: ['error-guessing'] }, () => {
     const nodes = [picture(), node('img_blur', 'blur', { blur_type: 'box' })];
     expect(fail(() => through(nodes, [makeEdge('src', 'image', 'blur', 'image')], 'blur', 'image'))).toMatchObject({ reason: 'unsupported', nodeId: 'blur', field: 'blur_type' });
   });
 
-  it('loads the gallery picture a built-in node holds itself', () => {
+  it('loads the gallery picture a built-in node holds itself', { tags: ['condition'] }, () => {
     const resize = node('img_resize', 'rs', { image: 'b.png', width: 64, height: 64 });
     const { graph } = through([resize], [], 'rs', 'image');
     expect(graph.prompt['rs:image']).toEqual({ class_type: 'LoadImage', inputs: { image: { $image: 'b.png' } } });
@@ -126,7 +126,7 @@ describe('pictures and their sizes', () => {
     expect(fail(() => through([node('img_resize', 'rs')], [], 'rs', 'image'))).toMatchObject({ reason: 'missingInput', nodeId: 'rs', field: 'image' });
   });
 
-  it('works out Integer Math and Float Math from plain numbers', () => {
+  it('works out Integer Math and Float Math from plain numbers', { tags: ['condition'] }, () => {
     const value = (type: string, inputs: Record<string, unknown>) => through([picture(), node(type, 'm', inputs)], [], 'm', 'value', 'intensity').graph.prompt.grain!.inputs.intensity;
     expect(value('integer_math', { operation: 'ADD', a: 2, b: 3 })).toBe(5);
     expect(value('integer_math', { operation: 'DIV', a: 7, b: 2 })).toBe(3);
@@ -137,7 +137,7 @@ describe('pictures and their sizes', () => {
     expect(value('float_math', { operation: 'ABS', a: -2.5, b: 0 })).toBe(2.5);
   });
 
-  it('refuses a sum with no result, or one that needs a number only the run knows', () => {
+  it('refuses a sum with no result, or one that needs a number only the run knows', { tags: ['error-guessing', 'boundary'] }, () => {
     const run = (type: string, inputs: Record<string, unknown>) => () => through([picture(), node(type, 'm', inputs)], [], 'm', 'value', 'intensity');
     expect(fail(run('integer_math', { operation: 'DIV', a: 1, b: 0 }))).toMatchObject({ reason: 'unsupported', nodeId: 'm', field: 'operation' });
     expect(fail(run('integer_math', { operation: 'SQRT', a: 4, b: 1 }))).toMatchObject({ reason: 'unsupported', nodeId: 'm' });
@@ -145,7 +145,7 @@ describe('pictures and their sizes', () => {
     expect(fail(random)).toMatchObject({ reason: 'unsupported', nodeId: 'm', field: 'a' });
   });
 
-  it('subtracts, raises and takes the smaller number, and divides floats without cutting them to whole numbers', () => {
+  it('subtracts, raises and takes the smaller number, and divides floats without cutting them to whole numbers', { tags: ['condition'] }, () => {
     const value = (type: string, inputs: Record<string, unknown>) => through([picture(), node(type, 'm', inputs)], [], 'm', 'value', 'intensity').graph.prompt.grain!.inputs.intensity;
     expect(value('integer_math', { operation: 'SUB', a: 2, b: 5 })).toBe(-3);
     expect(value('integer_math', { operation: 'EXP', a: 2, b: 10 })).toBe(1024);
@@ -155,7 +155,7 @@ describe('pictures and their sizes', () => {
     expect(value('float_math', { operation: 'DIV', a: 7, b: 2 })).toBe(3.5);
   });
 
-  it('refuses an operation the Math node does not have, and a Math node without its number', () => {
+  it('refuses an operation the Math node does not have, and a Math node without its number', { tags: ['error-guessing'] }, () => {
     const run = (type: string, inputs: Record<string, unknown>) => () => through([picture(), node(type, 'm', inputs)], [], 'm', 'value', 'intensity');
     // Float Math lists no MOD, and no Math node knows an operation outside its list.
     expect(fail(run('float_math', { operation: 'MOD', a: 7, b: 2 }))).toMatchObject({ reason: 'unsupported', nodeId: 'm', field: 'operation' });
@@ -164,7 +164,7 @@ describe('pictures and their sizes', () => {
     expect(fail(run('float_math', { operation: 'ADD', a: 1, b: null }))).toMatchObject({ reason: 'missingInput', nodeId: 'm', field: 'b' });
   });
 
-  it('turns the 0 to 255 Canny thresholds into the 0.01 to 0.99 range of ComfyUI, with the defaults for a value that is no number', () => {
+  it('turns the 0 to 255 Canny thresholds into the 0.01 to 0.99 range of ComfyUI, with the defaults for a value that is no number', { tags: ['boundary'] }, () => {
     const canny = (inputs: Record<string, unknown>) =>
       through([picture(), node('canny_edge_detection', 'cn', inputs)], [makeEdge('src', 'image', 'cn', 'image')], 'cn', 'image').graph.prompt.cn!;
     const edges = canny({ low_threshold: 51, high_threshold: 204 });
@@ -178,20 +178,20 @@ describe('pictures and their sizes', () => {
     expect(fallback.high_threshold).toBeCloseTo(200 / 255);
   });
 
-  it('resizes with an upscale method ComfyUI lists, bicubic for a mode it does not know', () => {
+  it('resizes with an upscale method ComfyUI lists, bicubic for a mode it does not know', { tags: ['decision-table'] }, () => {
     const method = (resample_mode: string) =>
       through([node('img_resize', 'rs', { image: 'b.png', width: 320, height: 240, resample_mode })], [], 'rs', 'image').graph.prompt.rs!.inputs;
     expect(method('lanczos')).toEqual({ image: ['rs:image', 0], upscale_method: 'lanczos', width: 320, height: 240, crop: 'disabled' });
     expect(['nearest', 'box', 'hamming', 'mitchell'].map((m) => method(m).upscale_method)).toEqual(['nearest-exact', 'area', 'bilinear', 'bicubic']);
   });
 
-  it('turns primitive nodes into plain values', () => {
+  it('turns primitive nodes into plain values', { tags: ['condition'] }, () => {
     const { graph } = through([picture(), node('integer', 'n', { value: 7 })], [], 'n', 'value', 'intensity');
     expect(graph.prompt.grain!.inputs.intensity).toBe(7);
     expect(graph.prompt.n).toBeUndefined();
   });
 
-  it('rejects a ControlNet wired into a plain input', () => {
+  it('rejects a ControlNet wired into a plain input', { tags: ['error-guessing'] }, () => {
     const nodes = [picture(), node('controlnet', 'cn', { control_model: 'c-key', image: 'a.png' })];
     expect(fail(() => through(nodes, [makeEdge('src', 'image', 'cn', 'image')], 'cn', 'control', 'intensity'))).toMatchObject({ reason: 'unsupported', nodeId: 'grain', field: 'intensity' });
   });
@@ -201,14 +201,14 @@ describe('samplers', () => {
   const sampler = (extra: Record<string, unknown> = {}) =>
     node('denoise_latents', 'den', { positive_conditioning: 'p', negative_conditioning: 'n', noise: 'z', unet: 'u', steps: 20, cfg_scale: 5, scheduler: 'euler', ...extra });
 
-  it('takes a random seed when no noise node fixes one', () => {
+  it('takes a random seed when no noise node fixes one', { tags: ['boundary'] }, () => {
     const out = through([sampler()], [], 'den', 'latents');
     expect(out.random).toBe(true);
     expect(out.seed).toBeNull();
     expect(out.graph.prompt.den!.inputs.seed).toEqual({ $seed: true });
   });
 
-  it('gives the size of the noise node it starts from', () => {
+  it('gives the size of the noise node it starts from', { tags: ['state-transition'] }, () => {
     const noise = node('noise', 'nz', { seed: 3, width: 640, height: 480 });
     const run = (handle: string) => through([picture(), noise, sampler()], [makeEdge('nz', 'noise', 'den', 'noise')], 'den', handle, 'intensity').graph;
     expect(run('width').prompt.grain!.inputs.intensity).toBe(640);
@@ -218,7 +218,7 @@ describe('samplers', () => {
     expect(tall.prompt.den!.inputs.latent_image).toEqual(['nz', 0]);
   });
 
-  it('queues with the first fixed seed and leaves the fixed seed of a second sampler as it is', () => {
+  it('queues with the first fixed seed and leaves the fixed seed of a second sampler as it is', { tags: ['regression', 'boundary'] }, () => {
     const chain = (n: string, seed: number) => [
       node('noise', `nz${n}`, { seed }),
       node('denoise_latents', `den${n}`, { positive_conditioning: 'p', negative_conditioning: 'n', unet: 'u', steps: 20, cfg_scale: 5, scheduler: 'euler' }),
@@ -233,7 +233,7 @@ describe('samplers', () => {
     expect(graph.outputs).toEqual(['dec1:preview', 'dec2:preview']);
   });
 
-  it('encodes an empty prompt as an empty text', () => {
+  it('encodes an empty prompt as an empty text', { tags: ['boundary'] }, () => {
     const pos = node('compel', 'pos');
     delete pos.data.inputs.prompt;
     const nodes = [node('main_model_loader', 'ckpt', { model: 'm-key' }), pos, sampler()];
@@ -242,18 +242,18 @@ describe('samplers', () => {
     expect(graph.prompt.den!.inputs.positive).toEqual(['pos', 0]);
   });
 
-  it('cannot say the size of the latent without a noise node', () => {
+  it('cannot say the size of the latent without a noise node', { tags: ['error-guessing'] }, () => {
     expect(fail(() => through([sampler(), picture()], [], 'den', 'width', 'intensity'))).toMatchObject({ reason: 'unsupported', nodeId: 'den', field: 'width' });
   });
 
-  it('does not run a control input that is not a ControlNet, nor an IP-Adapter input that is not an IP-Adapter', () => {
+  it('does not run a control input that is not a ControlNet, nor an IP-Adapter input that is not an IP-Adapter', { tags: ['condition'] }, () => {
     const withValue = () => through([sampler(), node('integer', 'n', { value: 1 })], [makeEdge('n', 'value', 'den', 'control')], 'den', 'latents');
     expect(fail(withValue)).toMatchObject({ reason: 'unsupported', nodeId: 'den', field: 'control' });
     const withNumber = () => through([sampler(), node('integer', 'n', { value: 1 })], [makeEdge('n', 'value', 'den', 'ip_adapter')], 'den', 'latents');
     expect(fail(withNumber)).toMatchObject({ reason: 'unsupported', nodeId: 'den', field: 'ip_adapter' });
   });
 
-  it('patches the model the sampler runs with an IP-Adapter', () => {
+  it('patches the model the sampler runs with an IP-Adapter', { tags: ['condition'] }, () => {
     const adapter = node('ip_adapter', 'ip', { ip_adapter_model: 'k', image: 'a.png', clip_vision_model: 'ViT-G', weight: 0.6, method: 'style', begin_step_percent: 0.1, end_step_percent: 0.9 });
     const { graph } = through([sampler(), adapter], [makeEdge('ip', 'ip_adapter', 'den', 'ip_adapter')], 'den', 'latents');
     expect(graph.prompt['den:ipadapter']).toEqual({ class_type: 'IPAdapterModelLoader', inputs: { ipadapter_file: { $model: 'k' } } });
@@ -277,7 +277,7 @@ describe('samplers', () => {
     expect(graph.prompt.den!.inputs.model).toEqual(['den:ipapply', 0]);
   });
 
-  it('names the method an IP-Adapter applies in the words of the pack', () => {
+  it('names the method an IP-Adapter applies in the words of the pack', { tags: ['condition'] }, () => {
     const typeOf = (method: string) => {
       const adapter = node('ip_adapter', 'ip', { ip_adapter_model: 'k', image: 'a.png', method });
       return through([sampler(), adapter], [makeEdge('ip', 'ip_adapter', 'den', 'ip_adapter')], 'den', 'latents').graph.prompt['den:ipapply']!.inputs.weight_type;
@@ -287,21 +287,21 @@ describe('samplers', () => {
     expect(typeOf('unknown')).toBe('linear');
   });
 
-  it('loads the ViT-H image encoder for an IP-Adapter saved before the encoder could be chosen', () => {
+  it('loads the ViT-H image encoder for an IP-Adapter saved before the encoder could be chosen', { tags: ['condition'] }, () => {
     const adapter = node('ip_adapter', 'ip', { ip_adapter_model: 'k', image: 'a.png' });
     delete adapter.data.inputs.clip_vision_model;
     const { graph } = through([sampler(), adapter], [makeEdge('ip', 'ip_adapter', 'den', 'ip_adapter')], 'den', 'latents');
     expect(graph.prompt['den:clipvision']).toEqual({ class_type: 'CLIPVisionLoader', inputs: { clip_name: { $clip_vision: 'ViT-H' } } });
   });
 
-  it('names the IP-Adapter model or picture that is missing', () => {
+  it('names the IP-Adapter model or picture that is missing', { tags: ['error-guessing'] }, () => {
     const run = (inputs: Record<string, unknown>) => () =>
       through([sampler(), node('ip_adapter', 'ip', inputs)], [makeEdge('ip', 'ip_adapter', 'den', 'ip_adapter')], 'den', 'latents');
     expect(fail(run({ image: 'a.png' }))).toMatchObject({ reason: 'missingInput', nodeId: 'ip', field: 'ip_adapter_model' });
     expect(fail(run({ ip_adapter_model: 'k' }))).toMatchObject({ reason: 'missingInput', nodeId: 'ip', field: 'image' });
   });
 
-  it('applies a ControlNet to both conditionings', () => {
+  it('applies a ControlNet to both conditionings', { tags: ['decision-table'] }, () => {
     const nodes = [picture(), sampler(), node('controlnet', 'cn', { control_model: 'c-key' })];
     const { graph } = through(nodes, [makeEdge('src', 'image', 'cn', 'image'), makeEdge('cn', 'control', 'den', 'control')], 'den', 'latents');
     expect(graph.prompt['den:control']!.class_type).toBe('ControlNetApplyAdvanced');
@@ -312,18 +312,18 @@ describe('samplers', () => {
 describe('pack node inputs', () => {
   const via = (inputs: Record<string, unknown>) => through([node('comfy:MockPicture', 'pic', inputs)], [], 'pic', 'IMAGE');
 
-  it('uploads the gallery picture a pack node names', () => {
+  it('uploads the gallery picture a pack node names', { tags: ['condition'] }, () => {
     const { graph } = via({ picture: 'a.png' });
     expect(graph.prompt.pic!.inputs).toEqual({ picture: { $image: 'a.png' } });
   });
 
-  it('names a required picture that is not picked, and leaves an optional one out', () => {
+  it('names a required picture that is not picked, and leaves an optional one out', { tags: ['boundary'] }, () => {
     expect(fail(() => via({}))).toMatchObject({ reason: 'missingInput', nodeId: 'pic', field: 'picture' });
     const { graph } = via({ picture: 'a.png', extra: '' });
     expect(graph.prompt.pic!.inputs).not.toHaveProperty('extra');
   });
 
-  it('fails on a missing required connection', () => {
+  it('fails on a missing required connection', { tags: ['error-guessing'] }, () => {
     const rig = node('comfy:MockFaceRig', 'rig');
     expect(fail(() => through([rig], [], 'rig', 'image'))).toMatchObject({ reason: 'missingInput', nodeId: 'rig', field: 'image' });
   });

@@ -29,7 +29,7 @@ const op: fc.Arbitrary<Op> = fc.oneof(
 );
 
 describe('Generate form size (properties)', () => {
-  it('any order of size operations keeps whole-number sides that are multiples of 8, at least 64, and a known aspect ratio', () => {
+  it('any order of size operations keeps whole-number sides that are multiples of 8, at least 64, and a known aspect ratio', { tags: ['boundary'] }, () => {
     check(
       fc.property(fc.array(op, { maxLength: 30 }), (ops) => {
         useParams.setState(initial, true);
@@ -52,7 +52,7 @@ describe('Generate form size (properties)', () => {
     );
   });
 
-  it('swapping twice gives the size and the ratio back', () => {
+  it('swapping twice gives the size and the ratio back', { tags: ['condition'] }, () => {
     check(
       fc.property(fc.integer({ min: 8, max: 512 }), fc.integer({ min: 8, max: 512 }), fc.constantFrom(...ASPECT_RATIOS.map((a) => a.id)), (w, h, id) => {
         useParams.setState({ ...initial, width: w * 8, height: h * 8, aspectRatio: id }, true);
@@ -66,14 +66,14 @@ describe('Generate form size (properties)', () => {
   });
 
   // Regression: a side set to NaN keeps a usable size (it used to become NaN).
-  it('keeps a usable size when a side is set to NaN', () => {
+  it('keeps a usable size when a side is set to NaN', { tags: ['regression', 'error-guessing'] }, () => {
     useParams.getState().setDimension('width', NaN);
     expect(Number.isFinite(useParams.getState().width)).toBe(true);
   });
 });
 
 describe('Generate form lists and recall (properties)', () => {
-  it('addLora never duplicates a LoRA, and remove / update touch only that key', () => {
+  it('addLora never duplicates a LoRA, and remove / update touch only that key', { tags: ['condition'] }, () => {
     check(
       fc.property(fc.array(fc.tuple(fc.constantFrom('add', 'remove', 'update'), fc.constantFrom('a', 'b', 'c')), { maxLength: 30 }), (ops) => {
         useParams.setState(initial, true);
@@ -92,7 +92,7 @@ describe('Generate form lists and recall (properties)', () => {
     );
   });
 
-  it('reference images get unique ids, and removing one removes only it', () => {
+  it('reference images get unique ids, and removing one removes only it', { tags: ['condition'] }, () => {
     check(
       fc.property(fc.integer({ min: 1, max: 8 }), fc.nat(), (n, pick) => {
         useParams.setState(initial, true);
@@ -125,7 +125,7 @@ describe('Generate form lists and recall (properties)', () => {
     loras: fc.array(fc.record({ key: fc.string({ maxLength: 6 }), weight: fc.integer({ min: -20, max: 20 }).map((n) => n / 10), isEnabled: fc.boolean() }), { maxLength: 5 }),
   }) as unknown as fc.Arbitrary<GenerationMetadata>;
 
-  it('recallAll puts the stored settings back, and remix keeps the current seed and seed mode', () => {
+  it('recallAll puts the stored settings back, and remix keeps the current seed and seed mode', { tags: ['condition'] }, () => {
     const main = (key: string, name: string) => ({ key, name, base: 'sdxl', type: 'main', format: 'checkpoint', description: '', path: '', size: 0, source: '' }) as ModelConfig;
     useModels.setState({ models: [main('a', 'Model A'), main('b', 'Model B')] });
     check(

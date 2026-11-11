@@ -65,14 +65,14 @@ async function waitFor<T>(f: () => T | undefined): Promise<T> {
 }
 
 describe('describing a picture in the mock', () => {
-  it('gives the same words for the same picture, tags or a sentence by the task', () => {
+  it('gives the same words for the same picture, tags or a sentence by the task', { tags: ['equivalence'] }, () => {
     const tags = mockCaption(captionGraph('a.png', 'prompt_gen_tags'), 'a.png');
     expect(tags).toBe(mockCaption(captionGraph('a.png', 'prompt_gen_tags'), 'a.png'));
     expect(tags.split(', ').length).toBeGreaterThan(3);
     expect(mockCaption(captionGraph('a.png', 'more_detailed_caption'), 'a.png')).toMatch(/\.$/);
   });
 
-  it('completes the job with the text and stores no picture', async () => {
+  it('completes the job with the text and stores no picture', { tags: ['condition'] }, async () => {
     const { backend, events, names } = await setUp();
     const before = events.filter((e) => e.type === 'image_added').length;
     const [item] = await backend.enqueue(captionRequest(names[0]!));

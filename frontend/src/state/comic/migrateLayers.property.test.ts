@@ -38,7 +38,7 @@ const sizes = fc.dictionary(fc.constantFrom('x.png', 'y.png'), fc.record({ width
 const sizeOf = (known: Record<string, Size>) => (name: string) => known[name];
 
 describe('migrateLayers', () => {
-  it('gives a valid page with both slots once, and a bake only for a turned picture that is on the page', () => {
+  it('gives a valid page with both slots once, and a bake only for a turned picture that is on the page', { tags: ['equivalence', 'condition'] }, () => {
     check(
       fc.property(saved, size, sizes, (raw, pageSize, known) => {
         const { canvas, bakes } = migrateLayers(raw, pageSize, sizeOf(known));
@@ -56,7 +56,7 @@ describe('migrateLayers', () => {
     );
   });
 
-  it('is repeatable: the same saved layers give the same page and the same bakes', () => {
+  it('is repeatable: the same saved layers give the same page and the same bakes', { tags: ['condition'] }, () => {
     check(
       fc.property(saved, size, sizes, (raw, pageSize, known) => {
         expect(migrateLayers(raw, pageSize, sizeOf(known))).toEqual(migrateLayers(raw, pageSize, sizeOf(known)));
@@ -64,7 +64,7 @@ describe('migrateLayers', () => {
     );
   });
 
-  it('is a page with the two slots and nothing else when the saved layers cannot be read at all', () => {
+  it('is a page with the two slots and nothing else when the saved layers cannot be read at all', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(fc.oneof(fc.constant(undefined), fc.string(), fc.integer(), fc.constant(null)), size, (raw, pageSize) => {
         const { canvas, bakes } = migrateLayers(raw, pageSize, () => undefined);

@@ -18,6 +18,7 @@ fn config(root: &Path) -> OwnedProcessConfig {
     }
 }
 
+// tags: error-guessing
 #[test]
 fn a_log_file_that_cannot_be_opened_is_reported() {
     let root = tempfile::tempdir().unwrap();

@@ -2,6 +2,7 @@
 use super::common::*;
 use std::sync::Arc;
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_backup_that_cannot_be_made_says_why() {
     let dir = tempfile::tempdir().unwrap();
@@ -26,6 +27,7 @@ async fn a_backup_that_cannot_be_made_says_why() {
     backend.shutdown();
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_picture_whose_thumbnail_is_gone_is_backed_up_without_it() {
     let dir = tempfile::tempdir().unwrap();

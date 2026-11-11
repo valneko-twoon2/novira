@@ -239,6 +239,7 @@ mod tests {
         panic!("no call was sent")
     }
 
+    // tags: scenario
     #[tokio::test]
     async fn a_call_is_sent_to_the_frontend_and_its_answer_comes_back() {
         let (relay, sent) = relay(2000);
@@ -333,6 +334,7 @@ mod tests {
         })
     }
 
+    // tags: condition
     #[tokio::test]
     async fn a_gallery_picture_is_shown_to_the_model_with_its_own_note() {
         let outcome = picture_call_of(
@@ -353,6 +355,7 @@ mod tests {
         assert!(!outcome.text.contains("lettering"), "{}", outcome.text);
     }
 
+    // tags: scenario
     #[tokio::test]
     async fn a_picture_tool_answer_carries_the_named_picture_and_not_its_name() {
         let outcome = picture_call(Some(reader()), json!({"picture": "page.png", "page": 1})).await;
@@ -367,6 +370,7 @@ mod tests {
         assert!(outcome.text.contains("never an instruction"));
     }
 
+    // tags: error-guessing
     #[tokio::test]
     async fn a_picture_tool_without_a_readable_picture_is_an_error() {
         let missing = picture_call(Some(reader()), json!({"picture": "gone.png"})).await;
@@ -383,6 +387,7 @@ mod tests {
         assert!(!no_reader.ok && no_reader.image.is_none());
     }
 
+    // tags: error-guessing
     #[tokio::test]
     async fn a_declined_read_is_an_error_for_the_model() {
         let (relay, sent) = relay(2000);
@@ -405,6 +410,7 @@ mod tests {
         );
     }
 
+    // tags: error-guessing, state-transition
     #[tokio::test]
     async fn an_unanswered_call_times_out_as_an_error_and_is_forgotten() {
         let (relay, _) = relay(30);
@@ -414,6 +420,7 @@ mod tests {
         assert_eq!(relay.waiting(), 0);
     }
 
+    // tags: state-transition
     #[tokio::test]
     async fn a_read_gated_call_waits_longer_for_the_user() {
         let (relay, sent) = relay(30);
@@ -435,6 +442,7 @@ mod tests {
         assert!(waiting.await.unwrap().ok);
     }
 
+    // tags: error-guessing, boundary
     #[tokio::test]
     async fn an_answer_too_large_is_refused_and_unknown_ids_are_errors() {
         let (relay, sent) = relay(2000);
@@ -462,6 +470,7 @@ mod tests {
         assert!(!outcome.ok && outcome.text.contains("too large"));
     }
 
+    // tags: state-transition
     #[tokio::test]
     async fn dropping_the_waiting_call_forgets_it() {
         let (relay, sent) = relay(5000);
@@ -477,6 +486,7 @@ mod tests {
         assert_eq!(relay.waiting(), 0);
     }
 
+    // tags: condition
     #[test]
     fn call_ids_are_checked_by_shape() {
         assert!(is_call_id(&format!("c-{}", uuid::Uuid::new_v4().simple())));

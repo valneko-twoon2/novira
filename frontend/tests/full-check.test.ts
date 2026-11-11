@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { formatReport, parseArgs, plan } from '../../scripts/tools/full-check.mjs';
 
 describe('full-check', () => {
-  it('runs the fast checks, the server tests, the mock against the backend, every Playwright project and the layout scan, in that order', () => {
+  it('runs the fast checks, the server tests, the mock against the backend, every Playwright project and the layout scan, in that order', { tags: ['scenario'] }, () => {
     const names = plan().map((s: { name: string }) => s.name);
     expect(names[0]).toMatch(/^scripts\\check\.bat/);
     expect(names[1]).toBe('cargo test novira-server');
@@ -17,13 +17,13 @@ describe('full-check', () => {
     expect(plan({ browser: false })).toHaveLength(3);
   });
 
-  it('takes only its own options', () => {
+  it('takes only its own options', { tags: ['scenario'] }, () => {
     expect(parseArgs([])).toEqual({ browser: true, list: false });
     expect(parseArgs(['--no-browser', '--list'])).toEqual({ browser: false, list: true });
     expect(() => parseArgs(['--fast'])).toThrow(/unknown option --fast/);
   });
 
-  it('reports each step and the last lines of the failed ones', () => {
+  it('reports each step and the last lines of the failed ones', { tags: ['scenario'] }, () => {
     const ok = formatReport([{ name: 'a', code: 0, ms: 90_000, tail: ['quiet'] }], 'T');
     expect(ok).toContain('All 1 steps passed.');
     expect(ok).toContain('| a | pass | 1.5 |');

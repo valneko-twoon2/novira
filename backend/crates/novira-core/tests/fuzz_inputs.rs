@@ -146,6 +146,7 @@ fn picture(format: image::ImageFormat, w: u32, h: u32) -> Vec<u8> {
     out.into_inner()
 }
 
+// tags: error-guessing, decision-table
 #[test]
 fn damaged_pictures_of_every_format_are_read_or_refused() {
     use image::ImageFormat::{Bmp, Gif, Jpeg, Png, WebP};
@@ -171,6 +172,7 @@ fn damaged_pictures_of_every_format_are_read_or_refused() {
     });
 }
 
+// tags: error-guessing
 #[test]
 fn damaged_content_credentials_are_read_or_refused() {
     let identity = credentials::Identity::generate().unwrap();
@@ -206,6 +208,7 @@ fn safetensors(header: &str, data: usize) -> Vec<u8> {
     out
 }
 
+// tags: error-guessing
 #[test]
 fn damaged_model_headers_are_read_or_refused() {
     let seeds = vec![
@@ -273,6 +276,7 @@ fn files_under(dir: &Path) -> Vec<PathBuf> {
     out
 }
 
+// tags: error-guessing
 #[test]
 fn damaged_backups_are_unpacked_into_the_staging_folder_or_refused_leaving_nothing() {
     let seeds = vec![backup_zip()];

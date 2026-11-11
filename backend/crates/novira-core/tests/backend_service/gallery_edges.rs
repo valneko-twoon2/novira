@@ -30,6 +30,7 @@ fn trashed_at(dir: &Path, at: i64) {
     }
 }
 
+// tags: boundary, state-transition
 #[tokio::test]
 async fn a_picture_that_waited_in_the_trash_too_long_is_deleted_for_good_by_the_next_delete() {
     let dir = tempfile::tempdir().unwrap();
@@ -62,6 +63,7 @@ async fn a_picture_that_waited_in_the_trash_too_long_is_deleted_for_good_by_the_
     backend.shutdown();
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_trashed_picture_whose_file_is_gone_is_left_out_of_a_restore() {
     let dir = tempfile::tempdir().unwrap();
@@ -95,6 +97,7 @@ fn walk_for(dir: &Path, name: &str) -> Option<std::path::PathBuf> {
     None
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_picture_whose_original_is_already_gone_is_deleted_without_a_complaint() {
     let dir = tempfile::tempdir().unwrap();
@@ -108,6 +111,7 @@ async fn a_picture_whose_original_is_already_gone_is_deleted_without_a_complaint
     backend.shutdown();
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn deleting_a_known_and_an_unknown_name_together_trashes_one_and_removes_the_other_for_good()
 {
@@ -156,6 +160,7 @@ async fn reopened_damaged(
     (open(dir, Arc::new(FakeEngine::default())).0, trashed, kept)
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_trash_or_gallery_table_that_cannot_be_written_fails_delete_and_restore() {
     // The trash table: the delete fails before the picture leaves the gallery table.

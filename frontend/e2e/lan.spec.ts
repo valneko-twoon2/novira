@@ -3,19 +3,19 @@
 // menu that chooses between home and away, and none of it on a phone-sized window.
 import { expect, msg, openApp, test } from './fixtures';
 
-test('the item is absent unless the page has a home network of its own', async ({ page }) => {
+test('the item is absent unless the page has a home network of its own', { tag: ['@condition'] }, async ({ page }) => {
   await openApp(page);
   await expect(page.getByTestId('home-link-open')).toHaveCount(0);
 });
 
-test('pressing the item opens a closed home network, trusting it, and shows its code', async ({ page }) => {
+test('pressing the item opens a closed home network, trusting it, and shows its code', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?lan');
   await page.getByTestId('home-link-open').click();
   await expect(page.getByTestId('home-link-code')).toBeVisible();
   await expect(page.getByTestId('lan-expires')).toBeVisible();
 });
 
-test('a phone that asks is allowed in the dialog, listed, and disconnected', async ({ page }) => {
+test('a phone that asks is allowed in the dialog, listed, and disconnected', { tag: ['@state-transition'] }, async ({ page }) => {
   await openApp(page, '?lan=open');
   await page.getByTestId('home-link-open').click();
   await expect(page.getByTestId('home-link-code')).toBeVisible();
@@ -32,7 +32,7 @@ test('a phone that asks is allowed in the dialog, listed, and disconnected', asy
   await expect(device).toHaveCount(0);
 });
 
-test('a phone that asks while the dialog is closed gets a prompt on this page', async ({ page }) => {
+test('a phone that asks while the dialog is closed gets a prompt on this page', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?lan=open');
   // A code is made and the dialog closed; the phone asks.
   await page.getByTestId('home-link-open').click();
@@ -49,7 +49,7 @@ test('a phone that asks while the dialog is closed gets a prompt on this page', 
   await expect(page.locator('[data-testid^="lan-device-"]')).toContainText('iPhone');
 });
 
-test('the away dialog turns the remote listener on, adds a phone with its passkey, and removes it', async ({ page }) => {
+test('the away dialog turns the remote listener on, adds a phone with its passkey, and removes it', { tag: ['@state-transition'] }, async ({ page }) => {
   await openApp(page, '?lan=open&remote');
   // With a remote listener the item asks which one first: each choice is a dialog of its own.
   await page.getByTestId('home-link-open').click();
@@ -79,7 +79,7 @@ test('the away dialog turns the remote listener on, adds a phone with its passke
   await expect(passkey).toHaveCount(0);
 });
 
-test('the away dialog says why the remote listener cannot open', async ({ page }) => {
+test('the away dialog says why the remote listener cannot open', { tag: ['@error-guessing'] }, async ({ page }) => {
   await openApp(page, '?lan=open&remote=missing');
   await page.getByTestId('home-link-open').click();
   await page.getByRole('menuitem', { name: msg('app.lan.menuAway') }).click();
@@ -88,7 +88,7 @@ test('the away dialog says why the remote listener cannot open', async ({ page }
   await expect(page.getByTestId('remote-enrol')).toHaveCount(0);
 });
 
-test('a phone-sized window shows no home network at all', async ({ page }) => {
+test('a phone-sized window shows no home network at all', { tag: ['@condition'] }, async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/?lan=open');
   await expect(page.getByTestId('phone-shell')).toBeVisible({ timeout: 20_000 });

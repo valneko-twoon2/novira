@@ -18,12 +18,12 @@ beforeEach(() => useModels.setState(initial, true));
 afterEach(cleanup);
 
 describe('DownloadDock', () => {
-  it('shows the reason under a failed download', () => {
+  it('shows the reason under a failed download', { tags: ['error-guessing', 'scenario'] }, () => {
     show(job({ error: 'Download answered 401 Unauthorized (this file needs an API key; set it in Settings)' }));
     expect(screen.getByText(/Download answered 401/)).not.toBeNull();
   });
 
-  it('shows no reason for a failure without one, a finished download or a running one', () => {
+  it('shows no reason for a failure without one, a finished download or a running one', { tags: ['error-guessing', 'boundary'] }, () => {
     show(job({ error: undefined }), job({ id: 'j2', status: 'completed', error: 'old' }), job({ id: 'j3', status: 'downloading', error: 'x' }));
     expect(document.querySelector('.browse-dock__error')).toBeNull();
   });

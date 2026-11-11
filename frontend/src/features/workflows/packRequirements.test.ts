@@ -20,7 +20,7 @@ describe('packs a workflow needs', () => {
   beforeAll(() => setExtensionTemplates(comfyTemplates({ ...MOCK_NODE_DEFS, ...CORE_NODE_DEFS, ...PACK_NODE_DEFS })));
   afterAll(() => setExtensionTemplates([]));
 
-  it('names the pack folder of each custom node once, and nothing for the app own nodes', () => {
+  it('names the pack folder of each custom node once, and nothing for the app own nodes', { tags: ['boundary', 'decision-table'] }, () => {
     const refs = packsOfNodes([{ data: { type: 'comfy:RMBG' } }, { data: { type: 'comfy:RMBG' } }, { data: { type: 'save_image' } }]);
     expect(refs).toHaveLength(1);
     expect(refs[0]!.folder).toBe('ComfyUI-RMBG');
@@ -28,13 +28,13 @@ describe('packs a workflow needs', () => {
     expect(refs[0]!.url).toBe('https://github.com/1038lab/ComfyUI-RMBG');
   });
 
-  it('reads the pack list of a file whose nodes are unknown here', () => {
+  it('reads the pack list of a file whose nodes are unknown here', { tags: ['error-guessing'] }, () => {
     const missing = missingPacks(file(['comfy:SomeNewNode'], [{ folder: 'ComfyUI-Some', url: 'https://github.com/a/ComfyUI-Some' }]));
     expect(missing).toEqual({ packs: [{ folder: 'ComfyUI-Some', url: 'https://github.com/a/ComfyUI-Some' }], types: ['comfy:SomeNewNode'] });
     expect(missingPacks(JSON.stringify(file(['comfy:SomeNewNode'])))?.packs).toEqual([]);
   });
 
-  it('leaves other failures alone: an unknown app node, a known file, or a broken one', () => {
+  it('leaves other failures alone: an unknown app node, a known file, or a broken one', { tags: ['error-guessing', 'boundary'] }, () => {
     expect(missingPacks(file(['no_such_app_node']))).toBeNull();
     expect(missingPacks(file(['comfy:RMBG', 'no_such_app_node']))).toBeNull();
     expect(missingPacks(file(['comfy:RMBG']))).toBeNull();

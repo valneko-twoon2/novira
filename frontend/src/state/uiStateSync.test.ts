@@ -40,7 +40,7 @@ afterEach(() => {
 });
 
 describe('adopting the backend state at start-up', () => {
-  it('hands over the page\'s own state the first time, and keeps it when the backend had none', async () => {
+  it('hands over the page\'s own state the first time, and keeps it when the backend had none', { tags: ['condition'] }, async () => {
     storage.setItem('novira.settings', 'mine');
     storage.setItem('other-site', 'x');
     const adopt = vi.spyOn(backend, 'adoptUiState').mockResolvedValue(null);
@@ -52,7 +52,7 @@ describe('adopting the backend state at start-up', () => {
     expect(adopt).toHaveBeenLastCalledWith(null);
   });
 
-  it('takes the backend state in place of the page\'s and leaves other keys alone', async () => {
+  it('takes the backend state in place of the page\'s and leaves other keys alone', { tags: ['condition'] }, async () => {
     storage.setItem('novira.settings', 'mine');
     storage.setItem('novira.old', 'gone');
     storage.setItem('other-site', 'kept');
@@ -64,7 +64,7 @@ describe('adopting the backend state at start-up', () => {
     expect(storage.getItem('other-site')).toBe('kept');
   });
 
-  it('keeps the saved keys of a store that is gone, so a state from an older version loads as it is', async () => {
+  it('keeps the saved keys of a store that is gone, so a state from an older version loads as it is', { tags: ['condition'] }, async () => {
     const old = { 'novira.logo': '{"state":{"form":{"text":"NOVA"}},"version":1}', 'novira.logoPresets': '{"state":{"presets":[]},"version":0}', 'novira.settings': 'mine' };
     vi.spyOn(backend, 'adoptUiState').mockResolvedValue(JSON.stringify(old));
     const save = vi.spyOn(backend, 'saveUiState').mockResolvedValue();
@@ -74,7 +74,7 @@ describe('adopting the backend state at start-up', () => {
     expect(save).not.toHaveBeenCalled();
   });
 
-  it('leaves the storage alone and sends nothing when the backend cannot be read', async () => {
+  it('leaves the storage alone and sends nothing when the backend cannot be read', { tags: ['error-guessing'] }, async () => {
     storage.setItem('novira.settings', 'mine');
     vi.spyOn(backend, 'adoptUiState').mockRejectedValue(new Error('locked'));
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
@@ -92,7 +92,7 @@ describe('sending changes to the backend', () => {
     vi.spyOn(backend, 'adoptUiState').mockResolvedValue(null);
   });
 
-  it('sends only the keys that changed, once after the changes settle, for app keys only', async () => {
+  it('sends only the keys that changed, once after the changes settle, for app keys only', { tags: ['condition'] }, async () => {
     const save = vi.spyOn(backend, 'saveUiState').mockResolvedValue();
     await adoptBackendUiState(storage);
     storage.setItem('other-site', 'x');
@@ -120,7 +120,7 @@ describe('sending changes to the backend', () => {
     expect(save.mock.calls[2]![2]).toEqual(['novira.b']);
   });
 
-  it('does not send a state that did not change, and sends it again after a failure', async () => {
+  it('does not send a state that did not change, and sends it again after a failure', { tags: ['error-guessing'] }, async () => {
     const save = vi.spyOn(backend, 'saveUiState').mockRejectedValueOnce(new Error('busy')).mockResolvedValue();
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     await adoptBackendUiState(storage);
@@ -136,7 +136,7 @@ describe('sending changes to the backend', () => {
     expect(save).toHaveBeenCalledTimes(2);
   });
 
-  it('sends a small change as a small message and reads nothing from the backend when no other page saved', async () => {
+  it('sends a small change as a small message and reads nothing from the backend when no other page saved', { tags: ['condition'] }, async () => {
     // A used PC holds hundreds of kilobytes (drafts, chats, the prompt book): a click must not move them twice.
     const drafts = 'd'.repeat(100_000);
     storage.setItem('novira.drafts', drafts);
@@ -152,7 +152,7 @@ describe('sending changes to the backend', () => {
     expect(save.mock.calls[0]![2]).toEqual([]);
   });
 
-  it('reads what other pages saved before it sends, when the page woke up and may have missed their events', async () => {
+  it('reads what other pages saved before it sends, when the page woke up and may have missed their events', { tags: ['condition'] }, async () => {
     const adopt = vi.spyOn(backend, 'adoptUiState').mockResolvedValue('{"novira.a":"1"}');
     const save = vi.spyOn(backend, 'saveUiState').mockResolvedValue();
     await adoptBackendUiState(storage);
@@ -166,7 +166,7 @@ describe('sending changes to the backend', () => {
     expect(JSON.parse(save.mock.calls[0]![0])).toEqual({ 'novira.b': '2' });
   });
 
-  it('sends at once when the page is hidden', async () => {
+  it('sends at once when the page is hidden', { tags: ['condition'] }, async () => {
     const save = vi.spyOn(backend, 'saveUiState').mockResolvedValue();
     await adoptBackendUiState(storage);
     storage.setItem('novira.a', '1');

@@ -11,7 +11,7 @@ const person = (x: number, y: number, missing: number[] = [], spread = 0) => ({
 const answer = (people: unknown[], w = 400, h = 200) => JSON.stringify([{ people, canvas_width: w, canvas_height: h }]);
 
 describe('pose extraction prompt', () => {
-  it('loads the picture, asks only for the body and shows the keypoints output as text', () => {
+  it('loads the picture, asks only for the body and shows the keypoints output as text', { tags: ['scenario'] }, () => {
     const g = buildPoseExtractGraph('photo.png', PACK_NODE_DEFS);
     expect(g.prompt.source!.inputs.image).toEqual({ $image: 'photo.png' });
     expect(g.prompt.pose!.class_type).toBe(POSE_EXTRACT_NODE);
@@ -20,18 +20,18 @@ describe('pose extraction prompt', () => {
     expect(g.outputs).toEqual(['show']);
   });
 
-  it('wires the output the real node names POSE_KEYPOINT', () => {
+  it('wires the output the real node names POSE_KEYPOINT', { tags: ['condition'] }, () => {
     expect(PACK_NODE_DEFS[POSE_EXTRACT_NODE]!.output_name?.[1]).toBe('POSE_KEYPOINT');
   });
 
-  it('uses the CPU-friendly detector and estimator when offered, and the first offered otherwise', () => {
+  it('uses the CPU-friendly detector and estimator when offered, and the first offered otherwise', { tags: ['condition'] }, () => {
     expect(buildPoseExtractGraph('a.png', PACK_NODE_DEFS).prompt.pose!.inputs).toMatchObject({ bbox_detector: 'yolox_l.onnx', pose_estimator: 'dw-ll_ucoco_384.onnx' });
     const defs = { DWPreprocessor: { input: { required: {}, optional: { bbox_detector: [['None', 'other.onnx']], pose_estimator: [['only.pt']] } } } } as unknown as ComfyNodeDefs;
     expect(buildPoseExtractGraph('a.png', defs).prompt.pose!.inputs).toMatchObject({ bbox_detector: 'other.onnx', pose_estimator: 'only.pt' });
     expect(buildPoseExtractGraph('a.png', null).prompt.pose!.inputs).not.toHaveProperty('pose_estimator');
   });
 
-  it('is ready only when the pack is loaded', () => {
+  it('is ready only when the pack is loaded', { tags: ['condition'] }, () => {
     expect(poseExtractReady(null)).toBe(false);
     expect(poseExtractReady({} as ComfyNodeDefs)).toBe(false);
     expect(poseExtractReady(PACK_NODE_DEFS)).toBe(true);
@@ -39,7 +39,7 @@ describe('pose extraction prompt', () => {
 });
 
 describe('pose extraction answer', () => {
-  it('reads the people of the answer in 0 to 1 of the picture, with the picture shape', () => {
+  it('reads the people of the answer in 0 to 1 of the picture, with the picture shape', { tags: ['condition'] }, () => {
     const found = parsePoseExtract(answer([person(100, 50)]))!;
     expect(found.aspect).toBe(2);
     expect(found.people).toHaveLength(1);
@@ -47,19 +47,19 @@ describe('pose extraction answer', () => {
     expect(found.people[0]!.hidden).toEqual([]);
   });
 
-  it('reads the mock answer, which is a real answer of the node', () => {
+  it('reads the mock answer, which is a real answer of the node', { tags: ['condition'] }, () => {
     const found = parsePoseExtract(mockPoseExtract())!;
     expect(found.people).toHaveLength(1);
     expect(found.people[0]!.points).toHaveLength(36);
     expect(found.people[0]!.points.every((v) => v > 0 && v <= 1)).toBe(true);
   });
 
-  it('marks the joints that were not found as hidden', () => {
+  it('marks the joints that were not found as hidden', { tags: ['condition'] }, () => {
     const found = parsePoseExtract(answer([person(100, 50, [4, 7, 10, 13])]))!;
     expect(found.people[0]!.hidden).toEqual([4, 7, 10, 13]);
   });
 
-  it('drops people with too few joints, keeps the biggest four and orders them left to right', () => {
+  it('drops people with too few joints, keeps the biggest four and orders them left to right', { tags: ['condition'] }, () => {
     const few = person(300, 50, Array.from({ length: 14 }, (_, i) => i));
     const people = [person(300, 20, [], 5), person(50, 20, [], 8), person(150, 20, [], 3), person(250, 20, [], 7), person(350, 20, [], 1), few];
     const found = parsePoseExtract(answer(people))!;
@@ -67,7 +67,7 @@ describe('pose extraction answer', () => {
     expect(found.people.map((p) => p.points[0]! * 400)).toEqual([50, 250, 300, 150].sort((a, b) => a - b));
   });
 
-  it('treats a missing score or a non-positive position as not found', () => {
+  it('treats a missing score or a non-positive position as not found', { tags: ['error-guessing'] }, () => {
     const p = person(100, 50);
     p.pose_keypoints_2d[2] = 0;
     p.pose_keypoints_2d[3] = -1;
@@ -75,7 +75,7 @@ describe('pose extraction answer', () => {
     expect(parsePoseExtract(answer([p]))!.people[0]!.hidden).toEqual([0, 1, 2]);
   });
 
-  it('gives null for text that is not that JSON, and no people for an empty picture', () => {
+  it('gives null for text that is not that JSON, and no people for an empty picture', { tags: ['error-guessing'] }, () => {
     expect(parsePoseExtract('')).toBeNull();
     expect(parsePoseExtract('not json')).toBeNull();
     expect(parsePoseExtract('[]')).toBeNull();

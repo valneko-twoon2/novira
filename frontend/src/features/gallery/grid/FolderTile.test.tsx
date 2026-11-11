@@ -24,7 +24,7 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('FolderTile', () => {
-  it('shows the name, the count and the cover, and opens its board on a click', () => {
+  it('shows the name, the count and the cover, and opens its board on a click', { tags: ['scenario'] }, () => {
     render(<FolderTile boardId="b1/sub" name="sub" count={3} cover={cover} size={120} />);
     expect(tile().getAttribute('title')).toBe('sub');
     expect(screen.getByText('3')).toBeTruthy();
@@ -33,7 +33,7 @@ describe('FolderTile', () => {
     expect(useGallery.getState().selectedBoardId).toBe('b1/sub');
   });
 
-  it('has an empty cover and no count when it has neither, and the way back is its own tile', () => {
+  it('has an empty cover and no count when it has neither, and the way back is its own tile', { tags: ['condition'] }, () => {
     render(<FolderTile boardId="b1" name="b1" up size={120} />);
     const up = screen.getByTestId('gallery-folder-up');
     expect(up.querySelector('img')).toBeNull();
@@ -42,7 +42,7 @@ describe('FolderTile', () => {
     expect(up.className).toContain('is-up');
   });
 
-  it('marks itself while a picture is dragged over and clears the mark when the drag leaves it', () => {
+  it('marks itself while a picture is dragged over and clears the mark when the drag leaves it', { tags: ['state-transition'] }, () => {
     render(<FolderTile boardId="b1/sub" name="sub" size={120} />);
     fireEvent.dragOver(tile(), transfer(['text/plain']));
     expect(tile().className).not.toContain('is-over');
@@ -57,7 +57,7 @@ describe('FolderTile', () => {
     expect(tile().className).not.toContain('is-over');
   });
 
-  it('moves dropped pictures to its board', async () => {
+  it('moves dropped pictures to its board', { tags: ['scenario'] }, async () => {
     dnd.names = ['x.png', 'y.png'];
     render(<FolderTile boardId="b1/sub" name="sub" size={120} />);
     fireEvent.drop(tile(), transfer(['Files']));
@@ -66,7 +66,7 @@ describe('FolderTile', () => {
     expect(tile().className).not.toContain('is-over');
   });
 
-  it('uploads dropped files into its board when no picture of the app came', async () => {
+  it('uploads dropped files into its board when no picture of the app came', { tags: ['scenario'] }, async () => {
     const file = new File(['x'], 'p.png', { type: 'image/png' });
     render(<FolderTile boardId="b1/sub" name="sub" size={120} />);
     fireEvent.drop(tile(), transfer(['Files'], [file]));
@@ -75,7 +75,7 @@ describe('FolderTile', () => {
     expect(actions.moveImagesToBoard).not.toHaveBeenCalled();
   });
 
-  it('does nothing for a drop with neither pictures nor files', async () => {
+  it('does nothing for a drop with neither pictures nor files', { tags: ['error-guessing'] }, async () => {
     render(<FolderTile boardId="b1/sub" name="sub" size={120} />);
     fireEvent.drop(tile(), transfer(['Files']));
     await new Promise((r) => setTimeout(r, 0));

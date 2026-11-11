@@ -85,6 +85,7 @@ mod tests {
         image::load_from_memory(&picture.jpeg).unwrap().dimensions()
     }
 
+    // tags: boundary
     #[test]
     fn a_large_picture_is_scaled_down_to_the_longest_side_keeping_its_shape() {
         let picture = prepare(&png(3136, 1568)).unwrap();
@@ -92,18 +93,21 @@ mod tests {
         assert!(picture.jpeg.starts_with(&[0xFF, 0xD8]), "a JPEG");
     }
 
+    // tags: boundary
     #[test]
     fn a_picture_at_or_below_the_limit_keeps_its_size() {
         assert_eq!(size(&prepare(&png(MAX_SIDE, 10)).unwrap()), (MAX_SIDE, 10));
         assert_eq!(size(&prepare(&png(1, 1)).unwrap()), (1, 1));
     }
 
+    // tags: error-guessing
     #[test]
     fn something_that_is_not_a_picture_is_refused() {
         assert!(prepare(b"not a picture").is_err());
         assert!(prepare(&[]).is_err());
     }
 
+    // tags: scenario
     #[test]
     fn the_data_url_and_the_note_say_what_is_sent() {
         let picture = AgentImage {

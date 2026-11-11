@@ -34,6 +34,7 @@ pub(crate) fn damage_index(dir: &Path, table: Table) {
     file.write_all(&[0xff; PAGE as usize]).unwrap();
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn images_that_cannot_be_saved_to_the_database_fail_the_calls_that_change_them() {
     let dir = tempfile::tempdir().unwrap();
@@ -69,6 +70,7 @@ async fn images_that_cannot_be_saved_to_the_database_fail_the_calls_that_change_
     backend.shutdown();
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_queue_that_cannot_be_saved_fails_new_jobs_and_a_status_change_is_only_logged() {
     let dir = tempfile::tempdir().unwrap();
@@ -93,6 +95,7 @@ async fn a_queue_that_cannot_be_saved_fails_new_jobs_and_a_status_change_is_only
     backend.shutdown();
 }
 
+// tags: error-guessing, state-transition
 #[test]
 fn models_that_cannot_be_saved_stop_the_backend_from_starting() {
     let dir = tempfile::tempdir().unwrap();
@@ -147,6 +150,7 @@ fn db_error(err: impl std::fmt::Display) -> bool {
     err.to_string().contains("database error")
 }
 
+// tags: error-guessing
 #[test]
 fn boards_that_cannot_be_saved_fail_the_calls_that_change_them() {
     let dir = tempfile::tempdir().unwrap();
@@ -168,6 +172,7 @@ fn boards_that_cannot_be_saved_fail_the_calls_that_change_them() {
     backend.shutdown();
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn workflows_that_cannot_be_saved_fail_the_calls_that_change_them() {
     let dir = tempfile::tempdir().unwrap();
@@ -202,6 +207,7 @@ async fn workflows_that_cannot_be_saved_fail_the_calls_that_change_them() {
     backend.shutdown();
 }
 
+// tags: error-guessing, decision-table
 #[tokio::test]
 async fn pictures_that_cannot_be_saved_fail_the_upload_and_the_delete() {
     let dir = tempfile::tempdir().unwrap();
@@ -217,6 +223,7 @@ async fn pictures_that_cannot_be_saved_fail_the_upload_and_the_delete() {
     backend.shutdown();
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_queue_that_cannot_be_changed_fails_clearing_and_pruning() {
     let dir = tempfile::tempdir().unwrap();
@@ -231,6 +238,7 @@ async fn a_queue_that_cannot_be_changed_fails_clearing_and_pruning() {
     backend.shutdown();
 }
 
+// tags: error-guessing
 #[test]
 fn a_model_record_that_cannot_be_saved_fails_editing_and_deleting() {
     let dir = tempfile::tempdir().unwrap();
@@ -246,6 +254,7 @@ fn a_model_record_that_cannot_be_saved_fails_editing_and_deleting() {
     backend.shutdown();
 }
 
+// tags: error-guessing
 #[test]
 fn a_database_whose_settings_table_is_damaged_does_not_start() {
     let dir = tempfile::tempdir().unwrap();
@@ -267,6 +276,7 @@ fn a_database_whose_settings_table_is_damaged_does_not_start() {
     assert!(db_error(err));
 }
 
+// tags: error-guessing, state-transition
 #[test]
 fn a_job_that_was_running_when_the_app_stopped_and_cannot_be_marked_interrupted_stops_the_start() {
     let dir = tempfile::tempdir().unwrap();
@@ -308,6 +318,7 @@ fn a_job_that_was_running_when_the_app_stopped_and_cannot_be_marked_interrupted_
     assert!(db_error(err));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_result_that_cannot_be_recorded_in_the_gallery_fails_the_job() {
     let dir = tempfile::tempdir().unwrap();
@@ -343,6 +354,7 @@ fn start(dir: &Path) -> novira_core::service::Result<novira_core::Backend> {
     )
 }
 
+// tags: error-guessing
 #[test]
 fn a_backend_does_not_start_on_a_table_that_cannot_be_read() {
     // The first page of each table: boards, images, workflows, models, queue.
@@ -359,6 +371,7 @@ fn a_backend_does_not_start_on_a_table_that_cannot_be_read() {
     }
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn a_backend_does_not_start_when_its_folders_are_taken_by_files() {
     // The data folder itself is a file.

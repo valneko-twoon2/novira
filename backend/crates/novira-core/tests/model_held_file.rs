@@ -9,6 +9,7 @@ use std::fs::OpenOptions;
 use std::os::windows::fs::OpenOptionsExt;
 use std::sync::Arc;
 
+// tags: error-guessing
 #[test]
 fn a_model_whose_file_is_in_use_stays_listed_when_it_cannot_be_deleted() {
     let dir = tempfile::tempdir().unwrap();

@@ -20,7 +20,7 @@ const setup = (initial = 'Old name') => {
 };
 
 describe('NameDialog', () => {
-  it('starts with the current name and submits it trimmed with the save button, then closes', () => {
+  it('starts with the current name and submits it trimmed with the save button, then closes', { tags: ['scenario'] }, () => {
     const { onSubmit, onClose, input, ok } = setup();
     expect(input.value).toBe('Old name');
     fireEvent.change(input, { target: { value: '  New name  ' } });
@@ -29,14 +29,14 @@ describe('NameDialog', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('submits with the Enter key too', () => {
+  it('submits with the Enter key too', { tags: ['condition'] }, () => {
     const { onSubmit, input } = setup();
     fireEvent.change(input, { target: { value: 'By keyboard' } });
     fireEvent.submit(input.closest('form')!);
     expect(onSubmit).toHaveBeenCalledWith('By keyboard');
   });
 
-  it('refuses a blank name: the button is disabled and nothing is submitted', () => {
+  it('refuses a blank name: the button is disabled and nothing is submitted', { tags: ['boundary'] }, () => {
     const { onSubmit, onClose, input, ok } = setup();
     fireEvent.change(input, { target: { value: '   ' } });
     expect(ok.disabled).toBe(true);
@@ -45,7 +45,7 @@ describe('NameDialog', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
-  it('closes without submitting on cancel and on the close button', () => {
+  it('closes without submitting on cancel and on the close button', { tags: ['condition'] }, () => {
     const { onSubmit, onClose } = setup();
     fireEvent.click(screen.getByText(t('common.cancel')));
     fireEvent.click(screen.getByLabelText(t('common.close')));

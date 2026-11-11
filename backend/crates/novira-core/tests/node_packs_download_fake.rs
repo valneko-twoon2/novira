@@ -151,6 +151,7 @@ fn steps(seen: &[PackStatus]) -> Vec<String> {
         .collect()
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_pack_is_downloaded_unpacked_marked_and_listed() {
     let world = World::new();
@@ -172,6 +173,7 @@ async fn a_pack_is_downloaded_unpacked_marked_and_listed() {
     );
 }
 
+// tags: scenario
 #[tokio::test]
 async fn requirements_are_installed_with_the_torch_pins_as_constraints() {
     let world = World::new();
@@ -184,6 +186,7 @@ async fn requirements_are_installed_with_the_torch_pins_as_constraints() {
     assert!(log.contains("requirements.txt"));
 }
 
+// tags: scenario
 #[tokio::test]
 async fn the_pose_pack_is_installed_without_mediapipe_or_albumentationsx_and_keeps_its_own_list() {
     let world = World::new();
@@ -222,6 +225,7 @@ async fn the_pose_pack_is_installed_without_mediapipe_or_albumentationsx_and_kee
     );
 }
 
+// tags: boundary, state-transition
 #[tokio::test]
 async fn an_install_py_runs_inside_the_pack_folder() {
     let world = World::new();
@@ -232,6 +236,7 @@ async fn an_install_py_runs_inside_the_pack_folder() {
     assert!(world.pack("np-setup").join("installed.txt").is_file());
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn an_installed_pack_is_replaced() {
     let world = World::new();
@@ -244,6 +249,7 @@ async fn an_installed_pack_is_replaced() {
     assert!(!world.pack("np-replace").join("old.txt").exists());
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_failing_install_py_puts_the_previous_pack_back() {
     let world = World::new();
@@ -268,6 +274,7 @@ async fn a_failing_install_py_puts_the_previous_pack_back() {
     assert_eq!(names, ["np-rollback"]);
 }
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn a_failed_first_install_leaves_no_folder_behind() {
     let world = World::new();
@@ -283,6 +290,7 @@ async fn a_failed_first_install_leaves_no_folder_behind() {
     assert!(!world.pack("np-pipfail").exists());
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_pip_freeze_that_fails_stops_the_install() {
     let world = World::new();
@@ -295,6 +303,7 @@ async fn a_pip_freeze_that_fails_stops_the_install() {
     assert!(!world.pack("np-freeze").exists());
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_submodule_is_fetched_at_the_commit_the_pack_pins() {
     let world = World::new();
@@ -313,6 +322,7 @@ async fn a_submodule_is_fetched_at_the_commit_the_pack_pins() {
     assert_eq!(site().requests("/owner/subrepo/zip/c0ffee1").len(), 1);
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_submodule_falls_back_to_head_when_github_does_not_say_which_commit() {
     let world = World::new();
@@ -328,6 +338,7 @@ async fn a_submodule_falls_back_to_head_when_github_does_not_say_which_commit() 
     assert!(world.pack("np-subs-head").join("libs/x/nodes.py").is_file());
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_submodule_outside_the_pack_or_off_github_is_refused() {
     let world = World::new();
@@ -340,6 +351,7 @@ async fn a_submodule_outside_the_pack_or_off_github_is_refused() {
     assert!(!world.pack("np-dotdot").exists() && !world.pack("np-offsite").exists());
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn archives_with_a_bad_layout_or_content_are_refused() {
     let world = World::new();
@@ -356,6 +368,7 @@ async fn archives_with_a_bad_layout_or_content_are_refused() {
     }
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_missing_archive_and_a_python_that_does_not_exist_are_errors() {
     let world = World::new();
@@ -374,6 +387,7 @@ async fn a_missing_archive_and_a_python_that_does_not_exist_are_errors() {
     assert!(err.contains("Unpacking the pack failed"), "{err}");
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_pack_installed_at_a_tag_comes_from_that_tag_and_remembers_it() {
     let world = World::new();
@@ -399,6 +413,7 @@ async fn a_pack_installed_at_a_tag_comes_from_that_tag_and_remembers_it() {
     assert_eq!(listed[0].version.as_deref(), Some("v1.2.0"));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_tag_that_is_not_plain_is_refused_before_anything_is_fetched() {
     let world = World::new();
@@ -420,6 +435,7 @@ async fn a_tag_that_is_not_plain_is_refused_before_anything_is_fetched() {
     assert!(!world.pack("np-badtag").exists());
 }
 
+// tags: scenario
 #[tokio::test]
 async fn the_versions_of_a_pack_are_its_valid_tags_newest_first() {
     site().put_json(

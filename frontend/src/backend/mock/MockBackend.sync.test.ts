@@ -22,7 +22,7 @@ async function started() {
 const of = <T extends BackendEvent['type']>(events: BackendEvent[], type: T) => events.filter((e): e is Extract<BackendEvent, { type: T }> => e.type === type);
 
 describe('mock backend: change events', () => {
-  it('tells the whole board list after a board is made, renamed and deleted', async () => {
+  it('tells the whole board list after a board is made, renamed and deleted', { tags: ['condition'] }, async () => {
     const { backend, events } = await started();
     const made = await backend.createBoard('Fresh');
     expect(of(events, 'boards_changed').at(-1)?.boards.some((b) => b.id === made.id && b.name === 'Fresh')).toBe(true);
@@ -32,7 +32,7 @@ describe('mock backend: change events', () => {
     expect(of(events, 'boards_changed').at(-1)?.boards.some((b) => b.id === made.id)).toBe(false);
   });
 
-  it('tells which pictures changed, left and came back', async () => {
+  it('tells which pictures changed, left and came back', { tags: ['condition'] }, async () => {
     const { backend, boot, events } = await started();
     const name = boot.images[0]!.name;
     await backend.updateImages([name], { starred: true });
@@ -43,7 +43,7 @@ describe('mock backend: change events', () => {
     expect(of(events, 'images_changed').at(-1)).toMatchObject({ images: [{ name }], removed: [] });
   });
 
-  it('tells nothing when nothing in the gallery changed', async () => {
+  it('tells nothing when nothing in the gallery changed', { tags: ['condition'] }, async () => {
     const { backend, events } = await started();
     await backend.updateImages(['not-there.png'], { starred: true });
     await backend.deleteImages(['not-there.png']);
@@ -51,7 +51,7 @@ describe('mock backend: change events', () => {
     expect(of(events, 'images_changed')).toEqual([]);
   });
 
-  it("tells where a deleted board's pictures went", async () => {
+  it("tells where a deleted board's pictures went", { tags: ['condition'] }, async () => {
     const { backend, boot, events } = await started();
     const withPictures = boot.boards.find((b) => boot.images.some((i) => i.boardId === b.id))!;
     const names = boot.images.filter((i) => i.boardId === withPictures.id).map((i) => i.name);
@@ -59,7 +59,7 @@ describe('mock backend: change events', () => {
     expect(of(events, 'images_changed').at(-1)).toEqual({ type: 'images_changed', images: [], removed: names });
   });
 
-  it('tells the models after one is edited or removed, and the library after a workflow is saved or deleted', async () => {
+  it('tells the models after one is edited or removed, and the library after a workflow is saved or deleted', { tags: ['condition'] }, async () => {
     const { backend, boot, events } = await started();
     const key = boot.models[0]!.key;
     await backend.updateModel(key, { name: 'Edited' });

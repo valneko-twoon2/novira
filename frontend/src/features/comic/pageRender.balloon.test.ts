@@ -80,7 +80,7 @@ const named = (steps: Step[], name: string) => steps.filter((s) => s.name === na
 const letters = (steps: Step[]) => named(steps, 'fillText').map((s) => ({ text: s.args[0] as string, x: s.args[1] as number, y: s.args[2] as number, step: s }));
 
 describe('the colours of a balloon', () => {
-  it('fills a light balloon white with black words, and a dark one black with white words', () => {
+  it('fills a light balloon white with black words, and a dark one black with white words', { tags: ['condition'] }, () => {
     const light = draw(balloon('speech', { text: 'Hi' }));
     expect(named(light, 'fill').length).toBeGreaterThan(0);
     expect(new Set(named(light, 'fill').map((s) => s.fillStyle))).toEqual(new Set(['#ffffff']));
@@ -91,7 +91,7 @@ describe('the colours of a balloon', () => {
     expect(letters(dark).map((l) => l.step.fillStyle)).toEqual(['#ffffff']);
   });
 
-  it('fills the rays of a flash in black over its white body', () => {
+  it('fills the rays of a flash in black over its white body', { tags: ['condition'] }, () => {
     const fills = named(draw(balloon('flash', { text: 'Hi' })), 'fill').map((s) => s.fillStyle);
     expect(fills[0]).toBe('#ffffff');
     expect(fills.at(-1)).toBe('#000000');
@@ -110,20 +110,20 @@ describe('the line of a balloon', () => {
     return out;
   }
 
-  it('draws a whisper in dashes measured in line widths (a tenth of the text), so a larger text has longer dashes', () => {
+  it('draws a whisper in dashes measured in line widths (a tenth of the text), so a larger text has longer dashes', { tags: ['condition'] }, () => {
     const lineUnit = FONT_PX * 0.1;
     expect(dashesAtStrokes(draw(balloon('speech', { text: 'Hi', line: 'dashed' })))).toEqual([DASH.map((d) => d * lineUnit)]);
     expect(dashesAtStrokes(draw(balloon('speech', { text: 'Hi', line: 'dashed', scale: 2 })))).toEqual([DASH.map((d) => d * lineUnit * 2)]);
   });
 
-  it('draws a solid line without dashes, and leaves no dashes behind for what follows', () => {
+  it('draws a solid line without dashes, and leaves no dashes behind for what follows', { tags: ['state-transition'] }, () => {
     const solid = draw(balloon('speech', { text: 'Hi' }));
     expect(dashesAtStrokes(solid)).toEqual([[]]);
     const dashed = draw(balloon('speech', { text: 'Hi', line: 'dashed' }));
     expect(named(dashed, 'setLineDash').at(-1)!.args[0]).toEqual([]);
   });
 
-  it('draws a double line as black, white and black strokes, each narrower, so two black bands show; none draws no line', () => {
+  it('draws a double line as black, white and black strokes, each narrower, so two black bands show; none draws no line', { tags: ['condition'] }, () => {
     const lineUnit = FONT_PX * 0.1;
     const double = named(draw(balloon('speech', { text: 'Hi', line: 'double', lineWidth: 2 })), 'stroke');
     expect(double.map((s) => [s.strokeStyle, s.lineWidth])).toEqual([
@@ -138,7 +138,7 @@ describe('the line of a balloon', () => {
 });
 
 describe('lettering without a balloon', () => {
-  it('letters a sound effect in the heaviest weight, each black letter over a white edge, with no balloon', () => {
+  it('letters a sound effect in the heaviest weight, each black letter over a white edge, with no balloon', { tags: ['boundary'] }, () => {
     const steps = draw(balloon('sfx', { text: 'A\nB' }));
     expect(named(steps, 'fill')).toEqual([]);
     expect(named(steps, 'stroke')).toEqual([]);
@@ -154,7 +154,7 @@ describe('lettering without a balloon', () => {
     expect(texts.filter((s) => s.name === 'fillText').every((s) => s.fillStyle === '#000000' && String(s.font).startsWith('900 '))).toBe(true);
   });
 
-  it('sits a sound effect closer to its corner and its lines closer together than a balloon of the same size', () => {
+  it('sits a sound effect closer to its corner and its lines closer together than a balloon of the same size', { tags: ['condition'] }, () => {
     const sfx = letters(draw(balloon('sfx', { text: 'A\nB' })));
     const speech = letters(draw(balloon('speech', { text: 'A\nB' })));
     expect(sfx[0]!.x - BALLOON_X).toBeLessThan(speech[0]!.x - BALLOON_X);
@@ -165,7 +165,7 @@ describe('lettering without a balloon', () => {
     expect(sfx[0]!.x).toBe(sfx[1]!.x);
   });
 
-  it('letters plain words in the regular weight with a thinner white edge than a sound effect, and no balloon', () => {
+  it('letters plain words in the regular weight with a thinner white edge than a sound effect, and no balloon', { tags: ['boundary'] }, () => {
     const plain = draw(balloon('plain', { text: 'Hi' }));
     expect(named(plain, 'fill')).toEqual([]);
     expect(named(plain, 'stroke')).toEqual([]);
@@ -177,13 +177,13 @@ describe('lettering without a balloon', () => {
     expect(String(letters(plain)[0]!.step.font)).toMatch(/^400 /);
   });
 
-  it('gives the words of a balloon no edge', () => {
+  it('gives the words of a balloon no edge', { tags: ['boundary'] }, () => {
     expect(named(draw(balloon('speech', { text: 'Hi' })), 'strokeText')).toEqual([]);
   });
 });
 
 describe('marked words', () => {
-  it('sets bold-marked words in bold and the rest in the regular weight, one after the other on the line', () => {
+  it('sets bold-marked words in bold and the rest in the regular weight, one after the other on the line', { tags: ['condition'] }, () => {
     const [bold, rest] = letters(draw(balloon('speech', { text: '**AB**C' })));
     expect([bold!.text, rest!.text]).toEqual(['AB', 'C']);
     expect(String(bold!.step.font)).toMatch(/^700 /);
@@ -192,7 +192,7 @@ describe('marked words', () => {
     expect(rest!.y).toBe(bold!.y);
   });
 
-  it('puts an emphasis dot above the middle of each marked character, in the colour of the words, none on a space or an unmarked one', () => {
+  it('puts an emphasis dot above the middle of each marked character, in the colour of the words, none on a space or an unmarked one', { tags: ['condition'] }, () => {
     for (const dark of [false, true]) {
       const steps = draw(balloon('speech', { text: 'X《《A B》》', dark }));
       const [plainRun, dotted] = letters(steps);
@@ -210,7 +210,7 @@ describe('marked words', () => {
 });
 
 describe('vertical text', () => {
-  it('writes columns from the right, each running down, centred on its column', () => {
+  it('writes columns from the right, each running down, centred on its column', { tags: ['condition'] }, () => {
     const steps = draw(balloon('speech', { text: 'AB\nC', vertical: true }));
     const [a, b, c] = letters(steps);
     expect([a!.text, b!.text, c!.text]).toEqual(['A', 'B', 'C']);
@@ -221,7 +221,7 @@ describe('vertical text', () => {
     expect([a, b, c].every((l) => l!.step.textAlign === 'center')).toBe(true);
   });
 
-  it('continues a column too long for the panel at the top of the next column to its left', () => {
+  it('continues a column too long for the panel at the top of the next column to its left', { tags: ['condition'] }, () => {
     const text = 'あ'.repeat(30);
     const column = letters(draw(balloon('speech', { text, vertical: true })));
     expect(column).toHaveLength(30);
@@ -236,7 +236,7 @@ describe('vertical text', () => {
     expect(next[0]!.y).toBe(first[0]!.y);
   });
 
-  it('puts the emphasis dot of a vertical character to its right, at its middle, none on a space', () => {
+  it('puts the emphasis dot of a vertical character to its right, at its middle, none on a space', { tags: ['condition'] }, () => {
     const steps = draw(balloon('speech', { text: '《《あ い》》う', vertical: true }));
     const chars = letters(steps);
     const arcs = named(steps, 'arc').map((s) => s.args as number[]);
@@ -251,7 +251,7 @@ describe('vertical text', () => {
 });
 
 describe('turned lettering', () => {
-  it('turns lettering about the middle of its box by its rotation, and leaves unturned lettering alone', () => {
+  it('turns lettering about the middle of its box by its rotation, and leaves unturned lettering alone', { tags: ['state-transition'] }, () => {
     const steps = draw(balloon('sfx', { text: 'BOOOOM', rotation: 30 }));
     const [word] = letters(steps);
     const turn = steps.findIndex((s) => s.name === 'rotate');
@@ -272,7 +272,7 @@ describe('stamps', () => {
   const image = { naturalWidth: stamp.width, naturalHeight: stamp.height } as HTMLImageElement;
   const pictures = new Map([[DEFAULT_STAMP_ID, image]]);
 
-  it('draws a stamp as its picture at its place, in its own proportions, as tall as its size says, with no words', () => {
+  it('draws a stamp as its picture at its place, in its own proportions, as tall as its size says, with no words', { tags: ['condition'] }, () => {
     for (const scale of [1, 2]) {
       const steps = draw(balloon('stamp', { text: DEFAULT_STAMP_ID, scale }), pictures);
       expect(named(steps, 'fillText')).toEqual([]);
@@ -286,7 +286,7 @@ describe('stamps', () => {
     }
   });
 
-  it('turns a stamp about its middle by its rotation', () => {
+  it('turns a stamp about its middle by its rotation', { tags: ['condition'] }, () => {
     const steps = draw(balloon('stamp', { text: DEFAULT_STAMP_ID, rotation: -45 }), pictures);
     const [, x, y, w, h] = named(steps, 'drawImage')[0]!.args as number[];
     const turn = steps.findIndex((s) => s.name === 'rotate');
@@ -296,7 +296,7 @@ describe('stamps', () => {
     expect(named(draw(balloon('stamp', { text: DEFAULT_STAMP_ID }), pictures), 'rotate')).toEqual([]);
   });
 
-  it('draws nothing for a stamp whose picture did not load, or a stamp that does not exist', () => {
+  it('draws nothing for a stamp whose picture did not load, or a stamp that does not exist', { tags: ['condition'] }, () => {
     expect(named(draw(balloon('stamp', { text: DEFAULT_STAMP_ID })), 'drawImage')).toEqual([]);
     expect(draw(balloon('stamp', { text: 'no-such-stamp' }), new Map([['no-such-stamp', image]]))).toEqual([]);
   });

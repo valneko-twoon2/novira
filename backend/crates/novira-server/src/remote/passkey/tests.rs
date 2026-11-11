@@ -143,6 +143,7 @@ fn new_key(a: &Authenticator, m: &Made) -> Result<NewKey, Refusal> {
     .inspect(|k| assert_eq!(k.public_key, a.point()))
 }
 
+// tags: condition
 #[test]
 fn a_new_passkey_checks_out_and_its_key_and_id_come_back() {
     let a = Authenticator::new();
@@ -151,6 +152,7 @@ fn a_new_passkey_checks_out_and_its_key_and_id_come_back() {
     assert_eq!(key.sign_count, 0);
 }
 
+// tags: error-guessing, decision-table
 #[test]
 fn a_new_passkey_for_another_challenge_origin_party_or_ceremony_is_refused() {
     let a = Authenticator::new();
@@ -226,6 +228,7 @@ fn a_new_passkey_for_another_challenge_origin_party_or_ceremony_is_refused() {
     );
 }
 
+// tags: condition
 #[test]
 fn a_new_passkey_needs_a_present_and_verified_user() {
     let mut a = Authenticator::new();
@@ -241,6 +244,7 @@ fn a_new_passkey_needs_a_present_and_verified_user() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn a_new_passkey_must_be_p256_and_the_key_the_authenticator_named() {
     let a = Authenticator::new();
@@ -317,6 +321,7 @@ fn a_new_passkey_must_be_p256_and_the_key_the_authenticator_named() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn a_new_passkey_must_carry_its_own_id_and_attested_data() {
     let a = Authenticator::new();
@@ -379,6 +384,7 @@ fn a_new_passkey_must_carry_its_own_id_and_attested_data() {
     }
 }
 
+// tags: condition
 #[test]
 fn a_sign_in_verifies_with_the_stored_key() {
     let mut a = Authenticator::new();
@@ -397,6 +403,7 @@ fn a_sign_in_verifies_with_the_stored_key() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn a_sign_in_with_another_key_a_changed_message_or_another_challenge_is_refused() {
     let mut a = Authenticator::new();
@@ -473,6 +480,7 @@ fn a_sign_in_with_another_key_a_changed_message_or_another_challenge_is_refused(
     );
 }
 
+// tags: condition
 #[test]
 fn a_sign_in_needs_a_verified_user_even_when_signed() {
     let mut a = Authenticator::new();
@@ -492,6 +500,7 @@ fn a_sign_in_needs_a_verified_user_even_when_signed() {
     );
 }
 
+// tags: boundary, state-transition
 #[test]
 fn a_counter_that_does_not_move_on_is_refused_and_zero_always_passes() {
     let mut a = Authenticator::new();
@@ -562,6 +571,7 @@ fn a_counter_that_does_not_move_on_is_refused_and_zero_always_passes() {
     );
 }
 
+// tags: condition
 #[test]
 fn the_challenge_is_read_from_the_client_data() {
     assert_eq!(
@@ -600,6 +610,7 @@ fn made_with(a: &Authenticator, flags: u8, id: Vec<u8>, cose: &[u8]) -> Result<N
 
 const VERIFIED: u8 = USER_PRESENT | USER_VERIFIED;
 
+// tags: condition
 #[test]
 fn es256_is_cose_algorithm_minus_7_as_the_browser_reports_it() {
     let a = Authenticator::new();
@@ -617,6 +628,7 @@ fn es256_is_cose_algorithm_minus_7_as_the_browser_reports_it() {
     .is_ok());
 }
 
+// tags: error-guessing
 #[test]
 fn attested_data_without_the_attested_flag_is_refused() {
     let a = Authenticator::new();
@@ -627,6 +639,7 @@ fn attested_data_without_the_attested_flag_is_refused() {
     );
 }
 
+// tags: boundary
 #[test]
 fn the_credential_id_is_1_to_1023_bytes() {
     let a = Authenticator::new();
@@ -671,6 +684,7 @@ fn the_credential_id_is_1_to_1023_bytes() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn the_cose_key_must_name_es256_and_hold_x_and_y() {
     let a = Authenticator::new();
@@ -691,6 +705,7 @@ fn the_cose_key_must_name_es256_and_hold_x_and_y() {
     }
 }
 
+// tags: error-guessing
 #[test]
 fn the_key_is_read_after_the_credential_id_not_inside_it() {
     let a = Authenticator::new();

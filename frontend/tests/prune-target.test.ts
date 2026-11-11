@@ -18,14 +18,14 @@ describe('prune-target', () => {
     dir = '';
   });
 
-  it('measures at most once a day, unless forced', () => {
+  it('measures at most once a day, unless forced', { tags: ['boundary'] }, () => {
     expect(plan({ checkedAt: NOW - EVERY_MS + 1 })).toBe('wait');
     expect(plan({ checkedAt: NOW - EVERY_MS })).toBe('measure');
     expect(plan({ checkedAt: null })).toBe('measure');
     expect(plan({ checkedAt: NOW - 1, force: true })).toBe('measure');
   });
 
-  it('cleans only past the limit, and never while the folder is in use', () => {
+  it('cleans only past the limit, and never while the folder is in use', { tags: ['boundary'] }, () => {
     expect(plan({ size: LIMIT_BYTES })).toBe('keep');
     expect(plan({ size: LIMIT_BYTES + 1 })).toBe('clean');
     expect(plan({ size: LIMIT_BYTES + 1, busy: 'novira.exe runs from it' })).toBe('skip');
@@ -33,7 +33,7 @@ describe('prune-target', () => {
     expect(plan({ size: 10, limit: 5 })).toBe('clean');
   });
 
-  it('counts a program running from inside the folder as in use, not one from beside it', () => {
+  it('counts a program running from inside the folder as in use, not one from beside it', { tags: ['condition'] }, () => {
     const target = join('E:', 'r', 'backend', 'target');
     expect(targetBusy([proc('novira.exe', join(target, 'debug', 'novira.exe'))], target)).toMatch(/novira\.exe \(pid 7\)/);
     expect(targetBusy([proc('novira.exe', join('E:', 'r', 'artifacts', 'novira.exe')), proc('target.exe', join('E:', 'r', 'backend', 'target2', 'x.exe'))], target)).toBe('');
@@ -41,7 +41,7 @@ describe('prune-target', () => {
     expect(targetBusy(null, target)).toMatch(/could not be listed/);
   });
 
-  it('adds up the files of a folder tree', () => {
+  it('adds up the files of a folder tree', { tags: ['condition'] }, () => {
     dir = mkdtempSync(join(tmpdir(), 'prune-target-'));
     mkdirSync(join(dir, 'a', 'b'), { recursive: true });
     writeFileSync(join(dir, 'x'), Buffer.alloc(10));
@@ -50,7 +50,7 @@ describe('prune-target', () => {
     expect(folderSize(join(dir, 'missing'))).toBe(0);
   });
 
-  it('stamps the measurement and keeps a small dev build', () => {
+  it('stamps the measurement and keeps a small dev build', { tags: ['condition'] }, () => {
     dir = mkdtempSync(join(tmpdir(), 'prune-target-'));
     mkdirSync(join(dir, 'debug'));
     writeFileSync(join(dir, 'debug', 'x'), Buffer.alloc(5));

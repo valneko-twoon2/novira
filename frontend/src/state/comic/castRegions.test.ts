@@ -17,14 +17,14 @@ const kage: ComicCharacter = { id: 'kage', name: 'Kage', tags: 'monster', imageN
 const project = { cast: [boy, girl, kage] };
 
 describe('castRegions', () => {
-  it('is null for a panel with one character, with no pose, or with nobody placed', () => {
+  it('is null for a panel with one character, with no pose, or with nobody placed', { tags: ['condition'] }, () => {
     expect(castRegions(project, { cast: ['boy'], poses: [person(0.3)] })).toBeNull();
     expect(castRegions(project, { cast: ['boy', 'girl'], poses: [] })).toBeNull();
     // Two people in the cast, three in the pose, nobody named: they cannot be told apart.
     expect(castRegions(project, { cast: ['boy', 'girl'], poses: [person(0.2), person(0.5), person(0.8)] })).toBeNull();
   });
 
-  it('takes the human characters in the panel order when they are as many as the people', () => {
+  it('takes the human characters in the panel order when they are as many as the people', { tags: ['condition'] }, () => {
     const regions = castRegions(project, { cast: ['girl', 'boy', 'kage'], poses: [person(0.25), person(0.75)] })!;
     expect(regions.map((r) => r.character.id)).toEqual(['girl', 'boy', 'kage']);
     expect(regions[0]!.box!.x).toBeLessThan(0.25);
@@ -33,7 +33,7 @@ describe('castRegions', () => {
     expect(regions[2]!.box).toBeNull();
   });
 
-  it('follows the names given to the people, and keeps a box inside the panel', () => {
+  it('follows the names given to the people, and keeps a box inside the panel', { tags: ['condition'] }, () => {
     const regions = castRegions(project, { cast: ['boy', 'girl'], poses: [person(0.02), person(0.75)], poseCast: ['girl', 'boy'] })!;
     const girlBox = regions.find((r) => r.character.id === 'girl')!.box!;
     expect(girlBox.x).toBe(0);
@@ -43,7 +43,7 @@ describe('castRegions', () => {
 });
 
 describe('storeCastRegions', () => {
-  it('stores each mask once: a panel drawn again with the same people in the same places reuses them', async () => {
+  it('stores each mask once: a panel drawn again with the same people in the same places reuses them', { tags: ['regression'] }, async () => {
     const png = new Blob(['x'], { type: 'image/png' });
     const canvas = { width: 0, height: 0, getContext: () => ({ fillRect: () => undefined, fillStyle: '' }), toBlob: (cb: (b: Blob) => void) => cb(png) };
     vi.stubGlobal('document', { createElement: () => canvas });

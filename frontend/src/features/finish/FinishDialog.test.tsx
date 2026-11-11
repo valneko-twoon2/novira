@@ -36,7 +36,7 @@ const mount = () =>
   );
 
 describe('finish graph', () => {
-  it('doubles the frames and the rate, then brings the enlarged frames to twice the clip', () => {
+  it('doubles the frames and the rate, then brings the enlarged frames to twice the clip', { tags: ['scenario'] }, () => {
     const g = finishGraph({ name: 'clip.mp4', width: 832, height: 480, fps: 24 }, { smooth: true, upscale: { modelKey: 'up-1' } });
     expect(g.prompt.load!.inputs.file).toEqual({ $image: 'clip.mp4' });
     expect(g.prompt.smooth!.inputs).toMatchObject({ frames: ['parts', 0], multiplier: 2 });
@@ -48,7 +48,7 @@ describe('finish graph', () => {
     expect(g.prompt.first!.inputs.image).toEqual(['fit', 0]);
   });
 
-  it('leaves a step out when it is not asked for, and drops inputs an older pack does not have', () => {
+  it('leaves a step out when it is not asked for, and drops inputs an older pack does not have', { tags: ['scenario'] }, () => {
     const only = finishGraph({ name: 'clip.mp4', width: 64, height: 64, fps: 12 }, { smooth: false, upscale: { modelKey: 'u' } });
     expect(only.prompt.smooth).toBeUndefined();
     expect(only.prompt.video!.inputs.fps).toBe(12);
@@ -72,7 +72,7 @@ describe('finish dialog', () => {
     vi.restoreAllMocks();
   });
 
-  it('looks at no picture while closed, however often the gallery changes', () => {
+  it('looks at no picture while closed, however often the gallery changes', { tags: ['scenario'] }, () => {
     // The dialog stays mounted; the gallery holds thousands of pictures and changes with every click.
     let reads = 0;
     const images = new Proxy(Array.from({ length: 500 }, (_, i) => ({ ...clip, name: `${i}.mp4` })), {
@@ -89,7 +89,7 @@ describe('finish dialog', () => {
     expect(screen.queryByTestId('finish-run')).toBeNull();
   });
 
-  it('queues the finished clip on the source board with the doubled rate', async () => {
+  it('queues the finished clip on the source board with the doubled rate', { tags: ['scenario'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue').mockResolvedValue([]);
     mount();
     useFinish.getState().open('clip.mp4');
@@ -102,7 +102,7 @@ describe('finish dialog', () => {
     expect(request.comfyGraph!.thumbnail).toBe('thumb');
   });
 
-  it('asks for the interpolation pack when ComfyUI lacks it', async () => {
+  it('asks for the interpolation pack when ComfyUI lacks it', { tags: ['scenario'] }, async () => {
     useComfyNodes.setState({ defs: { ...MOCK_NODE_DEFS }, status: 'ready' });
     mount();
     useFinish.getState().open('clip.mp4');

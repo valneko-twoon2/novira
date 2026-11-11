@@ -1,3 +1,4 @@
+//! tags: state-transition, error-guessing
 //! A move of the data folder cut off at each of its steps (the power goes, the process is killed), then the next start.
 //! Wherever it stopped, the next start opens one whole data folder: the new one with everything in it, the pointer
 //! naming it, and nothing of the move left behind.

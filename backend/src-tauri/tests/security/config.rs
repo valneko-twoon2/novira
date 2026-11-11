@@ -35,6 +35,7 @@ fn sources<'a>(csp: &'a HashMap<String, Vec<String>>, directive: &str) -> &'a [S
         .unwrap_or(&[])
 }
 
+// tags: static, condition
 #[test]
 fn scripts_come_only_from_the_app_itself() {
     let csp = csp();
@@ -59,6 +60,7 @@ fn scripts_come_only_from_the_app_itself() {
     }
 }
 
+// tags: static, condition
 #[test]
 fn plugins_frames_forms_and_base_are_closed() {
     let csp = csp();
@@ -71,6 +73,7 @@ fn plugins_frames_forms_and_base_are_closed() {
     }
 }
 
+// tags: static, condition
 #[test]
 fn no_directive_allows_any_host_or_scheme() {
     let csp = csp();
@@ -93,6 +96,7 @@ fn no_directive_allows_any_host_or_scheme() {
     }
 }
 
+// tags: static, condition
 #[test]
 fn connections_stay_inside_the_app() {
     let csp = csp();
@@ -113,6 +117,7 @@ fn connections_stay_inside_the_app() {
     }
 }
 
+// tags: static, condition
 #[test]
 fn development_and_asset_settings_do_not_loosen_the_policy() {
     let conf = conf();
@@ -134,6 +139,7 @@ fn development_and_asset_settings_do_not_loosen_the_policy() {
     }
 }
 
+// tags: static, condition
 #[test]
 fn no_tauri_plugin_is_a_dependency() {
     // fs, shell, http, opener and friends would widen what the WebView can do.
@@ -156,6 +162,7 @@ fn no_tauri_plugin_is_a_dependency() {
     );
 }
 
+// tags: static, condition
 #[test]
 fn only_the_default_capability_exists() {
     // A second capability file would grant permissions the command list test does not see.

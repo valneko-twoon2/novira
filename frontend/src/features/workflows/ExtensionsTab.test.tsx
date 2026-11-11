@@ -38,7 +38,7 @@ async function openCard(name: string) {
 }
 
 describe('extension manager', () => {
-  it('lets the list on the left be made wider or narrower, within limits', () => {
+  it('lets the list on the left be made wider or narrower, within limits', { tags: ['boundary', 'scenario'] }, () => {
     show();
     const handle = screen.getByTestId('ex-rail-handle');
     const before = Number(handle.getAttribute('aria-valuenow'));
@@ -47,7 +47,7 @@ describe('extension manager', () => {
     for (let i = 0; i < 40; i++) fireEvent.keyDown(handle, { key: 'ArrowRight' });
     expect(Number(handle.getAttribute('aria-valuenow'))).toBe(480);
   });
-  it('lists every extension novira can install and the ones found in ComfyUI, each with its author', async () => {
+  it('lists every extension novira can install and the ones found in ComfyUI, each with its author', { tags: ['state-transition', 'decision-table'] }, async () => {
     show();
     await openCard('comfyui-mock-preview');
     const cards = screen.getAllByTestId('extension-item');
@@ -66,7 +66,7 @@ describe('extension manager', () => {
     expect(screen.getByText(t('workflows.packs.mgr.empty'))).toBeTruthy();
   });
 
-  it('browses the registry: most downloaded first, with downloads, installs from the card, shows more on request and sorts by name', async () => {
+  it('browses the registry: most downloaded first, with downloads, installs from the card, shows more on request and sorts by name', { tags: ['boundary', 'state-transition'] }, async () => {
     // Scrolling the end of the list into view adds the next page.
     const watchers: ((e: { isIntersecting: boolean }[]) => void)[] = [];
     vi.stubGlobal(
@@ -100,7 +100,7 @@ describe('extension manager', () => {
     await waitFor(() => expect(screen.getAllByTestId('extension-item')[0]!.textContent).not.toContain('ComfyUI-KJNodes'));
   });
 
-  it('marks an installed extension whose registry version is newer, filters them and updates from the card', async () => {
+  it('marks an installed extension whose registry version is newer, filters them and updates from the card', { tags: ['state-transition', 'scenario'] }, async () => {
     show();
     await waitFor(() => expect(screen.getByTestId('ex-cat-updatable').textContent).toContain('1'));
     fireEvent.click(screen.getByTestId('ex-cat-updatable'));
@@ -110,7 +110,7 @@ describe('extension manager', () => {
     expect(cards[0]!.querySelector('[data-testid="extension-card-update"]')).not.toBeNull();
   });
 
-  it('says so, and still lists the suggested and installed packs, when the registry cannot be read', async () => {
+  it('says so, and still lists the suggested and installed packs, when the registry cannot be read', { tags: ['error-guessing', 'state-transition'] }, async () => {
     vi.spyOn(backend, 'registryNodes').mockRejectedValue(new Error('offline'));
     show();
     expect(await screen.findByTestId('registry-failed')).toBeTruthy();
@@ -118,7 +118,7 @@ describe('extension manager', () => {
     expect(screen.getAllByTestId('extension-item').length).toBeLessThan(60);
   });
 
-  it('shows the licence and the author of a suggested extension and of one looked up on GitHub', async () => {
+  it('shows the licence and the author of a suggested extension and of one looked up on GitHub', { tags: ['boundary', 'scenario'] }, async () => {
     vi.spyOn(backend, 'nodePacks').mockResolvedValue({
       available: true,
       comfyVersion: '0.3.50',
@@ -135,7 +135,7 @@ describe('extension manager', () => {
     expect(other.querySelector('[data-testid="extension-author"]')!.textContent).toBe('someone');
   });
 
-  it('installs an extension from any GitHub address and refuses an address that is not one', async () => {
+  it('installs an extension from any GitHub address and refuses an address that is not one', { tags: ['error-guessing', 'boundary'] }, async () => {
     show();
     const input = (await screen.findByTestId('wf-pack-url')) as HTMLInputElement;
     fireEvent.change(input, { target: { value: 'https://example.com/a/b' } });
@@ -146,7 +146,7 @@ describe('extension manager', () => {
     await waitFor(() => expect(useNodePacks.getState().jobs['https://github.com/someone/ComfyUI-Fancy']).toBeTruthy());
   });
 
-  it('shows the version of an extension and of ComfyUI, and no version control for a repository without tags', async () => {
+  it('shows the version of an extension and of ComfyUI, and no version control for a repository without tags', { tags: ['scenario'] }, async () => {
     show();
     const ipa = await openCard('ComfyUI_IPAdapter_plus');
     expect(ipa.querySelector('[data-testid="extension-version"]')!.textContent).toContain('v2.0.0');
@@ -164,7 +164,7 @@ describe('extension manager', () => {
     }
   });
 
-  it('lists the versions of an extension, marks the ones another extension does not support, and installs the one chosen', async () => {
+  it('lists the versions of an extension, marks the ones another extension does not support, and installs the one chosen', { tags: ['boundary', 'state-transition'], timeout: 20_000 }, async () => {
     const nkd = PACK_CATALOG.find((c) => c.id === 'nkd')!;
     nkd.requires = [{ on: 'ipadapter', min: 'v2.5.0' }];
     try {
@@ -197,9 +197,9 @@ describe('extension manager', () => {
     } finally {
       delete nkd.requires;
     }
-  }, 20_000);
+  });
 
-  it('lists the ComfyUI releases, marks the ones an installed extension does not support, and switches only after asking twice', async () => {
+  it('lists the ComfyUI releases, marks the ones an installed extension does not support, and switches only after asking twice', { tags: ['state-transition', 'scenario'], timeout: 20_000 }, async () => {
     const ipa = PACK_CATALOG.find((c) => c.id === 'ipadapter')!;
     ipa.requires = [{ on: 'comfyui', max: '0.3.50' }];
     try {
@@ -231,9 +231,9 @@ describe('extension manager', () => {
     } finally {
       delete ipa.requires;
     }
-  }, 20_000);
+  });
 
-  it('removes an installed extension from its detail panel and asks for the restart that applies it', async () => {
+  it('removes an installed extension from its detail panel and asks for the restart that applies it', { tags: ['state-transition', 'scenario'] }, async () => {
     show();
     const detail = await openCard('ComfyUI_UltimateSDUpscale');
     const remove = detail.querySelector('[data-testid="wf-pack-remove"]')!;
@@ -247,14 +247,14 @@ describe('extension manager', () => {
 describe('asking the assistant about extensions', () => {
   afterEach(() => useAgent.setState({ open: false, pendingAsk: null, focus: [] }));
 
-  it('asks about the extension whose panel is open', async () => {
+  it('asks about the extension whose panel is open', { tags: ['state-transition', 'scenario'] }, async () => {
     show();
     const detail = await openCard('ComfyUI-Impact-Pack');
     fireEvent.click(within(detail).getByTestId('extension-ask'));
     expect(useAgent.getState()).toMatchObject({ open: true, pendingAsk: t('agent.ask.pack', { name: 'ComfyUI-Impact-Pack' }), focus: ['ComfyUI-Impact-Pack'] });
   });
 
-  it('offers to ask about the results of a search, and about no more than the first few', async () => {
+  it('offers to ask about the results of a search, and about no more than the first few', { tags: ['boundary', 'scenario'] }, async () => {
     show();
     await waitFor(() => expect(useNodePacks.getState().packs).not.toBeNull());
     expect(screen.queryByTestId('ex-ask-results')).toBeNull();
@@ -266,7 +266,7 @@ describe('asking the assistant about extensions', () => {
     expect(focus.length).toBeLessThanOrEqual(8);
   });
 
-  it('does not offer it when the search finds nothing', async () => {
+  it('does not offer it when the search finds nothing', { tags: ['boundary', 'scenario'] }, async () => {
     show();
     fireEvent.change(screen.getByTestId('ex-search'), { target: { value: 'nothing-like-this' } });
     expect(screen.queryByTestId('ex-ask-results')).toBeNull();
@@ -274,7 +274,7 @@ describe('asking the assistant about extensions', () => {
 });
 
 describe('the source link of an extension', () => {
-  it('asks the backend to open the repository page instead of being a plain link', async () => {
+  it('asks the backend to open the repository page instead of being a plain link', { tags: ['state-transition', 'scenario'] }, async () => {
     show();
     const detail = await openCard('ComfyUI-Impact-Pack');
     const open = vi.spyOn(backend, 'openSourcePage').mockResolvedValue();
@@ -292,7 +292,7 @@ describe('the rail width', () => {
   beforeEach(() => localStorage.removeItem('novira.extensions.railWidth'));
   afterEach(() => localStorage.removeItem('novira.extensions.railWidth'));
 
-  it('starts at 200, or at the saved width kept within the limits', () => {
+  it('starts at 200, or at the saved width kept within the limits', { tags: ['boundary', 'state-transition'] }, () => {
     show();
     expect(tab().style.gridTemplateColumns).toContain('200px');
     cleanup();
@@ -305,7 +305,7 @@ describe('the rail width', () => {
     expect(tab().style.gridTemplateColumns).toContain('160px');
   });
 
-  it('starts at 200 when the browser storage cannot be read', () => {
+  it('starts at 200 when the browser storage cannot be read', { tags: ['error-guessing', 'boundary'] }, () => {
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('blocked');
     });
@@ -313,7 +313,7 @@ describe('the rail width', () => {
     expect(tab().style.gridTemplateColumns).toContain('200px');
   });
 
-  it('saves the width after the arrow keys, narrowing with the left one and ignoring other keys', () => {
+  it('saves the width after the arrow keys, narrowing with the left one and ignoring other keys', { tags: ['boundary', 'scenario'] }, () => {
     show();
     fireEvent.keyDown(handle(), { key: 'ArrowLeft' });
     expect(handle().getAttribute('aria-valuenow')).toBe('184');
@@ -322,7 +322,7 @@ describe('the rail width', () => {
     expect(handle().getAttribute('aria-valuenow')).toBe('184');
   });
 
-  it('follows a drag, within the limits, and saves it when the pointer is released', () => {
+  it('follows a drag, within the limits, and saves it when the pointer is released', { tags: ['boundary', 'scenario'] }, () => {
     show();
     fireEvent.pointerDown(handle(), { clientX: 100 });
     act(() => void window.dispatchEvent(new MouseEvent('pointermove', { clientX: 160 })));
@@ -337,7 +337,7 @@ describe('the rail width', () => {
     expect(handle().getAttribute('aria-valuenow')).toBe('480');
   });
 
-  it('still works when the width cannot be saved', () => {
+  it('still works when the width cannot be saved', { tags: ['error-guessing', 'scenario'] }, () => {
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new Error('full');
     });
@@ -348,7 +348,7 @@ describe('the rail width', () => {
 });
 
 describe('cards by keyboard and their picture', () => {
-  it('opens and closes the detail with Enter or Space on the card itself, not for a key pressed on its button', async () => {
+  it('opens and closes the detail with Enter or Space on the card itself, not for a key pressed on its button', { tags: ['state-transition', 'scenario'] }, async () => {
     show();
     await openCard('ComfyUI-Impact-Pack');
     const card = () => screen.getAllByTestId('extension-item').find((c) => c.textContent?.includes('ComfyUI-Impact-Pack'))!;
@@ -365,7 +365,7 @@ describe('cards by keyboard and their picture', () => {
     expect(screen.queryByTestId('extension-detail')).toBeNull();
   });
 
-  it('opens the ComfyUI detail by keyboard too, and closes it again', async () => {
+  it('opens the ComfyUI detail by keyboard too, and closes it again', { tags: ['regression', 'state-transition'] }, async () => {
     show();
     const card = await screen.findByTestId('comfy-version');
     fireEvent.keyDown(card, { key: 'Enter' });
@@ -376,7 +376,7 @@ describe('cards by keyboard and their picture', () => {
     expect(screen.queryByTestId('comfy-versions')).toBeNull();
   });
 
-  it('falls back to the puzzle icon when the picture of a registry pack cannot be loaded', async () => {
+  it('falls back to the puzzle icon when the picture of a registry pack cannot be loaded', { tags: ['error-guessing', 'scenario'] }, async () => {
     const node = { id: 'pic', name: 'ComfyUI-Pictured', description: 'Has a picture', publisher: 'someone', repository: 'https://github.com/someone/ComfyUI-Pictured', icon: 'https://example.invalid/i.png', downloads: 1, stars: 1, version: '1.0.0', updated: null, license: null };
     vi.spyOn(backend, 'registryNodes').mockResolvedValue([node]);
     show();
@@ -401,7 +401,7 @@ describe('notices', () => {
     useRegistry.setState(initialRegistry, true);
   });
 
-  it('retries reading the registry from the notice, forcing a fresh read', async () => {
+  it('retries reading the registry from the notice, forcing a fresh read', { tags: ['scenario'] }, async () => {
     const load = vi.fn().mockResolvedValue(undefined);
     useRegistry.setState({ load, error: 'offline', nodes: null });
     show();
@@ -412,13 +412,13 @@ describe('notices', () => {
     expect(load).toHaveBeenCalledWith(true);
   });
 
-  it('says that the registry is loading while nothing is there yet', () => {
+  it('says that the registry is loading while nothing is there yet', { tags: ['boundary', 'state-transition'] }, () => {
     useRegistry.setState({ load: vi.fn().mockResolvedValue(undefined), loading: true, nodes: null, error: null });
     show();
     expect(screen.getByText(t('workflows.packs.mgr.registryLoading'))).toBeTruthy();
   });
 
-  it('shows the engine restart bar and restarts on a press', async () => {
+  it('shows the engine restart bar and restarts on a press', { tags: ['state-transition', 'scenario'] }, async () => {
     const restart = vi.fn().mockResolvedValue(undefined);
     vi.spyOn(backend, 'nodePacks').mockResolvedValue({ available: true, comfyVersion: null, restartNeeded: true, installed: [] });
     useNodePacks.setState({ restart });
@@ -428,7 +428,7 @@ describe('notices', () => {
     expect(restart).toHaveBeenCalledTimes(1);
   });
 
-  it('shows no list but says so when extensions cannot be managed, and shows an install error', () => {
+  it('shows no list but says so when extensions cannot be managed, and shows an install error', { tags: ['error-guessing', 'state-transition'] }, () => {
     useNodePacks.setState({ load: vi.fn().mockResolvedValue(undefined) });
     show();
     // Set after the first render, in one step with the checks: a late answer of the mock cannot overwrite it.

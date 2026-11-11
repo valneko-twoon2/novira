@@ -44,7 +44,7 @@ beforeEach(() => {
 });
 
 describe('RichHeader', () => {
-  it('shows the seed row of the Generate screen and keeps its choices in the form', () => {
+  it('shows the seed row of the Generate screen and keeps its choices in the form', { tags: ['scenario'] }, () => {
     render(<RichHeader />);
     expect(screen.getByText(t('params.seed.label'))).toBeTruthy();
     fireEvent.click(screen.getByTestId('seed-fixed'));
@@ -55,7 +55,7 @@ describe('RichHeader', () => {
     expect(useRichForm.getState().form.seed).toBe(1234);
   });
 
-  it('has the Generate bar of the Generate screen: the caret, the count and the queue controls', () => {
+  it('has the Generate bar of the Generate screen: the caret, the count and the queue controls', { tags: ['scenario'] }, () => {
     render(<RichHeader />);
     expect(invokeButton().textContent).toContain(t('params.invoke.invoke'));
     expect(screen.getByLabelText(t('params.invoke.moreOptions'))).toBeTruthy();
@@ -64,14 +64,14 @@ describe('RichHeader', () => {
     expect(screen.getByLabelText(t('params.invoke.cancelCurrent'))).toBeTruthy();
   });
 
-  it('adds no note when a line ControlNet is missing, and the button stays usable', () => {
+  it('adds no note when a line ControlNet is missing, and the button stays usable', { tags: ['error-guessing'] }, () => {
     useModels.setState({ models: [model('wai', 'main', 'sdxl')] });
     render(<RichHeader />);
     expect(screen.queryByTestId('text-rich-nomodel')).toBeNull();
     expect(invokeButton().disabled).toBe(false);
   });
 
-  it('says why when no model can draw', () => {
+  it('says why when no model can draw', { tags: ['condition'] }, () => {
     useModels.setState({ models: [] });
     render(<RichHeader />);
     expect(screen.getByTestId('text-rich-nomodel')).toBeTruthy();
@@ -85,14 +85,14 @@ describe('RichHeader', () => {
       const bubble = newBubbleLayer(size, 'round', '');
       useTextEditor.setState({ scene: { ...EMPTY_SCENE, layers: [bubble] }, selectedId: bubble.id });
     }],
-  ])('waits for a text layer with words, with no note on the panel: %s', (_name, arrange) => {
+  ])('waits for a text layer with words, with no note on the panel: %s', { tags: ['equivalence'] }, (_name, arrange) => {
     arrange();
     render(<RichHeader />);
     expect(invokeButton().disabled).toBe(true);
     expect(screen.queryByText(t('text.rich.select'))).toBeNull();
   });
 
-  it('turns the button on when a text layer gets selected', () => {
+  it('turns the button on when a text layer gets selected', { tags: ['scenario'] }, () => {
     useTextEditor.setState({ selectedId: null });
     render(<RichHeader />);
     expect(invokeButton().disabled).toBe(true);
@@ -100,13 +100,13 @@ describe('RichHeader', () => {
     expect(invokeButton().disabled).toBe(false);
   });
 
-  it('keeps the chosen model only while it is installed', () => {
+  it('keeps the chosen model only while it is installed', { tags: ['condition'] }, () => {
     useRichForm.setState({ form: { ...RICH_FORM_DEFAULTS, modelKey: 'gone' } });
     render(<RichHeader />);
     expect(screen.getByTestId('text-rich-model').textContent).toContain(t('text.rich.model.auto'));
   });
 
-  it('picks the model with the card and picker of the Generate screen, and goes back to automatic', () => {
+  it('picks the model with the card and picker of the Generate screen, and goes back to automatic', { tags: ['scenario'] }, () => {
     useModels.setState({ models: [model('wai', 'main', 'sdxl', 'wai'), model('nova', 'main', 'sdxl', 'nova'), model('cn', 'controlnet', 'sdxl', 'union-promax')] });
     render(<RichHeader />);
     const card = screen.getByTestId('text-rich-model-card');
@@ -123,7 +123,7 @@ describe('RichHeader', () => {
 });
 
 describe('RichDetails', () => {
-  it('folds the strength and the spill', () => {
+  it('folds the strength and the spill', { tags: ['scenario'] }, () => {
     render(<RichDetails />);
     expect(screen.queryByLabelText(t('text.rich.strength'))).toBeNull();
     fireEvent.click(screen.getByText(t('text.rich.details')));

@@ -55,20 +55,20 @@ function addMask(x: number, y: number) {
 }
 
 describe('the readiness of a page inpaint', () => {
-  it('asks for a mask', () => {
+  it('asks for a mask', { tags: ['condition'] }, () => {
     pageCanvasStore(page().id);
     expect(pageInpaintReadiness(page().id)).toHaveLength(1);
     addMask(10, 10);
     expect(pageInpaintReadiness(page().id)).toEqual([]);
   });
 
-  it('has nothing to say about a page that is gone', () => {
+  it('has nothing to say about a page that is gone', { tags: ['error-guessing'] }, () => {
     expect(pageInpaintReadiness('nope')).toEqual([]);
   });
 });
 
 describe('queuing an inpaint', () => {
-  it('does not queue without a mask', async () => {
+  it('does not queue without a mask', { tags: ['error-guessing'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue');
     pageCanvasStore(page().id);
     expect(await queuePageInpaint(page().id)).toBe(false);
@@ -76,7 +76,7 @@ describe('queuing an inpaint', () => {
     expect(useToasts.getState().toasts.some((x) => x.status === 'warning')).toBe(true);
   });
 
-  it('queues an inpaint of the box, tied to the page', async () => {
+  it('queues an inpaint of the box, tied to the page', { tags: ['scenario'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue').mockResolvedValue([{ id: 55 }] as never);
     const store = addMask(300, 300);
     store.getState().setBbox({ x: 200, y: 200, width: 512, height: 640 }, { history: false });
@@ -93,7 +93,7 @@ describe('queuing an inpaint', () => {
     expect(store.getState().bbox).toEqual({ x: 200, y: 200, width: 512, height: 640 });
   });
 
-  it('fits a box that is too large around the mask first, and says so', async () => {
+  it('fits a box that is too large around the mask first, and says so', { tags: ['boundary'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue').mockResolvedValue([{ id: 56 }] as never);
     const store = addMask(1400, 2000);
     // The page's whole box, as a new page has it.
@@ -107,7 +107,7 @@ describe('queuing an inpaint', () => {
     expect(useToasts.getState().toasts.some((x) => x.status === 'info')).toBe(true);
   });
 
-  it('tells the user when the queue refuses, and ties nothing to the page', async () => {
+  it('tells the user when the queue refuses, and ties nothing to the page', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'enqueue').mockRejectedValue(new Error('down'));
     addMask(300, 300);
     expect(await queuePageInpaint(page().id)).toBe(false);

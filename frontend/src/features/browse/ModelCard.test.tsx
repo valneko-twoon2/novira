@@ -50,7 +50,7 @@ beforeEach(() => {
 afterEach(() => cleanup());
 
 describe('ModelCard', () => {
-  it('shows the name, creator, kind and base, and the counts', () => {
+  it('shows the name, creator, kind and base, and the counts', { tags: ['decision-table', 'scenario'] }, () => {
     mount(model());
     expect(screen.getByText('Sunny XL')).toBeTruthy();
     expect(screen.getByText('someone')).toBeTruthy();
@@ -60,7 +60,7 @@ describe('ModelCard', () => {
     expect(screen.queryByTestId('browse-paid-badge')).toBeNull();
   });
 
-  it('opens on a press, and on Enter or Space on the card itself only', () => {
+  it('opens on a press, and on Enter or Space on the card itself only', { tags: ['state-transition', 'scenario'] }, () => {
     const onOpen = mount(model());
     const card = screen.getByTestId('browse-card');
     fireEvent.click(card);
@@ -74,7 +74,7 @@ describe('ModelCard', () => {
     expect(onOpen).toHaveBeenCalledTimes(3);
   });
 
-  it('shows at most three trigger words, and none when the model has none', () => {
+  it('shows at most three trigger words, and none when the model has none', { tags: ['boundary', 'scenario'] }, () => {
     const { unmount } = render(ui(model({ triggerWords: ['a', 'b', 'c', 'd'] })));
     expect(screen.getAllByTitle(t('browse.detail.copyHint')).length).toBe(3);
     unmount();
@@ -82,7 +82,7 @@ describe('ModelCard', () => {
     expect(screen.queryAllByTitle(t('browse.detail.copyHint')).length).toBe(0);
   });
 
-  it('marks a paid model with its badge and locks the download', () => {
+  it('marks a paid model with its badge and locks the download', { tags: ['scenario'] }, () => {
     const m = model();
     m.versions[0]!.paid = true;
     mount(m);
@@ -90,7 +90,7 @@ describe('ModelCard', () => {
     expect(screen.getByTestId('browse-paid-locked')).toBeTruthy();
   });
 
-  it('opens the model page without opening the card', () => {
+  it('opens the model page without opening the card', { tags: ['state-transition', 'scenario'] }, () => {
     const m = model();
     const onOpen = mount(m);
     fireEvent.click(screen.getByLabelText(t('browse.card.openCivitai')));

@@ -52,11 +52,11 @@ async function prepared(page: ComicPage): Promise<PreparedPage> {
 const partKinds = (ready: PreparedPage) => pageParts(ready).map((p) => p.kind);
 
 describe('the order the saved page is drawn in', () => {
-  it('follows the stack: paper and backdrop, then each layer bottom first', async () => {
+  it('follows the stack: paper and backdrop, then each layer bottom first', { tags: ['boundary'] }, async () => {
     expect(partKinds(await prepared(samplePage()))).toEqual(['paper', 'backdrop', 'panel', 'frame', 'balloon', 'raster', 'raster']);
   });
 
-  it('puts a layer moved under the panels under them, and the balloons where they were moved', async () => {
+  it('puts a layer moved under the panels under them, and the balloons where they were moved', { tags: ['condition'] }, async () => {
     let page = samplePage();
     for (let i = 0; i < 2; i++) page = withCanvas(page, (doc) => moveRaster(doc, 'ink', 'down'));
     page = withCanvas(page, (doc) => moveRaster(doc, 'balloons', 'up'));
@@ -65,7 +65,7 @@ describe('the order the saved page is drawn in', () => {
     expect(pageParts(ready).map((p) => (p.kind === 'raster' ? p.entity.id : p.kind))).toEqual(['paper', 'backdrop', 'ink', 'panel', 'frame', 'sky', 'balloon']);
   });
 
-  it('leaves out a hidden layer, slot or not, and a page with only its slots is drawn as before there were layers', async () => {
+  it('leaves out a hidden layer, slot or not, and a page with only its slots is drawn as before there were layers', { tags: ['state-transition'] }, async () => {
     const hidden = withCanvas(withCanvas(samplePage(), look('balloons', { isEnabled: false })), look('sky', { isEnabled: false }));
     expect(partKinds(await prepared(hidden))).toEqual(['paper', 'backdrop', 'panel', 'frame', 'raster']);
     const plain = emptyPage(1);
@@ -73,7 +73,7 @@ describe('the order the saved page is drawn in', () => {
     expect(partKinds(await prepared(plain))).toEqual(['paper', 'backdrop', 'panel', 'frame', 'balloon']);
   });
 
-  it('leaves out an empty raster, one whose picture is gone, and the masks', async () => {
+  it('leaves out an empty raster, one whose picture is gone, and the masks', { tags: ['boundary', 'state-transition'] }, async () => {
     const page = emptyPage(1);
     const mask = { ...raster('m', 'Mask', [{ kind: 'stroke', id: 'm1', tool: 'brush', color: black, width: 9, points: [1, 1], clip: null }]), type: 'inpaint', color: black, fill: 'solid', denoiseLimit: null, noiseLevel: null } as CanvasEntity;
     const gone = raster('gone', 'Gone', [{ kind: 'image', id: 'g', url: '', imageName: 'gone.png', x: 0, y: 0, width: 5, height: 5 }]);
@@ -90,7 +90,7 @@ describe('the order the saved page is drawn in', () => {
 });
 
 describe('drawing the layers', () => {
-  it('lays a raster over the page from a canvas of its own, its eraser kept on that canvas', async () => {
+  it('lays a raster over the page from a canvas of its own, its eraser kept on that canvas', { tags: ['condition'] }, async () => {
     const main = canvases.of(drawPage(await prepared(samplePage())));
     const own = canvases.all.filter((r) => r !== main);
     // The eraser cuts the layer's own canvas, and the page's canvas never erases.
@@ -99,7 +99,7 @@ describe('drawing the layers', () => {
     expect(main.of('drawImage').some(([source]) => (source as HTMLCanvasElement).tagName === 'CANVAS')).toBe(true);
   });
 
-  it('lays a faded or blended layer over the page with its opacity and blend, a slot too', async () => {
+  it('lays a faded or blended layer over the page with its opacity and blend, a slot too', { tags: ['condition'] }, async () => {
     const faded = withCanvas(withCanvas(samplePage(), look('sky', { opacity: 0.25, blend: 'multiply' })), look('panels', { opacity: 0.5 }));
     const main = canvases.of(drawPage(await prepared(faded)));
     const sets = main.sets.map((s) => `${s.name}=${String(s.value)}`);
@@ -108,7 +108,7 @@ describe('drawing the layers', () => {
     expect(sets).toContain('globalAlpha=0.5');
   });
 
-  it('draws the plain slots straight onto the page', async () => {
+  it('draws the plain slots straight onto the page', { tags: ['condition'] }, async () => {
     const main = canvases.of(drawPage(await prepared(emptyPage(1))));
     expect(main.sets.some((s) => s.name === 'globalAlpha')).toBe(false);
     expect(canvases.all).toHaveLength(1);
@@ -116,7 +116,7 @@ describe('drawing the layers', () => {
 });
 
 describe('the layers of the PSD', () => {
-  it('follow the stack, named by the layer, with its opacity, blend and visibility, and leave the masks out', async () => {
+  it('follow the stack, named by the layer, with its opacity, blend and visibility, and leave the masks out', { tags: ['state-transition'] }, async () => {
     const looked = withCanvas(withCanvas(samplePage(), look('ink', { opacity: 0.5, blend: 'screen' })), look('sky', { isEnabled: false }));
     const ready = await prepared(looked);
     const layers = pageLayers(ready);
@@ -134,7 +134,7 @@ describe('the layers of the PSD', () => {
     ]);
   });
 
-  it('names a raster without a name by its number', async () => {
+  it('names a raster without a name by its number', { tags: ['condition'] }, async () => {
     const page = samplePage();
     const unnamed = withCanvas(page, look('ink', { name: null }));
     expect(pageLayers(await prepared(unnamed)).map((l) => l.name)).toContain('Raster Layer 3');

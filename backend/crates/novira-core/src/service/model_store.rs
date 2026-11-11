@@ -704,6 +704,7 @@ impl Backend {
 mod tests {
     use super::*;
 
+    // tags: equivalence
     #[test]
     fn sources_name_the_site_to_ask_for_the_license() {
         assert_eq!(
@@ -733,6 +734,7 @@ mod tests {
         );
     }
 
+    // tags: error-guessing, decision-table
     #[test]
     fn a_model_file_is_hashed_again_only_when_its_size_or_time_changed() {
         let dir = tempfile::tempdir().unwrap();
@@ -765,6 +767,7 @@ mod tests {
         assert!(hashes.sha256(&path).is_err());
     }
 
+    // tags: condition
     #[test]
     fn the_hash_is_spelled_as_civitai_spells_it() {
         let dir = tempfile::tempdir().unwrap();

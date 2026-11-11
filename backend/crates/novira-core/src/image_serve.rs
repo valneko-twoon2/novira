@@ -134,6 +134,7 @@ mod tests {
         }
     }
 
+    // tags: error-guessing
     #[tokio::test]
     async fn serves_stored_images_and_refuses_everything_else() {
         let dir = tempfile::tempdir().unwrap();
@@ -247,6 +248,7 @@ mod tests {
         body
     }
 
+    // tags: boundary
     #[test]
     fn a_range_reads_only_its_own_bytes_and_the_head_of_the_file() {
         let body = video(4 << 20);
@@ -302,6 +304,7 @@ mod tests {
         );
     }
 
+    // tags: boundary
     #[test]
     fn ranges_are_read_strictly() {
         assert_eq!(parse_range("bytes=0-9", 100), Some(Ok((0, 9))));

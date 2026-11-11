@@ -57,7 +57,7 @@ const picture = (over: Partial<ImageDTO> = {}): ImageDTO => ({
 const model = { key: 'main-xl', name: 'Main XL', base: 'sdxl', type: 'main', format: 'checkpoint', description: '', path: '', size: 0, source: '' } as ModelConfig;
 
 describe('canDerive', () => {
-  it('is true for pictures made from a prompt, false for the rest', () => {
+  it('is true for pictures made from a prompt, false for the rest', { tags: ['condition'] }, () => {
     expect(canDerive(picture())).toBe(true);
     expect(canDerive(picture({ metadata: { ...metadata, generationMode: 'inpaint' } }))).toBe(true);
     expect(canDerive(picture({ metadata: { ...metadata, generationMode: 'upscale' } }))).toBe(false);
@@ -72,7 +72,7 @@ describe('canDerive', () => {
 });
 
 describe('buildDerivedRequest', () => {
-  it('a variation keeps every setting and draws again with a new seed on the same board', () => {
+  it('a variation keeps every setting and draws again with a new seed on the same board', { tags: ['equivalence'] }, () => {
     const req = buildDerivedRequest(picture({ metadata: { ...metadata, generationMode: 'img2img', strength: 0.5 } }), 'variation', 4);
     expect(req).toMatchObject({ origin: 'generate', destination: 'gallery', iterations: 4, randomizeSeed: true, boardId: 'b1' });
     expect(req.params).toMatchObject({ generationMode: 'txt2img', positivePrompt: 'a girl, brown hair', modelKey: 'main-xl', steps: 30, cfgScale: 6, width: 832, height: 1216 });
@@ -81,13 +81,13 @@ describe('buildDerivedRequest', () => {
     expect(req.initImageUrl).toBeUndefined();
   });
 
-  it('a subtle redo starts from the picture itself at a low strength and at its size', () => {
+  it('a subtle redo starts from the picture itself at a low strength and at its size', { tags: ['state-transition'] }, () => {
     const req = buildDerivedRequest(picture(), 'subtle', 1);
     expect(req.params).toMatchObject({ generationMode: 'img2img', strength: SUBTLE_STRENGTH, width: 1024, height: 1536 });
     expect(req.initImageUrl).toBe('http://novira-image.localhost/full/p.png');
   });
 
-  it('a variation keeps the high-resolution fix, a redo of the finished picture drops it', () => {
+  it('a variation keeps the high-resolution fix, a redo of the finished picture drops it', { tags: ['state-transition'] }, () => {
     const image = picture({ metadata: { ...metadata, hiresFix: { scale: 1.5, strength: 0.45 } } });
     expect(buildDerivedRequest(image, 'variation', 1).params.hiresFix).toEqual({ scale: 1.5, strength: 0.45 });
     const redo = buildDerivedRequest(image, 'subtle', 1).params;
@@ -95,11 +95,11 @@ describe('buildDerivedRequest', () => {
     expect([redo.width, redo.height]).toEqual([1024, 1536]);
   });
 
-  it('a redo uses the strength it is given', () => {
+  it('a redo uses the strength it is given', { tags: ['state-transition'] }, () => {
     expect(buildDerivedRequest(picture(), 'subtle', 1, 0.8).params.strength).toBe(0.8);
   });
 
-  it('does not carry over guidance that is not stored with the picture, and never reuses the stored seed', () => {
+  it('does not carry over guidance that is not stored with the picture, and never reuses the stored seed', { tags: ['condition'] }, () => {
     const req = buildDerivedRequest(picture(), 'variation', 1);
     for (const key of ['refImageCount', 'controlLayerCount', 'maskBlur'] as const) expect(req.params[key]).toBeUndefined();
     expect(req.refImages).toBeUndefined();
@@ -107,7 +107,7 @@ describe('buildDerivedRequest', () => {
     expect(metadata.refImageCount).toBe(1);
   });
 
-  it('uses the reference images and control layers stored with the picture, as request fields', () => {
+  it('uses the reference images and control layers stored with the picture, as request fields', { tags: ['condition'] }, () => {
     const control = { imageUrl: 'http://novira-image.localhost/full/c.png', modelKey: 'cn', weight: 1, beginEnd: [0, 1] as [number, number], controlMode: 'balanced' as const };
     for (const kind of ['variation', 'subtle'] as const) {
       const req = buildDerivedRequest(picture({ metadata: { ...metadata, refImages: [reference], controlLayers: [control] } }), kind, 2);
@@ -123,7 +123,7 @@ describe('buildDerivedRequest', () => {
 describe('regional guidance of a derived picture', () => {
   const region = { imageUrl: 'http://novira-image.localhost/full/r.png', positivePrompt: 'a red hat', negativePrompt: null, autoNegative: true };
 
-  it('uses the regional layers stored with the picture, as request fields', () => {
+  it('uses the regional layers stored with the picture, as request fields', { tags: ['condition'] }, () => {
     for (const kind of ['variation', 'subtle'] as const) {
       const req = buildDerivedRequest(picture({ metadata: { ...metadata, regionalGuidanceCount: 1, regionalLayers: [region] } }), kind, 1);
       expect(req.regionalLayers).toEqual([region]);
@@ -144,7 +144,7 @@ describe('deriveFrom', () => {
   });
   afterEach(() => vi.restoreAllMocks());
 
-  it('queues the request and tells what could not be carried over', async () => {
+  it('queues the request and tells what could not be carried over', { tags: ['condition'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue').mockResolvedValue([]);
     await deriveFrom(picture(), 'variation', 4);
     expect(enqueue).toHaveBeenCalledTimes(1);
@@ -161,7 +161,7 @@ describe('deriveFrom', () => {
     expect(useToasts.getState().toasts[0]!.description).toBeUndefined();
   });
 
-  it('queues nothing and says why when the original model is not installed', async () => {
+  it('queues nothing and says why when the original model is not installed', { tags: ['condition'] }, async () => {
     useModels.getState().setModels([]);
     const enqueue = vi.spyOn(backend, 'enqueue').mockResolvedValue([]);
     await deriveFrom(picture(), 'variation', 1);
@@ -169,7 +169,7 @@ describe('deriveFrom', () => {
     expect(useToasts.getState().toasts[0]!.status).toBe('error');
   });
 
-  it('reports a failed enqueue instead of throwing', async () => {
+  it('reports a failed enqueue instead of throwing', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'enqueue').mockRejectedValue(new Error('queue is full'));
     await deriveFrom(picture(), 'variation', 1);
     const toast = useToasts.getState().toasts[0]!;
@@ -179,7 +179,7 @@ describe('deriveFrom', () => {
 });
 
 describe('pictures a derived picture gave its model as references', () => {
-  it('carries them over as request fields', () => {
+  it('carries them over as request fields', { tags: ['condition'] }, () => {
     const pictures = ['http://novira-image.localhost/full/mina.png'];
     for (const kind of ['variation', 'subtle'] as const) {
       const req = buildDerivedRequest(picture({ metadata: { ...metadata, referencePictures: pictures } }), kind, 1);

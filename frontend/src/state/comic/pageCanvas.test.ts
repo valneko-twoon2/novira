@@ -36,7 +36,7 @@ afterEach(() => {
 });
 
 describe('making a page store', () => {
-  it('takes the page layers and the Image tab tool settings, and never writes the form', () => {
+  it('takes the page layers and the Image tab tool settings, and never writes the form', { tags: ['error-guessing'] }, () => {
     useComic.getState().setPageCanvas(page().id, withLayer(page().canvas, [stroke('s')]));
     useCanvas.setState({ brushWidth: 77, fillColor: { r: 1, g: 2, b: 3, a: 1 } });
     const params = useParams.getState();
@@ -53,12 +53,12 @@ describe('making a page store', () => {
     expect({ width: useParams.getState().width, height: useParams.getState().height }).toEqual(before);
   });
 
-  it('starts on the brush, as its paint tool bar has no view tool, whatever the Image tab holds', () => {
+  it('starts on the brush, as its paint tool bar has no view tool, whatever the Image tab holds', { tags: ['state-transition'] }, () => {
     useCanvas.setState({ tool: 'view' });
     expect(pageCanvasStore(page().id)!.getState().tool).toBe('brush');
   });
 
-  it('gives pictures their gallery address, and keeps one the gallery does not have yet', () => {
+  it('gives pictures their gallery address, and keeps one the gallery does not have yet', { tags: ['condition'] }, () => {
     useComic.getState().setPageCanvas(page().id, withLayer(page().canvas, [picture]));
     const store = pageCanvasStore(page().id)!;
     expect(ink(store.getState().entities).objects[0]).toMatchObject({ imageName: 'p.png', url: '' });
@@ -68,7 +68,7 @@ describe('making a page store', () => {
     expect(store.getState().past).toHaveLength(0);
   });
 
-  it('leaves the comic untouched when a store is made for a page that is only shown', () => {
+  it('leaves the comic untouched when a store is made for a page that is only shown', { tags: ['condition'] }, () => {
     const before = useComic.getState().projects;
     const calls = vi.fn();
     const off = useComic.subscribe(calls);
@@ -81,7 +81,7 @@ describe('making a page store', () => {
     expect(useComic.getState().projects).toBe(before);
   });
 
-  it('gives the same store again, and none for a page that does not exist', () => {
+  it('gives the same store again, and none for a page that does not exist', { tags: ['regression', 'boundary'] }, () => {
     const store = pageCanvasStore(page().id);
     expect(pageCanvasStore(page().id)).toBe(store);
     expect(pageCanvasStore('missing')).toBeNull();
@@ -92,7 +92,7 @@ describe('layer limits', () => {
   const rasters = () => pageRasters({ entities: pageCanvasStore(page().id)!.getState().entities, bbox: page().canvas.bbox });
   const toasts = () => useToasts.getState().toasts;
 
-  it('allows layers up to the limit with the slots counted, then refuses with a warning', () => {
+  it('allows layers up to the limit with the slots counted, then refuses with a warning', { tags: ['error-guessing', 'boundary'] }, () => {
     useToasts.setState({ toasts: [] });
     const store = pageCanvasStore(page().id)!;
     while (rasters().length < MAX_RASTERS_PER_PAGE) expect(store.getState().addEntity('raster')).not.toBe('');
@@ -107,7 +107,7 @@ describe('layer limits', () => {
     expect(page().canvas.entities).toHaveLength(MAX_RASTERS_PER_PAGE);
   });
 
-  it('stops at the masks and the objects of one layer too', () => {
+  it('stops at the masks and the objects of one layer too', { tags: ['condition'] }, () => {
     useToasts.setState({ toasts: [] });
     const store = pageCanvasStore(page().id)!;
     for (let i = 0; i < MAX_MASKS_PER_PAGE; i++) expect(store.getState().addEntity(i % 2 ? 'regional' : 'inpaint')).not.toBe('');
@@ -123,7 +123,7 @@ describe('layer limits', () => {
 });
 
 describe('writing back', () => {
-  it('puts a change of the store into the page at once, with no comic undo step', () => {
+  it('puts a change of the store into the page at once, with no comic undo step', { tags: ['state-transition'] }, () => {
     const store = pageCanvasStore(page().id)!;
     const id = store.getState().addEntity('raster', { name: 'Ink' });
     store.getState().addObject(id, stroke('s'));
@@ -133,7 +133,7 @@ describe('writing back', () => {
     expect(page().canvas.entities).toBe(store.getState().entities);
   });
 
-  it('writes a run of changes once now and once after the wait, not on every change', () => {
+  it('writes a run of changes once now and once after the wait, not on every change', { tags: ['state-transition'] }, () => {
     const store = pageCanvasStore(page().id)!;
     const id = store.getState().addEntity('raster', { name: 'Ink' });
     vi.advanceTimersByTime(WRITE_BACK_MS * 2);
@@ -154,7 +154,7 @@ describe('writing back', () => {
     }
   });
 
-  it('writes what is still waiting when asked', () => {
+  it('writes what is still waiting when asked', { tags: ['regression'] }, () => {
     const store = pageCanvasStore(page().id)!;
     const id = store.getState().addEntity('raster', { name: 'Ink' });
     store.getState().updateEntity(id, { x: 5 }, { history: false });
@@ -163,7 +163,7 @@ describe('writing back', () => {
     expect(ink(pageRasters(page().canvas)).x).toBe(5);
   });
 
-  it('does not take its own write for an outside change (no loop, the history stays)', () => {
+  it('does not take its own write for an outside change (no loop, the history stays)', { tags: ['state-transition'] }, () => {
     const store = pageCanvasStore(page().id)!;
     store.getState().addEntity('raster', { name: 'Ink' });
     vi.advanceTimersByTime(WRITE_BACK_MS * 2);
@@ -173,7 +173,7 @@ describe('writing back', () => {
     expect(page().canvas.entities).toBe(entities);
   });
 
-  it('does not write a selection or a tool change', () => {
+  it('does not write a selection or a tool change', { tags: ['condition'] }, () => {
     const store = pageCanvasStore(page().id)!;
     const before = page().canvas;
     store.getState().select('balloons');
@@ -184,7 +184,7 @@ describe('writing back', () => {
 });
 
 describe('outside changes', () => {
-  it('seed the store again and clear its undo history', () => {
+  it('seed the store again and clear its undo history', { tags: ['regression'] }, () => {
     const store = pageCanvasStore(page().id)!;
     store.getState().addEntity('raster', { name: 'Ink' });
     vi.advanceTimersByTime(WRITE_BACK_MS * 2);
@@ -199,7 +199,7 @@ describe('outside changes', () => {
     expect(ink(pageRasters(page().canvas)).isEnabled).toBe(false);
   });
 
-  it('keep the history when pictures only got their gallery names', () => {
+  it('keep the history when pictures only got their gallery names', { tags: ['state-transition'] }, () => {
     useComic.getState().setPageCanvas(page().id, withLayer(page().canvas, [{ ...picture, imageName: null, url: 'blob:local' }]));
     const store = pageCanvasStore(page().id)!;
     store.getState().addEntity('raster');
@@ -210,7 +210,7 @@ describe('outside changes', () => {
     expect(ink(store.getState().entities).objects[0]).toMatchObject({ imageName: 'p.png', url: 'blob:stored' });
   });
 
-  it('come from a new paper, which scales the store layers too', () => {
+  it('come from a new paper, which scales the store layers too', { tags: ['condition'] }, () => {
     useComic.getState().setPageCanvas(page().id, withLayer(page().canvas, [stroke('s')]));
     const store = pageCanvasStore(page().id)!;
     store.getState().select(ink(store.getState().entities).id);
@@ -219,7 +219,7 @@ describe('outside changes', () => {
     expect((ink(store.getState().entities).objects[0] as { width: number }).width).toBeGreaterThan(10);
   });
 
-  it('drop a change of the store that was still waiting', () => {
+  it('drop a change of the store that was still waiting', { tags: ['regression'] }, () => {
     const store = pageCanvasStore(page().id)!;
     const id = store.getState().addEntity('raster', { name: 'Ink' });
     store.getState().updateEntity(id, { x: 5 }, { history: false });
@@ -231,7 +231,7 @@ describe('outside changes', () => {
 });
 
 describe('undo', () => {
-  it('of the page store goes back to the page; the comic undo leaves the layers and the store alone', () => {
+  it('of the page store goes back to the page; the comic undo leaves the layers and the store alone', { tags: ['state-transition'] }, () => {
     const store = pageCanvasStore(page().id)!;
     const panels = page().panels.length;
     useComic.getState().setPanelCount(page().id, panels + 1);
@@ -257,7 +257,7 @@ describe('undo', () => {
 });
 
 describe('dropping stores', () => {
-  it('drops the store of a deleted page and of every page of a deleted project', () => {
+  it('drops the store of a deleted page and of every page of a deleted project', { tags: ['equivalence'] }, () => {
     useComic.getState().addPage();
     const [first, second] = useComic.getState().projects[0]!.pages;
     pageCanvasStore(first!.id);
@@ -268,7 +268,7 @@ describe('dropping stores', () => {
     expect(livePageCanvases()).toEqual([]);
   });
 
-  it('seeds the store again when a project is read again under the same page', () => {
+  it('seeds the store again when a project is read again under the same page', { tags: ['regression'] }, () => {
     const store = pageCanvasStore(page().id)!;
     store.getState().addEntity('raster', { name: 'Ink' });
     vi.advanceTimersByTime(WRITE_BACK_MS * 2);
@@ -279,7 +279,7 @@ describe('dropping stores', () => {
     expect(store.getState().past).toHaveLength(0);
   });
 
-  it(`keeps at most ${MAX_STORES}, writing back the one used longest ago before it goes`, () => {
+  it(`keeps at most ${MAX_STORES}, writing back the one used longest ago before it goes`, { tags: ['boundary'] }, () => {
     const pages = Array.from({ length: MAX_STORES + 1 }, () => emptyPage());
     useComic.getState().setProjects([{ ...newProject('Many'), pages }]);
     const firstStore = pageCanvasStore(pages[0]!.id)!;

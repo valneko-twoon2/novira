@@ -8,11 +8,11 @@ const asJson = (x: unknown) => `${JSON.stringify(x, null, 2)}\n`;
 const snap = (name: string) => `./__snapshots__/captionGraph/${name}.json`;
 
 describe('caption graph snapshots', () => {
-  it('describe a picture as tags', async () => {
+  it('describe a picture as tags', { tags: ['condition'] }, async () => {
     await expect(asJson(buildCaptionGraph('photo.png', { style: 'tags', model: PREFERRED_CAPTION_MODEL }))).toMatchFileSnapshot(snap('caption-tags'));
   });
 
-  it('describe a picture as a sentence', async () => {
+  it('describe a picture as a sentence', { tags: ['condition'] }, async () => {
     await expect(asJson(buildCaptionGraph('photo.png', { style: 'sentence', model: PREFERRED_CAPTION_MODEL }))).toMatchFileSnapshot(snap('caption-sentence'));
   });
 });

@@ -118,7 +118,7 @@ const solid = (w: number, h: number, rgba: [number, number, number, number]): Ui
 };
 
 describe('encodePsd', () => {
-  it('writes an RGB file whose layers keep their place, pixels, transparency, opacity, visibility and names', () => {
+  it('writes an RGB file whose layers keep their place, pixels, transparency, opacity, visibility and names', { tags: ['condition'] }, () => {
     const stripes = new Uint8Array(3 * 2 * 4).map((_, i) => (i * 37) % 256);
     const layers: PsdLayer[] = [
       { name: 'Paper', left: 0, top: 0, width: 4, height: 3, pixels: solid(4, 3, [255, 255, 255, 255]) },
@@ -141,19 +141,19 @@ describe('encodePsd', () => {
     expect(psd.flat.map((c) => c[0])).toEqual([Math.round(200 * (128 / 255) + 255 * (127 / 255)), Math.round(100 * (128 / 255) + 255 * (127 / 255)), Math.round(255 * (127 / 255))]);
   });
 
-  it('writes the blend of each layer under the key Photoshop reads, normal when it has none', () => {
+  it('writes the blend of each layer under the key Photoshop reads, normal when it has none', { tags: ['equivalence'] }, () => {
     const one = (blend?: PsdLayer['blend']): PsdLayer => ({ name: blend ?? 'none', left: 0, top: 0, width: 1, height: 1, pixels: solid(1, 1, [0, 0, 0, 255]), blend });
     const psd = readPsd(encodePsd({ width: 1, height: 1, layers: [one(), one('normal'), one('multiply'), one('screen')], composite: solid(1, 1, [0, 0, 0, 255]) }));
     expect(psd.layers.map((l) => l.blend)).toEqual(['8BIMnorm', '8BIMnorm', '8BIMmul ', '8BIMscrn']);
   });
 
-  it('writes a file with no layers, and an empty layer', () => {
+  it('writes a file with no layers, and an empty layer', { tags: ['boundary'] }, () => {
     expect(readPsd(encodePsd({ width: 2, height: 2, layers: [], composite: solid(2, 2, [0, 0, 0, 255]) })).layers).toEqual([]);
     const psd = readPsd(encodePsd({ width: 2, height: 2, layers: [{ name: '', left: 0, top: 0, width: 0, height: 0, pixels: new Uint8Array() }], composite: solid(2, 2, [0, 0, 0, 255]) }));
     expect(psd.layers[0]).toMatchObject({ name: '', top: 0, bottom: 0 });
   });
 
-  it('refuses a size Photoshop cannot open and pixels that do not match their size', () => {
+  it('refuses a size Photoshop cannot open and pixels that do not match their size', { tags: ['error-guessing'] }, () => {
     expect(() => encodePsd({ width: 0, height: 1, layers: [], composite: new Uint8Array() })).toThrow();
     expect(() => encodePsd({ width: 30001, height: 1, layers: [], composite: new Uint8Array(30001 * 4) })).toThrow();
     expect(() => encodePsd({ width: 1, height: 1, layers: [], composite: new Uint8Array(3) })).toThrow();
@@ -162,7 +162,7 @@ describe('encodePsd', () => {
 });
 
 describe('croppedLayer', () => {
-  it('cuts a document-sized picture to the box around its visible pixels and keeps the look', () => {
+  it('cuts a document-sized picture to the box around its visible pixels and keeps the look', { tags: ['condition'] }, () => {
     // 4 × 3, transparent but for two pixels at (1, 0) and (2, 2).
     const pixels = new Uint8Array(4 * 3 * 4);
     pixels.set([1, 2, 3, 255], (0 * 4 + 1) * 4);
@@ -174,14 +174,14 @@ describe('croppedLayer', () => {
     expect(layer.pixels.length).toBe(2 * 3 * 4);
   });
 
-  it('keeps a picture with no transparent margin whole, and gives nothing for an empty one', () => {
+  it('keeps a picture with no transparent margin whole, and gives nothing for an empty one', { tags: ['boundary'] }, () => {
     expect(croppedLayer('Full', solid(2, 2, [9, 9, 9, 255]), 2, 2)).toMatchObject({ left: 0, top: 0, width: 2, height: 2 });
     expect(croppedLayer('Empty', solid(2, 2, [9, 9, 9, 0]), 2, 2)).toBeNull();
   });
 });
 
 describe('packBits', () => {
-  it('packs runs and literal stretches so they unpack to the same row', () => {
+  it('packs runs and literal stretches so they unpack to the same row', { tags: ['condition'] }, () => {
     const rows = [
       new Uint8Array([]),
       new Uint8Array([7]),

@@ -38,7 +38,7 @@ afterEach(() => {
 });
 
 describe('the faint ghost of a picture', () => {
-  it('is an unreadable, undraggable image of the whole picture, mirrored as the picture is', () => {
+  it('is an unreadable, undraggable image of the whole picture, mirrored as the picture is', { tags: ['error-guessing'] }, () => {
     const { container } = render(<PictureGhost url="novira://a.png" view={{ ...view, flipX: true, rotation: 30 }} box={box} aspect={1} />);
     const img = container.querySelector('img')!;
     expect(img.getAttribute('src')).toBe('novira://a.png');
@@ -49,13 +49,13 @@ describe('the faint ghost of a picture', () => {
 });
 
 describe('the corner and turning handles', () => {
-  it('has four corners and a turning handle', () => {
+  it('has four corners and a turning handle', { tags: ['scenario'] }, () => {
     show();
     expect(screen.getAllByTestId('comic-picture-corner')).toHaveLength(4);
     expect(screen.getByTestId('comic-picture-rotate')).toBeTruthy();
   });
 
-  it('resizes about the centre as a corner is dragged outward, and stops when it is let go', () => {
+  it('resizes about the centre as a corner is dragged outward, and stops when it is let go', { tags: ['scenario'] }, () => {
     const { onView } = show();
     const corner = screen.getAllByTestId('comic-picture-corner')[1]!;
     fireEvent.pointerDown(corner, { pointerId: 1, clientX: 600, clientY: 500, button: 0 });
@@ -67,7 +67,7 @@ describe('the corner and turning handles', () => {
     expect(onView).toHaveBeenCalledOnce();
   });
 
-  it('ignores moves of another pointer, and presses of another button', () => {
+  it('ignores moves of another pointer, and presses of another button', { tags: ['scenario'] }, () => {
     const { onView } = show();
     const corner = screen.getAllByTestId('comic-picture-corner')[0]!;
     fireEvent.pointerDown(corner, { pointerId: 1, clientX: 600, clientY: 500, button: 2 });
@@ -81,7 +81,7 @@ describe('the corner and turning handles', () => {
     expect(onView).not.toHaveBeenCalled();
   });
 
-  it('turns about the centre, in steps with Shift', () => {
+  it('turns about the centre, in steps with Shift', { tags: ['scenario'] }, () => {
     const { onView } = show();
     const handle = screen.getByTestId('comic-picture-rotate');
     // From straight right of the centre to straight below it: a quarter turn.
@@ -92,7 +92,7 @@ describe('the corner and turning handles', () => {
     expect(onView.mock.calls[1]![0].rotation % 15).toBeCloseTo(0);
   });
 
-  it('keeps a click on a handle from reaching what lies under it', () => {
+  it('keeps a click on a handle from reaching what lies under it', { tags: ['scenario'] }, () => {
     const outer = vi.fn();
     render(
       <div onClick={outer}>
@@ -105,7 +105,7 @@ describe('the corner and turning handles', () => {
 });
 
 describe('dragging the picture itself', () => {
-  it('is not movable unless asked to', () => {
+  it('is not movable unless asked to', { tags: ['scenario'] }, () => {
     const { onView, outline } = show();
     fireEvent.pointerDown(outline, { pointerId: 1, clientX: 500, clientY: 500, button: 0 });
     fireEvent.pointerMove(outline, { pointerId: 1, clientX: 600, clientY: 500 });
@@ -113,7 +113,7 @@ describe('dragging the picture itself', () => {
     expect(outline.className).not.toContain('is-movable');
   });
 
-  it('follows the pointer by how far the page is on screen, and stops on release', () => {
+  it('follows the pointer by how far the page is on screen, and stops on release', { tags: ['scenario'] }, () => {
     const { onView, outline } = show({ movable: true });
     expect(outline.className).toContain('is-movable');
     fireEvent.pointerDown(outline, { pointerId: 1, clientX: 500, clientY: 500, button: 0 });
@@ -125,7 +125,7 @@ describe('dragging the picture itself', () => {
     expect(onView).toHaveBeenCalledOnce();
   });
 
-  it('ignores another pointer and another button', () => {
+  it('ignores another pointer and another button', { tags: ['scenario'] }, () => {
     const { onView, outline } = show({ movable: true });
     fireEvent.pointerDown(outline, { pointerId: 1, clientX: 500, clientY: 500, button: 2 });
     fireEvent.pointerMove(outline, { pointerId: 1, clientX: 600, clientY: 500 });
@@ -138,7 +138,7 @@ describe('dragging the picture itself', () => {
     expect(onView).not.toHaveBeenCalled();
   });
 
-  it('hands a press to the balloon that lies under the hand instead of moving the picture', () => {
+  it('hands a press to the balloon that lies under the hand instead of moving the picture', { tags: ['scenario'] }, () => {
     const { onView, outline } = show({ movable: true });
     const balloon = document.createElement('div');
     balloon.className = 'comic-bubble';
@@ -164,7 +164,7 @@ describe('a picture of a panel of a free page', () => {
   ];
   const handlers = () => ({ onPointerDown: vi.fn(), onPointerMove: vi.fn(), onPointerUp: vi.fn(), onPointerCancel: vi.fn() });
 
-  it('carries the panel when the press is inside its shape, and moves the picture outside it or with Alt', () => {
+  it('carries the panel when the press is inside its shape, and moves the picture outside it or with Alt', { tags: ['scenario'] }, () => {
     const h = handlers();
     const { onView, outline } = show({ movable: true, carry: { shape, handlers: h } });
     fireEvent.pointerDown(outline, { pointerId: 1, clientX: 100, clientY: 100, button: 0 });
@@ -187,7 +187,7 @@ describe('a picture of a panel of a free page', () => {
     expect(onView).toHaveBeenCalledTimes(2);
   });
 
-  it('tells the panel when a carrying press is cancelled', () => {
+  it('tells the panel when a carrying press is cancelled', { tags: ['scenario'] }, () => {
     const h = handlers();
     const { outline } = show({ movable: true, carry: { shape, handlers: h } });
     fireEvent.pointerDown(outline, { pointerId: 1, clientX: 100, clientY: 100, button: 0 });

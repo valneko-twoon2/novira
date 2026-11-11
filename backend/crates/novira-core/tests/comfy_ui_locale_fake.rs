@@ -99,6 +99,7 @@ async fn words(
         .await
 }
 
+// tags: scenario
 #[tokio::test]
 async fn the_words_of_a_language_are_read_from_the_frontend_the_server_serves() {
     let l = words(Mode::Good, "fr").await.unwrap().expect("words");
@@ -110,6 +111,7 @@ async fn the_words_of_a_language_are_read_from_the_frontend_the_server_serves() 
     assert_eq!(l.nodes["KSampler"].name.as_deref(), Some("Échantillonneur"));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_frontend_laid_out_otherwise_gives_no_words_and_no_error() {
     for mode in [
@@ -124,6 +126,7 @@ async fn a_frontend_laid_out_otherwise_gives_no_words_and_no_error() {
     assert_eq!(words(Mode::Good, "xx").await.unwrap(), None);
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_script_that_cannot_be_fetched_is_an_error_that_names_what_failed() {
     let err = words(Mode::PageFails, "fr").await.unwrap_err().to_string();

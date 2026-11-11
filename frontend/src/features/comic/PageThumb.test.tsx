@@ -42,7 +42,7 @@ function samplePage(change: (doc: PageCanvas) => PageCanvas = (d) => d): ComicPa
 const order = (svg: Element) => [...svg.querySelectorAll('[data-thumb-layer]')].map((g) => g.getAttribute('data-thumb-layer'));
 
 describe('the runs of a page small drawing', () => {
-  it('gathers the shown rasters with something drawn between the slots, bottom first', () => {
+  it('gathers the shown rasters with something drawn between the slots, bottom first', { tags: ['boundary'] }, () => {
     const parts = thumbParts(samplePage().canvas);
     expect(parts.map((p) => (p.kind === 'slot' ? p.layer.slot : p.layers.map((l) => l.id).join('+')))).toEqual(['under', 'panels', 'balloons', 'a+b']);
     const hidden = thumbParts(samplePage((d) => updateRasterLook(d, 'a', { isEnabled: false })!).canvas);
@@ -51,7 +51,7 @@ describe('the runs of a page small drawing', () => {
 });
 
 describe('the small drawing of a page with layers', () => {
-  it('draws the panels at their slot with its look, and each run of rasters as a small picture in the stack order', async () => {
+  it('draws the panels at their slot with its look, and each run of rasters as a small picture in the stack order', { tags: ['scenario'] }, async () => {
     const page = samplePage((d) => updateRasterLook(d, 'panels', { opacity: 0.5, blend: 'multiply' })!);
     const { container } = render(<PageThumb shapes={[square]} aspect={2} page={page} urlOf={(n) => `blob:${n}`} />);
     const svg = container.querySelector('svg')!;
@@ -62,7 +62,7 @@ describe('the small drawing of a page with layers', () => {
     expect(svg.querySelector('[data-thumb-layer="raster"]')!.getAttribute('href')).toBe('data:image/png;base64,thumb');
   });
 
-  it('leaves out a hidden slot and follows a run moved under the panels', async () => {
+  it('leaves out a hidden slot and follows a run moved under the panels', { tags: ['state-transition'] }, async () => {
     let page = samplePage((d) => updateRasterLook(d, 'panels', { isEnabled: false })!);
     for (const id of ['a', 'a', 'a']) page = { ...page, canvas: moveRaster(page.canvas, id, 'down') ?? page.canvas };
     const { container } = render(<PageThumb shapes={[square]} aspect={1.4} page={page} />);
@@ -70,7 +70,7 @@ describe('the small drawing of a page with layers', () => {
     expect(container.querySelectorAll('.comic-thumb__panel')).toHaveLength(0);
   });
 
-  it('draws the panels alone without a page', () => {
+  it('draws the panels alone without a page', { tags: ['scenario'] }, () => {
     const { container } = render(<PageThumb shapes={[square]} aspect={1.4} />);
     expect(container.querySelectorAll('.comic-thumb__panel')).toHaveLength(1);
     expect(order(container.querySelector('svg')!)).toEqual([]);

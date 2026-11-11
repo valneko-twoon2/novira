@@ -64,6 +64,7 @@ pub fn open_backend(data_dir: &Path, image_url_base: String) -> Result<Backend, 
 mod tests {
     use super::{open_backend, try_claim, Refusal, LOCK_FILE_NAME};
 
+    // tags: state-transition
     #[test]
     fn a_second_claim_on_the_same_folder_waits_for_the_first_to_end() {
         let dir = tempfile::tempdir().unwrap();
@@ -74,6 +75,7 @@ mod tests {
         assert!(try_claim(&path).unwrap().is_some());
     }
 
+    // tags: error-guessing, state-transition
     #[test]
     fn a_folder_held_by_another_claim_is_refused_before_anything_is_opened() {
         let dir = tempfile::tempdir().unwrap();
@@ -87,6 +89,7 @@ mod tests {
         // The refusal came first: no database was created.
         assert!(!dir.path().join("novira.sqlite").exists());
     }
+    // tags: state-transition
     #[test]
     fn a_new_folder_is_locked_and_opened_with_its_database() {
         let dir = tempfile::tempdir().unwrap();
@@ -101,6 +104,7 @@ mod tests {
         assert!(try_claim(&data.join(LOCK_FILE_NAME)).unwrap().is_none());
     }
 
+    // tags: error-guessing, state-transition
     #[test]
     fn a_lock_that_cannot_be_opened_is_an_error_and_not_taken_for_another_novira() {
         let dir = tempfile::tempdir().unwrap();

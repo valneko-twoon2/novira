@@ -148,6 +148,7 @@ async fn finish(events: &Events, id: &str) -> ModelInstallJob {
     panic!("install did not finish: {:?}", last_job(events, id));
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_downloaded_lora_is_placed_classified_and_announced() {
     let dir = tempfile::tempdir().unwrap();
@@ -206,6 +207,7 @@ async fn a_downloaded_lora_is_placed_classified_and_announced() {
     assert_eq!(parts, 0);
 }
 
+// tags: scenario
 #[tokio::test]
 async fn kind_comes_from_the_header_then_from_the_file_name() {
     let dir = tempfile::tempdir().unwrap();
@@ -254,6 +256,7 @@ async fn kind_comes_from_the_header_then_from_the_file_name() {
         .any(|m| m.path.ends_with("up.pth") && m.kind == ModelType::SpandrelImageToImage));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn download_failures_are_reported_in_words() {
     let dir = tempfile::tempdir().unwrap();
@@ -292,6 +295,7 @@ async fn download_failures_are_reported_in_words() {
     assert!(err.contains("Download failed"), "{err}");
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn a_running_download_can_be_cancelled() {
     let dir = tempfile::tempdir().unwrap();
@@ -314,6 +318,7 @@ async fn a_running_download_can_be_cancelled() {
     assert!(!dir.path().join("models/loras/slow.safetensors").exists());
 }
 
+// tags: boundary, state-transition
 #[tokio::test]
 async fn cancelling_one_download_leaves_the_other_running() {
     let dir = tempfile::tempdir().unwrap();
@@ -351,6 +356,7 @@ async fn cancelling_one_download_leaves_the_other_running() {
     );
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn local_installs_refuse_what_is_not_a_model() {
     let dir = tempfile::tempdir().unwrap();
@@ -389,6 +395,7 @@ async fn local_installs_refuse_what_is_not_a_model() {
     assert!(!backend.list_starter_models().is_empty());
 }
 
+// tags: scenario
 #[tokio::test]
 async fn model_records_can_be_edited_deleted_and_scanned() {
     let dir = tempfile::tempdir().unwrap();

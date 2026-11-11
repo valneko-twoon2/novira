@@ -25,20 +25,20 @@ afterEach(() => {
 });
 
 describe('the prompt tag view', () => {
-  it('shows each tag and the strength of a weighted one', () => {
+  it('shows each tag and the strength of a weighted one', { tags: ['scenario'] }, () => {
     render(<Harness initial="1girl, (smile:1.3)" />);
     const chips = screen.getAllByTestId('positive-tag');
     expect(chips.map((c) => c.textContent)).toEqual(['1girl', 'smile1.30']);
   });
 
-  it('opens the strength popover on a tag and resets it to plain words', () => {
+  it('opens the strength popover on a tag and resets it to plain words', { tags: ['scenario'] }, () => {
     render(<Harness initial="1girl, (smile:1.3)" />);
     fireEvent.click(screen.getAllByTestId('positive-tag')[1]!);
     fireEvent.click(screen.getByLabelText(t('params.prompt.tagReset')));
     expect(latest).toBe('1girl, smile');
   });
 
-  it('renames a tag from the popover on Enter, keeping its strength, and keeps the popover open', () => {
+  it('renames a tag from the popover on Enter, keeping its strength, and keeps the popover open', { tags: ['scenario'] }, () => {
     render(<Harness initial="1girl, (smile:1.3)" />);
     fireEvent.click(screen.getAllByTestId('positive-tag')[1]!);
     const name = screen.getByTestId('positive-tag-name') as HTMLInputElement;
@@ -50,7 +50,7 @@ describe('the prompt tag view', () => {
     expect(screen.getByTestId('positive-tag-name')).toBeTruthy();
   });
 
-  it('saves a rename when the name field is left, and ignores a blank name', () => {
+  it('saves a rename when the name field is left, and ignores a blank name', { tags: ['error-guessing'] }, () => {
     render(<Harness initial="a, b" />);
     fireEvent.click(screen.getAllByTestId('positive-tag')[0]!);
     const name = screen.getByTestId('positive-tag-name');
@@ -63,21 +63,21 @@ describe('the prompt tag view', () => {
     expect(latest).toBe('c, b');
   });
 
-  it('keeps the width of a chip while its strength is dragged through 1', () => {
+  it('keeps the width of a chip while its strength is dragged through 1', { tags: ['boundary'] }, () => {
     render(<Harness initial="a, (b:1.05)" />);
     fireEvent.click(screen.getAllByTestId('positive-tag')[0]!);
     // A plain tag shows its strength while its popover is open, so the chip does not grow at 1.
     expect(screen.getAllByTestId('positive-tag')[0]!.textContent).toBe('a1.00');
   });
 
-  it('removes a tag from the popover', () => {
+  it('removes a tag from the popover', { tags: ['scenario'] }, () => {
     render(<Harness initial="a, b" />);
     fireEvent.click(screen.getAllByTestId('positive-tag')[0]!);
     fireEvent.click(screen.getByLabelText(t('params.prompt.tagRemove')));
     expect(latest).toBe('b');
   });
 
-  it('adds a typed tag on Enter, ignores an empty one, and skips a duplicate', () => {
+  it('adds a typed tag on Enter, ignores an empty one, and skips a duplicate', { tags: ['error-guessing'] }, () => {
     render(<Harness initial="a" />);
     const input = screen.getByTestId('positive-tag-add');
     fireEvent.keyDown(input, { key: 'Enter' });

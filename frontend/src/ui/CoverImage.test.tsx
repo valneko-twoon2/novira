@@ -18,12 +18,12 @@ afterEach(() => {
 });
 
 describe('CoverImage', () => {
-  it('shows the model picture when it has one', () => {
+  it('shows the model picture when it has one', { tags: ['condition'] }, () => {
     const { container } = render(<CoverImage model={model({ coverImageUrl: 'blob:real' })} />);
     expect(cover(container)!.getAttribute('src')).toBe('blob:real');
   });
 
-  it('stands a mock picture in for a model without one, the same for the same key', () => {
+  it('stands a mock picture in for a model without one, the same for the same key', { tags: ['condition'] }, () => {
     const first = render(<CoverImage model={model({ key: 'drawn-1' })} />);
     const src = cover(first.container)!.getAttribute('src')!;
     expect(MOCK_PICTURES).toContain(src);
@@ -32,13 +32,13 @@ describe('CoverImage', () => {
     expect(cover(again.container)!.getAttribute('src')).toBe(src);
   });
 
-  it('keeps the placeholder icon when there is no model', () => {
+  it('keeps the placeholder icon when there is no model', { tags: ['condition'] }, () => {
     const none = render(<CoverImage model={undefined} />);
     expect(cover(none.container)).toBeNull();
     expect(none.container.querySelector('svg')).not.toBeNull();
   });
 
-  it('opens an enlarged view on click when zoomable, and not otherwise', async () => {
+  it('opens an enlarged view on click when zoomable, and not otherwise', { tags: ['scenario'] }, async () => {
     const plain = render(<CoverImage model={model({ coverImageUrl: 'blob:real' })} />);
     fireEvent.click(plain.container.querySelector('.pp-cover')!);
     expect(screen.queryByAltText('Model One')).toBeNull();
@@ -50,7 +50,7 @@ describe('CoverImage', () => {
     expect((await screen.findByAltText('Model One')).getAttribute('src')).toBe(cover(container)!.getAttribute('src'));
   });
 
-  it('goes through all the pictures of the enlarged view, around both ends, and starts from the first each time', async () => {
+  it('goes through all the pictures of the enlarged view, around both ends, and starts from the first each time', { tags: ['boundary'] }, async () => {
     const urls = ['blob:a', 'blob:b', 'blob:c'];
     const { container } = render(<CoverImage model={model({ coverImageUrl: 'blob:a', coverImageUrls: urls })} zoomable className="thumb" />);
     fireEvent.click(container.querySelector('.thumb')!);
@@ -71,14 +71,14 @@ describe('CoverImage', () => {
     expect(shown()).toBe('blob:a');
   });
 
-  it('shows no arrows for a model with one picture', async () => {
+  it('shows no arrows for a model with one picture', { tags: ['boundary'] }, async () => {
     const { container } = render(<CoverImage model={model({ coverImageUrl: 'blob:a', coverImageUrls: ['blob:a'] })} zoomable className="thumb" />);
     fireEvent.click(container.querySelector('.thumb')!);
     expect(screen.queryByTestId('cover-zoom-next')).toBeNull();
     expect(screen.queryByTestId('cover-zoom-count')).toBeNull();
   });
 
-  it('opens from the keyboard with Enter or Space, and ignores other keys', () => {
+  it('opens from the keyboard with Enter or Space, and ignores other keys', { tags: ['equivalence'] }, () => {
     const { container } = render(<CoverImage model={model({ coverImageUrl: 'blob:a' })} zoomable className="thumb" />);
     const thumb = container.querySelector('.thumb')!;
     expect(thumb.getAttribute('role')).toBe('button');
@@ -92,7 +92,7 @@ describe('CoverImage', () => {
     expect(screen.getByTestId('cover-zoom')).toBeTruthy();
   });
 
-  it('steps with the arrow keys both ways, and ignores them for a single picture', () => {
+  it('steps with the arrow keys both ways, and ignores them for a single picture', { tags: ['boundary'] }, () => {
     const many = render(<CoverImage model={model({ coverImageUrl: 'blob:a', coverImageUrls: ['blob:a', 'blob:b'] })} zoomable className="thumb" />);
     fireEvent.click(many.container.querySelector('.thumb')!);
     const shown = () => screen.getByAltText('Model One').getAttribute('src');
@@ -107,7 +107,7 @@ describe('CoverImage', () => {
     expect(screen.getByAltText('Model One').getAttribute('src')).toBe('blob:a');
   });
 
-  it('marks a mature picture in the thumbnail and in the enlarged view', () => {
+  it('marks a mature picture in the thumbnail and in the enlarged view', { tags: ['condition'] }, () => {
     const { container } = render(<CoverImage model={model({ coverImageUrl: 'blob:a', coverMature: true })} zoomable className="thumb" />);
     expect(cover(container)!.className).toBe('is-mature');
     fireEvent.click(container.querySelector('.thumb')!);

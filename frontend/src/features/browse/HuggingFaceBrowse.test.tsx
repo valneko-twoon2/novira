@@ -31,7 +31,7 @@ afterEach(() => {
 });
 
 describe('HuggingFaceBrowse', () => {
-  it('takes an address into a folder, lists that folder first, and installs the files picked', async () => {
+  it('takes an address into a folder, lists that folder first, and installs the files picked', { tags: ['boundary', 'state-transition'] }, async () => {
     show();
     lookup('https://huggingface.co/h94/IP-Adapter/tree/main/sdxl_models');
     await screen.findByTestId('browse-hf-results');
@@ -44,7 +44,7 @@ describe('HuggingFaceBrowse', () => {
     expect(screen.getByText('models/ip-adapter_sd15.safetensors')).toBeTruthy();
   });
 
-  it('ticks the file of a file address, and says so for an address that is not a model', async () => {
+  it('ticks the file of a file address, and says so for an address that is not a model', { tags: ['scenario'] }, async () => {
     show();
     lookup('https://huggingface.co/h94/IP-Adapter/blob/main/models/ip-adapter_sd15.safetensors');
     await screen.findByTestId('browse-hf-results');
@@ -54,7 +54,7 @@ describe('HuggingFaceBrowse', () => {
     expect(screen.queryByTestId('browse-hf-results')).toBeNull();
   });
 
-  it('marks a file that is installed, shows the progress of one being downloaded, and leaves both unticked', async () => {
+  it('marks a file that is installed, shows the progress of one being downloaded, and leaves both unticked', { tags: ['boundary', 'state-transition'] }, async () => {
     useModels.setState({
       models: [{ key: 'm1', name: 'ip-adapter_sdxl.safetensors', source: 'h94/IP-Adapter::sdxl_models/ip-adapter_sdxl.safetensors' } as never],
       installJobs: [
@@ -72,7 +72,7 @@ describe('HuggingFaceBrowse', () => {
     expect((screen.getByRole('checkbox', { name: 'sdxl_models/ip-adapter_sdxl.safetensors' }) as HTMLInputElement).disabled).toBe(true);
   });
 
-  it('shows why a lookup failed', async () => {
+  it('shows why a lookup failed', { tags: ['error-guessing', 'scenario'] }, async () => {
     vi.spyOn(backend, 'listHuggingFaceFiles').mockRejectedValue(new Error('nope'));
     show();
     lookup('a/b');

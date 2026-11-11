@@ -67,7 +67,7 @@ describe('ImageViewer on a job being drawn', () => {
   const job = { id: 5, status: 'in_progress', destination: 'gallery', params: { width: 640, height: 960 } } as unknown as QueueItem;
   afterEach(() => useQueue.setState({ items: [], progress: null }));
 
-  it('shows the picture in progress large with its step, and gives way to a picture that is picked', () => {
+  it('shows the picture in progress large with its step, and gives way to a picture that is picked', { tags: ['scenario'] }, () => {
     openImage('a.png');
     useQueue.setState({ items: [job], progress: { itemId: 5, step: 8, totalSteps: 24, progressImageUrl: 'data:image/png;base64,AA==', message: '' } });
     act(() => useGallery.getState().showLiveItem(5));
@@ -81,7 +81,7 @@ describe('ImageViewer on a job being drawn', () => {
     expect(screen.getByTestId('viewer-zoom-surface')).toBeTruthy();
   });
 
-  it('waits for the first step, and goes back to the picture once the job is no longer running', () => {
+  it('waits for the first step, and goes back to the picture once the job is no longer running', { tags: ['scenario'] }, () => {
     openImage('a.png');
     useQueue.setState({ items: [job], progress: null });
     act(() => useGallery.getState().showLiveItem(5));
@@ -95,13 +95,13 @@ describe('ImageViewer on a job being drawn', () => {
 });
 
 describe('ImageViewer', () => {
-  it('invites a first picture when nothing is open and keeps the info line blank', () => {
+  it('invites a first picture when nothing is open and keeps the info line blank', { tags: ['scenario'] }, () => {
     show();
     expect(screen.getByText(t('gallery.viewer.empty'))).toBeTruthy();
     expect(screen.queryByTestId('viewer-image')).toBeNull();
   });
 
-  it('shows a still image with its size, model, seed and name', () => {
+  it('shows a still image with its size, model, seed and name', { tags: ['scenario'] }, () => {
     openImage('a.png');
     show();
     const info = screen.getByTestId('viewer-info').textContent!;
@@ -111,7 +111,7 @@ describe('ImageViewer', () => {
     expect(info).toContain('a.png');
   });
 
-  it('plays a video with its first frame as the poster', () => {
+  it('plays a video with its first frame as the poster', { tags: ['scenario'] }, () => {
     openImage('v.mp4');
     show();
     const video = screen.getByTestId('viewer-image') as HTMLVideoElement;
@@ -119,14 +119,14 @@ describe('ImageViewer', () => {
     expect(video.getAttribute('poster')).toBe('blob:t-v.mp4');
   });
 
-  it('shows the waveform of audio with the sound player under it', () => {
+  it('shows the waveform of audio with the sound player under it', { tags: ['scenario'] }, () => {
     openImage('s.wav');
     show();
     expect(screen.getByTestId('viewer-image').getAttribute('src')).toBe('blob:t-s.wav');
     expect(screen.getByTestId('viewer-audio').getAttribute('src')).toBe('blob:s.wav');
   });
 
-  it('steps to the previous and next picture with the arrows, and hides an arrow at either end', () => {
+  it('steps to the previous and next picture with the arrows, and hides an arrow at either end', { tags: ['boundary'] }, () => {
     openImage('b.png');
     show();
     fireEvent.click(screen.getByRole('button', { name: t('gallery.viewer.next') }));
@@ -139,7 +139,7 @@ describe('ImageViewer', () => {
     expect(screen.queryByRole('button', { name: t('gallery.viewer.next') })).toBeNull();
   });
 
-  it('opens and closes the metadata panel with I and its tabs show metadata, details and workflow', async () => {
+  it('opens and closes the metadata panel with I and its tabs show metadata, details and workflow', { tags: ['scenario'] }, async () => {
     openImage('a.png');
     show();
     key('i');
@@ -152,7 +152,7 @@ describe('ImageViewer', () => {
     expect(screen.queryByTestId('viewer-metadata')).toBeNull();
   });
 
-  it('closes the metadata panel on a press outside it, but not on a press inside or on the i button', async () => {
+  it('closes the metadata panel on a press outside it, but not on a press inside or on the i button', { tags: ['scenario'] }, async () => {
     openImage('a.png');
     show();
     key('i');
@@ -179,7 +179,7 @@ describe('ImageViewer', () => {
     expect(useGallery.getState().showMetadata).toBe(false);
   });
 
-  it('copies the raw metadata and shows empty states for a picture without any', async () => {
+  it('copies the raw metadata and shows empty states for a picture without any', { tags: ['scenario'] }, async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal('navigator', { clipboard: { writeText } });
     useGallery.setState({ showMetadata: true });
@@ -201,7 +201,7 @@ describe('ImageViewer', () => {
     expect(await screen.findByText(t('gallery.meta.noWorkflow'))).toBeTruthy();
   });
 
-  it('recalls with R, P, S and A, and warns when the picture has no metadata', () => {
+  it('recalls with R, P, S and A, and warns when the picture has no metadata', { tags: ['scenario'] }, () => {
     openImage('a.png');
     show();
     const p = useParams.getState();
@@ -222,7 +222,7 @@ describe('ImageViewer', () => {
     expect(lastToast()?.status).toBe('warning');
   });
 
-  it('sends the open picture to upscaling with Shift+U and does nothing when nothing is open', () => {
+  it('sends the open picture to upscaling with Shift+U and does nothing when nothing is open', { tags: ['scenario'] }, () => {
     show();
     key('u', { shiftKey: true });
     expect(useUi.getState().activeTab).toBe(initial.ui.activeTab);
@@ -231,7 +231,7 @@ describe('ImageViewer', () => {
     expect(useUi.getState().activeTab).toBe('upscaling');
   });
 
-  it('compares with C: warns without a second picture, compares with the one selected before, leaves with Escape', () => {
+  it('compares with C: warns without a second picture, compares with the one selected before, leaves with Escape', { tags: ['scenario'] }, () => {
     openImage('a.png');
     useGallery.getState().setSelection(['a.png']);
     show();

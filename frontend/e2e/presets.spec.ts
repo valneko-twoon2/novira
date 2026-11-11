@@ -2,7 +2,7 @@
 // after a reload.
 import { expect, msg, openApp, test } from './fixtures';
 
-test('a music preset is saved, applied back over changed settings and kept after a reload', async ({ page }) => {
+test('a music preset is saved, applied back over changed settings and kept after a reload', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('media-music').click();
   const bar = page.getByTestId('music-presets');

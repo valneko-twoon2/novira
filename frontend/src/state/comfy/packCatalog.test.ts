@@ -3,14 +3,14 @@ import { ja } from '@/i18n/catalog';
 import { agentPacks, caveatKey, goalDescKey, goalTitleKey, PACK_CATALOG, PACK_GOALS, packDescKey, packFolder, packsForGoal } from './packCatalog';
 
 describe('pack catalog', () => {
-  it('has unique ids and repository folders', () => {
+  it('has unique ids and repository folders', { tags: ['condition'] }, () => {
     const ids = PACK_CATALOG.map((p) => p.id);
     const folders = PACK_CATALOG.map((p) => packFolder(p.url));
     expect(new Set(ids).size).toBe(ids.length);
     expect(new Set(folders).size).toBe(folders.length);
   });
 
-  it('has a message for every pack, caveat and goal it shows', () => {
+  it('has a message for every pack, caveat and goal it shows', { tags: ['equivalence'] }, () => {
     const missing: string[] = [];
     const need = (key: string) => {
       if (!(key in ja)) missing.push(key);
@@ -26,7 +26,7 @@ describe('pack catalog', () => {
     expect(missing).toEqual([]);
   });
 
-  it('lists at least one pack under every goal, the packs mainly for it first', () => {
+  it('lists at least one pack under every goal, the packs mainly for it first', { tags: ['boundary'] }, () => {
     for (const goal of PACK_GOALS) {
       const packs = packsForGoal(goal);
       expect(packs.length, goal).toBeGreaterThan(0);
@@ -35,12 +35,12 @@ describe('pack catalog', () => {
     }
   });
 
-  it('takes the folder from a GitHub address with or without .git and a trailing slash', () => {
+  it('takes the folder from a GitHub address with or without .git and a trailing slash', { tags: ['condition'] }, () => {
     expect(packFolder('https://github.com/owner/Repo.git')).toBe('Repo');
     expect(packFolder('https://github.com/owner/Repo/')).toBe('Repo');
   });
 
-  it('tells the assistant which packs are installed, by folder or by address', () => {
+  it('tells the assistant which packs are installed, by folder or by address', { tags: ['condition'] }, () => {
     const [byFolder, byUrl] = PACK_CATALOG;
     const info = agentPacks([
       { folder: packFolder(byFolder!.url), url: null },

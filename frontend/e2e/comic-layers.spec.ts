@@ -39,7 +39,7 @@ const paintedPixels = (canvas: Locator) =>
 const pageOrder = (page: Page) =>
   page.locator('[data-testid="comic-layer-raster"], [data-testid="comic-layer-panels"]').evaluateAll((els) => els.map((e) => e.getAttribute('data-testid')));
 
-test('a stroke painted on a page is a layer of it: hidden, ordered, undone, and kept across pages and a reload', async ({ page }) => {
+test('a stroke painted on a page is a layer of it: hidden, ordered, undone, and kept across pages and a reload', { tag: ['@state-transition', '@scenario'] }, async ({ page }) => {
   test.slow();
   await openApp(page, '?scenario=empty');
   await showTab(page, 'comic');

@@ -18,7 +18,7 @@ const measure = (line: string) => [...line].reduce((n, ch) => n + (ch.charCodeAt
 const strip = (s: string) => s.replace(/\s+/g, '');
 
 describe('wrapText', () => {
-  it('keeps every line within the width, except a line of one character that is wider by itself', () => {
+  it('keeps every line within the width, except a line of one character that is wider by itself', { tags: ['decision-table'] }, () => {
     check(
       fc.property(text, fc.integer({ min: 0, max: 60 }), (t, width) => {
         for (const line of wrapText(measure, t, width)) {
@@ -28,7 +28,7 @@ describe('wrapText', () => {
     );
   });
 
-  it('gives back the text apart from the breaks and the spaces at them', () => {
+  it('gives back the text apart from the breaks and the spaces at them', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(text, fc.integer({ min: 0, max: 60 }), (t, width) => {
         const lines = wrapText(measure, t, width);
@@ -41,7 +41,7 @@ describe('wrapText', () => {
     );
   });
 
-  it('gives at least one line per paragraph, and the lines of a text that fits in one line are the paragraphs', () => {
+  it('gives at least one line per paragraph, and the lines of a text that fits in one line are the paragraphs', { tags: ['boundary'] }, () => {
     check(
       fc.property(text, (t) => {
         expect(wrapText(measure, t, 1e9).length).toBe(t.split('\n').length);
@@ -51,7 +51,7 @@ describe('wrapText', () => {
     expect(wrapText(measure, '', 10)).toEqual(['']);
   });
 
-  it('never makes more lines than the text has characters and paragraphs', () => {
+  it('never makes more lines than the text has characters and paragraphs', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(text, fc.integer({ min: 0, max: 60 }), (t, width) => {
         expect(wrapText(measure, t, width).length).toBeLessThanOrEqual([...strip(t)].length + t.split('\n').length);
@@ -61,7 +61,7 @@ describe('wrapText', () => {
 });
 
 describe('wrapVertical', () => {
-  it('has columns of at most maxChars characters that join to the text without its line breaks', () => {
+  it('has columns of at most maxChars characters that join to the text without its line breaks', { tags: ['boundary'] }, () => {
     check(
       fc.property(text, fc.integer({ min: 1, max: 12 }), (t, maxChars) => {
         const columns = wrapVertical(t, maxChars);
@@ -75,7 +75,7 @@ describe('wrapVertical', () => {
     );
   });
 
-  it('keeps each line of the text in its own column when the columns are long enough', () => {
+  it('keeps each line of the text in its own column when the columns are long enough', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(text, (t) => {
         expect(wrapVertical(t, 1000)).toEqual(t.split('\n'));
@@ -83,7 +83,7 @@ describe('wrapVertical', () => {
     );
   });
 
-  it('is only wider where it must: a column but the last of its line is full', () => {
+  it('is only wider where it must: a column but the last of its line is full', { tags: ['boundary'] }, () => {
     check(
       fc.property(fc.string({ minLength: 1, maxLength: 40 }), fc.integer({ min: 1, max: 8 }), (t, maxChars) => {
         const columns = wrapVertical(t.replace(/\n/g, ''), maxChars);

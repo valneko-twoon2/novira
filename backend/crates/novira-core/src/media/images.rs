@@ -608,6 +608,7 @@ mod tests {
         out.into_inner()
     }
 
+    // tags: boundary
     #[test]
     fn the_size_limits_of_a_picture_are_256_mib_100_megapixels_and_20000_pixels_a_side() {
         assert_eq!(MAX_IMAGE_BYTES, 268_435_456);
@@ -615,6 +616,7 @@ mod tests {
         assert_eq!(MAX_IMAGE_SIDE, 20_000);
     }
 
+    // tags: decision-table
     #[test]
     fn a_picture_is_in_the_gallery_or_in_the_trash_only_when_its_file_is() {
         let dir = tempfile::tempdir().unwrap();
@@ -633,6 +635,7 @@ mod tests {
         assert!(files.is_trashed(&name));
     }
 
+    // tags: scenario
     #[test]
     fn text_chunks_round_trip_utf8_and_replace_previous_values() {
         let png = tiny_png(4, 3);
@@ -649,6 +652,7 @@ mod tests {
         assert_eq!(img.to_rgb8().get_pixel(0, 0).0, [10, 20, 30]);
     }
 
+    // tags: error-guessing, boundary
     #[test]
     fn oversized_pictures_are_refused_from_their_header() {
         // A wide, one-pixel-high PNG is a few KB but declares a canvas past the side limit.
@@ -663,6 +667,7 @@ mod tests {
         assert!(check_limits(b"not an image").is_err());
     }
 
+    // tags: equivalence
     #[test]
     fn only_the_accepted_formats_reach_a_decoder() {
         let img = image::DynamicImage::ImageRgb8(image::RgbImage::from_pixel(
@@ -695,6 +700,7 @@ mod tests {
         }
     }
 
+    // tags: error-guessing
     #[test]
     fn non_png_input_is_converted_and_broken_input_refused() {
         let img = image::RgbImage::from_pixel(5, 5, image::Rgb([0, 0, 0]));
@@ -710,6 +716,7 @@ mod tests {
         assert!(to_png(b"hello").is_err());
     }
 
+    // tags: error-guessing, scenario
     #[test]
     fn a_png_whose_chunks_are_whole_but_whose_pixels_are_damaged_is_refused() {
         // Found by tests/fuzz_inputs.rs: the chunk list read fine, so the file was kept, and the gallery could not show it.
@@ -723,6 +730,7 @@ mod tests {
         assert!(to_png(&tiny_png(9, 7)).is_ok());
     }
 
+    // tags: error-guessing, equivalence
     #[test]
     fn names_outside_the_generated_form_are_refused() {
         assert!(is_valid_name(&new_name()));
@@ -731,6 +739,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn the_pixels_handed_back_are_the_ones_the_stored_png_decodes_to() {
         let img = image::DynamicImage::ImageRgb8(image::RgbImage::from_fn(7, 5, |x, y| {
@@ -754,6 +763,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn a_picture_stored_with_its_pixels_is_not_decoded_again() {
         let dir = tempfile::tempdir().unwrap();
@@ -785,6 +795,7 @@ mod tests {
         assert!(files.store_video_decoded(&name, b"mp4", &pixels).is_err());
     }
 
+    // tags: condition
     #[test]
     fn store_writes_original_and_thumbnail() {
         let dir = tempfile::tempdir().unwrap();

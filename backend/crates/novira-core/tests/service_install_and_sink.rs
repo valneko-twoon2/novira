@@ -54,6 +54,7 @@ fn open(dir: &std::path::Path, engine: Arc<Reporting>) -> (Backend, Arc<Mutex<Ve
     (backend, events)
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn engine_status_changes_reach_the_event_stream() {
     let dir = tempfile::tempdir().unwrap();
@@ -74,6 +75,7 @@ async fn engine_status_changes_reach_the_event_stream() {
     )));
 }
 
+// tags: boundary
 #[tokio::test]
 async fn the_model_folders_are_listed_and_shutdown_copes_with_a_finished_download() {
     let dir = tempfile::tempdir().unwrap();

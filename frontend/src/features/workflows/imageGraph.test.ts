@@ -58,7 +58,7 @@ const image = (m: GenerationMetadata | null, over: Partial<ImageDTO> = {}): Imag
 beforeEach(() => useModels.setState({ models: MODELS }));
 
 describe('workflow from a generated image', () => {
-  it('rebuilds the same request the generation screen sent', () => {
+  it('rebuilds the same request the generation screen sent', { tags: ['condition'] }, () => {
     const m = meta({ vaeKey: 'vae-x', loras: [{ key: 'detail', weight: 0.7, isEnabled: true }, { key: 'detail', weight: 0.2, isEnabled: false }] });
     const built = graphFromImage(image(m), MODELS)!;
     expect(built.lost).toEqual([]);
@@ -79,18 +79,18 @@ describe('workflow from a generated image', () => {
     expect(req.randomizeSeed).toBe(false);
   });
 
-  it('uses the SD 1.5 nodes for an SD 1.5 model', () => {
+  it('uses the SD 1.5 nodes for an SD 1.5 model', { tags: ['boundary'] }, () => {
     const built = graphFromImage(image(meta({ modelKey: 'old' })), MODELS)!;
     expect(built.graph.nodes.some((n) => n.data.type === 'main_model_loader')).toBe(true);
     expect(built.graph.nodes.some((n) => n.data.type === 'sdxl_model_loader')).toBe(false);
   });
 
-  it('says what the graph does not carry', () => {
+  it('says what the graph does not carry', { tags: ['condition'] }, () => {
     const built = graphFromImage(image(meta({ generationMode: 'img2img', clipSkip: 2, seamlessX: true, refImageCount: 1 })), MODELS)!;
     expect(built.lost).toHaveLength(4);
   });
 
-  it('refuses what it cannot rebuild', () => {
+  it('refuses what it cannot rebuild', { tags: ['error-guessing'] }, () => {
     expect(canBuildFromImage(image(null), MODELS)).toBe(false);
     expect(canBuildFromImage(image(meta({ modelKey: 'flux' })), MODELS)).toBe(false);
     expect(canBuildFromImage(image(meta({ modelKey: 'gone' })), MODELS)).toBe(false);

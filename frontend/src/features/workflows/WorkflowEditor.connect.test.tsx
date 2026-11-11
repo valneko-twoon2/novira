@@ -72,7 +72,7 @@ const edges = () => useWorkflows.getState().edges;
 const fromUnet = { isValid: false, toNode: null, fromHandle: { id: 'unet', type: 'source' }, fromNode: { id: 'model' } };
 
 describe('connection checks', () => {
-  it('accepts a fitting connection and refuses a mismatch or a loop', () => {
+  it('accepts a fitting connection and refuses a mismatch or a loop', { tags: ['error-guessing', 'scenario'] }, () => {
     mount();
     const c = (source: string, sourceHandle: string, target: string, targetHandle: string) => ({ source, sourceHandle, target, targetHandle });
     expect(flow.props!.isValidConnection(c('model', 'unet', 'denoise', 'unet'))).toBe(true);
@@ -81,7 +81,7 @@ describe('connection checks', () => {
     expect(flow.props!.isValidConnection(c('decode', 'image', 'denoise', 'latents'))).toBe(false);
   });
 
-  it('connects through onConnect, and ignores one with a missing handle', () => {
+  it('connects through onConnect, and ignores one with a missing handle', { tags: ['error-guessing', 'boundary'] }, () => {
     mount();
     flow.props!.onConnect({ source: 'model', sourceHandle: null, target: 'denoise', targetHandle: 'unet' });
     flow.props!.onConnect({ source: 'model', sourceHandle: 'unet', target: 'denoise', targetHandle: null });
@@ -103,7 +103,7 @@ describe('a connection let go', () => {
     return inner;
   };
 
-  it('on a node body connects to the first handle that fits', () => {
+  it('on a node body connects to the first handle that fits', { tags: ['boundary', 'scenario'] }, () => {
     mount();
     const target = overNode('denoise');
     act(() => flow.props!.onConnectEnd({ target, clientX: 5, clientY: 5 }, fromUnet));
@@ -111,7 +111,7 @@ describe('a connection let go', () => {
     expect(screen.queryByTestId('wf-node-picker')).toBeNull();
   });
 
-  it('on a node with nothing that fits connects nothing and opens no picker', () => {
+  it('on a node with nothing that fits connects nothing and opens no picker', { tags: ['boundary', 'state-transition'] }, () => {
     mount();
     const target = overNode('save');
     act(() => flow.props!.onConnectEnd({ target }, fromUnet));
@@ -119,7 +119,7 @@ describe('a connection let go', () => {
     expect(screen.queryByTestId('wf-node-picker')).toBeNull();
   });
 
-  it('does nothing when the connection was completed, ended on a handle, or has no origin', () => {
+  it('does nothing when the connection was completed, ended on a handle, or has no origin', { tags: ['boundary', 'state-transition'] }, () => {
     mount();
     const event = { target: document.body, clientX: 5, clientY: 5 };
     act(() => flow.props!.onConnectEnd(event, { ...fromUnet, isValid: true }));
@@ -130,7 +130,7 @@ describe('a connection let go', () => {
     expect(edges()).toHaveLength(0);
   });
 
-  it('does not open the picker for a handle the node does not have, or for a node that is gone', () => {
+  it('does not open the picker for a handle the node does not have, or for a node that is gone', { tags: ['state-transition', 'scenario'] }, () => {
     mount();
     const event = { target: document.body, clientX: 5, clientY: 5 };
     act(() => flow.props!.onConnectEnd(event, { ...fromUnet, fromHandle: { id: 'no-such-handle', type: 'source' } }));
@@ -138,13 +138,13 @@ describe('a connection let go', () => {
     expect(screen.queryByTestId('wf-node-picker')).toBeNull();
   });
 
-  it('does not open the picker for a touch that has no point', () => {
+  it('does not open the picker for a touch that has no point', { tags: ['state-transition', 'scenario'] }, () => {
     mount();
     act(() => flow.props!.onConnectEnd({ target: document.body, changedTouches: [] }, fromUnet));
     expect(screen.queryByTestId('wf-node-picker')).toBeNull();
   });
 
-  it('on the empty pane opens the picker, and the picked node is connected to where the drag began', async () => {
+  it('on the empty pane opens the picker, and the picked node is connected to where the drag began', { tags: ['boundary', 'state-transition'] }, async () => {
     mount();
     act(() => flow.props!.onConnectEnd({ target: document.body, clientX: 40, clientY: 50 }, fromUnet));
     const box = await screen.findByLabelText(t('workflows.picker.placeholder'));
@@ -158,7 +158,7 @@ describe('a connection let go', () => {
     expect(screen.queryByTestId('wf-node-picker')).toBeNull();
   });
 
-  it('from an input handle, opens the picker from a touch and puts the new node on the source side', async () => {
+  it('from an input handle, opens the picker from a touch and puts the new node on the source side', { tags: ['state-transition', 'scenario'] }, async () => {
     mount();
     const fromInput = { isValid: false, toNode: null, fromHandle: { id: 'image', type: 'target' }, fromNode: { id: 'save' } };
     act(() => flow.props!.onConnectEnd({ target: document.body, changedTouches: [{ clientX: 300, clientY: 200 }] }, fromInput));
@@ -176,7 +176,7 @@ describe('a connection let go', () => {
 });
 
 describe('adding from the node library', () => {
-  it('adds the node, selected, and each next one a little off the last', () => {
+  it('adds the node, selected, and each next one a little off the last', { tags: ['boundary', 'decision-table'] }, () => {
     mount();
     const before = useWorkflows.getState().nodes.length;
     act(() => addLibraryNode(getTemplate('l2i')!));
@@ -188,7 +188,7 @@ describe('adding from the node library', () => {
     expect(b!.position.y - a!.position.y).toBe(30);
   });
 
-  it('adds a node type dragged onto the canvas, and ignores an unknown one', () => {
+  it('adds a node type dragged onto the canvas, and ignores an unknown one', { tags: ['error-guessing', 'boundary'] }, () => {
     mount();
     const before = useWorkflows.getState().nodes.length;
     const drop = (type: string) => fireEvent.drop(screen.getByTestId('wf-editor'), { clientX: 10, clientY: 20, dataTransfer: { types: [NODE_MIME], getData: () => type } });
@@ -199,13 +199,13 @@ describe('adding from the node library', () => {
     expect(useWorkflows.getState().nodes.at(-1)!.data.type).toBe('l2i');
   });
 
-  it('accepts a node type dragged over the canvas', () => {
+  it('accepts a node type dragged over the canvas', { tags: ['scenario'] }, () => {
     mount();
     const accepted = fireEvent.dragOver(screen.getByTestId('wf-editor'), { dataTransfer: { types: [NODE_MIME], dropEffect: 'none' } });
     expect(accepted).toBe(false);
   });
 
-  it('stops adding to the editor once it is gone, and adds at the origin then', () => {
+  it('stops adding to the editor once it is gone, and adds at the origin then', { tags: ['state-transition', 'scenario'] }, () => {
     const { unmount } = mount();
     unmount();
     const before = useWorkflows.getState().nodes.length;

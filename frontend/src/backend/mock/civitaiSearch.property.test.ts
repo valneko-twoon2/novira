@@ -32,7 +32,7 @@ const walk = (p: CivitaiSearchParams) => {
 };
 
 describe('model search (properties)', () => {
-  it('walking the cursors lists every match exactly once and ends', () => {
+  it('walking the cursors lists every match exactly once and ends', { tags: ['boundary'] }, () => {
     check(
       fc.property(params, (p) => {
         const ids = walk(p);
@@ -43,7 +43,7 @@ describe('model search (properties)', () => {
     );
   });
 
-  it('results respect the kind, the NSFW switch and the query', () => {
+  it('results respect the kind, the NSFW switch and the query', { tags: ['decision-table'] }, () => {
     check(
       fc.property(params, (p) => {
         const r = searchCivitaiModels(p, p.source === 'huggingface' ? HUGGINGFACE_MODELS : undefined);
@@ -57,7 +57,7 @@ describe('model search (properties)', () => {
     );
   });
 
-  it('any cursor text (junk, negative, huge, fractional) gives a page and never throws', () => {
+  it('any cursor text (junk, negative, huge, fractional) gives a page and never throws', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(params, fc.oneof(junkText, fc.double().map(String), fc.constantFrom('-5', 'Infinity', '1e21', '0.5', 'NaN')), (p, cursor) => {
         const r = searchCivitaiModels({ ...p, cursor }, p.source === 'huggingface' ? HUGGINGFACE_MODELS : undefined);
@@ -67,7 +67,7 @@ describe('model search (properties)', () => {
     );
   });
 
-  it('sorting by downloads puts the most downloaded first', () => {
+  it('sorting by downloads puts the most downloaded first', { tags: ['condition'] }, () => {
     check(
       fc.property(params, (p) => {
         const items = searchCivitaiModels({ ...p, sort: 'downloads', cursor: null }).items;

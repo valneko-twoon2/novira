@@ -33,6 +33,7 @@ fn make_zip(path: &Path, entries: &[(&str, Vec<u8>)]) {
     zip.finish().unwrap();
 }
 
+// tags: error-guessing
 #[test]
 fn a_gallery_entry_that_cannot_be_read_fails_the_backup_and_leaves_no_partial_file() {
     let dir = tempfile::tempdir().unwrap();
@@ -60,6 +61,7 @@ fn a_gallery_entry_that_cannot_be_read_fails_the_backup_and_leaves_no_partial_fi
     assert!(!dir.path().join("backup.zip.partial").exists());
 }
 
+// tags: error-guessing, state-transition
 #[test]
 fn a_screen_state_that_is_not_text_is_refused() {
     let dir = tempfile::tempdir().unwrap();
@@ -77,6 +79,7 @@ fn a_screen_state_that_is_not_text_is_refused() {
     assert!(!data.path().join(STAGING).exists());
 }
 
+// tags: error-guessing
 #[test]
 fn a_target_that_cannot_be_replaced_fails_the_backup_and_leaves_no_partial_file() {
     let dir = tempfile::tempdir().unwrap();
@@ -119,6 +122,7 @@ fn big_database_bytes(bytes: usize) -> Vec<u8> {
     std::fs::read(dir.path().join(DATABASE)).unwrap()
 }
 
+// tags: boundary
 #[test]
 fn entries_of_a_realistic_size_are_unpacked_whole() {
     // Each entry limit is far above these sizes; a limit that came out tiny (a wrong constant) would refuse them.
@@ -154,6 +158,7 @@ fn entries_of_a_realistic_size_are_unpacked_whole() {
     );
 }
 
+// tags: boundary, decision-table
 #[test]
 fn unpacking_reports_each_entry_once_counting_from_one() {
     let dir = tempfile::tempdir().unwrap();
@@ -173,6 +178,7 @@ fn unpacking_reports_each_entry_once_counting_from_one() {
     assert_eq!(seen, vec![(1, 4), (2, 4), (3, 4), (4, 4)]);
 }
 
+// tags: error-guessing
 #[test]
 fn a_symbolic_link_in_a_backup_is_refused_even_under_a_gallery_name() {
     let dir = tempfile::tempdir().unwrap();

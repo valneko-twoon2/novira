@@ -393,6 +393,7 @@ fn unprotect(_: &[u8]) -> Result<Vec<u8>, String> {
 mod tests {
     use super::*;
 
+    // tags: error-guessing, scenario
     #[test]
     fn a_write_replaces_the_file_whole_and_a_cut_off_one_leaves_the_old_file() {
         let dir = tempfile::tempdir().unwrap();
@@ -429,6 +430,7 @@ mod tests {
         credential::read(&existing_target(dir, name)?).unwrap()
     }
 
+    // tags: scenario
     #[test]
     fn key_round_trips_through_the_credential_manager_and_leaves_no_file() {
         let _serial = serial();
@@ -447,6 +449,7 @@ mod tests {
         );
     }
 
+    // tags: equivalence
     #[test]
     fn each_secret_has_its_own_entry_or_file() {
         let _serial = serial();
@@ -479,6 +482,7 @@ mod tests {
         );
     }
 
+    // tags: state-transition
     #[test]
     fn blank_key_removes_the_entry() {
         let _serial = serial();
@@ -491,6 +495,7 @@ mod tests {
         save_civitai_key(dir.path(), None).unwrap();
     }
 
+    // tags: condition
     #[test]
     fn two_data_folders_do_not_share_keys() {
         let _serial = serial();
@@ -502,6 +507,7 @@ mod tests {
         assert_eq!(load_civitai_key(a.path()).unwrap().as_deref(), Some("of-a"));
     }
 
+    // tags: condition
     #[test]
     fn a_key_in_a_moved_data_folder_is_still_found() {
         let _serial = serial();
@@ -521,6 +527,7 @@ mod tests {
         );
     }
 
+    // tags: error-guessing, boundary
     #[test]
     fn a_long_unicode_key_reads_back_and_one_over_the_limit_is_refused() {
         let _serial = serial();
@@ -541,6 +548,7 @@ mod tests {
         );
     }
 
+    // tags: state-transition
     #[test]
     fn a_key_saved_as_a_file_by_an_earlier_version_moves_into_the_credential_manager() {
         let _serial = serial();
@@ -561,6 +569,7 @@ mod tests {
         );
     }
 
+    // tags: error-guessing
     #[test]
     fn tampered_old_file_is_an_error_not_a_key() {
         let _serial = serial();
@@ -571,6 +580,7 @@ mod tests {
         assert!(load_civitai_key(dir.path()).is_err());
     }
 
+    // tags: condition
     #[test]
     fn other_secrets_stay_encrypted_files() {
         let _serial = serial();
@@ -581,6 +591,7 @@ mod tests {
         assert!(!dir.path().join(SECRETS_DIR).join(STORE_ID_FILE).exists());
     }
 
+    // tags: error-guessing, boundary
     #[test]
     fn the_credential_manager_reports_what_it_refuses_and_reads_an_empty_value() {
         let _serial = serial();
@@ -600,6 +611,7 @@ mod tests {
         assert_eq!(credential::read(&target).unwrap(), None);
     }
 
+    // tags: error-guessing, equivalence
     #[test]
     fn an_unreadable_or_damaged_file_names_the_secret_it_belongs_to() {
         let _serial = serial();

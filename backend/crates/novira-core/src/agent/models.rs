@@ -172,6 +172,7 @@ mod tests {
     use super::*;
     use serde_json::json;
 
+    // tags: scenario, equivalence
     #[test]
     fn claude_lists_full_names_shown_with_their_version_and_efforts() {
         let models = models_of(AgentProvider::Claude);
@@ -192,6 +193,7 @@ mod tests {
         assert_eq!(models[0].efforts.last().map(String::as_str), Some("max"));
     }
 
+    // tags: condition
     #[test]
     fn the_default_model_is_one_the_tool_lists() {
         let claude = models_of(AgentProvider::Claude);
@@ -212,6 +214,7 @@ mod tests {
         assert_eq!(default_model(AgentProvider::Openai, &claude), None);
     }
 
+    // tags: decision-table
     #[test]
     fn codex_cache_keeps_listed_plain_models_in_priority_order() {
         let cache = json!({ "models": [
@@ -245,6 +248,7 @@ mod tests {
         assert!(parse_codex_models(&json!({ "models": "x" })).is_empty());
     }
 
+    // tags: error-guessing, scenario
     #[test]
     fn codex_cache_that_is_missing_or_broken_lists_nothing() {
         let dir = tempfile::tempdir().unwrap();
@@ -259,6 +263,7 @@ mod tests {
         assert_eq!(codex_models(dir.path())[0].id, "m1");
     }
 
+    // tags: equivalence
     #[test]
     fn only_plain_names_pass() {
         for ok in ["gpt-6.1-sol", "opus", "a_b"] {

@@ -5,7 +5,7 @@ import { canOpenNewWindow, openInNewWindow } from './openWindow';
 describe('openInNewWindow', () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it('opens addresses the app hands out', () => {
+  it('opens addresses the app hands out', { tags: ['equivalence'] }, () => {
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
     for (const url of ['http://novira-image.localhost/full/a.png', 'novira-image://localhost/full/a.png', 'blob:http://localhost/x', 'data:image/png;base64,AA==', '/novira-image/full/a.png']) {
       expect(openInNewWindow(url)).toBe(true);
@@ -14,7 +14,7 @@ describe('openInNewWindow', () => {
     expect(open).toHaveBeenCalledWith('http://novira-image.localhost/full/a.png', '_blank', 'noopener');
   });
 
-  it('refuses scripts, remote pages and look-alike hosts', () => {
+  it('refuses scripts, remote pages and look-alike hosts', { tags: ['error-guessing'] }, () => {
     const script = ['java', 'script:alert(1)'].join('');
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
     for (const url of [script, 'https://example.com/', 'http://novira-image.localhost.evil.com/a.png', 'data:text/html,<b>x</b>', ' blob:x', '/novira-image/full/../x', '/novira-image/other/a.png', '//evil.example/novira-image/full/a.png']) {
@@ -23,7 +23,7 @@ describe('openInNewWindow', () => {
     expect(open).not.toHaveBeenCalled();
   });
 
-  it('opens nothing inside the desktop app, which has no tabs', () => {
+  it('opens nothing inside the desktop app, which has no tabs', { tags: ['condition'] }, () => {
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
     Object.defineProperty(window, '__TAURI_INTERNALS__', { value: {}, configurable: true });
     try {

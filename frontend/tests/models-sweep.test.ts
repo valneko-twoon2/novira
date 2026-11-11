@@ -50,7 +50,7 @@ const BASES = Object.keys(BASE_LABELS) as BaseModel[];
 const model = (over: Partial<ModelConfig>): ModelConfig => ({ key: 'k', name: 'm', base: 'sdxl', type: 'main', format: 'checkpoint', description: '', path: 'E:/models/checkpoints/m.safetensors', size: 1, ...over }) as ModelConfig;
 
 describe('what the sweep reads from the code', () => {
-  it('reads the scanned folders of layout.rs with their wire kinds and the model extensions', () => {
+  it('reads the scanned folders of layout.rs with their wire kinds and the model extensions', { tags: ['scenario'] }, () => {
     expect(code.categories.map((c: { folder: string }) => c.folder)).toEqual(expect.arrayContaining(['checkpoints', 'loras', 'vae', 'diffusion_models', 'text_encoders', 'upscale_models']));
     expect(code.categories.find((c: { folder: string }) => c.folder === 'checkpoints').aliases).toContain('Stable-diffusion');
     for (const c of code.categories) expect(TYPES).toContain(c.kind);
@@ -59,7 +59,7 @@ describe('what the sweep reads from the code', () => {
     expect(wireKind('IpAdapter')).toBe('ip_adapter');
   });
 
-  it('reads the same families, labels, rail and cover kinds as the screens use', () => {
+  it('reads the same families, labels, rail and cover kinds as the screens use', { tags: ['scenario'] }, () => {
     expect(code.splitBases).toEqual(new Set(SPLIT_BASES));
     expect(code.videoBases).toEqual(new Set(VIDEO_BASES));
     expect(code.baseLabels).toEqual(BASE_LABELS);
@@ -67,7 +67,7 @@ describe('what the sweep reads from the code', () => {
     for (const type of TYPES) expect(code.pictureTypes.has(type)).toBe(coverKind(type) !== 'icon');
   });
 
-  it('sends every kind and base to the screen that draws with it, as the screens decide', () => {
+  it('sends every kind and base to the screen that draws with it, as the screens decide', { tags: ['scenario'] }, () => {
     for (const type of TYPES) {
       for (const base of BASES) {
         const m = model({ type, base });
@@ -83,7 +83,7 @@ describe('what the sweep reads from the code', () => {
     expect(pickerOf(model({ type: 'diffusion_model', base: 'hunyuan-dit' }), code).why).toContain('no screen');
   });
 
-  it('names the rail entry of every kind', () => {
+  it('names the rail entry of every kind', { tags: ['scenario'] }, () => {
     for (const type of TYPES) expect(railOf(type, code.rail), type).not.toBeNull();
     expect(railOf('diffusion_model', code.rail)).toBe('diffusion');
     expect(railOf('clip_vision', code.rail)).toBe('ipAdapter');
@@ -95,7 +95,7 @@ describe('the model packs', () => {
   const packs: Pack[] = code.packs;
   const pack = (kind: string) => packs.find((p) => p.kind === kind)!;
 
-  it('reads every pack kind, its folder and its files from packs.rs, and the voice models from the voice engine', () => {
+  it('reads every pack kind, its folder and its files from packs.rs, and the voice models from the voice engine', { tags: ['scenario'] }, () => {
     expect(packs.map((p) => p.kind).sort()).toEqual(['inpaint', 'music', 'turbo', 'video', 'voice']);
     expect(pack('music').files).toEqual([{ folder: 'checkpoints', file: expect.stringContaining('ace_step'), home: null }]);
     expect(pack('video').files.map((f) => f.folder)).toEqual(['diffusion_models', 'text_encoders', 'vae']);
@@ -108,7 +108,7 @@ describe('the model packs', () => {
   const on = (...present: string[]) => (p: string) => present.some((x) => p === x);
   const status = (state: string) => ({ music: { state }, video: { state }, turbo: { state }, voice: { state } });
 
-  it('passes a pack whose files are in a shared root and which the app reports ready', () => {
+  it('passes a pack whose files are in a shared root and which the app reports ready', { tags: ['condition'] }, () => {
     const [row] = packRows({ packs: only('music'), status: status('ready'), roots: ['E:/own', 'E:/shared'], has: on(`E:/shared/music/checkpoints/${pack('music').files[0]!.file}`) });
     expect(row).toMatchObject({ name: 'music pack', type: 'pack' });
     expect(row.checks.listed).toMatchObject({ status: 'pass' });
@@ -117,7 +117,7 @@ describe('the model packs', () => {
     expect(row.checks.picker.status).toBe('n/a');
   });
 
-  it('fails when the files are there and the app says missing, or the app says ready and a file is nowhere; n/a when not installed', () => {
+  it('fails when the files are there and the app says missing, or the app says ready and a file is nowhere; n/a when not installed', { tags: ['error-guessing'] }, () => {
     const music = `E:/shared/music/checkpoints/${pack('music').files[0]!.file}`;
     const there = packRows({ packs: only('music'), status: status('missing'), roots: ['E:/shared'], has: on(music) })[0];
     expect(there.checks.listed.status).toBe('fail');
@@ -129,7 +129,7 @@ describe('the model packs', () => {
     expect(overall(none.checks)).toBe('pass');
   });
 
-  it('looks for the files Turbo shares in the video pack folder, and for the voice models by their marker file', () => {
+  it('looks for the files Turbo shares in the video pack folder, and for the voice models by their marker file', { tags: ['condition'] }, () => {
     const turbo = pack('turbo');
     const present = turbo.files.map((f) => `E:/s/${f.home ? 'video' : 'turbo'}/${f.folder}/${f.file}`);
     expect(packRows({ packs: only('turbo'), status: status('ready'), roots: ['E:/s'], has: on(...present) })[0].checks.listed.status).toBe('pass');
@@ -139,7 +139,7 @@ describe('the model packs', () => {
     expect(packRows({ packs: only('voice'), status: status('missing'), roots: ['E:/s'], has: on(...marks) })[0].checks.listed.status).toBe('n/a');
   });
 
-  it('adds one row per pack to the merged table, narrowed by --model and --category', () => {
+  it('adds one row per pack to the merged table, narrowed by --model and --category', { tags: ['decision-table'] }, () => {
     const off = { status: 0, data: { models: [], results: {}, packs: status('missing') } };
     const base = { off, on: { status: 0, data: null }, lookup: false, gpuWhy: null, files: [], code, roots: ['E:/s'], has: () => false };
     expect(mergeRuns(base).filter((r: { type: string }) => r.type === 'pack')).toHaveLength(5);
@@ -152,18 +152,18 @@ describe('the model packs', () => {
 describe('model files and their folders', () => {
   const roots = ['E:/data/models', 'E:/shared/models'];
 
-  it('gives the category folder and the name ComfyUI lists, in any root and alias, ignoring case', () => {
+  it('gives the category folder and the name ComfyUI lists, in any root and alias, ignoring case', { tags: ['condition'] }, () => {
     expect(comfyNameOf('E:\\shared\\models\\Stable-diffusion\\sub\\a.safetensors', roots, code.categories)).toEqual({ folder: 'checkpoints', kind: 'main', alias: 'Stable-diffusion', name: 'sub/a.safetensors' });
     expect(comfyNameOf('E:/data/models/Lora/b.safetensors', roots, code.categories)).toMatchObject({ folder: 'loras', name: 'b.safetensors' });
     expect(comfyNameOf('E:/shared/models/video/diffusion_models/c.safetensors', roots, code.categories)).toBeNull();
     expect(comfyNameOf('E:/elsewhere/checkpoints/c.safetensors', roots, code.categories)).toBeNull();
   });
 
-  it('names the folders of a root that novira does not scan, not the categories', () => {
+  it('names the folders of a root that novira does not scan, not the categories', { tags: ['condition'] }, () => {
     expect(unscannedFolders(['checkpoints', 'video', 'Lora', 'music', '.downloads', 'VAE'], code.categories)).toEqual(['music', 'video']);
   });
 
-  it('only names the folder a removed pack left behind: it has no pack row, so it cannot fail the sweep', () => {
+  it('only names the folder a removed pack left behind: it has no pack row, so it cannot fail the sweep', { tags: ['error-guessing'] }, () => {
     expect(unscannedFolders(['checkpoints', 'logo'], code.categories)).toEqual(['logo']);
     expect(code.packs.map((p: { dir: string }) => p.dir)).not.toContain('logo');
     const off = { status: 0, data: { models: [], results: {}, packs: {} } };
@@ -171,7 +171,7 @@ describe('model files and their folders', () => {
     expect(rows.filter((r: { base: string }) => r.base === 'logo')).toEqual([]);
   });
 
-  it('fails a file listed as another kind than its folder holds, a kind without a base, and a base the name contradicts', () => {
+  it('fails a file listed as another kind than its folder holds, a kind without a base, and a base the name contradicts', { tags: ['error-guessing'] }, () => {
     const where = (folder: string, kind: string) => ({ folder, kind, alias: folder, name: 'x' });
     expect(classificationCheck(model({}), where('checkpoints', 'main'), code.categories).status).toBe('pass');
     expect(classificationCheck(model({ type: 'lora' }), where('checkpoints', 'main'), code.categories).why).toContain('loader does not read checkpoints/');
@@ -183,7 +183,7 @@ describe('model files and their folders', () => {
     expect(classificationCheck(model({}), null, code.categories).status).toBe('fail');
   });
 
-  it('reads a base from a file name only where the name says it', () => {
+  it('reads a base from a file name only where the name says it', { tags: ['condition'] }, () => {
     expect(baseHint('FComic_1to1000_IL_V2.safetensors')).toEqual(['sdxl']);
     expect(baseHint('reverse_bunnysuit-Illustrious.safetensors')).toEqual(['sdxl']);
     expect(baseHint('ryugahama_yueilxl_v1.safetensors')).toEqual(['sdxl']);
@@ -201,12 +201,12 @@ describe('which models the sweep runs', () => {
     model({ key: '4', name: 'style', type: 'lora', base: 'sdxl' }),
   ];
 
-  it('takes one model per kind and base, the first by name, or the ones whose name has the part asked for', () => {
+  it('takes one model per kind and base, the first by name, or the ones whose name has the part asked for', { tags: ['decision-table'] }, () => {
     expect(representatives(list).map((m: ModelConfig) => m.key)).toEqual(['2', '3', '4']);
     expect(representatives(list, { model: 'B-SD' }).map((m: ModelConfig) => m.key)).toEqual(['1']);
   });
 
-  it('narrows by folder, kind, rail entry, base or part of the name', () => {
+  it('narrows by folder, kind, rail entry, base or part of the name', { tags: ['decision-table'] }, () => {
     const keys = (opts: object) => narrow(list, opts, code).map((m: ModelConfig) => m.key);
     expect(keys({})).toEqual(['1', '2', '3', '4']);
     expect(keys({ category: 'diffusion_models' })).toEqual(['3']);
@@ -224,7 +224,7 @@ describe('what the job really loaded', () => {
     '3': { class_type: 'CLIPTextEncode', inputs: { text: 'a girl.safetensors? no' } },
   };
 
-  it('lists the model files the nodes load, with forward slashes', () => {
+  it('lists the model files the nodes load, with forward slashes', { tags: ['condition'] }, () => {
     expect(loadedFiles(prompt, code.extensions)).toEqual([
       { node: 'CheckpointLoaderSimple', input: 'ckpt_name', file: 'sub/waiIllustrious.safetensors' },
       { node: 'LoraLoader', input: 'lora_name', file: 'style.safetensors' },
@@ -232,7 +232,7 @@ describe('what the job really loaded', () => {
     expect(loadedFiles(null, code.extensions)).toEqual([]);
   });
 
-  it('passes only when the chosen file is among them', () => {
+  it('passes only when the chosen file is among them', { tags: ['condition'] }, () => {
     expect(graphCheck(prompt, 'sub/WAIillustrious.safetensors', code.extensions)).toMatchObject({ status: 'pass', why: 'CheckpointLoaderSimple.ckpt_name = sub/waiIllustrious.safetensors' });
     expect(graphCheck(prompt, 'other.safetensors', code.extensions).why).toContain('not other.safetensors');
     expect(graphCheck({ '1': { class_type: 'EmptyLatentImage', inputs: { width: 8 } } }, 'a.safetensors', code.extensions).why).toContain('no model file');
@@ -273,7 +273,7 @@ describe('the blank-picture check', () => {
   const W = 16;
   const gradient = Array.from({ length: 16 }, (_, y) => Array.from({ length: W * 3 }, (_, i) => (Math.floor(i / 3) * 13 + y * 7 + (i % 3) * 50) & 0xff));
 
-  it('decodes every PNG row filter back to the same pixels', () => {
+  it('decodes every PNG row filter back to the same pixels', { tags: ['condition'] }, () => {
     const plain = decodePng(png(W, gradient, [0]));
     const mixed = decodePng(png(W, gradient, [0, 1, 2, 3, 4]));
     expect(plain.width).toBe(W);
@@ -281,7 +281,7 @@ describe('the blank-picture check', () => {
     expect(Array.from(mixed.pixels)).toEqual(gradient.flat());
   });
 
-  it('fails a one-colour or unreadable picture and passes a real one', () => {
+  it('fails a one-colour or unreadable picture and passes a real one', { tags: ['error-guessing'] }, () => {
     const flat = Array.from({ length: 16 }, () => Array.from({ length: W * 3 }, () => 12));
     expect(brightnessSpread(decodePng(png(W, flat, [1])))).toBe(0);
     expect(pictureCheck(png(W, flat, [0])).status).toBe('fail');
@@ -297,12 +297,12 @@ describe('verdicts and the table', () => {
     { name: 'C', type: 'vae', base: 'any', checks: { listed: { status: 'pass', why: '' }, coverOff: { status: 'n/a', why: 'icon' } } },
   ];
 
-  it('is fail before not run before pass; n/a alone is a pass', () => {
+  it('is fail before not run before pass; n/a alone is a pass', { tags: ['condition'] }, () => {
     expect(rows.map((r) => overall(r.checks))).toEqual(['not run', 'fail', 'pass']);
     expect(overall({})).toBe('pass');
   });
 
-  it('writes one row per model and the reasons of every check that did not pass, never calling not run a pass', () => {
+  it('writes one row per model and the reasons of every check that did not pass, never calling not run a pass', { tags: ['condition'] }, () => {
     const md = markdownTable(rows);
     expect(md).toContain('| A | main / sdxl | pass | n/a |  |  | not run |  |  | **not run** |');
     expect(md).toContain('- B, a listed: fail: not listed');
@@ -310,7 +310,7 @@ describe('verdicts and the table', () => {
     expect(summaryLines(rows)).toEqual(['not run A (main / sdxl): GPU busy', 'fail    B (lora / anima): not listed', 'pass    C (vae / any)']);
   });
 
-  it('joins the two runs, marks a failed run, and adds a file the app does not list', () => {
+  it('joins the two runs, marks a failed run, and adds a file the app does not list', { tags: ['condition'] }, () => {
     const m = { key: 'k1', name: 'wai', type: 'main', base: 'sdxl', path: 'E:/s/checkpoints/wai.safetensors' };
     const ok = { status: 'pass', why: '' };
     const off = { status: 0, data: { models: [m], results: { k1: { listed: ok, cover: ok, picker: ok } } } };
@@ -321,7 +321,7 @@ describe('verdicts and the table', () => {
     expect(rows[1]).toMatchObject({ name: 'lost.safetensors', type: 'lora', checks: { listed: { status: 'fail', why: "on disk in loras/ but not in the app's model list" } } });
   });
 
-  it('does not list the files of other models as missing in a narrowed run', () => {
+  it('does not list the files of other models as missing in a narrowed run', { tags: ['error-guessing'] }, () => {
     const m = { key: 'k1', name: 'wai', type: 'main', base: 'sdxl', path: 'E:/s/checkpoints/wai.safetensors' };
     const ok = { status: 'pass', why: '' };
     const off = { status: 0, data: { models: [m], results: { k1: { listed: ok, cover: ok, picker: ok } } } };
@@ -330,7 +330,7 @@ describe('verdicts and the table', () => {
     expect(rows.map((r: { name: string }) => r.name)).toEqual(['wai']);
   });
 
-  it('shows the lookup-on cover as not run unless --lookup was given, and takes the GPU part from the lookup-off run', () => {
+  it('shows the lookup-on cover as not run unless --lookup was given, and takes the GPU part from the lookup-off run', { tags: ['condition'] }, () => {
     const m = { key: 'k1', name: 'wai', type: 'main', base: 'sdxl', path: 'E:/s/checkpoints/wai.safetensors' };
     const icon = { key: 'k2', name: 'vae1', type: 'vae', base: 'sdxl', path: 'E:/s/vae/vae1.safetensors' };
     const ok = { status: 'pass', why: '' };
@@ -343,7 +343,7 @@ describe('verdicts and the table', () => {
     expect(overall(wai!.checks)).toBe('not run');
   });
 
-  it('reads its flags and refuses unknown ones', () => {
+  it('reads its flags and refuses unknown ones', { tags: ['error-guessing'] }, () => {
     expect(parseArgs([])).toMatchObject({ lookup: false });
     expect(parseArgs(['--category', 'loras', '--lookup'])).toMatchObject({ category: 'loras', lookup: true });
     expect(parseArgs(['--category', 'loras', '--model', 'wai', '--no-gpu'])).toMatchObject({ category: 'loras', model: 'wai', gpu: false, build: false });
@@ -356,7 +356,7 @@ describe('verdicts and the table', () => {
 });
 
 describe('when a sweep is due', () => {
-  it('needs one for model code, the graphs, the Models and Browse screens and the pickers, not for their tests', () => {
+  it('needs one for model code, the graphs, the Models and Browse screens and the pickers, not for their tests', { tags: ['condition'] }, () => {
     for (const p of [
       'backend/crates/novira-core/src/models/classify.rs',
       'backend/crates/novira-core/src/service/model_store.rs',
@@ -385,12 +385,12 @@ describe('when a sweep is due', () => {
 
   const record = { complete: true, head: 'abc', dirty: { 'frontend/src/state/models.ts': 'blob1' } };
 
-  it('does not count a changed style sheet against a record', () => {
+  it('does not count a changed style sheet against a record', { tags: ['condition'] }, () => {
     expect(recordCoversHead(record, ['frontend/src/features/models/models.css'], () => null)).toBe(true);
     expect(sweepReminder({ root: 'E:/wt', records: [], committed: ['frontend/src/features/models/models.css'], covers: () => false })).toBeNull();
   });
 
-  it('counts a complete record whose model files since its commit are the ones it swept', () => {
+  it('counts a complete record whose model files since its commit are the ones it swept', { tags: ['condition'] }, () => {
     expect(recordCoversHead(record, [], () => null)).toBe(true);
     expect(recordCoversHead({ ...record, via: 'server' }, [], () => null)).toBe(false);
     expect(recordCoversHead({ ...record, via: 'app' }, [], () => null)).toBe(true);
@@ -402,7 +402,7 @@ describe('when a sweep is due', () => {
     expect(recordCoversHead(null, [], () => null)).toBe(false);
   });
 
-  it('reminds only when model code was committed and no record covers HEAD', () => {
+  it('reminds only when model code was committed and no record covers HEAD', { tags: ['condition'] }, () => {
     const base = { root: 'E:/wt', records: [record] };
     expect(sweepReminder({ ...base, committed: ['docs/a.md'], covers: () => false })).toBeNull();
     expect(sweepReminder({ ...base, committed: ['frontend/src/state/models.ts'], covers: () => true })).toBeNull();
@@ -411,7 +411,7 @@ describe('when a sweep is due', () => {
 });
 
 describe('the files a sweep record lists as uncommitted', () => {
-  it('reads git status -z whole: the first status starting with a space, a non-ASCII name, the new path of a rename', () => {
+  it('reads git status -z whole: the first status starting with a space, a non-ASCII name, the new path of a rename', { tags: ['condition'] }, () => {
     const out = [' M frontend/src/state/models.ts', '?? frontend/src/features/models/新しい.tsx', 'R  frontend/src/ui/ModelPicker.tsx', 'frontend/src/ui/OldPicker.tsx', ''].join('\0');
     expect(porcelainPaths(out)).toEqual(['frontend/src/state/models.ts', 'frontend/src/features/models/新しい.tsx', 'frontend/src/ui/ModelPicker.tsx']);
     expect(porcelainPaths('')).toEqual([]);
@@ -419,14 +419,14 @@ describe('the files a sweep record lists as uncommitted', () => {
 });
 
 describe('the Stop hook and the sweep', () => {
-  it('asks for the sweep only when nothing is uncommitted or left over, once', () => {
+  it('asks for the sweep only when nothing is uncommitted or left over, once', { tags: ['condition'] }, () => {
     expect(reminder({}, [], false, [], ['E:/wt: model code'])).toContain('E:/wt: model code');
     expect(reminder({}, ['a.ts'], false, [], ['E:/wt: model code'])).not.toContain('E:/wt: model code');
     expect(reminder({ stop_hook_active: true }, [], false, [], ['x'])).toBeNull();
     expect(reminder({}, [], false, [], [])).toBeNull();
   });
 
-  it('reads the commits of each work tree since main and checks the records against its HEAD', () => {
+  it('reads the commits of each work tree since main and checks the records against its HEAD', { tags: ['condition'] }, () => {
     const calls: string[] = [];
     const git = (root: string, args: string[]) => {
       calls.push(`${root} ${args.join(' ')}`);
@@ -450,7 +450,7 @@ describe('the Stop hook and the sweep', () => {
     expect(sweepReminders(['E:/main'], { git: broken, records: [] })).toEqual([]);
   });
 
-  it('reads the records of <logs>/models-sweep/, newest first, skipping what is half written', () => {
+  it('reads the records of <logs>/models-sweep/, newest first, skipping what is half written', { tags: ['error-guessing'] }, () => {
     const logs = mkdtempSync(path.join(tmpdir(), 'novira-sweep-records-'));
     try {
       expect(readRecords(logs)).toEqual([]);
@@ -469,7 +469,7 @@ describe('the Stop hook and the sweep', () => {
 });
 
 describe('the main checkout a worktree shares', () => {
-  it('is the first entry of `git worktree list`, or the folder itself when Git cannot tell', () => {
+  it('is the first entry of `git worktree list`, or the folder itself when Git cannot tell', { tags: ['error-guessing'] }, () => {
     const list = () => 'worktree E:/Code/novira\nHEAD a\nbranch refs/heads/main\n\nworktree E:/Code/novira-wt-x\nHEAD b\n';
     expect(mainCheckout('E:/Code/novira-wt-x', list).replaceAll('\\', '/')).toBe('E:/Code/novira');
     expect(mainCheckout('E:/Code/copy', () => {
@@ -481,7 +481,7 @@ describe('the main checkout a worktree shares', () => {
     expect(roots.logs.replaceAll('\\', '/')).toBe('E:/Code/novira/logs');
   });
 
-  it('gives each checkout its own Playwright folder in the logs/ of the main checkout', () => {
+  it('gives each checkout its own Playwright folder in the logs/ of the main checkout', { tags: ['condition'] }, () => {
     const dir = (repo: string) => e2eOutputDir(harnessRoots(repo, 'E:/Code/novira', null, () => true)).replaceAll('\\', '/');
     expect(dir('E:/Code/novira')).toBe('E:/Code/novira/logs/e2e');
     expect(dir('E:/Code/novira-wt-x')).toBe('E:/Code/novira/logs/e2e-novira-wt-x');
@@ -490,12 +490,12 @@ describe('the main checkout a worktree shares', () => {
     expect(dir('e:/code/novira/')).toBe('E:/Code/novira/logs/e2e');
   });
 
-  it('keeps the coverage of a checkout in its own logs/, also in a worktree', () => {
+  it('keeps the coverage of a checkout in its own logs/, also in a worktree', { tags: ['condition'] }, () => {
     expect(logsDir('E:/Code/novira-wt-x').replaceAll('\\', '/')).toBe('E:/Code/novira-wt-x/logs');
     expect(coverageDir('E:/Code/novira-wt-x').replaceAll('\\', '/')).toBe('E:/Code/novira-wt-x/logs/coverage');
   });
 
-  it('shares the models of a data folder the app moved out of the repository, and keeps the harness folder in it', () => {
+  it('shares the models of a data folder the app moved out of the repository, and keeps the harness folder in it', { tags: ['condition'] }, () => {
     const exists = (p: string) => p.replaceAll('\\', '/').startsWith('C:/data/models');
     const roots = harnessRoots('E:/Code/novira', 'E:/Code/novira', 'C:/data', exists);
     expect(roots.models.replaceAll('\\', '/')).toBe('C:/data/models');
@@ -505,7 +505,7 @@ describe('the main checkout a worktree shares', () => {
     expect(harnessRoots('E:/Code/novira', 'E:/Code/novira', null, () => false).models.replaceAll('\\', '/')).toBe('E:/Code/novira/novira-data/models');
   });
 
-  it('reads the moved data folder from the debug pointer first, then the installed one', () => {
+  it('reads the moved data folder from the debug pointer first, then the installed one', { tags: ['condition'] }, () => {
     const files: Record<string, string> = { 'L/novira/data-location.json': '{"dataDir":"D:/inst"}', 'L/novira/data-location-dev.json': '{"dataDir":"D:/dev"}' };
     const read = (f: string) => {
       const text = files[f.replaceAll('\\', '/')];
@@ -522,7 +522,7 @@ describe('the main checkout a worktree shares', () => {
 });
 
 describe('the folders the sweep walks', () => {
-  it('walks every model root the isolated settings name, once each, and only folders that exist', () => {
+  it('walks every model root the isolated settings name, once each, and only folders that exist', { tags: ['condition'] }, () => {
     const settings = JSON.stringify({ modelRoots: ['C:/moved/models', 'E:/repo/models', 'C:/Moved/Models', 'C:/gone', 7] });
     const exists = (p: string) => !p.toLowerCase().includes('gone');
     expect(sweepRoots('E:/work/verify-data', 'E:/repo/models', { read: () => settings, exists })).toEqual([path.join('E:/work/verify-data', 'models'), 'C:/moved/models', 'E:/repo/models']);

@@ -4,6 +4,7 @@ fn conf() -> serde_json::Value {
     serde_json::from_str(include_str!("../tauri.conf.json")).expect("tauri.conf.json parses")
 }
 
+// tags: static, condition
 #[test]
 fn html_drag_and_drop_reaches_the_page() {
     // With Tauri's own file-drop handling on (the default), WebView2 on Windows never delivers HTML5 drag events, so
@@ -21,6 +22,7 @@ fn html_drag_and_drop_reaches_the_page() {
     }
 }
 
+// tags: static, condition
 #[test]
 fn the_window_starts_hidden_until_its_theme_is_set() {
     // Shown at once, the frame followed Windows until setup gave it the saved theme, so a light app opened in a dark

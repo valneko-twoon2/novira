@@ -20,14 +20,14 @@ function seed() {
 beforeEach(reset);
 
 describe('swapping panels on a page', () => {
-  it('swaps two panels by their positions and leaves the others in place', () => {
+  it('swaps two panels by their positions and leaves the others in place', { tags: ['condition'] }, () => {
     const page = seed();
     useComic.getState().swapPanels(page.id, 0, 2);
     const panels = useComic.getState().projects[0]!.pages[0]!.panels;
     expect(panels.map((p) => p.prompt)).toEqual(['prompt 2', 'prompt 1', 'prompt 0', 'prompt 3']);
   });
 
-  it('does nothing for the same position or a position off the page', () => {
+  it('does nothing for the same position or a position off the page', { tags: ['condition'] }, () => {
     const page = seed();
     const before = useComic.getState().projects;
     useComic.getState().swapPanels(page.id, 1, 1);
@@ -37,7 +37,7 @@ describe('swapping panels on a page', () => {
 });
 
 describe('the negative prompt of a panel', () => {
-  it('sets the panel negative prompt and leaves the others alone', () => {
+  it('sets the panel negative prompt and leaves the others alone', { tags: ['condition'] }, () => {
     seed();
     useComic.getState().setPanelNegative('panel-1', 'text, watermark');
     const panels = useComic.getState().projects[0]!.pages[0]!.panels;
@@ -47,20 +47,20 @@ describe('the negative prompt of a panel', () => {
 });
 
 describe('the picture of a panel: moving, resizing and turning it', () => {
-  it('changes the fields given and keeps the rest', () => {
+  it('changes the fields given and keeps the rest', { tags: ['condition'] }, () => {
     seed();
     useComic.getState().setPanelImageView('panel-0', { scale: 2 });
     useComic.getState().setPanelImageView('panel-0', { cx: 0.2, rotation: 30, flipX: true });
     expect(findPanel(useComic.getState().projects, 'panel-0')!.panel.imageView).toEqual({ ...DEFAULT_IMAGE_VIEW, cx: 0.2, scale: 2, rotation: 30, flipX: true });
   });
 
-  it('keeps the view within its range: the scale, the centre near the panel, the angle within a turn', () => {
+  it('keeps the view within its range: the scale, the centre near the panel, the angle within a turn', { tags: ['boundary'] }, () => {
     seed();
     useComic.getState().setPanelImageView('panel-0', { cx: 3, cy: -2, scale: 10, rotation: 450 });
     expect(findPanel(useComic.getState().projects, 'panel-0')!.panel.imageView).toEqual({ ...DEFAULT_IMAGE_VIEW, cx: 2, cy: -1, scale: 8, rotation: 90 });
   });
 
-  it('selects the picture with its panel, and lets go of it when the panel or a balloon is selected', () => {
+  it('selects the picture with its panel, and lets go of it when the panel or a balloon is selected', { tags: ['condition'] }, () => {
     seed();
     useComic.getState().selectImage('panel-0');
     expect(useComic.getState()).toMatchObject({ selectedPanelId: 'panel-0', imageSelected: true, selectedBubbleId: null });
@@ -71,7 +71,7 @@ describe('the picture of a panel: moving, resizing and turning it', () => {
     expect(useComic.getState().imageSelected).toBe(false);
   });
 
-  it('starts a new picture as it covers the panel, but keeps the view when the same picture is set again', () => {
+  it('starts a new picture as it covers the panel, but keeps the view when the same picture is set again', { tags: ['regression'] }, () => {
     seed();
     useComic.getState().setPanelImage('panel-0', 'first.png');
     useComic.getState().setPanelImageView('panel-0', { scale: 3, cx: 0 });
@@ -83,12 +83,12 @@ describe('the picture of a panel: moving, resizing and turning it', () => {
 });
 
 describe('the frame of a page', () => {
-  it('starts with a thin line and no space between it and the picture', () => {
+  it('starts with a thin line and no space between it and the picture', { tags: ['state-transition'] }, () => {
     const page = seed();
     expect(page).toMatchObject({ frameMm: 0.6, insetMm: 0, marginMm: 0 });
   });
 
-  it('is set for the whole page, within its range', () => {
+  it('is set for the whole page, within its range', { tags: ['boundary'] }, () => {
     const page = seed();
     useComic.getState().setPageLayout(page.id, { frameMm: 1.5, insetMm: 3 });
     expect(useComic.getState().projects[0]!.pages[0]).toMatchObject({ frameMm: 1.5, insetMm: 3 });
@@ -96,14 +96,14 @@ describe('the frame of a page', () => {
     expect(useComic.getState().projects[0]!.pages[0]).toMatchObject({ frameMm: 3, insetMm: 0 });
   });
 
-  it('is taken back by undo', () => {
+  it('is taken back by undo', { tags: ['state-transition'] }, () => {
     const page = seed();
     useComic.getState().setPageLayout(page.id, { frameMm: 2 });
     useComic.getState().undo();
     expect(useComic.getState().projects[0]!.pages[0]!.frameMm).toBe(0.6);
   });
 
-  it('is kept when the layout is applied', () => {
+  it('is kept when the layout is applied', { tags: ['condition'] }, () => {
     const page = seed();
     useComic.getState().setPageLayout(page.id, { frameMm: 2, insetMm: 1 });
     useComic.getState().applyPageLayout(page.id, { panelCount: 2, columns: 2, direction: 'rtl', size: 'A4' });
@@ -112,7 +112,7 @@ describe('the frame of a page', () => {
 });
 
 describe('panel templates', () => {
-  it('saves a panel as a template and puts it into another panel, with new balloons and the picture kept', () => {
+  it('saves a panel as a template and puts it into another panel, with new balloons and the picture kept', { tags: ['condition'] }, () => {
     seed();
     useComic.getState().setPrompt('panel-0', 'a hero');
     useComic.getState().setPanelNegative('panel-0', 'blur');
@@ -135,14 +135,14 @@ describe('panel templates', () => {
     expect(findPanel(useComic.getState().projects, 'panel-3')!.panel.bubbles[0]!.id).not.toBe(target.bubbles[0]!.id);
   });
 
-  it('deletes a template of the project', () => {
+  it('deletes a template of the project', { tags: ['condition'] }, () => {
     seed();
     const id = useComic.getState().savePanelTemplate('panel-0', 'Hero')!;
     useComic.getState().deletePanelTemplate(id);
     expect(useComic.getState().projects[0]!.panelTemplates).toEqual([]);
   });
 
-  it('does not save a template for a panel that is not there, nor apply a template that is not there', () => {
+  it('does not save a template for a panel that is not there, nor apply a template that is not there', { tags: ['condition'] }, () => {
     seed();
     expect(useComic.getState().savePanelTemplate('missing', 'x')).toBeNull();
     useComic.getState().applyPanelTemplate('panel-0', 'no-such-template');
@@ -151,7 +151,7 @@ describe('panel templates', () => {
 });
 
 describe('page templates', () => {
-  it('saves the layout of a page and applies a layout to another page', () => {
+  it('saves the layout of a page and applies a layout to another page', { tags: ['condition'] }, () => {
     const page = seed();
     useComic.getState().setPageLayout(page.id, { columns: 3, direction: 'ltr' });
     const id = useComic.getState().savePageTemplate(page.id, 'Three')!;
@@ -164,7 +164,7 @@ describe('page templates', () => {
     expect(useComic.getState().projects[0]!.pages[1]!.panels).toHaveLength(2);
   });
 
-  it('drops the panels at the end when a layout has fewer, and clears the selection of a dropped one', () => {
+  it('drops the panels at the end when a layout has fewer, and clears the selection of a dropped one', { tags: ['condition'] }, () => {
     const page = seed();
     useComic.getState().selectPanel('panel-3');
     useComic.getState().applyPageLayout(page.id, { panelCount: 2, columns: 2, direction: 'rtl', size: 'A4' });
@@ -173,7 +173,7 @@ describe('page templates', () => {
     expect(useComic.getState().selectedPanelId).toBeNull();
   });
 
-  it('deletes a saved page layout', () => {
+  it('deletes a saved page layout', { tags: ['condition'] }, () => {
     const page = seed();
     const id = useComic.getState().savePageTemplate(page.id, 'Four')!;
     useComic.getState().deletePageTemplate(id);

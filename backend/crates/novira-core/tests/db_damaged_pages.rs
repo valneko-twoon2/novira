@@ -36,6 +36,7 @@ fn damaged(dir: &std::path::Path, table: Option<Table>) -> Db {
     Db::open(dir).unwrap()
 }
 
+// tags: error-guessing, decision-table
 #[test]
 fn writing_a_row_to_a_damaged_table_reports_the_error() {
     let dir = tempfile::tempdir().unwrap();
@@ -51,6 +52,7 @@ fn writing_a_row_to_a_damaged_table_reports_the_error() {
     db.put(Table::Boards, "b", 1, &row).unwrap();
 }
 
+// tags: error-guessing, decision-table
 #[test]
 fn writing_a_setting_to_a_damaged_meta_table_reports_the_error() {
     let dir = tempfile::tempdir().unwrap();

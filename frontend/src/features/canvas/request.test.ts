@@ -41,7 +41,7 @@ beforeEach(() => {
 });
 
 describe('canvas request', () => {
-  it('generates from text on an empty bbox and renders nothing', async () => {
+  it('generates from text on an empty bbox and renders nothing', { tags: ['boundary'] }, async () => {
     const req = await build(renderer('empty'));
     expect(req).toMatchObject({ initImageUrl: null, maskImageUrl: null, controlLayers: [], refImages: [] });
     expect(req.params).toMatchObject({ generationMode: 'txt2img', controlLayerCount: 0, refImageCount: 0 });
@@ -50,7 +50,7 @@ describe('canvas request', () => {
     expect(calls).toEqual([]);
   });
 
-  it('inpaints with the mask of the inpaint layers', async () => {
+  it('inpaints with the mask of the inpaint layers', { tags: ['condition'] }, async () => {
     c().addEntity('inpaint', { objects: [rect('m')] });
     const req = await build(renderer('full'));
     expect(req.params).toMatchObject({ generationMode: 'inpaint', strength: 0.6, maskBlur: 12 });
@@ -58,7 +58,7 @@ describe('canvas request', () => {
     expect(calls).toEqual(['source outpaint=false infill=lama/black']);
   });
 
-  it('falls back to image to image when the mask has nothing inside the bbox', async () => {
+  it('falls back to image to image when the mask has nothing inside the bbox', { tags: ['condition'] }, async () => {
     c().addEntity('inpaint', { objects: [rect('m')] });
     const req = await build(renderer('full', null));
     expect(req.params.generationMode).toBe('img2img');
@@ -67,13 +67,13 @@ describe('canvas request', () => {
     expect(req.initImageUrl).toBe('blob:source');
   });
 
-  it('reworks a fully covered bbox without inpaint layers as image to image, without a mask', async () => {
+  it('reworks a fully covered bbox without inpaint layers as image to image, without a mask', { tags: ['condition'] }, async () => {
     const req = await build(renderer('full'));
     expect(req.params.generationMode).toBe('img2img');
     expect(req.maskImageUrl).toBeNull();
   });
 
-  it('outpaints a partly covered bbox, filling the empty part as the infill setting says', async () => {
+  it('outpaints a partly covered bbox, filling the empty part as the infill setting says', { tags: ['boundary'] }, async () => {
     useParams.setState({ infillMethod: 'color', infillColor: 'white' });
     const req = await build(renderer('partial'));
     expect(req.params.generationMode).toBe('outpaint');
@@ -81,7 +81,7 @@ describe('canvas request', () => {
     expect(calls).toEqual(['source outpaint=true infill=color/white']);
   });
 
-  it('sends each enabled control layer with content and a model, in order, with its settings', async () => {
+  it('sends each enabled control layer with content and a model, in order, with its settings', { tags: ['condition'] }, async () => {
     const a = c().addEntity('control', { objects: [rect('a')], modelKey: 'cn-1', weight: 0.5, beginEnd: [0.1, 0.8], controlMode: 'more_control' });
     c().addEntity('control', { objects: [rect('b')], modelKey: 'cn-2', isEnabled: false });
     c().addEntity('control', { objects: [], modelKey: 'cn-3' });
@@ -99,7 +99,7 @@ describe('canvas request', () => {
     expect((await build(renderer('empty'))).controlLayers).toEqual([]);
   });
 
-  it('says what each control picture shows, so a union ControlNet is told it: the filter kind, or a pose', async () => {
+  it('says what each control picture shows, so a union ControlNet is told it: the filter kind, or a pose', { tags: ['condition'] }, async () => {
     const pose: PoseObject = { kind: 'pose', id: 'p', points: Array.from({ length: 36 }, () => 4), hidden: [], width: 2 };
     c().addEntity('control', { objects: [pose], modelKey: 'cn' });
     for (const filter of ['depth', 'canny', 'lineart', 'hed', 'normal', 'color_map'] as const) c().addEntity('control', { objects: [rect(filter)], modelKey: 'cn', filter });
@@ -110,7 +110,7 @@ describe('canvas request', () => {
     expect(req.controlLayers?.[7]).not.toHaveProperty('controlType');
   });
 
-  it('sends the global reference images and the regional layers that have content and a prompt', async () => {
+  it('sends the global reference images and the regional layers that have content and a prompt', { tags: ['condition'] }, async () => {
     useParams.getState().addRefImage({ imageName: 'r.png', imageUrl: 'http://novira-image.localhost/full/r.png', modelKey: 'ipa', method: 'composition' });
     const hat = c().addEntity('regional', { objects: [rect('g')], positivePrompt: ' a hat ', negativePrompt: null, autoNegative: true });
     c().addEntity('regional', { objects: [], positivePrompt: 'empty region' });

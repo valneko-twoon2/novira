@@ -24,7 +24,7 @@ describe('wildcard lists dialog', () => {
     vi.restoreAllMocks();
   });
 
-  it('lists the lists with their entry counts and edits the chosen one', () => {
+  it('lists the lists with their entry counts and edits the chosen one', { tags: ['scenario'] }, () => {
     mount();
     expect(screen.getAllByTestId('wildcard-list').map((b) => b.textContent)).toEqual(['hair2', 'mood1']);
     expect(screen.getByText(t('params.wildcards.usage', { token: '__hair__' }))).toBeTruthy();
@@ -32,7 +32,7 @@ describe('wildcard lists dialog', () => {
     expect(useWildcards.getState().lists[0]!.text).toBe('a\nb\nc');
   });
 
-  it('refuses an invalid or taken name and keeps the list as it was', () => {
+  it('refuses an invalid or taken name and keeps the list as it was', { tags: ['error-guessing'] }, () => {
     mount();
     const name = screen.getByTestId('wildcard-name');
     fireEvent.change(name, { target: { value: 'two words' } });
@@ -47,7 +47,7 @@ describe('wildcard lists dialog', () => {
     expect(useWildcards.getState().lists[0]!.name).toBe('hair-color');
   });
 
-  it('adds a new list and selects it, and deletes after confirming', () => {
+  it('adds a new list and selects it, and deletes after confirming', { tags: ['scenario'] }, () => {
     mount();
     fireEvent.click(screen.getByTestId('wildcard-new'));
     const lists = useWildcards.getState().lists;

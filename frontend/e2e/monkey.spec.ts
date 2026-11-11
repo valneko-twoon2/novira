@@ -137,7 +137,7 @@ const RUNS = TABS.flatMap((tab) => [
 ]);
 
 for (const [n, { tab, query, library }] of RUNS.entries()) {
-  test(`random actions on the ${tab} screen with ${library} break nothing`, async ({ page, errors }, testInfo) => {
+  test(`random actions on the ${tab} screen with ${library} break nothing`, { tag: ['@error-guessing'] }, async ({ page, errors }, testInfo) => {
     // An action takes well under a second alone, up to about three with six workers on a busy machine.
     test.setTimeout(30_000 + ACTIONS * 3_000);
     const seed = SEED + n;

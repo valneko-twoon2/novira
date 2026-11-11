@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { joinWeightedTags, parseWeightedTags, removeTagAt, setTagWeightAt } from './promptTags';
 
 describe('weighted tags', () => {
-  it('reads plain and weighted entries', () => {
+  it('reads plain and weighted entries', { tags: ['condition'] }, () => {
     expect(parseWeightedTags('1girl, (smile:1.3), (red eyes:0.8)')).toEqual([
       { text: '1girl', weight: 1 },
       { text: 'smile', weight: 1.3 },
@@ -10,26 +10,26 @@ describe('weighted tags', () => {
     ]);
   });
 
-  it('keeps commas inside brackets and braces in one entry', () => {
+  it('keeps commas inside brackets and braces in one entry', { tags: ['condition'] }, () => {
     expect(parseWeightedTags('(a, b:1.2), {x|y, z}, c').map((t) => t.text)).toEqual(['a, b', '{x|y, z}', 'c']);
   });
 
-  it('returns nothing for an empty prompt', () => {
+  it('returns nothing for an empty prompt', { tags: ['boundary'] }, () => {
     expect(parseWeightedTags('  , ')).toEqual([]);
   });
 
-  it('writes strength 1 as plain words and others in brackets', () => {
+  it('writes strength 1 as plain words and others in brackets', { tags: ['condition'] }, () => {
     expect(setTagWeightAt('a, (b:1.4)', 1, 1)).toBe('a, b');
     expect(setTagWeightAt('a, b', 0, 1.2)).toBe('(a:1.2), b');
   });
 
-  it('clamps and rounds the strength', () => {
+  it('clamps and rounds the strength', { tags: ['boundary'] }, () => {
     expect(setTagWeightAt('a', 0, 5)).toBe('(a:2)');
     expect(setTagWeightAt('a', 0, 1.2345)).toBe('(a:1.23)');
     expect(joinWeightedTags([{ text: 'a', weight: -1 }])).toBe('(a:0)');
   });
 
-  it('ignores an index past the end and removes an entry by index', () => {
+  it('ignores an index past the end and removes an entry by index', { tags: ['condition'] }, () => {
     expect(setTagWeightAt('a', 3, 1.5)).toBe('a');
     expect(removeTagAt('a, (b:1.2), c', 1)).toBe('a, c');
   });

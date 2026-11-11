@@ -6,7 +6,7 @@ describe('the mock home network', () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
 
-  it('opens only on a network that was trusted, and says which gateway to confirm', async () => {
+  it('opens only on a network that was trusted, and says which gateway to confirm', { tags: ['state-transition'] }, async () => {
     const lan = createMockLan();
     const refused = await lan.open();
     expect(refused).toMatchObject({ ok: false, code: 'untrusted_network', gatewayMac: '02:11:22:33:44:55' });
@@ -19,13 +19,13 @@ describe('the mock home network', () => {
     expect(state?.trustedNetworks).toHaveLength(1);
   });
 
-  it('starts open, or with Windows calling the network public, from the page flag', async () => {
+  it('starts open, or with Windows calling the network public, from the page flag', { tags: ['equivalence'] }, async () => {
     expect((await createMockLan('open').state())?.open).toBe(true);
     const pub = await createMockLan('public').state();
     expect(pub).toMatchObject({ open: false, windowsPublic: true });
   });
 
-  it('makes a code only while open, and a phone asks to pair two seconds later', async () => {
+  it('makes a code only while open, and a phone asks to pair two seconds later', { tags: ['state-transition'] }, async () => {
     const lan = createMockLan('open');
     const code = await lan.pairingCode();
     expect(code?.modules).toHaveLength((code?.size ?? 0) ** 2);
@@ -39,7 +39,7 @@ describe('the mock home network', () => {
     expect(await createMockLan().pairingCode()).toBeNull();
   });
 
-  it('approves into a device, refuses, revokes, and forgets all of it on close', async () => {
+  it('approves into a device, refuses, revokes, and forgets all of it on close', { tags: ['state-transition'] }, async () => {
     const lan = createMockLan('open');
     lan.askToPair('a', '192.168.1.30');
     lan.askToPair('b', '192.168.1.31');
@@ -57,14 +57,14 @@ describe('the mock home network', () => {
     expect(state).toMatchObject({ open: false, devices: [], pending: [] });
   });
 
-  it('stops trusting a network and closes with it', async () => {
+  it('stops trusting a network and closes with it', { tags: ['state-transition'] }, async () => {
     const lan = createMockLan('open');
     expect(await lan.untrust('02:11:22:33:44:55')).toEqual({ ok: true });
     expect(await lan.state()).toMatchObject({ open: false, network: { trusted: false } });
     expect(await lan.untrust('02:11:22:33:44:55')).toMatchObject({ ok: false, code: 'unknown' });
   });
 
-  it('draws a square with the three finder squares, different for each code', () => {
+  it('draws a square with the three finder squares, different for each code', { tags: ['condition'] }, () => {
     const { size, modules } = patternModules('a');
     expect(modules).toHaveLength(size * size);
     const at = (x: number, y: number) => modules[y * size + x];

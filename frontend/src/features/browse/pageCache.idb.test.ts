@@ -62,7 +62,7 @@ describe('pageCache with IndexedDB', () => {
   beforeEach(() => vi.useRealTimers());
   afterEach(() => vi.unstubAllGlobals());
 
-  it('writes a page and reads it back, creating the store on first open', async () => {
+  it('writes a page and reads it back, creating the store on first open', { tags: ['boundary', 'state-transition'] }, async () => {
     const idb = makeIdb();
     vi.stubGlobal('indexedDB', idb);
     const { readCachedPage, writeCachedPage } = await load();
@@ -72,7 +72,7 @@ describe('pageCache with IndexedDB', () => {
     expect(idb.open).toHaveBeenCalledTimes(1);
   });
 
-  it('reads null for an unknown key, a stale page and a malformed row', async () => {
+  it('reads null for an unknown key, a stale page and a malformed row', { tags: ['error-guessing'] }, async () => {
     const idb = makeIdb();
     vi.stubGlobal('indexedDB', idb);
     const { readCachedPage, writeCachedPage } = await load();
@@ -85,7 +85,7 @@ describe('pageCache with IndexedDB', () => {
     await expect(readCachedPage('bad', 2)).resolves.toBeNull();
   });
 
-  it('keeps only the 30 newest searches', async () => {
+  it('keeps only the 30 newest searches', { tags: ['boundary'] }, async () => {
     const idb = makeIdb();
     vi.stubGlobal('indexedDB', idb);
     const { writeCachedPage } = await load();
@@ -96,7 +96,7 @@ describe('pageCache with IndexedDB', () => {
     expect(idb.rows.has('k31')).toBe(true);
   });
 
-  it('reads the saved pages back only when a write takes them past the limit', async () => {
+  it('reads the saved pages back only when a write takes them past the limit', { tags: ['boundary'] }, async () => {
     // Each saved page holds a page of models with their descriptions: reading all 30 back on every search is wasted.
     const idb = makeIdb();
     vi.stubGlobal('indexedDB', idb);
@@ -111,13 +111,13 @@ describe('pageCache with IndexedDB', () => {
     expect(idb.rows.get('k5')).toMatchObject({ next: 'again' });
   });
 
-  it('reads nothing when the get request fails', async () => {
+  it('reads nothing when the get request fails', { tags: ['error-guessing', 'boundary'] }, async () => {
     vi.stubGlobal('indexedDB', makeIdb({ getFails: true }));
     const { readCachedPage } = await load();
     await expect(readCachedPage('k')).resolves.toBeNull();
   });
 
-  it.each(['error', 'blocked', 'throw'] as const)('reads nothing and writes without failing when open is %s', async (mode) => {
+  it.each(['error', 'blocked', 'throw'] as const)('reads nothing and writes without failing when open is %s', { tags: ['error-guessing', 'boundary'] }, async (mode) => {
     const idb = makeIdb({ openFails: mode });
     vi.stubGlobal('indexedDB', idb);
     const { readCachedPage, writeCachedPage } = await load();
@@ -126,7 +126,7 @@ describe('pageCache with IndexedDB', () => {
     expect(idb.rows.size).toBe(0);
   });
 
-  it('swallows a failure while saving', async () => {
+  it('swallows a failure while saving', { tags: ['error-guessing', 'state-transition'] }, async () => {
     const idb = makeIdb();
     vi.stubGlobal('indexedDB', idb);
     const { writeCachedPage } = await load();

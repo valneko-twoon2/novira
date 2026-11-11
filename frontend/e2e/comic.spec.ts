@@ -12,7 +12,7 @@ async function newComic(page: Page, name: string) {
   await chooseFirstModel(page);
 }
 
-test('a comic project is made, a panel is drawn into its frame, and a balloon is placed on the page', async ({ page }) => {
+test('a comic project is made, a panel is drawn into its frame, and a balloon is placed on the page', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await showTab(page, 'comic');
   await expect(page.getByText(msg('comic.editor.emptyTitle'))).toBeVisible();
@@ -34,7 +34,7 @@ test('a comic project is made, a panel is drawn into its frame, and a balloon is
   await expect(page.getByTestId('comic-bubble')).toHaveText('Hello');
 });
 
-test('a panel is drawn from its prompt in the side panel, and a balloon takes another kind, a tail turned by its handle, and vertical text', async ({
+test('a panel is drawn from its prompt in the side panel, and a balloon takes another kind, a tail turned by its handle, and vertical text', { tag: ['@scenario'] }, async ({
   page,
 }) => {
   await openApp(page, '?scenario=empty');

@@ -45,6 +45,7 @@ async fn run_one(b: &novira_core::Backend) -> QueueItem {
     b.queue_snapshot().items.last().unwrap().clone()
 }
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn a_reference_image_with_an_empty_region_is_refused_and_a_stored_region_is_read() {
     let dir = tempfile::tempdir().unwrap();
@@ -85,6 +86,7 @@ async fn a_reference_image_with_an_empty_region_is_refused_and_a_stored_region_i
     backend.shutdown();
 }
 
+// tags: error-guessing, decision-table
 #[tokio::test]
 async fn a_union_controlnet_kind_is_ignored_under_a_main_model_that_is_not_an_sd_family() {
     let dir = tempfile::tempdir().unwrap();
@@ -122,6 +124,7 @@ async fn a_union_controlnet_kind_is_ignored_under_a_main_model_that_is_not_an_sd
     backend.shutdown();
 }
 
+// tags: decision-table
 #[tokio::test]
 async fn a_flux2_model_reads_the_reference_pictures_it_takes_in_itself() {
     let dir = tempfile::tempdir().unwrap();

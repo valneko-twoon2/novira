@@ -5,6 +5,7 @@ use novira_core::types::*;
 use novira_core::BackendError;
 use std::sync::Arc;
 
+// tags: error-guessing
 #[tokio::test]
 async fn the_originals_are_copied_byte_for_byte_and_never_overwrite() {
     let dir = tempfile::tempdir().unwrap();
@@ -44,6 +45,7 @@ async fn the_originals_are_copied_byte_for_byte_and_never_overwrite() {
     backend.shutdown();
 }
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn no_names_bad_names_and_a_missing_folder_are_refused_before_writing() {
     let dir = tempfile::tempdir().unwrap();

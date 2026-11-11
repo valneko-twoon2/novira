@@ -13,7 +13,7 @@ const entries = fc.dictionary(key, fc.string({ maxLength: 30 }), { maxKeys: 8 })
 const dump = (s: Storage) => Object.fromEntries(Array.from({ length: s.length }, (_, i) => [s.key(i)!, s.getItem(s.key(i)!)]));
 
 describe('saved screen state (properties)', () => {
-  it('collect carries exactly the prefixed keys and apply restores them (round trip)', () => {
+  it('collect carries exactly the prefixed keys and apply restores them (round trip)', { tags: ['boundary'] }, () => {
     check(
       fc.property(entries, entries, (before, other) => {
         const source = memoryStorage(before);
@@ -30,7 +30,7 @@ describe('saved screen state (properties)', () => {
     );
   });
 
-  it('applyUiState of arbitrary text throws without changing anything, or writes only prefixed text values', () => {
+  it('applyUiState of arbitrary text throws without changing anything, or writes only prefixed text values', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(fc.oneof(junkStored, junkJson.map((v) => JSON.stringify(v))), entries, (text, initial) => {
         const storage = memoryStorage(initial);
@@ -51,7 +51,7 @@ describe('saved screen state (properties)', () => {
     );
   });
 
-  it('readUiState gives what collecting the state as JSON and parsing it back gives', () => {
+  it('readUiState gives what collecting the state as JSON and parsing it back gives', { tags: ['condition'] }, () => {
     // Any UTF-16 unit: control characters, quotes, backslashes and lone surrogates are escaped in JSON.
     const text = fc.string({ unit: fc.integer({ min: 0, max: 0xffff }).map((c) => String.fromCharCode(c)), maxLength: 40 });
     const anyKey = fc.oneof(key, fc.integer({ min: 190, max: 210 }).map((n) => `${PERSIST_PREFIX}${'k'.repeat(n)}`));

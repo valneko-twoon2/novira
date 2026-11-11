@@ -54,7 +54,7 @@ describe('a picture mirrored by its view', () => {
     return rec.of('scale');
   };
 
-  it('is turned over left to right when flipped across, and upside down when flipped down', () => {
+  it('is turned over left to right when flipped across, and upside down when flipped down', { tags: ['condition'] }, () => {
     for (const part of ['backdrop', 'panel'] as const) {
       expect(mirroring({}, part)).toEqual([[1, 1]]);
       expect(mirroring({ flipX: true }, part)).toEqual([[-1, 1]]);
@@ -65,7 +65,7 @@ describe('a picture mirrored by its view', () => {
 });
 
 describe('a panel of a reshaped page', () => {
-  it('is cut to its shape, not to its box, and its frame follows the shape', async () => {
+  it('is cut to its shape, not to its box, and its frame follows the shape', { tags: ['condition'] }, async () => {
     const page = emptyPage(1);
     const shape = [
       { x: 0.1, y: 0.1 },
@@ -86,7 +86,7 @@ describe('a panel of a reshaped page', () => {
     }
   });
 
-  it('is cut to its box when the page keeps the automatic layout', async () => {
+  it('is cut to its box when the page keeps the automatic layout', { tags: ['condition'] }, async () => {
     const ready = await preparePage(emptyPage(1), urlOf);
     const rec = recordingContext();
     drawPagePart(rec.ctx, ready, { kind: 'panel', index: 0 });
@@ -96,7 +96,7 @@ describe('a panel of a reshaped page', () => {
 });
 
 describe('making a page ready to draw', () => {
-  it('loads the regular and the bold weight of each balloon font for its words, the settings font when it has none', async () => {
+  it('loads the regular and the bold weight of each balloon font for its words, the settings font when it has none', { tags: ['condition'] }, async () => {
     useSettings.setState({ comicFont: 'Meiryo' });
     const page = emptyPage(2);
     page.panels[0]!.bubbles = [{ ...newBubble('speech', 0, 0), text: '**Hi** there', font: 'Yu Mincho' }];
@@ -110,7 +110,7 @@ describe('making a page ready to draw', () => {
     ]);
   });
 
-  it('loads no font when neither the balloon nor the settings name one (the standard fonts are drawn)', async () => {
+  it('loads no font when neither the balloon nor the settings name one (the standard fonts are drawn)', { tags: ['condition'] }, async () => {
     useSettings.setState({ comicFont: '' });
     const page = emptyPage(1);
     page.panels[0]!.bubbles = [{ ...newBubble('speech', 0, 0), text: 'Hi' }];
@@ -118,7 +118,7 @@ describe('making a page ready to draw', () => {
     expect(ensureFont).not.toHaveBeenCalled();
   });
 
-  it('loads the picture of each stamp once, and no font for a stamp', async () => {
+  it('loads the picture of each stamp once, and no font for a stamp', { tags: ['condition'] }, async () => {
     useSettings.setState({ comicFont: 'Meiryo' });
     const page = emptyPage(2);
     page.panels[0]!.bubbles = [newBubble('stamp', 0, 0), newBubble('stamp', 0.5, 0.5)];
@@ -143,7 +143,7 @@ describe('the page as a picture file', () => {
     });
   });
 
-  it('is a PNG without a quality by default, drawn without an effect', async () => {
+  it('is a PNG without a quality by default, drawn without an effect', { tags: ['condition'] }, async () => {
     expect(await renderPage(emptyPage(1), urlOf)).toBe(blob);
     expect(asked).toEqual([['image/png', undefined]]);
     // No effect: the page's own canvas is saved, no second canvas is laid over it with a filter.
@@ -151,7 +151,7 @@ describe('the page as a picture file', () => {
     expect(canvases.all[0]!.sets.some((s) => s.name === 'filter')).toBe(false);
   });
 
-  it('is a JPEG with a high quality when asked for one', async () => {
+  it('is a JPEG with a high quality when asked for one', { tags: ['condition'] }, async () => {
     await renderPage(emptyPage(1), urlOf, 'jpeg');
     expect(asked).toHaveLength(1);
     const [type, quality] = asked[0] as [string, number];
@@ -160,20 +160,20 @@ describe('the page as a picture file', () => {
     expect(quality).toBeLessThanOrEqual(1);
   });
 
-  it('fails when the browser hands back no picture', async () => {
+  it('fails when the browser hands back no picture', { tags: ['error-guessing'] }, async () => {
     blob = null;
     await expect(renderPage(emptyPage(1), urlOf)).rejects.toThrow('empty image');
   });
 });
 
 describe('a browser that hands out no canvas', () => {
-  it('fails to draw the page rather than give a blank one', () => {
+  it('fails to draw the page rather than give a blank one', { tags: ['error-guessing'] }, () => {
     canvases.restore();
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     expect(() => drawPage(preparedPage())).toThrow('no canvas');
   });
 
-  it('gives the page without its effect when the effect has no canvas to be laid on', () => {
+  it('gives the page without its effect when the effect has no canvas to be laid on', { tags: ['condition'] }, () => {
     canvases.restore();
     const rec = recordingContext({ width: 400, height: 600 });
     const asked: HTMLCanvasElement[] = [];

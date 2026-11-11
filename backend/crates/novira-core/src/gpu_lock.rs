@@ -211,6 +211,7 @@ pub async fn acquire(
 mod tests {
     use super::*;
 
+    // tags: state-transition
     #[tokio::test]
     async fn waits_for_a_held_lock_and_releases_on_drop() {
         let dir = tempfile::tempdir().unwrap();
@@ -231,6 +232,7 @@ mod tests {
         assert!(!path.exists());
     }
 
+    // tags: state-transition
     #[tokio::test]
     async fn cancel_stops_waiting_and_leaves_the_other_lock_alone() {
         let dir = tempfile::tempdir().unwrap();
@@ -242,6 +244,7 @@ mod tests {
         assert!(path.exists());
     }
 
+    // tags: state-transition
     #[test]
     fn a_lock_whose_owner_is_gone_is_taken_over() {
         let dir = tempfile::tempdir().unwrap();
@@ -255,6 +258,7 @@ mod tests {
         );
     }
 
+    // tags: state-transition
     #[test]
     fn a_lock_held_by_a_live_process_or_by_someone_else_stays() {
         let dir = tempfile::tempdir().unwrap();
@@ -275,6 +279,7 @@ mod tests {
         assert!(foreign.exists());
     }
 
+    // tags: state-transition
     #[test]
     fn release_all_frees_what_this_process_holds() {
         let dir = tempfile::tempdir().unwrap();

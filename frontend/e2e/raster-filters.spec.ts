@@ -23,7 +23,7 @@ const paintedPixels = (canvas: Locator) =>
     return n;
   });
 
-test('on a comic page, blur spreads the painted pixels and the bucket fills the empty region, each undone by one undo', async ({ page }) => {
+test('on a comic page, blur spreads the painted pixels and the bucket fills the empty region, each undone by one undo', { tag: ['@state-transition'] }, async ({ page }) => {
   test.slow();
   await openApp(page, '?scenario=empty');
   await showTab(page, 'comic');
@@ -61,7 +61,7 @@ test('on a comic page, blur spreads the painted pixels and the bucket fills the 
   await expect.poll(() => paintedPixels(content)).toBe(stroked);
 });
 
-test('on the Image tab, a filter changes the chosen layer and one undo takes it back', async ({ page }) => {
+test('on the Image tab, a filter changes the chosen layer and one undo takes it back', { tag: ['@state-transition'] }, async ({ page }) => {
   await openCanvas(page);
   await page.getByTestId('canvas-tool-brush').click();
   const stage = page.getByTestId('canvas-stage');

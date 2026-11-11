@@ -2,7 +2,7 @@
 // beside it (the Generate screen has a second one, the random run).
 import { expect, openApp, test } from './fixtures';
 
-test('the preset card is as large on the image, video, music, voice and text screens', async ({ page }) => {
+test('the preset card is as large on the image, video, music, voice and text screens', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   const sizes: Record<string, string> = {};
   for (const kind of ['image', 'video', 'music', 'voice', 'text']) {

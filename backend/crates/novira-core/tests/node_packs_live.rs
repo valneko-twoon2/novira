@@ -21,6 +21,7 @@ fn env(name: &str) -> String {
     std::env::var(name).unwrap_or_else(|_| panic!("set {name}"))
 }
 
+// tags: state-transition
 #[tokio::test]
 #[ignore = "downloads packs from GitHub and starts ComfyUI"]
 async fn packs_install_and_comfyui_loads_their_nodes() {
@@ -128,6 +129,7 @@ async fn packs_install_and_comfyui_loads_their_nodes() {
 
 /// Runs `LoadImage → NKDFilmGrain → SaveImage` as an editor-built prompt on the ComfyUI the first test prepared
 /// (same variables; needs ComfyUI-NKD-Basic-Tools installed in the base folder).
+// tags: scenario
 #[tokio::test]
 #[ignore = "starts ComfyUI and runs a graph on the GPU"]
 async fn a_graph_with_a_pack_node_runs() {
@@ -227,6 +229,7 @@ async fn a_graph_with_a_pack_node_runs() {
 /// Runs the prompt in `NOVIRA_GRAPH_FILE` (`{"prompt": {...}, "outputs": [...]}`, pictures written as
 /// `{"$image": "name"}`) on the same ComfyUI, with the pictures named in `NOVIRA_GRAPH_IMAGES` (`name=path;name=path`),
 /// and saves the first result to `NOVIRA_GRAPH_OUT`.
+// tags: scenario
 #[tokio::test]
 #[ignore = "starts ComfyUI and runs a graph on the GPU"]
 async fn a_graph_from_a_file_runs() {
@@ -314,6 +317,7 @@ async fn a_graph_from_a_file_runs() {
 
 /// The Face Rig routes the editor uses: the library, then a neutral and a posed preview of `NOVIRA_FACE_IMAGE`.
 /// Saves `face-neutral.jpg`, `face-posed.jpg` and `face-anchors.json` next to `NOVIRA_DEFS_OUT`.
+// tags: scenario
 #[tokio::test]
 #[ignore = "starts ComfyUI and renders a face on the GPU"]
 async fn face_rig_routes_render_a_posed_face() {

@@ -4,7 +4,7 @@ import { expect, msg, openApp, test } from './fixtures';
 
 const DAY = 86_400_000;
 
-test('the history screen finds a batch by model and prompt, opens it, and puts its settings back', async ({ page }) => {
+test('the history screen finds a batch by model and prompt, opens it, and puts its settings back', { tag: ['@scenario'] }, async ({ page }) => {
   await page.addInitScript((day) => {
     const now = Date.now();
     const batch = (n: number, model: string, prompt: string, ago: number) => ({

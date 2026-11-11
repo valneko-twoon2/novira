@@ -2,19 +2,19 @@ import { describe, expect, it } from 'vitest';
 import { parseStyle, phrasesOf, promptStyleOf, STYLE_MAX, TAG_WORDS_MAX } from './style';
 
 describe('phrasesOf', () => {
-  it(`names the terms longer than ${TAG_WORDS_MAX} words, without their weights`, () => {
+  it(`names the terms longer than ${TAG_WORDS_MAX} words, without their weights`, { tags: ['condition'] }, () => {
     const prompt = '1boy, solo, sitting quietly at his usual table, (large window showing the rainy street:1.2), hand on own chest, (teacup:1.2)';
     expect(phrasesOf(prompt)).toEqual(['sitting quietly at his usual table', 'large window showing the rainy street']);
   });
 
-  it('finds nothing in tags, or in words without spaces between them', () => {
+  it('finds nothing in tags, or in words without spaces between them', { tags: ['condition'] }, () => {
     expect(phrasesOf('1girl, solo, upper body, looking at another, smile')).toEqual([]);
     expect(phrasesOf('雨上がりの窓の外に大きな虹が見える')).toEqual([]);
   });
 });
 
 describe('promptStyleOf', () => {
-  it('reads tags for the SD family and with no model, sentences for the others', () => {
+  it('reads tags for the SD family and with no model, sentences for the others', { tags: ['condition'] }, () => {
     expect(promptStyleOf('sdxl')).toBe('tags');
     expect(promptStyleOf(null)).toBe('tags');
     expect(promptStyleOf('flux')).toBe('sentences');
@@ -22,12 +22,12 @@ describe('promptStyleOf', () => {
 });
 
 describe('parseStyle', () => {
-  it('keeps the words that are text, cut to their limit', () => {
+  it('keeps the words that are text, cut to their limit', { tags: ['boundary'] }, () => {
     expect(parseStyle({ positive: 'a'.repeat(STYLE_MAX + 5), negative: 'bad' })).toEqual({ positive: 'a'.repeat(STYLE_MAX), negative: 'bad' });
     expect(parseStyle({ negative: 'bad' })).toEqual({ negative: 'bad' });
   });
 
-  it('gives nothing for a value that holds no words', () => {
+  it('gives nothing for a value that holds no words', { tags: ['condition'] }, () => {
     expect(parseStyle(undefined)).toBeUndefined();
     expect(parseStyle(null)).toBeUndefined();
     expect(parseStyle([])).toBeUndefined();

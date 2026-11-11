@@ -5,6 +5,7 @@ fn image(id: u64, meta: Value) -> Value {
     json!({"id": id, "url": format!("https://image.civitai.com/x/abc/original=true/{id}.jpeg"), "type": "image", "nsfwLevel": "None", "meta": meta})
 }
 
+// tags: equivalence
 #[test]
 fn a_picture_made_on_a_site_with_civitai_resources_gives_every_setting() {
     // The shape Civitai answers for a picture of a LoRA (taken from the live API).
@@ -37,6 +38,7 @@ fn a_picture_made_on_a_site_with_civitai_resources_gives_every_setting() {
     assert_eq!(s.resources[1].weight, Some(0.65));
 }
 
+// tags: equivalence
 #[test]
 fn a_picture_made_on_civitai_names_its_checkpoint_as_an_air_address_and_its_size_as_numbers() {
     let body = json!({"items": [image(91402089, json!({
@@ -50,6 +52,7 @@ fn a_picture_made_on_civitai_names_its_checkpoint_as_an_air_address_and_its_size
     assert_eq!(s.resources[0].version_id.as_deref(), Some("128713"));
 }
 
+// tags: condition
 #[test]
 fn older_pictures_list_resources_by_name() {
     let body = json!({"items": [image(1, json!({
@@ -65,6 +68,7 @@ fn older_pictures_list_resources_by_name() {
     assert_eq!(s.resources[1].weight, Some(0.8));
 }
 
+// tags: condition
 #[test]
 fn a_picture_without_meta_or_a_prompt_is_left_out() {
     let body = json!({"items": [
@@ -77,6 +81,7 @@ fn a_picture_without_meta_or_a_prompt_is_left_out() {
     assert_eq!(ids, ["4"]);
 }
 
+// tags: condition
 #[test]
 fn a_video_and_a_repeated_picture_are_left_out() {
     let mut video = image(5, json!({"prompt": "p"}));
@@ -87,6 +92,7 @@ fn a_video_and_a_repeated_picture_are_left_out() {
     assert_eq!(found[0].prompt, "p");
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn values_out_of_range_or_of_the_wrong_kind_are_dropped_not_trusted() {
     let body = json!({"items": [image(7, json!({
@@ -105,6 +111,7 @@ fn values_out_of_range_or_of_the_wrong_kind_are_dropped_not_trusted() {
     );
 }
 
+// tags: condition
 #[test]
 fn numbers_written_as_text_are_read() {
     let body = json!({"items": [image(8, json!({"prompt": "p", "steps": "30", "cfgScale": "4.5", "seed": "123", "Size": " 832 x 1216 "}))]});
@@ -116,6 +123,7 @@ fn numbers_written_as_text_are_read() {
     assert_eq!((s.width, s.height), (Some(832), Some(1216)));
 }
 
+// tags: condition
 #[test]
 fn a_size_with_only_one_side_is_dropped() {
     let body = json!({"items": [image(9, json!({"prompt": "p", "width": 512}))]});
@@ -123,6 +131,7 @@ fn a_size_with_only_one_side_is_dropped() {
     assert_eq!((s.width, s.height), (None, None));
 }
 
+// tags: boundary
 #[test]
 fn the_resources_of_one_picture_are_capped() {
     let many: Vec<Value> = (1..=40)
@@ -132,6 +141,7 @@ fn the_resources_of_one_picture_are_capped() {
     assert_eq!(map_samples(&body)[0].resources.len(), 16);
 }
 
+// tags: condition
 #[test]
 fn air_addresses_give_their_kind_and_version() {
     assert_eq!(
@@ -147,6 +157,7 @@ fn air_addresses_give_their_kind_and_version() {
     assert_eq!(air("Some Model"), None);
 }
 
+// tags: decision-table
 #[test]
 fn the_query_asks_for_the_plain_examples_and_the_mature_ones_only_when_allowed() {
     let plain = queries("128713", false);
@@ -161,6 +172,7 @@ fn the_query_asks_for_the_plain_examples_and_the_mature_ones_only_when_allowed()
     assert_eq!(get(&both[1], "nsfw").as_deref(), Some("true"));
 }
 
+// tags: boundary
 #[test]
 fn a_version_id_is_digits_only_and_short() {
     assert!(is_version_id("128713"));

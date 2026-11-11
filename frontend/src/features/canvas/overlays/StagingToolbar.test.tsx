@@ -38,12 +38,12 @@ afterEach(() => {
 });
 
 describe('StagingToolbar', () => {
-  it('shows nothing while no result is staged', () => {
+  it('shows nothing while no result is staged', { tags: ['scenario'] }, () => {
     const { container } = show();
     expect(container.firstChild).toBeNull();
   });
 
-  it('counts the staged results and steps through them, wrapping around', () => {
+  it('counts the staged results and steps through them, wrapping around', { tags: ['scenario'] }, () => {
     state().addStagedImage('a.png');
     state().addStagedImage('b.png');
     state().addStagedImage('c.png');
@@ -56,14 +56,14 @@ describe('StagingToolbar', () => {
     expect(state().stagedIndex).toBe(2);
   });
 
-  it('disables stepping while there is a single result', () => {
+  it('disables stepping while there is a single result', { tags: ['scenario'] }, () => {
     state().addStagedImage('a.png');
     show();
     expect(button(`${t('canvas.staging.next')} (→)`).hasAttribute('disabled')).toBe(true);
     expect(button(`${t('canvas.staging.prev')} (←)`).hasAttribute('disabled')).toBe(true);
   });
 
-  it('accepts, saves and discards through the canvas actions', () => {
+  it('accepts, saves and discards through the canvas actions', { tags: ['scenario'] }, () => {
     state().addStagedImage('a.png');
     show();
     fireEvent.click(screen.getByTestId('canvas-staging-accept'));
@@ -76,7 +76,7 @@ describe('StagingToolbar', () => {
     expect(discardAllStaged).toHaveBeenCalledWith(useCanvas);
   });
 
-  it('counts the generating page after the results, with nothing to accept, save or discard on it', () => {
+  it('counts the generating page after the results, with nothing to accept, save or discard on it', { tags: ['scenario'] }, () => {
     state().setStagingGenerating(true);
     state().addStagedImage('a.png', { fromQueue: true });
     show();
@@ -87,7 +87,7 @@ describe('StagingToolbar', () => {
     expect(screen.getByTestId('canvas-staging-accept').hasAttribute('disabled')).toBe(false);
   });
 
-  it('toggles whether the staged results are drawn on the canvas', () => {
+  it('toggles whether the staged results are drawn on the canvas', { tags: ['state-transition'] }, () => {
     state().addStagedImage('a.png');
     show();
     fireEvent.click(button(t('canvas.staging.hideResults')));
@@ -96,7 +96,7 @@ describe('StagingToolbar', () => {
     expect(state().stagingShowResults).toBe(true);
   });
 
-  it('drags the current result by its name, and marks the inline variant', () => {
+  it('drags the current result by its name, and marks the inline variant', { tags: ['scenario'] }, () => {
     state().addStagedImage('a.png');
     state().addStagedImage('b.png');
     state().setStagedIndex(0);

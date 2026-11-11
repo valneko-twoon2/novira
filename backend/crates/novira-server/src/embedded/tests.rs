@@ -130,6 +130,7 @@ impl App {
     }
 }
 
+// tags: condition
 #[tokio::test]
 async fn only_the_management_routes_are_run_and_the_listener_waits_for_them() {
     let a = app().await;
@@ -157,6 +158,7 @@ async fn only_the_management_routes_are_run_and_the_listener_waits_for_them() {
     a.server.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn without_a_control_the_home_network_cannot_be_opened() {
     let data = tempfile::tempdir().unwrap();
@@ -170,6 +172,7 @@ async fn without_a_control_the_home_network_cannot_be_opened() {
     server.stop().await;
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_paired_phone_gets_the_app_from_the_built_in_files() {
     let a = app().await;
@@ -230,6 +233,7 @@ async fn a_paired_phone_gets_the_app_from_the_built_in_files() {
     a.backend.shutdown();
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn closing_from_the_window_ends_the_phone_session() {
     let a = app().await;
@@ -258,6 +262,7 @@ async fn closing_from_the_window_ends_the_phone_session() {
     a.server.stop().await;
 }
 
+// tags: equivalence
 #[test]
 fn picture_urls_are_written_between_the_two_bases() {
     let data = tempfile::tempdir().unwrap();
@@ -294,6 +299,7 @@ fn picture_urls_are_written_between_the_two_bases() {
     assert_eq!(text_to_page(state, "not json".into()), "not json");
 }
 
+// tags: condition
 #[test]
 fn a_backend_with_this_servers_base_is_left_as_it_is() {
     let data = tempfile::tempdir().unwrap();

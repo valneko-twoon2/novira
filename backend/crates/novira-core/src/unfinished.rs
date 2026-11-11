@@ -230,6 +230,7 @@ mod tests {
         items.iter().map(|i| i.path.as_str()).collect()
     }
 
+    // tags: scenario, equivalence
     #[test]
     fn lists_the_partial_files_of_every_download_folder() {
         let dir = data();
@@ -249,6 +250,7 @@ mod tests {
         assert_eq!(items[0].bytes, 10);
     }
 
+    // tags: decision-table
     #[test]
     fn a_record_is_listed_only_when_its_partial_file_is_gone() {
         let dir = tempfile::tempdir().unwrap();
@@ -263,6 +265,7 @@ mod tests {
             .exists());
     }
 
+    // tags: state-transition
     #[test]
     fn a_delete_removes_the_picked_partial_file_and_its_record_only() {
         let dir = data();
@@ -276,6 +279,7 @@ mod tests {
         assert!(d.join("models/.downloads/abc.part").exists());
     }
 
+    // tags: state-transition
     #[test]
     fn paths_the_listing_does_not_hold_are_ignored() {
         let dir = data();
@@ -296,6 +300,7 @@ mod tests {
         assert!(d.join("comfyui/.downloads/comfyui.7z").exists());
     }
 
+    // tags: state-transition
     #[test]
     fn a_held_partial_file_is_kept_until_the_hold_ends() {
         let dir = data();
@@ -310,6 +315,7 @@ mod tests {
         assert!(!part.exists());
     }
 
+    // tags: condition
     #[test]
     fn the_number_and_the_shape_of_picked_paths_are_checked() {
         assert!(check_picked(&["comfyui/.downloads/comfyui.part".into()]).is_ok());

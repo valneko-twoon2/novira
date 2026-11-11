@@ -41,7 +41,7 @@ afterEach(() => {
 });
 
 describe('the bytes of the whole comic', () => {
-  it('is a ZIP of numbered PNG pages for a CBZ and of numbered PSD pages for a PSD export', async () => {
+  it('is a ZIP of numbered PNG pages for a CBZ and of numbered PSD pages for a PSD export', { tags: ['condition'] }, async () => {
     const cbz = await buildBook(project(), 'cbz');
     const text = new TextDecoder('latin1').decode(cbz);
     expect(text).toContain('001.png');
@@ -51,7 +51,7 @@ describe('the bytes of the whole comic', () => {
     expect(render.renderPagePsd).toHaveBeenCalledTimes(2);
   });
 
-  it('is a PDF of JPEG pages otherwise', async () => {
+  it('is a PDF of JPEG pages otherwise', { tags: ['condition'] }, async () => {
     const pdf = await buildBook(project(), 'pdf');
     expect(new TextDecoder('latin1').decode(pdf.slice(0, 5))).toBe('%PDF-');
     expect(render.renderPage.mock.calls.every((c) => c[2] === 'jpeg')).toBe(true);
@@ -59,13 +59,13 @@ describe('the bytes of the whole comic', () => {
 });
 
 describe('saving the whole comic', () => {
-  it('downloads the file under the name of the comic and says so', async () => {
+  it('downloads the file under the name of the comic and says so', { tags: ['condition'] }, async () => {
     await saveBook(project(), 'cbz');
     expect(clicked.map((c) => c.download)).toEqual([bookFileName('Story: 1', 'cbz')]);
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('says why when a page cannot be drawn', async () => {
+  it('says why when a page cannot be drawn', { tags: ['error-guessing'] }, async () => {
     render.renderPage.mockRejectedValueOnce(new Error('no canvas'));
     await saveBook(project(), 'cbz');
     expect(clicked).toEqual([]);
@@ -74,7 +74,7 @@ describe('saving the whole comic', () => {
 });
 
 describe('saving one page', () => {
-  it('keeps the page picture in the gallery', async () => {
+  it('keeps the page picture in the gallery', { tags: ['condition'] }, async () => {
     const image = { name: 'page.png', url: '/novira-image/page.png' } as ImageDTO;
     vi.spyOn(backend, 'uploadImage').mockResolvedValue(image);
     const p = project();
@@ -83,20 +83,20 @@ describe('saving one page', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('says why when the upload fails', async () => {
+  it('says why when the upload fails', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'uploadImage').mockRejectedValue(new Error('disk full'));
     await savePage(project().pages[0]!, 'none');
     expect(lastToast()).toMatchObject({ status: 'error', description: 'disk full' });
   });
 
-  it('downloads a page as a PSD named after the comic and the page number', async () => {
+  it('downloads a page as a PSD named after the comic and the page number', { tags: ['condition'] }, async () => {
     const p = project();
     await savePagePsd(p, p.pages[1]!);
     expect(clicked.map((c) => c.download)).toEqual(['Story_ 1-2.psd']);
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('says why when a PSD cannot be drawn, with a message even for a thrown text', async () => {
+  it('says why when a PSD cannot be drawn, with a message even for a thrown text', { tags: ['error-guessing'] }, async () => {
     render.renderPagePsd.mockRejectedValueOnce('plain text');
     const p = project();
     await savePagePsd(p, p.pages[0]!);

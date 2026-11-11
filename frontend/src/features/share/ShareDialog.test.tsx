@@ -43,7 +43,7 @@ afterEach(() => {
 });
 
 describe('export for sharing dialog', () => {
-  it('exports the pictures only, keeping the generation info and adding no watermark by default', async () => {
+  it('exports the pictures only, keeping the generation info and adding no watermark by default', { tags: ['scenario'] }, async () => {
     const run = vi.spyOn(backend, 'exportImages').mockResolvedValue({ count: 2, skipped: 0, watermarked: 0, folder: 'D:/shared' });
     const reveal = vi.spyOn(backend, 'revealExportFolder').mockResolvedValue();
     mount();
@@ -58,7 +58,7 @@ describe('export for sharing dialog', () => {
     expect(reveal).toHaveBeenCalled();
   });
 
-  it('shows the quality only for JPEG and sends it', async () => {
+  it('shows the quality only for JPEG and sends it', { tags: ['scenario'] }, async () => {
     const run = vi.spyOn(backend, 'exportImages').mockResolvedValue({ count: 1, skipped: 0, watermarked: 0, folder: '' });
     mount();
     useShareDialog.getState().open(['a.png']);
@@ -77,7 +77,7 @@ describe('export for sharing dialog', () => {
     expect(screen.queryByTestId('share-open-folder')).toBeNull();
   });
 
-  it('keeps the form open when the folder dialog is cancelled', async () => {
+  it('keeps the form open when the folder dialog is cancelled', { tags: ['scenario'] }, async () => {
     const run = vi.spyOn(backend, 'exportImages').mockResolvedValue(null);
     mount();
     useShareDialog.getState().open(['a.png']);
@@ -87,14 +87,14 @@ describe('export for sharing dialog', () => {
     expect(screen.queryByTestId('share-done')).toBeNull();
   });
 
-  it('cannot run without a picture', async () => {
+  it('cannot run without a picture', { tags: ['scenario'] }, async () => {
     mount();
     useShareDialog.getState().open(['c.mp4']);
     expect(((await screen.findByTestId('share-run')) as HTMLButtonElement).disabled).toBe(true);
   });
 
   // The form is remembered between openings, so these come last and turn the watermark off again.
-  it('waits for the watermark files, then exports with the watermark and counts the marked copies', async () => {
+  it('waits for the watermark files, then exports with the watermark and counts the marked copies', { tags: ['scenario'] }, async () => {
     const status = vi
       .spyOn(backend, 'watermarkStatus')
       .mockResolvedValueOnce({ state: 'downloading', done: 50, total: 200 })
@@ -115,7 +115,7 @@ describe('export for sharing dialog', () => {
     expect((await screen.findByTestId('share-done')).textContent).toContain(tCount('share.doneWatermarked', 1));
   });
 
-  it('offers a retry when the watermark files could not be fetched', async () => {
+  it('offers a retry when the watermark files could not be fetched', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'watermarkStatus').mockResolvedValue({ state: 'failed', message: 'download answered 404' });
     const retry = vi.spyOn(backend, 'prepareWatermark').mockResolvedValue();
     mount();

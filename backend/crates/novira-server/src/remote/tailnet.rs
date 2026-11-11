@@ -275,6 +275,7 @@ pub fn system_source(data: PathBuf) -> Source {
 mod tests {
     use super::*;
 
+    // tags: boundary
     #[test]
     fn the_tailnet_range_is_100_64_slash_10() {
         for ip in ["100.64.0.1", "100.100.1.2", "100.127.255.254"] {
@@ -291,6 +292,7 @@ mod tests {
         }
     }
 
+    // tags: equivalence
     #[test]
     fn only_magic_dns_names_are_tailnet_names() {
         for name in [
@@ -324,6 +326,7 @@ mod tests {
         )
     }
 
+    // tags: condition
     #[test]
     fn the_status_names_this_computer_when_connected_with_https_on() {
         let ok = status(
@@ -407,6 +410,7 @@ mod tests {
         assert!(matches!(parse_status("x"), Err(Problem::Failed(_))));
     }
 
+    // tags: condition
     #[test]
     fn a_certificate_and_key_read_from_pem() {
         let key = rcgen::KeyPair::generate().unwrap();
@@ -421,6 +425,7 @@ mod tests {
         assert!(parse_certificate(cert.pem().as_bytes(), b"nope").is_err());
     }
 
+    // tags: equivalence
     #[test]
     fn problems_have_the_codes_the_screen_names() {
         assert_eq!(Problem::Missing.code(), "tailscale_missing");

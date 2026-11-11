@@ -120,7 +120,7 @@ const metadata: fc.Arbitrary<GenerationMetadata> = fc
   .map((m) => ({ modelName: 'x', ...m }) as unknown as GenerationMetadata);
 
 describe('compileComfyPrompt (properties)', () => {
-  it('compiles every graph made from image settings (base x LoRAs x VAE x mode x size) to a well-formed prompt', () => {
+  it('compiles every graph made from image settings (base x LoRAs x VAE x mode x size) to a well-formed prompt', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(metadata, (m) => {
         const built = graphFromImage({ ...PHOTO, metadata: m }, MODELS);
@@ -133,7 +133,7 @@ describe('compileComfyPrompt (properties)', () => {
     );
   });
 
-  it('compiles every ready-made template, with arbitrary finite numbers in its number fields', () => {
+  it('compiles every ready-made template, with arbitrary finite numbers in its number fields', { tags: ['error-guessing'] }, () => {
     const numbers = fc.double({ min: -1e6, max: 1e6, noNaN: true });
     check(
       fc.property(fc.constantFrom(...GRAPH_TEMPLATES.filter((t) => !t.nodes.some(([, type]) => type === 'video_generate'))), fc.array(numbers, { minLength: 1, maxLength: 12 }), (template, values) => {
@@ -151,7 +151,7 @@ describe('compileComfyPrompt (properties)', () => {
     );
   });
 
-  it('a template with dropped or shuffled nodes and edges compiles or fails with a ComfyGraphError, nothing else', () => {
+  it('a template with dropped or shuffled nodes and edges compiles or fails with a ComfyGraphError, nothing else', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(fc.constantFrom(...GRAPH_TEMPLATES), fc.array(fc.nat(40), { maxLength: 4 }), fc.array(fc.nat(60), { maxLength: 4 }), fc.boolean(), (template, dropNodes, dropEdges, reverse) => {
         const { nodes, edges } = buildPicked(...nodesAndEdges(template));

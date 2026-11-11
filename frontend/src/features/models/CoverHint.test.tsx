@@ -37,7 +37,7 @@ afterEach(() => {
 });
 
 describe('CoverHint', () => {
-  it('shows the note with a button to the engine settings when the lookup is off and a model has no picture', async () => {
+  it('shows the note with a button to the engine settings when the lookup is off and a model has no picture', { tags: ['scenario'] }, async () => {
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(await engine(false));
     show([model('a'), model('b', { coverImageUrl: 'x.jpg' })]);
     expect(await screen.findByText(t('models.coverHint.text'))).toBeTruthy();
@@ -46,7 +46,7 @@ describe('CoverHint', () => {
     expect(useUi.getState()).toMatchObject({ modal: 'settings', settingsTab: 'engine' });
   });
 
-  it('stays away when the lookup is on', async () => {
+  it('stays away when the lookup is on', { tags: ['scenario'] }, async () => {
     const spy = vi.spyOn(backend, 'engineSettings').mockResolvedValue(await engine(true));
     show([model('a')]);
     await waitFor(() => expect(spy).toHaveBeenCalled());
@@ -54,7 +54,7 @@ describe('CoverHint', () => {
     expect(screen.queryByTestId('mm-cover-hint')).toBeNull();
   });
 
-  it('stays away when every model has a picture or its kind shows an icon', async () => {
+  it('stays away when every model has a picture or its kind shows an icon', { tags: ['scenario'] }, async () => {
     const spy = vi.spyOn(backend, 'engineSettings').mockResolvedValue(await engine(false));
     show([model('a', { coverImageUrl: 'x.jpg' }), model('v', { type: 'vae' })]);
     await waitFor(() => expect(spy).toHaveBeenCalled());
@@ -62,7 +62,7 @@ describe('CoverHint', () => {
     expect(screen.queryByTestId('mm-cover-hint')).toBeNull();
   });
 
-  it('stays away when the settings cannot be read', async () => {
+  it('stays away when the settings cannot be read', { tags: ['error-guessing'] }, async () => {
     const spy = vi.spyOn(backend, 'engineSettings').mockRejectedValue(new Error('no'));
     show([model('a')]);
     await waitFor(() => expect(spy).toHaveBeenCalled());

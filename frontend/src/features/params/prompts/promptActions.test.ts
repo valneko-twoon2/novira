@@ -24,20 +24,20 @@ const prompts = () => {
 describe('apply recommended prompts', () => {
   beforeEach(() => useParams.getState().set({ positivePrompt: '', negativePrompt: '' }));
 
-  it('fills the positive for FLUX.1 too, and leaves its unused negative alone', () => {
+  it('fills the positive for FLUX.1 too, and leaves its unused negative alone', { tags: ['decision-table'] }, () => {
     useParams.getState().set({ positivePrompt: 'a cat on a sofa', negativePrompt: 'dog' });
     applyRecommendedPrompts(model('flux'));
     expect(prompts()).toEqual({ positive: 'a cat on a sofa, high quality, highly detailed, sharp focus', negative: 'dog' });
   });
 
-  it('fills both prompts without a model', () => {
+  it('fills both prompts without a model', { tags: ['decision-table'] }, () => {
     applyRecommendedPrompts(undefined);
     const { positive, negative } = prompts();
     expect(positive).toContain('best quality');
     expect(negative).toContain('worst quality');
   });
 
-  it('puts tag-model quality words in front, once, however often it is pressed', () => {
+  it('puts tag-model quality words in front, once, however often it is pressed', { tags: ['boundary'] }, () => {
     useParams.getState().set({ positivePrompt: '1girl, best quality', negativePrompt: 'blurry' });
     const anima = model('anima', 'NyaNya Harem Anima 2.9B');
     applyRecommendedPrompts(anima);

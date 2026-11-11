@@ -101,7 +101,7 @@ describe('what a preset keeps', () => {
     ['video', VIDEO, VIDEO_PRESET_FIELDS],
     ['music', MUSIC, MUSIC_PRESET_FIELDS],
     ['voice', VOICE, VOICE_PRESET_FIELDS],
-  ] as const)('%s: saves exactly the fields marked true', (_kind, table, fields) => {
+  ] as const)('%s: saves exactly the fields marked true', { tags: ['boundary'] }, (_kind, table, fields) => {
     expect([...fields].sort()).toEqual(kept(table));
   });
 });

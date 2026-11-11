@@ -35,6 +35,7 @@ fn hanging_up_client() -> reqwest::Client {
         .unwrap()
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_model_list_that_cannot_be_fetched_stops_the_install_with_the_reason() {
     let data = tempfile::tempdir().unwrap();
@@ -65,6 +66,7 @@ async fn a_model_list_that_cannot_be_fetched_stops_the_install_with_the_reason()
     assert!(!model_dir(&models, &CUSTOM_VOICE).join(".complete").exists());
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn stopping_before_the_worker_is_ready_cancels_the_request() {
     let data = tempfile::tempdir().unwrap();

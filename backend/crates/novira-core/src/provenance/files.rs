@@ -343,6 +343,7 @@ pub async fn fetch(
 mod tests {
     use super::*;
 
+    // tags: condition
     #[test]
     fn the_pinned_list_has_the_three_files_with_hashes_and_sizes() {
         let names: Vec<&str> = pinned().iter().map(|f| f.name.as_str()).collect();
@@ -366,6 +367,7 @@ mod tests {
         assert_eq!(rt.download_bytes(), archive.bytes);
     }
 
+    // tags: condition
     #[test]
     fn the_real_addresses_are_https_on_their_exact_hosts() {
         let enc = pinned_file(ENCODER);
@@ -378,6 +380,7 @@ mod tests {
             .starts_with("https://github.com/microsoft/onnxruntime/releases/download/v1.22.0/"));
     }
 
+    // tags: error-guessing
     #[test]
     fn other_hosts_and_plain_http_are_refused() {
         let f = pinned_file(ENCODER);
@@ -398,6 +401,7 @@ mod tests {
         assert!(!allowed("https://cai-watermark.adobe.net/x", rt));
     }
 
+    // tags: condition
     #[test]
     fn files_are_found_by_size_in_the_first_folder_that_has_them() {
         let a = tempfile::tempdir().unwrap();
@@ -440,6 +444,7 @@ mod tests {
         assert_eq!(missing(&only_c).len(), 3);
     }
 
+    // tags: error-guessing
     #[test]
     fn a_file_with_the_right_size_but_wrong_content_fails_verification() {
         let dir = tempfile::tempdir().unwrap();
@@ -452,6 +457,7 @@ mod tests {
         assert!(err.contains(ENCODER), "{err}");
     }
 
+    // tags: condition
     #[test]
     fn search_dirs_put_the_bundled_folder_first() {
         let data = Path::new("D:/data");
@@ -465,6 +471,7 @@ mod tests {
         assert_eq!(search_dirs(None, data), vec![data.join("models").join(DIR)]);
     }
 
+    // tags: condition
     #[test]
     fn sha256_of_a_file_is_lowercase_hex() {
         let dir = tempfile::tempdir().unwrap();

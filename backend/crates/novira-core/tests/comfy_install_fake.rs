@@ -98,6 +98,7 @@ async fn run(
     (result, seen.into_inner().unwrap())
 }
 
+// tags: scenario
 #[tokio::test]
 async fn the_package_is_unpacked_from_its_top_folder_and_moved_into_place() {
     let root = root_with_archive("nested");
@@ -119,6 +120,7 @@ async fn the_package_is_unpacked_from_its_top_folder_and_moved_into_place() {
     assert!(!root.path().join(".downloads").join("comfyui.7z").exists());
 }
 
+// tags: scenario
 #[tokio::test]
 async fn an_archive_without_a_top_folder_works_too() {
     let root = root_with_archive("flat");
@@ -127,6 +129,7 @@ async fn an_archive_without_a_top_folder_works_too() {
     assert!(comfyui_dir(root.path()).join("main.py").is_file());
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn an_archive_with_an_unexpected_layout_is_refused() {
     let root = root_with_archive("empty");
@@ -135,6 +138,7 @@ async fn an_archive_with_an_unexpected_layout_is_refused() {
     assert!(!is_installed(root.path()));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_failed_unpack_reports_the_tools_message_and_drops_the_archive() {
     let root = root_with_archive("fail");
@@ -144,6 +148,7 @@ async fn a_failed_unpack_reports_the_tools_message_and_drops_the_archive() {
     assert!(!root.path().join(".unpacking").exists());
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_failed_unpack_for_another_reason_keeps_the_archive_for_the_next_try() {
     // A full disk or a locked folder says nothing about the archive, so it is unpacked again without a new download.
@@ -156,6 +161,7 @@ async fn a_failed_unpack_for_another_reason_keeps_the_archive_for_the_next_try()
     assert!(!root.path().join(".unpacking").exists());
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn cancelling_stops_the_unpack_and_cleans_up() {
     let root = root_with_archive("sleep");
@@ -171,6 +177,7 @@ async fn cancelling_stops_the_unpack_and_cleans_up() {
     assert!(!root.path().join(".unpacking").exists());
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_tool_that_cannot_run_is_reported() {
     let root = root_with_archive("nested");
@@ -179,6 +186,7 @@ async fn a_tool_that_cannot_run_is_reported() {
     assert!(matches!(result, Err(EngineError::Failed(m)) if m.contains("Cannot run 7zr.exe")));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn an_unknown_package_is_refused_before_anything_is_done() {
     let root = tempfile::tempdir().unwrap();
@@ -188,6 +196,7 @@ async fn an_unknown_package_is_refused_before_anything_is_done() {
     assert!(package_url("nvidia").is_ok());
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_missing_tool_is_downloaded_first_and_a_failed_download_is_an_error() {
     let root = tempfile::tempdir().unwrap();
@@ -207,6 +216,7 @@ async fn a_missing_tool_is_downloaded_first_and_a_failed_download_is_an_error() 
     assert_eq!(result, Err(EngineError::Cancelled));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_missing_archive_is_downloaded_after_the_tool_is_there() {
     let root = root_with_archive("nested");
@@ -237,6 +247,7 @@ fn root_with_old_package_and_release(mode: &str, tag: &str) -> tempfile::TempDir
     root
 }
 
+// tags: boundary, state-transition
 #[tokio::test]
 async fn a_release_replaces_the_package_keeps_the_old_one_and_moves_the_extensions_over() {
     let root = root_with_old_package_and_release("nested", "v0.3.50");
@@ -270,6 +281,7 @@ async fn a_release_replaces_the_package_keeps_the_old_one_and_moves_the_extensio
         .exists());
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_release_records_its_package_and_the_record_goes_back_with_the_old_package() {
     let root = root_with_old_package_and_release("nested", "v0.3.50");
@@ -296,6 +308,7 @@ async fn a_release_records_its_package_and_the_record_goes_back_with_the_old_pac
 
 /// A start whose install was made from another package than the settings name installs the settings package in its
 /// place, with the same ComfyUI version. When the new one does not start, the old one comes back and the start fails.
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn a_start_with_another_package_changes_it_and_a_change_that_fails_puts_the_old_one_back() {
     let root = root_with_old_package_and_release("nested", "v0.3.50");
@@ -338,6 +351,7 @@ async fn a_start_with_another_package_changes_it_and_a_change_that_fails_puts_th
     );
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_release_that_cannot_be_unpacked_leaves_the_old_package_alone() {
     let root = root_with_old_package_and_release("fail", "v0.3.50");

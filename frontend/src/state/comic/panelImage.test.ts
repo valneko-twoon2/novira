@@ -27,17 +27,17 @@ beforeEach(() => {
 const imageOf = () => findPanel(useComic.getState().projects, panelId)!.panel.imageName;
 
 describe('putting a gallery picture into a panel', () => {
-  it('makes the named gallery picture the picture of the panel', () => {
+  it('makes the named gallery picture the picture of the panel', { tags: ['condition'] }, () => {
     expect(putGalleryImage(panelId, ['pic.png'])).toBe(true);
     expect(imageOf()).toBe('pic.png');
   });
 
-  it('takes the first picture of a drop that holds several', () => {
+  it('takes the first picture of a drop that holds several', { tags: ['condition'] }, () => {
     expect(putGalleryImage(panelId, ['pic.png', 'other.png'])).toBe(true);
     expect(imageOf()).toBe('pic.png');
   });
 
-  it('leaves the panel alone when the picture is not in the gallery', () => {
+  it('leaves the panel alone when the picture is not in the gallery', { tags: ['condition'] }, () => {
     expect(putGalleryImage(panelId, ['gone.png'])).toBe(false);
     expect(imageOf()).toBeNull();
   });
@@ -46,7 +46,7 @@ describe('putting a gallery picture into a panel', () => {
 describe('putting a file from the computer into a panel', () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it('uploads it to the gallery first, then makes it the picture of the panel', async () => {
+  it('uploads it to the gallery first, then makes it the picture of the panel', { tags: ['state-transition'] }, async () => {
     const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue({ name: 'up.png', url: 'novira://up.png' } as ImageDTO);
     await putFileImage(panelId, new File(['x'], 'up.png', { type: 'image/png' }));
     expect(upload).toHaveBeenCalledOnce();
@@ -54,7 +54,7 @@ describe('putting a file from the computer into a panel', () => {
     expect(imageOf()).toBe('up.png');
   });
 
-  it('leaves the panel alone when the upload fails', async () => {
+  it('leaves the panel alone when the upload fails', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'uploadImage').mockRejectedValue(new Error('disk full'));
     await expect(putFileImage(panelId, new File(['x'], 'up.png'))).rejects.toThrow('disk full');
     expect(imageOf()).toBeNull();
@@ -68,7 +68,7 @@ describe('reporting a failed picture', () => {
   });
   afterEach(() => setLocale('ja'));
 
-  it('toasts an error with the message of an Error, and the text of anything else', () => {
+  it('toasts an error with the message of an Error, and the text of anything else', { tags: ['error-guessing'] }, () => {
     reportImageFailure(new Error('too big'));
     reportImageFailure('plain text');
     const toasts = useToasts.getState().toasts;

@@ -4,7 +4,7 @@ import { expect, msg, openApp, showNewInViewer, test } from './fixtures';
 
 test.beforeEach(({ page }) => showNewInViewer(page));
 
-test('a gallery picture dropped on the image to image section is drawn over at a size of its shape', async ({ page }) => {
+test('a gallery picture dropped on the image to image section is drawn over at a size of its shape', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByRole('button', { name: msg('params.i2i.title'), exact: true }).click();
   // The strength can be set before a picture is put in.
@@ -31,7 +31,7 @@ test('a gallery picture dropped on the image to image section is drawn over at a
   await expect(page.getByTestId('i2i-image')).toHaveCount(0);
 });
 
-test('the high-resolution fix enlarges the picture drawn over a source', async ({ page }) => {
+test('the high-resolution fix enlarges the picture drawn over a source', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByRole('button', { name: msg('params.hires.title') }).click();
   await page.getByRole('switch', { name: msg('params.hires.enable') }).click();
@@ -49,7 +49,7 @@ test('the high-resolution fix enlarges the picture drawn over a source', async (
   await expect(page.getByTestId('viewer-info')).toContainText(`${enlarged(width)}`);
 });
 
-test('the reference image settings put the picture in the image to image section', async ({ page }) => {
+test('the reference image settings put the picture in the image to image section', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('gallery-thumb').first().dragTo(page.locator('.pp-refs:visible'));
   await page.getByTestId('ref-image').click();

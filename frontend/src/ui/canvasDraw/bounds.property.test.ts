@@ -8,7 +8,7 @@ const n = fc.integer({ min: -4000, max: 4000 });
 const rect = fc.record({ x: n, y: n, width: fc.integer({ min: 1, max: 4000 }), height: fc.integer({ min: 1, max: 4000 }) });
 
 describe('bounds (properties)', () => {
-  it('unionRect contains both rects and is commutative; null is the identity', () => {
+  it('unionRect contains both rects and is commutative; null is the identity', { tags: ['condition'] }, () => {
     check(
       fc.property(rect, rect, (a, b) => {
         const u = unionRect(a, b)!;
@@ -25,7 +25,7 @@ describe('bounds (properties)', () => {
     );
   });
 
-  it('objectsBounds ignores empty input and contains every brush stroke point', () => {
+  it('objectsBounds ignores empty input and contains every brush stroke point', { tags: ['boundary'] }, () => {
     expect(objectsBounds([])).toBeNull();
     check(
       fc.property(fc.array(fc.tuple(n, n), { minLength: 1, maxLength: 20 }), fc.integer({ min: 1, max: 200 }), (pts, width) => {

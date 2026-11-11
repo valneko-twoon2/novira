@@ -16,13 +16,13 @@ import {
 } from './zoomMath';
 
 describe('zoom math', () => {
-  it('round-trips screen and document coordinates', () => {
+  it('round-trips screen and document coordinates', { tags: ['condition'] }, () => {
     const v = { x: 30, y: -20, scale: 0.5 };
     expect(screenToDoc(docToScreen({ x: 100, y: 200 }, v), v)).toEqual({ x: 100, y: 200 });
     expect(boxToScreen({ x: 10, y: 20, width: 100, height: 50 }, v)).toEqual({ x: 35, y: -10, width: 50, height: 25 });
   });
 
-  it('keeps the anchor fixed when zooming', () => {
+  it('keeps the anchor fixed when zooming', { tags: ['condition'] }, () => {
     const v = { x: 10, y: 10, scale: 1 };
     const anchor = { x: 200, y: 150 };
     const z = zoomAt(v, anchor, 2);
@@ -30,13 +30,13 @@ describe('zoom math', () => {
     expect(docToScreen(screenToDoc(anchor, v), z)).toEqual(anchor);
   });
 
-  it('clamps the scale to the limits', () => {
+  it('clamps the scale to the limits', { tags: ['boundary'] }, () => {
     const v = { x: 0, y: 0, scale: 1 };
     expect(zoomAt(v, { x: 0, y: 0 }, 1000).scale).toBe(MAX_SCALE);
     expect(zoomAt(v, { x: 0, y: 0 }, 0).scale).toBe(MIN_SCALE);
   });
 
-  it('steps through the zoom presets and stops at the limits', () => {
+  it('steps through the zoom presets and stops at the limits', { tags: ['boundary'] }, () => {
     expect(stepZoom(1, 1)).toBe(1.25);
     expect(stepZoom(1, -1)).toBe(0.75);
     expect(stepZoom(0.9, 1)).toBe(1);
@@ -44,20 +44,20 @@ describe('zoom math', () => {
     expect(stepZoom(MIN_SCALE, -1)).toBe(MIN_SCALE);
   });
 
-  it('zooms in for wheel up and out for wheel down, faster per line than per pixel', () => {
+  it('zooms in for wheel up and out for wheel down, faster per line than per pixel', { tags: ['condition'] }, () => {
     expect(wheelZoomFactor({ deltaY: -100, deltaMode: 0 })).toBeGreaterThan(1);
     expect(wheelZoomFactor({ deltaY: 100, deltaMode: 0 })).toBeLessThan(1);
     expect(wheelZoomFactor({ deltaY: -100, deltaMode: 0 }) * wheelZoomFactor({ deltaY: 100, deltaMode: 0 })).toBeCloseTo(1);
     expect(wheelZoomFactor({ deltaY: -3, deltaMode: 1 })).toBeGreaterThan(wheelZoomFactor({ deltaY: -3, deltaMode: 0 }));
   });
 
-  it('fits a rect into the stage centered', () => {
+  it('fits a rect into the stage centered', { tags: ['condition'] }, () => {
     const v = fitRect({ x: 0, y: 0, width: 1000, height: 500 }, 600, 400, 50);
     expect(v.scale).toBeCloseTo(0.5);
     expect(docToScreen({ x: 500, y: 250 }, v)).toEqual({ x: 300, y: 200 });
   });
 
-  it('centers content smaller than the stage and keeps larger content covering it', () => {
+  it('centers content smaller than the stage and keeps larger content covering it', { tags: ['condition'] }, () => {
     const content = { width: 100, height: 100 };
     const stage = { width: 400, height: 300 };
     expect(clampPan({ x: -999, y: 999, scale: 1 }, content, stage)).toEqual({ x: 150, y: 100, scale: 1 });
@@ -68,7 +68,7 @@ describe('zoom math', () => {
     expect(canPan({ x: 0, y: 0, scale: 10 }, content, stage)).toBe(true);
   });
 
-  it('contains a box in a rect, centered, in whole pixels', () => {
+  it('contains a box in a rect, centered, in whole pixels', { tags: ['condition'] }, () => {
     expect(containIn(200, 100, { x: 0, y: 0, width: 100, height: 100 })).toEqual({ x: 0, y: 25, width: 100, height: 50 });
   });
 });

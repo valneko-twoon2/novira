@@ -347,6 +347,7 @@ pub async fn run_capped(
 mod tests {
     use super::*;
 
+    // tags: condition
     #[test]
     fn pictures_tools_returned_follow_as_one_user_message_and_none_without_them() {
         assert!(tool_pictures(&[]).is_none());
@@ -372,6 +373,7 @@ mod tests {
         );
     }
 
+    // tags: equivalence
     #[test]
     fn every_tool_is_offered_as_a_function_with_its_schema() {
         let specs = tool_specs(None);
@@ -388,6 +390,7 @@ mod tests {
         assert!(tool_specs(Some("nope")).as_array().unwrap().is_empty());
     }
 
+    // tags: condition
     #[test]
     fn a_call_is_read_whether_its_arguments_are_text_or_an_object() {
         let text = read_call(
@@ -420,6 +423,7 @@ mod tests {
         assert_eq!(read_call(&json!({}), 1).name, "");
     }
 
+    // tags: condition
     #[test]
     fn a_count_far_below_the_size_of_the_request_means_the_server_cut_it() {
         let body =
@@ -437,6 +441,7 @@ mod tests {
         assert!(cut_short(&body, &said(json!("many"))).is_none());
     }
 
+    // tags: condition
     #[test]
     fn the_context_probe_is_the_real_request_with_room_for_one_token() {
         let probe = context_probe("m");
@@ -448,6 +453,7 @@ mod tests {
         assert!(bytes > 20_000, "{bytes}");
     }
 
+    // tags: state-transition
     #[test]
     fn thinking_blocks_are_not_part_of_the_answer() {
         assert_eq!(without_thinking("<think>hmm</think>Done."), "Done.");
@@ -459,6 +465,7 @@ mod tests {
         assert_eq!(without_thinking("plain"), "plain");
     }
 
+    // tags: condition
     #[test]
     fn the_rules_are_the_system_message_and_the_turns_follow_in_order() {
         let request: AgentRequest = serde_json::from_value(json!({
@@ -482,6 +489,7 @@ mod tests {
         assert_eq!(messages[3]["content"], "make it blue");
     }
 
+    // tags: condition
     #[test]
     fn attached_pictures_go_with_the_users_message_as_image_parts_and_are_not_counted_as_text() {
         let mut request: AgentRequest =

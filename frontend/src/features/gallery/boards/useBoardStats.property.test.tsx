@@ -25,7 +25,7 @@ const image = fc
   );
 
 describe('useBoardStats (properties)', () => {
-  it('counts every visible image once, on its own board, and covers with the newest one', () => {
+  it('counts every visible image once, on its own board, and covers with the newest one', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(fc.array(image, { maxLength: 40 }), (list) => {
         const imgs = list.map((i, k) => ({ ...i, name: `i${k}` }));

@@ -48,19 +48,19 @@ afterEach(() => {
 });
 
 describe('the prompt boxes', () => {
-  it('writes what is typed into each prompt', () => {
+  it('writes what is typed into each prompt', { tags: ['scenario'] }, () => {
     fireEvent.change(screen.getByTestId('positive-prompt'), { target: { value: 'a cat' } });
     fireEvent.change(screen.getByTestId('negative-prompt'), { target: { value: 'blurry' } });
     expect(useParams.getState()).toMatchObject({ positivePrompt: 'a cat', negativePrompt: 'blurry' });
   });
 
-  it('focuses the positive prompt when asked from elsewhere', () => {
+  it('focuses the positive prompt when asked from elsewhere', { tags: ['scenario'] }, () => {
     expect(document.activeElement).not.toBe(screen.getByTestId('positive-prompt'));
     act(() => useUi.setState({ focusPromptNonce: 5 }));
     expect(document.activeElement).toBe(screen.getByTestId('positive-prompt'));
   });
 
-  it('adds the recommended words to the prompt whose button is pressed, and says so', () => {
+  it('adds the recommended words to the prompt whose button is pressed, and says so', { tags: ['scenario'] }, () => {
     fireEvent.click(screen.getByTestId('negative-recommended'));
     expect(useParams.getState().negativePrompt).not.toBe('');
     expect(useParams.getState().positivePrompt).toBe('');
@@ -69,7 +69,7 @@ describe('the prompt boxes', () => {
     expect(useParams.getState().positivePrompt).not.toBe('');
   });
 
-  it('keeps the section header to its title: the buttons sit in each prompt\'s own heading', () => {
+  it('keeps the section header to its title: the buttons sit in each prompt\'s own heading', { tags: ['scenario'] }, () => {
     const header = screen.getByTestId('prompts').querySelector('.ui-section__header')!;
     expect(header.querySelectorAll('button')).toHaveLength(1);
     for (const kind of ['positive', 'negative']) {
@@ -80,7 +80,7 @@ describe('the prompt boxes', () => {
     }
   });
 
-  it('edits both prompts in the big editor, and closes it', async () => {
+  it('edits both prompts in the big editor, and closes it', { tags: ['scenario'] }, async () => {
     fireEvent.click(screen.getByTestId('positive-expand'));
     fireEvent.change(screen.getByTestId('big-positive'), { target: { value: 'long positive' } });
     fireEvent.change(screen.getByTestId('big-negative'), { target: { value: 'long negative' } });
@@ -89,7 +89,7 @@ describe('the prompt boxes', () => {
     await waitFor(() => expect(screen.queryByTestId('big-positive')).toBeNull());
   });
 
-  it('switches each prompt between its text and its tags with two buttons, the active one marked', () => {
+  it('switches each prompt between its text and its tags with two buttons, the active one marked', { tags: ['scenario'] }, () => {
     for (const kind of ['positive', 'negative'] as const) {
       const text = screen.getByTestId(`${kind}-text-view`);
       const tags = screen.getByTestId(`${kind}-tag-view`);
@@ -102,7 +102,7 @@ describe('the prompt boxes', () => {
     }
   });
 
-  it('has the dynamic prompts button on the negative prompt too, lit when it uses the syntax', () => {
+  it('has the dynamic prompts button on the negative prompt too, lit when it uses the syntax', { tags: ['condition'] }, () => {
     expect(screen.getByTestId('dynamic-prompts')).toBeTruthy();
     const negative = screen.getByTestId('dynamic-prompts-negative');
     expect(negative.getAttribute('data-active')).not.toBe('true');
@@ -110,7 +110,7 @@ describe('the prompt boxes', () => {
     expect(screen.getByTestId('dynamic-prompts-negative').className).toMatch(/active/);
   });
 
-  it('opens the prompt book for either prompt', () => {
+  it('opens the prompt book for either prompt', { tags: ['scenario'] }, () => {
     fireEvent.click(screen.getByTestId('negative-open-book'));
     expect(usePromptBook.getState()).toMatchObject({ open: true, target: 'negative' });
     fireEvent.click(screen.getByTestId('positive-open-book'));
@@ -119,7 +119,7 @@ describe('the prompt boxes', () => {
 });
 
 describe('describing a picture', () => {
-  it('describes the picture selected in the gallery at once, or asks for a file when none or a video is selected', () => {
+  it('describes the picture selected in the gallery at once, or asks for a file when none or a video is selected', { tags: ['condition'] }, () => {
     const fileInput = screen.getByTestId('prompt-caption-file') as HTMLInputElement;
     const pick = vi.spyOn(fileInput, 'click').mockImplementation(() => undefined);
     fireEvent.click(screen.getByTestId('prompt-caption'));
@@ -133,7 +133,7 @@ describe('describing a picture', () => {
     expect(quickRunTool).toHaveBeenCalledTimes(1);
   });
 
-  it('describes a picture dropped on the button, and uploads a dropped or picked file first', async () => {
+  it('describes a picture dropped on the button, and uploads a dropped or picked file first', { tags: ['scenario'] }, async () => {
     const zone = screen.getByTestId('prompt-caption').closest('.pp-prompt__caption')!;
     fireEvent.drop(zone, { dataTransfer: { types: ['application/x-novira-images'], files: [], getData: () => JSON.stringify(['a.png']) } });
     await waitFor(() => expect(quickRunTool).toHaveBeenLastCalledWith('caption', 'a.png'));
@@ -150,7 +150,7 @@ describe('describing a picture', () => {
     await waitFor(() => expect(quickRunTool).toHaveBeenLastCalledWith('caption', 'picked.png'));
   });
 
-  it('says so when the file cannot be uploaded, and describes nothing', async () => {
+  it('says so when the file cannot be uploaded, and describes nothing', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'uploadImage').mockRejectedValue(new Error('too large'));
     const input = screen.getByTestId('prompt-caption-file') as HTMLInputElement;
     Object.defineProperty(input, 'files', { value: [new File(['x'], 'x.png', { type: 'image/png' })], configurable: true });

@@ -47,7 +47,7 @@ afterEach(() => {
 });
 
 describe('phone chat', () => {
-  it('says the assistant is set up on the PC while it is not ready, without a form or a box', async () => {
+  it('says the assistant is set up on the PC while it is not ready, without a form or a box', { tags: ['error-guessing', 'state-transition'] }, async () => {
     seed({ provider: null, installed: false, loggedIn: false, models: [] });
     show();
     expect(await screen.findByText(t('phone.agentSetup'))).toBeTruthy();
@@ -58,7 +58,7 @@ describe('phone chat', () => {
     expect(screen.queryByTestId('phone-chat-new')).toBeNull();
   });
 
-  it('shows the conversation with its chips under the session title, and goes back', async () => {
+  it('shows the conversation with its chips under the session title, and goes back', { tags: ['scenario'] }, async () => {
     seed(ready);
     show();
     expect(screen.getByTestId('agent-session-title').textContent).toBe('a cat');
@@ -73,7 +73,7 @@ describe('phone chat', () => {
     await waitFor(() => expect(backend.agentStatus).toHaveBeenCalled());
   });
 
-  it("leaves out the server's model picker, whose list and test are the PC's", () => {
+  it("leaves out the server's model picker, whose list and test are the PC's", { tags: ['scenario'] }, () => {
     seed({
       provider: 'openai',
       installed: true,
@@ -86,7 +86,7 @@ describe('phone chat', () => {
     expect(screen.queryByTestId('agent-model')).toBeNull();
   });
 
-  it('starts a new line on Enter and sends with the button; Stop shows while the assistant works', () => {
+  it('starts a new line on Enter and sends with the button; Stop shows while the assistant works', { tags: ['state-transition', 'scenario'] }, () => {
     const send = vi.fn().mockResolvedValue({ ok: true, cancelled: false, text: '' });
     const cancel = vi.fn();
     seed(ready, { send, cancel });
@@ -104,7 +104,7 @@ describe('phone chat', () => {
     expect(cancel).toHaveBeenCalled();
   });
 
-  it('offers the starting suggestions on a new chat and sends the one tapped', () => {
+  it('offers the starting suggestions on a new chat and sends the one tapped', { tags: ['boundary', 'scenario'] }, () => {
     const send = vi.fn().mockResolvedValue({ ok: true, cancelled: false, text: '' });
     seed(ready, { send });
     show();
@@ -115,7 +115,7 @@ describe('phone chat', () => {
     expect(send).toHaveBeenCalledWith(t('agent.suggestion.photo'), []);
   });
 
-  it('opens the past chats as a sheet; picking one shows it and closes the sheet', () => {
+  it('opens the past chats as a sheet; picking one shows it and closes the sheet', { tags: ['boundary', 'state-transition'] }, () => {
     seed(ready);
     show();
     fireEvent.click(screen.getByTestId('phone-chat-history'));
@@ -137,7 +137,7 @@ describe('phone chat', () => {
 });
 
 describe('the chat layer', () => {
-  it('renders nothing until the assistant is first opened, then stays mounted (hidden) after it closes', () => {
+  it('renders nothing until the assistant is first opened, then stays mounted (hidden) after it closes', { tags: ['boundary', 'state-transition'] }, () => {
     seed(ready, { open: false });
     const { container } = render(
       <TooltipProvider>
@@ -161,7 +161,7 @@ describe('the visible area above the keyboard', () => {
   }
   afterEach(() => delete (window as { visualViewport?: unknown }).visualViewport);
 
-  it('follows the visual viewport as the keyboard opens, and stops listening on unmount', () => {
+  it('follows the visual viewport as the keyboard opens, and stops listening on unmount', { tags: ['state-transition', 'scenario'] }, () => {
     const vv = new FakeViewport();
     Object.defineProperty(window, 'visualViewport', { configurable: true, value: vv });
     seed(ready);
@@ -182,7 +182,7 @@ describe('the visible area above the keyboard', () => {
     expect(el.style.height).toBe('300px');
   });
 
-  it('leaves the size to the style sheet when the browser has no visual viewport', () => {
+  it('leaves the size to the style sheet when the browser has no visual viewport', { tags: ['scenario'] }, () => {
     seed(ready);
     show();
     expect(screen.getByTestId('phone-chat').style.height).toBe('');

@@ -46,6 +46,7 @@ fn good_zip(path: &Path) {
     );
 }
 
+// tags: boundary
 #[test]
 fn a_backup_in_an_older_format_is_not_supported() {
     let dir = tempfile::tempdir().unwrap();
@@ -60,6 +61,7 @@ fn a_backup_in_an_older_format_is_not_supported() {
     assert!(!data.path().join(STAGING).exists());
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn an_entry_that_unpacks_to_more_than_its_limit_is_refused() {
     let dir = tempfile::tempdir().unwrap();
@@ -83,6 +85,7 @@ fn an_entry_that_unpacks_to_more_than_its_limit_is_refused() {
     );
 }
 
+// tags: error-guessing, state-transition
 #[test]
 fn a_screen_state_that_cannot_be_read_at_start_up_keeps_the_current_data() {
     let dir = tempfile::tempdir().unwrap();
@@ -108,6 +111,7 @@ fn a_screen_state_that_cannot_be_read_at_start_up_keeps_the_current_data() {
     assert!(!data.path().join(STAGING).exists());
 }
 
+// tags: state-transition
 #[test]
 fn a_restore_without_a_screen_state_still_applies() {
     let dir = tempfile::tempdir().unwrap();
@@ -130,6 +134,7 @@ fn a_restore_without_a_screen_state_still_applies() {
     assert_eq!(take_outcome(data.path()), RestoreOutcome::None);
 }
 
+// tags: boundary
 #[test]
 fn the_folder_for_the_old_data_gets_a_new_name_when_one_is_taken() {
     let dir = tempfile::tempdir().unwrap();
@@ -154,6 +159,7 @@ fn the_folder_for_the_old_data_gets_a_new_name_when_one_is_taken() {
     assert!(data.path().join("thumbnails").join("a.thumb").is_file());
 }
 
+// tags: error-guessing, state-transition
 #[test]
 fn an_outcome_that_cannot_be_recorded_does_not_stop_the_start() {
     let dir = tempfile::tempdir().unwrap();
@@ -172,6 +178,7 @@ fn an_outcome_that_cannot_be_recorded_does_not_stop_the_start() {
 }
 
 #[cfg(windows)]
+// tags: state-transition
 #[test]
 fn a_database_that_is_still_open_is_moved_aside_once_it_is_released() {
     use std::os::windows::fs::OpenOptionsExt;
@@ -205,6 +212,7 @@ fn a_database_that_is_still_open_is_moved_aside_once_it_is_released() {
 }
 
 #[cfg(windows)]
+// tags: error-guessing, boundary
 #[test]
 fn a_staging_folder_that_cannot_be_removed_afterwards_does_not_undo_the_restore() {
     use std::os::windows::fs::OpenOptionsExt;

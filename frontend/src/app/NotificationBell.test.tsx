@@ -17,7 +17,7 @@ const renderBell = () =>
   );
 
 describe('notification bell', () => {
-  it('counts quiet notifications without showing toasts, and lists them when opened', () => {
+  it('counts quiet notifications without showing toasts, and lists them when opened', { tags: ['scenario'] }, () => {
     renderBell();
     act(() => {
       toast({ status: 'success', title: 'Deleted 1 image', quiet: true });
@@ -33,7 +33,7 @@ describe('notification bell', () => {
     expect(screen.queryByTestId('notification-count')).toBeNull();
   });
 
-  it('runs an action from the history once and can clear the history', () => {
+  it('runs an action from the history once and can clear the history', { tags: ['scenario'] }, () => {
     const run = vi.fn();
     renderBell();
     act(() => void toast({ status: 'success', title: 'Deleted', quiet: true, actions: [{ label: 'Undo', run }] }));
@@ -47,7 +47,7 @@ describe('notification bell', () => {
     expect(useToasts.getState().history).toEqual([]);
   });
 
-  it('stops holding quiet notifications back once it is unmounted', () => {
+  it('stops holding quiet notifications back once it is unmounted', { tags: ['condition'] }, () => {
     const { unmount } = renderBell();
     expect(useToasts.getState().bells).toBe(1);
     unmount();

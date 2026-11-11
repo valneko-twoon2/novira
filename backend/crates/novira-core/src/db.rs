@@ -232,6 +232,7 @@ mod tests {
         n: u32,
     }
 
+    // tags: equivalence
     #[test]
     fn ids_and_sorts_list_every_row_even_one_whose_data_does_not_parse() {
         let db = Db::in_memory().unwrap();
@@ -257,6 +258,7 @@ mod tests {
         assert!(db.ids_and_sorts(Table::Boards).unwrap().is_empty());
     }
 
+    // tags: scenario
     #[test]
     fn rows_round_trip_in_sort_order_and_can_be_deleted() {
         let mut db = Db::in_memory().unwrap();
@@ -308,6 +310,7 @@ mod tests {
         assert_eq!(db.load::<Row>(Table::Boards).unwrap().len(), 1);
     }
 
+    // tags: decision-table
     #[test]
     fn rows_load_in_the_order_sqlite_gives_for_sort_then_id() {
         let mut db = Db::in_memory().unwrap();
@@ -357,6 +360,7 @@ mod tests {
         assert_eq!(loaded.first().map(String::as_str), Some("z"));
     }
 
+    // tags: error-guessing
     #[test]
     fn unreadable_rows_are_skipped() {
         let db = Db::in_memory().unwrap();
@@ -369,6 +373,7 @@ mod tests {
         assert!(db.load::<Row>(Table::Queue).unwrap().is_empty());
     }
 
+    // tags: error-guessing
     #[test]
     fn a_row_is_read_by_id_and_a_missing_or_broken_one_is_none() {
         let db = Db::in_memory().unwrap();
@@ -396,6 +401,7 @@ mod tests {
         assert_eq!(db.get::<Row>(Table::Watermarks, "bad").unwrap(), None);
     }
 
+    // tags: scenario
     #[test]
     fn meta_values_persist() {
         let db = Db::in_memory().unwrap();

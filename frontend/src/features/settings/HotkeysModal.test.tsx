@@ -23,12 +23,12 @@ const openIt = () => {
 const headings = () => screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
 
 describe('HotkeysModal', () => {
-  it('renders nothing until the modal is asked for', () => {
+  it('renders nothing until the modal is asked for', { tags: ['scenario'] }, () => {
     render(<HotkeysModal />);
     expect(screen.queryByTestId('hotkeys-modal')).toBeNull();
   });
 
-  it('lists every category with its shortcuts, keys drawn as separate caps', () => {
+  it('lists every category with its shortcuts, keys drawn as separate caps', { tags: ['scenario'] }, () => {
     openIt();
     expect(headings()).toEqual(HOTKEY_CATEGORIES.map((c) => t(c.title)));
     const kbds = document.querySelectorAll('kbd');
@@ -37,7 +37,7 @@ describe('HotkeysModal', () => {
     expect([...kbds].some((k) => k.textContent === '←')).toBe(true);
   });
 
-  it('narrows the list by the text of a title, a description or a key, and says when nothing matches', () => {
+  it('narrows the list by the text of a title, a description or a key, and says when nothing matches', { tags: ['scenario'] }, () => {
     openIt();
     const box = screen.getByRole('textbox', { name: t('settings.hotkeys.search') });
     const first = HOTKEY_CATEGORIES[0]!.hotkeys[0]!;
@@ -52,7 +52,7 @@ describe('HotkeysModal', () => {
     expect(screen.queryAllByRole('heading', { level: 3 })).toHaveLength(0);
   });
 
-  it('closes from the close button', () => {
+  it('closes from the close button', { tags: ['scenario'] }, () => {
     openIt();
     fireEvent.click(screen.getByRole('button', { name: t('common.close') }));
     expect(useUi.getState().modal).toBeNull();

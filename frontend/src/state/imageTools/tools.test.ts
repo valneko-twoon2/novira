@@ -3,11 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_TOOL_SETTINGS, TOOL_RANGES, restoreToolSettings } from './tools';
 
 describe('restoreToolSettings', () => {
-  it('gives the defaults for nothing, or for something that is not settings', () => {
+  it('gives the defaults for nothing, or for something that is not settings', { tags: ['condition'] }, () => {
     for (const stored of [undefined, null, 'x', 3, [], {}]) expect(restoreToolSettings(stored)).toEqual(DEFAULT_TOOL_SETTINGS);
   });
 
-  it('keeps stored values that are in range', () => {
+  it('keeps stored values that are in range', { tags: ['condition'] }, () => {
     const stored = {
       facefix: { detector: 'bbox/face_yolov8m.pt', strength: 0.6, sensitivity: 0.3 },
       cutout: { model: 'BEN2', sensitivity: 0.5, edge: -3, background: 'white' },
@@ -17,7 +17,7 @@ describe('restoreToolSettings', () => {
     expect(restoreToolSettings(stored)).toEqual(stored);
   });
 
-  it('holds numbers to their ranges at both ends and rounds the edge to whole pixels', () => {
+  it('holds numbers to their ranges at both ends and rounds the edge to whole pixels', { tags: ['boundary'] }, () => {
     const low = restoreToolSettings({ facefix: { strength: -1, sensitivity: 0 }, cutout: { sensitivity: 0, edge: -99 } });
     expect(low.facefix).toMatchObject({ strength: TOOL_RANGES.faceStrength.min, sensitivity: TOOL_RANGES.faceSensitivity.min });
     expect(low.cutout).toMatchObject({ sensitivity: TOOL_RANGES.cutoutSensitivity.min, edge: TOOL_RANGES.cutoutEdge.min });
@@ -26,7 +26,7 @@ describe('restoreToolSettings', () => {
     expect(high.cutout).toMatchObject({ sensitivity: TOOL_RANGES.cutoutSensitivity.max, edge: 3 });
   });
 
-  it('replaces values of the wrong kind by the defaults', () => {
+  it('replaces values of the wrong kind by the defaults', { tags: ['error-guessing'] }, () => {
     const s = restoreToolSettings({ facefix: { detector: '', strength: 'strong', sensitivity: Number.NaN }, cutout: { model: 7, background: 'pink' }, caption: { style: 'poem' } });
     expect(s.facefix).toEqual(DEFAULT_TOOL_SETTINGS.facefix);
     expect(s.cutout).toMatchObject({ model: null, background: 'alpha' });

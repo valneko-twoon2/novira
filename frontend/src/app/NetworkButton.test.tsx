@@ -35,13 +35,13 @@ async function refresh() {
 }
 
 describe('the pieces of the panel', () => {
-  it('draws each dark module as a square inside the quiet zone', () => {
+  it('draws each dark module as a square inside the quiet zone', { tags: ['condition'] }, () => {
     const link = { size: 3, modules: '100010001' };
     expect(qrPath(link)).toBe('M4 4h1v1h-1zM5 5h1v1h-1zM6 6h1v1h-1z');
     expect(qrPath({ ...link, modules: '000000000' })).toBe('');
   });
 
-  it('writes the time left as m:ss and the number in two groups', () => {
+  it('writes the time left as m:ss and the number in two groups', { tags: ['boundary'] }, () => {
     expect([clock(120), clock(59.4), clock(-3), clock(61)]).toEqual(['2:00', '0:59', '0:00', '1:01']);
     expect(groupedNumber('482913')).toBe('482 913');
     expect(groupedNumber('12')).toBe('12');
@@ -59,12 +59,12 @@ describe('NetworkButton', () => {
     getLanApi.mockReset();
   });
 
-  it('is absent where there is no home network (the desktop app, a phone, a page that cannot read the state)', async () => {
+  it('is absent where there is no home network (the desktop app, a phone, a page that cannot read the state)', { tags: ['condition'] }, async () => {
     await show(null);
     expect(screen.queryByTestId('home-link-open')).toBeNull();
   });
 
-  it('opens a closed home network at the press, trusting the network it is on, and shows the code', async () => {
+  it('opens a closed home network at the press, trusting the network it is on, and shows the code', { tags: ['scenario'] }, async () => {
     const lan = createMockLan();
     await show(lan);
     await press('home-link-open');
@@ -74,7 +74,7 @@ describe('NetworkButton', () => {
     expect(screen.queryByTestId('lan-open')).toBeNull();
   });
 
-  it('shows the code with its countdown, and a new one when it ran out', async () => {
+  it('shows the code with its countdown, and a new one when it ran out', { tags: ['state-transition'] }, async () => {
     const lan = createMockLan('open');
     await show(lan);
     await press('home-link-open');
@@ -97,7 +97,7 @@ describe('NetworkButton', () => {
     }
   });
 
-  it('lists a phone that asks with its number, and allows it, refuses it, or disconnects it later', async () => {
+  it('lists a phone that asks with its number, and allows it, refuses it, or disconnects it later', { tags: ['scenario'] }, async () => {
     const lan = createMockLan('open');
     await show(lan);
     await press('home-link-open');
@@ -118,7 +118,7 @@ describe('NetworkButton', () => {
     expect((await lan.state())?.devices).toEqual([]);
   });
 
-  it('has no button to close the home network or to stop trusting it', async () => {
+  it('has no button to close the home network or to stop trusting it', { tags: ['condition'] }, async () => {
     const lan = createMockLan('open');
     await show(lan);
     await press('home-link-open');
@@ -126,7 +126,7 @@ describe('NetworkButton', () => {
     expect(screen.queryByTestId('lan-close')).toBeNull();
   });
 
-  it('warns when Windows calls the network public, but still opens it', async () => {
+  it('warns when Windows calls the network public, but still opens it', { tags: ['condition'] }, async () => {
     const lan = createMockLan('public');
     await show(lan);
     await press('home-link-open');
@@ -134,7 +134,7 @@ describe('NetworkButton', () => {
     expect(await screen.findByTestId('home-link-code')).not.toBeNull();
   });
 
-  it('says why it cannot open when there is no home address or no known gateway', async () => {
+  it('says why it cannot open when there is no home address or no known gateway', { tags: ['decision-table'] }, async () => {
     const lan = createMockLan();
     const base = await lan.state();
     if (!base) throw new Error('state');
@@ -151,7 +151,7 @@ describe('NetworkButton', () => {
     }
   });
 
-  it('shows on the item how many phones wait', async () => {
+  it('shows on the item how many phones wait', { tags: ['condition'] }, async () => {
     const lan: MockLan = createMockLan('open');
     lan.askToPair('iPhone', '192.168.1.20');
     await show(lan);

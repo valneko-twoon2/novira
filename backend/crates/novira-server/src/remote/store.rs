@@ -309,6 +309,7 @@ mod tests {
         }
     }
 
+    // tags: condition, error-guessing
     #[test]
     fn what_is_kept_comes_back_and_a_missing_file_is_off() {
         let dir = tempfile::tempdir().unwrap();
@@ -332,6 +333,7 @@ mod tests {
         assert_eq!(log[0]["what"], "signedIn");
     }
 
+    // tags: error-guessing
     #[test]
     fn a_damaged_file_or_entry_lets_fewer_in_never_more() {
         let dir = tempfile::tempdir().unwrap();
@@ -367,6 +369,7 @@ mod tests {
         assert_eq!(s.passkeys[0].id, "a1");
     }
 
+    // tags: boundary, state-transition
     #[test]
     fn passkeys_are_capped_kept_once_and_forgotten() {
         let dir = tempfile::tempdir().unwrap();
@@ -382,6 +385,7 @@ mod tests {
         assert_eq!(Store::load(dir.path()).passkeys.len(), MAX_PASSKEYS - 1);
     }
 
+    // tags: boundary
     #[test]
     fn the_log_keeps_the_newest_lines() {
         let dir = tempfile::tempdir().unwrap();
@@ -394,6 +398,7 @@ mod tests {
         assert_eq!(Store::load(dir.path()).log.len(), MAX_LOG);
     }
 
+    // tags: boundary
     #[test]
     fn it_counts_as_unused_after_two_weeks_without_an_enrolment_or_a_sign_in() {
         let dir = tempfile::tempdir().unwrap();

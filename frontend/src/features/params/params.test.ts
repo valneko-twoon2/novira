@@ -47,19 +47,19 @@ describe('params builders', () => {
     autoSelectModels();
   });
 
-  it('picks the default upscale and a tile ControlNet for the chosen main model, but never the main model itself', () => {
+  it('picks the default upscale and a tile ControlNet for the chosen main model, but never the main model itself', { tags: ['condition'] }, () => {
     expect(useParams.getState().modelKey).toBe('main-xl');
     expect(useParams.getState().upscale.upscaleModelKey).toBe('up');
     expect(useParams.getState().upscale.tileControlnetModelKey).toBe('cn-tile');
   });
 
-  it('reports incompatible LoRAs and incomplete reference images', () => {
+  it('reports incompatible LoRAs and incomplete reference images', { tags: ['condition'] }, () => {
     useParams.getState().addLora('lora-sd1');
     useParams.getState().addRefImage();
     expect(paramsReadiness({ refImages: true })).toHaveLength(3);
   });
 
-  it('sends the enabled, complete reference images with the generate request', async () => {
+  it('sends the enabled, complete reference images with the generate request', { tags: ['scenario'] }, async () => {
     const p = useParams.getState();
     p.addRefImage({ imageName: 'r.png', imageUrl: 'http://novira-image.localhost/full/r.png', modelKey: 'ipa-xl', method: 'style', weight: 0.6, beginEnd: [0.1, 0.9] });
     p.addRefImage({ isEnabled: false, imageName: 'off.png', imageUrl: 'http://novira-image.localhost/full/off.png', modelKey: 'ipa-xl' });
@@ -74,7 +74,7 @@ describe('params builders', () => {
     expect(plain.params.refImageCount).toBeUndefined();
   });
 
-  it('asks for the image encoder the reference image needs before the job runs, and not once it is installed', () => {
+  it('asks for the image encoder the reference image needs before the job runs, and not once it is installed', { tags: ['condition'] }, () => {
     useParams.getState().addRefImage({ imageName: 'r.png', imageUrl: 'http://novira-image.localhost/full/r.png', modelKey: 'ipa-xl' });
     const reason = t('params.readiness.refNeedsEncoder', { size: 'ViT-H' });
     expect(paramsReadiness({ refImages: true })).toEqual([]);
@@ -83,7 +83,7 @@ describe('params builders', () => {
     expect(paramsReadiness({ refImages: false })).toEqual([]);
   });
 
-  it('puts the missing parts of the chosen model first, and drops the reason once none is missing', () => {
+  it('puts the missing parts of the chosen model first, and drops the reason once none is missing', { tags: ['condition'] }, () => {
     const key = useParams.getState().modelKey!;
     const missing = { id: 'te', name: 'qwen_3_06b_base', base: 'any' as const, type: 'text_encoder' as const, description: '', source: 'r::te.safetensors' };
     useModelParts.getState().setReport({ modelKey: key, modelName: 'M', missing: [missing], unavailable: [] });
@@ -93,7 +93,7 @@ describe('params builders', () => {
     useModelParts.setState({ reports: {} });
   });
 
-  it('asks for the IP-Adapter pack only while it is known to be missing', () => {
+  it('asks for the IP-Adapter pack only while it is known to be missing', { tags: ['condition'] }, () => {
     useParams.getState().addRefImage({ imageName: 'r.png', imageUrl: 'http://novira-image.localhost/full/r.png', modelKey: 'ipa-xl' });
     const reason = t('params.readiness.refNeedsPack', { pack: 'ComfyUI_IPAdapter_plus' });
     expect(paramsReadiness({ refImages: true })).toEqual([]);
@@ -106,7 +106,7 @@ describe('params builders', () => {
     expect(paramsReadiness({ refImages: true })).toEqual([]);
   });
 
-  it('sends the high-resolution fix only from the Generate tab, and only when it is on', async () => {
+  it('sends the high-resolution fix only from the Generate tab, and only when it is on', { tags: ['decision-table'] }, async () => {
     expect((await buildGenerateRequest(false)).params.hiresFix).toBeUndefined();
     useParams.getState().setHires({ enabled: true, upscaleModelKey: 'up', steps: 10 });
     expect((await buildGenerateRequest(false)).params.hiresFix).toEqual({ scale: 1.5, strength: 0.45, upscaleModelKey: 'up', steps: 10 });
@@ -115,7 +115,7 @@ describe('params builders', () => {
     expect((await buildUpscaleRequest(false)).params.hiresFix).toBeUndefined();
   });
 
-  it('draws over the image to image picture with its strength, sized to the trained size nearest its shape, and with the fix', async () => {
+  it('draws over the image to image picture with its strength, sized to the trained size nearest its shape, and with the fix', { tags: ['scenario'] }, async () => {
     useParams.getState().setHires({ enabled: true });
     const image = { name: 'i.png', url: 'u/full/i.png', thumbnailUrl: 'u', width: 1200, height: 800 } as never;
     useParams.getState().set({ strength: 0.55 });
@@ -134,13 +134,13 @@ describe('params builders', () => {
     expect(useParams.getState().width).toBe(1216);
   });
 
-  it('never sends a manga finish, and asks nothing of its pack', async () => {
+  it('never sends a manga finish, and asks nothing of its pack', { tags: ['condition'] }, async () => {
     useNodePacks.setState({ packs: { available: true, installed: [], comfyVersion: null, restartNeeded: false } });
     expect((await buildGenerateRequest(false)).params.mangaScreen).toBeUndefined();
     expect(generateReadiness()).toEqual([]);
   });
 
-  it('blocks a missing upscale model of the fix and only warns about a size the model may not draw well', () => {
+  it('blocks a missing upscale model of the fix and only warns about a size the model may not draw well', { tags: ['error-guessing'] }, () => {
     useParams.setState({ width: 1024, height: 1024 });
     useParams.getState().setHires({ enabled: true, scale: 2, upscaleModelKey: 'gone' });
     expect(generateReadiness()).toEqual([t('params.readiness.hiresNoModel')]);
@@ -154,7 +154,7 @@ describe('params builders', () => {
     expect(generateWarnings()).toEqual([]);
   });
 
-  it('blocks Invoke on a wildcard without a list, and expands the known ones', () => {
+  it('blocks Invoke on a wildcard without a list, and expands the known ones', { tags: ['error-guessing'] }, () => {
     useParams.setState({ positivePrompt: 'a __pet__ and a __bird__' });
     expect(generateReadiness()).toEqual([t('params.readiness.wildcardUnknown', { name: '__bird__' })]);
     useParams.setState({ positivePrompt: 'a __pet__' });
@@ -168,7 +168,7 @@ describe('params builders', () => {
     ]);
   });
 
-  it('random mode makes one picture per count, each prompt fixed by its own seed', () => {
+  it('random mode makes one picture per count, each prompt fixed by its own seed', { tags: ['decision-table'] }, () => {
     useParams.setState({ dynamicPromptMode: 'random' });
     const base = { origin: 'generate', destination: 'gallery', iterations: 4, randomizeSeed: false, prepend: false, boardId: null } as const;
     const req = { ...base, params: { positivePrompt: 'a {red|blue} __pet__', seed: 100 } as never };
@@ -189,7 +189,7 @@ describe('params builders', () => {
     expect(dynamicBatches({ ...base, params: { positivePrompt: 'a cat', seed: 1 } as never })).toHaveLength(1);
   });
 
-  it('expands a dynamic negative prompt too: every positive with every negative, or one pick per seed', () => {
+  it('expands a dynamic negative prompt too: every positive with every negative, or one pick per seed', { tags: ['decision-table'] }, () => {
     const base = { origin: 'generate', destination: 'gallery', iterations: 1, randomizeSeed: false, prepend: false, boardId: null } as const;
     useParams.setState({ dynamicPromptMode: 'combinatorial' });
     const both = dynamicBatches({ ...base, params: { positivePrompt: '{a|b}', negativePrompt: '{x|y}', seed: 5 } as never });
@@ -215,13 +215,13 @@ describe('params builders', () => {
     expect(dynamicBatches({ ...base, iterations: 6, params: { positivePrompt: 'a cat', negativePrompt: '{x|y}', seed: 40 } as never }).map((b) => b.params.negativePrompt)).toEqual(random.map((b) => b.params.negativePrompt));
   });
 
-  it('reports a wildcard problem of the negative prompt as well', () => {
+  it('reports a wildcard problem of the negative prompt as well', { tags: ['error-guessing'] }, () => {
     useParams.setState({ positivePrompt: 'a cat', negativePrompt: '__nothing__' });
     expect(generateReadiness().some((r) => r.includes('__nothing__'))).toBe(true);
     useParams.setState({ negativePrompt: '' });
   });
 
-  it('builds an upscale request from the initial image', async () => {
+  it('builds an upscale request from the initial image', { tags: ['scenario'] }, async () => {
     expect(upscaleReadiness()).toHaveLength(1);
     const image = { name: 'i', url: 'u', thumbnailUrl: 'u', width: 300, height: 200 } as never;
     useParams.getState().setUpscale({ initialImage: image, scale: 2, postProcessingModelKey: 'up' });
@@ -232,7 +232,7 @@ describe('params builders', () => {
     expect(req.params).toMatchObject({ generationMode: 'upscale', width: 300, height: 200, upscaleScale: 2, upscaleModelKey: 'up', tileControlnetModelKey: 'cn-tile', postProcessingModelKey: 'up' });
   });
 
-  it('upscales without a tile ControlNet when none fits the main model (Anima has none)', async () => {
+  it('upscales without a tile ControlNet when none fits the main model (Anima has none)', { tags: ['condition'] }, async () => {
     useModels.getState().setModels([...useModels.getState().models, model('main-anima', 'main', 'anima')]);
     const image = { name: 'i', url: 'u', thumbnailUrl: 'u', width: 300, height: 200 } as never;
     useParams.getState().setUpscale({ initialImage: image });
@@ -251,7 +251,7 @@ describe('params builders', () => {
 });
 
 describe('apply recommended', () => {
-  it('sets the fallback values of a model without saved defaults, so nothing is left mismatched', () => {
+  it('sets the fallback values of a model without saved defaults, so nothing is left mismatched', { tags: ['condition'] }, () => {
     const wai = model('wai', 'main', 'sdxl', 'waiIllustriousSDXL_v170');
     useModels.setState({ models: [wai] });
     useParams.getState().set({ modelKey: 'wai', steps: 12, cfgScale: 9, scheduler: 'dpmpp_2m_k', width: 832, height: 1216 });
@@ -265,7 +265,7 @@ describe('apply recommended', () => {
 
 describe('recommended steps range', () => {
   const settings = { cfgScale: 4.5, scheduler: 'euler' as const, width: 1024, height: 1024 };
-  it('flags Anima below 24 of its 30 steps, where riakuLab drew a flat blue picture at 17', () => {
+  it('flags Anima below 24 of its 30 steps, where riakuLab drew a flat blue picture at 17', { tags: ['regression', 'boundary'] }, () => {
     const anima = modelProfile(model('a', 'main', 'anima'));
     expect(anima.stepsRange).toEqual([24, 38]);
     expect(profileMismatches(anima, { ...settings, steps: 17 })).toContain('steps');
@@ -275,12 +275,12 @@ describe('recommended steps range', () => {
     expect(profileMismatches(anima, { ...settings, steps: 39 })).toContain('steps');
   });
 
-  it('keeps the wider lower bound of the other families', () => {
+  it('keeps the wider lower bound of the other families', { tags: ['boundary'] }, () => {
     expect(modelProfile(model('x', 'main', 'sdxl')).stepsRange).toEqual([15, 35]);
     expect(modelProfile(model('f', 'main', 'flux')).stepsRange).toEqual([15, 35]);
   });
 
-  it('takes the share of the steps a model saved for itself', () => {
+  it('takes the share of the steps a model saved for itself', { tags: ['condition'] }, () => {
     const own = { ...model('a', 'main', 'anima'), defaultSettings: { steps: 40 } };
     expect(modelProfile(own).stepsRange).toEqual([32, 50]);
   });

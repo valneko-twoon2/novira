@@ -10,31 +10,31 @@ inEachTheme((theme) => {
     await showTab(page, tab);
   };
 
-  test('canvas', async ({ page }) => {
+  test('canvas', { tag: ['@scenario'] }, async ({ page }) => {
     await open(page, 'canvas');
     await snap(page, 'canvas', theme, 'screen');
     await snap(page, 'canvas', theme, 'view', page.getByTestId('canvas-view'));
   });
 
-  test('upscaling', async ({ page }) => {
+  test('upscaling', { tag: ['@scenario'] }, async ({ page }) => {
     await open(page, 'upscaling');
     await snap(page, 'upscaling', theme, 'screen');
   });
 
-  test('workflows', async ({ page }) => {
+  test('workflows', { tag: ['@scenario'] }, async ({ page }) => {
     await open(page, 'workflows');
     await snap(page, 'workflows', theme, 'screen');
     await snap(page, 'workflows', theme, 'editor', page.getByTestId('wf-editor'));
   });
 
-  test('models', async ({ page }) => {
+  test('models', { tag: ['@scenario'] }, async ({ page }) => {
     await open(page, 'models');
     await expect(page.getByTestId('mm-item').first()).toBeVisible();
     await snap(page, 'models', theme, 'screen');
     await snap(page, 'models', theme, 'first-card', page.getByTestId('mm-item').first());
   });
 
-  test('browse', async ({ page }) => {
+  test('browse', { tag: ['@scenario'] }, async ({ page }) => {
     await open(page, 'browse');
     // Search results arrive after a short mock delay, and each cover picture loads on its own.
     await expect(page.getByTestId('browse-card').first()).toBeVisible();
@@ -44,7 +44,7 @@ inEachTheme((theme) => {
     await snap(page, 'browse', theme, 'first-card', page.getByTestId('browse-card').first());
   });
 
-  test('queue with a failed and a finished job', async ({ page }) => {
+  test('queue with a failed and a finished job', { tag: ['@scenario'] }, async ({ page }) => {
     await openDesktop(page, '?scenario=empty');
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
     await page.getByTestId('seed-fixed').click();
@@ -59,7 +59,7 @@ inEachTheme((theme) => {
     await snap(page, 'queue', theme, 'list', page.getByTestId('queue-list'));
   });
 
-  test('extensions', async ({ page }) => {
+  test('extensions', { tag: ['@scenario'] }, async ({ page }) => {
     await openDesktop(page);
     // Not a work tab: it has no aria-selected, so showTab does not apply.
     await page.getByTestId('tab-extensions').click();
@@ -67,7 +67,7 @@ inEachTheme((theme) => {
     await snap(page, 'extensions', theme, 'screen');
   });
 
-  test('log', async ({ page }) => {
+  test('log', { tag: ['@scenario'] }, async ({ page }) => {
     await openDesktop(page);
     await page.getByTestId('devlog-open').click();
     await expect(page.getByTestId('devlog')).toBeVisible();

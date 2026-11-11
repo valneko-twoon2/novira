@@ -29,7 +29,7 @@ const focus = () => {
 const blur = () => act(() => button().blur());
 
 describe('Tooltip', () => {
-  it('adds nothing but handlers and its state while closed', () => {
+  it('adds nothing but handlers and its state while closed', { tags: ['condition'] }, () => {
     render(
       <Tooltip content="Go there">
         <button type="button">go</button>
@@ -40,7 +40,7 @@ describe('Tooltip', () => {
     expect(screen.queryByRole('tooltip')).toBeNull();
   });
 
-  it('opens at once on focus, describes the control, and closes on blur', () => {
+  it('opens at once on focus, describes the control, and closes on blur', { tags: ['state-transition'] }, () => {
     render(
       <Tooltip content="Go there" side="right">
         <button type="button">go</button>
@@ -57,7 +57,7 @@ describe('Tooltip', () => {
     expect(screen.queryByRole('tooltip')).toBeNull();
   });
 
-  it('does not open on a focus the browser does not show, as when a dialog closed by the mouse gives the focus back', () => {
+  it('does not open on a focus the browser does not show, as when a dialog closed by the mouse gives the focus back', { tags: ['error-guessing'] }, () => {
     render(
       <Tooltip content="Go there">
         <button type="button">go</button>
@@ -76,7 +76,7 @@ describe('Tooltip', () => {
     matches.mockRestore();
   });
 
-  it('opens on hover after 400 ms, closes on leaving, and opens the next one at once for a moment', () => {
+  it('opens on hover after 400 ms, closes on leaving, and opens the next one at once for a moment', { tags: ['state-transition'] }, () => {
     render(
       <>
         <Tooltip content="First">
@@ -98,7 +98,7 @@ describe('Tooltip', () => {
     expect(screen.getByRole('tooltip').textContent).toBe('Second');
   });
 
-  it('does not open when the pointer leaves before the delay', () => {
+  it('does not open when the pointer leaves before the delay', { tags: ['boundary'] }, () => {
     render(
       <Tooltip content="Go there">
         <button type="button">go</button>
@@ -110,7 +110,7 @@ describe('Tooltip', () => {
     expect(screen.queryByRole('tooltip')).toBeNull();
   });
 
-  it('closes on a press, and the focus the press gives does not open it', () => {
+  it('closes on a press, and the focus the press gives does not open it', { tags: ['condition'] }, () => {
     render(
       <Tooltip content="Go there">
         <button type="button">go</button>
@@ -129,7 +129,7 @@ describe('Tooltip', () => {
     expect(screen.getByRole('tooltip')).toBeTruthy();
   });
 
-  it('closes on Escape and on a click', () => {
+  it('closes on Escape and on a click', { tags: ['condition'] }, () => {
     render(
       <Tooltip content="Go there">
         <button type="button">go</button>
@@ -144,7 +144,7 @@ describe('Tooltip', () => {
     expect(screen.queryByRole('tooltip')).toBeNull();
   });
 
-  it("keeps the control's own handlers, state and ref", () => {
+  it("keeps the control's own handlers, state and ref", { tags: ['condition'] }, () => {
     const onFocus = vi.fn();
     const onClick = vi.fn();
     const ref = createRef<HTMLButtonElement>();
@@ -164,7 +164,7 @@ describe('Tooltip', () => {
     expect(onClick).toHaveBeenCalledOnce();
   });
 
-  it('shows the control alone when there is nothing to say', () => {
+  it('shows the control alone when there is nothing to say', { tags: ['condition'] }, () => {
     render(
       <Tooltip content="">
         <button type="button">go</button>

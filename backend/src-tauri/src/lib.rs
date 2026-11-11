@@ -447,6 +447,7 @@ pub fn run() {
 mod tests {
     /// The About dialog and the Settings screen show the frontend's `package.json` version, which must equal the
     /// version every crate inherits from `[workspace.package]`.
+    // tags: static, condition
     #[test]
     fn the_frontend_package_has_the_app_version() {
         let package: serde_json::Value =

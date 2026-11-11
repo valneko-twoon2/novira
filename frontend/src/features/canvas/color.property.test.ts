@@ -7,7 +7,7 @@ import { fromHex, toHex } from './color';
 const byte = fc.integer({ min: 0, max: 255 });
 
 describe('canvas colours (properties)', () => {
-  it('toHex(fromHex(x)) returns the same colour, in lower case', () => {
+  it('toHex(fromHex(x)) returns the same colour, in lower case', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(byte, byte, byte, fc.boolean(), (r, g, b, hash) => {
         const hex = `${hash ? '#' : ''}${[r, g, b].map((n) => n.toString(16).padStart(2, '0')).join('')}`;
@@ -16,7 +16,7 @@ describe('canvas colours (properties)', () => {
     );
   });
 
-  it('fromHex never throws, keeps the alpha and gives whole channels in 0..255 for any text', () => {
+  it('fromHex never throws, keeps the alpha and gives whole channels in 0..255 for any text', { tags: ['error-guessing', 'boundary'] }, () => {
     check(
       fc.property(junkText, fc.double({ min: 0, max: 1, noNaN: true }), (text, a) => {
         const c = fromHex(text, a);
@@ -26,7 +26,7 @@ describe('canvas colours (properties)', () => {
     );
   });
 
-  it('toHex clamps channels outside 0..255 and rounds fractions', () => {
+  it('toHex clamps channels outside 0..255 and rounds fractions', { tags: ['boundary'] }, () => {
     check(
       fc.property(fc.double({ min: -1000, max: 1000, noNaN: true }), (n) => {
         expect(toHex({ r: n, g: n, b: n, a: 1 })).toMatch(/^#[0-9a-f]{6}$/);

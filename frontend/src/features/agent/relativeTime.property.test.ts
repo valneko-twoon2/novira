@@ -8,15 +8,15 @@ import { relativeTime } from './relativeTime';
 const ms = fc.integer({ min: 0, max: Date.UTC(2200, 0, 1) });
 
 describe('relativeTime (properties)', () => {
-  it('gives non-empty text for any pair of times (even one in the future) in every language', () => {
+  it('gives non-empty text for any pair of times (even one in the future) in every language', { tags: ['error-guessing'] }, () => {
     check(fc.property(ms, ms, fc.constantFrom(...LOCALES), (time, now, locale) => relativeTime(time, now, locale).length > 0));
   });
 
-  it('a time that is not in the past counts as "now" and is the same as the time itself', () => {
+  it('a time that is not in the past counts as "now" and is the same as the time itself', { tags: ['error-guessing'] }, () => {
     check(fc.property(ms, fc.nat(1000), fc.constantFrom(...LOCALES), (now, ahead, locale) => relativeTime(now + ahead, now, locale) === relativeTime(now, now, locale)));
   });
 
-  it('never throws for broken numbers', () => {
+  it('never throws for broken numbers', { tags: ['error-guessing'] }, () => {
     for (const bad of [NaN, Infinity, -Infinity]) expect(() => relativeTime(bad, 0, 'en')).not.toThrow();
     for (const bad of [NaN, Infinity]) expect(() => relativeTime(0, bad, 'en')).not.toThrow();
   });

@@ -51,7 +51,7 @@ afterEach(() => {
 });
 
 describe('fixSize', () => {
-  it('keeps the size of the picture in whole eights and shrinks a picture past the largest side', () => {
+  it('keeps the size of the picture in whole eights and shrinks a picture past the largest side', { tags: ['condition'] }, () => {
     expect(fixSize(832, 1216)).toEqual({ width: 832, height: 1216 });
     expect(fixSize(1001, 643)).toEqual({ width: 1000, height: 640 });
     expect(fixSize(4096, 2048)).toEqual({ width: 2048, height: 1024 });
@@ -59,7 +59,7 @@ describe('fixSize', () => {
 });
 
 describe('fixRequest', () => {
-  it('redraws the masked part of the picture with the panel words, the characters and the style, and no hires pass', () => {
+  it('redraws the masked part of the picture with the panel words, the characters and the style, and no hires pass', { tags: ['condition'] }, () => {
     const ref = seed();
     const req = fixRequest(ref, image('girl.png'), '/img/mask.png', { strength: 0.6 });
     expect(req).toMatchObject({ origin: 'generate', destination: 'gallery', iterations: 1, initImageUrl: '/img/girl.png', maskImageUrl: '/img/mask.png' });
@@ -70,7 +70,7 @@ describe('fixRequest', () => {
     expect(req.controlLayers).toBeUndefined();
   });
 
-  it('draws the part from the words given instead of the panel prompt, with the characters still in front', () => {
+  it('draws the part from the words given instead of the panel prompt, with the characters still in front', { tags: ['regression'] }, () => {
     const ref = seed();
     const req = fixRequest(ref, image('girl.png'), '/img/mask.png', { words: ' detailed hand ', strength: 0.75 });
     expect(req.params.positivePrompt).toBe('quality, 1girl, red scarf, detailed hand');
@@ -91,7 +91,7 @@ describe('redrawPart', () => {
   }
   const box = { strokes: [], boxes: [{ x: 0.1, y: 0.1, w: 0.3, h: 0.3 }] };
 
-  it('stores the mask as a hidden picture, queues the redraw, and the result replaces the picture and keeps the old one', async () => {
+  it('stores the mask as a hidden picture, queues the redraw, and the result replaces the picture and keeps the old one', { tags: ['condition'] }, async () => {
     seed();
     const { upload, sent } = mockBackend();
     expect(await redrawPart('panel-0', box, { strength: 0.7 })).toBe(true);
@@ -103,7 +103,7 @@ describe('redrawPart', () => {
     expect(panel.takes.map((take) => take.imageName)).toEqual(['girl.png']);
   });
 
-  it('queues nothing for a panel without a picture, a mask with nothing painted, or no model', async () => {
+  it('queues nothing for a panel without a picture, a mask with nothing painted, or no model', { tags: ['error-guessing'] }, async () => {
     const { enqueue } = mockBackend();
     seed(null);
     expect(await redrawPart('panel-0', box, { strength: 0.7 })).toBe(false);
@@ -117,7 +117,7 @@ describe('redrawPart', () => {
     expect(enqueue).not.toHaveBeenCalled();
   });
 
-  it('says so when the job cannot be queued', async () => {
+  it('says so when the job cannot be queued', { tags: ['error-guessing', 'state-transition'] }, async () => {
     seed();
     mockBackend();
     vi.spyOn(backend, 'enqueue').mockRejectedValue(new Error('engine is down'));
@@ -125,7 +125,7 @@ describe('redrawPart', () => {
     expect(toast).toHaveBeenLastCalledWith({ status: 'error', title: t('comic.draw.failed'), description: 'engine is down' });
   });
 
-  it('refuses a panel that is not there, as one without a picture', async () => {
+  it('refuses a panel that is not there, as one without a picture', { tags: ['error-guessing'] }, async () => {
     seed();
     const { enqueue } = mockBackend();
     expect(await redrawPart('gone', box, { strength: 0.7 })).toBe(false);
@@ -133,7 +133,7 @@ describe('redrawPart', () => {
     expect(enqueue).not.toHaveBeenCalled();
   });
 
-  it('passes on the text the desktop shell refuses the job with', async () => {
+  it('passes on the text the desktop shell refuses the job with', { tags: ['error-guessing'] }, async () => {
     seed();
     mockBackend();
     // The shell rejects a command with the error's text, not an Error.
@@ -142,7 +142,7 @@ describe('redrawPart', () => {
     expect(toast).toHaveBeenLastCalledWith({ status: 'error', title: t('comic.draw.failed'), description: 'queue is full' });
   });
 
-  it('does not say the redraw is queued when the queue takes no job', async () => {
+  it('does not say the redraw is queued when the queue takes no job', { tags: ['state-transition'] }, async () => {
     seed();
     mockBackend();
     vi.spyOn(backend, 'enqueue').mockResolvedValue([]);

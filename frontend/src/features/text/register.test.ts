@@ -18,13 +18,13 @@ beforeEach(() => {
 });
 
 describe('text editor for the assistant', () => {
-  it('reports the scene and selection', () => {
+  it('reports the scene and selection', { tags: ['condition'] }, () => {
     const layer = { ...newTextLayer(EMPTY_SCENE, 'A'), id: 'a' };
     useTextEditor.setState({ scene: { ...EMPTY_SCENE, layers: [layer] }, selectedId: 'a' });
     expect(editor!.context()).toMatchObject({ selectedLayerId: 'a', scene: { layers: [{ id: 'a' }] } });
   });
 
-  it('applies operations as one undo step and selects the new layer', () => {
+  it('applies operations as one undo step and selects the new layer', { tags: ['state-transition'] }, () => {
     const changed = editor!.apply([
       { op: 'add', layer: { type: 'text', text: 'one' } },
       { op: 'add', layer: { type: 'text', text: 'two' } },
@@ -36,12 +36,12 @@ describe('text editor for the assistant', () => {
     expect(s.past).toHaveLength(1);
   });
 
-  it('reports no change and leaves the history alone when nothing applied', () => {
+  it('reports no change and leaves the history alone when nothing applied', { tags: ['condition'] }, () => {
     expect(editor!.apply([{ op: 'remove', id: 'missing' }])).toBe(false);
     expect(useTextEditor.getState().past).toHaveLength(0);
   });
 
-  it('snapshots the scene and restores it without a selection', () => {
+  it('snapshots the scene and restores it without a selection', { tags: ['state-transition'] }, () => {
     editor!.apply([{ op: 'add', layer: { type: 'text', text: 'one' } }]);
     const snap = editor!.snapshot();
     editor!.apply([{ op: 'clear' }]);

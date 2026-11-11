@@ -393,7 +393,7 @@ export function render(tests) {
   const total = (list) => list.reduce((s, t) => s + t.count, 0);
   const by = (pred) => total(tests.filter(pred));
   const lines = [];
-  lines.push(`宣言されたテストは全部で **${total(tests)} 件**（${RUNNERS.map(([r, name]) => `${name} ${by((t) => t.runner === r)}`).join('、')}）。ソースを静的に数えた件数で、\`it.each\` は行数、ループで作るテストは 1 件と数える。`);
+  lines.push(`宣言されたテストは全部で **${total(tests)} 件**（${RUNNERS.map(([r, name]) => `${name} ${by((t) => t.runner === r)}`).join('、')}）。ソースを静的に数えた件数で、\`it.each\` は行数、ループや実行時の表で作るテストは 1 件と数える（そのぶん、vitest や cargo が報告する実行件数より少ない）。`);
   lines.push('');
   lines.push('### 手法別');
   lines.push('');

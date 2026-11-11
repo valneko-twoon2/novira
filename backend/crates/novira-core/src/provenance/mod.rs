@@ -245,6 +245,7 @@ mod tests {
         out.into_inner()
     }
 
+    // tags: scenario
     #[test]
     fn a_labelled_copy_carries_the_iptc_code_and_credentials_with_the_watermark_id() {
         let me = credentials::Identity::generate().unwrap();
@@ -269,6 +270,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn credentials_without_a_watermark_have_no_soft_binding() {
         let me = credentials::Identity::generate().unwrap();
@@ -278,6 +280,7 @@ mod tests {
         assert_eq!(f.credentials.soft_binding, None);
     }
 
+    // tags: error-guessing
     #[test]
     fn a_plain_file_and_garbage_show_nothing() {
         assert_eq!(
@@ -301,6 +304,7 @@ mod tests {
         .is_err());
     }
 
+    // tags: error-guessing
     #[test]
     fn tools_without_files_are_missing_and_refuse_to_load() {
         let data = tempfile::tempdir().unwrap();
@@ -310,6 +314,7 @@ mod tests {
         assert!(err.contains("not on this PC"), "{err}");
     }
 
+    // tags: error-guessing
     #[test]
     fn tools_with_files_of_the_right_size_report_ready_but_a_wrong_hash_fails_and_is_removed() {
         let data = tempfile::tempdir().unwrap();

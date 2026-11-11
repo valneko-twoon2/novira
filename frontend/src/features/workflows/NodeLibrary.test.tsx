@@ -18,7 +18,7 @@ const search = () => screen.getByLabelText(t('workflows.nodeLibrary.placeholder'
 const imageFolder = () => screen.getAllByTestId('wf-lib-group').find((g) => g.querySelector('.wf-nodes__label')?.textContent === 'image')!;
 
 describe('the node library', () => {
-  it('shows the nodes section with its folders closed, opens one on a click and closes it on the next', () => {
+  it('shows the nodes section with its folders closed, opens one on a click and closes it on the next', { tags: ['boundary', 'state-transition'] }, () => {
     render(<NodeLibrary />);
     expect(screen.getAllByTestId('wf-lib-group')[0]!.getAttribute('aria-expanded')).toBe('false');
     expect(screen.getAllByTestId('wf-lib-section')[0]!.textContent).toContain(t('workflows.nodeLibrary.section.core'));
@@ -30,7 +30,7 @@ describe('the node library', () => {
     expect(screen.queryAllByTestId('wf-lib-item')).toHaveLength(0);
   });
 
-  it('lists what a search matches with where it sits, and says when nothing matches', () => {
+  it('lists what a search matches with where it sits, and says when nothing matches', { tags: ['boundary', 'scenario'] }, () => {
     render(<NodeLibrary />);
     fireEvent.change(search(), { target: { value: 'integer' } });
     const items = screen.getAllByTestId('wf-lib-item');
@@ -43,7 +43,7 @@ describe('the node library', () => {
     expect(screen.getByText(t('workflows.picker.noResults'))).toBeTruthy();
   });
 
-  it('adds the node that is double-clicked, selected, and nothing on a single click', () => {
+  it('adds the node that is double-clicked, selected, and nothing on a single click', { tags: ['boundary', 'scenario'] }, () => {
     render(<NodeLibrary />);
     fireEvent.change(search(), { target: { value: 'integer' } });
     const before = useWorkflows.getState().nodes.length;
@@ -56,7 +56,7 @@ describe('the node library', () => {
     expect(nodes[nodes.length - 1]!.selected).toBe(true);
   });
 
-  it('adds the node with Enter, and not with another key', () => {
+  it('adds the node with Enter, and not with another key', { tags: ['scenario'] }, () => {
     render(<NodeLibrary />);
     fireEvent.change(search(), { target: { value: 'integer' } });
     const before = useWorkflows.getState().nodes.length;
@@ -67,7 +67,7 @@ describe('the node library', () => {
     expect(useWorkflows.getState().nodes).toHaveLength(before + 1);
   });
 
-  it('carries the node type when dragged', () => {
+  it('carries the node type when dragged', { tags: ['scenario'] }, () => {
     render(<NodeLibrary />);
     fireEvent.change(search(), { target: { value: 'integer' } });
     const item = screen.getAllByTestId('wf-lib-item')[0]!;

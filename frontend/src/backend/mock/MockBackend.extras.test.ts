@@ -26,7 +26,7 @@ async function start(engineInstall = false) {
 }
 
 describe('the pretend engine install (?engine=install)', () => {
-  it('starts as downloading and walks through the steps to ready', async () => {
+  it('starts as downloading and walks through the steps to ready', { tags: ['state-transition'] }, async () => {
     const { events, boot } = await start(true);
     expect(boot.engine).toMatchObject({ state: 'downloading', bytes: 0 });
     await vi.advanceTimersByTimeAsync(350 * 60);
@@ -39,14 +39,14 @@ describe('the pretend engine install (?engine=install)', () => {
     expect(downloads.at(-1)).toBe(2_400_000_000);
   });
 
-  it('is ready at once without the option', async () => {
+  it('is ready at once without the option', { tags: ['condition'] }, async () => {
     const { boot } = await start(false);
     expect(boot.engine).toEqual({ state: 'ready' });
   });
 });
 
 describe('model installs', () => {
-  it('cancels a download in progress and ignores an unknown one', async () => {
+  it('cancels a download in progress and ignores an unknown one', { tags: ['state-transition'] }, async () => {
     const { backend, events } = await start();
     const pending = backend.installModel('https://example.com/model.safetensors');
     await vi.advanceTimersByTimeAsync(1000);
@@ -59,7 +59,7 @@ describe('model installs', () => {
     expect(statuses.at(-1)).toBe('cancelled');
   });
 
-  it('refuses to update a model that does not exist, and scans a folder', async () => {
+  it('refuses to update a model that does not exist, and scans a folder', { tags: ['error-guessing'] }, async () => {
     const { backend } = await start();
     const pending = backend.updateModel('nope', { name: 'x' });
     const failed = expect(pending).rejects.toThrow('model not found: nope');
@@ -74,13 +74,13 @@ describe('model installs', () => {
 });
 
 describe('packs and node packs', () => {
-  it('cancels a pack download and a node pack install without error when nothing runs', async () => {
+  it('cancels a pack download and a node pack install without error when nothing runs', { tags: ['error-guessing'] }, async () => {
     const { backend } = await start();
     await backend.cancelPack('video');
     await backend.cancelNodePack('https://github.com/a/b');
   });
 
-  it('stops a pack download part way and goes back to missing', async () => {
+  it('stops a pack download part way and goes back to missing', { tags: ['state-transition'] }, async () => {
     const { backend, events } = await start();
     void backend.installPack('voice');
     await vi.advanceTimersByTimeAsync(300);
@@ -93,7 +93,7 @@ describe('packs and node packs', () => {
 });
 
 describe('the assistant and the restore state', () => {
-  it('signs in after a pause, answers a chat message, and has nothing to restore', async () => {
+  it('signs in after a pause, answers a chat message, and has nothing to restore', { tags: ['scenario'] }, async () => {
     const { backend } = await start();
     const login = backend.agentLogin('codex');
     await vi.advanceTimersByTimeAsync(1300);
@@ -118,7 +118,7 @@ describe('the assistant and the restore state', () => {
 });
 
 describe('the assistant fact look-up', () => {
-  it('gives the same canned article for the same words, nothing for [none], and refuses empty words', async () => {
+  it('gives the same canned article for the same words, nothing for [none], and refuses empty words', { tags: ['equivalence'] }, async () => {
     const { backend } = await start();
     const ask = async (language: 'ja' | 'en', query: string) => {
       const p = backend.lookupReference(language, query);
@@ -152,7 +152,7 @@ describe('engine settings', () => {
     await check;
   }
 
-  it('starts with the defaults and needs no restart', async () => {
+  it('starts with the defaults and needs no restart', { tags: ['condition'] }, async () => {
     const { backend } = await start();
     expect(await settle(backend.engineSettings())).toEqual({
       dataDir: 'C:\\Users\\you\\novira-data',
@@ -175,7 +175,7 @@ describe('engine settings', () => {
     });
   });
 
-  it('keeps a data folder change and a ComfyUI folder until cancelled or reset, each needing a restart', async () => {
+  it('keeps a data folder change and a ComfyUI folder until cancelled or reset, each needing a restart', { tags: ['state-transition'] }, async () => {
     const { backend } = await start();
     const moved = await settle(backend.chooseDataDir(true));
     expect(moved).toMatchObject({ dataDirNext: 'D:\\novira-data', dataDirMoves: true, restartNeeded: true });
@@ -185,7 +185,7 @@ describe('engine settings', () => {
     expect(await settle(backend.resetComfyuiInstallDir())).toMatchObject({ comfyuiInstallDir: null, restartNeeded: false });
   });
 
-  it('saves a valid patch and then needs a restart; back at the start values it does not', async () => {
+  it('saves a valid patch and then needs a restart; back at the start values it does not', { tags: ['state-transition'] }, async () => {
     const { backend } = await start();
     const changed = await settle(backend.setEngineSettings({ comfyuiPackage: 'amd', comfyuiStartTimeoutSecs: 1800 }));
     expect(changed).toMatchObject({ comfyuiPackage: 'amd', comfyuiStartTimeoutSecs: 1800, restartNeeded: true });
@@ -199,7 +199,7 @@ describe('engine settings', () => {
     expect(back.restartNeeded).toBe(false);
   });
 
-  it('refuses the values the backend refuses, and saves nothing of that patch', async () => {
+  it('refuses the values the backend refuses, and saves nothing of that patch', { tags: ['error-guessing'] }, async () => {
     const { backend } = await start();
     for (const secs of [29, 1801, 30.5, -60, Number.NaN]) {
       await refused(backend.setEngineSettings({ comfyuiPackage: 'amd', comfyuiStartTimeoutSecs: secs }), /30 to 1800/);
@@ -215,7 +215,7 @@ describe('engine settings', () => {
     });
   });
 
-  it('adds D:\\Models, E:\\Models and so on up to 16, and removes by index', async () => {
+  it('adds D:\\Models, E:\\Models and so on up to 16, and removes by index', { tags: ['boundary'] }, async () => {
     const { backend } = await start();
     expect((await settle(backend.addModelRoot()))?.modelRoots).toEqual(['D:\\Models']);
     expect(await settle(backend.addModelRoot())).toMatchObject({ modelRoots: ['D:\\Models', 'E:\\Models'], restartNeeded: true });
@@ -231,13 +231,13 @@ describe('engine settings', () => {
 });
 
 describe('unfinished downloads', () => {
-  it('starts with none, and deleting paths that are not there changes nothing', async () => {
+  it('starts with none, and deleting paths that are not there changes nothing', { tags: ['boundary'] }, async () => {
     const backend = new MockBackend('empty', false);
     expect(await backend.listUnfinishedDownloads()).toEqual([]);
     expect(await backend.deleteUnfinishedDownloads(['comfyui/.downloads/comfyui.part'])).toEqual([]);
   });
 
-  it('deletes the listed paths, returns what remains, and lists copies', async () => {
+  it('deletes the listed paths, returns what remains, and lists copies', { tags: ['condition'] }, async () => {
     const backend = new MockBackend('empty', false);
     const part: UnfinishedDownload = { path: 'comfyui/.downloads/comfyui.part', name: 'comfyui.part', bytes: 1_048_576 };
     const other: UnfinishedDownload = { path: 'models/.downloads/a.safetensors.part', name: 'a.safetensors.part', bytes: 2_000 };

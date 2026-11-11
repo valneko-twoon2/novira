@@ -21,7 +21,7 @@ const page = () => useComic.getState().projects[0]!.pages[0]!;
 beforeEach(reset);
 
 describe('the stacking order of panels', () => {
-  it('moves a panel to the front or the back with its shape, one step or all the way', () => {
+  it('moves a panel to the front or the back with its shape, one step or all the way', { tags: ['equivalence'] }, () => {
     const id = seed();
     useComic.getState().setPageFree(id, true);
     const ids = page().panels.map((p) => p.id);
@@ -34,7 +34,7 @@ describe('the stacking order of panels', () => {
     expect(page().panels.map((p) => p.id)).toEqual([ids[0], ids[1], ids[2]]);
   });
 
-  it('moves a panel one step forward, and orders the panels of an automatic page, which keeps no shapes', () => {
+  it('moves a panel one step forward, and orders the panels of an automatic page, which keeps no shapes', { tags: ['condition'] }, () => {
     const id = seed();
     const ids = page().panels.map((p) => p.id);
     expect(useComic.getState().movePanelOrder(id, 0, 'forward')).toBe(1);
@@ -43,7 +43,7 @@ describe('the stacking order of panels', () => {
     expect(useComic.getState().movePanelOrder(id, 2, 'forward')).toBe(-1);
   });
 
-  it('changes nothing for a panel already at the end, or one that is not there', () => {
+  it('changes nothing for a panel already at the end, or one that is not there', { tags: ['condition'] }, () => {
     const id = seed();
     useComic.getState().setPageFree(id, true);
     const before = useComic.getState().projects;
@@ -53,7 +53,7 @@ describe('the stacking order of panels', () => {
     expect(useComic.getState().projects).toBe(before);
   });
 
-  it('is one undo step', () => {
+  it('is one undo step', { tags: ['state-transition'] }, () => {
     const id = seed();
     useComic.getState().setPageFree(id, true);
     const order = page().panels.map((p) => p.id);
@@ -64,7 +64,7 @@ describe('the stacking order of panels', () => {
 });
 
 describe('putting a panel and its picture back', () => {
-  it('turns a tilted panel upright and keeps its size; "all" gives back the automatic shape', () => {
+  it('turns a tilted panel upright and keeps its size; "all" gives back the automatic shape', { tags: ['condition'] }, () => {
     const id = seed();
     useComic.getState().setPageFree(id, true);
     const original = pageShapes(page())[1]!;
@@ -82,12 +82,12 @@ describe('putting a panel and its picture back', () => {
     });
   });
 
-  it('does not reset the shape of a page that is not free', () => {
+  it('does not reset the shape of a page that is not free', { tags: ['state-transition'] }, () => {
     const id = seed();
     expect(useComic.getState().resetPanelShape(id, 0, 'all')).toBe(false);
   });
 
-  it('puts back only the chosen parts of a picture view', () => {
+  it('puts back only the chosen parts of a picture view', { tags: ['condition'] }, () => {
     const id = seed();
     const panelId = page().panels[0]!.id;
     useComic.getState().setPanelImage(panelId, 'a.png');
@@ -101,7 +101,7 @@ describe('putting a panel and its picture back', () => {
     void id;
   });
 
-  it('puts back the backdrop view', () => {
+  it('puts back the backdrop view', { tags: ['condition'] }, () => {
     const id = seed();
     useComic.getState().setBackdrop(id, 'a.png');
     useComic.getState().setBackdropView(id, { scale: 3, rotation: 20 });
@@ -111,7 +111,7 @@ describe('putting a panel and its picture back', () => {
 });
 
 describe('the finishing effect', () => {
-  it('follows the comic unless the page has its own', () => {
+  it('follows the comic unless the page has its own', { tags: ['condition'] }, () => {
     const id = seed();
     useComic.getState().setProjectEffect('ebook');
     const project = () => useComic.getState().projects[0]!;
@@ -122,7 +122,7 @@ describe('the finishing effect', () => {
     expect(effectOf(project(), page())).toBe('ebook');
   });
 
-  it('is saved and read back, a comic saved before it has none, and an unknown name falls back', () => {
+  it('is saved and read back, a comic saved before it has none, and an unknown name falls back', { tags: ['error-guessing', 'boundary'] }, () => {
     const id = seed();
     useComic.getState().setProjectEffect('sepia');
     useComic.getState().setPageEffect(id, 'mono');

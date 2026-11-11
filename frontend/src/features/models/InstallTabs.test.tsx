@@ -35,7 +35,7 @@ afterEach(() => {
 describe('InstallHuggingFace', () => {
   const files = ['turbo.safetensors', 'turbo.fp16.safetensors', 'sub/lora.ckpt'];
 
-  it('looks up a repo, lists its files and installs the checked ones', async () => {
+  it('looks up a repo, lists its files and installs the checked ones', { tags: ['scenario'] }, async () => {
     const list = vi.spyOn(backend, 'listHuggingFaceFiles').mockResolvedValue(files);
     ui(<InstallHuggingFace />);
     const input = screen.getByPlaceholderText('stabilityai/sdxl-turbo');
@@ -62,7 +62,7 @@ describe('InstallHuggingFace', () => {
     expect(installed.mock.calls.map((c) => c[0])).toEqual(['org/turbo::turbo.safetensors', 'org/turbo::sub/lora.ckpt']);
   });
 
-  it('says why the file list could not be read, and lists nothing', async () => {
+  it('says why the file list could not be read, and lists nothing', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'listHuggingFaceFiles').mockRejectedValue(new Error('No Hugging Face repository named org/none'));
     ui(<InstallHuggingFace />);
     fireEvent.change(screen.getByPlaceholderText('stabilityai/sdxl-turbo'), { target: { value: 'org/none' } });
@@ -73,7 +73,7 @@ describe('InstallHuggingFace', () => {
     expect(screen.queryByRole('checkbox')).toBeNull();
   });
 
-  it('installs every listed file for the whole repo, and only after a lookup', async () => {
+  it('installs every listed file for the whole repo, and only after a lookup', { tags: ['scenario'] }, async () => {
     vi.spyOn(backend, 'listHuggingFaceFiles').mockResolvedValue(files);
     ui(<InstallHuggingFace />);
     const repoButton = screen.getByText(t('models.install.hfInstallRepo')).closest('button')!;
@@ -93,7 +93,7 @@ describe('InstallScanFolder', () => {
     { path: 'D:\\m\\c.safetensors', installed: false },
   ];
 
-  it('scans a folder, filters the files and installs the ones not installed yet', async () => {
+  it('scans a folder, filters the files and installs the ones not installed yet', { tags: ['scenario'] }, async () => {
     vi.spyOn(backend, 'scanFolder').mockResolvedValue(found);
     useModels.setState({ installJobs: [{ id: 'j', source: 'D:\\m\\c.safetensors', name: 'c', status: 'downloading', bytes: 0, totalBytes: 1 }] });
     ui(<InstallScanFolder />);
@@ -116,7 +116,7 @@ describe('InstallScanFolder', () => {
     expect((screen.getByText(t('models.install.installAll')).closest('button') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('says why a scan failed and lists nothing', async () => {
+  it('says why a scan failed and lists nothing', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'scanFolder').mockRejectedValue(new Error('the folder cannot be read'));
     ui(<InstallScanFolder />);
     fireEvent.click(screen.getByTestId('mm-scan-button'));
@@ -124,7 +124,7 @@ describe('InstallScanFolder', () => {
     expect(screen.queryByText(t('models.install.scanResults', { count: 0 }))).toBeNull();
   });
 
-  it('says a folder is scanned in the desktop app when the page is on the browser server', () => {
+  it('says a folder is scanned in the desktop app when the page is on the browser server', { tags: ['scenario'] }, () => {
     asBrowserServer();
     const scan = vi.spyOn(backend, 'scanFolder');
     ui(<InstallScanFolder />);
@@ -156,7 +156,7 @@ describe('InstallStarter', () => {
   ];
   const model = (source: string): ModelConfig => ({ key: source, name: source, base: 'sdxl', type: 'vae', format: 'diffusers', description: '', path: '', size: 0, source });
 
-  it('starts the cards at the smallest size on a phone, and at 160 on a PC', async () => {
+  it('starts the cards at the smallest size on a phone, and at 160 on a PC', { tags: ['boundary'] }, async () => {
     vi.spyOn(backend, 'listStarterModels').mockResolvedValue(starters);
     const size = () => screen.getByRole('slider', { name: t('models.thumbSize') }).getAttribute('aria-valuenow');
     ui(<InstallStarter />);
@@ -169,7 +169,7 @@ describe('InstallStarter', () => {
     expect(size()).toBe('120');
   });
 
-  it('lists the starter models as cards and installs one, or a whole bundle', async () => {
+  it('lists the starter models as cards and installs one, or a whole bundle', { tags: ['scenario'] }, async () => {
     vi.spyOn(backend, 'listStarterModels').mockResolvedValue(starters);
     useModels.setState({ models: [model('src/three')] });
     ui(<InstallStarter />);
@@ -193,7 +193,7 @@ describe('InstallStarter', () => {
     expect((screen.getByText(t('models.starter.bundle', { base: 'SD1.X' })).closest('button') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('sorts the models and the model packs by purpose and family, and counts each choice', async () => {
+  it('sorts the models and the model packs by purpose and family, and counts each choice', { tags: ['scenario'] }, async () => {
     const list: StarterModel[] = [
       { id: 'anima', name: 'Anima Base', base: 'anima', type: 'diffusion_model', description: '', source: 'a', dependencies: ['enc'] },
       { id: 'enc', name: 'qwen encoder', base: 'any', type: 'text_encoder', description: '', source: 'e' },
@@ -228,7 +228,7 @@ describe('InstallStarter', () => {
     expect(screen.getByText(t('models.noMatch'))).toBeTruthy();
   });
 
-  it('searches by name, description, base and type, and says when nothing matches', async () => {
+  it('searches by name, description, base and type, and says when nothing matches', { tags: ['scenario'] }, async () => {
     vi.spyOn(backend, 'listStarterModels').mockResolvedValue(starters);
     ui(<InstallStarter />);
     await waitFor(() => expect(screen.getAllByTestId('mm-starter')).toHaveLength(3));
@@ -241,7 +241,7 @@ describe('InstallStarter', () => {
     expect(screen.getByText(t('models.noMatch'))).toBeTruthy();
   });
 
-  it('shows a spinner while the list loads', () => {
+  it('shows a spinner while the list loads', { tags: ['scenario'] }, () => {
     vi.spyOn(backend, 'listStarterModels').mockReturnValue(new Promise(() => {}));
     ui(<InstallStarter />);
     expect(document.querySelector('.mm-loading')).toBeTruthy();
@@ -249,7 +249,7 @@ describe('InstallStarter', () => {
 });
 
 describe('InstallFromSource', () => {
-  it('installs what was typed and clears the box; empty input does nothing', async () => {
+  it('installs what was typed and clears the box; empty input does nothing', { tags: ['scenario'] }, async () => {
     ui(<InstallFromSource />);
     const input = screen.getByTestId('mm-source-input') as HTMLInputElement;
     fireEvent.submit(input.closest('form')!);
@@ -260,7 +260,7 @@ describe('InstallFromSource', () => {
     expect(installed).toHaveBeenCalledWith('https://example.com/m.safetensors');
   });
 
-  it('keeps the text when the install did not start', async () => {
+  it('keeps the text when the install did not start', { tags: ['scenario'] }, async () => {
     installed.mockResolvedValueOnce(false);
     ui(<InstallFromSource />);
     const input = screen.getByTestId('mm-source-input') as HTMLInputElement;
@@ -271,7 +271,7 @@ describe('InstallFromSource', () => {
     expect(input.value).toBe('https://example.com/typo.safetensors');
   });
 
-  it('points a path on this PC to Scan Folder instead of sending it', () => {
+  it('points a path on this PC to Scan Folder instead of sending it', { tags: ['scenario'] }, () => {
     ui(<InstallFromSource />);
     const input = screen.getByTestId('mm-source-input') as HTMLInputElement;
     for (const path of ['C:\\models\\m.safetensors', 'd:/m.safetensors', '\\\\nas\\models\\m.safetensors', '/home/me/m.safetensors']) {
@@ -292,13 +292,13 @@ describe('InstallFromSource', () => {
 describe('InstallQueue', () => {
   const job = (over: Partial<ModelInstallJob>): ModelInstallJob => ({ id: 'j1', source: 'src', name: 'Model', status: 'downloading', bytes: 512, totalBytes: 1024, ...over });
 
-  it('says when the queue is empty', () => {
+  it('says when the queue is empty', { tags: ['scenario'] }, () => {
     ui(<InstallQueue />);
     expect(screen.getByText(t('models.queue.empty'))).toBeTruthy();
     expect((screen.getByText(t('models.queue.prune')).closest('button') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('lists each job with its progress and error, cancels active ones and prunes finished ones', () => {
+  it('lists each job with its progress and error, cancels active ones and prunes finished ones', { tags: ['scenario'] }, () => {
     const cancel = vi.spyOn(backend, 'cancelInstall').mockResolvedValue(undefined);
     useModels.setState({
       installJobs: [

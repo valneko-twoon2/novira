@@ -125,6 +125,7 @@ pub fn check_size(picture: &DynamicImage) -> Result<(), String> {
 mod tests {
     use super::*;
 
+    // tags: error-guessing, boundary
     #[test]
     fn pictures_too_large_or_too_small_are_refused_before_any_work() {
         let big = DynamicImage::new_rgb8(4097, 4096);
@@ -134,6 +135,7 @@ mod tests {
         assert!(check_size(&DynamicImage::new_rgb8(2, 2)).is_ok());
     }
 
+    // tags: error-guessing
     #[test]
     fn a_runtime_that_does_not_exist_is_an_error_not_a_panic() {
         let dir = tempfile::tempdir().unwrap();

@@ -74,7 +74,7 @@ const statusesOf = (events: BackendEvent[], id: number) =>
 
 
 describe('mock backend: start-up', () => {
-  it('starts with the sample boards and pictures by default', async () => {
+  it('starts with the sample boards and pictures by default', { tags: ['condition'] }, async () => {
     const { boot, backend } = await start('default');
     expect(boot.boards.map((b) => b.id)).toEqual(SEED_BOARDS.map((b) => b.id));
     expect(boot.images).toHaveLength(SEED_IMAGES.length);
@@ -89,12 +89,12 @@ describe('mock backend: start-up', () => {
     expect(boot.images.every((i, k) => k === 0 || i.createdAt < boot.images[k - 1]!.createdAt)).toBe(true);
   });
 
-  it('reports a mid-range graphics card, so the model recommendations show a mix of fits', async () => {
+  it('reports a mid-range graphics card, so the model recommendations show a mix of fits', { tags: ['condition'] }, async () => {
     const { backend } = await start('default');
     expect(await backend.hardwareInfo()).toEqual({ gpuName: 'Mock GPU', vramBytes: 12 * 1024 ** 3 });
   });
 
-  it('spreads the sample pictures over several days, so the gallery date filter has something to show', async () => {
+  it('spreads the sample pictures over several days, so the gallery date filter has something to show', { tags: ['condition'] }, async () => {
     const { boot } = await start('default');
     const times = boot.images.map((i) => i.createdAt);
     expect(times.every((t, k) => k === 0 || times[k - 1]! - t === SEED_IMAGE_SPACING_MS)).toBe(true);
@@ -104,7 +104,7 @@ describe('mock backend: start-up', () => {
     expect(days.size).toBeLessThan(times.length);
   });
 
-  it('starts with an empty gallery in the empty scenario but keeps models and workflows', async () => {
+  it('starts with an empty gallery in the empty scenario but keeps models and workflows', { tags: ['condition'] }, async () => {
     const { boot } = await start('empty');
     expect(boot.boards).toEqual([]);
     expect(boot.images).toEqual([]);
@@ -112,7 +112,7 @@ describe('mock backend: start-up', () => {
     expect(boot.workflows.length).toBeGreaterThan(0);
   });
 
-  it('returns copies, so changing them does not change the backend', async () => {
+  it('returns copies, so changing them does not change the backend', { tags: ['condition'] }, async () => {
     const backend = new MockBackend('default');
     const first = await backend.bootstrap();
     first.boards[0]!.name = 'changed';
@@ -122,7 +122,7 @@ describe('mock backend: start-up', () => {
 });
 
 describe('mock backend: generation', () => {
-  it('runs an item through pending, in progress and completed with step progress and the image', async () => {
+  it('runs an item through pending, in progress and completed with step progress and the image', { tags: ['state-transition'] }, async () => {
     const { backend, events, settled } = await start();
     const [item] = await backend.enqueue(request());
     const done = await settled(item!.id);
@@ -135,7 +135,7 @@ describe('mock backend: generation', () => {
     expect(backend.queueStatus()).toMatchObject({ completed: 1, pending: 0, inProgress: 0, total: 1 });
   });
 
-  it('records the sampling a newer family runs in place of the scheduler setting, as the backend does', async () => {
+  it('records the sampling a newer family runs in place of the scheduler setting, as the backend does', { tags: ['decision-table'] }, async () => {
     const { backend, settled } = await start();
     const images = async () => backend.getImageDetails((await backend.bootstrap()).images.map((i) => i.name));
     const [flux] = await backend.enqueue(request({}, { modelKey: 'main-flux-schnell', scheduler: 'euler_a' }));
@@ -146,7 +146,7 @@ describe('mock backend: generation', () => {
     expect((await images())[0]!.metadata?.sampling).toBeUndefined();
   });
 
-  it('records the sampler and noise schedule a picture named over the one its family fixes, and keeps the other half', async () => {
+  it('records the sampler and noise schedule a picture named over the one its family fixes, and keeps the other half', { tags: ['decision-table'] }, async () => {
     const { backend, settled } = await start();
     const images = async () => backend.getImageDetails((await backend.bootstrap()).images.map((i) => i.name));
     const [flux] = await backend.enqueue(request({}, { modelKey: 'main-flux-schnell', samplerName: 'res_multistep' }));
@@ -157,7 +157,7 @@ describe('mock backend: generation', () => {
     expect((await images())[0]!.metadata?.sampling).toEqual({ sampler: 'ddim', scheduler: 'beta' });
   });
 
-  it('makes the same picture from the same seed and prompt', async () => {
+  it('makes the same picture from the same seed and prompt', { tags: ['condition'] }, async () => {
     const a = await start();
     const b = await start();
     const [x] = await a.backend.enqueue(request());
@@ -174,7 +174,7 @@ describe('mock backend: generation', () => {
     expect(url(c.events)).not.toBe(url(a.events));
   });
 
-  it('varies the seed per iteration as seed + i, keeping MAX_SEED and wrapping after it', async () => {
+  it('varies the seed per iteration as seed + i, keeping MAX_SEED and wrapping after it', { tags: ['boundary'] }, async () => {
     const { backend } = await start();
     await backend.pauseProcessor();
     const [single] = await backend.enqueue(request({}, { seed: MAX_SEED }));
@@ -184,7 +184,7 @@ describe('mock backend: generation', () => {
     expect(new Set(items.map((i) => i.batchId)).size).toBe(1);
   });
 
-  it('fails an item whose prompt contains [fail]', async () => {
+  it('fails an item whose prompt contains [fail]', { tags: ['error-guessing'] }, async () => {
     const { backend, events, settled } = await start();
     const [item] = await backend.enqueue(request({}, { positivePrompt: 'a cat [FAIL]' }));
     const done = await settled(item!.id);
@@ -194,7 +194,7 @@ describe('mock backend: generation', () => {
     expect(events.some((e) => e.type === 'image_added')).toBe(false);
   });
 
-  it('fails an item whose prompt contains [oom] as out of memory, and other failures without a kind', async () => {
+  it('fails an item whose prompt contains [oom] as out of memory, and other failures without a kind', { tags: ['equivalence'] }, async () => {
     const { backend, settled } = await start();
     const [oom] = await backend.enqueue(request({}, { positivePrompt: 'a cat [oom]' }));
     const done = await settled(oom!.id);
@@ -205,7 +205,7 @@ describe('mock backend: generation', () => {
     expect((await settled(other!.id)).errorKind).toBeNull();
   });
 
-  it('retries an item smaller with the same seed, and refuses sizes the backend would refuse', async () => {
+  it('retries an item smaller with the same seed, and refuses sizes the backend would refuse', { tags: ['boundary'] }, async () => {
     const { backend, settled } = await start();
     const [oom] = await backend.enqueue(request({}, { positivePrompt: '[oom]', seed: 42, width: 512, height: 768 }));
     await settled(oom!.id);
@@ -218,7 +218,7 @@ describe('mock backend: generation', () => {
     await expect(backend.retryQueueItem(video!.id, { width: 256, height: 256 })).rejects.toThrow(/made from a prompt/);
   });
 
-  it('switches low-memory mode with a pretend restart, or waits for the next start while a job runs', async () => {
+  it('switches low-memory mode with a pretend restart, or waits for the next start while a job runs', { tags: ['state-transition'] }, async () => {
     const { backend, events } = await start();
     expect(await backend.lowMemoryMode()).toEqual({ enabled: false, ownedEngine: true, pendingRestart: false });
     expect(await backend.setLowMemoryMode(true)).toEqual({ enabled: true, ownedEngine: true, pendingRestart: false });
@@ -233,7 +233,7 @@ describe('mock backend: generation', () => {
     expect((await backend.lowMemoryMode()).pendingRestart).toBe(false);
   });
 
-  it('fails a job of the removed logo mode with a clear message, as the worker does', async () => {
+  it('fails a job of the removed logo mode with a clear message, as the worker does', { tags: ['error-guessing'] }, async () => {
     const { backend, settled } = await start();
     const [item] = await backend.enqueue(request({}, { generationMode: 'logo' }));
     const done = await settled(item!.id);
@@ -242,7 +242,7 @@ describe('mock backend: generation', () => {
     await expect(backend.retryQueueItem(item!.id)).rejects.toThrow(/can no longer be made/);
   });
 
-  it('fails a voice item with nothing to read', async () => {
+  it('fails a voice item with nothing to read', { tags: ['error-guessing'] }, async () => {
     const { backend, settled } = await start();
     const [item] = await backend.enqueue(request({}, { generationMode: 'voice', voice: { text: '  ' } as GenerationMetadata['voice'] }));
     const done = await settled(item!.id);
@@ -250,7 +250,7 @@ describe('mock backend: generation', () => {
     expect(done.error).toMatch(/no text/i);
   });
 
-  it('keeps drafts and canvas results out of the gallery', async () => {
+  it('keeps drafts and canvas results out of the gallery', { tags: ['condition'] }, async () => {
     const { backend, events, settled } = await start();
     const [draft] = await backend.enqueue(request({ boardId: 'b1' }, { steps: 10, draftAt: 0.35 }));
     const [staged] = await backend.enqueue(request({ destination: 'canvas', boardId: 'b1' }));
@@ -266,7 +266,7 @@ describe('mock backend: generation', () => {
     expect(draftSteps.length).toBeLessThan(10);
   });
 
-  it('keeps the guidance on the queue item and hands the mask to the picture', async () => {
+  it('keeps the guidance on the queue item and hands the mask to the picture', { tags: ['condition'] }, async () => {
     const { backend, events, settled } = await start();
     const control = { imageUrl: 'blob:c', modelKey: 'cn', weight: 0.75, beginEnd: [0, 0.75] as [number, number], controlMode: 'balanced' as const };
     const reference = { imageUrl: 'blob:r', modelKey: 'ipa', clipVisionModel: 'ViT-H' as const, weight: 0.5, beginEnd: [0, 1] as [number, number], method: 'style' as const };
@@ -284,7 +284,7 @@ describe('mock backend: generation', () => {
     expect(plain!.params.refImages).toBeUndefined();
   });
 
-  it('refuses the guidance the desktop backend refuses', async () => {
+  it('refuses the guidance the desktop backend refuses', { tags: ['error-guessing'] }, async () => {
     const { backend } = await start();
     const control = { imageUrl: 'blob:c', modelKey: 'cn', weight: 0.75, beginEnd: [0, 0.75] as [number, number], controlMode: 'balanced' as const };
     await expect(backend.enqueue(request({ initImageUrl: 'blob:src' }, { generationMode: 'inpaint' }))).rejects.toThrow(/need a mask/);
@@ -307,7 +307,7 @@ describe('mock backend: generation', () => {
     expect(backend.listQueue()).toEqual([]);
   });
 
-  it('keeps the regional layers on the queue item and the picture', async () => {
+  it('keeps the regional layers on the queue item and the picture', { tags: ['condition'] }, async () => {
     const { backend } = await start();
     const region = { imageUrl: 'blob:r', positivePrompt: 'a hat', negativePrompt: 'blur', autoNegative: true };
     const [item] = await backend.enqueue(request({ regionalLayers: [region] }, { regionalGuidanceCount: 1 }));
@@ -318,7 +318,7 @@ describe('mock backend: generation', () => {
     expect(plain!.params.regionalLayers).toBeUndefined();
   });
 
-  it('scales the picture of an upscale', async () => {
+  it('scales the picture of an upscale', { tags: ['condition'] }, async () => {
     const { backend, events, settled } = await start();
     const [item] = await backend.enqueue(request({}, { generationMode: 'upscale', upscaleScale: 4, width: 100, height: 50 }));
     await settled(item!.id);
@@ -326,7 +326,7 @@ describe('mock backend: generation', () => {
     expect([image.width, image.height]).toEqual([400, 200]);
   });
 
-  it('enlarges a picture with the high-resolution fix, counts both passes and keeps the first size in its settings', async () => {
+  it('enlarges a picture with the high-resolution fix, counts both passes and keeps the first size in its settings', { tags: ['condition'] }, async () => {
     const { backend, events, settled } = await start();
     const hiresFix = { scale: 1.5, strength: 0.45, steps: 2 };
     const [item] = await backend.enqueue(request({}, { width: 512, height: 680, hiresFix }));
@@ -339,7 +339,7 @@ describe('mock backend: generation', () => {
     expect(new Set(totals)).toEqual(new Set([5]));
   });
 
-  it('enlarges a picture drawn over a source with the high-resolution fix', async () => {
+  it('enlarges a picture drawn over a source with the high-resolution fix', { tags: ['condition'] }, async () => {
     const { backend, events, settled } = await start();
     const [item] = await backend.enqueue(request({}, { generationMode: 'img2img', strength: 0.6, width: 512, height: 512, hiresFix: { scale: 1.5, strength: 0.45 } }));
     expect((await settled(item!.id)).status).toBe('completed');
@@ -347,7 +347,7 @@ describe('mock backend: generation', () => {
     expect([image.width, image.height]).toEqual([768, 768]);
   });
 
-  it('refuses the high-resolution fix outside text and image to image', async () => {
+  it('refuses the high-resolution fix outside text and image to image', { tags: ['condition'] }, async () => {
     const { backend, settled } = await start();
     const [item] = await backend.enqueue(request({}, { generationMode: 'upscale', hiresFix: { scale: 1.5, strength: 0.45 } }));
     const done = await settled(item!.id);
@@ -356,7 +356,7 @@ describe('mock backend: generation', () => {
 });
 
 describe('mock backend: queue control', () => {
-  it('holds items while paused and runs them after resuming', async () => {
+  it('holds items while paused and runs them after resuming', { tags: ['state-transition'] }, async () => {
     const { backend, events, settled } = await start();
     await backend.pauseProcessor();
     const [item] = await backend.enqueue(request());
@@ -366,7 +366,7 @@ describe('mock backend: queue control', () => {
     expect(events.filter((e) => e.type === 'processor_state').map((e) => e.type === 'processor_state' && e.isPaused)).toEqual([true, false]);
   });
 
-  it('puts a prepended batch before the waiting items', async () => {
+  it('puts a prepended batch before the waiting items', { tags: ['condition'] }, async () => {
     const { backend } = await start();
     await backend.pauseProcessor();
     const [a] = await backend.enqueue(request());
@@ -375,7 +375,7 @@ describe('mock backend: queue control', () => {
     expect(backend.listQueue().map((q) => q.id)).toEqual([front!.id, a!.id, b!.id]);
   });
 
-  it('cancels a waiting item and a whole batch, and ignores finished ones', async () => {
+  it('cancels a waiting item and a whole batch, and ignores finished ones', { tags: ['state-transition'] }, async () => {
     const { backend } = await start();
     await backend.pauseProcessor();
     const [one] = await backend.enqueue(request());
@@ -388,7 +388,7 @@ describe('mock backend: queue control', () => {
     expect(backend.queueStatus()).toMatchObject({ canceled: 3, total: 3 });
   });
 
-  it('cancels every waiting item in one call and leaves the running one', async () => {
+  it('cancels every waiting item in one call and leaves the running one', { tags: ['state-transition'] }, async () => {
     const { backend } = await start();
     backend.setStepDelay(20);
     const running = await backend.enqueue(request({}, { steps: 50 }));
@@ -399,7 +399,7 @@ describe('mock backend: queue control', () => {
     await backend.cancelQueueItem(running[0]!.id);
   });
 
-  it('cancels the running item without producing an image', async () => {
+  it('cancels the running item without producing an image', { tags: ['state-transition'] }, async () => {
     const { backend, events } = await start();
     backend.setStepDelay(20);
     const [item] = await backend.enqueue(request({}, { steps: 50 }));
@@ -410,7 +410,7 @@ describe('mock backend: queue control', () => {
     expect(events.some((e) => e.type === 'image_added')).toBe(false);
   });
 
-  it('retries a failed item with the same seed and refuses to retry a completed one', async () => {
+  it('retries a failed item with the same seed and refuses to retry a completed one', { tags: ['state-transition'] }, async () => {
     const { backend, settled } = await start();
     const [bad] = await backend.enqueue(request({}, { positivePrompt: '[fail]', seed: 77 }));
     await settled(bad!.id);
@@ -424,7 +424,7 @@ describe('mock backend: queue control', () => {
     expect(await backend.retryQueueItem(good!.id)).toBeNull();
   });
 
-  it('prunes finished items but keeps waiting ones, and clears everything', async () => {
+  it('prunes finished items but keeps waiting ones, and clears everything', { tags: ['state-transition'] }, async () => {
     const { backend, settled } = await start();
     const [done] = await backend.enqueue(request());
     await settled(done!.id);
@@ -436,7 +436,7 @@ describe('mock backend: queue control', () => {
     expect(backend.queueStatus().total).toBe(0);
   });
 
-  it('refuses to restart the engine while a job is running', async () => {
+  it('refuses to restart the engine while a job is running', { tags: ['state-transition'] }, async () => {
     const { backend } = await start();
     backend.setStepDelay(20);
     const [item] = await backend.enqueue(request({}, { steps: 50 }));
@@ -447,7 +447,7 @@ describe('mock backend: queue control', () => {
 });
 
 describe('mock backend: boards and images', () => {
-  it('creates, renames and archives boards', async () => {
+  it('creates, renames and archives boards', { tags: ['scenario'] }, async () => {
     const { backend } = await start();
     const board = await backend.createBoard('Cats');
     expect(board).toMatchObject({ name: 'Cats', archived: false });
@@ -455,7 +455,7 @@ describe('mock backend: boards and images', () => {
     await expect(backend.updateBoard('missing', { name: 'x' })).rejects.toThrow(/not found/);
   });
 
-  it('trims board names and rejects blank ones on create and rename, like the real backend', async () => {
+  it('trims board names and rejects blank ones on create and rename, like the real backend', { tags: ['boundary'] }, async () => {
     const { backend } = await start();
     const board = await backend.createBoard('  Cats  ');
     expect(board.name).toBe('Cats');
@@ -466,7 +466,7 @@ describe('mock backend: boards and images', () => {
     expect(boards.find((b) => b.id === board.id)).toMatchObject({ name: 'Dogs', archived: false });
   });
 
-  it('deleting a board either deletes its images or moves them to Uncategorized', async () => {
+  it('deleting a board either deletes its images or moves them to Uncategorized', { tags: ['decision-table'] }, async () => {
     const { backend } = await start();
     const keep = await backend.createBoard('keep');
     const drop = await backend.createBoard('drop');
@@ -480,7 +480,7 @@ describe('mock backend: boards and images', () => {
     expect(moved.map((i) => [i.name, i.boardId])).toEqual([[a.name, null]]);
   });
 
-  it('saves an image, announces it, and updates or deletes it by name', async () => {
+  it('saves an image, announces it, and updates or deletes it by name', { tags: ['scenario'] }, async () => {
     const { backend, events } = await start();
     const image = await backend.saveImageFromUrl('blob:x', { boardId: null, category: 'user' });
     expect(image).toMatchObject({ width: 64, height: 48, category: 'user', isIntermediate: false, starred: false });
@@ -492,7 +492,7 @@ describe('mock backend: boards and images', () => {
     expect(await backend.updateImages([image.name], { starred: false })).toEqual([]);
   });
 
-  it('gives every image a unique name', async () => {
+  it('gives every image a unique name', { tags: ['condition'] }, async () => {
     const { backend } = await start();
     const names = new Set<string>();
     for (let i = 0; i < 5; i++) names.add((await backend.saveImageFromUrl(`blob:${i}`, { boardId: null })).name);
@@ -501,7 +501,7 @@ describe('mock backend: boards and images', () => {
 });
 
 describe('mock backend: models, workflows and packs', () => {
-  it('refuses the unfinished download paths the backend refuses, before deleting any', async () => {
+  it('refuses the unfinished download paths the backend refuses, before deleting any', { tags: ['error-guessing'] }, async () => {
     const { backend } = await start();
     await expect(backend.deleteUnfinishedDownloads(['../outside', 'x'.repeat(512)])).resolves.toEqual([]);
     for (const bad of [[''], ['a\u0007b'], ['x'.repeat(513)], ['あ'.repeat(171)], Array.from({ length: 1001 }, (_, i) => `p${i}`)]) {
@@ -510,7 +510,7 @@ describe('mock backend: models, workflows and packs', () => {
     await expect(backend.deleteUnfinishedDownloads(Array.from({ length: 1000 }, (_, i) => `p${i}`))).resolves.toEqual([]);
   });
 
-  it("offers every node of ComfyUI's own, in ComfyUI's order, with the hand-made ones in their place and no file names", async () => {
+  it("offers every node of ComfyUI's own, in ComfyUI's order, with the hand-made ones in their place and no file names", { tags: ['condition'] }, async () => {
     const { backend } = await start();
     const defs = await backend.nodeDefs();
     const core = Object.entries(defs).filter(([, d]) => /^(nodes|comfy_extras)(\.|$)/.test(d.python_module ?? ''));
@@ -522,7 +522,7 @@ describe('mock backend: models, workflows and packs', () => {
     expect(await backend.comfyUiLocale()).toBeNull();
   });
 
-  it('reports an install from a bad source as an error', async () => {
+  it('reports an install from a bad source as an error', { tags: ['error-guessing'] }, async () => {
     const { backend, events } = await start();
     const job = await backend.installModel('this-will-fail');
     expect(job.status).toBe('waiting');
@@ -533,14 +533,14 @@ describe('mock backend: models, workflows and packs', () => {
     expect(events.some((e) => e.type === 'model_added')).toBe(false);
   });
 
-  it('names an install after the starter model or the last part of the source', async () => {
+  it('names an install after the starter model or the last part of the source', { tags: ['equivalence'] }, async () => {
     const { backend } = await start();
     const job = await backend.installModel('C:\\models\\fancy-model.safetensors');
     expect(job.name).toBe('fancy-model.safetensors');
     await backend.cancelInstall(job.id);
   });
 
-  it('updates and deletes models, keeping the key', async () => {
+  it('updates and deletes models, keeping the key', { tags: ['condition'] }, async () => {
     const { backend, boot } = await start();
     const key = boot.models[0]!.key;
     expect(await backend.updateModel(key, { name: 'Renamed', key: 'hijack' })).toMatchObject({ key, name: 'Renamed' });
@@ -548,7 +548,7 @@ describe('mock backend: models, workflows and packs', () => {
     await expect(backend.updateModel(key, { name: 'x' })).rejects.toThrow(/not found/);
   });
 
-  it('saves a new user workflow, updates it in place and deletes it', async () => {
+  it('saves a new user workflow, updates it in place and deletes it', { tags: ['scenario'] }, async () => {
     const { backend } = await start();
     const saved = await backend.saveWorkflow({ name: 'Mine', description: '', author: '', tags: [], graph: {} });
     expect(saved).toMatchObject({ category: 'user', name: 'Mine' });
@@ -563,14 +563,14 @@ describe('mock backend: models, workflows and packs', () => {
     await expect(backend.saveWorkflow({ name: 'x', description: '', author: '', tags: [], graph: null })).rejects.toThrow('graph');
   });
 
-  it('keeps the saved canvas document in memory', async () => {
+  it('keeps the saved canvas document in memory', { tags: ['condition'] }, async () => {
     const { backend } = await start();
     expect(await backend.loadCanvas()).toBeNull();
     await backend.saveCanvas('{"version":1}');
     expect(await backend.loadCanvas()).toBe('{"version":1}');
   });
 
-  it('hands the screen state over once, then answers with the saved one', async () => {
+  it('hands the screen state over once, then answers with the saved one', { tags: ['condition'] }, async () => {
     const { backend } = await start();
     expect(await backend.adoptUiState(null)).toBeNull();
     expect(await backend.adoptUiState('{}')).toBeNull();
@@ -580,7 +580,7 @@ describe('mock backend: models, workflows and packs', () => {
     expect(await backend.adoptUiState('{"novira.b":"x"}')).toBe('{"novira.a":"2"}');
   });
 
-  it('keeps the saved comics oldest change first and refuses what the backend refuses', async () => {
+  it('keeps the saved comics oldest change first and refuses what the backend refuses', { tags: ['boundary'] }, async () => {
     const { backend } = await start();
     expect(await backend.listComics()).toEqual([]);
     await backend.saveComic('comic-a', { title: 'A' });
@@ -601,7 +601,7 @@ describe('mock backend: models, workflows and packs', () => {
     expect((await backend.listComics()).map((c) => c.document)).toEqual([{ title: 'B' }, { title: 'A2' }]);
   });
 
-  it('measures the comic size cap on the JSON text, as the backend does', async () => {
+  it('measures the comic size cap on the JSON text, as the backend does', { tags: ['boundary'] }, async () => {
     const { backend } = await start();
     // `{"x":"` and `"}` are 8 bytes around the string: this text is exactly the cap, the next byte over it.
     await backend.saveComic('big', { x: 'a'.repeat(MAX_COMIC_BYTES - 8) });
@@ -609,7 +609,7 @@ describe('mock backend: models, workflows and packs', () => {
     expect((await backend.listComics()).map((c) => c.document)).toEqual([{ x: 'a'.repeat(MAX_COMIC_BYTES - 8) }]);
   });
 
-  it('deletes a saved comic and does nothing for one that is not there', async () => {
+  it('deletes a saved comic and does nothing for one that is not there', { tags: ['condition'] }, async () => {
     const { backend } = await start();
     await backend.saveComic('comic-a', { title: 'A' });
     await backend.saveComic('comic-b', { title: 'B' });
@@ -618,7 +618,7 @@ describe('mock backend: models, workflows and packs', () => {
     expect((await backend.listComics()).map((c) => c.id)).toEqual(['comic-b']);
   });
 
-  it('keeps the comics across a reload in the storage it is given, and reads damaged storage as none', async () => {
+  it('keeps the comics across a reload in the storage it is given, and reads damaged storage as none', { tags: ['error-guessing'] }, async () => {
     const kept = new Map<string, string>();
     const storage = { getItem: (k: string) => kept.get(k) ?? null, setItem: (k: string, v: string) => void kept.set(k, v) };
     const first = new MockBackend('empty', false, storage);
@@ -632,13 +632,13 @@ describe('mock backend: models, workflows and packs', () => {
     expect(await new MockBackend('empty').listComics()).toEqual([]);
   });
 
-  it('accepts only GitHub repository addresses for node packs', async () => {
+  it('accepts only GitHub repository addresses for node packs', { tags: ['equivalence'] }, async () => {
     const { backend } = await start();
     await expect(backend.installNodePack('https://example.com/a/b')).rejects.toThrow(/GitHub/);
     await expect(backend.removeNodePack('NotInstalled')).rejects.toThrow(/not installed/);
   });
 
-  it('remembers whether API keys are set, treating blank keys as unset', async () => {
+  it('remembers whether API keys are set, treating blank keys as unset', { tags: ['equivalence'] }, async () => {
     const { backend } = await start();
     await backend.setCivitaiKey('  ');
     expect(await backend.hasCivitaiKey()).toBe(false);

@@ -27,6 +27,7 @@ fn control(url: &str, model_key: &str) -> ControlLayerInput {
     }
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn reference_images_with_a_missing_picture_or_model_or_a_backwards_span_are_refused() {
     let dir = tempfile::tempdir().unwrap();
@@ -49,6 +50,7 @@ async fn reference_images_with_a_missing_picture_or_model_or_a_backwards_span_ar
     backend.shutdown();
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn guidance_that_names_unknown_models_or_deleted_pictures_fails_the_job_with_a_reason() {
     let dir = tempfile::tempdir().unwrap();

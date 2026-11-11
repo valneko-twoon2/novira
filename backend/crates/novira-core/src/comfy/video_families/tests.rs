@@ -92,6 +92,7 @@ fn unet() -> ComfyRef {
     r("diffusion_models", "model.safetensors")
 }
 
+// tags: equivalence
 #[test]
 fn every_video_graph_ends_in_an_mp4_with_a_thumbnail() {
     let p = video_params();
@@ -127,6 +128,7 @@ fn every_video_graph_ends_in_an_mp4_with_a_thumbnail() {
     }
 }
 
+// tags: boundary
 #[test]
 fn wan_text_to_video_uses_the_empty_video_latent_and_the_wan_shift() {
     let p = video_params();
@@ -161,6 +163,7 @@ fn wan_text_to_video_uses_the_empty_video_latent_and_the_wan_shift() {
     assert_eq!(count(&g, "CLIPTextEncode"), 2);
 }
 
+// tags: condition
 #[test]
 fn wan_image_to_video_conditions_on_the_start_picture() {
     let p = video_params();
@@ -184,6 +187,7 @@ fn wan_image_to_video_conditions_on_the_start_picture() {
     assert!(err.contains("cannot animate a picture"), "{err}");
 }
 
+// tags: decision-table
 #[test]
 fn a_wan_22_pair_hands_over_from_the_high_to_the_low_noise_model() {
     let p = video_params();
@@ -212,6 +216,7 @@ fn a_wan_22_pair_hands_over_from_the_high_to_the_low_noise_model() {
     assert_eq!(g.total_steps, 20);
 }
 
+// tags: condition
 #[test]
 fn the_5b_wan_model_runs_the_pack_graph_with_the_users_files() {
     let p = video_params();
@@ -229,6 +234,7 @@ fn the_5b_wan_model_runs_the_pack_graph_with_the_users_files() {
     assert_eq!(node(&g, "CLIPLoader")["clip_name"], "te0.safetensors");
 }
 
+// tags: condition
 #[test]
 fn hunyuan_video_samples_with_a_guider_and_no_negative_prompt() {
     let mut p = video_params();
@@ -285,6 +291,7 @@ fn hunyuan_video_samples_with_a_guider_and_no_negative_prompt() {
         .contains("needs a source picture"));
 }
 
+// tags: boundary
 #[test]
 fn ltx_video_loads_a_checkpoint_and_snaps_frames_to_8n_plus_1() {
     let mut p = video_params();
@@ -323,6 +330,7 @@ fn ltx_video_loads_a_checkpoint_and_snaps_frames_to_8n_plus_1() {
     assert_eq!(node(&i2v, "LTXVConditioning")["positive"][1], 0);
 }
 
+// tags: error-guessing
 #[test]
 fn a_missing_vae_or_encoder_is_refused_with_the_file_to_install() {
     let p = video_params();
@@ -344,6 +352,7 @@ fn a_missing_vae_or_encoder_is_refused_with_the_file_to_install() {
     assert!(err.contains("could not be read"), "{err}");
 }
 
+// tags: condition
 #[test]
 fn hunyuan_video_15_samples_with_a_cfg_guider_and_its_own_latent() {
     use crate::models::classify::Variant;
@@ -379,6 +388,7 @@ fn hunyuan_video_15_samples_with_a_cfg_guider_and_its_own_latent() {
         .contains("cannot animate"));
 }
 
+// tags: condition
 #[test]
 fn ltx2_samples_video_and_sound_together_and_puts_the_sound_in_the_clip() {
     let p = video_params();

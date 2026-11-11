@@ -41,7 +41,7 @@ afterEach(() => {
 });
 
 describe('agent sessions', () => {
-  it('creates a session with the first message and adds the reply to it', async () => {
+  it('creates a session with the first message and adds the reply to it', { tags: ['condition'] }, async () => {
     replyWith('hello');
     expect(currentMessages(useAgent.getState())).toEqual([]);
     await useAgent.getState().send('  a cat  ');
@@ -54,14 +54,14 @@ describe('agent sessions', () => {
     ]);
   });
 
-  it('ignores blank messages without creating a session', async () => {
+  it('ignores blank messages without creating a session', { tags: ['condition'] }, async () => {
     const chat = replyWith('x');
     await useAgent.getState().send('   ');
     expect(useAgent.getState().sessions).toEqual([]);
     expect(chat).not.toHaveBeenCalled();
   });
 
-  it('sends only the current session history, without failed replies', async () => {
+  it('sends only the current session history, without failed replies', { tags: ['error-guessing'] }, async () => {
     replyWith('first reply');
     await useAgent.getState().send('first chat');
     const first = useAgent.getState().currentId!;
@@ -84,7 +84,7 @@ describe('agent sessions', () => {
     ]);
   });
 
-  it('shortens the older chat to fit the token limit, and sends it whole once the limit is off', async () => {
+  it('shortens the older chat to fit the token limit, and sends it whole once the limit is off', { tags: ['boundary'] }, async () => {
     replyWith('あ'.repeat(60000));
     await useAgent.getState().send('first');
     await useAgent.getState().send('second');
@@ -99,7 +99,7 @@ describe('agent sessions', () => {
     expect(requests.at(-1)!.history![0]).toEqual({ role: 'user', text: 'first' });
   });
 
-  it('keeps the prompt the assistant writes within the CLIP limit while the token limit is on', async () => {
+  it('keeps the prompt the assistant writes within the CLIP limit while the token limit is on', { tags: ['boundary'] }, async () => {
     const long = Array.from({ length: 40 }, (_, i) => `tag${i}`).join(', ');
     let answer: unknown;
     replyWith('done', async (call) => {
@@ -113,7 +113,7 @@ describe('agent sessions', () => {
     expect(useParams.getState().positivePrompt).toBe(long);
   });
 
-  it('switches only to a session that exists, renames and deletes sessions', async () => {
+  it('switches only to a session that exists, renames and deletes sessions', { tags: ['condition'] }, async () => {
     replyWith('ok');
     await useAgent.getState().send('keep');
     const keep = useAgent.getState().currentId!;
@@ -132,7 +132,7 @@ describe('agent sessions', () => {
     expect(useAgent.getState()).toMatchObject({ sessions: [], currentId: null });
   });
 
-  it('shows no answer for a session deleted while waiting', async () => {
+  it('shows no answer for a session deleted while waiting', { tags: ['scenario'] }, async () => {
     let resolve: (r: AgentReply) => void = () => {};
     vi.spyOn(backend, 'agentChat').mockImplementation(() => new Promise<AgentReply>((r) => (resolve = r)));
     const pending = useAgent.getState().send('change the prompt');
@@ -144,7 +144,7 @@ describe('agent sessions', () => {
     expect(useAgent.getState()).toMatchObject({ busy: false, busySessionId: null, sessions: [] });
   });
 
-  it('sends the messages written while it works one after the other, as soon as each answer ends', async () => {
+  it('sends the messages written while it works one after the other, as soon as each answer ends', { tags: ['equivalence'] }, async () => {
     let resolve: (r: AgentReply) => void = () => {};
     const chat = vi.spyOn(backend, 'agentChat').mockImplementationOnce(() => new Promise<AgentReply>((r) => (resolve = r))).mockResolvedValue({ text: 'next' });
     const first = useAgent.getState().send('one');
@@ -161,7 +161,7 @@ describe('agent sessions', () => {
     expect(useAgent.getState().queued).toEqual([]);
   });
 
-  it('takes a waiting message out of the line, and gives them back to the box when the request fails', async () => {
+  it('takes a waiting message out of the line, and gives them back to the box when the request fails', { tags: ['error-guessing'] }, async () => {
     let fail: (e: Error) => void = () => {};
     const chat = vi.spyOn(backend, 'agentChat').mockImplementation(() => new Promise<AgentReply>((_, r) => (fail = r)));
     const first = useAgent.getState().send('one');
@@ -175,7 +175,7 @@ describe('agent sessions', () => {
     expect(useAgent.getState()).toMatchObject({ queued: [], draftText: 'three\ntyping', draftAttached: ['a.png'] });
   });
 
-  it('keeps the reply in the session that asked even after switching to a new chat', async () => {
+  it('keeps the reply in the session that asked even after switching to a new chat', { tags: ['condition'] }, async () => {
     let resolve: (r: AgentReply) => void = () => {};
     vi.spyOn(backend, 'agentChat').mockImplementation(() => new Promise<AgentReply>((r) => (resolve = r)));
     const pending = useAgent.getState().send('question');
@@ -191,7 +191,7 @@ describe('agent sessions', () => {
 describe('what a request carries', () => {
   afterEach(() => useAgent.setState({ focus: [], pendingAsk: null, open: false }));
 
-  it('names the screen for every tab and kind of media, the language and nothing the tools can read', async () => {
+  it('names the screen for every tab and kind of media, the language and nothing the tools can read', { tags: ['equivalence'] }, async () => {
     replyWith('ok');
     const screens: [Partial<ReturnType<typeof useUi.getState>>, string][] = [
       [{ activeTab: 'generate', media: 'image' }, 'generate'],
@@ -211,7 +211,7 @@ describe('what a request carries', () => {
     useUi.setState({ activeTab: 'generate', media: 'image' });
   });
 
-  it('asks about extensions chosen in the manager: a new chat, sent once, and the follow-ups keep the focus', async () => {
+  it('asks about extensions chosen in the manager: a new chat, sent once, and the follow-ups keep the focus', { tags: ['condition'] }, async () => {
     replyWith('ok');
     await useAgent.getState().send('earlier chat');
     useAgent.getState().ask('What is ComfyUI-Foo?', ['ComfyUI-Foo']);
@@ -227,7 +227,7 @@ describe('what a request carries', () => {
     expect(requests[3]!.focus).toBeUndefined();
   });
 
-  it('keeps a waiting question until the assistant can send it', async () => {
+  it('keeps a waiting question until the assistant can send it', { tags: ['condition'] }, async () => {
     const chat = replyWith('ok');
     useAgent.setState({ busy: true });
     useAgent.getState().ask('wait for me', []);
@@ -238,7 +238,7 @@ describe('what a request carries', () => {
 });
 
 describe('tool calls of a request', () => {
-  it('applies each change as it comes, logs it for the chips, and undoes the whole request at once', async () => {
+  it('applies each change as it comes, logs it for the chips, and undoes the whole request at once', { tags: ['state-transition'] }, async () => {
     useParams.getState().set({ steps: 20 });
     replyWith('done', async (call) => {
       await call('set_generation_settings', { positivePrompt: 'a fox' });
@@ -255,7 +255,7 @@ describe('tool calls of a request', () => {
     expect(currentMessages(useAgent.getState()).at(-1)!.undone).toBe(true);
   });
 
-  it('shows what changed while the request runs', async () => {
+  it('shows what changed while the request runs', { tags: ['scenario'] }, async () => {
     let seen: unknown;
     replyWith('done', async (call) => {
       await call('set_generation_settings', { positivePrompt: 'x' });
@@ -266,7 +266,7 @@ describe('tool calls of a request', () => {
     expect(useAgent.getState().working).toEqual([]);
   });
 
-  it('tells the model what each answer changed, which one the user undid, and the settings before each request', async () => {
+  it('tells the model what each answer changed, which one the user undid, and the settings before each request', { tags: ['equivalence'] }, async () => {
     useSettings.getState().set({ assistantReadAccess: 'always' });
     setsPrompt('2girls, bob cut');
     await useAgent.getState().send('make the hair short');
@@ -292,7 +292,7 @@ describe('tool calls of a request', () => {
     });
   });
 
-  it('puts the pictures the assistant looked at under its answer and sends the trial setting', async () => {
+  it('puts the pictures the assistant looked at under its answer and sends the trial setting', { tags: ['condition'] }, async () => {
     useSettings.getState().set({ assistantReadAccess: 'always', assistantTrialPictures: false });
     replyWith('like this?', async (call) => {
       await call('view_picture', { name: 'trial.png' });
@@ -307,7 +307,7 @@ describe('tool calls of a request', () => {
     expect(currentMessages(useAgent.getState()).at(-1)).not.toHaveProperty('images');
   });
 
-  it('undoes a reply in any session', async () => {
+  it('undoes a reply in any session', { tags: ['state-transition'] }, async () => {
     setsPrompt('from chat one');
     await useAgent.getState().send('one');
     const reply = currentMessages(useAgent.getState()).at(-1)!;
@@ -317,7 +317,7 @@ describe('tool calls of a request', () => {
     expect(useParams.getState().positivePrompt).toBe('original');
   });
 
-  it('keeps the reasoning lines with the reply', async () => {
+  it('keeps the reasoning lines with the reply', { tags: ['condition'] }, async () => {
     vi.spyOn(backend, 'agentChat').mockResolvedValue({ thoughts: ['read it as a request for blue'], text: 'done' });
     await useAgent.getState().send('make it blue');
     expect(currentMessages(useAgent.getState()).at(-1)?.thoughts).toEqual(['read it as a request for blue']);
@@ -345,23 +345,23 @@ describe('reading pictures and prompts', () => {
     return result!;
   }
 
-  it('asks each time by default: allowed once it reads, and the next request asks again', async () => {
+  it('asks each time by default: allowed once it reads, and the next request asks again', { tags: ['equivalence'] }, async () => {
     expect((await readGallery('once')).ok).toBe(true);
     expect(useSettings.getState().assistantReadAccess).toBe('ask');
     expect((await readGallery('once')).ok).toBe(true);
   });
 
-  it('a declined read is an error telling the model the user declined, and nothing is read', async () => {
+  it('a declined read is an error telling the model the user declined, and nothing is read', { tags: ['error-guessing'] }, async () => {
     expect(await readGallery('deny')).toEqual({ ok: false, content: DECLINED });
   });
 
-  it('always allow changes the setting, so later reads are not asked', async () => {
+  it('always allow changes the setting, so later reads are not asked', { tags: ['condition'] }, async () => {
     expect((await readGallery('always')).ok).toBe(true);
     expect(useSettings.getState().assistantReadAccess).toBe('always');
     expect((await readGallery()).ok).toBe(true);
   });
 
-  it('never refuses without asking', async () => {
+  it('never refuses without asking', { tags: ['error-guessing'] }, async () => {
     useSettings.getState().set({ assistantReadAccess: 'never' });
     expect(await readGallery()).toEqual({ ok: false, content: DECLINED });
   });
@@ -389,11 +389,11 @@ describe('looking facts up on the web', () => {
     vi.spyOn(backend, 'lookupReference').mockResolvedValue([{ title: 'Kimono', extract: 'A garment.', url: 'https://en.wikipedia.org/wiki/Kimono' }]);
   });
 
-  it('shows the words that would be sent, and a decline is an answer about the web, not pictures', async () => {
+  it('shows the words that would be sent, and a decline is an answer about the web, not pictures', { tags: ['scenario'] }, async () => {
     expect(await lookUp('deny')).toEqual({ ok: false, content: DECLINED_WEB });
   });
 
-  it('allowed once it looks up, and always allow changes only the web setting', async () => {
+  it('allowed once it looks up, and always allow changes only the web setting', { tags: ['condition'] }, async () => {
     expect((await lookUp('once')).ok).toBe(true);
     expect(useSettings.getState().assistantWebAccess).toBe('ask');
     expect((await lookUp('always')).ok).toBe(true);
@@ -402,7 +402,7 @@ describe('looking facts up on the web', () => {
     expect((await lookUp()).ok).toBe(true);
   });
 
-  it('a setting of never refuses without asking, and always for pictures does not open the web', async () => {
+  it('a setting of never refuses without asking, and always for pictures does not open the web', { tags: ['error-guessing'] }, async () => {
     useSettings.getState().set({ assistantWebAccess: 'never' });
     expect(await lookUp()).toEqual({ ok: false, content: DECLINED_WEB });
     useSettings.getState().set({ assistantWebAccess: 'ask', assistantReadAccess: 'always' });
@@ -413,7 +413,7 @@ describe('looking facts up on the web', () => {
 describe('stopping a request', () => {
   afterEach(() => useAgent.setState({ busy: false }));
 
-  it('tells the backend, says it was cancelled, and keeps what was changed before so it can be undone', async () => {
+  it('tells the backend, says it was cancelled, and keeps what was changed before so it can be undone', { tags: ['state-transition'] }, async () => {
     const cancel = vi.spyOn(backend, 'agentCancel').mockResolvedValue();
     let resolve!: (r: AgentReply) => void;
     scriptAgent(async (call) => {
@@ -439,7 +439,7 @@ describe('stopping a request', () => {
     expect(currentMessages(useAgent.getState()).at(-1)?.text).toBe('ok');
   });
 
-  it('answers a waiting permission question with no', async () => {
+  it('answers a waiting permission question with no', { tags: ['condition'] }, async () => {
     vi.spyOn(backend, 'agentCancel').mockResolvedValue();
     let result: unknown;
     let resolve!: (r: AgentReply) => void;
@@ -456,7 +456,7 @@ describe('stopping a request', () => {
     expect(useAgent.getState().permission).toBeNull();
   });
 
-  it('does nothing when no request is running', () => {
+  it('does nothing when no request is running', { tags: ['state-transition'] }, () => {
     const cancel = vi.spyOn(backend, 'agentCancel').mockResolvedValue();
     useAgent.getState().cancel();
     expect(cancel).not.toHaveBeenCalled();
@@ -464,7 +464,7 @@ describe('stopping a request', () => {
 });
 
 describe('agent session persistence', () => {
-  it('saves sessions with the chips and without undo snapshots', async () => {
+  it('saves sessions with the chips and without undo snapshots', { tags: ['state-transition'] }, async () => {
     setsPrompt('saved');
     await useAgent.getState().send('remember me');
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)!) as { version: number; state: Record<string, unknown> };
@@ -479,7 +479,7 @@ describe('agent session persistence', () => {
     expect(currentMessages(useAgent.getState()).at(-1)!.snapshot).toBeDefined();
   });
 
-  it('keeps the token limit switch, on unless it was switched off', async () => {
+  it('keeps the token limit switch, on unless it was switched off', { tags: ['boundary'] }, async () => {
     for (const [kept, read] of [[false, false], [true, true], [undefined, true], ['no', true]] as const) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, state: { sessions: [], currentId: null, tokenLimit: kept } }));
       await useAgent.persist.rehydrate();
@@ -487,7 +487,7 @@ describe('agent session persistence', () => {
     }
   });
 
-  it('reads back the height of the message box within its limits, and the default when none was kept', async () => {
+  it('reads back the height of the message box within its limits, and the default when none was kept', { tags: ['boundary'] }, async () => {
     for (const [kept, read] of [[200, 200], [9999, AGENT_INPUT_HEIGHT.max], [3, AGENT_INPUT_HEIGHT.min], ['tall', AGENT_INPUT_HEIGHT.default]] as const) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, state: { sessions: [], currentId: null, inputHeight: kept } }));
       await useAgent.persist.rehydrate();
@@ -495,7 +495,7 @@ describe('agent session persistence', () => {
     }
   });
 
-  it('restores saved sessions, and new messages get ids that do not collide', async () => {
+  it('restores saved sessions, and new messages get ids that do not collide', { tags: ['scenario'] }, async () => {
     const stored = {
       version: 1,
       state: {
@@ -516,7 +516,7 @@ describe('agent session persistence', () => {
     expect(Math.min(...ids.slice(1))).toBeGreaterThan(500);
   });
 
-  it('starts a new chat when the saved current session is gone', async () => {
+  it('starts a new chat when the saved current session is gone', { tags: ['condition'] }, async () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, state: { sessions: 'broken', currentId: 'nope' } }));
     await useAgent.persist.rehydrate();
     expect(useAgent.getState()).toMatchObject({ sessions: [], currentId: null });
@@ -524,7 +524,7 @@ describe('agent session persistence', () => {
 });
 
 describe('attached pictures', () => {
-  it('go with the message and are kept on it; pictures alone ask for a prompt', async () => {
+  it('go with the message and are kept on it; pictures alone ask for a prompt', { tags: ['condition'] }, async () => {
     replyWith('done');
     await useAgent.getState().send('like this', ['a.png', 'b.png']);
     expect(requests[0]).toMatchObject({ message: 'like this', images: ['a.png', 'b.png'] });
@@ -535,7 +535,7 @@ describe('attached pictures', () => {
     expect(requests[1]!.history?.[0]?.text).toMatch(/^like this\n\[The user attached the pictures a\.png, b\.png\./);
   });
 
-  it('are left out when there are none, cut to the limit, and an empty message without pictures sends nothing', async () => {
+  it('are left out when there are none, cut to the limit, and an empty message without pictures sends nothing', { tags: ['boundary'] }, async () => {
     replyWith('done');
     await useAgent.getState().send('plain');
     expect(requests[0]).not.toHaveProperty('images');

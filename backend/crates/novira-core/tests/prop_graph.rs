@@ -397,6 +397,7 @@ fn try_build(c: &Case, match_counts: bool) -> Result<BuiltGraph, String> {
 static BUILT: AtomicUsize = AtomicUsize::new(0);
 static REFUSED: AtomicUsize = AtomicUsize::new(0);
 
+// tags: equivalence
 #[test]
 fn a_graph_that_is_built_is_a_well_formed_prompt() {
     check(case(), |c| {
@@ -423,6 +424,7 @@ fn a_graph_that_is_built_is_a_well_formed_prompt() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn counts_that_do_not_match_the_guidance_are_refused_not_built() {
     check(case(), |c| {
@@ -435,6 +437,7 @@ fn counts_that_do_not_match_the_guidance_are_refused_not_built() {
     });
 }
 
+// tags: equivalence
 #[test]
 fn every_mode_builds_a_plain_job_with_no_guidance() {
     for mode in ["txt2img", "video", "music"] {
@@ -460,6 +463,7 @@ fn every_mode_builds_a_plain_job_with_no_guidance() {
     }
 }
 
+// tags: boundary, equivalence
 #[test]
 fn guidance_that_the_service_accepts_has_finite_weights_in_range() {
     fn layer() -> impl Strategy<Value = (String, String, f64, [f64; 2])> {
@@ -557,6 +561,7 @@ fn editor_graph() -> impl Strategy<Value = (Map<String, Value>, Vec<String>, Opt
     )
 }
 
+// tags: boundary
 #[test]
 fn a_prepared_editor_prompt_has_no_placeholder_left_but_pictures_and_no_dangling_link() {
     check(editor_graph(), |(prompt, outputs, thumbnail)| {
@@ -644,6 +649,7 @@ fn assert_well_formed_loose(prompt: &Value) -> Result<(), TestCaseError> {
     Ok(())
 }
 
+// tags: error-guessing
 #[test]
 fn arbitrary_json_as_an_editor_prompt_never_panics() {
     check(
@@ -672,6 +678,7 @@ fn arbitrary_json_as_an_editor_prompt_never_panics() {
 /// Found by the property tests and fixed: `fill_images` indexed each node mutably, and `serde_json` panics when a node is a
 /// number, a string or a boolean. It is only called with prompts `prepare` returned (always objects), so nothing
 /// outside the backend can reach it today; the pinned input keeps it so.
+// tags: error-guessing
 #[test]
 fn filling_pictures_into_a_prompt_with_a_node_that_is_not_an_object_does_not_panic() {
     let mut prompt = json!({ "1": false });
@@ -682,6 +689,7 @@ fn filling_pictures_into_a_prompt_with_a_node_that_is_not_an_object_does_not_pan
 /// Found by the property tests and fixed: `round8` multiplied `round(side / 8)` by 8 in `u32`, which overflows for a side of
 /// 4294967292 or more (a panic in a debug build, a wrapped 0 turned into 64 in a release build). Nothing at enqueue
 /// time limits the size, so a job asking for such a width reaches the graph builder.
+// tags: boundary
 #[test]
 fn an_enormous_width_does_not_overflow_the_size_snapping() {
     let params: GenerationMetadata = serde_json::from_value(json!({
@@ -696,6 +704,7 @@ fn an_enormous_width_does_not_overflow_the_size_snapping() {
 
 /// Found by the property tests and fixed: the video size snapping added 16 to the width in `u32` (overflow for a
 /// width of 4294967280 or more).
+// tags: error-guessing, boundary
 #[test]
 fn a_video_job_with_an_enormous_width_is_built_or_refused_without_overflow() {
     let c = Case {

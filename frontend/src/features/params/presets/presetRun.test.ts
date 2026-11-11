@@ -70,31 +70,31 @@ beforeEach(() => {
 });
 
 describe('presetRunRequests', () => {
-  it('picks each picture\'s preset from the random source, every preset equally likely', () => {
+  it('picks each picture\'s preset from the random source, every preset equally likely', { tags: ['equivalence'] }, () => {
     const requests = presetRunRequests([portrait, landscape], 5, { random: sequence(0, 0.49, 0.5, 0.99, 0.999999), seed: sequence(1) });
     expect(requests.map((r) => r.params.positivePrompt)).toEqual(['a girl in a garden', 'a girl in a garden', 'mountains at dawn', 'mountains at dawn', 'mountains at dawn']);
   });
 
-  it('keeps a random source that reaches 1 on the last preset', () => {
+  it('keeps a random source that reaches 1 on the last preset', { tags: ['boundary'] }, () => {
     const [request] = presetRunRequests([portrait, landscape], 1, { random: () => 1, seed: () => 7 });
     expect(request!.params.positivePrompt).toBe('mountains at dawn');
   });
 
-  it('makes one request per picture with its own seed, whatever the form\'s count and seed say', () => {
+  it('makes one request per picture with its own seed, whatever the form\'s count and seed say', { tags: ['condition'] }, () => {
     const requests = presetRunRequests([portrait], 4, { random: () => 0, seed: sequence(11, 22, 33, 44) });
     expect(requests).toHaveLength(4);
     expect(requests.map((r) => r.params.seed)).toEqual([11, 22, 33, 44]);
     for (const r of requests) expect(r).toMatchObject({ iterations: 1, randomizeSeed: false, prepend: false, origin: 'generate', destination: 'gallery' });
   });
 
-  it('draws with every setting of the preset and takes the rest from the form', () => {
+  it('draws with every setting of the preset and takes the rest from the form', { tags: ['condition'] }, () => {
     const [a, b] = presetRunRequests([portrait, landscape], 2, { random: sequence(0, 0.5), seed: () => 1 });
     expect(a!.params).toMatchObject({ positivePrompt: 'a girl in a garden', negativePrompt: 'blurry', modelKey: 'anime-xl', width: 832, height: 1216, steps: 28, cfgScale: 5, scheduler: 'euler_a' });
     expect(a!.params.loras).toEqual([lora('style-xl')]);
     expect(b!.params).toMatchObject({ positivePrompt: 'mountains at dawn', negativePrompt: 'people', modelKey: 'photo-xl', width: 1216, height: 832, steps: 40, cfgScale: 7, scheduler: 'dpmpp_2m_k', loras: [] });
   });
 
-  it('leaves the form exactly as it was', () => {
+  it('leaves the form exactly as it was', { tags: ['condition'] }, () => {
     const before = formFields();
     const changed = vi.fn();
     const unsubscribe = useParams.subscribe(changed);
@@ -105,32 +105,32 @@ describe('presetRunRequests', () => {
     expect(formFields()).toEqual(before);
   });
 
-  it('keeps the form\'s model for a preset whose model was removed', () => {
+  it('keeps the form\'s model for a preset whose model was removed', { tags: ['condition'] }, () => {
     const gone: GenerationPreset = { id: 'p-gone', name: 'Gone', data: { modelKey: 'deleted-xl', steps: 9 } };
     const [request] = presetRunRequests([gone], 1, { random: () => 0, seed: () => 1 });
     expect(request!.params).toMatchObject({ modelKey: 'form-xl', steps: 9, positivePrompt: 'my own prompt' });
   });
 
-  it('draws one prompt per picture from a preset with dynamic prompts, even in every-combination mode', () => {
+  it('draws one prompt per picture from a preset with dynamic prompts, even in every-combination mode', { tags: ['decision-table'] }, () => {
     const dynamic: GenerationPreset = { id: 'p-dyn', name: 'Dynamic', data: { positivePrompt: 'a {red|blue|green} car', dynamicPromptMode: 'combinatorial' } };
     const requests = presetRunRequests([dynamic], 3, { random: () => 0, seed: sequence(1, 2, 3) });
     expect(requests).toHaveLength(3);
     for (const r of requests) expect(r.params.positivePrompt).toMatch(/^a (red|blue|green) car$/);
   });
 
-  it('makes nothing without presets or pictures', () => {
+  it('makes nothing without presets or pictures', { tags: ['boundary'] }, () => {
     expect(presetRunRequests([], 5)).toEqual([]);
     expect(presetRunRequests([portrait], 0)).toEqual([]);
   });
 });
 
 describe('chosenPresets and presetRunProblems', () => {
-  it('keeps the chosen presets that still exist, in the list\'s order', () => {
+  it('keeps the chosen presets that still exist, in the list\'s order', { tags: ['condition'] }, () => {
     expect(chosenPresets(['p-landscape', 'deleted', 'p-portrait']).map((p) => p.id)).toEqual(['p-portrait', 'p-landscape']);
     expect(chosenPresets([])).toEqual([]);
   });
 
-  it('names the preset that cannot be drawn', () => {
+  it('names the preset that cannot be drawn', { tags: ['error-guessing'] }, () => {
     const broken: GenerationPreset = { id: 'p-broken', name: 'Broken', data: { loras: [lora('lora-sd1')] } };
     expect(presetRunProblems([portrait, landscape])).toEqual([]);
     const problems = presetRunProblems([portrait, broken]);
@@ -147,7 +147,7 @@ describe('runPresets', () => {
   });
   afterEach(() => enqueue.mockRestore());
 
-  it('queues the chosen count from the chosen presets only', async () => {
+  it('queues the chosen count from the chosen presets only', { tags: ['scenario'] }, async () => {
     usePresetRun.setState({ ids: ['p-landscape', 'deleted'], count: 3 });
     await runPresets();
     expect(enqueue).toHaveBeenCalledTimes(3);
@@ -156,12 +156,12 @@ describe('runPresets', () => {
     expect(useParams.getState()).toMatchObject({ positivePrompt: 'my own prompt', modelKey: 'form-xl', width: 1024, steps: 20 });
   });
 
-  it('queues nothing with no preset chosen', async () => {
+  it('queues nothing with no preset chosen', { tags: ['condition'] }, async () => {
     await runPresets();
     expect(enqueue).not.toHaveBeenCalled();
   });
 
-  it('warns and queues nothing when a chosen preset cannot be drawn', async () => {
+  it('warns and queues nothing when a chosen preset cannot be drawn', { tags: ['error-guessing'] }, async () => {
     useImagePresets.setState({ presets: [portrait, { id: 'p-broken', name: 'Broken', data: { loras: [lora('lora-sd1')] } }] });
     usePresetRun.setState({ ids: ['p-portrait', 'p-broken'], count: 2 });
     await runPresets();
@@ -169,7 +169,7 @@ describe('runPresets', () => {
     expect(useToasts.getState().toasts[0]).toMatchObject({ status: 'warning' });
   });
 
-  it('reports a failed enqueue', async () => {
+  it('reports a failed enqueue', { tags: ['error-guessing'] }, async () => {
     enqueue.mockRejectedValue(new Error('queue is gone'));
     usePresetRun.setState({ ids: ['p-portrait'], count: 2 });
     await runPresets();
@@ -178,14 +178,14 @@ describe('runPresets', () => {
 });
 
 describe('usePresetRun', () => {
-  it('ticks and unticks a preset', () => {
+  it('ticks and unticks a preset', { tags: ['condition'] }, () => {
     usePresetRun.getState().toggle('a');
     usePresetRun.getState().toggle('b');
     usePresetRun.getState().toggle('a');
     expect(usePresetRun.getState().ids).toEqual(['b']);
   });
 
-  it('keeps the count a whole number from 1 to the limit', () => {
+  it('keeps the count a whole number from 1 to the limit', { tags: ['boundary'] }, () => {
     const counts = [0, -3, 2.6, MAX_RUN_COUNT + 1, Number.NaN].map((n) => {
       usePresetRun.getState().setCount(n);
       return usePresetRun.getState().count;

@@ -46,6 +46,7 @@ async fn failure_of(backend: &novira_core::Backend, req: EnqueueRequest) -> Stri
     backend.queue_snapshot().items.remove(0).error.unwrap()
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_main_model_without_a_comfyui_address_fails_the_job_by_name() {
     let dir = tempfile::tempdir().unwrap();
@@ -58,6 +59,7 @@ async fn a_main_model_without_a_comfyui_address_fails_the_job_by_name() {
     backend.shutdown();
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn guidance_models_without_an_address_or_of_the_wrong_kind_fail_the_job_with_a_reason() {
     let dir = tempfile::tempdir().unwrap();
@@ -135,6 +137,7 @@ async fn guidance_models_without_an_address_or_of_the_wrong_kind_fail_the_job_wi
     backend.shutdown();
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_reference_image_names_the_vit_l_encoder_when_it_is_missing() {
     let dir = tempfile::tempdir().unwrap();
@@ -166,6 +169,7 @@ async fn a_reference_image_names_the_vit_l_encoder_when_it_is_missing() {
     backend.shutdown();
 }
 
+// tags: scenario
 #[test]
 fn an_encoder_with_a_plain_name_is_sized_by_the_layers_in_its_header() {
     let header = |layers: u32| novira_core::models::classify::Header {

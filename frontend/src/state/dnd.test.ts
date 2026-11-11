@@ -19,13 +19,13 @@ function dragEvent(data: Record<string, string> = {}): DragEvent {
 }
 
 describe('drag payloads', () => {
-  it('passes gallery names through unchanged', async () => {
+  it('passes gallery names through unchanged', { tags: ['condition'] }, async () => {
     const e = dragEvent();
     setDragImages(e, ['a.png', 'b.png']);
     expect(await resolveDropImages(e)).toEqual(['a.png', 'b.png']);
   });
 
-  it('resolves a deferred source through its registered resolver', async () => {
+  it('resolves a deferred source through its registered resolver', { tags: ['condition'] }, async () => {
     const off = registerDragSource('test-layer', async (id) => `saved-${id}.png`);
     const e = dragEvent();
     setDeferredDrag(e, 'test-layer', 'L1');
@@ -35,7 +35,7 @@ describe('drag payloads', () => {
     expect(await resolveDropImages(e)).toEqual([]);
   });
 
-  it('gives nothing for an empty deferred source, an unknown kind or broken data', async () => {
+  it('gives nothing for an empty deferred source, an unknown kind or broken data', { tags: ['error-guessing'] }, async () => {
     const off = registerDragSource('empty-layer', async () => null);
     const empty = dragEvent();
     setDeferredDrag(empty, 'empty-layer', 'L1');
@@ -48,7 +48,7 @@ describe('drag payloads', () => {
     expect(await resolveDropImages(dragEvent({ [IMAGE_MIME]: '{"a":1}' }))).toEqual([]);
   });
 
-  it('an unregister call does not remove a newer resolver of the same kind', async () => {
+  it('an unregister call does not remove a newer resolver of the same kind', { tags: ['condition'] }, async () => {
     const offOld = registerDragSource('k', async () => 'old.png');
     registerDragSource('k', async () => 'new.png');
     offOld();
@@ -57,7 +57,7 @@ describe('drag payloads', () => {
     expect(await resolveDropImages(e)).toEqual(['new.png']);
   });
 
-  it('recognises image, deferred and file drags but not text', () => {
+  it('recognises image, deferred and file drags but not text', { tags: ['condition'] }, () => {
     expect(hasDragImages([IMAGE_MIME])).toBe(true);
     expect(hasDragImages([DEFERRED_MIME])).toBe(true);
     expect(hasDragImages(['Files'])).toBe(true);

@@ -21,7 +21,7 @@ const sceneOf = (layers: TextLayer[]): Scene => ({ width: 400, height: 300, back
 afterEach(() => useGallery.setState({ images: [] }));
 
 describe('richPictureNames', () => {
-  it('lists the current pictures of visible text layers once each', () => {
+  it('lists the current pictures of visible text layers once each', { tags: ['condition'] }, () => {
     const stale = { ...layer('B', 'b.png'), text: 'changed' };
     const hidden = layer('C', 'c.png', { visible: false });
     const empty = layer('', 'd.png');
@@ -31,13 +31,13 @@ describe('richPictureNames', () => {
     expect(richPictureNames(sceneOf([layer('A', 'a.png'), stale, hidden, empty, same1, same2, plain]))).toEqual(['a.png', 'e.png']);
   });
 
-  it('is empty for a scene with no AI fill', () => {
+  it('is empty for a scene with no AI fill', { tags: ['condition'] }, () => {
     expect(richPictureNames(sceneOf([layer('A', null)]))).toEqual([]);
   });
 });
 
 describe('loadRichPictures', () => {
-  it('loads what the gallery has and leaves out what is gone or cannot be read', async () => {
+  it('loads what the gallery has and leaves out what is gone or cannot be read', { tags: ['error-guessing'] }, async () => {
     useGallery.setState({ images: [image('a.png'), { ...image('broken.png'), url: 'http://x/broken.png' }] });
     const loaded = await loadRichPictures(['a.png', 'broken.png', 'gone.png']);
     expect([...loaded.keys()]).toEqual(['a.png']);
@@ -45,7 +45,7 @@ describe('loadRichPictures', () => {
 });
 
 describe('useRichPictures', () => {
-  it('gives the loaded pictures, and picks one up that reaches the gallery later', async () => {
+  it('gives the loaded pictures, and picks one up that reaches the gallery later', { tags: ['state-transition'] }, async () => {
     const scene = sceneOf([layer('A', 'a.png')]);
     const { result } = renderHook(() => useRichPictures(scene));
     expect(result.current.size).toBe(0);
@@ -53,7 +53,7 @@ describe('useRichPictures', () => {
     await waitFor(() => expect(result.current.has('a.png')).toBe(true));
   });
 
-  it('is empty again when the scene no longer needs a picture', async () => {
+  it('is empty again when the scene no longer needs a picture', { tags: ['state-transition'] }, async () => {
     useGallery.setState({ images: [image('a.png')] });
     let scene = sceneOf([layer('A', 'a.png')]);
     const { result, rerender } = renderHook(() => useRichPictures(scene));

@@ -62,6 +62,7 @@ mod tests {
     use super::{is_reserved_device_name, plain_path};
     use std::path::PathBuf;
 
+    // tags: equivalence
     #[test]
     fn device_names_are_found_by_the_part_before_the_first_dot() {
         for name in [
@@ -91,6 +92,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn plain_path_drops_the_verbatim_prefix_of_a_drive_path_only() {
         assert_eq!(

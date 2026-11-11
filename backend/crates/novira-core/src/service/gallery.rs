@@ -365,12 +365,14 @@ impl<'a> Picked<'a> {
 mod tests {
     use super::{stale_in_trash, Picked, TRASH_KEEP_COUNT, TRASH_KEEP_MS};
 
+    // tags: boundary, state-transition
     #[test]
     fn a_deleted_picture_waits_fourteen_days_and_at_most_five_hundred_wait() {
         assert_eq!(TRASH_KEEP_MS, 1_209_600_000);
         assert_eq!(TRASH_KEEP_COUNT, 500);
     }
 
+    // tags: condition
     #[test]
     fn the_trash_drops_what_is_old_and_what_is_beyond_the_newest_few() {
         let row = |n: &str, at: i64| (n.to_string(), at);
@@ -389,6 +391,7 @@ mod tests {
         assert!(stale_in_trash(Vec::new(), 1000, 10, 5).is_empty());
     }
 
+    // tags: boundary
     #[test]
     fn a_short_and_a_long_pick_answer_alike() {
         for count in [0, 1, Picked::SET_FROM - 1, Picked::SET_FROM, 40] {

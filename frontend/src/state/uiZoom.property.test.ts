@@ -5,7 +5,7 @@ import { check, junkJson } from '@/propertyTest.testkit';
 import { sanitizeUiZoom, stepUiZoom, UI_ZOOM_STEPS } from './uiZoom';
 
 describe('UI zoom (properties)', () => {
-  it('sanitizeUiZoom of any stored value is a usable zoom and is idempotent', () => {
+  it('sanitizeUiZoom of any stored value is a usable zoom and is idempotent', { tags: ['condition'] }, () => {
     check(
       fc.property(fc.oneof(junkJson, fc.double(), fc.constantFrom(NaN, Infinity, -Infinity, 0, -1)), (v) => {
         const z = sanitizeUiZoom(v);
@@ -17,7 +17,7 @@ describe('UI zoom (properties)', () => {
     );
   });
 
-  it('stepUiZoom moves one rung on the ladder and stays at the ends', () => {
+  it('stepUiZoom moves one rung on the ladder and stays at the ends', { tags: ['condition'] }, () => {
     check(
       fc.property(fc.double({ min: 0.5, max: 3, noNaN: true }), (z) => {
         const up = stepUiZoom(z, 1);
@@ -30,7 +30,7 @@ describe('UI zoom (properties)', () => {
     );
   });
 
-  it('repeated steps reach the ends of the ladder', () => {
+  it('repeated steps reach the ends of the ladder', { tags: ['equivalence'] }, () => {
     let z: number = 1;
     for (let i = 0; i < UI_ZOOM_STEPS.length; i++) z = stepUiZoom(z, 1);
     expect(z).toBe(UI_ZOOM_STEPS[UI_ZOOM_STEPS.length - 1]);

@@ -6,7 +6,7 @@ const prompt = (page: Parameters<typeof openApp>[0], text: string) => page.getBy
 
 test.beforeEach(({ page }) => galleryDefaults(page, { newPicturesToCandidates: true }));
 
-test('a generated picture waits in Candidates, leaves the boards alone, and moves to the board by the button or a drag', async ({ page }) => {
+test('a generated picture waits in Candidates, leaves the boards alone, and moves to the board by the button or a drag', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await prompt(page, 'a harbour at dawn');
   await page.getByTestId('seed-fixed').click();
@@ -41,7 +41,7 @@ test('a generated picture waits in Candidates, leaves the boards alone, and move
   }
 });
 
-test('the rest of a batch goes to the trash, and closing the batch does the same', async ({ page }) => {
+test('the rest of a batch goes to the trash, and closing the batch does the same', { tag: ['@state-transition'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await prompt(page, 'a lantern in the rain');
   await page.getByTestId('invoke-button').click();
@@ -57,7 +57,7 @@ test('the rest of a batch goes to the trash, and closing the batch does the same
   await expect(page.getByTestId('drafts-grid')).toHaveCount(0);
 });
 
-test('with the setting off a picture goes straight to its board', async ({ page }) => {
+test('with the setting off a picture goes straight to its board', { tag: ['@condition'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('tab-generate').click();
   await page.getByRole('button', { name: msg('gallery.settings.title') }).first().click();

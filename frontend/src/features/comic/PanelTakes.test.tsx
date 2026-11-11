@@ -38,14 +38,14 @@ afterEach(() => {
 });
 
 describe('PanelTakes', () => {
-  it('shows the picture of the panel and the earlier ones, newest first', async () => {
+  it('shows the picture of the panel and the earlier ones, newest first', { tags: ['boundary'] }, async () => {
     show();
     fireEvent.click(screen.getByTestId('comic-takes'));
     expect((await screen.findByTestId('comic-take-now')).querySelector('img')!.getAttribute('src')).toBe('/thumb/c.png');
     expect(screen.getAllByTestId('comic-take').map((b) => b.querySelector('img')!.getAttribute('src'))).toEqual(['/thumb/b.png', '/thumb/a.png']);
   });
 
-  it('puts an earlier picture back when it is pressed', async () => {
+  it('puts an earlier picture back when it is pressed', { tags: ['scenario'] }, async () => {
     show();
     fireEvent.click(screen.getByTestId('comic-takes'));
     fireEvent.click((await screen.findAllByTestId('comic-take'))[1]!);
@@ -53,7 +53,7 @@ describe('PanelTakes', () => {
     expect(panel().takes.map((t) => t.imageName)).toEqual(['c.png', 'b.png']);
   });
 
-  it('removes a picture from the list and leaves it in the gallery', async () => {
+  it('removes a picture from the list and leaves it in the gallery', { tags: ['state-transition'] }, async () => {
     show();
     fireEvent.click(screen.getByTestId('comic-takes'));
     fireEvent.click((await screen.findAllByTestId('comic-take-remove'))[0]!);
@@ -61,7 +61,7 @@ describe('PanelTakes', () => {
     expect(useGallery.getState().images.map((i) => i.name)).toContain('b.png');
   });
 
-  it('leaves out a picture the gallery no longer has, and says what the list is for when it is empty', async () => {
+  it('leaves out a picture the gallery no longer has, and says what the list is for when it is empty', { tags: ['regression', 'boundary'] }, async () => {
     useGallery.setState({ images: [image('c.png')] });
     show();
     fireEvent.click(screen.getByTestId('comic-takes'));

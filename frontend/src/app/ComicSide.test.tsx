@@ -38,7 +38,7 @@ afterEach(() => {
 });
 
 describe('the comic side column', () => {
-  it('shows the assistant when it asks leave to read, even from the gallery tab', () => {
+  it('shows the assistant when it asks leave to read, even from the gallery tab', { tags: ['condition'] }, () => {
     render(
       <TooltipProvider>
         <ComicSide pageStore={null} />
@@ -51,7 +51,7 @@ describe('the comic side column', () => {
     expect(screen.getByTestId('comic-side-tab-assistant').closest('[role="tab"]')!.getAttribute('aria-selected')).toBe('true');
   });
 
-  it('always shows the layers panel of the open page below the tabs, with no tab of its own', () => {
+  it('always shows the layers panel of the open page below the tabs, with no tab of its own', { tags: ['condition'] }, () => {
     useComic.getState().setProjects([newProject('Side')]);
     const page = useComic.getState().projects[0]!.pages[0]!;
     render(
@@ -67,7 +67,7 @@ describe('the comic side column', () => {
     expect(screen.getByTestId('canvas-layers')).toBeTruthy();
   });
 
-  it('shows the empty layers state when no page is open', () => {
+  it('shows the empty layers state when no page is open', { tags: ['condition'] }, () => {
     render(
       <TooltipProvider>
         <ComicSide pageStore={null} />

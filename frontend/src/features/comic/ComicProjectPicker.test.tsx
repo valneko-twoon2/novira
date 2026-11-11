@@ -25,7 +25,7 @@ const renderPicker = () =>
   );
 
 describe('the comic chooser', () => {
-  it('shows the open comic and how many pages it has, and opens another from its list', () => {
+  it('shows the open comic and how many pages it has, and opens another from its list', { tags: ['scenario'] }, () => {
     const first = newProject('First');
     const second = newProject('Second');
     useComic.getState().setProjects([first, second]);
@@ -40,7 +40,7 @@ describe('the comic chooser', () => {
     expect(useComic.getState().activeProjectId).toBe(second.id);
   });
 
-  it('makes a new comic from the foot of its list, named in a dialog', () => {
+  it('makes a new comic from the foot of its list, named in a dialog', { tags: ['scenario'] }, () => {
     useComic.getState().setProjects([]);
     renderPicker();
     expect(screen.getByTestId('comic-project-picker').textContent).toContain(t('comic.project.choose'));

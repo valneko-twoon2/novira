@@ -33,7 +33,7 @@ const commands = (p: Plan) => p.checks.map((c) => c.cmd.join(' '));
 const cargoTests = (p: Plan) => commands(p).find((c) => c.startsWith('cargo test -p novira-core --test')) ?? '';
 
 describe('affected checks: frontend', () => {
-  it('typechecks, lints the file and runs the tests that import it', () => {
+  it('typechecks, lints the file and runs the tests that import it', { tags: ['decision-table'] }, () => {
     const cmds = commands(run(['frontend/src/features/media/SeedControl.tsx']));
     expect(cmds).toContain('npm run typecheck');
     expect(cmds).toContain('npx eslint src/features/media/SeedControl.tsx');
@@ -42,7 +42,7 @@ describe('affected checks: frontend', () => {
     expect(cmds.some((c) => c.startsWith('cargo'))).toBe(false);
   });
 
-  it('leaves out the tests of the screen text and the manual unless asked with --text', () => {
+  it('leaves out the tests of the screen text and the manual unless asked with --text', { tags: ['decision-table'] }, () => {
     const cmds = (paths: string[]) => commands(run(paths));
     expect(cmds(['frontend/src/i18n/locales/ja/params.json']).some((c) => c.includes('tests/i18n.test.ts'))).toBe(false);
     expect(cmds(['docs/manual/en/02-generate.md']).some((c) => c.includes('tests/manual.test.ts'))).toBe(false);
@@ -52,14 +52,14 @@ describe('affected checks: frontend', () => {
     expect(withText(['docs/manual/en/02-generate.md'])).toContain('npx vitest run tests/manual.test.ts tests/i18n-glossary.test.ts');
   });
 
-  it('runs the tests that read a file at run time: contract, the map', () => {
+  it('runs the tests that read a file at run time: contract, the map', { tags: ['decision-table'] }, () => {
     expect(commands(run(['.claude/rules/frontend.md']))).toContain('npx vitest run tests/docs-check.test.ts tests/ui-refs.test.ts');
     const contract = commands(run(['contract/job.json']));
     expect(contract).toContain('npx vitest run src/backend/contract.test.ts src/backend/tauri');
     expect(contract).toContain('cargo test -p novira-core --test contract');
   });
 
-  it('checks the test ids and text keys named outside the app when a component, the ja catalog or a script naming them changes', () => {
+  it('checks the test ids and text keys named outside the app when a component, the ja catalog or a script naming them changes', { tags: ['decision-table'] }, () => {
     for (const path of ['frontend/src/features/media/MediaTabs.tsx', 'frontend/src/i18n/locales/ja/media.json', 'frontend/e2e/comic.spec.ts', 'frontend/scripts/manual/scenes.mjs', 'scripts/tools/models-sweep-app.mjs', 'docs/design/01-app/02-screens/01-navigation.md']) {
       expect(commands(run([path])).some((c) => c.includes('tests/ui-refs.test.ts')), path).toBe(true);
     }
@@ -68,7 +68,7 @@ describe('affected checks: frontend', () => {
     }
   });
 
-  it('checks the whole frontend when its build settings or dependencies change', () => {
+  it('checks the whole frontend when its build settings or dependencies change', { tags: ['decision-table'] }, () => {
     for (const path of ['frontend/package.json', 'frontend/vitest.config.ts', 'frontend/tsconfig.json']) {
       const cmds = commands(run([path]));
       expect(cmds, path).toContain('npm run check');
@@ -76,7 +76,7 @@ describe('affected checks: frontend', () => {
     }
   });
 
-  it('names the flows of a feature by its name and by the test ids it sets, never the layout or visual specs', () => {
+  it('names the flows of a feature by its name and by the test ids it sets, never the layout or visual specs', { tags: ['decision-table'] }, () => {
     // model-parts drives the Models screen, manga-finish the viewer's dialog, model-choice the video pack choice.
     expect(specsFor('models')).toContain('e2e/model-parts.spec.ts');
     expect(specsFor('viewer')).toContain('e2e/manga-finish.spec.ts');
@@ -89,7 +89,7 @@ describe('affected checks: frontend', () => {
     expect(specsFor('launchpad')).toEqual([]);
   });
 
-  it('only names the Playwright runs unless asked, and runs them with --e2e', () => {
+  it('only names the Playwright runs unless asked, and runs them with --e2e', { tags: ['decision-table'] }, () => {
     const quiet = run(['frontend/src/features/comic/ComicEditor.tsx']);
     expect(commands(quiet).some((c) => c.includes('playwright'))).toBe(false);
     expect(quiet.skipped.map((s) => s.cmd).join('\n')).toMatch(/playwright test --project=chromium .*e2e\/comic\.spec\.ts/);
@@ -100,7 +100,7 @@ describe('affected checks: frontend', () => {
     expect(commands(run(['frontend/src/ui/Button.tsx'], true))).toContain('npx playwright test --project=chromium');
   });
 
-  it('names the model sweep for model code, and not for its tests', () => {
+  it('names the model sweep for model code, and not for its tests', { tags: ['decision-table'] }, () => {
     for (const path of ['backend/crates/novira-core/src/models/classify.rs', 'frontend/src/features/models/CoverImage.tsx', 'frontend/src/ui/ModelPicker.tsx']) {
       expect(run([path]).skipped.map((s) => s.cmd), path).toContain('node scripts/tools/models-sweep.mjs --build');
     }
@@ -108,7 +108,7 @@ describe('affected checks: frontend', () => {
     expect(run(['frontend/src/features/models/models.css', 'frontend/src/ui/CoverImage.css']).skipped.map((s) => s.cmd)).not.toContain('node scripts/tools/models-sweep.mjs --build');
   });
 
-  it('runs the layout scan for css, shared components, the composition and feature components, not for tests or logic', () => {
+  it('runs the layout scan for css, shared components, the composition and feature components, not for tests or logic', { tags: ['decision-table'] }, () => {
     for (const path of ['frontend/src/theme/tokens.css', 'frontend/src/ui/controls.tsx', 'frontend/src/app/SideNav.tsx', 'frontend/src/features/models/ModelCard.tsx', 'frontend/e2e/layoutRules.ts']) {
       expect(commands(run([path])), path).toContain('node scripts/tools/layout-scan.mjs');
     }
@@ -117,7 +117,7 @@ describe('affected checks: frontend', () => {
     }
   });
 
-  it('names no Playwright run for a test, a script or the test settings', () => {
+  it('names no Playwright run for a test, a script or the test settings', { tags: ['decision-table'] }, () => {
     for (const path of ['frontend/src/features/comic/ComicEditor.test.tsx', 'frontend/src/ui/Button.test.tsx', 'scripts/tools/docs-check.mjs', 'frontend/vitest.config.ts']) {
       expect(run([path]).skipped, path).toEqual([]);
     }
@@ -125,7 +125,7 @@ describe('affected checks: frontend', () => {
 });
 
 describe('affected checks: backend', () => {
-  it('runs the library tests and the integration tests that name the changed module', () => {
+  it('runs the library tests and the integration tests that name the changed module', { tags: ['decision-table'] }, () => {
     const p = run(['backend/crates/novira-core/src/comfy/graph.rs']);
     expect(commands(p)).toEqual(
       expect.arrayContaining(['cargo fmt --all -- --check', 'cargo clippy -p novira-core --tests -- -D warnings', 'cargo test -p novira-core --lib']),
@@ -133,7 +133,7 @@ describe('affected checks: backend', () => {
     expect(cargoTests(p)).toBe('cargo test -p novira-core --test comfy_ws_edges');
   });
 
-  it('follows root re-exports and grouped imports, and never runs a live test', () => {
+  it('follows root re-exports and grouped imports, and never runs a live test', { tags: ['decision-table'] }, () => {
     expect(cargoTests(run(['backend/crates/novira-core/src/service/queue.rs']))).toBe('cargo test -p novira-core --test queue_flow');
     expect(cargoTests(run(['backend/crates/novira-core/src/voice/mod.rs']))).toBe('cargo test -p novira-core --test grouped');
     expect(cargoTests(run(['backend/crates/novira-core/src/media/png.rs']))).toBe('cargo test -p novira-core --test grouped');
@@ -142,12 +142,12 @@ describe('affected checks: backend', () => {
     expect(live.skipped[0]?.cmd).toContain('--test models_live -- --ignored');
   });
 
-  it('runs a changed test, and every test that uses a changed helper folder', () => {
+  it('runs a changed test, and every test that uses a changed helper folder', { tags: ['decision-table'] }, () => {
     expect(cargoTests(run(['backend/crates/novira-core/tests/comfy_ws_edges.rs']))).toBe('cargo test -p novira-core --test comfy_ws_edges');
     expect(cargoTests(run(['backend/crates/novira-core/tests/fake_site/mod.rs']))).toBe('cargo test -p novira-core --test queue_flow');
   });
 
-  it('checks the shell, and everything on a dependency or build change', () => {
+  it('checks the shell, and everything on a dependency or build change', { tags: ['decision-table'] }, () => {
     expect(commands(run(['backend/src-tauri/src/commands.rs']))).toEqual(
       expect.arrayContaining(['cargo test -p novira', 'npx vitest run src/backend/tauri tests/test-hygiene.test.ts']),
     );
@@ -158,18 +158,18 @@ describe('affected checks: backend', () => {
     }
   });
 
-  it('runs nothing when nothing changed', () => {
+  it('runs nothing when nothing changed', { tags: ['boundary'] }, () => {
     expect(run([]).checks).toEqual([]);
   });
 });
 
 describe('affected checks: reading the Rust tests', () => {
-  it('names the modules of plain paths, grouped imports and re-exports', () => {
+  it('names the modules of plain paths, grouped imports and re-exports', { tags: ['decision-table'] }, () => {
     const named = modulesNamed('use novira_core::{\n  Backend,\n  comfy::{graph, ws},\n  types::Job,\n};\nnovira_core::db::open();', reexports);
     expect([...named].sort()).toEqual(['comfy', 'db', 'service', 'types']);
   });
 
-  it('reads the real test folder: tests, helper folders and the re-exports of lib.rs', () => {
+  it('reads the real test folder: tests, helper folders and the re-exports of lib.rs', { tags: ['scenario'] }, () => {
     const real = readCoreTests();
     expect(real.tests.has('backend_service')).toBe(true);
     expect(real.tests.has('contract')).toBe(true);

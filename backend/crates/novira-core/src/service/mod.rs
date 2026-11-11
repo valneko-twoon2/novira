@@ -722,6 +722,7 @@ fn prepare_model_dirs(models_dir: &Path, roots: &[PathBuf], yaml_path: &Path) ->
 mod seed_tests {
     use super::*;
 
+    // tags: boundary
     #[test]
     fn batch_seeds_keep_max_seed_and_wrap_after_it() {
         assert_eq!(batch_seed(MAX_SEED, 0), MAX_SEED);
@@ -730,6 +731,7 @@ mod seed_tests {
         assert_eq!(batch_seed(7, 3), 10);
     }
 
+    // tags: boundary, scenario
     #[test]
     fn batch_seeds_do_not_overflow_for_out_of_range_seeds() {
         assert_eq!(
@@ -738,6 +740,7 @@ mod seed_tests {
         );
     }
 
+    // tags: boundary
     #[test]
     fn random_seeds_stay_in_range() {
         assert!((0..200).map(|_| random_seed()).all(|s| s <= MAX_SEED));

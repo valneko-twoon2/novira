@@ -32,19 +32,19 @@ describe('LanApprovals', () => {
     getLanApi.mockReset();
   });
 
-  it('asks nothing of a page with no home network', async () => {
+  it('asks nothing of a page with no home network', { tags: ['condition'] }, async () => {
     getLanApi.mockResolvedValue(null);
     await mount();
     expect(toasts()).toEqual([]);
   });
 
-  it('asks nothing while nobody is asking', async () => {
+  it('asks nothing while nobody is asking', { tags: ['condition'] }, async () => {
     getLanApi.mockResolvedValue(createMockLan('open'));
     await mount();
     expect(toasts()).toEqual([]);
   });
 
-  it('shows a toast with the name, the address and the number, once per request, and allows from it', async () => {
+  it('shows a toast with the name, the address and the number, once per request, and allows from it', { tags: ['scenario'] }, async () => {
     const lan = createMockLan('open');
     lan.askToPair('iPhone', '192.168.1.20');
     getLanApi.mockResolvedValue(lan);
@@ -70,7 +70,7 @@ describe('LanApprovals', () => {
     expect(toasts()).toEqual([]);
   });
 
-  it('refuses from the toast, and drops the toast of a request that went away', async () => {
+  it('refuses from the toast, and drops the toast of a request that went away', { tags: ['condition'] }, async () => {
     const lan = createMockLan('open');
     lan.askToPair('iPhone', '192.168.1.20');
     lan.askToPair('Pixel', '192.168.1.21');
@@ -96,7 +96,7 @@ describe('LanApprovals', () => {
     expect(toasts()).toEqual([]);
   });
 
-  it('leaves the requests to the dialog while it is open', async () => {
+  it('leaves the requests to the dialog while it is open', { tags: ['condition'] }, async () => {
     const lan = createMockLan('open');
     lan.askToPair('iPhone', '192.168.1.20');
     getLanApi.mockResolvedValue(lan);

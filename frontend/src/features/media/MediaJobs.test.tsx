@@ -28,7 +28,7 @@ afterEach(() => {
 });
 
 describe('MediaJobs', () => {
-  it('shows only the jobs of its own kind, running first as running and pending as waiting', () => {
+  it('shows only the jobs of its own kind, running first as running and pending as waiting', { tags: ['scenario'] }, () => {
     useQueue.setState({ items: [job(1, 'in_progress'), job(2, 'pending'), job(3, 'in_progress', 'voice'), job(4, 'completed')] });
     show('music');
     expect(screen.getAllByTestId('music-job')).toHaveLength(2);
@@ -37,7 +37,7 @@ describe('MediaJobs', () => {
     expect(screen.getByText(t('media.job.waiting'))).toBeTruthy();
   });
 
-  it('draws the progress of the running job only, and a waiting job as indeterminate', () => {
+  it('draws the progress of the running job only, and a waiting job as indeterminate', { tags: ['scenario'] }, () => {
     useQueue.setState({
       items: [job(1, 'in_progress'), job(2, 'pending')],
       progress: { itemId: 1, step: 5, totalSteps: 20, progressImageUrl: null, message: '' },
@@ -49,7 +49,7 @@ describe('MediaJobs', () => {
     expect(bar(waiting!).getAttribute('aria-valuenow')).toBeNull();
   });
 
-  it('shows no progress for a running job another item reports on', () => {
+  it('shows no progress for a running job another item reports on', { tags: ['scenario'] }, () => {
     useQueue.setState({
       items: [job(1, 'in_progress')],
       progress: { itemId: 99, step: 5, totalSteps: 20, progressImageUrl: null, message: '' },
@@ -59,7 +59,7 @@ describe('MediaJobs', () => {
     expect(bar.getAttribute('aria-valuenow')).toBe('0');
   });
 
-  it('cancels a job by its id', () => {
+  it('cancels a job by its id', { tags: ['scenario'] }, () => {
     const cancel = vi.spyOn(backend, 'cancelQueueItem').mockResolvedValue(undefined as never);
     useQueue.setState({ items: [job(7, 'pending')] });
     show();
@@ -67,7 +67,7 @@ describe('MediaJobs', () => {
     expect(cancel).toHaveBeenCalledWith(7);
   });
 
-  it('lists the last three failures with their error, and the memory notice for an out of memory one', () => {
+  it('lists the last three failures with their error, and the memory notice for an out of memory one', { tags: ['error-guessing'] }, () => {
     useQueue.setState({
       items: [
         job(1, 'failed', 'music', { error: 'e1' }),

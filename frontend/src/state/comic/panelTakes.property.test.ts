@@ -16,7 +16,7 @@ function seed() {
 }
 
 describe('the earlier pictures of a panel (properties)', () => {
-  it('never hold the panel picture or a picture twice, and never more than TAKES_MAX', () => {
+  it('never hold the panel picture or a picture twice, and never more than TAKES_MAX', { tags: ['error-guessing'] }, () => {
     const picture = fc.oneof(fc.constantFrom('a.png', 'b.png', 'c.png', 'd.png', null), fc.string({ minLength: 1, maxLength: 3 }));
     const step = fc.oneof(fc.record({ set: picture }), fc.record({ remove: fc.constantFrom('a.png', 'b.png', 'x.png') }));
     check(

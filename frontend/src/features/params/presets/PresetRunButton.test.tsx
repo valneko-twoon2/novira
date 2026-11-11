@@ -32,7 +32,7 @@ const mount = (random: boolean) =>
   );
 
 describe('PresetRunButton', () => {
-  it('is only on the bar of the Generate tab', () => {
+  it('is only on the bar of the Generate tab', { tags: ['condition'] }, () => {
     mount(false);
     expect(screen.queryByTestId('preset-run-open')).toBeNull();
     cleanup();
@@ -40,7 +40,7 @@ describe('PresetRunButton', () => {
     expect(screen.getByTestId('preset-run-open')).toBeTruthy();
   });
 
-  it('queues only once a preset is ticked', async () => {
+  it('queues only once a preset is ticked', { tags: ['scenario'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue').mockResolvedValue([{ id: 1 } as QueueItem]);
     mount(true);
     fireEvent.click(screen.getByTestId('preset-run-open'));

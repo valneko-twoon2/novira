@@ -27,7 +27,7 @@ afterEach(() => {
 });
 
 describe('the prompt book on a phone', () => {
-  it('fills the screen with the list, and the back control closes it', () => {
+  it('fills the screen with the list, and the back control closes it', { tags: ['scenario'] }, () => {
     const screenEl = screen.getByTestId('prompt-book-screen');
     expect(screenEl.parentElement).toBe(document.body);
     expect(screenEl.querySelector('.pb-item__tag')?.textContent).toBe('smile');
@@ -37,7 +37,7 @@ describe('the prompt book on a phone', () => {
     expect(screen.queryByTestId('prompt-book-screen')).toBeNull();
   });
 
-  it('closes with Escape', () => {
+  it('closes with Escape', { tags: ['scenario'] }, () => {
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(usePromptBook.getState().open).toBe(false);
   });

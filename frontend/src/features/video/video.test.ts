@@ -7,7 +7,7 @@ import type { ModelConfig } from '@/backend';
 describe('the video models', () => {
   beforeEach(() => useVideo.setState({ form: { ...useVideo.getState().form, model: 'standard', ...VIDEO_PRESETS.standard } }));
 
-  it('asks the backend for the fast model only when it is picked', () => {
+  it('asks the backend for the fast model only when it is picked', { tags: ['condition'] }, () => {
     expect(buildVideoRequest(useVideo.getState().form).params.modelKey).toBe('');
     useVideo.getState().setForm({ model: 'fast', ...VIDEO_PRESETS.fast });
     const p = buildVideoRequest(useVideo.getState().form).params;
@@ -16,7 +16,7 @@ describe('the video models', () => {
     expect(p.cfgScale).toBe(1);
   });
 
-  it('sends the small-GPU switches only when they are on', () => {
+  it('sends the small-GPU switches only when they are on', { tags: ['condition'] }, () => {
     const plain = buildVideoRequest(useVideo.getState().form).params;
     expect(plain.videoFp8).toBeUndefined();
     expect(plain.videoTiledDecode).toBeUndefined();
@@ -26,7 +26,7 @@ describe('the video models', () => {
     useVideo.getState().setForm({ fp8: false, tiledDecode: false });
   });
 
-  it('keeps the fast model inside what the form allows', () => {
+  it('keeps the fast model inside what the form allows', { tags: ['condition'] }, () => {
     expect(VIDEO_PRESETS.fast.steps).toBeGreaterThanOrEqual(4);
     expect(VIDEO_PRESETS.fast.cfgScale).toBeGreaterThanOrEqual(1);
   });
@@ -39,19 +39,19 @@ describe('an installed video model', () => {
     useVideo.setState({ form: { ...useVideo.getState().form, model: 'standard', modelKey: null, ...VIDEO_PRESETS.standard } });
   });
 
-  it('is sent by its key and name instead of the pack model', () => {
+  it('is sent by its key and name instead of the pack model', { tags: ['condition'] }, () => {
     useVideo.getState().setForm({ modelKey: 'wan-1' });
     const p = buildVideoRequest(useVideo.getState().form).params;
     expect(p.modelKey).toBe('wan-1');
     expect(p.modelName).toBe('wan2.1_t2v_1.3B');
   });
 
-  it('falls back to the pack model when the installed one is gone', () => {
+  it('falls back to the pack model when the installed one is gone', { tags: ['error-guessing'] }, () => {
     useVideo.getState().setForm({ modelKey: 'removed' });
     expect(buildVideoRequest(useVideo.getState().form).params.modelKey).toBe('');
   });
 
-  it('has settings for each family the backend runs', () => {
+  it('has settings for each family the backend runs', { tags: ['condition'] }, () => {
     expect(Object.keys(VIDEO_FAMILY_PRESETS).sort()).toEqual(['hunyuan-video', 'hunyuan-video-15', 'ltx-video', 'ltx2', 'wan']);
     for (const p of Object.values(VIDEO_FAMILY_PRESETS)) {
       expect(p.steps).toBeGreaterThanOrEqual(4);

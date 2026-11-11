@@ -4,6 +4,7 @@ use novira_core::models::classify::{detect_base, kind_from_name, parse_header};
 use novira_core::types::{BaseModel, ModelType};
 use serde_json::json;
 
+// tags: condition
 #[test]
 fn a_family_word_in_the_file_name_decides_the_family_without_a_header() {
     let main = |name: &str| detect_base(ModelType::Main, None, name);
@@ -23,6 +24,7 @@ fn a_family_word_in_the_file_name_decides_the_family_without_a_header() {
     assert_eq!(main("plain.safetensors"), BaseModel::Any);
 }
 
+// tags: condition
 #[test]
 fn the_words_of_a_name_give_the_kind_when_the_header_is_silent() {
     assert_eq!(
@@ -50,6 +52,7 @@ fn the_words_of_a_name_give_the_kind_when_the_header_is_silent() {
     assert_eq!(kind_from_name("unknown.safetensors"), None);
 }
 
+// tags: condition
 #[test]
 fn the_architecture_in_the_metadata_names_the_family() {
     let base_of = |arch: &str| {

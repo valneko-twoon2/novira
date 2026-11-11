@@ -113,6 +113,7 @@ fn folder() -> impl Strategy<Value = String> {
     prop_oneof![any_text(), Just("models/flux".to_string())].prop_map(|f| format!("{f}/"))
 }
 
+// tags: error-guessing, decision-table
 #[test]
 fn any_file_name_gets_a_kind_a_family_and_a_variant_without_a_panic() {
     check(
@@ -127,6 +128,7 @@ fn any_file_name_gets_a_kind_a_family_and_a_variant_without_a_panic() {
     );
 }
 
+// tags: boundary, decision-table
 #[test]
 fn the_kind_of_a_name_does_not_depend_on_letter_case_or_the_folder() {
     check((bare_name(), folder()), |(name, dir)| {
@@ -147,6 +149,7 @@ fn the_kind_of_a_name_does_not_depend_on_letter_case_or_the_folder() {
     });
 }
 
+// tags: equivalence
 #[test]
 fn a_gguf_or_pth_name_has_the_kind_its_ending_gives() {
     check((bare_name(), any::<bool>()), |(stem, gguf)| {
@@ -171,6 +174,7 @@ fn a_gguf_or_pth_name_has_the_kind_its_ending_gives() {
     });
 }
 
+// tags: error-guessing
 #[test]
 fn a_name_ending_otherwise_is_not_a_gguf_file() {
     check(any_text(), |name| {
@@ -179,6 +183,7 @@ fn a_name_ending_otherwise_is_not_a_gguf_file() {
     });
 }
 
+// tags: decision-table, equivalence
 #[test]
 fn the_family_from_a_name_is_stable_under_case_and_helpers_have_no_family() {
     check((file_name(), 0..KINDS.len()), |(name, kind)| {
@@ -195,6 +200,7 @@ fn the_family_from_a_name_is_stable_under_case_and_helpers_have_no_family() {
     });
 }
 
+// tags: boundary, decision-table
 #[test]
 fn a_variant_from_a_name_ignores_the_folder_and_the_case() {
     check(
@@ -209,6 +215,7 @@ fn a_variant_from_a_name_ignores_the_folder_and_the_case() {
     );
 }
 
+// tags: decision-table, equivalence
 #[test]
 fn a_family_word_decides_the_family_of_a_plain_file() {
     check(
@@ -243,6 +250,7 @@ fn a_family_word_decides_the_family_of_a_plain_file() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn the_whole_name_rule_of_a_word_that_is_a_file_name() {
     check(

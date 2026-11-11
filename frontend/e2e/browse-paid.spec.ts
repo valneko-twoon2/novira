@@ -1,7 +1,7 @@
 // Models that cost money on Civitai: a price filter, a badge with the end of early access, and no install button.
 import { expect, msg, openApp, showTab, test } from './fixtures';
 
-test('the price filter lists paid models, each with a badge and a download that cannot be pressed', async ({ page }) => {
+test('the price filter lists paid models, each with a badge and a download that cannot be pressed', { tag: ['@condition'] }, async ({ page }) => {
   await openApp(page);
   await showTab(page, 'browse');
   await expect(page.getByTestId('browse-card').first()).toBeVisible();
@@ -28,7 +28,7 @@ test('the price filter lists paid models, each with a badge and a download that 
   await expect(page.getByTestId('browse-drawer').getByTestId('browse-paid-locked').first()).toBeDisabled();
 });
 
-test('the free filter leaves no paid model, and the badge names the end date of an early access', async ({ page }) => {
+test('the free filter leaves no paid model, and the badge names the end date of an early access', { tag: ['@condition'] }, async ({ page }) => {
   await openApp(page);
   await showTab(page, 'browse');
   await page.getByTestId('browse-filters').click();

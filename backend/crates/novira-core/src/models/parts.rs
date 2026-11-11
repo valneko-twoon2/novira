@@ -162,6 +162,7 @@ mod tests {
         r.missing.iter().map(|m| m.id.as_str()).collect()
     }
 
+    // tags: error-guessing, equivalence
     #[test]
     fn a_main_model_with_an_unreadable_header_is_a_checkpoint_with_every_part() {
         assert!(matches!(
@@ -173,6 +174,7 @@ mod tests {
         ));
     }
 
+    // tags: equivalence
     #[test]
     fn a_wan_image_to_video_model_by_name_wants_the_vision_model_only_before_2_2() {
         let wan = |name: &str| model("w", name, ModelType::DiffusionModel, BaseModel::Wan);
@@ -190,6 +192,7 @@ mod tests {
         assert!(!wants_vision(&wan("wan2.1_t2v_1.3B.safetensors")));
     }
 
+    // tags: condition
     #[test]
     fn anima_alone_misses_its_encoder_and_vae() {
         let anima = model(
@@ -204,6 +207,7 @@ mod tests {
         assert!(r.missing.iter().all(|m| m.size_bytes.is_some()));
     }
 
+    // tags: condition
     #[test]
     fn an_installed_part_is_not_missing() {
         let anima = model(
@@ -222,6 +226,7 @@ mod tests {
         assert_eq!(ids(&r), ["starter-qwen3-06b"]);
     }
 
+    // tags: equivalence
     #[test]
     fn nothing_is_missing_when_every_part_is_installed() {
         let anima = model(
@@ -247,6 +252,7 @@ mod tests {
             .is_empty());
     }
 
+    // tags: condition
     #[test]
     fn a_file_of_another_kind_does_not_count_as_the_part() {
         let anima = model(
@@ -265,6 +271,7 @@ mod tests {
         assert!(ids(&r).contains(&"starter-qwen3-06b"));
     }
 
+    // tags: equivalence
     #[test]
     fn models_of_the_sd_family_and_other_kinds_miss_nothing() {
         let sdxl = model("s", "sdxl.safetensors", ModelType::Main, BaseModel::Sdxl);
@@ -282,6 +289,7 @@ mod tests {
             .is_empty());
     }
 
+    // tags: scenario, equivalence
     #[test]
     fn flux_lists_its_three_parts_and_keeps_the_whole_name_rule_of_its_vae() {
         let flux = model(
@@ -303,6 +311,7 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn a_part_without_a_starter_entry_is_reported_as_unavailable() {
         let sd3 = model(
@@ -319,6 +328,7 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn installing_what_is_reported_for_a_starter_model_leaves_nothing_missing() {
         for s in starter::starter_models()

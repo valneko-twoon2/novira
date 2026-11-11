@@ -6,7 +6,7 @@ async function openMenu(page: Page) {
   await page.getByTestId('gallery-thumb').first().click({ button: 'right' });
 }
 
-test('a picture becomes the source image of an image-to-video clip', async ({ page }) => {
+test('a picture becomes the source image of an image-to-video clip', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await openMenu(page);
   await page.getByRole('menuitem', { name: msg('gallery.menu.sendToVideo') }).click();
@@ -15,7 +15,7 @@ test('a picture becomes the source image of an image-to-video clip', async ({ pa
   await expect(page.locator('.vv-source__preview img')).toBeVisible();
 });
 
-test('a picture is added to the workflow as an image input node', async ({ page }) => {
+test('a picture is added to the workflow as an image input node', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await openMenu(page);
   await page.getByRole('menuitem', { name: msg('gallery.menu.sendToWorkflow') }).click();
@@ -24,7 +24,7 @@ test('a picture is added to the workflow as an image input node', async ({ page 
   await expect(page.getByText(msg('workflows.toast.imageAdded'))).toBeVisible();
 });
 
-test('a picture becomes the background of the text editor', async ({ page }) => {
+test('a picture becomes the background of the text editor', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await openMenu(page);
   await page.getByRole('menuitem', { name: msg('gallery.menu.sendToText') }).click();

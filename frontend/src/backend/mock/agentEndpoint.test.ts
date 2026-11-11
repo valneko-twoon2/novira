@@ -8,12 +8,12 @@ import { MOCK_SERVER_MODELS, normalizeAddress, testServer } from './agentEndpoin
 const OLLAMA = 'http://127.0.0.1:11434/v1';
 
 describe('the mock server', () => {
-  it('checks addresses like the backend', () => {
+  it('checks addresses like the backend', { tags: ['equivalence'] }, () => {
     expect(normalizeAddress(` ${OLLAMA}/ `)).toBe(OLLAMA);
     for (const bad of ['', 'ftp://x/v1', 'http://user:pw@host/v1', 'nope']) expect(() => normalizeAddress(bad), bad).toThrow();
   });
 
-  it('tests reachability, the model and a tool call round trip', () => {
+  it('tests reachability, the model and a tool call round trip', { tags: ['scenario'] }, () => {
     expect(testServer({ baseUrl: OLLAMA, model: 'qwen3:8b' })).toEqual({ reachable: true, modelFound: true, tools: 'supported' });
     expect(testServer({ baseUrl: OLLAMA, model: 'gemma:2b' })).toMatchObject({ reachable: true, tools: 'unsupported', toolsReason: expect.stringContaining('does not support tools') });
     expect(testServer({ baseUrl: OLLAMA, model: 'nope' })).toMatchObject({ reachable: true, modelFound: false, tools: 'unknown' });
@@ -26,7 +26,7 @@ describe('the mock server', () => {
 });
 
 describe('the mock backend with a saved server', () => {
-  it('saves and selects the server, keeps the key for the same address only and reports the address kind', async () => {
+  it('saves and selects the server, keeps the key for the same address only and reports the address kind', { tags: ['state-transition'] }, async () => {
     const b = new MockBackend();
     expect((await b.agentStatus()).endpoint).toBeUndefined();
     const saved = await b.agentEndpointSave({ baseUrl: OLLAMA, model: 'llama3.2:latest', apiKey: 'k' });
@@ -41,14 +41,14 @@ describe('the mock backend with a saved server', () => {
     await expect(b.agentLogin('openai')).rejects.toThrow('no sign-in');
   });
 
-  it('lists the models, and a server without a list or unreachable is an error', async () => {
+  it('lists the models, and a server without a list or unreachable is an error', { tags: ['error-guessing'] }, async () => {
     const b = new MockBackend();
     expect(await b.agentEndpointModels({ baseUrl: OLLAMA, model: '' })).toEqual(MOCK_SERVER_MODELS);
     await expect(b.agentEndpointModels({ baseUrl: 'http://nolist.lan/v1', model: '' })).rejects.toThrow('404');
     await expect(b.agentEndpointModels({ baseUrl: 'http://unreachable.lan/v1', model: '' })).rejects.toThrow('cannot connect');
   });
 
-  it('keeps a tools verdict only for the saved server and model, and refuses requests of a model without tools', async () => {
+  it('keeps a tools verdict only for the saved server and model, and refuses requests of a model without tools', { tags: ['condition'] }, async () => {
     const b = new MockBackend();
     await b.agentEndpointSave({ baseUrl: OLLAMA, model: 'qwen3:8b' });
     await b.agentEndpointTest({ baseUrl: OLLAMA, model: 'gemma:2b' });

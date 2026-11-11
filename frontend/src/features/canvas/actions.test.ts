@@ -56,7 +56,7 @@ function stage(...images: ImageDTO[]) {
 }
 
 describe('importing a picture', () => {
-  it('adds it as a layer of the asked type, fitted into the bbox, and shows the canvas', () => {
+  it('adds it as a layer of the asked type, fitted into the bbox, and shows the canvas', { tags: ['condition'] }, () => {
     importImage(image('a'), 'raster');
     expect(c().entities.map((e) => e.type)).toEqual(['raster']);
     const obj = c().entities[0]!.objects[0]!;
@@ -65,14 +65,14 @@ describe('importing a picture', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('starts a new canvas the size of the picture for the new-canvas targets', () => {
+  it('starts a new canvas the size of the picture for the new-canvas targets', { tags: ['condition'] }, () => {
     importImage(image('old'), 'raster');
     importImage(image('b', { width: 640, height: 320 }), 'newCanvasControl');
     expect(c().entities.map((e) => e.type)).toEqual(['control']);
     expect(c().bbox).toMatchObject({ x: 0, y: 0, width: 640, height: 320 });
   });
 
-  it('adds a regional layer holding the picture as its reference', () => {
+  it('adds a regional layer holding the picture as its reference', { tags: ['condition'] }, () => {
     importImage(image('r'), 'regional');
     const e = c().entities[0]!;
     expect(e.type).toBe('regional');
@@ -81,7 +81,7 @@ describe('importing a picture', () => {
 });
 
 describe('global reference images', () => {
-  it('adds one with the picture, or an empty one when there is none', () => {
+  it('adds one with the picture, or an empty one when there is none', { tags: ['boundary'] }, () => {
     addGlobalRefImage(image('a'));
     addGlobalRefImage(null);
     const refs = useParams.getState().refImages;
@@ -92,21 +92,21 @@ describe('global reference images', () => {
 });
 
 describe('commands that need layers', () => {
-  it('says there is nothing to merge with fewer than two visible raster layers', async () => {
+  it('says there is nothing to merge with fewer than two visible raster layers', { tags: ['condition'] }, async () => {
     c().addEntity('raster');
     await mergeVisible();
     expect(lastToast()?.status).toBe('info');
     expect(c().entities).toHaveLength(1);
   });
 
-  it('ignores an unknown layer when saving it', async () => {
+  it('ignores an unknown layer when saving it', { tags: ['error-guessing'] }, async () => {
     const save = vi.spyOn(backend, 'saveImageFromUrl');
     await saveEntityToGallery('missing');
     expect(save).not.toHaveBeenCalled();
     expect(await entityAsGalleryImage('missing')).toBeNull();
   });
 
-  it('hands out the gallery image of a layer that is one untouched picture without saving anything', async () => {
+  it('hands out the gallery image of a layer that is one untouched picture without saving anything', { tags: ['condition'] }, async () => {
     useGallery.setState({ images: [image('a')] });
     importImage(image('a'), 'raster');
     const save = vi.spyOn(backend, 'saveImageFromUrl');
@@ -116,7 +116,7 @@ describe('commands that need layers', () => {
 });
 
 describe('staging', () => {
-  it('accepts the shown result as a raster layer and clears the staging area', () => {
+  it('accepts the shown result as a raster layer and clears the staging area', { tags: ['condition'] }, () => {
     stage(image('a'), image('b'));
     c().setStagedIndex(0);
     acceptStaged();
@@ -125,14 +125,14 @@ describe('staging', () => {
     expect(c().entities[0]!.objects[0]).toMatchObject({ imageName: 'a' });
   });
 
-  it('does nothing when the shown result is no longer in the gallery', () => {
+  it('does nothing when the shown result is no longer in the gallery', { tags: ['regression'] }, () => {
     c().addStagedImage('gone');
     acceptStaged();
     expect(c().entities).toEqual([]);
     expect(c().stagedImageNames).toEqual(['gone']);
   });
 
-  it('deletes only the intermediate results that were not accepted', async () => {
+  it('deletes only the intermediate results that were not accepted', { tags: ['condition'] }, async () => {
     const del = vi.spyOn(backend, 'deleteImages').mockResolvedValue(undefined);
     stage(image('a', { isIntermediate: true }), image('b', { isIntermediate: true }), image('keep', { isIntermediate: false }));
     c().setStagedIndex(0);
@@ -141,7 +141,7 @@ describe('staging', () => {
     expect(useGallery.getState().images.map((i) => i.name)).toEqual(['a', 'keep']);
   });
 
-  it('discards the shown result, and everything when asked', async () => {
+  it('discards the shown result, and everything when asked', { tags: ['decision-table'] }, async () => {
     const del = vi.spyOn(backend, 'deleteImages').mockResolvedValue(undefined);
     stage(image('a', { isIntermediate: true }), image('b', { isIntermediate: true }));
     c().setStagedIndex(1);
@@ -153,14 +153,14 @@ describe('staging', () => {
     await vi.waitFor(() => expect(del).toHaveBeenLastCalledWith(['a']));
   });
 
-  it('does nothing when there is nothing staged', () => {
+  it('does nothing when there is nothing staged', { tags: ['condition'] }, () => {
     const del = vi.spyOn(backend, 'deleteImages');
     discardCurrentStaged();
     discardAllStaged();
     expect(del).not.toHaveBeenCalled();
   });
 
-  it('keeps a failed intermediate delete silent', async () => {
+  it('keeps a failed intermediate delete silent', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'deleteImages').mockRejectedValue(new Error('x'));
     stage(image('a', { isIntermediate: true }));
     discardAllStaged();
@@ -168,7 +168,7 @@ describe('staging', () => {
     expect(useToasts.getState().toasts).toEqual([]);
   });
 
-  it('keeps the shown result in the gallery on the auto-add board, once', async () => {
+  it('keeps the shown result in the gallery on the auto-add board, once', { tags: ['condition'] }, async () => {
     stage(image('a', { isIntermediate: true }));
     useGallery.setState({ autoAddBoardId: 'b1' });
     const update = vi.spyOn(backend, 'updateImages').mockResolvedValue([image('a', { boardId: 'b1' })]);
@@ -184,7 +184,7 @@ describe('staging', () => {
     expect(await stagedAsGalleryImage()).toBeNull();
   });
 
-  it('reports a failure to keep the result', async () => {
+  it('reports a failure to keep the result', { tags: ['error-guessing'] }, async () => {
     stage(image('a', { isIntermediate: true }));
     vi.spyOn(backend, 'updateImages').mockRejectedValue(new Error('disk'));
     expect(await stagedAsGalleryImage()).toBeNull();
@@ -193,7 +193,7 @@ describe('staging', () => {
     expect(lastToast()?.status).toBe('error');
   });
 
-  it('saves the shown result to the gallery and says so', async () => {
+  it('saves the shown result to the gallery and says so', { tags: ['condition'] }, async () => {
     stage(image('a', { isIntermediate: true }));
     vi.spyOn(backend, 'updateImages').mockResolvedValue([image('a')]);
     await saveStagedToGallery();
@@ -204,7 +204,7 @@ describe('staging', () => {
 describe('random poses', () => {
   const poses = (id: string) => c().entities.find((e) => e.id === id)!.objects as PoseObject[];
 
-  it('adds one pose filling the bbox to a new control layer when no control layer is selected', () => {
+  it('adds one pose filling the bbox to a new control layer when no control layer is selected', { tags: ['condition'] }, () => {
     c().setBbox({ x: 0, y: 0, width: 512, height: 512 }, { history: false, syncParams: false });
     const raster = c().addEntity('raster');
     randomizePoses(raster, seededRandom(3));
@@ -216,7 +216,7 @@ describe('random poses', () => {
     expect(poses(control.id)[0]!.width).toBe(4);
   });
 
-  it('gives every pose of the layer a new shape in its place, as one undo step, and keeps other objects', () => {
+  it('gives every pose of the layer a new shape in its place, as one undo step, and keeps other objects', { tags: ['state-transition', 'decision-table'] }, () => {
     const id = c().addEntity('control');
     randomizePoses(id, seededRandom(1));
     randomizePoses(id, seededRandom(2));
@@ -232,7 +232,7 @@ describe('random poses', () => {
     expect(c().past.length).toBe(past + 1);
   });
 
-  it('makes the new layer follow the pose fully, with an OpenPose model that fits the main model', () => {
+  it('makes the new layer follow the pose fully, with an OpenPose model that fits the main model', { tags: ['condition'] }, () => {
     const model = (key: string, name: string, base: string, type = 'controlnet') => ({ key, name, base, type, path: `${name}.safetensors` }) as unknown as ModelConfig;
     useModels.setState({ models: [model('main', 'main', 'sdxl', 'main'), model('op15', 'openpose-sd15', 'sd-1'), model('opxl', 'openpose-sdxl', 'sdxl')] });
     useParams.setState({ modelKey: 'main' });
@@ -243,14 +243,14 @@ describe('random poses', () => {
     expect(c().entities.find((e) => e.id === second)).toMatchObject({ modelKey: null, weight: 1 });
   });
 
-  it('warns and changes nothing on a locked layer', () => {
+  it('warns and changes nothing on a locked layer', { tags: ['condition'] }, () => {
     const id = c().addEntity('control', { isLocked: true });
     randomizePoses(id, seededRandom(1));
     expect(poses(id)).toHaveLength(0);
     expect(lastToast()).toMatchObject({ status: 'warning' });
   });
 
-  it('turns and scales a layer of poses by its joints, so it stays editable', async () => {
+  it('turns and scales a layer of poses by its joints, so it stays editable', { tags: ['decision-table'] }, async () => {
     const id = c().addEntity('control');
     randomizePoses(id, seededRandom(4));
     const before = poses(id)[0]!;
@@ -265,7 +265,7 @@ describe('poses from the assistant', () => {
   const control = () => c().entities.find((e) => e.type === 'control')!;
   const poses = () => control().objects.filter((o): o is PoseObject => o.kind === 'pose');
 
-  it('places the people on a new pose layer, replaces them next time and adds when asked', () => {
+  it('places the people on a new pose layer, replaces them next time and adds when asked', { tags: ['condition'] }, () => {
     c().setBbox({ x: 0, y: 0, width: 512, height: 512 }, { history: false, syncParams: false });
     expect(setPoses([{ x: 0.3 }, { x: 0.7, size: 0.5 }], false)).toBe(true);
     expect(c().entities.filter((e) => e.type === 'control')).toHaveLength(1);
@@ -279,7 +279,7 @@ describe('poses from the assistant', () => {
     expect(c().entities.filter((e) => e.type === 'control')).toHaveLength(1);
   });
 
-  it('keeps other objects of the layer, makes one undo step and uses a new layer when the selected one is locked', () => {
+  it('keeps other objects of the layer, makes one undo step and uses a new layer when the selected one is locked', { tags: ['state-transition'] }, () => {
     const id = c().addEntity('control');
     const rect = { kind: 'rect', id: 'r', x: 0, y: 0, width: 4, height: 4, color: { r: 0, g: 0, b: 0, a: 1 } } as const;
     c().addObject(id, rect);
@@ -293,14 +293,14 @@ describe('poses from the assistant', () => {
     expect(c().entities.find((e) => e.id === id)!.objects).toHaveLength(2);
   });
 
-  it('places at most four people and nothing when nobody was described', () => {
+  it('places at most four people and nothing when nobody was described', { tags: ['boundary'] }, () => {
     expect(setPoses([null, 3, 'x', []], false)).toBe(false);
     expect(c().entities).toHaveLength(0);
     setPoses([{}, {}, {}, {}, {}, {}], false);
     expect(poses()).toHaveLength(4);
   });
 
-  it('tells the assistant about the people on the selected control layer, and says none on other layers', () => {
+  it('tells the assistant about the people on the selected control layer, and says none on other layers', { tags: ['condition'] }, () => {
     expect(posesForAssistant()).toEqual({ poses: [] });
     setPoses([{ lean: 12, lArm: { upper: 150, fore: 170 } }], false);
     const [person] = posesForAssistant().poses;
@@ -314,7 +314,7 @@ describe('poses found in a picture', () => {
   const poses = () => control().objects.filter((o): o is PoseObject => o.kind === 'pose');
   const person = (x: number, hidden: number[] = []) => ({ points: Array.from({ length: 36 }, (_, i) => (i % 2 === 0 ? x : 0.2 + (i / 2) * 0.03)), hidden });
 
-  it('places the people on a new pose layer, replaces them next time and adds when asked', () => {
+  it('places the people on a new pose layer, replaces them next time and adds when asked', { tags: ['condition'] }, () => {
     c().setBbox({ x: 0, y: 0, width: 512, height: 512 }, { history: false, syncParams: false });
     expect(placeExtractedPoses({ people: [person(0.3), person(0.7)], aspect: 1 }, false)).toBe(true);
     expect(c().entities.filter((e) => e.type === 'control')).toHaveLength(1);
@@ -326,12 +326,12 @@ describe('poses found in a picture', () => {
     expect(poses()).toHaveLength(2);
   });
 
-  it('does nothing and makes no layer when nobody was found', () => {
+  it('does nothing and makes no layer when nobody was found', { tags: ['condition'] }, () => {
     expect(placeExtractedPoses({ people: [], aspect: 1 }, false)).toBe(false);
     expect(c().entities).toHaveLength(0);
   });
 
-  it('is one undo step', () => {
+  it('is one undo step', { tags: ['state-transition'] }, () => {
     c().select(c().addEntity('control'));
     const past = c().past.length;
     placeExtractedPoses({ people: [person(0.5)], aspect: 1 }, false);
@@ -342,7 +342,7 @@ describe('ready-made poses on the canvas', () => {
   const control = () => c().entities.find((e) => e.type === 'control')!;
   const poses = () => control().objects.filter((o): o is PoseObject => o.kind === 'pose');
 
-  it('make a new pose layer when none is selected, with a pose in the middle of the box', () => {
+  it('make a new pose layer when none is selected, with a pose in the middle of the box', { tags: ['condition'] }, () => {
     c().setBbox({ x: 0, y: 0, width: 512, height: 512 }, { history: false, syncParams: false });
     expect(applyPosePreset('handsOnHips')).toBe(true);
     expect(poses()).toHaveLength(1);
@@ -350,7 +350,7 @@ describe('ready-made poses on the canvas', () => {
     expect(b.x + b.width / 2).toBeCloseTo(256, -1);
   });
 
-  it('give the first pose a new shape in the same place, size and id, and leave the others', () => {
+  it('give the first pose a new shape in the same place, size and id, and leave the others', { tags: ['boundary', 'state-transition'] }, () => {
     c().setBbox({ x: 0, y: 0, width: 512, height: 512 }, { history: false, syncParams: false });
     setPoses([{ x: 0.3, size: 0.6 }, { x: 0.75, size: 0.5 }], false);
     const [first, second] = poses();
@@ -362,7 +362,7 @@ describe('ready-made poses on the canvas', () => {
     expect(jointBounds(first2!)!.x + jointBounds(first2!)!.width / 2).toBeCloseTo(jointBounds(first!)!.x + jointBounds(first!)!.width / 2, -1);
   });
 
-  it('keep every pose inside the generation box, shrinking the ones with raised arms or kicks', () => {
+  it('keep every pose inside the generation box, shrinking the ones with raised arms or kicks', { tags: ['decision-table'] }, () => {
     c().setBbox({ x: 0, y: 0, width: 512, height: 512 }, { history: false, syncParams: false });
     for (const id of ['armsUp', 'highKick', 'jumping', 'sprinting', 'drawingBow']) {
       c().select(null);
@@ -374,7 +374,7 @@ describe('ready-made poses on the canvas', () => {
     }
   });
 
-  it('put a composition on the layer in place of every pose, keeping what is not a pose', () => {
+  it('put a composition on the layer in place of every pose, keeping what is not a pose', { tags: ['decision-table'] }, () => {
     c().setBbox({ x: 0, y: 0, width: 512, height: 512 }, { history: false, syncParams: false });
     setPoses([{ x: 0.3 }, { x: 0.7 }, { x: 0.5 }], false);
     const id = c().selectedEntityId!;
@@ -387,7 +387,7 @@ describe('ready-made poses on the canvas', () => {
     expect(poses()).toHaveLength(3);
   });
 
-  it('refuse an unknown pose and a locked layer, and are one undo step', () => {
+  it('refuse an unknown pose and a locked layer, and are one undo step', { tags: ['error-guessing', 'state-transition'] }, () => {
     expect(applyPosePreset('nope')).toBe(false);
     expect(c().entities).toHaveLength(0);
     const id = c().addEntity('control');
@@ -408,7 +408,7 @@ describe('a batch of random poses', () => {
     registerInvokeBuilder('canvas', { readiness: () => reasons, build: async () => ({}) as never, subscribe: () => () => {} });
   });
 
-  it('queues one generation per pose, each with a new random pose on the same layer', async () => {
+  it('queues one generation per pose, each with a new random pose on the same layer', { tags: ['condition'] }, async () => {
     const seen: string[] = [];
     const enqueue = vi.spyOn(backend, 'enqueue').mockImplementation(async () => {
       seen.push(JSON.stringify(c().entities.find((e) => e.type === 'control')!.objects));
@@ -421,7 +421,7 @@ describe('a batch of random poses', () => {
     expect(new Set(seen).size).toBe(3);
   });
 
-  it('keeps queueing on the canvas when the user opens another tab meanwhile', async () => {
+  it('keeps queueing on the canvas when the user opens another tab meanwhile', { tags: ['condition'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue').mockImplementation(async () => {
       useUi.setState({ activeTab: 'queue' });
       return [];
@@ -430,14 +430,14 @@ describe('a batch of random poses', () => {
     expect(enqueue).toHaveBeenCalledTimes(3);
   });
 
-  it('stops with one error when a request fails', async () => {
+  it('stops with one error when a request fails', { tags: ['error-guessing'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue').mockRejectedValue(new Error('boom'));
     await generateWithRandomPoses(3);
     expect(enqueue).toHaveBeenCalledTimes(1);
     expect(useToasts.getState().toasts).toEqual([expect.objectContaining({ status: 'error', description: 'boom' })]);
   });
 
-  it('warns once and queues nothing when the canvas cannot be invoked', async () => {
+  it('warns once and queues nothing when the canvas cannot be invoked', { tags: ['error-guessing'] }, async () => {
     reasons = ['no model'];
     const enqueue = vi.spyOn(backend, 'enqueue').mockResolvedValue([]);
     await generateWithRandomPoses(5);
@@ -446,7 +446,7 @@ describe('a batch of random poses', () => {
     expect(c().entities).toHaveLength(0);
   });
 
-  it('keeps the count between one and the limit', async () => {
+  it('keeps the count between one and the limit', { tags: ['boundary'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue').mockResolvedValue([]);
     await generateWithRandomPoses(0);
     expect(enqueue).toHaveBeenCalledTimes(1);
@@ -456,7 +456,7 @@ describe('a batch of random poses', () => {
 });
 
 describe('filter previews', () => {
-  it('replaces the layer with the previewed picture and drops the filter and the preview', () => {
+  it('replaces the layer with the previewed picture and drops the filter and the preview', { tags: ['condition'] }, () => {
     const id = c().addEntity('control');
     c().setFilterPreview(id, { url: 'blob:p', x: 1, y: 2, width: 30, height: 40 });
     applyFilterPreview(id);
@@ -467,7 +467,7 @@ describe('filter previews', () => {
     expect(c().filterPreviews[id]).toBeUndefined();
   });
 
-  it('does nothing without a preview', () => {
+  it('does nothing without a preview', { tags: ['condition'] }, () => {
     const id = c().addEntity('control');
     const before = c().entities;
     applyFilterPreview(id);

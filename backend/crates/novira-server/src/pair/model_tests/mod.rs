@@ -68,6 +68,7 @@ fn run_ops(ops: &[Op]) -> Result<(), TestCaseError> {
     Ok(())
 }
 
+// tags: boundary
 #[test]
 fn the_documented_limits_are_the_ones_the_model_uses() {
     assert_eq!(CODE_TTL, Duration::from_secs(120));
@@ -82,6 +83,7 @@ fn the_documented_limits_are_the_ones_the_model_uses() {
     assert_eq!(LABEL_MAX, 40);
 }
 
+// tags: state-transition
 #[test]
 fn the_store_follows_the_model_over_random_operation_sequences() {
     check(prop::collection::vec(op(), 1..=MAX_OPS), |ops| {

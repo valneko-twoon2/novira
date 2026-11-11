@@ -5,19 +5,19 @@ import type { ExportOptions, ImageDTO } from '../types';
 import { backupFileName, backupInfo, downloadMockBackup, exportFileName, exportInBrowser, fitSize, type MockData } from './shareBackup';
 
 describe('mock export and backup helpers', () => {
-  it('shrinks the longest side like the desktop app and never enlarges', () => {
+  it('shrinks the longest side like the desktop app and never enlarges', { tags: ['boundary'] }, () => {
     expect(fitSize(4000, 3000, 1024)).toEqual({ width: 1024, height: 768 });
     expect(fitSize(3000, 4000, 1024)).toEqual({ width: 768, height: 1024 });
     expect(fitSize(800, 600, 1024)).toEqual({ width: 800, height: 600 });
     expect(fitSize(800, 600, null)).toEqual({ width: 800, height: 600 });
   });
 
-  it('names copies after the gallery file with the format extension', () => {
+  it('names copies after the gallery file with the format extension', { tags: ['equivalence'] }, () => {
     expect(exportFileName('000001-abc.png', 'jpeg')).toBe('000001-abc.jpg');
     expect(exportFileName('000001-abc.png', 'webp')).toBe('000001-abc.webp');
   });
 
-  it('names backups with the local date and time', () => {
+  it('names backups with the local date and time', { tags: ['condition'] }, () => {
     expect(backupFileName(new Date(2026, 9, 6, 9, 5))).toBe('novira-backup-20261006-0905.zip');
     expect(backupFileName(new Date(2026, 0, 2, 23, 59), 'json')).toBe('novira-backup-20260102-2359.json');
   });
@@ -56,7 +56,7 @@ describe('exporting copies in the browser', () => {
     vi.restoreAllMocks();
   });
 
-  it('downloads each still picture at the limited size and skips videos and audio', async () => {
+  it('downloads each still picture at the limited size and skips videos and audio', { tags: ['condition'] }, async () => {
     const result = await exportInBrowser([picture('a.png'), picture('b.mp4', 'video'), picture('c.wav', 'audio'), picture('d.png')], options({ format: 'webp', maxSide: 1000 }));
     expect(result).toEqual({ count: 2, skipped: 2, watermarked: 0, folder: '' });
     expect(downloads.map((d) => d.name)).toEqual(['a.webp', 'd.webp']);
@@ -67,7 +67,7 @@ describe('exporting copies in the browser', () => {
     expect(document.querySelector('a[download]')).toBeNull();
   });
 
-  it('lays a JPEG on white and gives its quality as a fraction; PNG has no quality', async () => {
+  it('lays a JPEG on white and gives its quality as a fraction; PNG has no quality', { tags: ['decision-table'] }, async () => {
     await exportInBrowser([picture('a.png')], options({ format: 'jpeg', quality: 80 }));
     const jpeg = canvases.all[0]!;
     expect(jpeg.sets.find((s) => s.name === 'fillStyle')!.value).toBe('#fff');
@@ -78,12 +78,12 @@ describe('exporting copies in the browser', () => {
     expect(toBlob.mock.calls[1]!.slice(1)).toEqual(['image/png', undefined]);
   });
 
-  it('treats a picture without a media type as a still picture', async () => {
+  it('treats a picture without a media type as a still picture', { tags: ['error-guessing'] }, async () => {
     const legacy = { ...picture('old.png'), mediaType: undefined } as unknown as ImageDTO;
     expect((await exportInBrowser([legacy], options({}))).count).toBe(1);
   });
 
-  it('rejects when the picture cannot be loaded, the canvas is missing or encoding gives nothing', async () => {
+  it('rejects when the picture cannot be loaded, the canvas is missing or encoding gives nothing', { tags: ['error-guessing'] }, async () => {
     await expect(exportInBrowser([picture('x.png', 'image', 'blob:bad')], options({}))).rejects.toThrow('image load failed');
     toBlob.mockImplementation(((cb: BlobCallback) => cb(null)) as never);
     await expect(exportInBrowser([picture('y.png')], options({}))).rejects.toThrow('encoding failed');
@@ -103,11 +103,11 @@ describe('the mock backup', () => {
     ],
   };
 
-  it('counts the pictures, the boards and only the user workflows', () => {
+  it('counts the pictures, the boards and only the user workflows', { tags: ['condition'] }, () => {
     expect(backupInfo(data, 123)).toEqual({ appVersion: '0.1.0-mock', createdAt: 123, images: 2, boards: 1, workflows: 1 });
   });
 
-  it('downloads one JSON file with no picture addresses, the user workflows and the screen state', async () => {
+  it('downloads one JSON file with no picture addresses, the user workflows and the screen state', { tags: ['scenario'] }, async () => {
     vi.stubGlobal('URL', { createObjectURL: () => 'blob:backup', revokeObjectURL: vi.fn() });
     let blob: Blob | null = null;
     vi.spyOn(URL, 'createObjectURL').mockImplementation((b) => ((blob = b as Blob), 'blob:backup'));

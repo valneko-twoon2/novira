@@ -37,7 +37,7 @@ afterEach(() => {
 });
 
 describe('PresetPicker', () => {
-  it('shows the current preset on the card, or a prompt to choose one', () => {
+  it('shows the current preset on the card, or a prompt to choose one', { tags: ['condition'] }, () => {
     setup({ selectedId: 'mine' });
     const card = screen.getByTestId('preset-trigger');
     expect(card.textContent).toContain('My portrait');
@@ -47,7 +47,7 @@ describe('PresetPicker', () => {
     expect(screen.getByTestId('preset-trigger').textContent).toContain(t('presets.choose'));
   });
 
-  it('shows names and summaries only, no pictures', () => {
+  it('shows names and summaries only, no pictures', { tags: ['condition'] }, () => {
     setup({ selectedId: 'mine' });
     openList();
     expect(screen.getByTestId('bar').querySelector('img')).toBeNull();
@@ -55,7 +55,7 @@ describe('PresetPicker', () => {
     expect(within(list()).getByText('SDXL')).toBeTruthy();
   });
 
-  it('groups my presets and the built-ins, and searches names and summaries', () => {
+  it('groups my presets and the built-ins, and searches names and summaries', { tags: ['condition'] }, () => {
     setup();
     openList();
     expect(within(list()).getByText(t('presets.group.mine'))).toBeTruthy();
@@ -72,7 +72,7 @@ describe('PresetPicker', () => {
     expect(list().textContent).toContain(t('presets.noMatch'));
   });
 
-  it('applies the clicked preset and closes the list', () => {
+  it('applies the clicked preset and closes the list', { tags: ['scenario'] }, () => {
     const h = setup();
     openList();
     fireEvent.click(within(rows()[0]!).getByText('My portrait'));
@@ -80,7 +80,7 @@ describe('PresetPicker', () => {
     expect(screen.queryByTestId('preset-list')).toBeNull();
   });
 
-  it('explains the empty state and still offers to save', () => {
+  it('explains the empty state and still offers to save', { tags: ['boundary'] }, () => {
     const h = setup({ items: [] });
     openList();
     expect(list().textContent).toContain(t('presets.empty'));
@@ -90,7 +90,7 @@ describe('PresetPicker', () => {
     expect(h.onSaveNew).toHaveBeenCalledWith('Night scene');
   });
 
-  it('blocks applying and saving while presets are unavailable, with the reason shown', () => {
+  it('blocks applying and saving while presets are unavailable, with the reason shown', { tags: ['condition'] }, () => {
     const h = setup({ disabledReason: 'Select a layer' });
     expect((screen.getByTestId('preset-quick-save') as HTMLButtonElement).disabled).toBe(true);
     openList();
@@ -102,7 +102,7 @@ describe('PresetPicker', () => {
     expect((screen.getByTestId('preset-save-new') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('renames, overwrites and deletes from the item menu', () => {
+  it('renames, overwrites and deletes from the item menu', { tags: ['scenario'] }, () => {
     const h = setup();
     const openMenu = (row: number) => {
       openList();

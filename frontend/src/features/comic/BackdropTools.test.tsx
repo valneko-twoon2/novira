@@ -45,7 +45,7 @@ afterEach(() => {
 });
 
 describe('the backdrop on the page', () => {
-  it('shows under the panels when the page has one, and not otherwise, and lets empty panels show it through', () => {
+  it('shows under the panels when the page has one, and not otherwise, and lets empty panels show it through', { tags: ['boundary'] }, () => {
     show();
     expect(screen.getByTestId('comic-backdrop-picture').getAttribute('src')).toBe('novira://sky.png');
     expect(screen.getByTestId('comic-page').className).toContain('has-backdrop');
@@ -55,7 +55,7 @@ describe('the backdrop on the page', () => {
     expect(screen.getByTestId('comic-page').className).not.toContain('has-backdrop');
   });
 
-  it('is edited from the tool popover: its buttons change the view and start the editing, and the handles drag it', async () => {
+  it('is edited from the tool popover: its buttons change the view and start the editing, and the handles drag it', { tags: ['scenario'] }, async () => {
     show();
     fireEvent.click(screen.getByTestId('comic-backdrop'));
     fireEvent.click(await screen.findByTestId('comic-backdrop-scale-up'));
@@ -74,7 +74,7 @@ describe('the backdrop on the page', () => {
     expect(page().backdrop!.view.cx).toBeCloseTo(0.6);
   });
 
-  it('ends the editing on Escape, and takes the picture off the page on Delete', () => {
+  it('ends the editing on Escape, and takes the picture off the page on Delete', { tags: ['scenario'] }, () => {
     show();
     act(() => useComic.getState().selectBackdrop(true));
     expect(screen.getByTestId('comic-picture-handles')).toBeTruthy();
@@ -104,7 +104,7 @@ function dropOnPopover(data: { names?: string[]; files?: File[] }) {
 describe('putting a picture in from the popover', () => {
   beforeEach(() => useToasts.setState({ toasts: [] }));
 
-  it('shows no edit or reset button while the page has no backdrop', async () => {
+  it('shows no edit or reset button while the page has no backdrop', { tags: ['scenario'] }, async () => {
     show(false);
     fireEvent.click(screen.getByTestId('comic-backdrop'));
     await screen.findByTestId('comic-backdrop-pop');
@@ -113,7 +113,7 @@ describe('putting a picture in from the popover', () => {
     expect(screen.queryByTestId('comic-backdrop-clear')).toBeNull();
   });
 
-  it('puts a gallery picture dropped on the popover over the page, and selects it', async () => {
+  it('puts a gallery picture dropped on the popover over the page, and selects it', { tags: ['scenario'] }, async () => {
     show(false);
     fireEvent.click(screen.getByTestId('comic-backdrop'));
     await screen.findByTestId('comic-backdrop-pop');
@@ -122,7 +122,7 @@ describe('putting a picture in from the popover', () => {
     expect(useComic.getState().backdropSelected).toBe(true);
   });
 
-  it('tells the user when the dropped picture is not in the gallery', async () => {
+  it('tells the user when the dropped picture is not in the gallery', { tags: ['scenario'] }, async () => {
     show(false);
     fireEvent.click(screen.getByTestId('comic-backdrop'));
     await screen.findByTestId('comic-backdrop-pop');
@@ -132,7 +132,7 @@ describe('putting a picture in from the popover', () => {
     expect(page().backdrop).toBeNull();
   });
 
-  it('uploads a dropped file, and reports a failed upload', async () => {
+  it('uploads a dropped file, and reports a failed upload', { tags: ['error-guessing'] }, async () => {
     const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValueOnce({ name: 'up.png', url: 'novira://up.png' } as ImageDTO);
     show(false);
     fireEvent.click(screen.getByTestId('comic-backdrop'));
@@ -146,7 +146,7 @@ describe('putting a picture in from the popover', () => {
     upload.mockRestore();
   });
 
-  it('uploads a file picked with the upload button of the tools', async () => {
+  it('uploads a file picked with the upload button of the tools', { tags: ['scenario'] }, async () => {
     vi.spyOn(backend, 'uploadImage').mockResolvedValueOnce({ name: 'picked.png', url: 'novira://picked.png' } as ImageDTO);
     show(false);
     fireEvent.click(screen.getByTestId('comic-backdrop'));
@@ -161,7 +161,7 @@ describe('putting a picture in from the popover', () => {
 describe('editing and clearing from the popover', () => {
   beforeEach(() => useToasts.setState({ toasts: [] }));
 
-  it('toggles the editing with the edit button', async () => {
+  it('toggles the editing with the edit button', { tags: ['state-transition'] }, async () => {
     show();
     fireEvent.click(screen.getByTestId('comic-backdrop'));
     const edit = await screen.findByTestId('comic-backdrop-edit');
@@ -173,7 +173,7 @@ describe('editing and clearing from the popover', () => {
     expect(useComic.getState().backdropSelected).toBe(false);
   });
 
-  it('takes the picture off the page with the clear button, and the notice puts it back', async () => {
+  it('takes the picture off the page with the clear button, and the notice puts it back', { tags: ['scenario'] }, async () => {
     show();
     fireEvent.click(screen.getByTestId('comic-backdrop'));
     fireEvent.click(await screen.findByTestId('comic-backdrop-clear'));

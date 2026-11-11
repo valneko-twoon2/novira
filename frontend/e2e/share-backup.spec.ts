@@ -1,7 +1,7 @@
 // Export for sharing (gallery menu, browser downloads in the mock) and the backup section of the settings.
 import { expect, msg, openApp, test } from './fixtures';
 
-test('pictures chosen in the gallery are exported as clean JPEG downloads', async ({ page }) => {
+test('pictures chosen in the gallery are exported as clean JPEG downloads', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('gallery-thumb').nth(0).click();
   await page.getByTestId('gallery-thumb').nth(1).click({ modifiers: ['Control'] });
@@ -17,7 +17,7 @@ test('pictures chosen in the gallery are exported as clean JPEG downloads', asyn
   expect(downloads.every((name) => name.endsWith('.jpg'))).toBe(true);
 });
 
-test('an export with the watermark switch is found again by the check, which leads to the original', async ({ page }) => {
+test('an export with the watermark switch is found again by the check, which leads to the original', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('gallery-thumb').nth(0).click({ button: 'right' });
   await page.getByRole('menuitem', { name: msg('share.menu') }).click();
@@ -35,7 +35,7 @@ test('an export with the watermark switch is found again by the check, which lea
   await expect(page.getByTestId('wm-check')).toBeHidden();
 });
 
-test('a backup downloads, and a restore stops at the confirmation in the mock', async ({ page }) => {
+test('a backup downloads, and a restore stops at the confirmation in the mock', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByRole('button', { name: msg('app.nav.settingsMenu') }).click();
   await page.getByRole('menuitem', { name: msg('app.nav.settings') }).click();

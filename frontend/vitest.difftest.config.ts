@@ -11,5 +11,6 @@ export default defineConfig({
     environment: 'node',
     maxWorkers: 1,
     testTimeout: 20_000,
+    tags: base.test?.tags,
   },
 });

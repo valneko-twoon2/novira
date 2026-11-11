@@ -13,7 +13,7 @@ afterEach(() => {
 });
 
 describe('ComfyUI words', () => {
-  it('reads the words of a language once', async () => {
+  it('reads the words of a language once', { tags: ['condition'] }, async () => {
     const read = vi.spyOn(backend, 'comfyUiLocale').mockResolvedValue(words('A'));
     await useComfyUiLocale.getState().load('ja');
     await useComfyUiLocale.getState().load('ja');
@@ -21,7 +21,7 @@ describe('ComfyUI words', () => {
     expect(useComfyUiLocale.getState().words?.comfyNodesHeading).toBe('A');
   });
 
-  it('keeps the words of the newest language when an older answer comes last', async () => {
+  it('keeps the words of the newest language when an older answer comes last', { tags: ['condition'] }, async () => {
     let answerJa: (w: ComfyUiLocale) => void = () => {};
     vi.spyOn(backend, 'comfyUiLocale').mockImplementation((locale) =>
       locale === 'ja' ? new Promise((r) => (answerJa = r)) : Promise.resolve(words('fr')),
@@ -33,7 +33,7 @@ describe('ComfyUI words', () => {
     expect(useComfyUiLocale.getState()).toMatchObject({ locale: 'fr', words: { comfyNodesHeading: 'fr' } });
   });
 
-  it('keeps no words and logs it when ComfyUI cannot answer', async () => {
+  it('keeps no words and logs it when ComfyUI cannot answer', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'comfyUiLocale').mockRejectedValue(new Error('offline'));
     const before = useDevLog.getState().entries.length;
     await useComfyUiLocale.getState().load('ja');

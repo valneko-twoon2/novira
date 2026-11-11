@@ -18,15 +18,15 @@ const OLD_RIFE = {
 } as unknown as ComfyNodeDefs;
 
 describe('finish graph snapshots', () => {
-  it('smoother motion', async () => {
+  it('smoother motion', { tags: ['decision-table'] }, async () => {
     await expect(asJson(finishGraph(CLIP, { smooth: true, upscale: null }))).toMatchFileSnapshot(snap('smooth'));
   });
 
-  it('larger picture', async () => {
+  it('larger picture', { tags: ['decision-table'] }, async () => {
     await expect(asJson(finishGraph(CLIP, { smooth: false, upscale: { modelKey: 'upscaler-key' } }))).toMatchFileSnapshot(snap('upscale'));
   });
 
-  it('both, with an older RIFE node that drops unknown inputs', async () => {
+  it('both, with an older RIFE node that drops unknown inputs', { tags: ['decision-table'] }, async () => {
     await expect(asJson(finishGraph(CLIP, { smooth: true, upscale: { modelKey: 'upscaler-key' } }, OLD_RIFE))).toMatchFileSnapshot(snap('smooth-upscale-old-rife'));
   });
 });

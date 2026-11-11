@@ -13,7 +13,7 @@ const newestFirst = (images: ImageDTO[]) => [...images].sort((x, y) => y.created
 describe.runIf(ORIGIN && TOKEN)('the mock answers as the real backend does', () => {
   const backends = useBackends();
 
-  it('makes, renames, archives and refuses boards alike', async () => {
+  it('makes, renames, archives and refuses boards alike', { tags: ['scenario'] }, async () => {
     await same(backends, (b) => [
       () => b.createBoard('  Trimmed  '),
       () => b.createBoard('   '),
@@ -25,7 +25,7 @@ describe.runIf(ORIGIN && TOKEN)('the mock answers as the real backend does', () 
     ]);
   });
 
-  it('saves, replaces and deletes workflows alike', async () => {
+  it('saves, replaces and deletes workflows alike', { tags: ['scenario'] }, async () => {
     await same(backends, async (b) => {
       const first = await b.saveWorkflow({ name: 'Diff A', description: '', author: '', tags: ['x'], graph: { v: 1 } } as never);
       return [
@@ -40,7 +40,7 @@ describe.runIf(ORIGIN && TOKEN)('the mock answers as the real backend does', () 
     });
   });
 
-  it('keeps comics, the canvas and the screen state alike, and refuses the same bad ones', async () => {
+  it('keeps comics, the canvas and the screen state alike, and refuses the same bad ones', { tags: ['scenario'] }, async () => {
     // Only the comics of this case: the sequences (sequences.difftest.ts) save theirs on the same server.
     const comics = (b: BackendClient) => b.listComics().then((list) => list.filter((c) => ['comic-1', 'comic 2'].includes(c.id)).map((c) => ({ id: c.id, document: c.document })));
     await same(backends, (b) => [
@@ -71,7 +71,7 @@ describe.runIf(ORIGIN && TOKEN)('the mock answers as the real backend does', () 
     ]);
   });
 
-  it('uploads, stars, moves, deletes and brings back pictures alike', async () => {
+  it('uploads, stars, moves, deletes and brings back pictures alike', { tags: ['scenario'] }, async () => {
     await same(backends, async (b) => {
       const board = await b.createBoard('Pictures');
       const a = await b.uploadImage(png(16, 12), { boardId: board.id });
@@ -99,7 +99,7 @@ describe.runIf(ORIGIN && TOKEN)('the mock answers as the real backend does', () 
     });
   });
 
-  it('deletes a board with its pictures, keeps the flags of a picture and brings pictures back alike', async () => {
+  it('deletes a board with its pictures, keeps the flags of a picture and brings pictures back alike', { tags: ['scenario'] }, async () => {
     await same(backends, async (b) => {
       const board = await b.createBoard('With pictures');
       const kept = await b.createBoard('Kept');
@@ -132,7 +132,7 @@ describe.runIf(ORIGIN && TOKEN)('the mock answers as the real backend does', () 
     });
   });
 
-  it('checks and keeps engine settings alike', async () => {
+  it('checks and keeps engine settings alike', { tags: ['scenario'] }, async () => {
     /** What both sides decide; the folders are each machine's own. */
     const decided = (s: EngineSettings) => ({
       comfyuiPackage: s.comfyuiPackage,
@@ -163,7 +163,7 @@ describe.runIf(ORIGIN && TOKEN)('the mock answers as the real backend does', () 
     ]);
   });
 
-  it('answers calls about things that are not there alike', async () => {
+  it('answers calls about things that are not there alike', { tags: ['scenario'] }, async () => {
     const calls = (b: BackendClient) => [
       () => b.cancelQueueItem(987654),
       () => b.cancelBatch('no-such-batch'),

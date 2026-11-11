@@ -13,7 +13,7 @@ vi.mock('./animation', async (original) => ({ ...(await original<typeof import('
 const ranges = rangesOf(MOCK_FACE_RIG_LIBRARY.axes);
 
 describe('face rig pose', () => {
-  it('writes only what differs from the photo and reads it back', () => {
+  it('writes only what differs from the photo and reads it back', { tags: ['scenario'] }, () => {
     expect(serializeRig(EMPTY_RIG)).toBe('');
     const pose = { w: { au12: 0.5, au26: 0 }, p: { happy: 0.7 }, rot: [0, 10, 0] as [number, number, number] };
     const text = serializeRig(pose);
@@ -24,7 +24,7 @@ describe('face rig pose', () => {
     expect(adjustedCount(pose)).toBe(3);
   });
 
-  it('moves a brow up to raise it and toward the nose to furrow it, both sides together when mirrored', () => {
+  it('moves a brow up to raise it and toward the nose to furrow it, both sides together when mirrored', { tags: ['state-transition', 'decision-table'] }, () => {
     const lifted = dragHandle(EMPTY_RIG, 'brow_L', UNIT_PX / 2, -UNIT_PX / 2, true, ranges);
     expect(lifted.w).toMatchObject({ au1_2_L: 0.5, au4_L: 0.5, au1_2_R: 0.5, au4_R: 0.5 });
     const alone = dragHandle(EMPTY_RIG, 'brow_L', 0, -UNIT_PX / 2, false, ranges);
@@ -32,7 +32,7 @@ describe('face rig pose', () => {
     expect(alone.w.au1_2_R).toBeUndefined();
   });
 
-  it('keeps every weight inside the range the pack allows', () => {
+  it('keeps every weight inside the range the pack allows', { tags: ['decision-table', 'scenario'] }, () => {
     const smile = dragHandle(EMPTY_RIG, 'corner_R', 0, -UNIT_PX * 5, false, ranges);
     expect(smile.w.au12).toBe(1);
     const frown = dragHandle(EMPTY_RIG, 'corner_R', 0, UNIT_PX * 5, false, ranges);
@@ -41,7 +41,7 @@ describe('face rig pose', () => {
     expect(eye.w.au45_L).toBe(-0.25);
   });
 
-  it('turns a point on the gaze and head discs into axes and degrees, and back', () => {
+  it('turns a point on the gaze and head discs into axes and degrees, and back', { tags: ['scenario'] }, () => {
     const looking = setGaze(EMPTY_RIG, 0.5, -0.5);
     expect(looking.w).toMatchObject({ au61: 0.5, au62: 0, au63: 0.5, au64: 0 });
     expect(gazeOf(looking)).toEqual([0.5, -0.5]);
@@ -63,7 +63,7 @@ describe('face rig editor', () => {
   });
   afterEach(cleanup);
 
-  it('draws the portrait with handles, follows a drag and hands the pose back when applied', async () => {
+  it('draws the portrait with handles, follows a drag and hands the pose back when applied', { tags: ['scenario'] }, async () => {
     const name = 'portrait.png';
     const onApply = vi.fn();
     render(
@@ -85,7 +85,7 @@ describe('face rig editor', () => {
     expect(JSON.parse(onApply.mock.calls[0]![0] as string)).toEqual({ v: 1, w: { au26: 0.5 }, p: { happy: 0.7 } });
   });
 
-  it('keeps expressions as keyframes, goes back to one, and makes a GIF from two or more', async () => {
+  it('keeps expressions as keyframes, goes back to one, and makes a GIF from two or more', { tags: ['boundary', 'scenario'] }, async () => {
     const gif = vi.mocked(renderGif).mockResolvedValue(new Uint8Array([71, 73, 70]));
     URL.createObjectURL = vi.fn(() => 'blob:gif');
     URL.revokeObjectURL = vi.fn();

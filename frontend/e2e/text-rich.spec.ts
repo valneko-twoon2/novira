@@ -14,7 +14,7 @@ async function openText(page: Parameters<typeof openApp>[0]) {
   await count.blur();
 }
 
-test('finishing a text layer makes candidates, and a changed text asks for a new run', async ({ page }) => {
+test('finishing a text layer makes candidates, and a changed text asks for a new run', { tag: ['@state-transition'] }, async ({ page }) => {
   await openText(page);
   await page.getByTestId('positive-prompt').fill('gold, sparkles');
 
@@ -43,7 +43,7 @@ test('finishing a text layer makes candidates, and a changed text asks for a new
   await expect(candidates).toHaveCount(0);
 });
 
-test('the seed row of the Generate screen: a random run shows the seed it used, and a fixed seed stays as it is', async ({ page }) => {
+test('the seed row of the Generate screen: a random run shows the seed it used, and a fixed seed stays as it is', { tag: ['@scenario'] }, async ({ page }) => {
   // Two runs, each given 30 s: under a full parallel run the test's own 30 s ran out before the second one ended.
   test.setTimeout(90_000);
   await openText(page);
@@ -61,7 +61,7 @@ test('the seed row of the Generate screen: a random run shows the seed it used, 
   await expect(seed).toHaveValue(used);
 });
 
-test('a busy button draws its spinner in the label color, so it shows on the blue fills', async ({ page }) => {
+test('a busy button draws its spinner in the label color, so it shows on the blue fills', { tag: ['@regression'] }, async ({ page }) => {
   await openText(page);
   // The mock run ends too fast to catch the spinner, so a busy button of each blue scheme is put on the page with the app's styles.
   const colors = await page.evaluate(() =>
@@ -81,7 +81,7 @@ test('a busy button draws its spinner in the label color, so it shows on the blu
   for (const { label, ring } of colors) expect(ring).toBe(label);
 });
 
-test('the picture can be saved with the AI fill and a failed run changes nothing', async ({ page }) => {
+test('the picture can be saved with the AI fill and a failed run changes nothing', { tag: ['@error-guessing'] }, async ({ page }) => {
   // Two waits of 30 s each, as in the seed test.
   test.setTimeout(90_000);
   await openText(page);
@@ -98,7 +98,7 @@ test('the picture can be saved with the AI fill and a failed run changes nothing
   await expect(page.getByTestId('invoke-button')).toBeEnabled();
 });
 
-test('the Text screen has the queue controls of the Generate screen: the count decides how many are made, and the caret adds to the front', async ({ page }) => {
+test('the Text screen has the queue controls of the Generate screen: the count decides how many are made, and the caret adds to the front', { tag: ['@scenario'] }, async ({ page }) => {
   await openText(page);
   const count = page.getByRole('spinbutton', { name: msg('params.invoke.iterations') });
   await count.fill('3');
@@ -110,7 +110,7 @@ test('the Text screen has the queue controls of the Generate screen: the count d
   await expect(page.getByRole('menuitem', { name: msg('params.invoke.openQueue') })).toBeVisible();
 });
 
-test('the prompts of the Text screen are its own: the image form keeps what it had', async ({ page }) => {
+test('the prompts of the Text screen are its own: the image form keeps what it had', { tag: ['@scenario'] }, async ({ page }) => {
   await openText(page);
   await page.getByTestId('positive-prompt').fill('molten gold');
   await page.getByTestId('negative-prompt').fill('blurry');

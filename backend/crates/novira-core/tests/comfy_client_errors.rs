@@ -296,6 +296,7 @@ fn message(r: Result<EngineOutput, EngineError>) -> String {
 
 // Pure helpers --------------------------------------------------------------------------------------------------
 
+// tags: boundary, decision-table
 #[test]
 fn previews_are_read_from_both_frame_layouts_and_empty_ones_are_dropped() {
     // Layout 4: the length of a JSON header, the header, then the picture.
@@ -317,6 +318,7 @@ fn previews_are_read_from_both_frame_layouts_and_empty_ones_are_dropped() {
     assert!(parse_preview(&[0, 0]).is_none());
 }
 
+// tags: error-guessing, decision-table
 #[test]
 fn a_rejected_prompt_names_each_failing_node() {
     let body = json!({
@@ -335,6 +337,7 @@ fn a_rejected_prompt_names_each_failing_node() {
 
 // Uploads and queueing ------------------------------------------------------------------------------------------
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_refused_upload_stops_the_job() {
     let (url, fake) = serve(Cfg {
@@ -347,6 +350,7 @@ async fn a_refused_upload_stops_the_job() {
     assert_eq!(fake.uploads.lock().unwrap().len(), 1);
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn an_upload_answered_without_a_name_stops_the_job() {
     let (url, _) = serve(Cfg {
@@ -358,6 +362,7 @@ async fn an_upload_answered_without_a_name_stops_the_job() {
     assert!(err.contains("returned no name"), "{err}");
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_video_and_a_sound_in_the_graph_are_uploaded_and_a_prompt_without_an_id_is_an_error() {
     let (url, fake) = serve(Cfg {
@@ -377,6 +382,7 @@ async fn a_video_and_a_sound_in_the_graph_are_uploaded_and_a_prompt_without_an_i
     assert_eq!(fake.uploads.lock().unwrap().len(), 3);
 }
 
+// tags: scenario
 #[tokio::test]
 async fn an_uploaded_picture_is_named_with_its_subfolder_only_when_there_is_one() {
     for (upload, want) in [("sub", "s/a.png"), ("ok", "a.png")] {
@@ -392,6 +398,7 @@ async fn an_uploaded_picture_is_named_with_its_subfolder_only_when_there_is_one(
     }
 }
 
+// tags: error-guessing, decision-table
 #[tokio::test]
 async fn a_rejected_prompt_gives_the_reason_of_each_node() {
     let (url, _) = serve(Cfg {
@@ -403,6 +410,7 @@ async fn a_rejected_prompt_gives_the_reason_of_each_node() {
     assert!(err.contains("KSampler: Required input is missing"), "{err}");
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_graph_without_an_output_node_is_refused() {
     let (url, _) = serve(Cfg::default()).await;
@@ -412,6 +420,7 @@ async fn a_graph_without_an_output_node_is_refused() {
     assert!(err.contains("no output node"), "{err}");
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_picture_that_was_not_uploaded_is_named() {
     let (url, _) = serve(Cfg::default()).await;
@@ -423,6 +432,7 @@ async fn a_picture_that_was_not_uploaded_is_named() {
 
 // Results -------------------------------------------------------------------------------------------------------
 
+// tags: scenario
 #[tokio::test]
 async fn a_node_that_showed_text_gives_text() {
     let (url, _) = serve(Cfg {
@@ -434,6 +444,7 @@ async fn a_node_that_showed_text_gives_text() {
     assert_eq!(out, EngineOutput::Text("1girl\n5".into()));
 }
 
+// tags: boundary
 #[tokio::test]
 async fn a_text_node_that_answers_with_one_string_gives_that_string() {
     let (url, _) = serve(Cfg {
@@ -445,6 +456,7 @@ async fn a_text_node_that_answers_with_one_string_gives_that_string() {
     assert_eq!(out, EngineOutput::Text("just words".into()));
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_video_graph_brings_back_the_file_and_its_first_frame() {
     let (url, _) = serve(Cfg {
@@ -478,6 +490,7 @@ async fn result_of(
     run(&engine(&url), &graph_job(graph)).await
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_graph_that_saved_sound_gives_the_sound_in_the_format_it_was_saved_in() {
     for (name, ext) in [
@@ -499,6 +512,7 @@ async fn a_graph_that_saved_sound_gives_the_sound_in_the_format_it_was_saved_in(
     }
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn sound_and_video_in_formats_the_gallery_cannot_keep_are_refused_with_the_way_out() {
     for (name, wants) in [
@@ -514,6 +528,7 @@ async fn sound_and_video_in_formats_the_gallery_cannot_keep_are_refused_with_the
     }
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_video_with_no_node_for_its_first_frame_is_refused_not_stored_as_a_picture() {
     let Err(EngineError::Failed(m)) = result_of(file_named("v.mp4"), vec![0], false).await else {
@@ -522,6 +537,7 @@ async fn a_video_with_no_node_for_its_first_frame_is_refused_not_stored_as_a_pic
     assert!(m.contains("first frame"), "{m}");
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_result_file_that_cannot_be_fetched_is_an_error() {
     let (url, _) = serve(Cfg {
@@ -533,6 +549,7 @@ async fn a_result_file_that_cannot_be_fetched_is_an_error() {
     assert!(err.contains("/view answered 500"), "{err}");
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_finished_job_without_any_file_is_an_error() {
     let (url, _) = serve(Cfg {
@@ -544,6 +561,7 @@ async fn a_finished_job_without_any_file_is_an_error() {
     assert!(err.contains("without a result file"), "{err}");
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_loss_picture_that_cannot_be_read_is_skipped_and_the_job_still_succeeds() {
     let (url, _) = serve(Cfg {
@@ -557,6 +575,7 @@ async fn a_loss_picture_that_cannot_be_read_is_skipped_and_the_job_still_succeed
     assert_eq!(out, EngineOutput::Nothing);
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_failing_history_ends_the_job_with_its_status() {
     let (url, _) = serve(Cfg {
@@ -568,6 +587,7 @@ async fn a_failing_history_ends_the_job_with_its_status() {
     assert!(err.contains("history/p1 answered 500"), "{err}");
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn an_error_in_the_history_is_reported_with_the_nodes_message_or_a_general_one() {
     let with_message = json!({ "outputs": {}, "status": { "status_str": "error", "completed": false, "messages": [
@@ -595,6 +615,7 @@ async fn an_error_in_the_history_is_reported_with_the_nodes_message_or_a_general
     assert_eq!(err, "ComfyUI reported an error");
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn running_out_of_memory_asks_comfyui_to_free_it_even_when_that_fails() {
     let oom = json!({ "outputs": {}, "status": { "status_str": "error", "completed": false, "messages": [
@@ -615,6 +636,7 @@ async fn running_out_of_memory_asks_comfyui_to_free_it_even_when_that_fails() {
 
 // Validation ----------------------------------------------------------------------------------------------------
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_graph_that_uses_nodes_comfyui_does_not_have_is_refused() {
     let (url, _) = serve(Cfg::default()).await;
@@ -630,6 +652,7 @@ async fn a_graph_that_uses_nodes_comfyui_does_not_have_is_refused() {
     engine(&url).validate(&job).await.unwrap();
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_graph_whose_output_saves_audio_or_video_passes_the_check() {
     let (url, _) = serve(Cfg {
@@ -650,6 +673,7 @@ async fn a_graph_whose_output_saves_audio_or_video_passes_the_check() {
     }
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_graph_with_a_model_comfyui_cannot_see_is_refused() {
     let (url, _) = serve(Cfg::default()).await;
@@ -662,6 +686,7 @@ async fn a_graph_with_a_model_comfyui_cannot_see_is_refused() {
     assert!(m.contains("missing.safetensors"), "{m}");
 }
 
+// tags: scenario
 #[tokio::test]
 async fn video_and_music_jobs_need_the_nodes_of_a_new_enough_comfyui() {
     let (url, _) = serve(Cfg::default()).await;
@@ -693,6 +718,7 @@ async fn video_and_music_jobs_need_the_nodes_of_a_new_enough_comfyui() {
 
 // The engine itself ---------------------------------------------------------------------------------------------
 
+// tags: scenario
 #[tokio::test]
 async fn routes_of_custom_node_packs_are_called_with_get_or_post() {
     let (url, _) = serve(Cfg::default()).await;
@@ -712,6 +738,7 @@ async fn routes_of_custom_node_packs_are_called_with_get_or_post() {
     assert!(e.pack_request(&cancel, "pack/text", None).await.is_err());
 }
 
+// tags: scenario
 #[tokio::test]
 async fn node_definitions_come_from_object_info() {
     let (url, _) = serve(Cfg::default()).await;
@@ -722,6 +749,7 @@ async fn node_definitions_come_from_object_info() {
     assert!(defs.get("LoadImage").is_some());
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_server_that_was_not_started_by_novira_cannot_be_restarted_or_set_to_low_memory() {
     let (url, _) = serve(Cfg::default()).await;
@@ -737,6 +765,7 @@ async fn a_server_that_was_not_started_by_novira_cannot_be_restarted_or_set_to_l
     e.shutdown();
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn an_unreachable_server_is_an_error_status_that_reaches_the_sink() {
     // A port nobody listens on.
@@ -760,6 +789,7 @@ async fn an_unreachable_server_is_an_error_status_that_reaches_the_sink() {
     assert_eq!(seen.lock().unwrap().len(), 1);
 }
 
+// tags: error-guessing
 #[test]
 fn an_address_that_is_not_http_is_refused() {
     assert!(ComfyEngine::new("ws://127.0.0.1:8188", None, Duration::from_secs(1)).is_err());
@@ -821,6 +851,7 @@ async fn not_ready_server() -> (u16, Fake) {
     (port, fake)
 }
 
+// tags: scenario
 #[tokio::test]
 async fn an_owned_comfyui_is_started_and_waited_for_until_it_answers() {
     let (port, fake) = not_ready_server().await;
@@ -851,6 +882,7 @@ async fn an_owned_comfyui_is_started_and_waited_for_until_it_answers() {
     drop(owned.dir);
 }
 
+// tags: scenario
 #[tokio::test]
 async fn an_owned_comfyui_that_ends_while_starting_is_reported() {
     let (port, _) = not_ready_server().await;
@@ -866,6 +898,7 @@ async fn an_owned_comfyui_that_ends_while_starting_is_reported() {
     assert!(matches!(e.status(), EngineStatus::Error { .. }));
 }
 
+// tags: boundary
 #[tokio::test]
 async fn an_owned_comfyui_that_never_answers_runs_into_the_time_limit() {
     let (port, _) = not_ready_server().await;
@@ -881,6 +914,7 @@ async fn an_owned_comfyui_that_never_answers_runs_into_the_time_limit() {
     e.shutdown();
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn stopping_while_the_owned_comfyui_starts_is_a_cancellation() {
     let (port, _) = not_ready_server().await;
@@ -904,6 +938,7 @@ async fn stopping_while_the_owned_comfyui_starts_is_a_cancellation() {
     e.shutdown();
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn a_restart_stops_the_old_process_and_starts_a_new_one() {
     let (port, fake) = not_ready_server().await;
@@ -924,6 +959,7 @@ async fn a_restart_stops_the_old_process_and_starts_a_new_one() {
     e.shutdown();
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_missing_comfyui_install_is_downloaded_first_and_a_failure_is_reported() {
     let (port, _) = not_ready_server().await;

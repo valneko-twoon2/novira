@@ -15,7 +15,7 @@ async function frameOfScreen(page: import('@playwright/test').Page) {
   });
 }
 
-test('every screen of the Generate tab sits flush in the main area', async ({ page }) => {
+test('every screen of the Generate tab sits flush in the main area', { tag: ['@equivalence'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('view-viewer').click();
   expect(await frameOfScreen(page)).toEqual({ border: '0px', radius: '0px' });

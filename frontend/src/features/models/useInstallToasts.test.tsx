@@ -19,7 +19,7 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('useInstallToasts', () => {
-  it('announces a job that completes while it is mounted, naming the model', () => {
+  it('announces a job that completes while it is mounted, naming the model', { tags: ['state-transition'] }, () => {
     setJobs(job({}));
     renderHook(() => useInstallToasts());
     setJobs(job({ status: 'completed' }));
@@ -27,7 +27,7 @@ describe('useInstallToasts', () => {
     expect(toasts()[0]).toMatchObject({ status: 'success', description: 'Model' });
   });
 
-  it('announces a failed job with its error, or its source when it has none', () => {
+  it('announces a failed job with its error, or its source when it has none', { tags: ['state-transition', 'error-guessing'] }, () => {
     setJobs(job({}), job({ id: 'j2', source: 'other' }));
     renderHook(() => useInstallToasts());
     setJobs(job({ status: 'error', error: 'disk full' }), job({ id: 'j2', source: 'other', status: 'error' }));
@@ -37,13 +37,13 @@ describe('useInstallToasts', () => {
     ]);
   });
 
-  it('stays quiet for jobs that were already finished when it mounted', () => {
+  it('stays quiet for jobs that were already finished when it mounted', { tags: ['state-transition'] }, () => {
     setJobs(job({ status: 'completed' }), job({ id: 'j2', status: 'error' }));
     renderHook(() => useInstallToasts());
     expect(toasts()).toEqual([]);
   });
 
-  it('stays quiet for progress, and does not repeat a finished job on later updates', () => {
+  it('stays quiet for progress, and does not repeat a finished job on later updates', { tags: ['state-transition'] }, () => {
     setJobs(job({}));
     renderHook(() => useInstallToasts());
     setJobs(job({ bytes: 1, status: 'running' }));
@@ -53,7 +53,7 @@ describe('useInstallToasts', () => {
     expect(toasts()).toHaveLength(1);
   });
 
-  it('announces a job that is new and already finished on its first appearance', () => {
+  it('announces a job that is new and already finished on its first appearance', { tags: ['state-transition'] }, () => {
     renderHook(() => useInstallToasts());
     setJobs(job({ status: 'completed' }));
     expect(toasts()).toHaveLength(1);

@@ -8,13 +8,13 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { defaultWorkers, fingerprint, gateMessage, indexFingerprint, isLayoutSource, parseArgs, parseStage, passed, readPasses, treeFingerprint, withPass } from '../../scripts/tools/layout-scan.mjs';
 
 describe('layout source', () => {
-  it('is css anywhere, ui/ and app/, feature components and the scan itself', () => {
+  it('is css anywhere, ui/ and app/, feature components and the scan itself', { tags: ['condition'] }, () => {
     for (const path of ['frontend/src/theme/tokens.css', 'frontend/src/features/models/models-cards.css', 'frontend/src/ui/controls.tsx', 'frontend/src/ui/zoomMath.ts', 'frontend/src/app/Workspace.tsx', 'frontend/src/features/comic/ComicEditor.tsx', 'frontend/e2e/layout.spec.ts', 'frontend/e2e/layoutRules.ts', 'frontend/e2e/textFit.ts', 'frontend/scripts/e2e-server.mjs', 'frontend/playwright.config.ts']) {
       expect(isLayoutSource(path), path).toBe(true);
     }
   });
 
-  it('is not tests, test support, feature logic, state, other specs or other folders', () => {
+  it('is not tests, test support, feature logic, state, other specs or other folders', { tags: ['condition'] }, () => {
     for (const path of ['frontend/src/ui/controls.test.tsx', 'frontend/src/features/comic/ComicEditor.test.tsx', 'frontend/src/features/comic/comicStore.ts', 'frontend/src/state/ui.ts', 'frontend/src/backend/mock/canvas2dRecorder.testkit.ts', 'frontend/e2e/text-fit.spec.ts', 'frontend/src/i18n/locales/ja/app.json', 'scripts/tools/affected.mjs', 'backend/src/ui/a.css']) {
       expect(isLayoutSource(path), path).toBe(false);
     }
@@ -22,7 +22,7 @@ describe('layout source', () => {
 });
 
 describe('fingerprint', () => {
-  it('depends on the content and path of layout source only, not on order or other files', () => {
+  it('depends on the content and path of layout source only, not on order or other files', { tags: ['condition'] }, () => {
     const a = fingerprint([
       ['frontend/src/ui/ui.css', '111'],
       ['frontend/src/app/App.tsx', '222'],
@@ -32,7 +32,7 @@ describe('fingerprint', () => {
     expect(fingerprint([['frontend/src/app/App.tsx', '222']])).not.toBe(a);
   });
 
-  it('reads stage 0 of `git ls-files -s -z` and leaves out the sides of a conflict', () => {
+  it('reads stage 0 of `git ls-files -s -z` and leaves out the sides of a conflict', { tags: ['condition'] }, () => {
     const out = ['100644 aaa 0\tfrontend/src/ui/ui.css', '100644 bbb 1\tfrontend/src/app/App.tsx', '100644 ccc 2\tfrontend/src/app/App.tsx', ''].join('\0');
     expect(parseStage(out)).toEqual([['frontend/src/ui/ui.css', 'aaa']]);
   });
@@ -41,7 +41,7 @@ describe('fingerprint', () => {
 describe('record of passes', () => {
   const pass = (fingerprint: string, locales = ['ja', 'en']) => ({ fingerprint, locales, head: 'h', at: 't' });
 
-  it('keeps the newest pass of each fingerprint first, and at most twenty', () => {
+  it('keeps the newest pass of each fingerprint first, and at most twenty', { tags: ['boundary'] }, () => {
     const many = Array.from({ length: 25 }, (_, i) => pass(`f${i}`));
     const after = withPass(many, pass('f3'));
     expect(after[0].fingerprint).toBe('f3');
@@ -49,7 +49,7 @@ describe('record of passes', () => {
     expect(after).toHaveLength(20);
   });
 
-  it('counts a pass only when it ran in ja and en', () => {
+  it('counts a pass only when it ran in ja and en', { tags: ['condition'] }, () => {
     expect(passed([pass('x')], 'x')).toBe(true);
     expect(passed([pass('x', ['all', 'ja', 'en'])], 'x')).toBe(true);
     expect(passed([pass('x', ['ja'])], 'x')).toBe(false);
@@ -57,7 +57,7 @@ describe('record of passes', () => {
     expect(passed([], 'x')).toBe(false);
   });
 
-  it('reads a missing or broken record as no passes', () => {
+  it('reads a missing or broken record as no passes', { tags: ['error-guessing'] }, () => {
     const dir = mkdtempSync(join(tmpdir(), 'layout-record-'));
     try {
       expect(readPasses(join(dir, 'none.json'))).toEqual([]);
@@ -72,12 +72,12 @@ describe('record of passes', () => {
 });
 
 describe('pre-commit gate', () => {
-  it('lets a commit through that changes no layout source, whatever the record says', () => {
+  it('lets a commit through that changes no layout source, whatever the record says', { tags: ['decision-table'] }, () => {
     expect(gateMessage(['frontend/src/state/ui.ts', 'docs/verification.md'], 'x', [])).toBeNull();
     expect(gateMessage([], 'x', [])).toBeNull();
   });
 
-  it('refuses layout source without a pass on what is staged, and names the files and the command', () => {
+  it('refuses layout source without a pass on what is staged, and names the files and the command', { tags: ['error-guessing'] }, () => {
     const text = gateMessage(['frontend/src/ui/ui.css', 'frontend/src/state/ui.ts'], 'staged', [{ fingerprint: 'older', locales: ['ja', 'en'] }]);
     expect(text).toContain('frontend/src/ui/ui.css');
     expect(text).not.toContain('frontend/src/state/ui.ts');
@@ -85,35 +85,35 @@ describe('pre-commit gate', () => {
     expect(gateMessage(['frontend/src/ui/ui.css'], 'staged', [{ fingerprint: 'staged', locales: ['ja'] }])).not.toBeNull();
   });
 
-  it('lets layout source through with a pass on exactly what is staged', () => {
+  it('lets layout source through with a pass on exactly what is staged', { tags: ['boundary'] }, () => {
     expect(gateMessage(['frontend/src/ui/ui.css'], 'staged', [{ fingerprint: 'staged', locales: ['ja', 'en'] }])).toBeNull();
   });
 
-  it('shortens a long list of files', () => {
+  it('shortens a long list of files', { tags: ['condition'] }, () => {
     const paths = Array.from({ length: 12 }, (_, i) => `frontend/src/ui/f${i}.css`);
     expect(gateMessage(paths, 'x', [])).toContain('and 4 more');
   });
 });
 
 describe('command line', () => {
-  it('takes the languages and --check, and passes the rest to Playwright', () => {
+  it('takes the languages and --check, and passes the rest to Playwright', { tags: ['condition'] }, () => {
     expect(parseArgs([])).toEqual({ locales: 'ja,en', check: false, workers: null, extra: [] });
     expect(parseArgs(['--locales', 'all', '--grep', 'models'])).toEqual({ locales: 'all', check: false, workers: null, extra: ['--grep', 'models'] });
     expect(parseArgs(['--check']).check).toBe(true);
   });
 
-  it('takes the workers as its own setting, so a run with other workers still records a pass', () => {
+  it('takes the workers as its own setting, so a run with other workers still records a pass', { tags: ['condition'] }, () => {
     expect(parseArgs(['--workers', '6'])).toMatchObject({ workers: 6, extra: [] });
     expect(parseArgs(['--workers=3', '--grep', 'x'])).toMatchObject({ workers: 3, extra: ['--grep', 'x'] });
     expect(parseArgs(['--workers', '0']).workers).toBeNull();
     expect(parseArgs(['--workers', 'many']).workers).toBeNull();
   });
 
-  it('uses half the processors as workers, at least 2 and at most 6', () => {
+  it('uses half the processors as workers, at least 2 and at most 6', { tags: ['boundary'] }, () => {
     expect([1, 2, 4, 5, 8, 12, 16, 32].map((n) => defaultWorkers(n))).toEqual([2, 2, 2, 2, 4, 6, 6, 6]);
   });
 
-  it('never takes more than 6 workers, even when asked for more', () => {
+  it('never takes more than 6 workers, even when asked for more', { tags: ['error-guessing'] }, () => {
     expect(parseArgs(['--workers', '8']).workers).toBe(6);
     expect(parseArgs(['--workers=16']).workers).toBe(6);
     expect(parseArgs(['--workers', '3']).workers).toBe(3);
@@ -127,7 +127,7 @@ describe('fingerprints of a real repository', () => {
     repo = '';
   });
 
-  it('match between the index and the working tree only when what is staged is what is on disk', () => {
+  it('match between the index and the working tree only when what is staged is what is on disk', { tags: ['condition'] }, () => {
     repo = mkdtempSync(join(tmpdir(), 'layout-repo-'));
     const git = (...args: string[]) => execFileSync('git', ['-C', repo, ...args], { encoding: 'utf8' });
     git('init', '-q');

@@ -50,6 +50,7 @@ echo     url = https://github.com/owner/subrepo>> "!OUT!\pack-abc\.gitmodules"
 exit /b 0
 "#;
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn a_submodule_folder_that_is_held_for_a_moment_is_moved_in_after_a_retry() {
     std::env::set_var("NOVIRA_TEST_RETRY_PAUSE_MS", "40");

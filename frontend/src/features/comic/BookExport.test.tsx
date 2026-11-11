@@ -22,7 +22,7 @@ afterEach(() => {
 });
 
 describe('BookExport', () => {
-  it('saves the project as a PDF, a CBZ or a ZIP of PSD pages from the menu', async () => {
+  it('saves the project as a PDF, a CBZ or a ZIP of PSD pages from the menu', { tags: ['scenario'] }, async () => {
     const project = newProject('Story');
     render(
       <TooltipProvider>
@@ -40,14 +40,14 @@ describe('BookExport', () => {
 });
 
 describe('bookFileName', () => {
-  it('replaces characters a file name cannot hold and adds the extension', () => {
+  it('replaces characters a file name cannot hold and adds the extension', { tags: ['error-guessing'] }, () => {
     expect(bookFileName('a/b:c*?', 'pdf')).toBe('a_b_c_.pdf');
   });
-  it('falls back to a default for an empty or dots-only name', () => {
+  it('falls back to a default for an empty or dots-only name', { tags: ['boundary'] }, () => {
     expect(bookFileName('', 'cbz')).toBe('comic.cbz');
     expect(bookFileName(' ... ', 'pdf')).toBe('comic.pdf');
   });
-  it('names the ZIP of PSD pages, and the PSD of one page by the comic and the page number', () => {
+  it('names the ZIP of PSD pages, and the PSD of one page by the comic and the page number', { tags: ['scenario'] }, () => {
     expect(bookFileName('Story', 'psd')).toBe('Story-psd.zip');
     const project = newProject('a/b');
     const second = { ...project.pages[0]!, id: 'second' };

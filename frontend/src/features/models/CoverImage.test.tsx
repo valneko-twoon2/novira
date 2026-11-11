@@ -20,12 +20,12 @@ afterEach(() => {
 });
 
 describe('model cover', () => {
-  it('shows the model picture when it has one', () => {
+  it('shows the model picture when it has one', { tags: ['scenario'] }, () => {
     const { container } = render(<CoverImage model={model({ coverImageUrl: 'blob:real' })} />);
     expect(container.querySelector('img')!.getAttribute('src')).toBe('blob:real');
   });
 
-  it('shows the picture of a diffusion model (an Anima file kept on its own) and the icon of an encoder', () => {
+  it('shows the picture of a diffusion model (an Anima file kept on its own) and the icon of an encoder', { tags: ['scenario'] }, () => {
     const { container } = render(<CoverImage model={model({ type: 'diffusion_model', coverImageUrl: 'blob:anima' })} />);
     expect(container.querySelector('img')!.getAttribute('src')).toBe('blob:anima');
     cleanup();
@@ -33,12 +33,12 @@ describe('model cover', () => {
     expect(encoder.container.querySelector('img')).toBeNull();
   });
 
-  it('stands a mock picture in for a model without one in the browser mock', () => {
+  it('stands a mock picture in for a model without one in the browser mock', { tags: ['scenario'] }, () => {
     const { container } = render(<CoverImage model={model({ key: 'drawn-1' })} />);
     expect(MOCK_PICTURES).toContain(container.querySelector('img')!.getAttribute('src'));
   });
 
-  it('shows the icon, not a picture, for a model without one where there is no stand-in (the desktop app)', () => {
+  it('shows the icon, not a picture, for a model without one where there is no stand-in (the desktop app)', { tags: ['scenario'] }, () => {
     standIn.on = false;
     const { container } = render(<CoverImage model={model()} />);
     expect(container.querySelector('img')).toBeNull();

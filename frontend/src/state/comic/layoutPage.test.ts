@@ -11,12 +11,12 @@ function disjoint(a: Box, b: Box): boolean {
 }
 
 describe('the layout of a page with columns and a reading direction', () => {
-  it('allows up to 24 panels on a page', () => {
+  it('allows up to 24 panels on a page', { tags: ['condition'] }, () => {
     expect(MAX_PANELS_PER_PAGE).toBe(24);
     expect(layoutFor(40)).toHaveLength(24);
   });
 
-  it('lays one column out as a single stack of panels of the same width', () => {
+  it('lays one column out as a single stack of panels of the same width', { tags: ['boundary'] }, () => {
     const boxes = layoutFor(4, 1);
     expect(boxes).toHaveLength(4);
     for (const b of boxes) {
@@ -25,14 +25,14 @@ describe('the layout of a page with columns and a reading direction', () => {
     }
   });
 
-  it('shares the width of an unfinished row between its panels, with three columns', () => {
+  it('shares the width of an unfinished row between its panels, with three columns', { tags: ['state-transition'] }, () => {
     const boxes = layoutFor(5, 3);
     // The first row has three panels; the second has two, which are wider than those of the first row.
     expect(boxes[3]!.width).toBeCloseTo(boxes[4]!.width, 9);
     expect(boxes[3]!.width).toBeGreaterThan(boxes[0]!.width);
   });
 
-  it('reads from the right: the first panel of a row sits at the right edge', () => {
+  it('reads from the right: the first panel of a row sits at the right edge', { tags: ['condition'] }, () => {
     // Four panels in two columns: the first panel is the top left one, and it moves to the top right.
     const ltr = layoutFor(4, 2, 'ltr');
     const rtl = layoutFor(4, 2, 'rtl');
@@ -41,7 +41,7 @@ describe('the layout of a page with columns and a reading direction', () => {
     expect(rtl[0]!.width).toBeCloseTo(ltr[0]!.width, 9);
   });
 
-  it('keeps every panel inside the page and apart from the others, for every column count and direction', () => {
+  it('keeps every panel inside the page and apart from the others, for every column count and direction', { tags: ['boundary'] }, () => {
     for (const columns of [1, 2, 3]) {
       for (const direction of ['ltr', 'rtl'] as const) {
         for (let n = 1; n <= MAX_PANELS_PER_PAGE; n++) {
@@ -59,7 +59,7 @@ describe('the layout of a page with columns and a reading direction', () => {
     }
   });
 
-  it('lays out a page of the default settings as two columns read left to right', () => {
+  it('lays out a page of the default settings as two columns read left to right', { tags: ['condition'] }, () => {
     expect(pageBoxes({ panels: [1, 2, 3], columns: 2, direction: 'ltr' })).toEqual(layoutFor(3));
   });
 });

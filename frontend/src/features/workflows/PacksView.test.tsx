@@ -24,7 +24,7 @@ const view = () =>
   );
 
 describe('extensions tab', () => {
-  it('starts from what the user wants, opens a goal, installs a pack and restarts ComfyUI to load it', async () => {
+  it('starts from what the user wants, opens a goal, installs a pack and restarts ComfyUI to load it', { tags: ['state-transition', 'scenario'] }, async () => {
     view();
     await waitFor(() => expect(screen.getAllByTestId('wf-goal')).toHaveLength(PACK_GOALS.length));
     // Packs that are not suggested are listed with their folder name.
@@ -45,7 +45,7 @@ describe('extensions tab', () => {
     expect(screen.getAllByTestId('wf-goal')).toHaveLength(PACK_GOALS.length);
   });
 
-  it('shows the goal tiles first and the packs of a goal sorted by how much they are for it', () => {
+  it('shows the goal tiles first and the packs of a goal sorted by how much they are for it', { tags: ['boundary', 'scenario'] }, () => {
     expect(PACK_GOALS.every((g) => packsForGoal(g).length > 0)).toBe(true);
     expect(PACK_CATALOG.length).toBeGreaterThanOrEqual(20);
     expect(new Set(PACK_CATALOG.map((p) => p.id)).size).toBe(PACK_CATALOG.length);
@@ -53,7 +53,7 @@ describe('extensions tab', () => {
     expect(packsForGoal('face')[0]!.goals[0]).toBe('face');
   });
 
-  it('installs any GitHub pack by its address and shows why an install failed', async () => {
+  it('installs any GitHub pack by its address and shows why an install failed', { tags: ['error-guessing', 'state-transition'] }, async () => {
     view();
     const input = await screen.findByTestId('wf-pack-url');
     const button = screen.getByTestId('wf-pack-url-install') as HTMLButtonElement;
@@ -65,7 +65,7 @@ describe('extensions tab', () => {
     await screen.findByText(/libraries failed/, undefined, { timeout: 3000 });
   });
 
-  it('removes a pack only after a second click', async () => {
+  it('removes a pack only after a second click', { tags: ['state-transition', 'scenario'] }, async () => {
     view();
     await screen.findByText('comfyui-mock-preview');
     const row = screen.getByText('comfyui-mock-preview').parentElement!;

@@ -52,6 +52,7 @@ fn refusal(mode: &str, patch: Value) -> String {
     build(&input(&p, &c, &x)).unwrap_err()
 }
 
+// tags: error-guessing, decision-table
 #[test]
 fn every_builder_refuses_a_job_without_steps() {
     for mode in ["txt2img", "video"] {
@@ -69,6 +70,7 @@ fn every_builder_refuses_a_job_without_steps() {
     assert_eq!(refusal("music", music), "Steps must be at least 1");
 }
 
+// tags: condition
 #[test]
 fn a_draft_needs_text_or_image_to_image_a_position_inside_the_steps_and_a_job_that_is_not_a_graph()
 {
@@ -89,6 +91,7 @@ fn a_draft_needs_text_or_image_to_image_a_position_inside_the_steps_and_a_job_th
     );
 }
 
+// tags: error-guessing
 #[test]
 fn music_time_signatures_map_to_the_models_names_and_unknown_ones_to_four() {
     let (c, x) = (
@@ -113,6 +116,7 @@ fn music_time_signatures_map_to_the_models_names_and_unknown_ones_to_four() {
     }
 }
 
+// tags: boundary
 #[test]
 fn a_control_layer_position_that_is_not_a_number_counts_as_the_start() {
     let p = params("txt2img", json!({ "controlLayerCount": 1 }));
@@ -142,6 +146,7 @@ fn a_control_layer_position_that_is_not_a_number_counts_as_the_start() {
     assert_eq!(apply["inputs"]["start_percent"], 0.0);
 }
 
+// tags: error-guessing
 #[test]
 fn editor_prompts_of_the_wrong_shape_are_refused_or_left_alone() {
     let graph: ComfyGraph = serde_json::from_value(json!({

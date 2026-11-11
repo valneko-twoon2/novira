@@ -2,6 +2,7 @@
 use super::common::*;
 use std::sync::Arc;
 
+// tags: state-transition
 #[tokio::test]
 async fn low_memory_mode_switched_off_restarts_the_engine_that_runs_with_it() {
     let dir = tempfile::tempdir().unwrap();

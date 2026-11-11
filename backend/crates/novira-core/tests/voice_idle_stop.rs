@@ -8,6 +8,7 @@ use novira_core::voice::{model_dir, site_dir, QwenVoice, VoiceEngine, CUSTOM_VOI
 use std::time::Duration;
 use tokio_util::sync::CancellationToken;
 
+// tags: state-transition, decision-table
 #[tokio::test]
 async fn an_idle_worker_is_stopped_and_the_next_request_starts_a_new_one() {
     std::env::set_var("NOVIRA_TEST_VOICE_IDLE_MS", "300");

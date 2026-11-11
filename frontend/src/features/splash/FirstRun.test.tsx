@@ -34,7 +34,7 @@ afterEach(() => {
 });
 
 describe('first-start screen', () => {
-  it('shows the default folders and no "use the default" button', () => {
+  it('shows the default folders and no "use the default" button', { tags: ['scenario'] }, () => {
     answer(() => null);
     render(<FirstRun initial={initial} />);
     expect(screen.getByTestId('first-run-data-path').textContent).toBe(initial.dataDir);
@@ -43,7 +43,7 @@ describe('first-start screen', () => {
     expect(screen.queryByTestId('first-run-comfyui-reset')).toBeNull();
   });
 
-  it('shows a folder chosen in the dialog, and goes back to the default', async () => {
+  it('shows a folder chosen in the dialog, and goes back to the default', { tags: ['scenario'] }, async () => {
     const chosen = { ...initial, dataDir: 'D:/novira', comfyuiDir: 'D:/novira/comfyui', dataIsDefault: false };
     answer((cmd) => (cmd === 'first_run_choose' ? chosen : cmd === 'first_run_reset' ? initial : null));
     render(<FirstRun initial={initial} />);
@@ -55,7 +55,7 @@ describe('first-start screen', () => {
     expect(calls[1]).toEqual({ cmd: 'first_run_reset', payload: { kind: 'data' } });
   });
 
-  it('keeps the folder when the dialog is cancelled', async () => {
+  it('keeps the folder when the dialog is cancelled', { tags: ['scenario'] }, async () => {
     answer(() => null);
     render(<FirstRun initial={initial} />);
     fireEvent.click(screen.getByTestId('first-run-comfyui-choose'));
@@ -64,7 +64,7 @@ describe('first-start screen', () => {
     expect(screen.queryByTestId('first-run-failure')).toBeNull();
   });
 
-  it('shows why a folder was refused', async () => {
+  it('shows why a folder was refused', { tags: ['error-guessing'] }, async () => {
     answer((cmd) => {
       if (cmd === 'first_run_choose') throw 'The chosen path is not a folder';
       return null;
@@ -75,7 +75,7 @@ describe('first-start screen', () => {
     expect(screen.getByTestId('first-run-data-path').textContent).toBe(initial.dataDir);
   });
 
-  it('saves the choice and restarts on "start", and says why when it cannot', async () => {
+  it('saves the choice and restarts on "start", and says why when it cannot', { tags: ['scenario'] }, async () => {
     answer((cmd) => {
       if (cmd === 'first_run_finish') throw 'cannot create D:/novira';
       return null;
@@ -87,7 +87,7 @@ describe('first-start screen', () => {
     expect((screen.getByTestId('first-run-start') as HTMLButtonElement).disabled).toBe(false);
   });
 
-  it('only says that the data is being moved while a folder change from the Settings screen is carried out', () => {
+  it('only says that the data is being moved while a folder change from the Settings screen is carried out', { tags: ['scenario'] }, () => {
     answer(() => null);
     render(<FirstRun initial={{ ...initial, needed: false, moving: true }} />);
     expect(screen.getByTestId('data-moving')).toBeTruthy();
@@ -96,7 +96,7 @@ describe('first-start screen', () => {
     expect(calls).toEqual([]);
   });
 
-  it('shows how far the copy is, asking again as it goes', async () => {
+  it('shows how far the copy is, asking again as it goes', { tags: ['scenario'] }, async () => {
     const moving = { ...initial, needed: false, moving: true };
     answer((cmd) => (cmd === 'first_run_info' ? { ...moving, moved: 3 * 1024 ** 3, toMove: 4 * 1024 ** 3 } : null));
     render(<FirstRun initial={{ ...moving, moved: 1024 ** 3, toMove: 4 * 1024 ** 3 }} />);

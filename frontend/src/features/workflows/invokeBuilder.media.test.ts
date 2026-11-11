@@ -20,12 +20,12 @@ afterEach(() => setExtensionTemplates([]));
 const graphOf = (id: string): EditorGraph => ({ ...buildTemplate(GRAPH_TEMPLATES.find((t) => t.id === id)!), form: [], meta: { ...EMPTY_META, name: id } });
 
 describe('the ready-made sound and video graphs', () => {
-  it('are ready to run once the models they name are in ComfyUI\'s lists', () => {
+  it('are ready to run once the models they name are in ComfyUI\'s lists', { tags: ['scenario'] }, () => {
     expect(readinessReasons(graphOf('musicAceStep'))).toEqual([]);
     expect(readinessReasons(graphOf('videoWan22'))).toEqual([]);
   });
 
-  it('say which model is missing, whether ComfyUI lists none or lists others', () => {
+  it('say which model is missing, whether ComfyUI lists none or lists others', { tags: ['error-guessing', 'boundary'] }, () => {
     const music = graphOf('musicAceStep');
     defsWith((defs) => {
       defs.CheckpointLoaderSimple!.input.required!.ckpt_name![0] = ['other.safetensors'] as never;
@@ -39,7 +39,7 @@ describe('the ready-made sound and video graphs', () => {
     expect(readinessReasons(graphOf('videoWan22')).join()).toMatch(/選べるファイルがありません/);
   });
 
-  it('do not ask about the choices of a format that is not the one chosen', () => {
+  it('do not ask about the choices of a format that is not the one chosen', { tags: ['boundary'] }, () => {
     // The MP3 and Opus qualities and the codecs only count while their format is chosen; FLAC and MP4 ask for none.
     expect(readinessReasons(graphOf('musicAceStep'))).toEqual([]);
     const g = graphOf('musicAceStep');
@@ -49,7 +49,7 @@ describe('the ready-made sound and video graphs', () => {
     expect(readinessReasons(g).join()).toMatch(/not a quality/);
   });
 
-  it('wait for the start picture of the picture-to-video graph', () => {
+  it('wait for the start picture of the picture-to-video graph', { tags: ['state-transition'] }, () => {
     const g = graphOf('videoWan22Image');
     expect(readinessReasons(g).join()).toMatch(/画像/);
     g.nodes.find((n) => n.data.type === 'image')!.data.inputs.image = 'photo.png';
@@ -58,7 +58,7 @@ describe('the ready-made sound and video graphs', () => {
 });
 
 describe('the request of a sound or video graph', () => {
-  it('describes a song by the style tags, the sampler and the model it loads, and takes a new seed each run', () => {
+  it('describes a song by the style tags, the sampler and the model it loads, and takes a new seed each run', { tags: ['decision-table'] }, () => {
     const g = graphOf('musicAceStep');
     const req = buildRequest(g, {}, { prepend: false });
     expect(req.params).toMatchObject({
@@ -74,7 +74,7 @@ describe('the request of a sound or video graph', () => {
     expect(req.comfyGraph!.thumbnail).toBeUndefined();
   });
 
-  it('describes a video by its prompts, size, frames and speed, and names the node that gives its first frame', () => {
+  it('describes a video by its prompts, size, frames and speed, and names the node that gives its first frame', { tags: ['boundary'] }, () => {
     const g = graphOf('videoWan22');
     const req = buildRequest(g, {}, { prepend: false });
     const save = g.nodes.find((n) => n.data.type === 'comfy:SaveVideo')!.id;

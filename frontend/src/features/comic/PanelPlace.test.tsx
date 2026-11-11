@@ -45,13 +45,13 @@ afterEach(() => {
 });
 
 describe('the place of a panel', () => {
-  it('shows no fields while the panel is set nowhere', () => {
+  it('shows no fields while the panel is set nowhere', { tags: ['scenario'] }, () => {
     seed([{ id: 'a', name: 'Cafe', tags: '' }]);
     expect(screen.queryByTestId('comic-place')).toBeNull();
     expect(screen.getByTestId('comic-panel-place-select').textContent).toContain(t('comic.place.none'));
   });
 
-  it('sets the panel in a place picked from the list, and takes it out again with "none"', () => {
+  it('sets the panel in a place picked from the list, and takes it out again with "none"', { tags: ['regression'] }, () => {
     seed([
       { id: 'a', name: 'Cafe', tags: 'table' },
       { id: 'b', name: '  ', tags: '' },
@@ -68,7 +68,7 @@ describe('the place of a panel', () => {
     expect(screen.queryByTestId('comic-place')).toBeNull();
   });
 
-  it('adds a numbered place from its button and sets the panel there', () => {
+  it('adds a numbered place from its button and sets the panel there', { tags: ['scenario'] }, () => {
     seed([{ id: 'a', name: 'Cafe', tags: '' }]);
     fireEvent.click(screen.getByTestId('comic-panel-place-add'));
     expect(places()).toHaveLength(2);
@@ -77,12 +77,12 @@ describe('the place of a panel', () => {
     expect(screen.getByTestId('comic-place')).toBeTruthy();
   });
 
-  it('turns the add button off at the most places', () => {
+  it('turns the add button off at the most places', { tags: ['scenario'] }, () => {
     seed(Array.from({ length: PLACES_MAX }, (_, i) => ({ id: `p${i}`, name: `P${i}`, tags: '' })));
     expect((screen.getByTestId('comic-panel-place-add') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('edits the chosen place for every panel, and removes it', () => {
+  it('edits the chosen place for every panel, and removes it', { tags: ['decision-table'] }, () => {
     seed([{ id: 'a', name: 'Cafe', tags: '' }]);
     act(() => useComic.getState().setPanelPlace(panelId, 'a'));
     fireEvent.change(screen.getByTestId('comic-place-tags'), { target: { value: 'sunlight' } });

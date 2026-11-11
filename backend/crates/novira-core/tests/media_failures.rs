@@ -34,6 +34,7 @@ fn with_chunk(png: &[u8], kind: &[u8; 4], data: &[u8]) -> Vec<u8> {
     out
 }
 
+// tags: error-guessing
 #[test]
 fn the_store_cannot_be_opened_when_a_folder_is_taken_by_a_file() {
     let dir = tempfile::tempdir().unwrap();
@@ -44,6 +45,7 @@ fn the_store_cannot_be_opened_when_a_folder_is_taken_by_a_file() {
     assert!(ImageFiles::new(dir.path()).is_err());
 }
 
+// tags: error-guessing
 #[test]
 fn pictures_that_cannot_be_decoded_or_written_are_refused() {
     let dir = tempfile::tempdir().unwrap();
@@ -72,6 +74,7 @@ fn pictures_that_cannot_be_decoded_or_written_are_refused() {
     assert!(files.store_audio(&audio, &wav).is_err());
 }
 
+// tags: error-guessing
 #[test]
 fn a_picture_that_cannot_be_decoded_is_refused_when_it_is_converted() {
     // A BMP whose header declares a size and whose pixel data is missing.
@@ -88,6 +91,7 @@ fn a_picture_that_cannot_be_decoded_is_refused_when_it_is_converted() {
     assert!(images::to_png(&bmp).is_err());
 }
 
+// tags: error-guessing
 #[test]
 fn text_chunks_that_are_cut_short_give_no_text() {
     let base = png(4, 4);
@@ -105,6 +109,7 @@ fn text_chunks_that_are_cut_short_give_no_text() {
     assert_eq!(images::read_text(&fine, "k").as_deref(), Some("text"));
 }
 
+// tags: scenario
 #[test]
 fn a_png_copy_keeps_the_settings_the_picture_was_made_with() {
     let original = images::with_text(&png(8, 8), images::METADATA_KEY, "{\"a\":1}").unwrap();

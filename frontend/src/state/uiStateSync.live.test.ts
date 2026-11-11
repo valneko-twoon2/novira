@@ -93,7 +93,7 @@ afterEach(() => {
 });
 
 describe('taking another page state while running', () => {
-  it('writes a key another page changed into the storage and has its store read it, without sending it back', async () => {
+  it('writes a key another page changed into the storage and has its store read it, without sending it back', { tags: ['condition'] }, async () => {
     await otherPageSaves({ 'novira.a': 'a1' });
     expect(storage.getItem('novira.a')).toBe('a1');
     expect(rehydrated).toEqual(['novira.a']);
@@ -102,7 +102,7 @@ describe('taking another page state while running', () => {
     expect(save).not.toHaveBeenCalled();
   });
 
-  it('is not moved by its own saves coming back as events, and does not read the backend for them', async () => {
+  it('is not moved by its own saves coming back as events, and does not read the backend for them', { tags: ['condition'] }, async () => {
     storage.setItem('novira.a', 'mine');
     await vi.advanceTimersByTimeAsync(SAVE_DELAY + 50);
     expect(save).toHaveBeenCalledTimes(1);
@@ -115,7 +115,7 @@ describe('taking another page state while running', () => {
     expect(rehydrated).toEqual([]);
   });
 
-  it('settles after one round when two pages change different keys', async () => {
+  it('settles after one round when two pages change different keys', { tags: ['condition'] }, async () => {
     await otherPageSaves({ 'novira.a': 'a1' });
     storage.setItem('novira.b', 'b1');
     await vi.advanceTimersByTimeAsync(SAVE_DELAY + 50);
@@ -130,13 +130,13 @@ describe('taking another page state while running', () => {
     expect(save).toHaveBeenCalledTimes(1);
   });
 
-  it('does not change a key that no store takes', async () => {
+  it('does not change a key that no store takes', { tags: ['condition'] }, async () => {
     await otherPageSaves({ 'novira.local': 'l1' });
     expect(storage.getItem('novira.local')).toBe('l0');
     expect(rehydrated).toEqual([]);
   });
 
-  it('keeps what this page changed when the same key changed elsewhere, and sends it', async () => {
+  it('keeps what this page changed when the same key changed elsewhere, and sends it', { tags: ['condition'] }, async () => {
     storage.setItem('novira.a', 'typed here');
     remote['novira.a'] = 'typed there';
     emit(event('page-other', NEWS));
@@ -146,7 +146,7 @@ describe('taking another page state while running', () => {
     expect(remote['novira.a']).toBe('typed here');
   });
 
-  it('does not overwrite what another page saved in a key this page did not change: only changed keys are sent', async () => {
+  it('does not overwrite what another page saved in a key this page did not change: only changed keys are sent', { tags: ['condition'] }, async () => {
     storage.setItem('novira.b', 'b1');
     // The other page saved a moment ago, and its event has not reached this page yet.
     remote['novira.a'] = 'a1';
@@ -161,7 +161,7 @@ describe('taking another page state while running', () => {
     expect(rehydrated).toEqual(['novira.a']);
   });
 
-  it('waits while the key is being typed into, then takes the other page text', async () => {
+  it('waits while the key is being typed into, then takes the other page text', { tags: ['scenario'] }, async () => {
     storage.setItem('novira.a', 'a0');
     await vi.advanceTimersByTimeAsync(SAVE_DELAY + 50);
     save.mockClear();
@@ -176,13 +176,13 @@ describe('taking another page state while running', () => {
     expect(save).not.toHaveBeenCalled();
   });
 
-  it('removes a key the other page dropped', async () => {
+  it('removes a key the other page dropped', { tags: ['condition'] }, async () => {
     await otherPageSaves({ 'novira.b': null });
     expect(storage.getItem('novira.b')).toBeNull();
     expect(rehydrated).toEqual(['novira.b']);
   });
 
-  it('reads once for a burst of events', async () => {
+  it('reads once for a burst of events', { tags: ['condition'] }, async () => {
     emit(event('page-other', NEWS));
     emit(event('page-other', NEWS + 1));
     emit(event('page-other', NEWS + 2));
@@ -190,7 +190,7 @@ describe('taking another page state while running', () => {
     expect(adopt).toHaveBeenCalledTimes(1);
   });
 
-  it('ignores an event it has seen, and events whose fields are not what the backend sends', async () => {
+  it('ignores an event it has seen, and events whose fields are not what the backend sends', { tags: ['condition'] }, async () => {
     emit(event('page-other', NEWS));
     await vi.advanceTimersByTimeAsync(PULL_DELAY + 10);
     adopt.mockClear();
@@ -209,7 +209,7 @@ describe('taking another page state while running', () => {
     expect(adopt).not.toHaveBeenCalled();
   });
 
-  it('ignores a state that is not an object of novira.* texts, and one that cannot be read', async () => {
+  it('ignores a state that is not an object of novira.* texts, and one that cannot be read', { tags: ['error-guessing'] }, async () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     let revision = NEWS;
     for (const bad of ['[1]', 'nope', '{"other":"x"}', '{"novira.a":5}', 'null']) {
@@ -225,7 +225,7 @@ describe('taking another page state while running', () => {
     expect(error).toHaveBeenCalledTimes(1);
   });
 
-  it('reads again when the page comes back on screen and when the event socket was reopened', async () => {
+  it('reads again when the page comes back on screen and when the event socket was reopened', { tags: ['condition'] }, async () => {
     remote['novira.a'] = 'a1';
     Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
     document.dispatchEvent(new Event('visibilitychange'));
@@ -237,7 +237,7 @@ describe('taking another page state while running', () => {
     expect(storage.getItem('novira.a')).toBe('a2');
   });
 
-  it('keeps going after one store fails to read', async () => {
+  it('keeps going after one store fails to read', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     registerRehydrate('novira.a', () => {
       throw new Error('broken store');
@@ -249,7 +249,7 @@ describe('taking another page state while running', () => {
 });
 
 describe('the state read from the backend', () => {
-  it('parseUiState takes only an object of novira.* keys with texts of a limited size', () => {
+  it('parseUiState takes only an object of novira.* keys with texts of a limited size', { tags: ['boundary'] }, () => {
     expect(parseUiState('{"novira.a":"1"}')).toEqual({ 'novira.a': '1' });
     expect(parseUiState('{}')).toEqual({});
     for (const bad of ['[]', '1', 'x', '{"a":"1"}', '{"novira.a":1}', `{"novira.${'k'.repeat(200)}":"1"}`]) {

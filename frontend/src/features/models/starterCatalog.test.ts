@@ -14,7 +14,7 @@ const s = (id: string, base: StarterModel['base'], type: StarterModel['type'], n
 });
 
 describe('purposeOf', () => {
-  it('tells pictures, edit models and video apart among the models that draw', () => {
+  it('tells pictures, edit models and video apart among the models that draw', { tags: ['condition'] }, () => {
     expect(purposeOf(s('a', 'anima', 'diffusion_model'))).toBe('picture');
     expect(purposeOf(s('x', 'sdxl', 'main'))).toBe('picture');
     expect(purposeOf(s('k', 'flux', 'diffusion_model', 'FLUX.1 Kontext dev (fp8)'))).toBe('edit');
@@ -24,7 +24,7 @@ describe('purposeOf', () => {
     expect(purposeOf(s('l', 'ltx2', 'main'))).toBe('video');
   });
 
-  it('puts the helpers by what they do', () => {
+  it('puts the helpers by what they do', { tags: ['condition'] }, () => {
     expect(purposeOf(s('u', 'any', 'spandrel_image_to_image'))).toBe('upscale');
     expect(purposeOf(s('c', 'sdxl', 'controlnet'))).toBe('control');
     expect(purposeOf(s('p', 'anima', 'model_patch'))).toBe('control');
@@ -43,14 +43,14 @@ describe('familiesOf', () => {
     s('up', 'any', 'spandrel_image_to_image'),
   ];
 
-  it('gives a shared part the families of the models that need it, through a part of a part too', () => {
+  it('gives a shared part the families of the models that need it, through a part of a part too', { tags: ['condition'] }, () => {
     expect(familiesOf(all[0]!, all)).toEqual(['anima']);
     expect(familiesOf(all[2]!, all)).toEqual(['z-image', 'anima']);
     expect(familiesOf(all[4]!, all)).toEqual(['sdxl']);
     expect(familiesOf(all[5]!, all)).toEqual([]);
   });
 
-  it('lists the families present, and filters by purpose and family in the order of the purposes', () => {
+  it('lists the families present, and filters by purpose and family in the order of the purposes', { tags: ['condition'] }, () => {
     const entries = starterEntries(all);
     expect(familiesIn(entries)).toEqual(['z-image', 'anima', 'sdxl', 'wan']);
     const shown = filterEntries(entries, null, 'anima');

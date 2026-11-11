@@ -492,6 +492,7 @@ mod copy_tests {
         }
     }
 
+    // tags: error-guessing
     #[test]
     fn a_full_disk_is_not_called_a_damaged_backup() {
         let err = copy_into(&mut &[7u8; 1000][..], &mut Full(10), 5000).unwrap_err();
@@ -501,12 +502,14 @@ mod copy_tests {
         );
     }
 
+    // tags: error-guessing
     #[test]
     fn a_unreadable_entry_is_a_damaged_backup() {
         let err = copy_into(&mut Broken, &mut Vec::new(), 5000).unwrap_err();
         assert!(err.starts_with("the backup is damaged"), "{err}");
     }
 
+    // tags: error-guessing
     #[test]
     fn removing_what_is_not_there_is_fine_and_a_failure_is_reported() {
         let dir = tempfile::tempdir().unwrap();
@@ -534,6 +537,7 @@ mod copy_tests {
         }
     }
 
+    // tags: boundary
     #[test]
     fn the_unpack_limits_are_one_mib_for_the_manifest_sixteen_gib_for_the_database_and_eight_for_a_picture(
     ) {
@@ -542,6 +546,7 @@ mod copy_tests {
         assert_eq!(MAX_GALLERY_FILE, 8_589_934_592);
     }
 
+    // tags: state-transition
     #[test]
     fn a_missing_source_is_not_retried() {
         let dir = tempfile::tempdir().unwrap();
@@ -551,6 +556,7 @@ mod copy_tests {
         assert!(started.elapsed() < Duration::from_secs(2));
     }
 
+    // tags: equivalence
     #[test]
     fn the_old_data_folder_name_counts_up_from_two_while_taken() {
         let dir = tempfile::tempdir().unwrap();
@@ -582,6 +588,7 @@ mod copy_tests {
         }
     }
 
+    // tags: error-guessing, state-transition
     #[test]
     fn an_interrupted_read_is_tried_again_and_a_real_failure_is_not() {
         let mut out = Vec::new();
@@ -591,6 +598,7 @@ mod copy_tests {
         assert!(copy_into(&mut Broken, &mut Vec::new(), 100).is_err());
     }
 
+    // tags: error-guessing, boundary
     #[test]
     fn an_entry_over_the_limit_is_refused_and_one_at_it_is_copied() {
         let mut out = Vec::new();

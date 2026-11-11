@@ -25,7 +25,7 @@ const current = () => useComic.getState().projects[0]!.pages[0]!;
 beforeEach(reset);
 
 describe('turning free placement on and off', () => {
-  it('keeps the shapes the panels have when it goes on, and lays the page out again when it goes off', () => {
+  it('keeps the shapes the panels have when it goes on, and lays the page out again when it goes off', { tags: ['regression'] }, () => {
     const project = newProject('P');
     useComic.getState().setProjects([project]);
     // The panels keep the rectangles they are drawn with, so nothing moves.
@@ -38,7 +38,7 @@ describe('turning free placement on and off', () => {
     expect(current().free).toBe(true);
   });
 
-  it('is left again by anything that lays the page out: a new panel count, new columns, a layout or a reset', () => {
+  it('is left again by anything that lays the page out: a new panel count, new columns, a layout or a reset', { tags: ['regression'] }, () => {
     const free = () => {
       const page = seedFree();
       return page.id;
@@ -61,7 +61,7 @@ describe('turning free placement on and off', () => {
     expect(current().free).toBe(false);
   });
 
-  it('is saved and read back, and only a page with shapes can be free', () => {
+  it('is saved and read back, and only a page with shapes can be free', { tags: ['condition'] }, () => {
     seedFree();
     const doc = serializeComicProject(useComic.getState().projects[0]!) as Record<string, unknown>;
     expect(parseComicProject(doc)!.pages[0]!.free).toBe(true);
@@ -71,7 +71,7 @@ describe('turning free placement on and off', () => {
 });
 
 describe('moving and turning a panel', () => {
-  it('moves one panel only, which may then lie over another, and a whole drag is one undo step', () => {
+  it('moves one panel only, which may then lie over another, and a whole drag is one undo step', { tags: ['state-transition'] }, () => {
     const page = seedFree();
     const [first, second] = page.shapes!;
     // The second panel is a half-width one in the bottom row (the page is read from the right).
@@ -86,7 +86,7 @@ describe('moving and turning a panel', () => {
     expect(current().shapes![1]).toEqual(second);
   });
 
-  it('turns a panel by any angle and keeps its size', () => {
+  it('turns a panel by any angle and keeps its size', { tags: ['condition'] }, () => {
     const page = seedFree();
     const start = page.shapes![1]!;
     const turned = rotateShape(start, (37 * Math.PI) / 180, aspect)!;
@@ -96,7 +96,7 @@ describe('moving and turning a panel', () => {
     expect(stored).not.toEqual(start);
   });
 
-  it('makes a page free when a panel of it is moved, in the same undo step as the move', () => {
+  it('makes a page free when a panel of it is moved, in the same undo step as the move', { tags: ['state-transition'] }, () => {
     const project = newProject('P');
     useComic.getState().setProjects([project]);
     const page = project.pages[0]!;
@@ -110,7 +110,7 @@ describe('moving and turning a panel', () => {
     expect(current()).toMatchObject({ free: false, shapes: null });
   });
 
-  it('refuses a shape for a panel that is not there, or a shape too small to be a panel', () => {
+  it('refuses a shape for a panel that is not there, or a shape too small to be a panel', { tags: ['error-guessing'] }, () => {
     const page = seedFree();
     const shape = pageShapes(page)[0]!;
     expect(useComic.getState().setFreeShape(page.id, 9, shape)).toBe(false);
@@ -119,7 +119,7 @@ describe('moving and turning a panel', () => {
 });
 
 describe('the other panel operations on a free page', () => {
-  it('moves a corner of one panel only, with no stitching to its neighbour', () => {
+  it('moves a corner of one panel only, with no stitching to its neighbour', { tags: ['condition'] }, () => {
     const page = seedFree();
     const before = page.shapes!;
     expect(useComic.getState().moveCorner(page.id, 0, 2, { x: 0.45, y: 0.3 })).toBe(true);
@@ -127,7 +127,7 @@ describe('the other panel operations on a free page', () => {
     expect(current().shapes![1]).toEqual(before[1]);
   });
 
-  it('adds and takes away a corner of one panel only, down to a three-cornered panel', () => {
+  it('adds and takes away a corner of one panel only, down to a three-cornered panel', { tags: ['condition'] }, () => {
     const page = seedFree();
     const [first, second, third] = page.shapes!;
     // The first panel's right edge lies on the page margin; the new corner stands past it, as only a free panel may.
@@ -144,7 +144,7 @@ describe('the other panel operations on a free page', () => {
     expect(current().shapes!.slice(1)).toEqual([second, third]);
   });
 
-  it('slides an edge of one panel only and says how far it went, cut short past the page', () => {
+  it('slides an edge of one panel only and says how far it went, cut short past the page', { tags: ['condition'] }, () => {
     const page = seedFree();
     const [first, second, third] = page.shapes!;
     expect(useComic.getState().moveEdge(page.id, 0, 1, { x: 0.02, y: 0 })).toEqual({ x: expect.closeTo(0.02), y: 0 });
@@ -159,7 +159,7 @@ describe('the other panel operations on a free page', () => {
     expect(current().shapes![0]![1]!.x).toBeGreaterThan(1);
   });
 
-  it('adds a panel of its own at the end instead of cutting one', () => {
+  it('adds a panel of its own at the end instead of cutting one', { tags: ['condition'] }, () => {
     const page = seedFree();
     const id = useComic.getState().halvePanel(page.id, 0);
     expect(id).not.toBeNull();
@@ -169,7 +169,7 @@ describe('the other panel operations on a free page', () => {
     expect(useComic.getState().selectedPanelId).toBe(id);
   });
 
-  it('cuts a panel in two without touching the panels around it', () => {
+  it('cuts a panel in two without touching the panels around it', { tags: ['condition'] }, () => {
     const page = seedFree();
     const [first, ...rest] = page.shapes!;
     const box = { x: Math.min(...first!.map((p) => p.x)), right: Math.max(...first!.map((p) => p.x)) };
@@ -180,7 +180,7 @@ describe('the other panel operations on a free page', () => {
     expect(current().shapes!.slice(2)).toEqual(rest);
   });
 
-  it('removes a panel with its shape and lets no neighbour grow into the space', () => {
+  it('removes a panel with its shape and lets no neighbour grow into the space', { tags: ['condition'] }, () => {
     const page = seedFree();
     const [, second, third] = page.shapes!;
     expect(useComic.getState().removePanel(page.id, 0)).toBe(true);

@@ -62,7 +62,7 @@ describe('a running page follows another page', () => {
     vi.restoreAllMocks();
   });
 
-  it('shows the phone\'s prompt, model, LoRAs, settings, presets, prompt book, drafts and finish values on the PC', async () => {
+  it('shows the phone\'s prompt, model, LoRAs, settings, presets, prompt book, drafts and finish values on the PC', { tags: ['scenario'] }, async () => {
     expect(useParams.getState().positivePrompt).toBe('on the PC');
     // The phone's state, but its settings (theme) are its own and the PC keeps its own.
     const pcSettings = localStorage.getItem('novira.settings');
@@ -89,7 +89,7 @@ describe('a running page follows another page', () => {
     expect(save).not.toHaveBeenCalled();
   });
 
-  it('does not touch what the user types on the PC while the other page changes it, and sends the typed text', async () => {
+  it('does not touch what the user types on the PC while the other page changes it, and sends the typed text', { tags: ['scenario'] }, async () => {
     useParams.getState().set({ positivePrompt: 'typing on the PC' });
     remote = JSON.stringify({ ...JSON.parse(remote), 'novira.params': JSON.stringify({ state: { positivePrompt: 'phone again' }, version: 1 }) });
     emit({ type: 'ui_state_changed', origin: 'page-phone', revision: 6 });
@@ -102,7 +102,7 @@ describe('a running page follows another page', () => {
 });
 
 describe('which keys follow another page', () => {
-  it('has no store for the saved keys of the removed logo screen, so a change of them is never taken or retried', () => {
+  it('has no store for the saved keys of the removed logo screen, so a change of them is never taken or retried', { tags: ['condition'] }, () => {
     for (const key of ['novira.logo', 'novira.logoPresets']) {
       expect(liveKeys()).not.toContain(key);
       expect(canRehydrate(key)).toBe(false);
@@ -125,18 +125,18 @@ describe('which keys follow another page', () => {
     return [...found];
   }
 
-  it('names every saved key either as following another page or as per page', () => {
+  it('names every saved key either as following another page or as per page', { tags: ['equivalence'] }, () => {
     const named = new Set([...liveKeys(), ...LOCAL_ONLY_KEYS]);
     expect(sourceKeys().filter((k) => !named.has(k))).toEqual([]);
   });
 
-  it('never lists a key both ways, and every following key is one the sources write', () => {
+  it('never lists a key both ways, and every following key is one the sources write', { tags: ['decision-table'] }, () => {
     expect(liveKeys().filter((k) => LOCAL_ONLY_KEYS.includes(k))).toEqual([]);
     const sources = new Set(sourceKeys());
     expect(liveKeys().filter((k) => !sources.has(k))).toEqual([]);
   });
 
-  it('keeps the screens\' own state per page', () => {
+  it('keeps the screens\' own state per page', { tags: ['condition'] }, () => {
     for (const key of ['novira.settings', 'novira.gallery', 'novira.agent', 'novira.canvas']) expect(liveKeys()).not.toContain(key);
     for (const key of ['novira.params', 'novira.drafts', 'novira.presets', 'novira.promptBook']) expect(liveKeys()).toContain(key);
   });

@@ -123,6 +123,7 @@ fn search_params(source: &str) -> SearchParams {
     }
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_civitai_search_is_mapped_and_sent_with_the_key() {
     let dir = tempfile::tempdir().unwrap();
@@ -192,6 +193,7 @@ async fn a_civitai_search_is_mapped_and_sent_with_the_key() {
         .all(|r| r.target.contains("cursor=page2")));
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_hugging_face_search_follows_the_next_links_and_sends_the_token() {
     let dir = tempfile::tempdir().unwrap();
@@ -231,6 +233,7 @@ async fn a_hugging_face_search_follows_the_next_links_and_sends_the_token() {
         .all(|r| r.authorization.as_deref() == Some("Bearer hf_search_token")));
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_civitai_file_is_resolved_downloaded_and_given_its_cover_words_and_licence() {
     let dir = tempfile::tempdir().unwrap();
@@ -282,6 +285,7 @@ async fn a_civitai_file_is_resolved_downloaded_and_given_its_cover_words_and_lic
     );
 }
 
+// tags: boundary
 #[tokio::test]
 async fn a_civitai_model_with_one_mature_picture_keeps_it_as_a_marked_cover_and_no_set() {
     let dir = tempfile::tempdir().unwrap();
@@ -330,6 +334,7 @@ async fn a_civitai_model_with_one_mature_picture_keeps_it_as_a_marked_cover_and_
     assert_eq!((bare.cover_image_url, bare.cover_mature), (None, None));
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_civitai_model_page_resolves_to_the_named_version() {
     let dir = tempfile::tempdir().unwrap();
@@ -390,6 +395,7 @@ async fn a_civitai_model_page_resolves_to_the_named_version() {
         .contains("The Civitai file was not found"));
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_civitai_answer_that_is_not_ok_fails_the_install() {
     let dir = tempfile::tempdir().unwrap();
@@ -401,6 +407,7 @@ async fn a_civitai_answer_that_is_not_ok_fails_the_install() {
     assert!(done.error.unwrap().contains("answered 500"));
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_hugging_face_file_is_downloaded_with_the_token_and_gets_cover_and_licence() {
     let dir = tempfile::tempdir().unwrap();
@@ -437,6 +444,7 @@ async fn a_hugging_face_file_is_downloaded_with_the_token_and_gets_cover_and_lic
     );
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn a_repository_the_hub_does_not_know_still_installs_without_cover_or_licence() {
     let dir = tempfile::tempdir().unwrap();
@@ -483,6 +491,7 @@ async fn install_plain(
     model_named(backend, file)
 }
 
+// tags: scenario
 #[tokio::test]
 async fn covers_and_licences_of_models_found_by_hash_are_filled_in() {
     let dir = tempfile::tempdir().unwrap();
@@ -520,6 +529,7 @@ async fn covers_and_licences_of_models_found_by_hash_are_filled_in() {
         .any(|e| matches!(e, BackendEvent::ModelAdded { model } if model.path.ends_with("by-hash.safetensors") && model.license.is_some())));
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_file_civitai_does_not_know_is_asked_about_only_once() {
     let dir = tempfile::tempdir().unwrap();
@@ -538,6 +548,7 @@ async fn a_file_civitai_does_not_know_is_asked_about_only_once() {
     assert!(model.cover_image_url.is_none() && model.license.is_none());
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_failing_lookup_stops_the_fill_and_is_retried_later() {
     let dir = tempfile::tempdir().unwrap();
@@ -557,6 +568,7 @@ async fn a_failing_lookup_stops_the_fill_and_is_retried_later() {
     assert_eq!(site().requests(&path).len(), 3);
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_hugging_face_model_with_a_page_address_gets_its_licence_from_the_hub() {
     let dir = tempfile::tempdir().unwrap();
@@ -584,6 +596,7 @@ async fn a_hugging_face_model_with_a_page_address_gets_its_licence_from_the_hub(
     assert_eq!(model.license.as_ref().unwrap().site, "huggingface");
 }
 
+// tags: regression, state-transition
 #[tokio::test]
 async fn an_install_started_again_continues_the_part_of_the_stopped_one() {
     let dir = tempfile::tempdir().unwrap();
@@ -621,6 +634,7 @@ async fn an_install_started_again_continues_the_part_of_the_stopped_one() {
     assert_eq!(std::fs::read(&model.path).unwrap(), bytes);
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_second_install_of_a_source_that_is_running_is_refused() {
     let dir = tempfile::tempdir().unwrap();

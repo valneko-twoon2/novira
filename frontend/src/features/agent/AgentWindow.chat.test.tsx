@@ -46,7 +46,7 @@ afterEach(() => {
 });
 
 describe('the text of a message', () => {
-  it("shows the assistant's Markdown as bold, lists, code and tables, and what the user typed and errors as they are", async () => {
+  it("shows the assistant's Markdown as bold, lists, code and tables, and what the user typed and errors as they are", { tags: ['error-guessing', 'scenario'] }, async () => {
     const answer = '**足したもの**\n- **線と塗り**: clean lineart\n- `glossy hair`\n\n| a | b |\n|---|---|\n| 1 | <b>2</b> |\n\n<img src=x onerror=alert(1)>';
     seed([
       message(1, 'user', '**as typed**'),
@@ -71,7 +71,7 @@ describe('the text of a message', () => {
 });
 
 describe('sending', () => {
-  it('offers starting suggestions on an empty chat and sends the one picked', async () => {
+  it('offers starting suggestions on an empty chat and sends the one picked', { tags: ['boundary', 'scenario'] }, async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     seed([], { send });
     show();
@@ -79,7 +79,7 @@ describe('sending', () => {
     expect(send).toHaveBeenCalledWith(t('agent.suggestion.anime'), []);
   });
 
-  it('sends on Enter, keeps Shift+Enter and composing for the text, and ignores an empty send and queues one made while it works', async () => {
+  it('sends on Enter, keeps Shift+Enter and composing for the text, and ignores an empty send and queues one made while it works', { tags: ['boundary', 'state-transition'] }, async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     seed([message(1, 'user', 'hi')], { send });
     show();
@@ -115,7 +115,7 @@ describe('sending', () => {
 });
 
 describe('the context meter', () => {
-  it('shows what the next message carries once the chat has messages, and says when older ones no longer fit', async () => {
+  it('shows what the next message carries once the chat has messages, and says when older ones no longer fit', { tags: ['regression'] }, async () => {
     seed([]);
     show();
     await screen.findByTestId('agent-input');
@@ -136,7 +136,7 @@ describe('the context meter', () => {
     expect(meter.textContent).toContain(tCount('agent.context.compressed', 2));
   });
 
-  it('has a token limit switch that is on at first, and without it sends the whole chat and says no older message is shortened', async () => {
+  it('has a token limit switch that is on at first, and without it sends the whole chat and says no older message is shortened', { tags: ['boundary', 'scenario'] }, async () => {
     const long = Array.from({ length: 4 }, (_, i) => message(i + 1, i % 2 ? 'assistant' : 'user', 'あ'.repeat(40000)));
     seed(long);
     show();
@@ -171,7 +171,7 @@ describe('applied changes', () => {
     { kind: 'packs', ids: ['rmbg'] },
   ];
 
-  it('names every kind of change in a chip list, shows the recommended extensions, and offers to generate and to undo', async () => {
+  it('names every kind of change in a chip list, shows the recommended extensions, and offers to generate and to undo', { tags: ['state-transition', 'decision-table'] }, async () => {
     const undo = vi.fn();
     seed([message(1, 'user', 'do it'), message(2, 'assistant', 'Done', { tools, snapshot: {} as never })], { undo });
     show();
@@ -197,7 +197,7 @@ describe('applied changes', () => {
     expect(undo).toHaveBeenCalledWith(2);
   });
 
-  it('shows a change as undone, or as no longer undoable, and no undo for work that was only queued', async () => {
+  it('shows a change as undone, or as no longer undoable, and no undo for work that was only queued', { tags: ['regression', 'state-transition'] }, async () => {
     seed([
       message(1, 'assistant', 'one', { tools: [{ kind: 'prompt' }], undone: true, snapshot: {} as never }),
       message(2, 'assistant', 'two', { tools: [{ kind: 'prompt' }] }),
@@ -211,14 +211,14 @@ describe('applied changes', () => {
     expect(screen.getByText(t('agent.action.queued', { count: 1 }))).toBeTruthy();
   });
 
-  it('shows what changed while the assistant works', async () => {
+  it('shows what changed while the assistant works', { tags: ['state-transition', 'scenario'] }, async () => {
     seed([message(1, 'user', 'go')], { busy: true, busySessionId: 's1', working: [{ kind: 'prompt' }, { kind: 'packs', ids: ['x'] }] });
     show();
     const working = await screen.findByTestId('agent-working');
     expect(within(working).getAllByRole('listitem').map((li) => li.textContent)).toEqual([t('agent.action.prompt')]);
   });
 
-  it('asks before the assistant reads pictures or prompts, and passes on the answer', async () => {
+  it('asks before the assistant reads pictures or prompts, and passes on the answer', { tags: ['scenario'] }, async () => {
     const answerPermission = vi.fn();
     seed([message(1, 'user', 'look')], { busy: true, busySessionId: 's1', permission: { tool: 'list_gallery_images' }, answerPermission });
     show();
@@ -231,7 +231,7 @@ describe('applied changes', () => {
     expect(answerPermission.mock.calls).toEqual([['once'], ['always'], ['deny']]);
   });
 
-  it('shows an error message as one', async () => {
+  it('shows an error message as one', { tags: ['error-guessing', 'boundary'] }, async () => {
     seed([message(1, 'assistant', 'It failed', { error: true })]);
     show();
     expect((await screen.findByText('It failed')).closest('.agent-msg')!.className).toContain('is-error');
@@ -239,7 +239,7 @@ describe('applied changes', () => {
 });
 
 describe('the window', () => {
-  it('can be dragged by its header, stays on screen and ignores presses on the header buttons', async () => {
+  it('can be dragged by its header, stays on screen and ignores presses on the header buttons', { tags: ['scenario'] }, async () => {
     const setPos = vi.fn();
     seed([message(1, 'user', 'hi')], { setPos });
     show();
@@ -262,7 +262,7 @@ describe('the window', () => {
     expect(setPos).toHaveBeenCalledTimes(2);
   });
 
-  it('closes, and changes the provider', async () => {
+  it('closes, and changes the provider', { tags: ['state-transition', 'scenario'] }, async () => {
     const setOpen = vi.fn();
     const changeProvider = vi.fn();
     seed([message(1, 'user', 'hi')], { setOpen, changeProvider });
@@ -274,7 +274,7 @@ describe('the window', () => {
     expect(setOpen).toHaveBeenCalledWith(false);
   });
 
-  it('starts a new chat from the session bar and closes the list', async () => {
+  it('starts a new chat from the session bar and closes the list', { tags: ['state-transition', 'scenario'] }, async () => {
     const newSession = vi.fn();
     seed([message(1, 'user', 'hi')], { newSession });
     show();
@@ -285,7 +285,7 @@ describe('the window', () => {
     expect(screen.getByTestId('agent-session-toggle').getAttribute('aria-expanded')).toBe('false');
   });
 
-  it('is placed where it was dragged to', async () => {
+  it('is placed where it was dragged to', { tags: ['scenario'] }, async () => {
     seed([], { pos: { x: 40, y: 60 } });
     show();
     const win = await screen.findByTestId('agent-window');
@@ -295,7 +295,7 @@ describe('the window', () => {
 });
 
 describe('setup', () => {
-  it('waits while the sign-in state is unknown', async () => {
+  it('waits while the sign-in state is unknown', { tags: ['error-guessing', 'state-transition'] }, async () => {
     vi.spyOn(backend, 'agentStatus').mockReturnValue(new Promise(() => {}));
     seed([], { status: null });
     show();
@@ -303,7 +303,7 @@ describe('setup', () => {
     expect(document.querySelector('.agent-setup')).toBeTruthy();
   });
 
-  it('lets the user choose a provider, says it is waiting, and explains a missing install or a failed sign-in', async () => {
+  it('lets the user choose a provider, says it is waiting, and explains a missing install or a failed sign-in', { tags: ['error-guessing', 'state-transition'] }, async () => {
     const signIn = vi.fn().mockResolvedValue(undefined);
     vi.spyOn(backend, 'agentStatus').mockResolvedValue({ provider: null, installed: false, loggedIn: false } as never);
     seed([], { status: { provider: null, installed: false, loggedIn: false } as never, signIn });
@@ -322,7 +322,7 @@ describe('setup', () => {
 describe('a question asked from another screen', () => {
   afterEach(() => useAgent.setState({ pendingAsk: null, focus: [] }));
 
-  it('is sent as soon as the assistant is signed in, and only once', async () => {
+  it('is sent as soon as the assistant is signed in, and only once', { tags: ['scenario'] }, async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     seed([], { send, status: null, pendingAsk: 'What does it do?' });
     show();
@@ -331,7 +331,7 @@ describe('a question asked from another screen', () => {
     expect(useAgent.getState().pendingAsk).toBeNull();
   });
 
-  it('waits on the sign-in screen when the assistant is not signed in', async () => {
+  it('waits on the sign-in screen when the assistant is not signed in', { tags: ['scenario'] }, async () => {
     vi.spyOn(backend, 'agentStatus').mockResolvedValue({ provider: 'claude', installed: true, loggedIn: false, models: [] });
     const send = vi.fn().mockResolvedValue(undefined);
     seed([], { send, status: null, pendingAsk: 'What does it do?' });
@@ -345,7 +345,7 @@ describe('a question asked from another screen', () => {
 describe('stopping, reasoning and resizing', () => {
   afterEach(() => useAgent.setState({ size: null, pos: null, busy: false }));
 
-  it('shows a stop button instead of send while a request is running, and it cancels the request', async () => {
+  it('shows a stop button instead of send while a request is running, and it cancels the request', { tags: ['state-transition', 'scenario'] }, async () => {
     const cancel = vi.fn();
     seed([message(1, 'user', 'hi')], { busy: true, busySessionId: 's1', cancel });
     show();
@@ -354,7 +354,7 @@ describe('stopping, reasoning and resizing', () => {
     expect(cancel).toHaveBeenCalledTimes(1);
   });
 
-  it('shows the reasoning as one line that opens to the whole account', async () => {
+  it('shows the reasoning as one line that opens to the whole account', { tags: ['boundary', 'state-transition'] }, async () => {
     seed([message(1, 'user', 'hi'), message(2, 'assistant', 'done', { thoughts: ['took it for ComfyUI_TJ_NormalLighting', 'it is not installed'] })]);
     show();
     const box = await screen.findByTestId('agent-thoughts');
@@ -366,14 +366,14 @@ describe('stopping, reasoning and resizing', () => {
     expect(within(box).queryByTestId('agent-thoughts-list')).toBeNull();
   });
 
-  it('shows no reasoning row for a reply without it', async () => {
+  it('shows no reasoning row for a reply without it', { tags: ['scenario'] }, async () => {
     seed([message(1, 'user', 'hi'), message(2, 'assistant', 'done')]);
     show();
     await screen.findByText('done');
     expect(screen.queryByTestId('agent-thoughts')).toBeNull();
   });
 
-  it('changes the size by dragging a corner, within limits, and remembers it', async () => {
+  it('changes the size by dragging a corner, within limits, and remembers it', { tags: ['boundary', 'scenario'] }, async () => {
     // Earlier tests replace the store's actions with mocks; use the real ones here.
     seed([], { setPos: (pos) => useAgent.setState({ pos }), setSize: (size) => useAgent.setState({ size }) });
     show();

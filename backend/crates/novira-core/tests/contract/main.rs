@@ -138,6 +138,7 @@ pub fn keys(v: &Value) -> Vec<String> {
     keys
 }
 
+// tags: decision-table
 #[test]
 fn every_fixture_is_checked() {
     let mut files: Vec<String> = std::fs::read_dir(contract_dir())
@@ -153,6 +154,7 @@ fn every_fixture_is_checked() {
     assert_eq!(files, checked);
 }
 
+// tags: condition
 #[test]
 fn fixtures_match_the_rust_types() {
     let failed: Vec<&str> = CHECKS

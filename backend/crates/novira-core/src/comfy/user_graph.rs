@@ -256,6 +256,7 @@ mod tests {
         }
     }
 
+    // tags: equivalence
     #[test]
     fn a_video_graph_names_its_thumbnail_and_may_load_a_clip() {
         let mut g = graph(
@@ -274,6 +275,7 @@ mod tests {
         assert!(prepare(&g, 1, lib, vision).unwrap_err().contains("nowhere"));
     }
 
+    // tags: state-transition
     #[test]
     fn placeholders_become_what_comfyui_expects() {
         let g = graph(
@@ -321,6 +323,7 @@ mod tests {
         assert_eq!(prompt["2"]["inputs"]["image"], "novira-1.png");
     }
 
+    // tags: error-guessing
     #[test]
     fn broken_graphs_are_refused_with_the_reason() {
         let save = json!({ "class_type": "SaveImage", "inputs": { "images": ["9", 0] } });
@@ -355,6 +358,7 @@ mod tests {
         json!({ "class_type": "LoadAudio", "inputs": { "audio": { "$speech": spoken } } })
     }
 
+    // tags: state-transition
     #[test]
     fn a_speech_placeholder_becomes_an_upload_and_the_same_speech_is_made_once() {
         let g = graph(
@@ -391,6 +395,7 @@ mod tests {
         assert_eq!(prompt["c"]["inputs"]["audio"], "novira-2.wav");
     }
 
+    // tags: error-guessing
     #[test]
     fn a_speech_that_cannot_be_made_is_refused_with_the_reason() {
         let err = |spoken: Value| {
@@ -418,6 +423,7 @@ mod tests {
             .contains("more than 8"));
     }
 
+    // tags: condition
     #[test]
     fn a_clip_vision_size_becomes_the_installed_model_and_is_checked_like_a_model() {
         let g = graph(

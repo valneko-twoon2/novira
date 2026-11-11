@@ -22,11 +22,11 @@ function sourceFiles(dir: string): string[] {
 const files = sourceFiles(SRC).map((p) => ({ rel: relative(SRC, p).replace(/\\/g, '/'), text: readFileSync(p, 'utf8') }));
 
 describe('i18n catalogs', () => {
-  it('renders placeholders and escaped braces', () => {
+  it('renders placeholders and escaped braces', { tags: ['error-guessing'] }, () => {
     expect(renderTemplate('{a} of {{b}}', { a: 1 })).toBe('1 of {b}');
   });
 
-  it('other locales only use keys and placeholders that exist in ja', () => {
+  it('other locales only use keys and placeholders that exist in ja', { tags: ['condition'] }, () => {
     const jaRecord = ja as Record<string, string>;
     for (const [locale, catalog] of Object.entries(catalogs)) {
       for (const [key, value] of Object.entries(catalog)) {
@@ -36,7 +36,7 @@ describe('i18n catalogs', () => {
     }
   });
 
-  it('ja and en have every key; the other languages may lack some and show the English text meanwhile', () => {
+  it('ja and en have every key; the other languages may lack some and show the English text meanwhile', { tags: ['condition'] }, () => {
     const jaKeys = Object.keys(ja);
     for (const locale of PRIMARY_LOCALES) {
       const missing = jaKeys.filter((k) => !(k in (catalogs[locale] as Record<string, string>)));
@@ -44,22 +44,22 @@ describe('i18n catalogs', () => {
     }
   });
 
-  it('the built-in ja and en hold every area file (a new area is imported in catalog.ts)', () => {
+  it('the built-in ja and en hold every area file (a new area is imported in catalog.ts)', { tags: ['condition'] }, () => {
     expect(ja).toEqual(catalogs.ja);
     expect(en).toEqual(catalogs.en);
   });
 
-  it('a language loaded when chosen holds the same messages as its area files', async () => {
+  it('a language loaded when chosen holds the same messages as its area files', { tags: ['condition'] }, async () => {
     for (const locale of Object.keys(catalogs) as (keyof typeof catalogs)[]) expect(await loadCatalog(locale), locale).toEqual(catalogs[locale]);
   });
 
-  it('every area file exists for every locale', () => {
+  it('every area file exists for every locale', { tags: ['condition'] }, () => {
     const dir = fileURLToPath(new URL('../src/i18n/locales/', import.meta.url));
     const areas = (locale: string) => readdirSync(join(dir, locale)).sort();
     for (const locale of readdirSync(dir)) expect(areas(locale), locale).toEqual(areas('ja'));
   });
 
-  it('every t() key used in source exists in ja', () => {
+  it('every t() key used in source exists in ja', { tags: ['condition'] }, () => {
     const missing: string[] = [];
     for (const f of files) {
       for (const m of f.text.matchAll(/\bt\(\s*'([a-zA-Z0-9_.-]+)'/g)) {
@@ -69,7 +69,7 @@ describe('i18n catalogs', () => {
     expect(missing).toEqual([]);
   });
 
-  it('UI source has no hardcoded Japanese', () => {
+  it('UI source has no hardcoded Japanese', { tags: ['condition'] }, () => {
     const offenders: string[] = [];
     for (const f of files) {
       if (EXEMPT.some((e) => f.rel.startsWith(e))) continue;

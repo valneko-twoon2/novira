@@ -41,7 +41,7 @@ const current = () => useComic.getState().projects[0]!.pages[0]!;
 beforeEach(reset);
 
 describe('applying a shape layout', () => {
-  it('takes the panel count from the shapes and keeps them on the page', () => {
+  it('takes the panel count from the shapes and keeps them on the page', { tags: ['condition'] }, () => {
     const page = seed(1);
     const shapes = layout('diagonal');
     useComic.getState().applyPageLayout(page.id, { panelCount: 0, columns: 2, direction: 'ltr', size: 'A4', shapes });
@@ -50,7 +50,7 @@ describe('applying a shape layout', () => {
     expect(current().panels.map((p) => p.prompt)).toEqual(['prompt 0', '']);
   });
 
-  it('returns a page with no shapes to the automatic layout when the layout has none', () => {
+  it('returns a page with no shapes to the automatic layout when the layout has none', { tags: ['boundary'] }, () => {
     const page = seed(2);
     useComic.getState().applyPageLayout(page.id, { panelCount: 3, columns: 1, direction: 'ltr', size: 'A4', shapes: null });
     expect(current().shapes).toBeNull();
@@ -59,7 +59,7 @@ describe('applying a shape layout', () => {
 });
 
 describe('cutting a panel', () => {
-  it('makes a new empty panel after the cut one, and the two parts make the panel', () => {
+  it('makes a new empty panel after the cut one, and the two parts make the panel', { tags: ['boundary', 'state-transition'] }, () => {
     const page = seed(2);
     useComic.getState().applyPageLayout(page.id, { panelCount: 2, columns: 2, direction: 'ltr', size: 'A4', shapes: layout('strips').slice(0, 2) });
     const before = pageShapes(current())[0]!;
@@ -70,7 +70,7 @@ describe('cutting a panel', () => {
     expect(shapes.reduce((total, s) => total + shapeArea(s), 0)).toBeCloseTo(shapeArea(before) + shapeArea(pageShapes(current())[2]!), 6);
   });
 
-  it('cuts an automatic page as its rectangles, and refuses a line that misses the panel', () => {
+  it('cuts an automatic page as its rectangles, and refuses a line that misses the panel', { tags: ['error-guessing'] }, () => {
     const page = seed(1);
     expect(useComic.getState().splitPanel(page.id, 0, pt(2, 0), pt(2, 1))).toBe(false);
     expect(current().shapes).toBeNull();
@@ -78,7 +78,7 @@ describe('cutting a panel', () => {
     expect(current().shapes).toHaveLength(2);
   });
 
-  it('does not add a panel past the most a page holds', () => {
+  it('does not add a panel past the most a page holds', { tags: ['boundary'] }, () => {
     const page = seed(24);
     expect(useComic.getState().splitPanel(page.id, 0, pt(0.5, 0), pt(0.5, 1))).toBe(false);
     expect(current().panels).toHaveLength(24);
@@ -86,7 +86,7 @@ describe('cutting a panel', () => {
 });
 
 describe('moving the corners of a panel', () => {
-  it('moves a corner that two panels share for both, and keeps the page valid', () => {
+  it('moves a corner that two panels share for both, and keeps the page valid', { tags: ['equivalence'] }, () => {
     const page = seed(2);
     useComic.getState().applyPageLayout(page.id, { panelCount: 2, columns: 2, direction: 'ltr', size: 'A4', shapes: layout('diagonal') });
     // The corner where the diagonal meets the right edge: the first panel's third corner and the second's second.
@@ -95,7 +95,7 @@ describe('moving the corners of a panel', () => {
     expect(current().shapes![1]![1]).toEqual(pt(0.9, 0.3));
   });
 
-  it('refuses a move that makes a panel cross itself, and changes nothing', () => {
+  it('refuses a move that makes a panel cross itself, and changes nothing', { tags: ['error-guessing'] }, () => {
     const page = seed(2);
     useComic.getState().applyPageLayout(page.id, { panelCount: 2, columns: 2, direction: 'ltr', size: 'A4', shapes: layout('diagonal') });
     const before = current().shapes;
@@ -104,7 +104,7 @@ describe('moving the corners of a panel', () => {
     expect(current().shapes).toBe(before);
   });
 
-  it('adds a corner on an edge of a page that is still automatic, and removes it again', () => {
+  it('adds a corner on an edge of a page that is still automatic, and removes it again', { tags: ['regression'] }, () => {
     const page = seed(2);
     // The right edge of the top panel: a point on it adds a straight corner, which can go again.
     expect(useComic.getState().insertCorner(page.id, 0, 1, pt(0.97, 0.2))).toBe(true);
@@ -115,7 +115,7 @@ describe('moving the corners of a panel', () => {
     expect(useComic.getState().removeCorner(page.id, 0, 0)).toBe(false);
   });
 
-  it('takes one undo step for the moves of one drag', () => {
+  it('takes one undo step for the moves of one drag', { tags: ['state-transition'] }, () => {
     const page = seed(2);
     useComic.getState().applyPageLayout(page.id, { panelCount: 2, columns: 2, direction: 'ltr', size: 'A4', shapes: layout('diagonal') });
     const before = current().shapes;
@@ -127,7 +127,7 @@ describe('moving the corners of a panel', () => {
 });
 
 describe('changing a reshaped page', () => {
-  it('goes back to the automatic layout when the panel count changes', () => {
+  it('goes back to the automatic layout when the panel count changes', { tags: ['condition'] }, () => {
     const page = seed(2);
     useComic.getState().applyPageLayout(page.id, { panelCount: 2, columns: 2, direction: 'ltr', size: 'A4', shapes: layout('diagonal') });
     useComic.getState().setPanelCount(page.id, 3);
@@ -135,7 +135,7 @@ describe('changing a reshaped page', () => {
     expect(current().panels).toHaveLength(3);
   });
 
-  it('goes back to the automatic layout when the columns change, and keeps the shapes for a new paper', () => {
+  it('goes back to the automatic layout when the columns change, and keeps the shapes for a new paper', { tags: ['condition'] }, () => {
     const page = seed(2);
     useComic.getState().applyPageLayout(page.id, { panelCount: 2, columns: 2, direction: 'ltr', size: 'A4', shapes: layout('diagonal') });
     useComic.getState().setPageLayout(page.id, { size: 'B4' });
@@ -144,7 +144,7 @@ describe('changing a reshaped page', () => {
     expect(current().shapes).toBeNull();
   });
 
-  it('flips the shapes when the reading direction changes', () => {
+  it('flips the shapes when the reading direction changes', { tags: ['condition'] }, () => {
     const page = seed(2);
     useComic.getState().applyPageLayout(page.id, { panelCount: 2, columns: 2, direction: 'ltr', size: 'A4', shapes: layout('bands').slice(0, 2) });
     const before = current().shapes![0]![0]!;
@@ -153,7 +153,7 @@ describe('changing a reshaped page', () => {
     expect(current().shapes![0]![0]!.y).toBeCloseTo(before.y);
   });
 
-  it('swaps the shapes with the panels, so each panel keeps its place in the swap', () => {
+  it('swaps the shapes with the panels, so each panel keeps its place in the swap', { tags: ['equivalence'] }, () => {
     const page = seed(2);
     const shapes = layout('diagonal');
     useComic.getState().applyPageLayout(page.id, { panelCount: 2, columns: 2, direction: 'ltr', size: 'A4', shapes });
@@ -162,7 +162,7 @@ describe('changing a reshaped page', () => {
     expect(current().shapes).toEqual([shapes[1], shapes[0]]);
   });
 
-  it('goes back to the automatic layout on a reset, which can be undone', () => {
+  it('goes back to the automatic layout on a reset, which can be undone', { tags: ['state-transition'] }, () => {
     const page = seed(2);
     const shapes = layout('diagonal');
     useComic.getState().applyPageLayout(page.id, { panelCount: 2, columns: 2, direction: 'ltr', size: 'A4', shapes });
@@ -174,7 +174,7 @@ describe('changing a reshaped page', () => {
 });
 
 describe('page templates with shapes', () => {
-  it('saves the shapes of a page, and applying the template brings them back', () => {
+  it('saves the shapes of a page, and applying the template brings them back', { tags: ['condition'] }, () => {
     const page = seed(2);
     const shapes = layout('diagonal');
     useComic.getState().applyPageLayout(page.id, { panelCount: 2, columns: 2, direction: 'ltr', size: 'A4', shapes });
@@ -186,7 +186,7 @@ describe('page templates with shapes', () => {
     expect(current().shapes).toEqual(shapes);
   });
 
-  it('turns cutting on and off without touching the project', () => {
+  it('turns cutting on and off without touching the project', { tags: ['condition'] }, () => {
     const before = useComic.getState().projects;
     useComic.getState().setCutting(true);
     expect(useComic.getState().cutting).toBe(true);

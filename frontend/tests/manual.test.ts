@@ -21,7 +21,7 @@ interface Rendered {
 const render = (source: string, options: Record<string, unknown> = {}): Rendered => renderMarkdown(source, options);
 
 describe('the Markdown renderer', () => {
-  it('renders headings with anchors, emphasis, code and lists', () => {
+  it('renders headings with anchors, emphasis, code and lists', { tags: ['condition'] }, () => {
     const r = render('# Title\n\nSome **bold** and *soft* and `code`.\n\n- one\n  - nested\n- two\n\n1. first\n2. second\n\n## Part two\n');
     expect(r.title).toBe('Title');
     expect(r.html).toContain('<strong>bold</strong>');
@@ -36,7 +36,7 @@ describe('the Markdown renderer', () => {
     expect(r.problems).toEqual([]);
   });
 
-  it('keeps heading ids unique across chapters with a prefix, and links to them', () => {
+  it('keeps heading ids unique across chapters with a prefix, and links to them', { tags: ['condition'] }, () => {
     const r = render('# One\n\n## Same\n\n## Same\n\n[back](#same) [other](02-two.md#deep) [chapter](02-two.md)', {
       idPrefix: 'ch-01',
       chapterId: (f: string) => (f === '02-two.md' ? 'ch-02' : undefined),
@@ -47,7 +47,7 @@ describe('the Markdown renderer', () => {
     expect(r.html).toContain('href="#ch-02"');
   });
 
-  it('links to another chapter through the page of that chapter, and stays on the page for its own headings', () => {
+  it('links to another chapter through the page of that chapter, and stays on the page for its own headings', { tags: ['condition'] }, () => {
     const r = render('# One\n\n## Same\n\n[back](#same) [own](01-one.md#same) [other](02-two.md#deep) [chapter](02-two.md)', {
       idPrefix: 'ch-01',
       chapterId: (f: string) => (f === '02-two.md' ? 'ch-02' : f === '01-one.md' ? 'ch-01' : undefined),
@@ -59,14 +59,14 @@ describe('the Markdown renderer', () => {
     expect(r.html).not.toContain('href="01-one.html');
   });
 
-  it('makes heading ids from the words, so an apostrophe is a separator and links inside a quote keep the chapter prefix', () => {
+  it('makes heading ids from the words, so an apostrophe is a separator and links inside a quote keep the chapter prefix', { tags: ['regression'] }, () => {
     const source = ['# One', '', "## Remove the l'arrière-plan", '', '> see [it](#remove-the-l-arrière-plan)', ''].join('\n');
     const r = render(source, { idPrefix: 'ch-01' });
     expect(r.headings.map((h) => h.id)).toEqual(['ch-01', 'ch-01--remove-the-l-arrière-plan']);
     expect(r.html).toContain('href="#ch-01--remove-the-l-arrière-plan"');
   });
 
-  it("gives the title and the heading texts as plain words, so a page escapes them once (no &amp;#39; in the contents)", () => {
+  it("gives the title and the heading texts as plain words, so a page escapes them once (no &amp;#39; in the contents)", { tags: ['regression'] }, () => {
     const r = render("# Découvrir l'écran\n\n## Drag & Drop <now>\n");
     expect(r.title).toBe("Découvrir l'écran");
     expect(r.headings.map((h) => h.text)).toEqual(["Découvrir l'écran", 'Drag & Drop <now>']);
@@ -74,7 +74,7 @@ describe('the Markdown renderer', () => {
     expect(escapeHtml(r.title)).toBe('Découvrir l&#39;écran');
   });
 
-  it('renders tables, notes and a picture on its own line as a figure', () => {
+  it('renders tables, notes and a picture on its own line as a figure', { tags: ['condition'] }, () => {
     const r = render('# T\n\n| a | b |\n|---|---|\n| 1 | `x\\|y` |\n\n> **Tip** careful\n\n![The generate tab](shot:generate)\n');
     expect(r.html).toContain('<th>a</th><th>b</th>');
     expect(r.html).toContain('<td><code>x|y</code></td>');
@@ -83,7 +83,7 @@ describe('the Markdown renderer', () => {
     expect(r.shots).toEqual(['generate']);
   });
 
-  it('does not let anything from the source into the page unescaped', () => {
+  it('does not let anything from the source into the page unescaped', { tags: ['error-guessing'] }, () => {
     const r = render('# <b>T</b>\n\n<script>alert(1)</script> & "quotes"\n\n[x](javascript:alert(1))\n\n![a](https://example.com/p.png)\n\n```\n<div>\n```\n');
     expect(r.html).not.toContain('<script>');
     expect(r.html).not.toContain('<b>');
@@ -96,26 +96,26 @@ describe('the Markdown renderer', () => {
     expect(r.problems.join('\n')).toMatch(/picture not allowed/);
   });
 
-  it('opens outside links safely and refuses a link to a missing chapter', () => {
+  it('opens outside links safely and refuses a link to a missing chapter', { tags: ['error-guessing'] }, () => {
     const r = render('# T\n\n[site](https://example.com/a?b=1&c=2) [gone](09-missing.md)', { chapterId: () => undefined });
     expect(r.html).toContain('href="https://example.com/a?b=1&amp;c=2" target="_blank" rel="noopener noreferrer"');
     expect(r.problems.join('\n')).toMatch(/chapter that does not exist/);
   });
 
-  it('puts the words of the screen in with {{ui:key}} and reports unknown keys and placeholders', () => {
+  it('puts the words of the screen in with {{ui:key}} and reports unknown keys and placeholders', { tags: ['condition'] }, () => {
     const message = (key: string) => ({ 'a.b': 'Generate', 'a.n': '{count} items' })[key];
     expect(render('# T\n\nPress **{{ui:a.b}}**.', { message }).html).toContain('<strong>Generate</strong>');
     expect(render('# T\n\n{{ui:no.key}}', { message }).problems.join()).toMatch(/unknown UI message key/);
     expect(render('# T\n\n{{ui:a.n}}', { message }).problems.join()).toMatch(/placeholders/);
   });
 
-  it('needs a title, a picture description, and joins wrapped lines without a gap between wide characters', () => {
+  it('needs a title, a picture description, and joins wrapped lines without a gap between wide characters', { tags: ['condition'] }, () => {
     expect(render('no title here').problems.join()).toMatch(/no "# " title/);
     expect(render('# T\n\n![](shot:generate)').problems.join()).toMatch(/no description/);
     expect(render('# T\n\n日本語の\n文章です\nand english\nwords').html).toContain('<p>日本語の文章です and english words</p>');
   });
 
-  it('slugs keep letters of every script', () => {
+  it('slugs keep letters of every script', { tags: ['condition'] }, () => {
     expect(slugify('Make a Picture!')).toBe('make-a-picture');
     expect(slugify('画像を作る')).toBe('画像を作る');
     expect(slugify('???')).toBe('section');
@@ -131,17 +131,17 @@ describe('the manual of every language', () => {
 
   const skeleton = chapterShape as (source: string) => string[];
 
-  it('has a folder for every language of the app, and for no other', () => {
+  it('has a folder for every language of the app, and for no other', { tags: ['scenario'] }, () => {
     const folders = readdirSync(MANUAL_SOURCE, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort();
     expect(folders, 'add docs/manual/<language>/ when a language is added (see .claude/rules/i18n.md)').toEqual([...locales].sort());
   });
 
-  it('has the same chapter files in every language', () => {
+  it('has the same chapter files in every language', { tags: ['scenario'] }, () => {
     expect(ja.length).toBeGreaterThan(0);
     for (const locale of locales) expect(listChapters(locale), locale).toEqual(ja);
   });
 
-  it('has the words of the page in every language', () => {
+  it('has the words of the page in every language', { tags: ['scenario'] }, () => {
     for (const locale of locales) {
       const meta = JSON.parse(readFileSync(join(MANUAL_SOURCE, locale, '_meta.json'), 'utf8')) as Record<string, string>;
       expect(Object.keys(meta).sort(), locale).toEqual([...META_KEYS].sort());
@@ -149,14 +149,14 @@ describe('the manual of every language', () => {
     }
   });
 
-  it('renders every chapter without problems (links, UI words, pictures)', () => {
+  it('renders every chapter without problems (links, UI words, pictures)', { tags: ['scenario'] }, () => {
     for (const locale of locales) {
       const page = renderManual(locale, { locales, messages: loadMessages(locale) }) as { problems: string[] };
       expect(page.problems, locale).toEqual([]);
     }
   });
 
-  it('makes a contents page and one page per chapter, each with the index of the chapters on the left', () => {
+  it('makes a contents page and one page per chapter, each with the index of the chapters on the left', { tags: ['scenario'] }, () => {
     const page = renderManual('ja', { locales, messages: loadMessages('ja') }) as { pages: Array<{ file: string; html: string }> };
     expect(page.pages.map((p) => p.file)).toEqual(['index.html', ...ja.map((f) => chapterPage(f))]);
     for (const p of page.pages) {
@@ -164,7 +164,7 @@ describe('the manual of every language', () => {
     }
   });
 
-  it('opens only the sections of the chapter being read in the index, and keeps the language on the same page', () => {
+  it('opens only the sections of the chapter being read in the index, and keeps the language on the same page', { tags: ['condition'] }, () => {
     const { pages } = renderManual('ja', { locales, messages: loadMessages('ja') }) as { pages: Array<{ file: string; html: string }> };
     const second = pages.find((p) => p.file === chapterPage(ja[1] as string)) as { html: string };
     const nav = /<nav class="toc"[\s\S]*?<\/nav>/.exec(second.html)![0];
@@ -177,7 +177,7 @@ describe('the manual of every language', () => {
     expect((nav.match(/href="#/g) ?? []).length).toBe(sections);
   });
 
-  it('keeps the shape of the Japanese chapters in every translation that is up to date', () => {
+  it('keeps the shape of the Japanese chapters in every translation that is up to date', { tags: ['condition'] }, () => {
     const pending = readPending() as Record<string, string[]>;
     for (const file of ja) {
       const expected = skeleton(read('ja', file));
@@ -188,7 +188,7 @@ describe('the manual of every language', () => {
     }
   });
 
-  it('lists as pending only chapters of the other languages that exist, and none of ja or en', () => {
+  it('lists as pending only chapters of the other languages that exist, and none of ja or en', { tags: ['condition'] }, () => {
     const pending = readPending() as Record<string, string[]>;
     for (const [locale, files] of Object.entries(pending)) {
       expect(locales, `pending.json names the language ${locale}`).toContain(locale);
@@ -197,7 +197,7 @@ describe('the manual of every language', () => {
     }
   });
 
-  it('shows the English chapter, with a note, for a chapter a language is behind with', () => {
+  it('shows the English chapter, with a note, for a chapter a language is behind with', { tags: ['condition'] }, () => {
     const file = ja[0] as string;
     const source = mkdtempSync(join(tmpdir(), 'novira-manual-'));
     for (const l of ['ja', 'en', 'ko']) {
@@ -217,7 +217,7 @@ describe('the manual of every language', () => {
     expect(own.pages.find((p) => p.file === chapterPage(file))!.html).toContain('body of ko');
   });
 
-  it('sends a link of an English chapter to the heading at the same place in a translated chapter', () => {
+  it('sends a link of an English chapter to the heading at the same place in a translated chapter', { tags: ['condition'] }, () => {
     const source = mkdtempSync(join(tmpdir(), 'novira-manual-'));
     const texts: Record<string, [string, string]> = {
       ja: ['# 一\n\n本文\n', '# 二\n\n## ポーズを作る\n\n本文\n'],
@@ -237,14 +237,14 @@ describe('the manual of every language', () => {
     expect(page.pages.find((p) => p.file === chapterPage('02-two.md'))!.html).toContain(`id="${link}"`);
   });
 
-  it('shows only scenes that exist, and every scene is shown', () => {
+  it('shows only scenes that exist, and every scene is shown', { tags: ['condition'] }, () => {
     const used = new Set<string>();
     for (const file of ja) for (const m of read('ja', file).matchAll(/\(shot:([\w-]+)\)/g)) used.add(m[1] as string);
     expect([...used].filter((id) => !sceneIds.includes(id)), 'a chapter shows a scene that scripts/manual/scenes.mjs does not have').toEqual([]);
     expect(sceneIds.filter((id) => !used.has(id)), 'a scene is taken but no chapter shows it (delete it or show it)').toEqual([]);
   });
 
-  it('has scenes with unique ids that can be run', () => {
+  it('has scenes with unique ids that can be run', { tags: ['scenario'] }, () => {
     expect(new Set(sceneIds).size).toBe(sceneIds.length);
     for (const scene of SCENES as Array<{ id: string; run: unknown }>) {
       expect(scene.id).toMatch(/^[a-z][a-z0-9-]*$/);
@@ -252,7 +252,7 @@ describe('the manual of every language', () => {
     }
   });
 
-  it('uses valid chapter ids and an existing source folder', () => {
+  it('uses valid chapter ids and an existing source folder', { tags: ['scenario'] }, () => {
     expect(existsSync(MANUAL_SOURCE)).toBe(true);
     expect(chapterId('03-canvas.md')).toBe('ch-03-canvas');
     expect(chapterPage('03-canvas.md')).toBe('03-canvas.html');

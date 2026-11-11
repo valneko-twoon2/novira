@@ -16,33 +16,33 @@ function project(bubbles: ComicBubble[], poses: ComicPoint[][] = [], direction: 
 const nosePose = (x: number, y: number): ComicPoint[] => [{ x, y }];
 
 describe('checkTypesetting', () => {
-  it('raises nothing for balloons that are placed, short and in reading order', () => {
+  it('raises nothing for balloons that are placed, short and in reading order', { tags: ['condition'] }, () => {
     const p = project([bubble({ x: 0.55, y: 0.05 }), bubble({ x: 0.1, y: 0.4, text: 'Yes' })]);
     expect(checkTypesetting(p)).toEqual([]);
   });
 
-  it('finds a balloon on a face, and not one beside it', () => {
+  it('finds a balloon on a face, and not one beside it', { tags: ['condition'] }, () => {
     const on = project([bubble({ x: 0.4, y: 0.3 })], [nosePose(0.5, 0.4)]);
     expect(checkTypesetting(on).map((i) => i.rule)).toContain('onFace');
     const beside = project([bubble({ x: 0.0, y: 0.0 })], [nosePose(0.8, 0.8)]);
     expect(checkTypesetting(beside)).toEqual([]);
   });
 
-  it('finds a sound-effect picture on a face too', () => {
+  it('finds a sound-effect picture on a face too', { tags: ['condition'] }, () => {
     const on = project([{ ...newBubble('stamp', 0.4, 0.3), scale: 1 }], [nosePose(0.5, 0.4)]);
     expect(checkTypesetting(on).map((i) => i.rule)).toContain('onFace');
   });
 
-  it('finds balloons on each other', () => {
+  it('finds balloons on each other', { tags: ['equivalence'] }, () => {
     const issues = checkTypesetting(project([bubble({ x: 0.3, y: 0.3 }), bubble({ x: 0.31, y: 0.31 })]));
     expect(issues).toContainEqual(expect.objectContaining({ rule: 'overlap', balloon: 1, other: 2 }));
   });
 
-  it('finds a balloon that leaves its panel', () => {
+  it('finds a balloon that leaves its panel', { tags: ['condition'] }, () => {
     expect(checkTypesetting(project([bubble({ x: 0.95, y: 0.2 })])).map((i) => i.rule)).toContain('offPanel');
   });
 
-  it('finds an empty balloon and one with too many words, but not a long caption or a picture', () => {
+  it('finds an empty balloon and one with too many words, but not a long caption or a picture', { tags: ['error-guessing', 'boundary'] }, () => {
     const long = 'a'.repeat(TOO_LONG.chars + 1);
     const rules = checkTypesetting(project([bubble({ text: '  ', x: 0.7, y: 0.05 }), bubble({ text: long, x: 0.0, y: 0.6, scale: 0.5 })])).map((i) => i.rule);
     expect(rules).toContain('empty');
@@ -51,13 +51,13 @@ describe('checkTypesetting', () => {
     expect(checkTypesetting(project([newBubble('stamp', 0, 0)])).map((i) => i.rule)).not.toContain('empty');
   });
 
-  it('finds words too small to read on the page, by the size of the panel, and not a normal or a picture balloon', () => {
+  it('finds words too small to read on the page, by the size of the panel, and not a normal or a picture balloon', { tags: ['error-guessing'] }, () => {
     expect(checkTypesetting(project([bubble({ x: 0.3, y: 0.3, scale: 0.3 })])).map((i) => i.rule)).toContain('tooSmall');
     expect(checkTypesetting(project([bubble({ x: 0.3, y: 0.3, scale: 1 })])).map((i) => i.rule)).not.toContain('tooSmall');
     expect(checkTypesetting(project([{ ...newBubble('stamp', 0.3, 0.3), scale: 0.1 }])).map((i) => i.rule)).not.toContain('tooSmall');
   });
 
-  it('finds balloons in the wrong reading order, by the page direction', () => {
+  it('finds balloons in the wrong reading order, by the page direction', { tags: ['error-guessing'] }, () => {
     const left = bubble({ x: 0.05, y: 0.05 });
     const right = bubble({ x: 0.6, y: 0.05 });
     // Right to left: the first balloon should be the right one.
@@ -68,7 +68,7 @@ describe('checkTypesetting', () => {
     expect(checkTypesetting(project([bubble({ x: 0.3, y: 0.7 }), bubble({ x: 0.3, y: 0.05 })])).map((i) => i.rule)).toContain('readingOrder');
   });
 
-  it('numbers pages, panels and balloons from 1 and skips a panel with no balloon', () => {
+  it('numbers pages, panels and balloons from 1 and skips a panel with no balloon', { tags: ['condition'] }, () => {
     const p = project([bubble({ text: '' })]);
     p.pages.push(emptyPage(2));
     expect(checkTypesetting(p)).toEqual([{ rule: 'empty', page: 1, panel: 1, balloon: 1 }]);
@@ -76,7 +76,7 @@ describe('checkTypesetting', () => {
 });
 
 describe('headBox', () => {
-  it('needs a nose, and is wider with the ears further apart', () => {
+  it('needs a nose, and is wider with the ears further apart', { tags: ['condition'] }, () => {
     expect(headBox([])).toBeNull();
     const small = headBox([{ x: 0.5, y: 0.5 }])!;
     const wide = headBox([{ x: 0.5, y: 0.5 }, ...Array(15).fill({ x: 0, y: 0 }), { x: 0.3, y: 0.5 }, { x: 0.7, y: 0.5 }])!;

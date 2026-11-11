@@ -12,7 +12,7 @@ beforeEach(() => useUi.setState(initial, true));
 afterEach(cleanup);
 
 describe('MediaTabs', () => {
-  it('labels every icon tab and switches the media kind', () => {
+  it('labels every icon tab and switches the media kind', { tags: ['scenario'] }, () => {
     render(
       <TooltipProvider>
         <MediaTabs />
@@ -30,7 +30,7 @@ describe('MediaTabs', () => {
     expect(screen.getByRole('tab', { name: t('media.tab.music') }).getAttribute('aria-selected')).toBe('true');
   });
 
-  it('opens the comic from its icon, and a media icon brings Generate back', () => {
+  it('opens the comic from its icon, and a media icon brings Generate back', { tags: ['scenario'] }, () => {
     render(
       <TooltipProvider>
         <MediaTabs />

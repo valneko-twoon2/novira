@@ -4,7 +4,7 @@ import { readCachedPage, writeCachedPage } from './pageCache';
 
 // jsdom has no IndexedDB: the cache must then read nothing and fail nothing.
 describe('pageCache without IndexedDB', () => {
-  it('reads nothing and writes without failing', async () => {
+  it('reads nothing and writes without failing', { tags: ['error-guessing', 'boundary'] }, async () => {
     expect(typeof indexedDB).toBe('undefined');
     await expect(writeCachedPage('k', { items: [], next: null })).resolves.toBeUndefined();
     await expect(readCachedPage('k')).resolves.toBeNull();

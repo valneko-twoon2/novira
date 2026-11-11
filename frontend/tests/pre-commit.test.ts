@@ -17,7 +17,7 @@ describe('pre-commit refusal', () => {
   });
   afterEach(() => rmSync(repo, { recursive: true, force: true }));
 
-  it.each(['logs/e2e/trace.zip', 'logs/coverage/report/index.html', 'novira-data/work/a.txt'])('refuses %s', (file) => {
+  it.each(['logs/e2e/trace.zip', 'logs/coverage/report/index.html', 'novira-data/work/a.txt'])('refuses %s', { tags: ['equivalence'] }, (file) => {
     mkdirSync(dirname(join(repo, file)), { recursive: true });
     writeFileSync(join(repo, file), 'x\n');
     execFileSync('git', ['-C', repo, 'add', '-f', file]);

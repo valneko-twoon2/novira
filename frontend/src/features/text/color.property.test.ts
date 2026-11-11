@@ -8,7 +8,7 @@ const byte = fc.integer({ min: 0, max: 255 });
 const hex = fc.tuple(byte, byte, byte).map(([r, g, b]) => `#${[r, g, b].map((n) => n.toString(16).padStart(2, '0')).join('')}`);
 
 describe('parseColor / formatColor (properties)', () => {
-  it('parseColor never throws and gives #rrggbb with an alpha in 0..1 for arbitrary text', () => {
+  it('parseColor never throws and gives #rrggbb with an alpha in 0..1 for arbitrary text', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(fc.oneof(junkText, hex, fc.string({ unit: 'binary-ascii', maxLength: 30 })), (css) => {
         const c = parseColor(css);
@@ -19,7 +19,7 @@ describe('parseColor / formatColor (properties)', () => {
     );
   });
 
-  it('formatColor then parseColor returns the same colour (alpha to two decimals)', () => {
+  it('formatColor then parseColor returns the same colour (alpha to two decimals)', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(hex, fc.integer({ min: 0, max: 100 }), (h, percent) => {
         const alpha = percent / 100;
@@ -30,7 +30,7 @@ describe('parseColor / formatColor (properties)', () => {
     );
   });
 
-  it('rgb() values outside 0..255 are clamped and 3-digit hex expands', () => {
+  it('rgb() values outside 0..255 are clamped and 3-digit hex expands', { tags: ['boundary'] }, () => {
     check(
       fc.property(fc.integer({ min: 0, max: 999 }), fc.integer({ min: 0, max: 999 }), fc.integer({ min: 0, max: 999 }), (r, g, b) => {
         const c = parseColor(`rgb(${r}, ${g}, ${b})`);
@@ -42,7 +42,7 @@ describe('parseColor / formatColor (properties)', () => {
   });
 
   // Regression: a malformed alpha ("1.2.3") is not a colour, so the documented fallback (opaque black) applies; it used to give a NaN alpha.
-  it('falls back to opaque black for a malformed alpha, never NaN', () => {
+  it('falls back to opaque black for a malformed alpha, never NaN', { tags: ['error-guessing'] }, () => {
     expect(parseColor('rgba(0,0,0,1.2.3)')).toEqual({ hex: '#000000', alpha: 1 });
     expect(parseColor('rgba(9,9,9,..5)')).toEqual({ hex: '#000000', alpha: 1 });
     expect(parseColor('rgba(9,9,9,.5)').alpha).toBe(0.5);

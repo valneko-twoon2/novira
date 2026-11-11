@@ -75,6 +75,7 @@ fn is_video(base: BaseModel) -> bool {
     )
 }
 
+// tags: scenario
 #[tokio::test]
 #[ignore = "uses the GPU and a model you name"]
 async fn a_model_makes_a_picture_or_a_clip() {

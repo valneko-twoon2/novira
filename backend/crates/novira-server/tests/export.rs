@@ -47,6 +47,7 @@ fn result(reply: &Reply) -> Value {
     .unwrap()
 }
 
+// tags: equivalence
 #[tokio::test]
 async fn one_picture_downloads_as_itself_and_several_as_a_zip() {
     let f = Fixture::start().await;
@@ -115,6 +116,7 @@ fn zip_entries(bytes: &[u8]) -> Vec<String> {
     names
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_bad_export_request_writes_nothing_and_says_why() {
     let f = Fixture::start().await;

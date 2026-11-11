@@ -147,14 +147,14 @@ const DESIGNED: { name: string; reason: string; explains: (s: Seen) => boolean }
 describe('contract corpus: Rust and types.ts on the same input', () => {
   const validator = beforeAllValidator();
 
-  it('has a corpus file for every type this test knows, and no other', () => {
+  it('has a corpus file for every type this test knows, and no other', { tags: ['condition'] }, () => {
     const files = readdirSync(DIR)
       .filter((f) => f.endsWith('.jsonl'))
       .map((f) => f.slice(0, -'.jsonl'.length));
     expect(files.sort()).toEqual(Object.keys(TS_TYPES).sort());
   });
 
-  it.runIf(DIR === DEFAULT_DIR)('the committed cases are what the generator makes from the samples now', () => {
+  it.runIf(DIR === DEFAULT_DIR)('the committed cases are what the generator makes from the samples now', { tags: ['condition'] }, () => {
     const made = generate(join(REPO, 'contract')) as Record<string, Case[]>;
     for (const [fixture, cases] of Object.entries(made)) {
       const stored = readCases(fixture).map(({ rust: _rust, ...rest }) => rest);
@@ -163,14 +163,14 @@ describe('contract corpus: Rust and types.ts on the same input', () => {
     }
   });
 
-  it('every case carries a verdict from Rust', () => {
+  it('every case carries a verdict from Rust', { tags: ['condition'] }, () => {
     for (const fixture of Object.keys(TS_TYPES)) {
       const missing = readCases(fixture).filter((c) => !c.rust).map((c) => c.id);
       expect(missing, `${fixture}: no verdict (run node contract/corpus/generate.mjs)`).toEqual([]);
     }
   });
 
-  it('types.ts and Rust agree on every case, except the designed differences', () => {
+  it('types.ts and Rust agree on every case, except the designed differences', { tags: ['error-guessing'] }, () => {
     const v = validator();
     const unexplained: string[] = [];
     const used = new Map<string, number>();

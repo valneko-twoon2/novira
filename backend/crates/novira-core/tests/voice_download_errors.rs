@@ -48,6 +48,7 @@ async fn run(data: &Path, models: &Path, cancel: &CancellationToken) -> Result<(
     .await
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_voice_model_download_that_goes_wrong_says_why_and_leaves_no_complete_mark() {
     // A file the host lists but does not serve.

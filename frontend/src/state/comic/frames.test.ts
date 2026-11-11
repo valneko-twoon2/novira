@@ -7,23 +7,23 @@ const page = (frameMm: number, insetMm: number, marginMm = 5) => ({ size: 'A4' a
 const G = 2 * (5 / 210);
 
 describe('the strokes of a panel frame', () => {
-  it('measures millimetres as a share of the paper width', () => {
+  it('measures millimetres as a share of the paper width', { tags: ['equivalence'] }, () => {
     expect(mmToPage({ size: 'A4' }, 21)).toBeCloseTo(0.1);
     expect(mmToPage({ size: 'A5' }, 14.8)).toBeCloseTo(0.1);
   });
 
-  it('is only the margin at no frame line and no inset', () => {
+  it('is only the margin at no frame line and no inset', { tags: ['condition'] }, () => {
     expect(frameStrokes(page(0, 0))).toEqual({ deep: G, line: G, gutter: G });
   });
 
-  it('draws no white at all at no margin (the first setting)', () => {
+  it('draws no white at all at no margin (the first setting)', { tags: ['equivalence'] }, () => {
     const s = frameStrokes(page(0.6, 0, 0));
     expect(s.gutter).toBe(0);
     expect(s.line).toBeCloseTo(2 * mmToPage({ size: 'A4' }, 0.6));
     expect(s.deep).toBe(s.line);
   });
 
-  it('adds the line to both sides of the gutter, and the inset beyond the line', () => {
+  it('adds the line to both sides of the gutter, and the inset beyond the line', { tags: ['equivalence'] }, () => {
     const frame = mmToPage({ size: 'A4' }, FRAME_WIDTH_RANGE.default);
     const strokes = frameStrokes(page(FRAME_WIDTH_RANGE.default, 2.1));
     expect(strokes.gutter).toBeCloseTo(G);
@@ -32,7 +32,7 @@ describe('the strokes of a panel frame', () => {
     expect(strokes.deep).toBeCloseTo(strokes.line + 2 * 0.01);
   });
 
-  it('keeps the same share of the paper at another paper size', () => {
+  it('keeps the same share of the paper at another paper size', { tags: ['equivalence'] }, () => {
     expect(frameStrokes({ ...page(0.6, 0), size: 'B5' as const }).line).toBeGreaterThan(frameStrokes(page(0.6, 0)).line);
   });
 });

@@ -93,7 +93,7 @@ afterEach(() => {
 });
 
 describe('queueing panels', () => {
-  it('stops at the first panel the queue refuses, says why, and leaves only the queued panel waiting for its picture', async () => {
+  it('stops at the first panel the queue refuses, says why, and leaves only the queued panel waiting for its picture', { tags: ['error-guessing', 'state-transition'] }, async () => {
     const ids = seed();
     const { spy } = mockQueue(101, (n) => (n === 2 ? 'queue is full' : undefined));
     expect(await drawPanels(ids)).toBe(1);
@@ -102,7 +102,7 @@ describe('queueing panels', () => {
     expect(toasts()).toEqual([failed('queue is full'), enqueued(1)]);
   });
 
-  it('skips a panel that is gone or has no prompt, and draws the rest', async () => {
+  it('skips a panel that is gone or has no prompt, and draws the rest', { tags: ['error-guessing'] }, async () => {
     const ids = seed();
     const project = useComic.getState().projects[0]!;
     useComic.getState().setProjects([{ ...project, pages: [{ ...project.pages[0]!, panels: project.pages[0]!.panels.map((p, i) => (i === 1 ? { ...p, prompt: '  ' } : p)) }] }]);
@@ -115,7 +115,7 @@ describe('queueing panels', () => {
 });
 
 describe('the characters\' reference pictures before the panels', () => {
-  it('draws the panels from the words alone when a portrait cannot be queued, and tries no other portrait', async () => {
+  it('draws the panels from the words alone when a portrait cannot be queued, and tries no other portrait', { tags: ['error-guessing', 'state-transition'] }, async () => {
     const ids = seed([A, C]);
     // The queue refuses every portrait, so a second try would show as a second refusal.
     const { prompts } = mockQueue(121, (_, r) => (r.params.positivePrompt.includes('white background') ? new Error('engine is down') : undefined));
@@ -128,7 +128,7 @@ describe('the characters\' reference pictures before the panels', () => {
     expect(toasts()).toEqual([failed('engine is down'), enqueued(3)]);
   });
 
-  it('does not wait for a portrait the queue answered with no item', async () => {
+  it('does not wait for a portrait the queue answered with no item', { tags: ['error-guessing'] }, async () => {
     const ids = seed([A]);
     const { prompts } = mockQueue(131, (n) => (n === 1 ? [] : undefined));
     expect(await drawPanels(ids)).toBe(3);
@@ -136,7 +136,7 @@ describe('the characters\' reference pictures before the panels', () => {
     expect(toasts()).toEqual([enqueued(3)]);
   });
 
-  it('queues the panels only once every character\'s portrait has come, however long the later one takes', async () => {
+  it('queues the panels only once every character\'s portrait has come, however long the later one takes', { tags: ['state-transition', 'boundary'] }, async () => {
     vi.useFakeTimers();
     const ids = seed([A, C]);
     const { prompts } = mockQueue(141);
@@ -153,7 +153,7 @@ describe('the characters\' reference pictures before the panels', () => {
     expect(useComic.getState().projects[0]!.cast.map((c) => c.imageName)).toEqual(['grandpa.png', 'mina.png']);
   });
 
-  it('gives the portrait to the character of its own comic when another comic is open', async () => {
+  it('gives the portrait to the character of its own comic when another comic is open', { tags: ['error-guessing'] }, async () => {
     const walk = makeProject([A]);
     // The open comic has a character of the same id, which must keep its own picture.
     const other = { ...newProject('Other'), cast: [{ ...A, name: 'Someone else', imageName: 'else.png' }] };
@@ -170,7 +170,7 @@ describe('the characters\' reference pictures before the panels', () => {
     expect(useComic.getState().activeProjectId).toBe(walk.id);
   });
 
-  it('ends quietly when the comic is deleted while its portrait is drawn', async () => {
+  it('ends quietly when the comic is deleted while its portrait is drawn', { tags: ['error-guessing'] }, async () => {
     const walk = makeProject([A]);
     const other = { ...newProject('Other'), cast: [C] };
     useComic.getState().setProjects([walk, other]);
@@ -194,7 +194,7 @@ describe('making a character\'s sheet', () => {
   };
   const views = () => Object.values(useComic.getState().sheetPending).map((p) => p.view);
 
-  it('says there is no front picture, and queues no view, when the front cannot be drawn', async () => {
+  it('says there is no front picture, and queues no view, when the front cannot be drawn', { tags: ['error-guessing'] }, async () => {
     seed([A]);
     const { spy } = mockQueue(201, () => 'engine is down');
     expect(await makeSheet('a')).toBe(0);
@@ -203,7 +203,7 @@ describe('making a character\'s sheet', () => {
     expect(toasts()).toEqual([failed('engine is down'), { status: 'error', title: t('comic.sheet.noFront') }]);
   });
 
-  it('stops at the first view the queue refuses and keeps the views already queued', async () => {
+  it('stops at the first view the queue refuses and keeps the views already queued', { tags: ['error-guessing', 'state-transition'] }, async () => {
     withFront();
     const { spy } = mockQueue(211, (n) => (n === 2 ? 'queue is full' : undefined));
     expect(await makeSheet('a')).toBe(1);
@@ -212,7 +212,7 @@ describe('making a character\'s sheet', () => {
     expect(toasts()).toEqual([failed('queue is full'), enqueued(1)]);
   });
 
-  it('does not count the views being drawn for another character or another comic', async () => {
+  it('does not count the views being drawn for another character or another comic', { tags: ['error-guessing'] }, async () => {
     withFront({ sheet: { face: 'face.png' } });
     const projectId = useComic.getState().projects[0]!.id;
     useComic.setState({ sheetPending: { 1: { projectId, characterId: 'b', view: 'side' }, 2: { projectId: 'other', characterId: 'a', view: 'back' } } });
@@ -221,7 +221,7 @@ describe('making a character\'s sheet', () => {
     expect(views()).toEqual(['side', 'back', 'threeQuarter', 'side', 'back']);
   });
 
-  it('leaves out a view the character has no words for', async () => {
+  it('leaves out a view the character has no words for', { tags: ['error-guessing'] }, async () => {
     // Only the eyes are written, and a view from behind does not show them.
     withFront({ tags: '', parts: { eyes: 'blue eyes' } });
     const { prompts } = mockQueue(231);
@@ -232,7 +232,7 @@ describe('making a character\'s sheet', () => {
 });
 
 describe('waiting for the panels\' pictures', () => {
-  it('answers at once when the engine refused every panel as it was queued', async () => {
+  it('answers at once when the engine refused every panel as it was queued', { tags: ['error-guessing', 'state-transition'] }, async () => {
     vi.useFakeTimers();
     const ids = seed();
     // The failure reaches the queue store before the enqueue call returns (see bindComicItem).
@@ -249,7 +249,7 @@ describe('waiting for the panels\' pictures', () => {
     expect(await waiting).toBe(3);
   });
 
-  it('does not wait longer for a change of the queue that does not move these pictures', async () => {
+  it('does not wait longer for a change of the queue that does not move these pictures', { tags: ['error-guessing'] }, async () => {
     vi.useFakeTimers();
     const ids = seed();
     mockQueue(311);

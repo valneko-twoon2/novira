@@ -34,6 +34,7 @@ mod tests {
     use super::*;
     use std::sync::Arc;
 
+    // tags: error-guessing
     #[test]
     fn a_poisoned_mutex_is_still_usable() {
         let m = Arc::new(Mutex::new(1));
@@ -48,6 +49,7 @@ mod tests {
         assert_eq!(*m.lock_safe(), 2);
     }
 
+    // tags: error-guessing, state-transition
     #[test]
     fn a_poisoned_rwlock_is_still_usable() {
         let l = Arc::new(RwLock::new(String::from("a")));

@@ -132,14 +132,14 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('HTTP command contract', () => {
-  it('lists the layer and the shell-only commands without overlap', () => {
+  it('lists the layer and the shell-only commands without overlap', { tags: ['condition'] }, () => {
     const names = [...layerCommands().keys()];
     expect(names.length).toBeGreaterThan(60);
     expect(names.filter((n) => shellOnly().includes(n))).toEqual([]);
     for (const n of shellOnly()) expect(shellArguments().has(n), n).toBe(true);
   });
 
-  it('calls every command of the layer and the shell (except the listed ones) and nothing else', async () => {
+  it('calls every command of the layer and the shell (except the listed ones) and nothing else', { tags: ['condition'] }, async () => {
     const b = new HttpBackend();
     for (const call of Object.values(CALLS)) await call(b).catch(() => undefined);
     const known = [...layerCommands().keys(), ...shellOnly()];
@@ -149,7 +149,7 @@ describe('HTTP command contract', () => {
     expect(Object.keys(NOT_CALLED).every((c) => known.includes(c))).toBe(true);
   });
 
-  it('posts JSON to /api/<command> with exactly the layer parameters as camelCase arguments', async () => {
+  it('posts JSON to /api/<command> with exactly the layer parameters as camelCase arguments', { tags: ['equivalence'] }, async () => {
     const b = new HttpBackend();
     for (const call of Object.values(CALLS)) await call(b).catch(() => undefined);
     const layer = layerCommands();
@@ -167,7 +167,7 @@ describe('HTTP command contract', () => {
 });
 
 describe('HttpBackend', () => {
-  it('turns the server message into an error, and a body that is not JSON into a status message', async () => {
+  it('turns the server message into an error, and a body that is not JSON into a status message', { tags: ['error-guessing'] }, async () => {
     const b = new HttpBackend();
     reply = () => ({
       status: 501,
@@ -184,7 +184,7 @@ describe('HttpBackend', () => {
     await expect(b.pruneQueue()).rejects.toThrow('prune_queue failed (502)');
   });
 
-  it('keeps the queue of the last bootstrap and adds the built-in workflows', async () => {
+  it('keeps the queue of the last bootstrap and adds the built-in workflows', { tags: ['condition'] }, async () => {
     const b = new HttpBackend();
     const boot = await b.bootstrap();
     expect(boot.workflows.length).toBeGreaterThan(0);
@@ -194,7 +194,7 @@ describe('HttpBackend', () => {
     expect(b.kind).toBe('http');
   });
 
-  it('posts a picture to the upload route, not to a command, and ignores zoom', async () => {
+  it('posts a picture to the upload route, not to a command, and ignores zoom', { tags: ['condition'] }, async () => {
     const b = new HttpBackend();
     const image = await b.uploadImage(new Blob(['x']), { boardId: null });
     expect(image.url).toBe('/novira-image/full/up.png');
@@ -204,7 +204,7 @@ describe('HttpBackend', () => {
     expect(calls).toEqual([]);
   });
 
-  it('downloads an export from the export route under the name the server gives, and passes its refusal on', async () => {
+  it('downloads an export from the export route under the name the server gives, and passes its refusal on', { tags: ['error-guessing'] }, async () => {
     const options = { format: 'png', quality: 90, maxSide: null, removeInfo: true, watermark: false } as const;
     const sent: { url: string; body: unknown }[] = [];
     const clicked: string[] = [];
@@ -246,7 +246,7 @@ describe('HttpBackend', () => {
     expect(clicked).toHaveLength(1);
   });
 
-  it('downloads each original from the page origin, and sends no call', async () => {
+  it('downloads each original from the page origin, and sends no call', { tags: ['condition'] }, async () => {
     const clicked: string[] = [];
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
       clicked.push(`${this.download}|${this.getAttribute('href')}`);
@@ -259,7 +259,7 @@ describe('HttpBackend', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it('knows the picture route and the page the server marked', () => {
+  it('knows the picture route and the page the server marked', { tags: ['condition'] }, () => {
     expect(isServerImageUrl('/novira-image/full/a.png')).toBe(true);
     expect(isServerImageUrl('http://novira-image.localhost/full/a.png')).toBe(false);
     expect(isServedByServer()).toBe(false);

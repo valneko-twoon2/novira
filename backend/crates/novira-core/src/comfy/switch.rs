@@ -146,6 +146,7 @@ mod tests {
         ComfyEngine::new("http://127.0.0.1:8188", None, Duration::from_secs(1)).unwrap()
     }
 
+    // tags: error-guessing, state-transition
     #[tokio::test]
     async fn a_version_that_is_not_a_tag_is_refused_before_anything_moves() {
         let err = engine_not_installed_by_novira()
@@ -160,6 +161,7 @@ mod tests {
         assert!(matches!(err, EngineError::Failed(m) if m.contains("Not a ComfyUI version")));
     }
 
+    // tags: error-guessing, state-transition
     #[tokio::test]
     async fn a_comfyui_that_novira_did_not_install_cannot_change_its_version_here() {
         let err = engine_not_installed_by_novira()
@@ -174,6 +176,7 @@ mod tests {
         assert!(matches!(err, EngineError::Failed(m) if m.contains("not installed by novira")));
     }
 
+    // tags: error-guessing, state-transition
     #[tokio::test]
     async fn changing_the_package_of_an_install_that_is_not_there_does_nothing() {
         let result = engine_not_installed_by_novira()

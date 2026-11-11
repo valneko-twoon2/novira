@@ -24,18 +24,18 @@ afterEach(() => {
 });
 
 describe('download sources', () => {
-  it('names a Civitai file by model and file id, and a Hugging Face file by repo and path', () => {
+  it('names a Civitai file by model and file id, and a Hugging Face file by repo and path', { tags: ['scenario'] }, () => {
     expect(fileSource(model(), file('f1'))).toBe(`${CIVITAI_SOURCE_PREFIX}m1/f1`);
     expect(fileSource(model({ id: 'owner/repo', source: 'huggingface' }), file('dir/w.safetensors'))).toBe('owner/repo::dir/w.safetensors');
   });
 
-  it('defaults to the first file of the first version', () => {
+  it('defaults to the first file of the first version', { tags: ['boundary', 'scenario'] }, () => {
     expect(defaultFile(model()).id).toBe('f1');
   });
 });
 
 describe('downloadFile', () => {
-  it('queues the install and shows an info toast with the file name', async () => {
+  it('queues the install and shows an info toast with the file name', { tags: ['state-transition', 'scenario'] }, async () => {
     const install = vi.spyOn(backend, 'installModel').mockResolvedValue(job({}));
     await downloadFile(model(), file('f1', 'a.safetensors'));
     expect(install).toHaveBeenCalledWith(`${CIVITAI_SOURCE_PREFIX}m1/f1`, 'a.safetensors');
@@ -44,7 +44,7 @@ describe('downloadFile', () => {
     expect(last?.description).toBe('a.safetensors');
   });
 
-  it('shows the error text when the install cannot be queued, for an Error and for a plain string', async () => {
+  it('shows the error text when the install cannot be queued, for an Error and for a plain string', { tags: ['error-guessing', 'state-transition'] }, async () => {
     const install = vi.spyOn(backend, 'installModel');
     install.mockRejectedValueOnce(new Error('disk full'));
     await downloadFile(model(), file('f1'));
@@ -58,39 +58,39 @@ describe('downloadFile', () => {
 describe('useDownloadState', () => {
   const state = (source = 'src', name = 'n') => renderHook(() => useDownloadState(source, name)).result;
 
-  it('is idle with no model and no job', () => {
+  it('is idle with no model and no job', { tags: ['scenario'] }, () => {
     expect(state().current).toEqual({ kind: 'idle' });
   });
 
-  it('is installed when an installed model matches by source or by name', () => {
+  it('is installed when an installed model matches by source or by name', { tags: ['state-transition', 'scenario'] }, () => {
     useModels.setState({ models: [{ key: 'k', source: 'src', name: 'other' } as ModelConfig] });
     expect(state('src', 'x').current).toEqual({ kind: 'installed' });
     useModels.setState({ models: [{ key: 'k', source: 'other', name: 'n' } as ModelConfig] });
     expect(state('src', 'n').current).toEqual({ kind: 'installed' });
   });
 
-  it('is installed when the job completed, and queued with its progress while the job is active', () => {
+  it('is installed when the job completed, and queued with its progress while the job is active', { tags: ['state-transition', 'scenario'] }, () => {
     useModels.setState({ installJobs: [job({ status: 'completed' })] });
     expect(state().current).toEqual({ kind: 'installed' });
     useModels.setState({ installJobs: [job({ status: 'downloading', bytes: 25, totalBytes: 100 })] });
     expect(state().current).toEqual({ kind: 'queued', progress: 0.25 });
   });
 
-  it('reports zero progress when the total size is unknown, and covers every active status', () => {
+  it('reports zero progress when the total size is unknown, and covers every active status', { tags: ['error-guessing', 'boundary'] }, () => {
     for (const status of ['waiting', 'downloading', 'running'] as const) {
       useModels.setState({ installJobs: [job({ status, bytes: 10, totalBytes: 0 })] });
       expect(state().current).toEqual({ kind: 'queued', progress: 0 });
     }
   });
 
-  it('stays idle for a failed job and for a job of another source', () => {
+  it('stays idle for a failed job and for a job of another source', { tags: ['error-guessing', 'scenario'] }, () => {
     useModels.setState({ installJobs: [job({ status: 'failed' })] });
     expect(state().current).toEqual({ kind: 'idle' });
     useModels.setState({ installJobs: [job({ status: 'downloading', source: 'else' })] });
     expect(state().current).toEqual({ kind: 'idle' });
   });
 
-  it('updates when the job progresses', () => {
+  it('updates when the job progresses', { tags: ['state-transition', 'scenario'] }, () => {
     useModels.setState({ installJobs: [job({ bytes: 0, totalBytes: 10 })] });
     const result = state();
     act(() => useModels.getState().upsertInstallJob(job({ bytes: 5, totalBytes: 10 })));

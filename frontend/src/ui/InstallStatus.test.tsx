@@ -23,7 +23,7 @@ describe('InstallSlot', () => {
       </InstallSlot>,
     );
 
-  it('shows the button while nothing is installing, and the progress while a download runs', () => {
+  it('shows the button while nothing is installing, and the progress while a download runs', { tags: ['state-transition'] }, () => {
     useModels.setState({ installJobs: [] });
     show();
     expect(screen.getByRole('button', { name: 'Install' })).toBeTruthy();
@@ -33,7 +33,7 @@ describe('InstallSlot', () => {
     expect(screen.getByTestId('install-state-progress').textContent).toContain('25%');
   });
 
-  it('is indeterminate while the size is not known, and says installed when the job is done', () => {
+  it('is indeterminate while the size is not known, and says installed when the job is done', { tags: ['state-transition'] }, () => {
     useModels.setState({ installJobs: [job({})] });
     show();
     expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBeNull();

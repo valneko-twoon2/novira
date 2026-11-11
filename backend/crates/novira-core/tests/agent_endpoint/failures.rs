@@ -10,12 +10,14 @@ fn endpoint(base: &str) -> Endpoint {
     Endpoint::new(base, None).unwrap()
 }
 
+// tags: boundary
 #[tokio::test]
 async fn the_base_address_is_kept_without_a_trailing_slash() {
     let e = endpoint("http://127.0.0.1:9/v1/");
     assert_eq!(e.base().as_str(), "http://127.0.0.1:9/v1");
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_body_cut_off_by_the_server_is_a_connection_failure_not_a_timeout() {
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -38,6 +40,7 @@ async fn a_body_cut_off_by_the_server_is_a_connection_failure_not_a_timeout() {
     assert!(err.message.contains("the connection failed"), "{err}");
 }
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn a_huge_error_page_is_cut_and_still_reported_with_its_status() {
     let fake = Fake::start().await;
@@ -54,6 +57,7 @@ async fn a_huge_error_page_is_cut_and_still_reported_with_its_status() {
     assert!(err.message.len() < 2000, "{}", err.message.len());
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn an_error_inside_a_200_answer_is_reported_with_the_servers_words() {
     let fake = Fake::start().await;
@@ -79,6 +83,7 @@ async fn an_error_inside_a_200_answer_is_reported_with_the_servers_words() {
     assert!(call(&e).await.message.contains("unknown"));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn test_connection_reports_a_server_that_rejects_the_probe() {
     let fake = Fake::start().await;
@@ -97,6 +102,7 @@ async fn test_connection_reports_a_server_that_rejects_the_probe() {
     assert!(result.error.unwrap().contains("boom"));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn test_connection_reports_a_second_request_the_server_refuses_for_tools() {
     let fake = Fake::start().await;

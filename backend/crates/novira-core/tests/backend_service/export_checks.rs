@@ -3,6 +3,7 @@ use super::common::*;
 use novira_core::media::export::{ExportFormat, ExportOptions};
 use std::sync::Arc;
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn export_options_out_of_range_are_refused_with_the_reason() {
     let dir = tempfile::tempdir().unwrap();

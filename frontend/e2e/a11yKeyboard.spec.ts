@@ -55,7 +55,7 @@ function ratchet(what: string, surface: string, found: string[], known: string[]
 }
 
 for (const tab of TABS) {
-  test(`${tab} tab: Tab reaches every control, draws focus and keeps its order`, async ({ page }) => {
+  test(`${tab} tab: Tab reaches every control, draws focus and keeps its order`, { tag: ['@scenario'] }, async ({ page }) => {
     test.setTimeout(120_000);
     await openApp(page);
     await showTab(page, tab);
@@ -113,7 +113,7 @@ const LAYERS: Record<string, Layer> = {
 };
 
 for (const [name, layer] of Object.entries(LAYERS)) {
-  test(`${name}: Escape closes it and gives focus back to the opener`, async ({ page }) => {
+  test(`${name}: Escape closes it and gives focus back to the opener`, { tag: ['@scenario'] }, async ({ page }) => {
     await openApp(page);
     await layer.open(page);
     await expect(layer.shown(page)).toBeVisible();
@@ -136,7 +136,7 @@ for (const [name, layer] of Object.entries(LAYERS)) {
 }
 
 for (const [name, layer] of Object.entries(LAYERS).filter(([, l]) => l.modal)) {
-  test(`${name}: Tab and Shift+Tab stay inside while it is open`, async ({ page }) => {
+  test(`${name}: Tab and Shift+Tab stay inside while it is open`, { tag: ['@scenario'] }, async ({ page }) => {
     await openApp(page);
     await layer.open(page);
     await expect(layer.shown(page)).toBeVisible();

@@ -7,6 +7,7 @@ use novira_core::BackendError;
 use serde_json::json;
 use std::sync::Arc;
 
+// tags: decision-table
 #[tokio::test]
 async fn the_versions_and_the_info_of_a_pack_come_from_its_repository() {
     let dir = tempfile::tempdir().unwrap();
@@ -67,6 +68,7 @@ async fn the_versions_and_the_info_of_a_pack_come_from_its_repository() {
     ));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn the_comfyui_releases_are_listed_and_a_bad_version_is_refused() {
     let dir = tempfile::tempdir().unwrap();

@@ -2,6 +2,7 @@
 //! tool is missing. This test changes `PATH` for its whole process, so it is the only test in this file.
 use novira_core::agent::{find_exe, login, status_of, AgentProvider};
 
+// tags: state-transition
 #[tokio::test]
 async fn without_the_tool_on_the_path_status_and_sign_in_say_it_is_not_installed() {
     let empty = tempfile::tempdir().unwrap();

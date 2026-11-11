@@ -28,7 +28,7 @@ function graph(): EditorGraph {
 }
 
 describe('workflow operations from the assistant', () => {
-  it('adds a node with default inputs overridden by the given ones', () => {
+  it('adds a node with default inputs overridden by the given ones', { tags: ['condition'] }, () => {
     const { a } = pair();
     const field = a.inputs.find((i) => i.input !== 'connection')?.name;
     const s = serializeWorkflow(graph());
@@ -39,7 +39,7 @@ describe('workflow operations from the assistant', () => {
     if (field) expect(node.data.inputs[field]).toBe('changed');
   });
 
-  it('refuses unknown node types, duplicate ids and a missing id', () => {
+  it('refuses unknown node types, duplicate ids and a missing id', { tags: ['error-guessing'] }, () => {
     const s = serializeWorkflow(graph());
     const { a } = pair();
     const r = applyWorkflowOps(s, [{ op: 'addNode', id: 'x', nodeType: 'no_such_node' }, { op: 'addNode', id: 'a', nodeType: a.type }, { op: 'addNode', nodeType: a.type }]);
@@ -47,7 +47,7 @@ describe('workflow operations from the assistant', () => {
     expect(r.graph.nodes).toHaveLength(2);
   });
 
-  it('sets inputs without losing the others, and moves and removes nodes with their connections', () => {
+  it('sets inputs without losing the others, and moves and removes nodes with their connections', { tags: ['state-transition'] }, () => {
     const { a, out, b, input } = pair();
     const g = graph();
     g.edges = [makeEdge('a', out, 'b', input)];
@@ -70,7 +70,7 @@ describe('workflow operations from the assistant', () => {
     expect(b.type).toBeTruthy();
   });
 
-  it('connects, replacing an earlier connection into the same input, and disconnects', () => {
+  it('connects, replacing an earlier connection into the same input, and disconnects', { tags: ['condition'] }, () => {
     const { out, input } = pair();
     const s = serializeWorkflow(graph());
     const edge = { source: 'a', sourceHandle: out, target: 'b', targetHandle: input };
@@ -83,7 +83,7 @@ describe('workflow operations from the assistant', () => {
     expect(applyWorkflowOps(s, [{ op: 'connect', ...edge, target: 'a' }]).applied).toBe(0);
   });
 
-  it('builds the edited editor graph through the normal parser and keeps the library details', () => {
+  it('builds the edited editor graph through the normal parser and keeps the library details', { tags: ['condition'] }, () => {
     const { out, input } = pair();
     const g = { ...graph(), meta: { ...EMPTY_META, id: 'lib1', category: 'user' as const, name: 'mine' } };
     const edited = editedGraph(g, [{ op: 'connect', source: 'a', sourceHandle: out, target: 'b', targetHandle: input }]);
@@ -92,13 +92,13 @@ describe('workflow operations from the assistant', () => {
     expect(edited?.graph.meta).toEqual(g.meta);
   });
 
-  it('drops a connection to an input or output that does not exist when the graph is parsed', () => {
+  it('drops a connection to an input or output that does not exist when the graph is parsed', { tags: ['condition'] }, () => {
     const g = graph();
     const edited = editedGraph(g, [{ op: 'connect', source: 'a', sourceHandle: 'no_such_output', target: 'b', targetHandle: 'no_such_input' }]);
     expect(edited?.graph.edges).toHaveLength(0);
   });
 
-  it('says why an operation was left out: an unknown node type, a repeated id, a missing node, a connection that does not fit', () => {
+  it('says why an operation was left out: an unknown node type, a repeated id, a missing node, a connection that does not fit', { tags: ['error-guessing'] }, () => {
     const { a, out, input } = pair();
     const s = serializeWorkflow(graph());
     const r = applyWorkflowOps(s, [
@@ -133,7 +133,7 @@ describe('workflow operations from the assistant', () => {
     expect(applyWorkflowOps(s, [{ op: 'connect', source: 'a', sourceHandle: out, target: 'b', targetHandle: input }]).skipped).toEqual([]);
   });
 
-  it('refuses a connection between types that do not fit instead of leaving it to be dropped later', () => {
+  it('refuses a connection between types that do not fit instead of leaving it to be dropped later', { tags: ['error-guessing'] }, () => {
     const [x, y] = [NODE_TEMPLATES.find((t) => t.outputs.some((o) => o.type === 'ImageField'))!, NODE_TEMPLATES.find((t) => t.inputs.some((i) => i.type === 'LatentsField' && i.input === 'connection'))!];
     const g = { nodes: [createNode(x, { x: 0, y: 0 }, { id: 'x' }), createNode(y, { x: 0, y: 0 }, { id: 'y' })], edges: [], meta: { ...EMPTY_META }, form: [] };
     const r = applyWorkflowOps(serializeWorkflow(g), [{ op: 'connect', source: 'x', sourceHandle: x.outputs.find((o) => o.type === 'ImageField')!.name, target: 'y', targetHandle: y.inputs.find((i) => i.type === 'LatentsField')!.name }]);
@@ -141,7 +141,7 @@ describe('workflow operations from the assistant', () => {
     expect(r.skipped[0]).toMatch(/a ImageField output cannot feed a LatentsField input/);
   });
 
-  it('says which values a node took no typed value for, in an added node and a changed one', () => {
+  it('says which values a node took no typed value for, in an added node and a changed one', { tags: ['boundary'] }, () => {
     const { a } = pair();
     const s = serializeWorkflow(graph());
     const added = applyWorkflowOps(s, [{ op: 'addNode', id: 'n', nodeType: a.type, inputs: { nonsense: 1 } }]);
@@ -151,7 +151,7 @@ describe('workflow operations from the assistant', () => {
     expect(set.skipped).toEqual([`op 1 (setInputs): ${a.type} takes no typed value for: nonsense`]);
   });
 
-  it('describes the graph to the assistant', () => {
+  it('describes the graph to the assistant', { tags: ['condition'] }, () => {
     const ctx = workflowContext(graph()) as { name: string; nodes: { id: string; type: string }[] };
     expect(ctx.name).toBe('flow');
     expect(ctx.nodes.map((n) => n.id)).toEqual(['a', 'b']);
@@ -162,12 +162,12 @@ describe('a whole graph from the assistant', () => {
   const pairs = pair();
   const node = (id: string, type: string, inputs: Record<string, unknown> = {}) => ({ id, position: { x: 0, y: 0 }, data: { type, inputs } });
 
-  it('names the node types that do not exist, which keep it from opening', () => {
+  it('names the node types that do not exist, which keep it from opening', { tags: ['condition'] }, () => {
     const report = checkAssistantGraph({ nodes: [node('a', pairs.a.type), node('z', 'comfy:Nope'), node('y', 'comfy:Nope')], edges: [] });
     expect(report.unknownTypes).toEqual(['comfy:Nope']);
   });
 
-  it('lists the connections and the values it leaves out, with the reason', () => {
+  it('lists the connections and the values it leaves out, with the reason', { tags: ['condition'] }, () => {
     const report = checkAssistantGraph({
       nodes: [node('a', pairs.a.type, { nonsense: 1 }), node('b', pairs.b.type)],
       edges: [
@@ -184,7 +184,7 @@ describe('a whole graph from the assistant', () => {
     ]);
   });
 
-  it('passes what is not a graph through untouched', () => {
+  it('passes what is not a graph through untouched', { tags: ['condition'] }, () => {
     expect(checkAssistantGraph(null)).toEqual({ graph: null, unknownTypes: [], dropped: [] });
     expect(checkAssistantGraph({ nodes: 'x' }).graph).toEqual({ nodes: 'x' });
   });
@@ -196,12 +196,12 @@ describe('inputs written by the assistant', () => {
 
   const rig = { nodes: [{ id: 'r', position: { x: 0, y: 0 }, data: { type: 'comfy:NKDFaceRig', inputs: { smile: 0.4, rig: 'a gentle smile', crop_factor: 2 } } }], edges: [] };
 
-  it('drops fields the node does not have and the ones its editor screen owns, from a whole graph', () => {
+  it('drops fields the node does not have and the ones its editor screen owns, from a whole graph', { tags: ['condition'] }, () => {
     const clean = cleanedAssistantGraph(rig) as typeof rig;
     expect(clean.nodes[0]!.data.inputs).toEqual({ crop_factor: 2 });
   });
 
-  it('applies the same rule to nodes added or changed by operations', () => {
+  it('applies the same rule to nodes added or changed by operations', { tags: ['condition'] }, () => {
     const s = { ...serializeWorkflow(graph()), nodes: [], edges: [] };
     const added = applyWorkflowOps(s, [{ op: 'addNode', id: 'r', nodeType: 'comfy:NKDFaceRig', inputs: { rig: 'x', smile: 1, crop_factor: 3 } }]);
     expect(added.graph.nodes[0]!.data.inputs.rig).toBe('');

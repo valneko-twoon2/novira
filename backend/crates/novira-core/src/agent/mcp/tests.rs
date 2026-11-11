@@ -53,6 +53,7 @@ async fn server(max_calls: usize) -> (McpServer, Arc<Echo>) {
     (start(echo.clone(), max_calls).await.unwrap(), echo)
 }
 
+// tags: scenario
 #[tokio::test]
 async fn initialize_lists_tools_and_relays_a_checked_call() {
     let (server, echo) = server(10).await;
@@ -94,6 +95,7 @@ async fn initialize_lists_tools_and_relays_a_checked_call() {
     );
 }
 
+// tags: error-guessing, equivalence
 #[tokio::test]
 async fn bad_arguments_and_unknown_tools_are_tool_errors_that_never_reach_the_handler() {
     let (server, echo) = server(10).await;
@@ -118,6 +120,7 @@ async fn bad_arguments_and_unknown_tools_are_tool_errors_that_never_reach_the_ha
     assert!(echo.seen.lock().unwrap().is_empty());
 }
 
+// tags: scenario
 #[tokio::test]
 async fn the_read_gated_flag_goes_with_the_call() {
     let (server, echo) = server(10).await;
@@ -137,6 +140,7 @@ async fn the_read_gated_flag_goes_with_the_call() {
     assert!(seen[0].read_gated && !seen[1].read_gated);
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn requests_without_the_token_or_from_another_host_or_a_web_page_are_refused() {
     let (server, echo) = server(10).await;
@@ -172,6 +176,7 @@ async fn requests_without_the_token_or_from_another_host_or_a_web_page_are_refus
     assert_eq!(raw(&server, localhost).await.0, 200);
 }
 
+// tags: boundary
 #[tokio::test]
 async fn bodies_and_heads_are_capped_and_must_be_json_with_a_length() {
     let (server, _) = server(10).await;
@@ -207,6 +212,7 @@ async fn bodies_and_heads_are_capped_and_must_be_json_with_a_length() {
     assert_eq!(raw(&server, not_json).await.0, 400);
 }
 
+// tags: error-guessing, equivalence
 #[tokio::test]
 async fn notifications_are_accepted_get_is_not_offered_and_batches_are_refused() {
     let (server, _) = server(10).await;
@@ -224,6 +230,7 @@ async fn notifications_are_accepted_get_is_not_offered_and_batches_are_refused()
     assert_eq!(raw(&server, post(&server, &batch, "")).await.0, 400);
 }
 
+// tags: boundary
 #[tokio::test]
 async fn a_request_stops_calling_tools_at_its_cap() {
     let (server, echo) = server(2).await;
@@ -240,6 +247,7 @@ async fn a_request_stops_calling_tools_at_its_cap() {
     assert_eq!(echo.seen.lock().unwrap().len(), 2);
 }
 
+// tags: condition
 #[tokio::test]
 async fn two_requests_on_one_connection_are_both_answered() {
     let (server, _) = server(10).await;
@@ -263,6 +271,7 @@ async fn two_requests_on_one_connection_are_both_answered() {
     );
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_dropped_server_stops_listening() {
     let (server, _) = server(10).await;
@@ -272,6 +281,7 @@ async fn a_dropped_server_stops_listening() {
     assert!(TcpStream::connect(addr).await.is_err());
 }
 
+// tags: scenario
 #[test]
 fn a_picture_goes_with_the_text_as_image_content() {
     let plain = call_result(ToolOutcome::ok("words"));

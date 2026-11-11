@@ -39,7 +39,7 @@ function withModel() {
 beforeEach(reset);
 
 describe('with no comic open', () => {
-  it('refuses every operation that needs a comic or a page, makes nothing, and says so for each', () => {
+  it('refuses every operation that needs a comic or a page, makes nothing, and says so for each', { tags: ['error-guessing'] }, () => {
     const ops = [
       { op: 'draw', scope: 'comic' },
       { op: 'page', page: 1 },
@@ -72,7 +72,7 @@ describe('with no comic open', () => {
     expect(skipped()[17]).toContain('no balloon has this id');
   });
 
-  it('tells the assistant that no page is open for an operation on a panel or a scene', () => {
+  it('tells the assistant that no page is open for an operation on a panel or a scene', { tags: ['error-guessing'] }, () => {
     expect(applyComicOps([{ op: 'panel', panel: 1, prompt: 'x' }, { op: 'scene', panel: 1, people: [{ who: 'Mio' }] }])).toBe(false);
     expect(projects()).toEqual([]);
     expect(skipped()).toEqual(['op 1 (panel): took no effect (no page is open)', 'op 2 (scene): took no effect (no page is open)']);
@@ -80,7 +80,7 @@ describe('with no comic open', () => {
 });
 
 describe('a panel that is not on the page', () => {
-  it('is refused by every operation that names one, leaving the comic and the selection as they were', () => {
+  it('is refused by every operation that names one, leaving the comic and the selection as they were', { tags: ['error-guessing'] }, () => {
     seed();
     useComic.getState().setPanelImage(page().panels[0]!.id, 'pic.png');
     const selected = useComic.getState().selectedPanelId;
@@ -109,7 +109,7 @@ describe('a panel that is not on the page', () => {
     expect(skipped().filter((s) => s.includes('panel 1.5 is not on the open page'))).toHaveLength(12);
   });
 
-  it('draws nothing for a panel that is not there or has no prompt', () => {
+  it('draws nothing for a panel that is not there or has no prompt', { tags: ['error-guessing'] }, () => {
     seed();
     const restore = withModel();
     const draw = vi.spyOn(generate, 'drawPanels').mockResolvedValue(0);
@@ -125,7 +125,7 @@ describe('a panel that is not on the page', () => {
 });
 
 describe('values of the wrong type or out of range', () => {
-  it('opens no page for a number that is not one of the pages', () => {
+  it('opens no page for a number that is not one of the pages', { tags: ['error-guessing'] }, () => {
     seed();
     applyComicOps([{ op: 'addPage' }, { op: 'page', page: 1 }]);
     const open = useComic.getState().activePageId;
@@ -133,7 +133,7 @@ describe('values of the wrong type or out of range', () => {
     expect(useComic.getState().activePageId).toBe(open);
   });
 
-  it('opens no comic for a name that is not a text or is empty', () => {
+  it('opens no comic for a name that is not a text or is empty', { tags: ['error-guessing', 'boundary'] }, () => {
     seed('Harbour');
     seed('Voyage');
     useComic.getState().selectProject(projects()[1]!.id);
@@ -141,7 +141,7 @@ describe('values of the wrong type or out of range', () => {
     expect(useComic.getState().activeProjectId).toBe(projects()[1]!.id);
   });
 
-  it('refuses shapes that are not a list of 1 to 24 shapes of 3 to 12 corners each, and keeps the layout', () => {
+  it('refuses shapes that are not a list of 1 to 24 shapes of 3 to 12 corners each, and keeps the layout', { tags: ['error-guessing'] }, () => {
     seed();
     const before = projects();
     const square = (x: number) => [{ x, y: 0 }, { x: x + 0.01, y: 0 }, { x: x + 0.01, y: 1 }, { x, y: 1 }];
@@ -160,7 +160,7 @@ describe('values of the wrong type or out of range', () => {
     expect(projects()).toBe(before);
   });
 
-  it('does not cut a panel along a line whose ends are not points', () => {
+  it('does not cut a panel along a line whose ends are not points', { tags: ['error-guessing'] }, () => {
     seed();
     const before = projects();
     expect(applyComicOps([
@@ -171,7 +171,7 @@ describe('values of the wrong type or out of range', () => {
     expect(projects()).toBe(before);
   });
 
-  it('leaves a picture where it is when no field of the view is readable', () => {
+  it('leaves a picture where it is when no field of the view is readable', { tags: ['error-guessing'] }, () => {
     seed();
     useComic.getState().setPanelImage(page().panels[0]!.id, 'pic.png');
     const before = projects();
@@ -179,7 +179,7 @@ describe('values of the wrong type or out of range', () => {
     expect(projects()).toBe(before);
   });
 
-  it('puts back no earlier picture for a number that is not a whole number, and says how many there are', () => {
+  it('puts back no earlier picture for a number that is not a whole number, and says how many there are', { tags: ['error-guessing'] }, () => {
     seed();
     const id = page().panels[0]!.id;
     for (const name of ['old.png', 'new.png']) useComic.getState().setPanelImage(id, name);
@@ -189,7 +189,7 @@ describe('values of the wrong type or out of range', () => {
     expect(skipped()).toEqual([expect.stringContaining('panel 1 has 1 earlier picture(s)'), expect.stringContaining('panel 1 has 1 earlier picture(s)')]);
   });
 
-  it('changes no balloon for an id that is not a balloon, a set that is not an object, or a set with nothing readable', () => {
+  it('changes no balloon for an id that is not a balloon, a set that is not an object, or a set with nothing readable', { tags: ['error-guessing'] }, () => {
     seed();
     applyComicOps([{ op: 'addBubble', panel: 1, text: 'Hello' }]);
     const id = page().panels[0]!.bubbles[0]!.id;
@@ -206,7 +206,7 @@ describe('values of the wrong type or out of range', () => {
     expect(skipped()[1]).toContain('bubble needs "set": {...fields}');
   });
 
-  it('removes nobody for names that are not texts or not in the cast or the places, and says what the operation needs', () => {
+  it('removes nobody for names that are not texts or not in the cast or the places, and says what the operation needs', { tags: ['error-guessing'] }, () => {
     seed();
     applyComicOps([{ op: 'cast', characters: [{ name: 'Mio', tags: '1girl' }] }, { op: 'places', places: [{ name: 'Cafe', tags: 'cafe' }] }]);
     const before = projects();
@@ -216,7 +216,7 @@ describe('values of the wrong type or out of range', () => {
     expect(skipped()[1]).toContain('places needs "places"');
   });
 
-  it('draws no sheet for a character named by something that is not a text', () => {
+  it('draws no sheet for a character named by something that is not a text', { tags: ['error-guessing'] }, () => {
     seed();
     applyComicOps([{ op: 'cast', characters: [{ name: 'Mio', tags: '1girl' }] }]);
     const make = vi.spyOn(generate, 'makeSheet').mockResolvedValue(0);
@@ -229,7 +229,7 @@ describe('values of the wrong type or out of range', () => {
     }
   });
 
-  it('draws no sheet without a model, and tells the user why', () => {
+  it('draws no sheet without a model, and tells the user why', { tags: ['error-guessing'] }, () => {
     seed();
     applyComicOps([{ op: 'cast', characters: [{ name: 'Mio', tags: '1girl' }] }]);
     useToasts.setState({ toasts: [] });
@@ -243,7 +243,7 @@ describe('values of the wrong type or out of range', () => {
     }
   });
 
-  it('names an operation that is not a text as "?" in the skipped list', () => {
+  it('names an operation that is not a text as "?" in the skipped list', { tags: ['error-guessing'] }, () => {
     seed();
     const before = projects();
     expect(applyComicOps([{ op: 3 }, { name: 'Mio' }])).toBe(false);
@@ -251,7 +251,7 @@ describe('values of the wrong type or out of range', () => {
     expect(skipped()).toEqual([expect.stringMatching(/^op 1 \(\?\): took no effect/), expect.stringMatching(/^op 2 \(\?\): took no effect/)]);
   });
 
-  it('restores nothing from an undo snapshot that is not a list of comics', () => {
+  it('restores nothing from an undo snapshot that is not a list of comics', { tags: ['error-guessing', 'state-transition'] }, () => {
     seed();
     const before = projects();
     comicAgentEditor.restore({ projects: [] });

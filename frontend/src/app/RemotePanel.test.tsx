@@ -48,7 +48,7 @@ describe('RemotePanel', () => {
     getLanApi.mockReset();
   });
 
-  it('turns the remote listener on with the switch and off again', async () => {
+  it('turns the remote listener on with the switch and off again', { tags: ['state-transition'] }, async () => {
     const lan = createMockLan('open', Date.now, 'off');
     await show(lan);
     expect(screen.queryByTestId('remote-enrol')).toBeNull();
@@ -60,7 +60,7 @@ describe('RemotePanel', () => {
     await waitFor(() => expect(screen.queryByTestId('remote-name')).toBeNull());
   });
 
-  it('says why it cannot open while it is on', async () => {
+  it('says why it cannot open while it is on', { tags: ['condition'] }, async () => {
     const lan = createMockLan('open', Date.now, 'missing');
     await show(lan);
     await click(screen.getByRole('switch'));
@@ -68,7 +68,7 @@ describe('RemotePanel', () => {
     expect(screen.queryByTestId('remote-enrol')).toBeNull();
   });
 
-  it('adds a phone: a code, its request with the number, and its passkey once allowed', async () => {
+  it('adds a phone: a code, its request with the number, and its passkey once allowed', { tags: ['scenario'] }, async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     try {
       const lan = createMockLan('open', Date.now, 'off');
@@ -94,7 +94,7 @@ describe('RemotePanel', () => {
     }
   });
 
-  it('removes a passkey only on a second press', async () => {
+  it('removes a passkey only on a second press', { tags: ['condition'] }, async () => {
     const lan = createMockLan('open', Date.now, 'on');
     await show(lan);
     const forget = await screen.findByTestId('remote-forget-k0');
@@ -105,7 +105,7 @@ describe('RemotePanel', () => {
     await waitFor(() => expect(screen.queryByTestId('remote-passkey-k0')).toBeNull());
   });
 
-  it('writes a time short, in the screen language, and leaves a bad one as it is', () => {
+  it('writes a time short, in the screen language, and leaves a bad one as it is', { tags: ['boundary'] }, () => {
     expect(shortTime('2026-11-03T18:20:00+00:00', 'en-US')).toMatch(/11\/\d/);
     expect(shortTime('nope', 'ja')).toBe('nope');
   });
@@ -131,14 +131,14 @@ describe('the network item with a remote listener', () => {
     await click(await screen.findByRole('menuitem', { name }));
   };
 
-  it('opens the home dialog at once when the server has no remote listener', async () => {
+  it('opens the home dialog at once when the server has no remote listener', { tags: ['condition'] }, async () => {
     await click(await mount('none'));
     expect(await screen.findByTestId('home-link-code')).not.toBeNull();
     expect(screen.queryByRole('menu')).toBeNull();
     expect(screen.getByRole('dialog').textContent).toContain(t('app.lan.menuHome'));
   });
 
-  it('asks home or away first when it has one, and each choice is a dialog of its own', async () => {
+  it('asks home or away first when it has one, and each choice is a dialog of its own', { tags: ['condition'] }, async () => {
     await mount('off');
     await choose(t('app.lan.menuHome'));
     expect(await screen.findByTestId('home-link-code')).not.toBeNull();

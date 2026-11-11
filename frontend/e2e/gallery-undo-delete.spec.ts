@@ -12,7 +12,7 @@ async function deleteFirst(page: Page): Promise<void> {
   await page.getByTestId('confirm-delete-images').click();
 }
 
-test('the notification and the header button bring a deleted picture back, and delete it again', async ({ page }) => {
+test('the notification and the header button bring a deleted picture back, and delete it again', { tag: ['@state-transition'] }, async ({ page }) => {
   await openApp(page);
   await expect(thumbs(page)).toHaveCount(4);
   await expect(page.getByTestId('gallery-undo-delete')).toBeDisabled();
@@ -40,7 +40,7 @@ test('the notification and the header button bring a deleted picture back, and d
   await expect(thumbs(page)).toHaveCount(4);
 });
 
-test('Ctrl+Z over the gallery brings a deletion back and Ctrl+Shift+Z deletes it again', async ({ page }) => {
+test('Ctrl+Z over the gallery brings a deletion back and Ctrl+Shift+Z deletes it again', { tag: ['@state-transition'] }, async ({ page }) => {
   await openApp(page);
   await deleteFirst(page);
   await expect(thumbs(page)).toHaveCount(3);
@@ -54,7 +54,7 @@ test('Ctrl+Z over the gallery brings a deletion back and Ctrl+Shift+Z deletes it
   await expect(thumbs(page)).toHaveCount(4);
 });
 
-test('deleting a board with its pictures can be taken back; they return uncategorized', async ({ page }) => {
+test('deleting a board with its pictures can be taken back; they return uncategorized', { tag: ['@state-transition'] }, async ({ page }) => {
   await openApp(page);
   await expect(thumbs(page)).toHaveCount(4);
   const row = page.getByTestId('board-row').filter({ hasText: 'Characters' });

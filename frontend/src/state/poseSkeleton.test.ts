@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { pickDepthModel, pickLineModel, pickPoseModel, POSE_COLORS, POSE_JOINT_NAMES, POSE_LIMBS, POSE_MIRROR, poseLimbColor, poseStick } from './poseSkeleton';
 
 describe('the OpenPose skeleton', () => {
-  it('has 18 joints, 17 limbs between them and a colour for each', () => {
+  it('has 18 joints, 17 limbs between them and a colour for each', { tags: ['condition'] }, () => {
     expect(POSE_JOINT_NAMES).toHaveLength(18);
     expect(POSE_LIMBS).toHaveLength(17);
     expect(POSE_COLORS).toHaveLength(18);
@@ -12,13 +12,13 @@ describe('the OpenPose skeleton', () => {
     }
   });
 
-  it('draws every limb from the neck or along the arms and legs like OpenPose (the neck joins both shoulders and both hips)', () => {
+  it('draws every limb from the neck or along the arms and legs like OpenPose (the neck joins both shoulders and both hips)', { tags: ['decision-table'] }, () => {
     const neck = POSE_JOINT_NAMES.indexOf('neck');
     const fromNeck = POSE_LIMBS.filter(([a]) => a === neck).map(([, b]) => POSE_JOINT_NAMES[b]);
     expect(fromNeck).toEqual(expect.arrayContaining(['rightShoulder', 'leftShoulder', 'rightHip', 'leftHip', 'nose']));
   });
 
-  it('pairs every right joint with its left partner, and the middle joints with themselves', () => {
+  it('pairs every right joint with its left partner, and the middle joints with themselves', { tags: ['equivalence'] }, () => {
     POSE_MIRROR.forEach((m, i) => {
       expect(POSE_MIRROR[m]).toBe(i);
       const name = POSE_JOINT_NAMES[i]!;
@@ -29,7 +29,7 @@ describe('the OpenPose skeleton', () => {
     });
   });
 
-  it('paints limbs at 60 % of their colour and scales the stick with the short side, never below 2 pixels', () => {
+  it('paints limbs at 60 % of their colour and scales the stick with the short side, never below 2 pixels', { tags: ['condition'] }, () => {
     expect(poseLimbColor(0)).toBe('rgb(153 0 0)');
     expect(poseLimbColor(9)).toBe('rgb(0 153 153)');
     expect(poseStick(512, 1024)).toBe(4);
@@ -41,14 +41,14 @@ describe('the OpenPose skeleton', () => {
 describe('pickPoseModel', () => {
   const model = (name: string, base = 'sdxl', type = 'controlnet') => ({ name, base, type, path: '', source: '' });
 
-  it('prefers a model made for OpenPose, then a union model, and only one that fits the main model', () => {
+  it('prefers a model made for OpenPose, then a union model, and only one that fits the main model', { tags: ['scenario'] }, () => {
     const models = [model('canny-sdxl'), model('controlnet-union-promax-sdxl'), model('openpose-sdxl'), model('openpose-sd1', 'sd-1')];
     expect(pickPoseModel(models, 'sdxl')?.name).toBe('openpose-sdxl');
     expect(pickPoseModel(models.filter((m) => !/^openpose-sdxl/.test(m.name)), 'sdxl')?.name).toBe('controlnet-union-promax-sdxl');
     expect(pickPoseModel(models, 'sd-1')?.name).toBe('openpose-sd1');
   });
 
-  it('is null when nothing can read a pose, and ignores models that are not ControlNets', () => {
+  it('is null when nothing can read a pose, and ignores models that are not ControlNets', { tags: ['error-guessing'] }, () => {
     expect(pickPoseModel([model('canny-sdxl')], 'sdxl')).toBeNull();
     expect(pickPoseModel([model('openpose-lora', 'sdxl', 'lora')], 'sdxl')).toBeNull();
     expect(pickPoseModel([], null)).toBeNull();
@@ -58,14 +58,14 @@ describe('pickPoseModel', () => {
 describe('pickLineModel', () => {
   const model = (name: string, base = 'sdxl', type = 'controlnet') => ({ name, base, type, path: '', source: '' });
 
-  it('prefers a model made for line art or canny edges, then a union model, and only one that fits the main model', () => {
+  it('prefers a model made for line art or canny edges, then a union model, and only one that fits the main model', { tags: ['boundary'] }, () => {
     const models = [model('openpose-sdxl'), model('controlnet-union-promax-sdxl'), model('canny-sdxl'), model('lineart-sd1', 'sd-1')];
     expect(pickLineModel(models, 'sdxl')?.name).toBe('canny-sdxl');
     expect(pickLineModel(models.filter((m) => m.name !== 'canny-sdxl'), 'sdxl')?.name).toBe('controlnet-union-promax-sdxl');
     expect(pickLineModel(models, 'sd-1')?.name).toBe('lineart-sd1');
   });
 
-  it('is null when nothing can read lines, and ignores models that are not ControlNets', () => {
+  it('is null when nothing can read lines, and ignores models that are not ControlNets', { tags: ['error-guessing'] }, () => {
     expect(pickLineModel([model('openpose-sdxl')], 'sdxl')).toBeNull();
     expect(pickLineModel([model('lineart-lora', 'sdxl', 'lora')], 'sdxl')).toBeNull();
     expect(pickLineModel([], null)).toBeNull();
@@ -75,7 +75,7 @@ describe('pickLineModel', () => {
 describe('pickDepthModel', () => {
   const model = (name: string, base = 'sdxl', type = 'controlnet') => ({ name, base, type, path: '', source: '' });
 
-  it('prefers a model made for depth maps, then a union model, and only one that fits the main model', () => {
+  it('prefers a model made for depth maps, then a union model, and only one that fits the main model', { tags: ['scenario'] }, () => {
     const models = [model('openpose-sdxl'), model('controlnet-union-sdxl-1.0'), model('controlnet-depth-sdxl'), model('depth-sd1', 'sd-1')];
     expect(pickDepthModel(models, 'sdxl')?.name).toBe('controlnet-depth-sdxl');
     expect(pickDepthModel(models.slice(0, 2), 'sdxl')?.name).toBe('controlnet-union-sdxl-1.0');

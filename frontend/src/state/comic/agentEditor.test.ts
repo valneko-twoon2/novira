@@ -29,11 +29,11 @@ type Context = { project: string | null; page: number; pageCount: number; panels
 beforeEach(reset);
 
 describe('comicContext', () => {
-  it('says there is no comic when none is open', () => {
+  it('says there is no comic when none is open', { tags: ['boundary'] }, () => {
     expect((comicContext() as Context).project).toBeNull();
   });
 
-  it('tells whether a pose reaches the picture: only with an OpenPose model installed', () => {
+  it('tells whether a pose reaches the picture: only with an OpenPose model installed', { tags: ['condition'] }, () => {
     seed();
     const before = useModels.getState().models;
     expect((comicContext() as { poseControl: boolean }).poseControl).toBe(false);
@@ -43,7 +43,7 @@ describe('comicContext', () => {
     useModels.setState({ models: before });
   });
 
-  it('tells how to word a prompt for the main model, the style words every panel gets, and whether references are used', () => {
+  it('tells how to word a prompt for the main model, the style words every panel gets, and whether references are used', { tags: ['equivalence'] }, () => {
     seed();
     const before = { models: useModels.getState().models, key: useParams.getState().modelKey };
     useModels.setState({ models: [{ key: 'xl', name: 'WAI', base: 'sdxl', type: 'main' }, { key: 'f2', name: 'FLUX.2', base: 'flux2', type: 'main' }] as typeof before.models });
@@ -59,7 +59,7 @@ describe('comicContext', () => {
     useParams.setState({ modelKey: before.key });
   });
 
-  it('describes the page on screen with its panels numbered from 1 and their shapes in unit points', () => {
+  it('describes the page on screen with its panels numbered from 1 and their shapes in unit points', { tags: ['condition'] }, () => {
     seed();
     const c = comicContext() as Context;
     expect(c).toMatchObject({ project: 'Harbour', page: 1, pageCount: 1 });
@@ -73,7 +73,7 @@ describe('comicContext', () => {
 });
 
 describe('applyComicOps', () => {
-  it('sets the finishing effect of the page or of the comic, and refuses a name it does not know', () => {
+  it('sets the finishing effect of the page or of the comic, and refuses a name it does not know', { tags: ['error-guessing', 'state-transition'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'effect', effect: 'mono', scope: 'comic' }, { op: 'effect', effect: 'ebook' }])).toBe(true);
     const state = useComic.getState();
@@ -83,7 +83,7 @@ describe('applyComicOps', () => {
     expect(applyComicOps([{ op: 'effect', effect: 'neon' }])).toBe(false);
   });
 
-  it('sets the style words of the comic or of the page, an empty text going back to the default, and refuses no words', () => {
+  it('sets the style words of the comic or of the page, an empty text going back to the default, and refuses no words', { tags: ['error-guessing', 'boundary'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'style', positive: ' masterpiece, (shigure ui:0.5) ', negative: 'lowres' }])).toBe(true);
     expect(useComic.getState().projects[0]!.style).toEqual({ positive: 'masterpiece, (shigure ui:0.5)', negative: 'lowres' });
@@ -95,7 +95,7 @@ describe('applyComicOps', () => {
     expect(applyComicOps([{ op: 'style' }, { op: 'style', positive: 3 }])).toBe(false);
   });
 
-  it('turns the character references on at a strength, and off with null', () => {
+  it('turns the character references on at a strength, and off with null', { tags: ['condition'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'castReference', strength: 0.4 }])).toBe(true);
     expect(useComic.getState().projects[0]!.castReference).toBe(0.4);
@@ -105,7 +105,7 @@ describe('applyComicOps', () => {
     expect(applyComicOps([{ op: 'castReference', strength: 'strong' }, { op: 'castReference' }])).toBe(false);
   });
 
-  it('lays the page out from a template, its own shapes, or a panel count', () => {
+  it('lays the page out from a template, its own shapes, or a panel count', { tags: ['condition'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'template', id: 'diagonal' }])).toBe(true);
     expect(page().panels).toHaveLength(2);
@@ -120,7 +120,7 @@ describe('applyComicOps', () => {
     expect(page().shapes).toBeNull();
   });
 
-  it('skips shapes that overlap, a template that does not exist and an unknown operation', () => {
+  it('skips shapes that overlap, a template that does not exist and an unknown operation', { tags: ['error-guessing'] }, () => {
     seed();
     const overlapping = [
       [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 0.6 }, { x: 0, y: 0.6 }],
@@ -131,7 +131,7 @@ describe('applyComicOps', () => {
     expect(page().shapes).toBeNull();
   });
 
-  it('adds and cuts panels, and swaps two of them', () => {
+  it('adds and cuts panels, and swaps two of them', { tags: ['condition'] }, () => {
     seed();
     applyComicOps([{ op: 'panel', panel: 1, prompt: 'first' }]);
     expect(applyComicOps([{ op: 'addPanel', panel: 1 }])).toBe(true);
@@ -146,7 +146,7 @@ describe('applyComicOps', () => {
     expect(applyComicOps([{ op: 'removePanel', panel: 40 }])).toBe(false);
   });
 
-  it('adds a panel with no panel given without changing the others', () => {
+  it('adds a panel with no panel given without changing the others', { tags: ['condition'] }, () => {
     seed();
     const drawn = frameOutlines(page());
     expect(applyComicOps([{ op: 'addPanel', panel: null }])).toBe(true);
@@ -155,7 +155,7 @@ describe('applyComicOps', () => {
     expect(page().shapes!.slice(0, 3)).toEqual(drawn);
   });
 
-  it('sets a panel prompt and selects a panel, and refuses a panel number that is not on the page', () => {
+  it('sets a panel prompt and selects a panel, and refuses a panel number that is not on the page', { tags: ['error-guessing'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'panel', panel: 2, prompt: 'close-up, 1girl', negativePrompt: 'lowres' }, { op: 'select', panel: 2 }])).toBe(true);
     expect(page().panels[1]).toMatchObject({ prompt: 'close-up, 1girl', negativePrompt: 'lowres' });
@@ -163,7 +163,7 @@ describe('applyComicOps', () => {
     expect(applyComicOps([{ op: 'panel', panel: 0, prompt: 'x' }, { op: 'panel', panel: 1.5, prompt: 'x' }, { op: 'panel', panel: 4, prompt: 'x' }])).toBe(false);
   });
 
-  it('adds balloons with their fields checked, then changes and removes them by id', () => {
+  it('adds balloons with their fields checked, then changes and removes them by id', { tags: ['state-transition'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'addBubble', panel: 1, kind: 'shout', text: 'Wait!', x: 3, y: -1, scale: 1.25, vertical: true, tail: null }])).toBe(true);
     const bubble = page().panels[0]!.bubbles[0]!;
@@ -177,7 +177,7 @@ describe('applyComicOps', () => {
     expect(page().panels[0]!.bubbles).toHaveLength(0);
   });
 
-  it('lays panels freely when asked: overlapping shapes on the page are kept, and a free layout must still be valid shapes', () => {
+  it('lays panels freely when asked: overlapping shapes on the page are kept, and a free layout must still be valid shapes', { tags: ['regression'] }, () => {
     seed();
     const a = [{ x: 0.05, y: 0.05 }, { x: 0.7, y: 0.05 }, { x: 0.7, y: 0.5 }, { x: 0.05, y: 0.5 }];
     const b = [{ x: 0.3, y: 0.3 }, { x: 0.95, y: 0.35 }, { x: 0.9, y: 0.9 }, { x: 0.3, y: 0.8 }];
@@ -192,7 +192,7 @@ describe('applyComicOps', () => {
     expect(applyComicOps([{ op: 'shapes', free: true, shapes: [[{ x: 0.1, y: 0.1 }, { x: 0.11, y: 0.1 }, { x: 0.11, y: 0.11 }]] }])).toBe(false);
   });
 
-  it('cuts the page as manga pages are cut: a free page of the asked panel count, the same seed giving the same page', () => {
+  it('cuts the page as manga pages are cut: a free page of the asked panel count, the same seed giving the same page', { tags: ['condition'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'mangaLayout', panelCount: 5, mood: 'dramatic', focus: 2, seed: 4 }])).toBe(true);
     expect(page()).toMatchObject({ free: true });
@@ -205,7 +205,7 @@ describe('applyComicOps', () => {
     expect(page().panels).toHaveLength(12);
   });
 
-  it('adds a sound effect as a tailless, large balloon and keeps its slant within range', () => {
+  it('adds a sound effect as a tailless, large balloon and keeps its slant within range', { tags: ['boundary'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'addBubble', panel: 1, kind: 'sfx', text: 'ドーン', rotation: 200 }])).toBe(true);
     expect(page().panels[0]!.bubbles[0]).toMatchObject({ kind: 'sfx', text: 'ドーン', tail: null, scale: 2.2, rotation: 90 });
@@ -214,7 +214,7 @@ describe('applyComicOps', () => {
     expect(page().panels[0]!.bubbles[0]).toMatchObject({ rotation: -12, scale: 4 });
   });
 
-  it('adds a sound-effect picture by its id or by its word, and refuses a word it has no picture for', () => {
+  it('adds a sound-effect picture by its id or by its word, and refuses a word it has no picture for', { tags: ['error-guessing'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'addBubble', panel: 1, kind: 'stamp', text: 'burst-doon', rotation: -20 }])).toBe(true);
     expect(page().panels[0]!.bubbles[0]).toMatchObject({ kind: 'stamp', text: 'burst-doon', tail: null, scale: 2.2, rotation: -20 });
@@ -233,7 +233,7 @@ describe('applyComicOps', () => {
     expect(page().panels[0]!.bubbles[0]!.text).toBe('block-doki');
   });
 
-  it('adds the newer kinds of balloon with their line and fill, and leaves out a line it does not know', () => {
+  it('adds the newer kinds of balloon with their line and fill, and leaves out a line it does not know', { tags: ['equivalence'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'addBubble', panel: 1, kind: 'icicle', text: 'Cold', line: 'dashed', dark: true }])).toBe(true);
     expect(page().panels[0]!.bubbles[0]).toMatchObject({ kind: 'icicle', line: 'dashed', dark: true });
@@ -242,7 +242,7 @@ describe('applyComicOps', () => {
     expect(page().panels[0]!.bubbles[0]).toMatchObject({ text: 'Brr', line: 'dashed', dark: true });
   });
 
-  it('sets the colour of the frame lines, and takes only a #rrggbb colour', () => {
+  it('sets the colour of the frame lines, and takes only a #rrggbb colour', { tags: ['condition'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'frame', color: '#1A2B3C' }])).toBe(true);
     expect(page().frameColor).toBe('#1a2b3c');
@@ -250,7 +250,7 @@ describe('applyComicOps', () => {
     expect(page().frameColor).toBe('#1a2b3c');
   });
 
-  it('adds a page and works on it, and goes back to a page by its number', () => {
+  it('adds a page and works on it, and goes back to a page by its number', { tags: ['condition'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'addPage' }, { op: 'panel', panel: 1, prompt: 'second page' }])).toBe(true);
     expect(useComic.getState().projects[0]!.pages).toHaveLength(2);
@@ -260,7 +260,7 @@ describe('applyComicOps', () => {
     expect(applyComicOps([{ op: 'page', page: 7 }])).toBe(false);
   });
 
-  it('puts an earlier picture of a panel back by its number, and says how many there are when the number is wrong', () => {
+  it('puts an earlier picture of a panel back by its number, and says how many there are when the number is wrong', { tags: ['error-guessing'] }, () => {
     seed();
     const id = page().panels[0]!.id;
     expect(applyComicOps([{ op: 'take', panel: 1, take: 1 }])).toBe(false);
@@ -275,7 +275,7 @@ describe('applyComicOps', () => {
     expect(comicAgentEditor.skipped()[0]).toContain('2 earlier picture(s)');
   });
 
-  it('redraws boxes of a drawn panel picture, and says why when the panel has none or the boxes are not boxes', () => {
+  it('redraws boxes of a drawn panel picture, and says why when the panel has none or the boxes are not boxes', { tags: ['boundary'] }, () => {
     seed();
     const before = { models: useModels.getState().models, modelKey: useParams.getState().modelKey };
     useModels.setState({ models: [{ key: 'main', name: 'Main', base: 'sdxl', type: 'main' } as (typeof before.models)[number]] });
@@ -303,7 +303,7 @@ describe('applyComicOps', () => {
     }
   });
 
-  it('draws the sheet of a character named in any case, and says why it cannot for an unknown name or a full sheet', () => {
+  it('draws the sheet of a character named in any case, and says why it cannot for an unknown name or a full sheet', { tags: ['error-guessing'] }, () => {
     seed();
     const before = { models: useModels.getState().models, modelKey: useParams.getState().modelKey };
     useModels.setState({ models: [{ key: 'main', name: 'Main', base: 'sdxl', type: 'main' } as (typeof before.models)[number]] });
@@ -327,7 +327,7 @@ describe('applyComicOps', () => {
     }
   });
 
-  it('moves only a picture that is there, and takes off a pose with an empty list', () => {
+  it('moves only a picture that is there, and takes off a pose with an empty list', { tags: ['boundary'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'picture', panel: 1, scale: 2 }])).toBe(false);
     useComic.getState().setPanelImage(page().panels[0]!.id, 'pic.png');
@@ -338,7 +338,7 @@ describe('applyComicOps', () => {
     expect(page().panels[1]!.poseImageName).toBeNull();
   });
 
-  it('tells which panels the user laid out in a 3D rough, until a pose put in another way drops its depth map', () => {
+  it('tells which panels the user laid out in a 3D rough, until a pose put in another way drops its depth map', { tags: ['condition'] }, () => {
     seed();
     const id = page().panels[0]!.id;
     useComic.getState().setPanelRough(id, newRough(), [], 'rough-pose.png', 'rough-depth.png');
@@ -351,7 +351,7 @@ describe('applyComicOps', () => {
 });
 
 describe('a pose on a panel without a place on the page', () => {
-  it('changes nothing and says why, so the assistant is not told it took effect with half of it written', () => {
+  it('changes nothing and says why, so the assistant is not told it took effect with half of it written', { tags: ['condition'] }, () => {
     seed();
     applyComicOps([{ op: 'cast', characters: [{ name: 'Jin', tags: '1boy' }] }]);
     const before = page().panels[0]!;
@@ -368,7 +368,7 @@ describe('a pose on a panel without a place on the page', () => {
 });
 
 describe('who each person of a pose is', () => {
-  it('names the people by the cast, puts a named character in the panel, and tells it back', () => {
+  it('names the people by the cast, puts a named character in the panel, and tells it back', { tags: ['condition'] }, () => {
     seed();
     applyComicOps([{ op: 'cast', characters: [{ name: 'Jin', tags: '1boy' }, { name: 'Akane', tags: '1girl' }] }]);
     const [jin, akane] = useComic.getState().projects[0]!.cast;
@@ -393,7 +393,7 @@ describe('a panel written as a scene', () => {
     return useComic.getState().projects[0]!;
   }
 
-  it('makes the prompt, cast, place, pose with who and words, and the balloons by speaker', () => {
+  it('makes the prompt, cast, place, pose with who and words, and the balloons by speaker', { tags: ['condition'] }, () => {
     const project = castAndPlace();
     const [mio, sota] = project.cast;
     useComic.getState().addBubble(page().panels[0]!.id, 'speech');
@@ -426,7 +426,7 @@ describe('a panel written as a scene', () => {
     expect(panel.bubbles[0]!.tail).not.toBeNull();
   });
 
-  it('tells the assistant what the scene named that the comic lacks, and a scene for a panel that is not there', () => {
+  it('tells the assistant what the scene named that the comic lacks, and a scene for a panel that is not there', { tags: ['condition'] }, () => {
     castAndPlace();
     applyComicOps([{ op: 'scene', panel: 1, people: [{ who: 'Nobody', pose: 'moonwalk' }] }]);
     const skipped = comicAgentEditor.skipped().join('\n');
@@ -436,7 +436,7 @@ describe('a panel written as a scene', () => {
     expect(comicAgentEditor.skipped()[0]).toMatch(/panel 9 is not on the open page/);
   });
 
-  it('clears what each person does when a pose is taken off', () => {
+  it('clears what each person does when a pose is taken off', { tags: ['equivalence'] }, () => {
     castAndPlace();
     applyComicOps([{ op: 'scene', panel: 1, people: [{ who: 'Mio', doing: 'waving' }] }]);
     expect(page().panels[0]!.poseWords).toEqual(['waving']);
@@ -446,7 +446,7 @@ describe('a panel written as a scene', () => {
 });
 
 describe('undo of an answer', () => {
-  it('puts the comic back as it was before the answer, in one step', () => {
+  it('puts the comic back as it was before the answer, in one step', { tags: ['condition'] }, () => {
     seed();
     const before = comicAgentEditor.snapshot();
     applyComicOps([{ op: 'template', id: 'slants' }, { op: 'panel', panel: 1, prompt: 'x' }, { op: 'addBubble', panel: 2, text: 'hi' }]);
@@ -458,7 +458,7 @@ describe('undo of an answer', () => {
 });
 
 describe('making and opening comics', () => {
-  it('makes a new comic, adds its pages, and opens another by name', () => {
+  it('makes a new comic, adds its pages, and opens another by name', { tags: ['condition'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'newComic', name: 'Voyage' }, { op: 'addPages', count: 29 }])).toBe(true);
     const made = useComic.getState().projects.find((p) => p.name === 'Voyage')!;
@@ -471,7 +471,7 @@ describe('making and opening comics', () => {
     expect(applyComicOps([{ op: 'openComic', name: 'missing' }, { op: 'addPages', count: 'x' }])).toBe(false);
   });
 
-  it('caps the pages added at once, and tells the assistant the comics when none is open', () => {
+  it('caps the pages added at once, and tells the assistant the comics when none is open', { tags: ['boundary'] }, () => {
     applyComicOps([{ op: 'newComic', name: '' }, { op: 'addPages', count: 1000 }]);
     expect(useComic.getState().projects[0]!.pages).toHaveLength(101);
     expect(comicContext()).toMatchObject({ pageCount: 101, comics: [useComic.getState().projects[0]!.name] });
@@ -479,7 +479,7 @@ describe('making and opening comics', () => {
     expect(comicContext()).toMatchObject({ project: null, comics: [useComic.getState().projects[0]!.name] });
   });
 
-  it('draws nothing without a model, and says why', () => {
+  it('draws nothing without a model, and says why', { tags: ['error-guessing'] }, () => {
     seed();
     applyComicOps([{ op: 'panel', panel: 1, prompt: 'a ship' }]);
     expect(applyComicOps([{ op: 'draw', scope: 'page' }])).toBe(false);
@@ -497,7 +497,7 @@ describe('balloons that name who speaks', () => {
   }
   const bubbles = () => page().panels[0]!.bubbles;
 
-  it('puts the balloon in free space and aims its tail at the speaker mouth', () => {
+  it('puts the balloon in free space and aims its tail at the speaker mouth', { tags: ['condition'] }, () => {
     twoPeople();
     expect(applyComicOps([{ op: 'addBubble', panel: 1, kind: 'speech', text: 'おはよう', vertical: true, speaker: 2 }])).toBe(true);
     const b = bubbles()[0]!;
@@ -508,13 +508,13 @@ describe('balloons that name who speaks', () => {
     expect(b.tail!.x > 1 || b.tail!.y > 1).toBe(true);
   });
 
-  it('keeps the place and the tail the assistant gave', () => {
+  it('keeps the place and the tail the assistant gave', { tags: ['condition'] }, () => {
     twoPeople();
     applyComicOps([{ op: 'addBubble', panel: 1, kind: 'speech', text: 'やあ', x: 0.5, y: 0.5, tail: null, speaker: 1 }]);
     expect(bubbles()[0]).toMatchObject({ x: 0.5, y: 0.5, tail: null });
   });
 
-  it('gives a tailless kind a free place but no tail, and moves a balloon only when a speaker is named', () => {
+  it('gives a tailless kind a free place but no tail, and moves a balloon only when a speaker is named', { tags: ['equivalence'] }, () => {
     twoPeople();
     applyComicOps([{ op: 'addBubble', panel: 1, kind: 'caption', text: '朝', speaker: 1 }]);
     expect(bubbles()[0]!.tail).toBeNull();
@@ -526,7 +526,7 @@ describe('balloons that name who speaks', () => {
     expect(bubbles()[0]!.tail).not.toBeNull();
   });
 
-  it('ignores a speaker the panel does not have, and a panel without poses', () => {
+  it('ignores a speaker the panel does not have, and a panel without poses', { tags: ['error-guessing'] }, () => {
     twoPeople();
     applyComicOps([{ op: 'addBubble', panel: 1, kind: 'speech', text: 'え', speaker: 3 }]);
     expect(bubbles()[0]!.tail).toEqual(expect.objectContaining({}));
@@ -535,14 +535,14 @@ describe('balloons that name who speaks', () => {
     expect(bubbles()).toHaveLength(1);
   });
 
-  it('tells where the heads are', () => {
+  it('tells where the heads are', { tags: ['condition'] }, () => {
     twoPeople();
     const c = comicContext() as { panels: { people: number; peopleAt: { x: number; y: number }[] }[] };
     expect(c.panels[0]!.people).toBe(2);
     expect(c.panels[0]!.peopleAt[1]!.x).toBeCloseTo(0.8, 1);
   });
 
-  it('makes a balloon that would cover the panel smaller, but leaves sound-effect lettering big', () => {
+  it('makes a balloon that would cover the panel smaller, but leaves sound-effect lettering big', { tags: ['condition'] }, () => {
     seed();
     applyComicOps([
       { op: 'addBubble', panel: 1, kind: 'speech', text: 'すごい雨だね。濡れなかった？風邪をひかないようにね', vertical: true, scale: 2 },
@@ -553,7 +553,7 @@ describe('balloons that name who speaks', () => {
     expect(sfx!.scale).toBe(3);
   });
 
-  it('gives a balloon smaller words when no free place is left at its size', () => {
+  it('gives a balloon smaller words when no free place is left at its size', { tags: ['condition'] }, () => {
     twoPeople();
     applyComicOps([{ op: 'addBubble', panel: 1, kind: 'speech', text: 'こんにちは、いい天気ですね。散歩日和です。', vertical: false, scale: 1, speaker: 1 }]);
     expect(bubbles()[0]!.scale).toBeLessThanOrEqual(1);
@@ -564,7 +564,7 @@ describe('the cast the assistant writes', () => {
   const cast = () => useComic.getState().projects[0]!.cast;
   const panelCast = (n: number) => page().panels[n]!.cast;
 
-  it('adds characters, rewrites one by its name, removes one, and says them in the context', () => {
+  it('adds characters, rewrites one by its name, removes one, and says them in the context', { tags: ['condition'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'cast', characters: [{ name: 'Grandpa', tags: '1boy, old man, flat cap' }, { name: 'Goro', tags: '1dog, shiba inu' }] }])).toBe(true);
     expect(cast().map((c) => c.name)).toEqual(['Grandpa', 'Goro']);
@@ -577,7 +577,7 @@ describe('the cast the assistant writes', () => {
     expect(applyComicOps([{ op: 'cast', remove: ['nobody'], characters: [{ name: '', tags: 'x' }, { name: 'Y' }, 3] }])).toBe(false);
   });
 
-  it('keeps the words a character keeps out of its panels, and clears them with an empty text', () => {
+  it('keeps the words a character keeps out of its panels, and clears them with an empty text', { tags: ['boundary'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'cast', characters: [{ name: 'Mina', tags: '1girl', negative: 'hat, glasses' }] }])).toBe(true);
     expect(cast()[0]!.negative).toBe('hat, glasses');
@@ -585,7 +585,7 @@ describe('the cast the assistant writes', () => {
     expect(cast()[0]).not.toHaveProperty('negative');
   });
 
-  it('puts characters in a panel by name, drops unknown names, and tells the cast of each panel', () => {
+  it('puts characters in a panel by name, drops unknown names, and tells the cast of each panel', { tags: ['error-guessing'] }, () => {
     seed();
     applyComicOps([{ op: 'cast', characters: [{ name: 'Grandpa', tags: 'a' }, { name: 'Goro', tags: 'b' }] }]);
     expect(applyComicOps([{ op: 'panel', panel: 1, cast: ['goro', 'Grandpa', 'Stranger'] }])).toBe(true);
@@ -595,7 +595,7 @@ describe('the cast the assistant writes', () => {
     expect(panelCast(0)).toEqual([cast()[0]!.id]);
   });
 
-  it('reads the list and the words under their plain alternative names, and says why an operation did nothing', () => {
+  it('reads the list and the words under their plain alternative names, and says why an operation did nothing', { tags: ['condition'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'cast', cast: [{ name: 'A', look: '1girl, red scarf' }, { name: 'B', description: '1dog' }] }])).toBe(true);
     expect(cast().map((c) => c.tags)).toEqual(['1girl, red scarf', '1dog']);
@@ -614,7 +614,7 @@ describe('the places the assistant writes', () => {
   const places = () => useComic.getState().projects[0]!.places;
   type Context = { places: { name: string; tags: string; negative?: string }[]; world: string; panels: { place?: string }[] };
 
-  it('adds places, rewrites one by its name, removes one, sets the world, and says them in the context', () => {
+  it('adds places, rewrites one by its name, removes one, sets the world, and says them in the context', { tags: ['condition'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'places', places: [{ name: 'Room', tags: 'bedroom, desk lamp' }, { name: 'Pier', words: 'pier, sea', negative: 'boats' }], world: ' summer, 1990s ' }])).toBe(true);
     expect(places().map((p) => [p.name, p.tags, p.negative])).toEqual([['Room', 'bedroom, desk lamp', undefined], ['Pier', 'pier, sea', 'boats']]);
@@ -630,7 +630,7 @@ describe('the places the assistant writes', () => {
     expect(comicAgentEditor.skipped()[0]).toContain('places needs');
   });
 
-  it('sets the place of a panel by name, takes it out with null, and says a name the comic lacks while keeping the rest', () => {
+  it('sets the place of a panel by name, takes it out with null, and says a name the comic lacks while keeping the rest', { tags: ['condition'] }, () => {
     seed();
     applyComicOps([{ op: 'places', places: [{ name: 'Room', tags: 'bedroom' }] }]);
     expect(applyComicOps([{ op: 'panel', panel: 1, place: 'room' }])).toBe(true);
@@ -647,7 +647,7 @@ describe('the places the assistant writes', () => {
     expect(comicAgentEditor.skipped()[0]).toContain('took no effect');
   });
 
-  it('names the places only in the answer of an edit', () => {
+  it('names the places only in the answer of an edit', { tags: ['condition'] }, () => {
     seed();
     applyComicOps([{ op: 'places', places: [{ name: 'Room', tags: 'bedroom, wooden desk' }] }]);
     expect((comicAnswer() as { places: unknown }).places).toEqual(['Room']);
@@ -658,7 +658,7 @@ describe('list operations written in another form', () => {
   // Claude Haiku 4.5 on 2026-10-17 sent each of these.
   const project = () => useComic.getState().projects[0]!;
 
-  it('reads one character or one place written flat into its operation, and the world sent on its own', () => {
+  it('reads one character or one place written flat into its operation, and the world sent on its own', { tags: ['condition'] }, () => {
     seed();
     expect(applyComicOps([
       { op: 'cast', name: 'Mio', tags: '1girl, short hair' },
@@ -672,7 +672,7 @@ describe('list operations written in another form', () => {
 });
 
 describe('figures: where animals stand', () => {
-  it('stores the boxes of a panel op, tells them in the context, and keeps balloons clear of them', () => {
+  it('stores the boxes of a panel op, tells them in the context, and keeps balloons clear of them', { tags: ['condition'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'panel', panel: 1, figures: [{ x: 0.3, y: 0.0, w: 0.4, h: 0.5 }, { x: 'bad' }] }])).toBe(true);
     expect(page().panels[0]!.figures).toEqual([{ x: 0.3, y: 0, w: 0.4, h: 0.5 }]);
@@ -685,7 +685,7 @@ describe('figures: where animals stand', () => {
     expect(overlapsAcross && overlapsDown).toBe(false);
   });
 
-  it('clears the boxes with an empty list', () => {
+  it('clears the boxes with an empty list', { tags: ['boundary'] }, () => {
     seed();
     applyComicOps([{ op: 'panel', panel: 1, figures: [{ x: 0.1, y: 0.1, w: 0.2, h: 0.2 }] }]);
     applyComicOps([{ op: 'panel', panel: 1, figures: [] }]);
@@ -695,7 +695,7 @@ describe('figures: where animals stand', () => {
 
 describe('the parts of a character the assistant writes', () => {
   beforeEach(seed);
-  it('adds a character with parts and merges later parts over the earlier ones', () => {
+  it('adds a character with parts and merges later parts over the earlier ones', { tags: ['condition'] }, () => {
     expect(applyComicOps([{ op: 'cast', characters: [{ name: 'Mio', tags: '1girl', parts: { hair: 'long black hair', eyes: 'green eyes' } }] }])).toBe(true);
     expect(applyComicOps([{ op: 'cast', characters: [{ name: 'Mio', parts: { eyes: 'blue eyes', outfit: 'navy blazer' } }] }])).toBe(true);
     const mio = useComic.getState().projects[0]!.cast[0]!;
@@ -704,7 +704,7 @@ describe('the parts of a character the assistant writes', () => {
     expect(((comicContext() as { cast: { parts: unknown }[] }).cast[0])!.parts).toEqual(mio.parts);
   });
 
-  it('marks a character as not human, keeps it, and can take it back', () => {
+  it('marks a character as not human, keeps it, and can take it back', { tags: ['condition'] }, () => {
     expect(applyComicOps([{ op: 'cast', characters: [{ name: 'Kage', tags: '1creature', nonHuman: true }] }])).toBe(true);
     expect(useComic.getState().projects[0]!.cast[0]!.nonHuman).toBe(true);
     expect((comicContext() as { cast: { nonHuman?: boolean }[] }).cast[0]!.nonHuman).toBe(true);
@@ -712,7 +712,7 @@ describe('the parts of a character the assistant writes', () => {
     expect(useComic.getState().projects[0]!.cast[0]!.nonHuman).toBeFalsy();
   });
 
-  it('refuses a character with neither words nor parts', () => {
+  it('refuses a character with neither words nor parts', { tags: ['error-guessing'] }, () => {
     expect(applyComicOps([{ op: 'cast', characters: [{ name: 'Nobody' }] }])).toBe(false);
   });
 });
@@ -720,7 +720,7 @@ describe('the parts of a character the assistant writes', () => {
 describe('the answer of an edit', () => {
   type Answer = { project: string; page: number; panels: unknown[]; cast: Record<string, unknown>[]; comics?: unknown; layoutTemplates?: unknown; parts?: unknown; more: string };
 
-  it('keeps the page but leaves out the cast words, the comic list and the templates', () => {
+  it('keeps the page but leaves out the cast words, the comic list and the templates', { tags: ['condition'] }, () => {
     seed();
     applyComicOps([{ op: 'cast', characters: [{ name: 'Aoi', tags: '1girl, black hair' }] }]);
     const answer = comicAnswer() as Answer;
@@ -735,7 +735,7 @@ describe('the answer of an edit', () => {
     expect(JSON.stringify(comicContext())).toContain('black hair');
   });
 
-  it('is the context itself when no comic is open, and is what the editor answers an edit with', () => {
+  it('is the context itself when no comic is open, and is what the editor answers an edit with', { tags: ['condition'] }, () => {
     expect(comicAnswer()).toEqual(comicContext());
     expect(comicAgentEditor.answer).toBe(comicAnswer);
   });

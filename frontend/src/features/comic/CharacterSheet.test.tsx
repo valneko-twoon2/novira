@@ -55,7 +55,7 @@ afterEach(() => {
 });
 
 describe('CharacterSheet', () => {
-  it('shows the front and each view it has, marks a view being drawn, and takes a view out', () => {
+  it('shows the front and each view it has, marks a view being drawn, and takes a view out', { tags: ['scenario'] }, () => {
     const projectId = show();
     expect(slot('front').dataset.has).toBe('yes');
     expect(slot('back').querySelector('img')!.getAttribute('src')).toBe('/thumb/back.png');
@@ -67,7 +67,7 @@ describe('CharacterSheet', () => {
     expect(slot('back').dataset.has).toBe('no');
   });
 
-  it('draws the missing views, and cannot without words or with every view there or being drawn', () => {
+  it('draws the missing views, and cannot without words or with every view there or being drawn', { tags: ['error-guessing', 'decision-table'] }, () => {
     const make = vi.spyOn(generate, 'makeSheet').mockResolvedValue(3);
     const projectId = show();
     fireEvent.click(button('comic-sheet-make'));
@@ -82,7 +82,7 @@ describe('CharacterSheet', () => {
     expect(button('comic-sheet-make').disabled).toBe(true);
   });
 
-  it('says which LoRA its panels use', () => {
+  it('says which LoRA its panels use', { tags: ['scenario'] }, () => {
     const id = useCharacters.getState().add('Mina', { imageNames: ['front.png'], weight: 0.6, tags: '1girl', lora: { key: 'mina-lora', weight: 0.8, trigger: 'mina', enabled: true } });
     useModels.setState({ models: [{ key: 'mina-lora', name: 'Mina LoRA', base: 'sdxl', type: 'lora' } as ModelConfig] });
     show({ ...MINA, libraryId: id });

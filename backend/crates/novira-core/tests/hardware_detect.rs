@@ -2,6 +2,7 @@
 //! that the reading ends and is consistent (a card with a name or memory, or the explicit "unknown").
 use novira_core::hardware::{detect, HardwareInfo};
 
+// tags: condition
 #[test]
 fn detecting_the_card_ends_with_a_consistent_answer() {
     let info = detect();

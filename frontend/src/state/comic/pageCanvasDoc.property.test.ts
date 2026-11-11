@@ -56,7 +56,7 @@ const saved = fc.record({ entities: fc.array(entity, { maxLength: 50 }), bbox: f
 const size = fc.constantFrom(...PAGE_SIZES);
 
 describe('reading a page (properties)', () => {
-  it('always gives a page within every limit, with each slot once, unique ids and rounded coordinates', () => {
+  it('always gives a page within every limit, with each slot once, unique ids and rounded coordinates', { tags: ['boundary'] }, () => {
     check(
       fc.property(saved, size, (doc, paper) => {
         const page = parsePageCanvas(doc, paper);
@@ -85,7 +85,7 @@ describe('reading a page (properties)', () => {
     );
   });
 
-  it('reads a page it read before (and its saved shape) as the same page', () => {
+  it('reads a page it read before (and its saved shape) as the same page', { tags: ['condition'] }, () => {
     check(
       fc.property(saved, size, (doc, paper) => {
         const page = parsePageCanvas(doc, paper);
@@ -95,7 +95,7 @@ describe('reading a page (properties)', () => {
     );
   });
 
-  it('keeps a page within its limits on any paper change, and changes nothing on the same paper', () => {
+  it('keeps a page within its limits on any paper change, and changes nothing on the same paper', { tags: ['boundary'] }, () => {
     check(
       fc.property(saved, size, size, (doc, from, to) => {
         const page = parsePageCanvas(doc, from);

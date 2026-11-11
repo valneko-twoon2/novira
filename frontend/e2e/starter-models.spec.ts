@@ -2,7 +2,7 @@
 // a family brings its parts along, the purposes stay put, and a pack (the erase model) is installed from the same cards.
 import { expect, msg, openApp, test } from './fixtures';
 
-test('narrows the starter models by family and purpose, and installs a model pack from the list', async ({ page }) => {
+test('narrows the starter models by family and purpose, and installs a model pack from the list', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('tab-models').click();
   await page.getByTestId('mm-import').click();

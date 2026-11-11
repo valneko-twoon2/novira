@@ -44,7 +44,7 @@ afterEach(() => {
 });
 
 describe('Invoke button', () => {
-  it('invokes when ready, and is disabled with the reasons when it cannot', () => {
+  it('invokes when ready, and is disabled with the reasons when it cannot', { tags: ['scenario'] }, () => {
     mount();
     const button = screen.getByTestId('invoke-button') as HTMLButtonElement;
     expect(button.disabled).toBe(false);
@@ -57,7 +57,7 @@ describe('Invoke button', () => {
     expect((screen.getByLabelText(t('params.invoke.moreOptions')) as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('shows progress and the queue count while a job runs', () => {
+  it('shows progress and the queue count while a job runs', { tags: ['scenario'] }, () => {
     useQueue.setState({
       status: status({ inProgress: 1, pending: 2 }),
       progress: { itemId: 1, step: 5, totalSteps: 20, progressImageUrl: null, message: '' },
@@ -70,7 +70,7 @@ describe('Invoke button', () => {
     expect(screen.queryByText('25%')).toBeNull();
   });
 
-  it('adds to the back or the front of the queue from the menu', async () => {
+  it('adds to the back or the front of the queue from the menu', { tags: ['scenario'] }, async () => {
     mount();
     openMenu(t('params.invoke.moreOptions'));
     fireEvent.click(await screen.findByText(t('params.invoke.addFront')));
@@ -80,7 +80,7 @@ describe('Invoke button', () => {
     expect(invoke).toHaveBeenLastCalledWith();
   });
 
-  it('offers the comparison grid only for image generation', async () => {
+  it('offers the comparison grid only for image generation', { tags: ['scenario'] }, async () => {
     mount();
     openMenu(t('params.invoke.moreOptions'));
     fireEvent.click(await screen.findByText(t('xyplot.menu')));
@@ -95,7 +95,7 @@ describe('Invoke button', () => {
 });
 
 describe('iterations', () => {
-  it('rounds the count and never goes below one', () => {
+  it('rounds the count and never goes below one', { tags: ['boundary'] }, () => {
     mount();
     const box = screen.getByLabelText(t('params.invoke.iterations'));
     fireEvent.change(box, { target: { value: '4.4' } });
@@ -112,12 +112,12 @@ describe('a screen that draws with its own buttons', () => {
     registerInvokeBuilder('comic', { readiness: () => [], showsInvokeButton: false, build: () => Promise.reject(new Error('unused')) });
   });
 
-  it('shows no Invoke button', () => {
+  it('shows no Invoke button', { tags: ['scenario'] }, () => {
     mount('comic');
     expect(screen.queryByTestId('invoke-button')).toBeNull();
   });
 
-  it('shows the cancel controls only while work is queued', () => {
+  it('shows the cancel controls only while work is queued', { tags: ['scenario'] }, () => {
     mount('comic');
     expect(screen.queryByLabelText(t('params.invoke.cancelCurrent'))).toBeNull();
     cleanup();
@@ -130,12 +130,12 @@ describe('a screen that draws with its own buttons', () => {
 describe('CancelControls', () => {
   const running = { id: 7, status: 'in_progress' } as QueueItem;
 
-  it('cannot cancel when nothing is running', () => {
+  it('cannot cancel when nothing is running', { tags: ['scenario'] }, () => {
     mount();
     expect((screen.getByLabelText(t('params.invoke.cancelCurrent')) as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('cancels the running item from the button and from the menu, and clears the queue', async () => {
+  it('cancels the running item from the button and from the menu, and clears the queue', { tags: ['scenario'] }, async () => {
     const cancel = vi.spyOn(backend, 'cancelQueueItem').mockResolvedValue();
     const clear = vi.spyOn(backend, 'clearQueue').mockResolvedValue();
     useQueue.setState({ items: [running], status: status({ inProgress: 1 }) });
@@ -150,7 +150,7 @@ describe('CancelControls', () => {
     expect(clear).toHaveBeenCalledTimes(1);
   });
 
-  it('pauses, resumes and opens the queue tab', async () => {
+  it('pauses, resumes and opens the queue tab', { tags: ['scenario'] }, async () => {
     const pause = vi.spyOn(backend, 'pauseProcessor').mockResolvedValue();
     const resume = vi.spyOn(backend, 'resumeProcessor').mockResolvedValue();
     mount();
@@ -168,7 +168,7 @@ describe('CancelControls', () => {
 });
 
 describe('Draw button of the comic screen', () => {
-  it('is the Invoke button, named after what it draws, and its menu chooses the selected panel or the whole page', async () => {
+  it('is the Invoke button, named after what it draws, and its menu chooses the selected panel or the whole page', { tags: ['scenario'] }, async () => {
     registerInvokeBuilder('comic', { readiness: () => [], build: () => Promise.reject(new Error('unused')) });
     useComic.setState({ drawScope: 'panel' });
     mount('comic');

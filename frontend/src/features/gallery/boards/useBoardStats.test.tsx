@@ -13,7 +13,7 @@ beforeEach(() => useGallery.setState(initial, true));
 afterEach(cleanup);
 
 describe('useBoardStats', () => {
-  it('counts general images and assets separately per board, with uncategorized pictures under none', () => {
+  it('counts general images and assets separately per board, with uncategorized pictures under none', { tags: ['condition'] }, () => {
     useGallery.setState({
       images: [
         image({ boardId: 'b1' }),
@@ -28,7 +28,7 @@ describe('useBoardStats', () => {
     expect(stats.has('b2')).toBe(false);
   });
 
-  it('uses the newest picture as the cover and skips intermediates', () => {
+  it('uses the newest picture as the cover and skips intermediates', { tags: ['condition'] }, () => {
     const old = image({ boardId: 'b1', createdAt: 1 });
     const newest = image({ boardId: 'b1', createdAt: 5 });
     const hidden = image({ boardId: 'b1', createdAt: 9, isIntermediate: true });
@@ -38,7 +38,7 @@ describe('useBoardStats', () => {
     expect(stats.get('b1')?.images).toBe(2);
   });
 
-  it('has no entry for a board whose only pictures are intermediates', () => {
+  it('has no entry for a board whose only pictures are intermediates', { tags: ['boundary'] }, () => {
     useGallery.setState({ images: [image({ boardId: 'b1', isIntermediate: true })] });
     expect(renderHook(() => useBoardStats()).result.current.size).toBe(0);
   });

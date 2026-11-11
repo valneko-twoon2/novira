@@ -159,6 +159,7 @@ mod tests {
     const A: Mac = [0x00, 0x11, 0x22, 0x33, 0x44, 0x55];
     const B: Mac = [0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff];
 
+    // tags: equivalence
     #[test]
     fn a_mac_is_six_hex_pairs_and_names_a_real_gateway() {
         assert_eq!(mac_text(&B), "aa:bb:cc:dd:ee:ff");
@@ -183,6 +184,7 @@ mod tests {
         }
     }
 
+    // tags: state-transition
     #[test]
     fn trusting_is_kept_in_the_file_and_comes_back() {
         let dir = tempfile::tempdir().unwrap();
@@ -208,6 +210,7 @@ mod tests {
         assert!(!Trusted::load(dir.path()).is_trusted(&A));
     }
 
+    // tags: error-guessing
     #[test]
     fn a_file_that_cannot_be_read_trusts_nothing_and_a_bad_entry_only_itself() {
         let dir = tempfile::tempdir().unwrap();
@@ -233,6 +236,7 @@ mod tests {
         assert!(t.is_trusted(&B) && !t.is_trusted(&A) && !t.is_trusted(&[0; 6]));
     }
 
+    // tags: boundary
     #[test]
     fn the_number_of_trusted_networks_is_capped() {
         let dir = tempfile::tempdir().unwrap();
@@ -252,6 +256,7 @@ mod tests {
         );
     }
 
+    // tags: error-guessing
     #[test]
     fn a_failed_save_does_not_trust() {
         let dir = tempfile::tempdir().unwrap();

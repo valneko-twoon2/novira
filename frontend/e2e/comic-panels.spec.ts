@@ -17,7 +17,7 @@ async function newComic(page: Page, name: string) {
   await chooseFirstModel(page);
 }
 
-test('a panel is carried by a press anywhere on it, and a press beside the page lets go of it', async ({ page }) => {
+test('a panel is carried by a press anywhere on it, and a press beside the page lets go of it', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await showTab(page, 'comic');
   await newComic(page, 'Moves');
@@ -45,7 +45,7 @@ test('a panel is carried by a press anywhere on it, and a press beside the page 
   await expect(page.getByTestId('comic-corner')).toHaveCount(0);
 });
 
-test('undo and redo take back a panel prompt, by the buttons and by the keys', async ({ page }) => {
+test('undo and redo take back a panel prompt, by the buttons and by the keys', { tag: ['@state-transition'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await showTab(page, 'comic');
   await newComic(page, 'Undo');
@@ -70,7 +70,7 @@ test('undo and redo take back a panel prompt, by the buttons and by the keys', a
   await expect(page.getByTestId('comic-panel-2')).not.toContainText('second panel');
 });
 
-test('the paper of a page sets its proportions', async ({ page }) => {
+test('the paper of a page sets its proportions', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await showTab(page, 'comic');
   await newComic(page, 'Paper');
@@ -85,7 +85,7 @@ test('the paper of a page sets its proportions', async ({ page }) => {
   expect(box!.height / box!.width).toBeCloseTo(1.412, 2);
 });
 
-test('a panel whose picture could not be made says so on the panel', async ({ page }) => {
+test('a panel whose picture could not be made says so on the panel', { tag: ['@error-guessing'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await showTab(page, 'comic');
   await newComic(page, 'Failure');
@@ -98,7 +98,7 @@ test('a panel whose picture could not be made says so on the panel', async ({ pa
   await expect(page.getByTestId('comic-panel-1')).toContainText(msg('comic.draw.failed'), { timeout: 30_000 });
 });
 
-test('the page view zooms with its bar, and the reset goes back to 100%', async ({ page }) => {
+test('the page view zooms with its bar, and the reset goes back to 100%', { tag: ['@boundary'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await showTab(page, 'comic');
   await newComic(page, 'Zoom');
@@ -114,7 +114,7 @@ test('the page view zooms with its bar, and the reset goes back to 100%', async 
   await expect(page.getByTestId('comic-zoom-value')).toHaveText('100%');
 });
 
-test('a panel is cut by a line drawn across it: the page gets a panel more, and the cut panel shows its corners', async ({ page }) => {
+test('a panel is cut by a line drawn across it: the page gets a panel more, and the cut panel shows its corners', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await showTab(page, 'comic');
   await newComic(page, 'Cuts');
@@ -135,7 +135,7 @@ test('a panel is cut by a line drawn across it: the page gets a panel more, and 
   await expect(page.getByTestId('comic-corner').first()).toBeVisible();
 });
 
-test('the prompt boxes hold the selected panel prompts, and the Generate tab gets its own back', async ({ page }) => {
+test('the prompt boxes hold the selected panel prompts, and the Generate tab gets its own back', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('positive-prompt').fill('a castle on Generate');
   await showTab(page, 'comic');
@@ -155,7 +155,7 @@ test('the prompt boxes hold the selected panel prompts, and the Generate tab get
   await expect(page.getByTestId('positive-prompt')).toHaveValue('a castle on Generate');
 });
 
-test("a panel's picture is turned from the toolbar and taken out of the panel with Delete", async ({ page }) => {
+test("a panel's picture is turned from the toolbar and taken out of the panel with Delete", { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await showTab(page, 'comic');
   await newComic(page, 'Picture');
@@ -193,7 +193,7 @@ test("a panel's picture is turned from the toolbar and taken out of the panel wi
   await expect(page.getByTestId('comic-panel-1').getByTestId('comic-panel-image')).toHaveCount(0);
 });
 
-test('a balloon is added in the middle of its panel and dragged alone, even over a selected picture', async ({ page }) => {
+test('a balloon is added in the middle of its panel and dragged alone, even over a selected picture', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await showTab(page, 'comic');
   await newComic(page, 'Drag');
@@ -231,7 +231,7 @@ test('a balloon is added in the middle of its panel and dragged alone, even over
   expect(await picture.boundingBox()).toEqual(pictureBefore);
 });
 
-test('a balloon of the list, drawn as it looks, is added to the panel and edited beside the page', async ({ page }) => {
+test('a balloon of the list, drawn as it looks, is added to the panel and edited beside the page', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await showTab(page, 'comic');
   await newComic(page, 'Balloons');
@@ -247,7 +247,7 @@ test('a balloon of the list, drawn as it looks, is added to the panel and edited
   await expect(page.getByTestId('comic-bubble-point').first()).toBeVisible();
 });
 
-test('the pose of a panel is set from the ready-made list in the toolbar', async ({ page }) => {
+test('the pose of a panel is set from the ready-made list in the toolbar', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await showTab(page, 'comic');
   await newComic(page, 'Pose');
@@ -258,7 +258,7 @@ test('the pose of a panel is set from the ready-made list in the toolbar', async
   await expect(page.getByTestId('comic-pose-remove')).toBeVisible();
 });
 
-test('a panel is posed from its 3D rough, a box beside the person, which bakes its pose and depth pictures', async ({ page }) => {
+test('a panel is posed from its 3D rough, a box beside the person, which bakes its pose and depth pictures', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await showTab(page, 'comic');
   await newComic(page, 'Rough');

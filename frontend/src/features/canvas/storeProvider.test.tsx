@@ -40,7 +40,7 @@ function showOn(store: CanvasStore) {
 }
 
 describe('canvas store provider', () => {
-  it('edits the given store from the layers panel and the toolbar and leaves the global store alone', () => {
+  it('edits the given store from the layers panel and the toolbar and leaves the global store alone', { tags: ['state-transition'] }, () => {
     const page = createCanvasStore({ syncParams: false });
     showOn(page);
 
@@ -66,7 +66,7 @@ describe('canvas store provider', () => {
     expect(useParams.getState()).toBe(initial.params);
   });
 
-  it('acts on the global store without a provider', () => {
+  it('acts on the global store without a provider', { tags: ['scenario'] }, () => {
     render(
       <TooltipProvider>
         <CanvasToolbar />

@@ -43,21 +43,21 @@ afterEach(() => {
 });
 
 describe('the list', () => {
-  it('shows uncategorized first, then the newest boards, hiding archived ones until asked', () => {
+  it('shows uncategorized first, then the newest boards, hiding archived ones until asked', { tags: ['condition'] }, () => {
     expect(names()).toEqual([t('gallery.boards.uncategorized'), 'Beta', 'Alpha']);
     act(() => state().setSettings({ showArchivedBoards: true }));
     expect(names()).toEqual([t('gallery.boards.uncategorized'), 'Old', 'Beta', 'Alpha']);
     expect(screen.getByLabelText(t('gallery.boards.archived'))).toBeTruthy();
   });
 
-  it('collapses and expands with the header', () => {
+  it('collapses and expands with the header', { tags: ['scenario'] }, () => {
     fireEvent.click(screen.getByTestId('boards-toggle'));
     expect(screen.queryByRole('listbox')).toBeNull();
     fireEvent.click(screen.getByTestId('boards-toggle'));
     expect(screen.getByRole('listbox')).toBeTruthy();
   });
 
-  it('selects a board when clicked and marks the auto-add board', () => {
+  it('selects a board when clicked and marks the auto-add board', { tags: ['scenario'] }, () => {
     fireEvent.click(rows()[1]!);
     expect(state().selectedBoardId).toBe('b2');
     expect(rows()[1]!.getAttribute('aria-selected')).toBe('true');
@@ -65,14 +65,14 @@ describe('the list', () => {
     expect(within(rows()[2]!).getByText(t('gallery.boards.autoBadge'))).toBeTruthy();
   });
 
-  it('counts the pictures of each board', () => {
+  it('counts the pictures of each board', { tags: ['scenario'] }, () => {
     const picture = (name: string, category: string, createdAt: number) => ({ name, boardId: 'b1', category, createdAt, thumbnailUrl: `blob:${name}` }) as never;
     act(() => useGallery.setState({ images: [picture('a.png', 'general', 1), picture('b.png', 'user', 2), picture('c.png', 'general', 3)] }));
     expect(rows()[2]!.querySelector('.gboard__count')!.textContent).toBe('3');
     expect(rows()[2]!.querySelector('img')!.getAttribute('src')).toBe('blob:c.png');
   });
 
-  it('resizes the list by dragging the handle, but never below the minimum', () => {
+  it('resizes the list by dragging the handle, but never below the minimum', { tags: ['boundary'] }, () => {
     const handle = screen.getByRole('separator');
     handle.setPointerCapture = vi.fn();
     const at = (type: string, y: number) => {
@@ -93,7 +93,7 @@ describe('the list', () => {
 });
 
 describe('search', () => {
-  it('filters the boards by name, keeps uncategorized when it matches, and says when nothing does', () => {
+  it('filters the boards by name, keeps uncategorized when it matches, and says when nothing does', { tags: ['condition'] }, () => {
     fireEvent.click(screen.getByLabelText(t('gallery.boards.search')));
     const input = screen.getByPlaceholderText(t('gallery.boards.searchPlaceholder'));
     fireEvent.change(input, { target: { value: 'alp' } });
@@ -111,7 +111,7 @@ describe('search', () => {
 });
 
 describe('creating and renaming', () => {
-  it('creates a board, selects it and opens its name for renaming', async () => {
+  it('creates a board, selects it and opens its name for renaming', { tags: ['scenario'] }, async () => {
     vi.spyOn(backend, 'createBoard').mockResolvedValue(board('b9', 'New board'));
     fireEvent.click(screen.getByTestId('add-board'));
     await waitFor(() => expect(state().selectedBoardId).toBe('b9'));
@@ -123,7 +123,7 @@ describe('creating and renaming', () => {
     await waitFor(() => expect(screen.queryByLabelText(t('common.rename'))).toBeNull());
   });
 
-  it('renames on double click, and Escape or an empty name keeps the old one', async () => {
+  it('renames on double click, and Escape or an empty name keeps the old one', { tags: ['error-guessing'] }, async () => {
     const update = vi.spyOn(backend, 'updateBoard').mockResolvedValue(board('b2', 'x'));
     fireEvent.doubleClick(screen.getByText('Beta'));
     fireEvent.keyDown(await screen.findByLabelText(t('common.rename')), { key: 'Escape' });
@@ -144,7 +144,7 @@ describe('the context menu', () => {
     return within(await screen.findByRole('menu'));
   };
 
-  it('makes a board the auto-add board, once', async () => {
+  it('makes a board the auto-add board, once', { tags: ['condition'] }, async () => {
     const m = await menu(rows()[1]!);
     fireEvent.click(m.getByText(t('gallery.boards.setAutoAdd')));
     expect(state().autoAddBoardId).toBe('b2');
@@ -153,14 +153,14 @@ describe('the context menu', () => {
     expect(again.getByText(t('gallery.boards.setAutoAdd')).closest('[role=menuitem]')!.getAttribute('aria-disabled')).toBe('true');
   });
 
-  it('says boards cannot be downloaded in the browser, and offers no rename or delete for uncategorized', async () => {
+  it('says boards cannot be downloaded in the browser, and offers no rename or delete for uncategorized', { tags: ['condition'] }, async () => {
     const m = await menu(rows()[0]!);
     expect(m.queryByText(t('gallery.boards.delete'))).toBeNull();
     fireEvent.click(m.getByText(t('gallery.boards.download')));
     expect(useToasts.getState().toasts.at(-1)?.status).toBe('info');
   });
 
-  it('archives and restores a board', async () => {
+  it('archives and restores a board', { tags: ['scenario'] }, async () => {
     const update = vi.spyOn(backend, 'updateBoard').mockImplementation(async (id, patch) => board(id, 'Beta', patch as Partial<BoardDTO>));
     fireEvent.click(rows()[1]!);
     const m = await menu(rows()[1]!);
@@ -169,13 +169,13 @@ describe('the context menu', () => {
     await waitFor(() => expect(state().selectedBoardId).toBe('none'));
   });
 
-  it('renames from the menu', async () => {
+  it('renames from the menu', { tags: ['scenario'] }, async () => {
     const m = await menu(rows()[1]!);
     fireEvent.click(m.getByText(t('common.rename')));
     expect(await screen.findByLabelText(t('common.rename'))).toBeTruthy();
   });
 
-  it('deletes a board after confirmation, with or without its pictures', async () => {
+  it('deletes a board after confirmation, with or without its pictures', { tags: ['scenario'] }, async () => {
     const del = vi.spyOn(backend, 'deleteBoard').mockResolvedValue({ deletedImages: [] });
     const m = await menu(rows()[1]!);
     fireEvent.click(m.getByText(t('gallery.boards.delete')));
@@ -189,7 +189,7 @@ describe('the context menu', () => {
     await waitFor(() => expect(del).toHaveBeenLastCalledWith('b1', true));
   });
 
-  it('can cancel the deletion', async () => {
+  it('can cancel the deletion', { tags: ['scenario'] }, async () => {
     const m = await menu(rows()[1]!);
     fireEvent.click(m.getByText(t('gallery.boards.delete')));
     fireEvent.click(await screen.findByText(t('common.cancel')));
@@ -200,7 +200,7 @@ describe('the context menu', () => {
 describe('dropping on a board', () => {
   const dataTransfer = (data: Record<string, string>, files: File[] = []) => ({ types: [...Object.keys(data), ...(files.length ? ['Files'] : [])], getData: (k: string) => data[k] ?? '', files, dropEffect: '' });
 
-  it('moves dropped gallery pictures to the board', async () => {
+  it('moves dropped gallery pictures to the board', { tags: ['scenario'] }, async () => {
     const row = rows()[1]!;
     fireEvent.dragOver(row, { dataTransfer: dataTransfer({ [IMAGE_MIME]: JSON.stringify(['a.png']) }) });
     expect(row.className).toContain('is-over');
@@ -209,14 +209,14 @@ describe('dropping on a board', () => {
     expect(row.className).not.toContain('is-over');
   });
 
-  it('uploads dropped files into the board, which becomes the auto-add board', async () => {
+  it('uploads dropped files into the board, which becomes the auto-add board', { tags: ['scenario'] }, async () => {
     const file = new File(['x'], 'x.png', { type: 'image/png' });
     fireEvent.drop(rows()[2]!, { dataTransfer: dataTransfer({}, [file]) });
     await waitFor(() => expect(uploadFiles).toHaveBeenCalledWith([file]));
     expect(state().autoAddBoardId).toBe('b1');
   });
 
-  it('ignores drags that carry no pictures, and clears the highlight when the drag leaves', () => {
+  it('ignores drags that carry no pictures, and clears the highlight when the drag leaves', { tags: ['error-guessing'] }, () => {
     const row = rows()[1]!;
     fireEvent.dragOver(row, { dataTransfer: dataTransfer({ 'text/plain': 'x' }) });
     expect(row.className).not.toContain('is-over');
@@ -230,7 +230,7 @@ describe('dropping on a board', () => {
 });
 
 describe('subfolders', () => {
-  it('adds a subfolder from the menu: its board opens, it is selected and its name is open for renaming', async () => {
+  it('adds a subfolder from the menu: its board opens, it is selected and its name is open for renaming', { tags: ['scenario'] }, async () => {
     const create = vi.spyOn(backend, 'createBoard').mockResolvedValue(board('b9', 'New folder', { parentId: 'b2' }));
     fireEvent.contextMenu(rows()[1]!);
     fireEvent.click(within(await screen.findByRole('menu')).getByText(t('gallery.boards.addSubfolder')));
@@ -240,7 +240,7 @@ describe('subfolders', () => {
     expect(state().settings.foldedBoards).not.toContain('b2');
   });
 
-  it('folds a board with subfolders away and brings them back, and shows them under a search that finds them', () => {
+  it('folds a board with subfolders away and brings them back, and shows them under a search that finds them', { tags: ['scenario'] }, () => {
     act(() => useGallery.setState({ boards: [board('b1', 'Alpha'), board('b2', 'Beta'), board('b4', 'Inner', { parentId: 'b2' })] }));
     expect(names()).toEqual([t('gallery.boards.uncategorized'), 'Beta', 'Inner', 'Alpha']);
     fireEvent.click(screen.getByTestId('board-fold'));

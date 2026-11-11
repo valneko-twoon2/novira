@@ -16,6 +16,7 @@ async fn upload(f: &Fixture, content_type: &str, options: Option<&str>, body: &[
     send(f.server.addr, "POST", "/upload/image", &headers, body).await
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_posted_picture_is_stored_with_its_options_and_served_by_name() {
     let f = Fixture::start().await;
@@ -50,6 +51,7 @@ async fn a_posted_picture_is_stored_with_its_options_and_served_by_name() {
     f.stop().await;
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn an_upload_that_is_not_a_picture_or_not_well_formed_stores_nothing() {
     let f = Fixture::start().await;

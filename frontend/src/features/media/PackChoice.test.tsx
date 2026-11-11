@@ -37,7 +37,7 @@ afterEach(() => {
 });
 
 describe('video model choice', () => {
-  it('lists both models with how they fit this PC, and recommends the first that fits comfortably', () => {
+  it('lists both models with how they fit this PC, and recommends the first that fits comfortably', { tags: ['scenario'] }, () => {
     show();
     expect(screen.getByTestId('choice-gpu').textContent).toBe(t('media.choice.gpu', { gpu: 'Test GPU', size: '16 GB' }));
     expect(screen.getAllByText(t('media.choice.fit.comfortable'))).toHaveLength(2);
@@ -45,21 +45,21 @@ describe('video model choice', () => {
     expect(screen.getByTestId('video-pack-video').textContent).toContain(t('media.choice.recommended'));
   });
 
-  it('marks a small card as too little and recommends nothing', () => {
+  it('marks a small card as too little and recommends nothing', { tags: ['scenario'] }, () => {
     useHardware.setState({ info: { gpuName: 'Small GPU', vramBytes: 4 * GIB } });
     show();
     expect(screen.getAllByText(t('media.choice.fit.short'))).toHaveLength(2);
     expect(screen.queryByText(t('media.choice.recommended'))).toBeNull();
   });
 
-  it('says so when the memory is unknown', () => {
+  it('says so when the memory is unknown', { tags: ['scenario'] }, () => {
     useHardware.setState({ info: { gpuName: '', vramBytes: null } });
     show();
     expect(screen.getByTestId('choice-gpu').textContent).toBe(t('media.choice.gpuUnknown'));
     expect(screen.getAllByText(t('media.choice.fit.unknown'))).toHaveLength(2);
   });
 
-  it('selects the model of a row and starts its download from the button', () => {
+  it('selects the model of a row and starts its download from the button', { tags: ['scenario'] }, () => {
     const install = vi.spyOn(backend, 'installPack').mockResolvedValue();
     const onSelect = show();
     fireEvent.click(screen.getByTestId('video-pack-turbo'));
@@ -68,7 +68,7 @@ describe('video model choice', () => {
     expect(install).toHaveBeenCalledWith('turbo');
   });
 
-  it('shows nothing once the model in use is installed', () => {
+  it('shows nothing once the model in use is installed', { tags: ['scenario'] }, () => {
     usePacks.setState({ packs: { ...initialPacks, video: { state: 'ready' }, turbo: missing } });
     show('video');
     expect(screen.queryByTestId('video-pack')).toBeNull();

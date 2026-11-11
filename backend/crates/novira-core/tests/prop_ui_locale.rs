@@ -57,6 +57,7 @@ fn language() -> impl Strategy<Value = String> {
     ]
 }
 
+// tags: equivalence
 #[test]
 fn the_finders_only_return_plain_script_names_whatever_the_text() {
     check(
@@ -79,6 +80,7 @@ fn the_finders_only_return_plain_script_names_whatever_the_text() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn a_script_the_page_names_is_found_through_any_surrounding_text() {
     check(
@@ -102,6 +104,7 @@ fn a_script_the_page_names_is_found_through_any_surrounding_text() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn a_path_in_the_page_is_never_taken_for_a_script_name() {
     check(
@@ -119,6 +122,7 @@ fn a_path_in_the_page_is_never_taken_for_a_script_name() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn only_the_ten_languages_of_the_app_have_a_comfy_name() {
     check(any_text(), |locale| {
@@ -150,6 +154,7 @@ fn plain_json() -> impl Strategy<Value = Value> {
     })
 }
 
+// tags: equivalence
 #[test]
 fn a_data_module_written_from_json_reads_back_as_that_json() {
     check(plain_json(), |value| {
@@ -172,6 +177,7 @@ fn a_data_module_written_from_json_reads_back_as_that_json() {
     });
 }
 
+// tags: error-guessing
 #[test]
 fn a_module_of_any_text_or_cut_short_is_read_or_refused() {
     check(
@@ -191,6 +197,7 @@ fn a_module_of_any_text_or_cut_short_is_read_or_refused() {
     );
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn the_words_read_from_any_two_modules_are_never_empty() {
     check((json_value(), json_value()), |(main, nodes)| {

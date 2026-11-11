@@ -19,7 +19,7 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('serializeCanvas', () => {
-  it('stores a page-only picture once as a hidden image and keeps only its name in the document', async () => {
+  it('stores a page-only picture once as a hidden image and keeps only its name in the document', { tags: ['condition'] }, async () => {
     const store = vi.spyOn(backend, 'saveImageFromUrl').mockResolvedValue(image('layer-1.png'));
     const id = useCanvas.getState().addEntity('raster', { objects: [stroke, picture('blob:x', null)] });
     const doc = JSON.parse(await serializeCanvas());
@@ -31,7 +31,7 @@ describe('serializeCanvas', () => {
     expect(store).toHaveBeenCalledTimes(1);
   });
 
-  it('leaves out a picture that cannot be stored and still saves the rest', async () => {
+  it('leaves out a picture that cannot be stored and still saves the rest', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'saveImageFromUrl').mockRejectedValue(new Error('disk full'));
     useCanvas.getState().addEntity('raster', { objects: [stroke, picture('blob:y', null)] });
     const doc = JSON.parse(await serializeCanvas());
@@ -40,7 +40,7 @@ describe('serializeCanvas', () => {
 });
 
 describe('restoring', () => {
-  it('looks pictures up by name, drops the ones whose image is gone and ignores damaged parts', () => {
+  it('looks pictures up by name, drops the ones whose image is gone and ignores damaged parts', { tags: ['condition'] }, () => {
     useGallery.setState({ images: [image('here.png')] });
     const text = JSON.stringify({
       version: 1,
@@ -61,13 +61,13 @@ describe('restoring', () => {
     expect(doc.groupHidden.inpaint).toBe(true);
   });
 
-  it('refuses text that is not a canvas document', () => {
+  it('refuses text that is not a canvas document', { tags: ['error-guessing'] }, () => {
     expect(parseCanvas('not json')).toBeNull();
     expect(parseCanvas('{"version":2,"entities":[],"bbox":{"x":0,"y":0,"width":1,"height":1}}')).toBeNull();
     expect(parseCanvas('{"version":1,"entities":[]}')).toBeNull();
   });
 
-  it('does not start saving when the saved document cannot be read, so it is not overwritten', async () => {
+  it('does not start saving when the saved document cannot be read, so it is not overwritten', { tags: ['error-guessing'] }, async () => {
     vi.useFakeTimers();
     vi.spyOn(backend, 'loadCanvas').mockRejectedValue(new Error('locked'));
     const save = vi.spyOn(backend, 'saveCanvas');
@@ -78,7 +78,7 @@ describe('restoring', () => {
     vi.useRealTimers();
   });
 
-  it('restores the saved layers, then saves once after a change (debounced)', async () => {
+  it('restores the saved layers, then saves once after a change (debounced)', { tags: ['scenario'] }, async () => {
     vi.useFakeTimers();
     vi.spyOn(backend, 'loadCanvas').mockResolvedValue(
       JSON.stringify({ version: 1, bbox: { x: 0, y: 0, width: 256, height: 256 }, entities: [{ id: 'e1', type: 'raster', objects: [stroke] }] }),

@@ -20,6 +20,7 @@ fn open_with_lock(dir: &Path, lock: &Path) -> Backend {
     .unwrap()
 }
 
+// tags: state-transition, decision-table
 #[tokio::test]
 async fn a_job_takes_a_free_gpu_lock_and_gives_it_back_when_it_is_done() {
     let dir = tempfile::tempdir().unwrap();

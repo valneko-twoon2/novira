@@ -255,6 +255,7 @@ fn class_counts(g: &BuiltGraph) -> BTreeMap<String, usize> {
     out
 }
 
+// tags: condition
 #[test]
 fn changing_the_seed_changes_only_seed_inputs() {
     check(req(), |r| {
@@ -274,6 +275,7 @@ fn changing_the_seed_changes_only_seed_inputs() {
     });
 }
 
+// tags: condition
 #[test]
 fn changing_the_steps_changes_only_step_inputs() {
     check(req(), |r| {
@@ -295,6 +297,7 @@ fn changing_the_steps_changes_only_step_inputs() {
     });
 }
 
+// tags: condition
 #[test]
 fn changing_the_guidance_scale_changes_only_cfg_inputs() {
     check(req(), |r| {
@@ -317,6 +320,7 @@ fn changing_the_guidance_scale_changes_only_cfg_inputs() {
     });
 }
 
+// tags: condition
 #[test]
 fn changing_a_prompt_changes_only_the_text_of_text_encoders() {
     check(req(), |r| {
@@ -346,6 +350,7 @@ fn changing_a_prompt_changes_only_the_text_of_text_encoders() {
     });
 }
 
+// tags: boundary
 #[test]
 fn changing_the_picture_size_changes_only_size_inputs() {
     check(req(), |r| {
@@ -366,6 +371,7 @@ fn changing_the_picture_size_changes_only_size_inputs() {
     });
 }
 
+// tags: condition
 #[test]
 fn changing_a_lora_weight_changes_only_that_loras_strength_inputs() {
     check(
@@ -420,6 +426,7 @@ fn with_part(r: &Req, part: Part) -> Req {
     next
 }
 
+// tags: regression, boundary
 #[test]
 fn switching_a_part_on_adds_nodes_and_removes_none_and_off_again_gives_the_base_back() {
     check(
@@ -472,6 +479,7 @@ fn switching_a_part_on_adds_nodes_and_removes_none_and_off_again_gives_the_base_
     );
 }
 
+// tags: condition
 #[test]
 fn a_hires_pass_adds_a_sampler_and_steps_and_leaves_the_first_pass_as_it_was() {
     check(req(), |r| {

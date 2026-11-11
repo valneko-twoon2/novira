@@ -38,6 +38,7 @@ fn answer_model(id: u64, total: u64, versions: &[(u64, &str, u64, u64, &str)]) -
     })
 }
 
+// tags: condition
 #[test]
 fn several_base_models_in_a_popularity_sort_are_searched_one_at_a_time() {
     let mut p = params();
@@ -57,6 +58,7 @@ fn several_base_models_in_a_popularity_sort_are_searched_one_at_a_time() {
     assert!(splits(&p, &bases(&p)));
 }
 
+// tags: equivalence
 #[test]
 fn the_flux_choice_asks_for_the_names_civitai_knows() {
     let mut p = params();
@@ -69,6 +71,7 @@ fn the_flux_choice_asks_for_the_names_civitai_knows() {
     assert!(splits(&p, &asked));
 }
 
+// tags: equivalence
 #[test]
 fn each_request_names_its_own_base_model_page_size_and_cursor() {
     let mut p = params();
@@ -90,6 +93,7 @@ fn each_request_names_its_own_base_model_page_size_and_cursor() {
     );
 }
 
+// tags: condition
 #[test]
 fn the_cursor_of_a_split_search_keeps_one_cursor_per_base_model() {
     let bases: Vec<String> = SDXL_COMPATIBLE.iter().map(|b| b.to_string()).collect();
@@ -109,6 +113,7 @@ fn the_cursor_of_a_split_search_keeps_one_cursor_per_base_model() {
     assert!(multi_cursors(Some("multi:{"), &bases).is_empty());
 }
 
+// tags: decision-table
 #[test]
 fn merged_answers_follow_the_sort_and_drop_repeats() {
     let items = vec![
@@ -131,6 +136,7 @@ fn merged_answers_follow_the_sort_and_drop_repeats() {
     assert!(by("downloads").contains(&("1".to_string(), 10)));
 }
 
+// tags: condition
 #[test]
 fn asked_for_a_base_model_a_card_counts_the_versions_of_that_base_the_order_uses() {
     // Civitai's answer for Anima LoRAs by downloads (the shape of 2026-11-08): the order follows the Anima versions, while
@@ -154,6 +160,7 @@ fn asked_for_a_base_model_a_card_counts_the_versions_of_that_base_the_order_uses
     assert_eq!(all[1].likes, 18_087);
 }
 
+// tags: condition
 #[test]
 fn a_version_without_stats_leaves_the_models_totals() {
     let mut m = answer_model(
@@ -173,6 +180,7 @@ fn a_version_without_stats_leaves_the_models_totals() {
     assert_eq!(version_totals(&m), None);
 }
 
+// tags: condition
 #[test]
 fn a_model_found_under_two_base_models_is_one_card_with_both_counts_and_versions() {
     let pony = map_response_by_base(&json!({"items": [answer_model(1, 9_000, &[(11, "Pony", 3_000, 30, "2026-08-01T00:00:00Z")])]}), false).items;
@@ -193,6 +201,7 @@ fn a_model_found_under_two_base_models_is_one_card_with_both_counts_and_versions
     assert_eq!(versions, ["12", "11"]);
 }
 
+// tags: equivalence
 #[test]
 fn license_creator_and_checkpoint_type_filters_go_to_the_site() {
     let mut p = params();
@@ -235,6 +244,7 @@ fn license_creator_and_checkpoint_type_filters_go_to_the_site() {
     }
 }
 
+// tags: equivalence
 #[test]
 fn the_answer_is_cut_to_the_permissions_and_files_asked_for() {
     let mk = |commercial: Value, derivatives: Value, format: &str| {
@@ -271,6 +281,7 @@ fn the_answer_is_cut_to_the_permissions_and_files_asked_for() {
     assert!(keep(&mk(json!([]), Value::Null, "SafeTensor"), &p));
 }
 
+// tags: equivalence
 #[test]
 fn query_maps_filters_to_api_names() {
     let q = query(&params());
@@ -286,6 +297,7 @@ fn query_maps_filters_to_api_names() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn response_maps_to_the_frontend_shape() {
     let body = json!({
@@ -329,12 +341,14 @@ fn response_maps_to_the_frontend_shape() {
     assert_eq!(m.description, "d");
 }
 
+// tags: condition
 #[test]
 fn html_descriptions_become_plain_text() {
     let html = "<p>Hello &amp; welcome</p><h3 id=\"x\"><span style=\"color:red\">Usage</span></h3><ul><li>one</li><li>two</li></ul><br/><br/><br/><p>end</p>";
     assert_eq!(html_to_text(html), "Hello & welcome\nUsage\none\ntwo\nend");
 }
 
+// tags: decision-table, equivalence
 #[test]
 fn permissions_follow_the_creator_flags() {
     let m = json!({
@@ -360,6 +374,7 @@ fn permissions_follow_the_creator_flags() {
     );
 }
 
+// tags: condition
 #[test]
 fn commercial_use_levels() {
     let commercial =
@@ -380,6 +395,7 @@ fn commercial_use_levels() {
     assert_eq!(commercial(json!(["Rent", "Sell"])), "limited");
 }
 
+// tags: boundary, state-transition
 #[test]
 fn a_summary_with_an_unstated_commercial_use_is_limited() {
     let p = |k: &str, allowed: Option<bool>| Permission {
@@ -401,6 +417,7 @@ fn a_summary_with_an_unstated_commercial_use_is_limited() {
     );
 }
 
+// tags: condition
 #[test]
 fn the_diffusion_kind_searches_checkpoints_of_the_video_bases() {
     let mut p = params();
@@ -413,6 +430,7 @@ fn the_diffusion_kind_searches_checkpoints_of_the_video_bases() {
     assert!(is_diffusion_base("Wan Video 14B i2v 720p") && !is_diffusion_base("SDXL 1.0"));
 }
 
+// tags: condition
 #[test]
 fn a_version_gives_its_first_plain_picture_and_its_trigger_words() {
     let v = serde_json::json!({
@@ -456,6 +474,7 @@ fn a_version_gives_its_first_plain_picture_and_its_trigger_words() {
     );
 }
 
+// tags: condition
 #[test]
 fn a_version_with_only_videos_is_shown_by_their_first_frames() {
     let only_videos = serde_json::json!({"images": [
@@ -485,6 +504,7 @@ fn a_version_with_only_videos_is_shown_by_their_first_frames() {
     );
 }
 
+// tags: condition
 #[test]
 fn pictures_come_before_the_frames_of_videos() {
     let v = serde_json::json!({"images": [
@@ -500,6 +520,7 @@ fn pictures_come_before_the_frames_of_videos() {
     );
 }
 
+// tags: condition
 #[test]
 fn full_size_covers_are_swapped_for_resized_ones() {
     assert_eq!(
@@ -512,6 +533,7 @@ fn full_size_covers_are_swapped_for_resized_ones() {
     );
 }
 
+// tags: condition
 #[test]
 fn the_pictures_to_page_through_and_the_model_page_come_from_the_version() {
     let v = serde_json::json!({"id": 22, "modelId": 11, "images": [
@@ -552,6 +574,7 @@ fn model_with_paid_access(id: &str, paid_access: serde_json::Value) -> CivitaiMo
     model(m, true, false).unwrap()
 }
 
+// tags: condition
 #[test]
 fn a_version_says_whether_and_until_when_civitai_asks_for_payment() {
     let free = model_with_paid_access("1", json!(null));
@@ -571,6 +594,7 @@ fn a_version_says_whether_and_until_when_civitai_asks_for_payment() {
     assert!(!free.versions[0].is_paid_at(0));
 }
 
+// tags: condition
 #[test]
 fn the_price_filter_keeps_free_or_paid_models_by_their_newest_version() {
     let free = model_with_paid_access("1", json!(null));

@@ -56,6 +56,7 @@ fn names(dir: &std::path::Path) -> Vec<String> {
     v
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_file_with_the_pinned_hash_is_kept_under_its_name() {
     let body = b"model bytes".repeat(1000);
@@ -80,6 +81,7 @@ async fn a_file_with_the_pinned_hash_is_kept_under_its_name() {
     assert_eq!(names(dir.path()), ["encoder.onnx"]);
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_file_with_another_hash_is_refused_and_removed() {
     site().put("/wm-bad/encoder.onnx", Route::bytes(b"evil".to_vec()));
@@ -102,6 +104,7 @@ async fn a_file_with_another_hash_is_refused_and_removed() {
     assert!(names(dir.path()).is_empty());
 }
 
+// tags: boundary, state-transition
 #[tokio::test]
 async fn a_download_larger_than_pinned_stops_at_the_cap() {
     // Announced as larger: refused before reading.
@@ -124,6 +127,7 @@ async fn a_download_larger_than_pinned_stops_at_the_cap() {
     assert!(names(dir.path()).is_empty());
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn an_error_answer_or_a_cancel_leaves_nothing() {
     site().put("/wm-404/a.onnx", Route::status(404));
@@ -153,6 +157,7 @@ async fn an_error_answer_or_a_cancel_leaves_nothing() {
     assert!(names(dir.path()).is_empty());
 }
 
+// tags: decision-table
 #[tokio::test]
 async fn the_runtime_comes_out_of_its_zip_and_the_zip_is_removed() {
     let dll = b"MZ fake runtime".repeat(50);
@@ -211,6 +216,7 @@ async fn the_runtime_comes_out_of_its_zip_and_the_zip_is_removed() {
     }
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn the_backend_reports_a_failed_download_and_keeps_no_partial_file() {
     // The pinned paths are not served by the fake site: the first file answers 404.

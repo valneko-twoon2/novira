@@ -20,7 +20,7 @@ async function ask(page: Page, text: string, replies: number): Promise<void> {
   await expect(win.locator('.agent-msg--assistant:not(.agent-msg--thinking)')).toHaveCount(replies, { timeout: 10_000 });
 }
 
-test('the assistant sits beside the gallery in the right column, keeps the draft across screens and floats elsewhere', async ({ page }) => {
+test('the assistant sits beside the gallery in the right column, keeps the draft across screens and floats elsewhere', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await openAssistant(page);
   // Generate's right column now shows the chat instead of the gallery, with the AI in use on its bar.
@@ -55,7 +55,7 @@ async function askFromExtensions(page: Page): Promise<void> {
   await page.getByTestId('ex-ask-results').click();
 }
 
-test('a picture attached from disk goes to the gallery and the assistant writes a prompt from it', async ({ page }) => {
+test('a picture attached from disk goes to the gallery and the assistant writes a prompt from it', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await openAssistant(page);
   const win = page.getByTestId('agent-window');
@@ -71,7 +71,7 @@ test('a picture attached from disk goes to the gallery and the assistant writes 
   await expect(page.getByTestId('positive-prompt')).toHaveValue(/summer sky/);
 });
 
-test('the assistant keeps separate chat sessions across a reload', async ({ page }) => {
+test('the assistant keeps separate chat sessions across a reload', { tag: ['@scenario'] }, async ({ page }) => {
   // Two chats, a reload and the session list in one flow: with every spec running in parallel (or recording coverage) it needs more than the default 30 s.
   test.slow();
   await openApp(page);
@@ -114,7 +114,7 @@ test('the assistant keeps separate chat sessions across a reload', async ({ page
   await expect(rows.locator('.agent-session__title')).toHaveText(['Roof cat']);
 });
 
-test('a question asked from the extension manager is sent after signing in, and answered about that extension', async ({ page }) => {
+test('a question asked from the extension manager is sent after signing in, and answered about that extension', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('tab-extensions').click();
   await page.getByTestId('extension-item').filter({ hasText: 'ComfyUI_IPAdapter_plus' }).click();
@@ -127,7 +127,7 @@ test('a question asked from the extension manager is sent after signing in, and 
   await expect(win.locator('.agent-msg--assistant')).toContainText('ComfyUI_IPAdapter_plus');
 });
 
-test('the assistant names the model it runs on, and shows its answer in Markdown as bold words and a list', async ({ page }) => {
+test('the assistant names the model it runs on, and shows its answer in Markdown as bold words and a list', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await openAssistant(page);
   const win = page.getByTestId('agent-window');
@@ -148,7 +148,7 @@ test('the assistant names the model it runs on, and shows its answer in Markdown
   await expect(reply).not.toContainText('**');
 });
 
-test('a request in flight can be cancelled, and the floating window size can be changed', async ({ page }) => {
+test('a request in flight can be cancelled, and the floating window size can be changed', { tag: ['@scenario', '@state-transition'] }, async ({ page }) => {
   await openApp(page);
   await openAssistant(page);
   const win = page.getByTestId('agent-window');
@@ -171,7 +171,7 @@ test('a request in flight can be cancelled, and the floating window size can be 
   expect(after.height).toBeGreaterThan(before.height + 20);
 });
 
-test('the assistant asks before it reads the gallery, and "always allow" stops the question', async ({ page }) => {
+test('the assistant asks before it reads the gallery, and "always allow" stops the question', { tag: ['@condition'] }, async ({ page }) => {
   await openApp(page);
   await openAssistant(page);
   const win = page.getByTestId('agent-window');
@@ -195,7 +195,7 @@ test('the assistant asks before it reads the gallery, and "always allow" stops t
   await expect(win.getByTestId('agent-permission')).toHaveCount(0);
 });
 
-test('the assistant connects to an Ollama-style server, shows a model without tools as such, and works after another model is chosen', async ({ page }) => {
+test('the assistant connects to an Ollama-style server, shows a model without tools as such, and works after another model is chosen', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('agent-open').click();
   const win = page.getByTestId('agent-window');
@@ -230,7 +230,7 @@ test('the assistant connects to an Ollama-style server, shows a model without to
   await expect(win.locator('.agent-msg--assistant:not(.agent-msg--thinking)').last()).not.toHaveClass(/is-error/);
 });
 
-test('a server on another machine over plain http shows the unencrypted and the sent-away warnings', async ({ page }) => {
+test('a server on another machine over plain http shows the unencrypted and the sent-away warnings', { tag: ['@condition'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('agent-open').click();
   const win = page.getByTestId('agent-window');
@@ -242,7 +242,7 @@ test('a server on another machine over plain http shows the unencrypted and the 
   await expect(win.getByTestId('agent-endpoint-warn-http')).toHaveCount(0);
 });
 
-test('the assistant draws one trial picture for a mood, shows it under its answer, and stops when the setting is off', async ({ page }) => {
+test('the assistant draws one trial picture for a mood, shows it under its answer, and stops when the setting is off', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await openAssistant(page);
   const win = page.getByTestId('agent-window');
@@ -272,7 +272,7 @@ test('the assistant draws one trial picture for a mood, shows it under its answe
   await expect(replies.last().getByTestId('agent-msg-pictures')).toHaveCount(0);
 });
 
-test('a trial picture made while new pictures wait in Candidates is still shown under the answer', async ({ page }) => {
+test('a trial picture made while new pictures wait in Candidates is still shown under the answer', { tag: ['@scenario'] }, async ({ page }) => {
   await galleryDefaults(page, { newPicturesToCandidates: true });
   await openApp(page);
   await openAssistant(page);
@@ -285,7 +285,7 @@ test('a trial picture made while new pictures wait in Candidates is still shown 
   await expect(replies.last().getByTestId('agent-msg-pictures').locator('img')).toHaveCount(1);
 });
 
-test('a refinement goes on by itself, one picture a round, until the assistant finishes', async ({ page }) => {
+test('a refinement goes on by itself, one picture a round, until the assistant finishes', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await openAssistant(page);
   const win = page.getByTestId('agent-window');
@@ -302,7 +302,7 @@ test('a refinement goes on by itself, one picture a round, until the assistant f
   for (let i = 0; i < 3; i++) await expect(replies.nth(i).getByTestId('agent-msg-pictures').locator('img')).toHaveCount(1);
 });
 
-test('the token limit switch is in the chat, on at first, and stays as it was left after a reload', async ({ page }) => {
+test('the token limit switch is in the chat, on at first, and stays as it was left after a reload', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await openAssistant(page);
   const win = page.getByTestId('agent-window');
@@ -321,7 +321,7 @@ test('the token limit switch is in the chat, on at first, and stays as it was le
   await expect(win.getByRole('switch', { name: msg('agent.context.limit') })).toHaveAttribute('aria-checked', 'false');
 });
 
-test('the "/" list is grouped by feature, Tab leaves only the command, sending expands it, and /help explains the commands', async ({ page }) => {
+test('the "/" list is grouped by feature, Tab leaves only the command, sending expands it, and /help explains the commands', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await openAssistant(page);
   const win = page.getByTestId('agent-window');

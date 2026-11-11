@@ -5,7 +5,7 @@ import { containsPoint, handleAt, layerAt, scaleStyle, toImage, toLocal } from '
 const scene = { width: 1000, height: 1000 };
 
 describe('layer hit testing', () => {
-  it('converts points between image and layer space, with rotation', () => {
+  it('converts points between image and layer space, with rotation', { tags: ['equivalence'] }, () => {
     const layer = { x: 100, y: 100, rotation: 90 };
     const local = toLocal(layer, { x: 100, y: 150 });
     expect(local.x).toBeCloseTo(50);
@@ -15,7 +15,7 @@ describe('layer hit testing', () => {
     expect(back.y).toBeCloseTo(150);
   });
 
-  it('finds the top-most unlocked visible layer', () => {
+  it('finds the top-most unlocked visible layer', { tags: ['condition'] }, () => {
     const a = { ...newTextLayer(scene, 'A'), id: 'a' };
     const b = { ...newTextLayer(scene, 'B'), id: 'b' };
     const halves = new Map([
@@ -29,7 +29,7 @@ describe('layer hit testing', () => {
     expect(layerAt([a, b], halves, { x: 0, y: 0 })).toBeNull();
   });
 
-  it('follows rotation when testing containment', () => {
+  it('follows rotation when testing containment', { tags: ['condition'] }, () => {
     const layer = { ...newTextLayer(scene, 'A'), rotation: 90 };
     const half = { hw: 200, hh: 20 };
     // After a quarter turn the long side runs vertically.
@@ -37,7 +37,7 @@ describe('layer hit testing', () => {
     expect(containsPoint(layer, half, { x: layer.x + 150, y: layer.y })).toBe(false);
   });
 
-  it('finds the pointer handle of a bubble before its corners', () => {
+  it('finds the pointer handle of a bubble before its corners', { tags: ['condition'] }, () => {
     const bubble = { ...newBubbleLayer(scene, 'round', 'a'), x: 500, y: 500 };
     const half = { hw: bubble.width / 2, hh: bubble.height / 2 };
     const tip = { x: bubble.x + bubble.tail.x, y: bubble.y + bubble.tail.y };
@@ -48,7 +48,7 @@ describe('layer hit testing', () => {
 });
 
 describe('scaling a style', () => {
-  it('scales font, outlines, shadow and spacing together', () => {
+  it('scales font, outlines, shadow and spacing together', { tags: ['equivalence'] }, () => {
     const style = {
       ...DEFAULT_TEXT_STYLE,
       fontSize: 100,

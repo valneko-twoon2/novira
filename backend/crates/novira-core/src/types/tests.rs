@@ -12,6 +12,7 @@ fn metadata() -> Value {
     })
 }
 
+// tags: scenario
 #[test]
 fn metadata_round_trips_in_camel_case_and_keeps_unknown_fields() {
     let mut input = metadata();
@@ -26,6 +27,7 @@ fn metadata_round_trips_in_camel_case_and_keeps_unknown_fields() {
     assert_eq!(serde_json::to_value(&parsed).unwrap(), input);
 }
 
+// tags: condition
 #[test]
 fn absent_optional_metadata_fields_are_left_out_not_sent_as_null() {
     let parsed: GenerationMetadata = serde_json::from_value(metadata()).unwrap();
@@ -46,6 +48,7 @@ fn absent_optional_metadata_fields_are_left_out_not_sent_as_null() {
     assert_eq!(obj["vaeKey"], Value::Null);
 }
 
+// tags: condition
 #[test]
 fn music_and_voice_settings_use_the_frontend_field_names() {
     let mut input = metadata();
@@ -62,6 +65,7 @@ fn music_and_voice_settings_use_the_frontend_field_names() {
     assert_eq!(serde_json::to_value(&parsed).unwrap(), input);
 }
 
+// tags: condition
 #[test]
 fn image_patch_tells_a_null_board_from_an_absent_one() {
     let moved: ImagePatch = serde_json::from_value(json!({"boardId": null})).unwrap();
@@ -73,6 +77,7 @@ fn image_patch_tells_a_null_board_from_an_absent_one() {
     assert_eq!(set.board_id, Some(Some("b1".into())));
 }
 
+// tags: condition
 #[test]
 fn stored_images_without_a_media_type_are_still_images() {
     let img: ImageDTO = serde_json::from_value(json!({
@@ -88,6 +93,7 @@ fn stored_images_without_a_media_type_are_still_images() {
     assert_eq!(out["isIntermediate"], false);
 }
 
+// tags: condition
 #[test]
 fn an_enqueue_request_may_leave_out_the_optional_fields() {
     let req: EnqueueRequest = serde_json::from_value(json!({
@@ -109,6 +115,7 @@ fn an_enqueue_request_may_leave_out_the_optional_fields() {
     assert_eq!(graph.outputs, ["1"]);
 }
 
+// tags: state-transition
 #[test]
 fn queue_items_and_status_serialize_in_camel_case() {
     let item = QueueItem {
@@ -182,6 +189,7 @@ fn queue_items_and_status_serialize_in_camel_case() {
     assert_eq!(status["isPaused"], true);
 }
 
+// tags: condition
 #[test]
 fn events_are_tagged_by_type_in_snake_case() {
     let paused = serde_json::to_value(BackendEvent::ProcessorState { is_paused: true }).unwrap();
@@ -228,6 +236,7 @@ fn events_are_tagged_by_type_in_snake_case() {
     );
 }
 
+// tags: boundary
 #[test]
 fn model_config_uses_type_for_the_kind_and_hides_empty_options() {
     let model = ModelConfig {
@@ -267,6 +276,7 @@ fn model_config_uses_type_for_the_kind_and_hides_empty_options() {
     assert_eq!(serde_json::from_value::<ModelConfig>(v).unwrap(), model);
 }
 
+// tags: scenario
 #[test]
 fn workflow_input_and_face_rig_preview_fill_their_defaults() {
     let wf: WorkflowInput = serde_json::from_value(json!({"name": "W", "graph": {}})).unwrap();

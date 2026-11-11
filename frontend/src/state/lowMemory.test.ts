@@ -10,7 +10,7 @@ afterEach(() => {
 });
 
 describe('low-memory mode', () => {
-  it('reads the mode once and switches it, telling the user when it waits for the next start', async () => {
+  it('reads the mode once and switches it, telling the user when it waits for the next start', { tags: ['scenario'] }, async () => {
     const read = vi.spyOn(backend, 'lowMemoryMode').mockResolvedValue({ enabled: false, ownedEngine: true, pendingRestart: false });
     await Promise.all([useLowMemory.getState().load(), useLowMemory.getState().load()]);
     expect(read).toHaveBeenCalledTimes(1);
@@ -24,7 +24,7 @@ describe('low-memory mode', () => {
     expect(toast?.description).toBeTruthy();
   });
 
-  it('reports a failed switch and keeps the mode it had', async () => {
+  it('reports a failed switch and keeps the mode it had', { tags: ['error-guessing'] }, async () => {
     useLowMemory.setState({ mode: { enabled: false, ownedEngine: true, pendingRestart: false } });
     vi.spyOn(backend, 'setLowMemoryMode').mockRejectedValue(new Error('cannot write settings.json'));
     await useLowMemory.getState().setEnabled(true);
@@ -32,7 +32,7 @@ describe('low-memory mode', () => {
     expect(useToasts.getState().toasts[0]).toMatchObject({ status: 'error', description: 'cannot write settings.json' });
   });
 
-  it('offers to turn it on only when it is off on novira’s own ComfyUI', () => {
+  it('offers to turn it on only when it is off on novira’s own ComfyUI', { tags: ['condition'] }, () => {
     expect(canTurnOnLowMemory(null)).toBe(false);
     expect(canTurnOnLowMemory({ enabled: false, ownedEngine: true, pendingRestart: false })).toBe(true);
     expect(canTurnOnLowMemory({ enabled: true, ownedEngine: true, pendingRestart: true })).toBe(false);

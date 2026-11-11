@@ -27,7 +27,7 @@ const joints = fc.tuple(vec, fc.array(fc.tuple(offset, offset, offset), { minLen
 const close = (a: number, b: number, tolerance = 1e-6) => Math.abs(a - b) <= tolerance * Math.max(1, Math.abs(a), Math.abs(b));
 
 describe('swinging a joint (properties)', () => {
-  it('keeps the length of every bone', () => {
+  it('keeps the length of every bone', { tags: ['equivalence'] }, () => {
     check(
       fc.property(joints, fc.integer({ min: 0, max: 17 }), vec, (list, joint, target) => {
         fc.pre(POSE_PARENT[joint]! < 0 || length3(sub(target, list[POSE_PARENT[joint]!]!)) > 1e-3);
@@ -38,7 +38,7 @@ describe('swinging a joint (properties)', () => {
     );
   });
 
-  it('aims the bone at the target', () => {
+  it('aims the bone at the target', { tags: ['condition'] }, () => {
     check(
       fc.property(joints, fc.integer({ min: 0, max: 17 }).filter((j) => POSE_PARENT[j]! >= 0), vec, (list, joint, target) => {
         const parent = list[POSE_PARENT[joint]!]!;
@@ -51,7 +51,7 @@ describe('swinging a joint (properties)', () => {
     );
   });
 
-  it('moves the whole body by one step when the neck is dragged', () => {
+  it('moves the whole body by one step when the neck is dragged', { tags: ['condition'] }, () => {
     check(
       fc.property(joints, vec, (list, target) => {
         const step = sub(target, list[1]!);
@@ -61,7 +61,7 @@ describe('swinging a joint (properties)', () => {
     );
   });
 
-  it('leaves the joints where they are when the target is already on the bone', () => {
+  it('leaves the joints where they are when the target is already on the bone', { tags: ['condition'] }, () => {
     check(
       fc.property(joints, fc.integer({ min: 0, max: 17 }).filter((j) => POSE_PARENT[j]! >= 0), fc.double({ min: 0.1, max: 5, noNaN: true }), (list, joint, k) => {
         const parent = list[POSE_PARENT[joint]!]!;
@@ -74,13 +74,13 @@ describe('swinging a joint (properties)', () => {
 });
 
 describe('turning the view (properties)', () => {
-  it('never changes the distance from the middle', () => {
+  it('never changes the distance from the middle', { tags: ['condition'] }, () => {
     check(fc.property(vec, fc.double({ min: -7, max: 7, noNaN: true }), fc.double({ min: -2, max: 2, noNaN: true }), (p, yaw, pitch) => {
       expect(close(length3(turnView(p, yaw, pitch)), length3(p), 1e-9)).toBe(true);
     }));
   });
 
-  it('is the identity for no turn', () => {
+  it('is the identity for no turn', { tags: ['condition'] }, () => {
     check(
       fc.property(vec, (p) => {
         expect(length3(sub(turnView(p, 0, 0), p))).toBeLessThan(1e-9);

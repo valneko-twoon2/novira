@@ -3,7 +3,7 @@ import { expect, msg, openApp, showTab, test } from './fixtures';
 
 test.use({ permissions: ['clipboard-read', 'clipboard-write'] });
 
-test('Ctrl+C copies the picture chosen in the gallery until something else is pressed', async ({ page }) => {
+test('Ctrl+C copies the picture chosen in the gallery until something else is pressed', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await showTab(page, 'canvas');
   const toasts = page.locator('.toast__title', { hasText: msg('gallery.toast.copied') });

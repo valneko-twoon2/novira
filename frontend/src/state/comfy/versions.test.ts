@@ -14,7 +14,7 @@ const pack = (id: string, requires: CatalogPack['requires'] = []): CatalogPack =
 const at = (id: string, version: string | null): InstalledNodePack => ({ folder: id, url: `https://github.com/o/${id}`, version });
 
 describe('versions', () => {
-  it('reads the number parts and compares them', () => {
+  it('reads the number parts and compares them', { tags: ['condition'] }, () => {
     expect(versionParts('v1.2.3')).toEqual([1, 2, 3]);
     expect(versionParts('0.3.50-rc1')).toEqual([0, 3, 50]);
     expect(versionParts('main')).toEqual([]);
@@ -23,14 +23,14 @@ describe('versions', () => {
     expect(compareVersions('main', '1.0')).toBeNull();
   });
 
-  it('keeps a version inside its range, and gives one that cannot be compared the benefit of the doubt', () => {
+  it('keeps a version inside its range, and gives one that cannot be compared the benefit of the doubt', { tags: ['error-guessing'] }, () => {
     expect(inRange('1.5.0', { min: '1.0.0', max: '2.0.0' })).toBe(true);
     expect(inRange('0.9.0', { min: '1.0.0' })).toBe(false);
     expect(inRange('2.1.0', { max: '2.0.0' })).toBe(false);
     expect(inRange('nightly', { min: '1.0.0' })).toBe(true);
   });
 
-  it('names the installed packs that do not support a version of ComfyUI', () => {
+  it('names the installed packs that do not support a version of ComfyUI', { tags: ['condition'] }, () => {
     const catalog = [pack('a', [{ on: 'comfyui', min: '0.3.0', max: '0.3.60' }]), pack('b', [{ on: 'comfyui', min: '0.2.0' }])];
     const installed = [at('a', null), at('b', null)];
     const names = (v: string) => conflictsFor({ kind: 'comfyui' }, v, installed, '0.3.50', catalog).map((c) => (c.kind === 'pack' ? c.folder : 'comfyui'));
@@ -39,7 +39,7 @@ describe('versions', () => {
     expect(names('0.1.0')).toEqual(['a', 'b']);
   });
 
-  it('names the pack that depends on a version of another pack, and what the pack itself needs', () => {
+  it('names the pack that depends on a version of another pack, and what the pack itself needs', { tags: ['condition'] }, () => {
     const catalog = [pack('base'), pack('sub', [{ on: 'base', min: '2.0.0' }]), pack('needsNew', [{ on: 'comfyui', min: '0.4.0' }])];
     const installed = [at('base', 'v2.5.0'), at('sub', 'v1.0.0'), at('needsNew', null)];
     // Moving base below what sub needs is flagged, with sub as the reason.
@@ -51,7 +51,7 @@ describe('versions', () => {
     expect(conflictsFor({ kind: 'pack', id: 'sub' }, 'v1', old, '0.3.50', catalog).map((c) => c.kind === 'pack' && c.folder)).toEqual(['base']);
   });
 
-  it('flags nothing for packs without declared needs', () => {
+  it('flags nothing for packs without declared needs', { tags: ['condition'] }, () => {
     expect(conflictsFor({ kind: 'comfyui' }, '9.9.9', [at('a', null)], '0.3.50', [pack('a')])).toEqual([]);
   });
 });

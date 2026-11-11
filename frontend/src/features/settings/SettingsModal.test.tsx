@@ -62,7 +62,7 @@ afterEach(() => {
 });
 
 describe('the tabs', () => {
-  it('shows one tab at a time, and none of the switches that did nothing', () => {
+  it('shows one tab at a time, and none of the switches that did nothing', { tags: ['scenario'] }, () => {
     expect(screen.getByTestId('settings-pane-general')).toBeTruthy();
     expect(screen.getByTestId('settings-tab-general').getAttribute('aria-selected')).toBe('true');
     for (const id of ['generation', 'gallery', 'edit', 'comicText', 'engine', 'accounts', 'data', 'developer']) {
@@ -73,11 +73,11 @@ describe('the tabs', () => {
     expect(screen.queryByText(/CPU/)).toBeNull();
   });
 
-  it('has no version line: the About window says it', () => {
+  it('has no version line: the About window says it', { tags: ['scenario'] }, () => {
     expect(modal().queryByText(APP_VERSION, { exact: false })).toBeNull();
   });
 
-  it('in the app build, where the comic screen is hidden (with video, music and voice), keeps the text settings and leaves out the comic ones', () => {
+  it('in the app build, where the comic screen is hidden (with video, music and voice), keeps the text settings and leaves out the comic ones', { tags: ['scenario'] }, () => {
     cleanup();
     vi.stubEnv('MODE', 'production');
     show();
@@ -89,21 +89,21 @@ describe('the tabs', () => {
     expect(screen.queryByTestId('settings-comic-size')).toBeNull();
   });
 
-  it('opens again on the tab last open', () => {
+  it('opens again on the tab last open', { tags: ['scenario'] }, () => {
     openTab('data');
     cleanup();
     show();
     expect(screen.getByTestId('settings-pane-data')).toBeTruthy();
   });
 
-  it('closes with the close button', () => {
+  it('closes with the close button', { tags: ['scenario'] }, () => {
     fireEvent.click(screen.getByLabelText(t('common.close')));
     expect(useUi.getState().modal).toBeNull();
   });
 });
 
 describe('general', () => {
-  it('chooses the tab the app opens on and how long a notification stays', async () => {
+  it('chooses the tab the app opens on and how long a notification stays', { tags: ['scenario'] }, async () => {
     fireEvent.click(screen.getByTestId('settings-start-tab'));
     expect(screen.getByRole('option', { name: t('app.tabs.models') })).toBeTruthy();
     expect(screen.queryByRole('option', { name: t('app.tabs.comic') })).toBeNull();
@@ -120,7 +120,7 @@ describe('general', () => {
 });
 
 describe('generation, gallery, editing and developer', () => {
-  it('flips their switches and writes their numbers', () => {
+  it('flips their switches and writes their numbers', { tags: ['scenario'] }, () => {
     openTab('generation');
     toggle(t('settings.antialiasProgressImages'));
     expect(useSettings.getState().antialiasProgressImages).toBe(true);
@@ -147,7 +147,7 @@ describe('generation, gallery, editing and developer', () => {
     expect(useSettings.getState().showDevLog).toBe(!devLog);
   });
 
-  it('chooses whether the assistant may read pictures and prompts', async () => {
+  it('chooses whether the assistant may read pictures and prompts', { tags: ['scenario'] }, async () => {
     openTab('generation');
     expect(useSettings.getState().assistantReadAccess).toBe('ask');
     await choose('settings-assistant-read', t('settings.assistantRead.never'));
@@ -156,7 +156,7 @@ describe('generation, gallery, editing and developer', () => {
     expect(useSettings.getState().assistantReadAccess).toBe('always');
   });
 
-  it('chooses whether the assistant may look things up on Wikipedia, apart from reading pictures', async () => {
+  it('chooses whether the assistant may look things up on Wikipedia, apart from reading pictures', { tags: ['scenario'] }, async () => {
     openTab('generation');
     expect(useSettings.getState().assistantWebAccess).toBe('ask');
     await choose('settings-assistant-web', t('settings.assistantRead.never'));
@@ -170,11 +170,11 @@ describe('generation, gallery, editing and developer', () => {
 describe('clearing intermediates', () => {
   beforeEach(() => openTab('gallery'));
 
-  it('is off without intermediate pictures', () => {
+  it('is off without intermediate pictures', { tags: ['scenario'] }, () => {
     expect((modal().getByText(tCount('settings.clearIntermediatesButton', 0)).closest('button') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('deletes them and says how many', async () => {
+  it('deletes them and says how many', { tags: ['scenario'] }, async () => {
     const del = vi.spyOn(backend, 'deleteImages').mockResolvedValue(undefined);
     act(() =>
       useGallery.setState({
@@ -191,7 +191,7 @@ describe('clearing intermediates', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('reports a failure', async () => {
+  it('reports a failure', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'deleteImages').mockRejectedValue(new Error('locked'));
     act(() => useGallery.setState({ images: [{ name: 'i1.png', isIntermediate: true } as never] }));
     fireEvent.click(modal().getByText(tCount('settings.clearIntermediatesButton', 1)));
@@ -211,7 +211,7 @@ describe('resetting', () => {
     fireEvent.click(screen.getByTestId('settings-reset-confirm'));
   };
 
-  it('puts the settings back at once by default, asking first, and leaves the rest of the saved state', () => {
+  it('puts the settings back at once by default, asking first, and leaves the rest of the saved state', { tags: ['scenario'] }, () => {
     localStorage.setItem('novira.params', '{}');
     useSettings.getState().set({ confirmOnDelete: false });
     fireEvent.click(screen.getByTestId('settings-reset'));
@@ -224,7 +224,7 @@ describe('resetting', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('clears only the chosen part, says what it clears, and offers a reload', async () => {
+  it('clears only the chosen part, says what it clears, and offers a reload', { tags: ['scenario'] }, async () => {
     localStorage.setItem('novira.agent', '{}');
     localStorage.setItem('novira.params', '{}');
     await choose('settings-reset-scope', t('settings.reset.scope.assistant'));
@@ -237,7 +237,7 @@ describe('resetting', () => {
     expect(screen.getByTestId('settings-reset-done')).toBeTruthy();
   });
 
-  it('clears every saved key of the app for everything, and nothing outside it', async () => {
+  it('clears every saved key of the app for everything, and nothing outside it', { tags: ['scenario'] }, async () => {
     localStorage.setItem(`${PERSIST_PREFIX}test`, '1');
     localStorage.setItem('other-key', '1');
     await choose('settings-reset-scope', t('settings.reset.scope.all'));
@@ -247,7 +247,7 @@ describe('resetting', () => {
     expect(modal().getByText(t('settings.resetDone'))).toBeTruthy();
   });
 
-  it('still resets the settings when the storage cannot be used', () => {
+  it('still resets the settings when the storage cannot be used', { tags: ['error-guessing'] }, () => {
     vi.stubGlobal(
       'localStorage',
       new Proxy(
@@ -266,7 +266,7 @@ describe('resetting', () => {
 });
 
 describe('the desktop app', () => {
-  it('offers the UI zoom', () => {
+  it('offers the UI zoom', { tags: ['scenario'] }, () => {
     cleanup();
     vi.spyOn(backend, 'kind', 'get').mockReturnValue('tauri' as never);
     show();
@@ -280,7 +280,7 @@ describe('the desktop app', () => {
 describe('comic and text', () => {
   beforeEach(() => openTab('comicText'));
 
-  it('sets the default balloon font from the app and computer fonts, and back to the standard one', async () => {
+  it('sets the default balloon font from the app and computer fonts, and back to the standard one', { tags: ['scenario'] }, async () => {
     expect(screen.getByTestId('settings-comic-font').textContent).toContain(t('common.font.standard'));
     fireEvent.click(screen.getByTestId('settings-comic-font'));
     fireEvent.click(await screen.findByText('Yu Mincho'));
@@ -290,7 +290,7 @@ describe('comic and text', () => {
     expect(useSettings.getState().comicFont).toBe('');
   });
 
-  it('sets how new comic pages start and the font of new text', async () => {
+  it('sets how new comic pages start and the font of new text', { tags: ['scenario'] }, async () => {
     await choose('settings-comic-size', 'B5');
     await choose('settings-comic-direction', t('comic.page.direction.ltr'));
     typeNumber(t('settings.comicPage.panels'), '5');
@@ -302,7 +302,7 @@ describe('comic and text', () => {
 });
 
 describe('the engine', () => {
-  it('turns the Civitai lookup on, and says it applies at the next start', async () => {
+  it('turns the Civitai lookup on, and says it applies at the next start', { tags: ['scenario'] }, async () => {
     const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
     const set = vi.spyOn(backend, 'setEngineSettings').mockImplementation(async (p) => ({ ...engine, ...p, restartNeeded: true }));
@@ -312,7 +312,7 @@ describe('the engine', () => {
     expect(await screen.findByTestId('settings-engine-restart')).toBeTruthy();
   });
 
-  it('shows where the data and the engine are, and changes the package, the start wait and the model folders', async () => {
+  it('shows where the data and the engine are, and changes the package, the start wait and the model folders', { tags: ['scenario'] }, async () => {
     const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
     const set = vi.spyOn(backend, 'setEngineSettings').mockImplementation(async (p) => ({ ...engine, ...p, restartNeeded: true }));
@@ -344,7 +344,7 @@ describe('the engine', () => {
     await waitFor(() => expect(screen.queryByText('D:\\Models')).toBeNull());
   });
 
-  it('changes the data folder after asking what happens to the data, and cancels a change that waits', async () => {
+  it('changes the data folder after asking what happens to the data, and cancels a change that waits', { tags: ['scenario'] }, async () => {
     const engine = { dataDir: 'C:\\data', dataDirChangeable: true, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
     const choose = vi.spyOn(backend, 'chooseDataDir').mockImplementation(async (moveData) => ({ ...engine, dataDirNext: 'D:\\data2', dataDirMoves: moveData, restartNeeded: true }));
@@ -368,7 +368,7 @@ describe('the engine', () => {
     await waitFor(() => expect(screen.queryByTestId('settings-engine-data-dir-next')).toBeNull());
   });
 
-  it('cannot change a data folder that is fixed, and shows why a move did not happen', async () => {
+  it('cannot change a data folder that is fixed, and shows why a move did not happen', { tags: ['error-guessing'] }, async () => {
     const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: 'not empty', comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
     openTab('engine');
@@ -376,7 +376,7 @@ describe('the engine', () => {
     expect(screen.queryByTestId('settings-engine-data-dir-change')).toBeNull();
   });
 
-  it('chooses the place novira installs ComfyUI in, with no button back to the default', async () => {
+  it('chooses the place novira installs ComfyUI in, with no button back to the default', { tags: ['scenario'] }, async () => {
     const engine = { dataDir: 'C:\\data', dataDirChangeable: true, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null as string | null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
     const choose = vi.spyOn(backend, 'chooseComfyuiInstallDir').mockResolvedValueOnce({ ...engine, comfyuiInstallDir: 'E:\\engine', restartNeeded: true }).mockResolvedValueOnce(null);
@@ -391,7 +391,7 @@ describe('the engine', () => {
     expect(screen.queryByTestId('settings-engine-comfyui-reset')).toBeNull();
   });
 
-  it('shows an engine named elsewhere, and reports a change the backend refuses', async () => {
+  it('shows an engine named elsewhere, and reports a change the backend refuses', { tags: ['error-guessing'] }, async () => {
     const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'url' as const, comfyuiUrl: 'http://127.0.0.1:8188', comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
     vi.spyOn(backend, 'addModelRoot').mockRejectedValue(new Error('already listed'));
@@ -401,7 +401,7 @@ describe('the engine', () => {
     await waitFor(() => expect(lastToast()).toMatchObject({ status: 'error', title: t('settings.engine.failed'), description: 'already listed' }));
   });
 
-  it('says an extra model folder is added in the desktop app when the page is on the browser server', async () => {
+  it('says an extra model folder is added in the desktop app when the page is on the browser server', { tags: ['scenario'] }, async () => {
     asBrowserServer();
     const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: ['D:\\Models'], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
@@ -432,7 +432,7 @@ describe('the engine', () => {
     const echoSave = (engine: EngineSettings) =>
       vi.spyOn(backend, 'setEngineSettings').mockImplementation(async (p) => ({ ...engine, ...p, restartNeeded: true }));
 
-    it('changes the package at once when no ComfyUI is installed yet', async () => {
+    it('changes the package at once when no ComfyUI is installed yet', { tags: ['scenario'] }, async () => {
       const engine = engineFor({});
       vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
       const set = echoSave(engine);
@@ -443,7 +443,7 @@ describe('the engine', () => {
       expect(screen.queryByText(t('settings.engine.package.reinstall'))).toBeNull();
     });
 
-    it('asks before another package reinstalls ComfyUI; Cancel saves nothing, confirm saves the package', async () => {
+    it('asks before another package reinstalls ComfyUI; Cancel saves nothing, confirm saves the package', { tags: ['scenario'] }, async () => {
       const engine = engineFor({ comfyuiInstalled: true, installedComfyuiPackage: 'nvidia' });
       vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
       const set = echoSave(engine);
@@ -467,7 +467,7 @@ describe('the engine', () => {
       await waitFor(() => expect(screen.queryByTestId('settings-engine-package-confirm')).toBeNull());
     });
 
-    it('does not ask when the package is the one the install came from', async () => {
+    it('does not ask when the package is the one the install came from', { tags: ['scenario'] }, async () => {
       // Saved amd, installed from nvidia (the change waits for the next start): choosing nvidia again saves at once.
       const engine = engineFor({ comfyuiInstalled: true, installedComfyuiPackage: 'nvidia', comfyuiPackage: 'amd', restartNeeded: true });
       vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
@@ -478,7 +478,7 @@ describe('the engine', () => {
       expect(screen.queryByTestId('settings-engine-package-confirm')).toBeNull();
     });
 
-    it('takes an install of unknown origin to be the saved package, so another package asks first', async () => {
+    it('takes an install of unknown origin to be the saved package, so another package asks first', { tags: ['scenario'] }, async () => {
       const engine = engineFor({ comfyuiInstalled: true, installedComfyuiPackage: null, comfyuiPackage: 'nvidia' });
       vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
       const set = echoSave(engine);
@@ -491,7 +491,7 @@ describe('the engine', () => {
 });
 
 describe('openSettings of the ui state', () => {
-  it('opens the modal on the chosen tab', () => {
+  it('opens the modal on the chosen tab', { tags: ['scenario'] }, () => {
     cleanup();
     useUi.setState({ ...initial.ui, modal: null }, true);
     useUi.getState().openSettings('engine');

@@ -19,7 +19,7 @@ beforeEach(() => {
 afterEach(() => stop());
 
 describe('comic drawing settings', () => {
-  it('keeps a change made on the comic screen in the comic, and gives the Generate tab its own back', () => {
+  it('keeps a change made on the comic screen in the comic, and gives the Generate tab its own back', { tags: ['condition'] }, () => {
     useComic.getState().createProject('A');
     useUi.getState().setTab('comic');
     useParams.getState().set({ steps: 12 });
@@ -30,14 +30,14 @@ describe('comic drawing settings', () => {
     expect(useParams.getState().steps).toBe(12);
   });
 
-  it('starts a comic that has no settings from the Generate tab, and does not write until something changes', () => {
+  it('starts a comic that has no settings from the Generate tab, and does not write until something changes', { tags: ['state-transition'] }, () => {
     useComic.getState().createProject('A');
     useUi.getState().setTab('comic');
     expect(useParams.getState().steps).toBe(30);
     expect(activeProject(useComic.getState())?.draw).toBeUndefined();
   });
 
-  it('gives each comic its own settings', () => {
+  it('gives each comic its own settings', { tags: ['equivalence'] }, () => {
     useComic.getState().createProject('A');
     const a = activeProject(useComic.getState())!.id;
     useUi.getState().setTab('comic');
@@ -49,7 +49,7 @@ describe('comic drawing settings', () => {
     expect(useParams.getState().steps).toBe(12);
   });
 
-  it('draws a panel with its comic\'s settings off the comic screen too, and leaves the Generate tab\'s form as it was', () => {
+  it('draws a panel with its comic\'s settings off the comic screen too, and leaves the Generate tab\'s form as it was', { tags: ['scenario'] }, () => {
     const id = useComic.getState().createProject('A');
     useComic.getState().setDraw(id, { steps: 12 });
     useUi.getState().setTab('generate');
@@ -59,13 +59,13 @@ describe('comic drawing settings', () => {
     expect(useParams.getState().steps).toBe(30);
   });
 
-  it('drops saved values of the wrong kind', () => {
+  it('drops saved values of the wrong kind', { tags: ['error-guessing'] }, () => {
     expect(parseDraw({ steps: 'x', width: 512, extra: 1 })).toEqual({ width: 512 });
     expect(parseDraw({ steps: 'x' })).toBeUndefined();
     expect(parseDraw(null)).toBeUndefined();
   });
 
-  it('is not taken for a change of the form by the comic builder, so its hints off the comic screen do not loop', () => {
+  it('is not taken for a change of the form by the comic builder, so its hints off the comic screen do not loop', { tags: ['condition'] }, () => {
     const id = useComic.getState().createProject('A');
     useComic.getState().setDraw(id, { steps: 12 });
     const page = activeProject(useComic.getState())!.pages[0]!;
@@ -87,7 +87,7 @@ describe('comic drawing settings', () => {
 });
 
 describe('comic drawing settings of an older version', () => {
-  it('drops the manga finish a comic stored, since drawing no longer takes part in it', () => {
+  it('drops the manga finish a comic stored, since drawing no longer takes part in it', { tags: ['regression'] }, () => {
     expect(parseDraw({ steps: 12, manga: { enabled: true, screenLines: 240 } })).toEqual({ steps: 12 });
     expect(parseDraw({ manga: { enabled: true } })).toBeUndefined();
   });

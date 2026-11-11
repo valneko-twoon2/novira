@@ -29,7 +29,7 @@ function setup(extra: { onActualSize?: () => void; menu?: boolean } = {}) {
 }
 
 describe('ZoomControls', () => {
-  it('shows the rounded percentage and runs the zoom buttons', () => {
+  it('shows the rounded percentage and runs the zoom buttons', { tags: ['scenario'] }, () => {
     const h = setup();
     expect(screen.getByTestId('zoom').textContent).toBe('46%');
     fireEvent.click(screen.getByRole('button', { name: t('common.zoomIn') }));
@@ -40,7 +40,7 @@ describe('ZoomControls', () => {
     expect(h.onFit).toHaveBeenCalledOnce();
   });
 
-  it('shows the 1:1 button only when an actual-size action is given', () => {
+  it('shows the 1:1 button only when an actual-size action is given', { tags: ['condition'] }, () => {
     setup();
     expect(screen.queryByRole('button', { name: t('common.zoomActualSize') })).toBeNull();
     cleanup();
@@ -50,7 +50,7 @@ describe('ZoomControls', () => {
     expect(onActualSize).toHaveBeenCalledOnce();
   });
 
-  it('offers zoom presets and extra items in the percentage menu', () => {
+  it('offers zoom presets and extra items in the percentage menu', { tags: ['condition'] }, () => {
     const h = setup({ menu: true });
     fireEvent.keyDown(screen.getByTestId('zoom'), { key: 'Enter' });
     fireEvent.click(screen.getByRole('menuitem', { name: '200%' }));

@@ -96,6 +96,7 @@ async fn release(root: &Path) -> Result<(), EngineError> {
     .await
 }
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn a_new_package_that_cannot_be_moved_into_place_puts_the_old_one_back() {
     quick_retries();
@@ -128,6 +129,7 @@ async fn a_new_package_that_cannot_be_moved_into_place_puts_the_old_one_back() {
     assert!(!previous_dir(root.path()).exists());
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn an_old_package_without_an_extensions_folder_cannot_hand_them_over() {
     let root = root_with_old_package(false);
@@ -166,6 +168,7 @@ fn engine(root: &Path) -> ComfyEngine {
     .with_installer(root.to_path_buf(), "nvidia".into())
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn a_start_of_the_new_version_that_is_cancelled_ends_as_cancelled() {
     let root = root_with_old_package(true);
@@ -184,6 +187,7 @@ async fn a_start_of_the_new_version_that_is_cancelled_ends_as_cancelled() {
     engine.shutdown();
 }
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn a_new_version_that_does_not_start_and_an_old_one_that_cannot_come_back_report_the_start() {
     let root = root_with_old_package(true);

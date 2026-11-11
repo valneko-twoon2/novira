@@ -27,7 +27,7 @@ const mount = () =>
   );
 
 describe('the character references of the drawing settings', () => {
-  it('starts off, turns on at the light strength with a slider, and off again', () => {
+  it('starts off, turns on at the light strength with a slider, and off again', { tags: ['scenario'] }, () => {
     mount();
     const section = screen.getByTestId('comic-cast-reference');
     const box = within(screen.getByTestId('comic-cast-reference-use')).getByRole('checkbox') as HTMLInputElement;

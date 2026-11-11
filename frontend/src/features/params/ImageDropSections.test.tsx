@@ -40,7 +40,7 @@ function dropFile(zone: Element, file: File) {
 const png = () => new File(['x'], 'drop.png', { type: 'image/png' });
 
 describe('RefImageList', () => {
-  it('adds an empty reference image from the add button', () => {
+  it('adds an empty reference image from the add button', { tags: ['scenario'] }, () => {
     show(<RefImageList />);
     expect(useParams.getState().refImages).toHaveLength(0);
     fireEvent.click(screen.getByTestId('add-ref-image'));
@@ -48,7 +48,7 @@ describe('RefImageList', () => {
     expect(useParams.getState().refImages[0]!.imageName).toBeFalsy();
   });
 
-  it('shows one card for each reference image', () => {
+  it('shows one card for each reference image', { tags: ['scenario'] }, () => {
     addDefaultRefImage();
     addDefaultRefImage();
     const { container } = show(<RefImageList />);
@@ -56,14 +56,14 @@ describe('RefImageList', () => {
     expect(useParams.getState().refImages).toHaveLength(2);
   });
 
-  it('adds a reference image holding a gallery picture dropped on the row', async () => {
+  it('adds a reference image holding a gallery picture dropped on the row', { tags: ['scenario'] }, async () => {
     const { container } = show(<RefImageList />);
     dropNames(container.querySelector('.pp-refs')!, ['pic.png']);
     await waitFor(() => expect(useParams.getState().refImages).toHaveLength(1));
     expect(useParams.getState().refImages[0]).toMatchObject({ imageName: 'pic.png', imageUrl: '/img/pic.png' });
   });
 
-  it('uploads a file dropped on the row, and adds it as a reference image', async () => {
+  it('uploads a file dropped on the row, and adds it as a reference image', { tags: ['scenario'] }, async () => {
     const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue(picture);
     const { container } = show(<RefImageList />);
     const file = png();
@@ -73,7 +73,7 @@ describe('RefImageList', () => {
     expect(useParams.getState().refImages[0]).toMatchObject({ imageName: 'pic.png' });
   });
 
-  it('adds nothing for a name the gallery does not know, or when the upload gives no picture', async () => {
+  it('adds nothing for a name the gallery does not know, or when the upload gives no picture', { tags: ['error-guessing'] }, async () => {
     const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue(undefined as never);
     const { container } = show(<RefImageList />);
     dropNames(container.querySelector('.pp-refs')!, ['missing.png']);
@@ -89,7 +89,7 @@ describe('RefImageList', () => {
 describe('I2iSection', () => {
   const openSection = () => fireEvent.click(document.querySelector('.ui-section__toggle')!);
 
-  it('is closed while empty, shows the drop hint once opened, and opens by itself when a picture is placed from elsewhere', () => {
+  it('is closed while empty, shows the drop hint once opened, and opens by itself when a picture is placed from elsewhere', { tags: ['state-transition'] }, () => {
     show(<I2iSection />);
     expect(screen.queryByText(t('params.i2i.dropHint'))).toBeNull();
     openSection();
@@ -100,7 +100,7 @@ describe('I2iSection', () => {
     expect(screen.getByTestId('i2i-image')).toBeTruthy();
   });
 
-  it('takes a dropped gallery picture and shows its size and strength badge', async () => {
+  it('takes a dropped gallery picture and shows its size and strength badge', { tags: ['scenario'] }, async () => {
     const { container } = show(<I2iSection />);
     openSection();
     dropNames(container.querySelector('.pp-upimg')!, ['pic.png']);
@@ -110,7 +110,7 @@ describe('I2iSection', () => {
     expect(screen.getByText(useParams.getState().strength.toFixed(2))).toBeTruthy();
   });
 
-  it('uploads a dropped file', async () => {
+  it('uploads a dropped file', { tags: ['scenario'] }, async () => {
     const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue(picture);
     const { container } = show(<I2iSection />);
     openSection();
@@ -119,7 +119,7 @@ describe('I2iSection', () => {
     expect(upload).toHaveBeenCalledTimes(1);
   });
 
-  it('ignores a drop of an unknown picture, and clears the picture with its button', async () => {
+  it('ignores a drop of an unknown picture, and clears the picture with its button', { tags: ['error-guessing'] }, async () => {
     const { container } = show(<I2iSection />);
     openSection();
     dropNames(container.querySelector('.pp-upimg')!, ['missing.png']);
@@ -133,7 +133,7 @@ describe('I2iSection', () => {
     expect(screen.queryByTestId('i2i-image')).toBeNull();
   });
 
-  it('sets the strength from the slider box', async () => {
+  it('sets the strength from the slider box', { tags: ['scenario'] }, async () => {
     const { container } = show(<I2iSection />);
     openSection();
     dropNames(container.querySelector('.pp-upimg')!, ['pic.png']);
@@ -148,13 +148,13 @@ describe('I2iSection', () => {
 describe('UpscaleInitialImage', () => {
   const image = () => useParams.getState().upscale.initialImage;
 
-  it('shows the drop hint while there is no picture', () => {
+  it('shows the drop hint while there is no picture', { tags: ['condition'] }, () => {
     show(<UpscaleInitialImage />);
     expect(screen.getByText(t('params.upscale.dropHint'))).toBeTruthy();
     expect(screen.queryByTestId('upscale-initial-image')).toBeNull();
   });
 
-  it('takes a dropped gallery picture, shows its size, and clears it', async () => {
+  it('takes a dropped gallery picture, shows its size, and clears it', { tags: ['scenario'] }, async () => {
     const { container } = show(<UpscaleInitialImage />);
     dropNames(container.querySelector('.pp-upimg')!, ['pic.png']);
     expect(await screen.findByTestId('upscale-initial-image')).toBeTruthy();
@@ -165,7 +165,7 @@ describe('UpscaleInitialImage', () => {
     expect(screen.getByText(t('params.upscale.dropHint'))).toBeTruthy();
   });
 
-  it('uploads a dropped file, and ignores an unknown name', async () => {
+  it('uploads a dropped file, and ignores an unknown name', { tags: ['error-guessing'] }, async () => {
     const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue(picture);
     const { container } = show(<UpscaleInitialImage />);
     dropNames(container.querySelector('.pp-upimg')!, ['missing.png']);

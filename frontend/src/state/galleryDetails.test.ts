@@ -38,7 +38,7 @@ afterEach(() => vi.restoreAllMocks());
 const held = (name: string) => useGallery.getState().images.find((i) => i.name === name)!;
 
 describe('ensureDetails', () => {
-  it('reads the details of a summary and puts them into the gallery', async () => {
+  it('reads the details of a summary and puts them into the gallery', { tags: ['condition'] }, async () => {
     await ensureDetails(['b.png']);
     expect(details).toHaveBeenCalledWith(['b.png']);
     expect(held('b.png').metadata?.positivePrompt).toBe('prompt of b.png');
@@ -47,19 +47,19 @@ describe('ensureDetails', () => {
     expect(summaryCount()).toBe(2);
   });
 
-  it('reads a picture once, also when it is asked for twice at the same time', async () => {
+  it('reads a picture once, also when it is asked for twice at the same time', { tags: ['condition'] }, async () => {
     await Promise.all([ensureDetails(['a.png']), ensureDetails(['a.png', 'a.png'])]);
     await ensureDetails(['a.png']);
     expect(details).toHaveBeenCalledTimes(1);
   });
 
-  it('does not read a picture that arrived whole, and does not ask when nothing is needed', async () => {
+  it('does not read a picture that arrived whole, and does not ask when nothing is needed', { tags: ['scenario'] }, async () => {
     await ensureDetails(['unknown.png']);
     await ensureDetails([]);
     expect(details).not.toHaveBeenCalled();
   });
 
-  it('keeps a star or a board that changed while the details were on their way', async () => {
+  it('keeps a star or a board that changed while the details were on their way', { tags: ['condition'] }, async () => {
     let release: (v: ImageDTO[]) => void = () => undefined;
     details.mockImplementation(() => new Promise<ImageDTO[]>((resolve) => (release = resolve)));
     const job = ensureDetails(['a.png']);
@@ -69,7 +69,7 @@ describe('ensureDetails', () => {
     expect(held('a.png')).toMatchObject({ starred: true, boardId: 'board-1', metadata: { positivePrompt: 'prompt of a.png' } });
   });
 
-  it('reads in chunks that stay within what the backend answers, and logs a failure without throwing', async () => {
+  it('reads in chunks that stay within what the backend answers, and logs a failure without throwing', { tags: ['error-guessing'] }, async () => {
     const many = Array.from({ length: DETAILS_CHUNK * 2 + 1 }, (_, i) => image(`m${i}.png`));
     useGallery.setState({ images: many });
     markSummaries(many);
@@ -84,7 +84,7 @@ describe('ensureDetails', () => {
     expect(summaryCount()).toBe(many.length);
   });
 
-  it('ensureAllDetails reads every summary', async () => {
+  it('ensureAllDetails reads every summary', { tags: ['equivalence'] }, async () => {
     await ensureAllDetails();
     expect(useGallery.getState().images.every((i) => i.metadata !== null)).toBe(true);
     expect(summaryCount()).toBe(0);
@@ -95,7 +95,7 @@ describe('what is read without being asked', () => {
   let stop: () => void;
   afterEach(() => stop());
 
-  it('reads the selected, viewed and compared pictures', async () => {
+  it('reads the selected, viewed and compared pictures', { tags: ['condition'] }, async () => {
     stop = watchGalleryDetails();
     useGallery.getState().setSelection(['a.png']);
     await vi.waitFor(() => expect(held('a.png').metadata).not.toBeNull());
@@ -104,7 +104,7 @@ describe('what is read without being asked', () => {
     expect(held('b.png').metadata).toBeNull();
   });
 
-  it('reads the video and audio pictures at once (their screens read their settings)', async () => {
+  it('reads the video and audio pictures at once (their screens read their settings)', { tags: ['condition'] }, async () => {
     useGallery.setState({ images: [image('v.mp4', { mediaType: 'video' }), image('s.wav', { mediaType: 'audio' }), image('p.png')] });
     markSummaries(useGallery.getState().images);
     stop = watchGalleryDetails();
@@ -113,7 +113,7 @@ describe('what is read without being asked', () => {
     expect(held('p.png').metadata).toBeNull();
   });
 
-  it('reads everything when a search is typed, because it looks in the prompts', async () => {
+  it('reads everything when a search is typed, because it looks in the prompts', { tags: ['condition'] }, async () => {
     stop = watchGalleryDetails();
     expect(details).not.toHaveBeenCalled();
     useGallery.getState().setSearch('prompt of b');
@@ -123,7 +123,7 @@ describe('what is read without being asked', () => {
 });
 
 describe('a gallery read again (a page over the network coming back)', () => {
-  it('keeps the details a picture already has and leaves the others as summaries', async () => {
+  it('keeps the details a picture already has and leaves the others as summaries', { tags: ['condition'] }, async () => {
     await ensureDetails(['a.png']);
     const merged = mergeSummaries([image('a.png', { starred: true }), image('b.png'), image('d.png')], useGallery.getState().images);
     expect(merged[0]).toMatchObject({ name: 'a.png', starred: true, metadata: { positivePrompt: 'prompt of a.png' } });
@@ -133,7 +133,7 @@ describe('a gallery read again (a page over the network coming back)', () => {
     expect(details).toHaveBeenLastCalledWith(['d.png']);
   });
 
-  it('applyCatchUp does not take the details away from the pictures that have them', async () => {
+  it('applyCatchUp does not take the details away from the pictures that have them', { tags: ['condition'] }, async () => {
     await ensureDetails(['a.png']);
     applyCatchUp(
       { boards: [], images: [image('a.png', { starred: true }), image('b.png')], imagesSummary: true, models: [], workflows: [] },

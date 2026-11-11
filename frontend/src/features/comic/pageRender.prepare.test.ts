@@ -25,7 +25,7 @@ beforeEach(() => {
 });
 
 describe('preparePage', () => {
-  it('loads every panel picture and the backdrop at the same time, and keeps the panels in order', async () => {
+  it('loads every panel picture and the backdrop at the same time, and keeps the panels in order', { tags: ['decision-table'] }, async () => {
     const page = emptyPage(3);
     page.panels.forEach((panel, i) => (panel.imageName = `p${i}.png`));
     page.backdrop = { imageName: 'back.png', view: { ...page.panels[0]!.imageView } } as typeof page.backdrop;

@@ -16,6 +16,7 @@ fn pages(n: usize) -> serde_json::Value {
     json!({"batchcomplete": true, "query": {"pages": list}})
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn the_lookup_asks_one_fixed_address_and_refuses_what_is_wrong() {
     let site = site();

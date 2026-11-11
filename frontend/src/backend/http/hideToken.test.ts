@@ -3,17 +3,17 @@ import { describe, expect, it } from 'vitest';
 import { hideToken, withoutToken } from './hideToken';
 
 describe('hideToken', () => {
-  it('drops the token and keeps the rest of the address', () => {
+  it('drops the token and keeps the rest of the address', { tags: ['equivalence'] }, () => {
     expect(withoutToken('http://127.0.0.1:5000/?token=abc')).toBe('/');
     expect(withoutToken('http://127.0.0.1:5000/?lan=open&token=abc#x')).toBe('/?lan=open#x');
   });
 
-  it('leaves an address without a token alone', () => {
+  it('leaves an address without a token alone', { tags: ['equivalence'] }, () => {
     expect(withoutToken('http://127.0.0.1:5000/?lan=open')).toBeNull();
     expect(withoutToken('http://127.0.0.1:5000/')).toBeNull();
   });
 
-  it('rewrites the history entry in place', () => {
+  it('rewrites the history entry in place', { tags: ['condition'] }, () => {
     window.history.replaceState(null, '', '/?token=abc&scenario=empty');
     const length = window.history.length;
     hideToken();

@@ -15,7 +15,7 @@ describe('the 3D pose editor source and result', () => {
     c().setBbox({ x: 0, y: 0, width: 512, height: 512 }, { history: false, syncParams: false });
   });
 
-  it('starts from the first pose of the selected control layer', () => {
+  it('starts from the first pose of the selected control layer', { tags: ['boundary'] }, () => {
     const id = c().addEntity('control');
     const pose = placePose('p1', {}, { x: 0, y: 0, width: 512, height: 512 }, 4);
     c().addObject(id, pose);
@@ -23,7 +23,7 @@ describe('the 3D pose editor source and result', () => {
     expect(pose3dSource()).toEqual({ entityId: id, pose });
   });
 
-  it('starts from a standing figure in the middle of the box when there is no pose, on the selected layer or none', () => {
+  it('starts from a standing figure in the middle of the box when there is no pose, on the selected layer or none', { tags: ['condition'] }, () => {
     const none = pose3dSource();
     expect(none.entityId).toBeNull();
     const b = jointBounds(none.pose)!;
@@ -36,7 +36,7 @@ describe('the 3D pose editor source and result', () => {
     expect(jointBounds(onLayer.pose)!.x + jointBounds(onLayer.pose)!.width / 2).toBeCloseTo(156, 0);
   });
 
-  it('does not use a locked layer or a layer that is not a control layer', () => {
+  it('does not use a locked layer or a layer that is not a control layer', { tags: ['condition'] }, () => {
     const id = c().addEntity('control');
     c().addObject(id, placePose('p1', {}, { x: 0, y: 0, width: 512, height: 512 }, 4));
     c().updateEntity(id, { isLocked: true });
@@ -46,7 +46,7 @@ describe('the 3D pose editor source and result', () => {
     expect(pose3dSource().entityId).toBeNull();
   });
 
-  it('replaces the pose in place with the new joints and depth, keeping its id, hidden joints and width, in one undo step', () => {
+  it('replaces the pose in place with the new joints and depth, keeping its id, hidden joints and width, in one undo step', { tags: ['state-transition'] }, () => {
     const id = c().addEntity('control');
     const pose: PoseObject = { ...placePose('p1', {}, { x: 0, y: 0, width: 512, height: 512 }, 4), hidden: [16] };
     c().addObject(id, pose);
@@ -58,7 +58,7 @@ describe('the 3D pose editor source and result', () => {
     expect(c().past.length).toBe(past + 1);
   });
 
-  it('makes a pose layer for a figure that was not on the canvas, and adds to an existing layer without a pose', () => {
+  it('makes a pose layer for a figure that was not on the canvas, and adds to an existing layer without a pose', { tags: ['condition'] }, () => {
     const source = pose3dSource();
     applyPose3d(source, baked());
     expect(c().entities.filter((e) => e.type === 'control')).toHaveLength(1);

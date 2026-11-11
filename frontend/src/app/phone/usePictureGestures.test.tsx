@@ -24,13 +24,13 @@ function setup(resetKey = 'a') {
 }
 
 describe('usePictureGestures', () => {
-  it('starts fitted', () => {
+  it('starts fitted', { tags: ['condition'] }, () => {
     const { result } = setup();
     expect(result.current.view).toEqual({ scale: 1, x: 0, y: 0 });
     expect(result.current.drag).toBe(0);
   });
 
-  it('follows a swiping finger and swipes to the next picture on release', () => {
+  it('follows a swiping finger and swipes to the next picture on release', { tags: ['scenario'] }, () => {
     const { result, onSwipe } = setup();
     const h = () => result.current.handlers;
     act(() => h().onPointerDown(ev(1, 100, 0, 0)));
@@ -41,7 +41,7 @@ describe('usePictureGestures', () => {
     expect(result.current.drag).toBe(0);
   });
 
-  it('swipes to the previous picture to the right, and ignores a short or mostly vertical move', () => {
+  it('swipes to the previous picture to the right, and ignores a short or mostly vertical move', { tags: ['boundary'] }, () => {
     const { result, onSwipe } = setup();
     const h = () => result.current.handlers;
     act(() => h().onPointerDown(ev(1, 0, 0, 0)));
@@ -55,7 +55,7 @@ describe('usePictureGestures', () => {
     expect(onSwipe).not.toHaveBeenCalled();
   });
 
-  it('zooms in on a double tap and back out on the next one', () => {
+  it('zooms in on a double tap and back out on the next one', { tags: ['state-transition'] }, () => {
     const { result } = setup();
     const h = () => result.current.handlers;
     const tap = (t: number) => {
@@ -71,7 +71,7 @@ describe('usePictureGestures', () => {
     expect(result.current.view).toEqual({ scale: 1, x: 0, y: 0 });
   });
 
-  it('does not double-tap when the taps are far apart in time or space, or slow', () => {
+  it('does not double-tap when the taps are far apart in time or space, or slow', { tags: ['boundary'] }, () => {
     const { result } = setup();
     const h = () => result.current.handlers;
     act(() => h().onPointerDown(ev(1, 0, 0, 0)));
@@ -92,7 +92,7 @@ describe('usePictureGestures', () => {
     expect(result.current.view.scale).toBe(1);
   });
 
-  it('pinches to zoom with two fingers, then pans the zoomed picture with one', () => {
+  it('pinches to zoom with two fingers, then pans the zoomed picture with one', { tags: ['scenario'] }, () => {
     const { result } = setup();
     const h = () => result.current.handlers;
     act(() => h().onPointerDown(ev(1, -50, 0, 0)));
@@ -107,7 +107,7 @@ describe('usePictureGestures', () => {
     expect(result.current.view.scale).toBeCloseTo(2, 5);
   });
 
-  it('ignores moves and ups from a pointer that is not down', () => {
+  it('ignores moves and ups from a pointer that is not down', { tags: ['error-guessing'] }, () => {
     const { result, onSwipe } = setup();
     act(() => result.current.handlers.onPointerMove(ev(9, 100, 0, 0)));
     act(() => result.current.handlers.onPointerUp(ev(9, 100, 0, 10)));
@@ -115,7 +115,7 @@ describe('usePictureGestures', () => {
     expect(onSwipe).not.toHaveBeenCalled();
   });
 
-  it('goes back to fitted when the picture changes', () => {
+  it('goes back to fitted when the picture changes', { tags: ['condition'] }, () => {
     const { result, rerender } = setup('a');
     const h = () => result.current.handlers;
     act(() => h().onPointerDown(ev(1, 0, 0, 0)));

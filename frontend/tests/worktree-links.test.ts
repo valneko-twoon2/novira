@@ -18,17 +18,17 @@ const scratch = (name: string) => {
 };
 
 describe('worktree names', () => {
-  it('takes letters, digits, dots, dashes and underscores', () => {
+  it('takes letters, digits, dots, dashes and underscores', { tags: ['equivalence', 'boundary'] }, () => {
     for (const name of ['cand-progress', '20261110_fix', 'v0.5.0', 'a']) expect(validName(name), name).toBe(true);
   });
 
-  it('refuses a name that could leave the folder or be read by a shell', () => {
+  it('refuses a name that could leave the folder or be read by a shell', { tags: ['error-guessing'] }, () => {
     for (const name of ['', '..', '../x', 'a/b', 'a\\b', 'x&calc', 'x|y', 'x y', 'x"y', '%PATH%', 'a;b', '.', '-x']) expect(validName(name), name).toBe(false);
   });
 });
 
 describe.runIf(process.platform === 'win32')('links to the main checkout (Windows)', () => {
-  it('makes a junction that shows the target, and tells it from a real folder', () => {
+  it('makes a junction that shows the target, and tells it from a real folder', { tags: ['scenario'] }, () => {
     // A shell character in the path: made through a shell, `&` would start a second command.
     const root = scratch('wt&link');
     const target = join(root, 'target');

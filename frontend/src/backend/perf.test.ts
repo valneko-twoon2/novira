@@ -9,7 +9,7 @@ const ticking = () => {
 };
 
 describe('perf recorder', () => {
-  it('keeps only the last calls of a bounded ring, oldest first, and counts the dropped ones', async () => {
+  it('keeps only the last calls of a bounded ring, oldest first, and counts the dropped ones', { tags: ['boundary'] }, async () => {
     const rec = createRecorder({ now: ticking(), limit: 3 });
     for (const name of ['a', 'b', 'c', 'd', 'e']) await rec.timed(name, () => Promise.resolve(name));
     const snap = rec.snapshot();
@@ -18,7 +18,7 @@ describe('perf recorder', () => {
     expect(snap.calls.every((c) => c.duration === 10 && c.ok)).toBe(true);
   });
 
-  it('is in call order before the ring is full, and the page recorder holds CALL_LIMIT', async () => {
+  it('is in call order before the ring is full, and the page recorder holds CALL_LIMIT', { tags: ['boundary'] }, async () => {
     const rec = createRecorder({ now: ticking(), limit: 4 });
     await rec.timed('one', () => Promise.resolve(1));
     await rec.timed('two', () => Promise.resolve(2));
@@ -26,7 +26,7 @@ describe('perf recorder', () => {
     expect(CALL_LIMIT).toBe(500);
   });
 
-  it('notes no size unless recording, then the length of the answer as JSON', async () => {
+  it('notes no size unless recording, then the length of the answer as JSON', { tags: ['condition'] }, async () => {
     const off = createRecorder({ now: ticking() });
     await off.timed('bootstrap', () => Promise.resolve({ images: [1, 2] }));
     expect(off.snapshot().calls[0]).not.toHaveProperty('size');
@@ -37,13 +37,13 @@ describe('perf recorder', () => {
     expect(on.snapshot().calls.map((c) => c.size)).toEqual([JSON.stringify({ images: [1, 2] }).length, 0]);
   });
 
-  it('notes a failed call as not ok, with no size, and passes the error on', async () => {
+  it('notes a failed call as not ok, with no size, and passes the error on', { tags: ['error-guessing'] }, async () => {
     const rec = createRecorder({ now: ticking(), recording: true });
     await expect(rec.timed('enqueue', () => Promise.reject(new Error('busy')))).rejects.toThrow('busy');
     expect(rec.snapshot().calls).toEqual([{ name: 'enqueue', start: 10, duration: 10, ok: false }]);
   });
 
-  it('keeps the first time of each mark and sends it to the timeline once', () => {
+  it('keeps the first time of each mark and sends it to the timeline once', { tags: ['condition'] }, () => {
     const markEntry = vi.fn();
     const rec = createRecorder({ now: ticking(), markEntry });
     rec.mark('backend-ready');
@@ -53,7 +53,7 @@ describe('perf recorder', () => {
     expect(markEntry.mock.calls).toEqual([['novira:backend-ready'], ['novira:stores-filled']]);
   });
 
-  it('times the promise methods of a prototype under their snake-case name and leaves the others as they were', async () => {
+  it('times the promise methods of a prototype under their snake-case name and leaves the others as they were', { tags: ['condition'] }, async () => {
     class Client {
       factor = 3;
       async listImages(n: number) {
@@ -75,13 +75,13 @@ describe('perf recorder', () => {
     expect(rec.snapshot().calls.map((c) => c.name)).toEqual(['list_images']);
   });
 
-  it('gives the harness a read-only snapshot on window', () => {
+  it('gives the harness a read-only snapshot on window', { tags: ['condition'] }, () => {
     const exposed = (window as unknown as { __noviraPerf: { snapshot: () => unknown } }).__noviraPerf;
     expect(Object.isFrozen(exposed)).toBe(true);
     expect(exposed.snapshot()).toEqual(perf.snapshot());
   });
 
-  it('writes command-like names', () => {
+  it('writes command-like names', { tags: ['condition'] }, () => {
     expect(snakeCase('listUnfinishedDownloads')).toBe('list_unfinished_downloads');
     expect(snakeCase('bootstrap')).toBe('bootstrap');
   });

@@ -4,14 +4,14 @@ import { authorOf, buildItems, filterItems, hasUpdate, sortItems } from './exten
 import { PACK_CATALOG } from './packCatalog';
 
 describe('extension list', () => {
-  it('takes the author from the GitHub address, whatever its spelling', () => {
+  it('takes the author from the GitHub address, whatever its spelling', { tags: ['condition'] }, () => {
     expect(authorOf('https://github.com/ltdrdata/ComfyUI-Impact-Pack')).toBe('ltdrdata');
     expect(authorOf('https://github.com/ltdrdata/ComfyUI-Impact-Pack.git/')).toBe('ltdrdata');
     expect(authorOf(null)).toBeNull();
     expect(authorOf('not an address')).toBeNull();
   });
 
-  it('lists every catalog pack once, marks the installed ones, and adds packs found only in ComfyUI', () => {
+  it('lists every catalog pack once, marks the installed ones, and adds packs found only in ComfyUI', { tags: ['equivalence'] }, () => {
     const items = buildItems([
       { folder: 'ComfyUI-Impact-Pack', url: 'https://github.com/ltdrdata/ComfyUI-Impact-Pack', version: 'v8.0' },
       { folder: 'by-hand', url: null, version: null },
@@ -24,7 +24,7 @@ describe('extension list', () => {
     expect(items.find((i) => i.folder === 'Fancy')!.author).toBe('someone');
   });
 
-  it('filters by state, purpose and text', () => {
+  it('filters by state, purpose and text', { tags: ['condition'] }, () => {
     const items = buildItems([{ folder: 'Fancy', url: 'https://github.com/someone/Fancy', version: null }]);
     expect(filterItems(items, 'installed', '').map((i) => i.folder)).toEqual(['Fancy']);
     expect(filterItems(items, 'notInstalled', '')).toHaveLength(PACK_CATALOG.length);
@@ -50,7 +50,7 @@ describe('extension list', () => {
     license: null,
   });
 
-  it('merges the registry, the catalog and what is installed into one entry per repository', () => {
+  it('merges the registry, the catalog and what is installed into one entry per repository', { tags: ['condition'] }, () => {
     const registry = [node('ComfyUI-Impact-Pack', 'ltdrdata', 500, '2026-01-01'), node('Other', 'someone', 900, '2026-03-01')];
     const items = buildItems(
       [
@@ -70,7 +70,7 @@ describe('extension list', () => {
     expect(items).toHaveLength(PACK_CATALOG.length + 1);
   });
 
-  it('sorts by downloads, stars, update date or name', () => {
+  it('sorts by downloads, stars, update date or name', { tags: ['condition'] }, () => {
     const items = buildItems([], [node('Bee', 'p', 10, '2026-01-01'), node('Ay', 'p', 30, '2025-01-01'), node('Cee', 'p', 20, '2026-06-01')]);
     const names = (sort: Parameters<typeof sortItems>[1]) => sortItems(items, sort).filter((i) => i.registry).map((i) => i.folder);
     expect(names('downloads')).toEqual(['Ay', 'Cee', 'Bee']);
@@ -78,7 +78,7 @@ describe('extension list', () => {
     expect(names('name')).toEqual(['Ay', 'Bee', 'Cee']);
   });
 
-  it('sees an update only when the installed tag is older than the latest version of the registry', () => {
+  it('sees an update only when the installed tag is older than the latest version of the registry', { tags: ['condition'] }, () => {
     const at = (version: string | null, latest: string | null) =>
       buildItems([{ folder: 'Alpha', url: 'https://github.com/p/Alpha', version }], [{ ...node('Alpha', 'p', 1, '2026-01-01'), version: latest }]).find((i) => i.folder === 'Alpha')!;
     expect(hasUpdate(at('v1.9.0', '1.10.0'))).toBe(true);

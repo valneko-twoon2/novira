@@ -42,6 +42,7 @@ fn hold_when_it_appears(
     })
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_pack_whose_new_copy_cannot_be_moved_in_keeps_the_installed_one() {
     std::env::set_var("NOVIRA_TEST_RETRY_PAUSE_MS", "1");

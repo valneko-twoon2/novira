@@ -18,7 +18,7 @@ const sent = () => vi.mocked(runJob).mock.calls.at(-1)![0] as EnqueueRequest;
 beforeEach(() => vi.mocked(runJob).mockReset().mockResolvedValue(source));
 
 describe('the manga finish graph', () => {
-  it('runs the picture through the finish node with the values and saves one picture', () => {
+  it('runs the picture through the finish node with the values and saves one picture', { tags: ['scenario'] }, () => {
     const g = buildMangaGraph('a.png', values);
     expect(g.prompt.source).toEqual({ class_type: 'LoadImage', inputs: { image: { $image: 'a.png' } } });
     expect(g.prompt.finish).toMatchObject({ class_type: 'MangaFinish', inputs: { image: ['source', 0], screen_lines: 240, white_point: 0.85, black_point: 0.35, gradation: 0.75, white_lines: 0.45 } });
@@ -26,12 +26,12 @@ describe('the manga finish graph', () => {
     expect(g.outputs).toEqual(['save']);
   });
 
-  it('keeps a try out of the gallery', async () => {
+  it('keeps a try out of the gallery', { tags: ['scenario'] }, async () => {
     await runMangaPreview('a.png', values);
     expect(sent().destination).toBe('intermediate');
   });
 
-  it('saves the page as a new gallery picture on the original board, with the original description', async () => {
+  it('saves the page as a new gallery picture on the original board, with the original description', { tags: ['scenario'] }, async () => {
     await saveMangaPage(source, values, 'Manga page');
     expect(sent()).toMatchObject({
       destination: 'gallery',
@@ -41,7 +41,7 @@ describe('the manga finish graph', () => {
     expect(sent().comfyGraph).toEqual(buildMangaGraph('a.png', values));
   });
 
-  it('saves a picture without metadata too', async () => {
+  it('saves a picture without metadata too', { tags: ['scenario'] }, async () => {
     await saveMangaPage({ ...source, metadata: null } as ImageDTO, values, 'Manga page');
     expect(sent().params.positivePrompt).toBe('');
   });

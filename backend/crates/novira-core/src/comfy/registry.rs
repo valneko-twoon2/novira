@@ -214,6 +214,7 @@ mod tests {
       {"id":"c","name":"Banned","status":"NodeStatusBanned","repository":"https://github.com/ow/c"},
       {"id":"d","name":"Dee","status":"NodeStatusActive","repository":"https://github.com/ow/Dee","author":"Me","license":"{\"file\": \"LICENSE\"}","icon":"https://evil.example/i.png"}]}"#;
 
+    // tags: condition
     #[test]
     fn a_page_keeps_active_github_packs_and_only_safe_fields() {
         let (nodes, pages) = parse_page(PAGE.as_bytes()).unwrap();
@@ -250,12 +251,14 @@ mod tests {
         );
     }
 
+    // tags: error-guessing
     #[test]
     fn an_answer_that_is_not_a_list_is_refused() {
         assert!(parse_page(b"not json").is_err());
         assert!(parse_page(br#"{"error":"x"}"#).is_err());
     }
 
+    // tags: boundary
     #[test]
     fn icons_need_https_and_an_allowed_host_exactly() {
         let ok = serde_json::json!("https://avatars.githubusercontent.com/u/1?v=4");
@@ -286,6 +289,7 @@ mod tests {
         }
     }
 
+    // tags: scenario
     #[test]
     fn a_saved_list_reads_back_with_its_age() {
         let dir = tempfile::tempdir().unwrap();
@@ -298,6 +302,7 @@ mod tests {
         assert!(!path.with_extension("json.part").exists());
     }
 
+    // tags: error-guessing
     #[test]
     fn a_missing_or_damaged_file_reads_as_nothing() {
         let dir = tempfile::tempdir().unwrap();
@@ -309,6 +314,7 @@ mod tests {
         assert!(load_cache(&path).is_none());
     }
 
+    // tags: condition
     #[test]
     fn the_disk_copy_is_checked_again_when_read() {
         let dir = tempfile::tempdir().unwrap();

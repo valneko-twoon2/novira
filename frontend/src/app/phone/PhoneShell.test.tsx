@@ -44,7 +44,7 @@ afterEach(() => {
 });
 
 describe('phone layout', () => {
-  it("opens the assistant's chat over the tabs from the title bar, and draws pictures again after a request", () => {
+  it("opens the assistant's chat over the tabs from the title bar, and draws pictures again after a request", { tags: ['scenario'] }, () => {
     vi.spyOn(backend, 'agentStatus').mockResolvedValue({ provider: null, installed: false, loggedIn: false, models: [] });
     useAgent.setState({ open: false, busy: false });
     mount();
@@ -65,7 +65,7 @@ describe('phone layout', () => {
     expect(screen.getByTestId('phone-shell').hasAttribute('data-chat')).toBe(false);
   });
 
-  it('opens on the Generate tab and draws with the Generate screen whatever the desktop layout had open', () => {
+  it('opens on the Generate tab and draws with the Generate screen whatever the desktop layout had open', { tags: ['condition'] }, () => {
     mount();
     expect(screen.getByTestId('phone-tab-generate')).toBeTruthy();
     expect(screen.getByRole('heading', { name: t('app.tabs.generate') })).toBeTruthy();
@@ -77,7 +77,7 @@ describe('phone layout', () => {
 });
 
 describe('phone Generate tab', () => {
-  it('writes the prompts the desktop left panel writes', () => {
+  it('writes the prompts the desktop left panel writes', { tags: ['condition'] }, () => {
     mount();
     fireEvent.change(screen.getByTestId('positive-prompt'), { target: { value: 'a cat on a roof' } });
     fireEvent.change(screen.getByTestId('negative-prompt'), { target: { value: 'blurry' } });
@@ -85,7 +85,7 @@ describe('phone Generate tab', () => {
     expect(useParams.getState().negativePrompt).toBe('blurry');
   });
 
-  it('says why it cannot draw yet and keeps the button off, then draws when ready', () => {
+  it('says why it cannot draw yet and keeps the button off, then draws when ready', { tags: ['state-transition'] }, () => {
     ready(['Pick a model']);
     mount();
     expect(screen.getByTestId('generation-reason').textContent).toBe('Pick a model');
@@ -98,7 +98,7 @@ describe('phone Generate tab', () => {
     expect(invoke).toHaveBeenCalledTimes(1);
   });
 
-  it('shows the progress and how many are queued while it draws', () => {
+  it('shows the progress and how many are queued while it draws', { tags: ['condition'] }, () => {
     useQueue.setState({ items: [running(3)], status: { ...initial.queue.status, inProgress: 1, pending: 2 }, progress: { itemId: 3, step: 6, totalSteps: 20, progressImageUrl: null, message: '' } });
     mount();
     const button = screen.getByTestId('invoke-button');
@@ -109,12 +109,12 @@ describe('phone Generate tab', () => {
 });
 
 describe('the job being drawn', () => {
-  it('shows nothing while no job runs', () => {
+  it('shows nothing while no job runs', { tags: ['condition'] }, () => {
     mount();
     expect(screen.queryByTestId('phone-live-chip')).toBeNull();
   });
 
-  it('shows the step in the title bar and the picture full screen, closing when the job ends', () => {
+  it('shows the step in the title bar and the picture full screen, closing when the job ends', { tags: ['state-transition'] }, () => {
     useQueue.setState({ items: [running(9)], progress: { itemId: 9, step: 5, totalSteps: 25, progressImageUrl: 'data:image/png;base64,AA==', message: '' } });
     mount();
     const chip = screen.getByTestId('phone-live-chip');
@@ -128,7 +128,7 @@ describe('the job being drawn', () => {
     expect(usePhone.getState().view).toBeNull();
   });
 
-  it('closes full screen with its button', () => {
+  it('closes full screen with its button', { tags: ['condition'] }, () => {
     useQueue.setState({ items: [running(9)], progress: null });
     mount();
     fireEvent.click(screen.getByTestId('phone-live-chip'));

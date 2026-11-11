@@ -76,6 +76,7 @@ fn shell_violations(code: &str) -> Vec<String> {
         .collect()
 }
 
+// tags: static, condition
 #[test]
 fn no_command_interpreter_is_started() {
     let mut found = Vec::new();
@@ -170,6 +171,7 @@ fn sql_violations(code: &str) -> Vec<String> {
     found
 }
 
+// tags: static, condition
 #[test]
 fn sql_text_takes_only_table_names() {
     let mut found = Vec::new();
@@ -188,6 +190,7 @@ fn sql_text_takes_only_table_names() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn the_scans_recognise_the_forbidden_forms() {
     assert_eq!(

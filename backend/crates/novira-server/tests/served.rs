@@ -16,6 +16,7 @@ async fn failed(f: &Fixture, command: &str, body: &str) -> String {
     r.json()["error"].as_str().unwrap().to_string()
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_job_is_queued_and_the_queue_controls_work() {
     let f = Fixture::start().await;
@@ -61,6 +62,7 @@ async fn a_job_is_queued_and_the_queue_controls_work() {
     f.stop().await;
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn installs_and_model_changes_keep_the_backends_checks() {
     let f = Fixture::start().await;
@@ -135,6 +137,7 @@ async fn installs_and_model_changes_keep_the_backends_checks() {
     f.stop().await;
 }
 
+// tags: equivalence
 #[tokio::test]
 async fn the_model_sites_are_asked_only_about_well_formed_names() {
     let f = Fixture::start().await;
@@ -153,6 +156,7 @@ async fn the_model_sites_are_asked_only_about_well_formed_names() {
     f.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn pages_outside_the_app_come_back_as_checked_addresses() {
     let f = Fixture::start().await;
@@ -215,6 +219,7 @@ async fn pages_outside_the_app_come_back_as_checked_addresses() {
     f.stop().await;
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn engine_settings_are_checked_before_they_are_written() {
     let f = Fixture::start().await;
@@ -252,6 +257,7 @@ async fn engine_settings_are_checked_before_they_are_written() {
     f.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn keys_are_stored_but_never_come_back() {
     let f = Fixture::start().await;
@@ -291,6 +297,7 @@ async fn keys_are_stored_but_never_come_back() {
     f.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn the_assistant_commands_keep_their_checks() {
     let f = Fixture::start().await;
@@ -301,6 +308,7 @@ async fn the_assistant_commands_keep_their_checks() {
     f.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn what_needs_a_dialog_or_a_restore_stays_unavailable() {
     let f = Fixture::start().await;
@@ -330,6 +338,7 @@ async fn what_needs_a_dialog_or_a_restore_stays_unavailable() {
     f.stop().await;
 }
 
+// tags: boundary
 #[tokio::test]
 async fn preparing_the_watermark_takes_no_arguments() {
     // Only the refusals: a call that is accepted starts the download from the real hosts.

@@ -39,7 +39,7 @@ const withWords = () =>
   });
 
 describe("ComfyUI's words on its nodes", () => {
-  it("keeps the node's own words while ComfyUI has none", () => {
+  it("keeps the node's own words while ComfyUI has none", { tags: ['boundary', 'state-transition'] }, () => {
     expect(nodeTitle(sampler.type)).toBe('KSampler Test');
     expect(nodeDesc(sampler.type)).toBe('Denoises');
     expect(fieldLabel(sampler.type, 'seed')).toBe('seed');
@@ -47,7 +47,7 @@ describe("ComfyUI's words on its nodes", () => {
     expect(outputLabel(sampler.type, 'LATENT')).toBe('LATENT');
   });
 
-  it("shows ComfyUI's words where it has them and the node's own where it has not", () => {
+  it("shows ComfyUI's words where it has them and the node's own where it has not", { tags: ['condition'] }, () => {
     withWords();
     expect(nodeTitle(sampler.type)).toBe('Échantillonneur');
     expect(nodeDesc(sampler.type)).toBe('Débruite');
@@ -57,7 +57,7 @@ describe("ComfyUI's words on its nodes", () => {
     expect(outputLabel(sampler.type, 'LATENT')).toBe('Latent FR');
   });
 
-  it('finds a node by its English name and by the name in the app language', () => {
+  it('finds a node by its English name and by the name in the app language', { tags: ['condition'] }, () => {
     withWords();
     expect(matchingTemplates('ksampler test').map((t) => t.type)).toContain(sampler.type);
     expect(matchingTemplates('échantillonneur').map((t) => t.type)).toContain(sampler.type);

@@ -27,7 +27,7 @@ beforeEach(() => {
 });
 
 describe('quickRunTool', () => {
-  it('shows the picture, opens the band on the run and runs the tool once its nodes are read', async () => {
+  it('shows the picture, opens the band on the run and runs the tool once its nodes are read', { tags: ['scenario'] }, async () => {
     useComfyNodes.setState({ defs: null, status: 'idle' });
     vi.spyOn(backend, 'nodeDefs').mockResolvedValue(all);
     await quickRunTool('caption', 'photo.png');
@@ -36,7 +36,7 @@ describe('quickRunTool', () => {
     expect(startToolRun).toHaveBeenCalledWith('caption', 'photo.png');
   });
 
-  it('waits for a node list another caller is already reading', async () => {
+  it('waits for a node list another caller is already reading', { tags: ['condition'] }, async () => {
     let answer!: (defs: ComfyNodeDefs) => void;
     useComfyNodes.setState({ defs: null, status: 'idle' });
     vi.spyOn(backend, 'nodeDefs').mockReturnValue(new Promise((resolve) => (answer = resolve)));
@@ -49,7 +49,7 @@ describe('quickRunTool', () => {
     expect(startToolRun).toHaveBeenCalledWith('cutout', 'photo.png');
   });
 
-  it('opens the band on the settings instead of running when a pack is missing', async () => {
+  it('opens the band on the settings instead of running when a pack is missing', { tags: ['error-guessing'] }, async () => {
     const { RMBG: _gone, ...defs } = all;
     useComfyNodes.setState({ defs, status: 'ready' });
     await quickRunTool('cutout', 'photo.png');
@@ -59,7 +59,7 @@ describe('quickRunTool', () => {
 });
 
 describe('the settings and the toolbar toggle', () => {
-  it('opens the settings without running, showing the picture unless asked not to', () => {
+  it('opens the settings without running, showing the picture unless asked not to', { tags: ['state-transition'] }, () => {
     useComfyNodes.setState({ defs: all, status: 'ready' });
     openToolSettings('facefix', 'photo.png');
     expect(viewer.showPicture).toHaveBeenCalledTimes(1);
@@ -69,7 +69,7 @@ describe('the settings and the toolbar toggle', () => {
     expect(startToolRun).not.toHaveBeenCalled();
   });
 
-  it('closes the band when it already shows the tool, and switches it to the tool otherwise', () => {
+  it('closes the band when it already shows the tool, and switches it to the tool otherwise', { tags: ['scenario'] }, () => {
     useComfyNodes.setState({ defs: all, status: 'ready' });
     toggleToolBand('caption', 'photo.png');
     expect(useToolBand.getState()).toMatchObject({ open: true, tool: 'caption' });
@@ -82,7 +82,7 @@ describe('the settings and the toolbar toggle', () => {
 });
 
 describe('the band', () => {
-  it('keeps the face fix choices for one picture and drops them for another', () => {
+  it('keeps the face fix choices for one picture and drops them for another', { tags: ['condition'] }, () => {
     const band = useToolBand.getState();
     band.show('facefix', 'photo.png', 'settings');
     band.setFace({ prompt: 'red eyes' });

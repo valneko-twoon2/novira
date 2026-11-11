@@ -14,14 +14,14 @@ vi.mock('@/backend/mock/imageSynth', async (original) => ({
 describe('text jobs', () => {
   beforeAll(() => backend.setStepDelay(0));
 
-  it('resolves with the text of the finished job', async () => {
+  it('resolves with the text of the finished job', { tags: ['condition'] }, async () => {
     const source = await backend.uploadImage(new Blob(['x']), { boardId: null });
     const text = await runTextJob(graphRequest(buildCaptionGraph(source.name, { style: 'tags', model: 'm' }), 'intermediate'));
     expect(text.split(', ').length).toBeGreaterThan(3);
     expect(await runTextJob(graphRequest(buildCaptionGraph(source.name, { style: 'tags', model: 'm' }), 'intermediate'))).toBe(text);
   });
 
-  it('tells the queue item id as soon as the job is queued', async () => {
+  it('tells the queue item id as soon as the job is queued', { tags: ['state-transition'] }, async () => {
     const source = await backend.uploadImage(new Blob(['x']), { boardId: null });
     const ids: number[] = [];
     await runTextJob(graphRequest(buildCaptionGraph(source.name, { style: 'tags', model: 'm' }), 'intermediate'), undefined, (id) => ids.push(id));
@@ -29,11 +29,11 @@ describe('text jobs', () => {
     expect(ids[0]).toBeGreaterThan(0);
   });
 
-  it('rejects with the reason when the job fails', async () => {
+  it('rejects with the reason when the job fails', { tags: ['error-guessing'] }, async () => {
     await expect(runTextJob(graphRequest(buildCaptionGraph('no-such-picture.png', { style: 'tags', model: 'm' }), 'intermediate'))).rejects.toThrow(/deleted/);
   });
 
-  it('cancels the job when aborted', async () => {
+  it('cancels the job when aborted', { tags: ['error-guessing'] }, async () => {
     backend.setStepDelay(40);
     const source = await backend.uploadImage(new Blob(['x']), { boardId: null });
     const controller = new AbortController();

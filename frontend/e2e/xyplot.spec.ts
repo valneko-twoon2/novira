@@ -1,7 +1,7 @@
 // The comparison grid: two settings vary, every combination is drawn, and one labelled table lands in the gallery.
 import { expect, msg, openApp, test } from './fixtures';
 
-test('a comparison grid is made from two varying settings and saved as one picture', async ({ page }) => {
+test('a comparison grid is made from two varying settings and saved as one picture', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('seed-fixed').click();
   await page.getByTestId('positive-prompt').fill('a lighthouse on a cliff at dusk');
@@ -28,7 +28,7 @@ test('a comparison grid is made from two varying settings and saved as one pictu
   await expect(page.getByTestId('gallery-thumb')).toHaveCount(5);
 });
 
-test('the same setting cannot vary on both axes, and a bad value is reported', async ({ page }) => {
+test('the same setting cannot vary on both axes, and a bad value is reported', { tag: ['@error-guessing'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('positive-prompt').fill('a lighthouse');
   await page.getByRole('button', { name: msg('params.invoke.moreOptions') }).click();

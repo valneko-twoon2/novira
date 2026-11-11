@@ -451,6 +451,7 @@ mod tests {
         }
     }
 
+    // tags: decision-table
     #[test]
     fn regional_layers_need_their_count_a_region_and_a_prompt() {
         let with = |layers: Vec<RegionalLayerInput>| Guidance {
@@ -495,6 +496,7 @@ mod tests {
         assert!(check(&with(vec![region(Some("a"))]), &video, false).is_err());
     }
 
+    // tags: condition
     #[test]
     fn reference_pictures_are_counted_named_and_kept_to_image_modes() {
         let url = "http://novira-image.localhost/full/a.png";
@@ -517,6 +519,7 @@ mod tests {
         assert!(!with(1, url).is_empty());
     }
 
+    // tags: equivalence
     #[test]
     fn well_formed_guidance_passes() {
         let g = Guidance {
@@ -533,6 +536,7 @@ mod tests {
         );
     }
 
+    // tags: error-guessing, boundary
     #[test]
     fn too_many_layers_or_references_are_refused() {
         let g = Guidance {
@@ -551,6 +555,7 @@ mod tests {
             .contains("At most"));
     }
 
+    // tags: boundary
     #[test]
     fn masks_belong_to_inpaint_and_outpaint_with_a_source() {
         let mask = Guidance {
@@ -567,6 +572,7 @@ mod tests {
         assert!(check(&huge, &params("inpaint", 0, 0), true).is_err());
     }
 
+    // tags: error-guessing
     #[test]
     fn guidance_is_refused_outside_image_generation_and_counts_must_match() {
         let g = Guidance {
@@ -583,6 +589,7 @@ mod tests {
             .contains("count"));
     }
 
+    // tags: condition
     #[test]
     fn weights_spans_and_keys_are_checked() {
         let bad_controls = [
@@ -638,6 +645,7 @@ mod tests {
         assert!(check(&g, &params("txt2img", 0, 1), false).is_err());
     }
 
+    // tags: decision-table, equivalence
     #[test]
     fn clip_vision_size_comes_from_the_name_then_the_layer_count() {
         assert_eq!(
@@ -674,6 +682,7 @@ mod tests {
         assert_eq!(clip_vision_size("model.safetensors", None), None);
     }
 
+    // tags: condition
     #[test]
     fn any_base_fits_everything() {
         assert!(compatible(BaseModel::Sdxl, BaseModel::Sdxl));

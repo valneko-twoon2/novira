@@ -1,7 +1,7 @@
 // Making a pose: the stick figure is bent, saved as a picture and added to the canvas as a control layer.
 import { expect, msg, openApp, test } from './fixtures';
 
-test('a pose is made and added to the canvas as a control layer with a model that can read it', async ({ page }) => {
+test('a pose is made and added to the canvas as a control layer with a model that can read it', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('tab-canvas').click();
   await page.getByTestId('canvas-add-layer').click();

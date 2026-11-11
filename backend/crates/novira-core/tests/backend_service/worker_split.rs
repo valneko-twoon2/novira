@@ -46,6 +46,7 @@ fn anima_key(b: &novira_core::Backend) -> String {
         .key
 }
 
+// tags: scenario
 #[tokio::test]
 async fn an_anima_job_gets_its_encoder_and_vae_from_the_installed_models() {
     let dir = tempfile::tempdir().unwrap();
@@ -77,6 +78,7 @@ async fn an_anima_job_gets_its_encoder_and_vae_from_the_installed_models() {
     assert_eq!(jobs[0].checkpoint.folder, "diffusion_models");
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_missing_part_fails_the_job_and_says_which_file_to_install() {
     let dir = tempfile::tempdir().unwrap();
@@ -95,6 +97,7 @@ async fn a_missing_part_fails_the_job_and_says_which_file_to_install() {
     assert!(engine.jobs.lock().unwrap().is_empty());
 }
 
+// tags: error-guessing, decision-table
 #[tokio::test]
 async fn a_family_without_a_recipe_is_still_refused_by_name() {
     let dir = tempfile::tempdir().unwrap();
@@ -118,6 +121,7 @@ async fn a_family_without_a_recipe_is_still_refused_by_name() {
     assert!(error.contains("wan models are not supported"), "{error}");
 }
 
+// tags: decision-table
 #[tokio::test]
 async fn a_checkpoint_of_a_newer_family_loads_only_the_parts_it_lacks() {
     let dir = tempfile::tempdir().unwrap();
@@ -180,6 +184,7 @@ async fn a_checkpoint_of_a_newer_family_loads_only_the_parts_it_lacks() {
     assert!(jobs[0].vae.is_none());
 }
 
+// tags: scenario
 #[tokio::test]
 async fn an_anima_picture_runs_and_records_the_scheduler_setting_with_no_fixed_sampling() {
     let dir = tempfile::tempdir().unwrap();
@@ -206,6 +211,7 @@ async fn an_anima_picture_runs_and_records_the_scheduler_setting_with_no_fixed_s
     backend.shutdown();
 }
 
+// tags: scenario
 #[tokio::test]
 async fn an_sd_picture_records_no_fixed_sampling_even_when_one_was_sent() {
     let dir = tempfile::tempdir().unwrap();
@@ -229,6 +235,7 @@ async fn an_sd_picture_records_no_fixed_sampling_even_when_one_was_sent() {
     backend.shutdown();
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn an_anima_checkpoint_with_parts_comfyui_cannot_read_gets_the_installed_ones() {
     let dir = tempfile::tempdir().unwrap();
@@ -269,6 +276,7 @@ async fn an_anima_checkpoint_with_parts_comfyui_cannot_read_gets_the_installed_o
     assert!(jobs[0].vae.is_some());
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_sampler_the_picture_named_is_recorded_as_what_ran() {
     let dir = tempfile::tempdir().unwrap();

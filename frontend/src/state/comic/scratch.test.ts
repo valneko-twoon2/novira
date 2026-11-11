@@ -6,7 +6,7 @@ import { keepScratch, sweepScratch } from './scratch';
 afterEach(() => vi.restoreAllMocks());
 
 describe('the looked-at pictures', () => {
-  it('keeps the last few, deletes the older ones, and deletes the rest when swept', async () => {
+  it('keeps the last few, deletes the older ones, and deletes the rest when swept', { tags: ['condition'] }, async () => {
     const gone = vi.spyOn(backend, 'deleteImages').mockResolvedValue();
     for (const name of ['a', 'b', 'c', 'd', 'e', 'f']) keepScratch(name);
     expect(gone).toHaveBeenNthCalledWith(1, ['a']);
@@ -17,7 +17,7 @@ describe('the looked-at pictures', () => {
     expect(gone).toHaveBeenCalledTimes(3);
   });
 
-  it('goes on when a picture cannot be deleted', async () => {
+  it('goes on when a picture cannot be deleted', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'deleteImages').mockRejectedValue(new Error('gone already'));
     keepScratch('x');
     await expect(sweepScratch()).resolves.toBeUndefined();

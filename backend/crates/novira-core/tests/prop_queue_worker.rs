@@ -520,6 +520,7 @@ async fn apply(
     Ok(())
 }
 
+// tags: model-based, state-transition
 #[test]
 fn the_queue_and_its_worker_follow_a_plain_model_through_any_sequence_of_moves() {
     let rt = tokio::runtime::Builder::new_multi_thread()

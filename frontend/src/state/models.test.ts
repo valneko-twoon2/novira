@@ -21,7 +21,7 @@ const model = (key: string, over: Partial<ModelConfig> = {}): ModelConfig => ({
 const job = (id: string, status: ModelInstallJob['status']): ModelInstallJob => ({ id, source: id, name: id, status, bytes: 0, totalBytes: 1 });
 
 describe('models store', () => {
-  it('upserts models by key and clears the detail panel when its model is removed', () => {
+  it('upserts models by key and clears the detail panel when its model is removed', { tags: ['condition'] }, () => {
     const m = useModels.getState();
     m.setModels([model('a'), model('b')]);
     m.upsertModel(model('a', { name: 'A2' }));
@@ -34,14 +34,14 @@ describe('models store', () => {
     expect(useModels.getState().selectedKey).toBeNull();
   });
 
-  it('toggles favorites', () => {
+  it('toggles favorites', { tags: ['state-transition'] }, () => {
     useModels.getState().toggleFavorite('a');
     useModels.getState().toggleFavorite('b');
     useModels.getState().toggleFavorite('a');
     expect(useModels.getState().favorites).toEqual(['b']);
   });
 
-  it('puts new install jobs first and clears only finished ones', () => {
+  it('puts new install jobs first and clears only finished ones', { tags: ['condition'] }, () => {
     const statuses: [string, ModelInstallJob['status']][] = [
       ['w', 'waiting'],
       ['d', 'downloading'],
@@ -58,14 +58,14 @@ describe('models store', () => {
     expect(useModels.getState().installJobs.map((j) => j.id)).toEqual(['r', 'd', 'w']);
   });
 
-  it('filters models by type and base, including base-independent models', () => {
+  it('filters models by type and base, including base-independent models', { tags: ['condition'] }, () => {
     const list = [model('xl'), model('sd1', { base: 'sd-1' }), model('any', { base: 'any' }), model('lora', { type: 'lora' })];
     expect(modelsOfType(list, 'main', 'sdxl').map((m) => m.key)).toEqual(['xl', 'any']);
     expect(modelsOfType(list, 'main').map((m) => m.key)).toEqual(['xl', 'sd1', 'any']);
     expect(modelsOfType(list, 'lora', 'sdxl').map((m) => m.key)).toEqual(['lora']);
   });
 
-  it('finds a model by key', () => {
+  it('finds a model by key', { tags: ['condition'] }, () => {
     useModels.getState().setModels([model('a')]);
     expect(findModel('a')?.key).toBe('a');
     expect(findModel('zz')).toBeUndefined();
@@ -74,7 +74,7 @@ describe('models store', () => {
 });
 
 describe('drawable models', () => {
-  it('counts main models and diffusion models of the families that load in parts, and nothing else', () => {
+  it('counts main models and diffusion models of the families that load in parts, and nothing else', { tags: ['condition'] }, () => {
     expect(isDrawable(model('a', { type: 'main' }))).toBe(true);
     expect(isDrawable(model('b', { type: 'diffusion_model', base: 'anima' }))).toBe(true);
     expect(isDrawable(model('c', { type: 'diffusion_model', base: 'qwen-image' }))).toBe(true);
@@ -93,14 +93,14 @@ describe('drawable models', () => {
     ]);
   });
 
-  it('gives a whole-checkpoint graph the drawable main models only: no diffusion model, no video checkpoint', () => {
+  it('gives a whole-checkpoint graph the drawable main models only: no diffusion model, no video checkpoint', { tags: ['scenario'] }, () => {
     const models = [model('a'), model('b', { type: 'diffusion_model', base: 'anima' }), model('h', { type: 'main', base: 'ltx-video' }), model('l', { type: 'lora' })];
     expect(checkpointModels(models).map((m) => m.key)).toEqual(['a']);
   });
 });
 
 describe('base order', () => {
-  it('lists every base model once, so a model list drops none of them', () => {
+  it('lists every base model once, so a model list drops none of them', { tags: ['equivalence'] }, () => {
     expect([...BASE_ORDER].sort()).toEqual(Object.keys(BASE_LABELS).sort());
   });
 });

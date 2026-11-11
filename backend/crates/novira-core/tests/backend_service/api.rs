@@ -4,6 +4,7 @@ use novira_core::api::{self, CallError};
 use serde_json::{json, Value};
 use std::sync::Arc;
 
+// tags: scenario
 #[test]
 fn the_command_names_are_unique_and_none_is_also_shell_only() {
     let mut names = api::NAMES.to_vec();
@@ -17,6 +18,7 @@ fn the_command_names_are_unique_and_none_is_also_shell_only() {
     assert_eq!(api::PARAMETERS.len(), api::NAMES.len());
 }
 
+// tags: scenario
 #[test]
 fn argument_names_are_spelled_in_camel_case() {
     assert_eq!(api::camel("delete_images"), "deleteImages");
@@ -35,6 +37,7 @@ async fn dispatch(
         .map(|text| serde_json::from_str(&text).expect("a result is JSON"))
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_read_and_a_write_go_through_the_json_form() {
     let dir = tempfile::tempdir().unwrap();
@@ -61,6 +64,7 @@ async fn a_read_and_a_write_go_through_the_json_form() {
     assert_eq!(none, Value::Null);
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn unknown_commands_and_bad_arguments_are_refused_before_any_work() {
     let dir = tempfile::tempdir().unwrap();
@@ -118,6 +122,7 @@ async fn unknown_commands_and_bad_arguments_are_refused_before_any_work() {
     ));
 }
 
+// tags: scenario
 #[test]
 fn page_commands_are_shell_only_and_give_checked_addresses() {
     for name in api::PAGE_COMMANDS {
@@ -154,6 +159,7 @@ fn page_commands_are_shell_only_and_give_checked_addresses() {
     ));
 }
 
+// tags: error-guessing
 #[test]
 fn an_address_with_a_query_goes_to_the_browser_whole_and_never_to_explorer() {
     let url = "http://127.0.0.1:8080/?token=abc&x=1";
@@ -167,6 +173,7 @@ fn an_address_with_a_query_goes_to_the_browser_whole_and_never_to_explorer() {
     }
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_json_array_is_refused_where_an_argument_is_a_struct() {
     let dir = tempfile::tempdir().unwrap();

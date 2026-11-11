@@ -55,7 +55,7 @@ afterEach(() => {
 });
 
 describe('FieldEdge', () => {
-  it('is coloured by the type it carries when the ends fit', () => {
+  it('is coloured by the type it carries when the ends fit', { tags: ['scenario'] }, () => {
     const { getByTestId, queryByTestId } = render(<FieldEdge {...edgeProps(makeEdge('model', 'unet', 'denoise', 'unet'))} />);
     const edge = getByTestId('edge');
     expect(edge.style.stroke).toBe('var(--wf-c-UNetField)');
@@ -64,18 +64,18 @@ describe('FieldEdge', () => {
     expect(queryByTestId('labels')).toBeNull();
   });
 
-  it('is red and marked invalid when the ends do not fit', () => {
+  it('is red and marked invalid when the ends do not fit', { tags: ['error-guessing', 'scenario'] }, () => {
     const { getByTestId } = render(<FieldEdge {...edgeProps(makeEdge('model', 'unet', 'save', 'image'))} />);
     expect(getByTestId('edge').style.stroke).toBe('var(--danger)');
     expect(getByTestId('edge').getAttribute('class')).toContain('is-invalid');
   });
 
-  it('is red when a node of the edge is gone', () => {
+  it('is red when a node of the edge is gone', { tags: ['scenario'] }, () => {
     const { getByTestId } = render(<FieldEdge {...edgeProps(makeEdge('ghost', 'unet', 'denoise', 'unet'))} />);
     expect(getByTestId('edge').getAttribute('class')).toContain('is-invalid');
   });
 
-  it('marks a selected edge, and animates with the setting', () => {
+  it('marks a selected edge, and animates with the setting', { tags: ['scenario'] }, () => {
     setGraph(useWorkflows.getState().nodes, { animatedEdges: true });
     const { getByTestId } = render(<FieldEdge {...edgeProps(makeEdge('model', 'unet', 'denoise', 'unet'), true)} />);
     const cls = getByTestId('edge').getAttribute('class')!;
@@ -83,19 +83,19 @@ describe('FieldEdge', () => {
     expect(cls).toContain('is-animated');
   });
 
-  it('animates while a workflow run is in progress', () => {
+  it('animates while a workflow run is in progress', { tags: ['state-transition', 'scenario'] }, () => {
     useQueue.setState({ items: [{ id: 'q1', status: 'in_progress', origin: 'workflows' }] } as never);
     const { getByTestId } = render(<FieldEdge {...edgeProps(makeEdge('model', 'unet', 'denoise', 'unet'))} />);
     expect(getByTestId('edge').getAttribute('class')).toContain('is-animated');
   });
 
-  it('does not animate for a run of another screen', () => {
+  it('does not animate for a run of another screen', { tags: ['scenario'] }, () => {
     useQueue.setState({ items: [{ id: 'q1', status: 'in_progress', origin: 'generate' }] } as never);
     const { getByTestId } = render(<FieldEdge {...edgeProps(makeEdge('model', 'unet', 'denoise', 'unet'))} />);
     expect(getByTestId('edge').getAttribute('class')).not.toContain('is-animated');
   });
 
-  it('labels the edge with both handles at the middle when the setting is on', () => {
+  it('labels the edge with both handles at the middle when the setting is on', { tags: ['decision-table', 'scenario'] }, () => {
     setGraph(useWorkflows.getState().nodes, { showEdgeLabels: true });
     const { getByTestId } = render(<FieldEdge {...edgeProps(makeEdge('model', 'unet', 'denoise', 'unet'))} />);
     const label = getByTestId('labels').querySelector('.wf-edge__label') as HTMLElement;
@@ -103,7 +103,7 @@ describe('FieldEdge', () => {
     expect(label.style.transform).toContain('translate(5px, 6px)');
   });
 
-  it('shows no label for an edge without handles', () => {
+  it('shows no label for an edge without handles', { tags: ['scenario'] }, () => {
     setGraph(useWorkflows.getState().nodes, { showEdgeLabels: true });
     const props = { ...edgeProps(makeEdge('model', 'unet', 'denoise', 'unet')), sourceHandleId: null };
     const { queryByTestId } = render(<FieldEdge {...props} />);

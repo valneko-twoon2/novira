@@ -50,6 +50,7 @@ fn pick(model: &Model, i: usize) -> Option<u64> {
     (!model.is_empty()).then(|| model[i % model.len()].0)
 }
 
+// tags: model-based, state-transition
 #[test]
 fn the_queue_follows_a_plain_model_through_any_sequence_of_operations() {
     let rt = tokio::runtime::Builder::new_multi_thread()

@@ -11,37 +11,37 @@ type Gate = { name: string; check: string };
 const names = (paths: string[]): string[] => (gatesFor(paths) as Gate[]).map((g) => g.name);
 
 describe('commit gates', () => {
-  it('runs only the visual regression for documents only, and the phone layouts for screen text (a longer text moves the layout)', () => {
+  it('runs only the visual regression for documents only, and the phone layouts for screen text (a longer text moves the layout)', { tags: ['decision-table'] }, () => {
     expect(names(['docs/design/02-generation/01-pictures/05-drafts.md', 'README.md', 'docs/manual/ja/07-media.md'])).toEqual(['visual']);
     expect(names(['frontend/src/i18n/locales/ja/params.json'])).toEqual(['e2e-phone', 'visual']);
   });
 
-  it('checks the format and clippy when Rust is staged, and compares the backends', () => {
+  it('checks the format and clippy when Rust is staged, and compares the backends', { tags: ['decision-table'] }, () => {
     expect(names(['backend/crates/novira-core/src/service/mod.rs'])).toEqual(['rust-format', 'clippy', 'diff-backends', 'visual']);
     expect(names(['backend/Cargo.lock'])).toEqual(['rust-format', 'clippy', 'diff-backends', 'visual']);
   });
 
-  it('lints a changed ts, js or css file of the frontend, and runs the phone layouts for a screen', () => {
+  it('lints a changed ts, js or css file of the frontend, and runs the phone layouts for a screen', { tags: ['decision-table'] }, () => {
     expect(names(['frontend/src/features/text/RichSection.tsx'])).toEqual(['lint', 'e2e-phone', 'visual']);
     expect(names(['frontend/src/features/text/text.css'])).toEqual(['lint', 'e2e-phone', 'visual']);
     expect(names(['frontend/e2e/perf-budget.spec.ts'])).toEqual(['lint', 'visual']);
   });
 
-  it('compares the backends when the mock or the contract changes', () => {
+  it('compares the backends when the mock or the contract changes', { tags: ['decision-table'] }, () => {
     expect(names(['frontend/src/backend/mock/MockBackend.ts'])).toEqual(['lint', 'diff-backends', 'e2e-phone', 'visual']);
     expect(names(['contract/samples/x.json'])).toEqual(['diff-backends', 'visual']);
   });
 
-  it('runs the visual regression last, whatever else is staged', () => {
+  it('runs the visual regression last, whatever else is staged', { tags: ['decision-table'] }, () => {
     expect(names(['backend/a.rs', 'frontend/src/a.ts']).at(-1)).toBe('visual');
   });
 
-  it('never runs the three long CI jobs (vitest, cargo test, the Chromium flows)', () => {
+  it('never runs the three long CI jobs (vitest, cargo test, the Chromium flows)', { tags: ['decision-table'] }, () => {
     const all = names(['backend/a.rs', 'frontend/src/a.ts', 'contract/a.json', 'frontend/e2e/phone.spec.ts']);
     expect(all.some((n) => /vitest|cargo-test|chromium/.test(n))).toBe(false);
   });
 
-  it('runs the two Playwright gates (phone, visual) under the e2e lock', () => {
+  it('runs the two Playwright gates (phone, visual) under the e2e lock', { tags: ['decision-table'] }, () => {
     const gates = gatesFor(['backend/a.rs', 'frontend/src/a.tsx']) as Gate[];
     expect(gates.filter((g) => specOf(g.check).lock).map((g) => g.name)).toEqual(['e2e-phone', 'visual']);
     // Every gate runs a check of the tool that sets its folder and environment.

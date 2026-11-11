@@ -30,7 +30,7 @@ afterEach(() => {
 });
 
 describe('QueueControls', () => {
-  it('pauses the processor, and resumes it when paused', async () => {
+  it('pauses the processor, and resumes it when paused', { tags: ['state-transition'] }, async () => {
     const pause = vi.spyOn(backend, 'pauseProcessor').mockResolvedValue(undefined as never);
     const resume = vi.spyOn(backend, 'resumeProcessor').mockResolvedValue(undefined as never);
     expect(screen.getByText(t('queue.processor.running'))).toBeTruthy();
@@ -42,7 +42,7 @@ describe('QueueControls', () => {
     expect(resume).toHaveBeenCalled();
   });
 
-  it('cancels the running item, and every pending item', async () => {
+  it('cancels the running item, and every pending item', { tags: ['state-transition'] }, async () => {
     const cancel = vi.spyOn(backend, 'cancelQueueItem').mockResolvedValue(undefined as never);
     const cancelPending = vi.spyOn(backend, 'cancelPending').mockResolvedValue(undefined as never);
     fireEvent.click(button(t('queue.action.cancelCurrent')));
@@ -54,14 +54,14 @@ describe('QueueControls', () => {
     await waitFor(() => expect(lastToast()?.title).toBe(tCount('queue.toast.canceledPending', 2)));
   });
 
-  it('prunes the finished items and says how many', async () => {
+  it('prunes the finished items and says how many', { tags: ['state-transition'] }, async () => {
     const prune = vi.spyOn(backend, 'pruneQueue').mockResolvedValue(undefined as never);
     fireEvent.click(screen.getByTestId('queue-prune'));
     await waitFor(() => expect(prune).toHaveBeenCalled());
     await waitFor(() => expect(lastToast()?.title).toBe(tCount('queue.toast.pruned', 2)));
   });
 
-  it('clears the queue only after confirmation', async () => {
+  it('clears the queue only after confirmation', { tags: ['state-transition'] }, async () => {
     const clear = vi.spyOn(backend, 'clearQueue').mockResolvedValue(undefined as never);
     fireEvent.click(button(t('queue.action.clear')));
     fireEvent.click(screen.getByText(t('common.cancel')));
@@ -72,7 +72,7 @@ describe('QueueControls', () => {
     await waitFor(() => expect(lastToast()?.title).toBe(t('queue.toast.cleared')));
   });
 
-  it('turns off what has nothing to act on', () => {
+  it('turns off what has nothing to act on', { tags: ['state-transition'] }, () => {
     cleanup();
     useQueue.setState({ status: status({ total: 0, completed: 0, failed: 0 }), items: [] });
     render(

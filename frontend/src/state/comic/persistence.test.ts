@@ -41,7 +41,7 @@ const recordOf = (project: import('./document').ComicProject): ComicRecord => ({
 });
 
 describe('saving comic projects', () => {
-  it('does not write anything when the saved projects cannot be read', async () => {
+  it('does not write anything when the saved projects cannot be read', { tags: ['error-guessing'] }, async () => {
     list.mockRejectedValue(new Error('locked'));
     await m.persistence.restoreAndWatchComics();
     m.store.useComic.getState().setProjects([m.document.newProject('Lost')]);
@@ -51,7 +51,7 @@ describe('saving comic projects', () => {
     expect(remove).not.toHaveBeenCalled();
   });
 
-  it('reads the saved projects into the store, newest first, and opens the first', async () => {
+  it('reads the saved projects into the store, newest first, and opens the first', { tags: ['condition'] }, async () => {
     const older = { ...m.document.newProject('Older'), updatedAt: 1 };
     const newer = { ...m.document.newProject('Newer'), updatedAt: 9 };
     list.mockResolvedValue([recordOf(older), recordOf(newer), { id: 'bad', updatedAt: 3, document: { version: m.document.COMIC_VERSION + 1 } }]);
@@ -61,7 +61,7 @@ describe('saving comic projects', () => {
     expect(s.activeProjectId).toBe(newer.id);
   });
 
-  it('saves a changed project once, one second after the last change', async () => {
+  it('saves a changed project once, one second after the last change', { tags: ['state-transition'] }, async () => {
     const project = { ...m.document.newProject('Changed'), updatedAt: 1 };
     list.mockResolvedValue([recordOf(project)]);
     await m.persistence.restoreAndWatchComics();
@@ -76,7 +76,7 @@ describe('saving comic projects', () => {
     expect(document).toMatchObject({ version: m.document.COMIC_VERSION, id: project.id, name: 'Renamed again' });
   });
 
-  it('removes a deleted project from the database at once', async () => {
+  it('removes a deleted project from the database at once', { tags: ['condition'] }, async () => {
     const project = { ...m.document.newProject('Gone'), updatedAt: 1 };
     list.mockResolvedValue([recordOf(project)]);
     await m.persistence.restoreAndWatchComics();
@@ -86,7 +86,7 @@ describe('saving comic projects', () => {
     expect(save).not.toHaveBeenCalled();
   });
 
-  it('keeps the screen when a save fails, and saves the next change', async () => {
+  it('keeps the screen when a save fails, and saves the next change', { tags: ['error-guessing'] }, async () => {
     const project = { ...m.document.newProject('Flaky'), updatedAt: 1 };
     list.mockResolvedValue([recordOf(project)]);
     save.mockRejectedValueOnce(new Error('disk full'));
@@ -103,7 +103,7 @@ describe('saving comic projects', () => {
 describe('saving the layers of the pages', () => {
   const image = (name: string) => ({ name, url: `url:${name}`, thumbnailUrl: '', width: 400, height: 300, createdAt: 0, boardId: null, starred: false, isIntermediate: true, category: 'general' }) as import('@/backend').ImageDTO;
 
-  it('stores a picture that lives only in the page before the project is written, and the page takes the stored one', async () => {
+  it('stores a picture that lives only in the page before the project is written, and the page takes the stored one', { tags: ['condition'] }, async () => {
     const project = { ...m.document.newProject('Painted'), updatedAt: 1 };
     list.mockResolvedValue([recordOf(project)]);
     const upload = vi.spyOn(m.backend, 'saveImageFromUrl').mockResolvedValue(image('stored.png'));
@@ -119,7 +119,7 @@ describe('saving the layers of the pages', () => {
     expect(live).toEqual([expect.objectContaining({ imageName: 'stored.png' })]);
   });
 
-  it('warns once when a project comes close to what the backend keeps, and still saves it', async () => {
+  it('warns once when a project comes close to what the backend keeps, and still saves it', { tags: ['regression'] }, async () => {
     const project = { ...m.document.newProject('Huge'), updatedAt: 1 };
     list.mockResolvedValue([recordOf(project)]);
     const { useToasts } = await import('../toasts');
@@ -132,7 +132,7 @@ describe('saving the layers of the pages', () => {
     expect(useToasts.getState().toasts.filter((t) => t.status === 'warning')).toHaveLength(1);
   });
 
-  it('writes a version 1 project with a turned picture only once the picture is baked', async () => {
+  it('writes a version 1 project with a turned picture only once the picture is baked', { tags: ['state-transition'] }, async () => {
     const { useGallery } = await import('../gallery');
     useGallery.setState({ images: [image('sky.png')] });
     const bakeOne = vi.spyOn(await import('./bakeRotation'), 'bakeOne');
@@ -154,7 +154,7 @@ describe('saving the layers of the pages', () => {
     expect(saved.pages[0]!.canvas.entities.flatMap((e) => e.objects)).toEqual([expect.objectContaining({ imageName: 'turned.png' })]);
   });
 
-  it('does not write a version 1 project whose turned picture could not be baked, and tells the user', async () => {
+  it('does not write a version 1 project whose turned picture could not be baked, and tells the user', { tags: ['condition'] }, async () => {
     const { useGallery } = await import('../gallery');
     const { useToasts } = await import('../toasts');
     useGallery.setState({ images: [image('sky.png')] });

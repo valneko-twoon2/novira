@@ -206,6 +206,7 @@ pub async fn remote_forget(app: tauri::AppHandle, id: String) -> Result<Value, S
 mod tests {
     use super::*;
 
+    // tags: boundary
     #[test]
     fn long_arguments_are_refused_at_the_entry() {
         assert!(checked("id", &"a".repeat(MAX_ARG_LEN)).is_ok());
@@ -213,6 +214,7 @@ mod tests {
         assert!(checked("id", "").is_ok());
     }
 
+    // tags: condition
     #[test]
     fn both_sinks_get_every_event() {
         use std::sync::atomic::{AtomicUsize, Ordering::SeqCst};

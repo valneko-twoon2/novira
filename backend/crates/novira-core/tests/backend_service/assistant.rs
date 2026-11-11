@@ -61,6 +61,7 @@ fn fake_codex(dir: &Path) -> PathBuf {
     path
 }
 
+// tags: decision-table
 #[tokio::test]
 async fn a_tool_call_reaches_the_window_and_the_windows_answer_reaches_the_model() {
     let dir = tempfile::tempdir().unwrap();
@@ -107,6 +108,7 @@ async fn a_tool_call_reaches_the_window_and_the_windows_answer_reaches_the_model
     assert!(late.contains("no assistant request is running"), "{late}");
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn answers_are_taken_only_for_a_waiting_call_of_a_running_request() {
     let dir = tempfile::tempdir().unwrap();
@@ -185,6 +187,7 @@ fn with_pictures(names: &[&str]) -> AgentRequest {
     request
 }
 
+// tags: scenario
 #[tokio::test]
 async fn attached_gallery_pictures_reach_the_tool_as_files() {
     let dir = tempfile::tempdir().unwrap();
@@ -218,6 +221,7 @@ async fn attached_gallery_pictures_reach_the_tool_as_files() {
     }
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn attachments_that_are_not_pictures_of_the_gallery_are_refused_before_the_tool_runs() {
     let dir = tempfile::tempdir().unwrap();

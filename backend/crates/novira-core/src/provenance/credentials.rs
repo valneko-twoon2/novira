@@ -286,6 +286,7 @@ mod tests {
         format.to_mime_type()
     }
 
+    // tags: scenario, equivalence
     #[test]
     fn every_export_format_gets_a_valid_manifest_that_says_ai_and_carries_the_soft_binding() {
         let me = Identity::generate().unwrap();
@@ -317,6 +318,7 @@ mod tests {
         }
     }
 
+    // tags: error-guessing
     #[test]
     fn another_installation_s_signature_is_not_this_app_and_a_change_breaks_validity() {
         let (me, other) = (Identity::generate().unwrap(), Identity::generate().unwrap());
@@ -332,6 +334,7 @@ mod tests {
         assert!(found.present && !found.valid, "{found:?}");
     }
 
+    // tags: scenario
     #[test]
     fn the_leaf_certificate_is_not_a_ca_and_carries_no_personal_name() {
         let me = Identity::generate().unwrap();
@@ -352,6 +355,7 @@ mod tests {
         );
     }
 
+    // tags: error-guessing
     #[test]
     fn garbage_has_no_manifest() {
         assert_eq!(read(b"not a picture", "image/png", None), Found::default());
@@ -359,6 +363,7 @@ mod tests {
         assert_eq!(first_pem("no pem here"), None);
     }
 
+    // tags: scenario
     #[cfg(windows)]
     #[test]
     fn the_identity_is_saved_encrypted_and_reused() {
@@ -370,6 +375,7 @@ mod tests {
         assert!(!String::from_utf8_lossy(&raw).contains("PRIVATE KEY"));
     }
 
+    // tags: error-guessing
     #[cfg(windows)]
     #[test]
     fn an_unreadable_saved_identity_is_replaced_by_a_new_one() {

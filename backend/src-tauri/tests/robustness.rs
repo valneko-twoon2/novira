@@ -48,6 +48,7 @@ fn sources() -> Vec<(String, String)> {
         .collect()
 }
 
+// tags: static, condition
 #[test]
 fn no_lock_is_unwrapped() {
     let bad = Regex::new(r"\.(lock|read|write)\(\)\s*\.(unwrap\(\)|expect\()").unwrap();
@@ -65,6 +66,7 @@ fn no_lock_is_unwrapped() {
     );
 }
 
+// tags: static, condition
 #[test]
 fn every_synchronous_command_is_guarded() {
     let code = std::fs::read_to_string(backend_root().join("src-tauri/src/commands.rs")).unwrap();

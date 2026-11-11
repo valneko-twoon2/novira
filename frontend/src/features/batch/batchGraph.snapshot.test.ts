@@ -7,11 +7,11 @@ import { removeBackgroundGraph, upscaleGraph } from './batchGraph';
 const asJson = (x: unknown) => `${JSON.stringify(x, null, 2)}\n`;
 
 describe('batch graph snapshots', () => {
-  it('remove background', async () => {
+  it('remove background', { tags: ['equivalence'] }, async () => {
     await expect(asJson(removeBackgroundGraph('photo.png'))).toMatchFileSnapshot('./__snapshots__/batchGraph/remove-background.json');
   });
 
-  it('upscale', async () => {
+  it('upscale', { tags: ['equivalence'] }, async () => {
     await expect(asJson(upscaleGraph('photo.png', 'upscaler-key'))).toMatchFileSnapshot('./__snapshots__/batchGraph/upscale.json');
   });
 });

@@ -100,13 +100,13 @@ beforeEach(() => {
 afterEach(() => clearMocks());
 
 describe('TauriBackend', () => {
-  it('is selected only inside Tauri and recognizes its image URLs', () => {
+  it('is selected only inside Tauri and recognizes its image URLs', { tags: ['condition'] }, () => {
     expect(isTauri()).toBe(true);
     expect(isBackendImageUrl(STORED)).toBe(true);
     expect(isBackendImageUrl('blob:http://localhost/x')).toBe(false);
   });
 
-  it('bootstraps the queue mirror and adds the built-in workflows', async () => {
+  it('bootstraps the queue mirror and adds the built-in workflows', { tags: ['scenario'] }, async () => {
     const b = new TauriBackend();
     const data = await b.bootstrap();
     expect(data.workflows.some((w) => w.category === 'default')).toBe(true);
@@ -114,7 +114,7 @@ describe('TauriBackend', () => {
     expect(b.queueStatus()).toMatchObject({ pending: 1, total: 1, isPaused: true });
   });
 
-  it('keeps the mirror in step with events before listeners see them', async () => {
+  it('keeps the mirror in step with events before listeners see them', { tags: ['condition'] }, async () => {
     const b = new TauriBackend();
     await b.bootstrap();
     const seen: { event: BackendEvent; total: number; completed: number }[] = [];
@@ -137,7 +137,7 @@ describe('TauriBackend', () => {
     expect(b.queueStatus().isPaused).toBe(false);
   });
 
-  it('stores a page-rendered source image before enqueueing it', async () => {
+  it('stores a page-rendered source image before enqueueing it', { tags: ['condition'] }, async () => {
     const b = new TauriBackend();
     await b.bootstrap();
     const request: EnqueueRequest = {
@@ -158,7 +158,7 @@ describe('TauriBackend', () => {
     expect(b.listQueue().map((q) => q.id)).toEqual([1, 2]);
   });
 
-  it('stores page-rendered masks and control pictures and passes stored reference images through', async () => {
+  it('stores page-rendered masks and control pictures and passes stored reference images through', { tags: ['equivalence'] }, async () => {
     const b = new TauriBackend();
     await b.bootstrap();
     await b.enqueue({
@@ -184,7 +184,7 @@ describe('TauriBackend', () => {
     expect(enq.request.regionalLayers?.[0]).toMatchObject({ imageUrl: STORED, positivePrompt: 'a hat', autoNegative: true });
   });
 
-  it('passes pictures given to the model as references, storing one the page rendered', async () => {
+  it('passes pictures given to the model as references, storing one the page rendered', { tags: ['condition'] }, async () => {
     const b = new TauriBackend();
     await b.bootstrap();
     await b.enqueue({ origin: 'generate', destination: 'gallery', params, iterations: 1, randomizeSeed: false, prepend: false, boardId: null, referencePictures: [STORED, 'data:image/png;base64,iVBORw0KGgo='] });
@@ -193,7 +193,7 @@ describe('TauriBackend', () => {
     expect(enq.request.referencePictures).toEqual([STORED, STORED]);
   });
 
-  it('revokes the one-shot pictures it read, stores one named by two jobs once, and leaves other blob URLs alone', async () => {
+  it('revokes the one-shot pictures it read, stores one named by two jobs once, and leaves other blob URLs alone', { tags: ['condition'] }, async () => {
     let n = 0;
     const revoked: string[] = [];
     URL.createObjectURL = () => `blob:one-shot/${n++}`;
@@ -221,7 +221,7 @@ describe('TauriBackend', () => {
     }
   });
 
-  it('sends empty guidance when a request has none', async () => {
+  it('sends empty guidance when a request has none', { tags: ['boundary'] }, async () => {
     const b = new TauriBackend();
     await b.bootstrap();
     await b.enqueue({ origin: 'generate', destination: 'gallery', params, iterations: 1, randomizeSeed: false, prepend: false, boardId: null });
@@ -229,7 +229,7 @@ describe('TauriBackend', () => {
     expect(enq.request).toMatchObject({ initImageUrl: null, maskImageUrl: null, controlLayers: [], regionalLayers: [], refImages: [], referencePictures: [] });
   });
 
-  it('reloads the queue order after a prepend and passes stored sources through', async () => {
+  it('reloads the queue order after a prepend and passes stored sources through', { tags: ['condition'] }, async () => {
     const b = new TauriBackend();
     await b.bootstrap();
     await b.enqueue({
@@ -246,7 +246,7 @@ describe('TauriBackend', () => {
     expect(b.listQueue().map((q) => q.id)).toEqual([2, 1]);
   });
 
-  it('returns the engine status and forwards engine events', async () => {
+  it('returns the engine status and forwards engine events', { tags: ['condition'] }, async () => {
     const b = new TauriBackend();
     expect((await b.bootstrap()).engine).toEqual({ state: 'downloading', bytes: 5, totalBytes: 10 });
     const seen: BackendEvent[] = [];
@@ -255,12 +255,12 @@ describe('TauriBackend', () => {
     expect(seen).toEqual([{ type: 'engine_status', status: { state: 'ready' } }]);
   });
 
-  it('asks the shell to open a Civitai page by model id', async () => {
+  it('asks the shell to open a Civitai page by model id', { tags: ['condition'] }, async () => {
     await new TauriBackend().openCivitaiPage('123');
     expect(calls.find((c) => c.cmd === 'open_civitai_page')?.payload).toEqual({ modelId: '123' });
   });
 
-  it('forwards the assistant status, sign-in, chat and tool answers to the shell', async () => {
+  it('forwards the assistant status, sign-in, chat and tool answers to the shell', { tags: ['condition'] }, async () => {
     const b = new TauriBackend();
     await b.agentStatus();
     await b.agentLogin('codex');

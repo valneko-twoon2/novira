@@ -14,14 +14,14 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('a request for the Candidates view', () => {
-  it('goes to the gallery unless the pictures are held, and then to the candidates', async () => {
+  it('goes to the gallery unless the pictures are held, and then to the candidates', { tags: ['decision-table'] }, async () => {
     useParams.setState({ positivePrompt: 'a cat' });
     expect((await buildGenerateRequest(false)).destination).toBe('gallery');
     expect((await buildGenerateRequest(false, false)).destination).toBe('gallery');
     expect((await buildGenerateRequest(false, true)).destination).toBe('candidates');
   });
 
-  it('queues the other dynamic-prompt batches for the candidates too, and hands their items over once, in queue order', async () => {
+  it('queues the other dynamic-prompt batches for the candidates too, and hands their items over once, in queue order', { tags: ['decision-table'] }, async () => {
     let next = 10;
     const enqueue = vi.spyOn(backend, 'enqueue').mockImplementation(async () => items(next++));
     const first = await buildGenerateRequest(false, true);
@@ -31,7 +31,7 @@ describe('a request for the Candidates view', () => {
     expect(takeExtraHeld()).toEqual([]);
   });
 
-  it('keeps nothing of the extra batches for pictures that go to a board', async () => {
+  it('keeps nothing of the extra batches for pictures that go to a board', { tags: ['condition'] }, async () => {
     vi.spyOn(backend, 'enqueue').mockResolvedValue(items(1));
     const first = await buildGenerateRequest(false);
     expect(first.destination).toBe('gallery');

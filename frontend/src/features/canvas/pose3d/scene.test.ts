@@ -65,7 +65,7 @@ afterEach(() => {
 });
 
 describe('the joints', () => {
-  it('start as given, and a copy is handed out', () => {
+  it('start as given, and a copy is handed out', { tags: ['condition'] }, () => {
     startUp([3]);
     expect(scene.joints()).toEqual(row);
     scene.joints()[0]!.x = 999;
@@ -73,7 +73,7 @@ describe('the joints', () => {
     expect(changed).toBeGreaterThan(0);
   });
 
-  it('swing a joint round its parent when its ball is dragged, and go back on reset', () => {
+  it('swing a joint round its parent when its ball is dragged, and go back on reset', { tags: ['condition'] }, () => {
     startUp();
     const [x, y] = screen(row[4]!);
     fire('pointerdown', x, y);
@@ -87,7 +87,7 @@ describe('the joints', () => {
     expect(scene.joints()).toEqual(row);
   });
 
-  it('slide the neck, which hangs from nothing, in the picture plane', () => {
+  it('slide the neck, which hangs from nothing, in the picture plane', { tags: ['condition'] }, () => {
     startUp();
     const [x, y] = screen(row[1]!);
     fire('pointerdown', x, y);
@@ -99,7 +99,7 @@ describe('the joints', () => {
 });
 
 describe('the view', () => {
-  it('turns with a drag of the background and stops short of straight up or down', () => {
+  it('turns with a drag of the background and stops short of straight up or down', { tags: ['condition'] }, () => {
     startUp();
     fire('pointerdown', 5, 5);
     fire('pointermove', 55, 35);
@@ -111,13 +111,13 @@ describe('the view', () => {
     expect(scene.view().pitch).toBeCloseTo(-Math.PI / 2);
   });
 
-  it('is set from outside within the same limit', () => {
+  it('is set from outside within the same limit', { tags: ['boundary'] }, () => {
     startUp();
     scene.setView(1, 10);
     expect(scene.view()).toEqual({ yaw: 1, pitch: Math.PI / 2 });
   });
 
-  it('ignores a move with nothing pressed, and a pointer that is let go', () => {
+  it('ignores a move with nothing pressed, and a pointer that is let go', { tags: ['condition'] }, () => {
     startUp();
     const before = changed;
     fire('pointermove', 50, 50);
@@ -128,7 +128,7 @@ describe('the view', () => {
     expect(scene.view()).toEqual({ yaw: 0, pitch: 0 });
   });
 
-  it('zooms with the wheel, within limits, and resizes to a wide or a tall canvas', () => {
+  it('zooms with the wheel, within limits, and resizes to a wide or a tall canvas', { tags: ['boundary'] }, () => {
     startUp();
     const wheel = (deltaY: number) => canvas.dispatchEvent(new WheelEvent('wheel', { deltaY, cancelable: true, bubbles: true }));
     for (let i = 0; i < 40; i++) wheel(-100);
@@ -139,7 +139,7 @@ describe('the view', () => {
     scene.resize();
   });
 
-  it('frees the renderer when it is closed', () => {
+  it('frees the renderer when it is closed', { tags: ['condition'] }, () => {
     startUp();
     scene.dispose();
     expect(gl.disposed).toBe(1);

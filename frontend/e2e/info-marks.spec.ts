@@ -1,7 +1,7 @@
 // The "i" beside a label shows the control's explanation; the settings keep only the text that has to stay in view.
 import { expect, msg, openApp, test } from './fixtures';
 
-test('only the scheduler has an i among the generation parameters, and its list says what each one is for', async ({ page }) => {
+test('only the scheduler has an i among the generation parameters, and its list says what each one is for', { tag: ['@condition'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   // The newer families run their own sampler, so a model that takes a choice is picked.
   await page.getByTestId('model-picker').click();
@@ -21,7 +21,7 @@ test('only the scheduler has an i among the generation parameters, and its list 
   await expect(page.getByRole('combobox', { name: msg('params.generation.scheduler') })).toHaveText('UniPC');
 });
 
-test('the settings rows have an i instead of a sub text, and a plain row has neither', async ({ page }) => {
+test('the settings rows have an i instead of a sub text, and a plain row has neither', { tag: ['@condition'] }, async ({ page }) => {
   await openApp(page);
   await page.getByRole('button', { name: msg('app.nav.settingsMenu') }).click();
   await page.getByRole('menuitem', { name: msg('app.nav.settings') }).click();

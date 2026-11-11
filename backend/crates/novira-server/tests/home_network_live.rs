@@ -90,6 +90,7 @@ impl Real {
     }
 }
 
+// tags: scenario
 #[tokio::test]
 #[ignore = "listens on the home address, which makes Windows ask about the firewall for each new test build; run with --ignored"]
 async fn the_home_address_is_served_over_tls_with_its_own_host_only_after_pairing() {
@@ -142,6 +143,7 @@ async fn the_home_address_is_served_over_tls_with_its_own_host_only_after_pairin
     f.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 #[ignore = "listens on the home address (firewall prompt); run with --ignored"]
 async fn a_home_network_device_is_refused_the_commands_that_change_this_computer() {

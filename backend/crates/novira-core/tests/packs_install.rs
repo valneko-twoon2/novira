@@ -30,6 +30,7 @@ fn hanging_up_client() -> reqwest::Client {
         .unwrap()
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_complete_pack_downloads_nothing_and_reports_nothing() {
     let dir = tempfile::tempdir().unwrap();
@@ -50,6 +51,7 @@ async fn a_complete_pack_downloads_nothing_and_reports_nothing() {
     assert_eq!(disk_status(dir.path(), PackKind::Music), PackStatus::Ready);
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_missing_file_that_cannot_be_downloaded_fails_with_the_reason() {
     let dir = tempfile::tempdir().unwrap();
@@ -71,6 +73,7 @@ async fn a_missing_file_that_cannot_be_downloaded_fails_with_the_reason() {
     ));
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn a_stopped_install_says_cancelled() {
     let dir = tempfile::tempdir().unwrap();
@@ -88,6 +91,7 @@ async fn a_stopped_install_says_cancelled() {
     assert_eq!(err, "cancelled");
 }
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn an_install_into_a_place_that_is_not_a_folder_is_an_error() {
     let dir = tempfile::tempdir().unwrap();
@@ -121,6 +125,7 @@ async fn an_install_into_a_place_that_is_not_a_folder_is_an_error() {
     .is_err());
 }
 
+// tags: scenario
 #[test]
 fn the_voice_engine_has_no_files_and_so_counts_as_installed() {
     let dir = tempfile::tempdir().unwrap();

@@ -28,6 +28,7 @@ fn system_process_can_be_inspected() -> bool {
     }
 }
 
+// tags: error-guessing
 #[test]
 fn a_lock_owned_by_a_process_that_cannot_be_inspected_stays() {
     if system_process_can_be_inspected() {
@@ -41,6 +42,7 @@ fn a_lock_owned_by_a_process_that_cannot_be_inspected_stays() {
     assert!(lock.is_dir(), "the lock is not taken over");
 }
 
+// tags: scenario
 #[test]
 fn a_lock_owned_by_a_process_that_has_exited_is_taken_over_even_while_its_handle_is_open() {
     let dir = tempfile::tempdir().unwrap();

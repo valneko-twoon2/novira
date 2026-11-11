@@ -67,7 +67,7 @@ afterEach(() => {
 });
 
 describe('a stage over a host document', () => {
-  it('paints in document pixels from the host box, whatever the store viewport says', () => {
+  it('paints in document pixels from the host box, whatever the store viewport says', { tags: ['condition'] }, () => {
     pointer('pointerdown', 40 + 50, 20 + 100);
     pointer('pointermove', 40 + 250, 20 + 100);
     pointer('pointerup', 40 + 250, 20 + 100);
@@ -77,14 +77,14 @@ describe('a stage over a host document', () => {
     expect(useCanvas.getState().entities).toEqual([]);
   });
 
-  it('follows the host zoom: the same screen point is another document point', () => {
+  it('follows the host zoom: the same screen point is another document point', { tags: ['condition'] }, () => {
     shown = 1000;
     pointer('pointerdown', 40 + 100, 20 + 100);
     pointer('pointerup', 40 + 100, 20 + 100);
     expect(store.getState().entities[0]!.objects[0]).toMatchObject({ points: [100, 100] });
   });
 
-  it('leaves the wheel, the middle button and the view, bbox and pose tools to the host', () => {
+  it('leaves the wheel, the middle button and the view, bbox and pose tools to the host', { tags: ['state-transition'] }, () => {
     const wheel = new WheelEvent('wheel', { deltaY: -100, cancelable: true, bubbles: true });
     canvas.dispatchEvent(wheel);
     expect(wheel.defaultPrevented).toBe(false);
@@ -102,7 +102,7 @@ describe('a stage over a host document', () => {
     expect(canvas.setPointerCapture).not.toHaveBeenCalled();
   });
 
-  it('moves and resizes the box with the box tool when the host limits it, through the host limit', () => {
+  it('moves and resizes the box with the box tool when the host limits it, through the host limit', { tags: ['boundary'] }, () => {
     controller.dispose();
     const limit = vi.fn((b: { x: number; y: number; width: number; height: number }) => ({ ...b, x: Math.min(b.x, 100), width: Math.min(b.width, 600) }));
     controller = new StageController(canvas, host, store, { docSize: () => doc, content: () => content, limitBbox: limit });
@@ -124,7 +124,7 @@ describe('a stage over a host document', () => {
     expect(store.getState().entities).toEqual([ink]);
   });
 
-  it('draws the selected layer and the live stroke on the content canvas, at most at document size', () => {
+  it('draws the selected layer and the live stroke on the content canvas, at most at document size', { tags: ['boundary'] }, () => {
     vi.stubGlobal('devicePixelRatio', 2);
     pointer('pointerdown', 40 + 50, 20 + 100);
     pointer('pointermove', 40 + 250, 20 + 100);
@@ -146,7 +146,7 @@ describe('a stage over a host document', () => {
     expect(content.width).toBe(400);
   });
 
-  it('draws nothing on the content canvas while a slot or no layer is chosen', () => {
+  it('draws nothing on the content canvas while a slot or no layer is chosen', { tags: ['condition'] }, () => {
     const painted: RasterEntity = { ...ink, objects: [{ kind: 'rect', id: 'r', x: 10, y: 10, width: 100, height: 100, color: { r: 0, g: 0, b: 0, a: 1 } }] };
     const slot: RasterEntity = { ...ink, id: 'panels', objects: [], slot: 'panels' };
     store.setState({ entities: [slot, painted], selectedEntityId: 'ink' });
@@ -159,7 +159,7 @@ describe('a stage over a host document', () => {
     expect(canvases.of(content).of('drawImage')).toHaveLength(1);
   });
 
-  it('draws no checkerboard on its own canvas', () => {
+  it('draws no checkerboard on its own canvas', { tags: ['condition'] }, () => {
     controller.invalidate();
     flush();
     const rec = canvases.of(canvas);

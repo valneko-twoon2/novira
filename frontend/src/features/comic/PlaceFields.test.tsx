@@ -27,19 +27,19 @@ afterEach(() => {
 });
 
 describe('the fields of a place', () => {
-  it('shows the name, the words and the words kept out', () => {
+  it('shows the name, the words and the words kept out', { tags: ['scenario'] }, () => {
     show();
     expect((screen.getByTestId('comic-place-name') as HTMLInputElement).value).toBe('Cafe');
     expect((screen.getByTestId('comic-place-tags') as HTMLTextAreaElement).value).toBe('wooden table');
     expect((screen.getByTestId('comic-place-negative') as HTMLTextAreaElement).value).toBe('crowd');
   });
 
-  it('shows an empty box for the words kept out when the place has none', () => {
+  it('shows an empty box for the words kept out when the place has none', { tags: ['boundary'] }, () => {
     show({ id: 'p2', name: 'Park', tags: '' });
     expect((screen.getByTestId('comic-place-negative') as HTMLTextAreaElement).value).toBe('');
   });
 
-  it('reports each edit as a patch of that one field', () => {
+  it('reports each edit as a patch of that one field', { tags: ['scenario'] }, () => {
     const { change } = show();
     fireEvent.change(screen.getByTestId('comic-place-name'), { target: { value: 'Bar' } });
     fireEvent.change(screen.getByTestId('comic-place-tags'), { target: { value: 'neon' } });
@@ -47,14 +47,14 @@ describe('the fields of a place', () => {
     expect(change.mock.calls).toEqual([[{ name: 'Bar' }], [{ tags: 'neon' }], [{ negative: 'rain' }]]);
   });
 
-  it('caps the length of every box', () => {
+  it('caps the length of every box', { tags: ['decision-table'] }, () => {
     show();
     expect(screen.getByTestId('comic-place-name').getAttribute('maxlength')).toBe(String(PLACE_NAME_MAX));
     expect(screen.getByTestId('comic-place-tags').getAttribute('maxlength')).toBe(String(PLACE_TAGS_MAX));
     expect(screen.getByTestId('comic-place-negative').getAttribute('maxlength')).toBe(String(PLACE_NEGATIVE_MAX));
   });
 
-  it('asks to remove the place from its button', () => {
+  it('asks to remove the place from its button', { tags: ['scenario'] }, () => {
     const { remove, change } = show();
     fireEvent.click(screen.getByTestId('comic-place-remove'));
     expect(remove).toHaveBeenCalledOnce();

@@ -26,7 +26,7 @@ afterEach(() => {
 });
 
 describe('ImageSection', () => {
-  it('shows the size and the shape as badges and changes the width and height', () => {
+  it('shows the size and the shape as badges and changes the width and height', { tags: ['scenario'] }, () => {
     show('generate');
     expect(screen.getAllByText('1024×1024').length).toBeGreaterThan(0);
     setNum(t('common.width'), 768);
@@ -39,12 +39,12 @@ describe('ImageSection', () => {
     expect(state().aspectRatio).toBe('free');
   });
 
-  it('has no denoising strength on the Generate screen', () => {
+  it('has no denoising strength on the Generate screen', { tags: ['condition'] }, () => {
     show('generate');
     expect(screen.queryAllByLabelText(t('params.image.strength'))).toHaveLength(0);
   });
 
-  it('the canvas names the box and sets the strength', () => {
+  it('the canvas names the box and sets the strength', { tags: ['scenario'] }, () => {
     show('canvas');
     expect(screen.getByText(t('params.image.bboxHint'))).toBeTruthy();
     setNum(t('params.image.strength'), 0.4);

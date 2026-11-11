@@ -160,6 +160,7 @@ mod tests {
         families_from_names(names.iter().map(|n| n.to_string()))
     }
 
+    // tags: equivalence
     #[test]
     fn a_full_name_becomes_its_family_and_each_family_comes_once() {
         assert_eq!(
@@ -184,6 +185,7 @@ mod tests {
         );
     }
 
+    // tags: equivalence
     #[test]
     fn bitmap_fonts_vertical_variants_and_unusable_names_are_left_out() {
         assert_eq!(
@@ -202,6 +204,7 @@ mod tests {
         );
     }
 
+    // tags: boundary, equivalence
     #[test]
     fn a_very_long_name_and_a_very_long_list_are_cut() {
         let long = format!("{} (TrueType)", "x".repeat(MAX_NAME_CHARS + 1));
@@ -212,6 +215,7 @@ mod tests {
         assert_eq!(families_from_names(many).len(), MAX_FAMILIES);
     }
 
+    // tags: scenario
     #[test]
     fn the_computer_lists_its_fonts_without_failing() {
         // The list depends on the machine; reading it must not fail, and what comes back must already be clean.

@@ -86,11 +86,11 @@ beforeEach(() => {
 afterEach(() => clearMocks());
 
 describe('IPC command contract', () => {
-  it('registers a #[tauri::command] function for every listed command and nothing else', () => {
+  it('registers a #[tauri::command] function for every listed command and nothing else', { tags: ['condition'] }, () => {
     expect([...commandArguments().keys()].sort()).toEqual(registeredCommands().sort());
   });
 
-  it('calls every registered command (except the listed ones) and nothing unregistered', async () => {
+  it('calls every registered command (except the listed ones) and nothing unregistered', { tags: ['condition'] }, async () => {
     const b = new TauriBackend();
     for (const call of Object.values(CALLS)) await call(b);
     const called = new Set(calls.map((c) => c.cmd));
@@ -99,7 +99,7 @@ describe('IPC command contract', () => {
     expect(Object.keys(NOT_CALLED).every((c) => registeredCommands().includes(c))).toBe(true);
   });
 
-  it('passes exactly the Rust parameters as camelCase arguments', async () => {
+  it('passes exactly the Rust parameters as camelCase arguments', { tags: ['condition'] }, async () => {
     const b = new TauriBackend();
     for (const call of Object.values(CALLS)) await call(b);
     const args = commandArguments();

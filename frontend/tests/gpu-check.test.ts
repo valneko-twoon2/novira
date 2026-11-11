@@ -10,7 +10,7 @@ import { busyThreshold, judge, lockState, parseGpus } from '../../scripts/tools/
 const gpu = (load: number) => [{ name: 'GPU', load, used: 1000, total: 12000 }];
 
 describe('gpu check', () => {
-  it('reads one line per GPU and skips lines that are not numbers', () => {
+  it('reads one line per GPU and skips lines that are not numbers', { tags: ['condition'] }, () => {
     expect(parseGpus('NVIDIA GeForce RTX 4070 Ti, 3, 1419, 12282\r\nOther, 90, 5000, 8000\n')).toEqual([
       { name: 'NVIDIA GeForce RTX 4070 Ti', load: 3, used: 1419, total: 12282 },
       { name: 'Other', load: 90, used: 5000, total: 8000 },
@@ -19,7 +19,7 @@ describe('gpu check', () => {
     expect(parseGpus('GPU, [N/A], 10, 20\n')).toEqual([]);
   });
 
-  it('is busy when the mean load reaches the threshold, and free just under it', () => {
+  it('is busy when the mean load reaches the threshold, and free just under it', { tags: ['boundary'] }, () => {
     expect(judge([gpu(25), gpu(25)], 25)).toMatchObject({ busy: true, known: true, load: 25 });
     expect(judge([gpu(24), gpu(25)], 25)).toMatchObject({ busy: false, known: true, load: 25 });
     expect(judge([gpu(20), gpu(28)], 25)).toMatchObject({ busy: false, load: 24 });
@@ -27,12 +27,12 @@ describe('gpu check', () => {
     expect(judge([gpu(100), gpu(0), gpu(0), gpu(0), gpu(0)], 25)).toMatchObject({ busy: false, load: 20 });
   });
 
-  it('judges by the busiest GPU', () => {
+  it('judges by the busiest GPU', { tags: ['condition'] }, () => {
     const two = (a: number, b: number) => [...gpu(a), ...gpu(b)];
     expect(judge([two(0, 80), two(0, 70)], 25)).toMatchObject({ busy: true, load: 75 });
   });
 
-  it('does not block when nvidia-smi cannot be read', () => {
+  it('does not block when nvidia-smi cannot be read', { tags: ['error-guessing'] }, () => {
     expect(judge([], 25)).toMatchObject({ busy: false, known: false, load: null });
     expect(judge([[], null], 25)).toMatchObject({ busy: false, known: false });
   });
@@ -42,7 +42,7 @@ describe('gpu lock state', () => {
   let dir = '';
   afterEach(() => dir && rmSync(dir, { recursive: true, force: true }));
 
-  it('says whether the lock is unset, free, held by novira or by another program', () => {
+  it('says whether the lock is unset, free, held by novira or by another program', { tags: ['state-transition'] }, () => {
     dir = mkdtempSync(join(tmpdir(), 'gpu-lock-'));
     const lock = join(dir, 'gpu.lock');
     expect(lockState('')).toBe('NOVIRA_GPU_LOCK is not set');
@@ -55,7 +55,7 @@ describe('gpu lock state', () => {
 });
 
 describe('the busy threshold', () => {
-  it('takes 0 to 100 from NOVIRA_GPU_BUSY_PERCENT, 0 meaning any use, and 25 for anything else', () => {
+  it('takes 0 to 100 from NOVIRA_GPU_BUSY_PERCENT, 0 meaning any use, and 25 for anything else', { tags: ['boundary'] }, () => {
     expect(busyThreshold('0')).toBe(0);
     expect(busyThreshold('60')).toBe(60);
     expect(busyThreshold('100')).toBe(100);

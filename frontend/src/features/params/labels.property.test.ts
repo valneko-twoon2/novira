@@ -17,7 +17,7 @@ const COHERENCE: CoherenceMode[] = ['Gaussian Blur', 'Box Blur', 'Staged'];
 const INFILL: InfillMethod[] = ['patchmatch', 'lama', 'cv2', 'color', 'tile'];
 
 describe('parameter labels (properties)', () => {
-  it('every enum value has a label that is not a raw message key, in every language', () => {
+  it('every enum value has a label that is not a raw message key, in every language', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(fc.constantFrom(...LOCALES), (locale) => {
         setLocale(locale);
@@ -33,11 +33,11 @@ describe('parameter labels (properties)', () => {
     );
   });
 
-  it('every scheduler has a name', () => {
+  it('every scheduler has a name', { tags: ['error-guessing'] }, () => {
     expect(SCHEDULERS.every((s) => SCHEDULER_LABELS[s]?.trim())).toBe(true);
   });
 
-  it('optimalDimension is a positive multiple of 64 for any base text', () => {
+  it('optimalDimension is a positive multiple of 64 for any base text', { tags: ['boundary'] }, () => {
     check(fc.property(fc.option(fc.oneof(junkText, fc.constantFrom('sd-1', 'sd-2', 'sdxl', 'flux')), { nil: undefined }), (base) => {
       const d = optimalDimension(base);
       return d > 0 && d % 64 === 0;

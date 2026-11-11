@@ -22,12 +22,12 @@ import { finished, parseWorktrees as parseTrees } from '../../scripts/tools/work
 describe('worktree script', () => {
   const porcelain = ['worktree E:/Code/novira', 'HEAD a', 'branch refs/heads/main', '', 'worktree E:/Code/wt-done', 'HEAD b', 'branch refs/heads/done', '', 'worktree E:/Code/wt-work', 'HEAD c', 'branch refs/heads/work', '', 'worktree E:/Code/wt-dirty', 'HEAD d', 'branch refs/heads/dirty', '', 'worktree E:/Code/wt-gone', 'HEAD e', 'detached', ''].join('\n');
 
-  it('reads branches and detached heads, the main checkout first', () => {
+  it('reads branches and detached heads, the main checkout first', { tags: ['condition'] }, () => {
     const trees = parseTrees(porcelain);
     expect(trees.map((t: { branch: string | null }) => t.branch)).toEqual(['main', 'done', 'work', 'dirty', null]);
   });
 
-  it('calls a worktree finished when its folder is gone, or it is clean and its branch is merged into main', () => {
+  it('calls a worktree finished when its folder is gone, or it is clean and its branch is merged into main', { tags: ['condition'] }, () => {
     const trees = parseTrees(porcelain);
     const done = finished(trees, {
       merged: new Set(['main', 'done', 'dirty']),
@@ -43,7 +43,7 @@ describe('worktree script', () => {
 });
 
 describe('worktree helper of the hooks', () => {
-  it('reads `git worktree list --porcelain` through scripts/tools/worktree.mjs: the main checkout first, a detached head without a branch', () => {
+  it('reads `git worktree list --porcelain` through scripts/tools/worktree.mjs: the main checkout first, a detached head without a branch', { tags: ['condition'] }, () => {
     const out = ['worktree E:/Code/novira', 'HEAD abc', 'branch refs/heads/main', '', 'worktree E:/Code/novira-wt-x', 'HEAD def', 'detached', ''].join('\n');
     const trees = parseTrees(out).map((t: { path: string; branch: string | null }) => [t.path.replaceAll('\\', '/').split('/').pop(), t.branch]);
     expect(trees).toEqual([
@@ -53,7 +53,7 @@ describe('worktree helper of the hooks', () => {
     expect(parseTrees('')).toEqual([]);
   });
 
-  it('finds the work tree that holds a file, case-insensitively, and none for a file elsewhere', () => {
+  it('finds the work tree that holds a file, case-insensitively, and none for a file elsewhere', { tags: ['condition'] }, () => {
     const roots = ['E:/Code/novira', 'E:/Code/novira-wt-x'];
     expect(rootHolding('e:\\Code\\novira-wt-x\\frontend\\a.ts', roots)).toBe('E:/Code/novira-wt-x');
     expect(rootHolding('E:/Code/novira/frontend/a.ts', roots)).toBe('E:/Code/novira');
@@ -64,19 +64,19 @@ describe('worktree helper of the hooks', () => {
 });
 
 describe('line-end hook', () => {
-  it('turns CRLF and mixed line ends into LF, and LF into CRLF for batch files', () => {
+  it('turns CRLF and mixed line ends into LF, and LF into CRLF for batch files', { tags: ['condition'] }, () => {
     expect(withEol('a\nb\r\nc\n', 'lf')).toBe('a\nb\nc\n');
     expect(withEol('a\nb\r\n', 'crlf')).toBe('a\r\nb\r\n');
   });
 
-  it('wants CRLF for .bat and .cmd files and LF for the rest', () => {
+  it('wants CRLF for .bat and .cmd files and LF for the rest', { tags: ['condition'] }, () => {
     expect(wantedEol('scripts/start.bat')).toBe('crlf');
     expect(wantedEol('a/RUN.CMD')).toBe('crlf');
     expect(wantedEol('src/a.ts')).toBe('lf');
     expect(wantedEol('docs/batch.md')).toBe('lf');
   });
 
-  it('only touches files inside the repository, outside generated folders', () => {
+  it('only touches files inside the repository, outside generated folders', { tags: ['condition'] }, () => {
     const root = 'E:/repo';
     expect(shouldConvert('E:/repo/frontend/src/a.ts', root)).toBe(true);
     expect(shouldConvert('E:/repo/frontend/node_modules/x/a.js', root)).toBe(false);
@@ -90,7 +90,7 @@ describe('line-end hook', () => {
 describe('architecture-map hook', () => {
   const root = fileURLToPath(new URL('../..', import.meta.url));
 
-  it('hands the entry page of the map to a session and to a subagent at their start', () => {
+  it('hands the entry page of the map to a session and to a subagent at their start', { tags: ['condition'] }, () => {
     for (const event of ['SessionStart', 'SubagentStart']) {
       const answer = contextFor(event, root);
       expect(answer.hookSpecificOutput.hookEventName).toBe(event);
@@ -99,19 +99,19 @@ describe('architecture-map hook', () => {
     }
   });
 
-  it('says nothing for another event or when the page is missing', () => {
+  it('says nothing for another event or when the page is missing', { tags: ['error-guessing'] }, () => {
     expect(contextFor('PreToolUse', root)).toBeNull();
     expect(contextFor('SessionStart', join(root, 'frontend', 'src'))).toBeNull();
   });
 
-  it('registers the line-end hook for edits and for shell commands', () => {
+  it('registers the line-end hook for edits and for shell commands', { tags: ['condition'] }, () => {
     const settings = JSON.parse(readFileSync(join(root, '.claude', 'settings.json'), 'utf8'));
     const post = JSON.stringify(settings.hooks.PostToolUse);
     expect(post).toContain('eol.mjs\\" edit');
     expect(post).toContain('eol.mjs\\" shell');
   });
 
-  it('is registered for both events', () => {
+  it('is registered for both events', { tags: ['condition'] }, () => {
     const settings = JSON.parse(readFileSync(join(root, '.claude', 'settings.json'), 'utf8'));
     for (const event of ['SessionStart', 'SubagentStart']) {
       expect(JSON.stringify(settings.hooks[event])).toContain('architecture-map.mjs');
@@ -120,12 +120,12 @@ describe('architecture-map hook', () => {
 });
 
 describe('line-end hook after a shell command', () => {
-  it('looks only at shell commands that can rewrite files', () => {
+  it('looks only at shell commands that can rewrite files', { tags: ['condition'] }, () => {
     for (const cmd of ["sed -i 's/a/b/' x.ts", 'python fix.py', 'echo a > out.txt', 'node fix.cjs', 'Set-Content a.txt b']) expect(rewritesFiles(cmd), cmd).toBe(true);
     for (const cmd of ['git status', 'npm run check', 'ls -la', 'git log --oneline 2>&1', 'cargo test -p novira-core', undefined]) expect(rewritesFiles(cmd), String(cmd)).toBe(false);
   });
 
-  it('lists text files whose work tree copy has the wrong line ends (CRLF, mixed; LF for batch files), not binaries or generated folders', () => {
+  it('lists text files whose work tree copy has the wrong line ends (CRLF, mixed; LF for batch files), not binaries or generated folders', { tags: ['error-guessing'] }, () => {
     const listing = [
       'i/lf    w/crlf  attr/text=auto eol=lf\tsrc/a.ts',
       'i/lf    w/mixed attr/text=auto eol=lf\tdocs/b.md',
@@ -145,7 +145,7 @@ describe('data-guard hook', () => {
   const data = 'E:/Code/novira/novira-data';
   const repo = 'E:/Code/novira';
 
-  it('protects the data folder except its work folder, on any case and slash', () => {
+  it('protects the data folder except its work folder, on any case and slash', { tags: ['condition'] }, () => {
     expect(isProtected('E:\\Code\\novira\\novira-data\\models\\x.txt', data)).toBe(true);
     expect(isProtected(`${data}/settings.json`, data)).toBe(true);
     expect(isProtected(`${data}/work/perf/a.json`, data)).toBe(false);
@@ -153,7 +153,7 @@ describe('data-guard hook', () => {
     expect(isProtected('E:/Code/novira/frontend/a.ts', data)).toBe(false);
   });
 
-  it('refuses shell commands that write, move or delete there, and lets reads and copies into work through', () => {
+  it('refuses shell commands that write, move or delete there, and lets reads and copies into work through', { tags: ['error-guessing'] }, () => {
     const refused = [
       'echo x > novira-data/models/a.txt',
       'cp a.txt novira-data/models/',
@@ -177,7 +177,7 @@ describe('data-guard hook', () => {
     for (const cmd of allowed) expect(shellWritesProtected(cmd, data, repo), cmd).toBe(false);
   });
 
-  it('reads the folder name as text, not a path, in Markdown code, an option value and a path built towards work/', () => {
+  it('reads the folder name as text, not a path, in Markdown code, an option value and a path built towards work/', { tags: ['condition'] }, () => {
     const allowed = [
       // A script writing a manual chapter that mentions the folder by name.
       "python - <<'EOF'\nopen('docs/manual/de/10.md','w').write('Daten in `novira-data` im Benutzerordner')\nEOF",
@@ -196,7 +196,7 @@ describe('data-guard hook', () => {
     for (const cmd of refused) expect(shellWritesProtected(cmd, data, repo), cmd).toBe(true);
   });
 
-  it('reports what a shell command left in the data folder, and nothing for an unchanged one', () => {
+  it('reports what a shell command left in the data folder, and nothing for an unchanged one', { tags: ['condition'] }, () => {
     const root = mkdtempSync(join(tmpdir(), 'guard-'));
     const dataDir = join(root, 'novira-data');
     const roots = { work: join(dataDir, 'work') };
@@ -229,7 +229,7 @@ describe('data-guard hook', () => {
     expect(listProtected(join(root, 'missing'))).toEqual([]);
   });
 
-  it('guards a data folder the app moved out of the repository the same way, by whatever name it has', () => {
+  it('guards a data folder the app moved out of the repository the same way, by whatever name it has', { tags: ['decision-table'] }, () => {
     const moved = 'C:/Users/u/mydata';
     const both = [data, moved];
     expect(isProtected('C:\\Users\\u\\mydata\\models\\a.safetensors', both)).toBe(true);
@@ -270,7 +270,7 @@ describe('data-guard hook', () => {
 });
 
 describe('commit-before-stop hook', () => {
-  it('asks to remove finished worktrees when nothing else is pending, once', () => {
+  it('asks to remove finished worktrees when nothing else is pending, once', { tags: ['state-transition'] }, () => {
     const text = reminder({}, [], false, ['E:/Code/wt-done']);
     expect(text).toContain('E:/Code/wt-done');
     expect(text).toContain('scripts/tools/worktree.mjs remove');
@@ -279,12 +279,12 @@ describe('commit-before-stop hook', () => {
     expect(reminder({}, [], false, [])).toBeNull();
   });
 
-  it('lists changed paths and leaves out generated folders and user data', () => {
+  it('lists changed paths and leaves out generated folders and user data', { tags: ['condition'] }, () => {
     const porcelain = [' M frontend/src/a.ts', '?? docs/new.md', 'R  old.md -> new.md', ' M novira-data/work/x.json', '?? logs/e2e/x.json', '?? frontend/node_modules/y.js', ' M data/user.db'].join('\n');
     expect(pending(porcelain)).toEqual(['frontend/src/a.ts', 'docs/new.md', 'new.md']);
   });
 
-  it('reminds once about uncommitted work, and never during a merge, after a reminder, or with nothing changed', () => {
+  it('reminds once about uncommitted work, and never during a merge, after a reminder, or with nothing changed', { tags: ['condition'] }, () => {
     const changed = ['a.ts', 'b.ts'];
     expect(reminder({}, changed, false)).toContain('a.ts');
     expect(reminder({}, changed, false)).toContain('commit');

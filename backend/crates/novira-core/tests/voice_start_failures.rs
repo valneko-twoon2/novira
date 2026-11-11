@@ -73,6 +73,7 @@ fn pip(data: &Path, report: Option<&str>) -> PathBuf {
     )
 }
 
+// tags: scenario
 #[test]
 fn entries_without_the_fields_that_are_needed_are_left_out() {
     let report = json!({"install": [
@@ -88,6 +89,7 @@ fn entries_without_the_fields_that_are_needed_are_left_out() {
     assert_eq!(wanted_files(&tree), [("model.safetensors".to_string(), 5)]);
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_pip_report_that_is_missing_or_not_json_stops_the_libraries_step() {
     let data = tempfile::tempdir().unwrap();
@@ -101,6 +103,7 @@ async fn a_pip_report_that_is_missing_or_not_json_stops_the_libraries_step() {
     assert!(err.contains("expected") || err.contains("key"), "{err}");
 }
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn a_folder_taken_by_a_file_stops_the_libraries_step() {
     let data = tempfile::tempdir().unwrap();
@@ -135,6 +138,7 @@ async fn speak(voice: &QwenVoice, data: &Path) -> Result<f64, String> {
         .await
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_worker_that_cannot_be_set_up_is_reported() {
     // Its script path is a folder.
@@ -167,6 +171,7 @@ async fn a_worker_that_cannot_be_set_up_is_reported() {
     assert!(err.contains("Cannot start the voice engine"), "{err}");
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_worker_that_answers_with_something_that_is_not_json_fails_the_request() {
     let data = tempfile::tempdir().unwrap();

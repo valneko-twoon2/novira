@@ -18,13 +18,13 @@ function chain() {
 }
 
 describe('a workflow file that loops back into itself', () => {
-  it('opens without the connections that close a loop, keeping the ones before them in the file', () => {
+  it('opens without the connections that close a loop, keeping the ones before them in the file', { tags: ['error-guessing', 'state-transition'] }, () => {
     const g = deserializeWorkflow({ nodes: [resize('a'), resize('b'), resize('c')], edges: [link('a', 'b'), link('b', 'c'), link('c', 'a'), link('b', 'b')] });
     expect(g).not.toBeNull();
     expect(pairs(g!.edges)).toEqual(['a->b', 'b->c']);
   });
 
-  it('keeps a graph that only branches and joins again', () => {
+  it('keeps a graph that only branches and joins again', { tags: ['regression'] }, () => {
     const blend = { id: 'd', position: { x: 0, y: 0 }, data: { type: 'img_resize', inputs: {} } };
     const g = deserializeWorkflow({ nodes: [resize('a'), resize('b'), resize('c'), blend], edges: [link('a', 'b'), link('a', 'c'), link('b', 'd')] });
     expect(pairs(g!.edges)).toEqual(['a->b', 'a->c', 'b->d']);
@@ -32,27 +32,27 @@ describe('a workflow file that loops back into itself', () => {
 });
 
 describe('a loop asked for by the assistant', () => {
-  it('refuses a connection that would close a loop and says why, leaving the graph as it was', () => {
+  it('refuses a connection that would close a loop and says why, leaving the graph as it was', { tags: ['error-guessing', 'state-transition'] }, () => {
     const r = applyWorkflowOps(chain(), [{ op: 'connect', ...link('c', 'a') }]);
     expect(r.applied).toBe(0);
     expect(r.skipped).toEqual([expect.stringContaining('c.image -> a.image: this would make the graph loop back into itself')]);
     expect(pairs(r.graph.edges)).toEqual(['a->b', 'b->c']);
   });
 
-  it('refuses a loop even when the new connection replaces another one into the same input', () => {
+  it('refuses a loop even when the new connection replaces another one into the same input', { tags: ['error-guessing', 'boundary'] }, () => {
     // c -> b takes b's image input from a, but b still feeds c.
     const r = applyWorkflowOps(chain(), [{ op: 'connect', ...link('c', 'b') }]);
     expect(r.skipped).toEqual([expect.stringContaining('c.image -> b.image: this would make the graph loop back into itself')]);
     expect(pairs(r.graph.edges)).toEqual(['a->b', 'b->c']);
   });
 
-  it('allows the same connection once the path back is cut', () => {
+  it('allows the same connection once the path back is cut', { tags: ['condition'] }, () => {
     const r = applyWorkflowOps(chain(), [{ op: 'disconnect', ...link('b', 'c') }, { op: 'connect', ...link('c', 'a') }]);
     expect(r.skipped).toEqual([]);
     expect(pairs(r.graph.edges)).toEqual(['a->b', 'c->a']);
   });
 
-  it('lists the connection of a whole graph that closes a loop among what it leaves out', () => {
+  it('lists the connection of a whole graph that closes a loop among what it leaves out', { tags: ['state-transition'] }, () => {
     const report = checkAssistantGraph({ nodes: [resize('a'), resize('b')], edges: [link('a', 'b'), link('b', 'a')] });
     expect(report.dropped).toEqual(['b.image -> a.image: this would make the graph loop back into itself']);
     expect(pairs(deserializeWorkflow(report.graph)!.edges)).toEqual(['a->b']);

@@ -15,7 +15,7 @@ const plainWords = fc.string({ maxLength: 30 }).filter((x) => !/[*《》]/.test(
 const mark = fc.constantFrom<TextMark>('bold', 'dots');
 
 describe('textRuns, plainText and charMarks', () => {
-  it('has no empty run, the plain text is the runs joined, and a mark is never part of a run of a text without one', () => {
+  it('has no empty run, the plain text is the runs joined, and a mark is never part of a run of a text without one', { tags: ['error-guessing', 'boundary'] }, () => {
     check(
       fc.property(marked, (text) => {
         const runs = textRuns(text);
@@ -27,7 +27,7 @@ describe('textRuns, plainText and charMarks', () => {
     );
   });
 
-  it('leaves a text without marks as it is, in one plain run', () => {
+  it('leaves a text without marks as it is, in one plain run', { tags: ['condition'] }, () => {
     check(
       fc.property(unmarked, (text) => {
         expect(plainText(text)).toBe(text);
@@ -36,7 +36,7 @@ describe('textRuns, plainText and charMarks', () => {
     );
   });
 
-  it('takes out of the text only the marks: putting their characters back is a supersequence of the plain text', () => {
+  it('takes out of the text only the marks: putting their characters back is a supersequence of the plain text', { tags: ['condition'] }, () => {
     check(
       fc.property(marked, (text) => {
         const plain = [...plainText(text)];
@@ -49,7 +49,7 @@ describe('textRuns, plainText and charMarks', () => {
 });
 
 describe('toggleMark', () => {
-  it('marks the selection, leaves the words of a text without marks the same, and toggling again restores the text', () => {
+  it('marks the selection, leaves the words of a text without marks the same, and toggling again restores the text', { tags: ['regression', 'condition'] }, () => {
     check(
       fc.property(plainWords, fc.nat(40), fc.nat(40), mark, (text, a, b, m) => {
         const on = toggleMark(text, a, b, m);

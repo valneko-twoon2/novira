@@ -112,6 +112,7 @@ fn read_cases(name: &str) -> Vec<Value> {
         .collect()
 }
 
+// tags: decision-table
 #[test]
 fn every_corpus_file_has_a_reader() {
     let mut files: Vec<String> = std::fs::read_dir(corpus_dir())
@@ -131,6 +132,7 @@ fn every_corpus_file_has_a_reader() {
     assert_eq!(files, readers);
 }
 
+// tags: condition
 #[test]
 fn rust_verdicts_of_the_corpus_are_current() {
     let update = std::env::var("CONTRACT_CORPUS_UPDATE").as_deref() == Ok("1");
@@ -180,6 +182,7 @@ fn rust_verdicts_of_the_corpus_are_current() {
 /// serde's derived `Deserialize` would read a JSON array as the fields of a struct in order (`[]` an empty patch,
 /// `["pkg", 30, true]` a three-field one). Every entry point reads through `novira_core::strict`, which refuses it, at
 /// the top and nested; the corpus readers above do the same, so Rust and `types.ts` agree on arrays.
+// tags: error-guessing
 #[test]
 fn a_json_array_is_refused_where_the_type_is_a_struct() {
     for array in [json!([]), json!([1, 2, 3]), json!(["pkg", 30, true])] {

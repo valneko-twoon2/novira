@@ -15,7 +15,7 @@ async function transparentPicture(page: import('@playwright/test').Page): Promis
   return Buffer.from(dataUrl.split(',')[1]!, 'base64');
 }
 
-test('the transparent margin of a picture is trimmed and saved as a new picture', async ({ page }) => {
+test('the transparent margin of a picture is trimmed and saved as a new picture', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('gallery-panel').locator('input[type="file"]').setInputFiles({ name: 'cutout.png', mimeType: 'image/png', buffer: await transparentPicture(page) });
   await expect(page.getByTestId('gallery-thumb')).toHaveCount(1);
@@ -26,7 +26,7 @@ test('the transparent margin of a picture is trimmed and saved as a new picture'
   await expect(page.getByText(msg('gallery.trim.saved', { width: 60, height: 40 }))).toBeVisible();
 });
 
-test('a picture without a transparent margin is left alone and says so', async ({ page }) => {
+test('a picture without a transparent margin is left alone and says so', { tag: ['@condition'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('positive-prompt').fill('a lighthouse on a cliff at dusk');
   await page.getByTestId('invoke-button').click();

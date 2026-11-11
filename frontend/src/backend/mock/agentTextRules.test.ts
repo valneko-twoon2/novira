@@ -16,7 +16,7 @@ const update = (message: string, layers?: unknown[]) => {
 };
 
 describe('textEdit', () => {
-  it('does not answer without a text scene', () => {
+  it('does not answer without a text scene', { tags: ['condition'] }, () => {
     expect(textEdit({ message: 'x', locale: 'en' }, undefined)).toBeNull();
     expect(textEdit({ message: 'x', locale: 'en' }, {})).toBeNull();
   });
@@ -30,11 +30,11 @@ describe('textEdit', () => {
     ['pink', '#ff5d8f'],
     ['orange', '#ff8a1f'],
     ['purple', '#8a4bd8'],
-  ])('recolours the selected layer: %s', (message, color) => {
+  ])('recolours the selected layer: %s', { tags: ['equivalence'] }, (message, color) => {
     expect(update(message).ops[0]!.set!.style!.fill).toEqual({ kind: 'solid', color });
   });
 
-  it('resizes, switches the writing direction and says what it did in English', () => {
+  it('resizes, switches the writing direction and says what it did in English', { tags: ['condition'] }, () => {
     expect(update('smaller').ops[0]!.set!.style!.fontSize).toBe(77);
     expect(update('bigger').ops[0]!.set!.style!.fontSize).toBe(130);
     expect(update('vertical').ops[0]!.set!.style!.vertical).toBe(true);
@@ -42,14 +42,14 @@ describe('textEdit', () => {
     expect(update('bigger').reply.text).toBe('Done: made the text larger.');
   });
 
-  it('adds and removes a shadow and an outline', () => {
+  it('adds and removes a shadow and an outline', { tags: ['condition'] }, () => {
     expect(update('add a shadow').ops[0]!.set!.style!.shadow).toMatchObject({ blur: 8 });
     expect(update('no shadow').ops[0]!.set!.style!.shadow).toBeNull();
     expect(update('add an outline').ops[0]!.set!.style!.stroke).toMatchObject({ width: 8 });
     expect(update('no outline').ops[0]!.set!.style!.stroke).toBeNull();
   });
 
-  it('rotates, moves and rewrites', () => {
+  it('rotates, moves and rewrites', { tags: ['condition'] }, () => {
     expect(update('30度').ops[0]!.set!.rotation).toBe(30);
     expect(update('center').ops[0]!.set).toMatchObject({ x: 500, y: 400 });
     expect(update('move to the top').ops[0]!.set!.y).toBe(160);
@@ -57,7 +57,7 @@ describe('textEdit', () => {
     expect(update('change it to "Thanks"').ops[0]!.set!.text).toBe('Thanks');
   });
 
-  it('applies a preset to text but not to a bubble, and removes a layer on request', () => {
+  it('applies a preset to text but not to a bubble, and removes a layer on request', { tags: ['condition'] }, () => {
     expect(update('gold style').ops[0]).toMatchObject({ op: 'preset', preset: 'gold' });
     expect(update('sticker').ops[0]).toMatchObject({ preset: 'sticker' });
     expect(update('soft').ops[0]).toMatchObject({ preset: 'soft' });
@@ -66,7 +66,7 @@ describe('textEdit', () => {
     expect(ask('gold', [bubble], 'b1')!.ops).toHaveLength(0);
   });
 
-  it('adds speech bubbles in the shape named, and text with a preset', () => {
+  it('adds speech bubbles in the shape named, and text with a preset', { tags: ['equivalence'] }, () => {
     const shapes: [string, string][] = [
       ['add a speech bubble, thought', 'cloud'],
       ['add a whisper bubble', 'whisper'],
@@ -83,7 +83,7 @@ describe('textEdit', () => {
     expect(added[1]).toMatchObject({ op: 'preset', preset: 'gold' });
   });
 
-  it('works on the last layer when nothing is selected, and explains itself in English when puzzled', () => {
+  it('works on the last layer when nothing is selected, and explains itself in English when puzzled', { tags: ['condition'] }, () => {
     const reply = ask('red', [layer], null)!;
     expect(reply.ops).toHaveLength(1);
     const puzzled = ask('hmm', [layer], null)!;

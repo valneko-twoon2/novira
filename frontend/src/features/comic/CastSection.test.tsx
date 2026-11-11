@@ -28,7 +28,7 @@ const cast = () => activeProject(useComic.getState())!.cast;
 const firstPanel = () => activeProject(useComic.getState())!.pages[0]!.panels[0]!;
 
 describe('the cast of a comic in the panel tools', () => {
-  it('keeps the words of a part, and drops a part that is emptied', () => {
+  it('keeps the words of a part, and drops a part that is emptied', { tags: ['scenario'] }, () => {
     render(
       <TooltipProvider>
         <Open />
@@ -44,7 +44,7 @@ describe('the cast of a comic in the panel tools', () => {
     expect(cast()[0]!.parts).toBeUndefined();
   });
 
-  it('offers the person of the pose only for a character in a panel with a pose, and shows who it is', () => {
+  it('offers the person of the pose only for a character in a panel with a pose, and shows who it is', { tags: ['scenario'] }, () => {
     const add = () => useComic.getState().setCast([{ id: 'a', name: 'Jin', tags: '1boy', imageName: null }]);
     add();
     const { rerender } = render(
@@ -62,7 +62,7 @@ describe('the cast of a comic in the panel tools', () => {
     expect(screen.getByText(t('comic.cast.posePersonHelp'))).toBeTruthy();
   });
 
-  it('marks a character as not human with the checkbox', () => {
+  it('marks a character as not human with the checkbox', { tags: ['scenario'] }, () => {
     render(
       <TooltipProvider>
         <Open />
@@ -73,7 +73,7 @@ describe('the cast of a comic in the panel tools', () => {
     expect(cast()[0]!.nonHuman).toBe(true);
   });
 
-  it('adds a character, edits its name and look, and puts it in the selected panel', () => {
+  it('adds a character, edits its name and look, and puts it in the selected panel', { tags: ['scenario'] }, () => {
     render(
       <TooltipProvider>
         <Open />
@@ -91,7 +91,7 @@ describe('the cast of a comic in the panel tools', () => {
     expect(firstPanel().cast).toEqual([]);
   });
 
-  it('removing a character takes it out of the panels too, and the cast stops at its limit', () => {
+  it('removing a character takes it out of the panels too, and the cast stops at its limit', { tags: ['boundary'] }, () => {
     render(
       <TooltipProvider>
         <Open />
@@ -108,7 +108,7 @@ describe('the cast of a comic in the panel tools', () => {
     expect((screen.getByTestId('comic-cast-add') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('shows one character at a time: the list picks it, a new one is shown, and a removed one gives way to the first', () => {
+  it('shows one character at a time: the list picks it, a new one is shown, and a removed one gives way to the first', { tags: ['boundary'] }, () => {
     render(
       <TooltipProvider>
         <Open />
@@ -132,7 +132,7 @@ describe('the cast of a comic in the panel tools', () => {
     expect((screen.getByTestId('comic-cast-name') as HTMLInputElement).value).toBe('Jin');
   });
 
-  it('edits the words of a character in the larger window too, in the design tab only', () => {
+  it('edits the words of a character in the larger window too, in the design tab only', { tags: ['scenario'] }, () => {
     const { unmount } = render(
       <TooltipProvider>
         <Open />
@@ -157,7 +157,7 @@ describe('the cast of a comic in the panel tools', () => {
     expect((screen.getByTestId('comic-cast-part-outfit') as HTMLTextAreaElement).value).toBe('cream cardigan, muted blue skirt, white blouse');
   });
 
-  it('takes the selected panel picture as the reference of a character, and lets it go', () => {
+  it('takes the selected panel picture as the reference of a character, and lets it go', { tags: ['scenario'] }, () => {
     render(
       <TooltipProvider>
         <Open />

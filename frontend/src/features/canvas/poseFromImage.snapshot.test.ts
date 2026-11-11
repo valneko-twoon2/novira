@@ -8,7 +8,7 @@ import { buildPoseExtractGraph } from '@/state/comfy/poseExtract';
 const asJson = (x: unknown) => `${JSON.stringify(x, null, 2)}\n`;
 
 describe('pose extraction graph snapshot', () => {
-  it('reads the body joints of a picture as text', async () => {
+  it('reads the body joints of a picture as text', { tags: ['condition'] }, async () => {
     await expect(asJson(buildPoseExtractGraph('photo.png', PACK_NODE_DEFS))).toMatchFileSnapshot('./__snapshots__/poseFromImage/pose-extract.json');
   });
 });

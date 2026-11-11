@@ -6,6 +6,7 @@ use serde_json::json;
 use std::sync::Arc;
 use std::time::Duration;
 
+// tags: error-guessing
 #[tokio::test]
 async fn enqueue_refuses_source_images_that_are_not_stored() {
     let dir = tempfile::tempdir().unwrap();
@@ -15,6 +16,7 @@ async fn enqueue_refuses_source_images_that_are_not_stored() {
     assert!(backend.enqueue(req).is_err());
 }
 
+// tags: scenario
 #[tokio::test]
 async fn results_for_the_canvas_drafts_or_candidates_are_hidden_and_gallery_results_keep_their_board(
 ) {
@@ -90,6 +92,7 @@ async fn results_for_the_canvas_drafts_or_candidates_are_hidden_and_gallery_resu
     backend.shutdown();
 }
 
+// tags: boundary
 #[tokio::test]
 async fn a_hires_fix_resolves_its_upscale_model_and_stores_the_first_pass_size() {
     let dir = tempfile::tempdir().unwrap();
@@ -154,6 +157,7 @@ async fn a_hires_fix_resolves_its_upscale_model_and_stores_the_first_pass_size()
     backend.shutdown();
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn jobs_the_engine_refuses_or_with_unknown_models_fail_before_generating() {
     let dir = tempfile::tempdir().unwrap();
@@ -187,6 +191,7 @@ async fn jobs_the_engine_refuses_or_with_unknown_models_fail_before_generating()
     backend.shutdown();
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn closing_the_app_marks_the_running_job_as_interrupted() {
     let dir = tempfile::tempdir().unwrap();

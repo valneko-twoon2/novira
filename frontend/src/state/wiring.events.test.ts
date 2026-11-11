@@ -27,7 +27,7 @@ beforeAll(async () => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('backend events', () => {
-  it('reloads the queue when it is cleared and when the processor changes state', async () => {
+  it('reloads the queue when it is cleared and when the processor changes state', { tags: ['scenario'] }, async () => {
     const list = vi.spyOn(backend, 'listQueue').mockReturnValue([{ id: 7 } as never]);
     const status = vi.spyOn(backend, 'queueStatus').mockReturnValue({ isPaused: true, total: 1 } as never);
     useQueue.getState().setProgress({ itemId: 1 } as never);
@@ -40,12 +40,12 @@ describe('backend events', () => {
     expect(list).toHaveBeenCalled();
   });
 
-  it('shows the progress of the running item', async () => {
+  it('shows the progress of the running item', { tags: ['state-transition'] }, async () => {
     emit({ type: 'invocation_progress', progress: { itemId: 3, progressImageUrl: 'blob:p' } } as never);
     expect(useQueue.getState().progress).toMatchObject({ itemId: 3 });
   });
 
-  it('keeps the last picture of an item through the steps that carry none, and drops it for another item', async () => {
+  it('keeps the last picture of an item through the steps that carry none, and drops it for another item', { tags: ['condition'] }, async () => {
     emit({ type: 'invocation_progress', progress: { itemId: 3, step: 1, progressImageUrl: 'data:image/png;base64,AAAA' } } as never);
     emit({ type: 'invocation_progress', progress: { itemId: 3, step: 2, progressImageUrl: null } } as never);
     expect(useQueue.getState().progress).toMatchObject({ step: 2, progressImageUrl: 'data:image/png;base64,AAAA' });
@@ -53,14 +53,14 @@ describe('backend events', () => {
     expect(useQueue.getState().progress?.progressImageUrl).toBeNull();
   });
 
-  it('keeps the model list and the install jobs up to date', async () => {
+  it('keeps the model list and the install jobs up to date', { tags: ['condition'] }, async () => {
     emit({ type: 'model_added', model: { key: 'm9', name: 'New', type: 'main', base: 'sdxl' } } as never);
     expect(useModels.getState().models.some((m) => m.key === 'm9')).toBe(true);
     emit({ type: 'model_install', job: { id: 'j9', source: 's', name: 'n', status: 'downloading', bytes: 1, totalBytes: 2 } } as never);
     expect(useModels.getState().installJobs.some((j) => j.id === 'j9')).toBe(true);
   });
 
-  it('tracks the downloads of model packs and node packs', async () => {
+  it('tracks the downloads of model packs and node packs', { tags: ['condition'] }, async () => {
     emit({ type: 'pack', kind: 'video', status: { state: 'downloading', bytes: 1, totalBytes: 10 } } as never);
     expect(usePacks.getState().packs.video.state).toBe('downloading');
     expect(useDownloads.getState().entries.map((e) => e.key)).toContain('model:video');
@@ -69,7 +69,7 @@ describe('backend events', () => {
     expect(useDownloads.getState().entries.map((e) => e.key)).toContain('node:https://github.com/a/b');
   });
 
-  it('adds log entries to the developer log', async () => {
+  it('adds log entries to the developer log', { tags: ['condition'] }, async () => {
     const before = useDevLog.getState().entries.length;
     emit({ type: 'log', entry: { id: 1, time: 0, level: 'info', source: 'test', message: 'hello' } } as never);
     expect(useDevLog.getState().entries.length).toBe(before + 1);

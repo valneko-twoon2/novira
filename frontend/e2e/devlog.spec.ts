@@ -1,7 +1,7 @@
 // The developer log (on by default in development builds): a failed job shows up as an error line.
 import { expect, openApp, test } from './fixtures';
 
-test('a failed job appears in the developer log', async ({ page }) => {
+test('a failed job appears in the developer log', { tag: ['@error-guessing', '@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('positive-prompt').fill('a broken picture [fail]');
   await page.getByTestId('invoke-button').click();

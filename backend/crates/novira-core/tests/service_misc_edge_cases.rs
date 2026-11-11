@@ -52,6 +52,7 @@ fn config(dir: &std::path::Path, settings: Settings) -> BackendConfig {
     }
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn an_engine_that_cannot_start_is_reported_without_stopping_the_app() {
     let dir = tempfile::tempdir().unwrap();
@@ -68,6 +69,7 @@ async fn an_engine_that_cannot_start_is_reported_without_stopping_the_app() {
     assert!(m.contains("cannot list nodes"), "{m}");
 }
 
+// tags: boundary
 #[tokio::test]
 async fn an_engine_without_node_definitions_gives_an_empty_list() {
     let dir = tempfile::tempdir().unwrap();
@@ -77,6 +79,7 @@ async fn an_engine_without_node_definitions_gives_an_empty_list() {
     assert_eq!(backend.node_defs().await.unwrap(), serde_json::json!({}));
 }
 
+// tags: error-guessing, decision-table
 #[test]
 fn saved_keys_that_cannot_be_read_are_skipped_and_the_settings_key_is_used() {
     let dir = tempfile::tempdir().unwrap();
@@ -106,6 +109,7 @@ fn saved_keys_that_cannot_be_read_are_skipped_and_the_settings_key_is_used() {
     assert!(backend.bootstrap().models.is_empty());
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn a_models_folder_that_cannot_be_made_stops_the_start_with_an_error() {
     let dir = tempfile::tempdir().unwrap();
@@ -118,6 +122,7 @@ fn a_models_folder_that_cannot_be_made_stops_the_start_with_an_error() {
     assert!(matches!(result, Err(BackendError::Internal(_))));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_stored_picture_that_is_not_a_picture_cannot_be_exported() {
     let dir = tempfile::tempdir().unwrap();
@@ -147,6 +152,7 @@ async fn a_stored_picture_that_is_not_a_picture_cannot_be_exported() {
     assert_eq!(std::fs::read_dir(out.path()).unwrap().count(), 0);
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn pictures_that_are_missing_from_the_gallery_are_skipped_and_counted() {
     let dir = tempfile::tempdir().unwrap();

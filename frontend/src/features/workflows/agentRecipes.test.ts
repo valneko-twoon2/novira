@@ -11,7 +11,7 @@ describe('what the assistant is told about graphs', () => {
   beforeAll(() => setExtensionTemplates(comfyTemplates({ ...MOCK_NODE_DEFS, ...CORE_NODE_DEFS, ...PACK_NODE_DEFS })));
   afterAll(() => setExtensionTemplates([]));
 
-  it('lists every recipe with the packs it still lacks', () => {
+  it('lists every recipe with the packs it still lacks', { tags: ['decision-table'] }, () => {
     const none = agentRecipes([]);
     expect(none.map((r) => r.id)).toEqual(GRAPH_TEMPLATES.map((g) => g.id));
     expect(none.find((r) => r.id === 'removeBackground')?.missing).toEqual(['rmbg']);
@@ -19,7 +19,7 @@ describe('what the assistant is told about graphs', () => {
     expect(none.find((r) => r.id === 'text2image')?.missing).toEqual([]);
   });
 
-  it('keeps every node type a recipe uses in the node list, and stays small', () => {
+  it('keeps every node type a recipe uses in the node list, and stays small', { tags: ['decision-table'] }, () => {
     const types = new Set(agentNodeTypes().map((n) => n.type));
     for (const g of GRAPH_TEMPLATES) for (const n of g.nodes) expect(types.has(n[1])).toBe(true);
     expect(JSON.stringify(agentNodeTypes()).length).toBeLessThan(60000);
@@ -29,7 +29,7 @@ describe('what the assistant is told about graphs', () => {
 describe('what the assistant is told about the nodes of an extension', () => {
   const defs = { ...MOCK_NODE_DEFS, ...CORE_NODE_DEFS, ...PACK_NODE_DEFS };
 
-  it('lists the nodes of the extension with inputs and outputs, and none of ComfyUI itself', () => {
+  it('lists the nodes of the extension with inputs and outputs, and none of ComfyUI itself', { tags: ['boundary'] }, () => {
     const folder = Object.values(PACK_NODE_DEFS)
       .map((d) => /^custom_nodes[./]([^./]+)/.exec(d.python_module ?? '')?.[1])
       .find((f) => f)!;
@@ -40,7 +40,7 @@ describe('what the assistant is told about the nodes of an extension', () => {
     expect(extensionNodes(defs, folder.toUpperCase()).length).toBe(nodes.length);
   });
 
-  it('lists nothing for an unknown folder or before the definitions are loaded', () => {
+  it('lists nothing for an unknown folder or before the definitions are loaded', { tags: ['error-guessing', 'boundary'] }, () => {
     expect(extensionNodes(defs, 'No-Such-Pack')).toEqual([]);
     expect(extensionNodes(null, 'ComfyUI-RMBG')).toEqual([]);
   });

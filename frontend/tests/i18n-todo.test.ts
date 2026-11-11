@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { missingMessages } from '../scripts/i18n-todo.mjs';
 
 describe('missingMessages', () => {
-  it('lists, per other language, the keys ja has and it lacks, with the ja and en texts', () => {
+  it('lists, per other language, the keys ja has and it lacks, with the ja and en texts', { tags: ['scenario'] }, () => {
     const dir = mkdtempSync(join(tmpdir(), 'novira-todo-'));
     const files: Record<string, Record<string, string>> = {
       ja: { 'demo.a': 'あ', 'demo.b': 'い' },

@@ -15,20 +15,20 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('packKey', () => {
-  it('normalizes a GitHub address the way the backend reports it', () => {
+  it('normalizes a GitHub address the way the backend reports it', { tags: ['condition'] }, () => {
     expect(packKey('  https://github.com/o/r.git/ ')).toBe('https://github.com/o/r');
     expect(packKey('https://github.com/o/r')).toBe('https://github.com/o/r');
   });
 });
 
 describe('node packs store', () => {
-  it('tracks an install under the normalized address and records a failure to start', async () => {
+  it('tracks an install under the normalized address and records a failure to start', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'installNodePack').mockRejectedValue(new Error('not a repository'));
     await useNodePacks.getState().install('https://github.com/o/r.git');
     expect(useNodePacks.getState().jobs).toEqual({ 'https://github.com/o/r': { state: 'error', message: 'not a repository' } });
   });
 
-  it('reloads the installed list when an install finishes', async () => {
+  it('reloads the installed list when an install finishes', { tags: ['scenario'] }, async () => {
     const nodePacks = vi.spyOn(backend, 'nodePacks').mockResolvedValue(list(true));
     useNodePacks.getState().setJob('https://github.com/o/r', { state: 'downloading', file: 'r', index: 1, count: 1, bytes: 1, totalBytes: 2 });
     expect(nodePacks).not.toHaveBeenCalled();
@@ -36,13 +36,13 @@ describe('node packs store', () => {
     await vi.waitFor(() => expect(useNodePacks.getState().packs).toEqual(list(true)));
   });
 
-  it('keeps the error of a failed removal', async () => {
+  it('keeps the error of a failed removal', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'removeNodePack').mockRejectedValue(new Error('x is not installed'));
     await useNodePacks.getState().remove('x');
     expect(useNodePacks.getState().error).toBe('x is not installed');
   });
 
-  it('restarts the engine and fetches the node definitions again', async () => {
+  it('restarts the engine and fetches the node definitions again', { tags: ['condition'] }, async () => {
     vi.spyOn(backend, 'restartEngine').mockResolvedValue(list(false));
     const defs = vi.spyOn(backend, 'nodeDefs').mockResolvedValue({} as ComfyNodeDefs);
     useComfyNodes.setState({ status: 'ready', defs: {} as ComfyNodeDefs });
@@ -51,7 +51,7 @@ describe('node packs store', () => {
     expect(useNodePacks.getState()).toMatchObject({ restarting: false, error: null, packs: list(false) });
   });
 
-  it('clears the restarting flag when the restart fails', async () => {
+  it('clears the restarting flag when the restart fails', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'restartEngine').mockRejectedValue(new Error('a job is running'));
     await useNodePacks.getState().restart();
     expect(useNodePacks.getState()).toMatchObject({ restarting: false, error: 'a job is running' });
@@ -59,7 +59,7 @@ describe('node packs store', () => {
 });
 
 describe('comfy node definitions', () => {
-  it('loads once unless forced', async () => {
+  it('loads once unless forced', { tags: ['condition'] }, async () => {
     const defs = vi.spyOn(backend, 'nodeDefs').mockResolvedValue({} as ComfyNodeDefs);
     await useComfyNodes.getState().load();
     await useComfyNodes.getState().load();
@@ -69,7 +69,7 @@ describe('comfy node definitions', () => {
     expect(useComfyNodes.getState().status).toBe('ready');
   });
 
-  it('reports a failed load and can try again', async () => {
+  it('reports a failed load and can try again', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'nodeDefs').mockRejectedValueOnce(new Error('engine down')).mockResolvedValue({} as ComfyNodeDefs);
     await useComfyNodes.getState().load();
     expect(useComfyNodes.getState()).toMatchObject({ status: 'error', error: 'engine down' });

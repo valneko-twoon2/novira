@@ -44,7 +44,7 @@ afterEach(() => {
 });
 
 describe('undo, redo and save', () => {
-  it('disables undo and redo until there is history, then steps through it', () => {
+  it('disables undo and redo until there is history, then steps through it', { tags: ['state-transition'] }, () => {
     show();
     const undo = screen.getByTestId('canvas-undo');
     const redo = screen.getByRole('button', { name: /Ctrl\+Shift\+Z/ });
@@ -59,7 +59,7 @@ describe('undo, redo and save', () => {
     expect(state().entities).toHaveLength(1);
   });
 
-  it('saves to the gallery and as a PSD', () => {
+  it('saves to the gallery and as a PSD', { tags: ['scenario'] }, () => {
     show();
     fireEvent.click(screen.getByTestId('canvas-save'));
     expect(saveCanvasToGallery).toHaveBeenCalledWith(useCanvas);
@@ -69,7 +69,7 @@ describe('undo, redo and save', () => {
 });
 
 describe('zoom group', () => {
-  it('shows the zoom as a percentage and zooms in and out', () => {
+  it('shows the zoom as a percentage and zooms in and out', { tags: ['scenario'] }, () => {
     show();
     const percent = () => screen.getByTestId('canvas-zoom').textContent;
     expect(percent()).toBe(`${Math.round(state().viewport.scale * 100)}%`);
@@ -82,7 +82,7 @@ describe('zoom group', () => {
     expect(state().viewport.scale).toBeLessThan(before);
   });
 
-  it('picks a preset from the menu and resets the view with the fit button', async () => {
+  it('picks a preset from the menu and resets the view with the fit button', { tags: ['scenario'] }, async () => {
     show();
     fireEvent.keyDown(screen.getByTestId('canvas-zoom'), { key: 'Enter' });
     fireEvent.click(await screen.findByRole('menuitem', { name: '200%' }));
@@ -91,7 +91,7 @@ describe('zoom group', () => {
     expect(state().viewport.scale).not.toBeCloseTo(2);
   });
 
-  it('fits the bbox and resets the view from the extra menu items', async () => {
+  it('fits the bbox and resets the view from the extra menu items', { tags: ['scenario'] }, async () => {
     show();
     act(() => state().setViewport({ x: 500, y: 500, scale: 3 }));
     fireEvent.keyDown(screen.getByTestId('canvas-zoom'), { key: 'Enter' });
@@ -105,14 +105,14 @@ describe('zoom group', () => {
 });
 
 describe('pose tool options', () => {
-  it('shows them only for the pose tool', () => {
+  it('shows them only for the pose tool', { tags: ['scenario'] }, () => {
     show();
     expect(screen.queryByTestId('canvas-pose-random')).toBeNull();
     act(() => state().setTool('pose'));
     expect(screen.getByTestId('canvas-pose-random')).toBeTruthy();
   });
 
-  it('randomizes the selected layer, opens the 3D pose dialog and reads the poses of the selected picture', () => {
+  it('randomizes the selected layer, opens the 3D pose dialog and reads the poses of the selected picture', { tags: ['scenario'] }, () => {
     const id = state().addEntity('control');
     state().setTool('pose');
     show();
@@ -125,7 +125,7 @@ describe('pose tool options', () => {
     expect(quickRunTool).toHaveBeenCalledWith('pose', 'photo.png');
   });
 
-  it('asks for a file to read the poses of when no picture is selected', () => {
+  it('asks for a file to read the poses of when no picture is selected', { tags: ['scenario'] }, () => {
     state().setTool('pose');
     show();
     const click = vi.spyOn(screen.getByTestId('canvas-pose-from-image-file') as HTMLInputElement, 'click').mockImplementation(() => undefined);
@@ -134,7 +134,7 @@ describe('pose tool options', () => {
     expect(quickRunTool).not.toHaveBeenCalled();
   });
 
-  it('generates a batch of the chosen size, limited to the maximum', () => {
+  it('generates a batch of the chosen size, limited to the maximum', { tags: ['boundary'] }, () => {
     state().setTool('pose');
     show();
     fireEvent.click(screen.getByTestId('canvas-pose-batch'));

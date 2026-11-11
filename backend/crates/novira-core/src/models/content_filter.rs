@@ -254,6 +254,7 @@ mod tests {
     use super::*;
     use serde_json::json;
 
+    // tags: equivalence
     #[test]
     fn adult_repositories_are_recognised_without_the_tag() {
         let none: Vec<String> = Vec::new();

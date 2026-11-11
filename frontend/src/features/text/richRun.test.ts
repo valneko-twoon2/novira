@@ -20,7 +20,7 @@ const current = (id: string) => useTextEditor.getState().scene.layers.find((l) =
 beforeEach(() => useRichRun.setState({ running: {} }));
 
 describe('pickRichCandidate', () => {
-  it('makes another candidate the fill as one undo step', () => {
+  it('makes another candidate the fill as one undo step', { tags: ['state-transition'] }, () => {
     const { id } = setup();
     useTextEditor.getState().checkpoint();
     pickRichCandidate(id, 'b.png');
@@ -29,7 +29,7 @@ describe('pickRichCandidate', () => {
     expect(current(id).rich?.imageName).toBe('a.png');
   });
 
-  it('ignores the one already in use, a name that is not a candidate and a layer with no AI fill', () => {
+  it('ignores the one already in use, a name that is not a candidate and a layer with no AI fill', { tags: ['error-guessing'] }, () => {
     const { id } = setup();
     const before = useTextEditor.getState().past.length;
     pickRichCandidate(id, 'a.png');
@@ -44,7 +44,7 @@ describe('pickRichCandidate', () => {
 });
 
 describe('clearRich', () => {
-  it('goes back to the plain fill, and undo brings the AI fill back', () => {
+  it('goes back to the plain fill, and undo brings the AI fill back', { tags: ['state-transition'] }, () => {
     const { id } = setup();
     clearRich(id);
     expect(current(id).rich).toBeUndefined();
@@ -52,7 +52,7 @@ describe('clearRich', () => {
     expect(current(id).rich?.imageName).toBe('a.png');
   });
 
-  it('does nothing for a layer with no AI fill or a layer that is gone', () => {
+  it('does nothing for a layer with no AI fill or a layer that is gone', { tags: ['error-guessing'] }, () => {
     const plain = setup(false);
     const before = useTextEditor.getState().past.length;
     clearRich(plain.id);
@@ -62,7 +62,7 @@ describe('clearRich', () => {
 });
 
 describe('runRich', () => {
-  it('does nothing for an empty text, a missing layer or when no model can draw', async () => {
+  it('does nothing for an empty text, a missing layer or when no model can draw', { tags: ['error-guessing'] }, async () => {
     const { id } = setup(false);
     useTextEditor.getState().update(id, { text: '   ' });
     await runRich(id);

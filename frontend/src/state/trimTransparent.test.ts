@@ -47,7 +47,7 @@ afterEach(() => {
 });
 
 describe('trimTransparent', () => {
-  it('saves a crop of the opaque area next to the original and adds it to the gallery', async () => {
+  it('saves a crop of the opaque area next to the original and adds it to the gallery', { tags: ['condition'] }, async () => {
     stubImage({ width: 10, height: 10 });
     canvases = installRecordingCanvases({ pixel: (x, y) => [0, 0, 0, x >= 2 && x < 6 && y >= 3 && y < 5 ? 255 : 0] });
     const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue(saved);
@@ -64,7 +64,7 @@ describe('trimTransparent', () => {
     expect(draws).toContainEqual([expect.anything(), 2, 3, 4, 2, 0, 0, 4, 2]);
   });
 
-  it('asks for cross-origin access only for remote pictures', async () => {
+  it('asks for cross-origin access only for remote pictures', { tags: ['condition'] }, async () => {
     const created = stubImage({});
     canvases = installRecordingCanvases({ pixel: () => [0, 0, 0, 255] });
     await trimTransparent({ ...image, url: 'https://example.test/a.png' });
@@ -72,7 +72,7 @@ describe('trimTransparent', () => {
     expect(created.map((i) => i.crossOrigin)).toEqual(['anonymous', '']);
   });
 
-  it('warns when the whole picture is transparent', async () => {
+  it('warns when the whole picture is transparent', { tags: ['scenario'] }, async () => {
     stubImage({});
     canvases = installRecordingCanvases({ pixel: () => [0, 0, 0, 0] });
     const upload = vi.spyOn(backend, 'uploadImage');
@@ -81,7 +81,7 @@ describe('trimTransparent', () => {
     expect(upload).not.toHaveBeenCalled();
   });
 
-  it('says so when there is no margin to trim', async () => {
+  it('says so when there is no margin to trim', { tags: ['condition'] }, async () => {
     stubImage({});
     canvases = installRecordingCanvases({ pixel: () => [0, 0, 0, 255] });
     const upload = vi.spyOn(backend, 'uploadImage');
@@ -90,13 +90,13 @@ describe('trimTransparent', () => {
     expect(upload).not.toHaveBeenCalled();
   });
 
-  it('reports a picture that cannot be loaded', async () => {
+  it('reports a picture that cannot be loaded', { tags: ['error-guessing'] }, async () => {
     stubImage({ fail: true });
     expect(await trimTransparent(image)).toBeNull();
     expect(lastToast()).toMatchObject({ status: 'error', title: t('gallery.trim.failed'), description: 'image load failed' });
   });
 
-  it('reports a canvas that cannot encode the crop, and a missing 2d context', async () => {
+  it('reports a canvas that cannot encode the crop, and a missing 2d context', { tags: ['error-guessing'] }, async () => {
     stubImage({});
     canvases = installRecordingCanvases({ pixel: (x) => [0, 0, 0, x < 5 ? 255 : 0] });
     blobResult = null;

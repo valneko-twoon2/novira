@@ -318,6 +318,7 @@ mod tests {
         haystack.windows(needle.len()).any(|w| w == needle)
     }
 
+    // tags: condition
     #[test]
     fn a_png_copy_has_no_text_chunks_and_the_requested_size() {
         let original = png(400, 200, false);
@@ -343,6 +344,7 @@ mod tests {
         assert_eq!(image::guess_format(&copy).unwrap(), image::ImageFormat::Png);
     }
 
+    // tags: condition
     #[test]
     fn a_png_copy_can_keep_the_settings_when_asked() {
         let copy = encode(
@@ -360,6 +362,7 @@ mod tests {
         assert!(images::read_text(&copy, images::WORKFLOW_KEY).is_some());
     }
 
+    // tags: condition
     #[test]
     fn a_jpeg_copy_has_no_exif_and_lays_transparency_on_white() {
         let copy = encode(&png(64, 32, true), &options(ExportFormat::Jpeg)).unwrap();
@@ -380,6 +383,7 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn a_webp_copy_is_lossless_without_metadata_and_keeps_alpha() {
         let copy = encode(
@@ -401,6 +405,7 @@ mod tests {
         assert!(decoded.color().has_alpha());
     }
 
+    // tags: condition
     #[test]
     fn sizes_shrink_in_proportion_and_never_grow() {
         assert_eq!(target_size(4000, 3000, Some(1024)), (1024, 768));
@@ -410,6 +415,7 @@ mod tests {
         assert_eq!(target_size(10_000, 1, Some(100)), (100, 1));
     }
 
+    // tags: error-guessing, boundary
     #[test]
     fn options_out_of_range_are_refused() {
         assert!(validate(&options(ExportFormat::Png)).is_ok());
@@ -435,6 +441,7 @@ mod tests {
         }
     }
 
+    // tags: equivalence
     #[test]
     fn a_taken_name_gets_a_number_and_nothing_is_overwritten() {
         let dir = tempfile::tempdir().unwrap();
@@ -447,6 +454,7 @@ mod tests {
         assert_eq!(std::fs::read(&a).unwrap(), b"one");
     }
 
+    // tags: condition
     #[test]
     fn the_mark_sees_the_resized_picture_and_its_result_is_what_is_encoded() {
         let seen = std::cell::Cell::new((0, 0));
@@ -481,6 +489,7 @@ mod tests {
         );
     }
 
+    // tags: equivalence
     #[test]
     fn names_in_one_download_never_repeat() {
         let mut taken = std::collections::HashSet::new();
@@ -490,6 +499,7 @@ mod tests {
         assert_eq!(unique_name(&mut taken, "pic", "png"), "pic-3.png");
     }
 
+    // tags: error-guessing, state-transition
     #[test]
     fn a_zip_holds_every_copy_unchanged_under_its_name() {
         let files = vec![
@@ -507,6 +517,7 @@ mod tests {
         }
     }
 
+    // tags: error-guessing
     #[test]
     fn broken_input_is_an_error() {
         assert!(encode(b"not a picture", &options(ExportFormat::Png)).is_err());

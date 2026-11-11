@@ -214,6 +214,7 @@ fn record_path(dest: &std::path::Path) -> std::path::PathBuf {
     dest.with_file_name(name)
 }
 
+// tags: scenario
 #[tokio::test]
 async fn an_interrupted_download_continues_from_its_part_with_the_validator_of_the_first_answer() {
     let body = bytes(1000, 1);
@@ -273,6 +274,7 @@ async fn an_interrupted_download_continues_from_its_part_with_the_validator_of_t
     );
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_file_that_changed_on_the_server_comes_back_whole_and_is_not_joined_to_the_old_part() {
     let old = bytes(1000, 1);
@@ -314,6 +316,7 @@ async fn a_file_that_changed_on_the_server_comes_back_whole_and_is_not_joined_to
     );
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn a_part_without_its_record_is_not_resumed() {
     let body = bytes(1000, 3);
@@ -342,6 +345,7 @@ async fn a_part_without_its_record_is_not_resumed() {
     assert_eq!(std::fs::read(&dest).unwrap(), body);
 }
 
+// tags: regression, error-guessing
 #[tokio::test]
 async fn a_server_that_refuses_the_range_starts_the_file_again() {
     let body = bytes(1000, 4);
@@ -374,6 +378,7 @@ async fn a_server_that_refuses_the_range_starts_the_file_again() {
     assert_eq!(std::fs::read(&dest).unwrap(), body);
 }
 
+// tags: boundary
 #[tokio::test]
 async fn a_stalled_connection_is_given_up_in_time_and_keeps_its_part() {
     let site = Site::start(bytes(1000, 5), "v1");
@@ -407,6 +412,7 @@ async fn a_stalled_connection_is_given_up_in_time_and_keeps_its_part() {
     );
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_part_being_downloaded_is_kept_by_a_delete_until_the_download_ends() {
     let site = Site::start(bytes(1000, 6), "v1");
@@ -471,6 +477,7 @@ async fn fetch(site: &Site, dest: &std::path::Path) -> Result<(), InstallError> 
     .await
 }
 
+// tags: boundary
 #[tokio::test]
 async fn a_file_sent_without_a_length_is_whole_when_the_connection_ends() {
     let body = bytes(500, 3);
@@ -482,6 +489,7 @@ async fn a_file_sent_without_a_length_is_whole_when_the_connection_ends() {
     assert_eq!(std::fs::read(&dest).unwrap(), body);
 }
 
+// tags: regression, boundary
 #[tokio::test]
 async fn a_resumed_file_is_checked_against_the_size_the_server_names_for_the_whole_file() {
     let body = bytes(1000, 1);
@@ -504,6 +512,7 @@ async fn a_resumed_file_is_checked_against_the_size_the_server_names_for_the_who
     assert!(record_path(&dest).is_file());
 }
 
+// tags: boundary
 #[tokio::test]
 async fn an_empty_part_is_fetched_without_a_range() {
     let body = bytes(300, 2);

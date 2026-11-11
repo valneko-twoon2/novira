@@ -9,7 +9,7 @@ import { allTemplates, fieldLabel, getTemplate, isActive, nodeTitle, setExtensio
 afterEach(() => setExtensionTemplates([]));
 
 describe('ComfyUI node definitions', () => {
-  it('turns the nodes of packs and of ComfyUI into templates, leaving out deprecated nodes and cloud API nodes', () => {
+  it('turns the nodes of packs and of ComfyUI into templates, leaving out deprecated nodes and cloud API nodes', { tags: ['condition'] }, () => {
     const list = comfyTemplates({ ...MOCK_NODE_DEFS, ...CORE_NODE_DEFS });
     const types = list.map((t) => t.type);
     // ComfyUI's own come first, then the packs' by pack.
@@ -29,7 +29,7 @@ describe('ComfyUI node definitions', () => {
     expect(comfyTemplates({ A: unknown, B: { ...MOCK_NODE_DEFS.KSampler!, python_module: 'comfy_api_nodes.nodes_x' } })).toEqual([]);
   });
 
-  it('maps widgets to controls and connection types to editor types', () => {
+  it('maps widgets to controls and connection types to editor types', { tags: ['condition'] }, () => {
     const rig = comfyTemplates(MOCK_NODE_DEFS).find((t) => t.comfyClass === 'MockFaceRig')!;
     expect(rig.pack).toBe('ComfyUI-Mock-Tools');
     expect(rig.title).toBe('Face Rig (Mock)');
@@ -46,7 +46,7 @@ describe('ComfyUI node definitions', () => {
     ]);
   });
 
-  it('keeps input order, new-style combos, multiline text, output nodes and 64-bit seeds in range', () => {
+  it('keeps input order, new-style combos, multiline text, output nodes and 64-bit seeds in range', { tags: ['boundary'] }, () => {
     const list = comfyTemplates(MOCK_NODE_DEFS).filter((t) => t.pack);
     const grain = list.find((t) => t.comfyClass === 'MockFilmGrain')!;
     expect(grain.inputs.map((i) => i.name)).toEqual(['image', 'intensity', 'grain_size', 'monochrome', 'seed']);
@@ -57,7 +57,7 @@ describe('ComfyUI node definitions', () => {
     expect(preview.inputs.find((i) => i.name === 'caption')).toMatchObject({ type: 'string', ui: 'textarea' });
   });
 
-  it('takes V3 inputs it can show, and lists the auto-grow ones it cannot', () => {
+  it('takes V3 inputs it can show, and lists the auto-grow ones it cannot', { tags: ['error-guessing'] }, () => {
     const resize = comfyTemplates(MOCK_NODE_DEFS).find((t) => t.comfyClass === 'MockResize')!;
     const byName = Object.fromEntries(resize.inputs.map((i) => [i.name, i]));
     expect(byName.input).toMatchObject({ type: 'Any', input: 'connection' });
@@ -68,7 +68,7 @@ describe('ComfyUI node definitions', () => {
     expect(comfyTemplates(MOCK_NODE_DEFS).find((t) => t.comfyClass === 'MockFaceRig')!.unsupported).toBeUndefined();
   });
 
-  it('shows the inputs a choice of a dynamic combo brings only while that choice is made', () => {
+  it('shows the inputs a choice of a dynamic combo brings only while that choice is made', { tags: ['state-transition'] }, () => {
     const resize = comfyTemplates(MOCK_NODE_DEFS).find((t) => t.comfyClass === 'MockResize')!;
     const byName = Object.fromEntries(resize.inputs.map((i) => [i.name, i]));
     expect(byName['mode.width']).toMatchObject({ type: 'integer', label: 'width', default: 512, when: [[{ field: 'mode', is: 'scale dimensions' }]] });
@@ -78,7 +78,7 @@ describe('ComfyUI node definitions', () => {
     expect(isActive(byName.mode!, {})).toBe(true);
   });
 
-  it("reads ComfyUI's own Save Audio and Save Video: a choice's inputs by the prompt's dotted names, forms with other options kept apart, legacy inputs left out", () => {
+  it("reads ComfyUI's own Save Audio and Save Video: a choice's inputs by the prompt's dotted names, forms with other options kept apart, legacy inputs left out", { tags: ['condition'] }, () => {
     const [audio] = comfyTemplates({ SaveAudioAdvanced: CORE_NODE_DEFS.SaveAudioAdvanced! });
     const byName = Object.fromEntries(audio!.inputs.map((i) => [i.name, i]));
     expect(audio!.isOutput).toBe(true);
@@ -105,7 +105,7 @@ describe('ComfyUI node definitions', () => {
     expect(isActive(crf, { format: 'mp4', 'format.codec': 'auto', 'format.codec.encoding': 're-encode' })).toBe(false);
   });
 
-  it("turns Load Video and Load Audio into pickers of the gallery's videos and sounds, and the media outputs into outputs", () => {
+  it("turns Load Video and Load Audio into pickers of the gallery's videos and sounds, and the media outputs into outputs", { tags: ['condition'] }, () => {
     const list = comfyTemplates(CORE_NODE_DEFS);
     const field = (cls: string, name: string) => list.find((t) => t.comfyClass === cls)!.inputs.find((i) => i.name === name)!;
     expect(field('LoadVideo', 'file')).toMatchObject({ type: 'ImageField', input: 'direct', media: 'video', required: true });
@@ -116,7 +116,7 @@ describe('ComfyUI node definitions', () => {
     expect(list.find((t) => t.comfyClass === 'VAEDecodeAudio')!.outputs).toEqual([{ name: 'AUDIO', type: 'comfy:AUDIO' }]);
   });
 
-  it('reads the field names, tips, colours and multi-type sockets packs declare', () => {
+  it('reads the field names, tips, colours and multi-type sockets packs declare', { tags: ['condition'] }, () => {
     const [paint] = comfyTemplates({
       Paint: {
         input: {
@@ -140,7 +140,7 @@ describe('ComfyUI node definitions', () => {
     expect(fieldLabel('comfy:Paint', 'bg_color')).toBe('bg color');
   });
 
-  it('lets pack nodes connect to built-in nodes through the shared types, and to each other through their own', () => {
+  it('lets pack nodes connect to built-in nodes through the shared types, and to each other through their own', { tags: ['decision-table'] }, () => {
     expect(isCompatible('ImageField', comfyFieldType('IMAGE'))).toBe(true);
     expect(isCompatible(comfyFieldType('MODEL'), 'UNetField')).toBe(true);
     expect(isCompatible(comfyFieldType('FACE_LANDMARKS'), comfyFieldType('FACE_LANDMARKS'))).toBe(true);
@@ -148,7 +148,7 @@ describe('ComfyUI node definitions', () => {
     expect(isCompatible(comfyFieldType('FACE_LANDMARKS'), 'ImageField')).toBe(false);
   });
 
-  it('registers pack nodes next to the built-in ones, named as the pack names them', () => {
+  it('registers pack nodes next to the built-in ones, named as the pack names them', { tags: ['condition'] }, () => {
     expect(getTemplate('comfy:MockFaceRig')).toBeUndefined();
     setExtensionTemplates(comfyTemplates(MOCK_NODE_DEFS));
     const rig = getTemplate('comfy:MockFaceRig')!;
@@ -160,7 +160,7 @@ describe('ComfyUI node definitions', () => {
     expect(node.data.inputs).toMatchObject({ head_yaw: 0, detector: 'yunet' });
   });
 
-  it('never lets a pack node replace a built-in node', () => {
+  it('never lets a pack node replace a built-in node', { tags: ['condition'] }, () => {
     setExtensionTemplates([{ ...comfyTemplates(MOCK_NODE_DEFS)[0]!, type: 'noise' }]);
     expect(getTemplate('noise')?.category).not.toBe('extension');
   });

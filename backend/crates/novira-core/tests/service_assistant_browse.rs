@@ -56,6 +56,7 @@ fn search(source: &str) -> SearchParams {
     .unwrap()
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn assistant_and_browse_calls_reach_their_tools_and_report_failures() {
     let data = tempfile::tempdir().unwrap();

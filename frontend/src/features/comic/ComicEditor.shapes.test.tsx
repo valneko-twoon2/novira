@@ -58,7 +58,7 @@ afterEach(() => {
 });
 
 describe('the corners of the selected panel', () => {
-  it('drags a corner, which reshapes the page, and stops on release', () => {
+  it('drags a corner, which reshapes the page, and stops on release', { tags: ['scenario'] }, () => {
     show();
     layout();
     act(() => useComic.getState().selectPanel(page().panels[0]!.id));
@@ -76,7 +76,7 @@ describe('the corners of the selected panel', () => {
     expect(JSON.stringify(page().shapes)).toBe(after);
   });
 
-  it('ignores a move of another pointer, and a move before the page is laid out', () => {
+  it('ignores a move of another pointer, and a move before the page is laid out', { tags: ['scenario'] }, () => {
     show();
     act(() => useComic.getState().selectPanel(page().panels[0]!.id));
     const corner = screen.getAllByTestId('comic-corner')[0]!;
@@ -90,7 +90,7 @@ describe('the corners of the selected panel', () => {
     fireEvent.pointerCancel(corner, { pointerId: 1 });
   });
 
-  it('removes a corner on a double click, and keeps a click from reaching the page', () => {
+  it('removes a corner on a double click, and keeps a click from reaching the page', { tags: ['scenario'] }, () => {
     show();
     layout();
     act(() => useComic.getState().selectPanel(page().panels[0]!.id));
@@ -103,7 +103,7 @@ describe('the corners of the selected panel', () => {
     expect(screen.getAllByTestId('comic-corner').length).toBeLessThanOrEqual(corners);
   });
 
-  it('adds a corner on a double click on the panel outline, and removes it again with a double click on the corner', () => {
+  it('adds a corner on a double click on the panel outline, and removes it again with a double click on the corner', { tags: ['regression'] }, () => {
     const { container } = show();
     layout();
     act(() => useComic.getState().selectPanel(page().panels[0]!.id));
@@ -128,7 +128,7 @@ describe('the corners of the selected panel', () => {
 });
 
 describe('the edges and the turning handle', () => {
-  it('slides an edge with its bar', () => {
+  it('slides an edge with its bar', { tags: ['boundary'] }, () => {
     show();
     layout();
     act(() => useComic.getState().selectPanel(page().panels[0]!.id));
@@ -148,7 +148,7 @@ describe('the edges and the turning handle', () => {
     expect(JSON.stringify(page().shapes)).toBe(after);
   });
 
-  it('does not start sliding an edge before the page is laid out, and ignores another pointer', () => {
+  it('does not start sliding an edge before the page is laid out, and ignores another pointer', { tags: ['boundary'] }, () => {
     show();
     act(() => useComic.getState().selectPanel(page().panels[0]!.id));
     const bar = screen.getAllByTestId('comic-edge')[0]!;
@@ -162,7 +162,7 @@ describe('the edges and the turning handle', () => {
     fireEvent.pointerCancel(bar, { pointerId: 1 });
   });
 
-  it('turns the panel with the handle above it, and in steps of 15 degrees with Shift', () => {
+  it('turns the panel with the handle above it, and in steps of 15 degrees with Shift', { tags: ['scenario'] }, () => {
     show();
     layout();
     act(() => useComic.getState().selectPanel(page().panels[0]!.id));
@@ -181,7 +181,7 @@ describe('the edges and the turning handle', () => {
     fireEvent.click(handle);
   });
 
-  it('ignores a turn that is not started with a laid-out page, or by another pointer', () => {
+  it('ignores a turn that is not started with a laid-out page, or by another pointer', { tags: ['scenario'] }, () => {
     show();
     act(() => useComic.getState().selectPanel(page().panels[0]!.id));
     const handle = screen.getByTestId('comic-rotate');
@@ -204,7 +204,7 @@ describe('the cut tool', () => {
     return layer;
   };
 
-  it('splits the panel under the line in two, and shows the line while it is drawn', () => {
+  it('splits the panel under the line in two, and shows the line while it is drawn', { tags: ['scenario'] }, () => {
     const { container } = show();
     layout();
     act(() => useComic.getState().setCutting(true));
@@ -216,7 +216,7 @@ describe('the cut tool', () => {
     expect(container.querySelector('.comic-cut__line')).toBeNull();
   });
 
-  it('cuts nothing for a click or a line too short, and nothing outside every panel', () => {
+  it('cuts nothing for a click or a line too short, and nothing outside every panel', { tags: ['decision-table'] }, () => {
     show();
     layout();
     act(() => useComic.getState().setCutting(true));
@@ -231,7 +231,7 @@ describe('the cut tool', () => {
     expect(page().panels).toHaveLength(count);
   });
 
-  it('warns when the page holds the most panels, and drops the line when the press is cancelled', () => {
+  it('warns when the page holds the most panels, and drops the line when the press is cancelled', { tags: ['scenario'] }, () => {
     const { container } = show();
     layout();
     act(() => useComic.getState().setPanelCount(page().id, MAX_PANELS_PER_PAGE));
@@ -246,7 +246,7 @@ describe('the cut tool', () => {
     expect(container.querySelector('.comic-cut__line')).toBeNull();
   });
 
-  it('turns the cut tool on and off from its button, and adds a panel or says it cannot', () => {
+  it('turns the cut tool on and off from its button, and adds a panel or says it cannot', { tags: ['error-guessing'] }, () => {
     show();
     fireEvent.click(screen.getByTestId('comic-cut'));
     expect(useComic.getState().cutting).toBe(true);
@@ -259,7 +259,7 @@ describe('the cut tool', () => {
 });
 
 describe('the buttons under and beside the page', () => {
-  it('saves the page as a picture and as a PSD', () => {
+  it('saves the page as a picture and as a PSD', { tags: ['scenario'] }, () => {
     const picture = vi.spyOn(savePageModule, 'savePage').mockResolvedValue();
     const psd = vi.spyOn(savePageModule, 'savePagePsd').mockResolvedValue();
     show();
@@ -270,7 +270,7 @@ describe('the buttons under and beside the page', () => {
     expect(psd).toHaveBeenCalledOnce();
   });
 
-  it('undoes and redoes from the buttons, which are off while there is nothing to do', () => {
+  it('undoes and redoes from the buttons, which are off while there is nothing to do', { tags: ['state-transition'] }, () => {
     show();
     const undo = screen.getByTestId('comic-undo') as HTMLButtonElement;
     const redo = screen.getByTestId('comic-redo') as HTMLButtonElement;
@@ -286,7 +286,7 @@ describe('the buttons under and beside the page', () => {
     expect(page().panels).toHaveLength(count);
   });
 
-  it('undoes and redoes from the keys', () => {
+  it('undoes and redoes from the keys', { tags: ['state-transition'] }, () => {
     show();
     fireEvent.click(screen.getByTestId('comic-add-panel'));
     const count = page().panels.length;
@@ -299,7 +299,7 @@ describe('the buttons under and beside the page', () => {
     expect(page().panels).toHaveLength(count);
   });
 
-  it('zooms in and out with the buttons, and stops at the ends of the range', () => {
+  it('zooms in and out with the buttons, and stops at the ends of the range', { tags: ['scenario'] }, () => {
     show();
     const value = screen.getByTestId('comic-zoom-value');
     const zoomIn = screen.getByRole('button', { name: t('common.zoomIn') }) as HTMLButtonElement;
@@ -315,7 +315,7 @@ describe('the buttons under and beside the page', () => {
     expect(zoomIn.disabled).toBe(true);
   });
 
-  it('ignores a Ctrl wheel that does not change the zoom (already at the end)', () => {
+  it('ignores a Ctrl wheel that does not change the zoom (already at the end)', { tags: ['scenario'] }, () => {
     show();
     const scroll = screen.getByTestId('comic-scroll');
     for (let i = 0; i < 40; i++) fireEvent.wheel(scroll, { ctrlKey: true, deltaY: 100 });
@@ -324,7 +324,7 @@ describe('the buttons under and beside the page', () => {
     expect(screen.getByTestId('comic-zoom-value').textContent).toBe(at);
   });
 
-  it('opens a new comic from the empty state with its button, which then shows the page', () => {
+  it('opens a new comic from the empty state with its button, which then shows the page', { tags: ['boundary', 'state-transition'] }, () => {
     useComic.getState().setProjects([]);
     render(
       <TooltipProvider>
@@ -335,7 +335,7 @@ describe('the buttons under and beside the page', () => {
     expect(useComic.getState().projects).toHaveLength(1);
   });
 
-  it('shows an empty view for a comic without a page on screen', () => {
+  it('shows an empty view for a comic without a page on screen', { tags: ['boundary'] }, () => {
     const project = newProject('None');
     useComic.getState().setProjects([{ ...project, pages: [] }]);
     const { container } = render(
@@ -353,7 +353,7 @@ describe('Alt and the wheel on the backdrop', () => {
     project.pages[0] = { ...project.pages[0]!, backdrop: { imageName: 'sky.png', view: { cx: 0.5, cy: 0.5, scale: 1, rotation: 0, flipX: false, flipY: false } } };
   };
 
-  it('scales the backdrop when the wheel turns over the paper, and selects it', () => {
+  it('scales the backdrop when the wheel turns over the paper, and selects it', { tags: ['scenario'] }, () => {
     show({}, withBackdrop);
     layout();
     const paper = screen.getByTestId('comic-page');
@@ -364,7 +364,7 @@ describe('Alt and the wheel on the backdrop', () => {
     expect(page().backdrop!.view.scale).toBeCloseTo(1);
   });
 
-  it('scales the backdrop over its own handles while it is selected', () => {
+  it('scales the backdrop over its own handles while it is selected', { tags: ['scenario'] }, () => {
     show({}, withBackdrop);
     layout();
     act(() => useComic.getState().selectBackdrop(true));
@@ -372,7 +372,7 @@ describe('Alt and the wheel on the backdrop', () => {
     expect(page().backdrop!.view.scale).toBeCloseTo(1.1);
   });
 
-  it('leaves a page without a backdrop alone, and a wheel with no turn, or with Ctrl', () => {
+  it('leaves a page without a backdrop alone, and a wheel with no turn, or with Ctrl', { tags: ['state-transition'] }, () => {
     show();
     layout();
     const paper = screen.getByTestId('comic-page');
@@ -387,7 +387,7 @@ describe('Alt and the wheel on the backdrop', () => {
     expect(page().backdrop!.view.scale).toBe(1);
   });
 
-  it('does nothing for a picture-less panel under the pointer', () => {
+  it('does nothing for a picture-less panel under the pointer', { tags: ['scenario'] }, () => {
     show({}, withBackdrop);
     layout();
     const before = page().backdrop!.view.scale;
@@ -404,7 +404,7 @@ describe('painting on the page', () => {
     paintToolbar: <span data-testid="paint-tools" />,
   });
 
-  it('shows the mode switch only when the shell can paint', () => {
+  it('shows the mode switch only when the shell can paint', { tags: ['state-transition'] }, () => {
     show();
     expect(screen.queryByTestId('comic-mode-paint')).toBeNull();
     cleanup();
@@ -413,7 +413,7 @@ describe('painting on the page', () => {
     expect(screen.queryByTestId('surface')).toBeNull();
   });
 
-  it('swaps the page tools for the painting parts while painting, and back with the page button or Escape', async () => {
+  it('swaps the page tools for the painting parts while painting, and back with the page button or Escape', { tags: ['scenario'] }, async () => {
     show(paintProps());
     act(() => useComic.getState().selectPanel(page().panels[0]!.id));
     expect(screen.getByTestId('comic-panel-tools')).toBeTruthy();

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { parseBlocks, parseInline } from './markdownBlocks';
 
 describe('blocks', () => {
-  it('reads an answer with bold headings and a list, as models write it', () => {
+  it('reads an answer with bold headings and a list, as models write it', { tags: ['condition'] }, () => {
     const text = '質感の指定だけを取り入れました。\n\n**足したもの(ポジティブ)**\n- **線と塗り**: clean delicate linework\n- **目**: expressive eyes\n\n**ネガティブ**: flat colors を足しました。';
     expect(parseBlocks(text)).toEqual([
       { kind: 'paragraph', text: '質感の指定だけを取り入れました。' },
@@ -18,7 +18,7 @@ describe('blocks', () => {
     ]);
   });
 
-  it('keeps the line breaks inside a paragraph and ends it at a block', () => {
+  it('keeps the line breaks inside a paragraph and ends it at a block', { tags: ['condition'] }, () => {
     expect(parseBlocks('one\ntwo\n# Head\nthree')).toEqual([
       { kind: 'paragraph', text: 'one\ntwo' },
       { kind: 'heading', level: 1, text: 'Head' },
@@ -27,7 +27,7 @@ describe('blocks', () => {
     expect(parseBlocks('a\r\nb')).toEqual([{ kind: 'paragraph', text: 'a\nb' }]);
   });
 
-  it('reads headings of every level, rules, quotes and code with its text untouched', () => {
+  it('reads headings of every level, rules, quotes and code with its text untouched', { tags: ['decision-table'] }, () => {
     expect(parseBlocks('###### six ##\n---\n> quoted\n> **two**\n```ts\nconst a = **b**;\n\n# not a heading\n```')).toEqual([
       { kind: 'heading', level: 6, text: 'six' },
       { kind: 'rule' },
@@ -38,7 +38,7 @@ describe('blocks', () => {
     expect(parseBlocks('```\nopen')).toEqual([{ kind: 'code', text: 'open' }]);
   });
 
-  it('reads numbered lists from their first number, nested lists and items split by blank lines', () => {
+  it('reads numbered lists from their first number, nested lists and items split by blank lines', { tags: ['boundary'] }, () => {
     expect(parseBlocks('3. three\n4. four\n   - inner\n\n5. five')).toEqual([
       {
         kind: 'list',
@@ -61,7 +61,7 @@ describe('blocks', () => {
     expect(after).toEqual({ kind: 'paragraph', text: 'end' });
   });
 
-  it('reads a table with its header and rows, an escaped pipe kept in its cell', () => {
+  it('reads a table with its header and rows, an escaped pipe kept in its cell', { tags: ['condition'] }, () => {
     expect(parseBlocks('| a | b |\n|---|:-:|\n| 1 | x \\| y |\n| 2 |\n\nafter')).toEqual([
       {
         kind: 'table',
@@ -75,7 +75,7 @@ describe('blocks', () => {
     ]);
   });
 
-  it('leaves plain text that only looks like Markdown as a paragraph', () => {
+  it('leaves plain text that only looks like Markdown as a paragraph', { tags: ['condition'] }, () => {
     for (const text of ['1.5倍にしました', '*強調*で始まる文', 'a | b', '#タグ', '-1 は負の数']) {
       expect(parseBlocks(text)).toEqual([{ kind: 'paragraph', text }]);
     }
@@ -85,7 +85,7 @@ describe('blocks', () => {
 });
 
 describe('inline pieces', () => {
-  it('reads bold, italics, strike-through, code and links, nested where models nest them', () => {
+  it('reads bold, italics, strike-through, code and links, nested where models nest them', { tags: ['condition'] }, () => {
     expect(parseInline('**bold *and em* here** `a**b**` ~~gone~~ [Wiki](https://ja.wikipedia.org/wiki/A)')).toEqual([
       {
         kind: 'strong',
@@ -109,7 +109,7 @@ describe('inline pieces', () => {
     ]);
   });
 
-  it('leaves names, arithmetic, lone markers and escapes as text', () => {
+  it('leaves names, arithmetic, lone markers and escapes as text', { tags: ['condition'] }, () => {
     for (const text of ['snake_case_name', '2 * 3 * 4', '** not bold **', 'a_b and c_d', 'price: 5*']) {
       expect(parseInline(text)).toEqual([{ kind: 'text', text }]);
     }

@@ -6,28 +6,28 @@ import { expect, inEachTheme, openDesktop, snap, test } from './shared';
 const SCREEN = 'generate';
 
 inEachTheme((theme) => {
-  test('whole screen', async ({ page }) => {
+  test('whole screen', { tag: ['@scenario'] }, async ({ page }) => {
     await openDesktop(page);
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
     await snap(page, SCREEN, theme, 'screen');
   });
 
-  test('start screen', async ({ page }) => {
+  test('start screen', { tag: ['@scenario'] }, async ({ page }) => {
     await openDesktop(page);
     await snap(page, SCREEN, theme, 'start', page.getByTestId('launchpad'));
   });
 
-  test('panel header (preset, seed, run buttons)', async ({ page }) => {
+  test('panel header (preset, seed, run buttons)', { tag: ['@scenario'] }, async ({ page }) => {
     await openDesktop(page);
     await snap(page, SCREEN, theme, 'panel-header', page.getByTestId('panel-header'));
   });
 
-  test('prompt boxes', async ({ page }) => {
+  test('prompt boxes', { tag: ['@boundary'] }, async ({ page }) => {
     await openDesktop(page);
     await snap(page, SCREEN, theme, 'prompts', page.getByTestId('prompts'));
   });
 
-  test('prompt boxes with text and as tags', async ({ page }) => {
+  test('prompt boxes with text and as tags', { tag: ['@scenario'] }, async ({ page }) => {
     await openDesktop(page);
     await page.getByTestId('positive-prompt').fill('a cat on a roof, smiling, (blue eyes:1.2), night sky');
     await page.getByTestId('negative-prompt').fill('blurry, low quality');
@@ -37,32 +37,32 @@ inEachTheme((theme) => {
     await snap(page, SCREEN, theme, 'prompts-tags', page.getByTestId('prompts'));
   });
 
-  test('prompt section folded', async ({ page }) => {
+  test('prompt section folded', { tag: ['@scenario'] }, async ({ page }) => {
     await openDesktop(page);
     await page.getByTestId('prompts').locator('.ui-section__toggle').click();
     await snap(page, SCREEN, theme, 'prompts-folded', page.getByTestId('prompts'));
   });
 
-  test('image section', async ({ page }) => {
+  test('image section', { tag: ['@scenario'] }, async ({ page }) => {
     await openDesktop(page);
     const section = page.locator('.ui-section', { has: page.getByRole('button', { name: msg('params.image.title') }) }).first();
     await snap(page, SCREEN, theme, 'image-section', section);
   });
 
-  test('model picker open', async ({ page }) => {
+  test('model picker open', { tag: ['@scenario'] }, async ({ page }) => {
     await openDesktop(page);
     await page.getByTestId('model-picker').click();
     await expect(page.getByTestId('model-picker-list')).toBeVisible();
     await snap(page, SCREEN, theme, 'model-picker');
   });
 
-  test('preset list open', async ({ page }) => {
+  test('preset list open', { tag: ['@scenario'] }, async ({ page }) => {
     await openDesktop(page);
     await page.getByTestId('panel-header').locator('.ui-preset__card').click();
     await snap(page, SCREEN, theme, 'preset-list');
   });
 
-  test('large prompt editor', async ({ page }) => {
+  test('large prompt editor', { tag: ['@scenario'] }, async ({ page }) => {
     await openDesktop(page);
     await page.getByTestId('positive-prompt').fill('a cat on a roof, smiling, night sky');
     await page.getByTestId('positive-expand').click();
@@ -70,7 +70,7 @@ inEachTheme((theme) => {
     await snap(page, SCREEN, theme, 'prompt-editor');
   });
 
-  test('a picture in the viewer', async ({ page }) => {
+  test('a picture in the viewer', { tag: ['@scenario'] }, async ({ page }) => {
     await galleryDefaults(page, { newPicturesToCandidates: false });
     await openDesktop(page, '?scenario=empty');
     await page.getByTestId('seed-fixed').click();
@@ -83,7 +83,7 @@ inEachTheme((theme) => {
     await snap(page, SCREEN, theme, 'viewer');
   });
 
-  test('candidates', async ({ page }) => {
+  test('candidates', { tag: ['@scenario'] }, async ({ page }) => {
     await galleryDefaults(page, { newPicturesToCandidates: true });
     await openDesktop(page, '?scenario=empty');
     await page.getByTestId('seed-fixed').click();

@@ -19,14 +19,14 @@ const model = { key: 'wai', name: 'wai' } as ModelConfig;
 afterEach(() => vi.unstubAllEnvs());
 
 describe('agent editors', () => {
-  it('gives back the editor registered for a screen, and none for a screen that has none', () => {
+  it('gives back the editor registered for a screen, and none for a screen that has none', { tags: ['condition'] }, () => {
     const e = editor();
     registerAgentEditor('text', e);
     expect(agentEditor('text')).toBe(e);
     expect(agentEditor('workflows')).toBeUndefined();
   });
 
-  it('hides the editor of a screen the production build leaves out', () => {
+  it('hides the editor of a screen the production build leaves out', { tags: ['condition'] }, () => {
     const e = editor();
     registerAgentEditor('comic', e);
     expect(agentEditor('comic')).toBe(e);
@@ -38,7 +38,7 @@ describe('agent editors', () => {
 });
 
 describe('the workflow side', () => {
-  it('does nothing before the workflows feature registers: nothing opened, no nodes, no recipes, search not ready', () => {
+  it('does nothing before the workflows feature registers: nothing opened, no nodes, no recipes, search not ready', { tags: ['scenario'] }, () => {
     registerAgentWorkflow(() => ({ dropped: [] }), () => []);
     expect(agentWorkflow.open('a', {})).toEqual({ dropped: [] });
     expect(agentWorkflow.nodeTypes()).toEqual([]);
@@ -46,7 +46,7 @@ describe('the workflow side', () => {
     expect(agentWorkflow.searchNodes('blur', 5)).toEqual({ ready: false, total: 0, matches: [] });
   });
 
-  it('uses what the feature registers', () => {
+  it('uses what the feature registers', { tags: ['condition'] }, () => {
     const open = vi.fn(() => ({ error: 'no', dropped: ['x'] }));
     const types = vi.fn(() => [{ type: 'Blur' }] as never);
     const recipes = vi.fn(() => [{ id: 'r' }] as never);
@@ -63,21 +63,21 @@ describe('the workflow side', () => {
 });
 
 describe('the nodes of an extension', () => {
-  it('asks the editor that registered for them', () => {
+  it('asks the editor that registered for them', { tags: ['condition'] }, () => {
     registerAgentExtensionNodes((folder) => [{ type: `${folder}-node` }] as never);
     expect(extensionNodes('pack')).toEqual([{ type: 'pack-node' }]);
   });
 });
 
 describe('selecting a model', () => {
-  it('uses the richer selection once the params feature registers it', () => {
+  it('uses the richer selection once the params feature registers it', { tags: ['condition'] }, () => {
     const select = vi.fn();
     registerAgentModelSelector(select);
     selectAgentModel(model);
     expect(select).toHaveBeenCalledWith(model);
   });
 
-  it('otherwise only sets the model key', async () => {
+  it('otherwise only sets the model key', { tags: ['condition'] }, async () => {
     vi.resetModules();
     const fresh = await import('./agentRegistry');
     const params = await import('./params');

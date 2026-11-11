@@ -12,37 +12,37 @@ const lists = {
 };
 
 describe('every combination', () => {
-  it('expands every combination', () => {
+  it('expands every combination', { tags: ['decision-table'] }, () => {
     expect(expandPrompt('a {red|blue} {cat|dog}')).toEqual(['a red cat', 'a red dog', 'a blue cat', 'a blue dog']);
   });
 
-  it('supports nested groups and escapes', () => {
+  it('supports nested groups and escapes', { tags: ['condition'] }, () => {
     expect(expandPrompt('{x|{y|z}}')).toEqual(['x', 'y', 'z']);
     expect(expandPrompt('a \\{b|c}')).toEqual(['a {b|c}']);
     expect(expandPrompt('a \\__hair__', undefined, lists)).toEqual(['a __hair__']);
     expect(hasDynamicSyntax('plain prompt')).toBe(false);
   });
 
-  it('caps the number of prompts', () => {
+  it('caps the number of prompts', { tags: ['condition'] }, () => {
     expect(expandPrompt('{a|b|c} {d|e|f}', 4)).toHaveLength(4);
     expect(expandPrompt('__hair__ __hair__ __hair__ {a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p}', 100, lists)).toHaveLength(100);
   });
 
-  it('uses every entry of a wildcard list, with groups and wildcards inside the entries', () => {
+  it('uses every entry of a wildcard list, with groups and wildcards inside the entries', { tags: ['equivalence'] }, () => {
     expect(expandPrompt('a girl, __hair__', undefined, lists)).toEqual(['a girl, black hair', 'a girl, silver hair']);
     expect(expandPrompt('__mood__', undefined, lists)).toEqual(['smile', 'happy face', 'sad face']);
     expect(expandPrompt('__look__', undefined, lists)).toHaveLength(6);
     expect(expandPrompt('{__hair__|bald}', undefined, lists)).toEqual(['black hair', 'silver hair', 'bald']);
   });
 
-  it('reads names with digits, - and _ and leaves other underscores alone', () => {
+  it('reads names with digits, - and _ and leaves other underscores alone', { tags: ['condition'] }, () => {
     const named = { 'time-of-day': ['dusk'], hair_2: ['red hair'] };
     expect(expandPrompt('__time-of-day__, __hair_2__, snake_case and __ alone', undefined, named)).toEqual(['dusk, red hair, snake_case and __ alone']);
     expect(usesWildcards('snake_case __')).toBe(false);
     expect(hasDynamicSyntax('a __hair__')).toBe(true);
   });
 
-  it('leaves a list it cannot use in the text instead of looping', () => {
+  it('leaves a list it cannot use in the text instead of looping', { tags: ['error-guessing'] }, () => {
     expect(expandPrompt('__nope__', undefined, lists)).toEqual(['__nope__']);
     expect(expandPrompt('__empty__', undefined, lists)).toEqual(['__empty__']);
     expect(expandPrompt('__loop__', undefined, lists)).toEqual(['a b __loop__']);
@@ -50,20 +50,20 @@ describe('every combination', () => {
 });
 
 describe('problems', () => {
-  it('reports unknown and empty lists and loops, each once', () => {
+  it('reports unknown and empty lists and loops, each once', { tags: ['error-guessing'] }, () => {
     const p = wildcardProblems('__nope__ __nope__ __empty__ __loop__ __hair__', lists);
     expect(p).toEqual({ unknown: ['nope'], empty: ['empty'], cycles: ['loop'], tooDeep: false });
     expect(hasProblems(p)).toBe(true);
     expect(hasProblems(wildcardProblems('__look__ {a|b}', lists))).toBe(false);
   });
 
-  it('finds problems inside groups and inside other lists', () => {
+  it('finds problems inside groups and inside other lists', { tags: ['condition'] }, () => {
     expect(wildcardProblems('{a|__nope__}', lists).unknown).toEqual(['nope']);
     expect(wildcardProblems('__x__', { x: ['__y__'], y: ['__x__'] }).cycles).toEqual(['x']);
     expect(wildcardProblems('__x__', { x: ['__x__'] }).cycles).toEqual(['x']);
   });
 
-  it('limits how deep lists may use one another', () => {
+  it('limits how deep lists may use one another', { tags: ['boundary'] }, () => {
     const chain = (n: number) => Object.fromEntries(Array.from({ length: n }, (_, i) => [`l${i}`, [i + 1 < n ? `__l${i + 1}__` : 'end']]));
     expect(wildcardProblems('__l0__', chain(MAX_WILDCARD_DEPTH)).tooDeep).toBe(false);
     expect(expandPrompt('__l0__', undefined, chain(MAX_WILDCARD_DEPTH))).toEqual(['end']);
@@ -72,7 +72,7 @@ describe('problems', () => {
 });
 
 describe('random', () => {
-  it('gives the same prompt for the same seed, and one of the possible prompts', () => {
+  it('gives the same prompt for the same seed, and one of the possible prompts', { tags: ['condition'] }, () => {
     const all = expandPrompt('{red|blue} __look__', 1000, lists);
     for (let seed = 0; seed < 50; seed++) {
       const p = randomPrompt('{red|blue} __look__', lists, seed);
@@ -81,12 +81,12 @@ describe('random', () => {
     }
   });
 
-  it('spreads over the options across seeds, also for neighbouring seeds', () => {
+  it('spreads over the options across seeds, also for neighbouring seeds', { tags: ['condition'] }, () => {
     const picked = new Set(Array.from({ length: 40 }, (_, i) => randomPrompt('{a|b|c|d}', {}, 1000 + i)));
     expect(picked).toEqual(new Set(['a', 'b', 'c', 'd']));
   });
 
-  it('handles seeds across the whole u32 range and lists it cannot use', () => {
+  it('handles seeds across the whole u32 range and lists it cannot use', { tags: ['error-guessing'] }, () => {
     expect(randomPrompt('{x|y}', {}, 4294967295)).toMatch(/^[xy]$/);
     expect(randomPrompt('__nope__ __loop__', lists, 7)).toBe('__nope__ a b __loop__');
     expect(randomPrompt('plain', lists, 3)).toBe('plain');

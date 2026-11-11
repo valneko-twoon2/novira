@@ -24,6 +24,7 @@ impl Engine for NoEngine {
     }
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_civitai_search_asks_for_compressed_answers_and_reads_them() {
     use std::io::Write;

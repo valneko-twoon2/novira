@@ -70,6 +70,7 @@ fn job() -> EngineJob {
     }
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn cancelling_a_job_ends_it_even_when_comfyui_has_stopped_answering() {
     let url = serve_hanging().await;
@@ -122,6 +123,7 @@ fn serve_then_die() -> String {
     url
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_comfyui_that_dies_in_the_middle_of_a_job_fails_it_with_words() {
     let url = serve_then_die();

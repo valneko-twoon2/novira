@@ -2,7 +2,7 @@
 // when the offer is dismissed the Generate panel keeps a one-click button for exactly the missing files.
 import { expect, msg, openApp, test } from './fixtures';
 
-test('offers the missing files after an Anima model is installed, and keeps a button in the Generate panel', async ({ page }) => {
+test('offers the missing files after an Anima model is installed, and keeps a button in the Generate panel', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('tab-models').click();
   await page.getByTestId('mm-import').click();

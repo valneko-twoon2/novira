@@ -49,6 +49,7 @@ fn main() {
 }
 "#;
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn a_package_folder_that_cannot_be_moved_is_reported_after_the_retries() {
     quick_retries();
@@ -118,6 +119,7 @@ echo     url = https://github.com/owner/subrepo>> "!OUT!\pack-abc\.gitmodules"
 exit /b 0
 "#;
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn a_submodule_that_cannot_be_moved_in_fails_the_pack_install_after_the_retries() {
     quick_retries();

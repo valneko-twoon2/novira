@@ -36,7 +36,7 @@ const mount = () =>
   );
 
 describe('batch graphs', () => {
-  it('cuts out with the background pack and keeps every input the node needs', () => {
+  it('cuts out with the background pack and keeps every input the node needs', { tags: ['decision-table', 'scenario'] }, () => {
     const g = removeBackgroundGraph('a.png');
     expect(g.prompt.source!.inputs.image).toEqual({ $image: 'a.png' });
     expect(g.prompt.cut!.class_type).toBe('RMBG');
@@ -44,7 +44,7 @@ describe('batch graphs', () => {
     expect(g.outputs).toEqual(['save']);
   });
 
-  it('enlarges with a library upscale model and links every step', () => {
+  it('enlarges with a library upscale model and links every step', { tags: ['decision-table', 'scenario'] }, () => {
     const g = upscaleGraph('a.png', 'up-1');
     expect(g.prompt.model!.inputs.model_name).toEqual({ $model: 'up-1' });
     expect(g.prompt.scale!.inputs).toEqual({ upscale_model: ['model', 0], image: ['source', 0] });
@@ -67,7 +67,7 @@ describe('batch dialog', () => {
     vi.restoreAllMocks();
   });
 
-  it('queues one job per picture on the picture own board, leaving out what is not a picture', async () => {
+  it('queues one job per picture on the picture own board, leaving out what is not a picture', { tags: ['boundary', 'state-transition'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue').mockResolvedValue([]);
     mount();
     useBatch.getState().open(['a.png', 'b.png', 'c.wav']);
@@ -80,7 +80,7 @@ describe('batch dialog', () => {
     await waitFor(() => expect(useBatch.getState().names).toBeNull());
   });
 
-  it('asks for the background pack when ComfyUI lacks it', async () => {
+  it('asks for the background pack when ComfyUI lacks it', { tags: ['scenario'] }, async () => {
     useComfyNodes.setState({ defs: { ...MOCK_NODE_DEFS }, status: 'ready' });
     mount();
     useBatch.getState().open(['a.png']);
@@ -88,7 +88,7 @@ describe('batch dialog', () => {
     expect((screen.getByTestId('batch-run') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('needs an upscale model to enlarge, and uses it for each picture', async () => {
+  it('needs an upscale model to enlarge, and uses it for each picture', { tags: ['decision-table', 'scenario'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue').mockResolvedValue([]);
     mount();
     useBatch.getState().open(['a.png', 'b.png']);

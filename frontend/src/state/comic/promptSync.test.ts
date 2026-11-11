@@ -29,19 +29,19 @@ afterEach(() => {
 });
 
 describe('the prompt boxes on the comic screen', () => {
-  it('show the first panel when the comic screen opens with no panel selected', () => {
+  it('show the first panel when the comic screen opens with no panel selected', { tags: ['condition'] }, () => {
     useUi.getState().setTab('comic');
     expect(useComic.getState().selectedPanelId).toBeNull();
     expect(boxes()).toEqual({ positive: 'prompt 0', negative: 'negative 0' });
   });
 
-  it('follow the selected panel', () => {
+  it('follow the selected panel', { tags: ['condition'] }, () => {
     useUi.getState().setTab('comic');
     useComic.getState().selectPanel('panel-2');
     expect(boxes()).toEqual({ positive: 'prompt 2', negative: 'negative 2' });
   });
 
-  it('write what is typed (or applied from a preset) into the selected panel only', () => {
+  it('write what is typed (or applied from a preset) into the selected panel only', { tags: ['state-transition'] }, () => {
     useUi.getState().setTab('comic');
     useComic.getState().selectPanel('panel-1');
     useParams.getState().set({ positivePrompt: 'a girl on a roof' });
@@ -50,7 +50,7 @@ describe('the prompt boxes on the comic screen', () => {
     expect(panel('panel-0')).toMatchObject({ prompt: 'prompt 0', negativePrompt: 'negative 0' });
   });
 
-  it('show a change made to the panel elsewhere, such as an undo', () => {
+  it('show a change made to the panel elsewhere, such as an undo', { tags: ['state-transition'] }, () => {
     useUi.getState().setTab('comic');
     useParams.getState().set({ positivePrompt: 'changed' });
     useComic.getState().undo();
@@ -58,7 +58,7 @@ describe('the prompt boxes on the comic screen', () => {
     expect(boxes().positive).toBe('prompt 0');
   });
 
-  it('stay on the panel selected last when the selection is let go, without selecting it again', () => {
+  it('stay on the panel selected last when the selection is let go, without selecting it again', { tags: ['regression'] }, () => {
     useUi.getState().setTab('comic');
     useComic.getState().selectPanel('panel-1');
     useComic.getState().selectPanel('panel-2');
@@ -70,7 +70,7 @@ describe('the prompt boxes on the comic screen', () => {
     expect(useComic.getState().selectedPanelId).toBeNull();
   });
 
-  it('let the backdrop stay selected', () => {
+  it('let the backdrop stay selected', { tags: ['condition'] }, () => {
     useUi.getState().setTab('comic');
     useComic.getState().selectPanel('panel-1');
     useComic.getState().selectBackdrop(true);
@@ -78,7 +78,7 @@ describe('the prompt boxes on the comic screen', () => {
     expect(boxes().positive).toBe('prompt 1');
   });
 
-  it('give the Generate tab its own prompts back when another screen opens', () => {
+  it('give the Generate tab its own prompts back when another screen opens', { tags: ['condition'] }, () => {
     useUi.getState().setTab('comic');
     useParams.getState().set({ positivePrompt: 'panel text' });
     useUi.getState().setTab('generate');
@@ -86,7 +86,7 @@ describe('the prompt boxes on the comic screen', () => {
     expect(panel('panel-0').prompt).toBe('panel text');
   });
 
-  it('leave the panels alone while another screen has the boxes', () => {
+  it('leave the panels alone while another screen has the boxes', { tags: ['condition'] }, () => {
     useParams.getState().set({ positivePrompt: 'typed on Generate' });
     expect(panel('panel-0').prompt).toBe('prompt 0');
   });

@@ -33,14 +33,14 @@ const addLines = () => {
 };
 
 describe('DevLogPanel', () => {
-  it('says so when there is nothing to show, and keeps the buttons off', () => {
+  it('says so when there is nothing to show, and keeps the buttons off', { tags: ['scenario'] }, () => {
     show();
     expect(screen.getByText(t('app.devlog.empty'))).toBeTruthy();
     expect((screen.getByLabelText(t('app.devlog.copy')) as HTMLButtonElement).disabled).toBe(true);
     expect((screen.getByLabelText(t('app.devlog.clear')) as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('lists the lines with their source and filters them by text', () => {
+  it('lists the lines with their source and filters them by text', { tags: ['scenario'] }, () => {
     addLines();
     show();
     expect(screen.getAllByTestId('devlog-row')).toHaveLength(3);
@@ -53,7 +53,7 @@ describe('DevLogPanel', () => {
     expect(screen.getByText(t('app.devlog.empty'))).toBeTruthy();
   });
 
-  it('follows new lines while at the bottom, and leaves the position when scrolled up', () => {
+  it('follows new lines while at the bottom, and leaves the position when scrolled up', { tags: ['scenario'] }, () => {
     show();
     const list = document.querySelector('.devlog__list') as HTMLElement;
     Object.defineProperties(list, { scrollHeight: { value: 1000, configurable: true }, clientHeight: { value: 100, configurable: true } });
@@ -69,7 +69,7 @@ describe('DevLogPanel', () => {
     expect(list.scrollTop).toBe(1000);
   });
 
-  it('copies the shown lines as text, and reports when the clipboard refuses', async () => {
+  it('copies the shown lines as text, and reports when the clipboard refuses', { tags: ['error-guessing'] }, async () => {
     addLines();
     const writeText = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal('navigator', { clipboard: { writeText } });
@@ -85,7 +85,7 @@ describe('DevLogPanel', () => {
     await waitFor(() => expect(useToasts.getState().toasts.at(-1)?.status).toBe('error'));
   });
 
-  it('clears the log and closes the panel', () => {
+  it('clears the log and closes the panel', { tags: ['scenario'] }, () => {
     addLines();
     show();
     fireEvent.click(screen.getByLabelText(t('app.devlog.clear')));

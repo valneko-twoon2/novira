@@ -471,7 +471,7 @@ async function pickPhoneModel(page: Page): Promise<void> {
 
 // The scan must find what it is for: a field wider than its box, a label cut to "…", two buttons with no gap, and it must
 // leave alone what is fine (a joined button group, a name marked as designed to shorten).
-test('the scan finds overflow, truncated text and touching buttons, and passes a sound layout', async ({ page }) => {
+test('the scan finds overflow, truncated text and touching buttons, and passes a sound layout', { tag: ['@condition', '@error-guessing'] }, async ({ page }) => {
   await page.setContent(`
     <div style="width:120px;border:1px solid red;margin-bottom:8px"><select style="width:200px"><option>long</option></select></div>
     <button style="display:block;margin-bottom:8px;width:60px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">a label that is far too long</button>
@@ -484,7 +484,7 @@ test('the scan finds overflow, truncated text and touching buttons, and passes a
 });
 
 // A sticky bar is a surface of its own: the rows scrolled under it do not overlap it, but two of its own buttons still do.
-test('the scan leaves alone rows scrolled under a sticky bar and finds an overlap inside the bar', async ({ page }) => {
+test('the scan leaves alone rows scrolled under a sticky bar and finds an overlap inside the bar', { tag: ['@condition', '@error-guessing'] }, async ({ page }) => {
   const row = '<button style="display:block;height:40px;margin-bottom:8px;border:1px solid red;border-radius:4px">row</button>';
   await page.setContent(`
     <div style="height:120px;overflow-y:auto">
@@ -499,7 +499,7 @@ test('the scan leaves alone rows scrolled under a sticky bar and finds an overla
 
 // Switching the theme in place must reach what only the light theme draws: here the borders that make two controls
 // touch, behind a colour transition that would otherwise still show the dark colours.
-test('the light pass finds two controls that touch only where the light theme draws their borders', async ({ page }) => {
+test('the light pass finds two controls that touch only where the light theme draws their borders', { tag: ['@condition', '@error-guessing'] }, async ({ page }) => {
   await page.setContent(`
     <style>
       [role="button"] { display: inline-block; padding: 4px; border: 1px solid transparent; border-radius: 4px; transition: border-color 2s; }
@@ -516,7 +516,7 @@ test('the light pass finds two controls that touch only where the light theme dr
 
 // The text fit must find what it is for: a button that is too narrow and short for its label (the bug that cut a segmented
 // switch in two), text cut off by a box, and a floating surface that runs out of the window.
-test('the fit check finds a label that wraps in a fixed-height button, clipped text and a tooltip outside the window', async ({ page }) => {
+test('the fit check finds a label that wraps in a fixed-height button, clipped text and a tooltip outside the window', { tag: ['@condition', '@error-guessing'] }, async ({ page }) => {
   await page.setContent(`
     <button style="width:90px;height:28px">すべての組み合わせ</button>
     <div style="width:60px;overflow:hidden;white-space:nowrap">a long clipped sentence</div>
@@ -529,7 +529,7 @@ test('the fit check finds a label that wraps in a fixed-height button, clipped t
 
 // The tooltip sweep must open what hovering opened: the tooltip of a button and of a span (which takes focus only for the
 // sweep), check it and close it again, and leave alone a trigger that something else covers.
-test('the tooltip sweep shows the tooltip of each trigger a pointer can reach and finds one outside the window', async ({ page }) => {
+test('the tooltip sweep shows the tooltip of each trigger a pointer can reach and finds one outside the window', { tag: ['@condition', '@error-guessing'] }, async ({ page }) => {
   await page.setContent(`
     <button data-state="closed" data-tip="inside" style="position:fixed;left:200px;top:200px">A</button>
     <span data-state="closed" data-tip="outside" style="position:fixed;left:300px;top:200px">B</span>
@@ -559,7 +559,7 @@ test('the tooltip sweep shows the tooltip of each trigger a pointer can reach an
 
 // The app's own tooltips open only on a keyboard focus, and the scans reach each screen with mouse clicks: the sweep must
 // still open them there, or every tooltip check passes on nothing.
-test('the tooltip sweep opens the tooltips of the app itself after a mouse click', async ({ page }) => {
+test('the tooltip sweep opens the tooltips of the app itself after a mouse click', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('tab-queue').click();
   const swept = await sweepTooltips(page);
@@ -569,7 +569,7 @@ test('the tooltip sweep opens the tooltips of the app itself after a mouse click
 
 // The opener check opens an opener repeated down a list once, still opens one of the same name in another box, and leaves
 // out what `skip` names (the shared parts on every screen but the Generate tab).
-test('the opener check opens a repeated opener once and leaves out the skipped parts', async ({ page }) => {
+test('the opener check opens a repeated opener once and leaves out the skipped parts', { tag: ['@condition'] }, async ({ page }) => {
   await page.setContent(`
     <div data-testid="row"><button aria-haspopup="menu" aria-label="Menu">A</button></div>
     <div data-testid="row"><button aria-haspopup="menu" aria-label="Menu">B</button></div>
@@ -596,7 +596,7 @@ for (const locale of LOCALES) {
       await openApp(page);
     });
 
-    for (const [name, open] of Object.entries(SURFACES)) test(name, ({ page }) => scanSurface(page, locale, name, open));
+    for (const [name, open] of Object.entries(SURFACES)) test(name, { tag: ['@equivalence'] }, ({ page }) => scanSurface(page, locale, name, open));
   });
 
   test.describe(`layout and text fit of the phone layout in ${locale}`, () => {
@@ -608,7 +608,7 @@ for (const locale of LOCALES) {
       await expect(page.getByTestId('phone-shell')).toBeVisible({ timeout: 20_000 });
     });
 
-    for (const [name, open] of Object.entries(PHONE_SURFACES)) test(name, ({ page }) => scanSurface(page, locale, name, open));
+    for (const [name, open] of Object.entries(PHONE_SURFACES)) test(name, { tag: ['@equivalence'] }, ({ page }) => scanSurface(page, locale, name, open));
   });
 }
 

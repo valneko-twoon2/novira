@@ -73,7 +73,7 @@ afterEach(() => {
 });
 
 describe('the band', () => {
-  it('stays hidden until a tool is opened, and closes with its button', () => {
+  it('stays hidden until a tool is opened, and closes with its button', { tags: ['scenario'] }, () => {
     mount();
     expect(screen.queryByTestId('tool-band')).toBeNull();
     openBand('cutout');
@@ -82,7 +82,7 @@ describe('the band', () => {
     expect(screen.queryByTestId('tool-band')).toBeNull();
   });
 
-  it('runs a tool from its settings, shows the result with the settings it used, and goes back to the settings', async () => {
+  it('runs a tool from its settings, shows the result with the settings it used, and goes back to the settings', { tags: ['scenario'] }, async () => {
     const job = pendingJob<ImageDTO>();
     vi.mocked(runJob).mockImplementation(job.impl);
     mount();
@@ -100,7 +100,7 @@ describe('the band', () => {
     expect(screen.getByTestId('tool-band-run')).toBeTruthy();
   });
 
-  it('keeps the job running when the band is closed, and shows its end when opened again', async () => {
+  it('keeps the job running when the band is closed, and shows its end when opened again', { tags: ['scenario'] }, async () => {
     const job = pendingJob<ImageDTO>();
     vi.mocked(runJob).mockImplementation(job.impl);
     mount();
@@ -115,7 +115,7 @@ describe('the band', () => {
     expect(status()).toBe('done');
   });
 
-  it('cancels the job with its own button', async () => {
+  it('cancels the job with its own button', { tags: ['scenario'] }, async () => {
     const job = pendingJob<ImageDTO>();
     vi.mocked(runJob).mockImplementation(job.impl);
     mount();
@@ -126,7 +126,7 @@ describe('the band', () => {
     expect(job.aborted()).toBe(true);
   });
 
-  it('shows why a run failed and offers to change the settings', async () => {
+  it('shows why a run failed and offers to change the settings', { tags: ['error-guessing'] }, async () => {
     vi.mocked(runJob).mockRejectedValue(new Error('out of memory'));
     mount();
     openBand('facefix');
@@ -137,7 +137,7 @@ describe('the band', () => {
     expect(screen.getByTestId('tool-band-edit')).toBeTruthy();
   });
 
-  it('offers the missing pack instead of the settings, and installs it in the background', () => {
+  it('offers the missing pack instead of the settings, and installs it in the background', { tags: ['scenario'] }, () => {
     const { RMBG: _gone, ...defs } = all;
     useComfyNodes.setState({ defs, status: 'ready' });
     const install = vi.spyOn(backend, 'installNodePack').mockResolvedValue(undefined as never);
@@ -151,14 +151,14 @@ describe('the band', () => {
     expect(Object.keys(useNodePacks.getState().jobs)).toHaveLength(1);
   });
 
-  it('says what is missing when it is not a pack', () => {
+  it('says what is missing when it is not a pack', { tags: ['scenario'] }, () => {
     useModels.getState().setModels([]);
     mount();
     openBand('facefix');
     expect(screen.getByTestId('tool-band-problem').textContent).toContain(t('facefix.noModel'));
   });
 
-  it('keeps changed settings for the next run', () => {
+  it('keeps changed settings for the next run', { tags: ['scenario'] }, () => {
     mount();
     openBand('facefix');
     fireEvent.change(screen.getByTestId('tool-band-face-prompt'), { target: { value: 'red eyes' } });
@@ -178,7 +178,7 @@ describe('the band', () => {
 });
 
 describe('results that are not pictures', () => {
-  it('puts a description into the prompt', async () => {
+  it('puts a description into the prompt', { tags: ['scenario'] }, async () => {
     vi.mocked(runTextJob).mockResolvedValue('1girl, smile');
     useParams.setState({ positivePrompt: 'masterpiece' });
     mount();
@@ -193,7 +193,7 @@ describe('results that are not pictures', () => {
     expect(useParams.getState().positivePrompt).toBe('1girl, frown');
   });
 
-  it('puts the people read from a picture on the canvas', async () => {
+  it('puts the people read from a picture on the canvas', { tags: ['scenario'] }, async () => {
     const person = { pose_keypoints_2d: Array.from({ length: 18 }, (_, j) => [10 + j, 10 + j * 2, 1]).flat() };
     vi.mocked(runTextJob).mockResolvedValue(JSON.stringify([{ canvas_width: 100, canvas_height: 100, people: [person] }]));
     const placer = vi.fn(() => true);
@@ -208,7 +208,7 @@ describe('results that are not pictures', () => {
 });
 
 describe('following the viewer', () => {
-  it('moves to another picture the viewer shows, but stays on the original while its result is shown', async () => {
+  it('moves to another picture the viewer shows, but stays on the original while its result is shown', { tags: ['scenario'] }, async () => {
     vi.mocked(runJob).mockResolvedValue(picture('cut.png'));
     const view = mount('photo.png');
     openBand('cutout');
@@ -229,7 +229,7 @@ describe('following the viewer', () => {
     expect(screen.getByTestId('tool-band-run')).toBeTruthy();
   });
 
-  it('offers only the tools the layout can use, and no comparing where the layout cannot', async () => {
+  it('offers only the tools the layout can use, and no comparing where the layout cannot', { tags: ['scenario'] }, async () => {
     vi.mocked(runJob).mockResolvedValue(picture('cut.png'));
     render(
       <TooltipProvider>

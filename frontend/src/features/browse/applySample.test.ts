@@ -33,7 +33,7 @@ const checkpoint = model({ key: 'main-1', name: 'Juggernaut XL', pageUrl: 'https
 const lora = model({ key: 'lora-1', name: 'Detail Tweaker', type: 'lora', pageUrl: 'https://civitai.com/models/58390?modelVersionId=62833' });
 
 describe('schedulerOf', () => {
-  it("maps the sampler names of the common tools to this app's schedulers", () => {
+  it("maps the sampler names of the common tools to this app's schedulers", { tags: ['condition'] }, () => {
     expect(schedulerOf('DPM++ 2M Karras')).toBe('dpmpp_2m_k');
     expect(schedulerOf('Euler a')).toBe('euler_a');
     expect(schedulerOf('  euler_a ')).toBe('euler_a');
@@ -41,7 +41,7 @@ describe('schedulerOf', () => {
     expect(schedulerOf('UniPC')).toBe('unipc');
     expect(schedulerOf('Uni PC')).toBe('unipc');
   });
-  it('gives null for a sampler it has no setting for, and for nothing', () => {
+  it('gives null for a sampler it has no setting for, and for nothing', { tags: ['boundary'] }, () => {
     expect(schedulerOf('DPM++ 3M SDE Exponential')).toBeNull();
     expect(schedulerOf('')).toBeNull();
     expect(schedulerOf(null)).toBeNull();
@@ -49,11 +49,11 @@ describe('schedulerOf', () => {
 });
 
 describe('versionOf', () => {
-  it('reads the version a page names', () => {
+  it('reads the version a page names', { tags: ['condition'] }, () => {
     expect(versionOf(checkpoint)).toBe('288982');
     expect(versionOf(model({ pageUrl: 'https://civitai.com/models/1?modelVersionId=5&x=1' }))).toBe('5');
   });
-  it('gives null without a versioned page', () => {
+  it('gives null without a versioned page', { tags: ['error-guessing'] }, () => {
     expect(versionOf(model({}))).toBeNull();
     expect(versionOf(model({ pageUrl: 'https://civitai.com/models/1' }))).toBeNull();
     expect(versionOf(model({ pageUrl: 'https://civitai.com/models/1?modelVersionId=abc' }))).toBeNull();
@@ -61,19 +61,19 @@ describe('versionOf', () => {
 });
 
 describe('installedFor', () => {
-  it('finds a model by the Civitai version first', () => {
+  it('finds a model by the Civitai version first', { tags: ['boundary'] }, () => {
     expect(installedFor({ kind: 'checkpoint', name: null, versionId: '288982', weight: null }, [lora, checkpoint])).toBe(checkpoint);
     expect(installedFor({ kind: 'lora', name: null, versionId: '62833', weight: 1 }, [lora, checkpoint])).toBe(lora);
   });
-  it('falls back to the name, ignoring case and punctuation', () => {
+  it('falls back to the name, ignoring case and punctuation', { tags: ['condition'] }, () => {
     expect(installedFor({ kind: 'lora', name: 'detail-tweaker', versionId: null, weight: null }, [lora])).toBe(lora);
     expect(installedFor({ kind: 'checkpoint', name: 'JUGGERNAUT xl', versionId: '999', weight: null }, [checkpoint])).toBe(checkpoint);
   });
-  it('does not mix kinds: a checkpoint never finds a LoRA of the same name', () => {
+  it('does not mix kinds: a checkpoint never finds a LoRA of the same name', { tags: ['decision-table'] }, () => {
     expect(installedFor({ kind: 'checkpoint', name: 'Detail Tweaker', versionId: null, weight: null }, [lora])).toBeNull();
     expect(installedFor({ kind: 'lora', name: 'Juggernaut XL', versionId: null, weight: null }, [checkpoint])).toBeNull();
   });
-  it('gives null when nothing or several match', () => {
+  it('gives null when nothing or several match', { tags: ['boundary'] }, () => {
     expect(installedFor({ kind: 'lora', name: null, versionId: '1', weight: null }, [lora])).toBeNull();
     expect(installedFor({ kind: 'lora', name: 'x', versionId: null, weight: null }, [])).toBeNull();
     const twin = { ...lora, key: 'lora-2' };
@@ -82,14 +82,14 @@ describe('installedFor', () => {
 });
 
 describe('sampleUse', () => {
-  it('always puts the prompt in, and leaves every setting the picture did not record', () => {
+  it('always puts the prompt in, and leaves every setting the picture did not record', { tags: ['decision-table'] }, () => {
     const use = sampleUse(sample(), []);
     expect(use.patch).toEqual({ positivePrompt: 'a prompt' });
     expect(use.missing).toEqual([]);
     expect(use.unknownSampler).toBeNull();
   });
 
-  it('puts in every recorded setting, fixes the seed and counts clip skip as layers skipped', () => {
+  it('puts in every recorded setting, fixes the seed and counts clip skip as layers skipped', { tags: ['decision-table'] }, () => {
     const use = sampleUse(
       sample({ negativePrompt: 'blurry', seed: 7, steps: 28, cfgScale: 6.5, width: 832, height: 1216, clipSkip: 2, sampler: 'DPM++ 2M Karras' }),
       [],
@@ -109,22 +109,22 @@ describe('sampleUse', () => {
     });
   });
 
-  it("maps Civitai's clip skip 1 (no skipping) to 0", () => {
+  it("maps Civitai's clip skip 1 (no skipping) to 0", { tags: ['boundary'] }, () => {
     expect(sampleUse(sample({ clipSkip: 1 }), []).patch.clipSkip).toBe(0);
   });
 
-  it('does not touch the size when the picture recorded only one side of it', () => {
+  it('does not touch the size when the picture recorded only one side of it', { tags: ['boundary'] }, () => {
     const patch = sampleUse(sample({ width: 512, height: null }), []).patch;
     expect('width' in patch || 'height' in patch || 'aspectRatio' in patch).toBe(false);
   });
 
-  it('names a sampler it cannot map and keeps the current scheduler', () => {
+  it('names a sampler it cannot map and keeps the current scheduler', { tags: ['error-guessing'] }, () => {
     const use = sampleUse(sample({ sampler: 'DPM++ 3M SDE Exponential' }), []);
     expect(use.unknownSampler).toBe('DPM++ 3M SDE Exponential');
     expect('scheduler' in use.patch).toBe(false);
   });
 
-  it('sets the installed checkpoint and replaces the LoRAs with the installed ones', () => {
+  it('sets the installed checkpoint and replaces the LoRAs with the installed ones', { tags: ['state-transition'] }, () => {
     const use = sampleUse(
       sample({
         resources: [
@@ -139,7 +139,7 @@ describe('sampleUse', () => {
     expect(use.missing).toEqual([]);
   });
 
-  it('names what is not installed, keeps the current model, and clears the LoRAs the picture used but are missing', () => {
+  it('names what is not installed, keeps the current model, and clears the LoRAs the picture used but are missing', { tags: ['error-guessing', 'state-transition'] }, () => {
     const lost = { kind: 'lora', name: 'Gone', versionId: null, weight: 0.5 };
     const gone = { kind: 'checkpoint', name: 'Gone Model', versionId: null, weight: null };
     const use = sampleUse(sample({ resources: [gone, lost] }), [checkpoint, lora]);
@@ -148,12 +148,12 @@ describe('sampleUse', () => {
     expect(use.missing).toEqual([gone, lost]);
   });
 
-  it('leaves the LoRAs alone when the picture recorded none', () => {
+  it('leaves the LoRAs alone when the picture recorded none', { tags: ['boundary'] }, () => {
     const use = sampleUse(sample({ resources: [{ kind: 'checkpoint', name: null, versionId: '288982', weight: null }] }), [checkpoint]);
     expect('loras' in use.patch).toBe(false);
   });
 
-  it('uses the default weight for a LoRA with none, adds a LoRA once, and ignores embeddings and VAEs', () => {
+  it('uses the default weight for a LoRA with none, adds a LoRA once, and ignores embeddings and VAEs', { tags: ['boundary'] }, () => {
     const use = sampleUse(
       sample({
         resources: [

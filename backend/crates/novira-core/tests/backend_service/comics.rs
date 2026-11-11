@@ -4,6 +4,7 @@ use novira_core::service::comics::MAX_COMIC_BYTES;
 use serde_json::json;
 use std::sync::Arc;
 
+// tags: error-guessing, state-transition
 #[test]
 fn the_comics_survive_a_restart_and_bad_ones_are_refused() {
     let dir = tempfile::tempdir().unwrap();

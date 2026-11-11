@@ -1,7 +1,7 @@
 // A draft whose finished picture was cancelled can be drawn to the end again, and so can one whose picture is gone.
 import { expect, msg, openApp, showTab, test } from './fixtures';
 
-test('cancelling the finished picture of a draft leaves the draft usable: it is finished again', async ({ page }) => {
+test('cancelling the finished picture of a draft leaves the draft usable: it is finished again', { tag: ['@state-transition', '@error-guessing'] }, async ({ page }) => {
   test.slow();
   // Slow steps, so the finished picture is still waiting or drawing when it is cancelled.
   await page.addInitScript(() => localStorage.setItem('novira.settings', JSON.stringify({ state: { mockStepDelay: 1000 }, version: 0 })));

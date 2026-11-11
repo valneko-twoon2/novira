@@ -9,7 +9,7 @@ const ids = (days: { groups: DraftGroup[] }[]) => days.map((d) => d.groups.map((
 const all = { period: 'all', model: null, text: '', sort: 'newest' } as const;
 
 describe('draft history', () => {
-  it('counts the periods in calendar days back from now', () => {
+  it('counts the periods in calendar days back from now', { tags: ['condition'] }, () => {
     expect(inPeriod(at(26, 0), 'today', NOW)).toBe(true);
     expect(inPeriod(at(25, 23), 'today', NOW)).toBe(false);
     expect(inPeriod(at(25, 23), 'yesterday', NOW)).toBe(true);
@@ -21,13 +21,13 @@ describe('draft history', () => {
     expect(inPeriod(at(20), 'older', NOW)).toBe(false);
   });
 
-  it('splits by day, newest or oldest first, keeping the starting order of batches of the same instant', () => {
+  it('splits by day, newest or oldest first, keeping the starting order of batches of the same instant', { tags: ['condition'] }, () => {
     const groups = [group('a', at(25, 9)), group('b', at(26, 8)), group('c', at(25, 9)), group('d', at(25, 18))];
     expect(ids(historyDays(groups, all, NOW))).toEqual([['b'], ['d', 'c', 'a']]);
     expect(ids(historyDays(groups, { ...all, sort: 'oldest' }, NOW))).toEqual([['a', 'c', 'd'], ['b']]);
   });
 
-  it('narrows by period, model and every word of the text, in the prompts or the model name', () => {
+  it('narrows by period, model and every word of the text, in the prompts or the model name', { tags: ['condition'] }, () => {
     const groups = [group('a', at(26), 'Anima', 'a cat on a roof'), group('b', at(26), 'SDXL', 'a dog'), group('c', at(18), 'Anima', 'a cat in snow')];
     expect(ids(historyDays(groups, { ...all, period: 'today' }, NOW)).flat()).toEqual(['b', 'a']);
     expect(ids(historyDays(groups, { ...all, model: 'Anima' }, NOW)).flat()).toEqual(['a', 'c']);
@@ -37,7 +37,7 @@ describe('draft history', () => {
     expect(historyDays(groups, { ...all, text: 'horse' }, NOW)).toEqual([]);
   });
 
-  it('lists the models the most used first, then by name', () => {
+  it('lists the models the most used first, then by name', { tags: ['condition'] }, () => {
     const groups = [group('a', 1, 'SDXL'), group('b', 2, 'Anima'), group('c', 3, 'Anima'), group('d', 4, 'Flux')];
     expect(historyModels(groups)).toEqual([
       { name: 'Anima', count: 2 },

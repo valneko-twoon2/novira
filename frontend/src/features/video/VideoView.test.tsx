@@ -49,7 +49,7 @@ const setNum = (label: string, value: number) => {
 };
 
 describe('VideoPanel form', () => {
-  it('switches between text and image mode', () => {
+  it('switches between text and image mode', { tags: ['scenario'] }, () => {
     panel();
     expect(screen.queryByText(t('video.pickFromGallery'))).toBeNull();
     fireEvent.click(screen.getByTestId('video-mode-image'));
@@ -59,7 +59,7 @@ describe('VideoPanel form', () => {
     expect(form().mode).toBe('text');
   });
 
-  it('edits the prompts and the numbers', () => {
+  it('edits the prompts and the numbers', { tags: ['scenario'] }, () => {
     panel();
     fireEvent.change(screen.getByTestId('video-prompt'), { target: { value: 'a sunrise' } });
     expect(form().positivePrompt).toBe('a sunrise');
@@ -72,7 +72,7 @@ describe('VideoPanel form', () => {
     expect(form()).toMatchObject({ fps: 12, steps: 30, cfgScale: 7.5, seconds: 4 });
   });
 
-  it('turns on the light settings, and grays out the seed box and the roll button while a new seed is drawn each time', () => {
+  it('turns on the light settings, and grays out the seed box and the roll button while a new seed is drawn each time', { tags: ['scenario'] }, () => {
     panel();
     const light = within(screen.getByTestId('video-light'));
     fireEvent.click(light.getByLabelText(t('video.light.fp8')));
@@ -91,7 +91,7 @@ describe('VideoPanel form', () => {
     expect(form().seed).not.toBe(99);
   });
 
-  it('chooses the model with its pack card while a model is missing', () => {
+  it('chooses the model with its pack card while a model is missing', { tags: ['scenario'] }, () => {
     usePacks.getState().setPack('video', { state: 'missing', totalBytes: 1e9 });
     usePacks.getState().setPack('turbo', { state: 'missing', totalBytes: 1e9 });
     panel();
@@ -105,7 +105,7 @@ describe('VideoPanel form', () => {
 describe('an installed video model', () => {
   const wan = { key: 'wan-1', name: 'wan2.1_t2v_1.3B', base: 'wan', type: 'diffusion_model', format: 'checkpoint', description: '', path: 'p', size: 1, source: 'local' } as ModelConfig;
 
-  it('needs no download card and no pack, and says which family it is', () => {
+  it('needs no download card and no pack, and says which family it is', { tags: ['scenario'] }, () => {
     usePacks.getState().setPack('video', { state: 'missing', totalBytes: 1e9 });
     usePacks.getState().setPack('turbo', { state: 'missing', totalBytes: 1e9 });
     useModels.setState({ models: [wan] });
@@ -116,7 +116,7 @@ describe('an installed video model', () => {
     expect(screen.queryByText(t('video.problem.pack'))).toBeNull();
   });
 
-  it('is reported when the model it names is gone', () => {
+  it('is reported when the model it names is gone', { tags: ['error-guessing'] }, () => {
     useModels.setState({ models: [] });
     useVideo.getState().setForm({ modelKey: 'wan-1', positivePrompt: 'a wave' });
     panel();
@@ -127,7 +127,7 @@ describe('an installed video model', () => {
 describe('the source picture', () => {
   beforeEach(() => useVideo.getState().setForm({ mode: 'image' }));
 
-  it('takes the picture selected in the gallery, but not a video or nothing', () => {
+  it('takes the picture selected in the gallery, but not a video or nothing', { tags: ['scenario'] }, () => {
     useGallery.setState({ images: [picture('a.png'), picture('v.mp4', { mediaType: 'video' })], selection: [] });
     panel();
     fireEvent.click(screen.getByText(t('video.pickFromGallery')));
@@ -143,7 +143,7 @@ describe('the source picture', () => {
     expect(form().sourceImageName).toBeNull();
   });
 
-  it('uploads a dropped file as the source, or reports why it could not', async () => {
+  it('uploads a dropped file as the source, or reports why it could not', { tags: ['error-guessing'] }, async () => {
     const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue(picture('up.png'));
     panel();
     const zone = screen.getByText(t('video.sourceHint')).closest('.vv-source')!;
@@ -158,7 +158,7 @@ describe('the source picture', () => {
     await waitFor(() => expect(lastToast()).toMatchObject({ status: 'error', description: 'too large' }));
   });
 
-  it('takes a picture dragged from the gallery, but not a video', () => {
+  it('takes a picture dragged from the gallery, but not a video', { tags: ['scenario'] }, () => {
     useGallery.setState({ images: [picture('a.png'), picture('v.mp4', { mediaType: 'video' })] });
     panel();
     const zone = screen.getByText(t('video.sourceHint')).closest('.vv-source')!;
@@ -178,12 +178,12 @@ describe('VideoResults', () => {
       </TooltipProvider>,
     );
 
-  it('shows the empty state until there is a clip', () => {
+  it('shows the empty state until there is a clip', { tags: ['scenario'] }, () => {
     results();
     expect(screen.getByText(t('video.empty.title'))).toBeTruthy();
   });
 
-  it('lists the clips newest first with their length and seed, opens the finishing dialog and deletes a clip', async () => {
+  it('lists the clips newest first with their length and seed, opens the finishing dialog and deletes a clip', { tags: ['scenario'] }, async () => {
     const clip = (name: string, createdAt: number, meta = true) =>
       picture(name, { mediaType: 'video', createdAt, metadata: meta ? ({ positivePrompt: `prompt ${name}`, seed: 5, videoFrames: 48, videoFps: 24 } as never) : null });
     useGallery.setState({ images: [clip('old.mp4', 1), clip('new.mp4', 2), clip('bare.mp4', 0, false), picture('still.png')] });

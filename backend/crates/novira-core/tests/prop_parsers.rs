@@ -45,6 +45,7 @@ fn search_params() -> impl Strategy<Value = SearchParams> {
     )
 }
 
+// tags: error-guessing
 #[test]
 fn civitai_answers_of_any_shape_are_mapped_or_ignored() {
     check((json_object(), any::<bool>()), |(body, nsfw)| {
@@ -55,6 +56,7 @@ fn civitai_answers_of_any_shape_are_mapped_or_ignored() {
     });
 }
 
+// tags: error-guessing
 #[test]
 fn civitai_pieces_of_any_shape_never_panic() {
     check(
@@ -74,6 +76,7 @@ fn civitai_pieces_of_any_shape_never_panic() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn hugging_face_answers_of_any_shape_are_mapped_or_ignored() {
     check(
@@ -99,6 +102,7 @@ fn hugging_face_answers_of_any_shape_are_mapped_or_ignored() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn an_adult_judgement_never_turns_off_when_more_evidence_is_added() {
     fn tags() -> impl Strategy<Value = Vec<String>> {
@@ -184,6 +188,7 @@ fn header_text() -> impl Strategy<Value = String> {
     })
 }
 
+// tags: equivalence
 #[test]
 fn a_model_header_reads_as_it_does_through_a_json_map() {
     // The text as written, and with one byte changed (broken JSON, broken UTF-8) at a generated place.
@@ -203,6 +208,7 @@ fn a_model_header_reads_as_it_does_through_a_json_map() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn a_model_header_of_any_bytes_is_read_or_refused() {
     check((bytes(512), any_text()), |(data, name)| {
@@ -227,6 +233,7 @@ fn a_model_header_of_any_bytes_is_read_or_refused() {
     });
 }
 
+// tags: error-guessing
 #[test]
 fn a_safetensors_file_of_any_bytes_is_read_or_refused() {
     let dir = tempfile::tempdir().unwrap();
@@ -248,6 +255,7 @@ fn a_safetensors_file_of_any_bytes_is_read_or_refused() {
     });
 }
 
+// tags: equivalence
 #[test]
 fn model_keys_do_not_depend_on_the_path_separator() {
     check((any_text(), any_text()), |(folder, name)| {
@@ -264,6 +272,7 @@ fn model_keys_do_not_depend_on_the_path_separator() {
     });
 }
 
+// tags: error-guessing
 #[test]
 fn engine_messages_of_any_shape_are_understood_or_ignored() {
     check(
@@ -280,6 +289,7 @@ fn engine_messages_of_any_shape_are_understood_or_ignored() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn a_preview_frame_is_a_data_url_or_nothing() {
     check(bytes(200), |frame| {
@@ -290,6 +300,7 @@ fn a_preview_frame_is_a_data_url_or_nothing() {
     });
 }
 
+// tags: error-guessing
 #[test]
 fn hardware_reports_of_any_text_are_read_or_refused() {
     check(
@@ -303,6 +314,7 @@ fn hardware_reports_of_any_text_are_read_or_refused() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn text_and_json_reports_of_any_shape_never_panic() {
     check(
@@ -318,6 +330,7 @@ fn text_and_json_reports_of_any_shape_never_panic() {
     );
 }
 
+// tags: state-transition, decision-table
 #[test]
 fn a_saved_screen_state_is_accepted_only_as_prefixed_keys() {
     check(
@@ -336,6 +349,7 @@ fn a_saved_screen_state_is_accepted_only_as_prefixed_keys() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn an_assistant_answer_becomes_bounded_text_and_thoughts() {
     check(any_text(), |text| {
@@ -369,6 +383,7 @@ fn tool_call() -> impl Strategy<Value = (String, Value)> {
     (prop::sample::select(names), near)
 }
 
+// tags: decision-table, equivalence
 #[test]
 fn a_tool_call_is_accepted_only_with_arguments_its_schema_allows() {
     check(tool_call(), |(name, args)| {
@@ -422,6 +437,7 @@ fn png_claiming(w: u32, h: u32) -> Vec<u8> {
     png
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn a_picture_that_declares_a_huge_canvas_is_refused_before_decoding() {
     check(
@@ -442,6 +458,7 @@ fn a_picture_that_declares_a_huge_canvas_is_refused_before_decoding() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn damaged_picture_bytes_are_read_or_refused() {
     let flip = prop::collection::vec((any::<prop::sample::Index>(), any::<u8>()), 0..6);
@@ -466,6 +483,7 @@ fn damaged_picture_bytes_are_read_or_refused() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn arbitrary_bytes_are_not_a_picture_the_app_keeps() {
     check(bytes(300), |data| {
@@ -478,6 +496,7 @@ fn arbitrary_bytes_are_not_a_picture_the_app_keeps() {
     });
 }
 
+// tags: decision-table
 #[test]
 fn a_text_chunk_written_into_a_png_reads_back_and_the_picture_still_decodes() {
     let png = tiny_png(4, 3);
@@ -495,6 +514,7 @@ fn a_text_chunk_written_into_a_png_reads_back_and_the_picture_still_decodes() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn audio_of_any_bytes_gets_a_waveform_picture() {
     check(bytes(400), |data| {
@@ -504,6 +524,7 @@ fn audio_of_any_bytes_gets_a_waveform_picture() {
     });
 }
 
+// tags: error-guessing, decision-table
 #[test]
 fn export_options_are_checked_and_the_copy_never_grows() {
     check(
@@ -534,6 +555,7 @@ fn export_options_are_checked_and_the_copy_never_grows() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn settings_of_any_bytes_are_loaded_or_refused_and_saving_a_key_keeps_the_others() {
     let dir = tempfile::tempdir().unwrap();
@@ -561,6 +583,7 @@ fn settings_of_any_bytes_are_loaded_or_refused_and_saving_a_key_keeps_the_others
     );
 }
 
+// tags: error-guessing
 #[test]
 fn a_saved_secret_of_any_bytes_is_read_or_refused_and_a_saved_key_reads_back() {
     let dir = tempfile::tempdir().unwrap();
@@ -584,6 +607,7 @@ fn a_saved_secret_of_any_bytes_is_read_or_refused_and_a_saved_key_reads_back() {
     save_civitai_key(dir.path(), None).unwrap();
 }
 
+// tags: error-guessing
 #[test]
 fn a_saved_workflow_of_any_shape_is_read_or_refused() {
     check(json_value(), |v| {
@@ -598,6 +622,7 @@ fn a_saved_workflow_of_any_shape_is_read_or_refused() {
 
 /// Found by probing the numeric parsers with the extremes of their types and fixed: these overflowed `u64`/`u32` arithmetic
 /// (a panic in a debug build, a silently wrong number in a release build). Each is pinned with its smallest input.
+// tags: boundary
 #[test]
 fn a_graphics_card_reporting_an_enormous_memory_size_does_not_overflow() {
     let card = parse_nvidia_smi("GPU, 17592186044416").unwrap();
@@ -606,6 +631,7 @@ fn a_graphics_card_reporting_an_enormous_memory_size_does_not_overflow() {
     assert_eq!(card.vram_bytes, Some(24576 * 1024 * 1024));
 }
 
+// tags: boundary
 #[test]
 fn a_progress_message_with_an_enormous_step_does_not_overflow() {
     let passes = vec![("3".to_string(), 10u32)];

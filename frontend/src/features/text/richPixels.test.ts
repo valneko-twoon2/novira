@@ -16,7 +16,7 @@ function solid(w: number, h: number, rgb: [number, number, number]): Uint8Clampe
 }
 
 describe('parseColor', () => {
-  it('reads long and short hex and falls back to grey', () => {
+  it('reads long and short hex and falls back to grey', { tags: ['equivalence', 'error-guessing'] }, () => {
     expect(parseColor('#c9952b')).toEqual([201, 149, 43]);
     expect(parseColor('#fa0')).toEqual([255, 170, 0]);
     expect(parseColor('red')).toEqual([128, 128, 128]);
@@ -25,7 +25,7 @@ describe('parseColor', () => {
 });
 
 describe('alphaOf', () => {
-  it('takes the alpha channel as 0..1', () => {
+  it('takes the alpha channel as 0..1', { tags: ['boundary'] }, () => {
     const a = alphaOf([0, 0, 0, 255, 9, 9, 9, 0, 1, 1, 1, 51]);
     expect([a[0], a[1]]).toEqual([1, 0]);
     expect(a[2]).toBeCloseTo(0.2, 5);
@@ -33,7 +33,7 @@ describe('alphaOf', () => {
 });
 
 describe('gaussianBlur', () => {
-  it('keeps a flat field flat and the total mass', () => {
+  it('keeps a flat field flat and the total mass', { tags: ['condition'] }, () => {
     const flat = new Float32Array(40 * 30).fill(0.5);
     expect(Math.max(...gaussianBlur(flat, 40, 30, 4).map((v) => Math.abs(v - 0.5)))).toBeLessThan(1e-5);
     const dot = new Float32Array(41 * 41);
@@ -42,7 +42,7 @@ describe('gaussianBlur', () => {
     expect(sum).toBeCloseTo(1, 3);
   });
 
-  it('spreads a dot symmetrically and returns the input for a tiny sigma', () => {
+  it('spreads a dot symmetrically and returns the input for a tiny sigma', { tags: ['boundary'] }, () => {
     const dot = new Float32Array(41 * 41);
     dot[20 * 41 + 20] = 1;
     const out = gaussianBlur(dot, 41, 41, 3);
@@ -54,7 +54,7 @@ describe('gaussianBlur', () => {
 });
 
 describe('heightField', () => {
-  it('is highest inside the letters and fades outside', () => {
+  it('is highest inside the letters and fades outside', { tags: ['condition'] }, () => {
     const a = box(96, 96, 32, 32, 64, 64);
     const h = heightField(a, 96, 96);
     expect(h[48 * 96 + 48]).toBeGreaterThan(0.9);
@@ -68,25 +68,25 @@ describe('bevelBase', () => {
   const a = box(96, 96, 24, 24, 72, 72);
   const out = bevelBase(a, 96, 96, fg, bg);
 
-  it('shows the background where there is no letter and is opaque', () => {
+  it('shows the background where there is no letter and is opaque', { tags: ['condition'] }, () => {
     expect([...out.slice(0, 4)]).toEqual([10, 10, 12, 255]);
     expect(out[(48 * 96 + 48) * 4 + 3]).toBe(255);
   });
 
-  it('lights the top left edge more than the bottom right edge', () => {
+  it('lights the top left edge more than the bottom right edge', { tags: ['condition'] }, () => {
     const lum = (x: number, y: number) => out[(y * 96 + x) * 4]! + out[(y * 96 + x) * 4 + 1]! + out[(y * 96 + x) * 4 + 2]!;
     expect(lum(27, 48)).toBeGreaterThan(lum(68, 48));
     expect(lum(48, 27)).toBeGreaterThan(lum(48, 68));
   });
 
-  it('keeps a flat interior in the look colour family', () => {
+  it('keeps a flat interior in the look colour family', { tags: ['condition'] }, () => {
     const o = (48 * 96 + 48) * 4;
     expect(out[o]!).toBeGreaterThan(out[o + 2]!);
   });
 });
 
 describe('lineMap', () => {
-  it('draws white only along the edge of the letters', () => {
+  it('draws white only along the edge of the letters', { tags: ['condition'] }, () => {
     const a = box(60, 60, 20, 20, 40, 40);
     const m = lineMap(a, 60, 60);
     const at = (x: number, y: number) => m[(y * 60 + x) * 4]!;
@@ -97,19 +97,19 @@ describe('lineMap', () => {
     expect(m[3]).toBe(255);
   });
 
-  it('is empty for an empty field', () => {
+  it('is empty for an empty field', { tags: ['boundary'] }, () => {
     expect(Math.max(...lineMap(new Float32Array(100), 10, 10).filter((_, i) => i % 4 === 0))).toBe(0);
   });
 });
 
 describe('keyColor', () => {
-  it('is the colour of the corners, whatever is in the middle', () => {
+  it('is the colour of the corners, whatever is in the middle', { tags: ['condition'] }, () => {
     const p = solid(80, 60, [30, 40, 50]);
     for (let y = 20; y < 40; y++) for (let x = 20; x < 60; x++) p.set([255, 0, 0, 255], (y * 80 + x) * 4);
     expect(keyColor(p, 80, 60)).toEqual([30, 40, 50]);
   });
 
-  it('works on a picture smaller than the corner squares', () => {
+  it('works on a picture smaller than the corner squares', { tags: ['boundary'] }, () => {
     expect(keyColor(solid(4, 4, [9, 8, 7]), 4, 4)).toEqual([9, 8, 7]);
   });
 });
@@ -125,13 +125,13 @@ describe('cutPicture', () => {
     return p;
   };
 
-  it('with no spill the alpha is the glyph alpha exactly', () => {
+  it('with no spill the alpha is the glyph alpha exactly', { tags: ['condition'] }, () => {
     const out = cutPicture(picture(), glyphs, w, h, 0);
     for (let i = 0; i < w * h; i++) expect(out[i * 4 + 3]).toBe(glyphs[i]! * 255);
     expect(out[(40 * w + 50) * 4]).toBe(250);
   });
 
-  it('with a spill keeps what is not background just outside the letters, and drops the plain background', () => {
+  it('with a spill keeps what is not background just outside the letters, and drops the plain background', { tags: ['condition'] }, () => {
     const out = cutPicture(picture(), glyphs, w, h, 100);
     const alpha = (x: number, y: number) => out[(y * w + x) * 4 + 3]!;
     expect(alpha(60, 40)).toBe(255);
@@ -140,7 +140,7 @@ describe('cutPicture', () => {
     expect(alpha(60, 5)).toBe(0);
   });
 
-  it('never lowers the alpha inside the letters and grows with the spill', () => {
+  it('never lowers the alpha inside the letters and grows with the spill', { tags: ['condition'] }, () => {
     const none = cutPicture(picture(), glyphs, w, h, 0);
     const some = cutPicture(picture(), glyphs, w, h, 30);
     const much = cutPicture(picture(), glyphs, w, h, 100);
@@ -150,13 +150,13 @@ describe('cutPicture', () => {
     for (let i = 0; i < w * h; i++) if (glyphs[i] === 1) expect(much[i * 4 + 3]).toBe(255);
   });
 
-  it('on a clean background a spill adds nothing', () => {
+  it('on a clean background a spill adds nothing', { tags: ['condition'] }, () => {
     const clean = solid(w, h, [10, 10, 10]);
     const out = cutPicture(clean, glyphs, w, h, 100);
     for (let i = 0; i < w * h; i++) expect(out[i * 4 + 3]).toBe(glyphs[i]! * 255);
   });
 
-  it('exports the reach as a share of the short side', () => {
+  it('exports the reach as a share of the short side', { tags: ['condition'] }, () => {
     expect(SPILL_REACH).toBeGreaterThan(0);
     expect(SPILL_REACH).toBeLessThan(0.5);
   });

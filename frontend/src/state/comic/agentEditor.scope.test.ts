@@ -42,7 +42,7 @@ function withModel() {
 beforeEach(reset);
 
 describe('only what an operation names', () => {
-  it('draws the prompted panels of the page on screen, of one panel, or of every page', () => {
+  it('draws the prompted panels of the page on screen, of one panel, or of every page', { tags: ['equivalence'] }, () => {
     seed();
     applyComicOps([
       { op: 'panel', panel: 1, prompt: 'a' },
@@ -74,7 +74,7 @@ describe('only what an operation names', () => {
     }
   });
 
-  it('changes only the named panel, and leaves the other panels and pages alone', () => {
+  it('changes only the named panel, and leaves the other panels and pages alone', { tags: ['condition'] }, () => {
     seed();
     applyComicOps([{ op: 'addPage' }, { op: 'page', page: 1 }]);
     const before = project();
@@ -85,7 +85,7 @@ describe('only what an operation names', () => {
     expect(pageAt(2)).toEqual(before.pages[1]);
   });
 
-  it('changes a balloon on another page by its id, and leaves the balloon beside it alone', () => {
+  it('changes a balloon on another page by its id, and leaves the balloon beside it alone', { tags: ['condition'] }, () => {
     seed();
     applyComicOps([{ op: 'addBubble', panel: 1, text: 'One' }, { op: 'addBubble', panel: 1, text: 'Two' }, { op: 'addPage' }]);
     const [one, two] = pageAt(1).panels[0]!.bubbles;
@@ -97,7 +97,7 @@ describe('only what an operation names', () => {
     expect(pageAt(1).panels[0]!.bubbles.map((b) => b.text)).toEqual(['Uno']);
   });
 
-  it('sets the frame, the effect, the style and the layout of the page on screen only', () => {
+  it('sets the frame, the effect, the style and the layout of the page on screen only', { tags: ['condition'] }, () => {
     seed();
     applyComicOps([{ op: 'addPage' }]);
     const first = pageAt(1);
@@ -115,14 +115,14 @@ describe('only what an operation names', () => {
 });
 
 describe('values brought into their range or left as they were', () => {
-  it('keeps the frame widths within their ranges and leaves the frame colour alone', () => {
+  it('keeps the frame widths within their ranges and leaves the frame colour alone', { tags: ['boundary'] }, () => {
     seed();
     const color = page().frameColor;
     expect(applyComicOps([{ op: 'frame', frameMm: 99, insetMm: -5, marginMm: 50 }])).toBe(true);
     expect(page()).toMatchObject({ frameMm: 3, insetMm: 0, marginMm: 10, frameColor: color });
   });
 
-  it('keeps the panel count, columns, reading direction and size a layout does not give or gives wrong', () => {
+  it('keeps the panel count, columns, reading direction and size a layout does not give or gives wrong', { tags: ['error-guessing'] }, () => {
     seed();
     applyComicOps([{ op: 'layout', columns: 2, direction: 'ltr', size: 'B5' }]);
     expect(applyComicOps([{ op: 'layout', columns: 7, direction: 'up', size: 'A3' }])).toBe(true);
@@ -130,7 +130,7 @@ describe('values brought into their range or left as they were', () => {
     expect(page().panels).toHaveLength(3);
   });
 
-  it('lays a grid template out in the page own direction and size', () => {
+  it('lays a grid template out in the page own direction and size', { tags: ['condition'] }, () => {
     seed();
     applyComicOps([{ op: 'layout', direction: 'ltr', size: 'B5' }, { op: 'shapes', shapes: [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }]] }]);
     expect(applyComicOps([{ op: 'template', id: 'four' }])).toBe(true);
@@ -138,14 +138,14 @@ describe('values brought into their range or left as they were', () => {
     expect(page().panels).toHaveLength(4);
   });
 
-  it('cuts a manga page into as many panels as the page has when no count is given', () => {
+  it('cuts a manga page into as many panels as the page has when no count is given', { tags: ['condition'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'mangaLayout', seed: 7 }])).toBe(true);
     expect(page().panels).toHaveLength(3);
     expect(page().free).toBe(true);
   });
 
-  it('goes back to the default style words when every word of the comic is cleared', () => {
+  it('goes back to the default style words when every word of the comic is cleared', { tags: ['equivalence'] }, () => {
     seed();
     applyComicOps([{ op: 'style', positive: 'sketch', negative: 'lowres' }, { op: 'style', positive: 'ink', scope: 'page' }]);
     expect(applyComicOps([{ op: 'style', positive: '', negative: ' ' }, { op: 'style', positive: '', scope: 'page' }])).toBe(true);
@@ -154,7 +154,7 @@ describe('values brought into their range or left as they were', () => {
     expect((comicContext() as { style: { own: boolean } }).style.own).toBe(false);
   });
 
-  it('keeps a balloon tail within reach of the balloon, and tells balloons with their tails rounded', () => {
+  it('keeps a balloon tail within reach of the balloon, and tells balloons with their tails rounded', { tags: ['boundary'] }, () => {
     seed();
     applyComicOps([{ op: 'addBubble', panel: 1, kind: 'speech', text: 'Hi', tail: { x: 9, y: -7 } }, { op: 'addBubble', panel: 1, kind: 'caption', text: 'Dawn' }]);
     expect(page().panels[0]!.bubbles[0]!.tail).toEqual({ x: 3, y: -2 });
@@ -164,14 +164,14 @@ describe('values brought into their range or left as they were', () => {
     expect(told).toEqual([expect.objectContaining({ text: 'Hi', tail: { x: 0.123, y: 1.679 } }), expect.objectContaining({ text: 'Dawn', tail: null })]);
   });
 
-  it('makes a comic with the default name when the name is not a text', () => {
+  it('makes a comic with the default name when the name is not a text', { tags: ['error-guessing'] }, () => {
     expect(applyComicOps([{ op: 'newComic', name: 5 }])).toBe(true);
     expect(project().name).toBe(t('comic.project.newName'));
   });
 });
 
 describe('the limits of the cast and the places', () => {
-  it('adds no character past the most, but still rewrites one the cast has', () => {
+  it('adds no character past the most, but still rewrites one the cast has', { tags: ['regression'] }, () => {
     seed();
     applyComicOps([{ op: 'cast', characters: Array.from({ length: CAST_MAX }, (_, i) => ({ name: `C${i + 1}`, tags: 'old' })) }]);
     expect(applyComicOps([{ op: 'cast', characters: [{ name: 'Extra', tags: 'x' }, { name: 'c1', tags: 'new' }] }])).toBe(true);
@@ -183,7 +183,7 @@ describe('the limits of the cast and the places', () => {
     expect(useComic.getState().projects).toBe(before);
   });
 
-  it('adds no place past the most, but still rewrites one the comic has', () => {
+  it('adds no place past the most, but still rewrites one the comic has', { tags: ['regression'] }, () => {
     seed();
     applyComicOps([{ op: 'places', places: Array.from({ length: PLACES_MAX }, (_, i) => ({ name: `P${i + 1}`, tags: 'old' })) }]);
     expect(applyComicOps([{ op: 'places', places: [{ name: 'Extra', tags: 'x' }, { name: 'p1', tags: 'new' }] }])).toBe(true);
@@ -192,7 +192,7 @@ describe('the limits of the cast and the places', () => {
     expect(project().places[0]!.tags).toBe('new');
   });
 
-  it('adds a character or a place given without words, and tells their kept-out words', () => {
+  it('adds a character or a place given without words, and tells their kept-out words', { tags: ['condition'] }, () => {
     seed();
     expect(applyComicOps([
       { op: 'cast', characters: [{ name: 'Kage', nonHuman: true, negative: 'human' }, { name: 'Mio', parts: { hair: 'red hair' } }] },
@@ -204,20 +204,20 @@ describe('the limits of the cast and the places', () => {
     expect(c.places).toEqual([{ name: 'Cave', tags: '', negative: 'sunlight' }]);
   });
 
-  it('removes the names that are texts and skips the rest', () => {
+  it('removes the names that are texts and skips the rest', { tags: ['condition'] }, () => {
     seed();
     applyComicOps([{ op: 'cast', characters: [{ name: 'Mio', tags: 'a' }, { name: 'Sota', tags: 'b' }] }]);
     expect(applyComicOps([{ op: 'cast', remove: [3, 'sota'] }])).toBe(true);
     expect(project().cast.map((c) => c.name)).toEqual(['Mio']);
   });
 
-  it('says the comic has no places when a panel names one', () => {
+  it('says the comic has no places when a panel names one', { tags: ['condition'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'panel', panel: 1, place: 'Cafe' }])).toBe(false);
     expect(comicAgentEditor.skipped()[0]).toContain('no place is named "Cafe"; the places are: none');
   });
 
-  it('reads a list sent under another name, giving each item the fields written beside the list', () => {
+  it('reads a list sent under another name, giving each item the fields written beside the list', { tags: ['equivalence'] }, () => {
     seed();
     expect(applyComicOps([{ op: 'cast', items: [{ name: 'Aki', tags: '1girl' }, { name: 'Ren' }, 'junk'], tags: '1boy' }, { op: 'places', rows: [{ name: 'Pier' }], tags: 'pier, sea' }])).toBe(true);
     expect(project().cast.map((c) => [c.name, c.tags])).toEqual([['Aki', '1girl'], ['Ren', '1boy']]);
@@ -230,7 +230,7 @@ describe('poses, balloons by speaker, redraws and what the context tells', () =>
   /** A person of 18 joints (nose first) standing at x. */
   const stand = (x: number) => Array.from({ length: 18 }, (_, i) => ({ x: x + (i > 1 ? (i % 2 ? 0.05 : -0.05) : 0), y: 0.3 + i * 0.03 }));
 
-  it('aims the tail at the speaker but keeps the place the assistant gave', () => {
+  it('aims the tail at the speaker but keeps the place the assistant gave', { tags: ['condition'] }, () => {
     seed();
     useComic.getState().setPanelPose(page().panels[0]!.id, [stand(0.2), stand(0.8)], null);
     applyComicOps([{ op: 'addBubble', panel: 1, kind: 'speech', text: 'やあ', x: 0.5, y: 0.1 }]);
@@ -242,7 +242,7 @@ describe('poses, balloons by speaker, redraws and what the context tells', () =>
     expect(aimed.tail).not.toEqual(unaimed);
   });
 
-  it('leaves a person of a pose unnamed when no name is given, and tells the user when the pose picture fails', async () => {
+  it('leaves a person of a pose unnamed when no name is given, and tells the user when the pose picture fails', { tags: ['error-guessing'] }, async () => {
     seed();
     applyComicOps([{ op: 'cast', characters: [{ name: 'Mio', tags: '1girl' }] }]);
     useToasts.setState({ toasts: [] });
@@ -256,7 +256,7 @@ describe('poses, balloons by speaker, redraws and what the context tells', () =>
     }
   });
 
-  it('redraws one box at the default strength with no words when only a box is given', () => {
+  it('redraws one box at the default strength with no words when only a box is given', { tags: ['condition'] }, () => {
     seed();
     const restore = withModel();
     useComic.getState().setPanelImage(page().panels[0]!.id, 'pic.png');
@@ -272,7 +272,7 @@ describe('poses, balloons by speaker, redraws and what the context tells', () =>
     }
   });
 
-  it('tells which characters a LoRA of the character library keeps the same, and not when that LoRA is off', () => {
+  it('tells which characters a LoRA of the character library keeps the same, and not when that LoRA is off', { tags: ['condition'] }, () => {
     seed();
     const presets = useCharacters.getState().presets;
     try {
@@ -291,7 +291,7 @@ describe('poses, balloons by speaker, redraws and what the context tells', () =>
     }
   });
 
-  it('tells which panel is selected, numbered from 1', () => {
+  it('tells which panel is selected, numbered from 1', { tags: ['condition'] }, () => {
     seed();
     applyComicOps([{ op: 'select', panel: 3 }]);
     expect((comicContext() as { selectedPanel: number | null }).selectedPanel).toBe(3);

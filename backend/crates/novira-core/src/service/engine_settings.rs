@@ -273,6 +273,7 @@ mod tests {
         serde_json::from_str(&std::fs::read_to_string(data.join(SETTINGS_FILE)).unwrap()).unwrap()
     }
 
+    // tags: scenario
     #[test]
     fn the_settings_show_what_is_saved_and_nothing_needs_a_restart_at_first() {
         let base = tempfile::tempdir().unwrap();
@@ -289,6 +290,7 @@ mod tests {
         assert!(!s.restart_needed);
     }
 
+    // tags: error-guessing, scenario
     #[test]
     fn a_change_is_saved_beside_the_other_keys_and_needs_a_restart() {
         let base = tempfile::tempdir().unwrap();
@@ -325,6 +327,7 @@ mod tests {
         );
     }
 
+    // tags: error-guessing, decision-table
     #[test]
     fn the_data_folder_can_be_changed_only_when_the_shell_gave_a_pointer() {
         let base = tempfile::tempdir().unwrap();
@@ -336,6 +339,7 @@ mod tests {
         assert!(b.check_data_dir_changeable().is_err());
     }
 
+    // tags: error-guessing, state-transition
     #[test]
     fn a_data_folder_change_waits_for_the_next_start_and_can_be_cancelled() {
         let base = tempfile::tempdir().unwrap();
@@ -370,6 +374,7 @@ mod tests {
         assert_eq!((kept.data_dir, kept.move_from), (data.clone(), None));
     }
 
+    // tags: error-guessing, state-transition
     #[test]
     fn a_folder_that_cannot_hold_the_data_is_refused_and_nothing_is_written() {
         let base = tempfile::tempdir().unwrap();
@@ -399,6 +404,7 @@ mod tests {
         assert!(!pointer.exists());
     }
 
+    // tags: state-transition
     #[test]
     fn the_comfyui_install_folder_is_chosen_and_reset_for_the_next_start() {
         let base = tempfile::tempdir().unwrap();
@@ -430,6 +436,7 @@ mod tests {
         assert!(saved(&data)["comfyuiInstallDir"].is_null());
     }
 
+    // tags: boundary, state-transition
     #[test]
     fn the_comfyui_install_folder_must_be_empty_or_hold_an_install_and_not_be_the_data_folder() {
         let base = tempfile::tempdir().unwrap();
@@ -456,6 +463,7 @@ mod tests {
         assert!(saved(&data)["comfyuiInstallDir"].is_string());
     }
 
+    // tags: state-transition, scenario
     #[test]
     fn the_civitai_lookup_is_off_until_saved_and_applies_at_the_next_start() {
         let base = tempfile::tempdir().unwrap();
@@ -475,6 +483,7 @@ mod tests {
         assert!(!b.civitai_lookup_at_start());
     }
 
+    // tags: error-guessing
     #[test]
     fn a_patch_with_one_bad_value_writes_nothing() {
         let base = tempfile::tempdir().unwrap();
@@ -506,6 +515,7 @@ mod tests {
         assert_eq!(saved(&data), before);
     }
 
+    // tags: error-guessing
     #[test]
     fn the_patch_refuses_fields_it_does_not_know() {
         let bad =
@@ -517,6 +527,7 @@ mod tests {
         assert!(serde_json::from_value::<EngineSettingsPatch>(negative).is_err());
     }
 
+    // tags: condition
     #[test]
     fn model_folders_are_added_checked_and_removed() {
         let base = tempfile::tempdir().unwrap();
@@ -557,6 +568,7 @@ mod tests {
         assert!(!s.restart_needed, "back to what the app started with");
     }
 
+    // tags: boundary
     #[test]
     fn no_more_than_the_limit_of_model_folders() {
         let base = tempfile::tempdir().unwrap();
@@ -581,6 +593,7 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn a_folder_or_url_engine_is_shown_as_saved() {
         let base = tempfile::tempdir().unwrap();
@@ -604,6 +617,7 @@ mod tests {
         std::fs::write(comfy.join("main.py"), "").unwrap();
     }
 
+    // tags: state-transition
     #[test]
     fn the_settings_say_whether_the_install_is_there_and_which_package_it_came_from() {
         let base = tempfile::tempdir().unwrap();
@@ -619,6 +633,7 @@ mod tests {
         assert_eq!(s.installed_comfyui_package, Some(ComfyuiPackage::Amd));
     }
 
+    // tags: error-guessing, state-transition
     #[test]
     fn a_package_change_first_records_an_install_that_has_no_record() {
         let base = tempfile::tempdir().unwrap();
@@ -641,6 +656,7 @@ mod tests {
         );
     }
 
+    // tags: error-guessing
     #[test]
     fn a_broken_settings_file_is_an_error_and_is_left_alone() {
         let base = tempfile::tempdir().unwrap();

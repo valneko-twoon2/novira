@@ -25,7 +25,7 @@ const board = (id: string): BoardDTO => ({ id, name: id, archived: false, create
 beforeEach(() => useGallery.setState(initial, true));
 
 describe('gallery store', () => {
-  it('adds a new image at the front and replaces an existing one without duplicating it', () => {
+  it('adds a new image at the front and replaces an existing one without duplicating it', { tags: ['condition'] }, () => {
     const g = useGallery.getState();
     g.setImages([image('a'), image('b')]);
     g.addImage(image('c'));
@@ -36,7 +36,7 @@ describe('gallery store', () => {
     expect(images[0]!.starred).toBe(true);
   });
 
-  it('upserts only images it already holds', () => {
+  it('upserts only images it already holds', { tags: ['condition'] }, () => {
     useGallery.getState().setImages([image('a'), image('b')]);
     useGallery.getState().upsertImages([image('b', { starred: true }), image('unknown')]);
     const images = useGallery.getState().images;
@@ -44,7 +44,7 @@ describe('gallery store', () => {
     expect(images[1]!.starred).toBe(true);
   });
 
-  it('clears selection, viewer and compare targets that point at removed images', () => {
+  it('clears selection, viewer and compare targets that point at removed images', { tags: ['condition'] }, () => {
     useGallery.setState({ images: [image('a'), image('b'), image('c')], selection: ['a', 'b'], viewerImageName: 'b', compareImageName: 'a' });
     useGallery.getState().removeImages(['a', 'b']);
     const s = useGallery.getState();
@@ -54,14 +54,14 @@ describe('gallery store', () => {
     expect(s.compareImageName).toBeNull();
   });
 
-  it('keeps the viewer image when an unrelated image is removed', () => {
+  it('keeps the viewer image when an unrelated image is removed', { tags: ['condition'] }, () => {
     useGallery.setState({ images: [image('a'), image('b')], selection: ['a'], viewerImageName: 'a' });
     useGallery.getState().removeImages(['b']);
     expect(useGallery.getState().viewerImageName).toBe('a');
     expect(useGallery.getState().selection).toEqual(['a']);
   });
 
-  it('falls back to Uncategorized when the selected or auto-add board is removed', () => {
+  it('falls back to Uncategorized when the selected or auto-add board is removed', { tags: ['condition'] }, () => {
     useGallery.setState({ boards: [board('x'), board('y')], selectedBoardId: 'x', autoAddBoardId: 'x' });
     useGallery.getState().removeBoard('x');
     const s = useGallery.getState();
@@ -70,7 +70,7 @@ describe('gallery store', () => {
     expect(s.autoAddBoardId).toBe('none');
   });
 
-  it('upserts boards by id', () => {
+  it('upserts boards by id', { tags: ['condition'] }, () => {
     useGallery.getState().upsertBoard(board('x'));
     useGallery.getState().upsertBoard({ ...board('x'), name: 'renamed' });
     useGallery.getState().upsertBoard(board('y'));
@@ -80,13 +80,13 @@ describe('gallery store', () => {
     ]);
   });
 
-  it('moves the images of a deleted board to Uncategorized', () => {
+  it('moves the images of a deleted board to Uncategorized', { tags: ['condition'] }, () => {
     useGallery.getState().setImages([image('a', { boardId: 'x' }), image('b', { boardId: 'y' })]);
     useGallery.getState().detachBoardImages('x');
     expect(useGallery.getState().images.map((i) => i.boardId)).toEqual([null, 'y']);
   });
 
-  it('selecting a board resets the page and selection and follows auto-assign', () => {
+  it('selecting a board resets the page and selection and follows auto-assign', { tags: ['condition'] }, () => {
     useGallery.setState({ page: 3, selection: ['a'] });
     useGallery.getState().selectBoard('x');
     let s = useGallery.getState();
@@ -99,7 +99,7 @@ describe('gallery store', () => {
     expect(s.autoAddBoardId).toBe('x');
   });
 
-  it('changing the view or the search goes back to the first page', () => {
+  it('changing the view or the search goes back to the first page', { tags: ['condition'] }, () => {
     useGallery.getState().setPage(4);
     useGallery.getState().setView('assets');
     expect(useGallery.getState().page).toBe(0);
@@ -108,7 +108,7 @@ describe('gallery store', () => {
     expect(useGallery.getState().page).toBe(0);
   });
 
-  it('starts without a date filter, sets and clears it, and goes back to the first page', () => {
+  it('starts without a date filter, sets and clears it, and goes back to the first page', { tags: ['condition'] }, () => {
     expect(useGallery.getState().dateFilter).toBeNull();
     useGallery.getState().setPage(2);
     useGallery.getState().setDateFilter({ from: '2026-10-01', to: '2026-10-05' });
@@ -118,19 +118,19 @@ describe('gallery store', () => {
     expect(useGallery.getState().dateFilter).toBeNull();
   });
 
-  it('keeps the date filter when another board is selected', () => {
+  it('keeps the date filter when another board is selected', { tags: ['condition'] }, () => {
     useGallery.getState().setDateFilter({ from: '2026-10-05', to: '2026-10-05' });
     useGallery.getState().selectBoard('x');
     expect(useGallery.getState().dateFilter).toEqual({ from: '2026-10-05', to: '2026-10-05' });
   });
 
-  it('does not save the date filter between sessions', () => {
+  it('does not save the date filter between sessions', { tags: ['condition'] }, () => {
     useGallery.getState().setDateFilter({ from: '2026-10-05', to: null });
     const saved = persistedPart(useGallery.getState());
     expect(Object.keys(saved).sort()).toEqual(['compareMode', 'settings', 'showMetadata']);
   });
 
-  it('fills settings missing from an older saved copy with their defaults', () => {
+  it('fills settings missing from an older saved copy with their defaults', { tags: ['error-guessing'] }, () => {
     const merged = mergePersisted({ settings: { thumbnailSize: 120 }, showMetadata: true }, useGallery.getState());
     expect(merged.settings.thumbnailSize).toBe(120);
     expect(merged.settings.groupByDate).toBe(false);
@@ -139,14 +139,14 @@ describe('gallery store', () => {
     expect(mergePersisted(undefined, useGallery.getState()).settings).toEqual(initial.settings);
   });
 
-  it('shows the last selected image in the viewer and keeps the viewer when the selection empties', () => {
+  it('shows the last selected image in the viewer and keeps the viewer when the selection empties', { tags: ['scenario'] }, () => {
     useGallery.getState().setSelection(['a', 'b']);
     expect(useGallery.getState().viewerImageName).toBe('b');
     useGallery.getState().setSelection([]);
     expect(useGallery.getState().viewerImageName).toBe('b');
   });
 
-  it('shows a running job in the viewer until a picture is picked, and an empty selection does not end it', () => {
+  it('shows a running job in the viewer until a picture is picked, and an empty selection does not end it', { tags: ['boundary'] }, () => {
     const g = useGallery.getState();
     g.setSelection(['a']);
     g.showLiveItem(9);
@@ -163,13 +163,13 @@ describe('gallery store', () => {
     expect(persistedPart({ ...useGallery.getState(), viewerLiveItemId: 9 })).not.toHaveProperty('viewerLiveItemId');
   });
 
-  it('merges settings patches', () => {
+  it('merges settings patches', { tags: ['condition'] }, () => {
     useGallery.getState().setSettings({ thumbnailSize: 120 });
     expect(useGallery.getState().settings.thumbnailSize).toBe(120);
     expect(useGallery.getState().settings.pageSize).toBe(initial.settings.pageSize);
   });
 
-  it('finds images by name', () => {
+  it('finds images by name', { tags: ['condition'] }, () => {
     useGallery.getState().setImages([image('a')]);
     expect(findImage('a')?.name).toBe('a');
     expect(findImage('b')).toBeUndefined();
@@ -197,21 +197,21 @@ describe('selectBoardImages', () => {
     ...over,
   });
 
-  it('lists the board images newest first with starred images on top, leaving out helpers and assets', () => {
+  it('lists the board images newest first with starred images on top, leaving out helpers and assets', { tags: ['condition'] }, () => {
     expect(selectBoardImages(state()).map((i) => i.name)).toEqual(['starred-old', 'new', 'prompted', 'old']);
   });
 
-  it('sorts oldest first and ignores stars when asked', () => {
+  it('sorts oldest first and ignores stars when asked', { tags: ['condition'] }, () => {
     const settings = { ...initial.settings, sortDirection: 'asc' as const, starredFirst: false };
     expect(selectBoardImages(state({ settings })).map((i) => i.name)).toEqual(['starred-old', 'old', 'prompted', 'new']);
   });
 
-  it('shows uploads in the assets view and the chosen board only', () => {
+  it('shows uploads in the assets view and the chosen board only', { tags: ['scenario'] }, () => {
     expect(selectBoardImages(state({ view: 'assets' })).map((i) => i.name)).toEqual(['upload']);
     expect(selectBoardImages(state({ selectedBoardId: 'x' })).map((i) => i.name)).toEqual(['other-board']);
   });
 
-  it('searches names and prompts case-insensitively', () => {
+  it('searches names and prompts case-insensitively', { tags: ['condition'] }, () => {
     expect(selectBoardImages(state({ search: '  red fox ' })).map((i) => i.name)).toEqual(['prompted']);
     expect(selectBoardImages(state({ search: 'OLD' })).map((i) => i.name)).toEqual(['starred-old', 'old']);
   });
@@ -239,36 +239,36 @@ describe('selectBoardImages with dates', () => {
   });
   const names = (over: Partial<Parameters<typeof selectBoardImages>[0]> = {}) => selectBoardImages(state(over)).map((i) => i.name);
 
-  it('keeps only the images of one local day, split exactly at local midnight', () => {
+  it('keeps only the images of one local day, split exactly at local midnight', { tags: ['boundary'] }, () => {
     expect(names({ dateFilter: { from: '2026-10-05', to: '2026-10-05' } })).toEqual(['oct5-starred', 'oct5-noon', 'oct5-midnight']);
     expect(names({ dateFilter: { from: '2026-10-04', to: '2026-10-04' } })).toEqual(['oct4-late']);
   });
 
-  it('includes both ends of a range and supports open ends', () => {
+  it('includes both ends of a range and supports open ends', { tags: ['decision-table'] }, () => {
     expect(names({ dateFilter: { from: '2026-10-05', to: '2026-10-06' } })).toEqual(['oct5-starred', 'oct6', 'oct5-noon', 'oct5-midnight']);
     expect(names({ dateFilter: { from: '2026-10-06', to: null } })).toEqual(['oct7-starred', 'oct6']);
     expect(names({ dateFilter: { from: null, to: '2026-10-04' } })).toEqual(['oct4-late']);
   });
 
-  it('is empty when no image falls in the range', () => {
+  it('is empty when no image falls in the range', { tags: ['boundary'] }, () => {
     expect(names({ dateFilter: { from: '2026-11-01', to: '2026-11-30' } })).toEqual([]);
   });
 
-  it('runs day by day when grouped, newest day first, starred first within each day', () => {
+  it('runs day by day when grouped, newest day first, starred first within each day', { tags: ['equivalence'] }, () => {
     const settings = { ...initial.settings, groupByDate: true };
     expect(names({ settings })).toEqual(['oct7-starred', 'oct6', 'oct5-starred', 'oct5-noon', 'oct5-midnight', 'oct4-late']);
     const asc = { ...settings, sortDirection: 'asc' as const };
     expect(names({ settings: asc })).toEqual(['oct4-late', 'oct5-starred', 'oct5-midnight', 'oct5-noon', 'oct6', 'oct7-starred']);
   });
 
-  it('keeps the logos of an older version in the assets view', () => {
+  it('keeps the logos of an older version in the assets view', { tags: ['condition'] }, () => {
     const logo = image('logo.png', { category: 'other', metadata: { generationMode: 'logo' } as ImageDTO['metadata'] });
     const shown = (view: 'images' | 'assets') => filterBoardImages({ images: [image('a'), logo], selectedBoardId: 'none', view, search: '' }).map((i) => i.name);
     expect(shown('assets')).toEqual(['logo.png']);
     expect(shown('images')).toEqual(['a']);
   });
 
-  it('leaves the date filter out of filterBoardImages (the calendar counts every day)', () => {
+  it('leaves the date filter out of filterBoardImages (the calendar counts every day)', { tags: ['equivalence'] }, () => {
     expect(filterBoardImages(state({ dateFilter: { from: '2026-10-07', to: '2026-10-07' } }))).toHaveLength(images.length);
   });
 });

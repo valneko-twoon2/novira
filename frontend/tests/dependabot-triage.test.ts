@@ -12,16 +12,16 @@ describe('bumpKind', () => {
     ['chore: Bump actions/checkout from 6 to 7', 'major'],
     ['chore: Bump actions/cache from v5.0.1 to v5.1.0', 'minor'],
     ['chore: Bump the minor-and-patch group across 1 directory with 4 updates', 'group'],
-  ])('%s is %s', (title, kind) => {
+  ])('%s is %s', { tags: ['condition'] }, (title, kind) => {
     expect(bumpKind(title)).toBe(kind);
   });
 
-  it('counts a minor bump of a 0.x version as major, and a patch bump of it as patch', () => {
+  it('counts a minor bump of a 0.x version as major, and a patch bump of it as patch', { tags: ['condition'] }, () => {
     expect(bumpKind('Bump tauri from 0.4.1 to 0.5.0')).toBe('major');
     expect(bumpKind('Bump tauri from 0.4.1 to 0.4.2')).toBe('patch');
   });
 
-  it('is null for a title with no versions', () => {
+  it('is null for a title with no versions', { tags: ['condition'] }, () => {
     expect(bumpKind('Update dependencies')).toBeNull();
     expect(bumpKind('')).toBeNull();
   });
@@ -30,36 +30,36 @@ describe('bumpKind', () => {
 describe('decide', () => {
   const small = { title: 'Bump serde from 1.0.200 to 1.0.201', labels: ['dependencies'], ageDays: 1 };
 
-  it('merges a small update whose checks passed', () => {
+  it('merges a small update whose checks passed', { tags: ['condition'] }, () => {
     expect(decide({ ...small, ci: 'success' }).action).toBe('merge');
     expect(decide({ title: 'Bump the minor-and-patch group with 3 updates', labels: [], ageDays: 0, ci: 'success' }).action).toBe('merge');
   });
 
-  it('waits while the checks run, are missing or have failed', () => {
+  it('waits while the checks run, are missing or have failed', { tags: ['error-guessing'] }, () => {
     for (const ci of ['pending', 'none', 'failure']) expect(decide({ ...small, ci }).action).toBe('leave');
   });
 
-  it('closes a major update, whatever the checks say', () => {
+  it('closes a major update, whatever the checks say', { tags: ['decision-table'] }, () => {
     for (const ci of ['success', 'failure', 'pending', 'none']) expect(decide({ title: 'Bump react from 18.3.1 to 19.0.0', labels: [], ageDays: 0, ci }).action).toBe('close');
   });
 
-  it('closes a small update that stays open past the limit without passing, but not one on the limit', () => {
+  it('closes a small update that stays open past the limit without passing, but not one on the limit', { tags: ['boundary'] }, () => {
     expect(decide({ ...small, ageDays: STALE_DAYS, ci: 'failure' }).action).toBe('leave');
     expect(decide({ ...small, ageDays: STALE_DAYS + 0.1, ci: 'failure' }).action).toBe('close');
   });
 
-  it('merges a stale update whose checks pass instead of closing it', () => {
+  it('merges a stale update whose checks pass instead of closing it', { tags: ['condition'] }, () => {
     expect(decide({ ...small, ageDays: STALE_DAYS + 5, ci: 'success' }).action).toBe('merge');
   });
 
-  it('never closes a security update: it merges a small one that passed and leaves every other one', () => {
+  it('never closes a security update: it merges a small one that passed and leaves every other one', { tags: ['error-guessing'] }, () => {
     const security = { labels: ['dependencies', 'security'], ageDays: 99 };
     expect(decide({ ...security, title: 'Bump serde from 1.0.200 to 1.0.201', ci: 'success' }).action).toBe('merge');
     expect(decide({ ...security, title: 'Bump serde from 1.0.200 to 1.0.201', ci: 'failure' }).action).toBe('leave');
     expect(decide({ ...security, title: 'Bump react from 18.3.1 to 19.0.0', ci: 'success' }).action).toBe('leave');
   });
 
-  it('leaves a title it cannot read, and always says why', () => {
+  it('leaves a title it cannot read, and always says why', { tags: ['error-guessing'] }, () => {
     const d = decide({ title: 'Update dependencies', labels: [], ageDays: 99, ci: 'success' });
     expect(d.action).toBe('leave');
     expect(d.reason.length).toBeGreaterThan(0);
@@ -70,27 +70,27 @@ describe('ciState', () => {
   const r = (workflow: string, status: string, conclusion: string | null, headSha = 'abc') => ({ workflow, headSha, status, conclusion });
   const passed = [r('test.yml', 'completed', 'success'), r('supply-chain.yml', 'completed', 'success')];
 
-  it('is success when the required workflows passed on this commit', () => {
+  it('is success when the required workflows passed on this commit', { tags: ['condition'] }, () => {
     expect(ciState(passed, 'abc')).toBe('success');
   });
 
-  it('is none until both required workflows have a run for this commit', () => {
+  it('is none until both required workflows have a run for this commit', { tags: ['condition'] }, () => {
     expect(ciState([r('test.yml', 'completed', 'success')], 'abc')).toBe('none');
     expect(ciState(passed, 'other')).toBe('none');
     expect(ciState([], 'abc')).toBe('none');
   });
 
-  it('is pending while a run is going, and failure when any run failed', () => {
+  it('is pending while a run is going, and failure when any run failed', { tags: ['state-transition'] }, () => {
     expect(ciState([r('test.yml', 'in_progress', null), ...passed.slice(1)], 'abc')).toBe('pending');
     expect(ciState([r('test.yml', 'completed', 'failure'), ...passed.slice(1)], 'abc')).toBe('failure');
     expect(ciState([r('test.yml', 'in_progress', null), r('supply-chain.yml', 'completed', 'failure')], 'abc')).toBe('failure');
   });
 
-  it('ignores a run that was cancelled by a newer push', () => {
+  it('ignores a run that was cancelled by a newer push', { tags: ['error-guessing'] }, () => {
     expect(ciState([r('test.yml', 'completed', 'cancelled'), ...passed], 'abc')).toBe('success');
   });
 
-  it('counts the audit only when it ran, and a failed audit stops the merge', () => {
+  it('counts the audit only when it ran, and a failed audit stops the merge', { tags: ['condition'] }, () => {
     expect(ciState([...passed, r('audit.yml', 'completed', 'success')], 'abc')).toBe('success');
     expect(ciState([...passed, r('audit.yml', 'completed', 'failure')], 'abc')).toBe('failure');
   });
@@ -124,7 +124,7 @@ describe('run', () => {
   const changes = (calls: string[][]) => calls.filter((c) => c[0] === 'pr' && c[1] !== 'list');
   const prs = [pr(1, 'Bump serde from 1.0.1 to 1.0.2'), pr(2, 'Bump react from 18.0.0 to 19.0.0'), pr(3, 'Bump vite from 7.0.0 to 7.1.0')];
 
-  it('merges the small one that passed, closes the major one with its reason and leaves the one still waiting', () => {
+  it('merges the small one that passed, closes the major one with its reason and leaves the one still waiting', { tags: ['condition'] }, () => {
     const { calls, exec } = fake(prs, ['sha1']);
     const lines: string[] = [];
     run({ now, log: (m: string) => lines.push(m), exec });
@@ -137,13 +137,13 @@ describe('run', () => {
     expect(lines[2]).toContain('leave');
   });
 
-  it('only logs what it would do with --dry', () => {
+  it('only logs what it would do with --dry', { tags: ['condition'] }, () => {
     const { calls, exec } = fake(prs, ['sha1']);
     run({ dry: true, now, log: () => undefined, exec });
     expect(changes(calls)).toEqual([]);
   });
 
-  it('does nothing when no pull request is open', () => {
+  it('does nothing when no pull request is open', { tags: ['condition'] }, () => {
     const { calls, exec } = fake([], []);
     run({ now, log: () => undefined, exec });
     expect(calls).toHaveLength(1);

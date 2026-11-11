@@ -19,7 +19,7 @@ import {
 const json = (o: unknown) => JSON.stringify(o);
 
 describe('the process list', () => {
-  it('reads one object, a list, or nothing, and puts a command line on one line', () => {
+  it('reads one object, a list, or nothing, and puts a command line on one line', { tags: ['condition'] }, () => {
     const one = { ProcessId: 5, ParentProcessId: 1, Name: 'novira.exe', ExecutablePath: 'C:\\a\\novira.exe', CommandLine: 'novira\r\n--x' };
     expect(parseProcessJson(json(one))).toEqual([{ pid: 5, ppid: 1, name: 'novira.exe', path: 'C:\\a\\novira.exe', cmd: 'novira --x' }]);
     expect(parseProcessJson(json([one, { ProcessId: 0, ParentProcessId: 0, Name: 'System Idle Process', ExecutablePath: null, CommandLine: null }]))[1]).toEqual({
@@ -32,7 +32,7 @@ describe('the process list', () => {
     expect(parseProcessJson('')).toEqual([]);
   });
 
-  it('finds the pythons whose command line holds every needle, letter case ignored, and nothing else', () => {
+  it('finds the pythons whose command line holds every needle, letter case ignored, and nothing else', { tags: ['condition'] }, () => {
     const list = [
       { pid: 1, name: 'python.exe', cmd: 'E:\\r\\novira-data\\work\\Comfy-Copy\\python.exe main.py --port 8190' },
       { pid: 2, name: 'pythonw.exe', cmd: 'x\\comfy-copy\\pythonw.exe main.py' },
@@ -45,7 +45,7 @@ describe('the process list', () => {
     expect(pythonsWith(null, 'comfy-copy')).toEqual([]);
   });
 
-  it.runIf(process.platform === 'win32')('lists this machine, this process included', () => {
+  it.runIf(process.platform === 'win32')('lists this machine, this process included', { tags: ['condition'] }, () => {
     const list = listProcesses();
     expect(list?.some((p: { pid: number }) => p.pid === process.pid)).toBe(true);
     expect(processAlive(process.pid)).toBe(true);
@@ -54,7 +54,7 @@ describe('the process list', () => {
 });
 
 describe('paths and tools', () => {
-  it('takes cargo from the rustup install of the profile, else from PATH', () => {
+  it('takes cargo from the rustup install of the profile, else from PATH', { tags: ['condition'] }, () => {
     const home = mkdtempSync(path.join(tmpdir(), 'cargo-home-'));
     try {
       expect(cargoCommand(home)).toBe('cargo');
@@ -66,7 +66,7 @@ describe('paths and tools', () => {
     }
   });
 
-  it('says what is inside a folder (not the folder itself, not a neighbour of the same start) and compares paths without case', () => {
+  it('says what is inside a folder (not the folder itself, not a neighbour of the same start) and compares paths without case', { tags: ['condition'] }, () => {
     expect(isInside('E:/r/novira-data/work/x', 'E:/r/novira-data/work')).toBe(true);
     expect(isInside('E:/r/novira-data/work', 'E:/r/novira-data/work')).toBe(false);
     expect(isInside('E:/r/novira-data/workshop', 'E:/r/novira-data/work')).toBe(false);
@@ -74,7 +74,7 @@ describe('paths and tools', () => {
     expect(sameFile('E:/R/novira.exe', 'e:\\r\\novira.exe')).toBe(true);
   });
 
-  it('builds the verification exe outside the repository unless NOVIRA_VERIFY_TARGET says where', () => {
+  it('builds the verification exe outside the repository unless NOVIRA_VERIFY_TARGET says where', { tags: ['condition'] }, () => {
     expect(verifyTarget({})).toBe(path.resolve(tmpdir(), 'novira-verify'));
     expect(verifyTarget({ NOVIRA_VERIFY_TARGET: 'E:/t/v' })).toBe(path.resolve('E:/t/v'));
   });

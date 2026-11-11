@@ -11,6 +11,7 @@ use novira_core::models::layout::category_by_folder;
 use serde_json::json;
 use tokio_util::sync::CancellationToken;
 
+// tags: scenario
 #[test]
 fn a_civitai_address_that_is_not_a_model_page_is_a_plain_download() {
     assert_eq!(
@@ -26,12 +27,14 @@ fn a_civitai_address_that_is_not_a_model_page_is_a_plain_download() {
     );
 }
 
+// tags: scenario
 #[test]
 fn model_folders_are_found_by_their_name() {
     assert!(category_by_folder("loras").is_some());
     assert!(category_by_folder("no-such-folder").is_none());
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_civitai_page_without_the_named_version_or_without_versions_is_refused() {
     site().put_json(
@@ -66,6 +69,7 @@ async fn a_civitai_page_without_the_named_version_or_without_versions_is_refused
     assert_eq!(err, "The Civitai model has no versions");
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_download_that_ends_early_or_cannot_be_written_fails_and_leaves_nothing() {
     let dir = tempfile::tempdir().unwrap();
@@ -111,6 +115,7 @@ async fn a_download_that_ends_early_or_cannot_be_written_fails_and_leaves_nothin
     assert!(matches!(result, Err(InstallError::Failed(_))));
 }
 
+// tags: error-guessing
 #[test]
 fn a_file_is_copied_when_it_cannot_be_linked_and_a_blocked_folder_is_an_error() {
     let dir = tempfile::tempdir().unwrap();
@@ -129,6 +134,7 @@ fn a_file_is_copied_when_it_cannot_be_linked_and_a_blocked_folder_is_an_error() 
     assert!(link_or_copy(&src, &blocker.join("inner.bin")).is_err());
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_search_the_host_refuses_reports_the_status() {
     use novira_core::models::civitai::{self, SearchParams};
@@ -162,6 +168,7 @@ async fn a_search_the_host_refuses_reports_the_status() {
     assert!(err.starts_with("Hugging Face answered 503"), "{err}");
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_civitai_page_without_a_version_number_takes_the_first_version() {
     site().put_json(

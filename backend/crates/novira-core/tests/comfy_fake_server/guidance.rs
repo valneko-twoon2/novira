@@ -84,6 +84,7 @@ fn loaded_from(prompt: &Value, link: &Value) -> Value {
     }
 }
 
+// tags: boundary, decision-table
 #[tokio::test]
 async fn guided_jobs_upload_the_mask_control_and_reference_pictures_and_use_each_where_it_belongs()
 {
@@ -126,6 +127,7 @@ async fn guided_jobs_upload_the_mask_control_and_reference_pictures_and_use_each
     );
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn reference_images_without_the_ipadapter_pack_are_refused_before_anything_is_uploaded() {
     let (url, seen) = serve_with(true, false).await;
@@ -143,6 +145,7 @@ async fn reference_images_without_the_ipadapter_pack_are_refused_before_anything
     engine(&url).validate(&j).await.unwrap();
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn guidance_models_comfyui_cannot_see_are_named() {
     let (url, _) = serve_with(true, true).await;
@@ -152,6 +155,7 @@ async fn guidance_models_comfyui_cannot_see_are_named() {
     assert!(err.contains("missing-cn.safetensors"), "{err}");
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_graph_that_needs_a_pack_the_engine_lacks_names_the_pack() {
     // The fake ComfyUI has none of the pack nodes.

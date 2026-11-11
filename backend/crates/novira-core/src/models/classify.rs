@@ -827,6 +827,7 @@ mod tests {
         parse_header(&serde_json::to_vec(&m).unwrap()).unwrap()
     }
 
+    // tags: condition
     #[test]
     fn a_header_reads_the_same_in_one_pass_as_through_a_json_tree() {
         let tensor = r#"{"dtype":"F16","shape":[16,3,1,2,2],"data_offsets":[0,2]}"#;
@@ -861,6 +862,7 @@ mod tests {
         assert_eq!(twice.shapes["patch_embedding.weight"], [2]);
     }
 
+    // tags: error-guessing
     #[test]
     fn a_header_refused_through_a_json_tree_is_refused_in_one_pass() {
         let mut bad_utf8 = br#"{"x":{"dtype":"F"#.to_vec();
@@ -893,6 +895,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn a_gguf_or_a_wan_transformer_is_a_diffusion_model() {
         assert_eq!(
@@ -941,6 +944,7 @@ mod tests {
         "net.t_embedder.1.linear_1.weight",
     ];
 
+    // tags: condition
     #[test]
     fn an_anima_file_is_a_diffusion_model_of_its_own_family() {
         let h = header(ANIMA, json!({ "format": "pt" }));
@@ -971,6 +975,7 @@ mod tests {
         assert_eq!(detect_architecture(&cosmos), None);
     }
 
+    // tags: equivalence
     #[test]
     fn newer_diffusion_transformers_are_told_apart_by_tensor_names() {
         let cases: &[(&[&str], BaseModel)] = &[
@@ -1054,6 +1059,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn a_checkpoint_with_its_own_vae_and_encoders_stays_a_main_model() {
         let flux = header(
@@ -1072,6 +1078,7 @@ mod tests {
         );
     }
 
+    // tags: equivalence
     #[test]
     fn loras_of_the_newer_families_carry_their_family() {
         let wan = header(
@@ -1105,6 +1112,7 @@ mod tests {
 
     /// BuAnime_NSFW_Style_Anima_BuAnimeV3 (Civitai, read from its header 2026-10-20): sd-scripts' Anima trainer wrote
     /// `stable-diffusion-v1/lora` as the architecture, and the LoRA changes only the Cosmos blocks, not the LLM adapter.
+    // tags: error-guessing, decision-table
     #[test]
     fn an_anima_lora_is_told_by_its_tensors_over_a_wrong_architecture() {
         let kohya = header(
@@ -1151,6 +1159,7 @@ mod tests {
         );
     }
 
+    // tags: equivalence
     #[test]
     fn text_encoders_vaes_and_upscalers_of_the_newer_models_are_recognised() {
         let t5 = header(
@@ -1213,6 +1222,7 @@ mod tests {
         assert_eq!(detect_kind(&esrgan), Some(ModelType::SpandrelImageToImage));
     }
 
+    // tags: equivalence
     #[test]
     fn model_patches_are_told_apart_from_controlnets_by_the_tensors_comfyui_reads() {
         let cases = [
@@ -1234,6 +1244,7 @@ mod tests {
         assert_eq!(detect_kind(&cn), Some(ModelType::Controlnet));
     }
 
+    // tags: equivalence
     #[test]
     fn all_in_one_checkpoints_of_the_newer_families_keep_their_family() {
         // The tensor names of the real files (read from their headers on Hugging Face, 2026-10-12).
@@ -1274,6 +1285,7 @@ mod tests {
         assert_eq!(detect_kind(&lllite), Some(ModelType::ModelPatch));
     }
 
+    // tags: scenario
     #[test]
     fn a_checkpoint_says_which_parts_it_carries() {
         let all = header(
@@ -1297,6 +1309,7 @@ mod tests {
         assert_eq!(bundled_parts(&sd), (true, true));
     }
 
+    // tags: scenario, equivalence
     #[test]
     fn an_anima_checkpoint_carries_only_the_parts_comfyui_reads() {
         // A merged Anima checkpoint (read from its header 2026-10-26) names its parts `text_encoders.` and `vae.`, which
@@ -1339,6 +1352,7 @@ mod tests {
         parse_header(&serde_json::to_vec(&m).unwrap()).unwrap()
     }
 
+    // tags: condition
     #[test]
     fn the_channels_of_a_wan_patch_embedding_tell_what_the_model_is_made_for() {
         // Read from the real files on Hugging Face (2026-10-12): 16 text to video, 36 image to video, 48 the 5B model.
@@ -1358,6 +1372,7 @@ mod tests {
         assert_eq!(h.shapes.len(), 1);
     }
 
+    // tags: equivalence
     #[test]
     fn hunyuan_video_and_ltx_video_files_are_recognised_by_their_real_names() {
         let hunyuan = header_with_shapes(&[
@@ -1390,6 +1405,7 @@ mod tests {
         );
     }
 
+    // tags: error-guessing, decision-table
     #[test]
     fn a_name_decides_only_when_the_header_cannot() {
         let kind = kind_from_name;
@@ -1408,6 +1424,7 @@ mod tests {
         assert_eq!(kind("Anima-2.9B-preview-v1.safetensors"), None);
     }
 
+    // tags: equivalence
     #[test]
     fn checkpoints_are_told_apart_by_tensor_names() {
         let xl = header(
@@ -1435,6 +1452,7 @@ mod tests {
         );
     }
 
+    // tags: decision-table
     #[test]
     fn lora_base_comes_from_metadata_then_keys() {
         let meta = header(
@@ -1464,6 +1482,7 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn vae_and_unknown_fall_back_to_the_file_name() {
         let vae = header(
@@ -1485,6 +1504,7 @@ mod tests {
         assert_eq!(detect_kind(&header(&["foo"], json!({}))), None);
     }
 
+    // tags: equivalence
     #[test]
     fn a_vae_whose_name_tells_no_family_takes_one_from_its_latent_channels() {
         // `decoder.conv_in.weight` of the real files (2026-10-26): [512, 4, 3, 3] in vae-ft-mse-840000-ema-pruned,
@@ -1551,6 +1571,7 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn header_is_read_from_a_file() {
         let dir = tempfile::tempdir().unwrap();
@@ -1567,6 +1588,7 @@ mod tests {
         assert!(read_header(&dir.path().join("y.safetensors")).is_none());
     }
 
+    // tags: condition
     #[test]
     fn the_variants_of_a_family_are_told_from_the_tensors_and_the_name() {
         let flux = |cols: u64| {
@@ -1632,6 +1654,7 @@ mod tests {
         ));
     }
 
+    // tags: condition
     #[test]
     fn a_wan_model_made_for_another_input_is_told_from_its_tensors() {
         let wan = |extra: &[&str], channels: u64| {
@@ -1693,6 +1716,7 @@ mod tests {
         ));
     }
 
+    // tags: state-transition, equivalence
     #[test]
     fn the_newer_families_are_told_from_the_ones_they_share_blocks_with() {
         // Tensor names and shapes read from the real files on Hugging Face (2026-10-12).
@@ -1791,6 +1815,7 @@ mod tests {
         assert_eq!(detect_kind(&ltx2), Some(ModelType::Main));
     }
 
+    // tags: condition
     #[test]
     fn a_hunyuan_dit_checkpoint_is_a_main_model_of_its_own_family() {
         // Tensor names read from `hunyuan_dit_1.2.safetensors` on Hugging Face (2026-10-12): the model, both text
@@ -1825,6 +1850,7 @@ mod tests {
         );
     }
 
+    // tags: equivalence
     #[test]
     fn a_hunyuan_image_file_takes_its_family_from_its_name_when_the_header_says_nothing() {
         // `hunyuan_image_2.1_vae_fp16.safetensors` (Comfy-Org's repackage) has no family in its header.
@@ -1876,6 +1902,7 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn hunyuan_image_is_told_from_hunyuan_video_by_its_flat_patch() {
         // `img_in.proj.weight` of the real files (2026-10-12): [3584, 64, 1, 1] for HunyuanImage 2.1, five dimensions

@@ -15,12 +15,12 @@ afterEach(() => {
 });
 
 describe('restoreSettings', () => {
-  it('keeps a saved start tab of Upscaling and of the comic, a mode of the Generate entry', () => {
+  it('keeps a saved start tab of Upscaling and of the comic, a mode of the Generate entry', { tags: ['condition'] }, () => {
     expect(restoreSettings({ startTab: 'upscaling' }).startTab).toBe('upscaling');
     expect(restoreSettings({ startTab: 'comic', lastTab: 'comic' })).toMatchObject({ startTab: 'generate', lastTab: 'comic' });
   });
 
-  it('keeps every valid field and puts each wrong one back to its default', () => {
+  it('keeps every valid field and puts each wrong one back to its default', { tags: ['error-guessing'] }, () => {
     const good = { ...SETTINGS_DEFAULTS, language: 'en', theme: 'light', startTab: 'last', lastTab: 'comic', toastSeconds: 6, undoLimit: 120, comicPageSize: 'B5', comicDirection: 'ltr', comicPanelCount: 5, textFont: 'Meiryo' };
     expect(restoreSettings(good)).toEqual(good);
     const bad = { language: 'xx', theme: 'blue', startTab: 'nowhere', toastSeconds: 99, undoLimit: UNDO_LIMIT_RANGE.min - 1, comicPanelCount: 2.5e9, comicFrameMm: 'thick', textFont: 'a"b', confirmOnDelete: 'yes' };
@@ -28,13 +28,13 @@ describe('restoreSettings', () => {
     expect(restoreSettings(null)).toEqual(SETTINGS_DEFAULTS);
   });
 
-  it('reads back whether the assistant may read pictures and prompts, asking each time when unsure', () => {
+  it('reads back whether the assistant may read pictures and prompts, asking each time when unsure', { tags: ['equivalence'] }, () => {
     expect(SETTINGS_DEFAULTS.assistantReadAccess).toBe('ask');
     for (const access of ['always', 'ask', 'never'] as const) expect(restoreSettings({ assistantReadAccess: access }).assistantReadAccess).toBe(access);
     for (const wrong of ['yes', true, 1, null, 'ALWAYS']) expect(restoreSettings({ assistantReadAccess: wrong }).assistantReadAccess).toBe('ask');
   });
 
-  it('reads back whether the assistant may look things up on the web, separately and asking each time when unsure', () => {
+  it('reads back whether the assistant may look things up on the web, separately and asking each time when unsure', { tags: ['equivalence'] }, () => {
     expect(SETTINGS_DEFAULTS.assistantWebAccess).toBe('ask');
     for (const access of ['always', 'ask', 'never'] as const) expect(restoreSettings({ assistantWebAccess: access }).assistantWebAccess).toBe(access);
     for (const wrong of ['yes', true, 1, null, 'ALWAYS']) expect(restoreSettings({ assistantWebAccess: wrong }).assistantWebAccess).toBe('ask');
@@ -42,7 +42,7 @@ describe('restoreSettings', () => {
     expect(restoreSettings({ assistantReadAccess: 'always' }).assistantWebAccess).toBe('ask');
   });
 
-  it('starts the Drafts count at 4 and reads back only a whole number from 1 to 24', () => {
+  it('starts the Drafts count at 4 and reads back only a whole number from 1 to 24', { tags: ['state-transition'] }, () => {
     expect(SETTINGS_DEFAULTS.draftCount).toBe(4);
     for (const ok of [DRAFT_COUNT_RANGE.min, 8, DRAFT_COUNT_RANGE.max]) expect(restoreSettings({ draftCount: ok }).draftCount).toBe(ok);
     for (const wrong of [0, DRAFT_COUNT_RANGE.max + 1, 2.5, -3, NaN, '8', null, true]) expect(restoreSettings({ draftCount: wrong }).draftCount).toBe(4);
@@ -53,14 +53,14 @@ describe('restoreSettings', () => {
     for (const wrong of [24, 61, 32.5, NaN, '40', null]) expect(restoreSettings({ draftPosition: wrong }).draftPosition).toBe(35);
   });
 
-  it('waits for the engine by default, and reads back only a boolean', () => {
+  it('waits for the engine by default, and reads back only a boolean', { tags: ['condition'] }, () => {
     expect(SETTINGS_DEFAULTS.waitForEngine).toBe(true);
     expect(restoreSettings({ waitForEngine: false }).waitForEngine).toBe(false);
     for (const wrong of ['false', 0, null]) expect(restoreSettings({ waitForEngine: wrong }).waitForEngine).toBe(true);
     expect(restoreSettings({ language: 'en' }).waitForEngine).toBe(true);
   });
 
-  it('drops the four switches that did nothing from an old store', async () => {
+  it('drops the four switches that did nothing from an old store', { tags: ['condition'] }, async () => {
     localStorage.setItem('novira.settings', JSON.stringify({ version: 0, state: { language: 'en', shouldUseCpuNoise: true, enableImageDebugging: true } }));
     await useSettings.persist.rehydrate();
     expect(useSettings.getState().language).toBe('en');
@@ -70,7 +70,7 @@ describe('restoreSettings', () => {
 });
 
 describe('the tab the app opens on', () => {
-  it('opens the chosen tab, or the last one, and remembers the tab open from then on', () => {
+  it('opens the chosen tab, or the last one, and remembers the tab open from then on', { tags: ['scenario'] }, () => {
     useSettings.getState().set({ startTab: 'queue' });
     const stop = applyStartTab();
     expect(useUi.getState().activeTab).toBe('queue');
@@ -84,7 +84,7 @@ describe('the tab the app opens on', () => {
 });
 
 describe('how new things start', () => {
-  it('starts new comics and their added pages as the settings say', () => {
+  it('starts new comics and their added pages as the settings say', { tags: ['condition'] }, () => {
     useSettings.getState().set({ comicPageSize: 'B4', comicDirection: 'ltr', comicPanelCount: 5, comicFrameMm: 1.2, comicMarginMm: 2 });
     useComic.getState().createProject('Defaults');
     const first = activePage(useComic.getState())!;
@@ -95,7 +95,7 @@ describe('how new things start', () => {
     expect(activePage(useComic.getState())!.panels).toHaveLength(1);
   });
 
-  it('gives new text the default font when one is chosen, and the standard one otherwise', () => {
+  it('gives new text the default font when one is chosen, and the standard one otherwise', { tags: ['condition'] }, () => {
     const layer = newTextLayer({ width: 512, height: 512 }, 'hi');
     expect(withDefaultFont(layer)).toBe(layer);
     useSettings.getState().set({ textFont: 'Meiryo' });
@@ -104,7 +104,7 @@ describe('how new things start', () => {
     expect(useTextEditor.getState().scene.layers.find((l) => l.id === id)?.style.fontFamily).toBe('Meiryo');
   });
 
-  it('keeps as many undo steps in the canvas as the setting says', () => {
+  it('keeps as many undo steps in the canvas as the setting says', { tags: ['state-transition'] }, () => {
     useSettings.getState().set({ undoLimit: UNDO_LIMIT_RANGE.min });
     for (let i = 0; i < UNDO_LIMIT_RANGE.min + 5; i++) useCanvas.getState().setBbox({ x: i, y: 0, width: 512, height: 512 });
     expect(useCanvas.getState().past.length).toBeLessThanOrEqual(UNDO_LIMIT_RANGE.min);

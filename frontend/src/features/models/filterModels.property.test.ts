@@ -34,7 +34,7 @@ const filter: fc.Arbitrary<ModelFilter> = fc.record({
 });
 
 describe('filterModels (properties)', () => {
-  it('returns a subset that matches the filter, without changing the input', () => {
+  it('returns a subset that matches the filter, without changing the input', { tags: ['condition'] }, () => {
     check(
       fc.property(models, filter, (list, f) => {
         const before = JSON.stringify(list);
@@ -55,7 +55,7 @@ describe('filterModels (properties)', () => {
     );
   });
 
-  it('is ordered by the sort key, and idempotent', () => {
+  it('is ordered by the sort key, and idempotent', { tags: ['condition'] }, () => {
     check(
       fc.property(models, filter, (list, f) => {
         const out = filterModels(list, f);

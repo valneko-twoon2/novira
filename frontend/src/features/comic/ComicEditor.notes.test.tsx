@@ -36,7 +36,7 @@ afterEach(() => {
 });
 
 describe('stage directions', () => {
-  it('are written in the panel tools and shown in the empty panel in place of its prompt', () => {
+  it('are written in the panel tools and shown in the empty panel in place of its prompt', { tags: ['boundary'] }, () => {
     const project = newProject('Notes');
     useComic.getState().setProjects([project]);
     const panelId = project.pages[0]!.panels[0]!.id;
@@ -65,7 +65,7 @@ describe('balloon words', () => {
     });
   }
 
-  it('are marked when they run out, and the fit button shrinks them to the smallest size', () => {
+  it('are marked when they run out, and the fit button shrinks them to the smallest size', { tags: ['boundary'] }, () => {
     const project = newProject('Fit');
     useComic.getState().setProjects([project]);
     const panelId = project.pages[0]!.panels[0]!.id;
@@ -81,7 +81,7 @@ describe('balloon words', () => {
     expect(useComic.getState().fittingBubbleIds).toEqual([]);
   });
 
-  it('are left as they are when they fit', () => {
+  it('are left as they are when they fit', { tags: ['scenario'] }, () => {
     const project = newProject('Fits');
     useComic.getState().setProjects([project]);
     const panelId = project.pages[0]!.panels[0]!.id;

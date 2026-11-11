@@ -3,7 +3,7 @@ import { expect, msg, openApp, showNewInViewer, test } from './fixtures';
 
 test.beforeEach(({ page }) => showNewInViewer(page));
 
-test('the high-resolution fix makes a larger picture from the Generate tab', async ({ page }) => {
+test('the high-resolution fix makes a larger picture from the Generate tab', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByRole('button', { name: msg('params.hires.title') }).click();
   await page.getByRole('switch', { name: msg('params.hires.enable') }).click();
@@ -14,7 +14,7 @@ test('the high-resolution fix makes a larger picture from the Generate tab', asy
   await expect(page.getByTestId('viewer-info')).toContainText('1536');
 });
 
-test('an unknown wildcard blocks Invoke until its list exists', async ({ page }) => {
+test('an unknown wildcard blocks Invoke until its list exists', { tag: ['@error-guessing'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('positive-prompt').fill('1girl, __hair-color__, __pose__');
   await expect(page.getByTestId('invoke-button')).toBeDisabled();

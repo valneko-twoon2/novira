@@ -11,7 +11,7 @@ const make = () => {
 };
 
 describe('entity limits', () => {
-  it('allows the last raster layer and refuses the one over it', () => {
+  it('allows the last raster layer and refuses the one over it', { tags: ['error-guessing'] }, () => {
     const { store, onLimit } = make();
     for (let i = 0; i < limits.rasters; i++) expect(store.getState().addEntity('raster')).not.toBe('');
     expect(onLimit).not.toHaveBeenCalled();
@@ -22,7 +22,7 @@ describe('entity limits', () => {
     expect(store.getState().past).toHaveLength(past);
   });
 
-  it('counts inpaint and regional layers together as masks, and leaves other kinds alone', () => {
+  it('counts inpaint and regional layers together as masks, and leaves other kinds alone', { tags: ['condition'] }, () => {
     const { store, onLimit } = make();
     store.getState().addEntity('inpaint');
     store.getState().addEntity('regional');
@@ -33,7 +33,7 @@ describe('entity limits', () => {
     expect(store.getState().addEntity('control')).not.toBe('');
   });
 
-  it('refuses to duplicate and to convert at the limit, and allows both below it', () => {
+  it('refuses to duplicate and to convert at the limit, and allows both below it', { tags: ['error-guessing'] }, () => {
     const { store, onLimit } = make();
     const first = store.getState().addEntity('raster');
     store.getState().duplicateEntity(first);
@@ -51,7 +51,7 @@ describe('entity limits', () => {
     expect(mask).not.toBe('');
   });
 
-  it('refuses the object over the limit of one layer, and a patch that grows it', () => {
+  it('refuses the object over the limit of one layer, and a patch that grows it', { tags: ['error-guessing'] }, () => {
     const { store, onLimit } = make();
     const id = store.getState().addEntity('raster');
     for (let i = 0; i < limits.objects; i++) store.getState().addObject(id, dot(`o${i}`));
@@ -68,7 +68,7 @@ describe('entity limits', () => {
     expect(layer().objects).toHaveLength(2);
   });
 
-  it('has no limit without limits', () => {
+  it('has no limit without limits', { tags: ['boundary'] }, () => {
     const store = createCanvasStore({ syncParams: false });
     for (let i = 0; i < 40; i++) expect(store.getState().addEntity('raster')).not.toBe('');
     expect(entityLimitHit(store.getState().entities, 'raster', undefined)).toBeNull();

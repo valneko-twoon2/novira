@@ -36,7 +36,7 @@ describe('the phone pairing page', () => {
     vi.useRealTimers();
   });
 
-  it('keeps the code in the address until it is used, so another browser can open it', async () => {
+  it('keeps the code in the address until it is used, so another browser can open it', { tags: ['condition'] }, async () => {
     const fetch = open(`/pair#${CODE}`);
     expect(location.hash).toBe(`#${CODE}`);
     expect(document.getElementById('form')!.hidden).toBe(false);
@@ -46,7 +46,7 @@ describe('the phone pairing page', () => {
     expect(location.pathname + location.hash).toBe('/pair');
   });
 
-  it('drops a code the server refused as wrong or used, and keeps one for a name to fix', async () => {
+  it('drops a code the server refused as wrong or used, and keeps one for a name to fix', { tags: ['error-guessing'] }, async () => {
     open(`/pair#${CODE}`, 400, { code: 'bad_label' });
     send();
     await vi.waitFor(() => expect(message()).toBe(en.badLabel));
@@ -57,7 +57,7 @@ describe('the phone pairing page', () => {
     await vi.waitFor(() => expect(location.hash).toBe(''));
   });
 
-  it('says there is no code when the address has none', () => {
+  it('says there is no code when the address has none', { tags: ['condition'] }, () => {
     open('/pair');
     expect(document.getElementById('form')!.hidden).toBe(true);
     expect(message()).toBe(en.noCode);

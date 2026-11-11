@@ -34,14 +34,14 @@ const chooseFiles = (files: File[]) => {
 };
 
 describe('importing', () => {
-  it('opens the file picker from the button', () => {
+  it('opens the file picker from the button', { tags: ['scenario'] }, () => {
     const input = document.querySelector('input[type=file]') as HTMLInputElement;
     const click = vi.spyOn(input, 'click');
     fireEvent.click(screen.getByTestId('wildcard-import'));
     expect(click).toHaveBeenCalled();
   });
 
-  it('adds one list per file, selects the last one and names them in the message', async () => {
+  it('adds one list per file, selects the last one and names them in the message', { tags: ['scenario'] }, async () => {
     chooseFiles([new File(['one\ntwo'], 'colors.txt'), new File(['x'], 'hair.txt')]);
     await waitFor(() => expect(useWildcards.getState().lists).toHaveLength(3));
     expect(useWildcards.getState().lists.map((l) => l.name)).toEqual(['hair', 'colors', 'hair-2']);
@@ -49,7 +49,7 @@ describe('importing', () => {
     expect(lastToast()).toMatchObject({ status: 'success', title: t('params.wildcards.imported', { names: '__colors__, __hair-2__' }) });
   });
 
-  it('ignores an empty choice, and reports a file that cannot be read', async () => {
+  it('ignores an empty choice, and reports a file that cannot be read', { tags: ['error-guessing'] }, async () => {
     chooseFiles([]);
     expect(useWildcards.getState().lists).toHaveLength(1);
     const broken = new File(['x'], 'bad.txt');
@@ -60,7 +60,7 @@ describe('importing', () => {
 });
 
 describe('exporting', () => {
-  it('saves the chosen list as a .txt file', async () => {
+  it('saves the chosen list as a .txt file', { tags: ['scenario'] }, async () => {
     fireEvent.click(screen.getByTestId('wildcard-list'));
     URL.createObjectURL = vi.fn(() => 'blob:wc');
     URL.revokeObjectURL = vi.fn();

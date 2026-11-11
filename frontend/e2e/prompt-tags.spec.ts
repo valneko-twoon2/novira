@@ -5,7 +5,7 @@ import { expect, msg, openApp, test } from './fixtures';
 /** The prompt's text box, also while the tag view hides it (the page's test id lookup keeps only visible elements). */
 const promptText = (page: Page, kind: 'positive' | 'negative') => page.locator(`[data-testid="${kind}-prompt"]`).first();
 
-test('a tag is renamed, its strength changed and reset from its popover, and removed', async ({ page }) => {
+test('a tag is renamed, its strength changed and reset from its popover, and removed', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('positive-prompt').fill('1girl, smile, (blush:1.3)');
   await page.getByTestId('positive-tag-view').click();
@@ -39,7 +39,7 @@ test('a tag is renamed, its strength changed and reset from its popover, and rem
   await expect(promptText(page, 'positive')).toHaveValue('1girl, smile');
 });
 
-test('dragging a strength does not move the tags: the chip keeps its width', async ({ page }) => {
+test('dragging a strength does not move the tags: the chip keeps its width', { tag: ['@condition'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('positive-prompt').fill('a, b, c');
   await page.getByTestId('positive-tag-view').click();
@@ -60,7 +60,7 @@ test('dragging a strength does not move the tags: the chip keeps its width', asy
   await expect(promptText(page, 'positive')).toHaveValue('(a:1.6), b, c');
 });
 
-test('each prompt switches between its text and its tags with two buttons', async ({ page }) => {
+test('each prompt switches between its text and its tags with two buttons', { tag: ['@state-transition'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   for (const kind of ['positive', 'negative']) {
     await expect(page.getByTestId(`${kind}-text-view`)).toHaveAttribute('aria-pressed', 'true');
@@ -72,7 +72,7 @@ test('each prompt switches between its text and its tags with two buttons', asyn
   }
 });
 
-test('the prompt headers have icons only: describe, dynamic prompts and presets', async ({ page }) => {
+test('the prompt headers have icons only: describe, dynamic prompts and presets', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   // The header's buttons are spaced alike: the text and tag buttons are not touching.
   for (const kind of ['positive', 'negative']) {
@@ -86,7 +86,7 @@ test('the prompt headers have icons only: describe, dynamic prompts and presets'
   await expect(page.getByTestId('dynamic-prompts-negative')).toBeVisible();
 });
 
-test('a dynamic negative prompt is previewed and every combination is drawn', async ({ page }) => {
+test('a dynamic negative prompt is previewed and every combination is drawn', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('positive-prompt').fill('a lighthouse');
   await page.getByTestId('negative-prompt').fill('{blurry|dark}, lowres');
@@ -100,7 +100,7 @@ test('a dynamic negative prompt is previewed and every combination is drawn', as
   await expect(page.getByTestId('gallery-thumb')).toHaveCount(2, { timeout: 30_000 });
 });
 
-test('an unknown wildcard in the negative prompt blocks Invoke', async ({ page }) => {
+test('an unknown wildcard in the negative prompt blocks Invoke', { tag: ['@error-guessing'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('positive-prompt').fill('a lighthouse');
   await page.getByTestId('negative-prompt').fill('__nothing__');

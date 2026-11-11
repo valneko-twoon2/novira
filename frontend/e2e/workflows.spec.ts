@@ -1,7 +1,7 @@
 // Workflow editor: the graph optimizer button, its undo, and the "tidy automatically" setting.
 import { expect, msg, openApp, test } from './fixtures';
 
-test('optimize removes an unconnected node as one undoable step', async ({ page }) => {
+test('optimize removes an unconnected node as one undoable step', { tag: ['@state-transition'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('tab-workflows').click();
   const nodes = page.locator('.react-flow__node');
@@ -28,7 +28,7 @@ test('optimize removes an unconnected node as one undoable step', async ({ page 
   await expect(page.locator('.toast__title').filter({ hasText: msg('workflows.optimize.nothing') })).toBeVisible();
 });
 
-test('tidying automatically is off by default and can be turned on', async ({ page }) => {
+test('tidying automatically is off by default and can be turned on', { tag: ['@condition'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('tab-workflows').click();
   await page.getByRole('button', { name: msg('workflows.settings.title') }).click();
@@ -38,7 +38,7 @@ test('tidying automatically is off by default and can be turned on', async ({ pa
   await expect(toggle).toHaveAttribute('aria-checked', 'true');
 });
 
-test('a long workflow name stays clear of the toolbar buttons', async ({ page }) => {
+test('a long workflow name stays clear of the toolbar buttons', { tag: ['@boundary'] }, async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 900 });
   await openApp(page);
   await page.getByTestId('tab-workflows').click();
@@ -59,7 +59,7 @@ test('a long workflow name stays clear of the toolbar buttons', async ({ page })
   await expect(page.getByRole('menuitem', { name: msg('common.saveAs') })).toBeVisible();
 });
 
-test('the Read Aloud template makes a sound that lands in the gallery', async ({ page }) => {
+test('the Read Aloud template makes a sound that lands in the gallery', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('tab-workflows').click();
   await page.getByRole('tab', { name: msg('workflows.panel.templates') }).click();

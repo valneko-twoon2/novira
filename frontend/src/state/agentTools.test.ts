@@ -64,13 +64,13 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('the tool list', () => {
-  it('has a handler for every tool the backend offers, and no other', () => {
+  it('has a handler for every tool the backend offers, and no other', { tags: ['equivalence'] }, () => {
     const rust = readFileSync(resolve(process.cwd(), '../backend/crates/novira-core/src/agent/tools.rs'), 'utf8');
     const offered = [...rust.matchAll(/^\s+name: "([a-z_]+)",$/gm)].map((m) => m[1]);
     expect([...TOOL_NAMES].sort()).toEqual([...offered].sort());
   });
 
-  it('tags the same reads as the backend', () => {
+  it('tags the same reads as the backend', { tags: ['condition'] }, () => {
     const rust = readFileSync(resolve(process.cwd(), '../backend/crates/novira-core/src/agent/tools.rs'), 'utf8');
     const body = rust.slice(rust.indexOf('pub fn is_read_gated'), rust.indexOf('pub fn check_call'));
     expect([...body.matchAll(/"([a-z_]+)"/g)].map((m) => m[1]).sort()).toEqual(['get_generation_settings', 'get_image_info', 'list_gallery_images', 'lookup_reference', 'view_comic_page', 'view_picture']);
@@ -84,7 +84,7 @@ describe('the tool list', () => {
     for (const tool of TOOL_NAMES.filter((t) => !['list_gallery_images', 'get_image_info', 'get_generation_settings', 'lookup_reference', 'view_comic_page', 'view_picture'].includes(t))) expect(isReadGated(tool, { includePrompts: true })).toBe(false);
   });
 
-  it('answers an unknown tool, a failing tool and an oversized answer with an error', async () => {
+  it('answers an unknown tool, a failing tool and an oversized answer with an error', { tags: ['error-guessing'] }, async () => {
     expect(await call('delete_images')).toMatchObject({ ok: false });
     registerAgentEditor('text', { ...editor('text'), context: () => ({ huge: 'x'.repeat(MAX_ANSWER_CHARS + 1) }) });
     expect(await call('get_text_scene')).toMatchObject({ ok: false, content: expect.stringContaining('too large') });
@@ -116,7 +116,7 @@ describe('the editors', () => {
     ['set_form', { kind: 'music', fields: { bpm: 90, tags: 'x' } }, 'music', [{ bpm: 90, tags: 'x' }], { kind: 'music', count: 2 }, 'generate', 'music'],
     ['set_form', { kind: 'voice', fields: { text: 'hi' } }, 'voice', [{ text: 'hi' }], { kind: 'voice', count: 1 }, 'generate', 'voice'],
     ['set_pose', { people: [{ x: 0.5 }] }, 'canvas', [{ people: [{ x: 0.5 }], add: false }], { kind: 'pose', count: 1 }, 'canvas', undefined],
-  ] as const)('%s reaches the %s editor after a snapshot, opens its screen and is logged', async (tool, args, screen, ops, log, tab, media) => {
+  ] as const)('%s reaches the %s editor after a snapshot, opens its screen and is logged', { tags: ['equivalence'] }, async (tool, args, screen, ops, log, tab, media) => {
     useUi.setState({ activeTab: 'models', media: 'image' });
     const result = await call(tool, args);
     expect(result).toEqual({ ok: true, content: { applied: true, now: { editor: screen } } });
@@ -127,26 +127,26 @@ describe('the editors', () => {
     if (media) expect(useUi.getState().media).toBe(media);
   });
 
-  it('keeps one snapshot per editor however many calls change it', async () => {
+  it('keeps one snapshot per editor however many calls change it', { tags: ['condition'] }, async () => {
     await call('edit_comic', { ops: [{ op: 'addPage' }] });
     await call('edit_comic', { ops: [{ op: 'addPage' }] });
     expect(screens.comic.snapshots).toBe(1);
     expect(run.log).toHaveLength(2);
   });
 
-  it('tells the model when no operation took effect, and logs nothing', async () => {
+  it('tells the model when no operation took effect, and logs nothing', { tags: ['condition'] }, async () => {
     registerAgentEditor('text', editor('text', false));
     expect(await call('edit_text', { ops: [{ op: 'nope' }] })).toMatchObject({ ok: false, content: expect.stringContaining('None of the operations') });
     expect(run.log).toEqual([]);
   });
 
-  it('answers an edit with the shorter answer of the editor when it has one, and a read with the whole context', async () => {
+  it('answers an edit with the shorter answer of the editor when it has one, and a read with the whole context', { tags: ['scenario'] }, async () => {
     registerAgentEditor('comic', { ...editor('comic'), context: () => ({ whole: true }), answer: () => ({ short: true }) });
     expect(await call('edit_comic', { ops: [{ op: 'addPage' }] })).toEqual({ ok: true, content: { applied: true, now: { short: true } } });
     expect(await call('get_comic_page')).toEqual({ ok: true, content: { whole: true } });
   });
 
-  it('reads each editor without changing anything', async () => {
+  it('reads each editor without changing anything', { tags: ['equivalence'] }, async () => {
     for (const [tool, args, screen] of [['get_text_scene', {}, 'text'], ['get_comic_page', {}, 'comic'], ['get_pose', {}, 'canvas'], ['get_form', { kind: 'music' }, 'music']] as const) {
       expect(await call(tool, args)).toEqual({ ok: true, content: { editor: screen } });
     }
@@ -154,7 +154,7 @@ describe('the editors', () => {
     expect(run.editSnapshots).toEqual({});
   });
 
-  it('opens a graph the assistant made with the registered opener, and gives the node types and recipes', async () => {
+  it('opens a graph the assistant made with the registered opener, and gives the node types and recipes', { tags: ['scenario'] }, async () => {
     const open = vi.fn(() => ({ dropped: [] }));
     registerAgentWorkflow(open, () => [{ type: 'math', inputs: [], outputs: [] }], () => [{ id: 'r' } as never]);
     expect(await call('get_workflow')).toEqual({ ok: true, content: { graph: { editor: 'workflows' }, nodeTypes: [{ type: 'math', inputs: [], outputs: [] }], recipes: [{ id: 'r' }] } });
@@ -166,7 +166,7 @@ describe('the editors', () => {
     registerAgentWorkflow(() => ({ dropped: [] }), () => []);
   });
 
-  it('answers with the reason when a graph does not open, and lists what an opened graph left out', async () => {
+  it('answers with the reason when a graph does not open, and lists what an opened graph left out', { tags: ['condition'] }, async () => {
     registerAgentWorkflow(() => ({ error: 'The graph was not opened: there is no node type "x"', dropped: [] }), () => []);
     useUi.setState({ activeTab: 'models' });
     expect(await call('create_workflow', { name: 'Flow', graph: { nodes: [], edges: [] } })).toEqual({ ok: false, content: expect.stringContaining('no node type "x"') });
@@ -177,7 +177,7 @@ describe('the editors', () => {
     registerAgentWorkflow(() => ({ dropped: [] }), () => []);
   });
 
-  it('searches the nodes of ComfyUI with the registered search, asking for eight by default', async () => {
+  it('searches the nodes of ComfyUI with the registered search, asking for eight by default', { tags: ['condition'] }, async () => {
     const search = vi.fn(() => ({ ready: true, total: 1, matches: [] }));
     registerAgentWorkflow(() => ({ dropped: [] }), () => [], () => [], search);
     expect(await call('search_comfy_nodes', { query: 'save audio' })).toEqual({ ok: true, content: { ready: true, total: 1, matches: [] } });
@@ -189,7 +189,7 @@ describe('the editors', () => {
     registerAgentWorkflow(() => ({ dropped: [] }), () => []);
   });
 
-  it('tells the model what an edit left out, and why when nothing took effect', async () => {
+  it('tells the model what an edit left out, and why when nothing took effect', { tags: ['condition'] }, async () => {
     registerAgentEditor('workflows', { ...editor('workflows'), skipped: () => ['op 1 (connect): a LATENT output cannot feed a IMAGE input'] });
     expect(await call('edit_workflow', { ops: [{ op: 'connect' }] })).toMatchObject({ ok: true, content: { applied: true, skipped: ['op 1 (connect): a LATENT output cannot feed a IMAGE input'] } });
     registerAgentEditor('workflows', { ...editor('workflows', false), skipped: () => ['op 1 (addNode): there is no node type "x"'] });
@@ -207,7 +207,7 @@ describe('the Generate tab', () => {
     });
   });
 
-  it("lists what the model manager knows of each model: a LoRA's trigger words, the default settings, the start of the notes", async () => {
+  it("lists what the model manager knows of each model: a LoRA's trigger words, the default settings, the start of the notes", { tags: ['equivalence'] }, async () => {
     const answer = await call('list_models', {});
     const [main, lora] = (answer.content as { models: Record<string, unknown>[] }).models;
     expect(main).toEqual({ key: 'm1', name: 'M', base: 'sdxl', type: 'main', defaults: { steps: 28, cfgScale: 5 } });
@@ -217,7 +217,7 @@ describe('the Generate tab', () => {
     expect(lora).not.toHaveProperty('defaults');
   });
 
-  it('lists the models and selects one with the registered selector, keeping the settings first', async () => {
+  it('lists the models and selects one with the registered selector, keeping the settings first', { tags: ['condition'] }, async () => {
     const select = vi.fn();
     registerAgentModelSelector(select);
     expect(await call('list_models', { type: 'lora' })).toMatchObject({ ok: true, content: { models: [{ key: 'l1', type: 'lora' }] } });
@@ -231,7 +231,7 @@ describe('the Generate tab', () => {
     registerAgentModelSelector((m) => useParams.getState().set({ modelKey: m.key }));
   });
 
-  it('adds a LoRA with its weight', async () => {
+  it('adds a LoRA with its weight', { tags: ['condition'] }, async () => {
     expect(await call('add_lora', { key: 'm1' })).toMatchObject({ ok: false });
     // The answer carries the LoRA's trigger words, so they go into the prompt.
     expect(await call('add_lora', { key: 'l1', weight: 0.6 })).toMatchObject({ ok: true, content: { added: 'l1', weight: 0.6, triggerPhrases: expect.arrayContaining(['gl0ssy']) } });
@@ -239,14 +239,14 @@ describe('the Generate tab', () => {
     expect(run.log).toEqual([{ kind: 'lora', key: 'l1', weight: 0.6 }]);
   });
 
-  it('sets prompts and parameters: a size on the grid, a fixed seed, a known scheduler only', async () => {
+  it('sets prompts and parameters: a size on the grid, a fixed seed, a known scheduler only', { tags: ['condition'] }, async () => {
     expect(await call('set_generation_settings', { scheduler: 'warp' })).toMatchObject({ ok: false, content: expect.stringContaining('Unknown scheduler') });
     await call('set_generation_settings', { positivePrompt: 'a cat', width: 641, height: 384, scheduler: 'euler', seed: 9, steps: 12 });
     expect(useParams.getState()).toMatchObject({ positivePrompt: 'a cat', width: 640, height: 384, scheduler: 'euler', seed: 9, steps: 12, shouldRandomizeSeed: false, aspectRatio: 'free' });
     expect(run.log).toEqual([{ kind: 'prompt' }, { kind: 'params', summary: '640×384 / 12 steps / euler / seed 9' }]);
   });
 
-  it('reads the settings without the prompts unless asked for them', async () => {
+  it('reads the settings without the prompts unless asked for them', { tags: ['condition'] }, async () => {
     useParams.getState().set({ positivePrompt: 'secret', steps: 21 });
     const plain = await call('get_generation_settings', {});
     expect(plain).toMatchObject({ ok: true, content: { steps: 21 } });
@@ -256,7 +256,7 @@ describe('the Generate tab', () => {
     expect(asked).toEqual(['get_generation_settings']);
   });
 
-  it('returns the length of a changed prompt before the request and now, and none for parameters alone', async () => {
+  it('returns the length of a changed prompt before the request and now, and none for parameters alone', { tags: ['condition'] }, async () => {
     useParams.getState().set({ positivePrompt: 'a girl', negativePrompt: 'blurry' });
     expect(await call('set_generation_settings', { positivePrompt: 'a girl, black hair, short hair' })).toEqual({
       ok: true,
@@ -267,7 +267,7 @@ describe('the Generate tab', () => {
     expect(await call('set_generation_settings', { steps: 25 })).toEqual({ ok: true, content: { set: ['steps'] } });
   });
 
-  it('refuses a prompt box over the token limit whole, and says the limit when asked for the settings', async () => {
+  it('refuses a prompt box over the token limit whole, and says the limit when asked for the settings', { tags: ['error-guessing'] }, async () => {
     run = createToolRun(async () => 'once', [], 4);
     useParams.getState().set({ positivePrompt: 'a girl', negativePrompt: 'blurry', steps: 30 });
     expect(await call('get_generation_settings', {})).toMatchObject({ ok: true, content: { promptTokenLimit: 4 } });
@@ -285,13 +285,13 @@ describe('the Generate tab', () => {
     expect(await call('set_generation_settings', { steps: 20 })).toMatchObject({ ok: true });
   });
 
-  it('lets any prompt length through while the token limit is off', async () => {
+  it('lets any prompt length through while the token limit is off', { tags: ['boundary'] }, async () => {
     const long = Array.from({ length: 100 }, (_, i) => `tag${i}`).join(', ');
     expect(await call('set_generation_settings', { positivePrompt: long })).toMatchObject({ ok: true });
     expect(await call('get_generation_settings', {})).not.toMatchObject({ content: { promptTokenLimit: expect.anything() } });
   });
 
-  it('gives the settings before earlier requests only with the prompts, which ask first', async () => {
+  it('gives the settings before earlier requests only with the prompts, which ask first', { tags: ['condition'] }, async () => {
     run = createToolRun(async (tool) => {
       asked.push(tool);
       return 'once';
@@ -309,14 +309,14 @@ describe('the Generate tab', () => {
     expect((await call('get_generation_settings', { includePrompts: true })).content).not.toHaveProperty('earlier');
   });
 
-  it('queues what the screen would, and reports why nothing was queued', async () => {
+  it('queues what the screen would, and reports why nothing was queued', { tags: ['state-transition'] }, async () => {
     enqueue.mockResolvedValueOnce({ items: [{ id: 7 }, { id: 8 }] }).mockResolvedValueOnce({ problems: ['No model'] });
     expect(await call('generate', { target: 'screen' })).toEqual({ ok: true, content: { queued: [7, 8] } });
     expect(run.log).toEqual([{ kind: 'queued', count: 2 }]);
     expect(await call('generate', { target: 'screen' })).toEqual({ ok: false, content: 'Nothing was queued: No model' });
   });
 
-  it('queues one trial picture only while the setting allows it', async () => {
+  it('queues one trial picture only while the setting allows it', { tags: ['condition'] }, async () => {
     enqueue.mockResolvedValue({ items: [{ id: 9 }] });
     useSettings.getState().set({ assistantTrialPictures: true });
     expect(await call('generate', { target: 'screen', trial: true })).toEqual({ ok: true, content: { queued: [9], note: expect.stringContaining('view_picture') } });
@@ -331,7 +331,7 @@ describe('the Generate tab', () => {
     enqueue.mockReset();
   });
 
-  it('shows a picture by name or waits for a queue item, asks first, and keeps it for the answer', async () => {
+  it('shows a picture by name or waits for a queue item, asks first, and keeps it for the answer', { tags: ['scenario'] }, async () => {
     vi.useFakeTimers();
     try {
       useQueue.setState({ items: [{ id: 3, status: 'in_progress', error: null, imageName: null } as never] });
@@ -363,13 +363,13 @@ describe('the Generate tab', () => {
     expect(run.shown).not.toContain('x.png');
   });
 
-  it('tells the state of queue items by id', async () => {
+  it('tells the state of queue items by id', { tags: ['condition'] }, async () => {
     useQueue.setState({ items: [{ id: 1, status: 'failed', error: 'oom', imageName: null } as never, { id: 2, status: 'completed', error: null, imageName: 'b.png' } as never] });
     expect(await call('get_queue_status', { ids: [2] })).toEqual({ ok: true, content: [{ id: 2, status: 'completed', picture: 'b.png' }] });
     expect(await call('get_queue_status', {})).toMatchObject({ content: [{ id: 1, error: 'oom' }, { id: 2 }] });
   });
 
-  it('names the screen and gives the guide', async () => {
+  it('names the screen and gives the guide', { tags: ['condition'] }, async () => {
     useUi.setState({ activeTab: 'generate', media: 'music' });
     expect(currentScreen()).toBe('music');
     expect(await call('get_screen')).toMatchObject({ ok: true, content: { screen: 'music' } });
@@ -383,7 +383,7 @@ describe('the gallery and permission', () => {
     ({ name, url: '', thumbnailUrl: '', width: 8, height: 8, createdAt: name.charCodeAt(0), boardId: null, starred: false, isIntermediate: false, category: 'general', workflow: null, metadata: { positivePrompt: prompt, negativePrompt: '', modelKey: 'm', modelName: 'M', generationMode: 'txt2img', seed: 1, steps: 2, cfgScale: 3, scheduler: 'euler', width: 8, height: 8 }, ...extra }) as never;
   beforeEach(() => useGallery.setState({ images: [image('a.png', 'a cat'), image('b.png', 'a dog', { starred: true }), image('c.png', 'mask', { isIntermediate: true })] }));
 
-  it('asks before reading, lists the newest pictures with their prompts, and leaves helper pictures out', async () => {
+  it('asks before reading, lists the newest pictures with their prompts, and leaves helper pictures out', { tags: ['condition'] }, async () => {
     const listed = await call('list_gallery_images', {}, true);
     expect(asked).toEqual(['list_gallery_images']);
     expect(listed).toMatchObject({ ok: true, content: { total: 2, images: [{ name: 'b.png', prompt: 'a dog' }, { name: 'a.png' }] } });
@@ -391,12 +391,12 @@ describe('the gallery and permission', () => {
     expect(await call('list_gallery_images', { starredOnly: true })).toMatchObject({ content: { total: 1, images: [{ name: 'b.png' }] } });
   });
 
-  it('tells how one picture was made, and not a helper picture', async () => {
+  it('tells how one picture was made, and not a helper picture', { tags: ['condition'] }, async () => {
     expect(await call('get_image_info', { name: 'a.png' })).toMatchObject({ ok: true, content: { generation: { positivePrompt: 'a cat', steps: 2 } } });
     expect(await call('get_image_info', { name: 'c.png' })).toMatchObject({ ok: false });
   });
 
-  it('a decline reads nothing and says so; the backend tag alone is enough to ask', async () => {
+  it('a decline reads nothing and says so; the backend tag alone is enough to ask', { tags: ['condition'] }, async () => {
     answer = 'deny';
     expect(await call('get_image_info', { name: 'a.png' })).toEqual({ ok: false, content: DECLINED });
     // A tool the frontend does not consider a read is still asked about when the backend tags the call.
@@ -405,7 +405,7 @@ describe('the gallery and permission', () => {
     expect(asked).toEqual(['get_image_info', 'get_screen']);
   });
 
-  it('never asks with always or never, and asks the questions of parallel calls one at a time', async () => {
+  it('never asks with always or never, and asks the questions of parallel calls one at a time', { tags: ['condition'] }, async () => {
     useSettings.getState().set({ assistantReadAccess: 'never' });
     expect(await call('list_gallery_images')).toEqual({ ok: false, content: DECLINED });
     useSettings.getState().set({ assistantReadAccess: 'always' });
@@ -424,7 +424,7 @@ describe('the gallery and permission', () => {
 describe('looking at a drawn comic page', () => {
   const onViewer = () => useUi.setState({ activeTab: 'comic', mainView: { ...useUi.getState().mainView, comic: 'viewer' } });
 
-  it('works only on the comic screen, and asks first', async () => {
+  it('works only on the comic screen, and asks first', { tags: ['condition'] }, async () => {
     const view = vi.fn(async (page: number) => `page-${page}.jpg`);
     registerAgentEditor('comic', { ...editor('comic'), view });
     useUi.setState({ activeTab: 'generate' });
@@ -435,7 +435,7 @@ describe('looking at a drawn comic page', () => {
     expect(asked).toEqual(['view_comic_page', 'view_comic_page']);
   });
 
-  it('looks at nothing when the user declines, and passes on why a page cannot be shown', async () => {
+  it('looks at nothing when the user declines, and passes on why a page cannot be shown', { tags: ['error-guessing'] }, async () => {
     const view = vi.fn(async () => {
       throw new Error('Page 3 has no drawn panel yet: draw it first.');
     });
@@ -452,7 +452,7 @@ describe('looking at a drawn comic page', () => {
 describe('looking facts up on the web', () => {
   const hit = { title: 'Edo period', extract: 'The Edo period lasted 1603-1868.', url: 'https://en.wikipedia.org/wiki/Edo_period' };
 
-  it('asks first, then returns the articles with the licence notice; the question carries the words', async () => {
+  it('asks first, then returns the articles with the licence notice; the question carries the words', { tags: ['scenario'] }, async () => {
     const lookup = vi.spyOn(backend, 'lookupReference').mockResolvedValue([hit]);
     const out = await call('lookup_reference', { query: '  Edo   period\n', language: 'en' }, true);
     expect(asked).toEqual(['lookup_reference']);
@@ -461,7 +461,7 @@ describe('looking facts up on the web', () => {
     expect(out).toMatchObject({ ok: true, content: { language: 'en', results: [hit], license: expect.stringContaining('CC BY-SA') } });
   });
 
-  it('is asked about even when the backend does not tag the call, and defaults to Japanese', async () => {
+  it('is asked about even when the backend does not tag the call, and defaults to Japanese', { tags: ['condition'] }, async () => {
     const lookup = vi.spyOn(backend, 'lookupReference').mockResolvedValue([]);
     const out = await call('lookup_reference', { query: '鎧' });
     expect(asked).toEqual(['lookup_reference']);
@@ -472,7 +472,7 @@ describe('looking facts up on the web', () => {
     expect(lookup).toHaveBeenLastCalledWith('ja', 'x');
   });
 
-  it('a decline looks nothing up and tells the model not to ask again this request', async () => {
+  it('a decline looks nothing up and tells the model not to ask again this request', { tags: ['condition'] }, async () => {
     const lookup = vi.spyOn(backend, 'lookupReference');
     answer = 'deny';
     const out = await call('lookup_reference', { query: 'kimono' });
@@ -482,14 +482,14 @@ describe('looking facts up on the web', () => {
     expect(lookup).not.toHaveBeenCalled();
   });
 
-  it('an empty query is an error and a failing lookup comes back as a tool error', async () => {
+  it('an empty query is an error and a failing lookup comes back as a tool error', { tags: ['error-guessing'] }, async () => {
     const lookup = vi.spyOn(backend, 'lookupReference').mockRejectedValue(new Error('Cannot reach Wikipedia'));
     expect(await call('lookup_reference', { query: '   ' })).toMatchObject({ ok: false, content: expect.stringContaining('needs a query') });
     expect(lookup).not.toHaveBeenCalled();
     expect(await call('lookup_reference', { query: 'kimono' })).toEqual({ ok: false, content: 'The tool failed: Cannot reach Wikipedia' });
   });
 
-  it('has its own always-allow: it never rides on the one for pictures, nor the other way round', async () => {
+  it('has its own always-allow: it never rides on the one for pictures, nor the other way round', { tags: ['condition'] }, async () => {
     vi.spyOn(backend, 'lookupReference').mockResolvedValue([hit]);
     useGallery.setState({ images: [] });
     // Always allowing pictures does not allow the web: the question is still asked.
@@ -524,7 +524,7 @@ describe('extensions', () => {
     useNodePacks.setState({ packs: null });
   });
 
-  it('finds the extensions a query names, and the one asked about by id', async () => {
+  it('finds the extensions a query names, and the one asked about by id', { tags: ['condition'] }, async () => {
     useRegistry.setState({ nodes: [reg] });
     expect(await call('search_extensions', { query: 'What does ComfyUI-Foo do?' })).toMatchObject({ ok: true, content: { extensions: [{ id: 'ext:ComfyUI-Foo' }] } });
     expect(await call('search_extensions', { ids: ['ext:ComfyUI-Foo'] })).toMatchObject({ content: { extensions: [{ id: 'ext:ComfyUI-Foo', about: 'Draws foo' }] } });
@@ -532,7 +532,7 @@ describe('extensions', () => {
     expect((plain.content as { packs: unknown[] }).packs.length).toBeGreaterThan(5);
   });
 
-  it('reads the registry when the query names something and it is not loaded yet, but not otherwise', async () => {
+  it('reads the registry when the query names something and it is not loaded yet, but not otherwise', { tags: ['condition'] }, async () => {
     const read = vi.spyOn(backend, 'registryNodes').mockResolvedValue([reg]);
     await call('search_extensions', { query: '背景を消したい' });
     expect(read).not.toHaveBeenCalled();
@@ -541,7 +541,7 @@ describe('extensions', () => {
     expect(useRegistry.getState().nodes).toEqual([reg]);
   });
 
-  it('shows only known extensions as cards, and changes nothing', async () => {
+  it('shows only known extensions as cards, and changes nothing', { tags: ['scenario'] }, async () => {
     useRegistry.setState({ nodes: [reg] });
     expect(await call('recommend_packs', { ids: ['made-up'] })).toMatchObject({ ok: false });
     expect(await call('recommend_packs', { ids: ['rmbg', 'made-up', 'ext:ComfyUI-Foo', 'rmbg'] })).toEqual({ ok: true, content: { shown: ['rmbg', 'ext:ComfyUI-Foo'], unknown: ['made-up'] } });
@@ -551,7 +551,7 @@ describe('extensions', () => {
 });
 
 describe('what the first tests leave', () => {
-  it('words the question of a web look-up: one short line, the language, and nothing for other tools or bad arguments', () => {
+  it('words the question of a web look-up: one short line, the language, and nothing for other tools or bad arguments', { tags: ['condition'] }, () => {
     expect(webQuestion('lookup_reference', { query: '  kimono \n  obi  ', language: 'en' })).toEqual({ query: 'kimono obi', language: 'en' });
     expect(webQuestion('lookup_reference', { query: 'x'.repeat(150) }).query).toHaveLength(100);
     expect(webQuestion('lookup_reference', { query: 5, language: 'fr' })).toEqual({ query: '', language: 'ja' });
@@ -560,14 +560,14 @@ describe('what the first tests leave', () => {
     expect(webQuestion('get_screen', { query: 'x' })).toEqual({});
   });
 
-  it('gives the manga guide, whole or for a topic', async () => {
+  it('gives the manga guide, whole or for a topic', { tags: ['scenario'] }, async () => {
     const whole = await call('get_manga_guide', {});
     expect(whole.ok).toBe(true);
     const topic = await call('get_manga_guide', { topic: 'no-such-topic-at-all' });
     expect(topic).toHaveProperty('ok');
   });
 
-  it('lists the LoRAs of the settings and of a picture, with their weights', async () => {
+  it('lists the LoRAs of the settings and of a picture, with their weights', { tags: ['condition'] }, async () => {
     useParams.getState().addLora('l1');
     useParams.getState().updateLora('l1', { weight: 0.7 });
     expect(await call('get_generation_settings', {})).toMatchObject({ content: { loras: [{ key: 'l1', weight: 0.7 }] } });
@@ -576,7 +576,7 @@ describe('what the first tests leave', () => {
     expect(await call('get_image_info', { name: 'a.png' })).toMatchObject({ content: { generation: { loras: [{ key: 'l9', weight: 0.4 }] } } });
   });
 
-  it('gives the workflow with the recipes of the extensions that are installed', async () => {
+  it('gives the workflow with the recipes of the extensions that are installed', { tags: ['scenario'] }, async () => {
     const recipes = vi.fn((_installed: string[]) => [{ id: 'r' } as never]);
     registerAgentWorkflow(() => ({ dropped: [] }), () => [], recipes);
     registerAgentEditor('workflows', editor('workflows'));
@@ -598,14 +598,14 @@ describe('drawing the comic', () => {
     return e;
   };
 
-  it('fails without a comic editor, and asks for the panel number when the scope is a panel', async () => {
+  it('fails without a comic editor, and asks for the panel number when the scope is a panel', { tags: ['error-guessing'] }, async () => {
     registerAgentEditor('comic', undefined as never);
     expect(await call('generate', { target: 'comic' })).toEqual({ ok: false, content: 'The comic is not available.' });
     comic();
     expect(await call('generate', { target: 'comic', scope: 'panel' })).toEqual({ ok: false, content: 'scope panel needs panel.' });
   });
 
-  it('says nothing was queued when the comic has nothing to draw', async () => {
+  it('says nothing was queued when the comic has nothing to draw', { tags: ['state-transition'] }, async () => {
     const e = editor('comic', false);
     registerAgentEditor('comic', e);
     const result = await call('generate', { target: 'comic', scope: 'page' });
@@ -614,7 +614,7 @@ describe('drawing the comic', () => {
     expect(e.applied).toEqual([[{ op: 'draw', scope: 'page' }]]);
   });
 
-  it('queues the panels and reports the new queue items once they stop coming', async () => {
+  it('queues the panels and reports the new queue items once they stop coming', { tags: ['condition'] }, async () => {
     useQueue.setState({ items: [{ id: 1, status: 'completed' } as never] });
     const e = comic();
     const apply = e.apply;

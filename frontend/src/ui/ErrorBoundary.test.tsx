@@ -24,7 +24,7 @@ describe('ErrorBoundary', () => {
     vi.restoreAllMocks();
   });
 
-  it('shows the fallback next to working siblings and logs the error', () => {
+  it('shows the fallback next to working siblings and logs the error', { tags: ['error-guessing'] }, () => {
     render(
       <>
         <ErrorBoundary area="left">
@@ -38,7 +38,7 @@ describe('ErrorBoundary', () => {
     expect(useDevLog.getState().entries.some((e) => e.source === 'render: left' && e.message.includes('bad data'))).toBe(true);
   });
 
-  it('renders again on retry', () => {
+  it('renders again on retry', { tags: ['scenario'] }, () => {
     render(
       <ErrorBoundary area="left">
         <Flaky />
@@ -49,7 +49,7 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText('fine')).toBeTruthy();
   });
 
-  it('renders again when a reset key changes', () => {
+  it('renders again when a reset key changes', { tags: ['condition'] }, () => {
     const { rerender } = render(
       <ErrorBoundary area="tab" resetKeys={['generate']}>
         <Flaky />

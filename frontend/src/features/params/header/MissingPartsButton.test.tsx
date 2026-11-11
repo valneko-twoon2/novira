@@ -23,7 +23,7 @@ afterEach(() => {
 });
 
 describe('MissingPartsButton', () => {
-  it('shows the total size and installs exactly the missing parts in place', async () => {
+  it('shows the total size and installs exactly the missing parts in place', { tags: ['scenario'] }, async () => {
     const install = vi.spyOn(backend, 'installModel').mockImplementation(async (source) => ({ id: source, source, name: source, status: 'waiting', bytes: 0, totalBytes: 1 }));
     render(<MissingPartsButton report={small} />);
     const button = screen.getByTestId('install-model-parts');
@@ -32,7 +32,7 @@ describe('MissingPartsButton', () => {
     expect(install.mock.calls.map((c) => c[0])).toEqual(['repo::te.safetensors', 'repo::vae.safetensors']);
   });
 
-  it('asks for confirmation when the download is large', async () => {
+  it('asks for confirmation when the download is large', { tags: ['boundary'] }, async () => {
     const install = vi.spyOn(backend, 'installModel');
     render(<MissingPartsButton report={{ ...small, missing: [part('big', 9_380_000_000)] }} />);
     fireEvent.click(screen.getByTestId('install-model-parts'));
@@ -40,7 +40,7 @@ describe('MissingPartsButton', () => {
     expect(useModelParts.getState().offer?.missing[0]?.id).toBe('big');
   });
 
-  it('turns into a disabled "installing" label once every part is on its way', () => {
+  it('turns into a disabled "installing" label once every part is on its way', { tags: ['state-transition'] }, () => {
     render(<MissingPartsButton report={small} />);
     act(() =>
       useModels.setState({

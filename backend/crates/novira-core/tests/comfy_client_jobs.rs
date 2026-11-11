@@ -197,6 +197,7 @@ fn gguf_job(unet: &str, encoder: &str) -> EngineJob {
     j
 }
 
+// tags: scenario
 #[tokio::test]
 async fn gguf_files_are_looked_up_in_the_lists_of_the_gguf_loaders() {
     let (engine, _) = serve(Fake {
@@ -230,6 +231,7 @@ async fn gguf_files_are_looked_up_in_the_lists_of_the_gguf_loaders() {
     );
 }
 
+// tags: decision-table
 #[tokio::test]
 async fn each_gguf_file_is_looked_up_in_the_list_of_its_own_loader() {
     let (engine, _) = serve(Fake {
@@ -256,6 +258,7 @@ async fn each_gguf_file_is_looked_up_in_the_list_of_its_own_loader() {
     .contains("clip-only.gguf"));
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_gguf_loader_that_lists_nothing_means_the_file_is_not_seen() {
     // The pack's nodes exist, but their lists hold no file.
@@ -301,6 +304,7 @@ fn ref_job(with_region: bool) -> EngineJob {
     j
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_regional_prompt_uploads_its_mask_and_runs() {
     let (engine, fake) = serve(fake()).await;
@@ -308,6 +312,7 @@ async fn a_regional_prompt_uploads_its_mask_and_runs() {
     assert_eq!(fake.uploads.load(Ordering::SeqCst), 1);
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_failed_upload_of_a_region_a_reference_or_its_region_stops_the_job() {
     let ipa = novira_core::comfy::graph::IPADAPTER_NODE;
@@ -339,6 +344,7 @@ async fn a_failed_upload_of_a_region_a_reference_or_its_region_stops_the_job() {
     }
 }
 
+// tags: decision-table
 #[tokio::test]
 async fn a_reference_with_a_region_uploads_both_pictures() {
     let (engine, fake) = serve(Fake {
@@ -367,6 +373,7 @@ fn video_job() -> EngineJob {
     j
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_video_model_needs_the_node_of_its_family_in_comfyui() {
     let (engine, _) = serve(Fake {

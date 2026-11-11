@@ -18,7 +18,7 @@ async function openDateFilter(page: Page): Promise<void> {
   await expect(page.getByTestId('gallery-date-calendar')).toBeVisible();
 }
 
-test('a quick range and a calendar day narrow the gallery, and the chip clears it', async ({ page }) => {
+test('a quick range and a calendar day narrow the gallery, and the chip clears it', { tag: ['@equivalence'] }, async ({ page }) => {
   await openApp(page);
   await expect(thumbs(page)).toHaveCount(4);
   await expect(page.getByTestId('gallery-count')).toHaveText('4');
@@ -50,7 +50,7 @@ test('a quick range and a calendar day narrow the gallery, and the chip clears i
   await expect(thumbs(page)).toHaveCount(4);
 });
 
-test('a range with no pictures shows its own empty state, which clears the filter', async ({ page }) => {
+test('a range with no pictures shows its own empty state, which clears the filter', { tag: ['@boundary'] }, async ({ page }) => {
   await openApp(page);
   await openDateFilter(page);
   await page.getByTestId('gallery-date-from').fill('2025-10-01');
@@ -63,7 +63,7 @@ test('a range with no pictures shows its own empty state, which clears the filte
   await expect(thumbs(page)).toHaveCount(4);
 });
 
-test('grouping by date puts a header with the count before each day', async ({ page }) => {
+test('grouping by date puts a header with the count before each day', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('gallery-settings').click();
   await page.getByRole('switch', { name: msg('gallery.settings.groupByDate') }).click();

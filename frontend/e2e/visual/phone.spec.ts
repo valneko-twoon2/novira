@@ -7,14 +7,14 @@ inEachTheme((theme) => {
     // A phone held upright, at scale 1 like every other shot here.
     test.use({ viewport: { width: 412, height: 915 }, isMobile: true, hasTouch: true });
 
-    test('generate tab', async ({ page }) => {
+    test('generate tab', { tag: ['@scenario'] }, async ({ page }) => {
       await page.goto('/');
       await expect(page.getByTestId('phone-generate')).toBeVisible({ timeout: 20_000 });
       await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
       await snap(page, 'phone', theme, 'generate');
     });
 
-    test('images tab and a picture full screen', async ({ page }) => {
+    test('images tab and a picture full screen', { tag: ['@scenario'] }, async ({ page }) => {
       await page.goto('/');
       await page.getByTestId('phone-nav-images').tap();
       await expect(page.getByTestId('phone-thumb').first()).toBeVisible();
@@ -25,7 +25,7 @@ inEachTheme((theme) => {
       await snap(page, 'phone', theme, 'picture');
     });
 
-    test('queue tab and drafts tab', async ({ page }) => {
+    test('queue tab and drafts tab', { tag: ['@scenario'] }, async ({ page }) => {
       // Drafts take seeds of their own: a fixed sequence of random numbers gives them the same seeds, so the same pictures.
       await page.addInitScript(() => {
         let state = 1;
@@ -52,7 +52,7 @@ inEachTheme((theme) => {
       await snap(page, 'phone', theme, 'drafts');
     });
 
-    test('assistant chat', async ({ page }) => {
+    test('assistant chat', { tag: ['@scenario'] }, async ({ page }) => {
       await page.goto('/');
       await expect(page.getByTestId('phone-generate')).toBeVisible({ timeout: 20_000 });
       // Signing in is the PC's: by widening the window, then narrowing it back.

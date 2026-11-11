@@ -158,6 +158,7 @@ fn engine(url: &str) -> ComfyEngine {
     ComfyEngine::new(url, None, Duration::from_secs(1)).unwrap()
 }
 
+// tags: boundary, state-transition
 #[tokio::test]
 async fn a_music_job_comes_back_as_audio_after_a_history_that_is_empty_then_unfinished() {
     quick_pauses();
@@ -179,6 +180,7 @@ async fn a_music_job_comes_back_as_audio_after_a_history_that_is_empty_then_unfi
     );
 }
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn a_job_that_comfyui_calls_done_but_the_history_never_shows_is_an_error() {
     quick_pauses();
@@ -199,6 +201,7 @@ async fn a_job_that_comfyui_calls_done_but_the_history_never_shows_is_an_error()
     );
 }
 
+// tags: boundary, decision-table
 #[tokio::test]
 async fn a_video_job_needs_the_video_node_and_two_models_of_one_folder_are_both_checked() {
     let missing = serve(Fake {

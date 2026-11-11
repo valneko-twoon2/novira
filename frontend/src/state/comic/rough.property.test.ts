@@ -49,7 +49,7 @@ function assertSane(r: ComicRough) {
 }
 
 describe('reading a rough (properties)', () => {
-  it('gives nothing for what is not an object, and a sane rough for any object', () => {
+  it('gives nothing for what is not an object, and a sane rough for any object', { tags: ['condition'] }, () => {
     check(
       fc.property(fc.oneof(document, fc.anything()), (v) => {
         const r = parseRough(v);
@@ -59,7 +59,7 @@ describe('reading a rough (properties)', () => {
     );
   });
 
-  it('settles after one reading: reading a read rough gives the same rough', () => {
+  it('settles after one reading: reading a read rough gives the same rough', { tags: ['state-transition', 'condition'] }, () => {
     check(
       fc.property(document, (v) => {
         // Through JSON, as a saved document is (a minus zero is saved as zero).
@@ -69,7 +69,7 @@ describe('reading a rough (properties)', () => {
     );
   });
 
-  it('keeps a new rough as it is', () => {
+  it('keeps a new rough as it is', { tags: ['condition'] }, () => {
     const r = newRough();
     expect(parseRough(JSON.parse(JSON.stringify(r)))).toEqual(r);
   });

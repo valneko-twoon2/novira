@@ -13,7 +13,7 @@ const close = (a: Vec3, b: Vec3, digits = 6) => {
 };
 
 describe('lifting a pose into 3D', () => {
-  it('puts the middle of the visible joints at the origin, with y up and a flat pose at depth 0', () => {
+  it('puts the middle of the visible joints at the origin, with y up and a flat pose at depth 0', { tags: ['condition'] }, () => {
     const o = person();
     const { joints, center } = liftPose(o);
     const b = jointBounds(o)!;
@@ -25,21 +25,21 @@ describe('lifting a pose into 3D', () => {
     expect((Math.max(...ys) + Math.min(...ys)) / 2).toBeCloseTo(0, 6);
   });
 
-  it('takes the depth of the pose when it has one', () => {
+  it('takes the depth of the pose when it has one', { tags: ['condition'] }, () => {
     const o = { ...person(), depth: Array.from({ length: 18 }, (_, i) => i) };
     expect(liftPose(o).joints.map((p) => p.z)).toEqual(o.depth);
   });
 });
 
 describe('turning the view and baking it back', () => {
-  it('does not change a pose seen from the front', () => {
+  it('does not change a pose seen from the front', { tags: ['condition'] }, () => {
     const o = person();
     const baked = bakeView(liftPose(o), o.hidden, 0, 0);
     expect(baked.points).toEqual(o.points.map((v) => Math.round(v * 10) / 10));
     expect(baked.depth.every((z) => z === 0)).toBe(true);
   });
 
-  it('turns by quarter turns four times back to where it started', () => {
+  it('turns by quarter turns four times back to where it started', { tags: ['condition'] }, () => {
     const p = v3(3, 5, 7);
     let q = p;
     for (let i = 0; i < 4; i++) q = turnView(q, Math.PI / 2, 0);
@@ -49,7 +49,7 @@ describe('turning the view and baking it back', () => {
     close(q, p);
   });
 
-  it('seen from the side the body is thin, and the depth carries what was the width', () => {
+  it('seen from the side the body is thin, and the depth carries what was the width', { tags: ['condition'] }, () => {
     const o = person();
     const baked = bakeView(liftPose(o), o.hidden, Math.PI / 2, 0);
     const xs = baked.points.filter((_, i) => i % 2 === 0);
@@ -58,7 +58,7 @@ describe('turning the view and baking it back', () => {
     expect(Math.sign(baked.depth[J.rShoulder]!)).toBe(-Math.sign(baked.depth[J.lShoulder]!));
   });
 
-  it('keeps the middle of the pose where it was and turns back to the same pose', () => {
+  it('keeps the middle of the pose where it was and turns back to the same pose', { tags: ['condition'] }, () => {
     const o = person({ lean: 10, lArm: { upper: 120, fore: 150 } });
     const lifted = liftPose(o);
     const baked = bakeView(lifted, o.hidden, 0.7, -0.4);
@@ -78,7 +78,7 @@ describe('turning the view and baking it back', () => {
 describe('aiming a bone', () => {
   const parent = v3(0, 0, 0);
 
-  it('puts the tip on the sphere the bone draws, where the ray crosses it nearest to the old tip', () => {
+  it('puts the tip on the sphere the bone draws, where the ray crosses it nearest to the old tip', { tags: ['scenario'] }, () => {
     const ray = { origin: v3(30, 20, 500), dir: v3(0, 0, -1) };
     const front = aimBone(parent, v3(0, 0, 100), ray);
     const back = aimBone(parent, v3(0, 0, -100), ray);
@@ -90,14 +90,14 @@ describe('aiming a bone', () => {
     expect(back.y).toBeCloseTo(20, 6);
   });
 
-  it('takes the point of the sphere nearest the ray when the ray misses it', () => {
+  it('takes the point of the sphere nearest the ray when the ray misses it', { tags: ['condition'] }, () => {
     const tip = v3(0, -100, 0);
     const aimed = aimBone(parent, tip, { origin: v3(300, 0, 500), dir: v3(0, 0, -1) });
     expect(length3(aimed)).toBeCloseTo(100, 6);
     close(aimed, v3(100, 0, 0), 5);
   });
 
-  it('still puts the tip on the sphere when the ray goes through the parent exactly', () => {
+  it('still puts the tip on the sphere when the ray goes through the parent exactly', { tags: ['boundary'] }, () => {
     const tip = v3(0, -100, 0);
     // A ray through the parent along z meets the sphere at (0, 0, +-100): those are valid hits, not a miss.
     const aimed = aimBone(parent, tip, { origin: v3(0, 0, 500), dir: v3(0, 0, -1) });
@@ -110,7 +110,7 @@ describe('swinging a joint', () => {
   const joints = liftPose(o).joints;
   const before = lengths(joints);
 
-  it('keeps every bone length, whichever way a joint is swung', () => {
+  it('keeps every bone length, whichever way a joint is swung', { tags: ['equivalence'] }, () => {
     for (let j = 0; j < 18; j++) {
       if ((POSE_PARENT[j] ?? -1) < 0) continue;
       const p = joints[POSE_PARENT[j] as number]!;
@@ -121,14 +121,14 @@ describe('swinging a joint', () => {
     }
   });
 
-  it('takes everything below the joint along and leaves the rest', () => {
+  it('takes everything below the joint along and leaves the rest', { tags: ['condition'] }, () => {
     const wrist = swingJoint(joints, J.rElbow, v3(joints[J.rShoulder]!.x, joints[J.rShoulder]!.y + 60, 0));
     expect(wrist[J.rWrist]).not.toEqual(joints[J.rWrist]);
     expect(wrist[J.lWrist]).toEqual(joints[J.lWrist]);
     expect(wrist[J.rShoulder]).toEqual(joints[J.rShoulder]);
   });
 
-  it('can swing a bone straight towards the viewer, which makes it short in the picture', () => {
+  it('can swing a bone straight towards the viewer, which makes it short in the picture', { tags: ['condition'] }, () => {
     const elbow = joints[J.rElbow]!;
     const shoulder = joints[J.rShoulder]!;
     const target = v3(shoulder.x, shoulder.y, shoulder.z + length3(v3(elbow.x - shoulder.x, elbow.y - shoulder.y, elbow.z - shoulder.z)));
@@ -139,7 +139,7 @@ describe('swinging a joint', () => {
     expect(flat).toBeLessThan(5);
   });
 
-  it('turns a bone half way round without a break (opposite directions)', () => {
+  it('turns a bone half way round without a break (opposite directions)', { tags: ['condition'] }, () => {
     const shoulder = joints[J.rShoulder]!;
     const elbow = joints[J.rElbow]!;
     const away = v3(2 * shoulder.x - elbow.x, 2 * shoulder.y - elbow.y, 2 * shoulder.z - elbow.z);
@@ -148,14 +148,14 @@ describe('swinging a joint', () => {
     lengths(swung).forEach((l, i) => expect(l).toBeCloseTo(before[i]!, 4));
   });
 
-  it('moves the whole body when the neck is dragged, and does nothing for a target on the joint', () => {
+  it('moves the whole body when the neck is dragged, and does nothing for a target on the joint', { tags: ['scenario'] }, () => {
     const moved = swingJoint(joints, J.neck, v3(joints[J.neck]!.x + 10, joints[J.neck]!.y - 5, 3));
     joints.forEach((p, i) => close(moved[i]!, v3(p.x + 10, p.y - 5, p.z + 3)));
     const same = swingJoint(joints, J.rElbow, joints[J.rElbow]!);
     same.forEach((p, i) => close(p, joints[i]!));
   });
 
-  it('gives back the 2D positions with the points unchanged for a swing within the picture plane', () => {
+  it('gives back the 2D positions with the points unchanged for a swing within the picture plane', { tags: ['condition'] }, () => {
     const lifted = liftPose(o);
     const shoulder = lifted.joints[J.rShoulder]!;
     const swung = swingJoint(lifted.joints, J.rElbow, v3(shoulder.x - 30, shoulder.y + 10, 0));

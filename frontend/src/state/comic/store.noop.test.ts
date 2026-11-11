@@ -67,7 +67,7 @@ describe('with no comic open', () => {
   ];
 
   for (const { name, edit, refused } of comicEdits) {
-    it(`${name} changes nothing and records no undo step`, () => {
+    it(`${name} changes nothing and records no undo step`, { tags: ['state-transition'] }, () => {
       const before = snapshot();
       expect(edit()).toBe(refused);
       expect(snapshot()).toEqual(before);
@@ -79,7 +79,7 @@ describe('with no comic open', () => {
 
 describe('on a page that is not in the open comic', () => {
   for (const { name, edit, refused } of pageEdits) {
-    it(`${name} changes nothing and records no undo step`, () => {
+    it(`${name} changes nothing and records no undo step`, { tags: ['state-transition'] }, () => {
       seed();
       const before = snapshot();
       expect(edit('missing')).toBe(refused);
@@ -90,7 +90,7 @@ describe('on a page that is not in the open comic', () => {
 });
 
 describe('an edit to what the page already has', () => {
-  it('the same panel count, free placement off on an automatic page, or a reset of a page with no shapes, changes nothing', () => {
+  it('the same panel count, free placement off on an automatic page, or a reset of a page with no shapes, changes nothing', { tags: ['state-transition'] }, () => {
     const { pageId } = seed();
     const before = snapshot();
     useComic.getState().setPanelCount(pageId, 3);
@@ -100,7 +100,7 @@ describe('an edit to what the page already has', () => {
     expect(snapshot()).toEqual(before);
   });
 
-  it('a shape reset of a panel that is not on a free page is refused', () => {
+  it('a shape reset of a panel that is not on a free page is refused', { tags: ['error-guessing', 'state-transition'] }, () => {
     const { pageId } = seed();
     useComic.getState().setPageFree(pageId, true);
     const before = snapshot();
@@ -108,7 +108,7 @@ describe('an edit to what the page already has', () => {
     expect(snapshot()).toEqual(before);
   });
 
-  it('a slide of an edge of a panel that is not there is refused', () => {
+  it('a slide of an edge of a panel that is not there is refused', { tags: ['error-guessing'] }, () => {
     const { pageId } = seed();
     const before = snapshot();
     expect(useComic.getState().moveEdge(pageId, 9, 0, { x: 0.05, y: 0 })).toBeNull();
@@ -121,7 +121,7 @@ describe('an edit to what the page already has', () => {
 });
 
 describe('a panel that is not there', () => {
-  it('takes no prompt, negative prompt, note or balloon edit, and records no undo step', () => {
+  it('takes no prompt, negative prompt, note or balloon edit, and records no undo step', { tags: ['state-transition'] }, () => {
     seed();
     const before = snapshot();
     useComic.getState().setPrompt('missing', 'a cat');
@@ -135,14 +135,14 @@ describe('a panel that is not there', () => {
 });
 
 describe('letting go of the backdrop', () => {
-  it('when it is not selected keeps the panel selected', () => {
+  it('when it is not selected keeps the panel selected', { tags: ['condition'] }, () => {
     const { panels } = seed();
     useComic.getState().selectPanel(panels[1]!);
     useComic.getState().selectBackdrop(false);
     expect(useComic.getState()).toMatchObject({ selectedPanelId: panels[1], backdropSelected: false });
   });
 
-  it('selected with no panel selected keeps the panel the prompt boxes work on', () => {
+  it('selected with no panel selected keeps the panel the prompt boxes work on', { tags: ['condition'] }, () => {
     const { panels } = seed();
     useComic.getState().selectPanel(panels[2]!);
     useComic.getState().selectPanel(null);

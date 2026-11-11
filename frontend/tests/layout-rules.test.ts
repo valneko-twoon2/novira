@@ -39,22 +39,22 @@ const snap = (...nodes: LayoutNode[]): LayoutSnapshot => ({ viewport: { width: 1
 const kinds = (faults: { kind: string }[]) => faults.map((f) => f.kind);
 
 describe('overflow', () => {
-  it('finds a control wider than the box that holds it, on either side', () => {
+  it('finds a control wider than the box that holds it, on either side', { tags: ['condition'] }, () => {
     expect(kinds(overflowFaults(snap(node({ rect: rect(10, 0, 200, 20), chain: [step(rect(10, 0, 120, 40))] }))))).toEqual(['overflow']);
     expect(kinds(overflowFaults(snap(node({ rect: rect(5, 0, 50, 20), chain: [step(rect(10, 0, 120, 40))] }))))).toEqual(['overflow']);
   });
 
-  it('allows a pixel of rounding and leaves a fitting control alone', () => {
+  it('allows a pixel of rounding and leaves a fitting control alone', { tags: ['boundary'] }, () => {
     expect(overflowFaults(snap(node({ rect: rect(10, 0, 120.9, 20), chain: [step(rect(10, 0, 120, 40))] })))).toEqual([]);
   });
 
-  it('finds the box it overflows further up, past a parent that grew with it', () => {
+  it('finds the box it overflows further up, past a parent that grew with it', { tags: ['condition'] }, () => {
     const card = { ...step(rect(0, 0, 200, 40)), where: 'div.card' };
     const faults = overflowFaults(snap(node({ rect: rect(0, 0, 300, 20), chain: [step(rect(0, 0, 300, 20)), card] })));
     expect(faults).toEqual([expect.objectContaining({ kind: 'overflow', other: 'div.card' })]);
   });
 
-  it('stops at a box that clips or floats, and at a strip that scrolls sideways on purpose', () => {
+  it('stops at a box that clips or floats, and at a strip that scrolls sideways on purpose', { tags: ['condition'] }, () => {
     // Past the clipping box, the ancestors further out do not matter (the control does not stick out of the clip).
     expect(overflowFaults(snap(node({ rect: rect(0, 0, 100, 20), chain: [step(rect(0, 0, 120, 40), 'clip'), step(rect(0, 0, 50, 40))] })))).toEqual([]);
     expect(overflowFaults(snap(node({ rect: rect(0, 0, 100, 20), chain: [step(rect(0, 0, 120, 40), 'none', true), step(rect(0, 0, 50, 40))] })))).toEqual([]);
@@ -63,12 +63,12 @@ describe('overflow', () => {
     expect(kinds(overflowFaults(snap(node({ rect: rect(0, 0, 300, 20), chain: [step(rect(0, 0, 200, 400), 'scroll')] }))))).toEqual(['overflow']);
   });
 
-  it('finds a control outside the window when nothing on the way clips it', () => {
+  it('finds a control outside the window when nothing on the way clips it', { tags: ['boundary'] }, () => {
     expect(kinds(overflowFaults(snap(node({ rect: rect(950, 0, 100, 20) }))))).toEqual(['offscreen']);
     expect(overflowFaults(snap(node({ rect: rect(950, 0, 100, 20), chain: [step(rect(0, 0, 2000, 40), 'clip')] })))).toEqual([]);
   });
 
-  it('leaves alone what is not a control, and a control placed on purpose', () => {
+  it('leaves alone what is not a control, and a control placed on purpose', { tags: ['condition'] }, () => {
     expect(overflowFaults(snap(node({ control: false, rect: rect(0, 0, 300, 20), chain: [step(rect(0, 0, 100, 40))] })))).toEqual([]);
     expect(overflowFaults(snap(node({ positioned: true, rect: rect(950, 0, 100, 20) })))).toEqual([]);
   });
@@ -77,17 +77,17 @@ describe('overflow', () => {
 describe('text', () => {
   const text = (over: Partial<LayoutNode>) => node({ hasText: true, scrollWidth: 100, clientWidth: 100, scrollHeight: 20, clientHeight: 20, ...over });
 
-  it('finds text shortened to "…" by an ellipsis or a line clamp', () => {
+  it('finds text shortened to "…" by an ellipsis or a line clamp', { tags: ['condition'] }, () => {
     expect(kinds(textFaults(snap(text({ ellipsis: true, scrollWidth: 160 }))))).toEqual(['truncated']);
     expect(kinds(textFaults(snap(text({ clamp: true, scrollHeight: 60 }))))).toEqual(['truncated']);
   });
 
-  it('leaves alone an ellipsis that is not triggered, and a place designed to shorten', () => {
+  it('leaves alone an ellipsis that is not triggered, and a place designed to shorten', { tags: ['condition'] }, () => {
     expect(textFaults(snap(text({ ellipsis: true, scrollWidth: 100.5 })))).toEqual([]);
     expect(textFaults(snap(text({ ellipsis: true, scrollWidth: 160, truncateOk: true })))).toEqual([]);
   });
 
-  it('finds text cut off by a box that hides its overflow, without "…"', () => {
+  it('finds text cut off by a box that hides its overflow, without "…"', { tags: ['condition'] }, () => {
     expect(kinds(textFaults(snap(text({ hidesOverflow: true, scrollWidth: 140 }))))).toEqual(['clipped']);
     expect(kinds(textFaults(snap(text({ hidesOverflow: true, scrollHeight: 30 }))))).toEqual(['clipped']);
     // A box with children is a container, not a label: what clips inside it is judged on the children.
@@ -95,34 +95,34 @@ describe('text', () => {
     expect(textFaults(snap(text({ scrollWidth: 140 })))).toEqual([]);
   });
 
-  it('looks only at elements with text of their own', () => {
+  it('looks only at elements with text of their own', { tags: ['condition'] }, () => {
     expect(textFaults(snap(node({ ellipsis: true, scrollWidth: 160, clientWidth: 100 })))).toEqual([]);
   });
 });
 
 describe('spacing', () => {
-  it('finds two buttons side by side with no gap, and two stacked with no gap', () => {
+  it('finds two buttons side by side with no gap, and two stacked with no gap', { tags: ['condition'] }, () => {
     expect(kinds(spacingFaults(snap(node({ rect: rect(0, 0, 50, 20) }), node({ rect: rect(50, 0, 50, 20) }))))).toEqual(['touching']);
     expect(kinds(spacingFaults(snap(node({ rect: rect(0, 0, 50, 20) }), node({ rect: rect(0, 20.5, 50, 20) }))))).toEqual(['touching']);
   });
 
-  it('finds two boxes that overlap', () => {
+  it('finds two boxes that overlap', { tags: ['condition'] }, () => {
     expect(kinds(spacingFaults(snap(node({ rect: rect(0, 0, 50, 20) }), node({ rect: rect(40, 5, 50, 20) }))))).toEqual(['overlap']);
   });
 
-  it('names the left or upper box first', () => {
+  it('names the left or upper box first', { tags: ['condition'] }, () => {
     const right = node({ rect: rect(50, 0, 50, 20), where: 'button.right' });
     const left = node({ rect: rect(0, 0, 50, 20), where: 'button.left' });
     expect(spacingFaults(snap(right, left))[0]).toMatchObject({ where: 'button.left', other: 'button.right' });
   });
 
-  it('leaves alone a gap of a pixel or more, and boxes that meet only at a corner', () => {
+  it('leaves alone a gap of a pixel or more, and boxes that meet only at a corner', { tags: ['boundary'] }, () => {
     expect(spacingFaults(snap(node({ rect: rect(0, 0, 50, 20) }), node({ rect: rect(51, 0, 50, 20) })))).toEqual([]);
     expect(spacingFaults(snap(node({ rect: rect(0, 0, 50, 20) }), node({ rect: rect(50, 20, 50, 20) })))).toEqual([]);
     expect(spacingFaults(snap(node({ rect: rect(0, 0, 50, 20) }), node({ rect: rect(50, 18, 50, 20) })))).toEqual([]);
   });
 
-  it('leaves alone a joined group: the corners that face each other are square', () => {
+  it('leaves alone a joined group: the corners that face each other are square', { tags: ['condition'] }, () => {
     const left = node({ rect: rect(0, 0, 50, 20), radii: [4, 0, 0, 4] });
     const right = node({ rect: rect(50, 0, 50, 20), radii: [0, 4, 4, 0] });
     expect(spacingFaults(snap(left, right))).toEqual([]);
@@ -133,7 +133,7 @@ describe('spacing', () => {
     expect(kinds(spacingFaults(snap(node({ rect: rect(0, 0, 50, 20), radii: [4, 0, 0, 4] }), node({ rect: rect(50, 0, 50, 20) }))))).toEqual(['touching']);
   });
 
-  it('compares only visible boxes of controls and cards on one surface, not a box and what it holds', () => {
+  it('compares only visible boxes of controls and cards on one surface, not a box and what it holds', { tags: ['condition'] }, () => {
     const a = node({ rect: rect(0, 0, 50, 20) });
     expect(spacingFaults(snap(a, node({ rect: rect(50, 0, 50, 20), boxed: false })))).toEqual([]);
     expect(spacingFaults(snap(a, node({ rect: rect(50, 0, 50, 20), layer: 7 })))).toEqual([]);
@@ -148,7 +148,7 @@ describe('spacing', () => {
 });
 
 describe('every fault', () => {
-  it('lists each distinct fault once', () => {
+  it('lists each distinct fault once', { tags: ['condition'] }, () => {
     const twin = { where: 'button.same', text: 'same' };
     const a = node({ ...twin, hasText: true, ellipsis: true, scrollWidth: 200, clientWidth: 50 });
     const b = node({ ...twin, hasText: true, ellipsis: true, scrollWidth: 200, clientWidth: 50, rect: rect(0, 100, 50, 20) });

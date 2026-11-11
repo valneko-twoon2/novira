@@ -49,7 +49,7 @@ const range = fc.option(
 const base = (imgs: ImageDTO[]) => fc.record({ images: fc.constant(imgs), selectedBoardId: fc.constantFrom<string>('none', ...BOARDS), view: fc.constantFrom<'images' | 'assets'>('images', 'assets'), search: fc.constantFrom('', 'i1', ' I2 ', 'zzz') });
 
 describe('gallery list selection (properties)', () => {
-  it('selectBoardImages returns a subset of one board and view, visible, in the date range, in comparator order', () => {
+  it('selectBoardImages returns a subset of one board and view, visible, in the date range, in comparator order', { tags: ['condition'] }, () => {
     check(
       fc.property(
         images.chain((imgs) => fc.tuple(base(imgs), settings, range)),
@@ -82,7 +82,7 @@ describe('gallery list selection (properties)', () => {
     );
   });
 
-  it('is idempotent: selecting from its own output gives the same list', () => {
+  it('is idempotent: selecting from its own output gives the same list', { tags: ['condition'] }, () => {
     check(
       fc.property(
         images.chain((imgs) => fc.tuple(base(imgs), settings, range)),
@@ -95,7 +95,7 @@ describe('gallery list selection (properties)', () => {
     );
   });
 
-  it('is stable: equal sort keys keep their input order', () => {
+  it('is stable: equal sort keys keep their input order', { tags: ['equivalence'] }, () => {
     check(
       fc.property(images, (imgs) => {
         const flat = imgs.map((i) => ({ ...i, createdAt: T0, starred: false, isIntermediate: false, boardId: null, category: 'general' as const }));
@@ -105,7 +105,7 @@ describe('gallery list selection (properties)', () => {
     );
   });
 
-  it('does not change the input array', () => {
+  it('does not change the input array', { tags: ['condition'] }, () => {
     check(
       fc.property(images, settings, (imgs, st) => {
         const copy = [...imgs];
@@ -149,7 +149,7 @@ const ops: fc.Arbitrary<Op[]> = fc.array(
 );
 
 describe('gallery store event sequences (properties)', () => {
-  it('keeps names unique, selection / viewer / compare on existing images and boards valid', () => {
+  it('keeps names unique, selection / viewer / compare on existing images and boards valid', { tags: ['condition'] }, () => {
     let serial = 0;
     check(
       fc.property(ops, (sequence) => {
@@ -237,7 +237,7 @@ const imageSample: ImageDTO = {
 };
 
 describe('gallery persistence (properties)', () => {
-  it('mergePersisted never throws for any stored value and keeps every default setting key', () => {
+  it('mergePersisted never throws for any stored value and keeps every default setting key', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(junkJson, (stored) => {
         const merged = mergePersisted(stored, initial);
@@ -247,7 +247,7 @@ describe('gallery persistence (properties)', () => {
     );
   });
 
-  it('mergePersisted keeps defaults for settings that an older save lacks', () => {
+  it('mergePersisted keeps defaults for settings that an older save lacks', { tags: ['condition'] }, () => {
     check(
       fc.property(fc.subarray(Object.keys(initial.settings)), (keys) => {
         const saved = Object.fromEntries(keys.map((k) => [k, (initial.settings as unknown as Record<string, unknown>)[k]]));

@@ -9,7 +9,7 @@ beforeEach(() => {
 });
 
 describe('text editor store', () => {
-  it('adds layers on top and selects the new one', () => {
+  it('adds layers on top and selects the new one', { tags: ['condition'] }, () => {
     const a = store().addText('A');
     const b = store().addBubble('round', 'B');
     expect(store().scene.layers.map((l) => l.id)).toEqual([a, b]);
@@ -17,7 +17,7 @@ describe('text editor store', () => {
     expect(store().scene.layers[1]!.type).toBe('bubble');
   });
 
-  it('undoes and redoes edits', () => {
+  it('undoes and redoes edits', { tags: ['state-transition'] }, () => {
     const id = store().addText('A');
     store().update(id, { text: 'B' });
     store().undo();
@@ -28,7 +28,7 @@ describe('text editor store', () => {
     expect(store().scene.layers).toHaveLength(1);
   });
 
-  it('merges quick edits of one control into one undo step', () => {
+  it('merges quick edits of one control into one undo step', { tags: ['state-transition'] }, () => {
     const id = store().addText('A');
     store().update(id, { x: 10 }, { key: 'x' });
     store().update(id, { x: 20 }, { key: 'x' });
@@ -38,7 +38,7 @@ describe('text editor store', () => {
     expect(store().scene.layers[0]!.x).toBe(store().scene.width / 2);
   });
 
-  it('records one step for a drag made of live moves', () => {
+  it('records one step for a drag made of live moves', { tags: ['condition'] }, () => {
     const id = store().addText('A');
     store().checkpoint();
     for (const x of [1, 2, 3]) store().update(id, { x }, { live: true });
@@ -47,7 +47,7 @@ describe('text editor store', () => {
     expect(store().scene.layers[0]!.x).toBe(store().scene.width / 2);
   });
 
-  it('clears the redo history on a new edit', () => {
+  it('clears the redo history on a new edit', { tags: ['state-transition'] }, () => {
     const id = store().addText('A');
     store().undo();
     expect(store().future).toHaveLength(1);
@@ -56,7 +56,7 @@ describe('text editor store', () => {
     expect(id).not.toBe(store().selectedId);
   });
 
-  it('reorders, duplicates and removes layers', () => {
+  it('reorders, duplicates and removes layers', { tags: ['condition'] }, () => {
     const a = store().addText('A');
     const b = store().addText('B');
     store().reorder(a, 'top');
@@ -70,13 +70,13 @@ describe('text editor store', () => {
     expect(store().scene.layers.some((l) => l.id === a)).toBe(false);
   });
 
-  it('keeps the canvas size within the limits', () => {
+  it('keeps the canvas size within the limits', { tags: ['boundary'] }, () => {
     store().resize(10, 99999);
     expect(store().scene.width).toBe(64);
     expect(store().scene.height).toBe(4096);
   });
 
-  it('copies a layer deeply so edits to the copy leave the original alone', () => {
+  it('copies a layer deeply so edits to the copy leave the original alone', { tags: ['condition'] }, () => {
     const id = store().addText('A');
     store().duplicate(id);
     const [orig, copy] = store().scene.layers;

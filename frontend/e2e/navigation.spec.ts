@@ -15,7 +15,7 @@ const SCREEN_MARKERS: Record<(typeof TABS)[number], string> = {
   queue: 'queue-tab',
 };
 
-test('app boots past the splash into the generate tab', async ({ page }) => {
+test('app boots past the splash into the generate tab', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await expect(page.getByTestId('tab-generate')).toHaveAttribute('aria-selected', 'true');
   await expect(page.getByTestId('parameters-panel')).toBeVisible();
@@ -23,7 +23,7 @@ test('app boots past the splash into the generate tab', async ({ page }) => {
   await expect(page.getByTestId('invoke-button')).toBeEnabled();
 });
 
-test('every side-nav tab renders its screen', async ({ page }) => {
+test('every side-nav tab renders its screen', { tag: ['@equivalence'] }, async ({ page }) => {
   await openApp(page);
   for (const tab of TABS) {
     await showTab(page, tab);
@@ -33,7 +33,7 @@ test('every side-nav tab renders its screen', async ({ page }) => {
 });
 
 // The number keys follow the side bar (NAV_HOTKEYS in state/ui.ts): 1 to 8.
-test('number keys switch tabs', async ({ page }) => {
+test('number keys switch tabs', { tag: ['@equivalence'] }, async ({ page }) => {
   await openApp(page);
   await page.keyboard.press('7');
   await expect(page.getByTestId('tab-queue')).toHaveAttribute('aria-selected', 'true');

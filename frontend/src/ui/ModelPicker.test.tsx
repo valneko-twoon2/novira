@@ -31,7 +31,7 @@ const openList = () => {
 };
 
 describe('ModelPicker', () => {
-  it('offers "automatic" first when asked, current while no model is chosen, and picks it', () => {
+  it('offers "automatic" first when asked, current while no model is chosen, and picks it', { tags: ['condition'] }, () => {
     const onAuto = vi.fn();
     render(<ModelPicker models={models} value={null} onPick={vi.fn()} placeholder="Pick one" auto={{ label: 'Automatic', onPick: onAuto }} testId="picker" aria-label="Model" />);
     expect(screen.getByTestId('picker').textContent).toContain('Automatic');
@@ -49,7 +49,7 @@ describe('ModelPicker', () => {
     expect(screen.getByTestId('picker-auto').className).not.toContain('is-current');
   });
 
-  it('shows the placeholder without a value and the model name with one', () => {
+  it('shows the placeholder without a value and the model name with one', { tags: ['condition'] }, () => {
     show(null);
     expect(screen.getByTestId('picker').textContent).toContain('Pick one');
     cleanup();
@@ -57,7 +57,7 @@ describe('ModelPicker', () => {
     expect(screen.getByTestId('picker').textContent).toContain('Old One');
   });
 
-  it('groups by base with names in order, marks the current one and picks another', () => {
+  it('groups by base with names in order, marks the current one and picks another', { tags: ['condition'] }, () => {
     const onPick = show('m1');
     const list = openList();
     expect(within(list).getAllByRole('heading').map((h) => h.textContent)).toEqual(['SDXL', 'SD1.X']);
@@ -68,7 +68,7 @@ describe('ModelPicker', () => {
     expect(screen.queryByTestId('model-picker-list')).toBeNull();
   });
 
-  it('filters by the search text and says when nothing matches', () => {
+  it('filters by the search text and says when nothing matches', { tags: ['condition'] }, () => {
     show(null);
     openList();
     const box = screen.getByRole('textbox', { name: t('params.model.search') });
@@ -78,7 +78,7 @@ describe('ModelPicker', () => {
     expect(screen.getByText(t('params.model.noMatch'))).toBeTruthy();
   });
 
-  it('goes to the model manager or the online search and closes the list', () => {
+  it('goes to the model manager or the online search and closes the list', { tags: ['condition'] }, () => {
     show(null);
     openList();
     fireEvent.click(screen.getByTestId('open-manager'));
@@ -89,14 +89,14 @@ describe('ModelPicker', () => {
     expect(useUi.getState().activeTab).toBe('browse');
   });
 
-  it('leaves the shortcuts out where the layout has no such screens', () => {
+  it('leaves the shortcuts out where the layout has no such screens', { tags: ['condition'] }, () => {
     render(<ModelPicker models={models} value={null} onPick={vi.fn()} placeholder="Pick one" testId="picker" shortcuts={false} />);
     openList();
     expect(screen.queryByTestId('open-manager')).toBeNull();
     expect(screen.queryByTestId('find-online')).toBeNull();
   });
 
-  it('does not open while disabled', () => {
+  it('does not open while disabled', { tags: ['condition'] }, () => {
     show(null, vi.fn(), true);
     fireEvent.click(screen.getByTestId('picker'));
     expect(screen.queryByTestId('model-picker-list')).toBeNull();

@@ -21,7 +21,7 @@ async function widthsOnEveryScreen(page: Page): Promise<number[][]> {
   return out;
 }
 
-test('every image screen shows the columns last dragged on another one, to the fraction of a pixel', async ({ page }) => {
+test('every image screen shows the columns last dragged on another one, to the fraction of a pixel', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   // Each screen stays mounted once opened and sized its columns then.
   for (const tab of SCREENS) await showTab(page, tab);

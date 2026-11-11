@@ -48,6 +48,7 @@ fn model(b: &novira_core::Backend, part: &str) -> ModelConfig {
         .unwrap_or_else(|| panic!("{part} is listed"))
 }
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn records_an_older_version_stored_wrongly_are_corrected_on_the_first_scan() {
     let dir = tempfile::tempdir().unwrap();
@@ -113,6 +114,7 @@ impl Engine for Unreachable {
     }
 }
 
+// tags: scenario
 #[tokio::test]
 async fn the_engines_screen_words_pass_through_the_service_and_open_is_timed() {
     let dir = tempfile::tempdir().unwrap();

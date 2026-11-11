@@ -4,7 +4,7 @@ import { maxMessageId, newSessionId, PERSISTED_SESSIONS_MAX, persistedSessions, 
 const session = (id: string, updatedAt: number, messages: AgentSession['messages'] = []): AgentSession => ({ id, createdAt: updatedAt, updatedAt, messages });
 
 describe('sessionTitle', () => {
-  it('uses the first user message on one line', () => {
+  it('uses the first user message on one line', { tags: ['scenario'] }, () => {
     const s = session('a', 1, [
       { id: 1, role: 'assistant', text: 'hello', tools: [] },
       { id: 2, role: 'user', text: '  a cat\n on a  roof ', tools: [] },
@@ -13,7 +13,7 @@ describe('sessionTitle', () => {
     expect(sessionTitle(s)).toBe('a cat on a roof');
   });
 
-  it('shortens a long first message and prefers the name the user gave', () => {
+  it('shortens a long first message and prefers the name the user gave', { tags: ['scenario'] }, () => {
     const long = session('a', 1, [{ id: 1, role: 'user', text: 'あ'.repeat(TITLE_MAX + 10), tools: [] }]);
     const title = sessionTitle(long);
     expect([...title]).toHaveLength(TITLE_MAX);
@@ -21,31 +21,31 @@ describe('sessionTitle', () => {
     expect(sessionTitle({ ...long, title: ' My chat ' })).toBe('My chat');
   });
 
-  it('is empty for a session without a user message or a name', () => {
+  it('is empty for a session without a user message or a name', { tags: ['boundary'] }, () => {
     expect(sessionTitle(session('a', 1))).toBe('');
     expect(sessionTitle({ ...session('a', 1), title: '   ' })).toBe('');
   });
 });
 
 describe('session order and ids', () => {
-  it('sorts the most recently used first without changing the input', () => {
+  it('sorts the most recently used first without changing the input', { tags: ['condition'] }, () => {
     const input = [session('old', 1), session('new', 3), session('mid', 2)];
     expect(sortSessions(input).map((s) => s.id)).toEqual(['new', 'mid', 'old']);
     expect(input.map((s) => s.id)).toEqual(['old', 'new', 'mid']);
   });
 
-  it('gives a different id each time, even in the same millisecond', () => {
+  it('gives a different id each time, even in the same millisecond', { tags: ['equivalence'] }, () => {
     expect(newSessionId(5)).not.toBe(newSessionId(5));
   });
 
-  it('finds the largest message id across sessions', () => {
+  it('finds the largest message id across sessions', { tags: ['boundary'] }, () => {
     expect(maxMessageId([])).toBe(0);
     expect(maxMessageId([session('a', 1, [{ id: 4, role: 'user', text: '', tools: [] }]), session('b', 1, [{ id: 9, role: 'user', text: '', tools: [] }])])).toBe(9);
   });
 });
 
 describe('persisted sessions', () => {
-  it('keeps the pictures a message carried, and reads back only names, at most four', () => {
+  it('keeps the pictures a message carried, and reads back only names, at most four', { tags: ['boundary'] }, () => {
     const [saved] = persistedSessions([{ ...session('a', 1), messages: [{ id: 1, role: 'user', text: 'like this', images: ['a.png'], tools: [] }] }]);
     expect(saved!.messages[0]).toEqual({ id: 1, role: 'user', text: 'like this', images: ['a.png'], tools: [] });
     const [restored] = restoreSessions([
@@ -55,7 +55,7 @@ describe('persisted sessions', () => {
     expect(restored!.messages[1]).not.toHaveProperty('images');
   });
 
-  it('keeps what the chat shows and drops the undo snapshots', () => {
+  it('keeps what the chat shows and drops the undo snapshots', { tags: ['state-transition'] }, () => {
     const [saved] = persistedSessions([
       {
         ...session('a', 1),
@@ -82,7 +82,7 @@ describe('persisted sessions', () => {
     });
   });
 
-  it('keeps only the most recent sessions', () => {
+  it('keeps only the most recent sessions', { tags: ['condition'] }, () => {
     const many = Array.from({ length: PERSISTED_SESSIONS_MAX + 5 }, (_, i) => session(`s${i}`, i));
     const saved = persistedSessions(many);
     expect(saved).toHaveLength(PERSISTED_SESSIONS_MAX);
@@ -90,7 +90,7 @@ describe('persisted sessions', () => {
     expect(saved.some((s) => s.id === 's0')).toBe(false);
   });
 
-  it('reads saved sessions back and skips malformed entries and chips', () => {
+  it('reads saved sessions back and skips malformed entries and chips', { tags: ['error-guessing'] }, () => {
     const restored = restoreSessions([
       {
         id: 'a',
@@ -122,7 +122,7 @@ describe('persisted sessions', () => {
     expect(restoreSessions({ not: 'a list' })).toEqual([]);
   });
 
-  it('reads chats saved before the assistant used tools: their actions become chips, and the going-on notes are dropped', () => {
+  it('reads chats saved before the assistant used tools: their actions become chips, and the going-on notes are dropped', { tags: ['regression', 'condition'] }, () => {
     const [old] = restoreSessions([
       {
         id: 'o',

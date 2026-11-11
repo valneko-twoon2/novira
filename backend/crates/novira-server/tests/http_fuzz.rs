@@ -424,6 +424,7 @@ fn fail(seed: u64, case: u64, request: &Request, what: String) -> ! {
     );
 }
 
+// tags: error-guessing
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn damaged_requests_are_answered_and_none_gets_past_a_check() {
     let cases = setting("NOVIRA_FUZZ_ITERATIONS", 300);

@@ -71,6 +71,7 @@ fn options(format: ExportFormat) -> ExportOptions {
     }
 }
 
+// tags: scenario
 #[test]
 fn a_picture_keeps_its_type_and_size_and_gives_its_mark_back() {
     let Some(found) = found() else { return };
@@ -105,6 +106,7 @@ fn a_picture_keeps_its_type_and_size_and_gives_its_mark_back() {
     assert_eq!(w.read(texture(256)).unwrap(), None);
 }
 
+// tags: error-guessing
 #[test]
 fn pictures_the_watermark_cannot_take_are_refused() {
     let Some(found) = found() else { return };
@@ -118,6 +120,7 @@ fn pictures_the_watermark_cannot_take_are_refused() {
         .contains("too small"));
 }
 
+// tags: error-guessing
 #[test]
 fn a_model_that_fails_its_hash_is_not_loaded() {
     let Some(found) = found() else { return };
@@ -135,6 +138,7 @@ fn a_model_that_fails_its_hash_is_not_loaded() {
     assert!(!err.is_empty());
 }
 
+// tags: scenario
 #[tokio::test]
 async fn exports_with_the_watermark_download_as_one_file_or_a_zip_and_read_back() {
     let Some(_) = found() else { return };
@@ -196,6 +200,7 @@ async fn exports_with_the_watermark_download_as_one_file_or_a_zip_and_read_back(
     assert!(!plain.watermark_found && plain.original_name.is_none());
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_damaged_model_file_fails_the_export_and_is_removed_for_the_next_download() {
     let Some(found) = found() else { return };

@@ -28,7 +28,7 @@ const size = fc.record({ width: length, height: length });
 const near = (a: number, b: number, tol = 1e-6) => Math.abs(a - b) <= tol * Math.max(1, Math.abs(a), Math.abs(b));
 
 describe('zoomMath (properties)', () => {
-  it('maps document to screen and back to the same point', () => {
+  it('maps document to screen and back to the same point', { tags: ['condition'] }, () => {
     check(
       fc.property(point, view, (p, v) => {
         const back = screenToDoc(docToScreen(p, v), v);
@@ -37,7 +37,7 @@ describe('zoomMath (properties)', () => {
     );
   });
 
-  it('zoomAt keeps the anchor fixed and clamps the scale', () => {
+  it('zoomAt keeps the anchor fixed and clamps the scale', { tags: ['boundary'] }, () => {
     check(
       fc.property(view, point, fc.double({ min: -100, max: 100, noNaN: true }), (v, anchor, requested) => {
         const next = zoomAt(v, anchor, requested);
@@ -53,7 +53,7 @@ describe('zoomMath (properties)', () => {
     );
   });
 
-  it('clampScale is idempotent and stays inside the limits', () => {
+  it('clampScale is idempotent and stays inside the limits', { tags: ['boundary'] }, () => {
     check(
       fc.property(fc.double({ noNaN: true }), (s) => {
         const c = clampScale(s);
@@ -62,7 +62,7 @@ describe('zoomMath (properties)', () => {
     );
   });
 
-  it('stepZoom moves in the asked direction and never leaves the limits', () => {
+  it('stepZoom moves in the asked direction and never leaves the limits', { tags: ['boundary'] }, () => {
     check(
       fc.property(scale, (s) => {
         const up = stepZoom(s, 1);
@@ -77,7 +77,7 @@ describe('zoomMath (properties)', () => {
     );
   });
 
-  it('fitRect centres the rect on the stage and, when not clamped, fits inside the padding', () => {
+  it('fitRect centres the rect on the stage and, when not clamped, fits inside the padding', { tags: ['condition'] }, () => {
     check(
       fc.property(box, size, fc.integer({ min: 0, max: 200 }), (rect, stage, padding) => {
         const v = fitRect(rect, stage.width, stage.height, padding);
@@ -95,7 +95,7 @@ describe('zoomMath (properties)', () => {
     );
   });
 
-  it('clampPan is idempotent, keeps the scale and keeps content reachable', () => {
+  it('clampPan is idempotent, keeps the scale and keeps content reachable', { tags: ['boundary'] }, () => {
     check(
       fc.property(view, size, size, (v, content, stage) => {
         const once = clampPan(v, content, stage);
@@ -118,7 +118,7 @@ describe('zoomMath (properties)', () => {
     );
   });
 
-  it('canPan is false exactly when the scaled content fits the stage (within half a pixel)', () => {
+  it('canPan is false exactly when the scaled content fits the stage (within half a pixel)', { tags: ['boundary'] }, () => {
     check(
       fc.property(view, size, size, (v, content, stage) => {
         const fits = content.width * v.scale <= stage.width + 0.5 && content.height * v.scale <= stage.height + 0.5;
@@ -127,7 +127,7 @@ describe('zoomMath (properties)', () => {
     );
   });
 
-  it('wheelZoomFactor is positive, finite and inverts for opposite deltas', () => {
+  it('wheelZoomFactor is positive, finite and inverts for opposite deltas', { tags: ['boundary'] }, () => {
     check(
       fc.property(fc.double({ min: -2000, max: 2000, noNaN: true }), fc.constantFrom(0, 1, 2), (deltaY, deltaMode) => {
         const f = wheelZoomFactor({ deltaY, deltaMode });
@@ -139,7 +139,7 @@ describe('zoomMath (properties)', () => {
     );
   });
 
-  it('containIn returns a centred box that fits the rect (whole pixels)', () => {
+  it('containIn returns a centred box that fits the rect (whole pixels)', { tags: ['condition'] }, () => {
     check(
       fc.property(length, length, box, (w, h, r) => {
         const out = containIn(w, h, r);

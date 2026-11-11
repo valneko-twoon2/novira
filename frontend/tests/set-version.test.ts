@@ -5,13 +5,13 @@ import { describe, expect, it } from 'vitest';
 import { isVersion, withCargoVersion, withPackageVersion } from '../../scripts/tools/set-version.mjs';
 
 describe('set-version', () => {
-  it('takes a version both Cargo and npm accept', () => {
+  it('takes a version both Cargo and npm accept', { tags: ['equivalence'] }, () => {
     for (const ok of ['0.1.0', '1.20.3', '0.2.0-beta.1', '1.0.0-rc-1']) expect(isVersion(ok), ok).toBe(true);
     for (const bad of ['', '1', '1.2', '01.2.3', '1.2.3.4', 'v1.2.3', '1.2.3-', '1.2.3+build', '1.2.3-beta..1', 'a.b.c', ' 1.2.3'])
       expect(isVersion(bad), bad).toBe(false);
   });
 
-  it('replaces only the workspace version of Cargo.toml', () => {
+  it('replaces only the workspace version of Cargo.toml', { tags: ['condition'] }, () => {
     const toml = '[workspace]\nmembers = []\n\n[workspace.package]\n# note\nversion = "0.1.0"\n\n[workspace.dependencies]\nserde = { version = "1" }\n';
     const out = withCargoVersion(toml, '0.2.0');
     expect(out.before).toBe('0.1.0');
@@ -19,7 +19,7 @@ describe('set-version', () => {
     expect(() => withCargoVersion('[package]\nversion = "1.0.0"\n', '0.2.0')).toThrow();
   });
 
-  it('replaces the app version of package.json and package-lock.json, not the dependencies', () => {
+  it('replaces the app version of package.json and package-lock.json, not the dependencies', { tags: ['condition'] }, () => {
     const lock = '{\n  "name": "x",\n  "version": "0.1.0",\n  "packages": {\n    "": {\n      "version": "0.1.0"\n    },\n    "node_modules/a": {\n      "version": "7.1.3"\n    }\n  }\n}\n';
     const out = JSON.parse(withPackageVersion(lock, '0.2.0-beta.1'));
     expect(out.version).toBe('0.2.0-beta.1');
@@ -28,7 +28,7 @@ describe('set-version', () => {
     expect(withPackageVersion(lock, '0.1.0')).toBe(lock);
   });
 
-  it('finds the real files in their expected shape', () => {
+  it('finds the real files in their expected shape', { tags: ['scenario'] }, () => {
     const root = new URL('../../', import.meta.url);
     const cargo = readFileSync(new URL('backend/Cargo.toml', root), 'utf8');
     const pkg = readFileSync(new URL('frontend/package.json', root), 'utf8');

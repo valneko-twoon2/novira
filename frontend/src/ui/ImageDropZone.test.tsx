@@ -19,7 +19,7 @@ const setup = (props: { onFiles?: (files: File[]) => void; disabled?: boolean } 
 const transfer = (types: string[], files: File[] = [], data: Record<string, string> = {}) => ({ dataTransfer: { types, files, dropEffect: '', getData: (type: string) => data[type] ?? '' } });
 
 describe('ImageDropZone', () => {
-  it('shows its label while a gallery picture or a file is dragged over, and hides it when the drag leaves', () => {
+  it('shows its label while a gallery picture or a file is dragged over, and hides it when the drag leaves', { tags: ['state-transition'] }, () => {
     const { zone } = setup();
     fireEvent.dragOver(zone, transfer([IMAGE_MIME]));
     expect(screen.getByText('Drop here')).toBeTruthy();
@@ -30,7 +30,7 @@ describe('ImageDropZone', () => {
     expect(screen.getByText('Drop here')).toBeTruthy();
   });
 
-  it('puts its label away when the drop lands on something else, or the drag is cancelled', () => {
+  it('puts its label away when the drop lands on something else, or the drag is cancelled', { tags: ['state-transition'] }, () => {
     const { zone } = setup();
     fireEvent.dragOver(zone, transfer([IMAGE_MIME]));
     expect(screen.getByText('Drop here')).toBeTruthy();
@@ -41,7 +41,7 @@ describe('ImageDropZone', () => {
     expect(screen.queryByText('Drop here')).toBeNull();
   });
 
-  it('puts its label away when the pointer or a key is used again, as no drag can still be under way', () => {
+  it('puts its label away when the pointer or a key is used again, as no drag can still be under way', { tags: ['state-transition'] }, () => {
     const { zone } = setup();
     fireEvent.dragOver(zone, transfer([IMAGE_MIME]));
     fireEvent.pointerMove(document.body, { movementX: 0, movementY: 0 });
@@ -56,19 +56,19 @@ describe('ImageDropZone', () => {
     expect(screen.queryByText('Drop here')).toBeNull();
   });
 
-  it('ignores drags of other things', () => {
+  it('ignores drags of other things', { tags: ['error-guessing'] }, () => {
     const { zone } = setup();
     fireEvent.dragOver(zone, transfer(['text/plain']));
     expect(screen.queryByText('Drop here')).toBeNull();
   });
 
-  it('hands over the names of dropped gallery pictures', async () => {
+  it('hands over the names of dropped gallery pictures', { tags: ['condition'] }, async () => {
     const { zone, onImages } = setup();
     fireEvent.drop(zone, transfer([IMAGE_MIME], [], { [IMAGE_MIME]: JSON.stringify(['a.png', 'b.png']) }));
     await waitFor(() => expect(onImages).toHaveBeenCalledWith(['a.png', 'b.png'], { alt: false }));
   });
 
-  it('hands over only the image files of a drop from the desktop, and nothing when there is no file handler', async () => {
+  it('hands over only the image files of a drop from the desktop, and nothing when there is no file handler', { tags: ['equivalence'] }, async () => {
     const onFiles = vi.fn();
     const { zone } = setup({ onFiles });
     const png = new File(['x'], 'x.png', { type: 'image/png' });
@@ -85,7 +85,7 @@ describe('ImageDropZone', () => {
     expect(onImages).not.toHaveBeenCalled();
   });
 
-  it('does nothing while disabled', async () => {
+  it('does nothing while disabled', { tags: ['condition'] }, async () => {
     const onFiles = vi.fn();
     const { zone, onImages } = setup({ disabled: true, onFiles });
     fireEvent.dragOver(zone, transfer([IMAGE_MIME]));

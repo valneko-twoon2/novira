@@ -1878,6 +1878,7 @@ fn not_modified(tag: &str) -> Response {
 mod tests {
     use super::*;
 
+    // tags: error-guessing
     #[test]
     fn request_paths_that_could_leave_the_folder_are_refused() {
         assert_eq!(
@@ -1911,6 +1912,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn the_qr_code_is_a_square_of_dark_and_light_modules() {
         let url = page_url(
@@ -1930,6 +1932,7 @@ mod tests {
         assert_eq!(qr_modules(&"x".repeat(8000)), None);
     }
 
+    // tags: equivalence, error-guessing
     #[test]
     fn the_token_is_found_in_a_cookie_among_others_and_compared_whole() {
         let mut h = HeaderMap::new();
@@ -1950,6 +1953,7 @@ mod tests {
         assert!(!same_secret("", "a"));
     }
 
+    // tags: static, condition
     #[test]
     fn every_served_command_is_in_the_shared_layer_and_none_twice() {
         for name in SERVED {
@@ -1967,6 +1971,7 @@ mod tests {
         assert_eq!(sorted.len(), SERVED.len());
     }
 
+    // tags: condition
     #[test]
     fn loopback_only_is_a_served_subset_of_the_changing_commands() {
         // Every loopback-only name is a served one (a home-network device gets a subset of what this computer does).

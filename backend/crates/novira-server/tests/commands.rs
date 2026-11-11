@@ -4,6 +4,7 @@ use common::*;
 use novira_server::SERVED;
 use serde_json::json;
 
+// tags: scenario
 #[tokio::test]
 async fn commands_run_through_the_shared_layer() {
     let f = Fixture::start().await;
@@ -81,6 +82,7 @@ async fn commands_run_through_the_shared_layer() {
     f.stop().await;
 }
 
+// tags: static, condition
 #[tokio::test]
 async fn the_served_list_is_a_subset_of_the_shared_layer_and_leaves_out_dialog_commands() {
     for risky in [

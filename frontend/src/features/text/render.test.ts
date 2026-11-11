@@ -20,7 +20,7 @@ let restore: (() => void) | null = null;
 afterEach(() => restore?.());
 
 describe('renderScene', () => {
-  it('clears, paints a colour background and then the visible layers only', () => {
+  it('clears, paints a colour background and then the visible layers only', { tags: ['condition'] }, () => {
     const rec = recordingContext();
     const hidden = { ...text('hidden'), visible: false };
     renderScene(rec.ctx, scene([text('shown'), hidden]), null);
@@ -31,7 +31,7 @@ describe('renderScene', () => {
     expect(drawn.join('')).not.toContain('hidden');
   });
 
-  it('draws the base picture for an image background and nothing for a transparent colour', () => {
+  it('draws the base picture for an image background and nothing for a transparent colour', { tags: ['condition'] }, () => {
     const base = {} as CanvasImageSource;
     const withImage = recordingContext();
     renderScene(withImage.ctx, scene([], { kind: 'image', imageName: 'a.png' }), base, 2);
@@ -44,19 +44,19 @@ describe('renderScene', () => {
     expect(transparent.of('drawImage')).toHaveLength(0);
   });
 
-  it('runs the underlay before anything else', () => {
+  it('runs the underlay before anything else', { tags: ['condition'] }, () => {
     const rec = recordingContext();
     renderScene(rec.ctx, scene([]), null, 1, (c) => c.fillRect(1, 2, 3, 4));
     expect(rec.of('fillRect')[0]).toEqual([1, 2, 3, 4]);
   });
 
-  it('skips a layer whose text is empty', () => {
+  it('skips a layer whose text is empty', { tags: ['condition'] }, () => {
     const rec = recordingContext();
     renderScene(rec.ctx, scene([text('')]), null);
     expect(rec.of('fillText')).toHaveLength(0);
   });
 
-  it('paints the outline, the stroke and the fill, with the shadow on the outermost shape only', () => {
+  it('paints the outline, the stroke and the fill, with the shadow on the outermost shape only', { tags: ['condition'] }, () => {
     const rec = recordingContext();
     const style = {
       outline: { color: '#ff0000', width: 4 },
@@ -72,13 +72,13 @@ describe('renderScene', () => {
     expect(widths).toEqual([2 * (4 + 2), 2 * 2]);
   });
 
-  it('uses a gradient fill when asked', () => {
+  it('uses a gradient fill when asked', { tags: ['condition'] }, () => {
     const rec = recordingContext();
     renderScene(rec.ctx, scene([text('Hi', { fill: { kind: 'gradient', top: '#fff', bottom: '#000' } })]), null);
     expect(rec.of('createLinearGradient')).toHaveLength(1);
   });
 
-  it('sets text on an arc when bent, and keeps empty lines straight', () => {
+  it('sets text on an arc when bent, and keeps empty lines straight', { tags: ['condition'] }, () => {
     const rec = recordingContext();
     renderScene(rec.ctx, scene([text('abc\n\nde', {}, { bend: 60 })]), null);
     // One put per character of the non-empty lines, each rotated to follow the arc.
@@ -86,20 +86,20 @@ describe('renderScene', () => {
     expect(rec.of('fillText').length).toBeGreaterThanOrEqual(5);
   });
 
-  it.each(['left', 'center', 'right'] as const)('aligns horizontal text %s', (align) => {
+  it.each(['left', 'center', 'right'] as const)('aligns horizontal text %s', { tags: ['equivalence'] }, (align) => {
     const rec = recordingContext();
     renderScene(rec.ctx, scene([text('ab\ncdef', { align })]), null);
     expect(rec.sets.some((s) => s.name === 'textAlign' && s.value === align)).toBe(true);
   });
 
-  it.each(['left', 'center', 'right'] as const)('lays vertical text out in columns, aligned %s', (align) => {
+  it.each(['left', 'center', 'right'] as const)('lays vertical text out in columns, aligned %s', { tags: ['equivalence'] }, (align) => {
     const rec = recordingContext();
     renderScene(rec.ctx, scene([text('あい、「う」\nabc', { vertical: true, align })]), null);
     expect(rec.of('fillText').length).toBeGreaterThan(5);
     expect(rec.of('translate').length).toBeGreaterThan(5);
   });
 
-  it('draws partly transparent layers on their own sheet and composites it with the opacity', () => {
+  it('draws partly transparent layers on their own sheet and composites it with the opacity', { tags: ['condition'] }, () => {
     const sheet = recordingContext();
     restore = installRecordingCanvas(sheet);
     const main = recordingContext({ scale: 2 });
@@ -111,7 +111,7 @@ describe('renderScene', () => {
     expect(main.sets.some((s) => s.name === 'globalAlpha' && s.value === 0.5)).toBe(true);
   });
 
-  it('skips a transparent layer when no sheet context is available', () => {
+  it('skips a transparent layer when no sheet context is available', { tags: ['error-guessing'] }, () => {
     restore = (() => {
       const original = HTMLCanvasElement.prototype.getContext;
       HTMLCanvasElement.prototype.getContext = (() => null) as never;
@@ -124,7 +124,7 @@ describe('renderScene', () => {
     expect(main.of('drawImage')).toHaveLength(0);
   });
 
-  it.each(['round', 'box', 'cloud', 'burst', 'whisper', 'narration'] as const)('draws a %s bubble with its text', (shape) => {
+  it.each(['round', 'box', 'cloud', 'burst', 'whisper', 'narration'] as const)('draws a %s bubble with its text', { tags: ['equivalence'] }, (shape) => {
     const rec = recordingContext();
     const made = newBubbleLayer({ width: 400, height: 300 }, shape, 'Hello');
     const bubble = { ...made, x: 200, y: 150, tail: { ...made.tail, enabled: true } };
@@ -136,7 +136,7 @@ describe('renderScene', () => {
     if (shape === 'cloud') expect(rec.of('arc').length).toBeGreaterThan(0);
   });
 
-  it('draws a bubble without text as a shape only, and keeps the font size when auto-fit is off', () => {
+  it('draws a bubble without text as a shape only, and keeps the font size when auto-fit is off', { tags: ['condition'] }, () => {
     const rec = recordingContext();
     const empty = { ...newBubbleLayer({ width: 400, height: 300 }, 'round', '  ') };
     renderScene(rec.ctx, scene([empty]), null);
@@ -150,13 +150,13 @@ describe('renderScene', () => {
 });
 
 describe('layerHalfSize', () => {
-  it('is half the bubble size for a bubble', () => {
+  it('is half the bubble size for a bubble', { tags: ['condition'] }, () => {
     const rec = recordingContext();
     const bubble = newBubbleLayer({ width: 400, height: 300 }, 'round', 'x');
     expect(layerHalfSize(rec.ctx, bubble)).toEqual({ hw: bubble.width / 2, hh: bubble.height / 2 });
   });
 
-  it('is the text block plus the outline padding for a text layer', () => {
+  it('is the text block plus the outline padding for a text layer', { tags: ['condition'] }, () => {
     const rec = recordingContext({ charWidth: 10 });
     const plain = { ...text('abcd', { stroke: null, outline: null }) };
     const { hw, hh } = layerHalfSize(rec.ctx, plain);

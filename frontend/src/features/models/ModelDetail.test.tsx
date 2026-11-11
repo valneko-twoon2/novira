@@ -56,7 +56,7 @@ afterEach(() => {
 });
 
 describe('ModelDetail facts', () => {
-  it('shows the name, the facts and the license state, and closes with the X button', () => {
+  it('shows the name, the facts and the license state, and closes with the X button', { tags: ['scenario'] }, () => {
     show();
     expect(screen.getByText('Sunny XL')).toBeTruthy();
     expect(screen.getByText('models/sunny.safetensors')).toBeTruthy();
@@ -65,7 +65,7 @@ describe('ModelDetail facts', () => {
     expect(useModels.getState().selectedKey).toBeNull();
   });
 
-  it('shows no description line without one, and hides the main-model parts for other types', () => {
+  it('shows no description line without one, and hides the main-model parts for other types', { tags: ['scenario'] }, () => {
     show({ ...model, description: '', type: 'vae', triggerPhrases: undefined, source: 'local' });
     expect(document.querySelector('.mm-detail__desc')).toBeNull();
     expect(screen.queryByTestId('mm-default-settings')).toBeNull();
@@ -73,7 +73,7 @@ describe('ModelDetail facts', () => {
     expect(screen.queryByTestId('mm-page-link')).toBeNull();
   });
 
-  it('opens the page of the URL row through the backend, or only says so in the browser mock', () => {
+  it('opens the page of the URL row through the backend, or only says so in the browser mock', { tags: ['scenario'] }, () => {
     const open = vi.spyOn(backend, 'openSourcePage').mockResolvedValue(undefined);
     show();
     fireEvent.click(screen.getByTestId('mm-page-link'));
@@ -84,7 +84,7 @@ describe('ModelDetail facts', () => {
     expect(open).toHaveBeenCalledWith(model.source);
   });
 
-  it('reports a source page that cannot be opened', async () => {
+  it('reports a source page that cannot be opened', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'kind', 'get').mockReturnValue('tauri' as never);
     vi.spyOn(backend, 'openSourcePage').mockRejectedValue(new Error('blocked'));
     show();
@@ -92,7 +92,7 @@ describe('ModelDetail facts', () => {
     await waitFor(() => expect(lastToast()).toMatchObject({ status: 'error', description: 'blocked' }));
   });
 
-  it('copies the path', async () => {
+  it('copies the path', { tags: ['scenario'] }, async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal('navigator', { clipboard: { writeText } });
     show();
@@ -104,7 +104,7 @@ describe('ModelDetail facts', () => {
 });
 
 describe('editing', () => {
-  it('saves a new name and description, falling back to the old name when emptied', async () => {
+  it('saves a new name and description, falling back to the old name when emptied', { tags: ['scenario'] }, async () => {
     show();
     fireEvent.click(screen.getByTestId('mm-edit'));
     const form = within(screen.getByTestId('mm-edit-form'));
@@ -121,7 +121,7 @@ describe('editing', () => {
     await waitFor(() => expect(update).toHaveBeenLastCalledWith('m1', expect.objectContaining({ name: model.name })));
   });
 
-  it('reports a failed save and leaves the form open; cancel closes it', async () => {
+  it('reports a failed save and leaves the form open; cancel closes it', { tags: ['error-guessing'] }, async () => {
     update.mockRejectedValue(new Error('read only'));
     show();
     fireEvent.click(screen.getByTestId('mm-edit'));
@@ -134,7 +134,7 @@ describe('editing', () => {
 });
 
 describe('trigger phrases', () => {
-  it('adds a phrase, refuses a duplicate or empty one, and removes one', async () => {
+  it('adds a phrase, refuses a duplicate or empty one, and removes one', { tags: ['error-guessing'] }, async () => {
     show();
     const box = within(screen.getByTestId('mm-trigger-phrases'));
     const input = box.getByLabelText(t('models.triggers.placeholder'));
@@ -151,21 +151,21 @@ describe('trigger phrases', () => {
     fireEvent.submit(input.closest('form')!);
   });
 
-  it('reports a failure to save the phrases', async () => {
+  it('reports a failure to save the phrases', { tags: ['error-guessing'] }, async () => {
     update.mockRejectedValue('no space');
     show();
     fireEvent.click(within(screen.getByTestId('mm-trigger-phrases')).getByLabelText(t('common.remove')));
     await waitFor(() => expect(lastToast()).toMatchObject({ status: 'error', description: 'no space' }));
   });
 
-  it('says when a model has no phrases yet', () => {
+  it('says when a model has no phrases yet', { tags: ['scenario'] }, () => {
     show({ ...model, triggerPhrases: [] });
     expect(screen.getByText(t('models.triggers.empty'))).toBeTruthy();
   });
 });
 
 describe('default settings', () => {
-  it('saves only the switched-on settings', async () => {
+  it('saves only the switched-on settings', { tags: ['scenario'] }, async () => {
     show();
     const box = within(screen.getByTestId('mm-default-settings'));
     // Steps was set on the model, so only it is on; turn the CFG scale on too, and the steps off again.
@@ -183,7 +183,7 @@ describe('default settings', () => {
     await waitFor(() => expect(lastToast()?.status).toBe('success'));
   });
 
-  it('starts from 512 px for an SD 1 model, and reports a failed save', async () => {
+  it('starts from 512 px for an SD 1 model, and reports a failed save', { tags: ['error-guessing'] }, async () => {
     update.mockRejectedValue(new Error('nope'));
     show({ ...model, base: 'sd-1', defaultSettings: undefined });
     const box = within(screen.getByTestId('mm-default-settings'));
@@ -195,7 +195,7 @@ describe('default settings', () => {
 });
 
 describe('converting and deleting', () => {
-  it('converts a checkpoint after confirmation, and offers nothing for other formats', async () => {
+  it('converts a checkpoint after confirmation, and offers nothing for other formats', { tags: ['scenario'] }, async () => {
     show();
     fireEvent.click(screen.getAllByText(t('models.convert'))[0]!);
     const dialog = within(screen.getByRole('dialog'));
@@ -207,7 +207,7 @@ describe('converting and deleting', () => {
     expect(screen.queryByText(t('models.convert'))).toBeNull();
   });
 
-  it('reports a failed conversion', async () => {
+  it('reports a failed conversion', { tags: ['error-guessing'] }, async () => {
     update.mockRejectedValue(new Error('too big'));
     show();
     fireEvent.click(screen.getAllByText(t('models.convert'))[0]!);
@@ -215,7 +215,7 @@ describe('converting and deleting', () => {
     await waitFor(() => expect(lastToast()).toMatchObject({ status: 'error', description: 'too big' }));
   });
 
-  it('deletes the model after confirmation, or reports why it could not', async () => {
+  it('deletes the model after confirmation, or reports why it could not', { tags: ['error-guessing'] }, async () => {
     const del = vi.spyOn(backend, 'deleteModel').mockResolvedValue(undefined);
     show();
     fireEvent.click(screen.getByText(t('common.delete')));
@@ -238,7 +238,7 @@ describe('a newer version', () => {
   const newer = { key: 'm1', modelId: '1', installedVersionId: '2', latestVersionId: '3', latestName: 'v3.0', publishedAt: Date.UTC(2026, 9, 20), pageUrl: 'https://civitai.com/models/1?modelVersionId=3' };
   afterEach(() => useModelUpdates.setState({ updates: [] }));
 
-  it('is named above the actions, with a button to its page', () => {
+  it('is named above the actions, with a button to its page', { tags: ['scenario'] }, () => {
     useModelUpdates.setState({ updates: [newer] });
     show();
     const row = screen.getByTestId('mm-update');
@@ -248,7 +248,7 @@ describe('a newer version', () => {
     expect(lastToast()?.title).toBe(t('browse.toast.openMock'));
   });
 
-  it('opens the newer version\'s page through the backend, which checks the address', () => {
+  it('opens the newer version\'s page through the backend, which checks the address', { tags: ['scenario'] }, () => {
     useModelUpdates.setState({ updates: [newer] });
     vi.spyOn(backend, 'kind', 'get').mockReturnValue('tauri');
     const open = vi.spyOn(backend, 'openSourcePage').mockResolvedValue(undefined);
@@ -257,7 +257,7 @@ describe('a newer version', () => {
     expect(open).toHaveBeenCalledWith(newer.pageUrl);
   });
 
-  it('is not shown for a model without an update', () => {
+  it('is not shown for a model without an update', { tags: ['scenario'] }, () => {
     useModelUpdates.setState({ updates: [{ ...newer, key: 'other' }] });
     show();
     expect(screen.queryByTestId('mm-update')).toBeNull();

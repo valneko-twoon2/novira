@@ -28,7 +28,7 @@ const show = (onQuery = vi.fn(), query = '') => {
 };
 
 describe('BrowseBar', () => {
-  it('switches the source between Civitai and Hugging Face, and only Civitai has a period filter', () => {
+  it('switches the source between Civitai and Hugging Face, and only Civitai has a period filter', { tags: ['scenario'] }, () => {
     show();
     expect(screen.getByLabelText(t('browse.period.label'))).toBeTruthy();
     fireEvent.click(screen.getByTestId('browse-source-huggingface'));
@@ -39,7 +39,7 @@ describe('BrowseBar', () => {
     expect(useBrowse.getState().source).toBe('civitai');
   });
 
-  it('starts on every base and offers Anima among the bases', () => {
+  it('starts on every base and offers Anima among the bases', { tags: ['state-transition', 'decision-table'] }, () => {
     show();
     expect(useBrowse.getState().baseModel).toBe('all');
     fireEvent.click(screen.getByLabelText(t('browse.base.label')));
@@ -47,7 +47,7 @@ describe('BrowseBar', () => {
     expect(useBrowse.getState().baseModel).toBe('Anima');
   });
 
-  it('picks the kind of model', () => {
+  it('picks the kind of model', { tags: ['decision-table', 'scenario'] }, () => {
     show();
     for (const kind of ['Checkpoint', 'ControlNet', 'VAE', 'Diffusion', 'all', 'LoRA'] as const) {
       fireEvent.click(screen.getByTestId(`browse-kind-${kind}`));
@@ -55,7 +55,7 @@ describe('BrowseBar', () => {
     }
   });
 
-  it('reports what is typed in the search box', () => {
+  it('reports what is typed in the search box', { tags: ['scenario'] }, () => {
     const onQuery = show(vi.fn(), 'cat');
     const box = screen.getByTestId('browse-search') as HTMLInputElement;
     expect(box.value).toBe('cat');
@@ -63,7 +63,7 @@ describe('BrowseBar', () => {
     expect(onQuery).toHaveBeenCalledWith('cats');
   });
 
-  it('turns mature content on and off', () => {
+  it('turns mature content on and off', { tags: ['scenario'] }, () => {
     show();
     const toggle = screen.getByRole('switch', { name: t('browse.nsfw.label') });
     fireEvent.click(toggle);
@@ -72,7 +72,7 @@ describe('BrowseBar', () => {
     expect(useBrowse.getState().includeNsfw).toBe(false);
   });
 
-  it('sets the card size within its limits', () => {
+  it('sets the card size within its limits', { tags: ['boundary', 'scenario'] }, () => {
     show();
     useBrowse.getState().setCardSize(5000);
     expect(useBrowse.getState().cardSize).toBe(CARD_MAX);
@@ -81,13 +81,13 @@ describe('BrowseBar', () => {
     expect(screen.getByTestId('browse-card-size')).toBeTruthy();
   });
 
-  it('starts the cards at the smallest size on a phone', () => {
+  it('starts the cards at the smallest size on a phone', { tags: ['state-transition', 'scenario'] }, () => {
     expect(defaultCardSize()).toBe(220);
     vi.stubGlobal('matchMedia', (q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} }));
     expect(defaultCardSize()).toBe(CARD_MIN);
   });
 
-  it('folds the controls behind one button on a phone', () => {
+  it('folds the controls behind one button on a phone', { tags: ['boundary', 'scenario'] }, () => {
     vi.stubGlobal('matchMedia', (q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} }));
     show();
     expect(screen.queryByTestId('browse-search')).toBeNull();

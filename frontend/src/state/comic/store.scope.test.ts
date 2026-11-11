@@ -58,7 +58,7 @@ describe('an edit of one page', () => {
   }
 
   for (const { name, prepare, edit } of cases) {
-    it(`changes that page only: ${name}`, () => {
+    it(`changes that page only: ${name}`, { tags: ['condition'] }, () => {
       const { a, b, first, second } = seed();
       prepare?.(second);
       const other = page(a, first);
@@ -71,7 +71,7 @@ describe('an edit of one page', () => {
     });
   }
 
-  it('in a comic that is not open (the page draw settings follow the page wherever it is) leaves the open comic alone', () => {
+  it('in a comic that is not open (the page draw settings follow the page wherever it is) leaves the open comic alone', { tags: ['condition'] }, () => {
     const { a, b } = seed();
     const bPage = project(b).pages[0]!.id;
     const open = project(a);
@@ -83,7 +83,7 @@ describe('an edit of one page', () => {
 });
 
 describe('deleting a page', () => {
-  it('that is not on screen keeps the page on screen and the panel selected on it', () => {
+  it('that is not on screen keeps the page on screen and the panel selected on it', { tags: ['condition'] }, () => {
     const { a, first, second } = seed();
     const third = useComic.getState().addPage()!;
     const selected = page(a, third).panels[1]!.id;
@@ -95,7 +95,7 @@ describe('deleting a page', () => {
     expect(s.selectedPanelId).toBe(selected);
   });
 
-  it('on screen with its panel selected opens the first page left and lets go of the panel', () => {
+  it('on screen with its panel selected opens the first page left and lets go of the panel', { tags: ['condition'] }, () => {
     const { a, first, second } = seed();
     useComic.getState().selectPage(second);
     useComic.getState().selectPanel(page(a, second).panels[0]!.id);
@@ -105,7 +105,7 @@ describe('deleting a page', () => {
     expect(s.selectedPanelId).toBeNull();
   });
 
-  it('that is the last one leaves the comic open with no page, also when it is opened again', () => {
+  it('that is the last one leaves the comic open with no page, also when it is opened again', { tags: ['regression'] }, () => {
     const { a, b, first, second } = seed();
     useComic.getState().deletePage(second);
     useComic.getState().deletePage(first);
@@ -118,7 +118,7 @@ describe('deleting a page', () => {
 });
 
 describe('deleting a comic that is not open', () => {
-  it('keeps the open comic, its page and the selection', () => {
+  it('keeps the open comic, its page and the selection', { tags: ['condition'] }, () => {
     const { a, b, first } = seed();
     const selected = page(a, first).panels[0]!.id;
     useComic.getState().selectPanel(selected);
@@ -141,7 +141,7 @@ describe('an edit of one balloon', () => {
     return { panelId, one, two, bubble };
   }
 
-  it('changes that balloon only, whether it is edited, fitted or centred', () => {
+  it('changes that balloon only, whether it is edited, fitted or centred', { tags: ['condition'] }, () => {
     const { panelId, one, two, bubble } = withBubbles();
     let other = bubble(two);
     useComic.getState().updateBubble(panelId, one, { text: 'Hello' });
@@ -160,7 +160,7 @@ describe('an edit of one balloon', () => {
     expect(bubble(one)).toBe(other);
   });
 
-  it('removed while another balloon is selected keeps that balloon selected and its editor open', () => {
+  it('removed while another balloon is selected keeps that balloon selected and its editor open', { tags: ['condition'] }, () => {
     const { panelId, one, two, bubble } = withBubbles();
     useComic.getState().removeBubble(panelId, one);
     expect(bubble(one)).toBeUndefined();
@@ -171,7 +171,7 @@ describe('an edit of one balloon', () => {
 });
 
 describe('an edit of one character sheet', () => {
-  it('changes that character only', () => {
+  it('changes that character only', { tags: ['condition'] }, () => {
     const { a } = seed();
     useComic.getState().setCast([
       { id: 'mina', name: 'Mina', tags: '1girl', imageName: 'mina.png' },

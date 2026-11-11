@@ -5,11 +5,11 @@ import { useDrawScope } from './drawScope';
 afterEach(() => useDrawScope.setState({ scope: 'comic' }));
 
 describe('the scope of the drawing settings', () => {
-  it('starts on the whole comic', () => {
+  it('starts on the whole comic', { tags: ['state-transition'] }, () => {
     expect(useDrawScope.getState().scope).toBe('comic');
   });
 
-  it('switches to the page and back', () => {
+  it('switches to the page and back', { tags: ['state-transition'] }, () => {
     useDrawScope.getState().setScope('page');
     expect(useDrawScope.getState().scope).toBe('page');
     useDrawScope.getState().setScope('comic');

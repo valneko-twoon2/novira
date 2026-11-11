@@ -60,7 +60,7 @@ const setNum = (label: string, value: number) => {
 const entity = (id: string) => state().entities.find((e) => e.id === id)!;
 
 describe('EntityRow', () => {
-  it('selects on click or Enter, and shows the settings only while selected', () => {
+  it('selects on click or Enter, and shows the settings only while selected', { tags: ['state-transition'] }, () => {
     const id = state().addEntity('raster');
     const { container } = row(id, false);
     expect(screen.queryByText(t('canvas.entity.opacity'))).toBeNull();
@@ -75,7 +75,7 @@ describe('EntityRow', () => {
     expect(screen.getByText(t('canvas.entity.opacity'))).toBeTruthy();
   });
 
-  it('locks, hides and deletes without selecting the row', () => {
+  it('locks, hides and deletes without selecting the row', { tags: ['scenario'] }, () => {
     const id = state().addEntity('raster');
     row(id, false);
     fireEvent.click(screen.getByLabelText(t('canvas.entity.lock')));
@@ -87,7 +87,7 @@ describe('EntityRow', () => {
     expect(state().entities).toHaveLength(0);
   });
 
-  it('renames on double click; Enter or blur keeps it, an empty name goes back to the default, Escape cancels', () => {
+  it('renames on double click; Enter or blur keeps it, an empty name goes back to the default, Escape cancels', { tags: ['boundary', 'state-transition'] }, () => {
     const id = state().addEntity('raster');
     row(id, false);
     const start = () => fireEvent.doubleClick(document.querySelector('.canvas-entity__name')!);
@@ -109,7 +109,7 @@ describe('EntityRow', () => {
     expect(entity(id).name).toBeNull();
   });
 
-  it('shows a slot under its own name without rename or delete, but with lock, visibility and opacity', () => {
+  it('shows a slot under its own name without rename or delete, but with lock, visibility and opacity', { tags: ['scenario'] }, () => {
     const id = state().addEntity('raster', { slot: 'panels', name: 'Frames' });
     row(id);
     fireEvent.doubleClick(document.querySelector('.canvas-entity__name')!);
@@ -122,7 +122,7 @@ describe('EntityRow', () => {
     expect(entity(id)).toMatchObject({ isEnabled: false, isLocked: true, opacity: 0.6, objects: [] });
   });
 
-  it('labels a slot row as the host says', () => {
+  it('labels a slot row as the host says', { tags: ['scenario'] }, () => {
     const id = state().addEntity('raster', { slot: 'panels' });
     state().select(null);
     render(
@@ -135,14 +135,14 @@ describe('EntityRow', () => {
     expect(screen.getByText('Panels')).toBeTruthy();
   });
 
-  it('edits the opacity of a raster layer', () => {
+  it('edits the opacity of a raster layer', { tags: ['scenario'] }, () => {
     const id = state().addEntity('raster');
     row(id);
     setNum(t('canvas.entity.opacity'), 40);
     expect(entity(id).opacity).toBe(0.4);
   });
 
-  it('sets the blend of a raster layer next to its opacity, normal by default; other layers have none', () => {
+  it('sets the blend of a raster layer next to its opacity, normal by default; other layers have none', { tags: ['scenario'] }, () => {
     HTMLElement.prototype.hasPointerCapture = vi.fn(() => false);
     HTMLElement.prototype.releasePointerCapture = vi.fn();
     HTMLElement.prototype.scrollIntoView = vi.fn();
@@ -162,7 +162,7 @@ describe('EntityRow', () => {
 });
 
 describe('inpaint mask settings', () => {
-  it('turns the denoise limit and noise level on and off, and changes the mask colour', () => {
+  it('turns the denoise limit and noise level on and off, and changes the mask colour', { tags: ['boundary'] }, () => {
     const id = state().addEntity('inpaint');
     row(id);
     const denoise = screen.getByRole('switch', { name: t('canvas.mask.denoiseLimit') });
@@ -180,7 +180,7 @@ describe('inpaint mask settings', () => {
 });
 
 describe('regional guidance settings', () => {
-  it('adds, edits and removes the prompts', () => {
+  it('adds, edits and removes the prompts', { tags: ['scenario'] }, () => {
     const id = state().addEntity('regional');
     row(id);
     fireEvent.click(screen.getByText(t('canvas.regional.addPositive')));
@@ -194,7 +194,7 @@ describe('regional guidance settings', () => {
     expect(entity(id)).toMatchObject({ positivePrompt: null, negativePrompt: null });
   });
 
-  it('adds a reference picture, edits its weight and removes it, and turns the auto-negative on', () => {
+  it('adds a reference picture, edits its weight and removes it, and turns the auto-negative on', { tags: ['boundary'] }, () => {
     const id = state().addEntity('regional');
     row(id);
     fireEvent.click(screen.getByText(t('canvas.regional.addRefImage')));
@@ -209,7 +209,7 @@ describe('regional guidance settings', () => {
 });
 
 describe('control layer settings', () => {
-  it('edits the weight and the start and end of the effect, and the transparency effect', () => {
+  it('edits the weight and the start and end of the effect, and the transparency effect', { tags: ['scenario'] }, () => {
     const id = state().addEntity('control');
     row(id);
     setNum(t('canvas.control.weight'), 1.2);
@@ -224,7 +224,7 @@ describe('control layer settings', () => {
     expect((entity(id) as { withTransparencyEffect: boolean }).withTransparencyEffect).toBe(false);
   });
 
-  it('processes, applies and cancels a filter preview', () => {
+  it('processes, applies and cancels a filter preview', { tags: ['scenario'] }, () => {
     const id = state().addEntity('control');
     state().updateEntity(id, { filter: 'canny' });
     row(id);
@@ -239,7 +239,7 @@ describe('control layer settings', () => {
     expect(state().filterPreviews[id]).toBeUndefined();
   });
 
-  it('processes automatically when asked, and clears the preview for no filter', () => {
+  it('processes automatically when asked, and clears the preview for no filter', { tags: ['scenario'] }, () => {
     const id = state().addEntity('control');
     state().updateEntity(id, { filter: 'canny' });
     state().setSettings({ autoProcess: true });
@@ -259,12 +259,12 @@ describe('RefImagesGroup', () => {
       </TooltipProvider>,
     );
 
-  it('shows nothing without reference images', () => {
+  it('shows nothing without reference images', { tags: ['scenario'] }, () => {
     const { container } = group();
     expect(container.firstChild).toBeNull();
   });
 
-  it('lists the reference images, selects, hides and deletes them, and adds another', () => {
+  it('lists the reference images, selects, hides and deletes them, and adds another', { tags: ['scenario'] }, () => {
     useParams.getState().addRefImage({ modelKey: null });
     useParams.getState().addRefImage({ modelKey: null, imageName: 'a.png', imageUrl: 'blob:a' });
     group();
@@ -282,14 +282,14 @@ describe('RefImagesGroup', () => {
     expect(useParams.getState().refImages).toHaveLength(2);
   });
 
-  it('shows the gallery thumbnail in a row, not the picture itself', () => {
+  it('shows the gallery thumbnail in a row, not the picture itself', { tags: ['scenario'] }, () => {
     useGallery.setState({ images: [{ name: 'a.png', url: 'blob:a', thumbnailUrl: 'blob:thumb-a', width: 1, height: 1 } as never] });
     useParams.getState().addRefImage({ modelKey: null, imageName: 'a.png', imageUrl: 'blob:a' });
     group();
     expect(document.querySelector('.canvas-entity__row img')!.getAttribute('src')).toBe('blob:thumb-a');
   });
 
-  it('edits the weight and the range of the selected reference image', () => {
+  it('edits the weight and the range of the selected reference image', { tags: ['scenario'] }, () => {
     useParams.getState().addRefImage({ modelKey: null });
     const id = useParams.getState().refImages[0]!.id;
     act(() => state().select(id));
@@ -304,7 +304,7 @@ describe('RefImagesGroup', () => {
     expect(useParams.getState().refImages[0]!.beginEnd[1]).toBe(0.8);
   });
 
-  it('fills the image slot from a drop, an upload, and clears it', async () => {
+  it('fills the image slot from a drop, an upload, and clears it', { tags: ['scenario'] }, async () => {
     useParams.getState().addRefImage({ modelKey: null });
     const ref = useParams.getState().refImages[0]!;
     act(() => state().select(ref.id));

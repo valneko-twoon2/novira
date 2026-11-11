@@ -17,6 +17,7 @@ fn nested_model(root: &std::path::Path, levels: usize) -> std::path::PathBuf {
     file
 }
 
+// tags: state-transition
 #[test]
 fn walk_stops_descending_after_six_levels_of_folders() {
     let at_limit = tempfile::tempdir().unwrap();
@@ -35,6 +36,7 @@ fn keys_only(keys: &[&str]) -> Header {
     }
 }
 
+// tags: boundary, decision-table
 #[test]
 fn each_lora_tensor_name_alone_marks_a_lora() {
     for key in [
@@ -51,6 +53,7 @@ fn each_lora_tensor_name_alone_marks_a_lora() {
     }
 }
 
+// tags: decision-table
 #[test]
 fn a_wan_transformer_needs_both_the_block_prefix_and_the_attention_name() {
     assert_eq!(
@@ -61,6 +64,7 @@ fn a_wan_transformer_needs_both_the_block_prefix_and_the_attention_name() {
     assert_eq!(detect_kind(&keys_only(&["other.self_attn.q.weight"])), None);
 }
 
+// tags: decision-table
 #[test]
 fn a_vae_needs_both_an_encoder_and_a_decoder() {
     assert_eq!(
@@ -86,6 +90,7 @@ fn file_with_header_of(dir: &std::path::Path, len: u64) -> std::path::PathBuf {
     path
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn a_header_of_exactly_64_mib_is_read_and_one_byte_more_is_refused() {
     let dir = tempfile::tempdir().unwrap();
@@ -99,6 +104,7 @@ fn a_header_of_exactly_64_mib_is_read_and_one_byte_more_is_refused() {
     assert!(read_header_unchecked(&refused).is_none());
 }
 
+// tags: condition
 #[test]
 fn an_sd15_file_name_is_recognised_by_either_of_its_spellings() {
     for name in ["x-v1-5.safetensors", "x-sd-1.safetensors"] {
@@ -114,6 +120,7 @@ fn an_sd15_file_name_is_recognised_by_either_of_its_spellings() {
     );
 }
 
+// tags: condition
 #[test]
 fn a_lora_with_only_a_second_text_encoder_is_sdxl() {
     let header = keys_only(&["text_encoder_2.layers.0.weight"]);

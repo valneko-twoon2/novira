@@ -491,6 +491,7 @@ mod tests {
             .unwrap()
     }
 
+    // tags: state-transition
     #[test]
     fn events_of_an_item_follow_its_states_when_a_cancel_overtakes_a_start() {
         let dir = tempfile::tempdir().unwrap();
@@ -521,6 +522,7 @@ mod tests {
         );
     }
 
+    // tags: state-transition
     #[test]
     fn a_clear_during_a_save_is_not_undone_by_the_late_save() {
         let dir = tempfile::tempdir().unwrap();
@@ -554,6 +556,7 @@ mod tests {
         );
     }
 
+    // tags: state-transition
     #[test]
     fn a_finished_item_never_moves_again_and_announces_nothing_more() {
         let dir = tempfile::tempdir().unwrap();
@@ -575,6 +578,7 @@ mod tests {
 
     /// A job cancelled while it finished (the cancel came after the worker's last look at its token): the item stays
     /// canceled, the picture is kept, and the picture is announced with the item as the state holds it.
+    // tags: state-transition
     #[test]
     fn a_picture_saved_after_a_cancel_is_announced_with_the_canceled_item() {
         let dir = tempfile::tempdir().unwrap();

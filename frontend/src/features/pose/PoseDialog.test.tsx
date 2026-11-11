@@ -79,7 +79,7 @@ afterEach(() => {
 });
 
 describe('editing the pose', () => {
-  it('mirrors the figure, and goes back to the chosen preset', async () => {
+  it('mirrors the figure, and goes back to the chosen preset', { tags: ['scenario'] }, async () => {
     await openDialog();
     const wrist = POSE_JOINT_NAMES.indexOf('rightWrist');
     const before = PRESETS.standing[wrist]!;
@@ -91,7 +91,7 @@ describe('editing the pose', () => {
     expect(joint('rightWrist').getAttribute('aria-valuetext')).toBe(`${Math.round(before.x * 100)}%, ${Math.round(before.y * 100)}%`);
   });
 
-  it('starts from another preset and discards the edits made on the first one', async () => {
+  it('starts from another preset and discards the edits made on the first one', { tags: ['scenario'] }, async () => {
     await openDialog();
     fireEvent.keyDown(joint('nose'), { key: 'ArrowDown', shiftKey: true });
     fireEvent.change(screen.getByLabelText(t('pose.preset')), { target: { value: 'armsUp' } });
@@ -101,7 +101,7 @@ describe('editing the pose', () => {
     expect(joint('nose').getAttribute('aria-valuetext')).toBe(`${Math.round(nose.x * 100)}%, ${Math.round(nose.y * 100)}%`);
   });
 
-  it('shapes the stage like the chosen size', async () => {
+  it('shapes the stage like the chosen size', { tags: ['scenario'] }, async () => {
     await openDialog();
     const stage = screen.getByTestId('pose-stage');
     expect(stage.getAttribute('viewBox')).toBe(`0 0 ${useCanvas.getState().bbox.width} ${useCanvas.getState().bbox.height}`);
@@ -115,7 +115,7 @@ describe('editing the pose', () => {
 });
 
 describe('using the pose', () => {
-  it('puts it on an empty canvas as a control layer that follows it to the end, with the OpenPose model chosen', async () => {
+  it('puts it on an empty canvas as a control layer that follows it to the end, with the OpenPose model chosen', { tags: ['scenario'] }, async () => {
     useModels.setState({ models: [controlnet('depth-xl', 'sdxl'), controlnet('xinsir-openpose', 'sdxl')] });
     await openDialog();
     fireEvent.click(screen.getByTestId('pose-use'));
@@ -129,7 +129,7 @@ describe('using the pose', () => {
     expect(useToasts.getState().toasts.at(-1)).toMatchObject({ status: 'success', title: t('pose.saved') });
   });
 
-  it('warns when no model reads OpenPose, and adds another layer when the canvas is not empty', async () => {
+  it('warns when no model reads OpenPose, and adds another layer when the canvas is not empty', { tags: ['scenario'] }, async () => {
     await openDialog();
     fireEvent.click(screen.getByTestId('pose-use'));
     await waitFor(() => expect(usePoseDialog.getState().isOpen).toBe(false));
@@ -144,7 +144,7 @@ describe('using the pose', () => {
     expect(importImage).toHaveBeenLastCalledWith(saved, 'control');
   });
 
-  it('stays open and shows the reason when the picture cannot be saved', async () => {
+  it('stays open and shows the reason when the picture cannot be saved', { tags: ['scenario'] }, async () => {
     vi.spyOn(backend, 'uploadImage').mockRejectedValue(new Error('disk full'));
     await openDialog();
     fireEvent.click(screen.getByTestId('pose-use'));
@@ -153,7 +153,7 @@ describe('using the pose', () => {
     expect(useCanvas.getState().entities).toHaveLength(0);
   });
 
-  it('shows a failure that is not an Error as text, and fails when the canvas gives no picture', async () => {
+  it('shows a failure that is not an Error as text, and fails when the canvas gives no picture', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'uploadImage').mockRejectedValue('plain text');
     await openDialog();
     fireEvent.click(screen.getByTestId('pose-use'));
@@ -163,7 +163,7 @@ describe('using the pose', () => {
     await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('empty image'));
   });
 
-  it('fails when there is no 2D context', async () => {
+  it('fails when there is no 2D context', { tags: ['error-guessing'] }, async () => {
     restoreCanvas();
     restoreCanvas = () => {};
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);

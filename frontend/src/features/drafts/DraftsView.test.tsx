@@ -65,7 +65,7 @@ const show = () =>
   );
 
 describe('starting drafts', () => {
-  it('shows the empty state and starts a batch with the chosen count and position', async () => {
+  it('shows the empty state and starts a batch with the chosen count and position', { tags: ['scenario'] }, async () => {
     const start = vi.fn().mockResolvedValue(null);
     useDrafts.setState({ start });
     show();
@@ -78,7 +78,7 @@ describe('starting drafts', () => {
     expect(lastToast()).toBeUndefined();
   });
 
-  it('starts with the count the settings give, 4 at first, and keeps what is typed for this run', async () => {
+  it('starts with the count the settings give, 4 at first, and keeps what is typed for this run', { tags: ['scenario'] }, async () => {
     const start = vi.fn().mockResolvedValue(null);
     useDrafts.setState({ start });
     show();
@@ -98,7 +98,7 @@ describe('starting drafts', () => {
     expect(useSettings.getState().draftCount).toBe(10);
   });
 
-  it('starts the position from the settings, and keeps count and position when the screen is left and opened again', async () => {
+  it('starts the position from the settings, and keeps count and position when the screen is left and opened again', { tags: ['scenario'] }, async () => {
     const start = vi.fn().mockResolvedValue(null);
     useDrafts.setState({ start });
     useSettings.getState().set({ draftPosition: 50 });
@@ -119,7 +119,7 @@ describe('starting drafts', () => {
     expect(useSettings.getState().draftPosition).toBe(50);
   });
 
-  it('explains why a batch could not start, and reports a failure', async () => {
+  it('explains why a batch could not start, and reports a failure', { tags: ['error-guessing'] }, async () => {
     const start = vi.fn().mockResolvedValueOnce({ error: 'edit-model' }).mockResolvedValueOnce({ error: 'no-builder' }).mockRejectedValueOnce(new Error('queue down'));
     useDrafts.setState({ start });
     show();
@@ -133,7 +133,7 @@ describe('starting drafts', () => {
 });
 
 describe('model of the drafts', () => {
-  it('starts the drafts with the model picked here instead of the Generate tab model', async () => {
+  it('starts the drafts with the model picked here instead of the Generate tab model', { tags: ['scenario'] }, async () => {
     const start = vi.fn().mockResolvedValue(null);
     useDrafts.setState({ start });
     useModels.setState({ models: [{ key: 'm1', name: 'Anime XL', base: 'sdxl', type: 'main' } as never] });
@@ -144,7 +144,7 @@ describe('model of the drafts', () => {
     await waitFor(() => expect(start).toHaveBeenCalledWith(expect.any(Number), expect.any(Number), 'm1'));
   });
 
-  it('offers the diffusion models of the newer families, and names the edit models it leaves out', () => {
+  it('offers the diffusion models of the newer families, and names the edit models it leaves out', { tags: ['scenario'] }, () => {
     useModels.setState({
       models: [
         { key: 'm1', name: 'Anime XL', base: 'sdxl', type: 'main', path: 'animeXL.safetensors' },
@@ -163,7 +163,7 @@ describe('model of the drafts', () => {
     expect(within(list).queryByText('Wan 5B')).toBeNull();
   });
 
-  it('says nothing is left out when every model can draft, and explains a refused edit model', async () => {
+  it('says nothing is left out when every model can draft, and explains a refused edit model', { tags: ['error-guessing'] }, async () => {
     const start = vi.fn().mockResolvedValue({ error: 'edit-model' });
     useDrafts.setState({ start });
     useModels.setState({ models: [{ key: 'm1', name: 'Anime XL', base: 'sdxl', type: 'main', path: 'a.safetensors' }] as never });
@@ -173,7 +173,7 @@ describe('model of the drafts', () => {
     await waitFor(() => expect(lastToast()).toMatchObject({ status: 'warning', title: t('drafts.editModel') }));
   });
 
-  it('does not open the viewer when the keep star is double clicked', () => {
+  it('does not open the viewer when the keep star is double clicked', { tags: ['scenario'] }, () => {
     useGallery.setState({ images: [picture('d1.png')] });
     useDrafts.setState({ groups: [group('a', [candidate(1)])], currentId: 'a' });
     show();
@@ -183,7 +183,7 @@ describe('model of the drafts', () => {
 });
 
 describe('groups', () => {
-  it('shows one tab per group, switches between them and closes one', () => {
+  it('shows one tab per group, switches between them and closes one', { tags: ['scenario'] }, () => {
     useDrafts.setState({ groups: [group('a', [candidate(1)]), group('b', [candidate(2), candidate(3)])], currentId: 'a' });
     show();
     const tabs = screen.getAllByRole('tab');
@@ -200,7 +200,7 @@ describe('groups', () => {
   describe('history', () => {
     const many = (n: number) => Array.from({ length: n }, (_, i) => group(`g${i + 1}`, [candidate(i + 1)]));
 
-    it('keeps only the latest five as tabs, and opens any batch from the history screen', () => {
+    it('keeps only the latest five as tabs, and opens any batch from the history screen', { tags: ['boundary'] }, () => {
       useDrafts.setState({ groups: many(8), currentId: 'g8' });
       show();
       expect(screen.getAllByRole('tab')).toHaveLength(5);
@@ -215,7 +215,7 @@ describe('groups', () => {
       expect(screen.queryByTestId('drafts-history')).toBeNull();
     });
 
-    it('shows the pictures drawn then on each card, and narrows by model and by words of the prompt', () => {
+    it('shows the pictures drawn then on each card, and narrows by model and by words of the prompt', { tags: ['scenario'] }, () => {
       const made = (id: string, model: string, prompt: string, n: number) => ({ ...group(id, [candidate(n), candidate(n + 50)]), params: { ...group(id, []).params, modelName: model, positivePrompt: prompt } });
       useDrafts.setState({ groups: [made('a', 'Anima', 'a cat on a roof', 1), made('b', 'SDXL', 'a dog in the rain', 2), made('c', 'Anima', 'a cat in the snow', 3)], currentId: 'c' });
       useGallery.setState({ images: [picture('d1.png'), picture('d51.png'), picture('d2.png')] });
@@ -232,7 +232,7 @@ describe('groups', () => {
       expect(screen.queryAllByTestId('drafts-history-card')).toHaveLength(0);
     });
 
-    it('puts the settings of a batch back in the Generate form', () => {
+    it('puts the settings of a batch back in the Generate form', { tags: ['scenario'] }, () => {
       const g = { ...group('a', [candidate(1)]), params: { ...group('a', []).params, positivePrompt: 'a lighthouse', negativePrompt: '', steps: 33, seed: 7, cfgScale: 5, scheduler: 'euler', loras: [] } as DraftGroup['params'] };
       useDrafts.setState({ groups: [g], currentId: 'a' });
       show();
@@ -242,7 +242,7 @@ describe('groups', () => {
       expect(lastToast()?.title).toBe(t('drafts.history.reused'));
     });
 
-    it('closes all the older ones at once from the history screen and leaves the latest', () => {
+    it('closes all the older ones at once from the history screen and leaves the latest', { tags: ['scenario'] }, () => {
       useDrafts.setState({ groups: many(7), currentId: 'g1' });
       show();
       fireEvent.click(screen.getByTestId('drafts-history-button'));
@@ -253,7 +253,7 @@ describe('groups', () => {
     });
   });
 
-  it('shows the last group when none is current', () => {
+  it('shows the last group when none is current', { tags: ['scenario'] }, () => {
     useDrafts.setState({ groups: [group('a', [candidate(1)]), group('b', [candidate(2), candidate(3)])], currentId: null });
     show();
     expect(screen.getAllByTestId('draft-cell')).toHaveLength(2);
@@ -263,7 +263,7 @@ describe('groups', () => {
 describe('candidates', () => {
   const cells = () => screen.getAllByTestId('draft-cell');
 
-  it('labels each candidate by its state', () => {
+  it('labels each candidate by its state', { tags: ['scenario'] }, () => {
     useGallery.setState({ images: ['d1.png', 'd5.png', 'f6.png'].map(picture) });
     useDrafts.setState({
       groups: [
@@ -293,7 +293,7 @@ describe('candidates', () => {
     expect(cells()[4]!.querySelector('.dv-busy')).toBeTruthy();
   });
 
-  it('selects ready candidates by click or keyboard, and ignores the others', () => {
+  it('selects ready candidates by click or keyboard, and ignores the others', { tags: ['scenario'] }, () => {
     useDrafts.setState({ groups: [group('a', [candidate(1), candidate(2, { status: 'queued', imageName: null })])], currentId: 'a' });
     show();
     const pick = (i: number) => within(cells()[i]!).getByRole('button', { name: /seed/ });
@@ -312,7 +312,7 @@ describe('candidates', () => {
     expect(useDrafts.getState().selection).toEqual([]);
   });
 
-  it('keeps or rejects a candidate with its buttons', () => {
+  it('keeps or rejects a candidate with its buttons', { tags: ['scenario'] }, () => {
     useDrafts.setState({ groups: [group('a', [candidate(1)])], currentId: 'a' });
     show();
     fireEvent.click(screen.getByLabelText(t('drafts.keep')));
@@ -325,7 +325,7 @@ describe('candidates', () => {
     expect(screen.getByLabelText(t('drafts.unreject'))).toBeTruthy();
   });
 
-  it('opens a candidate in the viewer on double click when its picture exists', () => {
+  it('opens a candidate in the viewer on double click when its picture exists', { tags: ['scenario'] }, () => {
     useGallery.setState({ images: [picture('d1.png')] });
     useDrafts.setState({ groups: [group('a', [candidate(1), candidate(2, { status: 'queued', imageName: null })])], currentId: 'a' });
     show();
@@ -336,7 +336,7 @@ describe('candidates', () => {
     expect(useUi.getState().mainView.generate).toBe('viewer');
   });
 
-  it('opens a candidate somewhere else when the layout asks, with a button as well as a double click', () => {
+  it('opens a candidate somewhere else when the layout asks, with a button as well as a double click', { tags: ['scenario'] }, () => {
     useGallery.setState({ images: [picture('d1.png')] });
     useDrafts.setState({ groups: [group('a', [candidate(1), candidate(2, { status: 'queued', imageName: null })])], currentId: 'a' });
     const onOpen = vi.fn();
@@ -356,14 +356,14 @@ describe('candidates', () => {
     expect(onOpen).toHaveBeenCalledTimes(2);
   });
 
-  it('has no open button in the desktop layout', () => {
+  it('has no open button in the desktop layout', { tags: ['scenario'] }, () => {
     useGallery.setState({ images: [picture('d1.png')] });
     useDrafts.setState({ groups: [group('a', [candidate(1)])], currentId: 'a' });
     show();
     expect(screen.queryByTestId('draft-open')).toBeNull();
   });
 
-  it('finishes the selected candidates', async () => {
+  it('finishes the selected candidates', { tags: ['scenario'] }, async () => {
     const finish = vi.fn().mockResolvedValue(undefined);
     useDrafts.setState({ finish, groups: [group('a', [candidate(1), candidate(2)])], currentId: 'a' });
     show();
@@ -374,7 +374,7 @@ describe('candidates', () => {
     expect(finish).toHaveBeenCalledWith('a', ['c1', 'c2']);
   });
 
-  it('offers to retry the failed ones', () => {
+  it('offers to retry the failed ones', { tags: ['error-guessing'] }, () => {
     const retryFailed = vi.fn().mockResolvedValue(undefined);
     useDrafts.setState({ retryFailed, groups: [group('a', [candidate(1, { status: 'failed', imageName: null }), candidate(2, { status: 'failed', imageName: null })])], currentId: 'a' });
     show();
@@ -382,7 +382,7 @@ describe('candidates', () => {
     expect(retryFailed).toHaveBeenCalledWith('a');
   });
 
-  it('pages through more than 24 candidates', () => {
+  it('pages through more than 24 candidates', { tags: ['boundary'] }, () => {
     useDrafts.setState({ groups: [group('a', Array.from({ length: 30 }, (_, i) => candidate(i + 1)))], currentId: 'a' });
     show();
     expect(cells()).toHaveLength(24);
@@ -404,7 +404,7 @@ describe('a draft being drawn or finished', () => {
   };
   afterEach(() => act(() => useQueue.getState().setProgress(null)));
 
-  it('shows the draft being drawn with its step, and ignores the progress of other jobs', () => {
+  it('shows the draft being drawn with its step, and ignores the progress of other jobs', { tags: ['scenario'] }, () => {
     const cell = setup({ imageName: null, status: 'running', itemId: 4 });
     expect(cell().querySelector('img')).toBeNull();
     act(() => useQueue.getState().setProgress({ itemId: 4, step: 3, totalSteps: 8, progressImageUrl: 'blob:draft-live' } as never));
@@ -414,7 +414,7 @@ describe('a draft being drawn or finished', () => {
     expect(cell().querySelector('img')).toBeNull();
   });
 
-  it('shows the picture being finished in place of the draft it comes from, and the draft again once it is done', () => {
+  it('shows the picture being finished in place of the draft it comes from, and the draft again once it is done', { tags: ['scenario'] }, () => {
     const cell = setup({ finalItemId: 9, finalStatus: 'running' });
     expect(cell().querySelector('img')?.getAttribute('src')).toBe('blob:t-d1.png');
     act(() => useQueue.getState().setProgress({ itemId: 9, step: 10, totalSteps: 30, progressImageUrl: 'blob:final-live' } as never));
@@ -435,12 +435,12 @@ describe('a generation batch', () => {
     show();
   };
 
-  it('shows each picture as finished, waiting or generating, never as a draft with a step', () => {
+  it('shows each picture as finished, waiting or generating, never as a draft with a step', { tags: ['scenario'] }, () => {
     showBatch(batch([made(), made({ id: 'c2', finalItemId: 2, finalImageName: null, finalStatus: 'running' }), made({ id: 'c3', finalItemId: 3, finalImageName: null, finalStatus: 'queued' })]), [held('g1.png')]);
     expect(screen.getAllByTestId('draft-cell').map((c) => within(c).getByText(/./, { selector: '.dv-badge' }).textContent)).toEqual([t('drafts.badge.finished'), t('drafts.badge.generating'), t('drafts.badge.queued')]);
   });
 
-  it('shows the picture being drawn with its step, like the grid of the gallery, and ignores the progress of other jobs', () => {
+  it('shows the picture being drawn with its step, like the grid of the gallery, and ignores the progress of other jobs', { tags: ['scenario'] }, () => {
     showBatch(batch([made({ finalImageName: null, finalStatus: 'running', finalItemId: 7 })]), []);
     const cell = () => screen.getByTestId('draft-cell');
     expect(cell().querySelector('img')).toBeNull();
@@ -453,7 +453,7 @@ describe('a generation batch', () => {
     act(() => useQueue.getState().setProgress(null));
   });
 
-  it('offers moving the chosen pictures to the board and throwing the rest away, and not finishing drafts', () => {
+  it('offers moving the chosen pictures to the board and throwing the rest away, and not finishing drafts', { tags: ['scenario'] }, () => {
     const adopt = vi.fn().mockResolvedValue(undefined);
     const discard = vi.fn().mockResolvedValue(undefined);
     useDrafts.setState({ adopt, discardRest: discard });
@@ -468,14 +468,14 @@ describe('a generation batch', () => {
     expect(discard).toHaveBeenCalledWith('g');
   });
 
-  it('names the board the pictures were made for', () => {
+  it('names the board the pictures were made for', { tags: ['scenario'] }, () => {
     useGallery.setState({ boards: [{ id: 'b1', name: 'Cats', archived: false, createdAt: 1, parentId: null }] as never });
     showBatch(batch([made()], 'b1'), [held('g1.png')]);
     fireEvent.click(screen.getAllByRole('button', { name: /seed/ })[0]!);
     expect(screen.getByTestId('drafts-adopt').textContent).toContain('Cats');
   });
 
-  it('does not select a picture that is not drawn yet', () => {
+  it('does not select a picture that is not drawn yet', { tags: ['scenario'] }, () => {
     showBatch(batch([made({ finalImageName: null, finalStatus: 'running' }), made({ id: 'c2', finalImageName: 'g2.png' })]), [held('g2.png')]);
     const [waiting, finished] = screen.getAllByRole('button', { name: /seed/ });
     fireEvent.click(waiting!);
@@ -484,19 +484,19 @@ describe('a generation batch', () => {
     expect(useDrafts.getState().selection).toEqual(['c2']);
   });
 
-  it('shows no picture that is already on a board (it was taken there by a drag)', () => {
+  it('shows no picture that is already on a board (it was taken there by a drag)', { tags: ['scenario'] }, () => {
     showBatch(batch([made(), made({ id: 'c2', finalImageName: 'g2.png' })]), [held('g1.png'), held('g2.png', false)]);
     expect(screen.getAllByRole('button', { name: /seed/ })).toHaveLength(1);
   });
 
-  it('lets a finished picture be dragged onto a board, and a waiting one not', () => {
+  it('lets a finished picture be dragged onto a board, and a waiting one not', { tags: ['scenario'] }, () => {
     showBatch(batch([made(), made({ id: 'c2', finalImageName: null, finalStatus: 'queued' })]), [held('g1.png')]);
     const [done, waiting] = screen.getAllByRole('button', { name: /seed/ });
     expect(done!.getAttribute('draggable')).toBe('true');
     expect(waiting!.getAttribute('draggable')).not.toBe('true');
   });
 
-  it('closes with a label that says the rest goes to the trash', () => {
+  it('closes with a label that says the rest goes to the trash', { tags: ['scenario'] }, () => {
     showBatch(batch([made()]), [held('g1.png')]);
     expect(screen.getAllByRole('button', { name: t('drafts.closeGroupHeld') }).length).toBeGreaterThan(0);
     expect(screen.queryByRole('button', { name: t('drafts.closeGroup') })).toBeNull();

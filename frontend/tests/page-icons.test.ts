@@ -10,11 +10,11 @@ describe('page icons', () => {
   const page = readFileSync(resolve(root, 'index.html'), 'utf8');
   const hrefs = [...page.matchAll(/<link rel="(?:icon|apple-touch-icon)"[^>]*href="([^"]+)"/g)].map((m) => m[1]!);
 
-  it('names a tab icon and a home-screen icon', () => {
+  it('names a tab icon and a home-screen icon', { tags: ['condition', 'static'] }, () => {
     expect(hrefs).toHaveLength(2);
   });
 
-  it.each(hrefs)('%s is a source file, not a file of public/', (href) => {
+  it.each(hrefs)('%s is a source file, not a file of public/', { tags: ['condition', 'static'] }, (href) => {
     expect(href.startsWith('/src/')).toBe(true);
     expect(existsSync(resolve(root, href.slice(1)))).toBe(true);
   });

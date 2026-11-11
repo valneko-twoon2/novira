@@ -9,7 +9,7 @@ const tag = fc.string({ maxLength: 12 }).filter((s) => !s.includes(',') && s.tri
 const prompt = fc.array(tag, { maxLength: 6 }).map((tags) => tags.join(', '));
 
 describe('prompt tags (properties)', () => {
-  it('addTag makes the tag present and is idempotent', () => {
+  it('addTag makes the tag present and is idempotent', { tags: ['condition'] }, () => {
     check(
       fc.property(prompt, tag, (p, t) => {
         const once = addTag(p, t);
@@ -19,7 +19,7 @@ describe('prompt tags (properties)', () => {
     );
   });
 
-  it('removeTag makes the tag absent, is idempotent and keeps the other tags', () => {
+  it('removeTag makes the tag absent, is idempotent and keeps the other tags', { tags: ['condition'] }, () => {
     check(
       fc.property(prompt, tag, (p, t) => {
         const once = removeTag(p, t);
@@ -30,11 +30,11 @@ describe('prompt tags (properties)', () => {
     );
   });
 
-  it('tag matching ignores case and surrounding spaces', () => {
+  it('tag matching ignores case and surrounding spaces', { tags: ['condition'] }, () => {
     check(fc.property(prompt, tag, (p, t) => hasTag(addTag(p, t), `  ${t.toUpperCase()} `)));
   });
 
-  it('withTagsFirst / withTagsLast contain every tag of both texts exactly once and order the new tags', () => {
+  it('withTagsFirst / withTagsLast contain every tag of both texts exactly once and order the new tags', { tags: ['boundary'] }, () => {
     check(
       fc.property(prompt, prompt, (p, extra) => {
         for (const merged of [withTagsFirst(p, extra), withTagsLast(p, extra)]) {
@@ -53,12 +53,12 @@ describe('prompt tags (properties)', () => {
     );
   });
 
-  it('estimateTokens is a count that adds up across separated texts and never throws', () => {
+  it('estimateTokens is a count that adds up across separated texts and never throws', { tags: ['error-guessing'] }, () => {
     check(fc.property(junkText, junkText, (a, b) => estimateTokens(a) >= 0 && estimateTokens(`${a} ${b}`) === estimateTokens(a) + estimateTokens(b)));
   });
 
   // Regression: a blank tag is not added (it used to leave an empty entry and a dangling separator: addTag('a', '') gave 'a, ').
-  it('does not append a blank tag', () => {
+  it('does not append a blank tag', { tags: ['regression', 'condition'] }, () => {
     expect(addTag('a', '')).toBe('a');
   });
 });

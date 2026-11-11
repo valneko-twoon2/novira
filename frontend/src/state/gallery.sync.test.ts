@@ -32,13 +32,13 @@ beforeEach(() => {
 });
 
 describe('syncBoards', () => {
-  it('takes a board another page made', () => {
+  it('takes a board another page made', { tags: ['condition'] }, () => {
     useGallery.getState().setBoards([board('a')]);
     useGallery.getState().syncBoards([board('a'), board('b')]);
     expect(useGallery.getState().boards.map((b) => b.id)).toEqual(['a', 'b']);
   });
 
-  it('falls back to Uncategorized when the picked and the auto-add board are gone', () => {
+  it('falls back to Uncategorized when the picked and the auto-add board are gone', { tags: ['condition'] }, () => {
     useGallery.setState({ boards: [board('a'), board('b')], selectedBoardId: 'a', autoAddBoardId: 'a' });
     useGallery.getState().syncBoards([board('b')]);
     const g = useGallery.getState();
@@ -46,7 +46,7 @@ describe('syncBoards', () => {
     expect(g.autoAddBoardId).toBe('none');
   });
 
-  it('keeps the picked board while it is still there, and Uncategorized as it is', () => {
+  it('keeps the picked board while it is still there, and Uncategorized as it is', { tags: ['condition'] }, () => {
     useGallery.setState({ boards: [board('a')], selectedBoardId: 'a', autoAddBoardId: 'none' });
     useGallery.getState().syncBoards([board('a'), board('c')]);
     const g = useGallery.getState();
@@ -56,7 +56,7 @@ describe('syncBoards', () => {
 });
 
 describe('applyImageChanges', () => {
-  it('replaces a changed picture where it is', () => {
+  it('replaces a changed picture where it is', { tags: ['condition'] }, () => {
     useGallery.getState().setImages([image('a'), image('b')]);
     useGallery.getState().applyImageChanges([image('b', { starred: true, boardId: 'x' })], []);
     const images = useGallery.getState().images;
@@ -64,14 +64,14 @@ describe('applyImageChanges', () => {
     expect(images[1]).toMatchObject({ starred: true, boardId: 'x' });
   });
 
-  it('puts a picture that came back from the trash in front, once', () => {
+  it('puts a picture that came back from the trash in front, once', { tags: ['condition'] }, () => {
     useGallery.getState().setImages([image('a')]);
     useGallery.getState().applyImageChanges([image('r')], []);
     useGallery.getState().applyImageChanges([image('r')], []);
     expect(useGallery.getState().images.map((i) => i.name)).toEqual(['r', 'a']);
   });
 
-  it('takes out the removed pictures and what pointed at them', () => {
+  it('takes out the removed pictures and what pointed at them', { tags: ['condition'] }, () => {
     useGallery.setState({ images: [image('a'), image('b')], selection: ['a', 'b'], viewerImageName: 'a', compareImageName: 'a' });
     useGallery.getState().applyImageChanges([], ['a', 'unknown']);
     const g = useGallery.getState();
@@ -81,7 +81,7 @@ describe('applyImageChanges', () => {
     expect(g.compareImageName).toBeNull();
   });
 
-  it('changes nothing for an empty change', () => {
+  it('changes nothing for an empty change', { tags: ['boundary'] }, () => {
     const images = [image('a')];
     useGallery.getState().setImages(images);
     useGallery.getState().applyImageChanges([], []);
@@ -90,14 +90,14 @@ describe('applyImageChanges', () => {
 });
 
 describe('syncModels', () => {
-  it('takes the list and unpicks a model that is gone', () => {
+  it('takes the list and unpicks a model that is gone', { tags: ['condition'] }, () => {
     useModels.setState({ models: [model('a'), model('b')], selectedKey: 'b' });
     useModels.getState().syncModels([model('a')]);
     expect(useModels.getState().models.map((m) => m.key)).toEqual(['a']);
     expect(useModels.getState().selectedKey).toBeNull();
   });
 
-  it('keeps the picked model while it is there, and no pick as none', () => {
+  it('keeps the picked model while it is there, and no pick as none', { tags: ['condition'] }, () => {
     useModels.setState({ models: [model('a')], selectedKey: 'a' });
     useModels.getState().syncModels([model('a'), model('c')]);
     expect(useModels.getState().selectedKey).toBe('a');

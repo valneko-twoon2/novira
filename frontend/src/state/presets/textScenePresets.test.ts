@@ -15,7 +15,7 @@ const bubble = (scene: Pick<Scene, 'width' | 'height'>): BubbleLayer => {
 };
 
 describe('scaleLayer', () => {
-  it('moves a text layer along each axis and scales its letters by the smaller factor', () => {
+  it('moves a text layer along each axis and scales its letters by the smaller factor', { tags: ['equivalence'] }, () => {
     const t = textLayer(EMPTY_SCENE);
     const scaled = scaleLayer(t, 2, 0.5) as TextLayer;
     expect(scaled.x).toBe(600);
@@ -24,12 +24,12 @@ describe('scaleLayer', () => {
     expect(scaled.text).toBe(t.text);
   });
 
-  it('scales a bubble\'s size, border and tail by the smaller factor', () => {
+  it('scales a bubble\'s size, border and tail by the smaller factor', { tags: ['condition'] }, () => {
     const scaled = scaleLayer(bubble(EMPTY_SCENE), 0.5, 1) as BubbleLayer;
     expect(scaled).toMatchObject({ x: 250, y: 100, width: 200, height: 100, border: { width: 5 }, tail: { x: 20, y: 75, width: 30 } });
   });
 
-  it('never shrinks a bubble below its minimum or a tail below 1', () => {
+  it('never shrinks a bubble below its minimum or a tail below 1', { tags: ['boundary'] }, () => {
     const scaled = scaleLayer(bubble(EMPTY_SCENE), 0.01, 0.01) as BubbleLayer;
     expect(scaled.width).toBe(40);
     expect(scaled.height).toBe(40);
@@ -37,12 +37,12 @@ describe('scaleLayer', () => {
     expect(scaled.style.fontSize).toBeGreaterThanOrEqual(1);
   });
 
-  it('leaves the AI fill as it is, since it follows the font size', () => {
+  it('leaves the AI fill as it is, since it follows the font size', { tags: ['condition'] }, () => {
     const t = { ...textLayer(EMPTY_SCENE), rich: { imageName: 'a.png', candidates: ['a.png'], width: 300, height: 100, fontSize: 100, sourceKey: 'k' } };
     expect((scaleLayer(t, 2, 2) as TextLayer).rich).toEqual(t.rich);
   });
 
-  it('keeps everything at a factor of 1', () => {
+  it('keeps everything at a factor of 1', { tags: ['condition'] }, () => {
     const b = bubble(EMPTY_SCENE);
     expect(scaleLayer(b, 1, 1)).toMatchObject({ x: b.x, y: b.y, width: b.width, height: b.height, border: b.border, tail: b.tail });
   });
@@ -51,20 +51,20 @@ describe('scaleLayer', () => {
 describe('sceneFromTemplate', () => {
   const data = { width: 1000, height: 1000, background: { color: '#112233' }, layers: [textLayer({ width: 1000, height: 1000 })] };
 
-  it('takes the sheet of the template on a plain background', () => {
+  it('takes the sheet of the template on a plain background', { tags: ['condition'] }, () => {
     const scene = sceneFromTemplate(data, { ...EMPTY_SCENE, width: 400, height: 300, background: { kind: 'color', color: null } });
     expect(scene).toMatchObject({ width: 1000, height: 1000, background: { kind: 'color', color: '#112233' } });
     expect(scene.layers[0]!.x).toBe(300);
   });
 
-  it('keeps the picture and its size, and scales the layers to it', () => {
+  it('keeps the picture and its size, and scales the layers to it', { tags: ['condition'] }, () => {
     const current: Scene = { ...EMPTY_SCENE, width: 500, height: 500, background: { kind: 'image', imageName: 'p.png' }, layers: [] };
     const scene = sceneFromTemplate(data, current);
     expect(scene).toMatchObject({ width: 500, height: 500, background: { kind: 'image', imageName: 'p.png' } });
     expect(scene.layers[0]).toMatchObject({ x: 150, y: 100 });
   });
 
-  it('keeps the current plain background when the template was made on a picture', () => {
+  it('keeps the current plain background when the template was made on a picture', { tags: ['condition'] }, () => {
     const onPicture = { width: 1000, height: 1000, layers: data.layers };
     const current: Scene = { ...EMPTY_SCENE, width: 2000, height: 2000, background: { kind: 'color', color: '#ffffff' }, layers: [] };
     const scene = sceneFromTemplate(onPicture, current);
@@ -72,7 +72,7 @@ describe('sceneFromTemplate', () => {
     expect(scene.layers[0]).toMatchObject({ x: 600, y: 400 });
   });
 
-  it('gives every layer a new id', () => {
+  it('gives every layer a new id', { tags: ['equivalence'] }, () => {
     const scene = sceneFromTemplate(data, EMPTY_SCENE);
     expect(scene.layers[0]!.id).not.toBe(data.layers[0]!.id);
   });
@@ -81,7 +81,7 @@ describe('sceneFromTemplate', () => {
 describe('the template preset kind', () => {
   beforeEach(() => reset({ ...EMPTY_SCENE, layers: [] }));
 
-  it('saves the layers and a plain background, not a picture, and without sharing objects with the editor', () => {
+  it('saves the layers and a plain background, not a picture, and without sharing objects with the editor', { tags: ['condition'] }, () => {
     const t = textLayer(EMPTY_SCENE);
     useTextEditor.setState({ scene: { ...EMPTY_SCENE, background: { kind: 'color', color: '#abcdef' }, layers: [t] } });
     const id = savePreset(textScenePresets, 'Title');
@@ -95,7 +95,7 @@ describe('the template preset kind', () => {
     expect(useTextScenePresets.getState().presets.find((p) => p.id === onPicture)!.data.background).toBeUndefined();
   });
 
-  it('applies as one undo step, replaces the layers and clears the selection', () => {
+  it('applies as one undo step, replaces the layers and clears the selection', { tags: ['state-transition'] }, () => {
     const t = textLayer(EMPTY_SCENE, 'Saved');
     useTextEditor.setState({ scene: { ...EMPTY_SCENE, layers: [t] } });
     const id = savePreset(textScenePresets, 'Title');
@@ -112,7 +112,7 @@ describe('the template preset kind', () => {
     expect(useTextEditor.getState().scene.layers).toHaveLength(2);
   });
 
-  it('applies the same template twice to two separate sets of layers', () => {
+  it('applies the same template twice to two separate sets of layers', { tags: ['condition'] }, () => {
     useTextEditor.setState({ scene: { ...EMPTY_SCENE, layers: [textLayer(EMPTY_SCENE)] } });
     const id = savePreset(textScenePresets, 'Title');
     applyPreset(textScenePresets, id);

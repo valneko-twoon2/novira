@@ -165,6 +165,7 @@ pub fn redraw(g: &mut Builder, r: &Redraw<'_>, tiles: &[Tile]) -> (Value, Vec<(S
 mod tests {
     use super::*;
 
+    // tags: condition
     #[test]
     fn the_tile_is_about_the_size_the_source_was_drawn_at() {
         assert_eq!(tile_side(888, 1184), 1024);
@@ -173,6 +174,7 @@ mod tests {
         assert_eq!(tile_side(4000, 3000), 1024);
     }
 
+    // tags: condition
     #[test]
     fn a_side_that_fits_is_one_tile_and_a_longer_one_is_covered_with_overlaps() {
         assert_eq!(starts(1024, 1024), vec![0]);
@@ -189,6 +191,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn the_grid_covers_the_output_row_by_row_and_feathers_only_into_earlier_tiles() {
         let tiles = grid(3552, 4736, 1024);

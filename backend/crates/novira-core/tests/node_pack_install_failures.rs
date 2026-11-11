@@ -82,6 +82,7 @@ fn hold(path: &Path) -> File {
         .unwrap()
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_submodule_archive_that_cannot_be_fetched_stops_the_install() {
     let world = World::new();
@@ -94,6 +95,7 @@ async fn a_submodule_archive_that_cannot_be_fetched_stops_the_install() {
         .exists());
 }
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn a_submodule_whose_folder_cannot_be_made_stops_the_install() {
     let world = World::new();
@@ -104,6 +106,7 @@ async fn a_submodule_whose_folder_cannot_be_made_stops_the_install() {
     assert!(!err.is_empty());
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn an_installed_pack_that_is_in_use_cannot_be_replaced_or_removed() {
     let world = World::new();
@@ -120,6 +123,7 @@ async fn an_installed_pack_that_is_in_use_cannot_be_replaced_or_removed() {
     assert!(err.contains("Cannot remove"), "{err}");
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_python_that_cannot_be_run_stops_the_install() {
     let world = World::new();

@@ -104,6 +104,7 @@ fn speech_graph_request() -> EnqueueRequest {
     req
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_failure_reported_after_the_user_cancelled_is_not_recorded_as_a_failure() {
     let dir = tempfile::tempdir().unwrap();
@@ -129,6 +130,7 @@ async fn a_failure_reported_after_the_user_cancelled_is_not_recorded_as_a_failur
     backend.shutdown();
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn a_job_cancelled_while_it_waits_for_the_gpu_lock_is_canceled() {
     let dir = tempfile::tempdir().unwrap();
@@ -164,6 +166,7 @@ async fn a_job_cancelled_while_it_waits_for_the_gpu_lock_is_canceled() {
     backend.shutdown();
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn a_graph_whose_speech_is_cancelled_in_the_voice_engine_ends_canceled() {
     let dir = tempfile::tempdir().unwrap();
@@ -184,6 +187,7 @@ async fn a_graph_whose_speech_is_cancelled_in_the_voice_engine_ends_canceled() {
     backend.shutdown();
 }
 
+// tags: decision-table
 #[tokio::test]
 async fn a_lora_given_as_the_main_model_and_an_unknown_tile_controlnet_are_told_apart() {
     let dir = tempfile::tempdir().unwrap();
@@ -287,6 +291,7 @@ const T5: &[&str] = &[
     "shared.weight",
 ];
 
+// tags: decision-table
 #[tokio::test]
 async fn a_hunyuan_video_15_image_model_needs_the_sigclip_vision_file() {
     let dir = tempfile::tempdir().unwrap();
@@ -319,6 +324,7 @@ async fn a_hunyuan_video_15_image_model_needs_the_sigclip_vision_file() {
     assert!(error.contains("HunyuanVideo 1.5 image to video"), "{error}");
 }
 
+// tags: decision-table
 #[tokio::test]
 async fn a_gguf_wan_model_is_told_apart_by_its_name_alone() {
     let dir = tempfile::tempdir().unwrap();

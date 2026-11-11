@@ -37,7 +37,7 @@ const callsOf = async (input: Parameters<typeof synthesize>[0]) => {
 };
 
 describe('synthesize', () => {
-  it('draws the same picture for the same seed and prompt, and another for another seed', async () => {
+  it('draws the same picture for the same seed and prompt, and another for another seed', { tags: ['condition'] }, async () => {
     const a = await callsOf({ width: 64, height: 48, seed: 1, prompt: 'a red fox in snow' });
     const b = await callsOf({ width: 64, height: 48, seed: 1, prompt: 'a red fox in snow' });
     const c = await callsOf({ width: 64, height: 48, seed: 2, prompt: 'a red fox in snow' });
@@ -46,7 +46,7 @@ describe('synthesize', () => {
     expect(a.result.url).toBe('blob:synth');
   });
 
-  it('paints a background, glowing blobs in additive mode, silhouettes and sparkles, with no source picture involved', async () => {
+  it('paints a background, glowing blobs in additive mode, silhouettes and sparkles, with no source picture involved', { tags: ['condition'] }, async () => {
     const { rec } = await callsOf({ width: 64, height: 48, seed: 3, prompt: '' });
     expect(rec.of('createLinearGradient')).toHaveLength(1);
     expect(rec.of('createRadialGradient').length).toBeGreaterThanOrEqual(6);
@@ -55,14 +55,14 @@ describe('synthesize', () => {
     expect(rec.of('drawImage')).toHaveLength(0);
   });
 
-  it('shrinks a large size to the render limit and keeps a tiny one at 8 pixels', async () => {
+  it('shrinks a large size to the render limit and keeps a tiny one at 8 pixels', { tags: ['boundary'] }, async () => {
     const big = await callsOf({ width: 4096, height: 2048, seed: 1, prompt: 'x' });
     expect([big.result.canvas.width, big.result.canvas.height]).toEqual([1024, 512]);
     const tiny = await callsOf({ width: 1, height: 1, seed: 1, prompt: 'x' });
     expect([tiny.result.canvas.width, tiny.result.canvas.height]).toEqual([8, 8]);
   });
 
-  it('lays the pattern over the source picture with the strength as its opacity, clamped to 0..1', async () => {
+  it('lays the pattern over the source picture with the strength as its opacity, clamped to 0..1', { tags: ['boundary'] }, async () => {
     const { rec } = await callsOf({ width: 64, height: 48, seed: 1, prompt: 'x', initImageUrl: 'blob:init-a', strength: 0.5 });
     expect(rec.of('clearRect')).toHaveLength(1);
     expect(rec.of('drawImage').length).toBe(3);
@@ -74,14 +74,14 @@ describe('synthesize', () => {
     expect(dflt.rec.sets.filter((s) => s.name === 'globalAlpha').map((s) => s.value)[0]).toBeCloseTo(0.7 * 0.85);
   });
 
-  it('keeps the pure pattern when the source picture cannot be loaded', async () => {
+  it('keeps the pure pattern when the source picture cannot be loaded', { tags: ['error-guessing'] }, async () => {
     const { rec, result } = await callsOf({ width: 64, height: 48, seed: 1, prompt: 'x', initImageUrl: 'blob:bad-init', maskImageUrl: 'blob:mask-ok' });
     expect(rec.of('drawImage')).toHaveLength(0);
     expect(rec.of('clearRect')).toHaveLength(0);
     expect(result.url).toBe('blob:synth');
   });
 
-  it('puts the source back outside the mask: the mask red channel becomes alpha and the redrawn part is cut by it', async () => {
+  it('puts the source back outside the mask: the mask red channel becomes alpha and the redrawn part is cut by it', { tags: ['condition'] }, async () => {
     const { rec, made } = await callsOf({ width: 64, height: 48, seed: 1, prompt: 'x', initImageUrl: 'blob:init-m', maskImageUrl: 'blob:mask-m' });
     // Main canvas, the pattern copy, the alpha canvas and the redrawn canvas.
     expect(made).toBe(4);
@@ -96,13 +96,13 @@ describe('synthesize', () => {
     expect(rec.of('clearRect').length).toBeGreaterThanOrEqual(2);
   });
 
-  it('keeps the whole redrawn picture when the mask cannot be loaded', async () => {
+  it('keeps the whole redrawn picture when the mask cannot be loaded', { tags: ['error-guessing'] }, async () => {
     const { rec } = await callsOf({ width: 64, height: 48, seed: 1, prompt: 'x', initImageUrl: 'blob:init-n', maskImageUrl: 'blob:bad-mask' });
     // Only the three draws of the img2img overlay; nothing from the mask step.
     expect(rec.of('drawImage')).toHaveLength(3);
   });
 
-  it('fails when there is no 2D context, and falls back to a data URL when the canvas gives no blob', async () => {
+  it('fails when there is no 2D context, and falls back to a data URL when the canvas gives no blob', { tags: ['error-guessing'] }, async () => {
     canvases.restore();
     const spy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     await expect(synthesize({ width: 64, height: 48, seed: 1, prompt: 'x' })).rejects.toThrow('2d context unavailable');
@@ -114,14 +114,14 @@ describe('synthesize', () => {
 });
 
 describe('loadImage and imageSize', () => {
-  it('loads a picture once per URL, with CORS only for http(s)', async () => {
+  it('loads a picture once per URL, with CORS only for http(s)', { tags: ['condition'] }, async () => {
     const first = loadImage('https://example.test/a.png');
     expect(loadImage('https://example.test/a.png')).toBe(first);
     expect((await first as unknown as FakeImage).crossOrigin).toBe('anonymous');
     expect((await loadImage('blob:local-a') as unknown as FakeImage).crossOrigin).toBe('');
   });
 
-  it('rejects with the URL when the picture cannot be loaded, and reports the natural size', async () => {
+  it('rejects with the URL when the picture cannot be loaded, and reports the natural size', { tags: ['error-guessing'] }, async () => {
     await expect(loadImage('blob:bad-load')).rejects.toThrow('failed to load blob:bad-load');
     await expect(imageSize('blob:size-a')).resolves.toEqual({ width: 320, height: 240 });
   });
@@ -135,7 +135,7 @@ describe('progressPreview', () => {
     return canvas;
   };
 
-  it('makes a 64 pixel wide preview that is blurred and noisy early and clean at the end', () => {
+  it('makes a 64 pixel wide preview that is blurred and noisy early and clean at the end', { tags: ['condition'] }, () => {
     const early = progressPreview(final(), 0.1, 5);
     expect(early).toBe('data:image/png;base64,AAAA');
     const earlyCtx = canvases.all.at(-1)!;
@@ -151,7 +151,7 @@ describe('progressPreview', () => {
     expect(latePut.data[(64 * 4 * 0) + 63 * 4]).toBe(255);
   });
 
-  it('is empty when no 2D context exists', () => {
+  it('is empty when no 2D context exists', { tags: ['error-guessing'] }, () => {
     canvases.restore();
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     expect(progressPreview(final(), 0.5, 1)).toBe('');

@@ -10,7 +10,7 @@ describe('erase prompt', () => {
     for (const node of Object.values(g.prompt)) for (const v of Object.values(node.inputs)) if (Array.isArray(v)) expect(g.prompt[v[0] as string]).toBeDefined();
   };
 
-  it('fills from the surroundings with OpenCV when no LaMa model is installed', () => {
+  it('fills from the surroundings with OpenCV when no LaMa model is installed', { tags: ['condition'] }, () => {
     const g = buildEraseGraph('photo.png', 'mask.png', { lama: null });
     expect(g.prompt.fill!.class_type).toBe(ERASE_NODE);
     expect(g.prompt.fill!.inputs.fill).toBe('telea');
@@ -22,13 +22,13 @@ describe('erase prompt', () => {
     links(g);
   });
 
-  it('erases what was painted and nothing around it: no node grows the mask', () => {
+  it('erases what was painted and nothing around it: no node grows the mask', { tags: ['condition'] }, () => {
     for (const lama of [null, 'big-lama.pt']) {
       expect(Object.values(buildEraseGraph('photo.png', 'mask.png', { lama }).prompt).map((n) => n.class_type)).not.toContain('INPAINT_ExpandMask');
     }
   });
 
-  it('uses LaMa when it is installed', () => {
+  it('uses LaMa when it is installed', { tags: ['condition'] }, () => {
     const g = buildEraseGraph('photo.png', 'mask.png', { lama: 'big-lama.pt' });
     expect(g.prompt.model!.inputs.model_name).toBe('big-lama.pt');
     expect(g.prompt.fill!.class_type).toBe('INPAINT_InpaintWithModel');
@@ -36,7 +36,7 @@ describe('erase prompt', () => {
     links(g);
   });
 
-  it('finds the LaMa file in the model list in either format ComfyUI reports it', () => {
+  it('finds the LaMa file in the model list in either format ComfyUI reports it', { tags: ['condition'] }, () => {
     const node = (spec: unknown) => ({ INPAINT_LoadInpaintModel: { input: { required: { model_name: spec } } } }) as unknown as ComfyNodeDefs;
     expect(lamaModel(node([['other.pth', 'big-lama.pt']]))).toBe('big-lama.pt');
     expect(lamaModel(node(['COMBO', { options: ['big-lama.pt'] }]))).toBe('big-lama.pt');
@@ -47,11 +47,11 @@ describe('erase prompt', () => {
 
 // Snapshots of the whole prompts, so a change to them is seen in review. Update on purpose with `npx vitest run -u`.
 describe('erase graph snapshots', () => {
-  it('erase with the Telea fill (no LaMa model)', async () => {
+  it('erase with the Telea fill (no LaMa model)', { tags: ['condition'] }, async () => {
     await expect(asJson(buildEraseGraph('photo.png', 'mask.png', { lama: null }))).toMatchFileSnapshot('./__snapshots__/erase/erase-telea.json');
   });
 
-  it('erase with LaMa', async () => {
+  it('erase with LaMa', { tags: ['condition'] }, async () => {
     await expect(asJson(buildEraseGraph('photo.png', 'mask.png', { lama: 'big-lama.pt' }))).toMatchFileSnapshot('./__snapshots__/erase/erase-lama.json');
   });
 });

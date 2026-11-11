@@ -8,7 +8,7 @@ const asJson = (x: unknown) => `${JSON.stringify(x, null, 2)}\n`;
 const snap = (name: string) => `./__snapshots__/faceFixGraph/${name}.json`;
 
 describe('face fix graph snapshots', () => {
-  it('fix the faces of a picture', async () => {
+  it('fix the faces of a picture', { tags: ['condition'] }, async () => {
     const g = buildFaceFixGraph('photo.png', { modelKey: 'sdxl-key', prompt: '1girl, brown hair', negative: 'lowres', detector: 'bbox/face_yolov8m.pt', strength: 0.4, sensitivity: 0.5, steps: 20, cfg: 6, scheduler: 'dpmpp_2m_k' });
     await expect(asJson(g)).toMatchFileSnapshot(snap('face-fix'));
   });

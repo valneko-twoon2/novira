@@ -16,7 +16,7 @@ beforeEach(() => {
 });
 
 describe('viewComicPage', () => {
-  it('stores the drawn page as an intermediate JPEG picture and gives its name', async () => {
+  it('stores the drawn page as an intermediate JPEG picture and gives its name', { tags: ['condition'] }, async () => {
     const project = useComic.getState().projects[0]!;
     project.pages[0]!.panels[0]!.imageName = 'panel.png';
     useComic.setState({ projects: [{ ...project }] });
@@ -26,7 +26,7 @@ describe('viewComicPage', () => {
     expect(upload).toHaveBeenCalledWith(expect.any(Blob), expect.objectContaining({ isIntermediate: true }));
   });
 
-  it('says why when the page is missing, undrawn, or no comic is open', async () => {
+  it('says why when the page is missing, undrawn, or no comic is open', { tags: ['error-guessing'] }, async () => {
     await expect(viewComicPage(5)).rejects.toThrow('there is no page 5');
     await expect(viewComicPage(1)).rejects.toThrow('no drawn panel');
     useComic.setState({ projects: [], activeProjectId: null });

@@ -51,12 +51,12 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('RecallParameters', () => {
-  it('says so when the picture has no stored settings', () => {
+  it('says so when the picture has no stored settings', { tags: ['scenario'] }, () => {
     show(null);
     expect(screen.getByText(t('gallery.meta.none'))).toBeTruthy();
   });
 
-  it('lists the settings and recalls each one alone', () => {
+  it('lists the settings and recalls each one alone', { tags: ['scenario'] }, () => {
     useModels.setState({ models: [{ key: 'm1', name: 'Model One', type: 'main', base: 'sdxl', path: '' } as never] });
     show(metadata({ negativePrompt: 'blurry' }));
     recall('gallery.meta.positivePrompt');
@@ -81,7 +81,7 @@ describe('RecallParameters', () => {
     expect(screen.getByText(t('gallery.meta.defaultVae'))).toBeTruthy();
   });
 
-  it('shows the sampling that ran in place of the unused scheduler setting, with nothing to recall', () => {
+  it('shows the sampling that ran in place of the unused scheduler setting, with nothing to recall', { tags: ['scenario'] }, () => {
     show(metadata({ scheduler: 'euler_a', sampling: { sampler: 'euler', scheduler: 'simple' } }));
     expect(screen.queryByText(t('gallery.meta.scheduler'))).toBeNull();
     const r = row('gallery.meta.sampling');
@@ -89,7 +89,7 @@ describe('RecallParameters', () => {
     expect(within(r).queryByRole('button')).toBeNull();
   });
 
-  it('takes back the sampler and noise schedule the picture named, with the scheduler it was drawn over', () => {
+  it('takes back the sampler and noise schedule the picture named, with the scheduler it was drawn over', { tags: ['scenario'] }, () => {
     useParams.setState({ scheduler: 'dpmpp_2m_k', samplerName: null, noiseSchedule: null });
     show(metadata({ scheduler: 'euler_a', samplerName: 'res_multistep', sampling: { sampler: 'res_multistep', scheduler: 'normal' } }));
     expect(row('gallery.meta.sampling').textContent).toContain('res_multistep / normal');
@@ -97,7 +97,7 @@ describe('RecallParameters', () => {
     expect(useParams.getState()).toMatchObject({ scheduler: 'euler_a', samplerName: 'res_multistep', noiseSchedule: null });
   });
 
-  it('finds the model by its name, and keeps the current one when none is installed', () => {
+  it('finds the model by its name, and keeps the current one when none is installed', { tags: ['scenario'] }, () => {
     useModels.setState({ models: [{ key: 'wai', name: 'waiIllustriousSDXL_v170', type: 'main', base: 'sdxl', path: '' } as never] });
     useParams.setState({ modelKey: 'current' });
     show(metadata({ modelKey: '', modelName: 'WAI-illustrious-SDXL-v17' }));
@@ -112,7 +112,7 @@ describe('RecallParameters', () => {
     expect(useToasts.getState().toasts.at(-1)).toMatchObject({ status: 'warning', description: t('gallery.toast.recallModelMissing', { name: 'ponyDiffusionV6XL' }) });
   });
 
-  it('copies each prompt as written, and only the prompts', () => {
+  it('copies each prompt as written, and only the prompts', { tags: ['scenario'] }, () => {
     const onCopy = vi.fn();
     show(metadata({ positivePrompt: 'a cat, sitting', negativePrompt: 'blurry' }), onCopy);
     const copy = (label: Parameters<typeof t>[0]) => within(row(label)).getByLabelText(t('gallery.meta.copy', { name: t(label) }));
@@ -124,13 +124,13 @@ describe('RecallParameters', () => {
     expect(within(row('gallery.meta.seed')).queryByLabelText(t('gallery.meta.copy', { name: t('gallery.meta.seed') }))).toBeNull();
   });
 
-  it('shows the generation mode without a recall button', () => {
+  it('shows the generation mode without a recall button', { tags: ['scenario'] }, () => {
     show(metadata());
     expect(within(row('gallery.meta.generationMode')).queryByRole('button')).toBeNull();
     expect(screen.queryByText(t('gallery.meta.negativePrompt'))).toBeNull();
   });
 
-  it('shows and recalls seamless tiling, strength, the high-resolution fix and each LoRA', () => {
+  it('shows and recalls seamless tiling, strength, the high-resolution fix and each LoRA', { tags: ['scenario'] }, () => {
     useModels.setState({ models: [{ key: 'l1', name: 'Style LoRA', type: 'lora' } as never] });
     useParams.setState({ loras: [{ key: 'l1', weight: 0.2 } as never, { key: 'other', weight: 1 } as never] });
     show(
@@ -155,7 +155,7 @@ describe('RecallParameters', () => {
     expect(useParams.getState().loras.map((l) => [l.key, l.weight])).toEqual([['other', 1], ['l1', 0.8]]);
   });
 
-  it('shows the settings of upscales and workflow pictures, which cannot be recalled', () => {
+  it('shows the settings of upscales and workflow pictures, which cannot be recalled', { tags: ['scenario'] }, () => {
     show(metadata({ upscaleScale: 4, creativity: 0.3, structure: 0.5, workflowName: 'My flow' }));
     expect(screen.getByText('×4')).toBeTruthy();
     expect(screen.getByText('My flow')).toBeTruthy();

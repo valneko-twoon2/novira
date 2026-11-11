@@ -57,7 +57,7 @@ describe('the home network store', () => {
     vi.useRealTimers();
   });
 
-  it('has nothing for a page with no home network, and asks once', async () => {
+  it('has nothing for a page with no home network, and asks once', { tags: ['condition'] }, async () => {
     getLanApi.mockResolvedValue(null);
     await useLan.getState().init();
     await useLan.getState().init();
@@ -66,7 +66,7 @@ describe('the home network store', () => {
     await vi.advanceTimersByTimeAsync(60_000);
   });
 
-  it('reads once while closed and then waits for something to change it', async () => {
+  it('reads once while closed and then waits for something to change it', { tags: ['scenario'] }, async () => {
     const a = api(() => state(false));
     getLanApi.mockResolvedValue(a);
     await useLan.getState().init();
@@ -76,7 +76,7 @@ describe('the home network store', () => {
     expect(a.state).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps reading while open, faster while the dialog is open, and stops when it is closed again', async () => {
+  it('keeps reading while open, faster while the dialog is open, and stops when it is closed again', { tags: ['condition'] }, async () => {
     let open = true;
     const a = api(() => state(open));
     getLanApi.mockResolvedValue(a);
@@ -95,7 +95,7 @@ describe('the home network store', () => {
     expect(a.state).toHaveBeenCalledTimes(settled);
   });
 
-  it('reads the remote listener with the home network, and none where the server has none', async () => {
+  it('reads the remote listener with the home network, and none where the server has none', { tags: ['condition'] }, async () => {
     let on = false;
     const a = api(
       () => state(true),
@@ -114,7 +114,7 @@ describe('the home network store', () => {
     expect(useLan.getState().remote).toBeNull();
   });
 
-  it('forgets the state of a server that stops answering', async () => {
+  it('forgets the state of a server that stops answering', { tags: ['condition'] }, async () => {
     let answer: LanState | null = state(true);
     const a = api(() => answer);
     getLanApi.mockResolvedValue(a);

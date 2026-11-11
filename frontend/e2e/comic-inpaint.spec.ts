@@ -22,7 +22,7 @@ async function drag(page: Page, target: Locator, from: [number, number], to: [nu
   await page.mouse.up();
 }
 
-test('a mask painted on a page is inpainted under the box and the result is accepted into a new layer, even from another page', async ({ page }) => {
+test('a mask painted on a page is inpainted under the box and the result is accepted into a new layer, even from another page', { tag: ['@scenario'] }, async ({ page }) => {
   test.slow();
   await openApp(page, '?scenario=empty');
   await showTab(page, 'comic');

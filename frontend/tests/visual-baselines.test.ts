@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { isScreenSource } from '../../scripts/tools/visual-baselines.mjs';
 
 describe('the files that can change a main screen', () => {
-  it('runs for the source that decides what the screens show', () => {
+  it('runs for the source that decides what the screens show', { tags: ['condition'] }, () => {
     for (const path of [
       'frontend/src/features/params/ParamControls.tsx',
       'frontend/src/app/app.css',
@@ -18,7 +18,7 @@ describe('the files that can change a main screen', () => {
     }
   });
 
-  it('does not run for tests, test support, documents, scripts', () => {
+  it('does not run for tests, test support, documents, scripts', { tags: ['condition'] }, () => {
     for (const path of [
       'frontend/src/features/params/ParamControls.test.tsx',
       'frontend/src/features/params/labels.property.test.ts',

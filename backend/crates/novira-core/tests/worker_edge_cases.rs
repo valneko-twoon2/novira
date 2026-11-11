@@ -89,6 +89,7 @@ async fn fails_with(b: &Backend, req: EnqueueRequest) -> String {
 // Refusals by the worker ----------------------------------------------------------------------------------------
 
 // A video family's model has no picture graph; Flux, which the picture graph now runs, no longer fails here.
+// tags: error-guessing
 #[tokio::test]
 async fn a_model_of_a_base_the_backend_cannot_run_fails_the_job_with_its_name() {
     let dir = tempfile::tempdir().unwrap();
@@ -107,6 +108,7 @@ async fn a_model_of_a_base_the_backend_cannot_run_fails_the_job_with_its_name() 
 }
 
 // The Logo screen is gone but the mode stays, for its pictures: a row an older version left in the queue must not hang it.
+// tags: error-guessing, decision-table
 #[tokio::test]
 async fn a_logo_job_left_in_the_queue_fails_with_a_clear_message_and_the_queue_goes_on() {
     let dir = tempfile::tempdir().unwrap();
@@ -132,6 +134,7 @@ async fn a_logo_job_left_in_the_queue_fails_with_a_clear_message_and_the_queue_g
     wait_until(|| statuses(&backend).last() == Some(&QueueItemStatus::Completed)).await;
 }
 
+// tags: scenario
 #[tokio::test]
 async fn video_and_music_jobs_need_their_packs() {
     let dir = tempfile::tempdir().unwrap();
@@ -162,6 +165,7 @@ async fn video_and_music_jobs_need_their_packs() {
     }
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn an_upscale_model_that_is_unknown_fails_the_job() {
     let dir = tempfile::tempdir().unwrap();
@@ -177,6 +181,7 @@ async fn an_upscale_model_that_is_unknown_fails_the_job() {
     assert!(err.contains("Upscale model not found"), "{err}");
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_post_processing_model_that_is_unknown_fails_the_job() {
     let dir = tempfile::tempdir().unwrap();
@@ -192,6 +197,7 @@ async fn a_post_processing_model_that_is_unknown_fails_the_job() {
     assert!(err.contains("Upscale model not found"), "{err}");
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn an_engine_that_finishes_without_a_result_fails_the_job() {
     let dir = tempfile::tempdir().unwrap();
@@ -203,6 +209,7 @@ async fn an_engine_that_finishes_without_a_result_fails_the_job() {
     assert!(err.contains("without a result"), "{err}");
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn an_engine_that_gives_up_by_itself_cancels_the_job_without_an_error() {
     let dir = tempfile::tempdir().unwrap();
@@ -215,6 +222,7 @@ async fn an_engine_that_gives_up_by_itself_cancels_the_job_without_an_error() {
     assert_eq!(last_error(&backend), "");
 }
 
+// tags: scenario
 #[tokio::test]
 async fn the_turbo_video_model_runs_once_its_pack_is_installed() {
     let dir = tempfile::tempdir().unwrap();
@@ -237,6 +245,7 @@ async fn the_turbo_video_model_runs_once_its_pack_is_installed() {
     assert_eq!(job.checkpoint, packs::video_turbo_unet_ref());
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_picture_deleted_while_its_job_waits_fails_the_job_by_name() {
     let dir = tempfile::tempdir().unwrap();
@@ -291,6 +300,7 @@ async fn wait_for_the_lock_message(events: &Events) {
     .await;
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn a_picture_job_waiting_for_the_gpu_lock_can_be_cancelled_and_leaves_the_lock_alone() {
     let dir = tempfile::tempdir().unwrap();
@@ -311,6 +321,7 @@ async fn a_picture_job_waiting_for_the_gpu_lock_can_be_cancelled_and_leaves_the_
     assert!(lock.is_dir(), "somebody else's lock is never removed");
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn a_voice_job_waiting_for_the_gpu_lock_can_be_cancelled() {
     let dir = tempfile::tempdir().unwrap();
@@ -337,6 +348,7 @@ async fn a_voice_job_waiting_for_the_gpu_lock_can_be_cancelled() {
     wait_until(|| statuses(&backend) == vec![QueueItemStatus::Canceled]).await;
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_voice_job_without_text_is_refused_before_it_is_queued_or_fails_when_run() {
     let dir = tempfile::tempdir().unwrap();

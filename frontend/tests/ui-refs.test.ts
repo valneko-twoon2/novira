@@ -26,7 +26,7 @@ const KEYS = new Set(['media.label', 'media.tab.video', 'media.tab.image', 'comi
 const id = (name: string, prefix = false) => testIdDefined({ kind: 'testid', name, prefix, line: 1 }, DEFS);
 
 describe('what counts as a reference', () => {
-  it('reads getByTestId, testid(), [data-testid] selectors, "test id" in Markdown, msg() and t() of a catalog area', () => {
+  it('reads getByTestId, testid(), [data-testid] selectors, "test id" in Markdown, msg() and t() of a catalog area', { tags: ['condition'] }, () => {
     const text = [
       "await page.getByTestId('invoke-button').click();",
       "await testid('comic-image-center').click();",
@@ -51,7 +51,7 @@ describe('what counts as a reference', () => {
     expect(referencesIn('docs/design/x.ts', 'the comic icon (test id `media-comic`)', AREAS)).toHaveLength(0);
   });
 
-  it('looks at the e2e specs, the frontend scripts, the tools, the docs and the skills, not at the app or itself', () => {
+  it('looks at the e2e specs, the frontend scripts, the tools, the docs and the skills, not at the app or itself', { tags: ['condition'] }, () => {
     for (const path of ['frontend/e2e/comic.spec.ts', 'frontend/scripts/manual/scenes.mjs', 'scripts/tools/models-sweep-app.mjs', 'docs/design/01-app/02-screens/01-navigation.md', '.claude/skills/verify-real-app/SKILL.md', 'AGENTS.md'])
       expect(isReferenceSource(path), path).toBe(true);
     for (const path of ['frontend/src/app/App.tsx', 'scripts/tools/ui-refs.mjs', 'frontend/src/app/App.test.tsx', 'backend/src/lib.rs']) expect(isReferenceSource(path), path).toBe(false);
@@ -59,7 +59,7 @@ describe('what counts as a reference', () => {
 });
 
 describe('what counts as defined', () => {
-  it('takes strings, and template strings with a fixed part of three letters or more', () => {
+  it('takes strings, and template strings with a fixed part of three letters or more', { tags: ['condition'] }, () => {
     expect(id('invoke-button')).toBe(true);
     expect(id('media-video')).toBe(true);
     expect(id('positive-prompt')).toBe(true);
@@ -68,19 +68,19 @@ describe('what counts as defined', () => {
     expect(id('comic-plan-tab')).toBe(false);
   });
 
-  it('lets a loose template (`${testId}-${item.id}`) make an id only after a stem handed through a test id prop', () => {
+  it('lets a loose template (`${testId}-${item.id}`) make an id only after a stem handed through a test id prop', { tags: ['condition'] }, () => {
     expect(templatePattern('${testId}-${item.id}')).toMatchObject({ loose: true });
     expect(id('video-pack-turbo')).toBe(true);
     // "manga" and "section" are ordinary words; no prop hands "manga" as a test id.
     expect(id('manga-section')).toBe(false);
   });
 
-  it('checks a name built at run time by its fixed start', () => {
+  it('checks a name built at run time by its fixed start', { tags: ['condition'] }, () => {
     expect(id('media-', true)).toBe(true);
     expect(id('comic-plan-', true)).toBe(false);
   });
 
-  it('takes a message key of the ja catalog, its plural forms and a fixed start', () => {
+  it('takes a message key of the ja catalog, its plural forms and a fixed start', { tags: ['condition'] }, () => {
     const key = (name: string, prefix = false) => messageDefined({ kind: 'message', name, prefix, line: 1 }, KEYS);
     expect(key('media.tab.video')).toBe(true);
     expect(key('comic.count')).toBe(true);
@@ -91,7 +91,7 @@ describe('what counts as defined', () => {
 });
 
 describe('the problems', () => {
-  it('names the file, the line and what is missing', () => {
+  it('names the file, the line and what is missing', { tags: ['error-guessing'] }, () => {
     const files = [{ path: 'scripts/tools/check.mjs', text: "ok\nawait page.getByTestId('comic-plan-tab').click();\nmsg('comic.plan.title');" }];
     expect(missingRefs(files, DEFS, KEYS)).toEqual([
       'scripts/tools/check.mjs:2: test id "comic-plan-tab" is in no source of frontend/src; the screen changed, so change this reference',
@@ -100,7 +100,7 @@ describe('the problems', () => {
     expect(missingRefs([{ path: 'scripts/tools/check.mjs', text: "page.getByTestId('media-video')" }], DEFS, KEYS)).toEqual([]);
   });
 
-  it('passes the repository itself', () => {
+  it('passes the repository itself', { tags: ['scenario', 'static'] }, () => {
     expect(checkRefs()).toEqual([]);
   });
 });

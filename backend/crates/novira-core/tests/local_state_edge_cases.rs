@@ -12,6 +12,7 @@ fn secret_file(data: &std::path::Path, name: &str) -> PathBuf {
     data.join("secrets").join(name)
 }
 
+// tags: error-guessing
 #[test]
 fn a_secret_that_cannot_be_read_names_the_secret_in_the_error() {
     let data = tempfile::tempdir().unwrap();
@@ -24,6 +25,7 @@ fn a_secret_that_cannot_be_read_names_the_secret_in_the_error() {
     assert!(hf.contains("Hugging Face token"), "{hf}");
 }
 
+// tags: error-guessing
 #[test]
 fn removing_a_secret_that_cannot_be_removed_is_an_error() {
     let data = tempfile::tempdir().unwrap();
@@ -35,6 +37,7 @@ fn removing_a_secret_that_cannot_be_removed_is_an_error() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn saving_a_secret_where_the_folder_or_file_is_blocked_is_an_error() {
     // The secrets folder cannot be created because a file has its name.
@@ -55,6 +58,7 @@ fn saving_a_secret_where_the_folder_or_file_is_blocked_is_an_error() {
     );
 }
 
+// tags: error-guessing, state-transition
 #[test]
 fn a_leftover_that_cannot_be_removed_does_not_stop_a_site_key_from_being_saved() {
     let data = tempfile::tempdir().unwrap();
@@ -71,6 +75,7 @@ fn a_leftover_that_cannot_be_removed_does_not_stop_a_site_key_from_being_saved()
 
 // GPU lock --------------------------------------------------------------------------------------------------------
 
+// tags: error-guessing
 #[test]
 fn the_lock_cannot_be_taken_inside_a_file() {
     let dir = tempfile::tempdir().unwrap();
@@ -78,6 +83,7 @@ fn the_lock_cannot_be_taken_inside_a_file() {
     assert!(try_acquire(&dir.path().join("file").join("gpu.lock")).is_err());
 }
 
+// tags: error-guessing, state-transition
 #[test]
 fn a_lock_name_the_system_refuses_is_an_error_not_a_busy_lock() {
     let dir = tempfile::tempdir().unwrap();
@@ -85,6 +91,7 @@ fn a_lock_name_the_system_refuses_is_an_error_not_a_busy_lock() {
     assert!(try_acquire(&dir.path().join("gpu?lock")).is_err());
 }
 
+// tags: scenario
 #[test]
 fn an_owner_record_with_a_reused_process_id_frees_the_lock() {
     let dir = tempfile::tempdir().unwrap();
@@ -97,6 +104,7 @@ fn an_owner_record_with_a_reused_process_id_frees_the_lock() {
     assert!(guard.is_some());
 }
 
+// tags: state-transition, decision-table
 #[test]
 fn releasing_everything_removes_the_locks_this_process_holds() {
     let dir = tempfile::tempdir().unwrap();
@@ -111,6 +119,7 @@ fn releasing_everything_removes_the_locks_this_process_holds() {
 
 // The lock setting ------------------------------------------------------------------------------------------------
 
+// tags: boundary
 #[test]
 fn the_auto_lock_follows_the_environment_variable_and_ignores_an_empty_one() {
     let settings = Settings::default();
@@ -126,6 +135,7 @@ fn the_auto_lock_follows_the_environment_variable_and_ignores_an_empty_one() {
     assert_eq!(settings.gpu_lock_path(), None);
 }
 
+// tags: error-guessing
 #[test]
 fn a_lock_with_an_unreadable_owner_record_is_left_alone() {
     let dir = tempfile::tempdir().unwrap();
@@ -136,6 +146,7 @@ fn a_lock_with_an_unreadable_owner_record_is_left_alone() {
     assert!(path.is_dir());
 }
 
+// tags: scenario
 #[test]
 fn a_lock_path_without_a_parent_is_tried_as_it_is() {
     // The drive root has no parent and already exists, so it can never be taken (and is never removed).

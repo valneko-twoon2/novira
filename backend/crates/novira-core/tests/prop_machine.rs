@@ -25,6 +25,7 @@ fn has_parent_dir(p: &Path) -> bool {
 
 // ---------------------------------------------------------------- the graphics-card parsers
 
+// tags: error-guessing
 #[test]
 fn nvidia_smi_gives_the_card_with_the_most_memory_and_never_panics() {
     check(
@@ -66,6 +67,7 @@ fn qword_listing(adapters: &[(u8, u64)]) -> (String, String) {
     (sizes, names)
 }
 
+// tags: error-guessing
 #[test]
 fn adapter_listings_give_the_largest_adapter_with_a_size_and_never_panic() {
     check(
@@ -97,6 +99,7 @@ fn adapter_listings_give_the_largest_adapter_with_a_size_and_never_panic() {
 
 // ---------------------------------------------------------------- the settings validators
 
+// tags: decision-table, equivalence
 #[test]
 fn a_package_is_accepted_only_when_the_installer_knows_it() {
     check(any_text(), |text| {
@@ -108,6 +111,7 @@ fn a_package_is_accepted_only_when_the_installer_knows_it() {
     });
 }
 
+// tags: boundary, decision-table
 #[test]
 fn a_start_timeout_is_accepted_exactly_inside_its_range() {
     check(
@@ -127,6 +131,7 @@ fn a_start_timeout_is_accepted_exactly_inside_its_range() {
     );
 }
 
+// tags: boundary, equivalence
 #[test]
 fn a_model_folder_that_is_accepted_is_a_plain_existing_folder_outside_the_data_folder() {
     let base = tempfile::tempdir().unwrap();
@@ -155,6 +160,7 @@ fn a_model_folder_that_is_accepted_is_a_plain_existing_folder_outside_the_data_f
     );
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn model_folders_are_refused_when_listed_already_or_when_there_are_too_many() {
     let base = tempfile::tempdir().unwrap();
@@ -179,6 +185,7 @@ fn model_folders_are_refused_when_listed_already_or_when_there_are_too_many() {
     });
 }
 
+// tags: boundary, equivalence
 #[test]
 fn a_comfyui_folder_that_is_accepted_is_full_plain_and_apart_from_the_data_folder() {
     let base = tempfile::tempdir().unwrap();
@@ -208,6 +215,7 @@ fn a_comfyui_folder_that_is_accepted_is_full_plain_and_apart_from_the_data_folde
 
 // ---------------------------------------------------------------- the data folder
 
+// tags: boundary, equivalence
 #[test]
 fn a_data_folder_that_is_accepted_is_a_full_plain_path_with_a_parent() {
     let base = tempfile::tempdir().unwrap();
@@ -230,6 +238,7 @@ fn a_data_folder_that_is_accepted_is_a_full_plain_path_with_a_parent() {
     );
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn a_new_data_folder_is_refused_when_it_is_the_current_one_or_nested_with_it() {
     let base = tempfile::tempdir().unwrap();
@@ -253,6 +262,7 @@ fn a_new_data_folder_is_refused_when_it_is_the_current_one_or_nested_with_it() {
     });
 }
 
+// tags: error-guessing, state-transition
 #[test]
 fn the_pointer_round_trips_and_a_damaged_one_is_no_pointer() {
     let base = tempfile::tempdir().unwrap();
@@ -295,6 +305,7 @@ fn the_pointer_round_trips_and_a_damaged_one_is_no_pointer() {
 
 // ---------------------------------------------------------------- packs
 
+// tags: boundary
 #[test]
 fn a_pack_file_always_lives_under_the_models_folder_in_its_own_pack_folder() {
     let models = PathBuf::from("models-root");
@@ -309,6 +320,7 @@ fn a_pack_file_always_lives_under_the_models_folder_in_its_own_pack_folder() {
     });
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn a_pack_is_ready_exactly_when_every_file_is_there_and_missing_counts_only_what_is_not() {
     check_up_to(

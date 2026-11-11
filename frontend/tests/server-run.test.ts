@@ -8,7 +8,7 @@ import { ensureBuilt, serverLayout, startServer } from '../../scripts/tools/serv
 const roots = { repo: 'E:/r/wt', main: 'E:/r/main', work: path.resolve('E:/r/main/novira-data/work'), models: 'E:/r/main/novira-data/models' };
 
 describe('server-run', () => {
-  it('builds the server outside the repository and serves the checkout\'s harness build', () => {
+  it('builds the server outside the repository and serves the checkout\'s harness build', { tags: ['condition'] }, () => {
     const layout = serverLayout({}, roots, 'E:/r/wt');
     expect(layout.target).toBe(path.resolve('E:/r/main/novira-data/work/server-target'));
     expect(layout.exe).toBe(path.join(layout.target, 'debug', 'novira-server.exe'));
@@ -17,11 +17,11 @@ describe('server-run', () => {
     expect(path.basename(layout.dist)).toMatch(/^wt-[0-9a-f]{8}$/);
   });
 
-  it('lets NOVIRA_SERVER_TARGET move the build', () => {
+  it('lets NOVIRA_SERVER_TARGET move the build', { tags: ['condition'] }, () => {
     expect(serverLayout({ NOVIRA_SERVER_TARGET: 'E:/t/x' }, roots, 'E:/r/wt').target).toBe(path.resolve('E:/t/x'));
   });
 
-  it('asks cargo even when a server is there: a cache can bring back one of another commit', () => {
+  it('asks cargo even when a server is there: a cache can bring back one of another commit', { tags: ['condition'] }, () => {
     const layout = { target: 'E:/t/server', exe: fileURLToPath(import.meta.url), dist: 'E:/t/dist' };
     const built: { args: string[]; cwd: string; target: string }[] = [];
     const exec = (_cmd: string, args: string[], o: { cwd: string; env: NodeJS.ProcessEnv }) => {
@@ -32,12 +32,12 @@ describe('server-run', () => {
     expect(built).toEqual([{ args: ['build', '-p', 'novira-server', '-j', '4'], cwd: path.join('E:/r/wt', 'backend'), target: 'E:/t/server' }]);
   });
 
-  it('stops when the server does not build', () => {
+  it('stops when the server does not build', { tags: ['error-guessing'] }, () => {
     const layout = { target: 'E:/t/server', exe: 'E:/t/server/novira-server.exe', dist: 'E:/t/dist' };
     expect(() => ensureBuilt({ layout, repo: 'E:/r/wt', exec: () => ({ status: 101 }), buildDist: () => undefined })).toThrow(/server build failed \(exit 101\)/);
   });
 
-  it.each(['E:/r/main/novira-data', 'E:/r/main/novira-data/work', 'E:/elsewhere/data', 'E:/r/main/novira-data/work/../models'])('refuses the data folder %s', async (data) => {
+  it.each(['E:/r/main/novira-data', 'E:/r/main/novira-data/work', 'E:/elsewhere/data', 'E:/r/main/novira-data/work/../models'])('refuses the data folder %s', { tags: ['error-guessing'] }, async (data) => {
     await expect(startServer({ data, roots })).rejects.toThrow(/refusing/);
   });
 });

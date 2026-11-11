@@ -35,7 +35,7 @@ async function pickFirstModel(page: Page): Promise<void> {
   await page.getByTestId('model-picker-list').locator('.pp-picker__item').first().tap();
 }
 
-test('a phone gets the phone layout: one tab with the tabs at its foot, no side bar', async ({ page }) => {
+test('a phone gets the phone layout: one tab with the tabs at its foot, no side bar', { tag: ['@scenario'] }, async ({ page }) => {
   await openPhone(page);
   await expect(page.getByTestId('tab-generate')).toHaveCount(0);
   await expect(page.getByRole('navigation', { name: msg('phone.nav') })).toBeVisible();
@@ -48,7 +48,7 @@ test('a phone gets the phone layout: one tab with the tabs at its foot, no side 
   expect(box!.y).toBeLessThan(page.viewportSize()!.height / 3);
 });
 
-test('draws a picture from the Generate tab, shows it full screen while it is drawn, then the picture it made', async ({ page }) => {
+test('draws a picture from the Generate tab, shows it full screen while it is drawn, then the picture it made', { tag: ['@scenario'] }, async ({ page }) => {
   await openPhone(page, { stepDelay: 1000 });
   await expect(page.getByTestId('invoke-button')).toBeDisabled();
   await expect(page.getByTestId('generation-reason')).toBeVisible();
@@ -72,7 +72,7 @@ test('draws a picture from the Generate tab, shows it full screen while it is dr
   await expect(page.getByTestId('phone-thumb')).toHaveCount(1);
 });
 
-test('looks through the pictures of a board full screen: swipe, star, info, delete', async ({ page }) => {
+test('looks through the pictures of a board full screen: swipe, star, info, delete', { tag: ['@scenario'] }, async ({ page }) => {
   await openPhone(page, { pictures: true });
   await page.getByTestId('phone-nav-images').tap();
   const thumbs = page.getByTestId('phone-thumb');
@@ -104,7 +104,7 @@ test('looks through the pictures of a board full screen: swipe, star, info, dele
   await expect(thumbs).toHaveCount(count - 1);
 });
 
-test('follows the jobs on the Queue tab: its count, cancelling one waiting, trying it again, watching one drawn', async ({ page }) => {
+test('follows the jobs on the Queue tab: its count, cancelling one waiting, trying it again, watching one drawn', { tag: ['@state-transition'] }, async ({ page }) => {
   await openPhone(page, { stepDelay: 1000 });
   await pickFirstModel(page);
   await page.getByTestId('positive-prompt').fill('a quiet harbour in the rain');
@@ -136,7 +136,7 @@ test('follows the jobs on the Queue tab: its count, cancelling one waiting, tryi
   await expect(cards).toHaveCount(0);
 });
 
-test('makes drafts on the Drafts tab, looks at one large and finishes it', async ({ page }) => {
+test('makes drafts on the Drafts tab, looks at one large and finishes it', { tag: ['@scenario'] }, async ({ page }) => {
   await openPhone(page);
   await pickFirstModel(page);
   await page.getByTestId('positive-prompt').fill('a red fox in the snow');
@@ -169,7 +169,7 @@ async function smallFields(page: Page): Promise<string[]> {
   );
 }
 
-test('opening a picker raises no keyboard: the search box is focused only when tapped', async ({ page }) => {
+test('opening a picker raises no keyboard: the search box is focused only when tapped', { tag: ['@condition'] }, async ({ page }) => {
   await openPhone(page);
   const focusedField = () => page.evaluate(() => /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName ?? ''));
   // The model, LoRA and preset pickers, and the popover under the prompt.
@@ -191,7 +191,7 @@ test('opening a picker raises no keyboard: the search box is focused only when t
   expect(await focusedField()).toBe(true);
 });
 
-test('every text field of the tabs is 16px or more, so iOS Safari does not zoom in on it', async ({ page }) => {
+test('every text field of the tabs is 16px or more, so iOS Safari does not zoom in on it', { tag: ['@equivalence'] }, async ({ page }) => {
   await openPhone(page, { pictures: true });
   for (const tab of ['generate', 'images', 'drafts', 'queue', 'models', 'browse'] as const) {
     await page.getByTestId(`phone-nav-${tab}`).tap();
@@ -200,7 +200,7 @@ test('every text field of the tabs is 16px or more, so iOS Safari does not zoom 
   }
 });
 
-test('a phone on its side keeps the phone layout', async ({ page }) => {
+test('a phone on its side keeps the phone layout', { tag: ['@condition'] }, async ({ page }) => {
   await page.setViewportSize({ width: 915, height: 412 });
   await openPhone(page);
   await expect(page.getByTestId('phone-generate')).toBeVisible();
@@ -222,7 +222,7 @@ async function signInOnDesktop(page: Page): Promise<void> {
   await expect(page.getByTestId('phone-shell')).toBeVisible();
 }
 
-test('the assistant opens from the title bar and says it is set up on the PC while it is not', async ({ page }) => {
+test('the assistant opens from the title bar and says it is set up on the PC while it is not', { tag: ['@scenario'] }, async ({ page }) => {
   await openPhone(page);
   await page.getByTestId('phone-chat-open').tap();
   const chat = page.getByTestId('phone-chat');
@@ -235,7 +235,7 @@ test('the assistant opens from the title bar and says it is set up on the PC whi
   await expect(page.getByTestId('phone-generate')).toBeVisible();
 });
 
-test('chats with the assistant full screen: it sets the Generate tab, keeps past chats and starts new ones', async ({ page }) => {
+test('chats with the assistant full screen: it sets the Generate tab, keeps past chats and starts new ones', { tag: ['@scenario'] }, async ({ page }) => {
   await openPhone(page, { pictures: true });
   await signInOnDesktop(page);
   await page.getByTestId('phone-chat-open').tap();

@@ -25,6 +25,7 @@ fn gzip_zeros(bytes: usize) -> Route {
     Route::bytes(z.finish().unwrap()).with_header("Content-Encoding", "gzip")
 }
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn the_list_of_comfyui_releases_refuses_a_failed_or_oversized_answer() {
     let path = "/repos/comfyanonymous/ComfyUI/releases";
@@ -38,6 +39,7 @@ async fn the_list_of_comfyui_releases_refuses_a_failed_or_oversized_answer() {
     assert_eq!(release_tags(&client()).await.unwrap(), ["v0.3.1"]);
 }
 
+// tags: boundary
 #[tokio::test]
 async fn the_tags_and_the_description_of_a_pack_repository_have_a_size_cap() {
     let repo = parse_github("https://github.com/capowner/caprepo").unwrap();
@@ -55,6 +57,7 @@ async fn the_tags_and_the_description_of_a_pack_repository_have_a_size_cap() {
     assert!(err.contains("unexpectedly large"), "{err}");
 }
 
+// tags: boundary
 #[tokio::test]
 async fn an_answer_of_exactly_the_cap_is_still_read() {
     let repo = parse_github("https://github.com/exactowner/exactrepo").unwrap();
@@ -78,6 +81,7 @@ fn page_node(id: &str, name: &str, downloads: u64) -> serde_json::Value {
     })
 }
 
+// tags: decision-table
 #[tokio::test]
 async fn the_registry_list_is_read_over_every_page_sorted_and_without_repeats() {
     let path = "/nodes";
@@ -105,6 +109,7 @@ async fn the_registry_list_is_read_over_every_page_sorted_and_without_repeats() 
     assert_eq!(parse_page(b"{\"nodes\":[]}").unwrap().1, 1);
 }
 
+// tags: boundary
 #[test]
 fn a_disk_copy_larger_than_any_real_list_is_not_read() {
     let dir = tempfile::tempdir().unwrap();
@@ -115,6 +120,7 @@ fn a_disk_copy_larger_than_any_real_list_is_not_read() {
     assert!(load_cache(&path).is_none());
 }
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn a_frontend_page_sent_in_chunks_past_the_script_cap_is_an_error() {
     // No length is announced, so only the bytes read can show that the page is too large.
@@ -144,6 +150,7 @@ async fn a_frontend_page_sent_in_chunks_past_the_script_cap_is_an_error() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn a_comfyui_process_reports_its_folder_and_a_log_folder_it_cannot_make() {
     let root = tempfile::tempdir().unwrap();

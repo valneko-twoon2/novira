@@ -19,7 +19,7 @@ const name = fc.oneof(
 );
 
 describe('fileBase', () => {
-  it('is never empty and has no forbidden character, control character, or trailing dot or space', () => {
+  it('is never empty and has no forbidden character, control character, or trailing dot or space', { tags: ['error-guessing', 'boundary'] }, () => {
     check(
       fc.property(name, (n) => {
         const base = fileBase(n);
@@ -31,7 +31,7 @@ describe('fileBase', () => {
     );
   });
 
-  it('is idempotent on ASCII names and keeps a name that is already safe as it is', () => {
+  it('is idempotent on ASCII names and keeps a name that is already safe as it is', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(fc.stringMatching(/^[a-zA-Z0-9 ._\\/:*?"<>|-]{0,24}$/), (n) => {
         const once = fileBase(n);
@@ -47,7 +47,7 @@ describe('fileBase', () => {
 });
 
 describe('bookFileName', () => {
-  it('is the safe base followed by the ending of the format, and the ending differs per format', () => {
+  it('is the safe base followed by the ending of the format, and the ending differs per format', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(name, format, (n, f) => {
         const file = bookFileName(n, f);

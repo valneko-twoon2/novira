@@ -278,6 +278,7 @@ mod tests {
             .collect()
     }
 
+    // tags: equivalence
     #[test]
     fn claude_gets_only_the_apps_server_and_its_tools_and_no_built_in_ones() {
         let args = strings(&claude_args(
@@ -304,6 +305,7 @@ mod tests {
         assert!(!plain.iter().any(|a| a == "--model" || a == "--effort"));
     }
 
+    // tags: equivalence
     #[test]
     fn claudes_config_names_the_server_by_http_with_the_token_in_a_header() {
         let config = claude_mcp_config(&McpLink {
@@ -317,6 +319,7 @@ mod tests {
         assert_eq!(config["mcpServers"].as_object().unwrap().len(), 1);
     }
 
+    // tags: condition
     #[test]
     fn codex_gets_the_server_by_url_the_token_by_environment_and_stays_read_only() {
         let args = strings(&codex_args(
@@ -348,6 +351,7 @@ mod tests {
         assert!(!args.contains(&"-i".to_string()));
     }
 
+    // tags: condition
     #[test]
     fn with_pictures_claude_reads_one_stream_json_message_and_answers_in_stream_json() {
         let args = strings(&claude_args(None, None, Path::new("c.json"), true));
@@ -383,6 +387,7 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn the_answer_of_a_stream_is_its_last_result_line() {
         let out = "{\"type\":\"system\"}\nnot json\n{\"type\":\"assistant\"}\n{\"type\":\"result\",\"result\":\"done\",\"is_error\":false}\n";
@@ -391,6 +396,7 @@ mod tests {
         assert!(stream_result("").is_none());
     }
 
+    // tags: equivalence
     #[test]
     fn codex_gets_each_picture_after_i_before_the_answer_file() {
         let pictures = [

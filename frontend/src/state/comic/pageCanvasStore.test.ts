@@ -19,7 +19,7 @@ beforeEach(() => {
 });
 
 describe('putting in the layers of a page', () => {
-  it('changes the page, makes no undo step, and tells when nothing changed', () => {
+  it('changes the page, makes no undo step, and tells when nothing changed', { tags: ['state-transition'] }, () => {
     const doc = painted(page().canvas);
     expect(useComic.getState().setPageCanvas(page().id, doc)).toBe(true);
     expect(page().canvas).toBe(doc);
@@ -28,7 +28,7 @@ describe('putting in the layers of a page', () => {
     expect(useComic.getState().setPageCanvas('missing', doc)).toBe(false);
   });
 
-  it('is kept by the comic undo, which brings back the rest of the page', () => {
+  it('is kept by the comic undo, which brings back the rest of the page', { tags: ['state-transition'] }, () => {
     const before = page().panels.length;
     useComic.getState().setPanelCount(page().id, before + 1);
     const doc = painted(page().canvas);
@@ -42,7 +42,7 @@ describe('putting in the layers of a page', () => {
 });
 
 describe('a new paper', () => {
-  it('scales the layers by one factor and centres them; undo brings them back to the old paper', () => {
+  it('scales the layers by one factor and centres them; undo brings them back to the old paper', { tags: ['state-transition'] }, () => {
     const doc = painted(page().canvas);
     useComic.getState().setPageCanvas(page().id, doc);
     const a4 = pagePixels({ size: 'A4' });
@@ -60,7 +60,7 @@ describe('a new paper', () => {
     points.forEach((v, i) => expect(Math.abs(v - before[i]!)).toBeLessThanOrEqual(1.5));
   });
 
-  it('applies a page template on another paper the same way, and leaves the layers alone on the same paper', () => {
+  it('applies a page template on another paper the same way, and leaves the layers alone on the same paper', { tags: ['equivalence'] }, () => {
     const doc = painted(page().canvas);
     useComic.getState().setPageCanvas(page().id, doc);
     useComic.getState().applyPageLayout(page().id, { panelCount: 2, columns: 2, direction: 'rtl', size: 'A4', shapes: null });

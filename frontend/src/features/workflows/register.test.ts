@@ -39,13 +39,13 @@ beforeEach(() => {
 });
 
 describe('pack nodes', () => {
-  it('join the catalog when ComfyUI reports its definitions', () => {
+  it('join the catalog when ComfyUI reports its definitions', { tags: ['condition'] }, () => {
     expect(getTemplate('comfy:MockFilmGrain')).toBeUndefined();
     useComfyNodes.setState({ defs: MOCK_NODE_DEFS });
     expect(getTemplate('comfy:MockFilmGrain')).toBeDefined();
   });
 
-  it('open a workflow file that was waiting for them, once they are known', () => {
+  it('open a workflow file that was waiting for them, once they are known', { tags: ['state-transition'] }, () => {
     const raw = { format: 'novira-workflow', version: 1, meta: { name: 'w' }, nodes: [], edges: [], form: [] };
     useWorkflowImport.getState().set({ raw, name: 'w', packs: [], types: [] });
     useComfyNodes.setState({ defs: MOCK_NODE_DEFS });
@@ -55,12 +55,12 @@ describe('pack nodes', () => {
 });
 
 describe('store actions', () => {
-  it('are filled in for the editor', () => {
+  it('are filled in for the editor', { tags: ['condition'] }, () => {
     const s = useWorkflows.getState();
     expect([typeof s.loadWorkflow, typeof s.canLoadImage, typeof s.loadImage, typeof s.addImageInput]).toEqual(['function', 'function', 'function', 'function']);
   });
 
-  it('open a picked file at once, or after asking when unsaved changes would be lost', () => {
+  it('open a picked file at once, or after asking when unsaved changes would be lost', { tags: ['state-transition'] }, () => {
     const file = new File(['{}'], 'flow.json');
     useWorkflows.setState({ isTouched: false });
     useWorkflows.getState().loadFile(file);
@@ -76,7 +76,7 @@ describe('store actions', () => {
 });
 
 describe('the assistant hooks', () => {
-  it('offers the workflow as context, a snapshot and a restore', () => {
+  it('offers the workflow as context, a snapshot and a restore', { tags: ['condition'] }, () => {
     const snap = editor().snapshot() as { nodes: unknown[] };
     expect(Array.isArray(snap.nodes)).toBe(true);
     expect(editor().context()).toBeTruthy();
@@ -85,17 +85,17 @@ describe('the assistant hooks', () => {
     expect(useWorkflows.getState().nodes).toHaveLength(snap.nodes.length);
   });
 
-  it('applies nothing for operations that change nothing', () => {
+  it('applies nothing for operations that change nothing', { tags: ['boundary'] }, () => {
     expect(editor().apply([])).toBe(false);
     expect(editor().apply([{ op: 'unknown' }])).toBe(false);
   });
 
-  it('applies operations that take effect', () => {
+  it('applies operations that take effect', { tags: ['condition'] }, () => {
     expect(editor().apply([{ op: 'addNode', id: 'added', nodeType: 'integer' }])).toBe(true);
     expect(useWorkflows.getState().nodes.some((n) => n.id === 'added')).toBe(true);
   });
 
-  it('opens a workflow the assistant wrote, tolerating a graph that is not an object', () => {
+  it('opens a workflow the assistant wrote, tolerating a graph that is not an object', { tags: ['state-transition'] }, () => {
     const opener = captured.opener as (name: string, graph: unknown) => void;
     opener('From chat', 'garbage');
     opener('From chat', { nodes: [], edges: [] });
@@ -104,7 +104,7 @@ describe('the assistant hooks', () => {
 });
 
 describe('the Invoke builder', () => {
-  it('reports what is missing, builds a request and tells when the graph changes', async () => {
+  it('reports what is missing, builds a request and tells when the graph changes', { tags: ['error-guessing'] }, async () => {
     expect(Array.isArray(builder().readiness())).toBe(true);
     useWorkflows.setState({ nodes: [], edges: [] });
     expect(builder().readiness().length).toBeGreaterThan(0);
@@ -118,7 +118,7 @@ describe('the Invoke builder', () => {
     stop();
   });
 
-  it('builds a request for a graph that is ready, and refuses one with nothing to run', async () => {
+  it('builds a request for a graph that is ready, and refuses one with nothing to run', { tags: ['error-guessing', 'boundary'] }, async () => {
     await expect(builder().build({ prepend: false })).rejects.toMatchObject({ reason: 'noOutput' });
     const { nodes, edges } = buildTemplate(GRAPH_TEMPLATES.find((t) => t.id === 'text2image')!);
     nodes.find((n) => n.data.type === 'sdxl_model_loader')!.data.inputs.model = 'sdxl-key';

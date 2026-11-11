@@ -60,6 +60,7 @@ fn package_path(package: &str) -> String {
         .to_string()
 }
 
+// tags: regression
 #[test]
 fn the_addresses_point_at_the_fake_site_in_a_debug_build() {
     // Starting the site sets the variables, so it comes before the first address is asked for.
@@ -71,6 +72,7 @@ fn the_addresses_point_at_the_fake_site_in_a_debug_build() {
     );
 }
 
+// tags: scenario
 #[tokio::test]
 async fn the_tool_and_the_package_are_downloaded_unpacked_and_moved_into_place() {
     let root = tempfile::tempdir().unwrap();
@@ -106,6 +108,7 @@ async fn the_tool_and_the_package_are_downloaded_unpacked_and_moved_into_place()
     assert!(!root.path().join(".downloads").join("comfyui.part").exists());
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_package_the_host_does_not_have_is_an_error_and_leaves_no_partial_file() {
     let root = tempfile::tempdir().unwrap();
@@ -125,6 +128,7 @@ async fn a_package_the_host_does_not_have_is_an_error_and_leaves_no_partial_file
     assert!(!is_installed(root.path()));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_pack_file_is_downloaded_and_moved_into_place_and_a_refusal_is_explained() {
     let models = tempfile::tempdir().unwrap();
@@ -205,6 +209,7 @@ fn serve_voice_model(repo: &str, files: &[(&str, &str)]) {
     site().put_json(&tree_path(repo), &serde_json::Value::Array(tree));
 }
 
+// tags: scenario
 #[tokio::test]
 async fn the_voice_models_are_listed_downloaded_and_marked_complete() {
     let data = tempfile::tempdir().unwrap();

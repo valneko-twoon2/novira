@@ -7,7 +7,7 @@ async function openMenuItem(page: Page, itemKey: string): Promise<void> {
   await page.getByRole('menuitem', { name: msg(itemKey) }).click();
 }
 
-test('the settings menu opens the hotkeys and about dialogs', async ({ page }) => {
+test('the settings menu opens the hotkeys and about dialogs', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await openMenuItem(page, 'app.nav.hotkeys');
   await expect(page.getByTestId('hotkeys-modal')).toBeVisible();
@@ -20,7 +20,7 @@ test('the settings menu opens the hotkeys and about dialogs', async ({ page }) =
   await expect(page.getByTestId('about-modal')).toHaveCount(0);
 });
 
-test('the about dialog keeps its size on both tabs, shows the license in full and a package license in place', async ({ page }) => {
+test('the about dialog keeps its size on both tabs, shows the license in full and a package license in place', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await openMenuItem(page, 'app.nav.about');
   const about = page.getByRole('dialog', { name: msg('settings.about.title') });
@@ -41,7 +41,7 @@ test('the about dialog keeps its size on both tabs, shows the license in full an
   expect(await about.boundingBox()).toEqual(onLicense);
 });
 
-test('switching the theme applies at once and survives a reload', async ({ page }) => {
+test('switching the theme applies at once and survives a reload', { tag: ['@state-transition'] }, async ({ page }) => {
   await openApp(page);
   const html = page.locator('html');
   await expect(html).toHaveAttribute('data-theme', 'dark');
@@ -57,7 +57,7 @@ test('switching the theme applies at once and survives a reload', async ({ page 
   await expect(html).toHaveAttribute('data-theme', 'light');
 });
 
-test('switching the language to English relabels the screen', async ({ page }) => {
+test('switching the language to English relabels the screen', { tag: ['@equivalence'] }, async ({ page }) => {
   await openApp(page);
   await expect(page.getByTestId('tab-generate')).toHaveAttribute('aria-label', msg('app.tabs.generate'));
 
@@ -79,7 +79,7 @@ for (const [locale, nameKey] of [
   ['fr', 'settings.language.fr'],
   ['de', 'settings.language.de'],
 ] as const) {
-  test(`switching the language to ${locale} relabels the screen and survives a reload`, async ({ page }) => {
+  test(`switching the language to ${locale} relabels the screen and survives a reload`, { tag: ['@equivalence'] }, async ({ page }) => {
     await openApp(page);
     await openMenuItem(page, 'app.nav.settings');
     await page.getByRole('combobox', { name: msg('settings.language.label') }).click();

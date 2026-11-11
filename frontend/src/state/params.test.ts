@@ -35,7 +35,7 @@ const metadata = (over: Partial<GenerationMetadata> = {}): GenerationMetadata =>
 });
 
 describe('image size', () => {
-  it('rounds to multiples of 8 with a 64 px minimum and unlocks the aspect ratio', () => {
+  it('rounds to multiples of 8 with a 64 px minimum and unlocks the aspect ratio', { tags: ['boundary'] }, () => {
     p().setDimension('width', 1001);
     expect(p().width).toBe(1000);
     expect(p().aspectRatio).toBe('free');
@@ -43,7 +43,7 @@ describe('image size', () => {
     expect(p().height).toBe(64);
   });
 
-  it('keeps the ratio when it is locked', () => {
+  it('keeps the ratio when it is locked', { tags: ['condition'] }, () => {
     p().set({ aspectRatio: '16:9', aspectLocked: true });
     p().setDimension('width', 1280);
     expect([p().width, p().height]).toEqual([1280, 720]);
@@ -52,7 +52,7 @@ describe('image size', () => {
     expect(p().aspectRatio).toBe('16:9');
   });
 
-  it('keeps the area when picking an aspect ratio', () => {
+  it('keeps the area when picking an aspect ratio', { tags: ['condition'] }, () => {
     p().setAspectRatio('16:9');
     expect(p().aspectRatio).toBe('16:9');
     expect([p().width, p().height]).toEqual([1368, 768]);
@@ -61,7 +61,7 @@ describe('image size', () => {
     expect([p().width, p().height]).toEqual([1368, 768]);
   });
 
-  it('swaps width and height and flips the ratio', () => {
+  it('swaps width and height and flips the ratio', { tags: ['condition'] }, () => {
     p().set({ width: 1216, height: 832, aspectRatio: '3:2' });
     p().swapDimensions();
     expect([p().width, p().height, p().aspectRatio]).toEqual([832, 1216, '2:3']);
@@ -70,7 +70,7 @@ describe('image size', () => {
     expect(p().aspectRatio).toBe('free');
   });
 
-  it('snaps a free shape to the nearest size the model was trained on, scaled to its base', () => {
+  it('snaps a free shape to the nearest size the model was trained on, scaled to its base', { tags: ['condition'] }, () => {
     p().set({ aspectRatio: 'free', width: 512, height: 512 });
     p().optimizeSize(1024);
     expect([p().width, p().height]).toEqual([1024, 1024]);
@@ -86,7 +86,7 @@ describe('image size', () => {
     expect([p().width, p().height]).toEqual([672, 384]);
   });
 
-  it('keeps a chosen ratio at the model area', () => {
+  it('keeps a chosen ratio at the model area', { tags: ['condition'] }, () => {
     p().set({ aspectRatio: '16:9', width: 1600, height: 900 });
     p().optimizeSize(1024);
     expect(p().width / p().height).toBeCloseTo(16 / 9, 1);
@@ -96,7 +96,7 @@ describe('image size', () => {
 });
 
 describe('LoRAs and reference images', () => {
-  it('adds a LoRA once, updates and removes it', () => {
+  it('adds a LoRA once, updates and removes it', { tags: ['condition'] }, () => {
     p().addLora('l1');
     p().addLora('l1');
     expect(p().loras).toEqual([{ key: 'l1', weight: 0.75, isEnabled: true }]);
@@ -106,7 +106,7 @@ describe('LoRAs and reference images', () => {
     expect(p().loras).toEqual([]);
   });
 
-  it('gives each reference image a unique id and defaults', () => {
+  it('gives each reference image a unique id and defaults', { tags: ['equivalence'] }, () => {
     const a = p().addRefImage();
     const b = p().addRefImage({ weight: 0.4 });
     expect(a).not.toBe(b);
@@ -119,7 +119,7 @@ describe('LoRAs and reference images', () => {
 });
 
 describe('recall', () => {
-  it('recalls every stored parameter and fixes the seed', () => {
+  it('recalls every stored parameter and fixes the seed', { tags: ['equivalence'] }, () => {
     const m = metadata({ strength: 0.4 });
     p().recallAll(m);
     expect(p()).toMatchObject({
@@ -144,7 +144,7 @@ describe('recall', () => {
     expect(m.loras[0]!.weight).toBe(0.5);
   });
 
-  it('keeps the current scheduler when the picture records the sampling its family fixed', () => {
+  it('keeps the current scheduler when the picture records the sampling its family fixed', { tags: ['condition'] }, () => {
     p().set({ scheduler: 'dpmpp_2m_k' });
     p().recallAll(metadata({ scheduler: 'euler_a', sampling: { sampler: 'euler', scheduler: 'simple' } }));
     expect(p().scheduler).toBe('dpmpp_2m_k');
@@ -152,7 +152,7 @@ describe('recall', () => {
     expect(p().scheduler).toBe('euler_a');
   });
 
-  it('recalls the sampler and noise schedule a picture named, and clears them for one that did not', () => {
+  it('recalls the sampler and noise schedule a picture named, and clears them for one that did not', { tags: ['condition'] }, () => {
     p().set({ scheduler: 'dpmpp_2m_k', samplerName: 'ddim', noiseSchedule: 'beta' });
     // The setting was what ran for the rest, so it comes back with the choice.
     p().recallAll(metadata({ scheduler: 'euler_a', samplerName: 'res_multistep', noiseSchedule: 'karras', sampling: { sampler: 'res_multistep', scheduler: 'karras' } }));
@@ -161,13 +161,13 @@ describe('recall', () => {
     expect(p()).toMatchObject({ samplerName: null, noiseSchedule: null });
   });
 
-  it('leaves the strength alone when the metadata has none', () => {
+  it('leaves the strength alone when the metadata has none', { tags: ['condition'] }, () => {
     p().set({ strength: 0.9 });
     p().recallAll(metadata());
     expect(p().strength).toBe(0.9);
   });
 
-  it('brings back the reference images a picture was made with, and keeps the existing ones when it had none', () => {
+  it('brings back the reference images a picture was made with, and keeps the existing ones when it had none', { tags: ['condition'] }, () => {
     p().set({ refImages: [] });
     p().recallAll(metadata());
     expect(p().refImages).toEqual([]);
@@ -180,12 +180,12 @@ describe('recall', () => {
     expect(p().refImages.some((r) => r.id === own)).toBe(true);
   });
 
-  it('finds the model of an imported picture by its name when it carries no key', () => {
+  it('finds the model of an imported picture by its name when it carries no key', { tags: ['condition'] }, () => {
     expect(p().recallAll(metadata({ modelKey: '', modelName: 'WAI-illustrious-SDXL-v17' }))).toMatchObject({ kind: 'name' });
     expect(p().modelKey).toBe('main-df710eb000d0');
   });
 
-  it('keeps the current model when the stored one is not installed', () => {
+  it('keeps the current model when the stored one is not installed', { tags: ['condition'] }, () => {
     p().set({ modelKey: 'm1' });
     expect(p().recallAll(metadata({ modelKey: 'gone', modelName: 'ponyDiffusionV6XL', steps: 33 }))).toEqual({ kind: 'missing', name: 'ponyDiffusionV6XL' });
     expect([p().modelKey, p().steps]).toEqual(['m1', 33]);
@@ -193,13 +193,13 @@ describe('recall', () => {
     expect(p().modelKey).toBe('m1');
   });
 
-  it('remix keeps the current seed and randomize setting', () => {
+  it('remix keeps the current seed and randomize setting', { tags: ['condition'] }, () => {
     p().set({ seed: 7, shouldRandomizeSeed: true });
     p().remix(metadata());
     expect([p().seed, p().shouldRandomizeSeed, p().positivePrompt]).toEqual([7, true, 'a cat']);
   });
 
-  it('turns the high-resolution fix on with the stored values, and off for a picture without it', () => {
+  it('turns the high-resolution fix on with the stored values, and off for a picture without it', { tags: ['condition'] }, () => {
     p().recallAll(metadata({ hiresFix: { scale: 1.75, strength: 0.3, upscaleModelKey: 'up', steps: 10 } }));
     expect(p().hires).toEqual({ enabled: true, scale: 1.75, strength: 0.3, upscaleModelKey: 'up', steps: 10 });
     p().recallAll(metadata({ hiresFix: { scale: 1.5, strength: 0.45 } }));
@@ -208,7 +208,7 @@ describe('recall', () => {
     expect(p().hires).toMatchObject({ enabled: false, scale: 1.5 });
   });
 
-  it('recalls a seed or a size alone', () => {
+  it('recalls a seed or a size alone', { tags: ['condition'] }, () => {
     p().recallSeed(99);
     expect([p().seed, p().shouldRandomizeSeed]).toEqual([99, false]);
     p().recallSize(640, 480);
@@ -217,18 +217,18 @@ describe('recall', () => {
 });
 
 describe('high-resolution fix', () => {
-  it('is sent only when on, without the optional fields left at their defaults', () => {
+  it('is sent only when on, without the optional fields left at their defaults', { tags: ['condition'] }, () => {
     expect(hiresFixInput(DEFAULT_HIRES)).toBeUndefined();
     expect(hiresFixInput({ ...DEFAULT_HIRES, enabled: true })).toEqual({ scale: 1.5, strength: 0.45 });
     expect(hiresFixInput({ ...DEFAULT_HIRES, enabled: true, upscaleModelKey: 'up', steps: 12 })).toEqual({ scale: 1.5, strength: 0.45, upscaleModelKey: 'up', steps: 12 });
   });
 
-  it('computes the second-pass size like the backend (multiples of 8)', () => {
+  it('computes the second-pass size like the backend (multiples of 8)', { tags: ['condition'] }, () => {
     expect(hiresSize(1024, 768, 1.33)).toEqual({ width: 1360, height: 1024 });
     expect(hiresSize(832, 1216, 1.25)).toEqual({ width: 1040, height: 1520 });
   });
 
-  it('merges partial changes', () => {
+  it('merges partial changes', { tags: ['condition'] }, () => {
     p().setHires({ enabled: true });
     p().setHires({ strength: 0.6 });
     expect(p().hires).toMatchObject({ enabled: true, strength: 0.6, scale: 1.5 });

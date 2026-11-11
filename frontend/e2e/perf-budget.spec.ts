@@ -22,7 +22,7 @@ const COLOR_BURST: Budget = {
 };
 
 // Measured 4 ms; 110 ms when every change redrew the screen.
-test('changing the text colour in a fast drag stays within its budget', async ({ page }) => {
+test('changing the text colour in a fast drag stays within its budget', { tag: ['@boundary'] }, async ({ page }) => {
   await openText(page);
   for (let i = 0; i < 5; i++) await page.getByTestId('text-add-text').click();
   await expect(page.getByTestId('text-panel').locator('input[type=color]').first()).toBeVisible();
@@ -48,7 +48,7 @@ const MEDIA_SWITCH: Budget = {
 };
 
 // Measured 25-90 ms on the mock's small gallery (55-90 ms before the screens were kept mounted; the app's gallery holds thousands of pictures, which the old switch built again each time).
-test('switching between the Image and Text screens stays within its budget', async ({ page }) => {
+test('switching between the Image and Text screens stays within its budget', { tag: ['@boundary'] }, async ({ page }) => {
   await openText(page);
   await page.getByTestId('media-image').click();
   await expect(page.getByTestId('model-picker')).toBeVisible();
@@ -71,7 +71,7 @@ const TAB_SWITCH: Budget = {
 };
 
 // Measured 35 ms.
-test('switching between the main screens stays within its budget', async ({ page }) => {
+test('switching between the main screens stays within its budget', { tag: ['@boundary'] }, async ({ page }) => {
   await openApp(page);
   const order = ['tab-queue', 'tab-models', 'tab-generate'];
   // Each screen is opened once first: the budget is for coming back to it, which is what a user does all day.
@@ -93,7 +93,7 @@ const ADD_LAYER: Budget = {
   look: 'state/text/textEditor.ts (history copies), features/text/useScenePreview.ts (the redraw), TextLayersPanel.tsx',
 };
 
-test('adding a text layer stays within its budget', async ({ page }) => {
+test('adding a text layer stays within its budget', { tag: ['@boundary'] }, async ({ page }) => {
   await openText(page);
   for (let i = 0; i < 6; i++) await page.getByTestId('text-add-text').click();
   const costs = await costInPage(
@@ -113,7 +113,7 @@ const MOSAIC_GROWTH: Budget = {
 };
 
 // Measured about 1x (flat); 3x or more when every stroke redrew all the earlier mosaics.
-test('painting more mosaic strokes does not make each one slower', async ({ page }) => {
+test('painting more mosaic strokes does not make each one slower', { tag: ['@boundary'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('gallery-thumb').first().dragTo(page.locator('.pp-refs'));
   await page.getByTestId('ref-image').click();
@@ -142,7 +142,7 @@ const PROMPT_BOOK_OPEN: Budget = {
 };
 
 // Measured 60-140 ms; 530-690 ms when every word of the book was drawn at once.
-test('opening the prompt book stays within its budget', async ({ page }) => {
+test('opening the prompt book stays within its budget', { tag: ['@boundary'] }, async ({ page }) => {
   await openApp(page);
   await expect(page.getByTestId('positive-open-book')).toBeVisible();
   const costs = await costInPage(

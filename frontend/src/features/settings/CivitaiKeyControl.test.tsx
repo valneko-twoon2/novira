@@ -10,7 +10,7 @@ afterEach(() => {
 });
 
 describe('CivitaiKeyControl', () => {
-  it('shows ten asterisks, never the key, once a key is saved', async () => {
+  it('shows ten asterisks, never the key, once a key is saved', { tags: ['scenario'] }, async () => {
     const set = vi.spyOn(backend, 'setCivitaiKey').mockResolvedValue();
     vi.spyOn(backend, 'hasCivitaiKey').mockResolvedValue(false);
     render(<CivitaiKeyControl />);

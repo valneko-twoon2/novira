@@ -21,6 +21,7 @@ fn format() -> impl Strategy<Value = ImageFormat> {
     prop::sample::select(&[ImageFormat::Png, ImageFormat::Jpeg, ImageFormat::WebP][..])
 }
 
+// tags: decision-table
 #[test]
 fn a_label_added_to_any_picture_reads_back_and_the_picture_still_decodes() {
     check_up_to(
@@ -50,6 +51,7 @@ fn a_label_added_to_any_picture_reads_back_and_the_picture_still_decodes() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn adding_the_label_to_bytes_of_any_kind_is_an_answer_never_a_panic() {
     check(
@@ -68,6 +70,7 @@ fn adding_the_label_to_bytes_of_any_kind_is_an_answer_never_a_panic() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn the_label_reader_returns_a_short_alphanumeric_code_or_nothing_for_any_bytes() {
     check(bytes(600), |data| {
@@ -79,6 +82,7 @@ fn the_label_reader_returns_a_short_alphanumeric_code_or_nothing_for_any_bytes()
     });
 }
 
+// tags: boundary
 #[test]
 fn a_code_in_a_pictures_packet_is_read_back_whole_up_to_sixty_four_characters() {
     let png = encode(ImageFormat::Png, 2, 2, 7);
@@ -99,6 +103,7 @@ fn a_code_in_a_pictures_packet_is_read_back_whole_up_to_sixty_four_characters() 
     });
 }
 
+// tags: equivalence
 #[test]
 fn only_the_three_algorithmic_codes_count_as_made_by_ai() {
     check("[A-Za-z]{0,40}", |code| {

@@ -37,7 +37,7 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('groups and selection', () => {
-  it('switches the group and clears the selection, toggles candidates and clears them', () => {
+  it('switches the group and clears the selection, toggles candidates and clears them', { tags: ['state-transition'] }, () => {
     useDrafts.setState({ groups: [group('a', [candidate(1)]), group('b', [candidate(2)])], currentId: 'a' });
     state().toggleSelect('c1');
     state().toggleSelect('c9');
@@ -51,7 +51,7 @@ describe('groups and selection', () => {
     expect(state().selection).toEqual([]);
   });
 
-  it('marks a candidate and unmarks it by marking the same verdict again', () => {
+  it('marks a candidate and unmarks it by marking the same verdict again', { tags: ['condition'] }, () => {
     useDrafts.setState({ groups: [group('a', [candidate(1)]), group('b', [candidate(2)])] });
     state().mark('a', 'c1', 'keep');
     expect(state().groups[0]!.candidates[0]!.verdict).toBe('keep');
@@ -62,7 +62,7 @@ describe('groups and selection', () => {
     expect(state().groups[1]!.candidates[0]!.verdict).toBeNull();
   });
 
-  it('closes a group; closing the current one shows the last remaining, and another one changes nothing', () => {
+  it('closes a group; closing the current one shows the last remaining, and another one changes nothing', { tags: ['scenario'] }, () => {
     useDrafts.setState({ groups: [group('a', []), group('b', []), group('c', [])], currentId: 'c', selection: ['x'] });
     state().closeGroup('a');
     expect(state()).toMatchObject({ currentId: 'c', selection: ['x'] });
@@ -72,26 +72,26 @@ describe('groups and selection', () => {
     expect(state().currentId).toBeNull();
   });
 
-  it('follows the queue through the queue store', () => {
+  it('follows the queue through the queue store', { tags: ['condition'] }, () => {
     useDrafts.setState({ groups: [group('a', [candidate(1)])] });
     useQueue.setState({ items: [{ id: 1, status: 'completed', imageName: 'done.png', error: null, createdAt: 1, params: { seed: 11, draftAt: 0.35 } } as QueueItem] });
     expect(state().groups[0]!.candidates[0]).toMatchObject({ status: 'ready', imageName: 'done.png' });
     useQueue.setState({ items: [] });
   });
 
-  it('works out the step a draft stops at', () => {
+  it('works out the step a draft stops at', { tags: ['condition'] }, () => {
     expect(draftStepOf(group('a', []))).toBe(12);
   });
 });
 
 describe('starting', () => {
-  it('says so when there is no builder', async () => {
+  it('says so when there is no builder', { tags: ['condition'] }, async () => {
     registerInvokeBuilder('generate', undefined as never);
     expect(await state().start(2, 0.3)).toEqual({ error: 'no-builder' });
     expect(state().busy).toBe(false);
   });
 
-  it('drafts image to image over the stored source and finishes and retries over it again', async () => {
+  it('drafts image to image over the stored source and finishes and retries over it again', { tags: ['condition'] }, async () => {
     const source = 'http://novira-image.localhost/full/source.png';
     const request = { origin: 'generate', destination: 'gallery', params: { generationMode: 'img2img', strength: 0.5, steps: 30, seed: 1 }, iterations: 2, randomizeSeed: false, prepend: false, boardId: null, initImageUrl: source } as EnqueueRequest;
     registerInvokeBuilder('generate', { readiness: () => [], build: async () => request });
@@ -109,7 +109,7 @@ describe('starting', () => {
     ]);
   });
 
-  it('keeps no source for text to image', async () => {
+  it('keeps no source for text to image', { tags: ['condition'] }, async () => {
     const request = { origin: 'generate', destination: 'gallery', params: { generationMode: 'txt2img', steps: 30, seed: 1 }, iterations: 1, randomizeSeed: false, prepend: false, boardId: null } as EnqueueRequest;
     registerInvokeBuilder('generate', { readiness: () => [], build: async () => request });
     const enqueue = vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => [{ id: 1, params: r.params, initImageUrl: null } as QueueItem]);
@@ -122,7 +122,7 @@ describe('starting', () => {
 });
 
 describe('finishing and retrying', () => {
-  it('finishes the chosen candidates once each, leaving the others and unknown ids', async () => {
+  it('finishes the chosen candidates once each, leaving the others and unknown ids', { tags: ['error-guessing'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => [{ id: 100 + r.params.seed, params: r.params } as QueueItem]);
     useDrafts.setState({
       groups: [group('a', [candidate(1, { status: 'ready' }), candidate(2, { status: 'ready', finalItemId: 5 }), candidate(3, { status: 'ready' })], { refImages: [] as never })],
@@ -138,7 +138,7 @@ describe('finishing and retrying', () => {
     expect(state().busy).toBe(false);
   });
 
-  it('draws a candidate to the end again after its finished picture was cancelled, failed or deleted, never twice at once', async () => {
+  it('draws a candidate to the end again after its finished picture was cancelled, failed or deleted, never twice at once', { tags: ['error-guessing'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => [{ id: 200 + r.params.seed, params: r.params } as QueueItem]);
     useDrafts.setState({
       groups: [
@@ -159,7 +159,7 @@ describe('finishing and retrying', () => {
     expect(done[3]!.finalImageName).toBeNull();
   });
 
-  it('offers to finish a candidate unless its draft is not ready, or its finished picture is being drawn or exists', () => {
+  it('offers to finish a candidate unless its draft is not ready, or its finished picture is being drawn or exists', { tags: ['condition'] }, () => {
     const c = (over: Partial<DraftCandidate>) => candidate(1, { status: 'ready', ...over });
     expect(canFinish(c({}), false)).toBe(true);
     expect(canFinish(c({ status: 'running' }), false)).toBe(false);
@@ -171,7 +171,7 @@ describe('finishing and retrying', () => {
     expect(canFinish(c({ finalItemId: 5, finalStatus: 'ready' }), false)).toBe(true);
   });
 
-  it('runs the failed drafts again with the same seeds and without the second pass', async () => {
+  it('runs the failed drafts again with the same seeds and without the second pass', { tags: ['error-guessing'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => [{ id: 200 + r.params.seed, params: r.params } as QueueItem]);
     useDrafts.setState({
       groups: [group('a', [candidate(1, { status: 'failed', error: 'oom', imageName: 'old.png' }), candidate(2, { status: 'ready' })], { refImages: [{ modelKey: 'ipa' }] as never })],
@@ -187,7 +187,7 @@ describe('finishing and retrying', () => {
     expect(state().groups[0]!.candidates[1]!.status).toBe('ready');
   });
 
-  it('turns busy off when the queue refuses', async () => {
+  it('turns busy off when the queue refuses', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'enqueue').mockRejectedValue(new Error('full'));
     useDrafts.setState({ groups: [group('a', [candidate(1, { status: 'failed' })])] });
     await expect(state().retryFailed('a')).rejects.toThrow('full');

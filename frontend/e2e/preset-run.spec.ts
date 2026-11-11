@@ -2,7 +2,7 @@
 // made with one of them while the form keeps the user's own settings.
 import { expect, msg, openApp, test } from './fixtures';
 
-test('a random preset run queues the chosen count from the ticked presets and leaves the form as it was', async ({ page }) => {
+test('a random preset run queues the chosen count from the ticked presets and leaves the form as it was', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   const prompt = page.getByTestId('positive-prompt');
   const bar = page.getByTestId('preset-bar');

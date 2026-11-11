@@ -515,6 +515,7 @@ mod tests {
             .collect()
     }
 
+    // tags: equivalence
     #[test]
     fn each_edit_model_uses_its_own_conditioning_nodes() {
         let fill = run(
@@ -579,6 +580,7 @@ mod tests {
         );
     }
 
+    // tags: error-guessing
     #[test]
     fn what_an_edit_model_cannot_do_is_refused_with_the_way_to_use_it() {
         let err =
@@ -631,6 +633,7 @@ mod tests {
         assert!(e.starts_with("Wan: this is a Wan Fun Control"), "{e}");
     }
 
+    // tags: error-guessing
     #[test]
     fn flux2_samples_with_a_guider_and_refuses_what_its_graph_lacks() {
         let dev = run(
@@ -734,6 +737,7 @@ mod tests {
             .unwrap_or_else(|| panic!("no {class}"))
     }
 
+    // tags: condition
     #[test]
     fn a_flux2_draft_runs_the_first_steps_and_keeps_the_denoised_picture() {
         for variant in [Variant::Flux2Dev, Variant::Flux2Klein4b] {
@@ -792,6 +796,7 @@ mod tests {
             .unwrap()
     }
 
+    // tags: error-guessing
     #[test]
     fn the_edit_models_refuse_drafts() {
         for (family, variant) in [
@@ -807,6 +812,7 @@ mod tests {
         }
     }
 
+    // tags: scenario, equivalence
     #[test]
     fn flux2_chains_each_reference_picture_to_both_sides_and_draws_at_the_size_asked() {
         let count = |g: &BuiltGraph, class: &str| classes(g).iter().filter(|c| *c == class).count();
@@ -849,6 +855,7 @@ mod tests {
         assert_eq!(count(&edited, "GetImageSize"), 1);
     }
 
+    // tags: error-guessing, equivalence
     #[test]
     fn the_other_families_refuse_pictures_given_as_references() {
         for (family, variant) in [

@@ -4,18 +4,18 @@ import { installRecordingCanvas, recordingContext } from '@/backend/mock/canvas2
 import { MAX_CELL, drawGrid, gridLayout } from './drawGrid';
 
 describe('gridLayout', () => {
-  it('shrinks a large picture to the cell size and keeps its proportions', () => {
+  it('shrinks a large picture to the cell size and keeps its proportions', { tags: ['boundary'] }, () => {
     const layout = gridLayout(2, 2, { width: 1024, height: 1536 }, { x: true, y: true });
     expect(layout.cellHeight).toBe(MAX_CELL);
     expect(layout.cellWidth).toBe(Math.round((1024 * MAX_CELL) / 1536));
   });
 
-  it('keeps a small picture at its own size', () => {
+  it('keeps a small picture at its own size', { tags: ['boundary'] }, () => {
     const layout = gridLayout(1, 1, { width: 200, height: 100 }, { x: false, y: false });
     expect([layout.cellWidth, layout.cellHeight]).toEqual([200, 100]);
   });
 
-  it('puts the cells in rows and columns inside the picture, with room for the labels only of the axes in use', () => {
+  it('puts the cells in rows and columns inside the picture, with room for the labels only of the axes in use', { tags: ['boundary'] }, () => {
     const both = gridLayout(3, 2, { width: 512, height: 512 }, { x: true, y: true });
     const none = gridLayout(3, 2, { width: 512, height: 512 }, { x: false, y: false });
     expect(both.width).toBeGreaterThan(none.width);
@@ -29,7 +29,7 @@ describe('gridLayout', () => {
     expect(last.y + both.cellHeight).toBeLessThanOrEqual(both.height);
   });
 
-  it('does not overlap neighbouring cells', () => {
+  it('does not overlap neighbouring cells', { tags: ['boundary'] }, () => {
     const layout = gridLayout(2, 1, { width: 300, height: 300 }, { x: true, y: false });
     expect(layout.cell(1, 0).x).toBeGreaterThanOrEqual(layout.cell(0, 0).x + layout.cellWidth);
   });
@@ -41,7 +41,7 @@ describe('drawGrid', () => {
   const content = { columns: 2, rows: 1, images: [{} as CanvasImageSource, null], picture: { width: 100, height: 50 }, title: 'Title', columnLabels: ['a', 'b'], rowLabels: ['row'] };
   const stubBlob = (blob: Blob | null) => vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((cb) => cb(blob));
 
-  it('draws the title, the labels, the pictures and a cross for a missing picture, and returns the PNG', async () => {
+  it('draws the title, the labels, the pictures and a cross for a missing picture, and returns the PNG', { tags: ['boundary'] }, async () => {
     const rec = recordingContext();
     const restore = installRecordingCanvas(rec);
     const png = new Blob(['x'], { type: 'image/png' });
@@ -56,7 +56,7 @@ describe('drawGrid', () => {
     expect(rec.sets.some((s) => s.name === 'fillStyle' && s.value === '#eeeeee')).toBe(true);
   });
 
-  it('cuts a label that is wider than its cell with an ellipsis', async () => {
+  it('cuts a label that is wider than its cell with an ellipsis', { tags: ['boundary'] }, async () => {
     const rec = recordingContext({ charWidth: 10 });
     const restore = installRecordingCanvas(rec);
     stubBlob(new Blob(['x']));
@@ -67,7 +67,7 @@ describe('drawGrid', () => {
     expect(label.length * 10).toBeLessThanOrEqual(100 + 10);
   });
 
-  it('fails when there is no 2D context or the canvas gives no image', async () => {
+  it('fails when there is no 2D context or the canvas gives no image', { tags: ['boundary', 'error-guessing'] }, async () => {
     const spy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     await expect(drawGrid(content)).rejects.toThrow('no canvas');
     spy.mockRestore();

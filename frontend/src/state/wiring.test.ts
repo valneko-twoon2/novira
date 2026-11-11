@@ -21,7 +21,7 @@ const data = (): BootstrapData => ({
 afterEach(() => vi.restoreAllMocks());
 
 describe('startBackend', () => {
-  it('lets every caller wait for the same start-up, so a repeated call does not resolve before the data is loaded, and fills the queue', async () => {
+  it('lets every caller wait for the same start-up, so a repeated call does not resolve before the data is loaded, and fills the queue', { tags: ['equivalence'] }, async () => {
     let finish: (d: BootstrapData) => void = () => undefined;
     const bootstrap = vi.spyOn(backend, 'bootstrap').mockImplementation(() => new Promise<BootstrapData>((resolve) => (finish = resolve)));
 

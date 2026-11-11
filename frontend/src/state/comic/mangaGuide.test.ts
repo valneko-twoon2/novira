@@ -12,16 +12,16 @@ const listed = () => {
 };
 
 describe('the comic know-how', () => {
-  it('has exactly the topics the tool description lists', () => {
+  it('has exactly the topics the tool description lists', { tags: ['condition'] }, () => {
     expect([...listed()].sort()).toEqual(MANGA_GUIDE_TOPICS);
   });
 
-  it('covers the 16 kinds of scene and the working topics', () => {
+  it('covers the 16 kinds of scene and the working topics', { tags: ['equivalence'] }, () => {
     expect(MANGA_GUIDE_TOPICS.filter((t) => t.startsWith('scene-'))).toHaveLength(16);
     for (const id of ['story', 'direction', 'layout', 'lettering', 'prompting', 'fixing', 'scene']) expect(MANGA_GUIDE_TOPICS).toContain(id);
   });
 
-  it('keeps each text to a size one answer can carry, with a title and its own-work line', () => {
+  it('keeps each text to a size one answer can carry, with a title and its own-work line', { tags: ['equivalence'] }, () => {
     for (const id of MANGA_GUIDE_TOPICS) {
       const text = String(mangaGuide(id).content);
       expect(text.startsWith('# '), id).toBe(true);
@@ -31,12 +31,12 @@ describe('the comic know-how', () => {
     }
   });
 
-  it('lists the topics when none or an unknown one is asked for', () => {
+  it('lists the topics when none or an unknown one is asked for', { tags: ['error-guessing', 'boundary'] }, () => {
     expect(mangaGuide(undefined)).toMatchObject({ ok: true, content: { topics: expect.any(Array) } });
     expect(mangaGuide('nope').ok).toBe(false);
   });
 
-  it('names no external kit or sample', () => {
+  it('names no external kit or sample', { tags: ['condition'] }, () => {
     for (const id of MANGA_GUIDE_TOPICS) expect(String(mangaGuide(id).content), id).not.toMatch(/MangaAgents|百合学園|NovelAI|Anlas|Production Kit|contributors|出典/i);
   });
 });

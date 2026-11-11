@@ -52,6 +52,7 @@ const ALL_FAMILIES: [Family; 15] = [
 
 // split.rs -----------------------------------------------------------------------------------------------------------
 
+// tags: equivalence
 #[test]
 fn a_wan_file_name_tells_what_the_model_is_made_for() {
     assert_eq!(
@@ -67,6 +68,7 @@ fn a_wan_file_name_tells_what_the_model_is_made_for() {
     assert_eq!(WanKind::from_name("some-model.gguf"), None);
 }
 
+// tags: equivalence
 #[test]
 fn each_video_job_names_the_node_that_older_comfyui_versions_lack() {
     let with = |family: Family, wan: Option<WanKind>, variant: Variant| {
@@ -116,6 +118,7 @@ fn each_video_job_names_the_node_that_older_comfyui_versions_lack() {
     assert_eq!(with(Family::Flux, None, Variant::Plain), "KSampler");
 }
 
+// tags: equivalence
 #[test]
 fn every_family_has_a_name_a_vae_a_sampler_and_a_latent() {
     let mut labels = std::collections::HashSet::new();
@@ -137,6 +140,7 @@ fn every_family_has_a_name_a_vae_a_sampler_and_a_latent() {
     assert!(Family::Wan.vae_for(None).what.contains("Wan 2.1"));
 }
 
+// tags: condition
 #[test]
 fn a_prompt_node_without_a_class_needs_no_pack() {
     let prompt = json!({
@@ -171,6 +175,7 @@ fn input<'a>(
     }
 }
 
+// tags: condition
 #[test]
 fn a_model_patch_control_needs_a_family_that_takes_one() {
     let mut p = params(GenerationMode::Txt2img);
@@ -190,6 +195,7 @@ fn a_model_patch_control_needs_a_family_that_takes_one() {
     assert!(err.contains("Anima, Qwen-Image and Z-Image"), "{err}");
 }
 
+// tags: condition
 #[test]
 fn a_small_upscale_with_a_tile_controlnet_is_guided_in_one_piece() {
     for family in [None, Some(Family::Flux)] {
@@ -238,6 +244,7 @@ fn flux2(p: &GenerationMetadata, loras: Vec<(&ComfyRef, f64)>) -> Result<BuiltGr
     build(&i)
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn flux2_refuses_zero_steps_and_drafts_outside_text_and_image_to_image() {
     let mut p = params(GenerationMode::Txt2img);
@@ -254,6 +261,7 @@ fn flux2_refuses_zero_steps_and_drafts_outside_text_and_image_to_image() {
     assert!(flux2(&p, vec![]).unwrap_err().contains("between 0 and 1"));
 }
 
+// tags: equivalence
 #[test]
 fn flux2_applies_each_lora_to_the_model_and_the_encoder() {
     let p = params(GenerationMode::Txt2img);
@@ -280,6 +288,7 @@ fn edit(
     build(&i)
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn an_edit_model_refuses_zero_steps_and_runs_its_loras() {
     let mut p = params(GenerationMode::Img2img);
@@ -314,6 +323,7 @@ fn video(
     super::video_families::build(&i, split)
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn a_video_job_is_refused_for_zero_steps_missing_encoders_and_a_picture_family() {
     let vae = r("vae", "v.safetensors");
@@ -331,6 +341,7 @@ fn a_video_job_is_refused_for_zero_steps_missing_encoders_and_a_picture_family()
     assert!(err.contains("is not a video model"), "{err}");
 }
 
+// tags: condition
 #[test]
 fn a_video_model_without_a_vae_says_which_one_it_needs() {
     let p = video_params();
@@ -338,6 +349,7 @@ fn a_video_model_without_a_vae_says_which_one_it_needs() {
     assert!(err.contains("HunyuanVideo VAE"), "{err}");
 }
 
+// tags: error-guessing
 #[test]
 fn the_fp8_setting_changes_the_weight_type_of_the_video_model() {
     let vae = r("vae", "v.safetensors");

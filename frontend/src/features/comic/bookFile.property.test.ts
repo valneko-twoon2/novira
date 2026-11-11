@@ -43,7 +43,7 @@ function readZip(zip: Uint8Array): { name: string; data: Uint8Array; crc: number
 }
 
 describe('buildZip', () => {
-  it('reads back every entry with its name, bytes and CRC, in order', () => {
+  it('reads back every entry with its name, bytes and CRC, in order', { tags: ['decision-table'] }, () => {
     check(
       fc.property(entries, (list: ZipEntry[]) => {
         const read = readZip(buildZip(list, new Date(2024, 4, 6, 7, 8, 10)));
@@ -57,7 +57,7 @@ describe('buildZip', () => {
     );
   });
 
-  it('is exactly as long as its headers, names (twice) and the stored bytes', () => {
+  it('is exactly as long as its headers, names (twice) and the stored bytes', { tags: ['boundary'] }, () => {
     check(
       fc.property(entries, (list) => {
         const names = list.reduce((n, e) => n + new TextEncoder().encode(e.name).length, 0);
@@ -69,7 +69,7 @@ describe('buildZip', () => {
 });
 
 describe('crc32', () => {
-  it('is an unsigned 32-bit number that changes when one byte changes', () => {
+  it('is an unsigned 32-bit number that changes when one byte changes', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(bytes(80), fc.nat(), fc.integer({ min: 1, max: 255 }), (data, at, flip) => {
         const crc = crc32(data);
@@ -92,7 +92,7 @@ const pdfPage = fc.record({
 });
 
 describe('buildPdf', () => {
-  it('is a PDF with one page object per picture and a cross-reference table that points at every object', () => {
+  it('is a PDF with one page object per picture and a cross-reference table that points at every object', { tags: ['decision-table'] }, () => {
     check(
       fc.property(fc.array(pdfPage, { minLength: 1, maxLength: 5 }), fc.boolean(), (pages: PdfPage[], rtl) => {
         const pdf = buildPdf(pages, rtl);
@@ -122,7 +122,7 @@ describe('buildPdf', () => {
     );
   });
 
-  it('refuses a book without pages', () => {
+  it('refuses a book without pages', { tags: ['error-guessing'] }, () => {
     expect(() => buildPdf([], false)).toThrow();
   });
 });

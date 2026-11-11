@@ -12,24 +12,24 @@ inEachTheme((theme) => {
     await expect(page.getByTestId('text-panel')).toBeVisible();
   };
 
-  test('whole screen', async ({ page }) => {
+  test('whole screen', { tag: ['@scenario'] }, async ({ page }) => {
     await openText(page);
     await snap(page, SCREEN, theme, 'screen');
   });
 
-  test('left panel', async ({ page }) => {
+  test('left panel', { tag: ['@scenario'] }, async ({ page }) => {
     await openText(page);
     await snap(page, SCREEN, theme, 'panel', page.getByTestId('text-panel'));
   });
 
-  test('background section', async ({ page }) => {
+  test('background section', { tag: ['@scenario'] }, async ({ page }) => {
     await openText(page);
     await snap(page, SCREEN, theme, 'background', page.getByTestId('text-background'));
     await page.getByTestId('text-background').getByText(msg('text.bg.color'), { exact: true }).click();
     await snap(page, SCREEN, theme, 'background-color', page.getByTestId('text-background'));
   });
 
-  test('with a text layer and a bubble', async ({ page }) => {
+  test('with a text layer and a bubble', { tag: ['@scenario'] }, async ({ page }) => {
     await openText(page);
     await page.getByTestId('text-add-text').click();
     await page.getByTestId('text-add-bubble').click();

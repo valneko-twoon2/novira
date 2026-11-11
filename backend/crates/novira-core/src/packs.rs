@@ -434,6 +434,7 @@ mod tests {
         }
     }
 
+    // tags: equivalence
     #[test]
     fn missing_until_every_file_is_there() {
         let dir = tempfile::tempdir().unwrap();
@@ -453,6 +454,7 @@ mod tests {
         assert_eq!(disk_status(dir.path(), PackKind::Music), PackStatus::Ready);
     }
 
+    // tags: equivalence
     #[test]
     fn comfy_sees_each_pack_through_its_own_yaml_section() {
         let yaml = extra_paths_yaml(Path::new("D:/data/models"));
@@ -466,6 +468,7 @@ mod tests {
         assert!(yaml.contains("  checkpoints: checkpoints\n"));
     }
 
+    // tags: condition
     #[test]
     fn the_turbo_model_shares_the_video_packs_encoder_and_vae() {
         let dir = tempfile::tempdir().unwrap();
@@ -503,6 +506,7 @@ mod tests {
         assert!(turbo.contains("diffusion_models") && !turbo.contains("text_encoders"));
     }
 
+    // tags: condition
     #[test]
     fn the_erase_model_has_its_own_folder_and_a_direct_address() {
         let yaml = extra_paths_yaml(Path::new("D:/data/models"));
@@ -531,6 +535,7 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn refs_point_at_the_pack_files() {
         assert_eq!(video_unet_ref().folder, "diffusion_models");
@@ -539,6 +544,7 @@ mod tests {
         assert!(music_checkpoint_ref().name.contains("ace_step"));
     }
 
+    // tags: condition
     #[test]
     fn the_voice_engine_has_no_comfy_files() {
         assert!(files(PackKind::Voice).is_empty());
@@ -547,6 +553,7 @@ mod tests {
         assert!(is_installed(dir.path(), PackKind::Voice));
     }
 
+    // tags: condition
     #[test]
     fn a_pack_in_a_shared_root_counts_and_its_files_are_found_there() {
         let own = tempfile::tempdir().unwrap();
@@ -566,6 +573,7 @@ mod tests {
         assert!(found.starts_with(own.path()));
     }
 
+    // tags: condition
     #[test]
     fn a_half_shared_pack_reports_only_what_is_missing_everywhere() {
         let own = tempfile::tempdir().unwrap();
@@ -586,6 +594,7 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn comfy_gets_a_section_per_existing_pack_folder_of_a_shared_root_and_nothing_is_created_there()
     {
@@ -625,6 +634,7 @@ mod tests {
         assert_eq!(before, walk(shared.path()));
     }
 
+    // tags: condition
     #[test]
     fn the_folder_a_removed_pack_left_behind_is_left_alone() {
         let own = tempfile::tempdir().unwrap();
@@ -655,6 +665,7 @@ mod tests {
         out
     }
 
+    // tags: equivalence
     #[test]
     fn kinds_serialize_in_snake_case() {
         assert_eq!(

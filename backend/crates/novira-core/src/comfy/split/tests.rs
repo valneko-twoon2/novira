@@ -81,6 +81,7 @@ fn built(f: Family) -> BuiltGraph {
     build_any(&input(&p, &unet, Some(&vae), &split)).unwrap()
 }
 
+// tags: condition
 #[test]
 fn anima_uses_a_plain_clip_loader_and_a_real_negative_prompt() {
     let g = built(Family::Anima);
@@ -100,6 +101,7 @@ fn anima_uses_a_plain_clip_loader_and_a_real_negative_prompt() {
     assert_eq!(k["steps"], 20);
 }
 
+// tags: condition
 #[test]
 fn flux_loads_two_encoders_and_gives_the_strength_to_the_guidance_node() {
     let g = built(Family::Flux);
@@ -117,6 +119,7 @@ fn flux_loads_two_encoders_and_gives_the_strength_to_the_guidance_node() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn each_family_has_its_loaders_shift_latent_and_sampler() {
     let cases = [
@@ -197,6 +200,7 @@ fn each_family_has_its_loaders_shift_latent_and_sampler() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn every_family_of_the_shared_graph_drafts_with_the_advanced_sampler() {
     let unet = r("diffusion_models", "model.safetensors");
@@ -257,6 +261,7 @@ fn every_family_of_the_shared_graph_drafts_with_the_advanced_sampler() {
     }
 }
 
+// tags: scenario
 #[test]
 fn a_checkpoint_gives_the_parts_it_carries_and_the_rest_are_loaded_beside_it() {
     let p = params(GenerationMode::Txt2img);
@@ -297,6 +302,7 @@ fn a_checkpoint_gives_the_parts_it_carries_and_the_rest_are_loaded_beside_it() {
     );
 }
 
+// tags: condition
 #[test]
 fn a_lora_goes_between_the_loaders_and_the_shift() {
     let p = params(GenerationMode::Txt2img);
@@ -318,6 +324,7 @@ fn a_lora_goes_between_the_loaders_and_the_shift() {
     );
 }
 
+// tags: condition
 #[test]
 fn image_to_image_inpaint_and_the_high_resolution_fix_use_the_shared_graph() {
     let unet = r("diffusion_models", "m.safetensors");
@@ -376,6 +383,7 @@ fn control(model: &ComfyRef) -> ControlInput<'_> {
     }
 }
 
+// tags: equivalence
 #[test]
 fn a_controlnet_of_the_newer_families_gets_the_vae() {
     let mut p = params(GenerationMode::Txt2img);
@@ -392,6 +400,7 @@ fn a_controlnet_of_the_newer_families_gets_the_vae() {
     assert_eq!(source(&g, &apply["vae"])["class_type"], "VAELoader");
 }
 
+// tags: error-guessing
 #[test]
 fn a_model_patch_control_changes_the_model_with_the_family_node() {
     let mut p = params(GenerationMode::Txt2img);
@@ -440,6 +449,7 @@ fn a_model_patch_control_changes_the_model_with_the_family_node() {
         .contains("Flux models cannot use"));
 }
 
+// tags: error-guessing
 #[test]
 fn what_a_family_cannot_do_is_refused_with_a_reason() {
     let unet = r("diffusion_models", "m.safetensors");
@@ -485,6 +495,7 @@ fn model(kind: ModelType, name: &str) -> ModelConfig {
     .unwrap()
 }
 
+// tags: condition
 #[test]
 fn the_installed_encoder_and_vae_are_found_by_the_words_in_their_names() {
     let models = vec![
@@ -549,6 +560,7 @@ fn the_installed_encoder_and_vae_are_found_by_the_words_in_their_names() {
     assert_eq!(vae(Family::Sd3), None);
 }
 
+// tags: equivalence
 #[test]
 fn only_the_families_with_a_recipe_have_one() {
     assert_eq!(Family::of(BaseModel::Anima), Some(Family::Anima));
@@ -558,6 +570,7 @@ fn only_the_families_with_a_recipe_have_one() {
     assert_eq!(Family::of(BaseModel::HunyuanVideo), None);
 }
 
+// tags: condition
 #[test]
 fn a_gguf_file_loads_through_the_gguf_pack_and_a_plain_file_does_not() {
     let p = params(GenerationMode::Txt2img);
@@ -590,6 +603,7 @@ fn a_gguf_file_loads_through_the_gguf_pack_and_a_plain_file_does_not() {
     assert!(super::gguf_nodes(&g.prompt).is_empty());
 }
 
+// tags: condition
 #[test]
 fn the_gguf_text_loader_matches_the_number_of_encoders() {
     let p = params(GenerationMode::Txt2img);
@@ -613,6 +627,7 @@ fn the_gguf_text_loader_matches_the_number_of_encoders() {
     }
 }
 
+// tags: condition
 #[test]
 fn flux2_klein_reads_qwen3_where_dev_reads_mistral() {
     use crate::models::classify::Variant;
@@ -637,6 +652,7 @@ fn flux2_klein_reads_qwen3_where_dev_reads_mistral() {
     assert_eq!(Family::of(BaseModel::Ltx2), None);
 }
 
+// tags: equivalence
 #[test]
 fn the_manga_finish_names_its_pack() {
     let prompt = json!({
@@ -653,6 +669,7 @@ fn the_manga_finish_names_its_pack() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn the_recorded_sampling_is_what_each_picture_family_graph_runs() {
     let unet = r("diffusion_models", "model.safetensors");
@@ -686,6 +703,7 @@ fn the_recorded_sampling_is_what_each_picture_family_graph_runs() {
     assert_eq!(count(&g, "KSampler"), 0);
 }
 
+// tags: condition
 #[test]
 fn anima_runs_the_scheduler_setting_and_plain_euler_is_its_template() {
     let unet = r("diffusion_models", "model.safetensors");
@@ -712,6 +730,7 @@ fn anima_runs_the_scheduler_setting_and_plain_euler_is_its_template() {
         .contains("not available"));
 }
 
+// tags: condition
 #[test]
 fn the_sampling_is_fixed_for_picture_family_models_in_the_modes_the_picture_graph_draws() {
     let of = |base: &str, kind: &str| -> ModelConfig {
@@ -767,6 +786,7 @@ fn the_sampling_is_fixed_for_picture_family_models_in_the_modes_the_picture_grap
     );
 }
 
+// tags: equivalence
 #[test]
 fn a_sampler_and_noise_schedule_the_picture_names_win_on_every_family() {
     let unet = r("diffusion_models", "model.safetensors");
@@ -810,6 +830,7 @@ fn a_sampler_and_noise_schedule_the_picture_names_win_on_every_family() {
     }
 }
 
+// tags: error-guessing
 #[test]
 fn flux2_takes_a_sampler_but_refuses_a_noise_schedule() {
     let unet = r("diffusion_models", "model.safetensors");
@@ -826,6 +847,7 @@ fn flux2_takes_a_sampler_but_refuses_a_noise_schedule() {
         .contains("noise schedule"));
 }
 
+// tags: decision-table
 #[test]
 fn the_recorded_sampling_is_what_the_picture_named_over_what_the_setting_or_family_ran() {
     let of = |base: &str, kind: &str| -> ModelConfig {

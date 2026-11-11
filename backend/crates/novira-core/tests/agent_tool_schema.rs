@@ -8,6 +8,7 @@ fn refusal(tool: &str, args: serde_json::Value) -> String {
     check_call(tool, Some(&args)).unwrap_err()
 }
 
+// tags: error-guessing, decision-table
 #[test]
 fn a_wrong_type_an_unknown_choice_and_a_missing_field_are_each_named() {
     assert!(refusal("generate", json!({"target": 5})).contains("must be of type string"));
@@ -24,6 +25,7 @@ fn a_wrong_type_an_unknown_choice_and_a_missing_field_are_each_named() {
     );
 }
 
+// tags: boundary, decision-table
 #[test]
 fn arrays_are_checked_for_size_and_for_each_item() {
     let many: Vec<u32> = (0..51).collect();
@@ -40,6 +42,7 @@ fn arrays_are_checked_for_size_and_for_each_item() {
     assert!(refusal("get_image_info", json!({"name": ""})).contains("too short"));
 }
 
+// tags: error-guessing
 #[test]
 fn the_text_forms_of_the_tool_errors_and_pictures() {
     assert!(EndpointError::NoTools("template".into())

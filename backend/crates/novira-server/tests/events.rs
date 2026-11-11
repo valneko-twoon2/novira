@@ -49,6 +49,7 @@ async fn next_event(socket: &mut Socket) -> Value {
     }
 }
 
+// tags: condition
 #[tokio::test]
 async fn backend_events_arrive_as_the_json_the_desktop_sends() {
     let f = Fixture::start().await;
@@ -80,6 +81,7 @@ async fn backend_events_arrive_as_the_json_the_desktop_sends() {
     f.stop().await;
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_saved_screen_state_reaches_every_open_page_with_the_savers_id_and_not_the_state() {
     let f = Fixture::start().await;
@@ -111,6 +113,7 @@ async fn a_saved_screen_state_reaches_every_open_page_with_the_savers_id_and_not
     f.stop().await;
 }
 
+// tags: error-guessing, condition
 #[tokio::test]
 async fn the_event_socket_passes_the_same_guards_as_every_route() {
     let f = Fixture::start().await;
@@ -174,6 +177,7 @@ async fn the_event_socket_passes_the_same_guards_as_every_route() {
     f.stop().await;
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn the_server_stops_while_a_page_holds_the_event_socket() {
     let f = Fixture::start().await;

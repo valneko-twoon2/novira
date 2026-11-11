@@ -34,7 +34,7 @@ const mount = () =>
 const field = (kind: 'positive' | 'negative') => screen.getByTestId(`comic-draw-style-${kind}`) as HTMLTextAreaElement;
 
 describe('the scope bar', () => {
-  it('marks the scope in use and switches to the page and back', () => {
+  it('marks the scope in use and switches to the page and back', { tags: ['scenario'] }, () => {
     mount();
     const comicBtn = screen.getByTestId('comic-draw-scope-comic');
     const pageBtn = screen.getByTestId('comic-draw-scope-page');
@@ -47,7 +47,7 @@ describe('the scope bar', () => {
     expect(useDrawScope.getState().scope).toBe('comic');
   });
 
-  it('offers the way back only while the page has changes of its own', () => {
+  it('offers the way back only while the page has changes of its own', { tags: ['condition'] }, () => {
     mount();
     expect(screen.queryByTestId('comic-draw-page-reset')).toBeNull();
     act(() => useComic.getState().setPageDraw(page().id, {}));
@@ -56,7 +56,7 @@ describe('the scope bar', () => {
     expect(screen.getByTestId('comic-draw-page-reset')).toBeTruthy();
   });
 
-  it('shows the way back for a page that has only its own quality words, and clears both on reset', () => {
+  it('shows the way back for a page that has only its own quality words, and clears both on reset', { tags: ['scenario'] }, () => {
     mount();
     act(() => {
       useComic.getState().setPageDraw(page().id, { steps: 12 } as never);
@@ -73,7 +73,7 @@ describe('the scope bar', () => {
 });
 
 describe('the quality words', () => {
-  it('writes the comic words, and drops a word that was emptied', () => {
+  it('writes the comic words, and drops a word that was emptied', { tags: ['scenario'] }, () => {
     mount();
     fireEvent.change(field('positive'), { target: { value: 'sharp lines' } });
     fireEvent.change(field('negative'), { target: { value: 'blurry' } });
@@ -84,14 +84,14 @@ describe('the quality words', () => {
     expect(comic().style).toBeUndefined();
   });
 
-  it('shows the default words as the hint while empty, and limits the length', () => {
+  it('shows the default words as the hint while empty, and limits the length', { tags: ['boundary'] }, () => {
     mount();
     expect(field('positive').value).toBe('');
     expect(field('positive').placeholder.length).toBeGreaterThan(0);
     expect(field('positive').maxLength).toBe(STYLE_MAX);
   });
 
-  it('writes to the page, not the comic, in the page scope', () => {
+  it('writes to the page, not the comic, in the page scope', { tags: ['scenario'] }, () => {
     useDrawScope.setState({ scope: 'page' });
     mount();
     fireEvent.change(field('positive'), { target: { value: 'page only' } });
@@ -100,7 +100,7 @@ describe('the quality words', () => {
     expect(field('positive').value).toBe('page only');
   });
 
-  it('shows the comic words in the comic scope and the page words in the page scope', () => {
+  it('shows the comic words in the comic scope and the page words in the page scope', { tags: ['scenario'] }, () => {
     useComic.getState().setStyle(comic().id, { positive: 'comic words' });
     useComic.getState().setPageStyle(page().id, { positive: 'page words' });
     mount();
@@ -109,7 +109,7 @@ describe('the quality words', () => {
     expect(field('positive').value).toBe('page words');
   });
 
-  it('shows no quality words when there is no comic', () => {
+  it('shows no quality words when there is no comic', { tags: ['condition'] }, () => {
     useComic.getState().setProjects([]);
     mount();
     expect(screen.queryByTestId('comic-draw-style')).toBeNull();
@@ -118,7 +118,7 @@ describe('the quality words', () => {
 });
 
 describe('the character references', () => {
-  it('changes the strength with the slider box within its limits', () => {
+  it('changes the strength with the slider box within its limits', { tags: ['boundary'] }, () => {
     useComic.getState().setCastReference(comic().id, CAST_REFERENCE_DEFAULT);
     mount();
     const section = screen.getByTestId('comic-cast-reference');

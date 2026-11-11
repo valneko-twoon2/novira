@@ -14,7 +14,7 @@ const rig: fc.Arbitrary<RigState> = fc.record({
 const finite = (n: number) => Number.isFinite(n);
 
 describe('face rig pose (properties)', () => {
-  it('parseRig never throws and always returns a pose of finite numbers, for any text', () => {
+  it('parseRig never throws and always returns a pose of finite numbers, for any text', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(junkStored, (text) => {
         const r = parseRig(text);
@@ -26,7 +26,7 @@ describe('face rig pose (properties)', () => {
     );
   });
 
-  it('a pose survives serialise and parse (small values below 0.0001 count as zero)', () => {
+  it('a pose survives serialise and parse (small values below 0.0001 count as zero)', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(rig, (r) => {
         const back = parseRig(serializeRig(r));
@@ -39,7 +39,7 @@ describe('face rig pose (properties)', () => {
     );
   });
 
-  it('the untouched pose serialises to an empty text', () => {
+  it('the untouched pose serialises to an empty text', { tags: ['error-guessing'] }, () => {
     expect(serializeRig({ w: {}, p: {}, rot: [0, 0, 0] })).toBe('');
   });
 });

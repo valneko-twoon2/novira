@@ -1,3 +1,4 @@
+//! tags: state-transition, error-guessing
 //! A start-up restore cut off after each of its steps (the power goes, the process is killed), then the next start.
 //! Whatever step it stopped at, the next start ends with one whole data folder: the restored one when the backup is
 //! good, the previous one when it is refused. Nothing is left half moved, and no restore folder stays behind.

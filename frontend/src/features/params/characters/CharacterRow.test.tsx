@@ -42,7 +42,7 @@ afterEach(() => {
 });
 
 describe('register a character', () => {
-  it('says so when no picture is selected, and ignores videos in the selection', () => {
+  it('says so when no picture is selected, and ignores videos in the selection', { tags: ['equivalence'] }, () => {
     mount();
     openList();
     fireEvent.click(screen.getByTestId('character-register'));
@@ -60,7 +60,7 @@ describe('register a character', () => {
 });
 
 describe('use a character', () => {
-  it('sets up the references and prompt, marks the character as current and tells what was done', () => {
+  it('sets up the references and prompt, marks the character as current and tells what was done', { tags: ['scenario'] }, () => {
     const id = useCharacters.getState().add('Mia', { imageNames: ['a.png', 'b.png', 'gone.png'], weight: 0.6, tags: 'pink hair' });
     useCharacters.setState({ selectedId: null });
     mount();
@@ -77,7 +77,7 @@ describe('use a character', () => {
     expect(screen.getByTestId('character-trigger').textContent).toContain('Mia');
   });
 
-  it('mentions a LoRA that was added, and one that is no longer installed', () => {
+  it('mentions a LoRA that was added, and one that is no longer installed', { tags: ['condition'] }, () => {
     useModels.getState().setModels([
       { key: 'xl', name: 'xl', base: 'sdxl', type: 'main' } as ModelConfig,
       { key: 'mia-lora', name: 'Mia', base: 'sdxl', type: 'lora' } as ModelConfig,
@@ -95,7 +95,7 @@ describe('use a character', () => {
     expect(old).toBeTruthy();
   });
 
-  it('shows an error and no success when none of its pictures is left', () => {
+  it('shows an error and no success when none of its pictures is left', { tags: ['error-guessing'] }, () => {
     useCharacters.getState().add('Ghost', { imageNames: ['gone.png'], weight: 0.6, tags: '' });
     useCharacters.setState({ selectedId: null });
     mount();
@@ -110,7 +110,7 @@ describe('the actions of one character', () => {
   const add = (lora = false) =>
     useCharacters.getState().add('Mia', { imageNames: ['a.png'], weight: 0.6, tags: 'x', ...(lora ? { lora: { key: 'l', weight: 0.8, trigger: 'mia', enabled: true } } : {}) });
 
-  it('opens the edit dialog with the character', async () => {
+  it('opens the edit dialog with the character', { tags: ['scenario'] }, async () => {
     const id = add();
     mount();
     openList();
@@ -119,7 +119,7 @@ describe('the actions of one character', () => {
     expect(useCharacterDialog.getState().target).toMatchObject({ imageNames: ['a.png'], name: 'Mia', editId: id });
   });
 
-  it('deletes the character only on the second press', async () => {
+  it('deletes the character only on the second press', { tags: ['state-transition'] }, async () => {
     add();
     mount();
     openList();
@@ -130,7 +130,7 @@ describe('the actions of one character', () => {
     expect(useCharacters.getState().presets).toHaveLength(0);
   });
 
-  it('lists characters by name and look words when searching', () => {
+  it('lists characters by name and look words when searching', { tags: ['equivalence'] }, () => {
     useCharacters.getState().add('Mia', { imageNames: ['a.png'], weight: 0.6, tags: 'pink hair' });
     useCharacters.getState().add('Rin', { imageNames: ['b.png'], weight: 0.6, tags: 'blue eyes' });
     mount();

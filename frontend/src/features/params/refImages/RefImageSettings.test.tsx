@@ -52,7 +52,7 @@ afterEach(() => {
 });
 
 describe('RefImageSettings', () => {
-  it('turns the image on and off, and deletes it', () => {
+  it('turns the image on and off, and deletes it', { tags: ['scenario'] }, () => {
     show();
     const toggle = screen.getByRole('switch', { name: t('params.refImage.enabled') });
     fireEvent.click(toggle);
@@ -62,7 +62,7 @@ describe('RefImageSettings', () => {
     expect(state().refImages).toHaveLength(0);
   });
 
-  it('edits the weight and the range, keeping the start before the end, and resets them', () => {
+  it('edits the weight and the range, keeping the start before the end, and resets them', { tags: ['boundary'] }, () => {
     show();
     setNum(t('params.refImage.weight'), 1.5);
     setNum(t('params.refImage.begin'), 0.3);
@@ -76,7 +76,7 @@ describe('RefImageSettings', () => {
     expect(current()).toMatchObject({ weight: 1, beginEnd: [0, 1], method: 'full' });
   });
 
-  it('shows the picture, can clear it, and opens it as the start of an image-to-image canvas', () => {
+  it('shows the picture, can clear it, and opens it as the start of an image-to-image canvas', { tags: ['scenario'] }, () => {
     useParams.getState().updateRefImage(current().id, { imageName: 'a.png', imageUrl: 'blob:a' });
     const importImage = vi.fn();
     useCanvas.setState({ importImage });
@@ -89,7 +89,7 @@ describe('RefImageSettings', () => {
     useCanvas.setState({ importImage: initial.canvas.importImage });
   });
 
-  it('hands a dropped gallery picture or an uploaded file to the caller', async () => {
+  it('hands a dropped gallery picture or an uploaded file to the caller', { tags: ['scenario'] }, async () => {
     const onImage = show();
     const zone = document.querySelector('.pp-refpop__image')!;
     fireEvent.drop(zone, { dataTransfer: { types: ['application/x-novira-images'], files: [], getData: () => JSON.stringify(['a.png']) } });
@@ -100,7 +100,7 @@ describe('RefImageSettings', () => {
     await waitFor(() => expect(onImage).toHaveBeenCalledWith(uploaded));
   });
 
-  it('tells where to get an IP-Adapter model when there is none, and opens the Models tab', () => {
+  it('tells where to get an IP-Adapter model when there is none, and opens the Models tab', { tags: ['condition'] }, () => {
     useModels.setState({ models: [model('main1', 'main')] });
     show();
     expect(screen.getByTestId('ref-no-models')).toBeTruthy();
@@ -108,7 +108,7 @@ describe('RefImageSettings', () => {
     expect(useUi.getState().activeTab).toBe('models');
   });
 
-  it('has no hint when models exist, and leaves out the CLIP vision and method choices for FLUX', () => {
+  it('has no hint when models exist, and leaves out the CLIP vision and method choices for FLUX', { tags: ['condition'] }, () => {
     show();
     expect(screen.queryByTestId('ref-no-models')).toBeNull();
     expect(screen.getByLabelText(t('params.refImage.clipVision'))).toBeTruthy();

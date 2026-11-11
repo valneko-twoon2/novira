@@ -31,12 +31,12 @@ function importsOf(file: string): string[] {
 }
 
 describe('frontend source layout', () => {
-  it('has no catch-all folders (utils, misc, helpers)', () => {
+  it('has no catch-all folders (utils, misc, helpers)', { tags: ['condition', 'static'] }, () => {
     const bad = dirs(SRC).filter((d) => FORBIDDEN_DIRS.test(d.split(/[\\/]/).pop()!)).map(rel);
     expect(bad).toEqual([]);
   });
 
-  it('every layer exception is still needed', () => {
+  it('every layer exception is still needed', { tags: ['condition', 'static'] }, () => {
     const stale = LAYER_EXCEPTIONS.filter(([from, to]) => !existsSync(join(SRC, from)) || !importsOf(from).includes(to));
     expect(stale.map(([from, to]) => `${from} -> ${to}`)).toEqual([]);
   });

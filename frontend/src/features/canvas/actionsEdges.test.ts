@@ -20,7 +20,7 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('importing a picture as a new canvas', () => {
-  it('replaces the canvas by one raster layer and a bbox the size of the picture', () => {
+  it('replaces the canvas by one raster layer and a bbox the size of the picture', { tags: ['condition'] }, () => {
     c().addEntity('inpaint');
     importImage(image('a'), 'newCanvasRaster');
     expect(c().entities.map((e) => e.type)).toEqual(['raster']);
@@ -30,7 +30,7 @@ describe('importing a picture as a new canvas', () => {
 });
 
 describe('saving the staged picture without one', () => {
-  it('does nothing when no picture is staged', async () => {
+  it('does nothing when no picture is staged', { tags: ['condition'] }, async () => {
     const update = vi.spyOn(backend, 'updateImages');
     await saveStagedToGallery();
     expect(update).not.toHaveBeenCalled();

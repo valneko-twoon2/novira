@@ -34,7 +34,7 @@ afterEach(() => {
 });
 
 describe('TextFloatingBar for a text layer', () => {
-  it('sets the size and the fill color', () => {
+  it('sets the size and the fill color', { tags: ['scenario'] }, () => {
     const layer = baseText();
     show(layer);
     const size = screen.getByLabelText(t('text.size')) as HTMLInputElement;
@@ -46,7 +46,7 @@ describe('TextFloatingBar for a text layer', () => {
     expect(now.style.fill).toEqual({ kind: 'solid', color: '#ff0000' });
   });
 
-  it('offers both colors of a gradient fill, and changes each on its own', () => {
+  it('offers both colors of a gradient fill, and changes each on its own', { tags: ['scenario'] }, () => {
     const layer = baseText();
     layer.style = { ...layer.style, fill: { kind: 'gradient', top: '#111111', bottom: '#222222' } };
     show(layer);
@@ -56,7 +56,7 @@ describe('TextFloatingBar for a text layer', () => {
     expect((state().scene.layers[0] as TextLayer).style.fill).toEqual({ kind: 'gradient', top: '#aa0000', bottom: '#00aa00' });
   });
 
-  it('shows the outline color only while the text has an outline', () => {
+  it('shows the outline color only while the text has an outline', { tags: ['condition'] }, () => {
     const layer = baseText();
     layer.style = { ...layer.style, stroke: null };
     const { unmount } = show(layer);
@@ -69,7 +69,7 @@ describe('TextFloatingBar for a text layer', () => {
     expect((state().scene.layers[0] as TextLayer).style.stroke).toEqual({ color: '#ffffff', width: 6 });
   });
 
-  it('joins a run of edits of one control into one undo step', () => {
+  it('joins a run of edits of one control into one undo step', { tags: ['state-transition'] }, () => {
     const layer = baseText();
     show(layer);
     for (const c of ['#ff0000', '#00ff00', '#0000ff']) fireEvent.change(colorInput(t('text.color')), { target: { value: c } });
@@ -78,7 +78,7 @@ describe('TextFloatingBar for a text layer', () => {
 });
 
 describe('TextFloatingBar for a bubble', () => {
-  it('has the fill and the border color and no font or size', () => {
+  it('has the fill and the border color and no font or size', { tags: ['condition'] }, () => {
     show(baseBubble());
     expect(screen.queryByLabelText(t('text.size'))).toBeNull();
     expect(screen.queryByTestId('text-bar-font')).toBeNull();
@@ -89,7 +89,7 @@ describe('TextFloatingBar for a bubble', () => {
 });
 
 describe('TextFloatingBar actions', () => {
-  it('duplicates and deletes the layer', () => {
+  it('duplicates and deletes the layer', { tags: ['scenario'] }, () => {
     show(baseText());
     fireEvent.click(screen.getByLabelText(t('text.layer.duplicate')));
     expect(state().scene.layers).toHaveLength(2);
@@ -97,7 +97,7 @@ describe('TextFloatingBar actions', () => {
     expect(state().scene.layers).toHaveLength(1);
   });
 
-  it('is a toolbar with a name', () => {
+  it('is a toolbar with a name', { tags: ['scenario'] }, () => {
     show(baseText());
     // Hidden until its size is measured, so the name is read from the attributes.
     const bar = screen.getByTestId('text-bar');

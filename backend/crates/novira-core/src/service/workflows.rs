@@ -160,6 +160,7 @@ mod tests {
         backend.save_workflow(wf).unwrap_err().to_string()
     }
 
+    // tags: scenario
     #[test]
     fn a_workflow_is_saved_and_replaced_as_it_was_given() {
         let dir = tempfile::tempdir().unwrap();
@@ -178,6 +179,7 @@ mod tests {
         assert!(backend.bootstrap().workflows.is_empty());
     }
 
+    // tags: boundary, equivalence
     #[test]
     fn a_name_must_be_there_and_plain_and_not_too_long() {
         let dir = tempfile::tempdir().unwrap();
@@ -206,6 +208,7 @@ mod tests {
         assert_eq!(backend.bootstrap().workflows.len(), 1);
     }
 
+    // tags: condition
     #[test]
     fn a_description_may_have_line_breaks_but_no_other_control_characters() {
         let dir = tempfile::tempdir().unwrap();
@@ -217,6 +220,7 @@ mod tests {
         assert!(backend.save_workflow(input()).is_ok());
     }
 
+    // tags: boundary
     #[test]
     fn tags_are_limited_in_number_and_length() {
         let dir = tempfile::tempdir().unwrap();
@@ -236,6 +240,7 @@ mod tests {
             .is_ok());
     }
 
+    // tags: condition
     #[test]
     fn a_graph_must_be_an_object_of_a_sane_size() {
         let dir = tempfile::tempdir().unwrap();

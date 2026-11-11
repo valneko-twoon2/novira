@@ -30,7 +30,7 @@ function answer(status: number, body: unknown) {
 describe('the desktop app home network calls', () => {
   afterEach(() => clearMocks());
 
-  it('name commands the shell registers, with its argument names', async () => {
+  it('name commands the shell registers, with its argument names', { tags: ['condition'] }, async () => {
     const shell = shellCommands();
     const registered = read('backend/src-tauri/src/command_list.rs');
     expect([...shell.keys()].sort()).toEqual(Object.values(LAN_COMMANDS).sort());
@@ -81,7 +81,7 @@ describe('the desktop app home network calls', () => {
     expect(calls[0]!.payload).toEqual({ gatewayMac: '02:11:22:33:44:55', label: 'home' });
   });
 
-  it('read the state and a pairing code from the answer, and nothing from a refusal', async () => {
+  it('read the state and a pairing code from the answer, and nothing from a refusal', { tags: ['error-guessing'] }, async () => {
     const state = { open: true, address: '192.168.1.5', port: 8124, devices: [], pending: [] };
     answer(200, state);
     expect(await tauriLanApi.state()).toEqual(state);
@@ -96,7 +96,7 @@ describe('the desktop app home network calls', () => {
     expect(await tauriLanApi.pairingCode()).toBeNull();
   });
 
-  it('bring a refusal back with its reason, and a failed call as offline', async () => {
+  it('bring a refusal back with its reason, and a failed call as offline', { tags: ['error-guessing'] }, async () => {
     answer(409, { code: 'untrusted_network', error: 'not trusted yet', gatewayMac: '02:11:22:33:44:55' });
     expect(await tauriLanApi.open()).toEqual({ ok: false, code: 'untrusted_network', message: 'not trusted yet', gatewayMac: '02:11:22:33:44:55' });
     answer(500, null);

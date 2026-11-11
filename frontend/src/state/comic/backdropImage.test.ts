@@ -25,21 +25,21 @@ afterEach(() => {
 });
 
 describe('putting a gallery picture over the page', () => {
-  it('puts the first name over the page and selects the picture', () => {
+  it('puts the first name over the page and selects the picture', { tags: ['condition'] }, () => {
     const id = seed();
     expect(putBackdropGalleryImage(id, ['a.png', 'missing.png'])).toBe(true);
     expect(backdrop()).toMatchObject({ imageName: 'a.png' });
     expect(useComic.getState().backdropSelected).toBe(true);
   });
 
-  it('does nothing when no name is in the gallery', () => {
+  it('does nothing when no name is in the gallery', { tags: ['condition'] }, () => {
     const id = seed();
     expect(putBackdropGalleryImage(id, ['missing.png'])).toBe(false);
     expect(backdrop()).toBeNull();
     expect(useComic.getState().backdropSelected).toBe(false);
   });
 
-  it('does nothing without any name', () => {
+  it('does nothing without any name', { tags: ['condition'] }, () => {
     const id = seed();
     expect(putBackdropGalleryImage(id, [])).toBe(false);
     expect(backdrop()).toBeNull();
@@ -47,7 +47,7 @@ describe('putting a gallery picture over the page', () => {
 });
 
 describe('putting a file from the computer over the page', () => {
-  it('uploads it to the gallery first, then puts it over the page', async () => {
+  it('uploads it to the gallery first, then puts it over the page', { tags: ['state-transition'] }, async () => {
     const id = seed();
     const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue(image('new.png'));
     await putBackdropFile(id, new File(['x'], 'new.png', { type: 'image/png' }));
@@ -57,7 +57,7 @@ describe('putting a file from the computer over the page', () => {
     expect(useComic.getState().backdropSelected).toBe(true);
   });
 
-  it('puts nothing over the page when the upload fails', async () => {
+  it('puts nothing over the page when the upload fails', { tags: ['error-guessing'] }, async () => {
     const id = seed();
     vi.spyOn(backend, 'uploadImage').mockRejectedValue(new Error('disk full'));
     await expect(putBackdropFile(id, new File(['x'], 'new.png', { type: 'image/png' }))).rejects.toThrow('disk full');

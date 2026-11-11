@@ -42,7 +42,7 @@ async function check(page: Page, surface: string): Promise<void> {
 }
 
 for (const tab of TABS) {
-  test(`${tab} tab: text on solid backgrounds has enough contrast in both themes`, async ({ page }) => {
+  test(`${tab} tab: text on solid backgrounds has enough contrast in both themes`, { tag: ['@equivalence'] }, async ({ page }) => {
     test.setTimeout(60_000);
     await openApp(page);
     await showTab(page, tab);
@@ -51,7 +51,7 @@ for (const tab of TABS) {
   });
 }
 
-test('settings dialog: text on solid backgrounds has enough contrast in both themes', async ({ page }) => {
+test('settings dialog: text on solid backgrounds has enough contrast in both themes', { tag: ['@equivalence'] }, async ({ page }) => {
   await openApp(page);
   await page.getByRole('button', { name: msg('app.nav.settingsMenu') }).click();
   await page.getByRole('menuitem', { name: msg('app.nav.settings') }).click();

@@ -45,7 +45,7 @@ describe('CanvasSettingsMenu', () => {
     ['canvas.settings.clipToBbox', 'clipToBbox'],
     ['canvas.settings.preserveMask', 'preserveMask'],
     ['canvas.settings.autoProcess', 'autoProcess'],
-  ] as const)('%s flips the %s setting and keeps the menu open', async (label, key) => {
+  ] as const)('%s flips the %s setting and keeps the menu open', { tags: ['decision-table'] }, async (label, key) => {
     const before = state().settings[key];
     const menu = await openMenu();
     fireEvent.click(menu.getByText(t(label)));
@@ -53,7 +53,7 @@ describe('CanvasSettingsMenu', () => {
     expect(screen.getByRole('menu')).toBeTruthy();
   });
 
-  it('merges the visible layers and fits the box to the layers', async () => {
+  it('merges the visible layers and fits the box to the layers', { tags: ['scenario'] }, async () => {
     let menu = await openMenu();
     fireEvent.click(menu.getByText(t('canvas.actions.mergeVisible')));
     expect(mergeVisible).toHaveBeenCalled();
@@ -63,7 +63,7 @@ describe('CanvasSettingsMenu', () => {
     expect(fitBboxToLayers).toHaveBeenCalled();
   });
 
-  it('turns clearing off while there is nothing to clear, and clears the history, the canvas and the staging area', async () => {
+  it('turns clearing off while there is nothing to clear, and clears the history, the canvas and the staging area', { tags: ['scenario'] }, async () => {
     let menu = await openMenu();
     expect(menu.getByText(t('canvas.actions.clearHistory')).closest('[role=menuitem]')!.getAttribute('aria-disabled')).toBe('true');
     expect(menu.getByText(t('canvas.actions.clearCanvas')).closest('[role=menuitem]')!.getAttribute('aria-disabled')).toBe('true');

@@ -36,7 +36,7 @@ afterEach(() => {
 });
 
 describe('adding and reshaping panels', () => {
-  it('adds a panel from the toolbar and selects it', () => {
+  it('adds a panel from the toolbar and selects it', { tags: ['scenario'] }, () => {
     const project = newProject('Add');
     useComic.getState().setProjects([project]);
     renderEditor();
@@ -46,7 +46,7 @@ describe('adding and reshaping panels', () => {
     expect(page.panels.some((p) => p.id === useComic.getState().selectedPanelId)).toBe(true);
   });
 
-  it('shows a bar on each edge of the selected panel only', () => {
+  it('shows a bar on each edge of the selected panel only', { tags: ['boundary'] }, () => {
     const project = newProject('Edges');
     useComic.getState().setProjects([project]);
     renderEditor();
@@ -58,7 +58,7 @@ describe('adding and reshaping panels', () => {
 });
 
 describe('placing panels freely', () => {
-  it('has no switch for it: the cut tool works on every page, and no panel has a grip', () => {
+  it('has no switch for it: the cut tool works on every page, and no panel has a grip', { tags: ['state-transition', 'decision-table'] }, () => {
     const project = newProject('Free');
     useComic.getState().setProjects([project]);
     renderEditor();
@@ -68,7 +68,7 @@ describe('placing panels freely', () => {
     expect((screen.getByTestId('comic-cut') as HTMLButtonElement).disabled).toBe(false);
   });
 
-  it('hides the handles of a panel whose balloon is selected, and frames the balloon instead', () => {
+  it('hides the handles of a panel whose balloon is selected, and frames the balloon instead', { tags: ['scenario'] }, () => {
     const project = newProject('Balloon');
     useComic.getState().setProjects([project]);
     const panelId = project.pages[0]!.panels[1]!.id;
@@ -84,7 +84,7 @@ describe('placing panels freely', () => {
     expect(screen.queryByTestId('comic-bubble-selection')).toBeNull();
   });
 
-  it('shows the turn handle for the selected panel, and carries a panel of a new page that is pressed anywhere', () => {
+  it('shows the turn handle for the selected panel, and carries a panel of a new page that is pressed anywhere', { tags: ['scenario'] }, () => {
     const project = newProject('Handle');
     useComic.getState().setProjects([project]);
     renderEditor();
@@ -108,7 +108,7 @@ describe('placing panels freely', () => {
     expect(useComic.getState().projects[0]!.pages[0]!.free).toBe(true);
   });
 
-  it('lets a panel run partly off the page when it is carried there', () => {
+  it('lets a panel run partly off the page when it is carried there', { tags: ['scenario'] }, () => {
     const project = newProject('Off');
     useComic.getState().setProjects([project]);
     renderEditor();
@@ -124,7 +124,7 @@ describe('placing panels freely', () => {
 });
 
 describe('deleting and letting go', () => {
-  it('deletes the selected panel from the toolbar, and the button waits for a selection', () => {
+  it('deletes the selected panel from the toolbar, and the button waits for a selection', { tags: ['scenario'] }, () => {
     const project = newProject('Delete');
     useComic.getState().setProjects([project]);
     renderEditor();
@@ -138,7 +138,7 @@ describe('deleting and letting go', () => {
     expect(useComic.getState().selectedPanelId).toBeNull();
   });
 
-  it('has one trash button, which takes away the selected balloon, then the picture, then the panel', () => {
+  it('has one trash button, which takes away the selected balloon, then the picture, then the panel', { tags: ['scenario'] }, () => {
     const project = newProject('One trash');
     useComic.getState().setProjects([project]);
     const panelId = project.pages[0]!.panels[0]!.id;
@@ -166,7 +166,7 @@ describe('deleting and letting go', () => {
     expect(useComic.getState().projects[0]!.pages[0]!.panels).toHaveLength(2);
   });
 
-  it('keeps the last panel of a page', () => {
+  it('keeps the last panel of a page', { tags: ['boundary'] }, () => {
     const project = newProject('Last');
     useComic.getState().setProjects([project]);
     act(() => useComic.getState().setPanelCount(project.pages[0]!.id, 1));
@@ -175,7 +175,7 @@ describe('deleting and letting go', () => {
     expect((screen.getByTestId('comic-delete') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('lets go of the selected panel when a blank part of the view is pressed, and not when a panel is', () => {
+  it('lets go of the selected panel when a blank part of the view is pressed, and not when a panel is', { tags: ['scenario'] }, () => {
     const project = newProject('Blank');
     useComic.getState().setProjects([project]);
     const id = project.pages[0]!.panels[0]!.id;
@@ -190,7 +190,7 @@ describe('deleting and letting go', () => {
     expect(useComic.getState().selectedPanelId).toBeNull();
   });
 
-  it('lets go of a panel chosen after another one, and does not go back to the first', () => {
+  it('lets go of a panel chosen after another one, and does not go back to the first', { tags: ['boundary'] }, () => {
     const project = newProject('Two');
     useComic.getState().setProjects([project]);
     const [first, second] = project.pages[0]!.panels;
@@ -203,7 +203,7 @@ describe('deleting and letting go', () => {
     expect(useComic.getState().selectedPanelId).not.toBe(first!.id);
   });
 
-  it('selects the backdrop when the page outside the panels is pressed, and Delete takes it off', () => {
+  it('selects the backdrop when the page outside the panels is pressed, and Delete takes it off', { tags: ['scenario'] }, () => {
     const project = newProject('Backdrop');
     useComic.getState().setProjects([project]);
     const pageId = project.pages[0]!.id;
@@ -231,7 +231,7 @@ describe('the balloon editor', () => {
     return { panelId, bubbleId };
   }
 
-  it('opens beside the page on a double click and edits the balloon there', () => {
+  it('opens beside the page on a double click and edits the balloon there', { tags: ['scenario'] }, () => {
     const { panelId, bubbleId } = withBalloon();
     renderEditor();
     expect(screen.queryByTestId('comic-bubble-editor')).toBeNull();
@@ -245,7 +245,7 @@ describe('the balloon editor', () => {
     expect(editor.closest('.comic-page')).toBeNull();
   });
 
-  it('makes the selected words bold or dotted, and shows them so on the page', () => {
+  it('makes the selected words bold or dotted, and shows them so on the page', { tags: ['scenario'] }, () => {
     withBalloon();
     renderEditor();
     fireEvent.doubleClick(screen.getByTestId('comic-bubble'));
@@ -263,7 +263,7 @@ describe('the balloon editor', () => {
     expect(shown.querySelector('.is-dots')?.textContent).toBe('o');
   });
 
-  it('sets the size by a slider and the font from the list, and the page shows the font', async () => {
+  it('sets the size by a slider and the font from the list, and the page shows the font', { tags: ['scenario'] }, async () => {
     const { panelId, bubbleId } = withBalloon();
     renderEditor();
     fireEvent.doubleClick(screen.getByTestId('comic-bubble'));
@@ -276,7 +276,7 @@ describe('the balloon editor', () => {
     expect((screen.getByTestId('comic-bubble') as HTMLElement).style.fontFamily).toContain('Shippori Mincho');
   });
 
-  it('offers a slant and no tail for a sound effect, and the slant turns the lettering on the page', () => {
+  it('offers a slant and no tail for a sound effect, and the slant turns the lettering on the page', { tags: ['scenario'] }, () => {
     const { panelId, bubbleId } = withBalloon();
     renderEditor();
     fireEvent.doubleClick(screen.getByTestId('comic-bubble'));
@@ -288,7 +288,7 @@ describe('the balloon editor', () => {
     expect((screen.getByTestId('comic-bubble') as HTMLElement).style.transform).toBe('rotate(30deg)');
   });
 
-  it('lies over the board panel when there is one wide enough, and stays by the page otherwise', () => {
+  it('lies over the board panel when there is one wide enough, and stays by the page otherwise', { tags: ['scenario'] }, () => {
     const { panelId, bubbleId } = withBalloon();
     const board = document.createElement('div');
     board.className = 'workspace__right';
@@ -309,7 +309,7 @@ describe('the balloon editor', () => {
     }
   });
 
-  it('closes on Escape in its text and on its close button, keeping the balloon chosen', () => {
+  it('closes on Escape in its text and on its close button, keeping the balloon chosen', { tags: ['scenario'] }, () => {
     const { panelId, bubbleId } = withBalloon();
     renderEditor();
     act(() => useComic.getState().openBubbleEditor(panelId, bubbleId));
@@ -321,7 +321,7 @@ describe('the balloon editor', () => {
     expect(screen.queryByTestId('comic-bubble-editor')).toBeNull();
   });
 
-  it('lists the balloons in the toolbar without their fields, and opens the editor from the list', async () => {
+  it('lists the balloons in the toolbar without their fields, and opens the editor from the list', { tags: ['scenario'] }, async () => {
     const { panelId } = withBalloon();
     act(() => useComic.getState().selectPanel(panelId));
     renderEditor();
@@ -333,7 +333,7 @@ describe('the balloon editor', () => {
     expect(screen.getByTestId('comic-bubble-editor')).toBeTruthy();
   });
 
-  it('draws every balloon of the list as it looks, and adds the one pressed with its look', async () => {
+  it('draws every balloon of the list as it looks, and adds the one pressed with its look', { tags: ['decision-table'] }, async () => {
     const project = newProject('List');
     useComic.getState().setProjects([project]);
     const panelId = project.pages[0]!.panels[0]!.id;
@@ -354,7 +354,7 @@ describe('the balloon editor', () => {
     expect(screen.getByTestId('comic-bubble-editor')).toBeTruthy();
   });
 
-  it('adds a sound-effect picture, shows it as a picture, and chooses another by search and by hand', async () => {
+  it('adds a sound-effect picture, shows it as a picture, and chooses another by search and by hand', { tags: ['scenario'] }, async () => {
     const project = newProject('Stamp');
     useComic.getState().setProjects([project]);
     const panelId = project.pages[0]!.panels[0]!.id;
@@ -382,7 +382,7 @@ describe('the balloon editor', () => {
     expect(bubble().text.startsWith('burst-')).toBe(true);
   });
 
-  it('shapes the outline freely by its points, and puts the shape back', () => {
+  it('shapes the outline freely by its points, and puts the shape back', { tags: ['scenario'] }, () => {
     const { panelId, bubbleId } = withBalloon();
     renderEditor();
     act(() => useComic.getState().openBubbleEditor(panelId, bubbleId));
@@ -415,7 +415,7 @@ describe('the balloon editor', () => {
     expect(screen.queryAllByTestId('comic-bubble-point')).toHaveLength(0);
   });
 
-  it('changes the line and the fill, and gives a new shape its own spikes', () => {
+  it('changes the line and the fill, and gives a new shape its own spikes', { tags: ['scenario'] }, () => {
     const { panelId, bubbleId } = withBalloon();
     renderEditor();
     act(() => useComic.getState().openBubbleEditor(panelId, bubbleId));

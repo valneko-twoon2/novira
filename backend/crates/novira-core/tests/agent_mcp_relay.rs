@@ -37,6 +37,7 @@ async fn call(server: &McpServer, tool: &str, args: Value) -> Value {
     post(server, body).await.json().await.unwrap()
 }
 
+// tags: decision-table
 #[tokio::test]
 async fn a_call_goes_to_the_frontend_and_its_answer_is_the_result() {
     let (server, relay, mut events) = server().await;
@@ -68,6 +69,7 @@ async fn a_call_goes_to_the_frontend_and_its_answer_is_the_result() {
     );
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_read_the_user_declines_comes_back_as_a_tool_error() {
     let (server, relay, mut events) = server().await;
@@ -93,6 +95,7 @@ async fn a_read_the_user_declines_comes_back_as_a_tool_error() {
     assert_eq!(result["result"]["content"][0]["text"], "The user declined.");
 }
 
+// tags: error-guessing, decision-table
 #[tokio::test]
 async fn a_call_with_bad_arguments_never_reaches_the_frontend() {
     let (server, _relay, mut events) = server().await;
@@ -101,6 +104,7 @@ async fn a_call_with_bad_arguments_never_reaches_the_frontend() {
     assert!(events.try_recv().is_err());
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_client_without_the_token_is_turned_away() {
     let (server, _relay, mut events) = server().await;

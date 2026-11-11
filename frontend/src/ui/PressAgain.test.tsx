@@ -6,7 +6,7 @@ import { PressAgainButton } from './PressAgain';
 afterEach(cleanup);
 
 describe('PressAgainButton', () => {
-  it('acts on the second press, and the first press says so in the label', () => {
+  it('acts on the second press, and the first press says so in the label', { tags: ['state-transition'] }, () => {
     const onConfirm = vi.fn();
     render(
       <PressAgainButton againLabel="Really delete" onConfirm={onConfirm}>
@@ -22,7 +22,7 @@ describe('PressAgainButton', () => {
     expect(button.textContent).toBe('Delete');
   });
 
-  it('disarms when it loses focus, so a later press only arms it again', () => {
+  it('disarms when it loses focus, so a later press only arms it again', { tags: ['state-transition'] }, () => {
     const onConfirm = vi.fn();
     render(
       <PressAgainButton againLabel="Really delete" onConfirm={onConfirm}>

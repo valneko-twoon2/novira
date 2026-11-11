@@ -51,7 +51,7 @@ afterEach(() => {
 });
 
 describe('the style words of a comic', () => {
-  it('puts the quality words of the model family before the prompt and the base negative before the panel negative', () => {
+  it('puts the quality words of the model family before the prompt and the base negative before the panel negative', { tags: ['condition'] }, () => {
     const { project, panelId } = seedPage('a girl at a window');
     delete project.style;
     project.pages[0]!.panels[0]!.negativePrompt = 'hat';
@@ -63,7 +63,7 @@ describe('the style words of a comic', () => {
     expect(req.params.negativePrompt).not.toMatch(/\bcolou?r(ed)?\b|smooth shading/);
   });
 
-  it('takes the comic\'s own words, and a page\'s own over them, each side apart', () => {
+  it('takes the comic\'s own words, and a page\'s own over them, each side apart', { tags: ['decision-table'] }, () => {
     const { project, panelId } = seedPage('a girl at a window');
     project.style = { positive: 'soft colours', negative: 'blur' };
     project.pages[0]!.style = { negative: 'text' };
@@ -75,7 +75,7 @@ describe('the style words of a comic', () => {
 });
 
 describe('the request that draws a panel', () => {
-  it('sends the panel prompt with the Generate tab settings, one picture to the gallery', () => {
+  it('sends the panel prompt with the Generate tab settings, one picture to the gallery', { tags: ['condition'] }, () => {
     const { panelId } = seedPage();
     const req = panelRequest(refOf(panelId), false);
     expect(req.origin).toBe('generate');
@@ -94,7 +94,7 @@ describe('the request that draws a panel', () => {
     expect(req.params.controlLayerCount).toBeUndefined();
   });
 
-  it('draws at the shape of the panel: a single panel is the whole portrait page, so a portrait picture of about a megapixel', () => {
+  it('draws at the shape of the panel: a single panel is the whole portrait page, so a portrait picture of about a megapixel', { tags: ['boundary'] }, () => {
     const project = newProject('One');
     project.pages[0]!.panels = project.pages[0]!.panels.slice(0, 1);
     useComic.getState().setProjects([project]);
@@ -103,7 +103,7 @@ describe('the request that draws a panel', () => {
     expect(req.params.width * req.params.height).toBeGreaterThan(0.8 * 1024 * 1024);
   });
 
-  it('adds the pose as a control layer, with the installed pose model, when the panel has a pose picture', () => {
+  it('adds the pose as a control layer, with the installed pose model, when the panel has a pose picture', { tags: ['condition'] }, () => {
     const { panelId } = seedPage();
     useGallery.setState({ images: [{ name: 'pose.png', url: 'novira://pose.png' } as ImageDTO] });
     useComic.getState().setPanelPose(panelId, [joints], 'pose.png');
@@ -124,7 +124,7 @@ describe('the request that draws a panel', () => {
     expect(comicWarnings()).toEqual([]);
   });
 
-  it('leaves the pose out and says so when the pose model is not installed', () => {
+  it('leaves the pose out and says so when the pose model is not installed', { tags: ['condition'] }, () => {
     const { panelId } = seedPage();
     useGallery.setState({ images: [{ name: 'pose.png', url: 'novira://pose.png' } as ImageDTO] });
     useModels.setState({ models: [model({})] });
@@ -134,13 +134,13 @@ describe('the request that draws a panel', () => {
     expect(comicWarnings()).toHaveLength(1);
   });
 
-  it('leaves the pose out when its picture is gone from the gallery', () => {
+  it('leaves the pose out when its picture is gone from the gallery', { tags: ['condition'] }, () => {
     const { panelId } = seedPage();
     useComic.getState().setPanelPose(panelId, [joints], 'deleted.png');
     expect(panelRequest(refOf(panelId), false).controlLayers).toBeUndefined();
   });
 
-  it('adds the depth map of a 3D rough after the pose, lightly and over the first steps, on the union ControlNet when it is the only one', () => {
+  it('adds the depth map of a 3D rough after the pose, lightly and over the first steps, on the union ControlNet when it is the only one', { tags: ['boundary', 'state-transition'] }, () => {
     const { panelId } = seedPage();
     const union = model({ key: 'union', name: 'controlnet-union-sdxl-1.0', base: 'sdxl', type: 'controlnet', path: 'diffusion_pytorch_model.safetensors' });
     useModels.setState({ models: [model({}), union] });
@@ -155,7 +155,7 @@ describe('the request that draws a panel', () => {
     expect(comicWarnings()).toEqual([]);
   });
 
-  it('takes a depth model over a union one, and says so when no model reads the depth map', () => {
+  it('takes a depth model over a union one, and says so when no model reads the depth map', { tags: ['condition'] }, () => {
     const { panelId } = seedPage();
     const depth = model({ key: 'depth', name: 'controlnet-depth-sdxl', base: 'sdxl', type: 'controlnet', path: 'depth-sdxl.safetensors' });
     const union = model({ key: 'union', name: 'promax', base: 'sdxl', type: 'controlnet', path: 'promax.safetensors' });
@@ -168,7 +168,7 @@ describe('the request that draws a panel', () => {
     expect(comicWarnings()).toEqual([t('comic.warning.noDepthModel')]);
   });
 
-  it('leaves out a depth map baked for another shape of panel, and says to bake the rough again', () => {
+  it('leaves out a depth map baked for another shape of panel, and says to bake the rough again', { tags: ['regression'] }, () => {
     // A rough kept its pictures after the page's cut changed the panel's shape; the engine stretched the set out of place.
     const { panelId } = seedPage();
     const union = model({ key: 'union', name: 'controlnet-union-sdxl-1.0', base: 'sdxl', type: 'controlnet', path: 'diffusion_pytorch_model.safetensors' });
@@ -187,7 +187,7 @@ describe('the request that draws a panel', () => {
 });
 
 describe('the prompts of a panel picture', () => {
-  it('draws a panel from its own prompts only, not from the text in the prompt boxes', () => {
+  it('draws a panel from its own prompts only, not from the text in the prompt boxes', { tags: ['condition'] }, () => {
     const { panelId } = seedPage();
     useParams.setState({ positivePrompt: 'masterpiece', negativePrompt: 'blurry' });
     useComic.getState().setPanelNegative(panelId, ' text, watermark ');
@@ -200,7 +200,7 @@ describe('the prompts of a panel picture', () => {
 });
 
 describe('the Generate settings in a panel picture', () => {
-  it('carries the LoRAs, the VAE, the hires fix and the reference-free settings of Generate into the panel', () => {
+  it('carries the LoRAs, the VAE, the hires fix and the reference-free settings of Generate into the panel', { tags: ['condition'] }, () => {
     const { panelId } = seedPage();
     useParams.setState({
       vaeKey: 'vae-1',
@@ -216,7 +216,7 @@ describe('the Generate settings in a panel picture', () => {
     expect(req.params.hiresFix).toEqual({ scale: 1.5, strength: 0.4 });
   });
 
-  it('sizes the picture by the panel even when Generate has its own size', () => {
+  it('sizes the picture by the panel even when Generate has its own size', { tags: ['condition'] }, () => {
     const { panelId } = seedPage();
     useParams.setState({ width: 512, height: 768 });
     const req = panelRequest(refOf(panelId), false);
@@ -226,7 +226,7 @@ describe('the Generate settings in a panel picture', () => {
 });
 
 describe('readiness of the comic screen', () => {
-  it('needs a model, a selected panel and a prompt in that panel', () => {
+  it('needs a model, a selected panel and a prompt in that panel', { tags: ['condition'] }, () => {
     seedPage('');
     expect(comicReadiness()).toEqual([expect.any(String)]);
     expect(comicReadiness()).toHaveLength(1);
@@ -234,7 +234,7 @@ describe('readiness of the comic screen', () => {
     expect(comicReadiness()).toEqual([]);
   });
 
-  it('names the missing prompt for the scope now, and nothing once there is one', () => {
+  it('names the missing prompt for the scope now, and nothing once there is one', { tags: ['error-guessing', 'state-transition'] }, () => {
     seedPage('');
     expect(promptReason()).toBe(t('comic.readiness.noPrompt', { number: 1 }));
     useComic.getState().setDrawScope('page');
@@ -249,7 +249,7 @@ describe('readiness of the comic screen', () => {
     expect(promptReason()).toBeNull();
   });
 
-  it('reports no model, and no panel only when there is no page to draw on', () => {
+  it('reports no model, and no panel only when there is no page to draw on', { tags: ['condition'] }, () => {
     useParams.setState({ modelKey: null });
     seedPage('x');
     // With no panel selected, the draw button works on the page's first panel (see workPanel).
@@ -259,7 +259,7 @@ describe('readiness of the comic screen', () => {
     expect(comicReadiness()).toEqual([t('comic.readiness.noModel'), t('comic.readiness.noPanel')]);
   });
 
-  it('for the whole page needs only one panel with a prompt, whether or not a panel is selected', () => {
+  it('for the whole page needs only one panel with a prompt, whether or not a panel is selected', { tags: ['error-guessing', 'boundary'] }, () => {
     seedPage('');
     useComic.getState().setDrawScope('page');
     useComic.getState().selectPanel(null);
@@ -274,7 +274,7 @@ describe('readiness of the comic screen', () => {
     expect(comicReadiness()).toEqual([t('comic.readiness.noPrompt', { number: 1 })]);
   });
 
-  it('for the whole comic needs a prompt on any page, and names the panels of every page in reading order', () => {
+  it('for the whole comic needs a prompt on any page, and names the panels of every page in reading order', { tags: ['equivalence'] }, () => {
     seedPage('');
     useComic.getState().setDrawScope('comic');
     expect(comicReadiness()).toEqual([t('comic.readiness.noPromptsComic')]);
@@ -289,13 +289,13 @@ describe('readiness of the comic screen', () => {
     useComic.getState().setDrawScope('panel');
   });
 
-  it('knows whether a pose model is installed for the chosen model', () => {
+  it('knows whether a pose model is installed for the chosen model', { tags: ['condition'] }, () => {
     expect(poseModelReady()).toBe(true);
     useModels.setState({ models: [model({})] });
     expect(poseModelReady()).toBe(false);
   });
 
-  it('draws only a panel that has a prompt', () => {
+  it('draws only a panel that has a prompt', { tags: ['condition'] }, () => {
     const { project } = seedPage();
     expect(drawablePanel(project.pages[0]!.panels[0]!.id)).not.toBeNull();
     expect(drawablePanel(project.pages[0]!.panels[1]!.id)).toBeNull();
@@ -304,7 +304,7 @@ describe('readiness of the comic screen', () => {
 });
 
 describe('the dynamic prompts of a panel picture', () => {
-  it('draws the random mode with the combination its seed picks, and keeps that seed', () => {
+  it('draws the random mode with the combination its seed picks, and keeps that seed', { tags: ['state-transition'] }, () => {
     const { panelId } = seedPage('a {red|blue} cat');
     useParams.setState({ dynamicPromptMode: 'random', positivePrompt: '', seed: 42, shouldRandomizeSeed: false });
     const req = panelRequest(refOf(panelId), false);
@@ -314,7 +314,7 @@ describe('the dynamic prompts of a panel picture', () => {
     expect(panelRequest(refOf(panelId), false).params.positivePrompt).toBe(req.params.positivePrompt);
   });
 
-  it('fixes a seed of its own when the seed is random, so the prompt it picked stays with the picture', () => {
+  it('fixes a seed of its own when the seed is random, so the prompt it picked stays with the picture', { tags: ['condition'] }, () => {
     const { panelId } = seedPage('a {red|blue} cat');
     useParams.setState({ dynamicPromptMode: 'random', positivePrompt: '', shouldRandomizeSeed: true });
     const req = panelRequest(refOf(panelId), false);
@@ -322,14 +322,14 @@ describe('the dynamic prompts of a panel picture', () => {
     expect(req.params.positivePrompt).toBe(randomPrompt('a {red|blue} cat', {}, req.params.seed));
   });
 
-  it('takes the first combination in the combinations mode, and says how many there are', () => {
+  it('takes the first combination in the combinations mode, and says how many there are', { tags: ['state-transition'] }, () => {
     const { panelId } = seedPage('a {red|blue} cat');
     useParams.setState({ dynamicPromptMode: 'combinatorial', positivePrompt: '' });
     expect(panelRequest(refOf(panelId), false).params.positivePrompt).toBe('a red cat');
     expect(comicWarnings()).toEqual([t('comic.warning.combinations', { count: 2 })]);
   });
 
-  it('draws a prompt without dynamic syntax as it is typed, with no warning', () => {
+  it('draws a prompt without dynamic syntax as it is typed, with no warning', { tags: ['condition'] }, () => {
     const { panelId } = seedPage('a red cat');
     useParams.setState({ dynamicPromptMode: 'combinatorial', positivePrompt: '' });
     expect(panelRequest(refOf(panelId), false).params.positivePrompt).toBe('a red cat');
@@ -338,7 +338,7 @@ describe('the dynamic prompts of a panel picture', () => {
 });
 
 describe('the batches of a panel with combinations', () => {
-  it('draws the first combination in the panel, and each further one as a batch of its own', () => {
+  it('draws the first combination in the panel, and each further one as a batch of its own', { tags: ['equivalence'] }, () => {
     const { panelId } = seedPage('a {red|blue|green} cat');
     useParams.setState({ dynamicPromptMode: 'combinatorial', positivePrompt: '' });
     const batches = panelBatches(refOf(panelId), false);
@@ -346,7 +346,7 @@ describe('the batches of a panel with combinations', () => {
     expect(batches.every((b) => b.iterations === 1 && b.destination === 'gallery')).toBe(true);
   });
 
-  it('puts the style words in front of every combination, and counts them in the warning', () => {
+  it('puts the style words in front of every combination, and counts them in the warning', { tags: ['equivalence'] }, () => {
     const { project, panelId } = seedPage('a {red|blue} cat');
     project.style = { positive: 'soft light', negative: ',' };
     useComic.getState().setProjects([project]);
@@ -359,7 +359,7 @@ describe('the batches of a panel with combinations', () => {
     expect(comicWarnings()).toEqual([t('comic.warning.combinations', { count: 4 })]);
   });
 
-  it('keeps the settings of the panel in every batch', () => {
+  it('keeps the settings of the panel in every batch', { tags: ['equivalence'] }, () => {
     const { panelId } = seedPage('a {red|blue} cat');
     useParams.setState({ dynamicPromptMode: 'combinatorial', positivePrompt: '', seed: 7, shouldRandomizeSeed: false });
     const [first, second] = panelBatches(refOf(panelId), true);
@@ -367,7 +367,7 @@ describe('the batches of a panel with combinations', () => {
     expect(second!.params).toMatchObject({ ...first!.params, positivePrompt: 'a blue cat' });
   });
 
-  it('is one batch when the prompt has no combinations, or the random mode picks one', () => {
+  it('is one batch when the prompt has no combinations, or the random mode picks one', { tags: ['state-transition'] }, () => {
     const { panelId } = seedPage('a red cat');
     useParams.setState({ dynamicPromptMode: 'combinatorial', positivePrompt: '' });
     expect(panelBatches(refOf(panelId), false)).toHaveLength(1);
@@ -386,13 +386,13 @@ describe('the characters of a panel', () => {
     return { project, panelId, grandpa, dog };
   };
 
-  it('puts the words of the characters in the panel in front of its prompt, as written and in the cast order', () => {
+  it('puts the words of the characters in the panel in front of its prompt, as written and in the cast order', { tags: ['condition'] }, () => {
     const { panelId, grandpa, dog } = withCast();
     useComic.getState().setPanelCast(panelId, [dog.id, grandpa.id]);
     expect(panelRequest(refOf(panelId), false).params.positivePrompt).toBe(`${grandpa.tags}, ${dog.tags}, sitting on a bench, smiling`);
   });
 
-  it('names only the parts of a character that the panel framing shows', () => {
+  it('names only the parts of a character that the panel framing shows', { tags: ['condition'] }, () => {
     const { panelId } = withCast();
     const mio = { id: 'c3', name: 'Mio', tags: '1girl', parts: { hair: 'long black hair', eyes: 'green eyes', outfit: 'navy blazer' }, imageName: null };
     useComic.getState().setCast([mio]);
@@ -403,14 +403,14 @@ describe('the characters of a panel', () => {
     expect(panelRequest(refOf(panelId), false).params.positivePrompt).toContain('navy blazer');
   });
 
-  it('leaves the prompt alone for a panel with no character, and ignores a character that is not in the cast', () => {
+  it('leaves the prompt alone for a panel with no character, and ignores a character that is not in the cast', { tags: ['error-guessing'] }, () => {
     const { panelId } = withCast();
     expect(panelRequest(refOf(panelId), false).params.positivePrompt).toBe('sitting on a bench, smiling');
     useComic.getState().setPanelCast(panelId, ['gone']);
     expect(panelRequest(refOf(panelId), false).params.positivePrompt).toBe('sitting on a bench, smiling');
   });
 
-  it('still needs the panel\'s own prompt to be drawn', () => {
+  it('still needs the panel\'s own prompt to be drawn', { tags: ['condition'] }, () => {
     const { project, grandpa } = withCast();
     const second = project.pages[0]!.panels[1]!.id;
     useComic.getState().setPanelCast(second, [grandpa.id]);
@@ -426,7 +426,7 @@ describe('the place of a panel and the world of the comic', () => {
     return panelId;
   };
 
-  it('puts the words of the panel place after its prompt, the world last, and what the place keeps out into the negative', () => {
+  it('puts the words of the panel place after its prompt, the world last, and what the place keeps out into the negative', { tags: ['state-transition'] }, () => {
     const panelId = withPlaces();
     const mio = { id: 'c1', name: 'Mio', tags: '1girl, black bob', imageName: null };
     useComic.getState().setCast([mio]);
@@ -439,7 +439,7 @@ describe('the place of a panel and the world of the comic', () => {
     expect(req.params.negativePrompt).toBe('hat, window');
   });
 
-  it('gives a panel without a place only the world, and adds nothing for a place that is gone or a world with no word', () => {
+  it('gives a panel without a place only the world, and adds nothing for a place that is gone or a world with no word', { tags: ['error-guessing'] }, () => {
     const panelId = withPlaces();
     useComic.getState().setWorld('summer');
     expect(panelRequest(refOf(panelId), false).params.positivePrompt).toBe('1girl, solo, sitting, reading, summer');
@@ -451,7 +451,7 @@ describe('the place of a panel and the world of the comic', () => {
     expect(req.params.negativePrompt).toBe('');
   });
 
-  it('gives a close-up its place words more weakly, and the world as it is', () => {
+  it('gives a close-up its place words more weakly, and the world as it is', { tags: ['condition'] }, () => {
     const panelId = withPlaces('1girl, extreme close-up of her hand on the button');
     useComic.getState().setPanelPlace(panelId, 'room');
     useComic.getState().setWorld('summer');
@@ -463,7 +463,7 @@ describe('the place of a panel and the world of the comic', () => {
     expect(panelRequest(refOf(panelId), false).params.positivePrompt).toBe('1girl, upper body, reading, bedroom, wooden desk, desk lamp, night, summer');
   });
 
-  it('keeps the place in the whole prompt when the characters are drawn in regions', () => {
+  it('keeps the place in the whole prompt when the characters are drawn in regions', { tags: ['condition'] }, () => {
     const panelId = withPlaces('two teenagers on a rooftop');
     useComic.getState().setCast([{ id: 'boy', name: 'Jin', tags: '1boy', imageName: null }]);
     useComic.getState().setPanelCast(panelId, ['boy']);
@@ -488,7 +488,7 @@ describe('the reference pictures of a panel characters', () => {
   }
 
   // On a real engine the adapter made the panels dull and carried the reference's plain background into them.
-  it('uses no character picture unless the comic turns its references on, and keeps the CFG scale', () => {
+  it('uses no character picture unless the comic turns its references on, and keeps the CFG scale', { tags: ['condition'] }, () => {
     const { panelId } = seedCast(['a.png']);
     useParams.setState({ cfgScale: 7 });
     const req = panelRequest(refOf(panelId), false);
@@ -497,7 +497,7 @@ describe('the reference pictures of a panel characters', () => {
     expect(req.params.cfgScale).toBe(7);
   });
 
-  it('sends each character picture as a light IP-Adapter reference over the first steps, and keeps the CFG scale', () => {
+  it('sends each character picture as a light IP-Adapter reference over the first steps, and keeps the CFG scale', { tags: ['equivalence'] }, () => {
     const { panelId } = seedCast(['a.png'], 0.4);
     useParams.setState({ cfgScale: 7 });
     const req = panelRequest(refOf(panelId), false);
@@ -506,7 +506,7 @@ describe('the reference pictures of a panel characters', () => {
     expect(req.params.cfgScale).toBe(7);
   });
 
-  it('shares the weight between several characters, and skips pictures that are gone, the own picture of the panel and an absent model', () => {
+  it('shares the weight between several characters, and skips pictures that are gone, the own picture of the panel and an absent model', { tags: ['condition'] }, () => {
     const { panelId } = seedCast(['a.png', 'b.png', 'gone.png', null], 0.6);
     useGallery.setState({ images: [picture('a.png'), picture('b.png')] });
     const refs = characterRefs(refOf(panelId).panel, refOf(panelId).project);
@@ -539,7 +539,7 @@ describe('a panel drawn in the regions of its characters', () => {
     { character: { id: 'kage', name: 'Kage', tags: 'ink black monster', imageName: 'kage.png', nonHuman: true }, imageUrl: 'novira-image://r-kage.png' },
   ];
 
-  it('says each character in its own region, with its reference picture masked to it, and keeps the words out of the whole prompt', () => {
+  it('says each character in its own region, with its reference picture masked to it, and keeps the words out of the whole prompt', { tags: ['equivalence'] }, () => {
     const panelId = seed();
     const req = panelRequest(refOf(panelId), false, regions);
     expect(req.params.positivePrompt).toBe('two teenagers on a rooftop');
@@ -554,7 +554,7 @@ describe('a panel drawn in the regions of its characters', () => {
     ]);
   });
 
-  it('without regions leaves the creature reference out when a person shares the panel, and keeps its words', () => {
+  it('without regions leaves the creature reference out when a person shares the panel, and keeps its words', { tags: ['condition'] }, () => {
     const panelId = seed();
     const req = panelRequest(refOf(panelId), false);
     expect(req.refImages?.map((r) => r.imageUrl)).toEqual(['novira-image://boy.png']);
@@ -565,7 +565,7 @@ describe('a panel drawn in the regions of its characters', () => {
 });
 
 describe('the request that draws a character reference picture', () => {
-  it('draws the tags alone on a plain background, with no pose and no reference, and nothing for a character without tags', () => {
+  it('draws the tags alone on a plain background, with no pose and no reference, and nothing for a character without tags', { tags: ['condition'] }, () => {
     const req = portraitRequest({ id: 'a', name: 'Grandpa', tags: '1boy, old man', imageName: 'old.png' })!;
     expect(req.params.positivePrompt).toMatch(/^1boy, old man, solo/);
     expect(req.params.positivePrompt).toContain('white background');
@@ -580,7 +580,7 @@ describe('the request that draws a character reference picture', () => {
 describe('what each person does, in their region', () => {
   const character = (id: string, tags: string): ComicCharacter => ({ id, name: id, tags, imageName: null });
 
-  it('puts the words of the person drawn as the character after its looks, in its own region only', () => {
+  it('puts the words of the person drawn as the character after its looks, in its own region only', { tags: ['state-transition'] }, () => {
     const panel = { ...emptyPanel(), cast: ['a', 'b'], poseCast: ['b', 'a'], poseWords: ['sitting, drinking tea', 'holding a tray'] };
     expect(personWords(panel, 'a')).toBe('holding a tray');
     expect(personWords(panel, 'z')).toBe('');
@@ -591,7 +591,7 @@ describe('what each person does, in their region', () => {
     expect(layers.map((l) => l.positivePrompt)).toEqual(['1girl, holding a tray', '1boy, sitting, drinking tea']);
   });
 
-  it('leaves a region with the looks alone when the panel keeps no words for that person', () => {
+  it('leaves a region with the looks alone when the panel keeps no words for that person', { tags: ['condition'] }, () => {
     expect(regionLayers({ ...emptyPanel(), cast: ['a'] }, [{ character: character('a', '1girl'), imageUrl: 'ra' }])[0]!.positivePrompt).toBe('1girl');
   });
 });

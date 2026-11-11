@@ -45,6 +45,7 @@ fn listed(b: &novira_core::Backend, name: &str) -> bool {
     b.bootstrap().images.iter().any(|i| i.name == name)
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_picture_whose_file_is_held_stays_in_the_gallery_when_it_is_deleted() {
     let dir = tempfile::tempdir().unwrap();
@@ -74,6 +75,7 @@ async fn a_picture_whose_file_is_held_stays_in_the_gallery_when_it_is_deleted() 
     assert!(dir.path().join("trash").join(&img.name).is_file());
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_trashed_picture_whose_file_is_held_stays_in_the_trash_when_it_is_restored() {
     let dir = tempfile::tempdir().unwrap();

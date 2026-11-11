@@ -42,7 +42,7 @@ afterEach(() => {
 });
 
 describe('boardName', () => {
-  it('names the uncategorized pseudo board and any board that is gone the same way', () => {
+  it('names the uncategorized pseudo board and any board that is gone the same way', { tags: ['equivalence'] }, () => {
     useGallery.getState().setBoards([{ id: 'b1', name: 'Cats', archived: false, createdAt: 0 }]);
     expect(boardName('b1')).toBe('Cats');
     expect(boardName('none')).toBe(boardName('missing'));
@@ -50,7 +50,7 @@ describe('boardName', () => {
 });
 
 describe('moving, starring and deleting', () => {
-  it('moves images to a board (null for the uncategorized one) and stores the updated images', async () => {
+  it('moves images to a board (null for the uncategorized one) and stores the updated images', { tags: ['scenario'] }, async () => {
     useGallery.setState({ images: [image('a')] });
     const update = vi.spyOn(backend, 'updateImages').mockResolvedValue([image('a', { boardId: 'b1' })]);
     await moveImagesToBoard(['a'], 'b1');
@@ -62,7 +62,7 @@ describe('moving, starring and deleting', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('does nothing for an empty selection', async () => {
+  it('does nothing for an empty selection', { tags: ['boundary'] }, async () => {
     const update = vi.spyOn(backend, 'updateImages');
     const del = vi.spyOn(backend, 'deleteImages');
     await moveImagesToBoard([], 'b1');
@@ -73,13 +73,13 @@ describe('moving, starring and deleting', () => {
     expect(useToasts.getState().toasts).toEqual([]);
   });
 
-  it('stars images through the backend', async () => {
+  it('stars images through the backend', { tags: ['scenario'] }, async () => {
     const update = vi.spyOn(backend, 'updateImages').mockResolvedValue([image('a', { starred: true })]);
     await setStarred(['a'], true);
     expect(update).toHaveBeenCalledWith(['a'], { starred: true });
   });
 
-  it('deletes images in the backend, drops them from the store and reports it', async () => {
+  it('deletes images in the backend, drops them from the store and reports it', { tags: ['scenario'] }, async () => {
     useGallery.setState({ images: [image('a'), image('b')] });
     vi.spyOn(backend, 'deleteImages').mockResolvedValue(undefined);
     await deleteImagesNow(['a']);
@@ -87,7 +87,7 @@ describe('moving, starring and deleting', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('offers an undo with the toast, and the button brings the pictures back', async () => {
+  it('offers an undo with the toast, and the button brings the pictures back', { tags: ['state-transition'] }, async () => {
     useGallery.setState({ images: [image('a'), image('b')] });
     useGalleryUndo.setState({ undo: [], redo: [] });
     vi.spyOn(backend, 'deleteImages').mockResolvedValue(undefined);
@@ -104,7 +104,7 @@ describe('moving, starring and deleting', () => {
 describe('uploadFiles', () => {
   const file = (name: string, type: string) => new File(['x'], name, { type });
 
-  it('uploads only image files into the auto-add board, then shows them selected in the assets view', async () => {
+  it('uploads only image files into the auto-add board, then shows them selected in the assets view', { tags: ['equivalence'] }, async () => {
     useGallery.setState({ autoAddBoardId: 'b1', page: 3 });
     const upload = vi.spyOn(backend, 'uploadImage').mockImplementation(async (f) => image((f as File).name));
     await uploadFiles([file('a.png', 'image/png'), file('notes.txt', 'text/plain'), file('b.png', 'image/png')]);
@@ -117,7 +117,7 @@ describe('uploadFiles', () => {
     expect(g.selection).toEqual(['b.png']);
   });
 
-  it('uses no board when none is set to receive new pictures, and does nothing when no file is an image', async () => {
+  it('uses no board when none is set to receive new pictures, and does nothing when no file is an image', { tags: ['decision-table'] }, async () => {
     const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue(image('a.png'));
     await uploadFiles([file('notes.txt', 'text/plain')]);
     expect(upload).not.toHaveBeenCalled();
@@ -131,21 +131,21 @@ describe('uploadFiles', () => {
 describe('recall', () => {
   const meta = { seed: 7, positivePrompt: 'p' } as GenerationMetadata;
 
-  it('recalls the size even without metadata', () => {
+  it('recalls the size even without metadata', { tags: ['condition'] }, () => {
     const size = vi.spyOn(useParams.getState(), 'recallSize').mockImplementation(() => undefined);
     recall(image('a'), 'size');
     expect(size).toHaveBeenCalledWith(640, 480);
     expect(lastToast()?.status).toBe('info');
   });
 
-  it('warns instead of recalling when the picture has no metadata', () => {
+  it('warns instead of recalling when the picture has no metadata', { tags: ['condition'] }, () => {
     const remix = vi.spyOn(useParams.getState(), 'remix').mockImplementation(() => ({ kind: 'none' }));
     for (const kind of ['remix', 'prompt', 'seed', 'all'] as const) recall(image('a'), kind);
     expect(remix).not.toHaveBeenCalled();
     expect(lastToast()?.status).toBe('warning');
   });
 
-  it('says when the model was found by name, or not found and kept', () => {
+  it('says when the model was found by name, or not found and kept', { tags: ['decision-table'] }, () => {
     const p = useParams.getState();
     const all = vi.spyOn(p, 'recallAll').mockImplementation(() => ({ kind: 'missing', name: 'WAI-v17' }));
     recall(image('a', { metadata: meta }), 'all');
@@ -159,7 +159,7 @@ describe('recall', () => {
     expect(lastToast()?.description).toBeUndefined();
   });
 
-  it('routes each kind to its own recall', () => {
+  it('routes each kind to its own recall', { tags: ['equivalence'] }, () => {
     const p = useParams.getState();
     const spies = {
       remix: vi.spyOn(p, 'remix').mockImplementation(() => ({ kind: 'none' })),
@@ -181,13 +181,13 @@ describe('recall', () => {
 });
 
 describe('copying', () => {
-  it('warns when the browser cannot write images to the clipboard', async () => {
+  it('warns when the browser cannot write images to the clipboard', { tags: ['error-guessing'] }, async () => {
     vi.stubGlobal('ClipboardItem', undefined);
     await copyImage(image('a'));
     expect(lastToast()?.status).toBe('warning');
   });
 
-  it('reports a failed image copy when the picture cannot be loaded', async () => {
+  it('reports a failed image copy when the picture cannot be loaded', { tags: ['error-guessing'] }, async () => {
     vi.stubGlobal('ClipboardItem', class { constructor(public items: Record<string, Promise<Blob>>) {} });
     // As the browser does: the write fails when the picture it was given fails.
     vi.stubGlobal('navigator', { clipboard: { write: vi.fn(async (items: { items: Record<string, Promise<Blob>> }[]) => void (await items[0]?.items['image/png'])) } });
@@ -196,7 +196,7 @@ describe('copying', () => {
     expect(lastToast()).toMatchObject({ status: 'error', description: 'Failed to fetch' });
   });
 
-  it('copies text and reports success, or failure when the clipboard refuses', async () => {
+  it('copies text and reports success, or failure when the clipboard refuses', { tags: ['condition'] }, async () => {
     const writeText = vi.fn().mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error('denied'));
     vi.stubGlobal('navigator', { clipboard: { writeText } });
     await copyText('hello');
@@ -208,7 +208,7 @@ describe('copying', () => {
 });
 
 describe('downloadImages', () => {
-  it('hands the names to the backend and never opens the picture in the page', async () => {
+  it('hands the names to the backend and never opens the picture in the page', { tags: ['condition'] }, async () => {
     const save = vi.spyOn(backend, 'saveImages').mockResolvedValue({ count: 2, skipped: 0, watermarked: 0, folder: '' });
     const opened: string[] = [];
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
@@ -221,7 +221,7 @@ describe('downloadImages', () => {
     expect(lastToast()).toBeUndefined();
   });
 
-  it('says where the desktop app saved them and can open that folder', async () => {
+  it('says where the desktop app saved them and can open that folder', { tags: ['condition'] }, async () => {
     vi.spyOn(backend, 'saveImages').mockResolvedValue({ count: 2, skipped: 0, watermarked: 0, folder: 'D:\\pictures' });
     const reveal = vi.spyOn(backend, 'revealExportFolder').mockResolvedValue();
     await downloadImages([image('a.png'), image('b.png')]);
@@ -230,7 +230,7 @@ describe('downloadImages', () => {
     expect(reveal).toHaveBeenCalled();
   });
 
-  it('says nothing when the folder dialog is cancelled or nothing is chosen, and reports a failure', async () => {
+  it('says nothing when the folder dialog is cancelled or nothing is chosen, and reports a failure', { tags: ['error-guessing'] }, async () => {
     const save = vi.spyOn(backend, 'saveImages').mockResolvedValue(null);
     await downloadImages([image('a.png')]);
     await downloadImages([]);
@@ -243,14 +243,14 @@ describe('downloadImages', () => {
 });
 
 describe('sending pictures elsewhere', () => {
-  it('adds a reference image and says so', () => {
+  it('adds a reference image and says so', { tags: ['scenario'] }, () => {
     const add = vi.spyOn(useParams.getState(), 'addRefImage');
     addAsReference(image('a'));
     expect(add).toHaveBeenCalledWith(expect.objectContaining({ imageName: 'a', imageUrl: 'blob:a' }));
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('opens the upscaling tab with the picture as its source', () => {
+  it('opens the upscaling tab with the picture as its source', { tags: ['scenario'] }, () => {
     const img = image('a');
     sendToUpscale(img);
     expect(useParams.getState().upscale.initialImage).toBe(img);
@@ -259,7 +259,7 @@ describe('sending pictures elsewhere', () => {
 });
 
 describe('opening a picture as a workflow', () => {
-  it('can open a picture that carries a workflow, and loads it under the workflow name or the image name', () => {
+  it('can open a picture that carries a workflow, and loads it under the workflow name or the image name', { tags: ['condition'] }, () => {
     const load = vi.spyOn(useWorkflows.getState(), 'loadWorkflow').mockImplementation(() => undefined);
     const wf = { nodes: [] };
     expect(canLoadImageWorkflow(image('a', { workflow: wf }))).toBe(true);
@@ -271,7 +271,7 @@ describe('opening a picture as a workflow', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('builds a graph from the settings of a plain picture only when the workflow store accepts it', () => {
+  it('builds a graph from the settings of a plain picture only when the workflow store accepts it', { tags: ['condition'] }, () => {
     const can = vi.spyOn(useWorkflows.getState(), 'canLoadImage').mockReturnValue(false);
     const loadImage = vi.spyOn(useWorkflows.getState(), 'loadImage').mockImplementation(() => undefined);
     expect(canLoadImageWorkflow(image('a'))).toBe(false);

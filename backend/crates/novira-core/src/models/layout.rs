@@ -313,6 +313,7 @@ mod tests {
         std::fs::write(p, bytes).unwrap();
     }
 
+    // tags: condition
     #[test]
     fn an_ip_adapter_filed_among_the_checkpoints_is_moved_to_its_own_folder() {
         let d = tempfile::tempdir().unwrap();
@@ -370,6 +371,7 @@ mod tests {
             .unwrap();
     }
 
+    // tags: error-guessing
     #[test]
     fn a_checkpoint_read_once_is_not_read_again_until_its_size_or_time_changes() {
         let d = tempfile::tempdir().unwrap();
@@ -401,6 +403,7 @@ mod tests {
         assert!(checked.is_empty());
     }
 
+    // tags: error-guessing
     #[test]
     fn a_changed_size_reads_the_file_again() {
         let d = tempfile::tempdir().unwrap();
@@ -416,6 +419,7 @@ mod tests {
         assert_eq!(move_misfiled(m, &mut checked).len(), 1);
     }
 
+    // tags: condition
     #[test]
     fn a_misfiled_file_that_could_not_move_is_read_again_next_time() {
         let d = tempfile::tempdir().unwrap();
@@ -432,6 +436,7 @@ mod tests {
         assert_eq!(move_misfiled(m, &mut checked).len(), 1);
     }
 
+    // tags: condition
     #[test]
     fn files_that_left_are_dropped_from_the_record() {
         let d = tempfile::tempdir().unwrap();
@@ -452,6 +457,7 @@ mod tests {
         assert_eq!(checked.len(), 1);
     }
 
+    // tags: error-guessing, boundary
     #[test]
     fn a_damaged_or_missing_record_is_an_empty_one_and_a_kept_one_round_trips() {
         assert_eq!(Checked::from_json(None), Checked::default());
@@ -475,6 +481,7 @@ mod tests {
         assert_eq!(move_misfiled(d.path(), &mut empty).len(), 1);
     }
 
+    // tags: decision-table
     #[test]
     fn both_layouts_are_scanned_and_first_root_wins() {
         let a = tempfile::tempdir().unwrap();
@@ -501,6 +508,7 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn quantised_diffusion_models_are_found_in_either_folder_name() {
         let a = tempfile::tempdir().unwrap();
@@ -513,6 +521,7 @@ mod tests {
             .all(|f| f.kind == ModelType::DiffusionModel && f.folder == "diffusion_models"));
     }
 
+    // tags: scenario
     #[test]
     fn yaml_lists_only_existing_folders() {
         let a = tempfile::tempdir().unwrap();
@@ -525,6 +534,7 @@ mod tests {
         assert!(!yaml.contains("novira_1"));
     }
 
+    // tags: equivalence
     #[test]
     fn ipadapter_and_clip_vision_folders_are_exposed_under_the_names_the_ipadapter_pack_reads() {
         // ComfyUI_IPAdapter_plus keeps the `ipadapter` paths already registered (from this file) and adds its own.

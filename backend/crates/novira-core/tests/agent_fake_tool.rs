@@ -50,6 +50,7 @@ fn request() -> AgentRequest {
 
 // Status --------------------------------------------------------------------------------------------------------
 
+// tags: state-transition
 #[tokio::test]
 async fn claude_is_logged_in_when_its_status_says_so() {
     let dir = tempfile::tempdir().unwrap();
@@ -86,6 +87,7 @@ async fn claude_is_logged_in_when_its_status_says_so() {
     );
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn codex_prints_its_state_on_either_stream() {
     let dir = tempfile::tempdir().unwrap();
@@ -121,6 +123,7 @@ async fn codex_prints_its_state_on_either_stream() {
     assert!(!status_of(AgentProvider::Codex, Some(&off)).await.logged_in);
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_tool_that_fails_or_cannot_start_is_installed_but_not_logged_in() {
     let dir = tempfile::tempdir().unwrap();
@@ -137,6 +140,7 @@ async fn a_tool_that_fails_or_cannot_start_is_installed_but_not_logged_in() {
     assert!(st.installed && !st.logged_in);
 }
 
+// tags: scenario
 #[tokio::test]
 async fn the_chosen_tool_is_remembered_and_reported() {
     let data = tempfile::tempdir().unwrap();
@@ -166,6 +170,7 @@ async fn the_chosen_tool_is_remembered_and_reported() {
     assert!(st.installed && st.logged_in);
 }
 
+// tags: error-guessing
 #[test]
 fn a_damaged_choice_file_means_no_choice() {
     let data = tempfile::tempdir().unwrap();
@@ -177,6 +182,7 @@ fn a_damaged_choice_file_means_no_choice() {
 
 // Sign-in -------------------------------------------------------------------------------------------------------
 
+// tags: scenario
 #[tokio::test]
 async fn sign_in_succeeds_when_the_tool_exits_cleanly() {
     let dir = tempfile::tempdir().unwrap();
@@ -184,6 +190,7 @@ async fn sign_in_succeeds_when_the_tool_exits_cleanly() {
     assert_eq!(login(AgentProvider::Claude, Some(&ok)).await, Ok(()));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_failed_sign_in_explains_why_from_the_stream_the_tool_uses() {
     let dir = tempfile::tempdir().unwrap();
@@ -209,6 +216,7 @@ async fn a_failed_sign_in_explains_why_from_the_stream_the_tool_uses() {
     assert!(err.contains("browser closed"), "{err}");
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn sign_in_with_a_tool_that_cannot_start_says_so() {
     let dir = tempfile::tempdir().unwrap();
@@ -220,6 +228,7 @@ async fn sign_in_with_a_tool_that_cannot_start_says_so() {
 
 // Chat ----------------------------------------------------------------------------------------------------------
 
+// tags: scenario
 #[tokio::test]
 async fn claude_answers_with_a_json_wrapper_whose_result_is_the_final_answer() {
     let dir = tempfile::tempdir().unwrap();
@@ -238,6 +247,7 @@ async fn claude_answers_with_a_json_wrapper_whose_result_is_the_final_answer() {
     assert_eq!(reply.thoughts, vec!["Read it as a portrait."]);
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn claude_reporting_an_error_becomes_the_error_text() {
     let dir = tempfile::tempdir().unwrap();
@@ -254,6 +264,7 @@ async fn claude_reporting_an_error_becomes_the_error_text() {
     assert_eq!(err, "Not logged in");
 }
 
+// tags: scenario
 #[tokio::test]
 async fn claude_printing_something_else_is_an_unexpected_answer() {
     let dir = tempfile::tempdir().unwrap();
@@ -270,6 +281,7 @@ async fn claude_printing_something_else_is_an_unexpected_answer() {
     assert!(err.contains("what"), "{err}");
 }
 
+// tags: scenario
 #[tokio::test]
 async fn codex_writes_its_answer_to_the_file_named_after_o() {
     let dir = tempfile::tempdir().unwrap();
@@ -293,6 +305,7 @@ echo 'From codex' > "$OUT""#;
     assert!(reply.thoughts.is_empty());
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn codex_without_an_answer_file_is_an_error() {
     let dir = tempfile::tempdir().unwrap();
@@ -303,6 +316,7 @@ async fn codex_without_an_answer_file_is_an_error() {
     assert!(err.starts_with("codex gave no answer"), "{err}");
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn chat_without_the_tool_installed_names_it() {
     let dir = tempfile::tempdir().unwrap();
@@ -317,6 +331,7 @@ async fn chat_without_the_tool_installed_names_it() {
     assert!(err.contains("cannot start"), "{err}");
 }
 
+// tags: boundary
 #[test]
 fn a_tool_is_found_on_the_path_in_its_windows_script_forms() {
     // Only this test changes PATH, and the other tests here pass the program explicitly.
@@ -333,6 +348,7 @@ fn a_tool_is_found_on_the_path_in_its_windows_script_forms() {
     assert_eq!(found, Some(script));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn claude_runs_on_the_chosen_model_and_effort_and_drops_unsafe_names() {
     let dir = tempfile::tempdir().unwrap();
@@ -370,6 +386,7 @@ async fn claude_runs_on_the_chosen_model_and_effort_and_drops_unsafe_names() {
     );
 }
 
+// tags: scenario
 #[tokio::test]
 async fn claude_is_given_the_apps_server_in_a_config_file_and_codex_the_token_in_its_environment() {
     let dir = tempfile::tempdir().unwrap();

@@ -50,6 +50,7 @@ fn params() -> VoiceParams {
     }
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn a_worker_that_is_busy_is_not_stopped_by_the_idle_timer() {
     let data = tempfile::tempdir().unwrap();
@@ -63,6 +64,7 @@ async fn a_worker_that_is_busy_is_not_stopped_by_the_idle_timer() {
     voice.shutdown();
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn closing_the_app_does_not_wait_for_a_worker_that_is_busy() {
     let data = tempfile::tempdir().unwrap();

@@ -105,7 +105,7 @@ async function started() {
 }
 
 describe('HttpBackend events', () => {
-  it('opens the event socket on the page origin before the first read and mirrors the queue from it', async () => {
+  it('opens the event socket on the page origin before the first read and mirrors the queue from it', { tags: ['scenario'] }, async () => {
     const { backend, socket } = await started();
     expect(socket.url).toBe(`ws://${location.host}/events`);
     expect(backend.listQueue().map((i) => i.id)).toEqual([1]);
@@ -128,7 +128,7 @@ describe('HttpBackend events', () => {
     expect(seen.at(-1)).toEqual({ type: 'queue_cleared' });
   });
 
-  it('delivers progress and other events as they come, and ignores a message that is not an event', async () => {
+  it('delivers progress and other events as they come, and ignores a message that is not an event', { tags: ['error-guessing'] }, async () => {
     const { backend, socket } = await started();
     const seen: BackendEvent[] = [];
     const stop = backend.subscribe((e) => seen.push(e));
@@ -139,7 +139,7 @@ describe('HttpBackend events', () => {
     expect(seen).toEqual([{ type: 'engine_status', status: { state: 'ready' } }]);
   });
 
-  it('opens the socket again after it drops and reads the queue it missed', async () => {
+  it('opens the socket again after it drops and reads the queue it missed', { tags: ['state-transition'] }, async () => {
     vi.useFakeTimers({ toFake: ['setTimeout'] });
     const { backend, socket } = await started();
     const seen: BackendEvent[] = [];
@@ -156,7 +156,7 @@ describe('HttpBackend events', () => {
     expect(backend.queueStatus().isPaused).toBe(true);
   });
 
-  it('does not wait for a socket that never opens', async () => {
+  it('does not wait for a socket that never opens', { tags: ['error-guessing'] }, async () => {
     const backend = new HttpBackend();
     const boot = backend.bootstrap();
     await vi.waitFor(() => expect(FakeSocket.all).toHaveLength(1));
@@ -166,7 +166,7 @@ describe('HttpBackend events', () => {
 });
 
 describe('HttpBackend pictures and jobs', () => {
-  it('posts a picture as bytes with its options in a header', async () => {
+  it('posts a picture as bytes with its options in a header', { tags: ['condition'] }, async () => {
     const backend = new HttpBackend();
     const image = await backend.uploadImage(new Blob(['png']), { boardId: 'b1', category: 'mask' });
     expect(image.url).toBe('/novira-image/full/up.png');
@@ -178,7 +178,7 @@ describe('HttpBackend pictures and jobs', () => {
     });
   });
 
-  it('stores a picture of the page before the job names it, and leaves the server pictures alone', async () => {
+  it('stores a picture of the page before the job names it, and leaves the server pictures alone', { tags: ['condition'] }, async () => {
     const backend = new HttpBackend();
     await backend.enqueue(
       request({
@@ -198,7 +198,7 @@ describe('HttpBackend pictures and jobs', () => {
     });
   });
 
-  it('shows the message of a refused command', async () => {
+  it('shows the message of a refused command', { tags: ['error-guessing'] }, async () => {
     const backend = new HttpBackend();
     await expect(backend.createBoard('x')).resolves.toBeNull();
     vi.mocked(fetch).mockImplementationOnce(() => json({ error: 'The picture was deleted', code: 'failed' }, false) as never);
@@ -207,7 +207,7 @@ describe('HttpBackend pictures and jobs', () => {
 });
 
 describe('HttpBackend pages outside the app', () => {
-  it('opens the address the server checked in a new tab, without a link back to this page', async () => {
+  it('opens the address the server checked in a new tab, without a link back to this page', { tags: ['condition'] }, async () => {
     const open = vi.fn(() => null);
     vi.stubGlobal('open', open);
     await new HttpBackend().openCivitaiPage('12');
@@ -216,7 +216,7 @@ describe('HttpBackend pages outside the app', () => {
     expect(open).toHaveBeenCalledWith('https://civitai.com/models/12', '_blank', 'noopener,noreferrer');
   });
 
-  it('opens nothing when the server refuses the address', async () => {
+  it('opens nothing when the server refuses the address', { tags: ['error-guessing'] }, async () => {
     const open = vi.fn(() => null);
     vi.stubGlobal('open', open);
     await expect(new HttpBackend().openSourcePage('https://evil.example/')).rejects.toThrow('this address cannot be opened');

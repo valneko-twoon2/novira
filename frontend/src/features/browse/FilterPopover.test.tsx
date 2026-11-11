@@ -16,7 +16,7 @@ afterEach(() => {
 const openFilters = () => fireEvent.click(screen.getByTestId('browse-filters'));
 
 describe('FilterPopover', () => {
-  it('sets a license permission, counts the filters set and clears them', () => {
+  it('sets a license permission, counts the filters set and clears them', { tags: ['scenario'] }, () => {
     render(<FilterPopover />);
     expect(screen.queryByTestId('browse-filters-count')).toBeNull();
     openFilters();
@@ -33,7 +33,7 @@ describe('FilterPopover', () => {
     expect(useBrowse.getState()).toMatchObject({ licenses: [], safetensorsOnly: false, creator: '', checkpointType: '' });
   });
 
-  it('offers the checkpoint type only for checkpoints', () => {
+  it('offers the checkpoint type only for checkpoints', { tags: ['scenario'] }, () => {
     render(<FilterPopover />);
     openFilters();
     expect(screen.queryByLabelText(t('browse.filter.checkpointType'))).toBeNull();
@@ -44,14 +44,14 @@ describe('FilterPopover', () => {
     expect(screen.getByLabelText(t('browse.filter.checkpointType'))).toBeTruthy();
   });
 
-  it('counts each kind of filter once', () => {
+  it('counts each kind of filter once', { tags: ['decision-table', 'scenario'] }, () => {
     expect(activeFilterCount({ licenses: [], checkpointType: '', safetensorsOnly: false, creator: ' ', price: '' })).toBe(0);
     expect(activeFilterCount({ licenses: ['a', 'b'], checkpointType: 'Merge', safetensorsOnly: true, creator: 'x', price: 'paid' })).toBe(6);
   });
 });
 
 describe('the mock search with the extra filters', () => {
-  it('keeps only free, or only paid, models by their newest version', () => {
+  it('keeps only free, or only paid, models by their newest version', { tags: ['boundary', 'scenario'] }, () => {
     const free = searchCivitaiModels({ ...base, price: 'free' });
     const paid = searchCivitaiModels({ ...base, price: 'paid' });
     expect(paid.items.length).toBeGreaterThan(0);
@@ -61,7 +61,7 @@ describe('the mock search with the extra filters', () => {
   });
 
   const base = { query: '', kind: 'all', baseModel: 'all', sort: 'downloads', period: 'all', includeNsfw: true } as const;
-  it('keeps only models whose license allows every asked-for permission', () => {
+  it('keeps only models whose license allows every asked-for permission', { tags: ['decision-table', 'scenario'] }, () => {
     const all = searchCivitaiModels({ ...base });
     const some = searchCivitaiModels({ ...base, licenses: ['sellImages', 'shareMerges'] });
     expect(some.items.length).toBeLessThanOrEqual(all.items.length);
@@ -69,7 +69,7 @@ describe('the mock search with the extra filters', () => {
       for (const k of ['sellImages', 'shareMerges']) expect(m.permissions?.find((p) => p.key === k)?.allowed).toBe(true);
     }
   });
-  it('filters by creator, and by safetensors', () => {
+  it('filters by creator, and by safetensors', { tags: ['scenario'] }, () => {
     const first = searchCivitaiModels({ ...base }).items[0]!;
     const mine = searchCivitaiModels({ ...base, creator: first.creator.toUpperCase() });
     expect(mine.items.length).toBeGreaterThan(0);

@@ -13,7 +13,7 @@ const header = (wav: Uint8Array) => new TextDecoder().decode(wav.slice(0, 4)) + 
 const samples = (wav: Uint8Array) => (wav.length - 44) / 2;
 
 describe('audioSynth', () => {
-  it('makes a WAV of the asked length, the same one for the same seed', () => {
+  it('makes a WAV of the asked length, the same one for the same seed', { tags: ['condition'] }, () => {
     const a = synthMusic(1, 2);
     expect(header(a)).toBe('RIFFWAVE');
     expect(samples(a)).toBe(2 * 22050);
@@ -21,12 +21,12 @@ describe('audioSynth', () => {
     expect(synthMusic(2, 2)).not.toEqual(a);
   });
 
-  it('keeps music within the length limit and the tempo floor', () => {
+  it('keeps music within the length limit and the tempo floor', { tags: ['boundary'] }, () => {
     expect(samples(synthMusic(1, 100, 10))).toBe(12 * 22050);
     expect(samples(synthMusic(1, 0))).toBe(22050);
   });
 
-  it('turns text into one burst per character, silent for spaces, capped in length', () => {
+  it('turns text into one burst per character, silent for spaces, capped in length', { tags: ['boundary'] }, () => {
     const speech = synthSpeech('ab c', 3);
     expect(samples(speech)).toBe(4 * Math.round(0.11 * 22050));
     expect(synthSpeech('ab c', 3)).toEqual(speech);
@@ -34,7 +34,7 @@ describe('audioSynth', () => {
     expect(samples(synthSpeech('あ'.repeat(500), 1))).toBeLessThanOrEqual(12 * 22050);
   });
 
-  it('gives a URL for a clip, an object URL when there is one and a data URL otherwise', () => {
+  it('gives a URL for a clip, an object URL when there is one and a data URL otherwise', { tags: ['condition'] }, () => {
     const wav = synthSpeech('hi', 1);
     vi.stubGlobal('URL', { createObjectURL: () => 'blob:clip' });
     expect(audioUrl(wav)).toBe('blob:clip');
@@ -42,7 +42,7 @@ describe('audioSynth', () => {
     expect(audioUrl(wav)).toMatch(/^data:audio\/wav;base64,/);
   });
 
-  it('draws a thumbnail of the waveform as bars, or nothing without a canvas', () => {
+  it('draws a thumbnail of the waveform as bars, or nothing without a canvas', { tags: ['condition'] }, () => {
     const canvases = installRecordingCanvases();
     const spy = vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue('data:image/png;base64,AAAA');
     expect(waveformThumbnail(synthMusic(1, 1))).toBe('data:image/png;base64,AAAA');
@@ -57,7 +57,7 @@ describe('audioSynth', () => {
 });
 
 describe('graphSource', () => {
-  it('reads the source picture of a prompt, or null when it reads none', () => {
+  it('reads the source picture of a prompt, or null when it reads none', { tags: ['condition'] }, () => {
     const graph = (image?: unknown): ComfyGraph => ({ prompt: image ? { b: { class_type: 'LoadImage', inputs: { image } } } : {} }) as unknown as ComfyGraph;
     expect(sourceOf(graph({ $image: 'cat.png' }))).toBe('cat.png');
     expect(sourceOf(graph())).toBeNull();
@@ -65,11 +65,11 @@ describe('graphSource', () => {
 });
 
 describe('videoSynth', () => {
-  it('gives up where recording is not available', async () => {
+  it('gives up where recording is not available', { tags: ['error-guessing'] }, async () => {
     expect(await synthesizeVideo(document.createElement('canvas'), { frames: 4, fps: 10 })).toBeNull();
   });
 
-  it('records a pan and zoom over the picture and returns a URL', async () => {
+  it('records a pan and zoom over the picture and returns a URL', { tags: ['scenario'] }, async () => {
     vi.useFakeTimers();
     const canvases = installRecordingCanvases();
     class FakeRecorder {
@@ -99,7 +99,7 @@ describe('videoSynth', () => {
     delete (HTMLCanvasElement.prototype as { captureStream?: unknown }).captureStream;
   });
 
-  it('gives up when the output canvas has no context', async () => {
+  it('gives up when the output canvas has no context', { tags: ['error-guessing'] }, async () => {
     vi.stubGlobal('MediaRecorder', class {});
     HTMLCanvasElement.prototype.captureStream = (() => ({})) as never;
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);

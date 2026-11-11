@@ -13,7 +13,7 @@ beforeEach(() => useCanvas.setState(initial, true));
 const only = () => useCanvas.getState().entities[0]!;
 
 describe('nudgeSelected', () => {
-  it('moves the selected layer by 1 px, or 10 px with Shift, with the move tool', () => {
+  it('moves the selected layer by 1 px, or 10 px with Shift, with the move tool', { tags: ['condition'] }, () => {
     const s = useCanvas.getState();
     s.addEntity('raster');
     s.setTool('move');
@@ -22,7 +22,7 @@ describe('nudgeSelected', () => {
     expect([only().x, only().y]).toEqual([1, 10]);
   });
 
-  it('leaves the layer alone for other tools, locked layers, other keys and an empty canvas', () => {
+  it('leaves the layer alone for other tools, locked layers, other keys and an empty canvas', { tags: ['boundary', 'state-transition'] }, () => {
     expect(nudgeSelected('ArrowLeft', false)).toBe(false);
     const s = useCanvas.getState();
     const id = s.addEntity('raster');
@@ -35,7 +35,7 @@ describe('nudgeSelected', () => {
     expect([only().x, only().y]).toEqual([0, 0]);
   });
 
-  it('leaves a slot where the host put it', () => {
+  it('leaves a slot where the host put it', { tags: ['state-transition'] }, () => {
     const s = useCanvas.getState();
     s.addEntity('raster', { slot: 'panels' });
     s.setTool('move');
@@ -48,12 +48,12 @@ describe('pastedImage', () => {
   const event = (target: EventTarget | null, items: { kind: string; type: string }[]) =>
     ({ target, clipboardData: { items: items.map((i) => ({ ...i, getAsFile: () => new File(['x'], 'p.png', { type: i.type }) })) } }) as unknown as ClipboardEvent;
 
-  it('takes the first picture on the clipboard', () => {
+  it('takes the first picture on the clipboard', { tags: ['boundary'] }, () => {
     const file = pastedImage(event(document.body, [{ kind: 'string', type: 'text/plain' }, { kind: 'file', type: 'image/png' }]));
     expect(file?.type).toBe('image/png');
   });
 
-  it('ignores clipboards without a picture and pastes into text fields', () => {
+  it('ignores clipboards without a picture and pastes into text fields', { tags: ['condition'] }, () => {
     expect(pastedImage(event(document.body, [{ kind: 'string', type: 'text/plain' }]))).toBeNull();
     expect(pastedImage(event(document.createElement('textarea'), [{ kind: 'file', type: 'image/png' }]))).toBeNull();
   });
@@ -73,7 +73,7 @@ describe('the keys on a host that narrows them', () => {
     return store;
   };
 
-  it('chooses only the tools the host offers', () => {
+  it('chooses only the tools the host offers', { tags: ['condition'] }, () => {
     const store = mount({ tools: ['brush', 'eraser'] });
     press('e');
     expect(store.getState().tool).toBe('eraser');
@@ -83,7 +83,7 @@ describe('the keys on a host that narrows them', () => {
     expect(store.getState().tool).toBe('eraser');
   });
 
-  it('leaves the view alone without view keys', () => {
+  it('leaves the view alone without view keys', { tags: ['state-transition'] }, () => {
     const zoom = (store: ReturnType<typeof mount>) => {
       const view = store.getState().viewport;
       press('+');
@@ -96,7 +96,7 @@ describe('the keys on a host that narrows them', () => {
     expect(zoom(mount({}))).toBe(true);
   });
 
-  it('does not delete a chosen global reference image where they are not shown', () => {
+  it('does not delete a chosen global reference image where they are not shown', { tags: ['condition'] }, () => {
     const store = mount({ refImages: false });
     const ref = useParams.getState().addRefImage();
     store.getState().select(ref);
@@ -104,7 +104,7 @@ describe('the keys on a host that narrows them', () => {
     expect(useParams.getState().refImages.map((r) => r.id)).toContain(ref);
   });
 
-  it('acts on the given store: undo of the page, not of the Image tab', () => {
+  it('acts on the given store: undo of the page, not of the Image tab', { tags: ['state-transition'] }, () => {
     const store = mount({});
     store.getState().addEntity('raster');
     useCanvas.getState().addEntity('raster');

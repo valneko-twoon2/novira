@@ -137,6 +137,7 @@ mod tests {
     use super::*;
     use image::GenericImageView;
 
+    // tags: equivalence
     #[test]
     fn the_extension_of_a_name_is_one_the_gallery_keeps() {
         assert_eq!(extension_of("a.flac"), Some("flac"));
@@ -167,6 +168,7 @@ mod tests {
         out
     }
 
+    // tags: equivalence
     #[test]
     fn formats_are_recognised_from_their_first_bytes() {
         assert_eq!(sniff(&wav(&[0; 4])), Some("audio/wav"));
@@ -177,6 +179,7 @@ mod tests {
         assert_eq!(sniff(b""), None);
     }
 
+    // tags: condition
     #[test]
     fn a_wav_thumbnail_follows_the_loudness() {
         // Loud first half, quiet second half.
@@ -187,6 +190,7 @@ mod tests {
         assert!(levels[2] > 0.9 && levels[BARS - 3] < 0.2, "{levels:?}");
     }
 
+    // tags: boundary
     #[test]
     fn thumbnails_are_valid_pngs_of_the_fixed_size_and_differ_between_files() {
         let a = waveform_png(b"ID3 first clip bytes....................................");
@@ -202,6 +206,7 @@ mod tests {
         );
     }
 
+    // tags: error-guessing
     #[test]
     fn broken_wav_data_falls_back_to_the_pattern() {
         assert!(wav_levels(b"RIFF\0\0\0\0WAVE").is_none());

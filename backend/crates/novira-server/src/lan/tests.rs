@@ -84,6 +84,7 @@ fn ago(by: Duration) -> Instant {
         .expect("a clock that has run that long")
 }
 
+// tags: condition
 #[tokio::test]
 async fn without_the_home_network_the_lan_routes_do_not_exist() {
     let b = Bench::start().await;
@@ -101,6 +102,7 @@ async fn without_the_home_network_the_lan_routes_do_not_exist() {
     b.stop().await;
 }
 
+// tags: decision-table, state-transition
 #[tokio::test]
 async fn a_network_that_is_unknown_or_untrusted_never_opens() {
     let net = Net::at(Some(MAC));
@@ -142,6 +144,7 @@ async fn a_network_that_is_unknown_or_untrusted_never_opens() {
     b.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn windows_calling_the_network_public_is_a_flag_not_a_gate() {
     let net = Net::at(Some(MAC));
@@ -158,6 +161,7 @@ async fn windows_calling_the_network_public_is_a_flag_not_a_gate() {
     b.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn trusting_is_for_the_network_this_computers_owner_was_shown() {
     let net = Net::at(Some(MAC));
@@ -254,6 +258,7 @@ async fn trusting_is_for_the_network_this_computers_owner_was_shown() {
     b.stop().await;
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn a_trusted_network_opens_on_demand_and_the_state_tells_what_is_going_on() {
     let net = Net::at(Some(MAC));
@@ -305,6 +310,7 @@ async fn a_trusted_network_opens_on_demand_and_the_state_tells_what_is_going_on(
     b.stop().await;
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn closing_ends_every_session_and_forgets_every_code() {
     let net = Net::at(Some(MAC));
@@ -333,6 +339,7 @@ async fn closing_ends_every_session_and_forgets_every_code() {
     b.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn the_lan_routes_are_for_this_computer_with_its_token_only() {
     let net = Net::at(Some(MAC));
@@ -394,6 +401,7 @@ async fn the_lan_routes_are_for_this_computer_with_its_token_only() {
     b.stop().await;
 }
 
+// tags: boundary, state-transition
 #[tokio::test]
 async fn an_unused_listener_closes_after_half_an_hour() {
     let net = Net::at(Some(MAC));
@@ -409,6 +417,7 @@ async fn an_unused_listener_closes_after_half_an_hour() {
     b.stop().await;
 }
 
+// tags: decision-table, state-transition
 #[tokio::test]
 async fn a_live_code_or_a_waiting_request_keeps_it_open_but_nothing_else_does() {
     let net = Net::at(Some(MAC));
@@ -441,6 +450,7 @@ async fn a_live_code_or_a_waiting_request_keeps_it_open_but_nothing_else_does() 
     b.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn only_a_paired_device_in_use_counts_as_use() {
     let net = Net::at(Some(MAC));
@@ -477,6 +487,7 @@ async fn only_a_paired_device_in_use_counts_as_use() {
     b.stop().await;
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn the_listener_closes_when_its_network_goes_away_or_stops_being_trusted() {
     let net = Net::at(Some(MAC));
@@ -549,6 +560,7 @@ async fn the_listener_closes_when_its_network_goes_away_or_stops_being_trusted()
     b.stop().await;
 }
 
+// tags: scenario, condition
 #[tokio::test]
 async fn the_library_opens_on_a_trusted_network_and_reports_why_not() {
     let net = Net::at(Some(MAC));

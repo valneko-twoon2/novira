@@ -83,6 +83,7 @@ fn valid_name() -> impl Strategy<Value = String> {
         .prop_map(|(stem, ext)| format!("{stem}{ext}"))
 }
 
+// tags: boundary
 #[test]
 fn any_board_name_becomes_one_safe_folder_name_and_settles() {
     check(any_text(), |name| {
@@ -94,6 +95,7 @@ fn any_board_name_becomes_one_safe_folder_name_and_settles() {
     });
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn boards_never_share_a_folder_or_take_the_two_fixed_ones() {
     check(
@@ -124,6 +126,7 @@ fn boards_never_share_a_folder_or_take_the_two_fixed_ones() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn a_file_name_gives_back_the_name_it_was_made_from() {
     // Years 1970..=9999: the stamp is `YYYYMMDD_HHMMSS` only while the year has four digits.
@@ -134,6 +137,7 @@ fn a_file_name_gives_back_the_name_it_was_made_from() {
     });
 }
 
+// tags: state-transition, equivalence
 #[test]
 fn a_name_read_from_a_file_is_always_a_valid_name_the_file_ends_with() {
     check(any_text(), |file| {
@@ -145,6 +149,7 @@ fn a_name_read_from_a_file_is_always_a_valid_name_the_file_ends_with() {
     });
 }
 
+// tags: boundary
 #[test]
 fn a_picture_is_placed_in_one_folder_under_outputs_and_found_again_by_name() {
     check(
@@ -180,6 +185,7 @@ fn a_picture_is_placed_in_one_folder_under_outputs_and_found_again_by_name() {
     );
 }
 
+// tags: boundary
 #[test]
 fn a_place_of_an_unknown_board_falls_back_to_the_uncategorized_folder() {
     check((valid_name(), "[a-z]{1,8}"), |(name, id)| {
@@ -192,6 +198,7 @@ fn a_place_of_an_unknown_board_falls_back_to_the_uncategorized_folder() {
     });
 }
 
+// tags: error-guessing, state-transition
 #[test]
 fn unique_names_never_repeat_and_never_take_a_name_already_held() {
     check(
@@ -227,6 +234,7 @@ fn unique_names_never_repeat_and_never_take_a_name_already_held() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn writing_copies_never_overwrites_a_file_and_every_copy_keeps_its_bytes() {
     check_up_to(

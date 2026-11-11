@@ -15,7 +15,7 @@ async function ask(message: string, selected: string | null = 'l1', on: Scene = 
 }
 
 describe('mock assistant on the text screen', () => {
-  it('reads the scene, changes the selected layer and the result applies cleanly', async () => {
+  it('reads the scene, changes the selected layer and the result applies cleanly', { tags: ['scenario'] }, async () => {
     const { ops, tools } = await ask('赤くして、もっと大きく');
     expect(tools.tools()).toEqual(['get_text_scene', 'edit_text']);
     const out = applyTextOps(scene, ops, 'l1').scene.layers[0] as TextLayer;
@@ -23,12 +23,12 @@ describe('mock assistant on the text screen', () => {
     expect(out.style.fontSize).toBe(Math.round(layer.style.fontSize * 1.3));
   });
 
-  it('changes the wording when the new text is quoted', async () => {
+  it('changes the wording when the new text is quoted', { tags: ['condition'] }, async () => {
     const out = applyTextOps(scene, (await ask('文字を「ありがとう」に変えて')).ops, 'l1').scene.layers[0] as TextLayer;
     expect(out.text).toBe('ありがとう');
   });
 
-  it('adds a styled logo and a speech bubble', async () => {
+  it('adds a styled logo and a speech bubble', { tags: ['condition'] }, async () => {
     const logo = applyTextOps(EMPTY_SCENE, (await ask('ポップなロゴを作って', null, EMPTY_SCENE)).ops);
     expect((logo.scene.layers[0] as TextLayer).style.fontFamily).toBe('Dela Gothic One');
     const bubble = applyTextOps(EMPTY_SCENE, (await ask('叫びの吹き出しを追加「やった！」', null, EMPTY_SCENE)).ops);
@@ -37,7 +37,7 @@ describe('mock assistant on the text screen', () => {
     expect(b.text).toBe('やった！');
   });
 
-  it('removes the layer on request and asks, changing nothing, when it does not understand', async () => {
+  it('removes the layer on request and asks, changing nothing, when it does not understand', { tags: ['condition'] }, async () => {
     expect(applyTextOps(scene, (await ask('消して')).ops, 'l1').scene.layers).toHaveLength(0);
     const unclear = await ask('うーん');
     expect(unclear.tools.tools()).toEqual(['get_text_scene']);

@@ -10,7 +10,7 @@ const list = (name: string, text = ''): WildcardList => ({ id: name, name, text 
 const used = fc.array(fc.stringMatching(/^[a-z0-9]{1,4}(-[2-5])?$/), { maxLength: 6 }).map((names) => names.map((n) => list(n)));
 
 describe('wildcard list files (properties)', () => {
-  it('listNameForFile gives a valid, unused name for any file name', () => {
+  it('listNameForFile gives a valid, unused name for any file name', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(junkText, used, (file, lists) => {
         const name = listNameForFile(file, lists);
@@ -20,7 +20,7 @@ describe('wildcard list files (properties)', () => {
     );
   });
 
-  it('listFileText uses Windows line ends, ends with one and keeps the entries', () => {
+  it('listFileText uses Windows line ends, ends with one and keeps the entries', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(junkText, (text) => {
         const out = listFileText(list('x', text));

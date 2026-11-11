@@ -72,7 +72,7 @@ afterEach(() => {
 });
 
 describe('phone Images tab', () => {
-  it('lists the pictures of the board in the gallery order, without helper pictures or assets', () => {
+  it('lists the pictures of the board in the gallery order, without helper pictures or assets', { tags: ['condition'] }, () => {
     mount();
     openImages();
     expect(screen.getByRole('heading', { name: t('phone.gallery') })).toBeTruthy();
@@ -81,7 +81,7 @@ describe('phone Images tab', () => {
     expect(screen.getByTestId('phone-images-count').textContent).toBe('3');
   });
 
-  it('shows another board when picked, and says when a board is empty', async () => {
+  it('shows another board when picked, and says when a board is empty', { tags: ['scenario'] }, async () => {
     mount();
     openImages();
     act(() => useGallery.getState().selectBoard('b1'));
@@ -90,7 +90,7 @@ describe('phone Images tab', () => {
     expect(screen.getByText(t('gallery.empty.noImages'))).toBeTruthy();
   });
 
-  it('puts the jobs drawn for the board first and opens one full screen', () => {
+  it('puts the jobs drawn for the board first and opens one full screen', { tags: ['condition'] }, () => {
     useQueue.setState({ items: [running(5), running(6, { boardId: 'b1' })], progress: { itemId: 5, step: 2, totalSteps: 8, progressImageUrl: 'data:image/png;base64,AA==', message: '' } });
     mount();
     openImages();
@@ -101,7 +101,7 @@ describe('phone Images tab', () => {
     expect(usePhone.getState().view).toEqual({ kind: 'live', itemId: 5 });
   });
 
-  it('builds a page of cells at a time on a large board', () => {
+  it('builds a page of cells at a time on a large board', { tags: ['boundary'] }, () => {
     useGallery.getState().setImages(Array.from({ length: PAGE + 5 }, (_, i) => picture(`p${i}.png`, { createdAt: i })));
     mount();
     openImages();
@@ -118,7 +118,7 @@ describe('a picture full screen', () => {
     return screen.getByTestId('phone-view');
   };
 
-  it('shows its place in the board and steps to its neighbours', () => {
+  it('shows its place in the board and steps to its neighbours', { tags: ['condition'] }, () => {
     const view = openPicture('new.png');
     expect(within(view).getByTestId('phone-view-place').textContent).toBe(t('phone.place', { index: 2, count: 3 }));
     expect(within(view).getByTestId('phone-view-image').getAttribute('src')).toBe('blob:new.png');
@@ -134,7 +134,7 @@ describe('a picture full screen', () => {
     expect(screen.queryByTestId('phone-view')).toBeNull();
   });
 
-  it('shows a picture outside the board (a draft) without a place or neighbours', () => {
+  it('shows a picture outside the board (a draft) without a place or neighbours', { tags: ['condition'] }, () => {
     act(() => useGallery.getState().addImage(picture('draft.png', { isIntermediate: true })));
     mount();
     act(() => usePhone.getState().show({ kind: 'image', name: 'draft.png' }));
@@ -144,7 +144,7 @@ describe('a picture full screen', () => {
     expect(screen.queryByRole('button', { name: t('gallery.viewer.prev') })).toBeNull();
   });
 
-  it('shows what it was made with, or says it has no record of it', () => {
+  it('shows what it was made with, or says it has no record of it', { tags: ['condition'] }, () => {
     openPicture('new.png');
     fireEvent.click(screen.getByTestId('phone-view-info'));
     const info = screen.getByTestId('phone-view-meta');
@@ -156,14 +156,14 @@ describe('a picture full screen', () => {
     expect(screen.getByTestId('phone-view-meta').textContent).toContain(t('gallery.toast.noMetadata'));
   });
 
-  it('stars and unstars it', async () => {
+  it('stars and unstars it', { tags: ['state-transition'] }, async () => {
     openPicture('mid.png');
     fireEvent.click(screen.getByTestId('phone-view-star'));
     await waitFor(() => expect(useGallery.getState().images.find((i) => i.name === 'mid.png')?.starred).toBe(true));
     expect(screen.getByTestId('phone-view-star').getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('takes its settings to the Generate tab, or cannot without a record of them', () => {
+  it('takes its settings to the Generate tab, or cannot without a record of them', { tags: ['condition'] }, () => {
     openPicture('mid.png');
     expect((screen.getByTestId('phone-view-use') as HTMLButtonElement).disabled).toBe(true);
     act(() => usePhone.getState().show({ kind: 'image', name: 'new.png' }));
@@ -172,7 +172,7 @@ describe('a picture full screen', () => {
     expect(usePhone.getState()).toMatchObject({ tab: 'generate', view: null });
   });
 
-  it('gives way to the next picture when it is deleted, and closes after the last', async () => {
+  it('gives way to the next picture when it is deleted, and closes after the last', { tags: ['state-transition'] }, async () => {
     openPicture('mid.png');
     fireEvent.click(screen.getByTestId('phone-view-delete'));
     await waitFor(() => expect(usePhone.getState().view).toEqual({ kind: 'image', name: 'new.png' }));
@@ -181,7 +181,7 @@ describe('a picture full screen', () => {
     await waitFor(() => expect(usePhone.getState().view).toBeNull());
   });
 
-  it('opens the desktop picture menu from its button, without the items that go to screens a phone has not', async () => {
+  it('opens the desktop picture menu from its button, without the items that go to screens a phone has not', { tags: ['condition'] }, async () => {
     openPicture('new.png');
     fireEvent.click(screen.getByTestId('phone-view-menu'));
     const items = (await screen.findAllByRole('menuitem')).map((e) => e.textContent ?? '');
@@ -190,7 +190,7 @@ describe('a picture full screen', () => {
     for (const key of ['gallery.menu.openInViewer', 'gallery.menu.compare', 'gallery.menu.loadWorkflow', 'gallery.menu.sendToCanvas', 'gallery.menu.upscale', 'gallery.menu.segment'] as const) expect(has(key), key).toBe(false);
   });
 
-  it('asks before deleting when the setting says so', () => {
+  it('asks before deleting when the setting says so', { tags: ['condition'] }, () => {
     useSettings.getState().set({ confirmOnDelete: true });
     openPicture('mid.png');
     fireEvent.click(screen.getByTestId('phone-view-delete'));
@@ -200,7 +200,7 @@ describe('a picture full screen', () => {
 });
 
 describe('a job full screen', () => {
-  it('turns into the picture it made when it ends', () => {
+  it('turns into the picture it made when it ends', { tags: ['state-transition'] }, () => {
     useQueue.setState({ items: [running(7)], progress: null });
     mount();
     act(() => usePhone.getState().show({ kind: 'live', itemId: 7 }));
@@ -210,7 +210,7 @@ describe('a job full screen', () => {
     expect(screen.getByTestId('phone-view-image').getAttribute('src')).toBe('blob:new.png');
   });
 
-  it('closes when it fails or is cancelled', () => {
+  it('closes when it fails or is cancelled', { tags: ['state-transition'] }, () => {
     useQueue.setState({ items: [running(7)], progress: null });
     mount();
     act(() => usePhone.getState().show({ kind: 'live', itemId: 7 }));

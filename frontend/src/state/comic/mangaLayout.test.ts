@@ -24,7 +24,7 @@ function overlap(a: Shape, b: Shape): boolean {
 }
 
 describe('mangaLayout', () => {
-  it('makes valid panels that never overlap, for every count and mood over many seeds', () => {
+  it('makes valid panels that never overlap, for every count and mood over many seeds', { tags: ['error-guessing'] }, () => {
     for (const mood of MANGA_MOODS) {
       for (let n = 1; n <= MANGA_MAX_PANELS; n++) {
         for (let seed = 1; seed <= 25; seed++) {
@@ -37,13 +37,13 @@ describe('mangaLayout', () => {
     }
   });
 
-  it('gives the same page for the same seed, and another page for another seed', () => {
+  it('gives the same page for the same seed, and another page for another seed', { tags: ['condition'] }, () => {
     const a = mangaLayout({ panelCount: 6, aspect, seed: 3 });
     expect(mangaLayout({ panelCount: 6, aspect, seed: 3 })).toEqual(a);
     expect(mangaLayout({ panelCount: 6, aspect, seed: 4 })).not.toEqual(a);
   });
 
-  it('reads from the top right on a right-to-left page and from the top left on a left-to-right one', () => {
+  it('reads from the top right on a right-to-left page and from the top left on a left-to-right one', { tags: ['condition'] }, () => {
     const rtl = mangaLayout({ panelCount: 4, mood: 'calm', aspect, seed: 2, direction: 'rtl' });
     const ltr = mangaLayout({ panelCount: 4, mood: 'calm', aspect, seed: 2, direction: 'ltr' });
     expect(rtl.map((s) => shapeCentre(s).x)).toEqual(ltr.map((s) => 1 - shapeCentre(s).x).map((x) => expect.closeTo(x, 9)));
@@ -53,7 +53,7 @@ describe('mangaLayout', () => {
     expect(shapeCentre(rtl[0]!).x).toBeGreaterThanOrEqual(Math.min(...rtl.filter((s) => box(s).y0 < box(rtl[0]!).y1).map((s) => shapeCentre(s).x)));
   });
 
-  it('makes the focus panel the largest on a dramatic page', () => {
+  it('makes the focus panel the largest on a dramatic page', { tags: ['condition'] }, () => {
     for (let seed = 1; seed <= 20; seed++) {
       const shapes = mangaLayout({ panelCount: 5, mood: 'dramatic', focus: 3, aspect, seed });
       const areas = shapes.map(shapeArea);
@@ -61,7 +61,7 @@ describe('mangaLayout', () => {
     }
   });
 
-  it('keeps a calm page square, with a wider gap between tiers than between panels side by side', () => {
+  it('keeps a calm page square, with a wider gap between tiers than between panels side by side', { tags: ['condition'] }, () => {
     const shapes = mangaLayout({ panelCount: 4, mood: 'calm', aspect, seed: 1, direction: 'ltr' });
     for (const s of shapes) {
       const b = box(s);

@@ -22,26 +22,26 @@ function saved(panelIds: string[], shapes: unknown, templateShapes: unknown = nu
 }
 
 describe('reading the shapes of a saved page', () => {
-  it('keeps shapes that are one for each panel', () => {
+  it('keeps shapes that are one for each panel', { tags: ['equivalence'] }, () => {
     const project = parseComicProject(saved(['a', 'b'], [triangle, triangle]));
     expect(project!.pages[0]!.shapes).toEqual([triangle, triangle]);
   });
 
-  it('takes the automatic layout when the shapes are not one for each panel', () => {
+  it('takes the automatic layout when the shapes are not one for each panel', { tags: ['equivalence'] }, () => {
     expect(parseComicProject(saved(['a', 'b'], [triangle]))!.pages[0]!.shapes).toBeNull();
   });
 
-  it('takes the automatic layout when a shape is not a shape', () => {
+  it('takes the automatic layout when a shape is not a shape', { tags: ['error-guessing'] }, () => {
     expect(parseComicProject(saved(['a', 'b'], [triangle, [{ x: 0, y: 0 }]]))!.pages[0]!.shapes).toBeNull();
     expect(parseComicProject(saved(['a', 'b'], [triangle, 'nope']))!.pages[0]!.shapes).toBeNull();
   });
 
-  it('reads a page saved before shapes as the automatic layout', () => {
+  it('reads a page saved before shapes as the automatic layout', { tags: ['condition'] }, () => {
     const old = saved(['a'], undefined);
     expect(parseComicProject(old)!.pages[0]!.shapes).toBeNull();
   });
 
-  it('keeps the corners within a page-length of the page', () => {
+  it('keeps the corners within a page-length of the page', { tags: ['boundary'] }, () => {
     const outside = [
       { x: -1, y: 0.5 },
       { x: 2, y: 0 },
@@ -54,7 +54,7 @@ describe('reading the shapes of a saved page', () => {
     ]);
   });
 
-  it('keeps the shapes of a page template for its panel count', () => {
+  it('keeps the shapes of a page template for its panel count', { tags: ['condition'] }, () => {
     expect(parseComicProject(saved(['a', 'b'], null, [triangle, triangle]))!.pageTemplates[0]!.shapes).toEqual([triangle, triangle]);
     expect(parseComicProject(saved(['a', 'b'], null, [triangle]))!.pageTemplates[0]!.shapes).toBeNull();
   });

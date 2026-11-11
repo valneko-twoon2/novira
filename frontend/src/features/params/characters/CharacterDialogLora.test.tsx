@@ -61,7 +61,7 @@ afterEach(async () => {
 });
 
 describe('the LoRA of a character', () => {
-  it('offers the LoRAs of the model list when the character has none, and sets the one chosen with its trigger phrase', async () => {
+  it('offers the LoRAs of the model list when the character has none, and sets the one chosen with its trigger phrase', { tags: ['scenario'] }, async () => {
     HTMLElement.prototype.hasPointerCapture = vi.fn(() => false);
     HTMLElement.prototype.releasePointerCapture = vi.fn();
     HTMLElement.prototype.scrollIntoView = vi.fn();
@@ -78,7 +78,7 @@ describe('the LoRA of a character', () => {
     expect(useCharacters.getState().presets.find((p) => p.id === id)!.data.lora).toEqual({ key: 'mia-lora', weight: 0.8, trigger: 'mia_chr', enabled: true });
   });
 
-  it('takes the LoRA off the character when "no LoRA" is chosen', async () => {
+  it('takes the LoRA off the character when "no LoRA" is chosen', { tags: ['scenario'] }, async () => {
     HTMLElement.prototype.hasPointerCapture = vi.fn(() => false);
     HTMLElement.prototype.releasePointerCapture = vi.fn();
     HTMLElement.prototype.scrollIntoView = vi.fn();
@@ -90,14 +90,14 @@ describe('the LoRA of a character', () => {
     expect(useCharacters.getState().presets.find((p) => p.id === id)!.data.lora).toBeUndefined();
   });
 
-  it('is not shown when registering a new character', async () => {
+  it('is not shown when registering a new character', { tags: ['condition'] }, async () => {
     mount();
     useCharacterDialog.getState().open({ imageNames: ['photo.png'], name: 'Mia' });
     await screen.findByTestId('character-dialog');
     expect(screen.queryByTestId('character-lora')).toBeNull();
   });
 
-  it('shows the LoRA with its name, and keeps the switch and weight that were set when saving', async () => {
+  it('shows the LoRA with its name, and keeps the switch and weight that were set when saving', { tags: ['scenario'] }, async () => {
     const id = await openEdit(true);
     expect(screen.getByTestId('character-lora').textContent).toContain('Mia LoRA');
     fireEvent.change(screen.getAllByLabelText(t('lora.weight')).find((e) => (e as HTMLInputElement).type === 'number')!, { target: { value: '1.2' } });
@@ -109,7 +109,7 @@ describe('the LoRA of a character', () => {
     expect(saved.data.lora).toMatchObject({ key: 'mia-lora', enabled: false, weight: 1.2, trigger: 'mia' });
   });
 
-  it('says when the LoRA file is gone', async () => {
+  it('says when the LoRA file is gone', { tags: ['error-guessing'] }, async () => {
     useModels.getState().setModels([]);
     await openEdit(true);
     expect(screen.getByTestId('character-lora').textContent).toContain(t('lora.gone'));
@@ -118,7 +118,7 @@ describe('the LoRA of a character', () => {
 });
 
 describe('cancelling a save', () => {
-  it('stops the white-background pass without an error and keeps the dialog open', async () => {
+  it('stops the white-background pass without an error and keeps the dialog open', { tags: ['error-guessing'] }, async () => {
     vi.mocked(runJob).mockImplementation(
       (_request, signal) => new Promise((_resolve, reject) => signal?.addEventListener('abort', () => reject(new Error('aborted')))),
     );

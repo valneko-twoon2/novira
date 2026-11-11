@@ -27,7 +27,7 @@ const layer: RasterEntity = { id: 'pic', type: 'raster', seq: 3, name: null, isE
 const doc: PageCanvas = { ...defaultPageCanvas('A4'), entities: [...defaultPageCanvas('A4').entities, layer] };
 
 describe('the box of a turned picture', () => {
-  it('is the picture itself unturned or half turned, its sides swapped at a quarter turn, and wider at 45 degrees', () => {
+  it('is the picture itself unturned or half turned, its sides swapped at a quarter turn, and wider at 45 degrees', { tags: ['condition'] }, () => {
     expect(turnedBox(200, 100, 0)).toEqual({ width: 200, height: 100 });
     const quarter = turnedBox(200, 100, 90);
     expect(quarter.width).toBeCloseTo(100);
@@ -40,19 +40,19 @@ describe('the box of a turned picture', () => {
 });
 
 describe('the object of a baked picture', () => {
-  it('covers the turned box about the same centre, with the new picture and no mirroring', () => {
+  it('covers the turned box about the same centre, with the new picture and no mirroring', { tags: ['condition'] }, () => {
     expect(bakedObject(bake(), 'turned.png')).toEqual({ imageName: 'turned.png', url: '', x: 450, y: 300, width: 100, height: 200 });
     const next = withBaked(doc, bake(), 'turned.png');
     expect(next.entities.at(-1)!.objects[0]).toEqual({ kind: 'image', id: 'pic-image', imageName: 'turned.png', url: '', x: 450, y: 300, width: 100, height: 200 });
   });
 
-  it('leaves the page as it is when the object is gone', () => {
+  it('leaves the page as it is when the object is gone', { tags: ['condition'] }, () => {
     expect(withBaked(doc, bake({ objectId: 'other' }), 'turned.png')).toBe(doc);
   });
 });
 
 describe('baking the pictures of the projects', () => {
-  it('puts a project in all at once and reports a project of which one picture failed, untouched', async () => {
+  it('puts a project in all at once and reports a project of which one picture failed, untouched', { tags: ['error-guessing', 'state-transition'] }, async () => {
     const applied: [string, string[]][] = [];
     const failed = await bakeRotations(
       [bake(), bake({ objectId: 'second' }), bake({ projectId: 'c2', imageName: 'gone.png' }), bake({ projectId: 'c2' })],

@@ -85,7 +85,7 @@ const openDialog = async () => {
 };
 
 describe('choosing the axes', () => {
-  it('asks for an axis first, then fills in a starting list of values and counts the pictures', async () => {
+  it('asks for an axis first, then fills in a starting list of values and counts the pictures', { tags: ['scenario'] }, async () => {
     await openDialog();
     expect(screen.getByTestId('xyplot-problem').textContent).toBe(t('xyplot.problem.noAxis'));
     expect((screen.getByTestId('xyplot-run') as HTMLButtonElement).disabled).toBe(true);
@@ -96,7 +96,7 @@ describe('choosing the axes', () => {
     expect(screen.getByTestId('xyplot-summary').textContent).toBe(t('xyplot.summary', { columns: 3, rows: 4, count: 12 }));
   });
 
-  it('refuses the same setting twice, unreadable numbers, too many values and an empty list', async () => {
+  it('refuses the same setting twice, unreadable numbers, too many values and an empty list', { tags: ['error-guessing', 'boundary'] }, async () => {
     await openDialog();
     pick(xAxis(), 'steps');
     pick(yAxis(), 'steps');
@@ -111,7 +111,7 @@ describe('choosing the axes', () => {
     expect(screen.getAllByText(t('xyplot.error.empty')).length).toBeGreaterThan(0);
   });
 
-  it('refuses a grid of more than 36 pictures', async () => {
+  it('refuses a grid of more than 36 pictures', { tags: ['error-guessing', 'boundary'] }, async () => {
     await openDialog();
     pick(xAxis(), 'seed');
     fireEvent.change(screen.getByTestId('xyplot-x-values'), { target: { value: '1 2 3 4 5 6 7' } });
@@ -120,7 +120,7 @@ describe('choosing the axes', () => {
     expect(screen.getByTestId('xyplot-problem').textContent).toBe(t('xyplot.problem.tooMany', { max: 36 }));
   });
 
-  it('lists the schedulers and the models of the same family as checkboxes, and says when there are none', async () => {
+  it('lists the schedulers and the models of the same family as checkboxes, and says when there are none', { tags: ['scenario'] }, async () => {
     useModels.setState({ models: [] });
     await openDialog();
     pick(xAxis(), 'scheduler');
@@ -135,7 +135,7 @@ describe('choosing the axes', () => {
     expect(screen.getByText(t('xyplot.noModels'))).toBeTruthy();
   });
 
-  it('offers the diffusion models of a newer family as the Generate tab draws them, not only main models', async () => {
+  it('offers the diffusion models of a newer family as the Generate tab draws them, not only main models', { tags: ['scenario'] }, async () => {
     useModels.setState({
       models: [
         { key: 'a1', name: 'NyaNya Anima', base: 'anima', type: 'diffusion_model', path: 'nyanya.safetensors' },
@@ -151,7 +151,7 @@ describe('choosing the axes', () => {
     expect([...choices.querySelectorAll('label')].map((l) => l.textContent)).toEqual(['NyaNya Anima', 'Other Anima']);
   });
 
-  it('takes one prompt per line and shows a note for the denoising strength', async () => {
+  it('takes one prompt per line and shows a note for the denoising strength', { tags: ['scenario'] }, async () => {
     await openDialog();
     pick(xAxis(), 'prompt');
     expect((screen.getByTestId('xyplot-x-values') as HTMLTextAreaElement).value).toContain('smiling');
@@ -162,7 +162,7 @@ describe('choosing the axes', () => {
 });
 
 describe('making the grid', () => {
-  it('runs every cell with the same seed, saves the table to the gallery and opens it in the viewer', async () => {
+  it('runs every cell with the same seed, saves the table to the gallery and opens it in the viewer', { tags: ['scenario'] }, async () => {
     await openDialog();
     pick(xAxis(), 'steps');
     pick(yAxis(), 'cfgScale');
@@ -185,7 +185,7 @@ describe('making the grid', () => {
     expect(useXyPlotDialog.getState().isOpen).toBe(false);
   });
 
-  it('draws only one axis with a dash for the unused one in the title', async () => {
+  it('draws only one axis with a dash for the unused one in the title', { tags: ['scenario'] }, async () => {
     await openDialog();
     pick(yAxis(), 'seed');
     fireEvent.click(screen.getByTestId('xyplot-run'));
@@ -197,7 +197,7 @@ describe('making the grid', () => {
     expect(content.title).toContain('Model One');
   });
 
-  it('keeps going when some pictures fail and says how many are missing', async () => {
+  it('keeps going when some pictures fail and says how many are missing', { tags: ['error-guessing'] }, async () => {
     vi.mocked(runJob).mockImplementation((request) => (request.params.steps === 25 ? Promise.reject(new Error('boom')) : Promise.resolve(picture(request.params.steps === 35 ? 'bad.png' : 'ok.png'))));
     await openDialog();
     pick(xAxis(), 'steps');
@@ -207,7 +207,7 @@ describe('making the grid', () => {
     expect(screen.getByText(t('xyplot.partFailed', { count: 2 }))).toBeTruthy();
   });
 
-  it('reports the engine message when every picture fails, and the generic one when none could be loaded', async () => {
+  it('reports the engine message when every picture fails, and the generic one when none could be loaded', { tags: ['error-guessing'] }, async () => {
     vi.mocked(runJob).mockRejectedValue(new Error('out of memory'));
     await openDialog();
     pick(xAxis(), 'steps');
@@ -221,7 +221,7 @@ describe('making the grid', () => {
     expect(screen.getByRole('alert').textContent).not.toContain('out of memory');
   });
 
-  it('says the generation is not set up when no request can be built, and shows non-Error failures as text', async () => {
+  it('says the generation is not set up when no request can be built, and shows non-Error failures as text', { tags: ['error-guessing'] }, async () => {
     vi.mocked(buildRequestFor).mockResolvedValueOnce(null);
     await openDialog();
     pick(xAxis(), 'steps');
@@ -232,7 +232,7 @@ describe('making the grid', () => {
     await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('plain text'));
   });
 
-  it('cannot start while the Generate form is not ready', async () => {
+  it('cannot start while the Generate form is not ready', { tags: ['scenario'] }, async () => {
     vi.mocked(useReadiness).mockReturnValue(['No model chosen']);
     await openDialog();
     pick(xAxis(), 'steps');
@@ -240,7 +240,7 @@ describe('making the grid', () => {
     expect((screen.getByTestId('xyplot-run') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('shows the progress while running and stops quietly when cancelled', async () => {
+  it('shows the progress while running and stops quietly when cancelled', { tags: ['scenario'] }, async () => {
     vi.mocked(runJob).mockImplementation((_request, signal) => new Promise((_resolve, reject) => signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')))));
     await openDialog();
     pick(xAxis(), 'steps');

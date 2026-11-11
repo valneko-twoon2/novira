@@ -27,11 +27,11 @@ describe('contract fixtures', () => {
     }
   }
 
-  it.each(Object.entries(SAMPLES))('%s.json matches its TypeScript sample', (name, sample) => {
+  it.each(Object.entries(SAMPLES))('%s.json matches its TypeScript sample', { tags: ['equivalence'] }, (name, sample) => {
     expect(JSON.parse(readFileSync(fixturePath(name), 'utf8'))).toStrictEqual(sample);
   });
 
-  it('has a TypeScript sample for every fixture file', () => {
+  it('has a TypeScript sample for every fixture file', { tags: ['condition'] }, () => {
     const files = readdirSync(CONTRACT_DIR)
       .filter((f) => f.endsWith('.json'))
       .map((f) => f.slice(0, -'.json'.length));

@@ -136,6 +136,7 @@ fn apply(mut v: Value, edits: &[Edit]) -> Value {
     v
 }
 
+// tags: state-transition
 #[test]
 fn every_contract_fixture_survives_a_round_trip_unchanged() {
     for (name, normalise) in TYPES {
@@ -144,6 +145,7 @@ fn every_contract_fixture_survives_a_round_trip_unchanged() {
     }
 }
 
+// tags: error-guessing, state-transition
 #[test]
 fn an_edited_fixture_is_refused_or_settles_after_one_round_trip() {
     ACCEPTED.store(0, Ordering::Relaxed);
@@ -170,6 +172,7 @@ fn an_edited_fixture_is_refused_or_settles_after_one_round_trip() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn unknown_fields_of_the_generation_settings_are_kept_for_newer_frontends() {
     let base = fixture("generation-metadata");
@@ -191,6 +194,7 @@ fn unknown_fields_of_the_generation_settings_are_kept_for_newer_frontends() {
     );
 }
 
+// tags: error-guessing, state-transition
 #[test]
 fn a_generation_setting_of_any_prompt_text_and_numbers_round_trips() {
     let base = fixture("generation-metadata");
@@ -218,6 +222,7 @@ fn a_generation_setting_of_any_prompt_text_and_numbers_round_trips() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn enums_and_guidance_of_any_value_are_read_or_refused_without_a_panic() {
     check(json_value(), |v| {

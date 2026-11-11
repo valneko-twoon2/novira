@@ -97,6 +97,7 @@ fn any_name() -> impl Strategy<Value = String> {
     prop_oneof![windows_text(), device_spelling(), nasty_string()]
 }
 
+// tags: error-guessing
 #[test]
 fn every_spelling_of_a_device_name_is_refused_as_a_gallery_or_model_file_name() {
     check(device_spelling(), |name| {
@@ -108,6 +109,7 @@ fn every_spelling_of_a_device_name_is_refused_as_a_gallery_or_model_file_name() 
     });
 }
 
+// tags: boundary
 #[test]
 fn the_device_check_ignores_case_dots_and_trailing_spaces_and_not_longer_words() {
     for device in DEVICES {
@@ -144,6 +146,7 @@ fn the_device_check_ignores_case_dots_and_trailing_spaces_and_not_longer_words()
     }
 }
 
+// tags: error-guessing
 #[test]
 fn a_device_name_with_a_stream_suffix_is_never_a_kept_name() {
     // The code's own check stops at the first dot, so `nul:s` is not a device to it; the callers refuse the colon first.
@@ -164,6 +167,7 @@ fn a_device_name_with_a_stream_suffix_is_never_a_kept_name() {
     }
 }
 
+// tags: error-guessing
 #[test]
 fn an_accepted_gallery_or_model_name_is_one_plain_component_and_not_a_device() {
     check(any_name(), |name| {
@@ -187,6 +191,7 @@ fn an_accepted_gallery_or_model_name_is_one_plain_component_and_not_a_device() {
     });
 }
 
+// tags: boundary
 #[test]
 fn the_length_limits_are_exact_at_the_edge() {
     // Gallery names: 80 bytes is the most; model file names: 200.
@@ -202,6 +207,7 @@ fn the_length_limits_are_exact_at_the_edge() {
     assert!(safe_file_name(&model(256)).is_none());
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn a_folder_made_from_a_name_is_short_plain_and_not_a_device_for_any_name() {
     check(any_name(), |name| {
@@ -230,6 +236,7 @@ fn a_folder_made_from_a_name_is_short_plain_and_not_a_device_for_any_name() {
     });
 }
 
+// tags: boundary, decision-table
 #[test]
 fn folders_of_boards_stay_inside_outputs_and_differ_even_when_the_names_differ_only_in_case() {
     let board = |i: usize, name: String, parent: Option<usize>| BoardDTO {
@@ -283,6 +290,7 @@ fn folders_of_boards_stay_inside_outputs_and_differ_even_when_the_names_differ_o
     );
 }
 
+// tags: error-guessing
 #[test]
 fn plain_path_drops_only_the_verbatim_drive_prefix_and_keeps_unc_and_everything_else() {
     check(
@@ -347,6 +355,7 @@ mod folder_checks {
             && !path.to_string_lossy().chars().any(char::is_control)
     }
 
+    // tags: boundary, equivalence
     #[test]
     fn a_folder_the_checks_accept_is_a_full_plain_path_outside_the_data_folder() {
         let data = tempfile::tempdir().unwrap();
@@ -364,6 +373,7 @@ mod folder_checks {
         });
     }
 
+    // tags: error-guessing
     #[test]
     fn device_drive_relative_rooted_and_parent_paths_are_refused() {
         let data = tempfile::tempdir().unwrap();
@@ -390,6 +400,7 @@ mod folder_checks {
         }
     }
 
+    // tags: error-guessing, boundary
     #[test]
     fn a_folder_inside_the_data_folder_is_refused_in_any_case_and_with_mixed_separators() {
         let data = tempfile::tempdir().unwrap();

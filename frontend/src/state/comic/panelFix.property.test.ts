@@ -20,7 +20,7 @@ function shown(view: ComicImageView, image: Size, panel: Size, px: number, py: n
 }
 
 describe('panelToPicture (properties)', () => {
-  it('undoes how the page shows the picture', () => {
+  it('undoes how the page shows the picture', { tags: ['state-transition', 'condition'] }, () => {
     const view = fc.record({
       cx: fc.double({ min: -1, max: 2, noNaN: true }),
       cy: fc.double({ min: -1, max: 2, noNaN: true }),

@@ -49,7 +49,7 @@ function layer(type: 'raster' | 'control' = 'raster', objects = [rect()]): strin
 }
 
 describe('exporting a layer to a file', () => {
-  it('downloads the flattened layer as a png and tells the user', async () => {
+  it('downloads the flattened layer as a png and tells the user', { tags: ['condition'] }, async () => {
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
     URL.revokeObjectURL = () => {};
     await exportEntityToFile(layer());
@@ -58,14 +58,14 @@ describe('exporting a layer to a file', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('warns when the layer is empty and downloads nothing', async () => {
+  it('warns when the layer is empty and downloads nothing', { tags: ['boundary'] }, async () => {
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
     await exportEntityToFile(layer('raster', []));
     expect(click).not.toHaveBeenCalled();
     expect(lastToast()?.status).toBe('warning');
   });
 
-  it('reports a failure to render', async () => {
+  it('reports a failure to render', { tags: ['error-guessing'] }, async () => {
     URL.createObjectURL = () => {
       throw new Error('no memory');
     };
@@ -75,7 +75,7 @@ describe('exporting a layer to a file', () => {
 });
 
 describe('saving the canvas as a PSD', () => {
-  it('downloads a layered PSD of the bounding box named after the canvas and tells the user', async () => {
+  it('downloads a layered PSD of the bounding box named after the canvas and tells the user', { tags: ['boundary'] }, async () => {
     let saved: Blob | null = null;
     URL.createObjectURL = (blob: Blob) => ((saved = blob), 'blob:psd');
     URL.revokeObjectURL = () => {};
@@ -92,7 +92,7 @@ describe('saving the canvas as a PSD', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('reports a canvas too large for a PSD', async () => {
+  it('reports a canvas too large for a PSD', { tags: ['error-guessing'] }, async () => {
     useCanvas.setState({ bbox: { x: 0, y: 0, width: 30001, height: 1 } });
     await saveCanvasAsPsd();
     expect(lastToast()?.status).toBe('error');
@@ -100,7 +100,7 @@ describe('saving the canvas as a PSD', () => {
 });
 
 describe('saving the canvas', () => {
-  it('flattens the visible raster layers, saves them and tells the user', async () => {
+  it('flattens the visible raster layers, saves them and tells the user', { tags: ['condition'] }, async () => {
     layer();
     await saveCanvasToGallery();
     expect(backend.saveImageFromUrl).toHaveBeenCalledWith('blob:flat', expect.any(Object));
@@ -108,13 +108,13 @@ describe('saving the canvas', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('reports a failure to save', async () => {
+  it('reports a failure to save', { tags: ['error-guessing'] }, async () => {
     vi.mocked(backend.saveImageFromUrl).mockRejectedValue(new Error('disk full'));
     await saveCanvasToGallery();
     expect(lastToast()).toMatchObject({ status: 'error', description: 'disk full' });
   });
 
-  it('saves one layer, or warns that an empty layer has nothing to save', async () => {
+  it('saves one layer, or warns that an empty layer has nothing to save', { tags: ['boundary'] }, async () => {
     const id = layer();
     await saveEntityToGallery(id);
     expect(lastToast()?.status).toBe('success');
@@ -128,7 +128,7 @@ describe('saving the canvas', () => {
 });
 
 describe('merging', () => {
-  it('replaces the visible raster layers by one layer holding their flattened picture', async () => {
+  it('replaces the visible raster layers by one layer holding their flattened picture', { tags: ['condition'] }, async () => {
     layer('raster', [rect(0)]);
     layer('raster', [rect(40)]);
     const control = layer('control');
@@ -141,7 +141,7 @@ describe('merging', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('never merges a slot: the layers between two slots are merged on their own and stay between them', async () => {
+  it('never merges a slot: the layers between two slots are merged on their own and stay between them', { tags: ['condition'] }, async () => {
     const low = [layer('raster', [rect(0)]), layer('raster', [rect(40)])];
     const panels = c().addEntity('raster', { slot: 'panels' });
     const lone = layer('raster', [rect(80)]);
@@ -157,7 +157,7 @@ describe('merging', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('merges on a full comic page: the bands between its slots on their own, hidden layers left, and room kept', async () => {
+  it('merges on a full comic page: the bands between its slots on their own, hidden layers left, and room kept', { tags: ['condition'] }, async () => {
     resetPageCanvases();
     useComic.getState().setProjects([newProject('Merge')]);
     const store = pageCanvasStore(activePage(useComic.getState())!.id)!;
@@ -184,7 +184,7 @@ describe('merging', () => {
     resetPageCanvases();
   });
 
-  it('has nothing to merge when no two visible layers share a band between slots', async () => {
+  it('has nothing to merge when no two visible layers share a band between slots', { tags: ['condition'] }, async () => {
     layer('raster', [rect(0)]);
     c().addEntity('raster', { slot: 'panels' });
     layer('raster', [rect(40)]);
@@ -194,7 +194,7 @@ describe('merging', () => {
     expect(lastToast()?.status).toBe('info');
   });
 
-  it('reports a failure while flattening', async () => {
+  it('reports a failure while flattening', { tags: ['error-guessing'] }, async () => {
     layer('raster', [rect(0)]);
     layer('raster', [rect(40)]);
     HTMLCanvasElement.prototype.toBlob = function (cb: BlobCallback) {
@@ -207,7 +207,7 @@ describe('merging', () => {
 });
 
 describe('handing out and copying a layer', () => {
-  it('saves a flattened layer and returns its image name; an empty layer or a failure gives null', async () => {
+  it('saves a flattened layer and returns its image name; an empty layer or a failure gives null', { tags: ['error-guessing', 'boundary'] }, async () => {
     const id = layer();
     expect(await entityAsGalleryImage(id)).toBe('saved.png');
     expect(await entityAsGalleryImage('missing')).toBeNull();
@@ -218,7 +218,7 @@ describe('handing out and copying a layer', () => {
     expect(lastToast()?.status).toBe('error');
   });
 
-  it('copies the layer to the clipboard as a PNG', async () => {
+  it('copies the layer to the clipboard as a PNG', { tags: ['condition'] }, async () => {
     // As the browser does: the write settles when the picture the item holds does, and fails when that fails.
     const write = vi.fn(async (items: { items: Record<string, Promise<Blob>> }[]) => void (await items[0]?.items['image/png']));
     vi.stubGlobal('ClipboardItem', class { constructor(public items: unknown) {} });
@@ -238,7 +238,7 @@ describe('handing out and copying a layer', () => {
     vi.unstubAllGlobals();
   });
 
-  it('says so when the browser cannot copy pictures', async () => {
+  it('says so when the browser cannot copy pictures', { tags: ['error-guessing'] }, async () => {
     vi.stubGlobal('ClipboardItem', undefined);
     await copyEntityToClipboard(layer());
     expect(lastToast()?.status).toBe('error');
@@ -253,13 +253,13 @@ describe('control filters', () => {
     return id;
   };
 
-  it('previews the filtered picture of a control layer', async () => {
+  it('previews the filtered picture of a control layer', { tags: ['condition'] }, async () => {
     const id = control('canny');
     await processFilter(id);
     expect(c().filterPreviews[id]).toMatchObject({ url: 'blob:flat', width: 20, height: 20 });
   });
 
-  it('drops the preview for the "none" filter, ignores other layers and warns about an empty layer', async () => {
+  it('drops the preview for the "none" filter, ignores other layers and warns about an empty layer', { tags: ['boundary'] }, async () => {
     const id = control('none');
     c().setFilterPreview(id, { url: 'x', x: 0, y: 0, width: 1, height: 1 });
     await processFilter(id);
@@ -276,7 +276,7 @@ describe('control filters', () => {
 });
 
 describe('transforming a layer', () => {
-  it('turns a raster layer into one picture with swapped sides around the same centre', async () => {
+  it('turns a raster layer into one picture with swapped sides around the same centre', { tags: ['condition'] }, async () => {
     const id = layer('raster', [{ ...rect(0), width: 40 }]);
     await transformEntity(id, 'rotateRight');
     expect(c().entities[0]!.objects).toEqual([expect.objectContaining({ kind: 'image', url: 'blob:flat', x: 10, y: -10, width: 20, height: 40 })]);
@@ -284,7 +284,7 @@ describe('transforming a layer', () => {
     expect(c().entities[0]!.objects[0]).toMatchObject({ width: 10, height: 20 });
   });
 
-  it('leaves masks, locked layers and empty layers alone and refuses a size beyond the limit', async () => {
+  it('leaves masks, locked layers and empty layers alone and refuses a size beyond the limit', { tags: ['error-guessing', 'boundary'] }, async () => {
     const mask = c().addEntity('inpaint', { objects: [rect()] });
     const locked = layer();
     c().updateEntity(locked, { isLocked: true });
@@ -298,7 +298,7 @@ describe('transforming a layer', () => {
     expect(c().entities.find((e) => e.id === big)!.objects[0]).toMatchObject({ kind: 'rect' });
   });
 
-  it('leaves a slot alone, without a warning', async () => {
+  it('leaves a slot alone, without a warning', { tags: ['state-transition'] }, async () => {
     const slot = c().addEntity('raster', { slot: 'panels' });
     const before = c().entities;
     await transformEntity(slot, 'rotateRight');
@@ -308,14 +308,14 @@ describe('transforming a layer', () => {
 });
 
 describe('pasting a picture', () => {
-  it('saves it to the gallery and adds it as a raster layer', async () => {
+  it('saves it to the gallery and adds it as a raster layer', { tags: ['condition'] }, async () => {
     URL.createObjectURL = () => 'blob:pasted';
     await pasteImageBlob(new Blob(['png'], { type: 'image/png' }));
     expect(backend.saveImageFromUrl).toHaveBeenCalledWith('blob:pasted', expect.any(Object));
     expect(c().entities[0]).toMatchObject({ type: 'raster', objects: [{ kind: 'image', imageName: 'saved.png' }] });
   });
 
-  it('reports a failure', async () => {
+  it('reports a failure', { tags: ['error-guessing'] }, async () => {
     vi.mocked(backend.saveImageFromUrl).mockRejectedValue(new Error('bad'));
     await pasteImageBlob(new Blob(['x']));
     expect(lastToast()).toMatchObject({ status: 'error', description: 'bad' });
@@ -324,7 +324,7 @@ describe('pasting a picture', () => {
 });
 
 describe('inverting a mask', () => {
-  it('redraws a mask as one picture the size of the generation area, and leaves other layers alone', async () => {
+  it('redraws a mask as one picture the size of the generation area, and leaves other layers alone', { tags: ['state-transition'] }, async () => {
     c().setBbox({ x: 8, y: 16, width: 64, height: 64 });
     const mask = c().addEntity('inpaint', { objects: [rect()] });
     const raster = layer();
@@ -336,20 +336,20 @@ describe('inverting a mask', () => {
 });
 
 describe('filling a lasso shape', () => {
-  it('adds the shape as a picture covering its outline', async () => {
+  it('adds the shape as a picture covering its outline', { tags: ['condition'] }, async () => {
     const id = layer('raster', []);
     await fillPolygon(id, [10.5, 4, 30, 4, 20, 24.2]);
     expect(c().entities[0]!.objects).toEqual([expect.objectContaining({ kind: 'image', url: 'blob:flat', x: 10, y: 4, width: 20, height: 21 })]);
   });
 
-  it('ignores a scribble that is not a shape', async () => {
+  it('ignores a scribble that is not a shape', { tags: ['condition'] }, async () => {
     const id = layer('raster', []);
     await fillPolygon(id, [5, 5, 9, 9]);
     await fillPolygon(id, [5, 5, 9, 5, 12, 5]);
     expect(c().entities[0]!.objects).toEqual([]);
   });
 
-  it('puts nothing into a slot', async () => {
+  it('puts nothing into a slot', { tags: ['condition'] }, async () => {
     const slot = c().addEntity('raster', { slot: 'panels' });
     await fillPolygon(slot, [10, 4, 30, 4, 20, 24]);
     expect(c().entities[0]!.objects).toEqual([]);
@@ -360,7 +360,7 @@ describe('raster filters and the bucket', () => {
   const objectsOf = (id: string) => c().entities.find((e) => e.id === id)!.objects;
   const warned = () => useToasts.getState().toasts.some((x) => x.status === 'warning');
 
-  it('blurs a raster layer into one picture larger by the blur margin, as one undo step', async () => {
+  it('blurs a raster layer into one picture larger by the blur margin, as one undo step', { tags: ['state-transition'] }, async () => {
     const id = layer('raster', [rect(10)]);
     const before = c().past.length;
     expect(await applyRasterFilter(id, { kind: 'blur', radius: 4 })).toBe(true);
@@ -373,7 +373,7 @@ describe('raster filters and the bucket', () => {
     expect(objectsOf(id)).toEqual([rect(10)]);
   });
 
-  it('keeps the size of the layer for grayscale and invert', async () => {
+  it('keeps the size of the layer for grayscale and invert', { tags: ['condition'] }, async () => {
     const id = layer('raster', [rect(10)]);
     await applyRasterFilter(id, { kind: 'grayscale' });
     expect(objectsOf(id)[0]).toMatchObject({ x: 10, y: 0, width: 20, height: 20 });
@@ -384,7 +384,7 @@ describe('raster filters and the bucket', () => {
     expect(filters).toContain('invert(1)');
   });
 
-  it('refuses what is not a raster layer of the user: a control layer, a locked layer, an empty layer, a slot', async () => {
+  it('refuses what is not a raster layer of the user: a control layer, a locked layer, an empty layer, a slot', { tags: ['error-guessing', 'boundary'] }, async () => {
     const control = layer('control');
     expect(await applyRasterFilter(control, { kind: 'invert' })).toBe(false);
     expect(warned()).toBe(true);
@@ -397,7 +397,7 @@ describe('raster filters and the bucket', () => {
     expect(await applyRasterFilter(null, { kind: 'invert' })).toBe(false);
   });
 
-  it('fills the region around the pressed point up to a line, one pixel under it, and keeps the layer as one picture', async () => {
+  it('fills the region around the pressed point up to a line, one pixel under it, and keeps the layer as one picture', { tags: ['boundary'] }, async () => {
     canvases.restore();
     // A black vertical line at x = 10 on a clear layer 40 x 30.
     canvases = installRecordingCanvases({ pixel: (x) => (x === 10 ? [0, 0, 0, 255] : [0, 0, 0, 0]) });
@@ -421,14 +421,14 @@ describe('raster filters and the bucket', () => {
     expect(painted).toBe(11 * 30);
   });
 
-  it('fills nothing outside the area, and nothing for a layer that cannot be filled', async () => {
+  it('fills nothing outside the area, and nothing for a layer that cannot be filled', { tags: ['error-guessing'] }, async () => {
     const id = layer();
     expect(await bucketFill(id, { x: 500, y: 5 }, { x: 0, y: 0, width: 40, height: 30 })).toBe(false);
     expect(objectsOf(id)).toEqual([rect()]);
     expect(await bucketFill(layer('control'), { x: 1, y: 1 }, { x: 0, y: 0, width: 40, height: 30 })).toBe(false);
   });
 
-  it('works on a comic page store with the page as its area', async () => {
+  it('works on a comic page store with the page as its area', { tags: ['condition'] }, async () => {
     useComic.getState().setProjects([newProject('Fill')]);
     const store = pageCanvasStore(activePage(useComic.getState())!.id)!;
     const id = store.getState().addEntity('raster');

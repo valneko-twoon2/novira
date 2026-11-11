@@ -8,6 +8,7 @@ use novira_core::models::layout::scan_roots;
 use novira_core::types::{BaseModel, ModelType};
 use serde_json::json;
 
+// tags: condition
 #[test]
 fn a_model_in_two_scanned_folders_is_listed_once_from_the_first() {
     let first = tempfile::tempdir().unwrap();
@@ -34,6 +35,7 @@ fn lora_header(base: &str) -> novira_core::models::classify::Header {
     parse_header(&bytes).unwrap()
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn a_loras_training_metadata_names_its_base_model_and_an_unknown_one_falls_back_to_the_file_name() {
     for (version, expected) in [
@@ -60,6 +62,7 @@ fn a_loras_training_metadata_names_its_base_model_and_an_unknown_one_falls_back_
     );
 }
 
+// tags: boundary
 #[test]
 fn adult_words_are_found_in_camel_case_names_and_in_picture_captions() {
     assert!(looks_adult("NudeXL", &[], &json!({})));
@@ -75,6 +78,7 @@ fn adult_words_are_found_in_camel_case_names_and_in_picture_captions() {
     ));
 }
 
+// tags: condition
 #[test]
 fn gitmodules_lines_of_other_keys_are_ignored() {
     let text =

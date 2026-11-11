@@ -7,13 +7,13 @@ const sceneWith = (text: string): Scene => ({ ...EMPTY_SCENE, layers: [newTextLa
 beforeEach(() => useTextSources.setState({ sources: [] }));
 
 describe('useTextSources', () => {
-  it('gives the scene back for a picture it remembers, and null for another', () => {
+  it('gives the scene back for a picture it remembers, and null for another', { tags: ['error-guessing'] }, () => {
     useTextSources.getState().remember('a.png', sceneWith('A'));
     expect(useTextSources.getState().sceneOf('a.png')?.layers[0]).toMatchObject({ text: 'A' });
     expect(useTextSources.getState().sceneOf('b.png')).toBeNull();
   });
 
-  it('keeps its own copy: editing the scene put in or taken out does not change what is kept', () => {
+  it('keeps its own copy: editing the scene put in or taken out does not change what is kept', { tags: ['condition'] }, () => {
     const scene = sceneWith('A');
     useTextSources.getState().remember('a.png', scene);
     scene.layers[0]!.text = 'changed after saving';
@@ -23,7 +23,7 @@ describe('useTextSources', () => {
     expect(useTextSources.getState().sceneOf('a.png')?.layers[0]).toMatchObject({ text: 'A' });
   });
 
-  it('replaces the scene of a picture saved again, and moves it to the newest place', () => {
+  it('replaces the scene of a picture saved again, and moves it to the newest place', { tags: ['condition'] }, () => {
     const { remember } = useTextSources.getState();
     remember('a.png', sceneWith('first'));
     remember('b.png', sceneWith('B'));
@@ -32,7 +32,7 @@ describe('useTextSources', () => {
     expect(useTextSources.getState().sceneOf('a.png')?.layers[0]).toMatchObject({ text: 'second' });
   });
 
-  it('drops the oldest scenes past the limit', () => {
+  it('drops the oldest scenes past the limit', { tags: ['boundary'] }, () => {
     const { remember } = useTextSources.getState();
     for (let i = 0; i < TEXT_SOURCES_MAX + 3; i += 1) remember(`p${i}.png`, sceneWith(String(i)));
     const names = useTextSources.getState().sources.map((s) => s.imageName);

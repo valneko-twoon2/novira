@@ -73,6 +73,7 @@ impl Bench {
     }
 }
 
+// tags: condition
 #[tokio::test]
 async fn a_device_is_answered_only_on_the_tls_listener_and_only_from_the_subnet() {
     let b = Bench::start().await;
@@ -106,6 +107,7 @@ async fn a_device_is_answered_only_on_the_tls_listener_and_only_from_the_subnet(
     b.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn a_scanned_qr_code_may_open_only_the_pairing_page_from_another_site() {
     let b = Bench::start().await;
@@ -287,6 +289,7 @@ pub(crate) const OTHER: Ipv4Addr = Ipv4Addr::new(192, 168, 1, 21);
 /// A hostile request: its headers, its body, the status it must get.
 type Case<'a> = (Vec<(&'a str, &'a str)>, &'a str, StatusCode);
 
+// tags: condition
 #[tokio::test]
 async fn a_device_reaches_the_app_only_with_a_session_never_with_the_token() {
     let b = Bench::start().await;
@@ -338,6 +341,7 @@ async fn a_device_reaches_the_app_only_with_a_session_never_with_the_token() {
     b.stop().await;
 }
 
+// tags: condition, error-guessing
 #[tokio::test]
 async fn a_session_works_only_from_its_address_with_its_exact_secret() {
     let b = Bench::start().await;
@@ -379,6 +383,7 @@ async fn a_session_works_only_from_its_address_with_its_exact_secret() {
     b.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn a_device_cannot_manage_pairing_even_when_paired() {
     let b = Bench::start().await;
@@ -411,6 +416,7 @@ async fn a_device_cannot_manage_pairing_even_when_paired() {
     b.stop().await;
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn pairing_calls_refuse_hostile_requests() {
     let b = Bench::start().await;
@@ -498,6 +504,7 @@ async fn pairing_calls_refuse_hostile_requests() {
     b.stop().await;
 }
 
+// tags: boundary
 #[tokio::test]
 async fn a_device_gets_five_pairing_requests_a_minute() {
     let b = Bench::start().await;
@@ -517,6 +524,7 @@ async fn a_device_gets_five_pairing_requests_a_minute() {
     b.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn only_the_asking_device_learns_the_outcome_and_a_denial_gives_nothing() {
     let b = Bench::start().await;
@@ -554,6 +562,7 @@ async fn only_the_asking_device_learns_the_outcome_and_a_denial_gives_nothing() 
     b.stop().await;
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn revoking_or_closing_ends_a_devices_session() {
     let b = Bench::start().await;
@@ -593,6 +602,7 @@ async fn revoking_or_closing_ends_a_devices_session() {
 
 /// A device's open event socket ends when this computer revokes its session. The connection runs over an in-memory
 /// stream with the device's ends, through the same HTTP serving as a real one.
+// tags: state-transition
 #[tokio::test]
 async fn a_revoked_device_loses_its_open_event_socket() {
     use futures_util::StreamExt;

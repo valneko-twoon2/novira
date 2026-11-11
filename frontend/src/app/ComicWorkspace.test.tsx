@@ -45,7 +45,7 @@ const mount = () =>
   );
 
 describe('the comic screen', () => {
-  it('starts on the drawing form, with the page in the middle and no stage bar', () => {
+  it('starts on the drawing form, with the page in the middle and no stage bar', { tags: ['scenario'] }, () => {
     mount();
     expect(screen.getByTestId('parameters-panel')).toBeTruthy();
     expect(screen.getByTestId('invoke-button')).toBeTruthy();
@@ -58,7 +58,7 @@ describe('painting on the page', () => {
   const rows = () => within(screen.getByTestId('canvas-layers')).getAllByTestId('canvas-entity');
   const rowOf = (text: string) => rows().find((r) => r.textContent?.includes(text))!.querySelector('.canvas-entity__row')!;
 
-  it('switches to painting with the layers panel, and back with Escape', () => {
+  it('switches to painting with the layers panel, and back with Escape', { tags: ['state-transition'] }, () => {
     mount();
     expect(screen.getByTestId('comic-delete')).toBeTruthy();
     fireEvent.click(screen.getByTestId('comic-mode-paint'));
@@ -77,7 +77,7 @@ describe('painting on the page', () => {
     expect(screen.getByTestId('comic-delete')).toBeTruthy();
   });
 
-  it('follows the layers panel: a slot row goes back to the page, a raster row paints again', () => {
+  it('follows the layers panel: a slot row goes back to the page, a raster row paints again', { tags: ['scenario'] }, () => {
     mount();
     fireEvent.click(screen.getByTestId('comic-mode-paint'));
     fireEvent.click(rowOf(t('comic.layers.panels')));
@@ -89,7 +89,7 @@ describe('painting on the page', () => {
     expect(screen.getByTestId('comic-paint')).toBeTruthy();
   });
 
-  it('gives Ctrl+Z to the page layers while painting, and to the comic otherwise', () => {
+  it('gives Ctrl+Z to the page layers while painting, and to the comic otherwise', { tags: ['condition'] }, () => {
     mount();
     act(() => useComic.getState().setPanelCount(page().id, page().panels.length + 1));
     expect(useComic.getState().past).toHaveLength(1);
@@ -104,7 +104,7 @@ describe('painting on the page', () => {
     expect(useComic.getState().past).toHaveLength(0);
   });
 
-  it('paints on an inpaint mask without leaving paint mode, and Escape discards a waiting result before it leaves', () => {
+  it('paints on an inpaint mask without leaving paint mode, and Escape discards a waiting result before it leaves', { tags: ['scenario'] }, () => {
     mount();
     fireEvent.click(screen.getByTestId('comic-mode-paint'));
     const store = pageCanvasStore(page().id)!;
@@ -125,7 +125,7 @@ describe('painting on the page', () => {
     expect(usePagePaint.getState().painting).toBe(false);
   });
 
-  it('accepts a staged result into a new raster layer of the page', () => {
+  it('accepts a staged result into a new raster layer of the page', { tags: ['scenario'] }, () => {
     mount();
     fireEvent.click(screen.getByTestId('comic-mode-paint'));
     const store = pageCanvasStore(page().id)!;
@@ -139,7 +139,7 @@ describe('painting on the page', () => {
     expect(rasters.some((e) => e.objects.some((o) => o.kind === 'image' && o.imageName === 'result.png'))).toBe(true);
   });
 
-  it('stops painting on another page', () => {
+  it('stops painting on another page', { tags: ['state-transition'] }, () => {
     mount();
     fireEvent.click(screen.getByTestId('comic-mode-paint'));
     act(() => {

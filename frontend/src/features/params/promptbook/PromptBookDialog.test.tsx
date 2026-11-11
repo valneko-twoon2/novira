@@ -31,7 +31,7 @@ afterEach(() => {
 });
 
 describe('browsing', () => {
-  it('lists the entries with their count, and narrows them by category and by search', () => {
+  it('lists the entries with their count, and narrows them by category and by search', { tags: ['equivalence'] }, () => {
     expect(items()).toEqual(['smile', 'rain', 'cloud']);
     expect(screen.getByText(t('params.promptBook.count', { count: 3 }))).toBeTruthy();
     const nav = within(screen.getByRole('navigation', { name: t('params.promptBook.category') }));
@@ -46,12 +46,12 @@ describe('browsing', () => {
     expect(items()).toHaveLength(3);
   });
 
-  it('says when the book is empty', () => {
+  it('says when the book is empty', { tags: ['condition'] }, () => {
     act(() => usePromptBook.setState({ entries: [] }));
     expect(screen.getByText(t('params.promptBook.empty'))).toBeTruthy();
   });
 
-  it('shows the meaning, note and category of an entry', () => {
+  it('shows the meaning, note and category of an entry', { tags: ['scenario'] }, () => {
     expect(screen.getByText('happy look')).toBeTruthy();
     expect(screen.getByText('works well')).toBeTruthy();
     expect(document.querySelectorAll('.pb-pill')).toHaveLength(3);
@@ -64,7 +64,7 @@ describe('using a tag', () => {
     return row.querySelector(`.pb-target--${kind}`) as HTMLElement;
   };
 
-  it('adds the tag to the positive or negative prompt and takes it out again', () => {
+  it('adds the tag to the positive or negative prompt and takes it out again', { tags: ['scenario'] }, () => {
     fireEvent.click(target('smile', 'positive'));
     expect(useParams.getState().positivePrompt).toContain('smile');
     expect(target('smile', 'positive').className).toContain('is-on');
@@ -77,7 +77,7 @@ describe('using a tag', () => {
 });
 
 describe('registering and editing', () => {
-  it('registers a new tag at the top, with its details, and empties the form', () => {
+  it('registers a new tag at the top, with its details, and empties the form', { tags: ['scenario'] }, () => {
     expect((screen.getByTestId('pb-submit') as HTMLButtonElement).disabled).toBe(true);
     fireEvent.submit(input('tag').closest('form')!);
     expect(state().entries).toHaveLength(3);
@@ -90,7 +90,7 @@ describe('registering and editing', () => {
     expect(input('tag').value).toBe('');
   });
 
-  it('edits an entry in the form and can stop editing', () => {
+  it('edits an entry in the form and can stop editing', { tags: ['scenario'] }, () => {
     const row = screen.getByText('smile').closest('.pb-item') as HTMLElement;
     fireEvent.click(within(row).getByLabelText(t('common.edit')));
     expect(input('tag').value).toBe('smile');
@@ -106,7 +106,7 @@ describe('registering and editing', () => {
 });
 
 describe('deleting', () => {
-  it('removes the entry on the second press, and ends its editing', () => {
+  it('removes the entry on the second press, and ends its editing', { tags: ['scenario'] }, () => {
     const row = () => screen.getByText('smile').closest('.pb-item') as HTMLElement;
     fireEvent.click(within(row()).getByLabelText(t('common.edit')));
     fireEvent.click(within(row()).getByLabelText(t('common.delete')));
@@ -118,7 +118,7 @@ describe('deleting', () => {
 });
 
 describe('closing', () => {
-  it('closes with the close button', () => {
+  it('closes with the close button', { tags: ['scenario'] }, () => {
     fireEvent.click(screen.getByLabelText(t('common.close')));
     expect(state().open).toBe(false);
   });
@@ -147,7 +147,7 @@ describe('a long book', () => {
     );
   });
 
-  it('draws the first rows, adds more as the end comes near and stops at the last', () => {
+  it('draws the first rows, adds more as the end comes near and stops at the last', { tags: ['boundary'] }, () => {
     expect(items()).toHaveLength(60);
     act(() => observers.at(-1)!.fire());
     expect(items()).toHaveLength(120);
@@ -156,7 +156,7 @@ describe('a long book', () => {
     expect(document.querySelector('.pb-list__more')).toBeNull();
   });
 
-  it('starts again from the first rows on a new search, and finds words not drawn yet', () => {
+  it('starts again from the first rows on a new search, and finds words not drawn yet', { tags: ['state-transition'] }, () => {
     act(() => observers.at(-1)!.fire());
     fireEvent.change(screen.getByTestId('pb-search'), { target: { value: 'tag129' } });
     expect(items()).toEqual(['tag129']);

@@ -22,7 +22,7 @@ beforeEach(() => useCanvas.setState(initial, true));
 afterEach(cleanup);
 
 describe('the ready-made poses dialog', () => {
-  it('lists the groups and categories on the left, starting with the compositions', () => {
+  it('lists the groups and categories on the left, starting with the compositions', { tags: ['scenario'] }, () => {
     openDialog();
     for (const g of POSE_GROUPS) expect(screen.getByText(t(g.label))).toBeTruthy();
     for (const c of POSE_CATEGORIES) expect(screen.getByTestId(`canvas-pose-category-${c.id}`)).toBeTruthy();
@@ -30,7 +30,7 @@ describe('the ready-made poses dialog', () => {
     expect(screen.getByTestId('canvas-pose-preset-bustUp')).toBeTruthy();
   });
 
-  it('shows each pose as a drawn figure with its name, and switches category', () => {
+  it('shows each pose as a drawn figure with its name, and switches category', { tags: ['state-transition'] }, () => {
     openDialog();
     const card = screen.getByTestId('canvas-pose-preset-bustUp');
     expect(card.querySelector('svg line')).not.toBeNull();
@@ -40,7 +40,7 @@ describe('the ready-made poses dialog', () => {
     expect(screen.getByTestId('canvas-pose-preset-highKick').querySelector('svg')).not.toBeNull();
   });
 
-  it('puts the chosen pose on a new layer and closes', () => {
+  it('puts the chosen pose on a new layer and closes', { tags: ['scenario'] }, () => {
     openDialog();
     fireEvent.click(screen.getByTestId('canvas-pose-category-panel.two'));
     fireEvent.click(screen.getByTestId('canvas-pose-preset-faceToFace'));

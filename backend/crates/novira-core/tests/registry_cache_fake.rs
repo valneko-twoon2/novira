@@ -60,6 +60,7 @@ fn first_name(list: &[novira_core::comfy::registry::RegistryNode]) -> &str {
     list.first().map(|n| n.id.as_str()).unwrap_or("")
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn the_registry_list_survives_a_restart_and_is_freshened_in_the_background() {
     site();

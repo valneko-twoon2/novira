@@ -59,7 +59,7 @@ const show = (m = model(), onClose = vi.fn()) => {
 };
 
 describe('DetailDrawer', () => {
-  it('shows the facts, the files of the first version, the trigger words, the tags and the description', () => {
+  it('shows the facts, the files of the first version, the trigger words, the tags and the description', { tags: ['boundary', 'scenario'] }, () => {
     show();
     expect(screen.getByRole('heading', { name: 'Sunny XL' })).toBeTruthy();
     expect(screen.getByText(t('browse.detail.by', { creator: 'someone' }))).toBeTruthy();
@@ -72,13 +72,13 @@ describe('DetailDrawer', () => {
     expect(document.querySelectorAll('.browse-thumbs button')).toHaveLength(3);
   });
 
-  it('hides the rating when nobody rated, and the trigger words when there are none', () => {
+  it('hides the rating when nobody rated, and the trigger words when there are none', { tags: ['boundary', 'scenario'] }, () => {
     show(model({ ratingCount: 0, versions: [{ id: 'v2', name: 'v2.0', baseModel: 'SDXL 1.0', createdAt: 1, triggerWords: [], files: [file('f3')] } as never] }));
     expect(document.querySelector('.browse-drawer__rating')).toBeNull();
     expect(screen.queryByText(t('browse.detail.triggerWords'))).toBeNull();
   });
 
-  it('picks another picture from the thumbnails', () => {
+  it('picks another picture from the thumbnails', { tags: ['scenario'] }, () => {
     show();
     const thumbs = document.querySelectorAll('.browse-thumbs button');
     fireEvent.click(thumbs[2]!);
@@ -86,7 +86,7 @@ describe('DetailDrawer', () => {
     expect(thumbs[0]!.className).toBe('');
   });
 
-  it('closes with the button, with Escape and with a press outside, but not with a press inside or in a dialog', () => {
+  it('closes with the button, with Escape and with a press outside, but not with a press inside or in a dialog', { tags: ['state-transition', 'scenario'] }, () => {
     const onClose = show();
     fireEvent.click(screen.getByLabelText(t('browse.detail.close')));
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -109,7 +109,7 @@ describe('DetailDrawer', () => {
     dialog.remove();
   });
 
-  it('opens the model page, only reporting it in the browser mock', () => {
+  it('opens the model page, only reporting it in the browser mock', { tags: ['state-transition', 'scenario'] }, () => {
     show();
     fireEvent.click(screen.getByText(t('browse.detail.openCivitai')));
     expect(useToasts.getState().toasts.at(-1)?.status).toBe('info');
@@ -121,14 +121,14 @@ describe('DetailDrawer', () => {
 });
 
 describe('DetailDrawer example settings', () => {
-  it('asks for the examples of the version shown', async () => {
+  it('asks for the examples of the version shown', { tags: ['scenario'] }, async () => {
     const ask = vi.spyOn(backend, 'civitaiSamples').mockResolvedValue([]);
     show();
     await screen.findByText(t('browse.samples.none'));
     expect(ask).toHaveBeenCalledExactlyOnceWith('v1', false);
   });
 
-  it('is not shown, and nothing is asked, for a Hugging Face repository', () => {
+  it('is not shown, and nothing is asked, for a Hugging Face repository', { tags: ['boundary', 'scenario'] }, () => {
     const ask = vi.spyOn(backend, 'civitaiSamples').mockResolvedValue([]);
     show(model({ source: 'huggingface' }));
     expect(screen.queryByTestId('browse-samples')).toBeNull();

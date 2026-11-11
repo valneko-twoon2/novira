@@ -60,7 +60,7 @@ afterEach(() => {
 });
 
 describe('the words of a balloon', () => {
-  it('takes the typing at once, and writes the words', () => {
+  it('takes the typing at once, and writes the words', { tags: ['scenario'] }, () => {
     startUp();
     const field = screen.getByLabelText(t('comic.bubble.text')) as HTMLTextAreaElement;
     expect(document.activeElement).toBe(field);
@@ -68,7 +68,7 @@ describe('the words of a balloon', () => {
     expect(bubble().text).toBe('Hi there');
   });
 
-  it('closes the editor on Escape in the field, and keeps other keys from reaching the page', () => {
+  it('closes the editor on Escape in the field, and keeps other keys from reaching the page', { tags: ['scenario'] }, () => {
     startUp();
     const pageKey = vi.fn();
     window.addEventListener('keydown', pageKey);
@@ -82,7 +82,7 @@ describe('the words of a balloon', () => {
     window.removeEventListener('keydown', pageKey);
   });
 
-  it('wraps the selected words in bold marks, and takes the marks off again', () => {
+  it('wraps the selected words in bold marks, and takes the marks off again', { tags: ['regression'] }, () => {
     startUp();
     act(() => useComic.getState().updateBubble(panelId, bubbleId, { text: 'hello world' }));
     const field = screen.getByLabelText(t('comic.bubble.text')) as HTMLTextAreaElement;
@@ -97,7 +97,7 @@ describe('the words of a balloon', () => {
     expect(bubble().text).toBe('hello world');
   });
 
-  it('wraps the selected words in emphasis dots', () => {
+  it('wraps the selected words in emphasis dots', { tags: ['scenario'] }, () => {
     startUp();
     act(() => useComic.getState().updateBubble(panelId, bubbleId, { text: 'abc' }));
     (screen.getByLabelText(t('comic.bubble.text')) as HTMLTextAreaElement).setSelectionRange(1, 2);
@@ -106,14 +106,14 @@ describe('the words of a balloon', () => {
     expect(bubble().text).toContain('b');
   });
 
-  it('keeps the field selection when a mark button is pressed (no focus change)', () => {
+  it('keeps the field selection when a mark button is pressed (no focus change)', { tags: ['scenario'] }, () => {
     startUp();
     const event = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
     screen.getByTestId('comic-bubble-bold').dispatchEvent(event);
     expect(event.defaultPrevented).toBe(true);
   });
 
-  it('picks a font', async () => {
+  it('picks a font', { tags: ['scenario'] }, async () => {
     startUp();
     fireEvent.click(screen.getByTestId('comic-bubble-font'));
     fireEvent.click((await screen.findAllByTestId('font-option'))[1]!);
@@ -122,7 +122,7 @@ describe('the words of a balloon', () => {
 });
 
 describe('the shape and the look', () => {
-  it('writes the toggles: vertical, tail, dark', () => {
+  it('writes the toggles: vertical, tail, dark', { tags: ['state-transition'] }, () => {
     startUp();
     fireEvent.click(screen.getByTestId('comic-bubble-vertical'));
     expect(bubble().vertical).toBe(true);
@@ -134,7 +134,7 @@ describe('the shape and the look', () => {
     expect(bubble().dark).toBe(true);
   });
 
-  it('writes the sliders of the look, kept within their ranges', () => {
+  it('writes the sliders of the look, kept within their ranges', { tags: ['scenario'] }, () => {
     startUp();
     setNum(t('comic.bubble.size'), '1.5');
     expect(bubble().scale).toBeCloseTo(1.5);
@@ -154,13 +154,13 @@ describe('the shape and the look', () => {
     expect(bubble().lineWidth).toBeLessThanOrEqual(4);
   });
 
-  it('changes the line from its list', () => {
+  it('changes the line from its list', { tags: ['scenario'] }, () => {
     startUp();
     choose(t('comic.bubble.lineLabel'), t('comic.bubble.line.double'));
     expect(bubble().line).toBe('double');
   });
 
-  it('offers spikes and depth only to shapes that have them, and the tail sliders only while there is a tail', () => {
+  it('offers spikes and depth only to shapes that have them, and the tail sliders only while there is a tail', { tags: ['scenario'] }, () => {
     startUp();
     expect(screen.queryByLabelText(t('comic.bubble.spikes'))).toBeNull();
     expect(screen.queryByLabelText(t('comic.bubble.depth'))).toBeNull();
@@ -174,7 +174,7 @@ describe('the shape and the look', () => {
     expect(bubble().depth).toBeCloseTo(0.3);
   });
 
-  it('brings the new look of a shape when the shape changes, and a tail when the new shape needs one', () => {
+  it('brings the new look of a shape when the shape changes, and a tail when the new shape needs one', { tags: ['scenario'] }, () => {
     startUp('caption');
     expect(bubble().tail).toBeNull();
     choose(t('comic.bubble.kindLabel'), t('comic.bubble.kind.shout'));
@@ -186,7 +186,7 @@ describe('the shape and the look', () => {
     expect(bubble().line).toBe('none');
   });
 
-  it('asks for the words to be fitted', () => {
+  it('asks for the words to be fitted', { tags: ['scenario'] }, () => {
     startUp();
     fireEvent.click(screen.getByTestId('comic-bubble-fit'));
     expect(useComic.getState().fittingBubbleIds).toContain(bubbleId);
@@ -194,7 +194,7 @@ describe('the shape and the look', () => {
 });
 
 describe('the outline', () => {
-  it('starts and stops shaping by hand, giving the balloon an outline to shape', () => {
+  it('starts and stops shaping by hand, giving the balloon an outline to shape', { tags: ['scenario'] }, () => {
     startUp();
     expect(bubble().outline ?? null).toBeNull();
     fireEvent.click(screen.getByTestId('comic-bubble-shape'));
@@ -206,7 +206,7 @@ describe('the outline', () => {
     expect(bubble().outline).not.toBeNull();
   });
 
-  it('smooths the outline, and resets it', () => {
+  it('smooths the outline, and resets it', { tags: ['scenario'] }, () => {
     startUp();
     fireEvent.click(screen.getByTestId('comic-bubble-shape'));
     const smooth = bubble().outline!.smooth;
@@ -220,7 +220,7 @@ describe('the outline', () => {
 });
 
 describe('lettering and stamps', () => {
-  it('shows a rotation slider instead of the look for lettering, and no tail button', () => {
+  it('shows a rotation slider instead of the look for lettering, and no tail button', { tags: ['scenario'] }, () => {
     startUp('sfx');
     expect(screen.queryByTestId('comic-bubble-tail-toggle')).toBeNull();
     expect(screen.queryByTestId('comic-bubble-dark')).toBeNull();
@@ -228,7 +228,7 @@ describe('lettering and stamps', () => {
     expect(bubble().rotation).toBe(30);
   });
 
-  it('shows the stamp picker for a stamp, which holds the stamp id as its words, and no words field', () => {
+  it('shows the stamp picker for a stamp, which holds the stamp id as its words, and no words field', { tags: ['scenario'] }, () => {
     startUp('stamp');
     expect(screen.queryByLabelText(t('comic.bubble.text'))).toBeNull();
     expect(screen.queryByTestId('comic-bubble-vertical')).toBeNull();
@@ -238,7 +238,7 @@ describe('lettering and stamps', () => {
     expect(bubble().text).not.toBe('');
   });
 
-  it('gives a balloon turned into a stamp a stamp, and clears the id when it stops being one', () => {
+  it('gives a balloon turned into a stamp a stamp, and clears the id when it stops being one', { tags: ['scenario'] }, () => {
     startUp('speech');
     act(() => useComic.getState().updateBubble(panelId, bubbleId, { text: 'words' }));
     choose(t('comic.bubble.kindLabel'), t('comic.bubble.kind.stamp'));
@@ -249,14 +249,14 @@ describe('lettering and stamps', () => {
 });
 
 describe('closing and removing', () => {
-  it('closes with its button', () => {
+  it('closes with its button', { tags: ['scenario'] }, () => {
     startUp();
     act(() => useComic.getState().openBubbleEditor(panelId, bubbleId));
     fireEvent.click(screen.getByTestId('comic-bubble-editor-close'));
     expect(useComic.getState().bubbleEditor).toBe(false);
   });
 
-  it('removes the balloon', () => {
+  it('removes the balloon', { tags: ['scenario'] }, () => {
     startUp();
     fireEvent.click(screen.getByTestId('comic-bubble-remove'));
     expect(findPanel(useComic.getState().projects, panelId)!.panel.bubbles).toHaveLength(0);

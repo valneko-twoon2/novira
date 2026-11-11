@@ -20,7 +20,7 @@ function withRich(style: Partial<TextStyle> = {}, rich: object = {}): TextLayer 
 }
 
 describe('AI fills', () => {
-  it('draws the picture in place of the fill, scaled with the font size, and keeps the outline drawn from the style', () => {
+  it('draws the picture in place of the fill, scaled with the font size, and keeps the outline drawn from the style', { tags: ['condition'] }, () => {
     const rec = recordingContext();
     const layer = withRich({ stroke: { color: '#111111', width: 3 } });
     renderScene(rec.ctx, scene([layer]), null, 1, undefined, pictures);
@@ -33,7 +33,7 @@ describe('AI fills', () => {
     expect(bigger.of('drawImage')).toEqual([[picture, -200, -80, 400, 160]]);
   });
 
-  it('falls back to the plain fill when the picture is not loaded or the lettering changed since it was made', () => {
+  it('falls back to the plain fill when the picture is not loaded or the lettering changed since it was made', { tags: ['condition'] }, () => {
     const notLoaded = recordingContext();
     renderScene(notLoaded.ctx, scene([withRich()]), null, 1, undefined, new Map());
     expect(notLoaded.of('drawImage')).toHaveLength(0);
@@ -49,7 +49,7 @@ describe('AI fills', () => {
     expect(none.of('drawImage')).toHaveLength(0);
   });
 
-  it('draws the picture for a layer with no outline too, so the shadow still has a shape', () => {
+  it('draws the picture for a layer with no outline too, so the shadow still has a shape', { tags: ['condition'] }, () => {
     const rec = recordingContext();
     renderScene(rec.ctx, scene([withRich({ stroke: null, outline: null, shadow: { color: '#000000', blur: 4, offsetX: 2, offsetY: 3 } })]), null, 1, undefined, pictures);
     expect(rec.of('drawImage')).toHaveLength(1);
@@ -57,7 +57,7 @@ describe('AI fills', () => {
 });
 
 describe('the letters alone', () => {
-  it('draws the glyphs in white at the middle of the canvas, with no outline', () => {
+  it('draws the glyphs in white at the middle of the canvas, with no outline', { tags: ['condition'] }, () => {
     const rec = recordingContext();
     const layer = text('NOVIRA', { stroke: { color: '#111111', width: 3 }, shadow: { color: '#000000', blur: 4, offsetX: 2, offsetY: 3 } });
     drawWhiteGlyphs(rec.ctx, layer, 2);
@@ -67,7 +67,7 @@ describe('the letters alone', () => {
     expect(rec.of('scale')[0]).toEqual([2, 2]);
   });
 
-  it('measures the letters without the outline padding', () => {
+  it('measures the letters without the outline padding', { tags: ['condition'] }, () => {
     const rec = recordingContext();
     const layer = text('NOVIRA', { stroke: { color: '#111111', width: 6 } });
     const letters = letterHalfSize(rec.ctx, layer);

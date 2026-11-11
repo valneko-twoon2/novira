@@ -694,6 +694,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn the_mode_picks_the_model() {
         assert_eq!(
@@ -706,6 +707,7 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn installed_needs_the_libraries_and_both_models() {
         let data = tempfile::tempdir().unwrap();
@@ -726,6 +728,7 @@ mod tests {
         assert_eq!(disk_status(data.path(), &models), PackStatus::Ready);
     }
 
+    // tags: condition
     #[test]
     fn voice_models_in_a_shared_root_count_and_are_loaded_from_there() {
         let data = tempfile::tempdir().unwrap();
@@ -761,6 +764,7 @@ mod tests {
         );
     }
 
+    // tags: scenario
     #[test]
     fn the_request_line_carries_everything_the_worker_needs() {
         let v = request_json(
@@ -785,6 +789,7 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn libraries_come_from_the_pip_report_without_the_demo_extras() {
         let report = json!({"install": [
@@ -805,6 +810,7 @@ mod tests {
         assert!(libraries_from_report(&json!({})).is_empty());
     }
 
+    // tags: equivalence
     #[test]
     fn only_model_files_are_downloaded() {
         let tree = json!([

@@ -39,12 +39,12 @@ afterEach(() => {
 const panelOf = () => findPanel(useComic.getState().projects, panelId)!.panel;
 
 describe('ready-made poses in a comic panel', () => {
-  it('finds a preset of the canvas list by its id, and none for an unknown id', () => {
+  it('finds a preset of the canvas list by its id, and none for an unknown id', { tags: ['error-guessing', 'boundary'] }, () => {
     expect(findPosePreset(POSE_PRESETS[0]!.id)).toBe(POSE_PRESETS[0]);
     expect(findPosePreset('no-such-pose')).toBeNull();
   });
 
-  it('puts a single-person preset into the panel as one pose, with its control picture', async () => {
+  it('puts a single-person preset into the panel as one pose, with its control picture', { tags: ['boundary', 'state-transition'] }, async () => {
     const preset = POSE_PRESETS.find((p) => !p.composed)!;
     expect(await putPosePreset(panelId, preset.id, 512, 768)).toBe(true);
     const panel = panelOf();
@@ -58,14 +58,14 @@ describe('ready-made poses in a comic panel', () => {
     expect(vi.mocked(backend.uploadImage).mock.calls[0]![1]).toMatchObject({ category: 'control' });
   });
 
-  it('puts every person of a composition into the panel', async () => {
+  it('puts every person of a composition into the panel', { tags: ['equivalence'] }, async () => {
     const composition = POSE_PRESETS.find((p) => p.composed && p.people.length > 1)!;
     expect(composition).toBeDefined();
     expect(await putPosePreset(panelId, composition.id, 1024, 1024)).toBe(true);
     expect(panelOf().poses).toHaveLength(composition.people.length);
   });
 
-  it('is not ready until the control picture of a pose being drawn is in the panel', async () => {
+  it('is not ready until the control picture of a pose being drawn is in the panel', { tags: ['condition'] }, async () => {
     let upload: (image: ImageDTO) => void = () => undefined;
     vi.mocked(backend.uploadImage).mockReturnValue(new Promise<ImageDTO>((resolve) => (upload = resolve)));
     const put = putPosePeople(panelId, [{ x: 0.3 }, { x: 0.7, back: true }], 512, 768);
@@ -81,13 +81,13 @@ describe('ready-made poses in a comic panel', () => {
     expect(panelOf().poses).toHaveLength(2);
   });
 
-  it('becomes ready even when the picture cannot be uploaded', async () => {
+  it('becomes ready even when the picture cannot be uploaded', { tags: ['error-guessing', 'state-transition'] }, async () => {
     vi.mocked(backend.uploadImage).mockRejectedValue(new Error('offline'));
     await expect(putPosePeople(panelId, [{}], 512, 768)).rejects.toThrow('offline');
     await posesReady();
   });
 
-  it('does nothing for an unknown preset', async () => {
+  it('does nothing for an unknown preset', { tags: ['error-guessing', 'state-transition'] }, async () => {
     expect(await putPosePreset(panelId, 'no-such-pose', 512, 512)).toBe(false);
     expect(backend.uploadImage).not.toHaveBeenCalled();
     expect(panelOf().poses).toEqual([]);

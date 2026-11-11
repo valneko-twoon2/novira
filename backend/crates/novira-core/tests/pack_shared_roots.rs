@@ -68,6 +68,7 @@ fn walk(dir: &Path) -> Vec<PathBuf> {
     out
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn packs_in_a_shared_root_are_ready_and_comfy_is_told_where_they_are() {
     let data = tempfile::tempdir().unwrap();
@@ -97,6 +98,7 @@ async fn packs_in_a_shared_root_are_ready_and_comfy_is_told_where_they_are() {
     );
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn installing_a_pack_that_is_already_shared_downloads_nothing_and_writes_nothing_there() {
     let data = tempfile::tempdir().unwrap();
@@ -122,6 +124,7 @@ async fn installing_a_pack_that_is_already_shared_downloads_nothing_and_writes_n
     assert!(!own.exists());
 }
 
+// tags: state-transition, decision-table
 #[tokio::test]
 async fn the_voice_pack_is_ready_when_the_libraries_are_local_and_the_models_are_shared() {
     let data = tempfile::tempdir().unwrap();

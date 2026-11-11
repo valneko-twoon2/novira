@@ -76,6 +76,7 @@ fn pip_script(report_json: &str) -> Vec<String> {
 
 // Choosing the interpreter ----------------------------------------------------------------------------------------
 
+// tags: decision-table
 #[test]
 fn the_explicit_python_wins_but_only_when_it_exists() {
     let dir = tempfile::tempdir().unwrap();
@@ -87,6 +88,7 @@ fn the_explicit_python_wins_but_only_when_it_exists() {
 
 // Installing the libraries ----------------------------------------------------------------------------------------
 
+// tags: state-transition, decision-table
 #[tokio::test]
 async fn install_needs_the_image_engines_python() {
     let data = tempfile::tempdir().unwrap();
@@ -101,6 +103,7 @@ async fn install_needs_the_image_engines_python() {
     assert!(seen.is_empty());
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn install_pins_the_libraries_from_the_pip_report_and_marks_them_ready() {
     let data = tempfile::tempdir().unwrap();
@@ -129,6 +132,7 @@ async fn install_pins_the_libraries_from_the_pip_report_and_marks_them_ready() {
     assert_eq!(disk_status(data.path(), &models), PackStatus::Ready);
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn install_is_a_no_op_when_everything_is_in_place() {
     let data = tempfile::tempdir().unwrap();
@@ -143,6 +147,7 @@ async fn install_is_a_no_op_when_everything_is_in_place() {
     assert!(seen.is_empty());
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn install_stops_when_pip_does_not_know_qwen_tts() {
     let data = tempfile::tempdir().unwrap();
@@ -158,6 +163,7 @@ async fn install_stops_when_pip_does_not_know_qwen_tts() {
     assert!(!site_dir(data.path()).join(".ready").exists());
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_failing_pip_reports_the_last_lines_of_its_error() {
     let data = tempfile::tempdir().unwrap();
@@ -182,6 +188,7 @@ async fn a_failing_pip_reports_the_last_lines_of_its_error() {
     assert!(!site_dir(data.path()).join(".ready").exists());
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn install_can_be_cancelled_before_pip_answers() {
     let data = tempfile::tempdir().unwrap();
@@ -194,6 +201,7 @@ async fn install_can_be_cancelled_before_pip_answers() {
     assert_eq!(result, Err("cancelled".to_string()));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_python_that_cannot_run_is_reported() {
     let data = tempfile::tempdir().unwrap();
@@ -241,6 +249,7 @@ fn voice_in(data: &Path, py: &Path) -> (QwenVoice, PathBuf) {
     )
 }
 
+// tags: decision-table
 #[tokio::test]
 async fn the_worker_answers_each_request_and_the_length_comes_back() {
     let data = tempfile::tempdir().unwrap();
@@ -266,6 +275,7 @@ async fn the_worker_answers_each_request_and_the_length_comes_back() {
     voice.shutdown();
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_failed_synthesis_gives_the_workers_error() {
     let data = tempfile::tempdir().unwrap();
@@ -283,6 +293,7 @@ async fn a_failed_synthesis_gives_the_workers_error() {
     voice.shutdown();
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn an_error_without_text_gets_a_general_message() {
     let data = tempfile::tempdir().unwrap();
@@ -300,6 +311,7 @@ async fn an_error_without_text_gets_a_general_message() {
     voice.shutdown();
 }
 
+// tags: scenario
 #[tokio::test]
 async fn lines_without_the_marker_and_answers_to_other_requests_are_skipped() {
     let data = tempfile::tempdir().unwrap();
@@ -319,6 +331,7 @@ async fn lines_without_the_marker_and_answers_to_other_requests_are_skipped() {
     voice.shutdown();
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_worker_that_dies_is_reported_with_the_log_hint() {
     let data = tempfile::tempdir().unwrap();
@@ -332,6 +345,7 @@ async fn a_worker_that_dies_is_reported_with_the_log_hint() {
     assert!(err.contains("voice.log"), "{err}");
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_worker_that_starts_with_something_else_is_refused() {
     let data = tempfile::tempdir().unwrap();
@@ -347,6 +361,7 @@ async fn a_worker_that_starts_with_something_else_is_refused() {
     assert!(err.contains("Unexpected start-up message"), "{err}");
 }
 
+// tags: state-transition, decision-table
 #[tokio::test]
 async fn cancelling_while_the_worker_is_busy_stops_it_and_the_next_request_starts_a_new_one() {
     let data = tempfile::tempdir().unwrap();
@@ -383,6 +398,7 @@ async fn cancelling_while_the_worker_is_busy_stops_it_and_the_next_request_start
     voice.shutdown();
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn speaking_without_python_or_without_the_install_says_what_is_missing() {
     let data = tempfile::tempdir().unwrap();

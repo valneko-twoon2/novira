@@ -23,7 +23,7 @@ describe('applying a character', () => {
     useToasts.setState({ toasts: [] });
   });
 
-  it('chooses the plain adapter before a face adapter', () => {
+  it('chooses the plain adapter before a face adapter', { tags: ['condition'] }, () => {
     expect(defaultRefModelKey('main-xl')).toBe('plain');
     useModels.getState().setModels([main, adapter('face', 'ip-adapter-plus-face_sdxl_vit-h')]);
     expect(defaultRefModelKey('main-xl')).toBe('face');
@@ -31,7 +31,7 @@ describe('applying a character', () => {
     expect(defaultRefModelKey('main-xl')).toBeNull();
   });
 
-  it('adds the picture as a reference image with the saved weight and puts the words first', () => {
+  it('adds the picture as a reference image with the saved weight and puts the words first', { tags: ['condition'] }, () => {
     const id = useCharacters.getState().add('Mia', { imageNames: ['girl.png'], weight: 0.55, tags: 'brown hair, blue skirt' });
     expect(applyCharacter(id)).toEqual({ cfgLowered: true, used: 1, capped: 0, missing: 0, lora: 'none' });
     const { refImages, positivePrompt } = useParams.getState();
@@ -41,7 +41,7 @@ describe('applying a character', () => {
     expect(useCharacters.getState().selectedId).toBe(id);
   });
 
-  it('does not add the picture or the words a second time, and turns a disabled reference back on', () => {
+  it('does not add the picture or the words a second time, and turns a disabled reference back on', { tags: ['condition'] }, () => {
     const id = useCharacters.getState().add('Mia', { imageNames: ['girl.png'], weight: 0.5, tags: 'brown hair' });
     applyCharacter(id);
     useParams.getState().updateRefImage(useParams.getState().refImages[0]!.id, { isEnabled: false, weight: 1 });
@@ -52,7 +52,7 @@ describe('applying a character', () => {
     expect(positivePrompt).toBe('brown hair, sitting in a cafe');
   });
 
-  it('lowers a high CFG scale to the one references need, and leaves a low one alone', () => {
+  it('lowers a high CFG scale to the one references need, and leaves a low one alone', { tags: ['boundary'] }, () => {
     const id = useCharacters.getState().add('Mia', { imageNames: ['girl.png'], weight: 0.6, tags: '' });
     expect(applyCharacter(id)).toMatchObject({ cfgLowered: true });
     expect(useParams.getState().cfgScale).toBe(4.5);
@@ -61,13 +61,13 @@ describe('applying a character', () => {
     expect(useParams.getState().cfgScale).toBe(3);
   });
 
-  it('leaves the prompt alone when the character has no words', () => {
+  it('leaves the prompt alone when the character has no words', { tags: ['condition'] }, () => {
     const id = useCharacters.getState().add('Mia', { imageNames: ['girl.png'], weight: 0.6, tags: '  ' });
     applyCharacter(id);
     expect(useParams.getState().positivePrompt).toBe('sitting in a cafe');
   });
 
-  it('changes nothing and says so when the picture was deleted, or the character is unknown', () => {
+  it('changes nothing and says so when the picture was deleted, or the character is unknown', { tags: ['error-guessing'] }, () => {
     const id = useCharacters.getState().add('Gone', { imageNames: ['deleted.png'], weight: 0.6, tags: 'x' });
     expect(applyCharacter(id)).toBeNull();
     expect(useParams.getState().refImages).toEqual([]);
@@ -88,7 +88,7 @@ describe('a character with several pictures', () => {
   });
   const names = (n: number) => Array.from({ length: n }, (_, i) => `p${i + 1}.png`);
 
-  it('adds every picture as a reference image and shares the weight among them', () => {
+  it('adds every picture as a reference image and shares the weight among them', { tags: ['condition'] }, () => {
     const id = useCharacters.getState().add('Mia', { imageNames: names(4), weight: 0.6, tags: '' });
     expect(applyCharacter(id)).toEqual({ cfgLowered: false, used: 4, capped: 0, missing: 0, lora: 'none' });
     const refs = useParams.getState().refImages;
@@ -96,20 +96,20 @@ describe('a character with several pictures', () => {
     expect(refs.every((r) => r.weight === 0.3)).toBe(true);
   });
 
-  it('uses the first pictures when there are more than the reference images allow, and says how many were left out', () => {
+  it('uses the first pictures when there are more than the reference images allow, and says how many were left out', { tags: ['boundary'] }, () => {
     const id = useCharacters.getState().add('Mia', { imageNames: names(10), weight: 0.6, tags: '' });
     expect(applyCharacter(id)).toMatchObject({ used: 8, capped: 2 });
     expect(useParams.getState().refImages).toHaveLength(8);
   });
 
-  it('leaves room for the reference images the character does not own', () => {
+  it('leaves room for the reference images the character does not own', { tags: ['boundary'] }, () => {
     useParams.getState().addRefImage({ imageName: 'other.png', imageUrl: 'blob:other', modelKey: 'plain' });
     const id = useCharacters.getState().add('Mia', { imageNames: names(8), weight: 0.6, tags: '' });
     expect(applyCharacter(id)).toMatchObject({ used: 7, capped: 1 });
     expect(useParams.getState().refImages).toHaveLength(8);
   });
 
-  it('refuses when the other reference images already fill the limit', () => {
+  it('refuses when the other reference images already fill the limit', { tags: ['boundary'] }, () => {
     for (let i = 0; i < 8; i++) useParams.getState().addRefImage({ imageName: `o${i}.png`, imageUrl: `blob:o${i}`, modelKey: 'plain' });
     const id = useCharacters.getState().add('Mia', { imageNames: names(2), weight: 0.6, tags: '' });
     expect(applyCharacter(id)).toBeNull();
@@ -117,7 +117,7 @@ describe('a character with several pictures', () => {
     expect(useToasts.getState().toasts[0]?.status).toBe('error');
   });
 
-  it('uses the pictures that are still there and counts the ones that are gone', () => {
+  it('uses the pictures that are still there and counts the ones that are gone', { tags: ['error-guessing'] }, () => {
     const id = useCharacters.getState().add('Mia', { imageNames: ['p1.png', 'gone.png', 'p2.png'], weight: 0.6, tags: '' });
     expect(applyCharacter(id)).toMatchObject({ used: 2, missing: 1 });
     expect(useParams.getState().refImages.map((r) => r.imageName)).toEqual(['p1.png', 'p2.png']);
@@ -133,7 +133,7 @@ describe('a character with a LoRA', () => {
     useCharacters.setState({ presets: [], selectedId: null });
   });
 
-  it('adds the LoRA at its weight and the trigger word in front, next to the reference pictures', () => {
+  it('adds the LoRA at its weight and the trigger word in front, next to the reference pictures', { tags: ['condition'] }, () => {
     const id = useCharacters.getState().add('Mia', { imageNames: ['girl.png'], weight: 0.6, tags: 'brown hair', lora: { key: 'lora-mia', weight: 0.8, trigger: 'mia_chr', enabled: true } });
     expect(applyCharacter(id)).toMatchObject({ used: 1, lora: 'used' });
     const { loras, refImages, positivePrompt } = useParams.getState();
@@ -145,7 +145,7 @@ describe('a character with a LoRA', () => {
     expect(useParams.getState().positivePrompt).toBe('mia_chr, brown hair, sitting in a cafe');
   });
 
-  it('leaves the LoRA out when it is switched off or no longer installed', () => {
+  it('leaves the LoRA out when it is switched off or no longer installed', { tags: ['decision-table'] }, () => {
     const off = useCharacters.getState().add('Off', { imageNames: ['girl.png'], weight: 0.6, tags: '', lora: { key: 'lora-mia', weight: 0.8, trigger: 'mia_chr', enabled: false } });
     expect(applyCharacter(off)).toMatchObject({ lora: 'off' });
     const gone = useCharacters.getState().add('Gone', { imageNames: ['girl.png'], weight: 0.6, tags: '', lora: { key: 'lora-deleted', weight: 0.8, trigger: 'gone_chr', enabled: true } });

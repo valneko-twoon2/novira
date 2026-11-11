@@ -62,7 +62,7 @@ afterEach(() => {
 });
 
 describe('check for a watermark dialog', () => {
-  it('checks a picked file and leads to the gallery original', async () => {
+  it('checks a picked file and leads to the gallery original', { tags: ['scenario'] }, async () => {
     const pick = vi.spyOn(backend, 'checkWatermarkFile').mockResolvedValue(marked);
     const select = vi.spyOn(useGallery.getState(), 'setSelection');
     mount();
@@ -78,7 +78,7 @@ describe('check for a watermark dialog', () => {
     expect(useWatermarkCheckDialog.getState().open).toBe(false);
   });
 
-  it('checks a gallery picture at once and says when nothing is there', async () => {
+  it('checks a gallery picture at once and says when nothing is there', { tags: ['scenario'] }, async () => {
     const check = vi.spyOn(backend, 'checkWatermarkImage').mockResolvedValue({ ...nothing, fileName: 'b.png' });
     mount();
     useWatermarkCheckDialog.getState().show('b.png');
@@ -88,7 +88,7 @@ describe('check for a watermark dialog', () => {
     expect(screen.getByTestId('wm-check-credentials').textContent).toContain(t('share.check.no'));
   });
 
-  it('says what it could not check and keeps the last result when the file dialog is cancelled', async () => {
+  it('says what it could not check and keeps the last result when the file dialog is cancelled', { tags: ['error-guessing'] }, async () => {
     const pick = vi
       .spyOn(backend, 'checkWatermarkFile')
       .mockResolvedValueOnce({ ...nothing, watermarkChecked: false, credentialsPresent: true, credentialsValid: false, originalName: 'gone.png' })
@@ -103,7 +103,7 @@ describe('check for a watermark dialog', () => {
     expect(screen.getByTestId('wm-check-result')).toBeTruthy();
   });
 
-  it('names a deleted original and an id this app does not know', async () => {
+  it('names a deleted original and an id this app does not know', { tags: ['scenario'] }, async () => {
     const pick = vi.spyOn(backend, 'checkWatermarkFile');
     mount();
     useWatermarkCheckDialog.getState().show();
@@ -115,7 +115,7 @@ describe('check for a watermark dialog', () => {
     await waitFor(() => expect(screen.getByTestId('wm-check-original').textContent).toContain(t('share.check.originalUnknown')));
   });
 
-  it('checks the gallery picture on the browser server but offers no file of this PC there', async () => {
+  it('checks the gallery picture on the browser server but offers no file of this PC there', { tags: ['scenario'] }, async () => {
     asBrowserServer();
     const check = vi.spyOn(backend, 'checkWatermarkImage').mockResolvedValue({ ...nothing, fileName: 'b.png' });
     const pick = vi.spyOn(backend, 'checkWatermarkFile');

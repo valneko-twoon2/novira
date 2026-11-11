@@ -10,7 +10,7 @@ beforeEach(() => useDownloads.setState({ entries: [] }));
 afterEach(() => vi.useRealTimers());
 
 describe('download list', () => {
-  it('keeps one entry per pack, updated in place, in the order they started', () => {
+  it('keeps one entry per pack, updated in place, in the order they started', { tags: ['condition'] }, () => {
     const { track } = useDownloads.getState();
     track(model(running));
     track(node({ state: 'installing', step: 'requirements' }));
@@ -20,14 +20,14 @@ describe('download list', () => {
     expect(entries[0]!.status).toMatchObject({ bytes: 9 });
   });
 
-  it('drops a pack that went back to missing (cancelled)', () => {
+  it('drops a pack that went back to missing (cancelled)', { tags: ['error-guessing'] }, () => {
     const { track } = useDownloads.getState();
     track(model(running));
     track(model({ state: 'missing', totalBytes: 10 }));
     expect(useDownloads.getState().entries).toEqual([]);
   });
 
-  it('clears finished and failed entries but not the ones still working', () => {
+  it('clears finished and failed entries but not the ones still working', { tags: ['error-guessing'] }, () => {
     const { track, clearFinished, dismiss } = useDownloads.getState();
     track(model(running));
     track(node({ state: 'error', message: 'boom' }));
@@ -37,7 +37,7 @@ describe('download list', () => {
     expect(useDownloads.getState().entries).toEqual([]);
   });
 
-  it('works out the time left from the speed of the file in progress', () => {
+  it('works out the time left from the speed of the file in progress', { tags: ['condition'] }, () => {
     vi.useFakeTimers();
     vi.setSystemTime(0);
     const file = (bytes: number, name = 'a.safetensors', index = 1): PackStatus => ({ state: 'downloading', file: name, index, count: 2, bytes, totalBytes: 1000 });

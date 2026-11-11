@@ -73,7 +73,7 @@ const stored = fc.oneof(
 
 describe('persisted stores load arbitrary stored text (fuzz)', () => {
   for (const [name, store] of STORES) {
-    it(`${name}: rehydrate never throws and keeps its actions`, async () => {
+    it(`${name}: rehydrate never throws and keeps its actions`, { tags: ['error-guessing'] }, async () => {
       const key = store.persist.getOptions().name!;
       const actions = Object.entries(store.getState()).filter(([, v]) => typeof v === 'function').map(([k]) => k);
       await fc.assert(
@@ -87,7 +87,7 @@ describe('persisted stores load arbitrary stored text (fuzz)', () => {
       );
     });
 
-    it(`${name}: text that is not JSON leaves the defaults alone`, async () => {
+    it(`${name}: text that is not JSON leaves the defaults alone`, { tags: ['error-guessing'] }, async () => {
       const key = store.persist.getOptions().name!;
       const before = snapshot(store.getState());
       await fc.assert(
@@ -115,7 +115,7 @@ describe('persisted stores load arbitrary stored text (fuzz)', () => {
   /** Saved objects that are one value, not a form: they gain no fields. */
   const VALUES: Record<string, string[]> = { canvas: ['fillColor'] };
   for (const [name, store] of STORES) {
-    it(`${name}: a saved object without a field added since loads that field's default`, async () => {
+    it(`${name}: a saved object without a field added since loads that field's default`, { tags: ['condition'] }, async () => {
       const { name: key, partialize, version } = store.persist.getOptions() as { name: string; partialize?: (s: object) => object; version?: number };
       const saved = (partialize ?? ((s: object) => s))(defaults.get(name)!) as Record<string, unknown>;
       const objects = Object.entries(saved).filter(([k, v]) => !!v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length > 0 && !VALUES[name]?.includes(k));
@@ -129,7 +129,7 @@ describe('persisted stores load arbitrary stored text (fuzz)', () => {
     });
   }
 
-  it('a text scene and the settings come back unchanged after save and load', async () => {
+  it('a text scene and the settings come back unchanged after save and load', { tags: ['condition'] }, async () => {
     const text = fc.string({ maxLength: 20 });
     await fc.assert(
       fc.asyncProperty(fc.array(fc.record({ text, x: fc.integer({ min: -500, max: 3000 }), y: fc.integer({ min: -500, max: 3000 }), vertical: fc.boolean() }), { maxLength: 5 }), fc.constantFrom('dark', 'light'), fc.integer({ min: 0, max: 500 }), async (layers, theme, delay) => {
@@ -160,13 +160,13 @@ describe('persisted stores load arbitrary stored text (fuzz)', () => {
     );
   });
 
-  it('really loads a valid saved state (so the cases above exercise the loader)', async () => {
+  it('really loads a valid saved state (so the cases above exercise the loader)', { tags: ['condition'] }, async () => {
     localStorage.setItem('novira.settings', JSON.stringify({ state: { theme: 'light' }, version: 0 }));
     await useSettings.persist.rehydrate();
     expect(useSettings.getState().theme).toBe('light');
   });
 
-  it('covers every persisted store (the list matches the stores that write to storage)', () => {
+  it('covers every persisted store (the list matches the stores that write to storage)', { tags: ['equivalence'] }, () => {
     const keys = STORES.map(([, s]) => s.persist.getOptions().name);
     expect(new Set(keys).size).toBe(STORES.length);
     expect(keys.every((k) => k?.startsWith('novira.'))).toBe(true);

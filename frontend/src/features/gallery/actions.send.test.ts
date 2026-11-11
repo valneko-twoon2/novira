@@ -28,7 +28,7 @@ afterEach(() => {
 });
 
 describe('sending a picture to another screen', () => {
-  it('imports it into the canvas, switches to the canvas view and says so', () => {
+  it('imports it into the canvas, switches to the canvas view and says so', { tags: ['scenario'] }, () => {
     const importImage = vi.spyOn(useCanvas.getState(), 'importImage').mockImplementation(() => undefined);
     const img = image('a');
     sendToCanvas(img, 'raster');
@@ -38,7 +38,7 @@ describe('sending a picture to another screen', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('makes it the first frame of an image-to-video clip on the generate tab', () => {
+  it('makes it the first frame of an image-to-video clip on the generate tab', { tags: ['scenario'] }, () => {
     useUi.getState().setTab('upscaling');
     sendToVideo(image('v'));
     expect(useVideo.getState().form.mode).toBe('image');
@@ -47,7 +47,7 @@ describe('sending a picture to another screen', () => {
     expect(useUi.getState().media).toBe('video');
   });
 
-  it('puts it behind the text editor at its own size, without leaving the generate tab', () => {
+  it('puts it behind the text editor at its own size, without leaving the generate tab', { tags: ['scenario'] }, () => {
     useUi.getState().setTab('generate');
     const setBackground = vi.spyOn(useTextEditor.getState(), 'setBackground').mockImplementation(() => undefined);
     sendToText(image('t'));
@@ -56,7 +56,7 @@ describe('sending a picture to another screen', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('opens the layers a picture was saved from in the text editor, as one undo step', () => {
+  it('opens the layers a picture was saved from in the text editor, as one undo step', { tags: ['scenario'] }, () => {
     useUi.getState().setTab('upscaling');
     const saved = { ...EMPTY_SCENE, layers: [newTextLayer(EMPTY_SCENE, 'Saved')] };
     useTextSources.setState({ sources: [{ imageName: 's.png', scene: saved }] });
@@ -71,7 +71,7 @@ describe('sending a picture to another screen', () => {
     expect(useTextEditor.getState().scene.layers).toHaveLength(0);
   });
 
-  it('does nothing for a picture whose layers are gone', () => {
+  it('does nothing for a picture whose layers are gone', { tags: ['error-guessing'] }, () => {
     useTextSources.setState({ sources: [] });
     useUi.getState().setTab('upscaling');
     useTextEditor.setState({ scene: { ...EMPTY_SCENE, layers: [] }, selectedId: null, past: [], future: [] });
@@ -81,7 +81,7 @@ describe('sending a picture to another screen', () => {
     expect(lastToast()).toBeUndefined();
   });
 
-  it('adds it as an image input of the workflow being edited', () => {
+  it('adds it as an image input of the workflow being edited', { tags: ['scenario'] }, () => {
     const add = vi.spyOn(useWorkflows.getState(), 'addImageInput').mockImplementation(() => undefined);
     const img = image('w');
     sendToWorkflow(img);
@@ -90,7 +90,7 @@ describe('sending a picture to another screen', () => {
 });
 
 describe('opening in a new tab', () => {
-  it('opens the picture URL in a browser window, which only the browser build offers', () => {
+  it('opens the picture URL in a browser window, which only the browser build offers', { tags: ['condition'] }, () => {
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
     expect(canOpenInNewTab()).toBe(true);
     openInNewTab(image('o'));
@@ -114,7 +114,7 @@ describe('copying a picture', () => {
   /** The picture the first write was given: a promise, settled when the picture has been read. */
   const givenItem = (write: ReturnType<typeof vi.fn>): Promise<Blob> => ((write.mock.calls[0]?.[0] ?? []) as Items)[0]?.items['image/png'] ?? Promise.reject(new Error('nothing was written'));
 
-  it('asks the clipboard at once, before the picture has been read, and reports success when it is on the clipboard', async () => {
+  it('asks the clipboard at once, before the picture has been read, and reports success when it is on the clipboard', { tags: ['scenario'] }, async () => {
     const write = stubClipboard();
     let release: (b: Blob) => void = () => undefined;
     vi.stubGlobal('fetch', vi.fn(() => new Promise((resolve) => (release = (b) => resolve({ ok: true, status: 200, blob: async () => b })))));
@@ -126,7 +126,7 @@ describe('copying a picture', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('puts nothing on the clipboard for a video or a sound, and says nothing', async () => {
+  it('puts nothing on the clipboard for a video or a sound, and says nothing', { tags: ['equivalence'] }, async () => {
     const write = stubClipboard();
     const fetchMock = answer(png());
     vi.stubGlobal('fetch', fetchMock);
@@ -136,7 +136,7 @@ describe('copying a picture', () => {
     expect(lastToast()).toBeUndefined();
   });
 
-  it('puts the stored PNG on the clipboard as it is, without decoding or encoding it', async () => {
+  it('puts the stored PNG on the clipboard as it is, without decoding or encoding it', { tags: ['scenario'] }, async () => {
     const write = stubClipboard();
     const stored = png('application/octet-stream');
     const fetchMock = answer(stored);
@@ -153,7 +153,7 @@ describe('copying a picture', () => {
     expect(bitmap).not.toHaveBeenCalled();
   });
 
-  it('converts a picture that is not a PNG, off the main thread', async () => {
+  it('converts a picture that is not a PNG, off the main thread', { tags: ['equivalence'] }, async () => {
     const write = stubClipboard();
     vi.stubGlobal('fetch', answer(jpeg()));
     const close = vi.fn();
@@ -168,7 +168,7 @@ describe('copying a picture', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('converts through a canvas on the page where there is no OffscreenCanvas', async () => {
+  it('converts through a canvas on the page where there is no OffscreenCanvas', { tags: ['condition'] }, async () => {
     const write = stubClipboard();
     vi.stubGlobal('fetch', answer(jpeg()));
     vi.stubGlobal('createImageBitmap', undefined);
@@ -187,7 +187,7 @@ describe('copying a picture', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('says the copy failed, with the reason, and writes the reason to the developer log, when the picture cannot be read', async () => {
+  it('says the copy failed, with the reason, and writes the reason to the developer log, when the picture cannot be read', { tags: ['error-guessing'] }, async () => {
     stubClipboard(vi.fn((items: Items) => (items[0]?.items['image/png'] ?? Promise.resolve()).then(() => undefined)));
     vi.stubGlobal('fetch', answer(new Blob([]), 404));
     await copyImage(image('gone'));
@@ -195,7 +195,7 @@ describe('copying a picture', () => {
     expect(useDevLog.getState().entries.at(-1)).toMatchObject({ level: 'error', source: 'gallery', message: expect.stringContaining('gone') });
   });
 
-  it('reports a clipboard that refuses the write, naming the browser error in the developer log', async () => {
+  it('reports a clipboard that refuses the write, naming the browser error in the developer log', { tags: ['error-guessing'] }, async () => {
     stubClipboard(vi.fn().mockRejectedValue(Object.assign(new Error('Document is not focused.'), { name: 'NotAllowedError' })));
     vi.stubGlobal('fetch', answer(png()));
     await copyImage(image('n'));
@@ -203,7 +203,7 @@ describe('copying a picture', () => {
     expect(useDevLog.getState().entries.at(-1)?.message).toContain('NotAllowedError');
   });
 
-  it('warns, and does not read the picture, where the browser has no picture clipboard', async () => {
+  it('warns, and does not read the picture, where the browser has no picture clipboard', { tags: ['error-guessing'] }, async () => {
     vi.stubGlobal('ClipboardItem', undefined);
     vi.stubGlobal('navigator', { clipboard: { write: vi.fn() } });
     const fetchMock = vi.fn();

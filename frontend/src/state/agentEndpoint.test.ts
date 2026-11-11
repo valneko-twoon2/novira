@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { addressHost, addressKind, ENDPOINT_PRESETS } from './agentEndpoint';
 
 describe('the address of an OpenAI-compatible server', () => {
-  it('tells this PC from another machine and plain http from https', () => {
+  it('tells this PC from another machine and plain http from https', { tags: ['condition'] }, () => {
     expect(addressKind('http://127.0.0.1:11434/v1')).toBe('local');
     expect(addressKind('http://localhost:1234/v1')).toBe('local');
     expect(addressKind(' http://LOCALHOST/v1 ')).toBe('local');
@@ -16,13 +16,13 @@ describe('the address of an OpenAI-compatible server', () => {
     expect(addressKind('http://127.0.0.1.evil.example/v1')).toBe('remote-http');
   });
 
-  it('refuses what is not an http(s) address', () => {
+  it('refuses what is not an http(s) address', { tags: ['error-guessing'] }, () => {
     for (const bad of ['', '  ', 'localhost:11434', '127.0.0.1:11434/v1', 'ftp://host/v1', 'file:///C:/x', `${'java'}script:alert(1)`, 'not a url']) {
       expect(addressKind(bad), bad).toBe('invalid');
     }
   });
 
-  it('names the host for the permission question and has presets that are local', () => {
+  it('names the host for the permission question and has presets that are local', { tags: ['condition'] }, () => {
     expect(addressHost('https://api.example.com:8443/v1')).toBe('api.example.com:8443');
     expect(addressHost('nonsense')).toBe('');
     expect(ENDPOINT_PRESETS.map((p) => p.id)).toContain('ollama');

@@ -29,7 +29,7 @@ export function listsMainModelsInSelect(source: string): boolean {
 }
 
 describe('screens follow the Generate screen', () => {
-  it('finds a main model in a plain Select, and not the picker or other lists', () => {
+  it('finds a main model in a plain Select, and not the picker or other lists', { tags: ['condition'] }, () => {
     const select = "const mains = checkpointModels(models);\n<Select options={mains.map((m) => ({ value: m.key, label: m.name }))} />";
     expect(listsMainModelsInSelect(select)).toBe(true);
     expect(listsMainModelsInSelect('const mains = drawableModels(models);\n<ModelPicker models={mains} />')).toBe(false);
@@ -37,7 +37,7 @@ describe('screens follow the Generate screen', () => {
     expect(listsMainModelsInSelect('const all = drawableModels(models);\nmodel: all.map((m): ChoiceOption => ({ value: m.key, label: m.name })),\n<Select />')).toBe(false);
   });
 
-  it('chooses every main model with ModelPicker, as the Generate screen does', () => {
+  it('chooses every main model with ModelPicker, as the Generate screen does', { tags: ['condition', 'static'] }, () => {
     const found = files(SRC)
       .filter((f) => listsMainModelsInSelect(readFileSync(f, 'utf8')))
       .map((f) => relative(SRC, f).replaceAll('\\', '/'))

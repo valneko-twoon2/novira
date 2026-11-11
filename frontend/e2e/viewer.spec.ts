@@ -12,7 +12,7 @@ async function generate(page: Page, prompt: string): Promise<void> {
 
 const percentOf = (text: string | null) => Number((text ?? '').replace('%', ''));
 
-test('the viewer zooms with the wheel, keys and buttons, and fits again on another image', async ({ page }) => {
+test('the viewer zooms with the wheel, keys and buttons, and fits again on another image', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('seed-fixed').click();
   await generate(page, 'a lighthouse on a cliff at dusk');
@@ -66,7 +66,7 @@ test('the viewer zooms with the wheel, keys and buttons, and fits again on anoth
   await expect(zoom).toHaveText(fit!);
 });
 
-test('the metadata panel copies selected text with Ctrl+C and closes on a press outside', async ({ page, context }) => {
+test('the metadata panel copies selected text with Ctrl+C and closes on a press outside', { tag: ['@scenario'] }, async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await openApp(page, '?scenario=empty');
   await generate(page, 'a lighthouse on a cliff at dusk');

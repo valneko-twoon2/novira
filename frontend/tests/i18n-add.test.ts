@@ -21,7 +21,7 @@ const texts = (extra: Record<string, string> = {}) => ({ ja: 'ja b', en: 'en b',
 const read = (dir: string, l: string, area = 'demo') => readFileSync(join(dir, l, `${area}.json`), 'utf8');
 
 describe('addMessages', () => {
-  it('appends the key to every language, in the repository format (2 spaces, LF)', () => {
+  it('appends the key to every language, in the repository format (2 spaces, LF)', { tags: ['decision-table'] }, () => {
     const dir = fixture();
     addMessages({ demo: { 'demo.b': texts() } }, { dir });
     for (const l of LOCALES) {
@@ -29,20 +29,20 @@ describe('addMessages', () => {
     }
   });
 
-  it('writes nothing when ja or en lacks a text, and names it', () => {
+  it('writes nothing when ja or en lacks a text, and names it', { tags: ['condition'] }, () => {
     const dir = fixture();
     expect(() => addMessages({ demo: { 'demo.b': { ja: 'x', ko: 'y' } } }, { dir })).toThrow(/demo\.b: no text for en/);
     expect(read(dir, 'ja')).not.toContain('demo.b');
   });
 
-  it('leaves out a language that has no text yet', () => {
+  it('leaves out a language that has no text yet', { tags: ['condition'] }, () => {
     const dir = fixture();
     addMessages({ demo: { 'demo.b': { ja: 'ja b', en: 'en b' } } }, { dir });
     expect(read(dir, 'en')).toContain('"demo.b": "en b"');
     expect(read(dir, 'ko')).not.toContain('demo.b');
   });
 
-  it('drops the old text of a language that is not given the new wording, and keeps the one that is', () => {
+  it('drops the old text of a language that is not given the new wording, and keeps the one that is', { tags: ['condition'] }, () => {
     const dir = fixture();
     addMessages({ demo: { 'demo.a': { ja: 'ja b', en: 'en b' } } }, { dir, replace: true });
     expect(read(dir, 'ko')).not.toContain('demo.a');
@@ -50,7 +50,7 @@ describe('addMessages', () => {
     expect(read(dir, 'ko')).toContain('"demo.a": "ko b"');
   });
 
-  it('fills the missing texts of the other languages, never the primary ones', () => {
+  it('fills the missing texts of the other languages, never the primary ones', { tags: ['error-guessing'] }, () => {
     const dir = fixture();
     addMessages({ demo: { 'demo.b': { ja: 'ja b', en: 'en b' } } }, { dir });
     addMessages({ demo: { 'demo.b': { ko: 'ko b' } } }, { dir, fill: true });
@@ -61,20 +61,20 @@ describe('addMessages', () => {
     expect(read(dir, 'ko')).toContain('"demo.b": "ko b"');
   });
 
-  it('refuses another set of placeholders, a foreign key prefix and an existing key', () => {
+  it('refuses another set of placeholders, a foreign key prefix and an existing key', { tags: ['error-guessing'] }, () => {
     const dir = fixture();
     expect(() => addMessages({ demo: { 'demo.b': texts({ ja: 'has {count}' }) } }, { dir })).toThrow(/other \{placeholders\}/);
     expect(() => addMessages({ demo: { 'other.b': texts() } }, { dir })).toThrow(/should start with "demo\."/);
     expect(() => addMessages({ demo: { 'demo.a': texts() } }, { dir })).toThrow(/already exists/);
   });
 
-  it('replaces a text in every language only when asked', () => {
+  it('replaces a text in every language only when asked', { tags: ['decision-table'] }, () => {
     const dir = fixture();
     addMessages({ demo: { 'demo.a': texts() } }, { dir, replace: true });
     expect(read(dir, 'en')).toContain('"demo.a": "en b"');
   });
 
-  it('creates a new area in every language only when asked', () => {
+  it('creates a new area in every language only when asked', { tags: ['decision-table'] }, () => {
     const dir = fixture();
     expect(() => addMessages({ fresh: { 'fresh.x': texts() } }, { dir })).toThrow(/does not exist/);
     addMessages({ fresh: { 'fresh.x': texts() } }, { dir, newArea: true });

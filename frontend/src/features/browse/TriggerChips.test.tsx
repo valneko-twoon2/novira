@@ -16,7 +16,7 @@ afterEach(() => {
 });
 
 describe('TriggerChips', () => {
-  it('shows every word, or only the first few with a limit', () => {
+  it('shows every word, or only the first few with a limit', { tags: ['boundary', 'decision-table'] }, () => {
     const words = ['a', 'b', 'c', 'd'];
     const { rerender } = render(<TriggerChips words={words} />);
     expect(chips().map((c) => c.textContent)).toEqual(words);
@@ -24,7 +24,7 @@ describe('TriggerChips', () => {
     expect(chips().map((c) => c.textContent)).toEqual(['a', 'b', 'c']);
   });
 
-  it('copies the word on a press, says so, and keeps the press from the card', async () => {
+  it('copies the word on a press, says so, and keeps the press from the card', { tags: ['scenario'] }, async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal('navigator', { clipboard: { writeText } });
     const onCard = vi.fn();
@@ -40,7 +40,7 @@ describe('TriggerChips', () => {
     expect(onCard).not.toHaveBeenCalled();
   });
 
-  it('warns when the clipboard refuses', async () => {
+  it('warns when the clipboard refuses', { tags: ['error-guessing', 'scenario'] }, async () => {
     vi.stubGlobal('navigator', { clipboard: { writeText: vi.fn().mockRejectedValue(new Error('denied')) } });
     render(<TriggerChips words={['sunny']} />);
     fireEvent.click(chips()[0]!);

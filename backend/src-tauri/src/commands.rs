@@ -858,6 +858,7 @@ include!("command_list.rs");
 mod tests {
     use super::{source_is_allowed, COMMANDS};
 
+    // tags: condition
     #[test]
     fn a_local_model_path_is_installed_only_when_the_last_scan_listed_it() {
         let scanned: std::collections::HashSet<String> =
@@ -885,6 +886,7 @@ mod tests {
         }
     }
 
+    // tags: static, condition
     #[test]
     fn the_capability_allows_exactly_the_registered_commands() {
         let cap: serde_json::Value =
@@ -916,6 +918,7 @@ mod tests {
         assert!(cap.get("remote").is_none() && cap.get("webviews").is_none());
     }
 
+    // tags: static, condition
     #[test]
     fn every_registered_command_is_in_the_shared_layer_or_in_its_shell_only_list() {
         use novira_core::api::{NAMES, SHELL_ONLY};
@@ -926,6 +929,7 @@ mod tests {
         assert_eq!(shared, registered);
     }
 
+    // tags: condition
     #[test]
     fn a_delegated_command_takes_the_parameters_of_the_shared_layer() {
         // The IPC argument names are the shared layer's parameters (camelCase on the wire in both shells).
@@ -952,6 +956,7 @@ mod tests {
         assert_eq!(checked, novira_core::api::NAMES.len());
     }
 
+    // tags: error-guessing
     #[test]
     fn a_command_argument_that_is_a_struct_is_read_strictly() {
         // serde alone reads a JSON array as the fields of a struct in order; `Strict<T>` refuses it (novira_core::strict).
@@ -984,6 +989,7 @@ mod tests {
         assert!(strict >= 13, "{strict}");
     }
 
+    // tags: error-guessing
     #[test]
     fn a_panicking_command_body_becomes_an_error() {
         let r: super::Res<u32> = super::guard(|| panic!("lock gone"));
@@ -993,6 +999,7 @@ mod tests {
         assert_eq!(super::guard(|| Ok(7)), Ok(7));
     }
 
+    // tags: boundary, error-guessing
     #[test]
     fn ui_zoom_accepts_only_finite_factors_in_range() {
         use super::valid_ui_zoom;

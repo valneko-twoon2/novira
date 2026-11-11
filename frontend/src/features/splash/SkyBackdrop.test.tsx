@@ -75,7 +75,7 @@ afterEach(() => {
 });
 
 describe('SkyBackdrop', () => {
-  it('draws a frame, with the sky colours read from the page tokens', () => {
+  it('draws a frame, with the sky colours read from the page tokens', { tags: ['condition'] }, () => {
     document.documentElement.style.setProperty('--bg-app', '#ffffff');
     render(<SkyBackdrop />);
     expect(screen.getByTestId('splash-sky').tagName).toBe('CANVAS');
@@ -90,7 +90,7 @@ describe('SkyBackdrop', () => {
     document.documentElement.style.removeProperty('--bg-app');
   });
 
-  it('softens the glow on a dark page', () => {
+  it('softens the glow on a dark page', { tags: ['condition'] }, () => {
     document.documentElement.style.setProperty('--bg-app', '#000000');
     render(<SkyBackdrop />);
     frames[0]!(1000);
@@ -98,7 +98,7 @@ describe('SkyBackdrop', () => {
     document.documentElement.style.removeProperty('--bg-app');
   });
 
-  it('skips a frame that comes too soon and re-reads the sky only after a second', () => {
+  it('skips a frame that comes too soon and re-reads the sky only after a second', { tags: ['boundary'] }, () => {
     render(<SkyBackdrop />);
     frames[0]!(1000);
     expect(gl!.drawArrays).toHaveBeenCalledTimes(1);
@@ -112,7 +112,7 @@ describe('SkyBackdrop', () => {
     expect(gl!.uniform3f).toHaveBeenCalledTimes(8);
   });
 
-  it('draws one still frame with reduced motion', () => {
+  it('draws one still frame with reduced motion', { tags: ['condition'] }, () => {
     reduced = true;
     render(<SkyBackdrop />);
     frames[0]!(1000);
@@ -120,7 +120,7 @@ describe('SkyBackdrop', () => {
     expect(frames.length).toBe(1);
   });
 
-  it('renders at a smaller scale when WebGL is software, and reads the debug renderer', () => {
+  it('renders at a smaller scale when WebGL is software, and reads the debug renderer', { tags: ['condition'] }, () => {
     gl = fakeGl({
       getExtension: vi.fn(() => ({ UNMASKED_RENDERER_WEBGL: 99 })),
       getParameter: vi.fn(() => 'Google SwiftShader'),
@@ -136,7 +136,7 @@ describe('SkyBackdrop', () => {
     }
   });
 
-  it('renders at half scale on a real GPU', () => {
+  it('renders at half scale on a real GPU', { tags: ['condition'] }, () => {
     Object.defineProperty(HTMLCanvasElement.prototype, 'clientWidth', { configurable: true, get: () => 400 });
     Object.defineProperty(HTMLCanvasElement.prototype, 'clientHeight', { configurable: true, get: () => 200 });
     try {
@@ -148,7 +148,7 @@ describe('SkyBackdrop', () => {
     }
   });
 
-  it('releases the GL resources and the observer on unmount', () => {
+  it('releases the GL resources and the observer on unmount', { tags: ['condition'] }, () => {
     const { unmount } = render(<SkyBackdrop />);
     unmount();
     expect(gl!.deleteBuffer).toHaveBeenCalled();
@@ -156,7 +156,7 @@ describe('SkyBackdrop', () => {
     expect(disconnect).toHaveBeenCalled();
   });
 
-  it('stays an empty canvas without WebGL', () => {
+  it('stays an empty canvas without WebGL', { tags: ['condition'] }, () => {
     gl = null;
     render(<SkyBackdrop />);
     expect(screen.getByTestId('splash-sky')).toBeTruthy();
@@ -168,7 +168,7 @@ describe('SkyBackdrop', () => {
     ['a shader that cannot be created', { createShader: vi.fn(() => null) }],
     ['a program that does not link', { getProgramParameter: vi.fn(() => false) }],
     ['no program', { createProgram: vi.fn(() => null) }],
-  ])('draws nothing with %s', (_name, over) => {
+  ])('draws nothing with %s', { tags: ['error-guessing'] }, (_name, over) => {
     gl = fakeGl(over);
     render(<SkyBackdrop />);
     expect(frames.length).toBe(0);

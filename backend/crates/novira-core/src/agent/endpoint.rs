@@ -553,6 +553,7 @@ enum ToolCheck {
 mod tests {
     use super::*;
 
+    // tags: condition
     #[test]
     fn addresses_are_http_or_https_with_a_host_and_nothing_secret_in_them() {
         let ok = |t: &str| parse_base_url(t).unwrap().to_string();
@@ -582,6 +583,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn only_this_pc_counts_as_loopback() {
         let loopback = |t: &str| is_loopback(&parse_base_url(t).unwrap());
@@ -596,6 +598,7 @@ mod tests {
         assert!(!loopback("http://0.0.0.0/v1"));
     }
 
+    // tags: condition
     #[test]
     fn a_remote_http_address_is_flagged_as_unencrypted_and_a_remote_https_is_not() {
         let info = |url: &str| {
@@ -617,6 +620,7 @@ mod tests {
         assert!(info("nonsense").remote);
     }
 
+    // tags: condition
     #[test]
     fn the_key_never_shows_in_debug_output_or_in_a_message() {
         let key = ApiKey::new("  sk-secret-123  ").unwrap();
@@ -628,6 +632,7 @@ mod tests {
         assert!(ApiKey::new("   ").is_none());
     }
 
+    // tags: error-guessing
     #[test]
     fn a_server_that_refuses_tools_is_told_from_other_errors() {
         let err = |status: u16, text: &str| CallError::new(Some(status), text).rejects_tools();

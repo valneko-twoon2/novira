@@ -28,7 +28,7 @@ afterEach(() => {
 });
 
 describe('the filter button', () => {
-  it('is off until a raster layer of the user is chosen', () => {
+  it('is off until a raster layer of the user is chosen', { tags: ['scenario'] }, () => {
     show(<RasterFilterMenu />);
     const button = screen.getByTestId('canvas-filter') as HTMLButtonElement;
     expect(button.disabled).toBe(true);
@@ -43,7 +43,7 @@ describe('the filter button', () => {
     expect((screen.getByTestId('canvas-filter') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('applies a blur with the chosen radius to the chosen layer', async () => {
+  it('applies a blur with the chosen radius to the chosen layer', { tags: ['scenario'] }, async () => {
     const id = useCanvas.getState().addEntity('raster', { objects: [raster] });
     useCanvas.getState().select(id);
     show(<RasterFilterMenu />);
@@ -56,7 +56,7 @@ describe('the filter button', () => {
     expect(applied).toHaveBeenCalledWith(id, { kind: 'blur', radius: 12 }, useCanvas);
   });
 
-  it('applies grayscale and invert without a radius', async () => {
+  it('applies grayscale and invert without a radius', { tags: ['scenario'] }, async () => {
     const id = useCanvas.getState().addEntity('raster', { objects: [raster] });
     useCanvas.getState().select(id);
     show(<RasterFilterMenu />);
@@ -67,7 +67,7 @@ describe('the filter button', () => {
     await waitFor(() => expect(applied).toHaveBeenCalledWith(id, { kind: 'invert' }, useCanvas));
   });
 
-  it('acts on the surrounding store, not the Image tab\'s', async () => {
+  it('acts on the surrounding store, not the Image tab\'s', { tags: ['scenario'] }, async () => {
     const page = createCanvasStore({ syncParams: false });
     const id = page.getState().addEntity('raster', { objects: [raster] });
     page.getState().select(id);
@@ -84,7 +84,7 @@ describe('the filter button', () => {
 });
 
 describe('the bucket', () => {
-  it('has a tool button, and a tolerance box only while it is the tool', () => {
+  it('has a tool button, and a tolerance box only while it is the tool', { tags: ['scenario'] }, () => {
     show(
       <>
         <ToolChooser />
@@ -100,7 +100,7 @@ describe('the bucket', () => {
     expect(useCanvas.getState().bucketTolerance).toBe(90);
   });
 
-  it('keeps the tolerance within 0 and 255', () => {
+  it('keeps the tolerance within 0 and 255', { tags: ['boundary'] }, () => {
     useCanvas.getState().setBucketTolerance(-5);
     expect(useCanvas.getState().bucketTolerance).toBe(0);
     useCanvas.getState().setBucketTolerance(999);

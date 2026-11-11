@@ -34,7 +34,7 @@ const openList = () => fireEvent.click(screen.getByTestId('preset-trigger'));
 const rows = () => within(screen.getByTestId('preset-list')).getAllByTestId('preset-item');
 
 describe('PresetBar', () => {
-  it('lists the store presets with their summaries and the translated display name', () => {
+  it('lists the store presets with their summaries and the translated display name', { tags: ['condition'] }, () => {
     mount({ nameOf: (p) => `shown ${p.name}` });
     openList();
     expect(rows()).toHaveLength(1);
@@ -42,7 +42,7 @@ describe('PresetBar', () => {
     expect(rows()[0]!.textContent).toContain('20 steps');
   });
 
-  it('applies a preset to the form and marks it as the current one', () => {
+  it('applies a preset to the form and marks it as the current one', { tags: ['scenario'] }, () => {
     mount();
     openList();
     fireEvent.click(within(rows()[0]!).getByText('builtin-key'));
@@ -51,7 +51,7 @@ describe('PresetBar', () => {
     expect(screen.getByTestId('preset-trigger').textContent).toContain('builtin-key');
   });
 
-  it('saves the form as a new preset under the typed name', () => {
+  it('saves the form as a new preset under the typed name', { tags: ['scenario'] }, () => {
     mount();
     openList();
     fireEvent.click(screen.getByTestId('preset-save-new'));
@@ -73,19 +73,19 @@ describe('PresetBar', () => {
     };
     const mine = () => kind.store.getState().presets.find((p) => p.name === 'Mine');
 
-    it('overwrites a preset with the current form', () => {
+    it('overwrites a preset with the current form', { tags: ['scenario'] }, () => {
       pickFromMenu(t('presets.overwrite'));
       expect(mine()!.data).toEqual({ steps: 30 });
     });
 
-    it('renames a preset', () => {
+    it('renames a preset', { tags: ['scenario'] }, () => {
       pickFromMenu(t('presets.rename'));
       fireEvent.change(screen.getByTestId('name-dialog-input'), { target: { value: 'Renamed' } });
       fireEvent.click(screen.getByTestId('name-dialog-ok'));
       expect(kind.store.getState().presets.map((p) => p.name)).toEqual(['builtin-key', 'Renamed']);
     });
 
-    it('deletes a preset on the second press', () => {
+    it('deletes a preset on the second press', { tags: ['state-transition'] }, () => {
       pickFromMenu(t('presets.delete'));
       expect(mine()).toBeDefined();
       fireEvent.click(screen.getByRole('menuitem', { name: t('common.deleteAgain') }));

@@ -2,7 +2,7 @@
 // detail) and the notice that an installed model has a newer version (a tag on the card, a row in the detail).
 import { expect, msg, openApp, showTab, test } from './fixtures';
 
-test('the detail lists the example settings and one button puts them into the Generate form', async ({ page }) => {
+test('the detail lists the example settings and one button puts them into the Generate form', { tag: ['@condition'] }, async ({ page }) => {
   await openApp(page);
   await showTab(page, 'browse');
   await page.getByTestId('browse-card').first().click();
@@ -24,7 +24,7 @@ test('the detail lists the example settings and one button puts them into the Ge
   await expect(page.getByText(msg('browse.samples.applied'))).toBeVisible();
 });
 
-test('a model with a newer version shows a tag on its card and a row in its detail', async ({ page }) => {
+test('a model with a newer version shows a tag on its card and a row in its detail', { tag: ['@condition'] }, async ({ page }) => {
   await openApp(page, '?updates');
   await showTab(page, 'models');
   // Asked for when the screen opens; the notice comes once.
@@ -46,7 +46,7 @@ test('a model with a newer version shows a tag on its card and a row in its deta
   await expect(page.getByText(msg('models.updates.found', { count: 1 }))).toHaveCount(0);
 });
 
-test('without an update there is no tag and no row', async ({ page }) => {
+test('without an update there is no tag and no row', { tag: ['@condition'] }, async ({ page }) => {
   await openApp(page);
   await showTab(page, 'models');
   await expect(page.locator('.mm-card-item').first()).toBeVisible();

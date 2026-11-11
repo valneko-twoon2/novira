@@ -14,7 +14,7 @@ async function makeFolder(page: Page, parent: string, name: string): Promise<voi
   await input.press('Enter');
 }
 
-test('a subfolder is made, takes a picture, shows as a tile in its board and opens', async ({ page }) => {
+test('a subfolder is made, takes a picture, shows as a tile in its board and opens', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await board(page, 'Landscapes').click();
   await expect(thumbs(page)).toHaveCount(3);
@@ -40,7 +40,7 @@ test('a subfolder is made, takes a picture, shows as a tile in its board and ope
   await expect(thumbs(page)).toHaveCount(2);
 });
 
-test('a subfolder holds subfolders, a board folds them away, and deleting it deletes all of them', async ({ page }) => {
+test('a subfolder holds subfolders, a board folds them away, and deleting it deletes all of them', { tag: ['@state-transition'] }, async ({ page }) => {
   await openApp(page);
   await makeFolder(page, 'Landscapes', 'Night');
   await makeFolder(page, 'Night', 'Stars');
@@ -63,7 +63,7 @@ test('a subfolder holds subfolders, a board folds them away, and deleting it del
   await expect(board(page, 'Landscapes')).toHaveCount(0);
 });
 
-test('a finished picture stays out of the viewer until the setting is on', async ({ page }) => {
+test('a finished picture stays out of the viewer until the setting is on', { tag: ['@condition'] }, async ({ page }) => {
   await openApp(page);
   const before = await page.getByTestId('gallery-thumb').count();
   await page.getByTestId('prompts').getByRole('textbox').first().fill('a quiet picture');

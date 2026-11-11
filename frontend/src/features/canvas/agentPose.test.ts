@@ -19,7 +19,7 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('the assistant and the pose tool', () => {
-  it('places the described person, reads the poses on the layer back, and undoes the change', async () => {
+  it('places the described person, reads the poses on the layer back, and undoes the change', { tags: ['state-transition'] }, async () => {
     const read: unknown[] = [];
     scriptAgent(async (call) => {
       read.push((await call('get_pose')).content);
@@ -39,7 +39,7 @@ describe('the assistant and the pose tool', () => {
     expect(useCanvas.getState().entities).toHaveLength(0);
   });
 
-  it('applies nothing when no usable person was described, and tells the assistant', async () => {
+  it('applies nothing when no usable person was described, and tells the assistant', { tags: ['condition'] }, async () => {
     let answer: unknown;
     scriptAgent(async (call) => {
       answer = await call('set_pose', { people: [3] });

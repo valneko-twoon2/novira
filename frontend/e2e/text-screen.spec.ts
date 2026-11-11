@@ -9,7 +9,7 @@ async function openText(page: Parameters<typeof openApp>[0]) {
   await expect(page.getByTestId('text-panel')).toBeVisible();
 }
 
-test('layers are added in the canvas toolbar and listed in the right column', async ({ page }) => {
+test('layers are added in the canvas toolbar and listed in the right column', { tag: ['@scenario'] }, async ({ page }) => {
   await openText(page);
   const canvas = page.getByTestId('text-canvas');
   const layers = page.getByTestId('text-layers');
@@ -31,7 +31,7 @@ test('layers are added in the canvas toolbar and listed in the right column', as
   await expect(layers.locator('li')).toHaveCount(0);
 });
 
-test('the run button comes first in the left column and the candidates appear under the canvas', async ({ page }) => {
+test('the run button comes first in the left column and the candidates appear under the canvas', { tag: ['@scenario'] }, async ({ page }) => {
   await openText(page);
   await page.getByTestId('text-add-text').click();
   const count = page.getByRole('spinbutton', { name: msg('params.invoke.iterations') });
@@ -58,7 +58,7 @@ test('the run button comes first in the left column and the candidates appear un
   await expect(strip).toHaveCount(0);
 });
 
-test('the quick bar sits over the selected layer, edits it, and steps aside while the layer is dragged', async ({ page }) => {
+test('the quick bar sits over the selected layer, edits it, and steps aside while the layer is dragged', { tag: ['@scenario'] }, async ({ page }) => {
   await openText(page);
   await page.getByTestId('text-add-text').click();
   const bar = page.getByTestId('text-bar');
@@ -92,7 +92,7 @@ test('the quick bar sits over the selected layer, edits it, and steps aside whil
   await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(1);
 });
 
-test('a laid-out scene is saved as a template and put back on an emptied sheet', async ({ page }) => {
+test('a laid-out scene is saved as a template and put back on an emptied sheet', { tag: ['@scenario'] }, async ({ page }) => {
   await openText(page);
   await page.getByTestId('text-add-text').click();
   await page.getByTestId('text-content').fill('TITLE');
@@ -121,7 +121,7 @@ test('a laid-out scene is saved as a template and put back on an emptied sheet',
   await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(0);
 });
 
-test('a picture saved from the Text tab opens its layers again from the gallery', async ({ page }) => {
+test('a picture saved from the Text tab opens its layers again from the gallery', { tag: ['@scenario'] }, async ({ page }) => {
   await openText(page);
   await page.getByTestId('text-add-text').click();
   await page.getByTestId('text-content').fill('SAVED WORDS');
@@ -150,7 +150,7 @@ test('a picture saved from the Text tab opens its layers again from the gallery'
   await expect(page.getByRole('menuitem', { name: msg('gallery.menu.editInText') })).toHaveCount(0);
 });
 
-test('the viewer opens beside the editor, from its tab and from a picture in the gallery, and the editor comes back as it was', async ({ page }) => {
+test('the viewer opens beside the editor, from its tab and from a picture in the gallery, and the editor comes back as it was', { tag: ['@scenario'] }, async ({ page }) => {
   await openText(page);
   await page.getByTestId('text-add-text').click();
   await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(1);

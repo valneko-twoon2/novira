@@ -30,7 +30,7 @@ afterEach(() => {
 });
 
 describe('the phone layout', () => {
-  it('follows the size of the window as it changes', () => {
+  it('follows the size of the window as it changes', { tags: ['condition'] }, () => {
     const resize = fakeMedia(false);
     const { result } = renderHook(() => usePhoneLayout());
     expect(result.current).toBe(false);
@@ -40,13 +40,13 @@ describe('the phone layout', () => {
     expect(result.current).toBe(false);
   });
 
-  it('is never shown in the desktop app, however narrow its window', () => {
+  it('is never shown in the desktop app, however narrow its window', { tags: ['condition'] }, () => {
     fakeMedia(true);
     vi.spyOn(backend, 'kind', 'get').mockReturnValue('tauri');
     expect(renderHook(() => usePhoneLayout()).result.current).toBe(false);
   });
 
-  it('is the desktop layout where the browser cannot tell the size', () => {
+  it('is the desktop layout where the browser cannot tell the size', { tags: ['error-guessing'] }, () => {
     vi.stubGlobal('matchMedia', undefined);
     expect(renderHook(() => usePhoneLayout()).result.current).toBe(false);
   });

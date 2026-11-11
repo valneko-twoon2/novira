@@ -9,7 +9,7 @@ const area = { x: 0, y: 0, width: 512, height: 512 };
 const deg = (from: { x: number; y: number }, to: { x: number; y: number }) => Math.round((Math.atan2(to.x - from.x, to.y - from.y) * 180) / Math.PI);
 
 describe('a body from a description', () => {
-  it('hangs a person upright with arms a little away from the body when nothing is said', () => {
+  it('hangs a person upright with arms a little away from the body when nothing is said', { tags: ['condition'] }, () => {
     const o = poseFromSpec({});
     expect(deg(at(o, J.rShoulder), at(o, J.rElbow))).toBe(-10);
     expect(deg(at(o, J.lShoulder), at(o, J.lElbow))).toBe(10);
@@ -18,7 +18,7 @@ describe('a body from a description', () => {
     expect(o.hidden).toEqual([]);
   });
 
-  it('points each bone by its own angle: 0 down, 90 to the right edge, 180 up, -90 to the left edge', () => {
+  it('points each bone by its own angle: 0 down, 90 to the right edge, 180 up, -90 to the left edge', { tags: ['boundary'] }, () => {
     const o = poseFromSpec({ rArm: { upper: -90, fore: 180 }, lArm: { upper: 90, fore: 0 }, rLeg: { thigh: 45, shin: -45 } });
     expect(deg(at(o, J.rShoulder), at(o, J.rElbow))).toBe(-90);
     expect(deg(at(o, J.rElbow), at(o, J.rWrist))).toBe(180);
@@ -28,7 +28,7 @@ describe('a body from a description', () => {
     expect(deg(at(o, J.rKnee), at(o, J.rAnkle))).toBe(-45);
   });
 
-  it('shortens a limb by its reach, leans the body and turns the head', () => {
+  it('shortens a limb by its reach, leans the body and turns the head', { tags: ['condition'] }, () => {
     const full = poseFromSpec({ rArm: { upper: -30, fore: -30 } });
     const short = poseFromSpec({ rArm: { upper: -30, fore: -30, reach: 0.5 } });
     const len = (o: { points: number[] }, a: number, b: number) => Math.hypot(at(o, a).x - at(o, b).x, at(o, a).y - at(o, b).y);
@@ -41,7 +41,7 @@ describe('a body from a description', () => {
     expect(at(poseFromSpec({ head: { tilt: 30 } }), J.nose).x).toBeGreaterThan(0);
   });
 
-  it('places the person in the box by x, y and size, the middle of the visible joints on the point', () => {
+  it('places the person in the box by x, y and size, the middle of the visible joints on the point', { tags: ['condition'] }, () => {
     const o = placePose('p', { x: 0.25, y: 0.6, size: 0.5 }, { x: 100, y: 50, width: 400, height: 400 }, 4);
     const b = jointBounds(o)!;
     expect(b.x + b.width / 2).toBeCloseTo(100 + 0.25 * 400, 0);
@@ -54,19 +54,19 @@ describe('a body from a description', () => {
 });
 
 describe('reading what the assistant sent', () => {
-  it('keeps known numbers in range and drops everything else', () => {
+  it('keeps known numbers in range and drops everything else', { tags: ['condition'] }, () => {
     const spec = readPoseSpec({ x: 5, size: 0, lean: 'x', turn: 0.1, head: { tilt: 500, turn: -3, junk: 1 }, rArm: { upper: 400, fore: -400, reach: 2, hand: 1 }, rLeg: 'no', evil: { a: 1 } });
     expect(spec).toEqual({ x: 1.2, size: 0.1, turn: 0.4, head: { tilt: 90, turn: -1 }, rArm: { upper: 360, fore: -360, reach: 1 } });
   });
 
-  it('refuses what is not an object and ignores non-finite numbers', () => {
+  it('refuses what is not an object and ignores non-finite numbers', { tags: ['error-guessing'] }, () => {
     for (const bad of [null, 3, 'pose', [1, 2], undefined]) expect(readPoseSpec(bad)).toBeNull();
     expect(readPoseSpec({ lean: Infinity, x: NaN })).toEqual({});
   });
 
   // The assistant is told to give a back view with back true and a framed figure by its neck; both were once dropped,
   // so a person said to be seen from behind was drawn facing the viewer.
-  it('reads a person seen from behind and a neck that frames the figure, up to a figure larger than the panel', () => {
+  it('reads a person seen from behind and a neck that frames the figure, up to a figure larger than the panel', { tags: ['state-transition'] }, () => {
     expect(readPoseSpec({ back: true, neck: { x: 0.4, y: 0.45 }, size: 2 })).toEqual({ back: true, neck: { x: 0.4, y: 0.45 }, size: 2 });
     expect(readPoseSpec({ size: 9 })!.size).toBe(2.5);
     // Only true turns a person round; a neck needs both of its numbers.
@@ -76,7 +76,7 @@ describe('reading what the assistant sent', () => {
 });
 
 describe('writing a pose back for the assistant', () => {
-  it('gives a description that builds the same pose again, to the nearest degree', () => {
+  it('gives a description that builds the same pose again, to the nearest degree', { tags: ['condition'] }, () => {
     for (let seed = 0; seed < 40; seed++) {
       const o = randomPose('p', seededRandom(seed), { x: 20, y: 30, width: 300, height: 400 }, 4);
       const spec = poseToSpec(o, area);
@@ -93,14 +93,14 @@ describe('writing a pose back for the assistant', () => {
     }
   });
 
-  it('describes a plain standing person with the default angles', () => {
+  it('describes a plain standing person with the default angles', { tags: ['condition'] }, () => {
     const spec: PoseSpec = poseToSpec(placePose('p', {}, area, 4), area);
     expect(spec).toMatchObject({ x: 0.5, y: 0.5, lean: 0, rArm: { upper: -10 }, lArm: { upper: 10 }, head: { tilt: 0, turn: 0 } });
     expect(spec.size).toBeCloseTo(0.85, 1);
     expect(spec).not.toHaveProperty('back');
   });
 
-  it('describes a person seen from behind as such, with the arms named as they were given', () => {
+  it('describes a person seen from behind as such, with the arms named as they were given', { tags: ['condition'] }, () => {
     const made = placePose('p', { back: true, rArm: { upper: -40, fore: -60 }, lArm: { upper: 15, fore: 10 } }, area, 4);
     const spec = poseToSpec(made, area);
     expect(spec).toMatchObject({ back: true, rArm: { upper: -40, fore: -60 }, lArm: { upper: 15, fore: 10 } });
@@ -112,7 +112,7 @@ describe('writing a pose back for the assistant', () => {
 });
 
 describe('random poses', () => {
-  it('describes each random person within the ranges a body can reach, and builds the same body from it', () => {
+  it('describes each random person within the ranges a body can reach, and builds the same body from it', { tags: ['equivalence'] }, () => {
     for (let seed = 0; seed < 100; seed++) {
       const spec = randomPoseSpec(seededRandom(seed));
       for (const leg of [spec.rLeg!, spec.lLeg!]) expect(Math.abs(leg.shin!)).toBeLessThanOrEqual(80);
@@ -127,12 +127,12 @@ describe('random poses', () => {
   });
 
 
-  it('gives the same random pose for the same seed and different ones for others', () => {
+  it('gives the same random pose for the same seed and different ones for others', { tags: ['condition'] }, () => {
     expect(randomPosePoints(seededRandom(7))).toEqual(randomPosePoints(seededRandom(7)));
     expect(randomPosePoints(seededRandom(7)).points).not.toEqual(randomPosePoints(seededRandom(8)).points);
   });
 
-  it('keeps every random pose a whole body inside the area, with the head above the neck', () => {
+  it('keeps every random pose a whole body inside the area, with the head above the neck', { tags: ['equivalence'] }, () => {
     for (let seed = 0; seed < 300; seed++) {
       const o = randomPose('p', seededRandom(seed), area, 4);
       expect(o.points).toHaveLength(POSE_JOINTS * 2);
@@ -152,7 +152,7 @@ describe('random poses', () => {
     }
   });
 
-  it('rerolls a pose in the place and size of the old one, keeping its id and width', () => {
+  it('rerolls a pose in the place and size of the old one, keeping its id and width', { tags: ['condition'] }, () => {
     const old = randomPose('keep', seededRandom(1), { x: 100, y: 50, width: 200, height: 300 }, 6);
     const b0 = jointBounds(old)!;
     const next = rerollPose(old, seededRandom(2));
@@ -169,7 +169,7 @@ describe('random poses', () => {
 describe('a person found in a picture', () => {
   const person = { points: Array.from({ length: 36 }, (_, i) => (i % 2 === 0 ? 0.5 : 0.1 + (i - 1) / 2 / 25)), hidden: [] as number[] };
 
-  it('fits the picture whole inside the box, centred, so a wide picture leaves room above and below', () => {
+  it('fits the picture whole inside the box, centred, so a wide picture leaves room above and below', { tags: ['scenario'] }, () => {
     const o = placeExtractedPerson('p', person, 2, { x: 0, y: 0, width: 400, height: 400 }, 4);
     expect(at(o, J.nose).x).toBeCloseTo(200, 0);
     // The picture is 400 by 200 inside the 400 by 400 box: it starts 100 down.
@@ -178,14 +178,14 @@ describe('a person found in a picture', () => {
     expect(o.width).toBe(4);
   });
 
-  it('puts a tall picture in the middle of a wide box', () => {
+  it('puts a tall picture in the middle of a wide box', { tags: ['condition'] }, () => {
     const o = placeExtractedPerson('p', person, 0.5, { x: 10, y: 20, width: 600, height: 400 }, 4);
     const w = 400 * 0.5;
     expect(at(o, J.nose).x).toBeCloseTo(10 + (600 - w) / 2 + 0.5 * w, 0);
     expect(at(o, J.nose).y).toBeCloseTo(20 + 0.1 * 400, 0);
   });
 
-  it('hides the joints that were not found on the joint they hang from', () => {
+  it('hides the joints that were not found on the joint they hang from', { tags: ['condition'] }, () => {
     const o = placeExtractedPerson('p', { ...person, hidden: [J.rWrist, J.rElbow] }, 1, { x: 0, y: 0, width: 100, height: 100 }, 4);
     expect(o.hidden).toEqual([J.rWrist, J.rElbow]);
     expect(at(o, J.rElbow)).toEqual(at(o, J.rShoulder));
@@ -196,7 +196,7 @@ describe('a person found in a picture', () => {
 describe('framing a person', () => {
   const box = { x: 0, y: 0, width: 400, height: 300 };
 
-  it('puts the neck where `neck` says and keeps it there when the size changes', () => {
+  it('puts the neck where `neck` says and keeps it there when the size changes', { tags: ['condition'] }, () => {
     for (const size of [0.4, 0.85, 2]) {
       const o = placePose('p', { neck: { x: 0.25, y: 0.4 }, size }, box, 4);
       expect(o.points[2]).toBeCloseTo(100, 0);
@@ -204,7 +204,7 @@ describe('framing a person', () => {
     }
   });
 
-  it('draws a person seen from behind without the face, the right side on the right of the picture', () => {
+  it('draws a person seen from behind without the face, the right side on the right of the picture', { tags: ['scenario'] }, () => {
     const front = placePose('f', { rArm: { upper: -40, fore: -40 } }, box, 4);
     const back = placePose('b', { back: true, rArm: { upper: -40, fore: -40 } }, box, 4);
     expect(back.hidden).toEqual([0, 14, 15]);

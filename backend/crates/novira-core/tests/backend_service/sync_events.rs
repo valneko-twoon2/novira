@@ -33,6 +33,7 @@ fn image_changes(events: &[BackendEvent]) -> Vec<(Vec<ImageDTO>, Vec<String>)> {
         .collect()
 }
 
+// tags: scenario
 #[test]
 fn every_board_change_tells_the_pages_the_whole_list() {
     let dir = tempfile::tempdir().unwrap();
@@ -58,6 +59,7 @@ fn every_board_change_tells_the_pages_the_whole_list() {
     assert_eq!(last_boards(&take(&events)), Some(vec!["B".to_string()]));
 }
 
+// tags: error-guessing
 #[test]
 fn a_refused_board_change_tells_nothing() {
     let dir = tempfile::tempdir().unwrap();
@@ -72,6 +74,7 @@ fn a_refused_board_change_tells_nothing() {
     assert_eq!(last_boards(&take(&events)), None);
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn picture_edits_deletes_and_restores_tell_the_pages() {
     let dir = tempfile::tempdir().unwrap();
@@ -111,6 +114,7 @@ async fn picture_edits_deletes_and_restores_tell_the_pages() {
     assert_eq!(image_changes(&take(&events)), vec![(back, vec![])]);
 }
 
+// tags: scenario
 #[tokio::test]
 async fn deleting_a_board_tells_the_pages_where_its_pictures_went() {
     let dir = tempfile::tempdir().unwrap();
@@ -141,6 +145,7 @@ async fn deleting_a_board_tells_the_pages_where_its_pictures_went() {
     assert_eq!(image_changes(&after), vec![(vec![], vec![trashed.name])]);
 }
 
+// tags: boundary
 #[test]
 fn deleting_an_empty_board_tells_no_picture_change() {
     let dir = tempfile::tempdir().unwrap();
@@ -151,6 +156,7 @@ fn deleting_an_empty_board_tells_no_picture_change() {
     assert!(image_changes(&take(&events)).is_empty());
 }
 
+// tags: scenario
 #[test]
 fn model_edits_and_removals_tell_the_pages_the_whole_list() {
     let dir = tempfile::tempdir().unwrap();
@@ -196,6 +202,7 @@ fn model_edits_and_removals_tell_the_pages_the_whole_list() {
     assert!(models_of(&take(&events)).is_empty());
 }
 
+// tags: scenario
 #[test]
 fn saving_and_deleting_a_workflow_tells_the_pages_the_library() {
     let dir = tempfile::tempdir().unwrap();

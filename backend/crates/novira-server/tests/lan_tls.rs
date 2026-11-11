@@ -14,6 +14,7 @@ fn lan_host(addr: SocketAddr) -> String {
     format!("127.0.0.1:{}", addr.port())
 }
 
+// tags: scenario
 #[tokio::test]
 async fn the_home_network_listener_speaks_tls_with_a_certificate_for_the_home_address() {
     let f = Fixture::start().await;
@@ -51,6 +52,7 @@ async fn the_home_network_listener_speaks_tls_with_a_certificate_for_the_home_ad
     f.stop().await;
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_client_refuses_the_certificate_for_another_name_or_from_another_ca() {
     let f = Fixture::start().await;
@@ -68,6 +70,7 @@ async fn a_client_refuses_the_certificate_for_another_name_or_from_another_ca() 
     f.stop().await;
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn plain_http_on_the_tls_port_gets_no_http_answer() {
     let f = Fixture::start().await;
@@ -91,6 +94,7 @@ async fn plain_http_on_the_tls_port_gets_no_http_answer() {
     f.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn the_ca_certificate_is_public_on_the_tls_listener_only() {
     let f = Fixture::start().await;
@@ -124,6 +128,7 @@ async fn the_ca_certificate_is_public_on_the_tls_listener_only() {
     f.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn the_origin_is_https_and_the_cookie_secure_on_the_tls_listener() {
     let f = Fixture::start().await;
@@ -210,6 +215,7 @@ async fn the_origin_is_https_and_the_cookie_secure_on_the_tls_listener() {
     f.stop().await;
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn the_listener_opens_once_closes_as_a_unit_and_opens_again() {
     let f = Fixture::start().await;
@@ -280,6 +286,7 @@ async fn the_listener_opens_once_closes_as_a_unit_and_opens_again() {
     assert!(tokio::net::TcpStream::connect(lan).await.is_err());
 }
 
+// tags: condition
 #[tokio::test]
 async fn this_computer_gets_a_pairing_code_while_the_listener_is_open() {
     let f = Fixture::start().await;
@@ -325,6 +332,7 @@ async fn this_computer_gets_a_pairing_code_while_the_listener_is_open() {
 
 /// The pairing calls over the TLS listener, as the phone page makes them (the client here is on loopback; what a
 /// device's address changes is tested in process, `src/lan_tests.rs`).
+// tags: scenario
 #[tokio::test]
 async fn a_phone_pairs_over_tls_and_receives_a_secure_session_cookie() {
     let f = Fixture::start().await;
@@ -435,6 +443,7 @@ async fn a_phone_pairs_over_tls_and_receives_a_secure_session_cookie() {
 }
 
 #[cfg(windows)]
+// tags: condition
 #[tokio::test]
 async fn the_data_folder_keeps_its_ca_between_openings() {
     let f = Fixture::start().await;

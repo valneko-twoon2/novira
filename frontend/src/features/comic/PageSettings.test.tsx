@@ -54,7 +54,7 @@ afterEach(() => {
 });
 
 describe('the page settings', () => {
-  it('sets the number of panels, within the most a page holds', async () => {
+  it('sets the number of panels, within the most a page holds', { tags: ['scenario'] }, async () => {
     await startUp();
     setNum(t('comic.page.panelCount'), '5');
     expect(page().panels).toHaveLength(5);
@@ -64,7 +64,7 @@ describe('the page settings', () => {
     expect(page().panels).toHaveLength(1);
   });
 
-  it('changes the columns, the paper and the reading direction from their lists', async () => {
+  it('changes the columns, the paper and the reading direction from their lists', { tags: ['scenario'] }, async () => {
     await startUp();
     choose(t('comic.page.columns'), /3/);
     expect(page().columns).toBe(3);
@@ -74,7 +74,7 @@ describe('the page settings', () => {
     expect(page().direction).toBe('ltr');
   });
 
-  it('writes the frame width, the margin and the inset, kept within their ranges', async () => {
+  it('writes the frame width, the margin and the inset, kept within their ranges', { tags: ['scenario'] }, async () => {
     await startUp();
     setNum(t('comic.page.frameWidth'), '1.5');
     expect(page().frameMm).toBeCloseTo(1.5);
@@ -86,13 +86,13 @@ describe('the page settings', () => {
     expect(page().insetMm).toBe(2.5);
   });
 
-  it('writes the frame colour', async () => {
+  it('writes the frame colour', { tags: ['scenario'] }, async () => {
     await startUp();
     fireEvent.change(screen.getByTestId('comic-frame-color'), { target: { value: '#ff0000' } });
     expect(page().frameColor).toBe('#ff0000');
   });
 
-  it('sets the effect of the comic, and of the page or back to following the comic', async () => {
+  it('sets the effect of the comic, and of the page or back to following the comic', { tags: ['scenario'] }, async () => {
     await startUp();
     choose(t('comic.effect.comic'), t('comic.effect.sepia'));
     expect(project().effect).toBe('sepia');
@@ -102,7 +102,7 @@ describe('the page settings', () => {
     expect(page().effect ?? null).toBeNull();
   });
 
-  it('keeps the shapes button off while the layout is automatic, and resets hand-made shapes with it', async () => {
+  it('keeps the shapes button off while the layout is automatic, and resets hand-made shapes with it', { tags: ['scenario'] }, async () => {
     await startUp();
     const reset = screen.getByTestId('comic-shape-reset') as HTMLButtonElement;
     expect(reset.disabled).toBe(true);

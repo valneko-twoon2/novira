@@ -1272,6 +1272,7 @@ impl ComfyEngine {
 mod tests {
     use super::*;
 
+    // tags: condition
     #[test]
     fn ws_messages_for_other_prompts_are_ignored() {
         let p = r#"{"type":"progress","data":{"value":3,"max":20,"prompt_id":"a"}}"#;
@@ -1319,6 +1320,7 @@ mod tests {
         assert_eq!(parse_ws_text("not json", "a"), WsEvent::Other);
     }
 
+    // tags: equivalence
     #[test]
     fn two_sampling_passes_count_on_instead_of_starting_over() {
         // One pass: as ComfyUI sends it.
@@ -1334,6 +1336,7 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn previews_become_data_urls() {
         let mut frame = 1u32.to_be_bytes().to_vec();
@@ -1354,6 +1357,7 @@ mod tests {
         assert_eq!(parse_preview(&[0, 0, 0, 2, 1]), None);
     }
 
+    // tags: equivalence
     #[test]
     fn prompt_errors_name_the_failing_nodes() {
         let body = serde_json::json!({
@@ -1366,6 +1370,7 @@ mod tests {
         );
     }
 
+    // tags: equivalence
     #[test]
     fn only_the_end_messages_of_our_own_prompt_end_the_job() {
         let msg = |kind: &str, id: &str, node: &str| {
@@ -1410,6 +1415,7 @@ mod tests {
         ));
     }
 
+    // tags: state-transition
     #[test]
     fn a_history_entry_is_done_when_completed_or_ended_with_a_status() {
         let done = |v: serde_json::Value| is_done(&v);
@@ -1426,12 +1432,14 @@ mod tests {
         assert!(!done(serde_json::json!({})));
     }
 
+    // tags: boundary
     #[test]
     fn an_output_node_that_showed_an_empty_text_list_showed_nothing() {
         let entry = serde_json::json!({ "status": { "status_str": "success" }, "outputs": { "9": { "text": [] } } });
         assert_eq!(output_text(&entry, "9").unwrap(), None);
     }
 
+    // tags: decision-table
     #[test]
     fn text_outputs_are_read_and_files_win_over_text() {
         let entry = serde_json::json!({ "status": { "status_str": "success" }, "outputs": {
@@ -1451,6 +1459,7 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn a_result_file_is_told_by_its_extension() {
         let kind = |n: &str| result_kind(n).unwrap();
@@ -1465,6 +1474,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn ws_url_follows_the_base_url() {
         let e = ComfyEngine::new("http://127.0.0.1:8188", None, Duration::from_secs(1)).unwrap();
@@ -1477,6 +1487,7 @@ mod tests {
             .starts_with("wss://comfy.example:8443/ws?clientId="));
     }
 
+    // tags: error-guessing
     #[tokio::test]
     async fn freeing_memory_from_a_comfyui_that_cannot_be_reached_only_logs() {
         let closed = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
@@ -1491,6 +1502,7 @@ mod tests {
         e.free_memory().await;
     }
 
+    // tags: state-transition
     #[tokio::test]
     async fn a_caller_that_waited_for_the_start_lock_finds_the_server_already_up() {
         use axum::routing::get;

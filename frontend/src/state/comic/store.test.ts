@@ -21,14 +21,14 @@ function seed() {
 beforeEach(reset);
 
 describe('the comic store: projects', () => {
-  it('opens the first project on its first page', () => {
+  it('opens the first project on its first page', { tags: ['condition'] }, () => {
     const { a } = seed();
     const s = useComic.getState();
     expect(activeProject(s)?.id).toBe(a.id);
     expect(activePage(s)?.id).toBe(a.pages[0]!.id);
   });
 
-  it('creates a project at the front and opens it', () => {
+  it('creates a project at the front and opens it', { tags: ['condition'] }, () => {
     seed();
     const id = useComic.getState().createProject('New');
     const s = useComic.getState();
@@ -38,7 +38,7 @@ describe('the comic store: projects', () => {
     expect(s.activeProjectId).toBe(id);
   });
 
-  it('keeps the space typed at the end of a character part and of a place\'s negative words', () => {
+  it('keeps the space typed at the end of a character part and of a place\'s negative words', { tags: ['boundary'] }, () => {
     seed();
     useComic.getState().setCast([{ id: 'c1', name: 'Mio', tags: '1girl', imageName: null, parts: { hair: 'long ' } }]);
     expect(activeProject(useComic.getState())!.cast[0]!.parts).toEqual({ hair: 'long ' });
@@ -49,7 +49,7 @@ describe('the comic store: projects', () => {
     expect(activeProject(useComic.getState())!.cast[0]!.parts).toBeUndefined();
   });
 
-  it('renames a project and leaves the others alone', () => {
+  it('renames a project and leaves the others alone', { tags: ['condition'] }, () => {
     const { a, b } = seed();
     useComic.getState().renameProject(a.id, 'Renamed');
     const s = useComic.getState();
@@ -57,7 +57,7 @@ describe('the comic store: projects', () => {
     expect(s.projects.find((p) => p.id === b.id)).toBe(b);
   });
 
-  it('deletes the open project and opens the next one', () => {
+  it('deletes the open project and opens the next one', { tags: ['condition'] }, () => {
     const { a, b } = seed();
     useComic.getState().deleteProject(a.id);
     const s = useComic.getState();
@@ -66,7 +66,7 @@ describe('the comic store: projects', () => {
     expect(s.activePageId).toBe(b.pages[0]!.id);
   });
 
-  it('deletes the last project and has nothing open', () => {
+  it('deletes the last project and has nothing open', { tags: ['condition'] }, () => {
     const { a } = seed();
     useComic.getState().deleteProject(a.id);
     useComic.getState().deleteProject(useComic.getState().projects[0]!.id);
@@ -76,7 +76,7 @@ describe('the comic store: projects', () => {
     expect(activePage(s)).toBeNull();
   });
 
-  it('changes the project on screen and clears the selection', () => {
+  it('changes the project on screen and clears the selection', { tags: ['condition'] }, () => {
     const { b } = seed();
     const panel = useComic.getState().projects[0]!.pages[0]!.panels[0]!;
     useComic.getState().selectPanel(panel.id);
@@ -86,14 +86,14 @@ describe('the comic store: projects', () => {
     expect(s.selectedPanelId).toBeNull();
   });
 
-  it('ignores a project id that is not there', () => {
+  it('ignores a project id that is not there', { tags: ['error-guessing'] }, () => {
     seed();
     const before = useComic.getState().activeProjectId;
     useComic.getState().selectProject('nope');
     expect(useComic.getState().activeProjectId).toBe(before);
   });
 
-  it('replaces the project object on every change, so changes can be told apart', () => {
+  it('replaces the project object on every change, so changes can be told apart', { tags: ['equivalence'] }, () => {
     const { a, b } = seed();
     useComic.getState().setPrompt(a.pages[0]!.panels[0]!.id, 'x');
     const s = useComic.getState();
@@ -103,7 +103,7 @@ describe('the comic store: projects', () => {
 });
 
 describe('the comic store: pages and panels', () => {
-  it('adds a page with three panels and opens it', () => {
+  it('adds a page with three panels and opens it', { tags: ['condition'] }, () => {
     const { a } = seed();
     const id = useComic.getState().addPage();
     const s = useComic.getState();
@@ -113,7 +113,7 @@ describe('the comic store: pages and panels', () => {
     expect(project.pages[1]!.panels).toHaveLength(3);
   });
 
-  it('deletes a page and moves to the first page left', () => {
+  it('deletes a page and moves to the first page left', { tags: ['state-transition'] }, () => {
     const { a } = seed();
     const second = emptyPage();
     useComic.getState().setProjects([{ ...a, pages: [a.pages[0]!, second] }]);
@@ -124,7 +124,7 @@ describe('the comic store: pages and panels', () => {
     expect(s.activePageId).toBe(a.pages[0]!.id);
   });
 
-  it('grows and shrinks the panels of a page, keeping the first ones', () => {
+  it('grows and shrinks the panels of a page, keeping the first ones', { tags: ['condition'] }, () => {
     const { a } = seed();
     const pageId = a.pages[0]!.id;
     const [first, second, third] = a.pages[0]!.panels;
@@ -137,7 +137,7 @@ describe('the comic store: pages and panels', () => {
     expect(panels.map((p) => p.id)).toEqual([first!.id]);
   });
 
-  it('keeps the count within one to the most a page holds', () => {
+  it('keeps the count within one to the most a page holds', { tags: ['boundary'] }, () => {
     const { a } = seed();
     useComic.getState().setPanelCount(a.pages[0]!.id, 500);
     expect(useComic.getState().projects[0]!.pages[0]!.panels).toHaveLength(MAX_PANELS_PER_PAGE);
@@ -145,7 +145,7 @@ describe('the comic store: pages and panels', () => {
     expect(useComic.getState().projects[0]!.pages[0]!.panels).toHaveLength(1);
   });
 
-  it('clears the selection when its panel is removed', () => {
+  it('clears the selection when its panel is removed', { tags: ['condition'] }, () => {
     const { a } = seed();
     const last = a.pages[0]!.panels[2]!;
     useComic.getState().selectPanel(last.id);
@@ -153,7 +153,7 @@ describe('the comic store: pages and panels', () => {
     expect(useComic.getState().selectedPanelId).toBeNull();
   });
 
-  it('finds a panel in whichever project holds it', () => {
+  it('finds a panel in whichever project holds it', { tags: ['equivalence'] }, () => {
     const { b } = seed();
     const panel = b.pages[0]!.panels[1]!;
     const ref = findPanel(useComic.getState().projects, panel.id);
@@ -162,14 +162,14 @@ describe('the comic store: pages and panels', () => {
     expect(findPanel(useComic.getState().projects, 'missing')).toBeNull();
   });
 
-  it('selects the panel on screen', () => {
+  it('selects the panel on screen', { tags: ['condition'] }, () => {
     const { a } = seed();
     const panel = a.pages[0]!.panels[0]!;
     useComic.getState().selectPanel(panel.id);
     expect(workPanel(useComic.getState())?.panel.id).toBe(panel.id);
   });
 
-  it('sets the prompt, the picture and the pose of a panel', () => {
+  it('sets the prompt, the picture and the pose of a panel', { tags: ['condition'] }, () => {
     const { a } = seed();
     const panel = a.pages[0]!.panels[0]!.id;
     const s = useComic.getState();
@@ -182,7 +182,7 @@ describe('the comic store: pages and panels', () => {
     expect(findPanel(useComic.getState().projects, panel)!.panel).toMatchObject({ poses: [], poseImageName: null });
   });
 
-  it('puts a 3D rough into a panel in one undo step, and lets a pose put in another way drop its depth map', () => {
+  it('puts a 3D rough into a panel in one undo step, and lets a pose put in another way drop its depth map', { tags: ['state-transition'] }, () => {
     const { a } = seed();
     const panel = a.pages[0]!.panels[0]!.id;
     const rough = newRough();
@@ -200,7 +200,7 @@ describe('the comic store: pages and panels', () => {
     expect(after).not.toHaveProperty('depthImageName');
   });
 
-  it('drops the depth map of a panel a template is put into', () => {
+  it('drops the depth map of a panel a template is put into', { tags: ['condition'] }, () => {
     const { a } = seed();
     const panel = a.pages[0]!.panels[0]!.id;
     const template = useComic.getState().savePanelTemplate(panel, 'standing')!;
@@ -211,7 +211,7 @@ describe('the comic store: pages and panels', () => {
 });
 
 describe('the comic store: the cast', () => {
-  it('keeps every field of a character it is given, the words kept out of its panels as they are typed', () => {
+  it('keeps every field of a character it is given, the words kept out of its panels as they are typed', { tags: ['equivalence'] }, () => {
     seed();
     useComic.getState().setCast([{ id: 'c', name: 'Mina', tags: '1girl', parts: { hair: 'red hair' }, nonHuman: true, negative: 'red ', imageName: 'mina.png' }]);
     expect(useComic.getState().projects[0]!.cast).toEqual([{ id: 'c', name: 'Mina', tags: '1girl', parts: { hair: 'red hair' }, nonHuman: true, negative: 'red ', imageName: 'mina.png' }]);
@@ -221,7 +221,7 @@ describe('the comic store: the cast', () => {
     expect(useComic.getState().projects[0]!.cast[0]).toMatchObject({ sheet: { back: 'b.png' }, libraryId: 'preset-1' });
   });
 
-  it('puts a view into the sheet of a character of any comic, and takes it out, without an undo step', () => {
+  it('puts a view into the sheet of a character of any comic, and takes it out, without an undo step', { tags: ['state-transition'] }, () => {
     const { a, b } = seed();
     useComic.getState().selectProject(b.id);
     useComic.getState().setCast([{ id: 'c', name: 'Mina', tags: '1girl', imageName: 'f.png' }]);
@@ -243,7 +243,7 @@ describe('the comic store: the cast', () => {
     expect(useComic.getState().projects).toBe(projects);
   });
 
-  it('turns the character references on at a strength kept in range, and off again', () => {
+  it('turns the character references on at a strength kept in range, and off again', { tags: ['regression'] }, () => {
     const { a } = seed();
     const comic = () => useComic.getState().projects.find((p) => p.id === a.id)!;
     expect(comic()).not.toHaveProperty('castReference');
@@ -260,7 +260,7 @@ describe('the comic store: the places and the world', () => {
   const comic = () => useComic.getState().projects[0]!;
   const panelOf = (id: string) => findPanel(useComic.getState().projects, id)!.panel;
 
-  it('keeps the places it is given, and a panel set in a place that is removed loses it', () => {
+  it('keeps the places it is given, and a panel set in a place that is removed loses it', { tags: ['condition'] }, () => {
     const { a } = seed();
     const [first, second] = a.pages[0]!.panels.map((p) => p.id) as [string, string];
     useComic.getState().setPlaces([
@@ -282,7 +282,7 @@ describe('the comic store: the places and the world', () => {
     expect(useComic.getState().projects[1]!.places).toEqual([]);
   });
 
-  it('keeps the world as it is typed, drops one with no word, and undoes a run of typing in one step', () => {
+  it('keeps the world as it is typed, drops one with no word, and undoes a run of typing in one step', { tags: ['state-transition'] }, () => {
     seed();
     for (const text of ['s', 'su', 'summer ']) useComic.getState().setWorld(text);
     expect(comic().world).toBe('summer ');
@@ -295,7 +295,7 @@ describe('the comic store: the places and the world', () => {
 });
 
 describe('the comic store: balloons and captions', () => {
-  it('adds a balloon and selects it, then edits and removes it', () => {
+  it('adds a balloon and selects it, then edits and removes it', { tags: ['state-transition'] }, () => {
     const { a } = seed();
     const panelId = a.pages[0]!.panels[0]!.id;
     const id = useComic.getState().addBubble(panelId, 'speech')!;
@@ -308,14 +308,14 @@ describe('the comic store: balloons and captions', () => {
     expect(useComic.getState().selectedBubbleId).toBeNull();
   });
 
-  it('adds nothing to a panel that is not there', () => {
+  it('adds nothing to a panel that is not there', { tags: ['error-guessing'] }, () => {
     seed();
     expect(useComic.getState().addBubble('missing', 'speech')).toBeNull();
   });
 });
 
 describe('the comic store: queue items', () => {
-  it('remembers which panel a queue item is drawing, and forgets it', () => {
+  it('remembers which panel a queue item is drawing, and forgets it', { tags: ['condition'] }, () => {
     useComic.getState().setPending(7, 'panel-x');
     expect(useComic.getState().pending).toEqual({ 7: 'panel-x' });
     useComic.getState().clearPending(7);

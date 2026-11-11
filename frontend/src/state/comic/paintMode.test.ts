@@ -20,7 +20,7 @@ beforeEach(() => {
 afterEach(() => resetPageCanvases());
 
 describe('starting to paint', () => {
-  it('adds a raster layer to a page without one, and chooses it', () => {
+  it('adds a raster layer to a page without one, and chooses it', { tags: ['condition'] }, () => {
     useComic.getState().selectPanel(page().panels[0]!.id);
     useComic.getState().setCutting(true);
     expect(startPainting(page().id)).toBe(true);
@@ -31,7 +31,7 @@ describe('starting to paint', () => {
     expect(useComic.getState().cutting).toBe(false);
   });
 
-  it('chooses the top raster of the user when a slot is chosen, and keeps a chosen raster', () => {
+  it('chooses the top raster of the user when a slot is chosen, and keeps a chosen raster', { tags: ['condition'] }, () => {
     const s = store().getState();
     const low = s.addEntity('raster');
     const high = s.addEntity('raster');
@@ -45,14 +45,14 @@ describe('starting to paint', () => {
     expect(userLayers()).toHaveLength(2);
   });
 
-  it('does nothing for a page that is gone', () => {
+  it('does nothing for a page that is gone', { tags: ['condition'] }, () => {
     expect(startPainting('missing')).toBe(false);
     expect(usePagePaint.getState().painting).toBe(false);
   });
 });
 
 describe('stopping', () => {
-  it('lets go of the painted layer, and of nothing when not painting', () => {
+  it('lets go of the painted layer, and of nothing when not painting', { tags: ['condition'] }, () => {
     startPainting(page().id);
     stopPainting(page().id);
     expect(usePagePaint.getState().painting).toBe(false);
@@ -65,7 +65,7 @@ describe('stopping', () => {
 });
 
 describe('following the layer choice', () => {
-  it('starts painting on a raster of the user and goes back to the page on a slot', () => {
+  it('starts painting on a raster of the user and goes back to the page on a slot', { tags: ['state-transition'] }, () => {
     const id = store().getState().addEntity('raster');
     followLayerChoice(page().id, id);
     expect(usePagePaint.getState().painting).toBe(true);

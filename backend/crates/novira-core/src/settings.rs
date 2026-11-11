@@ -264,6 +264,7 @@ fn path_key(path: &Path) -> String {
 mod tests {
     use super::*;
 
+    // tags: error-guessing
     #[test]
     fn a_settings_file_whose_root_is_not_an_object_is_refused() {
         // serde alone would read `[]` as the defaults and `[null]` as a first field, hiding a damaged file.
@@ -278,6 +279,7 @@ mod tests {
         assert_eq!(Settings::load(dir.path()).unwrap(), Settings::default());
     }
 
+    // tags: error-guessing
     #[test]
     fn a_comfyui_folder_that_is_not_a_plain_full_folder_path_is_refused() {
         let base = tempfile::tempdir().unwrap();
@@ -308,12 +310,14 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn missing_file_gives_defaults() {
         let dir = tempfile::tempdir().unwrap();
         assert_eq!(Settings::load(dir.path()).unwrap(), Settings::default());
     }
 
+    // tags: condition
     #[test]
     fn partial_file_keeps_other_defaults() {
         let dir = tempfile::tempdir().unwrap();
@@ -329,6 +333,7 @@ mod tests {
         assert_eq!(s.comfyui_start_timeout_secs, 180);
     }
 
+    // tags: condition
     #[test]
     fn saving_a_key_keeps_the_others() {
         let dir = tempfile::tempdir().unwrap();
@@ -351,6 +356,7 @@ mod tests {
         assert_eq!(s.comfyui_args, ["--fast"]);
     }
 
+    // tags: error-guessing
     #[test]
     fn saving_into_a_broken_file_leaves_it_alone() {
         let dir = tempfile::tempdir().unwrap();
@@ -362,6 +368,7 @@ mod tests {
         );
     }
 
+    // tags: error-guessing
     #[test]
     fn broken_file_is_an_error() {
         let dir = tempfile::tempdir().unwrap();
@@ -369,6 +376,7 @@ mod tests {
         assert!(Settings::load(dir.path()).is_err());
     }
 
+    // tags: decision-table
     #[test]
     fn the_mode_follows_the_url_then_the_folder() {
         let mut s = Settings::default();
@@ -379,6 +387,7 @@ mod tests {
         assert_eq!(s.comfyui_mode(), ComfyuiMode::Url);
     }
 
+    // tags: condition
     #[test]
     fn an_unknown_saved_package_shows_as_the_default() {
         let mut s = Settings::default();
@@ -389,6 +398,7 @@ mod tests {
         assert_eq!(s.package(), ComfyuiPackage::Nvidia);
     }
 
+    // tags: equivalence
     #[test]
     fn only_the_known_packages_are_accepted() {
         assert!(check_package("nvidia").is_ok());
@@ -407,6 +417,7 @@ mod tests {
         }
     }
 
+    // tags: boundary
     #[test]
     fn the_start_timeout_is_kept_within_its_range() {
         for ok in [30, 31, 180, 1799, 1800] {
@@ -430,6 +441,7 @@ mod tests {
         (base, data, a, b)
     }
 
+    // tags: equivalence
     #[test]
     fn a_new_existing_folder_is_accepted() {
         let (_base, data, a, b) = folders();
@@ -441,6 +453,7 @@ mod tests {
         assert!(check_new_model_root(&near, &[], &data).is_ok());
     }
 
+    // tags: error-guessing
     #[test]
     fn a_folder_already_listed_is_refused_in_any_spelling() {
         let (_base, data, a, _b) = folders();
@@ -456,6 +469,7 @@ mod tests {
         }
     }
 
+    // tags: error-guessing
     #[test]
     fn the_data_folder_and_folders_inside_it_are_refused() {
         let (_base, data, _a, _b) = folders();
@@ -471,6 +485,7 @@ mod tests {
         }
     }
 
+    // tags: error-guessing
     #[test]
     fn paths_that_are_not_plain_existing_folders_are_refused() {
         let (base, data, a, _b) = folders();
@@ -493,6 +508,7 @@ mod tests {
         }
     }
 
+    // tags: error-guessing
     #[cfg(windows)]
     #[test]
     fn windows_device_paths_are_refused() {
@@ -505,6 +521,7 @@ mod tests {
         }
     }
 
+    // tags: boundary
     #[test]
     fn no_more_than_the_limit_of_folders() {
         let (base, data, a, _b) = folders();

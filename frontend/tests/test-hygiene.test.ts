@@ -51,7 +51,7 @@ function frontendSnapshotNames(source: string, folder: string): string[] | null 
 }
 
 describe('test hygiene', () => {
-  it('uses #[ignore] only in backend tests/*_live.rs', () => {
+  it('uses #[ignore] only in backend tests/*_live.rs', { tags: ['condition', 'static'] }, () => {
     const rust = walk(BACKEND, (_p, name, isDir) => !isDir && name.endsWith('.rs'));
     const offenders = rust.flatMap((file) => {
       const live = /[\\/]tests[\\/][^\\/]+_live\.rs$/.test(file);
@@ -64,7 +64,7 @@ describe('test hygiene', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('every frontend snapshot file is written by a test case', () => {
+  it('every frontend snapshot file is written by a test case', { tags: ['condition', 'static'] }, () => {
     const folders = walk(SRC, (_p, name, isDir) => isDir && name === '__snapshots__').flatMap((snaps) =>
       readdirSync(snaps).map((folder) => join(snaps, folder)).filter((p) => statSync(p).isDirectory()),
     );
@@ -88,7 +88,7 @@ describe('test hygiene', () => {
     expect(orphans).toEqual([]);
   });
 
-  it('every backend graph snapshot file is written by a test case', () => {
+  it('every backend graph snapshot file is written by a test case', { tags: ['condition', 'static'] }, () => {
     const source = [GRAPH_SNAPSHOT_TEST, GRAPH_SNAPSHOT_FAMILIES_TEST].map((f) => readFileSync(f, 'utf8')).join('\n');
     const calls = [...source.matchAll(/(?<!fn )\b(?:snapshot_built|snapshot_guided|assert_snapshot|snap|controlled|gguf)\(\s*("|\w+)/g)];
     // Names must be string literals so this scan can read them (`case` is snapshot_built or snapshot_guided forwarding its parameter).

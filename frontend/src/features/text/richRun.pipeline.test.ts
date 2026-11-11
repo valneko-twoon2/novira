@@ -79,7 +79,7 @@ afterEach(() => {
 });
 
 describe('richReadiness', () => {
-  it('names what is missing: a model, then a text layer with letters', () => {
+  it('names what is missing: a model, then a text layer with letters', { tags: ['condition'] }, () => {
     selectText();
     useModels.setState({ models: [] });
     expect(richReadiness()).toHaveLength(1);
@@ -90,7 +90,7 @@ describe('richReadiness', () => {
     expect(richReadiness()).toEqual([]);
   });
 
-  it('tells the listener only when the reasons change, and stops when told to', () => {
+  it('tells the listener only when the reasons change, and stops when told to', { tags: ['state-transition'] }, () => {
     selectText();
     const changed = vi.fn();
     const off = subscribeRichReadiness(changed);
@@ -105,7 +105,7 @@ describe('richReadiness', () => {
 });
 
 describe('a run from Generate to the fill', () => {
-  it('makes the base and the line picture, follows the batch and puts each cut picture on the layer', async () => {
+  it('makes the base and the line picture, follows the batch and puts each cut picture on the layer', { tags: ['state-transition'] }, async () => {
     const layer = selectText();
     const request = await buildSelectedRich(false);
     expect(fake.backend.uploadImage).toHaveBeenCalledTimes(2);
@@ -133,7 +133,7 @@ describe('a run from Generate to the fill', () => {
     expect(fake.state.listener).toBeNull();
   });
 
-  it('draws a new seed per run when the seed is random and shows it in the form', async () => {
+  it('draws a new seed per run when the seed is random and shows it in the form', { tags: ['state-transition'] }, async () => {
     selectText();
     useRichForm.setState({ form: { ...RICH_FORM_DEFAULTS, randomSeed: true, seed: 0 } });
     await buildSelectedRich(false);
@@ -141,7 +141,7 @@ describe('a run from Generate to the fill', () => {
     expect(Number.isInteger(seed)).toBe(true);
   });
 
-  it('handles events that came before the queue told the items, once it does', async () => {
+  it('handles events that came before the queue told the items, once it does', { tags: ['state-transition'] }, async () => {
     const layer = selectText();
     const request = await buildSelectedRich(true);
     emit({ type: 'image_added', image: picture('early.png'), item: item(1) });
@@ -153,7 +153,7 @@ describe('a run from Generate to the fill', () => {
     expect(useRichRun.getState().running).toEqual({});
   });
 
-  it('reports a failed item once, and ends the run when the last item is over', async () => {
+  it('reports a failed item once, and ends the run when the last item is over', { tags: ['state-transition'] }, async () => {
     const layer = selectText();
     const request = await buildSelectedRich(false);
     attachRich([item(1, 'pending'), item(2, 'pending')], request);
@@ -167,7 +167,7 @@ describe('a run from Generate to the fill', () => {
     expect(fake.backend.deleteImages).toHaveBeenCalled();
   });
 
-  it('counts a canceled item as over without a report, and ignores items that are not its own', async () => {
+  it('counts a canceled item as over without a report, and ignores items that are not its own', { tags: ['state-transition'] }, async () => {
     selectText();
     const request = await buildSelectedRich(false);
     attachRich([item(1, 'pending')], request);
@@ -181,7 +181,7 @@ describe('a run from Generate to the fill', () => {
     expect(useRichRun.getState().running).toEqual({});
   });
 
-  it('on a cleared queue ends only the items that are no longer waiting', async () => {
+  it('on a cleared queue ends only the items that are no longer waiting', { tags: ['state-transition'] }, async () => {
     selectText();
     const request = await buildSelectedRich(false);
     attachRich([item(1, 'pending'), item(2, 'pending')], request);
@@ -193,7 +193,7 @@ describe('a run from Generate to the fill', () => {
     expect(useRichRun.getState().running).toEqual({});
   });
 
-  it('drops a picture that arrives after the layer is gone, deletes it and cancels what still waits', async () => {
+  it('drops a picture that arrives after the layer is gone, deletes it and cancels what still waits', { tags: ['error-guessing'] }, async () => {
     const layer = selectText();
     const request = await buildSelectedRich(false);
     attachRich([item(1, 'pending'), item(2, 'pending')], request);
@@ -208,7 +208,7 @@ describe('a run from Generate to the fill', () => {
     expect(fake.backend.uploadImage).toHaveBeenCalledTimes(3);
   });
 
-  it('reports a picture that cannot be stored and goes on', async () => {
+  it('reports a picture that cannot be stored and goes on', { tags: ['error-guessing'] }, async () => {
     const layer = selectText();
     const request = await buildSelectedRich(false);
     attachRich([item(1, 'pending')], request);
@@ -222,12 +222,12 @@ describe('a run from Generate to the fill', () => {
 });
 
 describe('what cannot start or is refused', () => {
-  it('says there is nothing to paint when no text layer is selected', async () => {
+  it('says there is nothing to paint when no text layer is selected', { tags: ['condition'] }, async () => {
     useTextEditor.setState({ scene: EMPTY_SCENE, selectedId: null });
     await expect(buildSelectedRich(false)).rejects.toThrow();
   });
 
-  it('cleans up the pictures already made when a later step of the build fails', async () => {
+  it('cleans up the pictures already made when a later step of the build fails', { tags: ['error-guessing'] }, async () => {
     selectText();
     fake.state.uploadFailsAt = 2;
     await expect(buildSelectedRich(false)).rejects.toThrow('upload refused');
@@ -235,7 +235,7 @@ describe('what cannot start or is refused', () => {
     expect(fake.state.listener).toBeNull();
   });
 
-  it('a queue that refuses the batch leaves nothing behind and shows a toast', async () => {
+  it('a queue that refuses the batch leaves nothing behind and shows a toast', { tags: ['error-guessing'] }, async () => {
     const layer = selectText();
     fake.state.enqueueFails = true;
     await runRich(layer.id);
@@ -245,14 +245,14 @@ describe('what cannot start or is refused', () => {
     expect(useRichRun.getState().running).toEqual({});
   });
 
-  it('runRich queues a batch for the layer and follows it', async () => {
+  it('runRich queues a batch for the layer and follows it', { tags: ['state-transition'] }, async () => {
     const layer = selectText();
     await runRich(layer.id);
     expect(fake.backend.enqueue).toHaveBeenCalledTimes(1);
     expect(useRichRun.getState().running[layer.id]).toEqual({ done: 0, total: 2 });
   });
 
-  it('dropRich and attachRich ignore a request that is not a run of its own', () => {
+  it('dropRich and attachRich ignore a request that is not a run of its own', { tags: ['error-guessing'] }, () => {
     const stranger = {} as never;
     dropRich(stranger);
     attachRich([item(1)], stranger);

@@ -33,15 +33,15 @@ function frontend(built: number | null, source: number) {
 }
 
 describe('ensure-frontend', () => {
-  it('builds when there is no page yet', () => {
+  it('builds when there is no page yet', { tags: ['condition'] }, () => {
     expect(frontendIsStale(frontend(null, 200))).toBe(true);
   });
 
-  it('builds when a source, also a deep one, is newer than the page', () => {
+  it('builds when a source, also a deep one, is newer than the page', { tags: ['condition'] }, () => {
     expect(frontendIsStale(frontend(300, 400))).toBe(true);
   });
 
-  it('does not build when the page is newer than every source, or as new', () => {
+  it('does not build when the page is newer than every source, or as new', { tags: ['condition'] }, () => {
     expect(frontendIsStale(frontend(500, 400))).toBe(false);
     expect(frontendIsStale(frontend(400, 400))).toBe(false);
   });

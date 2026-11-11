@@ -6,6 +6,7 @@ use novira_core::types::*;
 use novira_core::BackendError;
 use std::sync::Arc;
 
+// tags: error-guessing
 #[tokio::test]
 async fn unknown_models_bad_tags_and_an_engine_that_was_not_installed_here_are_refused() {
     let dir = tempfile::tempdir().unwrap();
@@ -37,6 +38,7 @@ fn webp() -> ExportOptions {
     }
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_picture_is_exported_as_webp() {
     let dir = tempfile::tempdir().unwrap();
@@ -59,6 +61,7 @@ async fn a_picture_is_exported_as_webp() {
 }
 
 #[cfg(windows)]
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn a_copy_that_cannot_be_written_into_the_folder_says_so() {
     let dir = tempfile::tempdir().unwrap();
@@ -82,6 +85,7 @@ async fn a_copy_that_cannot_be_written_into_the_folder_says_so() {
     backend.shutdown();
 }
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn a_file_over_the_size_limit_is_refused_before_it_is_read() {
     let dir = tempfile::tempdir().unwrap();

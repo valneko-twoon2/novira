@@ -30,19 +30,19 @@ afterEach(() => {
 });
 
 describe('picture marks of a notification', () => {
-  it('keeps small copies of at most the first few pictures, scaled to one height', async () => {
+  it('keeps small copies of at most the first few pictures, scaled to one height', { tags: ['boundary'] }, async () => {
     fakeImages(() => false);
     const marks = await keepMarks(Array.from({ length: MARKS_SHOWN + 2 }, (_, i) => picture(`p${i}`)));
     expect(marks).toHaveLength(MARKS_SHOWN);
     expect(marks[0]).toBe('data:128x64');
   });
 
-  it('leaves out a picture that does not load, and keeps the others', async () => {
+  it('leaves out a picture that does not load, and keeps the others', { tags: ['condition'] }, async () => {
     fakeImages((src) => src.endsWith('bad'));
     expect(await keepMarks([picture('bad'), picture('good')])).toEqual(['data:128x64']);
   });
 
-  it('gives up on a picture that never loads, so the notification does not wait for it', async () => {
+  it('gives up on a picture that never loads, so the notification does not wait for it', { tags: ['condition'] }, async () => {
     vi.useFakeTimers();
     vi.stubGlobal(
       'Image',
@@ -56,7 +56,7 @@ describe('picture marks of a notification', () => {
     vi.useRealTimers();
   });
 
-  it('uses the addresses of pictures that are still in the gallery as they are', () => {
+  it('uses the addresses of pictures that are still in the gallery as they are', { tags: ['condition'] }, () => {
     expect(liveMarks([picture('a'), picture('b', '')])).toEqual(['thumb/a']);
   });
 });

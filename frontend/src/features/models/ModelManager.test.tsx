@@ -74,14 +74,14 @@ afterEach(() => {
 });
 
 describe('ModelManager list', () => {
-  it('lists every model by name and counts them in the rail', () => {
+  it('lists every model by name and counts them in the rail', { tags: ['scenario'] }, () => {
     show();
     expect(items()).toEqual(['Cat Style', 'Good VAE', 'Moon Light', 'Sunny XL']);
     expect(screen.getByTestId('mm-cat-all').textContent).toContain('4');
     expect(screen.getByTestId('mm-cat-lora').textContent).toContain('1');
   });
 
-  it('narrows by category, search text and base, and says when nothing matches', () => {
+  it('narrows by category, search text and base, and says when nothing matches', { tags: ['scenario'] }, () => {
     show();
     fireEvent.click(screen.getByTestId('mm-cat-lora'));
     expect(items()).toEqual(['Cat Style']);
@@ -95,7 +95,7 @@ describe('ModelManager list', () => {
     expect(items()).toEqual(['Moon Light']);
   });
 
-  it('sorts by size and by type', () => {
+  it('sorts by size and by type', { tags: ['scenario'] }, () => {
     show();
     choose(t('models.sort.label'), t('models.sort.size'));
     expect(items()[0]).toBe('Sunny XL');
@@ -103,7 +103,7 @@ describe('ModelManager list', () => {
     expect(items()[0]).toBe('Cat Style');
   });
 
-  it('switches to the list view and back, and sizes the thumbnails', () => {
+  it('switches to the list view and back, and sizes the thumbnails', { tags: ['scenario'] }, () => {
     show();
     fireEvent.click(screen.getByRole('button', { name: t('models.view.list') }));
     expect(screen.getByTestId('mm-grid').className).toContain('mm-grid--list');
@@ -114,14 +114,14 @@ describe('ModelManager list', () => {
     expect(screen.getByTestId('mm-grid').getAttribute('style')).toContain('--mm-thumb: 190px');
   });
 
-  it('starts the thumbnails at the smallest size on a phone', () => {
+  it('starts the thumbnails at the smallest size on a phone', { tags: ['boundary'] }, () => {
     vi.stubGlobal('matchMedia', (q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} }));
     show();
     expect(screen.getByTestId('mm-grid').getAttribute('style')).toContain('--mm-thumb: 120px');
     expect(screen.getByRole('slider', { name: t('models.thumbSize') }).getAttribute('aria-valuenow')).toBe('120');
   });
 
-  it('shows the favourites only, after a model is starred, and removes the star again', () => {
+  it('shows the favourites only, after a model is starred, and removes the star again', { tags: ['scenario'] }, () => {
     show();
     fireEvent.click(within(screen.getAllByTestId('mm-item')[3]!).getByRole('button', { name: t('models.card.favorite') }));
     expect(useModels.getState().favorites).toEqual(['m1']);
@@ -133,7 +133,7 @@ describe('ModelManager list', () => {
 });
 
 describe('ModelManager selection and deletion', () => {
-  it('opens the detail panel when a card is pressed and closes it by pressing the same card again', () => {
+  it('opens the detail panel when a card is pressed and closes it by pressing the same card again', { tags: ['scenario'] }, () => {
     show();
     fireEvent.click(selectButton(screen.getAllByTestId('mm-item')[3]!));
     expect(useModels.getState().selectedKey).toBe('m1');
@@ -147,7 +147,7 @@ describe('ModelManager selection and deletion', () => {
     expect(useModels.getState().selectedKey).toBeNull();
   });
 
-  it('deletes a model from the card menu after confirmation', async () => {
+  it('deletes a model from the card menu after confirmation', { tags: ['scenario'] }, async () => {
     const del = vi.spyOn(backend, 'deleteModel').mockResolvedValue(undefined);
     show();
     fireEvent.keyDown(within(screen.getAllByTestId('mm-item')[0]!).getByRole('button', { name: t('models.card.menu') }), { key: 'Enter' });
@@ -157,7 +157,7 @@ describe('ModelManager selection and deletion', () => {
     await waitFor(() => expect(del).toHaveBeenCalled());
   });
 
-  it('opens a model from the card menu', async () => {
+  it('opens a model from the card menu', { tags: ['scenario'] }, async () => {
     show();
     fireEvent.keyDown(within(screen.getAllByTestId('mm-item')[2]!).getByRole('button', { name: t('models.card.menu') }), { key: 'Enter' });
     fireEvent.click(await screen.findByRole('menuitem', { name: t('models.card.open') }));
@@ -166,7 +166,7 @@ describe('ModelManager selection and deletion', () => {
 });
 
 describe('ModelManager empty and import', () => {
-  it('invites to find or import models when none are installed', async () => {
+  it('invites to find or import models when none are installed', { tags: ['scenario'] }, async () => {
     useModels.setState({ models: [] });
     show();
     expect(screen.getByText(t('models.empty.title'))).toBeTruthy();
@@ -178,7 +178,7 @@ describe('ModelManager empty and import', () => {
     expect(useUi.getState().activeTab).toBe('browse');
   });
 
-  it('opens the import dialog from the toolbar and goes to the online search with Find', async () => {
+  it('opens the import dialog from the toolbar and goes to the online search with Find', { tags: ['scenario'] }, async () => {
     show();
     fireEvent.click(screen.getByTestId('mm-import'));
     expect(await screen.findByRole('dialog')).toBeTruthy();
@@ -189,7 +189,7 @@ describe('ModelManager empty and import', () => {
 });
 
 describe('default settings editing', () => {
-  it('saves the edited values of every switched-on setting', async () => {
+  it('saves the edited values of every switched-on setting', { tags: ['scenario'] }, async () => {
     const update = vi.spyOn(backend, 'updateModel').mockImplementation(async (_key, patch) => ({ ...MODELS[0]!, ...patch }) as ModelConfig);
     useModels.setState({
       models: [
@@ -229,7 +229,7 @@ describe('new versions of installed models', () => {
   });
   afterEach(() => useModelUpdates.setState(initialUpdates, true));
 
-  it('asks Civitai when the screen opens and the answer is old, and marks the cards of the models with a new version', async () => {
+  it('asks Civitai when the screen opens and the answer is old, and marks the cards of the models with a new version', { tags: ['scenario'] }, async () => {
     const ask = vi.spyOn(backend, 'checkModelUpdates').mockResolvedValue([update('m2')]);
     show();
     await waitFor(() => expect(screen.getAllByTestId('mm-update-tag')).toHaveLength(1));
@@ -237,7 +237,7 @@ describe('new versions of installed models', () => {
     expect(within(screen.getByRole('group', { name: 'Moon Light' })).getByTestId('mm-update-tag')).toBeTruthy();
   });
 
-  it('does not ask again while the kept answer is fresh', async () => {
+  it('does not ask again while the kept answer is fresh', { tags: ['scenario'] }, async () => {
     useModelUpdates.setState({ checkedAt: Date.now() });
     const ask = vi.spyOn(backend, 'checkModelUpdates').mockResolvedValue([]);
     show();
@@ -245,7 +245,7 @@ describe('new versions of installed models', () => {
     expect(ask).not.toHaveBeenCalled();
   });
 
-  it('asks again when the toolbar button is pressed, and the button waits for the answer', async () => {
+  it('asks again when the toolbar button is pressed, and the button waits for the answer', { tags: ['scenario'] }, async () => {
     useModelUpdates.setState({ checkedAt: Date.now() });
     let answer!: (u: ReturnType<typeof update>[]) => void;
     const ask = vi.spyOn(backend, 'checkModelUpdates').mockReturnValue(new Promise((r) => (answer = r)));
@@ -259,7 +259,7 @@ describe('new versions of installed models', () => {
     expect(screen.getAllByTestId('mm-update-tag')).toHaveLength(1);
   });
 
-  it('forgets the update of a model that is deleted', async () => {
+  it('forgets the update of a model that is deleted', { tags: ['scenario'] }, async () => {
     useModelUpdates.setState({ checkedAt: Date.now(), updates: [update('m1'), update('gone')] });
     show();
     await waitFor(() => expect(useModelUpdates.getState().updates.map((u) => u.key)).toEqual(['m1']));

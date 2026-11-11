@@ -42,12 +42,12 @@ afterEach(() => {
 });
 
 describe('the manga finish dialog', () => {
-  it('stays closed until a picture is chosen', () => {
+  it('stays closed until a picture is chosen', { tags: ['scenario'] }, () => {
     mount();
     expect(screen.queryByTestId('manga-dialog')).toBeNull();
   });
 
-  it('shows the picture and no try yet, with every value at its default', () => {
+  it('shows the picture and no try yet, with every value at its default', { tags: ['scenario'] }, () => {
     mount();
     showDialog();
     expect(screen.getByTestId('manga-dialog')).toBeTruthy();
@@ -56,7 +56,7 @@ describe('the manga finish dialog', () => {
     expect(useMangaFinish.getState().values).toEqual(DEFAULT_MANGA);
   });
 
-  it('resets the values', () => {
+  it('resets the values', { tags: ['scenario'] }, () => {
     useMangaFinish.getState().set({ screenLines: 300, blackPoint: 0.5 });
     mount();
     showDialog();
@@ -64,7 +64,7 @@ describe('the manga finish dialog', () => {
     expect(useMangaFinish.getState().values).toEqual(DEFAULT_MANGA);
   });
 
-  it('tries the values on the picture and shows the result beside it', async () => {
+  it('tries the values on the picture and shows the result beside it', { tags: ['scenario'] }, async () => {
     useMangaFinish.getState().set({ screenLines: 120 });
     const run = vi.spyOn(graph, 'runMangaPreview').mockResolvedValue({ ...photo, name: 'q.png', url: 'blob:after' });
     mount();
@@ -74,7 +74,7 @@ describe('the manga finish dialog', () => {
     expect(run).toHaveBeenCalledWith('photo.png', { ...DEFAULT_MANGA, screenLines: 120 }, expect.any(AbortSignal));
   });
 
-  it('saves a new picture with the shown values, leaves the original, and opens it in the viewer', async () => {
+  it('saves a new picture with the shown values, leaves the original, and opens it in the viewer', { tags: ['scenario'] }, async () => {
     const save = vi.spyOn(graph, 'saveMangaPage').mockResolvedValue({ ...photo, name: 'page.png' });
     mount();
     showDialog();
@@ -88,7 +88,7 @@ describe('the manga finish dialog', () => {
     expect(useMangaDialog.getState().imageName).toBeNull();
   });
 
-  it('says why when the finish fails, and lets the user go on', async () => {
+  it('says why when the finish fails, and lets the user go on', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(graph, 'runMangaPreview').mockRejectedValue(new Error('out of memory'));
     mount();
     showDialog();
@@ -97,7 +97,7 @@ describe('the manga finish dialog', () => {
     await waitFor(() => expect(disabled('manga-try-run')).toBe(false));
   });
 
-  it('offers the install while the pack is missing, then the restart, and waits for both', async () => {
+  it('offers the install while the pack is missing, then the restart, and waits for both', { tags: ['scenario'] }, async () => {
     useNodePacks.setState({ packs: { available: true, installed: [], comfyVersion: null, restartNeeded: false } });
     mount();
     showDialog();

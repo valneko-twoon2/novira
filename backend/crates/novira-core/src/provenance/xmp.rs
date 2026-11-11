@@ -219,6 +219,7 @@ mod tests {
         out.into_inner()
     }
 
+    // tags: scenario, equivalence
     #[test]
     fn the_packet_names_the_iptc_code_and_reads_back() {
         let p = packet();
@@ -229,6 +230,7 @@ mod tests {
         );
     }
 
+    // tags: equivalence
     #[test]
     fn every_format_keeps_its_pixels_and_gains_the_label() {
         for (format, alpha) in [
@@ -258,6 +260,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn a_webp_becomes_the_extended_format_with_flags_and_canvas_size() {
         let out = add(&encoded(ImageFormat::WebP, true), ImageFormat::WebP).unwrap();
@@ -273,6 +276,7 @@ mod tests {
         assert_eq!(riff + 8, out.len());
     }
 
+    // tags: condition
     #[test]
     fn a_jpeg_segment_goes_after_the_jfif_header() {
         let plain = encoded(ImageFormat::Jpeg, false);
@@ -283,6 +287,7 @@ mod tests {
         assert_eq!(&out[app0 + 4..app0 + 4 + JPEG_XMP_NS.len()], JPEG_XMP_NS);
     }
 
+    // tags: error-guessing
     #[test]
     fn files_of_the_wrong_kind_are_refused() {
         assert!(add(b"not a picture", ImageFormat::Png).is_err());
@@ -291,6 +296,7 @@ mod tests {
         assert!(add(&encoded(ImageFormat::Png, false), ImageFormat::Gif).is_err());
     }
 
+    // tags: decision-table
     #[test]
     fn the_source_type_is_read_only_inside_an_xmp_packet() {
         // The address alone (as a C2PA manifest carries it) is not a label.
@@ -309,6 +315,7 @@ http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture</Iptc4xmpExt:Digit
         assert_eq!(digital_source_type(b"<x:xmpmeta></x:xmpmeta>"), None);
     }
 
+    // tags: error-guessing
     #[test]
     fn damaged_headers_are_refused_instead_of_cut() {
         // A JFIF marker whose length field is missing or runs past the end.
@@ -322,6 +329,7 @@ http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture</Iptc4xmpExt:Digit
         assert!(webp_chunks(b"RIFF\x14\0\0\0WEBPVP8L\xFF\0\0\0").is_none());
     }
 
+    // tags: condition
     #[test]
     fn a_webp_that_already_has_the_extended_header_keeps_it_and_gets_one_label() {
         let once = add(&encoded(ImageFormat::WebP, true), ImageFormat::WebP).unwrap();
@@ -335,12 +343,14 @@ http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture</Iptc4xmpExt:Digit
         );
     }
 
+    // tags: boundary
     #[test]
     fn an_empty_code_after_the_address_is_not_a_label() {
         let empty = "<x:xmpmeta>DigitalSourceType digitalsourcetype/ </x:xmpmeta>";
         assert_eq!(digital_source_type(empty.as_bytes()), None);
     }
 
+    // tags: condition
     #[test]
     fn ai_source_codes() {
         assert!(is_ai_source("trainedAlgorithmicMedia"));

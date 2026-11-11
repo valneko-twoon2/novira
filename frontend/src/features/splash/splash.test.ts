@@ -16,14 +16,14 @@ describe('start-up screen gate', () => {
   });
   afterEach(() => vi.useRealTimers());
 
-  it('stays for the minimum time even when everything is ready', () => {
+  it('stays for the minimum time even when everything is ready', { tags: ['state-transition', 'boundary'] }, () => {
     const { result } = renderHook(() => useSplashGate(true));
     expect(result.current.showSplash).toBe(true);
     act(() => void vi.advanceTimersByTime(MIN_SPLASH_MS + 10));
     expect(result.current.showSplash).toBe(false);
   });
 
-  it('waits for the backend', () => {
+  it('waits for the backend', { tags: ['state-transition'] }, () => {
     const { result, rerender } = renderHook(({ ready }) => useSplashGate(ready), { initialProps: { ready: false } });
     act(() => void vi.advanceTimersByTime(MIN_SPLASH_MS + 10));
     expect(result.current.showSplash).toBe(true);
@@ -31,14 +31,14 @@ describe('start-up screen gate', () => {
     expect(result.current.showSplash).toBe(false);
   });
 
-  it('waits while the engine is being installed', () => {
+  it('waits while the engine is being installed', { tags: ['state-transition'] }, () => {
     useEngine.setState({ status: { state: 'downloading', bytes: 1, totalBytes: 10 } });
     const { result } = renderHook(() => useSplashGate(true));
     act(() => void vi.advanceTimersByTime(MIN_SPLASH_MS + 10));
     expect(result.current.showSplash).toBe(true);
   });
 
-  it('leaves when the engine becomes ready, and does not come back for a later message', () => {
+  it('leaves when the engine becomes ready, and does not come back for a later message', { tags: ['state-transition'] }, () => {
     useEngine.setState({ status: { state: 'starting' } });
     const { result } = renderHook(() => useSplashGate(true));
     act(() => void vi.advanceTimersByTime(MIN_SPLASH_MS + 10));
@@ -49,7 +49,7 @@ describe('start-up screen gate', () => {
     expect(result.current.showSplash).toBe(false);
   });
 
-  it('holds on an engine error until the user opens the app', () => {
+  it('holds on an engine error until the user opens the app', { tags: ['state-transition'] }, () => {
     useEngine.setState({ status: { state: 'error', message: 'boom' } });
     const { result } = renderHook(() => useSplashGate(true));
     act(() => void vi.advanceTimersByTime(MIN_SPLASH_MS + 10));
@@ -58,7 +58,7 @@ describe('start-up screen gate', () => {
     expect(result.current.showSplash).toBe(false);
   });
 
-  it('waits while the engine has not begun to start, instead of showing a banner a moment later', () => {
+  it('waits while the engine has not begun to start, instead of showing a banner a moment later', { tags: ['state-transition'] }, () => {
     useEngine.setState({ status: { state: 'idle' } });
     const { result } = renderHook(() => useSplashGate(true));
     act(() => void vi.advanceTimersByTime(MIN_SPLASH_MS + 10));
@@ -70,14 +70,14 @@ describe('start-up screen gate', () => {
     expect(result.current.showSplash).toBe(false);
   });
 
-  it('opens anyway when the engine never begins', () => {
+  it('opens anyway when the engine never begins', { tags: ['state-transition'] }, () => {
     useEngine.setState({ status: { state: 'idle' } });
     const { result } = renderHook(() => useSplashGate(true));
     act(() => void vi.advanceTimersByTime(ENGINE_START_GRACE_MS + 10));
     expect(result.current.showSplash).toBe(false);
   });
 
-  it('reads the node list while it shows, and opens once it is read', () => {
+  it('reads the node list while it shows, and opens once it is read', { tags: ['state-transition'] }, () => {
     const load = vi.fn(async () => {});
     useComfyNodes.setState({ status: 'idle', defs: null, load });
     const { result } = renderHook(() => useSplashGate(true));
@@ -90,7 +90,7 @@ describe('start-up screen gate', () => {
     expect(result.current.showSplash).toBe(false);
   });
 
-  it('does not wait for the node list forever', () => {
+  it('does not wait for the node list forever', { tags: ['state-transition', 'boundary'] }, () => {
     useComfyNodes.setState({ status: 'loading', defs: null });
     const { result } = renderHook(() => useSplashGate(true));
     act(() => void vi.advanceTimersByTime(MAX_PREPARE_MS + 10));
@@ -114,7 +114,7 @@ describe('start-up screen gate with the engine wait turned off', () => {
     { state: 'starting' },
     { state: 'idle' },
     { state: 'error', message: 'boom' },
-  ] as const)('opens after the minimum time while the engine is %o', (status) => {
+  ] as const)('opens after the minimum time while the engine is %o', { tags: ['state-transition'] }, (status) => {
     useEngine.setState({ status });
     const { result } = renderHook(() => useSplashGate(true));
     expect(result.current.showSplash).toBe(true);
@@ -122,20 +122,20 @@ describe('start-up screen gate with the engine wait turned off', () => {
     expect(result.current.showSplash).toBe(false);
   });
 
-  it('still waits for the backend', () => {
+  it('still waits for the backend', { tags: ['state-transition'] }, () => {
     useEngine.setState({ status: { state: 'ready' } });
     const { result } = renderHook(() => useSplashGate(false));
     act(() => void vi.advanceTimersByTime(MIN_SPLASH_MS + 10));
     expect(result.current.showSplash).toBe(true);
   });
 
-  it('waits by default', () => {
+  it('waits by default', { tags: ['state-transition'] }, () => {
     expect(SETTINGS_DEFAULTS.waitForEngine).toBe(true);
   });
 });
 
 describe('engine card formatting', () => {
-  it('writes sizes and the time left in the largest fitting unit', () => {
+  it('writes sizes and the time left in the largest fitting unit', { tags: ['state-transition', 'boundary'] }, () => {
     expect(formatBytes(700 * 1024 * 1024)).toBe('700 MB');
     expect(formatBytes(2.4 * 1024 ** 3)).toBe('2.40 GB');
     expect(formatRemaining(18)).toContain('18');

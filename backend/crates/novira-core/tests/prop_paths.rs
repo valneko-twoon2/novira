@@ -57,6 +57,7 @@ fn device_name(ext: &'static [&'static str]) -> impl Strategy<Value = String> {
 const IMAGE_EXT: &[&str] = &[".png", ".mp4", ".wav", ".mp3", ".flac", ".ogg"];
 const MODEL_EXT: &[&str] = &[".safetensors", ".gguf", ".ckpt", ".pt", ".pth"];
 
+// tags: equivalence
 #[test]
 fn an_accepted_gallery_name_is_one_plain_file_name() {
     check(any_text(), |name| {
@@ -75,6 +76,7 @@ fn an_accepted_gallery_name_is_one_plain_file_name() {
     });
 }
 
+// tags: equivalence
 #[test]
 fn names_the_app_generates_are_valid() {
     for name in [
@@ -87,6 +89,7 @@ fn names_the_app_generates_are_valid() {
     }
 }
 
+// tags: error-guessing
 #[test]
 fn a_gallery_name_that_is_a_windows_device_is_refused() {
     for name in [
@@ -106,6 +109,7 @@ fn a_gallery_name_that_is_a_windows_device_is_refused() {
     });
 }
 
+// tags: equivalence
 #[test]
 fn an_accepted_model_file_name_is_plain_and_normalising_it_again_changes_nothing() {
     check(any_text(), |name| {
@@ -126,6 +130,7 @@ fn an_accepted_model_file_name_is_plain_and_normalising_it_again_changes_nothing
     });
 }
 
+// tags: error-guessing
 #[test]
 fn a_model_file_name_with_a_device_name_or_a_control_character_is_refused() {
     for name in [
@@ -155,6 +160,7 @@ fn a_model_file_name_with_a_device_name_or_a_control_character_is_refused() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn a_backup_entry_is_only_a_gallery_file_when_its_name_is_valid() {
     check(
@@ -184,6 +190,7 @@ fn a_backup_entry_is_only_a_gallery_file_when_its_name_is_valid() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn a_backup_entry_named_like_a_device_is_not_extracted() {
     for name in [
@@ -197,6 +204,7 @@ fn a_backup_entry_named_like_a_device_is_not_extracted() {
     }
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn a_hostile_backup_leaves_nothing_outside_the_staging_folder() {
     use std::io::Write;
@@ -236,6 +244,7 @@ fn a_hostile_backup_leaves_nothing_outside_the_staging_folder() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn a_pack_route_stays_inside_the_listed_prefix_and_carries_no_encoding() {
     let route = prop_oneof![
@@ -258,6 +267,7 @@ fn a_pack_route_stays_inside_the_listed_prefix_and_carries_no_encoding() {
     });
 }
 
+// tags: error-guessing
 #[test]
 fn an_encoded_traversal_is_not_a_pack_route() {
     for bad in [
@@ -279,6 +289,7 @@ fn an_encoded_traversal_is_not_a_pack_route() {
     assert!(route_allowed("nkd/facerig/preview"));
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn removing_a_pack_never_touches_anything_but_a_direct_child_folder() {
     let dir = tempfile::tempdir().unwrap();
@@ -302,6 +313,7 @@ fn removing_a_pack_never_touches_anything_but_a_direct_child_folder() {
     });
 }
 
+// tags: state-transition
 #[test]
 fn a_github_address_parses_to_plain_names_and_round_trips() {
     let url = prop_oneof![
@@ -330,6 +342,7 @@ fn a_github_address_parses_to_plain_names_and_round_trips() {
     });
 }
 
+// tags: equivalence
 #[test]
 fn a_model_source_is_one_of_the_forms_the_app_accepts() {
     let source = prop_oneof![
@@ -360,6 +373,7 @@ fn a_model_source_is_one_of_the_forms_the_app_accepts() {
     });
 }
 
+// tags: error-guessing
 #[test]
 fn a_repository_path_never_climbs_or_names_a_drive() {
     check(any_text(), |file| {
@@ -407,6 +421,7 @@ fn url_text() -> impl Strategy<Value = String> {
         .prop_map(|(scheme, user, host, port, rest)| format!("{scheme}{user}{host}{port}/{rest}"))
 }
 
+// tags: equivalence
 #[test]
 fn only_an_https_address_on_a_model_site_without_credentials_is_a_source_page() {
     check(prop_oneof![url_text(), any_text()], |text| {
@@ -426,6 +441,7 @@ fn only_an_https_address_on_a_model_site_without_credentials_is_a_source_page() 
     });
 }
 
+// tags: equivalence
 #[test]
 fn host_is_compares_the_whole_host() {
     check(url_text(), |text| {

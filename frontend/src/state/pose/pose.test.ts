@@ -9,7 +9,7 @@ const at = (o: PoseObject, i: number) => ({ x: o.points[i * 2]!, y: o.points[i *
 const dist = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.hypot(a.x - b.x, a.y - b.y);
 
 describe('the skeleton', () => {
-  it('has a parent for every joint but the neck, and bones that follow the parents', () => {
+  it('has a parent for every joint but the neck, and bones that follow the parents', { tags: ['equivalence'] }, () => {
     expect(POSE_PARENT).toHaveLength(POSE_JOINTS);
     expect(POSE_PARENT.filter((p) => p < 0)).toEqual([-1]);
     for (const [a, b] of POSE_LIMBS) expect(POSE_PARENT[b] === a || POSE_PARENT[a] === b).toBe(true);
@@ -19,7 +19,7 @@ describe('the skeleton', () => {
 });
 
 describe('placing a standing pose', () => {
-  it('stands a person facing the viewer, their right side on the left, centred and as tall as asked', () => {
+  it('stands a person facing the viewer, their right side on the left, centred and as tall as asked', { tags: ['condition'] }, () => {
     const o = standingPose('p', { x: 300, y: 200 }, 400, 4);
     const b = jointBounds(o)!;
     expect(b.height).toBeCloseTo(400, 0);
@@ -34,7 +34,7 @@ describe('placing a standing pose', () => {
 describe('editing a pose', () => {
   const o = standingPose('p', { x: 256, y: 256 }, 400, 4);
 
-  it('finds the nearest joint within the tolerance, and skips hidden ones when asked', () => {
+  it('finds the nearest joint within the tolerance, and skips hidden ones when asked', { tags: ['condition'] }, () => {
     const wrist = at(o, J.rWrist);
     expect(hitJoint(o, { x: wrist.x + 3, y: wrist.y }, 8)).toBe(J.rWrist);
     expect(hitJoint(o, { x: wrist.x + 30, y: wrist.y + 30 }, 8)).toBeNull();
@@ -43,12 +43,12 @@ describe('editing a pose', () => {
     expect(hitJoint(hidden, wrist, 8)).toBe(J.rWrist);
   });
 
-  it('moves the whole body by the neck', () => {
+  it('moves the whole body by the neck', { tags: ['scenario'] }, () => {
     const moved = dragJoint(o, J.neck, { x: at(o, J.neck).x + 10, y: at(o, J.neck).y - 5 }, false);
     o.points.forEach((v, i) => expect(moved.points[i]).toBeCloseTo(v + (i % 2 === 0 ? 10 : -5), 6));
   });
 
-  it('turns a limb around its parent so every bone below keeps its length, and leaves the rest', () => {
+  it('turns a limb around its parent so every bone below keeps its length, and leaves the rest', { tags: ['equivalence'] }, () => {
     const moved = dragJoint(o, J.lElbow, { x: at(o, J.lShoulder).x + 100, y: at(o, J.lShoulder).y }, false);
     expect(dist(at(moved, J.lShoulder), at(moved, J.lElbow))).toBeCloseTo(dist(at(o, J.lShoulder), at(o, J.lElbow)), 6);
     expect(dist(at(moved, J.lElbow), at(moved, J.lWrist))).toBeCloseTo(dist(at(o, J.lElbow), at(o, J.lWrist)), 6);
@@ -57,14 +57,14 @@ describe('editing a pose', () => {
     for (const j of [J.neck, J.rWrist, J.lShoulder, J.nose]) expect(at(moved, j)).toEqual(at(o, j));
   });
 
-  it('moves a single joint freely, changing the bone length', () => {
+  it('moves a single joint freely, changing the bone length', { tags: ['condition'] }, () => {
     const to = { x: 1, y: 2 };
     const moved = dragJoint(o, J.lElbow, to, true);
     expect(at(moved, J.lElbow)).toEqual(to);
     expect(at(moved, J.lWrist)).toEqual(at(o, J.lWrist));
   });
 
-  it('shows and hides joints, and leaves hidden joints out of the bounds', () => {
+  it('shows and hides joints, and leaves hidden joints out of the bounds', { tags: ['boundary'] }, () => {
     const hidden = toggleJoint(toggleJoint(o, J.rAnkle), J.lAnkle);
     expect(hidden.hidden).toEqual([J.rAnkle, J.lAnkle]);
     expect(toggleJoint(hidden, J.rAnkle).hidden).toEqual([J.lAnkle]);
@@ -73,7 +73,7 @@ describe('editing a pose', () => {
     expect(jointBounds({ ...o, hidden: all })).toBeNull();
   });
 
-  it('turns a quarter around a centre and scales with the line width', () => {
+  it('turns a quarter around a centre and scales with the line width', { tags: ['condition'] }, () => {
     const c = { x: 256, y: 256 };
     const right = transformPose(o, 'rotateRight', c);
     const n = at(o, J.nose);
@@ -86,7 +86,7 @@ describe('editing a pose', () => {
     expect(transformPose(o, 'scaleDown', c).width).toBe(2);
   });
 
-  it('mirrors a pose through the layer flip, swapping left and right so colours stay on the right side', () => {
+  it('mirrors a pose through the layer flip, swapping left and right so colours stay on the right side', { tags: ['condition'] }, () => {
     const asymmetric = toggleJoint(dragJoint(o, J.lElbow, { x: 400, y: 100 }, false), J.rEar);
     useCanvas.setState({ entities: [], past: [], future: [] });
     const id = useCanvas.getState().addEntity('control', { objects: [asymmetric] });
@@ -99,7 +99,7 @@ describe('editing a pose', () => {
     expect(flipped.hidden).toEqual([J.lEar]);
   });
 
-  it('keeps the depth of each joint with the joint through a mirror and scales it with the pose', () => {
+  it('keeps the depth of each joint with the joint through a mirror and scales it with the pose', { tags: ['equivalence'] }, () => {
     const withDepth: PoseObject = { ...o, depth: Array.from({ length: 18 }, (_, i) => i * 10) };
     useCanvas.setState({ entities: [], past: [], future: [] });
     const id = useCanvas.getState().addEntity('control', { objects: [withDepth] });
@@ -117,7 +117,7 @@ describe('editing a pose', () => {
 });
 
 describe('drawing a pose', () => {
-  it('draws an ellipse per bone between shown joints and a dot per shown joint, in OpenPose colours', () => {
+  it('draws an ellipse per bone between shown joints and a dot per shown joint, in OpenPose colours', { tags: ['scenario'] }, () => {
     const rec = recordingContext();
     drawPose(rec.ctx, standingPose('p', { x: 256, y: 256 }, 400, 4), false);
     expect(rec.of('arc')).toHaveLength(POSE_JOINTS);

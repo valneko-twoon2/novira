@@ -35,20 +35,20 @@ const item = (id: number, over: Partial<QueueItem> & { draftAt?: number } = {}):
 };
 
 describe('generating strip', () => {
-  it('shows a running gallery job with its step', () => {
+  it('shows a running gallery job with its step', { tags: ['scenario'] }, () => {
     useQueue.setState({ items: [item(1)], progress: { itemId: 1, step: 3, totalSteps: 30, progressImageUrl: null, message: '' } });
     render(<GeneratingStrip />);
     expect(screen.getAllByTestId('gallery-generating-item')).toHaveLength(1);
     expect(screen.getByText(/3\/30/)).toBeTruthy();
   });
 
-  it('shows nothing for drafts, canvas jobs and jobs that are not running', () => {
+  it('shows nothing for drafts, canvas jobs and jobs that are not running', { tags: ['decision-table'] }, () => {
     useQueue.setState({ items: [item(1, { draftAt: 5 }), item(2, { destination: 'canvas' }), item(3, { status: 'pending' })], progress: null });
     render(<GeneratingStrip />);
     expect(screen.queryByTestId('gallery-generating')).toBeNull();
   });
 
-  it('keeps a picture that ran out of memory with its notice until it is closed', () => {
+  it('keeps a picture that ran out of memory with its notice until it is closed', { tags: ['state-transition'] }, () => {
     const failed = (id: number, over: Partial<QueueItem> = {}) => item(id, { status: 'failed', errorKind: 'out_of_memory', ...over });
     useQueue.setState({
       items: [failed(1), failed(2, { destination: 'intermediate' }), failed(3, { params: { generationMode: 'video', width: 512, height: 512 } as QueueItem['params'] }), failed(4)],

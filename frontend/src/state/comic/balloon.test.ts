@@ -7,11 +7,11 @@ const look = (kind: BubbleKind, more: Partial<BalloonLook> = {}): BalloonLook =>
 const near = (a: number, b: number) => Math.abs(a - b) < 1e-6;
 
 describe('balloon outlines', () => {
-  it('draws nothing round lettering that has no balloon', () => {
+  it('draws nothing round lettering that has no balloon', { tags: ['condition'] }, () => {
     for (const kind of LETTERING_KINDS) expect(balloonShape(look(kind, { tail: { x: 0, y: 1.2 } }))).toEqual({ body: null, tail: [], ink: [] });
   });
 
-  it('gives every balloon a closed body round the middle of its box', () => {
+  it('gives every balloon a closed body round the middle of its box', { tags: ['equivalence'] }, () => {
     for (const kind of BUBBLE_KINDS.filter((k) => !LETTERING_KINDS.includes(k))) {
       const body = balloonShape(look(kind, { rough: 0.4 }), 3).body!;
       expect(body.length, kind).toBeGreaterThan(3);
@@ -27,12 +27,12 @@ describe('balloon outlines', () => {
     }
   });
 
-  it('draws a speech balloon with no wavering on the ellipse of its box', () => {
+  it('draws a speech balloon with no wavering on the ellipse of its box', { tags: ['condition'] }, () => {
     const body = balloonShape(look('speech')).body!;
     for (const p of body) expect(near(((p.x - 0.5) / 0.5) ** 2 + ((p.y - 0.5) / 0.5) ** 2, 1)).toBe(true);
   });
 
-  it('wavers the same way for the same balloon, and another way for another', () => {
+  it('wavers the same way for the same balloon, and another way for another', { tags: ['condition'] }, () => {
     const shaky = look('speech', { rough: 1 });
     expect(balloonShape(shaky, seedOf('bubble-a'))).toEqual(balloonShape(shaky, seedOf('bubble-a')));
     expect(balloonShape(shaky, seedOf('bubble-a'))).not.toEqual(balloonShape(shaky, seedOf('bubble-b')));
@@ -40,45 +40,45 @@ describe('balloon outlines', () => {
     expect(balloonShape(look('speech'), 1)).toEqual(balloonShape(look('speech'), 2));
   });
 
-  it('moves a wavering line off the ellipse, but only a little', () => {
+  it('moves a wavering line off the ellipse, but only a little', { tags: ['condition'] }, () => {
     const body = balloonShape(look('speech', { rough: 1 }), 5).body!;
     const off = body.map((p) => Math.abs(Math.hypot(p.x - 0.5, p.y - 0.5) - 0.5));
     expect(Math.max(...off)).toBeGreaterThan(0.005);
     expect(Math.max(...off)).toBeLessThan(0.06);
   });
 
-  it('gives a shout a tip and a dip for each spike', () => {
+  it('gives a shout a tip and a dip for each spike', { tags: ['equivalence'] }, () => {
     expect(balloonShape(look('shout', { spikes: 10 })).body).toHaveLength(20);
     expect(balloonShape(look('shout', { spikes: 30 })).body).toHaveLength(60);
   });
 
-  it('draws one ray of ink for each ray of a flash, and none for other balloons', () => {
+  it('draws one ray of ink for each ray of a flash, and none for other balloons', { tags: ['boundary'] }, () => {
     expect(balloonShape(look('flash', { spikes: 40 })).ink).toHaveLength(40);
     expect(balloonShape(look('speech')).ink).toEqual([]);
   });
 
-  it('draws the tail to the tip, wherever it is', () => {
+  it('draws the tail to the tip, wherever it is', { tags: ['condition'] }, () => {
     for (const tip of [{ x: 0.08, y: 1.18 }, { x: -0.5, y: 0.5 }, { x: 1.5, y: 0.5 }]) {
       const [wedge] = balloonShape(look('speech', { tail: tip })).tail;
       expect(wedge!.some((p) => near(p.x, tip.x) && near(p.y, tip.y))).toBe(true);
     }
   });
 
-  it('draws no tail when the balloon has none, when the tip is at the middle, or for a shape with no tail', () => {
+  it('draws no tail when the balloon has none, when the tip is at the middle, or for a shape with no tail', { tags: ['boundary'] }, () => {
     expect(balloonShape(look('speech', { tail: null })).tail).toEqual([]);
     expect(balloonShape(look('speech', { tail: { x: 0.5, y: 0.5 } })).tail).toEqual([]);
     expect(balloonShape(look('caption', { tail: { x: 0, y: 1.2 } })).tail).toEqual([]);
     expect(balloonShape(look('flash', { tail: { x: 0, y: 1.2 } })).tail).toEqual([]);
   });
 
-  it('draws a thought with a trail of three dots, and an electric balloon with one bolt', () => {
+  it('draws a thought with a trail of three dots, and an electric balloon with one bolt', { tags: ['condition'] }, () => {
     expect(balloonShape(look('thought', { tail: { x: 0.5, y: 1.5 } })).tail).toHaveLength(3);
     const bolt = balloonShape(look('electric', { tail: { x: 0.5, y: 1.5 } })).tail;
     expect(bolt).toHaveLength(1);
     expect(bolt[0]!.some((p) => near(p.x, 0.5) && near(p.y, 1.5))).toBe(true);
   });
 
-  it('bends the tail to one side or the other with its bend', () => {
+  it('bends the tail to one side or the other with its bend', { tags: ['condition'] }, () => {
     const middle = (curve: number) => {
       const [wedge] = balloonShape(look('speech', { tail: { x: 0.5, y: 1.5 }, tailCurve: curve })).tail;
       return wedge![6]!.x;
@@ -87,7 +87,7 @@ describe('balloon outlines', () => {
     expect(middle(-1)).toBeGreaterThan(middle(0));
   });
 
-  it('follows an outline drawn by hand instead of the shape', () => {
+  it('follows an outline drawn by hand instead of the shape', { tags: ['condition'] }, () => {
     const square = { points: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }], smooth: false };
     const body = balloonShape(look('speech', { outline: square })).body!;
     for (const p of body) expect(near(p.x, 0) || near(p.x, 1) || near(p.y, 0) || near(p.y, 1)).toBe(true);
@@ -98,7 +98,7 @@ describe('balloon outlines', () => {
 });
 
 describe('the points an outline is drawn from', () => {
-  it('are the corners of a box, the sides of a many-sided box, and points round the rounder shapes', () => {
+  it('are the corners of a box, the sides of a many-sided box, and points round the rounder shapes', { tags: ['condition'] }, () => {
     expect(baseOutline({ kind: 'caption', spikes: 0 })).toEqual({ points: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }], smooth: false });
     expect(baseOutline({ kind: 'electric', spikes: 6 }).points).toHaveLength(6);
     expect(baseOutline({ kind: 'electric', spikes: 6 }).smooth).toBe(false);
@@ -108,12 +108,12 @@ describe('the points an outline is drawn from', () => {
 });
 
 describe('drawing an outline', () => {
-  it('writes each polygon as a closed path', () => {
+  it('writes each polygon as a closed path', { tags: ['equivalence'] }, () => {
     expect(polyPath([[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }]])).toBe('M0.0000 0.0000L1.0000 0.0000L1.0000 1.0000Z');
     expect(polyPath([])).toBe('');
   });
 
-  it('lays one line as one stroke, two lines as three, and no line as none', () => {
+  it('lays one line as one stroke, two lines as three, and no line as none', { tags: ['boundary'] }, () => {
     expect(lineStrokes('solid')).toEqual([{ widths: 2, ink: true }]);
     expect(lineStrokes('dashed')).toEqual([{ widths: 2, ink: true }]);
     expect(lineStrokes('double').map((s) => s.ink)).toEqual([true, false, true]);
@@ -124,19 +124,19 @@ describe('drawing an outline', () => {
 describe('fitting a balloon', () => {
   const fits = { wordsOverflow: false, width: 0.3, height: 0.4, outlineX: 1, outlineY: 1 };
 
-  it('shrinks the words while they run out of the balloon or the balloon is too big for its panel', () => {
+  it('shrinks the words while they run out of the balloon or the balloon is too big for its panel', { tags: ['error-guessing'] }, () => {
     expect(fitStep({ scale: 1, x: 0, y: 0 }, { ...fits, wordsOverflow: true })).toEqual({ patch: { scale: 0.9 }, done: false });
     expect(fitStep({ scale: 2, x: 0, y: 0 }, { ...fits, height: FIT_PANEL_SHARE + 0.01 })).toEqual({ patch: { scale: 1.8 }, done: false });
     expect(fitStep({ scale: 0.42, x: 0, y: 0 }, { ...fits, wordsOverflow: true }).patch).toEqual({ scale: 0.4 });
   });
 
-  it('stops at the smallest size, and moves a balloon that fits inside its panel', () => {
+  it('stops at the smallest size, and moves a balloon that fits inside its panel', { tags: ['condition'] }, () => {
     expect(fitStep({ scale: 0.4, x: 0.1, y: 0.1 }, { ...fits, wordsOverflow: true })).toEqual({ patch: {}, done: true });
     expect(fitStep({ scale: 1, x: 0.9, y: -0.2 }, fits)).toEqual({ patch: { x: 0.7, y: 0 }, done: true });
     expect(fitStep({ scale: 1, x: 0.2, y: 0.3 }, fits)).toEqual({ patch: {}, done: true });
   });
 
-  it("measures the outline, which is larger than the words' box, against the panel and keeps it inside", () => {
+  it("measures the outline, which is larger than the words' box, against the panel and keeps it inside", { tags: ['condition'] }, () => {
     const ellipse = { ...fits, width: 0.7, outlineX: Math.SQRT2 };
     expect(fitStep({ scale: 1, x: 0.1, y: 0.1 }, ellipse).done).toBe(false);
     expect(fitStep({ scale: 1, x: 0.1, y: 0.1 }, { ...ellipse, outlineX: 1 }).done).toBe(true);

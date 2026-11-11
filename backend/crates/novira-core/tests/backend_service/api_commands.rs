@@ -5,6 +5,7 @@ use novira_core::api::{self, CallError};
 use serde_json::{json, Value};
 use std::sync::Arc;
 
+// tags: error-guessing
 #[test]
 fn a_call_error_reads_as_the_message_the_window_shows() {
     assert_eq!(CallError::UnknownCommand.to_string(), "unknown command");
@@ -15,6 +16,7 @@ fn a_call_error_reads_as_the_message_the_window_shows() {
     assert_eq!(CallError::Failed("no".into()).to_string(), "no");
 }
 
+// tags: error-guessing
 #[test]
 fn a_panic_in_a_command_becomes_an_error_with_its_text() {
     assert_eq!(api::guard(|| Ok(5)), Ok(5));
@@ -32,6 +34,7 @@ async fn call(backend: &novira_core::Backend, name: &str, args: Value) -> Result
         .map(|text| serde_json::from_str(&text).expect("a result is JSON"))
 }
 
+// tags: scenario
 #[tokio::test]
 async fn the_board_image_and_queue_commands_work_by_name() {
     let dir = tempfile::tempdir().unwrap();
@@ -129,6 +132,7 @@ async fn the_board_image_and_queue_commands_work_by_name() {
         .unwrap();
 }
 
+// tags: scenario
 #[tokio::test]
 async fn the_model_pack_and_setting_commands_work_by_name() {
     let dir = tempfile::tempdir().unwrap();
@@ -269,6 +273,7 @@ async fn the_model_pack_and_setting_commands_work_by_name() {
     assert!(saved.is_ok() || matches!(saved, Err(CallError::Failed(_))));
 }
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn a_model_install_without_a_folder_dialog_takes_references_and_refuses_local_files() {
     let dir = tempfile::tempdir().unwrap();

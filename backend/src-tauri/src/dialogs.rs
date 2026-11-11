@@ -62,6 +62,7 @@ mod tests {
     use super::with_zip_extension;
     use std::path::PathBuf;
 
+    // tags: equivalence
     #[test]
     fn a_saved_backup_always_ends_in_zip() {
         assert_eq!(

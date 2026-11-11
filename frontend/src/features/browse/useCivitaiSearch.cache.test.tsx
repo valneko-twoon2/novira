@@ -21,7 +21,7 @@ afterEach(() => {
 });
 
 describe('useCivitaiSearch with the page saved on disk', () => {
-  it('shows the saved page while the search runs, then the answer, and saves the answer', async () => {
+  it('shows the saved page while the search runs, then the answer, and saves the answer', { tags: ['state-transition', 'scenario'] }, async () => {
     vi.mocked(readCachedPage).mockResolvedValue({ items: [model('old')], next: 'c-old' });
     let answer: (r: CivitaiSearchResult) => void = () => {};
     vi.spyOn(backend, 'searchCivitai').mockReturnValue(new Promise((resolve) => (answer = resolve)));
@@ -35,7 +35,7 @@ describe('useCivitaiSearch with the page saved on disk', () => {
     expect(vi.mocked(writeCachedPage)).toHaveBeenCalledWith(expect.any(String), { items: [model('new')], next: null });
   });
 
-  it('does not let a late disk read replace an answer that already came', async () => {
+  it('does not let a late disk read replace an answer that already came', { tags: ['scenario'] }, async () => {
     let read: (p: { items: CivitaiModel[]; next: string | null } | null) => void = () => {};
     vi.mocked(readCachedPage).mockReturnValue(new Promise((resolve) => (read = resolve)));
     vi.spyOn(backend, 'searchCivitai').mockResolvedValue(page(['new'], null));
@@ -47,7 +47,7 @@ describe('useCivitaiSearch with the page saved on disk', () => {
     expect(result.current.hasMore).toBe(false);
   });
 
-  it('keeps the saved page on show when the search fails, and shows the error when there was none', async () => {
+  it('keeps the saved page on show when the search fails, and shows the error when there was none', { tags: ['error-guessing', 'boundary'] }, async () => {
     vi.mocked(readCachedPage).mockResolvedValue({ items: [model('old')], next: null });
     vi.spyOn(backend, 'searchCivitai').mockRejectedValue(new Error('offline'));
     const kept = renderHook(() => useCivitaiSearch(params('disk-3')));

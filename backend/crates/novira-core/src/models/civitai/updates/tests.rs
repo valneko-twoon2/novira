@@ -13,6 +13,7 @@ fn have(key: &str, model: &str, version: &str) -> Installed {
     }
 }
 
+// tags: condition
 #[test]
 fn a_page_address_gives_the_model_and_the_version() {
     assert_eq!(
@@ -25,6 +26,7 @@ fn a_page_address_gives_the_model_and_the_version() {
     );
 }
 
+// tags: condition
 #[test]
 fn an_address_that_is_not_a_versioned_civitai_page_gives_nothing() {
     for bad in [
@@ -41,6 +43,7 @@ fn an_address_that_is_not_a_versioned_civitai_page_gives_nothing() {
     }
 }
 
+// tags: condition
 #[test]
 fn a_newer_version_of_the_same_base_model_is_an_update() {
     let body = json!({"items": [{"id": 10, "modelVersions": [
@@ -65,6 +68,7 @@ fn a_newer_version_of_the_same_base_model_is_an_update() {
     assert_eq!(found[0].installed_version_id, "1");
 }
 
+// tags: condition
 #[test]
 fn the_newest_version_installed_is_not_an_update() {
     let body = json!({"items": [{"id": 10, "modelVersions": [
@@ -74,6 +78,7 @@ fn the_newest_version_installed_is_not_an_update() {
     assert!(updates_in(&body, &[have("k", "10", "3")]).is_empty());
 }
 
+// tags: condition
 #[test]
 fn a_newer_version_of_another_base_model_is_not_an_update() {
     // An SDXL version installed, and a newer Flux version on the same page.
@@ -84,6 +89,7 @@ fn a_newer_version_of_another_base_model_is_not_an_update() {
     assert!(updates_in(&body, &[have("k", "10", "1")]).is_empty());
 }
 
+// tags: condition
 #[test]
 fn a_version_behind_payment_or_not_public_is_not_offered() {
     let mut paid = version(4, "SDXL 1.0", "2025-04-01T00:00:00.000Z");
@@ -95,6 +101,7 @@ fn a_version_behind_payment_or_not_public_is_not_offered() {
     assert_eq!(found[0].latest_version_id, "2");
 }
 
+// tags: decision-table
 #[test]
 fn the_newest_by_date_wins_whatever_the_order_of_the_list() {
     let body = json!({"items": [{"id": 10, "modelVersions": [
@@ -108,12 +115,14 @@ fn the_newest_by_date_wins_whatever_the_order_of_the_list() {
     );
 }
 
+// tags: scenario
 #[test]
 fn an_installed_version_that_civitai_no_longer_lists_is_left_alone() {
     let body = json!({"items": [{"id": 10, "modelVersions": [version(3, "SDXL 1.0", "2025-03-01T00:00:00.000Z")]}]});
     assert!(updates_in(&body, &[have("k", "10", "99")]).is_empty());
 }
 
+// tags: equivalence
 #[test]
 fn two_installed_versions_of_one_model_are_each_checked() {
     let body = json!({"items": [{"id": 10, "modelVersions": [
@@ -137,6 +146,7 @@ fn two_installed_versions_of_one_model_are_each_checked() {
     assert_eq!(pairs, [("a", "4"), ("b", "3")]);
 }
 
+// tags: error-guessing
 #[test]
 fn an_answer_without_items_or_with_odd_entries_gives_nothing() {
     assert!(updates_in(&json!({}), &[have("k", "10", "1")]).is_empty());

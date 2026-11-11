@@ -85,6 +85,7 @@ async fn finish(events: &Events, id: &str) -> ModelInstallJob {
 }
 
 /// One test, because the answer of a path is shared by everything in this binary that asks for it.
+// tags: scenario
 #[tokio::test]
 async fn the_examples_and_the_newer_versions_come_through_the_backend_with_the_key() {
     let dir = tempfile::tempdir().unwrap();

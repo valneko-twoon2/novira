@@ -7,7 +7,7 @@ function sceneWith(...layers: Scene['layers']): Scene {
 }
 
 describe('text operations from the assistant', () => {
-  it('adds a text layer with checked fields and defaults for the rest', () => {
+  it('adds a text layer with checked fields and defaults for the rest', { tags: ['equivalence'] }, () => {
     const r = applyTextOps(EMPTY_SCENE, [
       { op: 'add', layer: { type: 'text', text: 'HELLO', x: 300, y: 200, style: { fontFamily: 'dela gothic one', fontSize: 120, fill: { kind: 'solid', color: '#ff0000' } } } },
     ]);
@@ -20,7 +20,7 @@ describe('text operations from the assistant', () => {
     expect(EMPTY_SCENE.layers).toHaveLength(0);
   });
 
-  it('updates only what is named and keeps the rest', () => {
+  it('updates only what is named and keeps the rest', { tags: ['condition'] }, () => {
     const layer = { ...newTextLayer(EMPTY_SCENE, 'A'), id: 'a' };
     const r = applyTextOps(sceneWith(layer), [{ op: 'update', id: 'a', set: { rotation: 15, style: { fontSize: 200 } } }]);
     const out = r.scene.layers[0] as TextLayer;
@@ -30,7 +30,7 @@ describe('text operations from the assistant', () => {
     expect(out.text).toBe('A');
   });
 
-  it('drops bad values instead of breaking the scene', () => {
+  it('drops bad values instead of breaking the scene', { tags: ['error-guessing'] }, () => {
     const layer = { ...newTextLayer(EMPTY_SCENE, 'A'), id: 'a' };
     const r = applyTextOps(sceneWith(layer), [
       {
@@ -49,7 +49,7 @@ describe('text operations from the assistant', () => {
     expect(out.style.align).toBe(layer.style.align);
   });
 
-  it('turns outlines and the shadow on and off, and rejects a zero-width outline', () => {
+  it('turns outlines and the shadow on and off, and rejects a zero-width outline', { tags: ['boundary'] }, () => {
     const base = newTextLayer(EMPTY_SCENE, 'A').style;
     const withShadow = sanitizeStyle({ shadow: { color: 'rgba(0,0,0,0.5)', blur: 8, offsetX: 4, offsetY: 6 }, stroke: { color: '#000000', width: 0 } }, base);
     expect(withShadow.shadow).toMatchObject({ blur: 8, offsetX: 4, offsetY: 6 });
@@ -57,12 +57,12 @@ describe('text operations from the assistant', () => {
     expect(sanitizeStyle({ shadow: null }, withShadow).shadow).toBeNull();
   });
 
-  it('snaps the weight to one the font has', () => {
+  it('snaps the weight to one the font has', { tags: ['condition'] }, () => {
     const base = newTextLayer(EMPTY_SCENE, 'A').style;
     expect(sanitizeStyle({ fontFamily: 'Dela Gothic One', fontWeight: 900 }, base).fontWeight).toBe(400);
   });
 
-  it('edits a bubble: shape, size, pointer', () => {
+  it('edits a bubble: shape, size, pointer', { tags: ['condition'] }, () => {
     const bubble = { ...newBubbleLayer(EMPTY_SCENE, 'round', 'hi'), id: 'b' };
     const r = applyTextOps(sceneWith(bubble), [{ op: 'update', id: 'b', set: { shape: 'burst', width: 99999, tail: { enabled: true, x: 10, y: 400, curve: 5 } } }]);
     const out = r.scene.layers[0]!;
@@ -71,7 +71,7 @@ describe('text operations from the assistant', () => {
     expect(out.type === 'bubble' && out.tail).toMatchObject({ enabled: true, x: 10, y: 400, curve: 1 });
   });
 
-  it('lets later operations refer to a layer added earlier by the id the assistant gave it', () => {
+  it('lets later operations refer to a layer added earlier by the id the assistant gave it', { tags: ['scenario'] }, () => {
     const r = applyTextOps(EMPTY_SCENE, [
       { op: 'add', layer: { id: 'logo', type: 'text', text: 'X' } },
       { op: 'preset', id: 'logo', preset: 'pop' },
@@ -83,12 +83,12 @@ describe('text operations from the assistant', () => {
     expect(out.y).toBe(123);
   });
 
-  it('skips operations on layers that do not exist and unknown operations', () => {
+  it('skips operations on layers that do not exist and unknown operations', { tags: ['error-guessing'] }, () => {
     const r = applyTextOps(EMPTY_SCENE, [{ op: 'update', id: 'nope', set: { x: 1 } }, { op: 'remove', id: 'nope' }, { op: 'explode' }, 'text', null, { op: 'add', layer: { type: 'image' } }]);
     expect(r.applied).toBe(0);
   });
 
-  it('removes, reorders, clears and sets the background', () => {
+  it('removes, reorders, clears and sets the background', { tags: ['condition'] }, () => {
     const a = { ...newTextLayer(EMPTY_SCENE, 'A'), id: 'a' };
     const b = { ...newTextLayer(EMPTY_SCENE, 'B'), id: 'b' };
     const r = applyTextOps(sceneWith(a, b), [{ op: 'reorder', id: 'a', order: 'top' }, { op: 'background', color: '#112233', width: 800, height: 600 }, { op: 'remove', id: 'b' }]);
@@ -99,12 +99,12 @@ describe('text operations from the assistant', () => {
     expect(applyTextOps(r.scene, [{ op: 'clear' }]).scene.layers).toHaveLength(0);
   });
 
-  it('stops adding layers at a limit', () => {
+  it('stops adding layers at a limit', { tags: ['boundary'] }, () => {
     const ops = Array.from({ length: 80 }, () => ({ op: 'add', layer: { type: 'text', text: 'x' } }));
     expect(applyTextOps(EMPTY_SCENE, ops).scene.layers).toHaveLength(60);
   });
 
-  it('tells the assistant the scene and what it may choose from', () => {
+  it('tells the assistant the scene and what it may choose from', { tags: ['scenario'] }, () => {
     const ctx = textContext(sceneWith({ ...newTextLayer(EMPTY_SCENE, 'A'), id: 'a' }), 'a') as { selectedLayerId: string; fonts: string[]; presets: string[] };
     expect(ctx.selectedLayerId).toBe('a');
     expect(ctx.fonts).toContain('Dela Gothic One');

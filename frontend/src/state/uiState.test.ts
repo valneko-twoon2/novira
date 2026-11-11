@@ -14,7 +14,7 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('saved screen state', () => {
-  it('collects only the app keys', () => {
+  it('collects only the app keys', { tags: ['condition'] }, () => {
     localStorage.setItem('novira.settings', '{"state":{"language":"en"}}');
     localStorage.setItem('novira.characters', '[]');
     localStorage.setItem('other-site', 'x');
@@ -22,7 +22,7 @@ describe('saved screen state', () => {
     expect(PERSIST_PREFIX).toBe('novira.');
   });
 
-  it('clears one part of the saved state, or every app key for all, and says how many went', () => {
+  it('clears one part of the saved state, or every app key for all, and says how many went', { tags: ['equivalence'] }, () => {
     for (const key of ['novira.settings', 'novira.params', 'novira.agent', 'novira.presets', 'other-site']) localStorage.setItem(key, '{}');
     expect(clearSavedState('assistant', localStorage)).toBe(1);
     expect(clearSavedState('assistant', localStorage)).toBe(0);
@@ -31,7 +31,7 @@ describe('saved screen state', () => {
     expect(Object.keys(localStorage)).toEqual(['other-site']);
   });
 
-  it('replaces every app key and leaves other keys alone', () => {
+  it('replaces every app key and leaves other keys alone', { tags: ['equivalence'] }, () => {
     localStorage.setItem('novira.old', 'gone');
     localStorage.setItem('novira.settings', 'old');
     localStorage.setItem('other-site', 'kept');
@@ -45,14 +45,14 @@ describe('saved screen state', () => {
     expect(localStorage.getItem('other-site')).toBe('kept');
   });
 
-  it('changes nothing when the state is not an object', () => {
+  it('changes nothing when the state is not an object', { tags: ['error-guessing'] }, () => {
     localStorage.setItem('novira.settings', 'kept');
     expect(() => applyUiState('[]', localStorage)).toThrow();
     expect(() => applyUiState('not json', localStorage)).toThrow();
     expect(localStorage.getItem('novira.settings')).toBe('kept');
   });
 
-  it('round-trips through collect and apply', () => {
+  it('round-trips through collect and apply', { tags: ['scenario'] }, () => {
     localStorage.setItem('novira.a', '1');
     localStorage.setItem('novira.b', '{"x":[1,2]}');
     const saved = collectUiState(localStorage);
@@ -63,13 +63,13 @@ describe('saved screen state', () => {
 });
 
 describe('reading the saved state without JSON', () => {
-  it('reads the app keys and refuses a key longer than the backend takes', () => {
+  it('reads the app keys and refuses a key longer than the backend takes', { tags: ['error-guessing'] }, () => {
     expect(readUiState(memoryStorage({ 'novira.a': '1', 'novira.b': '"x"', other: 'y' }))).toEqual({ 'novira.a': '1', 'novira.b': '"x"' });
     expect(readUiState(memoryStorage({ [`novira.${'k'.repeat(193)}`]: '1' }))).toEqual({ [`novira.${'k'.repeat(193)}`]: '1' });
     expect(readUiState(memoryStorage({ [`novira.${'k'.repeat(194)}`]: '1' }))).toBeNull();
   });
 
-  it('measures a state near the size limit as JSON: under it is read, over it (escapes counted) is refused', () => {
+  it('measures a state near the size limit as JSON: under it is read, over it (escapes counted) is refused', { tags: ['error-guessing'] }, () => {
     // Six million plain characters could be over the limit if every one were escaped; written out they are not.
     const plain = 'a'.repeat(6_000_000);
     expect(readUiState(memoryStorage({ 'novira.big': plain }))?.['novira.big']).toBe(plain);
@@ -81,7 +81,7 @@ describe('reading the saved state without JSON', () => {
 });
 
 describe('takeRestoredUiState', () => {
-  it('puts a restored state in place and reloads once, then reports it after the reload', async () => {
+  it('puts a restored state in place and reloads once, then reports it after the reload', { tags: ['scenario'] }, async () => {
     localStorage.setItem('novira.settings', 'current');
     vi.spyOn(backend, 'takeRestoredUiState').mockResolvedValue({ state: 'restored', uiState: '{"novira.settings":"restored"}' });
     const save = vi.spyOn(backend, 'saveUiState').mockResolvedValue();
@@ -98,7 +98,7 @@ describe('takeRestoredUiState', () => {
     expect(useToasts.getState().toasts.map((t) => t.status)).toEqual(['success']);
   });
 
-  it('reports a failed restore and keeps the current state', async () => {
+  it('reports a failed restore and keeps the current state', { tags: ['error-guessing'] }, async () => {
     localStorage.setItem('novira.settings', 'current');
     vi.spyOn(backend, 'takeRestoredUiState').mockResolvedValue({ state: 'failed', message: 'your data was kept' });
     const reload = vi.fn();
@@ -110,7 +110,7 @@ describe('takeRestoredUiState', () => {
     expect(shown?.description).toBe('your data was kept');
   });
 
-  it('does nothing without a restore', async () => {
+  it('does nothing without a restore', { tags: ['scenario'] }, async () => {
     const reload = vi.fn();
     expect(await takeRestoredUiState(localStorage, sessionStorage, reload)).toBe(false);
     expect(reload).not.toHaveBeenCalled();

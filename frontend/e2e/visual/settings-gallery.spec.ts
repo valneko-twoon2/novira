@@ -3,7 +3,7 @@ import { msg } from '../fixtures';
 import { expect, inEachTheme, openDesktop, settle, snap, test } from './shared';
 
 inEachTheme((theme) => {
-  test('settings dialog', async ({ page }) => {
+  test('settings dialog', { tag: ['@scenario'] }, async ({ page }) => {
     await openDesktop(page);
     await page.getByRole('button', { name: msg('app.nav.settingsMenu') }).click();
     await page.getByRole('menuitem', { name: msg('app.nav.settings') }).click();
@@ -15,7 +15,7 @@ inEachTheme((theme) => {
     await expect(page.locator('.sidenav')).toHaveScreenshot(['settings', theme, 'dialog-sidebar.png'], { animations: 'disabled', caret: 'hide', threshold: 0 });
   });
 
-  test('gallery column', async ({ page }) => {
+  test('gallery column', { tag: ['@scenario'] }, async ({ page }) => {
     await openDesktop(page);
     await expect(page.getByTestId('gallery-thumb').first()).toBeVisible();
     await snap(page, 'gallery', theme, 'column', page.getByTestId('gallery-panel'));

@@ -252,6 +252,7 @@ mod tests {
         s.parse().unwrap()
     }
 
+    // tags: equivalence, boundary
     #[test]
     fn the_ranges_a_home_router_hands_out_are_private_and_shared_ones() {
         for home in [
@@ -281,6 +282,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn a_peer_is_home_only_on_the_same_subnet_of_a_home_address() {
         let mask24 = v4("255.255.255.0");
@@ -333,6 +335,7 @@ mod tests {
     }
 
     #[cfg(windows)]
+    // tags: condition
     #[test]
     fn the_loopback_address_has_its_mask_in_the_system_table() {
         assert_eq!(subnet_mask_of(Ipv4Addr::LOCALHOST), Some(v4("255.0.0.0")));
@@ -340,6 +343,7 @@ mod tests {
     }
 
     #[cfg(windows)]
+    // tags: condition
     #[test]
     fn the_gateway_is_told_only_for_an_address_with_a_default_route() {
         // Loopback and an address no interface has have no gateway.
@@ -356,6 +360,7 @@ mod tests {
     }
 
     #[cfg(windows)]
+    // tags: error-guessing
     #[test]
     fn the_network_category_is_read_through_com_without_panic() {
         // Mainly a check that the COM query runs and returns a value; a developer's machine is not a public network,

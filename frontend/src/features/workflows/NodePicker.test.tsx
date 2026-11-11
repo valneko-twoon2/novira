@@ -24,7 +24,7 @@ const scopes = () => screen.getAllByTestId('wf-picker-scope');
 const items = (picker: HTMLElement) => picker.querySelectorAll('.wf-picker__item');
 
 describe('node picker scopes', () => {
-  it('offers all, each built-in category and each installed extension, with how many nodes each holds', () => {
+  it('offers all, each built-in category and each installed extension, with how many nodes each holds', { tags: ['state-transition', 'decision-table'] }, () => {
     show();
     const labels = scopes().map((s) => s.textContent ?? '');
     expect(labels[0]).toBe(`${t('workflows.picker.all')}${allTemplates().length}`);
@@ -34,7 +34,7 @@ describe('node picker scopes', () => {
     expect(labels.some((l) => l.startsWith(t('workflows.categories.model')))).toBe(true);
   });
 
-  it('shows only the nodes of the extension picked, and only the built-in ones for a category', () => {
+  it('shows only the nodes of the extension picked, and only the built-in ones for a category', { tags: ['scenario'] }, () => {
     const { picker } = show();
     const pack = allTemplates().find((n) => n.pack)!.pack!;
     fireEvent.click(scopes().find((s) => s.textContent?.startsWith(pack))!);
@@ -45,7 +45,7 @@ describe('node picker scopes', () => {
     expect(picker.querySelectorAll('.wf-picker__group')).toHaveLength(0);
   });
 
-  it("lists ComfyUI's own nodes by the start of their category, under a heading of their own", () => {
+  it("lists ComfyUI's own nodes by the start of their category, under a heading of their own", { tags: ['state-transition', 'scenario'] }, () => {
     const { picker } = show();
     expect(screen.getByTestId('wf-picker-scopes').textContent).toContain(t('workflows.picker.core'));
     const audio = allTemplates().filter((n) => n.group === 'audio');
@@ -59,7 +59,7 @@ describe('node picker scopes', () => {
     expect([...items(picker)].map((i) => i.textContent).join(' ')).toContain('Save Audio (Advanced)');
   });
 
-  it('picks the node that is clicked, and falls back to everything when a search empties the scope', () => {
+  it('picks the node that is clicked, and falls back to everything when a search empties the scope', { tags: ['scenario'] }, () => {
     const { picker, onPick } = show();
     const pack = allTemplates().find((n) => n.pack)!.pack!;
     fireEvent.click(scopes().find((s) => s.textContent?.startsWith(pack))!);

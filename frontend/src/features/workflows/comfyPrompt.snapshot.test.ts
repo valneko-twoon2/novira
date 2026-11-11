@@ -57,7 +57,7 @@ const FROM_IMAGE_CASES = ['from-image-txt2img', 'from-image-loras-vae'];
 
 describe('ComfyUI prompt snapshots: files', () => {
   // Names are built from the template list, so tests/test-hygiene.test.ts cannot read them; check orphans here.
-  it('has a case for every snapshot file', () => {
+  it('has a case for every snapshot file', { tags: ['equivalence'] }, () => {
     const files = readdirSync(new URL('./__snapshots__/comfyPrompt/', import.meta.url)).map((f) => f.replace(/\.json$/, ''));
     const cases = [...COMPILABLE.map((t) => `template-${t.id}`), ...DEFAULT_IDS, ...FROM_IMAGE_CASES];
     expect(files.sort()).toEqual(cases.sort());
@@ -65,7 +65,7 @@ describe('ComfyUI prompt snapshots: files', () => {
 });
 
 describe('ComfyUI prompt snapshots: graph templates', () => {
-  it.each(COMPILABLE.map((t) => [t.id, t] as const))('%s', async (id, template) => {
+  it.each(COMPILABLE.map((t) => [t.id, t] as const))('%s', { tags: ['equivalence'] }, async (id, template) => {
     await expect(asJson(compileComfyPrompt(stableTemplate(template)))).toMatchFileSnapshot(`./__snapshots__/comfyPrompt/template-${id}.json`);
   });
 });
@@ -93,7 +93,7 @@ const MODELS = [
 ];
 
 describe('ComfyUI prompt snapshots: built-in workflows', () => {
-  it.each(DEFAULT_IDS)('%s', async (id) => {
+  it.each(DEFAULT_IDS)('%s', { tags: ['equivalence'] }, async (id) => {
     const g = buildDefaultGraph({ id, name: id, description: '', author: '', tags: [] }, MODELS)!;
     fillPicks(g.nodes);
     await expect(asJson(compileComfyPrompt(g))).toMatchFileSnapshot(`./__snapshots__/comfyPrompt/${id}.json`);
@@ -126,11 +126,11 @@ describe('ComfyUI prompt snapshots: graph from a gallery image', () => {
     return compileComfyPrompt(made.graph);
   };
 
-  it('plain sdxl txt2img', async () => {
+  it('plain sdxl txt2img', { tags: ['equivalence'] }, async () => {
     await expect(asJson(compileFrom(meta({})))).toMatchFileSnapshot(`./__snapshots__/comfyPrompt/${FROM_IMAGE_CASES[0]}.json`);
   });
 
-  it('sd15 with two LoRAs (one disabled) and a separate VAE', async () => {
+  it('sd15 with two LoRAs (one disabled) and a separate VAE', { tags: ['equivalence'] }, async () => {
     const m = meta({
       modelKey: 'sd15-key',
       modelName: 'sd15-key',

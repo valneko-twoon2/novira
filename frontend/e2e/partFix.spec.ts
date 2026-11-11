@@ -20,7 +20,7 @@ async function paint(page: Page) {
   await page.mouse.up();
 }
 
-test('a part painted on the canvas is cut out into the gallery and erased into staging', async ({ page }) => {
+test('a part painted on the canvas is cut out into the gallery and erased into staging', { tag: ['@scenario'] }, async ({ page }) => {
   await openPartFix(page);
   await expect(page.getByTestId('canvas-entity')).toHaveCount(2);
   await expect(page.getByTestId('canvas-tool-brush')).toHaveAttribute('aria-pressed', 'true');
@@ -44,7 +44,7 @@ test('a part painted on the canvas is cut out into the gallery and erased into s
   await expect(page.getByTestId('canvas-entity')).toHaveCount(3);
 });
 
-test('a finished result stays on its page while the next ones are made, and the progress shows on the last page', async ({ page }) => {
+test('a finished result stays on its page while the next ones are made, and the progress shows on the last page', { tag: ['@state-transition'] }, async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('novira.settings', JSON.stringify({ state: { mockStepDelay: 120 }, version: 0 })));
   await openPartFix(page);
   await paint(page);
@@ -74,7 +74,7 @@ test('a finished result stays on its page while the next ones are made, and the 
   await expect(page.getByTestId('canvas-staging-accept')).toBeEnabled();
 });
 
-test('a painted part is redrawn from a written instruction into staging', async ({ page }) => {
+test('a painted part is redrawn from a written instruction into staging', { tag: ['@scenario'] }, async ({ page }) => {
   await openPartFix(page);
   await paint(page);
   await page.getByTestId('canvas-mask-instruction').fill('a blue ribbon');

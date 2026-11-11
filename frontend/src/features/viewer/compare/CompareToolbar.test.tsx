@@ -27,7 +27,7 @@ afterEach(() => {
 });
 
 describe('CompareToolbar', () => {
-  it('marks the mode in use and switches between the three modes', () => {
+  it('marks the mode in use and switches between the three modes', { tags: ['scenario'] }, () => {
     show();
     const radio = (key: Parameters<typeof t>[0]) => screen.getByRole('radio', { name: t(key) });
     expect(radio('gallery.compare.slider').getAttribute('aria-checked')).toBe('true');
@@ -40,14 +40,14 @@ describe('CompareToolbar', () => {
     expect(useGallery.getState().compareMode).toBe('hover');
   });
 
-  it('swaps the two pictures', () => {
+  it('swaps the two pictures', { tags: ['scenario'] }, () => {
     show();
     fireEvent.click(screen.getByRole('button', { name: t('gallery.compare.swap') }));
     expect(useGallery.getState().viewerImageName).toBe('b.png');
     expect(useGallery.getState().compareImageName).toBe('a.png');
   });
 
-  it('leaves compare mode and keeps the viewer picture', () => {
+  it('leaves compare mode and keeps the viewer picture', { tags: ['scenario'] }, () => {
     show();
     fireEvent.click(screen.getByTestId('compare-exit'));
     expect(useGallery.getState().compareImageName).toBeNull();

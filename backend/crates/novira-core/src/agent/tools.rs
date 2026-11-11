@@ -551,6 +551,7 @@ fn check(schema: &Value, value: &Value, path: &str) -> Result<(), String> {
 mod tests {
     use super::*;
 
+    // tags: equivalence
     #[test]
     fn every_tool_has_a_unique_snake_case_name_a_description_and_an_object_schema() {
         let mut names: Vec<&str> = TOOLS.iter().map(|t| t.name).collect();
@@ -571,6 +572,7 @@ mod tests {
         assert_eq!(listed["tools"][0]["inputSchema"]["type"], "object");
     }
 
+    // tags: condition
     #[test]
     fn destructive_tools_do_not_exist() {
         for name in [
@@ -586,6 +588,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn reading_pictures_and_prompt_boxes_and_the_web_lookup_are_gated_and_nothing_else() {
         let gated = |tool: &str, args: Value| check_call(tool, Some(&args)).unwrap().read_gated;
@@ -626,6 +629,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn viewing_a_comic_page_takes_one_page_number_from_1() {
         assert!(check_call("view_comic_page", Some(&json!({"page": 2}))).is_ok());
@@ -643,6 +647,7 @@ mod tests {
         }
     }
 
+    // tags: boundary, state-transition
     #[test]
     fn a_refinement_is_started_with_a_goal_and_ended_without_one_and_the_rounds_are_bounded() {
         for args in [
@@ -670,6 +675,7 @@ mod tests {
         ));
     }
 
+    // tags: equivalence
     #[test]
     fn viewing_a_picture_takes_a_queue_id_or_a_name_and_a_trial_is_a_flag_of_generate() {
         for args in [json!({"queueId": 4}), json!({"name": "a.png"}), json!({})] {
@@ -696,6 +702,7 @@ mod tests {
         .is_err());
     }
 
+    // tags: condition
     #[test]
     fn the_web_lookup_checks_its_arguments_and_warns_about_the_open_web() {
         let err = |args: Value| check_call("lookup_reference", Some(&args)).unwrap_err();
@@ -729,6 +736,7 @@ mod tests {
         assert_eq!(hint("get_screen"), json!(false));
     }
 
+    // tags: condition
     #[test]
     fn arguments_are_checked_against_the_schema() {
         let err = |tool: &str, args: Value| check_call(tool, Some(&args)).unwrap_err();
@@ -774,6 +782,7 @@ mod tests {
         assert!(check_call("get_screen", Some(&json!([]))).is_err());
     }
 
+    // tags: error-guessing, boundary
     #[test]
     fn oversized_arguments_are_refused_before_the_schema_is_read() {
         let huge = json!({"ops": [{"op": "panel", "note": "x".repeat(MAX_ARGS_BYTES)}]});

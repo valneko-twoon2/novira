@@ -3,6 +3,7 @@
 use novira_core::agent::reference::lookup;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_closed_port_and_a_cut_off_answer_are_sentences_for_the_model() {
     // A port that was free a moment ago and now has no listener.
@@ -37,6 +38,7 @@ async fn a_closed_port_and_a_cut_off_answer_are_sentences_for_the_model() {
     assert_eq!(err, "Wikipedia's answer was cut off");
 }
 
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn an_answer_sent_in_chunks_past_the_size_cap_is_refused_while_it_streams() {
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();

@@ -19,7 +19,7 @@ const types = () => c().entities.map((e) => e.type);
 const rect = (id: string): RectObject => ({ kind: 'rect', id, x: 0, y: 0, width: 8, height: 8, color: { r: 0, g: 0, b: 0, a: 1 } });
 
 describe('entities', () => {
-  it('numbers entities per type, selects the new one and regroups them by type when arranged', () => {
+  it('numbers entities per type, selects the new one and regroups them by type when arranged', { tags: ['equivalence'] }, () => {
     const r1 = c().addEntity('raster');
     const m1 = c().addEntity('inpaint');
     const r2 = c().addEntity('raster');
@@ -34,20 +34,20 @@ describe('entities', () => {
     expect(ids()).toEqual([r2, r1, m1]);
   });
 
-  it('gives regional masks different colors', () => {
+  it('gives regional masks different colors', { tags: ['condition'] }, () => {
     const a = c().addEntity('regional');
     const b = c().addEntity('regional');
     const color = (id: string) => (c().entities.find((e) => e.id === id) as Extract<CanvasEntity, { type: 'regional' }>).color;
     expect(color(a)).not.toEqual(color(b));
   });
 
-  it('shows a hidden group again when an entity is added to it', () => {
+  it('shows a hidden group again when an entity is added to it', { tags: ['scenario'] }, () => {
     c().setGroupHidden('control', true);
     c().addEntity('control');
     expect(c().groupHidden.control).toBe(false);
   });
 
-  it('selects the last entity of the same type after removing the selected one', () => {
+  it('selects the last entity of the same type after removing the selected one', { tags: ['condition'] }, () => {
     const r1 = c().addEntity('raster');
     c().addEntity('inpaint');
     const r2 = c().addEntity('raster');
@@ -57,7 +57,7 @@ describe('entities', () => {
     expect(c().filterPreviews).toEqual({});
   });
 
-  it('falls back to any entity, then to none, when no entity of the same type is left', () => {
+  it('falls back to any entity, then to none, when no entity of the same type is left', { tags: ['scenario'] }, () => {
     const m = c().addEntity('inpaint');
     const r = c().addEntity('raster');
     c().removeEntity(r);
@@ -66,7 +66,7 @@ describe('entities', () => {
     expect(c().selectedEntityId).toBeNull();
   });
 
-  it('duplicates an entity right after the source with a fresh number and no name', () => {
+  it('duplicates an entity right after the source with a fresh number and no name', { tags: ['condition'] }, () => {
     const a = c().addEntity('raster', { name: 'Sky' });
     const b = c().addEntity('raster');
     c().duplicateEntity(a);
@@ -76,7 +76,7 @@ describe('entities', () => {
     expect(c().selectedEntityId).toBe(copy.id);
   });
 
-  it('moves an entity up and down within its type only', () => {
+  it('moves an entity up and down within its type only', { tags: ['condition'] }, () => {
     const r1 = c().addEntity('raster');
     const r2 = c().addEntity('raster');
     const ctl = c().addEntity('control');
@@ -89,7 +89,7 @@ describe('entities', () => {
     expect(c().past.length).toBe(before);
   });
 
-  it('moves a layer to the position of another layer of the same type, and ignores other types', () => {
+  it('moves a layer to the position of another layer of the same type, and ignores other types', { tags: ['condition'] }, () => {
     const a = c().addEntity('raster');
     const b = c().addEntity('raster');
     const d = c().addEntity('raster');
@@ -105,7 +105,7 @@ describe('entities', () => {
     expect(c().past.length).toBe(before);
   });
 
-  it('flips a layer around the given center, mirroring strokes, rects and images, and undoes it', () => {
+  it('flips a layer around the given center, mirroring strokes, rects and images, and undoes it', { tags: ['state-transition'] }, () => {
     const id = c().addEntity('raster');
     const stroke: StrokeObject = { kind: 'stroke', id: 's1', tool: 'brush', color: { r: 0, g: 0, b: 0, a: 1 }, width: 2, points: [0, 0, 10, 4], clip: null };
     c().addObject(id, stroke);
@@ -119,7 +119,7 @@ describe('entities', () => {
     expect(c().entities[0]!.objects[1]).not.toHaveProperty('flipX', true);
   });
 
-  it('flips vertically and restores the picture when flipped twice', () => {
+  it('flips vertically and restores the picture when flipped twice', { tags: ['scenario'] }, () => {
     const id = c().addEntity('raster');
     c().addObject(id, { kind: 'rect', id: 'r1', x: 0, y: 2, width: 4, height: 6, color: { r: 0, g: 0, b: 0, a: 1 } });
     c().addObject(id, { kind: 'image', id: 'i1', url: 'u', imageName: null, x: 0, y: 0, width: 4, height: 2 });
@@ -131,14 +131,14 @@ describe('entities', () => {
     expect(c().entities[0]!.objects[1]).toMatchObject({ y: 0, flipY: false });
   });
 
-  it('does nothing to a layer without objects', () => {
+  it('does nothing to a layer without objects', { tags: ['condition'] }, () => {
     const id = c().addEntity('raster');
     const before = c().past.length;
     c().flipEntity(id, 'horizontal', 0);
     expect(c().past.length).toBe(before);
   });
 
-  it('converts between mask types keeping color, fill, opacity and objects', () => {
+  it('converts between mask types keeping color, fill, opacity and objects', { tags: ['condition'] }, () => {
     const id = c().addEntity('inpaint', { opacity: 0.3 });
     c().addObject(id, rect('o1'));
     const before = c().entities[0] as Extract<CanvasEntity, { type: 'inpaint' }>;
@@ -148,7 +148,7 @@ describe('entities', () => {
     expect(after.objects.map((o) => o.id)).toEqual(['o1']);
   });
 
-  it('converting a mask to a raster layer takes the raster defaults and re-sorts', () => {
+  it('converting a mask to a raster layer takes the raster defaults and re-sorts', { tags: ['condition'] }, () => {
     const r = c().addEntity('raster');
     const m = c().addEntity('inpaint');
     c().convertEntity(m, 'raster');
@@ -157,7 +157,7 @@ describe('entities', () => {
     expect(c().entities[0]!.id).toBe(r);
   });
 
-  it('clears the canvas but can undo it', () => {
+  it('clears the canvas but can undo it', { tags: ['state-transition'] }, () => {
     c().addEntity('raster');
     c().clearCanvas();
     expect(c().entities).toEqual([]);
@@ -166,7 +166,7 @@ describe('entities', () => {
     expect(types()).toEqual(['raster']);
   });
 
-  it('finds the selected entity', () => {
+  it('finds the selected entity', { tags: ['condition'] }, () => {
     const id = c().addEntity('control');
     expect(selectedEntity(c())?.id).toBe(id);
     c().select(null);
@@ -177,7 +177,7 @@ describe('entities', () => {
 describe('slots', () => {
   const entity = (id: string) => c().entities.find((e) => e.id === id)!;
 
-  it('tells a slot from an ordinary layer', () => {
+  it('tells a slot from an ordinary layer', { tags: ['condition'] }, () => {
     const slot = c().addEntity('raster', { slot: 'panels' });
     const plain = c().addEntity('raster');
     const mask = c().addEntity('inpaint');
@@ -185,7 +185,7 @@ describe('slots', () => {
     expect(isSlot(undefined)).toBe(false);
   });
 
-  it('takes no objects and no position, but keeps the rest of an update', () => {
+  it('takes no objects and no position, but keeps the rest of an update', { tags: ['condition'] }, () => {
     const slot = c().addEntity('raster', { slot: 'panels' });
     const steps = c().past.length;
     c().addObject(slot, rect('r'));
@@ -197,7 +197,7 @@ describe('slots', () => {
     expect(c().past).toHaveLength(steps + 1);
   });
 
-  it('cannot be deleted, duplicated, flipped or converted', () => {
+  it('cannot be deleted, duplicated, flipped or converted', { tags: ['error-guessing'] }, () => {
     const slot = c().addEntity('raster', { slot: 'panels' });
     const before = c().entities;
     c().removeEntity(slot);
@@ -207,7 +207,7 @@ describe('slots', () => {
     expect(c().entities).toBe(before);
   });
 
-  it('stays when the canvas is cleared, and is reordered like any raster layer', () => {
+  it('stays when the canvas is cleared, and is reordered like any raster layer', { tags: ['condition'] }, () => {
     const below = c().addEntity('raster');
     const slot = c().addEntity('raster', { slot: 'panels' });
     const above = c().addEntity('raster');
@@ -220,7 +220,7 @@ describe('slots', () => {
     expect(c().selectedEntityId).toBeNull();
   });
 
-  it('adds a layer right under another layer of its type when asked, else on top', () => {
+  it('adds a layer right under another layer of its type when asked, else on top', { tags: ['condition'] }, () => {
     const low = c().addEntity('raster');
     const slot = c().addEntity('raster', { slot: 'panels' });
     const under = c().addEntity('raster', {}, { under: slot });
@@ -233,7 +233,7 @@ describe('slots', () => {
 });
 
 describe('history', () => {
-  it('undoes and redoes document changes', () => {
+  it('undoes and redoes document changes', { tags: ['state-transition'] }, () => {
     const a = c().addEntity('raster');
     c().updateEntity(a, { opacity: 0.5 });
     c().undo();
@@ -248,7 +248,7 @@ describe('history', () => {
     expect(c().entities[0]!.opacity).toBe(0.5);
   });
 
-  it('drops the redo stack when a new change is made', () => {
+  it('drops the redo stack when a new change is made', { tags: ['state-transition'] }, () => {
     c().addEntity('raster');
     c().undo();
     expect(c().future).toHaveLength(1);
@@ -256,7 +256,7 @@ describe('history', () => {
     expect(c().future).toEqual([]);
   });
 
-  it('coalesces changes with the same key within a second', () => {
+  it('coalesces changes with the same key within a second', { tags: ['condition'] }, () => {
     vi.useFakeTimers();
     vi.setSystemTime(10_000);
     const id = c().addEntity('raster');
@@ -270,14 +270,14 @@ describe('history', () => {
     expect(c().past.length).toBe(base + 2);
   });
 
-  it('skips history when asked', () => {
+  it('skips history when asked', { tags: ['condition'] }, () => {
     const id = c().addEntity('raster');
     const base = c().past.length;
     c().updateEntity(id, { opacity: 0.2 }, { history: false });
     expect(c().past.length).toBe(base);
   });
 
-  it('keeps at most as many steps as the undo setting says (60 at first)', () => {
+  it('keeps at most as many steps as the undo setting says (60 at first)', { tags: ['boundary'] }, () => {
     for (let i = 0; i < 70; i++) c().pushHistory();
     expect(c().past).toHaveLength(SETTINGS_DEFAULTS.undoLimit);
     expect(SETTINGS_DEFAULTS.undoLimit).toBe(60);
@@ -285,13 +285,13 @@ describe('history', () => {
 });
 
 describe('bbox', () => {
-  it('rounds the bbox and syncs the generation size and aspect ratio', () => {
+  it('rounds the bbox and syncs the generation size and aspect ratio', { tags: ['condition'] }, () => {
     c().setBbox({ x: 10.4, y: 0, width: 1283, height: 717 });
     expect(c().bbox).toEqual({ x: 10, y: 0, width: 1280, height: 720 });
     expect(useParams.getState()).toMatchObject({ width: 1280, height: 720, aspectRatio: '16:9' });
   });
 
-  it('keeps a locked aspect ratio and skips syncing when asked', () => {
+  it('keeps a locked aspect ratio and skips syncing when asked', { tags: ['condition'] }, () => {
     useParams.getState().set({ aspectRatio: '1:1', aspectLocked: true });
     c().setBbox({ x: 0, y: 0, width: 640, height: 480 });
     expect(useParams.getState()).toMatchObject({ width: 640, height: 480, aspectRatio: '1:1' });
@@ -299,25 +299,25 @@ describe('bbox', () => {
     expect(useParams.getState().width).toBe(640);
   });
 
-  it('restores the generation size on undo', () => {
+  it('restores the generation size on undo', { tags: ['state-transition'] }, () => {
     c().setBbox({ x: 0, y: 0, width: 768, height: 512 });
     c().undo();
     expect(useParams.getState()).toMatchObject({ width: initialParams.width, height: initialParams.height });
   });
 
-  it('adds no history step when the bbox does not change', () => {
+  it('adds no history step when the bbox does not change', { tags: ['condition'] }, () => {
     c().setBbox({ ...c().bbox });
     expect(c().past).toEqual([]);
   });
 });
 
 describe('tools and staging', () => {
-  it('starts on the view tool', () => {
+  it('starts on the view tool', { tags: ['condition'] }, () => {
     expect(c().tool).toBe('view');
     expect(createCanvasStore({ syncParams: false }).getState().tool).toBe('view');
   });
 
-  it('remembers the previous tool for swapping', () => {
+  it('remembers the previous tool for swapping', { tags: ['condition'] }, () => {
     c().setTool('move');
     c().setTool('move');
     expect([c().tool, c().lastTool]).toEqual(['move', 'view']);
@@ -325,13 +325,13 @@ describe('tools and staging', () => {
     expect([c().tool, c().lastTool]).toEqual(['view', 'move']);
   });
 
-  it('clamps brush and eraser widths', () => {
+  it('clamps brush and eraser widths', { tags: ['boundary'] }, () => {
     c().setBrushWidth(0);
     c().setEraserWidth(9999);
     expect([c().brushWidth, c().eraserWidth]).toEqual([1, 600]);
   });
 
-  it('clamps the mosaic width and block size', () => {
+  it('clamps the mosaic width and block size', { tags: ['boundary'] }, () => {
     c().setMosaicWidth(0);
     c().setMosaicBlock(1);
     expect([c().mosaicWidth, c().mosaicBlock]).toEqual([1, 2]);
@@ -340,7 +340,7 @@ describe('tools and staging', () => {
     expect([c().mosaicWidth, c().mosaicBlock]).toEqual([600, 128]);
   });
 
-  it('shows the newest staged image and wraps around when stepping', () => {
+  it('shows the newest staged image and wraps around when stepping', { tags: ['scenario'] }, () => {
     c().addStagedImage('a');
     c().addStagedImage('b');
     c().addStagedImage('c');
@@ -351,7 +351,7 @@ describe('tools and staging', () => {
     expect(c().stagedIndex).toBe(2);
   });
 
-  it('keeps the staged index in range after discarding', () => {
+  it('keeps the staged index in range after discarding', { tags: ['condition'] }, () => {
     c().addStagedImage('a');
     c().addStagedImage('b');
     c().discardStaged(1);
@@ -369,7 +369,7 @@ describe('the generating page of staging', () => {
     c().addStagedImage(name, { fromQueue: true });
   };
 
-  it('opens on the generating page, stays there while more come and shows the last result at the end', () => {
+  it('opens on the generating page, stays there while more come and shows the last result at the end', { tags: ['scenario'] }, () => {
     c().setStagingGenerating(true);
     expect(page()).toEqual({ index: 0, generating: true });
     c().addStagedImage('a', { fromQueue: true });
@@ -379,7 +379,7 @@ describe('the generating page of staging', () => {
     expect(c().stagedImageNames[page().index]).toBe('b');
   });
 
-  it('leaves someone looking at a finished result on it while the next ones are made, the last included', () => {
+  it('leaves someone looking at a finished result on it while the next ones are made, the last included', { tags: ['condition'] }, () => {
     c().setStagingGenerating(true);
     c().addStagedImage('a', { fromQueue: true });
     c().setStagedIndex(0);
@@ -390,7 +390,7 @@ describe('the generating page of staging', () => {
     expect(page()).toEqual({ index: 0, generating: false });
   });
 
-  it('steps through the results and the generating page, wrapping around', () => {
+  it('steps through the results and the generating page, wrapping around', { tags: ['condition'] }, () => {
     c().setStagingGenerating(true);
     c().addStagedImage('a', { fromQueue: true });
     c().setStagedIndex(2);
@@ -399,7 +399,7 @@ describe('the generating page of staging', () => {
     expect(page()).toEqual({ index: 1, generating: true });
   });
 
-  it('jumps to a new generation\'s page, and back into range when a job ends without a picture', () => {
+  it('jumps to a new generation\'s page, and back into range when a job ends without a picture', { tags: ['condition'] }, () => {
     c().addStagedImage('a');
     c().addStagedImage('b');
     c().setStagedIndex(0);
@@ -409,7 +409,7 @@ describe('the generating page of staging', () => {
     expect(page()).toEqual({ index: 1, generating: false });
   });
 
-  it('shows a one-off result (an erase) straight away, even while a generation runs', () => {
+  it('shows a one-off result (an erase) straight away, even while a generation runs', { tags: ['scenario'] }, () => {
     c().setStagingGenerating(true);
     c().addStagedImage('a', { fromQueue: true });
     c().addStagedImage('erased');
@@ -419,7 +419,7 @@ describe('the generating page of staging', () => {
 });
 
 describe('separate stores', () => {
-  it('keeps two instances and the global store independent', () => {
+  it('keeps two instances and the global store independent', { tags: ['condition'] }, () => {
     const a = createCanvasStore({ syncParams: false });
     const b = createCanvasStore({ syncParams: false });
     const id = a.getState().addEntity('raster');
@@ -437,7 +437,7 @@ describe('separate stores', () => {
     expect(a.getState().entities).toHaveLength(1);
   });
 
-  it('never writes the left form when syncParams is false', () => {
+  it('never writes the left form when syncParams is false', { tags: ['condition'] }, () => {
     const page = createCanvasStore({ syncParams: false });
     const params = useParams.getState();
     page.getState().setBbox({ x: 0, y: 0, width: 1280, height: 720 });

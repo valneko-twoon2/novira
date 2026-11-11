@@ -9,21 +9,21 @@ function sceneWith(...layers: Scene['layers']): Scene {
 const baseStyle = () => newTextLayer(EMPTY_SCENE, 'A').style;
 
 describe('style checks for the assistant: edge cases', () => {
-  it('ignores a style that is not an object', () => {
+  it('ignores a style that is not an object', { tags: ['error-guessing'] }, () => {
     const base = baseStyle();
     expect(sanitizeStyle('bold', base)).toBe(base);
     expect(sanitizeStyle([1, 2], base)).toBe(base);
     expect(sanitizeStyle(null, base)).toBe(base);
   });
 
-  it('accepts a gradient fill only with both colours valid', () => {
+  it('accepts a gradient fill only with both colours valid', { tags: ['error-guessing'] }, () => {
     const base = baseStyle();
     expect(sanitizeStyle({ fill: { kind: 'gradient', top: '#ff0000', bottom: '#0000ff' } }, base).fill).toEqual({ kind: 'gradient', top: '#ff0000', bottom: '#0000ff' });
     expect(sanitizeStyle({ fill: { kind: 'gradient', top: '#ff0000', bottom: 'blue' } }, base).fill).toEqual(base.fill);
     expect(sanitizeStyle({ fill: 'red' }, base).fill).toEqual(base.fill);
   });
 
-  it('clears an outline or a stroke with null and keeps a valid one', () => {
+  it('clears an outline or a stroke with null and keeps a valid one', { tags: ['error-guessing'] }, () => {
     const base = baseStyle();
     const set = sanitizeStyle({ outline: { color: '#ffffff', width: 6 }, stroke: { color: '#000000', width: 3 } }, base);
     expect(set.outline).toEqual({ color: '#ffffff', width: 6 });
@@ -33,14 +33,14 @@ describe('style checks for the assistant: edge cases', () => {
     expect(cleared.stroke).toBeNull();
   });
 
-  it('keeps the old outline when the new one is malformed', () => {
+  it('keeps the old outline when the new one is malformed', { tags: ['error-guessing'] }, () => {
     const base = { ...baseStyle(), outline: { color: '#ffffff', width: 6 } };
     expect(sanitizeStyle({ outline: 'thick' }, base).outline).toEqual({ color: '#ffffff', width: 6 });
     expect(sanitizeStyle({ outline: { color: 'nope', width: 4 } }, base).outline).toEqual({ color: '#ffffff', width: 6 });
     expect(sanitizeStyle({ outline: { color: '#000000' } }, base).outline).toEqual({ color: '#ffffff', width: 6 });
   });
 
-  it('ignores a shadow without a valid colour and defaults its numbers', () => {
+  it('ignores a shadow without a valid colour and defaults its numbers', { tags: ['error-guessing'] }, () => {
     const base = baseStyle();
     expect(sanitizeStyle({ shadow: 'dark' }, base).shadow).toEqual(base.shadow);
     expect(sanitizeStyle({ shadow: { color: 'nope' } }, base).shadow).toEqual(base.shadow);
@@ -48,7 +48,7 @@ describe('style checks for the assistant: edge cases', () => {
     expect(sanitizeStyle({ shadow: { color: '#000000', offsetX: 99999 } }, base).shadow).toMatchObject({ offsetX: 400 });
   });
 
-  it('matches fonts by label as well as family and takes numbers given as strings', () => {
+  it('matches fonts by label as well as family and takes numbers given as strings', { tags: ['error-guessing'] }, () => {
     const base = baseStyle();
     expect(sanitizeStyle({ fontFamily: 7 }, base).fontFamily).toBe(base.fontFamily);
     expect(sanitizeStyle({ fontSize: '48.4', letterSpacing: '3', lineHeight: 9, vertical: true }, base)).toMatchObject({ fontSize: 48, letterSpacing: 3, lineHeight: 3, vertical: true });
@@ -57,7 +57,7 @@ describe('style checks for the assistant: edge cases', () => {
 });
 
 describe('layer edits from the assistant: edge cases', () => {
-  it('bends text and limits its string length, position and visibility flags', () => {
+  it('bends text and limits its string length, position and visibility flags', { tags: ['boundary'] }, () => {
     const layer = { ...newTextLayer(EMPTY_SCENE, 'A'), id: 'a' };
     const r = applyTextOps(sceneWith(layer), [
       { op: 'update', id: 'a', set: { text: 'x'.repeat(900), bend: 500, x: 99999, y: -99999, visible: false, locked: true } },
@@ -69,7 +69,7 @@ describe('layer edits from the assistant: edge cases', () => {
     expect([out.visible, out.locked]).toEqual([false, true]);
   });
 
-  it('checks the border, pointer, fit and seed of a bubble', () => {
+  it('checks the border, pointer, fit and seed of a bubble', { tags: ['error-guessing'] }, () => {
     const bubble = { ...newBubbleLayer(EMPTY_SCENE, 'round', 'hi'), id: 'b' };
     const r = applyTextOps(sceneWith(bubble), [
       {
@@ -88,20 +88,20 @@ describe('layer edits from the assistant: edge cases', () => {
     expect(out.tail).toMatchObject({ enabled: false, width: 4 });
   });
 
-  it('leaves a bubble border alone when the border is not an object', () => {
+  it('leaves a bubble border alone when the border is not an object', { tags: ['error-guessing'] }, () => {
     const bubble = { ...newBubbleLayer(EMPTY_SCENE, 'round', 'hi'), id: 'b' };
     const out = applyTextOps(sceneWith(bubble), [{ op: 'update', id: 'b', set: { border: 'thick', tail: 'long' } }]).scene.layers[0] as BubbleLayer;
     expect(out.border).toEqual(bubble.border);
     expect(out.tail).toEqual(bubble.tail);
   });
 
-  it('adds a bubble with its own fields', () => {
+  it('adds a bubble with its own fields', { tags: ['condition'] }, () => {
     const r = applyTextOps(EMPTY_SCENE, [{ op: 'add', layer: { type: 'bubble', text: 'Hey', shape: 'burst', width: 300 } }]);
     const out = r.scene.layers[0] as BubbleLayer;
     expect(out).toMatchObject({ type: 'bubble', text: 'Hey', shape: 'burst', width: 300 });
   });
 
-  it('applies a preset to a text layer but not to a bubble or an unknown preset', () => {
+  it('applies a preset to a text layer but not to a bubble or an unknown preset', { tags: ['decision-table'] }, () => {
     const t = { ...newTextLayer(EMPTY_SCENE, 'A'), id: 't' };
     const b = { ...newBubbleLayer(EMPTY_SCENE, 'round', 'B'), id: 'b' };
     const ok = applyTextOps(sceneWith(t, b), [{ op: 'preset', id: 't', preset: 'gold' }]);
@@ -115,7 +115,7 @@ describe('layer edits from the assistant: edge cases', () => {
     expect(none.applied).toBe(0);
   });
 
-  it('moves layers up, down and to the bottom and ignores moves that go nowhere', () => {
+  it('moves layers up, down and to the bottom and ignores moves that go nowhere', { tags: ['condition'] }, () => {
     const [a, b, c] = ['a', 'b', 'c'].map((id) => ({ ...newTextLayer(EMPTY_SCENE, id), id }));
     const order = (ops: unknown[]) =>
       applyTextOps(sceneWith(a!, b!, c!), ops)
@@ -131,14 +131,14 @@ describe('layer edits from the assistant: edge cases', () => {
     expect(order([{ op: 'reorder', id: 'zzz', order: 'up' }])).toBe('abc');
   });
 
-  it('clears the selection when the selected layer is removed or the scene is cleared', () => {
+  it('clears the selection when the selected layer is removed or the scene is cleared', { tags: ['state-transition'] }, () => {
     const a = { ...newTextLayer(EMPTY_SCENE, 'A'), id: 'a' };
     expect(applyTextOps(sceneWith(a), [{ op: 'remove', id: 'a' }], 'a').selectedId).toBeNull();
     expect(applyTextOps(sceneWith(a), [{ op: 'clear' }], 'a').selectedId).toBeNull();
     expect(applyTextOps(sceneWith(a), [{ op: 'remove', id: 'a' }], 'other').selectedId).toBe('other');
   });
 
-  it('ignores a background that changes nothing or has a malformed colour', () => {
+  it('ignores a background that changes nothing or has a malformed colour', { tags: ['error-guessing'] }, () => {
     expect(applyTextOps(EMPTY_SCENE, [{ op: 'background' }]).applied).toBe(0);
     expect(applyTextOps(EMPTY_SCENE, [{ op: 'background', color: 'plaid' }]).applied).toBe(0);
     const sized = applyTextOps(EMPTY_SCENE, [{ op: 'background', width: 1, height: 99999 }]).scene;
@@ -146,7 +146,7 @@ describe('layer edits from the assistant: edge cases', () => {
     expect(sized.height).toBeLessThan(99999);
   });
 
-  it('needs a layer object to add and an object to update with', () => {
+  it('needs a layer object to add and an object to update with', { tags: ['error-guessing'] }, () => {
     const a = { ...newTextLayer(EMPTY_SCENE, 'A'), id: 'a' };
     expect(applyTextOps(EMPTY_SCENE, [{ op: 'add', layer: 'text' }, { op: 'add' }]).applied).toBe(0);
     expect(applyTextOps(sceneWith(a), [{ op: 'update', id: 'a', set: 'x' }, { op: 'update', set: {} }]).applied).toBe(0);

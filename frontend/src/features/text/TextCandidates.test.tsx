@@ -45,7 +45,7 @@ beforeEach(() => {
 });
 
 describe('TextCandidates', () => {
-  it('shows nothing for nothing selected, a plain layer and a bubble', () => {
+  it('shows nothing for nothing selected, a plain layer and a bubble', { tags: ['equivalence'] }, () => {
     expect(render(<TextCandidates />).container.firstChild).toBeNull();
     cleanup();
     select(layer(false));
@@ -55,7 +55,7 @@ describe('TextCandidates', () => {
     expect(render(<TextCandidates />).container.firstChild).toBeNull();
   });
 
-  it('lists the candidates of the selected layer with the chosen one pressed', () => {
+  it('lists the candidates of the selected layer with the chosen one pressed', { tags: ['scenario'] }, () => {
     select(layer(true));
     render(<TextCandidates />);
     const items = screen.getAllByTestId('text-rich-candidate');
@@ -65,7 +65,7 @@ describe('TextCandidates', () => {
     expect(screen.queryByTestId('text-rich-stale')).toBeNull();
   });
 
-  it('shows each candidate by its thumbnail, and by its picture when it has none', () => {
+  it('shows each candidate by its thumbnail, and by its picture when it has none', { tags: ['condition'] }, () => {
     useGallery.setState({ images: [{ name: 'a.png', url: 'http://x/a.png', thumbnailUrl: 'http://x/thumb/a.png' }, { name: 'b.png', url: 'http://x/b.png', thumbnailUrl: '' }] as never });
     select(layer(true));
     render(<TextCandidates />);
@@ -73,14 +73,14 @@ describe('TextCandidates', () => {
     expect(srcs).toEqual(['http://x/thumb/a.png', 'http://x/b.png']);
   });
 
-  it('offers a new run when the lettering changed since the picture was made', () => {
+  it('offers a new run when the lettering changed since the picture was made', { tags: ['condition'] }, () => {
     select({ ...layer(true), text: 'changed' });
     render(<TextCandidates />);
     expect(screen.getByTestId('text-rich-stale')).toBeTruthy();
     expect((screen.getByTestId('text-rich-redo') as HTMLButtonElement).disabled).toBe(false);
   });
 
-  it('turns the redo off for an empty text and while a run is going', () => {
+  it('turns the redo off for an empty text and while a run is going', { tags: ['condition'] }, () => {
     select({ ...layer(true), text: '  ' });
     render(<TextCandidates />);
     expect((screen.getByTestId('text-rich-redo') as HTMLButtonElement).disabled).toBe(true);
@@ -92,7 +92,7 @@ describe('TextCandidates', () => {
     expect((screen.getByTestId('text-rich-redo') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('goes back to the plain fill and removes the strip', () => {
+  it('goes back to the plain fill and removes the strip', { tags: ['scenario'] }, () => {
     select(layer(true));
     const { container } = render(<TextCandidates />);
     fireEvent.click(screen.getByTestId('text-rich-clear'));

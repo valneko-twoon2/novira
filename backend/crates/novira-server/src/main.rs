@@ -222,6 +222,7 @@ mod tests {
         s.split_whitespace().map(str::to_string)
     }
 
+    // tags: equivalence
     #[test]
     fn the_options_are_read_and_the_data_folder_has_no_default() {
         let o = parse(args("--data d --dist f --port 8123 --engine --open"), None).unwrap();
@@ -270,6 +271,7 @@ mod tests {
         assert!(parse(args("--data d --dist f --lan"), None).is_err());
     }
 
+    // tags: condition
     #[test]
     fn the_apps_folder_is_opened_only_when_the_app_has_one() {
         assert_eq!(folder_of(AppData::Folder("d".into())), Ok("d".into()));
@@ -283,6 +285,7 @@ mod tests {
 
     /// The release folder's `server.bat` (written by `scripts/release/package.bat`) opens the app's own data folder, not a new
     /// one beside the exe that the app would then take for its data.
+    // tags: condition
     #[test]
     fn the_release_launcher_opens_the_apps_data_folder() {
         let release = include_str!("../../../../scripts/release/package.bat");
@@ -294,6 +297,7 @@ mod tests {
         assert!(!start.contains("--data "), "{start}");
     }
 
+    // tags: condition
     #[test]
     fn the_port_of_the_last_start_comes_back() {
         let dir = std::env::temp_dir().join(format!("novira-port-{}", std::process::id()));

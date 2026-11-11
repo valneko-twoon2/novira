@@ -39,24 +39,24 @@ const BASES: BaseModel[] = [
 ];
 
 describe('recommended prompts', () => {
-  it.each(BASES)('gives quality words for %s', (base) => {
+  it.each(BASES)('gives quality words for %s', { tags: ['equivalence'] }, (base) => {
     expect(recommendedPrompts(model(base)).positive.trim()).not.toBe('');
   });
 
-  it('gives quality words and a negative without a model', () => {
+  it('gives quality words and a negative without a model', { tags: ['error-guessing'] }, () => {
     const r = recommendedPrompts(undefined);
     expect(r.positive).toContain('best quality');
     expect(r.negative).toContain('worst quality');
   });
 
-  it('uses the Anima card prompts for an Anima checkpoint', () => {
+  it('uses the Anima card prompts for an Anima checkpoint', { tags: ['condition'] }, () => {
     const r = recommendedPrompts(model('anima', 'NyaNya Harem Anima 2.9B'));
     expect(r).toMatchObject({ place: 'first', positive: 'masterpiece, best quality, score_7' });
     expect(r.negative).toContain('score_1');
     expect(r.positive).not.toContain('safe');
   });
 
-  it('tells the anime SDXL families apart by name or file name', () => {
+  it('tells the anime SDXL families apart by name or file name', { tags: ['condition'] }, () => {
     expect(recommendedPrompts(model('sdxl', 'waiIllustriousSDXL_v170')).positive).toContain('very aesthetic');
     expect(recommendedPrompts(model('sdxl', 'My model', 'C:\\m\\wai-nsfw-illustrious-v14.safetensors')).positive).toContain('amazing quality');
     expect(recommendedPrompts(model('sdxl', 'NoobAI-XL v1.1')).negative).toContain('old, early');
@@ -65,7 +65,7 @@ describe('recommended prompts', () => {
     expect(recommendedPrompts(model('sdxl', 'some sdxl')).positive).toBe('masterpiece, best quality, highly detailed, sharp focus');
   });
 
-  it('puts sentence-model words after the description, and gives FLUX.1 no negative', () => {
+  it('puts sentence-model words after the description, and gives FLUX.1 no negative', { tags: ['error-guessing'] }, () => {
     expect(recommendedPrompts(model('flux'))).toMatchObject({ place: 'last', negative: '' });
     expect(recommendedPrompts(model('qwen-image'))).toMatchObject({ place: 'last', positive: 'Ultra HD, 4K, cinematic composition' });
     expect(recommendedPrompts(model('chroma')).negative).toContain('restricted palette');

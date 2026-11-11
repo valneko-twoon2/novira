@@ -46,7 +46,7 @@ function findMotion(page: Page, short: number): Promise<string[]> {
 }
 
 for (const tab of TABS) {
-  test(`${tab} tab: nothing longer than ${SHORT * 1000} ms moves under reduced motion`, async ({ page }) => {
+  test(`${tab} tab: nothing longer than ${SHORT * 1000} ms moves under reduced motion`, { tag: ['@boundary'] }, async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await openApp(page);
     await showTab(page, tab);

@@ -5,7 +5,7 @@ import { FIX_BRUSH, FIX_LIMITS, FIX_STRENGTH } from './panelFix';
 beforeEach(() => useComicFix.getState().stop());
 
 describe('marking a part of a panel picture', () => {
-  it('starts on a panel and drops what was marked on another one', () => {
+  it('starts on a panel and drops what was marked on another one', { tags: ['state-transition'] }, () => {
     const fix = useComicFix.getState();
     fix.start('a');
     fix.begin(0.1, 0.1);
@@ -16,7 +16,7 @@ describe('marking a part of a panel picture', () => {
     expect(useComicFix.getState()).toMatchObject({ panelId: 'b', strokes: [], words: '' });
   });
 
-  it('draws strokes with the brush of the moment, takes the last one away and clears them', () => {
+  it('draws strokes with the brush of the moment, takes the last one away and clears them', { tags: ['condition'] }, () => {
     const fix = useComicFix.getState();
     fix.start('a');
     fix.setBrush(0.1);
@@ -32,7 +32,7 @@ describe('marking a part of a panel picture', () => {
     expect(useComicFix.getState().strokes).toEqual([]);
   });
 
-  it('draws nothing when no panel is marked, and keeps to the most strokes a mask holds', () => {
+  it('draws nothing when no panel is marked, and keeps to the most strokes a mask holds', { tags: ['boundary'] }, () => {
     const fix = useComicFix.getState();
     fix.begin(0.1, 0.1);
     fix.extend(0.2, 0.2, 1);
@@ -42,7 +42,7 @@ describe('marking a part of a panel picture', () => {
     expect(useComicFix.getState().strokes).toHaveLength(FIX_LIMITS.strokes);
   });
 
-  it('keeps the brush and the strength within their ranges', () => {
+  it('keeps the brush and the strength within their ranges', { tags: ['boundary'] }, () => {
     const fix = useComicFix.getState();
     fix.setBrush(5);
     fix.setStrength(-1);
@@ -51,7 +51,7 @@ describe('marking a part of a panel picture', () => {
     expect(useComicFix.getState().brush).toBe(FIX_BRUSH.min);
   });
 
-  it('ends with nothing marked', () => {
+  it('ends with nothing marked', { tags: ['condition'] }, () => {
     const fix = useComicFix.getState();
     fix.start('a');
     fix.begin(0.1, 0.1);

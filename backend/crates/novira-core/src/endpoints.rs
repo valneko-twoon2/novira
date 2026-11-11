@@ -115,6 +115,7 @@ pub fn hf_resolve(repo: &str, path: &str) -> String {
 mod tests {
     use super::*;
 
+    // tags: equivalence
     #[test]
     fn loopback_base_accepts_only_a_loopback_origin_with_a_port() {
         assert_eq!(
@@ -147,6 +148,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn origin_with_uses_the_real_site_unless_a_loopback_override_is_given() {
         let none = |_: &str| None;
@@ -168,6 +170,7 @@ mod tests {
         );
     }
 
+    // tags: equivalence
     #[test]
     fn every_service_has_its_own_variable_and_an_https_origin() {
         let all = [

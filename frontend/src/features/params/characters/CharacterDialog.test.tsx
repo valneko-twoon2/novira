@@ -54,7 +54,7 @@ describe('register a character', () => {
     await waitFor(() => expect(useComfyNodes.getState().status).not.toBe('loading'));
   });
 
-  it('stays closed until a picture is chosen, and needs a name before it can save', async () => {
+  it('stays closed until a picture is chosen, and needs a name before it can save', { tags: ['condition'] }, async () => {
     mount();
     expect(screen.queryByTestId('character-dialog')).toBeNull();
     useCharacterDialog.getState().open({ imageNames: ['photo.png'] });
@@ -63,7 +63,7 @@ describe('register a character', () => {
     expect((screen.getByTestId('character-save') as HTMLButtonElement).disabled).toBe(false);
   });
 
-  it('puts the picture on a white background first and saves that picture', async () => {
+  it('puts the picture on a white background first and saves that picture', { tags: ['scenario'] }, async () => {
     mount();
     useCharacterDialog.getState().open({ imageNames: ['photo.png'] });
     await screen.findByTestId('character-dialog');
@@ -79,7 +79,7 @@ describe('register a character', () => {
     expect(useCharacterDialog.getState().target).toBeNull();
   });
 
-  it('saves the picture as it is when the background-removal pack is missing', async () => {
+  it('saves the picture as it is when the background-removal pack is missing', { tags: ['condition'] }, async () => {
     useComfyNodes.setState({ defs: { ...MOCK_NODE_DEFS }, status: 'ready' });
     mount();
     useCharacterDialog.getState().open({ imageNames: ['photo.png'], name: 'Mia' });
@@ -90,7 +90,7 @@ describe('register a character', () => {
     expect(useCharacters.getState().presets[0]!.data.imageNames).toEqual(['photo.png']);
   });
 
-  it('keeps the dialog open and shows why when the background removal fails', async () => {
+  it('keeps the dialog open and shows why when the background removal fails', { tags: ['error-guessing'] }, async () => {
     vi.mocked(runJob).mockRejectedValueOnce(new Error('out of memory'));
     mount();
     useCharacterDialog.getState().open({ imageNames: ['photo.png'], name: 'Mia' });
@@ -101,7 +101,7 @@ describe('register a character', () => {
     expect(useCharacterDialog.getState().target).not.toBeNull();
   });
 
-  it('edits a character in place without touching its picture', async () => {
+  it('edits a character in place without touching its picture', { tags: ['scenario'] }, async () => {
     const id = useCharacters.getState().add('Old', { imageNames: ['photo.png'], weight: 0.4, tags: 'a' });
     mount();
     useCharacterDialog.getState().open({ imageNames: ['photo.png'], name: 'Old', editId: id });
@@ -118,7 +118,7 @@ describe('register a character', () => {
 
   const second: ImageDTO = { ...photo, name: 'photo2.png', url: 'blob:photo2', thumbnailUrl: 'blob:photo2' };
 
-  it('registers several pictures at once, each put on white, in the order they were given', async () => {
+  it('registers several pictures at once, each put on white, in the order they were given', { tags: ['scenario'] }, async () => {
     useGallery.getState().setImages([photo, second]);
     vi.mocked(runJob)
       .mockReset()
@@ -134,7 +134,7 @@ describe('register a character', () => {
     expect(useCharacters.getState().presets[0]!.data.imageNames).toEqual(['white1.png', 'white2.png']);
   });
 
-  it('adds the pictures selected in the gallery, removes them again, and needs at least one picture to save', async () => {
+  it('adds the pictures selected in the gallery, removes them again, and needs at least one picture to save', { tags: ['boundary'] }, async () => {
     useGallery.getState().setImages([photo, second]);
     mount();
     useCharacterDialog.getState().open({ imageNames: ['photo.png'], name: 'Mia' });
@@ -151,7 +151,7 @@ describe('register a character', () => {
     expect((screen.getByTestId('character-save') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('puts only the pictures added while editing on white, and keeps the older ones as they are', async () => {
+  it('puts only the pictures added while editing on white, and keeps the older ones as they are', { tags: ['scenario'] }, async () => {
     useGallery.getState().setImages([photo, second]);
     const id = useCharacters.getState().add('Mia', { imageNames: ['photo.png'], weight: 0.6, tags: '' });
     mount();

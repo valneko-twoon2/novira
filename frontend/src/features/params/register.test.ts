@@ -22,7 +22,7 @@ afterEach(() => {
 });
 
 describe('registerParamsFeature', () => {
-  it('registers the Generate and Upscaling builders with their readiness', () => {
+  it('registers the Generate and Upscaling builders with their readiness', { tags: ['scenario'] }, () => {
     registerParamsFeature();
     const generate = renderHook(() => useReadiness('generate'));
     const upscaling = renderHook(() => useReadiness('upscaling'));
@@ -32,7 +32,7 @@ describe('registerParamsFeature', () => {
     expect(buildRequestFor('upscaling')).toBeInstanceOf(Promise);
   });
 
-  it('updates the readiness when the parameters, the models or the wildcard lists change', () => {
+  it('updates the readiness when the parameters, the models or the wildcard lists change', { tags: ['state-transition'] }, () => {
     registerParamsFeature();
     const generate = renderHook(() => useReadiness('generate'));
     const warnings = renderHook(() => useInvokeWarnings('generate'));
@@ -48,7 +48,7 @@ describe('registerParamsFeature', () => {
     expect(warnings.result.current).toEqual([]);
   });
 
-  it('lets go of the chosen main model when it disappears, without choosing another, and registering twice subscribes once', () => {
+  it('lets go of the chosen main model when it disappears, without choosing another, and registering twice subscribes once', { tags: ['condition'] }, () => {
     registerParamsFeature();
     registerParamsFeature();
     act(() => useModels.setState({ models: [main('m1'), main('m2')] }));

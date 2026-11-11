@@ -3,7 +3,7 @@ import { expect, openApp, showNewInViewer, test } from './fixtures';
 
 test.beforeEach(({ page }) => showNewInViewer(page));
 
-test('a picture is registered as a character and then sets up a reference image and the look words', async ({ page }) => {
+test('a picture is registered as a character and then sets up a reference image and the look words', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('seed-fixed').click();
   await page.getByTestId('positive-prompt').fill('a girl in a blue skirt');
@@ -26,7 +26,7 @@ test('a picture is registered as a character and then sets up a reference image 
   await expect(page.getByTestId('positive-prompt')).toHaveValue('brown hair, blue skirt, sitting in a cafe');
 });
 
-test('several pictures selected in the gallery are registered as one character', async ({ page }) => {
+test('several pictures selected in the gallery are registered as one character', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('positive-prompt').fill('a girl in a blue skirt');
   await page.getByTestId('invoke-button').click();

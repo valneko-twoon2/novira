@@ -10,7 +10,7 @@ type BootstrapData = Awaited<ReturnType<typeof backend.bootstrap>>;
 afterEach(() => vi.restoreAllMocks());
 
 describe('startBackend with summaries', () => {
-  it('marks the pictures as summaries before the gallery tells its listeners', async () => {
+  it('marks the pictures as summaries before the gallery tells its listeners', { tags: ['condition'] }, async () => {
     const image = { name: 'a.png', metadata: null } as ImageDTO;
     vi.spyOn(backend, 'bootstrap').mockResolvedValue({ models: [], boards: [], images: [image], imagesSummary: true, workflows: [], engine: { state: 'ready' } as BootstrapData['engine'], packs: {} as Packs });
     const seen: boolean[] = [];

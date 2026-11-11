@@ -676,6 +676,7 @@ mod tests {
     use crate::models::install::{self, Source};
     use std::collections::HashSet;
 
+    // tags: condition
     #[test]
     fn ids_are_unique() {
         let list = starter_models();
@@ -683,6 +684,7 @@ mod tests {
         assert_eq!(ids.len(), list.len());
     }
 
+    // tags: equivalence
     #[test]
     fn every_dependency_has_a_download_size() {
         let list = starter_models();
@@ -692,6 +694,7 @@ mod tests {
         }
     }
 
+    // tags: equivalence
     #[test]
     fn dependencies_name_listed_models_of_the_same_or_any_base() {
         let list = starter_models();
@@ -713,6 +716,7 @@ mod tests {
         }
     }
 
+    // tags: scenario, equivalence
     #[test]
     fn a_model_loaded_in_parts_lists_every_file_the_generate_tab_looks_for() {
         use crate::comfy::split::Family;
@@ -764,6 +768,7 @@ mod tests {
         }
     }
 
+    // tags: equivalence
     #[test]
     fn every_source_is_a_single_file_download_into_a_known_folder() {
         let models = std::path::Path::new("models");
@@ -782,6 +787,7 @@ mod tests {
         }
     }
 
+    // tags: equivalence
     #[test]
     fn reference_image_models_land_where_the_ipadapter_pack_looks_and_are_recognised() {
         let models = std::path::Path::new("models");

@@ -91,6 +91,7 @@ fn error_of(b: &novira_core::Backend) -> String {
         .unwrap()
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_wan_21_text_to_video_model_runs_without_the_pack() {
     let dir = tempfile::tempdir().unwrap();
@@ -114,6 +115,7 @@ async fn a_wan_21_text_to_video_model_runs_without_the_pack() {
     assert!(jobs[0].text_encoder.is_none());
 }
 
+// tags: decision-table
 #[tokio::test]
 async fn the_5b_model_takes_wan_22s_vae_and_an_i2v_model_is_told_apart() {
     let dir = tempfile::tempdir().unwrap();
@@ -142,6 +144,7 @@ async fn the_5b_model_takes_wan_22s_vae_and_an_i2v_model_is_told_apart() {
     );
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_wan_22_high_noise_model_brings_its_low_noise_partner() {
     let dir = tempfile::tempdir().unwrap();
@@ -188,6 +191,7 @@ async fn a_wan_22_high_noise_model_brings_its_low_noise_partner() {
     );
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_wan_model_of_an_unknown_kind_and_a_missing_vae_fail_with_the_reason() {
     let dir = tempfile::tempdir().unwrap();
@@ -215,6 +219,7 @@ async fn a_wan_model_of_an_unknown_kind_and_a_missing_vae_fail_with_the_reason()
     assert!(engine.jobs.lock().unwrap().is_empty());
 }
 
+// tags: scenario
 #[tokio::test]
 async fn hunyuan_video_runs_text_to_video_and_image_to_video_with_its_vision_model() {
     let dir = tempfile::tempdir().unwrap();
@@ -290,6 +295,7 @@ async fn hunyuan_video_runs_text_to_video_and_image_to_video_with_its_vision_mod
     );
 }
 
+// tags: scenario
 #[tokio::test]
 async fn an_ltx_checkpoint_gives_its_own_vae() {
     let dir = tempfile::tempdir().unwrap();
@@ -326,6 +332,7 @@ fn wan_file_with(path: &Path, channels: u64, extra: &[&str]) {
     safetensors(path, &tensors);
 }
 
+// tags: decision-table
 #[tokio::test]
 async fn a_wan_21_image_model_needs_the_clip_vision_file_and_gets_it_in_the_job() {
     let dir = tempfile::tempdir().unwrap();
@@ -360,6 +367,7 @@ async fn a_wan_21_image_model_needs_the_clip_vision_file_and_gets_it_in_the_job(
     );
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn vace_runs_and_a_model_made_for_another_input_is_refused_by_name() {
     use novira_core::models::classify::Variant;

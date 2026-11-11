@@ -155,6 +155,7 @@ async fn failure(engine: &ComfyEngine, job: &EngineJob) -> String {
 
 // Uploads -------------------------------------------------------------------------------------------------------
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_refused_upload_of_the_source_mask_control_or_reference_picture_fails_the_job() {
     let url = serve(healthy()).await;
@@ -200,6 +201,7 @@ async fn a_refused_upload_of_the_source_mask_control_or_reference_picture_fails_
         .contains("upload answered 500"));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_video_job_without_its_text_encoder_cannot_be_built() {
     let url = serve(healthy()).await;
@@ -209,6 +211,7 @@ async fn a_video_job_without_its_text_encoder_cannot_be_built() {
 
 // Reading from ComfyUI ------------------------------------------------------------------------------------------
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_node_list_that_cannot_be_read_fails_the_check_of_an_editor_graph() {
     let url = serve(Cfg {
@@ -226,6 +229,7 @@ async fn a_node_list_that_cannot_be_read_fails_the_check_of_an_editor_graph() {
     );
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_history_that_fails_while_the_job_is_polled_fails_the_job() {
     let url = serve(Cfg {
@@ -238,6 +242,7 @@ async fn a_history_that_fails_while_the_job_is_polled_fails_the_job() {
     assert!(message.contains("history/p1 answered 500"), "{message}");
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_job_that_ended_with_an_error_without_a_result_to_fetch_reports_it() {
     let url = serve(Cfg {
@@ -254,6 +259,7 @@ async fn a_job_that_ended_with_an_error_without_a_result_to_fetch_reports_it() {
     assert_eq!(message, "ComfyUI KSampler: boom");
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn a_video_whose_first_frame_is_missing_is_an_error() {
     let file = json!({ "filename": "v.mp4", "subfolder": "", "type": "temp" });
@@ -269,6 +275,7 @@ async fn a_video_whose_first_frame_is_missing_is_an_error() {
     assert!(message.contains("without a result file"), "{message}");
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn a_picture_job_whose_run_is_only_polled_still_finishes() {
     let url = serve(Cfg {
@@ -288,6 +295,7 @@ async fn a_picture_job_whose_run_is_only_polled_still_finishes() {
 
 // Preview frames ------------------------------------------------------------------------------------------------
 
+// tags: error-guessing
 #[test]
 fn preview_frames_that_are_cut_short_give_no_picture() {
     // A known event without its kind, with a kind but no picture, with a header length that runs past the end, and
@@ -308,6 +316,7 @@ fn preview_frames_that_are_cut_short_give_no_picture() {
 
 // Jobs that cannot be built ----------------------------------------------------------------------------------------
 
+// tags: error-guessing
 #[tokio::test]
 async fn logo_and_video_jobs_that_cannot_run_are_refused_before_anything_is_sent() {
     let url = serve(healthy()).await;
@@ -338,6 +347,7 @@ async fn logo_and_video_jobs_that_cannot_run_are_refused_before_anything_is_sent
     assert!(refused(engine.validate(&video).await).contains("is not available in ComfyUI"));
 }
 
+// tags: decision-table
 #[test]
 fn every_scheduler_name_maps_to_a_sampler_and_a_scheduler() {
     use novira_core::comfy::graph::sampler_for;

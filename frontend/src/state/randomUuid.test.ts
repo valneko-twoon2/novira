@@ -6,11 +6,11 @@ const V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}
 afterEach(() => vi.unstubAllGlobals());
 
 describe('randomUuid', () => {
-  it('uses the browser\'s own on a secure page', () => {
+  it('uses the browser\'s own on a secure page', { tags: ['condition'] }, () => {
     expect(randomUuid()).toMatch(V4);
   });
 
-  it('makes a version 4 id from random bytes where the page is not secure', () => {
+  it('makes a version 4 id from random bytes where the page is not secure', { tags: ['condition'] }, () => {
     const real = globalThis.crypto;
     vi.stubGlobal('crypto', { getRandomValues: (a: Uint8Array<ArrayBuffer>) => real.getRandomValues(a) });
     const ids = new Set(Array.from({ length: 200 }, randomUuid));

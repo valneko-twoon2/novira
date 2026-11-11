@@ -7,7 +7,7 @@ import { ContextMenu, ContextMenuContent, ContextMenuSplitItem, ContextMenuTrigg
 afterEach(cleanup);
 
 describe('Section', () => {
-  it('shows its body when open and hides it after toggling', () => {
+  it('shows its body when open and hides it after toggling', { tags: ['state-transition'] }, () => {
     render(
       <Section title="Advanced" badges={['2', '']}>
         <p>body</p>
@@ -23,7 +23,7 @@ describe('Section', () => {
     expect(screen.queryByText('body')).toBeNull();
   });
 
-  it('can start closed', () => {
+  it('can start closed', { tags: ['condition'] }, () => {
     render(
       <Section title="Closed" defaultOpen={false}>
         <p>hidden</p>
@@ -36,7 +36,7 @@ describe('Section', () => {
 });
 
 describe('Modal', () => {
-  it('renders the title, body and footer and closes with the labelled close button', () => {
+  it('renders the title, body and footer and closes with the labelled close button', { tags: ['condition'] }, () => {
     const onOpenChange = vi.fn();
     render(
       <Modal open onOpenChange={onOpenChange} title="Settings" closeLabel="Close" footer={<span>footer</span>}>
@@ -50,7 +50,7 @@ describe('Modal', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
-  it('closes on Escape and renders nothing while closed', () => {
+  it('closes on Escape and renders nothing while closed', { tags: ['condition'] }, () => {
     function Harness() {
       const [open, setOpen] = useState(true);
       return (
@@ -66,7 +66,7 @@ describe('Modal', () => {
 });
 
 describe('Tabs', () => {
-  it('shows the panel of the chosen tab', () => {
+  it('shows the panel of the chosen tab', { tags: ['condition'] }, () => {
     function Harness() {
       const [tab, setTab] = useState('a');
       return (
@@ -114,7 +114,7 @@ describe('ContextMenuSplitItem', () => {
     return { main, side };
   };
 
-  it('runs the item or its side action, each on its own, and closes the menu', () => {
+  it('runs the item or its side action, each on its own, and closes the menu', { tags: ['condition'] }, () => {
     const first = show();
     fireEvent.click(screen.getByText('Run'));
     expect(first.main).toHaveBeenCalledTimes(1);
@@ -126,7 +126,7 @@ describe('ContextMenuSplitItem', () => {
     expect(first.main).toHaveBeenCalledTimes(1);
   });
 
-  it('turns both off together', () => {
+  it('turns both off together', { tags: ['condition'] }, () => {
     show(true);
     expect(screen.getByTestId('side').getAttribute('aria-disabled')).toBe('true');
     expect(screen.getByText('Run').closest('[role=menuitem]')?.getAttribute('aria-disabled')).toBe('true');

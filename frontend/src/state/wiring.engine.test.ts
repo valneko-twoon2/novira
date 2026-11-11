@@ -11,7 +11,7 @@ type BootstrapData = Awaited<ReturnType<typeof backend.bootstrap>>;
 afterEach(() => vi.restoreAllMocks());
 
 describe('the engine restarting', () => {
-  it('reads the node definitions again once it is ready, but only when they were read before', async () => {
+  it('reads the node definitions again once it is ready, but only when they were read before', { tags: ['condition'] }, async () => {
     let emit: (e: BackendEvent) => void = () => undefined;
     vi.spyOn(backend, 'subscribe').mockImplementation((listener) => {
       emit = listener;

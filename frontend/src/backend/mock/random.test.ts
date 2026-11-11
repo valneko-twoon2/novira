@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { batchSeed, hashString, MAX_SEED, mulberry32, randomSeed } from './random';
 
 describe('mock random helpers', () => {
-  it('hashes a string to the same unsigned 32-bit number every time', () => {
+  it('hashes a string to the same unsigned 32-bit number every time', { tags: ['condition'] }, () => {
     expect(hashString('a red fox')).toBe(hashString('a red fox'));
     expect(hashString('a red fox')).not.toBe(hashString('a red fax'));
     // FNV-1a of the empty string is its offset basis.
@@ -13,7 +13,7 @@ describe('mock random helpers', () => {
     }
   });
 
-  it('repeats the same sequence for the same seed and differs for another seed', () => {
+  it('repeats the same sequence for the same seed and differs for another seed', { tags: ['condition'] }, () => {
     const take = (seed: number) => {
       const next = mulberry32(seed);
       return Array.from({ length: 5 }, next);
@@ -23,14 +23,14 @@ describe('mock random helpers', () => {
     for (const v of take(7)) expect(v >= 0 && v < 1).toBe(true);
   });
 
-  it('draws random seeds inside the seed range', () => {
+  it('draws random seeds inside the seed range', { tags: ['boundary'] }, () => {
     for (let i = 0; i < 100; i++) {
       const s = randomSeed();
       expect(Number.isInteger(s) && s >= 0 && s <= MAX_SEED).toBe(true);
     }
   });
 
-  it('steps batch seeds as seed + i, keeping MAX_SEED and wrapping after it like the Rust backend', () => {
+  it('steps batch seeds as seed + i, keeping MAX_SEED and wrapping after it like the Rust backend', { tags: ['boundary'] }, () => {
     expect(batchSeed(MAX_SEED, 0)).toBe(MAX_SEED);
     expect(batchSeed(MAX_SEED - 1, 1)).toBe(MAX_SEED);
     expect(batchSeed(MAX_SEED, 1)).toBe(0);

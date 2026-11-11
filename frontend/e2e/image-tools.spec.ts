@@ -21,7 +21,7 @@ async function fromMenu(page: Page, key: string) {
 
 const status = (page: Page) => page.getByTestId('tool-band-status');
 
-test('a menu item runs the tool at once, the viewer compares the result, and the band runs it again with changed settings', async ({ page }) => {
+test('a menu item runs the tool at once, the viewer compares the result, and the band runs it again with changed settings', { tag: ['@scenario'] }, async ({ page }) => {
   await onePicture(page);
   await fromMenu(page, 'cutout.menu');
   await expect(page.getByTestId('tool-band')).toHaveAttribute('data-tool', 'cutout');
@@ -49,7 +49,7 @@ test('a menu item runs the tool at once, the viewer compares the result, and the
   await expect(page.getByTestId('tool-band-used')).toContainText(msg('cutout.background.white'));
 });
 
-test('the gear beside a menu item opens the settings in the band without running', async ({ page }) => {
+test('the gear beside a menu item opens the settings in the band without running', { tag: ['@scenario'] }, async ({ page }) => {
   await onePicture(page);
   await page.getByTestId('gallery-thumb').first().click({ button: 'right' });
   await page.getByTestId('menu-tool-settings-facefix').click();
@@ -71,7 +71,7 @@ test('the gear beside a menu item opens the settings in the band without running
   await expect(page.getByTestId('tool-band-used')).toContainText('bbox/');
 });
 
-test('closing the band while its job waits does not cancel the job', async ({ page }) => {
+test('closing the band while its job waits does not cancel the job', { tag: ['@state-transition'] }, async ({ page }) => {
   await onePicture(page);
   // Hold the queue so the job is still waiting when the band closes.
   await showTab(page, 'queue');

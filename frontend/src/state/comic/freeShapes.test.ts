@@ -18,7 +18,7 @@ const inside = (s: Shape) => {
 };
 
 describe('keepOnPage and translateShape', () => {
-  it('keeps the middle of a shape on the page, and lets the rest run off it', () => {
+  it('keeps the middle of a shape on the page, and lets the rest run off it', { tags: ['condition'] }, () => {
     const kept = keepOnPage(rect(-0.4, 0.1, 0.4, 0.4))!;
     expect(shapeCentre(kept).x).toBeCloseTo(0);
     expect(kept[0]!.x).toBeLessThan(0);
@@ -26,7 +26,7 @@ describe('keepOnPage and translateShape', () => {
     expect(keepOnPage(rect(-1, 0, 4, 0.3))).toBeNull();
   });
 
-  it('moves a shape by the delta, partly off the page when asked, and stops it when its middle would leave', () => {
+  it('moves a shape by the delta, partly off the page when asked, and stops it when its middle would leave', { tags: ['condition'] }, () => {
     const moved = translateShape(rect(0.1, 0.1, 0.3, 0.2), { x: 0.2, y: 0.1 })!;
     expect(moved[0]).toEqual({ x: expect.closeTo(0.3), y: expect.closeTo(0.2) });
     const cut = translateShape(rect(0.5, 0.5, 0.3, 0.2), { x: 0.45, y: 0 })!;
@@ -39,7 +39,7 @@ describe('keepOnPage and translateShape', () => {
 });
 
 describe('rotateShape', () => {
-  it('keeps the panel the same size on the paper and the same middle, whatever the angle', () => {
+  it('keeps the panel the same size on the paper and the same middle, whatever the angle', { tags: ['equivalence'] }, () => {
     const start = rect(0.3, 0.3, 0.3, 0.2);
     for (const degrees of [15, 45, 90, 180, 270]) {
       const turned = rotateShape(start, (degrees * Math.PI) / 180, ASPECT)!;
@@ -49,7 +49,7 @@ describe('rotateShape', () => {
     }
   });
 
-  it('turns a right angle on paper into a right angle, and comes back after a full turn', () => {
+  it('turns a right angle on paper into a right angle, and comes back after a full turn', { tags: ['state-transition'] }, () => {
     const start = rect(0.3, 0.3, 0.3, 0.2);
     const turned = rotateShape(start, Math.PI / 6, ASPECT)!;
     const edge = (a: number, b: number) => ({ x: turned[b]!.x - turned[a]!.x, y: (turned[b]!.y - turned[a]!.y) * ASPECT });
@@ -63,7 +63,7 @@ describe('rotateShape', () => {
     });
   });
 
-  it('turns about its middle even where that runs a corner off the page, and refuses a turn that throws a corner too far', () => {
+  it('turns about its middle even where that runs a corner off the page, and refuses a turn that throws a corner too far', { tags: ['error-guessing'] }, () => {
     const turned = rotateShape(rect(0, 0, 0.9, 0.2), Math.PI / 4, ASPECT)!;
     expect(inside(turned)).toBe(true);
     expect(turned.some((p) => p.x < 0 || p.y < 0)).toBe(true);
@@ -74,18 +74,18 @@ describe('rotateShape', () => {
 describe('reshaping one free panel', () => {
   const shapes = [rect(0.1, 0.1, 0.4, 0.3), rect(0.3, 0.2, 0.4, 0.3)];
 
-  it('moves a corner of one panel and leaves the others alone, even where they overlap', () => {
+  it('moves a corner of one panel and leaves the others alone, even where they overlap', { tags: ['condition'] }, () => {
     const next = moveCornerFree(shapes, 0, 2, { x: 0.6, y: 0.45 })!;
     expect(next[0]![2]).toEqual({ x: 0.6, y: 0.45 });
     expect(next[1]).toEqual(shapes[1]);
   });
 
-  it('refuses a corner move that makes the panel cross itself, and stops a corner a page-length off the page', () => {
+  it('refuses a corner move that makes the panel cross itself, and stops a corner a page-length off the page', { tags: ['error-guessing'] }, () => {
     expect(moveCornerFree(shapes, 0, 2, { x: 0.1, y: 0.1 })).toBeNull();
     expect(moveCornerFree(shapes, 0, 2, { x: 4, y: 4 })![0]![2]).toEqual({ x: 2, y: 2 });
   });
 
-  it('slides an edge, adds a corner and takes one away', () => {
+  it('slides an edge, adds a corner and takes one away', { tags: ['condition'] }, () => {
     expect(moveEdgeFree(shapes, 0, 1, { x: 0.1, y: 0 })![0]!.slice(1, 3).map((p) => p.x)).toEqual([expect.closeTo(0.6), expect.closeTo(0.6)]);
     const more = insertCornerFree(shapes, 0, 0, { x: 0.3, y: 0.05 })!;
     expect(more[0]).toHaveLength(5);
@@ -96,7 +96,7 @@ describe('reshaping one free panel', () => {
 });
 
 describe('addFreeShape and isFreeShape', () => {
-  it('adds a valid rectangle on the page, each one a little off the one before', () => {
+  it('adds a valid rectangle on the page, each one a little off the one before', { tags: ['equivalence'] }, () => {
     const one = addFreeShape([], ASPECT);
     const two = addFreeShape(one, ASPECT);
     expect(two).toHaveLength(2);
@@ -104,7 +104,7 @@ describe('addFreeShape and isFreeShape', () => {
     expect(two[1]![0]).not.toEqual(two[0]![0]);
   });
 
-  it('accepts overlapping panels, and ones partly off the page, but not one whose middle is off it, or a sliver', () => {
+  it('accepts overlapping panels, and ones partly off the page, but not one whose middle is off it, or a sliver', { tags: ['condition'] }, () => {
     expect(isFreeShape(rect(0.2, 0.2, 0.5, 0.5))).toBe(true);
     expect(isFreeShape(rect(0.6, 0.6, 0.6, 0.6))).toBe(true);
     expect(isFreeShape(rect(1.1, 0.2, 0.5, 0.5))).toBe(false);

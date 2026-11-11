@@ -36,7 +36,7 @@ afterEach(() => {
 });
 
 describe('out-of-memory notice', () => {
-  it('offers a smaller retry and low-memory mode, and runs them', async () => {
+  it('offers a smaller retry and low-memory mode, and runs them', { tags: ['scenario'] }, async () => {
     useLowMemory.setState({ mode: { enabled: false, ownedEngine: true, pendingRestart: false } });
     const retry = vi.spyOn(backend, 'retryQueueItem').mockResolvedValue(null);
     const setMode = vi.spyOn(backend, 'setLowMemoryMode').mockResolvedValue({ enabled: true, ownedEngine: true, pendingRestart: false });
@@ -47,7 +47,7 @@ describe('out-of-memory notice', () => {
     expect(setMode).toHaveBeenCalledWith(true);
   });
 
-  it('hides what does not apply', () => {
+  it('hides what does not apply', { tags: ['condition'] }, () => {
     useLowMemory.setState({ mode: { enabled: true, ownedEngine: true, pendingRestart: false } });
     render(<OutOfMemoryNotice item={item({ generationMode: 'video' })} />);
     expect(screen.getByTestId('oom-notice')).toBeTruthy();
@@ -55,7 +55,7 @@ describe('out-of-memory notice', () => {
     expect(screen.queryByTestId('oom-low-memory')).toBeNull();
   });
 
-  it('closes when it has a close button', () => {
+  it('closes when it has a close button', { tags: ['condition'] }, () => {
     const onDismiss = vi.fn();
     render(
       <TooltipProvider>

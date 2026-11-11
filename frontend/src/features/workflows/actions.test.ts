@@ -9,12 +9,12 @@ const image = { name: 'pic.png' } as ImageDTO;
 describe('image input from the gallery', () => {
   beforeEach(() => useWorkflows.getState().setGraph({ nodes: [], edges: [], form: [], meta: { ...EMPTY_META } }));
 
-  it('places the node left of the graph, at its top, or at the origin when empty', () => {
+  it('places the node left of the graph, at its top, or at the origin when empty', { tags: ['boundary'] }, () => {
     expect(inputNodePosition([])).toEqual({ x: 0, y: 0 });
     expect(inputNodePosition([{ position: { x: 100, y: 50 } }, { position: { x: 400, y: -20 } }])).toEqual({ x: -280, y: -20 });
   });
 
-  it('adds an image node holding the picture and keeps existing nodes', () => {
+  it('adds an image node holding the picture and keeps existing nodes', { tags: ['condition'] }, () => {
     addImageInputNode(image);
     addImageInputNode(image);
     const nodes = useWorkflows.getState().nodes;

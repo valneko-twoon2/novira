@@ -40,7 +40,7 @@ afterEach(() => {
 });
 
 describe('main', () => {
-  it('renders the app after adopting the saved state and theme, in that order', async () => {
+  it('renders the app after adopting the saved state and theme, in that order', { tags: ['scenario'] }, async () => {
     await import('./main');
     await settle();
     expect(calls).toEqual(['hideToken', 'adopt', 'localeReady']);
@@ -52,7 +52,7 @@ describe('main', () => {
     expect(tree.props.children.type.name).toBe('App');
   });
 
-  it('renders only the folder screen on the very first start, without loading the app state', async () => {
+  it('renders only the folder screen on the very first start, without loading the app state', { tags: ['condition'] }, async () => {
     const info = { folders: [] };
     firstStart = async () => info;
     await import('./main');
@@ -65,7 +65,7 @@ describe('main', () => {
     expect(tree.props.children.props.initial).toBe(info);
   });
 
-  it('logs a start-up failure to the console instead of leaving it unhandled', async () => {
+  it('logs a start-up failure to the console instead of leaving it unhandled', { tags: ['error-guessing'] }, async () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     backendReady = Promise.reject(new Error('no backend'));
     backendReady.catch(() => undefined);
@@ -75,7 +75,7 @@ describe('main', () => {
     expect(render).not.toHaveBeenCalled();
   });
 
-  it('does nothing when the page has no root element', async () => {
+  it('does nothing when the page has no root element', { tags: ['condition'] }, async () => {
     document.body.replaceChildren();
     await import('./main');
     await settle();

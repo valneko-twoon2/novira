@@ -91,6 +91,7 @@ fn findings(rules: &[Rule], text: &str) -> Vec<&'static str> {
         .collect()
 }
 
+// tags: static, condition
 #[test]
 fn no_credentials_in_files_git_would_commit() {
     let root = repo_root();
@@ -140,6 +141,7 @@ fn no_credentials_in_files_git_would_commit() {
     );
 }
 
+// tags: equivalence, error-guessing
 #[test]
 fn the_patterns_recognise_real_shapes_only() {
     let rules = rules();

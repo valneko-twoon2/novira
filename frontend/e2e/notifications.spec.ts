@@ -12,7 +12,7 @@ async function deleteFirst(page: Page): Promise<void> {
   await page.getByTestId('confirm-delete-images').click();
 }
 
-test('deletions go under the bell, which counts them and lists them when opened', async ({ page }) => {
+test('deletions go under the bell, which counts them and lists them when opened', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   const bell = page.getByTestId('notification-bell');
   await expect(bell).toBeVisible();
@@ -49,7 +49,7 @@ test('deletions go under the bell, which counts them and lists them when opened'
 test.describe('a notification that is not quiet', () => {
   test.use({ permissions: ['clipboard-read', 'clipboard-write'] });
 
-  test('still pops up, and is kept under the bell', async ({ page }) => {
+  test('still pops up, and is kept under the bell', { tag: ['@condition'] }, async ({ page }) => {
     await openApp(page);
     await page.getByTestId('gallery-thumb').nth(2).click();
     await page.keyboard.press('ControlOrMeta+c');

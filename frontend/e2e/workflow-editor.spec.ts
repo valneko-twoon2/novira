@@ -12,7 +12,7 @@ async function openEditor(page: import('@playwright/test').Page) {
   await expect(page.getByTestId('wf-node-denoise_latents')).toBeVisible();
 }
 
-test('a workflow is saved under a name, appears in the library and is downloaded as a file', async ({ page }) => {
+test('a workflow is saved under a name, appears in the library and is downloaded as a file', { tag: ['@scenario'] }, async ({ page }) => {
   await openEditor(page);
   // Changing the details marks the workflow as unsaved.
   await page.getByRole('tab', { name: msg('workflows.panel.details') }).click();
@@ -63,7 +63,7 @@ test('a workflow is saved under a name, appears in the library and is downloaded
   await expect(page.getByTestId('wf-name')).toHaveText('Second copy');
 });
 
-test('a workflow file is loaded after confirming that the changes are discarded', async ({ page }, info) => {
+test('a workflow file is loaded after confirming that the changes are discarded', { tag: ['@state-transition'] }, async ({ page }, info) => {
   await openEditor(page);
   const file = join(info.outputPath('flow.json'));
   writeFileSync(file, JSON.stringify({ meta: { name: 'From file' }, nodes: [], edges: [], form: [] }));
@@ -82,7 +82,7 @@ test('a workflow file is loaded after confirming that the changes are discarded'
   await expect(page.getByTestId('wf-name')).toHaveText(msg('workflows.untitled'));
 });
 
-test('nodes are copied and pasted, and the editor settings and the node-list refresh answer', async ({ page }) => {
+test('nodes are copied and pasted, and the editor settings and the node-list refresh answer', { tag: ['@scenario'] }, async ({ page }) => {
   await openEditor(page);
   const before = await nodes(page).count();
   await page.getByTestId('wf-node-denoise_latents').locator('.wf-node__header').click();
@@ -103,7 +103,7 @@ test('nodes are copied and pasted, and the editor settings and the node-list ref
   await expect(page.locator('.react-flow__minimap')).toHaveCount(shown ? 1 : 0);
 });
 
-test('dragging a connection into empty space offers the nodes that fit and connects the one picked', async ({ page }) => {
+test('dragging a connection into empty space offers the nodes that fit and connects the one picked', { tag: ['@scenario'] }, async ({ page }) => {
   await openEditor(page);
   const before = await nodes(page).count();
   const edgesBefore = await page.locator('.react-flow__edge').count();
@@ -126,7 +126,7 @@ test('dragging a connection into empty space offers the nodes that fit and conne
   await expect(picker).toHaveCount(0);
 });
 
-test('a picture dropped on the editor becomes an image node', async ({ page }) => {
+test('a picture dropped on the editor becomes an image node', { tag: ['@scenario'] }, async ({ page }) => {
   await openEditor(page);
   const before = await nodes(page).count();
   const editor = page.getByTestId('wf-editor');
@@ -142,7 +142,7 @@ test('a picture dropped on the editor becomes an image node', async ({ page }) =
   expect(await nodes(page).count()).toBe(before + 1);
 });
 
-test("ComfyUI's own nodes are in the node list, grouped under a heading of their own, and a found node is added", async ({ page }) => {
+test("ComfyUI's own nodes are in the node list, grouped under a heading of their own, and a found node is added", { tag: ['@scenario'] }, async ({ page }) => {
   await openEditor(page);
   const before = await nodes(page).count();
   await page.keyboard.press('Shift+A');

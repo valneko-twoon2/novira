@@ -1,3 +1,4 @@
+//! tags: snapshot, decision-table
 //! Snapshots of the prompts built for the newer model families (image and video), so a change to what reaches
 //! ComfyUI for them shows up as a JSON diff, and `node_defs_check` can test every one against the node definitions of
 //! a real ComfyUI. Same files and update command as `graph_snapshots`.

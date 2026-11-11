@@ -29,12 +29,12 @@ const INVOKE: Record<BuilderKey, true | string> = {
 
 describe('the registries after start-up', () => {
   for (const [key, need] of Object.entries(INVOKE) as [BuilderKey, true | string][]) {
-    it(`${key}: ${need === true ? 'has an Invoke builder' : 'has no Invoke builder'}`, () => {
+    it(`${key}: ${need === true ? 'has an Invoke builder' : 'has no Invoke builder'}`, { tags: ['equivalence'] }, () => {
       expect(hasInvokeBuilder(key)).toBe(need === true);
     });
   }
 
-  it('gives every screen the assistant can change an editor', () => {
+  it('gives every screen the assistant can change an editor', { tags: ['condition'] }, () => {
     expect(EDIT_SCREENS.filter((screen) => !agentEditor(screen))).toEqual([]);
   });
 });

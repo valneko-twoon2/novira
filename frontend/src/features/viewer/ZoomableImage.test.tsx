@@ -43,7 +43,7 @@ afterEach(() => {
 });
 
 describe('ZoomableImage', () => {
-  it('shows the fitted image and its zoom percentage', () => {
+  it('shows the fitted image and its zoom percentage', { tags: ['scenario'] }, () => {
     render(view(image('a.png', 1000, 1000)));
     expect(percent()).toBe('30%');
     const frame = screen.getByTestId('viewer-image').parentElement as HTMLElement;
@@ -51,7 +51,7 @@ describe('ZoomableImage', () => {
     expect(frame.style.transform).toBe('translate(66px, 16px)');
   });
 
-  it('zooms with the controls and draws pixels sharp from 200%', () => {
+  it('zooms with the controls and draws pixels sharp from 200%', { tags: ['scenario'] }, () => {
     render(view(image('a.png', 1000, 1000)));
     fireEvent.click(screen.getByRole('button', { name: `1:1 ${t('common.zoomActualSize')}` }));
     expect(percent()).toBe('100%');
@@ -67,7 +67,7 @@ describe('ZoomableImage', () => {
     expect(percent()).toBe('30%');
   });
 
-  it('returns to fit when another image is shown', () => {
+  it('returns to fit when another image is shown', { tags: ['scenario'] }, () => {
     const { rerender } = render(view(image('a.png', 1000, 1000)));
     fireEvent.click(screen.getByRole('button', { name: `1:1 ${t('common.zoomActualSize')}` }));
     expect(percent()).toBe('100%');

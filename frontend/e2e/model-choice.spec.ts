@@ -1,7 +1,7 @@
 // "This needs a model" as a choice: the video screen offers both models with how well they fit this PC.
 import { expect, msg, openApp, test } from './fixtures';
 
-test('the video screen offers both models with their fit and a recommendation, and a pick sets the model', async ({ page }) => {
+test('the video screen offers both models with their fit and a recommendation, and a pick sets the model', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('media-video').click();
 

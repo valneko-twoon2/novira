@@ -93,7 +93,7 @@ async function chooseInSub(sub: string, label: string) {
 }
 
 describe('SingleImageMenu', () => {
-  it('opens in the viewer, in a new tab, downloads, copies and compares', async () => {
+  it('opens in the viewer, in a new tab, downloads, copies and compares', { tags: ['scenario'] }, async () => {
     showMenu(<SingleImageMenu image={image()} />);
     // Comparing is off for the picture that is open in the viewer, so it comes before opening it.
     await choose(t('gallery.menu.compare'));
@@ -110,7 +110,7 @@ describe('SingleImageMenu', () => {
     expect(useShareDialog.getState().names).toEqual(['a.png']);
   });
 
-  it('recalls the settings of the picture', async () => {
+  it('recalls the settings of the picture', { tags: ['scenario'] }, async () => {
     showMenu(<SingleImageMenu image={image()} />);
     for (const [label, mode] of [
       ['gallery.menu.remix', 'remix'],
@@ -126,7 +126,7 @@ describe('SingleImageMenu', () => {
     expect(actions.loadImageWorkflow).toHaveBeenCalled();
   });
 
-  it('offers the text editor in the app build, which shows it, and not the video screen it hides', async () => {
+  it('offers the text editor in the app build, which shows it, and not the video screen it hides', { tags: ['condition'] }, async () => {
     vi.stubEnv('MODE', 'production');
     showMenu(<SingleImageMenu image={image()} />);
     const menu = (await screen.findAllByRole('menu'))[0]!;
@@ -134,7 +134,7 @@ describe('SingleImageMenu', () => {
     expect(within(menu).queryByText(t('gallery.menu.sendToVideo'))).toBeNull();
   });
 
-  it('offers to edit a picture in Text only when its layers are kept', async () => {
+  it('offers to edit a picture in Text only when its layers are kept', { tags: ['condition'] }, async () => {
     useTextSources.setState({ sources: [] });
     showMenu(<SingleImageMenu image={image()} />);
     const plain = (await screen.findAllByRole('menu'))[0]!;
@@ -146,7 +146,7 @@ describe('SingleImageMenu', () => {
     expect(actions.editInText).toHaveBeenCalledWith(expect.objectContaining({ name: 'a.png' }));
   });
 
-  it('sends the picture to the other tabs', async () => {
+  it('sends the picture to the other tabs', { tags: ['scenario'] }, async () => {
     showMenu(<SingleImageMenu image={image()} />);
     await choose(t('gallery.menu.useAsReference'));
     expect(actions.addAsReference).toHaveBeenCalled();
@@ -162,7 +162,7 @@ describe('SingleImageMenu', () => {
     expect(actions.sendToCanvas).toHaveBeenCalledWith(expect.objectContaining({ name: 'a.png' }), 'control');
   });
 
-  it('opens the editing dialogs for the picture', async () => {
+  it('opens the editing dialogs for the picture', { tags: ['scenario'] }, async () => {
     showMenu(<SingleImageMenu image={image()} />);
     await choose(t('gallery.menu.segment'));
     expect(fixPartOnCanvas).toHaveBeenCalledWith(expect.objectContaining({ name: 'a.png' }));
@@ -172,7 +172,7 @@ describe('SingleImageMenu', () => {
     expect(trimTransparent).toHaveBeenCalled();
   });
 
-  it('runs a picture tool at once from the fix group, or opens its settings from the gear beside it', async () => {
+  it('runs a picture tool at once from the fix group, or opens its settings from the gear beside it', { tags: ['scenario'] }, async () => {
     showMenu(<SingleImageMenu image={image()} />);
     expect(screen.getByText(t('gallery.tools.heading'))).toBeTruthy();
     for (const [label, tool] of [
@@ -191,7 +191,7 @@ describe('SingleImageMenu', () => {
     expect(quickRunTool).toHaveBeenCalledTimes(4);
   });
 
-  it('offers the picture tools only for a still picture, and no pose reading on a phone', async () => {
+  it('offers the picture tools only for a still picture, and no pose reading on a phone', { tags: ['condition'] }, async () => {
     showMenu(<SingleImageMenu image={image({ mediaType: 'video' })} />);
     const items = (await screen.findAllByRole('menuitem')).filter((i) => i.textContent === t('facefix.menu'));
     expect(items[0]?.getAttribute('aria-disabled')).toBe('true');
@@ -203,7 +203,7 @@ describe('SingleImageMenu', () => {
     expect(screen.getByTestId('menu-tool-settings-caption')).toBeTruthy();
   });
 
-  it('derives new pictures from it', async () => {
+  it('derives new pictures from it', { tags: ['scenario'] }, async () => {
     showMenu(<SingleImageMenu image={image({ metadata: { modelKey: 'm', generationMode: 'txt2img' } as never })} />);
     await chooseInSub(t('gallery.derive.menu'), t('gallery.derive.custom'));
     expect(useDeriveDialog.getState().imageName).toBe('a.png');
@@ -211,7 +211,7 @@ describe('SingleImageMenu', () => {
     expect(deriveFrom).toHaveBeenCalled();
   });
 
-  it('moves, stars and deletes', async () => {
+  it('moves, stars and deletes', { tags: ['scenario'] }, async () => {
     showMenu(<SingleImageMenu image={image()} />);
     await chooseInSub(t('gallery.menu.changeBoard'), 'Alpha');
     expect(actions.moveImagesToBoard).toHaveBeenCalledWith(['a.png'], 'b1');
@@ -221,7 +221,7 @@ describe('SingleImageMenu', () => {
     expect(requestDeleteImages).toHaveBeenCalledWith(['a.png']);
   });
 
-  it('offers to unstar, and turns off what does not apply to videos or pictures without settings', async () => {
+  it('offers to unstar, and turns off what does not apply to videos or pictures without settings', { tags: ['condition'] }, async () => {
     vi.mocked(actions.canOpenInNewTab).mockReturnValue(false);
     vi.mocked(actions.canLoadImageWorkflow).mockReturnValue(false);
     showMenu(<SingleImageMenu image={image({ starred: true, metadata: null, mediaType: 'video' })} />);
@@ -237,7 +237,7 @@ describe('SingleImageMenu', () => {
 });
 
 describe('MultiImageMenu', () => {
-  it('stars, downloads, shares, batches, moves and deletes the selection', async () => {
+  it('stars, downloads, shares, batches, moves and deletes the selection', { tags: ['scenario'] }, async () => {
     showMenu(<MultiImageMenu names={['a.png', 'b.png']} />);
     const menu = await screen.findByRole('menu');
     expect(within(menu).getByText(tCount('gallery.menu.selectedCount', 2))).toBeTruthy();

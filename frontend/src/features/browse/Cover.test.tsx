@@ -17,12 +17,12 @@ afterEach(() => {
 });
 
 describe('Cover', () => {
-  it('explains an empty Civitai cover while mature content is off', () => {
+  it('explains an empty Civitai cover while mature content is off', { tags: ['boundary', 'state-transition'] }, () => {
     render(<Cover model={model({})} index={0} />);
     expect(note()).not.toBeNull();
   });
 
-  it('shows no note once mature content is on, when the model has a picture, or for Hugging Face', () => {
+  it('shows no note once mature content is on, when the model has a picture, or for Hugging Face', { tags: ['scenario'] }, () => {
     useBrowse.setState({ includeNsfw: true });
     const { rerender } = render(<Cover model={model({})} index={0} />);
     expect(note()).toBeNull();
@@ -33,7 +33,7 @@ describe('Cover', () => {
     expect(note()).toBeNull();
   });
 
-  it('shows no note past the last picture of a model that has some', () => {
+  it('shows no note past the last picture of a model that has some', { tags: ['boundary', 'scenario'] }, () => {
     render(<Cover model={model({ imageCount: 1, imageUrls: ['https://image.civitai.com/a.jpeg'] })} index={1} />);
     expect(note()).toBeNull();
   });
@@ -52,13 +52,13 @@ describe('Cover of a video', () => {
   });
   const video = () => document.querySelector('video')!;
 
-  it('is a picture of its first frame where nothing asks it to play', () => {
+  it('is a picture of its first frame where nothing asks it to play', { tags: ['boundary', 'scenario'] }, () => {
     render(<Cover model={withVideo} index={0} />);
     expect(video()).toBeNull();
     expect(document.querySelector('img')?.getAttribute('src')).toBe(still);
   });
 
-  it('plays the video itself on hover, with the first frame as its poster, and stops when the pointer leaves', () => {
+  it('plays the video itself on hover, with the first frame as its poster, and stops when the pointer leaves', { tags: ['boundary', 'state-transition'] }, () => {
     render(<Cover model={withVideo} index={0} play="hover" />);
     expect(video().getAttribute('src')).toBe('https://image.civitai.com/k/u/width=512/1.mp4');
     expect(video().getAttribute('poster')).toBe(still);
@@ -69,20 +69,20 @@ describe('Cover of a video', () => {
     expect(pause).toHaveBeenCalledTimes(1);
   });
 
-  it('has its own controls in the detail view and plays nothing by itself', () => {
+  it('has its own controls in the detail view and plays nothing by itself', { tags: ['boundary', 'scenario'] }, () => {
     render(<Cover model={withVideo} index={0} play="controls" />);
     expect(video().controls).toBe(true);
     fireEvent.mouseEnter(video());
     expect(play).not.toHaveBeenCalled();
   });
 
-  it('keeps a plain picture an image whatever the play mode', () => {
+  it('keeps a plain picture an image whatever the play mode', { tags: ['decision-table', 'scenario'] }, () => {
     render(<Cover model={model({ imageCount: 1, imageUrls: ['https://image.civitai.com/k/u/width=512/1.jpeg'] })} index={0} play="hover" />);
     expect(video()).toBeNull();
     expect(document.querySelector('img')).not.toBeNull();
   });
 
-  it('leaves an empty frame when the video cannot be loaded', () => {
+  it('leaves an empty frame when the video cannot be loaded', { tags: ['error-guessing', 'boundary'] }, () => {
     render(<Cover model={withVideo} index={0} play="hover" />);
     fireEvent.error(video());
     expect(video()).toBeNull();

@@ -78,7 +78,7 @@ describe.runIf(ORIGIN && TOKEN)('random sequences of library calls end alike on 
   const backends = useBackends();
   for (let run = 0; run < RUNS; run++) {
     const seed = SEED + run;
-    it(`sequence of seed ${seed}`, { timeout: 30_000 + STEPS * 2_000 }, async () => {
+    it(`sequence of seed ${seed}`, { tags: ['scenario', 'error-guessing'], timeout: 30_000 + STEPS * 2_000 }, async () => {
       await same(backends, (b) => sequence(b, seed));
     });
   }

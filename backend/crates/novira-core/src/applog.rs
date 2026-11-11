@@ -100,6 +100,7 @@ fn append_to_file(entry: &LogEntry) {
 mod tests {
     use super::*;
 
+    // tags: boundary
     #[test]
     fn long_messages_and_sources_are_cut() {
         let e = entry(
@@ -113,6 +114,7 @@ mod tests {
         assert!(e.at > 0);
     }
 
+    // tags: equivalence
     #[test]
     fn lines_reach_the_file_and_the_file_rotates() {
         let dir = tempfile::tempdir().unwrap();

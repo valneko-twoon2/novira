@@ -44,7 +44,7 @@ afterEach(() => {
 });
 
 describe('the view a panel takes', () => {
-  it('reads it from the prompt: from behind and close-ups by the framing, then side and three-quarter words', () => {
+  it('reads it from the prompt: from behind and close-ups by the framing, then side and three-quarter words', { tags: ['state-transition'] }, () => {
     expect(viewFor('1girl, from behind, walking away')).toBe('back');
     expect(viewFor('1girl, close-up, crying')).toBe('face');
     expect(viewFor('1girl, from side, running')).toBe('side');
@@ -55,14 +55,14 @@ describe('the view a panel takes', () => {
     expect(viewFor('1girl, close-up, from side')).toBe('face');
   });
 
-  it('takes the view from the sheet, and the front when the sheet lacks it', () => {
+  it('takes the view from the sheet, and the front when the sheet lacks it', { tags: ['condition'] }, () => {
     const mina = { ...MINA, sheet: { back: 'back.png' } };
     expect(referencePicture(mina, 'from behind')).toBe('back.png');
     expect(referencePicture(mina, 'close-up')).toBe('front.png');
     expect(referencePicture({ ...mina, imageName: null }, 'standing')).toBeNull();
   });
 
-  it('lists the missing views in order, and the sheet pictures with the front first', () => {
+  it('lists the missing views in order, and the sheet pictures with the front first', { tags: ['error-guessing'] }, () => {
     const mina = { ...MINA, sheet: { face: 'face.png', side: 'side.png' } };
     expect(missingViews(mina)).toEqual(['threeQuarter', 'back']);
     expect(sheetPictures(mina)).toEqual(['front.png', 'side.png', 'face.png']);
@@ -71,7 +71,7 @@ describe('the view a panel takes', () => {
 });
 
 describe('the reference a panel is drawn with', () => {
-  it('is the view of the sheet its framing needs, or the front when that picture is missing or gone', () => {
+  it('is the view of the sheet its framing needs, or the front when that picture is missing or gone', { tags: ['error-guessing'] }, () => {
     const ref = seed('1girl, from behind, at the gate', [{ ...MINA, sheet: { back: 'back.png', face: 'gone.png' } }]);
     expect(characterRefs(ref.panel, ref.project).map((r) => r.imageUrl)).toEqual(['novira-image://back.png']);
     const close = seed('1girl, close-up', [{ ...MINA, sheet: { back: 'back.png', face: 'gone.png' } }]);
@@ -80,7 +80,7 @@ describe('the reference a panel is drawn with', () => {
 });
 
 describe('the request that draws a view of the sheet', () => {
-  it('turns the character with the view words, from its front picture as the reference', () => {
+  it('turns the character with the view words, from its front picture as the reference', { tags: ['condition'] }, () => {
     const back = sheetRequest(MINA, 'back')!;
     expect(back.params.positivePrompt).toMatch(/^1girl, red hair, school uniform, solo, standing, full body, from behind/);
     // A view from behind names no eyes, and keeps a face out.
@@ -96,7 +96,7 @@ describe('the request that draws a view of the sheet', () => {
     expect(sheetRequest({ ...MINA, nonHuman: true, tags: '1dog' }, 'side')!.params.positivePrompt).toContain('no humans');
   });
 
-  it('draws nothing without a front picture in the gallery or words, and from the words alone without an IP-Adapter', () => {
+  it('draws nothing without a front picture in the gallery or words, and from the words alone without an IP-Adapter', { tags: ['error-guessing'] }, () => {
     expect(sheetRequest({ ...MINA, imageName: null }, 'back')).toBeNull();
     expect(sheetRequest({ ...MINA, imageName: 'gone.png' }, 'back')).toBeNull();
     expect(sheetRequest({ ...MINA, tags: '', parts: undefined }, 'back')).toBeNull();
@@ -110,7 +110,7 @@ describe('the LoRA of a character in a panel', () => {
   /** A library character holding the LoRA; returns its id. */
   const library = (l: CharacterLora | undefined, name = 'Mina') => useCharacters.getState().add(name, { imageNames: ['front.png'], weight: 0.6, tags: '1girl', ...(l ? { lora: l } : {}) });
 
-  it('draws the panel with the LoRA of its one character and puts the trigger before its words', () => {
+  it('draws the panel with the LoRA of its one character and puts the trigger before its words', { tags: ['condition'] }, () => {
     const ref = seed('1girl, smiling', [{ ...MINA, libraryId: library(lora()) }]);
     useParams.setState({ loras: [{ key: 'style', weight: 0.5, isEnabled: true }] });
     const req = panelRequest(ref, false);
@@ -121,7 +121,7 @@ describe('the LoRA of a character in a panel', () => {
     expect(req.params.positivePrompt).toMatch(/^minachan, 1girl/);
   });
 
-  it('uses none when it is off, gone, of another model family, or when two characters of the panel have one', () => {
+  it('uses none when it is off, gone, of another model family, or when two characters of the panel have one', { tags: ['boundary'] }, () => {
     expect(castLora(seed('x', [{ ...MINA, libraryId: library(lora({ enabled: false })) }]).panel, useComic.getState().projects[0]!)).toBeNull();
     expect(castLora(seed('x', [{ ...MINA, libraryId: library(lora({ key: 'gone' })) }]).panel, useComic.getState().projects[0]!)).toBeNull();
     useModels.setState({ models: [model({}), IPA, { ...LORA, base: 'sd-1' }] });
@@ -141,7 +141,7 @@ describe('the LoRA of a character in a panel', () => {
 describe('a model that takes pictures in itself (FLUX.2)', () => {
   const FLUX2 = model({ key: 'flux2', name: 'FLUX.2 klein', base: 'flux2' });
 
-  it('gets the characters\' pictures directly, by framing, and no IP-Adapter reference or lowered guidance', () => {
+  it('gets the characters\' pictures directly, by framing, and no IP-Adapter reference or lowered guidance', { tags: ['condition'] }, () => {
     useModels.setState({ models: [FLUX2, IPA] });
     useParams.setState({ modelKey: 'flux2', cfgScale: 7 });
     const ref = seed('1girl, from behind', [{ ...MINA, sheet: { back: 'back.png' } }]);
@@ -154,7 +154,7 @@ describe('a model that takes pictures in itself (FLUX.2)', () => {
     expect(view.refImages).toBeUndefined();
   });
 
-  it('gives at most four, and none for a panel without characters', () => {
+  it('gives at most four, and none for a panel without characters', { tags: ['boundary'] }, () => {
     useModels.setState({ models: [FLUX2] });
     useParams.setState({ modelKey: 'flux2' });
     const cast = Array.from({ length: 6 }, (_, i) => ({ ...MINA, id: `c${i}`, name: `C${i}` }));

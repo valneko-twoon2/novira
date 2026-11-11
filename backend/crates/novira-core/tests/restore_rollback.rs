@@ -106,6 +106,7 @@ fn old_folders(data: &Path) -> Vec<std::path::PathBuf> {
         .collect()
 }
 
+// tags: error-guessing
 #[test]
 fn a_swap_that_fails_and_cannot_be_undone_says_where_the_previous_data_is() {
     patient_retries();
@@ -133,6 +134,7 @@ fn a_swap_that_fails_and_cannot_be_undone_says_where_the_previous_data_is() {
     );
 }
 
+// tags: error-guessing
 #[test]
 fn a_database_that_cannot_be_moved_aside_keeps_its_write_ahead_log() {
     patient_retries();
@@ -160,6 +162,7 @@ fn a_database_that_cannot_be_moved_aside_keeps_its_write_ahead_log() {
     assert!(data.join("novira.sqlite-shm").exists());
 }
 
+// tags: error-guessing
 #[test]
 fn a_swap_that_fails_before_anything_moves_in_puts_the_previous_data_back() {
     patient_retries();
@@ -176,6 +179,7 @@ fn a_swap_that_fails_before_anything_moves_in_puts_the_previous_data_back() {
     assert!(old_folders(&data).is_empty());
 }
 
+// tags: error-guessing, boundary
 #[test]
 fn a_previous_folder_that_cannot_be_deleted_after_a_restore_is_left_where_it_is() {
     patient_retries();
@@ -205,6 +209,7 @@ fn a_previous_folder_that_cannot_be_deleted_after_a_restore_is_left_where_it_is(
     );
 }
 
+// tags: boundary, state-transition
 #[test]
 fn a_restore_whose_unpacked_folders_are_not_all_there_still_applies() {
     patient_retries();

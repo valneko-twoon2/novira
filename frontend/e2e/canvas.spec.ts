@@ -2,7 +2,7 @@
 // source, the mask and the outpaint fill are rendered in the browser) and the result is staged on the canvas.
 import { expect, msg, openApp, test } from './fixtures';
 
-test('a mask painted over a picture is redrawn and the result is staged on the canvas', async ({ page }) => {
+test('a mask painted over a picture is redrawn and the result is staged on the canvas', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   // A gallery picture on the canvas, through the reference row's "to canvas" (the reference image stays enabled).
   await page.getByTestId('gallery-thumb').first().dragTo(page.locator('.pp-refs'));
@@ -29,7 +29,7 @@ test('a mask painted over a picture is redrawn and the result is staged on the c
   await expect(page.getByTestId('queue-item').first()).toHaveAttribute('data-status', 'completed');
 });
 
-test('the pose tool places a pose on a new control layer and R gives it a new random shape', async ({ page }) => {
+test('the pose tool places a pose on a new control layer and R gives it a new random shape', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('tab-canvas').click();
   await page.getByTestId('canvas-tool-pose').click();
@@ -47,7 +47,7 @@ test('the pose tool places a pose on a new control layer and R gives it a new ra
   await expect(page.getByTestId('canvas-entity')).toHaveCount(0);
 });
 
-test('the pose tool queues one generation per random pose', async ({ page }) => {
+test('the pose tool queues one generation per random pose', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('tab-canvas').click();
   await page.getByTestId('canvas-tool-pose').click();
@@ -60,7 +60,7 @@ test('the pose tool queues one generation per random pose', async ({ page }) => 
   await expect(page.getByTestId('queue-item')).toHaveCount(3);
 });
 
-test('a picture from the gallery is read as a pose and put on the canvas', async ({ page }) => {
+test('a picture from the gallery is read as a pose and put on the canvas', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('gallery-thumb').first().click({ button: 'right' });
   await page.getByRole('menuitem', { name: msg('canvas.poseFromImage.menu') }).click();
@@ -71,7 +71,7 @@ test('a picture from the gallery is read as a pose and put on the canvas', async
   await expect(page.getByTestId('canvas-entity')).toHaveCount(1);
 });
 
-test('a ready-made pose from the pose tool puts a figure on a new control layer', async ({ page }) => {
+test('a ready-made pose from the pose tool puts a figure on a new control layer', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('tab-canvas').click();
   await page.getByTestId('canvas-tool-pose').click();
@@ -86,7 +86,7 @@ test('a ready-made pose from the pose tool puts a figure on a new control layer'
   await expect(page.getByTestId('canvas-entity')).toHaveCount(0);
 });
 
-test('a composition from the pose dialog puts two people on a new control layer', async ({ page }) => {
+test('a composition from the pose dialog puts two people on a new control layer', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('tab-canvas').click();
   await page.getByTestId('canvas-tool-pose').click();
@@ -99,7 +99,7 @@ test('a composition from the pose dialog puts two people on a new control layer'
   await expect(page.getByTestId('canvas-entity')).toHaveCount(1);
 });
 
-test('the 3D editor turns a pose to the side and applies it as a pose with depth', async ({ page }) => {
+test('the 3D editor turns a pose to the side and applies it as a pose with depth', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('tab-canvas').click();
   await page.getByTestId('canvas-tool-pose').click();
@@ -122,7 +122,7 @@ test('the 3D editor turns a pose to the side and applies it as a pose with depth
   await expect.poll(async () => Buffer.compare(await flat(), before) === 0).toBe(true);
 });
 
-test('a shape drawn with the lasso goes into the layer as one step that can be undone', async ({ page }) => {
+test('a shape drawn with the lasso goes into the layer as one step that can be undone', { tag: ['@state-transition'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('tab-canvas').click();
   await page.getByTestId('canvas-add-layer').click();

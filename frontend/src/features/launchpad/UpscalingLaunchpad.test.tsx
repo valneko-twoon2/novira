@@ -33,13 +33,13 @@ afterEach(() => {
 });
 
 describe('UpscalingLaunchpad', () => {
-  it('asks for a picture, and offers no warning when an upscaler is installed', () => {
+  it('asks for a picture, and offers no warning when an upscaler is installed', { tags: ['scenario'] }, () => {
     show(<UpscalingLaunchpad />);
     expect(screen.getByText(t('params.launchpad.upscaling.dropTitle'))).toBeTruthy();
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
-  it('takes a dropped gallery picture and then shows its size', async () => {
+  it('takes a dropped gallery picture and then shows its size', { tags: ['scenario'] }, async () => {
     show(<UpscalingLaunchpad />);
     const zone = screen.getByText(t('params.launchpad.upscaling.dropTitle')).closest('.ui-dropzone')!;
     const data: Record<string, string> = { [IMAGE_MIME]: JSON.stringify(['pic']) };
@@ -49,7 +49,7 @@ describe('UpscalingLaunchpad', () => {
     expect(screen.getByTestId('lp-upscale-drop').querySelector('img')?.getAttribute('src')).toBe('/img/pic-t.png');
   });
 
-  it('opens the settings panel and the models tab from its cards', () => {
+  it('opens the settings panel and the models tab from its cards', { tags: ['scenario'] }, () => {
     show(<UpscalingLaunchpad />);
     fireEvent.click(screen.getByText(t('params.launchpad.upscaling.settingsTitle')));
     expect(useUi.getState().leftPanelOpen).toBe(true);
@@ -57,7 +57,7 @@ describe('UpscalingLaunchpad', () => {
     expect(useUi.getState().activeTab).toBe('models');
   });
 
-  it('warns when no upscaler is installed, and the button opens the models tab', () => {
+  it('warns when no upscaler is installed, and the button opens the models tab', { tags: ['scenario'] }, () => {
     useModels.setState({ models: [{ key: 'm', name: 'M', type: 'main', base: 'sdxl' } as never] });
     show(<UpscalingLaunchpad />);
     expect(screen.getByRole('alert').textContent).toContain(t('params.upscale.missingUpscaler'));
@@ -67,7 +67,7 @@ describe('UpscalingLaunchpad', () => {
 });
 
 describe('Launchpad', () => {
-  it('gives each tab with its own launchpad that page', () => {
+  it('gives each tab with its own launchpad that page', { tags: ['scenario'] }, () => {
     for (const [tab, testId] of [
       ['canvas', 'lp-draw'],
       ['upscaling', 'lp-upscale-drop'],
@@ -80,7 +80,7 @@ describe('Launchpad', () => {
     }
   });
 
-  it('gives the Generate page to every tab that has no launchpad of its own', () => {
+  it('gives the Generate page to every tab that has no launchpad of its own', { tags: ['scenario'] }, () => {
     const own = new Set(['canvas', 'upscaling', 'workflows']);
     const others = TABS.filter((tab) => !own.has(tab));
     expect(others.length).toBeGreaterThan(0);

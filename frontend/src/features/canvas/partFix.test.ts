@@ -80,7 +80,7 @@ afterEach(() => {
 });
 
 describe('erasing the painted part', () => {
-  it('sends the picture and the mask, stages the result and removes the two helper pictures', async () => {
+  it('sends the picture and the mask, stages the result and removes the two helper pictures', { tags: ['condition'] }, async () => {
     setUp();
     runJob.mockResolvedValue(picture('erased.png'));
     await eraseMaskedPart(paintedMask());
@@ -94,7 +94,7 @@ describe('erasing the painted part', () => {
     expect(lastToast()).toMatchObject({ status: 'success', title: t('canvas.partFix.erased') });
   });
 
-  it('offers LaMa with the result while its model is missing, and not once it is there', async () => {
+  it('offers LaMa with the result while its model is missing, and not once it is there', { tags: ['error-guessing'] }, async () => {
     setUp();
     runJob.mockResolvedValue(picture('erased.png'));
     usePacks.setState({ packs: { ...initial.packs.packs, inpaint: { state: 'missing', totalBytes: 1 } } });
@@ -107,7 +107,7 @@ describe('erasing the painted part', () => {
     expect(lastToast()?.actions).toBeUndefined();
   });
 
-  it('says what to do when nothing is painted, and sends nothing', async () => {
+  it('says what to do when nothing is painted, and sends nothing', { tags: ['condition'] }, async () => {
     setUp(() => [0, 0, 0, 255]);
     await eraseMaskedPart(paintedMask());
     expect(lastToast()).toMatchObject({ status: 'warning', title: t('canvas.partFix.empty') });
@@ -115,7 +115,7 @@ describe('erasing the painted part', () => {
     expect(runJob).not.toHaveBeenCalled();
   });
 
-  it('offers to install the extension when the erase node is missing, or to restart when it waits for a restart', async () => {
+  it('offers to install the extension when the erase node is missing, or to restart when it waits for a restart', { tags: ['error-guessing'] }, async () => {
     setUp();
     useComfyNodes.setState({ defs: defs({}) });
     const install = vi.fn(async () => {});
@@ -133,7 +133,7 @@ describe('erasing the painted part', () => {
     expect(runJob).not.toHaveBeenCalled();
   });
 
-  it('reports a failed job and still removes the helper pictures', async () => {
+  it('reports a failed job and still removes the helper pictures', { tags: ['error-guessing'] }, async () => {
     setUp();
     runJob.mockRejectedValue(new Error('engine stopped'));
     await eraseMaskedPart(paintedMask());
@@ -142,7 +142,7 @@ describe('erasing the painted part', () => {
     expect(backend.deleteImages).toHaveBeenCalledWith(['up0.png', 'up1.png']);
   });
 
-  it('does nothing for a layer that is not an inpaint mask', async () => {
+  it('does nothing for a layer that is not an inpaint mask', { tags: ['condition'] }, async () => {
     setUp();
     paintedMask();
     const raster = c().entities.find((e) => e.type === 'raster')!.id;
@@ -153,7 +153,7 @@ describe('erasing the painted part', () => {
 });
 
 describe('redrawing the painted part', () => {
-  it('queues a canvas generation with the instruction as its prompt and only this mask, shown even when hidden', async () => {
+  it('queues a canvas generation with the instruction as its prompt and only this mask, shown even when hidden', { tags: ['condition'] }, async () => {
     setUp();
     const other = paintedMask();
     const id = c().addEntity('inpaint', { objects: [{ kind: 'stroke', id: 's2', tool: 'brush', color: red, width: 10, points: [5, 5, 20, 20], clip: null }] });
@@ -172,13 +172,13 @@ describe('redrawing the painted part', () => {
     expect(useParams.getState().positivePrompt).toBe('a girl in a park');
   });
 
-  it('uses the Generate tab\'s prompt when the instruction is blank', async () => {
+  it('uses the Generate tab\'s prompt when the instruction is blank', { tags: ['condition'] }, async () => {
     setUp();
     await redrawMaskedPart(paintedMask(), '   ');
     expect(buildCanvasRequest.mock.calls[0]![1].positivePrompt).toBe('a girl in a park');
   });
 
-  it('queues nothing when nothing is painted or the canvas cannot be invoked, and says why', async () => {
+  it('queues nothing when nothing is painted or the canvas cannot be invoked, and says why', { tags: ['error-guessing'] }, async () => {
     setUp(() => [0, 0, 0, 255]);
     await redrawMaskedPart(paintedMask(false), 'x');
     expect(lastToast()?.title).toBe(t('canvas.partFix.empty'));
@@ -191,7 +191,7 @@ describe('redrawing the painted part', () => {
     expect(backend.enqueue).not.toHaveBeenCalled();
   });
 
-  it('reports a failed enqueue', async () => {
+  it('reports a failed enqueue', { tags: ['error-guessing'] }, async () => {
     setUp();
     vi.mocked(backend.enqueue).mockRejectedValue(new Error('queue full'));
     await redrawMaskedPart(paintedMask(), 'x');
@@ -200,7 +200,7 @@ describe('redrawing the painted part', () => {
 });
 
 describe('cutting out the painted part', () => {
-  it('saves one picture to the gallery, not hidden, and tells the user', async () => {
+  it('saves one picture to the gallery, not hidden, and tells the user', { tags: ['condition'] }, async () => {
     setUp();
     await cutOutMaskedPart(paintedMask());
     expect(uploads).toHaveLength(1);
@@ -211,14 +211,14 @@ describe('cutting out the painted part', () => {
     expect(canvases.all.some((r) => r.sets.some((s) => s.name === 'globalCompositeOperation' && s.value === 'source-in'))).toBe(true);
   });
 
-  it('saves nothing when nothing is painted', async () => {
+  it('saves nothing when nothing is painted', { tags: ['condition'] }, async () => {
     setUp(() => [0, 0, 0, 255]);
     await cutOutMaskedPart(paintedMask(false));
     expect(uploads).toEqual([]);
     expect(lastToast()?.status).toBe('warning');
   });
 
-  it('reports a failed upload', async () => {
+  it('reports a failed upload', { tags: ['error-guessing'] }, async () => {
     setUp();
     vi.mocked(backend.uploadImage).mockRejectedValue(new Error('disk full'));
     await cutOutMaskedPart(paintedMask());

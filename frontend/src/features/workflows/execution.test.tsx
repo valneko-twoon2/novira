@@ -19,16 +19,16 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('useWorkflowExecution', () => {
-  it('is idle when nothing runs', () => {
+  it('is idle when nothing runs', { tags: ['boundary', 'scenario'] }, () => {
     expect(renderHook(() => useWorkflowExecution()).result.current).toEqual({ executing: false, progress: null });
   });
 
-  it('ignores a running item of another origin', () => {
+  it('ignores a running item of another origin', { tags: ['scenario'] }, () => {
     useQueue.getState().setItems([item(1, { status: 'in_progress', origin: 'generate' })]);
     expect(renderHook(() => useWorkflowExecution()).result.current.executing).toBe(false);
   });
 
-  it('is executing with the progress that belongs to the running workflow item', () => {
+  it('is executing with the progress that belongs to the running workflow item', { tags: ['state-transition', 'scenario'] }, () => {
     useQueue.getState().setItems([item(1, { status: 'in_progress' })]);
     useQueue.getState().setProgress(progress(1));
     const { executing, progress: p } = renderHook(() => useWorkflowExecution()).result.current;
@@ -36,7 +36,7 @@ describe('useWorkflowExecution', () => {
     expect(p?.itemId).toBe(1);
   });
 
-  it('drops the progress of another item', () => {
+  it('drops the progress of another item', { tags: ['state-transition', 'scenario'] }, () => {
     useQueue.getState().setItems([item(1, { status: 'in_progress' })]);
     useQueue.getState().setProgress(progress(9));
     expect(renderHook(() => useWorkflowExecution()).result.current).toEqual({ executing: true, progress: null });
@@ -46,12 +46,12 @@ describe('useWorkflowExecution', () => {
 describe('useLastWorkflowImageUrl', () => {
   const image = (name: string, thumbnailUrl: string) => ({ name, thumbnailUrl }) as ImageDTO;
 
-  it('is null when no workflow run completed', () => {
+  it('is null when no workflow run completed', { tags: ['state-transition', 'scenario'] }, () => {
     useQueue.getState().setItems([item(1, { status: 'failed', imageName: 'a' }), item(2, { status: 'completed', origin: 'generate', imageName: 'b' })]);
     expect(renderHook(() => useLastWorkflowImageUrl()).result.current).toBeNull();
   });
 
-  it('returns the thumbnail of the most recent completed workflow run that has an image', () => {
+  it('returns the thumbnail of the most recent completed workflow run that has an image', { tags: ['state-transition', 'scenario'] }, () => {
     useGallery.setState({ images: [image('a', 'thumb-a'), image('b', 'thumb-b')] });
     useQueue.getState().setItems([
       item(1, { status: 'completed', imageName: 'a' }),
@@ -61,7 +61,7 @@ describe('useLastWorkflowImageUrl', () => {
     expect(renderHook(() => useLastWorkflowImageUrl()).result.current).toBe('thumb-b');
   });
 
-  it('is null while the picture is not in the gallery yet', () => {
+  it('is null while the picture is not in the gallery yet', { tags: ['state-transition', 'scenario'] }, () => {
     useQueue.getState().setItems([item(1, { status: 'completed', imageName: 'missing' })]);
     expect(renderHook(() => useLastWorkflowImageUrl()).result.current).toBeNull();
   });

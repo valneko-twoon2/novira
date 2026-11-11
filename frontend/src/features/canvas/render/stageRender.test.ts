@@ -60,7 +60,7 @@ beforeEach(() => {
 afterEach(() => canvases.restore());
 
 describe('drawStage background', () => {
-  it('clears and paints the checkerboard, without a grid by default', () => {
+  it('clears and paints the checkerboard, without a grid by default', { tags: ['condition'] }, () => {
     drawStage(rec.ctx, scene());
     expect(rec.of('clearRect')[0]).toEqual([0, 0, 400, 300]);
     expect(rec.of('createPattern')).toHaveLength(1);
@@ -68,7 +68,7 @@ describe('drawStage background', () => {
     expect(rec.of('moveTo')).toHaveLength(0);
   });
 
-  it('draws minor and major grid lines when the grid is shown, widening the step when zoomed out', () => {
+  it('draws minor and major grid lines when the grid is shown, widening the step when zoomed out', { tags: ['condition'] }, () => {
     const settings = { ...scene().settings, showGrid: true };
     drawStage(rec.ctx, scene({ settings }));
     const zoomedIn = rec.of('moveTo').length;
@@ -85,7 +85,7 @@ describe('drawStage background', () => {
 });
 
 describe('drawStage layers', () => {
-  it('draws enabled layers in group order with their opacity, and skips hidden ones', () => {
+  it('draws enabled layers in group order with their opacity, and skips hidden ones', { tags: ['condition'] }, () => {
     const control = { ...raster('c'), type: 'control' } as unknown as CanvasEntity;
     const hiddenGroup = { ...raster('g'), type: 'inpaint', color: { r: 0, g: 0, b: 255, a: 1 }, fill: 'solid' } as unknown as CanvasEntity;
     const entities = [control, raster('a', { opacity: 0.5, x: 10, y: 20 }), raster('off', { isEnabled: false }), hiddenGroup];
@@ -97,7 +97,7 @@ describe('drawStage layers', () => {
     expect(draws[0]!.slice(1)).toEqual([10, 20, 30, 30]);
   });
 
-  it('draws an in-progress object on its own layer and the staged picture inside the bbox', () => {
+  it('draws an in-progress object on its own layer and the staged picture inside the bbox', { tags: ['condition'] }, () => {
     const pending = { entityId: 'a', object: { kind: 'rect', id: 'p', x: 0, y: 0, width: 5, height: 5, color: { r: 0, g: 0, b: 0, a: 1 } } as const };
     drawStage(rec.ctx, scene({ entities: [raster('a')], pending, overlayImageUrl: '/staged.png' }));
     expect(rec.of('drawImage').at(-1)).toEqual([picture, 50, 40, 100, 80]);
@@ -105,7 +105,7 @@ describe('drawStage layers', () => {
     expect(rec.of('drawImage').filter((a) => a[0] === picture)).toHaveLength(1);
   });
 
-  it('draws the layers apart with their blend when one is blended, then puts them over the checkerboard at once', () => {
+  it('draws the layers apart with their blend when one is blended, then puts them over the checkerboard at once', { tags: ['condition'] }, () => {
     const entities = [raster('a'), raster('m', { blend: 'multiply' }), raster('off', { blend: 'screen', isEnabled: false })];
     drawStage(rec.ctx, scene({ entities }));
     const stage = rec.of('drawImage');
@@ -117,20 +117,20 @@ describe('drawStage layers', () => {
     expect(rec.sets.some((s) => s.name === 'globalCompositeOperation')).toBe(false);
   });
 
-  it('draws straight onto the stage while no visible layer is blended', () => {
+  it('draws straight onto the stage while no visible layer is blended', { tags: ['condition'] }, () => {
     drawStage(rec.ctx, scene({ entities: [raster('a'), raster('off', { blend: 'multiply', isEnabled: false })] }));
     expect(rec.of('drawImage')).toHaveLength(1);
     expect(rec.sets.filter((s) => s.name === 'globalCompositeOperation').map((s) => s.value)).toEqual(['source-over']);
   });
 
-  it('turns smoothing off when zoomed in', () => {
+  it('turns smoothing off when zoomed in', { tags: ['condition'] }, () => {
     drawStage(rec.ctx, scene({ viewport: { x: 0, y: 0, scale: 4 } }));
     expect(rec.sets.find((s) => s.name === 'imageSmoothingEnabled')!.value).toBe(false);
   });
 });
 
 describe('drawStage bbox', () => {
-  it('outlines the box, dims the outside only when asked and shows handles and the size label for the bbox tool', () => {
+  it('outlines the box, dims the outside only when asked and shows handles and the size label for the bbox tool', { tags: ['condition'] }, () => {
     drawStage(rec.ctx, scene());
     expect(rec.of('strokeRect')).toHaveLength(2);
     expect(rec.of('fill')).toHaveLength(0);
@@ -155,7 +155,7 @@ describe('drawStageChrome bbox', () => {
     return r.of('strokeRect').length;
   };
 
-  it('draws the generation box only for the box tool, on an inpaint mask or around a staged result', () => {
+  it('draws the generation box only for the box tool, on an inpaint mask or around a staged result', { tags: ['condition'] }, () => {
     expect(boxStrokes({})).toBe(0);
     expect(boxStrokes({ entities: [raster('a')], selectedId: 'a' })).toBe(0);
     expect(boxStrokes({ tool: 'bbox' })).toBeGreaterThanOrEqual(2);
@@ -165,7 +165,7 @@ describe('drawStageChrome bbox', () => {
 });
 
 describe('drawStage selection and cursor', () => {
-  it('frames the selected layer for the move tool only', () => {
+  it('frames the selected layer for the move tool only', { tags: ['condition'] }, () => {
     const entities = [raster('a', { x: 5, y: 5 })];
     drawStage(rec.ctx, scene({ entities, selectedId: 'a', tool: 'move' }));
     expect(rec.of('setLineDash').some((a) => (a[0] as number[])[0] === 4)).toBe(true);
@@ -181,14 +181,14 @@ describe('drawStage selection and cursor', () => {
     ['brush', 10],
     ['eraser', 15],
     ['mosaic', 20],
-  ] as const)('draws a %s cursor circle of the tool width', (tool, radius) => {
+  ] as const)('draws a %s cursor circle of the tool width', { tags: ['decision-table'] }, (tool, radius) => {
     drawStage(rec.ctx, scene({ tool, cursor: { x: 100, y: 100 } }));
     expect(rec.of('arc').some((a) => a[2] === radius)).toBe(true);
     // Only the brush shows its colour inside.
     expect(rec.of('arc').filter((a) => a[2] === radius).length).toBe(tool === 'brush' ? 2 : 1);
   });
 
-  it('draws no cursor while panning, outside the stage or with another tool', () => {
+  it('draws no cursor while panning, outside the stage or with another tool', { tags: ['condition'] }, () => {
     for (const patch of [{ isPanning: true }, { cursor: null }, { tool: 'move' as const }]) {
       const other = recordingContext();
       drawStage(other.ctx, scene({ tool: 'brush', cursor: { x: 1, y: 1 }, ...patch }));

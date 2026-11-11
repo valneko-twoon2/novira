@@ -22,7 +22,7 @@ async function thumbnailHash(page: Page, index: number): Promise<string> {
   }, src!);
 }
 
-test('empty scenario starts with an empty gallery', async ({ page }) => {
+test('empty scenario starts with an empty gallery', { tag: ['@boundary'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   const grid = page.getByTestId('gallery-grid');
   await expect(grid).toBeVisible();
@@ -30,7 +30,7 @@ test('empty scenario starts with an empty gallery', async ({ page }) => {
   await expect(page.getByTestId('gallery-thumb')).toHaveCount(0);
 });
 
-test('invoking adds the image to the gallery, the viewer and the queue', async ({ page }) => {
+test('invoking adds the image to the gallery, the viewer and the queue', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await generate(page, 'a lighthouse on a cliff at dusk');
 
@@ -50,7 +50,7 @@ test('invoking adds the image to the gallery, the viewer and the queue', async (
   await expect(page.getByTestId('queue-stats').locator('[data-status="completed"] .qt-stat__value')).toHaveText('1');
 });
 
-test('the same seed and prompt give the same image; another prompt gives a different one', async ({ page }) => {
+test('the same seed and prompt give the same image; another prompt gives a different one', { tag: ['@condition'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('seed-fixed').click();
   await expect(page.getByTestId('seed-fixed')).toHaveAttribute('aria-pressed', 'true');
@@ -68,7 +68,7 @@ test('the same seed and prompt give the same image; another prompt gives a diffe
   expect(whale).not.toBe(fox1);
 });
 
-test('a picture being drawn is a cell of the gallery and opens large in the viewer', async ({ page }) => {
+test('a picture being drawn is a cell of the gallery and opens large in the viewer', { tag: ['@scenario'] }, async ({ page }) => {
   // Slow steps, so the job is still running when the cell is pressed.
   await page.addInitScript(() => localStorage.setItem('novira.settings', JSON.stringify({ state: { mockStepDelay: 500 }, version: 0 })));
   await openApp(page, '?scenario=empty');
@@ -86,7 +86,7 @@ test('a picture being drawn is a cell of the gallery and opens large in the view
   await expect(page.getByTestId('viewer-zoom-surface')).toBeVisible();
 });
 
-test('a prompt containing [fail] fails in the queue and adds nothing to the gallery', async ({ page }) => {
+test('a prompt containing [fail] fails in the queue and adds nothing to the gallery', { tag: ['@error-guessing'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await generate(page, 'a broken render [fail]');
 
@@ -102,7 +102,7 @@ test('a prompt containing [fail] fails in the queue and adds nothing to the gall
   await expect(page.getByTestId('gallery-thumb')).toHaveCount(0);
 });
 
-test('a prompt containing [oom] runs out of memory and offers a smaller retry and low-memory mode', async ({ page }) => {
+test('a prompt containing [oom] runs out of memory and offers a smaller retry and low-memory mode', { tag: ['@error-guessing'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await generate(page, 'a huge poster [oom]');
 
@@ -130,7 +130,7 @@ test('a prompt containing [oom] runs out of memory and offers a smaller retry an
   await expect(page.getByRole('switch', { name: msg('settings.lowMemory.label') })).toHaveAttribute('aria-checked', 'true');
 });
 
-test('a sampler and noise schedule picked by name are used, recorded with the picture and taken back', async ({ page }) => {
+test('a sampler and noise schedule picked by name are used, recorded with the picture and taken back', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   const pick = async (testId: string, option: string) => {
     await page.getByTestId(testId).click();

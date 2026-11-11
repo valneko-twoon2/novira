@@ -30,14 +30,14 @@ afterEach(() => {
 });
 
 describe('unfinished downloads', () => {
-  it('says there is nothing unfinished, and offers no delete', async () => {
+  it('says there is nothing unfinished, and offers no delete', { tags: ['scenario'] }, async () => {
     vi.spyOn(backend, 'listUnfinishedDownloads').mockResolvedValue([]);
     mount();
     expect(await screen.findByText(t('settings.unfinished.empty'))).toBeTruthy();
     expect(screen.queryByTestId('settings-unfinished-delete-all')).toBeNull();
   });
 
-  it('lists each file with its folder and its size', async () => {
+  it('lists each file with its folder and its size', { tags: ['scenario'] }, async () => {
     vi.spyOn(backend, 'listUnfinishedDownloads').mockResolvedValue([part, model]);
     mount();
     await waitFor(() => expect(rows()).toHaveLength(2));
@@ -48,7 +48,7 @@ describe('unfinished downloads', () => {
     expect(within(rows()[1]!).getByText('3.2 GB')).toBeTruthy();
   });
 
-  it('shows a small partial file in kilobytes, not as a whole megabyte', async () => {
+  it('shows a small partial file in kilobytes, not as a whole megabyte', { tags: ['boundary'] }, async () => {
     const small: UnfinishedDownload = { path: 'models/.downloads/small.part', name: 'small.part', bytes: 2_500 };
     vi.spyOn(backend, 'listUnfinishedDownloads').mockResolvedValue([small]);
     mount();
@@ -56,7 +56,7 @@ describe('unfinished downloads', () => {
     expect(within(rows()[0]!).getByText('3 KB')).toBeTruthy();
   });
 
-  it('deletes one file and shows what is left', async () => {
+  it('deletes one file and shows what is left', { tags: ['scenario'] }, async () => {
     vi.spyOn(backend, 'listUnfinishedDownloads').mockResolvedValue([part, model]);
     const del = vi.spyOn(backend, 'deleteUnfinishedDownloads').mockResolvedValue([model]);
     mount();
@@ -67,7 +67,7 @@ describe('unfinished downloads', () => {
     expect(lastToast()).toMatchObject({ status: 'success', title: t('settings.unfinished.deleted') });
   });
 
-  it('asks before deleting all, and deletes all after the confirmation', async () => {
+  it('asks before deleting all, and deletes all after the confirmation', { tags: ['scenario'] }, async () => {
     vi.spyOn(backend, 'listUnfinishedDownloads').mockResolvedValue([part, model]);
     const del = vi.spyOn(backend, 'deleteUnfinishedDownloads').mockResolvedValue([]);
     mount();
@@ -83,7 +83,7 @@ describe('unfinished downloads', () => {
     expect(lastToast()).toMatchObject({ status: 'success', title: t('settings.unfinished.deleted') });
   });
 
-  it('warns with the name of the file that is in use and was kept', async () => {
+  it('warns with the name of the file that is in use and was kept', { tags: ['scenario'] }, async () => {
     vi.spyOn(backend, 'listUnfinishedDownloads').mockResolvedValue([part, model]);
     vi.spyOn(backend, 'deleteUnfinishedDownloads').mockResolvedValue([model]);
     mount();
@@ -93,7 +93,7 @@ describe('unfinished downloads', () => {
     expect(rows()).toHaveLength(1);
   });
 
-  it('reports a failed delete and keeps the file listed', async () => {
+  it('reports a failed delete and keeps the file listed', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'listUnfinishedDownloads').mockResolvedValue([part]);
     vi.spyOn(backend, 'deleteUnfinishedDownloads').mockRejectedValue(new Error('locked'));
     mount();
@@ -103,7 +103,7 @@ describe('unfinished downloads', () => {
     expect((screen.getByTestId('settings-unfinished-delete-0') as HTMLButtonElement).disabled).toBe(false);
   });
 
-  it('reports a failed list', async () => {
+  it('reports a failed list', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'listUnfinishedDownloads').mockRejectedValue(new Error('disk gone'));
     mount();
     await waitFor(() => expect(lastToast()).toMatchObject({ status: 'error', title: t('settings.unfinished.loadFailed'), description: 'disk gone' }));

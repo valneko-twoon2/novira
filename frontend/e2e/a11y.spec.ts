@@ -24,7 +24,7 @@ async function scan(page: Page, surface: string): Promise<void> {
 }
 
 for (const tab of TABS) {
-  test(`${tab} tab has no new accessibility violations`, async ({ page }) => {
+  test(`${tab} tab has no new accessibility violations`, { tag: ['@scenario'] }, async ({ page }) => {
     await openApp(page);
     await showTab(page, tab);
     await scan(page, tab);
@@ -79,7 +79,7 @@ const SURFACES: Record<string, (page: Page) => Promise<void>> = {
 };
 
 for (const [name, open] of Object.entries(SURFACES)) {
-  test(`${name} has no new accessibility violations`, async ({ page }) => {
+  test(`${name} has no new accessibility violations`, { tag: ['@scenario'] }, async ({ page }) => {
     await openApp(page);
     await open(page);
     await page.waitForTimeout(300);
@@ -94,11 +94,11 @@ test.describe('phone layout', () => {
     await expect(page.getByTestId('phone-shell')).toBeVisible({ timeout: 20_000 });
   });
 
-  test('generate tab has no new accessibility violations', async ({ page }) => {
+  test('generate tab has no new accessibility violations', { tag: ['@scenario'] }, async ({ page }) => {
     await scan(page, 'phone generate');
   });
 
-  test('images tab and a picture have no new accessibility violations', async ({ page }) => {
+  test('images tab and a picture have no new accessibility violations', { tag: ['@scenario'] }, async ({ page }) => {
     await page.getByTestId('phone-nav-images').click();
     await expect(page.getByTestId('phone-thumb').first()).toBeVisible();
     await scan(page, 'phone images');

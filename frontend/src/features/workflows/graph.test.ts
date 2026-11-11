@@ -26,27 +26,27 @@ describe('workflow graph', () => {
   const int = createNode(tpl('integer'), { x: 0, y: 0 }, { id: 'int' });
   const nodes = [noise, denoise, l2i, int];
 
-  it('accepts matching types and integer to float', () => {
+  it('accepts matching types and integer to float', { tags: ['condition'] }, () => {
     expect(isValidConnection(nodes, [], { source: 'noise', sourceHandle: 'noise', target: 'denoise', targetHandle: 'noise' })).toBe(true);
     expect(isValidConnection(nodes, [], { source: 'int', sourceHandle: 'value', target: 'denoise', targetHandle: 'cfg_scale' })).toBe(true);
   });
 
-  it('rejects mismatched types and missing handles', () => {
+  it('rejects mismatched types and missing handles', { tags: ['error-guessing'] }, () => {
     expect(isValidConnection(nodes, [], { source: 'noise', sourceHandle: 'noise', target: 'l2i', targetHandle: 'latents' })).toBe(false);
     expect(isValidConnection(nodes, [], { source: 'noise', sourceHandle: 'nope', target: 'denoise', targetHandle: 'noise' })).toBe(false);
   });
 
-  it('rejects cycles', () => {
+  it('rejects cycles', { tags: ['error-guessing'] }, () => {
     const edges = [makeEdge('denoise', 'width', 'noise', 'width')];
     expect(createsCycle(edges, 'noise', 'denoise')).toBe(true);
     expect(isValidConnection(nodes, edges, { source: 'noise', sourceHandle: 'noise', target: 'denoise', targetHandle: 'noise' })).toBe(false);
   });
 
-  it('detects invalid edges', () => {
+  it('detects invalid edges', { tags: ['error-guessing'] }, () => {
     expect(invalidEdges(nodes, [makeEdge('noise', 'noise', 'l2i', 'latents')])).toHaveLength(1);
   });
 
-  it('round-trips through serialization', () => {
+  it('round-trips through serialization', { tags: ['condition'] }, () => {
     const g = buildDefaultGraph({ id: 'default-t2i-sd15', name: 'T2I', description: '', author: '', tags: ['a'] }, MODELS);
     expect(g).not.toBeNull();
     if (!g) return;
@@ -57,7 +57,7 @@ describe('workflow graph', () => {
     expect(back?.meta.name).toBe('T2I');
   });
 
-  it('rejects unknown node types', () => {
+  it('rejects unknown node types', { tags: ['error-guessing'] }, () => {
     expect(deserializeWorkflow({ nodes: [{ id: 'x', position: { x: 0, y: 0 }, data: { type: 'nope' } }], edges: [] })).toBeNull();
     expect(deserializeWorkflow(null)).toBeNull();
     expect(deserializeWorkflow({ format: 'another-app', version: 1, nodes: [], edges: [] })).toBeNull();
@@ -65,7 +65,7 @@ describe('workflow graph', () => {
     expect(deserializeWorkflow({ nodes: [], edges: [] })).not.toBeNull();
   });
 
-  it('default graphs are valid', () => {
+  it('default graphs are valid', { tags: ['condition'] }, () => {
     for (const id of ['default-t2i-sd15', 'default-t2i-sdxl', 'default-i2i-sdxl', 'default-multidiffusion', 'default-face-detailer']) {
       const g = buildDefaultGraph({ id, name: id, description: '', author: '', tags: [] }, MODELS);
       expect(g, id).not.toBeNull();
@@ -76,7 +76,7 @@ describe('workflow graph', () => {
     expect(t2i && readinessReasons(t2i)).toEqual([]);
   });
 
-  it('every template message key exists', () => {
+  it('every template message key exists', { tags: ['decision-table'] }, () => {
     const keys = new Set(Object.keys(ja));
     const missing: string[] = [];
     for (const t of NODE_TEMPLATES) {

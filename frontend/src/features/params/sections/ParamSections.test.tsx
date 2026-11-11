@@ -39,7 +39,7 @@ describe('CompositingSection', () => {
     fireEvent.click(screen.getByText(t('params.compositing.title')));
   };
 
-  it('edits the coherence pass and the mask blur', () => {
+  it('edits the coherence pass and the mask blur', { tags: ['scenario'] }, () => {
     showOpen();
     setNum(t('params.compositing.edgeSize'), 64);
     setNum(t('params.compositing.minDenoise'), 0.25);
@@ -47,7 +47,7 @@ describe('CompositingSection', () => {
     expect(state()).toMatchObject({ coherenceEdgeSize: 64, coherenceMinDenoise: 0.25, maskBlur: 12 });
   });
 
-  it('shows the tile size only for the tile infill, and the colour choices only for the colour infill', () => {
+  it('shows the tile size only for the tile infill, and the colour choices only for the colour infill', { tags: ['condition'] }, () => {
     showOpen();
     expect(screen.queryByLabelText(t('params.compositing.tileSize'))).toBeNull();
     act(() => state().set({ infillMethod: 'tile' }));
@@ -67,7 +67,7 @@ describe('CompositingSection', () => {
 });
 
 describe('UpscaleSection', () => {
-  it('warns about missing upscale models and tile ControlNets', () => {
+  it('warns about missing upscale models and tile ControlNets', { tags: ['condition'] }, () => {
     useModels.setState({ models: [model('main1', 'main')] });
     useParams.setState({ modelKey: 'main1' });
     show(<UpscaleSection />);
@@ -79,7 +79,7 @@ describe('UpscaleSection', () => {
     expect(useUi.getState().activeTab).toBe('models');
   });
 
-  it('picks the scale and edits creativity and structure', () => {
+  it('picks the scale and edits creativity and structure', { tags: ['scenario'] }, () => {
     useModels.setState({ models: [model('main1', 'main'), model('tile1', 'controlnet')] });
     useParams.setState({ modelKey: 'main1' });
     useParams.getState().setUpscale({ tileControlnetModelKey: 'tile1' });
@@ -94,7 +94,7 @@ describe('UpscaleSection', () => {
     expect(state().upscale).toMatchObject({ creativity: 3, structure: -4 });
   });
 
-  it('shows the output size of the picture, and warns when it gets too large', () => {
+  it('shows the output size of the picture, and warns when it gets too large', { tags: ['boundary'] }, () => {
     useParams.getState().setUpscale({ scale: 4, initialImage: { name: 'a.png', url: 'u', width: 1100, height: 500 } as never });
     show(<UpscaleSection />);
     expect(screen.getByText(t('params.upscale.output', { width: 4400, height: 2000 }))).toBeTruthy();
@@ -103,7 +103,7 @@ describe('UpscaleSection', () => {
     expect(screen.getByText(t('params.upscale.tooLarge', { max: 8192 }))).toBeTruthy();
   });
 
-  it('asks to select an upscaler when some exist but none is chosen', () => {
+  it('asks to select an upscaler when some exist but none is chosen', { tags: ['condition'] }, () => {
     useModels.setState({ models: [model('main1', 'main'), model('up1', 'spandrel_image_to_image'), model('tile1', 'controlnet')] });
     useParams.setState({ modelKey: 'main1' });
     useParams.getState().setUpscale({ upscaleModelKey: null });

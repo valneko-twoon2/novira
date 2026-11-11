@@ -50,7 +50,7 @@ describe('the 3D pose editor dialog', () => {
     usePose3dDialog.getState().close();
   });
 
-  it('opens the 3D view on the pose of the selected control layer, with its hidden joints', async () => {
+  it('opens the 3D view on the pose of the selected control layer, with its hidden joints', { tags: ['scenario'] }, async () => {
     const id = c().addEntity('control');
     c().addObject(id, { ...placePose('p1', {}, { x: 0, y: 0, width: 512, height: 512 }, 4), hidden: [16] });
     c().select(id);
@@ -63,7 +63,7 @@ describe('the 3D pose editor dialog', () => {
     expect(await screen.findByTestId('pose3d-apply')).toBeTruthy();
   });
 
-  it('turns the view with the view buttons and resets the figure', async () => {
+  it('turns the view with the view buttons and resets the figure', { tags: ['scenario'] }, async () => {
     mount();
     usePose3dDialog.getState().show();
     await waitFor(() => expect((screen.getByTestId('pose3d-view-side') as HTMLButtonElement).disabled).toBe(false));
@@ -75,7 +75,7 @@ describe('the 3D pose editor dialog', () => {
     expect(fake.reset).toHaveBeenCalled();
   });
 
-  it('applies the figure as seen: a new pose layer with the flat joints and their depth, and closes', async () => {
+  it('applies the figure as seen: a new pose layer with the flat joints and their depth, and closes', { tags: ['scenario'] }, async () => {
     mount();
     usePose3dDialog.getState().show();
     await waitFor(() => expect(fake.create).toHaveBeenCalled());
@@ -90,7 +90,7 @@ describe('the 3D pose editor dialog', () => {
     expect(usePose3dDialog.getState().open).toBe(false);
   });
 
-  it('says so when the 3D view cannot start, and does not offer to apply', async () => {
+  it('says so when the 3D view cannot start, and does not offer to apply', { tags: ['error-guessing'] }, async () => {
     fake.create.mockImplementation(() => {
       throw new Error('no webgl');
     });
@@ -101,7 +101,7 @@ describe('the 3D pose editor dialog', () => {
     fake.create.mockReset();
   });
 
-  it('releases the 3D view when the dialog closes', async () => {
+  it('releases the 3D view when the dialog closes', { tags: ['scenario'] }, async () => {
     mount();
     usePose3dDialog.getState().show();
     await waitFor(() => expect(fake.create).toHaveBeenCalled());

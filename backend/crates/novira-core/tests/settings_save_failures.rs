@@ -4,6 +4,7 @@
 use novira_core::Settings;
 use std::os::windows::fs::OpenOptionsExt;
 
+// tags: error-guessing, state-transition
 #[test]
 fn a_settings_file_that_is_in_use_cannot_be_replaced() {
     let dir = tempfile::tempdir().unwrap();

@@ -1,3 +1,4 @@
+//! tags: snapshot, decision-table
 //! Snapshots of the ComfyUI prompts the backend builds (image, video and music graphs, and editor prompts after
 //! their placeholders are filled), so any change to what reaches ComfyUI shows up in review as a JSON diff.
 //! The files live in `__snapshots__/graph/<case>.json` next to this module (LF, like every text file of the
@@ -809,6 +810,7 @@ fn panic_text(f: impl FnOnce() + std::panic::UnwindSafe) -> String {
     err.downcast_ref::<String>().cloned().unwrap_or_default()
 }
 
+// tags: error-guessing
 #[test]
 fn a_difference_hint_points_at_the_first_differing_line() {
     let hint = diff_hint("a\nb\nc\nd", "a\nb\nX\nd\ne");
@@ -820,6 +822,7 @@ fn a_difference_hint_points_at_the_first_differing_line() {
     assert!(diff_hint("a", "a\nb").contains("first difference at line 2"));
 }
 
+// tags: error-guessing
 #[test]
 fn a_missing_or_different_snapshot_fails_with_how_to_update_it() {
     if std::env::var(UPDATE_ENV).as_deref() == Ok("1") {

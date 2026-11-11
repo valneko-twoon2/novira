@@ -38,7 +38,7 @@ const mount = () =>
   );
 
 describe('the pose dialog for a target', () => {
-  it('starts from the target pose, has the target title, and hands the pose and its picture back without touching the canvas', async () => {
+  it('starts from the target pose, has the target title, and hands the pose and its picture back without touching the canvas', { tags: ['scenario'] }, async () => {
     mount();
     const onUse = vi.fn(async () => undefined);
     usePoseDialog.getState().open({ width: 512, height: 768, initial: PRESETS.armsUp, onUse });
@@ -55,7 +55,7 @@ describe('the pose dialog for a target', () => {
     expect(useCanvas.getState().entities).toHaveLength(initialCanvas.entities.length);
   });
 
-  it('starts from the standing preset when the target has no pose yet', async () => {
+  it('starts from the standing preset when the target has no pose yet', { tags: ['scenario'] }, async () => {
     mount();
     const onUse = vi.fn(async () => undefined);
     usePoseDialog.getState().open({ width: 512, height: 512, initial: null, onUse });

@@ -15,49 +15,49 @@ const lineSd1 = model('cn-sd1', 'sd-1', 'controlnet', 'control_v11p_sd15_lineart
 const depthOnly = model('cn-depth', 'sdxl', 'controlnet', 'depth-sdxl');
 
 describe('richPlan', () => {
-  it('takes the chosen model with its line ControlNet', () => {
+  it('takes the chosen model with its line ControlNet', { tags: ['condition'] }, () => {
     const plan = richPlan([sdxl, lineXl, sd1], 'wai', null);
     expect(plan.model?.key).toBe('wai');
     expect(plan.control?.key).toBe('cn-xl');
   });
 
-  it('takes the chosen model even when it has no ControlNet', () => {
+  it('takes the chosen model even when it has no ControlNet', { tags: ['condition'] }, () => {
     const plan = richPlan([sdxl, lineXl, anima], 'anima', 'wai');
     expect(plan.model?.key).toBe('anima');
     expect(plan.control).toBeNull();
   });
 
-  it('auto: the Generate tab model when a line ControlNet exists for its family', () => {
+  it('auto: the Generate tab model when a line ControlNet exists for its family', { tags: ['decision-table'] }, () => {
     const plan = richPlan([sd1, sdxl, lineXl, lineSd1], null, 'sd1');
     expect(plan.model?.key).toBe('sd1');
     expect(plan.control?.key).toBe('cn-sd1');
   });
 
-  it('auto: otherwise another model that has one, SDXL first', () => {
+  it('auto: otherwise another model that has one, SDXL first', { tags: ['decision-table'] }, () => {
     const plan = richPlan([anima, sd1, sdxl, lineXl, lineSd1], null, 'anima');
     expect(plan.model?.key).toBe('wai');
     expect(plan.control?.key).toBe('cn-xl');
   });
 
-  it('auto: otherwise the Generate tab model with no ControlNet', () => {
+  it('auto: otherwise the Generate tab model with no ControlNet', { tags: ['decision-table'] }, () => {
     const plan = richPlan([anima, sdxl, depthOnly], null, 'anima');
     expect(plan.model?.key).toBe('anima');
     expect(plan.control).toBeNull();
   });
 
-  it('falls back to the first drawable model, and to none when nothing draws', () => {
+  it('falls back to the first drawable model, and to none when nothing draws', { tags: ['decision-table'] }, () => {
     expect(richPlan([anima, sdxl], null, 'gone').model?.key).toBe('anima');
     expect(richPlan([lineXl], null, null)).toEqual({ model: null, control: null });
     expect(richPlan([], null, null)).toEqual({ model: null, control: null });
   });
 
-  it('ignores a chosen key that is no longer installed', () => {
+  it('ignores a chosen key that is no longer installed', { tags: ['error-guessing'] }, () => {
     expect(richPlan([sdxl, lineXl], 'removed', null).model?.key).toBe('wai');
   });
 });
 
 describe('richDenoise', () => {
-  it('maps 0..100 onto the plan range and clamps', () => {
+  it('maps 0..100 onto the plan range and clamps', { tags: ['boundary'] }, () => {
     expect(richDenoise(0, true)).toBeCloseTo(0.6);
     expect(richDenoise(50, true)).toBeCloseTo(0.8);
     expect(richDenoise(100, true)).toBeCloseTo(1);
@@ -70,7 +70,7 @@ describe('richDenoise', () => {
 });
 
 describe('richPrompts', () => {
-  it('puts the quality words in front for a tag model, then the user words', () => {
+  it('puts the quality words in front for a tag model, then the user words', { tags: ['decision-table'] }, () => {
     const { positive, negative } = richPrompts(sdxl, 'dragon scales, , sparkles');
     expect(positive.startsWith('masterpiece')).toBe(true);
     expect(positive.endsWith('dragon scales, sparkles')).toBe(true);
@@ -78,30 +78,30 @@ describe('richPrompts', () => {
     expect(negative).toContain('mirror image');
   });
 
-  it('does not repeat a negative word the family already has', () => {
+  it('does not repeat a negative word the family already has', { tags: ['decision-table'] }, () => {
     const words = richPrompts(sdxl, '').negative.split(', ');
     expect(new Set(words.map((w) => w.toLowerCase())).size).toBe(words.length);
   });
 
-  it('puts the quality words after the description for a model that reads sentences', () => {
+  it('puts the quality words after the description for a model that reads sentences', { tags: ['decision-table'] }, () => {
     const flux = model('flux', 'flux', 'main', 'flux-dev');
     const { positive } = richPrompts(flux, 'blue');
     expect(positive.startsWith('blue')).toBe(true);
     expect(positive.indexOf('blue')).toBeLessThan(positive.length - 1);
   });
 
-  it('gives no negative to a family that reads none', () => {
+  it('gives no negative to a family that reads none', { tags: ['decision-table'] }, () => {
     const flux = model('flux', 'flux', 'main', 'flux-dev');
     expect(richPrompts(flux, '', 'blurry').negative).toBe('');
   });
 
-  it('adds the user\'s negative words, each once', () => {
+  it('adds the user\'s negative words, each once', { tags: ['decision-table'] }, () => {
     const words = richPrompts(sdxl, '', 'blurry, text').negative.split(', ');
     expect(words).toContain('blurry');
     expect(words.filter((w) => w === 'text')).toHaveLength(1);
   });
 
-  it('works with no words', () => {
+  it('works with no words', { tags: ['boundary'] }, () => {
     expect(richPrompts(sdxl, '').positive.length).toBeGreaterThan(0);
   });
 });
@@ -109,7 +109,7 @@ describe('richPrompts', () => {
 describe('buildRichRequest', () => {
   const base = { model: sdxl, words: '', negative: '', iterations: 3, prepend: true, strength: 50, seed: 7, sourceUrl: 'img://base', lineUrl: 'img://line', width: 1024, height: 576 };
 
-  it('queues an image-to-image run kept as an intermediate, with the line ControlNet', () => {
+  it('queues an image-to-image run kept as an intermediate, with the line ControlNet', { tags: ['decision-table'] }, () => {
     const r = buildRichRequest({ ...base, control: lineXl });
     expect(r.origin).toBe('generate');
     expect(r.destination).toBe('intermediate');
@@ -127,14 +127,14 @@ describe('buildRichRequest', () => {
     expect(r.controlLayers).toEqual([{ imageUrl: 'img://line', modelKey: 'cn-xl', weight: 1, beginEnd: [0, 1], controlMode: 'balanced', controlType: 'lineart' }]);
   });
 
-  it('with no ControlNet it stays gentle and has no control layer', () => {
+  it('with no ControlNet it stays gentle and has no control layer', { tags: ['decision-table'] }, () => {
     const r = buildRichRequest({ ...base, control: null, lineUrl: null });
     expect(r.params.strength).toBeCloseTo(0.45);
     expect(r.params.controlLayerCount).toBeUndefined();
     expect(r.controlLayers).toBeUndefined();
   });
 
-  it('takes steps, CFG and scheduler from the model profile', () => {
+  it('takes steps, CFG and scheduler from the model profile', { tags: ['decision-table'] }, () => {
     const r = buildRichRequest({ ...base, control: null, lineUrl: null });
     expect(r.params.steps).toBeGreaterThan(0);
     expect(r.params.cfgScale).toBeGreaterThan(0);

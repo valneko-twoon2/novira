@@ -11,7 +11,7 @@ afterEach(() => vi.useRealTimers());
 const titles = () => useToasts.getState().toasts.map((t) => t.title);
 
 describe('toasts', () => {
-  it('dismisses a toast after its duration', () => {
+  it('dismisses a toast after its duration', { tags: ['condition'] }, () => {
     const id = toast({ status: 'info', title: 'a' }, 1000);
     expect(useToasts.getState().toasts.map((t) => t.id)).toEqual([id]);
     vi.advanceTimersByTime(999);
@@ -20,7 +20,7 @@ describe('toasts', () => {
     expect(titles()).toEqual([]);
   });
 
-  it('stays as long as the setting says when no duration is given', () => {
+  it('stays as long as the setting says when no duration is given', { tags: ['condition'] }, () => {
     useSettings.getState().set({ toastSeconds: 6 });
     toast({ status: 'info', title: 'b' });
     vi.advanceTimersByTime(5999);
@@ -30,7 +30,7 @@ describe('toasts', () => {
     useSettings.getState().reset();
   });
 
-  it('keeps a toast with no duration until it is dismissed', () => {
+  it('keeps a toast with no duration until it is dismissed', { tags: ['condition'] }, () => {
     const id = toast({ status: 'error', title: 'sticky' }, 0);
     vi.advanceTimersByTime(60_000);
     expect(titles()).toEqual(['sticky']);
@@ -38,12 +38,12 @@ describe('toasts', () => {
     expect(titles()).toEqual([]);
   });
 
-  it('shows at most the five newest toasts', () => {
+  it('shows at most the five newest toasts', { tags: ['boundary'] }, () => {
     for (let i = 1; i <= 7; i++) toast({ status: 'info', title: String(i) }, 0);
     expect(titles()).toEqual(['3', '4', '5', '6', '7']);
   });
 
-  it('gives every toast a distinct id', () => {
+  it('gives every toast a distinct id', { tags: ['equivalence'] }, () => {
     const a = toast({ status: 'info', title: 'a' });
     const b = toast({ status: 'info', title: 'b' });
     expect(a).not.toBe(b);
@@ -53,7 +53,7 @@ describe('toasts', () => {
 describe('notification history', () => {
   const history = () => useToasts.getState().history.map((n) => n.title);
 
-  it('keeps every notification, newest first, after its toast has gone', () => {
+  it('keeps every notification, newest first, after its toast has gone', { tags: ['equivalence'] }, () => {
     toast({ status: 'info', title: 'a' }, 1000);
     toast({ status: 'error', title: 'b' }, 1000);
     vi.advanceTimersByTime(1000);
@@ -62,14 +62,14 @@ describe('notification history', () => {
     expect(useToasts.getState().unread).toBe(2);
   });
 
-  it('keeps only the newest notifications past the limit', () => {
+  it('keeps only the newest notifications past the limit', { tags: ['boundary'] }, () => {
     for (let i = 1; i <= HISTORY_LIMIT + 2; i++) toast({ status: 'info', title: String(i) }, 0);
     expect(history()).toHaveLength(HISTORY_LIMIT);
     expect(history()[0]).toBe(String(HISTORY_LIMIT + 2));
     expect(history().at(-1)).toBe('3');
   });
 
-  it('puts a quiet notification only in the history while a bell is mounted', () => {
+  it('puts a quiet notification only in the history while a bell is mounted', { tags: ['condition'] }, () => {
     const detach = useToasts.getState().attachBell();
     toast({ status: 'success', title: 'deleted', quiet: true });
     expect(titles()).toEqual([]);
@@ -80,7 +80,7 @@ describe('notification history', () => {
     expect(titles()).toEqual(['deleted again']);
   });
 
-  it('runs an action once, from the toast or from the history', () => {
+  it('runs an action once, from the toast or from the history', { tags: ['state-transition'] }, () => {
     const run = vi.fn();
     const id = toast({ status: 'success', title: 'deleted', actions: [{ label: 'Undo', run }] }, 0);
     useToasts.getState().runAction(id, 0);
@@ -90,7 +90,7 @@ describe('notification history', () => {
     expect(useToasts.getState().history[0]?.actions).toBeUndefined();
   });
 
-  it('marks everything read, forgets one notification or all of them', () => {
+  it('marks everything read, forgets one notification or all of them', { tags: ['condition'] }, () => {
     const a = toast({ status: 'info', title: 'a' }, 0);
     toast({ status: 'info', title: 'b' }, 0);
     useToasts.getState().markRead();

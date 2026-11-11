@@ -18,13 +18,13 @@ function Harness() {
 afterEach(() => cleanup());
 
 describe('the pose stage', () => {
-  it('has a handle for each of the 18 joints, named for screen readers', () => {
+  it('has a handle for each of the 18 joints, named for screen readers', { tags: ['scenario'] }, () => {
     render(<Harness />);
     expect(screen.getAllByRole('slider')).toHaveLength(POSE_JOINT_NAMES.length);
     expect(screen.getByTestId('pose-joint-rightWrist').getAttribute('aria-label')).toBeTruthy();
   });
 
-  it('moves a joint with the arrow keys, further with shift, and leaves the other joints alone', () => {
+  it('moves a joint with the arrow keys, further with shift, and leaves the other joints alone', { tags: ['scenario'] }, () => {
     render(<Harness />);
     const wrist = POSE_JOINT_NAMES.indexOf('rightWrist');
     const before = PRESETS.standing[wrist]!;
@@ -36,7 +36,7 @@ describe('the pose stage', () => {
     expect(latest[POSE_JOINT_NAMES.indexOf('leftWrist')]).toEqual(PRESETS.standing[POSE_JOINT_NAMES.indexOf('leftWrist')]);
   });
 
-  it('ignores other keys', () => {
+  it('ignores other keys', { tags: ['scenario'] }, () => {
     render(<Harness />);
     fireEvent.keyDown(screen.getByTestId('pose-joint-nose'), { key: 'a' });
     expect(latest).toEqual(PRESETS.standing);
@@ -52,7 +52,7 @@ describe('dragging a joint with the pointer', () => {
   };
   const point = (x: number, y: number) => ({ clientX: x * 400, clientY: y * 500, pointerId: 1 });
 
-  it('picks up the joint under the press, follows the pointer and lets go on release', () => {
+  it('picks up the joint under the press, follows the pointer and lets go on release', { tags: ['scenario'] }, () => {
     render(<Harness />);
     const stage = stubBox();
     const nose = POSE_JOINT_NAMES.indexOf('nose');
@@ -68,7 +68,7 @@ describe('dragging a joint with the pointer', () => {
     expect(latest[nose]).toEqual({ x: 0.7, y: 0.3 });
   });
 
-  it('ignores a press that is far from every joint, and a cancelled drag stops', () => {
+  it('ignores a press that is far from every joint, and a cancelled drag stops', { tags: ['scenario'] }, () => {
     render(<Harness />);
     const stage = stubBox();
     fireEvent.pointerDown(stage, point(0.02, 0.98));

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { balloonOutline, outlineScale } from './balloon';
 
 describe('the outline of a balloon', () => {
-  it('is the text box scaled about its centre, and stretched by the balloon width and height', () => {
+  it('is the text box scaled about its centre, and stretched by the balloon width and height', { tags: ['condition'] }, () => {
     const box = { x: 10, y: 20, width: 100, height: 40 };
     for (const look of [{ kind: 'speech', width: 1, height: 1 }, { kind: 'caption', width: 1.5, height: 0.8 }] as const) {
       const outline = balloonOutline(box, look);
@@ -13,7 +13,7 @@ describe('the outline of a balloon', () => {
     }
   });
 
-  it('holds the corners of the text box inside the ellipse of a round balloon', () => {
+  it('holds the corners of the text box inside the ellipse of a round balloon', { tags: ['condition'] }, () => {
     // An ellipse of the outline's size: each corner of the text box must satisfy (dx/a)² + (dy/b)² ≤ 1.
     const box = { x: 0, y: 0, width: 300, height: 60 };
     const outline = balloonOutline(box, { kind: 'speech', width: 1, height: 1 });
@@ -31,7 +31,7 @@ describe('the outline of a balloon', () => {
     }
   });
 
-  it('gives a box only a little room round the words', () => {
+  it('gives a box only a little room round the words', { tags: ['condition'] }, () => {
     expect(outlineScale('caption')).toBeLessThan(outlineScale('speech'));
     expect(outlineScale('caption')).toBeGreaterThan(1);
   });

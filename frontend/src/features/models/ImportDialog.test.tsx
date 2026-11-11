@@ -22,7 +22,7 @@ describe('ImportDialog', () => {
       </TooltipProvider>,
     );
 
-  it('stays closed until opened, then opens on the first tab', () => {
+  it('stays closed until opened, then opens on the first tab', { tags: ['scenario'] }, () => {
     show();
     expect(screen.queryByRole('dialog')).toBeNull();
     act(() => useModelImport.getState().open());
@@ -30,13 +30,13 @@ describe('ImportDialog', () => {
     expect(screen.getByRole('tab', { name: t('models.install.tab.source') }).getAttribute('aria-selected')).toBe('true');
   });
 
-  it('opens straight on the starter models when asked', () => {
+  it('opens straight on the starter models when asked', { tags: ['scenario'] }, () => {
     show();
     act(() => useModelImport.getState().open('starter'));
     expect(screen.getByRole('tab', { name: t('models.install.tab.starter') }).getAttribute('aria-selected')).toBe('true');
   });
 
-  it('closes with its close button and remembers the tab it was left on', () => {
+  it('closes with its close button and remembers the tab it was left on', { tags: ['scenario'] }, () => {
     show();
     act(() => useModelImport.getState().open('scan'));
     act(() => useModelImport.getState().close());

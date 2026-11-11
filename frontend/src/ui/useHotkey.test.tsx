@@ -12,7 +12,7 @@ const press = (key: string, init: KeyboardEventInit = {}, target: EventTarget = 
 };
 
 describe('useHotkey', () => {
-  it('runs on the exact chord only, with Ctrl as mod outside macOS', () => {
+  it('runs on the exact chord only, with Ctrl as mod outside macOS', { tags: ['equivalence'] }, () => {
     const handler = vi.fn();
     renderHook(() => useHotkey('mod+enter', handler));
     press('Enter');
@@ -23,7 +23,7 @@ describe('useHotkey', () => {
     expect(e.defaultPrevented).toBe(true);
   });
 
-  it('accepts several chords and the named keys', () => {
+  it('accepts several chords and the named keys', { tags: ['equivalence'] }, () => {
     const handler = vi.fn();
     renderHook(() => useHotkey(['space', 'delete', 'shift+x'], handler));
     press(' ');
@@ -34,7 +34,7 @@ describe('useHotkey', () => {
     expect(handler).toHaveBeenCalledTimes(4);
   });
 
-  it('leaves Ctrl+C and Ctrl+X to the browser while text is selected on the page', () => {
+  it('leaves Ctrl+C and Ctrl+X to the browser while text is selected on the page', { tags: ['condition'] }, () => {
     const handler = vi.fn();
     renderHook(() => useHotkey(['mod+c', 'mod+x'], handler));
     const { getByText } = render(<p>selected words</p>);
@@ -48,7 +48,7 @@ describe('useHotkey', () => {
     expect(handler).toHaveBeenCalledOnce();
   });
 
-  it('leaves Ctrl+C to the browser while text is selected inside a text field', () => {
+  it('leaves Ctrl+C to the browser while text is selected inside a text field', { tags: ['condition'] }, () => {
     const handler = vi.fn();
     renderHook(() => useHotkey('mod+c', handler, { allowInInput: true }));
     const { getByRole } = render(<input defaultValue="some text" />);
@@ -60,7 +60,7 @@ describe('useHotkey', () => {
     expect(handler).toHaveBeenCalledOnce();
   });
 
-  it('keeps other chords working while text is selected', () => {
+  it('keeps other chords working while text is selected', { tags: ['condition'] }, () => {
     const handler = vi.fn();
     renderHook(() => useHotkey('mod+s', handler));
     const { getByText } = render(<p>words</p>);
@@ -72,12 +72,12 @@ describe('useHotkey', () => {
     expect(handler).toHaveBeenCalledOnce();
   });
 
-  it('labels the plus and minus keys, which a chord cannot spell', () => {
+  it('labels the plus and minus keys, which a chord cannot spell', { tags: ['condition'] }, () => {
     expect(chordLabel('mod+plus')).toBe('Ctrl++');
     expect(chordLabel('mod+minus')).toBe('Ctrl+-');
   });
 
-  it('matches plus and minus with or without Shift, and on the numpad', () => {
+  it('matches plus and minus with or without Shift, and on the numpad', { tags: ['equivalence'] }, () => {
     const zoomIn = vi.fn();
     const zoomOut = vi.fn();
     renderHook(() => {
@@ -95,7 +95,7 @@ describe('useHotkey', () => {
     expect(zoomOut).toHaveBeenCalledTimes(2);
   });
 
-  it('ignores keys typed into a field unless allowed', () => {
+  it('ignores keys typed into a field unless allowed', { tags: ['condition'] }, () => {
     const plain = vi.fn();
     const inInput = vi.fn();
     renderHook(() => {
@@ -110,7 +110,7 @@ describe('useHotkey', () => {
     expect(inInput).toHaveBeenCalledOnce();
   });
 
-  it('does nothing while disabled and leaves the default when asked', () => {
+  it('does nothing while disabled and leaves the default when asked', { tags: ['condition'] }, () => {
     const handler = vi.fn();
     const { rerender } = renderHook(({ enabled }) => useHotkey('g', handler, { enabled, preventDefault: false }), { initialProps: { enabled: false } });
     press('g');
@@ -121,7 +121,7 @@ describe('useHotkey', () => {
     expect(e.defaultPrevented).toBe(false);
   });
 
-  it('calls the latest handler and stops listening on unmount', () => {
+  it('calls the latest handler and stops listening on unmount', { tags: ['state-transition'] }, () => {
     const first = vi.fn();
     const second = vi.fn();
     const { rerender, unmount } = renderHook(({ fn }) => useHotkey('g', fn), { initialProps: { fn: first } });
@@ -136,7 +136,7 @@ describe('useHotkey', () => {
 });
 
 describe('chordLabel', () => {
-  it('shows chords for menus', () => {
+  it('shows chords for menus', { tags: ['condition'] }, () => {
     expect(chordLabel('mod+shift+enter')).toBe('Ctrl+Shift+Enter');
     expect(chordLabel('g')).toBe('G');
     expect(chordLabel('mod+plus')).toBe('Ctrl++');

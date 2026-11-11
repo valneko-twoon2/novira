@@ -30,12 +30,12 @@ beforeEach(() => {
 describe('createPresetStore', () => {
   const seed: Preset<{ n: number }>[] = [{ id: 'seed-a', name: 'A', data: { n: 1 } }];
 
-  it('starts from the built-ins, flagged as built-in', () => {
+  it('starts from the built-ins, flagged as built-in', { tags: ['condition'] }, () => {
     const store = createPresetStore({ name: 'test.presets.a', seed });
     expect(store.getState().presets).toEqual([{ id: 'seed-a', name: 'A', data: { n: 1 }, builtin: true }]);
   });
 
-  it('adds, overwrites, renames and removes; editing a built-in makes it the user\'s', () => {
+  it('adds, overwrites, renames and removes; editing a built-in makes it the user\'s', { tags: ['scenario'] }, () => {
     const store = createPresetStore({ name: 'test.presets.b', seed });
     const id = store.getState().add('mine', { n: 2 });
     expect(store.getState().selectedId).toBe(id);
@@ -52,7 +52,7 @@ describe('createPresetStore', () => {
     expect(store.getState().selectedId).toBeNull();
   });
 
-  it('persists under its own key and reads it back', async () => {
+  it('persists under its own key and reads it back', { tags: ['scenario'] }, async () => {
     const store = createPresetStore({ name: 'test.presets.c', seed });
     store.getState().add('kept', { n: 9 });
     const saved = JSON.parse(localStorage.getItem('test.presets.c') ?? '{}') as { state: { presets: Preset<{ n: number }>[] } };
@@ -63,7 +63,7 @@ describe('createPresetStore', () => {
     expect(again.getState().presets.map((p) => p.name)).toEqual(['A', 'kept']);
   });
 
-  it('marks stored copies of built-ins only while they are unchanged', () => {
+  it('marks stored copies of built-ins only while they are unchanged', { tags: ['condition'] }, () => {
     const marked = markBuiltins(
       [
         { id: 'seed-a', name: 'A', data: { n: 1 } },
@@ -75,7 +75,7 @@ describe('createPresetStore', () => {
     expect(marked.map((p) => p.builtin)).toEqual([true, false, false]);
   });
 
-  it('upgrades stored image presets: built-ins renamed in English and flagged', () => {
+  it('upgrades stored image presets: built-ins renamed in English and flagged', { tags: ['condition'] }, () => {
     const migrate = useImagePresets.persist.getOptions().migrate!;
     const standard = useImagePresets.getState().presets.find((p) => p.id === 'seed-standard')!;
     const migrated = migrate({ presets: [{ id: 'seed-standard', name: 'old name', data: standard.data }, { id: 'u', name: 'u', data: {} }] }, 1) as {
@@ -89,7 +89,7 @@ describe('createPresetStore', () => {
 });
 
 describe('preset kinds', () => {
-  it('keeps the presets of each kind apart', () => {
+  it('keeps the presets of each kind apart', { tags: ['equivalence'] }, () => {
     const before = { music: useMusicPresets.getState().presets.length, voice: useVoicePresets.getState().presets.length };
     savePreset(videoPresets, 'clip');
     expect(useVideoPresets.getState().presets.some((p) => p.name === 'clip')).toBe(true);
@@ -99,7 +99,7 @@ describe('preset kinds', () => {
     expect(localStorage.getItem('novira.musicPresets')).toBeNull();
   });
 
-  it('video: saves and applies the settings but leaves the seed and the source picture alone', () => {
+  it('video: saves and applies the settings but leaves the seed and the source picture alone', { tags: ['condition'] }, () => {
     useVideo.getState().setForm({ positivePrompt: 'waves', steps: 30, width: 832, height: 480, seed: 1, sourceImageName: 'a.png' });
     const id = savePreset(videoPresets, 'mine');
     expect(useVideoPresets.getState().presets.find((p) => p.id === id)?.data).not.toHaveProperty('seed');
@@ -110,14 +110,14 @@ describe('preset kinds', () => {
     expect(useVideoPresets.getState().selectedId).toBe(id);
   });
 
-  it('video: a built-in only sets the fields it holds, and goes back from an installed model to its own', () => {
+  it('video: a built-in only sets the fields it holds, and goes back from an installed model to its own', { tags: ['state-transition'] }, () => {
     useModels.setState({ models: [{ key: 'wan', name: 'Wan 14B', base: 'wan', type: 'diffusion_model', path: 'wan.safetensors' }] as never });
     useVideo.getState().setForm({ positivePrompt: 'kept prompt', model: 'standard', modelKey: 'wan' });
     applyPreset(videoPresets, 'seed-video-preview');
     expect(useVideo.getState().form).toMatchObject({ positivePrompt: 'kept prompt', model: 'fast', modelKey: null, steps: 4 });
   });
 
-  it('video: keeps the installed model it was saved with, unless that model is gone', () => {
+  it('video: keeps the installed model it was saved with, unless that model is gone', { tags: ['condition'] }, () => {
     useModels.setState({ models: [{ key: 'wan', name: 'Wan 14B', base: 'wan', type: 'diffusion_model', path: 'wan.safetensors' }] as never });
     useVideo.getState().setForm({ modelKey: 'wan' });
     const id = savePreset(videoPresets, 'wan clip');
@@ -130,7 +130,7 @@ describe('preset kinds', () => {
     expect(useVideo.getState().form.modelKey).toBeNull();
   });
 
-  it('music: overwrite takes the current settings; the lyrics and seed are never touched', () => {
+  it('music: overwrite takes the current settings; the lyrics and seed are never touched', { tags: ['condition'] }, () => {
     useMusic.getState().setForm({ tags: 'rock', bpm: 140, lyrics: 'first', seed: 3 });
     const id = savePreset(musicPresets, 'rock');
     useMusic.getState().setForm({ tags: 'jazz', bpm: 90 });
@@ -140,13 +140,13 @@ describe('preset kinds', () => {
     expect(useMusic.getState().form).toMatchObject({ tags: 'jazz', bpm: 90, lyrics: 'second', seed: 4 });
   });
 
-  it('voice: applies the voice and keeps the text', () => {
+  it('voice: applies the voice and keeps the text', { tags: ['condition'] }, () => {
     useVoice.getState().setForm({ text: 'hello', mode: 'design', instruct: 'old man' });
     applyPreset(voicePresets, 'seed-voice-narrator');
     expect(useVoice.getState().form).toMatchObject({ text: 'hello', mode: 'preset', speaker: 'Ono_Anna' });
   });
 
-  it('ignores fields a preset does not own and presets that are gone', () => {
+  it('ignores fields a preset does not own and presets that are gone', { tags: ['condition'] }, () => {
     useVoicePresets.setState({ presets: [{ id: 'x', name: 'x', data: { language: 'English', text: 'injected' } as never }] });
     useVoice.getState().setForm({ text: 'mine' });
     applyPreset(voicePresets, 'x');
@@ -160,17 +160,17 @@ describe('text style presets', () => {
     useTextEditor.setState({ scene: { width: 1024, height: 1024, background: { kind: 'color', color: null }, layers: [] }, selectedId: null, past: [], future: [] });
   });
 
-  it('ships the logo looks as built-ins', () => {
+  it('ships the logo looks as built-ins', { tags: ['condition'] }, () => {
     const pop = useTextStylePresets.getState().presets.find((p) => p.id === logoPresetId('pop'));
     expect(pop).toMatchObject({ builtin: true, data: presetStyle('pop', DEFAULT_TEXT_STYLE) });
   });
 
-  it('scales pixel measures to the target size', () => {
+  it('scales pixel measures to the target size', { tags: ['condition'] }, () => {
     const style = { ...DEFAULT_TEXT_STYLE, fontSize: 100, stroke: { color: '#000', width: 10 }, letterSpacing: 4 };
     expect(scaleStyle(style, 50)).toMatchObject({ fontSize: 50, stroke: { color: '#000', width: 5 }, letterSpacing: 2 });
   });
 
-  it('applies to the selected text layer only, keeping its words and size', () => {
+  it('applies to the selected text layer only, keeping its words and size', { tags: ['condition'] }, () => {
     const id = useTextEditor.getState().addText('Title');
     const size = useTextEditor.getState().scene.layers[0]!.style.fontSize;
     applyPreset(textStylePresets, logoPresetId('gold'));
@@ -182,7 +182,7 @@ describe('text style presets', () => {
     expect(useTextEditor.getState().scene.layers[0]!.style.fontFamily).toBe(DEFAULT_TEXT_STYLE.fontFamily);
   });
 
-  it('does nothing without a selected text layer', () => {
+  it('does nothing without a selected text layer', { tags: ['condition'] }, () => {
     useTextEditor.getState().addBubble('round', 'hi');
     const before = useTextEditor.getState().scene;
     applyPreset(textStylePresets, logoPresetId('pop'));

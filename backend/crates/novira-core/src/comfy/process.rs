@@ -231,6 +231,7 @@ fn cache_env(log_file: &Path) -> Vec<(&'static str, PathBuf)> {
 mod tests {
     use super::*;
 
+    // tags: condition
     #[test]
     fn only_this_pc_may_be_listened_on() {
         for ok in [
@@ -257,6 +258,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn caches_stay_inside_the_data_folder() {
         let env = cache_env(Path::new("D:/app/novira-data/logs/comfyui.log"));
@@ -267,6 +269,7 @@ mod tests {
         assert!(cache_env(Path::new("comfyui.log")).is_empty());
     }
 
+    // tags: condition
     #[test]
     fn arguments_bind_loopback_and_point_at_the_model_paths() {
         let c = OwnedProcessConfig {
@@ -296,6 +299,7 @@ mod tests {
         }
     }
 
+    // tags: condition
     #[test]
     fn low_memory_mode_replaces_the_users_vram_option() {
         let args = arguments(&config_with(&["--fast", "--highvram"]), true);
@@ -325,6 +329,7 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn low_memory_mode_is_left_out_on_the_cpu() {
         let args = arguments(&config_with(&["--cpu"]), true);
@@ -332,6 +337,7 @@ mod tests {
         assert!(!args.contains(&LOW_MEMORY_FLAG.to_string()));
     }
 
+    // tags: error-guessing, state-transition
     #[test]
     fn a_stopped_process_has_no_pending_low_memory_change() {
         let p = ComfyProcess::new(config_with(&[]));
@@ -339,6 +345,7 @@ mod tests {
         assert!(!p.low_memory_pending(), "it starts with the new value");
     }
 
+    // tags: state-transition
     #[test]
     fn missing_install_is_reported() {
         let dir = tempfile::tempdir().unwrap();

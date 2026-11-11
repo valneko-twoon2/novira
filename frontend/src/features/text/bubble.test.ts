@@ -5,7 +5,7 @@ import { boundaryRadius, bubbleGeometry, commandBounds, seeded } from './bubble'
 const scene = { width: 1000, height: 1000 };
 
 describe('bubble geometry', () => {
-  it('draws every shape as a closed outline inside its size', () => {
+  it('draws every shape as a closed outline inside its size', { tags: ['equivalence'] }, () => {
     for (const shape of BUBBLE_SHAPES) {
       const layer = newBubbleLayer(scene, shape, 'text');
       const geo = bubbleGeometry({ ...layer, tail: { ...layer.tail, enabled: false } });
@@ -19,14 +19,14 @@ describe('bubble geometry', () => {
     }
   });
 
-  it('adds a pointer that reaches the target', () => {
+  it('adds a pointer that reaches the target', { tags: ['condition'] }, () => {
     const layer = newBubbleLayer(scene, 'round', 'a');
     const geo = bubbleGeometry({ ...layer, tail: { ...layer.tail, enabled: true, x: 0, y: layer.height } });
     expect(geo.tail).not.toBeNull();
     expect(commandBounds(geo.tail!).maxY).toBe(layer.height);
   });
 
-  it('has no pointer when it is switched off, inside the body, or for a narration box', () => {
+  it('has no pointer when it is switched off, inside the body, or for a narration box', { tags: ['decision-table'] }, () => {
     const round = newBubbleLayer(scene, 'round', 'a');
     expect(bubbleGeometry({ ...round, tail: { ...round.tail, enabled: false } }).tail).toBeNull();
     expect(bubbleGeometry({ ...round, tail: { ...round.tail, enabled: true, x: 1, y: 1 } }).tail).toBeNull();
@@ -34,7 +34,7 @@ describe('bubble geometry', () => {
     expect(bubbleGeometry({ ...narration, tail: { ...narration.tail, enabled: true } }).tail).toBeNull();
   });
 
-  it('trails circles from a thought cloud and dashes a whisper', () => {
+  it('trails circles from a thought cloud and dashes a whisper', { tags: ['condition'] }, () => {
     const cloud = newBubbleLayer(scene, 'cloud', 'a');
     const geo = bubbleGeometry({ ...cloud, tail: { ...cloud.tail, enabled: true, x: 0, y: cloud.height } });
     expect(geo.circles).toHaveLength(3);
@@ -42,26 +42,26 @@ describe('bubble geometry', () => {
     expect(bubbleGeometry(newBubbleLayer(scene, 'whisper', 'a')).dashed).toBe(true);
   });
 
-  it('makes the same burst from the same seed', () => {
+  it('makes the same burst from the same seed', { tags: ['condition'] }, () => {
     const burst = newBubbleLayer(scene, 'burst', 'a');
     expect(bubbleGeometry({ ...burst, seed: 3 }).body).toEqual(bubbleGeometry({ ...burst, seed: 3 }).body);
     expect(bubbleGeometry({ ...burst, seed: 3 }).body).not.toEqual(bubbleGeometry({ ...burst, seed: 4 }).body);
   });
 
-  it('points a burst spike at the target', () => {
+  it('points a burst spike at the target', { tags: ['condition'] }, () => {
     const burst = newBubbleLayer(scene, 'burst', 'a');
     const geo = bubbleGeometry({ ...burst, tail: { ...burst.tail, enabled: true, x: 0, y: burst.height * 1.5 } });
     expect(commandBounds(geo.body).maxY).toBe(burst.height * 1.5);
   });
 
-  it('measures the outline distance of ellipses and rectangles', () => {
+  it('measures the outline distance of ellipses and rectangles', { tags: ['equivalence'] }, () => {
     expect(boundaryRadius('round', 100, 50, 0)).toBeCloseTo(100);
     expect(boundaryRadius('round', 100, 50, Math.PI / 2)).toBeCloseTo(50);
     expect(boundaryRadius('box', 100, 50, 0)).toBeCloseTo(100);
     expect(boundaryRadius('box', 100, 50, Math.PI / 4)).toBeCloseTo(50 * Math.SQRT2);
   });
 
-  it('gives the same random numbers for a seed', () => {
+  it('gives the same random numbers for a seed', { tags: ['condition'] }, () => {
     const a = seeded(5);
     const b = seeded(5);
     expect([a(), a(), a()]).toEqual([b(), b(), b()]);

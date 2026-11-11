@@ -37,7 +37,7 @@ afterEach(() => {
 });
 
 describe('baking one picture', () => {
-  it('draws it turned and mirrored at the density of the picture and returns the name of the stored result', async () => {
+  it('draws it turned and mirrored at the density of the picture and returns the name of the stored result', { tags: ['condition'] }, async () => {
     expect(await bakeOne(bake())).toBe('turned.png');
     const rec = canvases.all.at(-1)!;
     // 200 × 100 turned a quarter is 100 × 200; the picture has 2 pixels per page pixel.
@@ -48,7 +48,7 @@ describe('baking one picture', () => {
     expect(revoke).toHaveBeenCalledOnce();
   });
 
-  it('mirrors upside down for a flipped picture and draws a large one smaller', async () => {
+  it('mirrors upside down for a flipped picture and draws a large one smaller', { tags: ['condition'] }, async () => {
     vi.mocked(loadImage).mockResolvedValue({ naturalWidth: 100000 } as HTMLImageElement);
     await bakeOne(bake({ rotation: 0, flipX: false, flipY: true }));
     const rec = canvases.all.at(-1)!;
@@ -56,23 +56,23 @@ describe('baking one picture', () => {
     expect(Math.max((rec.ctx.canvas as HTMLCanvasElement).width, (rec.ctx.canvas as HTMLCanvasElement).height)).toBe(4096);
   });
 
-  it('fails for a picture that is no longer in the gallery', async () => {
+  it('fails for a picture that is no longer in the gallery', { tags: ['regression', 'error-guessing'] }, async () => {
     await expect(bakeOne(bake({ imageName: 'gone.png' }))).rejects.toThrow('picture gone.png is gone');
   });
 
-  it('fails when the canvas has no 2D context', async () => {
+  it('fails when the canvas has no 2D context', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     await expect(bakeOne(bake())).rejects.toThrow('no canvas');
   });
 
-  it('fails when the browser gives no picture', async () => {
+  it('fails when the browser gives no picture', { tags: ['error-guessing'] }, async () => {
     HTMLCanvasElement.prototype.toBlob = function (cb: BlobCallback) {
       cb(null);
     };
     await expect(bakeOne(bake())).rejects.toThrow('empty image');
   });
 
-  it('lets the address of the drawing go when storing it fails', async () => {
+  it('lets the address of the drawing go when storing it fails', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'saveImageFromUrl').mockRejectedValue(new Error('disk full'));
     await expect(bakeOne(bake())).rejects.toThrow('disk full');
     expect(revoke).toHaveBeenCalledOnce();

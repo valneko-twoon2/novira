@@ -20,7 +20,7 @@ const centerDoc = () => {
 };
 
 describe('canvas viewport commands', () => {
-  it('zooms to a scale around the middle of the stage', () => {
+  it('zooms to a scale around the middle of the stage', { tags: ['condition'] }, () => {
     const before = centerDoc();
     zoomTo(2);
     expect(c().viewport.scale).toBeCloseTo(2);
@@ -28,7 +28,7 @@ describe('canvas viewport commands', () => {
     expect(centerDoc().y).toBeCloseTo(before.y);
   });
 
-  it('steps zoom in and out and keeps the middle of the stage fixed', () => {
+  it('steps zoom in and out and keeps the middle of the stage fixed', { tags: ['condition'] }, () => {
     const before = centerDoc();
     const start = c().viewport.scale;
     zoomStep(1);
@@ -40,7 +40,7 @@ describe('canvas viewport commands', () => {
     expect(centerDoc().y).toBeCloseTo(before.y);
   });
 
-  it('uses the stage size it was given when fitting the bbox', () => {
+  it('uses the stage size it was given when fitting the bbox', { tags: ['condition'] }, () => {
     const { width, height } = c().bbox;
     setStageSize(200, 100);
     fitBbox();
@@ -51,7 +51,7 @@ describe('canvas viewport commands', () => {
     expect(v.y + (c().bbox.y + height / 2) * v.scale).toBeCloseTo(50);
   });
 
-  it('resets the view to the bbox when there are no layers', () => {
+  it('resets the view to the bbox when there are no layers', { tags: ['condition'] }, () => {
     zoomTo(4);
     resetView();
     const { width, height } = c().bbox;
@@ -59,7 +59,7 @@ describe('canvas viewport commands', () => {
     expect(height * c().viewport.scale).toBeLessThanOrEqual(600);
   });
 
-  it('keeps the bbox when there is no visible layer content to fit it to', () => {
+  it('keeps the bbox when there is no visible layer content to fit it to', { tags: ['condition'] }, () => {
     const before = c().bbox;
     fitBboxToLayers();
     expect(c().bbox).toEqual(before);
@@ -67,7 +67,7 @@ describe('canvas viewport commands', () => {
 });
 
 describe('viewport of another store', () => {
-  it('keeps its own stage size and acts only on its own store', () => {
+  it('keeps its own stage size and acts only on its own store', { tags: ['condition'] }, () => {
     const page = createCanvasStore({ syncParams: false });
     setStageSize(200, 100, page);
     fitBbox(page);
@@ -79,7 +79,7 @@ describe('viewport of another store', () => {
     expect(c().viewport.scale).toBeGreaterThan(v.scale);
   });
 
-  it('fits a store once its stage is large enough, and only the first time', () => {
+  it('fits a store once its stage is large enough, and only the first time', { tags: ['boundary'] }, () => {
     const page = createCanvasStore({ syncParams: false });
     setStageSize(40, 40, page);
     fitBboxOnce(page);

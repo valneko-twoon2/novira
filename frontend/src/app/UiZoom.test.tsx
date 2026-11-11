@@ -24,7 +24,7 @@ describe('UiZoom (desktop)', () => {
   });
   afterEach(cleanup);
 
-  it('applies the stored level on start and after every step', () => {
+  it('applies the stored level on start and after every step', { tags: ['condition'] }, () => {
     useSettings.getState().set({ uiZoom: 1.25 });
     render(<UiZoom />);
     expect(setUiZoom).toHaveBeenLastCalledWith(1.25);
@@ -36,7 +36,7 @@ describe('UiZoom (desktop)', () => {
     expect(useSettings.getState().uiZoom).toBe(1.1);
   });
 
-  it('accepts the plus key of Japanese and US layouts and the keypad', () => {
+  it('accepts the plus key of Japanese and US layouts and the keypad', { tags: ['equivalence'] }, () => {
     render(<UiZoom />);
     press(';');
     press('+', { shiftKey: true });
@@ -44,14 +44,14 @@ describe('UiZoom (desktop)', () => {
     expect(useSettings.getState().uiZoom).toBe(1.5);
   });
 
-  it('leaves Ctrl+0 to the canvas and the viewer', () => {
+  it('leaves Ctrl+0 to the canvas and the viewer', { tags: ['condition'] }, () => {
     useSettings.getState().set({ uiZoom: 2 });
     render(<UiZoom />);
     press('0');
     expect(useSettings.getState().uiZoom).toBe(2);
   });
 
-  it('falls back to 100 % when the stored level is broken', () => {
+  it('falls back to 100 % when the stored level is broken', { tags: ['error-guessing'] }, () => {
     useSettings.getState().set({ uiZoom: Number.NaN });
     render(<UiZoom />);
     expect(setUiZoom).toHaveBeenLastCalledWith(1);

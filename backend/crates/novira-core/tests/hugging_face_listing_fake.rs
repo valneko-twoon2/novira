@@ -42,6 +42,7 @@ fn open() -> (tempfile::TempDir, Backend) {
     (dir, backend)
 }
 
+// tags: state-transition, decision-table
 #[tokio::test]
 async fn the_install_list_is_the_single_model_files_of_the_repository() {
     let site = site();
@@ -62,6 +63,7 @@ async fn the_install_list_is_the_single_model_files_of_the_repository() {
     assert_eq!(files, vec!["turbo.safetensors", "sub/lora.ckpt"]);
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_repository_that_does_not_exist_is_reported_by_name() {
     let site = site();
@@ -76,6 +78,7 @@ async fn a_repository_that_does_not_exist_is_reported_by_name() {
         .contains("No Hugging Face repository named listing-owner/missing"));
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_repository_that_needs_a_token_is_reported_the_same_way() {
     let site = site();
@@ -90,6 +93,7 @@ async fn a_repository_that_needs_a_token_is_reported_the_same_way() {
         .contains("No Hugging Face repository named listing-owner/private"));
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn an_address_that_is_not_a_repository_id_is_refused_before_any_request() {
     site();
@@ -99,6 +103,7 @@ async fn an_address_that_is_not_a_repository_id_is_refused_before_any_request() 
     assert!(backend.hugging_face_files("owner/a/b").await.is_err());
 }
 
+// tags: boundary
 #[tokio::test]
 async fn the_token_is_sent_when_one_is_set() {
     let site = site();

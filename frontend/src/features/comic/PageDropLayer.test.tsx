@@ -55,21 +55,21 @@ afterEach(() => {
 });
 
 describe('dragging over the paper', () => {
-  it('shows the overlay for a picture drag, and takes the drag as a copy', () => {
+  it('shows the overlay for a picture drag, and takes the drag as a copy', { tags: ['scenario'] }, () => {
     seed();
     const event = drag('dragOver', screen.getByTestId('paper'), { types: [IMAGE_MIME] });
     expect(event.defaultPrevented).toBe(true);
     expect(screen.getByTestId('comic-backdrop-drop')).toBeTruthy();
   });
 
-  it('shows nothing for a drag that is not a picture', () => {
+  it('shows nothing for a drag that is not a picture', { tags: ['scenario'] }, () => {
     seed();
     const event = drag('dragEnter', screen.getByTestId('paper'), { types: ['text/plain'] });
     expect(event.defaultPrevented).toBe(false);
     expect(screen.queryByTestId('comic-backdrop-drop')).toBeNull();
   });
 
-  it('leaves a panel its own drop: the overlay goes when the drag moves onto one', () => {
+  it('leaves a panel its own drop: the overlay goes when the drag moves onto one', { tags: ['state-transition'] }, () => {
     seed();
     drag('dragOver', screen.getByTestId('paper'), { types: [IMAGE_MIME] });
     expect(screen.getByTestId('comic-backdrop-drop')).toBeTruthy();
@@ -78,7 +78,7 @@ describe('dragging over the paper', () => {
     expect(screen.queryByTestId('comic-backdrop-drop')).toBeNull();
   });
 
-  it('hides the overlay when the drag leaves the layer, but not when it moves inside', () => {
+  it('hides the overlay when the drag leaves the layer, but not when it moves inside', { tags: ['state-transition'] }, () => {
     seed();
     const paper = screen.getByTestId('paper');
     drag('dragOver', paper, { types: [IMAGE_MIME] });
@@ -90,7 +90,7 @@ describe('dragging over the paper', () => {
 });
 
 describe('dropping on the paper', () => {
-  it('puts a dropped gallery picture over the page', async () => {
+  it('puts a dropped gallery picture over the page', { tags: ['scenario'] }, async () => {
     seed();
     const paper = screen.getByTestId('paper');
     drag('dragOver', paper, { types: [IMAGE_MIME] });
@@ -100,7 +100,7 @@ describe('dropping on the paper', () => {
     expect(screen.queryByTestId('comic-backdrop-drop')).toBeNull();
   });
 
-  it('tells the user when the dropped picture is not in the gallery', async () => {
+  it('tells the user when the dropped picture is not in the gallery', { tags: ['scenario'] }, async () => {
     seed();
     drag('drop', screen.getByTestId('paper'), { types: [IMAGE_MIME], names: ['gone.png'] });
     await waitFor(() => expect(useToasts.getState().toasts).toHaveLength(1));
@@ -108,7 +108,7 @@ describe('dropping on the paper', () => {
     expect(backdrop()).toBeNull();
   });
 
-  it('uploads a dropped image file, and ignores files that are not images', async () => {
+  it('uploads a dropped image file, and ignores files that are not images', { tags: ['scenario'] }, async () => {
     const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue({ name: 'up.png', url: 'novira://up.png' } as ImageDTO);
     seed();
     const paper = screen.getByTestId('paper');
@@ -120,7 +120,7 @@ describe('dropping on the paper', () => {
     expect(upload).toHaveBeenCalledOnce();
   });
 
-  it('reports a failed upload as a toast and leaves the page alone', async () => {
+  it('reports a failed upload as a toast and leaves the page alone', { tags: ['error-guessing', 'state-transition'] }, async () => {
     vi.spyOn(backend, 'uploadImage').mockRejectedValue(new Error('disk full'));
     seed();
     drag('drop', screen.getByTestId('paper'), { types: ['Files'], files: [new File(['x'], 'up.png', { type: 'image/png' })] });
@@ -128,7 +128,7 @@ describe('dropping on the paper', () => {
     expect(backdrop()).toBeNull();
   });
 
-  it('does not take a drop that lands on a panel', async () => {
+  it('does not take a drop that lands on a panel', { tags: ['scenario'] }, async () => {
     seed();
     const event = drag('drop', screen.getByTestId('in-panel'), { types: [IMAGE_MIME], names: ['sky.png'] });
     expect(event.defaultPrevented).toBe(false);

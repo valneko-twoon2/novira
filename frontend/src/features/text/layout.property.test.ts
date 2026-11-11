@@ -24,7 +24,7 @@ const width = fc.integer({ min: 1, max: 2000 });
 const stripped = (s: string) => s.replace(/\s/g, '');
 
 describe('text layout (properties)', () => {
-  it('layoutText never throws and gives finite, non-negative sizes for any text and box', () => {
+  it('layoutText never throws and gives finite, non-negative sizes for any text and box', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(anything, style, fc.option(width, { nil: null }), (text, st, extent) => {
         const b = layoutText(text, st, extent, measure);
@@ -36,7 +36,7 @@ describe('text layout (properties)', () => {
     );
   });
 
-  it('wrapping keeps every visible character, in order', () => {
+  it('wrapping keeps every visible character, in order', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(anything, style, fc.option(width, { nil: null }), (text, st, extent) => {
         const h = layoutHorizontal(text, { ...st, vertical: false }, extent, measure);
@@ -48,7 +48,7 @@ describe('text layout (properties)', () => {
     );
   });
 
-  it('without a width limit, every paragraph is one line / one column', () => {
+  it('without a width limit, every paragraph is one line / one column', { tags: ['condition'] }, () => {
     check(
       fc.property(anything, style, (text, st) => {
         expect(layoutHorizontal(text, st, null, measure).lines.length).toBe(text.split('\n').length);
@@ -57,7 +57,7 @@ describe('text layout (properties)', () => {
     );
   });
 
-  it('each wrapped line fits the box unless a single character is wider than it', () => {
+  it('each wrapped line fits the box unless a single character is wider than it', { tags: ['boundary'] }, () => {
     check(
       fc.property(plain, style, width, (text, st, extent) => {
         const h = layoutHorizontal(text, { ...st, vertical: false }, extent, measure);
@@ -71,12 +71,12 @@ describe('text layout (properties)', () => {
 
   // Regression: a word wider than the box is broken between characters wherever it stands, not only at the start of a line:
   // layoutHorizontal('a bbbbbb', 10px, maxWidth 20) used to leave 'bbbbbb' whole on its own line.
-  it('breaks a too-wide word that follows other text', () => {
+  it('breaks a too-wide word that follows other text', { tags: ['boundary'] }, () => {
     const h = layoutHorizontal('a bbbbbb', { ...DEFAULT_TEXT_STYLE, fontSize: 10, letterSpacing: 0, vertical: false }, 20, measure);
     expect(h.lines.every((l) => l.width <= 20)).toBe(true);
   });
 
-  it('the block size is that of its lines', () => {
+  it('the block size is that of its lines', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(anything, style, fc.option(width, { nil: null }), (text, st, extent) => {
         const h = layoutHorizontal(text, st, extent, measure);
@@ -86,11 +86,11 @@ describe('text layout (properties)', () => {
     );
   });
 
-  it('verticalUnits never makes more units than characters', () => {
+  it('verticalUnits never makes more units than characters', { tags: ['boundary'] }, () => {
     check(fc.property(anything, (text) => verticalUnits(text.replace(/\n/g, '')).length <= [...text.replace(/\n/g, '')].length));
   });
 
-  it('fitFontSize stays between the minimum and the current size, fits unless at the minimum, and is the largest that fits', () => {
+  it('fitFontSize stays between the minimum and the current size, fits unless at the minimum, and is the largest that fits', { tags: ['boundary'] }, () => {
     check(
       fc.property(plain, style, fc.record({ width: fc.integer({ min: 20, max: 2000 }), height: fc.integer({ min: 20, max: 2000 }) }), fc.integer({ min: 4, max: 12 }), (text, st, box, min) => {
         const size = fitFontSize(text, st, box, measure, min);

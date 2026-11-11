@@ -17,14 +17,14 @@ const permission = (key: string, allowed: boolean | null) => ({ key, allowed }) 
 const tag = (n = 0) => screen.getAllByTestId('commercial-tag')[n]!;
 
 describe('CommercialTag', () => {
-  it('names the use in its label and hint', () => {
+  it('names the use in its label and hint', { tags: ['condition'] }, () => {
     render(<CommercialTag value="limited" />);
     expect(tag().textContent).toBe(t('browse.commercial.limited'));
     expect(tag().getAttribute('title')).toBe(t('browse.commercial.limited.hint'));
     expect(tag().getAttribute('data-commercial')).toBe('limited');
   });
 
-  it('lists every permission as allowed, not allowed or not stated, with the Civitai note', () => {
+  it('lists every permission as allowed, not allowed or not stated, with the Civitai note', { tags: ['equivalence'] }, () => {
     render(<CommercialTag value="allowed" permissions={[permission('sellImages', true), permission('sellModel', false), permission('noCredit', null)]} />);
     fireEvent.click(tag());
     const rows = [...document.querySelectorAll('[data-permission]')];
@@ -40,7 +40,7 @@ describe('CommercialTag', () => {
     expect(screen.getByText(t('browse.permission.disclaimer'))).toBeTruthy();
   });
 
-  it('says there is no item-by-item information, and gives a Hugging Face license (or that none is shown)', () => {
+  it('says there is no item-by-item information, and gives a Hugging Face license (or that none is shown)', { tags: ['equivalence'] }, () => {
     render(<CommercialTag value="denied" source="huggingface" license={['apache-2.0']} permissions={[]} />);
     fireEvent.click(tag());
     expect(screen.getByText(t('browse.permission.none'))).toBeTruthy();
@@ -51,7 +51,7 @@ describe('CommercialTag', () => {
     expect(screen.getByText(t('browse.permission.sourceHf', { license: t('browse.permission.noLicense') }))).toBeTruthy();
   });
 
-  it('does not pass the click on to the card around it, and shows one list at a time', () => {
+  it('does not pass the click on to the card around it, and shows one list at a time', { tags: ['condition'] }, () => {
     const onCard = vi.fn();
     render(
       <div onClick={onCard}>

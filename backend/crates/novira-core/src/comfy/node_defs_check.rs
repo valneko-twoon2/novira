@@ -119,6 +119,7 @@ fn snapshot_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/comfy/__snapshots__/graph")
 }
 
+// tags: boundary, equivalence
 #[test]
 fn every_snapshot_prompt_fits_the_node_definitions_of_a_real_comfyui() {
     let defs: Value = serde_json::from_str(DEFS).expect("node-defs.json is JSON");
@@ -180,6 +181,7 @@ mod tests {
         .join("\n")
     }
 
+    // tags: condition
     #[test]
     fn a_correct_prompt_has_no_problems() {
         assert_eq!(
@@ -188,6 +190,7 @@ mod tests {
         );
     }
 
+    // tags: equivalence
     #[test]
     fn each_kind_of_mistake_is_named() {
         let ok = json!({"model": ["1", 0], "steps": 20, "sampler": "euler"});
@@ -213,6 +216,7 @@ mod tests {
         assert!(unknown[0].contains("no node Nope"));
     }
 
+    // tags: error-guessing
     #[test]
     fn a_prompt_that_is_not_an_object_and_a_text_for_a_number_are_named() {
         assert_eq!(
@@ -223,6 +227,7 @@ mod tests {
         assert!(bad.contains("not a number"), "{bad}");
     }
 
+    // tags: condition
     #[test]
     fn a_node_with_a_dynamic_input_takes_the_inputs_of_its_choice() {
         let defs = json!({ "nodes": { "Save": {

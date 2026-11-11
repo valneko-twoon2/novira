@@ -62,7 +62,7 @@ describe('CanvasDropTargets', () => {
   };
   const names = (...n: string[]) => ({ [IMAGE_MIME]: JSON.stringify(n) });
 
-  it('stays hidden until a picture is dragged in, and hides when the drag ends', () => {
+  it('stays hidden until a picture is dragged in, and hides when the drag ends', { tags: ['scenario'] }, () => {
     const { rerender } = show();
     expect(screen.queryByTestId('canvas-drop')).toBeNull();
     rerender(
@@ -88,20 +88,20 @@ describe('CanvasDropTargets', () => {
     dragIn(data, files);
   };
 
-  it('imports a dropped gallery picture as the layer type of the tile', async () => {
+  it('imports a dropped gallery picture as the layer type of the tile', { tags: ['scenario'] }, async () => {
     startDrag(names('a.png'));
     fireEvent.drop(screen.getByText(t('canvas.drop.control')), { dataTransfer: transfer(names('a.png')) });
     await waitFor(() => expect(useCanvas.getState().entities.map((e) => e.type)).toEqual(['control']));
     expect(screen.queryByTestId('canvas-drop')).toBeNull();
   });
 
-  it('adds a dropped picture as a global reference image', async () => {
+  it('adds a dropped picture as a global reference image', { tags: ['scenario'] }, async () => {
     startDrag(names('a.png', 'b.png'));
     fireEvent.drop(screen.getByText(t('canvas.drop.global')), { dataTransfer: transfer(names('a.png', 'b.png')) });
     await waitFor(() => expect(useParams.getState().refImages).toHaveLength(2));
   });
 
-  it('uploads dropped files and imports them', async () => {
+  it('uploads dropped files and imports them', { tags: ['scenario'] }, async () => {
     const uploaded = image('up.png');
     const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue(uploaded);
     const file = new File(['x'], 'x.png', { type: 'image/png' });
@@ -112,7 +112,7 @@ describe('CanvasDropTargets', () => {
     expect(useGallery.getState().images.some((i) => i.name === 'up.png')).toBe(true);
   });
 
-  it('does nothing for a drop without pictures, and reports a failed import', async () => {
+  it('does nothing for a drop without pictures, and reports a failed import', { tags: ['error-guessing'] }, async () => {
     startDrag(names());
     fireEvent.drop(screen.getByText(t('canvas.drop.inpaint')), { dataTransfer: transfer({}) });
     await waitFor(() => expect(screen.queryByTestId('canvas-drop')).toBeNull());
@@ -126,7 +126,7 @@ describe('CanvasDropTargets', () => {
     await waitFor(() => expect(useToasts.getState().toasts.at(-1)).toMatchObject({ status: 'error', description: 'too big' }));
   });
 
-  it('highlights the tile under the pointer and ignores the area between tiles', () => {
+  it('highlights the tile under the pointer and ignores the area between tiles', { tags: ['scenario'] }, () => {
     startDrag(names('a.png'));
     const tile = screen.getByText(t('canvas.drop.raster')).closest('.canvas-drop__target')!;
     fireEvent.dragOver(tile, { dataTransfer: transfer(names('a.png')) });
@@ -140,7 +140,7 @@ describe('CanvasDropTargets', () => {
     expect(screen.queryByTestId('canvas-drop')).toBeNull();
   });
 
-  it('hides when the drag leaves the area for the outside', () => {
+  it('hides when the drag leaves the area for the outside', { tags: ['state-transition'] }, () => {
     startDrag({ [DEFERRED_MIME]: JSON.stringify({ kind: 'layer', id: 'x' }) });
     const area = screen.getByTestId('canvas-drop');
     leave(area, area.firstElementChild);
@@ -154,7 +154,7 @@ describe('CanvasHotkeys', () => {
   const press = (key: string, init: KeyboardEventInit = {}) => act(() => void window.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init })));
   const state = () => useCanvas.getState();
 
-  it('switches tools with letters and swaps with q', () => {
+  it('switches tools with letters and swaps with q', { tags: ['state-transition'] }, () => {
     render(<CanvasHotkeys />);
     for (const [key, tool] of [['b', 'brush'], ['e', 'eraser'], ['m', 'mosaic'], ['u', 'rect'], ['v', 'move'], ['c', 'bbox'], ['h', 'view'], ['i', 'colorPicker']] as const) {
       press(key);
@@ -166,7 +166,7 @@ describe('CanvasHotkeys', () => {
     expect(state().tool).toBe('brush');
   });
 
-  it('resizes the brush, eraser and mosaic with the bracket keys', () => {
+  it('resizes the brush, eraser and mosaic with the bracket keys', { tags: ['scenario'] }, () => {
     render(<CanvasHotkeys />);
     act(() => state().setBrushWidth(20));
     press('b');
@@ -185,7 +185,7 @@ describe('CanvasHotkeys', () => {
     expect(state().mosaicWidth).toBeLessThan(mosaic);
   });
 
-  it('undoes and redoes, and deletes the selected layer or reference image', () => {
+  it('undoes and redoes, and deletes the selected layer or reference image', { tags: ['state-transition'] }, () => {
     render(<CanvasHotkeys />);
     const id = state().addEntity('raster');
     state().select(id);
@@ -206,7 +206,7 @@ describe('CanvasHotkeys', () => {
     press('Delete');
   });
 
-  it('zooms and fits the view', () => {
+  it('zooms and fits the view', { tags: ['scenario'] }, () => {
     render(<CanvasHotkeys />);
     const before = state().viewport;
     press('+', { code: 'Equal' });
@@ -219,7 +219,7 @@ describe('CanvasHotkeys', () => {
     press('C', { shiftKey: true });
   });
 
-  it('accepts or discards staged results and steps through them from the keyboard', () => {
+  it('accepts or discards staged results and steps through them from the keyboard', { tags: ['scenario'] }, () => {
     render(<CanvasHotkeys />);
     useGallery.setState({ images: [image('a.png'), image('b.png')] });
     act(() => {

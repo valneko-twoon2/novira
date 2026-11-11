@@ -51,7 +51,7 @@ const showTab = (label: string) => fireEvent.mouseDown(screen.getByRole('tab', {
 const idOf = (type: string) => useWorkflows.getState().nodes.find((n) => n.data.type === type)!.id;
 
 describe('the panel', () => {
-  it('has no header of its own: the open workflow and the library are the card above the Generate button', () => {
+  it('has no header of its own: the open workflow and the library are the card above the Generate button', { tags: ['state-transition', 'scenario'] }, () => {
     loadDefault();
     wrap(<WorkflowsLeftPanel />);
     expect(screen.queryByTestId('wf-open-library')).toBeNull();
@@ -59,7 +59,7 @@ describe('the panel', () => {
     expect(screen.getByRole('tab', { name: t('workflows.panel.workflow') })).toBeTruthy();
   });
 
-  it('switches between its tabs', () => {
+  it('switches between its tabs', { tags: ['scenario'] }, () => {
     loadDefault();
     wrap(<WorkflowsLeftPanel />);
     expect(screen.getByTestId('wf-form')).toBeTruthy();
@@ -75,12 +75,12 @@ describe('the panel', () => {
 });
 
 describe('the form', () => {
-  it('explains that nothing is on the form yet', () => {
+  it('explains that nothing is on the form yet', { tags: ['boundary', 'scenario'] }, () => {
     wrap(<WorkflowsLeftPanel />);
     expect(screen.getByText(t('workflows.form.emptyTitle'))).toBeTruthy();
   });
 
-  it('lists the fields on the form, reorders and removes them, and shows the description', () => {
+  it('lists the fields on the form, reorders and removes them, and shows the description', { tags: ['state-transition', 'scenario'] }, () => {
     loadDefault();
     const id = idOf('denoise_latents');
     act(() => {
@@ -100,7 +100,7 @@ describe('the form', () => {
     expect(useWorkflows.getState().form).toHaveLength(1);
   });
 
-  it('toggles the edit mode, and tells that a connected field gets its value from a connection', () => {
+  it('toggles the edit mode, and tells that a connected field gets its value from a connection', { tags: ['state-transition', 'decision-table'] }, () => {
     loadDefault();
     act(() => useWorkflows.getState().addFormField({ nodeId: idOf('denoise_latents'), fieldName: 'positive_conditioning' }));
     wrap(<WorkflowsLeftPanel />);
@@ -111,7 +111,7 @@ describe('the form', () => {
     expect(useWorkflows.getState().mode).toBe('view');
   });
 
-  it('skips a form field whose node is gone', () => {
+  it('skips a form field whose node is gone', { tags: ['scenario'] }, () => {
     act(() => useWorkflows.getState().addFormField({ nodeId: 'ghost', fieldName: 'steps' }));
     wrap(<WorkflowsLeftPanel />);
     expect(document.querySelectorAll('.wf-form__row')).toHaveLength(0);
@@ -119,7 +119,7 @@ describe('the form', () => {
 });
 
 describe('details and data', () => {
-  it('edits the details of the workflow', () => {
+  it('edits the details of the workflow', { tags: ['scenario'] }, () => {
     wrap(<WorkflowsLeftPanel />);
     showTab(t('workflows.panel.details'));
     fireEvent.change(screen.getByLabelText(t('workflows.details.name')), { target: { value: 'My flow' } });
@@ -129,7 +129,7 @@ describe('details and data', () => {
     expect([meta.name, meta.tags, meta.notes]).toEqual(['My flow', 'a, b', 'remember']);
   });
 
-  it('shows the workflow as JSON and copies it, saying so only once it is copied', async () => {
+  it('shows the workflow as JSON and copies it, saying so only once it is copied', { tags: ['scenario'] }, async () => {
     loadDefault();
     const writeText = vi.fn(async () => {});
     vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
@@ -148,7 +148,7 @@ describe('details and data', () => {
 });
 
 describe('templates', () => {
-  it('opens a ready template as a workflow, and adds it next to what is on the canvas', () => {
+  it('opens a ready template as a workflow, and adds it next to what is on the canvas', { tags: ['state-transition', 'scenario'] }, () => {
     loadDefault();
     wrap(<WorkflowsLeftPanel />);
     showTab(t('workflows.panel.templates'));
@@ -162,7 +162,7 @@ describe('templates', () => {
     expect(useWorkflows.getState().nodes.length).toBeGreaterThan(before);
   });
 
-  it('offers to install the packs a template needs, and disables opening it', () => {
+  it('offers to install the packs a template needs, and disables opening it', { tags: ['state-transition', 'scenario'] }, () => {
     const install = vi.fn(async () => {});
     useNodePacks.setState({ install, packs: { installed: [], restartNeeded: false } as never });
     wrap(<WorkflowsLeftPanel />);
@@ -175,7 +175,7 @@ describe('templates', () => {
 });
 
 describe('the video guide', () => {
-  it('offers to download the video models, and opens the sample workflows', () => {
+  it('offers to download the video models, and opens the sample workflows', { tags: ['state-transition', 'scenario'] }, () => {
     const installPack = vi.spyOn(backend, 'installPack').mockResolvedValue(undefined as never);
     usePacks.getState().setPack('video', { state: 'missing' } as never);
     wrap(<VideoGuide />);
@@ -188,7 +188,7 @@ describe('the video guide', () => {
     expect(openLibraryWorkflow).toHaveBeenCalledTimes(1);
   });
 
-  it('says that the models are ready, or how far their download is', () => {
+  it('says that the models are ready, or how far their download is', { tags: ['scenario'] }, () => {
     const { rerender } = wrap(<VideoGuide />);
     expect(screen.getByText(t('video.guide.pack.ready'))).toBeTruthy();
     act(() => usePacks.getState().setPack('video', { state: 'downloading', index: 1, count: 3, bytes: 2e9, totalBytes: 5e9 } as never));
@@ -200,7 +200,7 @@ describe('the video guide', () => {
     expect(screen.getByText(/2\.0 GB/)).toBeTruthy();
   });
 
-  it('shows a notice above the form only while a video workflow lacks its models', () => {
+  it('shows a notice above the form only while a video workflow lacks its models', { tags: ['state-transition', 'scenario'] }, () => {
     usePacks.getState().setPack('video', { state: 'missing' } as never);
     const { container } = wrap(<VideoPanelNotice />);
     expect(container.querySelector('[data-testid="video-panel-notice"]')).toBeNull();
@@ -210,7 +210,7 @@ describe('the video guide', () => {
 });
 
 describe('the dialogs', () => {
-  it('asks before discarding, and runs the action only when confirmed', () => {
+  it('asks before discarding, and runs the action only when confirmed', { tags: ['scenario'] }, () => {
     const action = vi.fn();
     wrap(<WorkflowDialogs />);
     act(() => useDialogs.getState().ask(action));
@@ -221,7 +221,7 @@ describe('the dialogs', () => {
     expect(action).toHaveBeenCalledTimes(1);
   });
 
-  it('saves under the name that is typed, with Enter or the button, and not without a name', () => {
+  it('saves under the name that is typed, with Enter or the button, and not without a name', { tags: ['error-guessing', 'scenario'] }, () => {
     useWorkflows.getState().setMeta({ name: 'Mine', category: 'user' });
     wrap(<WorkflowDialogs />);
     act(() => useDialogs.getState().setSaveAsOpen(true));
@@ -237,7 +237,7 @@ describe('the dialogs', () => {
     expect(useDialogs.getState().saveAsOpen).toBe(false);
   });
 
-  it('proposes a copy name for a default workflow and can be cancelled', () => {
+  it('proposes a copy name for a default workflow and can be cancelled', { tags: ['state-transition', 'scenario'] }, () => {
     useWorkflows.getState().setMeta({ name: 'Stock', category: 'default' });
     wrap(<WorkflowDialogs />);
     act(() => useDialogs.getState().setSaveAsOpen(true));
@@ -246,7 +246,7 @@ describe('the dialogs', () => {
     expect(useDialogs.getState().saveAsOpen).toBe(false);
   });
 
-  it('lists the packs a file needs: install what is missing, restart for what is installed, and say when the source is unknown', () => {
+  it('lists the packs a file needs: install what is missing, restart for what is installed, and say when the source is unknown', { tags: ['error-guessing', 'state-transition'] }, () => {
     const install = vi.fn(async () => {});
     const restart = vi.fn(async () => {});
     useNodePacks.setState({ install, restart, packs: { installed: [{ folder: 'have', url: 'x' }] } as never });
@@ -271,7 +271,7 @@ describe('the dialogs', () => {
     expect(useWorkflowImport.getState().pending).toBeNull();
   });
 
-  it('says that it does not know the packs when the file names none', () => {
+  it('says that it does not know the packs when the file names none', { tags: ['boundary', 'scenario'] }, () => {
     useWorkflowImport.getState().set({ raw: {}, name: 'file', packs: [], types: ['comfy:Thing'] });
     wrap(<WorkflowDialogs />);
     expect(screen.getByText(t('workflows.import.unknownPacks'))).toBeTruthy();

@@ -2,7 +2,7 @@
 // enlarged view of a Generate tab model goes through all of them. The mock gives Juggernaut XL three pictures of three shapes.
 import { expect, msg, openApp, showTab, test } from './fixtures';
 
-test('the Models screen keeps the picture frame the same size for pictures of other shapes', async ({ page }) => {
+test('the Models screen keeps the picture frame the same size for pictures of other shapes', { tag: ['@equivalence'] }, async ({ page }) => {
   await openApp(page);
   await showTab(page, 'models');
   await page.locator('.mm-card-item', { hasText: 'Juggernaut XL v9' }).first().click();
@@ -22,7 +22,7 @@ test('the Models screen keeps the picture frame the same size for pictures of ot
   }
 });
 
-test('the enlarged picture of the Generate tab model goes through every picture', async ({ page }) => {
+test('the enlarged picture of the Generate tab model goes through every picture', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('model-picker').click();
   await page.getByTestId('model-picker-list').locator('.pp-picker__item', { hasText: 'Juggernaut XL v9' }).click();

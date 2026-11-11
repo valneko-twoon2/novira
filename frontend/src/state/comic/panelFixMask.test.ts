@@ -31,7 +31,7 @@ async function draw(mask: FixMask) {
 }
 
 describe('the mask picture', () => {
-  it('is the size of the picture, filled black first', async () => {
+  it('is the size of the picture, filled black first', { tags: ['condition'] }, async () => {
     const blob = await draw({ boxes: [], strokes: [] });
     expect(blob.type).toBe('image/png');
     expect(rec.ctx.canvas).toMatchObject({ width: 400, height: 300 });
@@ -39,19 +39,19 @@ describe('the mask picture', () => {
     expect(rec.sets.find((s) => s.name === 'fillStyle' && s.value === '#000000')).toBeDefined();
   });
 
-  it('draws each box in white at its place in the panel', async () => {
+  it('draws each box in white at its place in the panel', { tags: ['equivalence'] }, async () => {
     await draw({ boxes: [{ x: 0.1, y: 0.2, w: 0.5, h: 0.25 }], strokes: [] });
     expect(rec.of('fillRect')).toContainEqual([20, 20, 100, 25]);
   });
 
-  it('draws a dot as a disc of the brush width', async () => {
+  it('draws a dot as a disc of the brush width', { tags: ['condition'] }, async () => {
     await draw({ boxes: [], strokes: [{ points: [0.5, 0.5], width: 0.1 }] });
     expect(rec.of('arc')).toEqual([[100, 50, 10, 0, Math.PI * 2]]);
     expect(rec.of('fill')).toHaveLength(1);
     expect(rec.of('stroke')).toHaveLength(0);
   });
 
-  it('draws a line through its points with round ends at the brush width', async () => {
+  it('draws a line through its points with round ends at the brush width', { tags: ['condition'] }, async () => {
     await draw({ boxes: [], strokes: [{ points: [0, 0, 0.5, 0.5, 1, 0], width: 0.05 }] });
     expect(rec.of('moveTo')).toEqual([[0, 0]]);
     expect(rec.of('lineTo')).toEqual([[100, 50], [200, 0]]);
@@ -60,7 +60,7 @@ describe('the mask picture', () => {
     expect(rec.sets).toContainEqual({ name: 'lineCap', value: 'round' });
   });
 
-  it('leaves out a stroke with no point at all', async () => {
+  it('leaves out a stroke with no point at all', { tags: ['condition'] }, async () => {
     await draw({ boxes: [], strokes: [{ points: [], width: 0.1 }] });
     expect(rec.of('arc')).toHaveLength(0);
     expect(rec.of('stroke')).toHaveLength(0);
@@ -68,12 +68,12 @@ describe('the mask picture', () => {
 });
 
 describe('a mask that cannot be drawn', () => {
-  it('fails when the canvas has no 2D context', async () => {
+  it('fails when the canvas has no 2D context', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     await expect(fixMaskPicture({ boxes: [], strokes: [] }, DEFAULT_IMAGE_VIEW, image, panel)).rejects.toThrow('no canvas');
   });
 
-  it('fails when the browser gives no picture', async () => {
+  it('fails when the browser gives no picture', { tags: ['error-guessing'] }, async () => {
     HTMLCanvasElement.prototype.toBlob = function (cb: BlobCallback) {
       cb(null);
     };

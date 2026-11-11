@@ -36,6 +36,7 @@ fn make_zip(path: &Path, entries: &[(&str, Vec<u8>)]) {
     zip.finish().unwrap();
 }
 
+// tags: error-guessing
 #[test]
 fn a_backup_file_that_is_not_there_is_reported() {
     let dir = tempfile::tempdir().unwrap();
@@ -43,6 +44,7 @@ fn a_backup_file_that_is_not_there_is_reported() {
     assert!(err.contains("cannot open the backup"), "{err}");
 }
 
+// tags: error-guessing
 #[test]
 fn an_entry_whose_bytes_were_damaged_is_reported() {
     let dir = tempfile::tempdir().unwrap();
@@ -69,6 +71,7 @@ fn an_entry_whose_bytes_were_damaged_is_reported() {
     assert!(!data.path().join(STAGING).exists());
 }
 
+// tags: error-guessing, state-transition
 #[test]
 fn a_screen_state_that_is_not_a_state_is_refused() {
     let dir = tempfile::tempdir().unwrap();
@@ -86,6 +89,7 @@ fn a_screen_state_that_is_not_a_state_is_refused() {
     assert!(!data.path().join(STAGING).exists());
 }
 
+// tags: error-guessing
 #[test]
 fn a_database_with_a_damaged_table_is_refused() {
     let dir = tempfile::tempdir().unwrap();
@@ -99,6 +103,7 @@ fn a_database_with_a_damaged_table_is_refused() {
     assert!(err.contains("database cannot be read"), "{err}");
 }
 
+// tags: error-guessing, state-transition
 #[test]
 fn a_restore_that_cannot_be_marked_ready_says_so() {
     let dir = tempfile::tempdir().unwrap();
@@ -115,6 +120,7 @@ fn a_restore_that_cannot_be_marked_ready_says_so() {
 }
 
 #[cfg(windows)]
+// tags: error-guessing, state-transition
 #[test]
 fn an_earlier_unpacked_backup_that_is_in_use_stops_the_next_one() {
     use std::os::windows::fs::OpenOptionsExt;

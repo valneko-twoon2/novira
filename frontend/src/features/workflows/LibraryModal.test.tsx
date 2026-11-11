@@ -57,7 +57,7 @@ afterEach(() => {
 });
 
 describe('the lists', () => {
-  it('starts on the user workflows when there are some, with the count of each list', () => {
+  it('starts on the user workflows when there are some, with the count of each list', { tags: ['state-transition', 'decision-table'] }, () => {
     // Opened order: the recently opened one first, then by name.
     expect(cards()).toEqual(['Zebra mine', 'Apple mine']);
     expect(within(nav(t('workflows.library.recent'))).getByText('2')).toBeTruthy();
@@ -65,7 +65,7 @@ describe('the lists', () => {
     expect(within(nav(t('workflows.library.defaults'))).getByText('1')).toBeTruthy();
   });
 
-  it('switches to the recent list in the order they were opened, and to the defaults', () => {
+  it('switches to the recent list in the order they were opened, and to the defaults', { tags: ['scenario'] }, () => {
     fireEvent.click(nav(t('workflows.library.recent')));
     expect(cards()).toEqual(['Default one', 'Zebra mine']);
     fireEvent.click(nav(t('workflows.library.defaults')));
@@ -73,13 +73,13 @@ describe('the lists', () => {
     expect(screen.queryByText('default')).toBeNull();
   });
 
-  it('says so when a list is empty', () => {
+  it('says so when a list is empty', { tags: ['boundary', 'scenario'] }, () => {
     act(() => useWorkflows.setState({ library: [] }));
     expect(screen.getByText(t('workflows.library.empty'))).toBeTruthy();
     expect(screen.getByText(t('workflows.library.emptyUser'))).toBeTruthy();
   });
 
-  it('searches the name, the description, the author and the tags', () => {
+  it('searches the name, the description, the author and the tags', { tags: ['scenario'] }, () => {
     const search = screen.getByPlaceholderText(t('workflows.library.search'));
     fireEvent.change(search, { target: { value: 'ZEBRA' } });
     expect(cards()).toEqual(['Zebra mine']);
@@ -91,7 +91,7 @@ describe('the lists', () => {
     expect(screen.getByText(t('workflows.library.empty'))).toBeTruthy();
   });
 
-  it('filters by tags, all of the chosen ones, and clears them', () => {
+  it('filters by tags, all of the chosen ones, and clears them', { tags: ['decision-table', 'scenario'] }, () => {
     const photo = screen.getByLabelText('photo');
     fireEvent.click(photo);
     expect(cards()).toHaveLength(2);
@@ -103,7 +103,7 @@ describe('the lists', () => {
     fireEvent.click(photo);
   });
 
-  it('shows the description, the author, the date and which one is open', () => {
+  it('shows the description, the author, the date and which one is open', { tags: ['boundary', 'state-transition'] }, () => {
     expect(screen.getByText('about Zebra mine')).toBeTruthy();
     const apple = screen.getAllByTestId('wf-card').find((c) => c.textContent?.includes('Apple mine'))!;
     expect(apple.querySelector('.wf-card__desc')).toBeNull();
@@ -114,14 +114,14 @@ describe('the lists', () => {
 });
 
 describe('opening, creating and uploading', () => {
-  it('opens a workflow from its card or its button', () => {
+  it('opens a workflow from its card or its button', { tags: ['state-transition', 'scenario'] }, () => {
     fireEvent.click(screen.getAllByText(t('workflows.library.open'))[0]!);
     expect(openLibraryWorkflow).toHaveBeenCalledWith(expect.objectContaining({ id: expect.stringMatching(/^u/) }));
     fireEvent.click(screen.getByText('Zebra mine'));
     expect(openLibraryWorkflow).toHaveBeenCalledTimes(2);
   });
 
-  it('asks before discarding unsaved changes, and goes on only when confirmed', () => {
+  it('asks before discarding unsaved changes, and goes on only when confirmed', { tags: ['scenario'] }, () => {
     useWorkflows.setState({ nodes: [{ id: 'n' } as never], isTouched: true });
     fireEvent.click(screen.getAllByText(t('workflows.library.open'))[0]!);
     expect(openLibraryWorkflow).not.toHaveBeenCalled();
@@ -130,13 +130,13 @@ describe('opening, creating and uploading', () => {
     expect(openLibraryWorkflow).toHaveBeenCalledTimes(1);
   });
 
-  it('creates a workflow and closes the library', () => {
+  it('creates a workflow and closes the library', { tags: ['state-transition', 'scenario'] }, () => {
     fireEvent.click(screen.getByText(t('workflows.library.new')));
     expect(newWorkflow).toHaveBeenCalled();
     expect(useUi.getState().modal).toBeNull();
   });
 
-  it('hands a chosen file to the store, which asks before discarding (registerWorkflowsFeature)', () => {
+  it('hands a chosen file to the store, which asks before discarding (registerWorkflowsFeature)', { tags: ['scenario'] }, () => {
     const loadFile = vi.fn();
     useWorkflows.setState({ loadFile });
     const input = document.querySelector('input[type=file]') as HTMLInputElement;
@@ -154,13 +154,13 @@ describe('opening, creating and uploading', () => {
 });
 
 describe('copying and deleting', () => {
-  it('copies a default workflow to the user list', () => {
+  it('copies a default workflow to the user list', { tags: ['scenario'] }, () => {
     fireEvent.click(nav(t('workflows.library.defaults')));
     fireEvent.click(screen.getByLabelText(t('workflows.library.copyToMine')));
     expect(copyToMyWorkflows).toHaveBeenCalledWith(expect.objectContaining({ id: 'd1' }));
   });
 
-  it('deletes a user workflow only after a second click, and can back out', () => {
+  it('deletes a user workflow only after a second click, and can back out', { tags: ['scenario'] }, () => {
     expect(screen.queryByLabelText(t('workflows.library.copyToMine'))).toBeNull();
     const card = () => screen.getAllByTestId('wf-card')[0]!;
     fireEvent.click(within(card()).getByLabelText(t('common.delete')));

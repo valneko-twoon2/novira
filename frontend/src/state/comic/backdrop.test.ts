@@ -20,18 +20,18 @@ beforeEach(reset);
 describe('the page backdrop in a saved comic', () => {
   const read = (backdrop: unknown) => parseComicProject({ version: 1, id: 'c', pages: [{ id: 'p', panels: [{ id: 'x' }], backdrop }] })!.pages[0]!.backdrop;
 
-  it('reads the picture and its view, keeping the view within its range', () => {
+  it('reads the picture and its view, keeping the view within its range', { tags: ['boundary'] }, () => {
     expect(read({ imageName: 'a.png', view: { cx: 0.2, cy: 0.9, scale: 99, rotation: 450, flipX: true } })).toMatchObject({ imageName: 'a.png', view: { cx: 0.2, cy: 0.9, scale: 8, rotation: 90, flipX: true, flipY: false } });
   });
 
-  it('is none without a picture, and a page saved before it has none; a view that is missing covers the page', () => {
+  it('is none without a picture, and a page saved before it has none; a view that is missing covers the page', { tags: ['error-guessing', 'boundary'] }, () => {
     expect(read({ view: {} })).toBeNull();
     expect(read({ imageName: '' })).toBeNull();
     expect(read(undefined)).toBeNull();
     expect(read({ imageName: 'a.png' })!.view).toMatchObject({ cx: 0.5, cy: 0.5, scale: 1, rotation: 0 });
   });
 
-  it('is saved and read back as it was', () => {
+  it('is saved and read back as it was', { tags: ['condition'] }, () => {
     const id = seed();
     useComic.getState().setBackdrop(id, 'a.png');
     useComic.getState().setBackdropView(id, { scale: 2, rotation: 30 });
@@ -41,7 +41,7 @@ describe('the page backdrop in a saved comic', () => {
 });
 
 describe('putting a backdrop in', () => {
-  it('starts a new picture covering the page, and keeps the view of the same picture', () => {
+  it('starts a new picture covering the page, and keeps the view of the same picture', { tags: ['state-transition'] }, () => {
     const id = seed();
     useComic.getState().setBackdrop(id, 'a.png');
     useComic.getState().setBackdropView(id, { scale: 3, cx: 0.2 });
@@ -51,7 +51,7 @@ describe('putting a backdrop in', () => {
     expect(page().backdrop).toEqual({ imageName: 'b.png', view: expect.objectContaining({ scale: 1, cx: 0.5 }) });
   });
 
-  it('is taken away with null, which also ends editing it, and undo puts it back', () => {
+  it('is taken away with null, which also ends editing it, and undo puts it back', { tags: ['state-transition'] }, () => {
     const id = seed();
     useComic.getState().setBackdrop(id, 'a.png');
     useComic.getState().selectBackdrop(true);
@@ -62,7 +62,7 @@ describe('putting a backdrop in', () => {
     expect(page().backdrop!.imageName).toBe('a.png');
   });
 
-  it('changes the view of a backdrop that is there only, within the range, and a drag is one undo step', () => {
+  it('changes the view of a backdrop that is there only, within the range, and a drag is one undo step', { tags: ['boundary', 'state-transition'] }, () => {
     const id = seed();
     useComic.getState().setBackdropView(id, { scale: 2 });
     expect(page().backdrop).toBeNull();
@@ -76,7 +76,7 @@ describe('putting a backdrop in', () => {
 });
 
 describe('editing the backdrop', () => {
-  it('lets go of the panel and the picture selected, and a panel chosen after it ends the editing', () => {
+  it('lets go of the panel and the picture selected, and a panel chosen after it ends the editing', { tags: ['state-transition'] }, () => {
     const id = seed();
     const panel = page().panels[0]!.id;
     useComic.getState().setBackdrop(id, 'a.png');

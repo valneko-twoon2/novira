@@ -214,6 +214,7 @@ mod tests {
             .unwrap_or_else(|| panic!("no {class}"))
     }
 
+    // tags: condition
     #[test]
     fn a_song_graph_has_the_ace_step_nodes_and_saves_audio() {
         let g = graph(&music_params()).unwrap();
@@ -235,6 +236,7 @@ mod tests {
         assert_eq!(g.total_steps, 8);
     }
 
+    // tags: condition
     #[test]
     fn instrumental_music_drops_the_lyrics() {
         let mut p = music_params();
@@ -251,6 +253,7 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn values_the_model_does_not_list_are_replaced_by_safe_ones() {
         let mut p = music_params();
@@ -271,6 +274,7 @@ mod tests {
         assert_eq!(enc["inputs"]["timesignature"], "4");
     }
 
+    // tags: condition
     #[test]
     fn keys_are_checked_strictly() {
         assert_eq!(key_for("F# minor"), "F# minor");
@@ -279,6 +283,7 @@ mod tests {
         assert_eq!(key_for(""), "C major");
     }
 
+    // tags: error-guessing
     #[test]
     fn missing_settings_or_description_are_refused_with_a_reason() {
         let mut p = music_params();

@@ -59,14 +59,14 @@ afterEach(() => {
 });
 
 describe('ViewerToolbar buttons', () => {
-  it('toggles the metadata panel', () => {
+  it('toggles the metadata panel', { tags: ['scenario'] }, () => {
     show(image());
     const before = useGallery.getState().showMetadata;
     fireEvent.click(screen.getByTestId('toggle-metadata'));
     expect(useGallery.getState().showMetadata).toBe(!before);
   });
 
-  it('recalls the settings, loads the workflow, sends to the other tabs and downloads', () => {
+  it('recalls the settings, loads the workflow, sends to the other tabs and downloads', { tags: ['scenario'] }, () => {
     show(image());
     for (const [label, mode] of [
       ['gallery.menu.remix', 'remix'],
@@ -89,7 +89,7 @@ describe('ViewerToolbar buttons', () => {
     expect(actions.openInNewTab).toHaveBeenCalled();
   });
 
-  it('opens the editing dialogs', () => {
+  it('opens the editing dialogs', { tags: ['scenario'] }, () => {
     show(image());
     fireEvent.click(screen.getByTestId('viewer-segment'));
     expect(fixPartOnCanvas).toHaveBeenCalledWith(expect.objectContaining({ name: 'a.png' }));
@@ -101,7 +101,7 @@ describe('ViewerToolbar buttons', () => {
     expect(useShareDialog.getState().names).toEqual(['a.png']);
   });
 
-  it('opens the tool band on a picture tool, and closes it with the same button', () => {
+  it('opens the tool band on a picture tool, and closes it with the same button', { tags: ['scenario'] }, () => {
     show(image());
     for (const tool of ['cutout', 'facefix', 'caption'] as const) {
       fireEvent.click(screen.getByTestId(`viewer-${tool}`));
@@ -112,7 +112,7 @@ describe('ViewerToolbar buttons', () => {
     expect(useToolBand.getState().open).toBe(false);
   });
 
-  it('stars, unstars and deletes', () => {
+  it('stars, unstars and deletes', { tags: ['scenario'] }, () => {
     const { unmount } = show(image());
     fireEvent.click(button(t('gallery.menu.star')));
     expect(actions.setStarred).toHaveBeenCalledWith(['a.png'], true);
@@ -124,7 +124,7 @@ describe('ViewerToolbar buttons', () => {
     expect(actions.setStarred).toHaveBeenLastCalledWith(['a.png'], false);
   });
 
-  it('compares with the previously selected picture, and turns the comparison off again', () => {
+  it('compares with the previously selected picture, and turns the comparison off again', { tags: ['scenario'] }, () => {
     useGallery.setState({ selection: ['b.png', 'a.png'], viewerImageName: 'a.png' });
     show(image());
     fireEvent.click(button(t('gallery.compare.toggle')));
@@ -133,7 +133,7 @@ describe('ViewerToolbar buttons', () => {
     expect(useGallery.getState().compareImageName).toBeNull();
   });
 
-  it('sends to the canvas through its menu, and offers the ways to derive new pictures', async () => {
+  it('sends to the canvas through its menu, and offers the ways to derive new pictures', { tags: ['scenario'] }, async () => {
     show(image());
     fireEvent.keyDown(button(t('gallery.menu.sendToCanvas')), { key: 'Enter' });
     fireEvent.click(within(await screen.findByRole('menu')).getByText(t('gallery.canvas.raster')));
@@ -150,7 +150,7 @@ describe('ViewerToolbar buttons', () => {
 });
 
 describe('ViewerToolbar without a picture or settings', () => {
-  it('turns everything off when there is no picture', () => {
+  it('turns everything off when there is no picture', { tags: ['scenario'] }, () => {
     show(undefined);
     for (const label of [t('gallery.menu.remix'), t('gallery.menu.useAsReference'), t('common.download'), t('gallery.menu.delete'), t('gallery.menu.star')]) {
       expect(button(label).disabled).toBe(true);
@@ -159,7 +159,7 @@ describe('ViewerToolbar without a picture or settings', () => {
     expect(actions.recall).not.toHaveBeenCalled();
   });
 
-  it('turns off recalling for a picture without settings, and picture tools for a video', () => {
+  it('turns off recalling for a picture without settings, and picture tools for a video', { tags: ['scenario'] }, () => {
     vi.mocked(actions.canOpenInNewTab).mockReturnValue(false);
     vi.mocked(actions.canLoadImageWorkflow).mockReturnValue(false);
     show(image({ metadata: null, mediaType: 'video' }));

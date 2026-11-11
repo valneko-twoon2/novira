@@ -33,6 +33,7 @@ pub(crate) fn retry_pause(real: Duration) -> Duration {
 mod tests {
     use super::*;
 
+    // tags: scenario
     #[test]
     fn only_a_small_whole_number_of_milliseconds_is_an_override() {
         assert_eq!(parse_override(Some("1")), Some(Duration::from_millis(1)));
@@ -47,6 +48,7 @@ mod tests {
         assert_eq!(parse_override(None), None);
     }
 
+    // tags: condition
     #[test]
     fn without_the_variable_the_real_pause_is_used() {
         // Nothing in this test binary sets the variable.

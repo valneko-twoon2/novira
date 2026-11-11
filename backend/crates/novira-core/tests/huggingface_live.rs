@@ -20,6 +20,7 @@ fn params(query: &str, cursor: Option<String>) -> SearchParams {
     }
 }
 
+// tags: scenario
 #[tokio::test]
 #[ignore = "needs network"]
 async fn real_search_returns_downloadable_single_files_and_pages() {
@@ -51,6 +52,7 @@ async fn real_search_returns_downloadable_single_files_and_pages() {
     );
 }
 
+// tags: scenario
 #[tokio::test]
 #[ignore = "needs network"]
 async fn adult_models_are_left_out_unless_asked_for() {

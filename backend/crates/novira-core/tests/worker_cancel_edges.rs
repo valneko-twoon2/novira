@@ -87,6 +87,7 @@ fn voice_request() -> EnqueueRequest {
     req
 }
 
+// tags: boundary, state-transition
 #[tokio::test]
 async fn a_picture_job_cancelled_just_as_it_finishes_is_cancelled_not_saved() {
     let dir = tempfile::tempdir().unwrap();
@@ -103,6 +104,7 @@ async fn a_picture_job_cancelled_just_as_it_finishes_is_cancelled_not_saved() {
     wait_until(|| statuses(&backend) == vec![QueueItemStatus::Canceled]).await;
 }
 
+// tags: boundary, state-transition
 #[tokio::test]
 async fn a_voice_job_cancelled_just_as_it_finishes_is_cancelled_not_saved() {
     let dir = tempfile::tempdir().unwrap();
@@ -117,6 +119,7 @@ async fn a_voice_job_cancelled_just_as_it_finishes_is_cancelled_not_saved() {
     wait_until(|| statuses(&backend) == vec![QueueItemStatus::Canceled]).await;
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_gpu_lock_that_cannot_be_taken_fails_the_job_with_the_path() {
     let dir = tempfile::tempdir().unwrap();

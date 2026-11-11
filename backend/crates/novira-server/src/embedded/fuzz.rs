@@ -129,6 +129,7 @@ fn any_string(value: &Value, test: &dyn Fn(&str) -> bool) -> bool {
     }
 }
 
+// tags: error-guessing
 #[test]
 fn picture_urls_are_rewritten_only_from_their_start_and_both_ways_undo_each_other() {
     let data = tempfile::tempdir().unwrap();
@@ -297,6 +298,7 @@ fn app_server(data: &std::path::Path) -> (Embedded, Backend) {
     (server, backend)
 }
 
+// tags: error-guessing
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn damaged_management_calls_end_in_time_and_open_nothing_they_should_not() {
     let data = tempfile::tempdir().unwrap();
@@ -384,6 +386,7 @@ const FILE_PIECES: &[&str] = &[
     "é",
 ];
 
+// tags: error-guessing
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn a_paired_phone_reaches_only_clean_paths_of_the_built_in_files() {
     let data = tempfile::tempdir().unwrap();

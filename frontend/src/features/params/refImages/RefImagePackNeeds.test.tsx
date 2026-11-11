@@ -25,7 +25,7 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('reference image pack needs', () => {
-  it('offers the install while the pack is missing, then the restart, then nothing', () => {
+  it('offers the install while the pack is missing, then the restart, then nothing', { tags: ['state-transition'] }, () => {
     useParams.getState().addRefImage({ imageName: 'r.png', imageUrl: 'http://novira-image.localhost/full/r.png', modelKey: 'ipa' });
     const install = vi.fn(async () => {});
     useNodePacks.setState({ install });
@@ -47,7 +47,7 @@ describe('reference image pack needs', () => {
     expect(screen.queryByTestId('ref-pack-needs')).toBeNull();
   });
 
-  it('stays hidden without enabled reference images, and loads the pack list when one is added', () => {
+  it('stays hidden without enabled reference images, and loads the pack list when one is added', { tags: ['condition'] }, () => {
     const load = vi.fn(async () => {});
     useNodePacks.setState({ packs: null, load });
     show();

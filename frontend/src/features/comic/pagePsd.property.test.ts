@@ -15,7 +15,7 @@ const words = fc.oneof(
 const collapsed = (text: string) => plainText(text).replace(/\s+/g, ' ').trim();
 
 describe('firstWords', () => {
-  it('is one line of at most 16 characters plus an ellipsis, with no space at either end', () => {
+  it('is one line of at most 16 characters plus an ellipsis, with no space at either end', { tags: ['boundary'] }, () => {
     check(
       fc.property(words, (text) => {
         const name = firstWords(text);
@@ -26,7 +26,7 @@ describe('firstWords', () => {
     );
   });
 
-  it('is the whole words when they are short, and otherwise their start followed by an ellipsis', () => {
+  it('is the whole words when they are short, and otherwise their start followed by an ellipsis', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(words, (text) => {
         const whole = collapsed(text);
@@ -41,7 +41,7 @@ describe('firstWords', () => {
     );
   });
 
-  it('shows the marks of the words as nothing', () => {
+  it('shows the marks of the words as nothing', { tags: ['error-guessing'] }, () => {
     expect(firstWords('**bold**')).toBe('bold');
     expect(firstWords('《《dots》》')).toBe('dots');
   });

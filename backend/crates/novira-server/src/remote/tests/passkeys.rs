@@ -2,6 +2,7 @@
 //! what a signed-in phone may run, the rate limit, and the home network's pairing kept apart.
 use super::*;
 
+// tags: scenario
 #[tokio::test]
 async fn a_paired_phone_makes_one_passkey_and_signs_in_with_it_later() {
     let a = Away::start().await;
@@ -50,6 +51,7 @@ async fn a_paired_phone_makes_one_passkey_and_signs_in_with_it_later() {
     a.stop().await;
 }
 
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_passkey_that_does_not_check_out_is_not_kept_and_the_session_may_try_again() {
     let a = Away::start().await;
@@ -116,6 +118,7 @@ async fn a_passkey_that_does_not_check_out_is_not_kept_and_the_session_may_try_a
     a.stop().await;
 }
 
+// tags: error-guessing, equivalence
 #[tokio::test]
 async fn a_sign_in_is_refused_for_an_unknown_passkey_another_address_a_used_challenge_or_a_bad_signature(
 ) {
@@ -153,6 +156,7 @@ async fn a_sign_in_is_refused_for_an_unknown_passkey_another_address_a_used_chal
     a.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn a_session_works_only_from_the_address_that_signed_in() {
     let a = Away::start().await;
@@ -165,6 +169,7 @@ async fn a_session_works_only_from_the_address_that_signed_in() {
     a.stop().await;
 }
 
+// tags: state-transition
 #[tokio::test]
 async fn forgetting_a_passkey_ends_its_sessions_and_it_cannot_sign_in_again() {
     let a = Away::start().await;
@@ -190,6 +195,7 @@ async fn forgetting_a_passkey_ends_its_sessions_and_it_cannot_sign_in_again() {
     a.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn a_signed_in_phone_runs_what_a_phone_at_home_runs_and_nothing_more() {
     let a = Away::start().await;
@@ -216,6 +222,7 @@ async fn a_signed_in_phone_runs_what_a_phone_at_home_runs_and_nothing_more() {
     a.stop().await;
 }
 
+// tags: boundary
 #[tokio::test]
 async fn asking_for_challenges_too_often_is_refused() {
     let a = Away::start().await;
@@ -235,6 +242,7 @@ async fn asking_for_challenges_too_often_is_refused() {
     a.stop().await;
 }
 
+// tags: condition
 #[tokio::test]
 async fn pairing_at_home_and_away_are_apart() {
     let a = Away::start().await;

@@ -238,6 +238,7 @@ mod tests {
             .collect()
     }
 
+    // tags: boundary
     #[test]
     fn text_to_video_uses_the_wan_nodes_and_snaps_size_and_frames() {
         let g = graph(None);
@@ -258,6 +259,7 @@ mod tests {
         assert_eq!(g.total_steps, 20);
     }
 
+    // tags: state-transition
     #[test]
     fn the_small_gpu_switches_load_fp8_weights_and_decode_in_tiles() {
         let (unet, te, vae) = refs();
@@ -306,6 +308,7 @@ mod tests {
         assert_eq!(tiled["inputs"]["tile_size"], 512);
     }
 
+    // tags: scenario
     #[test]
     fn the_turbo_model_lowers_the_flow_shift() {
         let (unet, te, vae) = refs();
@@ -328,6 +331,7 @@ mod tests {
         assert_eq!(nodes(&g, "ModelSamplingSD3")[0]["inputs"]["shift"], 5.0);
     }
 
+    // tags: condition
     #[test]
     fn a_source_image_becomes_the_start_image() {
         let g = graph(Some("start.png"));
@@ -337,6 +341,7 @@ mod tests {
         assert!(latent["inputs"]["start_image"].is_array());
     }
 
+    // tags: error-guessing
     #[test]
     fn missing_pack_files_are_refused_with_a_reason() {
         let (unet, _, vae) = refs();
@@ -358,6 +363,7 @@ mod tests {
         assert!(err.contains("text encoder"));
     }
 
+    // tags: boundary
     #[test]
     fn frame_counts_are_four_n_plus_one() {
         let mut p = video_params();

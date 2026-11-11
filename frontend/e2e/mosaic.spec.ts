@@ -23,7 +23,7 @@ async function longestRun(page: import('@playwright/test').Page, y: number, x0: 
   );
 }
 
-test('the mosaic tool turns the painted part of a picture into blocks', async ({ page }) => {
+test('the mosaic tool turns the painted part of a picture into blocks', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('gallery-thumb').first().dragTo(page.locator('.pp-refs'));
   await page.getByTestId('ref-image').click();
@@ -52,7 +52,7 @@ test('the mosaic tool turns the painted part of a picture into blocks', async ({
   await expect.poll(() => longestRun(page, cy, cx - 60, cx + 60)).toBeLessThanOrEqual(before);
 });
 
-test('a mask layer has no picture to pixelate, so the mosaic tool says so', async ({ page }) => {
+test('a mask layer has no picture to pixelate, so the mosaic tool says so', { tag: ['@error-guessing'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('tab-canvas').click();
   await page.getByTestId('canvas-add-layer').click();

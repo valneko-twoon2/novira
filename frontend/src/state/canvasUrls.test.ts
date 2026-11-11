@@ -18,7 +18,7 @@ const picture = () => layerUrl(new Blob(['x']));
 const image = (url: string) => ({ kind: 'image' as const, id: `i-${url}`, url, imageName: null, x: 0, y: 0, width: 4, height: 4 });
 
 describe('canvas layer URLs', () => {
-  it('revokes the pictures that left the layers and the undo history, and keeps the ones still shown', () => {
+  it('revokes the pictures that left the layers and the undo history, and keeps the ones still shown', { tags: ['state-transition'] }, () => {
     const store = createCanvasStore({ syncParams: false });
     const base = layerUrlCount();
     store.getState().addEntity('raster');
@@ -41,7 +41,7 @@ describe('canvas layer URLs', () => {
     expect(URL.revokeObjectURL).not.toHaveBeenCalledWith(live.url);
   });
 
-  it('keeps a picture an undo step can still bring back', () => {
+  it('keeps a picture an undo step can still bring back', { tags: ['state-transition'] }, () => {
     const store = createCanvasStore({ syncParams: false });
     store.getState().addEntity('raster');
     const id = store.getState().entities[0]!.id;

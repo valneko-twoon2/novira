@@ -5,16 +5,16 @@ const JPEG = new Uint8Array([0xff, 0xd8, 0xff, 0xd9]);
 const text = (b: Uint8Array) => new TextDecoder('latin1').decode(b);
 
 describe('crc32', () => {
-  it('matches the known value for "123456789"', () => {
+  it('matches the known value for "123456789"', { tags: ['condition'] }, () => {
     expect(crc32(new TextEncoder().encode('123456789'))).toBe(0xcbf43926);
   });
-  it('is zero for no bytes', () => {
+  it('is zero for no bytes', { tags: ['boundary'] }, () => {
     expect(crc32(new Uint8Array())).toBe(0);
   });
 });
 
 describe('buildZip', () => {
-  it('stores the entries with the right sizes, names and offsets', () => {
+  it('stores the entries with the right sizes, names and offsets', { tags: ['condition'] }, () => {
     const a = new TextEncoder().encode('hello');
     const b = new TextEncoder().encode('world!');
     const zip = buildZip([{ name: '001.png', data: a }, { name: '002.png', data: b }], new Date(2024, 4, 6, 7, 8, 10));
@@ -33,7 +33,7 @@ describe('buildZip', () => {
     expect(text(zip.subarray(localAt + 30, localAt + 30 + 7))).toBe('002.png');
     expect(text(zip.subarray(localAt + 37, localAt + 43))).toBe('world!');
   });
-  it('makes an empty archive from no entries', () => {
+  it('makes an empty archive from no entries', { tags: ['boundary'] }, () => {
     const zip = buildZip([]);
     expect(zip.length).toBe(22);
   });
@@ -41,7 +41,7 @@ describe('buildZip', () => {
 
 describe('buildPdf', () => {
   const page = { jpeg: JPEG, width: 1654, height: 2339, widthMm: 210, heightMm: 297 };
-  it('writes one page object per picture and an xref that points at every object', () => {
+  it('writes one page object per picture and an xref that points at every object', { tags: ['decision-table'] }, () => {
     const pdf = buildPdf([page, page], true);
     const body = text(pdf);
     expect(body.startsWith('%PDF-1.4')).toBe(true);
@@ -57,10 +57,10 @@ describe('buildPdf', () => {
       expect(body.slice(at, at + String(i + 1).length + 6)).toBe(`${i + 1} 0 obj`);
     });
   });
-  it('reads left to right when asked', () => {
+  it('reads left to right when asked', { tags: ['condition'] }, () => {
     expect(text(buildPdf([page], false))).toContain('/Direction /L2R');
   });
-  it('refuses a book with no pages', () => {
+  it('refuses a book with no pages', { tags: ['error-guessing'] }, () => {
     expect(() => buildPdf([], true)).toThrow();
   });
 });

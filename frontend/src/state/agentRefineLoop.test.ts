@@ -32,7 +32,7 @@ afterEach(() => {
 });
 
 describe('the refinement loop', () => {
-  it('sends the assistant back for each next picture until it finishes, and notes each in the chat', async () => {
+  it('sends the assistant back for each next picture until it finishes, and notes each in the chat', { tags: ['equivalence'] }, async () => {
     const chat = assistant(async (call, turn) => {
       if (turn === 1) await call('refine', { action: 'start', goal: 'like the picture', targets: ['t.png'], maxRounds: 5 });
       if (turn === 4) await call('refine', { action: 'finish', summary: 'close' });
@@ -52,7 +52,7 @@ describe('the refinement loop', () => {
     expect(requests[1]!.history?.[0]?.text).toContain('make it like this');
   });
 
-  it('stops at the last picture even when the assistant never finishes', async () => {
+  it('stops at the last picture even when the assistant never finishes', { tags: ['condition'] }, async () => {
     const chat = assistant(async (call, turn) => {
       if (turn === 1) await call('refine', { action: 'start', goal: 'g', maxRounds: 3 });
     });
@@ -63,7 +63,7 @@ describe('the refinement loop', () => {
     expect(useAgent.getState().refining).toBeNull();
   });
 
-  it('goes on to 30 pictures when the assistant names no number', async () => {
+  it('goes on to 30 pictures when the assistant names no number', { tags: ['condition'], timeout: 30_000 }, async () => {
     const chat = assistant(async (call, turn) => {
       if (turn === 1) await call('refine', { action: 'start', goal: 'g' });
     });
@@ -71,9 +71,9 @@ describe('the refinement loop', () => {
     await vi.waitFor(() => expect(chat).toHaveBeenCalledTimes(30), { timeout: 20_000 });
     await settled();
     expect(chat).toHaveBeenCalledTimes(30);
-  }, 30_000);
+  });
 
-  it('does not start without trial pictures allowed', async () => {
+  it('does not start without trial pictures allowed', { tags: ['condition'] }, async () => {
     useSettings.getState().set({ assistantTrialPictures: false });
     let answer: unknown;
     assistant(async (call) => {
@@ -86,7 +86,7 @@ describe('the refinement loop', () => {
     expect(useAgent.getState().refining).toBeNull();
   });
 
-  it('ends when the user writes a message meanwhile, which is sent in place of the next picture', async () => {
+  it('ends when the user writes a message meanwhile, which is sent in place of the next picture', { tags: ['scenario'] }, async () => {
     const chat = assistant(async (call, turn) => {
       if (turn === 1) {
         await call('refine', { action: 'start', goal: 'g', maxRounds: 30 });
@@ -101,7 +101,7 @@ describe('the refinement loop', () => {
     expect(useAgent.getState().refining).toBeNull();
   });
 
-  it('ends when a request fails', async () => {
+  it('ends when a request fails', { tags: ['error-guessing'] }, async () => {
     const chat = scriptAgent(async (call, request) => {
       requests.push(request);
       if (requests.length === 1) await call('refine', { action: 'start', goal: 'g', maxRounds: 30 });
@@ -115,7 +115,7 @@ describe('the refinement loop', () => {
     expect(useAgent.getState().refining).toBeNull();
   });
 
-  it('does not follow the user into another chat', async () => {
+  it('does not follow the user into another chat', { tags: ['scenario'] }, async () => {
     const chat = assistant(async (call, turn) => {
       if (turn === 1) await call('refine', { action: 'start', goal: 'g', maxRounds: 30 });
       if (turn === 2) useAgent.getState().newSession();
@@ -127,7 +127,7 @@ describe('the refinement loop', () => {
     expect(useAgent.getState().refining).toBeNull();
   });
 
-  it('ends when the user presses stop', async () => {
+  it('ends when the user presses stop', { tags: ['scenario'] }, async () => {
     const chat = assistant(async (call, turn) => {
       if (turn === 1) await call('refine', { action: 'start', goal: 'g', maxRounds: 30 });
       if (turn === 2) useAgent.getState().cancel();

@@ -49,7 +49,7 @@ describe('the 3D rough editor', () => {
   });
   afterEach(() => cleanup());
 
-  it('opens the view at the panel shape on a standing person, chosen', async () => {
+  it('opens the view at the panel shape on a standing person, chosen', { tags: ['scenario'] }, async () => {
     mount();
     await waitFor(() => expect(fake.create).toHaveBeenCalled());
     const [, rough, aspect] = fake.create.mock.calls[0] as [unknown, ComicRough, number];
@@ -60,14 +60,14 @@ describe('the 3D rough editor', () => {
     expect(fake.select).toHaveBeenLastCalledWith(rough.people[0]!.id);
   });
 
-  it('opens the panel own rough while its depth map is current', async () => {
+  it('opens the panel own rough while its depth map is current', { tags: ['scenario'] }, async () => {
     const own = { ...newRough(), people: [newPerson(), newPerson(1, 0)] };
     mount(vi.fn(), { rough: own, depthImageName: 'depth.png' });
     await waitFor(() => expect(fake.create).toHaveBeenCalled());
     expect((fake.create.mock.calls[0] as [unknown, ComicRough])[1]).toEqual(own);
   });
 
-  it('adds a box, shows it in the view and chooses it; removes it again', async () => {
+  it('adds a box, shows it in the view and chooses it; removes it again', { tags: ['regression'] }, async () => {
     mount();
     await waitFor(() => expect(fake.create).toHaveBeenCalled());
     fireEvent.click(screen.getByTestId('comic-rough-add-box'));
@@ -80,7 +80,7 @@ describe('the 3D rough editor', () => {
     expect(screen.queryByTestId('comic-rough-prop')).toBeNull();
   });
 
-  it('takes what is dragged in the view and does not hand it back to the view', async () => {
+  it('takes what is dragged in the view and does not hand it back to the view', { tags: ['scenario'] }, async () => {
     mount();
     await waitFor(() => expect(fake.events).not.toBeNull());
     const dragged = { ...newRough(), people: [newPerson(), newPerson(2, 0)] };
@@ -92,7 +92,7 @@ describe('the 3D rough editor', () => {
     expect(screen.getByText(t('comic.rough.nothing'))).toBeTruthy();
   });
 
-  it('bakes the rough into the panel at its picture size and closes', async () => {
+  it('bakes the rough into the panel at its picture size and closes', { tags: ['scenario'] }, async () => {
     const onClose = mount();
     await waitFor(() => expect(fake.create).toHaveBeenCalled());
     fireEvent.click(screen.getByTestId('comic-rough-add-plane'));
@@ -103,7 +103,7 @@ describe('the 3D rough editor', () => {
     expect(rough.props.map((p) => p.shape)).toEqual(['plane']);
   });
 
-  it('says so when the browser gives no 3D view, and still bakes what the side panel set', async () => {
+  it('says so when the browser gives no 3D view, and still bakes what the side panel set', { tags: ['scenario'] }, async () => {
     fake.fail = true;
     const onClose = mount();
     expect(await screen.findByTestId('comic-rough-failed')).toBeTruthy();

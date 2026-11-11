@@ -26,7 +26,7 @@ const show = (image: ImageDTO) =>
   render(<Thumbnail image={image} size={100} selected={false} isCompare={false} alwaysShowSize={false} onClick={() => {}} />);
 
 describe('video scrub', () => {
-  it('seeks to the pointer position on the next frame and shows the time once the clip is known', () => {
+  it('seeks to the pointer position on the next frame and shows the time once the clip is known', { tags: ['scenario'] }, () => {
     const { container } = show(video);
     const thumb = screen.getByTestId('gallery-thumb');
     fireEvent.pointerEnter(thumb);
@@ -51,7 +51,7 @@ describe('video scrub', () => {
     expect(container.querySelector('video')).toBeNull();
   });
 
-  it('does not seek before the clip length is known', () => {
+  it('does not seek before the clip length is known', { tags: ['boundary'] }, () => {
     const { container } = show(video);
     const thumb = screen.getByTestId('gallery-thumb');
     fireEvent.pointerEnter(thumb);
@@ -60,7 +60,7 @@ describe('video scrub', () => {
     expect(frames).toHaveLength(0);
   });
 
-  it('moves the play-head of an audio thumbnail without a video element', () => {
+  it('moves the play-head of an audio thumbnail without a video element', { tags: ['condition'] }, () => {
     const { container } = show(audio);
     const thumb = screen.getByTestId('gallery-thumb');
     fireEvent.pointerEnter(thumb);

@@ -1,7 +1,7 @@
 // The download dock: model and extension downloads show their progress, wherever you are.
 import { expect, msg, openApp, test } from './fixtures';
 
-test('a model download shows in the download dock until it is done', async ({ page }) => {
+test('a model download shows in the download dock until it is done', { tag: ['@state-transition'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('media-video').click();
   await page.getByTestId('video-pack-install').click();

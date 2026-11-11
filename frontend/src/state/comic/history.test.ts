@@ -31,7 +31,7 @@ function openProject(name = 'Undo') {
 const prompt = (panelId: string) => findPanel(useComic.getState().projects, panelId)!.panel.prompt;
 
 describe('the comic undo history', () => {
-  it('leaves the drawing settings, the style and the character references as they are now', () => {
+  it('leaves the drawing settings, the style and the character references as they are now', { tags: ['condition'] }, () => {
     const { project, panels } = openProject();
     useComic.getState().setPrompt(panels[0]!, 'a cat');
     useComic.getState().setDraw(project.id, { steps: 12 });
@@ -47,7 +47,7 @@ describe('the comic undo history', () => {
     expect(now.pages[0]!.draw).toEqual({ width: 640 });
   });
 
-  it('takes back the last change to a prompt, and brings it back', () => {
+  it('takes back the last change to a prompt, and brings it back', { tags: ['condition'] }, () => {
     const [first] = openProject().panels;
     useComic.getState().setPrompt(first!, 'a cat');
     useComic.getState().undo();
@@ -60,7 +60,7 @@ describe('the comic undo history', () => {
     expect(useComic.getState().future).toHaveLength(0);
   });
 
-  it('typing in one field is one step, a pause starts another, and another field is never joined', () => {
+  it('typing in one field is one step, a pause starts another, and another field is never joined', { tags: ['error-guessing', 'state-transition'] }, () => {
     const now = vi.spyOn(Date, 'now');
     const [first] = openProject().panels;
     now.mockReturnValue(1000);
@@ -86,7 +86,7 @@ describe('the comic undo history', () => {
     expect(useComic.getState().past).toHaveLength(2);
   });
 
-  it('keeps the pictures of the panels when a step is taken back', () => {
+  it('keeps the pictures of the panels when a step is taken back', { tags: ['condition'] }, () => {
     const [first] = openProject().panels;
     useComic.getState().setPrompt(first!, 'before');
     useComic.getState().setPanelImage(first!, 'picture.png');
@@ -95,7 +95,7 @@ describe('the comic undo history', () => {
     expect(findPanel(useComic.getState().projects, first!)!.panel.imageName).toBe('picture.png');
   });
 
-  it('keeps the templates and the name of the project when a step is taken back', () => {
+  it('keeps the templates and the name of the project when a step is taken back', { tags: ['condition'] }, () => {
     const { project, panels } = openProject('Named');
     const [first] = panels;
     useComic.getState().setPrompt(first!, 'x');
@@ -108,7 +108,7 @@ describe('the comic undo history', () => {
     expect(prompt(first!)).toBe('');
   });
 
-  it('a change in another project opens that project and its page', () => {
+  it('a change in another project opens that project and its page', { tags: ['condition'] }, () => {
     const a = newProject('A');
     const b = newProject('B');
     useComic.getState().setProjects([a, b]);
@@ -123,7 +123,7 @@ describe('the comic undo history', () => {
     expect(prompt(bPanel)).toBe('');
   });
 
-  it('a balloon that a step removes is no longer selected', () => {
+  it('a balloon that a step removes is no longer selected', { tags: ['regression'] }, () => {
     const [first] = openProject().panels;
     const bubble = useComic.getState().addBubble(first!, 'speech')!;
     expect(useComic.getState().selectedBubbleId).toBe(bubble);
@@ -132,7 +132,7 @@ describe('the comic undo history', () => {
     expect(useComic.getState().selectedBubbleId).toBeNull();
   });
 
-  it('selecting, moving a picture and changing its view are not steps', () => {
+  it('selecting, moving a picture and changing its view are not steps', { tags: ['condition'] }, () => {
     const [first] = openProject().panels;
     useComic.getState().selectPanel(first!);
     useComic.getState().setPanelImageView(first!, { scale: 2 });
@@ -140,7 +140,7 @@ describe('the comic undo history', () => {
     expect(useComic.getState().past).toHaveLength(0);
   });
 
-  it('undo and redo do nothing without a step, and a new change clears the steps that were taken back', () => {
+  it('undo and redo do nothing without a step, and a new change clears the steps that were taken back', { tags: ['error-guessing', 'state-transition'] }, () => {
     const [first] = openProject().panels;
     const before = useComic.getState().projects;
     useComic.getState().undo();
@@ -154,7 +154,7 @@ describe('the comic undo history', () => {
     expect(useComic.getState().future).toHaveLength(0);
   });
 
-  it('keeps as many steps as the undo setting says', () => {
+  it('keeps as many steps as the undo setting says', { tags: ['state-transition'] }, () => {
     useSettings.getState().set({ undoLimit: 20 });
     const HISTORY_LIMIT = historyLimit();
     const { pageId } = openProject();
@@ -164,7 +164,7 @@ describe('the comic undo history', () => {
     useSettings.getState().reset();
   });
 
-  it('a step that opens another project lets go of the panel and the balloon selected in this one', () => {
+  it('a step that opens another project lets go of the panel and the balloon selected in this one', { tags: ['condition'] }, () => {
     const a = newProject('A');
     const b = newProject('B');
     useComic.getState().setProjects([a, b]);
@@ -179,7 +179,7 @@ describe('the comic undo history', () => {
     expect(useComic.getState()).toMatchObject({ activeProjectId: b.id, selectedPanelId: null, selectedBubbleId: null, bubbleEditor: false });
   });
 
-  it('a step that keeps the selected balloon keeps it selected with its editor open', () => {
+  it('a step that keeps the selected balloon keeps it selected with its editor open', { tags: ['condition'] }, () => {
     const [first] = openProject().panels;
     const bubble = useComic.getState().addBubble(first!, 'speech')!;
     useComic.getState().openBubbleEditor(first!, bubble);
@@ -190,7 +190,7 @@ describe('the comic undo history', () => {
     expect(useComic.getState()).toMatchObject({ selectedPanelId: first, selectedBubbleId: bubble, bubbleEditor: true });
   });
 
-  it('a step of a project deleted since changes nothing and keeps the open project and page', () => {
+  it('a step of a project deleted since changes nothing and keeps the open project and page', { tags: ['condition'] }, () => {
     const [a, b, c] = [newProject('A'), newProject('B'), newProject('C')];
     useComic.getState().setProjects([a, b, c]);
     useComic.getState().setPrompt(b.pages[0]!.panels[0]!.id, 'in B');
@@ -204,7 +204,7 @@ describe('the comic undo history', () => {
     expect(useComic.getState()).toMatchObject({ activeProjectId: c.id, activePageId: c.pages[0]!.id, past: [] });
   });
 
-  it('a step of the last project, deleted since, leaves nothing open', () => {
+  it('a step of the last project, deleted since, leaves nothing open', { tags: ['condition'] }, () => {
     const { project, panels } = openProject();
     useComic.getState().setPrompt(panels[0]!, 'gone');
     useComic.getState().deleteProject(project.id);
@@ -215,13 +215,13 @@ describe('the comic undo history', () => {
 });
 
 describe('restoreProjects', () => {
-  it('keeps the project object when the snapshot has the same one', () => {
+  it('keeps the project object when the snapshot has the same one', { tags: ['condition'] }, () => {
     const project = newProject('Same');
     expect(restoreProjects([project], [project], 1)).toEqual([project]);
     expect(restoreProjects([project], [project], 1)[0]).toBe(project);
   });
 
-  it('keeps the views of the characters\' sheets as they are now, like the panels\' pictures', () => {
+  it('keeps the views of the characters\' sheets as they are now, like the panels\' pictures', { tags: ['condition'] }, () => {
     const before: ComicProject = { ...newProject('Sheet'), cast: [{ id: 'c', name: 'Mina', tags: 'old words', imageName: 'front.png', sheet: { face: 'old-face.png' } }] };
     const now: ComicProject = { ...before, cast: [{ id: 'c', name: 'Mina', tags: 'new words', imageName: 'front.png', sheet: { back: 'back.png' } }] };
     const restored = restoreProjects([now], [before], 1)[0]!;
@@ -230,7 +230,7 @@ describe('restoreProjects', () => {
     expect(restoreProjects([emptied], [before], 1)[0]!.cast[0]).not.toHaveProperty('sheet');
   });
 
-  it('keeps a project that the snapshot does not have', () => {
+  it('keeps a project that the snapshot does not have', { tags: ['condition'] }, () => {
     const made: ComicProject = newProject('Made later');
     const old = newProject('Old');
     expect(restoreProjects([made], [old], 1)[0]).toBe(made);

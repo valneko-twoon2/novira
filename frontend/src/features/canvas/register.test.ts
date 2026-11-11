@@ -47,37 +47,37 @@ beforeEach(() => {
 });
 
 describe('canvas registration', () => {
-  it('registers the layer and staged-result drag sources once', () => {
+  it('registers the layer and staged-result drag sources once', { tags: ['condition'] }, () => {
     expect([...dragSources.keys()].sort()).toHaveLength(2);
     const before = builder;
     registerCanvasFeature();
     expect(builder).toBe(before);
   });
 
-  it('puts the shared import action into the canvas store', () => {
+  it('puts the shared import action into the canvas store', { tags: ['condition'] }, () => {
     expect(registeredImport).not.toBe(canvasInitial.importImage);
   });
 });
 
 describe('canvas readiness', () => {
-  it('is ready with a model and nothing else to check', () => {
+  it('is ready with a model and nothing else to check', { tags: ['condition'] }, () => {
     expect(reasons()).toEqual([]);
   });
 
-  it('asks for a model, and for one that is installed', () => {
+  it('asks for a model, and for one that is installed', { tags: ['condition'] }, () => {
     useParams.setState({ modelKey: null });
     expect(reasons()).toEqual([t('canvas.readiness.noModel')]);
     useParams.setState({ modelKey: 'gone' });
     expect(reasons()).toEqual([t('canvas.readiness.noModel')]);
   });
 
-  it('asks a control layer for its model, by the number in its name', () => {
+  it('asks a control layer for its model, by the number in its name', { tags: ['condition'] }, () => {
     useCanvas.getState().addEntity('control');
     const seq = useCanvas.getState().entities[0]!.seq;
     expect(reasons()).toEqual([t('canvas.readiness.controlNoModel', { number: seq })]);
   });
 
-  it('skips layers that are switched off or in a hidden group', () => {
+  it('skips layers that are switched off or in a hidden group', { tags: ['state-transition'] }, () => {
     const id = useCanvas.getState().addEntity('control');
     useCanvas.getState().updateEntity(id, { isEnabled: false });
     expect(reasons()).toEqual([]);
@@ -86,7 +86,7 @@ describe('canvas readiness', () => {
     expect(reasons()).toEqual([]);
   });
 
-  it('asks a regional layer for a prompt or a reference image, and complete reference images', () => {
+  it('asks a regional layer for a prompt or a reference image, and complete reference images', { tags: ['condition'] }, () => {
     const id = useCanvas.getState().addEntity('regional');
     const seq = useCanvas.getState().entities[0]!.seq;
     expect(reasons()).toEqual([t('canvas.readiness.regionalEmpty', { number: seq })]);
@@ -99,7 +99,7 @@ describe('canvas readiness', () => {
     expect(reasons()).toEqual([t('canvas.readiness.regionalRefIncomplete', { number: seq })]);
   });
 
-  it('asks the global reference images to be complete and adds the missing node pack reason', () => {
+  it('asks the global reference images to be complete and adds the missing node pack reason', { tags: ['error-guessing'] }, () => {
     useParams.setState({
       refImages: [
         { id: 'a', isEnabled: true, imageName: 'x', imageUrl: '/x', modelKey: 'ip', weight: 1, beginEnd: [0, 1], method: 'full', clipVisionModel: 'ViT-H' },
@@ -113,12 +113,12 @@ describe('canvas readiness', () => {
 });
 
 describe('canvas request and change notification', () => {
-  it('builds the request from the stores and the prepend flag', async () => {
+  it('builds the request from the stores and the prepend flag', { tags: ['condition'] }, async () => {
     await expect(builder!.build({ prepend: true })).resolves.toEqual({ built: true });
     expect(vi.mocked(buildCanvasRequest).mock.calls[0]![2]).toBe(true);
   });
 
-  it('reports changes of the model, layers, models and node packs until unsubscribed', () => {
+  it('reports changes of the model, layers, models and node packs until unsubscribed', { tags: ['condition'] }, () => {
     const onChange = vi.fn();
     const stop = builder!.subscribe!(onChange);
     useParams.setState({ modelKey: 'other' });
@@ -138,13 +138,13 @@ describe('canvas request and change notification', () => {
 });
 
 describe('bbox and size parameters', () => {
-  it('moves the bbox to a new width and height without writing back to the parameters', () => {
+  it('moves the bbox to a new width and height without writing back to the parameters', { tags: ['condition'] }, () => {
     useParams.setState({ width: 768, height: 1024 });
     const { bbox } = useCanvas.getState();
     expect([bbox.width, bbox.height]).toEqual([768, 1024]);
   });
 
-  it('leaves the bbox alone when only other parameters change or the size already matches', () => {
+  it('leaves the bbox alone when only other parameters change or the size already matches', { tags: ['state-transition'] }, () => {
     const before = useCanvas.getState().bbox;
     useParams.setState({ steps: 12 });
     expect(useCanvas.getState().bbox).toBe(before);
@@ -156,7 +156,7 @@ describe('bbox and size parameters', () => {
 describe('staging\'s generating page', () => {
   const job = (status: string, destination = 'canvas') => ({ id: 1, status, destination }) as never;
 
-  it('is there while a job bound for the canvas waits or runs, and goes once it has ended', async () => {
+  it('is there while a job bound for the canvas waits or runs, and goes once it has ended', { tags: ['boundary'] }, async () => {
     const { useQueue } = await import('@/state/queue');
     useQueue.setState({ items: [job('pending')] });
     expect(useCanvas.getState().stagingGenerating).toBe(true);

@@ -7,7 +7,7 @@ import { Button, Checkbox, IconButton, NumberInput, ProgressBar, Switch, Tooltip
 afterEach(cleanup);
 
 describe('NumberInput', () => {
-  it('commits on blur, clamped to the range', () => {
+  it('commits on blur, clamped to the range', { tags: ['boundary'] }, () => {
     const onChange = vi.fn();
     render(<NumberInput value={5} onChange={onChange} min={1} max={10} aria-label="steps" />);
     const input = screen.getByLabelText('steps');
@@ -18,7 +18,7 @@ describe('NumberInput', () => {
     expect((input as HTMLInputElement).value).toBe('10');
   });
 
-  it('commits on Enter and keeps the key from reaching global shortcuts', () => {
+  it('commits on Enter and keeps the key from reaching global shortcuts', { tags: ['condition'] }, () => {
     const onChange = vi.fn();
     const onWindowKey = vi.fn();
     window.addEventListener('keydown', onWindowKey);
@@ -31,7 +31,7 @@ describe('NumberInput', () => {
     expect(onWindowKey).not.toHaveBeenCalled();
   });
 
-  it('restores the previous value when the field is cleared or not a number', () => {
+  it('restores the previous value when the field is cleared or not a number', { tags: ['error-guessing'] }, () => {
     const onChange = vi.fn();
     render(<NumberInput value={7} onChange={onChange} min={1} max={10} precision={1} aria-label="steps" />);
     const input = screen.getByLabelText('steps') as HTMLInputElement;
@@ -46,7 +46,7 @@ describe('NumberInput', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it('shows the value with the given precision', () => {
+  it('shows the value with the given precision', { tags: ['condition'] }, () => {
     const onChange = vi.fn();
     render(<NumberInput value={1.5} onChange={onChange} precision={2} aria-label="weight" />);
     const input = screen.getByLabelText('weight') as HTMLInputElement;
@@ -57,7 +57,7 @@ describe('NumberInput', () => {
     expect(input.value).toBe('2.35');
   });
 
-  it('follows value changes from outside', () => {
+  it('follows value changes from outside', { tags: ['condition'] }, () => {
     function Harness() {
       const [v, setV] = useState(3);
       return (
@@ -76,7 +76,7 @@ describe('NumberInput', () => {
 });
 
 describe('Button', () => {
-  it('is disabled and shows no left icon while loading', () => {
+  it('is disabled and shows no left icon while loading', { tags: ['condition'] }, () => {
     const onClick = vi.fn();
     render(
       <Button isLoading leftIcon={<span data-testid="icon" />} onClick={onClick}>
@@ -90,7 +90,7 @@ describe('Button', () => {
 });
 
 describe('IconButton', () => {
-  it('uses the label as accessible name and reports the active state', () => {
+  it('uses the label as accessible name and reports the active state', { tags: ['condition'] }, () => {
     render(
       <TooltipProvider>
         <IconButton label="Pin" icon={<span />} isActive />
@@ -101,7 +101,7 @@ describe('IconButton', () => {
 });
 
 describe('Switch and Checkbox', () => {
-  it('switch reports the flipped value', () => {
+  it('switch reports the flipped value', { tags: ['condition'] }, () => {
     const onChange = vi.fn();
     render(<Switch checked={false} onChange={onChange} aria-label="grid" />);
     const sw = screen.getByRole('switch', { name: 'grid' });
@@ -110,14 +110,14 @@ describe('Switch and Checkbox', () => {
     expect(onChange).toHaveBeenCalledWith(true);
   });
 
-  it('disabled switch does not change', () => {
+  it('disabled switch does not change', { tags: ['condition'] }, () => {
     const onChange = vi.fn();
     render(<Switch checked onChange={onChange} disabled aria-label="grid" />);
     fireEvent.click(screen.getByRole('switch'));
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it('checkbox reports the new checked state', () => {
+  it('checkbox reports the new checked state', { tags: ['condition'] }, () => {
     const onChange = vi.fn();
     render(<Checkbox checked={false} onChange={onChange} label="Starred" />);
     fireEvent.click(screen.getByLabelText('Starred'));
@@ -126,12 +126,12 @@ describe('Switch and Checkbox', () => {
 });
 
 describe('ProgressBar', () => {
-  it('reports the percentage', () => {
+  it('reports the percentage', { tags: ['condition'] }, () => {
     render(<ProgressBar value={0.424} />);
     expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('42');
   });
 
-  it('keeps the bar inside the track', () => {
+  it('keeps the bar inside the track', { tags: ['boundary'] }, () => {
     const { container } = render(
       <>
         <ProgressBar value={1.7} />
@@ -142,7 +142,7 @@ describe('ProgressBar', () => {
     expect(widths).toEqual(['100%', '0%']);
   });
 
-  it('keeps the reported value inside the range', () => {
+  it('keeps the reported value inside the range', { tags: ['boundary'] }, () => {
     render(
       <>
         <ProgressBar value={1.7} />
@@ -153,7 +153,7 @@ describe('ProgressBar', () => {
     expect(values).toEqual(['100', '0']);
   });
 
-  it('reports no value while indeterminate', () => {
+  it('reports no value while indeterminate', { tags: ['condition'] }, () => {
     render(<ProgressBar value={0.5} indeterminate />);
     expect(screen.getByRole('progressbar').hasAttribute('aria-valuenow')).toBe(false);
   });

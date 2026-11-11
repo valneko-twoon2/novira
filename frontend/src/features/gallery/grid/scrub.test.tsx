@@ -14,7 +14,7 @@ const show = (image: ImageDTO) =>
   render(<Thumbnail image={image} size={100} selected={false} isCompare={false} alwaysShowSize={false} onClick={() => {}} />);
 
 describe('scrub position', () => {
-  it('is the pointer position across the element, kept inside 0..1', () => {
+  it('is the pointer position across the element, kept inside 0..1', { tags: ['boundary'] }, () => {
     const rect = { left: 100, width: 200 };
     expect(ratioOf(200, rect)).toBe(0.5);
     expect(ratioOf(0, rect)).toBe(0);
@@ -24,7 +24,7 @@ describe('scrub position', () => {
 });
 
 describe('thumbnail scrub', () => {
-  it('loads the video only while the pointer is over a video thumbnail', () => {
+  it('loads the video only while the pointer is over a video thumbnail', { tags: ['condition'] }, () => {
     const { container } = show(media('video'));
     const thumb = screen.getByTestId('gallery-thumb');
     expect(container.querySelector('video')).toBeNull();
@@ -35,7 +35,7 @@ describe('thumbnail scrub', () => {
     expect(container.querySelector('video')).toBeNull();
   });
 
-  it('shows a play-head on audio and nothing on still images', () => {
+  it('shows a play-head on audio and nothing on still images', { tags: ['condition'] }, () => {
     const audio = show(media('audio'));
     fireEvent.pointerEnter(screen.getByTestId('gallery-thumb'));
     expect(audio.container.querySelector('.gthumb__playhead')).not.toBeNull();

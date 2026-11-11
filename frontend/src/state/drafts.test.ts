@@ -36,7 +36,7 @@ const item = (id: number, status: QueueItem['status'], imageName: string | null 
 };
 
 describe('draftStep', () => {
-  it('keeps the draft readable and leaves at least two steps', () => {
+  it('keeps the draft readable and leaves at least two steps', { tags: ['boundary'] }, () => {
     expect(draftStep(28, 0.35)).toBe(10);
     expect(draftStep(28, 0.1)).toBe(6);
     expect(draftStep(28, 0.99)).toBe(26);
@@ -44,26 +44,26 @@ describe('draftStep', () => {
 });
 
 describe('syncGroups', () => {
-  it('follows the queue item from waiting to the finished draft', () => {
+  it('follows the queue item from waiting to the finished draft', { tags: ['state-transition'] }, () => {
     const groups = [group()];
     expect(syncGroups(groups, [item(1, 'in_progress')])[0]!.candidates[0]!.status).toBe('running');
     const done = syncGroups(groups, [item(1, 'completed', 'a.png')])[0]!.candidates[0]!;
     expect(done).toMatchObject({ status: 'ready', imageName: 'a.png' });
   });
 
-  it('keeps a finished draft after its queue item is gone, and fails one that never produced an image', () => {
+  it('keeps a finished draft after its queue item is gone, and fails one that never produced an image', { tags: ['error-guessing'] }, () => {
     expect(syncGroups([group(candidate({ status: 'ready', imageName: 'a.png' }))], [])[0]!.candidates[0]!.status).toBe('ready');
     expect(syncGroups([group()], [])[0]!.candidates[0]!.status).toBe('failed');
   });
 
-  it('tracks the finishing run separately and returns the same array when nothing changed', () => {
+  it('tracks the finishing run separately and returns the same array when nothing changed', { tags: ['condition'] }, () => {
     const groups = [group(candidate({ status: 'ready', imageName: 'a.png', finalItemId: 2, finalStatus: 'queued' }))];
     const next = syncGroups(groups, [item(1, 'completed', 'a.png'), item(2, 'completed', 'b.png')]);
     expect(next[0]!.candidates[0]).toMatchObject({ finalStatus: 'ready', finalImageName: 'b.png' });
     expect(syncGroups(next, [item(1, 'completed', 'a.png'), item(2, 'completed', 'b.png')])).toBe(next);
   });
 
-  it('does not take the picture of an unrelated job that now has the same id', () => {
+  it('does not take the picture of an unrelated job that now has the same id', { tags: ['condition'] }, () => {
     // The queue was cleared and its numbers started again: id 1 is another job (another seed, a plain picture, an older time).
     const own = candidate({ status: 'ready', imageName: 'draft.png' });
     const other = [
@@ -79,7 +79,7 @@ describe('syncGroups', () => {
     expect(next[0]!.candidates[0]).toMatchObject({ finalImageName: null });
   });
 
-  it('records why a draft failed', () => {
+  it('records why a draft failed', { tags: ['error-guessing'] }, () => {
     const c = syncGroups([group()], [item(1, 'failed', null, 'no GPU')])[0]!.candidates[0]!;
     expect(c).toMatchObject({ status: 'failed', error: 'no GPU' });
   });
@@ -100,21 +100,21 @@ describe('withModel', () => {
   });
   const params = { modelKey: 'a', modelName: 'a', vaeKey: 'vae', loras: [{ key: 'l', weight: 1, isEnabled: true }], steps: 30, cfgScale: 7, scheduler: 'euler', width: 1024, height: 1024 } as unknown as GenerationMetadata;
 
-  it('keeps everything else when the new model is of the same family', () => {
+  it('keeps everything else when the new model is of the same family', { tags: ['condition'] }, () => {
     useModels.setState({ models: [model('a', 'sdxl'), model('b', 'sdxl')] });
     const next = withModel(params, 'b');
     expect(next).toMatchObject({ modelKey: 'b', modelName: 'b', vaeKey: 'vae', steps: 30 });
     expect(next.loras).toHaveLength(1);
   });
 
-  it('drops the VAE and LoRAs and takes the new defaults for another family', () => {
+  it('drops the VAE and LoRAs and takes the new defaults for another family', { tags: ['condition'] }, () => {
     useModels.setState({ models: [model('a', 'sdxl'), model('c', 'sd-1', { steps: 25, cfgScale: 7.5, scheduler: 'euler_a', width: 512, height: 512 })] });
     const next = withModel(params, 'c');
     expect(next).toMatchObject({ modelKey: 'c', vaeKey: null, steps: 25, cfgScale: 7.5, scheduler: 'euler_a', width: 512, height: 512 });
     expect(next.loras).toEqual([]);
   });
 
-  it('leaves the settings alone without a different known model', () => {
+  it('leaves the settings alone without a different known model', { tags: ['condition'] }, () => {
     useModels.setState({ models: [model('a', 'sdxl')] });
     expect(withModel(params, null)).toBe(params);
     expect(withModel(params, 'a')).toBe(params);
@@ -147,7 +147,7 @@ describe('the models that make drafts', () => {
     m('anima-encoder', 'anima', 'text_encoder' as ModelConfig['type']),
   ];
 
-  it('offers every picture family the Generate tab draws with, diffusion models included, newest family first', () => {
+  it('offers every picture family the Generate tab draws with, diffusion models included, newest family first', { tags: ['equivalence'] }, () => {
     expect(draftModels(installed).map((x) => x.key)).toEqual([
       'qwen',
       'z-image',
@@ -164,7 +164,7 @@ describe('the models that make drafts', () => {
     ]);
   });
 
-  it('leaves out the edit models and names them, and no video model or other kind', () => {
+  it('leaves out the edit models and names them, and no video model or other kind', { tags: ['condition'] }, () => {
     expect(modelsWithoutDrafts(installed).map((x) => x.key)).toEqual(['kontext', 'fill', 'qwen-edit']);
     expect(draftRefusal(m('kontext', 'flux', 'diffusion_model', 'flux1-kontext-dev.gguf'))).toBe('edit');
     // Only the file name counts, not a folder named like an edit model.
@@ -175,7 +175,7 @@ describe('the models that make drafts', () => {
     expect(draftRefusal(m('no-path', 'qwen-image', 'diffusion_model', ''))).toBeNull();
   });
 
-  it('does not start drafts with an edit model', async () => {
+  it('does not start drafts with an edit model', { tags: ['condition'] }, async () => {
     useModels.setState({ models: installed });
     const request = {
       origin: 'generate',
@@ -201,7 +201,7 @@ describe('the models that make drafts', () => {
 describe('draft batches with reference images', () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it('sends the reference images with the drafts and again when one is finished', async () => {
+  it('sends the reference images with the drafts and again when one is finished', { tags: ['condition'] }, async () => {
     const refImages: RefImageInput[] = [
       { imageUrl: 'http://novira-image.localhost/full/r.png', modelKey: 'ipa', clipVisionModel: 'ViT-H', weight: 1, beginEnd: [0, 1], method: 'full' },
     ];
@@ -226,7 +226,7 @@ describe('draft batches with reference images', () => {
     ]);
   });
 
-  it('draws the drafts without the high-resolution fix and finishes with it', async () => {
+  it('draws the drafts without the high-resolution fix and finishes with it', { tags: ['scenario'] }, async () => {
     const hiresFix = { scale: 1.5, strength: 0.45 };
     const request = {
       origin: 'generate',
@@ -265,7 +265,7 @@ describe('a job that starts before the batch knows of it', () => {
     useQueue.setState({ items: [] });
   });
 
-  it('shows a draft as being drawn', async () => {
+  it('shows a draft as being drawn', { tags: ['scenario'] }, async () => {
     registerInvokeBuilder('generate', { readiness: () => [], build: async () => request });
     vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => {
       const item = started(41, r.params);
@@ -276,7 +276,7 @@ describe('a job that starts before the batch knows of it', () => {
     expect(useDrafts.getState().groups.at(-1)!.candidates[0]!.status).toBe('running');
   });
 
-  it('shows a picture being finished as being drawn', async () => {
+  it('shows a picture being finished as being drawn', { tags: ['scenario'] }, async () => {
     registerInvokeBuilder('generate', { readiness: () => [], build: async () => request });
     vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => [{ ...started(51, r.params), status: 'completed', imageName: 'd.png' }]);
     await useDrafts.getState().start(1, 0.35, null);
@@ -291,7 +291,7 @@ describe('a job that starts before the batch knows of it', () => {
     expect(useDrafts.getState().groups.find((x) => x.id === g.id)!.candidates[0]!.finalStatus).toBe('running');
   });
 
-  it('shows a failed draft drawn again as being drawn', async () => {
+  it('shows a failed draft drawn again as being drawn', { tags: ['error-guessing'] }, async () => {
     registerInvokeBuilder('generate', { readiness: () => [], build: async () => request });
     vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => [{ ...started(61, r.params), status: 'failed', error: 'out of memory' }]);
     await useDrafts.getState().start(1, 0.35, null);
@@ -313,19 +313,19 @@ describe('repairGroups', () => {
   const picture = (name: string, over: Partial<GenerationMetadata> = {}, createdAt = 1_000_100): ImageDTO =>
     ({ name, createdAt, metadata: { seed: 5, positivePrompt: 'fox', modelKey: 'm', draftAt: 0.35, ...over } }) as ImageDTO;
 
-  it('leaves the pictures that are the candidate own, and ones whose settings are not known yet', () => {
+  it('leaves the pictures that are the candidate own, and ones whose settings are not known yet', { tags: ['condition'] }, () => {
     const groups = [g(candidate({ status: 'ready', imageName: 'own.png' })), g(candidate({ status: 'ready', imageName: 'unread.png' }))];
     expect(repairGroups(groups, [picture('own.png'), { name: 'unread.png', createdAt: 1, metadata: null } as ImageDTO])).toBe(groups);
   });
 
-  it('swaps in the candidate own picture when the picture of another job took its place', () => {
+  it('swaps in the candidate own picture when the picture of another job took its place', { tags: ['condition'] }, () => {
     const stranger = picture('stranger.png', { seed: 99 }, 5_000_000);
     const groups = [g(candidate({ status: 'ready', imageName: 'stranger.png' }))];
     const fixed = repairGroups(groups, [stranger, picture('mine.png')]);
     expect(fixed[0]!.candidates[0]).toMatchObject({ imageName: 'mine.png', status: 'ready' });
   });
 
-  it('lets the picture go when the candidate own is not there, and a finished picture can be drawn again', () => {
+  it('lets the picture go when the candidate own is not there, and a finished picture can be drawn again', { tags: ['condition'] }, () => {
     const plain = picture('plain.png', { draftAt: undefined });
     const groups = [g(candidate({ status: 'ready', imageName: 'plain.png', finalItemId: 2, finalImageName: 'plain.png', finalStatus: 'ready' }))];
     const c = repairGroups(groups, [plain])[0]!.candidates[0]!;
@@ -337,7 +337,7 @@ describe('repairGroups', () => {
 });
 
 describe('the one-time repair of stored batches', () => {
-  it('reads the candidates pictures, finds the right ones and marks the batches as checked', async () => {
+  it('reads the candidates pictures, finds the right ones and marks the batches as checked', { tags: ['condition'] }, async () => {
     const { useGallery } = await import('./gallery');
     const own = { name: 'mine.png', createdAt: 1_000_100, metadata: { seed: 5, positivePrompt: 'fox', modelKey: 'm', draftAt: 0.35 } } as ImageDTO;
     const stranger = { name: 'stranger.png', createdAt: 5_000_000, metadata: { seed: 99, positivePrompt: 'cat', modelKey: 'm', draftAt: 0.35 } } as ImageDTO;
@@ -351,7 +351,7 @@ describe('the one-time repair of stored batches', () => {
     expect(useDrafts.getState().groups[0]!.candidates[0]!.imageName).toBe('mine.png');
   });
 
-  it('leaves the check for a later start when the pictures could not be read', async () => {
+  it('leaves the check for a later start when the pictures could not be read', { tags: ['condition'] }, async () => {
     const { useGallery } = await import('./gallery');
     const name = 'unread.png';
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
@@ -367,7 +367,7 @@ describe('the one-time repair of stored batches', () => {
     expect(useDrafts.getState().groups[0]!.candidates[0]!.imageName).toBe(name);
   });
 
-  it('keeps what arrived while the pictures were being read', async () => {
+  it('keeps what arrived while the pictures were being read', { tags: ['condition'] }, async () => {
     const { useGallery } = await import('./gallery');
     const own = { name: 'mine.png', createdAt: 1_000_100, metadata: { seed: 5, positivePrompt: 'fox', modelKey: 'm', draftAt: 0.35 } } as ImageDTO;
     const stranger = { name: 'stranger.png', createdAt: 5_000_000, metadata: { seed: 99, positivePrompt: 'cat', modelKey: 'm', draftAt: 0.35 } } as ImageDTO;

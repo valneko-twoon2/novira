@@ -73,7 +73,7 @@ afterEach(() => {
 });
 
 describe('GalleryPanel grid', () => {
-  it('lists the images newest first with the count, and selects with click, Ctrl and Shift', () => {
+  it('lists the images newest first with the count, and selects with click, Ctrl and Shift', { tags: ['scenario'] }, () => {
     show();
     expect(names()).toEqual(['c.png', 'a.png', 'b.png', 'd.png']);
     expect(screen.getByTestId('gallery-count').textContent).toBe('4');
@@ -85,7 +85,7 @@ describe('GalleryPanel grid', () => {
     expect(useGallery.getState().selection).toContain('c.png');
   });
 
-  it('opens the viewer on double click and starts a drag with the selection', () => {
+  it('opens the viewer on double click and starts a drag with the selection', { tags: ['scenario'] }, () => {
     show();
     fireEvent.click(thumbs()[0]!);
     fireEvent.click(thumbs()[1]!, { ctrlKey: true });
@@ -99,7 +99,7 @@ describe('GalleryPanel grid', () => {
     expect(useGallery.getState().selection).toEqual(['b.png']);
   });
 
-  it('stars from the hover button and asks before deleting from the hover button', async () => {
+  it('stars from the hover button and asks before deleting from the hover button', { tags: ['scenario'] }, async () => {
     const update = vi.spyOn(backend, 'updateImages').mockImplementation(async (ns, patch) => ns.map((n) => picture(n, { starred: patch.starred })));
     show();
     fireEvent.click(within(thumbs()[1]!).getByRole('button', { name: t('gallery.menu.star') }));
@@ -109,7 +109,7 @@ describe('GalleryPanel grid', () => {
     expect(useDeleteRequest.getState().pending).toEqual(['b.png']);
   });
 
-  it('groups by day with a header per day and filters by search with an empty state', async () => {
+  it('groups by day with a header per day and filters by search with an empty state', { tags: ['condition'] }, async () => {
     useGallery.getState().setSettings({ groupByDate: true });
     show();
     expect(screen.getAllByTestId('gallery-day-header')).toHaveLength(2);
@@ -122,7 +122,7 @@ describe('GalleryPanel grid', () => {
     expect(screen.queryByPlaceholderText(t('gallery.search.placeholder'))).toBeNull();
   });
 
-  it('shows the empty state of an empty gallery with an upload button', () => {
+  it('shows the empty state of an empty gallery with an upload button', { tags: ['condition'] }, () => {
     useGallery.getState().setImages([]);
     show();
     expect(screen.getByText(t('gallery.empty.noImages'))).toBeTruthy();
@@ -132,7 +132,7 @@ describe('GalleryPanel grid', () => {
     expect(click).toHaveBeenCalled();
   });
 
-  it('opens the context menu of one image and of a multi selection', async () => {
+  it('opens the context menu of one image and of a multi selection', { tags: ['equivalence'] }, async () => {
     show();
     fireEvent.contextMenu(thumbs()[0]!);
     expect(await screen.findByRole('menu')).toBeTruthy();
@@ -153,7 +153,7 @@ const running = (id: number, over: Partial<QueueItem> = {}): QueueItem =>
 describe('GalleryPanel pictures being drawn', () => {
   afterEach(() => useQueue.setState({ items: [], progress: null }));
 
-  it('puts a running job before the pictures and opens the viewer on it when pressed', () => {
+  it('puts a running job before the pictures and opens the viewer on it when pressed', { tags: ['scenario'] }, () => {
     useQueue.setState({ items: [running(7)], progress: { itemId: 7, step: 4, totalSteps: 20, progressImageUrl: 'data:image/png;base64,AA==', message: '' } });
     show();
     const cell = screen.getByTestId('gallery-live-thumb');
@@ -167,7 +167,7 @@ describe('GalleryPanel pictures being drawn', () => {
     expect(useGallery.getState().selection).toEqual([]);
   });
 
-  it('shows only the jobs of the board and the view the grid is on, and not while a search or a date narrows it', () => {
+  it('shows only the jobs of the board and the view the grid is on, and not while a search or a date narrows it', { tags: ['decision-table'] }, () => {
     useQueue.setState({ items: [running(1), running(2, { boardId: 'other' }), running(3, { params: { width: 640, height: 960, draftAt: 5 } as QueueItem['params'] }), running(4, { status: 'pending' })], progress: null });
     show();
     expect(screen.getAllByTestId('gallery-live-thumb')).toHaveLength(1);
@@ -178,7 +178,7 @@ describe('GalleryPanel pictures being drawn', () => {
     expect(screen.queryByTestId('gallery-live-thumb')).toBeNull();
   });
 
-  it('is not an empty gallery while only a job is running', () => {
+  it('is not an empty gallery while only a job is running', { tags: ['condition'] }, () => {
     useGallery.getState().setImages([]);
     useQueue.setState({ items: [running(1)], progress: null });
     show();
@@ -188,7 +188,7 @@ describe('GalleryPanel pictures being drawn', () => {
 });
 
 describe('GalleryPanel keyboard', () => {
-  it('moves the selection with the arrows while the viewer is the main view, and extends with Shift', () => {
+  it('moves the selection with the arrows while the viewer is the main view, and extends with Shift', { tags: ['scenario'] }, () => {
     useUi.getState().setMainView('generate', 'viewer');
     show();
     useGallery.getState().setSelection(['a.png']);
@@ -203,7 +203,7 @@ describe('GalleryPanel keyboard', () => {
     expect(useGallery.getState().selection).toHaveLength(1);
   });
 
-  it('selects all, asks to delete and clears the selection with Escape', () => {
+  it('selects all, asks to delete and clears the selection with Escape', { tags: ['scenario'] }, () => {
     useUi.getState().setMainView('generate', 'viewer');
     show();
     key('a', { ctrlKey: true });
@@ -214,7 +214,7 @@ describe('GalleryPanel keyboard', () => {
     expect(useGallery.getState().selection).toEqual([]);
   });
 
-  it('keeps Escape for the compare view and copies the open image with Ctrl+C', async () => {
+  it('keeps Escape for the compare view and copies the open image with Ctrl+C', { tags: ['scenario'] }, async () => {
     useUi.getState().setMainView('generate', 'viewer');
     show();
     useGallery.getState().setSelection(['a.png']);
@@ -227,7 +227,7 @@ describe('GalleryPanel keyboard', () => {
     await vi.waitFor(() => expect(document.body).toBeTruthy());
   });
 
-  it('ignores the keys while the pointer is elsewhere and another view is open', () => {
+  it('ignores the keys while the pointer is elsewhere and another view is open', { tags: ['error-guessing'] }, () => {
     show();
     useGallery.getState().setSelection(['a.png']);
     key('ArrowRight');
@@ -236,7 +236,7 @@ describe('GalleryPanel keyboard', () => {
 });
 
 describe('GalleryPanel header', () => {
-  it('switches between images and assets', () => {
+  it('switches between images and assets', { tags: ['scenario'] }, () => {
     show();
     fireEvent.click(screen.getByTestId('gallery-view-assets'));
     expect(useGallery.getState().view).toBe('assets');
@@ -245,7 +245,7 @@ describe('GalleryPanel header', () => {
     expect(useGallery.getState().view).toBe('images');
   });
 
-  it('changes the gallery settings from the popover', async () => {
+  it('changes the gallery settings from the popover', { tags: ['scenario'] }, async () => {
     show();
     fireEvent.click(screen.getByTestId('gallery-settings'));
     const group = await screen.findByRole('switch', { name: t('gallery.settings.groupByDate') });
@@ -255,7 +255,7 @@ describe('GalleryPanel header', () => {
     expect(useGallery.getState().settings.starredFirst).toBe(!initial.gallery.settings.starredFirst);
   });
 
-  it('filters by a quick range, a calendar day and a custom range, and clears with the chip', async () => {
+  it('filters by a quick range, a calendar day and a custom range, and clears with the chip', { tags: ['scenario'] }, async () => {
     show();
     fireEvent.click(screen.getByTestId('gallery-date-filter'));
     fireEvent.click(await screen.findByTestId('gallery-date-quick-today'));
@@ -276,7 +276,7 @@ describe('GalleryPanel header', () => {
     expect(useGallery.getState().dateFilter).toBeNull();
   });
 
-  it('shows an empty state for a date without images and clears the filter from it', async () => {
+  it('shows an empty state for a date without images and clears the filter from it', { tags: ['condition'] }, async () => {
     useGallery.getState().setDateFilter({ from: '2020-01-01', to: '2020-01-02' });
     show();
     expect(screen.getByText(t('gallery.empty.noDateResults'))).toBeTruthy();
@@ -289,7 +289,7 @@ describe('GalleryPanel header', () => {
 });
 
 describe('GalleryPanel upload and delete', () => {
-  it('uploads picked files, but not other kinds of file', async () => {
+  it('uploads picked files, but not other kinds of file', { tags: ['equivalence'] }, async () => {
     const upload = vi.spyOn(backend, 'uploadImage').mockImplementation(async (file) => picture(`up-${(file as File).name}`));
     show();
     const input = document.querySelector<HTMLInputElement>('input[type=file]')!;
@@ -301,7 +301,7 @@ describe('GalleryPanel upload and delete', () => {
     expect(upload).toHaveBeenCalledTimes(1);
   });
 
-  it('shows the drop hint while files are dragged over and uploads what is dropped; ignores other drags', async () => {
+  it('shows the drop hint while files are dragged over and uploads what is dropped; ignores other drags', { tags: ['equivalence'] }, async () => {
     const upload = vi.spyOn(backend, 'uploadImage').mockImplementation(async (file) => picture(`drop-${(file as File).name}`));
     show();
     const area = screen.getByTestId('gallery-panel').querySelector<HTMLElement>('.gpanel__gallery')!;
@@ -317,7 +317,7 @@ describe('GalleryPanel upload and delete', () => {
     await vi.waitFor(() => expect(upload).toHaveBeenCalledTimes(1));
   });
 
-  it('confirms a delete in the dialog, and remembers "do not ask again"', async () => {
+  it('confirms a delete in the dialog, and remembers "do not ask again"', { tags: ['scenario'] }, async () => {
     const del = vi.spyOn(backend, 'deleteImages').mockResolvedValue(undefined);
     show();
     act(() => requestDeleteImages(['a.png']));
@@ -334,7 +334,7 @@ describe('GalleryPanel upload and delete', () => {
     expect(del).toHaveBeenCalledTimes(2);
   });
 
-  it('cancels the delete dialog without deleting', async () => {
+  it('cancels the delete dialog without deleting', { tags: ['condition'] }, async () => {
     const del = vi.spyOn(backend, 'deleteImages').mockResolvedValue(undefined);
     show();
     act(() => requestDeleteImages(['c.png']));

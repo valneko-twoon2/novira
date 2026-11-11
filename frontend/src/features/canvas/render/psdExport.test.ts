@@ -41,7 +41,7 @@ function sample() {
 }
 
 describe('the layers of the canvas file', () => {
-  it('are the raster layers with their name, opacity and visibility, then the control layers hidden; masks are left out', () => {
+  it('are the raster layers with their name, opacity and visibility, then the control layers hidden; masks are left out', { tags: ['condition'] }, () => {
     const { first, second, control } = sample();
     expect(canvasPsdLayers(c()).map((l) => [l.entity.id, l.name, l.opacity, l.hidden])).toEqual([
       [first, 'Raster Layer 1', 1, false],
@@ -50,7 +50,7 @@ describe('the layers of the canvas file', () => {
     ]);
   });
 
-  it('are hidden when their group is hidden', () => {
+  it('are hidden when their group is hidden', { tags: ['condition'] }, () => {
     sample();
     c().setGroupHidden('raster', true);
     expect(canvasPsdLayers(c()).map((l) => l.hidden)).toEqual([true, true, true]);
@@ -58,7 +58,7 @@ describe('the layers of the canvas file', () => {
 });
 
 describe('the canvas file', () => {
-  it('is the size of the bounding box, has one layer per drawn layer, and the visible raster layers as its picture', async () => {
+  it('is the size of the bounding box, has one layer per drawn layer, and the visible raster layers as its picture', { tags: ['boundary'] }, async () => {
     sample();
     const doc = await buildCanvasPsd(c());
     expect(doc).toMatchObject({ width: 16, height: 12 });
@@ -73,7 +73,7 @@ describe('the canvas file', () => {
     expect(strengths).not.toContain(0.5);
   });
 
-  it('keeps the blend of a raster layer in the file and draws the layer itself normally', async () => {
+  it('keeps the blend of a raster layer in the file and draws the layer itself normally', { tags: ['condition'] }, async () => {
     c().addEntity('raster', { objects: square(0), blend: 'multiply' });
     c().addEntity('raster', { objects: square(5), blend: 'screen' });
     c().addEntity('raster', { objects: square(2), blend: 'normal' });
@@ -86,7 +86,7 @@ describe('the canvas file', () => {
     for (const rec of alone) expect(rec.sets.filter((s) => s.name === 'globalCompositeOperation').map((s) => s.value)).not.toContain('multiply');
   });
 
-  it('leaves out a layer with nothing inside the bounding box', async () => {
+  it('leaves out a layer with nothing inside the bounding box', { tags: ['boundary', 'state-transition'] }, async () => {
     canvases.restore();
     canvases = installRecordingCanvases({ pixel: () => [0, 0, 0, 0] });
     sample();

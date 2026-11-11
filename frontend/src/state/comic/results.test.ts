@@ -19,21 +19,21 @@ beforeEach(() => {
 });
 
 describe('the pictures the queue makes', () => {
-  it('puts the picture of a waiting queue item into its panel, and stops waiting for it', () => {
+  it('puts the picture of a waiting queue item into its panel, and stops waiting for it', { tags: ['condition'] }, () => {
     useComic.getState().setPending(5, panelId);
     onComicImage(item(5, 'completed'), image('made.png'));
     expect(findPanel(useComic.getState().projects, panelId)!.panel.imageName).toBe('made.png');
     expect(useComic.getState().pending).toEqual({});
   });
 
-  it('leaves alone the pictures of queue items this screen did not start', () => {
+  it('leaves alone the pictures of queue items this screen did not start', { tags: ['state-transition'] }, () => {
     useComic.getState().setPending(5, panelId);
     onComicImage(item(6, 'completed'), image('other.png'));
     expect(findPanel(useComic.getState().projects, panelId)!.panel.imageName).toBeNull();
     expect(useComic.getState().pending).toEqual({ 5: panelId });
   });
 
-  it('forgets a queue item that failed or was cancelled, and keeps one still running', () => {
+  it('forgets a queue item that failed or was cancelled, and keeps one still running', { tags: ['regression', 'error-guessing'] }, () => {
     useComic.getState().setPending(1, panelId);
     useComic.getState().setPending(2, panelId);
     useComic.getState().setPending(3, panelId);
@@ -43,7 +43,7 @@ describe('the pictures the queue makes', () => {
     expect(useComic.getState().pending).toEqual({ 3: panelId });
   });
 
-  it('remembers that a panel failed to draw, until it is drawn again', () => {
+  it('remembers that a panel failed to draw, until it is drawn again', { tags: ['regression', 'error-guessing'] }, () => {
     useComic.getState().setPending(1, panelId);
     onComicQueueItem(item(1, 'failed'));
     expect(useComic.getState().drawFailed).toEqual({ [panelId]: true });
@@ -51,7 +51,7 @@ describe('the pictures the queue makes', () => {
     expect(useComic.getState().drawFailed).toEqual({});
   });
 
-  it('does not count a cancelled job as a failed draw', () => {
+  it('does not count a cancelled job as a failed draw', { tags: ['error-guessing', 'state-transition'] }, () => {
     useComic.getState().setPending(1, panelId);
     onComicQueueItem(item(1, 'canceled'));
     expect(useComic.getState().drawFailed).toEqual({});
@@ -59,19 +59,19 @@ describe('the pictures the queue makes', () => {
 });
 
 describe('binding a drawn queue item to its panel', () => {
-  it('waits for the picture when the item is still queued', () => {
+  it('waits for the picture when the item is still queued', { tags: ['regression'] }, () => {
     bindComicItem(item(7, 'pending'), panelId);
     expect(useComic.getState().pending).toEqual({ 7: panelId });
   });
 
-  it('marks the panel failed, and waits for nothing, when the failure came in before the answer', () => {
+  it('marks the panel failed, and waits for nothing, when the failure came in before the answer', { tags: ['error-guessing'] }, () => {
     useQueue.setState({ items: [item(8, 'failed')] });
     bindComicItem(item(8, 'pending'), panelId);
     expect(useComic.getState().pending).toEqual({});
     expect(useComic.getState().drawFailed).toEqual({ [panelId]: true });
   });
 
-  it('waits for nothing when the item was cancelled before the answer', () => {
+  it('waits for nothing when the item was cancelled before the answer', { tags: ['state-transition'] }, () => {
     useQueue.setState({ items: [item(9, 'canceled')] });
     bindComicItem(item(9, 'pending'), panelId);
     expect(useComic.getState().pending).toEqual({});
@@ -86,7 +86,7 @@ describe('the views of a character sheet the queue makes', () => {
     return useComic.getState().projects[0]!.id;
   };
 
-  it('puts the picture of a view into the sheet of its character, not into a panel', () => {
+  it('puts the picture of a view into the sheet of its character, not into a panel', { tags: ['condition'] }, () => {
     const projectId = seedCast();
     bindSheetItem(item(7), { projectId, characterId: 'c', view: 'back' });
     expect(useComic.getState().sheetPending).toEqual({ 7: { projectId, characterId: 'c', view: 'back' } });
@@ -96,7 +96,7 @@ describe('the views of a character sheet the queue makes', () => {
     expect(findPanel(useComic.getState().projects, panelId)!.panel.imageName).toBeNull();
   });
 
-  it('forgets a view whose job failed or was cancelled, and one the engine refused at once', () => {
+  it('forgets a view whose job failed or was cancelled, and one the engine refused at once', { tags: ['error-guessing', 'state-transition'] }, () => {
     const projectId = seedCast();
     bindSheetItem(item(8), { projectId, characterId: 'c', view: 'side' });
     bindSheetItem(item(9), { projectId, characterId: 'c', view: 'face' });

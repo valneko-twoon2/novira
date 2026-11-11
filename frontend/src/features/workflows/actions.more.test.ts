@@ -53,26 +53,26 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('a generation as a graph', () => {
-  it('can be opened for a plain generation of a known model, and not for a video or without settings', () => {
+  it('can be opened for a plain generation of a known model, and not for a video or without settings', { tags: ['condition'] }, () => {
     expect(canLoadImageGraph(image())).toBe(true);
     expect(canLoadImageGraph(image({}, { mediaType: 'video' }))).toBe(false);
     expect(canLoadImageGraph(image({ modelKey: 'gone' }))).toBe(false);
     expect(canLoadImageGraph({ name: 'x.png', metadata: null } as ImageDTO)).toBe(false);
   });
 
-  it('opens the graph in the editor and says it is loaded', () => {
+  it('opens the graph in the editor and says it is loaded', { tags: ['state-transition'] }, () => {
     loadImageGraph(image());
     expect(useWorkflows.getState().nodes.length).toBeGreaterThan(0);
     expect(lastToast()).toMatchObject({ status: 'success', title: t('workflows.fromImage.loaded') });
   });
 
-  it('warns about the settings the graph could not carry', () => {
+  it('warns about the settings the graph could not carry', { tags: ['condition'] }, () => {
     loadImageGraph(image({ clipSkip: 2, cfgRescale: 0.5 }));
     expect(lastToast()?.status).toBe('warning');
     expect(lastToast()?.description).toContain(t('workflows.fromImage.lost.clipSkip'));
   });
 
-  it('warns when the picture cannot be turned into a graph and leaves the editor alone', () => {
+  it('warns when the picture cannot be turned into a graph and leaves the editor alone', { tags: ['error-guessing'] }, () => {
     loadImageGraph(image({ modelKey: 'gone' }));
     expect(lastToast()).toMatchObject({ status: 'warning', title: t('workflows.fromImage.unsupported') });
     expect(useWorkflows.getState().nodes).toHaveLength(0);
@@ -82,7 +82,7 @@ describe('a generation as a graph', () => {
 describe('copying a default workflow', () => {
   const stored = (over: Partial<SavedWorkflow> = {}): SavedWorkflow => ({ id: 'd1', name: 'Starter', description: 'desc', author: 'app', tags: ['default', 'photo'], category: 'default', updatedAt: 0, graph: null, ...over });
 
-  it('saves a copy under a new name without the default tag, and adds it to the library', async () => {
+  it('saves a copy under a new name without the default tag, and adds it to the library', { tags: ['error-guessing'] }, async () => {
     const save = vi.spyOn(backend, 'saveWorkflow').mockImplementation(async (w) => ({ ...(w as object), id: 'u9', category: 'user', updatedAt: 1 }) as SavedWorkflow);
     await copyToMyWorkflows(stored({ graph: serializeWorkflow({ nodes: [createNode(getTemplate('image')!, { x: 0, y: 0 })], edges: [], form: [], meta: { ...EMPTY_META, name: 'Starter' } }) }));
     const sent = save.mock.calls[0]![0];
@@ -93,7 +93,7 @@ describe('copying a default workflow', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('copies the details when the workflow has no graph to carry, and reports a failed save', async () => {
+  it('copies the details when the workflow has no graph to carry, and reports a failed save', { tags: ['error-guessing'] }, async () => {
     const save = vi.spyOn(backend, 'saveWorkflow').mockResolvedValue({ id: 'u1', name: 'n', category: 'user' } as never);
     vi.spyOn(await import('./defaultGraphs'), 'buildDefaultGraph').mockReturnValue(null);
     await copyToMyWorkflows(stored());
@@ -106,7 +106,7 @@ describe('copying a default workflow', () => {
 });
 
 describe('downloading the graph', () => {
-  it('offers the serialized workflow as a JSON file named after it, with unsafe characters replaced', () => {
+  it('offers the serialized workflow as a JSON file named after it, with unsafe characters replaced', { tags: ['condition'] }, () => {
     vi.useFakeTimers();
     useWorkflows.getState().setGraph({ nodes: [], edges: [], form: [], meta: { ...EMPTY_META, name: 'My: flow/1' } });
     URL.createObjectURL = vi.fn(() => 'blob:wf');
@@ -130,18 +130,18 @@ describe('downloading the graph', () => {
 describe('graphs that need custom node packs', () => {
   const needing = { nodes: [{ id: 'n', data: { type: 'comfy:SomeNode' } }], edges: [], packs: [{ folder: 'ComfyUI-Some', url: 'https://github.com/a/ComfyUI-Some' }], meta: { name: 'Needs packs' } };
 
-  it('waits for the packs instead of failing when a graph is loaded', () => {
+  it('waits for the packs instead of failing when a graph is loaded', { tags: ['error-guessing'] }, () => {
     loadWorkflowGraph(needing, 'fallback');
     expect(useWorkflowImport.getState().pending).toMatchObject({ name: 'Needs packs', types: ['comfy:SomeNode'] });
     expect(lastToast()).toBeUndefined();
   });
 
-  it('names the wait after the caller when the graph has no name of its own', () => {
+  it('names the wait after the caller when the graph has no name of its own', { tags: ['condition'] }, () => {
     loadWorkflowGraph({ ...needing, meta: {} }, 'fallback');
     expect(useWorkflowImport.getState().pending?.name).toBe('fallback');
   });
 
-  it('does the same for a file, named after the file', async () => {
+  it('does the same for a file, named after the file', { tags: ['condition'] }, async () => {
     await loadWorkflowFile(new File([JSON.stringify({ ...needing, meta: {} })], 'flow.json'));
     expect(useWorkflowImport.getState().pending?.name).toBe('flow');
     expect(lastToast()).toBeUndefined();

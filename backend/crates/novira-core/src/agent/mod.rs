@@ -288,6 +288,7 @@ mod tests {
         .unwrap()
     }
 
+    // tags: condition
     #[test]
     fn claude_runs_a_listed_model_or_its_default_and_known_efforts() {
         let claude = models_of(AgentProvider::Claude);
@@ -332,6 +333,7 @@ mod tests {
         );
     }
 
+    // tags: condition
     #[test]
     fn codex_takes_only_a_model_it_listed_and_an_effort_that_model_takes() {
         let listed = vec![AgentModelOption {
@@ -374,6 +376,7 @@ mod tests {
         assert_eq!(cli_effort(AgentProvider::Codex, &req, None, &[]), None);
     }
 
+    // tags: scenario
     #[test]
     fn provider_choice_is_saved_and_read_back() {
         let dir = tempfile::tempdir().unwrap();

@@ -15,7 +15,7 @@ const cleanups: (() => void)[] = [];
 afterEach(() => cleanups.splice(0).forEach((c) => c()));
 
 describe('drag payloads (properties)', () => {
-  it('getDragImages never throws and returns only strings', () => {
+  it('getDragImages never throws and returns only strings', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(junkStored, (raw) => {
         const names = getDragImages(dragEvent({ [IMAGE_MIME]: raw }));
@@ -25,7 +25,7 @@ describe('drag payloads (properties)', () => {
     );
   });
 
-  it('keeps exactly the string entries of a JSON array, in order', () => {
+  it('keeps exactly the string entries of a JSON array, in order', { tags: ['boundary'] }, () => {
     check(
       fc.property(fc.array(fc.oneof(junkText, fc.integer(), fc.constant(null), fc.boolean())), (items) => {
         const names = getDragImages(dragEvent({ [IMAGE_MIME]: JSON.stringify(items) }));
@@ -34,7 +34,7 @@ describe('drag payloads (properties)', () => {
     );
   });
 
-  it('resolveDropImages resolves for any payload and returns names of registered sources only', async () => {
+  it('resolveDropImages resolves for any payload and returns names of registered sources only', { tags: ['condition'] }, async () => {
     cleanups.push(registerDragSource('layer', async (id) => (id.length % 2 ? `saved-${id}` : null)));
     await fc.assert(
       fc.asyncProperty(junkStored, junkStored, async (images, deferred) => {
@@ -46,7 +46,7 @@ describe('drag payloads (properties)', () => {
     );
   });
 
-  it('a deferred drag of an unregistered kind (or without an id) yields nothing', async () => {
+  it('a deferred drag of an unregistered kind (or without an id) yields nothing', { tags: ['condition'] }, async () => {
     await fc.assert(
       fc.asyncProperty(junkJson, async (payload) => {
         const out = await resolveDropImages(dragEvent({ [DEFERRED_MIME]: JSON.stringify(payload) }));
@@ -56,7 +56,7 @@ describe('drag payloads (properties)', () => {
     );
   });
 
-  it('a registered deferred source gives its name, a failing one gives nothing and hasDragImages follows the types', async () => {
+  it('a registered deferred source gives its name, a failing one gives nothing and hasDragImages follows the types', { tags: ['error-guessing'] }, async () => {
     cleanups.push(registerDragSource('k', async (id) => (id === 'none' ? null : `n-${id}`)));
     await fc.assert(
       fc.asyncProperty(junkText, async (id) => {

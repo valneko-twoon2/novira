@@ -22,6 +22,7 @@ fn options(watermark: bool) -> ExportOptions {
     }
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn an_export_with_the_watermark_is_refused_until_its_files_are_here() {
     let dir = tempfile::tempdir().unwrap();
@@ -50,6 +51,7 @@ async fn an_export_with_the_watermark_is_refused_until_its_files_are_here() {
     assert_eq!((done.count, done.watermarked), (1, 0));
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_plain_gallery_picture_shows_no_marks() {
     let dir = tempfile::tempdir().unwrap();
@@ -69,6 +71,7 @@ async fn a_plain_gallery_picture_shows_no_marks() {
     assert_eq!(check.original_name, None);
 }
 
+// tags: scenario
 #[tokio::test]
 async fn a_labelled_file_shows_its_credentials_and_ai_label() {
     let dir = tempfile::tempdir().unwrap();
@@ -92,6 +95,7 @@ async fn a_labelled_file_shows_its_credentials_and_ai_label() {
     assert!(!check.watermark_found);
 }
 
+// tags: error-guessing
 #[tokio::test]
 async fn bad_requests_are_refused() {
     let dir = tempfile::tempdir().unwrap();

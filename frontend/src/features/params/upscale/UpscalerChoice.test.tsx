@@ -14,7 +14,7 @@ afterEach(() => {
 const starter = (id: string, type: 'spandrel_image_to_image' | 'main') => ({ id, name: id, base: 'any' as const, type, description: `${id} description`, source: `src-${id}` });
 
 describe('upscaler choice', () => {
-  it('lists only the upscaling models, with the recommended one first', async () => {
+  it('lists only the upscaling models, with the recommended one first', { tags: ['equivalence'] }, async () => {
     vi.spyOn(backend, 'listStarterModels').mockResolvedValue([starter('starter-realesrgan-x4', 'spandrel_image_to_image'), starter('starter-sdxl-base', 'main'), starter('starter-4x-ultrasharp', 'spandrel_image_to_image')]);
     render(
       <TooltipProvider>
@@ -29,7 +29,7 @@ describe('upscaler choice', () => {
     expect(screen.queryByTestId('choice-gpu')).toBeNull();
   });
 
-  it('shows nothing when there is no upscaling model to offer', async () => {
+  it('shows nothing when there is no upscaling model to offer', { tags: ['condition'] }, async () => {
     vi.spyOn(backend, 'listStarterModels').mockResolvedValue([starter('starter-sdxl-base', 'main')]);
     render(<UpscalerChoice />);
     await waitFor(() => expect(backend.listStarterModels).toHaveBeenCalled());

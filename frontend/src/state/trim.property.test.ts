@@ -16,7 +16,7 @@ const picture = fc
   );
 
 describe('opaqueBounds (properties)', () => {
-  it('is null exactly when no pixel is above the threshold, otherwise the tight box of those pixels', () => {
+  it('is null exactly when no pixel is above the threshold, otherwise the tight box of those pixels', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(picture, fc.integer({ min: 0, max: 40 }), ({ width, height, alphas, data }, threshold) => {
         const box = opaqueBounds({ width, height, data }, threshold);
@@ -37,7 +37,7 @@ describe('opaqueBounds (properties)', () => {
     );
   });
 
-  it('uses the default threshold when none is given', () => {
+  it('uses the default threshold when none is given', { tags: ['condition'] }, () => {
     check(fc.property(picture, ({ width, height, data }) => JSON.stringify(opaqueBounds({ width, height, data })) === JSON.stringify(opaqueBounds({ width, height, data }, ALPHA_THRESHOLD))));
   });
 });

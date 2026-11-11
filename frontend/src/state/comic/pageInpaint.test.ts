@@ -20,12 +20,12 @@ import { activePage, useComic } from './store';
 const doc = { width: 1654, height: 2339 };
 
 describe('the generation box on a page', () => {
-  it('is fine inside the page and within the size limits', () => {
+  it('is fine inside the page and within the size limits', { tags: ['boundary'] }, () => {
     expect(pageBboxProblem({ x: 0, y: 0, width: 1024, height: 1024 }, doc)).toBeNull();
     expect(pageBboxProblem({ x: 630, y: 1315, width: 1024, height: 1024 }, doc)).toBeNull();
   });
 
-  it('names what is wrong with a box', () => {
+  it('names what is wrong with a box', { tags: ['error-guessing'] }, () => {
     expect(pageBboxProblem({ x: 0, y: 0, width: 32, height: 512 }, doc)).toBe('tooSmall');
     expect(pageBboxProblem({ x: -8, y: 0, width: 512, height: 512 }, doc)).toBe('outside');
     expect(pageBboxProblem({ x: 700, y: 0, width: 1024, height: 512 }, doc)).toBe('outside');
@@ -33,7 +33,7 @@ describe('the generation box on a page', () => {
     expect(pageBboxProblem({ x: 0, y: 0, width: 1600, height: 1600 }, doc)).toBe('tooLarge');
   });
 
-  it('is limited to multiples of 8, the page and the size limits', () => {
+  it('is limited to multiples of 8, the page and the size limits', { tags: ['boundary'] }, () => {
     const big = limitPageBbox({ x: -50, y: 9000, width: 5000, height: 5000 }, doc);
     expect(pageBboxProblem(big, doc)).toBeNull();
     expect(big.width % 8).toBe(0);
@@ -44,12 +44,12 @@ describe('the generation box on a page', () => {
     expect(limitPageBbox({ x: 1600, y: 2300, width: 512, height: 512 }, doc)).toEqual({ x: 1142, y: 1827, width: 512, height: 512 });
   });
 
-  it('keeps a box that is fine as it is', () => {
+  it('keeps a box that is fine as it is', { tags: ['condition'] }, () => {
     const box = { x: 100, y: 200, width: 512, height: 768 };
     expect(limitPageBbox(box, doc)).toEqual(box);
   });
 
-  it('is fitted around what is to be redrawn, keeping its shape', () => {
+  it('is fitted around what is to be redrawn, keeping its shape', { tags: ['condition'] }, () => {
     const fitted = fitPageBbox({ x: 0, y: 0, width: 1654, height: 2336 }, doc, { x: 1400, y: 2100, width: 200, height: 200 });
     expect(pageBboxProblem(fitted, doc)).toBeNull();
     // Pushed back inside the page at the corner where the mask lies.
@@ -58,7 +58,7 @@ describe('the generation box on a page', () => {
     expect(fitted.height / fitted.width).toBeGreaterThan(1.2);
   });
 
-  it('is fitted around its own middle without a mask', () => {
+  it('is fitted around its own middle without a mask', { tags: ['error-guessing'] }, () => {
     const fitted = fitPageBbox({ x: 0, y: 0, width: 1654, height: 2336 }, doc, null);
     expect(pageBboxProblem(fitted, doc)).toBeNull();
   });
@@ -79,7 +79,7 @@ describe('the result of a page inpaint', () => {
 
   const pages = () => useComic.getState().projects[0]!.pages;
 
-  it('is staged on the store of the page that asked, once', () => {
+  it('is staged on the store of the page that asked, once', { tags: ['condition'] }, () => {
     const [first, second] = pages();
     trackPageInpaint([41, 42], first!.id);
     expect(pageOfInpaint(41)).toBe(first!.id);
@@ -90,7 +90,7 @@ describe('the result of a page inpaint', () => {
     expect(landPageInpaint(41, 'a.png')).toBe(false);
   });
 
-  it('lands on the asking page when another page is open, without starting to paint', () => {
+  it('lands on the asking page when another page is open, without starting to paint', { tags: ['state-transition'] }, () => {
     const [first, second] = pages();
     useComic.getState().selectPage(second!.id);
     expect(activePage(useComic.getState())!.id).toBe(second!.id);
@@ -100,7 +100,7 @@ describe('the result of a page inpaint', () => {
     expect(usePagePaint.getState().painting).toBe(false);
   });
 
-  it('starts painting when the page is the open one', () => {
+  it('starts painting when the page is the open one', { tags: ['state-transition'] }, () => {
     const [first] = pages();
     useComic.getState().selectPage(first!.id);
     trackPageInpaint([9], first!.id);
@@ -108,7 +108,7 @@ describe('the result of a page inpaint', () => {
     expect(usePagePaint.getState().painting).toBe(true);
   });
 
-  it('leaves an item no page asked for to the Image tab', () => {
+  it('leaves an item no page asked for to the Image tab', { tags: ['condition'] }, () => {
     expect(landPageInpaint(1234, 'd.png')).toBe(false);
   });
 });

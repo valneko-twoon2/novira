@@ -59,7 +59,7 @@ function assertConsistent(g: EditorGraph | null) {
 }
 
 describe('workflow files (properties)', () => {
-  it('a graph survives serialise, JSON and deserialise (nodes, inputs, edges, form, positions rounded)', () => {
+  it('a graph survives serialise, JSON and deserialise (nodes, inputs, edges, form, positions rounded)', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(template, (id) => {
         const g = templateGraph(id);
@@ -78,7 +78,7 @@ describe('workflow files (properties)', () => {
     );
   });
 
-  it('a saved workflow with any one value replaced by junk loads without throwing, or is refused, and is consistent', () => {
+  it('a saved workflow with any one value replaced by junk loads without throwing, or is refused, and is consistent', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(template, fc.nat(), junkJson, (id, pick, junk) => {
         const doc = JSON.parse(JSON.stringify(serializeWorkflow(templateGraph(id)))) as unknown;
@@ -90,7 +90,7 @@ describe('workflow files (properties)', () => {
     );
   });
 
-  it('arbitrary JSON and arbitrary text never throw and give null or a consistent graph', () => {
+  it('arbitrary JSON and arbitrary text never throw and give null or a consistent graph', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(fc.oneof(junkJson, junkText, fc.record({ format: fc.constant(WORKFLOW_FORMAT), nodes: junkJson, edges: junkJson, meta: junkJson, form: junkJson })), (raw) => {
         assertConsistent(deserializeWorkflow(raw));

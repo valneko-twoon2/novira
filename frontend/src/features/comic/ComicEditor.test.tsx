@@ -36,13 +36,13 @@ afterEach(() => {
 });
 
 describe('the comic page view', () => {
-  it('says that no comic is open when there is none', () => {
+  it('says that no comic is open when there is none', { tags: ['scenario'] }, () => {
     useComic.getState().setProjects([]);
     renderEditor();
     expect(screen.getByText(t('comic.editor.emptyTitle'))).toBeTruthy();
   });
 
-  it('shows the panels of the page, selects one on click and shows its balloon', () => {
+  it('shows the panels of the page, selects one on click and shows its balloon', { tags: ['scenario'] }, () => {
     const project = newProject('Page test');
     useComic.getState().setProjects([project]);
     const { container } = renderEditor();
@@ -64,7 +64,7 @@ describe('the comic page view', () => {
     expect(screen.getByTestId('comic-bubble').textContent).toBe('Hello');
   });
 
-  it('makes a new comic from the empty view', () => {
+  it('makes a new comic from the empty view', { tags: ['boundary'] }, () => {
     useComic.getState().setProjects([]);
     renderEditor();
     fireEvent.click(screen.getByTestId('comic-new-empty'));
@@ -72,7 +72,7 @@ describe('the comic page view', () => {
     expect(screen.getByTestId('comic-page')).toBeTruthy();
   });
 
-  it('zooms with Ctrl and the mouse wheel, and not with the wheel alone', () => {
+  it('zooms with Ctrl and the mouse wheel, and not with the wheel alone', { tags: ['scenario'] }, () => {
     useComic.getState().setProjects([newProject('Wheel')]);
     renderEditor();
     const view = screen.getByTestId('comic-scroll');
@@ -82,7 +82,7 @@ describe('the comic page view', () => {
     expect(Number.parseInt(screen.getByTestId('comic-zoom-value').textContent ?? '', 10)).toBeGreaterThan(100);
   });
 
-  it('zooms the page with its bar, and the reset button goes back to 100%', () => {
+  it('zooms the page with its bar, and the reset button goes back to 100%', { tags: ['scenario'] }, () => {
     useComic.getState().setProjects([newProject('Zoom test')]);
     renderEditor();
     expect(screen.getByTestId('comic-zoom-value').textContent).toBe('100%');
@@ -94,7 +94,7 @@ describe('the comic page view', () => {
 });
 
 describe('reshaping the page', () => {
-  it('draws the frames of a reshaped page, and shows the corners of the panel that is selected', () => {
+  it('draws the frames of a reshaped page, and shows the corners of the panel that is selected', { tags: ['scenario'] }, () => {
     const project = newProject('Shapes');
     const page = project.pages[0]!;
     const shapes = templateShapes(BUILTIN_SHAPE_LAYOUTS.find((l) => l.id === 'diagonal')!.shapes, pageAspect(page.size), page.direction);
@@ -108,7 +108,7 @@ describe('reshaping the page', () => {
     expect(screen.getAllByTestId('comic-corner')).toHaveLength(4);
   });
 
-  it('shows the cut layer only while the page is being cut', () => {
+  it('shows the cut layer only while the page is being cut', { tags: ['scenario'] }, () => {
     useComic.getState().setProjects([newProject('Cut')]);
     renderEditor();
     expect(screen.queryByTestId('comic-cut-layer')).toBeNull();
@@ -120,7 +120,7 @@ describe('reshaping the page', () => {
 });
 
 describe('the pages under the page view', () => {
-  it('opens a page from its drawing, and deletes the page on screen on the second press', () => {
+  it('opens a page from its drawing, and deletes the page on screen on the second press', { tags: ['scenario'] }, () => {
     useComic.getState().setProjects([newProject('Pages')]);
     act(() => void useComic.getState().addPage());
     renderEditor();
@@ -141,14 +141,14 @@ describe('the pages under the page view', () => {
     expect(pages()).toHaveLength(1);
   });
 
-  it('fits as many page drawings as the row has room for, from one to ten', () => {
+  it('fits as many page drawings as the row has room for, from one to ten', { tags: ['scenario'] }, () => {
     // An A4 drawing is 56px tall, so about 40px wide with its frame, and 4px apart.
     expect(groupSize(0, pageAspect('A4'))).toBe(1);
     expect(groupSize(200, pageAspect('A4'))).toBe(4);
     expect(groupSize(10_000, pageAspect('A4'))).toBe(10);
   });
 
-  it('shows ten pages at a time, and the arrows show the pages before and after', () => {
+  it('shows ten pages at a time, and the arrows show the pages before and after', { tags: ['scenario'] }, () => {
     useComic.getState().setProjects([newProject('Many')]);
     act(() => {
       for (let i = 0; i < 11; i++) useComic.getState().addPage();
@@ -168,7 +168,7 @@ describe('the pages under the page view', () => {
     expect(useComic.getState().activePageId).toBe(useComic.getState().projects[0]!.pages[2]!.id);
   });
 
-  it('lists the pages of a comic read from the right from the right, with the later pages behind the left arrow', () => {
+  it('lists the pages of a comic read from the right from the right, with the later pages behind the left arrow', { tags: ['scenario'] }, () => {
     const order = () => [...screen.getByTestId('comic-pager').children].map((el) => el.getAttribute('data-testid'));
     const project = newProject('Manga');
     useComic.getState().setProjects([{ ...project, pages: project.pages.map((p) => ({ ...p, direction: 'rtl' })) }]);
@@ -184,7 +184,7 @@ describe('the pages under the page view', () => {
 });
 
 describe('the frame of the panels', () => {
-  it('draws three rings in each panel, as wide as the page settings say', () => {
+  it('draws three rings in each panel, as wide as the page settings say', { tags: ['scenario'] }, () => {
     const project = newProject('Frame');
     useComic.getState().setProjects([project]);
     const { container } = renderEditor();
@@ -198,7 +198,7 @@ describe('the frame of the panels', () => {
     expect(widthOf(rings(1)[2]!)).toBeLessThan(widthOf(rings(1)[1]!));
   });
 
-  it('draws the frame line in the colour the page settings say', () => {
+  it('draws the frame line in the colour the page settings say', { tags: ['scenario'] }, () => {
     const project = newProject('Colour');
     useComic.getState().setProjects([project]);
     const { container } = renderEditor();
@@ -213,7 +213,7 @@ describe('the frame of the panels', () => {
 });
 
 describe('the page templates', () => {
-  it('applies a template on a press, and waits for a second press when it drops panels', () => {
+  it('applies a template on a press, and waits for a second press when it drops panels', { tags: ['scenario'] }, () => {
     const project = newProject('Templates');
     useComic.getState().setProjects([project]);
     const pageId = project.pages[0]!.id;
@@ -253,7 +253,7 @@ describe('the picture in a panel', () => {
     fireEvent.pointerDown(picture, { button: 0, pointerId: 1, altKey });
   };
 
-  it('shows its handles when it is pressed with Alt or double-clicked, and its tools in the toolbar', () => {
+  it('shows its handles when it is pressed with Alt or double-clicked, and its tools in the toolbar', { tags: ['scenario'] }, () => {
     withPicture();
     renderEditor();
     expect(screen.queryByTestId('comic-picture-handles')).toBeNull();
@@ -269,7 +269,7 @@ describe('the picture in a panel', () => {
     expect(screen.getByTestId('comic-image-flip-x')).toBeTruthy();
   });
 
-  it('turns and mirrors it from the toolbar', () => {
+  it('turns and mirrors it from the toolbar', { tags: ['scenario'] }, () => {
     const panelId = withPicture();
     renderEditor();
     pressPicture();
@@ -280,7 +280,7 @@ describe('the picture in a panel', () => {
     expect(panelOf(panelId).imageView).toMatchObject({ rotation: 0, scale: 1, cx: 0.5, cy: 0.5, flipX: true });
   });
 
-  it('takes the selected picture out of its panel with Delete, and the notice puts it back', () => {
+  it('takes the selected picture out of its panel with Delete, and the notice puts it back', { tags: ['scenario'] }, () => {
     const panelId = withPicture();
     useToasts.setState({ toasts: [] });
     renderEditor();
@@ -294,7 +294,7 @@ describe('the picture in a panel', () => {
     expect(panelOf(panelId)).toMatchObject({ imageName: 'cat.png', imageView: { scale: 0.5 } });
   });
 
-  it('takes the panel away, picture and all, when Delete is pressed with only the panel selected, and undo brings it back', () => {
+  it('takes the panel away, picture and all, when Delete is pressed with only the panel selected, and undo brings it back', { tags: ['state-transition'] }, () => {
     const panelId = withPicture();
     renderEditor();
     act(() => useComic.getState().selectPanel(panelId));
@@ -304,7 +304,7 @@ describe('the picture in a panel', () => {
     expect(panelOf(panelId).imageName).toBe('cat.png');
   });
 
-  it('scales the picture under the pointer with Alt and the mouse wheel, keeping the point under the pointer', () => {
+  it('scales the picture under the pointer with Alt and the mouse wheel, keeping the point under the pointer', { tags: ['scenario'] }, () => {
     const panelId = withPicture();
     renderEditor();
     const panel = screen.getByTestId('comic-panel-1');

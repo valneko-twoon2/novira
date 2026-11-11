@@ -23,12 +23,12 @@ afterEach(() => {
 });
 
 describe('ModelPartsDialog', () => {
-  it('renders nothing while there is no offer', () => {
+  it('renders nothing while there is no offer', { tags: ['condition'] }, () => {
     render(<ModelPartsDialog />);
     expect(screen.queryByTestId('model-parts-dialog')).toBeNull();
   });
 
-  it('lists the parts with their sizes and the total, and installs them on confirm', async () => {
+  it('lists the parts with their sizes and the total, and installs them on confirm', { tags: ['scenario'] }, async () => {
     const install = vi.spyOn(backend, 'installModel').mockImplementation(async (source) => ({ id: source, source, name: source, status: 'waiting', bytes: 0, totalBytes: 1 }));
     useModelParts.getState().openOffer(report);
     render(<ModelPartsDialog />);
@@ -41,7 +41,7 @@ describe('ModelPartsDialog', () => {
     expect(useModelParts.getState().offer).toBeNull();
   });
 
-  it('warns about a large download, and "not now" closes without installing', async () => {
+  it('warns about a large download, and "not now" closes without installing', { tags: ['boundary'] }, async () => {
     const install = vi.spyOn(backend, 'installModel');
     useModelParts.getState().openOffer({ ...report, missing: [part('big', 9_380_000_000)] });
     render(<ModelPartsDialog />);

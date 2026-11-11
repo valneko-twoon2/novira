@@ -8,7 +8,7 @@ test.beforeEach(({ page }) => showNewInViewer(page));
 
 const scrollTop = (page: Page) => page.evaluate(() => document.scrollingElement!.scrollTop);
 
-test('a picture is finished as a manga page from the viewer and saved as a new picture', async ({ page }) => {
+test('a picture is finished as a manga page from the viewer and saved as a new picture', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('positive-prompt').fill('a girl with brown hair');
   await page.getByTestId('invoke-button').click();

@@ -18,7 +18,7 @@ function renderPicker(value: string | null, onChange = vi.fn(), defaultLabel?: s
 }
 
 describe('FontPicker', () => {
-  it("lists the app's fonts and the computer's fonts under their headings, each in its own font", async () => {
+  it("lists the app's fonts and the computer's fonts under their headings, each in its own font", { tags: ['condition'] }, async () => {
     const onChange = renderPicker('Zen Maru Gothic');
     expect(screen.getByTestId('picker').textContent).toContain('Zen Maru Gothic');
     fireEvent.click(screen.getByTestId('picker'));
@@ -32,7 +32,7 @@ describe('FontPicker', () => {
     expect(onChange).toHaveBeenCalledWith('Meiryo');
   });
 
-  it('narrows the list by a search, and offers the row for no font of its own first when asked', async () => {
+  it('narrows the list by a search, and offers the row for no font of its own first when asked', { tags: ['scenario'] }, async () => {
     const onChange = renderPicker(null, vi.fn(), 'Standard');
     expect(screen.getByTestId('picker').textContent).toContain('Standard');
     fireEvent.click(screen.getByTestId('picker'));
@@ -47,7 +47,7 @@ describe('FontPicker', () => {
     expect(onChange).toHaveBeenCalledWith(null);
   });
 
-  it('shows a saved font the computer no longer has by its name', () => {
+  it('shows a saved font the computer no longer has by its name', { tags: ['error-guessing'] }, () => {
     renderPicker('Gone Font');
     expect(screen.getByTestId('picker').textContent).toContain('Gone Font');
   });

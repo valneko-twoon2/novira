@@ -47,7 +47,7 @@ beforeEach(() => {
 });
 
 describe('applyCatchUp', () => {
-  it("takes the backend's lists and drops the pictures it no longer has", () => {
+  it("takes the backend's lists and drops the pictures it no longer has", { tags: ['condition'] }, () => {
     useGallery.setState({ images: [image('gone'), image('kept')], boards: [board('old')], selectedBoardId: 'old' });
     applyCatchUp(data({ boards: [board('new')], images: [image('kept', { starred: true }), image('fresh')], models: [{ key: 'm' } as ModelConfig] }), new Set(['gone', 'kept']));
     const g = useGallery.getState();
@@ -58,7 +58,7 @@ describe('applyCatchUp', () => {
     expect(useModels.getState().models.map((m) => m.key)).toEqual(['m']);
   });
 
-  it('keeps a picture that arrived while the backend was being read', () => {
+  it('keeps a picture that arrived while the backend was being read', { tags: ['condition'] }, () => {
     useGallery.setState({ images: [image('arrived'), image('old')] });
     applyCatchUp(data({ images: [image('old')] }), new Set(['old']));
     expect(useGallery.getState().images.map((i) => i.name).sort()).toEqual(['arrived', 'old']);
@@ -66,7 +66,7 @@ describe('applyCatchUp', () => {
 });
 
 describe('catchUp', () => {
-  it('reads once at a time, and once more when asked during a read', async () => {
+  it('reads once at a time, and once more when asked during a read', { tags: ['condition'] }, async () => {
     let finish: (v: unknown) => void = () => undefined;
     fake.bootstrap.mockImplementationOnce(() => new Promise((r) => (finish = r))).mockResolvedValue(data());
     const first = catchUp();
@@ -77,7 +77,7 @@ describe('catchUp', () => {
     expect(fake.bootstrap).toHaveBeenCalledTimes(2);
   });
 
-  it('logs a failed read and leaves the stores as they were', async () => {
+  it('logs a failed read and leaves the stores as they were', { tags: ['error-guessing'] }, async () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     useGallery.setState({ images: [image('a')] });
     fake.bootstrap.mockRejectedValue(new Error('offline'));
@@ -89,7 +89,7 @@ describe('catchUp', () => {
 });
 
 describe('watchForMissedEvents', () => {
-  it('reads again on a page over the network when its socket reopens or it is shown again', async () => {
+  it('reads again on a page over the network when its socket reopens or it is shown again', { tags: ['scenario'] }, async () => {
     fake.bootstrap.mockResolvedValue(data());
     const stop = watchForMissedEvents();
     send({ type: 'queue_cleared' });
@@ -111,7 +111,7 @@ describe('watchForMissedEvents', () => {
     expect(fake.bootstrap).toHaveBeenCalledTimes(2);
   });
 
-  it('does nothing in the desktop app, which hears every event', () => {
+  it('does nothing in the desktop app, which hears every event', { tags: ['equivalence'] }, () => {
     fake.kind = 'tauri';
     watchForMissedEvents();
     send({ type: 'queue_cleared' });

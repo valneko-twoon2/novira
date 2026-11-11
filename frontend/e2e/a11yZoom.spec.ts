@@ -60,7 +60,7 @@ function problems(page: Page): Promise<string[]> {
 }
 
 for (const c of CASES) {
-  test(`${c.name} (${c.size.width}x${c.size.height}): no sideways scroll, navigation and controls stay in the window`, async ({ page }) => {
+  test(`${c.name} (${c.size.width}x${c.size.height}): no sideways scroll, navigation and controls stay in the window`, { tag: ['@boundary'] }, async ({ page }) => {
     test.setTimeout(60_000);
     await page.setViewportSize(c.size);
     // Under 768 CSS pixels the app shows its phone layout instead of the desktop shell.
