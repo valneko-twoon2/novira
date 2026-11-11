@@ -228,3 +228,29 @@ describe('dropping on a board', () => {
     expect(row.className).not.toContain('is-over');
   });
 });
+
+describe('subfolders', () => {
+  it('adds a subfolder from the menu: its board opens, it is selected and its name is open for renaming', async () => {
+    const create = vi.spyOn(backend, 'createBoard').mockResolvedValue(board('b9', 'New folder', { parentId: 'b2' }));
+    fireEvent.contextMenu(rows()[1]!);
+    fireEvent.click(within(await screen.findByRole('menu')).getByText(t('gallery.boards.addSubfolder')));
+    await waitFor(() => expect(create).toHaveBeenCalledWith(t('gallery.boards.newSubfolderName'), 'b2'));
+    await waitFor(() => expect(state().selectedBoardId).toBe('b9'));
+    expect(await screen.findByLabelText(t('common.rename'))).toBeTruthy();
+    expect(state().settings.foldedBoards).not.toContain('b2');
+  });
+
+  it('folds a board with subfolders away and brings them back, and shows them under a search that finds them', () => {
+    act(() => useGallery.setState({ boards: [board('b1', 'Alpha'), board('b2', 'Beta'), board('b4', 'Inner', { parentId: 'b2' })] }));
+    expect(names()).toEqual([t('gallery.boards.uncategorized'), 'Beta', 'Inner', 'Alpha']);
+    fireEvent.click(screen.getByTestId('board-fold'));
+    expect(state().settings.foldedBoards).toContain('b2');
+    expect(names()).toEqual([t('gallery.boards.uncategorized'), 'Beta', 'Alpha']);
+    act(() => state().setBoardSearch('inner'));
+    expect(names()).toContain('Inner');
+    act(() => state().setBoardSearch(''));
+    fireEvent.click(screen.getByTestId('board-fold'));
+    expect(state().settings.foldedBoards).not.toContain('b2');
+    expect(names()).toContain('Inner');
+  });
+});
