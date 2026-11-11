@@ -1,6 +1,7 @@
 // Git worktrees for work that must not touch the main checkout (the user's dev server watches it).
 //   node scripts/tools/worktree.mjs add <name>        a sibling folder ../novira-wt-<name> on a new branch, with frontend/node_modules linked
-//   node scripts/tools/worktree.mjs remove <path>     takes the links out first, then removes the worktree and its branch (merged only);
+//   node scripts/tools/worktree.mjs remove <path>     takes the links out first, then removes the worktree and its branch (merged only: into main,
+//                                             or by a pull request that GitHub merged, which a squash merge hides from git);
 //                                             refuses a worktree with uncommitted changes unless --force
 //   node scripts/tools/worktree.mjs list              worktrees that are finished and should be removed
 // `git worktree remove` follows a junction and empties the folder it points to, so the main checkout's node_modules is lost
@@ -40,6 +41,15 @@ export function isFresh(path, now = Date.now()) {
     return now - born < 3600_000 && tip <= born;
   } catch {
     return false;
+  }
+}
+
+/** The branches whose pull request GitHub merged (a squash merge leaves no merge in git); empty when `gh` cannot say. */
+export function prMergedBranches(cwd, run = (args) => execFileSync('gh', args, { cwd, encoding: 'utf8', timeout: 60000, stdio: ['ignore', 'pipe', 'ignore'] })) {
+  try {
+    return new Set(JSON.parse(run(['pr', 'list', '--state', 'merged', '--limit', '200', '--json', 'headRefName'])).map((p) => p.headRefName));
+  } catch {
+    return new Set();
   }
 }
 
@@ -113,10 +123,14 @@ function main(argv) {
     }
     git(main, 'worktree', 'remove', '-f', '-f', dir);
     git(main, 'worktree', 'prune');
-    if (tree.branch) console.log(git(main, 'branch', '-d', tree.branch).trim()); // refuses an unmerged branch: ask the user
+    if (tree.branch) {
+      // -d refuses an unmerged branch (ask the user); a branch whose pull request GitHub squash-merged is merged too.
+      const squashed = prMergedBranches(main).has(tree.branch);
+      console.log(git(main, 'branch', squashed ? '-D' : '-d', tree.branch).trim());
+    }
     console.log(`removed ${dir}`);
   } else if (cmd === 'list') {
-    const merged = new Set(git(main, 'branch', '--merged', 'main', '--format=%(refname:short)').split(/\r?\n/).filter(Boolean));
+    const merged = new Set([...git(main, 'branch', '--merged', 'main', '--format=%(refname:short)').split(/\r?\n/).filter(Boolean), ...prMergedBranches(main)]);
     const done = finished(trees, { merged, dirty: (p) => git(p, 'status', '--porcelain').trim() !== '', missing: (p) => !existsSync(p), fresh: isFresh });
     for (const t of done) console.log(t.path);
   } else {

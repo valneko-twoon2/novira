@@ -1,12 +1,12 @@
-# Code scanning with CodeQL (docs/design/01-app/04-release/02-ci.md). It runs on every push to main and to a release branch (release/* is where
-# the work is done and is deleted after the merge), on a pull request to main, and every week on main. The results are in the Security tab.
-# It replaces GitHub's "default setup", which cannot scan a release branch: turn that off before this workflow's first run.
+# Code scanning with CodeQL (docs/design/01-app/04-release/02-ci.md). It runs on every push to main (a merge), on every
+# pull request to main, and every week on main. The results are in the Security tab.
+# It replaces GitHub's "default setup" (it cannot take the config that leaves the tests out): turn that off before this workflow's first run.
 # The languages are those of the default setup. Nothing is built (`build-mode: none`). Only actions of GitHub's own are used.
 name: CodeQL
 
 on:
   push:
-    branches: [main, 'release/**']
+    branches: [main]
   pull_request:
     branches: [main]
   schedule:

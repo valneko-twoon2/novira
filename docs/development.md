@@ -57,6 +57,16 @@ Windows は実行中の `novira.exe` をロックするので、ランチャー�
 
 どの変更にどの検査が合うかは [../.claude/rules/tests.md](../.claude/rules/tests.md)。実アプリ、エンジン、モデルの総当たりの実行は [verification.md](verification.md)。
 
+## ブランチと PR
+
+GitHub Flow で進める。`main` はいつでもリリースできる状態に保ち、作業ごとに短いブランチを切る。
+
+1. **ブランチ。** 作業 1 つ（機能 1 つ、修正 1 つ）ごとに、`main` から `node scripts/tools/worktree.mjs add <名前>` で worktree とブランチを作る。エージェントは自分の判断で作る。
+2. **PR。** 終わったら `/ship`。`node scripts/tools/pr.mjs open` で push して PR を開き、新しいエージェントが GitHub 上でレビューする（`pr.mjs review`）。指摘があれば直して、レビューをやり直す。
+3. **マージ。** `pr.mjs merge` が、すべての検査（CI）が通り、今の head に対するレビューが ok のときだけ squash でマージする。`main` のブランチ保護が、PR を通さない push と、検査の通らないマージを拒む。
+4. **リリース。** マージのたびに `/release-notes` が、前のタグから利用者に見える変更があるかを判断する。あれば版を決め、`CHANGELOG.md` の節を書いたリリース PR を同じ流れで入れ、タグを push し、リリースのワークフローが通ったら公開する。
+5. **依存の更新。** Dependabot の PR も `main` 向け。小さな更新は検査が通れば自動でマージされる（[design/01-app/04-release/03-dependabot.md](design/01-app/04-release/03-dependabot.md)）。ブランチは短く、PR の検査は「ブランチ + 今の `main`」をマージした状態で走るので、`main` に入った更新はそのまま作業に届く。
+
 ## 知っておくこと
 
 - **ものの場所。** `frontend/` が UI、`backend/` が Rust のワークスペース（`crates/novira-core` がライブラリとしてのバックエンド、`src-tauri` が薄いデスクトップシェル、`crates/novira-server` がブラウザ用サーバー）、`contract/` が両側で検査する JSON のサンプル、`scripts/` がランチャー、`scripts/tools/` が検査と補助。変更の種類ごとの出発点は [architecture/README.md](architecture/README.md) にある。

@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { isJunction, linkFolder, validName } from '../../scripts/tools/worktree.mjs';
+import { isJunction, linkFolder, prMergedBranches, validName } from '../../scripts/tools/worktree.mjs';
 
 const made: string[] = [];
 afterEach(() => {
@@ -39,5 +39,19 @@ describe.runIf(process.platform === 'win32')('links to the main checkout (Window
     expect(isJunction(link)).toBe(true);
     expect(isJunction(target)).toBe(false);
     expect(isJunction(join(root, 'missing'))).toBe(false);
+  });
+});
+
+describe('branches merged on GitHub', () => {
+  it('are the head branches of the merged pull requests (a squash merge is invisible to git)', { tags: ['equivalence'] }, () => {
+    const run = () => JSON.stringify([{ headRefName: '20261112_github-flow' }, { headRefName: 'dependabot/npm/x' }]);
+    expect([...prMergedBranches('.', run)]).toEqual(['20261112_github-flow', 'dependabot/npm/x']);
+  });
+
+  it('are none when gh fails or answers nonsense, so nothing is deleted on a guess', { tags: ['error-guessing'] }, () => {
+    expect(prMergedBranches('.', () => {
+      throw new Error('gh: not logged in');
+    }).size).toBe(0);
+    expect(prMergedBranches('.', () => 'not json').size).toBe(0);
   });
 });
