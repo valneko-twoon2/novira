@@ -30,7 +30,7 @@ function readJson(read, spec) {
 }
 
 /** The product name is spelled novira in every language, so fixing only its capitals is not a change of meaning. */
-const spell = (text) => (typeof text === 'string' ? text.replace(/novira/g, 'novira') : text);
+const spell = (text) => (typeof text === 'string' ? text.replace(/novira/gi, 'novira') : text);
 
 /** Keys whose text was added, removed or changed between two versions of a catalog. */
 export function changedKeys(before, after) {
