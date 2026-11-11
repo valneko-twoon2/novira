@@ -22,7 +22,7 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
 # Native folder / save / open dialogs, opened by the shell itself so the WebView never handles a path (MIT).
-rfd = { version = "0.17", default-features = false, features = ["xdg-portal"] }
+rfd = { version = "0.18", default-features = false, features = ["xdg-portal"] }
 
 [dev-dependencies]
 async-trait = "0.1"
