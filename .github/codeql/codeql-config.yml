@@ -1,0 +1,16 @@
+# What CodeQL leaves out (.github/workflows/codeql.yml, docs/design/01-app/04-release/02-ci.md): the tests. A fixed seed or a
+# secret printed by a test is not a weakness of the app, and the tests are checked by running them. The paths follow where
+# the repository keeps its tests (.claude/rules/tests.md). Every language here is scanned without a build, so this applies to all.
+name: novira
+
+paths-ignore:
+  - '**/tests/**'
+  - '**/tests.rs'
+  - '**/*_tests.rs'
+  - '**/embedded/fuzz.rs'
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  - '**/*.testkit.ts'
+  - '**/*.testkit.tsx'
+  - 'frontend/e2e/**'
+  - 'frontend/difftest/**'

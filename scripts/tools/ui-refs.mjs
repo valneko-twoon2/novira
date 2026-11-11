@@ -30,6 +30,9 @@ export const isReferenceSource = (path) =>
   (/^frontend\/(e2e|scripts)\/.+\.(ts|mjs|js)$/.test(path) || /^scripts\/tools\/.+\.mjs$/.test(path) || /^\.claude\/.+\.(mjs|md)$/.test(path) || /^docs\/.+\.md$/.test(path) || path === 'AGENTS.md') &&
   path !== 'scripts/tools/ui-refs.mjs';
 
+/** `text` as a regular expression that matches it literally (every character a pattern gives a meaning, the backslash too). */
+const escapeRe = (text) => text.replace(/[\\^$.*+?()[\]{}|/-]/g, '\\$&');
+
 /**
  * Turns a template string's text (between the backticks) into `{ re, loose }`: a regex of the ids it can make. `loose` when
  * its fixed text has fewer than three letters (`${testId}-${item.id}`): such a template defines an id only when it starts with
@@ -39,7 +42,7 @@ export const isReferenceSource = (path) =>
 export function templatePattern(body) {
   const parts = body.split(/\$\{[^}]*\}/);
   if (parts.length < 2 || !parts.join('') || parts.some((p) => !/^[\w.:-]*$/.test(p))) return null;
-  const fixed = parts.map((p) => p.replace(/[.]/g, '\\.'));
+  const fixed = parts.map(escapeRe);
   return { re: new RegExp(`^${fixed.join('[\\w.:-]+')}$`), rest: new RegExp(`^${fixed.slice(1).join('[\\w.:-]+')}$`), loose: parts.join('').replace(/[^\w]/g, '').length < 3, lead: parts[0] === '' };
 }
 
@@ -135,7 +138,7 @@ export function testIdDefined(ref, { literals, patterns, stems }) {
   if (ref.prefix) {
     for (const l of literals) if (l.startsWith(ref.name)) return true;
     // A template that can make an id starting this way (`media-${kind}` for `media-`).
-    return patterns.some((t) => !t.loose && (t.re.source.slice(1).startsWith(ref.name.replace(/[.]/g, '\\.')) || t.re.test(`${ref.name}x`)));
+    return patterns.some((t) => !t.loose && (t.re.source.slice(1).startsWith(escapeRe(ref.name)) || t.re.test(`${ref.name}x`)));
   }
   return literals.has(ref.name) || patterns.some((t) => templateMakes(t, ref.name, stems));
 }
