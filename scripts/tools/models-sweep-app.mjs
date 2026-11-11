@@ -334,6 +334,9 @@ async function gpuChecks(model, models) {
         await section.getByRole('combobox', { name: t('params.advanced.vae'), exact: true }).click();
         await page.getByRole('option', { name: model.name, exact: true }).click();
       }
+      // A start picture left in the saved screen state (by an earlier run, in another window) would make the screen draw from it, or refuse: start from the prompt alone.
+      const initImage = page.getByTestId('i2i-clear');
+      if (await initImage.isVisible().catch(() => false)) await initImage.click();
       await page.getByTestId('positive-prompt').fill('masterpiece, best quality, a cute girl with long hair smiling in a flower field, soft light');
       try {
         item = await runJob(10 * 60_000);
