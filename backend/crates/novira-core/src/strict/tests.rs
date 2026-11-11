@@ -149,3 +149,47 @@ fn the_strict_wrapper_works_as_an_argument_type() {
         Strict(None)
     );
 }
+
+#[derive(Debug, PartialEq, Deserialize)]
+struct Marker;
+
+#[derive(Debug, PartialEq, Deserialize)]
+struct Pair(u32, Inner);
+
+#[derive(Debug, PartialEq, Deserialize)]
+enum Wide {
+    Two(u32, Inner),
+}
+
+#[test]
+fn unit_tuple_and_tuple_variant_shapes_read_as_serde_alone_reads_them() {
+    assert_eq!(from_value::<Marker>(json!(null)).unwrap(), Marker);
+    assert_eq!(
+        from_value::<Pair>(json!([1, {"a": 2}])).unwrap(),
+        Pair(
+            1,
+            Inner {
+                a: Some(2),
+                b: None
+            }
+        )
+    );
+    assert_eq!(
+        from_value::<Wide>(json!({"Two": [3, {"b": true}]})).unwrap(),
+        Wide::Two(
+            3,
+            Inner {
+                a: None,
+                b: Some(true)
+            }
+        )
+    );
+}
+
+#[test]
+fn a_struct_inside_a_tuple_shape_is_still_read_strictly() {
+    // The tuple is a list by design, but the struct in it is not allowed to be one.
+    assert!(!refused::<Pair>(json!([1, [2]])).is_empty());
+    assert!(!refused::<Wide>(json!({"Two": [3, [true]]})).is_empty());
+    assert!(from_value::<Marker>(json!([])).is_err());
+}
