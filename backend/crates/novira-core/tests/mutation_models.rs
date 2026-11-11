@@ -17,7 +17,7 @@ fn nested_model(root: &std::path::Path, levels: usize) -> std::path::PathBuf {
     file
 }
 
-// tags: state-transition
+// tags: boundary
 #[test]
 fn walk_stops_descending_after_six_levels_of_folders() {
     let at_limit = tempfile::tempdir().unwrap();
@@ -36,7 +36,7 @@ fn keys_only(keys: &[&str]) -> Header {
     }
 }
 
-// tags: boundary, decision-table
+// tags: equivalence
 #[test]
 fn each_lora_tensor_name_alone_marks_a_lora() {
     for key in [
@@ -90,7 +90,7 @@ fn file_with_header_of(dir: &std::path::Path, len: u64) -> std::path::PathBuf {
     path
 }
 
-// tags: error-guessing, boundary
+// tags: boundary, error-guessing
 #[test]
 fn a_header_of_exactly_64_mib_is_read_and_one_byte_more_is_refused() {
     let dir = tempfile::tempdir().unwrap();
@@ -104,7 +104,7 @@ fn a_header_of_exactly_64_mib_is_read_and_one_byte_more_is_refused() {
     assert!(read_header_unchecked(&refused).is_none());
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn an_sd15_file_name_is_recognised_by_either_of_its_spellings() {
     for name in ["x-v1-5.safetensors", "x-sd-1.safetensors"] {

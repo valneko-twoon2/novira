@@ -5,7 +5,7 @@ import { newBubble } from './document';
 import { estimateBox } from './balloonPlace';
 import { DEFAULT_STAMP_ID, findStamp, searchStamps, STAMP_STYLES, STAMPS, stampById, stampUrl, stampWords } from './stamps';
 
-describe('the stamp list', () => {
+describe('the stamp list', { tags: [] }, () => {
   it('has 38 words in each of the three hands, each with a picture in src/assets/onomatopoeia', { tags: ['equivalence'] }, () => {
     for (const style of STAMP_STYLES) expect(STAMPS.filter((s) => s.style === style)).toHaveLength(38);
     const files = new Set(readdirSync(join(__dirname, '../../../src/assets/onomatopoeia')));
@@ -13,7 +13,7 @@ describe('the stamp list', () => {
     for (const s of STAMPS) expect(files.has(`${s.id}.webp`), s.id).toBe(true);
   });
 
-  it('has unique ids that start with their hand, sizes that fit a picture and an intensity from 1 to 5', { tags: ['state-transition'] }, () => {
+  it('has unique ids that start with their hand, sizes that fit a picture and an intensity from 1 to 5', { tags: ['equivalence'] }, () => {
     expect(new Set(STAMPS.map((s) => s.id)).size).toBe(STAMPS.length);
     for (const s of STAMPS) {
       expect(s.id.startsWith(`${s.style}-`), s.id).toBe(true);
@@ -27,8 +27,8 @@ describe('the stamp list', () => {
   });
 });
 
-describe('searching and naming stamps', () => {
-  it('finds a word by its lettering or its reading, hiragana and katakana alike, in one hand or all', { tags: ['condition'] }, () => {
+describe('searching and naming stamps', { tags: [] }, () => {
+  it('finds a word by its lettering or its reading, hiragana and katakana alike, in one hand or all', { tags: ['equivalence'] }, () => {
     expect(searchStamps('どん').some((s) => s.id === 'block-don')).toBe(true);
     expect(searchStamps('ドン', 'burst').every((s) => s.style === 'burst')).toBe(true);
     expect(searchStamps('ドン', 'burst').map((s) => s.id)).toContain('burst-don');
@@ -40,7 +40,7 @@ describe('searching and naming stamps', () => {
     expect(searchStamps('')).toHaveLength(STAMPS.length);
   });
 
-  it('names a stamp by its id, or by a word with the first hand (or the hand asked for)', { tags: ['condition'] }, () => {
+  it('names a stamp by its id, or by a word with the first hand (or the hand asked for)', { tags: ['equivalence'] }, () => {
     expect(findStamp('burst-doon')?.id).toBe('burst-doon');
     expect(findStamp('ザワ')?.id).toBe('block-zawa');
     expect(findStamp('ざわ', 'drybrush')?.id).toBe('drybrush-zawa');
@@ -49,20 +49,24 @@ describe('searching and naming stamps', () => {
     expect(findStamp('nothing')).toBeUndefined();
   });
 
-  it('takes a word written a little differently, and the nearest count of one sound said again and again', { tags: ['regression'] }, () => {
-    expect(findStamp('ドォン')?.id).toBe('block-doon');
-    expect(findStamp('どーーん')?.id).toBe('block-doon');
-    expect(findStamp('ドン')?.id).toBe('block-don');
-    expect(findStamp('ゴゴゴ')?.id).toBe('block-go-4');
-    expect(findStamp('ゴゴゴゴゴゴゴゴゴ', 'burst')?.id).toBe('burst-go-7');
-    expect(findStamp('ズオオオ')).toBeUndefined();
-    expect(stampWords()).toContain('ザワ');
-    expect(stampWords()).toHaveLength(38);
-  });
+  it(
+    'takes a word written a little differently, and the nearest count of one sound said again and again',
+    { tags: ['equivalence'] },
+    () => {
+      expect(findStamp('ドォン')?.id).toBe('block-doon');
+      expect(findStamp('どーーん')?.id).toBe('block-doon');
+      expect(findStamp('ドン')?.id).toBe('block-don');
+      expect(findStamp('ゴゴゴ')?.id).toBe('block-go-4');
+      expect(findStamp('ゴゴゴゴゴゴゴゴゴ', 'burst')?.id).toBe('burst-go-7');
+      expect(findStamp('ズオオオ')).toBeUndefined();
+      expect(stampWords()).toContain('ザワ');
+      expect(stampWords()).toHaveLength(38);
+    },
+  );
 });
 
-describe('a new stamp balloon', () => {
-  it('starts as the default picture, large, with no tail, and its box follows the picture', { tags: ['state-transition'] }, () => {
+describe('a new stamp balloon', { tags: [] }, () => {
+  it('starts as the default picture, large, with no tail, and its box follows the picture', { tags: ['equivalence'] }, () => {
     const bubble = newBubble('stamp', 0.1, 0.1);
     expect(bubble).toMatchObject({ kind: 'stamp', text: DEFAULT_STAMP_ID, tail: null, scale: 2.2 });
     const wide = estimateBox({ ...bubble, scale: 1 }, 1);

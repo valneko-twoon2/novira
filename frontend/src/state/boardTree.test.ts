@@ -5,7 +5,7 @@ import { ancestorsOf, boardLabel, boardTree, canHoldSubfolder, isSubfolder, MAX_
 
 const b = (id: string, createdAt: number, parentId: string | null = null, archived = false): BoardDTO => ({ id, name: id.toUpperCase(), archived, createdAt, parentId });
 
-describe('boardTree', () => {
+describe('boardTree', { tags: [] }, () => {
   const boards = [b('a', 1), b('b', 5), b('a1', 2, 'a'), b('a2', 3, 'a'), b('lost', 4, 'gone'), b('deep', 6, 'a1')];
 
   it('lists boards newest first, each followed by its subfolders newest first', { tags: ['equivalence'] }, () => {
@@ -19,11 +19,15 @@ describe('boardTree', () => {
     ]);
   });
 
-  it('treats a subfolder without its board as a board of its own, and one inside a subfolder as a subfolder', { tags: ['condition'] }, () => {
-    expect(isSubfolder(boards, boards[4]!)).toBe(false);
-    expect(isSubfolder(boards, boards[5]!)).toBe(true);
-    expect(isSubfolder(boards, boards[2]!)).toBe(true);
-  });
+  it(
+    'treats a subfolder without its board as a board of its own, and one inside a subfolder as a subfolder',
+    { tags: ['condition', 'equivalence'] },
+    () => {
+      expect(isSubfolder(boards, boards[4]!)).toBe(false);
+      expect(isSubfolder(boards, boards[5]!)).toBe(true);
+      expect(isSubfolder(boards, boards[2]!)).toBe(true);
+    },
+  );
 
   it('leaves out what is inside a folded board, and still says the board has subfolders', { tags: ['condition'] }, () => {
     const rows = boardTree(boards, () => true, new Set(['a1']));
@@ -46,24 +50,24 @@ describe('boardTree', () => {
     expect([...withDescendants(loop, 'x')].sort()).toEqual(['x', 'y']);
   });
 
-  it('allows subfolders down to the last level only', { tags: ['condition'] }, () => {
+  it('allows subfolders down to the last level only', { tags: ['boundary'] }, () => {
     const chain = Array.from({ length: MAX_BOARD_DEPTH }, (_, i) => b(`l${i}`, i, i ? `l${i - 1}` : null));
     expect(canHoldSubfolder(chain, chain[MAX_BOARD_DEPTH - 2]!)).toBe(true);
     expect(canHoldSubfolder(chain, chain[MAX_BOARD_DEPTH - 1]!)).toBe(false);
   });
 
-  it('has the same limit as the backend', { tags: ['boundary'] }, () => {
+  it('has the same limit as the backend', { tags: ['equivalence'] }, () => {
     const rust = readFileSync('../backend/crates/novira-core/src/service/boards.rs', 'utf8');
     expect(/MAX_BOARD_DEPTH: usize = (\d+);/.exec(rust)?.[1]).toBe(String(MAX_BOARD_DEPTH));
   });
 
-  it('keeps a board for a matching subfolder and drops a board that matches nothing', { tags: ['condition'] }, () => {
+  it('keeps a board for a matching subfolder and drops a board that matches nothing', { tags: ['condition', 'boundary'] }, () => {
     const only = boardTree(boards, (x) => x.id === 'a1').map((x) => x.board.id);
     expect(only).toEqual(['a', 'a1']);
     expect(boardTree(boards, () => false)).toEqual([]);
   });
 
-  it('names a subfolder after its board', { tags: ['condition'] }, () => {
+  it('names a subfolder after its board', { tags: ['equivalence'] }, () => {
     expect(boardLabel(boards, boards[2]!)).toBe('A / A1');
     expect(boardLabel(boards, boards[5]!)).toBe('A / A1 / DEEP');
     expect(boardLabel(boards, boards[0]!)).toBe('A');

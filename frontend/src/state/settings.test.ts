@@ -15,7 +15,7 @@ afterEach(() => {
 });
 
 describe('restoreSettings', () => {
-  it('keeps a saved start tab of Upscaling and of the comic, a mode of the Generate entry', { tags: ['condition'] }, () => {
+  it('keeps a saved start tab of Upscaling and of the comic, a mode of the Generate entry', { tags: ['equivalence'] }, () => {
     expect(restoreSettings({ startTab: 'upscaling' }).startTab).toBe('upscaling');
     expect(restoreSettings({ startTab: 'comic', lastTab: 'comic' })).toMatchObject({ startTab: 'generate', lastTab: 'comic' });
   });
@@ -34,15 +34,19 @@ describe('restoreSettings', () => {
     for (const wrong of ['yes', true, 1, null, 'ALWAYS']) expect(restoreSettings({ assistantReadAccess: wrong }).assistantReadAccess).toBe('ask');
   });
 
-  it('reads back whether the assistant may look things up on the web, separately and asking each time when unsure', { tags: ['equivalence'] }, () => {
-    expect(SETTINGS_DEFAULTS.assistantWebAccess).toBe('ask');
-    for (const access of ['always', 'ask', 'never'] as const) expect(restoreSettings({ assistantWebAccess: access }).assistantWebAccess).toBe(access);
-    for (const wrong of ['yes', true, 1, null, 'ALWAYS']) expect(restoreSettings({ assistantWebAccess: wrong }).assistantWebAccess).toBe('ask');
-    // The pictures' setting does not carry over to the web one.
-    expect(restoreSettings({ assistantReadAccess: 'always' }).assistantWebAccess).toBe('ask');
-  });
+  it(
+    'reads back whether the assistant may look things up on the web, separately and asking each time when unsure',
+    { tags: ['equivalence', 'decision-table'] },
+    () => {
+      expect(SETTINGS_DEFAULTS.assistantWebAccess).toBe('ask');
+      for (const access of ['always', 'ask', 'never'] as const) expect(restoreSettings({ assistantWebAccess: access }).assistantWebAccess).toBe(access);
+      for (const wrong of ['yes', true, 1, null, 'ALWAYS']) expect(restoreSettings({ assistantWebAccess: wrong }).assistantWebAccess).toBe('ask');
+      // The pictures' setting does not carry over to the web one.
+      expect(restoreSettings({ assistantReadAccess: 'always' }).assistantWebAccess).toBe('ask');
+    },
+  );
 
-  it('starts the Drafts count at 4 and reads back only a whole number from 1 to 24', { tags: ['state-transition'] }, () => {
+  it('starts the Drafts count at 4 and reads back only a whole number from 1 to 24', { tags: ['boundary'] }, () => {
     expect(SETTINGS_DEFAULTS.draftCount).toBe(4);
     for (const ok of [DRAFT_COUNT_RANGE.min, 8, DRAFT_COUNT_RANGE.max]) expect(restoreSettings({ draftCount: ok }).draftCount).toBe(ok);
     for (const wrong of [0, DRAFT_COUNT_RANGE.max + 1, 2.5, -3, NaN, '8', null, true]) expect(restoreSettings({ draftCount: wrong }).draftCount).toBe(4);
@@ -60,7 +64,7 @@ describe('restoreSettings', () => {
     expect(restoreSettings({ language: 'en' }).waitForEngine).toBe(true);
   });
 
-  it('drops the four switches that did nothing from an old store', { tags: ['condition'] }, async () => {
+  it('drops the four switches that did nothing from an old store', { tags: ['regression'] }, async () => {
     localStorage.setItem('novira.settings', JSON.stringify({ version: 0, state: { language: 'en', shouldUseCpuNoise: true, enableImageDebugging: true } }));
     await useSettings.persist.rehydrate();
     expect(useSettings.getState().language).toBe('en');
@@ -104,7 +108,7 @@ describe('how new things start', () => {
     expect(useTextEditor.getState().scene.layers.find((l) => l.id === id)?.style.fontFamily).toBe('Meiryo');
   });
 
-  it('keeps as many undo steps in the canvas as the setting says', { tags: ['state-transition'] }, () => {
+  it('keeps as many undo steps in the canvas as the setting says', { tags: ['boundary'] }, () => {
     useSettings.getState().set({ undoLimit: UNDO_LIMIT_RANGE.min });
     for (let i = 0; i < UNDO_LIMIT_RANGE.min + 5; i++) useCanvas.getState().setBbox({ x: i, y: 0, width: 512, height: 512 });
     expect(useCanvas.getState().past.length).toBeLessThanOrEqual(UNDO_LIMIT_RANGE.min);

@@ -5,12 +5,12 @@ import { savedTheme } from './savedTheme';
 describe('savedTheme', () => {
   beforeEach(() => localStorage.clear());
 
-  it('reads light from the saved settings', { tags: ['condition'] }, () => {
+  it('reads light from the saved settings', { tags: ['equivalence'] }, () => {
     localStorage.setItem('novira.settings', JSON.stringify({ state: { theme: 'light', language: 'en' }, version: 0 }));
     expect(savedTheme()).toBe('light');
   });
 
-  it('is dark, the default, for anything else', { tags: ['condition'] }, () => {
+  it('is dark, the default, for anything else', { tags: ['error-guessing'] }, () => {
     expect(savedTheme()).toBe('dark');
     for (const text of ['{"state":{"theme":"dark"},"version":0}', '{"state":{}}', '{"theme":"light"}', 'null', '"light"', 'not json']) {
       localStorage.setItem('novira.settings', text);

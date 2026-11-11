@@ -32,17 +32,17 @@ const applied = new Set(
 /** camelCase words the guide may use that are fields of what get_comic_page returns, not operations. */
 const FIELDS = new Set(['nonHuman', 'typesetIssues', 'hasReferencePicture', 'poseControl', 'promptStyle']);
 
-describe('the operation names told to the comic agent', () => {
-  it('finds the operations at all (the scan is not silently empty)', { tags: ['condition', 'static'] }, () => {
+describe('the operation names told to the comic agent', { tags: [] }, () => {
+  it('finds the operations at all (the scan is not silently empty)', { tags: ['static', 'boundary'] }, () => {
     expect(declared.size).toBeGreaterThan(20);
     expect(applied.size).toBeGreaterThan(20);
   });
 
-  it('are all applied by the window: every operation edit_comic lists has a case', { tags: ['condition', 'static'] }, () => {
+  it('are all applied by the window: every operation edit_comic lists has a case', { tags: ['static', 'regression'] }, () => {
     expect([...declared].filter((op) => !applied.has(op))).toEqual([]);
   });
 
-  it.each(['COMIC_INSTRUCTIONS'])('are real in the rules %s of the prompt', { tags: ['condition', 'static'] }, (name) => {
+  it.each(['COMIC_INSTRUCTIONS'])('are real in the rules %s of the prompt', { tags: ['static', 'regression', 'equivalence'] }, (name) => {
     const rules = rustConst(prompt, name);
     const unknown = [...(rules.match(/\b[a-z]+(?:[A-Z][a-z0-9]+)+\b/g) ?? [])].filter((w) => !applied.has(w) && !FIELDS.has(w));
     expect(unknown).toEqual([]);

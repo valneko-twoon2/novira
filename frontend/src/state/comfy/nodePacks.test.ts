@@ -14,21 +14,25 @@ beforeEach(() => {
 });
 afterEach(() => vi.restoreAllMocks());
 
-describe('packKey', () => {
-  it('normalizes a GitHub address the way the backend reports it', { tags: ['condition'] }, () => {
+describe('packKey', { tags: [] }, () => {
+  it('normalizes a GitHub address the way the backend reports it', { tags: ['equivalence'] }, () => {
     expect(packKey('  https://github.com/o/r.git/ ')).toBe('https://github.com/o/r');
     expect(packKey('https://github.com/o/r')).toBe('https://github.com/o/r');
   });
 });
 
-describe('node packs store', () => {
-  it('tracks an install under the normalized address and records a failure to start', { tags: ['error-guessing'] }, async () => {
-    vi.spyOn(backend, 'installNodePack').mockRejectedValue(new Error('not a repository'));
-    await useNodePacks.getState().install('https://github.com/o/r.git');
-    expect(useNodePacks.getState().jobs).toEqual({ 'https://github.com/o/r': { state: 'error', message: 'not a repository' } });
-  });
+describe('node packs store', { tags: [] }, () => {
+  it(
+    'tracks an install under the normalized address and records a failure to start',
+    { tags: ['error-guessing', 'state-transition'] },
+    async () => {
+      vi.spyOn(backend, 'installNodePack').mockRejectedValue(new Error('not a repository'));
+      await useNodePacks.getState().install('https://github.com/o/r.git');
+      expect(useNodePacks.getState().jobs).toEqual({ 'https://github.com/o/r': { state: 'error', message: 'not a repository' } });
+    },
+  );
 
-  it('reloads the installed list when an install finishes', { tags: ['scenario'] }, async () => {
+  it('reloads the installed list when an install finishes', { tags: ['state-transition'] }, async () => {
     const nodePacks = vi.spyOn(backend, 'nodePacks').mockResolvedValue(list(true));
     useNodePacks.getState().setJob('https://github.com/o/r', { state: 'downloading', file: 'r', index: 1, count: 1, bytes: 1, totalBytes: 2 });
     expect(nodePacks).not.toHaveBeenCalled();
@@ -42,7 +46,7 @@ describe('node packs store', () => {
     expect(useNodePacks.getState().error).toBe('x is not installed');
   });
 
-  it('restarts the engine and fetches the node definitions again', { tags: ['condition'] }, async () => {
+  it('restarts the engine and fetches the node definitions again', { tags: ['state-transition'] }, async () => {
     vi.spyOn(backend, 'restartEngine').mockResolvedValue(list(false));
     const defs = vi.spyOn(backend, 'nodeDefs').mockResolvedValue({} as ComfyNodeDefs);
     useComfyNodes.setState({ status: 'ready', defs: {} as ComfyNodeDefs });
@@ -51,14 +55,14 @@ describe('node packs store', () => {
     expect(useNodePacks.getState()).toMatchObject({ restarting: false, error: null, packs: list(false) });
   });
 
-  it('clears the restarting flag when the restart fails', { tags: ['error-guessing'] }, async () => {
+  it('clears the restarting flag when the restart fails', { tags: ['error-guessing', 'state-transition'] }, async () => {
     vi.spyOn(backend, 'restartEngine').mockRejectedValue(new Error('a job is running'));
     await useNodePacks.getState().restart();
     expect(useNodePacks.getState()).toMatchObject({ restarting: false, error: 'a job is running' });
   });
 });
 
-describe('comfy node definitions', () => {
+describe('comfy node definitions', { tags: [] }, () => {
   it('loads once unless forced', { tags: ['condition'] }, async () => {
     const defs = vi.spyOn(backend, 'nodeDefs').mockResolvedValue({} as ComfyNodeDefs);
     await useComfyNodes.getState().load();
@@ -69,7 +73,7 @@ describe('comfy node definitions', () => {
     expect(useComfyNodes.getState().status).toBe('ready');
   });
 
-  it('reports a failed load and can try again', { tags: ['error-guessing'] }, async () => {
+  it('reports a failed load and can try again', { tags: ['error-guessing', 'state-transition'] }, async () => {
     vi.spyOn(backend, 'nodeDefs').mockRejectedValueOnce(new Error('engine down')).mockResolvedValue({} as ComfyNodeDefs);
     await useComfyNodes.getState().load();
     expect(useComfyNodes.getState()).toMatchObject({ status: 'error', error: 'engine down' });

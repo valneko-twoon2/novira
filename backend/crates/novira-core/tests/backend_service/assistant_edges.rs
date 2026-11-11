@@ -26,7 +26,7 @@ async fn connected(dir: &std::path::Path) -> (novira_core::Backend, Fake) {
     (backend, fake)
 }
 
-// tags: error-guessing
+// tags: equivalence, error-guessing
 #[tokio::test]
 async fn a_picture_a_tool_names_is_read_from_the_gallery_or_refused_with_the_reason() {
     let dir = tempfile::tempdir().unwrap();
@@ -79,7 +79,7 @@ async fn a_picture_a_tool_names_is_read_from_the_gallery_or_refused_with_the_rea
     assert_eq!(body.matches("data:image/jpeg;base64").count(), 1, "{body}");
 }
 
-// tags: boundary, state-transition
+// tags: state-transition
 #[tokio::test]
 async fn a_second_request_waits_out_the_first_and_stopping_ends_it() {
     let dir = tempfile::tempdir().unwrap();
@@ -105,7 +105,7 @@ async fn a_second_request_waits_out_the_first_and_stopping_ends_it() {
     assert!(err.contains("Stopped"), "{err}");
 }
 
-// tags: error-guessing
+// tags: error-guessing, equivalence
 #[tokio::test]
 async fn a_server_that_fails_is_an_internal_error_and_an_unknown_language_is_refused() {
     let dir = tempfile::tempdir().unwrap();

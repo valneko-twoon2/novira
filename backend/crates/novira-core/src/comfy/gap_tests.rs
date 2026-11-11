@@ -195,7 +195,7 @@ fn a_model_patch_control_needs_a_family_that_takes_one() {
     assert!(err.contains("Anima, Qwen-Image and Z-Image"), "{err}");
 }
 
-// tags: condition
+// tags: decision-table
 #[test]
 fn a_small_upscale_with_a_tile_controlnet_is_guided_in_one_piece() {
     for family in [None, Some(Family::Flux)] {
@@ -244,7 +244,7 @@ fn flux2(p: &GenerationMetadata, loras: Vec<(&ComfyRef, f64)>) -> Result<BuiltGr
     build(&i)
 }
 
-// tags: error-guessing, boundary
+// tags: boundary, error-guessing
 #[test]
 fn flux2_refuses_zero_steps_and_drafts_outside_text_and_image_to_image() {
     let mut p = params(GenerationMode::Txt2img);
@@ -261,7 +261,7 @@ fn flux2_refuses_zero_steps_and_drafts_outside_text_and_image_to_image() {
     assert!(flux2(&p, vec![]).unwrap_err().contains("between 0 and 1"));
 }
 
-// tags: equivalence
+// tags: boundary
 #[test]
 fn flux2_applies_each_lora_to_the_model_and_the_encoder() {
     let p = params(GenerationMode::Txt2img);
@@ -288,7 +288,7 @@ fn edit(
     build(&i)
 }
 
-// tags: error-guessing, boundary
+// tags: boundary, error-guessing
 #[test]
 fn an_edit_model_refuses_zero_steps_and_runs_its_loras() {
     let mut p = params(GenerationMode::Img2img);
@@ -323,7 +323,7 @@ fn video(
     super::video_families::build(&i, split)
 }
 
-// tags: error-guessing, boundary
+// tags: boundary, error-guessing
 #[test]
 fn a_video_job_is_refused_for_zero_steps_missing_encoders_and_a_picture_family() {
     let vae = r("vae", "v.safetensors");
@@ -349,7 +349,7 @@ fn a_video_model_without_a_vae_says_which_one_it_needs() {
     assert!(err.contains("HunyuanVideo VAE"), "{err}");
 }
 
-// tags: error-guessing
+// tags: condition
 #[test]
 fn the_fp8_setting_changes_the_weight_type_of_the_video_model() {
     let vae = r("vae", "v.safetensors");

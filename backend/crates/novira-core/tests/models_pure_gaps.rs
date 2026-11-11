@@ -5,7 +5,7 @@ use novira_core::models::content_filter::looks_adult;
 use novira_core::types::{BaseModel, ModelType};
 use serde_json::json;
 
-// tags: error-guessing
+// tags: condition, error-guessing
 #[test]
 fn an_unknown_architecture_in_the_metadata_falls_through_to_the_training_version() {
     let bytes = serde_json::to_vec(&json!({
@@ -23,7 +23,7 @@ fn an_unknown_architecture_in_the_metadata_falls_through_to_the_training_version
     );
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn a_word_inside_a_camel_case_name_is_found() {
     let none: Vec<String> = Vec::new();

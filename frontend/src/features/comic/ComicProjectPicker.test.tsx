@@ -24,7 +24,7 @@ const renderPicker = () =>
     </TooltipProvider>,
   );
 
-describe('the comic chooser', () => {
+describe('the comic chooser', { tags: [] }, () => {
   it('shows the open comic and how many pages it has, and opens another from its list', { tags: ['scenario'] }, () => {
     const first = newProject('First');
     const second = newProject('Second');

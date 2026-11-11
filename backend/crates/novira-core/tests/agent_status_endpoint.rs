@@ -13,7 +13,7 @@ fn saved_server() -> EndpointConfig {
     }
 }
 
-// tags: decision-table
+// tags: equivalence
 #[tokio::test]
 async fn the_saved_server_is_reported_with_every_provider() {
     let dir = tempfile::tempdir().unwrap();

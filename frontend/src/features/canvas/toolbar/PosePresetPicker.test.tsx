@@ -21,7 +21,7 @@ const openDialog = () => {
 beforeEach(() => useCanvas.setState(initial, true));
 afterEach(cleanup);
 
-describe('the ready-made poses dialog', () => {
+describe('the ready-made poses dialog', { tags: [] }, () => {
   it('lists the groups and categories on the left, starting with the compositions', { tags: ['scenario'] }, () => {
     openDialog();
     for (const g of POSE_GROUPS) expect(screen.getByText(t(g.label))).toBeTruthy();

@@ -6,7 +6,7 @@ import type { ComicPoint } from './document';
 const person = (x: number, y0: number, y1: number): ComicPoint[] =>
   Array.from({ length: 18 }, (_, i) => ({ x: x + (i % 3 === 0 ? 0.04 : -0.04) * (i > 1 ? 1 : 0), y: y0 + ((y1 - y0) * i) / 17 }));
 
-describe('estimating a balloon box', () => {
+describe('estimating a balloon box', { tags: [] }, () => {
   it('grows with the words, and a vertical balloon is taller than wide for a short line', { tags: ['condition'] }, () => {
     const small = estimateBox({ text: 'うん', scale: 1, vertical: true }, 1);
     const long = estimateBox({ text: 'すごい雨だね。\n濡れなかった？', scale: 1, vertical: true }, 1);
@@ -15,7 +15,7 @@ describe('estimating a balloon box', () => {
     expect(small.h).toBeGreaterThan(small.w);
   });
 
-  it('is larger at a larger scale, wider across a wide panel less tall, and never past the panel', { tags: ['error-guessing'] }, () => {
+  it('is larger at a larger scale, wider across a wide panel less tall, and never past the panel', { tags: ['boundary'] }, () => {
     const one = estimateBox({ text: 'こんにちは', scale: 1, vertical: false }, 1);
     expect(estimateBox({ text: 'こんにちは', scale: 2, vertical: false }, 1).w).toBeGreaterThan(one.w);
     expect(estimateBox({ text: 'こんにちは', scale: 1, vertical: false }, 2).h).toBeGreaterThan(one.h);
@@ -23,7 +23,7 @@ describe('estimating a balloon box', () => {
   });
 });
 
-describe('placing a balloon', () => {
+describe('placing a balloon', { tags: [] }, () => {
   const left = [person(0.25, 0.3, 0.95)];
   const size = { w: 0.2, h: 0.3 };
 
@@ -38,7 +38,7 @@ describe('placing a balloon', () => {
     expect(spot.y + spot.tail!.y * size.h).toBeCloseTo(mouth.y, 5);
   });
 
-  it('stays inside the panel, and puts a later balloon beside the earlier one', { tags: ['condition'] }, () => {
+  it('stays inside the panel, and puts a later balloon beside the earlier one', { tags: ['condition', 'boundary'] }, () => {
     const first = placeBalloon(size, personBoxes(left), [], null);
     expect(first.tail).toBeNull();
     expect(first.x).toBeGreaterThanOrEqual(0);
@@ -60,24 +60,28 @@ describe('placing a balloon', () => {
   });
 });
 
-describe('keeping a balloon small', () => {
-  it('shrinks the words of a long line until the balloon is within the limit, and leaves a short one alone', { tags: ['boundary'] }, () => {
-    const long = { text: wrapBalloonText('すごい雨だね。濡れなかった？風邪をひかないようにね', true), scale: 1.5, vertical: true };
-    const scale = fitScale(long, 1.4, 0.4);
-    expect(scale).toBeLessThan(1.5);
-    const box = estimateBox({ ...long, scale }, 1.4);
-    expect(box.w).toBeLessThanOrEqual(BALLOON_LIMIT.w);
-    expect(box.h).toBeLessThanOrEqual(BALLOON_LIMIT.h);
-    expect(fitScale({ text: 'うん', scale: 1, vertical: true }, 1, 0.4)).toBe(1);
-  });
+describe('keeping a balloon small', { tags: [] }, () => {
+  it(
+    'shrinks the words of a long line until the balloon is within the limit, and leaves a short one alone',
+    { tags: ['condition'] },
+    () => {
+      const long = { text: wrapBalloonText('すごい雨だね。濡れなかった？風邪をひかないようにね', true), scale: 1.5, vertical: true };
+      const scale = fitScale(long, 1.4, 0.4);
+      expect(scale).toBeLessThan(1.5);
+      const box = estimateBox({ ...long, scale }, 1.4);
+      expect(box.w).toBeLessThanOrEqual(BALLOON_LIMIT.w);
+      expect(box.h).toBeLessThanOrEqual(BALLOON_LIMIT.h);
+      expect(fitScale({ text: 'うん', scale: 1, vertical: true }, 1, 0.4)).toBe(1);
+    },
+  );
 
-  it('never goes below the floor', { tags: ['error-guessing', 'boundary'] }, () => {
+  it('never goes below the floor', { tags: ['boundary'] }, () => {
     expect(fitScale({ text: 'あ'.repeat(300), scale: 2, vertical: true }, 1, 0.4)).toBe(0.4);
   });
 });
 
-describe('breaking words into columns', () => {
-  it('breaks a long line after punctuation when there is one late enough, else at the length', { tags: ['state-transition'] }, () => {
+describe('breaking words into columns', { tags: [] }, () => {
+  it('breaks a long line after punctuation when there is one late enough, else at the length', { tags: ['condition'] }, () => {
     expect(wrapBalloonText('ゴロー！おじいさん、おはよう！', true)).toBe('ゴロー！\nおじいさん、\nおはよう！');
     expect(wrapBalloonText('あいうえおかきくけこさし', true)).toBe('あいうえおかきく\nけこさし');
     expect(wrapBalloonText('あいうえおかきくけこさし', false)).toBe('あいうえおかきくけこさし');
@@ -89,7 +93,7 @@ describe('breaking words into columns', () => {
     expect(wrapBalloonText('**とても大きな声で叫んでいます**よ', true)).toBe('**とても大きな声で叫んでいます**よ');
   });
 
-  it('makes a balloon shorter: broken words are estimated as the columns they are', { tags: ['error-guessing'] }, () => {
+  it('makes a balloon shorter: broken words are estimated as the columns they are', { tags: ['equivalence'] }, () => {
     const one = estimateBox({ text: 'ゴロー！おじいさん、おはよう！', scale: 1, vertical: true }, 1.4);
     const two = estimateBox({ text: wrapBalloonText('ゴロー！おじいさん、おはよう！', true), scale: 1, vertical: true }, 1.4);
     expect(two.h).toBeLessThan(one.h);

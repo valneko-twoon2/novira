@@ -51,8 +51,8 @@ async function prepared(page: ComicPage): Promise<PreparedPage> {
 
 const partKinds = (ready: PreparedPage) => pageParts(ready).map((p) => p.kind);
 
-describe('the order the saved page is drawn in', () => {
-  it('follows the stack: paper and backdrop, then each layer bottom first', { tags: ['boundary'] }, async () => {
+describe('the order the saved page is drawn in', { tags: [] }, () => {
+  it('follows the stack: paper and backdrop, then each layer bottom first', { tags: ['boundary', 'equivalence'] }, async () => {
     expect(partKinds(await prepared(samplePage()))).toEqual(['paper', 'backdrop', 'panel', 'frame', 'balloon', 'raster', 'raster']);
   });
 
@@ -65,15 +65,19 @@ describe('the order the saved page is drawn in', () => {
     expect(pageParts(ready).map((p) => (p.kind === 'raster' ? p.entity.id : p.kind))).toEqual(['paper', 'backdrop', 'ink', 'panel', 'frame', 'sky', 'balloon']);
   });
 
-  it('leaves out a hidden layer, slot or not, and a page with only its slots is drawn as before there were layers', { tags: ['state-transition'] }, async () => {
-    const hidden = withCanvas(withCanvas(samplePage(), look('balloons', { isEnabled: false })), look('sky', { isEnabled: false }));
-    expect(partKinds(await prepared(hidden))).toEqual(['paper', 'backdrop', 'panel', 'frame', 'raster']);
-    const plain = emptyPage(1);
-    plain.panels[0]!.bubbles = [{ ...newBubble('speech', 0, 0), text: 'Hi' }];
-    expect(partKinds(await prepared(plain))).toEqual(['paper', 'backdrop', 'panel', 'frame', 'balloon']);
-  });
+  it(
+    'leaves out a hidden layer, slot or not, and a page with only its slots is drawn as before there were layers',
+    { tags: ['condition', 'decision-table'] },
+    async () => {
+      const hidden = withCanvas(withCanvas(samplePage(), look('balloons', { isEnabled: false })), look('sky', { isEnabled: false }));
+      expect(partKinds(await prepared(hidden))).toEqual(['paper', 'backdrop', 'panel', 'frame', 'raster']);
+      const plain = emptyPage(1);
+      plain.panels[0]!.bubbles = [{ ...newBubble('speech', 0, 0), text: 'Hi' }];
+      expect(partKinds(await prepared(plain))).toEqual(['paper', 'backdrop', 'panel', 'frame', 'balloon']);
+    },
+  );
 
-  it('leaves out an empty raster, one whose picture is gone, and the masks', { tags: ['boundary', 'state-transition'] }, async () => {
+  it('leaves out an empty raster, one whose picture is gone, and the masks', { tags: ['boundary', 'condition'] }, async () => {
     const page = emptyPage(1);
     const mask = { ...raster('m', 'Mask', [{ kind: 'stroke', id: 'm1', tool: 'brush', color: black, width: 9, points: [1, 1], clip: null }]), type: 'inpaint', color: black, fill: 'solid', denoiseLimit: null, noiseLevel: null } as CanvasEntity;
     const gone = raster('gone', 'Gone', [{ kind: 'image', id: 'g', url: '', imageName: 'gone.png', x: 0, y: 0, width: 5, height: 5 }]);
@@ -89,7 +93,7 @@ describe('the order the saved page is drawn in', () => {
   });
 });
 
-describe('drawing the layers', () => {
+describe('drawing the layers', { tags: [] }, () => {
   it('lays a raster over the page from a canvas of its own, its eraser kept on that canvas', { tags: ['condition'] }, async () => {
     const main = canvases.of(drawPage(await prepared(samplePage())));
     const own = canvases.all.filter((r) => r !== main);
@@ -99,14 +103,18 @@ describe('drawing the layers', () => {
     expect(main.of('drawImage').some(([source]) => (source as HTMLCanvasElement).tagName === 'CANVAS')).toBe(true);
   });
 
-  it('lays a faded or blended layer over the page with its opacity and blend, a slot too', { tags: ['condition'] }, async () => {
-    const faded = withCanvas(withCanvas(samplePage(), look('sky', { opacity: 0.25, blend: 'multiply' })), look('panels', { opacity: 0.5 }));
-    const main = canvases.of(drawPage(await prepared(faded)));
-    const sets = main.sets.map((s) => `${s.name}=${String(s.value)}`);
-    expect(sets).toContain('globalAlpha=0.25');
-    expect(sets).toContain('globalCompositeOperation=multiply');
-    expect(sets).toContain('globalAlpha=0.5');
-  });
+  it(
+    'lays a faded or blended layer over the page with its opacity and blend, a slot too',
+    { tags: ['condition', 'decision-table'] },
+    async () => {
+      const faded = withCanvas(withCanvas(samplePage(), look('sky', { opacity: 0.25, blend: 'multiply' })), look('panels', { opacity: 0.5 }));
+      const main = canvases.of(drawPage(await prepared(faded)));
+      const sets = main.sets.map((s) => `${s.name}=${String(s.value)}`);
+      expect(sets).toContain('globalAlpha=0.25');
+      expect(sets).toContain('globalCompositeOperation=multiply');
+      expect(sets).toContain('globalAlpha=0.5');
+    },
+  );
 
   it('draws the plain slots straight onto the page', { tags: ['condition'] }, async () => {
     const main = canvases.of(drawPage(await prepared(emptyPage(1))));
@@ -115,24 +123,28 @@ describe('drawing the layers', () => {
   });
 });
 
-describe('the layers of the PSD', () => {
-  it('follow the stack, named by the layer, with its opacity, blend and visibility, and leave the masks out', { tags: ['state-transition'] }, async () => {
-    const looked = withCanvas(withCanvas(samplePage(), look('ink', { opacity: 0.5, blend: 'screen' })), look('sky', { isEnabled: false }));
-    const ready = await prepared(looked);
-    const layers = pageLayers(ready);
-    expect(layers.map((l) => l.name)).toEqual(['Paper', 'Panel 1', 'Frames', 'Balloon 1-1: Hi', 'Ink', 'Sky']);
-    expect(layers[4]!.look).toEqual({ opacity: 0.5, hidden: false, blend: 'screen' });
-    expect(layers[5]!.look).toEqual({ opacity: 1, hidden: true, blend: 'normal' });
-    const doc = buildPagePsd(ready, 'none');
-    expect(doc.layers.map((l) => [l.name, l.opacity, l.hidden, l.blend])).toEqual([
-      ['Paper', undefined, undefined, undefined],
-      ['Panel 1', 1, false, 'normal'],
-      ['Frames', 1, false, 'normal'],
-      ['Balloon 1-1: Hi', 1, false, 'normal'],
-      ['Ink', 0.5, false, 'screen'],
-      ['Sky', 1, true, 'normal'],
-    ]);
-  });
+describe('the layers of the PSD', { tags: [] }, () => {
+  it(
+    'follow the stack, named by the layer, with its opacity, blend and visibility, and leave the masks out',
+    { tags: ['equivalence', 'scenario'] },
+    async () => {
+      const looked = withCanvas(withCanvas(samplePage(), look('ink', { opacity: 0.5, blend: 'screen' })), look('sky', { isEnabled: false }));
+      const ready = await prepared(looked);
+      const layers = pageLayers(ready);
+      expect(layers.map((l) => l.name)).toEqual(['Paper', 'Panel 1', 'Frames', 'Balloon 1-1: Hi', 'Ink', 'Sky']);
+      expect(layers[4]!.look).toEqual({ opacity: 0.5, hidden: false, blend: 'screen' });
+      expect(layers[5]!.look).toEqual({ opacity: 1, hidden: true, blend: 'normal' });
+      const doc = buildPagePsd(ready, 'none');
+      expect(doc.layers.map((l) => [l.name, l.opacity, l.hidden, l.blend])).toEqual([
+        ['Paper', undefined, undefined, undefined],
+        ['Panel 1', 1, false, 'normal'],
+        ['Frames', 1, false, 'normal'],
+        ['Balloon 1-1: Hi', 1, false, 'normal'],
+        ['Ink', 0.5, false, 'screen'],
+        ['Sky', 1, true, 'normal'],
+      ]);
+    },
+  );
 
   it('names a raster without a name by its number', { tags: ['condition'] }, async () => {
     const page = samplePage();

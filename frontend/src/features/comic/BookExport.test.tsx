@@ -21,8 +21,8 @@ afterEach(() => {
   setLocale('ja');
 });
 
-describe('BookExport', () => {
-  it('saves the project as a PDF, a CBZ or a ZIP of PSD pages from the menu', { tags: ['scenario'] }, async () => {
+describe('BookExport', { tags: [] }, () => {
+  it('saves the project as a PDF, a CBZ or a ZIP of PSD pages from the menu', { tags: ['scenario', 'equivalence'] }, async () => {
     const project = newProject('Story');
     render(
       <TooltipProvider>
@@ -39,7 +39,7 @@ describe('BookExport', () => {
   });
 });
 
-describe('bookFileName', () => {
+describe('bookFileName', { tags: [] }, () => {
   it('replaces characters a file name cannot hold and adds the extension', { tags: ['error-guessing'] }, () => {
     expect(bookFileName('a/b:c*?', 'pdf')).toBe('a_b_c_.pdf');
   });
@@ -47,7 +47,7 @@ describe('bookFileName', () => {
     expect(bookFileName('', 'cbz')).toBe('comic.cbz');
     expect(bookFileName(' ... ', 'pdf')).toBe('comic.pdf');
   });
-  it('names the ZIP of PSD pages, and the PSD of one page by the comic and the page number', { tags: ['scenario'] }, () => {
+  it('names the ZIP of PSD pages, and the PSD of one page by the comic and the page number', { tags: ['equivalence'] }, () => {
     expect(bookFileName('Story', 'psd')).toBe('Story-psd.zip');
     const project = newProject('a/b');
     const second = { ...project.pages[0]!, id: 'second' };

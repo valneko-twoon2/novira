@@ -59,14 +59,14 @@ const key = (init: KeyboardEventInit) => fireEvent.keyDown(window, init);
 const nodeOf = (type: string) => screen.getAllByTestId(`wf-node-${type}`)[0]!;
 const selectAll = () => act(() => useWorkflows.setState((s) => ({ nodes: s.nodes.map((n) => ({ ...n, selected: true })) })));
 
-describe('rendering', () => {
-  it('draws a node for every node of the graph', { tags: ['decision-table', 'scenario'] }, async () => {
+describe('rendering', { tags: [] }, () => {
+  it('draws a node for every node of the graph', { tags: ['equivalence'] }, async () => {
     mount();
     await waitFor(() => expect(document.querySelectorAll('.react-flow__node').length).toBe(nodeCount()));
     expect(screen.getByTestId('wf-editor')).toBeTruthy();
   });
 
-  it('shows the workflow name, and a dot once it has unsaved changes', { tags: ['scenario'] }, () => {
+  it('shows the workflow name, and a dot once it has unsaved changes', { tags: ['condition'] }, () => {
     mount();
     expect(screen.getByTestId('wf-name').textContent).toBeTruthy();
     expect(screen.queryByLabelText(t('workflows.unsaved'))).toBeNull();
@@ -74,7 +74,7 @@ describe('rendering', () => {
     expect(screen.getByLabelText(t('workflows.unsaved'))).toBeTruthy();
   });
 
-  it('turns the minimap and other editor settings on from the settings popover', { tags: ['boundary', 'scenario'] }, async () => {
+  it('turns the minimap and other editor settings on from the settings popover', { tags: ['scenario'] }, async () => {
     mount();
     expect(document.querySelector('.wf-minimap')).toBeNull();
     fireEvent.pointerDown(screen.getByLabelText(t('workflows.settings.title')), { button: 0, ctrlKey: false });
@@ -93,10 +93,10 @@ describe('rendering', () => {
   });
 });
 
-describe('a node of ComfyUI with a dynamic combo', () => {
+describe('a node of ComfyUI with a dynamic combo', { tags: [] }, () => {
   afterEach(() => setExtensionTemplates([]));
 
-  it('shows the inputs of the choice that is made, and the others when the choice changes', { tags: ['scenario'] }, () => {
+  it('shows the inputs of the choice that is made, and the others when the choice changes', { tags: ['condition'] }, () => {
     setExtensionTemplates(comfyTemplates(CORE_NODE_DEFS));
     const save = createNode(getTemplate('comfy:SaveAudioAdvanced')!, { x: 0, y: 0 }, { id: 'save' });
     useWorkflows.getState().setGraph({ nodes: [save], edges: [], form: [], meta: useWorkflows.getState().meta });
@@ -113,8 +113,8 @@ describe('a node of ComfyUI with a dynamic combo', () => {
   });
 });
 
-describe('the node library next to the editor', () => {
-  it('adds a double-clicked node to the canvas, one step off the last so they do not pile up', { tags: ['boundary', 'scenario'] }, async () => {
+describe('the node library next to the editor', { tags: [] }, () => {
+  it('adds a double-clicked node to the canvas, one step off the last so they do not pile up', { tags: ['boundary'] }, async () => {
     render(
       <TooltipProvider>
         <NodeLibrary />
@@ -135,7 +135,7 @@ describe('the node library next to the editor', () => {
     expect(b).toBeTruthy();
   });
 
-  it('places a node dropped from the library, and ignores a type that does not exist', { tags: ['scenario'] }, () => {
+  it('places a node dropped from the library, and ignores a type that does not exist', { tags: ['error-guessing'] }, () => {
     mount();
     const before = nodeCount();
     const pane = screen.getByTestId('wf-editor');
@@ -151,8 +151,8 @@ describe('the node library next to the editor', () => {
   });
 });
 
-describe('the node picker', () => {
-  it('adds the node that is picked with Enter after searching, and closes', { tags: ['state-transition', 'scenario'] }, async () => {
+describe('the node picker', { tags: [] }, () => {
+  it('adds the node that is picked with Enter after searching, and closes', { tags: ['scenario'] }, async () => {
     mount();
     const before = nodeCount();
     key({ key: 'A', shiftKey: true });
@@ -165,7 +165,7 @@ describe('the node picker', () => {
     expect(screen.queryByTestId('wf-node-picker')).toBeNull();
   });
 
-  it('adds a node by clicking it, and says when nothing matches', { tags: ['boundary', 'scenario'] }, async () => {
+  it('adds a node by clicking it, and says when nothing matches', { tags: ['scenario', 'boundary'] }, async () => {
     mount();
     const before = nodeCount();
     key({ key: 'A', shiftKey: true });
@@ -177,7 +177,7 @@ describe('the node picker', () => {
     expect(nodeCount()).toBe(before + 1);
   });
 
-  it('closes on Escape and when the pane is clicked', { tags: ['state-transition', 'scenario'] }, async () => {
+  it('closes on Escape and when the pane is clicked', { tags: ['state-transition'] }, async () => {
     mount();
     key({ key: ' ' });
     fireEvent.keyDown(await screen.findByLabelText(t('workflows.picker.placeholder')), { key: 'Escape' });
@@ -189,7 +189,7 @@ describe('the node picker', () => {
   });
 });
 
-describe('hotkeys', () => {
+describe('hotkeys', { tags: [] }, () => {
   it('copies the selected nodes and pastes them offset, with the connections between them', { tags: ['scenario'] }, () => {
     mount();
     const before = nodeCount();
@@ -201,14 +201,14 @@ describe('hotkeys', () => {
     expect(useWorkflows.getState().edges.length).toBe(edgesBefore * 2);
   });
 
-  it('copies nothing when no node is selected', { tags: ['boundary', 'scenario'] }, () => {
+  it('copies nothing when no node is selected', { tags: ['boundary'] }, () => {
     mount();
     key({ key: 'c', ctrlKey: true });
     key({ key: 'v', ctrlKey: true });
     expect(nodeCount()).toBeGreaterThan(0);
   });
 
-  it('undoes and redoes a change', { tags: ['state-transition', 'scenario'] }, () => {
+  it('undoes and redoes a change', { tags: ['state-transition'] }, () => {
     mount();
     const before = nodeCount();
     selectAll();
@@ -223,7 +223,7 @@ describe('hotkeys', () => {
     expect(nodeCount()).toBe(before * 2);
   });
 
-  it('asks for a name when saving a workflow that is not saved yet', { tags: ['scenario'] }, () => {
+  it('asks for a name when saving a workflow that is not saved yet', { tags: ['condition'] }, () => {
     mount();
     useWorkflows.getState().setMeta({ id: '', category: 'user' });
     key({ key: 's', ctrlKey: true });
@@ -231,11 +231,11 @@ describe('hotkeys', () => {
   });
 });
 
-describe('dropping pictures', () => {
+describe('dropping pictures', { tags: [] }, () => {
   const drop = (names: string[]) =>
     fireEvent.drop(screen.getByTestId('wf-editor'), { clientX: 10, clientY: 20, dataTransfer: { types: [IMAGE_MIME], getData: () => JSON.stringify(names), dropEffect: 'none' } });
 
-  it('adds a picture node for every dropped picture', { tags: ['decision-table', 'scenario'] }, async () => {
+  it('adds a picture node for every dropped picture', { tags: ['boundary'] }, async () => {
     mount();
     const before = nodeCount();
     drop(['a.png', 'b.png']);
@@ -243,7 +243,7 @@ describe('dropping pictures', () => {
     expect(useWorkflows.getState().nodes.slice(-2).map((n) => n.data.inputs.image)).toEqual(['a.png', 'b.png']);
   });
 
-  it('accepts a picture drag over it and ignores a drag of anything else', { tags: ['scenario'] }, () => {
+  it('accepts a picture drag over it and ignores a drag of anything else', { tags: ['condition'] }, () => {
     mount();
     const over = { dataTransfer: { types: [IMAGE_MIME], dropEffect: 'none' } };
     const overEvent = fireEvent.dragOver(screen.getByTestId('wf-editor'), over);
@@ -256,8 +256,8 @@ describe('dropping pictures', () => {
   });
 });
 
-describe('editing a node', () => {
-  it('collapses and expands a node', { tags: ['scenario'] }, () => {
+describe('editing a node', { tags: [] }, () => {
+  it('collapses and expands a node', { tags: ['state-transition'] }, () => {
     mount();
     const node = nodeOf('denoise_latents');
     fireEvent.click(within(node).getByLabelText(t('workflows.node.collapse')));
@@ -266,7 +266,7 @@ describe('editing a node', () => {
     expect(node.className).not.toContain('is-collapsed');
   });
 
-  it('renames a node by double-clicking its title, and restores the default name when it is cleared', { tags: ['scenario'] }, () => {
+  it('renames a node by double-clicking its title, and restores the default name when it is cleared', { tags: ['boundary'] }, () => {
     mount();
     const node = nodeOf('denoise_latents');
     const id = useWorkflows.getState().nodes.find((n) => n.data.type === 'denoise_latents')!.id;
@@ -281,7 +281,7 @@ describe('editing a node', () => {
     expect(within(node).queryByLabelText(t('workflows.node.rename'))).toBeNull();
   });
 
-  it('switches the cache of a node and adds a field to the form and takes it out again', { tags: ['regression'] }, () => {
+  it('switches the cache of a node and adds a field to the form and takes it out again', { tags: ['state-transition'] }, () => {
     mount();
     const node = nodeOf('denoise_latents');
     const id = useWorkflows.getState().nodes.find((n) => n.data.type === 'denoise_latents')!.id;
@@ -297,7 +297,7 @@ describe('editing a node', () => {
     expect(useWorkflows.getState().form.length).toBe(formBefore);
   });
 
-  it('edits number, text and switch fields of a node', { tags: ['scenario'] }, () => {
+  it('edits number, text and switch fields of a node', { tags: ['equivalence'] }, () => {
     mount();
     const sampler = nodeOf('denoise_latents');
     const id = useWorkflows.getState().nodes.find((n) => n.data.type === 'denoise_latents')!.id;
@@ -311,23 +311,27 @@ describe('editing a node', () => {
     expect(Object.values(useWorkflows.getState().nodes.find((n) => n.id === owner)!.data.inputs)).toContain('a red fox');
   });
 
-  it('shows what it holds for a node type it does not know', { tags: ['scenario'] }, () => {
+  it('shows what it holds for a node type it does not know', { tags: ['error-guessing'] }, () => {
     mount();
     act(() => useWorkflows.getState().addNodes([{ ...useWorkflows.getState().nodes[0]!, id: 'odd', data: { ...useWorkflows.getState().nodes[0]!.data, type: 'no_such_node' } }]));
     expect(screen.getByText('no_such_node')).toBeTruthy();
   });
 });
 
-describe('the toolbar', () => {
-  it('has no library button (the card above the Generate button opens it), and asks to save under a name when the workflow has none yet', { tags: ['boundary', 'state-transition'] }, () => {
-    mount();
-    expect(screen.queryByTestId('wf-open-library')).toBeNull();
-    useWorkflows.getState().setMeta({ id: '', category: 'user' });
-    fireEvent.click(screen.getByLabelText(t('workflows.toolbar.save')));
-    expect(useDialogs.getState().saveAsOpen).toBe(true);
-  });
+describe('the toolbar', { tags: [] }, () => {
+  it(
+    'has no library button (the card above the Generate button opens it), and asks to save under a name when the workflow has none yet',
+    { tags: ['condition'] },
+    () => {
+      mount();
+      expect(screen.queryByTestId('wf-open-library')).toBeNull();
+      useWorkflows.getState().setMeta({ id: '', category: 'user' });
+      fireEvent.click(screen.getByLabelText(t('workflows.toolbar.save')));
+      expect(useDialogs.getState().saveAsOpen).toBe(true);
+    },
+  );
 
-  it('asks before starting a new workflow over unsaved changes', { tags: ['scenario'] }, () => {
+  it('asks before starting a new workflow over unsaved changes', { tags: ['condition'] }, () => {
     mount();
     act(() => useWorkflows.setState({ isTouched: true }));
     fireEvent.click(screen.getByLabelText(t('workflows.toolbar.new')));
@@ -335,7 +339,7 @@ describe('the toolbar', () => {
     expect(nodeCount()).toBeGreaterThan(0);
   });
 
-  it('starts a new workflow at once when nothing is unsaved', { tags: ['boundary', 'state-transition'] }, () => {
+  it('starts a new workflow at once when nothing is unsaved', { tags: ['condition'] }, () => {
     mount();
     act(() => useWorkflows.setState({ isTouched: false }));
     fireEvent.click(screen.getByLabelText(t('workflows.toolbar.new')));
@@ -343,7 +347,7 @@ describe('the toolbar', () => {
     expect(nodeCount()).toBe(0);
   });
 
-  it('removes what the optimizer finds useless', { tags: ['state-transition', 'scenario'] }, () => {
+  it('removes what the optimizer finds useless', { tags: ['scenario'] }, () => {
     mount();
     const before = nodeCount();
     act(() => useWorkflows.getState().addNodes([{ ...useWorkflows.getState().nodes[0]!, id: 'lonely', data: { ...useWorkflows.getState().nodes[0]!.data, type: 'integer', inputs: { value: 1 } } }]));
@@ -369,7 +373,7 @@ describe('the toolbar', () => {
     expect(click).toHaveBeenCalled();
   });
 
-  it('ignores a file input that was cancelled', { tags: ['state-transition', 'scenario'] }, () => {
+  it('ignores a file input that was cancelled', { tags: ['error-guessing'] }, () => {
     mount();
     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     fireEvent.change(input, { target: { files: [] } });

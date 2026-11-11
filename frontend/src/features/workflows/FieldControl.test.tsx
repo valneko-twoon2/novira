@@ -39,8 +39,8 @@ const field = (input: Partial<InputTemplate> & Pick<InputTemplate, 'type'>, valu
 };
 const image = (name: string): ImageDTO => ({ name, thumbnailUrl: `thumb-${name}`, width: 640, height: 480 }) as ImageDTO;
 
-describe('numbers', () => {
-  it('commits an integer on blur and clamps it to the range', { tags: ['boundary', 'scenario'] }, () => {
+describe('numbers', { tags: [] }, () => {
+  it('commits an integer on blur and clamps it to the range', { tags: ['boundary'] }, () => {
     field({ type: 'integer', min: 1, max: 10, step: 1, default: 5 }, undefined);
     const box = screen.getByLabelText(/^The field/) as HTMLInputElement;
     expect(box.value).toBe('5');
@@ -49,7 +49,7 @@ describe('numbers', () => {
     expect(stored().x).toBe(10);
   });
 
-  it('shows a float with two decimals', { tags: ['scenario'] }, () => {
+  it('shows a float with two decimals', { tags: ['equivalence'] }, () => {
     field({ type: 'float', step: 0.05 }, 0.5);
     expect((screen.getByLabelText(/^The field/) as HTMLInputElement).value).toBe('0.50');
   });
@@ -64,8 +64,8 @@ describe('numbers', () => {
   });
 });
 
-describe('text, switch and choices', () => {
-  it('edits a single-line and a multi-line string', { tags: ['boundary', 'scenario'] }, () => {
+describe('text, switch and choices', { tags: [] }, () => {
+  it('edits a single-line and a multi-line string', { tags: ['equivalence', 'error-guessing'] }, () => {
     const { unmount } = field({ type: 'string' }, 'old');
     fireEvent.change(screen.getByLabelText(/^The field/), { target: { value: 'new' } });
     expect(stored().x).toBe('new');
@@ -78,7 +78,7 @@ describe('text, switch and choices', () => {
     expect(stored().x).toBe('two\nlines');
   });
 
-  it('flips a switch', { tags: ['scenario'] }, () => {
+  it('flips a switch', { tags: ['equivalence'] }, () => {
     field({ type: 'boolean' }, false);
     const sw = screen.getByRole('switch');
     expect(sw.getAttribute('aria-checked')).toBe('false');
@@ -86,7 +86,7 @@ describe('text, switch and choices', () => {
     expect(stored().x).toBe(true);
   });
 
-  it('renders the choices of an enum, a scheduler and a board field', { tags: ['scenario'] }, () => {
+  it('renders the choices of an enum, a scheduler and a board field', { tags: ['equivalence'] }, () => {
     useGallery.setState({ boards: [{ id: 'b1', name: 'Mine', archived: false }, { id: 'b2', name: 'Old', archived: true }] as never });
     const { unmount } = field({ type: 'enum', options: ['a', 'b'] }, 'b');
     expect(screen.getByLabelText(/^The field/).textContent).toContain('b');
@@ -98,21 +98,21 @@ describe('text, switch and choices', () => {
     expect(screen.getByLabelText(/^The field/).textContent).toContain(t('workflows.field.boardAuto'));
   });
 
-  it('renders nothing for a type it has no control for', { tags: ['boundary', 'scenario'] }, () => {
+  it('renders nothing for a type it has no control for', { tags: ['error-guessing'] }, () => {
     const { container } = field({ type: 'LatentsField' as never }, null);
     expect(container.querySelector('.wf-control')!.childElementCount).toBe(0);
   });
 });
 
-describe('models', () => {
+describe('models', { tags: [] }, () => {
   const lora = (key: string): ModelConfig => ({ key, name: `Lora ${key}`, base: 'sdxl', type: 'lora' }) as ModelConfig;
 
-  it('says there are no models of that type', { tags: ['scenario'] }, () => {
+  it('says there are no models of that type', { tags: ['boundary'] }, () => {
     field({ type: 'LoRAModelField' }, null);
     expect(screen.getByLabelText(/^The field/).textContent).toContain(t('workflows.field.noModels'));
   });
 
-  it('shows the picked model and asks to pick when the stored key is not installed', { tags: ['state-transition', 'scenario'] }, () => {
+  it('shows the picked model and asks to pick when the stored key is not installed', { tags: ['condition'] }, () => {
     useModels.setState({ models: [lora('l1')] });
     const { unmount } = field({ type: 'LoRAModelField' }, 'l1');
     expect(screen.getByLabelText(/^The field/).textContent).toContain('Lora l1');
@@ -122,7 +122,7 @@ describe('models', () => {
   });
 });
 
-describe('pictures', () => {
+describe('pictures', { tags: [] }, () => {
   it('shows the picture with its size, and clears it', { tags: ['scenario'] }, () => {
     useGallery.setState({ images: [image('a.png')] });
     field({ type: 'ImageField' }, 'a.png');
@@ -132,7 +132,7 @@ describe('pictures', () => {
     expect(stored().x).toBeNull();
   });
 
-  it('asks for a picture when there is none, and takes one dropped from the gallery', { tags: ['boundary', 'scenario'] }, async () => {
+  it('asks for a picture when there is none, and takes one dropped from the gallery', { tags: ['condition'] }, async () => {
     const { container } = field({ type: 'ImageField' }, null);
     expect(screen.getByText(t('workflows.field.dropImageHint'))).toBeTruthy();
     fireEvent.drop(container.querySelector('.ui-dropzone')!, { dataTransfer: { types: [IMAGE_MIME], files: [], getData: () => JSON.stringify(['b.png']) } });
@@ -149,7 +149,7 @@ describe('pictures', () => {
     expect(useGallery.getState().images.some((i) => i.name === 'up.png')).toBe(true);
   });
 
-  it('ignores a dropped file that is not a picture', { tags: ['scenario'] }, () => {
+  it('ignores a dropped file that is not a picture', { tags: ['error-guessing'] }, () => {
     const upload = vi.spyOn(backend, 'uploadImage');
     const { container } = field({ type: 'ImageField' }, null);
     act(() => {

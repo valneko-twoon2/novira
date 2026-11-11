@@ -23,32 +23,36 @@ import {
   // @ts-expect-error -- plain ESM script without types
 } from '../../scripts/tools/perf.mjs';
 
-describe('options', () => {
-  it('has the defaults and passes the start-up options through', { tags: ['condition'] }, () => {
+describe('options', { tags: [] }, () => {
+  it('has the defaults and passes the start-up options through', { tags: ['equivalence'] }, () => {
     expect(parseArgs(['all'])).toMatchObject({ command: 'all', runs: 7, save: null, compare: null, build: true, startup: [] });
     const o = parseArgs(['startup', '--runs', '3', '--via', 'mock', '--switch', '--save', 'base', '--compare', 'old', '--no-build']);
     expect(o).toMatchObject({ runs: 3, save: 'base', compare: 'old', build: false, startup: ['--via', 'mock', '--switch'] });
   });
 
-  it('refuses an unknown command or option, a bad run count, a missing value and a compare without a baseline', { tags: ['error-guessing'] }, () => {
-    expect(() => parseArgs(['speed'])).toThrow(/usage/);
-    expect(() => parseArgs(['all', '--fast'])).toThrow(/unknown option/);
-    for (const runs of ['0', '1.5', 'x']) expect(() => parseArgs(['all', '--runs', runs])).toThrow(/--runs/);
-    expect(() => parseArgs(['all', '--save'])).toThrow(/needs a value/);
-    expect(() => parseArgs(['compare'])).toThrow(/usage/);
-    expect(parseArgs(['compare', 'base', 'now']).positional).toEqual(['base', 'now']);
-  });
+  it(
+    'refuses an unknown command or option, a bad run count, a missing value and a compare without a baseline',
+    { tags: ['error-guessing'] },
+    () => {
+      expect(() => parseArgs(['speed'])).toThrow(/usage/);
+      expect(() => parseArgs(['all', '--fast'])).toThrow(/unknown option/);
+      for (const runs of ['0', '1.5', 'x']) expect(() => parseArgs(['all', '--runs', runs])).toThrow(/--runs/);
+      expect(() => parseArgs(['all', '--save'])).toThrow(/needs a value/);
+      expect(() => parseArgs(['compare'])).toThrow(/usage/);
+      expect(parseArgs(['compare', 'base', 'now']).positional).toEqual(['base', 'now']);
+    },
+  );
 
-  it('takes only names that stay a file in the baseline folder', { tags: ['condition'] }, () => {
+  it('takes only names that stay a file in the baseline folder', { tags: ['error-guessing'] }, () => {
     expect(baselineName('base-1.2_x')).toBe('base-1.2_x');
     for (const bad of ['../x', 'a/b', 'a b', '.hidden', '']) expect(() => baselineName(bad)).toThrow(/not a usable name/);
   });
 });
 
-describe('noise rule', () => {
+describe('noise rule', { tags: [] }, () => {
   const base = [100, 104, 98, 110, 101, 99, 103];
 
-  it('takes the median, lowest and highest, skipping what is not a number', { tags: ['boundary'] }, () => {
+  it('takes the median, lowest and highest, skipping what is not a number', { tags: ['equivalence', 'error-guessing'] }, () => {
     expect(stats([3, null, 1, 2, Number.NaN])).toEqual({ n: 3, median: 2, min: 1, max: 3 });
     expect(stats([])).toEqual({ n: 0, median: null, min: null, max: null });
   });
@@ -57,7 +61,7 @@ describe('noise rule', () => {
     expect(judge('ms', base, [102, 99, 107, 100, 103, 101, 98]).flag).toBe('');
   });
 
-  it('flags a time outside the range only when it also moved by 10 % and 2 ms', { tags: ['boundary'] }, () => {
+  it('flags a time outside the range only when it also moved by 10 % and 2 ms', { tags: ['boundary', 'decision-table'] }, () => {
     expect(judge('ms', base, [125, 126, 124])).toMatchObject({ flag: 'slower', diff: 24 });
     expect(judge('ms', base, [80, 81, 79]).flag).toBe('faster');
     // Outside the range but under 10 %.
@@ -80,7 +84,7 @@ describe('noise rule', () => {
     expect(judge('ms', [1], []).flag).toBe('gone');
   });
 
-  it('compares every key of either side and writes a table with the flag in bold', { tags: ['condition'] }, () => {
+  it('compares every key of either side and writes a table with the flag in bold', { tags: ['equivalence'] }, () => {
     const rows = compareMetrics({ a: { unit: 'ms', samples: base }, gone: { unit: 'ms', samples: [1] } }, { a: { unit: 'ms', samples: [130, 131] }, fresh: { unit: 'bytes', samples: [5] } });
     expect(rows.map((r: { key: string; flag: string }) => [r.key, r.flag])).toEqual([
       ['a', 'slower'],
@@ -98,19 +102,19 @@ describe('noise rule', () => {
     expect(compareTable([row])).toContain('| other programs |');
   });
 
-  it('prints small numbers with more decimals', { tags: ['condition'] }, () => {
+  it('prints small numbers with more decimals', { tags: ['boundary'] }, () => {
     expect([num(0.01234), num(3.456), num(123.45), num(null), num(5.5, 0)]).toEqual(['0.012', '3.46', '123.5', '-', '6']);
   });
 });
 
-describe('metrics of each part', () => {
-  it('writes forward-slash model roots as this system would, and leaves other settings alone', { tags: ['condition'] }, () => {
+describe('metrics of each part', { tags: [] }, () => {
+  it('writes forward-slash model roots as this system would, and leaves other settings alone', { tags: ['equivalence'] }, () => {
     const resolve = (p: string) => p.replace(/\//g, '\\');
     expect(normalizeRoots({ modelRoots: ['E:/models', 'D:\\other'], civitaiLookup: false }, resolve)).toEqual({ modelRoots: ['E:\\models', 'D:\\other'], civitaiLookup: false });
     expect(normalizeRoots({ theme: 'dark' })).toEqual({ theme: 'dark' });
   });
 
-  it('reads the backend example: open steps, the total, and each command with its size', { tags: ['condition'] }, () => {
+  it('reads the backend example: open steps, the total, and each command with its size', { tags: ['equivalence'] }, () => {
     const m = backendMetrics({
       open: { database: [1, 2] },
       openTotal: [20, 21],
@@ -123,7 +127,7 @@ describe('metrics of each part', () => {
     expect(m).not.toHaveProperty(['backend update_images dispatch']);
   });
 
-  it('reads perf-startup runs per build, with units by name, and the screen switches', { tags: ['condition'] }, () => {
+  it('reads perf-startup runs per build, with units by name, and the screen switches', { tags: ['equivalence'] }, () => {
     const raw = { current: { starts: [{ n: 1 }, { n: 2 }], switches: [{ 'cold tab-canvas': 30 }] } };
     const numbers = (s: { n: number }) => ({ appShown: 100 * s.n, bootstrapKB: 3000, callsTotal: 9, heapUsedMB: 16 });
     const m = startupMetrics(raw, numbers);
@@ -135,21 +139,25 @@ describe('metrics of each part', () => {
     expect(startupUnit('startCallsEnd')).toBe('ms');
   });
 
-  it('reads one app start: marks, navigation, the reveal after the splash was opened, and the first time of each call', { tags: ['condition'] }, () => {
-    const start = {
-      marks: { 'stores-filled': 300, 'shell-visible': 2500, 'first-thumbnail': 2600 },
-      nav: { responseEnd: 20, dcl: 60 },
-      paint: { 'first-contentful-paint': 80 },
-      clickAt: 2450,
-      calls: [
-        { name: 'bootstrap', duration: 40 },
-        { name: 'bootstrap', duration: 10 },
-      ],
-    };
-    expect(appStartNumbers(start)).toEqual({ 'stores-filled': 300, 'shell-visible': 2500, 'first-thumbnail': 2600, responseEnd: 20, domContentLoaded: 60, firstContentfulPaint: 80, reveal: 50, 'shown-to-thumbnail': 100, 'call bootstrap': 40 });
-  });
+  it(
+    'reads one app start: marks, navigation, the reveal after the splash was opened, and the first time of each call',
+    { tags: ['equivalence'] },
+    () => {
+      const start = {
+        marks: { 'stores-filled': 300, 'shell-visible': 2500, 'first-thumbnail': 2600 },
+        nav: { responseEnd: 20, dcl: 60 },
+        paint: { 'first-contentful-paint': 80 },
+        clickAt: 2450,
+        calls: [
+          { name: 'bootstrap', duration: 40 },
+          { name: 'bootstrap', duration: 10 },
+        ],
+      };
+      expect(appStartNumbers(start)).toEqual({ 'stores-filled': 300, 'shell-visible': 2500, 'first-thumbnail': 2600, responseEnd: 20, domContentLoaded: 60, firstContentfulPaint: 80, reveal: 50, 'shown-to-thumbnail': 100, 'call bootstrap': 40 });
+    },
+  );
 
-  it('collects the app runs, the page start after spawn, and sizes from the recorded run only', { tags: ['condition'] }, () => {
+  it('collects the app runs, the page start after spawn, and sizes from the recorded run only', { tags: ['equivalence'] }, () => {
     const page = (d: number) => ({ timeOrigin: 1000 + d, marks: { 'stores-filled': d }, calls: [{ name: 'bootstrap', duration: d }] });
     const m = appMetrics([
       { startedAt: 500, cold: page(10), warm: page(5) },
@@ -160,7 +168,7 @@ describe('metrics of each part', () => {
     expect(m['app size bootstrap']).toEqual({ unit: 'chars', samples: [4000] });
   });
 
-  it('puts the window time of each call beside the backend time and their difference', { tags: ['boundary'] }, () => {
+  it('puts the window time of each call beside the backend time and their difference', { tags: ['equivalence'] }, () => {
     const s = (...samples: number[]) => ({ unit: 'ms', samples });
     const rows = ipcRows({ 'app cold call bootstrap': s(60), 'app warm call bootstrap': s(30), 'backend bootstrap call': s(2), 'backend bootstrap json': s(3), 'app size bootstrap': { unit: 'chars', samples: [9] }, 'app cold call list_fonts': s(4) });
     expect(rows).toEqual([
@@ -170,7 +178,7 @@ describe('metrics of each part', () => {
   });
 });
 
-describe('engine check', () => {
+describe('engine check', { tags: [] }, () => {
   const list = [
     { pid: 10, ppid: 1, name: 'novira.exe' },
     { pid: 11, ppid: 10, name: 'msedgewebview2.exe' },
@@ -178,7 +186,7 @@ describe('engine check', () => {
     { pid: 20, ppid: 1, name: 'python.exe' },
   ];
 
-  it('finds every process below the app, and none of the others', { tags: ['condition'] }, () => {
+  it('finds every process below the app, and none of the others', { tags: ['equivalence'] }, () => {
     expect(descendants(list, 10)).toEqual([
       { pid: 11, name: 'msedgewebview2.exe' },
       { pid: 12, name: 'msedgewebview2.exe' },
@@ -192,15 +200,15 @@ describe('engine check', () => {
   });
 });
 
-describe('machine load', () => {
+describe('machine load', { tags: [] }, () => {
   const cpu = (idle: number, user: number) => ({ times: { user, nice: 0, sys: 0, idle, irq: 0 } });
 
-  it('is the busy share of all processors between two readings', { tags: ['condition'] }, () => {
+  it('is the busy share of all processors between two readings', { tags: ['boundary'] }, () => {
     expect(busyPercent([cpu(100, 0), cpu(100, 0)], [cpu(190, 10), cpu(130, 70)])).toBe(40);
     expect(busyPercent([cpu(5, 5)], [cpu(5, 5)])).toBeNull();
   });
 
-  it('puts the baseline and the new load of each part on one line', { tags: ['condition'] }, () => {
+  it('puts the baseline and the new load of each part on one line', { tags: ['equivalence'] }, () => {
     expect(loadLine({ app: { before: 3, during: 12 } }, { app: { before: 30, during: 41 }, backend: { before: 2, during: 9 } })).toBe(
       'Processor load: app 3 % before, 12 % during then 30 % before, 41 % during; backend not noted then 2 % before, 9 % during.',
     );

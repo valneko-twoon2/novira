@@ -52,7 +52,7 @@ describe('adopting the backend state at start-up', () => {
     expect(adopt).toHaveBeenLastCalledWith(null);
   });
 
-  it('takes the backend state in place of the page\'s and leaves other keys alone', { tags: ['condition'] }, async () => {
+  it('takes the backend state in place of the page\'s and leaves other keys alone', { tags: ['equivalence'] }, async () => {
     storage.setItem('novira.settings', 'mine');
     storage.setItem('novira.old', 'gone');
     storage.setItem('other-site', 'kept');
@@ -92,33 +92,37 @@ describe('sending changes to the backend', () => {
     vi.spyOn(backend, 'adoptUiState').mockResolvedValue(null);
   });
 
-  it('sends only the keys that changed, once after the changes settle, for app keys only', { tags: ['condition'] }, async () => {
-    const save = vi.spyOn(backend, 'saveUiState').mockResolvedValue();
-    await adoptBackendUiState(storage);
-    storage.setItem('other-site', 'x');
-    await vi.advanceTimersByTimeAsync(DELAY * 2);
-    expect(save).not.toHaveBeenCalled();
+  it(
+    'sends only the keys that changed, once after the changes settle, for app keys only',
+    { tags: ['condition', 'boundary'] },
+    async () => {
+      const save = vi.spyOn(backend, 'saveUiState').mockResolvedValue();
+      await adoptBackendUiState(storage);
+      storage.setItem('other-site', 'x');
+      await vi.advanceTimersByTimeAsync(DELAY * 2);
+      expect(save).not.toHaveBeenCalled();
 
-    storage.setItem('novira.a', '1');
-    await vi.advanceTimersByTimeAsync(DELAY / 2);
-    storage.setItem('novira.b', '2');
-    await vi.advanceTimersByTimeAsync(DELAY / 2);
-    expect(save).not.toHaveBeenCalled();
-    await vi.advanceTimersByTimeAsync(DELAY);
-    expect(save).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(save.mock.calls[0]![0])).toEqual({ 'novira.a': '1', 'novira.b': '2' });
-    expect(save.mock.calls[0]![2]).toEqual([]);
+      storage.setItem('novira.a', '1');
+      await vi.advanceTimersByTimeAsync(DELAY / 2);
+      storage.setItem('novira.b', '2');
+      await vi.advanceTimersByTimeAsync(DELAY / 2);
+      expect(save).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(DELAY);
+      expect(save).toHaveBeenCalledTimes(1);
+      expect(JSON.parse(save.mock.calls[0]![0])).toEqual({ 'novira.a': '1', 'novira.b': '2' });
+      expect(save.mock.calls[0]![2]).toEqual([]);
 
-    // A key that is gone goes in `removed`; the keys that did not change are not sent again.
-    storage.removeItem('novira.a');
-    await vi.advanceTimersByTimeAsync(DELAY * 2);
-    expect(JSON.parse(save.mock.calls[1]![0])).toEqual({});
-    expect(save.mock.calls[1]![2]).toEqual(['novira.a']);
-    storage.clear();
-    await vi.advanceTimersByTimeAsync(DELAY * 2);
-    expect(save.mock.calls[2]![0]).toBe('{}');
-    expect(save.mock.calls[2]![2]).toEqual(['novira.b']);
-  });
+      // A key that is gone goes in `removed`; the keys that did not change are not sent again.
+      storage.removeItem('novira.a');
+      await vi.advanceTimersByTimeAsync(DELAY * 2);
+      expect(JSON.parse(save.mock.calls[1]![0])).toEqual({});
+      expect(save.mock.calls[1]![2]).toEqual(['novira.a']);
+      storage.clear();
+      await vi.advanceTimersByTimeAsync(DELAY * 2);
+      expect(save.mock.calls[2]![0]).toBe('{}');
+      expect(save.mock.calls[2]![2]).toEqual(['novira.b']);
+    },
+  );
 
   it('does not send a state that did not change, and sends it again after a failure', { tags: ['error-guessing'] }, async () => {
     const save = vi.spyOn(backend, 'saveUiState').mockRejectedValueOnce(new Error('busy')).mockResolvedValue();
@@ -136,37 +140,45 @@ describe('sending changes to the backend', () => {
     expect(save).toHaveBeenCalledTimes(2);
   });
 
-  it('sends a small change as a small message and reads nothing from the backend when no other page saved', { tags: ['condition'] }, async () => {
-    // A used PC holds hundreds of kilobytes (drafts, chats, the prompt book): a click must not move them twice.
-    const drafts = 'd'.repeat(100_000);
-    storage.setItem('novira.drafts', drafts);
-    const adopt = vi.spyOn(backend, 'adoptUiState').mockResolvedValue(collectUiState(storage));
-    const save = vi.spyOn(backend, 'saveUiState').mockResolvedValue();
-    await adoptBackendUiState(storage);
-    adopt.mockClear();
-    storage.setItem('novira.settings', 'changed');
-    await vi.advanceTimersByTimeAsync(DELAY * 2);
-    expect(adopt).not.toHaveBeenCalled();
-    expect(save).toHaveBeenCalledTimes(1);
-    expect(save.mock.calls[0]![0]).toBe('{"novira.settings":"changed"}');
-    expect(save.mock.calls[0]![2]).toEqual([]);
-  });
+  it(
+    'sends a small change as a small message and reads nothing from the backend when no other page saved',
+    { tags: ['condition'] },
+    async () => {
+      // A used PC holds hundreds of kilobytes (drafts, chats, the prompt book): a click must not move them twice.
+      const drafts = 'd'.repeat(100_000);
+      storage.setItem('novira.drafts', drafts);
+      const adopt = vi.spyOn(backend, 'adoptUiState').mockResolvedValue(collectUiState(storage));
+      const save = vi.spyOn(backend, 'saveUiState').mockResolvedValue();
+      await adoptBackendUiState(storage);
+      adopt.mockClear();
+      storage.setItem('novira.settings', 'changed');
+      await vi.advanceTimersByTimeAsync(DELAY * 2);
+      expect(adopt).not.toHaveBeenCalled();
+      expect(save).toHaveBeenCalledTimes(1);
+      expect(save.mock.calls[0]![0]).toBe('{"novira.settings":"changed"}');
+      expect(save.mock.calls[0]![2]).toEqual([]);
+    },
+  );
 
-  it('reads what other pages saved before it sends, when the page woke up and may have missed their events', { tags: ['condition'] }, async () => {
-    const adopt = vi.spyOn(backend, 'adoptUiState').mockResolvedValue('{"novira.a":"1"}');
-    const save = vi.spyOn(backend, 'saveUiState').mockResolvedValue();
-    await adoptBackendUiState(storage);
-    adopt.mockClear();
-    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
-    document.dispatchEvent(new Event('visibilitychange'));
-    storage.setItem('novira.b', '2');
-    await vi.advanceTimersByTimeAsync(DELAY * 2);
-    expect(adopt).toHaveBeenCalled();
-    expect(save).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(save.mock.calls[0]![0])).toEqual({ 'novira.b': '2' });
-  });
+  it(
+    'reads what other pages saved before it sends, when the page woke up and may have missed their events',
+    { tags: ['condition'] },
+    async () => {
+      const adopt = vi.spyOn(backend, 'adoptUiState').mockResolvedValue('{"novira.a":"1"}');
+      const save = vi.spyOn(backend, 'saveUiState').mockResolvedValue();
+      await adoptBackendUiState(storage);
+      adopt.mockClear();
+      Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
+      document.dispatchEvent(new Event('visibilitychange'));
+      storage.setItem('novira.b', '2');
+      await vi.advanceTimersByTimeAsync(DELAY * 2);
+      expect(adopt).toHaveBeenCalled();
+      expect(save).toHaveBeenCalledTimes(1);
+      expect(JSON.parse(save.mock.calls[0]![0])).toEqual({ 'novira.b': '2' });
+    },
+  );
 
-  it('sends at once when the page is hidden', { tags: ['condition'] }, async () => {
+  it('sends at once when the page is hidden', { tags: ['state-transition'] }, async () => {
     const save = vi.spyOn(backend, 'saveUiState').mockResolvedValue();
     await adoptBackendUiState(storage);
     storage.setItem('novira.a', '1');

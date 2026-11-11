@@ -80,7 +80,7 @@ describe('TextCandidates', () => {
     expect((screen.getByTestId('text-rich-redo') as HTMLButtonElement).disabled).toBe(false);
   });
 
-  it('turns the redo off for an empty text and while a run is going', { tags: ['condition'] }, () => {
+  it('turns the redo off for an empty text and while a run is going', { tags: ['decision-table'] }, () => {
     select({ ...layer(true), text: '  ' });
     render(<TextCandidates />);
     expect((screen.getByTestId('text-rich-redo') as HTMLButtonElement).disabled).toBe(true);

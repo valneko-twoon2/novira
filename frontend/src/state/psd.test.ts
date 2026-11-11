@@ -118,28 +118,32 @@ const solid = (w: number, h: number, rgba: [number, number, number, number]): Ui
 };
 
 describe('encodePsd', () => {
-  it('writes an RGB file whose layers keep their place, pixels, transparency, opacity, visibility and names', { tags: ['condition'] }, () => {
-    const stripes = new Uint8Array(3 * 2 * 4).map((_, i) => (i * 37) % 256);
-    const layers: PsdLayer[] = [
-      { name: 'Paper', left: 0, top: 0, width: 4, height: 3, pixels: solid(4, 3, [255, 255, 255, 255]) },
-      { name: 'コマ 1', left: -1, top: 2, width: 3, height: 2, pixels: stripes, opacity: 0.5 },
-      { name: 'Hidden', left: 1, top: 1, width: 1, height: 1, pixels: solid(1, 1, [10, 20, 30, 0]), hidden: true },
-    ];
-    const composite = solid(4, 3, [200, 100, 0, 128]);
-    const psd = readPsd(encodePsd({ width: 4, height: 3, layers, composite }));
-    expect(psd).toMatchObject({ signature: '8BPS', version: 1, channels: 3, width: 4, height: 3, depth: 8, mode: 3 });
-    expect(psd.layers.map((l) => [l.name, l.unicode, l.top, l.left, l.bottom, l.right, l.opacity, l.flags & 2, l.blend])).toEqual([
-      ['Paper', 'Paper', 0, 0, 3, 4, 255, 0, '8BIMnorm'],
-      ['?? 1', 'コマ 1', 2, -1, 4, 2, 128, 0, '8BIMnorm'],
-      ['Hidden', 'Hidden', 1, 1, 2, 2, 255, 2, '8BIMnorm'],
-    ]);
-    const second = psd.layers[1]!;
-    const back = Array.from({ length: 6 }, (_, i) => [second.pixels[0]![i], second.pixels[1]![i], second.pixels[2]![i], second.pixels[-1]![i]]).flat();
-    expect(back).toEqual([...stripes]);
-    expect(psd.layers[2]!.pixels[-1]).toEqual([0]);
-    // Half-transparent orange over white.
-    expect(psd.flat.map((c) => c[0])).toEqual([Math.round(200 * (128 / 255) + 255 * (127 / 255)), Math.round(100 * (128 / 255) + 255 * (127 / 255)), Math.round(255 * (127 / 255))]);
-  });
+  it(
+    'writes an RGB file whose layers keep their place, pixels, transparency, opacity, visibility and names',
+    { tags: ['scenario'] },
+    () => {
+      const stripes = new Uint8Array(3 * 2 * 4).map((_, i) => (i * 37) % 256);
+      const layers: PsdLayer[] = [
+        { name: 'Paper', left: 0, top: 0, width: 4, height: 3, pixels: solid(4, 3, [255, 255, 255, 255]) },
+        { name: 'コマ 1', left: -1, top: 2, width: 3, height: 2, pixels: stripes, opacity: 0.5 },
+        { name: 'Hidden', left: 1, top: 1, width: 1, height: 1, pixels: solid(1, 1, [10, 20, 30, 0]), hidden: true },
+      ];
+      const composite = solid(4, 3, [200, 100, 0, 128]);
+      const psd = readPsd(encodePsd({ width: 4, height: 3, layers, composite }));
+      expect(psd).toMatchObject({ signature: '8BPS', version: 1, channels: 3, width: 4, height: 3, depth: 8, mode: 3 });
+      expect(psd.layers.map((l) => [l.name, l.unicode, l.top, l.left, l.bottom, l.right, l.opacity, l.flags & 2, l.blend])).toEqual([
+        ['Paper', 'Paper', 0, 0, 3, 4, 255, 0, '8BIMnorm'],
+        ['?? 1', 'コマ 1', 2, -1, 4, 2, 128, 0, '8BIMnorm'],
+        ['Hidden', 'Hidden', 1, 1, 2, 2, 255, 2, '8BIMnorm'],
+      ]);
+      const second = psd.layers[1]!;
+      const back = Array.from({ length: 6 }, (_, i) => [second.pixels[0]![i], second.pixels[1]![i], second.pixels[2]![i], second.pixels[-1]![i]]).flat();
+      expect(back).toEqual([...stripes]);
+      expect(psd.layers[2]!.pixels[-1]).toEqual([0]);
+      // Half-transparent orange over white.
+      expect(psd.flat.map((c) => c[0])).toEqual([Math.round(200 * (128 / 255) + 255 * (127 / 255)), Math.round(100 * (128 / 255) + 255 * (127 / 255)), Math.round(255 * (127 / 255))]);
+    },
+  );
 
   it('writes the blend of each layer under the key Photoshop reads, normal when it has none', { tags: ['equivalence'] }, () => {
     const one = (blend?: PsdLayer['blend']): PsdLayer => ({ name: blend ?? 'none', left: 0, top: 0, width: 1, height: 1, pixels: solid(1, 1, [0, 0, 0, 255]), blend });
@@ -153,7 +157,7 @@ describe('encodePsd', () => {
     expect(psd.layers[0]).toMatchObject({ name: '', top: 0, bottom: 0 });
   });
 
-  it('refuses a size Photoshop cannot open and pixels that do not match their size', { tags: ['error-guessing'] }, () => {
+  it('refuses a size Photoshop cannot open and pixels that do not match their size', { tags: ['error-guessing', 'boundary'] }, () => {
     expect(() => encodePsd({ width: 0, height: 1, layers: [], composite: new Uint8Array() })).toThrow();
     expect(() => encodePsd({ width: 30001, height: 1, layers: [], composite: new Uint8Array(30001 * 4) })).toThrow();
     expect(() => encodePsd({ width: 1, height: 1, layers: [], composite: new Uint8Array(3) })).toThrow();
@@ -181,7 +185,7 @@ describe('croppedLayer', () => {
 });
 
 describe('packBits', () => {
-  it('packs runs and literal stretches so they unpack to the same row', { tags: ['condition'] }, () => {
+  it('packs runs and literal stretches so they unpack to the same row', { tags: ['boundary', 'equivalence'] }, () => {
     const rows = [
       new Uint8Array([]),
       new Uint8Array([7]),

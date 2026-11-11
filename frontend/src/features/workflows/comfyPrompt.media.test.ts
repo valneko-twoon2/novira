@@ -29,15 +29,15 @@ function clip(save: Record<string, unknown> = {}) {
   return { nodes, edges };
 }
 
-describe('a sound', () => {
-  it('ends at the node that saves it, with no first frame', { tags: ['boundary'] }, () => {
+describe('a sound', { tags: [] }, () => {
+  it('ends at the node that saves it, with no first frame', { tags: ['equivalence'] }, () => {
     const { graph } = compileComfyPrompt(sound());
     expect(graph.outputs).toEqual(['save']);
     expect(graph.thumbnail).toBeUndefined();
     expect(graph.prompt.save).toEqual({ class_type: 'SaveAudioAdvanced', inputs: { audio: ['silence', 0], filename_prefix: 'audio/ComfyUI', format: 'flac' } });
   });
 
-  it('sends the quality of the format that is chosen, under the name the prompt gives it', { tags: ['condition'] }, () => {
+  it('sends the quality of the format that is chosen, under the name the prompt gives it', { tags: ['decision-table'] }, () => {
     const quality = (format: string, extra: Record<string, unknown> = {}) => compileComfyPrompt(sound({ format, ...extra })).graph.prompt.save!.inputs;
     expect(quality('mp3')).toMatchObject({ format: 'mp3', 'format.quality': 'V0' });
     expect(quality('mp3', { 'format.quality': '320k' })).toMatchObject({ 'format.quality': '320k' });
@@ -56,8 +56,8 @@ describe('a sound', () => {
   });
 });
 
-describe('a video', () => {
-  it('ends at the node that saves it, and has a node for its first frame beside it', { tags: ['boundary'] }, () => {
+describe('a video', { tags: [] }, () => {
+  it('ends at the node that saves it, and has a node for its first frame beside it', { tags: ['equivalence'] }, () => {
     const { graph } = compileComfyPrompt(clip());
     expect(graph.outputs).toEqual(['save']);
     expect(graph.thumbnail).toBe('save:frame');
@@ -66,7 +66,7 @@ describe('a video', () => {
     expect(graph.prompt['save:frame']).toEqual({ class_type: 'PreviewImage', inputs: { images: ['save:first', 0] } });
   });
 
-  it('sends the codec the container brings, and the encoding only for a codec that has one', { tags: ['boundary'] }, () => {
+  it('sends the codec the container brings, and the encoding only for a codec that has one', { tags: ['decision-table'] }, () => {
     const inputs = (save: Record<string, unknown>) => compileComfyPrompt(clip(save)).graph.prompt.save!.inputs;
     expect(inputs({})).toMatchObject({ format: 'auto', 'format.codec': 'auto' });
     expect(inputs({})).not.toHaveProperty('format.codec.encoding');
@@ -77,7 +77,7 @@ describe('a video', () => {
     expect(inputs({ format: 'webm', 'format.codec#2': 'av1' })).toMatchObject({ format: 'webm', 'format.codec': 'av1' });
   });
 
-  it("sends a choice that is a number in ComfyUI's list as that number", { tags: ['condition'] }, () => {
+  it("sends a choice that is a number in ComfyUI's list as that number", { tags: ['equivalence'] }, () => {
     const { nodes, edges } = clip();
     const video = nodes.find((n) => n.id === 'video')!;
     expect(getTemplate('comfy:CreateVideo')!.inputs.find((i) => i.name === 'bit_depth')).toMatchObject({ options: ['auto', '8', '10'], values: ['auto', 8, 10], default: 'auto' });
@@ -87,7 +87,7 @@ describe('a video', () => {
     expect(compileComfyPrompt({ nodes, edges }).graph.prompt.video!.inputs).toMatchObject({ bit_depth: 'auto' });
   });
 
-  it('must be connected to something that makes a video', { tags: ['condition'] }, () => {
+  it('must be connected to something that makes a video', { tags: ['error-guessing'] }, () => {
     const { nodes } = clip();
     const e = (() => {
       try {
@@ -109,7 +109,7 @@ describe('a video', () => {
     expect(graph.outputs).toContain('shown');
   });
 
-  it('does not ask for a first frame when the first output is a picture', { tags: ['boundary'] }, () => {
+  it('does not ask for a first frame when the first output is a picture', { tags: ['condition'] }, () => {
     const { nodes } = clip();
     const only = nodes.filter((n) => n.id !== 'save');
     const preview = node('comfy:PreviewImage', 'preview');
@@ -119,13 +119,13 @@ describe('a video', () => {
   });
 });
 
-describe('a video or a sound from the gallery', () => {
+describe('a video or a sound from the gallery', { tags: [] }, () => {
   const load = (type: string, field: string, value: unknown): { nodes: WorkflowNode[]; edges: WorkflowEdge[] } => ({
     nodes: [node(type, 'src', { [field]: value }), node('comfy:PreviewAudio', 'out')],
     edges: type === 'comfy:LoadAudio' ? [makeEdge('src', 'AUDIO', 'out', 'audio')] : [],
   });
 
-  it('is named for the backend to upload when the graph runs', { tags: ['condition'] }, () => {
+  it('is named for the backend to upload when the graph runs', { tags: ['equivalence'] }, () => {
     const { graph } = compileComfyPrompt(load('comfy:LoadAudio', 'audio', 'song.flac'));
     expect(graph.prompt.src).toEqual({ class_type: 'LoadAudio', inputs: { audio: { $image: 'song.flac' } } });
     const video = compileComfyPrompt({
@@ -136,7 +136,7 @@ describe('a video or a sound from the gallery', () => {
     expect(video.graph.thumbnail).toBe('save:frame');
   });
 
-  it('needs one to be picked', { tags: ['boundary'] }, () => {
+  it('needs one to be picked', { tags: ['error-guessing'] }, () => {
     expect(() => compileComfyPrompt(load('comfy:LoadAudio', 'audio', null))).toThrow(ComfyGraphError);
   });
 });

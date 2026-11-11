@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { balloonOutline, outlineScale } from './balloon';
 
-describe('the outline of a balloon', () => {
-  it('is the text box scaled about its centre, and stretched by the balloon width and height', { tags: ['condition'] }, () => {
+describe('the outline of a balloon', { tags: [] }, () => {
+  it('is the text box scaled about its centre, and stretched by the balloon width and height', { tags: ['equivalence'] }, () => {
     const box = { x: 10, y: 20, width: 100, height: 40 };
     for (const look of [{ kind: 'speech', width: 1, height: 1 }, { kind: 'caption', width: 1.5, height: 0.8 }] as const) {
       const outline = balloonOutline(box, look);

@@ -38,7 +38,7 @@ describe('swinging a joint (properties)', () => {
     );
   });
 
-  it('aims the bone at the target', { tags: ['condition'] }, () => {
+  it('aims the bone at the target', { tags: ['equivalence'] }, () => {
     check(
       fc.property(joints, fc.integer({ min: 0, max: 17 }).filter((j) => POSE_PARENT[j]! >= 0), vec, (list, joint, target) => {
         const parent = list[POSE_PARENT[joint]!]!;
@@ -61,7 +61,7 @@ describe('swinging a joint (properties)', () => {
     );
   });
 
-  it('leaves the joints where they are when the target is already on the bone', { tags: ['condition'] }, () => {
+  it('leaves the joints where they are when the target is already on the bone', { tags: ['boundary'] }, () => {
     check(
       fc.property(joints, fc.integer({ min: 0, max: 17 }).filter((j) => POSE_PARENT[j]! >= 0), fc.double({ min: 0.1, max: 5, noNaN: true }), (list, joint, k) => {
         const parent = list[POSE_PARENT[joint]!]!;
@@ -74,13 +74,13 @@ describe('swinging a joint (properties)', () => {
 });
 
 describe('turning the view (properties)', () => {
-  it('never changes the distance from the middle', { tags: ['condition'] }, () => {
+  it('never changes the distance from the middle', { tags: ['equivalence'] }, () => {
     check(fc.property(vec, fc.double({ min: -7, max: 7, noNaN: true }), fc.double({ min: -2, max: 2, noNaN: true }), (p, yaw, pitch) => {
       expect(close(length3(turnView(p, yaw, pitch)), length3(p), 1e-9)).toBe(true);
     }));
   });
 
-  it('is the identity for no turn', { tags: ['condition'] }, () => {
+  it('is the identity for no turn', { tags: ['boundary'] }, () => {
     check(
       fc.property(vec, (p) => {
         expect(length3(sub(turnView(p, 0, 0), p))).toBeLessThan(1e-9);

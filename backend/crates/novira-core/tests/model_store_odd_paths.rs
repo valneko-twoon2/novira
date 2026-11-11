@@ -86,7 +86,7 @@ fn data_with_lora(tag: &str) -> (tempfile::TempDir, Vec<u8>, std::path::PathBuf)
     (dir, bytes, file)
 }
 
-// tags: state-transition
+// tags: condition, state-transition
 #[tokio::test]
 async fn the_cover_lookup_sends_the_civitai_key_and_stops_when_the_app_is_closing() {
     let (dir, bytes, _) = data_with_lora("odd-key");
@@ -114,7 +114,7 @@ async fn the_cover_lookup_sends_the_civitai_key_and_stops_when_the_app_is_closin
     assert!(site().requests(&by_hash_path(&bytes)).is_empty());
 }
 
-// tags: scenario
+// tags: condition
 #[tokio::test]
 async fn the_cover_lookup_fills_only_what_a_model_lacks() {
     let (dir, bytes, _) = data_with_lora("odd-fill");
@@ -161,7 +161,7 @@ async fn the_cover_lookup_fills_only_what_a_model_lacks() {
     assert_eq!(model.trigger_phrases, None);
 }
 
-// tags: regression, error-guessing
+// tags: condition, error-guessing
 #[tokio::test]
 async fn a_failed_license_lookup_is_asked_again_later_but_an_unknown_model_is_not() {
     let (dir, bytes, _) = data_with_lora("odd-lic-fail");
@@ -181,7 +181,7 @@ async fn a_failed_license_lookup_is_asked_again_later_but_an_unknown_model_is_no
     assert_eq!(site().requests(&by_hash_path(&bytes)).len(), 1);
 }
 
-// tags: scenario
+// tags: error-guessing
 #[tokio::test]
 async fn a_model_file_that_vanished_is_skipped_by_the_background_fills() {
     let (dir, bytes, file) = data_with_lora("odd-gone");
@@ -199,7 +199,7 @@ async fn a_model_file_that_vanished_is_skipped_by_the_background_fills() {
     assert!(model.cover_image_url.is_none() && model.license.is_none());
 }
 
-// tags: regression, state-transition
+// tags: state-transition
 #[tokio::test]
 async fn a_hidden_model_comes_back_when_its_file_is_installed_again() {
     let dir = tempfile::tempdir().unwrap();
@@ -267,7 +267,7 @@ async fn finished_job(events: &Events, id: &str) -> ModelInstallJob {
     panic!("the install did not end");
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing
 #[tokio::test]
 async fn an_install_into_a_folder_that_cannot_be_made_fails_with_the_reason() {
     let dir = tempfile::tempdir().unwrap();
@@ -300,7 +300,7 @@ async fn an_install_into_a_folder_that_cannot_be_made_fails_with_the_reason() {
     );
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing
 #[tokio::test]
 async fn a_model_that_cannot_be_recorded_fails_its_install_and_a_starter_keeps_its_name() {
     let dir = tempfile::tempdir().unwrap();

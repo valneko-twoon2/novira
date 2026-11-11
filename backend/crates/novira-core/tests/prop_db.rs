@@ -121,7 +121,7 @@ fn a_run_of_writes_leaves_what_a_plain_model_of_them_leaves() {
     });
 }
 
-// tags: error-guessing
+// tags: error-guessing, condition
 #[test]
 fn a_row_that_is_not_there_is_none_and_deleting_it_is_harmless() {
     check((id(), stored_json()), |(id, value)| {

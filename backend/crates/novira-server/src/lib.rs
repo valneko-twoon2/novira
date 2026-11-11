@@ -1912,7 +1912,7 @@ mod tests {
         }
     }
 
-    // tags: condition
+    // tags: equivalence, boundary
     #[test]
     fn the_qr_code_is_a_square_of_dark_and_light_modules() {
         let url = page_url(

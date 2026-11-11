@@ -39,8 +39,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('canvas launchpad', () => {
-  it('opens the canvas from the draw card', { tags: ['decision-table'] }, () => {
+describe('canvas launchpad', { tags: [] }, () => {
+  it('opens the canvas from the draw card', { tags: ['scenario'] }, () => {
     show(<CanvasLaunchpad />);
     fireEvent.click(screen.getByTestId('lp-draw'));
     expect(useUi.getState().mainView.canvas).toBe('canvas');
@@ -50,7 +50,7 @@ describe('canvas launchpad', () => {
     ['params.launchpad.canvas.imageTitle', 'newCanvasRaster'],
     ['params.launchpad.canvas.controlTitle', 'newCanvasControl'],
     ['params.launchpad.canvas.inpaintTitle', 'inpaint'],
-  ] as const)('imports an image dropped on %s as %s and opens the canvas', { tags: ['decision-table'] }, async (key, target) => {
+  ] as const)('imports an image dropped on %s as %s and opens the canvas', { tags: ['equivalence'] }, async (key, target) => {
     const importImage = vi.fn();
     useCanvas.setState({ importImage });
     show(<CanvasLaunchpad />);
@@ -59,13 +59,13 @@ describe('canvas launchpad', () => {
     expect(useUi.getState().mainView.canvas).toBe('canvas');
   });
 
-  it('opens the canvas from a click on a drop card', { tags: ['decision-table'] }, () => {
+  it('opens the canvas from a click on a drop card', { tags: ['scenario'] }, () => {
     show(<CanvasLaunchpad />);
     fireEvent.click(screen.getByText(t('params.launchpad.canvas.inpaintTitle')));
     expect(useUi.getState().mainView.canvas).toBe('canvas');
   });
 
-  it('ignores a drop of an image the gallery does not know', { tags: ['decision-table'] }, async () => {
+  it('ignores a drop of an image the gallery does not know', { tags: ['error-guessing', 'condition'] }, async () => {
     const importImage = vi.fn();
     useCanvas.setState({ importImage });
     show(<CanvasLaunchpad />);
@@ -78,14 +78,14 @@ describe('canvas launchpad', () => {
   });
 });
 
-describe('generate launchpad', () => {
-  it('focuses the prompt from the text card', { tags: ['decision-table'] }, () => {
+describe('generate launchpad', { tags: [] }, () => {
+  it('focuses the prompt from the text card', { tags: ['scenario'] }, () => {
     show(<GenerateLaunchpad />);
     fireEvent.click(screen.getByTestId('lp-text'));
     expect(useUi.getState().focusPromptNonce).toBe(1);
   });
 
-  it('adds an empty reference image from a click and a filled one from a drop', { tags: ['decision-table'] }, async () => {
+  it('adds an empty reference image from a click and a filled one from a drop', { tags: ['scenario'] }, async () => {
     show(<GenerateLaunchpad />);
     fireEvent.click(screen.getByTestId('lp-ref'));
     expect(useParams.getState().refImages).toHaveLength(1);
@@ -94,7 +94,7 @@ describe('generate launchpad', () => {
     expect(useParams.getState().refImages[1]).toMatchObject({ imageName: 'pic', imageUrl: '/img/pic.png' });
   });
 
-  it('puts a picture dropped on the start card in the image to image section, and stays on this tab', { tags: ['decision-table'] }, async () => {
+  it('puts a picture dropped on the start card in the image to image section, and stays on this tab', { tags: ['scenario'] }, async () => {
     useParams.setState({ initImage: null });
     show(<GenerateLaunchpad />);
     dropOn(t('params.launchpad.generate.startTitle'), ['pic']);
@@ -102,7 +102,7 @@ describe('generate launchpad', () => {
     expect(useUi.getState().activeTab).toBe('generate');
   });
 
-  it('opens a file chooser from the start card', { tags: ['decision-table'] }, () => {
+  it('opens a file chooser from the start card', { tags: ['scenario'] }, () => {
     show(<GenerateLaunchpad />);
     const input = screen.getByTestId('lp-start-file') as HTMLInputElement;
     const click = vi.spyOn(input, 'click');
@@ -111,7 +111,7 @@ describe('generate launchpad', () => {
     expect(useUi.getState().activeTab).toBe('generate');
   });
 
-  it('opens the canvas itself from the canvas card', { tags: ['decision-table'] }, () => {
+  it('opens the canvas itself from the canvas card', { tags: ['scenario'] }, () => {
     show(<GenerateLaunchpad />);
     fireEvent.click(screen.getByText(t('params.launchpad.generate.canvasTitle')));
     expect(useUi.getState().activeTab).toBe('canvas');
@@ -119,10 +119,10 @@ describe('generate launchpad', () => {
   });
 });
 
-describe('workflows launchpad', () => {
+describe('workflows launchpad', { tags: [] }, () => {
   const wf = (id: string, name: string, updatedAt: number): SavedWorkflow => ({ id, name, description: `about ${name}`, author: '', tags: [], category: 'user', updatedAt, graph: { nodes: [] } });
 
-  it('opens the editor from the new card and the library from the library card', { tags: ['decision-table'] }, () => {
+  it('opens the editor from the new card and the library from the library card', { tags: ['scenario'] }, () => {
     show(<WorkflowsLaunchpad />);
     fireEvent.click(screen.getByTestId('lp-new-workflow'));
     expect(useUi.getState().mainView.workflows).toBe('editor');
@@ -130,7 +130,7 @@ describe('workflows launchpad', () => {
     expect(useUi.getState().modal).toBe('workflowLibrary');
   });
 
-  it('asks for the file at once from the load card and opens the one picked', { tags: ['decision-table'] }, () => {
+  it('asks for the file at once from the load card and opens the one picked', { tags: ['scenario'] }, () => {
     act(() => useUi.setState({ modal: null }));
     const loadFile = vi.fn();
     useWorkflows.setState({ loadFile });
@@ -145,13 +145,13 @@ describe('workflows launchpad', () => {
     expect(loadFile).toHaveBeenCalledWith(file);
   });
 
-  it('lists no recent section for an empty library', { tags: ['decision-table'] }, () => {
+  it('lists no recent section for an empty library', { tags: ['boundary'] }, () => {
     act(() => useWorkflows.getState().setLibrary([]));
     show(<WorkflowsLaunchpad />);
     expect(screen.queryByText(t('params.launchpad.workflows.recent'))).toBeNull();
   });
 
-  it('lists the six most recently changed workflows and opens one in the editor', { tags: ['decision-table'] }, () => {
+  it('lists the six most recently changed workflows and opens one in the editor', { tags: ['boundary', 'scenario'] }, () => {
     const library = Array.from({ length: 8 }, (_, i) => wf(`w${i}`, `Flow ${i}`, i));
     act(() => useWorkflows.getState().setLibrary(library));
     const load = vi.fn();

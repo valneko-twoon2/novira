@@ -343,7 +343,7 @@ pub async fn fetch(
 mod tests {
     use super::*;
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn the_pinned_list_has_the_three_files_with_hashes_and_sizes() {
         let names: Vec<&str> = pinned().iter().map(|f| f.name.as_str()).collect();
@@ -367,7 +367,7 @@ mod tests {
         assert_eq!(rt.download_bytes(), archive.bytes);
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn the_real_addresses_are_https_on_their_exact_hosts() {
         let enc = pinned_file(ENCODER);
@@ -401,7 +401,7 @@ mod tests {
         assert!(!allowed("https://cai-watermark.adobe.net/x", rt));
     }
 
-    // tags: condition
+    // tags: condition, boundary
     #[test]
     fn files_are_found_by_size_in_the_first_folder_that_has_them() {
         let a = tempfile::tempdir().unwrap();
@@ -471,7 +471,7 @@ mod tests {
         assert_eq!(search_dirs(None, data), vec![data.join("models").join(DIR)]);
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn sha256_of_a_file_is_lowercase_hex() {
         let dir = tempfile::tempdir().unwrap();

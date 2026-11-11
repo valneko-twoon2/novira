@@ -3,8 +3,8 @@ import { maxMessageId, newSessionId, PERSISTED_SESSIONS_MAX, persistedSessions, 
 
 const session = (id: string, updatedAt: number, messages: AgentSession['messages'] = []): AgentSession => ({ id, createdAt: updatedAt, updatedAt, messages });
 
-describe('sessionTitle', () => {
-  it('uses the first user message on one line', { tags: ['scenario'] }, () => {
+describe('sessionTitle', { tags: [] }, () => {
+  it('uses the first user message on one line', { tags: ['equivalence'] }, () => {
     const s = session('a', 1, [
       { id: 1, role: 'assistant', text: 'hello', tools: [] },
       { id: 2, role: 'user', text: '  a cat\n on a  roof ', tools: [] },
@@ -13,7 +13,7 @@ describe('sessionTitle', () => {
     expect(sessionTitle(s)).toBe('a cat on a roof');
   });
 
-  it('shortens a long first message and prefers the name the user gave', { tags: ['scenario'] }, () => {
+  it('shortens a long first message and prefers the name the user gave', { tags: ['boundary', 'condition'] }, () => {
     const long = session('a', 1, [{ id: 1, role: 'user', text: 'あ'.repeat(TITLE_MAX + 10), tools: [] }]);
     const title = sessionTitle(long);
     expect([...title]).toHaveLength(TITLE_MAX);
@@ -27,14 +27,14 @@ describe('sessionTitle', () => {
   });
 });
 
-describe('session order and ids', () => {
-  it('sorts the most recently used first without changing the input', { tags: ['condition'] }, () => {
+describe('session order and ids', { tags: [] }, () => {
+  it('sorts the most recently used first without changing the input', { tags: ['equivalence'] }, () => {
     const input = [session('old', 1), session('new', 3), session('mid', 2)];
     expect(sortSessions(input).map((s) => s.id)).toEqual(['new', 'mid', 'old']);
     expect(input.map((s) => s.id)).toEqual(['old', 'new', 'mid']);
   });
 
-  it('gives a different id each time, even in the same millisecond', { tags: ['equivalence'] }, () => {
+  it('gives a different id each time, even in the same millisecond', { tags: ['boundary'] }, () => {
     expect(newSessionId(5)).not.toBe(newSessionId(5));
   });
 
@@ -44,8 +44,8 @@ describe('session order and ids', () => {
   });
 });
 
-describe('persisted sessions', () => {
-  it('keeps the pictures a message carried, and reads back only names, at most four', { tags: ['boundary'] }, () => {
+describe('persisted sessions', { tags: [] }, () => {
+  it('keeps the pictures a message carried, and reads back only names, at most four', { tags: ['boundary', 'error-guessing'] }, () => {
     const [saved] = persistedSessions([{ ...session('a', 1), messages: [{ id: 1, role: 'user', text: 'like this', images: ['a.png'], tools: [] }] }]);
     expect(saved!.messages[0]).toEqual({ id: 1, role: 'user', text: 'like this', images: ['a.png'], tools: [] });
     const [restored] = restoreSessions([
@@ -55,7 +55,7 @@ describe('persisted sessions', () => {
     expect(restored!.messages[1]).not.toHaveProperty('images');
   });
 
-  it('keeps what the chat shows and drops the undo snapshots', { tags: ['state-transition'] }, () => {
+  it('keeps what the chat shows and drops the undo snapshots', { tags: ['equivalence'] }, () => {
     const [saved] = persistedSessions([
       {
         ...session('a', 1),
@@ -82,7 +82,7 @@ describe('persisted sessions', () => {
     });
   });
 
-  it('keeps only the most recent sessions', { tags: ['condition'] }, () => {
+  it('keeps only the most recent sessions', { tags: ['boundary'] }, () => {
     const many = Array.from({ length: PERSISTED_SESSIONS_MAX + 5 }, (_, i) => session(`s${i}`, i));
     const saved = persistedSessions(many);
     expect(saved).toHaveLength(PERSISTED_SESSIONS_MAX);
@@ -122,19 +122,23 @@ describe('persisted sessions', () => {
     expect(restoreSessions({ not: 'a list' })).toEqual([]);
   });
 
-  it('reads chats saved before the assistant used tools: their actions become chips, and the going-on notes are dropped', { tags: ['regression', 'condition'] }, () => {
-    const [old] = restoreSessions([
-      {
-        id: 'o',
-        updatedAt: 1,
-        messages: [
-          { id: 1, role: 'user', text: 'make it', tools: [] },
-          { id: 2, role: 'assistant', text: 'done', actions: [{ type: 'selectModel', key: 'm1' }, { type: 'setPrompt', positive: 'p', negative: '' }, { type: 'recommendPacks', ids: ['rmbg'] }, { type: 'createWorkflow', name: 'W', graph: null }, { type: 'nope' }] },
-          { id: 3, role: 'user', text: 'Continue the work', actions: [], auto: 1 },
-        ],
-      },
-    ]);
-    expect(old!.messages.map((m) => m.id)).toEqual([1, 2]);
-    expect(old!.messages[1]!.tools).toEqual([{ kind: 'model', key: 'm1' }, { kind: 'prompt' }, { kind: 'packs', ids: ['rmbg'] }, { kind: 'workflow', key: 'W' }]);
-  });
+  it(
+    'reads chats saved before the assistant used tools: their actions become chips, and the going-on notes are dropped',
+    { tags: ['regression', 'condition'] },
+    () => {
+      const [old] = restoreSessions([
+        {
+          id: 'o',
+          updatedAt: 1,
+          messages: [
+            { id: 1, role: 'user', text: 'make it', tools: [] },
+            { id: 2, role: 'assistant', text: 'done', actions: [{ type: 'selectModel', key: 'm1' }, { type: 'setPrompt', positive: 'p', negative: '' }, { type: 'recommendPacks', ids: ['rmbg'] }, { type: 'createWorkflow', name: 'W', graph: null }, { type: 'nope' }] },
+            { id: 3, role: 'user', text: 'Continue the work', actions: [], auto: 1 },
+          ],
+        },
+      ]);
+      expect(old!.messages.map((m) => m.id)).toEqual([1, 2]);
+      expect(old!.messages[1]!.tools).toEqual([{ kind: 'model', key: 'm1' }, { kind: 'prompt' }, { kind: 'packs', ids: ['rmbg'] }, { kind: 'workflow', key: 'W' }]);
+    },
+  );
 });

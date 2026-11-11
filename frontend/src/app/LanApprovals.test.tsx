@@ -21,7 +21,7 @@ async function mount() {
 
 const toasts = () => useToasts.getState().toasts;
 
-describe('LanApprovals', () => {
+describe('LanApprovals', { tags: [] }, () => {
   beforeEach(() => {
     resetLan();
     useToasts.setState({ toasts: [] });
@@ -38,7 +38,7 @@ describe('LanApprovals', () => {
     expect(toasts()).toEqual([]);
   });
 
-  it('asks nothing while nobody is asking', { tags: ['condition'] }, async () => {
+  it('asks nothing while nobody is asking', { tags: ['boundary'] }, async () => {
     getLanApi.mockResolvedValue(createMockLan('open'));
     await mount();
     expect(toasts()).toEqual([]);
@@ -70,7 +70,7 @@ describe('LanApprovals', () => {
     expect(toasts()).toEqual([]);
   });
 
-  it('refuses from the toast, and drops the toast of a request that went away', { tags: ['condition'] }, async () => {
+  it('refuses from the toast, and drops the toast of a request that went away', { tags: ['state-transition'] }, async () => {
     const lan = createMockLan('open');
     lan.askToPair('iPhone', '192.168.1.20');
     lan.askToPair('Pixel', '192.168.1.21');

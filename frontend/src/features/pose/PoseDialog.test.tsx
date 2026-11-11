@@ -78,7 +78,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('editing the pose', () => {
+describe('editing the pose', { tags: [] }, () => {
   it('mirrors the figure, and goes back to the chosen preset', { tags: ['scenario'] }, async () => {
     await openDialog();
     const wrist = POSE_JOINT_NAMES.indexOf('rightWrist');
@@ -101,7 +101,7 @@ describe('editing the pose', () => {
     expect(joint('nose').getAttribute('aria-valuetext')).toBe(`${Math.round(nose.x * 100)}%, ${Math.round(nose.y * 100)}%`);
   });
 
-  it('shapes the stage like the chosen size', { tags: ['scenario'] }, async () => {
+  it('shapes the stage like the chosen size', { tags: ['equivalence'] }, async () => {
     await openDialog();
     const stage = screen.getByTestId('pose-stage');
     expect(stage.getAttribute('viewBox')).toBe(`0 0 ${useCanvas.getState().bbox.width} ${useCanvas.getState().bbox.height}`);
@@ -114,22 +114,26 @@ describe('editing the pose', () => {
   });
 });
 
-describe('using the pose', () => {
-  it('puts it on an empty canvas as a control layer that follows it to the end, with the OpenPose model chosen', { tags: ['scenario'] }, async () => {
-    useModels.setState({ models: [controlnet('depth-xl', 'sdxl'), controlnet('xinsir-openpose', 'sdxl')] });
-    await openDialog();
-    fireEvent.click(screen.getByTestId('pose-use'));
-    await waitFor(() => expect(usePoseDialog.getState().isOpen).toBe(false));
-    expect(backend.uploadImage).toHaveBeenCalledWith(expect.any(Blob), { boardId: null, category: 'control' });
-    expect(useGallery.getState().images.some((i) => i.name === 'pose.png')).toBe(true);
-    const layers = useCanvas.getState().entities.filter((e) => e.type === 'control');
-    expect(layers).toHaveLength(1);
-    expect(importImage).toHaveBeenCalledWith(saved, 'newCanvasControl');
-    expect(layers[0]).toMatchObject({ weight: 1, beginEnd: [0, 1], modelKey: 'xinsir-openpose' });
-    expect(useToasts.getState().toasts.at(-1)).toMatchObject({ status: 'success', title: t('pose.saved') });
-  });
+describe('using the pose', { tags: [] }, () => {
+  it(
+    'puts it on an empty canvas as a control layer that follows it to the end, with the OpenPose model chosen',
+    { tags: ['scenario'] },
+    async () => {
+      useModels.setState({ models: [controlnet('depth-xl', 'sdxl'), controlnet('xinsir-openpose', 'sdxl')] });
+      await openDialog();
+      fireEvent.click(screen.getByTestId('pose-use'));
+      await waitFor(() => expect(usePoseDialog.getState().isOpen).toBe(false));
+      expect(backend.uploadImage).toHaveBeenCalledWith(expect.any(Blob), { boardId: null, category: 'control' });
+      expect(useGallery.getState().images.some((i) => i.name === 'pose.png')).toBe(true);
+      const layers = useCanvas.getState().entities.filter((e) => e.type === 'control');
+      expect(layers).toHaveLength(1);
+      expect(importImage).toHaveBeenCalledWith(saved, 'newCanvasControl');
+      expect(layers[0]).toMatchObject({ weight: 1, beginEnd: [0, 1], modelKey: 'xinsir-openpose' });
+      expect(useToasts.getState().toasts.at(-1)).toMatchObject({ status: 'success', title: t('pose.saved') });
+    },
+  );
 
-  it('warns when no model reads OpenPose, and adds another layer when the canvas is not empty', { tags: ['scenario'] }, async () => {
+  it('warns when no model reads OpenPose, and adds another layer when the canvas is not empty', { tags: ['condition'] }, async () => {
     await openDialog();
     fireEvent.click(screen.getByTestId('pose-use'));
     await waitFor(() => expect(usePoseDialog.getState().isOpen).toBe(false));
@@ -144,7 +148,7 @@ describe('using the pose', () => {
     expect(importImage).toHaveBeenLastCalledWith(saved, 'control');
   });
 
-  it('stays open and shows the reason when the picture cannot be saved', { tags: ['scenario'] }, async () => {
+  it('stays open and shows the reason when the picture cannot be saved', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'uploadImage').mockRejectedValue(new Error('disk full'));
     await openDialog();
     fireEvent.click(screen.getByTestId('pose-use'));

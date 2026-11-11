@@ -20,7 +20,7 @@ function seed() {
 
 beforeEach(reset);
 
-describe('the comic store: projects', () => {
+describe('the comic store: projects', { tags: [] }, () => {
   it('opens the first project on its first page', { tags: ['condition'] }, () => {
     const { a } = seed();
     const s = useComic.getState();
@@ -38,7 +38,7 @@ describe('the comic store: projects', () => {
     expect(s.activeProjectId).toBe(id);
   });
 
-  it('keeps the space typed at the end of a character part and of a place\'s negative words', { tags: ['boundary'] }, () => {
+  it('keeps the space typed at the end of a character part and of a place\'s negative words', { tags: ['condition'] }, () => {
     seed();
     useComic.getState().setCast([{ id: 'c1', name: 'Mio', tags: '1girl', imageName: null, parts: { hair: 'long ' } }]);
     expect(activeProject(useComic.getState())!.cast[0]!.parts).toEqual({ hair: 'long ' });
@@ -66,7 +66,7 @@ describe('the comic store: projects', () => {
     expect(s.activePageId).toBe(b.pages[0]!.id);
   });
 
-  it('deletes the last project and has nothing open', { tags: ['condition'] }, () => {
+  it('deletes the last project and has nothing open', { tags: ['boundary'] }, () => {
     const { a } = seed();
     useComic.getState().deleteProject(a.id);
     useComic.getState().deleteProject(useComic.getState().projects[0]!.id);
@@ -102,8 +102,8 @@ describe('the comic store: projects', () => {
   });
 });
 
-describe('the comic store: pages and panels', () => {
-  it('adds a page with three panels and opens it', { tags: ['condition'] }, () => {
+describe('the comic store: pages and panels', { tags: [] }, () => {
+  it('adds a page with three panels and opens it', { tags: ['equivalence'] }, () => {
     const { a } = seed();
     const id = useComic.getState().addPage();
     const s = useComic.getState();
@@ -124,7 +124,7 @@ describe('the comic store: pages and panels', () => {
     expect(s.activePageId).toBe(a.pages[0]!.id);
   });
 
-  it('grows and shrinks the panels of a page, keeping the first ones', { tags: ['condition'] }, () => {
+  it('grows and shrinks the panels of a page, keeping the first ones', { tags: ['boundary'] }, () => {
     const { a } = seed();
     const pageId = a.pages[0]!.id;
     const [first, second, third] = a.pages[0]!.panels;
@@ -162,14 +162,14 @@ describe('the comic store: pages and panels', () => {
     expect(findPanel(useComic.getState().projects, 'missing')).toBeNull();
   });
 
-  it('selects the panel on screen', { tags: ['condition'] }, () => {
+  it('selects the panel on screen', { tags: ['equivalence'] }, () => {
     const { a } = seed();
     const panel = a.pages[0]!.panels[0]!;
     useComic.getState().selectPanel(panel.id);
     expect(workPanel(useComic.getState())?.panel.id).toBe(panel.id);
   });
 
-  it('sets the prompt, the picture and the pose of a panel', { tags: ['condition'] }, () => {
+  it('sets the prompt, the picture and the pose of a panel', { tags: ['equivalence'] }, () => {
     const { a } = seed();
     const panel = a.pages[0]!.panels[0]!.id;
     const s = useComic.getState();
@@ -182,23 +182,27 @@ describe('the comic store: pages and panels', () => {
     expect(findPanel(useComic.getState().projects, panel)!.panel).toMatchObject({ poses: [], poseImageName: null });
   });
 
-  it('puts a 3D rough into a panel in one undo step, and lets a pose put in another way drop its depth map', { tags: ['state-transition'] }, () => {
-    const { a } = seed();
-    const panel = a.pages[0]!.panels[0]!.id;
-    const rough = newRough();
-    useComic.getState().setPanelRough(panel, rough, [joints], 'rough-pose.png', 'rough-depth.png');
-    expect(findPanel(useComic.getState().projects, panel)!.panel).toMatchObject({ rough, poses: [joints], poseImageName: 'rough-pose.png', depthImageName: 'rough-depth.png' });
-    useComic.getState().undo();
-    const before = findPanel(useComic.getState().projects, panel)!.panel;
-    expect(before.rough).toBeUndefined();
-    expect(before.depthImageName).toBeUndefined();
-    useComic.getState().redo();
-    // A pose from the pose editor, a ready-made one or the assistant: the rough stays, its depth map goes.
-    useComic.getState().setPanelPose(panel, [joints], 'pose.png');
-    const after = findPanel(useComic.getState().projects, panel)!.panel;
-    expect(after.rough).toEqual(rough);
-    expect(after).not.toHaveProperty('depthImageName');
-  });
+  it(
+    'puts a 3D rough into a panel in one undo step, and lets a pose put in another way drop its depth map',
+    { tags: ['state-transition'] },
+    () => {
+      const { a } = seed();
+      const panel = a.pages[0]!.panels[0]!.id;
+      const rough = newRough();
+      useComic.getState().setPanelRough(panel, rough, [joints], 'rough-pose.png', 'rough-depth.png');
+      expect(findPanel(useComic.getState().projects, panel)!.panel).toMatchObject({ rough, poses: [joints], poseImageName: 'rough-pose.png', depthImageName: 'rough-depth.png' });
+      useComic.getState().undo();
+      const before = findPanel(useComic.getState().projects, panel)!.panel;
+      expect(before.rough).toBeUndefined();
+      expect(before.depthImageName).toBeUndefined();
+      useComic.getState().redo();
+      // A pose from the pose editor, a ready-made one or the assistant: the rough stays, its depth map goes.
+      useComic.getState().setPanelPose(panel, [joints], 'pose.png');
+      const after = findPanel(useComic.getState().projects, panel)!.panel;
+      expect(after.rough).toEqual(rough);
+      expect(after).not.toHaveProperty('depthImageName');
+    },
+  );
 
   it('drops the depth map of a panel a template is put into', { tags: ['condition'] }, () => {
     const { a } = seed();
@@ -210,7 +214,7 @@ describe('the comic store: pages and panels', () => {
   });
 });
 
-describe('the comic store: the cast', () => {
+describe('the comic store: the cast', { tags: [] }, () => {
   it('keeps every field of a character it is given, the words kept out of its panels as they are typed', { tags: ['equivalence'] }, () => {
     seed();
     useComic.getState().setCast([{ id: 'c', name: 'Mina', tags: '1girl', parts: { hair: 'red hair' }, nonHuman: true, negative: 'red ', imageName: 'mina.png' }]);
@@ -221,7 +225,7 @@ describe('the comic store: the cast', () => {
     expect(useComic.getState().projects[0]!.cast[0]).toMatchObject({ sheet: { back: 'b.png' }, libraryId: 'preset-1' });
   });
 
-  it('puts a view into the sheet of a character of any comic, and takes it out, without an undo step', { tags: ['state-transition'] }, () => {
+  it('puts a view into the sheet of a character of any comic, and takes it out, without an undo step', { tags: ['condition'] }, () => {
     const { a, b } = seed();
     useComic.getState().selectProject(b.id);
     useComic.getState().setCast([{ id: 'c', name: 'Mina', tags: '1girl', imageName: 'f.png' }]);
@@ -243,7 +247,7 @@ describe('the comic store: the cast', () => {
     expect(useComic.getState().projects).toBe(projects);
   });
 
-  it('turns the character references on at a strength kept in range, and off again', { tags: ['regression'] }, () => {
+  it('turns the character references on at a strength kept in range, and off again', { tags: ['boundary'] }, () => {
     const { a } = seed();
     const comic = () => useComic.getState().projects.find((p) => p.id === a.id)!;
     expect(comic()).not.toHaveProperty('castReference');
@@ -256,7 +260,7 @@ describe('the comic store: the cast', () => {
   });
 });
 
-describe('the comic store: the places and the world', () => {
+describe('the comic store: the places and the world', { tags: [] }, () => {
   const comic = () => useComic.getState().projects[0]!;
   const panelOf = (id: string) => findPanel(useComic.getState().projects, id)!.panel;
 
@@ -282,19 +286,23 @@ describe('the comic store: the places and the world', () => {
     expect(useComic.getState().projects[1]!.places).toEqual([]);
   });
 
-  it('keeps the world as it is typed, drops one with no word, and undoes a run of typing in one step', { tags: ['state-transition'] }, () => {
-    seed();
-    for (const text of ['s', 'su', 'summer ']) useComic.getState().setWorld(text);
-    expect(comic().world).toBe('summer ');
-    useComic.getState().undo();
-    expect(comic()).not.toHaveProperty('world');
-    useComic.getState().setWorld('summer');
-    useComic.getState().setWorld('   ');
-    expect(comic()).not.toHaveProperty('world');
-  });
+  it(
+    'keeps the world as it is typed, drops one with no word, and undoes a run of typing in one step',
+    { tags: ['state-transition'] },
+    () => {
+      seed();
+      for (const text of ['s', 'su', 'summer ']) useComic.getState().setWorld(text);
+      expect(comic().world).toBe('summer ');
+      useComic.getState().undo();
+      expect(comic()).not.toHaveProperty('world');
+      useComic.getState().setWorld('summer');
+      useComic.getState().setWorld('   ');
+      expect(comic()).not.toHaveProperty('world');
+    },
+  );
 });
 
-describe('the comic store: balloons and captions', () => {
+describe('the comic store: balloons and captions', { tags: [] }, () => {
   it('adds a balloon and selects it, then edits and removes it', { tags: ['state-transition'] }, () => {
     const { a } = seed();
     const panelId = a.pages[0]!.panels[0]!.id;
@@ -314,8 +322,8 @@ describe('the comic store: balloons and captions', () => {
   });
 });
 
-describe('the comic store: queue items', () => {
-  it('remembers which panel a queue item is drawing, and forgets it', { tags: ['condition'] }, () => {
+describe('the comic store: queue items', { tags: [] }, () => {
+  it('remembers which panel a queue item is drawing, and forgets it', { tags: ['state-transition'] }, () => {
     useComic.getState().setPending(7, 'panel-x');
     expect(useComic.getState().pending).toEqual({ 7: 'panel-x' });
     useComic.getState().clearPending(7);

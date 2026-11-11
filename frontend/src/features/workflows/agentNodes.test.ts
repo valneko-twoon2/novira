@@ -10,13 +10,13 @@ import { setExtensionTemplates } from './templates';
 beforeEach(() => setExtensionTemplates(comfyTemplates({ ...MOCK_NODE_DEFS, ...CORE_NODE_DEFS })));
 afterEach(() => setExtensionTemplates([]));
 
-describe('searching the nodes of ComfyUI', () => {
-  it('says ComfyUI is not ready while the editor knows none of its nodes', { tags: ['boundary', 'state-transition'] }, () => {
+describe('searching the nodes of ComfyUI', { tags: [] }, () => {
+  it('says ComfyUI is not ready while the editor knows none of its nodes', { tags: ['boundary'] }, () => {
     setExtensionTemplates([]);
     expect(searchComfyNodes('save audio', 5)).toMatchObject({ ready: false, total: 0, matches: [], note: expect.stringContaining('not running') });
   });
 
-  it('finds a node by its class name, its title or what it does, best match first', { tags: ['boundary'] }, () => {
+  it('finds a node by its class name, its title or what it does, best match first', { tags: ['equivalence', 'error-guessing'] }, () => {
     const byClass = searchComfyNodes('SaveAudioAdvanced', 5);
     expect(byClass.ready).toBe(true);
     expect(byClass.matches[0]!.type).toBe('comfy:SaveAudioAdvanced');
@@ -26,22 +26,26 @@ describe('searching the nodes of ComfyUI', () => {
     expect(searchComfyNodes('save audio zzzznothing', 5).matches).toEqual([]);
   });
 
-  it('writes the inputs the way setInputs and connect take them: choices, the inputs of a choice, links and gallery files', { tags: ['condition'] }, () => {
-    const save = searchComfyNodes('SaveAudioAdvanced', 1).matches[0]!;
-    expect(save.output).toBe(true);
-    expect(save.inputs).toEqual(expect.arrayContaining([expect.stringMatching(/^audio\*<-AUDIO$/), expect.stringMatching(/^format\*?:one of \[flac\|mp3\|opus\]=flac$/), expect.stringMatching(/^format\.quality:one of \[V0\|128k\|320k\]=V0 \(only while format=mp3\)$/)]));
-    expect(save.outputs).toEqual(['audio:AUDIO']);
-    // A second input of the same name for another choice is named with #2, as the editor and setInputs take it.
-    expect(save.inputs).toContain('format.quality#2:one of [64k|96k|128k|192k|320k]=128k (only while format=opus)');
-    const load = searchComfyNodes('LoadAudio', 3).matches.find((m) => m.type === 'comfy:LoadAudio')!;
-    expect(load.inputs.join()).toMatch(/audio\*?:gallery-sound-name/);
-    expect(searchComfyNodes('LoadVideo', 3).matches.find((m) => m.type === 'comfy:LoadVideo')!.inputs.join()).toMatch(/file\*?:gallery-video-name/);
-    const sampler = searchComfyNodes('KSampler', 1).matches[0]!;
-    expect(sampler.inputs).toEqual(expect.arrayContaining(['model*<-UNetField', 'positive*<-ConditioningField', 'latent_image*<-LatentsField']));
-    expect(sampler.outputs).toEqual(['LATENT:LatentsField']);
-  });
+  it(
+    'writes the inputs the way setInputs and connect take them: choices, the inputs of a choice, links and gallery files',
+    { tags: ['equivalence'] },
+    () => {
+      const save = searchComfyNodes('SaveAudioAdvanced', 1).matches[0]!;
+      expect(save.output).toBe(true);
+      expect(save.inputs).toEqual(expect.arrayContaining([expect.stringMatching(/^audio\*<-AUDIO$/), expect.stringMatching(/^format\*?:one of \[flac\|mp3\|opus\]=flac$/), expect.stringMatching(/^format\.quality:one of \[V0\|128k\|320k\]=V0 \(only while format=mp3\)$/)]));
+      expect(save.outputs).toEqual(['audio:AUDIO']);
+      // A second input of the same name for another choice is named with #2, as the editor and setInputs take it.
+      expect(save.inputs).toContain('format.quality#2:one of [64k|96k|128k|192k|320k]=128k (only while format=opus)');
+      const load = searchComfyNodes('LoadAudio', 3).matches.find((m) => m.type === 'comfy:LoadAudio')!;
+      expect(load.inputs.join()).toMatch(/audio\*?:gallery-sound-name/);
+      expect(searchComfyNodes('LoadVideo', 3).matches.find((m) => m.type === 'comfy:LoadVideo')!.inputs.join()).toMatch(/file\*?:gallery-video-name/);
+      const sampler = searchComfyNodes('KSampler', 1).matches[0]!;
+      expect(sampler.inputs).toEqual(expect.arrayContaining(['model*<-UNetField', 'positive*<-ConditioningField', 'latent_image*<-LatentsField']));
+      expect(sampler.outputs).toEqual(['LATENT:LatentsField']);
+    },
+  );
 
-  it('cuts a long list of choices and keeps the answer small', { tags: ['condition'] }, () => {
+  it('cuts a long list of choices and keeps the answer small', { tags: ['boundary'] }, () => {
     const sampler = searchComfyNodes('KSampler', 1).matches[0]!;
     const choices = sampler.inputs.find((i) => i.startsWith('sampler_name'))!;
     expect(choices).toMatch(/\|\.\.\.\+\d+\]/);
@@ -51,7 +55,7 @@ describe('searching the nodes of ComfyUI', () => {
     expect(searchComfyNodes('save', 0).matches).toHaveLength(1);
   });
 
-  it('lists the groups with their counts when there is no query', { tags: ['condition'] }, () => {
+  it('lists the groups with their counts when there is no query', { tags: ['condition', 'boundary'] }, () => {
     const r = searchComfyNodes('', 5);
     expect(r.matches).toEqual([]);
     expect(r.groups).toEqual(expect.arrayContaining([expect.objectContaining({ group: 'audio' })]));

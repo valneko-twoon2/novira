@@ -73,7 +73,7 @@ async fn graph_jobs_resolve_models_and_read_pictures_before_the_engine_runs() {
             .is_some_and(|m| m.generation_mode == GenerationMode::Graph)));
 }
 
-// tags: scenario
+// tags: equivalence
 #[tokio::test]
 async fn a_graph_that_saves_sound_or_video_lands_in_the_gallery_as_that() {
     let dir = tempfile::tempdir().unwrap();
@@ -125,7 +125,7 @@ async fn a_graph_that_saves_sound_or_video_lands_in_the_gallery_as_that() {
     );
 }
 
-// tags: scenario
+// tags: equivalence, condition
 #[tokio::test]
 async fn a_graph_asks_for_the_installed_image_encoder_of_a_size() {
     let dir = tempfile::tempdir().unwrap();
@@ -187,7 +187,7 @@ async fn a_graph_asks_for_the_installed_image_encoder_of_a_size() {
     assert_eq!(g.models[0].folder, "clip_vision");
 }
 
-// tags: scenario
+// tags: condition
 #[tokio::test]
 async fn a_helper_job_keeps_its_picture_hidden_from_the_gallery() {
     let dir = tempfile::tempdir().unwrap();
@@ -210,7 +210,7 @@ async fn a_helper_job_keeps_its_picture_hidden_from_the_gallery() {
     assert!(images[0].is_intermediate, "a helper result is not shown");
 }
 
-// tags: error-guessing
+// tags: error-guessing, equivalence
 #[tokio::test]
 async fn graph_jobs_without_their_prompt_or_with_unknown_models_fail_with_the_reason() {
     let dir = tempfile::tempdir().unwrap();
@@ -245,7 +245,7 @@ async fn graph_jobs_without_their_prompt_or_with_unknown_models_fail_with_the_re
     );
 }
 
-// tags: boundary, decision-table
+// tags: boundary, condition
 #[tokio::test]
 async fn face_rig_previews_are_clamped_and_carry_the_picture_only_when_named() {
     let dir = tempfile::tempdir().unwrap();

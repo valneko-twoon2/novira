@@ -48,7 +48,7 @@ const pageEdits: { name: string; edit: (pageId: string) => unknown; refused?: un
 
 beforeEach(reset);
 
-describe('with no comic open', () => {
+describe('with no comic open', { tags: [] }, () => {
   /** The edits of the open comic that name no page. */
   const comicEdits: { name: string; edit: () => unknown; refused?: unknown }[] = [
     { name: 'addPage', edit: () => useComic.getState().addPage(), refused: null },
@@ -77,7 +77,7 @@ describe('with no comic open', () => {
   }
 });
 
-describe('on a page that is not in the open comic', () => {
+describe('on a page that is not in the open comic', { tags: [] }, () => {
   for (const { name, edit, refused } of pageEdits) {
     it(`${name} changes nothing and records no undo step`, { tags: ['state-transition'] }, () => {
       seed();
@@ -89,18 +89,22 @@ describe('on a page that is not in the open comic', () => {
   }
 });
 
-describe('an edit to what the page already has', () => {
-  it('the same panel count, free placement off on an automatic page, or a reset of a page with no shapes, changes nothing', { tags: ['state-transition'] }, () => {
-    const { pageId } = seed();
-    const before = snapshot();
-    useComic.getState().setPanelCount(pageId, 3);
-    useComic.getState().setPageFree(pageId, false);
-    useComic.getState().resetPageShapes(pageId);
-    expect(useComic.getState().projects).toBe(before.projects);
-    expect(snapshot()).toEqual(before);
-  });
+describe('an edit to what the page already has', { tags: [] }, () => {
+  it(
+    'the same panel count, free placement off on an automatic page, or a reset of a page with no shapes, changes nothing',
+    { tags: ['condition'] },
+    () => {
+      const { pageId } = seed();
+      const before = snapshot();
+      useComic.getState().setPanelCount(pageId, 3);
+      useComic.getState().setPageFree(pageId, false);
+      useComic.getState().resetPageShapes(pageId);
+      expect(useComic.getState().projects).toBe(before.projects);
+      expect(snapshot()).toEqual(before);
+    },
+  );
 
-  it('a shape reset of a panel that is not on a free page is refused', { tags: ['error-guessing', 'state-transition'] }, () => {
+  it('a shape reset of a panel that is not on a free page is refused', { tags: ['error-guessing'] }, () => {
     const { pageId } = seed();
     useComic.getState().setPageFree(pageId, true);
     const before = snapshot();
@@ -120,7 +124,7 @@ describe('an edit to what the page already has', () => {
   });
 });
 
-describe('a panel that is not there', () => {
+describe('a panel that is not there', { tags: [] }, () => {
   it('takes no prompt, negative prompt, note or balloon edit, and records no undo step', { tags: ['state-transition'] }, () => {
     seed();
     const before = snapshot();
@@ -134,7 +138,7 @@ describe('a panel that is not there', () => {
   });
 });
 
-describe('letting go of the backdrop', () => {
+describe('letting go of the backdrop', { tags: [] }, () => {
   it('when it is not selected keeps the panel selected', { tags: ['condition'] }, () => {
     const { panels } = seed();
     useComic.getState().selectPanel(panels[1]!);

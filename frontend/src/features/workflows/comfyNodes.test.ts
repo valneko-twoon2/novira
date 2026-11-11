@@ -8,28 +8,32 @@ import { allTemplates, fieldLabel, getTemplate, isActive, nodeTitle, setExtensio
 
 afterEach(() => setExtensionTemplates([]));
 
-describe('ComfyUI node definitions', () => {
-  it('turns the nodes of packs and of ComfyUI into templates, leaving out deprecated nodes and cloud API nodes', { tags: ['condition'] }, () => {
-    const list = comfyTemplates({ ...MOCK_NODE_DEFS, ...CORE_NODE_DEFS });
-    const types = list.map((t) => t.type);
-    // ComfyUI's own come first, then the packs' by pack.
-    expect(types.indexOf('comfy:KSampler')).toBeLessThan(types.indexOf('comfy:MockFaceRig'));
-    expect(types).toEqual(expect.arrayContaining(['comfy:KSampler', 'comfy:SaveVideo', 'comfy:MockLandmarkPreview', 'comfy:MockFaceRig', 'comfy:MockFilmGrain', 'comfy:MockResize']));
-    expect(types).not.toContain('comfy:SaveAudio');
-    expect(types).not.toContain('comfy:ClaudeNode');
-    expect(types).not.toContain('comfy:MockOldNode');
-    const sampler = list.find((t) => t.type === 'comfy:KSampler')!;
-    expect(sampler).toMatchObject({ category: 'comfyui', group: 'model/sampling' });
-    expect(sampler.pack).toBeUndefined();
-    expect(list.find((t) => t.type === 'comfy:MockFaceRig')).toMatchObject({ category: 'extension', pack: 'ComfyUI-Mock-Tools' });
-    expect(comfyPack(MOCK_NODE_DEFS.KSampler!)).toBeNull();
-    expect(comfyPack({ ...MOCK_NODE_DEFS.KSampler!, python_module: 'custom_nodes.comfyui-foo@1.2' })).toBe('comfyui-foo');
-    // A node of neither ComfyUI nor a pack (no module, or a cloud API node by its module) is not offered.
-    const { python_module: _none, ...unknown } = MOCK_NODE_DEFS.KSampler!;
-    expect(comfyTemplates({ A: unknown, B: { ...MOCK_NODE_DEFS.KSampler!, python_module: 'comfy_api_nodes.nodes_x' } })).toEqual([]);
-  });
+describe('ComfyUI node definitions', { tags: [] }, () => {
+  it(
+    'turns the nodes of packs and of ComfyUI into templates, leaving out deprecated nodes and cloud API nodes',
+    { tags: ['condition'] },
+    () => {
+      const list = comfyTemplates({ ...MOCK_NODE_DEFS, ...CORE_NODE_DEFS });
+      const types = list.map((t) => t.type);
+      // ComfyUI's own come first, then the packs' by pack.
+      expect(types.indexOf('comfy:KSampler')).toBeLessThan(types.indexOf('comfy:MockFaceRig'));
+      expect(types).toEqual(expect.arrayContaining(['comfy:KSampler', 'comfy:SaveVideo', 'comfy:MockLandmarkPreview', 'comfy:MockFaceRig', 'comfy:MockFilmGrain', 'comfy:MockResize']));
+      expect(types).not.toContain('comfy:SaveAudio');
+      expect(types).not.toContain('comfy:ClaudeNode');
+      expect(types).not.toContain('comfy:MockOldNode');
+      const sampler = list.find((t) => t.type === 'comfy:KSampler')!;
+      expect(sampler).toMatchObject({ category: 'comfyui', group: 'model/sampling' });
+      expect(sampler.pack).toBeUndefined();
+      expect(list.find((t) => t.type === 'comfy:MockFaceRig')).toMatchObject({ category: 'extension', pack: 'ComfyUI-Mock-Tools' });
+      expect(comfyPack(MOCK_NODE_DEFS.KSampler!)).toBeNull();
+      expect(comfyPack({ ...MOCK_NODE_DEFS.KSampler!, python_module: 'custom_nodes.comfyui-foo@1.2' })).toBe('comfyui-foo');
+      // A node of neither ComfyUI nor a pack (no module, or a cloud API node by its module) is not offered.
+      const { python_module: _none, ...unknown } = MOCK_NODE_DEFS.KSampler!;
+      expect(comfyTemplates({ A: unknown, B: { ...MOCK_NODE_DEFS.KSampler!, python_module: 'comfy_api_nodes.nodes_x' } })).toEqual([]);
+    },
+  );
 
-  it('maps widgets to controls and connection types to editor types', { tags: ['condition'] }, () => {
+  it('maps widgets to controls and connection types to editor types', { tags: ['equivalence'] }, () => {
     const rig = comfyTemplates(MOCK_NODE_DEFS).find((t) => t.comfyClass === 'MockFaceRig')!;
     expect(rig.pack).toBe('ComfyUI-Mock-Tools');
     expect(rig.title).toBe('Face Rig (Mock)');
@@ -57,7 +61,7 @@ describe('ComfyUI node definitions', () => {
     expect(preview.inputs.find((i) => i.name === 'caption')).toMatchObject({ type: 'string', ui: 'textarea' });
   });
 
-  it('takes V3 inputs it can show, and lists the auto-grow ones it cannot', { tags: ['error-guessing'] }, () => {
+  it('takes V3 inputs it can show, and lists the auto-grow ones it cannot', { tags: ['condition'] }, () => {
     const resize = comfyTemplates(MOCK_NODE_DEFS).find((t) => t.comfyClass === 'MockResize')!;
     const byName = Object.fromEntries(resize.inputs.map((i) => [i.name, i]));
     expect(byName.input).toMatchObject({ type: 'Any', input: 'connection' });
@@ -68,7 +72,7 @@ describe('ComfyUI node definitions', () => {
     expect(comfyTemplates(MOCK_NODE_DEFS).find((t) => t.comfyClass === 'MockFaceRig')!.unsupported).toBeUndefined();
   });
 
-  it('shows the inputs a choice of a dynamic combo brings only while that choice is made', { tags: ['state-transition'] }, () => {
+  it('shows the inputs a choice of a dynamic combo brings only while that choice is made', { tags: ['condition'] }, () => {
     const resize = comfyTemplates(MOCK_NODE_DEFS).find((t) => t.comfyClass === 'MockResize')!;
     const byName = Object.fromEntries(resize.inputs.map((i) => [i.name, i]));
     expect(byName['mode.width']).toMatchObject({ type: 'integer', label: 'width', default: 512, when: [[{ field: 'mode', is: 'scale dimensions' }]] });
@@ -78,45 +82,53 @@ describe('ComfyUI node definitions', () => {
     expect(isActive(byName.mode!, {})).toBe(true);
   });
 
-  it("reads ComfyUI's own Save Audio and Save Video: a choice's inputs by the prompt's dotted names, forms with other options kept apart, legacy inputs left out", { tags: ['condition'] }, () => {
-    const [audio] = comfyTemplates({ SaveAudioAdvanced: CORE_NODE_DEFS.SaveAudioAdvanced! });
-    const byName = Object.fromEntries(audio!.inputs.map((i) => [i.name, i]));
-    expect(audio!.isOutput).toBe(true);
-    expect(byName.format).toMatchObject({ type: 'enum', options: ['flac', 'mp3', 'opus'], default: 'flac' });
-    // MP3 and Opus both bring a quality, with other choices: two inputs, one name in the prompt.
-    expect(byName['format.quality']).toMatchObject({ options: ['V0', '128k', '320k'], default: 'V0', when: [[{ field: 'format', is: 'mp3' }]] });
-    expect(byName['format.quality#2']).toMatchObject({ promptName: 'format.quality', options: ['64k', '96k', '128k', '192k', '320k'], default: '128k', when: [[{ field: 'format', is: 'opus' }]] });
-    setExtensionTemplates([audio!]);
-    expect(fieldLabel('comfy:SaveAudioAdvanced', 'format.quality#2')).toBe('quality');
+  it(
+    "reads ComfyUI's own Save Audio and Save Video: a choice's inputs by the prompt's dotted names, forms with other options kept apart, legacy inputs left out",
+    { tags: ['decision-table', 'condition'] },
+    () => {
+      const [audio] = comfyTemplates({ SaveAudioAdvanced: CORE_NODE_DEFS.SaveAudioAdvanced! });
+      const byName = Object.fromEntries(audio!.inputs.map((i) => [i.name, i]));
+      expect(audio!.isOutput).toBe(true);
+      expect(byName.format).toMatchObject({ type: 'enum', options: ['flac', 'mp3', 'opus'], default: 'flac' });
+      // MP3 and Opus both bring a quality, with other choices: two inputs, one name in the prompt.
+      expect(byName['format.quality']).toMatchObject({ options: ['V0', '128k', '320k'], default: 'V0', when: [[{ field: 'format', is: 'mp3' }]] });
+      expect(byName['format.quality#2']).toMatchObject({ promptName: 'format.quality', options: ['64k', '96k', '128k', '192k', '320k'], default: '128k', when: [[{ field: 'format', is: 'opus' }]] });
+      setExtensionTemplates([audio!]);
+      expect(fieldLabel('comfy:SaveAudioAdvanced', 'format.quality#2')).toBe('quality');
 
-    const [video] = comfyTemplates({ SaveVideo: CORE_NODE_DEFS.SaveVideo! });
-    const names = video!.inputs.map((i) => i.name);
-    // The hidden legacy `codec` is not offered; the codec every container brings is one input for auto, MP4 and MKV, and WebM has its own.
-    expect(names).not.toContain('codec');
-    expect(names).toEqual(expect.arrayContaining(['video', 'filename_prefix', 'format', 'format.codec', 'format.codec#2', 'format.codec.encoding', 'format.codec.encoding.crf']));
-    const codec = video!.inputs.find((i) => i.name === 'format.codec')!;
-    expect(codec.options).toEqual(['auto', 'h264', 'av1']);
-    expect(codec.when!.map((chain) => chain[0]!.is)).toEqual(['auto', 'mp4', 'mkv']);
-    expect(video!.inputs.find((i) => i.name === 'format.codec#2')).toMatchObject({ promptName: 'format.codec', options: ['auto', 'av1'], when: [[{ field: 'format', is: 'webm' }]] });
-    // The crf of a re-encode shows only for an H.264 or AV1 codec set to re-encode.
-    const crf = video!.inputs.find((i) => i.name === 'format.codec.encoding.crf')!;
-    expect(isActive(crf, { format: 'mp4', 'format.codec': 'h264', 'format.codec.encoding': 're-encode' })).toBe(true);
-    expect(isActive(crf, { format: 'mp4', 'format.codec': 'h264', 'format.codec.encoding': 'auto' })).toBe(false);
-    expect(isActive(crf, { format: 'mp4', 'format.codec': 'auto', 'format.codec.encoding': 're-encode' })).toBe(false);
-  });
+      const [video] = comfyTemplates({ SaveVideo: CORE_NODE_DEFS.SaveVideo! });
+      const names = video!.inputs.map((i) => i.name);
+      // The hidden legacy `codec` is not offered; the codec every container brings is one input for auto, MP4 and MKV, and WebM has its own.
+      expect(names).not.toContain('codec');
+      expect(names).toEqual(expect.arrayContaining(['video', 'filename_prefix', 'format', 'format.codec', 'format.codec#2', 'format.codec.encoding', 'format.codec.encoding.crf']));
+      const codec = video!.inputs.find((i) => i.name === 'format.codec')!;
+      expect(codec.options).toEqual(['auto', 'h264', 'av1']);
+      expect(codec.when!.map((chain) => chain[0]!.is)).toEqual(['auto', 'mp4', 'mkv']);
+      expect(video!.inputs.find((i) => i.name === 'format.codec#2')).toMatchObject({ promptName: 'format.codec', options: ['auto', 'av1'], when: [[{ field: 'format', is: 'webm' }]] });
+      // The crf of a re-encode shows only for an H.264 or AV1 codec set to re-encode.
+      const crf = video!.inputs.find((i) => i.name === 'format.codec.encoding.crf')!;
+      expect(isActive(crf, { format: 'mp4', 'format.codec': 'h264', 'format.codec.encoding': 're-encode' })).toBe(true);
+      expect(isActive(crf, { format: 'mp4', 'format.codec': 'h264', 'format.codec.encoding': 'auto' })).toBe(false);
+      expect(isActive(crf, { format: 'mp4', 'format.codec': 'auto', 'format.codec.encoding': 're-encode' })).toBe(false);
+    },
+  );
 
-  it("turns Load Video and Load Audio into pickers of the gallery's videos and sounds, and the media outputs into outputs", { tags: ['condition'] }, () => {
-    const list = comfyTemplates(CORE_NODE_DEFS);
-    const field = (cls: string, name: string) => list.find((t) => t.comfyClass === cls)!.inputs.find((i) => i.name === name)!;
-    expect(field('LoadVideo', 'file')).toMatchObject({ type: 'ImageField', input: 'direct', media: 'video', required: true });
-    expect(field('LoadAudio', 'audio')).toMatchObject({ type: 'ImageField', input: 'direct', media: 'audio' });
-    expect(field('LoadImage', 'image')).toMatchObject({ type: 'ImageField', input: 'any' });
-    expect(list.find((t) => t.comfyClass === 'LoadVideo')!.outputs).toEqual([{ name: 'VIDEO', type: 'comfy:VIDEO' }]);
-    expect(list.find((t) => t.comfyClass === 'PreviewAudio')!.isOutput).toBe(true);
-    expect(list.find((t) => t.comfyClass === 'VAEDecodeAudio')!.outputs).toEqual([{ name: 'AUDIO', type: 'comfy:AUDIO' }]);
-  });
+  it(
+    "turns Load Video and Load Audio into pickers of the gallery's videos and sounds, and the media outputs into outputs",
+    { tags: ['equivalence'] },
+    () => {
+      const list = comfyTemplates(CORE_NODE_DEFS);
+      const field = (cls: string, name: string) => list.find((t) => t.comfyClass === cls)!.inputs.find((i) => i.name === name)!;
+      expect(field('LoadVideo', 'file')).toMatchObject({ type: 'ImageField', input: 'direct', media: 'video', required: true });
+      expect(field('LoadAudio', 'audio')).toMatchObject({ type: 'ImageField', input: 'direct', media: 'audio' });
+      expect(field('LoadImage', 'image')).toMatchObject({ type: 'ImageField', input: 'any' });
+      expect(list.find((t) => t.comfyClass === 'LoadVideo')!.outputs).toEqual([{ name: 'VIDEO', type: 'comfy:VIDEO' }]);
+      expect(list.find((t) => t.comfyClass === 'PreviewAudio')!.isOutput).toBe(true);
+      expect(list.find((t) => t.comfyClass === 'VAEDecodeAudio')!.outputs).toEqual([{ name: 'AUDIO', type: 'comfy:AUDIO' }]);
+    },
+  );
 
-  it('reads the field names, tips, colours and multi-type sockets packs declare', { tags: ['condition'] }, () => {
+  it('reads the field names, tips, colours and multi-type sockets packs declare', { tags: ['equivalence'] }, () => {
     const [paint] = comfyTemplates({
       Paint: {
         input: {
@@ -140,15 +152,19 @@ describe('ComfyUI node definitions', () => {
     expect(fieldLabel('comfy:Paint', 'bg_color')).toBe('bg color');
   });
 
-  it('lets pack nodes connect to built-in nodes through the shared types, and to each other through their own', { tags: ['decision-table'] }, () => {
-    expect(isCompatible('ImageField', comfyFieldType('IMAGE'))).toBe(true);
-    expect(isCompatible(comfyFieldType('MODEL'), 'UNetField')).toBe(true);
-    expect(isCompatible(comfyFieldType('FACE_LANDMARKS'), comfyFieldType('FACE_LANDMARKS'))).toBe(true);
-    expect(isCompatible(comfyFieldType('FACE_LANDMARKS'), comfyFieldType('MASK'))).toBe(false);
-    expect(isCompatible(comfyFieldType('FACE_LANDMARKS'), 'ImageField')).toBe(false);
-  });
+  it(
+    'lets pack nodes connect to built-in nodes through the shared types, and to each other through their own',
+    { tags: ['equivalence'] },
+    () => {
+      expect(isCompatible('ImageField', comfyFieldType('IMAGE'))).toBe(true);
+      expect(isCompatible(comfyFieldType('MODEL'), 'UNetField')).toBe(true);
+      expect(isCompatible(comfyFieldType('FACE_LANDMARKS'), comfyFieldType('FACE_LANDMARKS'))).toBe(true);
+      expect(isCompatible(comfyFieldType('FACE_LANDMARKS'), comfyFieldType('MASK'))).toBe(false);
+      expect(isCompatible(comfyFieldType('FACE_LANDMARKS'), 'ImageField')).toBe(false);
+    },
+  );
 
-  it('registers pack nodes next to the built-in ones, named as the pack names them', { tags: ['condition'] }, () => {
+  it('registers pack nodes next to the built-in ones, named as the pack names them', { tags: ['scenario'] }, () => {
     expect(getTemplate('comfy:MockFaceRig')).toBeUndefined();
     setExtensionTemplates(comfyTemplates(MOCK_NODE_DEFS));
     const rig = getTemplate('comfy:MockFaceRig')!;

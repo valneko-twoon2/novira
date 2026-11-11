@@ -33,8 +33,8 @@ const mount = (props: Partial<React.ComponentProps<typeof PresetBar<Data>>> = {}
 const openList = () => fireEvent.click(screen.getByTestId('preset-trigger'));
 const rows = () => within(screen.getByTestId('preset-list')).getAllByTestId('preset-item');
 
-describe('PresetBar', () => {
-  it('lists the store presets with their summaries and the translated display name', { tags: ['condition'] }, () => {
+describe('PresetBar', { tags: [] }, () => {
+  it('lists the store presets with their summaries and the translated display name', { tags: ['equivalence'] }, () => {
     mount({ nameOf: (p) => `shown ${p.name}` });
     openList();
     expect(rows()).toHaveLength(1);
@@ -62,7 +62,7 @@ describe('PresetBar', () => {
     expect(kind.store.getState().selectedId).toBe(saved!.id);
   });
 
-  describe('the item menu', () => {
+  describe('the item menu', { tags: [] }, () => {
     const pickFromMenu = (label: string) => {
       kind.store.getState().add('Mine', { steps: 1 });
       mount();
@@ -73,12 +73,12 @@ describe('PresetBar', () => {
     };
     const mine = () => kind.store.getState().presets.find((p) => p.name === 'Mine');
 
-    it('overwrites a preset with the current form', { tags: ['scenario'] }, () => {
+    it('overwrites a preset with the current form', { tags: ['equivalence'] }, () => {
       pickFromMenu(t('presets.overwrite'));
       expect(mine()!.data).toEqual({ steps: 30 });
     });
 
-    it('renames a preset', { tags: ['scenario'] }, () => {
+    it('renames a preset', { tags: ['equivalence'] }, () => {
       pickFromMenu(t('presets.rename'));
       fireEvent.change(screen.getByTestId('name-dialog-input'), { target: { value: 'Renamed' } });
       fireEvent.click(screen.getByTestId('name-dialog-ok'));

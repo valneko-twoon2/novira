@@ -1,4 +1,3 @@
-//! tags: snapshot, decision-table
 //! Snapshots of the ComfyUI prompts the backend builds (image, video and music graphs, and editor prompts after
 //! their placeholders are filled), so any change to what reaches ComfyUI shows up in review as a JSON diff.
 //! The files live in `__snapshots__/graph/<case>.json` next to this module (LF, like every text file of the
@@ -223,6 +222,7 @@ fn vit_h() -> ComfyRef {
     r("clip_vision", "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors")
 }
 
+// tags: equivalence
 #[test]
 fn txt2img() {
     snapshot_built(
@@ -233,6 +233,7 @@ fn txt2img() {
     );
 }
 
+// tags: condition
 #[test]
 fn txt2img_draft() {
     let mut p = params(GenerationMode::Txt2img);
@@ -241,6 +242,7 @@ fn txt2img_draft() {
     snapshot_built("txt2img-draft", &Models::image(), &p, None);
 }
 
+// tags: equivalence, decision-table
 #[test]
 fn txt2img_loras_vae_clip_skip_rescale() {
     let mut p = params(GenerationMode::Txt2img);
@@ -267,6 +269,7 @@ fn hires(scale: f64, strength: f64, model: Option<&str>, steps: Option<u32>) -> 
     }
 }
 
+// tags: equivalence
 #[test]
 fn txt2img_hires_smooth() {
     // Decode, Lanczos to 1.5x, encode, a second sampler at 0.45 with the same seed.
@@ -275,6 +278,7 @@ fn txt2img_hires_smooth() {
     snapshot_built("txt2img-hires-smooth", &Models::image(), &p, None);
 }
 
+// tags: equivalence
 #[test]
 fn txt2img_hires_with_model() {
     // An ESRGAN-type model enlarges first (4x), then the picture is resized to exactly 1.25x; 12 second-pass steps.
@@ -289,6 +293,7 @@ fn txt2img_hires_with_model() {
     snapshot_built("txt2img-hires-with-model", &models, &p, None);
 }
 
+// tags: decision-table
 #[test]
 fn txt2img_hires_with_lora_and_guidance() {
     // The second pass samples with the same patched model (LoRA, reference image) and the control conditioning.
@@ -324,6 +329,7 @@ fn txt2img_hires_with_lora_and_guidance() {
     snapshot_guided("txt2img-hires-lora-guidance", &models, &p, None, guidance);
 }
 
+// tags: equivalence
 #[test]
 fn img2img() {
     let mut p = params(GenerationMode::Img2img);
@@ -331,6 +337,7 @@ fn img2img() {
     snapshot_built("img2img", &Models::image(), &p, Some("source.png"));
 }
 
+// tags: condition
 #[test]
 fn img2img_draft() {
     let mut p = params(GenerationMode::Img2img);
@@ -340,6 +347,7 @@ fn img2img_draft() {
     snapshot_built("img2img-draft", &Models::image(), &p, Some("source.png"));
 }
 
+// tags: equivalence
 #[test]
 fn img2img_hires() {
     // The first pass draws over the source at its strength; the second enlarges that picture as text to image does.
@@ -356,6 +364,7 @@ fn masked(mask: &str) -> GuidanceInput<'_> {
     }
 }
 
+// tags: equivalence
 #[test]
 fn inpaint() {
     // Noise only inside the (softened) mask, the source kept outside it.
@@ -369,6 +378,7 @@ fn inpaint() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn outpaint() {
     // The frontend has filled the transparent part of the source; the mask covers it. No blur: the mask as painted.
@@ -386,6 +396,7 @@ fn outpaint() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn txt2img_control_layers() {
     let mut p = params(GenerationMode::Txt2img);
@@ -421,6 +432,7 @@ fn txt2img_control_layers() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn txt2img_union_control_types() {
     // A union ControlNet told what each picture is: a pose and edges.
@@ -457,6 +469,7 @@ fn txt2img_union_control_types() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn txt2img_reference_images() {
     let mut p = params(GenerationMode::Txt2img);
@@ -493,6 +506,7 @@ fn txt2img_reference_images() {
     snapshot_guided("txt2img-reference-images", &models, &p, None, guidance);
 }
 
+// tags: scenario
 #[test]
 fn txt2img_characters_in_their_regions() {
     // A comic panel with two characters: each one's words and reference picture act inside its own region.
@@ -546,6 +560,7 @@ fn txt2img_characters_in_their_regions() {
     );
 }
 
+// tags: decision-table
 #[test]
 fn inpaint_with_control_and_reference() {
     // Everything at once: reference image, control layer and mask on one source.
@@ -586,6 +601,7 @@ fn inpaint_with_control_and_reference() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn upscale_with_model() {
     let mut p = params(GenerationMode::Upscale);
@@ -597,6 +613,7 @@ fn upscale_with_model() {
     snapshot_built("upscale-with-model", &models, &p, Some("source.png"));
 }
 
+// tags: equivalence
 #[test]
 fn upscale_with_tile_controlnet() {
     let mut p = params(GenerationMode::Upscale);
@@ -616,6 +633,7 @@ fn upscale_with_tile_controlnet() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn upscale_with_post_processing() {
     let mut p = params(GenerationMode::Upscale);
@@ -633,6 +651,7 @@ fn upscale_with_post_processing() {
     );
 }
 
+// tags: condition
 #[test]
 fn upscale_without_model() {
     let mut p = params(GenerationMode::Upscale);
@@ -659,11 +678,13 @@ fn video_params() -> GenerationMetadata {
     p
 }
 
+// tags: equivalence
 #[test]
 fn video_from_text() {
     snapshot_built("video-text", &Models::video(), &video_params(), None);
 }
 
+// tags: equivalence
 #[test]
 fn video_from_image_turbo_fp8_tiled() {
     let mut p = video_params();
@@ -691,6 +712,7 @@ fn music_params(music: MusicParams) -> GenerationMetadata {
     p
 }
 
+// tags: equivalence
 #[test]
 fn music_with_lyrics() {
     let p = music_params(MusicParams {
@@ -705,6 +727,7 @@ fn music_with_lyrics() {
     snapshot_built("music-lyrics", &Models::music(), &p, None);
 }
 
+// tags: boundary, error-guessing
 #[test]
 fn music_instrumental_with_fallbacks() {
     // Out-of-range length and tempo, an unknown key, signature and language fall back to what the node accepts.
@@ -720,6 +743,7 @@ fn music_instrumental_with_fallbacks() {
     snapshot_built("music-instrumental-fallbacks", &Models::music(), &p, None);
 }
 
+// tags: equivalence
 #[test]
 fn editor_prompt_with_placeholders_filled() {
     let graph: ComfyGraph = serde_json::from_value(json!({
@@ -766,6 +790,7 @@ fn editor_prompt_with_placeholders_filled() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn txt2img_regional_guidance() {
     let mut p = params(GenerationMode::Txt2img);
@@ -796,6 +821,7 @@ fn txt2img_regional_guidance() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn txt2img_seamless_tiling() {
     let mut p = params(GenerationMode::Txt2img);

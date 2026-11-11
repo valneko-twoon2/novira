@@ -393,7 +393,7 @@ fn unprotect(_: &[u8]) -> Result<Vec<u8>, String> {
 mod tests {
     use super::*;
 
-    // tags: error-guessing, scenario
+    // tags: error-guessing
     #[test]
     fn a_write_replaces_the_file_whole_and_a_cut_off_one_leaves_the_old_file() {
         let dir = tempfile::tempdir().unwrap();
@@ -507,7 +507,7 @@ mod tests {
         assert_eq!(load_civitai_key(a.path()).unwrap().as_deref(), Some("of-a"));
     }
 
-    // tags: condition
+    // tags: scenario
     #[test]
     fn a_key_in_a_moved_data_folder_is_still_found() {
         let _serial = serial();
@@ -527,7 +527,7 @@ mod tests {
         );
     }
 
-    // tags: error-guessing, boundary
+    // tags: boundary, error-guessing
     #[test]
     fn a_long_unicode_key_reads_back_and_one_over_the_limit_is_refused() {
         let _serial = serial();
@@ -591,7 +591,7 @@ mod tests {
         assert!(!dir.path().join(SECRETS_DIR).join(STORE_ID_FILE).exists());
     }
 
-    // tags: error-guessing, boundary
+    // tags: error-guessing
     #[test]
     fn the_credential_manager_reports_what_it_refuses_and_reads_an_empty_value() {
         let _serial = serial();

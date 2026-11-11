@@ -18,7 +18,7 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-describe('useInstallToasts', () => {
+describe('useInstallToasts', { tags: [] }, () => {
   it('announces a job that completes while it is mounted, naming the model', { tags: ['state-transition'] }, () => {
     setJobs(job({}));
     renderHook(() => useInstallToasts());
@@ -27,7 +27,7 @@ describe('useInstallToasts', () => {
     expect(toasts()[0]).toMatchObject({ status: 'success', description: 'Model' });
   });
 
-  it('announces a failed job with its error, or its source when it has none', { tags: ['state-transition', 'error-guessing'] }, () => {
+  it('announces a failed job with its error, or its source when it has none', { tags: ['state-transition', 'condition'] }, () => {
     setJobs(job({}), job({ id: 'j2', source: 'other' }));
     renderHook(() => useInstallToasts());
     setJobs(job({ status: 'error', error: 'disk full' }), job({ id: 'j2', source: 'other', status: 'error' }));
@@ -37,7 +37,7 @@ describe('useInstallToasts', () => {
     ]);
   });
 
-  it('stays quiet for jobs that were already finished when it mounted', { tags: ['state-transition'] }, () => {
+  it('stays quiet for jobs that were already finished when it mounted', { tags: ['state-transition', 'condition'] }, () => {
     setJobs(job({ status: 'completed' }), job({ id: 'j2', status: 'error' }));
     renderHook(() => useInstallToasts());
     expect(toasts()).toEqual([]);

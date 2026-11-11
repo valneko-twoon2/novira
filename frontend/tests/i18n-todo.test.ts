@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
 import { missingMessages } from '../scripts/i18n-todo.mjs';
 
-describe('missingMessages', () => {
+describe('missingMessages', { tags: [] }, () => {
   it('lists, per other language, the keys ja has and it lacks, with the ja and en texts', { tags: ['scenario'] }, () => {
     const dir = mkdtempSync(join(tmpdir(), 'novira-todo-'));
     const files: Record<string, Record<string, string>> = {

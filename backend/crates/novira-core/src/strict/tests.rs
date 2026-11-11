@@ -37,7 +37,7 @@ fn refused<T: DeserializeOwned + std::fmt::Debug>(v: Value) -> String {
         .to_string()
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn a_valid_object_reads_as_serde_alone_reads_it() {
     let v = json!({
@@ -80,7 +80,7 @@ fn an_array_is_refused_for_a_struct_at_the_top_and_says_what_was_expected() {
     assert!(serde_json::from_value::<Inner>(json!([1, true])).is_ok());
 }
 
-// tags: error-guessing, equivalence
+// tags: error-guessing, boundary
 #[test]
 fn an_array_is_refused_for_a_struct_at_every_depth() {
     refused::<Outer>(json!({"inner": []}));
@@ -94,7 +94,7 @@ fn an_array_is_refused_for_a_struct_at_every_depth() {
     refused::<Vec<Inner>>(json!([[]]));
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn an_array_is_still_read_where_the_type_is_a_list_or_a_tuple() {
     assert_eq!(from_value::<Vec<u32>>(json!([1, 2])).unwrap(), vec![1, 2]);
@@ -113,7 +113,7 @@ fn an_array_is_still_read_where_the_type_is_a_list_or_a_tuple() {
     );
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn enum_variants_are_read_strictly_too() {
     assert_eq!(from_value::<Shape>(json!("Dot")).unwrap(), Shape::Dot);
@@ -144,7 +144,7 @@ fn text_with_trailing_content_or_a_bad_array_is_refused() {
     assert!(from_str::<Outer>(r#"{"inner": []}"#).is_err());
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn the_strict_wrapper_works_as_an_argument_type() {
     let ok: Strict<Inner> = serde_json::from_value(json!({"a": 5})).unwrap();
@@ -168,7 +168,7 @@ enum Wide {
     Two(u32, Inner),
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn unit_tuple_and_tuple_variant_shapes_read_as_serde_alone_reads_them() {
     assert_eq!(from_value::<Marker>(json!(null)).unwrap(), Marker);
@@ -194,7 +194,7 @@ fn unit_tuple_and_tuple_variant_shapes_read_as_serde_alone_reads_them() {
     );
 }
 
-// tags: condition
+// tags: error-guessing
 #[test]
 fn a_struct_inside_a_tuple_shape_is_still_read_strictly() {
     // The tuple is a list by design, but the struct in it is not allowed to be one.

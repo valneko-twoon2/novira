@@ -7,7 +7,7 @@ import { pickInputs, reportArgs } from '../../scripts/tools/coverage-report.mjs'
 
 const root = join('C:', 'logs', 'coverage');
 
-describe('coverage report', () => {
+describe('coverage report', { tags: [] }, () => {
   it('reads the Cobertura file of a run when there is one, and its lcov file otherwise', { tags: ['condition'] }, () => {
     const present = new Set([join(root, 'frontend', 'cobertura-coverage.xml'), join(root, 'frontend', 'lcov.info'), join(root, 'e2e', 'lcov.info')]);
     const picked = pickInputs(root, (f: string) => present.has(f)) as Array<{ name: string; file: string; sources: string }>;
@@ -17,11 +17,11 @@ describe('coverage report', () => {
     ]);
   });
 
-  it('reads nothing when no run left a file', { tags: ['condition'] }, () => {
+  it('reads nothing when no run left a file', { tags: ['boundary'] }, () => {
     expect(pickInputs(root, () => false)).toEqual([]);
   });
 
-  it('passes every report, the history and the source folders to ReportGenerator as single arguments', { tags: ['condition'] }, () => {
+  it('passes every report, the history and the source folders to ReportGenerator as single arguments', { tags: ['error-guessing'] }, () => {
     const args = reportArgs({ reports: ['a.xml', 'b dir/lcov.info'], target: 'out dir', history: 'hist', sourceDirs: ['frontend', 'backend'], tag: 'abc1234' }) as string[];
     expect(args).toContain('-reports:a.xml;b dir/lcov.info');
     expect(args).toContain('-targetdir:out dir');

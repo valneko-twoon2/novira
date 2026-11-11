@@ -7,7 +7,7 @@ use novira_core::provenance::{files, Tools};
 use novira_core::types::WatermarkStatus;
 use tokio_util::sync::CancellationToken;
 
-// tags: scenario
+// tags: condition
 #[tokio::test]
 async fn nothing_is_fetched_when_every_file_is_on_the_pc() {
     let _ = site();
@@ -26,7 +26,7 @@ async fn nothing_is_fetched_when_every_file_is_on_the_pc() {
     assert_eq!(tools.status(), WatermarkStatus::Ready);
 }
 
-// tags: error-guessing
+// tags: state-transition, error-guessing
 #[tokio::test]
 async fn a_second_prepare_while_one_runs_does_nothing_and_a_bad_download_is_a_failure() {
     let site = site();
@@ -46,7 +46,7 @@ async fn a_second_prepare_while_one_runs_does_nothing_and_a_bad_download_is_a_fa
     assert!(!site.requests(&first.path).is_empty());
 }
 
-// tags: error-guessing, state-transition
+// tags: state-transition, error-guessing
 #[tokio::test]
 async fn a_cancelled_download_goes_back_to_missing() {
     let site = site();

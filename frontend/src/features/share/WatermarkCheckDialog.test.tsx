@@ -61,7 +61,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('check for a watermark dialog', () => {
+describe('check for a watermark dialog', { tags: [] }, () => {
   it('checks a picked file and leads to the gallery original', { tags: ['scenario'] }, async () => {
     const pick = vi.spyOn(backend, 'checkWatermarkFile').mockResolvedValue(marked);
     const select = vi.spyOn(useGallery.getState(), 'setSelection');
@@ -78,7 +78,7 @@ describe('check for a watermark dialog', () => {
     expect(useWatermarkCheckDialog.getState().open).toBe(false);
   });
 
-  it('checks a gallery picture at once and says when nothing is there', { tags: ['scenario'] }, async () => {
+  it('checks a gallery picture at once and says when nothing is there', { tags: ['condition'] }, async () => {
     const check = vi.spyOn(backend, 'checkWatermarkImage').mockResolvedValue({ ...nothing, fileName: 'b.png' });
     mount();
     useWatermarkCheckDialog.getState().show('b.png');
@@ -103,7 +103,7 @@ describe('check for a watermark dialog', () => {
     expect(screen.getByTestId('wm-check-result')).toBeTruthy();
   });
 
-  it('names a deleted original and an id this app does not know', { tags: ['scenario'] }, async () => {
+  it('names a deleted original and an id this app does not know', { tags: ['equivalence'] }, async () => {
     const pick = vi.spyOn(backend, 'checkWatermarkFile');
     mount();
     useWatermarkCheckDialog.getState().show();
@@ -115,7 +115,7 @@ describe('check for a watermark dialog', () => {
     await waitFor(() => expect(screen.getByTestId('wm-check-original').textContent).toContain(t('share.check.originalUnknown')));
   });
 
-  it('checks the gallery picture on the browser server but offers no file of this PC there', { tags: ['scenario'] }, async () => {
+  it('checks the gallery picture on the browser server but offers no file of this PC there', { tags: ['condition'] }, async () => {
     asBrowserServer();
     const check = vi.spyOn(backend, 'checkWatermarkImage').mockResolvedValue({ ...nothing, fileName: 'b.png' });
     const pick = vi.spyOn(backend, 'checkWatermarkFile');

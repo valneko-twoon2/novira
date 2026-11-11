@@ -30,7 +30,7 @@ beforeEach(() => {
 describe('createPresetStore', () => {
   const seed: Preset<{ n: number }>[] = [{ id: 'seed-a', name: 'A', data: { n: 1 } }];
 
-  it('starts from the built-ins, flagged as built-in', { tags: ['condition'] }, () => {
+  it('starts from the built-ins, flagged as built-in', { tags: ['equivalence'] }, () => {
     const store = createPresetStore({ name: 'test.presets.a', seed });
     expect(store.getState().presets).toEqual([{ id: 'seed-a', name: 'A', data: { n: 1 }, builtin: true }]);
   });
@@ -75,7 +75,7 @@ describe('createPresetStore', () => {
     expect(marked.map((p) => p.builtin)).toEqual([true, false, false]);
   });
 
-  it('upgrades stored image presets: built-ins renamed in English and flagged', { tags: ['condition'] }, () => {
+  it('upgrades stored image presets: built-ins renamed in English and flagged', { tags: ['equivalence'] }, () => {
     const migrate = useImagePresets.persist.getOptions().migrate!;
     const standard = useImagePresets.getState().presets.find((p) => p.id === 'seed-standard')!;
     const migrated = migrate({ presets: [{ id: 'seed-standard', name: 'old name', data: standard.data }, { id: 'u', name: 'u', data: {} }] }, 1) as {
@@ -110,12 +110,16 @@ describe('preset kinds', () => {
     expect(useVideoPresets.getState().selectedId).toBe(id);
   });
 
-  it('video: a built-in only sets the fields it holds, and goes back from an installed model to its own', { tags: ['state-transition'] }, () => {
-    useModels.setState({ models: [{ key: 'wan', name: 'Wan 14B', base: 'wan', type: 'diffusion_model', path: 'wan.safetensors' }] as never });
-    useVideo.getState().setForm({ positivePrompt: 'kept prompt', model: 'standard', modelKey: 'wan' });
-    applyPreset(videoPresets, 'seed-video-preview');
-    expect(useVideo.getState().form).toMatchObject({ positivePrompt: 'kept prompt', model: 'fast', modelKey: null, steps: 4 });
-  });
+  it(
+    'video: a built-in only sets the fields it holds, and goes back from an installed model to its own',
+    { tags: ['state-transition'] },
+    () => {
+      useModels.setState({ models: [{ key: 'wan', name: 'Wan 14B', base: 'wan', type: 'diffusion_model', path: 'wan.safetensors' }] as never });
+      useVideo.getState().setForm({ positivePrompt: 'kept prompt', model: 'standard', modelKey: 'wan' });
+      applyPreset(videoPresets, 'seed-video-preview');
+      expect(useVideo.getState().form).toMatchObject({ positivePrompt: 'kept prompt', model: 'fast', modelKey: null, steps: 4 });
+    },
+  );
 
   it('video: keeps the installed model it was saved with, unless that model is gone', { tags: ['condition'] }, () => {
     useModels.setState({ models: [{ key: 'wan', name: 'Wan 14B', base: 'wan', type: 'diffusion_model', path: 'wan.safetensors' }] as never });
@@ -140,13 +144,13 @@ describe('preset kinds', () => {
     expect(useMusic.getState().form).toMatchObject({ tags: 'jazz', bpm: 90, lyrics: 'second', seed: 4 });
   });
 
-  it('voice: applies the voice and keeps the text', { tags: ['condition'] }, () => {
+  it('voice: applies the voice and keeps the text', { tags: ['equivalence'] }, () => {
     useVoice.getState().setForm({ text: 'hello', mode: 'design', instruct: 'old man' });
     applyPreset(voicePresets, 'seed-voice-narrator');
     expect(useVoice.getState().form).toMatchObject({ text: 'hello', mode: 'preset', speaker: 'Ono_Anna' });
   });
 
-  it('ignores fields a preset does not own and presets that are gone', { tags: ['condition'] }, () => {
+  it('ignores fields a preset does not own and presets that are gone', { tags: ['error-guessing'] }, () => {
     useVoicePresets.setState({ presets: [{ id: 'x', name: 'x', data: { language: 'English', text: 'injected' } as never }] });
     useVoice.getState().setForm({ text: 'mine' });
     applyPreset(voicePresets, 'x');
@@ -160,12 +164,12 @@ describe('text style presets', () => {
     useTextEditor.setState({ scene: { width: 1024, height: 1024, background: { kind: 'color', color: null }, layers: [] }, selectedId: null, past: [], future: [] });
   });
 
-  it('ships the logo looks as built-ins', { tags: ['condition'] }, () => {
+  it('ships the logo looks as built-ins', { tags: ['equivalence'] }, () => {
     const pop = useTextStylePresets.getState().presets.find((p) => p.id === logoPresetId('pop'));
     expect(pop).toMatchObject({ builtin: true, data: presetStyle('pop', DEFAULT_TEXT_STYLE) });
   });
 
-  it('scales pixel measures to the target size', { tags: ['condition'] }, () => {
+  it('scales pixel measures to the target size', { tags: ['equivalence'] }, () => {
     const style = { ...DEFAULT_TEXT_STYLE, fontSize: 100, stroke: { color: '#000', width: 10 }, letterSpacing: 4 };
     expect(scaleStyle(style, 50)).toMatchObject({ fontSize: 50, stroke: { color: '#000', width: 5 }, letterSpacing: 2 });
   });

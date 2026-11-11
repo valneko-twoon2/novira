@@ -50,7 +50,7 @@ fn request() -> AgentRequest {
 
 // Status --------------------------------------------------------------------------------------------------------
 
-// tags: state-transition
+// tags: state-transition, condition
 #[tokio::test]
 async fn claude_is_logged_in_when_its_status_says_so() {
     let dir = tempfile::tempdir().unwrap();
@@ -87,7 +87,7 @@ async fn claude_is_logged_in_when_its_status_says_so() {
     );
 }
 
-// tags: state-transition
+// tags: equivalence, condition
 #[tokio::test]
 async fn codex_prints_its_state_on_either_stream() {
     let dir = tempfile::tempdir().unwrap();
@@ -182,7 +182,7 @@ fn a_damaged_choice_file_means_no_choice() {
 
 // Sign-in -------------------------------------------------------------------------------------------------------
 
-// tags: scenario
+// tags: equivalence
 #[tokio::test]
 async fn sign_in_succeeds_when_the_tool_exits_cleanly() {
     let dir = tempfile::tempdir().unwrap();
@@ -190,7 +190,7 @@ async fn sign_in_succeeds_when_the_tool_exits_cleanly() {
     assert_eq!(login(AgentProvider::Claude, Some(&ok)).await, Ok(()));
 }
 
-// tags: error-guessing
+// tags: error-guessing, equivalence
 #[tokio::test]
 async fn a_failed_sign_in_explains_why_from_the_stream_the_tool_uses() {
     let dir = tempfile::tempdir().unwrap();
@@ -247,7 +247,7 @@ async fn claude_answers_with_a_json_wrapper_whose_result_is_the_final_answer() {
     assert_eq!(reply.thoughts, vec!["Read it as a portrait."]);
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing
 #[tokio::test]
 async fn claude_reporting_an_error_becomes_the_error_text() {
     let dir = tempfile::tempdir().unwrap();
@@ -264,7 +264,7 @@ async fn claude_reporting_an_error_becomes_the_error_text() {
     assert_eq!(err, "Not logged in");
 }
 
-// tags: scenario
+// tags: error-guessing, equivalence
 #[tokio::test]
 async fn claude_printing_something_else_is_an_unexpected_answer() {
     let dir = tempfile::tempdir().unwrap();
@@ -316,7 +316,7 @@ async fn codex_without_an_answer_file_is_an_error() {
     assert!(err.starts_with("codex gave no answer"), "{err}");
 }
 
-// tags: state-transition
+// tags: error-guessing
 #[tokio::test]
 async fn chat_without_the_tool_installed_names_it() {
     let dir = tempfile::tempdir().unwrap();
@@ -331,7 +331,7 @@ async fn chat_without_the_tool_installed_names_it() {
     assert!(err.contains("cannot start"), "{err}");
 }
 
-// tags: boundary
+// tags: equivalence, condition
 #[test]
 fn a_tool_is_found_on_the_path_in_its_windows_script_forms() {
     // Only this test changes PATH, and the other tests here pass the program explicitly.
@@ -348,7 +348,7 @@ fn a_tool_is_found_on_the_path_in_its_windows_script_forms() {
     assert_eq!(found, Some(script));
 }
 
-// tags: error-guessing
+// tags: condition, error-guessing
 #[tokio::test]
 async fn claude_runs_on_the_chosen_model_and_effort_and_drops_unsafe_names() {
     let dir = tempfile::tempdir().unwrap();

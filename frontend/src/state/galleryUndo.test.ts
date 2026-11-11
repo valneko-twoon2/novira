@@ -17,7 +17,7 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('gallery undo of deletes', () => {
-  it('remembers a deletion and forgets what could be made again', { tags: ['condition'] }, () => {
+  it('remembers a deletion and forgets what could be made again', { tags: ['condition', 'boundary'] }, () => {
     useGalleryUndo.setState({ undo: [], redo: [['x']] });
     recordDeletion(['a']);
     expect(useGalleryUndo.getState()).toEqual({ undo: [['a']], redo: [] });
@@ -25,7 +25,7 @@ describe('gallery undo of deletes', () => {
     expect(useGalleryUndo.getState().undo).toHaveLength(1);
   });
 
-  it('keeps only the latest thirty deletions', { tags: ['condition'] }, () => {
+  it('keeps only the latest thirty deletions', { tags: ['boundary'] }, () => {
     for (let i = 0; i < 35; i++) recordDeletion([`${i}.png`]);
     const { undo } = useGalleryUndo.getState();
     expect(undo).toHaveLength(30);
@@ -51,16 +51,20 @@ describe('gallery undo of deletes', () => {
     expect(useGalleryUndo.getState().undo).toEqual([['b']]);
   });
 
-  it('says so when the backend no longer holds the pictures, and does nothing with nothing to undo', { tags: ['state-transition'] }, async () => {
-    expect(await undoDeletion()).toBe(false);
-    recordDeletion(['a']);
-    vi.spyOn(backend, 'restoreImages').mockResolvedValue([]);
-    expect(await undoDeletion()).toBe(false);
-    expect(useToasts.getState().toasts.at(-1)?.status).toBe('warning');
-    expect(useGalleryUndo.getState().redo).toEqual([]);
-  });
+  it(
+    'says so when the backend no longer holds the pictures, and does nothing with nothing to undo',
+    { tags: ['state-transition', 'boundary'] },
+    async () => {
+      expect(await undoDeletion()).toBe(false);
+      recordDeletion(['a']);
+      vi.spyOn(backend, 'restoreImages').mockResolvedValue([]);
+      expect(await undoDeletion()).toBe(false);
+      expect(useToasts.getState().toasts.at(-1)?.status).toBe('warning');
+      expect(useGalleryUndo.getState().redo).toEqual([]);
+    },
+  );
 
-  it('reports a failing restore and keeps the deletion to try again', { tags: ['error-guessing'] }, async () => {
+  it('reports a failing restore and keeps the deletion to try again', { tags: ['error-guessing', 'state-transition'] }, async () => {
     recordDeletion(['a']);
     vi.spyOn(backend, 'restoreImages').mockRejectedValue(new Error('disk'));
     expect(await undoDeletion()).toBe(false);

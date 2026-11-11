@@ -18,51 +18,59 @@ import { addOffset, templateReady, TemplatesView } from './TemplatesView';
 beforeEach(() => useWorkflows.getState().setGraph({ nodes: [], edges: [], form: [], meta: EMPTY_META }));
 afterEach(cleanup);
 
-describe('graph templates', () => {
+describe('graph templates', { tags: [] }, () => {
   beforeAll(() => setExtensionTemplates(comfyTemplates({ ...MOCK_NODE_DEFS, ...CORE_NODE_DEFS, ...PACK_NODE_DEFS })));
   afterAll(() => setExtensionTemplates([]));
 
-  it.each(GRAPH_TEMPLATES.map((t) => [t.id, t] as const))('%s builds a valid graph that only waits for models and images', { tags: ['scenario'] }, (_id, template) => {
-    const { nodes, edges } = buildTemplate(template);
-    expect(new Set(nodes.map((n) => n.id)).size).toBe(nodes.length);
-    expect(invalidEdges(nodes, edges)).toEqual([]);
-    for (const e of edges) expect(createsCycle(edges.filter((x) => x !== e), e.source, e.target)).toBe(false);
-    // Each input takes one connection.
-    const targets = edges.map((e) => `${e.target}.${e.targetHandle}`);
-    expect(new Set(targets).size).toBe(targets.length);
-    // The only missing things are the ones the user picks: a model or a picture.
-    const missing = readinessReasons({ nodes, edges });
-    for (const reason of missing) expect(reason).toMatch(/モデル|画像|動画|Load Video/);
-    expect(missing.some((r) => r.includes('出力'))).toBe(false);
-  });
+  it.each(GRAPH_TEMPLATES.map((t) => [t.id, t] as const))(
+    '%s builds a valid graph that only waits for models and images',
+    { tags: ['equivalence'] },
+    (_id, template) => {
+      const { nodes, edges } = buildTemplate(template);
+      expect(new Set(nodes.map((n) => n.id)).size).toBe(nodes.length);
+      expect(invalidEdges(nodes, edges)).toEqual([]);
+      for (const e of edges) expect(createsCycle(edges.filter((x) => x !== e), e.source, e.target)).toBe(false);
+      // Each input takes one connection.
+      const targets = edges.map((e) => `${e.target}.${e.targetHandle}`);
+      expect(new Set(targets).size).toBe(targets.length);
+      // The only missing things are the ones the user picks: a model or a picture.
+      const missing = readinessReasons({ nodes, edges });
+      for (const reason of missing) expect(reason).toMatch(/モデル|画像|動画|Load Video/);
+      expect(missing.some((r) => r.includes('出力'))).toBe(false);
+    },
+  );
 
-  it.each(GRAPH_TEMPLATES.filter((t) => t.packs).map((t) => [t.id, t] as const))('%s runs as a ComfyUI prompt once a model and pictures are picked', { tags: ['scenario'] }, (_id, template) => {
-    const { nodes, edges } = buildTemplate(template);
-    expect(runsAsPrompt({ nodes })).toBe(true);
-    for (const n of nodes) {
-      if (n.data.type === 'image') n.data.inputs.image = 'photo.png';
-      // Every model the user would pick.
-      for (const input of getTemplate(n.data.type)!.inputs) if (MODEL_FIELDS[input.type] && !n.data.inputs[input.name]) n.data.inputs[input.name] = 'model-key';
-    }
-    const { graph } = compileComfyPrompt({ nodes, edges });
-    expect(graph.outputs.length).toBeGreaterThan(0);
-    const classes = Object.values(graph.prompt).map((n) => n.class_type);
-    for (const n of nodes.filter((x) => x.data.type.startsWith('comfy:'))) expect(classes).toContain(n.data.type.slice('comfy:'.length));
-  });
+  it.each(GRAPH_TEMPLATES.filter((t) => t.packs).map((t) => [t.id, t] as const))(
+    '%s runs as a ComfyUI prompt once a model and pictures are picked',
+    { tags: ['equivalence'] },
+    (_id, template) => {
+      const { nodes, edges } = buildTemplate(template);
+      expect(runsAsPrompt({ nodes })).toBe(true);
+      for (const n of nodes) {
+        if (n.data.type === 'image') n.data.inputs.image = 'photo.png';
+        // Every model the user would pick.
+        for (const input of getTemplate(n.data.type)!.inputs) if (MODEL_FIELDS[input.type] && !n.data.inputs[input.name]) n.data.inputs[input.name] = 'model-key';
+      }
+      const { graph } = compileComfyPrompt({ nodes, edges });
+      expect(graph.outputs.length).toBeGreaterThan(0);
+      const classes = Object.values(graph.prompt).map((n) => n.class_type);
+      for (const n of nodes.filter((x) => x.data.type.startsWith('comfy:'))) expect(classes).toContain(n.data.type.slice('comfy:'.length));
+    },
+  );
 
-  it('gives fresh ids each time so a template can be added twice', { tags: ['decision-table', 'scenario'] }, () => {
+  it('gives fresh ids each time so a template can be added twice', { tags: ['equivalence'] }, () => {
     const a = buildTemplate(GRAPH_TEMPLATES[0]!);
     const b = buildTemplate(GRAPH_TEMPLATES[0]!);
     expect(a.nodes.some((n) => b.nodes.some((m) => m.id === n.id))).toBe(false);
   });
 
-  it('adds a template to the right of the existing nodes', { tags: ['scenario'] }, () => {
+  it('adds a template to the right of the existing nodes', { tags: ['boundary'] }, () => {
     expect(addOffset([])).toEqual({ x: 0, y: 0 });
     expect(addOffset([{ position: { x: 100, y: 40 } }, { position: { x: 900, y: -20 } }])).toEqual({ x: 1360, y: -20 });
   });
 });
 
-describe('templates tab', () => {
+describe('templates tab', { tags: [] }, () => {
   it('asks for the packs a template needs before it can be opened', { tags: ['scenario'] }, () => {
     setExtensionTemplates([]);
     render(<TooltipProvider><TemplatesView /></TooltipProvider>);
@@ -77,7 +85,7 @@ describe('templates tab', () => {
     expect(screen.getAllByText('ComfyUI が動き出すと使えます')).toHaveLength(waiting.length - withPacks.length);
   });
 
-  it('lists every template; Open replaces the graph and Add keeps what is there', { tags: ['state-transition', 'decision-table'] }, () => {
+  it('lists every template; Open replaces the graph and Add keeps what is there', { tags: ['scenario', 'condition'] }, () => {
     render(<TooltipProvider><TemplatesView /></TooltipProvider>);
     expect(screen.getAllByTestId('wf-template')).toHaveLength(GRAPH_TEMPLATES.length);
 

@@ -36,7 +36,7 @@ beforeEach(() => {
 });
 afterEach(() => vi.restoreAllMocks());
 
-describe('groups and selection', () => {
+describe('groups and selection', { tags: [] }, () => {
   it('switches the group and clears the selection, toggles candidates and clears them', { tags: ['state-transition'] }, () => {
     useDrafts.setState({ groups: [group('a', [candidate(1)]), group('b', [candidate(2)])], currentId: 'a' });
     state().toggleSelect('c1');
@@ -51,7 +51,7 @@ describe('groups and selection', () => {
     expect(state().selection).toEqual([]);
   });
 
-  it('marks a candidate and unmarks it by marking the same verdict again', { tags: ['condition'] }, () => {
+  it('marks a candidate and unmarks it by marking the same verdict again', { tags: ['state-transition', 'condition'] }, () => {
     useDrafts.setState({ groups: [group('a', [candidate(1)]), group('b', [candidate(2)])] });
     state().mark('a', 'c1', 'keep');
     expect(state().groups[0]!.candidates[0]!.verdict).toBe('keep');
@@ -62,36 +62,40 @@ describe('groups and selection', () => {
     expect(state().groups[1]!.candidates[0]!.verdict).toBeNull();
   });
 
-  it('closes a group; closing the current one shows the last remaining, and another one changes nothing', { tags: ['scenario'] }, () => {
-    useDrafts.setState({ groups: [group('a', []), group('b', []), group('c', [])], currentId: 'c', selection: ['x'] });
-    state().closeGroup('a');
-    expect(state()).toMatchObject({ currentId: 'c', selection: ['x'] });
-    state().closeGroup('c');
-    expect(state()).toMatchObject({ currentId: 'b', selection: [] });
-    state().closeGroup('b');
-    expect(state().currentId).toBeNull();
-  });
+  it(
+    'closes a group; closing the current one shows the last remaining, and another one changes nothing',
+    { tags: ['state-transition', 'condition'] },
+    () => {
+      useDrafts.setState({ groups: [group('a', []), group('b', []), group('c', [])], currentId: 'c', selection: ['x'] });
+      state().closeGroup('a');
+      expect(state()).toMatchObject({ currentId: 'c', selection: ['x'] });
+      state().closeGroup('c');
+      expect(state()).toMatchObject({ currentId: 'b', selection: [] });
+      state().closeGroup('b');
+      expect(state().currentId).toBeNull();
+    },
+  );
 
-  it('follows the queue through the queue store', { tags: ['condition'] }, () => {
+  it('follows the queue through the queue store', { tags: ['scenario'] }, () => {
     useDrafts.setState({ groups: [group('a', [candidate(1)])] });
     useQueue.setState({ items: [{ id: 1, status: 'completed', imageName: 'done.png', error: null, createdAt: 1, params: { seed: 11, draftAt: 0.35 } } as QueueItem] });
     expect(state().groups[0]!.candidates[0]).toMatchObject({ status: 'ready', imageName: 'done.png' });
     useQueue.setState({ items: [] });
   });
 
-  it('works out the step a draft stops at', { tags: ['condition'] }, () => {
+  it('works out the step a draft stops at', { tags: ['equivalence'] }, () => {
     expect(draftStepOf(group('a', []))).toBe(12);
   });
 });
 
-describe('starting', () => {
-  it('says so when there is no builder', { tags: ['condition'] }, async () => {
+describe('starting', { tags: [] }, () => {
+  it('says so when there is no builder', { tags: ['error-guessing'] }, async () => {
     registerInvokeBuilder('generate', undefined as never);
     expect(await state().start(2, 0.3)).toEqual({ error: 'no-builder' });
     expect(state().busy).toBe(false);
   });
 
-  it('drafts image to image over the stored source and finishes and retries over it again', { tags: ['condition'] }, async () => {
+  it('drafts image to image over the stored source and finishes and retries over it again', { tags: ['scenario'] }, async () => {
     const source = 'http://novira-image.localhost/full/source.png';
     const request = { origin: 'generate', destination: 'gallery', params: { generationMode: 'img2img', strength: 0.5, steps: 30, seed: 1 }, iterations: 2, randomizeSeed: false, prepend: false, boardId: null, initImageUrl: source } as EnqueueRequest;
     registerInvokeBuilder('generate', { readiness: () => [], build: async () => request });
@@ -121,57 +125,69 @@ describe('starting', () => {
   });
 });
 
-describe('finishing and retrying', () => {
-  it('finishes the chosen candidates once each, leaving the others and unknown ids', { tags: ['error-guessing'] }, async () => {
-    const enqueue = vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => [{ id: 100 + r.params.seed, params: r.params } as QueueItem]);
-    useDrafts.setState({
-      groups: [group('a', [candidate(1, { status: 'ready' }), candidate(2, { status: 'ready', finalItemId: 5 }), candidate(3, { status: 'ready' })], { refImages: [] as never })],
-      selection: ['c1', 'c2'],
-    });
-    await state().finish('missing', ['c1']);
-    await state().finish('a', ['c1', 'c2', 'nope']);
-    expect(enqueue).toHaveBeenCalledTimes(1);
-    expect(enqueue.mock.calls[0]![0]).toMatchObject({ params: { seed: 11 }, boardId: 'board', iterations: 1, randomizeSeed: false });
-    expect(state().groups[0]!.candidates.map((c) => c.finalItemId)).toEqual([111, 5, null]);
-    expect(state().groups[0]!.candidates[0]!.finalStatus).toBe('queued');
-    expect(state().selection).toEqual(['c2']);
-    expect(state().busy).toBe(false);
-  });
+describe('finishing and retrying', { tags: [] }, () => {
+  it(
+    'finishes the chosen candidates once each, leaving the others and unknown ids',
+    { tags: ['condition', 'error-guessing'] },
+    async () => {
+      const enqueue = vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => [{ id: 100 + r.params.seed, params: r.params } as QueueItem]);
+      useDrafts.setState({
+        groups: [group('a', [candidate(1, { status: 'ready' }), candidate(2, { status: 'ready', finalItemId: 5 }), candidate(3, { status: 'ready' })], { refImages: [] as never })],
+        selection: ['c1', 'c2'],
+      });
+      await state().finish('missing', ['c1']);
+      await state().finish('a', ['c1', 'c2', 'nope']);
+      expect(enqueue).toHaveBeenCalledTimes(1);
+      expect(enqueue.mock.calls[0]![0]).toMatchObject({ params: { seed: 11 }, boardId: 'board', iterations: 1, randomizeSeed: false });
+      expect(state().groups[0]!.candidates.map((c) => c.finalItemId)).toEqual([111, 5, null]);
+      expect(state().groups[0]!.candidates[0]!.finalStatus).toBe('queued');
+      expect(state().selection).toEqual(['c2']);
+      expect(state().busy).toBe(false);
+    },
+  );
 
-  it('draws a candidate to the end again after its finished picture was cancelled, failed or deleted, never twice at once', { tags: ['error-guessing'] }, async () => {
-    const enqueue = vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => [{ id: 200 + r.params.seed, params: r.params } as QueueItem]);
-    useDrafts.setState({
-      groups: [
-        group('a', [
-          candidate(1, { status: 'ready', finalItemId: 5, finalStatus: 'failed' }),
-          candidate(2, { status: 'ready', finalItemId: 6, finalStatus: 'running' }),
-          candidate(3, { status: 'ready', finalItemId: 7, finalStatus: 'queued' }),
-          candidate(4, { status: 'ready', finalItemId: 8, finalStatus: 'ready', finalImageName: 'gone.png' }),
-        ]),
-      ],
-    });
-    await state().finish('a', ['c1', 'c2', 'c3', 'c4']);
-    expect(enqueue).toHaveBeenCalledTimes(2);
-    const done = state().groups[0]!.candidates;
-    expect(done.map((c) => c.finalItemId)).toEqual([211, 6, 7, 214]);
-    expect(done.map((c) => c.finalStatus)).toEqual(['queued', 'running', 'queued', 'queued']);
-    // The picture of the earlier try is forgotten, so the cell does not show it while the new one is drawn.
-    expect(done[3]!.finalImageName).toBeNull();
-  });
+  it(
+    'draws a candidate to the end again after its finished picture was cancelled, failed or deleted, never twice at once',
+    { tags: ['state-transition', 'regression'] },
+    async () => {
+      const enqueue = vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => [{ id: 200 + r.params.seed, params: r.params } as QueueItem]);
+      useDrafts.setState({
+        groups: [
+          group('a', [
+            candidate(1, { status: 'ready', finalItemId: 5, finalStatus: 'failed' }),
+            candidate(2, { status: 'ready', finalItemId: 6, finalStatus: 'running' }),
+            candidate(3, { status: 'ready', finalItemId: 7, finalStatus: 'queued' }),
+            candidate(4, { status: 'ready', finalItemId: 8, finalStatus: 'ready', finalImageName: 'gone.png' }),
+          ]),
+        ],
+      });
+      await state().finish('a', ['c1', 'c2', 'c3', 'c4']);
+      expect(enqueue).toHaveBeenCalledTimes(2);
+      const done = state().groups[0]!.candidates;
+      expect(done.map((c) => c.finalItemId)).toEqual([211, 6, 7, 214]);
+      expect(done.map((c) => c.finalStatus)).toEqual(['queued', 'running', 'queued', 'queued']);
+      // The picture of the earlier try is forgotten, so the cell does not show it while the new one is drawn.
+      expect(done[3]!.finalImageName).toBeNull();
+    },
+  );
 
-  it('offers to finish a candidate unless its draft is not ready, or its finished picture is being drawn or exists', { tags: ['condition'] }, () => {
-    const c = (over: Partial<DraftCandidate>) => candidate(1, { status: 'ready', ...over });
-    expect(canFinish(c({}), false)).toBe(true);
-    expect(canFinish(c({ status: 'running' }), false)).toBe(false);
-    expect(canFinish(c({ status: 'failed' }), false)).toBe(false);
-    expect(canFinish(c({ finalItemId: 5, finalStatus: 'failed' }), false)).toBe(true);
-    expect(canFinish(c({ finalItemId: 5, finalStatus: 'queued' }), false)).toBe(false);
-    expect(canFinish(c({ finalItemId: 5, finalStatus: 'running' }), false)).toBe(false);
-    expect(canFinish(c({ finalItemId: 5, finalStatus: 'ready' }), true)).toBe(false);
-    expect(canFinish(c({ finalItemId: 5, finalStatus: 'ready' }), false)).toBe(true);
-  });
+  it(
+    'offers to finish a candidate unless its draft is not ready, or its finished picture is being drawn or exists',
+    { tags: ['decision-table'] },
+    () => {
+      const c = (over: Partial<DraftCandidate>) => candidate(1, { status: 'ready', ...over });
+      expect(canFinish(c({}), false)).toBe(true);
+      expect(canFinish(c({ status: 'running' }), false)).toBe(false);
+      expect(canFinish(c({ status: 'failed' }), false)).toBe(false);
+      expect(canFinish(c({ finalItemId: 5, finalStatus: 'failed' }), false)).toBe(true);
+      expect(canFinish(c({ finalItemId: 5, finalStatus: 'queued' }), false)).toBe(false);
+      expect(canFinish(c({ finalItemId: 5, finalStatus: 'running' }), false)).toBe(false);
+      expect(canFinish(c({ finalItemId: 5, finalStatus: 'ready' }), true)).toBe(false);
+      expect(canFinish(c({ finalItemId: 5, finalStatus: 'ready' }), false)).toBe(true);
+    },
+  );
 
-  it('runs the failed drafts again with the same seeds and without the second pass', { tags: ['error-guessing'] }, async () => {
+  it('runs the failed drafts again with the same seeds and without the second pass', { tags: ['state-transition'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => [{ id: 200 + r.params.seed, params: r.params } as QueueItem]);
     useDrafts.setState({
       groups: [group('a', [candidate(1, { status: 'failed', error: 'oom', imageName: 'old.png' }), candidate(2, { status: 'ready' })], { refImages: [{ modelKey: 'ipa' }] as never })],

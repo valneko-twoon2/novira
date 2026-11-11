@@ -39,34 +39,38 @@ function showOn(store: CanvasStore) {
   );
 }
 
-describe('canvas store provider', () => {
-  it('edits the given store from the layers panel and the toolbar and leaves the global store alone', { tags: ['state-transition'] }, () => {
-    const page = createCanvasStore({ syncParams: false });
-    showOn(page);
+describe('canvas store provider', { tags: [] }, () => {
+  it(
+    'edits the given store from the layers panel and the toolbar and leaves the global store alone',
+    { tags: ['state-transition', 'condition'] },
+    () => {
+      const page = createCanvasStore({ syncParams: false });
+      showOn(page);
 
-    fireEvent.click(screen.getByRole('button', { name: t(ADD_LABEL.raster) }));
-    expect(page.getState().entities.map((e) => e.type)).toEqual(['raster']);
-    expect(screen.getAllByTestId('canvas-entity')).toHaveLength(1);
+      fireEvent.click(screen.getByRole('button', { name: t(ADD_LABEL.raster) }));
+      expect(page.getState().entities.map((e) => e.type)).toEqual(['raster']);
+      expect(screen.getAllByTestId('canvas-entity')).toHaveLength(1);
 
-    fireEvent.click(screen.getByTestId('canvas-tool-eraser'));
-    expect(page.getState().tool).toBe('eraser');
+      fireEvent.click(screen.getByTestId('canvas-tool-eraser'));
+      expect(page.getState().tool).toBe('eraser');
 
-    const scale = page.getState().viewport.scale;
-    fireEvent.click(screen.getByRole('button', { name: t('common.zoomIn') }));
-    expect(page.getState().viewport.scale).toBeGreaterThan(scale);
+      const scale = page.getState().viewport.scale;
+      fireEvent.click(screen.getByRole('button', { name: t('common.zoomIn') }));
+      expect(page.getState().viewport.scale).toBeGreaterThan(scale);
 
-    fireEvent.click(screen.getByTestId('canvas-undo'));
-    expect(page.getState().entities).toEqual([]);
+      fireEvent.click(screen.getByTestId('canvas-undo'));
+      expect(page.getState().entities).toEqual([]);
 
-    const global = useCanvas.getState();
-    expect(global.entities).toEqual([]);
-    expect(global.past).toEqual([]);
-    expect(global.tool).toBe(initial.canvas.tool);
-    expect(global.viewport).toEqual(initial.canvas.viewport);
-    expect(useParams.getState()).toBe(initial.params);
-  });
+      const global = useCanvas.getState();
+      expect(global.entities).toEqual([]);
+      expect(global.past).toEqual([]);
+      expect(global.tool).toBe(initial.canvas.tool);
+      expect(global.viewport).toEqual(initial.canvas.viewport);
+      expect(useParams.getState()).toBe(initial.params);
+    },
+  );
 
-  it('acts on the global store without a provider', { tags: ['scenario'] }, () => {
+  it('acts on the global store without a provider', { tags: ['condition'] }, () => {
     render(
       <TooltipProvider>
         <CanvasToolbar />

@@ -30,67 +30,67 @@ afterEach(() => {
   useWorkflows.setState(initial, true);
 });
 
-describe('useDragFrom', () => {
-  it('is null while no connection is in progress', { tags: ['state-transition', 'scenario'] }, () => {
+describe('useDragFrom', { tags: [] }, () => {
+  it('is null while no connection is in progress', { tags: ['condition'] }, () => {
     expect(renderHook(() => useDragFrom()).result.current).toBeNull();
   });
 
-  it('is null for a drag that has no handle id', { tags: ['scenario'] }, () => {
+  it('is null for a drag that has no handle id', { tags: ['error-guessing'] }, () => {
     conn.value = { inProgress: true, fromHandle: { id: null, type: 'source' }, fromNode: { id: 'model' } };
     expect(renderHook(() => useDragFrom()).result.current).toBeNull();
   });
 
-  it('names the node, handle and side being dragged from', { tags: ['scenario'] }, () => {
+  it('names the node, handle and side being dragged from', { tags: ['equivalence'] }, () => {
     dragFromUnet();
     expect(renderHook(() => useDragFrom()).result.current).toEqual({ nodeId: 'model', handle: 'unet', side: 'source' });
   });
 });
 
-describe('useHandleAssist', () => {
-  it('is idle with no drag', { tags: ['scenario'] }, () => {
+describe('useHandleAssist', { tags: [] }, () => {
+  it('is idle with no drag', { tags: ['condition'] }, () => {
     expect(renderHook(() => useHandleAssist('denoise', 'unet', 'target')).result.current).toBe('idle');
   });
 
-  it('marks the origin, a handle that fits, and one that does not', { tags: ['boundary', 'scenario'] }, () => {
+  it('marks the origin, a handle that fits, and one that does not', { tags: ['equivalence'] }, () => {
     dragFromUnet();
     expect(renderHook(() => useHandleAssist('model', 'unet', 'source')).result.current).toBe('origin');
     expect(renderHook(() => useHandleAssist('denoise', 'unet', 'target')).result.current).toBe('ok');
     expect(renderHook(() => useHandleAssist('denoise', 'latents', 'target')).result.current).toBe('blocked');
   });
 
-  it('blocks a handle whose connection would close a cycle', { tags: ['state-transition', 'scenario'] }, () => {
+  it('blocks a handle whose connection would close a cycle', { tags: ['condition'] }, () => {
     useWorkflows.setState({ edges: [makeEdge('denoise', 'latents', 'model', 'unet')] });
     dragFromUnet();
     expect(renderHook(() => useHandleAssist('denoise', 'unet', 'target')).result.current).toBe('blocked');
   });
 });
 
-describe('useNodeBlocked', () => {
-  it('is false with no drag', { tags: ['scenario'] }, () => {
+describe('useNodeBlocked', { tags: [] }, () => {
+  it('is false with no drag', { tags: ['condition'] }, () => {
     expect(renderHook(() => useNodeBlocked('save', 'save_image')).result.current).toBe(false);
   });
 
-  it('never dims the node the drag started from', { tags: ['scenario'] }, () => {
+  it('never dims the node the drag started from', { tags: ['condition'] }, () => {
     dragFromUnet();
     expect(renderHook(() => useNodeBlocked('model', 'sdxl_model_loader')).result.current).toBe(false);
   });
 
-  it('dims a node with nothing that can take the drag, not one that can', { tags: ['boundary', 'scenario'] }, () => {
+  it('dims a node with nothing that can take the drag, not one that can', { tags: ['equivalence'] }, () => {
     dragFromUnet();
     expect(renderHook(() => useNodeBlocked('save', 'save_image')).result.current).toBe(true);
     expect(renderHook(() => useNodeBlocked('denoise', 'denoise_latents')).result.current).toBe(false);
   });
 
-  it('does not dim a node of an unknown type', { tags: ['error-guessing', 'scenario'] }, () => {
+  it('does not dim a node of an unknown type', { tags: ['error-guessing'] }, () => {
     dragFromUnet();
     expect(renderHook(() => useNodeBlocked('x', 'no_such_type')).result.current).toBe(false);
   });
 });
 
-describe('AssistHandle', () => {
+describe('AssistHandle', { tags: [] }, () => {
   const classOf = () => screen.getByTestId('handle').className;
 
-  it('has no state class while idle and keeps the class it is given', { tags: ['state-transition', 'scenario'] }, () => {
+  it('has no state class while idle and keeps the class it is given', { tags: ['condition'] }, () => {
     render(<AssistHandle nodeId="denoise" id="unet" type="target" position={'left' as never} className="mine" />);
     expect(classOf()).toBe('mine');
   });
@@ -99,7 +99,7 @@ describe('AssistHandle', () => {
     ['model', 'unet', 'source', 'is-origin'],
     ['denoise', 'unet', 'target', 'is-ok'],
     ['denoise', 'latents', 'target', 'is-blocked'],
-  ] as const)('wears the class of its state (%s.%s)', { tags: ['decision-table'] }, (nodeId, id, type, cls) => {
+  ] as const)('wears the class of its state (%s.%s)', { tags: ['equivalence'] }, (nodeId, id, type, cls) => {
     dragFromUnet();
     render(<AssistHandle nodeId={nodeId} id={id} type={type} position={'left' as never} />);
     expect(classOf()).toContain(cls);

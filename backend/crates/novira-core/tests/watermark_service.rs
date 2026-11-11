@@ -22,7 +22,7 @@ fn options(watermark: bool) -> ExportOptions {
     }
 }
 
-// tags: error-guessing
+// tags: condition, error-guessing
 #[tokio::test]
 async fn an_export_with_the_watermark_is_refused_until_its_files_are_here() {
     let dir = tempfile::tempdir().unwrap();
@@ -95,7 +95,7 @@ async fn a_labelled_file_shows_its_credentials_and_ai_label() {
     assert!(!check.watermark_found);
 }
 
-// tags: error-guessing
+// tags: error-guessing, equivalence
 #[tokio::test]
 async fn bad_requests_are_refused() {
     let dir = tempfile::tempdir().unwrap();

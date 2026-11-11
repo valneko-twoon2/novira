@@ -60,7 +60,7 @@ fn psnr(a: &DynamicImage, b: &DynamicImage) -> f64 {
     10.0 * (255.0f64.powi(2) / (se / a.as_raw().len() as f64)).log10()
 }
 
-// tags: state-transition
+// tags: boundary
 #[test]
 #[ignore = "needs the TrustMark files (node scripts/tools/fetch-trustmark.mjs)"]
 fn the_watermark_survives_jpeg_at_80_and_half_the_size() {

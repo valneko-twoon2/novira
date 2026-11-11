@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseHex } from './skyColour';
 
-describe('parseHex', () => {
+describe('parseHex', { tags: [] }, () => {
   it('reads token colours in hex and falls back on anything else', { tags: ['equivalence'] }, () => {
     const fallback = { r: 1, g: 2, b: 3 };
     expect(parseHex(' #2f6feb ', fallback)).toEqual({ r: 47, g: 111, b: 235 });

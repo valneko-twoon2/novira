@@ -39,66 +39,70 @@ const paintedPixels = (canvas: Locator) =>
 const pageOrder = (page: Page) =>
   page.locator('[data-testid="comic-layer-raster"], [data-testid="comic-layer-panels"]').evaluateAll((els) => els.map((e) => e.getAttribute('data-testid')));
 
-test('a stroke painted on a page is a layer of it: hidden, ordered, undone, and kept across pages and a reload', { tag: ['@state-transition', '@scenario'] }, async ({ page }) => {
-  test.slow();
-  await openApp(page, '?scenario=empty');
-  await showTab(page, 'comic');
-  await newComic(page, 'Paint');
+test(
+  'a stroke painted on a page is a layer of it: hidden, ordered, undone, and kept across pages and a reload',
+  { tag: ['@state-transition', '@scenario'] },
+  async ({ page }) => {
+    test.slow();
+    await openApp(page, '?scenario=empty');
+    await showTab(page, 'comic');
+    await newComic(page, 'Paint');
 
-  // The layers panel is there with the page; the switch starts painting with a new raster layer over the balloons and the panels.
-  const rows = page.getByTestId('canvas-layers').getByTestId('canvas-entity');
-  await expect(rows).toHaveCount(2);
-  await page.getByTestId('comic-mode-paint').click();
-  await expect(rows).toHaveCount(3);
-  await expect(rows.nth(1)).toContainText(msg('comic.layers.balloons'));
-  await expect(rows.nth(2)).toContainText(msg('comic.layers.panels'));
-  // No panel handles while painting, and the page's own tools are put away.
-  await expect(page.getByTestId('comic-delete')).toHaveCount(0);
+    // The layers panel is there with the page; the switch starts painting with a new raster layer over the balloons and the panels.
+    const rows = page.getByTestId('canvas-layers').getByTestId('canvas-entity');
+    await expect(rows).toHaveCount(2);
+    await page.getByTestId('comic-mode-paint').click();
+    await expect(rows).toHaveCount(3);
+    await expect(rows.nth(1)).toContainText(msg('comic.layers.balloons'));
+    await expect(rows.nth(2)).toContainText(msg('comic.layers.panels'));
+    // No panel handles while painting, and the page's own tools are put away.
+    await expect(page.getByTestId('comic-delete')).toHaveCount(0);
 
-  await drag(page, page.getByTestId('canvas-embedded-stage'), [0.2, 0.15], [0.8, 0.5]);
-  const content = page.getByTestId('canvas-embedded-content');
-  await expect.poll(() => paintedPixels(content)).toBeGreaterThan(100);
+    await drag(page, page.getByTestId('canvas-embedded-stage'), [0.2, 0.15], [0.8, 0.5]);
+    const content = page.getByTestId('canvas-embedded-content');
+    await expect.poll(() => paintedPixels(content)).toBeGreaterThan(100);
 
-  // The page's own undo takes the stroke back (the layer stays), and redo brings it again.
-  await page.getByTestId('canvas-undo').click();
-  await expect.poll(() => paintedPixels(content)).toBe(0);
-  await expect(rows).toHaveCount(3);
-  await page.getByTestId('canvas-redo').click();
-  await expect.poll(() => paintedPixels(content)).toBeGreaterThan(100);
+    // The page's own undo takes the stroke back (the layer stays), and redo brings it again.
+    await page.getByTestId('canvas-undo').click();
+    await expect.poll(() => paintedPixels(content)).toBe(0);
+    await expect(rows).toHaveCount(3);
+    await page.getByTestId('canvas-redo').click();
+    await expect.poll(() => paintedPixels(content)).toBeGreaterThan(100);
 
-  // Hidden from the layers panel: the page no longer shows the layer.
-  const raster = rows.nth(0);
-  await raster.getByRole('button', { name: msg('canvas.entity.hide'), exact: true }).click();
-  await expect(page.getByTestId('comic-layer-raster')).toHaveCount(0);
-  await raster.getByRole('button', { name: msg('canvas.entity.show'), exact: true }).click();
-  await expect(page.getByTestId('comic-layer-raster')).toHaveCount(1);
+    // Hidden from the layers panel: the page no longer shows the layer.
+    const raster = rows.nth(0);
+    await raster.getByRole('button', { name: msg('canvas.entity.hide'), exact: true }).click();
+    await expect(page.getByTestId('comic-layer-raster')).toHaveCount(0);
+    await raster.getByRole('button', { name: msg('canvas.entity.show'), exact: true }).click();
+    await expect(page.getByTestId('comic-layer-raster')).toHaveCount(1);
 
-  // Under the panels and back over them.
-  await expect.poll(() => pageOrder(page)).toEqual(['comic-layer-panels', 'comic-layer-raster']);
-  await raster.locator('.canvas-entity__row').click({ button: 'right' });
-  // The submenu opens by the keyboard: at the window's edge a pointer path to it is not reliable.
-  await page.getByRole('menuitem', { name: msg('canvas.entityMenu.arrange') }).press('ArrowRight');
-  await page.getByRole('menuitem', { name: msg('canvas.entityMenu.moveToBottom') }).press('Enter');
-  await expect(rows.nth(2)).not.toContainText(msg('comic.layers.panels'));
-  await expect.poll(() => pageOrder(page)).toEqual(['comic-layer-raster', 'comic-layer-panels']);
-  await page.getByTestId('canvas-undo').click();
-  await expect.poll(() => pageOrder(page)).toEqual(['comic-layer-panels', 'comic-layer-raster']);
+    // Under the panels and back over them.
+    await expect.poll(() => pageOrder(page)).toEqual(['comic-layer-panels', 'comic-layer-raster']);
+    await raster.locator('.canvas-entity__row').click({ button: 'right' });
+    // The submenu opens by the keyboard: at the window's edge a pointer path to it is not reliable.
+    await page.getByRole('menuitem', { name: msg('canvas.entityMenu.arrange') }).press('ArrowRight');
+    await page.getByRole('menuitem', { name: msg('canvas.entityMenu.moveToBottom') }).press('Enter');
+    await expect(rows.nth(2)).not.toContainText(msg('comic.layers.panels'));
+    await expect.poll(() => pageOrder(page)).toEqual(['comic-layer-raster', 'comic-layer-panels']);
+    await page.getByTestId('canvas-undo').click();
+    await expect.poll(() => pageOrder(page)).toEqual(['comic-layer-panels', 'comic-layer-raster']);
 
-  // Choosing the panels row goes back to the page, which shows the stroke as a layer of its own.
-  await rows.filter({ hasText: msg('comic.layers.panels') }).locator('.canvas-entity__row').click();
-  await expect(page.getByTestId('canvas-embedded-stage')).toHaveCount(0);
-  await expect(page.getByTestId('comic-layer-canvas')).toHaveCount(1);
+    // Choosing the panels row goes back to the page, which shows the stroke as a layer of its own.
+    await rows.filter({ hasText: msg('comic.layers.panels') }).locator('.canvas-entity__row').click();
+    await expect(page.getByTestId('canvas-embedded-stage')).toHaveCount(0);
+    await expect(page.getByTestId('comic-layer-canvas')).toHaveCount(1);
 
-  // Another page has no stroke; back on the first one, it is there.
-  await page.getByTestId('comic-page-add').click();
-  await expect(page.getByTestId('comic-layer-canvas')).toHaveCount(0);
-  await page.getByTestId('comic-page-1').click();
-  await expect(page.getByTestId('comic-layer-canvas')).toHaveCount(1);
+    // Another page has no stroke; back on the first one, it is there.
+    await page.getByTestId('comic-page-add').click();
+    await expect(page.getByTestId('comic-layer-canvas')).toHaveCount(0);
+    await page.getByTestId('comic-page-1').click();
+    await expect(page.getByTestId('comic-layer-canvas')).toHaveCount(1);
 
-  // Saved: a reload brings the stroke back.
-  await page.waitForTimeout(1500);
-  await page.reload();
-  await expect(page.locator('.app')).toBeVisible({ timeout: 20_000 });
-  await showTab(page, 'comic');
-  await expect(page.getByTestId('comic-layer-canvas')).toHaveCount(1);
-});
+    // Saved: a reload brings the stroke back.
+    await page.waitForTimeout(1500);
+    await page.reload();
+    await expect(page.locator('.app')).toBeVisible({ timeout: 20_000 });
+    await showTab(page, 'comic');
+    await expect(page.getByTestId('comic-layer-canvas')).toHaveCount(1);
+  },
+);

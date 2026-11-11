@@ -50,8 +50,8 @@ afterEach(() => {
   setLocale('ja');
 });
 
-describe('PanelFix', () => {
-  it('shows the strip and the surface only while the panel is marked', { tags: ['scenario'] }, () => {
+describe('PanelFix', { tags: [] }, () => {
+  it('shows the strip and the surface only while the panel is marked', { tags: ['state-transition'] }, () => {
     show();
     expect(screen.queryByTestId('comic-fix-bar')).toBeNull();
     expect(screen.queryByTestId('comic-fix-surface')).toBeNull();
@@ -62,23 +62,27 @@ describe('PanelFix', () => {
     expect(screen.queryByTestId('comic-fix-bar')).toBeNull();
   });
 
-  it('paints strokes in fractions of the panel, and Redraw queues them with the words and ends the marking', { tags: ['scenario'] }, async () => {
-    show();
-    fireEvent.click(screen.getByTestId('comic-fix'));
-    expect((screen.getByTestId('comic-fix-go') as HTMLButtonElement).disabled).toBe(true);
-    const el = surface();
-    fireEvent.pointerDown(el, { button: 0, pointerId: 1, clientX: 20, clientY: 40 });
-    fireEvent.pointerMove(el, { pointerId: 1, clientX: 100, clientY: 120 });
-    fireEvent.pointerUp(el, { pointerId: 1 });
-    expect(useComicFix.getState().strokes[0]!.points).toEqual([0.1, 0.2, 0.5, 0.6]);
-    fireEvent.change(screen.getByTestId('comic-fix-words'), { target: { value: 'an open hand' } });
-    const painted = useComicFix.getState().strokes;
-    fireEvent.click(screen.getByTestId('comic-fix-go'));
-    await waitFor(() => expect(redrawPart).toHaveBeenCalledWith('panel-0', { strokes: painted, boxes: [] }, expect.objectContaining({ words: 'an open hand' })));
-    await waitFor(() => expect(useComicFix.getState().panelId).toBeNull());
-  });
+  it(
+    'paints strokes in fractions of the panel, and Redraw queues them with the words and ends the marking',
+    { tags: ['scenario'] },
+    async () => {
+      show();
+      fireEvent.click(screen.getByTestId('comic-fix'));
+      expect((screen.getByTestId('comic-fix-go') as HTMLButtonElement).disabled).toBe(true);
+      const el = surface();
+      fireEvent.pointerDown(el, { button: 0, pointerId: 1, clientX: 20, clientY: 40 });
+      fireEvent.pointerMove(el, { pointerId: 1, clientX: 100, clientY: 120 });
+      fireEvent.pointerUp(el, { pointerId: 1 });
+      expect(useComicFix.getState().strokes[0]!.points).toEqual([0.1, 0.2, 0.5, 0.6]);
+      fireEvent.change(screen.getByTestId('comic-fix-words'), { target: { value: 'an open hand' } });
+      const painted = useComicFix.getState().strokes;
+      fireEvent.click(screen.getByTestId('comic-fix-go'));
+      await waitFor(() => expect(redrawPart).toHaveBeenCalledWith('panel-0', { strokes: painted, boxes: [] }, expect.objectContaining({ words: 'an open hand' })));
+      await waitFor(() => expect(useComicFix.getState().panelId).toBeNull());
+    },
+  );
 
-  it('keeps the marking when nothing could be queued', { tags: ['scenario'] }, async () => {
+  it('keeps the marking when nothing could be queued', { tags: ['error-guessing', 'condition'] }, async () => {
     redrawPart.mockResolvedValueOnce(false);
     show();
     fireEvent.click(screen.getByTestId('comic-fix'));
@@ -90,7 +94,7 @@ describe('PanelFix', () => {
     expect(useComicFix.getState().panelId).toBe('panel-0');
   });
 
-  it('ends the marking when another panel is selected', { tags: ['scenario'] }, () => {
+  it('ends the marking when another panel is selected', { tags: ['state-transition'] }, () => {
     useComicFix.getState().start('panel-0');
     show('panel-1');
     expect(useComicFix.getState().panelId).toBeNull();

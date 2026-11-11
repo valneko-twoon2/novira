@@ -26,7 +26,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('backup section', () => {
+describe('backup section', { tags: [] }, () => {
   it('sends the saved screen state with a new backup', { tags: ['scenario'] }, async () => {
     localStorage.setItem('novira.characters', '[1]');
     localStorage.setItem('elsewhere', 'x');
@@ -38,7 +38,7 @@ describe('backup section', () => {
     await waitFor(() => expect(useToasts.getState().toasts[0]?.title).toContain('novira-backup.zip'));
   });
 
-  it('asks before replacing the data, and drops the backup on cancel', { tags: ['scenario'] }, async () => {
+  it('asks before replacing the data, and drops the backup on cancel', { tags: ['state-transition'] }, async () => {
     vi.spyOn(backend, 'openBackup').mockResolvedValue(info);
     const discard = vi.spyOn(backend, 'discardRestore').mockResolvedValue();
     const confirm = vi.spyOn(backend, 'confirmRestore').mockResolvedValue();
@@ -74,7 +74,7 @@ describe('backup section', () => {
     expect(screen.queryByTestId('restore-confirm')).toBeNull();
   });
 
-  it('says a backup needs the desktop app on the browser server, and asks for nothing', { tags: ['scenario'] }, () => {
+  it('says a backup needs the desktop app on the browser server, and asks for nothing', { tags: ['condition'] }, () => {
     asBrowserServer();
     const create = vi.spyOn(backend, 'createBackup');
     const open = vi.spyOn(backend, 'openBackup');
@@ -89,7 +89,7 @@ describe('backup section', () => {
     expect(open).not.toHaveBeenCalled();
   });
 
-  it('shows no such note where the dialog exists', { tags: ['scenario'] }, () => {
+  it('shows no such note where the dialog exists', { tags: ['condition'] }, () => {
     mount();
     expect(screen.queryByTestId('backup-desktop-only')).toBeNull();
     expect((screen.getByTestId('backup-create') as HTMLButtonElement).disabled).toBe(false);

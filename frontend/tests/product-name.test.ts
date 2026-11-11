@@ -5,8 +5,8 @@ import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- a plain .mjs tool without types
 import { findMisspellings, misspelledLines } from '../../scripts/tools/check-name.mjs';
 
-describe('the product name', () => {
-  it('is found when written with a capital, at the start of a sentence too', { tags: ['condition'] }, () => {
+describe('the product name', { tags: [] }, () => {
+  it('is found when written with a capital, at the start of a sentence too', { tags: ['equivalence'] }, () => {
     expect(misspelledLines('Novira is an app\nthe novira app\nand Novira.exe\n# Novira')).toEqual([1, 3, 4]);
   });
 
@@ -14,7 +14,7 @@ describe('the product name', () => {
     expect(misspelledLines('Decoded::Novira(id)\nNovira(u64),\nwatermarkNovira\nNOVIRA_DATA_DIR\nnovira-server')).toEqual([]);
   });
 
-  it('is spelled in lowercase in every tracked text file', { tags: ['scenario', 'static'] }, () => {
+  it('is spelled in lowercase in every tracked text file', { tags: ['static', 'scenario'] }, () => {
     const root = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
     const paths = execFileSync('git', ['-C', root, 'ls-files', '-z'], { encoding: 'utf8', maxBuffer: 1 << 28 }).split('\0').filter(Boolean);
     const found = findMisspellings(paths, (p: string) => readFileSync(`${root}/${p}`));

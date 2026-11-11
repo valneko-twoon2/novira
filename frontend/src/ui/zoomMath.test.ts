@@ -15,14 +15,14 @@ import {
   zoomAt,
 } from './zoomMath';
 
-describe('zoom math', () => {
-  it('round-trips screen and document coordinates', { tags: ['condition'] }, () => {
+describe('zoom math', { tags: [] }, () => {
+  it('round-trips screen and document coordinates', { tags: ['equivalence'] }, () => {
     const v = { x: 30, y: -20, scale: 0.5 };
     expect(screenToDoc(docToScreen({ x: 100, y: 200 }, v), v)).toEqual({ x: 100, y: 200 });
     expect(boxToScreen({ x: 10, y: 20, width: 100, height: 50 }, v)).toEqual({ x: 35, y: -10, width: 50, height: 25 });
   });
 
-  it('keeps the anchor fixed when zooming', { tags: ['condition'] }, () => {
+  it('keeps the anchor fixed when zooming', { tags: ['equivalence'] }, () => {
     const v = { x: 10, y: 10, scale: 1 };
     const anchor = { x: 200, y: 150 };
     const z = zoomAt(v, anchor, 2);
@@ -44,14 +44,14 @@ describe('zoom math', () => {
     expect(stepZoom(MIN_SCALE, -1)).toBe(MIN_SCALE);
   });
 
-  it('zooms in for wheel up and out for wheel down, faster per line than per pixel', { tags: ['condition'] }, () => {
+  it('zooms in for wheel up and out for wheel down, faster per line than per pixel', { tags: ['equivalence'] }, () => {
     expect(wheelZoomFactor({ deltaY: -100, deltaMode: 0 })).toBeGreaterThan(1);
     expect(wheelZoomFactor({ deltaY: 100, deltaMode: 0 })).toBeLessThan(1);
     expect(wheelZoomFactor({ deltaY: -100, deltaMode: 0 }) * wheelZoomFactor({ deltaY: 100, deltaMode: 0 })).toBeCloseTo(1);
     expect(wheelZoomFactor({ deltaY: -3, deltaMode: 1 })).toBeGreaterThan(wheelZoomFactor({ deltaY: -3, deltaMode: 0 }));
   });
 
-  it('fits a rect into the stage centered', { tags: ['condition'] }, () => {
+  it('fits a rect into the stage centered', { tags: ['equivalence'] }, () => {
     const v = fitRect({ x: 0, y: 0, width: 1000, height: 500 }, 600, 400, 50);
     expect(v.scale).toBeCloseTo(0.5);
     expect(docToScreen({ x: 500, y: 250 }, v)).toEqual({ x: 300, y: 200 });
@@ -68,7 +68,7 @@ describe('zoom math', () => {
     expect(canPan({ x: 0, y: 0, scale: 10 }, content, stage)).toBe(true);
   });
 
-  it('contains a box in a rect, centered, in whole pixels', { tags: ['condition'] }, () => {
+  it('contains a box in a rect, centered, in whole pixels', { tags: ['equivalence'] }, () => {
     expect(containIn(200, 100, { x: 0, y: 0, width: 100, height: 100 })).toEqual({ x: 0, y: 25, width: 100, height: 50 });
   });
 });

@@ -10,7 +10,7 @@ const page = { panels: [{ panel: 1 }, { panel: 2 }], layoutTemplates: ['slants']
 const request = (message: string, over: Partial<AgentRequest> = {}): AgentRequest => ({ message, locale: 'ja', screen: 'comic', ...over });
 const opsOf = (message: string) => comicOps(message, page, true).ops.map((o) => (o as { op: string }).op);
 
-describe('comicOps', () => {
+describe('comicOps', { tags: [] }, () => {
   it('turns a slanted layout, dialogue and shots into comic operations', { tags: ['equivalence'] }, () => {
     expect(opsOf('斜めのコマ割りにして')).toEqual(['template']);
     expect(opsOf('漫画らしいコマ割りにして')).toEqual(['mangaLayout']);
@@ -22,25 +22,33 @@ describe('comicOps', () => {
   });
 });
 
-describe('comicOps on layers', () => {
+describe('comicOps on layers', { tags: [] }, () => {
   const layered = { layers: [{ layer: 1, kind: 'panels' }, { layer: 2, kind: 'balloons' }, { layer: 3, kind: 'raster' }] };
 
-  it('adds a layer, and blends or moves the new one by its number on top of the layers of the page', { tags: ['condition'] }, () => {
-    expect(comicOps('レイヤーを足して', layered, true).ops).toEqual([{ op: 'addLayer', name: '効果線' }]);
-    expect(comicOps('乗算のレイヤーをコマの下に足して', layered, true).ops).toEqual([
-      { op: 'addLayer', name: '効果線' },
-      { op: 'layer', layer: 4, blend: 'multiply' },
-      { op: 'layer', layer: 4, move: 'bottom' },
-    ]);
-  });
+  it(
+    'adds a layer, and blends or moves the new one by its number on top of the layers of the page',
+    { tags: ['equivalence', 'decision-table'] },
+    () => {
+      expect(comicOps('レイヤーを足して', layered, true).ops).toEqual([{ op: 'addLayer', name: '効果線' }]);
+      expect(comicOps('乗算のレイヤーをコマの下に足して', layered, true).ops).toEqual([
+        { op: 'addLayer', name: '効果線' },
+        { op: 'layer', layer: 4, blend: 'multiply' },
+        { op: 'layer', layer: 4, move: 'bottom' },
+      ]);
+    },
+  );
 
-  it('deletes the top raster of the user that is not locked, and adds nothing when there is none', { tags: ['condition'] }, () => {
-    expect(comicOps('レイヤーを削除して', layered, true).ops).toEqual([{ op: 'deleteLayer', layer: 3 }]);
-    expect(comicOps('レイヤーを削除して', { layers: [{ layer: 3, kind: 'raster', locked: true }] }, true).ops).toEqual([{ op: 'addLayer', name: '効果線' }]);
-  });
+  it(
+    'deletes the top raster of the user that is not locked, and adds nothing when there is none',
+    { tags: ['condition', 'boundary'] },
+    () => {
+      expect(comicOps('レイヤーを削除して', layered, true).ops).toEqual([{ op: 'deleteLayer', layer: 3 }]);
+      expect(comicOps('レイヤーを削除して', { layers: [{ layer: 3, kind: 'raster', locked: true }] }, true).ops).toEqual([{ op: 'addLayer', name: '効果線' }]);
+    },
+  );
 });
 
-describe('comicAgentReply', () => {
+describe('comicAgentReply', { tags: [] }, () => {
   it('reads the page, then edits it', { tags: ['scenario'] }, async () => {
     const tools = fakeTools({ get_comic_page: page });
     const reply = await comicAgentReply(request('斜めのコマ割りにして'), tools.call);

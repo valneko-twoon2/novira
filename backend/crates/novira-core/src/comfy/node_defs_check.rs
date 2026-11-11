@@ -119,7 +119,7 @@ fn snapshot_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("src/comfy/__snapshots__/graph")
 }
 
-// tags: boundary, equivalence
+// tags: equivalence
 #[test]
 fn every_snapshot_prompt_fits_the_node_definitions_of_a_real_comfyui() {
     let defs: Value = serde_json::from_str(DEFS).expect("node-defs.json is JSON");
@@ -181,7 +181,7 @@ mod tests {
         .join("\n")
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn a_correct_prompt_has_no_problems() {
         assert_eq!(
@@ -190,7 +190,7 @@ mod tests {
         );
     }
 
-    // tags: equivalence
+    // tags: equivalence, boundary
     #[test]
     fn each_kind_of_mistake_is_named() {
         let ok = json!({"model": ["1", 0], "steps": 20, "sampler": "euler"});

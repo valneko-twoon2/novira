@@ -43,7 +43,7 @@ describe('image size', () => {
     expect(p().height).toBe(64);
   });
 
-  it('keeps the ratio when it is locked', { tags: ['condition'] }, () => {
+  it('keeps the ratio when it is locked', { tags: ['decision-table'] }, () => {
     p().set({ aspectRatio: '16:9', aspectLocked: true });
     p().setDimension('width', 1280);
     expect([p().width, p().height]).toEqual([1280, 720]);
@@ -52,7 +52,7 @@ describe('image size', () => {
     expect(p().aspectRatio).toBe('16:9');
   });
 
-  it('keeps the area when picking an aspect ratio', { tags: ['condition'] }, () => {
+  it('keeps the area when picking an aspect ratio', { tags: ['equivalence'] }, () => {
     p().setAspectRatio('16:9');
     expect(p().aspectRatio).toBe('16:9');
     expect([p().width, p().height]).toEqual([1368, 768]);
@@ -70,7 +70,7 @@ describe('image size', () => {
     expect(p().aspectRatio).toBe('free');
   });
 
-  it('snaps a free shape to the nearest size the model was trained on, scaled to its base', { tags: ['condition'] }, () => {
+  it('snaps a free shape to the nearest size the model was trained on, scaled to its base', { tags: ['equivalence', 'boundary'] }, () => {
     p().set({ aspectRatio: 'free', width: 512, height: 512 });
     p().optimizeSize(1024);
     expect([p().width, p().height]).toEqual([1024, 1024]);
@@ -96,7 +96,7 @@ describe('image size', () => {
 });
 
 describe('LoRAs and reference images', () => {
-  it('adds a LoRA once, updates and removes it', { tags: ['condition'] }, () => {
+  it('adds a LoRA once, updates and removes it', { tags: ['equivalence'] }, () => {
     p().addLora('l1');
     p().addLora('l1');
     expect(p().loras).toEqual([{ key: 'l1', weight: 0.75, isEnabled: true }]);
@@ -167,20 +167,24 @@ describe('recall', () => {
     expect(p().strength).toBe(0.9);
   });
 
-  it('brings back the reference images a picture was made with, and keeps the existing ones when it had none', { tags: ['condition'] }, () => {
-    p().set({ refImages: [] });
-    p().recallAll(metadata());
-    expect(p().refImages).toEqual([]);
-    const ref = { imageUrl: 'http://novira-image.localhost/full/r.png', modelKey: 'ipa', clipVisionModel: 'ViT-H' as const, weight: 0.6, beginEnd: [0, 1] as [number, number], method: 'full' as const };
-    p().recallAll(metadata({ refImages: [ref] }));
-    expect(p().refImages).toHaveLength(1);
-    expect(p().refImages[0]).toMatchObject({ isEnabled: true, imageUrl: ref.imageUrl, modelKey: 'ipa', weight: 0.6 });
-    const own = p().addRefImage({ imageUrl: 'x', modelKey: 'k' });
-    p().recallAll(metadata());
-    expect(p().refImages.some((r) => r.id === own)).toBe(true);
-  });
+  it(
+    'brings back the reference images a picture was made with, and keeps the existing ones when it had none',
+    { tags: ['condition'] },
+    () => {
+      p().set({ refImages: [] });
+      p().recallAll(metadata());
+      expect(p().refImages).toEqual([]);
+      const ref = { imageUrl: 'http://novira-image.localhost/full/r.png', modelKey: 'ipa', clipVisionModel: 'ViT-H' as const, weight: 0.6, beginEnd: [0, 1] as [number, number], method: 'full' as const };
+      p().recallAll(metadata({ refImages: [ref] }));
+      expect(p().refImages).toHaveLength(1);
+      expect(p().refImages[0]).toMatchObject({ isEnabled: true, imageUrl: ref.imageUrl, modelKey: 'ipa', weight: 0.6 });
+      const own = p().addRefImage({ imageUrl: 'x', modelKey: 'k' });
+      p().recallAll(metadata());
+      expect(p().refImages.some((r) => r.id === own)).toBe(true);
+    },
+  );
 
-  it('finds the model of an imported picture by its name when it carries no key', { tags: ['condition'] }, () => {
+  it('finds the model of an imported picture by its name when it carries no key', { tags: ['equivalence'] }, () => {
     expect(p().recallAll(metadata({ modelKey: '', modelName: 'WAI-illustrious-SDXL-v17' }))).toMatchObject({ kind: 'name' });
     expect(p().modelKey).toBe('main-df710eb000d0');
   });
@@ -208,7 +212,7 @@ describe('recall', () => {
     expect(p().hires).toMatchObject({ enabled: false, scale: 1.5 });
   });
 
-  it('recalls a seed or a size alone', { tags: ['condition'] }, () => {
+  it('recalls a seed or a size alone', { tags: ['equivalence'] }, () => {
     p().recallSeed(99);
     expect([p().seed, p().shouldRandomizeSeed]).toEqual([99, false]);
     p().recallSize(640, 480);
@@ -223,12 +227,12 @@ describe('high-resolution fix', () => {
     expect(hiresFixInput({ ...DEFAULT_HIRES, enabled: true, upscaleModelKey: 'up', steps: 12 })).toEqual({ scale: 1.5, strength: 0.45, upscaleModelKey: 'up', steps: 12 });
   });
 
-  it('computes the second-pass size like the backend (multiples of 8)', { tags: ['condition'] }, () => {
+  it('computes the second-pass size like the backend (multiples of 8)', { tags: ['equivalence'] }, () => {
     expect(hiresSize(1024, 768, 1.33)).toEqual({ width: 1360, height: 1024 });
     expect(hiresSize(832, 1216, 1.25)).toEqual({ width: 1040, height: 1520 });
   });
 
-  it('merges partial changes', { tags: ['condition'] }, () => {
+  it('merges partial changes', { tags: ['equivalence'] }, () => {
     p().setHires({ enabled: true });
     p().setHires({ strength: 0.6 });
     expect(p().hires).toMatchObject({ enabled: true, strength: 0.6, scale: 1.5 });

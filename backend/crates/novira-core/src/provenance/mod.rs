@@ -245,7 +245,7 @@ mod tests {
         out.into_inner()
     }
 
-    // tags: scenario
+    // tags: scenario, equivalence
     #[test]
     fn a_labelled_copy_carries_the_iptc_code_and_credentials_with_the_watermark_id() {
         let me = credentials::Identity::generate().unwrap();
@@ -304,7 +304,7 @@ mod tests {
         .is_err());
     }
 
-    // tags: error-guessing
+    // tags: error-guessing, state-transition
     #[test]
     fn tools_without_files_are_missing_and_refuse_to_load() {
         let data = tempfile::tempdir().unwrap();
@@ -314,7 +314,7 @@ mod tests {
         assert!(err.contains("not on this PC"), "{err}");
     }
 
-    // tags: error-guessing
+    // tags: error-guessing, state-transition
     #[test]
     fn tools_with_files_of_the_right_size_report_ready_but_a_wrong_hash_fails_and_is_removed() {
         let data = tempfile::tempdir().unwrap();

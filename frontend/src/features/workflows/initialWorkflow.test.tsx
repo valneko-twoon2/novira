@@ -14,8 +14,8 @@ async function loadHook() {
 
 afterEach(cleanup);
 
-describe('useInitialWorkflow', () => {
-  it('loads the default workflow when the library is already there', { tags: ['scenario'] }, async () => {
+describe('useInitialWorkflow', { tags: [] }, () => {
+  it('loads the default workflow when the library is already there', { tags: ['condition'] }, async () => {
     const { useInitialWorkflow, useWorkflows: store } = await loadHook();
     store.getState().setLibrary(DEFAULT_WORKFLOWS);
     renderHook(() => useInitialWorkflow());
@@ -23,7 +23,7 @@ describe('useInitialWorkflow', () => {
     expect(store.getState().meta.id).toBe('default-t2i-sd15');
   });
 
-  it('waits for the library when the tab is shown before the data has arrived', { tags: ['scenario'] }, async () => {
+  it('waits for the library when the tab is shown before the data has arrived', { tags: ['condition'] }, async () => {
     const { useInitialWorkflow, useWorkflows: store } = await loadHook();
     renderHook(() => useInitialWorkflow());
     expect(store.getState().nodes).toEqual([]);

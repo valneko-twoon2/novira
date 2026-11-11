@@ -44,7 +44,7 @@ function preparedPage(page: ComicPage = emptyPage(1)): PreparedPage {
   return { page, width: 400, height: 600, backdrop: picture, panels: [{ index: 0, panel: page.panels[0]!, shape: null, rect, outline: null, image: picture }], defaultFont: '', rasters: [], stamps: new Map() };
 }
 
-describe('a picture mirrored by its view', () => {
+describe('a picture mirrored by its view', { tags: [] }, () => {
   const mirroring = (view: Partial<ComicImageView>, part: 'backdrop' | 'panel') => {
     const page = emptyPage(1);
     page.backdrop = { imageName: 'sky.png', view: { ...DEFAULT_IMAGE_VIEW, ...view } };
@@ -54,7 +54,7 @@ describe('a picture mirrored by its view', () => {
     return rec.of('scale');
   };
 
-  it('is turned over left to right when flipped across, and upside down when flipped down', { tags: ['condition'] }, () => {
+  it('is turned over left to right when flipped across, and upside down when flipped down', { tags: ['decision-table'] }, () => {
     for (const part of ['backdrop', 'panel'] as const) {
       expect(mirroring({}, part)).toEqual([[1, 1]]);
       expect(mirroring({ flipX: true }, part)).toEqual([[-1, 1]]);
@@ -64,8 +64,8 @@ describe('a picture mirrored by its view', () => {
   });
 });
 
-describe('a panel of a reshaped page', () => {
-  it('is cut to its shape, not to its box, and its frame follows the shape', { tags: ['condition'] }, async () => {
+describe('a panel of a reshaped page', { tags: [] }, () => {
+  it('is cut to its shape, not to its box, and its frame follows the shape', { tags: ['condition', 'equivalence'] }, async () => {
     const page = emptyPage(1);
     const shape = [
       { x: 0.1, y: 0.1 },
@@ -95,28 +95,36 @@ describe('a panel of a reshaped page', () => {
   });
 });
 
-describe('making a page ready to draw', () => {
-  it('loads the regular and the bold weight of each balloon font for its words, the settings font when it has none', { tags: ['condition'] }, async () => {
-    useSettings.setState({ comicFont: 'Meiryo' });
-    const page = emptyPage(2);
-    page.panels[0]!.bubbles = [{ ...newBubble('speech', 0, 0), text: '**Hi** there', font: 'Yu Mincho' }];
-    page.panels[1]!.bubbles = [{ ...newBubble('speech', 0, 0), text: 'Yo' }, { ...newBubble('speech', 0, 0), text: '' }];
-    await preparePage(page, urlOf);
-    expect(vi.mocked(ensureFont).mock.calls).toEqual([
-      ['Yu Mincho', 400, 'Hi there'],
-      ['Yu Mincho', 700, 'Hi there'],
-      ['Meiryo', 400, 'Yo'],
-      ['Meiryo', 700, 'Yo'],
-    ]);
-  });
+describe('making a page ready to draw', { tags: [] }, () => {
+  it(
+    'loads the regular and the bold weight of each balloon font for its words, the settings font when it has none',
+    { tags: ['condition', 'decision-table'] },
+    async () => {
+      useSettings.setState({ comicFont: 'Meiryo' });
+      const page = emptyPage(2);
+      page.panels[0]!.bubbles = [{ ...newBubble('speech', 0, 0), text: '**Hi** there', font: 'Yu Mincho' }];
+      page.panels[1]!.bubbles = [{ ...newBubble('speech', 0, 0), text: 'Yo' }, { ...newBubble('speech', 0, 0), text: '' }];
+      await preparePage(page, urlOf);
+      expect(vi.mocked(ensureFont).mock.calls).toEqual([
+        ['Yu Mincho', 400, 'Hi there'],
+        ['Yu Mincho', 700, 'Hi there'],
+        ['Meiryo', 400, 'Yo'],
+        ['Meiryo', 700, 'Yo'],
+      ]);
+    },
+  );
 
-  it('loads no font when neither the balloon nor the settings name one (the standard fonts are drawn)', { tags: ['condition'] }, async () => {
-    useSettings.setState({ comicFont: '' });
-    const page = emptyPage(1);
-    page.panels[0]!.bubbles = [{ ...newBubble('speech', 0, 0), text: 'Hi' }];
-    await preparePage(page, urlOf);
-    expect(ensureFont).not.toHaveBeenCalled();
-  });
+  it(
+    'loads no font when neither the balloon nor the settings name one (the standard fonts are drawn)',
+    { tags: ['condition', 'boundary'] },
+    async () => {
+      useSettings.setState({ comicFont: '' });
+      const page = emptyPage(1);
+      page.panels[0]!.bubbles = [{ ...newBubble('speech', 0, 0), text: 'Hi' }];
+      await preparePage(page, urlOf);
+      expect(ensureFont).not.toHaveBeenCalled();
+    },
+  );
 
   it('loads the picture of each stamp once, and no font for a stamp', { tags: ['condition'] }, async () => {
     useSettings.setState({ comicFont: 'Meiryo' });
@@ -130,7 +138,7 @@ describe('making a page ready to draw', () => {
   });
 });
 
-describe('the page as a picture file', () => {
+describe('the page as a picture file', { tags: [] }, () => {
   let blob: Blob | null;
   /** The type and the quality of each picture asked of a canvas. */
   let asked: unknown[][];
@@ -143,7 +151,7 @@ describe('the page as a picture file', () => {
     });
   });
 
-  it('is a PNG without a quality by default, drawn without an effect', { tags: ['condition'] }, async () => {
+  it('is a PNG without a quality by default, drawn without an effect', { tags: ['equivalence', 'condition'] }, async () => {
     expect(await renderPage(emptyPage(1), urlOf)).toBe(blob);
     expect(asked).toEqual([['image/png', undefined]]);
     // No effect: the page's own canvas is saved, no second canvas is laid over it with a filter.
@@ -166,14 +174,14 @@ describe('the page as a picture file', () => {
   });
 });
 
-describe('a browser that hands out no canvas', () => {
+describe('a browser that hands out no canvas', { tags: [] }, () => {
   it('fails to draw the page rather than give a blank one', { tags: ['error-guessing'] }, () => {
     canvases.restore();
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     expect(() => drawPage(preparedPage())).toThrow('no canvas');
   });
 
-  it('gives the page without its effect when the effect has no canvas to be laid on', { tags: ['condition'] }, () => {
+  it('gives the page without its effect when the effect has no canvas to be laid on', { tags: ['error-guessing', 'condition'] }, () => {
     canvases.restore();
     const rec = recordingContext({ width: 400, height: 600 });
     const asked: HTMLCanvasElement[] = [];

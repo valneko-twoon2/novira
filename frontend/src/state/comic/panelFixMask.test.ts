@@ -30,8 +30,8 @@ async function draw(mask: FixMask) {
   return blob;
 }
 
-describe('the mask picture', () => {
-  it('is the size of the picture, filled black first', { tags: ['condition'] }, async () => {
+describe('the mask picture', { tags: [] }, () => {
+  it('is the size of the picture, filled black first', { tags: ['equivalence'] }, async () => {
     const blob = await draw({ boxes: [], strokes: [] });
     expect(blob.type).toBe('image/png');
     expect(rec.ctx.canvas).toMatchObject({ width: 400, height: 300 });
@@ -60,14 +60,14 @@ describe('the mask picture', () => {
     expect(rec.sets).toContainEqual({ name: 'lineCap', value: 'round' });
   });
 
-  it('leaves out a stroke with no point at all', { tags: ['condition'] }, async () => {
+  it('leaves out a stroke with no point at all', { tags: ['boundary'] }, async () => {
     await draw({ boxes: [], strokes: [{ points: [], width: 0.1 }] });
     expect(rec.of('arc')).toHaveLength(0);
     expect(rec.of('stroke')).toHaveLength(0);
   });
 });
 
-describe('a mask that cannot be drawn', () => {
+describe('a mask that cannot be drawn', { tags: [] }, () => {
   it('fails when the canvas has no 2D context', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     await expect(fixMaskPicture({ boxes: [], strokes: [] }, DEFAULT_IMAGE_VIEW, image, panel)).rejects.toThrow('no canvas');

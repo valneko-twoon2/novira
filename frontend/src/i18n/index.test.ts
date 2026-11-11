@@ -4,31 +4,35 @@ import { getLocale, loadedCatalog, LOCALES, localeReady, onLocaleChange, setLoca
 
 afterEach(() => setLocale('ja'));
 
-describe('setLocale', () => {
-  it('switches to ja and en at once, before anything is awaited', { tags: ['condition'] }, () => {
+describe('setLocale', { tags: [] }, () => {
+  it('switches to ja and en at once, before anything is awaited', { tags: ['equivalence'] }, () => {
     void setLocale('en');
     expect(getLocale()).toBe('en');
     expect(t('settings.language.label')).toBe(en['settings.language.label']);
   });
 
-  it('keeps the language shown until the chosen one has loaded, then tells the listeners once', { tags: ['state-transition'] }, async () => {
-    // The first tests here: no language but ja and en has been loaded yet.
-    const seen: Locale[] = [];
-    const off = onLocaleChange((l) => seen.push(l));
-    try {
-      const switching = setLocale('de');
-      const before = getLocale();
-      await localeReady();
-      await switching;
-      expect(before).toBe('ja');
-      expect(getLocale()).toBe('de');
-      expect(seen).toEqual(['de']);
-    } finally {
-      off();
-    }
-  });
+  it(
+    'keeps the language shown until the chosen one has loaded, then tells the listeners once',
+    { tags: ['state-transition'] },
+    async () => {
+      // The first tests here: no language but ja and en has been loaded yet.
+      const seen: Locale[] = [];
+      const off = onLocaleChange((l) => seen.push(l));
+      try {
+        const switching = setLocale('de');
+        const before = getLocale();
+        await localeReady();
+        await switching;
+        expect(before).toBe('ja');
+        expect(getLocale()).toBe('de');
+        expect(seen).toEqual(['de']);
+      } finally {
+        off();
+      }
+    },
+  );
 
-  it('ends on the language chosen last when a slower load finishes after it', { tags: ['state-transition'] }, async () => {
+  it('ends on the language chosen last when a slower load finishes after it', { tags: ['state-transition', 'regression'] }, async () => {
     const first = setLocale('ko');
     void setLocale('en');
     await first;
@@ -43,7 +47,7 @@ describe('setLocale', () => {
     }
   });
 
-  it('falls back to ja for a saved language this build does not ship', { tags: ['error-guessing'] }, async () => {
+  it('falls back to ja for a saved language this build does not ship', { tags: ['condition', 'error-guessing'] }, async () => {
     await setLocale('en');
     await setLocale('xx' as Locale);
     expect(getLocale()).toBe('ja');

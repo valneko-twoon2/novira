@@ -3,7 +3,7 @@ mod common;
 use common::*;
 use novira_server::TOKEN_HEADER;
 
-// tags: equivalence
+// tags: equivalence, condition
 #[tokio::test]
 async fn every_route_needs_the_token() {
     let f = Fixture::start().await;
@@ -180,7 +180,7 @@ async fn the_page_turns_the_token_into_a_cookie_and_carries_the_marker_script() 
     f.stop().await;
 }
 
-// tags: error-guessing
+// tags: error-guessing, equivalence
 #[tokio::test]
 async fn a_wrong_host_or_origin_is_refused_even_with_the_token() {
     let f = Fixture::start().await;

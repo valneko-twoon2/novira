@@ -29,11 +29,11 @@ const model = (key: string, name: string) => ({ key, name, base: 'sdxl', type: '
 const axis = (kind: Axis['kind'], values: string[]): Axis => ({ kind, values });
 
 describe('parseAxisValues', () => {
-  it('reads numbers split at commas, spaces and lines, without repeats', { tags: ['condition'] }, () => {
+  it('reads numbers split at commas, spaces and lines, without repeats', { tags: ['equivalence'] }, () => {
     expect(parseAxisValues('cfgScale', '3, 4.5 6\n6，8')).toEqual({ values: ['3', '4.5', '6', '8'], error: null });
   });
 
-  it('rounds whole-number settings down', { tags: ['scenario'] }, () => {
+  it('rounds whole-number settings down', { tags: ['boundary'] }, () => {
     expect(parseAxisValues('steps', '20.9, 30').values).toEqual(['20', '30']);
   });
 
@@ -45,7 +45,7 @@ describe('parseAxisValues', () => {
     expect(parseAxisValues('seed', '  ').error).toBe('empty');
   });
 
-  it('keeps only as many values as an axis may hold', { tags: ['condition'] }, () => {
+  it('keeps only as many values as an axis may hold', { tags: ['boundary'] }, () => {
     const many = Array.from({ length: MAX_AXIS_VALUES + 2 }, (_, i) => String(i + 1)).join(',');
     const parsed = parseAxisValues('steps', many);
     expect(parsed.error).toBe('tooMany');
@@ -56,18 +56,18 @@ describe('parseAxisValues', () => {
     expect(parseAxisValues('prompt', 'red hair, smiling\n\nblue eyes').values).toEqual(['red hair, smiling', 'blue eyes']);
   });
 
-  it('accepts its own starting values', { tags: ['condition'] }, () => {
+  it('accepts its own starting values', { tags: ['equivalence'] }, () => {
     for (const kind of ['cfgScale', 'steps', 'seed', 'strength', 'prompt'] as const) expect(parseAxisValues(kind, AXIS_DEFAULTS[kind]).error).toBeNull();
   });
 });
 
 describe('gridSize and gridProblem', () => {
-  it('counts one column or row for an axis that is not used', { tags: ['condition'] }, () => {
+  it('counts one column or row for an axis that is not used', { tags: ['boundary'] }, () => {
     expect(gridSize(axis('cfgScale', ['3', '6']), NO_AXIS)).toEqual({ columns: 2, rows: 1, cells: 2 });
     expect(gridSize(axis('cfgScale', ['3', '6']), axis('steps', ['10', '20', '30']))).toEqual({ columns: 2, rows: 3, cells: 6 });
   });
 
-  it('names what is wrong with the axes', { tags: ['error-guessing'] }, () => {
+  it('names what is wrong with the axes', { tags: ['decision-table'] }, () => {
     expect(gridProblem(NO_AXIS, NO_AXIS)).toBe('noAxis');
     expect(gridProblem(axis('steps', ['1']), axis('steps', ['2']))).toBe('sameAxis');
     expect(gridProblem(axis('steps', []), NO_AXIS)).toBe('empty');
@@ -78,7 +78,7 @@ describe('gridSize and gridProblem', () => {
 });
 
 describe('applyAxis', () => {
-  it('changes one setting and leaves the rest and the original alone', { tags: ['condition'] }, () => {
+  it('changes one setting and leaves the rest and the original alone', { tags: ['equivalence'] }, () => {
     const changed = applyAxis(base, 'cfgScale', '4.5');
     expect(changed.params.cfgScale).toBe(4.5);
     expect(changed.params.steps).toBe(20);
@@ -106,7 +106,7 @@ describe('applyAxis', () => {
 });
 
 describe('buildCells', () => {
-  it('makes one single-picture request per cell, row by row, all with the same seed', { tags: ['condition'] }, () => {
+  it('makes one single-picture request per cell, row by row, all with the same seed', { tags: ['equivalence'] }, () => {
     const cells = buildCells(base, axis('cfgScale', ['3', '6']), axis('steps', ['10', '20', '30']), 123);
     expect(cells).toHaveLength(6);
     expect(cells.map((c) => [c.column, c.row])).toEqual([[0, 0], [1, 0], [0, 1], [1, 1], [0, 2], [1, 2]]);
@@ -123,7 +123,7 @@ describe('buildCells', () => {
     expect(cells.every((c) => c.row === 0)).toBe(true);
   });
 
-  it('draws a random seed when none is given, and keeps the original request untouched', { tags: ['scenario'] }, () => {
+  it('draws a random seed when none is given, and keeps the original request untouched', { tags: ['condition'] }, () => {
     const cells = buildCells(base, axis('steps', ['10', '20']), NO_AXIS);
     expect(cells[0]!.request.params.seed).toBe(cells[1]!.request.params.seed);
     expect(base.iterations).toBe(4);
@@ -132,7 +132,7 @@ describe('buildCells', () => {
 });
 
 describe('valueLabel', () => {
-  it('shows a model by its name and everything else as written', { tags: ['scenario'] }, () => {
+  it('shows a model by its name and everything else as written', { tags: ['equivalence'] }, () => {
     useModels.getState().setModels([model('m2', 'Model 2')]);
     expect(valueLabel('model', 'm2')).toBe('Model 2');
     expect(valueLabel('model', 'gone')).toBe('gone');

@@ -31,7 +31,7 @@ const mount = () =>
     </TooltipProvider>,
   );
 
-describe('redo with a chosen strength', () => {
+describe('redo with a chosen strength', { tags: [] }, () => {
   beforeEach(() => {
     vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
     useGallery.getState().setImages([picture]);
@@ -42,7 +42,7 @@ describe('redo with a chosen strength', () => {
     vi.restoreAllMocks();
   });
 
-  it('stays closed until a picture is chosen, then redoes it at the strength on the slider', { tags: ['scenario'] }, () => {
+  it('stays closed until a picture is chosen, then redoes it at the strength on the slider', { tags: ['scenario', 'condition'] }, () => {
     const run = vi.spyOn(derive, 'deriveFrom').mockResolvedValue();
     mount();
     expect(screen.queryByTestId('derive-dialog')).toBeNull();
@@ -59,7 +59,7 @@ describe('redo with a chosen strength', () => {
     });
   });
 
-  it('shows nothing for a picture that is gone', { tags: ['error-guessing'] }, () => {
+  it('shows nothing for a picture that is gone', { tags: ['condition'] }, () => {
     mount();
     useDeriveDialog.setState({ imageName: 'missing.png' });
     expect(screen.queryByTestId('derive-dialog')).toBeNull();

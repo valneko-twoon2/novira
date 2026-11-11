@@ -35,8 +35,8 @@ afterEach(() => {
   setLocale('ja');
 });
 
-describe('the comic page view', () => {
-  it('says that no comic is open when there is none', { tags: ['scenario'] }, () => {
+describe('the comic page view', { tags: [] }, () => {
+  it('says that no comic is open when there is none', { tags: ['boundary', 'condition'] }, () => {
     useComic.getState().setProjects([]);
     renderEditor();
     expect(screen.getByText(t('comic.editor.emptyTitle'))).toBeTruthy();
@@ -72,7 +72,7 @@ describe('the comic page view', () => {
     expect(screen.getByTestId('comic-page')).toBeTruthy();
   });
 
-  it('zooms with Ctrl and the mouse wheel, and not with the wheel alone', { tags: ['scenario'] }, () => {
+  it('zooms with Ctrl and the mouse wheel, and not with the wheel alone', { tags: ['decision-table', 'condition'] }, () => {
     useComic.getState().setProjects([newProject('Wheel')]);
     renderEditor();
     const view = screen.getByTestId('comic-scroll');
@@ -82,7 +82,7 @@ describe('the comic page view', () => {
     expect(Number.parseInt(screen.getByTestId('comic-zoom-value').textContent ?? '', 10)).toBeGreaterThan(100);
   });
 
-  it('zooms the page with its bar, and the reset button goes back to 100%', { tags: ['scenario'] }, () => {
+  it('zooms the page with its bar, and the reset button goes back to 100%', { tags: ['boundary', 'scenario'] }, () => {
     useComic.getState().setProjects([newProject('Zoom test')]);
     renderEditor();
     expect(screen.getByTestId('comic-zoom-value').textContent).toBe('100%');
@@ -93,8 +93,8 @@ describe('the comic page view', () => {
   });
 });
 
-describe('reshaping the page', () => {
-  it('draws the frames of a reshaped page, and shows the corners of the panel that is selected', { tags: ['scenario'] }, () => {
+describe('reshaping the page', { tags: [] }, () => {
+  it('draws the frames of a reshaped page, and shows the corners of the panel that is selected', { tags: ['condition'] }, () => {
     const project = newProject('Shapes');
     const page = project.pages[0]!;
     const shapes = templateShapes(BUILTIN_SHAPE_LAYOUTS.find((l) => l.id === 'diagonal')!.shapes, pageAspect(page.size), page.direction);
@@ -108,7 +108,7 @@ describe('reshaping the page', () => {
     expect(screen.getAllByTestId('comic-corner')).toHaveLength(4);
   });
 
-  it('shows the cut layer only while the page is being cut', { tags: ['scenario'] }, () => {
+  it('shows the cut layer only while the page is being cut', { tags: ['condition', 'state-transition'] }, () => {
     useComic.getState().setProjects([newProject('Cut')]);
     renderEditor();
     expect(screen.queryByTestId('comic-cut-layer')).toBeNull();
@@ -119,8 +119,8 @@ describe('reshaping the page', () => {
   });
 });
 
-describe('the pages under the page view', () => {
-  it('opens a page from its drawing, and deletes the page on screen on the second press', { tags: ['scenario'] }, () => {
+describe('the pages under the page view', { tags: [] }, () => {
+  it('opens a page from its drawing, and deletes the page on screen on the second press', { tags: ['scenario', 'condition'] }, () => {
     useComic.getState().setProjects([newProject('Pages')]);
     act(() => void useComic.getState().addPage());
     renderEditor();
@@ -141,14 +141,14 @@ describe('the pages under the page view', () => {
     expect(pages()).toHaveLength(1);
   });
 
-  it('fits as many page drawings as the row has room for, from one to ten', { tags: ['scenario'] }, () => {
+  it('fits as many page drawings as the row has room for, from one to ten', { tags: ['boundary'] }, () => {
     // An A4 drawing is 56px tall, so about 40px wide with its frame, and 4px apart.
     expect(groupSize(0, pageAspect('A4'))).toBe(1);
     expect(groupSize(200, pageAspect('A4'))).toBe(4);
     expect(groupSize(10_000, pageAspect('A4'))).toBe(10);
   });
 
-  it('shows ten pages at a time, and the arrows show the pages before and after', { tags: ['scenario'] }, () => {
+  it('shows ten pages at a time, and the arrows show the pages before and after', { tags: ['boundary', 'scenario'] }, () => {
     useComic.getState().setProjects([newProject('Many')]);
     act(() => {
       for (let i = 0; i < 11; i++) useComic.getState().addPage();
@@ -168,23 +168,27 @@ describe('the pages under the page view', () => {
     expect(useComic.getState().activePageId).toBe(useComic.getState().projects[0]!.pages[2]!.id);
   });
 
-  it('lists the pages of a comic read from the right from the right, with the later pages behind the left arrow', { tags: ['scenario'] }, () => {
-    const order = () => [...screen.getByTestId('comic-pager').children].map((el) => el.getAttribute('data-testid'));
-    const project = newProject('Manga');
-    useComic.getState().setProjects([{ ...project, pages: project.pages.map((p) => ({ ...p, direction: 'rtl' })) }]);
-    const view = renderEditor();
-    expect(screen.getByTestId('comic-pager-list').classList.contains('is-rtl')).toBe(true);
-    expect(order().slice(0, 3)).toEqual(['comic-page-group-next', 'comic-pager-list', 'comic-page-group-prev']);
-    view.unmount();
-    useComic.getState().setProjects([{ ...project, pages: project.pages.map((p) => ({ ...p, direction: 'ltr' })) }]);
-    renderEditor();
-    expect(screen.getByTestId('comic-pager-list').classList.contains('is-rtl')).toBe(false);
-    expect(order().slice(0, 3)).toEqual(['comic-page-group-prev', 'comic-pager-list', 'comic-page-group-next']);
-  });
+  it(
+    'lists the pages of a comic read from the right from the right, with the later pages behind the left arrow',
+    { tags: ['condition', 'equivalence'] },
+    () => {
+      const order = () => [...screen.getByTestId('comic-pager').children].map((el) => el.getAttribute('data-testid'));
+      const project = newProject('Manga');
+      useComic.getState().setProjects([{ ...project, pages: project.pages.map((p) => ({ ...p, direction: 'rtl' })) }]);
+      const view = renderEditor();
+      expect(screen.getByTestId('comic-pager-list').classList.contains('is-rtl')).toBe(true);
+      expect(order().slice(0, 3)).toEqual(['comic-page-group-next', 'comic-pager-list', 'comic-page-group-prev']);
+      view.unmount();
+      useComic.getState().setProjects([{ ...project, pages: project.pages.map((p) => ({ ...p, direction: 'ltr' })) }]);
+      renderEditor();
+      expect(screen.getByTestId('comic-pager-list').classList.contains('is-rtl')).toBe(false);
+      expect(order().slice(0, 3)).toEqual(['comic-page-group-prev', 'comic-pager-list', 'comic-page-group-next']);
+    },
+  );
 });
 
-describe('the frame of the panels', () => {
-  it('draws three rings in each panel, as wide as the page settings say', { tags: ['scenario'] }, () => {
+describe('the frame of the panels', { tags: [] }, () => {
+  it('draws three rings in each panel, as wide as the page settings say', { tags: ['equivalence'] }, () => {
     const project = newProject('Frame');
     useComic.getState().setProjects([project]);
     const { container } = renderEditor();
@@ -198,7 +202,7 @@ describe('the frame of the panels', () => {
     expect(widthOf(rings(1)[2]!)).toBeLessThan(widthOf(rings(1)[1]!));
   });
 
-  it('draws the frame line in the colour the page settings say', { tags: ['scenario'] }, () => {
+  it('draws the frame line in the colour the page settings say', { tags: ['equivalence'] }, () => {
     const project = newProject('Colour');
     useComic.getState().setProjects([project]);
     const { container } = renderEditor();
@@ -212,31 +216,35 @@ describe('the frame of the panels', () => {
   });
 });
 
-describe('the page templates', () => {
-  it('applies a template on a press, and waits for a second press when it drops panels', { tags: ['scenario'] }, () => {
-    const project = newProject('Templates');
-    useComic.getState().setProjects([project]);
-    const pageId = project.pages[0]!.id;
-    act(() => useComic.getState().setPanelCount(pageId, 6));
-    renderEditor();
-    const panels = () => useComic.getState().projects[0]!.pages[0]!.panels;
-    fireEvent.click(screen.getByTestId('comic-page-templates'));
-    const four = () => screen.getAllByTestId('comic-page-template').find((el) => el.dataset.template === 'builtin:four')!;
-    fireEvent.click(four());
-    expect(panels()).toHaveLength(6);
-    expect(four().textContent).toBe(t('comic.template.applyAgain'));
-    fireEvent.click(four());
-    expect(panels()).toHaveLength(4);
+describe('the page templates', { tags: [] }, () => {
+  it(
+    'applies a template on a press, and waits for a second press when it drops panels',
+    { tags: ['condition', 'state-transition'] },
+    () => {
+      const project = newProject('Templates');
+      useComic.getState().setProjects([project]);
+      const pageId = project.pages[0]!.id;
+      act(() => useComic.getState().setPanelCount(pageId, 6));
+      renderEditor();
+      const panels = () => useComic.getState().projects[0]!.pages[0]!.panels;
+      fireEvent.click(screen.getByTestId('comic-page-templates'));
+      const four = () => screen.getAllByTestId('comic-page-template').find((el) => el.dataset.template === 'builtin:four')!;
+      fireEvent.click(four());
+      expect(panels()).toHaveLength(6);
+      expect(four().textContent).toBe(t('comic.template.applyAgain'));
+      fireEvent.click(four());
+      expect(panels()).toHaveLength(4);
 
-    // A template with more panels applies at once, and gives the panels its shapes.
-    fireEvent.click(screen.getByTestId('comic-page-templates'));
-    fireEvent.click(screen.getAllByTestId('comic-page-template').find((el) => el.dataset.template === 'shape:stagger')!);
-    expect(panels()).toHaveLength(5);
-    expect(useComic.getState().projects[0]!.pages[0]!.shapes).toHaveLength(5);
-  });
+      // A template with more panels applies at once, and gives the panels its shapes.
+      fireEvent.click(screen.getByTestId('comic-page-templates'));
+      fireEvent.click(screen.getAllByTestId('comic-page-template').find((el) => el.dataset.template === 'shape:stagger')!);
+      expect(panels()).toHaveLength(5);
+      expect(useComic.getState().projects[0]!.pages[0]!.shapes).toHaveLength(5);
+    },
+  );
 });
 
-describe('the picture in a panel', () => {
+describe('the picture in a panel', { tags: [] }, () => {
   function withPicture() {
     const project = newProject('Picture');
     useComic.getState().setProjects([project]);
@@ -253,23 +261,27 @@ describe('the picture in a panel', () => {
     fireEvent.pointerDown(picture, { button: 0, pointerId: 1, altKey });
   };
 
-  it('shows its handles when it is pressed with Alt or double-clicked, and its tools in the toolbar', { tags: ['scenario'] }, () => {
-    withPicture();
-    renderEditor();
-    expect(screen.queryByTestId('comic-picture-handles')).toBeNull();
-    // A press without Alt is the panel's: it only selects the panel.
-    pressPicture(false);
-    expect(screen.queryByTestId('comic-picture-handles')).toBeNull();
-    fireEvent.doubleClick(screen.getByTestId('comic-panel-image'));
-    expect(screen.getByTestId('comic-picture-handles')).toBeTruthy();
-    act(() => useComic.getState().selectPanel(null));
-    pressPicture();
-    expect(screen.getByTestId('comic-picture-handles')).toBeTruthy();
-    expect(screen.getAllByTestId('comic-picture-corner')).toHaveLength(4);
-    expect(screen.getByTestId('comic-image-flip-x')).toBeTruthy();
-  });
+  it(
+    'shows its handles when it is pressed with Alt or double-clicked, and its tools in the toolbar',
+    { tags: ['decision-table', 'condition'] },
+    () => {
+      withPicture();
+      renderEditor();
+      expect(screen.queryByTestId('comic-picture-handles')).toBeNull();
+      // A press without Alt is the panel's: it only selects the panel.
+      pressPicture(false);
+      expect(screen.queryByTestId('comic-picture-handles')).toBeNull();
+      fireEvent.doubleClick(screen.getByTestId('comic-panel-image'));
+      expect(screen.getByTestId('comic-picture-handles')).toBeTruthy();
+      act(() => useComic.getState().selectPanel(null));
+      pressPicture();
+      expect(screen.getByTestId('comic-picture-handles')).toBeTruthy();
+      expect(screen.getAllByTestId('comic-picture-corner')).toHaveLength(4);
+      expect(screen.getByTestId('comic-image-flip-x')).toBeTruthy();
+    },
+  );
 
-  it('turns and mirrors it from the toolbar', { tags: ['scenario'] }, () => {
+  it('turns and mirrors it from the toolbar', { tags: ['equivalence'] }, () => {
     const panelId = withPicture();
     renderEditor();
     pressPicture();
@@ -280,44 +292,56 @@ describe('the picture in a panel', () => {
     expect(panelOf(panelId).imageView).toMatchObject({ rotation: 0, scale: 1, cx: 0.5, cy: 0.5, flipX: true });
   });
 
-  it('takes the selected picture out of its panel with Delete, and the notice puts it back', { tags: ['scenario'] }, () => {
-    const panelId = withPicture();
-    useToasts.setState({ toasts: [] });
-    renderEditor();
-    act(() => useComic.getState().setPanelImageView(panelId, { scale: 0.5 }));
-    pressPicture();
-    fireEvent.keyDown(window, { key: 'Delete' });
-    expect(panelOf(panelId).imageName).toBeNull();
-    const notice = useToasts.getState().toasts.at(-1)!;
-    expect(notice.title).toBe(t('comic.image.removed'));
-    act(() => notice.actions![0]!.run());
-    expect(panelOf(panelId)).toMatchObject({ imageName: 'cat.png', imageView: { scale: 0.5 } });
-  });
+  it(
+    'takes the selected picture out of its panel with Delete, and the notice puts it back',
+    { tags: ['state-transition', 'scenario'] },
+    () => {
+      const panelId = withPicture();
+      useToasts.setState({ toasts: [] });
+      renderEditor();
+      act(() => useComic.getState().setPanelImageView(panelId, { scale: 0.5 }));
+      pressPicture();
+      fireEvent.keyDown(window, { key: 'Delete' });
+      expect(panelOf(panelId).imageName).toBeNull();
+      const notice = useToasts.getState().toasts.at(-1)!;
+      expect(notice.title).toBe(t('comic.image.removed'));
+      act(() => notice.actions![0]!.run());
+      expect(panelOf(panelId)).toMatchObject({ imageName: 'cat.png', imageView: { scale: 0.5 } });
+    },
+  );
 
-  it('takes the panel away, picture and all, when Delete is pressed with only the panel selected, and undo brings it back', { tags: ['state-transition'] }, () => {
-    const panelId = withPicture();
-    renderEditor();
-    act(() => useComic.getState().selectPanel(panelId));
-    fireEvent.keyDown(window, { key: 'Delete' });
-    expect(useComic.getState().projects[0]!.pages[0]!.panels).toHaveLength(2);
-    act(() => useComic.getState().undo());
-    expect(panelOf(panelId).imageName).toBe('cat.png');
-  });
+  it(
+    'takes the panel away, picture and all, when Delete is pressed with only the panel selected, and undo brings it back',
+    { tags: ['state-transition', 'condition'] },
+    () => {
+      const panelId = withPicture();
+      renderEditor();
+      act(() => useComic.getState().selectPanel(panelId));
+      fireEvent.keyDown(window, { key: 'Delete' });
+      expect(useComic.getState().projects[0]!.pages[0]!.panels).toHaveLength(2);
+      act(() => useComic.getState().undo());
+      expect(panelOf(panelId).imageName).toBe('cat.png');
+    },
+  );
 
-  it('scales the picture under the pointer with Alt and the mouse wheel, keeping the point under the pointer', { tags: ['scenario'] }, () => {
-    const panelId = withPicture();
-    renderEditor();
-    const panel = screen.getByTestId('comic-panel-1');
-    panel.getBoundingClientRect = () => ({ left: 0, top: 0, width: 400, height: 300, right: 400, bottom: 300, x: 0, y: 0 }) as DOMRect;
-    // Over the panel's left quarter, a turn of the wheel away from the user enlarges the picture about that point.
-    fireEvent.wheel(screen.getByTestId('comic-panel-image'), { deltaY: -100, altKey: true, clientX: 100, clientY: 150 });
-    const view = panelOf(panelId).imageView;
-    expect(view.scale).toBeCloseTo(1.1);
-    expect(view.cx).toBeCloseTo(0.25 + (0.5 - 0.25) * 1.1);
-    expect(view.cy).toBeCloseTo(0.5);
-    expect(useComic.getState()).toMatchObject({ imageSelected: true, selectedPanelId: panelId });
-    // Without Alt the wheel leaves the picture alone.
-    fireEvent.wheel(screen.getByTestId('comic-panel-image'), { deltaY: 100, clientX: 100, clientY: 150 });
-    expect(panelOf(panelId).imageView.scale).toBeCloseTo(1.1);
-  });
+  it(
+    'scales the picture under the pointer with Alt and the mouse wheel, keeping the point under the pointer',
+    { tags: ['equivalence'] },
+    () => {
+      const panelId = withPicture();
+      renderEditor();
+      const panel = screen.getByTestId('comic-panel-1');
+      panel.getBoundingClientRect = () => ({ left: 0, top: 0, width: 400, height: 300, right: 400, bottom: 300, x: 0, y: 0 }) as DOMRect;
+      // Over the panel's left quarter, a turn of the wheel away from the user enlarges the picture about that point.
+      fireEvent.wheel(screen.getByTestId('comic-panel-image'), { deltaY: -100, altKey: true, clientX: 100, clientY: 150 });
+      const view = panelOf(panelId).imageView;
+      expect(view.scale).toBeCloseTo(1.1);
+      expect(view.cx).toBeCloseTo(0.25 + (0.5 - 0.25) * 1.1);
+      expect(view.cy).toBeCloseTo(0.5);
+      expect(useComic.getState()).toMatchObject({ imageSelected: true, selectedPanelId: panelId });
+      // Without Alt the wheel leaves the picture alone.
+      fireEvent.wheel(screen.getByTestId('comic-panel-image'), { deltaY: 100, clientX: 100, clientY: 150 });
+      expect(panelOf(panelId).imageView.scale).toBeCloseTo(1.1);
+    },
+  );
 });

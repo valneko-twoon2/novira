@@ -35,8 +35,8 @@ const mount = () =>
     </TooltipProvider>,
   );
 
-describe('finish graph', () => {
-  it('doubles the frames and the rate, then brings the enlarged frames to twice the clip', { tags: ['scenario'] }, () => {
+describe('finish graph', { tags: [] }, () => {
+  it('doubles the frames and the rate, then brings the enlarged frames to twice the clip', { tags: ['equivalence'] }, () => {
     const g = finishGraph({ name: 'clip.mp4', width: 832, height: 480, fps: 24 }, { smooth: true, upscale: { modelKey: 'up-1' } });
     expect(g.prompt.load!.inputs.file).toEqual({ $image: 'clip.mp4' });
     expect(g.prompt.smooth!.inputs).toMatchObject({ frames: ['parts', 0], multiplier: 2 });
@@ -48,7 +48,7 @@ describe('finish graph', () => {
     expect(g.prompt.first!.inputs.image).toEqual(['fit', 0]);
   });
 
-  it('leaves a step out when it is not asked for, and drops inputs an older pack does not have', { tags: ['scenario'] }, () => {
+  it('leaves a step out when it is not asked for, and drops inputs an older pack does not have', { tags: ['condition'] }, () => {
     const only = finishGraph({ name: 'clip.mp4', width: 64, height: 64, fps: 12 }, { smooth: false, upscale: { modelKey: 'u' } });
     expect(only.prompt.smooth).toBeUndefined();
     expect(only.prompt.video!.inputs.fps).toBe(12);
@@ -58,7 +58,7 @@ describe('finish graph', () => {
   });
 });
 
-describe('finish dialog', () => {
+describe('finish dialog', { tags: [] }, () => {
   beforeEach(() => {
     vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
     useGallery.getState().setImages([clip]);
@@ -72,7 +72,7 @@ describe('finish dialog', () => {
     vi.restoreAllMocks();
   });
 
-  it('looks at no picture while closed, however often the gallery changes', { tags: ['scenario'] }, () => {
+  it('looks at no picture while closed, however often the gallery changes', { tags: ['regression', 'condition'] }, () => {
     // The dialog stays mounted; the gallery holds thousands of pictures and changes with every click.
     let reads = 0;
     const images = new Proxy(Array.from({ length: 500 }, (_, i) => ({ ...clip, name: `${i}.mp4` })), {
@@ -102,7 +102,7 @@ describe('finish dialog', () => {
     expect(request.comfyGraph!.thumbnail).toBe('thumb');
   });
 
-  it('asks for the interpolation pack when ComfyUI lacks it', { tags: ['scenario'] }, async () => {
+  it('asks for the interpolation pack when ComfyUI lacks it', { tags: ['condition'] }, async () => {
     useComfyNodes.setState({ defs: { ...MOCK_NODE_DEFS }, status: 'ready' });
     mount();
     useFinish.getState().open('clip.mp4');

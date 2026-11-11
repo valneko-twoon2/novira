@@ -6,7 +6,7 @@ const initial = useParams.getState();
 afterEach(() => useParams.setState(initial, true));
 
 describe('generationMetadata', () => {
-  it('sends the sampler and noise schedule only when one was picked', { tags: ['condition'] }, () => {
+  it('sends the sampler and noise schedule only when one was picked', { tags: ['decision-table'] }, () => {
     useParams.setState({ samplerName: null, noiseSchedule: null });
     const plain = generationMetadata('txt2img');
     expect('samplerName' in plain).toBe(false);

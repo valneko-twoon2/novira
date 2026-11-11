@@ -146,7 +146,7 @@ fn picture(format: image::ImageFormat, w: u32, h: u32) -> Vec<u8> {
     out.into_inner()
 }
 
-// tags: error-guessing, decision-table
+// tags: error-guessing, equivalence
 #[test]
 fn damaged_pictures_of_every_format_are_read_or_refused() {
     use image::ImageFormat::{Bmp, Gif, Jpeg, Png, WebP};

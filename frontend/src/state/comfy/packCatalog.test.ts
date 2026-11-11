@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ja } from '@/i18n/catalog';
 import { agentPacks, caveatKey, goalDescKey, goalTitleKey, PACK_CATALOG, PACK_GOALS, packDescKey, packFolder, packsForGoal } from './packCatalog';
 
-describe('pack catalog', () => {
+describe('pack catalog', { tags: [] }, () => {
   it('has unique ids and repository folders', { tags: ['condition'] }, () => {
     const ids = PACK_CATALOG.map((p) => p.id);
     const folders = PACK_CATALOG.map((p) => packFolder(p.url));
@@ -35,7 +35,7 @@ describe('pack catalog', () => {
     }
   });
 
-  it('takes the folder from a GitHub address with or without .git and a trailing slash', { tags: ['condition'] }, () => {
+  it('takes the folder from a GitHub address with or without .git and a trailing slash', { tags: ['equivalence'] }, () => {
     expect(packFolder('https://github.com/owner/Repo.git')).toBe('Repo');
     expect(packFolder('https://github.com/owner/Repo/')).toBe('Repo');
   });

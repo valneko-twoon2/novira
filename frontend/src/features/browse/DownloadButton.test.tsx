@@ -26,8 +26,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('DownloadButton', () => {
-  it('queues the install on a press without letting the press reach the card', { tags: ['state-transition', 'scenario'] }, () => {
+describe('DownloadButton', { tags: [] }, () => {
+  it('queues the install on a press without letting the press reach the card', { tags: ['scenario'] }, () => {
     const install = vi.spyOn(backend, 'installModel').mockResolvedValue({ id: 'j', source: 's', name: 'n', status: 'waiting', bytes: 0, totalBytes: 0 });
     const onCard = vi.fn();
     const m = model();
@@ -41,7 +41,7 @@ describe('DownloadButton', () => {
     expect(onCard).not.toHaveBeenCalled();
   });
 
-  it('shows the progress while the install runs, and cannot be pressed', { tags: ['error-guessing', 'state-transition'] }, () => {
+  it('shows the progress while the install runs, and cannot be pressed', { tags: ['state-transition'] }, () => {
     const m = model();
     useModels.setState({ installJobs: [{ id: 'j', source: fileSource(m, file), name: 'a.safetensors', status: 'downloading', bytes: 25, totalBytes: 100 }] });
     mount(m);
@@ -50,7 +50,7 @@ describe('DownloadButton', () => {
     expect(button.style.getPropertyValue('--browse-progress')).toBe('25%');
   });
 
-  it('says installed, disabled, once the file is installed', { tags: ['state-transition', 'scenario'] }, () => {
+  it('says installed, disabled, once the file is installed', { tags: ['state-transition'] }, () => {
     const m = model();
     useModels.setState({ installJobs: [{ id: 'j', source: fileSource(m, file), name: 'a.safetensors', status: 'completed', bytes: 1, totalBytes: 1 }] });
     mount(m);
@@ -59,7 +59,7 @@ describe('DownloadButton', () => {
     expect(button.className).toContain('is-installed');
   });
 
-  it('is locked for a paid version, with no way to start the install', { tags: ['state-transition', 'scenario'] }, () => {
+  it('is locked for a paid version, with no way to start the install', { tags: ['condition'] }, () => {
     const install = vi.spyOn(backend, 'installModel');
     mount(model(version({ paid: true })));
     const button = screen.getByTestId('browse-paid-locked') as HTMLButtonElement;
@@ -69,14 +69,14 @@ describe('DownloadButton', () => {
     expect(install).not.toHaveBeenCalled();
   });
 
-  it('judges the version it is given, not the first one', { tags: ['boundary', 'scenario'] }, () => {
+  it('judges the version it is given, not the first one', { tags: ['condition'] }, () => {
     const m = { ...model(version({ paid: true })), versions: [version({ paid: true }), version({ id: 'v2' })] } as CivitaiModel;
     mount(m, { version: m.versions[1] });
     expect(screen.queryByTestId('browse-paid-locked')).toBeNull();
     expect(screen.getByText(t('browse.card.download'))).toBeTruthy();
   });
 
-  it('is open for an early access that has ended', { tags: ['state-transition', 'scenario'] }, () => {
+  it('is open for an early access that has ended', { tags: ['boundary'] }, () => {
     mount(model(version({ paid: true, paidUntil: Date.now() - 1000 })));
     expect(screen.queryByTestId('browse-paid-locked')).toBeNull();
   });

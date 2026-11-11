@@ -107,7 +107,7 @@ mod tests {
         assert!(prepare(&[]).is_err());
     }
 
-    // tags: scenario
+    // tags: equivalence
     #[test]
     fn the_data_url_and_the_note_say_what_is_sent() {
         let picture = AgentImage {

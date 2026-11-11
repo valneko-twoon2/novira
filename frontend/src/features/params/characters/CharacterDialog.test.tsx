@@ -134,24 +134,28 @@ describe('register a character', () => {
     expect(useCharacters.getState().presets[0]!.data.imageNames).toEqual(['white1.png', 'white2.png']);
   });
 
-  it('adds the pictures selected in the gallery, removes them again, and needs at least one picture to save', { tags: ['boundary'] }, async () => {
-    useGallery.getState().setImages([photo, second]);
-    mount();
-    useCharacterDialog.getState().open({ imageNames: ['photo.png'], name: 'Mia' });
-    await screen.findByTestId('character-dialog');
-    act(() => useGallery.setState({ selection: ['photo2.png'] }));
-    fireEvent.click(screen.getByTestId('character-add-selected'));
-    expect(screen.getAllByTestId('character-picture')).toHaveLength(2);
-    // Adding again does nothing: the picture is already there.
-    fireEvent.click(screen.getByTestId('character-add-selected'));
-    expect(screen.getAllByTestId('character-picture')).toHaveLength(2);
-    fireEvent.click(screen.getAllByTestId('character-picture-remove')[0]!);
-    fireEvent.click(screen.getByTestId('character-picture-remove'));
-    expect(screen.queryAllByTestId('character-picture')).toHaveLength(0);
-    expect((screen.getByTestId('character-save') as HTMLButtonElement).disabled).toBe(true);
-  });
+  it(
+    'adds the pictures selected in the gallery, removes them again, and needs at least one picture to save',
+    { tags: ['boundary'] },
+    async () => {
+      useGallery.getState().setImages([photo, second]);
+      mount();
+      useCharacterDialog.getState().open({ imageNames: ['photo.png'], name: 'Mia' });
+      await screen.findByTestId('character-dialog');
+      act(() => useGallery.setState({ selection: ['photo2.png'] }));
+      fireEvent.click(screen.getByTestId('character-add-selected'));
+      expect(screen.getAllByTestId('character-picture')).toHaveLength(2);
+      // Adding again does nothing: the picture is already there.
+      fireEvent.click(screen.getByTestId('character-add-selected'));
+      expect(screen.getAllByTestId('character-picture')).toHaveLength(2);
+      fireEvent.click(screen.getAllByTestId('character-picture-remove')[0]!);
+      fireEvent.click(screen.getByTestId('character-picture-remove'));
+      expect(screen.queryAllByTestId('character-picture')).toHaveLength(0);
+      expect((screen.getByTestId('character-save') as HTMLButtonElement).disabled).toBe(true);
+    },
+  );
 
-  it('puts only the pictures added while editing on white, and keeps the older ones as they are', { tags: ['scenario'] }, async () => {
+  it('puts only the pictures added while editing on white, and keeps the older ones as they are', { tags: ['condition'] }, async () => {
     useGallery.getState().setImages([photo, second]);
     const id = useCharacters.getState().add('Mia', { imageNames: ['photo.png'], weight: 0.6, tags: '' });
     mount();

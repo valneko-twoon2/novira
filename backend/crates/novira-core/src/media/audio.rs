@@ -179,7 +179,7 @@ mod tests {
         assert_eq!(sniff(b""), None);
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn a_wav_thumbnail_follows_the_loudness() {
         // Loud first half, quiet second half.
@@ -190,7 +190,7 @@ mod tests {
         assert!(levels[2] > 0.9 && levels[BARS - 3] < 0.2, "{levels:?}");
     }
 
-    // tags: boundary
+    // tags: equivalence
     #[test]
     fn thumbnails_are_valid_pngs_of_the_fixed_size_and_differ_between_files() {
         let a = waveform_png(b"ID3 first clip bytes....................................");

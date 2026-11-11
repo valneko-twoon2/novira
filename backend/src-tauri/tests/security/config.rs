@@ -60,7 +60,7 @@ fn scripts_come_only_from_the_app_itself() {
     }
 }
 
-// tags: static, condition
+// tags: static, equivalence
 #[test]
 fn plugins_frames_forms_and_base_are_closed() {
     let csp = csp();
@@ -73,7 +73,7 @@ fn plugins_frames_forms_and_base_are_closed() {
     }
 }
 
-// tags: static, condition
+// tags: static, condition, error-guessing
 #[test]
 fn no_directive_allows_any_host_or_scheme() {
     let csp = csp();
@@ -96,7 +96,7 @@ fn no_directive_allows_any_host_or_scheme() {
     }
 }
 
-// tags: static, condition
+// tags: static, equivalence
 #[test]
 fn connections_stay_inside_the_app() {
     let csp = csp();
@@ -139,7 +139,7 @@ fn development_and_asset_settings_do_not_loosen_the_policy() {
     }
 }
 
-// tags: static, condition
+// tags: static, equivalence
 #[test]
 fn no_tauri_plugin_is_a_dependency() {
     // fs, shell, http, opener and friends would widen what the WebView can do.
@@ -162,7 +162,7 @@ fn no_tauri_plugin_is_a_dependency() {
     );
 }
 
-// tags: static, condition
+// tags: static, equivalence
 #[test]
 fn only_the_default_capability_exists() {
     // A second capability file would grant permissions the command list test does not see.

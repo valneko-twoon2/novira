@@ -21,7 +21,7 @@ fn format() -> impl Strategy<Value = ImageFormat> {
     prop::sample::select(&[ImageFormat::Png, ImageFormat::Jpeg, ImageFormat::WebP][..])
 }
 
-// tags: decision-table
+// tags: equivalence
 #[test]
 fn a_label_added_to_any_picture_reads_back_and_the_picture_still_decodes() {
     check_up_to(

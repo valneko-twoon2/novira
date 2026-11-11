@@ -633,7 +633,7 @@ mod tests {
         assert!(e.starts_with("Wan: this is a Wan Fun Control"), "{e}");
     }
 
-    // tags: error-guessing
+    // tags: equivalence, error-guessing
     #[test]
     fn flux2_samples_with_a_guider_and_refuses_what_its_graph_lacks() {
         let dev = run(
@@ -855,7 +855,7 @@ mod tests {
         assert_eq!(count(&edited, "GetImageSize"), 1);
     }
 
-    // tags: error-guessing, equivalence
+    // tags: error-guessing
     #[test]
     fn the_other_families_refuse_pictures_given_as_references() {
         for (family, variant) in [

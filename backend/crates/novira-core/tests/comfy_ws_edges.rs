@@ -193,7 +193,7 @@ async fn a_job_comfyui_interrupts_fails_with_that_reason() {
     }
 }
 
-// tags: state-transition
+// tags: error-guessing
 #[tokio::test]
 async fn a_socket_with_noise_that_closes_does_not_stop_the_job() {
     let (result, _) = run(Script::NoiseThenClose).await;
@@ -214,7 +214,7 @@ async fn a_preview_frame_is_shown_while_the_job_runs() {
     );
 }
 
-// tags: scenario
+// tags: error-guessing
 #[test]
 fn a_preview_header_that_names_another_type_is_shown_as_jpeg() {
     let header = br#"{"image_type":"image/webp"}"#;
@@ -263,7 +263,7 @@ fn plain_job(mode: &str) -> EngineJob {
     }
 }
 
-// tags: scenario
+// tags: condition
 #[tokio::test]
 async fn video_and_music_need_the_nodes_of_a_new_enough_comfyui() {
     let engine = ComfyEngine::new(

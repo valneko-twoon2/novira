@@ -31,7 +31,7 @@ fn header(keys: &[&str], meta: Value) -> Header {
     }
 }
 
-// tags: condition
+// tags: decision-table
 #[test]
 fn civitai_requests_follow_the_filters() {
     let p = params("LoRA", "sdxl-compat");
@@ -72,7 +72,7 @@ fn civitai_requests_follow_the_filters() {
     }
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn civitai_licenses_and_models_are_mapped() {
     let m = json!({
@@ -150,7 +150,7 @@ fn civitai_covers_skip_mature_pictures() {
     assert!(civitai::cover_of_version(&json!({})).is_none());
 }
 
-// tags: condition
+// tags: decision-table
 #[test]
 fn hugging_face_requests_follow_the_filters() {
     let q = huggingface::query(&params("LoRA", "sdxl-compat"));
@@ -192,7 +192,7 @@ fn hugging_face_requests_follow_the_filters() {
     assert!(has(&q, "search", "my VAE") && has(&q, "sort", "downloads"));
 }
 
-// tags: condition
+// tags: equivalence, boundary
 #[test]
 fn hugging_face_files_licenses_and_cursors() {
     let siblings = json!([
@@ -254,7 +254,7 @@ fn hugging_face_files_licenses_and_cursors() {
     assert!(huggingface::next_cursor(Some(r#"<not a url>; rel="next""#)).is_none());
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn hugging_face_repositories_are_mapped_by_what_they_hold() {
     let repo = |id: &str, tags: Value, extra: Value| {
@@ -316,7 +316,7 @@ fn hugging_face_repositories_are_mapped_by_what_they_hold() {
     assert_eq!(by("o/ckpt").base_model, "—");
 }
 
-// tags: state-transition, decision-table
+// tags: equivalence, error-guessing
 #[test]
 fn install_sources_are_parsed_strictly() {
     assert!(matches!(
@@ -418,7 +418,7 @@ async fn sources_without_an_api_resolve_without_asking_one() {
         .is_err());
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing
 #[tokio::test]
 async fn a_download_to_a_blocked_path_or_cancelled_early_leaves_nothing() {
     let http = reqwest::Client::new();
@@ -445,7 +445,7 @@ async fn a_download_to_a_blocked_path_or_cancelled_early_leaves_nothing() {
     assert_eq!(std::fs::read(&to).unwrap(), b"abc");
 }
 
-// tags: decision-table
+// tags: equivalence
 #[test]
 fn model_kinds_and_bases_are_read_from_tensor_names() {
     let kinds = [
@@ -598,7 +598,7 @@ fn model_kinds_and_bases_are_read_from_tensor_names() {
     );
 }
 
-// tags: boundary
+// tags: boundary, error-guessing
 #[test]
 fn safetensors_headers_are_read_with_limits() {
     let dir = tempfile::tempdir().unwrap();
@@ -636,7 +636,7 @@ fn safetensors_headers_are_read_with_limits() {
     assert!(classify::parse_header(b"[]").is_none());
 }
 
-// tags: decision-table
+// tags: equivalence
 #[test]
 fn record_keys_are_stable_and_phrases_come_from_the_header() {
     let kinds = [

@@ -4,8 +4,8 @@ import { buildPdf, buildZip, crc32 } from './bookFile';
 const JPEG = new Uint8Array([0xff, 0xd8, 0xff, 0xd9]);
 const text = (b: Uint8Array) => new TextDecoder('latin1').decode(b);
 
-describe('crc32', () => {
-  it('matches the known value for "123456789"', { tags: ['condition'] }, () => {
+describe('crc32', { tags: [] }, () => {
+  it('matches the known value for "123456789"', { tags: ['equivalence'] }, () => {
     expect(crc32(new TextEncoder().encode('123456789'))).toBe(0xcbf43926);
   });
   it('is zero for no bytes', { tags: ['boundary'] }, () => {
@@ -13,8 +13,8 @@ describe('crc32', () => {
   });
 });
 
-describe('buildZip', () => {
-  it('stores the entries with the right sizes, names and offsets', { tags: ['condition'] }, () => {
+describe('buildZip', { tags: [] }, () => {
+  it('stores the entries with the right sizes, names and offsets', { tags: ['equivalence'] }, () => {
     const a = new TextEncoder().encode('hello');
     const b = new TextEncoder().encode('world!');
     const zip = buildZip([{ name: '001.png', data: a }, { name: '002.png', data: b }], new Date(2024, 4, 6, 7, 8, 10));
@@ -39,9 +39,9 @@ describe('buildZip', () => {
   });
 });
 
-describe('buildPdf', () => {
+describe('buildPdf', { tags: [] }, () => {
   const page = { jpeg: JPEG, width: 1654, height: 2339, widthMm: 210, heightMm: 297 };
-  it('writes one page object per picture and an xref that points at every object', { tags: ['decision-table'] }, () => {
+  it('writes one page object per picture and an xref that points at every object', { tags: ['equivalence'] }, () => {
     const pdf = buildPdf([page, page], true);
     const body = text(pdf);
     expect(body.startsWith('%PDF-1.4')).toBe(true);
@@ -60,7 +60,7 @@ describe('buildPdf', () => {
   it('reads left to right when asked', { tags: ['condition'] }, () => {
     expect(text(buildPdf([page], false))).toContain('/Direction /L2R');
   });
-  it('refuses a book with no pages', { tags: ['error-guessing'] }, () => {
+  it('refuses a book with no pages', { tags: ['boundary', 'error-guessing'] }, () => {
     expect(() => buildPdf([], true)).toThrow();
   });
 });

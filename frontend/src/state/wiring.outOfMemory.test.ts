@@ -13,7 +13,7 @@ const item = (status: QueueItem['status'], errorKind: QueueItem['errorKind'] = n
   ({ id: 5, status, errorKind, params: { generationMode: 'txt2img', width: 512, height: 512 }, origin: 'generate', destination: 'gallery' }) as unknown as QueueItem;
 
 describe('an out-of-memory failure', () => {
-  it('is reported once with a notice and a toast', { tags: ['condition'] }, async () => {
+  it('is reported once with a notice and a toast', { tags: ['state-transition', 'condition'] }, async () => {
     let emit: (e: BackendEvent) => void = () => undefined;
     vi.spyOn(backend, 'subscribe').mockImplementation((listener) => {
       emit = listener;

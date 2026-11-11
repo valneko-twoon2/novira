@@ -33,7 +33,7 @@ describe('selection by clicking', () => {
   const list = ['a', 'b', 'c', 'd', 'e'];
   const selection = () => useGallery.getState().selection;
 
-  it('selects the clicked picture alone', { tags: ['condition'] }, () => {
+  it('selects the clicked picture alone', { tags: ['equivalence'] }, () => {
     clickImage('b', none, list);
     expect(selection()).toEqual(['b']);
     clickImage('c', none, list);

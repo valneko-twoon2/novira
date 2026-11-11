@@ -48,41 +48,45 @@ const range = fc.option(
 );
 const base = (imgs: ImageDTO[]) => fc.record({ images: fc.constant(imgs), selectedBoardId: fc.constantFrom<string>('none', ...BOARDS), view: fc.constantFrom<'images' | 'assets'>('images', 'assets'), search: fc.constantFrom('', 'i1', ' I2 ', 'zzz') });
 
-describe('gallery list selection (properties)', () => {
-  it('selectBoardImages returns a subset of one board and view, visible, in the date range, in comparator order', { tags: ['condition'] }, () => {
-    check(
-      fc.property(
-        images.chain((imgs) => fc.tuple(base(imgs), settings, range)),
-        ([b, st, dateFilter]) => {
-          const out = selectBoardImages({ ...b, dateFilter, settings: { ...initial.settings, ...st } });
-          const names = new Set(b.images.map((i) => i.name));
-          expect(new Set(out.map((i) => i.name)).size).toBe(out.length);
-          for (const i of out) {
-            expect(names.has(i.name)).toBe(true);
-            expect(i.isIntermediate).toBe(false);
-            expect(i.boardId).toBe(b.selectedBoardId === 'none' ? null : b.selectedBoardId);
-            expect((i.category !== 'general') === (b.view === 'assets')).toBe(true);
-            if (dateFilter) expect(inRange(i.createdAt, dateFilter)).toBe(true);
-          }
-          // nothing that matches is lost
-          const matching = filterBoardImages(b).filter((i) => !dateFilter || inRange(i.createdAt, dateFilter));
-          expect([...out.map((i) => i.name)].sort()).toEqual(matching.map((i) => i.name).sort());
-          if (!st.groupByDate) {
-            for (let k = 1; k < out.length; k++) {
-              const a = out[k - 1]!;
-              const c = out[k]!;
-              if (st.starredFirst && a.starred !== c.starred) expect(a.starred).toBe(true);
-              else if (!st.starredFirst || a.starred === c.starred) {
-                expect(st.sortDirection === 'desc' ? a.createdAt >= c.createdAt : a.createdAt <= c.createdAt).toBe(true);
+describe('gallery list selection (properties)', { tags: [] }, () => {
+  it(
+    'selectBoardImages returns a subset of one board and view, visible, in the date range, in comparator order',
+    { tags: ['decision-table', 'boundary'] },
+    () => {
+      check(
+        fc.property(
+          images.chain((imgs) => fc.tuple(base(imgs), settings, range)),
+          ([b, st, dateFilter]) => {
+            const out = selectBoardImages({ ...b, dateFilter, settings: { ...initial.settings, ...st } });
+            const names = new Set(b.images.map((i) => i.name));
+            expect(new Set(out.map((i) => i.name)).size).toBe(out.length);
+            for (const i of out) {
+              expect(names.has(i.name)).toBe(true);
+              expect(i.isIntermediate).toBe(false);
+              expect(i.boardId).toBe(b.selectedBoardId === 'none' ? null : b.selectedBoardId);
+              expect((i.category !== 'general') === (b.view === 'assets')).toBe(true);
+              if (dateFilter) expect(inRange(i.createdAt, dateFilter)).toBe(true);
+            }
+            // nothing that matches is lost
+            const matching = filterBoardImages(b).filter((i) => !dateFilter || inRange(i.createdAt, dateFilter));
+            expect([...out.map((i) => i.name)].sort()).toEqual(matching.map((i) => i.name).sort());
+            if (!st.groupByDate) {
+              for (let k = 1; k < out.length; k++) {
+                const a = out[k - 1]!;
+                const c = out[k]!;
+                if (st.starredFirst && a.starred !== c.starred) expect(a.starred).toBe(true);
+                else if (!st.starredFirst || a.starred === c.starred) {
+                  expect(st.sortDirection === 'desc' ? a.createdAt >= c.createdAt : a.createdAt <= c.createdAt).toBe(true);
+                }
               }
             }
-          }
-        },
-      ),
-    );
-  });
+          },
+        ),
+      );
+    },
+  );
 
-  it('is idempotent: selecting from its own output gives the same list', { tags: ['condition'] }, () => {
+  it('is idempotent: selecting from its own output gives the same list', { tags: ['decision-table'] }, () => {
     check(
       fc.property(
         images.chain((imgs) => fc.tuple(base(imgs), settings, range)),
@@ -95,7 +99,7 @@ describe('gallery list selection (properties)', () => {
     );
   });
 
-  it('is stable: equal sort keys keep their input order', { tags: ['equivalence'] }, () => {
+  it('is stable: equal sort keys keep their input order', { tags: ['boundary'] }, () => {
     check(
       fc.property(images, (imgs) => {
         const flat = imgs.map((i) => ({ ...i, createdAt: T0, starred: false, isIntermediate: false, boardId: null, category: 'general' as const }));
@@ -105,7 +109,7 @@ describe('gallery list selection (properties)', () => {
     );
   });
 
-  it('does not change the input array', { tags: ['condition'] }, () => {
+  it('does not change the input array', { tags: ['equivalence'] }, () => {
     check(
       fc.property(images, settings, (imgs, st) => {
         const copy = [...imgs];
@@ -148,8 +152,8 @@ const ops: fc.Arbitrary<Op[]> = fc.array(
   { maxLength: 40 },
 );
 
-describe('gallery store event sequences (properties)', () => {
-  it('keeps names unique, selection / viewer / compare on existing images and boards valid', { tags: ['condition'] }, () => {
+describe('gallery store event sequences (properties)', { tags: [] }, () => {
+  it('keeps names unique, selection / viewer / compare on existing images and boards valid', { tags: ['state-transition'] }, () => {
     let serial = 0;
     check(
       fc.property(ops, (sequence) => {
@@ -236,7 +240,7 @@ const imageSample: ImageDTO = {
   workflow: null,
 };
 
-describe('gallery persistence (properties)', () => {
+describe('gallery persistence (properties)', { tags: [] }, () => {
   it('mergePersisted never throws for any stored value and keeps every default setting key', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(junkJson, (stored) => {

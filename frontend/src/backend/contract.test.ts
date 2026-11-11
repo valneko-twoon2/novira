@@ -20,7 +20,7 @@ import { SAMPLES } from './contract/samples';
 const CONTRACT_DIR = fileURLToPath(new URL('../../../contract/', import.meta.url));
 const fixturePath = (name: string) => join(CONTRACT_DIR, `${name}.json`);
 
-describe('contract fixtures', () => {
+describe('contract fixtures', { tags: [] }, () => {
   if (process.env.CONTRACT_UPDATE === '1') {
     for (const [name, sample] of Object.entries(SAMPLES)) {
       writeFileSync(fixturePath(name), `${JSON.stringify(sample, null, 2)}\n`);

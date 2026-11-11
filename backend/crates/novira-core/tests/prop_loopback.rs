@@ -62,7 +62,7 @@ fn client() -> reqwest::Client {
         .unwrap()
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing
 #[test]
 fn a_civitai_search_survives_any_answer() {
     let (rt, http) = (runtime(), client());
@@ -95,7 +95,7 @@ fn a_civitai_search_survives_any_answer() {
     assert!(started.elapsed() < Duration::from_secs(5));
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing
 #[test]
 fn a_hugging_face_search_survives_any_answer_and_any_link_header() {
     let (rt, http) = (runtime(), client());

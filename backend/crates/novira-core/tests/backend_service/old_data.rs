@@ -155,7 +155,7 @@ async fn opens_with_everything_it_held(version: &str) {
     backend.shutdown();
 }
 
-// tags: error-guessing, boundary
+// tags: scenario
 #[tokio::test]
 async fn a_data_folder_of_v0_3_0_opens_with_everything_it_held() {
     opens_with_everything_it_held("v0.3.0").await;

@@ -26,7 +26,7 @@ function pageWith(entity: RasterEntity) {
   return { ...page, canvas: { ...page.canvas, entities: [...page.canvas.entities, entity] } };
 }
 
-describe('PageLayerStack', () => {
+describe('PageLayerStack', { tags: [] }, () => {
   it('draws a layer again only when its pictures change, not when the gallery lookup is a new map', { tags: ['regression'] }, () => {
     const draw = vi.spyOn(entityRender, 'renderEntity');
     const page = pageWith(layer);

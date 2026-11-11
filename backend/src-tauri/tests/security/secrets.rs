@@ -91,7 +91,7 @@ fn findings(rules: &[Rule], text: &str) -> Vec<&'static str> {
         .collect()
 }
 
-// tags: static, condition
+// tags: static, error-guessing
 #[test]
 fn no_credentials_in_files_git_would_commit() {
     let root = repo_root();

@@ -28,7 +28,7 @@ async fn re_uploaded_images_keep_their_embedded_settings() {
         .is_err());
 }
 
-// tags: scenario
+// tags: condition, equivalence
 #[tokio::test]
 async fn image_edits_touch_only_the_named_images_and_a_null_board_uncategorizes() {
     let dir = tempfile::tempdir().unwrap();
@@ -90,7 +90,7 @@ async fn image_edits_touch_only_the_named_images_and_a_null_board_uncategorizes(
     assert!(backend.read_image("full", "../x.png").is_none());
 }
 
-// tags: scenario
+// tags: scenario, boundary
 #[tokio::test]
 async fn deleting_a_board_with_its_images_removes_their_files() {
     let dir = tempfile::tempdir().unwrap();
@@ -166,7 +166,7 @@ async fn deleting_a_board_with_its_images_removes_their_files() {
     );
 }
 
-// tags: scenario
+// tags: condition
 #[tokio::test]
 async fn saving_a_workflow_with_its_id_updates_it_in_place() {
     let dir = tempfile::tempdir().unwrap();
@@ -274,7 +274,7 @@ async fn a_deleted_picture_waits_in_the_trash_and_comes_back_with_its_board_and_
     backend.shutdown();
 }
 
-// tags: scenario
+// tags: state-transition, condition
 #[tokio::test]
 async fn a_picture_whose_board_was_deleted_in_the_meantime_comes_back_uncategorized() {
     let dir = tempfile::tempdir().unwrap();
@@ -336,7 +336,7 @@ async fn a_trashed_picture_survives_a_restart_and_a_stray_name_is_deleted_for_go
     backend.shutdown();
 }
 
-// tags: error-guessing, boundary
+// tags: error-guessing
 #[tokio::test]
 async fn restore_and_delete_refuse_names_that_leave_the_picture_folders() {
     let dir = tempfile::tempdir().unwrap();
@@ -371,7 +371,7 @@ fn file_of(dir: &std::path::Path, folder: &str, img: &ImageDTO) -> std::path::Pa
         ))
 }
 
-// tags: boundary, state-transition
+// tags: state-transition
 #[tokio::test]
 async fn files_sit_in_the_folder_of_their_board_and_follow_a_move_and_a_rename() {
     let dir = tempfile::tempdir().unwrap();
@@ -433,7 +433,7 @@ async fn files_sit_in_the_folder_of_their_board_and_follow_a_move_and_a_rename()
     backend.shutdown();
 }
 
-// tags: boundary, state-transition
+// tags: state-transition
 #[tokio::test]
 async fn a_restored_picture_goes_back_to_its_folder_and_a_start_arranges_flat_files() {
     let dir = tempfile::tempdir().unwrap();
@@ -524,7 +524,7 @@ async fn a_subfolder_belongs_to_one_board_nests_to_the_limit_and_goes_with_its_b
     assert!(!on_disk.exists());
 }
 
-// tags: boundary
+// tags: condition
 #[tokio::test]
 async fn deleting_a_board_keeps_the_pictures_of_its_subfolders_uncategorized() {
     let dir = tempfile::tempdir().unwrap();

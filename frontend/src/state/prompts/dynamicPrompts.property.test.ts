@@ -21,7 +21,7 @@ const template = fc
 const tidy = (s: string) => s === s.replace(/\s+/g, ' ').trim();
 
 describe('dynamic prompts (properties)', () => {
-  it('expandPrompt never throws, respects the limit and returns tidy, unique prompts', { tags: ['error-guessing'] }, () => {
+  it('expandPrompt never throws, respects the limit and returns tidy, unique prompts', { tags: ['error-guessing', 'boundary'] }, () => {
     check(
       fc.property(fc.oneof(junkText, template), lists, fc.integer({ min: 1, max: 50 }), (text, l, limit) => {
         const out = expandPrompt(text, limit, l);
@@ -32,7 +32,7 @@ describe('dynamic prompts (properties)', () => {
     );
   });
 
-  it('expandPrompt of plain words is the tidied text itself', { tags: ['condition'] }, () => {
+  it('expandPrompt of plain words is the tidied text itself', { tags: ['equivalence'] }, () => {
     check(fc.property(fc.array(word, { maxLength: 6 }), (words) => expandPrompt(words.join('   ')).join('|') === words.join(' ')));
   });
 
@@ -60,11 +60,11 @@ describe('dynamic prompts (properties)', () => {
     );
   });
 
-  it('randomPrompt copes with arbitrary text and arbitrary lists', { tags: ['condition'] }, () => {
+  it('randomPrompt copes with arbitrary text and arbitrary lists', { tags: ['error-guessing'] }, () => {
     check(fc.property(junkText, lists, fc.integer(), (text, l, seed) => typeof randomPrompt(text, l, seed) === 'string'));
   });
 
-  it('wildcardProblems terminates on cyclic lists and agrees with expansion when it finds none', { tags: ['condition'] }, () => {
+  it('wildcardProblems terminates on cyclic lists and agrees with expansion when it finds none', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(template, lists, (text, l) => {
         const p = wildcardProblems(text, l);

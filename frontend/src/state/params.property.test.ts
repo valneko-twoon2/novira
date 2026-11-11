@@ -29,30 +29,34 @@ const op: fc.Arbitrary<Op> = fc.oneof(
 );
 
 describe('Generate form size (properties)', () => {
-  it('any order of size operations keeps whole-number sides that are multiples of 8, at least 64, and a known aspect ratio', { tags: ['boundary'] }, () => {
-    check(
-      fc.property(fc.array(op, { maxLength: 30 }), (ops) => {
-        useParams.setState(initial, true);
-        for (const o of ops) {
-          const s = useParams.getState();
-          if (o.op === 'dim') s.setDimension(o.axis, o.v);
-          else if (o.op === 'aspect') s.setAspectRatio(o.id);
-          else if (o.op === 'swap') s.swapDimensions();
-          else if (o.op === 'optimize') s.optimizeSize(o.base);
-          else s.set({ aspectLocked: o.locked });
-          const { width, height, aspectRatio } = useParams.getState();
-          for (const side of [width, height]) {
-            expect(Number.isInteger(side)).toBe(true);
-            expect(side).toBeGreaterThanOrEqual(64);
-            expect(side % 8).toBe(0);
+  it(
+    'any order of size operations keeps whole-number sides that are multiples of 8, at least 64, and a known aspect ratio',
+    { tags: ['boundary', 'state-transition'] },
+    () => {
+      check(
+        fc.property(fc.array(op, { maxLength: 30 }), (ops) => {
+          useParams.setState(initial, true);
+          for (const o of ops) {
+            const s = useParams.getState();
+            if (o.op === 'dim') s.setDimension(o.axis, o.v);
+            else if (o.op === 'aspect') s.setAspectRatio(o.id);
+            else if (o.op === 'swap') s.swapDimensions();
+            else if (o.op === 'optimize') s.optimizeSize(o.base);
+            else s.set({ aspectLocked: o.locked });
+            const { width, height, aspectRatio } = useParams.getState();
+            for (const side of [width, height]) {
+              expect(Number.isInteger(side)).toBe(true);
+              expect(side).toBeGreaterThanOrEqual(64);
+              expect(side % 8).toBe(0);
+            }
+            expect(ASPECT_RATIOS.some((a) => a.id === aspectRatio)).toBe(true);
           }
-          expect(ASPECT_RATIOS.some((a) => a.id === aspectRatio)).toBe(true);
-        }
-      }),
-    );
-  });
+        }),
+      );
+    },
+  );
 
-  it('swapping twice gives the size and the ratio back', { tags: ['condition'] }, () => {
+  it('swapping twice gives the size and the ratio back', { tags: ['equivalence'] }, () => {
     check(
       fc.property(fc.integer({ min: 8, max: 512 }), fc.integer({ min: 8, max: 512 }), fc.constantFrom(...ASPECT_RATIOS.map((a) => a.id)), (w, h, id) => {
         useParams.setState({ ...initial, width: w * 8, height: h * 8, aspectRatio: id }, true);
@@ -73,7 +77,7 @@ describe('Generate form size (properties)', () => {
 });
 
 describe('Generate form lists and recall (properties)', () => {
-  it('addLora never duplicates a LoRA, and remove / update touch only that key', { tags: ['condition'] }, () => {
+  it('addLora never duplicates a LoRA, and remove / update touch only that key', { tags: ['state-transition'] }, () => {
     check(
       fc.property(fc.array(fc.tuple(fc.constantFrom('add', 'remove', 'update'), fc.constantFrom('a', 'b', 'c')), { maxLength: 30 }), (ops) => {
         useParams.setState(initial, true);
@@ -125,7 +129,7 @@ describe('Generate form lists and recall (properties)', () => {
     loras: fc.array(fc.record({ key: fc.string({ maxLength: 6 }), weight: fc.integer({ min: -20, max: 20 }).map((n) => n / 10), isEnabled: fc.boolean() }), { maxLength: 5 }),
   }) as unknown as fc.Arbitrary<GenerationMetadata>;
 
-  it('recallAll puts the stored settings back, and remix keeps the current seed and seed mode', { tags: ['condition'] }, () => {
+  it('recallAll puts the stored settings back, and remix keeps the current seed and seed mode', { tags: ['decision-table'] }, () => {
     const main = (key: string, name: string) => ({ key, name, base: 'sdxl', type: 'main', format: 'checkpoint', description: '', path: '', size: 0, source: '' }) as ModelConfig;
     useModels.setState({ models: [main('a', 'Model A'), main('b', 'Model B')] });
     check(

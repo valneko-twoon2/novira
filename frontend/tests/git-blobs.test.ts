@@ -4,14 +4,14 @@ import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
 import { parseBatch, readBlobs } from '../scripts/git-blobs.mjs';
 
-describe('git cat-file --batch output', () => {
+describe('git cat-file --batch output', { tags: [] }, () => {
   it('gives each content in order, a missing spec as null, and survives a newline inside a content', { tags: ['error-guessing'] }, () => {
     const raw = Buffer.from('aaa blob 3\n{}\n\nHEAD:new.json missing\nbbb blob 5\na\nbé\n', 'utf8');
     const parts = parseBatch(raw, 3).map((p: Buffer | null) => (p === null ? null : p.toString('utf8')));
     expect(parts).toEqual(['{}\n', null, 'a\nbé']);
   });
 
-  it('stops on output that ends early instead of reading past it', { tags: ['error-guessing'] }, () => {
+  it('stops on output that ends early instead of reading past it', { tags: ['error-guessing', 'boundary'] }, () => {
     expect(() => parseBatch(Buffer.from('aaa blob 3\n{}\n\n'), 2)).toThrow(/ended early/);
   });
 

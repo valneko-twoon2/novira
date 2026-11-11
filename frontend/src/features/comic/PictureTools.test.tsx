@@ -28,14 +28,14 @@ afterEach(() => {
   setLocale('ja');
 });
 
-describe('the tools of a picture', () => {
-  it('has only the upload button while there is no picture', { tags: ['scenario'] }, () => {
+describe('the tools of a picture', { tags: [] }, () => {
+  it('has only the upload button while there is no picture', { tags: ['boundary', 'condition'] }, () => {
     show(null);
     expect(screen.getByTestId('comic-image-upload')).toBeTruthy();
     expect(screen.queryByTestId('comic-image-cover')).toBeNull();
   });
 
-  it('has only the upload button for a view without an address', { tags: ['scenario'] }, () => {
+  it('has only the upload button for a view without an address', { tags: ['condition', 'error-guessing'] }, () => {
     show({ ...DEFAULT_IMAGE_VIEW }, { url: undefined });
     expect(screen.queryByTestId('comic-image-cover')).toBeNull();
   });
@@ -51,13 +51,13 @@ describe('the tools of a picture', () => {
     expect(onFile).toHaveBeenCalledWith(file);
   });
 
-  it('ignores a picker that closed without a file', { tags: ['scenario'] }, () => {
+  it('ignores a picker that closed without a file', { tags: ['error-guessing', 'boundary'] }, () => {
     const { onFile, container } = show({ ...DEFAULT_IMAGE_VIEW });
     fireEvent.change(container.querySelector('input[type="file"]') as HTMLInputElement, { target: { files: [] } });
     expect(onFile).not.toHaveBeenCalled();
   });
 
-  it('fits the picture to the panel, either filling it or showing it whole', { tags: ['scenario'] }, () => {
+  it('fits the picture to the panel, either filling it or showing it whole', { tags: ['decision-table'] }, () => {
     const { onView } = show({ ...DEFAULT_IMAGE_VIEW, cx: 0.2, cy: 0.9, rotation: 90, scale: 3 });
     fireEvent.click(screen.getByTestId('comic-image-cover'));
     expect(onView).toHaveBeenLastCalledWith(expect.objectContaining({ cx: 0.5, cy: 0.5, rotation: 0, scale: 1 }));
@@ -66,7 +66,7 @@ describe('the tools of a picture', () => {
     expect(onView).toHaveBeenLastCalledWith(expect.objectContaining({ cx: 0.5, cy: 0.5, rotation: 0 }));
   });
 
-  it('zooms by a step each way, and never past the range', { tags: ['scenario'] }, () => {
+  it('zooms by a step each way, and never past the range', { tags: ['boundary'] }, () => {
     const { onView } = show({ ...DEFAULT_IMAGE_VIEW, scale: 2 });
     fireEvent.click(screen.getByTestId('comic-image-scale-up'));
     expect(onView).toHaveBeenLastCalledWith({ scale: 2 * SCALE_STEP });
@@ -82,7 +82,7 @@ describe('the tools of a picture', () => {
     expect(bottom.onView).toHaveBeenLastCalledWith({ scale: IMAGE_SCALE_RANGE.min });
   });
 
-  it('centres, turns by a quarter each way (kept within half a turn), and mirrors', { tags: ['scenario'] }, () => {
+  it('centres, turns by a quarter each way (kept within half a turn), and mirrors', { tags: ['boundary', 'equivalence'] }, () => {
     const { onView } = show({ ...DEFAULT_IMAGE_VIEW, rotation: 0, flipX: true, flipY: false, cx: 0.9 });
     fireEvent.click(screen.getByTestId('comic-image-center'));
     expect(onView).toHaveBeenLastCalledWith({ cx: 0.5, cy: 0.5 });
@@ -96,7 +96,7 @@ describe('the tools of a picture', () => {
     expect(onView).toHaveBeenLastCalledWith({ flipY: true });
   });
 
-  it('shows the clear button only when asked to, and uses the given test-id prefix', { tags: ['scenario'] }, () => {
+  it('shows the clear button only when asked to, and uses the given test-id prefix', { tags: ['condition'] }, () => {
     show({ ...DEFAULT_IMAGE_VIEW }, { idPrefix: 'x' });
     expect(screen.queryByTestId('x-clear')).toBeNull();
     cleanup();
@@ -107,7 +107,7 @@ describe('the tools of a picture', () => {
   });
 });
 
-describe('the keys of the page', () => {
+describe('the keys of the page', { tags: [] }, () => {
   let panelId = '';
   let otherId = '';
   const view = () => findPanel(useComic.getState().projects, panelId)!.panel.imageView;
@@ -126,7 +126,7 @@ describe('the keys of the page', () => {
     otherId = project.pages[0]!.panels[1]!.id;
   });
 
-  it('moves a selected picture with the arrows, ten times as far with Shift', { tags: ['scenario'] }, () => {
+  it('moves a selected picture with the arrows, ten times as far with Shift', { tags: ['decision-table', 'equivalence'] }, () => {
     useComic.getState().setPanelImage(panelId, 'a.png');
     act(() => useComic.getState().selectImage(panelId));
     render(<Keys />);
@@ -142,7 +142,7 @@ describe('the keys of the page', () => {
     expect(view().cy).toBeCloseTo(DEFAULT_IMAGE_VIEW.cy);
   });
 
-  it('does not move anything when the picture is not selected, or the keys are off', { tags: ['scenario'] }, () => {
+  it('does not move anything when the picture is not selected, or the keys are off', { tags: ['condition'] }, () => {
     useComic.getState().setPanelImage(panelId, 'a.png');
     act(() => useComic.getState().selectPanel(panelId));
     const { rerender } = render(<Keys />);
@@ -154,7 +154,7 @@ describe('the keys of the page', () => {
     expect(view().cx).toBe(DEFAULT_IMAGE_VIEW.cx);
   });
 
-  it('lets go step by step on Escape: the balloon editor, the balloon, the picture, the panel', { tags: ['scenario'] }, () => {
+  it('lets go step by step on Escape: the balloon editor, the balloon, the picture, the panel', { tags: ['state-transition'] }, () => {
     useComic.getState().setPanelImage(panelId, 'a.png');
     const bubbleId = useComic.getState().addBubble(panelId, 'speech')!;
     act(() => useComic.getState().openBubbleEditor(panelId, bubbleId));
@@ -172,7 +172,7 @@ describe('the keys of the page', () => {
     expect(useComic.getState().selectedPanelId).toBeNull();
   });
 
-  it('lets go of the backdrop first on Escape', { tags: ['boundary'] }, () => {
+  it('lets go of the backdrop first on Escape', { tags: ['condition', 'state-transition'] }, () => {
     useComic.getState().setBackdrop(useComic.getState().projects[0]!.pages[0]!.id, 'sky.png');
     act(() => useComic.getState().selectBackdrop(true));
     render(<Keys />);
@@ -180,7 +180,7 @@ describe('the keys of the page', () => {
     expect(useComic.getState().backdropSelected).toBe(false);
   });
 
-  it('takes away the selected panel on Delete, but not the last one', { tags: ['boundary'] }, () => {
+  it('takes away the selected panel on Delete, but not the last one', { tags: ['boundary', 'condition'] }, () => {
     act(() => useComic.getState().selectPanel(otherId));
     render(<Keys />);
     const count = pagePanels().length;
@@ -189,7 +189,7 @@ describe('the keys of the page', () => {
     expect(pagePanels().some((p) => p.id === otherId)).toBe(false);
   });
 
-  it('does nothing on Delete when nothing is selected', { tags: ['scenario'] }, () => {
+  it('does nothing on Delete when nothing is selected', { tags: ['boundary', 'condition'] }, () => {
     render(<Keys />);
     const count = pagePanels().length;
     fireEvent.keyDown(window, { key: 'Delete' });

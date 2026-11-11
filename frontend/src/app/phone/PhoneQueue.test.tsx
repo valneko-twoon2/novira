@@ -55,13 +55,13 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('phone Queue tab', () => {
+describe('phone Queue tab', { tags: [] }, () => {
   it('says the queue is empty', { tags: ['boundary'] }, () => {
     mount();
     expect(screen.getByText(t('queue.empty.title'))).toBeTruthy();
   });
 
-  it('lists the jobs newest first with their state, prompt, model and size', { tags: ['condition'] }, () => {
+  it('lists the jobs newest first with their state, prompt, model and size', { tags: ['equivalence'] }, () => {
     useQueue.setState({ items: [job(1, 'completed', { imageName: 'done.png' }), job(3, 'pending'), job(2, 'in_progress')] });
     mount();
     expect(cards().map((c) => c.getAttribute('data-status'))).toEqual(['pending', 'in_progress', 'completed']);
@@ -72,35 +72,43 @@ describe('phone Queue tab', () => {
     expect(first.querySelector('img')?.getAttribute('src')).toBe('blob:t-done.png');
   });
 
-  it('cancels a waiting or running job and retries a failed or cancelled one', { tags: ['condition'] }, async () => {
-    const cancel = vi.spyOn(backend, 'cancelQueueItem').mockResolvedValue();
-    const retry = vi.spyOn(backend, 'retryQueueItem').mockResolvedValue(job(9, 'pending'));
-    useQueue.setState({ items: [job(1, 'failed', { error: 'out of luck' }), job(2, 'pending'), job(3, 'canceled'), job(4, 'completed')] });
-    mount();
-    const [completed, canceled, pending, failed] = cards();
-    fireEvent.click(within(pending!).getByTestId('phone-queue-cancel'));
-    expect(cancel).toHaveBeenCalledWith(2);
-    fireEvent.click(within(failed!).getByTestId('phone-queue-retry'));
-    expect(retry).toHaveBeenCalledWith(1);
-    await waitFor(() => expect(useToasts.getState().toasts.at(-1)?.title).toBe(t('queue.toast.retried', { id: 1 })));
-    expect(within(canceled!).getByTestId('phone-queue-retry')).toBeTruthy();
-    expect(within(completed!).queryByTestId('phone-queue-cancel')).toBeNull();
-    expect(within(completed!).queryByTestId('phone-queue-retry')).toBeNull();
-    expect(failed!.textContent).toContain('out of luck');
-  });
+  it(
+    'cancels a waiting or running job and retries a failed or cancelled one',
+    { tags: ['decision-table', 'state-transition'] },
+    async () => {
+      const cancel = vi.spyOn(backend, 'cancelQueueItem').mockResolvedValue();
+      const retry = vi.spyOn(backend, 'retryQueueItem').mockResolvedValue(job(9, 'pending'));
+      useQueue.setState({ items: [job(1, 'failed', { error: 'out of luck' }), job(2, 'pending'), job(3, 'canceled'), job(4, 'completed')] });
+      mount();
+      const [completed, canceled, pending, failed] = cards();
+      fireEvent.click(within(pending!).getByTestId('phone-queue-cancel'));
+      expect(cancel).toHaveBeenCalledWith(2);
+      fireEvent.click(within(failed!).getByTestId('phone-queue-retry'));
+      expect(retry).toHaveBeenCalledWith(1);
+      await waitFor(() => expect(useToasts.getState().toasts.at(-1)?.title).toBe(t('queue.toast.retried', { id: 1 })));
+      expect(within(canceled!).getByTestId('phone-queue-retry')).toBeTruthy();
+      expect(within(completed!).queryByTestId('phone-queue-cancel')).toBeNull();
+      expect(within(completed!).queryByTestId('phone-queue-retry')).toBeNull();
+      expect(failed!.textContent).toContain('out of luck');
+    },
+  );
 
-  it('opens the picture of a finished job and a job being drawn full screen, not one without a picture', { tags: ['condition'] }, () => {
-    useQueue.setState({ items: [job(1, 'completed', { imageName: 'done.png' }), job(2, 'in_progress'), job(3, 'pending')] });
-    mount();
-    const [pending, running, done] = cards();
-    expect((within(pending!).getAllByRole('button')[0] as HTMLButtonElement).disabled).toBe(true);
-    fireEvent.click(within(running!).getAllByRole('button')[0]!);
-    expect(usePhone.getState().view).toEqual({ kind: 'live', itemId: 2 });
-    fireEvent.click(within(done!).getAllByRole('button')[0]!);
-    expect(usePhone.getState().view).toEqual({ kind: 'image', name: 'done.png' });
-  });
+  it(
+    'opens the picture of a finished job and a job being drawn full screen, not one without a picture',
+    { tags: ['decision-table'] },
+    () => {
+      useQueue.setState({ items: [job(1, 'completed', { imageName: 'done.png' }), job(2, 'in_progress'), job(3, 'pending')] });
+      mount();
+      const [pending, running, done] = cards();
+      expect((within(pending!).getAllByRole('button')[0] as HTMLButtonElement).disabled).toBe(true);
+      fireEvent.click(within(running!).getAllByRole('button')[0]!);
+      expect(usePhone.getState().view).toEqual({ kind: 'live', itemId: 2 });
+      fireEvent.click(within(done!).getAllByRole('button')[0]!);
+      expect(usePhone.getState().view).toEqual({ kind: 'image', name: 'done.png' });
+    },
+  );
 
-  it('pauses and resumes the processor, and tidies the finished jobs', { tags: ['scenario'] }, () => {
+  it('pauses and resumes the processor, and tidies the finished jobs', { tags: ['state-transition'] }, () => {
     const pause = vi.spyOn(backend, 'pauseProcessor').mockResolvedValue();
     const resume = vi.spyOn(backend, 'resumeProcessor').mockResolvedValue();
     const prune = vi.spyOn(backend, 'pruneQueue').mockResolvedValue();
@@ -120,7 +128,7 @@ describe('phone Queue tab', () => {
     expect(prune).toHaveBeenCalled();
   });
 
-  it('counts the waiting and running jobs on its tab', { tags: ['condition'] }, () => {
+  it('counts the waiting and running jobs on its tab', { tags: ['equivalence'] }, () => {
     useQueue.setState({ items: [], status: status({ pending: 2, inProgress: 1 }) });
     mount();
     expect(screen.getByTestId('phone-queue-badge').textContent).toBe('3');

@@ -46,12 +46,12 @@ describe('browsing', () => {
     expect(items()).toHaveLength(3);
   });
 
-  it('says when the book is empty', { tags: ['condition'] }, () => {
+  it('says when the book is empty', { tags: ['boundary'] }, () => {
     act(() => usePromptBook.setState({ entries: [] }));
     expect(screen.getByText(t('params.promptBook.empty'))).toBeTruthy();
   });
 
-  it('shows the meaning, note and category of an entry', { tags: ['scenario'] }, () => {
+  it('shows the meaning, note and category of an entry', { tags: ['equivalence'] }, () => {
     expect(screen.getByText('happy look')).toBeTruthy();
     expect(screen.getByText('works well')).toBeTruthy();
     expect(document.querySelectorAll('.pb-pill')).toHaveLength(3);
@@ -64,7 +64,7 @@ describe('using a tag', () => {
     return row.querySelector(`.pb-target--${kind}`) as HTMLElement;
   };
 
-  it('adds the tag to the positive or negative prompt and takes it out again', { tags: ['scenario'] }, () => {
+  it('adds the tag to the positive or negative prompt and takes it out again', { tags: ['state-transition'] }, () => {
     fireEvent.click(target('smile', 'positive'));
     expect(useParams.getState().positivePrompt).toContain('smile');
     expect(target('smile', 'positive').className).toContain('is-on');
@@ -90,7 +90,7 @@ describe('registering and editing', () => {
     expect(input('tag').value).toBe('');
   });
 
-  it('edits an entry in the form and can stop editing', { tags: ['scenario'] }, () => {
+  it('edits an entry in the form and can stop editing', { tags: ['state-transition'] }, () => {
     const row = screen.getByText('smile').closest('.pb-item') as HTMLElement;
     fireEvent.click(within(row).getByLabelText(t('common.edit')));
     expect(input('tag').value).toBe('smile');
@@ -106,7 +106,7 @@ describe('registering and editing', () => {
 });
 
 describe('deleting', () => {
-  it('removes the entry on the second press, and ends its editing', { tags: ['scenario'] }, () => {
+  it('removes the entry on the second press, and ends its editing', { tags: ['state-transition'] }, () => {
     const row = () => screen.getByText('smile').closest('.pb-item') as HTMLElement;
     fireEvent.click(within(row()).getByLabelText(t('common.edit')));
     fireEvent.click(within(row()).getByLabelText(t('common.delete')));
@@ -118,7 +118,7 @@ describe('deleting', () => {
 });
 
 describe('closing', () => {
-  it('closes with the close button', { tags: ['scenario'] }, () => {
+  it('closes with the close button', { tags: ['equivalence'] }, () => {
     fireEvent.click(screen.getByLabelText(t('common.close')));
     expect(state().open).toBe(false);
   });

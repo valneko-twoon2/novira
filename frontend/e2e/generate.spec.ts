@@ -50,23 +50,27 @@ test('invoking adds the image to the gallery, the viewer and the queue', { tag: 
   await expect(page.getByTestId('queue-stats').locator('[data-status="completed"] .qt-stat__value')).toHaveText('1');
 });
 
-test('the same seed and prompt give the same image; another prompt gives a different one', { tag: ['@condition'] }, async ({ page }) => {
-  await openApp(page, '?scenario=empty');
-  await page.getByTestId('seed-fixed').click();
-  await expect(page.getByTestId('seed-fixed')).toHaveAttribute('aria-pressed', 'true');
+test(
+  'the same seed and prompt give the same image; another prompt gives a different one',
+  { tag: ['@decision-table'] },
+  async ({ page }) => {
+    await openApp(page, '?scenario=empty');
+    await page.getByTestId('seed-fixed').click();
+    await expect(page.getByTestId('seed-fixed')).toHaveAttribute('aria-pressed', 'true');
 
-  await generate(page, 'a red fox in the snow');
-  await expect(page.getByTestId('gallery-thumb')).toHaveCount(1);
-  await generate(page, 'a red fox in the snow');
-  await expect(page.getByTestId('gallery-thumb')).toHaveCount(2);
-  await generate(page, 'a blue whale in the deep sea');
-  await expect(page.getByTestId('gallery-thumb')).toHaveCount(3);
+    await generate(page, 'a red fox in the snow');
+    await expect(page.getByTestId('gallery-thumb')).toHaveCount(1);
+    await generate(page, 'a red fox in the snow');
+    await expect(page.getByTestId('gallery-thumb')).toHaveCount(2);
+    await generate(page, 'a blue whale in the deep sea');
+    await expect(page.getByTestId('gallery-thumb')).toHaveCount(3);
 
-  // Newest first: [whale, fox, fox].
-  const [whale, fox2, fox1] = [await thumbnailHash(page, 0), await thumbnailHash(page, 1), await thumbnailHash(page, 2)];
-  expect(fox2).toBe(fox1);
-  expect(whale).not.toBe(fox1);
-});
+    // Newest first: [whale, fox, fox].
+    const [whale, fox2, fox1] = [await thumbnailHash(page, 0), await thumbnailHash(page, 1), await thumbnailHash(page, 2)];
+    expect(fox2).toBe(fox1);
+    expect(whale).not.toBe(fox1);
+  },
+);
 
 test('a picture being drawn is a cell of the gallery and opens large in the viewer', { tag: ['@scenario'] }, async ({ page }) => {
   // Slow steps, so the job is still running when the cell is pressed.
@@ -102,52 +106,60 @@ test('a prompt containing [fail] fails in the queue and adds nothing to the gall
   await expect(page.getByTestId('gallery-thumb')).toHaveCount(0);
 });
 
-test('a prompt containing [oom] runs out of memory and offers a smaller retry and low-memory mode', { tag: ['@error-guessing'] }, async ({ page }) => {
-  await openApp(page, '?scenario=empty');
-  await generate(page, 'a huge poster [oom]');
+test(
+  'a prompt containing [oom] runs out of memory and offers a smaller retry and low-memory mode',
+  { tag: ['@error-guessing'] },
+  async ({ page }) => {
+    await openApp(page, '?scenario=empty');
+    await generate(page, 'a huge poster [oom]');
 
-  // The gallery keeps the failure with what to do about it.
-  const notice = page.getByTestId('gallery-generating').getByTestId('oom-notice');
-  await expect(notice).toBeVisible();
-  await expect(notice).toContainText(msg('queue.oom.title'));
-  await expect(notice.getByTestId('oom-low-memory')).toBeVisible();
-  await notice.getByTestId('oom-retry-smaller').click();
+    // The gallery keeps the failure with what to do about it.
+    const notice = page.getByTestId('gallery-generating').getByTestId('oom-notice');
+    await expect(notice).toBeVisible();
+    await expect(notice).toContainText(msg('queue.oom.title'));
+    await expect(notice.getByTestId('oom-low-memory')).toBeVisible();
+    await notice.getByTestId('oom-retry-smaller').click();
 
-  // The retry runs at about 75% of the area (1024x1024 -> 888x888) with the same prompt, and fails again in the mock.
-  await page.getByTestId('tab-queue').click();
-  const items = page.getByTestId('queue-item');
-  await expect(items).toHaveCount(2);
-  await expect(items.nth(1)).toContainText('888×888');
-  await expect(items.nth(1)).toHaveAttribute('data-status', 'failed');
+    // The retry runs at about 75% of the area (1024x1024 -> 888x888) with the same prompt, and fails again in the mock.
+    await page.getByTestId('tab-queue').click();
+    const items = page.getByTestId('queue-item');
+    await expect(items).toHaveCount(2);
+    await expect(items.nth(1)).toContainText('888×888');
+    await expect(items.nth(1)).toHaveAttribute('data-status', 'failed');
 
-  // Low-memory mode from the queue's notice: the switch in Settings follows.
-  await items.nth(1).getByTestId('oom-low-memory').click();
-  await expect(page.getByTestId('oom-low-memory')).toHaveCount(0);
-  await page.getByRole('button', { name: msg('app.nav.settingsMenu') }).click();
-  await page.getByRole('menuitem', { name: msg('app.nav.settings') }).click();
-  // The switch is on the Generation tab of the settings.
-  await page.getByTestId('settings-tab-generation').click();
-  await expect(page.getByRole('switch', { name: msg('settings.lowMemory.label') })).toHaveAttribute('aria-checked', 'true');
-});
+    // Low-memory mode from the queue's notice: the switch in Settings follows.
+    await items.nth(1).getByTestId('oom-low-memory').click();
+    await expect(page.getByTestId('oom-low-memory')).toHaveCount(0);
+    await page.getByRole('button', { name: msg('app.nav.settingsMenu') }).click();
+    await page.getByRole('menuitem', { name: msg('app.nav.settings') }).click();
+    // The switch is on the Generation tab of the settings.
+    await page.getByTestId('settings-tab-generation').click();
+    await expect(page.getByRole('switch', { name: msg('settings.lowMemory.label') })).toHaveAttribute('aria-checked', 'true');
+  },
+);
 
-test('a sampler and noise schedule picked by name are used, recorded with the picture and taken back', { tag: ['@scenario'] }, async ({ page }) => {
-  await openApp(page, '?scenario=empty');
-  const pick = async (testId: string, option: string) => {
-    await page.getByTestId(testId).click();
-    await page.getByRole('option', { name: option, exact: true }).click();
-  };
-  await pick('sampler-name', 'res_multistep');
-  await pick('noise-schedule', 'karras');
-  await generate(page, 'a lighthouse on a cliff at dusk');
-  await expect(page.getByTestId('viewer-image')).toBeVisible();
-  await page.getByTestId('toggle-metadata').click();
-  await expect(page.getByTestId('viewer-metadata')).toContainText('res_multistep / karras');
+test(
+  'a sampler and noise schedule picked by name are used, recorded with the picture and taken back',
+  { tag: ['@scenario'] },
+  async ({ page }) => {
+    await openApp(page, '?scenario=empty');
+    const pick = async (testId: string, option: string) => {
+      await page.getByTestId(testId).click();
+      await page.getByRole('option', { name: option, exact: true }).click();
+    };
+    await pick('sampler-name', 'res_multistep');
+    await pick('noise-schedule', 'karras');
+    await generate(page, 'a lighthouse on a cliff at dusk');
+    await expect(page.getByTestId('viewer-image')).toBeVisible();
+    await page.getByTestId('toggle-metadata').click();
+    await expect(page.getByTestId('viewer-metadata')).toContainText('res_multistep / karras');
 
-  // Auto gives the choice back to the scheduler.
-  const auto = new RegExp(`^${msg('params.generation.engineAuto')}`);
-  await page.getByTestId('sampler-name').click();
-  await page.getByRole('option', { name: auto }).click();
-  await page.getByTestId('noise-schedule').click();
-  await page.getByRole('option', { name: auto }).click();
-  await expect(page.getByTestId('sampler-name')).toContainText(auto);
-});
+    // Auto gives the choice back to the scheduler.
+    const auto = new RegExp(`^${msg('params.generation.engineAuto')}`);
+    await page.getByTestId('sampler-name').click();
+    await page.getByRole('option', { name: auto }).click();
+    await page.getByTestId('noise-schedule').click();
+    await page.getByRole('option', { name: auto }).click();
+    await expect(page.getByTestId('sampler-name')).toContainText(auto);
+  },
+);

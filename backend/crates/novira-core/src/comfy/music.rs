@@ -214,7 +214,7 @@ mod tests {
             .unwrap_or_else(|| panic!("no {class}"))
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn a_song_graph_has_the_ace_step_nodes_and_saves_audio() {
         let g = graph(&music_params()).unwrap();
@@ -253,7 +253,7 @@ mod tests {
         );
     }
 
-    // tags: condition
+    // tags: boundary, error-guessing
     #[test]
     fn values_the_model_does_not_list_are_replaced_by_safe_ones() {
         let mut p = music_params();
@@ -274,7 +274,7 @@ mod tests {
         assert_eq!(enc["inputs"]["timesignature"], "4");
     }
 
-    // tags: condition
+    // tags: equivalence, error-guessing
     #[test]
     fn keys_are_checked_strictly() {
         assert_eq!(key_for("F# minor"), "F# minor");

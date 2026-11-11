@@ -17,7 +17,7 @@ const scratch = (name: string) => {
   return dir;
 };
 
-describe('worktree names', () => {
+describe('worktree names', { tags: [] }, () => {
   it('takes letters, digits, dots, dashes and underscores', { tags: ['equivalence', 'boundary'] }, () => {
     for (const name of ['cand-progress', '20261110_fix', 'v0.5.0', 'a']) expect(validName(name), name).toBe(true);
   });
@@ -27,8 +27,8 @@ describe('worktree names', () => {
   });
 });
 
-describe.runIf(process.platform === 'win32')('links to the main checkout (Windows)', () => {
-  it('makes a junction that shows the target, and tells it from a real folder', { tags: ['scenario'] }, () => {
+describe.runIf(process.platform === 'win32')('links to the main checkout (Windows)', { tags: [] }, () => {
+  it('makes a junction that shows the target, and tells it from a real folder', { tags: ['scenario', 'error-guessing'] }, () => {
     // A shell character in the path: made through a shell, `&` would start a second command.
     const root = scratch('wt&link');
     const target = join(root, 'target');

@@ -275,7 +275,7 @@ mod tests {
         assert!(prepare(&g, 1, lib, vision).unwrap_err().contains("nowhere"));
     }
 
-    // tags: state-transition
+    // tags: equivalence
     #[test]
     fn placeholders_become_what_comfyui_expects() {
         let g = graph(
@@ -358,7 +358,7 @@ mod tests {
         json!({ "class_type": "LoadAudio", "inputs": { "audio": { "$speech": spoken } } })
     }
 
-    // tags: state-transition
+    // tags: condition
     #[test]
     fn a_speech_placeholder_becomes_an_upload_and_the_same_speech_is_made_once() {
         let g = graph(
@@ -395,7 +395,7 @@ mod tests {
         assert_eq!(prompt["c"]["inputs"]["audio"], "novira-2.wav");
     }
 
-    // tags: error-guessing
+    // tags: error-guessing, boundary
     #[test]
     fn a_speech_that_cannot_be_made_is_refused_with_the_reason() {
         let err = |spoken: Value| {

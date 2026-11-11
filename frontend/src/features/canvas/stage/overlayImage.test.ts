@@ -11,8 +11,8 @@ beforeEach(() => {
   useGallery.setState({ images: ['a.png', 'b.png'].map((name) => ({ name, url: `/${name}` }) as ImageDTO) });
 });
 
-describe('overlayImageUrl', () => {
-  it('keeps a finished result on its page while the next one is made', { tags: ['condition'] }, () => {
+describe('overlayImageUrl', { tags: [] }, () => {
+  it('keeps a finished result on its page while the next one is made', { tags: ['condition', 'state-transition'] }, () => {
     expect(overlayImageUrl(staging({ stagedIndex: 1 }), canvasJob, true)).toBe('/b.png');
   });
 
@@ -21,14 +21,14 @@ describe('overlayImageUrl', () => {
     expect(overlayImageUrl(staging({ stagedImageNames: [] }), canvasJob, true)).toBe('/live.png');
   });
 
-  it('draws no progress of a job bound elsewhere, or on a store canvas jobs do not reach', { tags: ['boundary'] }, () => {
+  it('draws no progress of a job bound elsewhere, or on a store canvas jobs do not reach', { tags: ['condition', 'boundary'] }, () => {
     const toGallery = { ...canvasJob, items: [{ id: 7, destination: 'gallery' } as QueueItem] };
     expect(overlayImageUrl(staging({ stagedIndex: 2 }), toGallery, true)).toBeNull();
     expect(overlayImageUrl(staging({ stagedIndex: 2 }), canvasJob, false)).toBeNull();
     expect(overlayImageUrl(staging({ stagedIndex: 2 }), { items: canvasJob.items, progress: null }, true)).toBeNull();
   });
 
-  it('draws no result while results are hidden, and clamps an index left past the end', { tags: ['boundary'] }, () => {
+  it('draws no result while results are hidden, and clamps an index left past the end', { tags: ['boundary', 'condition'] }, () => {
     expect(overlayImageUrl(staging({ stagingShowResults: false }), canvasJob, true)).toBeNull();
     expect(overlayImageUrl(staging({ stagedIndex: 2, stagingGenerating: false }), canvasJob, true)).toBe('/b.png');
   });

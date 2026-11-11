@@ -12,8 +12,8 @@ afterEach(() => vi.unstubAllGlobals());
 const header = (wav: Uint8Array) => new TextDecoder().decode(wav.slice(0, 4)) + new TextDecoder().decode(wav.slice(8, 12));
 const samples = (wav: Uint8Array) => (wav.length - 44) / 2;
 
-describe('audioSynth', () => {
-  it('makes a WAV of the asked length, the same one for the same seed', { tags: ['condition'] }, () => {
+describe('audioSynth', { tags: [] }, () => {
+  it('makes a WAV of the asked length, the same one for the same seed', { tags: ['equivalence'] }, () => {
     const a = synthMusic(1, 2);
     expect(header(a)).toBe('RIFFWAVE');
     expect(samples(a)).toBe(2 * 22050);
@@ -56,7 +56,7 @@ describe('audioSynth', () => {
   });
 });
 
-describe('graphSource', () => {
+describe('graphSource', { tags: [] }, () => {
   it('reads the source picture of a prompt, or null when it reads none', { tags: ['condition'] }, () => {
     const graph = (image?: unknown): ComfyGraph => ({ prompt: image ? { b: { class_type: 'LoadImage', inputs: { image } } } : {} }) as unknown as ComfyGraph;
     expect(sourceOf(graph({ $image: 'cat.png' }))).toBe('cat.png');
@@ -64,7 +64,7 @@ describe('graphSource', () => {
   });
 });
 
-describe('videoSynth', () => {
+describe('videoSynth', { tags: [] }, () => {
   it('gives up where recording is not available', { tags: ['error-guessing'] }, async () => {
     expect(await synthesizeVideo(document.createElement('canvas'), { frames: 4, fps: 10 })).toBeNull();
   });

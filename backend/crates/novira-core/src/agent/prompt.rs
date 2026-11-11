@@ -123,7 +123,7 @@ mod tests {
         .unwrap()
     }
 
-    // tags: error-guessing, scenario
+    // tags: boundary, error-guessing
     #[test]
     fn the_turns_are_sent_in_order_and_only_an_absurd_history_is_cut() {
         // The window keeps the history to a token budget; the backend does not cut a normal one.
@@ -149,7 +149,7 @@ mod tests {
         assert!(p.contains("locale: en") && p.contains("screen: generate"));
     }
 
-    // tags: scenario
+    // tags: condition
     #[test]
     fn the_screen_and_the_extension_asked_about_are_sent() {
         let mut req = request(0);
@@ -176,7 +176,7 @@ mod tests {
         assert!(p.contains("words live in the cast") && p.contains("its words live in places"));
     }
 
-    // tags: error-guessing
+    // tags: equivalence
     #[test]
     fn the_rules_cover_tools_permission_and_what_the_assistant_cannot_do() {
         let p = build_prompt(&request(0));
@@ -201,7 +201,7 @@ mod tests {
         assert!(!p.contains("\"actions\"") && !p.contains("\"continue\""));
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn the_rules_say_how_to_take_a_correction() {
         let p = build_prompt(&request(0));
@@ -227,7 +227,7 @@ mod tests {
         assert!(comic.contains("instead of patching your last version"));
     }
 
-    // tags: condition
+    // tags: decision-table, condition
     #[test]
     fn the_trial_picture_setting_reaches_the_prompt_outside_the_comic() {
         let mut req = request(0);

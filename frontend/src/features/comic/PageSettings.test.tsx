@@ -53,8 +53,8 @@ afterEach(() => {
   setLocale('ja');
 });
 
-describe('the page settings', () => {
-  it('sets the number of panels, within the most a page holds', { tags: ['scenario'] }, async () => {
+describe('the page settings', { tags: [] }, () => {
+  it('sets the number of panels, within the most a page holds', { tags: ['boundary'] }, async () => {
     await startUp();
     setNum(t('comic.page.panelCount'), '5');
     expect(page().panels).toHaveLength(5);
@@ -64,7 +64,7 @@ describe('the page settings', () => {
     expect(page().panels).toHaveLength(1);
   });
 
-  it('changes the columns, the paper and the reading direction from their lists', { tags: ['scenario'] }, async () => {
+  it('changes the columns, the paper and the reading direction from their lists', { tags: ['equivalence', 'decision-table'] }, async () => {
     await startUp();
     choose(t('comic.page.columns'), /3/);
     expect(page().columns).toBe(3);
@@ -74,7 +74,7 @@ describe('the page settings', () => {
     expect(page().direction).toBe('ltr');
   });
 
-  it('writes the frame width, the margin and the inset, kept within their ranges', { tags: ['scenario'] }, async () => {
+  it('writes the frame width, the margin and the inset, kept within their ranges', { tags: ['boundary'] }, async () => {
     await startUp();
     setNum(t('comic.page.frameWidth'), '1.5');
     expect(page().frameMm).toBeCloseTo(1.5);
@@ -86,40 +86,48 @@ describe('the page settings', () => {
     expect(page().insetMm).toBe(2.5);
   });
 
-  it('writes the frame colour', { tags: ['scenario'] }, async () => {
+  it('writes the frame colour', { tags: ['equivalence'] }, async () => {
     await startUp();
     fireEvent.change(screen.getByTestId('comic-frame-color'), { target: { value: '#ff0000' } });
     expect(page().frameColor).toBe('#ff0000');
   });
 
-  it('sets the effect of the comic, and of the page or back to following the comic', { tags: ['scenario'] }, async () => {
-    await startUp();
-    choose(t('comic.effect.comic'), t('comic.effect.sepia'));
-    expect(project().effect).toBe('sepia');
-    choose(t('comic.effect.page'), t('comic.effect.mono'));
-    expect(page().effect).toBe('mono');
-    choose(t('comic.effect.page'), t('comic.effect.follow'));
-    expect(page().effect ?? null).toBeNull();
-  });
+  it(
+    'sets the effect of the comic, and of the page or back to following the comic',
+    { tags: ['decision-table', 'state-transition'] },
+    async () => {
+      await startUp();
+      choose(t('comic.effect.comic'), t('comic.effect.sepia'));
+      expect(project().effect).toBe('sepia');
+      choose(t('comic.effect.page'), t('comic.effect.mono'));
+      expect(page().effect).toBe('mono');
+      choose(t('comic.effect.page'), t('comic.effect.follow'));
+      expect(page().effect ?? null).toBeNull();
+    },
+  );
 
-  it('keeps the shapes button off while the layout is automatic, and resets hand-made shapes with it', { tags: ['scenario'] }, async () => {
-    await startUp();
-    const reset = screen.getByTestId('comic-shape-reset') as HTMLButtonElement;
-    expect(reset.disabled).toBe(true);
-    expect(screen.getByText(t('comic.page.autoLayout'))).toBeTruthy();
-    const quad = [
-      { x: 0, y: 0 },
-      { x: 1, y: 0 },
-      { x: 1, y: 1 },
-      { x: 0, y: 1 },
-    ];
-    act(() => {
-      useComic.setState((s) => ({ projects: s.projects.map((p) => ({ ...p, pages: p.pages.map((pg) => ({ ...pg, shapes: pg.panels.map(() => quad) })) })) }));
-    });
-    expect(reset.disabled).toBe(false);
-    expect(screen.getByText(t('comic.shape.custom'))).toBeTruthy();
-    fireEvent.click(reset);
-    expect(page().shapes).toBeNull();
-    expect(reset.disabled).toBe(true);
-  });
+  it(
+    'keeps the shapes button off while the layout is automatic, and resets hand-made shapes with it',
+    { tags: ['condition'] },
+    async () => {
+      await startUp();
+      const reset = screen.getByTestId('comic-shape-reset') as HTMLButtonElement;
+      expect(reset.disabled).toBe(true);
+      expect(screen.getByText(t('comic.page.autoLayout'))).toBeTruthy();
+      const quad = [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 1, y: 1 },
+        { x: 0, y: 1 },
+      ];
+      act(() => {
+        useComic.setState((s) => ({ projects: s.projects.map((p) => ({ ...p, pages: p.pages.map((pg) => ({ ...pg, shapes: pg.panels.map(() => quad) })) })) }));
+      });
+      expect(reset.disabled).toBe(false);
+      expect(screen.getByText(t('comic.shape.custom'))).toBeTruthy();
+      fireEvent.click(reset);
+      expect(page().shapes).toBeNull();
+      expect(reset.disabled).toBe(true);
+    },
+  );
 });

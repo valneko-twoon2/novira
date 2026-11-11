@@ -96,7 +96,7 @@ mod tests {
         json!({ "title": title, "pages": [{ "panels": [] }] })
     }
 
-    // tags: condition
+    // tags: scenario
     #[test]
     fn a_saved_comic_is_listed_with_the_document_as_it_was_saved() {
         let dir = tempfile::tempdir().unwrap();
@@ -123,7 +123,7 @@ mod tests {
         assert_eq!(listed[0].document, comic("second"));
     }
 
-    // tags: error-guessing
+    // tags: equivalence
     #[test]
     fn comics_are_listed_oldest_change_first() {
         let dir = tempfile::tempdir().unwrap();
@@ -140,7 +140,7 @@ mod tests {
         assert_eq!(ids, ["older", "newer"]);
     }
 
-    // tags: error-guessing
+    // tags: error-guessing, boundary
     #[test]
     fn ids_outside_the_rule_are_refused() {
         let dir = tempfile::tempdir().unwrap();
@@ -173,7 +173,7 @@ mod tests {
         assert!(backend.list_comics().unwrap().is_empty());
     }
 
-    // tags: error-guessing, boundary
+    // tags: boundary, error-guessing
     #[test]
     fn a_document_over_the_size_cap_is_refused_and_the_saved_one_stays() {
         let dir = tempfile::tempdir().unwrap();
@@ -186,7 +186,7 @@ mod tests {
         assert_eq!(listed[0].document, comic("good"));
     }
 
-    // tags: boundary, equivalence
+    // tags: boundary
     #[test]
     fn a_document_of_exactly_the_size_cap_is_accepted() {
         let dir = tempfile::tempdir().unwrap();

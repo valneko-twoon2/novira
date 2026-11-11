@@ -84,7 +84,7 @@ fn loaded_from(prompt: &Value, link: &Value) -> Value {
     }
 }
 
-// tags: boundary, decision-table
+// tags: scenario
 #[tokio::test]
 async fn guided_jobs_upload_the_mask_control_and_reference_pictures_and_use_each_where_it_belongs()
 {
@@ -155,7 +155,7 @@ async fn guidance_models_comfyui_cannot_see_are_named() {
     assert!(err.contains("missing-cn.safetensors"), "{err}");
 }
 
-// tags: scenario
+// tags: error-guessing
 #[tokio::test]
 async fn a_graph_that_needs_a_pack_the_engine_lacks_names_the_pack() {
     // The fake ComfyUI has none of the pack nodes.

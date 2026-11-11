@@ -81,7 +81,7 @@ describe('sending a picture to another screen', () => {
     expect(lastToast()).toBeUndefined();
   });
 
-  it('adds it as an image input of the workflow being edited', { tags: ['scenario'] }, () => {
+  it('adds it as an image input of the workflow being edited', { tags: ['equivalence'] }, () => {
     const add = vi.spyOn(useWorkflows.getState(), 'addImageInput').mockImplementation(() => undefined);
     const img = image('w');
     sendToWorkflow(img);
@@ -114,17 +114,21 @@ describe('copying a picture', () => {
   /** The picture the first write was given: a promise, settled when the picture has been read. */
   const givenItem = (write: ReturnType<typeof vi.fn>): Promise<Blob> => ((write.mock.calls[0]?.[0] ?? []) as Items)[0]?.items['image/png'] ?? Promise.reject(new Error('nothing was written'));
 
-  it('asks the clipboard at once, before the picture has been read, and reports success when it is on the clipboard', { tags: ['scenario'] }, async () => {
-    const write = stubClipboard();
-    let release: (b: Blob) => void = () => undefined;
-    vi.stubGlobal('fetch', vi.fn(() => new Promise((resolve) => (release = (b) => resolve({ ok: true, status: 200, blob: async () => b })))));
-    const done = copyImage(image('c'));
-    expect(write).toHaveBeenCalledTimes(1);
-    expect(lastToast()).toBeUndefined();
-    release(png());
-    await done;
-    expect(lastToast()?.status).toBe('success');
-  });
+  it(
+    'asks the clipboard at once, before the picture has been read, and reports success when it is on the clipboard',
+    { tags: ['state-transition'] },
+    async () => {
+      const write = stubClipboard();
+      let release: (b: Blob) => void = () => undefined;
+      vi.stubGlobal('fetch', vi.fn(() => new Promise((resolve) => (release = (b) => resolve({ ok: true, status: 200, blob: async () => b })))));
+      const done = copyImage(image('c'));
+      expect(write).toHaveBeenCalledTimes(1);
+      expect(lastToast()).toBeUndefined();
+      release(png());
+      await done;
+      expect(lastToast()?.status).toBe('success');
+    },
+  );
 
   it('puts nothing on the clipboard for a video or a sound, and says nothing', { tags: ['equivalence'] }, async () => {
     const write = stubClipboard();
@@ -187,29 +191,41 @@ describe('copying a picture', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('says the copy failed, with the reason, and writes the reason to the developer log, when the picture cannot be read', { tags: ['error-guessing'] }, async () => {
-    stubClipboard(vi.fn((items: Items) => (items[0]?.items['image/png'] ?? Promise.resolve()).then(() => undefined)));
-    vi.stubGlobal('fetch', answer(new Blob([]), 404));
-    await copyImage(image('gone'));
-    expect(lastToast()).toMatchObject({ status: 'error', description: expect.stringContaining('404') });
-    expect(useDevLog.getState().entries.at(-1)).toMatchObject({ level: 'error', source: 'gallery', message: expect.stringContaining('gone') });
-  });
+  it(
+    'says the copy failed, with the reason, and writes the reason to the developer log, when the picture cannot be read',
+    { tags: ['error-guessing'] },
+    async () => {
+      stubClipboard(vi.fn((items: Items) => (items[0]?.items['image/png'] ?? Promise.resolve()).then(() => undefined)));
+      vi.stubGlobal('fetch', answer(new Blob([]), 404));
+      await copyImage(image('gone'));
+      expect(lastToast()).toMatchObject({ status: 'error', description: expect.stringContaining('404') });
+      expect(useDevLog.getState().entries.at(-1)).toMatchObject({ level: 'error', source: 'gallery', message: expect.stringContaining('gone') });
+    },
+  );
 
-  it('reports a clipboard that refuses the write, naming the browser error in the developer log', { tags: ['error-guessing'] }, async () => {
-    stubClipboard(vi.fn().mockRejectedValue(Object.assign(new Error('Document is not focused.'), { name: 'NotAllowedError' })));
-    vi.stubGlobal('fetch', answer(png()));
-    await copyImage(image('n'));
-    expect(lastToast()?.status).toBe('error');
-    expect(useDevLog.getState().entries.at(-1)?.message).toContain('NotAllowedError');
-  });
+  it(
+    'reports a clipboard that refuses the write, naming the browser error in the developer log',
+    { tags: ['error-guessing'] },
+    async () => {
+      stubClipboard(vi.fn().mockRejectedValue(Object.assign(new Error('Document is not focused.'), { name: 'NotAllowedError' })));
+      vi.stubGlobal('fetch', answer(png()));
+      await copyImage(image('n'));
+      expect(lastToast()?.status).toBe('error');
+      expect(useDevLog.getState().entries.at(-1)?.message).toContain('NotAllowedError');
+    },
+  );
 
-  it('warns, and does not read the picture, where the browser has no picture clipboard', { tags: ['error-guessing'] }, async () => {
-    vi.stubGlobal('ClipboardItem', undefined);
-    vi.stubGlobal('navigator', { clipboard: { write: vi.fn() } });
-    const fetchMock = vi.fn();
-    vi.stubGlobal('fetch', fetchMock);
-    await copyImage(image('u'));
-    expect(lastToast()?.status).toBe('warning');
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
+  it(
+    'warns, and does not read the picture, where the browser has no picture clipboard',
+    { tags: ['error-guessing', 'condition'] },
+    async () => {
+      vi.stubGlobal('ClipboardItem', undefined);
+      vi.stubGlobal('navigator', { clipboard: { write: vi.fn() } });
+      const fetchMock = vi.fn();
+      vi.stubGlobal('fetch', fetchMock);
+      await copyImage(image('u'));
+      expect(lastToast()?.status).toBe('warning');
+      expect(fetchMock).not.toHaveBeenCalled();
+    },
+  );
 });

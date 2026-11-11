@@ -32,7 +32,7 @@ describe('low-memory mode', () => {
     expect(useToasts.getState().toasts[0]).toMatchObject({ status: 'error', description: 'cannot write settings.json' });
   });
 
-  it('offers to turn it on only when it is off on novira’s own ComfyUI', { tags: ['condition'] }, () => {
+  it('offers to turn it on only when it is off on novira’s own ComfyUI', { tags: ['decision-table'] }, () => {
     expect(canTurnOnLowMemory(null)).toBe(false);
     expect(canTurnOnLowMemory({ enabled: false, ownedEngine: true, pendingRestart: false })).toBe(true);
     expect(canTurnOnLowMemory({ enabled: true, ownedEngine: true, pendingRestart: true })).toBe(false);

@@ -52,7 +52,7 @@ fn a_picture_made_on_civitai_names_its_checkpoint_as_an_air_address_and_its_size
     assert_eq!(s.resources[0].version_id.as_deref(), Some("128713"));
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn older_pictures_list_resources_by_name() {
     let body = json!({"items": [image(1, json!({
@@ -111,7 +111,7 @@ fn values_out_of_range_or_of_the_wrong_kind_are_dropped_not_trusted() {
     );
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn numbers_written_as_text_are_read() {
     let body = json!({"items": [image(8, json!({"prompt": "p", "steps": "30", "cfgScale": "4.5", "seed": "123", "Size": " 832 x 1216 "}))]});
@@ -123,7 +123,7 @@ fn numbers_written_as_text_are_read() {
     assert_eq!((s.width, s.height), (Some(832), Some(1216)));
 }
 
-// tags: condition
+// tags: boundary
 #[test]
 fn a_size_with_only_one_side_is_dropped() {
     let body = json!({"items": [image(9, json!({"prompt": "p", "width": 512}))]});
@@ -141,7 +141,7 @@ fn the_resources_of_one_picture_are_capped() {
     assert_eq!(map_samples(&body)[0].resources.len(), 16);
 }
 
-// tags: condition
+// tags: equivalence, error-guessing
 #[test]
 fn air_addresses_give_their_kind_and_version() {
     assert_eq!(
@@ -172,7 +172,7 @@ fn the_query_asks_for_the_plain_examples_and_the_mature_ones_only_when_allowed()
     assert_eq!(get(&both[1], "nsfw").as_deref(), Some("true"));
 }
 
-// tags: boundary
+// tags: boundary, error-guessing
 #[test]
 fn a_version_id_is_digits_only_and_short() {
     assert!(is_version_id("128713"));

@@ -6,8 +6,8 @@ import { cameraFrame, liftPoses, personJoints, placeLocal, project, toLocal } fr
 
 const straight: RoughCamera = { target: { x: 0, y: 1, z: 0 }, yaw: 0, pitch: 0, distance: 3, fov: 40 };
 
-describe('the camera of a rough', () => {
-  it('stands in front of what it looks at, its picture upright', { tags: ['condition'] }, () => {
+describe('the camera of a rough', { tags: [] }, () => {
+  it('stands in front of what it looks at, its picture upright', { tags: ['equivalence'] }, () => {
     const frame = cameraFrame(straight);
     expect(frame.position.x).toBeCloseTo(0);
     expect(frame.position.y).toBeCloseTo(1);
@@ -17,14 +17,14 @@ describe('the camera of a rough', () => {
     expect(frame.up.y).toBeCloseTo(1);
   });
 
-  it('looks down on the set when tilted up, and from the side when turned', { tags: ['condition'] }, () => {
+  it('looks down on the set when tilted up, and from the side when turned', { tags: ['equivalence'] }, () => {
     expect(cameraFrame({ ...straight, pitch: 0.5 }).position.y).toBeGreaterThan(1);
     const side = cameraFrame({ ...straight, yaw: Math.PI / 2 });
     expect(side.position.x).toBeCloseTo(3);
     expect(side.forward.x).toBeCloseTo(-1);
   });
 
-  it('puts what it looks at in the middle of the picture, right to the right and up to the top', { tags: ['condition'] }, () => {
+  it('puts what it looks at in the middle of the picture, right to the right and up to the top', { tags: ['equivalence'] }, () => {
     const aspect = 1.5;
     expect(project(straight, aspect, straight.target)).toMatchObject({ x: 0.5, y: 0.5, depth: 3 });
     const right = project(straight, aspect, v3(0.5, 1, 0));
@@ -38,8 +38,8 @@ describe('the camera of a rough', () => {
   });
 });
 
-describe('the people of a rough', () => {
-  it('places a point of its own space on the set and back', { tags: ['condition'] }, () => {
+describe('the people of a rough', { tags: [] }, () => {
+  it('places a point of its own space on the set and back', { tags: ['equivalence'] }, () => {
     const at = { x: 1, y: 0.5, z: -2, yaw: 0.7 };
     const p = v3(0.3, 1.2, -0.4);
     const back = toLocal(at, placeLocal(at, p));
@@ -48,17 +48,21 @@ describe('the people of a rough', () => {
     expect(back.z).toBeCloseTo(p.z);
   });
 
-  it('shows a person facing the camera with the right side on the left of the picture, and one turned away the other way round', { tags: ['condition'] }, () => {
-    const toward = personJoints(newPerson(0, 0, 0));
-    const away = personJoints(newPerson(0, 0, Math.PI));
-    const x = (joints: typeof toward, i: number) => project(straight, 1, joints[i]!).x;
-    expect(x(toward, J.rShoulder)).toBeLessThan(x(toward, J.lShoulder));
-    expect(x(away, J.rShoulder)).toBeGreaterThan(x(away, J.lShoulder));
-    // The face is in front of the head, so it is nearer the camera only when the person faces it.
-    expect(project(straight, 1, toward[J.nose]!).depth).toBeLessThan(project(straight, 1, away[J.nose]!).depth);
-  });
+  it(
+    'shows a person facing the camera with the right side on the left of the picture, and one turned away the other way round',
+    { tags: ['condition'] },
+    () => {
+      const toward = personJoints(newPerson(0, 0, 0));
+      const away = personJoints(newPerson(0, 0, Math.PI));
+      const x = (joints: typeof toward, i: number) => project(straight, 1, joints[i]!).x;
+      expect(x(toward, J.rShoulder)).toBeLessThan(x(toward, J.lShoulder));
+      expect(x(away, J.rShoulder)).toBeGreaterThan(x(away, J.lShoulder));
+      // The face is in front of the head, so it is nearer the camera only when the person faces it.
+      expect(project(straight, 1, toward[J.nose]!).depth).toBeLessThan(project(straight, 1, away[J.nose]!).depth);
+    },
+  );
 
-  it.each([0, 0.5, 1])('stands a flat pose up so the camera, tilted by %s, sees it as it was', { tags: ['condition'] }, (pitch) => {
+  it.each([0, 0.5, 1])('stands a flat pose up so the camera, tilted by %s, sees it as it was', { tags: ['equivalence'] }, (pitch) => {
     // A camera that looks down a long way saw an upright figure shortened and moved off the pose.
     const camera = { ...defaultCamera(), pitch, yaw: 0.6 };
     const aspect = 0.75;
@@ -73,11 +77,15 @@ describe('the people of a rough', () => {
     expect(person!.yaw).toBeCloseTo(camera.yaw);
   });
 
-  it('turns a flat figure away from the camera when its right shoulder is on the right, and skips one with no torso', { tags: ['condition'] }, () => {
-    const camera = defaultCamera();
-    const away = personJoints(newPerson(0, 0, Math.PI)).map((p) => project(camera, 1, p));
-    expect(liftPoses([away], camera, 1)[0]!.yaw).toBeCloseTo(camera.yaw + Math.PI);
-    const dot = Array.from({ length: 18 }, () => ({ x: 0.5, y: 0.5 }));
-    expect(liftPoses([dot, away.slice(0, 5)], camera, 1)).toEqual([]);
-  });
+  it(
+    'turns a flat figure away from the camera when its right shoulder is on the right, and skips one with no torso',
+    { tags: ['condition'] },
+    () => {
+      const camera = defaultCamera();
+      const away = personJoints(newPerson(0, 0, Math.PI)).map((p) => project(camera, 1, p));
+      expect(liftPoses([away], camera, 1)[0]!.yaw).toBeCloseTo(camera.yaw + Math.PI);
+      const dot = Array.from({ length: 18 }, () => ({ x: 0.5, y: 0.5 }));
+      expect(liftPoses([dot, away.slice(0, 5)], camera, 1)).toEqual([]);
+    },
+  );
 });

@@ -92,15 +92,19 @@ afterEach(() => {
   useComic.setState({ pending: {}, sheetPending: {} });
 });
 
-describe('queueing panels', () => {
-  it('stops at the first panel the queue refuses, says why, and leaves only the queued panel waiting for its picture', { tags: ['error-guessing', 'state-transition'] }, async () => {
-    const ids = seed();
-    const { spy } = mockQueue(101, (n) => (n === 2 ? 'queue is full' : undefined));
-    expect(await drawPanels(ids)).toBe(1);
-    expect(spy).toHaveBeenCalledTimes(2);
-    expect(useComic.getState().pending).toEqual({ 101: ids[0] });
-    expect(toasts()).toEqual([failed('queue is full'), enqueued(1)]);
-  });
+describe('queueing panels', { tags: [] }, () => {
+  it(
+    'stops at the first panel the queue refuses, says why, and leaves only the queued panel waiting for its picture',
+    { tags: ['error-guessing'] },
+    async () => {
+      const ids = seed();
+      const { spy } = mockQueue(101, (n) => (n === 2 ? 'queue is full' : undefined));
+      expect(await drawPanels(ids)).toBe(1);
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(useComic.getState().pending).toEqual({ 101: ids[0] });
+      expect(toasts()).toEqual([failed('queue is full'), enqueued(1)]);
+    },
+  );
 
   it('skips a panel that is gone or has no prompt, and draws the rest', { tags: ['error-guessing'] }, async () => {
     const ids = seed();
@@ -114,19 +118,23 @@ describe('queueing panels', () => {
   });
 });
 
-describe('the characters\' reference pictures before the panels', () => {
-  it('draws the panels from the words alone when a portrait cannot be queued, and tries no other portrait', { tags: ['error-guessing', 'state-transition'] }, async () => {
-    const ids = seed([A, C]);
-    // The queue refuses every portrait, so a second try would show as a second refusal.
-    const { prompts } = mockQueue(121, (_, r) => (r.params.positivePrompt.includes('white background') ? new Error('engine is down') : undefined));
-    expect(await drawPanels(ids)).toBe(3);
-    // One refused portrait, then the three panels: no second portrait, and no wait for a picture that was never queued.
-    expect(prompts()).toHaveLength(4);
-    expect(prompts()[0]).toContain('white background');
-    expect(prompts().slice(1).every((p) => !p.includes('white background'))).toBe(true);
-    expect(useComic.getState().projects[0]!.cast.map((c) => c.imageName)).toEqual([null, null]);
-    expect(toasts()).toEqual([failed('engine is down'), enqueued(3)]);
-  });
+describe('the characters\' reference pictures before the panels', { tags: [] }, () => {
+  it(
+    'draws the panels from the words alone when a portrait cannot be queued, and tries no other portrait',
+    { tags: ['error-guessing'] },
+    async () => {
+      const ids = seed([A, C]);
+      // The queue refuses every portrait, so a second try would show as a second refusal.
+      const { prompts } = mockQueue(121, (_, r) => (r.params.positivePrompt.includes('white background') ? new Error('engine is down') : undefined));
+      expect(await drawPanels(ids)).toBe(3);
+      // One refused portrait, then the three panels: no second portrait, and no wait for a picture that was never queued.
+      expect(prompts()).toHaveLength(4);
+      expect(prompts()[0]).toContain('white background');
+      expect(prompts().slice(1).every((p) => !p.includes('white background'))).toBe(true);
+      expect(useComic.getState().projects[0]!.cast.map((c) => c.imageName)).toEqual([null, null]);
+      expect(toasts()).toEqual([failed('engine is down'), enqueued(3)]);
+    },
+  );
 
   it('does not wait for a portrait the queue answered with no item', { tags: ['error-guessing'] }, async () => {
     const ids = seed([A]);
@@ -136,24 +144,28 @@ describe('the characters\' reference pictures before the panels', () => {
     expect(toasts()).toEqual([enqueued(3)]);
   });
 
-  it('queues the panels only once every character\'s portrait has come, however long the later one takes', { tags: ['state-transition', 'boundary'] }, async () => {
-    vi.useFakeTimers();
-    const ids = seed([A, C]);
-    const { prompts } = mockQueue(141);
-    const drawing = drawPanels(ids);
-    await vi.advanceTimersByTimeAsync(0);
-    expect(prompts()).toHaveLength(2);
-    finishPortrait(141, 'grandpa.png');
-    // A picture takes a minute or so: the other portrait is still waited for.
-    await vi.advanceTimersByTimeAsync(60_000);
-    expect(prompts()).toHaveLength(2);
-    finishPortrait(142, 'mina.png');
-    await vi.advanceTimersByTimeAsync(0);
-    expect(await drawing).toBe(3);
-    expect(useComic.getState().projects[0]!.cast.map((c) => c.imageName)).toEqual(['grandpa.png', 'mina.png']);
-  });
+  it(
+    'queues the panels only once every character\'s portrait has come, however long the later one takes',
+    { tags: ['state-transition'] },
+    async () => {
+      vi.useFakeTimers();
+      const ids = seed([A, C]);
+      const { prompts } = mockQueue(141);
+      const drawing = drawPanels(ids);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(prompts()).toHaveLength(2);
+      finishPortrait(141, 'grandpa.png');
+      // A picture takes a minute or so: the other portrait is still waited for.
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(prompts()).toHaveLength(2);
+      finishPortrait(142, 'mina.png');
+      await vi.advanceTimersByTimeAsync(0);
+      expect(await drawing).toBe(3);
+      expect(useComic.getState().projects[0]!.cast.map((c) => c.imageName)).toEqual(['grandpa.png', 'mina.png']);
+    },
+  );
 
-  it('gives the portrait to the character of its own comic when another comic is open', { tags: ['error-guessing'] }, async () => {
+  it('gives the portrait to the character of its own comic when another comic is open', { tags: ['condition'] }, async () => {
     const walk = makeProject([A]);
     // The open comic has a character of the same id, which must keep its own picture.
     const other = { ...newProject('Other'), cast: [{ ...A, name: 'Someone else', imageName: 'else.png' }] };
@@ -187,7 +199,7 @@ describe('the characters\' reference pictures before the panels', () => {
   });
 });
 
-describe('making a character\'s sheet', () => {
+describe('making a character\'s sheet', { tags: [] }, () => {
   const withFront = (over: Partial<ComicCharacter> = {}) => {
     seed([{ ...A, imageName: 'a.png', ...over }]);
     useGallery.setState({ images: [{ name: 'a.png', url: 'novira-image://a.png' } as ImageDTO] });
@@ -203,7 +215,7 @@ describe('making a character\'s sheet', () => {
     expect(toasts()).toEqual([failed('engine is down'), { status: 'error', title: t('comic.sheet.noFront') }]);
   });
 
-  it('stops at the first view the queue refuses and keeps the views already queued', { tags: ['error-guessing', 'state-transition'] }, async () => {
+  it('stops at the first view the queue refuses and keeps the views already queued', { tags: ['error-guessing'] }, async () => {
     withFront();
     const { spy } = mockQueue(211, (n) => (n === 2 ? 'queue is full' : undefined));
     expect(await makeSheet('a')).toBe(1);
@@ -231,8 +243,8 @@ describe('making a character\'s sheet', () => {
   });
 });
 
-describe('waiting for the panels\' pictures', () => {
-  it('answers at once when the engine refused every panel as it was queued', { tags: ['error-guessing', 'state-transition'] }, async () => {
+describe('waiting for the panels\' pictures', { tags: [] }, () => {
+  it('answers at once when the engine refused every panel as it was queued', { tags: ['error-guessing'] }, async () => {
     vi.useFakeTimers();
     const ids = seed();
     // The failure reaches the queue store before the enqueue call returns (see bindComicItem).
@@ -249,7 +261,7 @@ describe('waiting for the panels\' pictures', () => {
     expect(await waiting).toBe(3);
   });
 
-  it('does not wait longer for a change of the queue that does not move these pictures', { tags: ['error-guessing'] }, async () => {
+  it('does not wait longer for a change of the queue that does not move these pictures', { tags: ['condition'] }, async () => {
     vi.useFakeTimers();
     const ids = seed();
     mockQueue(311);

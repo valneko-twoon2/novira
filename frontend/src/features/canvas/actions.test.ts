@@ -55,8 +55,8 @@ function stage(...images: ImageDTO[]) {
   for (const i of images) c().addStagedImage(i.name);
 }
 
-describe('importing a picture', () => {
-  it('adds it as a layer of the asked type, fitted into the bbox, and shows the canvas', { tags: ['condition'] }, () => {
+describe('importing a picture', { tags: [] }, () => {
+  it('adds it as a layer of the asked type, fitted into the bbox, and shows the canvas', { tags: ['equivalence'] }, () => {
     importImage(image('a'), 'raster');
     expect(c().entities.map((e) => e.type)).toEqual(['raster']);
     const obj = c().entities[0]!.objects[0]!;
@@ -65,14 +65,14 @@ describe('importing a picture', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('starts a new canvas the size of the picture for the new-canvas targets', { tags: ['condition'] }, () => {
+  it('starts a new canvas the size of the picture for the new-canvas targets', { tags: ['equivalence'] }, () => {
     importImage(image('old'), 'raster');
     importImage(image('b', { width: 640, height: 320 }), 'newCanvasControl');
     expect(c().entities.map((e) => e.type)).toEqual(['control']);
     expect(c().bbox).toMatchObject({ x: 0, y: 0, width: 640, height: 320 });
   });
 
-  it('adds a regional layer holding the picture as its reference', { tags: ['condition'] }, () => {
+  it('adds a regional layer holding the picture as its reference', { tags: ['equivalence'] }, () => {
     importImage(image('r'), 'regional');
     const e = c().entities[0]!;
     expect(e.type).toBe('regional');
@@ -80,7 +80,7 @@ describe('importing a picture', () => {
   });
 });
 
-describe('global reference images', () => {
+describe('global reference images', { tags: [] }, () => {
   it('adds one with the picture, or an empty one when there is none', { tags: ['boundary'] }, () => {
     addGlobalRefImage(image('a'));
     addGlobalRefImage(null);
@@ -91,8 +91,8 @@ describe('global reference images', () => {
   });
 });
 
-describe('commands that need layers', () => {
-  it('says there is nothing to merge with fewer than two visible raster layers', { tags: ['condition'] }, async () => {
+describe('commands that need layers', { tags: [] }, () => {
+  it('says there is nothing to merge with fewer than two visible raster layers', { tags: ['boundary'] }, async () => {
     c().addEntity('raster');
     await mergeVisible();
     expect(lastToast()?.status).toBe('info');
@@ -115,8 +115,8 @@ describe('commands that need layers', () => {
   });
 });
 
-describe('staging', () => {
-  it('accepts the shown result as a raster layer and clears the staging area', { tags: ['condition'] }, () => {
+describe('staging', { tags: [] }, () => {
+  it('accepts the shown result as a raster layer and clears the staging area', { tags: ['scenario'] }, () => {
     stage(image('a'), image('b'));
     c().setStagedIndex(0);
     acceptStaged();
@@ -125,7 +125,7 @@ describe('staging', () => {
     expect(c().entities[0]!.objects[0]).toMatchObject({ imageName: 'a' });
   });
 
-  it('does nothing when the shown result is no longer in the gallery', { tags: ['regression'] }, () => {
+  it('does nothing when the shown result is no longer in the gallery', { tags: ['regression', 'error-guessing'] }, () => {
     c().addStagedImage('gone');
     acceptStaged();
     expect(c().entities).toEqual([]);
@@ -141,7 +141,7 @@ describe('staging', () => {
     expect(useGallery.getState().images.map((i) => i.name)).toEqual(['a', 'keep']);
   });
 
-  it('discards the shown result, and everything when asked', { tags: ['decision-table'] }, async () => {
+  it('discards the shown result, and everything when asked', { tags: ['decision-table', 'state-transition'] }, async () => {
     const del = vi.spyOn(backend, 'deleteImages').mockResolvedValue(undefined);
     stage(image('a', { isIntermediate: true }), image('b', { isIntermediate: true }));
     c().setStagedIndex(1);
@@ -153,7 +153,7 @@ describe('staging', () => {
     await vi.waitFor(() => expect(del).toHaveBeenLastCalledWith(['a']));
   });
 
-  it('does nothing when there is nothing staged', { tags: ['condition'] }, () => {
+  it('does nothing when there is nothing staged', { tags: ['boundary'] }, () => {
     const del = vi.spyOn(backend, 'deleteImages');
     discardCurrentStaged();
     discardAllStaged();
@@ -193,7 +193,7 @@ describe('staging', () => {
     expect(lastToast()?.status).toBe('error');
   });
 
-  it('saves the shown result to the gallery and says so', { tags: ['condition'] }, async () => {
+  it('saves the shown result to the gallery and says so', { tags: ['equivalence'] }, async () => {
     stage(image('a', { isIntermediate: true }));
     vi.spyOn(backend, 'updateImages').mockResolvedValue([image('a')]);
     await saveStagedToGallery();
@@ -201,7 +201,7 @@ describe('staging', () => {
   });
 });
 
-describe('random poses', () => {
+describe('random poses', { tags: [] }, () => {
   const poses = (id: string) => c().entities.find((e) => e.id === id)!.objects as PoseObject[];
 
   it('adds one pose filling the bbox to a new control layer when no control layer is selected', { tags: ['condition'] }, () => {
@@ -216,32 +216,40 @@ describe('random poses', () => {
     expect(poses(control.id)[0]!.width).toBe(4);
   });
 
-  it('gives every pose of the layer a new shape in its place, as one undo step, and keeps other objects', { tags: ['state-transition', 'decision-table'] }, () => {
-    const id = c().addEntity('control');
-    randomizePoses(id, seededRandom(1));
-    randomizePoses(id, seededRandom(2));
-    c().updateEntity(id, { objects: [...c().entities[0]!.objects, ...poses(id).map((p) => ({ ...p, id: 'second' }))] }, { history: false });
-    const rect = { kind: 'rect', id: 'r', x: 0, y: 0, width: 4, height: 4, color: { r: 0, g: 0, b: 0, a: 1 } } as const;
-    c().addObject(id, rect);
-    const before = poses(id);
-    const past = c().past.length;
-    randomizePoses(id, seededRandom(9));
-    expect(poses(id).map((p) => p.id)).toEqual([before[0]!.id, 'second', 'r']);
-    expect(poses(id)[0]!.points).not.toEqual(before[0]!.points);
-    expect(poses(id)[2]).toBe(before[2]);
-    expect(c().past.length).toBe(past + 1);
-  });
+  it(
+    'gives every pose of the layer a new shape in its place, as one undo step, and keeps other objects',
+    { tags: ['state-transition'] },
+    () => {
+      const id = c().addEntity('control');
+      randomizePoses(id, seededRandom(1));
+      randomizePoses(id, seededRandom(2));
+      c().updateEntity(id, { objects: [...c().entities[0]!.objects, ...poses(id).map((p) => ({ ...p, id: 'second' }))] }, { history: false });
+      const rect = { kind: 'rect', id: 'r', x: 0, y: 0, width: 4, height: 4, color: { r: 0, g: 0, b: 0, a: 1 } } as const;
+      c().addObject(id, rect);
+      const before = poses(id);
+      const past = c().past.length;
+      randomizePoses(id, seededRandom(9));
+      expect(poses(id).map((p) => p.id)).toEqual([before[0]!.id, 'second', 'r']);
+      expect(poses(id)[0]!.points).not.toEqual(before[0]!.points);
+      expect(poses(id)[2]).toBe(before[2]);
+      expect(c().past.length).toBe(past + 1);
+    },
+  );
 
-  it('makes the new layer follow the pose fully, with an OpenPose model that fits the main model', { tags: ['condition'] }, () => {
-    const model = (key: string, name: string, base: string, type = 'controlnet') => ({ key, name, base, type, path: `${name}.safetensors` }) as unknown as ModelConfig;
-    useModels.setState({ models: [model('main', 'main', 'sdxl', 'main'), model('op15', 'openpose-sd15', 'sd-1'), model('opxl', 'openpose-sdxl', 'sdxl')] });
-    useParams.setState({ modelKey: 'main' });
-    const first = addPoseLayer();
-    expect(c().entities.find((e) => e.id === first)).toMatchObject({ type: 'control', modelKey: 'opxl', weight: 1, beginEnd: [0, 1], withTransparencyEffect: false });
-    useModels.setState({ models: [] });
-    const second = addPoseLayer();
-    expect(c().entities.find((e) => e.id === second)).toMatchObject({ modelKey: null, weight: 1 });
-  });
+  it(
+    'makes the new layer follow the pose fully, with an OpenPose model that fits the main model',
+    { tags: ['condition', 'decision-table'] },
+    () => {
+      const model = (key: string, name: string, base: string, type = 'controlnet') => ({ key, name, base, type, path: `${name}.safetensors` }) as unknown as ModelConfig;
+      useModels.setState({ models: [model('main', 'main', 'sdxl', 'main'), model('op15', 'openpose-sd15', 'sd-1'), model('opxl', 'openpose-sdxl', 'sdxl')] });
+      useParams.setState({ modelKey: 'main' });
+      const first = addPoseLayer();
+      expect(c().entities.find((e) => e.id === first)).toMatchObject({ type: 'control', modelKey: 'opxl', weight: 1, beginEnd: [0, 1], withTransparencyEffect: false });
+      useModels.setState({ models: [] });
+      const second = addPoseLayer();
+      expect(c().entities.find((e) => e.id === second)).toMatchObject({ modelKey: null, weight: 1 });
+    },
+  );
 
   it('warns and changes nothing on a locked layer', { tags: ['condition'] }, () => {
     const id = c().addEntity('control', { isLocked: true });
@@ -250,7 +258,7 @@ describe('random poses', () => {
     expect(lastToast()).toMatchObject({ status: 'warning' });
   });
 
-  it('turns and scales a layer of poses by its joints, so it stays editable', { tags: ['decision-table'] }, async () => {
+  it('turns and scales a layer of poses by its joints, so it stays editable', { tags: ['equivalence'] }, async () => {
     const id = c().addEntity('control');
     randomizePoses(id, seededRandom(4));
     const before = poses(id)[0]!;
@@ -261,39 +269,47 @@ describe('random poses', () => {
   });
 });
 
-describe('poses from the assistant', () => {
+describe('poses from the assistant', { tags: [] }, () => {
   const control = () => c().entities.find((e) => e.type === 'control')!;
   const poses = () => control().objects.filter((o): o is PoseObject => o.kind === 'pose');
 
-  it('places the people on a new pose layer, replaces them next time and adds when asked', { tags: ['condition'] }, () => {
-    c().setBbox({ x: 0, y: 0, width: 512, height: 512 }, { history: false, syncParams: false });
-    expect(setPoses([{ x: 0.3 }, { x: 0.7, size: 0.5 }], false)).toBe(true);
-    expect(c().entities.filter((e) => e.type === 'control')).toHaveLength(1);
-    expect(poses()).toHaveLength(2);
-    expect(c().selectedEntityId).toBe(control().id);
-    expect(jointBounds(poses()[0]!)!.x).toBeLessThan(jointBounds(poses()[1]!)!.x);
-    expect(setPoses([{ lean: 10 }], false)).toBe(true);
-    expect(poses()).toHaveLength(1);
-    expect(setPoses([{ x: 0.2 }], true)).toBe(true);
-    expect(poses()).toHaveLength(2);
-    expect(c().entities.filter((e) => e.type === 'control')).toHaveLength(1);
-  });
+  it(
+    'places the people on a new pose layer, replaces them next time and adds when asked',
+    { tags: ['condition', 'state-transition'] },
+    () => {
+      c().setBbox({ x: 0, y: 0, width: 512, height: 512 }, { history: false, syncParams: false });
+      expect(setPoses([{ x: 0.3 }, { x: 0.7, size: 0.5 }], false)).toBe(true);
+      expect(c().entities.filter((e) => e.type === 'control')).toHaveLength(1);
+      expect(poses()).toHaveLength(2);
+      expect(c().selectedEntityId).toBe(control().id);
+      expect(jointBounds(poses()[0]!)!.x).toBeLessThan(jointBounds(poses()[1]!)!.x);
+      expect(setPoses([{ lean: 10 }], false)).toBe(true);
+      expect(poses()).toHaveLength(1);
+      expect(setPoses([{ x: 0.2 }], true)).toBe(true);
+      expect(poses()).toHaveLength(2);
+      expect(c().entities.filter((e) => e.type === 'control')).toHaveLength(1);
+    },
+  );
 
-  it('keeps other objects of the layer, makes one undo step and uses a new layer when the selected one is locked', { tags: ['state-transition'] }, () => {
-    const id = c().addEntity('control');
-    const rect = { kind: 'rect', id: 'r', x: 0, y: 0, width: 4, height: 4, color: { r: 0, g: 0, b: 0, a: 1 } } as const;
-    c().addObject(id, rect);
-    const past = c().past.length;
-    setPoses([{}], false);
-    expect(c().past.length).toBe(past + 1);
-    expect(c().entities.find((e) => e.id === id)!.objects.map((o) => o.kind)).toEqual(['rect', 'pose']);
-    c().updateEntity(id, { isLocked: true });
-    setPoses([{}], false);
-    expect(c().entities.filter((e) => e.type === 'control')).toHaveLength(2);
-    expect(c().entities.find((e) => e.id === id)!.objects).toHaveLength(2);
-  });
+  it(
+    'keeps other objects of the layer, makes one undo step and uses a new layer when the selected one is locked',
+    { tags: ['decision-table', 'state-transition'] },
+    () => {
+      const id = c().addEntity('control');
+      const rect = { kind: 'rect', id: 'r', x: 0, y: 0, width: 4, height: 4, color: { r: 0, g: 0, b: 0, a: 1 } } as const;
+      c().addObject(id, rect);
+      const past = c().past.length;
+      setPoses([{}], false);
+      expect(c().past.length).toBe(past + 1);
+      expect(c().entities.find((e) => e.id === id)!.objects.map((o) => o.kind)).toEqual(['rect', 'pose']);
+      c().updateEntity(id, { isLocked: true });
+      setPoses([{}], false);
+      expect(c().entities.filter((e) => e.type === 'control')).toHaveLength(2);
+      expect(c().entities.find((e) => e.id === id)!.objects).toHaveLength(2);
+    },
+  );
 
-  it('places at most four people and nothing when nobody was described', { tags: ['boundary'] }, () => {
+  it('places at most four people and nothing when nobody was described', { tags: ['boundary', 'error-guessing'] }, () => {
     expect(setPoses([null, 3, 'x', []], false)).toBe(false);
     expect(c().entities).toHaveLength(0);
     setPoses([{}, {}, {}, {}, {}, {}], false);
@@ -309,24 +325,28 @@ describe('poses from the assistant', () => {
     expect(posesForAssistant()).toEqual({ poses: [] });
   });
 });
-describe('poses found in a picture', () => {
+describe('poses found in a picture', { tags: [] }, () => {
   const control = () => c().entities.find((e) => e.type === 'control')!;
   const poses = () => control().objects.filter((o): o is PoseObject => o.kind === 'pose');
   const person = (x: number, hidden: number[] = []) => ({ points: Array.from({ length: 36 }, (_, i) => (i % 2 === 0 ? x : 0.2 + (i / 2) * 0.03)), hidden });
 
-  it('places the people on a new pose layer, replaces them next time and adds when asked', { tags: ['condition'] }, () => {
-    c().setBbox({ x: 0, y: 0, width: 512, height: 512 }, { history: false, syncParams: false });
-    expect(placeExtractedPoses({ people: [person(0.3), person(0.7)], aspect: 1 }, false)).toBe(true);
-    expect(c().entities.filter((e) => e.type === 'control')).toHaveLength(1);
-    expect(poses()).toHaveLength(2);
-    expect(c().selectedEntityId).toBe(control().id);
-    expect(placeExtractedPoses({ people: [person(0.5)], aspect: 1 }, false)).toBe(true);
-    expect(poses()).toHaveLength(1);
-    expect(placeExtractedPoses({ people: [person(0.2)], aspect: 1 }, true)).toBe(true);
-    expect(poses()).toHaveLength(2);
-  });
+  it(
+    'places the people on a new pose layer, replaces them next time and adds when asked',
+    { tags: ['condition', 'state-transition'] },
+    () => {
+      c().setBbox({ x: 0, y: 0, width: 512, height: 512 }, { history: false, syncParams: false });
+      expect(placeExtractedPoses({ people: [person(0.3), person(0.7)], aspect: 1 }, false)).toBe(true);
+      expect(c().entities.filter((e) => e.type === 'control')).toHaveLength(1);
+      expect(poses()).toHaveLength(2);
+      expect(c().selectedEntityId).toBe(control().id);
+      expect(placeExtractedPoses({ people: [person(0.5)], aspect: 1 }, false)).toBe(true);
+      expect(poses()).toHaveLength(1);
+      expect(placeExtractedPoses({ people: [person(0.2)], aspect: 1 }, true)).toBe(true);
+      expect(poses()).toHaveLength(2);
+    },
+  );
 
-  it('does nothing and makes no layer when nobody was found', { tags: ['condition'] }, () => {
+  it('does nothing and makes no layer when nobody was found', { tags: ['boundary'] }, () => {
     expect(placeExtractedPoses({ people: [], aspect: 1 }, false)).toBe(false);
     expect(c().entities).toHaveLength(0);
   });
@@ -338,7 +358,7 @@ describe('poses found in a picture', () => {
     expect(c().past.length).toBe(past + 1);
   });
 });
-describe('ready-made poses on the canvas', () => {
+describe('ready-made poses on the canvas', { tags: [] }, () => {
   const control = () => c().entities.find((e) => e.type === 'control')!;
   const poses = () => control().objects.filter((o): o is PoseObject => o.kind === 'pose');
 
@@ -350,7 +370,7 @@ describe('ready-made poses on the canvas', () => {
     expect(b.x + b.width / 2).toBeCloseTo(256, -1);
   });
 
-  it('give the first pose a new shape in the same place, size and id, and leave the others', { tags: ['boundary', 'state-transition'] }, () => {
+  it('give the first pose a new shape in the same place, size and id, and leave the others', { tags: ['equivalence'] }, () => {
     c().setBbox({ x: 0, y: 0, width: 512, height: 512 }, { history: false, syncParams: false });
     setPoses([{ x: 0.3, size: 0.6 }, { x: 0.75, size: 0.5 }], false);
     const [first, second] = poses();
@@ -362,17 +382,21 @@ describe('ready-made poses on the canvas', () => {
     expect(jointBounds(first2!)!.x + jointBounds(first2!)!.width / 2).toBeCloseTo(jointBounds(first!)!.x + jointBounds(first!)!.width / 2, -1);
   });
 
-  it('keep every pose inside the generation box, shrinking the ones with raised arms or kicks', { tags: ['decision-table'] }, () => {
-    c().setBbox({ x: 0, y: 0, width: 512, height: 512 }, { history: false, syncParams: false });
-    for (const id of ['armsUp', 'highKick', 'jumping', 'sprinting', 'drawingBow']) {
-      c().select(null);
-      c().replaceEntities([]);
-      applyPosePreset(id);
-      const b = jointBounds(poses().at(-1)!)!;
-      expect(b.width, id).toBeLessThanOrEqual(512 * 0.97);
-      expect(b.height, id).toBeLessThanOrEqual(512 * 0.97);
-    }
-  });
+  it(
+    'keep every pose inside the generation box, shrinking the ones with raised arms or kicks',
+    { tags: ['boundary', 'equivalence'] },
+    () => {
+      c().setBbox({ x: 0, y: 0, width: 512, height: 512 }, { history: false, syncParams: false });
+      for (const id of ['armsUp', 'highKick', 'jumping', 'sprinting', 'drawingBow']) {
+        c().select(null);
+        c().replaceEntities([]);
+        applyPosePreset(id);
+        const b = jointBounds(poses().at(-1)!)!;
+        expect(b.width, id).toBeLessThanOrEqual(512 * 0.97);
+        expect(b.height, id).toBeLessThanOrEqual(512 * 0.97);
+      }
+    },
+  );
 
   it('put a composition on the layer in place of every pose, keeping what is not a pose', { tags: ['decision-table'] }, () => {
     c().setBbox({ x: 0, y: 0, width: 512, height: 512 }, { history: false, syncParams: false });
@@ -387,7 +411,7 @@ describe('ready-made poses on the canvas', () => {
     expect(poses()).toHaveLength(3);
   });
 
-  it('refuse an unknown pose and a locked layer, and are one undo step', { tags: ['error-guessing', 'state-transition'] }, () => {
+  it('refuse an unknown pose and a locked layer, and are one undo step', { tags: ['error-guessing', 'condition'] }, () => {
     expect(applyPosePreset('nope')).toBe(false);
     expect(c().entities).toHaveLength(0);
     const id = c().addEntity('control');
@@ -399,7 +423,7 @@ describe('ready-made poses on the canvas', () => {
     expect(applyPosePreset('standing')).toBe(false);
   });
 });
-describe('a batch of random poses', () => {
+describe('a batch of random poses', { tags: [] }, () => {
   let reasons: string[] = [];
   beforeEach(() => {
     reasons = [];
@@ -408,7 +432,7 @@ describe('a batch of random poses', () => {
     registerInvokeBuilder('canvas', { readiness: () => reasons, build: async () => ({}) as never, subscribe: () => () => {} });
   });
 
-  it('queues one generation per pose, each with a new random pose on the same layer', { tags: ['condition'] }, async () => {
+  it('queues one generation per pose, each with a new random pose on the same layer', { tags: ['scenario'] }, async () => {
     const seen: string[] = [];
     const enqueue = vi.spyOn(backend, 'enqueue').mockImplementation(async () => {
       seen.push(JSON.stringify(c().entities.find((e) => e.type === 'control')!.objects));
@@ -455,8 +479,8 @@ describe('a batch of random poses', () => {
   });
 });
 
-describe('filter previews', () => {
-  it('replaces the layer with the previewed picture and drops the filter and the preview', { tags: ['condition'] }, () => {
+describe('filter previews', { tags: [] }, () => {
+  it('replaces the layer with the previewed picture and drops the filter and the preview', { tags: ['equivalence'] }, () => {
     const id = c().addEntity('control');
     c().setFilterPreview(id, { url: 'blob:p', x: 1, y: 2, width: 30, height: 40 });
     applyFilterPreview(id);

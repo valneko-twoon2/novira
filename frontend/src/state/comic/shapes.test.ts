@@ -25,13 +25,13 @@ const square: Shape = [pt(0, 0), pt(1, 0), pt(1, 1), pt(0, 1)];
 const left: Shape = [pt(0, 0), pt(0.5, 0), pt(0.5, 1), pt(0, 1)];
 const right: Shape = [pt(0.5, 0), pt(1, 0), pt(1, 1), pt(0.5, 1)];
 
-describe('the area and the box of a shape', () => {
-  it('measures a square and a triangle', { tags: ['condition'] }, () => {
+describe('the area and the box of a shape', { tags: [] }, () => {
+  it('measures a square and a triangle', { tags: ['equivalence'] }, () => {
     expect(shapeArea(square)).toBeCloseTo(1);
     expect(shapeArea([pt(0, 0), pt(1, 0), pt(0, 1)])).toBeCloseTo(0.5);
   });
 
-  it('gives the rectangle a shape fits in', { tags: ['condition'] }, () => {
+  it('gives the rectangle a shape fits in', { tags: ['equivalence'] }, () => {
     const box = shapeBox([pt(0.2, 0.1), pt(0.6, 0.4), pt(0.3, 0.9)]);
     expect(box.x).toBeCloseTo(0.2);
     expect(box.y).toBeCloseTo(0.1);
@@ -40,8 +40,8 @@ describe('the area and the box of a shape', () => {
   });
 });
 
-describe('a point inside a shape', () => {
-  it('is inside a convex shape and outside it', { tags: ['condition'] }, () => {
+describe('a point inside a shape', { tags: [] }, () => {
+  it('is inside a convex shape and outside it', { tags: ['equivalence'] }, () => {
     expect(pointInShape(square, pt(0.5, 0.5))).toBe(true);
     expect(pointInShape(square, pt(1.5, 0.5))).toBe(false);
     expect(pointInShape(square, pt(-0.1, 0.2))).toBe(false);
@@ -55,14 +55,14 @@ describe('a point inside a shape', () => {
   });
 });
 
-describe('whether a shape stands', () => {
+describe('whether a shape stands', { tags: [] }, () => {
   it('refuses a shape whose edges cross', { tags: ['error-guessing'] }, () => {
     const bowTie: Shape = [pt(0, 0), pt(1, 1), pt(1, 0), pt(0, 1)];
     expect(isSimple(bowTie)).toBe(false);
     expect(isValidShape(bowTie)).toBe(false);
   });
 
-  it('refuses too few corners, too many, and a panel too small', { tags: ['error-guessing'] }, () => {
+  it('refuses too few corners, too many, and a panel too small', { tags: ['boundary'] }, () => {
     expect(isValidShape([pt(0, 0), pt(1, 0)])).toBe(false);
     expect(isValidShape(Array.from({ length: MAX_SHAPE_CORNERS + 1 }, (_, i) => pt(0.5 + 0.4 * Math.cos(i), 0.5 + 0.4 * Math.sin(i))))).toBe(false);
     expect(isValidShape([pt(0, 0), pt(0.01, 0), pt(0, 0.01)])).toBe(false);
@@ -71,8 +71,8 @@ describe('whether a shape stands', () => {
   });
 });
 
-describe('cutting a panel in two', () => {
-  it('cuts a square along its diagonal into two triangles that make the square', { tags: ['condition'] }, () => {
+describe('cutting a panel in two', { tags: [] }, () => {
+  it('cuts a square along its diagonal into two triangles that make the square', { tags: ['equivalence'] }, () => {
     const cut = splitShape(square, pt(0, 0), pt(1, 1));
     expect(cut).not.toBeNull();
     const [a, b] = cut!;
@@ -82,7 +82,7 @@ describe('cutting a panel in two', () => {
     expect(b.length).toBe(3);
   });
 
-  it('cuts along a line that is not through the corners, and extends it to the edges', { tags: ['condition'] }, () => {
+  it('cuts along a line that is not through the corners, and extends it to the edges', { tags: ['equivalence'] }, () => {
     const cut = splitShape(square, pt(0.5, 0.2), pt(0.5, 0.3));
     expect(cut).not.toBeNull();
     expect(shapeArea(cut![0])).toBeCloseTo(0.5);
@@ -97,13 +97,13 @@ describe('cutting a panel in two', () => {
     expect(splitShape(square, pt(1, 0), pt(2, 1))).toBeNull();
   });
 
-  it('cuts a panel through one corner and the opposite edge', { tags: ['condition'] }, () => {
+  it('cuts a panel through one corner and the opposite edge', { tags: ['equivalence'] }, () => {
     const cut = splitShape(square, pt(0, 0), pt(0.5, 1));
     expect(cut).not.toBeNull();
     expect(shapeArea(cut![0]) + shapeArea(cut![1])).toBeCloseTo(1);
   });
 
-  it('refuses a line with no length', { tags: ['error-guessing'] }, () => {
+  it('refuses a line with no length', { tags: ['boundary'] }, () => {
     expect(splitShape(square, pt(0.5, 0.5), pt(0.5, 0.5))).toBeNull();
   });
 
@@ -112,13 +112,13 @@ describe('cutting a panel in two', () => {
     expect(splitShape(comb, pt(-0.5, 0.6), pt(1.5, 0.6))).toBeNull();
   });
 
-  it('refuses a cut that leaves a piece too small', { tags: ['error-guessing'] }, () => {
+  it('refuses a cut that leaves a piece too small', { tags: ['boundary'] }, () => {
     expect(splitShape(square, pt(0.001, 0), pt(0.001, 1))).toBeNull();
   });
 });
 
-describe('the corners shared by panels', () => {
-  it('puts a corner on another panel\'s edge into that panel too', { tags: ['boundary'] }, () => {
+describe('the corners shared by panels', { tags: [] }, () => {
+  it('puts a corner on another panel\'s edge into that panel too', { tags: ['condition'] }, () => {
     // A tall panel whose right edge has a corner where the two panels on the right meet.
     const tall: Shape = [pt(0, 0), pt(0.6, 0), pt(0.6, 1), pt(0, 1)];
     const top: Shape = [pt(0.6, 0), pt(1, 0), pt(1, 0.5), pt(0.6, 0.5)];
@@ -159,11 +159,11 @@ describe('the corners shared by panels', () => {
     expect(removed).toEqual([left, right]);
   });
 
-  it('refuses to remove a bent corner, since the panels that share it would no longer fit together', { tags: ['regression', 'error-guessing'] }, () => {
+  it('refuses to remove a bent corner, since the panels that share it would no longer fit together', { tags: ['condition'] }, () => {
     expect(removeCorner([left, right], 0, 1)).toBeNull();
   });
 
-  it('does not remove a corner from a panel that would be left with fewer than three', { tags: ['condition'] }, () => {
+  it('does not remove a corner from a panel that would be left with fewer than three', { tags: ['boundary'] }, () => {
     expect(removeCorner([[pt(0, 0), pt(1, 0), pt(0, 1)]], 0, 0)).toBeNull();
   });
 
@@ -177,15 +177,15 @@ describe('the corners shared by panels', () => {
   });
 });
 
-describe('the nearest point of an edge', () => {
-  it('gives the edge a point is nearest to, and the point on it', { tags: ['condition'] }, () => {
+describe('the nearest point of an edge', { tags: [] }, () => {
+  it('gives the edge a point is nearest to, and the point on it', { tags: ['equivalence'] }, () => {
     expect(nearestEdge(square, pt(0.5, -0.2))).toEqual({ edge: 0, point: pt(0.5, 0) });
     expect(nearestEdge(square, pt(1.2, 0.25))).toEqual({ edge: 1, point: pt(1, 0.25) });
   });
 });
 
-describe('mirroring shapes', () => {
-  it('flips them left to right and keeps their heights', { tags: ['condition'] }, () => {
+describe('mirroring shapes', { tags: [] }, () => {
+  it('flips them left to right and keeps their heights', { tags: ['equivalence'] }, () => {
     expect(mirrorShapes([[pt(0.1, 0.2), pt(0.4, 0.9), pt(0.1, 0.9)]])).toEqual([[pt(0.9, 0.2), pt(0.6, 0.9), pt(0.9, 0.9)]]);
   });
 });

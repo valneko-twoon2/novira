@@ -40,16 +40,20 @@ function text2image(name = 'Plain'): EditorGraph {
   return g;
 }
 
-describe('what keeps a workflow from running', () => {
-  it('asks for an output node when nothing saves or shows the result, besides what else is missing', { tags: ['error-guessing', 'boundary'] }, () => {
-    const g = { nodes: [node('sdxl_model_loader', 'model', { model: '' }), node('noise', 'noise')], edges: [] };
-    const missing = t('workflows.readiness.missingModel', { node: nodeTitle('sdxl_model_loader'), field: fieldLabel('sdxl_model_loader', 'model') });
-    expect(readinessReasons(g)).toEqual([t('workflows.readiness.noOutput'), missing]);
-    g.nodes[0]!.data.inputs.model = 'sdxl-key';
-    expect(readinessReasons(g)).toEqual([t('workflows.readiness.noOutput')]);
-  });
+describe('what keeps a workflow from running', { tags: [] }, () => {
+  it(
+    'asks for an output node when nothing saves or shows the result, besides what else is missing',
+    { tags: ['condition', 'boundary'] },
+    () => {
+      const g = { nodes: [node('sdxl_model_loader', 'model', { model: '' }), node('noise', 'noise')], edges: [] };
+      const missing = t('workflows.readiness.missingModel', { node: nodeTitle('sdxl_model_loader'), field: fieldLabel('sdxl_model_loader', 'model') });
+      expect(readinessReasons(g)).toEqual([t('workflows.readiness.noOutput'), missing]);
+      g.nodes[0]!.data.inputs.model = 'sdxl-key';
+      expect(readinessReasons(g)).toEqual([t('workflows.readiness.noOutput')]);
+    },
+  );
 
-  it('counts the connections whose types do not match', { tags: ['condition'] }, () => {
+  it('counts the connections whose types do not match', { tags: ['boundary'] }, () => {
     const g = text2image();
     expect(readinessReasons(g)).toEqual([]);
     const pos = byType(g, 'sdxl_compel_prompt');
@@ -68,7 +72,7 @@ describe('what keeps a workflow from running', () => {
     expect(readinessReasons(g)).toEqual([t('workflows.readiness.comfyUnsupported', { node: nodeTitle('video_generate'), field: '' })]);
   });
 
-  it('lets a node of a missing extension that is wired to nothing stay in the graph', { tags: ['error-guessing', 'boundary'] }, () => {
+  it('lets a node of a missing extension that is wired to nothing stay in the graph', { tags: ['condition'] }, () => {
     const g = text2image();
     g.nodes.push(node('comfy:MockFilmGrain', 'grain', { intensity: 0.4 }));
     setExtensionTemplates([]);
@@ -105,7 +109,7 @@ describe('what keeps a workflow from running', () => {
     expect(readinessReasons(g)).toEqual([t('workflows.readiness.missingInput', { node: nodeTitle('voice_speak'), field: fieldLabel('voice_speak', 'text') })]);
   });
 
-  it('lets an empty String node feed a prompt that may be empty', { tags: ['boundary'] }, () => {
+  it('lets an empty String node feed a prompt that may be empty', { tags: ['condition'] }, () => {
     const g = text2image();
     g.nodes.push(node('string', 'words', { value: '' }));
     g.edges.push(makeEdge('words', 'value', byType(g, 'sdxl_compel_prompt').id, 'prompt'));
@@ -125,7 +129,7 @@ describe('what keeps a workflow from running', () => {
     expect(readinessReasons(g)).toEqual([]);
   });
 
-  it('asks for text to read that is more than spaces', { tags: ['condition'] }, () => {
+  it('asks for text to read that is more than spaces', { tags: ['boundary'] }, () => {
     usePacks.getState().setPack('voice', { state: 'ready' });
     const g = graphOf('voiceRead');
     byType(g, 'voice_speak').data.inputs.text = '   ';
@@ -142,7 +146,7 @@ describe('what keeps a workflow from running', () => {
     expect(readinessReasons(g)).toEqual([t('workflows.readiness.noOutput')]);
   });
 
-  it('checks the CLIP ViT-H encoder for an IP-Adapter saved without a size, the size it runs with', { tags: ['error-guessing'] }, () => {
+  it('checks the CLIP ViT-H encoder for an IP-Adapter saved without a size, the size it runs with', { tags: ['condition'] }, () => {
     const g = text2image();
     const ip = node('ip_adapter', 'ip', { ip_adapter_model: 'k', image: 'a.png' });
     delete ip.data.inputs.clip_vision_model;
@@ -155,15 +159,19 @@ describe('what keeps a workflow from running', () => {
     expect(readinessReasons(g)).toEqual([]);
   });
 
-  it('asks for a ComfyUI choice the node holds no value for (a model never picked), not for an empty name in the list', { tags: ['boundary'] }, () => {
-    const g = graphOf('musicAceStep');
-    const loader = byType(g, 'comfy:CheckpointLoaderSimple');
-    const args = { node: nodeTitle(loader.data.type), field: fieldLabel(loader.data.type, 'ckpt_name') };
-    for (const unset of [null, undefined, '']) {
-      loader.data.inputs.ckpt_name = unset;
-      expect(readinessReasons(g)).toEqual([t('workflows.readiness.missingInput', args)]);
-    }
-  });
+  it(
+    'asks for a ComfyUI choice the node holds no value for (a model never picked), not for an empty name in the list',
+    { tags: ['boundary'] },
+    () => {
+      const g = graphOf('musicAceStep');
+      const loader = byType(g, 'comfy:CheckpointLoaderSimple');
+      const args = { node: nodeTitle(loader.data.type), field: fieldLabel(loader.data.type, 'ckpt_name') };
+      for (const unset of [null, undefined, '']) {
+        loader.data.inputs.ckpt_name = unset;
+        expect(readinessReasons(g)).toEqual([t('workflows.readiness.missingInput', args)]);
+      }
+    },
+  );
 
   it('names a ComfyUI choice that is not in the list ComfyUI has now', { tags: ['condition'] }, () => {
     const g = graphOf('musicAceStep');
@@ -174,8 +182,8 @@ describe('what keeps a workflow from running', () => {
   });
 });
 
-describe('the request of a built-in picture graph', () => {
-  it('takes the prompt and the sampler settings from the Integer and String nodes wired to them', { tags: ['condition'] }, () => {
+describe('the request of a built-in picture graph', { tags: [] }, () => {
+  it('takes the prompt and the sampler settings from the Integer and String nodes wired to them', { tags: ['equivalence'] }, () => {
     const g = text2image();
     const pos = byType(g, 'sdxl_compel_prompt');
     const denoise = byType(g, 'denoise_latents');
@@ -187,7 +195,7 @@ describe('the request of a built-in picture graph', () => {
     expect(req.comfyGraph!.prompt[denoise.id]!.inputs.steps).toBe(12);
   });
 
-  it('records the strength of a picture-to-picture graph as what the sampler leaves of the source', { tags: ['condition'] }, () => {
+  it('records the strength of a picture-to-picture graph as what the sampler leaves of the source', { tags: ['equivalence'] }, () => {
     useGallery.setState({ images: [picture('a.png', 640, 384)] });
     const g = graphOf('image2image');
     byType(g, 'sdxl_model_loader').data.inputs.model = 'sdxl-key';
@@ -200,11 +208,11 @@ describe('the request of a built-in picture graph', () => {
     expect(buildRequest(text2image(), null, { prepend: false }).params).not.toHaveProperty('strength');
   });
 
-  it('names an untitled workflow as untitled', { tags: ['condition'] }, () => {
+  it('names an untitled workflow as untitled', { tags: ['boundary'] }, () => {
     expect(buildRequest(text2image(''), null, { prepend: false }).params.workflowName).toBe(t('workflows.untitled'));
   });
 
-  it('saves to the board Save Image names, to none, or to the auto-add board', { tags: ['boundary'] }, () => {
+  it('saves to the board Save Image names, to none, or to the auto-add board', { tags: ['equivalence'] }, () => {
     useGallery.setState({ autoAddBoardId: 'auto-board' });
     const g = text2image();
     const save = byType(g, 'save_image');
@@ -230,8 +238,8 @@ describe('the request of a built-in picture graph', () => {
   });
 });
 
-describe('the request of a ComfyUI video graph', () => {
-  it('tells the speed of a video it re-makes at a set frame rate, but no frame count it cannot know', { tags: ['error-guessing'] }, () => {
+describe('the request of a ComfyUI video graph', { tags: [] }, () => {
+  it('tells the speed of a video it re-makes at a set frame rate, but no frame count it cannot know', { tags: ['condition'] }, () => {
     const g = graphOf('videoNarration');
     const video = byType(g, 'comfy:CreateVideo');
     g.edges = g.edges.filter((e) => !(e.target === video.id && e.targetHandle === 'fps'));
@@ -243,7 +251,7 @@ describe('the request of a ComfyUI video graph', () => {
   });
 });
 
-describe('the request of a Generate Video graph', () => {
+describe('the request of a Generate Video graph', { tags: [] }, () => {
   beforeEach(() => usePacks.getState().setPack('video', { state: 'ready' }));
 
   it('keeps the seed typed in the node when no Random Integer feeds it', { tags: ['condition'] }, () => {
@@ -256,7 +264,7 @@ describe('the request of a Generate Video graph', () => {
     expect(req.randomizeSeed).toBe(false);
   });
 
-  it('falls back to the default size and no start picture when the chosen picture left the gallery', { tags: ['state-transition'] }, () => {
+  it('falls back to the default size and no start picture when the chosen picture left the gallery', { tags: ['error-guessing'] }, () => {
     useGallery.setState({ images: [] });
     const g = buildDefaultGraph({ id: 'default-video-i2v', ...VIDEO_META }, [])!;
     byType(g, 'image').data.inputs.image = 'gone.png';

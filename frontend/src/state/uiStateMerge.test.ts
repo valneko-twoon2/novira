@@ -12,7 +12,7 @@ const plan = (theirs: KeyText, mine: KeyText, local: KeyText, remote: KeyText, o
   });
 
 describe('planRemote', () => {
-  it('takes a key the backend changed and this page did not', { tags: ['condition'] }, () => {
+  it('takes a key the backend changed and this page did not', { tags: ['decision-table'] }, () => {
     const p = plan({ 'novira.a': '1' }, { 'novira.a': '1' }, { 'novira.a': '1' }, { 'novira.a': '2' });
     expect([...p.apply]).toEqual([['novira.a', '2']]);
     expect(p.later).toEqual([]);
@@ -24,7 +24,7 @@ describe('planRemote', () => {
     expect([...plan(s, s, s, {}).apply]).toEqual([['novira.a', null]]);
   });
 
-  it('leaves a key alone that the backend did not change, whatever this page holds', { tags: ['condition'] }, () => {
+  it('leaves a key alone that the backend did not change, whatever this page holds', { tags: ['decision-table'] }, () => {
     const p = plan({ 'novira.a': '1' }, { 'novira.a': '1' }, { 'novira.a': 'typed' }, { 'novira.a': '1' });
     expect(p.apply.size).toBe(0);
     expect(p.later).toEqual([]);
@@ -36,13 +36,13 @@ describe('planRemote', () => {
     expect(p.same).toEqual([]);
   });
 
-  it('only notes a key where this page already holds the backend\'s text', { tags: ['condition'] }, () => {
+  it('only notes a key where this page already holds the backend\'s text', { tags: ['decision-table'] }, () => {
     const p = plan({ 'novira.a': '1' }, { 'novira.a': '1' }, { 'novira.a': '2' }, { 'novira.a': '2' });
     expect(p.apply.size).toBe(0);
     expect(p.same).toEqual(['novira.a']);
   });
 
-  it('never applies a key no running store can take', { tags: ['state-transition'] }, () => {
+  it('never applies a key no running store can take', { tags: ['condition'] }, () => {
     const p = plan({ 'novira.settings': 'a' }, { 'novira.settings': 'a' }, { 'novira.settings': 'a' }, { 'novira.settings': 'b' });
     expect(p.apply.size).toBe(0);
   });
@@ -59,7 +59,7 @@ describe('planRemote', () => {
     expect([...p.apply]).toEqual([['novira.b', '2']]);
   });
 
-  it('does nothing when nothing changed', { tags: ['condition'] }, () => {
+  it('does nothing when nothing changed', { tags: ['boundary'] }, () => {
     const s = { 'novira.a': '1', 'novira.b': '2' };
     const p = plan(s, s, s, { ...s });
     expect(p).toEqual({ apply: new Map(), later: [], same: [] });
@@ -67,7 +67,7 @@ describe('planRemote', () => {
 });
 
 describe('sameState', () => {
-  it('compares keys and texts, not their order', { tags: ['condition'] }, () => {
+  it('compares keys and texts, not their order', { tags: ['equivalence'] }, () => {
     expect(sameState({ a: '1', b: '2' }, { b: '2', a: '1' })).toBe(true);
     expect(sameState({ a: '1' }, { a: '1', b: '2' })).toBe(false);
     expect(sameState({ a: '1' }, { a: '2' })).toBe(false);

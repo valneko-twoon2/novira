@@ -20,7 +20,7 @@ const image = (name: string, category: ImageDTO['category']): ImageDTO =>
 const item = { params: {}, origin: 'generate', destination: 'gallery' } as unknown as QueueItem;
 
 describe('a finished result', () => {
-  it('switches the gallery to the images view that lists a queue result', { tags: ['condition'] }, async () => {
+  it('switches the gallery to the images view that lists a queue result', { tags: ['decision-table'] }, async () => {
     let emit: (e: BackendEvent) => void = () => undefined;
     vi.spyOn(backend, 'subscribe').mockImplementation((listener) => {
       emit = listener;

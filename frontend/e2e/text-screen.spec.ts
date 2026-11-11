@@ -31,66 +31,74 @@ test('layers are added in the canvas toolbar and listed in the right column', { 
   await expect(layers.locator('li')).toHaveCount(0);
 });
 
-test('the run button comes first in the left column and the candidates appear under the canvas', { tag: ['@scenario'] }, async ({ page }) => {
-  await openText(page);
-  await page.getByTestId('text-add-text').click();
-  const count = page.getByRole('spinbutton', { name: msg('params.invoke.iterations') });
-  await count.fill('2');
-  await count.blur();
-  const run = page.getByTestId('invoke-button');
-  const panel = page.getByTestId('text-panel');
-  // Above the layer's own settings: no scrolling to reach it.
-  const runBox = await run.boundingBox();
-  const propsBox = await panel.getByTestId('text-props').boundingBox();
-  expect(runBox!.y).toBeLessThan(propsBox!.y);
+test(
+  'the run button comes first in the left column and the candidates appear under the canvas',
+  { tag: ['@scenario'] },
+  async ({ page }) => {
+    await openText(page);
+    await page.getByTestId('text-add-text').click();
+    const count = page.getByRole('spinbutton', { name: msg('params.invoke.iterations') });
+    await count.fill('2');
+    await count.blur();
+    const run = page.getByTestId('invoke-button');
+    const panel = page.getByTestId('text-panel');
+    // Above the layer's own settings: no scrolling to reach it.
+    const runBox = await run.boundingBox();
+    const propsBox = await panel.getByTestId('text-props').boundingBox();
+    expect(runBox!.y).toBeLessThan(propsBox!.y);
 
-  await expect(page.getByTestId('text-candidates')).toHaveCount(0);
-  await run.click();
-  const strip = page.getByTestId('text-candidates');
-  await expect(strip).toBeVisible({ timeout: 30_000 });
-  const stripBox = await strip.boundingBox();
-  const canvasBox = await page.getByTestId('text-overlay').boundingBox();
-  expect(stripBox!.y).toBeGreaterThan(canvasBox!.y + canvasBox!.height - 1);
-  await expect(page.getByTestId('text-rich-candidate')).toHaveCount(2);
+    await expect(page.getByTestId('text-candidates')).toHaveCount(0);
+    await run.click();
+    const strip = page.getByTestId('text-candidates');
+    await expect(strip).toBeVisible({ timeout: 30_000 });
+    const stripBox = await strip.boundingBox();
+    const canvasBox = await page.getByTestId('text-overlay').boundingBox();
+    expect(stripBox!.y).toBeGreaterThan(canvasBox!.y + canvasBox!.height - 1);
+    await expect(page.getByTestId('text-rich-candidate')).toHaveCount(2);
 
-  // The strip belongs to the selected layer: clearing the selection hides it.
-  await page.getByTestId('text-layers').getByText(msg('text.layers.clear')).click();
-  await expect(strip).toHaveCount(0);
-});
+    // The strip belongs to the selected layer: clearing the selection hides it.
+    await page.getByTestId('text-layers').getByText(msg('text.layers.clear')).click();
+    await expect(strip).toHaveCount(0);
+  },
+);
 
-test('the quick bar sits over the selected layer, edits it, and steps aside while the layer is dragged', { tag: ['@scenario'] }, async ({ page }) => {
-  await openText(page);
-  await page.getByTestId('text-add-text').click();
-  const bar = page.getByTestId('text-bar');
-  await expect(bar).toBeVisible();
+test(
+  'the quick bar sits over the selected layer, edits it, and steps aside while the layer is dragged',
+  { tag: ['@state-transition'] },
+  async ({ page }) => {
+    await openText(page);
+    await page.getByTestId('text-add-text').click();
+    const bar = page.getByTestId('text-bar');
+    await expect(bar).toBeVisible();
 
-  // Over the layer: the bar's bottom edge is above the letters' center, which is the center of the sheet.
-  const sheet = await page.getByTestId('text-overlay').boundingBox();
-  const barBox = await bar.boundingBox();
-  expect(barBox!.y + barBox!.height).toBeLessThan(sheet!.y + sheet!.height / 2);
+    // Over the layer: the bar's bottom edge is above the letters' center, which is the center of the sheet.
+    const sheet = await page.getByTestId('text-overlay').boundingBox();
+    const barBox = await bar.boundingBox();
+    expect(barBox!.y + barBox!.height).toBeLessThan(sheet!.y + sheet!.height / 2);
 
-  // A size typed in the bar is the size in the layer's own settings.
-  const quick = bar.getByRole('spinbutton', { name: msg('text.size') });
-  await quick.fill('200');
-  await quick.blur();
-  await expect(page.getByTestId('text-props').getByRole('spinbutton', { name: msg('text.size') })).toHaveValue('200');
+    // A size typed in the bar is the size in the layer's own settings.
+    const quick = bar.getByRole('spinbutton', { name: msg('text.size') });
+    await quick.fill('200');
+    await quick.blur();
+    await expect(page.getByTestId('text-props').getByRole('spinbutton', { name: msg('text.size') })).toHaveValue('200');
 
-  // Dragging hides the bar until the pointer is released.
-  const x = sheet!.x + sheet!.width / 2;
-  const y = sheet!.y + sheet!.height / 2;
-  await page.mouse.move(x, y);
-  await page.mouse.down();
-  await page.mouse.move(x + 40, y + 30, { steps: 4 });
-  await expect(bar).toHaveCount(0);
-  await page.mouse.up();
-  await expect(bar).toBeVisible();
+    // Dragging hides the bar until the pointer is released.
+    const x = sheet!.x + sheet!.width / 2;
+    const y = sheet!.y + sheet!.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 40, y + 30, { steps: 4 });
+    await expect(bar).toHaveCount(0);
+    await page.mouse.up();
+    await expect(bar).toBeVisible();
 
-  // Duplicate and delete are in the bar too.
-  await bar.getByRole('button', { name: msg('text.layer.duplicate') }).click();
-  await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(2);
-  await page.getByTestId('text-bar').getByRole('button', { name: msg('text.layer.delete') }).click();
-  await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(1);
-});
+    // Duplicate and delete are in the bar too.
+    await bar.getByRole('button', { name: msg('text.layer.duplicate') }).click();
+    await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(2);
+    await page.getByTestId('text-bar').getByRole('button', { name: msg('text.layer.delete') }).click();
+    await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(1);
+  },
+);
 
 test('a laid-out scene is saved as a template and put back on an emptied sheet', { tag: ['@scenario'] }, async ({ page }) => {
   await openText(page);
@@ -150,17 +158,21 @@ test('a picture saved from the Text tab opens its layers again from the gallery'
   await expect(page.getByRole('menuitem', { name: msg('gallery.menu.editInText') })).toHaveCount(0);
 });
 
-test('the viewer opens beside the editor, from its tab and from a picture in the gallery, and the editor comes back as it was', { tag: ['@scenario'] }, async ({ page }) => {
-  await openText(page);
-  await page.getByTestId('text-add-text').click();
-  await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(1);
-  await page.getByTestId('view-viewer').click();
-  await expect(page.getByTestId('text-canvas')).toHaveCount(0);
-  await page.getByTestId('view-text').click();
-  await expect(page.getByTestId('text-canvas')).toBeVisible();
-  await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(1);
+test(
+  'the viewer opens beside the editor, from its tab and from a picture in the gallery, and the editor comes back as it was',
+  { tag: ['@scenario'] },
+  async ({ page }) => {
+    await openText(page);
+    await page.getByTestId('text-add-text').click();
+    await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(1);
+    await page.getByTestId('view-viewer').click();
+    await expect(page.getByTestId('text-canvas')).toHaveCount(0);
+    await page.getByTestId('view-text').click();
+    await expect(page.getByTestId('text-canvas')).toBeVisible();
+    await expect(page.getByTestId('text-layers').locator('li')).toHaveCount(1);
 
-  await page.locator('.gthumb:visible').first().dblclick();
-  await expect(page.getByTestId('view-viewer')).toHaveAttribute('aria-selected', 'true');
-  await expect(page.getByTestId('text-canvas')).toHaveCount(0);
-});
+    await page.locator('.gthumb:visible').first().dblclick();
+    await expect(page.getByTestId('view-viewer')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('text-canvas')).toHaveCount(0);
+  },
+);

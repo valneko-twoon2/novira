@@ -55,7 +55,7 @@ fn a_gallery_file_that_vanished_is_left_out_and_a_missing_database_fails_without
     assert!(!dir.path().join("failed.zip.partial").exists());
 }
 
-// tags: error-guessing, boundary
+// tags: boundary, error-guessing
 #[test]
 fn a_saved_screen_state_over_the_limit_is_refused() {
     let big = "x".repeat(MAX_UI_STATE_BYTES + 1);

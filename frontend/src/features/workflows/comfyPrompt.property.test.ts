@@ -119,56 +119,68 @@ const metadata: fc.Arbitrary<GenerationMetadata> = fc
   })
   .map((m) => ({ modelName: 'x', ...m }) as unknown as GenerationMetadata);
 
-describe('compileComfyPrompt (properties)', () => {
-  it('compiles every graph made from image settings (base x LoRAs x VAE x mode x size) to a well-formed prompt', { tags: ['error-guessing'] }, () => {
-    check(
-      fc.property(metadata, (m) => {
-        const built = graphFromImage({ ...PHOTO, metadata: m }, MODELS);
-        expect(built).not.toBeNull();
-        const compiled = compileComfyPrompt(buildPicked(built!.graph.nodes, built!.graph.edges));
-        assertWellFormed(compiled);
-        const enabled = m.loras.filter((l) => l.isEnabled).length;
-        expect(Object.values(compiled.graph.prompt).filter((n) => n.class_type === 'LoraLoader').length).toBe(enabled);
-      }),
-    );
-  });
+describe('compileComfyPrompt (properties)', { tags: [] }, () => {
+  it(
+    'compiles every graph made from image settings (base x LoRAs x VAE x mode x size) to a well-formed prompt',
+    { tags: ['decision-table', 'boundary'] },
+    () => {
+      check(
+        fc.property(metadata, (m) => {
+          const built = graphFromImage({ ...PHOTO, metadata: m }, MODELS);
+          expect(built).not.toBeNull();
+          const compiled = compileComfyPrompt(buildPicked(built!.graph.nodes, built!.graph.edges));
+          assertWellFormed(compiled);
+          const enabled = m.loras.filter((l) => l.isEnabled).length;
+          expect(Object.values(compiled.graph.prompt).filter((n) => n.class_type === 'LoraLoader').length).toBe(enabled);
+        }),
+      );
+    },
+  );
 
-  it('compiles every ready-made template, with arbitrary finite numbers in its number fields', { tags: ['error-guessing'] }, () => {
-    const numbers = fc.double({ min: -1e6, max: 1e6, noNaN: true });
-    check(
-      fc.property(fc.constantFrom(...GRAPH_TEMPLATES.filter((t) => !t.nodes.some(([, type]) => type === 'video_generate'))), fc.array(numbers, { minLength: 1, maxLength: 12 }), (template, values) => {
-        const { nodes, edges } = buildPicked(...nodesAndEdges(template));
-        let k = 0;
-        for (const n of nodes)
-          for (const input of getTemplate(n.data.type)!.inputs) {
-            const isNumber = input.type === 'integer' || input.type === 'float';
-            if (!isNumber || typeof n.data.inputs[input.name] !== 'number') continue;
-            const v = values[k++ % values.length]!;
-            n.data.inputs[input.name] = input.type === 'integer' ? Math.trunc(v) : v;
+  it(
+    'compiles every ready-made template, with arbitrary finite numbers in its number fields',
+    { tags: ['error-guessing', 'boundary'] },
+    () => {
+      const numbers = fc.double({ min: -1e6, max: 1e6, noNaN: true });
+      check(
+        fc.property(fc.constantFrom(...GRAPH_TEMPLATES.filter((t) => !t.nodes.some(([, type]) => type === 'video_generate'))), fc.array(numbers, { minLength: 1, maxLength: 12 }), (template, values) => {
+          const { nodes, edges } = buildPicked(...nodesAndEdges(template));
+          let k = 0;
+          for (const n of nodes)
+            for (const input of getTemplate(n.data.type)!.inputs) {
+              const isNumber = input.type === 'integer' || input.type === 'float';
+              if (!isNumber || typeof n.data.inputs[input.name] !== 'number') continue;
+              const v = values[k++ % values.length]!;
+              n.data.inputs[input.name] = input.type === 'integer' ? Math.trunc(v) : v;
+            }
+          assertWellFormed(compileComfyPrompt({ nodes, edges }));
+        }),
+      );
+    },
+  );
+
+  it(
+    'a template with dropped or shuffled nodes and edges compiles or fails with a ComfyGraphError, nothing else',
+    { tags: ['error-guessing'] },
+    () => {
+      check(
+        fc.property(fc.constantFrom(...GRAPH_TEMPLATES), fc.array(fc.nat(40), { maxLength: 4 }), fc.array(fc.nat(60), { maxLength: 4 }), fc.boolean(), (template, dropNodes, dropEdges, reverse) => {
+          const { nodes, edges } = buildPicked(...nodesAndEdges(template));
+          const keepNodes = nodes.filter((_, i) => !dropNodes.includes(i % Math.max(1, nodes.length)) || nodes.length < 2);
+          const keepEdges = edges.filter((_, i) => !dropEdges.includes(i % Math.max(1, edges.length)));
+          const g = { nodes: reverse ? [...keepNodes].reverse() : keepNodes, edges: keepEdges };
+          let compiled: CompiledGraph;
+          try {
+            compiled = compileComfyPrompt(g);
+          } catch (e) {
+            expect(e, `unexpected ${String(e)}`).toBeInstanceOf(ComfyGraphError);
+            return;
           }
-        assertWellFormed(compileComfyPrompt({ nodes, edges }));
-      }),
-    );
-  });
-
-  it('a template with dropped or shuffled nodes and edges compiles or fails with a ComfyGraphError, nothing else', { tags: ['error-guessing'] }, () => {
-    check(
-      fc.property(fc.constantFrom(...GRAPH_TEMPLATES), fc.array(fc.nat(40), { maxLength: 4 }), fc.array(fc.nat(60), { maxLength: 4 }), fc.boolean(), (template, dropNodes, dropEdges, reverse) => {
-        const { nodes, edges } = buildPicked(...nodesAndEdges(template));
-        const keepNodes = nodes.filter((_, i) => !dropNodes.includes(i % Math.max(1, nodes.length)) || nodes.length < 2);
-        const keepEdges = edges.filter((_, i) => !dropEdges.includes(i % Math.max(1, edges.length)));
-        const g = { nodes: reverse ? [...keepNodes].reverse() : keepNodes, edges: keepEdges };
-        let compiled: CompiledGraph;
-        try {
-          compiled = compileComfyPrompt(g);
-        } catch (e) {
-          expect(e, `unexpected ${String(e)}`).toBeInstanceOf(ComfyGraphError);
-          return;
-        }
-        assertWellFormed(compiled);
-      }),
-    );
-  });
+          assertWellFormed(compiled);
+        }),
+      );
+    },
+  );
 });
 
 function nodesAndEdges(template: (typeof GRAPH_TEMPLATES)[number]): [WorkflowNode[], WorkflowEdge[]] {

@@ -63,13 +63,13 @@ describe('saved screen state', () => {
 });
 
 describe('reading the saved state without JSON', () => {
-  it('reads the app keys and refuses a key longer than the backend takes', { tags: ['error-guessing'] }, () => {
+  it('reads the app keys and refuses a key longer than the backend takes', { tags: ['boundary'] }, () => {
     expect(readUiState(memoryStorage({ 'novira.a': '1', 'novira.b': '"x"', other: 'y' }))).toEqual({ 'novira.a': '1', 'novira.b': '"x"' });
     expect(readUiState(memoryStorage({ [`novira.${'k'.repeat(193)}`]: '1' }))).toEqual({ [`novira.${'k'.repeat(193)}`]: '1' });
     expect(readUiState(memoryStorage({ [`novira.${'k'.repeat(194)}`]: '1' }))).toBeNull();
   });
 
-  it('measures a state near the size limit as JSON: under it is read, over it (escapes counted) is refused', { tags: ['error-guessing'] }, () => {
+  it('measures a state near the size limit as JSON: under it is read, over it (escapes counted) is refused', { tags: ['boundary'] }, () => {
     // Six million plain characters could be over the limit if every one were escaped; written out they are not.
     const plain = 'a'.repeat(6_000_000);
     expect(readUiState(memoryStorage({ 'novira.big': plain }))?.['novira.big']).toBe(plain);
@@ -81,7 +81,7 @@ describe('reading the saved state without JSON', () => {
 });
 
 describe('takeRestoredUiState', () => {
-  it('puts a restored state in place and reloads once, then reports it after the reload', { tags: ['scenario'] }, async () => {
+  it('puts a restored state in place and reloads once, then reports it after the reload', { tags: ['state-transition'] }, async () => {
     localStorage.setItem('novira.settings', 'current');
     vi.spyOn(backend, 'takeRestoredUiState').mockResolvedValue({ state: 'restored', uiState: '{"novira.settings":"restored"}' });
     const save = vi.spyOn(backend, 'saveUiState').mockResolvedValue();
@@ -110,7 +110,7 @@ describe('takeRestoredUiState', () => {
     expect(shown?.description).toBe('your data was kept');
   });
 
-  it('does nothing without a restore', { tags: ['scenario'] }, async () => {
+  it('does nothing without a restore', { tags: ['condition'] }, async () => {
     const reload = vi.fn();
     expect(await takeRestoredUiState(localStorage, sessionStorage, reload)).toBe(false);
     expect(reload).not.toHaveBeenCalled();

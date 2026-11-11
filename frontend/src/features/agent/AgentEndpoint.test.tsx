@@ -58,7 +58,7 @@ async function openForm(saved?: AgentEndpointInfo) {
   return screen.findByTestId('agent-endpoint-form');
 }
 
-describe('the server form', () => {
+describe('the server form', { tags: [] }, () => {
   it('is a third choice beside Claude and Codex, and the back arrow returns to the choice', { tags: ['scenario'] }, async () => {
     await openForm();
     expect(screen.queryByTestId('agent-choose-claude')).toBeNull();
@@ -66,7 +66,7 @@ describe('the server form', () => {
     expect(screen.getByTestId('agent-choose-claude')).toBeTruthy();
   });
 
-  it('fills the address and reads the model list with one click on the Ollama preset', { tags: ['boundary', 'scenario'] }, async () => {
+  it('fills the address and reads the model list with one click on the Ollama preset', { tags: ['scenario'] }, async () => {
     const models = vi.spyOn(backend, 'agentEndpointModels').mockResolvedValue(['llama3.2:latest', 'qwen3:8b']);
     await openForm();
     fireEvent.click(screen.getByTestId('agent-endpoint-preset-ollama'));
@@ -80,7 +80,7 @@ describe('the server form', () => {
     expect(screen.queryByTestId('agent-endpoint-warn-remote')).toBeNull();
   });
 
-  it('falls back to a typed model name when the server gives no list, with the reason', { tags: ['scenario'] }, async () => {
+  it('falls back to a typed model name when the server gives no list, with the reason', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'agentEndpointModels').mockRejectedValue(new Error('the server answered 404: not found'));
     await openForm();
     fireEvent.click(screen.getByTestId('agent-endpoint-preset-ollama'));
@@ -90,7 +90,7 @@ describe('the server form', () => {
     expect((screen.getByTestId('agent-endpoint-model') as HTMLInputElement).value).toBe('my-model');
   });
 
-  it('warns about an unencrypted address on another machine and about reads leaving this PC', { tags: ['scenario'] }, async () => {
+  it('warns about an unencrypted address on another machine and about reads leaving this PC', { tags: ['decision-table'] }, async () => {
     await openForm();
     type('agent-endpoint-url', 'http://192.168.1.5:11434/v1');
     expect(screen.getByTestId('agent-endpoint-warn-http')).toBeTruthy();
@@ -104,22 +104,26 @@ describe('the server form', () => {
     expect((screen.getByTestId('agent-endpoint-test') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('saving needs an address and a model, sends the key only when it was touched, and opens the chat', { tags: ['state-transition', 'scenario'] }, async () => {
-    const save = vi.spyOn(backend, 'agentEndpointSave').mockResolvedValue(statusOf());
-    await openForm();
-    type('agent-endpoint-url', OLLAMA);
-    expect((screen.getByTestId('agent-endpoint-save') as HTMLButtonElement).disabled).toBe(true);
-    type('agent-endpoint-model', ' qwen3:8b ');
-    fireEvent.click(screen.getByTestId('agent-endpoint-save'));
-    await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
-    // The key field was never touched: no key field is sent, so a saved key stays.
-    expect(save.mock.calls[0]![0]).toEqual({ baseUrl: OLLAMA, model: 'qwen3:8b' });
-    await waitFor(() => expect(useAgent.getState().status?.provider).toBe('openai'));
-    expect(await screen.findByTestId('agent-input')).toBeTruthy();
-    expect(screen.getByTestId('agent-provider').textContent).toBe('OpenAI API');
-  });
+  it(
+    'saving needs an address and a model, sends the key only when it was touched, and opens the chat',
+    { tags: ['condition', 'boundary'] },
+    async () => {
+      const save = vi.spyOn(backend, 'agentEndpointSave').mockResolvedValue(statusOf());
+      await openForm();
+      type('agent-endpoint-url', OLLAMA);
+      expect((screen.getByTestId('agent-endpoint-save') as HTMLButtonElement).disabled).toBe(true);
+      type('agent-endpoint-model', ' qwen3:8b ');
+      fireEvent.click(screen.getByTestId('agent-endpoint-save'));
+      await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
+      // The key field was never touched: no key field is sent, so a saved key stays.
+      expect(save.mock.calls[0]![0]).toEqual({ baseUrl: OLLAMA, model: 'qwen3:8b' });
+      await waitFor(() => expect(useAgent.getState().status?.provider).toBe('openai'));
+      expect(await screen.findByTestId('agent-input')).toBeTruthy();
+      expect(screen.getByTestId('agent-provider').textContent).toBe('OpenAI API');
+    },
+  );
 
-  it('sends a typed key, and an emptied saved key removes it', { tags: ['state-transition', 'scenario'] }, async () => {
+  it('sends a typed key, and an emptied saved key removes it', { tags: ['condition'] }, async () => {
     const save = vi.spyOn(backend, 'agentEndpointSave').mockResolvedValue(statusOf());
     await openForm(endpoint({ hasKey: true }));
     expect((screen.getByTestId('agent-endpoint-url') as HTMLInputElement).value).toBe(OLLAMA);
@@ -139,7 +143,7 @@ describe('the server form', () => {
     expect(save.mock.calls[1]![0]).toEqual({ baseUrl: OLLAMA, model: 'm', apiKey: 'sk-123' });
   });
 
-  it('shows a save that the backend refuses', { tags: ['error-guessing', 'scenario'] }, async () => {
+  it('shows a save that the backend refuses', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'agentEndpointSave').mockRejectedValue(new Error('The address must start with http:// or https://'));
     await openForm();
     type('agent-endpoint-url', OLLAMA);
@@ -149,7 +153,7 @@ describe('the server form', () => {
     expect(screen.getByTestId('agent-endpoint-form')).toBeTruthy();
   });
 
-  it('shows what test connection found: the server, the model and the tools', { tags: ['scenario'] }, async () => {
+  it('shows what test connection found: the server, the model and the tools', { tags: ['equivalence'] }, async () => {
     const test = vi.spyOn(backend, 'agentEndpointTest');
     await openForm();
     type('agent-endpoint-url', OLLAMA);
@@ -172,7 +176,7 @@ describe('the server form', () => {
   });
 });
 
-describe('a saved server in the chat', () => {
+describe('a saved server in the chat', { tags: [] }, () => {
   it('lets the model be chosen from the server list or typed, and saves it without touching the key', { tags: ['scenario'] }, async () => {
     useAgent.setState({ status: statusOf() });
     vi.spyOn(backend, 'agentStatus').mockResolvedValue(statusOf());
@@ -195,18 +199,22 @@ describe('a saved server in the chat', () => {
     await waitFor(() => expect(save).toHaveBeenLastCalledWith({ baseUrl: OLLAMA, model: 'typed-model' }));
   });
 
-  it('says so when the server gives no list, and shows what is known about tools with the reason', { tags: ['scenario'] }, async () => {
-    const info = endpoint({ tools: 'unsupported', toolsReason: 'qwen3:8b does not support tools' });
-    useAgent.setState({ status: statusOf({ endpoint: info }) });
-    vi.spyOn(backend, 'agentStatus').mockResolvedValue(statusOf({ endpoint: info }));
-    vi.spyOn(backend, 'agentEndpointModels').mockRejectedValue(new Error('404'));
-    renderWindow();
-    fireEvent.click(await screen.findByTestId('agent-model'));
-    expect(await screen.findByTestId('agent-model-nolist')).toBeTruthy();
-    expect(screen.getByTestId('agent-endpoint-tools-state').textContent).toBe(t('agent.endpoint.tools.unsupported', { reason: 'qwen3:8b does not support tools' }));
-  });
+  it(
+    'says so when the server gives no list, and shows what is known about tools with the reason',
+    { tags: ['error-guessing'] },
+    async () => {
+      const info = endpoint({ tools: 'unsupported', toolsReason: 'qwen3:8b does not support tools' });
+      useAgent.setState({ status: statusOf({ endpoint: info }) });
+      vi.spyOn(backend, 'agentStatus').mockResolvedValue(statusOf({ endpoint: info }));
+      vi.spyOn(backend, 'agentEndpointModels').mockRejectedValue(new Error('404'));
+      renderWindow();
+      fireEvent.click(await screen.findByTestId('agent-model'));
+      expect(await screen.findByTestId('agent-model-nolist')).toBeTruthy();
+      expect(screen.getByTestId('agent-endpoint-tools-state').textContent).toBe(t('agent.endpoint.tools.unsupported', { reason: 'qwen3:8b does not support tools' }));
+    },
+  );
 
-  it('runs test connection from the picker and refreshes the status with its verdict', { tags: ['state-transition', 'scenario'] }, async () => {
+  it('runs test connection from the picker and refreshes the status with its verdict', { tags: ['state-transition'] }, async () => {
     let current = statusOf();
     useAgent.setState({ status: current });
     vi.spyOn(backend, 'agentStatus').mockImplementation(async () => current);
@@ -223,7 +231,7 @@ describe('a saved server in the chat', () => {
     await waitFor(() => expect(screen.getByTestId('agent-endpoint-tools-state').textContent).toBe(t('agent.endpoint.tools.supported')));
   });
 
-  it('warns above the input while the model cannot use the app tools, and not for a model that can', { tags: ['error-guessing', 'state-transition'] }, async () => {
+  it('warns above the input while the model cannot use the app tools, and not for a model that can', { tags: ['condition'] }, async () => {
     const bad = statusOf({ endpoint: endpoint({ tools: 'unsupported', toolsReason: 'does not support tools' }) });
     useAgent.setState({ status: bad });
     vi.spyOn(backend, 'agentStatus').mockResolvedValue(bad);
@@ -234,26 +242,30 @@ describe('a saved server in the chat', () => {
     expect(screen.queryByTestId('agent-tools-banner')).toBeNull();
   });
 
-  it('refreshes the status after a request fails, so a model found to lack tools is shown at once', { tags: ['error-guessing', 'state-transition'] }, async () => {
-    const before = statusOf();
-    const after = statusOf({ endpoint: endpoint({ tools: 'unsupported', toolsReason: 'x does not support tools' }) });
-    let current = before;
-    useAgent.setState({ status: before });
-    vi.spyOn(backend, 'agentStatus').mockImplementation(async () => current);
-    vi.spyOn(backend, 'agentChat').mockImplementation(async () => {
-      current = after;
-      throw new Error("This model cannot use the app's tools (x does not support tools).");
-    });
-    renderWindow();
-    await screen.findByTestId('agent-input');
-    await act(async () => {
-      await useAgent.getState().send('hello');
-    });
-    await waitFor(() => expect(screen.getByTestId('agent-tools-banner')).toBeTruthy());
-    expect(screen.getByText(/cannot use the app's tools/)).toBeTruthy();
-  });
+  it(
+    'refreshes the status after a request fails, so a model found to lack tools is shown at once',
+    { tags: ['error-guessing'] },
+    async () => {
+      const before = statusOf();
+      const after = statusOf({ endpoint: endpoint({ tools: 'unsupported', toolsReason: 'x does not support tools' }) });
+      let current = before;
+      useAgent.setState({ status: before });
+      vi.spyOn(backend, 'agentStatus').mockImplementation(async () => current);
+      vi.spyOn(backend, 'agentChat').mockImplementation(async () => {
+        current = after;
+        throw new Error("This model cannot use the app's tools (x does not support tools).");
+      });
+      renderWindow();
+      await screen.findByTestId('agent-input');
+      await act(async () => {
+        await useAgent.getState().send('hello');
+      });
+      await waitFor(() => expect(screen.getByTestId('agent-tools-banner')).toBeTruthy());
+      expect(screen.getByText(/cannot use the app's tools/)).toBeTruthy();
+    },
+  );
 
-  it('tells where what the assistant reads is sent, in the permission question', { tags: ['scenario'] }, async () => {
+  it('tells where what the assistant reads is sent, in the permission question', { tags: ['decision-table'] }, async () => {
     useAgent.setState({ status: statusOf() });
     vi.spyOn(backend, 'agentStatus').mockResolvedValue(statusOf());
     const { rerender } = renderWindow();
@@ -273,20 +285,24 @@ describe('a saved server in the chat', () => {
     expect(screen.queryByTestId('agent-permission-sent')).toBeNull();
   });
 
-  it('keeps the saved server in the form after switching the AI, and sends no model or effort for a server', { tags: ['scenario'] }, async () => {
-    useAgent.setState({ status: statusOf() });
-    vi.spyOn(backend, 'agentStatus').mockResolvedValue(statusOf());
-    renderWindow();
-    await screen.findByTestId('agent-input');
-    const chat = vi.spyOn(backend, 'agentChat').mockResolvedValue({ text: 'ok' });
-    await act(async () => {
-      await useAgent.getState().send('hello');
-    });
-    expect(chat.mock.calls[0]![0]).not.toHaveProperty('agentModel');
-    expect(chat.mock.calls[0]![0]).not.toHaveProperty('effort');
-    act(() => useAgent.getState().changeProvider());
-    fireEvent.click(await screen.findByTestId('agent-choose-openai'));
-    expect((await screen.findByTestId('agent-endpoint-url') as HTMLInputElement).value).toBe(OLLAMA);
-    expect((screen.getByTestId('agent-endpoint-model') as HTMLInputElement).value).toBe('qwen3:8b');
-  });
+  it(
+    'keeps the saved server in the form after switching the AI, and sends no model or effort for a server',
+    { tags: ['scenario'] },
+    async () => {
+      useAgent.setState({ status: statusOf() });
+      vi.spyOn(backend, 'agentStatus').mockResolvedValue(statusOf());
+      renderWindow();
+      await screen.findByTestId('agent-input');
+      const chat = vi.spyOn(backend, 'agentChat').mockResolvedValue({ text: 'ok' });
+      await act(async () => {
+        await useAgent.getState().send('hello');
+      });
+      expect(chat.mock.calls[0]![0]).not.toHaveProperty('agentModel');
+      expect(chat.mock.calls[0]![0]).not.toHaveProperty('effort');
+      act(() => useAgent.getState().changeProvider());
+      fireEvent.click(await screen.findByTestId('agent-choose-openai'));
+      expect((await screen.findByTestId('agent-endpoint-url') as HTMLInputElement).value).toBe(OLLAMA);
+      expect((screen.getByTestId('agent-endpoint-model') as HTMLInputElement).value).toBe('qwen3:8b');
+    },
+  );
 });

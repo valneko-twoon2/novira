@@ -48,13 +48,17 @@ describe('registerParamsFeature', () => {
     expect(warnings.result.current).toEqual([]);
   });
 
-  it('lets go of the chosen main model when it disappears, without choosing another, and registering twice subscribes once', { tags: ['condition'] }, () => {
-    registerParamsFeature();
-    registerParamsFeature();
-    act(() => useModels.setState({ models: [main('m1'), main('m2')] }));
-    expect(useParams.getState().modelKey).toBeNull();
-    act(() => useParams.getState().set({ modelKey: 'm1' }));
-    act(() => useModels.setState({ models: [main('m2')] }));
-    expect(useParams.getState().modelKey).toBeNull();
-  });
+  it(
+    'lets go of the chosen main model when it disappears, without choosing another, and registering twice subscribes once',
+    { tags: ['state-transition'] },
+    () => {
+      registerParamsFeature();
+      registerParamsFeature();
+      act(() => useModels.setState({ models: [main('m1'), main('m2')] }));
+      expect(useParams.getState().modelKey).toBeNull();
+      act(() => useParams.getState().set({ modelKey: 'm1' }));
+      act(() => useModels.setState({ models: [main('m2')] }));
+      expect(useParams.getState().modelKey).toBeNull();
+    },
+  );
 });

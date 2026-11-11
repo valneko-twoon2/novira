@@ -36,7 +36,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('PresetPicker', () => {
+describe('PresetPicker', { tags: [] }, () => {
   it('shows the current preset on the card, or a prompt to choose one', { tags: ['condition'] }, () => {
     setup({ selectedId: 'mine' });
     const card = screen.getByTestId('preset-trigger');
@@ -47,7 +47,7 @@ describe('PresetPicker', () => {
     expect(screen.getByTestId('preset-trigger').textContent).toContain(t('presets.choose'));
   });
 
-  it('shows names and summaries only, no pictures', { tags: ['condition'] }, () => {
+  it('shows names and summaries only, no pictures', { tags: ['equivalence'] }, () => {
     setup({ selectedId: 'mine' });
     openList();
     expect(screen.getByTestId('bar').querySelector('img')).toBeNull();
@@ -55,7 +55,7 @@ describe('PresetPicker', () => {
     expect(within(list()).getByText('SDXL')).toBeTruthy();
   });
 
-  it('groups my presets and the built-ins, and searches names and summaries', { tags: ['condition'] }, () => {
+  it('groups my presets and the built-ins, and searches names and summaries', { tags: ['equivalence', 'condition'] }, () => {
     setup();
     openList();
     expect(within(list()).getByText(t('presets.group.mine'))).toBeTruthy();
@@ -90,7 +90,7 @@ describe('PresetPicker', () => {
     expect(h.onSaveNew).toHaveBeenCalledWith('Night scene');
   });
 
-  it('blocks applying and saving while presets are unavailable, with the reason shown', { tags: ['condition'] }, () => {
+  it('blocks applying and saving while presets are unavailable, with the reason shown', { tags: ['condition', 'error-guessing'] }, () => {
     const h = setup({ disabledReason: 'Select a layer' });
     expect((screen.getByTestId('preset-quick-save') as HTMLButtonElement).disabled).toBe(true);
     openList();

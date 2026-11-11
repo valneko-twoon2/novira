@@ -18,7 +18,7 @@ const names = () => panel().takes.map((t) => t.imageName);
 
 beforeEach(reset);
 
-describe('the earlier pictures of a panel', () => {
+describe('the earlier pictures of a panel', { tags: [] }, () => {
   it('keeps the picture a redraw replaced, with how it sat, in front of the list', { tags: ['condition'] }, () => {
     seed();
     useComic.getState().setPanelImage('panel-0', 'first.png');
@@ -87,7 +87,7 @@ describe('the earlier pictures of a panel', () => {
   });
 });
 
-describe('nextTakes', () => {
+describe('nextTakes', { tags: [] }, () => {
   const take = (imageName: string) => ({ imageName, view: { ...DEFAULT_IMAGE_VIEW } });
 
   it('leaves the list alone when there was no picture and the new one is not in it', { tags: ['condition'] }, () => {
@@ -99,8 +99,8 @@ describe('nextTakes', () => {
   });
 });
 
-describe('the earlier pictures in a saved comic', () => {
-  it('are saved and read back', { tags: ['condition'] }, () => {
+describe('the earlier pictures in a saved comic', { tags: [] }, () => {
+  it('are saved and read back', { tags: ['equivalence'] }, () => {
     seed();
     useComic.getState().setPanelImage('panel-0', 'a.png');
     useComic.getState().setPanelImage('panel-0', 'b.png');
@@ -127,7 +127,7 @@ describe('the earlier pictures in a saved comic', () => {
     expect(takes.map((t) => t.imageName)).not.toContain('now.png');
   });
 
-  it('are an empty list for a panel saved before there were any', { tags: ['boundary'] }, () => {
+  it('are an empty list for a panel saved before there were any', { tags: ['condition'] }, () => {
     const project = serializeComicProject(newProject('P')) as Record<string, unknown>;
     delete (project.pages as { panels: Record<string, unknown>[] }[])[0]!.panels[0]!.takes;
     expect(parseComicProject(project)!.pages[0]!.panels[0]!.takes).toEqual([]);

@@ -28,8 +28,8 @@ const focus = () => {
 };
 const blur = () => act(() => button().blur());
 
-describe('Tooltip', () => {
-  it('adds nothing but handlers and its state while closed', { tags: ['condition'] }, () => {
+describe('Tooltip', { tags: [] }, () => {
+  it('adds nothing but handlers and its state while closed', { tags: ['state-transition'] }, () => {
     render(
       <Tooltip content="Go there">
         <button type="button">go</button>
@@ -57,48 +57,56 @@ describe('Tooltip', () => {
     expect(screen.queryByRole('tooltip')).toBeNull();
   });
 
-  it('does not open on a focus the browser does not show, as when a dialog closed by the mouse gives the focus back', { tags: ['error-guessing'] }, () => {
-    render(
-      <Tooltip content="Go there">
-        <button type="button">go</button>
-      </Tooltip>,
-    );
-    const el = button();
-    const real = Element.prototype.matches;
-    const matches = vi.spyOn(el, 'matches').mockImplementation((selector) => selector !== ':focus-visible' && real.call(el, selector));
-    focus();
-    expect(screen.queryByRole('tooltip')).toBeNull();
-    expect(button().getAttribute('data-state')).toBe('closed');
-    // Hovering it still shows the tooltip.
-    fireEvent.pointerMove(button());
-    act(() => vi.advanceTimersByTime(400));
-    expect(screen.getByRole('tooltip').textContent).toBe('Go there');
-    matches.mockRestore();
-  });
-
-  it('opens on hover after 400 ms, closes on leaving, and opens the next one at once for a moment', { tags: ['state-transition'] }, () => {
-    render(
-      <>
-        <Tooltip content="First">
+  it(
+    'does not open on a focus the browser does not show, as when a dialog closed by the mouse gives the focus back',
+    { tags: ['regression', 'condition'] },
+    () => {
+      render(
+        <Tooltip content="Go there">
           <button type="button">go</button>
-        </Tooltip>
-        <Tooltip content="Second">
-          <button type="button">next</button>
-        </Tooltip>
-      </>,
-    );
-    fireEvent.pointerMove(button());
-    act(() => vi.advanceTimersByTime(399));
-    expect(screen.queryByRole('tooltip')).toBeNull();
-    act(() => vi.advanceTimersByTime(1));
-    expect(screen.getByRole('tooltip').textContent).toBe('First');
-    fireEvent.pointerLeave(button());
-    expect(screen.queryByRole('tooltip')).toBeNull();
-    fireEvent.pointerMove(screen.getByRole('button', { name: 'next' }));
-    expect(screen.getByRole('tooltip').textContent).toBe('Second');
-  });
+        </Tooltip>,
+      );
+      const el = button();
+      const real = Element.prototype.matches;
+      const matches = vi.spyOn(el, 'matches').mockImplementation((selector) => selector !== ':focus-visible' && real.call(el, selector));
+      focus();
+      expect(screen.queryByRole('tooltip')).toBeNull();
+      expect(button().getAttribute('data-state')).toBe('closed');
+      // Hovering it still shows the tooltip.
+      fireEvent.pointerMove(button());
+      act(() => vi.advanceTimersByTime(400));
+      expect(screen.getByRole('tooltip').textContent).toBe('Go there');
+      matches.mockRestore();
+    },
+  );
 
-  it('does not open when the pointer leaves before the delay', { tags: ['boundary'] }, () => {
+  it(
+    'opens on hover after 400 ms, closes on leaving, and opens the next one at once for a moment',
+    { tags: ['state-transition', 'boundary'] },
+    () => {
+      render(
+        <>
+          <Tooltip content="First">
+            <button type="button">go</button>
+          </Tooltip>
+          <Tooltip content="Second">
+            <button type="button">next</button>
+          </Tooltip>
+        </>,
+      );
+      fireEvent.pointerMove(button());
+      act(() => vi.advanceTimersByTime(399));
+      expect(screen.queryByRole('tooltip')).toBeNull();
+      act(() => vi.advanceTimersByTime(1));
+      expect(screen.getByRole('tooltip').textContent).toBe('First');
+      fireEvent.pointerLeave(button());
+      expect(screen.queryByRole('tooltip')).toBeNull();
+      fireEvent.pointerMove(screen.getByRole('button', { name: 'next' }));
+      expect(screen.getByRole('tooltip').textContent).toBe('Second');
+    },
+  );
+
+  it('does not open when the pointer leaves before the delay', { tags: ['boundary', 'state-transition'] }, () => {
     render(
       <Tooltip content="Go there">
         <button type="button">go</button>
@@ -110,7 +118,7 @@ describe('Tooltip', () => {
     expect(screen.queryByRole('tooltip')).toBeNull();
   });
 
-  it('closes on a press, and the focus the press gives does not open it', { tags: ['condition'] }, () => {
+  it('closes on a press, and the focus the press gives does not open it', { tags: ['state-transition', 'regression'] }, () => {
     render(
       <Tooltip content="Go there">
         <button type="button">go</button>
@@ -129,7 +137,7 @@ describe('Tooltip', () => {
     expect(screen.getByRole('tooltip')).toBeTruthy();
   });
 
-  it('closes on Escape and on a click', { tags: ['condition'] }, () => {
+  it('closes on Escape and on a click', { tags: ['state-transition'] }, () => {
     render(
       <Tooltip content="Go there">
         <button type="button">go</button>
@@ -164,7 +172,7 @@ describe('Tooltip', () => {
     expect(onClick).toHaveBeenCalledOnce();
   });
 
-  it('shows the control alone when there is nothing to say', { tags: ['condition'] }, () => {
+  it('shows the control alone when there is nothing to say', { tags: ['boundary'] }, () => {
     render(
       <Tooltip content="">
         <button type="button">go</button>

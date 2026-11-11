@@ -52,7 +52,7 @@ afterEach(() => {
 });
 
 describe('RefImageSettings', () => {
-  it('turns the image on and off, and deletes it', { tags: ['scenario'] }, () => {
+  it('turns the image on and off, and deletes it', { tags: ['state-transition'] }, () => {
     show();
     const toggle = screen.getByRole('switch', { name: t('params.refImage.enabled') });
     fireEvent.click(toggle);

@@ -44,19 +44,19 @@ describe('renderScene', () => {
     expect(transparent.of('drawImage')).toHaveLength(0);
   });
 
-  it('runs the underlay before anything else', { tags: ['condition'] }, () => {
+  it('runs the underlay before anything else', { tags: ['equivalence'] }, () => {
     const rec = recordingContext();
     renderScene(rec.ctx, scene([]), null, 1, (c) => c.fillRect(1, 2, 3, 4));
     expect(rec.of('fillRect')[0]).toEqual([1, 2, 3, 4]);
   });
 
-  it('skips a layer whose text is empty', { tags: ['condition'] }, () => {
+  it('skips a layer whose text is empty', { tags: ['boundary'] }, () => {
     const rec = recordingContext();
     renderScene(rec.ctx, scene([text('')]), null);
     expect(rec.of('fillText')).toHaveLength(0);
   });
 
-  it('paints the outline, the stroke and the fill, with the shadow on the outermost shape only', { tags: ['condition'] }, () => {
+  it('paints the outline, the stroke and the fill, with the shadow on the outermost shape only', { tags: ['decision-table'] }, () => {
     const rec = recordingContext();
     const style = {
       outline: { color: '#ff0000', width: 4 },
@@ -124,29 +124,37 @@ describe('renderScene', () => {
     expect(main.of('drawImage')).toHaveLength(0);
   });
 
-  it.each(['round', 'box', 'cloud', 'burst', 'whisper', 'narration'] as const)('draws a %s bubble with its text', { tags: ['equivalence'] }, (shape) => {
-    const rec = recordingContext();
-    const made = newBubbleLayer({ width: 400, height: 300 }, shape, 'Hello');
-    const bubble = { ...made, x: 200, y: 150, tail: { ...made.tail, enabled: true } };
-    renderScene(rec.ctx, scene([bubble]), null);
-    expect(rec.of('stroke').length).toBeGreaterThan(0);
-    expect(rec.of('fill').length).toBeGreaterThan(0);
-    expect(rec.of('fillText').length).toBeGreaterThan(0);
-    if (shape === 'whisper') expect(rec.of('setLineDash')[0]).toHaveLength(1);
-    if (shape === 'cloud') expect(rec.of('arc').length).toBeGreaterThan(0);
-  });
+  it.each(['round', 'box', 'cloud', 'burst', 'whisper', 'narration'] as const)(
+    'draws a %s bubble with its text',
+    { tags: ['equivalence'] },
+    (shape) => {
+      const rec = recordingContext();
+      const made = newBubbleLayer({ width: 400, height: 300 }, shape, 'Hello');
+      const bubble = { ...made, x: 200, y: 150, tail: { ...made.tail, enabled: true } };
+      renderScene(rec.ctx, scene([bubble]), null);
+      expect(rec.of('stroke').length).toBeGreaterThan(0);
+      expect(rec.of('fill').length).toBeGreaterThan(0);
+      expect(rec.of('fillText').length).toBeGreaterThan(0);
+      if (shape === 'whisper') expect(rec.of('setLineDash')[0]).toHaveLength(1);
+      if (shape === 'cloud') expect(rec.of('arc').length).toBeGreaterThan(0);
+    },
+  );
 
-  it('draws a bubble without text as a shape only, and keeps the font size when auto-fit is off', { tags: ['condition'] }, () => {
-    const rec = recordingContext();
-    const empty = { ...newBubbleLayer({ width: 400, height: 300 }, 'round', '  ') };
-    renderScene(rec.ctx, scene([empty]), null);
-    expect(rec.of('fillText')).toHaveLength(0);
+  it(
+    'draws a bubble without text as a shape only, and keeps the font size when auto-fit is off',
+    { tags: ['boundary', 'condition'] },
+    () => {
+      const rec = recordingContext();
+      const empty = { ...newBubbleLayer({ width: 400, height: 300 }, 'round', '  ') };
+      renderScene(rec.ctx, scene([empty]), null);
+      expect(rec.of('fillText')).toHaveLength(0);
 
-    const fixed = recordingContext();
-    const big = { ...newBubbleLayer({ width: 400, height: 300 }, 'narration', 'Hello there'), autoFit: false };
-    renderScene(fixed.ctx, scene([big]), null);
-    expect(fixed.sets.some((s) => s.name === 'font' && String(s.value).includes(`${big.style.fontSize}px`))).toBe(true);
-  });
+      const fixed = recordingContext();
+      const big = { ...newBubbleLayer({ width: 400, height: 300 }, 'narration', 'Hello there'), autoFit: false };
+      renderScene(fixed.ctx, scene([big]), null);
+      expect(fixed.sets.some((s) => s.name === 'font' && String(s.value).includes(`${big.style.fontSize}px`))).toBe(true);
+    },
+  );
 });
 
 describe('layerHalfSize', () => {

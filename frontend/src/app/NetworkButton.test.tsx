@@ -34,8 +34,8 @@ async function refresh() {
   });
 }
 
-describe('the pieces of the panel', () => {
-  it('draws each dark module as a square inside the quiet zone', { tags: ['condition'] }, () => {
+describe('the pieces of the panel', { tags: [] }, () => {
+  it('draws each dark module as a square inside the quiet zone', { tags: ['equivalence'] }, () => {
     const link = { size: 3, modules: '100010001' };
     expect(qrPath(link)).toBe('M4 4h1v1h-1zM5 5h1v1h-1zM6 6h1v1h-1z');
     expect(qrPath({ ...link, modules: '000000000' })).toBe('');
@@ -48,7 +48,7 @@ describe('the pieces of the panel', () => {
   });
 });
 
-describe('NetworkButton', () => {
+describe('NetworkButton', { tags: [] }, () => {
   beforeEach(() => {
     resetLan();
     useToasts.setState({ toasts: [] });
@@ -59,22 +59,30 @@ describe('NetworkButton', () => {
     getLanApi.mockReset();
   });
 
-  it('is absent where there is no home network (the desktop app, a phone, a page that cannot read the state)', { tags: ['condition'] }, async () => {
-    await show(null);
-    expect(screen.queryByTestId('home-link-open')).toBeNull();
-  });
+  it(
+    'is absent where there is no home network (the desktop app, a phone, a page that cannot read the state)',
+    { tags: ['condition'] },
+    async () => {
+      await show(null);
+      expect(screen.queryByTestId('home-link-open')).toBeNull();
+    },
+  );
 
-  it('opens a closed home network at the press, trusting the network it is on, and shows the code', { tags: ['scenario'] }, async () => {
-    const lan = createMockLan();
-    await show(lan);
-    await press('home-link-open');
-    expect(await screen.findByTestId('home-link-code')).not.toBeNull();
-    expect((await lan.state())?.open).toBe(true);
-    expect((await lan.state())?.network).toMatchObject({ trusted: true });
-    expect(screen.queryByTestId('lan-open')).toBeNull();
-  });
+  it(
+    'opens a closed home network at the press, trusting the network it is on, and shows the code',
+    { tags: ['scenario', 'state-transition'] },
+    async () => {
+      const lan = createMockLan();
+      await show(lan);
+      await press('home-link-open');
+      expect(await screen.findByTestId('home-link-code')).not.toBeNull();
+      expect((await lan.state())?.open).toBe(true);
+      expect((await lan.state())?.network).toMatchObject({ trusted: true });
+      expect(screen.queryByTestId('lan-open')).toBeNull();
+    },
+  );
 
-  it('shows the code with its countdown, and a new one when it ran out', { tags: ['state-transition'] }, async () => {
+  it('shows the code with its countdown, and a new one when it ran out', { tags: ['state-transition', 'boundary'] }, async () => {
     const lan = createMockLan('open');
     await show(lan);
     await press('home-link-open');
@@ -97,26 +105,30 @@ describe('NetworkButton', () => {
     }
   });
 
-  it('lists a phone that asks with its number, and allows it, refuses it, or disconnects it later', { tags: ['scenario'] }, async () => {
-    const lan = createMockLan('open');
-    await show(lan);
-    await press('home-link-open');
-    lan.askToPair('iPhone', '192.168.1.20');
-    lan.askToPair('Pixel', '192.168.1.21');
-    await refresh();
-    const [first, second] = (await lan.state())?.pending ?? [];
-    const row = await screen.findByTestId(`lan-pending-${first?.id}`);
-    expect(row.textContent).toContain('iPhone');
-    expect(row.textContent).toContain('192.168.1.20');
-    expect(row.textContent).toContain(groupedNumber(first?.confirm ?? ''));
-    await press(`lan-allow-${first?.id}`);
-    await press(`lan-deny-${second?.id}`);
-    expect((await screen.findByTestId(`lan-device-${first?.id}`)).textContent).toContain('iPhone');
-    expect(screen.queryByTestId(`lan-pending-${second?.id}`)).toBeNull();
-    await press(`lan-revoke-${first?.id}`);
-    await waitFor(() => expect(screen.queryByTestId(`lan-device-${first?.id}`)).toBeNull());
-    expect((await lan.state())?.devices).toEqual([]);
-  });
+  it(
+    'lists a phone that asks with its number, and allows it, refuses it, or disconnects it later',
+    { tags: ['scenario', 'state-transition'] },
+    async () => {
+      const lan = createMockLan('open');
+      await show(lan);
+      await press('home-link-open');
+      lan.askToPair('iPhone', '192.168.1.20');
+      lan.askToPair('Pixel', '192.168.1.21');
+      await refresh();
+      const [first, second] = (await lan.state())?.pending ?? [];
+      const row = await screen.findByTestId(`lan-pending-${first?.id}`);
+      expect(row.textContent).toContain('iPhone');
+      expect(row.textContent).toContain('192.168.1.20');
+      expect(row.textContent).toContain(groupedNumber(first?.confirm ?? ''));
+      await press(`lan-allow-${first?.id}`);
+      await press(`lan-deny-${second?.id}`);
+      expect((await screen.findByTestId(`lan-device-${first?.id}`)).textContent).toContain('iPhone');
+      expect(screen.queryByTestId(`lan-pending-${second?.id}`)).toBeNull();
+      await press(`lan-revoke-${first?.id}`);
+      await waitFor(() => expect(screen.queryByTestId(`lan-device-${first?.id}`)).toBeNull());
+      expect((await lan.state())?.devices).toEqual([]);
+    },
+  );
 
   it('has no button to close the home network or to stop trusting it', { tags: ['condition'] }, async () => {
     const lan = createMockLan('open');
@@ -134,24 +146,28 @@ describe('NetworkButton', () => {
     expect(await screen.findByTestId('home-link-code')).not.toBeNull();
   });
 
-  it('says why it cannot open when there is no home address or no known gateway', { tags: ['decision-table'] }, async () => {
-    const lan = createMockLan();
-    const base = await lan.state();
-    if (!base) throw new Error('state');
-    for (const [change, text] of [
-      [{ address: null }, 'アドレスが見つかりません'],
-      [{ network: { ...base.network, gatewayMac: null } }, 'ゲートウェイを確認できない'],
-    ] as const) {
-      cleanup();
-      resetLan();
-      await show({ ...lan, state: async () => ({ ...base, ...change }) });
-      await press('home-link-open');
-      expect((await screen.findByTestId('lan-reason')).textContent).toContain(text);
-      expect(screen.queryByTestId('lan-open')).toBeNull();
-    }
-  });
+  it(
+    'says why it cannot open when there is no home address or no known gateway',
+    { tags: ['decision-table', 'error-guessing'] },
+    async () => {
+      const lan = createMockLan();
+      const base = await lan.state();
+      if (!base) throw new Error('state');
+      for (const [change, text] of [
+        [{ address: null }, 'アドレスが見つかりません'],
+        [{ network: { ...base.network, gatewayMac: null } }, 'ゲートウェイを確認できない'],
+      ] as const) {
+        cleanup();
+        resetLan();
+        await show({ ...lan, state: async () => ({ ...base, ...change }) });
+        await press('home-link-open');
+        expect((await screen.findByTestId('lan-reason')).textContent).toContain(text);
+        expect(screen.queryByTestId('lan-open')).toBeNull();
+      }
+    },
+  );
 
-  it('shows on the item how many phones wait', { tags: ['condition'] }, async () => {
+  it('shows on the item how many phones wait', { tags: ['equivalence'] }, async () => {
     const lan: MockLan = createMockLan('open');
     lan.askToPair('iPhone', '192.168.1.20');
     await show(lan);

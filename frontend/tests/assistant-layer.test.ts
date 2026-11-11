@@ -38,18 +38,18 @@ const BELOW_IT = [
   ['features/browse/browse.css', '.browse-dock'],
 ] as const;
 
-describe('assistant window stacking', () => {
-  it('stays under the dialogs, menus, popovers and tooltips', { tags: ['condition'] }, () => {
+describe('assistant window stacking', { tags: [] }, () => {
+  it('stays under the dialogs, menus, popovers and tooltips', { tags: ['equivalence'] }, () => {
     const own = zIndex(...ASSISTANT);
     for (const [file, selector] of ABOVE_IT) expect(zIndex(file!, selector!), selector).toBeGreaterThan(own);
   });
 
-  it('stays over the app panels', { tags: ['condition'] }, () => {
+  it('stays over the app panels', { tags: ['equivalence'] }, () => {
     const own = zIndex(...ASSISTANT);
     for (const [file, selector] of BELOW_IT) expect(own, selector).toBeGreaterThan(zIndex(file!, selector!));
   });
 
-  it('keeps its own model picker above its window, and under the dialogs', { tags: ['condition'] }, () => {
+  it('keeps its own model picker above its window, and under the dialogs', { tags: ['boundary'] }, () => {
     const picker = zIndex(...ASSISTANT_PICKER);
     expect(picker).toBeGreaterThan(zIndex(...ASSISTANT));
     expect(picker).toBeLessThan(zIndex('ui/ui.css', '.ui-modal__overlay'));

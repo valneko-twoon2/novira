@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { joinWeightedTags, parseWeightedTags, removeTagAt, setTagWeightAt } from './promptTags';
 
 describe('weighted tags', () => {
-  it('reads plain and weighted entries', { tags: ['condition'] }, () => {
+  it('reads plain and weighted entries', { tags: ['equivalence'] }, () => {
     expect(parseWeightedTags('1girl, (smile:1.3), (red eyes:0.8)')).toEqual([
       { text: '1girl', weight: 1 },
       { text: 'smile', weight: 1.3 },
@@ -10,7 +10,7 @@ describe('weighted tags', () => {
     ]);
   });
 
-  it('keeps commas inside brackets and braces in one entry', { tags: ['condition'] }, () => {
+  it('keeps commas inside brackets and braces in one entry', { tags: ['equivalence'] }, () => {
     expect(parseWeightedTags('(a, b:1.2), {x|y, z}, c').map((t) => t.text)).toEqual(['a, b', '{x|y, z}', 'c']);
   });
 
@@ -29,7 +29,7 @@ describe('weighted tags', () => {
     expect(joinWeightedTags([{ text: 'a', weight: -1 }])).toBe('(a:0)');
   });
 
-  it('ignores an index past the end and removes an entry by index', { tags: ['condition'] }, () => {
+  it('ignores an index past the end and removes an entry by index', { tags: ['boundary'] }, () => {
     expect(setTagWeightAt('a', 3, 1.5)).toBe('a');
     expect(removeTagAt('a, (b:1.2), c', 1)).toBe('a, c');
   });

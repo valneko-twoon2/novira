@@ -12,59 +12,71 @@ async function deleteFirst(page: Page): Promise<void> {
   await page.getByTestId('confirm-delete-images').click();
 }
 
-test('the notification and the header button bring a deleted picture back, and delete it again', { tag: ['@state-transition'] }, async ({ page }) => {
-  await openApp(page);
-  await expect(thumbs(page)).toHaveCount(4);
-  await expect(page.getByTestId('gallery-undo-delete')).toBeDisabled();
-  await expect(page.getByTestId('gallery-redo-delete')).toBeDisabled();
+test(
+  'the notification and the header button bring a deleted picture back, and delete it again',
+  { tag: ['@state-transition'] },
+  async ({ page }) => {
+    await openApp(page);
+    await expect(thumbs(page)).toHaveCount(4);
+    await expect(page.getByTestId('gallery-undo-delete')).toBeDisabled();
+    await expect(page.getByTestId('gallery-redo-delete')).toBeDisabled();
 
-  await deleteFirst(page);
-  await expect(thumbs(page)).toHaveCount(3);
-  await expect(page.getByTestId('gallery-undo-delete')).toBeEnabled();
+    await deleteFirst(page);
+    await expect(thumbs(page)).toHaveCount(3);
+    await expect(page.getByTestId('gallery-undo-delete')).toBeEnabled();
 
-  // The deletion's notification goes under the bell, not into a toast; its own button takes this deletion back.
-  await expect(page.locator('.toast')).toHaveCount(0);
-  await page.getByTestId('notification-bell').click();
-  await page.getByTestId('notification-list').getByRole('button', { name: msg('gallery.undoDelete.action'), exact: true }).click();
-  await expect(thumbs(page)).toHaveCount(4);
-  await expect(page.getByTestId('gallery-count')).toHaveText('4');
-  await expect(page.getByTestId('gallery-undo-delete')).toBeDisabled();
-  await expect(page.getByTestId('gallery-redo-delete')).toBeEnabled();
+    // The deletion's notification goes under the bell, not into a toast; its own button takes this deletion back.
+    await expect(page.locator('.toast')).toHaveCount(0);
+    await page.getByTestId('notification-bell').click();
+    await page.getByTestId('notification-list').getByRole('button', { name: msg('gallery.undoDelete.action'), exact: true }).click();
+    await expect(thumbs(page)).toHaveCount(4);
+    await expect(page.getByTestId('gallery-count')).toHaveText('4');
+    await expect(page.getByTestId('gallery-undo-delete')).toBeDisabled();
+    await expect(page.getByTestId('gallery-redo-delete')).toBeEnabled();
 
-  // Taking it back is itself undone by "delete again".
-  await page.getByTestId('gallery-redo-delete').click();
-  await expect(thumbs(page)).toHaveCount(3);
-  await expect(page.getByTestId('gallery-redo-delete')).toBeDisabled();
+    // Taking it back is itself undone by "delete again".
+    await page.getByTestId('gallery-redo-delete').click();
+    await expect(thumbs(page)).toHaveCount(3);
+    await expect(page.getByTestId('gallery-redo-delete')).toBeDisabled();
 
-  await page.getByTestId('gallery-undo-delete').click();
-  await expect(thumbs(page)).toHaveCount(4);
-});
+    await page.getByTestId('gallery-undo-delete').click();
+    await expect(thumbs(page)).toHaveCount(4);
+  },
+);
 
-test('Ctrl+Z over the gallery brings a deletion back and Ctrl+Shift+Z deletes it again', { tag: ['@state-transition'] }, async ({ page }) => {
-  await openApp(page);
-  await deleteFirst(page);
-  await expect(thumbs(page)).toHaveCount(3);
+test(
+  'Ctrl+Z over the gallery brings a deletion back and Ctrl+Shift+Z deletes it again',
+  { tag: ['@state-transition'] },
+  async ({ page }) => {
+    await openApp(page);
+    await deleteFirst(page);
+    await expect(thumbs(page)).toHaveCount(3);
 
-  await page.getByTestId('gallery-panel').hover();
-  await page.keyboard.press('Control+z');
-  await expect(thumbs(page)).toHaveCount(4);
-  await page.keyboard.press('Control+Shift+z');
-  await expect(thumbs(page)).toHaveCount(3);
-  await page.keyboard.press('Control+z');
-  await expect(thumbs(page)).toHaveCount(4);
-});
+    await page.getByTestId('gallery-panel').hover();
+    await page.keyboard.press('Control+z');
+    await expect(thumbs(page)).toHaveCount(4);
+    await page.keyboard.press('Control+Shift+z');
+    await expect(thumbs(page)).toHaveCount(3);
+    await page.keyboard.press('Control+z');
+    await expect(thumbs(page)).toHaveCount(4);
+  },
+);
 
-test('deleting a board with its pictures can be taken back; they return uncategorized', { tag: ['@state-transition'] }, async ({ page }) => {
-  await openApp(page);
-  await expect(thumbs(page)).toHaveCount(4);
-  const row = page.getByTestId('board-row').filter({ hasText: 'Characters' });
-  await row.click({ button: 'right' });
-  await page.getByRole('menuitem', { name: msg('gallery.boards.delete') }).click();
-  await page.getByTestId('delete-board-and-images').click();
-  await expect(row).toHaveCount(0);
-  await expect(page.getByTestId('gallery-undo-delete')).toBeEnabled();
+test(
+  'deleting a board with its pictures can be taken back; they return uncategorized',
+  { tag: ['@state-transition'] },
+  async ({ page }) => {
+    await openApp(page);
+    await expect(thumbs(page)).toHaveCount(4);
+    const row = page.getByTestId('board-row').filter({ hasText: 'Characters' });
+    await row.click({ button: 'right' });
+    await page.getByRole('menuitem', { name: msg('gallery.boards.delete') }).click();
+    await page.getByTestId('delete-board-and-images').click();
+    await expect(row).toHaveCount(0);
+    await expect(page.getByTestId('gallery-undo-delete')).toBeEnabled();
 
-  await page.getByTestId('gallery-undo-delete').click();
-  // The board is gone, so its two pictures come back to Uncategorized, which now holds six.
-  await expect(thumbs(page)).toHaveCount(6);
-});
+    await page.getByTestId('gallery-undo-delete').click();
+    // The board is gone, so its two pictures come back to Uncategorized, which now holds six.
+    await expect(thumbs(page)).toHaveCount(6);
+  },
+);

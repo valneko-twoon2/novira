@@ -66,7 +66,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('attaching pictures', () => {
+describe('attaching pictures', { tags: [] }, () => {
   it('stores picked files in the gallery, shows them, and sends them with the message', { tags: ['scenario'] }, async () => {
     show();
     await pick(file('a.png'), file('notes.txt', 'text/plain'), file('b.jpg', 'image/jpeg'));
@@ -93,7 +93,7 @@ describe('attaching pictures', () => {
     expect(send).toHaveBeenCalledWith('', ['up2.png']);
   });
 
-  it('takes at most four and says so', { tags: ['boundary', 'scenario'] }, async () => {
+  it('takes at most four and says so', { tags: ['boundary'] }, async () => {
     show();
     await pick(file('1.png'), file('2.png'), file('3.png'));
     await waitFor(() => expect(thumbs()).toHaveLength(3));
@@ -102,7 +102,7 @@ describe('attaching pictures', () => {
     expect(thumbs()).toEqual(['t/up1.png', 't/up2.png', 't/up3.png', 't/up4.png']);
   });
 
-  it('reports a file the gallery refuses and keeps the others', { tags: ['error-guessing', 'scenario'] }, async () => {
+  it('reports a file the gallery refuses and keeps the others', { tags: ['error-guessing'] }, async () => {
     vi.mocked(backend.uploadImage).mockRejectedValueOnce(new Error('broken PNG'));
     show();
     await pick(file('bad.png'), file('good.png'));
@@ -110,7 +110,7 @@ describe('attaching pictures', () => {
     expect(useToasts.getState().toasts[0]).toMatchObject({ status: 'error', title: t('agent.attach.failed'), description: 'broken PNG' });
   });
 
-  it('takes gallery pictures dropped on the input box without storing them again, but not videos', { tags: ['regression'] }, async () => {
+  it('takes gallery pictures dropped on the input box without storing them again, but not videos', { tags: ['condition'] }, async () => {
     show();
     drop(screen.getByTestId('agent-form'), { names: ['g1.png', 'clip.mp4', 'g2.png'] });
     await waitFor(() => expect(thumbs()).toEqual(['t/g1.png', 't/g2.png']));
@@ -120,7 +120,7 @@ describe('attaching pictures', () => {
     await waitFor(() => expect(thumbs()).toEqual(['t/g1.png', 't/g2.png']));
   });
 
-  it('stores files dropped from disk or pasted into the box', { tags: ['scenario'] }, async () => {
+  it('stores files dropped from disk or pasted into the box', { tags: ['equivalence'] }, async () => {
     show();
     drop(screen.getByTestId('agent-form'), { files: [file('disk.png')] });
     await waitFor(() => expect(thumbs()).toEqual(['t/up1.png']));
@@ -132,26 +132,30 @@ describe('attaching pictures', () => {
   });
 });
 
-describe('sent messages', () => {
-  it('show the pictures they carried, and a picture no longer in the gallery as a placeholder', { tags: ['regression'] }, () => {
+describe('sent messages', { tags: [] }, () => {
+  it('show the pictures they carried, and a picture no longer in the gallery as a placeholder', { tags: ['condition'] }, () => {
     show([{ id: 1, role: 'user', text: 'like this', images: ['g1.png', 'gone.png'], tools: [] }]);
     const pictures = screen.getByTestId('agent-msg-pictures');
     expect(within(pictures).getAllByRole('img').map((img) => img.getAttribute('src'))).toEqual(['t/g1.png', null]);
   });
 
-  it('show a picture in the viewer when it is pressed, from a screen with no viewer too, and ignore one that is gone', { tags: ['boundary', 'scenario'] }, () => {
-    show([{ id: 1, role: 'assistant', text: 'trial', images: ['g1.png', 'gone.png'], tools: [] }]);
-    useUi.setState({ activeTab: 'models', mainView: { ...useUi.getState().mainView, generate: 'launchpad' } });
-    const [first, gone] = within(screen.getByTestId('agent-msg-pictures')).getAllByRole('button');
-    fireEvent.click(gone!);
-    expect(useUi.getState().activeTab).toBe('models');
-    fireEvent.click(first!);
-    expect(useGallery.getState().selection).toEqual(['g1.png']);
-    expect(useUi.getState().activeTab).toBe('generate');
-    expect(useUi.getState().mainView.generate).toBe('viewer');
-  });
+  it(
+    'show a picture in the viewer when it is pressed, from a screen with no viewer too, and ignore one that is gone',
+    { tags: ['condition'] },
+    () => {
+      show([{ id: 1, role: 'assistant', text: 'trial', images: ['g1.png', 'gone.png'], tools: [] }]);
+      useUi.setState({ activeTab: 'models', mainView: { ...useUi.getState().mainView, generate: 'launchpad' } });
+      const [first, gone] = within(screen.getByTestId('agent-msg-pictures')).getAllByRole('button');
+      fireEvent.click(gone!);
+      expect(useUi.getState().activeTab).toBe('models');
+      fireEvent.click(first!);
+      expect(useGallery.getState().selection).toEqual(['g1.png']);
+      expect(useUi.getState().activeTab).toBe('generate');
+      expect(useUi.getState().mainView.generate).toBe('viewer');
+    },
+  );
 
-  it('copy their text, and say so when the clipboard refuses', { tags: ['error-guessing', 'scenario'] }, async () => {
+  it('copy their text, and say so when the clipboard refuses', { tags: ['error-guessing'] }, async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal('navigator', { clipboard: { writeText } });
     show([

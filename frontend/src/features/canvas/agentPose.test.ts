@@ -18,28 +18,32 @@ beforeEach(() => {
 });
 afterEach(() => vi.restoreAllMocks());
 
-describe('the assistant and the pose tool', () => {
-  it('places the described person, reads the poses on the layer back, and undoes the change', { tags: ['state-transition'] }, async () => {
-    const read: unknown[] = [];
-    scriptAgent(async (call) => {
-      read.push((await call('get_pose')).content);
-      if (read.length === 1) await call('set_pose', { people: [{ lean: 7, rArm: { upper: -170, fore: -175 } }] });
-    });
-    await useAgent.getState().send('a pose with the right hand up');
-    expect(read[0]).toMatchObject({ poses: [] });
-    expect(poses()).toHaveLength(1);
+describe('the assistant and the pose tool', { tags: [] }, () => {
+  it(
+    'places the described person, reads the poses on the layer back, and undoes the change',
+    { tags: ['scenario', 'state-transition'] },
+    async () => {
+      const read: unknown[] = [];
+      scriptAgent(async (call) => {
+        read.push((await call('get_pose')).content);
+        if (read.length === 1) await call('set_pose', { people: [{ lean: 7, rArm: { upper: -170, fore: -175 } }] });
+      });
+      await useAgent.getState().send('a pose with the right hand up');
+      expect(read[0]).toMatchObject({ poses: [] });
+      expect(poses()).toHaveLength(1);
 
-    await useAgent.getState().send('lean more');
-    expect(read[1]).toMatchObject({ poses: [{ lean: 7, rArm: { upper: -170 } }] });
+      await useAgent.getState().send('lean more');
+      expect(read[1]).toMatchObject({ poses: [{ lean: 7, rArm: { upper: -170 } }] });
 
-    const message = useAgent.getState().sessions[0]!.messages.filter((m) => m.role === 'assistant')[0]!;
-    expect(message.tools).toEqual([{ kind: 'pose', count: 1 }]);
-    expect(message.editSnapshots).toHaveProperty('canvas');
-    useAgent.getState().undo(message.id);
-    expect(useCanvas.getState().entities).toHaveLength(0);
-  });
+      const message = useAgent.getState().sessions[0]!.messages.filter((m) => m.role === 'assistant')[0]!;
+      expect(message.tools).toEqual([{ kind: 'pose', count: 1 }]);
+      expect(message.editSnapshots).toHaveProperty('canvas');
+      useAgent.getState().undo(message.id);
+      expect(useCanvas.getState().entities).toHaveLength(0);
+    },
+  );
 
-  it('applies nothing when no usable person was described, and tells the assistant', { tags: ['condition'] }, async () => {
+  it('applies nothing when no usable person was described, and tells the assistant', { tags: ['error-guessing'] }, async () => {
     let answer: unknown;
     scriptAgent(async (call) => {
       answer = await call('set_pose', { people: [3] });

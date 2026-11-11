@@ -7,14 +7,14 @@ import { TOOL_LOG_KINDS, type AgentMessage } from './agentSessions';
 const user = (id: number, text: string, extra: Partial<AgentMessage> = {}): AgentMessage => ({ id, role: 'user', text, tools: [], ...extra });
 const answer = (id: number, extra: Partial<AgentMessage> = {}): AgentMessage => ({ id, role: 'assistant', text: 'done', tools: [], ...extra });
 
-describe('historyTurn', () => {
-  it('leaves the user and an answer that changed nothing as they are', { tags: ['scenario'] }, () => {
+describe('historyTurn', { tags: [] }, () => {
+  it('leaves the user and an answer that changed nothing as they are', { tags: ['equivalence'] }, () => {
     expect(historyTurn(user(1, 'hi'))).toEqual({ role: 'user', text: 'hi' });
     expect(historyTurn({ ...user(1, 'hi'), tools: [{ kind: 'prompt' }] })).toEqual({ role: 'user', text: 'hi' });
     expect(historyTurn(answer(2))).toEqual({ role: 'assistant', text: 'done' });
   });
 
-  it('notes every call of an answer in order, with its model, weight, count or summary', { tags: ['equivalence'] }, () => {
+  it('notes every call of an answer in order, with its model, weight, count or summary', { tags: ['scenario'] }, () => {
     const turn = historyTurn(answer(2, { tools: [{ kind: 'model', key: 'm1' }, { kind: 'lora', key: 'l1', weight: 0.8 }, { kind: 'prompt' }, { kind: 'params', summary: '30 steps' }, { kind: 'queued', count: 2 }] }));
     expect(turn.text).toBe('done\n[This answer selected the model m1; added the LoRA l1 at 0.8; rewrote the prompt boxes of the Generate tab; set 30 steps; queued 2 job(s).]');
   });
@@ -30,15 +30,15 @@ describe('historyTurn', () => {
     );
   });
 
-  it('says when the user undid the answer', { tags: ['scenario'] }, () => {
+  it('says when the user undid the answer', { tags: ['condition'] }, () => {
     expect(historyTurn(answer(2, { tools: [{ kind: 'prompt' }], undone: true })).text).toBe(
       'done\n[This answer rewrote the prompt boxes of the Generate tab.]\n[The user undid these changes with the undo button: they are not in the app any more.]',
     );
   });
 });
 
-describe('earlierSettings', () => {
-  it('pairs the settings before each changing request with that request, oldest first', { tags: ['equivalence'] }, () => {
+describe('earlierSettings', { tags: [] }, () => {
+  it('pairs the settings before each changing request with that request, oldest first', { tags: ['scenario', 'condition'] }, () => {
     const messages = [
       user(1, 'short hair'),
       answer(2, { snapshot: { positivePrompt: 'long hair' } }),
@@ -58,7 +58,7 @@ describe('earlierSettings', () => {
     expect(earlierSettings([])).toEqual([]);
   });
 
-  it('cuts a long request and keeps only the latest versions', { tags: ['condition'] }, () => {
+  it('cuts a long request and keeps only the latest versions', { tags: ['boundary'] }, () => {
     const long = 'あ'.repeat(REQUEST_CHARS + 5);
     expect(earlierSettings([user(1, long), answer(2, { snapshot: {} })])[0]!.request).toBe('あ'.repeat(REQUEST_CHARS));
     const many = Array.from({ length: EARLIER_MAX + 2 }, (_, i) => [user(i * 2, `r${i}`), answer(i * 2 + 1, { snapshot: { steps: i } })]).flat();
@@ -69,10 +69,10 @@ describe('earlierSettings', () => {
   });
 });
 
-describe('fitHistory', () => {
+describe('fitHistory', { tags: [] }, () => {
   const turn = (text: string) => ({ role: 'user' as const, text });
 
-  it('keeps the newest turns that fit the budget, oldest first, and counts the rest as dropped', { tags: ['condition'] }, () => {
+  it('keeps the newest turns that fit the budget, oldest first, and counts the rest as dropped', { tags: ['boundary'] }, () => {
     const turns = ['a'.repeat(300), 'b'.repeat(300), 'c'.repeat(300)].map(turn);
     const each = roughTokens('a'.repeat(300)) + 4;
     expect(fitHistory(turns, each * 2)).toMatchObject({ turns: [turns[1], turns[2]], tokens: each * 2, dropped: 1 });
@@ -80,18 +80,18 @@ describe('fitHistory', () => {
     expect(fitHistory([], 10)).toEqual({ turns: [], tokens: 0, dropped: 0 });
   });
 
-  it('always sends the newest turn, even when it alone is over the budget', { tags: ['condition'] }, () => {
+  it('always sends the newest turn, even when it alone is over the budget', { tags: ['boundary', 'condition'] }, () => {
     const turns = [turn('old'), turn('x'.repeat(3000))];
     expect(fitHistory(turns, 10)).toMatchObject({ turns: [turns[1]], dropped: 1 });
   });
 
-  it('counts about a token for three characters, in any script', { tags: ['condition'] }, () => {
+  it('counts about a token for three characters, in any script', { tags: ['equivalence', 'boundary'] }, () => {
     expect(roughTokens('')).toBe(0);
     expect(roughTokens('abcdefg')).toBe(3);
     expect(roughTokens('あいう')).toBe(1);
   });
 
-  it('measures a session like a request does: failed replies are left out and notes are counted', { tags: ['error-guessing'] }, () => {
+  it('measures a session like a request does: failed replies are left out and notes are counted', { tags: ['condition'] }, () => {
     const messages = [user(1, 'hi'), answer(2, { error: true }), answer(3, { tools: [{ kind: 'prompt' }] })];
     const { turns, tokens, dropped } = contextUsage(messages);
     expect(turns.map((t) => t.role)).toEqual(['user', 'assistant']);
@@ -101,16 +101,16 @@ describe('fitHistory', () => {
   });
 });
 
-describe('the token limit', () => {
+describe('the token limit', { tags: [] }, () => {
   const turn = (text: string, role: 'user' | 'assistant' = 'user') => ({ role, text });
 
-  it('keeps a chat that fits whole, with nothing shortened', { tags: ['scenario'] }, () => {
+  it('keeps a chat that fits whole, with nothing shortened', { tags: ['boundary'] }, () => {
     const turns = [turn('hi'), turn('hello', 'assistant')];
     expect(compressHistory(turns, 1000)).toEqual({ turns, tokens: 2 * 4 + roughTokens('hi') + roughTokens('hello'), dropped: 0, omitted: 0 });
     expect(compressHistory([], 1000)).toEqual({ turns: [], tokens: 0, dropped: 0, omitted: 0 });
   });
 
-  it('shortens the older turns to a line each in one turn at the start, and keeps the newest whole', { tags: ['equivalence'] }, () => {
+  it('shortens the older turns to a line each in one turn at the start, and keeps the newest whole', { tags: ['scenario'] }, () => {
     const budget = DIGEST_TOKENS + 400;
     const turns = Array.from({ length: 12 }, (_, i) => turn(`message ${i}: ` + 'あ'.repeat(900), i % 2 ? 'assistant' : 'user'));
     const fit = compressHistory(turns, budget);
@@ -129,7 +129,7 @@ describe('the token limit', () => {
     expect(fit.tokens).toBeLessThanOrEqual(budget);
   });
 
-  it('leaves the oldest messages out of the shortened part too when even their lines do not fit', { tags: ['condition'] }, () => {
+  it('leaves the oldest messages out of the shortened part too when even their lines do not fit', { tags: ['boundary'] }, () => {
     const turns = Array.from({ length: 600 }, (_, i) => turn(`m${i} ` + 'x'.repeat(200), i % 2 ? 'assistant' : 'user'));
     const fit = compressHistory(turns, DIGEST_TOKENS + 1000);
     expect(fit.omitted).toBeGreaterThan(0);
@@ -139,14 +139,14 @@ describe('the token limit', () => {
     expect(fit.tokens).toBeLessThanOrEqual(DIGEST_TOKENS + 1000);
   });
 
-  it('sends the newest turn whole even when it alone is over the budget', { tags: ['scenario'] }, () => {
+  it('sends the newest turn whole even when it alone is over the budget', { tags: ['boundary'] }, () => {
     const turns = [turn('old'), turn('x'.repeat(9000))];
     const fit = compressHistory(turns, 10);
     expect(fit.turns.at(-1)).toBe(turns[1]);
     expect(fit.turns[0]!.text).toContain('You: old');
   });
 
-  it('sends the whole chat when the limit is off, and counts it', { tags: ['boundary'] }, () => {
+  it('sends the whole chat when the limit is off, and counts it', { tags: ['condition', 'boundary'] }, () => {
     const messages = Array.from({ length: 4 }, (_, i) => (i % 2 ? answer(i + 1, { text: 'あ'.repeat(40000) }) : user(i + 1, 'あ'.repeat(40000))));
     const on = contextUsage(messages, true);
     expect(on.dropped).toBe(2);

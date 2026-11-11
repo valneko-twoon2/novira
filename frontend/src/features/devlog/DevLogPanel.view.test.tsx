@@ -32,8 +32,8 @@ const addLines = () => {
   useDevLog.getState().add({ level: 'error', source: 'backend', message: 'out of memory' });
 };
 
-describe('DevLogPanel', () => {
-  it('says so when there is nothing to show, and keeps the buttons off', { tags: ['scenario'] }, () => {
+describe('DevLogPanel', { tags: [] }, () => {
+  it('says so when there is nothing to show, and keeps the buttons off', { tags: ['boundary', 'condition'] }, () => {
     show();
     expect(screen.getByText(t('app.devlog.empty'))).toBeTruthy();
     expect((screen.getByLabelText(t('app.devlog.copy')) as HTMLButtonElement).disabled).toBe(true);
@@ -53,7 +53,7 @@ describe('DevLogPanel', () => {
     expect(screen.getByText(t('app.devlog.empty'))).toBeTruthy();
   });
 
-  it('follows new lines while at the bottom, and leaves the position when scrolled up', { tags: ['scenario'] }, () => {
+  it('follows new lines while at the bottom, and leaves the position when scrolled up', { tags: ['condition'] }, () => {
     show();
     const list = document.querySelector('.devlog__list') as HTMLElement;
     Object.defineProperties(list, { scrollHeight: { value: 1000, configurable: true }, clientHeight: { value: 100, configurable: true } });

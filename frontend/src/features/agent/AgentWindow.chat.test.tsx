@@ -45,33 +45,37 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('the text of a message', () => {
-  it("shows the assistant's Markdown as bold, lists, code and tables, and what the user typed and errors as they are", { tags: ['error-guessing', 'scenario'] }, async () => {
-    const answer = '**足したもの**\n- **線と塗り**: clean lineart\n- `glossy hair`\n\n| a | b |\n|---|---|\n| 1 | <b>2</b> |\n\n<img src=x onerror=alert(1)>';
-    seed([
-      message(1, 'user', '**as typed**'),
-      message(2, 'assistant', answer, { thoughts: ['Read **this** as a style request.'] }),
-      message(3, 'assistant', '**failed**', { error: true }),
-    ]);
-    show();
-    const [, reply, failed] = await screen.findAllByTestId(/^agent-msg-/);
-    expect(screen.getByTestId('agent-msg-user').textContent).toContain('**as typed**');
-    expect(within(reply!).getByText('足したもの').tagName).toBe('STRONG');
-    const items = within(reply!).getAllByRole('listitem');
-    expect(items.map((li) => li.textContent)).toEqual(['線と塗り: clean lineart', 'glossy hair']);
-    expect(within(items[1]!).getByText('glossy hair').tagName).toBe('CODE');
-    expect(within(reply!).getAllByRole('columnheader').map((th) => th.textContent)).toEqual(['a', 'b']);
-    // HTML in an answer stays text: no element is made from it.
-    expect(within(reply!).getByText('<b>2</b>').tagName).toBe('TD');
-    expect(reply!.querySelector('img, b')).toBeNull();
-    expect(reply!.textContent).toContain('<img src=x onerror=alert(1)>');
-    expect(within(reply!).getByText('this').tagName).toBe('STRONG');
-    expect(failed!.textContent).toContain('**failed**');
-  });
+describe('the text of a message', { tags: [] }, () => {
+  it(
+    "shows the assistant's Markdown as bold, lists, code and tables, and what the user typed and errors as they are",
+    { tags: ['equivalence', 'error-guessing'] },
+    async () => {
+      const answer = '**足したもの**\n- **線と塗り**: clean lineart\n- `glossy hair`\n\n| a | b |\n|---|---|\n| 1 | <b>2</b> |\n\n<img src=x onerror=alert(1)>';
+      seed([
+        message(1, 'user', '**as typed**'),
+        message(2, 'assistant', answer, { thoughts: ['Read **this** as a style request.'] }),
+        message(3, 'assistant', '**failed**', { error: true }),
+      ]);
+      show();
+      const [, reply, failed] = await screen.findAllByTestId(/^agent-msg-/);
+      expect(screen.getByTestId('agent-msg-user').textContent).toContain('**as typed**');
+      expect(within(reply!).getByText('足したもの').tagName).toBe('STRONG');
+      const items = within(reply!).getAllByRole('listitem');
+      expect(items.map((li) => li.textContent)).toEqual(['線と塗り: clean lineart', 'glossy hair']);
+      expect(within(items[1]!).getByText('glossy hair').tagName).toBe('CODE');
+      expect(within(reply!).getAllByRole('columnheader').map((th) => th.textContent)).toEqual(['a', 'b']);
+      // HTML in an answer stays text: no element is made from it.
+      expect(within(reply!).getByText('<b>2</b>').tagName).toBe('TD');
+      expect(reply!.querySelector('img, b')).toBeNull();
+      expect(reply!.textContent).toContain('<img src=x onerror=alert(1)>');
+      expect(within(reply!).getByText('this').tagName).toBe('STRONG');
+      expect(failed!.textContent).toContain('**failed**');
+    },
+  );
 });
 
-describe('sending', () => {
-  it('offers starting suggestions on an empty chat and sends the one picked', { tags: ['boundary', 'scenario'] }, async () => {
+describe('sending', { tags: [] }, () => {
+  it('offers starting suggestions on an empty chat and sends the one picked', { tags: ['scenario'] }, async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     seed([], { send });
     show();
@@ -79,81 +83,93 @@ describe('sending', () => {
     expect(send).toHaveBeenCalledWith(t('agent.suggestion.anime'), []);
   });
 
-  it('sends on Enter, keeps Shift+Enter and composing for the text, and ignores an empty send and queues one made while it works', { tags: ['boundary', 'state-transition'] }, async () => {
-    const send = vi.fn().mockResolvedValue(undefined);
-    seed([message(1, 'user', 'hi')], { send });
-    show();
-    const input = (await screen.findByTestId('agent-input')) as HTMLTextAreaElement;
-    expect((screen.getByTestId('agent-send') as HTMLButtonElement).disabled).toBe(true);
-    fireEvent.keyDown(input, { key: 'Enter' });
-    expect(send).not.toHaveBeenCalled();
-    fireEvent.change(input, { target: { value: 'make it blue' } });
-    fireEvent.keyDown(input, { key: 'Enter', shiftKey: true });
-    expect(send).not.toHaveBeenCalled();
-    fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
-    expect(send).not.toHaveBeenCalled();
-    fireEvent.keyDown(input, { key: 'Enter' });
-    expect(send).toHaveBeenCalledWith('make it blue', []);
-    expect(input.value).toBe('');
+  it(
+    'sends on Enter, keeps Shift+Enter and composing for the text, and ignores an empty send and queues one made while it works',
+    { tags: ['condition', 'boundary'] },
+    async () => {
+      const send = vi.fn().mockResolvedValue(undefined);
+      seed([message(1, 'user', 'hi')], { send });
+      show();
+      const input = (await screen.findByTestId('agent-input')) as HTMLTextAreaElement;
+      expect((screen.getByTestId('agent-send') as HTMLButtonElement).disabled).toBe(true);
+      fireEvent.keyDown(input, { key: 'Enter' });
+      expect(send).not.toHaveBeenCalled();
+      fireEvent.change(input, { target: { value: 'make it blue' } });
+      fireEvent.keyDown(input, { key: 'Enter', shiftKey: true });
+      expect(send).not.toHaveBeenCalled();
+      fireEvent.keyDown(input, { key: 'Enter', isComposing: true });
+      expect(send).not.toHaveBeenCalled();
+      fireEvent.keyDown(input, { key: 'Enter' });
+      expect(send).toHaveBeenCalledWith('make it blue', []);
+      expect(input.value).toBe('');
 
-    fireEvent.change(input, { target: { value: 'again' } });
-    fireEvent.submit(input.closest('form')!);
-    expect(send).toHaveBeenCalledTimes(2);
-    act(() => useAgent.setState({ busy: true, busySessionId: 's1' }));
-    fireEvent.change(input, { target: { value: 'while busy' } });
-    fireEvent.submit(input.closest('form')!);
-    expect(send).toHaveBeenCalledTimes(2);
-    expect(screen.getByText(t('agent.thinking'))).toBeTruthy();
-    // The message written meanwhile waits its turn, shown faded under the thinking, and can be taken out.
-    expect(input.value).toBe('');
-    expect(useAgent.getState().queued.map((q) => q.text)).toEqual(['while busy']);
-    expect(within(screen.getByTestId('agent-msg-queued')).getByText('while busy')).toBeTruthy();
-    fireEvent.click(screen.getByTestId('agent-unqueue'));
-    expect(useAgent.getState().queued).toEqual([]);
-    expect(screen.queryByTestId('agent-msg-queued')).toBeNull();
-  });
+      fireEvent.change(input, { target: { value: 'again' } });
+      fireEvent.submit(input.closest('form')!);
+      expect(send).toHaveBeenCalledTimes(2);
+      act(() => useAgent.setState({ busy: true, busySessionId: 's1' }));
+      fireEvent.change(input, { target: { value: 'while busy' } });
+      fireEvent.submit(input.closest('form')!);
+      expect(send).toHaveBeenCalledTimes(2);
+      expect(screen.getByText(t('agent.thinking'))).toBeTruthy();
+      // The message written meanwhile waits its turn, shown faded under the thinking, and can be taken out.
+      expect(input.value).toBe('');
+      expect(useAgent.getState().queued.map((q) => q.text)).toEqual(['while busy']);
+      expect(within(screen.getByTestId('agent-msg-queued')).getByText('while busy')).toBeTruthy();
+      fireEvent.click(screen.getByTestId('agent-unqueue'));
+      expect(useAgent.getState().queued).toEqual([]);
+      expect(screen.queryByTestId('agent-msg-queued')).toBeNull();
+    },
+  );
 });
 
-describe('the context meter', () => {
-  it('shows what the next message carries once the chat has messages, and says when older ones no longer fit', { tags: ['regression'] }, async () => {
-    seed([]);
-    show();
-    await screen.findByTestId('agent-input');
-    // Nothing to measure yet, but the token limit switch is there.
-    const empty = screen.getByTestId('agent-context');
-    expect(empty.querySelector('.agent-context__usage')).toBeNull();
-    expect(within(empty).getByRole('switch', { name: t('agent.context.limit') })).toBeTruthy();
-    cleanup();
-    seed([message(1, 'user', 'hi'), message(2, 'assistant', 'hello')]);
-    show();
-    expect((await screen.findByTestId('agent-context')).textContent).toContain(t('agent.context.usage', { used: '11', max: '30.0k' }));
-    expect(screen.getByTestId('agent-context').getAttribute('data-full')).toBeNull();
-    cleanup();
-    seed(Array.from({ length: 4 }, (_, i) => message(i + 1, i % 2 ? 'assistant' : 'user', 'あ'.repeat(40000))));
-    show();
-    const meter = await screen.findByTestId('agent-context');
-    expect(meter.getAttribute('data-full')).toBe('true');
-    expect(meter.textContent).toContain(tCount('agent.context.compressed', 2));
-  });
+describe('the context meter', { tags: [] }, () => {
+  it(
+    'shows what the next message carries once the chat has messages, and says when older ones no longer fit',
+    { tags: ['boundary'] },
+    async () => {
+      seed([]);
+      show();
+      await screen.findByTestId('agent-input');
+      // Nothing to measure yet, but the token limit switch is there.
+      const empty = screen.getByTestId('agent-context');
+      expect(empty.querySelector('.agent-context__usage')).toBeNull();
+      expect(within(empty).getByRole('switch', { name: t('agent.context.limit') })).toBeTruthy();
+      cleanup();
+      seed([message(1, 'user', 'hi'), message(2, 'assistant', 'hello')]);
+      show();
+      expect((await screen.findByTestId('agent-context')).textContent).toContain(t('agent.context.usage', { used: '11', max: '30.0k' }));
+      expect(screen.getByTestId('agent-context').getAttribute('data-full')).toBeNull();
+      cleanup();
+      seed(Array.from({ length: 4 }, (_, i) => message(i + 1, i % 2 ? 'assistant' : 'user', 'あ'.repeat(40000))));
+      show();
+      const meter = await screen.findByTestId('agent-context');
+      expect(meter.getAttribute('data-full')).toBe('true');
+      expect(meter.textContent).toContain(tCount('agent.context.compressed', 2));
+    },
+  );
 
-  it('has a token limit switch that is on at first, and without it sends the whole chat and says no older message is shortened', { tags: ['boundary', 'scenario'] }, async () => {
-    const long = Array.from({ length: 4 }, (_, i) => message(i + 1, i % 2 ? 'assistant' : 'user', 'あ'.repeat(40000)));
-    seed(long);
-    show();
-    const meter = await screen.findByTestId('agent-context');
-    const limit = within(meter).getByRole('switch', { name: t('agent.context.limit') });
-    expect(limit.getAttribute('aria-checked')).toBe('true');
-    expect(meter.textContent).toContain(tCount('agent.context.compressed', 2));
-    fireEvent.click(limit);
-    expect(useAgent.getState().tokenLimit).toBe(false);
-    expect(limit.getAttribute('aria-checked')).toBe('false');
-    expect(meter.getAttribute('data-full')).toBeNull();
-    expect(meter.textContent).not.toContain(tCount('agent.context.compressed', 2));
-    expect(meter.textContent).toContain(t('agent.context.usageOff', { used: '53.4k' }));
-  });
+  it(
+    'has a token limit switch that is on at first, and without it sends the whole chat and says no older message is shortened',
+    { tags: ['condition'] },
+    async () => {
+      const long = Array.from({ length: 4 }, (_, i) => message(i + 1, i % 2 ? 'assistant' : 'user', 'あ'.repeat(40000)));
+      seed(long);
+      show();
+      const meter = await screen.findByTestId('agent-context');
+      const limit = within(meter).getByRole('switch', { name: t('agent.context.limit') });
+      expect(limit.getAttribute('aria-checked')).toBe('true');
+      expect(meter.textContent).toContain(tCount('agent.context.compressed', 2));
+      fireEvent.click(limit);
+      expect(useAgent.getState().tokenLimit).toBe(false);
+      expect(limit.getAttribute('aria-checked')).toBe('false');
+      expect(meter.getAttribute('data-full')).toBeNull();
+      expect(meter.textContent).not.toContain(tCount('agent.context.compressed', 2));
+      expect(meter.textContent).toContain(t('agent.context.usageOff', { used: '53.4k' }));
+    },
+  );
 });
 
-describe('applied changes', () => {
+describe('applied changes', { tags: [] }, () => {
   const tools: AgentToolLog[] = [
     { kind: 'model', key: 'unknown-key' },
     { kind: 'lora', key: 'lora-x', weight: 0.7 },
@@ -171,33 +187,37 @@ describe('applied changes', () => {
     { kind: 'packs', ids: ['rmbg'] },
   ];
 
-  it('names every kind of change in a chip list, shows the recommended extensions, and offers to generate and to undo', { tags: ['state-transition', 'decision-table'] }, async () => {
-    const undo = vi.fn();
-    seed([message(1, 'user', 'do it'), message(2, 'assistant', 'Done', { tools, snapshot: {} as never })], { undo });
-    show();
-    const list = await screen.findByText(t('agent.applied'));
-    const items = within(list.closest('.agent-msg__actions') as HTMLElement).getAllByRole('listitem').map((li) => li.textContent);
-    expect(items).toEqual([
-      t('agent.action.model', { name: 'unknown-key' }),
-      t('agent.action.lora', { name: 'lora-x', weight: 0.7 }),
-      t('agent.action.prompt'),
-      t('agent.action.workflow', { name: 'My flow' }),
-      t('agent.action.editText', { count: 2 }),
-      t('agent.action.video', { fields: 1 }),
-      t('agent.action.music', { fields: 2 }),
-      t('agent.action.voice', { fields: 1 }),
-      t('agent.action.editWorkflow', { count: 1 }),
-      t('agent.action.editComic', { count: 4 }),
-      t('agent.action.pose', { count: 2 }),
-      t('agent.action.params', { summary: '512×768 / 30 steps' }),
-      t('agent.action.queued', { count: 3 }),
-    ]);
-    expect(screen.getAllByTestId('agent-pack').map((c) => c.getAttribute('data-pack'))).toEqual(['rmbg']);
-    fireEvent.click(screen.getByTestId('agent-undo'));
-    expect(undo).toHaveBeenCalledWith(2);
-  });
+  it(
+    'names every kind of change in a chip list, shows the recommended extensions, and offers to generate and to undo',
+    { tags: ['equivalence'] },
+    async () => {
+      const undo = vi.fn();
+      seed([message(1, 'user', 'do it'), message(2, 'assistant', 'Done', { tools, snapshot: {} as never })], { undo });
+      show();
+      const list = await screen.findByText(t('agent.applied'));
+      const items = within(list.closest('.agent-msg__actions') as HTMLElement).getAllByRole('listitem').map((li) => li.textContent);
+      expect(items).toEqual([
+        t('agent.action.model', { name: 'unknown-key' }),
+        t('agent.action.lora', { name: 'lora-x', weight: 0.7 }),
+        t('agent.action.prompt'),
+        t('agent.action.workflow', { name: 'My flow' }),
+        t('agent.action.editText', { count: 2 }),
+        t('agent.action.video', { fields: 1 }),
+        t('agent.action.music', { fields: 2 }),
+        t('agent.action.voice', { fields: 1 }),
+        t('agent.action.editWorkflow', { count: 1 }),
+        t('agent.action.editComic', { count: 4 }),
+        t('agent.action.pose', { count: 2 }),
+        t('agent.action.params', { summary: '512×768 / 30 steps' }),
+        t('agent.action.queued', { count: 3 }),
+      ]);
+      expect(screen.getAllByTestId('agent-pack').map((c) => c.getAttribute('data-pack'))).toEqual(['rmbg']);
+      fireEvent.click(screen.getByTestId('agent-undo'));
+      expect(undo).toHaveBeenCalledWith(2);
+    },
+  );
 
-  it('shows a change as undone, or as no longer undoable, and no undo for work that was only queued', { tags: ['regression', 'state-transition'] }, async () => {
+  it('shows a change as undone, or as no longer undoable, and no undo for work that was only queued', { tags: ['condition'] }, async () => {
     seed([
       message(1, 'assistant', 'one', { tools: [{ kind: 'prompt' }], undone: true, snapshot: {} as never }),
       message(2, 'assistant', 'two', { tools: [{ kind: 'prompt' }] }),
@@ -211,7 +231,7 @@ describe('applied changes', () => {
     expect(screen.getByText(t('agent.action.queued', { count: 1 }))).toBeTruthy();
   });
 
-  it('shows what changed while the assistant works', { tags: ['state-transition', 'scenario'] }, async () => {
+  it('shows what changed while the assistant works', { tags: ['scenario'] }, async () => {
     seed([message(1, 'user', 'go')], { busy: true, busySessionId: 's1', working: [{ kind: 'prompt' }, { kind: 'packs', ids: ['x'] }] });
     show();
     const working = await screen.findByTestId('agent-working');
@@ -231,38 +251,42 @@ describe('applied changes', () => {
     expect(answerPermission.mock.calls).toEqual([['once'], ['always'], ['deny']]);
   });
 
-  it('shows an error message as one', { tags: ['error-guessing', 'boundary'] }, async () => {
+  it('shows an error message as one', { tags: ['equivalence'] }, async () => {
     seed([message(1, 'assistant', 'It failed', { error: true })]);
     show();
     expect((await screen.findByText('It failed')).closest('.agent-msg')!.className).toContain('is-error');
   });
 });
 
-describe('the window', () => {
-  it('can be dragged by its header, stays on screen and ignores presses on the header buttons', { tags: ['scenario'] }, async () => {
-    const setPos = vi.fn();
-    seed([message(1, 'user', 'hi')], { setPos });
-    show();
-    const win = await screen.findByTestId('agent-window');
-    win.getBoundingClientRect = () => ({ left: 100, top: 100, width: 300, height: 400, right: 400, bottom: 500, x: 100, y: 100, toJSON: () => ({}) });
-    const header = win.querySelector('.agent-win__head')!;
-    const at = (el: Element | Window, type: string, x: number, y: number) => {
-      const e = new MouseEvent(type, { clientX: x, clientY: y, bubbles: true, cancelable: true });
-      el.dispatchEvent(e);
-    };
-    at(header.querySelector('button')!, 'pointerdown', 120, 120);
-    expect(setPos).not.toHaveBeenCalled();
-    at(header, 'pointerdown', 120, 130);
-    at(window, 'pointermove', 220, 230);
-    expect(setPos).toHaveBeenLastCalledWith({ x: 200, y: 200 });
-    at(window, 'pointermove', -500, 5000);
-    expect(setPos).toHaveBeenLastCalledWith({ x: 0, y: window.innerHeight - 48 });
-    at(window, 'pointerup', 0, 0);
-    at(window, 'pointermove', 300, 300);
-    expect(setPos).toHaveBeenCalledTimes(2);
-  });
+describe('the window', { tags: [] }, () => {
+  it(
+    'can be dragged by its header, stays on screen and ignores presses on the header buttons',
+    { tags: ['boundary', 'scenario'] },
+    async () => {
+      const setPos = vi.fn();
+      seed([message(1, 'user', 'hi')], { setPos });
+      show();
+      const win = await screen.findByTestId('agent-window');
+      win.getBoundingClientRect = () => ({ left: 100, top: 100, width: 300, height: 400, right: 400, bottom: 500, x: 100, y: 100, toJSON: () => ({}) });
+      const header = win.querySelector('.agent-win__head')!;
+      const at = (el: Element | Window, type: string, x: number, y: number) => {
+        const e = new MouseEvent(type, { clientX: x, clientY: y, bubbles: true, cancelable: true });
+        el.dispatchEvent(e);
+      };
+      at(header.querySelector('button')!, 'pointerdown', 120, 120);
+      expect(setPos).not.toHaveBeenCalled();
+      at(header, 'pointerdown', 120, 130);
+      at(window, 'pointermove', 220, 230);
+      expect(setPos).toHaveBeenLastCalledWith({ x: 200, y: 200 });
+      at(window, 'pointermove', -500, 5000);
+      expect(setPos).toHaveBeenLastCalledWith({ x: 0, y: window.innerHeight - 48 });
+      at(window, 'pointerup', 0, 0);
+      at(window, 'pointermove', 300, 300);
+      expect(setPos).toHaveBeenCalledTimes(2);
+    },
+  );
 
-  it('closes, and changes the provider', { tags: ['state-transition', 'scenario'] }, async () => {
+  it('closes, and changes the provider', { tags: ['scenario'] }, async () => {
     const setOpen = vi.fn();
     const changeProvider = vi.fn();
     seed([message(1, 'user', 'hi')], { setOpen, changeProvider });
@@ -274,7 +298,7 @@ describe('the window', () => {
     expect(setOpen).toHaveBeenCalledWith(false);
   });
 
-  it('starts a new chat from the session bar and closes the list', { tags: ['state-transition', 'scenario'] }, async () => {
+  it('starts a new chat from the session bar and closes the list', { tags: ['scenario'] }, async () => {
     const newSession = vi.fn();
     seed([message(1, 'user', 'hi')], { newSession });
     show();
@@ -285,7 +309,7 @@ describe('the window', () => {
     expect(screen.getByTestId('agent-session-toggle').getAttribute('aria-expanded')).toBe('false');
   });
 
-  it('is placed where it was dragged to', { tags: ['scenario'] }, async () => {
+  it('is placed where it was dragged to', { tags: ['condition'] }, async () => {
     seed([], { pos: { x: 40, y: 60 } });
     show();
     const win = await screen.findByTestId('agent-window');
@@ -294,8 +318,8 @@ describe('the window', () => {
   });
 });
 
-describe('setup', () => {
-  it('waits while the sign-in state is unknown', { tags: ['error-guessing', 'state-transition'] }, async () => {
+describe('setup', { tags: [] }, () => {
+  it('waits while the sign-in state is unknown', { tags: ['state-transition'] }, async () => {
     vi.spyOn(backend, 'agentStatus').mockReturnValue(new Promise(() => {}));
     seed([], { status: null });
     show();
@@ -303,26 +327,30 @@ describe('setup', () => {
     expect(document.querySelector('.agent-setup')).toBeTruthy();
   });
 
-  it('lets the user choose a provider, says it is waiting, and explains a missing install or a failed sign-in', { tags: ['error-guessing', 'state-transition'] }, async () => {
-    const signIn = vi.fn().mockResolvedValue(undefined);
-    vi.spyOn(backend, 'agentStatus').mockResolvedValue({ provider: null, installed: false, loggedIn: false } as never);
-    seed([], { status: { provider: null, installed: false, loggedIn: false } as never, signIn });
-    show();
-    fireEvent.click(await screen.findByTestId('agent-choose-codex'));
-    expect(signIn).toHaveBeenCalledWith('codex');
-    act(() => useAgent.setState({ signingIn: 'claude' }));
-    expect(screen.getByText(t('agent.setup.waiting', { name: 'Claude' }))).toBeTruthy();
-    act(() => useAgent.setState({ signingIn: null, signInError: 'denied', status: { provider: 'codex', installed: false, loggedIn: false } as never }));
-    expect(screen.getByText('denied')).toBeTruthy();
-    expect(screen.getByText(t('agent.setup.notInstalled', { name: 'Codex' }))).toBeTruthy();
-    await waitFor(() => expect(screen.getByTestId('agent-setup')).toBeTruthy());
-  });
+  it(
+    'lets the user choose a provider, says it is waiting, and explains a missing install or a failed sign-in',
+    { tags: ['scenario', 'error-guessing'] },
+    async () => {
+      const signIn = vi.fn().mockResolvedValue(undefined);
+      vi.spyOn(backend, 'agentStatus').mockResolvedValue({ provider: null, installed: false, loggedIn: false } as never);
+      seed([], { status: { provider: null, installed: false, loggedIn: false } as never, signIn });
+      show();
+      fireEvent.click(await screen.findByTestId('agent-choose-codex'));
+      expect(signIn).toHaveBeenCalledWith('codex');
+      act(() => useAgent.setState({ signingIn: 'claude' }));
+      expect(screen.getByText(t('agent.setup.waiting', { name: 'Claude' }))).toBeTruthy();
+      act(() => useAgent.setState({ signingIn: null, signInError: 'denied', status: { provider: 'codex', installed: false, loggedIn: false } as never }));
+      expect(screen.getByText('denied')).toBeTruthy();
+      expect(screen.getByText(t('agent.setup.notInstalled', { name: 'Codex' }))).toBeTruthy();
+      await waitFor(() => expect(screen.getByTestId('agent-setup')).toBeTruthy());
+    },
+  );
 });
 
-describe('a question asked from another screen', () => {
+describe('a question asked from another screen', { tags: [] }, () => {
   afterEach(() => useAgent.setState({ pendingAsk: null, focus: [] }));
 
-  it('is sent as soon as the assistant is signed in, and only once', { tags: ['scenario'] }, async () => {
+  it('is sent as soon as the assistant is signed in, and only once', { tags: ['condition'] }, async () => {
     const send = vi.fn().mockResolvedValue(undefined);
     seed([], { send, status: null, pendingAsk: 'What does it do?' });
     show();
@@ -331,7 +359,7 @@ describe('a question asked from another screen', () => {
     expect(useAgent.getState().pendingAsk).toBeNull();
   });
 
-  it('waits on the sign-in screen when the assistant is not signed in', { tags: ['scenario'] }, async () => {
+  it('waits on the sign-in screen when the assistant is not signed in', { tags: ['condition'] }, async () => {
     vi.spyOn(backend, 'agentStatus').mockResolvedValue({ provider: 'claude', installed: true, loggedIn: false, models: [] });
     const send = vi.fn().mockResolvedValue(undefined);
     seed([], { send, status: null, pendingAsk: 'What does it do?' });
@@ -342,19 +370,23 @@ describe('a question asked from another screen', () => {
   });
 });
 
-describe('stopping, reasoning and resizing', () => {
+describe('stopping, reasoning and resizing', { tags: [] }, () => {
   afterEach(() => useAgent.setState({ size: null, pos: null, busy: false }));
 
-  it('shows a stop button instead of send while a request is running, and it cancels the request', { tags: ['state-transition', 'scenario'] }, async () => {
-    const cancel = vi.fn();
-    seed([message(1, 'user', 'hi')], { busy: true, busySessionId: 's1', cancel });
-    show();
-    expect(screen.queryByTestId('agent-send')).toBeNull();
-    fireEvent.click(await screen.findByTestId('agent-stop'));
-    expect(cancel).toHaveBeenCalledTimes(1);
-  });
+  it(
+    'shows a stop button instead of send while a request is running, and it cancels the request',
+    { tags: ['state-transition'] },
+    async () => {
+      const cancel = vi.fn();
+      seed([message(1, 'user', 'hi')], { busy: true, busySessionId: 's1', cancel });
+      show();
+      expect(screen.queryByTestId('agent-send')).toBeNull();
+      fireEvent.click(await screen.findByTestId('agent-stop'));
+      expect(cancel).toHaveBeenCalledTimes(1);
+    },
+  );
 
-  it('shows the reasoning as one line that opens to the whole account', { tags: ['boundary', 'state-transition'] }, async () => {
+  it('shows the reasoning as one line that opens to the whole account', { tags: ['state-transition'] }, async () => {
     seed([message(1, 'user', 'hi'), message(2, 'assistant', 'done', { thoughts: ['took it for ComfyUI_TJ_NormalLighting', 'it is not installed'] })]);
     show();
     const box = await screen.findByTestId('agent-thoughts');
@@ -366,14 +398,14 @@ describe('stopping, reasoning and resizing', () => {
     expect(within(box).queryByTestId('agent-thoughts-list')).toBeNull();
   });
 
-  it('shows no reasoning row for a reply without it', { tags: ['scenario'] }, async () => {
+  it('shows no reasoning row for a reply without it', { tags: ['condition'] }, async () => {
     seed([message(1, 'user', 'hi'), message(2, 'assistant', 'done')]);
     show();
     await screen.findByText('done');
     expect(screen.queryByTestId('agent-thoughts')).toBeNull();
   });
 
-  it('changes the size by dragging a corner, within limits, and remembers it', { tags: ['boundary', 'scenario'] }, async () => {
+  it('changes the size by dragging a corner, within limits, and remembers it', { tags: ['boundary'] }, async () => {
     // Earlier tests replace the store's actions with mocks; use the real ones here.
     seed([], { setPos: (pos) => useAgent.setState({ pos }), setSize: (size) => useAgent.setState({ size }) });
     show();

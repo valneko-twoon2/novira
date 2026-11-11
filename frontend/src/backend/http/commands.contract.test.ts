@@ -131,7 +131,7 @@ beforeEach(() => {
 
 afterEach(() => vi.unstubAllGlobals());
 
-describe('HTTP command contract', () => {
+describe('HTTP command contract', { tags: [] }, () => {
   it('lists the layer and the shell-only commands without overlap', { tags: ['condition'] }, () => {
     const names = [...layerCommands().keys()];
     expect(names.length).toBeGreaterThan(60);
@@ -139,7 +139,7 @@ describe('HTTP command contract', () => {
     for (const n of shellOnly()) expect(shellArguments().has(n), n).toBe(true);
   });
 
-  it('calls every command of the layer and the shell (except the listed ones) and nothing else', { tags: ['condition'] }, async () => {
+  it('calls every command of the layer and the shell (except the listed ones) and nothing else', { tags: ['decision-table'] }, async () => {
     const b = new HttpBackend();
     for (const call of Object.values(CALLS)) await call(b).catch(() => undefined);
     const known = [...layerCommands().keys(), ...shellOnly()];
@@ -166,25 +166,29 @@ describe('HTTP command contract', () => {
   });
 });
 
-describe('HttpBackend', () => {
-  it('turns the server message into an error, and a body that is not JSON into a status message', { tags: ['error-guessing'] }, async () => {
-    const b = new HttpBackend();
-    reply = () => ({
-      status: 501,
-      body: {
-        error: 'not available in the browser yet: enqueue',
-        code: 'not_available_in_browser',
-      },
-    });
-    await expect(b.pruneQueue()).rejects.toThrow('not available in the browser yet: enqueue');
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async () => new Response('<html>', { status: 502 })),
-    );
-    await expect(b.pruneQueue()).rejects.toThrow('prune_queue failed (502)');
-  });
+describe('HttpBackend', { tags: [] }, () => {
+  it(
+    'turns the server message into an error, and a body that is not JSON into a status message',
+    { tags: ['error-guessing', 'equivalence'] },
+    async () => {
+      const b = new HttpBackend();
+      reply = () => ({
+        status: 501,
+        body: {
+          error: 'not available in the browser yet: enqueue',
+          code: 'not_available_in_browser',
+        },
+      });
+      await expect(b.pruneQueue()).rejects.toThrow('not available in the browser yet: enqueue');
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => new Response('<html>', { status: 502 })),
+      );
+      await expect(b.pruneQueue()).rejects.toThrow('prune_queue failed (502)');
+    },
+  );
 
-  it('keeps the queue of the last bootstrap and adds the built-in workflows', { tags: ['condition'] }, async () => {
+  it('keeps the queue of the last bootstrap and adds the built-in workflows', { tags: ['scenario'] }, async () => {
     const b = new HttpBackend();
     const boot = await b.bootstrap();
     expect(boot.workflows.length).toBeGreaterThan(0);
@@ -204,47 +208,51 @@ describe('HttpBackend', () => {
     expect(calls).toEqual([]);
   });
 
-  it('downloads an export from the export route under the name the server gives, and passes its refusal on', { tags: ['error-guessing'] }, async () => {
-    const options = { format: 'png', quality: 90, maxSide: null, removeInfo: true, watermark: false } as const;
-    const sent: { url: string; body: unknown }[] = [];
-    const clicked: string[] = [];
-    // jsdom has no object URLs.
-    const { createObjectURL, revokeObjectURL } = URL;
-    URL.createObjectURL = () => 'blob:x';
-    URL.revokeObjectURL = () => undefined;
-    onTestFinished(() => {
-      URL.createObjectURL = createObjectURL;
-      URL.revokeObjectURL = revokeObjectURL;
-    });
-    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
-      clicked.push(this.download);
-    });
-    onTestFinished(() => click.mockRestore());
-    const result = { count: 2, skipped: 1, watermarked: 0, folder: '' };
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async (url: string, init: RequestInit) => {
-        sent.push({ url, body: JSON.parse(String(init.body)) });
-        return new Response(new NodeBlob(['zip']) as unknown as Blob, {
-          headers: {
-            'content-type': 'application/zip',
-            'content-disposition': 'attachment; filename="novira-export-20261022-120000.zip"',
-            'x-novira-export': JSON.stringify(result),
-          },
-        });
-      }),
-    );
-    const b = new HttpBackend();
-    expect(await b.exportImages(['a.png', 'b.png', 'gone.png'], options)).toEqual(result);
-    expect(sent).toEqual([{ url: '/export/images', body: { names: ['a.png', 'b.png', 'gone.png'], options } }]);
-    expect(clicked).toEqual(['novira-export-20261022-120000.zip']);
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async () => new Response(JSON.stringify({ error: 'choose fewer pictures', code: 'failed' }), { status: 422 })),
-    );
-    await expect(b.exportImages(['a.png'], options)).rejects.toThrow('choose fewer pictures');
-    expect(clicked).toHaveLength(1);
-  });
+  it(
+    'downloads an export from the export route under the name the server gives, and passes its refusal on',
+    { tags: ['scenario', 'error-guessing'] },
+    async () => {
+      const options = { format: 'png', quality: 90, maxSide: null, removeInfo: true, watermark: false } as const;
+      const sent: { url: string; body: unknown }[] = [];
+      const clicked: string[] = [];
+      // jsdom has no object URLs.
+      const { createObjectURL, revokeObjectURL } = URL;
+      URL.createObjectURL = () => 'blob:x';
+      URL.revokeObjectURL = () => undefined;
+      onTestFinished(() => {
+        URL.createObjectURL = createObjectURL;
+        URL.revokeObjectURL = revokeObjectURL;
+      });
+      const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
+        clicked.push(this.download);
+      });
+      onTestFinished(() => click.mockRestore());
+      const result = { count: 2, skipped: 1, watermarked: 0, folder: '' };
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async (url: string, init: RequestInit) => {
+          sent.push({ url, body: JSON.parse(String(init.body)) });
+          return new Response(new NodeBlob(['zip']) as unknown as Blob, {
+            headers: {
+              'content-type': 'application/zip',
+              'content-disposition': 'attachment; filename="novira-export-20261022-120000.zip"',
+              'x-novira-export': JSON.stringify(result),
+            },
+          });
+        }),
+      );
+      const b = new HttpBackend();
+      expect(await b.exportImages(['a.png', 'b.png', 'gone.png'], options)).toEqual(result);
+      expect(sent).toEqual([{ url: '/export/images', body: { names: ['a.png', 'b.png', 'gone.png'], options } }]);
+      expect(clicked).toEqual(['novira-export-20261022-120000.zip']);
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => new Response(JSON.stringify({ error: 'choose fewer pictures', code: 'failed' }), { status: 422 })),
+      );
+      await expect(b.exportImages(['a.png'], options)).rejects.toThrow('choose fewer pictures');
+      expect(clicked).toHaveLength(1);
+    },
+  );
 
   it('downloads each original from the page origin, and sends no call', { tags: ['condition'] }, async () => {
     const clicked: string[] = [];
@@ -259,7 +267,7 @@ describe('HttpBackend', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it('knows the picture route and the page the server marked', { tags: ['condition'] }, () => {
+  it('knows the picture route and the page the server marked', { tags: ['equivalence', 'condition'] }, () => {
     expect(isServerImageUrl('/novira-image/full/a.png')).toBe(true);
     expect(isServerImageUrl('http://novira-image.localhost/full/a.png')).toBe(false);
     expect(isServedByServer()).toBe(false);

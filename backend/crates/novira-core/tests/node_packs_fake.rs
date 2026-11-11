@@ -56,7 +56,7 @@ async fn a_failed_download_is_an_error_and_leaves_nothing_behind() {
     );
 }
 
-// tags: state-transition
+// tags: state-transition, condition
 #[tokio::test]
 async fn a_cancelled_install_says_so() {
     let comfy = tempfile::tempdir().unwrap();
@@ -67,7 +67,7 @@ async fn a_cancelled_install_says_so() {
     assert!(leftovers(comfy.path()).is_empty());
 }
 
-// tags: error-guessing, boundary
+// tags: error-guessing
 #[tokio::test]
 async fn an_unwritable_custom_nodes_folder_is_an_error() {
     let comfy = tempfile::tempdir().unwrap();

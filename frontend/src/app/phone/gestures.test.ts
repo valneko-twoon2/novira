@@ -4,7 +4,7 @@ import { clampView, FITTED, MAX_SCALE, pinchView, swipeOf, SWIPE_DISTANCE, TAP_S
 const picture = { width: 400, height: 600 };
 const stage = { width: 400, height: 700 };
 
-describe('phone picture gestures', () => {
+describe('phone picture gestures', { tags: [] }, () => {
   it('keeps a fitted picture still and lets a zoomed one move only as far as it overflows', { tags: ['boundary'] }, () => {
     expect(clampView({ scale: 1, x: 50, y: -50 }, picture, stage)).toEqual(FITTED);
     // At 2x the picture is 800 x 1200 on a 400 x 700 stage: 200 and 250 to each side.
@@ -15,7 +15,7 @@ describe('phone picture gestures', () => {
     expect(clampView({ scale: 40, x: 0, y: 0 }, picture, stage).scale).toBe(MAX_SCALE);
   });
 
-  it('zooms a pinch around the middle of the fingers, keeping that point of the picture under them', { tags: ['condition'] }, () => {
+  it('zooms a pinch around the middle of the fingers, keeping that point of the picture under them', { tags: ['equivalence'] }, () => {
     const from: [{ x: number; y: number }, { x: number; y: number }] = [{ x: 40, y: 60 }, { x: 140, y: 60 }];
     const to: [{ x: number; y: number }, { x: number; y: number }] = [{ x: -10, y: 60 }, { x: 190, y: 60 }];
     const v = pinchView(FITTED, from, to);
@@ -41,7 +41,7 @@ describe('phone picture gestures', () => {
     expect(tapView(zoomed, { x: 0, y: 0 })).toEqual(FITTED);
   });
 
-  it('tells a sideways swipe from a short or upright move', { tags: ['equivalence'] }, () => {
+  it('tells a sideways swipe from a short or upright move', { tags: ['equivalence', 'boundary'] }, () => {
     expect(swipeOf(-SWIPE_DISTANCE, 0)).toBe('next');
     expect(swipeOf(SWIPE_DISTANCE + 1, 10)).toBe('previous');
     expect(swipeOf(-(SWIPE_DISTANCE - 1), 0)).toBeNull();

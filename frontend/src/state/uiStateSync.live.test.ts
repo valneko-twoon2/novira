@@ -93,14 +93,18 @@ afterEach(() => {
 });
 
 describe('taking another page state while running', () => {
-  it('writes a key another page changed into the storage and has its store read it, without sending it back', { tags: ['condition'] }, async () => {
-    await otherPageSaves({ 'novira.a': 'a1' });
-    expect(storage.getItem('novira.a')).toBe('a1');
-    expect(rehydrated).toEqual(['novira.a']);
-    // The store's own write while reading is not a change of this page: nothing goes out.
-    await vi.advanceTimersByTimeAsync(SAVE_DELAY * 3);
-    expect(save).not.toHaveBeenCalled();
-  });
+  it(
+    'writes a key another page changed into the storage and has its store read it, without sending it back',
+    { tags: ['scenario'] },
+    async () => {
+      await otherPageSaves({ 'novira.a': 'a1' });
+      expect(storage.getItem('novira.a')).toBe('a1');
+      expect(rehydrated).toEqual(['novira.a']);
+      // The store's own write while reading is not a change of this page: nothing goes out.
+      await vi.advanceTimersByTimeAsync(SAVE_DELAY * 3);
+      expect(save).not.toHaveBeenCalled();
+    },
+  );
 
   it('is not moved by its own saves coming back as events, and does not read the backend for them', { tags: ['condition'] }, async () => {
     storage.setItem('novira.a', 'mine');
@@ -115,7 +119,7 @@ describe('taking another page state while running', () => {
     expect(rehydrated).toEqual([]);
   });
 
-  it('settles after one round when two pages change different keys', { tags: ['condition'] }, async () => {
+  it('settles after one round when two pages change different keys', { tags: ['scenario'] }, async () => {
     await otherPageSaves({ 'novira.a': 'a1' });
     storage.setItem('novira.b', 'b1');
     await vi.advanceTimersByTimeAsync(SAVE_DELAY + 50);
@@ -136,7 +140,7 @@ describe('taking another page state while running', () => {
     expect(rehydrated).toEqual([]);
   });
 
-  it('keeps what this page changed when the same key changed elsewhere, and sends it', { tags: ['condition'] }, async () => {
+  it('keeps what this page changed when the same key changed elsewhere, and sends it', { tags: ['decision-table'] }, async () => {
     storage.setItem('novira.a', 'typed here');
     remote['novira.a'] = 'typed there';
     emit(event('page-other', NEWS));
@@ -146,22 +150,26 @@ describe('taking another page state while running', () => {
     expect(remote['novira.a']).toBe('typed here');
   });
 
-  it('does not overwrite what another page saved in a key this page did not change: only changed keys are sent', { tags: ['condition'] }, async () => {
-    storage.setItem('novira.b', 'b1');
-    // The other page saved a moment ago, and its event has not reached this page yet.
-    remote['novira.a'] = 'a1';
-    await vi.advanceTimersByTimeAsync(SAVE_DELAY + 50);
-    expect(save).toHaveBeenCalledTimes(1);
-    expect(parseUiState(save.mock.calls[0]![0] as string)).toEqual({ 'novira.b': 'b1' });
-    expect(remote).toMatchObject({ 'novira.a': 'a1', 'novira.b': 'b1' });
-    // Its event arrives later and the page takes the key.
-    emit(event('page-other', NEWS));
-    await vi.advanceTimersByTimeAsync(PULL_DELAY + 10);
-    expect(storage.getItem('novira.a')).toBe('a1');
-    expect(rehydrated).toEqual(['novira.a']);
-  });
+  it(
+    'does not overwrite what another page saved in a key this page did not change: only changed keys are sent',
+    { tags: ['condition'] },
+    async () => {
+      storage.setItem('novira.b', 'b1');
+      // The other page saved a moment ago, and its event has not reached this page yet.
+      remote['novira.a'] = 'a1';
+      await vi.advanceTimersByTimeAsync(SAVE_DELAY + 50);
+      expect(save).toHaveBeenCalledTimes(1);
+      expect(parseUiState(save.mock.calls[0]![0] as string)).toEqual({ 'novira.b': 'b1' });
+      expect(remote).toMatchObject({ 'novira.a': 'a1', 'novira.b': 'b1' });
+      // Its event arrives later and the page takes the key.
+      emit(event('page-other', NEWS));
+      await vi.advanceTimersByTimeAsync(PULL_DELAY + 10);
+      expect(storage.getItem('novira.a')).toBe('a1');
+      expect(rehydrated).toEqual(['novira.a']);
+    },
+  );
 
-  it('waits while the key is being typed into, then takes the other page text', { tags: ['scenario'] }, async () => {
+  it('waits while the key is being typed into, then takes the other page text', { tags: ['state-transition'] }, async () => {
     storage.setItem('novira.a', 'a0');
     await vi.advanceTimersByTimeAsync(SAVE_DELAY + 50);
     save.mockClear();
@@ -182,7 +190,7 @@ describe('taking another page state while running', () => {
     expect(rehydrated).toEqual(['novira.b']);
   });
 
-  it('reads once for a burst of events', { tags: ['condition'] }, async () => {
+  it('reads once for a burst of events', { tags: ['boundary'] }, async () => {
     emit(event('page-other', NEWS));
     emit(event('page-other', NEWS + 1));
     emit(event('page-other', NEWS + 2));
@@ -190,7 +198,7 @@ describe('taking another page state while running', () => {
     expect(adopt).toHaveBeenCalledTimes(1);
   });
 
-  it('ignores an event it has seen, and events whose fields are not what the backend sends', { tags: ['condition'] }, async () => {
+  it('ignores an event it has seen, and events whose fields are not what the backend sends', { tags: ['error-guessing'] }, async () => {
     emit(event('page-other', NEWS));
     await vi.advanceTimersByTimeAsync(PULL_DELAY + 10);
     adopt.mockClear();
@@ -249,7 +257,7 @@ describe('taking another page state while running', () => {
 });
 
 describe('the state read from the backend', () => {
-  it('parseUiState takes only an object of novira.* keys with texts of a limited size', { tags: ['boundary'] }, () => {
+  it('parseUiState takes only an object of novira.* keys with texts of a limited size', { tags: ['error-guessing', 'boundary'] }, () => {
     expect(parseUiState('{"novira.a":"1"}')).toEqual({ 'novira.a': '1' });
     expect(parseUiState('{}')).toEqual({});
     for (const bad of ['[]', '1', 'x', '{"a":"1"}', '{"novira.a":1}', `{"novira.${'k'.repeat(200)}":"1"}`]) {

@@ -71,7 +71,7 @@ describe('text layout (properties)', () => {
 
   // Regression: a word wider than the box is broken between characters wherever it stands, not only at the start of a line:
   // layoutHorizontal('a bbbbbb', 10px, maxWidth 20) used to leave 'bbbbbb' whole on its own line.
-  it('breaks a too-wide word that follows other text', { tags: ['boundary'] }, () => {
+  it('breaks a too-wide word that follows other text', { tags: ['regression', 'boundary'] }, () => {
     const h = layoutHorizontal('a bbbbbb', { ...DEFAULT_TEXT_STYLE, fontSize: 10, letterSpacing: 0, vertical: false }, 20, measure);
     expect(h.lines.every((l) => l.width <= 20)).toBe(true);
   });
@@ -90,20 +90,24 @@ describe('text layout (properties)', () => {
     check(fc.property(anything, (text) => verticalUnits(text.replace(/\n/g, '')).length <= [...text.replace(/\n/g, '')].length));
   });
 
-  it('fitFontSize stays between the minimum and the current size, fits unless at the minimum, and is the largest that fits', { tags: ['boundary'] }, () => {
-    check(
-      fc.property(plain, style, fc.record({ width: fc.integer({ min: 20, max: 2000 }), height: fc.integer({ min: 20, max: 2000 }) }), fc.integer({ min: 4, max: 12 }), (text, st, box, min) => {
-        const size = fitFontSize(text, st, box, measure, min);
-        expect(size).toBeGreaterThanOrEqual(min);
-        expect(size).toBeLessThanOrEqual(Math.max(min, Math.round(st.fontSize)));
-        const fits = (s: number) => {
-          const scaled = { ...st, fontSize: s, letterSpacing: (st.letterSpacing * s) / st.fontSize };
-          const b = layoutText(text, scaled, scaled.vertical ? box.height : box.width, measure);
-          return b.width <= box.width + 0.5 && b.height <= box.height + 0.5;
-        };
-        if (size > min) expect(fits(size)).toBe(true);
-        if (size < Math.max(min, Math.round(st.fontSize))) expect(fits(size + 1)).toBe(false);
-      }),
-    );
-  });
+  it(
+    'fitFontSize stays between the minimum and the current size, fits unless at the minimum, and is the largest that fits',
+    { tags: ['boundary'] },
+    () => {
+      check(
+        fc.property(plain, style, fc.record({ width: fc.integer({ min: 20, max: 2000 }), height: fc.integer({ min: 20, max: 2000 }) }), fc.integer({ min: 4, max: 12 }), (text, st, box, min) => {
+          const size = fitFontSize(text, st, box, measure, min);
+          expect(size).toBeGreaterThanOrEqual(min);
+          expect(size).toBeLessThanOrEqual(Math.max(min, Math.round(st.fontSize)));
+          const fits = (s: number) => {
+            const scaled = { ...st, fontSize: s, letterSpacing: (st.letterSpacing * s) / st.fontSize };
+            const b = layoutText(text, scaled, scaled.vertical ? box.height : box.width, measure);
+            return b.width <= box.width + 0.5 && b.height <= box.height + 0.5;
+          };
+          if (size > min) expect(fits(size)).toBe(true);
+          if (size < Math.max(min, Math.round(st.fontSize))) expect(fits(size + 1)).toBe(false);
+        }),
+      );
+    },
+  );
 });

@@ -827,7 +827,7 @@ mod tests {
         parse_header(&serde_json::to_vec(&m).unwrap()).unwrap()
     }
 
-    // tags: condition
+    // tags: equivalence, error-guessing
     #[test]
     fn a_header_reads_the_same_in_one_pass_as_through_a_json_tree() {
         let tensor = r#"{"dtype":"F16","shape":[16,3,1,2,2],"data_offsets":[0,2]}"#;
@@ -895,7 +895,7 @@ mod tests {
         }
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn a_gguf_or_a_wan_transformer_is_a_diffusion_model() {
         assert_eq!(
@@ -944,7 +944,7 @@ mod tests {
         "net.t_embedder.1.linear_1.weight",
     ];
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn an_anima_file_is_a_diffusion_model_of_its_own_family() {
         let h = header(ANIMA, json!({ "format": "pt" }));
@@ -1112,7 +1112,7 @@ mod tests {
 
     /// BuAnime_NSFW_Style_Anima_BuAnimeV3 (Civitai, read from its header 2026-10-20): sd-scripts' Anima trainer wrote
     /// `stable-diffusion-v1/lora` as the architecture, and the LoRA changes only the Cosmos blocks, not the LLM adapter.
-    // tags: error-guessing, decision-table
+    // tags: decision-table, error-guessing
     #[test]
     fn an_anima_lora_is_told_by_its_tensors_over_a_wrong_architecture() {
         let kohya = header(
@@ -1285,7 +1285,7 @@ mod tests {
         assert_eq!(detect_kind(&lllite), Some(ModelType::ModelPatch));
     }
 
-    // tags: scenario
+    // tags: equivalence
     #[test]
     fn a_checkpoint_says_which_parts_it_carries() {
         let all = header(
@@ -1309,7 +1309,7 @@ mod tests {
         assert_eq!(bundled_parts(&sd), (true, true));
     }
 
-    // tags: scenario, equivalence
+    // tags: equivalence
     #[test]
     fn an_anima_checkpoint_carries_only_the_parts_comfyui_reads() {
         // A merged Anima checkpoint (read from its header 2026-10-26) names its parts `text_encoders.` and `vae.`, which
@@ -1352,7 +1352,7 @@ mod tests {
         parse_header(&serde_json::to_vec(&m).unwrap()).unwrap()
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn the_channels_of_a_wan_patch_embedding_tell_what_the_model_is_made_for() {
         // Read from the real files on Hugging Face (2026-10-12): 16 text to video, 36 image to video, 48 the 5B model.
@@ -1405,7 +1405,7 @@ mod tests {
         );
     }
 
-    // tags: error-guessing, decision-table
+    // tags: condition
     #[test]
     fn a_name_decides_only_when_the_header_cannot() {
         let kind = kind_from_name;
@@ -1571,7 +1571,7 @@ mod tests {
         );
     }
 
-    // tags: condition
+    // tags: scenario
     #[test]
     fn header_is_read_from_a_file() {
         let dir = tempfile::tempdir().unwrap();
@@ -1716,7 +1716,7 @@ mod tests {
         ));
     }
 
-    // tags: state-transition, equivalence
+    // tags: condition
     #[test]
     fn the_newer_families_are_told_from_the_ones_they_share_blocks_with() {
         // Tensor names and shapes read from the real files on Hugging Face (2026-10-12).
@@ -1815,7 +1815,7 @@ mod tests {
         assert_eq!(detect_kind(&ltx2), Some(ModelType::Main));
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn a_hunyuan_dit_checkpoint_is_a_main_model_of_its_own_family() {
         // Tensor names read from `hunyuan_dit_1.2.safetensors` on Hugging Face (2026-10-12): the model, both text
@@ -1850,7 +1850,7 @@ mod tests {
         );
     }
 
-    // tags: equivalence
+    // tags: condition, equivalence
     #[test]
     fn a_hunyuan_image_file_takes_its_family_from_its_name_when_the_header_says_nothing() {
         // `hunyuan_image_2.1_vae_fp16.safetensors` (Comfy-Org's repackage) has no family in its header.

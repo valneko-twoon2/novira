@@ -19,7 +19,7 @@ describe('the skeleton', () => {
 });
 
 describe('placing a standing pose', () => {
-  it('stands a person facing the viewer, their right side on the left, centred and as tall as asked', { tags: ['condition'] }, () => {
+  it('stands a person facing the viewer, their right side on the left, centred and as tall as asked', { tags: ['equivalence'] }, () => {
     const o = standingPose('p', { x: 300, y: 200 }, 400, 4);
     const b = jointBounds(o)!;
     expect(b.height).toBeCloseTo(400, 0);
@@ -34,7 +34,7 @@ describe('placing a standing pose', () => {
 describe('editing a pose', () => {
   const o = standingPose('p', { x: 256, y: 256 }, 400, 4);
 
-  it('finds the nearest joint within the tolerance, and skips hidden ones when asked', { tags: ['condition'] }, () => {
+  it('finds the nearest joint within the tolerance, and skips hidden ones when asked', { tags: ['boundary'] }, () => {
     const wrist = at(o, J.rWrist);
     expect(hitJoint(o, { x: wrist.x + 3, y: wrist.y }, 8)).toBe(J.rWrist);
     expect(hitJoint(o, { x: wrist.x + 30, y: wrist.y + 30 }, 8)).toBeNull();
@@ -43,7 +43,7 @@ describe('editing a pose', () => {
     expect(hitJoint(hidden, wrist, 8)).toBe(J.rWrist);
   });
 
-  it('moves the whole body by the neck', { tags: ['scenario'] }, () => {
+  it('moves the whole body by the neck', { tags: ['condition'] }, () => {
     const moved = dragJoint(o, J.neck, { x: at(o, J.neck).x + 10, y: at(o, J.neck).y - 5 }, false);
     o.points.forEach((v, i) => expect(moved.points[i]).toBeCloseTo(v + (i % 2 === 0 ? 10 : -5), 6));
   });
@@ -73,7 +73,7 @@ describe('editing a pose', () => {
     expect(jointBounds({ ...o, hidden: all })).toBeNull();
   });
 
-  it('turns a quarter around a centre and scales with the line width', { tags: ['condition'] }, () => {
+  it('turns a quarter around a centre and scales with the line width', { tags: ['equivalence'] }, () => {
     const c = { x: 256, y: 256 };
     const right = transformPose(o, 'rotateRight', c);
     const n = at(o, J.nose);
@@ -86,7 +86,7 @@ describe('editing a pose', () => {
     expect(transformPose(o, 'scaleDown', c).width).toBe(2);
   });
 
-  it('mirrors a pose through the layer flip, swapping left and right so colours stay on the right side', { tags: ['condition'] }, () => {
+  it('mirrors a pose through the layer flip, swapping left and right so colours stay on the right side', { tags: ['equivalence'] }, () => {
     const asymmetric = toggleJoint(dragJoint(o, J.lElbow, { x: 400, y: 100 }, false), J.rEar);
     useCanvas.setState({ entities: [], past: [], future: [] });
     const id = useCanvas.getState().addEntity('control', { objects: [asymmetric] });
@@ -117,19 +117,23 @@ describe('editing a pose', () => {
 });
 
 describe('drawing a pose', () => {
-  it('draws an ellipse per bone between shown joints and a dot per shown joint, in OpenPose colours', { tags: ['scenario'] }, () => {
-    const rec = recordingContext();
-    drawPose(rec.ctx, standingPose('p', { x: 256, y: 256 }, 400, 4), false);
-    expect(rec.of('arc')).toHaveLength(POSE_JOINTS);
-    expect(rec.of('ellipse')).toHaveLength(POSE_LIMBS.length);
-    // Bones first at 60 % of their colour, then the joints over them in full colour.
-    const fills = rec.sets.filter((s) => s.name === 'fillStyle').map((s) => s.value);
-    expect(fills[0]).toBe('rgb(153 0 0)');
-    expect(fills.at(-1)).toBe('#ff0055');
-    const hidden = toggleJoint(standingPose('p', { x: 256, y: 256 }, 400, 4), J.nose);
-    drawPose(rec.ctx, hidden, true);
-    // The nose and its three bones (to the neck and both eyes) are left out.
-    expect(rec.of('arc')).toHaveLength(POSE_JOINTS * 2 - 1);
-    expect(rec.of('ellipse')).toHaveLength(POSE_LIMBS.length * 2 - 3);
-  });
+  it(
+    'draws an ellipse per bone between shown joints and a dot per shown joint, in OpenPose colours',
+    { tags: ['equivalence', 'condition'] },
+    () => {
+      const rec = recordingContext();
+      drawPose(rec.ctx, standingPose('p', { x: 256, y: 256 }, 400, 4), false);
+      expect(rec.of('arc')).toHaveLength(POSE_JOINTS);
+      expect(rec.of('ellipse')).toHaveLength(POSE_LIMBS.length);
+      // Bones first at 60 % of their colour, then the joints over them in full colour.
+      const fills = rec.sets.filter((s) => s.name === 'fillStyle').map((s) => s.value);
+      expect(fills[0]).toBe('rgb(153 0 0)');
+      expect(fills.at(-1)).toBe('#ff0055');
+      const hidden = toggleJoint(standingPose('p', { x: 256, y: 256 }, 400, 4), J.nose);
+      drawPose(rec.ctx, hidden, true);
+      // The nose and its three bones (to the neck and both eyes) are left out.
+      expect(rec.of('arc')).toHaveLength(POSE_JOINTS * 2 - 1);
+      expect(rec.of('ellipse')).toHaveLength(POSE_LIMBS.length * 2 - 3);
+    },
+  );
 });

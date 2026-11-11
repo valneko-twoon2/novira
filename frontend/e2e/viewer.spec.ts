@@ -66,35 +66,39 @@ test('the viewer zooms with the wheel, keys and buttons, and fits again on anoth
   await expect(zoom).toHaveText(fit!);
 });
 
-test('the metadata panel copies selected text with Ctrl+C and closes on a press outside', { tag: ['@scenario'] }, async ({ page, context }) => {
-  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-  await openApp(page, '?scenario=empty');
-  await generate(page, 'a lighthouse on a cliff at dusk');
-  await expect(page.getByTestId('viewer-image')).toBeVisible();
-  await page.getByTestId('toggle-metadata').click();
-  const panel = page.getByTestId('viewer-metadata');
-  await expect(panel).toBeVisible();
+test(
+  'the metadata panel copies selected text with Ctrl+C and closes on a press outside',
+  { tag: ['@scenario'] },
+  async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await openApp(page, '?scenario=empty');
+    await generate(page, 'a lighthouse on a cliff at dusk');
+    await expect(page.getByTestId('viewer-image')).toBeVisible();
+    await page.getByTestId('toggle-metadata').click();
+    const panel = page.getByTestId('viewer-metadata');
+    await expect(panel).toBeVisible();
 
-  // Select the prompt by dragging from inside the panel to outside it: the panel stays, Ctrl+C copies the text.
-  const prompt = panel.getByText('a lighthouse on a cliff at dusk').first();
-  const box = (await prompt.boundingBox())!;
-  // A point outside the panel: the prompt box of the left panel.
-  const outside = (await page.getByTestId('positive-prompt').boundingBox())!;
-  const away = { x: outside.x + outside.width / 2, y: outside.y + outside.height / 2 };
-  await page.mouse.move(box.x + 1, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(away.x, away.y, { steps: 5 });
-  await page.mouse.up();
-  await expect(panel).toBeVisible();
-  const selected = await page.evaluate(() => window.getSelection()?.toString() ?? '');
-  expect(selected.trim().length).toBeGreaterThan(0);
-  await page.evaluate(() => navigator.clipboard.writeText('before'));
-  await page.keyboard.press('Control+C');
-  // The clipboard holds the selection (the browser's own text form spaces table-like rows its own way).
-  const words = (text: string) => text.replace(/\s+/g, ' ').trim();
-  await expect.poll(async () => words(await page.evaluate(() => navigator.clipboard.readText()))).toBe(words(selected));
+    // Select the prompt by dragging from inside the panel to outside it: the panel stays, Ctrl+C copies the text.
+    const prompt = panel.getByText('a lighthouse on a cliff at dusk').first();
+    const box = (await prompt.boundingBox())!;
+    // A point outside the panel: the prompt box of the left panel.
+    const outside = (await page.getByTestId('positive-prompt').boundingBox())!;
+    const away = { x: outside.x + outside.width / 2, y: outside.y + outside.height / 2 };
+    await page.mouse.move(box.x + 1, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(away.x, away.y, { steps: 5 });
+    await page.mouse.up();
+    await expect(panel).toBeVisible();
+    const selected = await page.evaluate(() => window.getSelection()?.toString() ?? '');
+    expect(selected.trim().length).toBeGreaterThan(0);
+    await page.evaluate(() => navigator.clipboard.writeText('before'));
+    await page.keyboard.press('Control+C');
+    // The clipboard holds the selection (the browser's own text form spaces table-like rows its own way).
+    const words = (text: string) => text.replace(/\s+/g, ' ').trim();
+    await expect.poll(async () => words(await page.evaluate(() => navigator.clipboard.readText()))).toBe(words(selected));
 
-  // A press outside the panel closes it.
-  await page.mouse.click(away.x, away.y);
-  await expect(panel).toBeHidden();
-});
+    // A press outside the panel closes it.
+    await page.mouse.click(away.x, away.y);
+    await expect(panel).toBeHidden();
+  },
+);

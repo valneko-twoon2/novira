@@ -4,8 +4,8 @@ import { fitOf, formatVram, recommendedIndex } from './modelFit';
 const GIB = 1024 ** 3;
 const need = { minGb: 8, goodGb: 12 };
 
-describe('fitOf', () => {
-  it('calls a card comfortable, tight or short by its memory', { tags: ['boundary'] }, () => {
+describe('fitOf', { tags: [] }, () => {
+  it('calls a card comfortable, tight or short by its memory', { tags: ['equivalence'] }, () => {
     expect(fitOf(16 * GIB, need)).toBe('comfortable');
     expect(fitOf(10 * GIB, need)).toBe('tight');
     expect(fitOf(6 * GIB, need)).toBe('short');
@@ -16,18 +16,18 @@ describe('fitOf', () => {
     expect(formatVram(12282 * 1024 * 1024)).toBe('12 GB');
   });
 
-  it('is unknown when the memory could not be read', { tags: ['boundary', 'error-guessing'] }, () => {
+  it('is unknown when the memory could not be read', { tags: ['error-guessing'] }, () => {
     expect(fitOf(null, need)).toBe('unknown');
   });
 });
 
-describe('recommendedIndex', () => {
-  it('prefers the first comfortable candidate, then the first tight one', { tags: ['boundary'] }, () => {
+describe('recommendedIndex', { tags: [] }, () => {
+  it('prefers the first comfortable candidate, then the first tight one', { tags: ['condition'] }, () => {
     expect(recommendedIndex(['tight', 'comfortable', 'comfortable'])).toBe(1);
     expect(recommendedIndex(['short', 'tight', 'tight'])).toBe(1);
   });
 
-  it('recommends nothing when none fits or the card is unknown', { tags: ['boundary'] }, () => {
+  it('recommends nothing when none fits or the card is unknown', { tags: ['condition'] }, () => {
     expect(recommendedIndex(['short', 'short'])).toBe(-1);
     expect(recommendedIndex(['unknown', 'unknown'])).toBe(-1);
   });

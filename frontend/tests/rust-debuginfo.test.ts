@@ -52,23 +52,23 @@ export function debugBypass(text: string): string[] {
 
 const tracked = (globs: string[]) => execFileSync('git', ['ls-files', '--', ...globs], { cwd: REPO, encoding: 'utf8' }).split('\n').filter(Boolean);
 
-describe('rust debug info', () => {
-  it('turns debug info off in every profile of every Cargo.toml', { tags: ['condition', 'static'] }, () => {
+describe('rust debug info', { tags: [] }, () => {
+  it('turns debug info off in every profile of every Cargo.toml', { tags: ['static', 'regression'] }, () => {
     for (const file of tracked(['backend/Cargo.toml', 'backend/**/Cargo.toml'])) expect(debugInProfiles(read(file)), file).toEqual([]);
     expect(read('backend/Cargo.toml')).toMatch(/^\[profile\.dev\]\s*\r?\ndebug = false$/m);
   });
 
-  it('tells the linker to write no .pdb', { tags: ['condition', 'static'] }, () => {
+  it('tells the linker to write no .pdb', { tags: ['static', 'equivalence'] }, () => {
     expect(msvcRustflags(read('backend/.cargo/config.toml'))).toContain('"link-arg=/DEBUG:NONE"');
   });
 
-  it('has no script, hook or workflow that brings debug info back', { tags: ['condition', 'static'] }, () => {
+  it('has no script, hook or workflow that brings debug info back', { tags: ['static', 'equivalence'] }, () => {
     const files = tracked(['scripts', '.githooks', '.claude/hooks', '.claude/settings.json', '.github', 'frontend/package.json', 'frontend/scripts']);
     const hits = files.filter((f) => !f.endsWith('.md')).flatMap((f) => debugBypass(read(f)).map((line) => `${f}: ${line.trim()}`));
     expect(hits).toEqual([]);
   });
 
-  it('finds what turns debug info on, and lets the off settings through', { tags: ['condition', 'static'] }, () => {
+  it('finds what turns debug info on, and lets the off settings through', { tags: ['static', 'condition', 'equivalence'] }, () => {
     expect(debugInProfiles('[profile.dev]\ndebug = false\n[profile.release]\nopt-level = 3\n')).toEqual([]);
     expect(debugInProfiles('[profile.dev]\ndebug = 0\n[profile.test]\ndebug = "none"\n')).toEqual([]);
     expect(debugInProfiles('[profile.dev]\ndebug = true\n')).toEqual(['[profile.dev] debug = true']);
@@ -79,13 +79,13 @@ describe('rust debug info', () => {
     expect(debugInProfiles('# debug = true\n[profile.dev]\n# debug = true\n')).toEqual([]);
   });
 
-  it('reads the linker flags of the msvc target only', { tags: ['decision-table', 'static'] }, () => {
+  it('reads the linker flags of the msvc target only', { tags: ['static', 'condition'] }, () => {
     expect(msvcRustflags('[target.x86_64-pc-windows-msvc]\nlinker = "rust-lld.exe"\nrustflags = ["-C", "link-arg=/DEBUG:NONE"]\n')).toBe('["-C", "link-arg=/DEBUG:NONE"]');
     expect(msvcRustflags('[target.x86_64-pc-windows-msvc]\nlinker = "rust-lld.exe"\n# rustflags = ["-C", "link-arg=/DEBUG:NONE"]\n')).toBeNull();
     expect(msvcRustflags('[build]\nrustflags = ["-C", "link-arg=/DEBUG:NONE"]\n')).toBeNull();
   });
 
-  it('finds the ways around it in a script, and lets ordinary cargo lines through', { tags: ['condition', 'static'] }, () => {
+  it('finds the ways around it in a script, and lets ordinary cargo lines through', { tags: ['static', 'equivalence'] }, () => {
     expect(debugBypass('set RUSTFLAGS=-C opt-level=1')).toHaveLength(1);
     expect(debugBypass('env: { ...process.env, CARGO_ENCODED_RUSTFLAGS: "x" }')).toHaveLength(1);
     expect(debugBypass('CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_RUSTFLAGS=""')).toHaveLength(1);

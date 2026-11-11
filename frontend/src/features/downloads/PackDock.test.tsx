@@ -24,13 +24,13 @@ afterEach(() => {
   useNodePacks.setState({ packs: null });
 });
 
-describe('PackDock', () => {
-  it('shows nothing until something downloads', { tags: ['state-transition'] }, () => {
+describe('PackDock', { tags: [] }, () => {
+  it('shows nothing until something downloads', { tags: ['condition'] }, () => {
     show();
     expect(screen.queryByTestId('pack-dock')).toBeNull();
   });
 
-  it('shows the progress of a model pack and cancels it', { tags: ['state-transition'] }, () => {
+  it('shows the progress of a model pack and cancels it', { tags: ['scenario'] }, () => {
     const cancel = vi.spyOn(backend, 'cancelPack').mockResolvedValue(undefined);
     useDownloads.getState().track({ key: 'model:video', kind: 'model', pack: 'video', status: { state: 'downloading', file: 'a.safetensors', index: 2, count: 3, bytes: 4_000_000_000, totalBytes: 10_000_000_000 } });
     show();
@@ -41,7 +41,7 @@ describe('PackDock', () => {
     expect(cancel).toHaveBeenCalledWith('video');
   });
 
-  it('names an extension pack by its folder, shows the step it is in, and cancels by address', { tags: ['state-transition'] }, () => {
+  it('names an extension pack by its folder, shows the step it is in, and cancels by address', { tags: ['scenario'] }, () => {
     const cancel = vi.spyOn(useNodePacks.getState(), 'cancel').mockResolvedValue(undefined);
     useDownloads.getState().track({ key: `node:${url}`, kind: 'node', url, status: { state: 'installing', step: 'requirements' } });
     show();
@@ -52,7 +52,7 @@ describe('PackDock', () => {
     expect(cancel).toHaveBeenCalledWith(url);
   });
 
-  it('keeps a failed install on screen with its message until it is dismissed', { tags: ['state-transition', 'error-guessing'] }, () => {
+  it('keeps a failed install on screen with its message until it is dismissed', { tags: ['error-guessing', 'state-transition'] }, () => {
     useDownloads.getState().track({ key: `node:${url}`, kind: 'node', url, status: { state: 'error', message: 'WinError 123' } });
     show();
     expect(screen.getByText('WinError 123')).toBeTruthy();
@@ -60,7 +60,7 @@ describe('PackDock', () => {
     expect(screen.queryByTestId('pack-dock')).toBeNull();
   });
 
-  it('offers the restart once an extension pack is in and the engine has to load it', { tags: ['state-transition'] }, () => {
+  it('offers the restart once an extension pack is in and the engine has to load it', { tags: ['condition'] }, () => {
     useNodePacks.setState({ packs: { available: true, installed: [], comfyVersion: null, restartNeeded: true } });
     useDownloads.getState().track({ key: `node:${url}`, kind: 'node', url, status: { state: 'ready' } });
     show();
@@ -68,24 +68,28 @@ describe('PackDock', () => {
     expect(screen.getByTestId('pack-dock-restart')).toBeTruthy();
   });
 
-  it('says how long is left for a download whose size is known, and how long it has been going when it is not', { tags: ['state-transition'] }, () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(0);
-    const { track } = useDownloads.getState();
-    const file = (bytes: number) => ({ state: 'downloading' as const, file: 'a', index: 1, count: 1, bytes, totalBytes: 1000 });
-    track({ key: 'model:video', kind: 'model', pack: 'video', status: file(0) });
-    vi.setSystemTime(2000);
-    track({ key: 'model:video', kind: 'model', pack: 'video', status: file(100) });
-    track({ key: `node:${url}`, kind: 'node', url, status: { state: 'installing', step: 'requirements' } });
-    vi.setSystemTime(62_000);
-    show();
-    const [model, node] = screen.getAllByTestId('pack-dock-item');
-    expect(within(model!).getByTestId('pack-dock-time').textContent).toBe(t('splash.engine.eta', { time: t('splash.engine.seconds', { n: 18 }) }));
-    expect(within(node!).getByTestId('pack-dock-time').textContent).toBe(t('media.downloads.elapsed', { time: t('splash.engine.minutes', { n: 1, s: 0 }) }));
-    vi.useRealTimers();
-  });
+  it(
+    'says how long is left for a download whose size is known, and how long it has been going when it is not',
+    { tags: ['condition', 'boundary'] },
+    () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(0);
+      const { track } = useDownloads.getState();
+      const file = (bytes: number) => ({ state: 'downloading' as const, file: 'a', index: 1, count: 1, bytes, totalBytes: 1000 });
+      track({ key: 'model:video', kind: 'model', pack: 'video', status: file(0) });
+      vi.setSystemTime(2000);
+      track({ key: 'model:video', kind: 'model', pack: 'video', status: file(100) });
+      track({ key: `node:${url}`, kind: 'node', url, status: { state: 'installing', step: 'requirements' } });
+      vi.setSystemTime(62_000);
+      show();
+      const [model, node] = screen.getAllByTestId('pack-dock-item');
+      expect(within(model!).getByTestId('pack-dock-time').textContent).toBe(t('splash.engine.eta', { time: t('splash.engine.seconds', { n: 18 }) }));
+      expect(within(node!).getByTestId('pack-dock-time').textContent).toBe(t('media.downloads.elapsed', { time: t('splash.engine.minutes', { n: 1, s: 0 }) }));
+      vi.useRealTimers();
+    },
+  );
 
-  it('opens the list of installed extensions from the dock', { tags: ['state-transition'] }, () => {
+  it('opens the list of installed extensions from the dock', { tags: ['scenario'] }, () => {
     useDownloads.getState().track({ key: `node:${url}`, kind: 'node', url, status: { state: 'ready' } });
     show();
     fireEvent.click(screen.getByTestId('pack-dock-manage'));

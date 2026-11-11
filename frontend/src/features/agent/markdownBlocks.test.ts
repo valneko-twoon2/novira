@@ -2,8 +2,8 @@
 import { describe, expect, it } from 'vitest';
 import { parseBlocks, parseInline } from './markdownBlocks';
 
-describe('blocks', () => {
-  it('reads an answer with bold headings and a list, as models write it', { tags: ['condition'] }, () => {
+describe('blocks', { tags: [] }, () => {
+  it('reads an answer with bold headings and a list, as models write it', { tags: ['equivalence'] }, () => {
     const text = '質感の指定だけを取り入れました。\n\n**足したもの(ポジティブ)**\n- **線と塗り**: clean delicate linework\n- **目**: expressive eyes\n\n**ネガティブ**: flat colors を足しました。';
     expect(parseBlocks(text)).toEqual([
       { kind: 'paragraph', text: '質感の指定だけを取り入れました。' },
@@ -27,7 +27,7 @@ describe('blocks', () => {
     expect(parseBlocks('a\r\nb')).toEqual([{ kind: 'paragraph', text: 'a\nb' }]);
   });
 
-  it('reads headings of every level, rules, quotes and code with its text untouched', { tags: ['decision-table'] }, () => {
+  it('reads headings of every level, rules, quotes and code with its text untouched', { tags: ['equivalence'] }, () => {
     expect(parseBlocks('###### six ##\n---\n> quoted\n> **two**\n```ts\nconst a = **b**;\n\n# not a heading\n```')).toEqual([
       { kind: 'heading', level: 6, text: 'six' },
       { kind: 'rule' },
@@ -61,7 +61,7 @@ describe('blocks', () => {
     expect(after).toEqual({ kind: 'paragraph', text: 'end' });
   });
 
-  it('reads a table with its header and rows, an escaped pipe kept in its cell', { tags: ['condition'] }, () => {
+  it('reads a table with its header and rows, an escaped pipe kept in its cell', { tags: ['equivalence'] }, () => {
     expect(parseBlocks('| a | b |\n|---|:-:|\n| 1 | x \\| y |\n| 2 |\n\nafter')).toEqual([
       {
         kind: 'table',
@@ -75,7 +75,7 @@ describe('blocks', () => {
     ]);
   });
 
-  it('leaves plain text that only looks like Markdown as a paragraph', { tags: ['condition'] }, () => {
+  it('leaves plain text that only looks like Markdown as a paragraph', { tags: ['error-guessing'] }, () => {
     for (const text of ['1.5倍にしました', '*強調*で始まる文', 'a | b', '#タグ', '-1 は負の数']) {
       expect(parseBlocks(text)).toEqual([{ kind: 'paragraph', text }]);
     }
@@ -84,8 +84,8 @@ describe('blocks', () => {
   });
 });
 
-describe('inline pieces', () => {
-  it('reads bold, italics, strike-through, code and links, nested where models nest them', { tags: ['condition'] }, () => {
+describe('inline pieces', { tags: [] }, () => {
+  it('reads bold, italics, strike-through, code and links, nested where models nest them', { tags: ['equivalence'] }, () => {
     expect(parseInline('**bold *and em* here** `a**b**` ~~gone~~ [Wiki](https://ja.wikipedia.org/wiki/A)')).toEqual([
       {
         kind: 'strong',
@@ -109,7 +109,7 @@ describe('inline pieces', () => {
     ]);
   });
 
-  it('leaves names, arithmetic, lone markers and escapes as text', { tags: ['condition'] }, () => {
+  it('leaves names, arithmetic, lone markers and escapes as text', { tags: ['error-guessing'] }, () => {
     for (const text of ['snake_case_name', '2 * 3 * 4', '** not bold **', 'a_b and c_d', 'price: 5*']) {
       expect(parseInline(text)).toEqual([{ kind: 'text', text }]);
     }

@@ -29,7 +29,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('QueueControls', () => {
+describe('QueueControls', { tags: [] }, () => {
   it('pauses the processor, and resumes it when paused', { tags: ['state-transition'] }, async () => {
     const pause = vi.spyOn(backend, 'pauseProcessor').mockResolvedValue(undefined as never);
     const resume = vi.spyOn(backend, 'resumeProcessor').mockResolvedValue(undefined as never);
@@ -42,7 +42,7 @@ describe('QueueControls', () => {
     expect(resume).toHaveBeenCalled();
   });
 
-  it('cancels the running item, and every pending item', { tags: ['state-transition'] }, async () => {
+  it('cancels the running item, and every pending item', { tags: ['scenario'] }, async () => {
     const cancel = vi.spyOn(backend, 'cancelQueueItem').mockResolvedValue(undefined as never);
     const cancelPending = vi.spyOn(backend, 'cancelPending').mockResolvedValue(undefined as never);
     fireEvent.click(button(t('queue.action.cancelCurrent')));
@@ -54,7 +54,7 @@ describe('QueueControls', () => {
     await waitFor(() => expect(lastToast()?.title).toBe(tCount('queue.toast.canceledPending', 2)));
   });
 
-  it('prunes the finished items and says how many', { tags: ['state-transition'] }, async () => {
+  it('prunes the finished items and says how many', { tags: ['scenario'] }, async () => {
     const prune = vi.spyOn(backend, 'pruneQueue').mockResolvedValue(undefined as never);
     fireEvent.click(screen.getByTestId('queue-prune'));
     await waitFor(() => expect(prune).toHaveBeenCalled());
@@ -72,7 +72,7 @@ describe('QueueControls', () => {
     await waitFor(() => expect(lastToast()?.title).toBe(t('queue.toast.cleared')));
   });
 
-  it('turns off what has nothing to act on', { tags: ['state-transition'] }, () => {
+  it('turns off what has nothing to act on', { tags: ['boundary'] }, () => {
     cleanup();
     useQueue.setState({ status: status({ total: 0, completed: 0, failed: 0 }), items: [] });
     render(

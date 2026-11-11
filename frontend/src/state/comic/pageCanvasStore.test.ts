@@ -18,7 +18,7 @@ beforeEach(() => {
   useComic.getState().setProjects([newProject('Layers')]);
 });
 
-describe('putting in the layers of a page', () => {
+describe('putting in the layers of a page', { tags: [] }, () => {
   it('changes the page, makes no undo step, and tells when nothing changed', { tags: ['state-transition'] }, () => {
     const doc = painted(page().canvas);
     expect(useComic.getState().setPageCanvas(page().id, doc)).toBe(true);
@@ -41,7 +41,7 @@ describe('putting in the layers of a page', () => {
   });
 });
 
-describe('a new paper', () => {
+describe('a new paper', { tags: [] }, () => {
   it('scales the layers by one factor and centres them; undo brings them back to the old paper', { tags: ['state-transition'] }, () => {
     const doc = painted(page().canvas);
     useComic.getState().setPageCanvas(page().id, doc);
@@ -60,12 +60,16 @@ describe('a new paper', () => {
     points.forEach((v, i) => expect(Math.abs(v - before[i]!)).toBeLessThanOrEqual(1.5));
   });
 
-  it('applies a page template on another paper the same way, and leaves the layers alone on the same paper', { tags: ['equivalence'] }, () => {
-    const doc = painted(page().canvas);
-    useComic.getState().setPageCanvas(page().id, doc);
-    useComic.getState().applyPageLayout(page().id, { panelCount: 2, columns: 2, direction: 'rtl', size: 'A4', shapes: null });
-    expect(page().canvas).toBe(doc);
-    useComic.getState().applyPageLayout(page().id, { panelCount: 2, columns: 2, direction: 'rtl', size: 'A5', shapes: null });
-    expect(page().canvas).toEqual(rescaleCanvasDoc(doc, pagePixels({ size: 'A4' }), pagePixels({ size: 'A5' })));
-  });
+  it(
+    'applies a page template on another paper the same way, and leaves the layers alone on the same paper',
+    { tags: ['condition'] },
+    () => {
+      const doc = painted(page().canvas);
+      useComic.getState().setPageCanvas(page().id, doc);
+      useComic.getState().applyPageLayout(page().id, { panelCount: 2, columns: 2, direction: 'rtl', size: 'A4', shapes: null });
+      expect(page().canvas).toBe(doc);
+      useComic.getState().applyPageLayout(page().id, { panelCount: 2, columns: 2, direction: 'rtl', size: 'A5', shapes: null });
+      expect(page().canvas).toEqual(rescaleCanvasDoc(doc, pagePixels({ size: 'A4' }), pagePixels({ size: 'A5' })));
+    },
+  );
 });

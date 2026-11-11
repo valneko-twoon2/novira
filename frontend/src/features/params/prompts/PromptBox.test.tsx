@@ -48,7 +48,7 @@ afterEach(() => {
 });
 
 describe('the prompt boxes', () => {
-  it('writes what is typed into each prompt', { tags: ['scenario'] }, () => {
+  it('writes what is typed into each prompt', { tags: ['equivalence'] }, () => {
     fireEvent.change(screen.getByTestId('positive-prompt'), { target: { value: 'a cat' } });
     fireEvent.change(screen.getByTestId('negative-prompt'), { target: { value: 'blurry' } });
     expect(useParams.getState()).toMatchObject({ positivePrompt: 'a cat', negativePrompt: 'blurry' });
@@ -69,7 +69,7 @@ describe('the prompt boxes', () => {
     expect(useParams.getState().positivePrompt).not.toBe('');
   });
 
-  it('keeps the section header to its title: the buttons sit in each prompt\'s own heading', { tags: ['scenario'] }, () => {
+  it('keeps the section header to its title: the buttons sit in each prompt\'s own heading', { tags: ['equivalence'] }, () => {
     const header = screen.getByTestId('prompts').querySelector('.ui-section__header')!;
     expect(header.querySelectorAll('button')).toHaveLength(1);
     for (const kind of ['positive', 'negative']) {
@@ -89,7 +89,7 @@ describe('the prompt boxes', () => {
     await waitFor(() => expect(screen.queryByTestId('big-positive')).toBeNull());
   });
 
-  it('switches each prompt between its text and its tags with two buttons, the active one marked', { tags: ['scenario'] }, () => {
+  it('switches each prompt between its text and its tags with two buttons, the active one marked', { tags: ['state-transition'] }, () => {
     for (const kind of ['positive', 'negative'] as const) {
       const text = screen.getByTestId(`${kind}-text-view`);
       const tags = screen.getByTestId(`${kind}-tag-view`);
@@ -119,19 +119,23 @@ describe('the prompt boxes', () => {
 });
 
 describe('describing a picture', () => {
-  it('describes the picture selected in the gallery at once, or asks for a file when none or a video is selected', { tags: ['condition'] }, () => {
-    const fileInput = screen.getByTestId('prompt-caption-file') as HTMLInputElement;
-    const pick = vi.spyOn(fileInput, 'click').mockImplementation(() => undefined);
-    fireEvent.click(screen.getByTestId('prompt-caption'));
-    expect(pick).toHaveBeenCalledTimes(1);
-    act(() => useGallery.setState({ selection: ['a.png'] }));
-    fireEvent.click(screen.getByTestId('prompt-caption'));
-    expect(quickRunTool).toHaveBeenLastCalledWith('caption', 'a.png');
-    act(() => useGallery.setState({ selection: ['v.mp4'] }));
-    fireEvent.click(screen.getByTestId('prompt-caption'));
-    expect(pick).toHaveBeenCalledTimes(2);
-    expect(quickRunTool).toHaveBeenCalledTimes(1);
-  });
+  it(
+    'describes the picture selected in the gallery at once, or asks for a file when none or a video is selected',
+    { tags: ['equivalence', 'condition'] },
+    () => {
+      const fileInput = screen.getByTestId('prompt-caption-file') as HTMLInputElement;
+      const pick = vi.spyOn(fileInput, 'click').mockImplementation(() => undefined);
+      fireEvent.click(screen.getByTestId('prompt-caption'));
+      expect(pick).toHaveBeenCalledTimes(1);
+      act(() => useGallery.setState({ selection: ['a.png'] }));
+      fireEvent.click(screen.getByTestId('prompt-caption'));
+      expect(quickRunTool).toHaveBeenLastCalledWith('caption', 'a.png');
+      act(() => useGallery.setState({ selection: ['v.mp4'] }));
+      fireEvent.click(screen.getByTestId('prompt-caption'));
+      expect(pick).toHaveBeenCalledTimes(2);
+      expect(quickRunTool).toHaveBeenCalledTimes(1);
+    },
+  );
 
   it('describes a picture dropped on the button, and uploads a dropped or picked file first', { tags: ['scenario'] }, async () => {
     const zone = screen.getByTestId('prompt-caption').closest('.pp-prompt__caption')!;

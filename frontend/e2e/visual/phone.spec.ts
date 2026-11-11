@@ -3,7 +3,7 @@ import { msg } from '../fixtures';
 import { expect, inEachTheme, snap, test } from './shared';
 
 inEachTheme((theme) => {
-  test.describe('phone layout', () => {
+  test.describe('phone layout', { tag: [] }, () => {
     // A phone held upright, at scale 1 like every other shot here.
     test.use({ viewport: { width: 412, height: 915 }, isMobile: true, hasTouch: true });
 

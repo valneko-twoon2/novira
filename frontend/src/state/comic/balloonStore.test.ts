@@ -13,8 +13,8 @@ beforeEach(() => {
   useComic.setState({ projects: [], activeProjectId: null, activePageId: null, selectedPanelId: null, selectedBubbleId: null, pending: {} });
 });
 
-describe('the comic store: page layout and balloons', () => {
-  it('sets the columns and the reading direction of a page, and keeps the rest of it', { tags: ['condition'] }, () => {
+describe('the comic store: page layout and balloons', { tags: [] }, () => {
+  it('sets the columns and the reading direction of a page, and keeps the rest of it', { tags: ['equivalence'] }, () => {
     const project = seed();
     const page = project.pages[0]!.id;
     useComic.getState().setPageLayout(page, { columns: 3 });
@@ -46,7 +46,7 @@ describe('the comic store: page layout and balloons', () => {
     });
   });
 
-  it('adds a balloon with the look of a preset, and the look its shape starts with', { tags: ['state-transition'] }, () => {
+  it('adds a balloon with the look of a preset, and the look its shape starts with', { tags: ['equivalence'] }, () => {
     const project = seed();
     const panel = project.pages[0]!.panels[0]!.id;
     const whisper = useComic.getState().addBubble(panel, 'speech', { line: 'dashed' })!;
@@ -56,7 +56,7 @@ describe('the comic store: page layout and balloons', () => {
     expect(bubbles.find((b) => b.id === flash)).toMatchObject({ kind: 'flash', line: 'none', tail: null, spikes: 72 });
   });
 
-  it('keeps every change of a balloon in range', { tags: ['equivalence'] }, () => {
+  it('keeps every change of a balloon in range', { tags: ['boundary'] }, () => {
     const project = seed();
     const panel = project.pages[0]!.panels[0]!.id;
     const bubble = useComic.getState().addBubble(panel, 'shout')!;
@@ -64,7 +64,7 @@ describe('the comic store: page layout and balloons', () => {
     expect(findPanel(useComic.getState().projects, panel)!.panel.bubbles[0]).toMatchObject({ lineWidth: 4, rough: 1, width: 0.6, spikes: 3, depth: 0, tailCurve: 1 });
   });
 
-  it('shows the points of the selected balloon only, until another balloon or none is chosen', { tags: ['boundary'] }, () => {
+  it('shows the points of the selected balloon only, until another balloon or none is chosen', { tags: ['state-transition'] }, () => {
     const project = seed();
     const panel = project.pages[0]!.panels[0]!.id;
     const a = useComic.getState().addBubble(panel, 'speech')!;
@@ -87,7 +87,7 @@ describe('the comic store: page layout and balloons', () => {
   });
 });
 
-describe('a balloon just added goes to the middle of its panel', () => {
+describe('a balloon just added goes to the middle of its panel', { tags: [] }, () => {
   const bubble = (panelId: string, id: string) => findPanel(useComic.getState().projects, panelId)!.panel.bubbles.find((b) => b.id === id)!;
 
   it('once the screen gives its size, as part of the step that added it', { tags: ['state-transition'] }, () => {
@@ -104,7 +104,7 @@ describe('a balloon just added goes to the middle of its panel', () => {
     expect(findPanel(useComic.getState().projects, panelId)!.panel.bubbles).toHaveLength(0);
   });
 
-  it('keeps a balloon bigger than its panel at the panel corner', { tags: ['condition'] }, () => {
+  it('keeps a balloon bigger than its panel at the panel corner', { tags: ['boundary', 'condition'] }, () => {
     const panelId = seed().pages[0]!.panels[0]!.id;
     const id = useComic.getState().addBubble(panelId, 'speech')!;
     useComic.getState().centerBubble(panelId, id, 1.5, Number.NaN);

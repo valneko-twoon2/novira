@@ -30,8 +30,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('HuggingFaceBrowse', () => {
-  it('takes an address into a folder, lists that folder first, and installs the files picked', { tags: ['boundary', 'state-transition'] }, async () => {
+describe('HuggingFaceBrowse', { tags: [] }, () => {
+  it('takes an address into a folder, lists that folder first, and installs the files picked', { tags: ['scenario'] }, async () => {
     show();
     lookup('https://huggingface.co/h94/IP-Adapter/tree/main/sdxl_models');
     await screen.findByTestId('browse-hf-results');
@@ -44,7 +44,7 @@ describe('HuggingFaceBrowse', () => {
     expect(screen.getByText('models/ip-adapter_sd15.safetensors')).toBeTruthy();
   });
 
-  it('ticks the file of a file address, and says so for an address that is not a model', { tags: ['scenario'] }, async () => {
+  it('ticks the file of a file address, and says so for an address that is not a model', { tags: ['condition'] }, async () => {
     show();
     lookup('https://huggingface.co/h94/IP-Adapter/blob/main/models/ip-adapter_sd15.safetensors');
     await screen.findByTestId('browse-hf-results');
@@ -54,25 +54,29 @@ describe('HuggingFaceBrowse', () => {
     expect(screen.queryByTestId('browse-hf-results')).toBeNull();
   });
 
-  it('marks a file that is installed, shows the progress of one being downloaded, and leaves both unticked', { tags: ['boundary', 'state-transition'] }, async () => {
-    useModels.setState({
-      models: [{ key: 'm1', name: 'ip-adapter_sdxl.safetensors', source: 'h94/IP-Adapter::sdxl_models/ip-adapter_sdxl.safetensors' } as never],
-      installJobs: [
-        { id: 'j1', source: 'h94/IP-Adapter::sdxl_models/ip-adapter-plus_sdxl_vit-h.safetensors', name: 'plus', status: 'downloading', bytes: 25, totalBytes: 100 },
-      ],
-    });
-    show();
-    lookup('https://huggingface.co/h94/IP-Adapter/tree/main/sdxl_models');
-    await screen.findByTestId('browse-hf-results');
-    const rows = screen.getAllByTestId('browse-hf-file');
-    const byState = (state: string) => rows.filter((r) => r.getAttribute('data-state') === state);
-    expect(byState('installed')).toHaveLength(1);
-    expect(byState('installed')[0]!.textContent).toContain(t('browse.card.installed'));
-    expect(byState('queued')[0]!.textContent).toContain(t('browse.card.installing', { percent: 25 }));
-    expect((screen.getByRole('checkbox', { name: 'sdxl_models/ip-adapter_sdxl.safetensors' }) as HTMLInputElement).disabled).toBe(true);
-  });
+  it(
+    'marks a file that is installed, shows the progress of one being downloaded, and leaves both unticked',
+    { tags: ['condition'] },
+    async () => {
+      useModels.setState({
+        models: [{ key: 'm1', name: 'ip-adapter_sdxl.safetensors', source: 'h94/IP-Adapter::sdxl_models/ip-adapter_sdxl.safetensors' } as never],
+        installJobs: [
+          { id: 'j1', source: 'h94/IP-Adapter::sdxl_models/ip-adapter-plus_sdxl_vit-h.safetensors', name: 'plus', status: 'downloading', bytes: 25, totalBytes: 100 },
+        ],
+      });
+      show();
+      lookup('https://huggingface.co/h94/IP-Adapter/tree/main/sdxl_models');
+      await screen.findByTestId('browse-hf-results');
+      const rows = screen.getAllByTestId('browse-hf-file');
+      const byState = (state: string) => rows.filter((r) => r.getAttribute('data-state') === state);
+      expect(byState('installed')).toHaveLength(1);
+      expect(byState('installed')[0]!.textContent).toContain(t('browse.card.installed'));
+      expect(byState('queued')[0]!.textContent).toContain(t('browse.card.installing', { percent: 25 }));
+      expect((screen.getByRole('checkbox', { name: 'sdxl_models/ip-adapter_sdxl.safetensors' }) as HTMLInputElement).disabled).toBe(true);
+    },
+  );
 
-  it('shows why a lookup failed', { tags: ['error-guessing', 'scenario'] }, async () => {
+  it('shows why a lookup failed', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'listHuggingFaceFiles').mockRejectedValue(new Error('nope'));
     show();
     lookup('a/b');

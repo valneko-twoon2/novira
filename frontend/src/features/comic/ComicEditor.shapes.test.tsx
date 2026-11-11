@@ -57,8 +57,8 @@ afterEach(() => {
   useComic.setState({ selectedPanelId: null, imageSelected: false, backdropSelected: false, cutting: false });
 });
 
-describe('the corners of the selected panel', () => {
-  it('drags a corner, which reshapes the page, and stops on release', { tags: ['scenario'] }, () => {
+describe('the corners of the selected panel', { tags: [] }, () => {
+  it('drags a corner, which reshapes the page, and stops on release', { tags: ['state-transition'] }, () => {
     show();
     layout();
     act(() => useComic.getState().selectPanel(page().panels[0]!.id));
@@ -76,7 +76,7 @@ describe('the corners of the selected panel', () => {
     expect(JSON.stringify(page().shapes)).toBe(after);
   });
 
-  it('ignores a move of another pointer, and a move before the page is laid out', { tags: ['scenario'] }, () => {
+  it('ignores a move of another pointer, and a move before the page is laid out', { tags: ['error-guessing', 'condition'] }, () => {
     show();
     act(() => useComic.getState().selectPanel(page().panels[0]!.id));
     const corner = screen.getAllByTestId('comic-corner')[0]!;
@@ -90,7 +90,7 @@ describe('the corners of the selected panel', () => {
     fireEvent.pointerCancel(corner, { pointerId: 1 });
   });
 
-  it('removes a corner on a double click, and keeps a click from reaching the page', { tags: ['scenario'] }, () => {
+  it('removes a corner on a double click, and keeps a click from reaching the page', { tags: ['condition'] }, () => {
     show();
     layout();
     act(() => useComic.getState().selectPanel(page().panels[0]!.id));
@@ -103,31 +103,35 @@ describe('the corners of the selected panel', () => {
     expect(screen.getAllByTestId('comic-corner').length).toBeLessThanOrEqual(corners);
   });
 
-  it('adds a corner on a double click on the panel outline, and removes it again with a double click on the corner', { tags: ['regression'] }, () => {
-    const { container } = show();
-    layout();
-    act(() => useComic.getState().selectPanel(page().panels[0]!.id));
-    const hit = container.querySelector('.comic-frames__hit')!;
-    const corners = screen.getAllByTestId('comic-corner').length;
-    // On the left edge of the first panel.
-    fireEvent.doubleClick(hit, { clientX: 0, clientY: HEIGHT / 4 });
-    const added = screen.getAllByTestId('comic-corner').length;
-    expect(added).toBeGreaterThan(corners);
-    // Without a size on screen, nothing is added.
-    screen.getByTestId('comic-page').getBoundingClientRect = () => ({ left: 0, top: 0, width: 0, height: 0, right: 0, bottom: 0, x: 0, y: 0 }) as DOMRect;
-    fireEvent.doubleClick(container.querySelector('.comic-frames__hit')!, { clientX: 0, clientY: HEIGHT / 4 });
-    expect(screen.getAllByTestId('comic-corner')).toHaveLength(added);
-    layout();
-    // The corner just added is the one a double click takes away again (a corner shared with a neighbour stays).
-    for (const c of screen.getAllByTestId('comic-corner')) {
-      if (screen.getAllByTestId('comic-corner').length < added) break;
-      fireEvent.doubleClick(c);
-    }
-    expect(screen.getAllByTestId('comic-corner').length).toBeLessThan(added);
-  });
+  it(
+    'adds a corner on a double click on the panel outline, and removes it again with a double click on the corner',
+    { tags: ['state-transition', 'condition'] },
+    () => {
+      const { container } = show();
+      layout();
+      act(() => useComic.getState().selectPanel(page().panels[0]!.id));
+      const hit = container.querySelector('.comic-frames__hit')!;
+      const corners = screen.getAllByTestId('comic-corner').length;
+      // On the left edge of the first panel.
+      fireEvent.doubleClick(hit, { clientX: 0, clientY: HEIGHT / 4 });
+      const added = screen.getAllByTestId('comic-corner').length;
+      expect(added).toBeGreaterThan(corners);
+      // Without a size on screen, nothing is added.
+      screen.getByTestId('comic-page').getBoundingClientRect = () => ({ left: 0, top: 0, width: 0, height: 0, right: 0, bottom: 0, x: 0, y: 0 }) as DOMRect;
+      fireEvent.doubleClick(container.querySelector('.comic-frames__hit')!, { clientX: 0, clientY: HEIGHT / 4 });
+      expect(screen.getAllByTestId('comic-corner')).toHaveLength(added);
+      layout();
+      // The corner just added is the one a double click takes away again (a corner shared with a neighbour stays).
+      for (const c of screen.getAllByTestId('comic-corner')) {
+        if (screen.getAllByTestId('comic-corner').length < added) break;
+        fireEvent.doubleClick(c);
+      }
+      expect(screen.getAllByTestId('comic-corner').length).toBeLessThan(added);
+    },
+  );
 });
 
-describe('the edges and the turning handle', () => {
+describe('the edges and the turning handle', { tags: [] }, () => {
   it('slides an edge with its bar', { tags: ['boundary'] }, () => {
     show();
     layout();
@@ -148,21 +152,25 @@ describe('the edges and the turning handle', () => {
     expect(JSON.stringify(page().shapes)).toBe(after);
   });
 
-  it('does not start sliding an edge before the page is laid out, and ignores another pointer', { tags: ['boundary'] }, () => {
-    show();
-    act(() => useComic.getState().selectPanel(page().panels[0]!.id));
-    const bar = screen.getAllByTestId('comic-edge')[0]!;
-    fireEvent.pointerDown(bar, { pointerId: 1, clientX: 5, clientY: 5 });
-    layout();
-    fireEvent.pointerMove(bar, { pointerId: 1, clientX: 50, clientY: 50 });
-    expect(page().shapes).toBeNull();
-    fireEvent.pointerDown(bar, { pointerId: 1, clientX: 5, clientY: 5 });
-    fireEvent.pointerMove(bar, { pointerId: 2, clientX: 50, clientY: 50 });
-    expect(page().shapes).toBeNull();
-    fireEvent.pointerCancel(bar, { pointerId: 1 });
-  });
+  it(
+    'does not start sliding an edge before the page is laid out, and ignores another pointer',
+    { tags: ['error-guessing', 'condition'] },
+    () => {
+      show();
+      act(() => useComic.getState().selectPanel(page().panels[0]!.id));
+      const bar = screen.getAllByTestId('comic-edge')[0]!;
+      fireEvent.pointerDown(bar, { pointerId: 1, clientX: 5, clientY: 5 });
+      layout();
+      fireEvent.pointerMove(bar, { pointerId: 1, clientX: 50, clientY: 50 });
+      expect(page().shapes).toBeNull();
+      fireEvent.pointerDown(bar, { pointerId: 1, clientX: 5, clientY: 5 });
+      fireEvent.pointerMove(bar, { pointerId: 2, clientX: 50, clientY: 50 });
+      expect(page().shapes).toBeNull();
+      fireEvent.pointerCancel(bar, { pointerId: 1 });
+    },
+  );
 
-  it('turns the panel with the handle above it, and in steps of 15 degrees with Shift', { tags: ['scenario'] }, () => {
+  it('turns the panel with the handle above it, and in steps of 15 degrees with Shift', { tags: ['boundary', 'condition'] }, () => {
     show();
     layout();
     act(() => useComic.getState().selectPanel(page().panels[0]!.id));
@@ -181,7 +189,7 @@ describe('the edges and the turning handle', () => {
     fireEvent.click(handle);
   });
 
-  it('ignores a turn that is not started with a laid-out page, or by another pointer', { tags: ['scenario'] }, () => {
+  it('ignores a turn that is not started with a laid-out page, or by another pointer', { tags: ['error-guessing', 'condition'] }, () => {
     show();
     act(() => useComic.getState().selectPanel(page().panels[0]!.id));
     const handle = screen.getByTestId('comic-rotate');
@@ -196,7 +204,7 @@ describe('the edges and the turning handle', () => {
   });
 });
 
-describe('the cut tool', () => {
+describe('the cut tool', { tags: [] }, () => {
   const drawLine = (from: [number, number], to: [number, number]) => {
     const layer = screen.getByTestId('comic-cut-layer');
     fireEvent.pointerDown(layer, { pointerId: 1, clientX: from[0], clientY: from[1] });
@@ -216,7 +224,7 @@ describe('the cut tool', () => {
     expect(container.querySelector('.comic-cut__line')).toBeNull();
   });
 
-  it('cuts nothing for a click or a line too short, and nothing outside every panel', { tags: ['decision-table'] }, () => {
+  it('cuts nothing for a click or a line too short, and nothing outside every panel', { tags: ['boundary', 'decision-table'] }, () => {
     show();
     layout();
     act(() => useComic.getState().setCutting(true));
@@ -231,34 +239,42 @@ describe('the cut tool', () => {
     expect(page().panels).toHaveLength(count);
   });
 
-  it('warns when the page holds the most panels, and drops the line when the press is cancelled', { tags: ['scenario'] }, () => {
-    const { container } = show();
-    layout();
-    act(() => useComic.getState().setPanelCount(page().id, MAX_PANELS_PER_PAGE));
-    act(() => useComic.getState().setCutting(true));
-    const count = page().panels.length;
-    const layer = drawLine([200, 300], [800, 300]);
-    fireEvent.pointerUp(layer, { pointerId: 1 });
-    expect(page().panels).toHaveLength(count);
-    expect(useToasts.getState().toasts.some((x) => x.title === t('comic.shape.cutFailed'))).toBe(true);
-    drawLine([200, 300], [800, 300]);
-    fireEvent.pointerCancel(screen.getByTestId('comic-cut-layer'), { pointerId: 1 });
-    expect(container.querySelector('.comic-cut__line')).toBeNull();
-  });
+  it(
+    'warns when the page holds the most panels, and drops the line when the press is cancelled',
+    { tags: ['boundary', 'state-transition'] },
+    () => {
+      const { container } = show();
+      layout();
+      act(() => useComic.getState().setPanelCount(page().id, MAX_PANELS_PER_PAGE));
+      act(() => useComic.getState().setCutting(true));
+      const count = page().panels.length;
+      const layer = drawLine([200, 300], [800, 300]);
+      fireEvent.pointerUp(layer, { pointerId: 1 });
+      expect(page().panels).toHaveLength(count);
+      expect(useToasts.getState().toasts.some((x) => x.title === t('comic.shape.cutFailed'))).toBe(true);
+      drawLine([200, 300], [800, 300]);
+      fireEvent.pointerCancel(screen.getByTestId('comic-cut-layer'), { pointerId: 1 });
+      expect(container.querySelector('.comic-cut__line')).toBeNull();
+    },
+  );
 
-  it('turns the cut tool on and off from its button, and adds a panel or says it cannot', { tags: ['error-guessing'] }, () => {
-    show();
-    fireEvent.click(screen.getByTestId('comic-cut'));
-    expect(useComic.getState().cutting).toBe(true);
-    fireEvent.click(screen.getByTestId('comic-cut'));
-    expect(useComic.getState().cutting).toBe(false);
-    vi.spyOn(useComic.getState(), 'addPanel').mockReturnValue(null);
-    fireEvent.click(screen.getByTestId('comic-add-panel'));
-    expect(useToasts.getState().toasts.some((x) => x.title === t('comic.shape.addPanelFailed'))).toBe(true);
-  });
+  it(
+    'turns the cut tool on and off from its button, and adds a panel or says it cannot',
+    { tags: ['state-transition', 'condition'] },
+    () => {
+      show();
+      fireEvent.click(screen.getByTestId('comic-cut'));
+      expect(useComic.getState().cutting).toBe(true);
+      fireEvent.click(screen.getByTestId('comic-cut'));
+      expect(useComic.getState().cutting).toBe(false);
+      vi.spyOn(useComic.getState(), 'addPanel').mockReturnValue(null);
+      fireEvent.click(screen.getByTestId('comic-add-panel'));
+      expect(useToasts.getState().toasts.some((x) => x.title === t('comic.shape.addPanelFailed'))).toBe(true);
+    },
+  );
 });
 
-describe('the buttons under and beside the page', () => {
+describe('the buttons under and beside the page', { tags: [] }, () => {
   it('saves the page as a picture and as a PSD', { tags: ['scenario'] }, () => {
     const picture = vi.spyOn(savePageModule, 'savePage').mockResolvedValue();
     const psd = vi.spyOn(savePageModule, 'savePagePsd').mockResolvedValue();
@@ -270,7 +286,7 @@ describe('the buttons under and beside the page', () => {
     expect(psd).toHaveBeenCalledOnce();
   });
 
-  it('undoes and redoes from the buttons, which are off while there is nothing to do', { tags: ['state-transition'] }, () => {
+  it('undoes and redoes from the buttons, which are off while there is nothing to do', { tags: ['state-transition', 'boundary'] }, () => {
     show();
     const undo = screen.getByTestId('comic-undo') as HTMLButtonElement;
     const redo = screen.getByTestId('comic-redo') as HTMLButtonElement;
@@ -299,7 +315,7 @@ describe('the buttons under and beside the page', () => {
     expect(page().panels).toHaveLength(count);
   });
 
-  it('zooms in and out with the buttons, and stops at the ends of the range', { tags: ['scenario'] }, () => {
+  it('zooms in and out with the buttons, and stops at the ends of the range', { tags: ['boundary'] }, () => {
     show();
     const value = screen.getByTestId('comic-zoom-value');
     const zoomIn = screen.getByRole('button', { name: t('common.zoomIn') }) as HTMLButtonElement;
@@ -315,7 +331,7 @@ describe('the buttons under and beside the page', () => {
     expect(zoomIn.disabled).toBe(true);
   });
 
-  it('ignores a Ctrl wheel that does not change the zoom (already at the end)', { tags: ['scenario'] }, () => {
+  it('ignores a Ctrl wheel that does not change the zoom (already at the end)', { tags: ['boundary'] }, () => {
     show();
     const scroll = screen.getByTestId('comic-scroll');
     for (let i = 0; i < 40; i++) fireEvent.wheel(scroll, { ctrlKey: true, deltaY: 100 });
@@ -324,16 +340,20 @@ describe('the buttons under and beside the page', () => {
     expect(screen.getByTestId('comic-zoom-value').textContent).toBe(at);
   });
 
-  it('opens a new comic from the empty state with its button, which then shows the page', { tags: ['boundary', 'state-transition'] }, () => {
-    useComic.getState().setProjects([]);
-    render(
-      <TooltipProvider>
-        <ComicEditor />
-      </TooltipProvider>,
-    );
-    fireEvent.click(screen.getByTestId('comic-new-empty'));
-    expect(useComic.getState().projects).toHaveLength(1);
-  });
+  it(
+    'opens a new comic from the empty state with its button, which then shows the page',
+    { tags: ['state-transition', 'scenario'] },
+    () => {
+      useComic.getState().setProjects([]);
+      render(
+        <TooltipProvider>
+          <ComicEditor />
+        </TooltipProvider>,
+      );
+      fireEvent.click(screen.getByTestId('comic-new-empty'));
+      expect(useComic.getState().projects).toHaveLength(1);
+    },
+  );
 
   it('shows an empty view for a comic without a page on screen', { tags: ['boundary'] }, () => {
     const project = newProject('None');
@@ -348,12 +368,12 @@ describe('the buttons under and beside the page', () => {
   });
 });
 
-describe('Alt and the wheel on the backdrop', () => {
+describe('Alt and the wheel on the backdrop', { tags: [] }, () => {
   const withBackdrop = (project: ReturnType<typeof newProject>) => {
     project.pages[0] = { ...project.pages[0]!, backdrop: { imageName: 'sky.png', view: { cx: 0.5, cy: 0.5, scale: 1, rotation: 0, flipX: false, flipY: false } } };
   };
 
-  it('scales the backdrop when the wheel turns over the paper, and selects it', { tags: ['scenario'] }, () => {
+  it('scales the backdrop when the wheel turns over the paper, and selects it', { tags: ['equivalence'] }, () => {
     show({}, withBackdrop);
     layout();
     const paper = screen.getByTestId('comic-page');
@@ -364,7 +384,7 @@ describe('Alt and the wheel on the backdrop', () => {
     expect(page().backdrop!.view.scale).toBeCloseTo(1);
   });
 
-  it('scales the backdrop over its own handles while it is selected', { tags: ['scenario'] }, () => {
+  it('scales the backdrop over its own handles while it is selected', { tags: ['condition'] }, () => {
     show({}, withBackdrop);
     layout();
     act(() => useComic.getState().selectBackdrop(true));
@@ -372,7 +392,7 @@ describe('Alt and the wheel on the backdrop', () => {
     expect(page().backdrop!.view.scale).toBeCloseTo(1.1);
   });
 
-  it('leaves a page without a backdrop alone, and a wheel with no turn, or with Ctrl', { tags: ['state-transition'] }, () => {
+  it('leaves a page without a backdrop alone, and a wheel with no turn, or with Ctrl', { tags: ['decision-table', 'condition'] }, () => {
     show();
     layout();
     const paper = screen.getByTestId('comic-page');
@@ -387,7 +407,7 @@ describe('Alt and the wheel on the backdrop', () => {
     expect(page().backdrop!.view.scale).toBe(1);
   });
 
-  it('does nothing for a picture-less panel under the pointer', { tags: ['scenario'] }, () => {
+  it('does nothing for a picture-less panel under the pointer', { tags: ['condition'] }, () => {
     show({}, withBackdrop);
     layout();
     const before = page().backdrop!.view.scale;
@@ -397,14 +417,14 @@ describe('Alt and the wheel on the backdrop', () => {
   });
 });
 
-describe('painting on the page', () => {
+describe('painting on the page', { tags: [] }, () => {
   const paintProps = (): ComicEditorProps => ({
     canPaint: true,
     paintSurface: <div data-testid="surface" />,
     paintToolbar: <span data-testid="paint-tools" />,
   });
 
-  it('shows the mode switch only when the shell can paint', { tags: ['state-transition'] }, () => {
+  it('shows the mode switch only when the shell can paint', { tags: ['condition'] }, () => {
     show();
     expect(screen.queryByTestId('comic-mode-paint')).toBeNull();
     cleanup();
@@ -413,30 +433,34 @@ describe('painting on the page', () => {
     expect(screen.queryByTestId('surface')).toBeNull();
   });
 
-  it('swaps the page tools for the painting parts while painting, and back with the page button or Escape', { tags: ['scenario'] }, async () => {
-    show(paintProps());
-    act(() => useComic.getState().selectPanel(page().panels[0]!.id));
-    expect(screen.getByTestId('comic-panel-tools')).toBeTruthy();
-    fireEvent.click(screen.getByTestId('comic-mode-paint'));
-    await waitFor(() => expect(screen.getByTestId('surface')).toBeTruthy());
-    expect(screen.getByTestId('paint-tools')).toBeTruthy();
-    expect(screen.queryByTestId('comic-panel-tools')).toBeNull();
-    expect(screen.queryByTestId('comic-add-panel')).toBeNull();
-    expect(screen.queryByTestId('comic-rotate')).toBeNull();
-    // The page's own keys are out of reach: Delete does not take the panel away.
-    const count = page().panels.length;
-    fireEvent.keyDown(window, { key: 'Delete' });
-    expect(page().panels).toHaveLength(count);
-    // A press on blank paper while painting changes no selection.
-    const selectedBefore = useComic.getState().selectedPanelId;
-    fireEvent.pointerDown(screen.getByTestId('comic-editor'), { button: 0 });
-    expect(useComic.getState().selectedPanelId).toBe(selectedBefore);
-    fireEvent.keyDown(window, { key: 'Escape' });
-    await waitFor(() => expect(screen.queryByTestId('surface')).toBeNull());
-    expect(usePagePaint.getState().painting).toBe(false);
-    fireEvent.click(screen.getByTestId('comic-mode-paint'));
-    await waitFor(() => expect(screen.getByTestId('surface')).toBeTruthy());
-    fireEvent.click(screen.getByTestId('comic-mode-page'));
-    await waitFor(() => expect(screen.queryByTestId('surface')).toBeNull());
-  });
+  it(
+    'swaps the page tools for the painting parts while painting, and back with the page button or Escape',
+    { tags: ['state-transition'] },
+    async () => {
+      show(paintProps());
+      act(() => useComic.getState().selectPanel(page().panels[0]!.id));
+      expect(screen.getByTestId('comic-panel-tools')).toBeTruthy();
+      fireEvent.click(screen.getByTestId('comic-mode-paint'));
+      await waitFor(() => expect(screen.getByTestId('surface')).toBeTruthy());
+      expect(screen.getByTestId('paint-tools')).toBeTruthy();
+      expect(screen.queryByTestId('comic-panel-tools')).toBeNull();
+      expect(screen.queryByTestId('comic-add-panel')).toBeNull();
+      expect(screen.queryByTestId('comic-rotate')).toBeNull();
+      // The page's own keys are out of reach: Delete does not take the panel away.
+      const count = page().panels.length;
+      fireEvent.keyDown(window, { key: 'Delete' });
+      expect(page().panels).toHaveLength(count);
+      // A press on blank paper while painting changes no selection.
+      const selectedBefore = useComic.getState().selectedPanelId;
+      fireEvent.pointerDown(screen.getByTestId('comic-editor'), { button: 0 });
+      expect(useComic.getState().selectedPanelId).toBe(selectedBefore);
+      fireEvent.keyDown(window, { key: 'Escape' });
+      await waitFor(() => expect(screen.queryByTestId('surface')).toBeNull());
+      expect(usePagePaint.getState().painting).toBe(false);
+      fireEvent.click(screen.getByTestId('comic-mode-paint'));
+      await waitFor(() => expect(screen.getByTestId('surface')).toBeTruthy());
+      fireEvent.click(screen.getByTestId('comic-mode-page'));
+      await waitFor(() => expect(screen.queryByTestId('surface')).toBeNull());
+    },
+  );
 });

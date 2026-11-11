@@ -50,7 +50,7 @@ describe('the list', () => {
     expect(screen.getByLabelText(t('gallery.boards.archived'))).toBeTruthy();
   });
 
-  it('collapses and expands with the header', { tags: ['scenario'] }, () => {
+  it('collapses and expands with the header', { tags: ['state-transition'] }, () => {
     fireEvent.click(screen.getByTestId('boards-toggle'));
     expect(screen.queryByRole('listbox')).toBeNull();
     fireEvent.click(screen.getByTestId('boards-toggle'));
@@ -65,7 +65,7 @@ describe('the list', () => {
     expect(within(rows()[2]!).getByText(t('gallery.boards.autoBadge'))).toBeTruthy();
   });
 
-  it('counts the pictures of each board', { tags: ['scenario'] }, () => {
+  it('counts the pictures of each board', { tags: ['equivalence'] }, () => {
     const picture = (name: string, category: string, createdAt: number) => ({ name, boardId: 'b1', category, createdAt, thumbnailUrl: `blob:${name}` }) as never;
     act(() => useGallery.setState({ images: [picture('a.png', 'general', 1), picture('b.png', 'user', 2), picture('c.png', 'general', 3)] }));
     expect(rows()[2]!.querySelector('.gboard__count')!.textContent).toBe('3');
@@ -153,14 +153,18 @@ describe('the context menu', () => {
     expect(again.getByText(t('gallery.boards.setAutoAdd')).closest('[role=menuitem]')!.getAttribute('aria-disabled')).toBe('true');
   });
 
-  it('says boards cannot be downloaded in the browser, and offers no rename or delete for uncategorized', { tags: ['condition'] }, async () => {
-    const m = await menu(rows()[0]!);
-    expect(m.queryByText(t('gallery.boards.delete'))).toBeNull();
-    fireEvent.click(m.getByText(t('gallery.boards.download')));
-    expect(useToasts.getState().toasts.at(-1)?.status).toBe('info');
-  });
+  it(
+    'says boards cannot be downloaded in the browser, and offers no rename or delete for uncategorized',
+    { tags: ['condition'] },
+    async () => {
+      const m = await menu(rows()[0]!);
+      expect(m.queryByText(t('gallery.boards.delete'))).toBeNull();
+      fireEvent.click(m.getByText(t('gallery.boards.download')));
+      expect(useToasts.getState().toasts.at(-1)?.status).toBe('info');
+    },
+  );
 
-  it('archives and restores a board', { tags: ['scenario'] }, async () => {
+  it('archives and restores a board', { tags: ['state-transition'] }, async () => {
     const update = vi.spyOn(backend, 'updateBoard').mockImplementation(async (id, patch) => board(id, 'Beta', patch as Partial<BoardDTO>));
     fireEvent.click(rows()[1]!);
     const m = await menu(rows()[1]!);
@@ -230,27 +234,35 @@ describe('dropping on a board', () => {
 });
 
 describe('subfolders', () => {
-  it('adds a subfolder from the menu: its board opens, it is selected and its name is open for renaming', { tags: ['scenario'] }, async () => {
-    const create = vi.spyOn(backend, 'createBoard').mockResolvedValue(board('b9', 'New folder', { parentId: 'b2' }));
-    fireEvent.contextMenu(rows()[1]!);
-    fireEvent.click(within(await screen.findByRole('menu')).getByText(t('gallery.boards.addSubfolder')));
-    await waitFor(() => expect(create).toHaveBeenCalledWith(t('gallery.boards.newSubfolderName'), 'b2'));
-    await waitFor(() => expect(state().selectedBoardId).toBe('b9'));
-    expect(await screen.findByLabelText(t('common.rename'))).toBeTruthy();
-    expect(state().settings.foldedBoards).not.toContain('b2');
-  });
+  it(
+    'adds a subfolder from the menu: its board opens, it is selected and its name is open for renaming',
+    { tags: ['scenario'] },
+    async () => {
+      const create = vi.spyOn(backend, 'createBoard').mockResolvedValue(board('b9', 'New folder', { parentId: 'b2' }));
+      fireEvent.contextMenu(rows()[1]!);
+      fireEvent.click(within(await screen.findByRole('menu')).getByText(t('gallery.boards.addSubfolder')));
+      await waitFor(() => expect(create).toHaveBeenCalledWith(t('gallery.boards.newSubfolderName'), 'b2'));
+      await waitFor(() => expect(state().selectedBoardId).toBe('b9'));
+      expect(await screen.findByLabelText(t('common.rename'))).toBeTruthy();
+      expect(state().settings.foldedBoards).not.toContain('b2');
+    },
+  );
 
-  it('folds a board with subfolders away and brings them back, and shows them under a search that finds them', { tags: ['scenario'] }, () => {
-    act(() => useGallery.setState({ boards: [board('b1', 'Alpha'), board('b2', 'Beta'), board('b4', 'Inner', { parentId: 'b2' })] }));
-    expect(names()).toEqual([t('gallery.boards.uncategorized'), 'Beta', 'Inner', 'Alpha']);
-    fireEvent.click(screen.getByTestId('board-fold'));
-    expect(state().settings.foldedBoards).toContain('b2');
-    expect(names()).toEqual([t('gallery.boards.uncategorized'), 'Beta', 'Alpha']);
-    act(() => state().setBoardSearch('inner'));
-    expect(names()).toContain('Inner');
-    act(() => state().setBoardSearch(''));
-    fireEvent.click(screen.getByTestId('board-fold'));
-    expect(state().settings.foldedBoards).not.toContain('b2');
-    expect(names()).toContain('Inner');
-  });
+  it(
+    'folds a board with subfolders away and brings them back, and shows them under a search that finds them',
+    { tags: ['state-transition'] },
+    () => {
+      act(() => useGallery.setState({ boards: [board('b1', 'Alpha'), board('b2', 'Beta'), board('b4', 'Inner', { parentId: 'b2' })] }));
+      expect(names()).toEqual([t('gallery.boards.uncategorized'), 'Beta', 'Inner', 'Alpha']);
+      fireEvent.click(screen.getByTestId('board-fold'));
+      expect(state().settings.foldedBoards).toContain('b2');
+      expect(names()).toEqual([t('gallery.boards.uncategorized'), 'Beta', 'Alpha']);
+      act(() => state().setBoardSearch('inner'));
+      expect(names()).toContain('Inner');
+      act(() => state().setBoardSearch(''));
+      fireEvent.click(screen.getByTestId('board-fold'));
+      expect(state().settings.foldedBoards).not.toContain('b2');
+      expect(names()).toContain('Inner');
+    },
+  );
 });

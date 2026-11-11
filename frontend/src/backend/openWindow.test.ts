@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { canOpenNewWindow, openInNewWindow } from './openWindow';
 
-describe('openInNewWindow', () => {
+describe('openInNewWindow', { tags: [] }, () => {
   afterEach(() => vi.restoreAllMocks());
 
   it('opens addresses the app hands out', { tags: ['equivalence'] }, () => {

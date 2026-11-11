@@ -59,7 +59,7 @@ afterEach(() => {
   setLocale('ja');
 });
 
-describe('the balloons tool', () => {
+describe('the balloons tool', { tags: [] }, () => {
   it('adds a balloon of the tile pressed and opens its editor; the row selects, edits and removes it', { tags: ['scenario'] }, async () => {
     await openTool('comic-bubbles');
     const preset = BALLOON_PRESETS[0]!;
@@ -90,7 +90,7 @@ describe('the balloons tool', () => {
     expect(screen.queryByTestId('comic-bubble-row')).toBeNull();
   });
 
-  it('shows the words of a balloon in its row', { tags: ['scenario'] }, async () => {
+  it('shows the words of a balloon in its row', { tags: ['equivalence'] }, async () => {
     const id = useComic.getState().addBubble(panelId, 'speech')!;
     act(() => useComic.getState().updateBubble(panelId, id, { text: '  Hello  ' }));
     await openTool('comic-bubbles');
@@ -99,8 +99,8 @@ describe('the balloons tool', () => {
   });
 });
 
-describe('the pose tool', () => {
-  it('offers the pose editor without a remove button while the panel has no pose', { tags: ['scenario'] }, async () => {
+describe('the pose tool', { tags: [] }, () => {
+  it('offers the pose editor without a remove button while the panel has no pose', { tags: ['condition', 'boundary'] }, async () => {
     await openTool('comic-pose-tools');
     expect(screen.getByTestId('comic-pose').textContent).toBe(t('comic.panel.pose'));
     expect(screen.queryByTestId('comic-pose-remove')).toBeNull();
@@ -123,23 +123,27 @@ describe('the pose tool', () => {
     expect(panel().poseImageName).toBe('pose.png');
   });
 
-  it('shows the count and a remove button for a panel with a pose, and the remove button clears it', { tags: ['scenario'] }, async () => {
-    act(() => useComic.getState().setPanelPose(panelId, [Array.from({ length: 18 }, () => ({ x: 0.5, y: 0.5 }))], 'p.png'));
-    await openTool('comic-pose-tools');
-    expect(screen.getByTestId('comic-pose').textContent).toBe(t('comic.panel.poseEdit'));
-    fireEvent.click(screen.getByTestId('comic-pose-remove'));
-    expect(panel().poses).toHaveLength(0);
-    expect(screen.queryByTestId('comic-pose-remove')).toBeNull();
-  });
+  it(
+    'shows the count and a remove button for a panel with a pose, and the remove button clears it',
+    { tags: ['condition', 'state-transition'] },
+    async () => {
+      act(() => useComic.getState().setPanelPose(panelId, [Array.from({ length: 18 }, () => ({ x: 0.5, y: 0.5 }))], 'p.png'));
+      await openTool('comic-pose-tools');
+      expect(screen.getByTestId('comic-pose').textContent).toBe(t('comic.panel.poseEdit'));
+      fireEvent.click(screen.getByTestId('comic-pose-remove'));
+      expect(panel().poses).toHaveLength(0);
+      expect(screen.queryByTestId('comic-pose-remove')).toBeNull();
+    },
+  );
 
-  it('applies the ready-made pose chosen from the list at the panel size', { tags: ['scenario'] }, async () => {
+  it('applies the ready-made pose chosen from the list at the panel size', { tags: ['equivalence'] }, async () => {
     await openTool('comic-pose-tools');
     fireEvent.click(screen.getByTestId('comic-pose-preset-apply'));
     const first = POSE_CATEGORIES[0]!;
     expect(putPosePreset).toHaveBeenCalledWith(panelId, first.presets[0]!.id, expect.any(Number), expect.any(Number));
   });
 
-  it('picks another category, which starts at its first pose', { tags: ['boundary'] }, async () => {
+  it('picks another category, which starts at its first pose', { tags: ['state-transition', 'boundary'] }, async () => {
     await openTool('comic-pose-tools');
     const second = POSE_CATEGORIES[1]!;
     fireEvent.keyDown(screen.getByLabelText(t('comic.panel.poseCategory')), { key: 'Enter' });
@@ -174,8 +178,8 @@ describe('the pose tool', () => {
   });
 });
 
-describe('the note and place tools', () => {
-  it('writes the note of the panel, within its length', { tags: ['scenario'] }, async () => {
+describe('the note and place tools', { tags: [] }, () => {
+  it('writes the note of the panel, within its length', { tags: ['boundary'] }, async () => {
     await openTool('comic-note-tools');
     const note = screen.getByTestId('comic-note') as HTMLTextAreaElement;
     expect(note.getAttribute('maxlength')).toBe(String(PANEL_NOTE_MAX));
@@ -183,35 +187,39 @@ describe('the note and place tools', () => {
     expect(panel().note).toBe('close up, rain');
   });
 
-  it('holds the place of the panel', { tags: ['scenario'] }, async () => {
+  it('holds the place of the panel', { tags: ['equivalence'] }, async () => {
     await openTool('comic-place-tools');
     expect(screen.getByTestId('comic-panel-place')).toBeTruthy();
   });
 
-  it('holds the cast of the panel', { tags: ['scenario'] }, async () => {
+  it('holds the cast of the panel', { tags: ['equivalence'] }, async () => {
     await openTool('comic-cast-tools');
     expect(screen.getByText(t('comic.cast.title'), { selector: 'h3' })).toBeTruthy();
   });
 });
 
-describe('the panel templates tool', () => {
+describe('the panel templates tool', { tags: [] }, () => {
   const templates = () => useComic.getState().projects[0]!.panelTemplates;
 
-  it('says there are none, saves one under a typed or a numbered name, and clears the name', { tags: ['scenario'] }, async () => {
-    await openTool('comic-panel-templates');
-    expect(screen.getByText(t('comic.template.empty'))).toBeTruthy();
-    const name = screen.getByLabelText(t('comic.template.name')) as HTMLInputElement;
-    fireEvent.change(name, { target: { value: '  Close  ' } });
-    fireEvent.click(screen.getByTestId('comic-panel-template-save'));
-    expect(templates().map((x) => x.name)).toEqual(['Close']);
-    expect(name.value).toBe('');
-    fireEvent.click(screen.getByTestId('comic-panel-template-save'));
-    expect(templates()[1]!.name).toBe(t('comic.template.defaultName', { number: 2 }));
-    expect(screen.getAllByTestId('comic-panel-template')).toHaveLength(2);
-    expect(screen.queryByText(t('comic.template.empty'))).toBeNull();
-  });
+  it(
+    'says there are none, saves one under a typed or a numbered name, and clears the name',
+    { tags: ['boundary', 'scenario'] },
+    async () => {
+      await openTool('comic-panel-templates');
+      expect(screen.getByText(t('comic.template.empty'))).toBeTruthy();
+      const name = screen.getByLabelText(t('comic.template.name')) as HTMLInputElement;
+      fireEvent.change(name, { target: { value: '  Close  ' } });
+      fireEvent.click(screen.getByTestId('comic-panel-template-save'));
+      expect(templates().map((x) => x.name)).toEqual(['Close']);
+      expect(name.value).toBe('');
+      fireEvent.click(screen.getByTestId('comic-panel-template-save'));
+      expect(templates()[1]!.name).toBe(t('comic.template.defaultName', { number: 2 }));
+      expect(screen.getAllByTestId('comic-panel-template')).toHaveLength(2);
+      expect(screen.queryByText(t('comic.template.empty'))).toBeNull();
+    },
+  );
 
-  it('applies a saved template to the panel and deletes it', { tags: ['scenario'] }, async () => {
+  it('applies a saved template to the panel and deletes it', { tags: ['scenario', 'state-transition'] }, async () => {
     act(() => useComic.getState().setPrompt(panelId, 'rain'));
     act(() => void useComic.getState().savePanelTemplate(panelId, 'Rainy'));
     act(() => useComic.getState().setPrompt(panelId, 'sun'));

@@ -43,8 +43,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('undo, redo and save', () => {
-  it('disables undo and redo until there is history, then steps through it', { tags: ['state-transition'] }, () => {
+describe('undo, redo and save', { tags: [] }, () => {
+  it('disables undo and redo until there is history, then steps through it', { tags: ['state-transition', 'boundary'] }, () => {
     show();
     const undo = screen.getByTestId('canvas-undo');
     const redo = screen.getByRole('button', { name: /Ctrl\+Shift\+Z/ });
@@ -68,7 +68,7 @@ describe('undo, redo and save', () => {
   });
 });
 
-describe('zoom group', () => {
+describe('zoom group', { tags: [] }, () => {
   it('shows the zoom as a percentage and zooms in and out', { tags: ['scenario'] }, () => {
     show();
     const percent = () => screen.getByTestId('canvas-zoom').textContent;
@@ -104,8 +104,8 @@ describe('zoom group', () => {
   });
 });
 
-describe('pose tool options', () => {
-  it('shows them only for the pose tool', { tags: ['scenario'] }, () => {
+describe('pose tool options', { tags: [] }, () => {
+  it('shows them only for the pose tool', { tags: ['condition'] }, () => {
     show();
     expect(screen.queryByTestId('canvas-pose-random')).toBeNull();
     act(() => state().setTool('pose'));
@@ -125,7 +125,7 @@ describe('pose tool options', () => {
     expect(quickRunTool).toHaveBeenCalledWith('pose', 'photo.png');
   });
 
-  it('asks for a file to read the poses of when no picture is selected', { tags: ['scenario'] }, () => {
+  it('asks for a file to read the poses of when no picture is selected', { tags: ['condition'] }, () => {
     state().setTool('pose');
     show();
     const click = vi.spyOn(screen.getByTestId('canvas-pose-from-image-file') as HTMLInputElement, 'click').mockImplementation(() => undefined);

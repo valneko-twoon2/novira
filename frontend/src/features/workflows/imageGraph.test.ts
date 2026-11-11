@@ -57,8 +57,8 @@ const image = (m: GenerationMetadata | null, over: Partial<ImageDTO> = {}): Imag
 
 beforeEach(() => useModels.setState({ models: MODELS }));
 
-describe('workflow from a generated image', () => {
-  it('rebuilds the same request the generation screen sent', { tags: ['condition'] }, () => {
+describe('workflow from a generated image', { tags: [] }, () => {
+  it('rebuilds the same request the generation screen sent', { tags: ['scenario'] }, () => {
     const m = meta({ vaeKey: 'vae-x', loras: [{ key: 'detail', weight: 0.7, isEnabled: true }, { key: 'detail', weight: 0.2, isEnabled: false }] });
     const built = graphFromImage(image(m), MODELS)!;
     expect(built.lost).toEqual([]);
@@ -79,7 +79,7 @@ describe('workflow from a generated image', () => {
     expect(req.randomizeSeed).toBe(false);
   });
 
-  it('uses the SD 1.5 nodes for an SD 1.5 model', { tags: ['boundary'] }, () => {
+  it('uses the SD 1.5 nodes for an SD 1.5 model', { tags: ['equivalence'] }, () => {
     const built = graphFromImage(image(meta({ modelKey: 'old' })), MODELS)!;
     expect(built.graph.nodes.some((n) => n.data.type === 'main_model_loader')).toBe(true);
     expect(built.graph.nodes.some((n) => n.data.type === 'sdxl_model_loader')).toBe(false);

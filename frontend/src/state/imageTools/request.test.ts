@@ -15,7 +15,7 @@ const photo = (metadata: GenerationMetadata | null = meta) => ({ name: 'photo.pn
 const settings = (over: Partial<ToolSettings> = {}): ToolSettings => ({ ...DEFAULT_TOOL_SETTINGS, ...over });
 
 describe('the face fix model and prompt', () => {
-  it('takes the band choice, else the picture own model, else the form model, else the first', { tags: ['condition'] }, () => {
+  it('takes the band choice, else the picture own model, else the form model, else the first', { tags: ['decision-table'] }, () => {
     expect(faceFixModel(photo(), { modelKey: 'form', prompt: null }, ctx, 'first')).toBe('form');
     expect(faceFixModel(photo(), NO_FACE_OVERRIDES, ctx, 'form')).toBe('own');
     expect(faceFixModel(photo(null), NO_FACE_OVERRIDES, ctx, 'form')).toBe('form');
@@ -33,7 +33,7 @@ describe('the face fix model and prompt', () => {
 });
 
 describe('buildToolJob', () => {
-  it('fixes the faces on the picture board with its size, a face detector first, and says what it used', { tags: ['condition'] }, () => {
+  it('fixes the faces on the picture board with its size, a face detector first, and says what it used', { tags: ['equivalence'] }, () => {
     const job = buildToolJob('facefix', photo(), settings(), ctx, NO_FACE_OVERRIDES, null);
     expect(job.makes).toBe('picture');
     expect(job.request).toMatchObject({ destination: 'gallery', boardId: 'b1', params: { width: 640, height: 480 } });
@@ -60,7 +60,7 @@ describe('buildToolJob', () => {
     expect(best.used).toMatchObject({ model: 'RMBG-2.0' });
   });
 
-  it('describes and reads poses as text that is not kept in the gallery', { tags: ['condition'] }, () => {
+  it('describes and reads poses as text that is not kept in the gallery', { tags: ['equivalence'] }, () => {
     const caption = buildToolJob('caption', photo(), settings({ caption: { style: 'sentence' } }), ctx, NO_FACE_OVERRIDES, null);
     expect(caption).toMatchObject({ makes: 'text', request: { destination: 'intermediate' }, used: { tool: 'caption', style: 'sentence' } });
     const pose = buildToolJob('pose', photo(), settings(), ctx, NO_FACE_OVERRIDES, null);

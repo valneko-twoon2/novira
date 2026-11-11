@@ -36,19 +36,23 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('baking one picture', () => {
-  it('draws it turned and mirrored at the density of the picture and returns the name of the stored result', { tags: ['condition'] }, async () => {
-    expect(await bakeOne(bake())).toBe('turned.png');
-    const rec = canvases.all.at(-1)!;
-    // 200 × 100 turned a quarter is 100 × 200; the picture has 2 pixels per page pixel.
-    expect(rec.ctx.canvas).toMatchObject({ width: 200, height: 400 });
-    expect(rec.of('rotate')[0]![0]).toBeCloseTo(Math.PI / 2);
-    expect(rec.of('scale')).toEqual([[-1, 1]]);
-    expect(rec.of('drawImage')[0]!.slice(1)).toEqual([-200, -100, 400, 200]);
-    expect(revoke).toHaveBeenCalledOnce();
-  });
+describe('baking one picture', { tags: [] }, () => {
+  it(
+    'draws it turned and mirrored at the density of the picture and returns the name of the stored result',
+    { tags: ['equivalence'] },
+    async () => {
+      expect(await bakeOne(bake())).toBe('turned.png');
+      const rec = canvases.all.at(-1)!;
+      // 200 × 100 turned a quarter is 100 × 200; the picture has 2 pixels per page pixel.
+      expect(rec.ctx.canvas).toMatchObject({ width: 200, height: 400 });
+      expect(rec.of('rotate')[0]![0]).toBeCloseTo(Math.PI / 2);
+      expect(rec.of('scale')).toEqual([[-1, 1]]);
+      expect(rec.of('drawImage')[0]!.slice(1)).toEqual([-200, -100, 400, 200]);
+      expect(revoke).toHaveBeenCalledOnce();
+    },
+  );
 
-  it('mirrors upside down for a flipped picture and draws a large one smaller', { tags: ['condition'] }, async () => {
+  it('mirrors upside down for a flipped picture and draws a large one smaller', { tags: ['condition', 'boundary'] }, async () => {
     vi.mocked(loadImage).mockResolvedValue({ naturalWidth: 100000 } as HTMLImageElement);
     await bakeOne(bake({ rotation: 0, flipX: false, flipY: true }));
     const rec = canvases.all.at(-1)!;

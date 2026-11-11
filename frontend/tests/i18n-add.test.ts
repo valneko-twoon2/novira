@@ -20,8 +20,8 @@ function fixture(): string {
 const texts = (extra: Record<string, string> = {}) => ({ ja: 'ja b', en: 'en b', ko: 'ko b', ...extra });
 const read = (dir: string, l: string, area = 'demo') => readFileSync(join(dir, l, `${area}.json`), 'utf8');
 
-describe('addMessages', () => {
-  it('appends the key to every language, in the repository format (2 spaces, LF)', { tags: ['decision-table'] }, () => {
+describe('addMessages', { tags: [] }, () => {
+  it('appends the key to every language, in the repository format (2 spaces, LF)', { tags: ['equivalence'] }, () => {
     const dir = fixture();
     addMessages({ demo: { 'demo.b': texts() } }, { dir });
     for (const l of LOCALES) {
@@ -29,7 +29,7 @@ describe('addMessages', () => {
     }
   });
 
-  it('writes nothing when ja or en lacks a text, and names it', { tags: ['condition'] }, () => {
+  it('writes nothing when ja or en lacks a text, and names it', { tags: ['error-guessing'] }, () => {
     const dir = fixture();
     expect(() => addMessages({ demo: { 'demo.b': { ja: 'x', ko: 'y' } } }, { dir })).toThrow(/demo\.b: no text for en/);
     expect(read(dir, 'ja')).not.toContain('demo.b');
@@ -68,13 +68,13 @@ describe('addMessages', () => {
     expect(() => addMessages({ demo: { 'demo.a': texts() } }, { dir })).toThrow(/already exists/);
   });
 
-  it('replaces a text in every language only when asked', { tags: ['decision-table'] }, () => {
+  it('replaces a text in every language only when asked', { tags: ['condition'] }, () => {
     const dir = fixture();
     addMessages({ demo: { 'demo.a': texts() } }, { dir, replace: true });
     expect(read(dir, 'en')).toContain('"demo.a": "en b"');
   });
 
-  it('creates a new area in every language only when asked', { tags: ['decision-table'] }, () => {
+  it('creates a new area in every language only when asked', { tags: ['condition'] }, () => {
     const dir = fixture();
     expect(() => addMessages({ fresh: { 'fresh.x': texts() } }, { dir })).toThrow(/does not exist/);
     addMessages({ fresh: { 'fresh.x': texts() } }, { dir, newArea: true });

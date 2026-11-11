@@ -31,7 +31,7 @@ describe('applying a character', () => {
     expect(defaultRefModelKey('main-xl')).toBeNull();
   });
 
-  it('adds the picture as a reference image with the saved weight and puts the words first', { tags: ['condition'] }, () => {
+  it('adds the picture as a reference image with the saved weight and puts the words first', { tags: ['equivalence'] }, () => {
     const id = useCharacters.getState().add('Mia', { imageNames: ['girl.png'], weight: 0.55, tags: 'brown hair, blue skirt' });
     expect(applyCharacter(id)).toEqual({ cfgLowered: true, used: 1, capped: 0, missing: 0, lora: 'none' });
     const { refImages, positivePrompt } = useParams.getState();
@@ -88,7 +88,7 @@ describe('a character with several pictures', () => {
   });
   const names = (n: number) => Array.from({ length: n }, (_, i) => `p${i + 1}.png`);
 
-  it('adds every picture as a reference image and shares the weight among them', { tags: ['condition'] }, () => {
+  it('adds every picture as a reference image and shares the weight among them', { tags: ['equivalence'] }, () => {
     const id = useCharacters.getState().add('Mia', { imageNames: names(4), weight: 0.6, tags: '' });
     expect(applyCharacter(id)).toEqual({ cfgLowered: false, used: 4, capped: 0, missing: 0, lora: 'none' });
     const refs = useParams.getState().refImages;
@@ -96,11 +96,15 @@ describe('a character with several pictures', () => {
     expect(refs.every((r) => r.weight === 0.3)).toBe(true);
   });
 
-  it('uses the first pictures when there are more than the reference images allow, and says how many were left out', { tags: ['boundary'] }, () => {
-    const id = useCharacters.getState().add('Mia', { imageNames: names(10), weight: 0.6, tags: '' });
-    expect(applyCharacter(id)).toMatchObject({ used: 8, capped: 2 });
-    expect(useParams.getState().refImages).toHaveLength(8);
-  });
+  it(
+    'uses the first pictures when there are more than the reference images allow, and says how many were left out',
+    { tags: ['boundary'] },
+    () => {
+      const id = useCharacters.getState().add('Mia', { imageNames: names(10), weight: 0.6, tags: '' });
+      expect(applyCharacter(id)).toMatchObject({ used: 8, capped: 2 });
+      expect(useParams.getState().refImages).toHaveLength(8);
+    },
+  );
 
   it('leaves room for the reference images the character does not own', { tags: ['boundary'] }, () => {
     useParams.getState().addRefImage({ imageName: 'other.png', imageUrl: 'blob:other', modelKey: 'plain' });
@@ -133,7 +137,7 @@ describe('a character with a LoRA', () => {
     useCharacters.setState({ presets: [], selectedId: null });
   });
 
-  it('adds the LoRA at its weight and the trigger word in front, next to the reference pictures', { tags: ['condition'] }, () => {
+  it('adds the LoRA at its weight and the trigger word in front, next to the reference pictures', { tags: ['equivalence'] }, () => {
     const id = useCharacters.getState().add('Mia', { imageNames: ['girl.png'], weight: 0.6, tags: 'brown hair', lora: { key: 'lora-mia', weight: 0.8, trigger: 'mia_chr', enabled: true } });
     expect(applyCharacter(id)).toMatchObject({ used: 1, lora: 'used' });
     const { loras, refImages, positivePrompt } = useParams.getState();

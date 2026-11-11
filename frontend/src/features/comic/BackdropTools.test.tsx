@@ -44,37 +44,45 @@ afterEach(() => {
   useComic.setState({ backdropSelected: false });
 });
 
-describe('the backdrop on the page', () => {
-  it('shows under the panels when the page has one, and not otherwise, and lets empty panels show it through', { tags: ['boundary'] }, () => {
-    show();
-    expect(screen.getByTestId('comic-backdrop-picture').getAttribute('src')).toBe('novira://sky.png');
-    expect(screen.getByTestId('comic-page').className).toContain('has-backdrop');
-    cleanup();
-    show(false);
-    expect(screen.queryByTestId('comic-backdrop-picture')).toBeNull();
-    expect(screen.getByTestId('comic-page').className).not.toContain('has-backdrop');
-  });
+describe('the backdrop on the page', { tags: [] }, () => {
+  it(
+    'shows under the panels when the page has one, and not otherwise, and lets empty panels show it through',
+    { tags: ['condition', 'boundary'] },
+    () => {
+      show();
+      expect(screen.getByTestId('comic-backdrop-picture').getAttribute('src')).toBe('novira://sky.png');
+      expect(screen.getByTestId('comic-page').className).toContain('has-backdrop');
+      cleanup();
+      show(false);
+      expect(screen.queryByTestId('comic-backdrop-picture')).toBeNull();
+      expect(screen.getByTestId('comic-page').className).not.toContain('has-backdrop');
+    },
+  );
 
-  it('is edited from the tool popover: its buttons change the view and start the editing, and the handles drag it', { tags: ['scenario'] }, async () => {
-    show();
-    fireEvent.click(screen.getByTestId('comic-backdrop'));
-    fireEvent.click(await screen.findByTestId('comic-backdrop-scale-up'));
-    expect(page().backdrop!.view.scale).toBeCloseTo(1.1);
-    expect(useComic.getState().backdropSelected).toBe(true);
-    fireEvent.click(screen.getByTestId('comic-backdrop-rotate-right'));
-    expect(page().backdrop!.view.rotation).toBe(90);
-    fireEvent.click(screen.getByTestId('comic-backdrop-flip-x'));
-    expect(page().backdrop!.view.flipX).toBe(true);
-    // The handles are over the page now, and the picture itself is dragged by its outline.
-    const outline = await screen.findByTestId('comic-picture-handles');
-    screen.getByTestId('comic-page').getBoundingClientRect = () => ({ left: 0, top: 0, width: 1000, height: 1414, right: 1000, bottom: 1414, x: 0, y: 0 }) as DOMRect;
-    fireEvent.pointerDown(outline, { pointerId: 1, clientX: 500, clientY: 700 });
-    fireEvent.pointerMove(outline, { pointerId: 1, clientX: 600, clientY: 700 });
-    fireEvent.pointerUp(outline, { pointerId: 1 });
-    expect(page().backdrop!.view.cx).toBeCloseTo(0.6);
-  });
+  it(
+    'is edited from the tool popover: its buttons change the view and start the editing, and the handles drag it',
+    { tags: ['scenario'] },
+    async () => {
+      show();
+      fireEvent.click(screen.getByTestId('comic-backdrop'));
+      fireEvent.click(await screen.findByTestId('comic-backdrop-scale-up'));
+      expect(page().backdrop!.view.scale).toBeCloseTo(1.1);
+      expect(useComic.getState().backdropSelected).toBe(true);
+      fireEvent.click(screen.getByTestId('comic-backdrop-rotate-right'));
+      expect(page().backdrop!.view.rotation).toBe(90);
+      fireEvent.click(screen.getByTestId('comic-backdrop-flip-x'));
+      expect(page().backdrop!.view.flipX).toBe(true);
+      // The handles are over the page now, and the picture itself is dragged by its outline.
+      const outline = await screen.findByTestId('comic-picture-handles');
+      screen.getByTestId('comic-page').getBoundingClientRect = () => ({ left: 0, top: 0, width: 1000, height: 1414, right: 1000, bottom: 1414, x: 0, y: 0 }) as DOMRect;
+      fireEvent.pointerDown(outline, { pointerId: 1, clientX: 500, clientY: 700 });
+      fireEvent.pointerMove(outline, { pointerId: 1, clientX: 600, clientY: 700 });
+      fireEvent.pointerUp(outline, { pointerId: 1 });
+      expect(page().backdrop!.view.cx).toBeCloseTo(0.6);
+    },
+  );
 
-  it('ends the editing on Escape, and takes the picture off the page on Delete', { tags: ['scenario'] }, () => {
+  it('ends the editing on Escape, and takes the picture off the page on Delete', { tags: ['state-transition', 'equivalence'] }, () => {
     show();
     act(() => useComic.getState().selectBackdrop(true));
     expect(screen.getByTestId('comic-picture-handles')).toBeTruthy();
@@ -101,10 +109,10 @@ function dropOnPopover(data: { names?: string[]; files?: File[] }) {
   fireEvent(zone, event);
 }
 
-describe('putting a picture in from the popover', () => {
+describe('putting a picture in from the popover', { tags: [] }, () => {
   beforeEach(() => useToasts.setState({ toasts: [] }));
 
-  it('shows no edit or reset button while the page has no backdrop', { tags: ['scenario'] }, async () => {
+  it('shows no edit or reset button while the page has no backdrop', { tags: ['condition', 'boundary'] }, async () => {
     show(false);
     fireEvent.click(screen.getByTestId('comic-backdrop'));
     await screen.findByTestId('comic-backdrop-pop');
@@ -122,7 +130,7 @@ describe('putting a picture in from the popover', () => {
     expect(useComic.getState().backdropSelected).toBe(true);
   });
 
-  it('tells the user when the dropped picture is not in the gallery', { tags: ['scenario'] }, async () => {
+  it('tells the user when the dropped picture is not in the gallery', { tags: ['error-guessing', 'condition'] }, async () => {
     show(false);
     fireEvent.click(screen.getByTestId('comic-backdrop'));
     await screen.findByTestId('comic-backdrop-pop');
@@ -158,7 +166,7 @@ describe('putting a picture in from the popover', () => {
   });
 });
 
-describe('editing and clearing from the popover', () => {
+describe('editing and clearing from the popover', { tags: [] }, () => {
   beforeEach(() => useToasts.setState({ toasts: [] }));
 
   it('toggles the editing with the edit button', { tags: ['state-transition'] }, async () => {
@@ -173,13 +181,17 @@ describe('editing and clearing from the popover', () => {
     expect(useComic.getState().backdropSelected).toBe(false);
   });
 
-  it('takes the picture off the page with the clear button, and the notice puts it back', { tags: ['scenario'] }, async () => {
-    show();
-    fireEvent.click(screen.getByTestId('comic-backdrop'));
-    fireEvent.click(await screen.findByTestId('comic-backdrop-clear'));
-    expect(page().backdrop).toBeNull();
-    const notice = useToasts.getState().toasts[0]!;
-    act(() => notice.actions![0]!.run());
-    expect(page().backdrop).toMatchObject({ imageName: 'sky.png' });
-  });
+  it(
+    'takes the picture off the page with the clear button, and the notice puts it back',
+    { tags: ['scenario', 'state-transition'] },
+    async () => {
+      show();
+      fireEvent.click(screen.getByTestId('comic-backdrop'));
+      fireEvent.click(await screen.findByTestId('comic-backdrop-clear'));
+      expect(page().backdrop).toBeNull();
+      const notice = useToasts.getState().toasts[0]!;
+      act(() => notice.actions![0]!.run());
+      expect(page().backdrop).toMatchObject({ imageName: 'sky.png' });
+    },
+  );
 });

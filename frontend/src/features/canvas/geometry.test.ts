@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { pickGenerationMode } from './generationMode';
 import { classifyCoverage, hitBbox, resizeRect, transformedRect } from './geometry';
 
-describe('canvas geometry', () => {
-  it('resizes the bbox from handles with snapping, minimum and ratio', { tags: ['condition'] }, () => {
+describe('canvas geometry', { tags: [] }, () => {
+  it('resizes the bbox from handles with snapping, minimum and ratio', { tags: ['decision-table', 'boundary'] }, () => {
     const start = { x: 0, y: 0, width: 512, height: 512 };
     expect(resizeRect(start, 'se', 100, 3)).toEqual({ x: 0, y: 0, width: 616, height: 512 });
     expect(resizeRect(start, 'nw', 600, 600)).toEqual({ x: 448, y: 448, width: 64, height: 64 });
@@ -18,7 +18,7 @@ describe('canvas geometry', () => {
     expect(hitBbox({ x: 10, y: 10 }, r)).toBeNull();
   });
 
-  it('classifies coverage and picks the generation mode', { tags: ['state-transition'] }, () => {
+  it('classifies coverage and picks the generation mode', { tags: ['decision-table', 'equivalence'] }, () => {
     const px = (alphas: number[]) => alphas.flatMap((a) => [0, 0, 0, a]);
     expect(classifyCoverage(px([0, 0]))).toBe('empty');
     expect(classifyCoverage(px([255, 255]))).toBe('full');
@@ -30,8 +30,8 @@ describe('canvas geometry', () => {
   });
 });
 
-describe('transformedRect', () => {
-  it('keeps the centre, swaps the sides for a quarter turn and doubles or halves for scaling', { tags: ['condition'] }, () => {
+describe('transformedRect', { tags: [] }, () => {
+  it('keeps the centre, swaps the sides for a quarter turn and doubles or halves for scaling', { tags: ['equivalence'] }, () => {
     const r = { x: 10, y: 20, width: 40, height: 20 };
     expect(transformedRect(r, 'rotateRight')).toEqual({ x: 20, y: 10, width: 20, height: 40 });
     expect(transformedRect(r, 'rotateLeft')).toEqual({ x: 20, y: 10, width: 20, height: 40 });

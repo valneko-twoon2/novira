@@ -18,7 +18,7 @@ const chip = (label: string) =>
   within(screen.getByRole('group', { name: t('settings.about.oss.groupLabel') })).getByRole('button', { name: new RegExp(`^${label}`) });
 const rows = () => Array.from(screen.getByTestId('about-oss-list').querySelectorAll<HTMLLIElement>(':scope > ul > li'));
 
-describe('AboutModal open-source software', () => {
+describe('AboutModal open-source software', { tags: [] }, () => {
   beforeEach(() => {
     useUi.getState().openModal('about');
     // The modal asks the backend for the list when it opens, so the list is stubbed there.
@@ -49,7 +49,7 @@ describe('AboutModal open-source software', () => {
     expect(screen.getByTestId('about-oss-list').textContent).toContain('ComfyUI');
   });
 
-  it('lists each installed extension by name, without a license tag', { tags: ['scenario'] }, async () => {
+  it('lists each installed extension by name, without a license tag', { tags: ['condition'] }, async () => {
     render(<AboutModal />);
     openOssTab();
     await waitFor(() => expect(chip(t('settings.about.oss.short.packs'))).toBeTruthy());
@@ -61,7 +61,7 @@ describe('AboutModal open-source software', () => {
     expect(list.textContent).not.toContain('GPL-3.0');
   });
 
-  it('searches by name only, and says so when nothing matches', { tags: ['scenario'] }, async () => {
+  it('searches by name only, and says so when nothing matches', { tags: ['equivalence'] }, async () => {
     render(<AboutModal />);
     openOssTab();
     const search = screen.getByRole('textbox', { name: t('settings.about.oss.search') });
@@ -74,7 +74,7 @@ describe('AboutModal open-source software', () => {
     expect(screen.getByTestId('about-oss-list').textContent).toContain(t('settings.about.oss.noMatch'));
   });
 
-  it("shows a package's own license text under its row, and hides it again", { tags: ['scenario'] }, async () => {
+  it("shows a package's own license text under its row, and hides it again", { tags: ['state-transition'] }, async () => {
     render(<AboutModal />);
     openOssTab();
     fireEvent.change(screen.getByRole('textbox', { name: t('settings.about.oss.search') }), { target: { value: 'zustand' } });
@@ -87,7 +87,7 @@ describe('AboutModal open-source software', () => {
     await waitFor(() => expect(within(row).queryByTestId('about-license-text')).toBeNull());
   });
 
-  it('points to the homepage for software the app does not ship, and opens the homepage when asked', { tags: ['scenario'] }, async () => {
+  it('points to the homepage for software the app does not ship, and opens the homepage when asked', { tags: ['condition'] }, async () => {
     useToasts.setState({ toasts: [] });
     render(<AboutModal />);
     openOssTab();
@@ -101,7 +101,7 @@ describe('AboutModal open-source software', () => {
     expect(useToasts.getState().toasts.at(-1)?.description).toBe('https://github.com/comfyanonymous/ComfyUI');
   });
 
-  it('says there are no extensions when none is installed', { tags: ['scenario'] }, async () => {
+  it('says there are no extensions when none is installed', { tags: ['boundary'] }, async () => {
     vi.spyOn(backend, 'nodePacks').mockResolvedValue({ available: true, restartNeeded: false, comfyVersion: null, installed: [] });
     render(<AboutModal />);
     openOssTab();
@@ -111,7 +111,7 @@ describe('AboutModal open-source software', () => {
   });
 });
 
-describe('AboutModal license', () => {
+describe('AboutModal license', { tags: [] }, () => {
   beforeEach(() => {
     useUi.getState().openModal('about');
   });

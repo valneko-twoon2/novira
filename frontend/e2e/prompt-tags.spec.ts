@@ -72,7 +72,7 @@ test('each prompt switches between its text and its tags with two buttons', { ta
   }
 });
 
-test('the prompt headers have icons only: describe, dynamic prompts and presets', { tag: ['@scenario'] }, async ({ page }) => {
+test('the prompt headers have icons only: describe, dynamic prompts and presets', { tag: ['@equivalence'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   // The header's buttons are spaced alike: the text and tag buttons are not touching.
   for (const kind of ['positive', 'negative']) {

@@ -38,8 +38,8 @@ const withWords = () =>
     },
   });
 
-describe("ComfyUI's words on its nodes", () => {
-  it("keeps the node's own words while ComfyUI has none", { tags: ['boundary', 'state-transition'] }, () => {
+describe("ComfyUI's words on its nodes", { tags: [] }, () => {
+  it("keeps the node's own words while ComfyUI has none", { tags: ['condition'] }, () => {
     expect(nodeTitle(sampler.type)).toBe('KSampler Test');
     expect(nodeDesc(sampler.type)).toBe('Denoises');
     expect(fieldLabel(sampler.type, 'seed')).toBe('seed');
@@ -57,7 +57,7 @@ describe("ComfyUI's words on its nodes", () => {
     expect(outputLabel(sampler.type, 'LATENT')).toBe('Latent FR');
   });
 
-  it('finds a node by its English name and by the name in the app language', { tags: ['condition'] }, () => {
+  it('finds a node by its English name and by the name in the app language', { tags: ['equivalence'] }, () => {
     withWords();
     expect(matchingTemplates('ksampler test').map((t) => t.type)).toContain(sampler.type);
     expect(matchingTemplates('échantillonneur').map((t) => t.type)).toContain(sampler.type);

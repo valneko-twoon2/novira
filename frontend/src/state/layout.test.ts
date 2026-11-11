@@ -30,7 +30,7 @@ afterEach(() => {
 });
 
 describe('the phone layout', () => {
-  it('follows the size of the window as it changes', { tags: ['condition'] }, () => {
+  it('follows the size of the window as it changes', { tags: ['state-transition'] }, () => {
     const resize = fakeMedia(false);
     const { result } = renderHook(() => usePhoneLayout());
     expect(result.current).toBe(false);

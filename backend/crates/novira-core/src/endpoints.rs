@@ -115,7 +115,7 @@ pub fn hf_resolve(repo: &str, path: &str) -> String {
 mod tests {
     use super::*;
 
-    // tags: equivalence
+    // tags: equivalence, error-guessing
     #[test]
     fn loopback_base_accepts_only_a_loopback_origin_with_a_port() {
         assert_eq!(

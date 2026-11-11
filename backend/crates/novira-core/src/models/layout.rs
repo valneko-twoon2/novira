@@ -313,7 +313,7 @@ mod tests {
         std::fs::write(p, bytes).unwrap();
     }
 
-    // tags: condition
+    // tags: scenario
     #[test]
     fn an_ip_adapter_filed_among_the_checkpoints_is_moved_to_its_own_folder() {
         let d = tempfile::tempdir().unwrap();
@@ -371,7 +371,7 @@ mod tests {
             .unwrap();
     }
 
-    // tags: error-guessing
+    // tags: condition
     #[test]
     fn a_checkpoint_read_once_is_not_read_again_until_its_size_or_time_changes() {
         let d = tempfile::tempdir().unwrap();
@@ -403,7 +403,7 @@ mod tests {
         assert!(checked.is_empty());
     }
 
-    // tags: error-guessing
+    // tags: condition
     #[test]
     fn a_changed_size_reads_the_file_again() {
         let d = tempfile::tempdir().unwrap();
@@ -419,7 +419,7 @@ mod tests {
         assert_eq!(move_misfiled(m, &mut checked).len(), 1);
     }
 
-    // tags: condition
+    // tags: error-guessing, state-transition
     #[test]
     fn a_misfiled_file_that_could_not_move_is_read_again_next_time() {
         let d = tempfile::tempdir().unwrap();
@@ -436,7 +436,7 @@ mod tests {
         assert_eq!(move_misfiled(m, &mut checked).len(), 1);
     }
 
-    // tags: condition
+    // tags: state-transition
     #[test]
     fn files_that_left_are_dropped_from_the_record() {
         let d = tempfile::tempdir().unwrap();
@@ -457,7 +457,7 @@ mod tests {
         assert_eq!(checked.len(), 1);
     }
 
-    // tags: error-guessing, boundary
+    // tags: error-guessing
     #[test]
     fn a_damaged_or_missing_record_is_an_empty_one_and_a_kept_one_round_trips() {
         assert_eq!(Checked::from_json(None), Checked::default());
@@ -508,7 +508,7 @@ mod tests {
         );
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn quantised_diffusion_models_are_found_in_either_folder_name() {
         let a = tempfile::tempdir().unwrap();
@@ -521,7 +521,7 @@ mod tests {
             .all(|f| f.kind == ModelType::DiffusionModel && f.folder == "diffusion_models"));
     }
 
-    // tags: scenario
+    // tags: condition
     #[test]
     fn yaml_lists_only_existing_folders() {
         let a = tempfile::tempdir().unwrap();

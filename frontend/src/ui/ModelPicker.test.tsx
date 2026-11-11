@@ -30,8 +30,8 @@ const openList = () => {
   return screen.getByTestId('model-picker-list');
 };
 
-describe('ModelPicker', () => {
-  it('offers "automatic" first when asked, current while no model is chosen, and picks it', { tags: ['condition'] }, () => {
+describe('ModelPicker', { tags: [] }, () => {
+  it('offers "automatic" first when asked, current while no model is chosen, and picks it', { tags: ['condition', 'scenario'] }, () => {
     const onAuto = vi.fn();
     render(<ModelPicker models={models} value={null} onPick={vi.fn()} placeholder="Pick one" auto={{ label: 'Automatic', onPick: onAuto }} testId="picker" aria-label="Model" />);
     expect(screen.getByTestId('picker').textContent).toContain('Automatic');
@@ -57,7 +57,7 @@ describe('ModelPicker', () => {
     expect(screen.getByTestId('picker').textContent).toContain('Old One');
   });
 
-  it('groups by base with names in order, marks the current one and picks another', { tags: ['condition'] }, () => {
+  it('groups by base with names in order, marks the current one and picks another', { tags: ['equivalence', 'scenario'] }, () => {
     const onPick = show('m1');
     const list = openList();
     expect(within(list).getAllByRole('heading').map((h) => h.textContent)).toEqual(['SDXL', 'SD1.X']);
@@ -68,7 +68,7 @@ describe('ModelPicker', () => {
     expect(screen.queryByTestId('model-picker-list')).toBeNull();
   });
 
-  it('filters by the search text and says when nothing matches', { tags: ['condition'] }, () => {
+  it('filters by the search text and says when nothing matches', { tags: ['condition', 'boundary'] }, () => {
     show(null);
     openList();
     const box = screen.getByRole('textbox', { name: t('params.model.search') });
@@ -78,7 +78,7 @@ describe('ModelPicker', () => {
     expect(screen.getByText(t('params.model.noMatch'))).toBeTruthy();
   });
 
-  it('goes to the model manager or the online search and closes the list', { tags: ['condition'] }, () => {
+  it('goes to the model manager or the online search and closes the list', { tags: ['scenario'] }, () => {
     show(null);
     openList();
     fireEvent.click(screen.getByTestId('open-manager'));

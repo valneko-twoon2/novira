@@ -105,35 +105,39 @@ describe('richReadiness', () => {
 });
 
 describe('a run from Generate to the fill', () => {
-  it('makes the base and the line picture, follows the batch and puts each cut picture on the layer', { tags: ['state-transition'] }, async () => {
-    const layer = selectText();
-    const request = await buildSelectedRich(false);
-    expect(fake.backend.uploadImage).toHaveBeenCalledTimes(2);
-    attachRich([item(1, 'pending'), item(2, 'pending')], request);
-    expect(useRichRun.getState().running[layer.id]).toEqual({ done: 0, total: 2 });
+  it(
+    'makes the base and the line picture, follows the batch and puts each cut picture on the layer',
+    { tags: ['scenario', 'state-transition'] },
+    async () => {
+      const layer = selectText();
+      const request = await buildSelectedRich(false);
+      expect(fake.backend.uploadImage).toHaveBeenCalledTimes(2);
+      attachRich([item(1, 'pending'), item(2, 'pending')], request);
+      expect(useRichRun.getState().running[layer.id]).toEqual({ done: 0, total: 2 });
 
-    emit({ type: 'image_added', image: picture('r1.png'), item: item(1) });
-    await flush();
-    const first = current(layer.id)?.rich;
-    expect(first?.candidates).toHaveLength(1);
-    expect(useRichRun.getState().running[layer.id]).toEqual({ done: 1, total: 2 });
-    expect(useTextEditor.getState().past).toHaveLength(1);
+      emit({ type: 'image_added', image: picture('r1.png'), item: item(1) });
+      await flush();
+      const first = current(layer.id)?.rich;
+      expect(first?.candidates).toHaveLength(1);
+      expect(useRichRun.getState().running[layer.id]).toEqual({ done: 1, total: 2 });
+      expect(useTextEditor.getState().past).toHaveLength(1);
 
-    emit({ type: 'image_added', image: picture('r2.png'), item: item(2) });
-    await flush();
-    const second = current(layer.id)?.rich;
-    expect(second?.candidates).toHaveLength(2);
-    expect(second?.candidates[1]).toBe(first?.imageName);
-    expect(useTextEditor.getState().past).toHaveLength(1);
-    expect(useRichRun.getState().running).toEqual({});
-    // The pictures made for the run only are deleted when it is over: the base, the line and the engine's two results.
-    const deleted = fake.backend.deleteImages.mock.calls.flatMap((c) => c[0] as string[]);
-    expect(deleted).toEqual(expect.arrayContaining(['up1.png', 'up2.png', 'r1.png', 'r2.png']));
-    expect(fake.backend.subscribe).toHaveBeenCalledTimes(1);
-    expect(fake.state.listener).toBeNull();
-  });
+      emit({ type: 'image_added', image: picture('r2.png'), item: item(2) });
+      await flush();
+      const second = current(layer.id)?.rich;
+      expect(second?.candidates).toHaveLength(2);
+      expect(second?.candidates[1]).toBe(first?.imageName);
+      expect(useTextEditor.getState().past).toHaveLength(1);
+      expect(useRichRun.getState().running).toEqual({});
+      // The pictures made for the run only are deleted when it is over: the base, the line and the engine's two results.
+      const deleted = fake.backend.deleteImages.mock.calls.flatMap((c) => c[0] as string[]);
+      expect(deleted).toEqual(expect.arrayContaining(['up1.png', 'up2.png', 'r1.png', 'r2.png']));
+      expect(fake.backend.subscribe).toHaveBeenCalledTimes(1);
+      expect(fake.state.listener).toBeNull();
+    },
+  );
 
-  it('draws a new seed per run when the seed is random and shows it in the form', { tags: ['state-transition'] }, async () => {
+  it('draws a new seed per run when the seed is random and shows it in the form', { tags: ['condition'] }, async () => {
     selectText();
     useRichForm.setState({ form: { ...RICH_FORM_DEFAULTS, randomSeed: true, seed: 0 } });
     await buildSelectedRich(false);
@@ -167,19 +171,23 @@ describe('a run from Generate to the fill', () => {
     expect(fake.backend.deleteImages).toHaveBeenCalled();
   });
 
-  it('counts a canceled item as over without a report, and ignores items that are not its own', { tags: ['state-transition'] }, async () => {
-    selectText();
-    const request = await buildSelectedRich(false);
-    attachRich([item(1, 'pending')], request);
-    emit({ type: 'queue_item_status_changed', item: item(9, 'failed', 'someone else') });
-    emit({ type: 'image_added', image: picture('other.png'), item: item(9) });
-    emit({ type: 'image_added', image: picture('plain.png'), item: null });
-    expect(fake.toast).not.toHaveBeenCalled();
-    expect(useRichRun.getState().running).not.toEqual({});
-    emit({ type: 'queue_item_status_changed', item: item(1, 'canceled') });
-    expect(fake.toast).not.toHaveBeenCalled();
-    expect(useRichRun.getState().running).toEqual({});
-  });
+  it(
+    'counts a canceled item as over without a report, and ignores items that are not its own',
+    { tags: ['state-transition', 'condition'] },
+    async () => {
+      selectText();
+      const request = await buildSelectedRich(false);
+      attachRich([item(1, 'pending')], request);
+      emit({ type: 'queue_item_status_changed', item: item(9, 'failed', 'someone else') });
+      emit({ type: 'image_added', image: picture('other.png'), item: item(9) });
+      emit({ type: 'image_added', image: picture('plain.png'), item: null });
+      expect(fake.toast).not.toHaveBeenCalled();
+      expect(useRichRun.getState().running).not.toEqual({});
+      emit({ type: 'queue_item_status_changed', item: item(1, 'canceled') });
+      expect(fake.toast).not.toHaveBeenCalled();
+      expect(useRichRun.getState().running).toEqual({});
+    },
+  );
 
   it('on a cleared queue ends only the items that are no longer waiting', { tags: ['state-transition'] }, async () => {
     selectText();
@@ -193,20 +201,24 @@ describe('a run from Generate to the fill', () => {
     expect(useRichRun.getState().running).toEqual({});
   });
 
-  it('drops a picture that arrives after the layer is gone, deletes it and cancels what still waits', { tags: ['error-guessing'] }, async () => {
-    const layer = selectText();
-    const request = await buildSelectedRich(false);
-    attachRich([item(1, 'pending'), item(2, 'pending')], request);
-    useTextEditor.setState({ scene: EMPTY_SCENE, selectedId: null });
-    emit({ type: 'image_added', image: picture('late.png'), item: item(1) });
-    await flush();
-    expect(current(layer.id)).toBeUndefined();
-    expect(fake.backend.deleteImages.mock.calls.flatMap((c) => c[0] as string[])).toContain('up3.png');
-    expect(fake.backend.cancelQueueItem).toHaveBeenCalledWith(2);
-    emit({ type: 'image_added', image: picture('later.png'), item: item(2) });
-    await flush();
-    expect(fake.backend.uploadImage).toHaveBeenCalledTimes(3);
-  });
+  it(
+    'drops a picture that arrives after the layer is gone, deletes it and cancels what still waits',
+    { tags: ['error-guessing'] },
+    async () => {
+      const layer = selectText();
+      const request = await buildSelectedRich(false);
+      attachRich([item(1, 'pending'), item(2, 'pending')], request);
+      useTextEditor.setState({ scene: EMPTY_SCENE, selectedId: null });
+      emit({ type: 'image_added', image: picture('late.png'), item: item(1) });
+      await flush();
+      expect(current(layer.id)).toBeUndefined();
+      expect(fake.backend.deleteImages.mock.calls.flatMap((c) => c[0] as string[])).toContain('up3.png');
+      expect(fake.backend.cancelQueueItem).toHaveBeenCalledWith(2);
+      emit({ type: 'image_added', image: picture('later.png'), item: item(2) });
+      await flush();
+      expect(fake.backend.uploadImage).toHaveBeenCalledTimes(3);
+    },
+  );
 
   it('reports a picture that cannot be stored and goes on', { tags: ['error-guessing'] }, async () => {
     const layer = selectText();
@@ -245,7 +257,7 @@ describe('what cannot start or is refused', () => {
     expect(useRichRun.getState().running).toEqual({});
   });
 
-  it('runRich queues a batch for the layer and follows it', { tags: ['state-transition'] }, async () => {
+  it('runRich queues a batch for the layer and follows it', { tags: ['scenario'] }, async () => {
     const layer = selectText();
     await runRich(layer.id);
     expect(fake.backend.enqueue).toHaveBeenCalledTimes(1);

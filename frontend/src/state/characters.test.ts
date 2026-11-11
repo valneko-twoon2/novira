@@ -1,32 +1,36 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_LORA_WEIGHT, MAX_REFERENCE_IMAGES, migrateCharacters, referenceWeight, type CharacterData } from './characters';
 
-describe('referenceWeight', () => {
-  it('keeps one picture at the weight and shares it among several', { tags: ['condition'] }, () => {
+describe('referenceWeight', { tags: [] }, () => {
+  it('keeps one picture at the weight and shares it among several', { tags: ['boundary', 'equivalence'] }, () => {
     expect(referenceWeight(0.6, 1)).toBe(0.6);
     expect(referenceWeight(0.6, 4)).toBe(0.3);
     expect(referenceWeight(0.6, 2)).toBeLessThan(0.6);
     expect(referenceWeight(0.6, 2)).toBeGreaterThan(referenceWeight(0.6, 4));
   });
 
-  it('treats no picture like one', { tags: ['condition'] }, () => {
+  it('treats no picture like one', { tags: ['boundary'] }, () => {
     expect(referenceWeight(0.5, 0)).toBe(0.5);
   });
 });
 
-describe('migrateCharacters', () => {
-  it('turns the single picture of an older character into a list, and leaves newer ones alone', { tags: ['condition'] }, () => {
-    const migrated = migrateCharacters({
-      presets: [
-        { id: 'a', name: 'Old', data: { imageName: 'a.png', weight: 0.6, tags: 'x' } as never },
-        { id: 'b', name: 'New', data: { imageNames: ['b.png', 'c.png'], weight: 0.5, tags: '' } },
-      ],
-    });
-    expect(migrated.presets[0]!.data).toEqual({ imageNames: ['a.png'], weight: 0.6, tags: 'x' });
-    expect(migrated.presets[1]!.data.imageNames).toEqual(['b.png', 'c.png']);
-  });
+describe('migrateCharacters', { tags: [] }, () => {
+  it(
+    'turns the single picture of an older character into a list, and leaves newer ones alone',
+    { tags: ['equivalence', 'condition'] },
+    () => {
+      const migrated = migrateCharacters({
+        presets: [
+          { id: 'a', name: 'Old', data: { imageName: 'a.png', weight: 0.6, tags: 'x' } as never },
+          { id: 'b', name: 'New', data: { imageNames: ['b.png', 'c.png'], weight: 0.5, tags: '' } },
+        ],
+      });
+      expect(migrated.presets[0]!.data).toEqual({ imageNames: ['a.png'], weight: 0.6, tags: 'x' });
+      expect(migrated.presets[1]!.data.imageNames).toEqual(['b.png', 'c.png']);
+    },
+  );
 
-  it('copes with a stored state that has no characters or a character without a picture', { tags: ['condition'] }, () => {
+  it('copes with a stored state that has no characters or a character without a picture', { tags: ['boundary', 'error-guessing'] }, () => {
     type Stored = { presets?: { id: string; name: string; data: CharacterData }[] };
     expect(migrateCharacters<Stored>({}).presets).toEqual([]);
     const noPicture = { id: 'a', name: 'x', data: { weight: 1, tags: '' } as unknown as CharacterData };
@@ -34,8 +38,8 @@ describe('migrateCharacters', () => {
   });
 });
 
-describe('the LoRA of a character', () => {
-  it('keeps a stored LoRA, fills a missing weight and drops a broken entry', { tags: ['error-guessing'] }, () => {
+describe('the LoRA of a character', { tags: [] }, () => {
+  it('keeps a stored LoRA, fills a missing weight and drops a broken entry', { tags: ['error-guessing', 'condition'] }, () => {
     const migrated = migrateCharacters({
       presets: [
         { id: 'a', name: 'A', data: { imageNames: ['a.png'], weight: 0.6, tags: '', lora: { key: 'lora-1', weight: 0.7, trigger: 'mika', enabled: false } } },
@@ -49,7 +53,7 @@ describe('the LoRA of a character', () => {
   });
 });
 
-describe('the reference limit', () => {
+describe('the reference limit', { tags: [] }, () => {
   it('matches the backend limit of eight', { tags: ['boundary'] }, () => {
     expect(MAX_REFERENCE_IMAGES).toBe(8);
   });

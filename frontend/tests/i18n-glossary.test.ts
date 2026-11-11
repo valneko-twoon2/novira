@@ -16,14 +16,14 @@ const locales: string[] = selectLocales(process.env.NOVIRA_GLOSSARY_LOCALES, ava
 
 const one = (term: Partial<Term>): { terms: Term[] } => ({ terms: [{ concept: 'C', ja: '正', en: 'right', why: 'w', avoid: {}, ...term }] });
 
-describe('glossary', () => {
+describe('glossary', { tags: [] }, () => {
   for (const language of locales) {
-    it(`${language}: no word the glossary says to avoid, in the catalogs and the manual`, { tags: ['condition'] }, () => {
+    it(`${language}: no word the glossary says to avoid, in the catalogs and the manual`, { tags: ['equivalence'] }, () => {
       expect(check(workingTree, [language])).toEqual([]);
     });
   }
 
-  it('every term has a canonical ja and en word, a reason and valid patterns', { tags: ['condition'] }, () => {
+  it('every term has a canonical ja and en word, a reason and valid patterns', { tags: ['error-guessing'] }, () => {
     for (const t of terms) {
       expect(t.concept && t.ja && t.en && t.why, JSON.stringify(t)).toBeTruthy();
       for (const [language, list] of Object.entries(t.avoid)) {
@@ -34,13 +34,13 @@ describe('glossary', () => {
     }
   });
 
-  it('every exception names a catalog key that exists and gives a reason', { tags: ['condition'] }, () => {
+  it('every exception names a catalog key that exists and gives a reason', { tags: ['error-guessing'] }, () => {
     const keys = new Set((textsOf('ja', workingTree) as Text[]).flatMap((x) => (x.key ? [x.key] : [])));
     for (const t of terms) for (const e of t.except ?? []) expect(keys.has(e.key) && e.why, `${t.concept}: ${e.key}`).toBeTruthy();
   });
 });
 
-describe('check-glossary', () => {
+describe('check-glossary', { tags: [] }, () => {
   it('checks ja and en by default, every language with "all", or a list', { tags: ['decision-table'] }, () => {
     expect(DEFAULT_LOCALES).toEqual(['ja', 'en']);
     expect(selectLocales(undefined, ['de', 'en', 'ja'])).toEqual(['ja', 'en']);
@@ -50,12 +50,12 @@ describe('check-glossary', () => {
     expect(() => selectLocales('xx', ['de', 'en', 'ja'])).toThrow(/xx/);
   });
 
-  it('does not read screen-word references, placeholders, inline code, link targets or URLs', { tags: ['condition'] }, () => {
+  it('does not read screen-word references, placeholders, inline code, link targets or URLs', { tags: ['equivalence'] }, () => {
     expect(strip('a {{ui:x.lora}} {lora} `lora` [t](08-models.md#lora) https://x.io/lora b')).not.toMatch(/lora/);
     expect(strip('keep lora here')).toContain('lora');
   });
 
-  it('reports a variant with where it is and the word to use', { tags: ['condition'] }, () => {
+  it('reports a variant with where it is and the word to use', { tags: ['equivalence'] }, () => {
     const found = findViolations([{ where: 'ja/a.json a.b', key: 'a.b', text: '誤を使う' }], one({ avoid: { ja: ['誤'] } }), 'ja');
     expect(found).toHaveLength(1);
     expect(found[0]).toMatch(/^ja\/a\.json a\.b: "誤" -> use "正"/);
@@ -80,7 +80,7 @@ describe('check-glossary', () => {
     expect(findViolations([{ where: 'x', key: 'a.ok', text: '誤' }, { where: 'y', key: 'a.no', text: '誤' }], g, 'ja')).toHaveLength(1);
   });
 
-  it('reads catalog messages and manual lines, but not fenced code', { tags: ['condition'] }, () => {
+  it('reads catalog messages and manual lines, but not fenced code', { tags: ['equivalence'] }, () => {
     const files: Record<string, string> = {
       'frontend/src/i18n/locales/ja/a.json': '{ "a.x": "誤" }',
       'docs/manual/ja/01-x.md': '# 見出し\n誤\n```\n誤\n```\n',
@@ -94,7 +94,7 @@ describe('check-glossary', () => {
     expect(findViolations(texts, one({ avoid: { ja: ['誤'] } }), 'ja')).toHaveLength(2);
   });
 
-  it('keeps the words the real rules must allow', { tags: ['condition'] }, () => {
+  it('keeps the words the real rules must allow', { tags: ['equivalence'] }, () => {
     const g = glossary as unknown as { terms: Term[] };
     const ok = (language: string, text: string, key = 'x.y') => expect(findViolations([{ where: 'x', key, text }], g, language)).toEqual([]);
     ok('ja', 'プロンプトを入れて「生成」を押します');
@@ -107,7 +107,7 @@ describe('check-glossary', () => {
     ok('en', 'Retry', 'queue.action.retry');
   });
 
-  it('stops the variants the real rules name', { tags: ['condition'] }, () => {
+  it('stops the variants the real rules name', { tags: ['equivalence'] }, () => {
     const g = glossary as unknown as { terms: Term[] };
     const bad = (language: string, text: string, key = 'x.y') => expect(findViolations([{ where: 'x', key, text }], g, language), text).not.toEqual([]);
     bad('ja', '拡張機能を入れてください');

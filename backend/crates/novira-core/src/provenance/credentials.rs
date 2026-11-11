@@ -286,7 +286,7 @@ mod tests {
         format.to_mime_type()
     }
 
-    // tags: scenario, equivalence
+    // tags: equivalence, scenario
     #[test]
     fn every_export_format_gets_a_valid_manifest_that_says_ai_and_carries_the_soft_binding() {
         let me = Identity::generate().unwrap();
@@ -318,7 +318,7 @@ mod tests {
         }
     }
 
-    // tags: error-guessing
+    // tags: error-guessing, condition
     #[test]
     fn another_installation_s_signature_is_not_this_app_and_a_change_breaks_validity() {
         let (me, other) = (Identity::generate().unwrap(), Identity::generate().unwrap());
@@ -334,7 +334,7 @@ mod tests {
         assert!(found.present && !found.valid, "{found:?}");
     }
 
-    // tags: scenario
+    // tags: equivalence
     #[test]
     fn the_leaf_certificate_is_not_a_ca_and_carries_no_personal_name() {
         let me = Identity::generate().unwrap();

@@ -134,7 +134,7 @@ mod tests {
         }
     }
 
-    // tags: error-guessing
+    // tags: scenario, error-guessing
     #[tokio::test]
     async fn serves_stored_images_and_refuses_everything_else() {
         let dir = tempfile::tempdir().unwrap();
@@ -304,7 +304,7 @@ mod tests {
         );
     }
 
-    // tags: boundary
+    // tags: boundary, error-guessing
     #[test]
     fn ranges_are_read_strictly() {
         assert_eq!(parse_range("bytes=0-9", 100), Some(Ok((0, 9))));

@@ -6,7 +6,7 @@ import { batchSeed, hashString, MAX_SEED, mulberry32, randomSeed } from './rando
 
 const seed = fc.integer({ min: 0, max: MAX_SEED });
 
-describe('seed helpers (properties)', () => {
+describe('seed helpers (properties)', { tags: [] }, () => {
   it('batchSeed stays in 0..MAX_SEED, starts at the seed and steps by one with wrap-around', { tags: ['boundary'] }, () => {
     check(
       fc.property(seed, fc.integer({ min: 0, max: 100_000 }), (s, i) => {
@@ -20,11 +20,11 @@ describe('seed helpers (properties)', () => {
     );
   });
 
-  it('batchSeed accepts seeds above the range by wrapping them', { tags: ['boundary'] }, () => {
+  it('batchSeed accepts seeds above the range by wrapping them', { tags: ['boundary', 'error-guessing'] }, () => {
     check(fc.property(fc.integer({ min: MAX_SEED + 1, max: 2 ** 40 }), fc.nat(1000), (s, i) => batchSeed(s, i) <= MAX_SEED));
   });
 
-  it('mulberry32 is deterministic, gives numbers in [0, 1) and any integer seed works', { tags: ['boundary'] }, () => {
+  it('mulberry32 is deterministic, gives numbers in [0, 1) and any integer seed works', { tags: ['boundary', 'equivalence'] }, () => {
     check(
       fc.property(fc.integer({ min: -(2 ** 40), max: 2 ** 40 }), (s) => {
         const a = mulberry32(s);
@@ -46,7 +46,7 @@ describe('seed helpers (properties)', () => {
     }));
   });
 
-  it('randomSeed is a valid seed', { tags: ['condition'] }, () => {
+  it('randomSeed is a valid seed', { tags: ['boundary'] }, () => {
     for (let k = 0; k < 200; k++) {
       const s = randomSeed();
       expect(Number.isInteger(s) && s >= 0 && s <= MAX_SEED).toBe(true);

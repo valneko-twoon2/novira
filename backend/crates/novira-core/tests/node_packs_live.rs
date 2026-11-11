@@ -21,7 +21,7 @@ fn env(name: &str) -> String {
     std::env::var(name).unwrap_or_else(|_| panic!("set {name}"))
 }
 
-// tags: state-transition
+// tags: scenario, state-transition
 #[tokio::test]
 #[ignore = "downloads packs from GitHub and starts ComfyUI"]
 async fn packs_install_and_comfyui_loads_their_nodes() {

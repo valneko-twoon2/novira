@@ -10,29 +10,29 @@ beforeEach(() => {
 });
 afterEach(() => canvases.restore());
 
-describe('raster filter settings', () => {
-  it('keeps the blur radius a whole number between 1 and 100', { tags: ['condition'] }, () => {
+describe('raster filter settings', { tags: [] }, () => {
+  it('keeps the blur radius a whole number between 1 and 100', { tags: ['boundary'] }, () => {
     expect(clampBlurRadius(0)).toBe(1);
     expect(clampBlurRadius(2.6)).toBe(3);
     expect(clampBlurRadius(1e9)).toBe(MAX_BLUR_RADIUS);
   });
 
-  it('gives a blur a margin of three radii and the others none', { tags: ['condition'] }, () => {
+  it('gives a blur a margin of three radii and the others none', { tags: ['boundary', 'condition'] }, () => {
     expect(filterMargin({ kind: 'blur', radius: 10 })).toBe(30);
     expect(filterMargin({ kind: 'blur', radius: 0 })).toBe(3);
     expect(filterMargin({ kind: 'grayscale' })).toBe(0);
     expect(filterMargin({ kind: 'invert' })).toBe(0);
   });
 
-  it('names the CSS filter of each kind', { tags: ['condition'] }, () => {
+  it('names the CSS filter of each kind', { tags: ['decision-table'] }, () => {
     expect(cssFilter({ kind: 'blur', radius: 6 })).toBe('blur(6px)');
     expect(cssFilter({ kind: 'grayscale' })).toBe('grayscale(1)');
     expect(cssFilter({ kind: 'invert' })).toBe('invert(1)');
   });
 });
 
-describe('filterCanvas', () => {
-  it('draws the source inside the margin with the filter on, then turns the filter off', { tags: ['condition'] }, () => {
+describe('filterCanvas', { tags: [] }, () => {
+  it('draws the source inside the margin with the filter on, then turns the filter off', { tags: ['equivalence'] }, () => {
     const source = document.createElement('canvas');
     source.width = 20;
     source.height = 10;

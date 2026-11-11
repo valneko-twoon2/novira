@@ -27,8 +27,8 @@ afterEach(cleanup);
 const cast = () => activeProject(useComic.getState())!.cast;
 const firstPanel = () => activeProject(useComic.getState())!.pages[0]!.panels[0]!;
 
-describe('the cast of a comic in the panel tools', () => {
-  it('keeps the words of a part, and drops a part that is emptied', { tags: ['scenario'] }, () => {
+describe('the cast of a comic in the panel tools', { tags: [] }, () => {
+  it('keeps the words of a part, and drops a part that is emptied', { tags: ['condition', 'boundary'] }, () => {
     render(
       <TooltipProvider>
         <Open />
@@ -44,7 +44,7 @@ describe('the cast of a comic in the panel tools', () => {
     expect(cast()[0]!.parts).toBeUndefined();
   });
 
-  it('offers the person of the pose only for a character in a panel with a pose, and shows who it is', { tags: ['scenario'] }, () => {
+  it('offers the person of the pose only for a character in a panel with a pose, and shows who it is', { tags: ['condition'] }, () => {
     const add = () => useComic.getState().setCast([{ id: 'a', name: 'Jin', tags: '1boy', imageName: null }]);
     add();
     const { rerender } = render(
@@ -62,7 +62,7 @@ describe('the cast of a comic in the panel tools', () => {
     expect(screen.getByText(t('comic.cast.posePersonHelp'))).toBeTruthy();
   });
 
-  it('marks a character as not human with the checkbox', { tags: ['scenario'] }, () => {
+  it('marks a character as not human with the checkbox', { tags: ['equivalence'] }, () => {
     render(
       <TooltipProvider>
         <Open />
@@ -91,48 +91,56 @@ describe('the cast of a comic in the panel tools', () => {
     expect(firstPanel().cast).toEqual([]);
   });
 
-  it('removing a character takes it out of the panels too, and the cast stops at its limit', { tags: ['boundary'] }, () => {
-    render(
-      <TooltipProvider>
-        <Open />
-      </TooltipProvider>,
-    );
-    fireEvent.click(screen.getByTestId('comic-cast-add'));
-    fireEvent.click(screen.getByRole('checkbox', { name: t('comic.cast.inPanelOf', { name: t('comic.cast.newName', { number: 1 }) }) }));
-    expect(firstPanel().cast).toHaveLength(1);
-    fireEvent.click(screen.getByTestId('comic-cast-remove'));
-    expect(cast()).toEqual([]);
-    expect(firstPanel().cast).toEqual([]);
-    for (let i = 0; i < CAST_MAX + 2; i++) if (!(screen.getByTestId('comic-cast-add') as HTMLButtonElement).disabled) fireEvent.click(screen.getByTestId('comic-cast-add'));
-    expect(cast()).toHaveLength(CAST_MAX);
-    expect((screen.getByTestId('comic-cast-add') as HTMLButtonElement).disabled).toBe(true);
-  });
+  it(
+    'removing a character takes it out of the panels too, and the cast stops at its limit',
+    { tags: ['boundary', 'state-transition'] },
+    () => {
+      render(
+        <TooltipProvider>
+          <Open />
+        </TooltipProvider>,
+      );
+      fireEvent.click(screen.getByTestId('comic-cast-add'));
+      fireEvent.click(screen.getByRole('checkbox', { name: t('comic.cast.inPanelOf', { name: t('comic.cast.newName', { number: 1 }) }) }));
+      expect(firstPanel().cast).toHaveLength(1);
+      fireEvent.click(screen.getByTestId('comic-cast-remove'));
+      expect(cast()).toEqual([]);
+      expect(firstPanel().cast).toEqual([]);
+      for (let i = 0; i < CAST_MAX + 2; i++) if (!(screen.getByTestId('comic-cast-add') as HTMLButtonElement).disabled) fireEvent.click(screen.getByTestId('comic-cast-add'));
+      expect(cast()).toHaveLength(CAST_MAX);
+      expect((screen.getByTestId('comic-cast-add') as HTMLButtonElement).disabled).toBe(true);
+    },
+  );
 
-  it('shows one character at a time: the list picks it, a new one is shown, and a removed one gives way to the first', { tags: ['boundary'] }, () => {
-    render(
-      <TooltipProvider>
-        <Open />
-      </TooltipProvider>,
-    );
-    fireEvent.click(screen.getByTestId('comic-cast-add'));
-    fireEvent.change(screen.getByTestId('comic-cast-name'), { target: { value: 'Mio' } });
-    fireEvent.click(screen.getByTestId('comic-cast-add'));
-    fireEvent.change(screen.getByTestId('comic-cast-name'), { target: { value: 'Jin' } });
-    expect(screen.getAllByTestId('comic-cast-entry')).toHaveLength(2);
-    expect(screen.getAllByTestId('comic-cast-row')).toHaveLength(1);
-    expect(cast().map((c) => c.name)).toEqual(['Mio', 'Jin']);
-    const picks = () => screen.getAllByTestId('comic-cast-pick');
-    expect(picks().map((p) => p.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
-    fireEvent.click(picks()[0]!);
-    expect((screen.getByTestId('comic-cast-name') as HTMLInputElement).value).toBe('Mio');
-    // Each character of the list says whether it is in the panel, by its own name.
-    fireEvent.click(screen.getByRole('checkbox', { name: t('comic.cast.inPanelOf', { name: 'Jin' }) }));
-    expect(firstPanel().cast).toEqual([cast()[1]!.id]);
-    fireEvent.click(screen.getByTestId('comic-cast-remove'));
-    expect((screen.getByTestId('comic-cast-name') as HTMLInputElement).value).toBe('Jin');
-  });
+  it(
+    'shows one character at a time: the list picks it, a new one is shown, and a removed one gives way to the first',
+    { tags: ['state-transition', 'condition'] },
+    () => {
+      render(
+        <TooltipProvider>
+          <Open />
+        </TooltipProvider>,
+      );
+      fireEvent.click(screen.getByTestId('comic-cast-add'));
+      fireEvent.change(screen.getByTestId('comic-cast-name'), { target: { value: 'Mio' } });
+      fireEvent.click(screen.getByTestId('comic-cast-add'));
+      fireEvent.change(screen.getByTestId('comic-cast-name'), { target: { value: 'Jin' } });
+      expect(screen.getAllByTestId('comic-cast-entry')).toHaveLength(2);
+      expect(screen.getAllByTestId('comic-cast-row')).toHaveLength(1);
+      expect(cast().map((c) => c.name)).toEqual(['Mio', 'Jin']);
+      const picks = () => screen.getAllByTestId('comic-cast-pick');
+      expect(picks().map((p) => p.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
+      fireEvent.click(picks()[0]!);
+      expect((screen.getByTestId('comic-cast-name') as HTMLInputElement).value).toBe('Mio');
+      // Each character of the list says whether it is in the panel, by its own name.
+      fireEvent.click(screen.getByRole('checkbox', { name: t('comic.cast.inPanelOf', { name: 'Jin' }) }));
+      expect(firstPanel().cast).toEqual([cast()[1]!.id]);
+      fireEvent.click(screen.getByTestId('comic-cast-remove'));
+      expect((screen.getByTestId('comic-cast-name') as HTMLInputElement).value).toBe('Jin');
+    },
+  );
 
-  it('edits the words of a character in the larger window too, in the design tab only', { tags: ['scenario'] }, () => {
+  it('edits the words of a character in the larger window too, in the design tab only', { tags: ['condition'] }, () => {
     const { unmount } = render(
       <TooltipProvider>
         <Open />
@@ -157,7 +165,7 @@ describe('the cast of a comic in the panel tools', () => {
     expect((screen.getByTestId('comic-cast-part-outfit') as HTMLTextAreaElement).value).toBe('cream cardigan, muted blue skirt, white blouse');
   });
 
-  it('takes the selected panel picture as the reference of a character, and lets it go', { tags: ['scenario'] }, () => {
+  it('takes the selected panel picture as the reference of a character, and lets it go', { tags: ['scenario', 'state-transition'] }, () => {
     render(
       <TooltipProvider>
         <Open />

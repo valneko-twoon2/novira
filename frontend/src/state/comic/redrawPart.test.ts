@@ -50,34 +50,38 @@ afterEach(() => {
   useQueue.setState(initial.queue, true);
 });
 
-describe('fixSize', () => {
-  it('keeps the size of the picture in whole eights and shrinks a picture past the largest side', { tags: ['condition'] }, () => {
+describe('fixSize', { tags: [] }, () => {
+  it('keeps the size of the picture in whole eights and shrinks a picture past the largest side', { tags: ['boundary'] }, () => {
     expect(fixSize(832, 1216)).toEqual({ width: 832, height: 1216 });
     expect(fixSize(1001, 643)).toEqual({ width: 1000, height: 640 });
     expect(fixSize(4096, 2048)).toEqual({ width: 2048, height: 1024 });
   });
 });
 
-describe('fixRequest', () => {
-  it('redraws the masked part of the picture with the panel words, the characters and the style, and no hires pass', { tags: ['condition'] }, () => {
-    const ref = seed();
-    const req = fixRequest(ref, image('girl.png'), '/img/mask.png', { strength: 0.6 });
-    expect(req).toMatchObject({ origin: 'generate', destination: 'gallery', iterations: 1, initImageUrl: '/img/girl.png', maskImageUrl: '/img/mask.png' });
-    expect(req.params).toMatchObject({ generationMode: 'inpaint', strength: 0.6, width: 832, height: 1216 });
-    expect(req.params.hiresFix).toBeUndefined();
-    expect(req.params.positivePrompt).toBe('quality, 1girl, red scarf, reading a book');
-    expect(req.params.negativePrompt).toBe('bad');
-    expect(req.controlLayers).toBeUndefined();
-  });
+describe('fixRequest', { tags: [] }, () => {
+  it(
+    'redraws the masked part of the picture with the panel words, the characters and the style, and no hires pass',
+    { tags: ['equivalence'] },
+    () => {
+      const ref = seed();
+      const req = fixRequest(ref, image('girl.png'), '/img/mask.png', { strength: 0.6 });
+      expect(req).toMatchObject({ origin: 'generate', destination: 'gallery', iterations: 1, initImageUrl: '/img/girl.png', maskImageUrl: '/img/mask.png' });
+      expect(req.params).toMatchObject({ generationMode: 'inpaint', strength: 0.6, width: 832, height: 1216 });
+      expect(req.params.hiresFix).toBeUndefined();
+      expect(req.params.positivePrompt).toBe('quality, 1girl, red scarf, reading a book');
+      expect(req.params.negativePrompt).toBe('bad');
+      expect(req.controlLayers).toBeUndefined();
+    },
+  );
 
-  it('draws the part from the words given instead of the panel prompt, with the characters still in front', { tags: ['regression'] }, () => {
+  it('draws the part from the words given instead of the panel prompt, with the characters still in front', { tags: ['condition'] }, () => {
     const ref = seed();
     const req = fixRequest(ref, image('girl.png'), '/img/mask.png', { words: ' detailed hand ', strength: 0.75 });
     expect(req.params.positivePrompt).toBe('quality, 1girl, red scarf, detailed hand');
   });
 });
 
-describe('redrawPart', () => {
+describe('redrawPart', { tags: [] }, () => {
   function mockBackend() {
     const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue(image('mask.png'));
     const sent: EnqueueRequest[] = [];
@@ -91,19 +95,23 @@ describe('redrawPart', () => {
   }
   const box = { strokes: [], boxes: [{ x: 0.1, y: 0.1, w: 0.3, h: 0.3 }] };
 
-  it('stores the mask as a hidden picture, queues the redraw, and the result replaces the picture and keeps the old one', { tags: ['condition'] }, async () => {
-    seed();
-    const { upload, sent } = mockBackend();
-    expect(await redrawPart('panel-0', box, { strength: 0.7 })).toBe(true);
-    expect(upload).toHaveBeenCalledWith(expect.any(Blob), { boardId: null, isIntermediate: true, category: 'mask' });
-    expect(sent[0]!.maskImageUrl).toBe('/img/mask.png');
-    onComicImage(useQueue.getState().items[0]!, image('girl-fixed.png'));
-    const panel = findPanel(useComic.getState().projects, 'panel-0')!.panel;
-    expect(panel.imageName).toBe('girl-fixed.png');
-    expect(panel.takes.map((take) => take.imageName)).toEqual(['girl.png']);
-  });
+  it(
+    'stores the mask as a hidden picture, queues the redraw, and the result replaces the picture and keeps the old one',
+    { tags: ['scenario'] },
+    async () => {
+      seed();
+      const { upload, sent } = mockBackend();
+      expect(await redrawPart('panel-0', box, { strength: 0.7 })).toBe(true);
+      expect(upload).toHaveBeenCalledWith(expect.any(Blob), { boardId: null, isIntermediate: true, category: 'mask' });
+      expect(sent[0]!.maskImageUrl).toBe('/img/mask.png');
+      onComicImage(useQueue.getState().items[0]!, image('girl-fixed.png'));
+      const panel = findPanel(useComic.getState().projects, 'panel-0')!.panel;
+      expect(panel.imageName).toBe('girl-fixed.png');
+      expect(panel.takes.map((take) => take.imageName)).toEqual(['girl.png']);
+    },
+  );
 
-  it('queues nothing for a panel without a picture, a mask with nothing painted, or no model', { tags: ['error-guessing'] }, async () => {
+  it('queues nothing for a panel without a picture, a mask with nothing painted, or no model', { tags: ['condition'] }, async () => {
     const { enqueue } = mockBackend();
     seed(null);
     expect(await redrawPart('panel-0', box, { strength: 0.7 })).toBe(false);
@@ -117,7 +125,7 @@ describe('redrawPart', () => {
     expect(enqueue).not.toHaveBeenCalled();
   });
 
-  it('says so when the job cannot be queued', { tags: ['error-guessing', 'state-transition'] }, async () => {
+  it('says so when the job cannot be queued', { tags: ['error-guessing'] }, async () => {
     seed();
     mockBackend();
     vi.spyOn(backend, 'enqueue').mockRejectedValue(new Error('engine is down'));
@@ -142,7 +150,7 @@ describe('redrawPart', () => {
     expect(toast).toHaveBeenLastCalledWith({ status: 'error', title: t('comic.draw.failed'), description: 'queue is full' });
   });
 
-  it('does not say the redraw is queued when the queue takes no job', { tags: ['state-transition'] }, async () => {
+  it('does not say the redraw is queued when the queue takes no job', { tags: ['error-guessing'] }, async () => {
     seed();
     mockBackend();
     vi.spyOn(backend, 'enqueue').mockResolvedValue([]);

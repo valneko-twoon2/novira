@@ -63,14 +63,14 @@ beforeEach(() => {
 });
 afterEach(() => vi.restoreAllMocks());
 
-describe('the tool list', () => {
+describe('the tool list', { tags: [] }, () => {
   it('has a handler for every tool the backend offers, and no other', { tags: ['equivalence'] }, () => {
     const rust = readFileSync(resolve(process.cwd(), '../backend/crates/novira-core/src/agent/tools.rs'), 'utf8');
     const offered = [...rust.matchAll(/^\s+name: "([a-z_]+)",$/gm)].map((m) => m[1]);
     expect([...TOOL_NAMES].sort()).toEqual([...offered].sort());
   });
 
-  it('tags the same reads as the backend', { tags: ['condition'] }, () => {
+  it('tags the same reads as the backend', { tags: ['decision-table', 'condition'] }, () => {
     const rust = readFileSync(resolve(process.cwd(), '../backend/crates/novira-core/src/agent/tools.rs'), 'utf8');
     const body = rust.slice(rust.indexOf('pub fn is_read_gated'), rust.indexOf('pub fn check_call'));
     expect([...body.matchAll(/"([a-z_]+)"/g)].map((m) => m[1]).sort()).toEqual(['get_generation_settings', 'get_image_info', 'list_gallery_images', 'lookup_reference', 'view_comic_page', 'view_picture']);
@@ -84,21 +84,25 @@ describe('the tool list', () => {
     for (const tool of TOOL_NAMES.filter((t) => !['list_gallery_images', 'get_image_info', 'get_generation_settings', 'lookup_reference', 'view_comic_page', 'view_picture'].includes(t))) expect(isReadGated(tool, { includePrompts: true })).toBe(false);
   });
 
-  it('answers an unknown tool, a failing tool and an oversized answer with an error', { tags: ['error-guessing'] }, async () => {
-    expect(await call('delete_images')).toMatchObject({ ok: false });
-    registerAgentEditor('text', { ...editor('text'), context: () => ({ huge: 'x'.repeat(MAX_ANSWER_CHARS + 1) }) });
-    expect(await call('get_text_scene')).toMatchObject({ ok: false, content: expect.stringContaining('too large') });
-    registerAgentEditor('text', {
-      ...editor('text'),
-      context: () => {
-        throw new Error('boom');
-      },
-    });
-    expect(await call('get_text_scene')).toEqual({ ok: false, content: 'The tool failed: boom' });
-  });
+  it(
+    'answers an unknown tool, a failing tool and an oversized answer with an error',
+    { tags: ['error-guessing', 'boundary'] },
+    async () => {
+      expect(await call('delete_images')).toMatchObject({ ok: false });
+      registerAgentEditor('text', { ...editor('text'), context: () => ({ huge: 'x'.repeat(MAX_ANSWER_CHARS + 1) }) });
+      expect(await call('get_text_scene')).toMatchObject({ ok: false, content: expect.stringContaining('too large') });
+      registerAgentEditor('text', {
+        ...editor('text'),
+        context: () => {
+          throw new Error('boom');
+        },
+      });
+      expect(await call('get_text_scene')).toEqual({ ok: false, content: 'The tool failed: boom' });
+    },
+  );
 });
 
-describe('the editors', () => {
+describe('the editors', { tags: [] }, () => {
   const screens = { text: editor('text'), workflows: editor('workflows'), video: editor('video'), music: editor('music'), voice: editor('voice'), canvas: editor('canvas'), comic: editor('comic') };
   beforeEach(() => {
     for (const [screen, e] of Object.entries(screens)) {
@@ -127,7 +131,7 @@ describe('the editors', () => {
     if (media) expect(useUi.getState().media).toBe(media);
   });
 
-  it('keeps one snapshot per editor however many calls change it', { tags: ['condition'] }, async () => {
+  it('keeps one snapshot per editor however many calls change it', { tags: ['state-transition', 'boundary'] }, async () => {
     await call('edit_comic', { ops: [{ op: 'addPage' }] });
     await call('edit_comic', { ops: [{ op: 'addPage' }] });
     expect(screens.comic.snapshots).toBe(1);
@@ -140,11 +144,15 @@ describe('the editors', () => {
     expect(run.log).toEqual([]);
   });
 
-  it('answers an edit with the shorter answer of the editor when it has one, and a read with the whole context', { tags: ['scenario'] }, async () => {
-    registerAgentEditor('comic', { ...editor('comic'), context: () => ({ whole: true }), answer: () => ({ short: true }) });
-    expect(await call('edit_comic', { ops: [{ op: 'addPage' }] })).toEqual({ ok: true, content: { applied: true, now: { short: true } } });
-    expect(await call('get_comic_page')).toEqual({ ok: true, content: { whole: true } });
-  });
+  it(
+    'answers an edit with the shorter answer of the editor when it has one, and a read with the whole context',
+    { tags: ['condition'] },
+    async () => {
+      registerAgentEditor('comic', { ...editor('comic'), context: () => ({ whole: true }), answer: () => ({ short: true }) });
+      expect(await call('edit_comic', { ops: [{ op: 'addPage' }] })).toEqual({ ok: true, content: { applied: true, now: { short: true } } });
+      expect(await call('get_comic_page')).toEqual({ ok: true, content: { whole: true } });
+    },
+  );
 
   it('reads each editor without changing anything', { tags: ['equivalence'] }, async () => {
     for (const [tool, args, screen] of [['get_text_scene', {}, 'text'], ['get_comic_page', {}, 'comic'], ['get_pose', {}, 'canvas'], ['get_form', { kind: 'music' }, 'music']] as const) {
@@ -154,30 +162,38 @@ describe('the editors', () => {
     expect(run.editSnapshots).toEqual({});
   });
 
-  it('opens a graph the assistant made with the registered opener, and gives the node types and recipes', { tags: ['scenario'] }, async () => {
-    const open = vi.fn(() => ({ dropped: [] }));
-    registerAgentWorkflow(open, () => [{ type: 'math', inputs: [], outputs: [] }], () => [{ id: 'r' } as never]);
-    expect(await call('get_workflow')).toEqual({ ok: true, content: { graph: { editor: 'workflows' }, nodeTypes: [{ type: 'math', inputs: [], outputs: [] }], recipes: [{ id: 'r' }] } });
-    await call('create_workflow', { name: 'Flow', graph: { nodes: [], edges: [] } });
-    expect(open).toHaveBeenCalledWith('Flow', { nodes: [], edges: [] });
-    expect(run.editSnapshots).toHaveProperty('workflows');
-    expect(run.log).toEqual([{ kind: 'workflow', key: 'Flow' }]);
-    expect(useUi.getState().activeTab).toBe('workflows');
-    registerAgentWorkflow(() => ({ dropped: [] }), () => []);
-  });
+  it(
+    'opens a graph the assistant made with the registered opener, and gives the node types and recipes',
+    { tags: ['scenario'] },
+    async () => {
+      const open = vi.fn(() => ({ dropped: [] }));
+      registerAgentWorkflow(open, () => [{ type: 'math', inputs: [], outputs: [] }], () => [{ id: 'r' } as never]);
+      expect(await call('get_workflow')).toEqual({ ok: true, content: { graph: { editor: 'workflows' }, nodeTypes: [{ type: 'math', inputs: [], outputs: [] }], recipes: [{ id: 'r' }] } });
+      await call('create_workflow', { name: 'Flow', graph: { nodes: [], edges: [] } });
+      expect(open).toHaveBeenCalledWith('Flow', { nodes: [], edges: [] });
+      expect(run.editSnapshots).toHaveProperty('workflows');
+      expect(run.log).toEqual([{ kind: 'workflow', key: 'Flow' }]);
+      expect(useUi.getState().activeTab).toBe('workflows');
+      registerAgentWorkflow(() => ({ dropped: [] }), () => []);
+    },
+  );
 
-  it('answers with the reason when a graph does not open, and lists what an opened graph left out', { tags: ['condition'] }, async () => {
-    registerAgentWorkflow(() => ({ error: 'The graph was not opened: there is no node type "x"', dropped: [] }), () => []);
-    useUi.setState({ activeTab: 'models' });
-    expect(await call('create_workflow', { name: 'Flow', graph: { nodes: [], edges: [] } })).toEqual({ ok: false, content: expect.stringContaining('no node type "x"') });
-    expect(run.log).toEqual([]);
-    expect(useUi.getState().activeTab).toBe('models');
-    registerAgentWorkflow(() => ({ dropped: ['a.b -> c.d: no such input'] }), () => []);
-    expect(await call('create_workflow', { name: 'Flow', graph: { nodes: [], edges: [] } })).toMatchObject({ ok: true, content: { opened: 'Flow', dropped: ['a.b -> c.d: no such input'] } });
-    registerAgentWorkflow(() => ({ dropped: [] }), () => []);
-  });
+  it(
+    'answers with the reason when a graph does not open, and lists what an opened graph left out',
+    { tags: ['condition', 'error-guessing'] },
+    async () => {
+      registerAgentWorkflow(() => ({ error: 'The graph was not opened: there is no node type "x"', dropped: [] }), () => []);
+      useUi.setState({ activeTab: 'models' });
+      expect(await call('create_workflow', { name: 'Flow', graph: { nodes: [], edges: [] } })).toEqual({ ok: false, content: expect.stringContaining('no node type "x"') });
+      expect(run.log).toEqual([]);
+      expect(useUi.getState().activeTab).toBe('models');
+      registerAgentWorkflow(() => ({ dropped: ['a.b -> c.d: no such input'] }), () => []);
+      expect(await call('create_workflow', { name: 'Flow', graph: { nodes: [], edges: [] } })).toMatchObject({ ok: true, content: { opened: 'Flow', dropped: ['a.b -> c.d: no such input'] } });
+      registerAgentWorkflow(() => ({ dropped: [] }), () => []);
+    },
+  );
 
-  it('searches the nodes of ComfyUI with the registered search, asking for eight by default', { tags: ['condition'] }, async () => {
+  it('searches the nodes of ComfyUI with the registered search, asking for eight by default', { tags: ['boundary'] }, async () => {
     const search = vi.fn(() => ({ ready: true, total: 1, matches: [] }));
     registerAgentWorkflow(() => ({ dropped: [] }), () => [], () => [], search);
     expect(await call('search_comfy_nodes', { query: 'save audio' })).toEqual({ ok: true, content: { ready: true, total: 1, matches: [] } });
@@ -197,7 +213,7 @@ describe('the editors', () => {
   });
 });
 
-describe('the Generate tab', () => {
+describe('the Generate tab', { tags: [] }, () => {
   beforeEach(() => {
     useModels.setState({
       models: [
@@ -207,31 +223,39 @@ describe('the Generate tab', () => {
     });
   });
 
-  it("lists what the model manager knows of each model: a LoRA's trigger words, the default settings, the start of the notes", { tags: ['equivalence'] }, async () => {
-    const answer = await call('list_models', {});
-    const [main, lora] = (answer.content as { models: Record<string, unknown>[] }).models;
-    expect(main).toEqual({ key: 'm1', name: 'M', base: 'sdxl', type: 'main', defaults: { steps: 28, cfgScale: 5 } });
-    expect(lora!.triggerPhrases).toEqual(['gl0ssy', ...Array.from({ length: 11 }, (_, i) => `w${i}`)]);
-    expect(lora!.note).toMatch(/^glossy style\. x+$/);
-    expect((lora!.note as string).length).toBe(200);
-    expect(lora).not.toHaveProperty('defaults');
-  });
+  it(
+    "lists what the model manager knows of each model: a LoRA's trigger words, the default settings, the start of the notes",
+    { tags: ['equivalence', 'boundary'] },
+    async () => {
+      const answer = await call('list_models', {});
+      const [main, lora] = (answer.content as { models: Record<string, unknown>[] }).models;
+      expect(main).toEqual({ key: 'm1', name: 'M', base: 'sdxl', type: 'main', defaults: { steps: 28, cfgScale: 5 } });
+      expect(lora!.triggerPhrases).toEqual(['gl0ssy', ...Array.from({ length: 11 }, (_, i) => `w${i}`)]);
+      expect(lora!.note).toMatch(/^glossy style\. x+$/);
+      expect((lora!.note as string).length).toBe(200);
+      expect(lora).not.toHaveProperty('defaults');
+    },
+  );
 
-  it('lists the models and selects one with the registered selector, keeping the settings first', { tags: ['condition'] }, async () => {
-    const select = vi.fn();
-    registerAgentModelSelector(select);
-    expect(await call('list_models', { type: 'lora' })).toMatchObject({ ok: true, content: { models: [{ key: 'l1', type: 'lora' }] } });
-    expect(await call('select_model', { key: 'l1' })).toMatchObject({ ok: false });
-    expect(await call('select_model', { key: 'nope' })).toMatchObject({ ok: false });
-    expect(run.snapshot).toBeUndefined();
-    expect(await call('select_model', { key: 'm1' })).toMatchObject({ ok: true });
-    expect(select.mock.calls[0]![0]).toMatchObject({ key: 'm1' });
-    expect(run.snapshot).toHaveProperty('modelKey');
-    expect(run.log).toEqual([{ kind: 'model', key: 'm1' }]);
-    registerAgentModelSelector((m) => useParams.getState().set({ modelKey: m.key }));
-  });
+  it(
+    'lists the models and selects one with the registered selector, keeping the settings first',
+    { tags: ['scenario', 'error-guessing'] },
+    async () => {
+      const select = vi.fn();
+      registerAgentModelSelector(select);
+      expect(await call('list_models', { type: 'lora' })).toMatchObject({ ok: true, content: { models: [{ key: 'l1', type: 'lora' }] } });
+      expect(await call('select_model', { key: 'l1' })).toMatchObject({ ok: false });
+      expect(await call('select_model', { key: 'nope' })).toMatchObject({ ok: false });
+      expect(run.snapshot).toBeUndefined();
+      expect(await call('select_model', { key: 'm1' })).toMatchObject({ ok: true });
+      expect(select.mock.calls[0]![0]).toMatchObject({ key: 'm1' });
+      expect(run.snapshot).toHaveProperty('modelKey');
+      expect(run.log).toEqual([{ kind: 'model', key: 'm1' }]);
+      registerAgentModelSelector((m) => useParams.getState().set({ modelKey: m.key }));
+    },
+  );
 
-  it('adds a LoRA with its weight', { tags: ['condition'] }, async () => {
+  it('adds a LoRA with its weight', { tags: ['condition', 'equivalence'] }, async () => {
     expect(await call('add_lora', { key: 'm1' })).toMatchObject({ ok: false });
     // The answer carries the LoRA's trigger words, so they go into the prompt.
     expect(await call('add_lora', { key: 'l1', weight: 0.6 })).toMatchObject({ ok: true, content: { added: 'l1', weight: 0.6, triggerPhrases: expect.arrayContaining(['gl0ssy']) } });
@@ -239,12 +263,16 @@ describe('the Generate tab', () => {
     expect(run.log).toEqual([{ kind: 'lora', key: 'l1', weight: 0.6 }]);
   });
 
-  it('sets prompts and parameters: a size on the grid, a fixed seed, a known scheduler only', { tags: ['condition'] }, async () => {
-    expect(await call('set_generation_settings', { scheduler: 'warp' })).toMatchObject({ ok: false, content: expect.stringContaining('Unknown scheduler') });
-    await call('set_generation_settings', { positivePrompt: 'a cat', width: 641, height: 384, scheduler: 'euler', seed: 9, steps: 12 });
-    expect(useParams.getState()).toMatchObject({ positivePrompt: 'a cat', width: 640, height: 384, scheduler: 'euler', seed: 9, steps: 12, shouldRandomizeSeed: false, aspectRatio: 'free' });
-    expect(run.log).toEqual([{ kind: 'prompt' }, { kind: 'params', summary: '640×384 / 12 steps / euler / seed 9' }]);
-  });
+  it(
+    'sets prompts and parameters: a size on the grid, a fixed seed, a known scheduler only',
+    { tags: ['boundary', 'error-guessing'] },
+    async () => {
+      expect(await call('set_generation_settings', { scheduler: 'warp' })).toMatchObject({ ok: false, content: expect.stringContaining('Unknown scheduler') });
+      await call('set_generation_settings', { positivePrompt: 'a cat', width: 641, height: 384, scheduler: 'euler', seed: 9, steps: 12 });
+      expect(useParams.getState()).toMatchObject({ positivePrompt: 'a cat', width: 640, height: 384, scheduler: 'euler', seed: 9, steps: 12, shouldRandomizeSeed: false, aspectRatio: 'free' });
+      expect(run.log).toEqual([{ kind: 'prompt' }, { kind: 'params', summary: '640×384 / 12 steps / euler / seed 9' }]);
+    },
+  );
 
   it('reads the settings without the prompts unless asked for them', { tags: ['condition'] }, async () => {
     useParams.getState().set({ positivePrompt: 'secret', steps: 21 });
@@ -256,36 +284,44 @@ describe('the Generate tab', () => {
     expect(asked).toEqual(['get_generation_settings']);
   });
 
-  it('returns the length of a changed prompt before the request and now, and none for parameters alone', { tags: ['condition'] }, async () => {
-    useParams.getState().set({ positivePrompt: 'a girl', negativePrompt: 'blurry' });
-    expect(await call('set_generation_settings', { positivePrompt: 'a girl, black hair, short hair' })).toEqual({
-      ok: true,
-      content: { set: ['positivePrompt'], tokens: { positivePrompt: { beforeRequest: 2, now: 8 } } },
-    });
-    // A second call of the same request still compares with the prompt before the request.
-    expect(await call('set_generation_settings', { positivePrompt: 'a girl, bob' })).toMatchObject({ content: { tokens: { positivePrompt: { beforeRequest: 2, now: 4 } } } });
-    expect(await call('set_generation_settings', { steps: 25 })).toEqual({ ok: true, content: { set: ['steps'] } });
-  });
+  it(
+    'returns the length of a changed prompt before the request and now, and none for parameters alone',
+    { tags: ['equivalence'] },
+    async () => {
+      useParams.getState().set({ positivePrompt: 'a girl', negativePrompt: 'blurry' });
+      expect(await call('set_generation_settings', { positivePrompt: 'a girl, black hair, short hair' })).toEqual({
+        ok: true,
+        content: { set: ['positivePrompt'], tokens: { positivePrompt: { beforeRequest: 2, now: 8 } } },
+      });
+      // A second call of the same request still compares with the prompt before the request.
+      expect(await call('set_generation_settings', { positivePrompt: 'a girl, bob' })).toMatchObject({ content: { tokens: { positivePrompt: { beforeRequest: 2, now: 4 } } } });
+      expect(await call('set_generation_settings', { steps: 25 })).toEqual({ ok: true, content: { set: ['steps'] } });
+    },
+  );
 
-  it('refuses a prompt box over the token limit whole, and says the limit when asked for the settings', { tags: ['error-guessing'] }, async () => {
-    run = createToolRun(async () => 'once', [], 4);
-    useParams.getState().set({ positivePrompt: 'a girl', negativePrompt: 'blurry', steps: 30 });
-    expect(await call('get_generation_settings', {})).toMatchObject({ ok: true, content: { promptTokenLimit: 4 } });
-    // 5 tokens: refused, and nothing of the call is set (the steps neither), no undo snapshot, no chip.
-    const refused = await call('set_generation_settings', { positivePrompt: 'a girl, black hair', steps: 12 });
-    expect(refused).toMatchObject({ ok: false, content: expect.stringContaining('positivePrompt has 5') });
-    expect(useParams.getState()).toMatchObject({ positivePrompt: 'a girl', steps: 30 });
-    expect(run.snapshot).toBeUndefined();
-    expect(run.log).toEqual([]);
-    expect(await call('set_generation_settings', { negativePrompt: 'blurry, low quality, bad' })).toMatchObject({ ok: false, content: expect.stringContaining('negativePrompt has 6') });
-    // Exactly at the limit goes through; parameters alone are never checked against it.
-    expect(await call('set_generation_settings', { positivePrompt: 'a girl, bob' })).toMatchObject({ ok: true });
-    expect(useParams.getState().positivePrompt).toBe('a girl, bob');
-    useParams.getState().set({ negativePrompt: 'blurry, low quality, worst quality' });
-    expect(await call('set_generation_settings', { steps: 20 })).toMatchObject({ ok: true });
-  });
+  it(
+    'refuses a prompt box over the token limit whole, and says the limit when asked for the settings',
+    { tags: ['boundary', 'error-guessing'] },
+    async () => {
+      run = createToolRun(async () => 'once', [], 4);
+      useParams.getState().set({ positivePrompt: 'a girl', negativePrompt: 'blurry', steps: 30 });
+      expect(await call('get_generation_settings', {})).toMatchObject({ ok: true, content: { promptTokenLimit: 4 } });
+      // 5 tokens: refused, and nothing of the call is set (the steps neither), no undo snapshot, no chip.
+      const refused = await call('set_generation_settings', { positivePrompt: 'a girl, black hair', steps: 12 });
+      expect(refused).toMatchObject({ ok: false, content: expect.stringContaining('positivePrompt has 5') });
+      expect(useParams.getState()).toMatchObject({ positivePrompt: 'a girl', steps: 30 });
+      expect(run.snapshot).toBeUndefined();
+      expect(run.log).toEqual([]);
+      expect(await call('set_generation_settings', { negativePrompt: 'blurry, low quality, bad' })).toMatchObject({ ok: false, content: expect.stringContaining('negativePrompt has 6') });
+      // Exactly at the limit goes through; parameters alone are never checked against it.
+      expect(await call('set_generation_settings', { positivePrompt: 'a girl, bob' })).toMatchObject({ ok: true });
+      expect(useParams.getState().positivePrompt).toBe('a girl, bob');
+      useParams.getState().set({ negativePrompt: 'blurry, low quality, worst quality' });
+      expect(await call('set_generation_settings', { steps: 20 })).toMatchObject({ ok: true });
+    },
+  );
 
-  it('lets any prompt length through while the token limit is off', { tags: ['boundary'] }, async () => {
+  it('lets any prompt length through while the token limit is off', { tags: ['boundary', 'condition'] }, async () => {
     const long = Array.from({ length: 100 }, (_, i) => `tag${i}`).join(', ');
     expect(await call('set_generation_settings', { positivePrompt: long })).toMatchObject({ ok: true });
     expect(await call('get_generation_settings', {})).not.toMatchObject({ content: { promptTokenLimit: expect.anything() } });
@@ -309,14 +345,14 @@ describe('the Generate tab', () => {
     expect((await call('get_generation_settings', { includePrompts: true })).content).not.toHaveProperty('earlier');
   });
 
-  it('queues what the screen would, and reports why nothing was queued', { tags: ['state-transition'] }, async () => {
+  it('queues what the screen would, and reports why nothing was queued', { tags: ['equivalence', 'condition'] }, async () => {
     enqueue.mockResolvedValueOnce({ items: [{ id: 7 }, { id: 8 }] }).mockResolvedValueOnce({ problems: ['No model'] });
     expect(await call('generate', { target: 'screen' })).toEqual({ ok: true, content: { queued: [7, 8] } });
     expect(run.log).toEqual([{ kind: 'queued', count: 2 }]);
     expect(await call('generate', { target: 'screen' })).toEqual({ ok: false, content: 'Nothing was queued: No model' });
   });
 
-  it('queues one trial picture only while the setting allows it', { tags: ['condition'] }, async () => {
+  it('queues one trial picture only while the setting allows it', { tags: ['decision-table'] }, async () => {
     enqueue.mockResolvedValue({ items: [{ id: 9 }] });
     useSettings.getState().set({ assistantTrialPictures: true });
     expect(await call('generate', { target: 'screen', trial: true })).toEqual({ ok: true, content: { queued: [9], note: expect.stringContaining('view_picture') } });
@@ -331,45 +367,49 @@ describe('the Generate tab', () => {
     enqueue.mockReset();
   });
 
-  it('shows a picture by name or waits for a queue item, asks first, and keeps it for the answer', { tags: ['scenario'] }, async () => {
-    vi.useFakeTimers();
-    try {
-      useQueue.setState({ items: [{ id: 3, status: 'in_progress', error: null, imageName: null } as never] });
-      const waiting = call('view_picture', { queueId: 3 });
-      await vi.advanceTimersByTimeAsync(10);
-      useQueue.setState({ items: [{ id: 3, status: 'completed', error: null, imageName: 'trial.png' } as never] });
-      expect(await waiting).toEqual({ ok: true, content: { picture: 'trial.png', queueId: 3 } });
-      expect(asked).toEqual(['view_picture']);
-      expect(run.shown).toEqual(['trial.png']);
-      // Not finished within the wait: the model is told to ask again.
-      useQueue.setState({ items: [{ id: 4, status: 'pending', error: null, imageName: null } as never] });
-      const slow = call('view_picture', { queueId: 4 });
-      await vi.advanceTimersByTimeAsync(PICTURE_WAIT_MS + 10);
-      expect(await slow).toEqual({ ok: false, content: expect.stringContaining('not finished yet') });
-    } finally {
-      vi.useRealTimers();
-    }
-    useQueue.setState({ items: [{ id: 5, status: 'failed', error: 'oom', imageName: null } as never, { id: 6, status: 'canceled', error: null, imageName: null } as never] });
-    expect(await call('view_picture', { queueId: 5 })).toEqual({ ok: false, content: 'Queue item 5 failed: oom' });
-    expect(await call('view_picture', { queueId: 6 })).toEqual({ ok: false, content: 'Queue item 6 was canceled.' });
-    expect(await call('view_picture', { queueId: 99 })).toEqual({ ok: false, content: 'No queue item 99.' });
-    expect(await call('view_picture', {})).toEqual({ ok: false, content: 'Give queueId or name.' });
-    expect(await call('view_picture', { name: 'trial.png' })).toEqual({ ok: true, content: { picture: 'trial.png' } });
-    expect(await call('view_picture', { name: 'other.png' })).toMatchObject({ ok: true });
-    // A picture is listed once.
-    expect(run.shown).toEqual(['trial.png', 'other.png']);
-    answer = 'deny';
-    expect(await call('view_picture', { name: 'x.png' })).toEqual({ ok: false, content: DECLINED });
-    expect(run.shown).not.toContain('x.png');
-  });
+  it(
+    'shows a picture by name or waits for a queue item, asks first, and keeps it for the answer',
+    { tags: ['state-transition', 'error-guessing'] },
+    async () => {
+      vi.useFakeTimers();
+      try {
+        useQueue.setState({ items: [{ id: 3, status: 'in_progress', error: null, imageName: null } as never] });
+        const waiting = call('view_picture', { queueId: 3 });
+        await vi.advanceTimersByTimeAsync(10);
+        useQueue.setState({ items: [{ id: 3, status: 'completed', error: null, imageName: 'trial.png' } as never] });
+        expect(await waiting).toEqual({ ok: true, content: { picture: 'trial.png', queueId: 3 } });
+        expect(asked).toEqual(['view_picture']);
+        expect(run.shown).toEqual(['trial.png']);
+        // Not finished within the wait: the model is told to ask again.
+        useQueue.setState({ items: [{ id: 4, status: 'pending', error: null, imageName: null } as never] });
+        const slow = call('view_picture', { queueId: 4 });
+        await vi.advanceTimersByTimeAsync(PICTURE_WAIT_MS + 10);
+        expect(await slow).toEqual({ ok: false, content: expect.stringContaining('not finished yet') });
+      } finally {
+        vi.useRealTimers();
+      }
+      useQueue.setState({ items: [{ id: 5, status: 'failed', error: 'oom', imageName: null } as never, { id: 6, status: 'canceled', error: null, imageName: null } as never] });
+      expect(await call('view_picture', { queueId: 5 })).toEqual({ ok: false, content: 'Queue item 5 failed: oom' });
+      expect(await call('view_picture', { queueId: 6 })).toEqual({ ok: false, content: 'Queue item 6 was canceled.' });
+      expect(await call('view_picture', { queueId: 99 })).toEqual({ ok: false, content: 'No queue item 99.' });
+      expect(await call('view_picture', {})).toEqual({ ok: false, content: 'Give queueId or name.' });
+      expect(await call('view_picture', { name: 'trial.png' })).toEqual({ ok: true, content: { picture: 'trial.png' } });
+      expect(await call('view_picture', { name: 'other.png' })).toMatchObject({ ok: true });
+      // A picture is listed once.
+      expect(run.shown).toEqual(['trial.png', 'other.png']);
+      answer = 'deny';
+      expect(await call('view_picture', { name: 'x.png' })).toEqual({ ok: false, content: DECLINED });
+      expect(run.shown).not.toContain('x.png');
+    },
+  );
 
-  it('tells the state of queue items by id', { tags: ['condition'] }, async () => {
+  it('tells the state of queue items by id', { tags: ['equivalence'] }, async () => {
     useQueue.setState({ items: [{ id: 1, status: 'failed', error: 'oom', imageName: null } as never, { id: 2, status: 'completed', error: null, imageName: 'b.png' } as never] });
     expect(await call('get_queue_status', { ids: [2] })).toEqual({ ok: true, content: [{ id: 2, status: 'completed', picture: 'b.png' }] });
     expect(await call('get_queue_status', {})).toMatchObject({ content: [{ id: 1, error: 'oom' }, { id: 2 }] });
   });
 
-  it('names the screen and gives the guide', { tags: ['condition'] }, async () => {
+  it('names the screen and gives the guide', { tags: ['scenario'] }, async () => {
     useUi.setState({ activeTab: 'generate', media: 'music' });
     expect(currentScreen()).toBe('music');
     expect(await call('get_screen')).toMatchObject({ ok: true, content: { screen: 'music' } });
@@ -378,25 +418,29 @@ describe('the Generate tab', () => {
   });
 });
 
-describe('the gallery and permission', () => {
+describe('the gallery and permission', { tags: [] }, () => {
   const image = (name: string, prompt: string, extra = {}) =>
     ({ name, url: '', thumbnailUrl: '', width: 8, height: 8, createdAt: name.charCodeAt(0), boardId: null, starred: false, isIntermediate: false, category: 'general', workflow: null, metadata: { positivePrompt: prompt, negativePrompt: '', modelKey: 'm', modelName: 'M', generationMode: 'txt2img', seed: 1, steps: 2, cfgScale: 3, scheduler: 'euler', width: 8, height: 8 }, ...extra }) as never;
   beforeEach(() => useGallery.setState({ images: [image('a.png', 'a cat'), image('b.png', 'a dog', { starred: true }), image('c.png', 'mask', { isIntermediate: true })] }));
 
-  it('asks before reading, lists the newest pictures with their prompts, and leaves helper pictures out', { tags: ['condition'] }, async () => {
-    const listed = await call('list_gallery_images', {}, true);
-    expect(asked).toEqual(['list_gallery_images']);
-    expect(listed).toMatchObject({ ok: true, content: { total: 2, images: [{ name: 'b.png', prompt: 'a dog' }, { name: 'a.png' }] } });
-    expect(await call('list_gallery_images', { search: 'CAT', starredOnly: false })).toMatchObject({ content: { total: 1 } });
-    expect(await call('list_gallery_images', { starredOnly: true })).toMatchObject({ content: { total: 1, images: [{ name: 'b.png' }] } });
-  });
+  it(
+    'asks before reading, lists the newest pictures with their prompts, and leaves helper pictures out',
+    { tags: ['scenario', 'condition'] },
+    async () => {
+      const listed = await call('list_gallery_images', {}, true);
+      expect(asked).toEqual(['list_gallery_images']);
+      expect(listed).toMatchObject({ ok: true, content: { total: 2, images: [{ name: 'b.png', prompt: 'a dog' }, { name: 'a.png' }] } });
+      expect(await call('list_gallery_images', { search: 'CAT', starredOnly: false })).toMatchObject({ content: { total: 1 } });
+      expect(await call('list_gallery_images', { starredOnly: true })).toMatchObject({ content: { total: 1, images: [{ name: 'b.png' }] } });
+    },
+  );
 
-  it('tells how one picture was made, and not a helper picture', { tags: ['condition'] }, async () => {
+  it('tells how one picture was made, and not a helper picture', { tags: ['condition', 'equivalence'] }, async () => {
     expect(await call('get_image_info', { name: 'a.png' })).toMatchObject({ ok: true, content: { generation: { positivePrompt: 'a cat', steps: 2 } } });
     expect(await call('get_image_info', { name: 'c.png' })).toMatchObject({ ok: false });
   });
 
-  it('a decline reads nothing and says so; the backend tag alone is enough to ask', { tags: ['condition'] }, async () => {
+  it('a decline reads nothing and says so; the backend tag alone is enough to ask', { tags: ['decision-table'] }, async () => {
     answer = 'deny';
     expect(await call('get_image_info', { name: 'a.png' })).toEqual({ ok: false, content: DECLINED });
     // A tool the frontend does not consider a read is still asked about when the backend tags the call.
@@ -405,23 +449,27 @@ describe('the gallery and permission', () => {
     expect(asked).toEqual(['get_image_info', 'get_screen']);
   });
 
-  it('never asks with always or never, and asks the questions of parallel calls one at a time', { tags: ['condition'] }, async () => {
-    useSettings.getState().set({ assistantReadAccess: 'never' });
-    expect(await call('list_gallery_images')).toEqual({ ok: false, content: DECLINED });
-    useSettings.getState().set({ assistantReadAccess: 'always' });
-    expect((await call('list_gallery_images')).ok).toBe(true);
-    expect(asked).toEqual([]);
-    useSettings.getState().set({ assistantReadAccess: 'ask' });
-    answer = 'always';
-    const both = await Promise.all([call('list_gallery_images'), call('get_image_info', { name: 'a.png' })]);
-    expect(both.every((r) => r.ok)).toBe(true);
-    // After "always allow" on the first question the second is not asked.
-    expect(asked).toEqual(['list_gallery_images']);
-    expect(useSettings.getState().assistantReadAccess).toBe('always');
-  });
+  it(
+    'never asks with always or never, and asks the questions of parallel calls one at a time',
+    { tags: ['decision-table', 'state-transition'] },
+    async () => {
+      useSettings.getState().set({ assistantReadAccess: 'never' });
+      expect(await call('list_gallery_images')).toEqual({ ok: false, content: DECLINED });
+      useSettings.getState().set({ assistantReadAccess: 'always' });
+      expect((await call('list_gallery_images')).ok).toBe(true);
+      expect(asked).toEqual([]);
+      useSettings.getState().set({ assistantReadAccess: 'ask' });
+      answer = 'always';
+      const both = await Promise.all([call('list_gallery_images'), call('get_image_info', { name: 'a.png' })]);
+      expect(both.every((r) => r.ok)).toBe(true);
+      // After "always allow" on the first question the second is not asked.
+      expect(asked).toEqual(['list_gallery_images']);
+      expect(useSettings.getState().assistantReadAccess).toBe('always');
+    },
+  );
 });
 
-describe('looking at a drawn comic page', () => {
+describe('looking at a drawn comic page', { tags: [] }, () => {
   const onViewer = () => useUi.setState({ activeTab: 'comic', mainView: { ...useUi.getState().mainView, comic: 'viewer' } });
 
   it('works only on the comic screen, and asks first', { tags: ['condition'] }, async () => {
@@ -435,21 +483,25 @@ describe('looking at a drawn comic page', () => {
     expect(asked).toEqual(['view_comic_page', 'view_comic_page']);
   });
 
-  it('looks at nothing when the user declines, and passes on why a page cannot be shown', { tags: ['error-guessing'] }, async () => {
-    const view = vi.fn(async () => {
-      throw new Error('Page 3 has no drawn panel yet: draw it first.');
-    });
-    registerAgentEditor('comic', { ...editor('comic'), view });
-    onViewer();
-    answer = 'deny';
-    expect(await call('view_comic_page', { page: 3 })).toEqual({ ok: false, content: DECLINED });
-    expect(view).not.toHaveBeenCalled();
-    answer = 'once';
-    expect(await call('view_comic_page', { page: 3 })).toMatchObject({ ok: false, content: expect.stringContaining('no drawn panel') });
-  });
+  it(
+    'looks at nothing when the user declines, and passes on why a page cannot be shown',
+    { tags: ['error-guessing', 'condition'] },
+    async () => {
+      const view = vi.fn(async () => {
+        throw new Error('Page 3 has no drawn panel yet: draw it first.');
+      });
+      registerAgentEditor('comic', { ...editor('comic'), view });
+      onViewer();
+      answer = 'deny';
+      expect(await call('view_comic_page', { page: 3 })).toEqual({ ok: false, content: DECLINED });
+      expect(view).not.toHaveBeenCalled();
+      answer = 'once';
+      expect(await call('view_comic_page', { page: 3 })).toMatchObject({ ok: false, content: expect.stringContaining('no drawn panel') });
+    },
+  );
 });
 
-describe('looking facts up on the web', () => {
+describe('looking facts up on the web', { tags: [] }, () => {
   const hit = { title: 'Edo period', extract: 'The Edo period lasted 1603-1868.', url: 'https://en.wikipedia.org/wiki/Edo_period' };
 
   it('asks first, then returns the articles with the licence notice; the question carries the words', { tags: ['scenario'] }, async () => {
@@ -482,41 +534,45 @@ describe('looking facts up on the web', () => {
     expect(lookup).not.toHaveBeenCalled();
   });
 
-  it('an empty query is an error and a failing lookup comes back as a tool error', { tags: ['error-guessing'] }, async () => {
+  it('an empty query is an error and a failing lookup comes back as a tool error', { tags: ['error-guessing', 'boundary'] }, async () => {
     const lookup = vi.spyOn(backend, 'lookupReference').mockRejectedValue(new Error('Cannot reach Wikipedia'));
     expect(await call('lookup_reference', { query: '   ' })).toMatchObject({ ok: false, content: expect.stringContaining('needs a query') });
     expect(lookup).not.toHaveBeenCalled();
     expect(await call('lookup_reference', { query: 'kimono' })).toEqual({ ok: false, content: 'The tool failed: Cannot reach Wikipedia' });
   });
 
-  it('has its own always-allow: it never rides on the one for pictures, nor the other way round', { tags: ['condition'] }, async () => {
-    vi.spyOn(backend, 'lookupReference').mockResolvedValue([hit]);
-    useGallery.setState({ images: [] });
-    // Always allowing pictures does not allow the web: the question is still asked.
-    useSettings.getState().set({ assistantReadAccess: 'always' });
-    await call('lookup_reference', { query: 'kimono' });
-    expect(asked).toEqual(['lookup_reference']);
-    // "Always allow" for the web sets only the web setting.
-    useSettings.getState().set({ assistantReadAccess: 'ask' });
-    answer = 'always';
-    await call('lookup_reference', { query: 'kimono' });
-    expect(useSettings.getState().assistantWebAccess).toBe('always');
-    expect(useSettings.getState().assistantReadAccess).toBe('ask');
-    asked = [];
-    expect((await call('lookup_reference', { query: 'kimono' })).ok).toBe(true);
-    expect(asked).toEqual([]);
-    // The pictures are still asked about.
-    await call('list_gallery_images');
-    expect(asked).toEqual(['list_gallery_images']);
-    // Never for the web refuses without asking, whatever pictures say.
-    asked = [];
-    useSettings.getState().set({ assistantWebAccess: 'never', assistantReadAccess: 'always' });
-    expect(await call('lookup_reference', { query: 'kimono' })).toEqual({ ok: false, content: DECLINED_WEB });
-    expect(asked).toEqual([]);
-  });
+  it(
+    'has its own always-allow: it never rides on the one for pictures, nor the other way round',
+    { tags: ['decision-table'] },
+    async () => {
+      vi.spyOn(backend, 'lookupReference').mockResolvedValue([hit]);
+      useGallery.setState({ images: [] });
+      // Always allowing pictures does not allow the web: the question is still asked.
+      useSettings.getState().set({ assistantReadAccess: 'always' });
+      await call('lookup_reference', { query: 'kimono' });
+      expect(asked).toEqual(['lookup_reference']);
+      // "Always allow" for the web sets only the web setting.
+      useSettings.getState().set({ assistantReadAccess: 'ask' });
+      answer = 'always';
+      await call('lookup_reference', { query: 'kimono' });
+      expect(useSettings.getState().assistantWebAccess).toBe('always');
+      expect(useSettings.getState().assistantReadAccess).toBe('ask');
+      asked = [];
+      expect((await call('lookup_reference', { query: 'kimono' })).ok).toBe(true);
+      expect(asked).toEqual([]);
+      // The pictures are still asked about.
+      await call('list_gallery_images');
+      expect(asked).toEqual(['list_gallery_images']);
+      // Never for the web refuses without asking, whatever pictures say.
+      asked = [];
+      useSettings.getState().set({ assistantWebAccess: 'never', assistantReadAccess: 'always' });
+      expect(await call('lookup_reference', { query: 'kimono' })).toEqual({ ok: false, content: DECLINED_WEB });
+      expect(asked).toEqual([]);
+    },
+  );
 });
 
-describe('extensions', () => {
+describe('extensions', { tags: [] }, () => {
   const reg = { id: 'foo', name: 'ComfyUI-Foo', description: 'Draws foo', publisher: 'someone', repository: 'https://github.com/someone/ComfyUI-Foo', icon: null, downloads: 1, stars: 1, version: '1.0.0', updated: null, license: null };
   beforeEach(() => useNodePacks.setState({ packs: { available: true, installed: [], comfyVersion: null, restartNeeded: false } }));
   afterEach(() => {
@@ -524,7 +580,7 @@ describe('extensions', () => {
     useNodePacks.setState({ packs: null });
   });
 
-  it('finds the extensions a query names, and the one asked about by id', { tags: ['condition'] }, async () => {
+  it('finds the extensions a query names, and the one asked about by id', { tags: ['scenario'] }, async () => {
     useRegistry.setState({ nodes: [reg] });
     expect(await call('search_extensions', { query: 'What does ComfyUI-Foo do?' })).toMatchObject({ ok: true, content: { extensions: [{ id: 'ext:ComfyUI-Foo' }] } });
     expect(await call('search_extensions', { ids: ['ext:ComfyUI-Foo'] })).toMatchObject({ content: { extensions: [{ id: 'ext:ComfyUI-Foo', about: 'Draws foo' }] } });
@@ -541,7 +597,7 @@ describe('extensions', () => {
     expect(useRegistry.getState().nodes).toEqual([reg]);
   });
 
-  it('shows only known extensions as cards, and changes nothing', { tags: ['scenario'] }, async () => {
+  it('shows only known extensions as cards, and changes nothing', { tags: ['condition', 'error-guessing'] }, async () => {
     useRegistry.setState({ nodes: [reg] });
     expect(await call('recommend_packs', { ids: ['made-up'] })).toMatchObject({ ok: false });
     expect(await call('recommend_packs', { ids: ['rmbg', 'made-up', 'ext:ComfyUI-Foo', 'rmbg'] })).toEqual({ ok: true, content: { shown: ['rmbg', 'ext:ComfyUI-Foo'], unknown: ['made-up'] } });
@@ -550,24 +606,28 @@ describe('extensions', () => {
   });
 });
 
-describe('what the first tests leave', () => {
-  it('words the question of a web look-up: one short line, the language, and nothing for other tools or bad arguments', { tags: ['condition'] }, () => {
-    expect(webQuestion('lookup_reference', { query: '  kimono \n  obi  ', language: 'en' })).toEqual({ query: 'kimono obi', language: 'en' });
-    expect(webQuestion('lookup_reference', { query: 'x'.repeat(150) }).query).toHaveLength(100);
-    expect(webQuestion('lookup_reference', { query: 5, language: 'fr' })).toEqual({ query: '', language: 'ja' });
-    expect(webQuestion('lookup_reference', 'text')).toEqual({});
-    expect(webQuestion('lookup_reference', null)).toEqual({});
-    expect(webQuestion('get_screen', { query: 'x' })).toEqual({});
-  });
+describe('what the first tests leave', { tags: [] }, () => {
+  it(
+    'words the question of a web look-up: one short line, the language, and nothing for other tools or bad arguments',
+    { tags: ['boundary', 'error-guessing'] },
+    () => {
+      expect(webQuestion('lookup_reference', { query: '  kimono \n  obi  ', language: 'en' })).toEqual({ query: 'kimono obi', language: 'en' });
+      expect(webQuestion('lookup_reference', { query: 'x'.repeat(150) }).query).toHaveLength(100);
+      expect(webQuestion('lookup_reference', { query: 5, language: 'fr' })).toEqual({ query: '', language: 'ja' });
+      expect(webQuestion('lookup_reference', 'text')).toEqual({});
+      expect(webQuestion('lookup_reference', null)).toEqual({});
+      expect(webQuestion('get_screen', { query: 'x' })).toEqual({});
+    },
+  );
 
-  it('gives the manga guide, whole or for a topic', { tags: ['scenario'] }, async () => {
+  it('gives the manga guide, whole or for a topic', { tags: ['equivalence'] }, async () => {
     const whole = await call('get_manga_guide', {});
     expect(whole.ok).toBe(true);
     const topic = await call('get_manga_guide', { topic: 'no-such-topic-at-all' });
     expect(topic).toHaveProperty('ok');
   });
 
-  it('lists the LoRAs of the settings and of a picture, with their weights', { tags: ['condition'] }, async () => {
+  it('lists the LoRAs of the settings and of a picture, with their weights', { tags: ['equivalence'] }, async () => {
     useParams.getState().addLora('l1');
     useParams.getState().updateLora('l1', { weight: 0.7 });
     expect(await call('get_generation_settings', {})).toMatchObject({ content: { loras: [{ key: 'l1', weight: 0.7 }] } });
@@ -576,7 +636,7 @@ describe('what the first tests leave', () => {
     expect(await call('get_image_info', { name: 'a.png' })).toMatchObject({ content: { generation: { loras: [{ key: 'l9', weight: 0.4 }] } } });
   });
 
-  it('gives the workflow with the recipes of the extensions that are installed', { tags: ['scenario'] }, async () => {
+  it('gives the workflow with the recipes of the extensions that are installed', { tags: ['condition'] }, async () => {
     const recipes = vi.fn((_installed: string[]) => [{ id: 'r' } as never]);
     registerAgentWorkflow(() => ({ dropped: [] }), () => [], recipes);
     registerAgentEditor('workflows', editor('workflows'));
@@ -591,21 +651,25 @@ describe('what the first tests leave', () => {
   });
 });
 
-describe('drawing the comic', () => {
+describe('drawing the comic', { tags: [] }, () => {
   const comic = () => {
     const e = editor('comic');
     registerAgentEditor('comic', e);
     return e;
   };
 
-  it('fails without a comic editor, and asks for the panel number when the scope is a panel', { tags: ['error-guessing'] }, async () => {
-    registerAgentEditor('comic', undefined as never);
-    expect(await call('generate', { target: 'comic' })).toEqual({ ok: false, content: 'The comic is not available.' });
-    comic();
-    expect(await call('generate', { target: 'comic', scope: 'panel' })).toEqual({ ok: false, content: 'scope panel needs panel.' });
-  });
+  it(
+    'fails without a comic editor, and asks for the panel number when the scope is a panel',
+    { tags: ['error-guessing', 'condition'] },
+    async () => {
+      registerAgentEditor('comic', undefined as never);
+      expect(await call('generate', { target: 'comic' })).toEqual({ ok: false, content: 'The comic is not available.' });
+      comic();
+      expect(await call('generate', { target: 'comic', scope: 'panel' })).toEqual({ ok: false, content: 'scope panel needs panel.' });
+    },
+  );
 
-  it('says nothing was queued when the comic has nothing to draw', { tags: ['state-transition'] }, async () => {
+  it('says nothing was queued when the comic has nothing to draw', { tags: ['condition'] }, async () => {
     const e = editor('comic', false);
     registerAgentEditor('comic', e);
     const result = await call('generate', { target: 'comic', scope: 'page' });
@@ -614,7 +678,7 @@ describe('drawing the comic', () => {
     expect(e.applied).toEqual([[{ op: 'draw', scope: 'page' }]]);
   });
 
-  it('queues the panels and reports the new queue items once they stop coming', { tags: ['condition'] }, async () => {
+  it('queues the panels and reports the new queue items once they stop coming', { tags: ['scenario'] }, async () => {
     useQueue.setState({ items: [{ id: 1, status: 'completed' } as never] });
     const e = comic();
     const apply = e.apply;

@@ -6,14 +6,14 @@ import { checkoutEntry, harnessDistDir } from '../../scripts/tools/harness-paths
 // @ts-expect-error -- plain ESM script without types
 import { needsTypecheck } from '../../scripts/tools/typecheck.mjs';
 
-describe('needsTypecheck', () => {
-  it('starts for any ts, tsx, mts or JSON of the frontend, tests and declarations included', { tags: ['condition'] }, () => {
+describe('needsTypecheck', { tags: [] }, () => {
+  it('starts for any ts, tsx, mts or JSON of the frontend, tests and declarations included', { tags: ['equivalence'] }, () => {
     for (const p of ['frontend/src/state/ui.ts', 'frontend/src/app/App.tsx', 'frontend/tests/eslint-rules.test.ts', 'frontend/e2e/layout.spec.ts', 'frontend/scripts/eslint-layers.d.mts', 'frontend/src/i18n/locales/ja/app.json', 'frontend/tsconfig.json', 'frontend/package.json', 'frontend/vite.config.ts']) {
       expect(needsTypecheck([p]), p).toBe(true);
     }
   });
 
-  it('does not start for other files of the frontend or files outside it', { tags: ['condition'] }, () => {
+  it('does not start for other files of the frontend or files outside it', { tags: ['equivalence', 'boundary'] }, () => {
     for (const p of ['frontend/src/theme/tokens.css', 'frontend/scripts/manual.mjs', 'scripts/tools/affected.mjs', 'docs/architecture/03-tooling.md', 'backend/src-tauri/tauri.conf.json', 'contract/settings.json', 'xfrontend/a.ts']) {
       expect(needsTypecheck([p]), p).toBe(false);
     }
@@ -25,8 +25,8 @@ describe('needsTypecheck', () => {
   });
 });
 
-describe('checkoutEntry', () => {
-  it('names one folder per checkout under the kind, and the harness build uses it', { tags: ['condition'] }, () => {
+describe('checkoutEntry', { tags: [] }, () => {
+  it('names one folder per checkout under the kind, and the harness build uses it', { tags: ['equivalence'] }, () => {
     const work = path.join('W', 'work');
     const main = checkoutEntry('tsc', path.join('E', 'novira'), work);
     const tree = checkoutEntry('tsc', path.join('E', 'novira-wt'), work);

@@ -4,7 +4,7 @@ import { installRecordingCanvases } from './canvas2dRecorder.testkit';
 import type { ExportOptions, ImageDTO } from '../types';
 import { backupFileName, backupInfo, downloadMockBackup, exportFileName, exportInBrowser, fitSize, type MockData } from './shareBackup';
 
-describe('mock export and backup helpers', () => {
+describe('mock export and backup helpers', { tags: [] }, () => {
   it('shrinks the longest side like the desktop app and never enlarges', { tags: ['boundary'] }, () => {
     expect(fitSize(4000, 3000, 1024)).toEqual({ width: 1024, height: 768 });
     expect(fitSize(3000, 4000, 1024)).toEqual({ width: 768, height: 1024 });
@@ -17,7 +17,7 @@ describe('mock export and backup helpers', () => {
     expect(exportFileName('000001-abc.png', 'webp')).toBe('000001-abc.webp');
   });
 
-  it('names backups with the local date and time', { tags: ['condition'] }, () => {
+  it('names backups with the local date and time', { tags: ['equivalence', 'boundary'] }, () => {
     expect(backupFileName(new Date(2026, 9, 6, 9, 5))).toBe('novira-backup-20261006-0905.zip');
     expect(backupFileName(new Date(2026, 0, 2, 23, 59), 'json')).toBe('novira-backup-20260102-2359.json');
   });
@@ -36,7 +36,7 @@ class FakeImage {
 const picture = (name: string, mediaType: ImageDTO['mediaType'] = 'image', url = `blob:${name}`): ImageDTO => ({ name, mediaType, url, thumbnailUrl: url, width: 4000, height: 3000, createdAt: 0, boardId: null, starred: false, isIntermediate: false, category: 'general', metadata: null, workflow: null });
 const options = (patch: Partial<ExportOptions>): ExportOptions => ({ format: 'png', quality: 90, maxSide: null, ...patch }) as ExportOptions;
 
-describe('exporting copies in the browser', () => {
+describe('exporting copies in the browser', { tags: [] }, () => {
   let canvases: ReturnType<typeof installRecordingCanvases>;
   let toBlob: { mock: { calls: unknown[][] }; mockImplementation: (f: never) => unknown };
   let downloads: { name: string; href: string }[];
@@ -83,17 +83,21 @@ describe('exporting copies in the browser', () => {
     expect((await exportInBrowser([legacy], options({}))).count).toBe(1);
   });
 
-  it('rejects when the picture cannot be loaded, the canvas is missing or encoding gives nothing', { tags: ['error-guessing'] }, async () => {
-    await expect(exportInBrowser([picture('x.png', 'image', 'blob:bad')], options({}))).rejects.toThrow('image load failed');
-    toBlob.mockImplementation(((cb: BlobCallback) => cb(null)) as never);
-    await expect(exportInBrowser([picture('y.png')], options({}))).rejects.toThrow('encoding failed');
-    canvases.restore();
-    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
-    await expect(exportInBrowser([picture('z.png')], options({}))).rejects.toThrow('canvas unavailable');
-  });
+  it(
+    'rejects when the picture cannot be loaded, the canvas is missing or encoding gives nothing',
+    { tags: ['error-guessing'] },
+    async () => {
+      await expect(exportInBrowser([picture('x.png', 'image', 'blob:bad')], options({}))).rejects.toThrow('image load failed');
+      toBlob.mockImplementation(((cb: BlobCallback) => cb(null)) as never);
+      await expect(exportInBrowser([picture('y.png')], options({}))).rejects.toThrow('encoding failed');
+      canvases.restore();
+      vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+      await expect(exportInBrowser([picture('z.png')], options({}))).rejects.toThrow('canvas unavailable');
+    },
+  );
 });
 
-describe('the mock backup', () => {
+describe('the mock backup', { tags: [] }, () => {
   const data: MockData = {
     boards: [{ id: 'b1', name: 'Board' } as MockData['boards'][number]],
     images: [picture('a.png'), picture('b.png')],

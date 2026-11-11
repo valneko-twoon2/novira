@@ -14,7 +14,7 @@ const dragEvent = (data: Record<string, string>): DragEvent =>
 const cleanups: (() => void)[] = [];
 afterEach(() => cleanups.splice(0).forEach((c) => c()));
 
-describe('drag payloads (properties)', () => {
+describe('drag payloads (properties)', { tags: [] }, () => {
   it('getDragImages never throws and returns only strings', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(junkStored, (raw) => {
@@ -25,7 +25,7 @@ describe('drag payloads (properties)', () => {
     );
   });
 
-  it('keeps exactly the string entries of a JSON array, in order', { tags: ['boundary'] }, () => {
+  it('keeps exactly the string entries of a JSON array, in order', { tags: ['error-guessing', 'equivalence'] }, () => {
     check(
       fc.property(fc.array(fc.oneof(junkText, fc.integer(), fc.constant(null), fc.boolean())), (items) => {
         const names = getDragImages(dragEvent({ [IMAGE_MIME]: JSON.stringify(items) }));
@@ -34,19 +34,23 @@ describe('drag payloads (properties)', () => {
     );
   });
 
-  it('resolveDropImages resolves for any payload and returns names of registered sources only', { tags: ['condition'] }, async () => {
-    cleanups.push(registerDragSource('layer', async (id) => (id.length % 2 ? `saved-${id}` : null)));
-    await fc.assert(
-      fc.asyncProperty(junkStored, junkStored, async (images, deferred) => {
-        const out = await resolveDropImages(dragEvent({ [IMAGE_MIME]: images, [DEFERRED_MIME]: deferred }));
-        expect(Array.isArray(out)).toBe(true);
-        expect(out.every((n) => typeof n === 'string')).toBe(true);
-      }),
-      { numRuns: 100, seed: 20261007 },
-    );
-  });
+  it(
+    'resolveDropImages resolves for any payload and returns names of registered sources only',
+    { tags: ['error-guessing', 'condition'] },
+    async () => {
+      cleanups.push(registerDragSource('layer', async (id) => (id.length % 2 ? `saved-${id}` : null)));
+      await fc.assert(
+        fc.asyncProperty(junkStored, junkStored, async (images, deferred) => {
+          const out = await resolveDropImages(dragEvent({ [IMAGE_MIME]: images, [DEFERRED_MIME]: deferred }));
+          expect(Array.isArray(out)).toBe(true);
+          expect(out.every((n) => typeof n === 'string')).toBe(true);
+        }),
+        { numRuns: 100, seed: 20261007 },
+      );
+    },
+  );
 
-  it('a deferred drag of an unregistered kind (or without an id) yields nothing', { tags: ['condition'] }, async () => {
+  it('a deferred drag of an unregistered kind (or without an id) yields nothing', { tags: ['error-guessing', 'condition'] }, async () => {
     await fc.assert(
       fc.asyncProperty(junkJson, async (payload) => {
         const out = await resolveDropImages(dragEvent({ [DEFERRED_MIME]: JSON.stringify(payload) }));
@@ -56,19 +60,23 @@ describe('drag payloads (properties)', () => {
     );
   });
 
-  it('a registered deferred source gives its name, a failing one gives nothing and hasDragImages follows the types', { tags: ['error-guessing'] }, async () => {
-    cleanups.push(registerDragSource('k', async (id) => (id === 'none' ? null : `n-${id}`)));
-    await fc.assert(
-      fc.asyncProperty(junkText, async (id) => {
-        const out = await resolveDropImages(dragEvent({ [DEFERRED_MIME]: JSON.stringify({ kind: 'k', id }) }));
-        expect(out).toEqual(id === 'none' ? [] : [`n-${id}`]);
-      }),
-      { numRuns: 100, seed: 20261007 },
-    );
-    check(
-      fc.property(fc.array(fc.oneof(fc.constantFrom(IMAGE_MIME, DEFERRED_MIME, 'Files', 'text/plain'), junkText)), (types) => {
-        expect(hasDragImages(types)).toBe(types.some((t) => t === IMAGE_MIME || t === DEFERRED_MIME || t === 'Files'));
-      }),
-    );
-  });
+  it(
+    'a registered deferred source gives its name, a failing one gives nothing and hasDragImages follows the types',
+    { tags: ['error-guessing', 'condition'] },
+    async () => {
+      cleanups.push(registerDragSource('k', async (id) => (id === 'none' ? null : `n-${id}`)));
+      await fc.assert(
+        fc.asyncProperty(junkText, async (id) => {
+          const out = await resolveDropImages(dragEvent({ [DEFERRED_MIME]: JSON.stringify({ kind: 'k', id }) }));
+          expect(out).toEqual(id === 'none' ? [] : [`n-${id}`]);
+        }),
+        { numRuns: 100, seed: 20261007 },
+      );
+      check(
+        fc.property(fc.array(fc.oneof(fc.constantFrom(IMAGE_MIME, DEFERRED_MIME, 'Files', 'text/plain'), junkText)), (types) => {
+          expect(hasDragImages(types)).toBe(types.some((t) => t === IMAGE_MIME || t === DEFERRED_MIME || t === 'Files'));
+        }),
+      );
+    },
+  );
 });

@@ -334,7 +334,7 @@ mod tests {
         })
     }
 
-    // tags: condition
+    // tags: equivalence
     #[tokio::test]
     async fn a_gallery_picture_is_shown_to_the_model_with_its_own_note() {
         let outcome = picture_call_of(
@@ -420,7 +420,7 @@ mod tests {
         assert_eq!(relay.waiting(), 0);
     }
 
-    // tags: state-transition
+    // tags: state-transition, boundary
     #[tokio::test]
     async fn a_read_gated_call_waits_longer_for_the_user() {
         let (relay, sent) = relay(30);
@@ -486,7 +486,7 @@ mod tests {
         assert_eq!(relay.waiting(), 0);
     }
 
-    // tags: condition
+    // tags: equivalence, error-guessing
     #[test]
     fn call_ids_are_checked_by_shape() {
         assert!(is_call_id(&format!("c-{}", uuid::Uuid::new_v4().simple())));

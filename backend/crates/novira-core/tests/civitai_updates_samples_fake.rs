@@ -24,7 +24,7 @@ fn version(id: u64, base: &str, at: &str) -> serde_json::Value {
 }
 
 /// One test, because the answer of a path is shared by everything in this binary that asks for it.
-// tags: scenario
+// tags: boundary, condition, error-guessing
 #[tokio::test]
 async fn the_update_check_asks_civitai_by_id_and_tells_what_is_newer() {
     let http = client();
@@ -104,7 +104,7 @@ fn example(id: u64, prompt: &str) -> serde_json::Value {
     })
 }
 
-// tags: decision-table
+// tags: error-guessing, boundary, condition
 #[tokio::test]
 async fn the_examples_of_a_version_are_asked_for_with_the_key_and_each_picture_comes_once() {
     // Refused ids first: they make no request.

@@ -14,7 +14,7 @@ afterEach(() => {
   useEngine.setState(initial, true);
 });
 
-describe('EngineBanner', () => {
+describe('EngineBanner', { tags: [] }, () => {
   it.each([['idle'], ['ready']])('shows nothing while %s', { tags: ['equivalence'] }, (state) => {
     setStatus({ state });
     render(<EngineBanner />);
@@ -30,14 +30,18 @@ describe('EngineBanner', () => {
     expect(banner.textContent).toContain('port 8188 is taken');
   });
 
-  it.each([['extracting'], ['starting']])('shows %s as a status with an indeterminate bar and no size', { tags: ['equivalence'] }, (state) => {
-    setStatus({ state });
-    render(<EngineBanner />);
-    const banner = screen.getByRole('status');
-    expect(banner.textContent).toContain(t(`engine.title.${state}` as 'engine.title.starting'));
-    expect(banner.textContent).not.toContain(t('engine.firstRunNote'));
-    expect(screen.queryByText(/MB/)).toBeNull();
-  });
+  it.each([['extracting'], ['starting']])(
+    'shows %s as a status with an indeterminate bar and no size',
+    { tags: ['equivalence'] },
+    (state) => {
+      setStatus({ state });
+      render(<EngineBanner />);
+      const banner = screen.getByRole('status');
+      expect(banner.textContent).toContain(t(`engine.title.${state}` as 'engine.title.starting'));
+      expect(banner.textContent).not.toContain(t('engine.firstRunNote'));
+      expect(screen.queryByText(/MB/)).toBeNull();
+    },
+  );
 
   it('shows the download size in MB and the first-run note', { tags: ['equivalence'] }, () => {
     setStatus({ state: 'downloading', bytes: 50 * 1024 * 1024, totalBytes: 200 * 1024 * 1024 });
@@ -47,13 +51,13 @@ describe('EngineBanner', () => {
     expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('25');
   });
 
-  it('shows sizes of a gigabyte or more in GB with two decimals', { tags: ['equivalence', 'boundary'] }, () => {
+  it('shows sizes of a gigabyte or more in GB with two decimals', { tags: ['boundary'] }, () => {
     setStatus({ state: 'downloading', bytes: 1024 * 1024 * 1024, totalBytes: 3 * 1024 * 1024 * 1024 });
     render(<EngineBanner />);
     expect(screen.getByText(t('engine.sizeProgress', { done: '1.00 GB', total: '3.00 GB' }))).toBeTruthy();
   });
 
-  it('shows no size while the total is unknown, but still the note', { tags: ['equivalence'] }, () => {
+  it('shows no size while the total is unknown, but still the note', { tags: ['boundary', 'condition'] }, () => {
     setStatus({ state: 'downloading', bytes: 10, totalBytes: 0 });
     render(<EngineBanner />);
     expect(screen.queryByText(/MB/)).toBeNull();

@@ -4,12 +4,12 @@ import { describe, expect, it } from 'vitest';
 import { check } from '@/propertyTest.testkit';
 import { formatCount, formatSize } from './format';
 
-describe('model stat formats (properties)', () => {
-  it('formatSize gives a dash, a whole number of MB or a GB with one decimal, for any size', { tags: ['error-guessing'] }, () => {
+describe('model stat formats (properties)', { tags: [] }, () => {
+  it('formatSize gives a dash, a whole number of MB or a GB with one decimal, for any size', { tags: ['boundary'] }, () => {
     check(fc.property(fc.oneof(fc.integer({ min: -10, max: 2 ** 45 }), fc.double({ min: 0, max: 1e15, noNaN: true })), (bytes) => /^(—|\d+ MB|\d+\.\d GB)$/.test(formatSize(bytes))));
   });
 
-  it('formatSize is monotone in the size it shows (never smaller for a bigger file)', { tags: ['error-guessing'] }, () => {
+  it('formatSize is monotone in the size it shows (never smaller for a bigger file)', { tags: ['boundary'] }, () => {
     const value = (s: string) => (s === '—' ? 0 : s.endsWith('GB') ? parseFloat(s) * 1024 : parseFloat(s));
     check(fc.property(fc.integer({ min: 1, max: 2 ** 40 }), fc.integer({ min: 0, max: 2 ** 40 }), (a, d) => value(formatSize(a + d)) >= value(formatSize(a)) - 1));
   });

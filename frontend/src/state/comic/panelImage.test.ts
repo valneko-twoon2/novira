@@ -26,7 +26,7 @@ beforeEach(() => {
 
 const imageOf = () => findPanel(useComic.getState().projects, panelId)!.panel.imageName;
 
-describe('putting a gallery picture into a panel', () => {
+describe('putting a gallery picture into a panel', { tags: [] }, () => {
   it('makes the named gallery picture the picture of the panel', { tags: ['condition'] }, () => {
     expect(putGalleryImage(panelId, ['pic.png'])).toBe(true);
     expect(imageOf()).toBe('pic.png');
@@ -43,7 +43,7 @@ describe('putting a gallery picture into a panel', () => {
   });
 });
 
-describe('putting a file from the computer into a panel', () => {
+describe('putting a file from the computer into a panel', { tags: [] }, () => {
   afterEach(() => vi.restoreAllMocks());
 
   it('uploads it to the gallery first, then makes it the picture of the panel', { tags: ['state-transition'] }, async () => {
@@ -61,14 +61,14 @@ describe('putting a file from the computer into a panel', () => {
   });
 });
 
-describe('reporting a failed picture', () => {
+describe('reporting a failed picture', { tags: [] }, () => {
   beforeEach(() => {
     setLocale('en');
     useToasts.setState({ toasts: [] });
   });
   afterEach(() => setLocale('ja'));
 
-  it('toasts an error with the message of an Error, and the text of anything else', { tags: ['error-guessing'] }, () => {
+  it('toasts an error with the message of an Error, and the text of anything else', { tags: ['equivalence'] }, () => {
     reportImageFailure(new Error('too big'));
     reportImageFailure('plain text');
     const toasts = useToasts.getState().toasts;

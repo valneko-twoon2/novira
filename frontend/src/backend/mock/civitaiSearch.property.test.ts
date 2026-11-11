@@ -31,7 +31,7 @@ const walk = (p: CivitaiSearchParams) => {
   throw new Error('pagination did not end');
 };
 
-describe('model search (properties)', () => {
+describe('model search (properties)', { tags: [] }, () => {
   it('walking the cursors lists every match exactly once and ends', { tags: ['boundary'] }, () => {
     check(
       fc.property(params, (p) => {
@@ -57,7 +57,7 @@ describe('model search (properties)', () => {
     );
   });
 
-  it('any cursor text (junk, negative, huge, fractional) gives a page and never throws', { tags: ['error-guessing'] }, () => {
+  it('any cursor text (junk, negative, huge, fractional) gives a page and never throws', { tags: ['error-guessing', 'boundary'] }, () => {
     check(
       fc.property(params, fc.oneof(junkText, fc.double().map(String), fc.constantFrom('-5', 'Infinity', '1e21', '0.5', 'NaN')), (p, cursor) => {
         const r = searchCivitaiModels({ ...p, cursor }, p.source === 'huggingface' ? HUGGINGFACE_MODELS : undefined);

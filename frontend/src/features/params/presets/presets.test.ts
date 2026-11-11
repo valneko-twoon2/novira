@@ -35,38 +35,46 @@ describe('generation presets', () => {
     expect(useParams.getState()).toMatchObject({ modelKey: 'kept', steps: 12 });
   });
 
-  it('keeps the sampler and noise schedule picked, and an older preset without them clears the current choice', { tags: ['condition'] }, () => {
-    useParams.setState({ samplerName: 'res_multistep', noiseSchedule: 'karras' });
-    const data = snapshotPresetData();
-    expect(data).toMatchObject({ samplerName: 'res_multistep', noiseSchedule: 'karras' });
-    useParams.setState({ samplerName: null, noiseSchedule: null });
-    applyPresetData(data);
-    expect(useParams.getState()).toMatchObject({ samplerName: 'res_multistep', noiseSchedule: 'karras' });
-    applyPresetData({ steps: 12 });
-    expect(useParams.getState()).toMatchObject({ samplerName: null, noiseSchedule: null, steps: 12 });
-  });
+  it(
+    'keeps the sampler and noise schedule picked, and an older preset without them clears the current choice',
+    { tags: ['condition'] },
+    () => {
+      useParams.setState({ samplerName: 'res_multistep', noiseSchedule: 'karras' });
+      const data = snapshotPresetData();
+      expect(data).toMatchObject({ samplerName: 'res_multistep', noiseSchedule: 'karras' });
+      useParams.setState({ samplerName: null, noiseSchedule: null });
+      applyPresetData(data);
+      expect(useParams.getState()).toMatchObject({ samplerName: 'res_multistep', noiseSchedule: 'karras' });
+      applyPresetData({ steps: 12 });
+      expect(useParams.getState()).toMatchObject({ samplerName: null, noiseSchedule: null, steps: 12 });
+    },
+  );
 
-  it('keeps the high-resolution fix, the upscale and the inpaint settings, but not the picture to upscale', { tags: ['condition'] }, () => {
-    useModels.setState({ models: [{ key: 'esrgan', name: '4x', base: 'any', type: 'spandrel_image_to_image', path: '4x.pth' }] as never });
-    const p = useParams.getState();
-    const picture = { name: 'big.png' } as never;
-    useParams.setState({
-      hires: { ...p.hires, enabled: true, scale: 2, upscaleModelKey: 'esrgan' },
-      upscale: { ...p.upscale, initialImage: picture, scale: 4, creativity: 3, upscaleModelKey: 'esrgan' },
-      maskBlur: 24,
-      infillMethod: 'tile',
-      dynamicPromptMode: 'random',
-    });
-    const data = snapshotPresetData();
-    expect(data.upscale).not.toHaveProperty('initialImage');
-    const other = { name: 'other.png' } as never;
-    useParams.setState({ hires: { ...p.hires, enabled: false }, upscale: { ...p.upscale, initialImage: other, scale: 2 }, maskBlur: 4, infillMethod: 'color', dynamicPromptMode: 'combinatorial' });
-    applyPresetData(data);
-    const now = useParams.getState();
-    expect(now.hires).toMatchObject({ enabled: true, scale: 2, upscaleModelKey: 'esrgan' });
-    expect(now.upscale).toMatchObject({ initialImage: other, scale: 4, creativity: 3, upscaleModelKey: 'esrgan' });
-    expect(now).toMatchObject({ maskBlur: 24, infillMethod: 'tile', dynamicPromptMode: 'random' });
-  });
+  it(
+    'keeps the high-resolution fix, the upscale and the inpaint settings, but not the picture to upscale',
+    { tags: ['equivalence'] },
+    () => {
+      useModels.setState({ models: [{ key: 'esrgan', name: '4x', base: 'any', type: 'spandrel_image_to_image', path: '4x.pth' }] as never });
+      const p = useParams.getState();
+      const picture = { name: 'big.png' } as never;
+      useParams.setState({
+        hires: { ...p.hires, enabled: true, scale: 2, upscaleModelKey: 'esrgan' },
+        upscale: { ...p.upscale, initialImage: picture, scale: 4, creativity: 3, upscaleModelKey: 'esrgan' },
+        maskBlur: 24,
+        infillMethod: 'tile',
+        dynamicPromptMode: 'random',
+      });
+      const data = snapshotPresetData();
+      expect(data.upscale).not.toHaveProperty('initialImage');
+      const other = { name: 'other.png' } as never;
+      useParams.setState({ hires: { ...p.hires, enabled: false }, upscale: { ...p.upscale, initialImage: other, scale: 2 }, maskBlur: 4, infillMethod: 'color', dynamicPromptMode: 'combinatorial' });
+      applyPresetData(data);
+      const now = useParams.getState();
+      expect(now.hires).toMatchObject({ enabled: true, scale: 2, upscaleModelKey: 'esrgan' });
+      expect(now.upscale).toMatchObject({ initialImage: other, scale: 4, creativity: 3, upscaleModelKey: 'esrgan' });
+      expect(now).toMatchObject({ maskBlur: 24, infillMethod: 'tile', dynamicPromptMode: 'random' });
+    },
+  );
 
   it('keeps the current upscale models when the preset names removed ones', { tags: ['condition'] }, () => {
     useModels.setState({ models: [] });
@@ -77,7 +85,7 @@ describe('generation presets', () => {
     expect(useParams.getState().upscale.upscaleModelKey).toBe('kept');
   });
 
-  it('ships built-in presets and summarises size and steps', { tags: ['condition'] }, () => {
+  it('ships built-in presets and summarises size and steps', { tags: ['equivalence'] }, () => {
     const builtin = useImagePresets.getState().presets.find((p) => p.id === 'seed-standard');
     expect(builtin?.builtin).toBe(true);
     expect(summarizeImagePreset(builtin!.data)).toBe('1024×1024 · 30 ステップ');
@@ -85,7 +93,7 @@ describe('generation presets', () => {
 });
 
 describe('prompt book', () => {
-  it('registers, updates and removes entries', { tags: ['condition'] }, () => {
+  it('registers, updates and removes entries', { tags: ['state-transition'] }, () => {
     const id = usePromptBook.getState().add({ tag: 'x', meaning: '', category: '', note: '' });
     usePromptBook.getState().update(id, { tag: 'y', meaning: 'm', category: 'c', note: '' });
     expect(usePromptBook.getState().entries.find((e) => e.id === id)?.tag).toBe('y');

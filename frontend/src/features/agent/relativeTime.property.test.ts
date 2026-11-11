@@ -7,12 +7,12 @@ import { relativeTime } from './relativeTime';
 
 const ms = fc.integer({ min: 0, max: Date.UTC(2200, 0, 1) });
 
-describe('relativeTime (properties)', () => {
+describe('relativeTime (properties)', { tags: [] }, () => {
   it('gives non-empty text for any pair of times (even one in the future) in every language', { tags: ['error-guessing'] }, () => {
     check(fc.property(ms, ms, fc.constantFrom(...LOCALES), (time, now, locale) => relativeTime(time, now, locale).length > 0));
   });
 
-  it('a time that is not in the past counts as "now" and is the same as the time itself', { tags: ['error-guessing'] }, () => {
+  it('a time that is not in the past counts as "now" and is the same as the time itself', { tags: ['boundary'] }, () => {
     check(fc.property(ms, fc.nat(1000), fc.constantFrom(...LOCALES), (now, ahead, locale) => relativeTime(now + ahead, now, locale) === relativeTime(now, now, locale)));
   });
 

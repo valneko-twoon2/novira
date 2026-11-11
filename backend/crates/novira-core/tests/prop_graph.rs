@@ -424,7 +424,7 @@ fn a_graph_that_is_built_is_a_well_formed_prompt() {
     );
 }
 
-// tags: error-guessing
+// tags: error-guessing, condition
 #[test]
 fn counts_that_do_not_match_the_guidance_are_refused_not_built() {
     check(case(), |c| {
@@ -463,7 +463,7 @@ fn every_mode_builds_a_plain_job_with_no_guidance() {
     }
 }
 
-// tags: boundary, equivalence
+// tags: boundary
 #[test]
 fn guidance_that_the_service_accepts_has_finite_weights_in_range() {
     fn layer() -> impl Strategy<Value = (String, String, f64, [f64; 2])> {
@@ -561,7 +561,7 @@ fn editor_graph() -> impl Strategy<Value = (Map<String, Value>, Vec<String>, Opt
     )
 }
 
-// tags: boundary
+// tags: boundary, error-guessing
 #[test]
 fn a_prepared_editor_prompt_has_no_placeholder_left_but_pictures_and_no_dangling_link() {
     check(editor_graph(), |(prompt, outputs, thumbnail)| {
@@ -689,7 +689,7 @@ fn filling_pictures_into_a_prompt_with_a_node_that_is_not_an_object_does_not_pan
 /// Found by the property tests and fixed: `round8` multiplied `round(side / 8)` by 8 in `u32`, which overflows for a side of
 /// 4294967292 or more (a panic in a debug build, a wrapped 0 turned into 64 in a release build). Nothing at enqueue
 /// time limits the size, so a job asking for such a width reaches the graph builder.
-// tags: boundary
+// tags: boundary, error-guessing
 #[test]
 fn an_enormous_width_does_not_overflow_the_size_snapping() {
     let params: GenerationMetadata = serde_json::from_value(json!({
@@ -704,7 +704,7 @@ fn an_enormous_width_does_not_overflow_the_size_snapping() {
 
 /// Found by the property tests and fixed: the video size snapping added 16 to the width in `u32` (overflow for a
 /// width of 4294967280 or more).
-// tags: error-guessing, boundary
+// tags: boundary, error-guessing
 #[test]
 fn a_video_job_with_an_enormous_width_is_built_or_refused_without_overflow() {
     let c = Case {

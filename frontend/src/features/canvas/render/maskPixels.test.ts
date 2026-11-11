@@ -5,7 +5,7 @@ import { addTransparentArea, maskGrey, maskIsEmpty, pullPushFill } from './maskP
 const rgba = (...pixels: number[][]) => new Uint8ClampedArray(pixels.flat());
 const pixel = (data: Uint8ClampedArray, i: number) => Array.from(data.slice(i * 4, i * 4 + 4));
 
-describe('mask pixels', () => {
+describe('mask pixels', { tags: [] }, () => {
   it('turns a denoise limit into the grey of the mask', { tags: ['boundary'] }, () => {
     expect(maskGrey(null)).toBe(255);
     expect(maskGrey(0.5)).toBe(128);
@@ -14,15 +14,19 @@ describe('mask pixels', () => {
     expect(maskGrey(Number.NaN)).toBe(255);
   });
 
-  it('redraws transparent pixels as much as they are transparent, keeping stronger mask values', { tags: ['condition'] }, () => {
-    const mask = rgba([0, 0, 0, 255], [200, 200, 200, 255], [0, 0, 0, 255]);
-    addTransparentArea(mask, rgba([9, 9, 9, 255], [9, 9, 9, 255], [9, 9, 9, 55]));
-    expect([pixel(mask, 0), pixel(mask, 1), pixel(mask, 2)]).toEqual([
-      [0, 0, 0, 255],
-      [200, 200, 200, 255],
-      [200, 200, 200, 255],
-    ]);
-  });
+  it(
+    'redraws transparent pixels as much as they are transparent, keeping stronger mask values',
+    { tags: ['condition', 'boundary'] },
+    () => {
+      const mask = rgba([0, 0, 0, 255], [200, 200, 200, 255], [0, 0, 0, 255]);
+      addTransparentArea(mask, rgba([9, 9, 9, 255], [9, 9, 9, 255], [9, 9, 9, 55]));
+      expect([pixel(mask, 0), pixel(mask, 1), pixel(mask, 2)]).toEqual([
+        [0, 0, 0, 255],
+        [200, 200, 200, 255],
+        [200, 200, 200, 255],
+      ]);
+    },
+  );
 
   it('treats antialiasing noise as an empty mask', { tags: ['boundary'] }, () => {
     expect(maskIsEmpty(rgba([0, 0, 0, 255], [3, 3, 3, 255]))).toBe(true);
@@ -31,8 +35,8 @@ describe('mask pixels', () => {
   });
 });
 
-describe('pull-push fill', () => {
-  it('keeps opaque pixels and fills the transparent ones from their surroundings, all opaque', { tags: ['condition'] }, () => {
+describe('pull-push fill', { tags: [] }, () => {
+  it('keeps opaque pixels and fills the transparent ones from their surroundings, all opaque', { tags: ['equivalence'] }, () => {
     // 4 x 2: the left half red, the right half empty.
     const red = [255, 0, 0, 255];
     const none = [0, 0, 0, 0];
@@ -40,7 +44,7 @@ describe('pull-push fill', () => {
     for (let i = 0; i < 8; i++) expect(pixel(out, i)).toEqual([255, 0, 0, 255]);
   });
 
-  it('blends towards the nearer colour', { tags: ['condition'] }, () => {
+  it('blends towards the nearer colour', { tags: ['equivalence'] }, () => {
     // 8 x 1: red at the left end, blue at the right end, empty between.
     const px = Array.from({ length: 8 }, (_, i) => (i === 0 ? [255, 0, 0, 255] : i === 7 ? [0, 0, 255, 255] : [0, 0, 0, 0]));
     const out = pullPushFill(rgba(...px), 8, 1);
@@ -52,17 +56,21 @@ describe('pull-push fill', () => {
     expect(pixel(out, 7)).toEqual([0, 0, 255, 255]);
   });
 
-  it('continues the edge colour next to the content instead of the average of the whole picture', { tags: ['boundary'] }, () => {
-    // 8 x 2: red in the first column, blue in the last, empty between. The pixel beside the red one stays red.
-    const row = Array.from({ length: 8 }, (_, i) => (i === 0 ? [255, 0, 0, 255] : i === 7 ? [0, 0, 255, 255] : [0, 0, 0, 0]));
-    const out = pullPushFill(rgba(...row, ...row), 8, 2);
-    const [r, , b] = pixel(out, 1) as [number, number, number, number];
-    // A plain average of the coarse levels gave about [226, 0, 29] here.
-    expect(r).toBeGreaterThan(232);
-    expect(b).toBeLessThan(20);
-  });
+  it(
+    'continues the edge colour next to the content instead of the average of the whole picture',
+    { tags: ['regression', 'boundary'] },
+    () => {
+      // 8 x 2: red in the first column, blue in the last, empty between. The pixel beside the red one stays red.
+      const row = Array.from({ length: 8 }, (_, i) => (i === 0 ? [255, 0, 0, 255] : i === 7 ? [0, 0, 255, 255] : [0, 0, 0, 0]));
+      const out = pullPushFill(rgba(...row, ...row), 8, 2);
+      const [r, , b] = pixel(out, 1) as [number, number, number, number];
+      // A plain average of the coarse levels gave about [226, 0, 29] here.
+      expect(r).toBeGreaterThan(232);
+      expect(b).toBeLessThan(20);
+    },
+  );
 
-  it('leaves a picture without holes as it is and an empty one black', { tags: ['boundary', 'state-transition'] }, () => {
+  it('leaves a picture without holes as it is and an empty one black', { tags: ['boundary', 'condition'] }, () => {
     const full = rgba([10, 20, 30, 255], [40, 50, 60, 255], [70, 80, 90, 255]);
     expect(Array.from(pullPushFill(full, 3, 1))).toEqual(Array.from(full));
     expect(Array.from(pullPushFill(rgba([5, 5, 5, 0], [5, 5, 5, 0]), 2, 1))).toEqual([0, 0, 0, 255, 0, 0, 0, 255]);

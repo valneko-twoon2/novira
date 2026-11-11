@@ -6,15 +6,15 @@ const root = resolve(__dirname, '..');
 
 // The build leaves `public/` out (`copyPublicDir: false`), so an icon the page names there never reaches `dist/` and the
 // tab of the browser version stays without one. Icons are source files that Vite emits under `assets/`.
-describe('page icons', () => {
+describe('page icons', { tags: [] }, () => {
   const page = readFileSync(resolve(root, 'index.html'), 'utf8');
   const hrefs = [...page.matchAll(/<link rel="(?:icon|apple-touch-icon)"[^>]*href="([^"]+)"/g)].map((m) => m[1]!);
 
-  it('names a tab icon and a home-screen icon', { tags: ['condition', 'static'] }, () => {
+  it('names a tab icon and a home-screen icon', { tags: ['static', 'boundary'] }, () => {
     expect(hrefs).toHaveLength(2);
   });
 
-  it.each(hrefs)('%s is a source file, not a file of public/', { tags: ['condition', 'static'] }, (href) => {
+  it.each(hrefs)('%s is a source file, not a file of public/', { tags: ['static', 'regression'] }, (href) => {
     expect(href.startsWith('/src/')).toBe(true);
     expect(existsSync(resolve(root, href.slice(1)))).toBe(true);
   });

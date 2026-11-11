@@ -28,8 +28,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('useZoomPan', () => {
-  it('starts fitted and centered with the viewer padding', { tags: ['condition'] }, () => {
+describe('useZoomPan', { tags: [] }, () => {
+  it('starts fitted and centered with the viewer padding', { tags: ['equivalence'] }, () => {
     render(<Harness content={{ width: 1000, height: 500 }} resetKey="a" />);
     expect(zoom.stage).toEqual(STAGE);
     expect(zoom.fitted).toBe(true);
@@ -40,7 +40,7 @@ describe('useZoomPan', () => {
     expect(zoom.grab).toBe(false);
   });
 
-  it('zooms with the wheel keeping the point under the cursor fixed (Ctrl+wheel and pinch alike)', { tags: ['condition'] }, () => {
+  it('zooms with the wheel keeping the point under the cursor fixed (Ctrl+wheel and pinch alike)', { tags: ['equivalence'] }, () => {
     render(<Harness content={{ width: 1000, height: 1000 }} resetKey="a" />);
     const anchor = { x: 250, y: 150 };
     const before = zoom.view;
@@ -98,7 +98,7 @@ describe('useZoomPan', () => {
     fireEvent.pointerUp(surface(), { pointerId: 2 });
   });
 
-  it('pans with Space+drag or the middle button when the left button belongs to something else', { tags: ['condition'] }, () => {
+  it('pans with Space+drag or the middle button when the left button belongs to something else', { tags: ['decision-table'] }, () => {
     render(<Harness content={{ width: 1000, height: 1000 }} resetKey="a" leftButtonPans={false} />);
     key('1', { ctrlKey: true });
     const start = zoom.view;
@@ -124,24 +124,28 @@ describe('useZoomPan', () => {
     expect(zoom.grab).toBe(false);
   });
 
-  it('follows the canvas zoom hotkeys: Ctrl+1, plus / minus, Ctrl+0 (Ctrl with plus / minus zooms the whole app)', { tags: ['condition'] }, () => {
-    render(<Harness content={{ width: 1000, height: 1000 }} resetKey="a" />);
-    const fit = zoom.view.scale;
-    key('1', { ctrlKey: true });
-    expect(zoom.view.scale).toBe(1);
-    key('=', { ctrlKey: true });
-    expect(zoom.view.scale).toBe(1);
-    key('=');
-    expect(zoom.view.scale).toBe(1.25);
-    key('-');
-    key('-');
-    expect(zoom.view.scale).toBe(0.75);
-    key('0', { ctrlKey: true });
-    expect(zoom.fitted).toBe(true);
-    expect(zoom.view.scale).toBeCloseTo(fit);
-  });
+  it(
+    'follows the canvas zoom hotkeys: Ctrl+1, plus / minus, Ctrl+0 (Ctrl with plus / minus zooms the whole app)',
+    { tags: ['equivalence'] },
+    () => {
+      render(<Harness content={{ width: 1000, height: 1000 }} resetKey="a" />);
+      const fit = zoom.view.scale;
+      key('1', { ctrlKey: true });
+      expect(zoom.view.scale).toBe(1);
+      key('=', { ctrlKey: true });
+      expect(zoom.view.scale).toBe(1);
+      key('=');
+      expect(zoom.view.scale).toBe(1.25);
+      key('-');
+      key('-');
+      expect(zoom.view.scale).toBe(0.75);
+      key('0', { ctrlKey: true });
+      expect(zoom.fitted).toBe(true);
+      expect(zoom.view.scale).toBeCloseTo(fit);
+    },
+  );
 
-  it('toggles fit and 100% at the double-clicked point', { tags: ['condition'] }, () => {
+  it('toggles fit and 100% at the double-clicked point', { tags: ['state-transition'] }, () => {
     render(<Harness content={{ width: 1000, height: 1000 }} resetKey="a" />);
     const fitted = zoom.view;
     const anchor = { x: 210, y: 140 };
@@ -155,14 +159,14 @@ describe('useZoomPan', () => {
     expect(zoom.view).toEqual(fitted);
   });
 
-  it('goes to 200% on double-click when the fit is already 100%', { tags: ['condition'] }, () => {
+  it('goes to 200% on double-click when the fit is already 100%', { tags: ['boundary'] }, () => {
     render(<Harness content={{ width: 368, height: 100 }} resetKey="a" />);
     expect(zoom.view.scale).toBeCloseTo(1);
     fireEvent.doubleClick(surface(), { clientX: 200, clientY: 150 });
     expect(zoom.view.scale).toBe(2);
   });
 
-  it('resets to fit when the image changes, also when going back to an earlier one', { tags: ['condition'] }, () => {
+  it('resets to fit when the image changes, also when going back to an earlier one', { tags: ['state-transition'] }, () => {
     const { rerender } = render(<Harness content={{ width: 1000, height: 1000 }} resetKey="a" />);
     const fitA = zoom.view;
     key('1', { ctrlKey: true });
@@ -175,7 +179,7 @@ describe('useZoomPan', () => {
     expect(zoom.view).toEqual(fitA);
   });
 
-  it('stops listening once unmounted', { tags: ['condition'] }, () => {
+  it('stops listening once unmounted', { tags: ['state-transition'] }, () => {
     const { unmount } = render(<Harness content={{ width: 1000, height: 1000 }} resetKey="a" />);
     const el = surface();
     const view = zoom.view;

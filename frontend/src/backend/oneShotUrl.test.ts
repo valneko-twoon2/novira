@@ -14,8 +14,8 @@ afterEach(() => vi.restoreAllMocks());
 
 const blob = () => new Blob(['x']);
 
-describe('one-shot URLs', () => {
-  it('revokes a URL it made once, and leaves any other URL alone', { tags: ['condition'] }, () => {
+describe('one-shot URLs', { tags: [] }, () => {
+  it('revokes a URL it made once, and leaves any other URL alone', { tags: ['state-transition'] }, () => {
     const before = oneShotUrlCount();
     const url = oneShotUrl(blob());
     expect(oneShotUrlCount()).toBe(before + 1);
@@ -28,7 +28,7 @@ describe('one-shot URLs', () => {
     expect(revoke).toHaveBeenCalledTimes(1);
   });
 
-  it('stores a one-shot URL once and gives the same answer when it is named again', { tags: ['condition'] }, async () => {
+  it('stores a one-shot URL once and gives the same answer when it is named again', { tags: ['state-transition'] }, async () => {
     const url = oneShotUrl(blob());
     const save = vi.fn(async () => {
       releaseOneShotUrl(url);
@@ -52,23 +52,27 @@ describe('one-shot URLs', () => {
   });
 });
 
-describe('layer URLs', () => {
+describe('layer URLs', { tags: [] }, () => {
   const later = () => Date.now() + LAYER_URL_GRACE_MS + 1;
 
-  it('revokes a URL no canvas uses any more, but not a new one (it is put into a layer a moment later)', { tags: ['condition'] }, () => {
-    const base = layerUrlCount();
-    const a = layerUrl(blob());
-    const b = layerUrl(blob());
-    expect(layerUrlCount()).toBe(base + 2);
-    expect(holdLayerUrls('c1', new Set([b]))).toBe(0);
-    expect(revoke).not.toHaveBeenCalled();
-    expect(holdLayerUrls('c1', new Set([b]), later())).toBe(1);
-    expect(revoke).toHaveBeenCalledWith(a);
-    expect(revoke).not.toHaveBeenCalledWith(b);
-    expect(layerUrlCount()).toBe(base + 1);
-    expect(holdLayerUrls('c1', new Set(), later())).toBe(1);
-    expect(revoke).toHaveBeenCalledWith(b);
-  });
+  it(
+    'revokes a URL no canvas uses any more, but not a new one (it is put into a layer a moment later)',
+    { tags: ['state-transition', 'boundary'] },
+    () => {
+      const base = layerUrlCount();
+      const a = layerUrl(blob());
+      const b = layerUrl(blob());
+      expect(layerUrlCount()).toBe(base + 2);
+      expect(holdLayerUrls('c1', new Set([b]))).toBe(0);
+      expect(revoke).not.toHaveBeenCalled();
+      expect(holdLayerUrls('c1', new Set([b]), later())).toBe(1);
+      expect(revoke).toHaveBeenCalledWith(a);
+      expect(revoke).not.toHaveBeenCalledWith(b);
+      expect(layerUrlCount()).toBe(base + 1);
+      expect(holdLayerUrls('c1', new Set(), later())).toBe(1);
+      expect(revoke).toHaveBeenCalledWith(b);
+    },
+  );
 
   it('keeps a URL another canvas still holds', { tags: ['condition'] }, () => {
     const shared = layerUrl(blob());

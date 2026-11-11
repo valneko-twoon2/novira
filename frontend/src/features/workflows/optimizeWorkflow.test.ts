@@ -28,8 +28,8 @@ beforeEach(() => {
 });
 afterEach(() => vi.useRealTimers());
 
-describe('optimizeWorkflow', () => {
-  it('applies the optimization as one undo step and reports what changed', { tags: ['boundary', 'state-transition'] }, () => {
+describe('optimizeWorkflow', { tags: [] }, () => {
+  it('applies the optimization as one undo step and reports what changed', { tags: ['state-transition'] }, () => {
     messyGraph();
     const summary = optimizeWorkflow();
     expect(summary).toMatchObject({ merged: 1, removed: 2, edgesRemoved: 1 });
@@ -43,7 +43,7 @@ describe('optimizeWorkflow', () => {
     expect(ids()).toEqual(['img1', 'save']);
   });
 
-  it('says so and saves no undo step when there is nothing to optimize', { tags: ['boundary', 'state-transition'] }, () => {
+  it('says so and saves no undo step when there is nothing to optimize', { tags: ['boundary'] }, () => {
     messyGraph();
     optimizeWorkflow();
     const past = w().past.length;
@@ -52,7 +52,7 @@ describe('optimizeWorkflow', () => {
     expect(toasts().at(-1)).toMatchObject({ status: 'info', title: t('workflows.optimize.nothing') });
   });
 
-  it('the automatic run keeps unconnected nodes and stays quiet when it only moves nodes', { tags: ['state-transition'] }, () => {
+  it('the automatic run keeps unconnected nodes and stays quiet when it only moves nodes', { tags: ['condition'] }, () => {
     // img2 duplicates img1 but is not wired yet: the user may still be setting it up.
     load([node('image', 'img1', { image: 'a.png' }), node('image', 'img2', { image: 'a.png' }), node('save_image', 'save'), node('integer', 'lonely')], [
       makeEdge('img1', 'image', 'save', 'image'),
@@ -65,7 +65,7 @@ describe('optimizeWorkflow', () => {
   });
 });
 
-describe('startAutoOptimize', () => {
+describe('startAutoOptimize', { tags: [] }, () => {
   const twoLoaders = () =>
     load([
       node('main_model_loader', 'm1', { model: 'x' }),
@@ -74,7 +74,7 @@ describe('startAutoOptimize', () => {
       node('compel', 'neg', { prompt: 'b' }),
     ]);
 
-  it('re-optimizes a moment after a connection is made', { tags: ['condition'] }, () => {
+  it('re-optimizes a moment after a connection is made', { tags: ['boundary', 'state-transition'] }, () => {
     vi.useFakeTimers();
     twoLoaders();
     const stop = startAutoOptimize();
@@ -112,7 +112,7 @@ describe('startAutoOptimize', () => {
     stop();
   });
 
-  it('does nothing while the setting is off, and stops when asked', { tags: ['boundary', 'state-transition'] }, () => {
+  it('does nothing while the setting is off, and stops when asked', { tags: ['condition'] }, () => {
     vi.useFakeTimers();
     twoLoaders();
     w().setSettings({ autoTidy: false });
@@ -128,7 +128,7 @@ describe('startAutoOptimize', () => {
     expect(ids()).toContain('m2');
   });
 
-  it('a waiting run is dropped when another graph is opened', { tags: ['condition'] }, () => {
+  it('a waiting run is dropped when another graph is opened', { tags: ['state-transition'] }, () => {
     vi.useFakeTimers();
     twoLoaders();
     const stop = startAutoOptimize();

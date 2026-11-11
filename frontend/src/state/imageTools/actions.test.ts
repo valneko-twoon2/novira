@@ -36,7 +36,7 @@ describe('quickRunTool', () => {
     expect(startToolRun).toHaveBeenCalledWith('caption', 'photo.png');
   });
 
-  it('waits for a node list another caller is already reading', { tags: ['condition'] }, async () => {
+  it('waits for a node list another caller is already reading', { tags: ['state-transition'] }, async () => {
     let answer!: (defs: ComfyNodeDefs) => void;
     useComfyNodes.setState({ defs: null, status: 'idle' });
     vi.spyOn(backend, 'nodeDefs').mockReturnValue(new Promise((resolve) => (answer = resolve)));
@@ -49,7 +49,7 @@ describe('quickRunTool', () => {
     expect(startToolRun).toHaveBeenCalledWith('cutout', 'photo.png');
   });
 
-  it('opens the band on the settings instead of running when a pack is missing', { tags: ['error-guessing'] }, async () => {
+  it('opens the band on the settings instead of running when a pack is missing', { tags: ['condition'] }, async () => {
     const { RMBG: _gone, ...defs } = all;
     useComfyNodes.setState({ defs, status: 'ready' });
     await quickRunTool('cutout', 'photo.png');
@@ -59,7 +59,7 @@ describe('quickRunTool', () => {
 });
 
 describe('the settings and the toolbar toggle', () => {
-  it('opens the settings without running, showing the picture unless asked not to', { tags: ['state-transition'] }, () => {
+  it('opens the settings without running, showing the picture unless asked not to', { tags: ['condition'] }, () => {
     useComfyNodes.setState({ defs: all, status: 'ready' });
     openToolSettings('facefix', 'photo.png');
     expect(viewer.showPicture).toHaveBeenCalledTimes(1);
@@ -69,7 +69,7 @@ describe('the settings and the toolbar toggle', () => {
     expect(startToolRun).not.toHaveBeenCalled();
   });
 
-  it('closes the band when it already shows the tool, and switches it to the tool otherwise', { tags: ['scenario'] }, () => {
+  it('closes the band when it already shows the tool, and switches it to the tool otherwise', { tags: ['state-transition'] }, () => {
     useComfyNodes.setState({ defs: all, status: 'ready' });
     toggleToolBand('caption', 'photo.png');
     expect(useToolBand.getState()).toMatchObject({ open: true, tool: 'caption' });

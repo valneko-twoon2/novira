@@ -101,7 +101,7 @@ const event: fc.Arbitrary<{ at: number; e: BackendEvent }> = fc
   .map(([at, e]) => ({ at, e }));
 
 describe('backend event reducers (properties)', () => {
-  it('keep the stores consistent for any event sequence', { tags: ['condition'] }, () => {
+  it('keep the stores consistent for any event sequence', { tags: ['state-transition', 'error-guessing'] }, () => {
     check(
       fc.property(fc.array(event, { maxLength: 60 }), (events) => {
         useQueue.setState({ items: [], progress: null });

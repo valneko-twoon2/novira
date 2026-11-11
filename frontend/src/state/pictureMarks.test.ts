@@ -37,24 +37,28 @@ describe('picture marks of a notification', () => {
     expect(marks[0]).toBe('data:128x64');
   });
 
-  it('leaves out a picture that does not load, and keeps the others', { tags: ['condition'] }, async () => {
+  it('leaves out a picture that does not load, and keeps the others', { tags: ['error-guessing'] }, async () => {
     fakeImages((src) => src.endsWith('bad'));
     expect(await keepMarks([picture('bad'), picture('good')])).toEqual(['data:128x64']);
   });
 
-  it('gives up on a picture that never loads, so the notification does not wait for it', { tags: ['condition'] }, async () => {
-    vi.useFakeTimers();
-    vi.stubGlobal(
-      'Image',
-      class {
-        set src(_: string) {}
-      },
-    );
-    const pending = keepMarks([picture('slow')]);
-    await vi.advanceTimersByTimeAsync(1500);
-    expect(await pending).toEqual([]);
-    vi.useRealTimers();
-  });
+  it(
+    'gives up on a picture that never loads, so the notification does not wait for it',
+    { tags: ['error-guessing', 'boundary'] },
+    async () => {
+      vi.useFakeTimers();
+      vi.stubGlobal(
+        'Image',
+        class {
+          set src(_: string) {}
+        },
+      );
+      const pending = keepMarks([picture('slow')]);
+      await vi.advanceTimersByTimeAsync(1500);
+      expect(await pending).toEqual([]);
+      vi.useRealTimers();
+    },
+  );
 
   it('uses the addresses of pictures that are still in the gallery as they are', { tags: ['condition'] }, () => {
     expect(liveMarks([picture('a'), picture('b', '')])).toEqual(['thumb/a']);

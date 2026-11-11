@@ -121,7 +121,7 @@ fn max_diff(a: &DynamicImage, b: &DynamicImage) -> u8 {
         .unwrap_or(0)
 }
 
-// tags: boundary
+// tags: boundary, error-guessing
 #[test]
 fn an_export_has_the_requested_size_and_never_enlarges() {
     check(
@@ -202,7 +202,7 @@ fn exporting_twice_to_a_smaller_size_keeps_the_proportion_of_exporting_once() {
     );
 }
 
-// tags: condition
+// tags: equivalence, error-guessing
 #[test]
 fn exporting_the_same_picture_twice_gives_the_same_bytes() {
     check(
@@ -221,7 +221,7 @@ fn exporting_the_same_picture_twice_gives_the_same_bytes() {
     );
 }
 
-// tags: decision-table
+// tags: equivalence, error-guessing
 #[test]
 fn a_lossless_export_without_resizing_keeps_every_pixel() {
     check((pic(), lossless()), |(p, format)| {
@@ -239,7 +239,7 @@ fn a_lossless_export_without_resizing_keeps_every_pixel() {
     });
 }
 
-// tags: boundary
+// tags: equivalence
 #[test]
 fn the_lossless_formats_resize_to_the_same_pixels() {
     check((pic(), prop::option::of(16u32..100)), |(p, max)| {
@@ -283,7 +283,7 @@ fn leaving_out_the_settings_changes_no_pixel_and_keeping_them_keeps_the_text() {
     );
 }
 
-// tags: condition
+// tags: equivalence, error-guessing
 #[test]
 fn a_mirrored_picture_exports_to_the_mirrored_export() {
     // Resampling with a symmetric filter commutes with mirroring; one level of rounding is allowed, no more.
@@ -303,7 +303,7 @@ fn a_mirrored_picture_exports_to_the_mirrored_export() {
     });
 }
 
-// tags: condition
+// tags: boundary
 #[test]
 fn the_best_jpeg_quality_is_no_further_from_the_original_than_the_worst() {
     // Only the two ends are compared and only on a picture of some size: JPEG is not monotone between close
@@ -357,7 +357,7 @@ fn flatten(img: &DynamicImage) -> RgbImage {
     })
 }
 
-// tags: condition
+// tags: boundary
 #[test]
 fn a_stored_thumbnail_fits_the_box_and_keeps_the_proportion() {
     let dir = tempfile::tempdir().unwrap();
@@ -397,7 +397,7 @@ fn a_stored_thumbnail_fits_the_box_and_keeps_the_proportion() {
     );
 }
 
-// tags: condition
+// tags: equivalence, error-guessing
 #[test]
 fn a_text_chunk_round_trips_and_leaves_the_pixels_and_other_keys_alone() {
     check(
@@ -427,7 +427,7 @@ fn a_text_chunk_round_trips_and_leaves_the_pixels_and_other_keys_alone() {
     );
 }
 
-// tags: condition
+// tags: equivalence, error-guessing
 #[test]
 fn turning_any_accepted_picture_into_png_keeps_its_pixels_and_a_png_stays_the_same_bytes() {
     check(

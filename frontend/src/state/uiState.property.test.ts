@@ -13,7 +13,7 @@ const entries = fc.dictionary(key, fc.string({ maxLength: 30 }), { maxKeys: 8 })
 const dump = (s: Storage) => Object.fromEntries(Array.from({ length: s.length }, (_, i) => [s.key(i)!, s.getItem(s.key(i)!)]));
 
 describe('saved screen state (properties)', () => {
-  it('collect carries exactly the prefixed keys and apply restores them (round trip)', { tags: ['boundary'] }, () => {
+  it('collect carries exactly the prefixed keys and apply restores them (round trip)', { tags: ['equivalence'] }, () => {
     check(
       fc.property(entries, entries, (before, other) => {
         const source = memoryStorage(before);
@@ -30,28 +30,32 @@ describe('saved screen state (properties)', () => {
     );
   });
 
-  it('applyUiState of arbitrary text throws without changing anything, or writes only prefixed text values', { tags: ['error-guessing'] }, () => {
-    check(
-      fc.property(fc.oneof(junkStored, junkJson.map((v) => JSON.stringify(v))), entries, (text, initial) => {
-        const storage = memoryStorage(initial);
-        const before = dump(storage);
-        let count: number;
-        try {
-          count = applyUiState(text, storage);
-        } catch {
-          expect(dump(storage)).toEqual(before);
-          return;
-        }
-        const after = dump(storage);
-        const prefixed = Object.keys(after).filter((k) => k.startsWith(PERSIST_PREFIX));
-        expect(prefixed.length).toBe(count);
-        for (const k of Object.keys(after)) expect(typeof after[k]).toBe('string');
-        for (const [k, v] of Object.entries(before)) if (!k.startsWith(PERSIST_PREFIX)) expect(after[k]).toBe(v);
-      }),
-    );
-  });
+  it(
+    'applyUiState of arbitrary text throws without changing anything, or writes only prefixed text values',
+    { tags: ['error-guessing'] },
+    () => {
+      check(
+        fc.property(fc.oneof(junkStored, junkJson.map((v) => JSON.stringify(v))), entries, (text, initial) => {
+          const storage = memoryStorage(initial);
+          const before = dump(storage);
+          let count: number;
+          try {
+            count = applyUiState(text, storage);
+          } catch {
+            expect(dump(storage)).toEqual(before);
+            return;
+          }
+          const after = dump(storage);
+          const prefixed = Object.keys(after).filter((k) => k.startsWith(PERSIST_PREFIX));
+          expect(prefixed.length).toBe(count);
+          for (const k of Object.keys(after)) expect(typeof after[k]).toBe('string');
+          for (const [k, v] of Object.entries(before)) if (!k.startsWith(PERSIST_PREFIX)) expect(after[k]).toBe(v);
+        }),
+      );
+    },
+  );
 
-  it('readUiState gives what collecting the state as JSON and parsing it back gives', { tags: ['condition'] }, () => {
+  it('readUiState gives what collecting the state as JSON and parsing it back gives', { tags: ['error-guessing', 'boundary'] }, () => {
     // Any UTF-16 unit: control characters, quotes, backslashes and lone surrogates are escaped in JSON.
     const text = fc.string({ unit: fc.integer({ min: 0, max: 0xffff }).map((c) => String.fromCharCode(c)), maxLength: 40 });
     const anyKey = fc.oneof(key, fc.integer({ min: 190, max: 210 }).map((n) => `${PERSIST_PREFIX}${'k'.repeat(n)}`));

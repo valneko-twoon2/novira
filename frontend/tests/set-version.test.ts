@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- a plain .mjs tool without types
 import { isVersion, withCargoVersion, withPackageVersion } from '../../scripts/tools/set-version.mjs';
 
-describe('set-version', () => {
-  it('takes a version both Cargo and npm accept', { tags: ['equivalence'] }, () => {
+describe('set-version', { tags: [] }, () => {
+  it('takes a version both Cargo and npm accept', { tags: ['equivalence', 'boundary'] }, () => {
     for (const ok of ['0.1.0', '1.20.3', '0.2.0-beta.1', '1.0.0-rc-1']) expect(isVersion(ok), ok).toBe(true);
     for (const bad of ['', '1', '1.2', '01.2.3', '1.2.3.4', 'v1.2.3', '1.2.3-', '1.2.3+build', '1.2.3-beta..1', 'a.b.c', ' 1.2.3'])
       expect(isVersion(bad), bad).toBe(false);

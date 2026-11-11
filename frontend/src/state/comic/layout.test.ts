@@ -10,22 +10,26 @@ function overlap(a: Box, b: Box): number {
   return w > 0 && h > 0 ? w * h : 0;
 }
 
-describe('the automatic layout of a page', () => {
-  it.each(Array.from({ length: MAX_PANELS_PER_PAGE }, (_, i) => i + 1))('gives %i panels, inside the page and clear of each other', { tags: ['boundary'] }, (count) => {
-    const boxes = layoutFor(count);
-    expect(boxes).toHaveLength(count);
-    for (const b of boxes) {
-      expect(b.width).toBeGreaterThan(0);
-      expect(b.height).toBeGreaterThan(0);
-      expect(b.x).toBeGreaterThanOrEqual(0.04 - EPS);
-      expect(b.x + b.width).toBeLessThanOrEqual(0.96 + EPS);
-      expect(b.y * PAGE_ASPECT).toBeGreaterThanOrEqual(0.04 - EPS);
-      expect((b.y + b.height) * PAGE_ASPECT).toBeLessThanOrEqual(PAGE_ASPECT - 0.04 + EPS);
-    }
-    for (let i = 0; i < boxes.length; i++) {
-      for (let j = i + 1; j < boxes.length; j++) expect(overlap(boxes[i]!, boxes[j]!)).toBe(0);
-    }
-  });
+describe('the automatic layout of a page', { tags: [] }, () => {
+  it.each(Array.from({ length: MAX_PANELS_PER_PAGE }, (_, i) => i + 1))(
+    'gives %i panels, inside the page and clear of each other',
+    { tags: ['equivalence', 'boundary'] },
+    (count) => {
+      const boxes = layoutFor(count);
+      expect(boxes).toHaveLength(count);
+      for (const b of boxes) {
+        expect(b.width).toBeGreaterThan(0);
+        expect(b.height).toBeGreaterThan(0);
+        expect(b.x).toBeGreaterThanOrEqual(0.04 - EPS);
+        expect(b.x + b.width).toBeLessThanOrEqual(0.96 + EPS);
+        expect(b.y * PAGE_ASPECT).toBeGreaterThanOrEqual(0.04 - EPS);
+        expect((b.y + b.height) * PAGE_ASPECT).toBeLessThanOrEqual(PAGE_ASPECT - 0.04 + EPS);
+      }
+      for (let i = 0; i < boxes.length; i++) {
+        for (let j = i + 1; j < boxes.length; j++) expect(overlap(boxes[i]!, boxes[j]!)).toBe(0);
+      }
+    },
+  );
 
   it('keeps a gutter between panels: no two boxes touch', { tags: ['condition'] }, () => {
     const boxes = layoutFor(4);
@@ -35,7 +39,7 @@ describe('the automatic layout of a page', () => {
     expect(c.y - (a.y + a.height)).toBeGreaterThan(0.015 / PAGE_ASPECT);
   });
 
-  it('puts the first panel at the top left, in reading order', { tags: ['condition'] }, () => {
+  it('puts the first panel at the top left, in reading order', { tags: ['equivalence'] }, () => {
     const boxes = layoutFor(3);
     expect(boxes[0]!.x).toBeLessThan(boxes[1]!.x + EPS);
     expect(boxes[0]!.y).toBeLessThan(boxes[1]!.y);
@@ -55,15 +59,15 @@ describe('the automatic layout of a page', () => {
     expect(layoutFor(2.7)).toHaveLength(2);
   });
 
-  it('gives an odd last panel of the grid the full width of its row', { tags: ['error-guessing'] }, () => {
+  it('gives an odd last panel of the grid the full width of its row', { tags: ['boundary'] }, () => {
     const boxes = layoutFor(7);
     const last = boxes[6]!;
     expect(last.width).toBeCloseTo(0.92, 9);
   });
 });
 
-describe('the picture size of a panel', () => {
-  it('draws about one megapixel, in steps of 64, in the shape of the panel', { tags: ['condition'] }, () => {
+describe('the picture size of a panel', { tags: [] }, () => {
+  it('draws about one megapixel, in steps of 64, in the shape of the panel', { tags: ['equivalence'] }, () => {
     const square = { x: 0, y: 0, width: 0.5, height: 0.5 / PAGE_ASPECT };
     const { width, height } = panelPixels(square);
     expect(width % 64).toBe(0);
@@ -79,7 +83,7 @@ describe('the picture size of a panel', () => {
     expect(wide.width).toBeGreaterThan(wide.height);
   });
 
-  it('never goes below 256 or above 2048 on a side', { tags: ['error-guessing', 'boundary'] }, () => {
+  it('never goes below 256 or above 2048 on a side', { tags: ['boundary'] }, () => {
     const thin = panelPixels({ x: 0, y: 0, width: 0.01, height: 1 });
     expect(thin.width).toBeGreaterThanOrEqual(256);
     expect(thin.height).toBeLessThanOrEqual(2048);
@@ -89,8 +93,8 @@ describe('the picture size of a panel', () => {
   });
 });
 
-describe('the edge the frame of a panel is drawn along', () => {
-  it('is the rectangle a panel of the automatic layout is drawn as, inside the gutter', { tags: ['condition'] }, () => {
+describe('the edge the frame of a panel is drawn along', { tags: [] }, () => {
+  it('is the rectangle a panel of the automatic layout is drawn as, inside the gutter', { tags: ['equivalence'] }, () => {
     const page = emptyPage(3);
     frameOutlines(page).forEach((outline, i) => {
       const { box } = panelGeometry(page)[i]!;

@@ -50,7 +50,7 @@ beforeEach(() => {
 });
 afterEach(() => canvases.restore());
 
-describe('coverage', () => {
+describe('coverage', { tags: [] }, () => {
   it('is empty without raster content and measured on the composite otherwise', { tags: ['boundary'] }, async () => {
     install({ pixel: () => [0, 0, 0, 255] });
     expect(await canvasRenderer.coverage(doc([]))).toBe('empty');
@@ -58,7 +58,7 @@ describe('coverage', () => {
   });
 });
 
-describe('source and mask', () => {
+describe('source and mask', { tags: [] }, () => {
   const infill = { method: 'color' as const, color: '#808080' };
 
   it('sends the composite alone when nothing is to be redrawn', { tags: ['condition'] }, async () => {
@@ -67,7 +67,7 @@ describe('source and mask', () => {
     expect(out).toEqual({ initImageUrl: 'blob:1', maskImageUrl: null });
   });
 
-  it('sends a mask of the inpaint layers, the strongest redraw winning where they overlap', { tags: ['condition'] }, async () => {
+  it('sends a mask of the inpaint layers, the strongest redraw winning where they overlap', { tags: ['decision-table'] }, async () => {
     install();
     const out = await canvasRenderer.sourceAndMask(doc([raster('a'), inpaint('m1', 0.5), inpaint('m2')]), { outpaint: false, infill });
     expect(out.maskImageUrl).not.toBeNull();
@@ -76,25 +76,33 @@ describe('source and mask', () => {
     expect(maskCanvas.sets.filter((s) => s.name === 'fillStyle')[0]!.value).toBe('#000000');
   });
 
-  it('adds the transparent area to the mask and fills it with a colour for outpainting', { tags: ['condition'] }, async () => {
-    install({ pixel: () => [10, 10, 10, 0] });
-    const out = await canvasRenderer.sourceAndMask(doc([raster('a')]), { outpaint: true, infill });
-    expect(out.maskImageUrl).not.toBeNull();
-    const filled = canvases.all.find((r) => r.sets.some((s) => s.name === 'fillStyle' && s.value === '#808080'))!;
-    expect(filled.of('fillRect')).toHaveLength(1);
-    expect(filled.of('drawImage')).toHaveLength(1);
-  });
+  it(
+    'adds the transparent area to the mask and fills it with a colour for outpainting',
+    { tags: ['condition', 'decision-table'] },
+    async () => {
+      install({ pixel: () => [10, 10, 10, 0] });
+      const out = await canvasRenderer.sourceAndMask(doc([raster('a')]), { outpaint: true, infill });
+      expect(out.maskImageUrl).not.toBeNull();
+      const filled = canvases.all.find((r) => r.sets.some((s) => s.name === 'fillStyle' && s.value === '#808080'))!;
+      expect(filled.of('fillRect')).toHaveLength(1);
+      expect(filled.of('drawImage')).toHaveLength(1);
+    },
+  );
 
-  it('fills the transparent area from the surrounding colours for the other infill methods', { tags: ['condition'] }, async () => {
-    install({ pixel: (x) => (x < 20 ? [200, 50, 50, 255] : [0, 0, 0, 0]) });
-    const out = await canvasRenderer.sourceAndMask(doc([raster('a')]), { outpaint: true, infill: { method: 'lama', color: '#000000' } });
-    expect(out.initImageUrl).toMatch(/^blob:/);
-    expect(canvases.all.some((r) => r.of('putImageData').length > 0 && r.of('drawImage').length === 1)).toBe(true);
-  });
+  it(
+    'fills the transparent area from the surrounding colours for the other infill methods',
+    { tags: ['condition', 'decision-table'] },
+    async () => {
+      install({ pixel: (x) => (x < 20 ? [200, 50, 50, 255] : [0, 0, 0, 0]) });
+      const out = await canvasRenderer.sourceAndMask(doc([raster('a')]), { outpaint: true, infill: { method: 'lama', color: '#000000' } });
+      expect(out.initImageUrl).toMatch(/^blob:/);
+      expect(canvases.all.some((r) => r.of('putImageData').length > 0 && r.of('drawImage').length === 1)).toBe(true);
+    },
+  );
 });
 
-describe('regional masks', () => {
-  it('draws the region white on black at the bbox position', { tags: ['condition'] }, async () => {
+describe('regional masks', { tags: [] }, () => {
+  it('draws the region white on black at the bbox position', { tags: ['equivalence'] }, async () => {
     install();
     const layer = control('r');
     const url = await canvasRenderer.regionMask(doc([layer]), layer);
@@ -105,8 +113,8 @@ describe('regional masks', () => {
   });
 });
 
-describe('control images', () => {
-  it('draws the control layer on black at the bbox position', { tags: ['condition'] }, async () => {
+describe('control images', { tags: [] }, () => {
+  it('draws the control layer on black at the bbox position', { tags: ['equivalence'] }, async () => {
     install();
     const url = await canvasRenderer.controlImage(doc([control('c')]), control('c'));
     expect(url).toMatch(/^blob:/);
@@ -115,7 +123,7 @@ describe('control images', () => {
     expect(out.of('drawImage')).toHaveLength(1);
   });
 
-  it('uses the filter preview when there is one, and stays black for an empty layer', { tags: ['boundary'] }, async () => {
+  it('uses the filter preview when there is one, and stays black for an empty layer', { tags: ['condition', 'boundary'] }, async () => {
     install();
     const preview = { url: 'blob:p', x: 2, y: 3, width: 10, height: 10 };
     const layer = control('c');

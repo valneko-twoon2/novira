@@ -176,7 +176,7 @@ mod tests {
         assert!(matches!(err, EngineError::Failed(m) if m.contains("not installed by novira")));
     }
 
-    // tags: error-guessing, state-transition
+    // tags: state-transition, condition
     #[tokio::test]
     async fn changing_the_package_of_an_install_that_is_not_there_does_nothing() {
         let result = engine_not_installed_by_novira()

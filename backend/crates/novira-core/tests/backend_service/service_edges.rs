@@ -38,7 +38,7 @@ fn webp() -> ExportOptions {
     }
 }
 
-// tags: scenario
+// tags: equivalence
 #[tokio::test]
 async fn a_picture_is_exported_as_webp() {
     let dir = tempfile::tempdir().unwrap();
@@ -61,7 +61,7 @@ async fn a_picture_is_exported_as_webp() {
 }
 
 #[cfg(windows)]
-// tags: error-guessing, boundary
+// tags: error-guessing
 #[tokio::test]
 async fn a_copy_that_cannot_be_written_into_the_folder_says_so() {
     let dir = tempfile::tempdir().unwrap();
@@ -85,7 +85,7 @@ async fn a_copy_that_cannot_be_written_into_the_folder_says_so() {
     backend.shutdown();
 }
 
-// tags: error-guessing, boundary
+// tags: boundary, error-guessing
 #[tokio::test]
 async fn a_file_over_the_size_limit_is_refused_before_it_is_read() {
     let dir = tempfile::tempdir().unwrap();

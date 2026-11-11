@@ -61,7 +61,7 @@ impl Stopwatch {
 mod tests {
     use super::*;
 
-    // tags: condition
+    // tags: scenario
     #[test]
     fn laps_are_kept_in_order_and_summed_in_the_summary() {
         let mut watch = Stopwatch::start();

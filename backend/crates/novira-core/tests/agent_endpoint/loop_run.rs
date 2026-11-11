@@ -124,7 +124,7 @@ async fn arguments_that_break_the_schema_never_reach_the_handler() {
     assert!(tool_result(&chats[2].body, "d").contains("not valid JSON"));
 }
 
-// tags: error-guessing
+// tags: condition, error-guessing
 #[tokio::test]
 async fn reads_of_pictures_and_prompts_go_to_the_handler_marked_read_gated_and_a_decline_is_the_models_error(
 ) {
@@ -161,7 +161,7 @@ async fn reads_of_pictures_and_prompts_go_to_the_handler_marked_read_gated_and_a
     assert!(tool_result(&chats[1].body, "g").starts_with("Error: The user declined"));
 }
 
-// tags: error-guessing, boundary
+// tags: boundary, error-guessing
 #[tokio::test]
 async fn a_relayed_answer_over_the_cap_reaches_the_model_as_an_error() {
     let fake = Fake::start().await;
@@ -236,7 +236,7 @@ async fn a_model_that_stops_calling_after_the_cap_may_still_answer() {
     assert_eq!(handler.tools_seen().len(), 2);
 }
 
-// tags: boundary
+// tags: boundary, condition
 #[tokio::test]
 async fn a_server_that_read_only_part_of_the_first_request_is_reported_before_its_answer_is_used() {
     let fake = Fake::start().await;
@@ -308,7 +308,7 @@ async fn thinking_blocks_are_dropped_and_an_empty_answer_is_an_error() {
     );
 }
 
-// tags: error-guessing
+// tags: error-guessing, equivalence
 #[tokio::test]
 async fn a_server_that_rejects_tools_is_reported_as_such_and_other_errors_are_not() {
     let fake = Fake::start().await;

@@ -18,8 +18,8 @@ function picture(rows: string[]): { data: Uint8ClampedArray; width: number; heig
 }
 const count = (mask: Uint8Array) => mask.reduce((n, v) => n + v, 0);
 
-describe('floodFillRegion', () => {
-  it('fills the clear region up to the lines, and no further', { tags: ['condition'] }, () => {
+describe('floodFillRegion', { tags: [] }, () => {
+  it('fills the clear region up to the lines, and no further', { tags: ['equivalence'] }, () => {
     const { data, width, height } = picture(['..#..', '..#..', '..#..']);
     const left = floodFillRegion(data, width, height, 0, 0, 0)!;
     expect(count(left.mask)).toBe(6);
@@ -33,7 +33,7 @@ describe('floodFillRegion', () => {
     expect(count(floodFillRegion(data, width, height, 0, 0, 0)!.mask)).toBe(width * height - 2);
   });
 
-  it('does not leak through a diagonal gap (four-way connection)', { tags: ['condition'] }, () => {
+  it('does not leak through a diagonal gap (four-way connection)', { tags: ['condition', 'boundary'] }, () => {
     const { data, width, height } = picture(['.#.', '#..', '...']);
     expect(count(floodFillRegion(data, width, height, 0, 0, 0)!.mask)).toBe(1);
   });
@@ -44,7 +44,7 @@ describe('floodFillRegion', () => {
     expect(count(line.mask)).toBe(1);
   });
 
-  it('reads a tolerance per channel: near colours join, far ones do not', { tags: ['condition'] }, () => {
+  it('reads a tolerance per channel: near colours join, far ones do not', { tags: ['boundary', 'decision-table'] }, () => {
     const { data, width, height } = picture(['#p r']);
     // "#" (0,0,0) and "p" (20,20,20) are 20 apart: joined from tolerance 20 on.
     expect(count(floodFillRegion(data, width, height, 0, 0, 19)!.mask)).toBe(1);
@@ -59,7 +59,7 @@ describe('floodFillRegion', () => {
     expect(count(floodFillRegion(data, width, height, 0, 0, 0)!.mask)).toBe(3);
   });
 
-  it('is null outside the image', { tags: ['error-guessing'] }, () => {
+  it('is null outside the image', { tags: ['boundary', 'error-guessing'] }, () => {
     const { data, width, height } = picture(['..']);
     expect(floodFillRegion(data, width, height, -1, 0, 0)).toBeNull();
     expect(floodFillRegion(data, width, height, 2, 0, 0)).toBeNull();
@@ -76,8 +76,8 @@ describe('floodFillRegion', () => {
   });
 });
 
-describe('growRegion', () => {
-  it('adds the pixels next to the region, within the image', { tags: ['condition'] }, () => {
+describe('growRegion', { tags: [] }, () => {
+  it('adds the pixels next to the region, within the image', { tags: ['equivalence', 'boundary'] }, () => {
     const { data, width, height } = picture(['..#..', '..#..', '..#..']);
     const left = floodFillRegion(data, width, height, 0, 0, 0)!;
     const grown = growRegion(left, width, height);
@@ -94,7 +94,7 @@ describe('growRegion', () => {
   });
 });
 
-describe('regionPixels', () => {
+describe('regionPixels', { tags: [] }, () => {
   it('paints the region in the colour with its alpha, over a box as large as the bounds', { tags: ['boundary'] }, () => {
     const region = { mask: new Uint8Array([0, 1, 1, 0, 0, 1]), bounds: { x: 1, y: 0, width: 2, height: 2 } };
     const px = regionPixels(region, 3, { r: 1, g: 2, b: 3, a: 0.5 });

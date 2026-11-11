@@ -129,7 +129,7 @@ describe('persisted stores load arbitrary stored text (fuzz)', () => {
     });
   }
 
-  it('a text scene and the settings come back unchanged after save and load', { tags: ['condition'] }, async () => {
+  it('a text scene and the settings come back unchanged after save and load', { tags: ['equivalence'] }, async () => {
     const text = fc.string({ maxLength: 20 });
     await fc.assert(
       fc.asyncProperty(fc.array(fc.record({ text, x: fc.integer({ min: -500, max: 3000 }), y: fc.integer({ min: -500, max: 3000 }), vertical: fc.boolean() }), { maxLength: 5 }), fc.constantFrom('dark', 'light'), fc.integer({ min: 0, max: 500 }), async (layers, theme, delay) => {
@@ -160,7 +160,7 @@ describe('persisted stores load arbitrary stored text (fuzz)', () => {
     );
   });
 
-  it('really loads a valid saved state (so the cases above exercise the loader)', { tags: ['condition'] }, async () => {
+  it('really loads a valid saved state (so the cases above exercise the loader)', { tags: ['equivalence'] }, async () => {
     localStorage.setItem('novira.settings', JSON.stringify({ state: { theme: 'light' }, version: 0 }));
     await useSettings.persist.rehydrate();
     expect(useSettings.getState().theme).toBe('light');

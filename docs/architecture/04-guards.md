@@ -18,6 +18,7 @@
 | `frontend/tests/structure.test.ts` | `utils/`、`misc/`、`helpers/` フォルダ、もう要らないレイヤーの例外 |
 | `frontend/tests/generate-parity.test.ts` | 生成画面と違う部品でメインモデルを選ばせる画面（`Select` に名前で並べたもの。`ModelPicker` を使う） |
 | `frontend/tests/test-hygiene.test.ts` | `tests/*_live.rs` の外の `#[ignore]`、どのテストも書かないプロンプトのスナップショット（フロントと `comfy/__snapshots__/graph/`） |
+| `frontend/tests/test-tags.test.ts` | 設計技法のタグのないテスト、語彙にないタグ、`docs/tests/README.md` の件数表が今のソースと食い違うこと（`scripts/tools/test-tags.mjs --write` で直す） |
 | `comfy::node_defs_check`（`cargo test -p novira-core --lib` の中） | 本物の ComfyUI が拒むグラフ（未知のノードや入力、足りない入力、誤ったリンク、受け付けない選択肢や数値。`scripts/tools/comfy-node-defs.mjs` による `node-defs.json` に対して）。ファイル不足や実行時の失敗は止めない |
 | ESLint `frontend/scripts/eslint-security.mjs`、`cargo test -p novira --test security` | DOM への HTML の直接挿入、`eval`、`window.open`、緩めた CSP や capability、シェル経由の起動、値を整形して作る SQL、コミットされた秘密（詳細と限界は `.claude/rules/security.md`） |
 | stylelint | `tokens.css` の外の hex・`rgb()`・`hsl()` の色、`--radius-*` でない角丸、9 を超える z-index が `--z-*` でないこと |

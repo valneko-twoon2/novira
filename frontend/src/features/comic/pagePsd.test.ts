@@ -46,23 +46,27 @@ async function prepared(page: ComicPage): Promise<PreparedPage> {
   return { ...(await preparePage(page, urlOf)), width: 20, height: 30 };
 }
 
-describe('the layers of a page', () => {
-  it('are the paper, the backdrop, each panel, the frames and each balloon with words, bottom first', { tags: ['boundary'] }, async () => {
-    const layers = pageLayers(await prepared(samplePage()));
-    expect(layers.map((l) => l.name)).toEqual([
-      'Paper',
-      'Picture over the whole page',
-      'Panel 1',
-      'Panel 2',
-      'Frames',
-      'Balloon 1-1: Hello there, how…',
-      'Balloon 1-3: Wow',
-      'Balloon 2-1: ねえ 聞いて',
-    ]);
-    expect(layers.map((l) => l.part.kind)).toEqual(['paper', 'backdrop', 'panel', 'panel', 'frames', 'balloon', 'balloon', 'balloon']);
-  });
+describe('the layers of a page', { tags: [] }, () => {
+  it(
+    'are the paper, the backdrop, each panel, the frames and each balloon with words, bottom first',
+    { tags: ['equivalence', 'scenario'] },
+    async () => {
+      const layers = pageLayers(await prepared(samplePage()));
+      expect(layers.map((l) => l.name)).toEqual([
+        'Paper',
+        'Picture over the whole page',
+        'Panel 1',
+        'Panel 2',
+        'Frames',
+        'Balloon 1-1: Hello there, how…',
+        'Balloon 1-3: Wow',
+        'Balloon 2-1: ねえ 聞いて',
+      ]);
+      expect(layers.map((l) => l.part.kind)).toEqual(['paper', 'backdrop', 'panel', 'panel', 'frames', 'balloon', 'balloon', 'balloon']);
+    },
+  );
 
-  it('leave out the backdrop when the page has none, and the frames when no panel has one', { tags: ['state-transition'] }, async () => {
+  it('leave out the backdrop when the page has none, and the frames when no panel has one', { tags: ['condition'] }, async () => {
     const page = { ...samplePage(), backdrop: null, frameMm: 0, insetMm: 0, marginMm: 0 };
     const ready = await prepared(page);
     const names = pageLayers({ ...ready, panels: ready.panels.map((p) => ({ ...p, outline: null })) }).map((l) => l.name);
@@ -71,7 +75,7 @@ describe('the layers of a page', () => {
     expect(names.slice(0, 3)).toEqual(['Paper', 'Panel 1', 'Panel 2']);
   });
 
-  it('are named in the language of the app', { tags: ['condition'] }, async () => {
+  it('are named in the language of the app', { tags: ['decision-table'] }, async () => {
     setLocale('ja');
     const names = pageLayers(await prepared(samplePage())).map((l) => l.name);
     expect(names[0]).toBe('用紙');
@@ -79,21 +83,25 @@ describe('the layers of a page', () => {
     expect(names.at(-1)).toBe('吹き出し 2-1: ねえ 聞いて');
   });
 
-  it('show the start of a balloon\'s words on one line, without its marks', { tags: ['condition'] }, () => {
+  it('show the start of a balloon\'s words on one line, without its marks', { tags: ['equivalence'] }, () => {
     expect(firstWords('**Big**  《《news》》\nhere')).toBe('Big news here');
     expect(firstWords('あいうえおかきくけこさしすせそたち')).toBe('あいうえおかきくけこさしすせそた…');
   });
 });
 
-describe('the PSD of a page', () => {
-  it('has one layer per part, cut to what is drawn in it, and the whole page as its flattened picture', { tags: ['condition'] }, async () => {
-    const ready = await prepared(samplePage());
-    const doc = buildPagePsd(ready, 'none');
-    expect(doc.layers.map((l) => l.name)).toEqual(pageLayers(ready).map((l) => l.name));
-    for (const layer of doc.layers) expect(layer).toMatchObject({ left: 0, top: 0, width: 4, height: 3 });
-    expect(doc).toMatchObject({ width: 20, height: 30 });
-    expect(doc.composite.length).toBe(20 * 30 * 4);
-  });
+describe('the PSD of a page', { tags: [] }, () => {
+  it(
+    'has one layer per part, cut to what is drawn in it, and the whole page as its flattened picture',
+    { tags: ['scenario'] },
+    async () => {
+      const ready = await prepared(samplePage());
+      const doc = buildPagePsd(ready, 'none');
+      expect(doc.layers.map((l) => l.name)).toEqual(pageLayers(ready).map((l) => l.name));
+      for (const layer of doc.layers) expect(layer).toMatchObject({ left: 0, top: 0, width: 4, height: 3 });
+      expect(doc).toMatchObject({ width: 20, height: 30 });
+      expect(doc.composite.length).toBe(20 * 30 * 4);
+    },
+  );
 
   it('gives every layer the page\'s effect: the filter, then the paper tone over its pixels', { tags: ['decision-table'] }, async () => {
     const doc = buildPagePsd(await prepared(samplePage()), 'ebook');
@@ -104,7 +112,7 @@ describe('the PSD of a page', () => {
     expect([...doc.layers[0]!.pixels.subarray(0, 4)]).toEqual([0xf1, 0xee, 0xe6, 255]);
   });
 
-  it('draws the flattened picture the way the saved page is drawn', { tags: ['condition'] }, async () => {
+  it('draws the flattened picture the way the saved page is drawn', { tags: ['equivalence'] }, async () => {
     const ready = await prepared(samplePage());
     const flat = drawPage(ready, 'none');
     const pageCalls = canvases.of(flat).calls.map((c) => c.name);
@@ -115,7 +123,7 @@ describe('the PSD of a page', () => {
     expect(flatOfPsd.calls.map((c) => c.name).filter((n) => n !== 'getImageData')).toEqual(pageCalls);
   });
 
-  it('is a PSD file, and "export all pages" puts one per page into a ZIP', { tags: ['condition'], timeout: 30000 }, async () => {
+  it('is a PSD file, and "export all pages" puts one per page into a ZIP', { tags: ['scenario'], timeout: 30000 }, async () => {
     const page = { ...samplePage(), size: 'A5' as const };
     const bytes = await renderPagePsd(page, urlOf, 'mono');
     expect(String.fromCharCode(...bytes.subarray(0, 4))).toBe('8BPS');

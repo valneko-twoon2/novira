@@ -83,7 +83,7 @@ fn valid_name() -> impl Strategy<Value = String> {
         .prop_map(|(stem, ext)| format!("{stem}{ext}"))
 }
 
-// tags: boundary
+// tags: boundary, error-guessing
 #[test]
 fn any_board_name_becomes_one_safe_folder_name_and_settles() {
     check(any_text(), |name| {
@@ -137,7 +137,7 @@ fn a_file_name_gives_back_the_name_it_was_made_from() {
     });
 }
 
-// tags: state-transition, equivalence
+// tags: equivalence, error-guessing
 #[test]
 fn a_name_read_from_a_file_is_always_a_valid_name_the_file_ends_with() {
     check(any_text(), |file| {
@@ -149,7 +149,7 @@ fn a_name_read_from_a_file_is_always_a_valid_name_the_file_ends_with() {
     });
 }
 
-// tags: boundary
+// tags: equivalence
 #[test]
 fn a_picture_is_placed_in_one_folder_under_outputs_and_found_again_by_name() {
     check(
@@ -185,7 +185,7 @@ fn a_picture_is_placed_in_one_folder_under_outputs_and_found_again_by_name() {
     );
 }
 
-// tags: boundary
+// tags: condition
 #[test]
 fn a_place_of_an_unknown_board_falls_back_to_the_uncategorized_folder() {
     check((valid_name(), "[a-z]{1,8}"), |(name, id)| {
@@ -198,7 +198,7 @@ fn a_place_of_an_unknown_board_falls_back_to_the_uncategorized_folder() {
     });
 }
 
-// tags: error-guessing, state-transition
+// tags: boundary, condition
 #[test]
 fn unique_names_never_repeat_and_never_take_a_name_already_held() {
     check(
@@ -234,7 +234,7 @@ fn unique_names_never_repeat_and_never_take_a_name_already_held() {
     );
 }
 
-// tags: error-guessing
+// tags: error-guessing, condition
 #[test]
 fn writing_copies_never_overwrites_a_file_and_every_copy_keeps_its_bytes() {
     check_up_to(

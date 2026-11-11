@@ -71,7 +71,7 @@ test('a picture from the gallery is read as a pose and put on the canvas', { tag
   await expect(page.getByTestId('canvas-entity')).toHaveCount(1);
 });
 
-test('a ready-made pose from the pose tool puts a figure on a new control layer', { tag: ['@scenario'] }, async ({ page }) => {
+test('a ready-made pose from the pose tool puts a figure on a new control layer', { tag: ['@equivalence'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('tab-canvas').click();
   await page.getByTestId('canvas-tool-pose').click();
@@ -122,22 +122,26 @@ test('the 3D editor turns a pose to the side and applies it as a pose with depth
   await expect.poll(async () => Buffer.compare(await flat(), before) === 0).toBe(true);
 });
 
-test('a shape drawn with the lasso goes into the layer as one step that can be undone', { tag: ['@state-transition'] }, async ({ page }) => {
-  await openApp(page);
-  await page.getByTestId('tab-canvas').click();
-  await page.getByTestId('canvas-add-layer').click();
-  await page.getByRole('menuitem', { name: msg('canvas.add.inpaint') }).click();
-  await expect(page.getByTestId('canvas-entity')).toHaveCount(1);
-  await page.getByTestId('canvas-tool-lasso').click();
-  const box = (await page.getByTestId('canvas-stage').boundingBox())!;
-  const [cx, cy] = [box.x + box.width / 2, box.y + box.height / 2];
-  await page.mouse.move(cx - 60, cy + 40);
-  await page.mouse.down();
-  await page.mouse.move(cx, cy - 50, { steps: 6 });
-  await page.mouse.move(cx + 60, cy + 40, { steps: 6 });
-  await page.mouse.up();
-  // The shape is one history step: two undos remove it and then the layer itself.
-  await page.keyboard.press('Control+z');
-  await page.keyboard.press('Control+z');
-  await expect(page.getByTestId('canvas-entity')).toHaveCount(0);
-});
+test(
+  'a shape drawn with the lasso goes into the layer as one step that can be undone',
+  { tag: ['@state-transition'] },
+  async ({ page }) => {
+    await openApp(page);
+    await page.getByTestId('tab-canvas').click();
+    await page.getByTestId('canvas-add-layer').click();
+    await page.getByRole('menuitem', { name: msg('canvas.add.inpaint') }).click();
+    await expect(page.getByTestId('canvas-entity')).toHaveCount(1);
+    await page.getByTestId('canvas-tool-lasso').click();
+    const box = (await page.getByTestId('canvas-stage').boundingBox())!;
+    const [cx, cy] = [box.x + box.width / 2, box.y + box.height / 2];
+    await page.mouse.move(cx - 60, cy + 40);
+    await page.mouse.down();
+    await page.mouse.move(cx, cy - 50, { steps: 6 });
+    await page.mouse.move(cx + 60, cy + 40, { steps: 6 });
+    await page.mouse.up();
+    // The shape is one history step: two undos remove it and then the layer itself.
+    await page.keyboard.press('Control+z');
+    await page.keyboard.press('Control+z');
+    await expect(page.getByTestId('canvas-entity')).toHaveCount(0);
+  },
+);

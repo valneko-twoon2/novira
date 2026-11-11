@@ -33,8 +33,8 @@ const saved = {
   ],
 };
 
-describe('reading a saved comic project', () => {
-  it('reads what it wrote', { tags: ['condition'] }, () => {
+describe('reading a saved comic project', { tags: [] }, () => {
+  it('reads what it wrote', { tags: ['equivalence'] }, () => {
     const project = parseComicProject(saved);
     expect(project).not.toBeNull();
     expect(project!.pages[0]!.panels[0]).toEqual({
@@ -48,61 +48,73 @@ describe('reading a saved comic project', () => {
     });
   });
 
-  it('reads the cast and who is in each panel, keeps what is in range, and reads a comic saved before casts as having none', { tags: ['boundary'] }, () => {
-    const withCast = {
-      ...saved,
-      cast: [{ id: 'c1', name: 'Grandpa', tags: '1boy, old man' }, { id: 'c2' }, { id: 'c3', name: 'x'.repeat(100), tags: 'y'.repeat(900) }, ...Array.from({ length: 12 }, (_, i) => ({ id: 'e' + i, name: 'E' + i, tags: '' }))],
-      pages: [{ id: 'p', panels: [{ id: 'x', cast: ['c1', 3, 'c3'] }] }],
-    };
-    const project = parseComicProject(withCast)!;
-    expect(project.cast).toHaveLength(8);
-    expect(project.cast[0]).toEqual({ id: 'c1', name: 'Grandpa', tags: '1boy, old man', imageName: null });
-    expect(project.cast[1]!.name).toHaveLength(40);
-    expect(project.cast[1]!.tags).toHaveLength(600);
-    expect(project.pages[0]!.panels[0]!.cast).toEqual(['c1', 'c3']);
-    const again = parseComicProject(serializeComicProject(project))!;
-    expect(again.cast).toEqual(project.cast);
-    expect(parseComicProject(saved)!.cast).toEqual([]);
-  });
+  it(
+    'reads the cast and who is in each panel, keeps what is in range, and reads a comic saved before casts as having none',
+    { tags: ['condition', 'boundary'] },
+    () => {
+      const withCast = {
+        ...saved,
+        cast: [{ id: 'c1', name: 'Grandpa', tags: '1boy, old man' }, { id: 'c2' }, { id: 'c3', name: 'x'.repeat(100), tags: 'y'.repeat(900) }, ...Array.from({ length: 12 }, (_, i) => ({ id: 'e' + i, name: 'E' + i, tags: '' }))],
+        pages: [{ id: 'p', panels: [{ id: 'x', cast: ['c1', 3, 'c3'] }] }],
+      };
+      const project = parseComicProject(withCast)!;
+      expect(project.cast).toHaveLength(8);
+      expect(project.cast[0]).toEqual({ id: 'c1', name: 'Grandpa', tags: '1boy, old man', imageName: null });
+      expect(project.cast[1]!.name).toHaveLength(40);
+      expect(project.cast[1]!.tags).toHaveLength(600);
+      expect(project.pages[0]!.panels[0]!.cast).toEqual(['c1', 'c3']);
+      const again = parseComicProject(serializeComicProject(project))!;
+      expect(again.cast).toEqual(project.cast);
+      expect(parseComicProject(saved)!.cast).toEqual([]);
+    },
+  );
 
-  it('reads a panel saved before several people and tails: its pose is the one person, and balloons get the default tail', { tags: ['condition'] }, () => {
-    const old = {
-      ...saved,
-      pages: [{ id: 'p', panels: [{ id: 'x', pose: joints(), bubbles: [{ id: 'b', kind: 'speech', text: 'Hi', x: 0, y: 0 }] }] }],
-    };
-    const panel = parseComicProject(old)!.pages[0]!.panels[0]!;
-    expect(panel.poses).toEqual([joints()]);
-    expect(panel.bubbles[0]).toMatchObject({ kind: 'speech', tail: { x: 0.08, y: 1.18 }, scale: 1, vertical: false });
-  });
+  it(
+    'reads a panel saved before several people and tails: its pose is the one person, and balloons get the default tail',
+    { tags: ['condition'] },
+    () => {
+      const old = {
+        ...saved,
+        pages: [{ id: 'p', panels: [{ id: 'x', pose: joints(), bubbles: [{ id: 'b', kind: 'speech', text: 'Hi', x: 0, y: 0 }] }] }],
+      };
+      const panel = parseComicProject(old)!.pages[0]!.panels[0]!;
+      expect(panel.poses).toEqual([joints()]);
+      expect(panel.bubbles[0]).toMatchObject({ kind: 'speech', tail: { x: 0.08, y: 1.18 }, scale: 1, vertical: false });
+    },
+  );
 
-  it('reads a balloon saved before its look could be changed with the look its shape starts with, and keeps a look in range', { tags: ['state-transition'] }, () => {
-    const old = {
-      ...saved,
-      pages: [
-        {
-          id: 'p',
-          panels: [
-            {
-              id: 'x',
-              bubbles: [
-                { id: 'a', kind: 'shout', text: 'Hey' },
-                { id: 'b', kind: 'flash', text: '!', lineWidth: 99, rough: -1, width: 0, spikes: 1000, depth: 7, outline: { points: [{ x: 0, y: 0 }, { x: 1, y: 1 }] } },
-                { id: 'c', kind: 'balloon-of-the-future', line: 'wiggly', outline: { points: [{ x: 9, y: -9 }, { x: 1, y: 0 }, { x: 0, y: 1 }], smooth: true } },
-              ],
-            },
-          ],
-        },
-      ],
-    };
-    const [shout, flash, unknown] = parseComicProject(old)!.pages[0]!.panels[0]!.bubbles;
-    expect(shout).toMatchObject({ line: 'solid', dark: false, lineWidth: 1, rough: 0.4, width: 1, height: 1, spikes: 16, depth: 0.45, tailWidth: 1, tailCurve: 0, outline: null });
-    // Out of range is brought into range; an outline of two points is no outline.
-    expect(flash).toMatchObject({ line: 'none', lineWidth: 4, rough: 0, width: 0.6, spikes: 90, depth: 1, outline: null });
-    // An unknown shape is read as speech, an unknown line as the shape's own, and a drawn point is kept near the box.
-    expect(unknown).toMatchObject({ kind: 'speech', line: 'solid', outline: { points: [{ x: 2, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }], smooth: true } });
-  });
+  it(
+    'reads a balloon saved before its look could be changed with the look its shape starts with, and keeps a look in range',
+    { tags: ['condition'] },
+    () => {
+      const old = {
+        ...saved,
+        pages: [
+          {
+            id: 'p',
+            panels: [
+              {
+                id: 'x',
+                bubbles: [
+                  { id: 'a', kind: 'shout', text: 'Hey' },
+                  { id: 'b', kind: 'flash', text: '!', lineWidth: 99, rough: -1, width: 0, spikes: 1000, depth: 7, outline: { points: [{ x: 0, y: 0 }, { x: 1, y: 1 }] } },
+                  { id: 'c', kind: 'balloon-of-the-future', line: 'wiggly', outline: { points: [{ x: 9, y: -9 }, { x: 1, y: 0 }, { x: 0, y: 1 }], smooth: true } },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+      const [shout, flash, unknown] = parseComicProject(old)!.pages[0]!.panels[0]!.bubbles;
+      expect(shout).toMatchObject({ line: 'solid', dark: false, lineWidth: 1, rough: 0.4, width: 1, height: 1, spikes: 16, depth: 0.45, tailWidth: 1, tailCurve: 0, outline: null });
+      // Out of range is brought into range; an outline of two points is no outline.
+      expect(flash).toMatchObject({ line: 'none', lineWidth: 4, rough: 0, width: 0.6, spikes: 90, depth: 1, outline: null });
+      // An unknown shape is read as speech, an unknown line as the shape's own, and a drawn point is kept near the box.
+      expect(unknown).toMatchObject({ kind: 'speech', line: 'solid', outline: { points: [{ x: 2, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }], smooth: true } });
+    },
+  );
 
-  it('reads a sound effect with its slant kept in range, and a balloon saved before slants as upright', { tags: ['condition'] }, () => {
+  it('reads a sound effect with its slant kept in range, and a balloon saved before slants as upright', { tags: ['boundary'] }, () => {
     const old = {
       ...saved,
       pages: [{ id: 'p', panels: [{ id: 'x', bubbles: [{ id: 'a', kind: 'sfx', text: 'Boom', rotation: 400, scale: 3 }, { id: 'b', kind: 'speech', text: 'Hi' }] }] }],
@@ -112,7 +124,7 @@ describe('reading a saved comic project', () => {
     expect(bubbles[1]).toMatchObject({ rotation: 0 });
   });
 
-  it('keeps a stamp balloon as it was saved, with the id of its picture as its text', { tags: ['condition'] }, () => {
+  it('keeps a stamp balloon as it was saved, with the id of its picture as its text', { tags: ['equivalence'] }, () => {
     const bubble = newBubble('stamp', 0.2, 0.3);
     const again = parseComicProject({ ...saved, pages: [{ id: 'p', panels: [{ id: 'x', bubbles: [{ ...bubble, text: 'burst-doon', rotation: 12 }] }] }] })!.pages[0]!.panels[0]!.bubbles[0]!;
     expect(again).toMatchObject({ kind: 'stamp', text: 'burst-doon', rotation: 12, tail: null, line: 'none' });
@@ -123,17 +135,21 @@ describe('reading a saved comic project', () => {
     expect(page).toMatchObject({ columns: 2, direction: 'rtl' });
   });
 
-  it('keeps a balloon font that is a plain name and a text size in range, and drops the rest', { tags: ['condition'] }, () => {
-    const bubble = (b: Record<string, unknown>) =>
-      parseComicProject({ ...saved, pages: [{ id: 'p', panels: [{ id: 'x', bubbles: [{ id: 'b', kind: 'speech', text: '', x: 0, y: 0, ...b }] }] }] })!.pages[0]!.panels[0]!.bubbles[0]!;
-    expect(bubble({ font: ' 源ノ角ゴシック JP ', scale: 1.7 })).toMatchObject({ font: '源ノ角ゴシック JP', scale: 1.7 });
-    expect(bubble({ font: 'Evil", serif', scale: 0.1 })).toMatchObject({ font: null, scale: 0.4 });
-    expect(bubble({ font: 'a\\b', scale: 99 })).toMatchObject({ font: null, scale: 4 });
-    expect(bubble({ font: 'x'.repeat(129), scale: 'big' })).toMatchObject({ font: null, scale: 1 });
-    expect(bubble({ font: 3 })).toMatchObject({ font: null });
-  });
+  it(
+    'keeps a balloon font that is a plain name and a text size in range, and drops the rest',
+    { tags: ['error-guessing', 'boundary'] },
+    () => {
+      const bubble = (b: Record<string, unknown>) =>
+        parseComicProject({ ...saved, pages: [{ id: 'p', panels: [{ id: 'x', bubbles: [{ id: 'b', kind: 'speech', text: '', x: 0, y: 0, ...b }] }] }] })!.pages[0]!.panels[0]!.bubbles[0]!;
+      expect(bubble({ font: ' 源ノ角ゴシック JP ', scale: 1.7 })).toMatchObject({ font: '源ノ角ゴシック JP', scale: 1.7 });
+      expect(bubble({ font: 'Evil", serif', scale: 0.1 })).toMatchObject({ font: null, scale: 0.4 });
+      expect(bubble({ font: 'a\\b', scale: 99 })).toMatchObject({ font: null, scale: 4 });
+      expect(bubble({ font: 'x'.repeat(129), scale: 'big' })).toMatchObject({ font: null, scale: 1 });
+      expect(bubble({ font: 3 })).toMatchObject({ font: null });
+    },
+  );
 
-  it('keeps a balloon with no tail as it was saved, and an unknown kind as speech', { tags: ['error-guessing'] }, () => {
+  it('keeps a balloon with no tail as it was saved, and an unknown kind as speech', { tags: ['error-guessing', 'condition'] }, () => {
     const doc = { ...saved, pages: [{ id: 'p', panels: [{ id: 'x', bubbles: [{ id: 'b', kind: 'zigzag', text: '', x: 0, y: 0, tail: null }] }] }] };
     expect(parseComicProject(doc)!.pages[0]!.panels[0]!.bubbles[0]).toMatchObject({ kind: 'speech', tail: null });
   });
@@ -146,12 +162,12 @@ describe('reading a saved comic project', () => {
     expect(parseComicProject([saved])).toBeNull();
   });
 
-  it('drops a pose that does not have all the joints', { tags: ['equivalence'] }, () => {
+  it('drops a pose that does not have all the joints', { tags: ['boundary'] }, () => {
     const doc = { ...saved, pages: [{ id: 'p', panels: [{ id: 'x', poses: [joints(17)] }] }] };
     expect(parseComicProject(doc)!.pages[0]!.panels[0]!.poses).toEqual([]);
   });
 
-  it('keeps the parts it can read and skips the rest', { tags: ['condition'] }, () => {
+  it('keeps the parts it can read and skips the rest', { tags: ['condition', 'error-guessing'] }, () => {
     const doc = {
       ...saved,
       pages: [
@@ -166,7 +182,7 @@ describe('reading a saved comic project', () => {
     expect(bubble).toMatchObject({ kind: 'speech', text: 'hi', x: 1, y: 0 });
   });
 
-  it('fills the missing fields with the empty values', { tags: ['error-guessing', 'boundary'] }, () => {
+  it('fills the missing fields with the empty values', { tags: ['boundary'] }, () => {
     const project = parseComicProject({ version: COMIC_VERSION, id: 'c' })!;
     expect(project).toEqual({ id: 'c', name: '', pages: [], effect: 'none', panelTemplates: [], pageTemplates: [], cast: [], places: [], createdAt: 0, updatedAt: 0 });
   });
@@ -178,14 +194,18 @@ describe('reading a saved comic project', () => {
     expect(panel).toMatchObject({ negativePrompt: 'blur', imageView: { cx: 2, cy: -1, scale: IMAGE_SCALE_RANGE.max, rotation: -90, flipX: true, flipY: false } });
   });
 
-  it('reads the frame width and the inset of a page, keeps them within range, and gives a page saved without them the defaults', { tags: ['boundary'] }, () => {
-    const doc = (page: object) => ({ ...saved, pages: [{ id: 'p', panels: [], ...page }] });
-    expect(parseComicProject(doc({ frameMm: 1.2, insetMm: 4 }))!.pages[0]).toMatchObject({ frameMm: 1.2, insetMm: 4 });
-    expect(parseComicProject(doc({ frameMm: 50, insetMm: -1, marginMm: 99 }))!.pages[0]).toMatchObject({ frameMm: 3, insetMm: 0, marginMm: 10 });
-    expect(parseComicProject(doc({}))!.pages[0]).toMatchObject({ frameMm: 0.6, insetMm: 0, marginMm: 0 });
-  });
+  it(
+    'reads the frame width and the inset of a page, keeps them within range, and gives a page saved without them the defaults',
+    { tags: ['boundary', 'condition'] },
+    () => {
+      const doc = (page: object) => ({ ...saved, pages: [{ id: 'p', panels: [], ...page }] });
+      expect(parseComicProject(doc({ frameMm: 1.2, insetMm: 4 }))!.pages[0]).toMatchObject({ frameMm: 1.2, insetMm: 4 });
+      expect(parseComicProject(doc({ frameMm: 50, insetMm: -1, marginMm: 99 }))!.pages[0]).toMatchObject({ frameMm: 3, insetMm: 0, marginMm: 10 });
+      expect(parseComicProject(doc({}))!.pages[0]).toMatchObject({ frameMm: 0.6, insetMm: 0, marginMm: 0 });
+    },
+  );
 
-  it('keeps the placement of a picture saved when it could only be enlarged and slid inside its panel', { tags: ['condition'] }, () => {
+  it('keeps the placement of a picture saved when it could only be enlarged and slid inside its panel', { tags: ['boundary'] }, () => {
     // Enlarged twice and slid to its left edge: the picture's centre was one panel width right of that edge.
     const doc = { ...saved, pages: [{ id: 'p', panels: [{ id: 'x', imageView: { x: 0, y: 1, scale: 2 } }] }] };
     expect(parseComicProject(doc)!.pages[0]!.panels[0]!.imageView).toEqual({ ...DEFAULT_IMAGE_VIEW, cx: 1, cy: 0, scale: 2 });
@@ -219,7 +239,7 @@ describe('reading a saved comic project', () => {
   });
 });
 
-describe('a reference image saved by an older version', () => {
+describe('a reference image saved by an older version', { tags: [] }, () => {
   it('is dropped: the panel, its template and the project no longer hold one', { tags: ['regression'] }, () => {
     const reference = { imageName: 'hero.png', modelKey: 'ipa-sdxl', clipVisionModel: 'ViT-H', method: 'full', weight: 1 };
     const doc = { ...saved, reference, pages: [{ id: 'p', panels: [{ id: 'x', reference }] }], panelTemplates: [{ id: 't1', name: 'Hero', reference }] };
@@ -230,8 +250,8 @@ describe('a reference image saved by an older version', () => {
   });
 });
 
-describe('the strength of the character references', () => {
-  it('is kept in its range, and a comic without one, or with something else, does not use them', { tags: ['condition'] }, () => {
+describe('the strength of the character references', { tags: [] }, () => {
+  it('is kept in its range, and a comic without one, or with something else, does not use them', { tags: ['boundary'] }, () => {
     expect(parseComicProject({ ...saved, castReference: 0.4 })!.castReference).toBe(0.4);
     expect(parseComicProject({ ...saved, castReference: 5 })!.castReference).toBe(1);
     expect(parseComicProject({ ...saved, castReference: 0 })!.castReference).toBe(0.1);
@@ -239,25 +259,29 @@ describe('the strength of the character references', () => {
   });
 });
 
-describe('the places of a comic and its world', () => {
-  it('keeps each readable place once, cut to its limits, with its words and what it keeps out', { tags: ['boundary'] }, () => {
-    const long = 'x'.repeat(PLACE_TAGS_MAX + 50);
-    const places = [
-      { id: 'room', name: 'Mio’s room', tags: 'bedroom, desk lamp', negative: ' cars ' },
-      { id: 'room', name: 'twice', tags: 'ignored' },
-      { id: 'pier', name: 'Pier', tags: long, negative: '  ' },
-      { name: 'no id', tags: 'street' },
-      'a street',
-      { id: '', name: 'empty id' },
-    ];
-    expect(parseComicProject({ ...saved, places })!.places).toEqual([
-      { id: 'room', name: 'Mio’s room', tags: 'bedroom, desk lamp', negative: 'cars' },
-      { id: 'pier', name: 'Pier', tags: long.slice(0, PLACE_TAGS_MAX) },
-    ]);
-    const many = Array.from({ length: PLACES_MAX + 3 }, (_, i) => ({ id: `p${i}`, name: `P${i}`, tags: '' }));
-    expect(parseComicProject({ ...saved, places: many })!.places).toHaveLength(PLACES_MAX);
-    expect(parseComicProject({ ...saved, places: 'beach' })!.places).toEqual([]);
-  });
+describe('the places of a comic and its world', { tags: [] }, () => {
+  it(
+    'keeps each readable place once, cut to its limits, with its words and what it keeps out',
+    { tags: ['boundary', 'error-guessing'] },
+    () => {
+      const long = 'x'.repeat(PLACE_TAGS_MAX + 50);
+      const places = [
+        { id: 'room', name: 'Mio’s room', tags: 'bedroom, desk lamp', negative: ' cars ' },
+        { id: 'room', name: 'twice', tags: 'ignored' },
+        { id: 'pier', name: 'Pier', tags: long, negative: '  ' },
+        { name: 'no id', tags: 'street' },
+        'a street',
+        { id: '', name: 'empty id' },
+      ];
+      expect(parseComicProject({ ...saved, places })!.places).toEqual([
+        { id: 'room', name: 'Mio’s room', tags: 'bedroom, desk lamp', negative: 'cars' },
+        { id: 'pier', name: 'Pier', tags: long.slice(0, PLACE_TAGS_MAX) },
+      ]);
+      const many = Array.from({ length: PLACES_MAX + 3 }, (_, i) => ({ id: `p${i}`, name: `P${i}`, tags: '' }));
+      expect(parseComicProject({ ...saved, places: many })!.places).toHaveLength(PLACES_MAX);
+      expect(parseComicProject({ ...saved, places: 'beach' })!.places).toEqual([]);
+    },
+  );
 
   it('keeps the world line cut to its limit, and none when it holds no word', { tags: ['boundary'] }, () => {
     expect(parseComicProject({ ...saved, world: 'summer, seaside town' })!.world).toBe('summer, seaside town');
@@ -272,24 +296,24 @@ describe('the places of a comic and its world', () => {
   });
 });
 
-describe('the 3D rough of a panel', () => {
+describe('the 3D rough of a panel', { tags: [] }, () => {
   const panelWith = (fields: Record<string, unknown>) => parseComicProject({ ...saved, pages: [{ id: 'p', panels: [{ id: 'x', ...fields }] }] })!.pages[0]!.panels[0]!;
 
-  it('reads back a panel rough and its depth map', { tags: ['condition'] }, () => {
+  it('reads back a panel rough and its depth map', { tags: ['equivalence'] }, () => {
     const rough = newRough();
     const panel = panelWith({ rough: JSON.parse(JSON.stringify(rough)), depthImageName: 'depth.png' });
     expect(panel.rough).toEqual(rough);
     expect(panel.depthImageName).toBe('depth.png');
   });
 
-  it('leaves out a rough that is not one and a depth map with no name', { tags: ['condition'] }, () => {
+  it('leaves out a rough that is not one and a depth map with no name', { tags: ['error-guessing'] }, () => {
     for (const none of [undefined, 'rough', 4, []]) expect(panelWith({ rough: none })).not.toHaveProperty('rough');
     for (const none of [undefined, '', 7, null]) expect(panelWith({ depthImageName: none })).not.toHaveProperty('depthImageName');
   });
 });
 
-describe('writing a comic project', () => {
-  it('writes the version with the project, and reads back the same project', { tags: ['condition'] }, () => {
+describe('writing a comic project', { tags: [] }, () => {
+  it('writes the version with the project, and reads back the same project', { tags: ['equivalence'] }, () => {
     const project = parseComicProject(saved)!;
     const written = serializeComicProject(project) as Record<string, unknown>;
     expect(written.version).toBe(COMIC_VERSION);
@@ -308,13 +332,13 @@ describe('writing a comic project', () => {
     }
   });
 
-  it('makes panels with a prompt-less, pose-less, picture-less start', { tags: ['state-transition'] }, () => {
+  it('makes panels with a prompt-less, pose-less, picture-less start', { tags: ['equivalence'] }, () => {
     expect(emptyPanel()).toMatchObject({ prompt: '', imageName: null, poses: [], poseImageName: null, bubbles: [] });
     expect(emptyPanel()).toMatchObject({ negativePrompt: '', imageView: DEFAULT_IMAGE_VIEW });
   });
 });
 
-describe('the figures of a panel', () => {
+describe('the figures of a panel', { tags: [] }, () => {
   it('keeps valid boxes inside the panel, drops the rest, and caps the count', { tags: ['boundary'] }, () => {
     expect(parseFigures([{ x: 0.2, y: 0.2, w: 0.5, h: 0.5 }, { x: 0.8, y: 0.9, w: 0.5, h: 0.5 }])).toEqual([
       { x: 0.2, y: 0.2, w: 0.5, h: 0.5 },
@@ -327,13 +351,13 @@ describe('the figures of a panel', () => {
   });
 });
 
-describe('who each person of a pose is', () => {
+describe('who each person of a pose is', { tags: [] }, () => {
   it('keeps ids and turns anything else into nobody, up to the limit', { tags: ['boundary'] }, () => {
     expect(parsePoseCast(['a', '', 3, null, 'b'])).toEqual(['a', null, null, null, 'b']);
     expect(parsePoseCast(Array.from({ length: MAX_POSE_PEOPLE + 3 }, () => 'x'))).toHaveLength(MAX_POSE_PEOPLE);
   });
 
-  it('survives a save and a read, and an older panel has none', { tags: ['boundary'] }, () => {
+  it('survives a save and a read, and an older panel has none', { tags: ['condition'] }, () => {
     const project = parseComicProject(saved)!;
     expect(project.pages[0]!.panels[0]!.poseCast).toBeUndefined();
     project.pages[0]!.panels[0]!.poseCast = ['c1', null];
@@ -341,13 +365,13 @@ describe('who each person of a pose is', () => {
   });
 });
 
-describe('what each person of a pose does', () => {
+describe('what each person of a pose does', { tags: [] }, () => {
   it('keeps a text per person, cut to its limit, up to the people a pose keeps', { tags: ['boundary'] }, () => {
     expect(parsePoseWords([' waving ', 3, null, 'x'.repeat(POSE_WORDS_MAX + 5)])).toEqual(['waving', '', '', 'x'.repeat(POSE_WORDS_MAX)]);
     expect(parsePoseWords(Array.from({ length: MAX_POSE_PEOPLE + 2 }, () => 'a'))).toHaveLength(MAX_POSE_PEOPLE);
   });
 
-  it('survives a save and a read, and words that are all empty are not kept', { tags: ['boundary'] }, () => {
+  it('survives a save and a read, and words that are all empty are not kept', { tags: ['condition'] }, () => {
     const project = parseComicProject(saved)!;
     expect(project.pages[0]!.panels[0]!.poseWords).toBeUndefined();
     project.pages[0]!.panels[0]!.poseWords = ['waving', ''];

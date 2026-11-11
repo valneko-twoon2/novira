@@ -30,7 +30,7 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('invoke', () => {
-  it('enqueues the active tab batch and leaves the launchpad for the viewer', { tags: ['condition'] }, async () => {
+  it('enqueues the active tab batch and leaves the launchpad for the viewer', { tags: ['scenario'] }, async () => {
     const b = builder();
     registerInvokeBuilder('generate', b);
     useUi.setState({ activeTab: 'generate', mainView: { ...initialUi.mainView, generate: 'launchpad' } });
@@ -42,14 +42,18 @@ describe('invoke', () => {
     expect(statuses()).toEqual(['success']);
   });
 
-  it('asks the image form to hold its pictures for the Candidates view, and leaves the launchpad for that view', { tags: ['condition'] }, async () => {
-    const b = builder({ build: vi.fn(async () => request('candidates')) });
-    registerInvokeBuilder('generate', b);
-    useUi.setState({ activeTab: 'generate', mainView: { ...initialUi.mainView, generate: 'launchpad' } });
-    await invoke();
-    expect(b.build).toHaveBeenCalledWith({ prepend: false, held: true });
-    expect(useUi.getState().mainView.generate).toBe('drafts');
-  });
+  it(
+    'asks the image form to hold its pictures for the Candidates view, and leaves the launchpad for that view',
+    { tags: ['decision-table'] },
+    async () => {
+      const b = builder({ build: vi.fn(async () => request('candidates')) });
+      registerInvokeBuilder('generate', b);
+      useUi.setState({ activeTab: 'generate', mainView: { ...initialUi.mainView, generate: 'launchpad' } });
+      await invoke();
+      expect(b.build).toHaveBeenCalledWith({ prepend: false, held: true });
+      expect(useUi.getState().mainView.generate).toBe('drafts');
+    },
+  );
 
   it('holds nothing for the other screens: only the image form takes the Candidates view', { tags: ['condition'] }, async () => {
     const b = builder();
@@ -59,11 +63,15 @@ describe('invoke', () => {
     expect(b.build).toHaveBeenCalledWith({ prepend: false, held: false });
   });
 
-  it('keeps a run of Invokes on the board the first picture chose, whether it waits for a board or for the Candidates view', { tags: ['condition'] }, () => {
-    useGallery.setState({ ...initialGallery, boards: [{ id: 'b1' }] as never });
-    useQueue.setState({ items: [{ id: 1, status: 'pending', destination: 'candidates', boardId: 'b1' }] as unknown as QueueItem[] });
-    expect(generationBoardId()).toBe('b1');
-  });
+  it(
+    'keeps a run of Invokes on the board the first picture chose, whether it waits for a board or for the Candidates view',
+    { tags: ['condition'] },
+    () => {
+      useGallery.setState({ ...initialGallery, boards: [{ id: 'b1' }] as never });
+      useQueue.setState({ items: [{ id: 1, status: 'pending', destination: 'candidates', boardId: 'b1' }] as unknown as QueueItem[] });
+      expect(generationBoardId()).toBe('b1');
+    },
+  );
 
   it('stays on the launchpad when the batch goes to the canvas', { tags: ['condition'] }, async () => {
     registerInvokeBuilder('generate', builder({ build: async () => request('canvas') }));
@@ -88,7 +96,7 @@ describe('invoke', () => {
     expect(useToasts.getState().toasts[0]).toMatchObject({ status: 'error', description: 'queue is gone' });
   });
 
-  it('uses the media panel builder while the Generate tab shows video, music or voice', { tags: ['scenario'] }, async () => {
+  it('uses the media panel builder while the Generate tab shows video, music or voice', { tags: ['decision-table'] }, async () => {
     const image = builder();
     const video = builder();
     registerInvokeBuilder('generate', image);
@@ -102,7 +110,7 @@ describe('invoke', () => {
   });
 
   // The text editor has no builder: Ctrl+Enter there once queued the image form hidden behind it.
-  it('does not fall back to the image form on a media panel without a builder', { tags: ['condition'] }, async () => {
+  it('does not fall back to the image form on a media panel without a builder', { tags: ['regression'] }, async () => {
     const image = builder();
     registerInvokeBuilder('generate', image);
     useUi.setState({ activeTab: 'generate', media: 'text' });
@@ -127,7 +135,7 @@ describe('invoke', () => {
 });
 
 describe('autoAddBoardId', () => {
-  it('maps Uncategorized to no board', { tags: ['condition'] }, () => {
+  it('maps Uncategorized to no board', { tags: ['equivalence'] }, () => {
     expect(autoAddBoardId()).toBeNull();
     useGallery.getState().setAutoAddBoard('b1');
     expect(autoAddBoardId()).toBe('b1');
@@ -144,7 +152,7 @@ describe('generationBoardId', () => {
   });
   afterEach(() => useQueue.setState({ items: [] }));
 
-  it('follows the auto-add board when nothing waits or draws', { tags: ['scenario'] }, () => {
+  it('follows the auto-add board when nothing waits or draws', { tags: ['equivalence'] }, () => {
     expect(generationBoardId()).toBe('b2');
     useQueue.setState({ items: [item({ status: 'completed' }), item({ id: 2, status: 'failed' })] });
     expect(generationBoardId()).toBe('b2');
@@ -157,7 +165,7 @@ describe('generationBoardId', () => {
     expect(generationBoardId()).toBeNull();
   });
 
-  it('ignores items that do not go to the gallery', { tags: ['condition'] }, () => {
+  it('ignores items that do not go to the gallery', { tags: ['equivalence'] }, () => {
     useQueue.setState({ items: [item({ destination: 'canvas' }), item({ id: 2, destination: 'intermediate' })] });
     expect(generationBoardId()).toBe('b2');
   });

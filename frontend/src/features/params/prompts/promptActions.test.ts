@@ -30,14 +30,14 @@ describe('apply recommended prompts', () => {
     expect(prompts()).toEqual({ positive: 'a cat on a sofa, high quality, highly detailed, sharp focus', negative: 'dog' });
   });
 
-  it('fills both prompts without a model', { tags: ['decision-table'] }, () => {
+  it('fills both prompts without a model', { tags: ['condition'] }, () => {
     applyRecommendedPrompts(undefined);
     const { positive, negative } = prompts();
     expect(positive).toContain('best quality');
     expect(negative).toContain('worst quality');
   });
 
-  it('puts tag-model quality words in front, once, however often it is pressed', { tags: ['boundary'] }, () => {
+  it('puts tag-model quality words in front, once, however often it is pressed', { tags: ['condition'] }, () => {
     useParams.getState().set({ positivePrompt: '1girl, best quality', negativePrompt: 'blurry' });
     const anima = model('anima', 'NyaNya Harem Anima 2.9B');
     applyRecommendedPrompts(anima);

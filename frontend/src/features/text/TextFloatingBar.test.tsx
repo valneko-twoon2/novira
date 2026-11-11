@@ -97,7 +97,7 @@ describe('TextFloatingBar actions', () => {
     expect(state().scene.layers).toHaveLength(1);
   });
 
-  it('is a toolbar with a name', { tags: ['scenario'] }, () => {
+  it('is a toolbar with a name', { tags: ['equivalence'] }, () => {
     show(baseText());
     // Hidden until its size is measured, so the name is read from the attributes.
     const bar = screen.getByTestId('text-bar');

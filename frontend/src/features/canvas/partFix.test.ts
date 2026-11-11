@@ -79,8 +79,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('erasing the painted part', () => {
-  it('sends the picture and the mask, stages the result and removes the two helper pictures', { tags: ['condition'] }, async () => {
+describe('erasing the painted part', { tags: [] }, () => {
+  it('sends the picture and the mask, stages the result and removes the two helper pictures', { tags: ['scenario'] }, async () => {
     setUp();
     runJob.mockResolvedValue(picture('erased.png'));
     await eraseMaskedPart(paintedMask());
@@ -94,7 +94,7 @@ describe('erasing the painted part', () => {
     expect(lastToast()).toMatchObject({ status: 'success', title: t('canvas.partFix.erased') });
   });
 
-  it('offers LaMa with the result while its model is missing, and not once it is there', { tags: ['error-guessing'] }, async () => {
+  it('offers LaMa with the result while its model is missing, and not once it is there', { tags: ['condition'] }, async () => {
     setUp();
     runJob.mockResolvedValue(picture('erased.png'));
     usePacks.setState({ packs: { ...initial.packs.packs, inpaint: { state: 'missing', totalBytes: 1 } } });
@@ -107,7 +107,7 @@ describe('erasing the painted part', () => {
     expect(lastToast()?.actions).toBeUndefined();
   });
 
-  it('says what to do when nothing is painted, and sends nothing', { tags: ['condition'] }, async () => {
+  it('says what to do when nothing is painted, and sends nothing', { tags: ['boundary', 'condition'] }, async () => {
     setUp(() => [0, 0, 0, 255]);
     await eraseMaskedPart(paintedMask());
     expect(lastToast()).toMatchObject({ status: 'warning', title: t('canvas.partFix.empty') });
@@ -115,23 +115,27 @@ describe('erasing the painted part', () => {
     expect(runJob).not.toHaveBeenCalled();
   });
 
-  it('offers to install the extension when the erase node is missing, or to restart when it waits for a restart', { tags: ['error-guessing'] }, async () => {
-    setUp();
-    useComfyNodes.setState({ defs: defs({}) });
-    const install = vi.fn(async () => {});
-    useNodePacks.setState({ packs: { available: true, installed: [] } as never, install });
-    await eraseMaskedPart(paintedMask());
-    const toast = lastToast()!;
-    expect(toast.status).toBe('warning');
-    expect(toast.actions!.map((a) => a.label)).toEqual([t('canvas.partFix.install')]);
-    toast.actions![0]!.run();
-    expect(install).toHaveBeenCalledWith('https://github.com/Acly/comfyui-inpaint-nodes');
+  it(
+    'offers to install the extension when the erase node is missing, or to restart when it waits for a restart',
+    { tags: ['error-guessing', 'decision-table'] },
+    async () => {
+      setUp();
+      useComfyNodes.setState({ defs: defs({}) });
+      const install = vi.fn(async () => {});
+      useNodePacks.setState({ packs: { available: true, installed: [] } as never, install });
+      await eraseMaskedPart(paintedMask());
+      const toast = lastToast()!;
+      expect(toast.status).toBe('warning');
+      expect(toast.actions!.map((a) => a.label)).toEqual([t('canvas.partFix.install')]);
+      toast.actions![0]!.run();
+      expect(install).toHaveBeenCalledWith('https://github.com/Acly/comfyui-inpaint-nodes');
 
-    useNodePacks.setState({ packs: { available: true, installed: [{ folder: 'comfyui-inpaint-nodes', url: null, version: null }] } as never });
-    await eraseMaskedPart(c().selectedEntityId!);
-    expect(lastToast()!.actions!.map((a) => a.label)).toEqual([t('canvas.partFix.restart')]);
-    expect(runJob).not.toHaveBeenCalled();
-  });
+      useNodePacks.setState({ packs: { available: true, installed: [{ folder: 'comfyui-inpaint-nodes', url: null, version: null }] } as never });
+      await eraseMaskedPart(c().selectedEntityId!);
+      expect(lastToast()!.actions!.map((a) => a.label)).toEqual([t('canvas.partFix.restart')]);
+      expect(runJob).not.toHaveBeenCalled();
+    },
+  );
 
   it('reports a failed job and still removes the helper pictures', { tags: ['error-guessing'] }, async () => {
     setUp();
@@ -152,44 +156,52 @@ describe('erasing the painted part', () => {
   });
 });
 
-describe('redrawing the painted part', () => {
-  it('queues a canvas generation with the instruction as its prompt and only this mask, shown even when hidden', { tags: ['condition'] }, async () => {
-    setUp();
-    const other = paintedMask();
-    const id = c().addEntity('inpaint', { objects: [{ kind: 'stroke', id: 's2', tool: 'brush', color: red, width: 10, points: [5, 5, 20, 20], clip: null }] });
-    c().updateEntity(id, { isEnabled: false });
-    useCanvas.setState({ groupHidden: { ...c().groupHidden, inpaint: true } });
-    await redrawMaskedPart(id, '  a blue ribbon ');
-    const [doc, params] = buildCanvasRequest.mock.calls[0]!;
-    expect(params.positivePrompt).toBe('a blue ribbon');
-    const masks = doc.entities.filter((e) => e.type === 'inpaint');
-    expect(masks.map((e) => [e.id, e.isEnabled])).toEqual([[id, true]]);
-    expect(masks.some((e) => e.id === other)).toBe(false);
-    expect(doc.groupHidden.inpaint).toBe(false);
-    expect(backend.enqueue).toHaveBeenCalledTimes(1);
-    expect(lastToast()).toMatchObject({ status: 'success', title: t('canvas.partFix.redrawing') });
-    // The Generate tab's prompt is left as it was.
-    expect(useParams.getState().positivePrompt).toBe('a girl in a park');
-  });
+describe('redrawing the painted part', { tags: [] }, () => {
+  it(
+    'queues a canvas generation with the instruction as its prompt and only this mask, shown even when hidden',
+    { tags: ['condition', 'equivalence'] },
+    async () => {
+      setUp();
+      const other = paintedMask();
+      const id = c().addEntity('inpaint', { objects: [{ kind: 'stroke', id: 's2', tool: 'brush', color: red, width: 10, points: [5, 5, 20, 20], clip: null }] });
+      c().updateEntity(id, { isEnabled: false });
+      useCanvas.setState({ groupHidden: { ...c().groupHidden, inpaint: true } });
+      await redrawMaskedPart(id, '  a blue ribbon ');
+      const [doc, params] = buildCanvasRequest.mock.calls[0]!;
+      expect(params.positivePrompt).toBe('a blue ribbon');
+      const masks = doc.entities.filter((e) => e.type === 'inpaint');
+      expect(masks.map((e) => [e.id, e.isEnabled])).toEqual([[id, true]]);
+      expect(masks.some((e) => e.id === other)).toBe(false);
+      expect(doc.groupHidden.inpaint).toBe(false);
+      expect(backend.enqueue).toHaveBeenCalledTimes(1);
+      expect(lastToast()).toMatchObject({ status: 'success', title: t('canvas.partFix.redrawing') });
+      // The Generate tab's prompt is left as it was.
+      expect(useParams.getState().positivePrompt).toBe('a girl in a park');
+    },
+  );
 
-  it('uses the Generate tab\'s prompt when the instruction is blank', { tags: ['condition'] }, async () => {
+  it('uses the Generate tab\'s prompt when the instruction is blank', { tags: ['boundary', 'condition'] }, async () => {
     setUp();
     await redrawMaskedPart(paintedMask(), '   ');
     expect(buildCanvasRequest.mock.calls[0]![1].positivePrompt).toBe('a girl in a park');
   });
 
-  it('queues nothing when nothing is painted or the canvas cannot be invoked, and says why', { tags: ['error-guessing'] }, async () => {
-    setUp(() => [0, 0, 0, 255]);
-    await redrawMaskedPart(paintedMask(false), 'x');
-    expect(lastToast()?.title).toBe(t('canvas.partFix.empty'));
-    canvases.restore();
+  it(
+    'queues nothing when nothing is painted or the canvas cannot be invoked, and says why',
+    { tags: ['boundary', 'error-guessing'] },
+    async () => {
+      setUp(() => [0, 0, 0, 255]);
+      await redrawMaskedPart(paintedMask(false), 'x');
+      expect(lastToast()?.title).toBe(t('canvas.partFix.empty'));
+      canvases.restore();
 
-    setUp();
-    readiness.mockReturnValue(['no model']);
-    await redrawMaskedPart(c().selectedEntityId!, 'x');
-    expect(lastToast()).toMatchObject({ status: 'warning', title: t('app.invoke.notReady'), description: 'no model' });
-    expect(backend.enqueue).not.toHaveBeenCalled();
-  });
+      setUp();
+      readiness.mockReturnValue(['no model']);
+      await redrawMaskedPart(c().selectedEntityId!, 'x');
+      expect(lastToast()).toMatchObject({ status: 'warning', title: t('app.invoke.notReady'), description: 'no model' });
+      expect(backend.enqueue).not.toHaveBeenCalled();
+    },
+  );
 
   it('reports a failed enqueue', { tags: ['error-guessing'] }, async () => {
     setUp();
@@ -199,8 +211,8 @@ describe('redrawing the painted part', () => {
   });
 });
 
-describe('cutting out the painted part', () => {
-  it('saves one picture to the gallery, not hidden, and tells the user', { tags: ['condition'] }, async () => {
+describe('cutting out the painted part', { tags: [] }, () => {
+  it('saves one picture to the gallery, not hidden, and tells the user', { tags: ['scenario'] }, async () => {
     setUp();
     await cutOutMaskedPart(paintedMask());
     expect(uploads).toHaveLength(1);
@@ -211,7 +223,7 @@ describe('cutting out the painted part', () => {
     expect(canvases.all.some((r) => r.sets.some((s) => s.name === 'globalCompositeOperation' && s.value === 'source-in'))).toBe(true);
   });
 
-  it('saves nothing when nothing is painted', { tags: ['condition'] }, async () => {
+  it('saves nothing when nothing is painted', { tags: ['boundary'] }, async () => {
     setUp(() => [0, 0, 0, 255]);
     await cutOutMaskedPart(paintedMask(false));
     expect(uploads).toEqual([]);

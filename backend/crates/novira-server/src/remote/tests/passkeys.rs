@@ -195,7 +195,7 @@ async fn forgetting_a_passkey_ends_its_sessions_and_it_cannot_sign_in_again() {
     a.stop().await;
 }
 
-// tags: condition
+// tags: condition, equivalence
 #[tokio::test]
 async fn a_signed_in_phone_runs_what_a_phone_at_home_runs_and_nothing_more() {
     let a = Away::start().await;

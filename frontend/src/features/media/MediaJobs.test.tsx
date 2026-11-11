@@ -27,8 +27,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('MediaJobs', () => {
-  it('shows only the jobs of its own kind, running first as running and pending as waiting', { tags: ['scenario'] }, () => {
+describe('MediaJobs', { tags: [] }, () => {
+  it('shows only the jobs of its own kind, running first as running and pending as waiting', { tags: ['condition'] }, () => {
     useQueue.setState({ items: [job(1, 'in_progress'), job(2, 'pending'), job(3, 'in_progress', 'voice'), job(4, 'completed')] });
     show('music');
     expect(screen.getAllByTestId('music-job')).toHaveLength(2);
@@ -37,7 +37,7 @@ describe('MediaJobs', () => {
     expect(screen.getByText(t('media.job.waiting'))).toBeTruthy();
   });
 
-  it('draws the progress of the running job only, and a waiting job as indeterminate', { tags: ['scenario'] }, () => {
+  it('draws the progress of the running job only, and a waiting job as indeterminate', { tags: ['condition'] }, () => {
     useQueue.setState({
       items: [job(1, 'in_progress'), job(2, 'pending')],
       progress: { itemId: 1, step: 5, totalSteps: 20, progressImageUrl: null, message: '' },
@@ -49,7 +49,7 @@ describe('MediaJobs', () => {
     expect(bar(waiting!).getAttribute('aria-valuenow')).toBeNull();
   });
 
-  it('shows no progress for a running job another item reports on', { tags: ['scenario'] }, () => {
+  it('shows no progress for a running job another item reports on', { tags: ['condition'] }, () => {
     useQueue.setState({
       items: [job(1, 'in_progress')],
       progress: { itemId: 99, step: 5, totalSteps: 20, progressImageUrl: null, message: '' },
@@ -59,7 +59,7 @@ describe('MediaJobs', () => {
     expect(bar.getAttribute('aria-valuenow')).toBe('0');
   });
 
-  it('cancels a job by its id', { tags: ['scenario'] }, () => {
+  it('cancels a job by its id', { tags: ['equivalence'] }, () => {
     const cancel = vi.spyOn(backend, 'cancelQueueItem').mockResolvedValue(undefined as never);
     useQueue.setState({ items: [job(7, 'pending')] });
     show();
@@ -67,22 +67,26 @@ describe('MediaJobs', () => {
     expect(cancel).toHaveBeenCalledWith(7);
   });
 
-  it('lists the last three failures with their error, and the memory notice for an out of memory one', { tags: ['error-guessing'] }, () => {
-    useQueue.setState({
-      items: [
-        job(1, 'failed', 'music', { error: 'e1' }),
-        job(2, 'failed', 'music', { error: 'e2' }),
-        job(3, 'failed', 'music', { error: 'e3' }),
-        job(4, 'failed', 'music', { error: 'e4', errorKind: 'out_of_memory' }),
-        job(5, 'failed', 'voice', { error: 'other kind' }),
-      ],
-    });
-    show();
-    expect(screen.queryByText('e1')).toBeNull();
-    expect(screen.getByText('e2')).toBeTruthy();
-    expect(screen.getByText('e3')).toBeTruthy();
-    expect(screen.queryByText('other kind')).toBeNull();
-    expect(screen.getAllByText(t('media.job.failed.music'))).toHaveLength(2);
-    expect(screen.getByTestId('oom-notice')).toBeTruthy();
-  });
+  it(
+    'lists the last three failures with their error, and the memory notice for an out of memory one',
+    { tags: ['boundary', 'error-guessing'] },
+    () => {
+      useQueue.setState({
+        items: [
+          job(1, 'failed', 'music', { error: 'e1' }),
+          job(2, 'failed', 'music', { error: 'e2' }),
+          job(3, 'failed', 'music', { error: 'e3' }),
+          job(4, 'failed', 'music', { error: 'e4', errorKind: 'out_of_memory' }),
+          job(5, 'failed', 'voice', { error: 'other kind' }),
+        ],
+      });
+      show();
+      expect(screen.queryByText('e1')).toBeNull();
+      expect(screen.getByText('e2')).toBeTruthy();
+      expect(screen.getByText('e3')).toBeTruthy();
+      expect(screen.queryByText('other kind')).toBeNull();
+      expect(screen.getAllByText(t('media.job.failed.music'))).toHaveLength(2);
+      expect(screen.getByTestId('oom-notice')).toBeTruthy();
+    },
+  );
 });

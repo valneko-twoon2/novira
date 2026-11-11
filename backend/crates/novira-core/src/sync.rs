@@ -49,7 +49,7 @@ mod tests {
         assert_eq!(*m.lock_safe(), 2);
     }
 
-    // tags: error-guessing, state-transition
+    // tags: error-guessing
     #[test]
     fn a_poisoned_rwlock_is_still_usable() {
         let l = Arc::new(RwLock::new(String::from("a")));

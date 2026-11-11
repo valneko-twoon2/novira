@@ -43,23 +43,27 @@ test('finishing a text layer makes candidates, and a changed text asks for a new
   await expect(candidates).toHaveCount(0);
 });
 
-test('the seed row of the Generate screen: a random run shows the seed it used, and a fixed seed stays as it is', { tag: ['@scenario'] }, async ({ page }) => {
-  // Two runs, each given 30 s: under a full parallel run the test's own 30 s ran out before the second one ended.
-  test.setTimeout(90_000);
-  await openText(page);
-  const seed = page.getByRole('spinbutton', { name: msg('params.seed.label') });
-  const candidates = page.getByTestId('text-rich-candidate');
-  await page.getByTestId('invoke-button').click();
-  await expect(candidates).toHaveCount(2, { timeout: 30_000 });
-  // The random run left its seed in the (now disabled) box; fixing it keeps that number.
-  const used = await seed.inputValue();
-  await page.getByTestId('seed-fixed').click();
-  await expect(seed).toHaveValue(used);
-  await page.getByTestId('text-rich-clear').click();
-  await page.getByTestId('invoke-button').click();
-  await expect(candidates).toHaveCount(2, { timeout: 30_000 });
-  await expect(seed).toHaveValue(used);
-});
+test(
+  'the seed row of the Generate screen: a random run shows the seed it used, and a fixed seed stays as it is',
+  { tag: ['@condition'] },
+  async ({ page }) => {
+    // Two runs, each given 30 s: under a full parallel run the test's own 30 s ran out before the second one ended.
+    test.setTimeout(90_000);
+    await openText(page);
+    const seed = page.getByRole('spinbutton', { name: msg('params.seed.label') });
+    const candidates = page.getByTestId('text-rich-candidate');
+    await page.getByTestId('invoke-button').click();
+    await expect(candidates).toHaveCount(2, { timeout: 30_000 });
+    // The random run left its seed in the (now disabled) box; fixing it keeps that number.
+    const used = await seed.inputValue();
+    await page.getByTestId('seed-fixed').click();
+    await expect(seed).toHaveValue(used);
+    await page.getByTestId('text-rich-clear').click();
+    await page.getByTestId('invoke-button').click();
+    await expect(candidates).toHaveCount(2, { timeout: 30_000 });
+    await expect(seed).toHaveValue(used);
+  },
+);
 
 test('a busy button draws its spinner in the label color, so it shows on the blue fills', { tag: ['@regression'] }, async ({ page }) => {
   await openText(page);
@@ -98,17 +102,21 @@ test('the picture can be saved with the AI fill and a failed run changes nothing
   await expect(page.getByTestId('invoke-button')).toBeEnabled();
 });
 
-test('the Text screen has the queue controls of the Generate screen: the count decides how many are made, and the caret adds to the front', { tag: ['@scenario'] }, async ({ page }) => {
-  await openText(page);
-  const count = page.getByRole('spinbutton', { name: msg('params.invoke.iterations') });
-  await count.fill('3');
-  await count.blur();
-  await page.getByRole('button', { name: msg('params.invoke.moreOptions') }).click();
-  await page.getByRole('menuitem', { name: msg('params.invoke.addFront') }).click();
-  await expect(page.getByTestId('text-rich-candidate')).toHaveCount(3, { timeout: 30_000 });
-  await page.getByRole('button', { name: msg('params.invoke.queueMenu') }).click();
-  await expect(page.getByRole('menuitem', { name: msg('params.invoke.openQueue') })).toBeVisible();
-});
+test(
+  'the Text screen has the queue controls of the Generate screen: the count decides how many are made, and the caret adds to the front',
+  { tag: ['@scenario'] },
+  async ({ page }) => {
+    await openText(page);
+    const count = page.getByRole('spinbutton', { name: msg('params.invoke.iterations') });
+    await count.fill('3');
+    await count.blur();
+    await page.getByRole('button', { name: msg('params.invoke.moreOptions') }).click();
+    await page.getByRole('menuitem', { name: msg('params.invoke.addFront') }).click();
+    await expect(page.getByTestId('text-rich-candidate')).toHaveCount(3, { timeout: 30_000 });
+    await page.getByRole('button', { name: msg('params.invoke.queueMenu') }).click();
+    await expect(page.getByRole('menuitem', { name: msg('params.invoke.openQueue') })).toBeVisible();
+  },
+);
 
 test('the prompts of the Text screen are its own: the image form keeps what it had', { tag: ['@scenario'] }, async ({ page }) => {
   await openText(page);

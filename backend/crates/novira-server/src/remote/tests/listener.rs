@@ -89,7 +89,7 @@ async fn a_problem_with_tailscale_is_named_and_it_opens_once_fixed() {
     a.stop().await;
 }
 
-// tags: condition
+// tags: decision-table, condition
 #[tokio::test]
 async fn only_tailnet_addresses_that_name_the_listener_are_answered() {
     let a = Away::start().await;
@@ -160,7 +160,7 @@ async fn only_tailnet_addresses_that_name_the_listener_are_answered() {
     a.stop().await;
 }
 
-// tags: condition
+// tags: condition, equivalence
 #[tokio::test]
 async fn a_phone_without_a_session_is_sent_to_sign_in_and_gets_nothing_else() {
     let a = Away::start().await;
@@ -262,7 +262,7 @@ async fn a_fresh_certificate_is_asked_for_once_a_day() {
     a.stop().await;
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn the_phone_page_has_the_same_strings_in_japanese_and_english() {
     crate::pair::tests::check_page_strings(STRINGS, include_str!("../page.js"));

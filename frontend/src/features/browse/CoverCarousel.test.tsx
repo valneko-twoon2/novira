@@ -13,8 +13,8 @@ const model = (imageCount: number) => ({ id: 'm', imageCount }) as CivitaiModel;
 const shown = () => screen.getByTestId('cover').textContent;
 const dots = () => [...document.querySelectorAll('.browse-carousel__dots span')];
 
-describe('CoverCarousel', () => {
-  it('has no arrows or dots for one picture, or none', { tags: ['boundary', 'scenario'] }, () => {
+describe('CoverCarousel', { tags: [] }, () => {
+  it('has no arrows or dots for one picture, or none', { tags: ['boundary'] }, () => {
     const { rerender } = render(<CoverCarousel model={model(1)} />);
     expect(screen.queryByLabelText(t('browse.card.nextImage'))).toBeNull();
     rerender(<CoverCarousel model={model(0)} />);
@@ -22,7 +22,7 @@ describe('CoverCarousel', () => {
     expect(dots().length).toBe(0);
   });
 
-  it('steps forward and wraps from the last picture to the first', { tags: ['boundary', 'scenario'] }, () => {
+  it('steps forward and wraps from the last picture to the first', { tags: ['boundary'] }, () => {
     render(<CoverCarousel model={model(3)} />);
     const next = screen.getByLabelText(t('browse.card.nextImage'));
     expect(dots().length).toBe(3);
@@ -34,7 +34,7 @@ describe('CoverCarousel', () => {
     expect(shown()).toBe('0');
   });
 
-  it('steps back and wraps from the first picture to the last, without reaching the card', { tags: ['boundary', 'scenario'] }, () => {
+  it('steps back and wraps from the first picture to the last, without reaching the card', { tags: ['boundary'] }, () => {
     const onCard = vi.fn();
     render(
       <div onClick={onCard}>

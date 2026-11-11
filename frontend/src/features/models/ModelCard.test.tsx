@@ -50,27 +50,27 @@ function show(m: ModelConfig) {
   return { onSelect };
 }
 
-describe('ModelCard format tag', () => {
+describe('ModelCard format tag', { tags: [] }, () => {
   const tags = () => [...document.querySelectorAll('.mm-card-item__badges .mm-tag')].map((e) => e.textContent);
 
-  it('tags a main model with its single-file format', { tags: ['scenario'] }, () => {
+  it('tags a main model with its single-file format', { tags: ['equivalence'] }, () => {
     show(model);
     expect(tags()).toEqual(['SDXL', 'Checkpoint']);
   });
 
-  it('leaves the plain single-file format off a diffusion model, so it is not read as a checkpoint', { tags: ['scenario'] }, () => {
+  it('leaves the plain single-file format off a diffusion model, so it is not read as a checkpoint', { tags: ['condition'] }, () => {
     show({ ...model, type: 'diffusion_model', base: 'anima' });
     expect(tags()).toEqual(['Anima']);
   });
 
-  it('still tags a format that says something, on any type', { tags: ['scenario'] }, () => {
+  it('still tags a format that says something, on any type', { tags: ['condition'] }, () => {
     show({ ...model, type: 'diffusion_model', base: 'flux', format: 'gguf' });
     expect(tags()).toEqual(['FLUX', 'GGUF']);
   });
 });
 
-describe('ModelCard license tag', () => {
-  it('shows the commercial-use tag on the cover, named for screen readers, when the license is known', { tags: ['scenario'] }, () => {
+describe('ModelCard license tag', { tags: [] }, () => {
+  it('shows the commercial-use tag on the cover, named for screen readers, when the license is known', { tags: ['equivalence'] }, () => {
     show(licensed);
     const tag = screen.getByTestId('commercial-tag');
     expect(tag.closest('.mm-card-item__media')).toBeTruthy();
@@ -79,7 +79,7 @@ describe('ModelCard license tag', () => {
     expect(tag.getAttribute('aria-label')).toBe(t('models.card.license', { use: t('browse.commercial.limited') }));
   });
 
-  it('shows no tag when the license is not known', { tags: ['scenario'] }, () => {
+  it('shows no tag when the license is not known', { tags: ['condition'] }, () => {
     show(model);
     expect(screen.queryByTestId('commercial-tag')).toBeNull();
   });
@@ -110,21 +110,25 @@ describe('ModelCard license tag', () => {
   });
 });
 
-describe('ModelCard structure', () => {
-  it('is a group named by the model with one select button, whose pressed state follows the selection', { tags: ['scenario'] }, () => {
-    const onSelect = vi.fn();
-    const { rerender } = render(<ModelCard model={model} selected={false} favorite={false} onSelect={onSelect} onToggleFavorite={vi.fn()} onDelete={vi.fn()} />);
-    const card = screen.getByRole('group', { name: 'Sunny XL' });
-    const select = card.querySelector('.mm-card-item__select') as HTMLButtonElement;
-    expect(select.getAttribute('aria-pressed')).toBe('false');
-    fireEvent.click(select);
-    expect(onSelect).toHaveBeenCalledOnce();
-    rerender(<ModelCard model={model} selected favorite={false} onSelect={onSelect} onToggleFavorite={vi.fn()} onDelete={vi.fn()} />);
-    expect(select.getAttribute('aria-pressed')).toBe('true');
-    expect(card.className).toContain('is-selected');
-  });
+describe('ModelCard structure', { tags: [] }, () => {
+  it(
+    'is a group named by the model with one select button, whose pressed state follows the selection',
+    { tags: ['state-transition'] },
+    () => {
+      const onSelect = vi.fn();
+      const { rerender } = render(<ModelCard model={model} selected={false} favorite={false} onSelect={onSelect} onToggleFavorite={vi.fn()} onDelete={vi.fn()} />);
+      const card = screen.getByRole('group', { name: 'Sunny XL' });
+      const select = card.querySelector('.mm-card-item__select') as HTMLButtonElement;
+      expect(select.getAttribute('aria-pressed')).toBe('false');
+      fireEvent.click(select);
+      expect(onSelect).toHaveBeenCalledOnce();
+      rerender(<ModelCard model={model} selected favorite={false} onSelect={onSelect} onToggleFavorite={vi.fn()} onDelete={vi.fn()} />);
+      expect(select.getAttribute('aria-pressed')).toBe('true');
+      expect(card.className).toContain('is-selected');
+    },
+  );
 
-  it('keeps the star, the menu and the license tag out of the card select button', { tags: ['scenario'] }, () => {
+  it('keeps the star, the menu and the license tag out of the card select button', { tags: ['condition'] }, () => {
     const onSelect = vi.fn();
     const onToggleFavorite = vi.fn();
     render(<ModelCard model={licensed} selected={false} favorite={false} onSelect={onSelect} onToggleFavorite={onToggleFavorite} onDelete={vi.fn()} />);
@@ -138,11 +142,11 @@ describe('ModelCard structure', () => {
   });
 });
 
-describe('the update tag', () => {
+describe('the update tag', { tags: [] }, () => {
   const update = { key: 'm1', modelId: '1', installedVersionId: '2', latestVersionId: '3', latestName: 'v3', publishedAt: 0, pageUrl: 'https://civitai.com/models/1?modelVersionId=3' };
   afterEach(() => useModelUpdates.setState({ updates: [] }));
 
-  it('is shown on the card of a model that has a newer version, and on no other', { tags: ['scenario'] }, () => {
+  it('is shown on the card of a model that has a newer version, and on no other', { tags: ['condition'] }, () => {
     useModelUpdates.setState({ updates: [update] });
     const { rerender } = render(<ModelCard model={model} selected={false} favorite={false} onSelect={vi.fn()} onToggleFavorite={vi.fn()} onDelete={vi.fn()} />);
     expect(screen.getByTestId('mm-update-tag').textContent).toBe(t('models.updates.tag'));
@@ -150,7 +154,7 @@ describe('the update tag', () => {
     expect(screen.queryByTestId('mm-update-tag')).toBeNull();
   });
 
-  it('is not shown without an update', { tags: ['scenario'] }, () => {
+  it('is not shown without an update', { tags: ['condition'] }, () => {
     render(<ModelCard model={model} selected={false} favorite={false} onSelect={vi.fn()} onToggleFavorite={vi.fn()} onDelete={vi.fn()} />);
     expect(screen.queryByTestId('mm-update-tag')).toBeNull();
   });

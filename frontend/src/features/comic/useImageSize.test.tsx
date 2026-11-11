@@ -30,14 +30,14 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('the size of a picture', () => {
-  it('is null without an address', { tags: ['error-guessing'] }, () => {
+describe('the size of a picture', { tags: [] }, () => {
+  it('is null without an address', { tags: ['boundary', 'error-guessing'] }, () => {
     const { result } = renderHook(() => useImageSize(undefined));
     expect(result.current).toBeNull();
     expect(images).toHaveLength(0);
   });
 
-  it('is null until the picture has loaded, then its natural size', { tags: ['error-guessing'] }, () => {
+  it('is null until the picture has loaded, then its natural size', { tags: ['state-transition', 'boundary'] }, () => {
     const { result } = renderHook(() => useImageSize('novira://a-load.png'));
     expect(result.current).toBeNull();
     expect(images[0]!.src).toBe('novira://a-load.png');
@@ -45,7 +45,7 @@ describe('the size of a picture', () => {
     expect(result.current).toEqual({ width: 640, height: 480 });
   });
 
-  it('is known at once for an address loaded before, without loading it again', { tags: ['regression'] }, () => {
+  it('is known at once for an address loaded before, without loading it again', { tags: ['condition'] }, () => {
     const first = renderHook(() => useImageSize('novira://b-cached.png'));
     act(() => images[0]!.load(100, 200));
     first.unmount();
@@ -54,15 +54,19 @@ describe('the size of a picture', () => {
     expect(images).toHaveLength(1);
   });
 
-  it('drops the size when the address goes away, and ignores a load that finishes after the hook is gone', { tags: ['scenario'] }, () => {
-    const { result, rerender, unmount } = renderHook(({ url }: { url: string | undefined }) => useImageSize(url), { initialProps: { url: 'novira://c-gone.png' as string | undefined } });
-    act(() => images[0]!.load(10, 20));
-    expect(result.current).toEqual({ width: 10, height: 20 });
-    rerender({ url: undefined });
-    expect(result.current).toBeNull();
-    rerender({ url: 'novira://d-late.png' });
-    unmount();
-    // The late load only fills the cache; nothing is set on a gone hook.
-    expect(() => images[1]!.load(30, 40)).not.toThrow();
-  });
+  it(
+    'drops the size when the address goes away, and ignores a load that finishes after the hook is gone',
+    { tags: ['state-transition', 'error-guessing'] },
+    () => {
+      const { result, rerender, unmount } = renderHook(({ url }: { url: string | undefined }) => useImageSize(url), { initialProps: { url: 'novira://c-gone.png' as string | undefined } });
+      act(() => images[0]!.load(10, 20));
+      expect(result.current).toEqual({ width: 10, height: 20 });
+      rerender({ url: undefined });
+      expect(result.current).toBeNull();
+      rerender({ url: 'novira://d-late.png' });
+      unmount();
+      // The late load only fills the cache; nothing is set on a gone hook.
+      expect(() => images[1]!.load(30, 40)).not.toThrow();
+    },
+  );
 });

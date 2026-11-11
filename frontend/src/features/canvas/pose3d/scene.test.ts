@@ -64,8 +64,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('the joints', () => {
-  it('start as given, and a copy is handed out', { tags: ['condition'] }, () => {
+describe('the joints', { tags: [] }, () => {
+  it('start as given, and a copy is handed out', { tags: ['equivalence'] }, () => {
     startUp([3]);
     expect(scene.joints()).toEqual(row);
     scene.joints()[0]!.x = 999;
@@ -73,7 +73,7 @@ describe('the joints', () => {
     expect(changed).toBeGreaterThan(0);
   });
 
-  it('swing a joint round its parent when its ball is dragged, and go back on reset', { tags: ['condition'] }, () => {
+  it('swing a joint round its parent when its ball is dragged, and go back on reset', { tags: ['state-transition'] }, () => {
     startUp();
     const [x, y] = screen(row[4]!);
     fire('pointerdown', x, y);
@@ -98,8 +98,8 @@ describe('the joints', () => {
   });
 });
 
-describe('the view', () => {
-  it('turns with a drag of the background and stops short of straight up or down', { tags: ['condition'] }, () => {
+describe('the view', { tags: [] }, () => {
+  it('turns with a drag of the background and stops short of straight up or down', { tags: ['boundary'] }, () => {
     startUp();
     fire('pointerdown', 5, 5);
     fire('pointermove', 55, 35);
@@ -117,7 +117,7 @@ describe('the view', () => {
     expect(scene.view()).toEqual({ yaw: 1, pitch: Math.PI / 2 });
   });
 
-  it('ignores a move with nothing pressed, and a pointer that is let go', { tags: ['condition'] }, () => {
+  it('ignores a move with nothing pressed, and a pointer that is let go', { tags: ['condition', 'error-guessing'] }, () => {
     startUp();
     const before = changed;
     fire('pointermove', 50, 50);
@@ -139,7 +139,7 @@ describe('the view', () => {
     scene.resize();
   });
 
-  it('frees the renderer when it is closed', { tags: ['condition'] }, () => {
+  it('frees the renderer when it is closed', { tags: ['state-transition'] }, () => {
     startUp();
     scene.dispose();
     expect(gl.disposed).toBe(1);

@@ -19,8 +19,8 @@ const centerDoc = () => {
   return { x: (400 - v.x) / v.scale, y: (300 - v.y) / v.scale };
 };
 
-describe('canvas viewport commands', () => {
-  it('zooms to a scale around the middle of the stage', { tags: ['condition'] }, () => {
+describe('canvas viewport commands', { tags: [] }, () => {
+  it('zooms to a scale around the middle of the stage', { tags: ['equivalence'] }, () => {
     const before = centerDoc();
     zoomTo(2);
     expect(c().viewport.scale).toBeCloseTo(2);
@@ -28,7 +28,7 @@ describe('canvas viewport commands', () => {
     expect(centerDoc().y).toBeCloseTo(before.y);
   });
 
-  it('steps zoom in and out and keeps the middle of the stage fixed', { tags: ['condition'] }, () => {
+  it('steps zoom in and out and keeps the middle of the stage fixed', { tags: ['equivalence'] }, () => {
     const before = centerDoc();
     const start = c().viewport.scale;
     zoomStep(1);
@@ -51,7 +51,7 @@ describe('canvas viewport commands', () => {
     expect(v.y + (c().bbox.y + height / 2) * v.scale).toBeCloseTo(50);
   });
 
-  it('resets the view to the bbox when there are no layers', { tags: ['condition'] }, () => {
+  it('resets the view to the bbox when there are no layers', { tags: ['boundary', 'condition'] }, () => {
     zoomTo(4);
     resetView();
     const { width, height } = c().bbox;
@@ -66,7 +66,7 @@ describe('canvas viewport commands', () => {
   });
 });
 
-describe('viewport of another store', () => {
+describe('viewport of another store', { tags: [] }, () => {
   it('keeps its own stage size and acts only on its own store', { tags: ['condition'] }, () => {
     const page = createCanvasStore({ syncParams: false });
     setStageSize(200, 100, page);
@@ -79,7 +79,7 @@ describe('viewport of another store', () => {
     expect(c().viewport.scale).toBeGreaterThan(v.scale);
   });
 
-  it('fits a store once its stage is large enough, and only the first time', { tags: ['boundary'] }, () => {
+  it('fits a store once its stage is large enough, and only the first time', { tags: ['boundary', 'state-transition'] }, () => {
     const page = createCanvasStore({ syncParams: false });
     setStageSize(40, 40, page);
     fitBboxOnce(page);

@@ -61,7 +61,7 @@ fn a_gallery_entry_that_cannot_be_read_fails_the_backup_and_leaves_no_partial_fi
     assert!(!dir.path().join("backup.zip.partial").exists());
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing
 #[test]
 fn a_screen_state_that_is_not_text_is_refused() {
     let dir = tempfile::tempdir().unwrap();
@@ -158,7 +158,7 @@ fn entries_of_a_realistic_size_are_unpacked_whole() {
     );
 }
 
-// tags: boundary, decision-table
+// tags: boundary
 #[test]
 fn unpacking_reports_each_entry_once_counting_from_one() {
     let dir = tempfile::tempdir().unwrap();

@@ -9,7 +9,7 @@ export{e as actionbar,n as nodeCategories,t as sideToolbar,r as misc,j as models
 const NODES: &str = "var e={display_name:`Échantillonneur`,description:`Two\nlines`,inputs:{seed:{name:`Graine`,tooltip:`Random`},cfg:{name:`cfg`}},\
 outputs:{\"0\":{tooltip:`Latent out`}}},t={display_name:`Charger`},n={APG:e,KSampler:e,Load:t};export{e as APG,t as Load,n as default};";
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn reads_a_module_of_data_as_its_named_exports() {
     let v = parse_module(MAIN).unwrap();
@@ -35,7 +35,7 @@ fn reads_the_default_export_when_there_is_one() {
     assert_eq!(v["KSampler"]["description"], json!("Two\nlines"));
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn gathers_the_words_of_a_language() {
     let l = read_locale(MAIN, NODES).unwrap();
@@ -71,7 +71,7 @@ fn gathers_the_words_of_a_language() {
     assert!(l.nodes["Load"].inputs.is_empty());
 }
 
-// tags: condition
+// tags: error-guessing
 #[test]
 fn a_file_with_anything_but_data_is_not_read() {
     for bad in [
@@ -90,7 +90,7 @@ fn a_file_with_anything_but_data_is_not_read() {
     }
 }
 
-// tags: equivalence
+// tags: error-guessing, boundary
 #[test]
 fn a_loop_of_names_or_a_deep_value_stops() {
     assert!(parse_module("var e={a:t},t={b:e};export{e as default};").is_err());
@@ -107,7 +107,7 @@ fn a_loop_of_names_or_a_deep_value_stops() {
     assert!(parse_module(&huge).is_err());
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn finds_the_scripts_from_the_page() {
     let html = r#"<script type="module" crossorigin src="./assets/index-D6MF_nPRO.js"></script>"#;
@@ -131,7 +131,7 @@ fn finds_the_scripts_from_the_page() {
     assert_eq!(locale_scripts(map, "ko"), None);
 }
 
-// tags: equivalence
+// tags: equivalence, error-guessing
 #[test]
 fn maps_the_app_languages_to_comfyui_s() {
     assert_eq!(comfy_language("zh-CN"), Some("zh"));
@@ -140,7 +140,7 @@ fn maps_the_app_languages_to_comfyui_s() {
     assert_eq!(comfy_language("xx"), None);
 }
 
-// tags: boundary, equivalence
+// tags: equivalence, error-guessing
 #[test]
 fn comments_arrays_escapes_and_short_forms_are_read() {
     let src = r#"// a line comment
@@ -186,7 +186,7 @@ export{a as list,b as default}; /* unclosed"#;
     }
 }
 
-// tags: condition
+// tags: equivalence, boundary
 #[test]
 fn numeric_keys_and_a_surrogate_pair_written_as_escapes_are_read() {
     let v = parse_module(r#"var a={1:`one`,22:"two"},b="\ud83d\ude00";export{a,b};"#).unwrap();

@@ -4,7 +4,7 @@ import { useDrawScope } from './drawScope';
 
 afterEach(() => useDrawScope.setState({ scope: 'comic' }));
 
-describe('the scope of the drawing settings', () => {
+describe('the scope of the drawing settings', { tags: [] }, () => {
   it('starts on the whole comic', { tags: ['state-transition'] }, () => {
     expect(useDrawScope.getState().scope).toBe('comic');
   });

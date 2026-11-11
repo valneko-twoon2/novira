@@ -104,42 +104,50 @@ async function started() {
   return { backend, socket: FakeSocket.at(0) };
 }
 
-describe('HttpBackend events', () => {
-  it('opens the event socket on the page origin before the first read and mirrors the queue from it', { tags: ['scenario'] }, async () => {
-    const { backend, socket } = await started();
-    expect(socket.url).toBe(`ws://${location.host}/events`);
-    expect(backend.listQueue().map((i) => i.id)).toEqual([1]);
-    const seen: BackendEvent[] = [];
-    backend.subscribe((e) => seen.push(e));
+describe('HttpBackend events', { tags: [] }, () => {
+  it(
+    'opens the event socket on the page origin before the first read and mirrors the queue from it',
+    { tags: ['scenario', 'state-transition'] },
+    async () => {
+      const { backend, socket } = await started();
+      expect(socket.url).toBe(`ws://${location.host}/events`);
+      expect(backend.listQueue().map((i) => i.id)).toEqual([1]);
+      const seen: BackendEvent[] = [];
+      backend.subscribe((e) => seen.push(e));
 
-    socket.send({ type: 'queue_item_status_changed', item: item(1, 'in_progress') });
-    socket.send({ type: 'queue_item_status_changed', item: item(2, 'pending') });
-    socket.send({ type: 'processor_state', isPaused: true });
-    expect(backend.listQueue().map((i) => [i.id, i.status])).toEqual([
-      [1, 'in_progress'],
-      [2, 'pending'],
-    ]);
-    expect(backend.queueStatus()).toMatchObject({ inProgress: 1, pending: 1, total: 2, isPaused: true });
-    expect(seen.map((e) => e.type)).toEqual(['queue_item_status_changed', 'queue_item_status_changed', 'processor_state']);
+      socket.send({ type: 'queue_item_status_changed', item: item(1, 'in_progress') });
+      socket.send({ type: 'queue_item_status_changed', item: item(2, 'pending') });
+      socket.send({ type: 'processor_state', isPaused: true });
+      expect(backend.listQueue().map((i) => [i.id, i.status])).toEqual([
+        [1, 'in_progress'],
+        [2, 'pending'],
+      ]);
+      expect(backend.queueStatus()).toMatchObject({ inProgress: 1, pending: 1, total: 2, isPaused: true });
+      expect(seen.map((e) => e.type)).toEqual(['queue_item_status_changed', 'queue_item_status_changed', 'processor_state']);
 
-    // The remaining items travel with `queue_cleared`; the listeners get the event without them.
-    socket.send({ type: 'queue_cleared', items: [item(2, 'pending')] });
-    expect(backend.listQueue().map((i) => i.id)).toEqual([2]);
-    expect(seen.at(-1)).toEqual({ type: 'queue_cleared' });
-  });
+      // The remaining items travel with `queue_cleared`; the listeners get the event without them.
+      socket.send({ type: 'queue_cleared', items: [item(2, 'pending')] });
+      expect(backend.listQueue().map((i) => i.id)).toEqual([2]);
+      expect(seen.at(-1)).toEqual({ type: 'queue_cleared' });
+    },
+  );
 
-  it('delivers progress and other events as they come, and ignores a message that is not an event', { tags: ['error-guessing'] }, async () => {
-    const { backend, socket } = await started();
-    const seen: BackendEvent[] = [];
-    const stop = backend.subscribe((e) => seen.push(e));
-    socket.send({ type: 'engine_status', status: { state: 'ready' } });
-    socket.onmessage?.({ data: 'not json' });
-    stop();
-    socket.send({ type: 'processor_state', isPaused: false });
-    expect(seen).toEqual([{ type: 'engine_status', status: { state: 'ready' } }]);
-  });
+  it(
+    'delivers progress and other events as they come, and ignores a message that is not an event',
+    { tags: ['error-guessing'] },
+    async () => {
+      const { backend, socket } = await started();
+      const seen: BackendEvent[] = [];
+      const stop = backend.subscribe((e) => seen.push(e));
+      socket.send({ type: 'engine_status', status: { state: 'ready' } });
+      socket.onmessage?.({ data: 'not json' });
+      stop();
+      socket.send({ type: 'processor_state', isPaused: false });
+      expect(seen).toEqual([{ type: 'engine_status', status: { state: 'ready' } }]);
+    },
+  );
 
-  it('opens the socket again after it drops and reads the queue it missed', { tags: ['state-transition'] }, async () => {
+  it('opens the socket again after it drops and reads the queue it missed', { tags: ['state-transition', 'error-guessing'] }, async () => {
     vi.useFakeTimers({ toFake: ['setTimeout'] });
     const { backend, socket } = await started();
     const seen: BackendEvent[] = [];
@@ -156,7 +164,7 @@ describe('HttpBackend events', () => {
     expect(backend.queueStatus().isPaused).toBe(true);
   });
 
-  it('does not wait for a socket that never opens', { tags: ['error-guessing'] }, async () => {
+  it('does not wait for a socket that never opens', { tags: ['error-guessing', 'state-transition'] }, async () => {
     const backend = new HttpBackend();
     const boot = backend.bootstrap();
     await vi.waitFor(() => expect(FakeSocket.all).toHaveLength(1));
@@ -165,8 +173,8 @@ describe('HttpBackend events', () => {
   });
 });
 
-describe('HttpBackend pictures and jobs', () => {
-  it('posts a picture as bytes with its options in a header', { tags: ['condition'] }, async () => {
+describe('HttpBackend pictures and jobs', { tags: [] }, () => {
+  it('posts a picture as bytes with its options in a header', { tags: ['equivalence'] }, async () => {
     const backend = new HttpBackend();
     const image = await backend.uploadImage(new Blob(['png']), { boardId: 'b1', category: 'mask' });
     expect(image.url).toBe('/novira-image/full/up.png');
@@ -206,8 +214,8 @@ describe('HttpBackend pictures and jobs', () => {
   });
 });
 
-describe('HttpBackend pages outside the app', () => {
-  it('opens the address the server checked in a new tab, without a link back to this page', { tags: ['condition'] }, async () => {
+describe('HttpBackend pages outside the app', { tags: [] }, () => {
+  it('opens the address the server checked in a new tab, without a link back to this page', { tags: ['equivalence'] }, async () => {
     const open = vi.fn(() => null);
     vi.stubGlobal('open', open);
     await new HttpBackend().openCivitaiPage('12');

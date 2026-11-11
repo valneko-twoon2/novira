@@ -14,7 +14,7 @@ afterEach(() => {
   useModelImport.setState({ isOpen: false, tab: 'source' });
 });
 
-describe('ImportDialog', () => {
+describe('ImportDialog', { tags: [] }, () => {
   const show = () =>
     render(
       <TooltipProvider>
@@ -22,7 +22,7 @@ describe('ImportDialog', () => {
       </TooltipProvider>,
     );
 
-  it('stays closed until opened, then opens on the first tab', { tags: ['scenario'] }, () => {
+  it('stays closed until opened, then opens on the first tab', { tags: ['state-transition'] }, () => {
     show();
     expect(screen.queryByRole('dialog')).toBeNull();
     act(() => useModelImport.getState().open());
@@ -30,13 +30,13 @@ describe('ImportDialog', () => {
     expect(screen.getByRole('tab', { name: t('models.install.tab.source') }).getAttribute('aria-selected')).toBe('true');
   });
 
-  it('opens straight on the starter models when asked', { tags: ['scenario'] }, () => {
+  it('opens straight on the starter models when asked', { tags: ['condition'] }, () => {
     show();
     act(() => useModelImport.getState().open('starter'));
     expect(screen.getByRole('tab', { name: t('models.install.tab.starter') }).getAttribute('aria-selected')).toBe('true');
   });
 
-  it('closes with its close button and remembers the tab it was left on', { tags: ['scenario'] }, () => {
+  it('closes with its close button and remembers the tab it was left on', { tags: ['state-transition'] }, () => {
     show();
     act(() => useModelImport.getState().open('scan'));
     act(() => useModelImport.getState().close());

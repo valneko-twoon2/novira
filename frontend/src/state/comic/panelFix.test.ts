@@ -7,8 +7,8 @@ const near = (p: { x: number; y: number }, x: number, y: number) => {
   expect(p.y).toBeCloseTo(y, 6);
 };
 
-describe('panelToPicture', () => {
-  it('maps the panel onto a picture of its own shape that covers it, corner to corner', { tags: ['condition'] }, () => {
+describe('panelToPicture', { tags: [] }, () => {
+  it('maps the panel onto a picture of its own shape that covers it, corner to corner', { tags: ['equivalence'] }, () => {
     const m = panelToPicture(DEFAULT_IMAGE_VIEW, { width: 800, height: 1200 }, { width: 2, height: 3 });
     near(applyMatrix(m, 0, 0), 0, 0);
     near(applyMatrix(m, 1, 1.5), 400, 600);
@@ -22,27 +22,31 @@ describe('panelToPicture', () => {
     near(applyMatrix(m, 1, 1), 1500, 1000);
   });
 
-  it('follows a picture moved and enlarged in its panel', { tags: ['condition'] }, () => {
+  it('follows a picture moved and enlarged in its panel', { tags: ['equivalence'] }, () => {
     // Twice as big, its centre at the panel's top-left corner: that corner is the picture's centre.
     const m = panelToPicture({ ...DEFAULT_IMAGE_VIEW, cx: 0, cy: 0, scale: 2 }, { width: 100, height: 100 }, { width: 1, height: 1 });
     near(applyMatrix(m, 0, 0), 50, 50);
     near(applyMatrix(m, 0.5, 0.5), 75, 75);
   });
 
-  it('turns a point back by the picture turn: a quarter turn clockwise sends the panel top to the picture left', { tags: ['condition'] }, () => {
-    const m = panelToPicture({ ...DEFAULT_IMAGE_VIEW, rotation: 90 }, { width: 100, height: 100 }, { width: 1, height: 1 });
-    // The top middle of the panel shows the left middle of the turned picture.
-    near(applyMatrix(m, 0.5, 0), 0, 50);
-  });
+  it(
+    'turns a point back by the picture turn: a quarter turn clockwise sends the panel top to the picture left',
+    { tags: ['equivalence'] },
+    () => {
+      const m = panelToPicture({ ...DEFAULT_IMAGE_VIEW, rotation: 90 }, { width: 100, height: 100 }, { width: 1, height: 1 });
+      // The top middle of the panel shows the left middle of the turned picture.
+      near(applyMatrix(m, 0.5, 0), 0, 50);
+    },
+  );
 
-  it('mirrors a point for a mirrored picture', { tags: ['condition'] }, () => {
+  it('mirrors a point for a mirrored picture', { tags: ['equivalence'] }, () => {
     const m = panelToPicture({ ...DEFAULT_IMAGE_VIEW, flipX: true }, { width: 100, height: 100 }, { width: 1, height: 1 });
     near(applyMatrix(m, 0, 0.5), 100, 50);
     const v = panelToPicture({ ...DEFAULT_IMAGE_VIEW, flipY: true }, { width: 100, height: 100 }, { width: 1, height: 1 });
     near(applyMatrix(v, 0.5, 0), 50, 100);
   });
 
-  it('gives the same pixels whatever unit the panel is measured in', { tags: ['condition'] }, () => {
+  it('gives the same pixels whatever unit the panel is measured in', { tags: ['equivalence'] }, () => {
     const view = { ...DEFAULT_IMAGE_VIEW, cx: 0.4, scale: 1.3, rotation: 20 };
     const a = panelToPicture(view, { width: 640, height: 960 }, { width: 1, height: 1.25 });
     const b = panelToPicture(view, { width: 640, height: 960 }, { width: 1000, height: 1250 });
@@ -52,8 +56,8 @@ describe('panelToPicture', () => {
   });
 });
 
-describe('extendFix', () => {
-  it('keeps the points inside the panel and skips points too close to the last one', { tags: ['error-guessing'] }, () => {
+describe('extendFix', { tags: [] }, () => {
+  it('keeps the points inside the panel and skips points too close to the last one', { tags: ['boundary'] }, () => {
     let s = extendFix({ points: [], width: 0.05 }, -0.2, 1.4, 1);
     expect(s.points).toEqual([0, 1]);
     s = extendFix(s, 0.001, 1, 1);
@@ -68,8 +72,8 @@ describe('extendFix', () => {
   });
 });
 
-describe('readFixBoxes', () => {
-  it('reads boxes in fractions of the panel and keeps them inside it', { tags: ['condition'] }, () => {
+describe('readFixBoxes', { tags: [] }, () => {
+  it('reads boxes in fractions of the panel and keeps them inside it', { tags: ['boundary'] }, () => {
     expect(readFixBoxes([{ x: 0.8, y: -0.1, w: 0.5, h: 0.3 }])).toEqual([{ x: 0.8, y: 0, w: expect.closeTo(0.2, 9), h: 0.3 }]);
   });
 
@@ -84,7 +88,7 @@ describe('readFixBoxes', () => {
   });
 });
 
-describe('hasFix', () => {
+describe('hasFix', { tags: [] }, () => {
   it('asks for a redraw only with a box or a stroke of at least one point', { tags: ['boundary'] }, () => {
     expect(hasFix({ strokes: [], boxes: [] })).toBe(false);
     expect(hasFix({ strokes: [{ points: [], width: 0.1 }], boxes: [] })).toBe(false);

@@ -35,7 +35,7 @@ fn lora_header(base: &str) -> novira_core::models::classify::Header {
     parse_header(&bytes).unwrap()
 }
 
-// tags: error-guessing, boundary
+// tags: equivalence, condition
 #[test]
 fn a_loras_training_metadata_names_its_base_model_and_an_unknown_one_falls_back_to_the_file_name() {
     for (version, expected) in [
@@ -62,7 +62,7 @@ fn a_loras_training_metadata_names_its_base_model_and_an_unknown_one_falls_back_
     );
 }
 
-// tags: boundary
+// tags: equivalence
 #[test]
 fn adult_words_are_found_in_camel_case_names_and_in_picture_captions() {
     assert!(looks_adult("NudeXL", &[], &json!({})));

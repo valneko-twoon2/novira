@@ -232,7 +232,7 @@ mod tests {
         n: u32,
     }
 
-    // tags: equivalence
+    // tags: error-guessing
     #[test]
     fn ids_and_sorts_list_every_row_even_one_whose_data_does_not_parse() {
         let db = Db::in_memory().unwrap();
@@ -310,7 +310,7 @@ mod tests {
         assert_eq!(db.load::<Row>(Table::Boards).unwrap().len(), 1);
     }
 
-    // tags: decision-table
+    // tags: boundary
     #[test]
     fn rows_load_in_the_order_sqlite_gives_for_sort_then_id() {
         let mut db = Db::in_memory().unwrap();
@@ -401,7 +401,7 @@ mod tests {
         assert_eq!(db.get::<Row>(Table::Watermarks, "bad").unwrap(), None);
     }
 
-    // tags: scenario
+    // tags: equivalence
     #[test]
     fn meta_values_persist() {
         let db = Db::in_memory().unwrap();

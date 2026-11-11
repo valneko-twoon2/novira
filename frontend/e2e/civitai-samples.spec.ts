@@ -2,7 +2,7 @@
 // detail) and the notice that an installed model has a newer version (a tag on the card, a row in the detail).
 import { expect, msg, openApp, showTab, test } from './fixtures';
 
-test('the detail lists the example settings and one button puts them into the Generate form', { tag: ['@condition'] }, async ({ page }) => {
+test('the detail lists the example settings and one button puts them into the Generate form', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);
   await showTab(page, 'browse');
   await page.getByTestId('browse-card').first().click();

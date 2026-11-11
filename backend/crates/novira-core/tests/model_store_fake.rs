@@ -207,7 +207,7 @@ async fn a_downloaded_lora_is_placed_classified_and_announced() {
     assert_eq!(parts, 0);
 }
 
-// tags: scenario
+// tags: condition, equivalence
 #[tokio::test]
 async fn kind_comes_from_the_header_then_from_the_file_name() {
     let dir = tempfile::tempdir().unwrap();
@@ -256,7 +256,7 @@ async fn kind_comes_from_the_header_then_from_the_file_name() {
         .any(|m| m.path.ends_with("up.pth") && m.kind == ModelType::SpandrelImageToImage));
 }
 
-// tags: error-guessing
+// tags: error-guessing, equivalence
 #[tokio::test]
 async fn download_failures_are_reported_in_words() {
     let dir = tempfile::tempdir().unwrap();
@@ -318,7 +318,7 @@ async fn a_running_download_can_be_cancelled() {
     assert!(!dir.path().join("models/loras/slow.safetensors").exists());
 }
 
-// tags: boundary, state-transition
+// tags: state-transition
 #[tokio::test]
 async fn cancelling_one_download_leaves_the_other_running() {
     let dir = tempfile::tempdir().unwrap();
@@ -356,7 +356,7 @@ async fn cancelling_one_download_leaves_the_other_running() {
     );
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing, equivalence
 #[tokio::test]
 async fn local_installs_refuse_what_is_not_a_model() {
     let dir = tempfile::tempdir().unwrap();

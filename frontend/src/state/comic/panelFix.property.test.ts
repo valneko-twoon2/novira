@@ -19,8 +19,8 @@ function shown(view: ComicImageView, image: Size, panel: Size, px: number, py: n
   return { x: box.cx + qx * Math.cos(t) - qy * Math.sin(t), y: box.cy + qx * Math.sin(t) + qy * Math.cos(t) };
 }
 
-describe('panelToPicture (properties)', () => {
-  it('undoes how the page shows the picture', { tags: ['state-transition', 'condition'] }, () => {
+describe('panelToPicture (properties)', { tags: [] }, () => {
+  it('undoes how the page shows the picture', { tags: ['equivalence', 'error-guessing'] }, () => {
     const view = fc.record({
       cx: fc.double({ min: -1, max: 2, noNaN: true }),
       cy: fc.double({ min: -1, max: 2, noNaN: true }),

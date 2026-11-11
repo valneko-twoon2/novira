@@ -8,7 +8,7 @@ const ticking = () => {
   return () => (t += 10);
 };
 
-describe('perf recorder', () => {
+describe('perf recorder', { tags: [] }, () => {
   it('keeps only the last calls of a bounded ring, oldest first, and counts the dropped ones', { tags: ['boundary'] }, async () => {
     const rec = createRecorder({ now: ticking(), limit: 3 });
     for (const name of ['a', 'b', 'c', 'd', 'e']) await rec.timed(name, () => Promise.resolve(name));
@@ -53,35 +53,39 @@ describe('perf recorder', () => {
     expect(markEntry.mock.calls).toEqual([['novira:backend-ready'], ['novira:stores-filled']]);
   });
 
-  it('times the promise methods of a prototype under their snake-case name and leaves the others as they were', { tags: ['condition'] }, async () => {
-    class Client {
-      factor = 3;
-      async listImages(n: number) {
-        return n * this.factor;
+  it(
+    'times the promise methods of a prototype under their snake-case name and leaves the others as they were',
+    { tags: ['condition'] },
+    async () => {
+      class Client {
+        factor = 3;
+        async listImages(n: number) {
+          return n * this.factor;
+        }
+        queueStatus() {
+          return this.factor;
+        }
+        get kind() {
+          return 'mock';
+        }
       }
-      queueStatus() {
-        return this.factor;
-      }
-      get kind() {
-        return 'mock';
-      }
-    }
-    const rec = createRecorder({ now: ticking() });
-    rec.timeMethods(Client.prototype, snakeCase);
-    const client = new Client();
-    expect(await client.listImages(2)).toBe(6);
-    expect(client.queueStatus()).toBe(3);
-    expect(client.kind).toBe('mock');
-    expect(rec.snapshot().calls.map((c) => c.name)).toEqual(['list_images']);
-  });
+      const rec = createRecorder({ now: ticking() });
+      rec.timeMethods(Client.prototype, snakeCase);
+      const client = new Client();
+      expect(await client.listImages(2)).toBe(6);
+      expect(client.queueStatus()).toBe(3);
+      expect(client.kind).toBe('mock');
+      expect(rec.snapshot().calls.map((c) => c.name)).toEqual(['list_images']);
+    },
+  );
 
-  it('gives the harness a read-only snapshot on window', { tags: ['condition'] }, () => {
+  it('gives the harness a read-only snapshot on window', { tags: ['equivalence'] }, () => {
     const exposed = (window as unknown as { __noviraPerf: { snapshot: () => unknown } }).__noviraPerf;
     expect(Object.isFrozen(exposed)).toBe(true);
     expect(exposed.snapshot()).toEqual(perf.snapshot());
   });
 
-  it('writes command-like names', { tags: ['condition'] }, () => {
+  it('writes command-like names', { tags: ['equivalence'] }, () => {
     expect(snakeCase('listUnfinishedDownloads')).toBe('list_unfinished_downloads');
     expect(snakeCase('bootstrap')).toBe('bootstrap');
   });

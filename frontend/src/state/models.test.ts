@@ -41,7 +41,7 @@ describe('models store', () => {
     expect(useModels.getState().favorites).toEqual(['b']);
   });
 
-  it('puts new install jobs first and clears only finished ones', { tags: ['condition'] }, () => {
+  it('puts new install jobs first and clears only finished ones', { tags: ['state-transition'] }, () => {
     const statuses: [string, ModelInstallJob['status']][] = [
       ['w', 'waiting'],
       ['d', 'downloading'],
@@ -58,14 +58,14 @@ describe('models store', () => {
     expect(useModels.getState().installJobs.map((j) => j.id)).toEqual(['r', 'd', 'w']);
   });
 
-  it('filters models by type and base, including base-independent models', { tags: ['condition'] }, () => {
+  it('filters models by type and base, including base-independent models', { tags: ['decision-table'] }, () => {
     const list = [model('xl'), model('sd1', { base: 'sd-1' }), model('any', { base: 'any' }), model('lora', { type: 'lora' })];
     expect(modelsOfType(list, 'main', 'sdxl').map((m) => m.key)).toEqual(['xl', 'any']);
     expect(modelsOfType(list, 'main').map((m) => m.key)).toEqual(['xl', 'sd1', 'any']);
     expect(modelsOfType(list, 'lora', 'sdxl').map((m) => m.key)).toEqual(['lora']);
   });
 
-  it('finds a model by key', { tags: ['condition'] }, () => {
+  it('finds a model by key', { tags: ['equivalence'] }, () => {
     useModels.getState().setModels([model('a')]);
     expect(findModel('a')?.key).toBe('a');
     expect(findModel('zz')).toBeUndefined();
@@ -74,7 +74,7 @@ describe('models store', () => {
 });
 
 describe('drawable models', () => {
-  it('counts main models and diffusion models of the families that load in parts, and nothing else', { tags: ['condition'] }, () => {
+  it('counts main models and diffusion models of the families that load in parts, and nothing else', { tags: ['equivalence'] }, () => {
     expect(isDrawable(model('a', { type: 'main' }))).toBe(true);
     expect(isDrawable(model('b', { type: 'diffusion_model', base: 'anima' }))).toBe(true);
     expect(isDrawable(model('c', { type: 'diffusion_model', base: 'qwen-image' }))).toBe(true);
@@ -93,10 +93,14 @@ describe('drawable models', () => {
     ]);
   });
 
-  it('gives a whole-checkpoint graph the drawable main models only: no diffusion model, no video checkpoint', { tags: ['scenario'] }, () => {
-    const models = [model('a'), model('b', { type: 'diffusion_model', base: 'anima' }), model('h', { type: 'main', base: 'ltx-video' }), model('l', { type: 'lora' })];
-    expect(checkpointModels(models).map((m) => m.key)).toEqual(['a']);
-  });
+  it(
+    'gives a whole-checkpoint graph the drawable main models only: no diffusion model, no video checkpoint',
+    { tags: ['equivalence'] },
+    () => {
+      const models = [model('a'), model('b', { type: 'diffusion_model', base: 'anima' }), model('h', { type: 'main', base: 'ltx-video' }), model('l', { type: 'lora' })];
+      expect(checkpointModels(models).map((m) => m.key)).toEqual(['a']);
+    },
+  );
 });
 
 describe('base order', () => {

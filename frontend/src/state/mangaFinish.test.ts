@@ -8,7 +8,7 @@ beforeEach(() => {
 });
 
 describe('the manga finish values', () => {
-  it('start at the node defaults, which lie inside the ranges', { tags: ['condition'] }, () => {
+  it('start at the node defaults, which lie inside the ranges', { tags: ['boundary'] }, () => {
     expect(useMangaFinish.getState().values).toEqual({ screenLines: 200, whitePoint: 0.8, blackPoint: 0.3, gradation: 1, whiteLines: 0.4 });
     for (const key of MANGA_KEYS) {
       expect(DEFAULT_MANGA[key]).toBeGreaterThanOrEqual(MANGA_RANGE[key].min);
@@ -16,7 +16,7 @@ describe('the manga finish values', () => {
     }
   });
 
-  it('change one value at a time, and reset to the defaults', { tags: ['condition'] }, () => {
+  it('change one value at a time, and reset to the defaults', { tags: ['equivalence'] }, () => {
     useMangaFinish.getState().set({ screenLines: 300 });
     useMangaFinish.getState().set({ blackPoint: 0.5 });
     expect(useMangaFinish.getState().values).toEqual({ ...DEFAULT_MANGA, screenLines: 300, blackPoint: 0.5 });
@@ -24,20 +24,24 @@ describe('the manga finish values', () => {
     expect(useMangaFinish.getState().values).toEqual(DEFAULT_MANGA);
   });
 
-  it('are kept across starts', { tags: ['condition'] }, () => {
+  it('are kept across starts', { tags: ['equivalence'] }, () => {
     useMangaFinish.getState().set({ whiteLines: 0.9 });
     const saved = JSON.parse(localStorage.getItem('novira.mangaFinish')!);
     expect(saved.state.values.whiteLines).toBe(0.9);
   });
 
-  it('are read back value by value: a wrong kind keeps the default, a number is held to its range', { tags: ['error-guessing'] }, () => {
-    expect(restoreManga({ values: { screenLines: 9999, whitePoint: 'x', blackPoint: -1, gradation: Number.NaN, whiteLines: 0.7, extra: 1 } })).toEqual({
-      ...DEFAULT_MANGA,
-      screenLines: 600,
-      blackPoint: 0,
-      whiteLines: 0.7,
-    });
-    expect(restoreManga(null)).toEqual(DEFAULT_MANGA);
-    expect(restoreManga({ values: 3 })).toEqual(DEFAULT_MANGA);
-  });
+  it(
+    'are read back value by value: a wrong kind keeps the default, a number is held to its range',
+    { tags: ['boundary', 'error-guessing'] },
+    () => {
+      expect(restoreManga({ values: { screenLines: 9999, whitePoint: 'x', blackPoint: -1, gradation: Number.NaN, whiteLines: 0.7, extra: 1 } })).toEqual({
+        ...DEFAULT_MANGA,
+        screenLines: 600,
+        blackPoint: 0,
+        whiteLines: 0.7,
+      });
+      expect(restoreManga(null)).toEqual(DEFAULT_MANGA);
+      expect(restoreManga({ values: 3 })).toEqual(DEFAULT_MANGA);
+    },
+  );
 });

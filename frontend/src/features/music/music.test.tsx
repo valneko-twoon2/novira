@@ -24,14 +24,14 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('music request', () => {
-  it('needs style tags', { tags: ['scenario'] }, () => {
+describe('music request', { tags: [] }, () => {
+  it('needs style tags', { tags: ['condition'] }, () => {
     const { form } = useMusic.getState();
     expect(musicProblems(form, { tags: 'tags' })).toEqual(['tags']);
     expect(musicProblems({ ...form, tags: 'lofi' }, { tags: 'tags' })).toEqual([]);
   });
 
-  it('carries the lyrics and musical settings, and drops the lyrics of an instrumental', { tags: ['scenario'] }, () => {
+  it('carries the lyrics and musical settings, and drops the lyrics of an instrumental', { tags: ['condition'] }, () => {
     const form = { ...useMusic.getState().form, tags: ' upbeat pop ', lyrics: ' la la ', seconds: 45, bpm: 100, key: 'E minor', language: 'en' };
     const req = buildMusicRequest(form);
     expect(req.params.generationMode).toBe('music');
@@ -42,7 +42,7 @@ describe('music request', () => {
   });
 });
 
-describe('music panel', () => {
+describe('music panel', { tags: [] }, () => {
   it('lists what is missing, then invokes once the style is filled in', { tags: ['scenario'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue').mockResolvedValue([]);
     render(<TooltipProvider><MusicPanel /></TooltipProvider>);
@@ -61,7 +61,7 @@ describe('music panel', () => {
     expect(request.params.positivePrompt).toBe('calm piano');
   });
 
-  it('asks for the model download first', { tags: ['scenario'] }, async () => {
+  it('asks for the model download first', { tags: ['condition'] }, async () => {
     usePacks.getState().setPack('music', { state: 'missing', totalBytes: 10_000_000_000 });
     useMusic.getState().setForm({ tags: 'calm piano' });
     render(<TooltipProvider><MusicPanel /></TooltipProvider>);
@@ -69,7 +69,7 @@ describe('music panel', () => {
     expect(screen.getByTestId('music-pack')).toBeTruthy();
   });
 
-  it('turning on instrumental disables the lyrics', { tags: ['scenario'] }, () => {
+  it('turning on instrumental disables the lyrics', { tags: ['condition'] }, () => {
     render(<TooltipProvider><MusicPanel /></TooltipProvider>);
     const lyrics = screen.getByTestId('music-lyrics') as HTMLTextAreaElement;
     expect(lyrics.disabled).toBe(false);
@@ -78,8 +78,8 @@ describe('music panel', () => {
   });
 });
 
-describe('media jobs', () => {
-  it('renders nothing when no job of that kind exists', { tags: ['scenario'] }, () => {
+describe('media jobs', { tags: [] }, () => {
+  it('renders nothing when no job of that kind exists', { tags: ['boundary'] }, () => {
     const { container } = render(<MediaJobs kind="music" />);
     expect(container.textContent).toBe('');
   });

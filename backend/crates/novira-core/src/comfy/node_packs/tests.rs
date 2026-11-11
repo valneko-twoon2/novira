@@ -1,6 +1,6 @@
 use super::*;
 
-// tags: equivalence
+// tags: equivalence, error-guessing
 #[test]
 fn repo_info_reads_the_author_and_licence_and_survives_missing_fields() {
     let repo = parse_github("https://github.com/someone/Fancy").unwrap();
@@ -17,7 +17,7 @@ fn repo_info_reads_the_author_and_licence_and_survives_missing_fields() {
     assert_eq!(parse_repo_info(b"not json", &repo).author, "someone");
 }
 
-// tags: decision-table
+// tags: equivalence, error-guessing
 #[test]
 fn tags_are_put_into_an_address_only_when_plain() {
     for ok in ["v1.2.3", "1.0", "release-2024_01", "v1.0+build.5"] {
@@ -35,7 +35,7 @@ fn tags_are_put_into_an_address_only_when_plain() {
     );
 }
 
-// tags: equivalence
+// tags: equivalence, error-guessing
 #[test]
 fn a_tags_answer_gives_the_valid_names_in_order() {
     let body = br#"[{"name":"v2.0"},{"name":"../evil"},{"name":"v1.9"},{"other":1}]"#;
@@ -75,7 +75,7 @@ fn the_installed_version_is_remembered_in_the_marker() {
     assert_eq!(listed[1].version, None);
 }
 
-// tags: equivalence
+// tags: equivalence, error-guessing
 #[test]
 fn only_plain_github_repositories_are_accepted() {
     let r = parse_github("https://github.com/Nekodificador/ComfyUI-NKD-Basic-Tools.git/").unwrap();
@@ -102,7 +102,7 @@ fn only_plain_github_repositories_are_accepted() {
     }
 }
 
-// tags: condition
+// tags: condition, error-guessing
 #[test]
 fn listing_skips_caches_and_disabled_packs_and_reads_where_a_pack_came_from() {
     let dir = tempfile::tempdir().unwrap();
@@ -143,7 +143,7 @@ fn listing_skips_caches_and_disabled_packs_and_reads_where_a_pack_came_from() {
     assert!(!dir.path().join("b-pack").exists());
 }
 
-// tags: equivalence
+// tags: equivalence, error-guessing
 #[test]
 fn only_listed_pack_routes_are_callable() {
     assert!(route_allowed("nkd/facerig/preview"));
@@ -161,7 +161,7 @@ fn only_listed_pack_routes_are_callable() {
     }
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn submodules_are_read_from_gitmodules() {
     let text = "[submodule \"repositories/x\"]\n\tpath = repositories/x\n\turl = https://github.com/a/x\n[submodule \"y\"]\n\turl = https://github.com/a/y.git\n\tpath = y\n";
@@ -186,7 +186,7 @@ fn packs_that_miss_a_library_get_it_added() {
     assert!(extra_requirements(&other).is_empty());
 }
 
-// tags: condition
+// tags: condition, equivalence
 #[test]
 fn the_pose_pack_leaves_out_mediapipe_and_albumentationsx_and_other_packs_leave_out_nothing() {
     let aux = parse_github("https://github.com/Fannovel16/comfyui_controlnet_aux").unwrap();
@@ -233,7 +233,7 @@ fn requirements_cannot_replace_comfyuis_pytorch() {
     );
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn portable_builds_pin_their_wheels_by_the_version_in_the_file_name() {
     // The lines as the portable build's `pip freeze` writes them (the hash after `#` is not needed).
@@ -269,7 +269,7 @@ fn a_version_file_with_an_empty_or_overlong_value_gives_no_version() {
     assert_eq!(comfyui_version(dir.path()), None);
 }
 
-// tags: equivalence
+// tags: decision-table
 #[test]
 fn only_the_named_repository_of_the_named_owner_has_libraries_left_out_or_added() {
     let repo = |o: &str, r: &str| GithubRepo {
@@ -291,7 +291,7 @@ fn only_the_named_repository_of_the_named_owner_has_libraries_left_out_or_added(
     assert!(extra_requirements(&repo("1038lab", "other")).is_empty());
 }
 
-// tags: equivalence
+// tags: boundary, equivalence
 #[test]
 fn a_frozen_line_pins_only_with_both_a_name_and_a_version() {
     assert_eq!(
@@ -316,7 +316,7 @@ fn cut_off_install(custom_nodes: &Path, replaces: Option<&str>) -> PathBuf {
     work
 }
 
-// tags: error-guessing, state-transition
+// tags: state-transition, error-guessing
 #[test]
 fn a_start_after_a_pack_install_was_cut_off_puts_the_pack_back_and_clears_the_work_folder() {
     let dir = tempfile::tempdir().unwrap();
@@ -329,7 +329,7 @@ fn a_start_after_a_pack_install_was_cut_off_puts_the_pack_back_and_clears_the_wo
     assert!(!work.exists());
 }
 
-// tags: condition
+// tags: state-transition
 #[test]
 fn a_start_after_the_new_pack_was_placed_keeps_it_and_clears_the_work_folder() {
     let dir = tempfile::tempdir().unwrap();
@@ -371,7 +371,7 @@ fn a_work_folder_whose_pack_cannot_be_named_is_kept() {
     assert!(dir.path().join("someone/previous").is_dir() && dir.path().join(".git").is_dir());
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn any_opencv_distribution_counts_as_cv2_being_there() {
     assert!(opencv_installed(
@@ -423,7 +423,7 @@ fn a_second_opencv_is_left_out_of_the_plan_and_the_rest_is_pinned() {
     assert_eq!(plan_without_second_opencv(&only, true), Some(vec![]));
 }
 
-// tags: equivalence
+// tags: condition, decision-table
 #[test]
 fn the_plan_is_kept_as_pip_made_it_unless_an_opencv_must_go_and_every_item_pins() {
     let report = plan(&[

@@ -25,7 +25,7 @@ async function start(engineInstall = false) {
   return { backend, events, boot };
 }
 
-describe('the pretend engine install (?engine=install)', () => {
+describe('the pretend engine install (?engine=install)', { tags: [] }, () => {
   it('starts as downloading and walks through the steps to ready', { tags: ['state-transition'] }, async () => {
     const { events, boot } = await start(true);
     expect(boot.engine).toMatchObject({ state: 'downloading', bytes: 0 });
@@ -45,8 +45,8 @@ describe('the pretend engine install (?engine=install)', () => {
   });
 });
 
-describe('model installs', () => {
-  it('cancels a download in progress and ignores an unknown one', { tags: ['state-transition'] }, async () => {
+describe('model installs', { tags: [] }, () => {
+  it('cancels a download in progress and ignores an unknown one', { tags: ['state-transition', 'error-guessing'] }, async () => {
     const { backend, events } = await start();
     const pending = backend.installModel('https://example.com/model.safetensors');
     await vi.advanceTimersByTimeAsync(1000);
@@ -73,12 +73,16 @@ describe('model installs', () => {
   });
 });
 
-describe('packs and node packs', () => {
-  it('cancels a pack download and a node pack install without error when nothing runs', { tags: ['error-guessing'] }, async () => {
-    const { backend } = await start();
-    await backend.cancelPack('video');
-    await backend.cancelNodePack('https://github.com/a/b');
-  });
+describe('packs and node packs', { tags: [] }, () => {
+  it(
+    'cancels a pack download and a node pack install without error when nothing runs',
+    { tags: ['error-guessing', 'boundary'] },
+    async () => {
+      const { backend } = await start();
+      await backend.cancelPack('video');
+      await backend.cancelNodePack('https://github.com/a/b');
+    },
+  );
 
   it('stops a pack download part way and goes back to missing', { tags: ['state-transition'] }, async () => {
     const { backend, events } = await start();
@@ -92,8 +96,8 @@ describe('packs and node packs', () => {
   });
 });
 
-describe('the assistant and the restore state', () => {
-  it('signs in after a pause, answers a chat message, and has nothing to restore', { tags: ['scenario'] }, async () => {
+describe('the assistant and the restore state', { tags: [] }, () => {
+  it('signs in after a pause, answers a chat message, and has nothing to restore', { tags: ['scenario', 'error-guessing'] }, async () => {
     const { backend } = await start();
     const login = backend.agentLogin('codex');
     await vi.advanceTimersByTimeAsync(1300);
@@ -117,28 +121,32 @@ describe('the assistant and the restore state', () => {
   });
 });
 
-describe('the assistant fact look-up', () => {
-  it('gives the same canned article for the same words, nothing for [none], and refuses empty words', { tags: ['equivalence'] }, async () => {
-    const { backend } = await start();
-    const ask = async (language: 'ja' | 'en', query: string) => {
-      const p = backend.lookupReference(language, query);
+describe('the assistant fact look-up', { tags: [] }, () => {
+  it(
+    'gives the same canned article for the same words, nothing for [none], and refuses empty words',
+    { tags: ['equivalence', 'error-guessing'] },
+    async () => {
+      const { backend } = await start();
+      const ask = async (language: 'ja' | 'en', query: string) => {
+        const p = backend.lookupReference(language, query);
+        await vi.advanceTimersByTimeAsync(100);
+        return p;
+      };
+      const a = await ask('en', 'Edo period');
+      expect(a).toEqual(await ask('en', 'Edo period'));
+      expect(a).toHaveLength(1);
+      expect(a[0]).toMatchObject({ title: 'Edo period', url: 'https://en.wikipedia.org/wiki/Edo_period' });
+      expect((await ask('ja', '鎧'))[0]!.url.startsWith('https://ja.wikipedia.org/wiki/')).toBe(true);
+      expect(await ask('en', 'zzz [none]')).toEqual([]);
+      const empty = backend.lookupReference('en', '  ');
+      const failed = expect(empty).rejects.toThrow('empty');
       await vi.advanceTimersByTimeAsync(100);
-      return p;
-    };
-    const a = await ask('en', 'Edo period');
-    expect(a).toEqual(await ask('en', 'Edo period'));
-    expect(a).toHaveLength(1);
-    expect(a[0]).toMatchObject({ title: 'Edo period', url: 'https://en.wikipedia.org/wiki/Edo_period' });
-    expect((await ask('ja', '鎧'))[0]!.url.startsWith('https://ja.wikipedia.org/wiki/')).toBe(true);
-    expect(await ask('en', 'zzz [none]')).toEqual([]);
-    const empty = backend.lookupReference('en', '  ');
-    const failed = expect(empty).rejects.toThrow('empty');
-    await vi.advanceTimersByTimeAsync(100);
-    await failed;
-  });
+      await failed;
+    },
+  );
 });
 
-describe('engine settings', () => {
+describe('engine settings', { tags: [] }, () => {
   /** Resolves a call that waits for the mock's latency. */
   async function settle<T>(call: Promise<T>): Promise<T> {
     await vi.advanceTimersByTimeAsync(100);
@@ -152,7 +160,7 @@ describe('engine settings', () => {
     await check;
   }
 
-  it('starts with the defaults and needs no restart', { tags: ['condition'] }, async () => {
+  it('starts with the defaults and needs no restart', { tags: ['equivalence'] }, async () => {
     const { backend } = await start();
     expect(await settle(backend.engineSettings())).toEqual({
       dataDir: 'C:\\Users\\you\\novira-data',
@@ -175,31 +183,39 @@ describe('engine settings', () => {
     });
   });
 
-  it('keeps a data folder change and a ComfyUI folder until cancelled or reset, each needing a restart', { tags: ['state-transition'] }, async () => {
-    const { backend } = await start();
-    const moved = await settle(backend.chooseDataDir(true));
-    expect(moved).toMatchObject({ dataDirNext: 'D:\\novira-data', dataDirMoves: true, restartNeeded: true });
-    expect(await settle(backend.chooseDataDir(false))).toMatchObject({ dataDirMoves: false });
-    expect(await settle(backend.cancelDataDirChange())).toMatchObject({ dataDirNext: null, restartNeeded: false });
-    expect(await settle(backend.chooseComfyuiInstallDir())).toMatchObject({ comfyuiInstallDir: 'D:\\ComfyUI-novira', restartNeeded: true });
-    expect(await settle(backend.resetComfyuiInstallDir())).toMatchObject({ comfyuiInstallDir: null, restartNeeded: false });
-  });
+  it(
+    'keeps a data folder change and a ComfyUI folder until cancelled or reset, each needing a restart',
+    { tags: ['state-transition'] },
+    async () => {
+      const { backend } = await start();
+      const moved = await settle(backend.chooseDataDir(true));
+      expect(moved).toMatchObject({ dataDirNext: 'D:\\novira-data', dataDirMoves: true, restartNeeded: true });
+      expect(await settle(backend.chooseDataDir(false))).toMatchObject({ dataDirMoves: false });
+      expect(await settle(backend.cancelDataDirChange())).toMatchObject({ dataDirNext: null, restartNeeded: false });
+      expect(await settle(backend.chooseComfyuiInstallDir())).toMatchObject({ comfyuiInstallDir: 'D:\\ComfyUI-novira', restartNeeded: true });
+      expect(await settle(backend.resetComfyuiInstallDir())).toMatchObject({ comfyuiInstallDir: null, restartNeeded: false });
+    },
+  );
 
-  it('saves a valid patch and then needs a restart; back at the start values it does not', { tags: ['state-transition'] }, async () => {
-    const { backend } = await start();
-    const changed = await settle(backend.setEngineSettings({ comfyuiPackage: 'amd', comfyuiStartTimeoutSecs: 1800 }));
-    expect(changed).toMatchObject({ comfyuiPackage: 'amd', comfyuiStartTimeoutSecs: 1800, restartNeeded: true });
-    // The mock does not reinstall: the install keeps the package it came from until the next start.
-    expect(changed).toMatchObject({ comfyuiInstalled: true, installedComfyuiPackage: 'nvidia' });
-    expect(await settle(backend.setEngineSettings({ comfyuiStartTimeoutSecs: 30 }))).toMatchObject({
-      comfyuiPackage: 'amd',
-      comfyuiStartTimeoutSecs: 30,
-    });
-    const back = await settle(backend.setEngineSettings({ comfyuiPackage: 'nvidia', comfyuiStartTimeoutSecs: 180 }));
-    expect(back.restartNeeded).toBe(false);
-  });
+  it(
+    'saves a valid patch and then needs a restart; back at the start values it does not',
+    { tags: ['state-transition', 'condition'] },
+    async () => {
+      const { backend } = await start();
+      const changed = await settle(backend.setEngineSettings({ comfyuiPackage: 'amd', comfyuiStartTimeoutSecs: 1800 }));
+      expect(changed).toMatchObject({ comfyuiPackage: 'amd', comfyuiStartTimeoutSecs: 1800, restartNeeded: true });
+      // The mock does not reinstall: the install keeps the package it came from until the next start.
+      expect(changed).toMatchObject({ comfyuiInstalled: true, installedComfyuiPackage: 'nvidia' });
+      expect(await settle(backend.setEngineSettings({ comfyuiStartTimeoutSecs: 30 }))).toMatchObject({
+        comfyuiPackage: 'amd',
+        comfyuiStartTimeoutSecs: 30,
+      });
+      const back = await settle(backend.setEngineSettings({ comfyuiPackage: 'nvidia', comfyuiStartTimeoutSecs: 180 }));
+      expect(back.restartNeeded).toBe(false);
+    },
+  );
 
-  it('refuses the values the backend refuses, and saves nothing of that patch', { tags: ['error-guessing'] }, async () => {
+  it('refuses the values the backend refuses, and saves nothing of that patch', { tags: ['error-guessing', 'boundary'] }, async () => {
     const { backend } = await start();
     for (const secs of [29, 1801, 30.5, -60, Number.NaN]) {
       await refused(backend.setEngineSettings({ comfyuiPackage: 'amd', comfyuiStartTimeoutSecs: secs }), /30 to 1800/);
@@ -230,14 +246,14 @@ describe('engine settings', () => {
   });
 });
 
-describe('unfinished downloads', () => {
+describe('unfinished downloads', { tags: [] }, () => {
   it('starts with none, and deleting paths that are not there changes nothing', { tags: ['boundary'] }, async () => {
     const backend = new MockBackend('empty', false);
     expect(await backend.listUnfinishedDownloads()).toEqual([]);
     expect(await backend.deleteUnfinishedDownloads(['comfyui/.downloads/comfyui.part'])).toEqual([]);
   });
 
-  it('deletes the listed paths, returns what remains, and lists copies', { tags: ['condition'] }, async () => {
+  it('deletes the listed paths, returns what remains, and lists copies', { tags: ['equivalence'] }, async () => {
     const backend = new MockBackend('empty', false);
     const part: UnfinishedDownload = { path: 'comfyui/.downloads/comfyui.part', name: 'comfyui.part', bytes: 1_048_576 };
     const other: UnfinishedDownload = { path: 'models/.downloads/a.safetensors.part', name: 'a.safetensors.part', bytes: 2_000 };

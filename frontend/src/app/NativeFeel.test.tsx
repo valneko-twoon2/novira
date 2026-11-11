@@ -20,7 +20,7 @@ function fire(target: EventTarget, type: string): boolean {
   return e.defaultPrevented;
 }
 
-describe('NativeFeel', () => {
+describe('NativeFeel', { tags: [] }, () => {
   it('treats a key event with no key (some autofill and IME events) as no shortcut', { tags: ['error-guessing'] }, () => {
     expect(isBrowserShortcut({ key: undefined as unknown as string, ctrlKey: false, metaKey: false, shiftKey: false, altKey: false })).toBe(false);
   });
@@ -46,7 +46,7 @@ describe('NativeFeel', () => {
     expect(fire(document.querySelector('[data-testid=area]')!, 'contextmenu')).toBe(false);
   });
 
-  it('stops a dropped file from navigating the window', { tags: ['condition'] }, () => {
+  it('stops a dropped file from navigating the window', { tags: ['scenario'] }, () => {
     render(<NativeFeel />);
     const e = new Event('drop', { cancelable: true }) as Event & { dataTransfer?: unknown };
     e.dataTransfer = { types: ['Files'] };
@@ -60,7 +60,7 @@ describe('NativeFeel', () => {
     expect(fire(document.body, 'contextmenu')).toBe(false);
   });
 
-  it('names the browser shortcuts only', { tags: ['condition'] }, () => {
+  it('names the browser shortcuts only', { tags: ['equivalence'] }, () => {
     const k = (key: string, init: Partial<KeyboardEvent> = {}) => ({ key, ctrlKey: false, metaKey: false, shiftKey: false, altKey: false, ...init });
     expect(isBrowserShortcut(k('F5'))).toBe(true);
     expect(isBrowserShortcut(k('r', { ctrlKey: true }))).toBe(true);

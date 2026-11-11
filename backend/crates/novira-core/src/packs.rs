@@ -434,7 +434,7 @@ mod tests {
         }
     }
 
-    // tags: equivalence
+    // tags: boundary
     #[test]
     fn missing_until_every_file_is_there() {
         let dir = tempfile::tempdir().unwrap();
@@ -506,7 +506,7 @@ mod tests {
         assert!(turbo.contains("diffusion_models") && !turbo.contains("text_encoders"));
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn the_erase_model_has_its_own_folder_and_a_direct_address() {
         let yaml = extra_paths_yaml(Path::new("D:/data/models"));
@@ -535,7 +535,7 @@ mod tests {
         );
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn refs_point_at_the_pack_files() {
         assert_eq!(video_unet_ref().folder, "diffusion_models");
@@ -544,7 +544,7 @@ mod tests {
         assert!(music_checkpoint_ref().name.contains("ace_step"));
     }
 
-    // tags: condition
+    // tags: boundary
     #[test]
     fn the_voice_engine_has_no_comfy_files() {
         assert!(files(PackKind::Voice).is_empty());
@@ -573,7 +573,7 @@ mod tests {
         assert!(found.starts_with(own.path()));
     }
 
-    // tags: condition
+    // tags: boundary
     #[test]
     fn a_half_shared_pack_reports_only_what_is_missing_everywhere() {
         let own = tempfile::tempdir().unwrap();

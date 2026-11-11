@@ -279,7 +279,7 @@ mod tests {
         assert_eq!(Settings::load(dir.path()).unwrap(), Settings::default());
     }
 
-    // tags: error-guessing
+    // tags: error-guessing, equivalence
     #[test]
     fn a_comfyui_folder_that_is_not_a_plain_full_folder_path_is_refused() {
         let base = tempfile::tempdir().unwrap();
@@ -310,7 +310,7 @@ mod tests {
         );
     }
 
-    // tags: condition
+    // tags: boundary
     #[test]
     fn missing_file_gives_defaults() {
         let dir = tempfile::tempdir().unwrap();
@@ -398,7 +398,7 @@ mod tests {
         assert_eq!(s.package(), ComfyuiPackage::Nvidia);
     }
 
-    // tags: equivalence
+    // tags: equivalence, error-guessing
     #[test]
     fn only_the_known_packages_are_accepted() {
         assert!(check_package("nvidia").is_ok());

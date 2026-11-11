@@ -5,7 +5,7 @@ use novira_core::{Backend, BackendConfig, Settings};
 use std::path::Path;
 use std::sync::Arc;
 
-// tags: error-guessing, boundary
+// tags: condition
 #[tokio::test]
 async fn models_in_user_folders_are_hidden_not_deleted() {
     let dir = tempfile::tempdir().unwrap();
@@ -60,7 +60,7 @@ async fn models_in_user_folders_are_hidden_not_deleted() {
     assert!(yaml.contains("Lora"));
 }
 
-// tags: boundary
+// tags: scenario, error-guessing
 #[tokio::test]
 async fn installing_a_local_file_links_it_into_the_models_folder() {
     let dir = tempfile::tempdir().unwrap();
@@ -102,7 +102,7 @@ async fn installing_a_local_file_links_it_into_the_models_folder() {
     assert!(backend.install_model("Lykon/dreamshaper-8", None).is_err());
 }
 
-// tags: decision-table
+// tags: condition, state-transition
 #[tokio::test]
 async fn the_lora_base_check_runs_once_and_then_keeps_the_users_choice() {
     let dir = tempfile::tempdir().unwrap();

@@ -69,7 +69,7 @@ pub fn soft_binding_value(id: u64) -> String {
 mod tests {
     use super::*;
 
-    // tags: state-transition, decision-table
+    // tags: boundary
     #[test]
     fn bits_are_the_marker_then_the_id_most_significant_first() {
         let b = bits(1);
@@ -80,7 +80,7 @@ mod tests {
         assert_eq!(bits(0), format!("0100111001010110{}", "0".repeat(45)));
     }
 
-    // tags: scenario
+    // tags: equivalence, boundary
     #[test]
     fn ids_round_trip_through_the_bits() {
         for id in [0, 1, 0x0123_4567_89ab, MAX_ID, random_id(), random_id()] {
@@ -106,7 +106,7 @@ mod tests {
         assert_eq!(sorted.len(), a.len());
     }
 
-    // tags: error-guessing, state-transition
+    // tags: error-guessing
     #[test]
     fn another_marker_or_a_malformed_payload_is_not_novira() {
         let mut other = bits(7);
@@ -124,7 +124,7 @@ mod tests {
         }
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn hex_ids_and_soft_binding_values_have_a_fixed_shape() {
         assert_eq!(id_hex(0), "000000000000");

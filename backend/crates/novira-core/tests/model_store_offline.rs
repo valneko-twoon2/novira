@@ -41,7 +41,7 @@ fn refusing_proxy() -> String {
     format!("http://127.0.0.1:{port}")
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing
 #[tokio::test]
 async fn unreachable_sites_stop_the_lookups_and_fail_the_installs() {
     // This file holds one test, so changing the environment cannot disturb another one.

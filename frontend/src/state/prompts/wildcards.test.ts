@@ -7,7 +7,7 @@ beforeEach(() => useWildcards.setState(initial, true));
 const w = () => useWildcards.getState();
 
 describe('wildcard lists', () => {
-  it('starts with small starter lists that are valid and in use as entries', { tags: ['condition'] }, () => {
+  it('starts with small starter lists that are valid and in use as entries', { tags: ['equivalence'] }, () => {
     expect(w().lists.map((l) => l.name)).toEqual(['hair-color', 'expression', 'time-of-day']);
     for (const l of w().lists) {
       expect(isWildcardName(l.name)).toBe(true);
@@ -15,12 +15,12 @@ describe('wildcard lists', () => {
     }
   });
 
-  it('reads one entry per line, without blank lines and # comments', { tags: ['condition'] }, () => {
+  it('reads one entry per line, without blank lines and # comments', { tags: ['equivalence'] }, () => {
     expect(wildcardEntries('  a \r\n\n# note\nb, c\n')).toEqual(['a', 'b, c']);
     expect(wildcardMap([{ id: '1', name: 'x', text: 'p\nq' }])).toEqual({ x: ['p', 'q'] });
   });
 
-  it('accepts names of letters, digits, - and _ that start and end with a letter or digit', { tags: ['condition'] }, () => {
+  it('accepts names of letters, digits, - and _ that start and end with a letter or digit', { tags: ['equivalence'] }, () => {
     for (const ok of ['hair', 'hair-color', 'hair_color', 'a', '髪色', 'x2']) expect(isWildcardName(ok)).toBe(true);
     for (const bad of ['', '_hair', 'hair_', '-a', 'a b', 'a/b', '{a}']) expect(isWildcardName(bad)).toBe(false);
   });
@@ -35,7 +35,7 @@ describe('wildcard lists', () => {
     expect(freeWildcardName('***', [])).toBe('list');
   });
 
-  it('renames only to a valid name that no other list has', { tags: ['condition'] }, () => {
+  it('renames only to a valid name that no other list has', { tags: ['equivalence'] }, () => {
     const [first, second] = w().lists;
     expect(w().rename(first!.id, 'bad name')).toBe('invalid');
     expect(w().rename(first!.id, second!.name)).toBe('taken');
@@ -54,7 +54,7 @@ describe('wildcard lists', () => {
     expect(w().open).toBe(false);
   });
 
-  it('saves only the lists, under a novira.* key', { tags: ['condition'] }, () => {
+  it('saves only the lists, under a novira.* key', { tags: ['equivalence'] }, () => {
     w().add('saved', 'one');
     w().openEditor();
     const stored = JSON.parse(localStorage.getItem('novira.wildcards')!) as { state: Record<string, unknown> };

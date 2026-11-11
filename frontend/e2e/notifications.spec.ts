@@ -46,7 +46,7 @@ test('deletions go under the bell, which counts them and lists them when opened'
   await expect(page.getByText(msg('app.notifications.empty'))).toBeVisible();
 });
 
-test.describe('a notification that is not quiet', () => {
+test.describe('a notification that is not quiet', { tag: [] }, () => {
   test.use({ permissions: ['clipboard-read', 'clipboard-write'] });
 
   test('still pops up, and is kept under the bell', { tag: ['@condition'] }, async ({ page }) => {

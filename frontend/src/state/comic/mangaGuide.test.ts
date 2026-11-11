@@ -11,8 +11,8 @@ const listed = () => {
   return [...description.matchAll(/\[([a-z-]+)\]/g)].map((m) => m[1]!);
 };
 
-describe('the comic know-how', () => {
-  it('has exactly the topics the tool description lists', { tags: ['condition'] }, () => {
+describe('the comic know-how', { tags: [] }, () => {
+  it('has exactly the topics the tool description lists', { tags: ['equivalence'] }, () => {
     expect([...listed()].sort()).toEqual(MANGA_GUIDE_TOPICS);
   });
 
@@ -21,7 +21,7 @@ describe('the comic know-how', () => {
     for (const id of ['story', 'direction', 'layout', 'lettering', 'prompting', 'fixing', 'scene']) expect(MANGA_GUIDE_TOPICS).toContain(id);
   });
 
-  it('keeps each text to a size one answer can carry, with a title and its own-work line', { tags: ['equivalence'] }, () => {
+  it('keeps each text to a size one answer can carry, with a title and its own-work line', { tags: ['boundary'] }, () => {
     for (const id of MANGA_GUIDE_TOPICS) {
       const text = String(mangaGuide(id).content);
       expect(text.startsWith('# '), id).toBe(true);
@@ -31,7 +31,7 @@ describe('the comic know-how', () => {
     }
   });
 
-  it('lists the topics when none or an unknown one is asked for', { tags: ['error-guessing', 'boundary'] }, () => {
+  it('lists the topics when none or an unknown one is asked for', { tags: ['error-guessing', 'condition'] }, () => {
     expect(mangaGuide(undefined)).toMatchObject({ ok: true, content: { topics: expect.any(Array) } });
     expect(mangaGuide('nope').ok).toBe(false);
   });

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { charMarks, plainText, textRuns, toggleMark } from './balloonText';
 
-describe('textRuns', () => {
-  it('reads bold and emphasis dots, nested, and leaves plain words alone', { tags: ['condition'] }, () => {
+describe('textRuns', { tags: [] }, () => {
+  it('reads bold and emphasis dots, nested, and leaves plain words alone', { tags: ['equivalence'] }, () => {
     expect(textRuns('それは**本当**に《《大事》》な**《《話》》**だ')).toEqual([
       { text: 'それは', bold: false, dots: false },
       { text: '本当', bold: true, dots: false },
@@ -16,11 +16,15 @@ describe('textRuns', () => {
     expect(textRuns('')).toEqual([]);
   });
 
-  it('runs a mark left open to the end, and keeps a closing mark with no opening one as words', { tags: ['condition'] }, () => {
-    expect(textRuns('**まだ')).toEqual([{ text: 'まだ', bold: true, dots: false }]);
-    expect(textRuns('《《まだ')).toEqual([{ text: 'まだ', bold: false, dots: true }]);
-    expect(textRuns('a》》b')).toEqual([{ text: 'a》》b', bold: false, dots: false }]);
-  });
+  it(
+    'runs a mark left open to the end, and keeps a closing mark with no opening one as words',
+    { tags: ['error-guessing', 'condition'] },
+    () => {
+      expect(textRuns('**まだ')).toEqual([{ text: 'まだ', bold: true, dots: false }]);
+      expect(textRuns('《《まだ')).toEqual([{ text: 'まだ', bold: false, dots: true }]);
+      expect(textRuns('a》》b')).toEqual([{ text: 'a》》b', bold: false, dots: false }]);
+    },
+  );
 
   it('gives the plain text and one mark entry per character of it', { tags: ['equivalence'] }, () => {
     expect(plainText('a**b**《《c》》')).toBe('abc');
@@ -32,8 +36,8 @@ describe('textRuns', () => {
   });
 });
 
-describe('toggleMark', () => {
-  it('wraps the selection and keeps the same words selected', { tags: ['condition'] }, () => {
+describe('toggleMark', { tags: [] }, () => {
+  it('wraps the selection and keeps the same words selected', { tags: ['equivalence'] }, () => {
     expect(toggleMark('ここが大事', 2, 5, 'dots')).toEqual({ text: 'ここ《《が大事》》', start: 4, end: 7 });
     expect(toggleMark('ここが大事', 5, 2, 'bold')).toEqual({ text: 'ここ**が大事**', start: 4, end: 7 });
   });

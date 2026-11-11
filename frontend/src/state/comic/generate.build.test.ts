@@ -76,7 +76,7 @@ afterEach(() => {
   useComic.setState({ pending: {}, drawScope: 'panel' });
 });
 
-describe('the Invoke build of the comic screen', () => {
+describe('the Invoke build of the comic screen', { tags: [] }, () => {
   it('draws the selected panel alone in the panel scope', { tags: ['condition'] }, async () => {
     const { page1 } = seed();
     useComic.getState().selectPanel(page1[2]!);
@@ -88,34 +88,42 @@ describe('the Invoke build of the comic screen', () => {
     expect(useComic.getState().pending).toEqual({ 11: page1[2] });
   });
 
-  it('draws the page on screen in the page scope: its first panel with a prompt, then the others in reading order', { tags: ['state-transition'] }, async () => {
-    const { page1 } = seed();
-    useComic.getState().setDrawScope('page');
-    const { prompts } = mockQueue(21);
-    const { request } = await invoke();
-    // The build itself queues nothing: the first panel goes back to the Invoke bar.
-    expect(request.params.positivePrompt).toContain('p1 at the gate');
-    await vi.waitFor(() => expect(prompts()).toHaveLength(2));
-    await flush();
-    // The panel without a prompt is skipped, and the other page is not drawn.
-    expect(prompts()[1]).toContain('p3 by the river');
-    expect(prompts()).toHaveLength(2);
-    expect(useComic.getState().pending).toEqual({ 21: page1[0], 22: page1[2] });
-  });
+  it(
+    'draws the page on screen in the page scope: its first panel with a prompt, then the others in reading order',
+    { tags: ['condition'] },
+    async () => {
+      const { page1 } = seed();
+      useComic.getState().setDrawScope('page');
+      const { prompts } = mockQueue(21);
+      const { request } = await invoke();
+      // The build itself queues nothing: the first panel goes back to the Invoke bar.
+      expect(request.params.positivePrompt).toContain('p1 at the gate');
+      await vi.waitFor(() => expect(prompts()).toHaveLength(2));
+      await flush();
+      // The panel without a prompt is skipped, and the other page is not drawn.
+      expect(prompts()[1]).toContain('p3 by the river');
+      expect(prompts()).toHaveLength(2);
+      expect(useComic.getState().pending).toEqual({ 21: page1[0], 22: page1[2] });
+    },
+  );
 
-  it('draws every page in the comic scope, from the comic\'s first panel whichever page is on screen', { tags: ['condition'] }, async () => {
-    const { page1, page2 } = seed();
-    const project = useComic.getState().projects[0]!;
-    useComic.getState().selectPage(project.pages[1]!.id);
-    useComic.getState().setDrawScope('comic');
-    const { prompts } = mockQueue(31);
-    const { request } = await invoke();
-    expect(request.params.positivePrompt).toContain('p1 at the gate');
-    await vi.waitFor(() => expect(prompts()).toHaveLength(3));
-    expect(prompts()[1]).toContain('p3 by the river');
-    expect(prompts()[2]).toContain('q1 on the roof');
-    expect(useComic.getState().pending).toEqual({ 31: page1[0], 32: page1[2], 33: page2[0] });
-  });
+  it(
+    'draws every page in the comic scope, from the comic\'s first panel whichever page is on screen',
+    { tags: ['condition'] },
+    async () => {
+      const { page1, page2 } = seed();
+      const project = useComic.getState().projects[0]!;
+      useComic.getState().selectPage(project.pages[1]!.id);
+      useComic.getState().setDrawScope('comic');
+      const { prompts } = mockQueue(31);
+      const { request } = await invoke();
+      expect(request.params.positivePrompt).toContain('p1 at the gate');
+      await vi.waitFor(() => expect(prompts()).toHaveLength(3));
+      expect(prompts()[1]).toContain('p3 by the river');
+      expect(prompts()[2]).toContain('q1 on the roof');
+      expect(useComic.getState().pending).toEqual({ 31: page1[0], 32: page1[2], 33: page2[0] });
+    },
+  );
 
   it('says why nothing can be drawn, in the words of each scope', { tags: ['equivalence'] }, async () => {
     const spy = vi.spyOn(backend, 'enqueue');
@@ -150,7 +158,7 @@ describe('the Invoke build of the comic screen', () => {
     expect(useComic.getState().projects[0]!.cast[0]!.imageName).toBe('grandpa.png');
   });
 
-  describe('a prompt with several combinations', () => {
+  describe('a prompt with several combinations', { tags: [] }, () => {
     const colour = (r: EnqueueRequest) => /red|blue|green/.exec(r.params.positivePrompt)?.[0];
 
     beforeEach(() => {
@@ -169,7 +177,7 @@ describe('the Invoke build of the comic screen', () => {
       expect(sent.every((r) => !r.prepend)).toBe(true);
     });
 
-    it('keeps the combinations in order at the front of the queue when they are put first', { tags: ['equivalence'] }, async () => {
+    it('keeps the combinations in order at the front of the queue when they are put first', { tags: ['condition'] }, async () => {
       // A queue that puts a prepended request in front of everything waiting.
       const order: string[] = [];
       vi.spyOn(backend, 'enqueue').mockImplementation(async (request) => {
@@ -185,7 +193,7 @@ describe('the Invoke build of the comic screen', () => {
   });
 });
 
-describe('drawing the whole comic', () => {
+describe('drawing the whole comic', { tags: [] }, () => {
   it('says that no model is chosen and queues nothing', { tags: ['condition'] }, async () => {
     seed();
     const spy = vi.spyOn(backend, 'enqueue');

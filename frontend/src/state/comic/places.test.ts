@@ -16,7 +16,7 @@ beforeEach(() => {
   useComic.setState({ projects: [], activeProjectId: null, activePageId: null });
 });
 
-describe('changing a place', () => {
+describe('changing a place', { tags: [] }, () => {
   it('changes the one named and leaves the others as they are', { tags: ['condition'] }, () => {
     seed([
       { id: 'a', name: 'Street', tags: 'city' },
@@ -30,7 +30,7 @@ describe('changing a place', () => {
   });
 });
 
-describe('adding a place', () => {
+describe('adding a place', { tags: [] }, () => {
   it('adds an empty place named by its number and returns its id', { tags: ['boundary'] }, () => {
     seed([{ id: 'a', name: 'Street', tags: '' }]);
     const id = addPlace();
@@ -39,7 +39,7 @@ describe('adding a place', () => {
   });
 });
 
-describe('removing a place', () => {
+describe('removing a place', { tags: [] }, () => {
   it('takes the place out and keeps the others', { tags: ['condition'] }, () => {
     seed([
       { id: 'a', name: 'Street', tags: '' },

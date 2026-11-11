@@ -11,7 +11,7 @@ const NOW = Date.UTC(2026, 10, 2);
 const proc = (name: string, path: string) => ({ pid: 7, ppid: 0, name, path, cmd: '' });
 const plan = (o: Record<string, unknown>) => planTargetPrune({ now: NOW, checkedAt: null, size: null, busy: '', ...o }).action;
 
-describe('prune-target', () => {
+describe('prune-target', { tags: [] }, () => {
   let dir = '';
   afterEach(() => {
     if (dir) rmSync(dir, { recursive: true, force: true });
@@ -25,7 +25,7 @@ describe('prune-target', () => {
     expect(plan({ checkedAt: NOW - 1, force: true })).toBe('measure');
   });
 
-  it('cleans only past the limit, and never while the folder is in use', { tags: ['boundary'] }, () => {
+  it('cleans only past the limit, and never while the folder is in use', { tags: ['boundary', 'decision-table'] }, () => {
     expect(plan({ size: LIMIT_BYTES })).toBe('keep');
     expect(plan({ size: LIMIT_BYTES + 1 })).toBe('clean');
     expect(plan({ size: LIMIT_BYTES + 1, busy: 'novira.exe runs from it' })).toBe('skip');
@@ -41,7 +41,7 @@ describe('prune-target', () => {
     expect(targetBusy(null, target)).toMatch(/could not be listed/);
   });
 
-  it('adds up the files of a folder tree', { tags: ['condition'] }, () => {
+  it('adds up the files of a folder tree', { tags: ['equivalence', 'boundary'] }, () => {
     dir = mkdtempSync(join(tmpdir(), 'prune-target-'));
     mkdirSync(join(dir, 'a', 'b'), { recursive: true });
     writeFileSync(join(dir, 'x'), Buffer.alloc(10));
@@ -50,7 +50,7 @@ describe('prune-target', () => {
     expect(folderSize(join(dir, 'missing'))).toBe(0);
   });
 
-  it('stamps the measurement and keeps a small dev build', { tags: ['condition'] }, () => {
+  it('stamps the measurement and keeps a small dev build', { tags: ['state-transition'] }, () => {
     dir = mkdtempSync(join(tmpdir(), 'prune-target-'));
     mkdirSync(join(dir, 'debug'));
     writeFileSync(join(dir, 'debug', 'x'), Buffer.alloc(5));

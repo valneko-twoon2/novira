@@ -46,7 +46,7 @@ describe('vertical layout: edge cases', () => {
     expect(b.columns.map((c) => c.length)).toEqual([3, 1]);
   });
 
-  it('does not break an opening bracket away when it is the only other cell', { tags: ['condition'] }, () => {
+  it('does not break an opening bracket away when it is the only other cell', { tags: ['boundary'] }, () => {
     const b = layoutVertical('(あい', style({ vertical: true }), 20);
     expect(b.columns.length).toBeGreaterThan(1);
     expect(b.columns.flat()).toHaveLength(3);

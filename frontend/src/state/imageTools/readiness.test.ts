@@ -12,7 +12,7 @@ const ctx = (over: Partial<ToolContext> = {}): ToolContext => ({ defs: all, stat
 const without = (...nodes: string[]) => Object.fromEntries(Object.entries(all).filter(([k]) => !nodes.includes(k))) as ComfyNodeDefs;
 
 describe('toolReadiness', () => {
-  it('waits while the node list is being read', { tags: ['condition'] }, () => {
+  it('waits while the node list is being read', { tags: ['equivalence'] }, () => {
     for (const tool of IMAGE_TOOLS) {
       expect(toolReadiness(tool, ctx({ status: 'idle' }))).toEqual({ state: 'loading' });
       expect(toolReadiness(tool, ctx({ status: 'loading' }))).toEqual({ state: 'loading' });
@@ -23,7 +23,7 @@ describe('toolReadiness', () => {
     for (const tool of IMAGE_TOOLS) expect(toolReadiness(tool, ctx())).toEqual({ state: 'ready' });
   });
 
-  it('names the pack each tool misses, also when the node list could not be read', { tags: ['equivalence'] }, () => {
+  it('names the pack each tool misses, also when the node list could not be read', { tags: ['equivalence', 'error-guessing'] }, () => {
     expect(toolReadiness('facefix', ctx({ defs: without('FaceDetailer') }))).toMatchObject({ state: 'needsPack', pack: 'impact' });
     expect(toolReadiness('facefix', ctx({ defs: without('UltralyticsDetectorProvider') }))).toMatchObject({ state: 'needsPack', pack: 'impactSubpack' });
     expect(toolReadiness('cutout', ctx({ defs: without('RMBG') }))).toMatchObject({ state: 'needsPack', pack: 'rmbg' });

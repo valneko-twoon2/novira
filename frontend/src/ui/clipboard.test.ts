@@ -7,7 +7,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('writeClipboardText', () => {
+describe('writeClipboardText', { tags: [] }, () => {
   it('uses the clipboard of a secure page', { tags: ['condition'] }, async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal('navigator', { clipboard: { writeText } });
@@ -37,16 +37,20 @@ describe('writeClipboardText', () => {
   });
 });
 
-describe('writeClipboardImage', () => {
-  it('asks the clipboard in the same turn, handing it the picture that is still being made', { tags: ['condition'] }, async () => {
-    const write = vi.fn().mockResolvedValue(undefined);
-    vi.stubGlobal('ClipboardItem', class { constructor(public items: Record<string, Blob | Promise<Blob>>) {} });
-    vi.stubGlobal('navigator', { clipboard: { write } });
-    const pending = new Promise<Blob>(() => undefined);
-    void writeClipboardImage(pending);
-    expect(write).toHaveBeenCalledTimes(1);
-    expect((write.mock.calls[0]?.[0] as { items: Record<string, unknown> }[])[0]?.items['image/png']).toBe(pending);
-  });
+describe('writeClipboardImage', { tags: [] }, () => {
+  it(
+    'asks the clipboard in the same turn, handing it the picture that is still being made',
+    { tags: ['regression', 'condition'] },
+    async () => {
+      const write = vi.fn().mockResolvedValue(undefined);
+      vi.stubGlobal('ClipboardItem', class { constructor(public items: Record<string, Blob | Promise<Blob>>) {} });
+      vi.stubGlobal('navigator', { clipboard: { write } });
+      const pending = new Promise<Blob>(() => undefined);
+      void writeClipboardImage(pending);
+      expect(write).toHaveBeenCalledTimes(1);
+      expect((write.mock.calls[0]?.[0] as { items: Record<string, unknown> }[])[0]?.items['image/png']).toBe(pending);
+    },
+  );
 
   it('refuses where the page has no picture clipboard, and does not touch the clipboard', { tags: ['error-guessing'] }, async () => {
     const write = vi.fn();

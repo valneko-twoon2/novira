@@ -55,16 +55,16 @@ const COMPILABLE = GRAPH_TEMPLATES.filter((t) => !t.nodes.some(([, type]) => typ
 const DEFAULT_IDS = ['default-t2i-sd15', 'default-t2i-sdxl', 'default-i2i-sdxl', 'default-multidiffusion', 'default-face-detailer'];
 const FROM_IMAGE_CASES = ['from-image-txt2img', 'from-image-loras-vae'];
 
-describe('ComfyUI prompt snapshots: files', () => {
+describe('ComfyUI prompt snapshots: files', { tags: [] }, () => {
   // Names are built from the template list, so tests/test-hygiene.test.ts cannot read them; check orphans here.
-  it('has a case for every snapshot file', { tags: ['equivalence'] }, () => {
+  it('has a case for every snapshot file', { tags: ['condition'] }, () => {
     const files = readdirSync(new URL('./__snapshots__/comfyPrompt/', import.meta.url)).map((f) => f.replace(/\.json$/, ''));
     const cases = [...COMPILABLE.map((t) => `template-${t.id}`), ...DEFAULT_IDS, ...FROM_IMAGE_CASES];
     expect(files.sort()).toEqual(cases.sort());
   });
 });
 
-describe('ComfyUI prompt snapshots: graph templates', () => {
+describe('ComfyUI prompt snapshots: graph templates', { tags: [] }, () => {
   it.each(COMPILABLE.map((t) => [t.id, t] as const))('%s', { tags: ['equivalence'] }, async (id, template) => {
     await expect(asJson(compileComfyPrompt(stableTemplate(template)))).toMatchFileSnapshot(`./__snapshots__/comfyPrompt/template-${id}.json`);
   });
@@ -92,15 +92,15 @@ const MODELS = [
   model('vae-key', 'vae', 'sdxl'),
 ];
 
-describe('ComfyUI prompt snapshots: built-in workflows', () => {
-  it.each(DEFAULT_IDS)('%s', { tags: ['equivalence'] }, async (id) => {
+describe('ComfyUI prompt snapshots: built-in workflows', { tags: [] }, () => {
+  it.each(DEFAULT_IDS)('%s', { tags: ['scenario'] }, async (id) => {
     const g = buildDefaultGraph({ id, name: id, description: '', author: '', tags: [] }, MODELS)!;
     fillPicks(g.nodes);
     await expect(asJson(compileComfyPrompt(g))).toMatchFileSnapshot(`./__snapshots__/comfyPrompt/${id}.json`);
   });
 });
 
-describe('ComfyUI prompt snapshots: graph from a gallery image', () => {
+describe('ComfyUI prompt snapshots: graph from a gallery image', { tags: [] }, () => {
   const meta = (over: Partial<GenerationMetadata>): GenerationMetadata => ({
     generationMode: 'txt2img',
     positivePrompt: '1girl, smile, cherry blossoms',
@@ -130,7 +130,7 @@ describe('ComfyUI prompt snapshots: graph from a gallery image', () => {
     await expect(asJson(compileFrom(meta({})))).toMatchFileSnapshot(`./__snapshots__/comfyPrompt/${FROM_IMAGE_CASES[0]}.json`);
   });
 
-  it('sd15 with two LoRAs (one disabled) and a separate VAE', { tags: ['equivalence'] }, async () => {
+  it('sd15 with two LoRAs (one disabled) and a separate VAE', { tags: ['decision-table'] }, async () => {
     const m = meta({
       modelKey: 'sd15-key',
       modelName: 'sd15-key',

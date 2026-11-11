@@ -74,7 +74,7 @@ fn class_of<'a>(g: &'a BuiltGraph, link: &Value) -> &'a Value {
     &g.prompt[link[0].as_str().unwrap()]["class_type"]
 }
 
-// tags: boundary
+// tags: equivalence
 #[test]
 fn txt2img_uses_an_empty_latent_and_full_denoise() {
     let p = params(GenerationMode::Txt2img);
@@ -171,7 +171,7 @@ fn hires(scale: f64, strength: f64, model: Option<&str>, steps: Option<u32>) -> 
     }
 }
 
-// tags: boundary
+// tags: equivalence
 #[test]
 fn hires_fix_redraws_the_enlarged_picture_with_the_same_seed_and_conditioning() {
     let mut p = params(GenerationMode::Txt2img);
@@ -219,7 +219,7 @@ fn hires_fix_redraws_the_enlarged_picture_with_the_same_seed_and_conditioning() 
     );
 }
 
-// tags: boundary, decision-table
+// tags: decision-table, boundary
 #[test]
 fn hires_fix_with_a_model_upscales_then_resizes_and_snaps_to_eight() {
     let mut p = params(GenerationMode::Txt2img);
@@ -251,7 +251,7 @@ fn hires_fix_with_a_model_upscales_then_resizes_and_snaps_to_eight() {
     assert_eq!(g.total_steps, 32);
 }
 
-// tags: boundary, decision-table
+// tags: decision-table
 #[test]
 fn hires_fix_over_image_to_image_enlarges_the_picture_drawn_over_the_source() {
     let mut p = params(GenerationMode::Img2img);
@@ -278,7 +278,7 @@ fn hires_fix_over_image_to_image_enlarges_the_picture_drawn_over_the_source() {
     assert_eq!(g.total_steps, 40);
 }
 
-// tags: error-guessing
+// tags: error-guessing, condition
 #[test]
 fn hires_fix_is_refused_where_it_cannot_run() {
     let c = ckpt();
@@ -317,7 +317,7 @@ fn manga(screen_lines: u32, white_point: f64, black_point: f64) -> MangaScreen {
     }
 }
 
-// tags: boundary, state-transition
+// tags: boundary
 #[test]
 fn manga_finish_is_the_last_step_before_the_output_and_holds_each_value_to_its_range() {
     let c = ckpt();
@@ -345,7 +345,7 @@ fn manga_finish_is_the_last_step_before_the_output_and_holds_each_value_to_its_r
     assert!(by_class(&build(&input(&p, &c, None)).unwrap(), "MangaFinish").is_empty());
 }
 
-// tags: scenario
+// tags: equivalence
 #[test]
 fn loras_chain_in_order_and_clip_skip_vae_and_rescale_apply() {
     let mut p = params(GenerationMode::Txt2img);
@@ -405,7 +405,7 @@ fn img2img_encodes_the_source_with_strength() {
     assert!(by_class(&g, "ImageCompositeMasked").is_empty());
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn upscale_scales_the_size_and_runs_the_upscale_model() {
     let mut p = params(GenerationMode::Upscale);
@@ -428,7 +428,7 @@ fn upscale_scales_the_size_and_runs_the_upscale_model() {
     assert_eq!(by_class(&g, "KSampler")[0]["denoise"], 0.35);
 }
 
-// tags: condition
+// tags: boundary
 #[test]
 fn upscale_creativity_sets_the_denoise_strength() {
     let mut p = params(GenerationMode::Upscale);
@@ -557,7 +557,7 @@ fn a_large_upscale_is_redrawn_tile_by_tile_and_blended_into_the_enlarged_picture
     assert_eq!(by_class(&whole, "KSampler").len(), 1);
 }
 
-// tags: decision-table
+// tags: condition
 #[test]
 fn upscale_with_a_post_processing_model_finishes_the_picture_then_fits_the_output() {
     let mut p = params(GenerationMode::Upscale);
@@ -665,7 +665,7 @@ fn mask_blur_is_clamped_and_zero_uses_the_mask_as_painted() {
     );
 }
 
-// tags: scenario
+// tags: equivalence, condition
 #[test]
 fn control_layers_chain_the_conditioning_and_more_control_skips_the_negative() {
     let p = {
@@ -797,7 +797,7 @@ fn union_controlnets_are_known_by_their_name_file_or_source_and_kinds_by_comfyui
     assert_eq!(union_type(ControlType::Normal), "normal");
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn reference_images_patch_the_model_with_the_packs_weight_types() {
     let mut p = params(GenerationMode::Txt2img);
@@ -953,7 +953,7 @@ fn unsupported_requests_are_refused_with_a_reason() {
     assert!(masked(&p).unwrap_err().contains("cannot be used"));
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn regional_layers_confine_their_prompts_to_their_region() {
     let p = {
@@ -1021,7 +1021,7 @@ fn regional_layers_confine_their_prompts_to_their_region() {
     assert!(err.unwrap_err().contains("SD 1.5 and SDXL"));
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn seamless_tiling_circles_the_model_and_the_decode_through_the_tiling_pack() {
     let c = ckpt();

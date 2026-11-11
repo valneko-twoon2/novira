@@ -50,7 +50,7 @@ afterEach(() => {
   useQueue.setState(initial.queue, true);
 });
 
-describe('which characters need a reference picture', () => {
+describe('which characters need a reference picture', { tags: [] }, () => {
   it('judges a panel by the model of its own page, not by the page on screen', { tags: ['condition'] }, () => {
     const ids = seed([A, B], null);
     const project = useComic.getState().projects[0]!;
@@ -71,21 +71,29 @@ describe('which characters need a reference picture', () => {
     expect(portraitCharacters(bare).map((c) => c.character.id)).toEqual(['b']);
   });
 
-  it('lists none when the panels are drawn without the pictures of their characters: references off, or no IP-Adapter', { tags: ['boundary'] }, () => {
-    expect(portraitCharacters(seed([A, B], null))).toEqual([]);
-    useModels.setState({ models: [model({})] });
-    expect(portraitCharacters(seed())).toEqual([]);
-    // A model that takes pictures in itself always draws with them.
-    useModels.setState({ models: [model({ base: 'flux2' })] });
-    expect(portraitCharacters(seed([A, B], null)).map((c) => c.character.id)).toEqual(['a']);
-  });
+  it(
+    'lists none when the panels are drawn without the pictures of their characters: references off, or no IP-Adapter',
+    { tags: ['decision-table'] },
+    () => {
+      expect(portraitCharacters(seed([A, B], null))).toEqual([]);
+      useModels.setState({ models: [model({})] });
+      expect(portraitCharacters(seed())).toEqual([]);
+      // A model that takes pictures in itself always draws with them.
+      useModels.setState({ models: [model({ base: 'flux2' })] });
+      expect(portraitCharacters(seed([A, B], null)).map((c) => c.character.id)).toEqual(['a']);
+    },
+  );
 
-  it('queues the panels without drawing the characters alone first when the comic uses no references', { tags: ['condition'] }, async () => {
-    const ids = seed([A, B], null);
-    const { prompts } = mockQueue();
-    expect(await drawPanels(ids)).toBe(3);
-    expect(prompts.every((p) => !p.includes('white background'))).toBe(true);
-  });
+  it(
+    'queues the panels without drawing the characters alone first when the comic uses no references',
+    { tags: ['condition'] },
+    async () => {
+      const ids = seed([A, B], null);
+      const { prompts } = mockQueue();
+      expect(await drawPanels(ids)).toBe(3);
+      expect(prompts.every((p) => !p.includes('white background'))).toBe(true);
+    },
+  );
 });
 
 /** Queue mock that answers each request with a pending item and remembers the prompts; ids count from `first`. */
@@ -101,38 +109,42 @@ function mockQueue(first = 1) {
   return { prompts, spy };
 }
 
-describe('drawing several panels with references', () => {
-  it('draws the character alone first, waits for it, makes it the reference, then queues the panels', { tags: ['state-transition'] }, async () => {
-    const ids = seed();
-    const { prompts } = mockQueue();
-    const drawing = drawPanels(ids);
-    await vi.waitFor(() => expect(prompts).toHaveLength(1));
-    // Only the portrait (the tags alone, on a plain background) is queued while its picture is awaited.
-    expect(prompts[0]).toContain('1boy, old man');
-    expect(prompts[0]).toContain('white background');
-    await new Promise((r) => setTimeout(r, 30));
-    expect(prompts).toHaveLength(1);
-    const item = useQueue.getState().items[0]!;
-    useQueue.setState({ items: [{ ...item, status: 'completed' }] });
-    onComicImage(item, { name: 'grandpa.png', url: 'u' } as ImageDTO);
-    expect(await drawing).toBe(3);
-    expect(prompts).toHaveLength(4);
-    expect(prompts[1]).toContain('p1 at the gate');
-    expect(prompts[3]).toContain('p3 by the river');
-    // The portrait is now the character's reference, and the other character's is untouched.
-    const cast = findPanel(useComic.getState().projects, ids[0]!)!.project.cast;
-    expect(cast.find((c) => c.id === 'a')!.imageName).toBe('grandpa.png');
-    expect(cast.find((c) => c.id === 'b')!.imageName).toBe('goro.png');
-  });
+describe('drawing several panels with references', { tags: [] }, () => {
+  it(
+    'draws the character alone first, waits for it, makes it the reference, then queues the panels',
+    { tags: ['state-transition'] },
+    async () => {
+      const ids = seed();
+      const { prompts } = mockQueue();
+      const drawing = drawPanels(ids);
+      await vi.waitFor(() => expect(prompts).toHaveLength(1));
+      // Only the portrait (the tags alone, on a plain background) is queued while its picture is awaited.
+      expect(prompts[0]).toContain('1boy, old man');
+      expect(prompts[0]).toContain('white background');
+      await new Promise((r) => setTimeout(r, 30));
+      expect(prompts).toHaveLength(1);
+      const item = useQueue.getState().items[0]!;
+      useQueue.setState({ items: [{ ...item, status: 'completed' }] });
+      onComicImage(item, { name: 'grandpa.png', url: 'u' } as ImageDTO);
+      expect(await drawing).toBe(3);
+      expect(prompts).toHaveLength(4);
+      expect(prompts[1]).toContain('p1 at the gate');
+      expect(prompts[3]).toContain('p3 by the river');
+      // The portrait is now the character's reference, and the other character's is untouched.
+      const cast = findPanel(useComic.getState().projects, ids[0]!)!.project.cast;
+      expect(cast.find((c) => c.id === 'a')!.imageName).toBe('grandpa.png');
+      expect(cast.find((c) => c.id === 'b')!.imageName).toBe('goro.png');
+    },
+  );
 
-  it('queues the panels at once when every character already has a picture', { tags: ['state-transition'] }, async () => {
+  it('queues the panels at once when every character already has a picture', { tags: ['condition'] }, async () => {
     const ids = seed([{ ...A, imageName: 'a.png' }, B]);
     const { spy } = mockQueue();
     expect(await drawPanels(ids)).toBe(3);
     expect(spy).toHaveBeenCalledTimes(3);
   });
 
-  it('carries on with the panels when the portrait never comes, after the wait', { tags: ['error-guessing', 'state-transition'] }, async () => {
+  it('carries on with the panels when the portrait never comes, after the wait', { tags: ['error-guessing'] }, async () => {
     vi.useFakeTimers();
     try {
       const ids = seed();
@@ -150,7 +162,7 @@ describe('drawing several panels with references', () => {
   });
 });
 
-describe('drawing panels and waiting for their pictures', () => {
+describe('drawing panels and waiting for their pictures', { tags: [] }, () => {
   /** Finishes the queue item `id` and puts its picture in its panel, as the app does when a picture arrives. */
   const finish = (id: number) => {
     const items = useQueue.getState().items.map((i) => (i.id === id ? { ...i, status: 'completed' as const } : i));
@@ -174,7 +186,7 @@ describe('drawing panels and waiting for their pictures', () => {
     expect(useComic.getState().projects[0]!.pages[0]!.panels.map((p) => p.imageName)).toEqual(['pic-101.png', 'pic-102.png', 'pic-103.png']);
   });
 
-  it('waits as long as the pictures keep moving, and gives up when they stop', { tags: ['condition'] }, async () => {
+  it('waits as long as the pictures keep moving, and gives up when they stop', { tags: ['boundary', 'state-transition'] }, async () => {
     vi.useFakeTimers();
     try {
       const ids = seed([{ ...A, imageName: 'a.png' }, B]);
@@ -222,7 +234,7 @@ describe('drawing panels and waiting for their pictures', () => {
     expect(await waiting).toBe(3);
   });
 
-  it('queues nothing and waits for nothing without a panel to draw', { tags: ['error-guessing'] }, async () => {
+  it('queues nothing and waits for nothing without a panel to draw', { tags: ['boundary'] }, async () => {
     seed();
     const { spy } = mockQueue();
     expect(await drawPanelsAndWait([])).toBe(0);
@@ -230,10 +242,10 @@ describe('drawing panels and waiting for their pictures', () => {
   });
 });
 
-describe('redrawing a part of a panel\'s picture', () => {
+describe('redrawing a part of a panel\'s picture', { tags: [] }, () => {
   const mask = { strokes: [], boxes: [{ x: 0.1, y: 0.1, w: 0.3, h: 0.3 }] };
 
-  it('says why it cannot at once: no picture in the gallery, a model that takes no masks', { tags: ['error-guessing'] }, () => {
+  it('says why it cannot at once: no picture in the gallery, a model that takes no masks', { tags: ['condition'] }, () => {
     const ids = seed();
     expect(fixTarget(ids[0]!, mask)).toBe(t('comic.fix.noPicture'));
     useComic.getState().setPanelImage(ids[0]!, 'pic.png');
@@ -266,11 +278,11 @@ describe('redrawing a part of a panel\'s picture', () => {
   });
 });
 
-describe('making the sheet of a character', () => {
+describe('making the sheet of a character', { tags: [] }, () => {
   const IPA = model({ key: 'ipa', name: 'IP-Adapter SDXL', base: 'sdxl', type: 'ip_adapter', path: 'ip-adapter_sdxl_vit-h.safetensors' });
   const cast = () => useComic.getState().projects[0]!.cast;
 
-  it('queues the views it lacks, each from the front picture, and a view being drawn only once', { tags: ['equivalence'] }, async () => {
+  it('queues the views it lacks, each from the front picture, and a view being drawn only once', { tags: ['condition'] }, async () => {
     seed([{ ...A, imageName: 'a.png', sheet: { face: 'face.png' } }, B]);
     useModels.setState({ models: [model({}), IPA] });
     useGallery.setState({ images: [{ name: 'a.png', url: 'novira-image://a.png' } as ImageDTO] });
@@ -282,7 +294,7 @@ describe('making the sheet of a character', () => {
     useComic.setState({ sheetPending: {} });
   });
 
-  it('draws the front picture first when there is none, then the views from it', { tags: ['boundary', 'state-transition'] }, async () => {
+  it('draws the front picture first when there is none, then the views from it', { tags: ['state-transition'] }, async () => {
     seed();
     useModels.setState({ models: [model({}), IPA] });
     const { prompts } = mockQueue(401);

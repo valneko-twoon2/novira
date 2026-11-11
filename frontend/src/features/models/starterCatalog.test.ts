@@ -13,8 +13,8 @@ const s = (id: string, base: StarterModel['base'], type: StarterModel['type'], n
   ...(dependencies ? { dependencies } : {}),
 });
 
-describe('purposeOf', () => {
-  it('tells pictures, edit models and video apart among the models that draw', { tags: ['condition'] }, () => {
+describe('purposeOf', { tags: [] }, () => {
+  it('tells pictures, edit models and video apart among the models that draw', { tags: ['equivalence'] }, () => {
     expect(purposeOf(s('a', 'anima', 'diffusion_model'))).toBe('picture');
     expect(purposeOf(s('x', 'sdxl', 'main'))).toBe('picture');
     expect(purposeOf(s('k', 'flux', 'diffusion_model', 'FLUX.1 Kontext dev (fp8)'))).toBe('edit');
@@ -24,7 +24,7 @@ describe('purposeOf', () => {
     expect(purposeOf(s('l', 'ltx2', 'main'))).toBe('video');
   });
 
-  it('puts the helpers by what they do', { tags: ['condition'] }, () => {
+  it('puts the helpers by what they do', { tags: ['equivalence'] }, () => {
     expect(purposeOf(s('u', 'any', 'spandrel_image_to_image'))).toBe('upscale');
     expect(purposeOf(s('c', 'sdxl', 'controlnet'))).toBe('control');
     expect(purposeOf(s('p', 'anima', 'model_patch'))).toBe('control');
@@ -33,7 +33,7 @@ describe('purposeOf', () => {
   });
 });
 
-describe('familiesOf', () => {
+describe('familiesOf', { tags: [] }, () => {
   const all = [
     s('anima', 'anima', 'diffusion_model', 'Anima', ['qwen3']),
     s('zimage', 'z-image', 'diffusion_model', 'Z-Image', ['qwen3']),
@@ -50,7 +50,7 @@ describe('familiesOf', () => {
     expect(familiesOf(all[5]!, all)).toEqual([]);
   });
 
-  it('lists the families present, and filters by purpose and family in the order of the purposes', { tags: ['condition'] }, () => {
+  it('lists the families present, and filters by purpose and family in the order of the purposes', { tags: ['decision-table'] }, () => {
     const entries = starterEntries(all);
     expect(familiesIn(entries)).toEqual(['z-image', 'anima', 'sdxl', 'wan']);
     const shown = filterEntries(entries, null, 'anima');

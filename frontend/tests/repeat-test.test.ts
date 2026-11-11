@@ -11,8 +11,8 @@ type Run = { ok: boolean; code: number | null; output: string };
 const pass: Run = { ok: true, code: 0, output: 'ok' };
 const fail = (output: string): Run => ({ ok: false, code: 1, output });
 
-describe('arguments', () => {
-  it('defaults to 20 runs one after another, stopping at the first failure', { tags: ['condition'] }, () => {
+describe('arguments', { tags: [] }, () => {
+  it('defaults to 20 runs one after another, stopping at the first failure', { tags: ['equivalence'] }, () => {
     expect(parseArgs(['--', 'cargo', 'test'])).toEqual({ times: DEFAULT_TIMES, parallel: 1, stopOnFail: true, command: ['cargo', 'test'] });
     expect(DEFAULT_TIMES).toBe(20);
   });
@@ -23,7 +23,7 @@ describe('arguments', () => {
     expect(parseArgs(['--no-stop-on-fail', '--stop-on-fail', '--', 'x'])).toMatchObject({ stopOnFail: true });
   });
 
-  it('keeps the options of the command itself after the double dash', { tags: ['decision-table'] }, () => {
+  it('keeps the options of the command itself after the double dash', { tags: ['condition'] }, () => {
     expect(parseArgs(['--times', '2', '--', 'node', '--times', '9'])).toMatchObject({ times: 2, command: ['node', '--times', '9'] });
   });
 
@@ -44,8 +44,8 @@ describe('arguments', () => {
   });
 });
 
-describe('the series', () => {
-  it('runs every time when all pass', { tags: ['condition'] }, async () => {
+describe('the series', { tags: [] }, () => {
+  it('runs every time when all pass', { tags: ['equivalence'] }, async () => {
     const r = await repeat({ times: 7, run: async () => pass });
     expect(r).toEqual({ started: 7, passed: 7, failed: 0, firstFailure: null });
   });
@@ -61,7 +61,7 @@ describe('the series', () => {
     expect(r).toMatchObject({ started: 6, passed: 3, failed: 3, firstFailure: { index: 1, output: 'bad 1' } });
   });
 
-  it('never has more copies running than asked, and starts no new run after a failure', { tags: ['condition'] }, async () => {
+  it('never has more copies running than asked, and starts no new run after a failure', { tags: ['boundary'] }, async () => {
     let live = 0;
     let most = 0;
     const r = await repeat({
@@ -80,7 +80,7 @@ describe('the series', () => {
     expect(r.started).toBeLessThan(12);
   });
 
-  it('does not start more copies than there are runs', { tags: ['condition'] }, async () => {
+  it('does not start more copies than there are runs', { tags: ['boundary'] }, async () => {
     let most = 0;
     let live = 0;
     await repeat({
@@ -110,41 +110,45 @@ describe('the series', () => {
   });
 });
 
-describe('output', () => {
-  it('keeps the last lines only, without trailing blanks', { tags: ['condition'] }, () => {
+describe('output', { tags: [] }, () => {
+  it('keeps the last lines only, without trailing blanks', { tags: ['boundary'] }, () => {
     const text = Array.from({ length: 100 }, (_, i) => `line ${i}`).join('\n') + '\n\n';
     const lines = tail(text, 3).split('\n');
     expect(lines).toEqual(['line 97', 'line 98', 'line 99']);
     expect(tail('a\r\nb', 5)).toBe('a\nb');
   });
 
-  describe('files', () => {
+  describe('files', { tags: [] }, () => {
     let root = '';
     beforeEach(() => {
       root = mkdtempSync(join(tmpdir(), 'repeat-test-'));
     });
     afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-    it('saves a failing run under logs/repeat-test/ of the given root only', { tags: ['condition'] }, () => {
+    it('saves a failing run under logs/repeat-test/ of the given root only', { tags: ['equivalence'] }, () => {
       const file = saveFailure('the output', root, new Date(Date.UTC(2026, 10, 7, 1, 2, 3)));
       expect(file.startsWith(join(root, 'logs', 'repeat-test'))).toBe(true);
       expect(readFileSync(file, 'utf8')).toBe('the output');
       expect(existsSync(join(root, 'logs'))).toBe(true);
     });
 
-    it('runs a real process: a pass, a failure with its own exit code and output, and a missing program', { tags: ['error-guessing'] }, async () => {
-      const ok = await runOnce([process.execPath, '-e', 'console.log("hello")']);
-      expect(ok).toMatchObject({ ok: true, code: 0 });
-      expect(ok.output).toContain('hello');
-      const bad = await runOnce([process.execPath, '-e', 'console.error("oops"); process.exit(3)']);
-      expect(bad).toMatchObject({ ok: false, code: 3 });
-      expect(bad.output).toContain('oops');
-      const missing = await runOnce(['novira-no-such-program-xyz']);
-      expect(missing.ok).toBe(false);
-      expect(missing.output).toContain('could not start');
-    });
+    it(
+      'runs a real process: a pass, a failure with its own exit code and output, and a missing program',
+      { tags: ['error-guessing'] },
+      async () => {
+        const ok = await runOnce([process.execPath, '-e', 'console.log("hello")']);
+        expect(ok).toMatchObject({ ok: true, code: 0 });
+        expect(ok.output).toContain('hello');
+        const bad = await runOnce([process.execPath, '-e', 'console.error("oops"); process.exit(3)']);
+        expect(bad).toMatchObject({ ok: false, code: 3 });
+        expect(bad.output).toContain('oops');
+        const missing = await runOnce(['novira-no-such-program-xyz']);
+        expect(missing.ok).toBe(false);
+        expect(missing.output).toContain('could not start');
+      },
+    );
 
-    it('catches a command that fails only on its third run', { tags: ['error-guessing'] }, async () => {
+    it('catches a command that fails only on its third run', { tags: ['scenario'] }, async () => {
       const counter = join(root, 'count');
       writeFileSync(counter, '0');
       const script = `const fs=require('fs');const n=Number(fs.readFileSync(${JSON.stringify(counter)},'utf8'))+1;fs.writeFileSync(${JSON.stringify(counter)},String(n));if(n===3){console.log('third');process.exit(1)}`;

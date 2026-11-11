@@ -17,7 +17,7 @@ afterEach(() => {
 });
 
 describe('the Generate form across starts', () => {
-  it('comes back as it was left: prompts, model, settings, LoRAs and reference images', { tags: ['condition'] }, async () => {
+  it('comes back as it was left: prompts, model, settings, LoRAs and reference images', { tags: ['scenario'] }, async () => {
     const p = useParams.getState();
     p.set({ positivePrompt: 'a cat', negativePrompt: 'blurry', modelKey: 'm1', steps: 12, shouldRandomizeSeed: false, seed: 42 });
     p.addLora('l1');
@@ -38,7 +38,7 @@ describe('the Generate form across starts', () => {
     expect(typeof s.set).toBe('function');
   });
 
-  it('gives a new reference image an id no restored one has', { tags: ['scenario'] }, async () => {
+  it('gives a new reference image an id no restored one has', { tags: ['condition'] }, async () => {
     localStorage.setItem('novira.params', JSON.stringify({ state: { refImages: [{ id: 'ref-40' }] }, version: 1 }));
     await useParams.persist.rehydrate();
     const id = useParams.getState().addRefImage();
@@ -46,28 +46,32 @@ describe('the Generate form across starts', () => {
     expect(id).not.toBe('ref-40');
   });
 
-  it('saves the Generate tab prompts, not the comic panel shown in the boxes, while the comic screen is open', { tags: ['condition'] }, () => {
-    const project = newProject('P');
-    project.pages[0]!.panels[0] = { ...project.pages[0]!.panels[0]!, prompt: 'panel prompt', negativePrompt: 'panel negative' };
-    useComic.getState().setProjects([project]);
-    useParams.getState().set({ positivePrompt: 'generate text', negativePrompt: 'generate negative' });
-    const stop = startComicPromptSync();
-    try {
-      useUi.getState().setTab('comic');
-      expect(useParams.getState().positivePrompt).toBe('panel prompt');
-      useParams.getState().set({ steps: 9 });
-      expect(saved()?.state).toMatchObject({ positivePrompt: 'generate text', negativePrompt: 'generate negative', steps: 9 });
-      useUi.getState().setTab('generate');
-      useParams.getState().set({ positivePrompt: 'typed later' });
-      expect(saved()?.state.positivePrompt).toBe('typed later');
-    } finally {
-      stop();
-    }
-  });
+  it(
+    'saves the Generate tab prompts, not the comic panel shown in the boxes, while the comic screen is open',
+    { tags: ['condition'] },
+    () => {
+      const project = newProject('P');
+      project.pages[0]!.panels[0] = { ...project.pages[0]!.panels[0]!, prompt: 'panel prompt', negativePrompt: 'panel negative' };
+      useComic.getState().setProjects([project]);
+      useParams.getState().set({ positivePrompt: 'generate text', negativePrompt: 'generate negative' });
+      const stop = startComicPromptSync();
+      try {
+        useUi.getState().setTab('comic');
+        expect(useParams.getState().positivePrompt).toBe('panel prompt');
+        useParams.getState().set({ steps: 9 });
+        expect(saved()?.state).toMatchObject({ positivePrompt: 'generate text', negativePrompt: 'generate negative', steps: 9 });
+        useUi.getState().setTab('generate');
+        useParams.getState().set({ positivePrompt: 'typed later' });
+        expect(saved()?.state.positivePrompt).toBe('typed later');
+      } finally {
+        stop();
+      }
+    },
+  );
 });
 
 describe('restoreParams', () => {
-  it('takes only the fields of the right kind and leaves the rest at the defaults', { tags: ['condition'] }, () => {
+  it('takes only the fields of the right kind and leaves the rest at the defaults', { tags: ['error-guessing'] }, () => {
     const s = restoreParams(
       {
         steps: 'many',
@@ -99,19 +103,19 @@ describe('restoreParams', () => {
     expect(restoreParams({ initImage: 'a.png' }, initial).initImage).toBeNull();
   });
 
-  it('ignores the manga finish an older version stored with the form', { tags: ['condition'] }, () => {
+  it('ignores the manga finish an older version stored with the form', { tags: ['error-guessing', 'condition'] }, () => {
     const s = restoreParams({ cfgScale: 5, manga: { enabled: true, screenLines: 240 } }, initial);
     expect(s.cfgScale).toBe(5);
     expect('manga' in s).toBe(false);
   });
 
-  it('numbers a new reference image after the restored ones, so no two share an id', { tags: ['scenario'] }, () => {
+  it('numbers a new reference image after the restored ones, so no two share an id', { tags: ['boundary'] }, () => {
     const s = restoreParams({ refImages: [{ id: 'ref-900' }] }, initial);
     useParams.setState(s, true);
     expect(useParams.getState().addRefImage({})).toBe('ref-901');
   });
 
-  it('keeps the defaults for something that is not a saved form', { tags: ['condition'] }, () => {
+  it('keeps the defaults for something that is not a saved form', { tags: ['error-guessing'] }, () => {
     expect(restoreParams(null, initial)).toBe(initial);
     expect(restoreParams([1], initial)).toBe(initial);
   });

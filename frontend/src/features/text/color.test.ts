@@ -15,7 +15,7 @@ describe('colour strings', () => {
     expect(formatColor({ hex: '#112233', alpha: 0.5 })).toBe('rgba(17, 34, 51, 0.5)');
   });
 
-  it('round-trips a translucent colour', { tags: ['condition'] }, () => {
+  it('round-trips a translucent colour', { tags: ['equivalence'] }, () => {
     expect(parseColor(formatColor({ hex: '#336699', alpha: 0.4 }))).toEqual({ hex: '#336699', alpha: 0.4 });
   });
 });

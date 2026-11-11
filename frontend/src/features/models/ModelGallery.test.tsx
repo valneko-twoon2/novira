@@ -36,7 +36,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('the model pictures', () => {
+describe('the model pictures', { tags: [] }, () => {
   it('pages forward and back around the ends, with a counter', { tags: ['boundary'] }, () => {
     show();
     expect(src()).toBe('https://image.civitai.com/a.jpeg');
@@ -57,7 +57,7 @@ describe('the model pictures', () => {
     expect(screen.queryByTestId('mm-gallery-count')).toBeNull();
   });
 
-  it('starts at the first picture again for another model', { tags: ['boundary'] }, () => {
+  it('starts at the first picture again for another model', { tags: ['condition'] }, () => {
     const { rerender } = show();
     fireEvent.click(screen.getByTestId('mm-gallery-next'));
     rerender(
@@ -69,7 +69,7 @@ describe('the model pictures', () => {
   });
 });
 
-describe('the original page', () => {
+describe('the original page', { tags: [] }, () => {
   it('lists the address and opens it through the backend', { tags: ['scenario'] }, () => {
     const open = vi.spyOn(backend, 'openSourcePage').mockResolvedValue(undefined);
     vi.spyOn(backend, 'kind', 'get').mockReturnValue('tauri' as never);
@@ -80,7 +80,7 @@ describe('the original page', () => {
     expect(open).toHaveBeenCalledWith(model.pageUrl);
   });
 
-  it('falls back to a page built from the source, and shows no link for a local file', { tags: ['scenario'] }, () => {
+  it('falls back to a page built from the source, and shows no link for a local file', { tags: ['equivalence'] }, () => {
     show({ ...model, pageUrl: undefined, source: 'https://huggingface.co/a/b' });
     expect(screen.getByTestId('mm-page-link').textContent).toBe('https://huggingface.co/a/b');
     cleanup();

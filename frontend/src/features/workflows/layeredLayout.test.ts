@@ -6,8 +6,8 @@ import { getTemplate } from './templates';
 
 const node = (type: string, id: string, extra: Partial<WorkflowNode> = {}): WorkflowNode => ({ ...createNode(getTemplate(type)!, { x: 0, y: 0 }, { id }), ...extra });
 
-describe('layeredLayout', () => {
-  it('orders nodes within a column to remove edge crossings', { tags: ['state-transition'] }, () => {
+describe('layeredLayout', { tags: [] }, () => {
+  it('orders nodes within a column to remove edge crossings', { tags: ['equivalence'] }, () => {
     // Array order would put t1 above t2, crossing a->t2 and b->t1.
     const nodes = [node('integer', 'a'), node('integer', 'b'), node('integer_math', 't1'), node('integer_math', 't2')];
     const edges = [makeEdge('a', 'value', 't2', 'a'), makeEdge('b', 'value', 't1', 'a')];
@@ -17,7 +17,7 @@ describe('layeredLayout', () => {
     expect(p.get('t1')!.x).toBe(LAYER_SPACING);
   });
 
-  it('stacks nodes of a column by their measured heights without overlap', { tags: ['condition'] }, () => {
+  it('stacks nodes of a column by their measured heights without overlap', { tags: ['equivalence'] }, () => {
     const nodes = [node('integer', 'a', { measured: { width: 300, height: 200 } }), node('integer', 'b', { measured: { width: 300, height: 120 } })];
     const p = layeredLayout(nodes, [], { x: 10, y: 20 });
     expect(p.get('a')).toEqual({ x: 10, y: 20 });
@@ -37,7 +37,7 @@ describe('layeredLayout', () => {
     expect([p.get('a')!.x, p.get('m1')!.x, p.get('m2')!.x]).toEqual([0, LAYER_SPACING, 2 * LAYER_SPACING]);
   });
 
-  it('still places every node of a cycle', { tags: ['decision-table'] }, () => {
+  it('still places every node of a cycle', { tags: ['error-guessing'] }, () => {
     const nodes = [node('integer_math', 'x'), node('integer_math', 'y')];
     const edges = [makeEdge('x', 'value', 'y', 'a'), makeEdge('y', 'value', 'x', 'a')];
     expect(topologicalOrder(nodes, edges)).toEqual(['x', 'y']);

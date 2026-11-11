@@ -70,8 +70,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('ModelBrowser', () => {
-  it('shows skeleton cards while loading, then the models and the end marker', { tags: ['state-transition', 'scenario'] }, async () => {
+describe('ModelBrowser', { tags: [] }, () => {
+  it('shows skeleton cards while loading, then the models and the end marker', { tags: ['state-transition'] }, async () => {
     vi.spyOn(backend, 'searchCivitai').mockResolvedValue(page(['a', 'b'], null));
     const { container } = show();
     expect(container.querySelectorAll('.browse-skeleton')).toHaveLength(10);
@@ -79,13 +79,13 @@ describe('ModelBrowser', () => {
     expect(screen.getByText(t('browse.status.end'))).toBeTruthy();
   });
 
-  it('says when nothing was found', { tags: ['boundary', 'scenario'] }, async () => {
+  it('says when nothing was found', { tags: ['boundary'] }, async () => {
     vi.spyOn(backend, 'searchCivitai').mockResolvedValue(page([], null));
     show();
     expect(await screen.findByText(t('browse.status.empty'))).toBeTruthy();
   });
 
-  it('shows the error and searches again with Retry', { tags: ['regression', 'error-guessing'] }, async () => {
+  it('shows the error and searches again with Retry', { tags: ['error-guessing'] }, async () => {
     const search = vi.spyOn(backend, 'searchCivitai').mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(page(['a'], null));
     show();
     expect(await screen.findByText(t('browse.status.error'))).toBeTruthy();
@@ -115,7 +115,7 @@ describe('ModelBrowser', () => {
     expect(screen.queryByRole('button', { name: t('browse.status.loadMore') })).toBeNull();
   });
 
-  it('opens the detail drawer of a card and closes it again', { tags: ['regression', 'state-transition'] }, async () => {
+  it('opens the detail drawer of a card and closes it again', { tags: ['scenario'] }, async () => {
     vi.spyOn(backend, 'searchCivitai').mockResolvedValue(page(['a'], null));
     show();
     fireEvent.click(await screen.findByTestId('browse-card'));
@@ -124,7 +124,7 @@ describe('ModelBrowser', () => {
     expect(useBrowse.getState().selected).toBeNull();
   });
 
-  it('copies the typed query into the filters after a short pause', { tags: ['state-transition', 'scenario'] }, async () => {
+  it('copies the typed query into the filters after a short pause', { tags: ['scenario'] }, async () => {
     vi.spyOn(backend, 'searchCivitai').mockResolvedValue(page(['a'], null));
     show();
     await screen.findAllByTestId('browse-card');
@@ -133,7 +133,7 @@ describe('ModelBrowser', () => {
     await waitFor(() => expect(useBrowse.getState().query).toBe('cats and dogs'));
   });
 
-  it('shows the address box instead of a name search for Hugging Face, and searches Civitai only', { tags: ['scenario'] }, async () => {
+  it('shows the address box instead of a name search for Hugging Face, and searches Civitai only', { tags: ['condition'] }, async () => {
     const search = vi.spyOn(backend, 'searchCivitai').mockResolvedValue(page(['a'], null));
     useBrowse.setState({ source: 'huggingface' });
     show();

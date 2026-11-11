@@ -4,7 +4,7 @@ import { FIX_BRUSH, FIX_LIMITS, FIX_STRENGTH } from './panelFix';
 
 beforeEach(() => useComicFix.getState().stop());
 
-describe('marking a part of a panel picture', () => {
+describe('marking a part of a panel picture', { tags: [] }, () => {
   it('starts on a panel and drops what was marked on another one', { tags: ['state-transition'] }, () => {
     const fix = useComicFix.getState();
     fix.start('a');
@@ -16,7 +16,7 @@ describe('marking a part of a panel picture', () => {
     expect(useComicFix.getState()).toMatchObject({ panelId: 'b', strokes: [], words: '' });
   });
 
-  it('draws strokes with the brush of the moment, takes the last one away and clears them', { tags: ['condition'] }, () => {
+  it('draws strokes with the brush of the moment, takes the last one away and clears them', { tags: ['state-transition'] }, () => {
     const fix = useComicFix.getState();
     fix.start('a');
     fix.setBrush(0.1);
@@ -51,7 +51,7 @@ describe('marking a part of a panel picture', () => {
     expect(useComicFix.getState().brush).toBe(FIX_BRUSH.min);
   });
 
-  it('ends with nothing marked', { tags: ['condition'] }, () => {
+  it('ends with nothing marked', { tags: ['state-transition'] }, () => {
     const fix = useComicFix.getState();
     fix.start('a');
     fix.begin(0.1, 0.1);

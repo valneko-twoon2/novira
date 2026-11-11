@@ -509,7 +509,7 @@ mod copy_tests {
         assert!(err.starts_with("the backup is damaged"), "{err}");
     }
 
-    // tags: error-guessing
+    // tags: error-guessing, condition
     #[test]
     fn removing_what_is_not_there_is_fine_and_a_failure_is_reported() {
         let dir = tempfile::tempdir().unwrap();
@@ -546,7 +546,7 @@ mod copy_tests {
         assert_eq!(MAX_GALLERY_FILE, 8_589_934_592);
     }
 
-    // tags: state-transition
+    // tags: state-transition, error-guessing
     #[test]
     fn a_missing_source_is_not_retried() {
         let dir = tempfile::tempdir().unwrap();
@@ -556,7 +556,7 @@ mod copy_tests {
         assert!(started.elapsed() < Duration::from_secs(2));
     }
 
-    // tags: equivalence
+    // tags: boundary
     #[test]
     fn the_old_data_folder_name_counts_up_from_two_while_taken() {
         let dir = tempfile::tempdir().unwrap();

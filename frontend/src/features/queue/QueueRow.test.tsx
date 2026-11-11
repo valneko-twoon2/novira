@@ -41,7 +41,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('a queue row', () => {
+describe('a queue row', { tags: [] }, () => {
   it('shows the item, its prompt, model, size and how long it took, and toggles on a click', { tags: ['scenario'] }, () => {
     const onToggle = show(make());
     expect(screen.getByText('a cat')).toBeTruthy();
@@ -52,13 +52,13 @@ describe('a queue row', () => {
     expect(onToggle).toHaveBeenCalledOnce();
   });
 
-  it('says there is no prompt and shows no duration for an unfinished item', { tags: ['scenario'] }, () => {
+  it('says there is no prompt and shows no duration for an unfinished item', { tags: ['condition'] }, () => {
     show(make({ status: 'pending', params: { positivePrompt: '', seed: 1, modelName: 'M', width: 8, height: 8 } as never, completedAt: null }));
     expect(screen.getByText(t('queue.noPrompt'))).toBeTruthy();
     expect(document.querySelector('.qt-faint')).toBeNull();
   });
 
-  it('cancels a running item without toggling the row', { tags: ['scenario'] }, () => {
+  it('cancels a running item without toggling the row', { tags: ['condition'] }, () => {
     const cancel = vi.spyOn(backend, 'cancelQueueItem').mockResolvedValue(undefined as never);
     const onToggle = show(make({ status: 'in_progress' }));
     expect(byLabel(t('queue.action.retry'))).toBeNull();
@@ -67,7 +67,7 @@ describe('a queue row', () => {
     expect(onToggle).not.toHaveBeenCalled();
   });
 
-  it('retries a failed item and says so', { tags: ['error-guessing'] }, async () => {
+  it('retries a failed item and says so', { tags: ['condition'] }, async () => {
     useToasts.setState({ toasts: [] });
     const retry = vi.spyOn(backend, 'retryQueueItem').mockResolvedValue({ id: 8 } as never);
     show(make({ status: 'failed' }));
@@ -77,12 +77,12 @@ describe('a queue row', () => {
     await waitFor(() => expect(useToasts.getState().toasts).toHaveLength(1));
   });
 
-  it('offers no retry for a failed job of the removed logo mode, which would fail the same way', { tags: ['error-guessing'] }, () => {
+  it('offers no retry for a failed job of the removed logo mode, which would fail the same way', { tags: ['condition'] }, () => {
     show(make({ status: 'failed', params: { positivePrompt: 'NOVA', seed: 1, modelName: 'M', width: 8, height: 8, generationMode: 'logo' } as never }));
     expect(byLabel(t('queue.action.retry'))).toBeNull();
   });
 
-  it('says nothing when there was nothing to retry', { tags: ['scenario'] }, async () => {
+  it('says nothing when there was nothing to retry', { tags: ['condition'] }, async () => {
     useToasts.setState({ toasts: [] });
     const retry = vi.spyOn(backend, 'retryQueueItem').mockResolvedValue(null as never);
     show(make({ status: 'canceled' }));
@@ -91,7 +91,7 @@ describe('a queue row', () => {
     expect(useToasts.getState().toasts).toHaveLength(0);
   });
 
-  it('offers a way out for a job that ran out of memory', { tags: ['scenario'] }, () => {
+  it('offers a way out for a job that ran out of memory', { tags: ['condition'] }, () => {
     show(make({ status: 'failed', errorKind: 'out_of_memory', error: 'CUDA out of memory' }));
     expect(document.querySelector('.qt-oom')).not.toBeNull();
   });
@@ -107,7 +107,7 @@ describe('a queue row', () => {
     expect(cancelBatch).toHaveBeenCalledWith('batch-0123456789ab');
   });
 
-  it('shows no picture for a name the gallery lacks, and no batch cancel for a finished item', { tags: ['scenario'] }, () => {
+  it('shows no picture for a name the gallery lacks, and no batch cancel for a finished item', { tags: ['condition'] }, () => {
     useGallery.setState({ images: [] });
     show(make({ imageName: 'gone.png' }), true);
     expect(document.querySelector('.qt-detail__image img')).toBeNull();

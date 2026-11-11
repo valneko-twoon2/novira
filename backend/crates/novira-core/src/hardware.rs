@@ -151,7 +151,7 @@ pub fn detect() -> HardwareInfo {
 mod tests {
     use super::*;
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn nvidia_smi_gives_the_card_with_the_most_memory() {
         let out = "NVIDIA GeForce RTX 3060, 12288\nNVIDIA GeForce GT 1030, 2048\n";
@@ -167,7 +167,7 @@ mod tests {
         assert_eq!(parse_nvidia_smi("No devices were found"), None);
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn the_adapter_with_the_most_memory_is_found_in_the_registry_output() {
         let key = |n: &str| format!(r"HKEY_LOCAL_MACHINE\SYSTEM\X\{n}");
@@ -196,7 +196,7 @@ mod tests {
         assert_eq!(h.vram_bytes, Some(0x2_ffa0_0000));
     }
 
-    // tags: condition
+    // tags: equivalence, error-guessing
     #[test]
     fn a_size_stored_as_bytes_is_read_little_endian() {
         assert_eq!(
@@ -207,7 +207,7 @@ mod tests {
         assert_eq!(reg_size("REG_SZ", "0x10"), None);
     }
 
-    // tags: condition
+    // tags: boundary
     #[test]
     fn no_adapter_with_a_size_is_unknown() {
         assert_eq!(parse_adapters("", ""), None);

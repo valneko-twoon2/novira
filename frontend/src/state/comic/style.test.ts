@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { parseStyle, phrasesOf, promptStyleOf, STYLE_MAX, TAG_WORDS_MAX } from './style';
 
-describe('phrasesOf', () => {
-  it(`names the terms longer than ${TAG_WORDS_MAX} words, without their weights`, { tags: ['condition'] }, () => {
+describe('phrasesOf', { tags: [] }, () => {
+  it(`names the terms longer than ${TAG_WORDS_MAX} words, without their weights`, { tags: ['boundary'] }, () => {
     const prompt = '1boy, solo, sitting quietly at his usual table, (large window showing the rainy street:1.2), hand on own chest, (teacup:1.2)';
     expect(phrasesOf(prompt)).toEqual(['sitting quietly at his usual table', 'large window showing the rainy street']);
   });
@@ -13,21 +13,21 @@ describe('phrasesOf', () => {
   });
 });
 
-describe('promptStyleOf', () => {
-  it('reads tags for the SD family and with no model, sentences for the others', { tags: ['condition'] }, () => {
+describe('promptStyleOf', { tags: [] }, () => {
+  it('reads tags for the SD family and with no model, sentences for the others', { tags: ['equivalence'] }, () => {
     expect(promptStyleOf('sdxl')).toBe('tags');
     expect(promptStyleOf(null)).toBe('tags');
     expect(promptStyleOf('flux')).toBe('sentences');
   });
 });
 
-describe('parseStyle', () => {
+describe('parseStyle', { tags: [] }, () => {
   it('keeps the words that are text, cut to their limit', { tags: ['boundary'] }, () => {
     expect(parseStyle({ positive: 'a'.repeat(STYLE_MAX + 5), negative: 'bad' })).toEqual({ positive: 'a'.repeat(STYLE_MAX), negative: 'bad' });
     expect(parseStyle({ negative: 'bad' })).toEqual({ negative: 'bad' });
   });
 
-  it('gives nothing for a value that holds no words', { tags: ['condition'] }, () => {
+  it('gives nothing for a value that holds no words', { tags: ['error-guessing'] }, () => {
     expect(parseStyle(undefined)).toBeUndefined();
     expect(parseStyle(null)).toBeUndefined();
     expect(parseStyle([])).toBeUndefined();

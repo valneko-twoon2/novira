@@ -17,7 +17,7 @@ fn the_tensors_outrank_the_sites_label_and_the_users_own_choice_outranks_both() 
     assert_eq!(pick_kind(None, None, None), None);
 }
 
-// tags: state-transition
+// tags: condition
 #[test]
 fn a_civitai_install_of_a_version_with_mature_pictures_only_keeps_one_marked_as_mature() {
     let v = serde_json::json!({
@@ -39,7 +39,7 @@ fn a_civitai_install_of_a_version_with_mature_pictures_only_keeps_one_marked_as_
     assert!(!civitai_file(&plain, None, None).unwrap().cover_mature);
 }
 
-// tags: state-transition
+// tags: scenario
 #[test]
 fn a_civitai_install_keeps_the_versions_cover_and_trigger_words() {
     let v = serde_json::json!({
@@ -56,7 +56,7 @@ fn a_civitai_install_keeps_the_versions_cover_and_trigger_words() {
     assert_eq!(r.trigger_words, vec!["girl".to_string()]);
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn video_models_and_gguf_files_from_civitai_go_to_the_diffusion_folder() {
     let version = |base: &str, file: &str| {
@@ -199,7 +199,7 @@ fn every_open_source_homepage_may_be_opened() {
     assert!(blocked.is_empty(), "{blocked:?}");
 }
 
-// tags: scenario
+// tags: error-guessing, equivalence
 #[test]
 fn host_matching_compares_the_whole_host() {
     let u = |s: &str| reqwest::Url::parse(s).unwrap();
@@ -250,7 +250,7 @@ fn a_civitai_file_is_downloaded_only_from_civitai_over_https() {
     }
 }
 
-// tags: decision-table, scenario
+// tags: decision-table
 #[tokio::test]
 async fn keys_are_sent_only_to_their_own_site_over_https() {
     let http = reqwest::Client::new();
@@ -294,7 +294,7 @@ fn plain_http_and_odd_repository_paths_are_refused() {
     assert!(parse_source("owner/repo::sub/dir/model.v2.safetensors").is_ok());
 }
 
-// tags: equivalence
+// tags: equivalence, error-guessing
 #[test]
 fn file_names_are_checked() {
     assert_eq!(
@@ -310,7 +310,7 @@ fn file_names_are_checked() {
     );
 }
 
-// tags: state-transition
+// tags: equivalence
 #[test]
 fn a_part_is_named_by_its_source_so_the_same_install_finds_it() {
     let name = part_name("civitai:701/7001-9");
@@ -321,7 +321,7 @@ fn a_part_is_named_by_its_source_so_the_same_install_finds_it() {
     assert!(hex.bytes().all(|b| b.is_ascii_hexdigit()));
 }
 
-// tags: error-guessing, state-transition
+// tags: equivalence, error-guessing
 #[test]
 fn only_an_access_refusal_or_a_sharing_violation_counts_as_a_file_held_by_another_program() {
     use std::io::{Error, ErrorKind};

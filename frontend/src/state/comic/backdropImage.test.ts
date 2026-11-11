@@ -24,7 +24,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('putting a gallery picture over the page', () => {
+describe('putting a gallery picture over the page', { tags: [] }, () => {
   it('puts the first name over the page and selects the picture', { tags: ['condition'] }, () => {
     const id = seed();
     expect(putBackdropGalleryImage(id, ['a.png', 'missing.png'])).toBe(true);
@@ -39,14 +39,14 @@ describe('putting a gallery picture over the page', () => {
     expect(useComic.getState().backdropSelected).toBe(false);
   });
 
-  it('does nothing without any name', { tags: ['condition'] }, () => {
+  it('does nothing without any name', { tags: ['boundary'] }, () => {
     const id = seed();
     expect(putBackdropGalleryImage(id, [])).toBe(false);
     expect(backdrop()).toBeNull();
   });
 });
 
-describe('putting a file from the computer over the page', () => {
+describe('putting a file from the computer over the page', { tags: [] }, () => {
   it('uploads it to the gallery first, then puts it over the page', { tags: ['state-transition'] }, async () => {
     const id = seed();
     const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue(image('new.png'));

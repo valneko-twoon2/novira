@@ -11,8 +11,8 @@ const press = (key: string, init: KeyboardEventInit = {}, target: EventTarget = 
   return e;
 };
 
-describe('useHotkey', () => {
-  it('runs on the exact chord only, with Ctrl as mod outside macOS', { tags: ['equivalence'] }, () => {
+describe('useHotkey', { tags: [] }, () => {
+  it('runs on the exact chord only, with Ctrl as mod outside macOS', { tags: ['decision-table'] }, () => {
     const handler = vi.fn();
     renderHook(() => useHotkey('mod+enter', handler));
     press('Enter');
@@ -34,7 +34,7 @@ describe('useHotkey', () => {
     expect(handler).toHaveBeenCalledTimes(4);
   });
 
-  it('leaves Ctrl+C and Ctrl+X to the browser while text is selected on the page', { tags: ['condition'] }, () => {
+  it('leaves Ctrl+C and Ctrl+X to the browser while text is selected on the page', { tags: ['condition', 'decision-table'] }, () => {
     const handler = vi.fn();
     renderHook(() => useHotkey(['mod+c', 'mod+x'], handler));
     const { getByText } = render(<p>selected words</p>);
@@ -72,12 +72,12 @@ describe('useHotkey', () => {
     expect(handler).toHaveBeenCalledOnce();
   });
 
-  it('labels the plus and minus keys, which a chord cannot spell', { tags: ['condition'] }, () => {
+  it('labels the plus and minus keys, which a chord cannot spell', { tags: ['equivalence'] }, () => {
     expect(chordLabel('mod+plus')).toBe('Ctrl++');
     expect(chordLabel('mod+minus')).toBe('Ctrl+-');
   });
 
-  it('matches plus and minus with or without Shift, and on the numpad', { tags: ['equivalence'] }, () => {
+  it('matches plus and minus with or without Shift, and on the numpad', { tags: ['decision-table'] }, () => {
     const zoomIn = vi.fn();
     const zoomOut = vi.fn();
     renderHook(() => {
@@ -135,8 +135,8 @@ describe('useHotkey', () => {
   });
 });
 
-describe('chordLabel', () => {
-  it('shows chords for menus', { tags: ['condition'] }, () => {
+describe('chordLabel', { tags: [] }, () => {
+  it('shows chords for menus', { tags: ['equivalence'] }, () => {
     expect(chordLabel('mod+shift+enter')).toBe('Ctrl+Shift+Enter');
     expect(chordLabel('g')).toBe('G');
     expect(chordLabel('mod+plus')).toBe('Ctrl++');

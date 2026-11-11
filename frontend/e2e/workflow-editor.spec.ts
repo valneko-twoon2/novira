@@ -63,24 +63,28 @@ test('a workflow is saved under a name, appears in the library and is downloaded
   await expect(page.getByTestId('wf-name')).toHaveText('Second copy');
 });
 
-test('a workflow file is loaded after confirming that the changes are discarded', { tag: ['@state-transition'] }, async ({ page }, info) => {
-  await openEditor(page);
-  const file = join(info.outputPath('flow.json'));
-  writeFileSync(file, JSON.stringify({ meta: { name: 'From file' }, nodes: [], edges: [], form: [] }));
-  // Unsaved changes: the file is only loaded once the discard is confirmed.
-  await page.keyboard.press('Shift+A');
-  await page.getByTestId('wf-node-picker').getByRole('textbox').fill('integer');
-  await page.getByTestId('wf-node-picker').getByRole('textbox').press('Enter');
-  await page.getByRole('button', { name: msg('workflows.toolbar.more') }).click();
-  await page.getByRole('menuitem', { name: msg('workflows.toolbar.loadFromFile') }).click();
-  await page.locator('input[type=file][accept*=json]').first().setInputFiles(file);
-  await page.getByTestId('wf-confirm-discard').click();
-  await expect(page.getByTestId('wf-name')).toHaveText('From file');
-  await expect(nodes(page)).toHaveCount(0);
-  // A new workflow starts empty.
-  await page.getByRole('button', { name: msg('workflows.toolbar.new') }).click();
-  await expect(page.getByTestId('wf-name')).toHaveText(msg('workflows.untitled'));
-});
+test(
+  'a workflow file is loaded after confirming that the changes are discarded',
+  { tag: ['@state-transition'] },
+  async ({ page }, info) => {
+    await openEditor(page);
+    const file = join(info.outputPath('flow.json'));
+    writeFileSync(file, JSON.stringify({ meta: { name: 'From file' }, nodes: [], edges: [], form: [] }));
+    // Unsaved changes: the file is only loaded once the discard is confirmed.
+    await page.keyboard.press('Shift+A');
+    await page.getByTestId('wf-node-picker').getByRole('textbox').fill('integer');
+    await page.getByTestId('wf-node-picker').getByRole('textbox').press('Enter');
+    await page.getByRole('button', { name: msg('workflows.toolbar.more') }).click();
+    await page.getByRole('menuitem', { name: msg('workflows.toolbar.loadFromFile') }).click();
+    await page.locator('input[type=file][accept*=json]').first().setInputFiles(file);
+    await page.getByTestId('wf-confirm-discard').click();
+    await expect(page.getByTestId('wf-name')).toHaveText('From file');
+    await expect(nodes(page)).toHaveCount(0);
+    // A new workflow starts empty.
+    await page.getByRole('button', { name: msg('workflows.toolbar.new') }).click();
+    await expect(page.getByTestId('wf-name')).toHaveText(msg('workflows.untitled'));
+  },
+);
 
 test('nodes are copied and pasted, and the editor settings and the node-list refresh answer', { tag: ['@scenario'] }, async ({ page }) => {
   await openEditor(page);
@@ -103,28 +107,32 @@ test('nodes are copied and pasted, and the editor settings and the node-list ref
   await expect(page.locator('.react-flow__minimap')).toHaveCount(shown ? 1 : 0);
 });
 
-test('dragging a connection into empty space offers the nodes that fit and connects the one picked', { tag: ['@scenario'] }, async ({ page }) => {
-  await openEditor(page);
-  const before = await nodes(page).count();
-  const edgesBefore = await page.locator('.react-flow__edge').count();
-  // The first output handle of the noise node (or any node with a free output).
-  const handle = page.locator('.react-flow__node .react-flow__handle.source').first();
-  const box = (await handle.boundingBox())!;
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(box.x + 200, box.y + 400, { steps: 8 });
-  await page.mouse.up();
-  const picker = page.getByTestId('wf-node-picker');
-  await expect(picker).toBeVisible();
-  await picker.getByRole('textbox').press('Enter');
-  await expect(nodes(page)).toHaveCount(before + 1);
-  expect(await page.locator('.react-flow__edge').count()).toBeGreaterThanOrEqual(edgesBefore);
-  // Escape closes the dialog without adding anything.
-  await page.keyboard.press('Shift+A');
-  await expect(picker).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(picker).toHaveCount(0);
-});
+test(
+  'dragging a connection into empty space offers the nodes that fit and connects the one picked',
+  { tag: ['@scenario'] },
+  async ({ page }) => {
+    await openEditor(page);
+    const before = await nodes(page).count();
+    const edgesBefore = await page.locator('.react-flow__edge').count();
+    // The first output handle of the noise node (or any node with a free output).
+    const handle = page.locator('.react-flow__node .react-flow__handle.source').first();
+    const box = (await handle.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 200, box.y + 400, { steps: 8 });
+    await page.mouse.up();
+    const picker = page.getByTestId('wf-node-picker');
+    await expect(picker).toBeVisible();
+    await picker.getByRole('textbox').press('Enter');
+    await expect(nodes(page)).toHaveCount(before + 1);
+    expect(await page.locator('.react-flow__edge').count()).toBeGreaterThanOrEqual(edgesBefore);
+    // Escape closes the dialog without adding anything.
+    await page.keyboard.press('Shift+A');
+    await expect(picker).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(picker).toHaveCount(0);
+  },
+);
 
 test('a picture dropped on the editor becomes an image node', { tag: ['@scenario'] }, async ({ page }) => {
   await openEditor(page);
@@ -142,17 +150,21 @@ test('a picture dropped on the editor becomes an image node', { tag: ['@scenario
   expect(await nodes(page).count()).toBe(before + 1);
 });
 
-test("ComfyUI's own nodes are in the node list, grouped under a heading of their own, and a found node is added", { tag: ['@scenario'] }, async ({ page }) => {
-  await openEditor(page);
-  const before = await nodes(page).count();
-  await page.keyboard.press('Shift+A');
-  const picker = page.getByTestId('wf-node-picker');
-  await expect(picker).toBeVisible();
-  await expect(page.getByTestId('wf-picker-scopes')).toContainText(msg('workflows.picker.core'));
-  // The group of the audio nodes lists the node that saves a sound.
-  await page.getByTestId('wf-picker-scope').filter({ hasText: /^audio\d+$/ }).click();
-  await expect(picker.locator('.wf-picker__item', { hasText: 'Save Audio (Advanced)' })).toBeVisible();
-  await picker.locator('.wf-picker__item', { hasText: 'Save Audio (Advanced)' }).click();
-  await expect(nodes(page)).toHaveCount(before + 1);
-  await expect(page.getByTestId('wf-node-comfy:SaveAudioAdvanced')).toBeVisible();
-});
+test(
+  "ComfyUI's own nodes are in the node list, grouped under a heading of their own, and a found node is added",
+  { tag: ['@scenario'] },
+  async ({ page }) => {
+    await openEditor(page);
+    const before = await nodes(page).count();
+    await page.keyboard.press('Shift+A');
+    const picker = page.getByTestId('wf-node-picker');
+    await expect(picker).toBeVisible();
+    await expect(page.getByTestId('wf-picker-scopes')).toContainText(msg('workflows.picker.core'));
+    // The group of the audio nodes lists the node that saves a sound.
+    await page.getByTestId('wf-picker-scope').filter({ hasText: /^audio\d+$/ }).click();
+    await expect(picker.locator('.wf-picker__item', { hasText: 'Save Audio (Advanced)' })).toBeVisible();
+    await picker.locator('.wf-picker__item', { hasText: 'Save Audio (Advanced)' }).click();
+    await expect(nodes(page)).toHaveCount(before + 1);
+    await expect(page.getByTestId('wf-node-comfy:SaveAudioAdvanced')).toBeVisible();
+  },
+);

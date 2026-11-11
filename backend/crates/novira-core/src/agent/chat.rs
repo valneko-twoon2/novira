@@ -319,7 +319,7 @@ mod tests {
         assert_eq!(config["mcpServers"].as_object().unwrap().len(), 1);
     }
 
-    // tags: condition
+    // tags: decision-table, condition
     #[test]
     fn codex_gets_the_server_by_url_the_token_by_environment_and_stays_read_only() {
         let args = strings(&codex_args(
@@ -387,7 +387,7 @@ mod tests {
         );
     }
 
-    // tags: condition
+    // tags: boundary, error-guessing
     #[test]
     fn the_answer_of_a_stream_is_its_last_result_line() {
         let out = "{\"type\":\"system\"}\nnot json\n{\"type\":\"assistant\"}\n{\"type\":\"result\",\"result\":\"done\",\"is_error\":false}\n";

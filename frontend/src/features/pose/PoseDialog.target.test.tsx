@@ -37,25 +37,29 @@ const mount = () =>
     </TooltipProvider>,
   );
 
-describe('the pose dialog for a target', () => {
-  it('starts from the target pose, has the target title, and hands the pose and its picture back without touching the canvas', { tags: ['scenario'] }, async () => {
-    mount();
-    const onUse = vi.fn(async () => undefined);
-    usePoseDialog.getState().open({ width: 512, height: 768, initial: PRESETS.armsUp, onUse });
-    await screen.findByTestId('pose-dialog');
-    expect(screen.getByText(t('comic.pose.title'))).toBeTruthy();
-    expect(screen.queryByLabelText(t('pose.size'))).toBeNull();
+describe('the pose dialog for a target', { tags: [] }, () => {
+  it(
+    'starts from the target pose, has the target title, and hands the pose and its picture back without touching the canvas',
+    { tags: ['scenario'] },
+    async () => {
+      mount();
+      const onUse = vi.fn(async () => undefined);
+      usePoseDialog.getState().open({ width: 512, height: 768, initial: PRESETS.armsUp, onUse });
+      await screen.findByTestId('pose-dialog');
+      expect(screen.getByText(t('comic.pose.title'))).toBeTruthy();
+      expect(screen.queryByLabelText(t('pose.size'))).toBeNull();
 
-    fireEvent.click(screen.getByTestId('pose-use'));
-    await waitFor(() => expect(onUse).toHaveBeenCalledOnce());
-    const [pose, picture] = onUse.mock.calls[0] as unknown as [{ x: number; y: number }[], Blob];
-    expect(pose).toEqual(PRESETS.armsUp);
-    expect(picture).toBeInstanceOf(Blob);
-    await waitFor(() => expect(usePoseDialog.getState().isOpen).toBe(false));
-    expect(useCanvas.getState().entities).toHaveLength(initialCanvas.entities.length);
-  });
+      fireEvent.click(screen.getByTestId('pose-use'));
+      await waitFor(() => expect(onUse).toHaveBeenCalledOnce());
+      const [pose, picture] = onUse.mock.calls[0] as unknown as [{ x: number; y: number }[], Blob];
+      expect(pose).toEqual(PRESETS.armsUp);
+      expect(picture).toBeInstanceOf(Blob);
+      await waitFor(() => expect(usePoseDialog.getState().isOpen).toBe(false));
+      expect(useCanvas.getState().entities).toHaveLength(initialCanvas.entities.length);
+    },
+  );
 
-  it('starts from the standing preset when the target has no pose yet', { tags: ['scenario'] }, async () => {
+  it('starts from the standing preset when the target has no pose yet', { tags: ['condition'] }, async () => {
     mount();
     const onUse = vi.fn(async () => undefined);
     usePoseDialog.getState().open({ width: 512, height: 512, initial: null, onUse });

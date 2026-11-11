@@ -32,7 +32,7 @@ afterEach(() => {
 });
 
 describe('smaller size', () => {
-  it('keeps about 75% of the area and the aspect ratio, in multiples of 8', { tags: ['condition'] }, () => {
+  it('keeps about 75% of the area and the aspect ratio, in multiples of 8', { tags: ['equivalence'] }, () => {
     for (const [w, h] of [
       [1024, 1024],
       [832, 1216],
@@ -49,19 +49,19 @@ describe('smaller size', () => {
     expect(smallerSize(1024, 1024)).toEqual({ width: 888, height: 888 });
   });
 
-  it('never goes below 64 and gives nothing when it cannot shrink', { tags: ['error-guessing'] }, () => {
+  it('never goes below 64 and gives nothing when it cannot shrink', { tags: ['boundary'] }, () => {
     expect(smallerSize(64, 512)).toEqual({ width: 64, height: 440 });
     expect(smallerSize(64, 64)).toBeNull();
   });
 
-  it('applies to pictures made at a size only', { tags: ['condition'] }, () => {
+  it('applies to pictures made at a size only', { tags: ['equivalence'] }, () => {
     expect(retrySmallerSize(item())).toEqual({ width: 888, height: 888 });
     for (const mode of ['img2img', 'inpaint', 'outpaint'] as const) expect(retrySmallerSize(item({}, { generationMode: mode }))).not.toBeNull();
     for (const mode of ['upscale', 'video', 'music', 'voice', 'graph', 'logo'] as const) expect(retrySmallerSize(item({}, { generationMode: mode }))).toBeNull();
     expect(retrySmallerSize(item({ comfyGraph: { prompt: {}, outputs: [] } }))).toBeNull();
   });
 
-  it('recognises out-of-memory failures by their kind', { tags: ['error-guessing'] }, () => {
+  it('recognises out-of-memory failures by their kind', { tags: ['equivalence'] }, () => {
     expect(isOutOfMemory(item())).toBe(true);
     expect(isOutOfMemory(item({ errorKind: null }))).toBe(false);
     expect(isOutOfMemory(item({ status: 'completed' }))).toBe(false);
@@ -69,7 +69,7 @@ describe('smaller size', () => {
 });
 
 describe('retry smaller', () => {
-  it('queues the item again at the smaller size and closes its notice', { tags: ['condition'] }, async () => {
+  it('queues the item again at the smaller size and closes its notice', { tags: ['scenario'] }, async () => {
     const retry = vi.spyOn(backend, 'retryQueueItem').mockResolvedValue(item({ id: 8, status: 'pending' }));
     useOutOfMemoryNotices.getState().report(7);
     await retrySmaller(item());
@@ -97,13 +97,13 @@ describe('report', () => {
     expect(toast?.actions).toHaveLength(2);
   });
 
-  it('leaves out what does not apply: no smaller retry for a video, no low-memory mode when it is on', { tags: ['state-transition'] }, () => {
+  it('leaves out what does not apply: no smaller retry for a video, no low-memory mode when it is on', { tags: ['decision-table'] }, () => {
     useLowMemory.setState({ mode: { enabled: true, ownedEngine: true, pendingRestart: false } });
     reportOutOfMemory(item({}, { generationMode: 'video' }));
     expect(useToasts.getState().toasts[0]?.actions).toEqual([]);
   });
 
-  it('keeps only the three newest notices', { tags: ['condition'] }, () => {
+  it('keeps only the three newest notices', { tags: ['boundary'] }, () => {
     for (const id of [1, 2, 3, 4, 4]) useOutOfMemoryNotices.getState().report(id);
     expect(useOutOfMemoryNotices.getState().ids).toEqual([2, 3, 4]);
   });

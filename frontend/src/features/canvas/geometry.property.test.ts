@@ -8,8 +8,8 @@ const n = fc.integer({ min: -4000, max: 4000 });
 const rect = fc.record({ x: n, y: n, width: fc.integer({ min: 1, max: 4000 }), height: fc.integer({ min: 1, max: 4000 }) });
 const handle = fc.constantFrom(...BBOX_HANDLES);
 
-describe('geometry (properties)', () => {
-  it('normalizeRect gives a non-negative size whichever corner comes first', { tags: ['boundary'] }, () => {
+describe('geometry (properties)', { tags: [] }, () => {
+  it('normalizeRect gives a non-negative size whichever corner comes first', { tags: ['equivalence'] }, () => {
     check(
       fc.property(n, n, n, n, (x0, y0, x1, y1) => {
         const r = normalizeRect(x0, y0, x1, y1);
@@ -20,7 +20,7 @@ describe('geometry (properties)', () => {
     );
   });
 
-  it('resizeRect keeps whole numbers, honours the minimum and snaps the size', { tags: ['error-guessing'] }, () => {
+  it('resizeRect keeps whole numbers, honours the minimum and snaps the size', { tags: ['boundary'] }, () => {
     check(
       fc.property(rect, handle, n, n, fc.constantFrom(1, 8, 16, 64), fc.constantFrom(8, 64), (start, h, dx, dy, step, min) => {
         const r = resizeRect(start, h, dx, dy, { step, min });
@@ -32,7 +32,7 @@ describe('geometry (properties)', () => {
     );
   });
 
-  it('resizeRect with a ratio keeps the result finite and never below the minimum', { tags: ['error-guessing'] }, () => {
+  it('resizeRect with a ratio keeps the result finite and never below the minimum', { tags: ['boundary', 'error-guessing'] }, () => {
     check(
       fc.property(rect, handle, n, n, fc.double({ min: 0.1, max: 10, noNaN: true }), (start, h, dx, dy, ratio) => {
         const r = resizeRect(start, h, dx, dy, { ratio });
@@ -43,7 +43,7 @@ describe('geometry (properties)', () => {
     );
   });
 
-  it('a corner or edge handle point is found by hitBbox; the centre is inside', { tags: ['boundary'] }, () => {
+  it('a corner or edge handle point is found by hitBbox; the centre is inside', { tags: ['boundary', 'condition'] }, () => {
     check(
       fc.property(rect, handle, (r, h) => {
         const p = handlePoint(r, h);
@@ -54,7 +54,7 @@ describe('geometry (properties)', () => {
     );
   });
 
-  it('classifyCoverage agrees with a direct count of covered alpha values', { tags: ['error-guessing'] }, () => {
+  it('classifyCoverage agrees with a direct count of covered alpha values', { tags: ['boundary', 'equivalence'] }, () => {
     check(
       fc.property(fc.array(fc.integer({ min: 0, max: 255 }), { maxLength: 64 }), fc.integer({ min: 0, max: 254 }), (alphas, threshold) => {
         const data = alphas.flatMap((a) => [0, 0, 0, a]);

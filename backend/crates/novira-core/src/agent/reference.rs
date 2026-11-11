@@ -317,7 +317,7 @@ mod tests {
         }
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn the_host_comes_from_the_language_and_the_words_are_one_parameter() {
         for (lang, host) in [
@@ -370,7 +370,7 @@ mod tests {
         assert!(!raw.contains('#'));
     }
 
-    // tags: condition
+    // tags: equivalence, error-guessing
     #[test]
     fn line_breaks_and_control_characters_become_spaces() {
         assert_eq!(clean_query("a\r\nb\tc\u{0}d\u{7f}e").unwrap(), "a b c d e");
@@ -395,7 +395,7 @@ mod tests {
         assert!(search_url(Lang::En, &"x".repeat(100_000)).is_err());
     }
 
-    // tags: decision-table, equivalence
+    // tags: error-guessing, equivalence
     #[test]
     fn only_wikipedia_over_https_passes_the_address_check() {
         let ok = |s: &str, l| is_wikipedia(&Url::parse(s).unwrap(), l);
@@ -413,7 +413,7 @@ mod tests {
         serde_json::to_vec(&json!({"batchcomplete": true, "query": {"pages": pages}})).unwrap()
     }
 
-    // tags: condition
+    // tags: equivalence, boundary
     #[test]
     fn a_normal_answer_becomes_ranked_entries_with_article_addresses() {
         let body = answer(json!([
@@ -438,7 +438,7 @@ mod tests {
         assert!(ja[0].url.starts_with("https://ja.wikipedia.org/wiki/"));
     }
 
-    // tags: condition
+    // tags: boundary
     #[test]
     fn text_is_cut_and_stripped() {
         let long = "あ".repeat(5000);
@@ -500,7 +500,7 @@ mod tests {
         }
     }
 
-    // tags: decision-table
+    // tags: equivalence
     #[test]
     fn the_client_allows_a_redirect_only_inside_the_same_origin() {
         // The policy is a closure over reqwest's attempt type, which cannot be built by hand: the behaviour is covered by

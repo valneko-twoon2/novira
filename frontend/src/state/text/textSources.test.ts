@@ -7,7 +7,7 @@ const sceneWith = (text: string): Scene => ({ ...EMPTY_SCENE, layers: [newTextLa
 beforeEach(() => useTextSources.setState({ sources: [] }));
 
 describe('useTextSources', () => {
-  it('gives the scene back for a picture it remembers, and null for another', { tags: ['error-guessing'] }, () => {
+  it('gives the scene back for a picture it remembers, and null for another', { tags: ['condition'] }, () => {
     useTextSources.getState().remember('a.png', sceneWith('A'));
     expect(useTextSources.getState().sceneOf('a.png')?.layers[0]).toMatchObject({ text: 'A' });
     expect(useTextSources.getState().sceneOf('b.png')).toBeNull();

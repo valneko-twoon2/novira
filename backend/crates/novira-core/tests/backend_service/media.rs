@@ -27,7 +27,7 @@ fn video_request(init_image_url: Option<&str>) -> EnqueueRequest {
     req
 }
 
-// tags: decision-table
+// tags: condition, scenario
 #[tokio::test]
 async fn video_needs_the_pack_and_is_stored_as_an_mp4_with_a_thumbnail() {
     let dir = tempfile::tempdir().unwrap();
@@ -82,7 +82,7 @@ async fn a_video_cannot_be_used_as_a_source_image() {
     assert!(reason.contains("video cannot be a source"), "{reason}");
 }
 
-// tags: boundary
+// tags: regression
 #[tokio::test]
 async fn a_logo_of_an_older_version_still_loads_lists_and_opens() {
     let dir = tempfile::tempdir().unwrap();
@@ -146,7 +146,7 @@ fn music_request() -> EnqueueRequest {
     req
 }
 
-// tags: decision-table
+// tags: condition, scenario
 #[tokio::test]
 async fn music_needs_the_pack_and_is_stored_as_audio_with_a_waveform_thumbnail() {
     let dir = tempfile::tempdir().unwrap();
@@ -242,7 +242,7 @@ fn voice_request(text: &str) -> EnqueueRequest {
     req
 }
 
-// tags: scenario
+// tags: scenario, error-guessing
 #[tokio::test]
 async fn speech_is_made_by_the_voice_engine_and_stored_as_a_wav() {
     let dir = tempfile::tempdir().unwrap();
@@ -324,7 +324,7 @@ fn speech_graph_request(text: &str) -> EnqueueRequest {
     req
 }
 
-// tags: scenario
+// tags: scenario, error-guessing
 #[tokio::test]
 async fn a_graph_that_reads_text_aloud_gets_the_speech_uploaded_before_the_run() {
     let dir = tempfile::tempdir().unwrap();

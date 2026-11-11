@@ -48,7 +48,7 @@ fn model(b: &novira_core::Backend, part: &str) -> ModelConfig {
         .unwrap_or_else(|| panic!("{part} is listed"))
 }
 
-// tags: error-guessing, boundary
+// tags: regression, condition
 #[tokio::test]
 async fn records_an_older_version_stored_wrongly_are_corrected_on_the_first_scan() {
     let dir = tempfile::tempdir().unwrap();

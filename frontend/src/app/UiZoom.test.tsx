@@ -17,14 +17,14 @@ const press = (key: string, init: KeyboardEventInit = {}) =>
     window.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ctrlKey: true, ...init }));
   });
 
-describe('UiZoom (desktop)', () => {
+describe('UiZoom (desktop)', { tags: [] }, () => {
   beforeEach(() => {
     setUiZoom.mockClear();
     useSettings.getState().set({ uiZoom: 1 });
   });
   afterEach(cleanup);
 
-  it('applies the stored level on start and after every step', { tags: ['condition'] }, () => {
+  it('applies the stored level on start and after every step', { tags: ['state-transition'] }, () => {
     useSettings.getState().set({ uiZoom: 1.25 });
     render(<UiZoom />);
     expect(setUiZoom).toHaveBeenLastCalledWith(1.25);

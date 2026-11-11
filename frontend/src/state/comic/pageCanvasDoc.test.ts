@@ -44,29 +44,37 @@ const mask = (id: string): CanvasEntity => ({ ...raster(id), type: 'inpaint', co
 const ids = (doc: PageCanvas) => doc.entities.map((e) => e.id);
 const read = (entities: unknown[], bbox: unknown = defaultBbox('A4')) => parsePageCanvas({ entities, bbox }, 'A4');
 
-describe('the layers a page starts with', () => {
-  it('are the panels slot with the balloons slot over it, and the whole page as the box in multiples of 8', { tags: ['condition'] }, () => {
-    const doc = defaultPageCanvas('A4');
-    expect(doc.entities.map((e) => (e as RasterEntity).slot)).toEqual([PANELS_SLOT, BALLOONS_SLOT]);
-    const { width, height } = pagePixels({ size: 'A4' });
-    expect(doc.bbox).toEqual({ x: 0, y: 0, width: Math.floor(width / 8) * 8, height: Math.floor(height / 8) * 8 });
-    expect(doc.bbox.width % 8).toBe(0);
-  });
+describe('the layers a page starts with', { tags: [] }, () => {
+  it(
+    'are the panels slot with the balloons slot over it, and the whole page as the box in multiples of 8',
+    { tags: ['equivalence'] },
+    () => {
+      const doc = defaultPageCanvas('A4');
+      expect(doc.entities.map((e) => (e as RasterEntity).slot)).toEqual([PANELS_SLOT, BALLOONS_SLOT]);
+      const { width, height } = pagePixels({ size: 'A4' });
+      expect(doc.bbox).toEqual({ x: 0, y: 0, width: Math.floor(width / 8) * 8, height: Math.floor(height / 8) * 8 });
+      expect(doc.bbox.width % 8).toBe(0);
+    },
+  );
 });
 
-describe('reading a saved page', () => {
+describe('reading a saved page', { tags: [] }, () => {
   it('gives a page without a document (or with a damaged box) the defaults of its paper', { tags: ['error-guessing'] }, () => {
     expect(parsePageCanvas(undefined, 'B5')).toEqual(defaultPageCanvas('B5'));
     expect(parsePageCanvas({ entities: [], bbox: { x: 0, y: 0, width: 'wide', height: 10 } }, 'A5').bbox).toEqual(defaultBbox('A5'));
   });
 
-  it('keeps one slot of each kind, puts a missing one back at its end, and drops a slot of an unknown kind', { tags: ['error-guessing'] }, () => {
-    const doc = read([raster('ink', [stroke('s')]), raster('b', [], { slot: BALLOONS_SLOT }), raster('b2', [], { slot: BALLOONS_SLOT }), raster('x', [], { slot: 'tone' })]);
-    expect(ids(doc)).toEqual([PANELS_SLOT, 'ink', 'b']);
-    // A slot holds nothing and stays at the corner, whatever was saved.
-    const odd = read([raster('p', [stroke('s')], { slot: PANELS_SLOT, x: 40, y: 50 })]);
-    expect(slotOf(odd, PANELS_SLOT)).toMatchObject({ objects: [], x: 0, y: 0 });
-  });
+  it(
+    'keeps one slot of each kind, puts a missing one back at its end, and drops a slot of an unknown kind',
+    { tags: ['condition'] },
+    () => {
+      const doc = read([raster('ink', [stroke('s')]), raster('b', [], { slot: BALLOONS_SLOT }), raster('b2', [], { slot: BALLOONS_SLOT }), raster('x', [], { slot: 'tone' })]);
+      expect(ids(doc)).toEqual([PANELS_SLOT, 'ink', 'b']);
+      // A slot holds nothing and stays at the corner, whatever was saved.
+      const odd = read([raster('p', [stroke('s')], { slot: PANELS_SLOT, x: 40, y: 50 })]);
+      expect(slotOf(odd, PANELS_SLOT)).toMatchObject({ objects: [], x: 0, y: 0 });
+    },
+  );
 
   it('gives a missing slot another id when a user layer holds its own', { tags: ['error-guessing'] }, () => {
     const doc = read([raster(PANELS_SLOT, [stroke('s')])]);
@@ -74,12 +82,16 @@ describe('reading a saved page', () => {
     expect(new Set(ids(doc)).size).toBe(doc.entities.length);
   });
 
-  it('orders the entities by group, keeps the first of a repeated id, and drops control layers and unknown kinds', { tags: ['error-guessing'] }, () => {
-    const control = { ...raster('c'), type: 'control', modelKey: null, weight: 1, beginEnd: [0, 1], controlMode: 'balanced', filter: 'none', withTransparencyEffect: true };
-    const doc = read([mask('m'), raster('a'), raster('a', [], { name: 'copy' }), control, { id: 'u', type: 'tone', objects: [] }, 'junk']);
-    expect(ids(doc)).toEqual([PANELS_SLOT, 'a', BALLOONS_SLOT, 'm']);
-    expect(doc.entities[1]!.name).toBeNull();
-  });
+  it(
+    'orders the entities by group, keeps the first of a repeated id, and drops control layers and unknown kinds',
+    { tags: ['error-guessing'] },
+    () => {
+      const control = { ...raster('c'), type: 'control', modelKey: null, weight: 1, beginEnd: [0, 1], controlMode: 'balanced', filter: 'none', withTransparencyEffect: true };
+      const doc = read([mask('m'), raster('a'), raster('a', [], { name: 'copy' }), control, { id: 'u', type: 'tone', objects: [] }, 'junk']);
+      expect(ids(doc)).toEqual([PANELS_SLOT, 'a', BALLOONS_SLOT, 'm']);
+      expect(doc.entities[1]!.name).toBeNull();
+    },
+  );
 
   it('holds every field to its range and drops damaged objects', { tags: ['error-guessing'] }, () => {
     const doc = read([
@@ -140,8 +152,8 @@ describe('reading a saved page', () => {
   });
 });
 
-describe('the saved shape of a page', () => {
-  it('reads back as it was saved', { tags: ['condition'] }, () => {
+describe('the saved shape of a page', { tags: [] }, () => {
+  it('reads back as it was saved', { tags: ['equivalence'] }, () => {
     const doc = read([raster('a', [stroke('s'), picture('i')], { blend: 'multiply', opacity: 0.5, name: 'Ink' }), mask('m')]);
     expect(parsePageCanvas(JSON.parse(JSON.stringify(serializePageCanvas(doc, 'A4'))), 'A4')).toEqual(doc);
   });
@@ -152,7 +164,7 @@ describe('the saved shape of a page', () => {
   });
 });
 
-describe('a page on another paper', () => {
+describe('a page on another paper', { tags: [] }, () => {
   const doc: PageCanvas = { entities: [raster('p', [], { slot: PANELS_SLOT }), raster('a', [stroke('s', [0, 0, 100, 200])], { x: 10, y: 20 })], bbox: { x: 0, y: 0, width: 1000, height: 2000 } };
 
   it('scales everything by one factor, centres it, and leaves the slots at the corner', { tags: ['equivalence'] }, () => {
@@ -170,7 +182,7 @@ describe('a page on another paper', () => {
   });
 });
 
-describe('changing the look of the layers', () => {
+describe('changing the look of the layers', { tags: [] }, () => {
   const doc = read([raster('a'), raster('b')]);
 
   it('changes a raster layer in range and nothing when nothing changes', { tags: ['condition'] }, () => {
@@ -181,7 +193,7 @@ describe('changing the look of the layers', () => {
     expect(updateRasterLook(doc, 'missing', { isEnabled: false })).toBeNull();
   });
 
-  it('moves a raster among the rasters, slots too, and not past either end', { tags: ['condition'] }, () => {
+  it('moves a raster among the rasters, slots too, and not past either end', { tags: ['boundary'] }, () => {
     expect(ids(moveRaster(doc, BALLOONS_SLOT, 'down')!)).toEqual([PANELS_SLOT, 'a', BALLOONS_SLOT, 'b']);
     expect(moveRaster(doc, PANELS_SLOT, 'down')).toBeNull();
     expect(moveRaster(doc, BALLOONS_SLOT, 'up')).toBeNull();

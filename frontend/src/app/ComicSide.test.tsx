@@ -37,7 +37,7 @@ afterEach(() => {
   useAgent.setState({ permission: null });
 });
 
-describe('the comic side column', () => {
+describe('the comic side column', { tags: [] }, () => {
   it('shows the assistant when it asks leave to read, even from the gallery tab', { tags: ['condition'] }, () => {
     render(
       <TooltipProvider>
@@ -67,7 +67,7 @@ describe('the comic side column', () => {
     expect(screen.getByTestId('canvas-layers')).toBeTruthy();
   });
 
-  it('shows the empty layers state when no page is open', { tags: ['condition'] }, () => {
+  it('shows the empty layers state when no page is open', { tags: ['boundary'] }, () => {
     render(
       <TooltipProvider>
         <ComicSide pageStore={null} />

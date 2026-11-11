@@ -108,7 +108,7 @@ async fn source_backup(out: &Path) -> (PathBuf, Vec<ImageDTO>, Vec<u8>) {
     (target, vec![a, b], original_a)
 }
 
-// tags: state-transition
+// tags: scenario
 #[tokio::test]
 async fn a_backup_holds_the_database_gallery_and_screen_state_and_nothing_secret() {
     let out = tempfile::tempdir().unwrap();
@@ -216,7 +216,7 @@ async fn a_restore_that_fails_at_start_up_puts_the_old_data_back() {
     );
 }
 
-// tags: error-guessing, state-transition
+// tags: state-transition, error-guessing
 #[tokio::test]
 async fn an_unconfirmed_restore_is_dropped_and_changes_nothing() {
     let out = tempfile::tempdir().unwrap();
@@ -239,7 +239,7 @@ async fn an_unconfirmed_restore_is_dropped_and_changes_nothing() {
     );
 }
 
-// tags: error-guessing, boundary
+// tags: error-guessing
 #[tokio::test]
 async fn entries_that_leave_the_folder_are_refused_before_anything_is_written() {
     let out = tempfile::tempdir().unwrap();
@@ -270,7 +270,7 @@ async fn entries_that_leave_the_folder_are_refused_before_anything_is_written() 
     }
 }
 
-// tags: error-guessing
+// tags: error-guessing, equivalence
 #[tokio::test]
 async fn foreign_and_newer_backups_are_refused() {
     let out = tempfile::tempdir().unwrap();
@@ -316,7 +316,7 @@ async fn foreign_and_newer_backups_are_refused() {
     assert!(leftovers(dir.path()).is_empty());
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing
 #[tokio::test]
 async fn a_bad_screen_state_is_refused_before_writing() {
     let out = tempfile::tempdir().unwrap();
@@ -330,7 +330,7 @@ async fn a_bad_screen_state_is_refused_before_writing() {
     assert!(!target.exists());
 }
 
-// tags: scenario
+// tags: scenario, condition
 #[tokio::test]
 async fn exported_pictures_are_clean_copies_and_other_media_are_skipped() {
     let dir = tempfile::tempdir().unwrap();
@@ -401,7 +401,7 @@ fn download_options(format: ExportFormat) -> ExportOptions {
     }
 }
 
-// tags: scenario
+// tags: condition, boundary
 #[tokio::test]
 async fn one_picture_for_the_browser_comes_as_itself_and_several_as_a_zip() {
     let dir = tempfile::tempdir().unwrap();

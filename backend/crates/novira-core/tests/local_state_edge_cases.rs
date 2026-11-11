@@ -58,7 +58,7 @@ fn saving_a_secret_where_the_folder_or_file_is_blocked_is_an_error() {
     );
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing, condition
 #[test]
 fn a_leftover_that_cannot_be_removed_does_not_stop_a_site_key_from_being_saved() {
     let data = tempfile::tempdir().unwrap();
@@ -83,7 +83,7 @@ fn the_lock_cannot_be_taken_inside_a_file() {
     assert!(try_acquire(&dir.path().join("file").join("gpu.lock")).is_err());
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing
 #[test]
 fn a_lock_name_the_system_refuses_is_an_error_not_a_busy_lock() {
     let dir = tempfile::tempdir().unwrap();
@@ -91,7 +91,7 @@ fn a_lock_name_the_system_refuses_is_an_error_not_a_busy_lock() {
     assert!(try_acquire(&dir.path().join("gpu?lock")).is_err());
 }
 
-// tags: scenario
+// tags: condition
 #[test]
 fn an_owner_record_with_a_reused_process_id_frees_the_lock() {
     let dir = tempfile::tempdir().unwrap();
@@ -104,7 +104,7 @@ fn an_owner_record_with_a_reused_process_id_frees_the_lock() {
     assert!(guard.is_some());
 }
 
-// tags: state-transition, decision-table
+// tags: state-transition
 #[test]
 fn releasing_everything_removes_the_locks_this_process_holds() {
     let dir = tempfile::tempdir().unwrap();
@@ -119,7 +119,7 @@ fn releasing_everything_removes_the_locks_this_process_holds() {
 
 // The lock setting ------------------------------------------------------------------------------------------------
 
-// tags: boundary
+// tags: condition, boundary
 #[test]
 fn the_auto_lock_follows_the_environment_variable_and_ignores_an_empty_one() {
     let settings = Settings::default();
@@ -146,7 +146,7 @@ fn a_lock_with_an_unreadable_owner_record_is_left_alone() {
     assert!(path.is_dir());
 }
 
-// tags: scenario
+// tags: boundary
 #[test]
 fn a_lock_path_without_a_parent_is_tried_as_it_is() {
     // The drive root has no parent and already exists, so it can never be taken (and is never removed).

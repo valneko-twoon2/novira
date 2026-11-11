@@ -48,7 +48,7 @@ fn sources() -> Vec<(String, String)> {
         .collect()
 }
 
-// tags: static, condition
+// tags: static, error-guessing
 #[test]
 fn no_lock_is_unwrapped() {
     let bad = Regex::new(r"\.(lock|read|write)\(\)\s*\.(unwrap\(\)|expect\()").unwrap();

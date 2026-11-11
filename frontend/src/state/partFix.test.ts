@@ -9,7 +9,7 @@ const image = { name: 'a.png', url: 'blob:a', width: 64, height: 48 } as ImageDT
 beforeEach(() => useCanvas.setState(initial, true));
 
 describe('fixPartOnCanvas', () => {
-  it('opens the picture on a fresh canvas with an empty inpaint mask chosen and the brush in hand', { tags: ['boundary'] }, () => {
+  it('opens the picture on a fresh canvas with an empty inpaint mask chosen and the brush in hand', { tags: ['scenario'] }, () => {
     const importImage = vi.fn(() => {
       useCanvas.getState().clearCanvas();
       useCanvas.getState().addEntity('raster');

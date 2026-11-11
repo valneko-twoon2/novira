@@ -21,15 +21,19 @@ describe('a request for the Candidates view', () => {
     expect((await buildGenerateRequest(false, true)).destination).toBe('candidates');
   });
 
-  it('queues the other dynamic-prompt batches for the candidates too, and hands their items over once, in queue order', { tags: ['decision-table'] }, async () => {
-    let next = 10;
-    const enqueue = vi.spyOn(backend, 'enqueue').mockImplementation(async () => items(next++));
-    const first = await buildGenerateRequest(false, true);
-    expect(first.destination).toBe('candidates');
-    expect(enqueue.mock.calls.map(([r]) => r.destination)).toEqual(['candidates']);
-    expect(takeExtraHeld().map((i) => i.id)).toEqual([10]);
-    expect(takeExtraHeld()).toEqual([]);
-  });
+  it(
+    'queues the other dynamic-prompt batches for the candidates too, and hands their items over once, in queue order',
+    { tags: ['state-transition'] },
+    async () => {
+      let next = 10;
+      const enqueue = vi.spyOn(backend, 'enqueue').mockImplementation(async () => items(next++));
+      const first = await buildGenerateRequest(false, true);
+      expect(first.destination).toBe('candidates');
+      expect(enqueue.mock.calls.map(([r]) => r.destination)).toEqual(['candidates']);
+      expect(takeExtraHeld().map((i) => i.id)).toEqual([10]);
+      expect(takeExtraHeld()).toEqual([]);
+    },
+  );
 
   it('keeps nothing of the extra batches for pictures that go to a board', { tags: ['condition'] }, async () => {
     vi.spyOn(backend, 'enqueue').mockResolvedValue(items(1));

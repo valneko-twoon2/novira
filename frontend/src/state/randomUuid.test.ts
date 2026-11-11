@@ -10,7 +10,7 @@ describe('randomUuid', () => {
     expect(randomUuid()).toMatch(V4);
   });
 
-  it('makes a version 4 id from random bytes where the page is not secure', { tags: ['condition'] }, () => {
+  it('makes a version 4 id from random bytes where the page is not secure', { tags: ['condition', 'boundary'] }, () => {
     const real = globalThis.crypto;
     vi.stubGlobal('crypto', { getRandomValues: (a: Uint8Array<ArrayBuffer>) => real.getRandomValues(a) });
     const ids = new Set(Array.from({ length: 200 }, randomUuid));

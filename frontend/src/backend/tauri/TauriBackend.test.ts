@@ -99,7 +99,7 @@ beforeEach(() => {
 
 afterEach(() => clearMocks());
 
-describe('TauriBackend', () => {
+describe('TauriBackend', { tags: [] }, () => {
   it('is selected only inside Tauri and recognizes its image URLs', { tags: ['condition'] }, () => {
     expect(isTauri()).toBe(true);
     expect(isBackendImageUrl(STORED)).toBe(true);
@@ -114,7 +114,7 @@ describe('TauriBackend', () => {
     expect(b.queueStatus()).toMatchObject({ pending: 1, total: 1, isPaused: true });
   });
 
-  it('keeps the mirror in step with events before listeners see them', { tags: ['condition'] }, async () => {
+  it('keeps the mirror in step with events before listeners see them', { tags: ['state-transition'] }, async () => {
     const b = new TauriBackend();
     await b.bootstrap();
     const seen: { event: BackendEvent; total: number; completed: number }[] = [];
@@ -158,31 +158,35 @@ describe('TauriBackend', () => {
     expect(b.listQueue().map((q) => q.id)).toEqual([1, 2]);
   });
 
-  it('stores page-rendered masks and control pictures and passes stored reference images through', { tags: ['equivalence'] }, async () => {
-    const b = new TauriBackend();
-    await b.bootstrap();
-    await b.enqueue({
-      origin: 'canvas',
-      destination: 'canvas',
-      params: { ...params, generationMode: 'inpaint', controlLayerCount: 1, refImageCount: 1, regionalGuidanceCount: 1 },
-      iterations: 1,
-      randomizeSeed: false,
-      prepend: false,
-      boardId: null,
-      initImageUrl: STORED,
-      maskImageUrl: 'data:image/png;base64,iVBORw0KGgo=',
-      controlLayers: [{ imageUrl: 'data:image/png;base64,iVBORw0KGgo=', modelKey: 'cn', weight: 0.75, beginEnd: [0, 0.75], controlMode: 'balanced' }],
-      regionalLayers: [{ imageUrl: 'data:image/png;base64,iVBORw0KGgo=', positivePrompt: 'a hat', negativePrompt: null, autoNegative: true }],
-      refImages: [{ imageUrl: STORED, modelKey: 'ipa', clipVisionModel: 'ViT-H', weight: 0.5, beginEnd: [0, 1], method: 'style' }],
-    });
-    // The mask, the control picture and the region are uploaded; the source and the reference are already stored.
-    expect(calls.filter((c) => c.cmd === 'upload_image')).toHaveLength(3);
-    const enq = calls.find((c) => c.cmd === 'enqueue')?.payload as { request: EnqueueRequest };
-    expect(enq.request.maskImageUrl).toBe(STORED);
-    expect(enq.request.controlLayers?.[0]).toMatchObject({ imageUrl: STORED, modelKey: 'cn', controlMode: 'balanced' });
-    expect(enq.request.refImages?.[0]).toMatchObject({ imageUrl: STORED, method: 'style' });
-    expect(enq.request.regionalLayers?.[0]).toMatchObject({ imageUrl: STORED, positivePrompt: 'a hat', autoNegative: true });
-  });
+  it(
+    'stores page-rendered masks and control pictures and passes stored reference images through',
+    { tags: ['equivalence', 'condition'] },
+    async () => {
+      const b = new TauriBackend();
+      await b.bootstrap();
+      await b.enqueue({
+        origin: 'canvas',
+        destination: 'canvas',
+        params: { ...params, generationMode: 'inpaint', controlLayerCount: 1, refImageCount: 1, regionalGuidanceCount: 1 },
+        iterations: 1,
+        randomizeSeed: false,
+        prepend: false,
+        boardId: null,
+        initImageUrl: STORED,
+        maskImageUrl: 'data:image/png;base64,iVBORw0KGgo=',
+        controlLayers: [{ imageUrl: 'data:image/png;base64,iVBORw0KGgo=', modelKey: 'cn', weight: 0.75, beginEnd: [0, 0.75], controlMode: 'balanced' }],
+        regionalLayers: [{ imageUrl: 'data:image/png;base64,iVBORw0KGgo=', positivePrompt: 'a hat', negativePrompt: null, autoNegative: true }],
+        refImages: [{ imageUrl: STORED, modelKey: 'ipa', clipVisionModel: 'ViT-H', weight: 0.5, beginEnd: [0, 1], method: 'style' }],
+      });
+      // The mask, the control picture and the region are uploaded; the source and the reference are already stored.
+      expect(calls.filter((c) => c.cmd === 'upload_image')).toHaveLength(3);
+      const enq = calls.find((c) => c.cmd === 'enqueue')?.payload as { request: EnqueueRequest };
+      expect(enq.request.maskImageUrl).toBe(STORED);
+      expect(enq.request.controlLayers?.[0]).toMatchObject({ imageUrl: STORED, modelKey: 'cn', controlMode: 'balanced' });
+      expect(enq.request.refImages?.[0]).toMatchObject({ imageUrl: STORED, method: 'style' });
+      expect(enq.request.regionalLayers?.[0]).toMatchObject({ imageUrl: STORED, positivePrompt: 'a hat', autoNegative: true });
+    },
+  );
 
   it('passes pictures given to the model as references, storing one the page rendered', { tags: ['condition'] }, async () => {
     const b = new TauriBackend();
@@ -193,33 +197,37 @@ describe('TauriBackend', () => {
     expect(enq.request.referencePictures).toEqual([STORED, STORED]);
   });
 
-  it('revokes the one-shot pictures it read, stores one named by two jobs once, and leaves other blob URLs alone', { tags: ['condition'] }, async () => {
-    let n = 0;
-    const revoked: string[] = [];
-    URL.createObjectURL = () => `blob:one-shot/${n++}`;
-    URL.revokeObjectURL = (url: string) => void revoked.push(url);
-    const fetched: string[] = [];
-    vi.stubGlobal('fetch', async (url: string) => (fetched.push(url), { blob: async () => new Blob(['x']) }));
-    try {
-      const b = new TauriBackend();
-      await b.bootstrap();
-      const once = oneShotUrl(new Blob(['a']));
-      const layer = 'blob:a-layer-picture';
-      const request = (initImageUrl: string): EnqueueRequest => ({ origin: 'canvas', destination: 'canvas', params, iterations: 1, randomizeSeed: false, prepend: false, boardId: null, initImageUrl });
-      await b.enqueue(request(once));
-      // A grid of jobs from one canvas names the same URL again: it is not read (it is gone) and not uploaded again.
-      await b.enqueue(request(once));
-      expect(fetched).toEqual([once]);
-      expect(revoked).toEqual([once]);
-      expect(calls.filter((c) => c.cmd === 'upload_image')).toHaveLength(1);
-      // A blob URL the page still uses (a layer's picture) is read but never revoked.
-      await b.enqueue(request(layer));
-      expect(fetched).toEqual([once, layer]);
-      expect(revoked).toEqual([once]);
-    } finally {
-      vi.unstubAllGlobals();
-    }
-  });
+  it(
+    'revokes the one-shot pictures it read, stores one named by two jobs once, and leaves other blob URLs alone',
+    { tags: ['state-transition', 'condition'] },
+    async () => {
+      let n = 0;
+      const revoked: string[] = [];
+      URL.createObjectURL = () => `blob:one-shot/${n++}`;
+      URL.revokeObjectURL = (url: string) => void revoked.push(url);
+      const fetched: string[] = [];
+      vi.stubGlobal('fetch', async (url: string) => (fetched.push(url), { blob: async () => new Blob(['x']) }));
+      try {
+        const b = new TauriBackend();
+        await b.bootstrap();
+        const once = oneShotUrl(new Blob(['a']));
+        const layer = 'blob:a-layer-picture';
+        const request = (initImageUrl: string): EnqueueRequest => ({ origin: 'canvas', destination: 'canvas', params, iterations: 1, randomizeSeed: false, prepend: false, boardId: null, initImageUrl });
+        await b.enqueue(request(once));
+        // A grid of jobs from one canvas names the same URL again: it is not read (it is gone) and not uploaded again.
+        await b.enqueue(request(once));
+        expect(fetched).toEqual([once]);
+        expect(revoked).toEqual([once]);
+        expect(calls.filter((c) => c.cmd === 'upload_image')).toHaveLength(1);
+        // A blob URL the page still uses (a layer's picture) is read but never revoked.
+        await b.enqueue(request(layer));
+        expect(fetched).toEqual([once, layer]);
+        expect(revoked).toEqual([once]);
+      } finally {
+        vi.unstubAllGlobals();
+      }
+    },
+  );
 
   it('sends empty guidance when a request has none', { tags: ['boundary'] }, async () => {
     const b = new TauriBackend();
@@ -246,7 +254,7 @@ describe('TauriBackend', () => {
     expect(b.listQueue().map((q) => q.id)).toEqual([2, 1]);
   });
 
-  it('returns the engine status and forwards engine events', { tags: ['condition'] }, async () => {
+  it('returns the engine status and forwards engine events', { tags: ['scenario'] }, async () => {
     const b = new TauriBackend();
     expect((await b.bootstrap()).engine).toEqual({ state: 'downloading', bytes: 5, totalBytes: 10 });
     const seen: BackendEvent[] = [];
@@ -255,12 +263,12 @@ describe('TauriBackend', () => {
     expect(seen).toEqual([{ type: 'engine_status', status: { state: 'ready' } }]);
   });
 
-  it('asks the shell to open a Civitai page by model id', { tags: ['condition'] }, async () => {
+  it('asks the shell to open a Civitai page by model id', { tags: ['equivalence'] }, async () => {
     await new TauriBackend().openCivitaiPage('123');
     expect(calls.find((c) => c.cmd === 'open_civitai_page')?.payload).toEqual({ modelId: '123' });
   });
 
-  it('forwards the assistant status, sign-in, chat and tool answers to the shell', { tags: ['condition'] }, async () => {
+  it('forwards the assistant status, sign-in, chat and tool answers to the shell', { tags: ['scenario'] }, async () => {
     const b = new TauriBackend();
     await b.agentStatus();
     await b.agentLogin('codex');

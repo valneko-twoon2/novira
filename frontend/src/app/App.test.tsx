@@ -38,7 +38,7 @@ function shown(testId: string): HTMLElement {
   return el;
 }
 
-describe('App shell', () => {
+describe('App shell', { tags: [] }, () => {
   beforeAll(() => {
     canvases = installRecordingCanvases();
   });
@@ -66,7 +66,7 @@ describe('App shell', () => {
     expect(screen.getByText(t('app.nav.mock'))).toBeTruthy();
   });
 
-  it('shows the phone layout on a phone-sized window', { tags: ['scenario'] }, async () => {
+  it('shows the phone layout on a phone-sized window', { tags: ['condition'] }, async () => {
     const { PHONE_QUERY } = await import('@/state/layout');
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: query === PHONE_QUERY, addEventListener: () => {}, removeEventListener: () => {} }));
     render(<App />);
@@ -74,23 +74,27 @@ describe('App shell', () => {
     expect(screen.queryByTestId('tab-generate')).toBeNull();
   });
 
-  it('builds the shell hidden under the start-up screen, without its shortcuts, and shows it when the screen goes', { tags: ['scenario'] }, async () => {
-    gate.showSplash = true;
-    const { rerender } = render(<App />);
-    const entry = await screen.findByTestId('tab-generate');
-    expect(screen.getByTestId('splash')).toBeTruthy();
-    expect(entry.closest('.app')?.getAttribute('style')).toContain('display: none');
-    key('t');
-    expect(useUi.getState().leftPanelOpen).toBe(true);
-    gate.showSplash = false;
-    rerender(<App />);
-    await waitFor(() => expect(screen.queryByTestId('splash')).toBeNull());
-    expect(screen.getByTestId('tab-generate').closest('.app')?.getAttribute('style') ?? '').not.toContain('display: none');
-    key('t');
-    expect(useUi.getState().leftPanelOpen).toBe(false);
-  });
+  it(
+    'builds the shell hidden under the start-up screen, without its shortcuts, and shows it when the screen goes',
+    { tags: ['state-transition'] },
+    async () => {
+      gate.showSplash = true;
+      const { rerender } = render(<App />);
+      const entry = await screen.findByTestId('tab-generate');
+      expect(screen.getByTestId('splash')).toBeTruthy();
+      expect(entry.closest('.app')?.getAttribute('style')).toContain('display: none');
+      key('t');
+      expect(useUi.getState().leftPanelOpen).toBe(true);
+      gate.showSplash = false;
+      rerender(<App />);
+      await waitFor(() => expect(screen.queryByTestId('splash')).toBeNull());
+      expect(screen.getByTestId('tab-generate').closest('.app')?.getAttribute('style') ?? '').not.toContain('display: none');
+      key('t');
+      expect(useUi.getState().leftPanelOpen).toBe(false);
+    },
+  );
 
-  it('switches tabs from the side bar and with the number keys', { tags: ['scenario'] }, async () => {
+  it('switches tabs from the side bar and with the number keys', { tags: ['scenario', 'equivalence'] }, async () => {
     await openApp();
     fireEvent.click(screen.getByTestId('tab-canvas'));
     expect(useUi.getState().activeTab).toBe('canvas');
@@ -125,17 +129,21 @@ describe('App shell', () => {
     expect(useUi.getState().activeTab).toBe('generate');
   });
 
-  it('switches on the press of the mouse button, not on its release, and leaves touch and modified presses to the click', { tags: ['condition'] }, async () => {
-    await openApp();
-    fireEvent.pointerDown(screen.getByTestId('tab-canvas'), { pointerType: 'mouse', button: 0 });
-    expect(useUi.getState().activeTab).toBe('canvas');
-    fireEvent.pointerDown(screen.getByTestId('tab-models'), { pointerType: 'touch', button: 0 });
-    fireEvent.pointerDown(screen.getByTestId('tab-models'), { pointerType: 'mouse', button: 2 });
-    fireEvent.pointerDown(screen.getByTestId('tab-models'), { pointerType: 'mouse', button: 0, ctrlKey: true });
-    expect(useUi.getState().activeTab).toBe('canvas');
-    fireEvent.click(screen.getByTestId('tab-models'));
-    expect(useUi.getState().activeTab).toBe('models');
-  });
+  it(
+    'switches on the press of the mouse button, not on its release, and leaves touch and modified presses to the click',
+    { tags: ['decision-table', 'condition'] },
+    async () => {
+      await openApp();
+      fireEvent.pointerDown(screen.getByTestId('tab-canvas'), { pointerType: 'mouse', button: 0 });
+      expect(useUi.getState().activeTab).toBe('canvas');
+      fireEvent.pointerDown(screen.getByTestId('tab-models'), { pointerType: 'touch', button: 0 });
+      fireEvent.pointerDown(screen.getByTestId('tab-models'), { pointerType: 'mouse', button: 2 });
+      fireEvent.pointerDown(screen.getByTestId('tab-models'), { pointerType: 'mouse', button: 0, ctrlKey: true });
+      expect(useUi.getState().activeTab).toBe('canvas');
+      fireEvent.click(screen.getByTestId('tab-models'));
+      expect(useUi.getState().activeTab).toBe('models');
+    },
+  );
 
   it('toggles the panels with T, G and F, and with the arrow buttons', { tags: ['scenario'] }, async () => {
     await openApp();
@@ -164,7 +172,7 @@ describe('App shell', () => {
     expect(useUi.getState().mainView.generate).toBe('viewer');
   });
 
-  it('renders the other media in the generate tab and the canvas layout with the layers panel', { tags: ['scenario'] }, async () => {
+  it('renders the other media in the generate tab and the canvas layout with the layers panel', { tags: ['equivalence'] }, async () => {
     await openApp();
     for (const media of ['video', 'text', 'music', 'voice', 'image'] as const) {
       act(() => useUi.getState().setMedia(media));
@@ -187,35 +195,43 @@ describe('App shell', () => {
     expect(focus).toHaveBeenCalled();
   });
 
-  it('invokes with Ctrl+Enter, cancels the running item with Shift+X and clears with Ctrl+Shift+X', { tags: ['scenario'] }, async () => {
-    const cancel = vi.spyOn(backend, 'cancelQueueItem');
-    const clear = vi.spyOn(backend, 'clearQueue');
-    await openApp();
-    key('Enter', { ctrlKey: true });
-    key('Enter', { ctrlKey: true, shiftKey: true });
-    key('x', { shiftKey: true });
-    key('x', { ctrlKey: true, shiftKey: true });
-    expect(clear).toHaveBeenCalled();
-    cancel.mockRestore();
-    clear.mockRestore();
-  });
+  it(
+    'invokes with Ctrl+Enter, cancels the running item with Shift+X and clears with Ctrl+Shift+X',
+    { tags: ['scenario', 'state-transition'] },
+    async () => {
+      const cancel = vi.spyOn(backend, 'cancelQueueItem');
+      const clear = vi.spyOn(backend, 'clearQueue');
+      await openApp();
+      key('Enter', { ctrlKey: true });
+      key('Enter', { ctrlKey: true, shiftKey: true });
+      key('x', { shiftKey: true });
+      key('x', { ctrlKey: true, shiftKey: true });
+      expect(clear).toHaveBeenCalled();
+      cancel.mockRestore();
+      clear.mockRestore();
+    },
+  );
 
-  it('opens the settings menu entries, the about box, the assistant in the right column and the developer log', { tags: ['scenario'] }, async () => {
-    useSettings.getState().set({ showDevLog: true });
-    await openApp();
-    // The assistant's tab in the right column (a tab turns on the press, as Radix tabs do).
-    fireEvent.mouseDown(screen.getByTestId('agent-open'));
-    expect(useAgent.getState().open).toBe(true);
-    expect(screen.getAllByTestId('agent-window').length).toBeGreaterThan(0);
-    fireEvent.mouseDown(screen.getByTestId('right-tab-gallery'));
-    expect(useAgent.getState().open).toBe(false);
-    fireEvent.click(screen.getByTestId('devlog-open'));
-    expect(useDevLog.getState().open).toBe(true);
-    fireEvent.click(screen.getByTestId('devlog-open'));
-    expect(useDevLog.getState().open).toBe(false);
-    fireEvent.click(screen.getByRole('button', { name: t('app.nav.about') }));
-    expect(useUi.getState().modal).toBe('about');
-  });
+  it(
+    'opens the settings menu entries, the about box, the assistant in the right column and the developer log',
+    { tags: ['scenario'] },
+    async () => {
+      useSettings.getState().set({ showDevLog: true });
+      await openApp();
+      // The assistant's tab in the right column (a tab turns on the press, as Radix tabs do).
+      fireEvent.mouseDown(screen.getByTestId('agent-open'));
+      expect(useAgent.getState().open).toBe(true);
+      expect(screen.getAllByTestId('agent-window').length).toBeGreaterThan(0);
+      fireEvent.mouseDown(screen.getByTestId('right-tab-gallery'));
+      expect(useAgent.getState().open).toBe(false);
+      fireEvent.click(screen.getByTestId('devlog-open'));
+      expect(useDevLog.getState().open).toBe(true);
+      fireEvent.click(screen.getByTestId('devlog-open'));
+      expect(useDevLog.getState().open).toBe(false);
+      fireEvent.click(screen.getByRole('button', { name: t('app.nav.about') }));
+      expect(useUi.getState().modal).toBe('about');
+    },
+  );
 
   it('shows the extensions screen from its tab in the side bar', { tags: ['scenario'] }, async () => {
     await openApp();
@@ -225,7 +241,7 @@ describe('App shell', () => {
     useUi.getState().setTab('generate');
   });
 
-  it('opens each entry of the settings menu', { tags: ['scenario'] }, async () => {
+  it('opens each entry of the settings menu', { tags: ['equivalence'] }, async () => {
     await openApp();
     const trigger = screen.getByRole('button', { name: t('app.nav.settingsMenu') });
     for (const modal of ['settings', 'hotkeys', 'about']) {

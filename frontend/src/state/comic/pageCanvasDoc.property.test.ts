@@ -55,37 +55,41 @@ const entity = fc.oneof(
 const saved = fc.record({ entities: fc.array(entity, { maxLength: 50 }), bbox: fc.oneof(fc.record({ x: num, y: num, width: num, height: num }), fc.anything()) }, { requiredKeys: [] });
 const size = fc.constantFrom(...PAGE_SIZES);
 
-describe('reading a page (properties)', () => {
-  it('always gives a page within every limit, with each slot once, unique ids and rounded coordinates', { tags: ['boundary'] }, () => {
-    check(
-      fc.property(saved, size, (doc, paper) => {
-        const page = parsePageCanvas(doc, paper);
-        const rasters = pageRasters(page);
-        expect(rasters.length).toBeLessThanOrEqual(MAX_RASTERS_PER_PAGE);
-        expect(rasters.filter((e) => e.slot === PANELS_SLOT)).toHaveLength(1);
-        expect(rasters.filter((e) => e.slot === BALLOONS_SLOT)).toHaveLength(1);
-        expect(page.entities.filter((e) => e.type !== 'raster').length).toBeLessThanOrEqual(MAX_MASKS_PER_PAGE);
-        expect(new Set(page.entities.map((e) => e.id)).size).toBe(page.entities.length);
-        // Rasters first, then inpaint masks, then regional guidance.
-        const order = page.entities.map((e) => ['raster', 'inpaint', 'regional'].indexOf(e.type));
-        expect(order.every((v, i) => v >= 0 && (i === 0 || v >= order[i - 1]!))).toBe(true);
-        let coordinates = 0;
-        for (const e of page.entities) {
-          expect(e.objects.length).toBeLessThanOrEqual(MAX_OBJECTS_PER_LAYER);
-          for (const o of e.objects) {
-            coordinates += objectCoordinates(o);
-            const numbers = o.kind === 'stroke' ? o.points : o.kind === 'pose' ? o.points : [o.x, o.y, o.width, o.height];
-            for (const n of numbers) expect(Math.abs(Math.round(n * 10) - n * 10)).toBeLessThan(1e-6);
+describe('reading a page (properties)', { tags: [] }, () => {
+  it(
+    'always gives a page within every limit, with each slot once, unique ids and rounded coordinates',
+    { tags: ['boundary', 'error-guessing'] },
+    () => {
+      check(
+        fc.property(saved, size, (doc, paper) => {
+          const page = parsePageCanvas(doc, paper);
+          const rasters = pageRasters(page);
+          expect(rasters.length).toBeLessThanOrEqual(MAX_RASTERS_PER_PAGE);
+          expect(rasters.filter((e) => e.slot === PANELS_SLOT)).toHaveLength(1);
+          expect(rasters.filter((e) => e.slot === BALLOONS_SLOT)).toHaveLength(1);
+          expect(page.entities.filter((e) => e.type !== 'raster').length).toBeLessThanOrEqual(MAX_MASKS_PER_PAGE);
+          expect(new Set(page.entities.map((e) => e.id)).size).toBe(page.entities.length);
+          // Rasters first, then inpaint masks, then regional guidance.
+          const order = page.entities.map((e) => ['raster', 'inpaint', 'regional'].indexOf(e.type));
+          expect(order.every((v, i) => v >= 0 && (i === 0 || v >= order[i - 1]!))).toBe(true);
+          let coordinates = 0;
+          for (const e of page.entities) {
+            expect(e.objects.length).toBeLessThanOrEqual(MAX_OBJECTS_PER_LAYER);
+            for (const o of e.objects) {
+              coordinates += objectCoordinates(o);
+              const numbers = o.kind === 'stroke' ? o.points : o.kind === 'pose' ? o.points : [o.x, o.y, o.width, o.height];
+              for (const n of numbers) expect(Math.abs(Math.round(n * 10) - n * 10)).toBeLessThan(1e-6);
+            }
           }
-        }
-        expect(coordinates).toBeLessThanOrEqual(MAX_COORDINATES_PER_PAGE);
-        expect(page.bbox.width % 8).toBe(0);
-        expect(page.bbox.height).toBeGreaterThanOrEqual(64);
-      }),
-    );
-  });
+          expect(coordinates).toBeLessThanOrEqual(MAX_COORDINATES_PER_PAGE);
+          expect(page.bbox.width % 8).toBe(0);
+          expect(page.bbox.height).toBeGreaterThanOrEqual(64);
+        }),
+      );
+    },
+  );
 
-  it('reads a page it read before (and its saved shape) as the same page', { tags: ['condition'] }, () => {
+  it('reads a page it read before (and its saved shape) as the same page', { tags: ['condition', 'error-guessing'] }, () => {
     check(
       fc.property(saved, size, (doc, paper) => {
         const page = parsePageCanvas(doc, paper);
@@ -95,16 +99,20 @@ describe('reading a page (properties)', () => {
     );
   });
 
-  it('keeps a page within its limits on any paper change, and changes nothing on the same paper', { tags: ['boundary'] }, () => {
-    check(
-      fc.property(saved, size, size, (doc, from, to) => {
-        const page = parsePageCanvas(doc, from);
-        const sizes = { A4: { width: 1654, height: 2339 }, A5: { width: 1166, height: 1654 }, B4: { width: 2024, height: 2866 }, B5: { width: 1433, height: 2024 } } as const;
-        const moved = rescaleCanvasDoc(page, sizes[from], sizes[to]);
-        if (from === to) expect(moved).toBe(page);
-        expect(parsePageCanvas(moved, to).entities.map((e) => e.id)).toEqual(page.entities.map((e) => e.id));
-      }),
-      60,
-    );
-  });
+  it(
+    'keeps a page within its limits on any paper change, and changes nothing on the same paper',
+    { tags: ['boundary', 'error-guessing'] },
+    () => {
+      check(
+        fc.property(saved, size, size, (doc, from, to) => {
+          const page = parsePageCanvas(doc, from);
+          const sizes = { A4: { width: 1654, height: 2339 }, A5: { width: 1166, height: 1654 }, B4: { width: 2024, height: 2866 }, B5: { width: 1433, height: 2024 } } as const;
+          const moved = rescaleCanvasDoc(page, sizes[from], sizes[to]);
+          if (from === to) expect(moved).toBe(page);
+          expect(parsePageCanvas(moved, to).entities.map((e) => e.id)).toEqual(page.entities.map((e) => e.id));
+        }),
+        60,
+      );
+    },
+  );
 });

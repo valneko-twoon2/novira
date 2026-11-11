@@ -39,22 +39,22 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('QueueList', () => {
-  it('shows the empty state and the header while the queue is empty', { tags: ['scenario'] }, () => {
+describe('QueueList', { tags: [] }, () => {
+  it('shows the empty state and the header while the queue is empty', { tags: ['boundary'] }, () => {
     show();
     expect(screen.getByText(t('queue.empty.title'))).toBeTruthy();
     expect(screen.getByText(t('queue.col.status'))).toBeTruthy();
     expect(screen.queryAllByTestId('queue-item')).toHaveLength(0);
   });
 
-  it('lists the items by ascending id whatever order they arrive in', { tags: ['scenario'] }, () => {
+  it('lists the items by ascending id whatever order they arrive in', { tags: ['equivalence'] }, () => {
     useQueue.setState({ items: [item(3), item(1), item(2)] });
     show();
     expect(screen.queryByText(t('queue.empty.title'))).toBeNull();
     expect(screen.getAllByTestId('queue-item').map((r) => r.textContent?.match(/prompt (\d)/)?.[1])).toEqual(['1', '2', '3']);
   });
 
-  it('expands and collapses each row on its own', { tags: ['scenario'] }, () => {
+  it('expands and collapses each row on its own', { tags: ['state-transition'] }, () => {
     useQueue.setState({ items: [item(1), item(2)] });
     show();
     const rows = () => screen.getAllByTestId('queue-item');
@@ -68,7 +68,7 @@ describe('QueueList', () => {
     expect(rows()[1]!.classList.contains('is-expanded')).toBe(true);
   });
 
-  it('follows the store when an item is added', { tags: ['scenario'] }, () => {
+  it('follows the store when an item is added', { tags: ['state-transition'] }, () => {
     useQueue.setState({ items: [item(1)] });
     show();
     expect(screen.getAllByTestId('queue-item')).toHaveLength(1);

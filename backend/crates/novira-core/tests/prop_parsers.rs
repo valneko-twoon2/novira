@@ -102,7 +102,7 @@ fn hugging_face_answers_of_any_shape_are_mapped_or_ignored() {
     );
 }
 
-// tags: error-guessing
+// tags: condition
 #[test]
 fn an_adult_judgement_never_turns_off_when_more_evidence_is_added() {
     fn tags() -> impl Strategy<Value = Vec<String>> {
@@ -188,7 +188,7 @@ fn header_text() -> impl Strategy<Value = String> {
     })
 }
 
-// tags: equivalence
+// tags: equivalence, error-guessing
 #[test]
 fn a_model_header_reads_as_it_does_through_a_json_map() {
     // The text as written, and with one byte changed (broken JSON, broken UTF-8) at a generated place.
@@ -233,7 +233,7 @@ fn a_model_header_of_any_bytes_is_read_or_refused() {
     });
 }
 
-// tags: error-guessing
+// tags: error-guessing, boundary
 #[test]
 fn a_safetensors_file_of_any_bytes_is_read_or_refused() {
     let dir = tempfile::tempdir().unwrap();
@@ -330,7 +330,7 @@ fn text_and_json_reports_of_any_shape_never_panic() {
     );
 }
 
-// tags: state-transition, decision-table
+// tags: condition, error-guessing
 #[test]
 fn a_saved_screen_state_is_accepted_only_as_prefixed_keys() {
     check(
@@ -349,7 +349,7 @@ fn a_saved_screen_state_is_accepted_only_as_prefixed_keys() {
     );
 }
 
-// tags: equivalence
+// tags: boundary
 #[test]
 fn an_assistant_answer_becomes_bounded_text_and_thoughts() {
     check(any_text(), |text| {
@@ -383,7 +383,7 @@ fn tool_call() -> impl Strategy<Value = (String, Value)> {
     (prop::sample::select(names), near)
 }
 
-// tags: decision-table, equivalence
+// tags: boundary, condition
 #[test]
 fn a_tool_call_is_accepted_only_with_arguments_its_schema_allows() {
     check(tool_call(), |(name, args)| {
@@ -496,7 +496,7 @@ fn arbitrary_bytes_are_not_a_picture_the_app_keeps() {
     });
 }
 
-// tags: decision-table
+// tags: equivalence
 #[test]
 fn a_text_chunk_written_into_a_png_reads_back_and_the_picture_still_decodes() {
     let png = tiny_png(4, 3);
@@ -524,7 +524,7 @@ fn audio_of_any_bytes_gets_a_waveform_picture() {
     });
 }
 
-// tags: error-guessing, decision-table
+// tags: boundary, error-guessing
 #[test]
 fn export_options_are_checked_and_the_copy_never_grows() {
     check(

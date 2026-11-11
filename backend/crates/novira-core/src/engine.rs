@@ -304,7 +304,7 @@ mod tests {
         }
     }
 
-    // tags: state-transition
+    // tags: equivalence
     #[test]
     fn status_is_tagged_by_state_with_camel_case_fields() {
         assert_eq!(
@@ -335,7 +335,7 @@ mod tests {
         }
     }
 
-    // tags: error-guessing
+    // tags: equivalence, error-guessing
     #[tokio::test]
     async fn default_methods_accept_jobs_and_refuse_pack_routes() {
         let engine = Minimal;

@@ -205,7 +205,7 @@ fn the_phone_learns_the_decision_with_its_secret_from_its_address_only() {
     }
 }
 
-// tags: state-transition
+// tags: state-transition, boundary
 #[test]
 fn a_denied_or_forgotten_request_gives_no_session() {
     let mut p = Pairing::default();
@@ -330,7 +330,7 @@ fn the_number_of_paired_devices_is_capped() {
     assert!(!p.approve(t0, &id));
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn the_session_cookie_is_named_per_port_and_locked_down() {
     assert_eq!(session_cookie(8443), "novira_session_8443");
@@ -383,7 +383,7 @@ fn the_routes_split_into_public_and_this_computers() {
     }
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn the_phone_page_has_the_same_strings_in_japanese_and_english() {
     check_page_strings(STRINGS, include_str!("page.js"));
@@ -431,7 +431,7 @@ pub(crate) fn check_page_strings(strings: &str, source: &str) {
     assert_eq!(source.matches("__STRINGS__").count(), 1);
 }
 
-// tags: condition
+// tags: equivalence
 #[tokio::test]
 async fn the_script_carries_its_strings_and_the_page_loads_it_as_a_file() {
     let body = script_source();

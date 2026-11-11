@@ -496,7 +496,7 @@ mod tests {
         assert!(check(&with(vec![region(Some("a"))]), &video, false).is_err());
     }
 
-    // tags: condition
+    // tags: condition, boundary
     #[test]
     fn reference_pictures_are_counted_named_and_kept_to_image_modes() {
         let url = "http://novira-image.localhost/full/a.png";
@@ -536,7 +536,7 @@ mod tests {
         );
     }
 
-    // tags: error-guessing, boundary
+    // tags: boundary, error-guessing
     #[test]
     fn too_many_layers_or_references_are_refused() {
         let g = Guidance {
@@ -555,7 +555,7 @@ mod tests {
             .contains("At most"));
     }
 
-    // tags: boundary
+    // tags: decision-table, boundary
     #[test]
     fn masks_belong_to_inpaint_and_outpaint_with_a_source() {
         let mask = Guidance {
@@ -589,7 +589,7 @@ mod tests {
             .contains("count"));
     }
 
-    // tags: condition
+    // tags: error-guessing
     #[test]
     fn weights_spans_and_keys_are_checked() {
         let bad_controls = [
@@ -645,7 +645,7 @@ mod tests {
         assert!(check(&g, &params("txt2img", 0, 1), false).is_err());
     }
 
-    // tags: decision-table, equivalence
+    // tags: condition, equivalence
     #[test]
     fn clip_vision_size_comes_from_the_name_then_the_layer_count() {
         assert_eq!(
@@ -682,7 +682,7 @@ mod tests {
         assert_eq!(clip_vision_size("model.safetensors", None), None);
     }
 
-    // tags: condition
+    // tags: decision-table
     #[test]
     fn any_base_fits_everything() {
         assert!(compatible(BaseModel::Sdxl, BaseModel::Sdxl));

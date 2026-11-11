@@ -282,7 +282,7 @@ mod tests {
         }
     }
 
-    // tags: condition
+    // tags: condition, boundary
     #[test]
     fn a_peer_is_home_only_on_the_same_subnet_of_a_home_address() {
         let mask24 = v4("255.255.255.0");
@@ -335,7 +335,7 @@ mod tests {
     }
 
     #[cfg(windows)]
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn the_loopback_address_has_its_mask_in_the_system_table() {
         assert_eq!(subnet_mask_of(Ipv4Addr::LOCALHOST), Some(v4("255.0.0.0")));

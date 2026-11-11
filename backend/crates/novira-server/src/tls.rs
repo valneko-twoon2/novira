@@ -249,7 +249,7 @@ mod tests {
             .0
     }
 
-    // tags: condition
+    // tags: equivalence, condition
     #[test]
     fn a_leaf_for_a_home_address_verifies() {
         let ca = Ca::generate().unwrap();
@@ -268,7 +268,7 @@ mod tests {
         assert!(verify(&ca, &leaf, "192.168.1.6").is_err());
     }
 
-    // tags: error-guessing, condition
+    // tags: error-guessing, equivalence
     #[test]
     fn the_ca_cannot_vouch_for_a_public_address_or_any_dns_name() {
         let ca = Ca::generate().unwrap();
@@ -322,7 +322,7 @@ mod tests {
         assert!(verify(&other, &ip_leaf(&ca, "192.168.1.5"), "192.168.1.5").is_err());
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn the_ca_is_named_in_lowercase_and_its_pem_holds_its_der() {
         let ca = Ca::generate().unwrap();
@@ -331,7 +331,7 @@ mod tests {
         assert_eq!(pem_body(ca.pem()).as_deref(), Some(ca.der().as_ref()));
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn the_server_config_offers_http1_only() {
         let ca = Ca::generate().unwrap();
@@ -340,7 +340,7 @@ mod tests {
     }
 
     #[cfg(windows)]
-    // tags: condition
+    // tags: state-transition, error-guessing
     #[test]
     fn the_ca_is_kept_per_data_folder_and_its_key_is_not_in_clear() {
         let dir = tempfile::tempdir().unwrap();

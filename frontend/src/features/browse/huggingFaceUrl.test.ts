@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { parseHuggingFaceInput } from './huggingFaceUrl';
 
-describe('parseHuggingFaceInput', () => {
-  it('reads owner/name and a repository page', { tags: ['condition'] }, () => {
+describe('parseHuggingFaceInput', { tags: [] }, () => {
+  it('reads owner/name and a repository page', { tags: ['equivalence'] }, () => {
     const whole = { repo: 'h94/IP-Adapter', folder: '', file: null };
     expect(parseHuggingFaceInput('h94/IP-Adapter')).toEqual(whole);
     expect(parseHuggingFaceInput('  https://huggingface.co/h94/IP-Adapter/ ')).toEqual(whole);
@@ -10,7 +10,7 @@ describe('parseHuggingFaceInput', () => {
     expect(parseHuggingFaceInput('https://hf.co/h94/IP-Adapter/discussions')).toEqual(whole);
   });
 
-  it('reads the folder of a tree address and the file of a blob or resolve address', { tags: ['condition'] }, () => {
+  it('reads the folder of a tree address and the file of a blob or resolve address', { tags: ['equivalence'] }, () => {
     expect(parseHuggingFaceInput('https://huggingface.co/h94/IP-Adapter/tree/main/sdxl_models')).toEqual({ repo: 'h94/IP-Adapter', folder: 'sdxl_models', file: null });
     expect(parseHuggingFaceInput('https://huggingface.co/h94/IP-Adapter/blob/main/sdxl_models/ip-adapter_sdxl.safetensors')).toEqual({
       repo: 'h94/IP-Adapter',

@@ -10,8 +10,8 @@ afterEach(() => cleanup());
 
 const setStatus = (status: object) => useEngine.setState({ status } as never);
 
-describe('the start-up screen', () => {
-  it('can be opened while the engine downloads', { tags: ['scenario'] }, () => {
+describe('the start-up screen', { tags: [] }, () => {
+  it('can be opened while the engine downloads', { tags: ['equivalence'] }, () => {
     setStatus({ state: 'downloading', bytes: 0, totalBytes: 0 });
     const onOpen = vi.fn();
     render(<Splash onOpen={onOpen} />);
@@ -19,7 +19,7 @@ describe('the start-up screen', () => {
     expect(onOpen).toHaveBeenCalledTimes(1);
   });
 
-  it('is offered on an engine error', { tags: ['scenario'] }, () => {
+  it('is offered on an engine error', { tags: ['equivalence'] }, () => {
     setStatus({ state: 'error', message: 'the engine did not start' });
     const onOpen = vi.fn();
     render(<Splash onOpen={onOpen} />);
@@ -27,7 +27,7 @@ describe('the start-up screen', () => {
     expect(onOpen).toHaveBeenCalledTimes(1);
   });
 
-  it('is not offered while the engine is only starting', { tags: ['scenario'] }, () => {
+  it('is not offered while the engine is only starting', { tags: ['equivalence'] }, () => {
     setStatus({ state: 'starting' });
     render(<Splash onOpen={vi.fn()} />);
     expect(screen.queryByTestId('splash-open-later')).toBeNull();

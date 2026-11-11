@@ -275,7 +275,7 @@ pub fn system_source(data: PathBuf) -> Source {
 mod tests {
     use super::*;
 
-    // tags: boundary
+    // tags: boundary, equivalence
     #[test]
     fn the_tailnet_range_is_100_64_slash_10() {
         for ip in ["100.64.0.1", "100.100.1.2", "100.127.255.254"] {
@@ -292,7 +292,7 @@ mod tests {
         }
     }
 
-    // tags: equivalence
+    // tags: equivalence, boundary
     #[test]
     fn only_magic_dns_names_are_tailnet_names() {
         for name in [
@@ -326,7 +326,7 @@ mod tests {
         )
     }
 
-    // tags: condition
+    // tags: decision-table, condition
     #[test]
     fn the_status_names_this_computer_when_connected_with_https_on() {
         let ok = status(
@@ -410,7 +410,7 @@ mod tests {
         assert!(matches!(parse_status("x"), Err(Problem::Failed(_))));
     }
 
-    // tags: condition
+    // tags: equivalence, error-guessing
     #[test]
     fn a_certificate_and_key_read_from_pem() {
         let key = rcgen::KeyPair::generate().unwrap();

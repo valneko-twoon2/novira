@@ -35,7 +35,7 @@ fn hanging_up_client() -> reqwest::Client {
         .unwrap()
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing, condition
 #[tokio::test]
 async fn a_model_list_that_cannot_be_fetched_stops_the_install_with_the_reason() {
     let data = tempfile::tempdir().unwrap();

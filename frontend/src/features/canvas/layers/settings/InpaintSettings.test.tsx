@@ -34,7 +34,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('InpaintSettings on the Image tab', () => {
+describe('InpaintSettings on the Image tab', { tags: [] }, () => {
   it('redraws with the instruction typed, then erases and cuts out', { tags: ['scenario'] }, async () => {
     const m = mask();
     show(<InpaintSettings entity={m.entity()} />);
@@ -49,7 +49,7 @@ describe('InpaintSettings on the Image tab', () => {
     expect(fixes.cutOutMaskedPart).toHaveBeenCalledWith(m.id, useCanvas);
   });
 
-  it('holds the other buttons while one fix is running', { tags: ['scenario'] }, async () => {
+  it('holds the other buttons while one fix is running', { tags: ['state-transition'] }, async () => {
     let finish: () => void = () => undefined;
     fixes.eraseMaskedPart.mockImplementationOnce(() => new Promise<undefined>((resolve) => (finish = () => resolve(undefined))));
     const m = mask();
@@ -61,7 +61,7 @@ describe('InpaintSettings on the Image tab', () => {
     await waitFor(() => expect((screen.getByTestId('canvas-mask-redraw') as HTMLButtonElement).disabled).toBe(false));
   });
 
-  it('turns the denoise limit and the noise level on and off, and sets them', { tags: ['boundary'] }, () => {
+  it('turns the denoise limit and the noise level on and off, and sets them', { tags: ['state-transition', 'boundary'] }, () => {
     const m = mask();
     const view = show(<InpaintSettings entity={m.entity()} />);
     expect(m.entity().denoiseLimit).toBeNull();
@@ -79,8 +79,8 @@ describe('InpaintSettings on the Image tab', () => {
   });
 });
 
-describe('InpaintSettings on another canvas', () => {
-  it('has no redraw (its result reaches only the Image tab) but erases and cuts out on its own store', { tags: ['scenario'] }, () => {
+describe('InpaintSettings on another canvas', { tags: [] }, () => {
+  it('has no redraw (its result reaches only the Image tab) but erases and cuts out on its own store', { tags: ['condition'] }, () => {
     const other = createCanvasStore({ syncParams: false });
     const m = mask(other);
     show(

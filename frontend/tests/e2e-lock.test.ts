@@ -19,7 +19,7 @@ afterEach(() => {
   dir = '';
 });
 
-describe('e2e lock', () => {
+describe('e2e lock', { tags: [] }, () => {
   it('is held while its process lives on this machine, and stale once it is gone', { tags: ['state-transition'] }, () => {
     expect(isStale(owner(), NOW, NOW, () => true, 'here')).toBe(false);
     expect(isStale(owner(), NOW, NOW, () => false, 'here')).toBe(true);
@@ -33,7 +33,7 @@ describe('e2e lock', () => {
     expect(isStale(owner({ at: 'not a date' }), NOW, NOW, () => true, 'here')).toBe(true);
   });
 
-  it('waits a minute for the owner record of a lock just made, then takes it over', { tags: ['state-transition'] }, () => {
+  it('waits a minute for the owner record of a lock just made, then takes it over', { tags: ['boundary', 'state-transition'] }, () => {
     expect(isStale(null, NOW - 30_000, NOW)).toBe(false);
     expect(isStale(null, NOW - 61_000, NOW)).toBe(true);
   });
@@ -56,7 +56,7 @@ describe('e2e lock', () => {
     expect(describeLock(lock)).toContain('free');
   });
 
-  it('takes over a lock whose process is gone', { tags: ['state-transition'] }, async () => {
+  it('takes over a lock whose process is gone', { tags: ['state-transition', 'error-guessing'] }, async () => {
     dir = mkdtempSync(join(tmpdir(), 'e2e-lock-'));
     const lock = join(dir, 'lock');
     mkdirSync(lock);
@@ -70,40 +70,52 @@ describe('e2e lock', () => {
   });
 });
 
-describe('taking over a stale lock', () => {
-  it('removes the lock that was judged stale, and puts back a fresh one another waiter made meanwhile', { tags: ['state-transition'] }, () => {
-    dir = mkdtempSync(join(tmpdir(), 'e2e-lock-'));
-    const lock = join(dir, 'lock');
-    const stale = owner({ pid: 1, at: '2026-01-01T00:00:00.000Z' });
-    mkdirSync(lock);
-    writeFileSync(join(lock, 'owner.json'), JSON.stringify(stale));
-    takeOver(lock, stale);
-    expect(existsSync(lock)).toBe(false);
-    // The other waiter was first: the lock is now its own, and this one's late takeover must leave it alone.
-    const fresh = owner({ pid: process.pid, at: new Date().toISOString() });
-    mkdirSync(lock);
-    writeFileSync(join(lock, 'owner.json'), JSON.stringify(fresh));
-    takeOver(lock, stale);
-    expect(JSON.parse(readFileSync(join(lock, 'owner.json'), 'utf8'))).toEqual(fresh);
-    expect(readdirSync(dir)).toEqual(['lock']);
-  });
+describe('taking over a stale lock', { tags: [] }, () => {
+  it(
+    'removes the lock that was judged stale, and puts back a fresh one another waiter made meanwhile',
+    { tags: ['state-transition', 'error-guessing'] },
+    () => {
+      dir = mkdtempSync(join(tmpdir(), 'e2e-lock-'));
+      const lock = join(dir, 'lock');
+      const stale = owner({ pid: 1, at: '2026-01-01T00:00:00.000Z' });
+      mkdirSync(lock);
+      writeFileSync(join(lock, 'owner.json'), JSON.stringify(stale));
+      takeOver(lock, stale);
+      expect(existsSync(lock)).toBe(false);
+      // The other waiter was first: the lock is now its own, and this one's late takeover must leave it alone.
+      const fresh = owner({ pid: process.pid, at: new Date().toISOString() });
+      mkdirSync(lock);
+      writeFileSync(join(lock, 'owner.json'), JSON.stringify(fresh));
+      takeOver(lock, stale);
+      expect(JSON.parse(readFileSync(join(lock, 'owner.json'), 'utf8'))).toEqual(fresh);
+      expect(readdirSync(dir)).toEqual(['lock']);
+    },
+  );
 });
 
-describe('the command line a command is run with', () => {
-  it('quotes an argument with a space or a character cmd.exe acts on, and leaves a plain one alone', { tags: ['condition'] }, () => {
-    expect(commandLine(['npx', 'playwright', 'test', '--grep', 'a b', 'x&y', '--workers=2', ''])).toBe('npx playwright test --grep "a b" "x&y" "--workers=2" ""');
-    expect(() => commandLine(['node', 'say "hi"'])).toThrow(/double quote/);
-  });
+describe('the command line a command is run with', { tags: [] }, () => {
+  it(
+    'quotes an argument with a space or a character cmd.exe acts on, and leaves a plain one alone',
+    { tags: ['equivalence', 'error-guessing'] },
+    () => {
+      expect(commandLine(['npx', 'playwright', 'test', '--grep', 'a b', 'x&y', '--workers=2', ''])).toBe('npx playwright test --grep "a b" "x&y" "--workers=2" ""');
+      expect(() => commandLine(['node', 'say "hi"'])).toThrow(/double quote/);
+    },
+  );
 
-  it.runIf(process.platform === 'win32')('keeps each argument whole through cmd.exe and runs nothing after &', { tags: ['condition'] }, () => {
-    const line = commandLine([process.execPath, '-e', 'console.log(JSON.stringify(process.argv.slice(1)))', 'a b', 'c&echo INJECTED']);
-    const out = spawnSync(line, { shell: true, encoding: 'utf8' }).stdout;
-    expect(out.trim()).toBe(JSON.stringify(['a b', 'c&echo INJECTED']));
-  });
+  it.runIf(process.platform === 'win32')(
+    'keeps each argument whole through cmd.exe and runs nothing after &',
+    { tags: ['error-guessing'] },
+    () => {
+      const line = commandLine([process.execPath, '-e', 'console.log(JSON.stringify(process.argv.slice(1)))', 'a b', 'c&echo INJECTED']);
+      const out = spawnSync(line, { shell: true, encoding: 'utf8' }).stdout;
+      expect(out.trim()).toBe(JSON.stringify(['a b', 'c&echo INJECTED']));
+    },
+  );
 });
 
-describe('e2e server', () => {
-  it('serves the build to a run of the layout project only, the dev server otherwise', { tags: ['condition'] }, () => {
+describe('e2e server', { tags: [] }, () => {
+  it('serves the build to a run of the layout project only, the dev server otherwise', { tags: ['equivalence'] }, () => {
     expect(serverMode({}, ['node', 'playwright', 'test', '--project=layout'])).toBe('build');
     expect(serverMode({}, ['node', 'playwright', 'test', '--project', 'layout', '--workers=8'])).toBe('build');
     expect(serverMode({}, ['node', 'playwright', 'test', '--project=layout', '--project=chromium'])).toBe('dev');
@@ -111,7 +123,7 @@ describe('e2e server', () => {
     expect(serverMode({}, ['node', 'playwright', 'test'])).toBe('dev');
   });
 
-  it('follows E2E_SERVER, except that browser coverage always needs the dev server', { tags: ['condition'] }, () => {
+  it('follows E2E_SERVER, except that browser coverage always needs the dev server', { tags: ['decision-table'] }, () => {
     expect(serverMode({ E2E_SERVER: 'build' }, ['node', 'playwright', 'test'])).toBe('build');
     expect(serverMode({ E2E_SERVER: 'dev' }, ['node', 'playwright', 'test', '--project=layout'])).toBe('dev');
     expect(serverMode({ E2E_SERVER: 'nonsense' }, ['node', 'playwright', 'test', '--project=layout'])).toBe('build');
@@ -141,7 +153,7 @@ describe('e2e server', () => {
     expect(inputsHash(dir, inputs)).not.toBe(changed);
   });
 
-  it('keeps one build per checkout inside the work folder', { tags: ['condition'] }, () => {
+  it('keeps one build per checkout inside the work folder', { tags: ['equivalence'] }, () => {
     const a = buildDir('E:/Code/novira-wt-a').replaceAll('\\', '/');
     const b = buildDir('E:/Code/novira-wt-b').replaceAll('\\', '/');
     expect(a).toMatch(/\/novira-data\/work\/e2e-build\/novira-wt-a-[0-9a-f]{8}$/);

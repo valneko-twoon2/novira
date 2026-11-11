@@ -12,7 +12,7 @@ fn png() -> Vec<u8> {
     out.into_inner()
 }
 
-// tags: scenario
+// tags: boundary, error-guessing
 #[test]
 fn a_store_whose_outputs_folder_vanished_indexes_nothing_and_cleans_nothing() {
     let dir = tempfile::tempdir().unwrap();
@@ -22,7 +22,7 @@ fn a_store_whose_outputs_folder_vanished_indexes_nothing_and_cleans_nothing() {
     files.remove_empty_folders();
 }
 
-// tags: scenario
+// tags: condition
 #[test]
 fn the_index_finds_pictures_in_sub_folders_and_skips_what_is_not_one() {
     let dir = tempfile::tempdir().unwrap();
@@ -91,7 +91,7 @@ fn picture(name: &str, board: Option<&str>) -> novira_core::types::ImageDTO {
     .unwrap()
 }
 
-// tags: scenario
+// tags: error-guessing
 #[test]
 fn a_picture_whose_folder_place_is_taken_stays_where_it_is() {
     use novira_core::media::arrangement::{arrange, place_of};
@@ -112,7 +112,7 @@ fn a_picture_whose_folder_place_is_taken_stays_where_it_is() {
     assert!(files.read_original(&name).is_some());
 }
 
-// tags: decision-table
+// tags: equivalence
 #[test]
 fn every_export_format_has_its_content_type() {
     use novira_core::media::export::ExportFormat;

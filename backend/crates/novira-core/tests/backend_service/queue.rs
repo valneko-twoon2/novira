@@ -91,7 +91,7 @@ async fn queued_jobs_run_in_order_and_store_images_with_metadata() {
     backend.shutdown();
 }
 
-// tags: error-guessing, boundary
+// tags: state-transition, error-guessing
 #[tokio::test]
 async fn failures_cancels_pause_and_retry() {
     let dir = tempfile::tempdir().unwrap();
@@ -313,7 +313,7 @@ async fn prepended_batches_go_before_the_first_pending_item_and_seeds_wrap() {
     );
 }
 
-// tags: error-guessing, boundary
+// tags: boundary, error-guessing
 #[tokio::test]
 async fn a_request_for_more_iterations_than_the_queue_takes_is_refused_at_the_limit_not_past_it() {
     let dir = tempfile::tempdir().unwrap();
@@ -329,7 +329,7 @@ async fn a_request_for_more_iterations_than_the_queue_takes_is_refused_at_the_li
     assert_eq!(items.len(), 1000);
 }
 
-// tags: state-transition
+// tags: state-transition, condition
 #[tokio::test]
 async fn cancel_touches_only_active_items_and_a_batch_cancels_together() {
     let dir = tempfile::tempdir().unwrap();
@@ -393,7 +393,7 @@ async fn cancel_pending_cancels_every_waiting_item_in_one_call_and_nothing_else(
     assert_eq!(backend.queue_snapshot().status.canceled, 4);
 }
 
-// tags: error-guessing, state-transition
+// tags: state-transition
 #[tokio::test]
 async fn pruned_and_cleared_items_stay_gone_after_a_restart() {
     let dir = tempfile::tempdir().unwrap();
@@ -436,7 +436,7 @@ async fn pruned_and_cleared_items_stay_gone_after_a_restart() {
 
 /// Draft groups and other stored references name queue items by id, so an id given once is never given again: not after
 /// the queue is cleared or pruned, and not after a restart on an empty queue.
-// tags: error-guessing, state-transition
+// tags: state-transition, regression
 #[tokio::test]
 async fn an_item_id_is_never_given_twice_after_the_queue_is_cleared_and_the_app_restarted() {
     let dir = tempfile::tempdir().unwrap();

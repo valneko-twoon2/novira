@@ -64,7 +64,7 @@ const show = () =>
     </TooltipProvider>,
   );
 
-describe('starting drafts', () => {
+describe('starting drafts', { tags: [] }, () => {
   it('shows the empty state and starts a batch with the chosen count and position', { tags: ['scenario'] }, async () => {
     const start = vi.fn().mockResolvedValue(null);
     useDrafts.setState({ start });
@@ -78,46 +78,54 @@ describe('starting drafts', () => {
     expect(lastToast()).toBeUndefined();
   });
 
-  it('starts with the count the settings give, 4 at first, and keeps what is typed for this run', { tags: ['scenario'] }, async () => {
-    const start = vi.fn().mockResolvedValue(null);
-    useDrafts.setState({ start });
-    show();
-    fireEvent.click(screen.getByTestId('drafts-start'));
-    await waitFor(() => expect(start).toHaveBeenLastCalledWith(4, 0.35, null));
-    cleanup();
-    useSettings.getState().set({ draftCount: 10 });
-    show();
-    fireEvent.click(screen.getByTestId('drafts-start'));
-    await waitFor(() => expect(start).toHaveBeenLastCalledWith(10, 0.35, null));
-    // Changing the box does not change the setting.
-    const count = screen.getAllByLabelText(t('drafts.count')).find((e) => (e as HTMLInputElement).type === 'number')!;
-    fireEvent.change(count, { target: { value: '3' } });
-    fireEvent.blur(count);
-    fireEvent.click(screen.getByTestId('drafts-start'));
-    await waitFor(() => expect(start).toHaveBeenLastCalledWith(3, 0.35, null));
-    expect(useSettings.getState().draftCount).toBe(10);
-  });
+  it(
+    'starts with the count the settings give, 4 at first, and keeps what is typed for this run',
+    { tags: ['scenario', 'condition'] },
+    async () => {
+      const start = vi.fn().mockResolvedValue(null);
+      useDrafts.setState({ start });
+      show();
+      fireEvent.click(screen.getByTestId('drafts-start'));
+      await waitFor(() => expect(start).toHaveBeenLastCalledWith(4, 0.35, null));
+      cleanup();
+      useSettings.getState().set({ draftCount: 10 });
+      show();
+      fireEvent.click(screen.getByTestId('drafts-start'));
+      await waitFor(() => expect(start).toHaveBeenLastCalledWith(10, 0.35, null));
+      // Changing the box does not change the setting.
+      const count = screen.getAllByLabelText(t('drafts.count')).find((e) => (e as HTMLInputElement).type === 'number')!;
+      fireEvent.change(count, { target: { value: '3' } });
+      fireEvent.blur(count);
+      fireEvent.click(screen.getByTestId('drafts-start'));
+      await waitFor(() => expect(start).toHaveBeenLastCalledWith(3, 0.35, null));
+      expect(useSettings.getState().draftCount).toBe(10);
+    },
+  );
 
-  it('starts the position from the settings, and keeps count and position when the screen is left and opened again', { tags: ['scenario'] }, async () => {
-    const start = vi.fn().mockResolvedValue(null);
-    useDrafts.setState({ start });
-    useSettings.getState().set({ draftPosition: 50 });
-    show();
-    fireEvent.click(screen.getByTestId('drafts-start'));
-    await waitFor(() => expect(start).toHaveBeenLastCalledWith(4, 0.5, null));
-    const count = screen.getAllByLabelText(t('drafts.count')).find((e) => (e as HTMLInputElement).type === 'number')!;
-    fireEvent.change(count, { target: { value: '7' } });
-    fireEvent.blur(count);
-    const position = screen.getAllByLabelText(t('drafts.position')).find((e) => (e as HTMLInputElement).type === 'number')!;
-    fireEvent.change(position, { target: { value: '30' } });
-    fireEvent.blur(position);
-    cleanup();
-    // Another screen was shown meanwhile: the box and the slider come back as they were set, not from the settings.
-    show();
-    fireEvent.click(screen.getByTestId('drafts-start'));
-    await waitFor(() => expect(start).toHaveBeenLastCalledWith(7, 0.3, null));
-    expect(useSettings.getState().draftPosition).toBe(50);
-  });
+  it(
+    'starts the position from the settings, and keeps count and position when the screen is left and opened again',
+    { tags: ['scenario'] },
+    async () => {
+      const start = vi.fn().mockResolvedValue(null);
+      useDrafts.setState({ start });
+      useSettings.getState().set({ draftPosition: 50 });
+      show();
+      fireEvent.click(screen.getByTestId('drafts-start'));
+      await waitFor(() => expect(start).toHaveBeenLastCalledWith(4, 0.5, null));
+      const count = screen.getAllByLabelText(t('drafts.count')).find((e) => (e as HTMLInputElement).type === 'number')!;
+      fireEvent.change(count, { target: { value: '7' } });
+      fireEvent.blur(count);
+      const position = screen.getAllByLabelText(t('drafts.position')).find((e) => (e as HTMLInputElement).type === 'number')!;
+      fireEvent.change(position, { target: { value: '30' } });
+      fireEvent.blur(position);
+      cleanup();
+      // Another screen was shown meanwhile: the box and the slider come back as they were set, not from the settings.
+      show();
+      fireEvent.click(screen.getByTestId('drafts-start'));
+      await waitFor(() => expect(start).toHaveBeenLastCalledWith(7, 0.3, null));
+      expect(useSettings.getState().draftPosition).toBe(50);
+    },
+  );
 
   it('explains why a batch could not start, and reports a failure', { tags: ['error-guessing'] }, async () => {
     const start = vi.fn().mockResolvedValueOnce({ error: 'edit-model' }).mockResolvedValueOnce({ error: 'no-builder' }).mockRejectedValueOnce(new Error('queue down'));
@@ -132,7 +140,7 @@ describe('starting drafts', () => {
   });
 });
 
-describe('model of the drafts', () => {
+describe('model of the drafts', { tags: [] }, () => {
   it('starts the drafts with the model picked here instead of the Generate tab model', { tags: ['scenario'] }, async () => {
     const start = vi.fn().mockResolvedValue(null);
     useDrafts.setState({ start });
@@ -144,7 +152,7 @@ describe('model of the drafts', () => {
     await waitFor(() => expect(start).toHaveBeenCalledWith(expect.any(Number), expect.any(Number), 'm1'));
   });
 
-  it('offers the diffusion models of the newer families, and names the edit models it leaves out', { tags: ['scenario'] }, () => {
+  it('offers the diffusion models of the newer families, and names the edit models it leaves out', { tags: ['condition'] }, () => {
     useModels.setState({
       models: [
         { key: 'm1', name: 'Anime XL', base: 'sdxl', type: 'main', path: 'animeXL.safetensors' },
@@ -163,17 +171,21 @@ describe('model of the drafts', () => {
     expect(within(list).queryByText('Wan 5B')).toBeNull();
   });
 
-  it('says nothing is left out when every model can draft, and explains a refused edit model', { tags: ['error-guessing'] }, async () => {
-    const start = vi.fn().mockResolvedValue({ error: 'edit-model' });
-    useDrafts.setState({ start });
-    useModels.setState({ models: [{ key: 'm1', name: 'Anime XL', base: 'sdxl', type: 'main', path: 'a.safetensors' }] as never });
-    show();
-    expect(screen.queryByTestId('drafts-left-out')).toBeNull();
-    fireEvent.click(screen.getByTestId('drafts-start'));
-    await waitFor(() => expect(lastToast()).toMatchObject({ status: 'warning', title: t('drafts.editModel') }));
-  });
+  it(
+    'says nothing is left out when every model can draft, and explains a refused edit model',
+    { tags: ['condition', 'error-guessing'] },
+    async () => {
+      const start = vi.fn().mockResolvedValue({ error: 'edit-model' });
+      useDrafts.setState({ start });
+      useModels.setState({ models: [{ key: 'm1', name: 'Anime XL', base: 'sdxl', type: 'main', path: 'a.safetensors' }] as never });
+      show();
+      expect(screen.queryByTestId('drafts-left-out')).toBeNull();
+      fireEvent.click(screen.getByTestId('drafts-start'));
+      await waitFor(() => expect(lastToast()).toMatchObject({ status: 'warning', title: t('drafts.editModel') }));
+    },
+  );
 
-  it('does not open the viewer when the keep star is double clicked', { tags: ['scenario'] }, () => {
+  it('does not open the viewer when the keep star is double clicked', { tags: ['condition'] }, () => {
     useGallery.setState({ images: [picture('d1.png')] });
     useDrafts.setState({ groups: [group('a', [candidate(1)])], currentId: 'a' });
     show();
@@ -182,8 +194,8 @@ describe('model of the drafts', () => {
   });
 });
 
-describe('groups', () => {
-  it('shows one tab per group, switches between them and closes one', { tags: ['scenario'] }, () => {
+describe('groups', { tags: [] }, () => {
+  it('shows one tab per group, switches between them and closes one', { tags: ['scenario', 'state-transition'] }, () => {
     useDrafts.setState({ groups: [group('a', [candidate(1)]), group('b', [candidate(2), candidate(3)])], currentId: 'a' });
     show();
     const tabs = screen.getAllByRole('tab');
@@ -197,7 +209,7 @@ describe('groups', () => {
     expect(screen.getAllByTestId('draft-cell')).toHaveLength(1);
   });
 
-  describe('history', () => {
+  describe('history', { tags: [] }, () => {
     const many = (n: number) => Array.from({ length: n }, (_, i) => group(`g${i + 1}`, [candidate(i + 1)]));
 
     it('keeps only the latest five as tabs, and opens any batch from the history screen', { tags: ['boundary'] }, () => {
@@ -242,7 +254,7 @@ describe('groups', () => {
       expect(lastToast()?.title).toBe(t('drafts.history.reused'));
     });
 
-    it('closes all the older ones at once from the history screen and leaves the latest', { tags: ['scenario'] }, () => {
+    it('closes all the older ones at once from the history screen and leaves the latest', { tags: ['boundary', 'scenario'] }, () => {
       useDrafts.setState({ groups: many(7), currentId: 'g1' });
       show();
       fireEvent.click(screen.getByTestId('drafts-history-button'));
@@ -253,17 +265,17 @@ describe('groups', () => {
     });
   });
 
-  it('shows the last group when none is current', { tags: ['scenario'] }, () => {
+  it('shows the last group when none is current', { tags: ['condition'] }, () => {
     useDrafts.setState({ groups: [group('a', [candidate(1)]), group('b', [candidate(2), candidate(3)])], currentId: null });
     show();
     expect(screen.getAllByTestId('draft-cell')).toHaveLength(2);
   });
 });
 
-describe('candidates', () => {
+describe('candidates', { tags: [] }, () => {
   const cells = () => screen.getAllByTestId('draft-cell');
 
-  it('labels each candidate by its state', { tags: ['scenario'] }, () => {
+  it('labels each candidate by its state', { tags: ['equivalence'] }, () => {
     useGallery.setState({ images: ['d1.png', 'd5.png', 'f6.png'].map(picture) });
     useDrafts.setState({
       groups: [
@@ -293,7 +305,7 @@ describe('candidates', () => {
     expect(cells()[4]!.querySelector('.dv-busy')).toBeTruthy();
   });
 
-  it('selects ready candidates by click or keyboard, and ignores the others', { tags: ['scenario'] }, () => {
+  it('selects ready candidates by click or keyboard, and ignores the others', { tags: ['equivalence', 'condition'] }, () => {
     useDrafts.setState({ groups: [group('a', [candidate(1), candidate(2, { status: 'queued', imageName: null })])], currentId: 'a' });
     show();
     const pick = (i: number) => within(cells()[i]!).getByRole('button', { name: /seed/ });
@@ -312,7 +324,7 @@ describe('candidates', () => {
     expect(useDrafts.getState().selection).toEqual([]);
   });
 
-  it('keeps or rejects a candidate with its buttons', { tags: ['scenario'] }, () => {
+  it('keeps or rejects a candidate with its buttons', { tags: ['state-transition'] }, () => {
     useDrafts.setState({ groups: [group('a', [candidate(1)])], currentId: 'a' });
     show();
     fireEvent.click(screen.getByLabelText(t('drafts.keep')));
@@ -325,7 +337,7 @@ describe('candidates', () => {
     expect(screen.getByLabelText(t('drafts.unreject'))).toBeTruthy();
   });
 
-  it('opens a candidate in the viewer on double click when its picture exists', { tags: ['scenario'] }, () => {
+  it('opens a candidate in the viewer on double click when its picture exists', { tags: ['condition'] }, () => {
     useGallery.setState({ images: [picture('d1.png')] });
     useDrafts.setState({ groups: [group('a', [candidate(1), candidate(2, { status: 'queued', imageName: null })])], currentId: 'a' });
     show();
@@ -336,27 +348,31 @@ describe('candidates', () => {
     expect(useUi.getState().mainView.generate).toBe('viewer');
   });
 
-  it('opens a candidate somewhere else when the layout asks, with a button as well as a double click', { tags: ['scenario'] }, () => {
-    useGallery.setState({ images: [picture('d1.png')] });
-    useDrafts.setState({ groups: [group('a', [candidate(1), candidate(2, { status: 'queued', imageName: null })])], currentId: 'a' });
-    const onOpen = vi.fn();
-    render(
-      <TooltipProvider>
-        <DraftsView onOpen={onOpen} />
-      </TooltipProvider>,
-    );
-    // Only a candidate with a picture has the button.
-    expect(screen.getAllByTestId('draft-open')).toHaveLength(1);
-    fireEvent.click(within(cells()[0]!).getByTestId('draft-open'));
-    expect(onOpen).toHaveBeenCalledWith('d1.png');
-    // The button does not select the candidate, and the desktop viewer is left alone.
-    expect(useDrafts.getState().selection).toEqual([]);
-    expect(useGallery.getState().selection).toEqual([]);
-    fireEvent.doubleClick(within(cells()[0]!).getByRole('button', { name: /seed/ }));
-    expect(onOpen).toHaveBeenCalledTimes(2);
-  });
+  it(
+    'opens a candidate somewhere else when the layout asks, with a button as well as a double click',
+    { tags: ['condition', 'scenario'] },
+    () => {
+      useGallery.setState({ images: [picture('d1.png')] });
+      useDrafts.setState({ groups: [group('a', [candidate(1), candidate(2, { status: 'queued', imageName: null })])], currentId: 'a' });
+      const onOpen = vi.fn();
+      render(
+        <TooltipProvider>
+          <DraftsView onOpen={onOpen} />
+        </TooltipProvider>,
+      );
+      // Only a candidate with a picture has the button.
+      expect(screen.getAllByTestId('draft-open')).toHaveLength(1);
+      fireEvent.click(within(cells()[0]!).getByTestId('draft-open'));
+      expect(onOpen).toHaveBeenCalledWith('d1.png');
+      // The button does not select the candidate, and the desktop viewer is left alone.
+      expect(useDrafts.getState().selection).toEqual([]);
+      expect(useGallery.getState().selection).toEqual([]);
+      fireEvent.doubleClick(within(cells()[0]!).getByRole('button', { name: /seed/ }));
+      expect(onOpen).toHaveBeenCalledTimes(2);
+    },
+  );
 
-  it('has no open button in the desktop layout', { tags: ['scenario'] }, () => {
+  it('has no open button in the desktop layout', { tags: ['condition'] }, () => {
     useGallery.setState({ images: [picture('d1.png')] });
     useDrafts.setState({ groups: [group('a', [candidate(1)])], currentId: 'a' });
     show();
@@ -395,7 +411,7 @@ describe('candidates', () => {
   });
 });
 
-describe('a draft being drawn or finished', () => {
+describe('a draft being drawn or finished', { tags: [] }, () => {
   const setup = (over: Partial<DraftCandidate>) => {
     useDrafts.setState({ groups: [group('g', [candidate(1, over)])], currentId: 'g' });
     useGallery.setState({ images: [picture('d1.png')] as never });
@@ -404,7 +420,7 @@ describe('a draft being drawn or finished', () => {
   };
   afterEach(() => act(() => useQueue.getState().setProgress(null)));
 
-  it('shows the draft being drawn with its step, and ignores the progress of other jobs', { tags: ['scenario'] }, () => {
+  it('shows the draft being drawn with its step, and ignores the progress of other jobs', { tags: ['condition'] }, () => {
     const cell = setup({ imageName: null, status: 'running', itemId: 4 });
     expect(cell().querySelector('img')).toBeNull();
     act(() => useQueue.getState().setProgress({ itemId: 4, step: 3, totalSteps: 8, progressImageUrl: 'blob:draft-live' } as never));
@@ -414,18 +430,22 @@ describe('a draft being drawn or finished', () => {
     expect(cell().querySelector('img')).toBeNull();
   });
 
-  it('shows the picture being finished in place of the draft it comes from, and the draft again once it is done', { tags: ['scenario'] }, () => {
-    const cell = setup({ finalItemId: 9, finalStatus: 'running' });
-    expect(cell().querySelector('img')?.getAttribute('src')).toBe('blob:t-d1.png');
-    act(() => useQueue.getState().setProgress({ itemId: 9, step: 10, totalSteps: 30, progressImageUrl: 'blob:final-live' } as never));
-    expect(cell().querySelector('img')?.getAttribute('src')).toBe('blob:final-live');
-    expect(within(cell()).getByText('10/30', { exact: false })).toBeTruthy();
-    act(() => useQueue.getState().setProgress(null));
-    expect(cell().querySelector('img')?.getAttribute('src')).toBe('blob:t-d1.png');
-  });
+  it(
+    'shows the picture being finished in place of the draft it comes from, and the draft again once it is done',
+    { tags: ['state-transition'] },
+    () => {
+      const cell = setup({ finalItemId: 9, finalStatus: 'running' });
+      expect(cell().querySelector('img')?.getAttribute('src')).toBe('blob:t-d1.png');
+      act(() => useQueue.getState().setProgress({ itemId: 9, step: 10, totalSteps: 30, progressImageUrl: 'blob:final-live' } as never));
+      expect(cell().querySelector('img')?.getAttribute('src')).toBe('blob:final-live');
+      expect(within(cell()).getByText('10/30', { exact: false })).toBeTruthy();
+      act(() => useQueue.getState().setProgress(null));
+      expect(cell().querySelector('img')?.getAttribute('src')).toBe('blob:t-d1.png');
+    },
+  );
 });
 
-describe('a generation batch', () => {
+describe('a generation batch', { tags: [] }, () => {
   const made = (over: Partial<DraftCandidate> = {}) => candidate(1, { itemId: null, imageName: null, finalItemId: 1, finalImageName: 'g1.png', finalStatus: 'ready', ...over });
   const batch = (candidates: DraftCandidate[], boardId: string | null = null): DraftGroup => ({ ...group('g', candidates), kind: 'generation', position: 1, boardId });
   const held = (name: string, isIntermediate = true) => ({ ...(picture(name) as object), isIntermediate }) as never;
@@ -435,23 +455,27 @@ describe('a generation batch', () => {
     show();
   };
 
-  it('shows each picture as finished, waiting or generating, never as a draft with a step', { tags: ['scenario'] }, () => {
+  it('shows each picture as finished, waiting or generating, never as a draft with a step', { tags: ['equivalence'] }, () => {
     showBatch(batch([made(), made({ id: 'c2', finalItemId: 2, finalImageName: null, finalStatus: 'running' }), made({ id: 'c3', finalItemId: 3, finalImageName: null, finalStatus: 'queued' })]), [held('g1.png')]);
     expect(screen.getAllByTestId('draft-cell').map((c) => within(c).getByText(/./, { selector: '.dv-badge' }).textContent)).toEqual([t('drafts.badge.finished'), t('drafts.badge.generating'), t('drafts.badge.queued')]);
   });
 
-  it('shows the picture being drawn with its step, like the grid of the gallery, and ignores the progress of other jobs', { tags: ['scenario'] }, () => {
-    showBatch(batch([made({ finalImageName: null, finalStatus: 'running', finalItemId: 7 })]), []);
-    const cell = () => screen.getByTestId('draft-cell');
-    expect(cell().querySelector('img')).toBeNull();
-    act(() => useQueue.getState().setProgress({ itemId: 7, step: 12, totalSteps: 30, progressImageUrl: 'blob:live' } as never));
-    expect(cell().querySelector('img')?.getAttribute('src')).toBe('blob:live');
-    expect(within(cell()).getByText('12/30', { exact: false })).toBeTruthy();
-    // Another job's progress is not this picture's.
-    act(() => useQueue.getState().setProgress({ itemId: 8, step: 3, totalSteps: 30, progressImageUrl: 'blob:other' } as never));
-    expect(cell().querySelector('img')).toBeNull();
-    act(() => useQueue.getState().setProgress(null));
-  });
+  it(
+    'shows the picture being drawn with its step, like the grid of the gallery, and ignores the progress of other jobs',
+    { tags: ['condition'] },
+    () => {
+      showBatch(batch([made({ finalImageName: null, finalStatus: 'running', finalItemId: 7 })]), []);
+      const cell = () => screen.getByTestId('draft-cell');
+      expect(cell().querySelector('img')).toBeNull();
+      act(() => useQueue.getState().setProgress({ itemId: 7, step: 12, totalSteps: 30, progressImageUrl: 'blob:live' } as never));
+      expect(cell().querySelector('img')?.getAttribute('src')).toBe('blob:live');
+      expect(within(cell()).getByText('12/30', { exact: false })).toBeTruthy();
+      // Another job's progress is not this picture's.
+      act(() => useQueue.getState().setProgress({ itemId: 8, step: 3, totalSteps: 30, progressImageUrl: 'blob:other' } as never));
+      expect(cell().querySelector('img')).toBeNull();
+      act(() => useQueue.getState().setProgress(null));
+    },
+  );
 
   it('offers moving the chosen pictures to the board and throwing the rest away, and not finishing drafts', { tags: ['scenario'] }, () => {
     const adopt = vi.fn().mockResolvedValue(undefined);
@@ -468,14 +492,14 @@ describe('a generation batch', () => {
     expect(discard).toHaveBeenCalledWith('g');
   });
 
-  it('names the board the pictures were made for', { tags: ['scenario'] }, () => {
+  it('names the board the pictures were made for', { tags: ['condition'] }, () => {
     useGallery.setState({ boards: [{ id: 'b1', name: 'Cats', archived: false, createdAt: 1, parentId: null }] as never });
     showBatch(batch([made()], 'b1'), [held('g1.png')]);
     fireEvent.click(screen.getAllByRole('button', { name: /seed/ })[0]!);
     expect(screen.getByTestId('drafts-adopt').textContent).toContain('Cats');
   });
 
-  it('does not select a picture that is not drawn yet', { tags: ['scenario'] }, () => {
+  it('does not select a picture that is not drawn yet', { tags: ['condition'] }, () => {
     showBatch(batch([made({ finalImageName: null, finalStatus: 'running' }), made({ id: 'c2', finalImageName: 'g2.png' })]), [held('g2.png')]);
     const [waiting, finished] = screen.getAllByRole('button', { name: /seed/ });
     fireEvent.click(waiting!);
@@ -484,19 +508,19 @@ describe('a generation batch', () => {
     expect(useDrafts.getState().selection).toEqual(['c2']);
   });
 
-  it('shows no picture that is already on a board (it was taken there by a drag)', { tags: ['scenario'] }, () => {
+  it('shows no picture that is already on a board (it was taken there by a drag)', { tags: ['condition'] }, () => {
     showBatch(batch([made(), made({ id: 'c2', finalImageName: 'g2.png' })]), [held('g1.png'), held('g2.png', false)]);
     expect(screen.getAllByRole('button', { name: /seed/ })).toHaveLength(1);
   });
 
-  it('lets a finished picture be dragged onto a board, and a waiting one not', { tags: ['scenario'] }, () => {
+  it('lets a finished picture be dragged onto a board, and a waiting one not', { tags: ['condition'] }, () => {
     showBatch(batch([made(), made({ id: 'c2', finalImageName: null, finalStatus: 'queued' })]), [held('g1.png')]);
     const [done, waiting] = screen.getAllByRole('button', { name: /seed/ });
     expect(done!.getAttribute('draggable')).toBe('true');
     expect(waiting!.getAttribute('draggable')).not.toBe('true');
   });
 
-  it('closes with a label that says the rest goes to the trash', { tags: ['scenario'] }, () => {
+  it('closes with a label that says the rest goes to the trash', { tags: ['condition'] }, () => {
     showBatch(batch([made()]), [held('g1.png')]);
     expect(screen.getAllByRole('button', { name: t('drafts.closeGroupHeld') }).length).toBeGreaterThan(0);
     expect(screen.queryByRole('button', { name: t('drafts.closeGroup') })).toBeNull();

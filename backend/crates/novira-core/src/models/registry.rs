@@ -208,7 +208,7 @@ mod tests {
         }
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn keys_are_stable_and_separator_independent() {
         assert_eq!(
@@ -222,7 +222,7 @@ mod tests {
         assert!(key_for(ModelType::Lora, "loras", "x").starts_with("lora-"));
     }
 
-    // tags: condition
+    // tags: state-transition
     #[test]
     fn rescans_keep_user_edits_and_skip_hidden_or_missing_files() {
         let dir = tempfile::tempdir().unwrap();
@@ -253,7 +253,7 @@ mod tests {
         assert_eq!(third.changed.len(), 1);
     }
 
-    // tags: error-guessing
+    // tags: condition
     #[test]
     fn a_changed_file_refreshes_what_the_file_says_about_itself_and_not_the_users_edits() {
         let dir = tempfile::tempdir().unwrap();
@@ -308,7 +308,7 @@ mod tests {
         }
     }
 
-    // tags: condition
+    // tags: condition, error-guessing
     #[test]
     fn a_lora_stored_with_an_sd_base_its_tensors_contradict_is_corrected() {
         let dir = tempfile::tempdir().unwrap();
@@ -412,7 +412,7 @@ mod tests {
         assert!(corrected_any_bases(&[old]).is_empty());
     }
 
-    // tags: equivalence
+    // tags: decision-table
     #[test]
     fn a_stored_license_summary_is_brought_in_line_with_its_permissions() {
         let dir = tempfile::tempdir().unwrap();

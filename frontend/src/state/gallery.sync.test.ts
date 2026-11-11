@@ -32,7 +32,7 @@ beforeEach(() => {
 });
 
 describe('syncBoards', () => {
-  it('takes a board another page made', { tags: ['condition'] }, () => {
+  it('takes a board another page made', { tags: ['equivalence'] }, () => {
     useGallery.getState().setBoards([board('a')]);
     useGallery.getState().syncBoards([board('a'), board('b')]);
     expect(useGallery.getState().boards.map((b) => b.id)).toEqual(['a', 'b']);
@@ -56,7 +56,7 @@ describe('syncBoards', () => {
 });
 
 describe('applyImageChanges', () => {
-  it('replaces a changed picture where it is', { tags: ['condition'] }, () => {
+  it('replaces a changed picture where it is', { tags: ['equivalence'] }, () => {
     useGallery.getState().setImages([image('a'), image('b')]);
     useGallery.getState().applyImageChanges([image('b', { starred: true, boardId: 'x' })], []);
     const images = useGallery.getState().images;
@@ -71,7 +71,7 @@ describe('applyImageChanges', () => {
     expect(useGallery.getState().images.map((i) => i.name)).toEqual(['r', 'a']);
   });
 
-  it('takes out the removed pictures and what pointed at them', { tags: ['condition'] }, () => {
+  it('takes out the removed pictures and what pointed at them', { tags: ['equivalence'] }, () => {
     useGallery.setState({ images: [image('a'), image('b')], selection: ['a', 'b'], viewerImageName: 'a', compareImageName: 'a' });
     useGallery.getState().applyImageChanges([], ['a', 'unknown']);
     const g = useGallery.getState();
@@ -97,7 +97,7 @@ describe('syncModels', () => {
     expect(useModels.getState().selectedKey).toBeNull();
   });
 
-  it('keeps the picked model while it is there, and no pick as none', { tags: ['condition'] }, () => {
+  it('keeps the picked model while it is there, and no pick as none', { tags: ['condition', 'boundary'] }, () => {
     useModels.setState({ models: [model('a')], selectedKey: 'a' });
     useModels.getState().syncModels([model('a'), model('c')]);
     expect(useModels.getState().selectedKey).toBe('a');

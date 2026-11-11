@@ -47,11 +47,15 @@ describe('params builders', () => {
     autoSelectModels();
   });
 
-  it('picks the default upscale and a tile ControlNet for the chosen main model, but never the main model itself', { tags: ['condition'] }, () => {
-    expect(useParams.getState().modelKey).toBe('main-xl');
-    expect(useParams.getState().upscale.upscaleModelKey).toBe('up');
-    expect(useParams.getState().upscale.tileControlnetModelKey).toBe('cn-tile');
-  });
+  it(
+    'picks the default upscale and a tile ControlNet for the chosen main model, but never the main model itself',
+    { tags: ['condition'] },
+    () => {
+      expect(useParams.getState().modelKey).toBe('main-xl');
+      expect(useParams.getState().upscale.upscaleModelKey).toBe('up');
+      expect(useParams.getState().upscale.tileControlnetModelKey).toBe('cn-tile');
+    },
+  );
 
   it('reports incompatible LoRAs and incomplete reference images', { tags: ['condition'] }, () => {
     useParams.getState().addLora('lora-sd1');
@@ -59,7 +63,7 @@ describe('params builders', () => {
     expect(paramsReadiness({ refImages: true })).toHaveLength(3);
   });
 
-  it('sends the enabled, complete reference images with the generate request', { tags: ['scenario'] }, async () => {
+  it('sends the enabled, complete reference images with the generate request', { tags: ['condition'] }, async () => {
     const p = useParams.getState();
     p.addRefImage({ imageName: 'r.png', imageUrl: 'http://novira-image.localhost/full/r.png', modelKey: 'ipa-xl', method: 'style', weight: 0.6, beginEnd: [0.1, 0.9] });
     p.addRefImage({ isEnabled: false, imageName: 'off.png', imageUrl: 'http://novira-image.localhost/full/off.png', modelKey: 'ipa-xl' });
@@ -74,14 +78,18 @@ describe('params builders', () => {
     expect(plain.params.refImageCount).toBeUndefined();
   });
 
-  it('asks for the image encoder the reference image needs before the job runs, and not once it is installed', { tags: ['condition'] }, () => {
-    useParams.getState().addRefImage({ imageName: 'r.png', imageUrl: 'http://novira-image.localhost/full/r.png', modelKey: 'ipa-xl' });
-    const reason = t('params.readiness.refNeedsEncoder', { size: 'ViT-H' });
-    expect(paramsReadiness({ refImages: true })).toEqual([]);
-    useModels.getState().setModels(useModels.getState().models.filter((m) => m.type !== 'clip_vision'));
-    expect(paramsReadiness({ refImages: true })).toEqual([reason]);
-    expect(paramsReadiness({ refImages: false })).toEqual([]);
-  });
+  it(
+    'asks for the image encoder the reference image needs before the job runs, and not once it is installed',
+    { tags: ['condition'] },
+    () => {
+      useParams.getState().addRefImage({ imageName: 'r.png', imageUrl: 'http://novira-image.localhost/full/r.png', modelKey: 'ipa-xl' });
+      const reason = t('params.readiness.refNeedsEncoder', { size: 'ViT-H' });
+      expect(paramsReadiness({ refImages: true })).toEqual([]);
+      useModels.getState().setModels(useModels.getState().models.filter((m) => m.type !== 'clip_vision'));
+      expect(paramsReadiness({ refImages: true })).toEqual([reason]);
+      expect(paramsReadiness({ refImages: false })).toEqual([]);
+    },
+  );
 
   it('puts the missing parts of the chosen model first, and drops the reason once none is missing', { tags: ['condition'] }, () => {
     const key = useParams.getState().modelKey!;
@@ -115,24 +123,28 @@ describe('params builders', () => {
     expect((await buildUpscaleRequest(false)).params.hiresFix).toBeUndefined();
   });
 
-  it('draws over the image to image picture with its strength, sized to the trained size nearest its shape, and with the fix', { tags: ['scenario'] }, async () => {
-    useParams.getState().setHires({ enabled: true });
-    const image = { name: 'i.png', url: 'u/full/i.png', thumbnailUrl: 'u', width: 1200, height: 800 } as never;
-    useParams.getState().set({ strength: 0.55 });
-    useParams.getState().setInitImage(image, 1024);
-    expect([useParams.getState().width, useParams.getState().height, useParams.getState().aspectRatio]).toEqual([1216, 832, 'free']);
-    const req = await buildGenerateRequest(false);
-    expect(req.initImageUrl).toBe('u/full/i.png');
-    expect(req.params).toMatchObject({ generationMode: 'img2img', strength: 0.55, width: 1216, height: 832, hiresFix: { scale: 1.5, strength: 0.45 } });
-    // Removed, it is text to image again, and the size stays as it was set.
-    useParams.getState().setInitImage(null, 1024);
-    const plain = await buildGenerateRequest(false);
-    expect(plain.initImageUrl).toBeUndefined();
-    expect(plain.params.generationMode).toBe('txt2img');
-    expect(plain.params.strength).toBeUndefined();
-    expect(plain.params.hiresFix).toBeDefined();
-    expect(useParams.getState().width).toBe(1216);
-  });
+  it(
+    'draws over the image to image picture with its strength, sized to the trained size nearest its shape, and with the fix',
+    { tags: ['scenario'] },
+    async () => {
+      useParams.getState().setHires({ enabled: true });
+      const image = { name: 'i.png', url: 'u/full/i.png', thumbnailUrl: 'u', width: 1200, height: 800 } as never;
+      useParams.getState().set({ strength: 0.55 });
+      useParams.getState().setInitImage(image, 1024);
+      expect([useParams.getState().width, useParams.getState().height, useParams.getState().aspectRatio]).toEqual([1216, 832, 'free']);
+      const req = await buildGenerateRequest(false);
+      expect(req.initImageUrl).toBe('u/full/i.png');
+      expect(req.params).toMatchObject({ generationMode: 'img2img', strength: 0.55, width: 1216, height: 832, hiresFix: { scale: 1.5, strength: 0.45 } });
+      // Removed, it is text to image again, and the size stays as it was set.
+      useParams.getState().setInitImage(null, 1024);
+      const plain = await buildGenerateRequest(false);
+      expect(plain.initImageUrl).toBeUndefined();
+      expect(plain.params.generationMode).toBe('txt2img');
+      expect(plain.params.strength).toBeUndefined();
+      expect(plain.params.hiresFix).toBeDefined();
+      expect(useParams.getState().width).toBe(1216);
+    },
+  );
 
   it('never sends a manga finish, and asks nothing of its pack', { tags: ['condition'] }, async () => {
     useNodePacks.setState({ packs: { available: true, installed: [], comfyVersion: null, restartNeeded: false } });
@@ -140,19 +152,23 @@ describe('params builders', () => {
     expect(generateReadiness()).toEqual([]);
   });
 
-  it('blocks a missing upscale model of the fix and only warns about a size the model may not draw well', { tags: ['error-guessing'] }, () => {
-    useParams.setState({ width: 1024, height: 1024 });
-    useParams.getState().setHires({ enabled: true, scale: 2, upscaleModelKey: 'gone' });
-    expect(generateReadiness()).toEqual([t('params.readiness.hiresNoModel')]);
-    // 2048 on the long side is still comfortable for SDXL.
-    expect(generateWarnings()).toEqual([]);
-    useParams.getState().setHires({ upscaleModelKey: null, scale: 2.05 });
-    useParams.setState({ width: 1024, height: 1040 });
-    expect(generateReadiness()).toEqual([]);
-    expect(generateWarnings()).toEqual([t('params.readiness.hiresLarge', { width: 2096, height: 2136, base: 'SDXL', max: 2048 })]);
-    useParams.getState().setHires({ enabled: false });
-    expect(generateWarnings()).toEqual([]);
-  });
+  it(
+    'blocks a missing upscale model of the fix and only warns about a size the model may not draw well',
+    { tags: ['boundary', 'error-guessing'] },
+    () => {
+      useParams.setState({ width: 1024, height: 1024 });
+      useParams.getState().setHires({ enabled: true, scale: 2, upscaleModelKey: 'gone' });
+      expect(generateReadiness()).toEqual([t('params.readiness.hiresNoModel')]);
+      // 2048 on the long side is still comfortable for SDXL.
+      expect(generateWarnings()).toEqual([]);
+      useParams.getState().setHires({ upscaleModelKey: null, scale: 2.05 });
+      useParams.setState({ width: 1024, height: 1040 });
+      expect(generateReadiness()).toEqual([]);
+      expect(generateWarnings()).toEqual([t('params.readiness.hiresLarge', { width: 2096, height: 2136, base: 'SDXL', max: 2048 })]);
+      useParams.getState().setHires({ enabled: false });
+      expect(generateWarnings()).toEqual([]);
+    },
+  );
 
   it('blocks Invoke on a wildcard without a list, and expands the known ones', { tags: ['error-guessing'] }, () => {
     useParams.setState({ positivePrompt: 'a __pet__ and a __bird__' });
@@ -189,31 +205,35 @@ describe('params builders', () => {
     expect(dynamicBatches({ ...base, params: { positivePrompt: 'a cat', seed: 1 } as never })).toHaveLength(1);
   });
 
-  it('expands a dynamic negative prompt too: every positive with every negative, or one pick per seed', { tags: ['decision-table'] }, () => {
-    const base = { origin: 'generate', destination: 'gallery', iterations: 1, randomizeSeed: false, prepend: false, boardId: null } as const;
-    useParams.setState({ dynamicPromptMode: 'combinatorial' });
-    const both = dynamicBatches({ ...base, params: { positivePrompt: '{a|b}', negativePrompt: '{x|y}', seed: 5 } as never });
-    expect(both.map((b) => [b.params.positivePrompt, b.params.negativePrompt])).toEqual([
-      ['a', 'x'],
-      ['a', 'y'],
-      ['b', 'x'],
-      ['b', 'y'],
-    ]);
-    // Only the negative is dynamic: the positive stays as it is in every batch.
-    const only = dynamicBatches({ ...base, params: { positivePrompt: 'a cat', negativePrompt: '{x|y}', seed: 5 } as never });
-    expect(only.map((b) => [b.params.positivePrompt, b.params.negativePrompt])).toEqual([
-      ['a cat', 'x'],
-      ['a cat', 'y'],
-    ]);
-    // A plain negative prompt is sent exactly as typed, not tidied.
-    const plain = dynamicBatches({ ...base, params: { positivePrompt: '{a|b}', negativePrompt: 'bad ,  hands', seed: 5 } as never });
-    expect(plain.map((b) => b.params.negativePrompt)).toEqual(['bad ,  hands', 'bad ,  hands']);
-    useParams.setState({ dynamicPromptMode: 'random' });
-    const random = dynamicBatches({ ...base, iterations: 6, params: { positivePrompt: 'a cat', negativePrompt: '{x|y}', seed: 40 } as never });
-    expect(random).toHaveLength(6);
-    for (const b of random) expect(b.params.negativePrompt).toMatch(/^(x|y)$/);
-    expect(dynamicBatches({ ...base, iterations: 6, params: { positivePrompt: 'a cat', negativePrompt: '{x|y}', seed: 40 } as never }).map((b) => b.params.negativePrompt)).toEqual(random.map((b) => b.params.negativePrompt));
-  });
+  it(
+    'expands a dynamic negative prompt too: every positive with every negative, or one pick per seed',
+    { tags: ['decision-table'] },
+    () => {
+      const base = { origin: 'generate', destination: 'gallery', iterations: 1, randomizeSeed: false, prepend: false, boardId: null } as const;
+      useParams.setState({ dynamicPromptMode: 'combinatorial' });
+      const both = dynamicBatches({ ...base, params: { positivePrompt: '{a|b}', negativePrompt: '{x|y}', seed: 5 } as never });
+      expect(both.map((b) => [b.params.positivePrompt, b.params.negativePrompt])).toEqual([
+        ['a', 'x'],
+        ['a', 'y'],
+        ['b', 'x'],
+        ['b', 'y'],
+      ]);
+      // Only the negative is dynamic: the positive stays as it is in every batch.
+      const only = dynamicBatches({ ...base, params: { positivePrompt: 'a cat', negativePrompt: '{x|y}', seed: 5 } as never });
+      expect(only.map((b) => [b.params.positivePrompt, b.params.negativePrompt])).toEqual([
+        ['a cat', 'x'],
+        ['a cat', 'y'],
+      ]);
+      // A plain negative prompt is sent exactly as typed, not tidied.
+      const plain = dynamicBatches({ ...base, params: { positivePrompt: '{a|b}', negativePrompt: 'bad ,  hands', seed: 5 } as never });
+      expect(plain.map((b) => b.params.negativePrompt)).toEqual(['bad ,  hands', 'bad ,  hands']);
+      useParams.setState({ dynamicPromptMode: 'random' });
+      const random = dynamicBatches({ ...base, iterations: 6, params: { positivePrompt: 'a cat', negativePrompt: '{x|y}', seed: 40 } as never });
+      expect(random).toHaveLength(6);
+      for (const b of random) expect(b.params.negativePrompt).toMatch(/^(x|y)$/);
+      expect(dynamicBatches({ ...base, iterations: 6, params: { positivePrompt: 'a cat', negativePrompt: '{x|y}', seed: 40 } as never }).map((b) => b.params.negativePrompt)).toEqual(random.map((b) => b.params.negativePrompt));
+    },
+  );
 
   it('reports a wildcard problem of the negative prompt as well', { tags: ['error-guessing'] }, () => {
     useParams.setState({ positivePrompt: 'a cat', negativePrompt: '__nothing__' });
@@ -251,7 +271,7 @@ describe('params builders', () => {
 });
 
 describe('apply recommended', () => {
-  it('sets the fallback values of a model without saved defaults, so nothing is left mismatched', { tags: ['condition'] }, () => {
+  it('sets the fallback values of a model without saved defaults, so nothing is left mismatched', { tags: ['equivalence'] }, () => {
     const wai = model('wai', 'main', 'sdxl', 'waiIllustriousSDXL_v170');
     useModels.setState({ models: [wai] });
     useParams.getState().set({ modelKey: 'wai', steps: 12, cfgScale: 9, scheduler: 'dpmpp_2m_k', width: 832, height: 1216 });

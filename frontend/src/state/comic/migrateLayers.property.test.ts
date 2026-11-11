@@ -37,26 +37,30 @@ const size = fc.constantFrom(...PAGE_SIZES);
 const sizes = fc.dictionary(fc.constantFrom('x.png', 'y.png'), fc.record({ width: fc.double({ min: -5, max: 4000, noNaN: true }), height: fc.double({ min: -5, max: 4000, noNaN: true }) }));
 const sizeOf = (known: Record<string, Size>) => (name: string) => known[name];
 
-describe('migrateLayers', () => {
-  it('gives a valid page with both slots once, and a bake only for a turned picture that is on the page', { tags: ['equivalence', 'condition'] }, () => {
-    check(
-      fc.property(saved, size, sizes, (raw, pageSize, known) => {
-        const { canvas, bakes } = migrateLayers(raw, pageSize, sizeOf(known));
-        expect(parsePageCanvas(canvas, pageSize)).toEqual(canvas);
-        const rasters = pageRasters(canvas);
-        expect(rasters.filter((r) => r.slot === PANELS_SLOT)).toHaveLength(1);
-        expect(rasters.filter((r) => r.slot === BALLOONS_SLOT)).toHaveLength(1);
-        for (const bake of bakes) {
-          expect(bake.rotation).not.toBe(0);
-          expect(Number.isFinite(bake.rotation)).toBe(true);
-          const owner = rasters.find((r) => r.id === bake.entityId);
-          expect(owner?.objects.some((o) => o.kind === 'image' && o.id === bake.objectId && o.imageName === bake.imageName)).toBe(true);
-        }
-      }),
-    );
-  });
+describe('migrateLayers', { tags: [] }, () => {
+  it(
+    'gives a valid page with both slots once, and a bake only for a turned picture that is on the page',
+    { tags: ['error-guessing', 'condition'] },
+    () => {
+      check(
+        fc.property(saved, size, sizes, (raw, pageSize, known) => {
+          const { canvas, bakes } = migrateLayers(raw, pageSize, sizeOf(known));
+          expect(parsePageCanvas(canvas, pageSize)).toEqual(canvas);
+          const rasters = pageRasters(canvas);
+          expect(rasters.filter((r) => r.slot === PANELS_SLOT)).toHaveLength(1);
+          expect(rasters.filter((r) => r.slot === BALLOONS_SLOT)).toHaveLength(1);
+          for (const bake of bakes) {
+            expect(bake.rotation).not.toBe(0);
+            expect(Number.isFinite(bake.rotation)).toBe(true);
+            const owner = rasters.find((r) => r.id === bake.entityId);
+            expect(owner?.objects.some((o) => o.kind === 'image' && o.id === bake.objectId && o.imageName === bake.imageName)).toBe(true);
+          }
+        }),
+      );
+    },
+  );
 
-  it('is repeatable: the same saved layers give the same page and the same bakes', { tags: ['condition'] }, () => {
+  it('is repeatable: the same saved layers give the same page and the same bakes', { tags: ['condition', 'error-guessing'] }, () => {
     check(
       fc.property(saved, size, sizes, (raw, pageSize, known) => {
         expect(migrateLayers(raw, pageSize, sizeOf(known))).toEqual(migrateLayers(raw, pageSize, sizeOf(known)));
@@ -64,14 +68,18 @@ describe('migrateLayers', () => {
     );
   });
 
-  it('is a page with the two slots and nothing else when the saved layers cannot be read at all', { tags: ['error-guessing'] }, () => {
-    check(
-      fc.property(fc.oneof(fc.constant(undefined), fc.string(), fc.integer(), fc.constant(null)), size, (raw, pageSize) => {
-        const { canvas, bakes } = migrateLayers(raw, pageSize, () => undefined);
-        expect(bakes).toEqual([]);
-        expect(pageRasters(canvas).map((r) => r.slot)).toEqual([PANELS_SLOT, BALLOONS_SLOT]);
-        expect(pageRasters(canvas).every((r) => r.objects.length === 0)).toBe(true);
-      }),
-    );
-  });
+  it(
+    'is a page with the two slots and nothing else when the saved layers cannot be read at all',
+    { tags: ['error-guessing', 'condition'] },
+    () => {
+      check(
+        fc.property(fc.oneof(fc.constant(undefined), fc.string(), fc.integer(), fc.constant(null)), size, (raw, pageSize) => {
+          const { canvas, bakes } = migrateLayers(raw, pageSize, () => undefined);
+          expect(bakes).toEqual([]);
+          expect(pageRasters(canvas).map((r) => r.slot)).toEqual([PANELS_SLOT, BALLOONS_SLOT]);
+          expect(pageRasters(canvas).every((r) => r.objects.length === 0)).toBe(true);
+        }),
+      );
+    },
+  );
 });

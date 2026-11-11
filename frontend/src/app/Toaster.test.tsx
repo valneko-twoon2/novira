@@ -9,7 +9,7 @@ afterEach(() => {
   useToasts.setState({ toasts: [] });
 });
 
-describe('toaster', () => {
+describe('toaster', { tags: [] }, () => {
   it('runs a toast action and closes the toast', { tags: ['scenario'] }, () => {
     const run = vi.fn();
     toast({ status: 'error', title: 'Out of memory', actions: [{ label: 'Retry smaller', run }] }, 0);

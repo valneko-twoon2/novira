@@ -58,8 +58,8 @@ function assertConsistent(g: EditorGraph | null) {
   }
 }
 
-describe('workflow files (properties)', () => {
-  it('a graph survives serialise, JSON and deserialise (nodes, inputs, edges, form, positions rounded)', { tags: ['error-guessing'] }, () => {
+describe('workflow files (properties)', { tags: [] }, () => {
+  it('a graph survives serialise, JSON and deserialise (nodes, inputs, edges, form, positions rounded)', { tags: ['equivalence'] }, () => {
     check(
       fc.property(template, (id) => {
         const g = templateGraph(id);
@@ -78,17 +78,21 @@ describe('workflow files (properties)', () => {
     );
   });
 
-  it('a saved workflow with any one value replaced by junk loads without throwing, or is refused, and is consistent', { tags: ['error-guessing'] }, () => {
-    check(
-      fc.property(template, fc.nat(), junkJson, (id, pick, junk) => {
-        const doc = JSON.parse(JSON.stringify(serializeWorkflow(templateGraph(id)))) as unknown;
-        const all = paths(doc);
-        const damaged = replaceAt(doc, all[pick % all.length]!, junk);
-        assertConsistent(deserializeWorkflow(damaged));
-        assertConsistent(deserializeWorkflow(JSON.stringify(damaged)));
-      }),
-    );
-  });
+  it(
+    'a saved workflow with any one value replaced by junk loads without throwing, or is refused, and is consistent',
+    { tags: ['error-guessing'] },
+    () => {
+      check(
+        fc.property(template, fc.nat(), junkJson, (id, pick, junk) => {
+          const doc = JSON.parse(JSON.stringify(serializeWorkflow(templateGraph(id)))) as unknown;
+          const all = paths(doc);
+          const damaged = replaceAt(doc, all[pick % all.length]!, junk);
+          assertConsistent(deserializeWorkflow(damaged));
+          assertConsistent(deserializeWorkflow(JSON.stringify(damaged)));
+        }),
+      );
+    },
+  );
 
   it('arbitrary JSON and arbitrary text never throw and give null or a consistent graph', { tags: ['error-guessing'] }, () => {
     check(

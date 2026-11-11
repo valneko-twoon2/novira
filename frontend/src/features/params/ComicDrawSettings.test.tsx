@@ -34,7 +34,7 @@ const mount = () =>
 const field = (kind: 'positive' | 'negative') => screen.getByTestId(`comic-draw-style-${kind}`) as HTMLTextAreaElement;
 
 describe('the scope bar', () => {
-  it('marks the scope in use and switches to the page and back', { tags: ['scenario'] }, () => {
+  it('marks the scope in use and switches to the page and back', { tags: ['state-transition'] }, () => {
     mount();
     const comicBtn = screen.getByTestId('comic-draw-scope-comic');
     const pageBtn = screen.getByTestId('comic-draw-scope-page');
@@ -73,7 +73,7 @@ describe('the scope bar', () => {
 });
 
 describe('the quality words', () => {
-  it('writes the comic words, and drops a word that was emptied', { tags: ['scenario'] }, () => {
+  it('writes the comic words, and drops a word that was emptied', { tags: ['condition'] }, () => {
     mount();
     fireEvent.change(field('positive'), { target: { value: 'sharp lines' } });
     fireEvent.change(field('negative'), { target: { value: 'blurry' } });
@@ -91,7 +91,7 @@ describe('the quality words', () => {
     expect(field('positive').maxLength).toBe(STYLE_MAX);
   });
 
-  it('writes to the page, not the comic, in the page scope', { tags: ['scenario'] }, () => {
+  it('writes to the page, not the comic, in the page scope', { tags: ['condition'] }, () => {
     useDrawScope.setState({ scope: 'page' });
     mount();
     fireEvent.change(field('positive'), { target: { value: 'page only' } });
@@ -100,7 +100,7 @@ describe('the quality words', () => {
     expect(field('positive').value).toBe('page only');
   });
 
-  it('shows the comic words in the comic scope and the page words in the page scope', { tags: ['scenario'] }, () => {
+  it('shows the comic words in the comic scope and the page words in the page scope', { tags: ['condition'] }, () => {
     useComic.getState().setStyle(comic().id, { positive: 'comic words' });
     useComic.getState().setPageStyle(page().id, { positive: 'page words' });
     mount();

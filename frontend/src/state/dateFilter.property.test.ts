@@ -26,8 +26,8 @@ const day = ms.map(dayKey);
 const maybeDay = fc.oneof(day, junkText, fc.constant(null));
 const items = fc.array(fc.record({ createdAt: ms, id: fc.integer() }), { maxLength: 40 });
 
-describe('dateFilter (properties)', () => {
-  it('dayKey is a valid key that parses back to the same local day', { tags: ['condition'] }, () => {
+describe('dateFilter (properties)', { tags: [] }, () => {
+  it('dayKey is a valid key that parses back to the same local day', { tags: ['boundary', 'equivalence'] }, () => {
     check(
       fc.property(ms, (t) => {
         const key = dayKey(t);
@@ -41,7 +41,7 @@ describe('dateFilter (properties)', () => {
     check(fc.property(junkText, (s) => isDayKey(s) === (parseDayKey(s) !== null)));
   });
 
-  it('addDays is reversible and moves keys in order', { tags: ['condition'] }, () => {
+  it('addDays is reversible and moves keys in order', { tags: ['boundary'] }, () => {
     check(
       fc.property(day, fc.integer({ min: -4000, max: 4000 }), (k, n) => {
         const moved = addDays(k, n);
@@ -51,7 +51,7 @@ describe('dateFilter (properties)', () => {
     );
   });
 
-  it('normalizeRange returns null or an ordered, valid, idempotent range', { tags: ['error-guessing'] }, () => {
+  it('normalizeRange returns null or an ordered, valid, idempotent range', { tags: ['error-guessing', 'condition'] }, () => {
     check(
       fc.property(maybeDay, maybeDay, (a, b) => {
         const r = normalizeRange(a, b);
@@ -67,7 +67,7 @@ describe('dateFilter (properties)', () => {
     );
   });
 
-  it('inRange agrees with dayInRange and an open end never excludes', { tags: ['condition'] }, () => {
+  it('inRange agrees with dayInRange and an open end never excludes', { tags: ['condition', 'boundary'] }, () => {
     check(
       fc.property(ms, day, day, (t, a, b) => {
         const range = normalizeRange(a, b)!;
@@ -89,7 +89,7 @@ describe('dateFilter (properties)', () => {
     );
   });
 
-  it('groupByDay partitions the items by day, keeps the inner order and sorts the days', { tags: ['condition'] }, () => {
+  it('groupByDay partitions the items by day, keeps the inner order and sorts the days', { tags: ['decision-table', 'condition'] }, () => {
     check(
       fc.property(items, fc.constantFrom('asc', 'desc'), (list, dir) => {
         const groups = groupByDay(list, dir);
@@ -105,11 +105,11 @@ describe('dateFilter (properties)', () => {
     );
   });
 
-  it('dayCounts sums to the number of items', { tags: ['condition'] }, () => {
+  it('dayCounts sums to the number of items', { tags: ['equivalence'] }, () => {
     check(fc.property(items, (list) => [...dayCounts(list).values()].reduce((a, b) => a + b, 0) === list.length));
   });
 
-  it('monthGrid has full weeks that list each day of the month once, in order', { tags: ['equivalence'] }, () => {
+  it('monthGrid has full weeks that list each day of the month once, in order', { tags: ['boundary'] }, () => {
     check(
       fc.property(day, fc.integer({ min: -30, max: 30 }), (k, n) => {
         const month = addMonths(monthOf(k), n);
@@ -124,7 +124,7 @@ describe('dateFilter (properties)', () => {
     );
   });
 
-  it('addMonths keeps the month in 0-11 and is reversible', { tags: ['condition'] }, () => {
+  it('addMonths keeps the month in 0-11 and is reversible', { tags: ['boundary'] }, () => {
     check(
       fc.property(fc.record({ year: fc.integer({ min: 1, max: 3000 }), month: fc.integer({ min: 0, max: 11 }) }), fc.integer({ min: -5000, max: 5000 }), (m, n) => {
         const moved = addMonths(m, n);

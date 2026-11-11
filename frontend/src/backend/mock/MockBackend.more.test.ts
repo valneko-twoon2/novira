@@ -64,8 +64,8 @@ async function waitFor<T>(f: () => T | undefined): Promise<T> {
   throw new Error('not reached');
 }
 
-describe('jobs on a picture', () => {
-  it('fails a job whose picture was deleted, whatever the kind of job', { tags: ['error-guessing'] }, async () => {
+describe('jobs on a picture', { tags: [] }, () => {
+  it('fails a job whose picture was deleted, whatever the kind of job', { tags: ['error-guessing', 'equivalence'] }, async () => {
     const { backend, events } = await start();
     for (const node of ['INPAINT_MaskedFill', 'RMBG', 'PreviewAny']) {
       const [item] = await backend.enqueue(request({ destination: 'intermediate', comfyGraph: graphOf('gone.png', node) }));
@@ -85,7 +85,7 @@ describe('jobs on a picture', () => {
     expect(cut.image.isIntermediate).toBe(false);
   });
 
-  it('reads a text aloud into an audio clip', { tags: ['condition'] }, async () => {
+  it('reads a text aloud into an audio clip', { tags: ['equivalence'] }, async () => {
     const canvases = installRecordingCanvases();
     vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue('data:image/png;base64,AAAA');
     const { backend, events } = await start();
@@ -98,27 +98,31 @@ describe('jobs on a picture', () => {
     canvases.restore();
   });
 
-  it('turns a graph that saves a sound into an audio clip that keeps the graph, reading aloud when the graph asks for it', { tags: ['condition'] }, async () => {
-    const { backend, events } = await start();
-    const prompt = (audio: unknown): ComfyGraph['prompt'] => ({
-      src: { class_type: 'LoadAudio', inputs: { audio } },
-      save: { class_type: 'SaveAudioAdvanced', inputs: { audio: ['src', 0], format: 'flac' } },
-    });
-    const queue = async (graph: ComfyGraph) => {
-      const [item] = await backend.enqueue({ ...request({}, { generationMode: 'graph' }), comfyGraph: graph, workflow: { nodes: [] } });
-      await waitFor(() => finished(events, item!.id));
-      return events.find((e): e is Extract<BackendEvent, { type: 'image_added' }> => e.type === 'image_added' && e.item?.id === item!.id)!.image;
-    };
-    const spoken = await queue({ prompt: prompt({ $speech: { text: 'hello there', language: 'Auto', mode: 'preset', speaker: 'Ono_Anna', instruct: '' } }), outputs: ['save'] });
-    expect(spoken.mediaType).toBe('audio');
-    expect(spoken.workflow).toEqual({ nodes: [] });
-    const song = await queue({ prompt: { ...prompt('x.wav'), latent: { class_type: 'EmptyAceStep1.5LatentAudio', inputs: { seconds: 5 } } }, outputs: ['save'] });
-    expect(song.mediaType).toBe('audio');
-    expect(song.url).not.toBe(spoken.url);
-  });
+  it(
+    'turns a graph that saves a sound into an audio clip that keeps the graph, reading aloud when the graph asks for it',
+    { tags: ['decision-table', 'condition'] },
+    async () => {
+      const { backend, events } = await start();
+      const prompt = (audio: unknown): ComfyGraph['prompt'] => ({
+        src: { class_type: 'LoadAudio', inputs: { audio } },
+        save: { class_type: 'SaveAudioAdvanced', inputs: { audio: ['src', 0], format: 'flac' } },
+      });
+      const queue = async (graph: ComfyGraph) => {
+        const [item] = await backend.enqueue({ ...request({}, { generationMode: 'graph' }), comfyGraph: graph, workflow: { nodes: [] } });
+        await waitFor(() => finished(events, item!.id));
+        return events.find((e): e is Extract<BackendEvent, { type: 'image_added' }> => e.type === 'image_added' && e.item?.id === item!.id)!.image;
+      };
+      const spoken = await queue({ prompt: prompt({ $speech: { text: 'hello there', language: 'Auto', mode: 'preset', speaker: 'Ono_Anna', instruct: '' } }), outputs: ['save'] });
+      expect(spoken.mediaType).toBe('audio');
+      expect(spoken.workflow).toEqual({ nodes: [] });
+      const song = await queue({ prompt: { ...prompt('x.wav'), latent: { class_type: 'EmptyAceStep1.5LatentAudio', inputs: { seconds: 5 } } }, outputs: ['save'] });
+      expect(song.mediaType).toBe('audio');
+      expect(song.url).not.toBe(spoken.url);
+    },
+  );
 });
 
-describe('models, node packs and the face rig', () => {
+describe('models, node packs and the face rig', { tags: [] }, () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
   const settle = async <T,>(promise: Promise<T>, ms = 1000): Promise<T> => {
@@ -137,7 +141,7 @@ describe('models, node packs and the face rig', () => {
     expect(events.some((e) => e.type === 'model_added' && e.model.name === 'Fancy')).toBe(true);
   });
 
-  it('reports the files an Anima model lacks, and none once they are installed', { tags: ['condition'] }, async () => {
+  it('reports the files an Anima model lacks, and none once they are installed', { tags: ['condition', 'boundary'] }, async () => {
     const { backend, events } = await start();
     const keyOf = (name: string) => events.flatMap((e) => (e.type === 'model_added' && e.model.name === name ? [e.model.key] : []))[0]!;
     const job = await settle(backend.installModel('circlestone-labs/Anima::split_files/diffusion_models/anima-base-v1.0.safetensors', 'Anima Base 1.0'));
@@ -158,65 +162,81 @@ describe('models, node packs and the face rig', () => {
     await gone;
   });
 
-  it('hands out copies of the starter models, and the Civitai search can fail or search Hugging Face', { tags: ['error-guessing'] }, async () => {
-    const { backend } = await start();
-    const starters = await settle(backend.listStarterModels());
-    starters[0]!.name = 'changed';
-    expect((await settle(backend.listStarterModels()))[0]!.name).not.toBe('changed');
-    const failed = expect(backend.searchCivitai({ query: 'this will fail', source: 'civitai' } as never)).rejects.toThrow('Civitai request failed');
-    await vi.advanceTimersByTimeAsync(1000);
-    await failed;
-    const hf = backend.searchCivitai({ query: 'flux', source: 'huggingface' } as never);
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(Array.isArray((await hf).items)).toBe(true);
-  });
+  it(
+    'hands out copies of the starter models, and the Civitai search can fail or search Hugging Face',
+    { tags: ['error-guessing', 'boundary'] },
+    async () => {
+      const { backend } = await start();
+      const starters = await settle(backend.listStarterModels());
+      starters[0]!.name = 'changed';
+      expect((await settle(backend.listStarterModels()))[0]!.name).not.toBe('changed');
+      const failed = expect(backend.searchCivitai({ query: 'this will fail', source: 'civitai' } as never)).rejects.toThrow('Civitai request failed');
+      await vi.advanceTimersByTimeAsync(1000);
+      await failed;
+      const hf = backend.searchCivitai({ query: 'flux', source: 'huggingface' } as never);
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(Array.isArray((await hf).items)).toBe(true);
+    },
+  );
 
-  it('installs a node pack from a GitHub address, marks the engine for restart, and removes it again', { tags: ['state-transition'] }, async () => {
-    const { backend, events } = await start();
-    await backend.installNodePack('https://github.com/someone/ComfyUI-Fancy.git');
-    await backend.installNodePack('https://github.com/someone/ComfyUI-Fancy');
-    await vi.advanceTimersByTimeAsync(2000);
-    const states = events.flatMap((e) => (e.type === 'node_pack' ? [e.status.state] : []));
-    expect(states.at(-1)).toBe('ready');
-    expect(states.filter((s) => s === 'installing')).toHaveLength(1);
-    const packs = await settle(backend.nodePacks());
-    expect(packs.restartNeeded).toBe(true);
-    expect(packs.installed.some((p) => p.folder === 'ComfyUI-Fancy')).toBe(true);
-    const removed = await settle(backend.removeNodePack('ComfyUI-Fancy'));
-    expect(removed.installed.some((p) => p.folder === 'ComfyUI-Fancy')).toBe(false);
-    const missing = expect(backend.removeNodePack('ComfyUI-Fancy')).rejects.toThrow('is not installed');
-    await vi.advanceTimersByTimeAsync(1000);
-    await missing;
-  });
+  it(
+    'installs a node pack from a GitHub address, marks the engine for restart, and removes it again',
+    { tags: ['state-transition', 'error-guessing'] },
+    async () => {
+      const { backend, events } = await start();
+      await backend.installNodePack('https://github.com/someone/ComfyUI-Fancy.git');
+      await backend.installNodePack('https://github.com/someone/ComfyUI-Fancy');
+      await vi.advanceTimersByTimeAsync(2000);
+      const states = events.flatMap((e) => (e.type === 'node_pack' ? [e.status.state] : []));
+      expect(states.at(-1)).toBe('ready');
+      expect(states.filter((s) => s === 'installing')).toHaveLength(1);
+      const packs = await settle(backend.nodePacks());
+      expect(packs.restartNeeded).toBe(true);
+      expect(packs.installed.some((p) => p.folder === 'ComfyUI-Fancy')).toBe(true);
+      const removed = await settle(backend.removeNodePack('ComfyUI-Fancy'));
+      expect(removed.installed.some((p) => p.folder === 'ComfyUI-Fancy')).toBe(false);
+      const missing = expect(backend.removeNodePack('ComfyUI-Fancy')).rejects.toThrow('is not installed');
+      await vi.advanceTimersByTimeAsync(1000);
+      await missing;
+    },
+  );
 
-  it('switches the ComfyUI version through the engine states and refuses a version that is not plain', { tags: ['state-transition'] }, async () => {
-    const { backend, events } = await start();
-    const releases = backend.comfyVersions();
-    await vi.advanceTimersByTimeAsync(500);
-    expect((await releases)[0]).toBe('v0.3.60');
-    await expect(backend.switchComfyVersion('../x')).rejects.toThrow('Not a ComfyUI version');
-    const switching = backend.switchComfyVersion('v0.3.40');
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(await switching).toEqual([]);
-    expect(events.flatMap((e) => (e.type === 'engine_status' ? [e.status.state] : [])).slice(-3)).toEqual(['extracting', 'starting', 'ready']);
-    const packs = backend.nodePacks();
-    await vi.advanceTimersByTimeAsync(500);
-    expect((await packs).comfyVersion).toBe('0.3.40');
-  });
+  it(
+    'switches the ComfyUI version through the engine states and refuses a version that is not plain',
+    { tags: ['state-transition', 'error-guessing'] },
+    async () => {
+      const { backend, events } = await start();
+      const releases = backend.comfyVersions();
+      await vi.advanceTimersByTimeAsync(500);
+      expect((await releases)[0]).toBe('v0.3.60');
+      await expect(backend.switchComfyVersion('../x')).rejects.toThrow('Not a ComfyUI version');
+      const switching = backend.switchComfyVersion('v0.3.40');
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(await switching).toEqual([]);
+      expect(events.flatMap((e) => (e.type === 'engine_status' ? [e.status.state] : [])).slice(-3)).toEqual(['extracting', 'starting', 'ready']);
+      const packs = backend.nodePacks();
+      await vi.advanceTimersByTimeAsync(500);
+      expect((await packs).comfyVersion).toBe('0.3.40');
+    },
+  );
 
-  it('lists versions for a GitHub address only, and refuses a version that is not a plain tag', { tags: ['equivalence'] }, async () => {
-    const { backend } = await start();
-    const listing = backend.nodePackVersions('https://github.com/someone/ComfyUI-Fancy');
-    await vi.advanceTimersByTimeAsync(500);
-    expect((await listing)[0]).toBe('v2.1.0');
-    await expect(backend.nodePackVersions('https://example.com/a/b')).rejects.toThrow('Not a GitHub repository address');
-    const none = backend.nodePackVersions('https://github.com/someone/untagged');
-    await vi.advanceTimersByTimeAsync(500);
-    expect(await none).toEqual([]);
-    await expect(backend.installNodePack('https://github.com/someone/ComfyUI-Fancy', '../evil')).rejects.toThrow('Not a version tag');
-  });
+  it(
+    'lists versions for a GitHub address only, and refuses a version that is not a plain tag',
+    { tags: ['equivalence', 'error-guessing'] },
+    async () => {
+      const { backend } = await start();
+      const listing = backend.nodePackVersions('https://github.com/someone/ComfyUI-Fancy');
+      await vi.advanceTimersByTimeAsync(500);
+      expect((await listing)[0]).toBe('v2.1.0');
+      await expect(backend.nodePackVersions('https://example.com/a/b')).rejects.toThrow('Not a GitHub repository address');
+      const none = backend.nodePackVersions('https://github.com/someone/untagged');
+      await vi.advanceTimersByTimeAsync(500);
+      expect(await none).toEqual([]);
+      await expect(backend.installNodePack('https://github.com/someone/ComfyUI-Fancy', '../evil')).rejects.toThrow('Not a version tag');
+    },
+  );
 
-  it('lists the registry most downloaded first, only with GitHub addresses', { tags: ['condition'] }, async () => {
+  it('lists the registry most downloaded first, only with GitHub addresses', { tags: ['equivalence'] }, async () => {
     const { backend } = await start();
     const list = backend.registryNodes(false);
     await vi.advanceTimersByTimeAsync(500);
@@ -226,7 +246,7 @@ describe('models, node packs and the face rig', () => {
     expect(nodes.every((n) => n.repository.startsWith('https://github.com/'))).toBe(true);
   });
 
-  it('describes a repository by its GitHub address only', { tags: ['condition'] }, async () => {
+  it('describes a repository by its GitHub address only', { tags: ['condition', 'error-guessing'] }, async () => {
     const { backend } = await start();
     const info = backend.nodePackInfo('https://github.com/someone/ComfyUI-Fancy');
     await vi.advanceTimersByTimeAsync(500);
@@ -237,20 +257,24 @@ describe('models, node packs and the face rig', () => {
     await expect(backend.nodePackInfo('https://example.com/a/b')).rejects.toThrow('Not a GitHub repository address');
   });
 
-  it('refuses an address that is not GitHub, reports a failing pack and cancels one in progress', { tags: ['error-guessing'] }, async () => {
-    const { backend, events } = await start();
-    await expect(backend.installNodePack('https://example.com/a/b')).rejects.toThrow('Not a GitHub repository address');
-    await backend.installNodePack('https://github.com/someone/fail-pack');
-    await vi.advanceTimersByTimeAsync(2000);
-    expect(events.flatMap((e) => (e.type === 'node_pack' && e.url.endsWith('fail-pack') ? [e.status.state] : [])).at(-1)).toBe('error');
-    await backend.installNodePack('https://github.com/someone/slow-pack');
-    await vi.advanceTimersByTimeAsync(100);
-    await backend.cancelNodePack('https://github.com/someone/slow-pack');
-    await vi.advanceTimersByTimeAsync(2000);
-    expect(events.flatMap((e) => (e.type === 'node_pack' && e.url.endsWith('slow-pack') ? [e.status.state] : [])).at(-1)).toBe('missing');
-  });
+  it(
+    'refuses an address that is not GitHub, reports a failing pack and cancels one in progress',
+    { tags: ['error-guessing', 'state-transition'] },
+    async () => {
+      const { backend, events } = await start();
+      await expect(backend.installNodePack('https://example.com/a/b')).rejects.toThrow('Not a GitHub repository address');
+      await backend.installNodePack('https://github.com/someone/fail-pack');
+      await vi.advanceTimersByTimeAsync(2000);
+      expect(events.flatMap((e) => (e.type === 'node_pack' && e.url.endsWith('fail-pack') ? [e.status.state] : [])).at(-1)).toBe('error');
+      await backend.installNodePack('https://github.com/someone/slow-pack');
+      await vi.advanceTimersByTimeAsync(100);
+      await backend.cancelNodePack('https://github.com/someone/slow-pack');
+      await vi.advanceTimersByTimeAsync(2000);
+      expect(events.flatMap((e) => (e.type === 'node_pack' && e.url.endsWith('slow-pack') ? [e.status.state] : [])).at(-1)).toBe('missing');
+    },
+  );
 
-  it('lists the node definitions (as a copy) and the face rig library', { tags: ['condition'] }, async () => {
+  it('lists the node definitions (as a copy) and the face rig library', { tags: ['equivalence'] }, async () => {
     const { backend } = await start();
     const defs = await settle(backend.nodeDefs());
     expect(Object.keys(defs).length).toBeGreaterThan(5);
@@ -259,62 +283,78 @@ describe('models, node packs and the face rig', () => {
     expect(await settle(backend.faceRigLibrary())).toBeTruthy();
   });
 
-  it('asks for a frame first, then previews the picture it was given (a placeholder when the mock does not hold it)', { tags: ['scenario'] }, async () => {
-    const { backend } = await start();
-    expect(await settle(backend.faceRigPreview({ nodeKey: 'n1' } as never), 100)).toEqual({ needsFrame: true });
-    const unknown = await settle(backend.faceRigPreview({ nodeKey: 'n1', image: 'gone.png' } as never), 100);
-    expect(unknown).toMatchObject({ settled: true });
-    const kept = await settle(backend.faceRigPreview({ nodeKey: 'n1' } as never), 100);
-    expect(kept).toMatchObject({ image: (unknown as { image: string }).image });
-    const source = await backend.uploadImage(new Blob(['a']), { boardId: null });
-    const known = await settle(backend.faceRigPreview({ nodeKey: 'n2', image: source.name } as never), 100);
-    expect(known).toMatchObject({ image: source.url });
-  });
+  it(
+    'asks for a frame first, then previews the picture it was given (a placeholder when the mock does not hold it)',
+    { tags: ['condition', 'scenario'] },
+    async () => {
+      const { backend } = await start();
+      expect(await settle(backend.faceRigPreview({ nodeKey: 'n1' } as never), 100)).toEqual({ needsFrame: true });
+      const unknown = await settle(backend.faceRigPreview({ nodeKey: 'n1', image: 'gone.png' } as never), 100);
+      expect(unknown).toMatchObject({ settled: true });
+      const kept = await settle(backend.faceRigPreview({ nodeKey: 'n1' } as never), 100);
+      expect(kept).toMatchObject({ image: (unknown as { image: string }).image });
+      const source = await backend.uploadImage(new Blob(['a']), { boardId: null });
+      const known = await settle(backend.faceRigPreview({ nodeKey: 'n2', image: source.name } as never), 100);
+      expect(known).toMatchObject({ image: source.url });
+    },
+  );
 });
 
-describe('exports and backups', () => {
+describe('exports and backups', { tags: [] }, () => {
   const options: ExportOptions = { format: 'png', quality: 90, maxSide: null, removeInfo: true, watermark: false };
 
-  it('refuses an empty choice and counts the pictures that no longer exist as skipped', { tags: ['error-guessing'] }, async () => {
-    const { backend } = await start();
-    const source = await backend.uploadImage(new Blob(['a']), { boardId: null });
-    await expect(backend.exportImages([], options)).rejects.toThrow('Choose at least one picture');
-    expect(await backend.exportImages([source.name, 'gone.png', 'gone2.png'], options)).toEqual({ count: 1, skipped: 2, watermarked: 0, folder: '' });
-    await expect(backend.revealExportFolder()).resolves.toBeUndefined();
-  });
+  it(
+    'refuses an empty choice and counts the pictures that no longer exist as skipped',
+    { tags: ['boundary', 'error-guessing'] },
+    async () => {
+      const { backend } = await start();
+      const source = await backend.uploadImage(new Blob(['a']), { boardId: null });
+      await expect(backend.exportImages([], options)).rejects.toThrow('Choose at least one picture');
+      expect(await backend.exportImages([source.name, 'gone.png', 'gone2.png'], options)).toEqual({ count: 1, skipped: 2, watermarked: 0, folder: '' });
+      await expect(backend.revealExportFolder()).resolves.toBeUndefined();
+    },
+  );
 
-  it('pretends to watermark: the last marked copy is what a file check finds, a gallery picture has no marks', { tags: ['condition'] }, async () => {
-    const { backend } = await start();
-    const source = await backend.uploadImage(new Blob(['a']), { boardId: null });
-    expect(await backend.watermarkStatus()).toEqual({ state: 'ready' });
-    await expect(backend.prepareWatermark()).resolves.toBeUndefined();
-    expect(await backend.checkWatermarkFile()).toMatchObject({ watermarkFound: false, credentialsPresent: false });
-    const done = await backend.exportImages([source.name], { ...options, format: 'jpeg', watermark: true });
-    expect(done).toMatchObject({ count: 1, watermarked: 1 });
-    const check = await backend.checkWatermarkFile();
-    expect(check).toMatchObject({ noviraMarker: true, originalName: source.name, originalInGallery: true, credentialsThisApp: true, iptcAi: true });
-    expect(check!.fileName).toMatch(/\.jpg$/);
-    expect(check!.watermarkId).toMatch(/^[0-9a-f]{12}$/);
-    expect(await backend.checkWatermarkImage(source.name)).toMatchObject({ fileName: source.name, watermarkFound: false });
-    await expect(backend.checkWatermarkImage('gone.png')).rejects.toThrow('no picture');
-  });
+  it(
+    'pretends to watermark: the last marked copy is what a file check finds, a gallery picture has no marks',
+    { tags: ['scenario', 'condition'] },
+    async () => {
+      const { backend } = await start();
+      const source = await backend.uploadImage(new Blob(['a']), { boardId: null });
+      expect(await backend.watermarkStatus()).toEqual({ state: 'ready' });
+      await expect(backend.prepareWatermark()).resolves.toBeUndefined();
+      expect(await backend.checkWatermarkFile()).toMatchObject({ watermarkFound: false, credentialsPresent: false });
+      const done = await backend.exportImages([source.name], { ...options, format: 'jpeg', watermark: true });
+      expect(done).toMatchObject({ count: 1, watermarked: 1 });
+      const check = await backend.checkWatermarkFile();
+      expect(check).toMatchObject({ noviraMarker: true, originalName: source.name, originalInGallery: true, credentialsThisApp: true, iptcAi: true });
+      expect(check!.fileName).toMatch(/\.jpg$/);
+      expect(check!.watermarkId).toMatch(/^[0-9a-f]{12}$/);
+      expect(await backend.checkWatermarkImage(source.name)).toMatchObject({ fileName: source.name, watermarkFound: false });
+      await expect(backend.checkWatermarkImage('gone.png')).rejects.toThrow('no picture');
+    },
+  );
 
-  it('makes a backup, reports it as the one to restore, and forgets it after confirming', { tags: ['scenario'] }, async () => {
-    vi.useFakeTimers();
-    try {
-      const { backend, events } = await start();
-      const summary = await backend.createBackup('{}');
-      expect(summary).toMatchObject({ fileName: 'b.json' });
-      expect(events.some((e) => e.type === 'backup' && e.progress.phase === 'create')).toBe(true);
-      const opened = backend.openBackup();
-      await vi.advanceTimersByTimeAsync(1000);
-      expect(await opened).toMatchObject({ images: 1, boards: 1 });
-      await backend.confirmRestore();
-      const again = backend.openBackup();
-      await vi.advanceTimersByTimeAsync(1000);
-      expect((await again)?.appVersion).toBe('0.1.0-mock');
-    } finally {
-      vi.useRealTimers();
-    }
-  });
+  it(
+    'makes a backup, reports it as the one to restore, and forgets it after confirming',
+    { tags: ['scenario', 'state-transition'] },
+    async () => {
+      vi.useFakeTimers();
+      try {
+        const { backend, events } = await start();
+        const summary = await backend.createBackup('{}');
+        expect(summary).toMatchObject({ fileName: 'b.json' });
+        expect(events.some((e) => e.type === 'backup' && e.progress.phase === 'create')).toBe(true);
+        const opened = backend.openBackup();
+        await vi.advanceTimersByTimeAsync(1000);
+        expect(await opened).toMatchObject({ images: 1, boards: 1 });
+        await backend.confirmRestore();
+        const again = backend.openBackup();
+        await vi.advanceTimersByTimeAsync(1000);
+        expect((await again)?.appVersion).toBe('0.1.0-mock');
+      } finally {
+        vi.useRealTimers();
+      }
+    },
+  );
 });

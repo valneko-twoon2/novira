@@ -35,8 +35,8 @@ afterEach(() => {
   setLocale('ja');
 });
 
-describe('stage directions', () => {
-  it('are written in the panel tools and shown in the empty panel in place of its prompt', { tags: ['boundary'] }, () => {
+describe('stage directions', { tags: [] }, () => {
+  it('are written in the panel tools and shown in the empty panel in place of its prompt', { tags: ['scenario', 'condition'] }, () => {
     const project = newProject('Notes');
     useComic.getState().setProjects([project]);
     const panelId = project.pages[0]!.panels[0]!.id;
@@ -52,7 +52,7 @@ describe('stage directions', () => {
   });
 });
 
-describe('balloon words', () => {
+describe('balloon words', { tags: [] }, () => {
   /** Lays the page out as a browser would: panels 400px, balloons 100px, words wider than their balloon. */
   function layOut() {
     vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(400);
@@ -65,23 +65,27 @@ describe('balloon words', () => {
     });
   }
 
-  it('are marked when they run out, and the fit button shrinks them to the smallest size', { tags: ['boundary'] }, () => {
-    const project = newProject('Fit');
-    useComic.getState().setProjects([project]);
-    const panelId = project.pages[0]!.panels[0]!.id;
-    const id = useComic.getState().addBubble(panelId, 'speech', { x: 0.1, y: 0.1, text: 'A very long line' })!;
-    layOut();
-    renderEditor();
-    const balloon = screen.getByTestId('comic-bubble');
-    expect(balloon.classList.contains('is-overflowing')).toBe(true);
-    act(() => useComic.getState().openBubbleEditor(panelId, id));
-    fireEvent.click(screen.getByTestId('comic-bubble-fit'));
-    const bubble = useComic.getState().projects[0]!.pages[0]!.panels[0]!.bubbles[0]!;
-    expect(bubble.scale).toBe(BUBBLE_SCALE_RANGE.min);
-    expect(useComic.getState().fittingBubbleIds).toEqual([]);
-  });
+  it(
+    'are marked when they run out, and the fit button shrinks them to the smallest size',
+    { tags: ['boundary', 'state-transition'] },
+    () => {
+      const project = newProject('Fit');
+      useComic.getState().setProjects([project]);
+      const panelId = project.pages[0]!.panels[0]!.id;
+      const id = useComic.getState().addBubble(panelId, 'speech', { x: 0.1, y: 0.1, text: 'A very long line' })!;
+      layOut();
+      renderEditor();
+      const balloon = screen.getByTestId('comic-bubble');
+      expect(balloon.classList.contains('is-overflowing')).toBe(true);
+      act(() => useComic.getState().openBubbleEditor(panelId, id));
+      fireEvent.click(screen.getByTestId('comic-bubble-fit'));
+      const bubble = useComic.getState().projects[0]!.pages[0]!.panels[0]!.bubbles[0]!;
+      expect(bubble.scale).toBe(BUBBLE_SCALE_RANGE.min);
+      expect(useComic.getState().fittingBubbleIds).toEqual([]);
+    },
+  );
 
-  it('are left as they are when they fit', { tags: ['scenario'] }, () => {
+  it('are left as they are when they fit', { tags: ['boundary', 'condition'] }, () => {
     const project = newProject('Fits');
     useComic.getState().setProjects([project]);
     const panelId = project.pages[0]!.panels[0]!.id;

@@ -15,7 +15,7 @@ afterEach(() => {
   useModels.setState({ models: initial.models, installJobs: initial.installJobs });
 });
 
-describe('InstallSlot', () => {
+describe('InstallSlot', { tags: [] }, () => {
   const show = () =>
     render(
       <InstallSlot source="org/repo::a.safetensors">
@@ -33,11 +33,15 @@ describe('InstallSlot', () => {
     expect(screen.getByTestId('install-state-progress').textContent).toContain('25%');
   });
 
-  it('is indeterminate while the size is not known, and says installed when the job is done', { tags: ['state-transition'] }, () => {
-    useModels.setState({ installJobs: [job({})] });
-    show();
-    expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBeNull();
-    act(() => useModels.setState({ installJobs: [job({ status: 'completed', bytes: 9, totalBytes: 9 })] }));
-    expect(screen.getByTestId('install-state-installed')).toBeTruthy();
-  });
+  it(
+    'is indeterminate while the size is not known, and says installed when the job is done',
+    { tags: ['state-transition', 'condition'] },
+    () => {
+      useModels.setState({ installJobs: [job({})] });
+      show();
+      expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBeNull();
+      act(() => useModels.setState({ installJobs: [job({ status: 'completed', bytes: 9, totalBytes: 9 })] }));
+      expect(screen.getByTestId('install-state-installed')).toBeTruthy();
+    },
+  );
 });

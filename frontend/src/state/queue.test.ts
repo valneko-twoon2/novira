@@ -20,7 +20,7 @@ describe('mergeProgress', () => {
 });
 
 describe('queue store', () => {
-  it('appends unknown items and replaces known ones in place', { tags: ['error-guessing'] }, () => {
+  it('appends unknown items and replaces known ones in place', { tags: ['condition'] }, () => {
     useQueue.getState().setItems([item(1, 'pending'), item(2, 'pending')]);
     useQueue.getState().upsertItem(item(1, 'in_progress'));
     useQueue.getState().upsertItem(item(3, 'pending'));

@@ -54,35 +54,43 @@ afterEach(() => {
   setLocale('ja');
 });
 
-describe('CharacterSheet', () => {
-  it('shows the front and each view it has, marks a view being drawn, and takes a view out', { tags: ['scenario'] }, () => {
-    const projectId = show();
-    expect(slot('front').dataset.has).toBe('yes');
-    expect(slot('back').querySelector('img')!.getAttribute('src')).toBe('/thumb/back.png');
-    expect(slot('side').dataset.has).toBe('no');
-    act(() => useComic.getState().setSheetPending(3, { projectId, characterId: 'c', view: 'side' }));
-    expect(slot('side').textContent).toContain(t('comic.sheet.drawing'));
-    fireEvent.click(screen.getByTestId('comic-sheet-remove-back'));
-    expect(useComic.getState().projects[0]!.cast[0]).not.toHaveProperty('sheet');
-    expect(slot('back').dataset.has).toBe('no');
-  });
+describe('CharacterSheet', { tags: [] }, () => {
+  it(
+    'shows the front and each view it has, marks a view being drawn, and takes a view out',
+    { tags: ['scenario', 'state-transition'] },
+    () => {
+      const projectId = show();
+      expect(slot('front').dataset.has).toBe('yes');
+      expect(slot('back').querySelector('img')!.getAttribute('src')).toBe('/thumb/back.png');
+      expect(slot('side').dataset.has).toBe('no');
+      act(() => useComic.getState().setSheetPending(3, { projectId, characterId: 'c', view: 'side' }));
+      expect(slot('side').textContent).toContain(t('comic.sheet.drawing'));
+      fireEvent.click(screen.getByTestId('comic-sheet-remove-back'));
+      expect(useComic.getState().projects[0]!.cast[0]).not.toHaveProperty('sheet');
+      expect(slot('back').dataset.has).toBe('no');
+    },
+  );
 
-  it('draws the missing views, and cannot without words or with every view there or being drawn', { tags: ['error-guessing', 'decision-table'] }, () => {
-    const make = vi.spyOn(generate, 'makeSheet').mockResolvedValue(3);
-    const projectId = show();
-    fireEvent.click(button('comic-sheet-make'));
-    expect(make).toHaveBeenCalledWith('c');
-    act(() => {
-      for (const [i, view] of (['threeQuarter', 'side', 'face'] as const).entries()) useComic.getState().setSheetPending(i + 1, { projectId, characterId: 'c', view });
-    });
-    expect(button('comic-sheet-make').disabled).toBe(true);
-    cleanup();
-    useComic.setState({ sheetPending: {} });
-    show({ ...MINA, tags: '' });
-    expect(button('comic-sheet-make').disabled).toBe(true);
-  });
+  it(
+    'draws the missing views, and cannot without words or with every view there or being drawn',
+    { tags: ['decision-table', 'error-guessing'] },
+    () => {
+      const make = vi.spyOn(generate, 'makeSheet').mockResolvedValue(3);
+      const projectId = show();
+      fireEvent.click(button('comic-sheet-make'));
+      expect(make).toHaveBeenCalledWith('c');
+      act(() => {
+        for (const [i, view] of (['threeQuarter', 'side', 'face'] as const).entries()) useComic.getState().setSheetPending(i + 1, { projectId, characterId: 'c', view });
+      });
+      expect(button('comic-sheet-make').disabled).toBe(true);
+      cleanup();
+      useComic.setState({ sheetPending: {} });
+      show({ ...MINA, tags: '' });
+      expect(button('comic-sheet-make').disabled).toBe(true);
+    },
+  );
 
-  it('says which LoRA its panels use', { tags: ['scenario'] }, () => {
+  it('says which LoRA its panels use', { tags: ['equivalence'] }, () => {
     const id = useCharacters.getState().add('Mina', { imageNames: ['front.png'], weight: 0.6, tags: '1girl', lora: { key: 'mina-lora', weight: 0.8, trigger: 'mina', enabled: true } });
     useModels.setState({ models: [{ key: 'mina-lora', name: 'Mina LoRA', base: 'sdxl', type: 'lora' } as ModelConfig] });
     show({ ...MINA, libraryId: id });

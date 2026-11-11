@@ -2,22 +2,26 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockLan, patternModules } from './mockLan';
 
-describe('the mock home network', () => {
+describe('the mock home network', { tags: [] }, () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
 
-  it('opens only on a network that was trusted, and says which gateway to confirm', { tags: ['state-transition'] }, async () => {
-    const lan = createMockLan();
-    const refused = await lan.open();
-    expect(refused).toMatchObject({ ok: false, code: 'untrusted_network', gatewayMac: '02:11:22:33:44:55' });
-    expect((await lan.state())?.open).toBe(false);
-    expect(await lan.trust('02:99:99:99:99:99', 'home')).toMatchObject({ ok: false, code: 'network_changed' });
-    expect(await lan.trust('02:11:22:33:44:55', 'home')).toEqual({ ok: true });
-    expect(await lan.open()).toEqual({ ok: true });
-    const state = await lan.state();
-    expect(state).toMatchObject({ open: true, port: 51423, network: { trusted: true, label: 'home' } });
-    expect(state?.trustedNetworks).toHaveLength(1);
-  });
+  it(
+    'opens only on a network that was trusted, and says which gateway to confirm',
+    { tags: ['state-transition', 'condition'] },
+    async () => {
+      const lan = createMockLan();
+      const refused = await lan.open();
+      expect(refused).toMatchObject({ ok: false, code: 'untrusted_network', gatewayMac: '02:11:22:33:44:55' });
+      expect((await lan.state())?.open).toBe(false);
+      expect(await lan.trust('02:99:99:99:99:99', 'home')).toMatchObject({ ok: false, code: 'network_changed' });
+      expect(await lan.trust('02:11:22:33:44:55', 'home')).toEqual({ ok: true });
+      expect(await lan.open()).toEqual({ ok: true });
+      const state = await lan.state();
+      expect(state).toMatchObject({ open: true, port: 51423, network: { trusted: true, label: 'home' } });
+      expect(state?.trustedNetworks).toHaveLength(1);
+    },
+  );
 
   it('starts open, or with Windows calling the network public, from the page flag', { tags: ['equivalence'] }, async () => {
     expect((await createMockLan('open').state())?.open).toBe(true);
@@ -25,7 +29,7 @@ describe('the mock home network', () => {
     expect(pub).toMatchObject({ open: false, windowsPublic: true });
   });
 
-  it('makes a code only while open, and a phone asks to pair two seconds later', { tags: ['state-transition'] }, async () => {
+  it('makes a code only while open, and a phone asks to pair two seconds later', { tags: ['state-transition', 'condition'] }, async () => {
     const lan = createMockLan('open');
     const code = await lan.pairingCode();
     expect(code?.modules).toHaveLength((code?.size ?? 0) ** 2);
@@ -57,14 +61,14 @@ describe('the mock home network', () => {
     expect(state).toMatchObject({ open: false, devices: [], pending: [] });
   });
 
-  it('stops trusting a network and closes with it', { tags: ['state-transition'] }, async () => {
+  it('stops trusting a network and closes with it', { tags: ['state-transition', 'error-guessing'] }, async () => {
     const lan = createMockLan('open');
     expect(await lan.untrust('02:11:22:33:44:55')).toEqual({ ok: true });
     expect(await lan.state()).toMatchObject({ open: false, network: { trusted: false } });
     expect(await lan.untrust('02:11:22:33:44:55')).toMatchObject({ ok: false, code: 'unknown' });
   });
 
-  it('draws a square with the three finder squares, different for each code', { tags: ['condition'] }, () => {
+  it('draws a square with the three finder squares, different for each code', { tags: ['equivalence'] }, () => {
     const { size, modules } = patternModules('a');
     expect(modules).toHaveLength(size * size);
     const at = (x: number, y: number) => modules[y * size + x];

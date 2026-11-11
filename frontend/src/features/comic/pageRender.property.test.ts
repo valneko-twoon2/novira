@@ -17,16 +17,20 @@ const text = fc.oneof(
 const measure = (line: string) => [...line].reduce((n, ch) => n + (ch.charCodeAt(0) >= 0x2e80 ? 2 : (ch.charCodeAt(0) % 3) + 1), 0);
 const strip = (s: string) => s.replace(/\s+/g, '');
 
-describe('wrapText', () => {
-  it('keeps every line within the width, except a line of one character that is wider by itself', { tags: ['decision-table'] }, () => {
-    check(
-      fc.property(text, fc.integer({ min: 0, max: 60 }), (t, width) => {
-        for (const line of wrapText(measure, t, width)) {
-          if ([...line].length > 1) expect(measure(line)).toBeLessThanOrEqual(width);
-        }
-      }),
-    );
-  });
+describe('wrapText', { tags: [] }, () => {
+  it(
+    'keeps every line within the width, except a line of one character that is wider by itself',
+    { tags: ['boundary', 'error-guessing'] },
+    () => {
+      check(
+        fc.property(text, fc.integer({ min: 0, max: 60 }), (t, width) => {
+          for (const line of wrapText(measure, t, width)) {
+            if ([...line].length > 1) expect(measure(line)).toBeLessThanOrEqual(width);
+          }
+        }),
+      );
+    },
+  );
 
   it('gives back the text apart from the breaks and the spaces at them', { tags: ['error-guessing'] }, () => {
     check(
@@ -41,17 +45,21 @@ describe('wrapText', () => {
     );
   });
 
-  it('gives at least one line per paragraph, and the lines of a text that fits in one line are the paragraphs', { tags: ['boundary'] }, () => {
-    check(
-      fc.property(text, (t) => {
-        expect(wrapText(measure, t, 1e9).length).toBe(t.split('\n').length);
-        expect(wrapText(measure, t, 3).length).toBeGreaterThanOrEqual(t.split('\n').length);
-      }),
-    );
-    expect(wrapText(measure, '', 10)).toEqual(['']);
-  });
+  it(
+    'gives at least one line per paragraph, and the lines of a text that fits in one line are the paragraphs',
+    { tags: ['boundary'] },
+    () => {
+      check(
+        fc.property(text, (t) => {
+          expect(wrapText(measure, t, 1e9).length).toBe(t.split('\n').length);
+          expect(wrapText(measure, t, 3).length).toBeGreaterThanOrEqual(t.split('\n').length);
+        }),
+      );
+      expect(wrapText(measure, '', 10)).toEqual(['']);
+    },
+  );
 
-  it('never makes more lines than the text has characters and paragraphs', { tags: ['error-guessing'] }, () => {
+  it('never makes more lines than the text has characters and paragraphs', { tags: ['boundary', 'error-guessing'] }, () => {
     check(
       fc.property(text, fc.integer({ min: 0, max: 60 }), (t, width) => {
         expect(wrapText(measure, t, width).length).toBeLessThanOrEqual([...strip(t)].length + t.split('\n').length);
@@ -60,7 +68,7 @@ describe('wrapText', () => {
   });
 });
 
-describe('wrapVertical', () => {
+describe('wrapVertical', { tags: [] }, () => {
   it('has columns of at most maxChars characters that join to the text without its line breaks', { tags: ['boundary'] }, () => {
     check(
       fc.property(text, fc.integer({ min: 1, max: 12 }), (t, maxChars) => {
@@ -75,7 +83,7 @@ describe('wrapVertical', () => {
     );
   });
 
-  it('keeps each line of the text in its own column when the columns are long enough', { tags: ['error-guessing'] }, () => {
+  it('keeps each line of the text in its own column when the columns are long enough', { tags: ['boundary', 'condition'] }, () => {
     check(
       fc.property(text, (t) => {
         expect(wrapVertical(t, 1000)).toEqual(t.split('\n'));
@@ -83,7 +91,7 @@ describe('wrapVertical', () => {
     );
   });
 
-  it('is only wider where it must: a column but the last of its line is full', { tags: ['boundary'] }, () => {
+  it('is only wider where it must: a column but the last of its line is full', { tags: ['boundary', 'condition'] }, () => {
     check(
       fc.property(fc.string({ minLength: 1, maxLength: 40 }), fc.integer({ min: 1, max: 8 }), (t, maxChars) => {
         const columns = wrapVertical(t.replace(/\n/g, ''), maxChars);

@@ -299,7 +299,7 @@ fn engine(url: &str) -> ComfyEngine {
     ComfyEngine::new(url, None, Duration::from_secs(1)).unwrap()
 }
 
-// tags: state-transition
+// tags: scenario
 #[tokio::test]
 async fn generates_with_progress_previews_and_an_uploaded_source() {
     let (url, seen) = serve(true).await;
@@ -339,7 +339,7 @@ async fn generates_with_progress_previews_and_an_uploaded_source() {
         .is_some_and(|u| u.starts_with("data:image/jpeg;base64,"))));
 }
 
-// tags: scenario
+// tags: condition
 #[tokio::test]
 async fn works_by_polling_when_there_is_no_websocket() {
     let (url, _) = serve(false).await;
@@ -392,7 +392,7 @@ async fn rejected_prompts_and_execution_errors_carry_the_reason() {
     );
 }
 
-// tags: error-guessing, state-transition
+// tags: condition, error-guessing
 #[tokio::test]
 async fn memory_is_freed_after_running_out_of_it_and_not_after_other_errors() {
     for send_ws in [true, false] {
@@ -445,7 +445,7 @@ async fn validation_names_models_comfyui_cannot_see_and_unknown_samplers() {
         .contains("dpmpp_sde"));
 }
 
-// tags: state-transition
+// tags: condition
 #[tokio::test]
 async fn cancel_interrupts_only_our_prompt() {
     let (url, seen) = serve(true).await;
@@ -470,7 +470,7 @@ async fn cancel_interrupts_only_our_prompt() {
     assert_eq!(seen.deletes, vec![json!({ "delete": ["p1"] })]);
 }
 
-// tags: error-guessing, decision-table
+// tags: error-guessing
 #[tokio::test]
 async fn an_unreachable_server_is_reported() {
     let e = engine("http://127.0.0.1:9");
@@ -481,7 +481,7 @@ async fn an_unreachable_server_is_reported() {
     assert!(err.to_string().contains("not reachable"), "{err}");
 }
 
-// tags: scenario
+// tags: equivalence
 #[tokio::test]
 async fn node_defs_are_the_object_info_of_the_server() {
     let (url, _) = serve(true).await;
@@ -538,7 +538,7 @@ async fn graph_jobs_upload_their_pictures_and_run_the_editor_prompt() {
     );
 }
 
-// tags: scenario
+// tags: error-guessing
 #[tokio::test]
 async fn graph_jobs_name_the_nodes_comfyui_does_not_have() {
     let (url, seen) = serve(true).await;
@@ -569,7 +569,7 @@ fn output_job(class: &str, no_result: bool) -> EngineJob {
     j
 }
 
-// tags: scenario
+// tags: equivalence
 #[tokio::test]
 async fn a_text_output_comes_back_as_text() {
     for ws in [true, false] {
@@ -589,7 +589,7 @@ async fn a_text_output_comes_back_as_text() {
     }
 }
 
-// tags: state-transition
+// tags: condition
 #[tokio::test]
 async fn a_job_that_keeps_its_file_in_comfyui_finishes_with_nothing_to_fetch() {
     let (url, _) = serve(true).await;
@@ -614,7 +614,7 @@ async fn a_job_that_keeps_its_file_in_comfyui_finishes_with_nothing_to_fetch() {
     assert!(err.to_string().contains("without a result file"), "{err}");
 }
 
-// tags: scenario
+// tags: condition
 #[tokio::test]
 async fn a_job_that_keeps_its_file_in_comfyui_brings_back_the_picture_its_first_output_showed() {
     let (url, _) = serve(true).await;

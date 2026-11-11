@@ -130,7 +130,7 @@ impl App {
     }
 }
 
-// tags: condition
+// tags: condition, equivalence
 #[tokio::test]
 async fn only_the_management_routes_are_run_and_the_listener_waits_for_them() {
     let a = app().await;

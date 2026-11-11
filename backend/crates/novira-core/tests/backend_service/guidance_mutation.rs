@@ -24,7 +24,7 @@ fn key_of(b: &novira_core::Backend, file_part: &str) -> String {
         .key
 }
 
-// tags: scenario
+// tags: equivalence, error-guessing
 #[tokio::test]
 async fn a_video_or_a_sound_is_not_accepted_as_a_mask_or_a_control_picture() {
     let dir = tempfile::tempdir().unwrap();
@@ -57,7 +57,7 @@ async fn a_video_or_a_sound_is_not_accepted_as_a_mask_or_a_control_picture() {
     backend.shutdown();
 }
 
-// tags: scenario
+// tags: condition, error-guessing
 #[tokio::test]
 async fn a_controlnet_must_fit_the_base_of_the_jobs_own_main_model() {
     let dir = tempfile::tempdir().unwrap();

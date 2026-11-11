@@ -162,7 +162,7 @@ mod tests {
         r.missing.iter().map(|m| m.id.as_str()).collect()
     }
 
-    // tags: error-guessing, equivalence
+    // tags: error-guessing
     #[test]
     fn a_main_model_with_an_unreadable_header_is_a_checkpoint_with_every_part() {
         assert!(matches!(
@@ -174,7 +174,7 @@ mod tests {
         ));
     }
 
-    // tags: equivalence
+    // tags: condition
     #[test]
     fn a_wan_image_to_video_model_by_name_wants_the_vision_model_only_before_2_2() {
         let wan = |name: &str| model("w", name, ModelType::DiffusionModel, BaseModel::Wan);
@@ -192,7 +192,7 @@ mod tests {
         assert!(!wants_vision(&wan("wan2.1_t2v_1.3B.safetensors")));
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn anima_alone_misses_its_encoder_and_vae() {
         let anima = model(
@@ -226,7 +226,7 @@ mod tests {
         assert_eq!(ids(&r), ["starter-qwen3-06b"]);
     }
 
-    // tags: equivalence
+    // tags: boundary
     #[test]
     fn nothing_is_missing_when_every_part_is_installed() {
         let anima = model(
@@ -289,7 +289,7 @@ mod tests {
             .is_empty());
     }
 
-    // tags: scenario, equivalence
+    // tags: equivalence, condition
     #[test]
     fn flux_lists_its_three_parts_and_keeps_the_whole_name_rule_of_its_vae() {
         let flux = model(
@@ -311,7 +311,7 @@ mod tests {
         );
     }
 
-    // tags: condition
+    // tags: error-guessing
     #[test]
     fn a_part_without_a_starter_entry_is_reported_as_unavailable() {
         let sd3 = model(
@@ -328,7 +328,7 @@ mod tests {
         );
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn installing_what_is_reported_for_a_starter_model_leaves_nothing_missing() {
         for s in starter::starter_models()

@@ -19,14 +19,14 @@ const MODELS = [
   { key: 'xl', name: 'xl', base: 'sdxl', type: 'main' },
 ] as ModelConfig[];
 
-describe('workflow graph', () => {
+describe('workflow graph', { tags: [] }, () => {
   const noise = createNode(tpl('noise'), { x: 0, y: 0 }, { id: 'noise' });
   const denoise = createNode(tpl('denoise_latents'), { x: 0, y: 0 }, { id: 'denoise' });
   const l2i = createNode(tpl('l2i'), { x: 0, y: 0 }, { id: 'l2i' });
   const int = createNode(tpl('integer'), { x: 0, y: 0 }, { id: 'int' });
   const nodes = [noise, denoise, l2i, int];
 
-  it('accepts matching types and integer to float', { tags: ['condition'] }, () => {
+  it('accepts matching types and integer to float', { tags: ['equivalence'] }, () => {
     expect(isValidConnection(nodes, [], { source: 'noise', sourceHandle: 'noise', target: 'denoise', targetHandle: 'noise' })).toBe(true);
     expect(isValidConnection(nodes, [], { source: 'int', sourceHandle: 'value', target: 'denoise', targetHandle: 'cfg_scale' })).toBe(true);
   });
@@ -46,7 +46,7 @@ describe('workflow graph', () => {
     expect(invalidEdges(nodes, [makeEdge('noise', 'noise', 'l2i', 'latents')])).toHaveLength(1);
   });
 
-  it('round-trips through serialization', { tags: ['condition'] }, () => {
+  it('round-trips through serialization', { tags: ['scenario'] }, () => {
     const g = buildDefaultGraph({ id: 'default-t2i-sd15', name: 'T2I', description: '', author: '', tags: ['a'] }, MODELS);
     expect(g).not.toBeNull();
     if (!g) return;
@@ -65,7 +65,7 @@ describe('workflow graph', () => {
     expect(deserializeWorkflow({ nodes: [], edges: [] })).not.toBeNull();
   });
 
-  it('default graphs are valid', { tags: ['condition'] }, () => {
+  it('default graphs are valid', { tags: ['equivalence'] }, () => {
     for (const id of ['default-t2i-sd15', 'default-t2i-sdxl', 'default-i2i-sdxl', 'default-multidiffusion', 'default-face-detailer']) {
       const g = buildDefaultGraph({ id, name: id, description: '', author: '', tags: [] }, MODELS);
       expect(g, id).not.toBeNull();
@@ -76,7 +76,7 @@ describe('workflow graph', () => {
     expect(t2i && readinessReasons(t2i)).toEqual([]);
   });
 
-  it('every template message key exists', { tags: ['decision-table'] }, () => {
+  it('every template message key exists', { tags: ['equivalence'] }, () => {
     const keys = new Set(Object.keys(ja));
     const missing: string[] = [];
     for (const t of NODE_TEMPLATES) {

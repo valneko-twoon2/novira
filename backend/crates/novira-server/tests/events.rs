@@ -49,7 +49,7 @@ async fn next_event(socket: &mut Socket) -> Value {
     }
 }
 
-// tags: condition
+// tags: scenario
 #[tokio::test]
 async fn backend_events_arrive_as_the_json_the_desktop_sends() {
     let f = Fixture::start().await;

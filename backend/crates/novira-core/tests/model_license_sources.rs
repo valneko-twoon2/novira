@@ -35,7 +35,7 @@ fn lora(tag: usize) -> Vec<u8> {
     out
 }
 
-// tags: decision-table
+// tags: condition
 #[tokio::test]
 async fn sources_that_name_no_model_page_fall_back_to_the_hash_and_end_without_a_license() {
     site();

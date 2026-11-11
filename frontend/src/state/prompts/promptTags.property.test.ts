@@ -9,7 +9,7 @@ const tag = fc.string({ maxLength: 12 }).filter((s) => !s.includes(',') && s.tri
 const prompt = fc.array(tag, { maxLength: 6 }).map((tags) => tags.join(', '));
 
 describe('prompt tags (properties)', () => {
-  it('addTag makes the tag present and is idempotent', { tags: ['condition'] }, () => {
+  it('addTag makes the tag present and is idempotent', { tags: ['equivalence'] }, () => {
     check(
       fc.property(prompt, tag, (p, t) => {
         const once = addTag(p, t);
@@ -30,11 +30,11 @@ describe('prompt tags (properties)', () => {
     );
   });
 
-  it('tag matching ignores case and surrounding spaces', { tags: ['condition'] }, () => {
+  it('tag matching ignores case and surrounding spaces', { tags: ['equivalence'] }, () => {
     check(fc.property(prompt, tag, (p, t) => hasTag(addTag(p, t), `  ${t.toUpperCase()} `)));
   });
 
-  it('withTagsFirst / withTagsLast contain every tag of both texts exactly once and order the new tags', { tags: ['boundary'] }, () => {
+  it('withTagsFirst / withTagsLast contain every tag of both texts exactly once and order the new tags', { tags: ['condition'] }, () => {
     check(
       fc.property(prompt, prompt, (p, extra) => {
         for (const merged of [withTagsFirst(p, extra), withTagsLast(p, extra)]) {
@@ -58,7 +58,7 @@ describe('prompt tags (properties)', () => {
   });
 
   // Regression: a blank tag is not added (it used to leave an empty entry and a dangling separator: addTag('a', '') gave 'a, ').
-  it('does not append a blank tag', { tags: ['regression', 'condition'] }, () => {
+  it('does not append a blank tag', { tags: ['regression', 'boundary'] }, () => {
     expect(addTag('a', '')).toBe('a');
   });
 });

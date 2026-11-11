@@ -40,7 +40,7 @@ const recordOf = (project: import('./document').ComicProject): ComicRecord => ({
   document: m.document.serializeComicProject(project),
 });
 
-describe('saving comic projects', () => {
+describe('saving comic projects', { tags: [] }, () => {
   it('does not write anything when the saved projects cannot be read', { tags: ['error-guessing'] }, async () => {
     list.mockRejectedValue(new Error('locked'));
     await m.persistence.restoreAndWatchComics();
@@ -61,7 +61,7 @@ describe('saving comic projects', () => {
     expect(s.activeProjectId).toBe(newer.id);
   });
 
-  it('saves a changed project once, one second after the last change', { tags: ['state-transition'] }, async () => {
+  it('saves a changed project once, one second after the last change', { tags: ['state-transition', 'boundary'] }, async () => {
     const project = { ...m.document.newProject('Changed'), updatedAt: 1 };
     list.mockResolvedValue([recordOf(project)]);
     await m.persistence.restoreAndWatchComics();
@@ -100,26 +100,30 @@ describe('saving comic projects', () => {
   });
 });
 
-describe('saving the layers of the pages', () => {
+describe('saving the layers of the pages', { tags: [] }, () => {
   const image = (name: string) => ({ name, url: `url:${name}`, thumbnailUrl: '', width: 400, height: 300, createdAt: 0, boardId: null, starred: false, isIntermediate: true, category: 'general' }) as import('@/backend').ImageDTO;
 
-  it('stores a picture that lives only in the page before the project is written, and the page takes the stored one', { tags: ['condition'] }, async () => {
-    const project = { ...m.document.newProject('Painted'), updatedAt: 1 };
-    list.mockResolvedValue([recordOf(project)]);
-    const upload = vi.spyOn(m.backend, 'saveImageFromUrl').mockResolvedValue(image('stored.png'));
-    await m.persistence.restoreAndWatchComics();
-    const page = m.store.useComic.getState().projects[0]!.pages[0]!;
-    const layer = { id: 'r', type: 'raster' as const, seq: 3, name: null, isEnabled: true, isLocked: false, opacity: 1, x: 0, y: 0, objects: [{ kind: 'image' as const, id: 'o', url: 'blob:live', imageName: null, x: 1, y: 2, width: 30, height: 40 }] };
-    m.store.useComic.getState().setPageCanvas(page.id, { ...page.canvas, entities: [...page.canvas.entities, layer] });
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(upload).toHaveBeenCalledWith('blob:live', expect.objectContaining({ isIntermediate: true }));
-    const saved = save.mock.calls[0]![1] as { pages: { canvas: { entities: { objects: unknown[] }[] } }[] };
-    expect(saved.pages[0]!.canvas.entities.flatMap((e) => e.objects)).toEqual([expect.objectContaining({ id: 'o', imageName: 'stored.png', url: '' })]);
-    const live = m.store.useComic.getState().projects[0]!.pages[0]!.canvas.entities.flatMap((e) => e.objects);
-    expect(live).toEqual([expect.objectContaining({ imageName: 'stored.png' })]);
-  });
+  it(
+    'stores a picture that lives only in the page before the project is written, and the page takes the stored one',
+    { tags: ['state-transition'] },
+    async () => {
+      const project = { ...m.document.newProject('Painted'), updatedAt: 1 };
+      list.mockResolvedValue([recordOf(project)]);
+      const upload = vi.spyOn(m.backend, 'saveImageFromUrl').mockResolvedValue(image('stored.png'));
+      await m.persistence.restoreAndWatchComics();
+      const page = m.store.useComic.getState().projects[0]!.pages[0]!;
+      const layer = { id: 'r', type: 'raster' as const, seq: 3, name: null, isEnabled: true, isLocked: false, opacity: 1, x: 0, y: 0, objects: [{ kind: 'image' as const, id: 'o', url: 'blob:live', imageName: null, x: 1, y: 2, width: 30, height: 40 }] };
+      m.store.useComic.getState().setPageCanvas(page.id, { ...page.canvas, entities: [...page.canvas.entities, layer] });
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(upload).toHaveBeenCalledWith('blob:live', expect.objectContaining({ isIntermediate: true }));
+      const saved = save.mock.calls[0]![1] as { pages: { canvas: { entities: { objects: unknown[] }[] } }[] };
+      expect(saved.pages[0]!.canvas.entities.flatMap((e) => e.objects)).toEqual([expect.objectContaining({ id: 'o', imageName: 'stored.png', url: '' })]);
+      const live = m.store.useComic.getState().projects[0]!.pages[0]!.canvas.entities.flatMap((e) => e.objects);
+      expect(live).toEqual([expect.objectContaining({ imageName: 'stored.png' })]);
+    },
+  );
 
-  it('warns once when a project comes close to what the backend keeps, and still saves it', { tags: ['regression'] }, async () => {
+  it('warns once when a project comes close to what the backend keeps, and still saves it', { tags: ['boundary'] }, async () => {
     const project = { ...m.document.newProject('Huge'), updatedAt: 1 };
     list.mockResolvedValue([recordOf(project)]);
     const { useToasts } = await import('../toasts');
@@ -154,19 +158,23 @@ describe('saving the layers of the pages', () => {
     expect(saved.pages[0]!.canvas.entities.flatMap((e) => e.objects)).toEqual([expect.objectContaining({ imageName: 'turned.png' })]);
   });
 
-  it('does not write a version 1 project whose turned picture could not be baked, and tells the user', { tags: ['condition'] }, async () => {
-    const { useGallery } = await import('../gallery');
-    const { useToasts } = await import('../toasts');
-    useGallery.setState({ images: [image('sky.png')] });
-    vi.spyOn(await import('./bakeRotation'), 'bakeOne').mockRejectedValue(new Error('no canvas'));
-    const v1 = { version: 1, id: 'old', name: 'Old', updatedAt: 1, pages: [{ id: 'p', panels: [], layers: [{ id: 'pic', kind: 'image', imageName: 'sky.png', view: { rotation: -30 } }] }] };
-    list.mockResolvedValue([{ id: 'old', updatedAt: 1, document: v1 }]);
-    await m.persistence.restoreAndWatchComics();
-    expect(useToasts.getState().toasts.map((t) => t.status)).toContain('error');
-    m.store.useComic.getState().renameProject('old', 'Changed');
-    await vi.advanceTimersByTimeAsync(2000);
-    expect(save).not.toHaveBeenCalled();
-    // The picture is still shown, unturned, for this run.
-    expect(m.store.useComic.getState().projects[0]!.pages[0]!.canvas.entities.flatMap((e) => e.objects)).toEqual([expect.objectContaining({ imageName: 'sky.png' })]);
-  });
+  it(
+    'does not write a version 1 project whose turned picture could not be baked, and tells the user',
+    { tags: ['error-guessing'] },
+    async () => {
+      const { useGallery } = await import('../gallery');
+      const { useToasts } = await import('../toasts');
+      useGallery.setState({ images: [image('sky.png')] });
+      vi.spyOn(await import('./bakeRotation'), 'bakeOne').mockRejectedValue(new Error('no canvas'));
+      const v1 = { version: 1, id: 'old', name: 'Old', updatedAt: 1, pages: [{ id: 'p', panels: [], layers: [{ id: 'pic', kind: 'image', imageName: 'sky.png', view: { rotation: -30 } }] }] };
+      list.mockResolvedValue([{ id: 'old', updatedAt: 1, document: v1 }]);
+      await m.persistence.restoreAndWatchComics();
+      expect(useToasts.getState().toasts.map((t) => t.status)).toContain('error');
+      m.store.useComic.getState().renameProject('old', 'Changed');
+      await vi.advanceTimersByTimeAsync(2000);
+      expect(save).not.toHaveBeenCalled();
+      // The picture is still shown, unturned, for this run.
+      expect(m.store.useComic.getState().projects[0]!.pages[0]!.canvas.entities.flatMap((e) => e.objects)).toEqual([expect.objectContaining({ imageName: 'sky.png' })]);
+    },
+  );
 });

@@ -362,7 +362,7 @@ mod tests {
         assert!(images::read_text(&copy, images::WORKFLOW_KEY).is_some());
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn a_jpeg_copy_has_no_exif_and_lays_transparency_on_white() {
         let copy = encode(&png(64, 32, true), &options(ExportFormat::Jpeg)).unwrap();
@@ -383,7 +383,7 @@ mod tests {
         );
     }
 
-    // tags: condition
+    // tags: equivalence, boundary
     #[test]
     fn a_webp_copy_is_lossless_without_metadata_and_keeps_alpha() {
         let copy = encode(
@@ -405,7 +405,7 @@ mod tests {
         assert!(decoded.color().has_alpha());
     }
 
-    // tags: condition
+    // tags: boundary
     #[test]
     fn sizes_shrink_in_proportion_and_never_grow() {
         assert_eq!(target_size(4000, 3000, Some(1024)), (1024, 768));
@@ -441,7 +441,7 @@ mod tests {
         }
     }
 
-    // tags: equivalence
+    // tags: condition
     #[test]
     fn a_taken_name_gets_a_number_and_nothing_is_overwritten() {
         let dir = tempfile::tempdir().unwrap();
@@ -454,7 +454,7 @@ mod tests {
         assert_eq!(std::fs::read(&a).unwrap(), b"one");
     }
 
-    // tags: condition
+    // tags: scenario
     #[test]
     fn the_mark_sees_the_resized_picture_and_its_result_is_what_is_encoded() {
         let seen = std::cell::Cell::new((0, 0));
@@ -489,7 +489,7 @@ mod tests {
         );
     }
 
-    // tags: equivalence
+    // tags: condition
     #[test]
     fn names_in_one_download_never_repeat() {
         let mut taken = std::collections::HashSet::new();
@@ -499,7 +499,7 @@ mod tests {
         assert_eq!(unique_name(&mut taken, "pic", "png"), "pic-3.png");
     }
 
-    // tags: error-guessing, state-transition
+    // tags: equivalence
     #[test]
     fn a_zip_holds_every_copy_unchanged_under_its_name() {
         let files = vec![

@@ -27,8 +27,8 @@ function graph(): EditorGraph {
   return { nodes: [createNode(a, { x: 0, y: 0 }, { id: 'a' }), createNode(b, { x: 300, y: 0 }, { id: 'b' })], edges: [], meta: { ...EMPTY_META, name: 'flow' }, form: [] };
 }
 
-describe('workflow operations from the assistant', () => {
-  it('adds a node with default inputs overridden by the given ones', { tags: ['condition'] }, () => {
+describe('workflow operations from the assistant', { tags: [] }, () => {
+  it('adds a node with default inputs overridden by the given ones', { tags: ['condition', 'boundary'] }, () => {
     const { a } = pair();
     const field = a.inputs.find((i) => i.input !== 'connection')?.name;
     const s = serializeWorkflow(graph());
@@ -70,7 +70,7 @@ describe('workflow operations from the assistant', () => {
     expect(b.type).toBeTruthy();
   });
 
-  it('connects, replacing an earlier connection into the same input, and disconnects', { tags: ['condition'] }, () => {
+  it('connects, replacing an earlier connection into the same input, and disconnects', { tags: ['condition', 'error-guessing'] }, () => {
     const { out, input } = pair();
     const s = serializeWorkflow(graph());
     const edge = { source: 'a', sourceHandle: out, target: 'b', targetHandle: input };
@@ -83,7 +83,7 @@ describe('workflow operations from the assistant', () => {
     expect(applyWorkflowOps(s, [{ op: 'connect', ...edge, target: 'a' }]).applied).toBe(0);
   });
 
-  it('builds the edited editor graph through the normal parser and keeps the library details', { tags: ['condition'] }, () => {
+  it('builds the edited editor graph through the normal parser and keeps the library details', { tags: ['scenario'] }, () => {
     const { out, input } = pair();
     const g = { ...graph(), meta: { ...EMPTY_META, id: 'lib1', category: 'user' as const, name: 'mine' } };
     const edited = editedGraph(g, [{ op: 'connect', source: 'a', sourceHandle: out, target: 'b', targetHandle: input }]);
@@ -92,46 +92,50 @@ describe('workflow operations from the assistant', () => {
     expect(edited?.graph.meta).toEqual(g.meta);
   });
 
-  it('drops a connection to an input or output that does not exist when the graph is parsed', { tags: ['condition'] }, () => {
+  it('drops a connection to an input or output that does not exist when the graph is parsed', { tags: ['error-guessing'] }, () => {
     const g = graph();
     const edited = editedGraph(g, [{ op: 'connect', source: 'a', sourceHandle: 'no_such_output', target: 'b', targetHandle: 'no_such_input' }]);
     expect(edited?.graph.edges).toHaveLength(0);
   });
 
-  it('says why an operation was left out: an unknown node type, a repeated id, a missing node, a connection that does not fit', { tags: ['error-guessing'] }, () => {
-    const { a, out, input } = pair();
-    const s = serializeWorkflow(graph());
-    const r = applyWorkflowOps(s, [
-      { op: 'addNode', id: 'x', nodeType: 'no_such_node' },
-      { op: 'addNode', id: 'a', nodeType: a.type },
-      { op: 'addNode', nodeType: a.type },
-      { op: 'setInputs', id: 'ghost', inputs: {} },
-      { op: 'move', id: 'ghost' },
-      { op: 'removeNode', id: 'ghost' },
-      { op: 'connect', source: 'a', sourceHandle: 'no_such_output', target: 'b', targetHandle: input },
-      { op: 'connect', source: 'a', sourceHandle: out, target: 'b', targetHandle: 'no_such_input' },
-      { op: 'connect', source: 'a', sourceHandle: out, target: 'a', targetHandle: input },
-      { op: 'disconnect', source: 'a', sourceHandle: out, target: 'b', targetHandle: input },
-      { op: 'fly' },
-      'nope',
-    ]);
-    expect(r.applied).toBe(0);
-    expect(r.skipped).toEqual([
-      expect.stringContaining('op 1 (addNode): there is no node type "no_such_node"; find one with search_comfy_nodes'),
-      'op 2 (addNode): a node with the id "a" exists already',
-      'op 3 (addNode): a node needs an id',
-      'op 4 (setInputs): there is no node "ghost"',
-      'op 5 (move): there is no node "ghost"',
-      'op 6 (removeNode): there is no node "ghost"',
-      expect.stringContaining('op 7 (connect): a.no_such_output -> b.' + input + ': ' + a.type + ' has no output named "no_such_output"'),
-      expect.stringContaining('has no input named "no_such_input"'),
-      'op 9 (connect): a.' + out + ' -> a.' + input + ': a node cannot feed itself',
-      'op 10 (disconnect): there is no such connection',
-      expect.stringContaining('op 11 (fly): unknown operation'),
-      'op 12: not an object with an "op"',
-    ]);
-    expect(applyWorkflowOps(s, [{ op: 'connect', source: 'a', sourceHandle: out, target: 'b', targetHandle: input }]).skipped).toEqual([]);
-  });
+  it(
+    'says why an operation was left out: an unknown node type, a repeated id, a missing node, a connection that does not fit',
+    { tags: ['error-guessing', 'equivalence'] },
+    () => {
+      const { a, out, input } = pair();
+      const s = serializeWorkflow(graph());
+      const r = applyWorkflowOps(s, [
+        { op: 'addNode', id: 'x', nodeType: 'no_such_node' },
+        { op: 'addNode', id: 'a', nodeType: a.type },
+        { op: 'addNode', nodeType: a.type },
+        { op: 'setInputs', id: 'ghost', inputs: {} },
+        { op: 'move', id: 'ghost' },
+        { op: 'removeNode', id: 'ghost' },
+        { op: 'connect', source: 'a', sourceHandle: 'no_such_output', target: 'b', targetHandle: input },
+        { op: 'connect', source: 'a', sourceHandle: out, target: 'b', targetHandle: 'no_such_input' },
+        { op: 'connect', source: 'a', sourceHandle: out, target: 'a', targetHandle: input },
+        { op: 'disconnect', source: 'a', sourceHandle: out, target: 'b', targetHandle: input },
+        { op: 'fly' },
+        'nope',
+      ]);
+      expect(r.applied).toBe(0);
+      expect(r.skipped).toEqual([
+        expect.stringContaining('op 1 (addNode): there is no node type "no_such_node"; find one with search_comfy_nodes'),
+        'op 2 (addNode): a node with the id "a" exists already',
+        'op 3 (addNode): a node needs an id',
+        'op 4 (setInputs): there is no node "ghost"',
+        'op 5 (move): there is no node "ghost"',
+        'op 6 (removeNode): there is no node "ghost"',
+        expect.stringContaining('op 7 (connect): a.no_such_output -> b.' + input + ': ' + a.type + ' has no output named "no_such_output"'),
+        expect.stringContaining('has no input named "no_such_input"'),
+        'op 9 (connect): a.' + out + ' -> a.' + input + ': a node cannot feed itself',
+        'op 10 (disconnect): there is no such connection',
+        expect.stringContaining('op 11 (fly): unknown operation'),
+        'op 12: not an object with an "op"',
+      ]);
+      expect(applyWorkflowOps(s, [{ op: 'connect', source: 'a', sourceHandle: out, target: 'b', targetHandle: input }]).skipped).toEqual([]);
+    },
+  );
 
   it('refuses a connection between types that do not fit instead of leaving it to be dropped later', { tags: ['error-guessing'] }, () => {
     const [x, y] = [NODE_TEMPLATES.find((t) => t.outputs.some((o) => o.type === 'ImageField'))!, NODE_TEMPLATES.find((t) => t.inputs.some((i) => i.type === 'LatentsField' && i.input === 'connection'))!];
@@ -141,7 +145,7 @@ describe('workflow operations from the assistant', () => {
     expect(r.skipped[0]).toMatch(/a ImageField output cannot feed a LatentsField input/);
   });
 
-  it('says which values a node took no typed value for, in an added node and a changed one', { tags: ['boundary'] }, () => {
+  it('says which values a node took no typed value for, in an added node and a changed one', { tags: ['error-guessing'] }, () => {
     const { a } = pair();
     const s = serializeWorkflow(graph());
     const added = applyWorkflowOps(s, [{ op: 'addNode', id: 'n', nodeType: a.type, inputs: { nonsense: 1 } }]);
@@ -151,23 +155,23 @@ describe('workflow operations from the assistant', () => {
     expect(set.skipped).toEqual([`op 1 (setInputs): ${a.type} takes no typed value for: nonsense`]);
   });
 
-  it('describes the graph to the assistant', { tags: ['condition'] }, () => {
+  it('describes the graph to the assistant', { tags: ['equivalence'] }, () => {
     const ctx = workflowContext(graph()) as { name: string; nodes: { id: string; type: string }[] };
     expect(ctx.name).toBe('flow');
     expect(ctx.nodes.map((n) => n.id)).toEqual(['a', 'b']);
   });
 });
 
-describe('a whole graph from the assistant', () => {
+describe('a whole graph from the assistant', { tags: [] }, () => {
   const pairs = pair();
   const node = (id: string, type: string, inputs: Record<string, unknown> = {}) => ({ id, position: { x: 0, y: 0 }, data: { type, inputs } });
 
-  it('names the node types that do not exist, which keep it from opening', { tags: ['condition'] }, () => {
+  it('names the node types that do not exist, which keep it from opening', { tags: ['error-guessing'] }, () => {
     const report = checkAssistantGraph({ nodes: [node('a', pairs.a.type), node('z', 'comfy:Nope'), node('y', 'comfy:Nope')], edges: [] });
     expect(report.unknownTypes).toEqual(['comfy:Nope']);
   });
 
-  it('lists the connections and the values it leaves out, with the reason', { tags: ['condition'] }, () => {
+  it('lists the connections and the values it leaves out, with the reason', { tags: ['error-guessing'] }, () => {
     const report = checkAssistantGraph({
       nodes: [node('a', pairs.a.type, { nonsense: 1 }), node('b', pairs.b.type)],
       edges: [
@@ -184,13 +188,13 @@ describe('a whole graph from the assistant', () => {
     ]);
   });
 
-  it('passes what is not a graph through untouched', { tags: ['condition'] }, () => {
+  it('passes what is not a graph through untouched', { tags: ['error-guessing', 'boundary'] }, () => {
     expect(checkAssistantGraph(null)).toEqual({ graph: null, unknownTypes: [], dropped: [] });
     expect(checkAssistantGraph({ nodes: 'x' }).graph).toEqual({ nodes: 'x' });
   });
 });
 
-describe('inputs written by the assistant', () => {
+describe('inputs written by the assistant', { tags: [] }, () => {
   beforeAll(() => setExtensionTemplates(comfyTemplates({ ...MOCK_NODE_DEFS, ...CORE_NODE_DEFS, ...PACK_NODE_DEFS })));
   afterAll(() => setExtensionTemplates([]));
 

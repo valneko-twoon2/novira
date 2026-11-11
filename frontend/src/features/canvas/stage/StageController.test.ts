@@ -91,7 +91,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('StageController setup', () => {
+describe('StageController setup', { tags: [] }, () => {
   it('sizes the canvas to its host and redraws on resize and on state changes', { tags: ['state-transition'] }, () => {
     expect(canvas.style.width).toBe('800px');
     expect(canvas.width).toBe(800);
@@ -108,13 +108,13 @@ describe('StageController setup', () => {
     expect(rec.of('clearRect').length).toBe(before + 1);
   });
 
-  it('stops listening after dispose', { tags: ['condition'] }, () => {
+  it('stops listening after dispose', { tags: ['state-transition'] }, () => {
     controller.dispose();
     drag([150, 150], [160, 160]);
     expect(state().entities).toHaveLength(0);
   });
 
-  it('follows the tool in the mouse cursor', { tags: ['condition'] }, () => {
+  it('follows the tool in the mouse cursor', { tags: ['decision-table', 'equivalence'] }, () => {
     const cursorFor = (tool: ReturnType<typeof state>['tool']) => {
       state().setTool(tool);
       pointer('pointermove', 5, 5);
@@ -128,27 +128,31 @@ describe('StageController setup', () => {
   });
 });
 
-describe('painting', () => {
-  it('draws a stroke on a new raster layer when nothing is selected', { tags: ['condition'] }, () => {
+describe('painting', { tags: [] }, () => {
+  it('draws a stroke on a new raster layer when nothing is selected', { tags: ['condition', 'scenario'] }, () => {
     drag([150, 150], [200, 180]);
     expect(state().entities).toHaveLength(1);
     const o = lastObject();
     expect(o).toMatchObject({ kind: 'stroke', tool: 'brush', width: 40, points: [150, 150, 200, 180], clip: null });
   });
 
-  it('keeps a stroke relative to the layer offset, clips to the bbox when asked and straightens with shift', { tags: ['condition'] }, () => {
-    const id = state().addEntity('raster', { x: 10, y: 20 });
-    state().select(id);
-    state().setSettings({ clipToBbox: true });
-    pointer('pointerdown', 150, 150);
-    pointer('pointermove', 160, 160);
-    pointer('pointermove', 170, 190, { shiftKey: true });
-    pointer('pointermove', 170.2, 190.2);
-    pointer('pointerup', 170, 190);
-    expect(lastObject()).toMatchObject({ points: [140, 130, 160, 170], clip: { x: 90, y: 80, width: 200, height: 200 } });
-  });
+  it(
+    'keeps a stroke relative to the layer offset, clips to the bbox when asked and straightens with shift',
+    { tags: ['decision-table'] },
+    () => {
+      const id = state().addEntity('raster', { x: 10, y: 20 });
+      state().select(id);
+      state().setSettings({ clipToBbox: true });
+      pointer('pointerdown', 150, 150);
+      pointer('pointermove', 160, 160);
+      pointer('pointermove', 170, 190, { shiftKey: true });
+      pointer('pointermove', 170.2, 190.2);
+      pointer('pointerup', 170, 190);
+      expect(lastObject()).toMatchObject({ points: [140, 130, 160, 170], clip: { x: 90, y: 80, width: 200, height: 200 } });
+    },
+  );
 
-  it('ignores a right click and a second press during a drag', { tags: ['condition'] }, () => {
+  it('ignores a right click and a second press during a drag', { tags: ['error-guessing', 'condition'] }, () => {
     pointer('pointerdown', 150, 150, { button: 2 });
     expect(state().entities).toHaveLength(0);
     pointer('pointerdown', 150, 150);
@@ -157,7 +161,7 @@ describe('painting', () => {
     expect(state().entities[0]!.objects).toHaveLength(1);
   });
 
-  it('does not create a layer for the eraser and warns about a locked or hidden layer', { tags: ['condition'] }, () => {
+  it('does not create a layer for the eraser and warns about a locked or hidden layer', { tags: ['condition', 'decision-table'] }, () => {
     state().setTool('eraser');
     drag([150, 150], [200, 200]);
     expect(state().entities).toHaveLength(0);
@@ -178,7 +182,7 @@ describe('painting', () => {
     expect(state().entities[0]!.objects).toHaveLength(0);
   });
 
-  it('does not paint, fill a rectangle or a lasso into a slot, and says so', { tags: ['condition'] }, () => {
+  it('does not paint, fill a rectangle or a lasso into a slot, and says so', { tags: ['condition', 'decision-table'] }, () => {
     const slot = state().addEntity('raster', { slot: 'panels' });
     state().select(slot);
     for (const tool of ['brush', 'eraser', 'mosaic', 'rect', 'lasso'] as const) {
@@ -191,7 +195,7 @@ describe('painting', () => {
     expect(toast).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'warning', title: t('canvas.toast.slotLayer') }));
   });
 
-  it('erases with the eraser width and pixelates with a mosaic block, but not on a mask', { tags: ['condition'] }, () => {
+  it('erases with the eraser width and pixelates with a mosaic block, but not on a mask', { tags: ['decision-table', 'condition'] }, () => {
     const id = state().addEntity('raster');
     state().select(id);
     state().setTool('eraser');
@@ -209,7 +213,7 @@ describe('painting', () => {
     expect(state().entities.find((e) => e.id === mask)!.objects).toHaveLength(0);
   });
 
-  it('shows the in-progress stroke while dragging', { tags: ['condition'] }, () => {
+  it('shows the in-progress stroke while dragging', { tags: ['state-transition'] }, () => {
     pointer('pointerdown', 150, 150);
     pointer('pointermove', 200, 200);
     flush();
@@ -219,10 +223,10 @@ describe('painting', () => {
   });
 });
 
-describe('rectangles', () => {
+describe('rectangles', { tags: [] }, () => {
   beforeEach(() => state().setTool('rect'));
 
-  it('adds a rectangle from the drag, a square with shift, and nothing for a click', { tags: ['condition'] }, () => {
+  it('adds a rectangle from the drag, a square with shift, and nothing for a click', { tags: ['condition', 'boundary'] }, () => {
     drag([100, 100], [180, 140]);
     expect(lastObject()).toMatchObject({ kind: 'rect', x: 100, y: 100, width: 80, height: 40 });
     drag([100, 100], [150, 120], { shiftKey: true });
@@ -235,8 +239,8 @@ describe('rectangles', () => {
   });
 });
 
-describe('moving a layer', () => {
-  it('moves the selected layer with the drag and records one history step', { tags: ['condition'] }, () => {
+describe('moving a layer', { tags: [] }, () => {
+  it('moves the selected layer with the drag and records one history step', { tags: ['scenario', 'state-transition'] }, () => {
     const id = state().addEntity('raster', { objects: [{ kind: 'rect', id: 'r', x: 0, y: 0, width: 20, height: 20, color: { r: 0, g: 0, b: 0, a: 1 } }] });
     state().select(id);
     state().setTool('move');
@@ -270,7 +274,7 @@ describe('moving a layer', () => {
   });
 });
 
-describe('the pose tool', () => {
+describe('the pose tool', { tags: [] }, () => {
   const pose = () => state().entities[0]!.objects[0] as PoseObject;
   const joint = (i: number): [number, number] => [pose().points[i * 2]!, pose().points[i * 2 + 1]!];
   const place = () => {
@@ -279,7 +283,7 @@ describe('the pose tool', () => {
     pointer('pointerup', 200, 200);
   };
 
-  it('places a standing pose on a new control layer, sized to the bounding box', { tags: ['boundary'] }, () => {
+  it('places a standing pose on a new control layer, sized to the bounding box', { tags: ['equivalence'] }, () => {
     place();
     expect(state().entities.map((e) => e.type)).toEqual(['control']);
     const b = objectsBounds([{ ...pose(), width: 0 }])!;
@@ -288,45 +292,53 @@ describe('the pose tool', () => {
     expect(pose().hidden).toEqual([]);
   });
 
-  it('turns a dragged joint around its parent with everything below it, as one history step', { tags: ['decision-table'] }, () => {
-    place();
-    const elbow = joint(J.rElbow);
-    const len = (a: [number, number], b: [number, number]) => Math.hypot(a[0] - b[0], a[1] - b[1]);
-    const upper = len(joint(J.rShoulder), elbow);
-    const fore = len(elbow, joint(J.rWrist));
-    const past = state().past.length;
-    pointer('pointerdown', ...elbow);
-    pointer('pointermove', elbow[0] - 30, elbow[1] - 40);
-    pointer('pointermove', elbow[0] - 40, elbow[1] - 60);
-    pointer('pointerup', elbow[0] - 40, elbow[1] - 60);
-    expect(len(joint(J.rShoulder), joint(J.rElbow))).toBeCloseTo(upper, 5);
-    expect(len(joint(J.rElbow), joint(J.rWrist))).toBeCloseTo(fore, 5);
-    expect(joint(J.rElbow)).not.toEqual(elbow);
-    expect(state().past.length).toBe(past + 1);
-  });
+  it(
+    'turns a dragged joint around its parent with everything below it, as one history step',
+    { tags: ['equivalence', 'state-transition'] },
+    () => {
+      place();
+      const elbow = joint(J.rElbow);
+      const len = (a: [number, number], b: [number, number]) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+      const upper = len(joint(J.rShoulder), elbow);
+      const fore = len(elbow, joint(J.rWrist));
+      const past = state().past.length;
+      pointer('pointerdown', ...elbow);
+      pointer('pointermove', elbow[0] - 30, elbow[1] - 40);
+      pointer('pointermove', elbow[0] - 40, elbow[1] - 60);
+      pointer('pointerup', elbow[0] - 40, elbow[1] - 60);
+      expect(len(joint(J.rShoulder), joint(J.rElbow))).toBeCloseTo(upper, 5);
+      expect(len(joint(J.rElbow), joint(J.rWrist))).toBeCloseTo(fore, 5);
+      expect(joint(J.rElbow)).not.toEqual(elbow);
+      expect(state().past.length).toBe(past + 1);
+    },
+  );
 
-  it('moves only the joint with shift, hides it with alt, and leaves a locked layer alone', { tags: ['state-transition'] }, () => {
-    place();
-    const wrist = joint(J.rWrist);
-    const elbow = joint(J.rElbow);
-    drag(wrist, [wrist[0] + 15, wrist[1] + 5], { shiftKey: true });
-    expect(joint(J.rWrist)).toEqual([wrist[0] + 15, wrist[1] + 5]);
-    expect(joint(J.rElbow)).toEqual(elbow);
-    pointer('pointerdown', ...joint(J.rWrist), { altKey: true });
-    pointer('pointerup', ...joint(J.rWrist));
-    expect(pose().hidden).toEqual([J.rWrist]);
-    state().updateEntity(state().entities[0]!.id, { isLocked: true });
-    const before = pose();
-    drag(joint(J.lWrist), [10, 10]);
-    expect(pose()).toBe(before);
-    expect(toast).toHaveBeenCalledWith(expect.objectContaining({ status: 'warning' }));
-  });
+  it(
+    'moves only the joint with shift, hides it with alt, and leaves a locked layer alone',
+    { tags: ['decision-table', 'condition'] },
+    () => {
+      place();
+      const wrist = joint(J.rWrist);
+      const elbow = joint(J.rElbow);
+      drag(wrist, [wrist[0] + 15, wrist[1] + 5], { shiftKey: true });
+      expect(joint(J.rWrist)).toEqual([wrist[0] + 15, wrist[1] + 5]);
+      expect(joint(J.rElbow)).toEqual(elbow);
+      pointer('pointerdown', ...joint(J.rWrist), { altKey: true });
+      pointer('pointerup', ...joint(J.rWrist));
+      expect(pose().hidden).toEqual([J.rWrist]);
+      state().updateEntity(state().entities[0]!.id, { isLocked: true });
+      const before = pose();
+      drag(joint(J.lWrist), [10, 10]);
+      expect(pose()).toBe(before);
+      expect(toast).toHaveBeenCalledWith(expect.objectContaining({ status: 'warning' }));
+    },
+  );
 });
 
-describe('the bounding box', () => {
+describe('the bounding box', { tags: [] }, () => {
   beforeEach(() => state().setTool('bbox'));
 
-  it('moves by the drag, snapped to 8 px (to 64 px on the grid, exact with alt)', { tags: ['condition'] }, () => {
+  it('moves by the drag, snapped to 8 px (to 64 px on the grid, exact with alt)', { tags: ['boundary', 'decision-table'] }, () => {
     drag([200, 200], [213, 224]);
     expect(state().bbox).toMatchObject({ x: 112, y: 128, width: 200, height: 200 });
     drag([200, 200], [213, 224], { altKey: true });
@@ -336,7 +348,7 @@ describe('the bounding box', () => {
     expect(state().bbox.x % 64).toBe(0);
   });
 
-  it('resizes from a handle, keeping the ratio with shift or a locked aspect ratio', { tags: ['condition'] }, () => {
+  it('resizes from a handle, keeping the ratio with shift or a locked aspect ratio', { tags: ['decision-table', 'condition'] }, () => {
     const r = state().bbox;
     const corner: [number, number] = [r.x + r.width, r.y + r.height];
     drag(corner, [corner[0] + 100, corner[1] + 40]);
@@ -350,7 +362,7 @@ describe('the bounding box', () => {
     expect(state().bbox.width / state().bbox.height).toBeCloseTo(r3.width / r3.height, 1);
   });
 
-  it('does nothing outside the box and picks the resize cursor over a handle', { tags: ['condition'] }, () => {
+  it('does nothing outside the box and picks the resize cursor over a handle', { tags: ['boundary', 'condition'] }, () => {
     pointer('pointermove', 20, 20);
     expect(canvas.style.cursor).toBe('default');
     drag([20, 20], [60, 60]);
@@ -368,25 +380,29 @@ describe('the bounding box', () => {
   });
 });
 
-describe('the colour picker', () => {
-  it('takes the colour under the pointer from the visible layers, and keeps the colour over empty pixels', { tags: ['boundary'] }, () => {
-    canvases.restore();
-    canvases = installRecordingCanvases({ pixel: () => [10, 20, 30, 255] });
-    state().addEntity('raster', { objects: [{ kind: 'rect', id: 'r', x: 0, y: 0, width: 50, height: 50, color: { r: 1, g: 1, b: 1, a: 1 } }] });
-    state().addEntity('raster', { isEnabled: false });
-    state().setTool('colorPicker');
-    pointer('pointerdown', 10, 10);
-    expect(state().fillColor).toMatchObject({ r: 10, g: 20, b: 30, a: 1 });
-    canvases.restore();
-    canvases = installRecordingCanvases({ pixel: () => [200, 200, 200, 0] });
-    pointer('pointermove', 12, 12);
-    expect(state().fillColor).toMatchObject({ r: 10, g: 20, b: 30 });
-    pointer('pointerup', 12, 12);
-  });
+describe('the colour picker', { tags: [] }, () => {
+  it(
+    'takes the colour under the pointer from the visible layers, and keeps the colour over empty pixels',
+    { tags: ['condition', 'boundary'] },
+    () => {
+      canvases.restore();
+      canvases = installRecordingCanvases({ pixel: () => [10, 20, 30, 255] });
+      state().addEntity('raster', { objects: [{ kind: 'rect', id: 'r', x: 0, y: 0, width: 50, height: 50, color: { r: 1, g: 1, b: 1, a: 1 } }] });
+      state().addEntity('raster', { isEnabled: false });
+      state().setTool('colorPicker');
+      pointer('pointerdown', 10, 10);
+      expect(state().fillColor).toMatchObject({ r: 10, g: 20, b: 30, a: 1 });
+      canvases.restore();
+      canvases = installRecordingCanvases({ pixel: () => [200, 200, 200, 0] });
+      pointer('pointermove', 12, 12);
+      expect(state().fillColor).toMatchObject({ r: 10, g: 20, b: 30 });
+      pointer('pointerup', 12, 12);
+    },
+  );
 });
 
-describe('panning and zooming', () => {
-  it('pans with the view tool, the middle button or the space bar', { tags: ['condition'] }, () => {
+describe('panning and zooming', { tags: [] }, () => {
+  it('pans with the view tool, the middle button or the space bar', { tags: ['decision-table'] }, () => {
     state().setTool('view');
     drag([100, 100], [130, 90]);
     expect(state().viewport).toMatchObject({ x: 30, y: -10, scale: 1 });
@@ -416,20 +432,24 @@ describe('panning and zooming', () => {
     input.remove();
   });
 
-  it('zooms around the pointer with the wheel, and resizes the brush with ctrl + wheel', { tags: ['condition'] }, () => {
-    canvas.dispatchEvent(new WheelEvent('wheel', { clientX: 400, clientY: 300, deltaY: -100, cancelable: true }));
-    expect(state().viewport.scale).toBeGreaterThan(1);
-    canvas.dispatchEvent(new WheelEvent('wheel', { ctrlKey: true, deltaY: -100, cancelable: true }));
-    expect(state().brushWidth).toBeGreaterThan(40);
-    state().setTool('eraser');
-    canvas.dispatchEvent(new WheelEvent('wheel', { ctrlKey: true, deltaY: 100, cancelable: true }));
-    expect(state().eraserWidth).toBeLessThan(40);
-    state().setTool('mosaic');
-    canvas.dispatchEvent(new WheelEvent('wheel', { ctrlKey: true, deltaY: -100, cancelable: true }));
-    expect(state().mosaicWidth).toBeGreaterThan(40);
-  });
+  it(
+    'zooms around the pointer with the wheel, and resizes the brush with ctrl + wheel',
+    { tags: ['equivalence', 'decision-table'] },
+    () => {
+      canvas.dispatchEvent(new WheelEvent('wheel', { clientX: 400, clientY: 300, deltaY: -100, cancelable: true }));
+      expect(state().viewport.scale).toBeGreaterThan(1);
+      canvas.dispatchEvent(new WheelEvent('wheel', { ctrlKey: true, deltaY: -100, cancelable: true }));
+      expect(state().brushWidth).toBeGreaterThan(40);
+      state().setTool('eraser');
+      canvas.dispatchEvent(new WheelEvent('wheel', { ctrlKey: true, deltaY: 100, cancelable: true }));
+      expect(state().eraserWidth).toBeLessThan(40);
+      state().setTool('mosaic');
+      canvas.dispatchEvent(new WheelEvent('wheel', { ctrlKey: true, deltaY: -100, cancelable: true }));
+      expect(state().mosaicWidth).toBeGreaterThan(40);
+    },
+  );
 
-  it('grows a tiny width with ctrl + wheel instead of sticking', { tags: ['condition'] }, () => {
+  it('grows a tiny width with ctrl + wheel instead of sticking', { tags: ['boundary', 'regression'] }, () => {
     state().setTool('mosaic');
     state().setMosaicWidth(1);
     canvas.dispatchEvent(new WheelEvent('wheel', { ctrlKey: true, deltaY: -100, cancelable: true }));
@@ -440,7 +460,7 @@ describe('panning and zooming', () => {
   });
 });
 
-describe('the staged picture', () => {
+describe('the staged picture', { tags: [] }, () => {
   it('draws the live progress image while the canvas is generating', { tags: ['condition'] }, () => {
     useQueue.setState({
       items: [{ id: 'q1', destination: 'canvas' } as never],

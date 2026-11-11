@@ -38,7 +38,7 @@ async fn not_ready_server() -> (u16, Arc<AtomicBool>) {
     (port, up)
 }
 
-// tags: scenario
+// tags: state-transition
 #[tokio::test]
 async fn two_jobs_that_ask_for_the_engine_together_start_it_once() {
     let (port, up) = not_ready_server().await;

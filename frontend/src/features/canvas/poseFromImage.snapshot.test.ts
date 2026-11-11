@@ -7,8 +7,8 @@ import { buildPoseExtractGraph } from '@/state/comfy/poseExtract';
 /** Pretty JSON with LF line ends, matching how the repository keeps text files. */
 const asJson = (x: unknown) => `${JSON.stringify(x, null, 2)}\n`;
 
-describe('pose extraction graph snapshot', () => {
-  it('reads the body joints of a picture as text', { tags: ['condition'] }, async () => {
+describe('pose extraction graph snapshot', { tags: [] }, () => {
+  it('reads the body joints of a picture as text', { tags: ['scenario'] }, async () => {
     await expect(asJson(buildPoseExtractGraph('photo.png', PACK_NODE_DEFS))).toMatchFileSnapshot('./__snapshots__/poseFromImage/pose-extract.json');
   });
 });

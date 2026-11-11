@@ -33,8 +33,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('first-start screen', () => {
-  it('shows the default folders and no "use the default" button', { tags: ['scenario'] }, () => {
+describe('first-start screen', { tags: [] }, () => {
+  it('shows the default folders and no "use the default" button', { tags: ['condition'] }, () => {
     answer(() => null);
     render(<FirstRun initial={initial} />);
     expect(screen.getByTestId('first-run-data-path').textContent).toBe(initial.dataDir);
@@ -55,7 +55,7 @@ describe('first-start screen', () => {
     expect(calls[1]).toEqual({ cmd: 'first_run_reset', payload: { kind: 'data' } });
   });
 
-  it('keeps the folder when the dialog is cancelled', { tags: ['scenario'] }, async () => {
+  it('keeps the folder when the dialog is cancelled', { tags: ['condition'] }, async () => {
     answer(() => null);
     render(<FirstRun initial={initial} />);
     fireEvent.click(screen.getByTestId('first-run-comfyui-choose'));
@@ -87,16 +87,20 @@ describe('first-start screen', () => {
     expect((screen.getByTestId('first-run-start') as HTMLButtonElement).disabled).toBe(false);
   });
 
-  it('only says that the data is being moved while a folder change from the Settings screen is carried out', { tags: ['scenario'] }, () => {
-    answer(() => null);
-    render(<FirstRun initial={{ ...initial, needed: false, moving: true }} />);
-    expect(screen.getByTestId('data-moving')).toBeTruthy();
-    expect(screen.queryByTestId('first-run-start')).toBeNull();
-    expect(screen.getByTestId('data-moving-percent').textContent).toBe('');
-    expect(calls).toEqual([]);
-  });
+  it(
+    'only says that the data is being moved while a folder change from the Settings screen is carried out',
+    { tags: ['condition'] },
+    () => {
+      answer(() => null);
+      render(<FirstRun initial={{ ...initial, needed: false, moving: true }} />);
+      expect(screen.getByTestId('data-moving')).toBeTruthy();
+      expect(screen.queryByTestId('first-run-start')).toBeNull();
+      expect(screen.getByTestId('data-moving-percent').textContent).toBe('');
+      expect(calls).toEqual([]);
+    },
+  );
 
-  it('shows how far the copy is, asking again as it goes', { tags: ['scenario'] }, async () => {
+  it('shows how far the copy is, asking again as it goes', { tags: ['state-transition'] }, async () => {
     const moving = { ...initial, needed: false, moving: true };
     answer((cmd) => (cmd === 'first_run_info' ? { ...moving, moved: 3 * 1024 ** 3, toMove: 4 * 1024 ** 3 } : null));
     render(<FirstRun initial={{ ...moving, moved: 1024 ** 3, toMove: 4 * 1024 ** 3 }} />);

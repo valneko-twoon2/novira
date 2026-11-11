@@ -161,7 +161,7 @@ async fn windows_calling_the_network_public_is_a_flag_not_a_gate() {
     b.stop().await;
 }
 
-// tags: condition
+// tags: equivalence, error-guessing
 #[tokio::test]
 async fn trusting_is_for_the_network_this_computers_owner_was_shown() {
     let net = Net::at(Some(MAC));
@@ -339,7 +339,7 @@ async fn closing_ends_every_session_and_forgets_every_code() {
     b.stop().await;
 }
 
-// tags: condition
+// tags: decision-table, condition
 #[tokio::test]
 async fn the_lan_routes_are_for_this_computer_with_its_token_only() {
     let net = Net::at(Some(MAC));

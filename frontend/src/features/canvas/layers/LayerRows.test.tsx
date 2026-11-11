@@ -59,7 +59,7 @@ const setNum = (label: string, value: number) => {
 };
 const entity = (id: string) => state().entities.find((e) => e.id === id)!;
 
-describe('EntityRow', () => {
+describe('EntityRow', { tags: [] }, () => {
   it('selects on click or Enter, and shows the settings only while selected', { tags: ['state-transition'] }, () => {
     const id = state().addEntity('raster');
     const { container } = row(id, false);
@@ -87,29 +87,33 @@ describe('EntityRow', () => {
     expect(state().entities).toHaveLength(0);
   });
 
-  it('renames on double click; Enter or blur keeps it, an empty name goes back to the default, Escape cancels', { tags: ['boundary', 'state-transition'] }, () => {
-    const id = state().addEntity('raster');
-    row(id, false);
-    const start = () => fireEvent.doubleClick(document.querySelector('.canvas-entity__name')!);
-    start();
-    let input = screen.getByLabelText(t('common.rename')) as HTMLInputElement;
-    fireEvent.change(input, { target: { value: '  Sky  ' } });
-    fireEvent.keyDown(input, { key: 'Enter' });
-    expect(entity(id).name).toBe('Sky');
-    start();
-    input = screen.getByLabelText(t('common.rename')) as HTMLInputElement;
-    fireEvent.click(input);
-    fireEvent.change(input, { target: { value: 'Ground' } });
-    fireEvent.keyDown(input, { key: 'Escape' });
-    expect(entity(id).name).toBe('Sky');
-    start();
-    input = screen.getByLabelText(t('common.rename')) as HTMLInputElement;
-    fireEvent.change(input, { target: { value: '' } });
-    fireEvent.blur(input);
-    expect(entity(id).name).toBeNull();
-  });
+  it(
+    'renames on double click; Enter or blur keeps it, an empty name goes back to the default, Escape cancels',
+    { tags: ['boundary', 'state-transition'] },
+    () => {
+      const id = state().addEntity('raster');
+      row(id, false);
+      const start = () => fireEvent.doubleClick(document.querySelector('.canvas-entity__name')!);
+      start();
+      let input = screen.getByLabelText(t('common.rename')) as HTMLInputElement;
+      fireEvent.change(input, { target: { value: '  Sky  ' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+      expect(entity(id).name).toBe('Sky');
+      start();
+      input = screen.getByLabelText(t('common.rename')) as HTMLInputElement;
+      fireEvent.click(input);
+      fireEvent.change(input, { target: { value: 'Ground' } });
+      fireEvent.keyDown(input, { key: 'Escape' });
+      expect(entity(id).name).toBe('Sky');
+      start();
+      input = screen.getByLabelText(t('common.rename')) as HTMLInputElement;
+      fireEvent.change(input, { target: { value: '' } });
+      fireEvent.blur(input);
+      expect(entity(id).name).toBeNull();
+    },
+  );
 
-  it('shows a slot under its own name without rename or delete, but with lock, visibility and opacity', { tags: ['scenario'] }, () => {
+  it('shows a slot under its own name without rename or delete, but with lock, visibility and opacity', { tags: ['condition'] }, () => {
     const id = state().addEntity('raster', { slot: 'panels', name: 'Frames' });
     row(id);
     fireEvent.doubleClick(document.querySelector('.canvas-entity__name')!);
@@ -122,7 +126,7 @@ describe('EntityRow', () => {
     expect(entity(id)).toMatchObject({ isEnabled: false, isLocked: true, opacity: 0.6, objects: [] });
   });
 
-  it('labels a slot row as the host says', { tags: ['scenario'] }, () => {
+  it('labels a slot row as the host says', { tags: ['equivalence'] }, () => {
     const id = state().addEntity('raster', { slot: 'panels' });
     state().select(null);
     render(
@@ -135,14 +139,14 @@ describe('EntityRow', () => {
     expect(screen.getByText('Panels')).toBeTruthy();
   });
 
-  it('edits the opacity of a raster layer', { tags: ['scenario'] }, () => {
+  it('edits the opacity of a raster layer', { tags: ['equivalence'] }, () => {
     const id = state().addEntity('raster');
     row(id);
     setNum(t('canvas.entity.opacity'), 40);
     expect(entity(id).opacity).toBe(0.4);
   });
 
-  it('sets the blend of a raster layer next to its opacity, normal by default; other layers have none', { tags: ['scenario'] }, () => {
+  it('sets the blend of a raster layer next to its opacity, normal by default; other layers have none', { tags: ['condition'] }, () => {
     HTMLElement.prototype.hasPointerCapture = vi.fn(() => false);
     HTMLElement.prototype.releasePointerCapture = vi.fn();
     HTMLElement.prototype.scrollIntoView = vi.fn();
@@ -161,25 +165,29 @@ describe('EntityRow', () => {
   });
 });
 
-describe('inpaint mask settings', () => {
-  it('turns the denoise limit and noise level on and off, and changes the mask colour', { tags: ['boundary'] }, () => {
-    const id = state().addEntity('inpaint');
-    row(id);
-    const denoise = screen.getByRole('switch', { name: t('canvas.mask.denoiseLimit') });
-    fireEvent.click(denoise);
-    expect(entity(id)).toMatchObject({ denoiseLimit: 1 });
-    setNum(t('canvas.mask.denoiseLimit'), 0.4);
-    expect(entity(id)).toMatchObject({ denoiseLimit: 0.4 });
-    fireEvent.click(screen.getByRole('switch', { name: t('canvas.mask.noiseLevel') }));
-    expect((entity(id) as { noiseLevel: number | null }).noiseLevel).toBe(1);
-    fireEvent.click(denoise);
-    expect((entity(id) as { denoiseLimit: number | null }).denoiseLimit).toBeNull();
-    fireEvent.change(screen.getByLabelText(t('canvas.mask.color')), { target: { value: '#00ff00' } });
-    expect((entity(id) as { color: { g: number } }).color.g).toBe(255);
-  });
+describe('inpaint mask settings', { tags: [] }, () => {
+  it(
+    'turns the denoise limit and noise level on and off, and changes the mask colour',
+    { tags: ['state-transition', 'equivalence'] },
+    () => {
+      const id = state().addEntity('inpaint');
+      row(id);
+      const denoise = screen.getByRole('switch', { name: t('canvas.mask.denoiseLimit') });
+      fireEvent.click(denoise);
+      expect(entity(id)).toMatchObject({ denoiseLimit: 1 });
+      setNum(t('canvas.mask.denoiseLimit'), 0.4);
+      expect(entity(id)).toMatchObject({ denoiseLimit: 0.4 });
+      fireEvent.click(screen.getByRole('switch', { name: t('canvas.mask.noiseLevel') }));
+      expect((entity(id) as { noiseLevel: number | null }).noiseLevel).toBe(1);
+      fireEvent.click(denoise);
+      expect((entity(id) as { denoiseLimit: number | null }).denoiseLimit).toBeNull();
+      fireEvent.change(screen.getByLabelText(t('canvas.mask.color')), { target: { value: '#00ff00' } });
+      expect((entity(id) as { color: { g: number } }).color.g).toBe(255);
+    },
+  );
 });
 
-describe('regional guidance settings', () => {
+describe('regional guidance settings', { tags: [] }, () => {
   it('adds, edits and removes the prompts', { tags: ['scenario'] }, () => {
     const id = state().addEntity('regional');
     row(id);
@@ -194,7 +202,7 @@ describe('regional guidance settings', () => {
     expect(entity(id)).toMatchObject({ positivePrompt: null, negativePrompt: null });
   });
 
-  it('adds a reference picture, edits its weight and removes it, and turns the auto-negative on', { tags: ['boundary'] }, () => {
+  it('adds a reference picture, edits its weight and removes it, and turns the auto-negative on', { tags: ['scenario'] }, () => {
     const id = state().addEntity('regional');
     row(id);
     fireEvent.click(screen.getByText(t('canvas.regional.addRefImage')));
@@ -208,8 +216,8 @@ describe('regional guidance settings', () => {
   });
 });
 
-describe('control layer settings', () => {
-  it('edits the weight and the start and end of the effect, and the transparency effect', { tags: ['scenario'] }, () => {
+describe('control layer settings', { tags: [] }, () => {
+  it('edits the weight and the start and end of the effect, and the transparency effect', { tags: ['boundary', 'condition'] }, () => {
     const id = state().addEntity('control');
     row(id);
     setNum(t('canvas.control.weight'), 1.2);
@@ -224,7 +232,7 @@ describe('control layer settings', () => {
     expect((entity(id) as { withTransparencyEffect: boolean }).withTransparencyEffect).toBe(false);
   });
 
-  it('processes, applies and cancels a filter preview', { tags: ['scenario'] }, () => {
+  it('processes, applies and cancels a filter preview', { tags: ['state-transition'] }, () => {
     const id = state().addEntity('control');
     state().updateEntity(id, { filter: 'canny' });
     row(id);
@@ -239,7 +247,7 @@ describe('control layer settings', () => {
     expect(state().filterPreviews[id]).toBeUndefined();
   });
 
-  it('processes automatically when asked, and clears the preview for no filter', { tags: ['scenario'] }, () => {
+  it('processes automatically when asked, and clears the preview for no filter', { tags: ['condition'] }, () => {
     const id = state().addEntity('control');
     state().updateEntity(id, { filter: 'canny' });
     state().setSettings({ autoProcess: true });
@@ -251,7 +259,7 @@ describe('control layer settings', () => {
   });
 });
 
-describe('RefImagesGroup', () => {
+describe('RefImagesGroup', { tags: [] }, () => {
   const group = () =>
     render(
       <TooltipProvider>
@@ -259,7 +267,7 @@ describe('RefImagesGroup', () => {
       </TooltipProvider>,
     );
 
-  it('shows nothing without reference images', { tags: ['scenario'] }, () => {
+  it('shows nothing without reference images', { tags: ['boundary'] }, () => {
     const { container } = group();
     expect(container.firstChild).toBeNull();
   });
@@ -282,14 +290,14 @@ describe('RefImagesGroup', () => {
     expect(useParams.getState().refImages).toHaveLength(2);
   });
 
-  it('shows the gallery thumbnail in a row, not the picture itself', { tags: ['scenario'] }, () => {
+  it('shows the gallery thumbnail in a row, not the picture itself', { tags: ['equivalence'] }, () => {
     useGallery.setState({ images: [{ name: 'a.png', url: 'blob:a', thumbnailUrl: 'blob:thumb-a', width: 1, height: 1 } as never] });
     useParams.getState().addRefImage({ modelKey: null, imageName: 'a.png', imageUrl: 'blob:a' });
     group();
     expect(document.querySelector('.canvas-entity__row img')!.getAttribute('src')).toBe('blob:thumb-a');
   });
 
-  it('edits the weight and the range of the selected reference image', { tags: ['scenario'] }, () => {
+  it('edits the weight and the range of the selected reference image', { tags: ['boundary', 'condition'] }, () => {
     useParams.getState().addRefImage({ modelKey: null });
     const id = useParams.getState().refImages[0]!.id;
     act(() => state().select(id));
@@ -304,7 +312,7 @@ describe('RefImagesGroup', () => {
     expect(useParams.getState().refImages[0]!.beginEnd[1]).toBe(0.8);
   });
 
-  it('fills the image slot from a drop, an upload, and clears it', { tags: ['scenario'] }, async () => {
+  it('fills the image slot from a drop, an upload, and clears it', { tags: ['scenario', 'equivalence'] }, async () => {
     useParams.getState().addRefImage({ modelKey: null });
     const ref = useParams.getState().refImages[0]!;
     act(() => state().select(ref.id));

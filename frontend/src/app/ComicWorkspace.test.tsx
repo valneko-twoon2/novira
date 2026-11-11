@@ -44,7 +44,7 @@ const mount = () =>
     </TooltipProvider>,
   );
 
-describe('the comic screen', () => {
+describe('the comic screen', { tags: [] }, () => {
   it('starts on the drawing form, with the page in the middle and no stage bar', { tags: ['scenario'] }, () => {
     mount();
     expect(screen.getByTestId('parameters-panel')).toBeTruthy();
@@ -53,7 +53,7 @@ describe('the comic screen', () => {
   });
 });
 
-describe('painting on the page', () => {
+describe('painting on the page', { tags: [] }, () => {
   const page = () => activePage(useComic.getState())!;
   const rows = () => within(screen.getByTestId('canvas-layers')).getAllByTestId('canvas-entity');
   const rowOf = (text: string) => rows().find((r) => r.textContent?.includes(text))!.querySelector('.canvas-entity__row')!;
@@ -77,7 +77,7 @@ describe('painting on the page', () => {
     expect(screen.getByTestId('comic-delete')).toBeTruthy();
   });
 
-  it('follows the layers panel: a slot row goes back to the page, a raster row paints again', { tags: ['scenario'] }, () => {
+  it('follows the layers panel: a slot row goes back to the page, a raster row paints again', { tags: ['state-transition'] }, () => {
     mount();
     fireEvent.click(screen.getByTestId('comic-mode-paint'));
     fireEvent.click(rowOf(t('comic.layers.panels')));
@@ -104,26 +104,30 @@ describe('painting on the page', () => {
     expect(useComic.getState().past).toHaveLength(0);
   });
 
-  it('paints on an inpaint mask without leaving paint mode, and Escape discards a waiting result before it leaves', { tags: ['scenario'] }, () => {
-    mount();
-    fireEvent.click(screen.getByTestId('comic-mode-paint'));
-    const store = pageCanvasStore(page().id)!;
-    let maskId = '';
-    act(() => {
-      maskId = store.getState().addEntity('inpaint');
-      store.getState().select(maskId);
-    });
-    expect(usePagePaint.getState().painting).toBe(true);
-    expect(screen.getByTestId('comic-inpaint-run')).toBeTruthy();
-    expect(screen.queryByTestId('canvas-staging')).toBeNull();
-    act(() => store.getState().addStagedImage('result.png'));
-    expect(screen.getByTestId('canvas-staging')).toBeTruthy();
-    fireEvent.keyDown(window, { key: 'Escape' });
-    expect(store.getState().stagedImageNames).toEqual([]);
-    expect(usePagePaint.getState().painting).toBe(true);
-    fireEvent.keyDown(window, { key: 'Escape' });
-    expect(usePagePaint.getState().painting).toBe(false);
-  });
+  it(
+    'paints on an inpaint mask without leaving paint mode, and Escape discards a waiting result before it leaves',
+    { tags: ['state-transition', 'scenario'] },
+    () => {
+      mount();
+      fireEvent.click(screen.getByTestId('comic-mode-paint'));
+      const store = pageCanvasStore(page().id)!;
+      let maskId = '';
+      act(() => {
+        maskId = store.getState().addEntity('inpaint');
+        store.getState().select(maskId);
+      });
+      expect(usePagePaint.getState().painting).toBe(true);
+      expect(screen.getByTestId('comic-inpaint-run')).toBeTruthy();
+      expect(screen.queryByTestId('canvas-staging')).toBeNull();
+      act(() => store.getState().addStagedImage('result.png'));
+      expect(screen.getByTestId('canvas-staging')).toBeTruthy();
+      fireEvent.keyDown(window, { key: 'Escape' });
+      expect(store.getState().stagedImageNames).toEqual([]);
+      expect(usePagePaint.getState().painting).toBe(true);
+      fireEvent.keyDown(window, { key: 'Escape' });
+      expect(usePagePaint.getState().painting).toBe(false);
+    },
+  );
 
   it('accepts a staged result into a new raster layer of the page', { tags: ['scenario'] }, () => {
     mount();
@@ -139,7 +143,7 @@ describe('painting on the page', () => {
     expect(rasters.some((e) => e.objects.some((o) => o.kind === 'image' && o.imageName === 'result.png'))).toBe(true);
   });
 
-  it('stops painting on another page', { tags: ['state-transition'] }, () => {
+  it('stops painting on another page', { tags: ['state-transition', 'condition'] }, () => {
     mount();
     fireEvent.click(screen.getByTestId('comic-mode-paint'));
     act(() => {

@@ -70,7 +70,7 @@ describe('gallery store', () => {
     expect(s.autoAddBoardId).toBe('none');
   });
 
-  it('upserts boards by id', { tags: ['condition'] }, () => {
+  it('upserts boards by id', { tags: ['equivalence'] }, () => {
     useGallery.getState().upsertBoard(board('x'));
     useGallery.getState().upsertBoard({ ...board('x'), name: 'renamed' });
     useGallery.getState().upsertBoard(board('y'));
@@ -80,13 +80,13 @@ describe('gallery store', () => {
     ]);
   });
 
-  it('moves the images of a deleted board to Uncategorized', { tags: ['condition'] }, () => {
+  it('moves the images of a deleted board to Uncategorized', { tags: ['equivalence'] }, () => {
     useGallery.getState().setImages([image('a', { boardId: 'x' }), image('b', { boardId: 'y' })]);
     useGallery.getState().detachBoardImages('x');
     expect(useGallery.getState().images.map((i) => i.boardId)).toEqual([null, 'y']);
   });
 
-  it('selecting a board resets the page and selection and follows auto-assign', { tags: ['condition'] }, () => {
+  it('selecting a board resets the page and selection and follows auto-assign', { tags: ['decision-table'] }, () => {
     useGallery.setState({ page: 3, selection: ['a'] });
     useGallery.getState().selectBoard('x');
     let s = useGallery.getState();
@@ -99,7 +99,7 @@ describe('gallery store', () => {
     expect(s.autoAddBoardId).toBe('x');
   });
 
-  it('changing the view or the search goes back to the first page', { tags: ['condition'] }, () => {
+  it('changing the view or the search goes back to the first page', { tags: ['equivalence'] }, () => {
     useGallery.getState().setPage(4);
     useGallery.getState().setView('assets');
     expect(useGallery.getState().page).toBe(0);
@@ -108,7 +108,7 @@ describe('gallery store', () => {
     expect(useGallery.getState().page).toBe(0);
   });
 
-  it('starts without a date filter, sets and clears it, and goes back to the first page', { tags: ['condition'] }, () => {
+  it('starts without a date filter, sets and clears it, and goes back to the first page', { tags: ['state-transition'] }, () => {
     expect(useGallery.getState().dateFilter).toBeNull();
     useGallery.getState().setPage(2);
     useGallery.getState().setDateFilter({ from: '2026-10-01', to: '2026-10-05' });
@@ -124,13 +124,13 @@ describe('gallery store', () => {
     expect(useGallery.getState().dateFilter).toEqual({ from: '2026-10-05', to: '2026-10-05' });
   });
 
-  it('does not save the date filter between sessions', { tags: ['condition'] }, () => {
+  it('does not save the date filter between sessions', { tags: ['equivalence'] }, () => {
     useGallery.getState().setDateFilter({ from: '2026-10-05', to: null });
     const saved = persistedPart(useGallery.getState());
     expect(Object.keys(saved).sort()).toEqual(['compareMode', 'settings', 'showMetadata']);
   });
 
-  it('fills settings missing from an older saved copy with their defaults', { tags: ['error-guessing'] }, () => {
+  it('fills settings missing from an older saved copy with their defaults', { tags: ['error-guessing', 'condition'] }, () => {
     const merged = mergePersisted({ settings: { thumbnailSize: 120 }, showMetadata: true }, useGallery.getState());
     expect(merged.settings.thumbnailSize).toBe(120);
     expect(merged.settings.groupByDate).toBe(false);
@@ -139,37 +139,41 @@ describe('gallery store', () => {
     expect(mergePersisted(undefined, useGallery.getState()).settings).toEqual(initial.settings);
   });
 
-  it('shows the last selected image in the viewer and keeps the viewer when the selection empties', { tags: ['scenario'] }, () => {
+  it('shows the last selected image in the viewer and keeps the viewer when the selection empties', { tags: ['state-transition'] }, () => {
     useGallery.getState().setSelection(['a', 'b']);
     expect(useGallery.getState().viewerImageName).toBe('b');
     useGallery.getState().setSelection([]);
     expect(useGallery.getState().viewerImageName).toBe('b');
   });
 
-  it('shows a running job in the viewer until a picture is picked, and an empty selection does not end it', { tags: ['boundary'] }, () => {
-    const g = useGallery.getState();
-    g.setSelection(['a']);
-    g.showLiveItem(9);
-    expect(useGallery.getState().viewerLiveItemId).toBe(9);
-    useGallery.getState().setSelection([]);
-    expect(useGallery.getState().viewerLiveItemId).toBe(9);
-    expect(useGallery.getState().viewerImageName).toBe('a');
-    useGallery.getState().setSelection(['b']);
-    expect(useGallery.getState().viewerLiveItemId).toBeNull();
-    useGallery.getState().showLiveItem(9);
-    useGallery.getState().setViewerImage('c');
-    expect(useGallery.getState().viewerLiveItemId).toBeNull();
-    // Not kept between sessions.
-    expect(persistedPart({ ...useGallery.getState(), viewerLiveItemId: 9 })).not.toHaveProperty('viewerLiveItemId');
-  });
+  it(
+    'shows a running job in the viewer until a picture is picked, and an empty selection does not end it',
+    { tags: ['state-transition', 'boundary'] },
+    () => {
+      const g = useGallery.getState();
+      g.setSelection(['a']);
+      g.showLiveItem(9);
+      expect(useGallery.getState().viewerLiveItemId).toBe(9);
+      useGallery.getState().setSelection([]);
+      expect(useGallery.getState().viewerLiveItemId).toBe(9);
+      expect(useGallery.getState().viewerImageName).toBe('a');
+      useGallery.getState().setSelection(['b']);
+      expect(useGallery.getState().viewerLiveItemId).toBeNull();
+      useGallery.getState().showLiveItem(9);
+      useGallery.getState().setViewerImage('c');
+      expect(useGallery.getState().viewerLiveItemId).toBeNull();
+      // Not kept between sessions.
+      expect(persistedPart({ ...useGallery.getState(), viewerLiveItemId: 9 })).not.toHaveProperty('viewerLiveItemId');
+    },
+  );
 
-  it('merges settings patches', { tags: ['condition'] }, () => {
+  it('merges settings patches', { tags: ['equivalence'] }, () => {
     useGallery.getState().setSettings({ thumbnailSize: 120 });
     expect(useGallery.getState().settings.thumbnailSize).toBe(120);
     expect(useGallery.getState().settings.pageSize).toBe(initial.settings.pageSize);
   });
 
-  it('finds images by name', { tags: ['condition'] }, () => {
+  it('finds images by name', { tags: ['equivalence'] }, () => {
     useGallery.getState().setImages([image('a')]);
     expect(findImage('a')?.name).toBe('a');
     expect(findImage('b')).toBeUndefined();
@@ -197,21 +201,21 @@ describe('selectBoardImages', () => {
     ...over,
   });
 
-  it('lists the board images newest first with starred images on top, leaving out helpers and assets', { tags: ['condition'] }, () => {
+  it('lists the board images newest first with starred images on top, leaving out helpers and assets', { tags: ['equivalence'] }, () => {
     expect(selectBoardImages(state()).map((i) => i.name)).toEqual(['starred-old', 'new', 'prompted', 'old']);
   });
 
-  it('sorts oldest first and ignores stars when asked', { tags: ['condition'] }, () => {
+  it('sorts oldest first and ignores stars when asked', { tags: ['decision-table'] }, () => {
     const settings = { ...initial.settings, sortDirection: 'asc' as const, starredFirst: false };
     expect(selectBoardImages(state({ settings })).map((i) => i.name)).toEqual(['starred-old', 'old', 'prompted', 'new']);
   });
 
-  it('shows uploads in the assets view and the chosen board only', { tags: ['scenario'] }, () => {
+  it('shows uploads in the assets view and the chosen board only', { tags: ['equivalence'] }, () => {
     expect(selectBoardImages(state({ view: 'assets' })).map((i) => i.name)).toEqual(['upload']);
     expect(selectBoardImages(state({ selectedBoardId: 'x' })).map((i) => i.name)).toEqual(['other-board']);
   });
 
-  it('searches names and prompts case-insensitively', { tags: ['condition'] }, () => {
+  it('searches names and prompts case-insensitively', { tags: ['equivalence'] }, () => {
     expect(selectBoardImages(state({ search: '  red fox ' })).map((i) => i.name)).toEqual(['prompted']);
     expect(selectBoardImages(state({ search: 'OLD' })).map((i) => i.name)).toEqual(['starred-old', 'old']);
   });
@@ -244,7 +248,7 @@ describe('selectBoardImages with dates', () => {
     expect(names({ dateFilter: { from: '2026-10-04', to: '2026-10-04' } })).toEqual(['oct4-late']);
   });
 
-  it('includes both ends of a range and supports open ends', { tags: ['decision-table'] }, () => {
+  it('includes both ends of a range and supports open ends', { tags: ['boundary', 'decision-table'] }, () => {
     expect(names({ dateFilter: { from: '2026-10-05', to: '2026-10-06' } })).toEqual(['oct5-starred', 'oct6', 'oct5-noon', 'oct5-midnight']);
     expect(names({ dateFilter: { from: '2026-10-06', to: null } })).toEqual(['oct7-starred', 'oct6']);
     expect(names({ dateFilter: { from: null, to: '2026-10-04' } })).toEqual(['oct4-late']);
@@ -254,21 +258,21 @@ describe('selectBoardImages with dates', () => {
     expect(names({ dateFilter: { from: '2026-11-01', to: '2026-11-30' } })).toEqual([]);
   });
 
-  it('runs day by day when grouped, newest day first, starred first within each day', { tags: ['equivalence'] }, () => {
+  it('runs day by day when grouped, newest day first, starred first within each day', { tags: ['decision-table'] }, () => {
     const settings = { ...initial.settings, groupByDate: true };
     expect(names({ settings })).toEqual(['oct7-starred', 'oct6', 'oct5-starred', 'oct5-noon', 'oct5-midnight', 'oct4-late']);
     const asc = { ...settings, sortDirection: 'asc' as const };
     expect(names({ settings: asc })).toEqual(['oct4-late', 'oct5-starred', 'oct5-midnight', 'oct5-noon', 'oct6', 'oct7-starred']);
   });
 
-  it('keeps the logos of an older version in the assets view', { tags: ['condition'] }, () => {
+  it('keeps the logos of an older version in the assets view', { tags: ['regression'] }, () => {
     const logo = image('logo.png', { category: 'other', metadata: { generationMode: 'logo' } as ImageDTO['metadata'] });
     const shown = (view: 'images' | 'assets') => filterBoardImages({ images: [image('a'), logo], selectedBoardId: 'none', view, search: '' }).map((i) => i.name);
     expect(shown('assets')).toEqual(['logo.png']);
     expect(shown('images')).toEqual(['a']);
   });
 
-  it('leaves the date filter out of filterBoardImages (the calendar counts every day)', { tags: ['equivalence'] }, () => {
+  it('leaves the date filter out of filterBoardImages (the calendar counts every day)', { tags: ['condition'] }, () => {
     expect(filterBoardImages(state({ dateFilter: { from: '2026-10-07', to: '2026-10-07' } }))).toHaveLength(images.length);
   });
 });

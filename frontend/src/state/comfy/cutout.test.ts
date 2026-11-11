@@ -4,8 +4,8 @@ import { CUTOUT_NODE, buildCutoutGraph, cutoutModels } from './cutout';
 
 const defsWith = (models: string[]) => ({ [CUTOUT_NODE]: { input: { required: { model: [models] } } } }) as unknown as ComfyNodeDefs;
 
-describe('cutout prompt', () => {
-  it('reads the gallery picture, keeps its alpha and saves one picture', { tags: ['condition'] }, () => {
+describe('cutout prompt', { tags: [] }, () => {
+  it('reads the gallery picture, keeps its alpha and saves one picture', { tags: ['equivalence'] }, () => {
     const g = buildCutoutGraph('photo.png', { model: 'RMBG-2.0', sensitivity: 0.8, edge: -2, background: 'alpha' });
     expect(g.prompt.source!.inputs.image).toEqual({ $image: 'photo.png' });
     const cut = g.prompt.cut!;
@@ -21,26 +21,26 @@ describe('cutout prompt', () => {
   });
 });
 
-describe('cutout models', () => {
-  it('lists what the loaded node offers, the best known first', { tags: ['condition'] }, () => {
+describe('cutout models', { tags: [] }, () => {
+  it('lists what the loaded node offers, the best known first', { tags: ['equivalence'] }, () => {
     expect(cutoutModels(defsWith(['BEN', 'INSPYRENET', 'RMBG-2.0', 'BEN2']))).toEqual(['RMBG-2.0', 'INSPYRENET', 'BEN2', 'BEN']);
   });
 
-  it('is empty while the pack is not loaded', { tags: ['boundary'] }, () => {
+  it('is empty while the pack is not loaded', { tags: ['boundary', 'error-guessing'] }, () => {
     expect(cutoutModels(null)).toEqual([]);
     expect(cutoutModels({} as ComfyNodeDefs)).toEqual([]);
   });
 });
 
 // Snapshots of the whole prompts, so a change to them is seen in review. Update on purpose with `npx vitest run -u`.
-describe('cutout graph snapshots', () => {
+describe('cutout graph snapshots', { tags: [] }, () => {
   const asJson = (x: unknown) => `${JSON.stringify(x, null, 2)}\n`;
 
-  it('remove the background', { tags: ['condition'] }, async () => {
+  it('remove the background', { tags: ['equivalence'] }, async () => {
     await expect(asJson(buildCutoutGraph('photo.png', { model: 'RMBG-2.0', sensitivity: 1, edge: 0, background: 'alpha' }))).toMatchFileSnapshot('./__snapshots__/cutout/cutout.json');
   });
 
-  it('remove the background and put a white one in its place', { tags: ['condition'] }, async () => {
+  it('remove the background and put a white one in its place', { tags: ['equivalence'] }, async () => {
     await expect(asJson(buildCutoutGraph('photo.png', { model: 'RMBG-2.0', sensitivity: 1, edge: 0, background: 'white' }))).toMatchFileSnapshot('./__snapshots__/cutout/cutout-white.json');
   });
 });

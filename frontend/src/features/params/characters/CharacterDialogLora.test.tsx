@@ -61,22 +61,26 @@ afterEach(async () => {
 });
 
 describe('the LoRA of a character', () => {
-  it('offers the LoRAs of the model list when the character has none, and sets the one chosen with its trigger phrase', { tags: ['scenario'] }, async () => {
-    HTMLElement.prototype.hasPointerCapture = vi.fn(() => false);
-    HTMLElement.prototype.releasePointerCapture = vi.fn();
-    HTMLElement.prototype.scrollIntoView = vi.fn();
-    useModels.getState().setModels([{ key: 'mia-lora', name: 'Mia LoRA', base: 'sdxl', type: 'lora', triggerPhrases: ['mia_chr', 'other'] } as ModelConfig]);
-    const id = await openEdit(false);
-    const select = screen.getByTestId('character-lora-select');
-    expect(select.textContent).toBe(t('lora.noneOption'));
-    expect(screen.queryByLabelText(t('lora.use'))).toBeNull();
-    fireEvent.keyDown(select, { key: 'Enter' });
-    fireEvent.click(screen.getByRole('option', { name: 'Mia LoRA' }));
-    expect(screen.getByLabelText(t('lora.use'))).toBeTruthy();
-    fireEvent.click(screen.getByTestId('character-save'));
-    await waitFor(() => expect(useCharacterDialog.getState().target).toBeNull());
-    expect(useCharacters.getState().presets.find((p) => p.id === id)!.data.lora).toEqual({ key: 'mia-lora', weight: 0.8, trigger: 'mia_chr', enabled: true });
-  });
+  it(
+    'offers the LoRAs of the model list when the character has none, and sets the one chosen with its trigger phrase',
+    { tags: ['scenario'] },
+    async () => {
+      HTMLElement.prototype.hasPointerCapture = vi.fn(() => false);
+      HTMLElement.prototype.releasePointerCapture = vi.fn();
+      HTMLElement.prototype.scrollIntoView = vi.fn();
+      useModels.getState().setModels([{ key: 'mia-lora', name: 'Mia LoRA', base: 'sdxl', type: 'lora', triggerPhrases: ['mia_chr', 'other'] } as ModelConfig]);
+      const id = await openEdit(false);
+      const select = screen.getByTestId('character-lora-select');
+      expect(select.textContent).toBe(t('lora.noneOption'));
+      expect(screen.queryByLabelText(t('lora.use'))).toBeNull();
+      fireEvent.keyDown(select, { key: 'Enter' });
+      fireEvent.click(screen.getByRole('option', { name: 'Mia LoRA' }));
+      expect(screen.getByLabelText(t('lora.use'))).toBeTruthy();
+      fireEvent.click(screen.getByTestId('character-save'));
+      await waitFor(() => expect(useCharacterDialog.getState().target).toBeNull());
+      expect(useCharacters.getState().presets.find((p) => p.id === id)!.data.lora).toEqual({ key: 'mia-lora', weight: 0.8, trigger: 'mia_chr', enabled: true });
+    },
+  );
 
   it('takes the LoRA off the character when "no LoRA" is chosen', { tags: ['scenario'] }, async () => {
     HTMLElement.prototype.hasPointerCapture = vi.fn(() => false);

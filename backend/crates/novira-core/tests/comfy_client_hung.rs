@@ -70,7 +70,7 @@ fn job() -> EngineJob {
     }
 }
 
-// tags: state-transition
+// tags: state-transition, error-guessing
 #[tokio::test]
 async fn cancelling_a_job_ends_it_even_when_comfyui_has_stopped_answering() {
     let url = serve_hanging().await;

@@ -858,7 +858,7 @@ include!("command_list.rs");
 mod tests {
     use super::{source_is_allowed, COMMANDS};
 
-    // tags: condition
+    // tags: condition, error-guessing
     #[test]
     fn a_local_model_path_is_installed_only_when_the_last_scan_listed_it() {
         let scanned: std::collections::HashSet<String> =

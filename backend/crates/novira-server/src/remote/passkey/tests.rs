@@ -143,7 +143,7 @@ fn new_key(a: &Authenticator, m: &Made) -> Result<NewKey, Refusal> {
     .inspect(|k| assert_eq!(k.public_key, a.point()))
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn a_new_passkey_checks_out_and_its_key_and_id_come_back() {
     let a = Authenticator::new();
@@ -228,7 +228,7 @@ fn a_new_passkey_for_another_challenge_origin_party_or_ceremony_is_refused() {
     );
 }
 
-// tags: condition
+// tags: decision-table, condition
 #[test]
 fn a_new_passkey_needs_a_present_and_verified_user() {
     let mut a = Authenticator::new();
@@ -321,7 +321,7 @@ fn a_new_passkey_must_be_p256_and_the_key_the_authenticator_named() {
     );
 }
 
-// tags: error-guessing
+// tags: error-guessing, boundary
 #[test]
 fn a_new_passkey_must_carry_its_own_id_and_attested_data() {
     let a = Authenticator::new();
@@ -384,7 +384,7 @@ fn a_new_passkey_must_carry_its_own_id_and_attested_data() {
     }
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn a_sign_in_verifies_with_the_stored_key() {
     let mut a = Authenticator::new();
@@ -571,7 +571,7 @@ fn a_counter_that_does_not_move_on_is_refused_and_zero_always_passes() {
     );
 }
 
-// tags: condition
+// tags: equivalence, error-guessing
 #[test]
 fn the_challenge_is_read_from_the_client_data() {
     assert_eq!(
@@ -610,7 +610,7 @@ fn made_with(a: &Authenticator, flags: u8, id: Vec<u8>, cose: &[u8]) -> Result<N
 
 const VERIFIED: u8 = USER_PRESENT | USER_VERIFIED;
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn es256_is_cose_algorithm_minus_7_as_the_browser_reports_it() {
     let a = Authenticator::new();
@@ -628,7 +628,7 @@ fn es256_is_cose_algorithm_minus_7_as_the_browser_reports_it() {
     .is_ok());
 }
 
-// tags: error-guessing
+// tags: condition, error-guessing
 #[test]
 fn attested_data_without_the_attested_flag_is_refused() {
     let a = Authenticator::new();

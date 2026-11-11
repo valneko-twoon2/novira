@@ -16,7 +16,7 @@ const key = ms.map(dayKey);
 const locale = fc.constantFrom(...LOCALES);
 
 describe('date labels (properties)', () => {
-  it('day labels are non-empty text in every language, for any real day', { tags: ['error-guessing'] }, () => {
+  it('day labels are non-empty text in every language, for any real day', { tags: ['equivalence'] }, () => {
     check(
       fc.property(locale, key, (l, k) => {
         setLocale(l);
@@ -30,7 +30,7 @@ describe('date labels (properties)', () => {
     check(fc.property(fc.string({ maxLength: 12 }).filter((s) => !/^\d{4}-\d{2}-\d{2}$/.test(s)), (s) => longDayLabel(s) === s && shortDayLabel(s) === s));
   });
 
-  it('rangeLabel gives a label for any range, empty only when both ends are open', { tags: ['error-guessing'] }, () => {
+  it('rangeLabel gives a label for any range, empty only when both ends are open', { tags: ['condition', 'error-guessing'] }, () => {
     check(
       fc.property(locale, fc.option(key, { nil: null }), fc.option(key, { nil: null }), ms, (l, from, to, now) => {
         setLocale(l);
@@ -41,7 +41,7 @@ describe('date labels (properties)', () => {
     );
   });
 
-  it('month and weekday labels exist for every month and language', { tags: ['error-guessing'] }, () => {
+  it('month and weekday labels exist for every month and language', { tags: ['boundary'] }, () => {
     check(
       fc.property(locale, key, fc.integer({ min: -60, max: 60 }), (l, k, n) => {
         setLocale(l);

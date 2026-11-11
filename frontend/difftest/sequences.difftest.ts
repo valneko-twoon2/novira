@@ -74,11 +74,11 @@ function sequence(b: BackendClient, seed: number): Step[] {
   return steps;
 }
 
-describe.runIf(ORIGIN && TOKEN)('random sequences of library calls end alike on the mock and the real backend', () => {
+describe.runIf(ORIGIN && TOKEN)('random sequences of library calls end alike on the mock and the real backend', { tags: [] }, () => {
   const backends = useBackends();
   for (let run = 0; run < RUNS; run++) {
     const seed = SEED + run;
-    it(`sequence of seed ${seed}`, { tags: ['scenario', 'error-guessing'], timeout: 30_000 + STEPS * 2_000 }, async () => {
+    it(`sequence of seed ${seed}`, { tags: ['state-transition', 'error-guessing'], timeout: 30_000 + STEPS * 2_000 }, async () => {
       await same(backends, (b) => sequence(b, seed));
     });
   }

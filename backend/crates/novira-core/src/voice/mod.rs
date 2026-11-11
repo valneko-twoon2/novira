@@ -694,7 +694,7 @@ mod tests {
         }
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn the_mode_picks_the_model() {
         assert_eq!(
@@ -707,7 +707,7 @@ mod tests {
         );
     }
 
-    // tags: condition
+    // tags: decision-table
     #[test]
     fn installed_needs_the_libraries_and_both_models() {
         let data = tempfile::tempdir().unwrap();
@@ -764,7 +764,7 @@ mod tests {
         );
     }
 
-    // tags: scenario
+    // tags: equivalence
     #[test]
     fn the_request_line_carries_everything_the_worker_needs() {
         let v = request_json(
@@ -789,7 +789,7 @@ mod tests {
         );
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn libraries_come_from_the_pip_report_without_the_demo_extras() {
         let report = json!({"install": [
@@ -810,7 +810,7 @@ mod tests {
         assert!(libraries_from_report(&json!({})).is_empty());
     }
 
-    // tags: equivalence
+    // tags: equivalence, error-guessing
     #[test]
     fn only_model_files_are_downloaded() {
         let tree = json!([

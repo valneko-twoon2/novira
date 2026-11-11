@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { wrapVertical } from './pageRender';
 
-describe('wrapVertical', () => {
-  it('makes one column per line of the text, and breaks a long line into columns', { tags: ['condition'] }, () => {
+describe('wrapVertical', { tags: [] }, () => {
+  it('makes one column per line of the text, and breaks a long line into columns', { tags: ['equivalence'] }, () => {
     expect(wrapVertical('ab\ncd', 5)).toEqual(['ab', 'cd']);
     expect(wrapVertical('abcdefg', 3)).toEqual(['abc', 'def', 'g']);
   });

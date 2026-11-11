@@ -27,7 +27,7 @@ fn control(url: &str, model_key: &str) -> ControlLayerInput {
     }
 }
 
-// tags: error-guessing
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn reference_images_with_a_missing_picture_or_model_or_a_backwards_span_are_refused() {
     let dir = tempfile::tempdir().unwrap();

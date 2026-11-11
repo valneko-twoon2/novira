@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
 import { blocking, median, medians, parseArgs, recorded, traceSummary, waitedFor } from '../../scripts/tools/perf-startup.mjs';
 
-describe('median', () => {
+describe('median', { tags: [] }, () => {
   it('takes the middle of an odd count and the upper middle of an even one, unsorted input', { tags: ['boundary'] }, () => {
     expect(median([5, 1, 3])).toBe(3);
     expect(median([4, 1, 3, 2])).toBe(3);
@@ -20,14 +20,14 @@ describe('median', () => {
   });
 });
 
-describe('blocking', () => {
+describe('blocking', { tags: [] }, () => {
   const tasks = [
     { start: 10, duration: 50 },
     { start: 100, duration: 120 },
     { start: 400, duration: 80 },
   ];
 
-  it('counts the time over 50 ms of each task, the longest and the total', { tags: ['condition'] }, () => {
+  it('counts the time over 50 ms of each task, the longest and the total', { tags: ['boundary'] }, () => {
     expect(blocking(tasks)).toEqual({ count: 3, tbt: 100, longest: 120, total: 250 });
   });
 
@@ -37,7 +37,7 @@ describe('blocking', () => {
   });
 });
 
-describe('waitedFor', () => {
+describe('waitedFor', { tags: [] }, () => {
   it('names the call that ended just before a call started, when nothing else was running', { tags: ['condition'] }, () => {
     const calls = [
       { name: 'bootstrap', start: 10, end: 300 },
@@ -61,8 +61,8 @@ describe('waitedFor', () => {
   });
 });
 
-describe('parseArgs', () => {
-  it('reads labelled and plain builds and the switches', { tags: ['condition'] }, () => {
+describe('parseArgs', { tags: [] }, () => {
+  it('reads labelled and plain builds and the switches', { tags: ['equivalence'] }, () => {
     const o = parseArgs(['--via', 'mock', '--dist', 'base=/x/a', '--dist', '/x/b', '--runs', '9', '--switch', '--keep-floor', '--trace']);
     expect(o.via).toBe('mock');
     expect(o.dists.map((d: { label: string }) => d.label)).toEqual(['base', 'b']);
@@ -76,28 +76,28 @@ describe('parseArgs', () => {
   });
 });
 
-describe('traceSummary', () => {
+describe('traceSummary', { tags: [] }, () => {
   const thread = { name: 'thread_name', ph: 'M', pid: 1, tid: 7, args: { name: 'CrRendererMain' } };
   const nav = { name: 'navigationStart', ph: 'R', pid: 1, tid: 7, ts: 1_000_000 };
   const x = (name: string, ms: number, dur: number, tid = 7) => ({ name, ph: 'X', pid: 1, tid, ts: 1_000_000 + ms * 1000, dur: dur * 1000 });
   const comp = (message: string, start: number, end: number) => ({ name: 'TimeStamp', ph: 'I', pid: 1, tid: 7, ts: 0, args: { data: { track: 'Components ⚛', message, start, end } } });
 
-  it('sums the main thread by event inside the window and leaves other threads out', { tags: ['boundary'] }, () => {
+  it('sums the main thread by event inside the window and leaves other threads out', { tags: ['equivalence'] }, () => {
     const s = traceSummary([thread, nav, x('Layout', 5, 2), x('Layout', 10, 3), x('Paint', 2000, 9), x('Layout', 6, 50, 8)], 0, 1000);
     expect(s.events).toEqual({ Layout: 5 });
   });
 
-  it('gives each component its own time, nested children taken out', { tags: ['condition'] }, () => {
+  it('gives each component its own time, nested children taken out', { tags: ['equivalence'] }, () => {
     const s = traceSummary([thread, nav, comp('App', 0, 10_000), comp('Grid', 2000, 8000), comp('Thumb', 3000, 4000)]);
     expect(s.components).toEqual({ Grid: 5, App: 4, Thumb: 1 });
   });
 
-  it('is empty without a renderer thread that navigated', { tags: ['condition'] }, () => {
+  it('is empty without a renderer thread that navigated', { tags: ['boundary'] }, () => {
     expect(traceSummary([x('Layout', 1, 1)])).toEqual({ events: {}, components: {} });
   });
 });
 
-describe('recorded', () => {
+describe('recorded', { tags: [] }, () => {
   it('takes the own marks of the app and the first duration of each call, nothing without a recorder', { tags: ['condition'] }, () => {
     const rec = { marks: { 'stores-filled': 300 }, calls: [{ name: 'bootstrap', duration: 40 }, { name: 'bootstrap', duration: 9 }, { name: 'list_fonts', duration: 2 }] };
     expect(recorded(rec)).toEqual({ 'mark stores-filled': 300, 'call bootstrap': 40, 'call list_fonts': 2 });

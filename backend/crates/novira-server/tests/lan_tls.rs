@@ -128,7 +128,7 @@ async fn the_ca_certificate_is_public_on_the_tls_listener_only() {
     f.stop().await;
 }
 
-// tags: condition
+// tags: condition, decision-table
 #[tokio::test]
 async fn the_origin_is_https_and_the_cookie_secure_on_the_tls_listener() {
     let f = Fixture::start().await;
@@ -443,7 +443,7 @@ async fn a_phone_pairs_over_tls_and_receives_a_secure_session_cookie() {
 }
 
 #[cfg(windows)]
-// tags: condition
+// tags: state-transition
 #[tokio::test]
 async fn the_data_folder_keeps_its_ca_between_openings() {
     let f = Fixture::start().await;

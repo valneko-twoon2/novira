@@ -54,7 +54,7 @@ function addMask(x: number, y: number) {
   return store;
 }
 
-describe('the readiness of a page inpaint', () => {
+describe('the readiness of a page inpaint', { tags: [] }, () => {
   it('asks for a mask', { tags: ['condition'] }, () => {
     pageCanvasStore(page().id);
     expect(pageInpaintReadiness(page().id)).toHaveLength(1);
@@ -67,8 +67,8 @@ describe('the readiness of a page inpaint', () => {
   });
 });
 
-describe('queuing an inpaint', () => {
-  it('does not queue without a mask', { tags: ['error-guessing'] }, async () => {
+describe('queuing an inpaint', { tags: [] }, () => {
+  it('does not queue without a mask', { tags: ['condition'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue');
     pageCanvasStore(page().id);
     expect(await queuePageInpaint(page().id)).toBe(false);

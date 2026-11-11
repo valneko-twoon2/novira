@@ -32,7 +32,7 @@ fn nothing_chosen_keeps_what_the_setting_or_family_runs() {
     );
 }
 
-// tags: equivalence
+// tags: equivalence, condition
 #[test]
 fn a_chosen_name_replaces_only_its_own_half() {
     let p = with(Some("res_multistep"), None);
@@ -50,7 +50,7 @@ fn a_chosen_name_replaces_only_its_own_half() {
     );
 }
 
-// tags: error-guessing, equivalence
+// tags: error-guessing
 #[test]
 fn a_name_the_engine_does_not_list_is_refused() {
     for bad in ["nope", "EULER", "euler ", "../x", "euler\n"] {
@@ -61,7 +61,7 @@ fn a_name_the_engine_does_not_list_is_refused() {
     }
 }
 
-// tags: state-transition, scenario
+// tags: equivalence
 #[test]
 fn the_lists_have_no_duplicates_and_hold_the_names_the_setting_maps_to() {
     for list in [SAMPLERS, SCHEDULES] {

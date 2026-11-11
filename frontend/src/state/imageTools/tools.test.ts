@@ -3,11 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_TOOL_SETTINGS, TOOL_RANGES, restoreToolSettings } from './tools';
 
 describe('restoreToolSettings', () => {
-  it('gives the defaults for nothing, or for something that is not settings', { tags: ['condition'] }, () => {
+  it('gives the defaults for nothing, or for something that is not settings', { tags: ['error-guessing'] }, () => {
     for (const stored of [undefined, null, 'x', 3, [], {}]) expect(restoreToolSettings(stored)).toEqual(DEFAULT_TOOL_SETTINGS);
   });
 
-  it('keeps stored values that are in range', { tags: ['condition'] }, () => {
+  it('keeps stored values that are in range', { tags: ['equivalence'] }, () => {
     const stored = {
       facefix: { detector: 'bbox/face_yolov8m.pt', strength: 0.6, sensitivity: 0.3 },
       cutout: { model: 'BEN2', sensitivity: 0.5, edge: -3, background: 'white' },

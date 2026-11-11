@@ -22,8 +22,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('brush width', () => {
-  it('shows nothing for tools without a width', { tags: ['scenario'] }, () => {
+describe('brush width', { tags: [] }, () => {
+  it('shows nothing for tools without a width', { tags: ['condition'] }, () => {
     state().setTool('move');
     const { container } = show(<BrushWidth />);
     expect(container.querySelector('.canvas-width')).toBeNull();
@@ -33,7 +33,7 @@ describe('brush width', () => {
     ['brush', 'canvas.toolbar.brushWidth', 'brushWidth'],
     ['eraser', 'canvas.toolbar.eraserWidth', 'eraserWidth'],
     ['mosaic', 'canvas.toolbar.mosaicWidth', 'mosaicWidth'],
-  ] as const)('edits the width of the %s tool', { tags: ['decision-table'] }, (tool, key, field) => {
+  ] as const)('edits the width of the %s tool', { tags: ['equivalence'] }, (tool, key, field) => {
     state().setTool(tool);
     show(<BrushWidth />);
     const input = screen.getByLabelText(t(key)) as HTMLInputElement;
@@ -60,7 +60,7 @@ describe('brush width', () => {
     expect(screen.getByRole('button', { name: '200' }).getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('offers the block size only for the mosaic tool', { tags: ['scenario'] }, () => {
+  it('offers the block size only for the mosaic tool', { tags: ['condition'] }, () => {
     state().setTool('brush');
     const { unmount } = show(<BrushWidth />);
     expect(screen.queryByLabelText(t('canvas.toolbar.mosaicBlock'))).toBeNull();
@@ -75,7 +75,7 @@ describe('brush width', () => {
   });
 });
 
-describe('fill colour', () => {
+describe('fill colour', { tags: [] }, () => {
   const openPicker = () => fireEvent.click(screen.getByTestId('canvas-fill-color'));
   const hexBox = () => screen.getByLabelText(t('canvas.color.hex')) as HTMLInputElement;
 
@@ -100,7 +100,7 @@ describe('fill colour', () => {
     expect(state().fillColor).toEqual({ r: 0, g: 255, b: 0, a: 1 });
   });
 
-  it('commits the hex box with Enter without passing the key on to the canvas', { tags: ['state-transition'] }, () => {
+  it('commits the hex box with Enter without passing the key on to the canvas', { tags: ['condition', 'state-transition'] }, () => {
     show(<FillColor />);
     openPicker();
     const onKey = vi.fn();
@@ -113,7 +113,7 @@ describe('fill colour', () => {
     expect(state().fillColor).toMatchObject({ r: 0, g: 0, b: 255 });
   });
 
-  it('sets the opacity as a percentage', { tags: ['scenario'] }, () => {
+  it('sets the opacity as a percentage', { tags: ['equivalence'] }, () => {
     state().setFillColor({ r: 10, g: 20, b: 30, a: 1 });
     show(<FillColor />);
     openPicker();
@@ -123,7 +123,7 @@ describe('fill colour', () => {
     expect(state().fillColor).toEqual({ r: 10, g: 20, b: 30, a: 0.4 });
   });
 
-  it('picks a preset swatch but keeps the opacity', { tags: ['scenario'] }, () => {
+  it('picks a preset swatch but keeps the opacity', { tags: ['decision-table', 'condition'] }, () => {
     state().setFillColor({ r: 1, g: 2, b: 3, a: 0.25 });
     show(<FillColor />);
     openPicker();
@@ -135,7 +135,7 @@ describe('fill colour', () => {
     expect(swatches[0]!.getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('follows a colour set elsewhere', { tags: ['scenario'] }, () => {
+  it('follows a colour set elsewhere', { tags: ['state-transition'] }, () => {
     show(<FillColor />);
     openPicker();
     act(() => state().setFillColor({ r: 255, g: 255, b: 255, a: 1 }));

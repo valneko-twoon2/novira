@@ -12,14 +12,14 @@ test('a gallery picture dropped on the reference row adds a reference image with
   await expect(page.locator('.pp-ref__warn')).toHaveCount(0);
 });
 
-test('a gallery picture dropped on the upscale input becomes the picture to enlarge', { tag: ['@scenario'] }, async ({ page }) => {
+test('a gallery picture dropped on the upscale input becomes the picture to enlarge', { tag: ['@equivalence'] }, async ({ page }) => {
   await openApp(page);
   await page.getByTestId('tab-upscaling').click();
   await page.getByTestId('gallery-thumb').first().dragTo(page.locator('.pp-upimg'));
   await expect(page.getByTestId('upscale-initial-image')).toBeVisible();
 });
 
-test('a canvas layer dragged onto the reference row is added as another reference image', { tag: ['@scenario'] }, async ({ page }) => {
+test('a canvas layer dragged onto the reference row is added as another reference image', { tag: ['@equivalence'] }, async ({ page }) => {
   await openApp(page);
   const before = await page.getByTestId('gallery-thumb').count();
   await page.getByTestId('gallery-thumb').first().dragTo(page.locator('.pp-refs:visible'));

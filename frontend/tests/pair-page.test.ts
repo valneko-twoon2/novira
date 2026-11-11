@@ -28,7 +28,7 @@ const message = () => document.getElementById('message')!.textContent;
 /** jsdom's language is English. */
 const en = JSON.parse(strings).en as Record<string, string>;
 
-describe('the phone pairing page', () => {
+describe('the phone pairing page', { tags: [] }, () => {
   // The page polls every two seconds once a request waits: fake timers keep that from running on after a test.
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => {
@@ -36,7 +36,7 @@ describe('the phone pairing page', () => {
     vi.useRealTimers();
   });
 
-  it('keeps the code in the address until it is used, so another browser can open it', { tags: ['condition'] }, async () => {
+  it('keeps the code in the address until it is used, so another browser can open it', { tags: ['scenario'] }, async () => {
     const fetch = open(`/pair#${CODE}`);
     expect(location.hash).toBe(`#${CODE}`);
     expect(document.getElementById('form')!.hidden).toBe(false);

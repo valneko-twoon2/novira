@@ -6,40 +6,44 @@ const prompt = (page: Parameters<typeof openApp>[0], text: string) => page.getBy
 
 test.beforeEach(({ page }) => galleryDefaults(page, { newPicturesToCandidates: true }));
 
-test('a generated picture waits in Candidates, leaves the boards alone, and moves to the board by the button or a drag', { tag: ['@scenario'] }, async ({ page }) => {
-  await openApp(page, '?scenario=empty');
-  await prompt(page, 'a harbour at dawn');
-  await page.getByTestId('seed-fixed').click();
-  await page.getByLabel(msg('params.invoke.iterations')).fill('3');
-  await page.getByTestId('invoke-button').click();
+test(
+  'a generated picture waits in Candidates, leaves the boards alone, and moves to the board by the button or a drag',
+  { tag: ['@scenario'] },
+  async ({ page }) => {
+    await openApp(page, '?scenario=empty');
+    await prompt(page, 'a harbour at dawn');
+    await page.getByTestId('seed-fixed').click();
+    await page.getByLabel(msg('params.invoke.iterations')).fill('3');
+    await page.getByTestId('invoke-button').click();
 
-  // The start screen gives way to the Candidates view, and the pictures come in as they are drawn.
-  const grid = page.getByTestId('drafts-grid');
-  await expect(grid).toBeVisible();
-  await expect(page.getByTestId('draft-cell').first().locator('img')).toBeVisible({ timeout: 20_000 });
-  const cells = await page.getByTestId('draft-cell').count();
-  // Nothing reached the gallery: the board is empty, and the viewer shows nothing new.
-  await expect(page.getByTestId('gallery-thumb')).toHaveCount(0);
+    // The start screen gives way to the Candidates view, and the pictures come in as they are drawn.
+    const grid = page.getByTestId('drafts-grid');
+    await expect(grid).toBeVisible();
+    await expect(page.getByTestId('draft-cell').first().locator('img')).toBeVisible({ timeout: 20_000 });
+    const cells = await page.getByTestId('draft-cell').count();
+    // Nothing reached the gallery: the board is empty, and the viewer shows nothing new.
+    await expect(page.getByTestId('gallery-thumb')).toHaveCount(0);
 
-  // Choosing a picture and moving it to the board.
-  await page.getByTestId('draft-cell').first().locator('.dv-img').click();
-  await page.getByTestId('drafts-adopt').click();
-  await expect(page.getByTestId('gallery-thumb')).toHaveCount(1);
-  await expect(page.getByTestId('draft-cell')).toHaveCount(cells - 1);
+    // Choosing a picture and moving it to the board.
+    await page.getByTestId('draft-cell').first().locator('.dv-img').click();
+    await page.getByTestId('drafts-adopt').click();
+    await expect(page.getByTestId('gallery-thumb')).toHaveCount(1);
+    await expect(page.getByTestId('draft-cell')).toHaveCount(cells - 1);
 
-  // Dragging a picture onto a board row moves it too, and the board row is the target.
-  if (cells > 1) {
-    await page.getByTestId('draft-cell').first().locator('.dv-img').dragTo(page.getByTestId('board-row').first());
-    await expect(page.getByTestId('gallery-thumb')).toHaveCount(2);
-  }
+    // Dragging a picture onto a board row moves it too, and the board row is the target.
+    if (cells > 1) {
+      await page.getByTestId('draft-cell').first().locator('.dv-img').dragTo(page.getByTestId('board-row').first());
+      await expect(page.getByTestId('gallery-thumb')).toHaveCount(2);
+    }
 
-  // Double click opens a candidate large in the viewer, as a draft does.
-  const left = page.getByTestId('draft-cell');
-  if ((await left.count()) > 0) {
-    await left.first().locator('.dv-img').dblclick();
-    await expect(page.getByTestId('viewer-image')).toBeVisible();
-  }
-});
+    // Double click opens a candidate large in the viewer, as a draft does.
+    const left = page.getByTestId('draft-cell');
+    if ((await left.count()) > 0) {
+      await left.first().locator('.dv-img').dblclick();
+      await expect(page.getByTestId('viewer-image')).toBeVisible();
+    }
+  },
+);
 
 test('the rest of a batch goes to the trash, and closing the batch does the same', { tag: ['@state-transition'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');

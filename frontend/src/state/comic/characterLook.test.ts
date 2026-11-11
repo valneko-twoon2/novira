@@ -4,8 +4,8 @@ import { allWords, characterWords, cleanParts, framingOf, CHARACTER_PART_MAX } f
 
 const girl = { tags: '1girl, teen', parts: { hair: 'long black hair', eyes: 'green eyes', face: 'mole under left eye', outfit: 'navy blazer', body: 'slender', accessory: 'round glasses' } };
 
-describe('framingOf', () => {
-  it('reads the framing from the prompt, and takes a silent prompt as the whole person', { tags: ['condition'] }, () => {
+describe('framingOf', { tags: [] }, () => {
+  it('reads the framing from the prompt, and takes a silent prompt as the whole person', { tags: ['equivalence'] }, () => {
     expect(framingOf('close-up of her face, rain')).toBe('close');
     expect(framingOf('Upper body, smiling')).toBe('bust');
     expect(framingOf('seen from behind on the stairs')).toBe('back');
@@ -18,7 +18,7 @@ describe('framingOf', () => {
   });
 });
 
-describe('characterWords', () => {
+describe('characterWords', { tags: [] }, () => {
   it('names the head parts only in a close-up', { tags: ['condition'] }, () => {
     expect(characterWords(girl, 'close-up')).toBe('1girl, teen, long black hair, green eyes, mole under left eye, round glasses');
   });
@@ -37,14 +37,14 @@ describe('characterWords', () => {
     expect(words).toContain('slender');
   });
 
-  it('is just the tags for a character with no parts, and every word for the portrait', { tags: ['equivalence'] }, () => {
+  it('is just the tags for a character with no parts, and every word for the portrait', { tags: ['condition'] }, () => {
     expect(characterWords({ tags: '1dog, shiba inu' }, 'close-up')).toBe('1dog, shiba inu');
     expect(allWords(girl)).toContain('navy blazer');
     expect(allWords({ tags: ' ' })).toBe('');
   });
 });
 
-describe('a character that is not human', () => {
+describe('a character that is not human', { tags: [] }, () => {
   it('is told with every part in every framing', { tags: ['equivalence'] }, () => {
     const beast = { tags: '1creature, giant', parts: { body: 'many thin arms', face: 'no face', hair: 'smoke' }, nonHuman: true };
     expect(characterWords(beast, 'from behind')).toBe('1creature, giant, smoke, no face, many thin arms');
@@ -52,7 +52,7 @@ describe('a character that is not human', () => {
   });
 });
 
-describe('cleanParts', () => {
+describe('cleanParts', { tags: [] }, () => {
   it('keeps known parts with words, cuts them, and gives nothing for an empty set', { tags: ['boundary'] }, () => {
     expect(cleanParts({ hair: ' red ', nope: 'x', eyes: '', body: 3 })).toEqual({ hair: 'red' });
     expect(cleanParts({ hair: 'h'.repeat(500) })!.hair).toHaveLength(CHARACTER_PART_MAX);

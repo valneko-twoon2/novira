@@ -75,7 +75,7 @@ async fn engine_status_changes_reach_the_event_stream() {
     )));
 }
 
-// tags: boundary
+// tags: scenario, state-transition
 #[tokio::test]
 async fn the_model_folders_are_listed_and_shutdown_copes_with_a_finished_download() {
     let dir = tempfile::tempdir().unwrap();

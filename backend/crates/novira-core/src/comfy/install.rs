@@ -423,7 +423,7 @@ mod tests {
         std::fs::write(comfyui_dir(root).join("main.py"), "").unwrap();
     }
 
-    // tags: error-guessing, state-transition
+    // tags: state-transition, condition
     #[test]
     fn an_install_without_a_record_is_adopted_and_a_different_package_is_a_change() {
         let dir = tempfile::tempdir().unwrap();
@@ -438,7 +438,7 @@ mod tests {
         assert!(!package_changed(dir.path(), "amd").unwrap());
     }
 
-    // tags: state-transition
+    // tags: condition
     #[test]
     fn nothing_is_adopted_without_an_install() {
         let dir = tempfile::tempdir().unwrap();
@@ -446,7 +446,7 @@ mod tests {
         assert_eq!(installed_package(dir.path()), None);
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn the_version_tag_comes_from_the_installed_comfyui() {
         let dir = tempfile::tempdir().unwrap();
@@ -468,7 +468,7 @@ mod tests {
         assert_eq!(installed_version_tag(dir.path()), None);
     }
 
-    // tags: error-guessing
+    // tags: error-guessing, equivalence
     #[test]
     fn only_a_message_about_the_archive_itself_marks_it_damaged() {
         assert!(archive_is_damaged("ERROR: Data Error : comfyui.7z"));
@@ -481,7 +481,7 @@ mod tests {
         assert!(!archive_is_damaged(""));
     }
 
-    // tags: error-guessing, state-transition
+    // tags: equivalence, error-guessing
     #[test]
     fn a_release_package_is_addressed_by_its_tag_and_a_tag_that_is_not_plain_is_refused() {
         assert!(package_url_for("nvidia", Some("v0.3.50"))
@@ -496,7 +496,7 @@ mod tests {
         assert!(package_url_for("cuda", Some("v1")).is_err());
     }
 
-    // tags: state-transition, equivalence
+    // tags: equivalence, condition
     #[test]
     fn release_tags_skip_drafts_prereleases_and_names_that_are_not_plain() {
         let body = br#"[
@@ -537,7 +537,7 @@ mod tests {
         assert!(!new.join("custom_nodes/__pycache__").exists());
     }
 
-    // tags: condition
+    // tags: state-transition
     #[test]
     fn a_kept_package_is_put_back_or_dropped() {
         let root = tempfile::tempdir().unwrap();
@@ -577,7 +577,7 @@ mod tests {
         }
     }
 
-    // tags: error-guessing, state-transition
+    // tags: state-transition, error-guessing
     #[test]
     fn a_start_after_a_switch_was_cut_off_puts_the_old_version_back_with_its_packs() {
         for (new, carried) in [(false, false), (true, false), (true, true)] {
@@ -600,7 +600,7 @@ mod tests {
         }
     }
 
-    // tags: error-guessing, state-transition
+    // tags: state-transition, error-guessing
     #[test]
     fn a_start_after_a_switch_finished_changes_nothing_and_drops_a_cut_off_deletion() {
         let root = tempfile::tempdir().unwrap();
@@ -617,7 +617,7 @@ mod tests {
         );
     }
 
-    // tags: error-guessing
+    // tags: equivalence, error-guessing
     #[test]
     fn packages_resolve_and_unknown_ones_are_refused() {
         assert!(package_url("nvidia")

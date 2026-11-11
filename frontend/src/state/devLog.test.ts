@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { describeError, installDevLogCapture, isResizeObserverNotice, MAX_LOG_ENTRIES, resetDevLogThrottle, useDevLog } from './devLog';
 import { useToasts } from './toasts';
 
-describe('developer log', () => {
+describe('developer log', { tags: [] }, () => {
   beforeEach(() => {
     useDevLog.getState().clear();
     useToasts.setState({ toasts: [] });
@@ -21,7 +21,7 @@ describe('developer log', () => {
     expect(useDevLog.getState().entries.at(-1)!.message.length).toBeLessThan(4100);
   });
 
-  it('describes anything thrown', { tags: ['error-guessing'] }, () => {
+  it('describes anything thrown', { tags: ['error-guessing', 'equivalence'] }, () => {
     expect(describeError(new TypeError('bad'))).toBe('TypeError: bad');
     expect(describeError('plain')).toBe('plain');
     expect(describeError({ code: 1 })).toBe('{"code":1}');
@@ -30,7 +30,7 @@ describe('developer log', () => {
     expect(describeError(cyclic)).toBe('[object Object]');
   });
 
-  it('logs uncaught errors and rejections, with one notification per burst', { tags: ['error-guessing'] }, () => {
+  it('logs uncaught errors and rejections, with one notification per burst', { tags: ['error-guessing', 'scenario'] }, () => {
     installDevLogCapture();
     window.dispatchEvent(new ErrorEvent('error', { error: new Error('render loop'), message: 'render loop' }));
     const rejection = new Event('unhandledrejection') as Event & { reason: unknown };
@@ -57,7 +57,7 @@ describe('developer log', () => {
     expect(useDevLog.getState().entries.at(-1)!.level).toBe('error');
   });
 
-  it('tells the ResizeObserver notice from other messages', { tags: ['condition'] }, () => {
+  it('tells the ResizeObserver notice from other messages', { tags: ['equivalence', 'condition'] }, () => {
     expect(isResizeObserverNotice('ResizeObserver loop completed with undelivered notifications.')).toBe(true);
     expect(isResizeObserverNotice('ResizeObserver loop limit exceeded')).toBe(true);
     expect(isResizeObserverNotice('TypeError: ResizeObserver loop completed')).toBe(false);
@@ -65,7 +65,7 @@ describe('developer log', () => {
     expect(isResizeObserverNotice(undefined)).toBe(false);
   });
 
-  it('copies console warnings and errors into the log', { tags: ['error-guessing'] }, () => {
+  it('copies console warnings and errors into the log', { tags: ['scenario'] }, () => {
     installDevLogCapture();
     console.warn('careful', 3);
     const last = useDevLog.getState().entries.at(-1)!;

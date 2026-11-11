@@ -16,7 +16,7 @@ async fn enqueue_refuses_source_images_that_are_not_stored() {
     assert!(backend.enqueue(req).is_err());
 }
 
-// tags: scenario
+// tags: decision-table
 #[tokio::test]
 async fn results_for_the_canvas_drafts_or_candidates_are_hidden_and_gallery_results_keep_their_board(
 ) {
@@ -92,7 +92,7 @@ async fn results_for_the_canvas_drafts_or_candidates_are_hidden_and_gallery_resu
     backend.shutdown();
 }
 
-// tags: boundary
+// tags: condition, scenario
 #[tokio::test]
 async fn a_hires_fix_resolves_its_upscale_model_and_stores_the_first_pass_size() {
     let dir = tempfile::tempdir().unwrap();
@@ -157,7 +157,7 @@ async fn a_hires_fix_resolves_its_upscale_model_and_stores_the_first_pass_size()
     backend.shutdown();
 }
 
-// tags: error-guessing
+// tags: error-guessing, equivalence
 #[tokio::test]
 async fn jobs_the_engine_refuses_or_with_unknown_models_fail_before_generating() {
     let dir = tempfile::tempdir().unwrap();

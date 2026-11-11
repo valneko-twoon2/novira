@@ -78,7 +78,7 @@ fn the_process_starts_once_logs_its_arguments_and_stops() {
     p.stop();
 }
 
-// tags: scenario
+// tags: condition
 #[test]
 fn a_process_started_in_low_memory_mode_carries_the_flag() {
     let root = tempfile::tempdir().unwrap();
@@ -97,7 +97,7 @@ fn a_process_started_in_low_memory_mode_carries_the_flag() {
     assert!(p.low_memory_pending());
 }
 
-// tags: regression
+// tags: state-transition
 #[test]
 fn a_process_that_exits_is_noticed_and_can_be_started_again() {
     let root = tempfile::tempdir().unwrap();
@@ -129,7 +129,7 @@ fn a_log_folder_that_cannot_be_made_is_reported() {
     assert!(ComfyProcess::new(cfg).start().is_err());
 }
 
-// tags: boundary, state-transition
+// tags: condition
 #[test]
 fn without_an_explicit_python_the_one_next_to_the_install_is_used() {
     let root = tempfile::tempdir().unwrap();

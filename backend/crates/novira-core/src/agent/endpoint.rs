@@ -553,7 +553,7 @@ enum ToolCheck {
 mod tests {
     use super::*;
 
-    // tags: condition
+    // tags: equivalence, error-guessing
     #[test]
     fn addresses_are_http_or_https_with_a_host_and_nothing_secret_in_them() {
         let ok = |t: &str| parse_base_url(t).unwrap().to_string();
@@ -583,7 +583,7 @@ mod tests {
         }
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn only_this_pc_counts_as_loopback() {
         let loopback = |t: &str| is_loopback(&parse_base_url(t).unwrap());
@@ -598,7 +598,7 @@ mod tests {
         assert!(!loopback("http://0.0.0.0/v1"));
     }
 
-    // tags: condition
+    // tags: decision-table
     #[test]
     fn a_remote_http_address_is_flagged_as_unencrypted_and_a_remote_https_is_not() {
         let info = |url: &str| {
@@ -620,7 +620,7 @@ mod tests {
         assert!(info("nonsense").remote);
     }
 
-    // tags: condition
+    // tags: error-guessing, condition
     #[test]
     fn the_key_never_shows_in_debug_output_or_in_a_message() {
         let key = ApiKey::new("  sk-secret-123  ").unwrap();

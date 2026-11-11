@@ -97,7 +97,7 @@ fn walk_for(dir: &Path, name: &str) -> Option<std::path::PathBuf> {
     None
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing
 #[tokio::test]
 async fn a_picture_whose_original_is_already_gone_is_deleted_without_a_complaint() {
     let dir = tempfile::tempdir().unwrap();
@@ -111,7 +111,7 @@ async fn a_picture_whose_original_is_already_gone_is_deleted_without_a_complaint
     backend.shutdown();
 }
 
-// tags: state-transition
+// tags: condition
 #[tokio::test]
 async fn deleting_a_known_and_an_unknown_name_together_trashes_one_and_removes_the_other_for_good()
 {
@@ -160,7 +160,7 @@ async fn reopened_damaged(
     (open(dir, Arc::new(FakeEngine::default())).0, trashed, kept)
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing
 #[tokio::test]
 async fn a_trash_or_gallery_table_that_cannot_be_written_fails_delete_and_restore() {
     // The trash table: the delete fails before the picture leaves the gallery table.

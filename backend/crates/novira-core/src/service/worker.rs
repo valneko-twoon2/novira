@@ -815,7 +815,7 @@ impl Backend {
 mod tests {
     use super::panic_message;
 
-    // tags: regression, error-guessing
+    // tags: equivalence, error-guessing
     #[test]
     fn a_caught_panic_reads_as_an_internal_error() {
         let caught = std::panic::catch_unwind(|| panic!("graph broke")).unwrap_err();

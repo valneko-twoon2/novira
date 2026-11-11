@@ -7,7 +7,7 @@ import { comfyTemplates } from './comfyNodes';
 import { GRAPH_TEMPLATES } from './graphTemplates';
 import { setExtensionTemplates } from './templates';
 
-describe('what the assistant is told about graphs', () => {
+describe('what the assistant is told about graphs', { tags: [] }, () => {
   beforeAll(() => setExtensionTemplates(comfyTemplates({ ...MOCK_NODE_DEFS, ...CORE_NODE_DEFS, ...PACK_NODE_DEFS })));
   afterAll(() => setExtensionTemplates([]));
 
@@ -19,17 +19,17 @@ describe('what the assistant is told about graphs', () => {
     expect(none.find((r) => r.id === 'text2image')?.missing).toEqual([]);
   });
 
-  it('keeps every node type a recipe uses in the node list, and stays small', { tags: ['decision-table'] }, () => {
+  it('keeps every node type a recipe uses in the node list, and stays small', { tags: ['equivalence'] }, () => {
     const types = new Set(agentNodeTypes().map((n) => n.type));
     for (const g of GRAPH_TEMPLATES) for (const n of g.nodes) expect(types.has(n[1])).toBe(true);
     expect(JSON.stringify(agentNodeTypes()).length).toBeLessThan(60000);
   });
 });
 
-describe('what the assistant is told about the nodes of an extension', () => {
+describe('what the assistant is told about the nodes of an extension', { tags: [] }, () => {
   const defs = { ...MOCK_NODE_DEFS, ...CORE_NODE_DEFS, ...PACK_NODE_DEFS };
 
-  it('lists the nodes of the extension with inputs and outputs, and none of ComfyUI itself', { tags: ['boundary'] }, () => {
+  it('lists the nodes of the extension with inputs and outputs, and none of ComfyUI itself', { tags: ['equivalence'] }, () => {
     const folder = Object.values(PACK_NODE_DEFS)
       .map((d) => /^custom_nodes[./]([^./]+)/.exec(d.python_module ?? '')?.[1])
       .find((f) => f)!;

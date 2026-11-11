@@ -27,8 +27,8 @@ const show = (onQuery = vi.fn(), query = '') => {
   return onQuery;
 };
 
-describe('BrowseBar', () => {
-  it('switches the source between Civitai and Hugging Face, and only Civitai has a period filter', { tags: ['scenario'] }, () => {
+describe('BrowseBar', { tags: [] }, () => {
+  it('switches the source between Civitai and Hugging Face, and only Civitai has a period filter', { tags: ['condition'] }, () => {
     show();
     expect(screen.getByLabelText(t('browse.period.label'))).toBeTruthy();
     fireEvent.click(screen.getByTestId('browse-source-huggingface'));
@@ -39,7 +39,7 @@ describe('BrowseBar', () => {
     expect(useBrowse.getState().source).toBe('civitai');
   });
 
-  it('starts on every base and offers Anima among the bases', { tags: ['state-transition', 'decision-table'] }, () => {
+  it('starts on every base and offers Anima among the bases', { tags: ['equivalence'] }, () => {
     show();
     expect(useBrowse.getState().baseModel).toBe('all');
     fireEvent.click(screen.getByLabelText(t('browse.base.label')));
@@ -47,7 +47,7 @@ describe('BrowseBar', () => {
     expect(useBrowse.getState().baseModel).toBe('Anima');
   });
 
-  it('picks the kind of model', { tags: ['decision-table', 'scenario'] }, () => {
+  it('picks the kind of model', { tags: ['equivalence'] }, () => {
     show();
     for (const kind of ['Checkpoint', 'ControlNet', 'VAE', 'Diffusion', 'all', 'LoRA'] as const) {
       fireEvent.click(screen.getByTestId(`browse-kind-${kind}`));
@@ -55,7 +55,7 @@ describe('BrowseBar', () => {
     }
   });
 
-  it('reports what is typed in the search box', { tags: ['scenario'] }, () => {
+  it('reports what is typed in the search box', { tags: ['equivalence'] }, () => {
     const onQuery = show(vi.fn(), 'cat');
     const box = screen.getByTestId('browse-search') as HTMLInputElement;
     expect(box.value).toBe('cat');
@@ -63,7 +63,7 @@ describe('BrowseBar', () => {
     expect(onQuery).toHaveBeenCalledWith('cats');
   });
 
-  it('turns mature content on and off', { tags: ['scenario'] }, () => {
+  it('turns mature content on and off', { tags: ['state-transition'] }, () => {
     show();
     const toggle = screen.getByRole('switch', { name: t('browse.nsfw.label') });
     fireEvent.click(toggle);
@@ -72,7 +72,7 @@ describe('BrowseBar', () => {
     expect(useBrowse.getState().includeNsfw).toBe(false);
   });
 
-  it('sets the card size within its limits', { tags: ['boundary', 'scenario'] }, () => {
+  it('sets the card size within its limits', { tags: ['boundary'] }, () => {
     show();
     useBrowse.getState().setCardSize(5000);
     expect(useBrowse.getState().cardSize).toBe(CARD_MAX);
@@ -81,13 +81,13 @@ describe('BrowseBar', () => {
     expect(screen.getByTestId('browse-card-size')).toBeTruthy();
   });
 
-  it('starts the cards at the smallest size on a phone', { tags: ['state-transition', 'scenario'] }, () => {
+  it('starts the cards at the smallest size on a phone', { tags: ['condition'] }, () => {
     expect(defaultCardSize()).toBe(220);
     vi.stubGlobal('matchMedia', (q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} }));
     expect(defaultCardSize()).toBe(CARD_MIN);
   });
 
-  it('folds the controls behind one button on a phone', { tags: ['boundary', 'scenario'] }, () => {
+  it('folds the controls behind one button on a phone', { tags: ['condition'] }, () => {
     vi.stubGlobal('matchMedia', (q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {} }));
     show();
     expect(screen.queryByTestId('browse-search')).toBeNull();

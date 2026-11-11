@@ -39,8 +39,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('main', () => {
-  it('renders the app after adopting the saved state and theme, in that order', { tags: ['scenario'] }, async () => {
+describe('main', { tags: [] }, () => {
+  it('renders the app after adopting the saved state and theme, in that order', { tags: ['scenario', 'state-transition'] }, async () => {
     await import('./main');
     await settle();
     expect(calls).toEqual(['hideToken', 'adopt', 'localeReady']);
@@ -75,7 +75,7 @@ describe('main', () => {
     expect(render).not.toHaveBeenCalled();
   });
 
-  it('does nothing when the page has no root element', { tags: ['condition'] }, async () => {
+  it('does nothing when the page has no root element', { tags: ['condition', 'boundary'] }, async () => {
     document.body.replaceChildren();
     await import('./main');
     await settle();

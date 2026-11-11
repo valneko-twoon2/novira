@@ -25,29 +25,33 @@ const fail = (g: { nodes: WorkflowNode[]; edges: WorkflowEdge[] }): ComfyGraphEr
   throw new Error(`expected the compile to fail, got ${JSON.stringify(result)}`);
 };
 
-describe('connections that point at nothing', () => {
-  it('names the node a connection comes from when that node is gone', { tags: ['condition'] }, () => {
+describe('connections that point at nothing', { tags: [] }, () => {
+  it('names the node a connection comes from when that node is gone', { tags: ['error-guessing'] }, () => {
     const g = { nodes: [node('save_image', 'save')], edges: [makeEdge('gone', 'image', 'save', 'image')] };
     expect(fail(g)).toMatchObject({ reason: 'unsupported', nodeId: 'gone', field: 'image' });
   });
 
-  it('names the node of a connection that leaves from no output', { tags: ['condition'] }, () => {
+  it('names the node of a connection that leaves from no output', { tags: ['error-guessing'] }, () => {
     const edge: WorkflowEdge = { ...makeEdge('src', 'image', 'save', 'image'), sourceHandle: null };
     const g = { nodes: [node('image', 'src', { image: 'a.png' }), node('save_image', 'save')], edges: [edge] };
     expect(fail(g)).toMatchObject({ reason: 'unsupported', nodeId: 'src', field: null });
   });
 
-  it('refuses a graph that loops back into itself, naming a node of the loop, and says so before it is queued', { tags: ['error-guessing', 'state-transition'] }, () => {
-    // The editor refuses such a connection, but a file or the assistant can still bring one in.
-    const nodes = [node('comfy:MockFilmGrain', 'a'), node('comfy:MockFilmGrain', 'b'), node('save_image', 'save')];
-    const edges = [makeEdge('a', 'IMAGE', 'b', 'image'), makeEdge('b', 'IMAGE', 'a', 'image'), makeEdge('b', 'IMAGE', 'save', 'image')];
-    const e = fail({ nodes, edges });
-    expect(e.reason).toBe('unsupported');
-    expect(['a', 'b']).toContain(e.nodeId);
-    const reasons = readinessReasons({ nodes, edges });
-    expect(reasons).toHaveLength(1);
-    expect(reasons[0]).toMatch(/Film Grain \(Mock\).*まだ実行できません/);
-  });
+  it(
+    'refuses a graph that loops back into itself, naming a node of the loop, and says so before it is queued',
+    { tags: ['error-guessing'] },
+    () => {
+      // The editor refuses such a connection, but a file or the assistant can still bring one in.
+      const nodes = [node('comfy:MockFilmGrain', 'a'), node('comfy:MockFilmGrain', 'b'), node('save_image', 'save')];
+      const edges = [makeEdge('a', 'IMAGE', 'b', 'image'), makeEdge('b', 'IMAGE', 'a', 'image'), makeEdge('b', 'IMAGE', 'save', 'image')];
+      const e = fail({ nodes, edges });
+      expect(e.reason).toBe('unsupported');
+      expect(['a', 'b']).toContain(e.nodeId);
+      const reasons = readinessReasons({ nodes, edges });
+      expect(reasons).toHaveLength(1);
+      expect(reasons[0]).toMatch(/Film Grain \(Mock\).*まだ実行できません/);
+    },
+  );
 
   it('refuses a node of a pack whose nodes ComfyUI no longer lists', { tags: ['regression', 'error-guessing'] }, () => {
     // A workflow made where a pack was installed, opened where it is not.
@@ -58,8 +62,8 @@ describe('connections that point at nothing', () => {
   });
 });
 
-describe('a graph that ends at pack nodes', () => {
-  it('previews only the picture nothing reads on, not the one a later node takes', { tags: ['boundary'] }, () => {
+describe('a graph that ends at pack nodes', { tags: [] }, () => {
+  it('previews only the picture nothing reads on, not the one a later node takes', { tags: ['condition'] }, () => {
     // The decoder's picture goes on to the first Film Grain, so it is not previewed; neither is the first one's.
     const nodes = [node('l2i', 'dec', { latents: 'z', vae: 'v' }), node('comfy:MockFilmGrain', 'first'), node('comfy:MockFilmGrain', 'second')];
     const edges = [makeEdge('dec', 'image', 'first', 'image'), makeEdge('first', 'IMAGE', 'second', 'image')];

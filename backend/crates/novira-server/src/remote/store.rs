@@ -309,7 +309,7 @@ mod tests {
         }
     }
 
-    // tags: condition, error-guessing
+    // tags: equivalence, error-guessing
     #[test]
     fn what_is_kept_comes_back_and_a_missing_file_is_off() {
         let dir = tempfile::tempdir().unwrap();

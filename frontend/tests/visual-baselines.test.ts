@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
 import { isScreenSource } from '../../scripts/tools/visual-baselines.mjs';
 
-describe('the files that can change a main screen', () => {
-  it('runs for the source that decides what the screens show', { tags: ['condition'] }, () => {
+describe('the files that can change a main screen', { tags: [] }, () => {
+  it('runs for the source that decides what the screens show', { tags: ['equivalence'] }, () => {
     for (const path of [
       'frontend/src/features/params/ParamControls.tsx',
       'frontend/src/app/app.css',
@@ -18,7 +18,7 @@ describe('the files that can change a main screen', () => {
     }
   });
 
-  it('does not run for tests, test support, documents, scripts', { tags: ['condition'] }, () => {
+  it('does not run for tests, test support, documents, scripts', { tags: ['equivalence'] }, () => {
     for (const path of [
       'frontend/src/features/params/ParamControls.test.tsx',
       'frontend/src/features/params/labels.property.test.ts',

@@ -40,7 +40,7 @@ function dropFile(zone: Element, file: File) {
 const png = () => new File(['x'], 'drop.png', { type: 'image/png' });
 
 describe('RefImageList', () => {
-  it('adds an empty reference image from the add button', { tags: ['scenario'] }, () => {
+  it('adds an empty reference image from the add button', { tags: ['boundary'] }, () => {
     show(<RefImageList />);
     expect(useParams.getState().refImages).toHaveLength(0);
     fireEvent.click(screen.getByTestId('add-ref-image'));
@@ -48,7 +48,7 @@ describe('RefImageList', () => {
     expect(useParams.getState().refImages[0]!.imageName).toBeFalsy();
   });
 
-  it('shows one card for each reference image', { tags: ['scenario'] }, () => {
+  it('shows one card for each reference image', { tags: ['equivalence'] }, () => {
     addDefaultRefImage();
     addDefaultRefImage();
     const { container } = show(<RefImageList />);
@@ -89,16 +89,20 @@ describe('RefImageList', () => {
 describe('I2iSection', () => {
   const openSection = () => fireEvent.click(document.querySelector('.ui-section__toggle')!);
 
-  it('is closed while empty, shows the drop hint once opened, and opens by itself when a picture is placed from elsewhere', { tags: ['state-transition'] }, () => {
-    show(<I2iSection />);
-    expect(screen.queryByText(t('params.i2i.dropHint'))).toBeNull();
-    openSection();
-    expect(screen.getByText(t('params.i2i.dropHint'))).toBeTruthy();
-    openSection();
-    expect(screen.queryByText(t('params.i2i.dropHint'))).toBeNull();
-    act(() => useParams.getState().setInitImage(picture, 1024));
-    expect(screen.getByTestId('i2i-image')).toBeTruthy();
-  });
+  it(
+    'is closed while empty, shows the drop hint once opened, and opens by itself when a picture is placed from elsewhere',
+    { tags: ['state-transition'] },
+    () => {
+      show(<I2iSection />);
+      expect(screen.queryByText(t('params.i2i.dropHint'))).toBeNull();
+      openSection();
+      expect(screen.getByText(t('params.i2i.dropHint'))).toBeTruthy();
+      openSection();
+      expect(screen.queryByText(t('params.i2i.dropHint'))).toBeNull();
+      act(() => useParams.getState().setInitImage(picture, 1024));
+      expect(screen.getByTestId('i2i-image')).toBeTruthy();
+    },
+  );
 
   it('takes a dropped gallery picture and shows its size and strength badge', { tags: ['scenario'] }, async () => {
     const { container } = show(<I2iSection />);
@@ -133,7 +137,7 @@ describe('I2iSection', () => {
     expect(screen.queryByTestId('i2i-image')).toBeNull();
   });
 
-  it('sets the strength from the slider box', { tags: ['scenario'] }, async () => {
+  it('sets the strength from the slider box', { tags: ['equivalence'] }, async () => {
     const { container } = show(<I2iSection />);
     openSection();
     dropNames(container.querySelector('.pp-upimg')!, ['pic.png']);

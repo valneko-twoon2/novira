@@ -3,18 +3,18 @@ import { describe, expect, it } from 'vitest';
 import { sanitizeUiZoom, stepUiZoom, UI_ZOOM_STEPS } from './uiZoom';
 
 describe('UI zoom', () => {
-  it('steps up and down the ladder', { tags: ['condition'] }, () => {
+  it('steps up and down the ladder', { tags: ['equivalence'] }, () => {
     expect(stepUiZoom(1, 1)).toBe(1.1);
     expect(stepUiZoom(1, -1)).toBe(0.9);
     expect(stepUiZoom(1.25, -1)).toBe(1.1);
   });
 
-  it('snaps an off-ladder value to the next level in the asked direction', { tags: ['condition'] }, () => {
+  it('snaps an off-ladder value to the next level in the asked direction', { tags: ['boundary'] }, () => {
     expect(stepUiZoom(1.05, 1)).toBe(1.1);
     expect(stepUiZoom(1.05, -1)).toBe(1);
   });
 
-  it('stays at the ends', { tags: ['condition'] }, () => {
+  it('stays at the ends', { tags: ['boundary'] }, () => {
     expect(stepUiZoom(UI_ZOOM_STEPS[0], -1)).toBe(0.5);
     expect(stepUiZoom(3, 1)).toBe(3);
   });

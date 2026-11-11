@@ -51,17 +51,21 @@ beforeEach(() => {
 });
 afterEach(() => vi.restoreAllMocks());
 
-describe('library workflows', () => {
-  it('builds the editor graph of a stored workflow with the library entry as its identity', { tags: ['condition'] }, () => {
+describe('library workflows', { tags: [] }, () => {
+  it('builds the editor graph of a stored workflow with the library entry as its identity', { tags: ['equivalence'] }, () => {
     const g = graphForLibraryItem(saved({ graph: validGraph('Stored') }));
     expect(g?.nodes).toHaveLength(1);
     expect(g?.meta).toMatchObject({ name: 'Stored', id: 'w1', category: 'user' });
   });
 
-  it('falls back to the library name when the stored graph has no name, and gives up on a broken graph', { tags: ['error-guessing'] }, () => {
-    expect(graphForLibraryItem(saved({ graph: validGraph(''), name: 'Entry' }))?.meta.name).toBe('Entry');
-    expect(graphForLibraryItem(saved({ graph: { nodes: 'x' } }))).toBeNull();
-  });
+  it(
+    'falls back to the library name when the stored graph has no name, and gives up on a broken graph',
+    { tags: ['error-guessing'] },
+    () => {
+      expect(graphForLibraryItem(saved({ graph: validGraph(''), name: 'Entry' }))?.meta.name).toBe('Entry');
+      expect(graphForLibraryItem(saved({ graph: { nodes: 'x' } }))).toBeNull();
+    },
+  );
 
   it('opens a stored workflow in the editor and remembers it as recent', { tags: ['state-transition'] }, () => {
     expect(openLibraryWorkflow(saved({ graph: validGraph() }))).toBe(true);
@@ -91,7 +95,7 @@ describe('library workflows', () => {
   });
 });
 
-describe('loading graphs', () => {
+describe('loading graphs', { tags: [] }, () => {
   it('loads a valid graph as a new unsaved workflow, named by the caller when the graph has no name', { tags: ['condition'] }, () => {
     loadWorkflowGraph(validGraph(''), 'From image');
     expect(wfs().meta).toMatchObject({ name: 'From image', id: null, category: null });
@@ -104,7 +108,7 @@ describe('loading graphs', () => {
     expect(wfs().nodes).toEqual([]);
   });
 
-  it('starts a fresh empty workflow', { tags: ['boundary', 'state-transition'] }, () => {
+  it('starts a fresh empty workflow', { tags: ['state-transition'] }, () => {
     loadWorkflowGraph(validGraph(), 'x');
     newWorkflow();
     expect(wfs().nodes).toEqual([]);
@@ -124,7 +128,7 @@ describe('loading graphs', () => {
   });
 });
 
-describe('saving and deleting', () => {
+describe('saving and deleting', { tags: [] }, () => {
   const echo = (id = 'w9') => vi.spyOn(backend, 'saveWorkflow').mockImplementation(async (w) => saved({ id: w.id ?? id, name: w.name, tags: w.tags }));
 
   it('saves a new workflow under a fallback name when the name is blank, and marks it as saved', { tags: ['boundary'] }, async () => {
@@ -139,7 +143,7 @@ describe('saving and deleting', () => {
     expect(lastToast()?.status).toBe('success');
   });
 
-  it('overwrites a saved user workflow by id, but Save As always creates a new one', { tags: ['boundary'] }, async () => {
+  it('overwrites a saved user workflow by id, but Save As always creates a new one', { tags: ['condition'] }, async () => {
     loadWorkflowGraph(validGraph('A'), 'A');
     wfs().markSaved('w1', 'user');
     const save = echo();

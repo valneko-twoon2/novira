@@ -7,7 +7,7 @@ import { SETTINGS_DEFAULTS, useSettings } from '@/state/settings';
 import { formatBytes, formatRemaining } from './EnginePanel';
 import { ENGINE_START_GRACE_MS, MAX_PREPARE_MS, MIN_SPLASH_MS, useSplashGate } from './useSplashGate';
 
-describe('start-up screen gate', () => {
+describe('start-up screen gate', { tags: [] }, () => {
   beforeEach(() => {
     vi.useFakeTimers();
     useSettings.setState({ waitForEngine: true });
@@ -16,7 +16,7 @@ describe('start-up screen gate', () => {
   });
   afterEach(() => vi.useRealTimers());
 
-  it('stays for the minimum time even when everything is ready', { tags: ['state-transition', 'boundary'] }, () => {
+  it('stays for the minimum time even when everything is ready', { tags: ['boundary', 'state-transition'] }, () => {
     const { result } = renderHook(() => useSplashGate(true));
     expect(result.current.showSplash).toBe(true);
     act(() => void vi.advanceTimersByTime(MIN_SPLASH_MS + 10));
@@ -70,7 +70,7 @@ describe('start-up screen gate', () => {
     expect(result.current.showSplash).toBe(false);
   });
 
-  it('opens anyway when the engine never begins', { tags: ['state-transition'] }, () => {
+  it('opens anyway when the engine never begins', { tags: ['boundary', 'state-transition'] }, () => {
     useEngine.setState({ status: { state: 'idle' } });
     const { result } = renderHook(() => useSplashGate(true));
     act(() => void vi.advanceTimersByTime(ENGINE_START_GRACE_MS + 10));
@@ -90,7 +90,7 @@ describe('start-up screen gate', () => {
     expect(result.current.showSplash).toBe(false);
   });
 
-  it('does not wait for the node list forever', { tags: ['state-transition', 'boundary'] }, () => {
+  it('does not wait for the node list forever', { tags: ['boundary'] }, () => {
     useComfyNodes.setState({ status: 'loading', defs: null });
     const { result } = renderHook(() => useSplashGate(true));
     act(() => void vi.advanceTimersByTime(MAX_PREPARE_MS + 10));
@@ -98,7 +98,7 @@ describe('start-up screen gate', () => {
   });
 });
 
-describe('start-up screen gate with the engine wait turned off', () => {
+describe('start-up screen gate with the engine wait turned off', { tags: [] }, () => {
   beforeEach(() => {
     vi.useFakeTimers();
     useSettings.setState({ waitForEngine: false });
@@ -114,7 +114,7 @@ describe('start-up screen gate with the engine wait turned off', () => {
     { state: 'starting' },
     { state: 'idle' },
     { state: 'error', message: 'boom' },
-  ] as const)('opens after the minimum time while the engine is %o', { tags: ['state-transition'] }, (status) => {
+  ] as const)('opens after the minimum time while the engine is %o', { tags: ['decision-table'] }, (status) => {
     useEngine.setState({ status });
     const { result } = renderHook(() => useSplashGate(true));
     expect(result.current.showSplash).toBe(true);
@@ -122,20 +122,20 @@ describe('start-up screen gate with the engine wait turned off', () => {
     expect(result.current.showSplash).toBe(false);
   });
 
-  it('still waits for the backend', { tags: ['state-transition'] }, () => {
+  it('still waits for the backend', { tags: ['condition'] }, () => {
     useEngine.setState({ status: { state: 'ready' } });
     const { result } = renderHook(() => useSplashGate(false));
     act(() => void vi.advanceTimersByTime(MIN_SPLASH_MS + 10));
     expect(result.current.showSplash).toBe(true);
   });
 
-  it('waits by default', { tags: ['state-transition'] }, () => {
+  it('waits by default', { tags: ['equivalence'] }, () => {
     expect(SETTINGS_DEFAULTS.waitForEngine).toBe(true);
   });
 });
 
-describe('engine card formatting', () => {
-  it('writes sizes and the time left in the largest fitting unit', { tags: ['state-transition', 'boundary'] }, () => {
+describe('engine card formatting', { tags: [] }, () => {
+  it('writes sizes and the time left in the largest fitting unit', { tags: ['boundary'] }, () => {
     expect(formatBytes(700 * 1024 * 1024)).toBe('700 MB');
     expect(formatBytes(2.4 * 1024 ** 3)).toBe('2.40 GB');
     expect(formatRemaining(18)).toContain('18');

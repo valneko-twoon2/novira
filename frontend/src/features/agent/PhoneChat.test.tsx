@@ -46,8 +46,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('phone chat', () => {
-  it('says the assistant is set up on the PC while it is not ready, without a form or a box', { tags: ['error-guessing', 'state-transition'] }, async () => {
+describe('phone chat', { tags: [] }, () => {
+  it('says the assistant is set up on the PC while it is not ready, without a form or a box', { tags: ['condition'] }, async () => {
     seed({ provider: null, installed: false, loggedIn: false, models: [] });
     show();
     expect(await screen.findByText(t('phone.agentSetup'))).toBeTruthy();
@@ -73,7 +73,7 @@ describe('phone chat', () => {
     await waitFor(() => expect(backend.agentStatus).toHaveBeenCalled());
   });
 
-  it("leaves out the server's model picker, whose list and test are the PC's", { tags: ['scenario'] }, () => {
+  it("leaves out the server's model picker, whose list and test are the PC's", { tags: ['condition'] }, () => {
     seed({
       provider: 'openai',
       installed: true,
@@ -86,7 +86,7 @@ describe('phone chat', () => {
     expect(screen.queryByTestId('agent-model')).toBeNull();
   });
 
-  it('starts a new line on Enter and sends with the button; Stop shows while the assistant works', { tags: ['state-transition', 'scenario'] }, () => {
+  it('starts a new line on Enter and sends with the button; Stop shows while the assistant works', { tags: ['scenario'] }, () => {
     const send = vi.fn().mockResolvedValue({ ok: true, cancelled: false, text: '' });
     const cancel = vi.fn();
     seed(ready, { send, cancel });
@@ -104,7 +104,7 @@ describe('phone chat', () => {
     expect(cancel).toHaveBeenCalled();
   });
 
-  it('offers the starting suggestions on a new chat and sends the one tapped', { tags: ['boundary', 'scenario'] }, () => {
+  it('offers the starting suggestions on a new chat and sends the one tapped', { tags: ['scenario'] }, () => {
     const send = vi.fn().mockResolvedValue({ ok: true, cancelled: false, text: '' });
     seed(ready, { send });
     show();
@@ -115,7 +115,7 @@ describe('phone chat', () => {
     expect(send).toHaveBeenCalledWith(t('agent.suggestion.photo'), []);
   });
 
-  it('opens the past chats as a sheet; picking one shows it and closes the sheet', { tags: ['boundary', 'state-transition'] }, () => {
+  it('opens the past chats as a sheet; picking one shows it and closes the sheet', { tags: ['scenario'] }, () => {
     seed(ready);
     show();
     fireEvent.click(screen.getByTestId('phone-chat-history'));
@@ -136,32 +136,36 @@ describe('phone chat', () => {
   });
 });
 
-describe('the chat layer', () => {
-  it('renders nothing until the assistant is first opened, then stays mounted (hidden) after it closes', { tags: ['boundary', 'state-transition'] }, () => {
-    seed(ready, { open: false });
-    const { container } = render(
-      <TooltipProvider>
-        <PhoneChatLayer />
-      </TooltipProvider>,
-    );
-    expect(screen.queryByTestId('phone-chat')).toBeNull();
-    expect(container.innerHTML).toBe('');
-    act(() => useAgent.setState({ open: true }));
-    expect(screen.getByTestId('phone-chat')).toBeTruthy();
-    act(() => useAgent.setState({ open: false }));
-    // Hidden, not removed: the draft in the message box survives.
-    expect(document.querySelector('[data-testid="phone-chat"]')).not.toBeNull();
-  });
+describe('the chat layer', { tags: [] }, () => {
+  it(
+    'renders nothing until the assistant is first opened, then stays mounted (hidden) after it closes',
+    { tags: ['state-transition'] },
+    () => {
+      seed(ready, { open: false });
+      const { container } = render(
+        <TooltipProvider>
+          <PhoneChatLayer />
+        </TooltipProvider>,
+      );
+      expect(screen.queryByTestId('phone-chat')).toBeNull();
+      expect(container.innerHTML).toBe('');
+      act(() => useAgent.setState({ open: true }));
+      expect(screen.getByTestId('phone-chat')).toBeTruthy();
+      act(() => useAgent.setState({ open: false }));
+      // Hidden, not removed: the draft in the message box survives.
+      expect(document.querySelector('[data-testid="phone-chat"]')).not.toBeNull();
+    },
+  );
 });
 
-describe('the visible area above the keyboard', () => {
+describe('the visible area above the keyboard', { tags: [] }, () => {
   class FakeViewport extends EventTarget {
     height = 500;
     offsetTop = 20;
   }
   afterEach(() => delete (window as { visualViewport?: unknown }).visualViewport);
 
-  it('follows the visual viewport as the keyboard opens, and stops listening on unmount', { tags: ['state-transition', 'scenario'] }, () => {
+  it('follows the visual viewport as the keyboard opens, and stops listening on unmount', { tags: ['state-transition'] }, () => {
     const vv = new FakeViewport();
     Object.defineProperty(window, 'visualViewport', { configurable: true, value: vv });
     seed(ready);
@@ -182,7 +186,7 @@ describe('the visible area above the keyboard', () => {
     expect(el.style.height).toBe('300px');
   });
 
-  it('leaves the size to the style sheet when the browser has no visual viewport', { tags: ['scenario'] }, () => {
+  it('leaves the size to the style sheet when the browser has no visual viewport', { tags: ['condition'] }, () => {
     seed(ready);
     show();
     expect(screen.getByTestId('phone-chat').style.height).toBe('');

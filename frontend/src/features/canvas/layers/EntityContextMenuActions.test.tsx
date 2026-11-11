@@ -58,13 +58,13 @@ async function openMenu(type: EntityType, opts: { drawn?: boolean; locked?: bool
 }
 const disabled = (menu: ReturnType<typeof within>, key: Parameters<typeof t>[0]) => menu.getByRole('menuitem', { name: t(key) }).getAttribute('aria-disabled') === 'true';
 
-describe('layer menu actions', () => {
+describe('layer menu actions', { tags: [] }, () => {
   it.each([
     ['rotateRight', 'canvas.entityMenu.rotateRight'],
     ['rotateLeft', 'canvas.entityMenu.rotateLeft'],
     ['scaleUp', 'canvas.entityMenu.scaleUp'],
     ['scaleDown', 'canvas.entityMenu.scaleDown'],
-  ] as const)('runs %s on a drawn raster and control layer', { tags: ['decision-table'] }, async (op, key) => {
+  ] as const)('runs %s on a drawn raster and control layer', { tags: ['equivalence', 'decision-table'] }, async (op, key) => {
     for (const type of ['raster', 'control'] as const) {
       const { id, menu } = await openMenu(type, { drawn: true });
       expect(disabled(menu, key)).toBe(false);
@@ -74,7 +74,7 @@ describe('layer menu actions', () => {
     }
   });
 
-  it('disables turning and scaling for an empty layer, a locked layer and a mask', { tags: ['boundary'] }, async () => {
+  it('disables turning and scaling for an empty layer, a locked layer and a mask', { tags: ['condition', 'boundary'] }, async () => {
     const empty = await openMenu('raster');
     expect(disabled(empty.menu, 'canvas.entityMenu.rotateRight')).toBe(true);
     expect(disabled(empty.menu, 'canvas.entityMenu.flipHorizontal')).toBe(true);
@@ -90,7 +90,7 @@ describe('layer menu actions', () => {
     expect(transformEntity).not.toHaveBeenCalled();
   });
 
-  it('flips a drawn layer around the centre of its content', { tags: ['scenario'] }, async () => {
+  it('flips a drawn layer around the centre of its content', { tags: ['equivalence'] }, async () => {
     const first = await openMenu('raster', { drawn: true });
     fireEvent.click(first.menu.getByRole('menuitem', { name: t('canvas.entityMenu.flipHorizontal') }));
     const points = (id: string) => (state().entities.find((e) => e.id === id)!.objects[0] as { points: number[] }).points;
@@ -102,7 +102,7 @@ describe('layer menu actions', () => {
     expect(points(second.id)).toEqual([10, 220, 110, 20]);
   });
 
-  it('offers invert only for masks, and disables it while locked', { tags: ['scenario'] }, async () => {
+  it('offers invert only for masks, and disables it while locked', { tags: ['condition'] }, async () => {
     const raster = await openMenu('raster');
     expect(raster.menu.queryByRole('menuitem', { name: t('canvas.entityMenu.invertMask') })).toBeNull();
     cleanup();
@@ -116,7 +116,7 @@ describe('layer menu actions', () => {
     expect(invertMask).toHaveBeenCalledTimes(1);
   });
 
-  it('offers a random pose only for control layers', { tags: ['scenario'] }, async () => {
+  it('offers a random pose only for control layers', { tags: ['condition'] }, async () => {
     const raster = await openMenu('raster');
     expect(raster.menu.queryByRole('menuitem', { name: t('canvas.pose.random') })).toBeNull();
     cleanup();
@@ -128,7 +128,7 @@ describe('layer menu actions', () => {
     expect(disabled(locked.menu, 'canvas.pose.random')).toBe(true);
   });
 
-  it('exports the layer to a file', { tags: ['scenario'] }, async () => {
+  it('exports the layer to a file', { tags: ['equivalence'] }, async () => {
     const { id, menu } = await openMenu('raster');
     fireEvent.click(menu.getByRole('menuitem', { name: t('canvas.entityMenu.exportToFile') }));
     expect(exportEntityToFile).toHaveBeenCalledWith(id, useCanvas);

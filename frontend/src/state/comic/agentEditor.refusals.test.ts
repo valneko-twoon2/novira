@@ -38,7 +38,7 @@ function withModel() {
 
 beforeEach(reset);
 
-describe('with no comic open', () => {
+describe('with no comic open', { tags: [] }, () => {
   it('refuses every operation that needs a comic or a page, makes nothing, and says so for each', { tags: ['error-guessing'] }, () => {
     const ops = [
       { op: 'draw', scope: 'comic' },
@@ -79,35 +79,39 @@ describe('with no comic open', () => {
   });
 });
 
-describe('a panel that is not on the page', () => {
-  it('is refused by every operation that names one, leaving the comic and the selection as they were', { tags: ['error-guessing'] }, () => {
-    seed();
-    useComic.getState().setPanelImage(page().panels[0]!.id, 'pic.png');
-    const selected = useComic.getState().selectedPanelId;
-    const before = projects();
-    const bad = [0, 4, 1.5, '1', undefined];
-    const ops = bad.flatMap((panel) => [
-      { op: 'panel', panel, prompt: 'x' },
-      { op: 'pose', panel, people: [] },
-      { op: 'picture', panel, scale: 2 },
-      { op: 'take', panel, take: 1 },
-      { op: 'fix', panel, boxes: [{ x: 0.1, y: 0.1, w: 0.3, h: 0.3 }] },
-      { op: 'select', panel },
-      { op: 'addBubble', panel, text: 'hi' },
-      { op: 'split', panel, from: { x: 0, y: 0.5 }, to: { x: 1, y: 0.5 } },
-      { op: 'removePanel', panel },
-      { op: 'swap', a: panel, b: 1 },
-      { op: 'swap', a: 1, b: panel },
-      // No panel at all adds one; a panel that is not there adds nothing.
-      ...(panel === undefined ? [] : [{ op: 'addPanel', panel }]),
-    ]);
-    expect(applyComicOps(ops)).toBe(false);
-    expect(projects()).toBe(before);
-    expect(useComic.getState().selectedPanelId).toBe(selected);
-    expect(skipped()).toHaveLength(ops.length);
-    expect(skipped()[0]).toBe('op 1 (panel): took no effect (panel 0 is not on the open page, which has 3 panels numbered from 1 (open the page with op page first))');
-    expect(skipped().filter((s) => s.includes('panel 1.5 is not on the open page'))).toHaveLength(12);
-  });
+describe('a panel that is not on the page', { tags: [] }, () => {
+  it(
+    'is refused by every operation that names one, leaving the comic and the selection as they were',
+    { tags: ['error-guessing', 'boundary'] },
+    () => {
+      seed();
+      useComic.getState().setPanelImage(page().panels[0]!.id, 'pic.png');
+      const selected = useComic.getState().selectedPanelId;
+      const before = projects();
+      const bad = [0, 4, 1.5, '1', undefined];
+      const ops = bad.flatMap((panel) => [
+        { op: 'panel', panel, prompt: 'x' },
+        { op: 'pose', panel, people: [] },
+        { op: 'picture', panel, scale: 2 },
+        { op: 'take', panel, take: 1 },
+        { op: 'fix', panel, boxes: [{ x: 0.1, y: 0.1, w: 0.3, h: 0.3 }] },
+        { op: 'select', panel },
+        { op: 'addBubble', panel, text: 'hi' },
+        { op: 'split', panel, from: { x: 0, y: 0.5 }, to: { x: 1, y: 0.5 } },
+        { op: 'removePanel', panel },
+        { op: 'swap', a: panel, b: 1 },
+        { op: 'swap', a: 1, b: panel },
+        // No panel at all adds one; a panel that is not there adds nothing.
+        ...(panel === undefined ? [] : [{ op: 'addPanel', panel }]),
+      ]);
+      expect(applyComicOps(ops)).toBe(false);
+      expect(projects()).toBe(before);
+      expect(useComic.getState().selectedPanelId).toBe(selected);
+      expect(skipped()).toHaveLength(ops.length);
+      expect(skipped()[0]).toBe('op 1 (panel): took no effect (panel 0 is not on the open page, which has 3 panels numbered from 1 (open the page with op page first))');
+      expect(skipped().filter((s) => s.includes('panel 1.5 is not on the open page'))).toHaveLength(12);
+    },
+  );
 
   it('draws nothing for a panel that is not there or has no prompt', { tags: ['error-guessing'] }, () => {
     seed();
@@ -124,8 +128,8 @@ describe('a panel that is not on the page', () => {
   });
 });
 
-describe('values of the wrong type or out of range', () => {
-  it('opens no page for a number that is not one of the pages', { tags: ['error-guessing'] }, () => {
+describe('values of the wrong type or out of range', { tags: [] }, () => {
+  it('opens no page for a number that is not one of the pages', { tags: ['error-guessing', 'boundary'] }, () => {
     seed();
     applyComicOps([{ op: 'addPage' }, { op: 'page', page: 1 }]);
     const open = useComic.getState().activePageId;
@@ -141,24 +145,28 @@ describe('values of the wrong type or out of range', () => {
     expect(useComic.getState().activeProjectId).toBe(projects()[1]!.id);
   });
 
-  it('refuses shapes that are not a list of 1 to 24 shapes of 3 to 12 corners each, and keeps the layout', { tags: ['error-guessing'] }, () => {
-    seed();
-    const before = projects();
-    const square = (x: number) => [{ x, y: 0 }, { x: x + 0.01, y: 0 }, { x: x + 0.01, y: 1 }, { x, y: 1 }];
-    const corners = (n: number) => Array.from({ length: n }, (_, i) => ({ x: Math.cos(i), y: Math.sin(i) }));
-    const tries = [
-      'a square',
-      [],
-      Array.from({ length: 25 }, (_, i) => square(i * 0.04)),
-      [[{ x: 0, y: 0 }, { x: 1, y: 1 }]],
-      [corners(13)],
-      [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1 }, { x: 0, y: 1 }]],
-      [[{ x: 0, y: 0 }, { x: 1, y: 0 }, 'corner', { x: 0, y: 1 }]],
-      ['not a shape'],
-    ];
-    expect(applyComicOps(tries.flatMap((shapes) => [{ op: 'shapes', shapes }, { op: 'shapes', free: true, shapes }]))).toBe(false);
-    expect(projects()).toBe(before);
-  });
+  it(
+    'refuses shapes that are not a list of 1 to 24 shapes of 3 to 12 corners each, and keeps the layout',
+    { tags: ['boundary', 'error-guessing'] },
+    () => {
+      seed();
+      const before = projects();
+      const square = (x: number) => [{ x, y: 0 }, { x: x + 0.01, y: 0 }, { x: x + 0.01, y: 1 }, { x, y: 1 }];
+      const corners = (n: number) => Array.from({ length: n }, (_, i) => ({ x: Math.cos(i), y: Math.sin(i) }));
+      const tries = [
+        'a square',
+        [],
+        Array.from({ length: 25 }, (_, i) => square(i * 0.04)),
+        [[{ x: 0, y: 0 }, { x: 1, y: 1 }]],
+        [corners(13)],
+        [[{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1 }, { x: 0, y: 1 }]],
+        [[{ x: 0, y: 0 }, { x: 1, y: 0 }, 'corner', { x: 0, y: 1 }]],
+        ['not a shape'],
+      ];
+      expect(applyComicOps(tries.flatMap((shapes) => [{ op: 'shapes', shapes }, { op: 'shapes', free: true, shapes }]))).toBe(false);
+      expect(projects()).toBe(before);
+    },
+  );
 
   it('does not cut a panel along a line whose ends are not points', { tags: ['error-guessing'] }, () => {
     seed();
@@ -179,42 +187,54 @@ describe('values of the wrong type or out of range', () => {
     expect(projects()).toBe(before);
   });
 
-  it('puts back no earlier picture for a number that is not a whole number, and says how many there are', { tags: ['error-guessing'] }, () => {
-    seed();
-    const id = page().panels[0]!.id;
-    for (const name of ['old.png', 'new.png']) useComic.getState().setPanelImage(id, name);
-    const before = projects();
-    expect(applyComicOps([{ op: 'take', panel: 1, take: 0.5 }, { op: 'take', panel: 1, take: '1' }])).toBe(false);
-    expect(projects()).toBe(before);
-    expect(skipped()).toEqual([expect.stringContaining('panel 1 has 1 earlier picture(s)'), expect.stringContaining('panel 1 has 1 earlier picture(s)')]);
-  });
+  it(
+    'puts back no earlier picture for a number that is not a whole number, and says how many there are',
+    { tags: ['error-guessing'] },
+    () => {
+      seed();
+      const id = page().panels[0]!.id;
+      for (const name of ['old.png', 'new.png']) useComic.getState().setPanelImage(id, name);
+      const before = projects();
+      expect(applyComicOps([{ op: 'take', panel: 1, take: 0.5 }, { op: 'take', panel: 1, take: '1' }])).toBe(false);
+      expect(projects()).toBe(before);
+      expect(skipped()).toEqual([expect.stringContaining('panel 1 has 1 earlier picture(s)'), expect.stringContaining('panel 1 has 1 earlier picture(s)')]);
+    },
+  );
 
-  it('changes no balloon for an id that is not a balloon, a set that is not an object, or a set with nothing readable', { tags: ['error-guessing'] }, () => {
-    seed();
-    applyComicOps([{ op: 'addBubble', panel: 1, text: 'Hello' }]);
-    const id = page().panels[0]!.bubbles[0]!.id;
-    const before = projects();
-    expect(applyComicOps([
-      { op: 'bubble', id: 5, set: { text: 'x' } },
-      { op: 'bubble', id, set: 'Stop!' },
-      { op: 'bubble', id, set: { kind: 'nope', scale: 'big', tail: 'mouth' } },
-      { op: 'removeBubble', id: 'missing' },
-      { op: 'removeBubble', id: 5 },
-    ])).toBe(false);
-    expect(projects()).toBe(before);
-    expect(skipped()[0]).toContain('no balloon has this id');
-    expect(skipped()[1]).toContain('bubble needs "set": {...fields}');
-  });
+  it(
+    'changes no balloon for an id that is not a balloon, a set that is not an object, or a set with nothing readable',
+    { tags: ['error-guessing'] },
+    () => {
+      seed();
+      applyComicOps([{ op: 'addBubble', panel: 1, text: 'Hello' }]);
+      const id = page().panels[0]!.bubbles[0]!.id;
+      const before = projects();
+      expect(applyComicOps([
+        { op: 'bubble', id: 5, set: { text: 'x' } },
+        { op: 'bubble', id, set: 'Stop!' },
+        { op: 'bubble', id, set: { kind: 'nope', scale: 'big', tail: 'mouth' } },
+        { op: 'removeBubble', id: 'missing' },
+        { op: 'removeBubble', id: 5 },
+      ])).toBe(false);
+      expect(projects()).toBe(before);
+      expect(skipped()[0]).toContain('no balloon has this id');
+      expect(skipped()[1]).toContain('bubble needs "set": {...fields}');
+    },
+  );
 
-  it('removes nobody for names that are not texts or not in the cast or the places, and says what the operation needs', { tags: ['error-guessing'] }, () => {
-    seed();
-    applyComicOps([{ op: 'cast', characters: [{ name: 'Mio', tags: '1girl' }] }, { op: 'places', places: [{ name: 'Cafe', tags: 'cafe' }] }]);
-    const before = projects();
-    expect(applyComicOps([{ op: 'cast', remove: [3, null, 'nobody'] }, { op: 'places', remove: [3, null, 'nowhere'] }])).toBe(false);
-    expect(projects()).toBe(before);
-    expect(skipped()[0]).toContain('cast needs "characters"');
-    expect(skipped()[1]).toContain('places needs "places"');
-  });
+  it(
+    'removes nobody for names that are not texts or not in the cast or the places, and says what the operation needs',
+    { tags: ['error-guessing'] },
+    () => {
+      seed();
+      applyComicOps([{ op: 'cast', characters: [{ name: 'Mio', tags: '1girl' }] }, { op: 'places', places: [{ name: 'Cafe', tags: 'cafe' }] }]);
+      const before = projects();
+      expect(applyComicOps([{ op: 'cast', remove: [3, null, 'nobody'] }, { op: 'places', remove: [3, null, 'nowhere'] }])).toBe(false);
+      expect(projects()).toBe(before);
+      expect(skipped()[0]).toContain('cast needs "characters"');
+      expect(skipped()[1]).toContain('places needs "places"');
+    },
+  );
 
   it('draws no sheet for a character named by something that is not a text', { tags: ['error-guessing'] }, () => {
     seed();
@@ -229,7 +249,7 @@ describe('values of the wrong type or out of range', () => {
     }
   });
 
-  it('draws no sheet without a model, and tells the user why', { tags: ['error-guessing'] }, () => {
+  it('draws no sheet without a model, and tells the user why', { tags: ['condition', 'error-guessing'] }, () => {
     seed();
     applyComicOps([{ op: 'cast', characters: [{ name: 'Mio', tags: '1girl' }] }]);
     useToasts.setState({ toasts: [] });

@@ -259,7 +259,7 @@ mod tests {
         assert_eq!(g.total_steps, 20);
     }
 
-    // tags: state-transition
+    // tags: decision-table
     #[test]
     fn the_small_gpu_switches_load_fp8_weights_and_decode_in_tiles() {
         let (unet, te, vae) = refs();
@@ -308,7 +308,7 @@ mod tests {
         assert_eq!(tiled["inputs"]["tile_size"], 512);
     }
 
-    // tags: scenario
+    // tags: condition
     #[test]
     fn the_turbo_model_lowers_the_flow_shift() {
         let (unet, te, vae) = refs();

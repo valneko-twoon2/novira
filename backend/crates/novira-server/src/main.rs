@@ -222,7 +222,7 @@ mod tests {
         s.split_whitespace().map(str::to_string)
     }
 
-    // tags: equivalence
+    // tags: equivalence, condition
     #[test]
     fn the_options_are_read_and_the_data_folder_has_no_default() {
         let o = parse(args("--data d --dist f --port 8123 --engine --open"), None).unwrap();
@@ -297,7 +297,7 @@ mod tests {
         assert!(!start.contains("--data "), "{start}");
     }
 
-    // tags: condition
+    // tags: boundary, equivalence
     #[test]
     fn the_port_of_the_last_start_comes_back() {
         let dir = std::env::temp_dir().join(format!("novira-port-{}", std::process::id()));

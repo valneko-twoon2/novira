@@ -54,7 +54,7 @@ afterEach(() => {
   useGallery.getState().setCompareMode('slider');
 });
 
-describe('CompareView zoom', () => {
+describe('CompareView zoom', { tags: [] }, () => {
   it('zooms and pans both side-by-side images together', { tags: ['scenario'] }, () => {
     useGallery.getState().setCompareMode('side-by-side');
     show();
@@ -75,7 +75,7 @@ describe('CompareView zoom', () => {
     expect(a2?.style.transform).toBe(b2?.style.transform);
   });
 
-  it('keeps the slider drag for the divider and zooms both layers with the wheel', { tags: ['scenario'] }, () => {
+  it('keeps the slider drag for the divider and zooms both layers with the wheel', { tags: ['condition'] }, () => {
     useGallery.getState().setCompareMode('slider');
     show();
     const slider = screen.getByTestId('compare-slider');
@@ -95,7 +95,7 @@ describe('CompareView zoom', () => {
     expect(frames()[1]?.style.clipPath).toMatch(/^inset\(0 0 0 [\d.]+%\)$/);
   });
 
-  it('starts fitted again after switching the layout', { tags: ['scenario'] }, () => {
+  it('starts fitted again after switching the layout', { tags: ['state-transition'] }, () => {
     useGallery.getState().setCompareMode('hover');
     show();
     fireEvent.wheel(screen.getByTestId('compare-hover'), { deltaY: -600, clientX: 200, clientY: 150 });

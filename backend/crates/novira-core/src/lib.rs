@@ -92,7 +92,7 @@ mod tests {
         }
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn plain_path_drops_the_verbatim_prefix_of_a_drive_path_only() {
         assert_eq!(

@@ -17,14 +17,14 @@ function Harness() {
 
 afterEach(() => cleanup());
 
-describe('the pose stage', () => {
-  it('has a handle for each of the 18 joints, named for screen readers', { tags: ['scenario'] }, () => {
+describe('the pose stage', { tags: [] }, () => {
+  it('has a handle for each of the 18 joints, named for screen readers', { tags: ['equivalence'] }, () => {
     render(<Harness />);
     expect(screen.getAllByRole('slider')).toHaveLength(POSE_JOINT_NAMES.length);
     expect(screen.getByTestId('pose-joint-rightWrist').getAttribute('aria-label')).toBeTruthy();
   });
 
-  it('moves a joint with the arrow keys, further with shift, and leaves the other joints alone', { tags: ['scenario'] }, () => {
+  it('moves a joint with the arrow keys, further with shift, and leaves the other joints alone', { tags: ['condition'] }, () => {
     render(<Harness />);
     const wrist = POSE_JOINT_NAMES.indexOf('rightWrist');
     const before = PRESETS.standing[wrist]!;
@@ -36,14 +36,14 @@ describe('the pose stage', () => {
     expect(latest[POSE_JOINT_NAMES.indexOf('leftWrist')]).toEqual(PRESETS.standing[POSE_JOINT_NAMES.indexOf('leftWrist')]);
   });
 
-  it('ignores other keys', { tags: ['scenario'] }, () => {
+  it('ignores other keys', { tags: ['condition'] }, () => {
     render(<Harness />);
     fireEvent.keyDown(screen.getByTestId('pose-joint-nose'), { key: 'a' });
     expect(latest).toEqual(PRESETS.standing);
   });
 });
 
-describe('dragging a joint with the pointer', () => {
+describe('dragging a joint with the pointer', { tags: [] }, () => {
   const stubBox = () => {
     const stage = screen.getByTestId('pose-stage') as unknown as SVGSVGElement;
     stage.getBoundingClientRect = () => ({ left: 0, top: 0, width: 400, height: 500, right: 400, bottom: 500, x: 0, y: 0, toJSON: () => ({}) });
@@ -52,7 +52,7 @@ describe('dragging a joint with the pointer', () => {
   };
   const point = (x: number, y: number) => ({ clientX: x * 400, clientY: y * 500, pointerId: 1 });
 
-  it('picks up the joint under the press, follows the pointer and lets go on release', { tags: ['scenario'] }, () => {
+  it('picks up the joint under the press, follows the pointer and lets go on release', { tags: ['state-transition'] }, () => {
     render(<Harness />);
     const stage = stubBox();
     const nose = POSE_JOINT_NAMES.indexOf('nose');
@@ -68,7 +68,7 @@ describe('dragging a joint with the pointer', () => {
     expect(latest[nose]).toEqual({ x: 0.7, y: 0.3 });
   });
 
-  it('ignores a press that is far from every joint, and a cancelled drag stops', { tags: ['scenario'] }, () => {
+  it('ignores a press that is far from every joint, and a cancelled drag stops', { tags: ['state-transition', 'condition'] }, () => {
     render(<Harness />);
     const stage = stubBox();
     fireEvent.pointerDown(stage, point(0.02, 0.98));

@@ -35,8 +35,8 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('making a page store', () => {
-  it('takes the page layers and the Image tab tool settings, and never writes the form', { tags: ['error-guessing'] }, () => {
+describe('making a page store', { tags: [] }, () => {
+  it('takes the page layers and the Image tab tool settings, and never writes the form', { tags: ['condition'] }, () => {
     useComic.getState().setPageCanvas(page().id, withLayer(page().canvas, [stroke('s')]));
     useCanvas.setState({ brushWidth: 77, fillColor: { r: 1, g: 2, b: 3, a: 1 } });
     const params = useParams.getState();
@@ -53,7 +53,7 @@ describe('making a page store', () => {
     expect({ width: useParams.getState().width, height: useParams.getState().height }).toEqual(before);
   });
 
-  it('starts on the brush, as its paint tool bar has no view tool, whatever the Image tab holds', { tags: ['state-transition'] }, () => {
+  it('starts on the brush, as its paint tool bar has no view tool, whatever the Image tab holds', { tags: ['condition'] }, () => {
     useCanvas.setState({ tool: 'view' });
     expect(pageCanvasStore(page().id)!.getState().tool).toBe('brush');
   });
@@ -81,18 +81,18 @@ describe('making a page store', () => {
     expect(useComic.getState().projects).toBe(before);
   });
 
-  it('gives the same store again, and none for a page that does not exist', { tags: ['regression', 'boundary'] }, () => {
+  it('gives the same store again, and none for a page that does not exist', { tags: ['condition', 'error-guessing'] }, () => {
     const store = pageCanvasStore(page().id);
     expect(pageCanvasStore(page().id)).toBe(store);
     expect(pageCanvasStore('missing')).toBeNull();
   });
 });
 
-describe('layer limits', () => {
+describe('layer limits', { tags: [] }, () => {
   const rasters = () => pageRasters({ entities: pageCanvasStore(page().id)!.getState().entities, bbox: page().canvas.bbox });
   const toasts = () => useToasts.getState().toasts;
 
-  it('allows layers up to the limit with the slots counted, then refuses with a warning', { tags: ['error-guessing', 'boundary'] }, () => {
+  it('allows layers up to the limit with the slots counted, then refuses with a warning', { tags: ['boundary'] }, () => {
     useToasts.setState({ toasts: [] });
     const store = pageCanvasStore(page().id)!;
     while (rasters().length < MAX_RASTERS_PER_PAGE) expect(store.getState().addEntity('raster')).not.toBe('');
@@ -107,7 +107,7 @@ describe('layer limits', () => {
     expect(page().canvas.entities).toHaveLength(MAX_RASTERS_PER_PAGE);
   });
 
-  it('stops at the masks and the objects of one layer too', { tags: ['condition'] }, () => {
+  it('stops at the masks and the objects of one layer too', { tags: ['boundary'] }, () => {
     useToasts.setState({ toasts: [] });
     const store = pageCanvasStore(page().id)!;
     for (let i = 0; i < MAX_MASKS_PER_PAGE; i++) expect(store.getState().addEntity(i % 2 ? 'regional' : 'inpaint')).not.toBe('');
@@ -122,7 +122,7 @@ describe('layer limits', () => {
   });
 });
 
-describe('writing back', () => {
+describe('writing back', { tags: [] }, () => {
   it('puts a change of the store into the page at once, with no comic undo step', { tags: ['state-transition'] }, () => {
     const store = pageCanvasStore(page().id)!;
     const id = store.getState().addEntity('raster', { name: 'Ink' });
@@ -183,7 +183,7 @@ describe('writing back', () => {
   });
 });
 
-describe('outside changes', () => {
+describe('outside changes', { tags: [] }, () => {
   it('seed the store again and clear its undo history', { tags: ['regression'] }, () => {
     const store = pageCanvasStore(page().id)!;
     store.getState().addEntity('raster', { name: 'Ink' });
@@ -230,33 +230,37 @@ describe('outside changes', () => {
   });
 });
 
-describe('undo', () => {
-  it('of the page store goes back to the page; the comic undo leaves the layers and the store alone', { tags: ['state-transition'] }, () => {
-    const store = pageCanvasStore(page().id)!;
-    const panels = page().panels.length;
-    useComic.getState().setPanelCount(page().id, panels + 1);
-    store.getState().addEntity('raster', { name: 'Ink' });
-    vi.advanceTimersByTime(WRITE_BACK_MS * 2);
-    expect(useComic.getState().past).toHaveLength(1);
-    const painted = store.getState().entities;
+describe('undo', { tags: [] }, () => {
+  it(
+    'of the page store goes back to the page; the comic undo leaves the layers and the store alone',
+    { tags: ['state-transition'] },
+    () => {
+      const store = pageCanvasStore(page().id)!;
+      const panels = page().panels.length;
+      useComic.getState().setPanelCount(page().id, panels + 1);
+      store.getState().addEntity('raster', { name: 'Ink' });
+      vi.advanceTimersByTime(WRITE_BACK_MS * 2);
+      expect(useComic.getState().past).toHaveLength(1);
+      const painted = store.getState().entities;
 
-    useComic.getState().undo();
-    expect(page().panels).toHaveLength(panels);
-    expect(page().canvas.entities).toBe(painted);
-    expect(store.getState().entities).toBe(painted);
-    expect(store.getState().past).toHaveLength(1);
+      useComic.getState().undo();
+      expect(page().panels).toHaveLength(panels);
+      expect(page().canvas.entities).toBe(painted);
+      expect(store.getState().entities).toBe(painted);
+      expect(store.getState().past).toHaveLength(1);
 
-    store.getState().undo();
-    vi.advanceTimersByTime(WRITE_BACK_MS * 2);
-    expect(ink(pageRasters(page().canvas))).toBeUndefined();
-    expect(useComic.getState().future).toHaveLength(1);
-    store.getState().redo();
-    vi.advanceTimersByTime(WRITE_BACK_MS * 2);
-    expect(ink(pageRasters(page().canvas))).toBeDefined();
-  });
+      store.getState().undo();
+      vi.advanceTimersByTime(WRITE_BACK_MS * 2);
+      expect(ink(pageRasters(page().canvas))).toBeUndefined();
+      expect(useComic.getState().future).toHaveLength(1);
+      store.getState().redo();
+      vi.advanceTimersByTime(WRITE_BACK_MS * 2);
+      expect(ink(pageRasters(page().canvas))).toBeDefined();
+    },
+  );
 });
 
-describe('dropping stores', () => {
+describe('dropping stores', { tags: [] }, () => {
   it('drops the store of a deleted page and of every page of a deleted project', { tags: ['equivalence'] }, () => {
     useComic.getState().addPage();
     const [first, second] = useComic.getState().projects[0]!.pages;

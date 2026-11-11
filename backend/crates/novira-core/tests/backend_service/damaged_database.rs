@@ -95,7 +95,7 @@ async fn a_queue_that_cannot_be_saved_fails_new_jobs_and_a_status_change_is_only
     backend.shutdown();
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing
 #[test]
 fn models_that_cannot_be_saved_stop_the_backend_from_starting() {
     let dir = tempfile::tempdir().unwrap();
@@ -207,7 +207,7 @@ async fn workflows_that_cannot_be_saved_fail_the_calls_that_change_them() {
     backend.shutdown();
 }
 
-// tags: error-guessing, decision-table
+// tags: error-guessing
 #[tokio::test]
 async fn pictures_that_cannot_be_saved_fail_the_upload_and_the_delete() {
     let dir = tempfile::tempdir().unwrap();
@@ -354,7 +354,7 @@ fn start(dir: &Path) -> novira_core::service::Result<novira_core::Backend> {
     )
 }
 
-// tags: error-guessing
+// tags: error-guessing, equivalence
 #[test]
 fn a_backend_does_not_start_on_a_table_that_cannot_be_read() {
     // The first page of each table: boards, images, workflows, models, queue.
@@ -371,7 +371,7 @@ fn a_backend_does_not_start_on_a_table_that_cannot_be_read() {
     }
 }
 
-// tags: error-guessing, boundary
+// tags: error-guessing, equivalence
 #[test]
 fn a_backend_does_not_start_when_its_folders_are_taken_by_files() {
     // The data folder itself is a file.

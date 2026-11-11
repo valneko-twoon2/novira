@@ -15,7 +15,7 @@ const update = (message: string, layers?: unknown[]) => {
   return { reply, ops: reply.ops as { op: string; id?: string; set?: Record<string, unknown> & { style?: Record<string, unknown> } }[] };
 };
 
-describe('textEdit', () => {
+describe('textEdit', { tags: [] }, () => {
   it('does not answer without a text scene', { tags: ['condition'] }, () => {
     expect(textEdit({ message: 'x', locale: 'en' }, undefined)).toBeNull();
     expect(textEdit({ message: 'x', locale: 'en' }, {})).toBeNull();
@@ -34,7 +34,7 @@ describe('textEdit', () => {
     expect(update(message).ops[0]!.set!.style!.fill).toEqual({ kind: 'solid', color });
   });
 
-  it('resizes, switches the writing direction and says what it did in English', { tags: ['condition'] }, () => {
+  it('resizes, switches the writing direction and says what it did in English', { tags: ['equivalence'] }, () => {
     expect(update('smaller').ops[0]!.set!.style!.fontSize).toBe(77);
     expect(update('bigger').ops[0]!.set!.style!.fontSize).toBe(130);
     expect(update('vertical').ops[0]!.set!.style!.vertical).toBe(true);
@@ -49,7 +49,7 @@ describe('textEdit', () => {
     expect(update('no outline').ops[0]!.set!.style!.stroke).toBeNull();
   });
 
-  it('rotates, moves and rewrites', { tags: ['condition'] }, () => {
+  it('rotates, moves and rewrites', { tags: ['equivalence'] }, () => {
     expect(update('30度').ops[0]!.set!.rotation).toBe(30);
     expect(update('center').ops[0]!.set).toMatchObject({ x: 500, y: 400 });
     expect(update('move to the top').ops[0]!.set!.y).toBe(160);
@@ -83,12 +83,16 @@ describe('textEdit', () => {
     expect(added[1]).toMatchObject({ op: 'preset', preset: 'gold' });
   });
 
-  it('works on the last layer when nothing is selected, and explains itself in English when puzzled', { tags: ['condition'] }, () => {
-    const reply = ask('red', [layer], null)!;
-    expect(reply.ops).toHaveLength(1);
-    const puzzled = ask('hmm', [layer], null)!;
-    expect(puzzled.ops).toHaveLength(0);
-    expect(puzzled.text).toContain('Tell me');
-    expect(ask('add a bubble', [], null)!.ops).toHaveLength(1);
-  });
+  it(
+    'works on the last layer when nothing is selected, and explains itself in English when puzzled',
+    { tags: ['condition', 'boundary'] },
+    () => {
+      const reply = ask('red', [layer], null)!;
+      expect(reply.ops).toHaveLength(1);
+      const puzzled = ask('hmm', [layer], null)!;
+      expect(puzzled.ops).toHaveLength(0);
+      expect(puzzled.text).toContain('Tell me');
+      expect(ask('add a bubble', [], null)!.ops).toHaveLength(1);
+    },
+  );
 });

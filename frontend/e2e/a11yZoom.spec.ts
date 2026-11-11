@@ -60,26 +60,30 @@ function problems(page: Page): Promise<string[]> {
 }
 
 for (const c of CASES) {
-  test(`${c.name} (${c.size.width}x${c.size.height}): no sideways scroll, navigation and controls stay in the window`, { tag: ['@boundary'] }, async ({ page }) => {
-    test.setTimeout(60_000);
-    await page.setViewportSize(c.size);
-    // Under 768 CSS pixels the app shows its phone layout instead of the desktop shell.
-    await page.goto('/');
-    await expect(page.locator('.app, [data-testid="phone-shell"]').first()).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByTestId('splash')).toHaveCount(0);
-    await page.waitForTimeout(400);
-    // Controls that stick out of their box or out of the window (the layout scan's own rules, so the same exceptions hold), counted.
-    const sticking = (await findLayoutFaults(page)).filter((f) => f.kind === 'offscreen' || f.kind === 'overflow');
-    const counts = { overflow: sticking.filter((f) => f.kind === 'overflow').length, offscreen: sticking.filter((f) => f.kind === 'offscreen').length };
-    const found = [...new Set(await problems(page))].sort();
-    if (process.env.A11Y_REPORT) {
-      for (const k of found) console.log(`A11Y-ZOOM | ${c.name} | ${k}`);
-      for (const f of sticking) console.log(`A11Y-ZOOM-FAULT | ${c.name} | ${f.kind} ${f.where} ${f.text}`);
-    }
-    const known = new Set(KNOWN_ZOOM[c.name]?.problems ?? []);
-    const most = KNOWN_ZOOM[c.name]?.most ?? {};
-    for (const kind of ['overflow', 'offscreen'] as const) expect(counts[kind], `controls with an ${kind} fault at "${c.name}" (most allowed: a11yZoomKnown.ts)`).toBeLessThanOrEqual(most[kind] ?? 0);
-    expect(found.filter((k) => !known.has(k)), `"${c.name}" beyond a11yZoomKnown.ts`).toEqual([]);
-    expect([...known].filter((k) => !found.includes(k)), `known fault of "${c.name}" that no longer happens (delete the entry)`).toEqual([]);
-  });
+  test(
+    `${c.name} (${c.size.width}x${c.size.height}): no sideways scroll, navigation and controls stay in the window`,
+    { tag: ['@boundary'] },
+    async ({ page }) => {
+      test.setTimeout(60_000);
+      await page.setViewportSize(c.size);
+      // Under 768 CSS pixels the app shows its phone layout instead of the desktop shell.
+      await page.goto('/');
+      await expect(page.locator('.app, [data-testid="phone-shell"]').first()).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByTestId('splash')).toHaveCount(0);
+      await page.waitForTimeout(400);
+      // Controls that stick out of their box or out of the window (the layout scan's own rules, so the same exceptions hold), counted.
+      const sticking = (await findLayoutFaults(page)).filter((f) => f.kind === 'offscreen' || f.kind === 'overflow');
+      const counts = { overflow: sticking.filter((f) => f.kind === 'overflow').length, offscreen: sticking.filter((f) => f.kind === 'offscreen').length };
+      const found = [...new Set(await problems(page))].sort();
+      if (process.env.A11Y_REPORT) {
+        for (const k of found) console.log(`A11Y-ZOOM | ${c.name} | ${k}`);
+        for (const f of sticking) console.log(`A11Y-ZOOM-FAULT | ${c.name} | ${f.kind} ${f.where} ${f.text}`);
+      }
+      const known = new Set(KNOWN_ZOOM[c.name]?.problems ?? []);
+      const most = KNOWN_ZOOM[c.name]?.most ?? {};
+      for (const kind of ['overflow', 'offscreen'] as const) expect(counts[kind], `controls with an ${kind} fault at "${c.name}" (most allowed: a11yZoomKnown.ts)`).toBeLessThanOrEqual(most[kind] ?? 0);
+      expect(found.filter((k) => !known.has(k)), `"${c.name}" beyond a11yZoomKnown.ts`).toEqual([]);
+      expect([...known].filter((k) => !found.includes(k)), `known fault of "${c.name}" that no longer happens (delete the entry)`).toEqual([]);
+    },
+  );
 }

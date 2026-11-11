@@ -6,7 +6,7 @@ const layer = (): TextLayer => newTextLayer({ width: 1000, height: 1000 }, 'NOVI
 const rich = (l: TextLayer): RichFill => ({ imageName: 'a.png', candidates: ['a.png'], width: 400, height: 200, fontSize: l.style.fontSize, sourceKey: richSourceKey(l) });
 
 describe('richSourceKey', () => {
-  it('does not change with colours, position, rotation, opacity or the size of the layer', { tags: ['condition'] }, () => {
+  it('does not change with colours, position, rotation, opacity or the size of the layer', { tags: ['equivalence'] }, () => {
     const l = layer();
     const key = richSourceKey(l);
     const moved = { ...l, x: 5, y: 9, rotation: 30, opacity: 0.4, visible: false, locked: true };
@@ -17,7 +17,7 @@ describe('richSourceKey', () => {
     expect(richSourceKey(scaled)).toBe(key);
   });
 
-  it('changes with what shapes the letters', { tags: ['condition'] }, () => {
+  it('changes with what shapes the letters', { tags: ['equivalence'] }, () => {
     const l = layer();
     const key = richSourceKey(l);
     expect(richSourceKey({ ...l, text: 'NOVIRA!' })).not.toBe(key);
@@ -27,7 +27,7 @@ describe('richSourceKey', () => {
     }
   });
 
-  it('counts the letter spacing as a share of the font size in steps of 2%', { tags: ['condition'] }, () => {
+  it('counts the letter spacing as a share of the font size in steps of 2%', { tags: ['boundary'] }, () => {
     const base = layer();
     const l = { ...base, style: { ...base.style, fontSize: 100, letterSpacing: 0 } };
     const key = richSourceKey(l);

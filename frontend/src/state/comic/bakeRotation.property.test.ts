@@ -11,8 +11,8 @@ const side = fc.double({ min: 0.5, max: 5000, noNaN: true });
 const angle = fc.double({ min: -720, max: 720, noNaN: true });
 const near = (a: number, b: number) => Math.abs(a - b) <= 1e-6 * Math.max(1, Math.abs(a), Math.abs(b));
 
-describe('turnedBox', () => {
-  it('covers the picture, and is within width + height on each side', { tags: ['boundary'] }, () => {
+describe('turnedBox', { tags: [] }, () => {
+  it('covers the picture, and is within width + height on each side', { tags: ['boundary', 'error-guessing'] }, () => {
     check(
       fc.property(side, side, angle, (w, h, r) => {
         const box = turnedBox(w, h, r);
@@ -26,7 +26,7 @@ describe('turnedBox', () => {
     );
   });
 
-  it('is the same after a half turn and for the opposite direction', { tags: ['state-transition', 'condition'] }, () => {
+  it('is the same after a half turn and for the opposite direction', { tags: ['equivalence', 'error-guessing'] }, () => {
     check(
       fc.property(side, side, angle, (w, h, r) => {
         const box = turnedBox(w, h, r);
@@ -38,7 +38,7 @@ describe('turnedBox', () => {
     );
   });
 
-  it('swaps the sides when the picture does, and at a quarter turn', { tags: ['condition'] }, () => {
+  it('swaps the sides when the picture does, and at a quarter turn', { tags: ['condition', 'error-guessing'] }, () => {
     check(
       fc.property(side, side, angle, (w, h, r) => {
         const box = turnedBox(w, h, r);

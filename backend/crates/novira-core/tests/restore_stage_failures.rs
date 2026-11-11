@@ -71,7 +71,7 @@ fn an_entry_whose_bytes_were_damaged_is_reported() {
     assert!(!data.path().join(STAGING).exists());
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing
 #[test]
 fn a_screen_state_that_is_not_a_state_is_refused() {
     let dir = tempfile::tempdir().unwrap();

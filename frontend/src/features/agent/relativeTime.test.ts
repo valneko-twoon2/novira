@@ -4,8 +4,8 @@ import { relativeTime } from './relativeTime';
 const NOW = Date.UTC(2026, 9, 6, 12, 0, 0);
 const MIN = 60_000;
 
-describe('relativeTime', () => {
-  it('words recent times in the given language', { tags: ['condition'] }, () => {
+describe('relativeTime', { tags: [] }, () => {
+  it('words recent times in the given language', { tags: ['equivalence', 'boundary'] }, () => {
     expect(relativeTime(NOW - 10_000, NOW, 'en')).toBe('now');
     expect(relativeTime(NOW - 5 * MIN, NOW, 'en')).toBe('5 minutes ago');
     expect(relativeTime(NOW - 3 * 60 * MIN, NOW, 'en')).toBe('3 hours ago');
@@ -13,7 +13,7 @@ describe('relativeTime', () => {
     expect(relativeTime(NOW - 5 * MIN, NOW, 'ja')).toBe('5 分前');
   });
 
-  it('shows the date after a week and treats future times as now', { tags: ['condition'] }, () => {
+  it('shows the date after a week and treats future times as now', { tags: ['boundary'] }, () => {
     const old = NOW - 30 * 24 * 60 * MIN;
     expect(relativeTime(old, NOW, 'en')).toBe(new Date(old).toLocaleDateString('en'));
     expect(relativeTime(NOW + 5 * MIN, NOW, 'en')).toBe('now');

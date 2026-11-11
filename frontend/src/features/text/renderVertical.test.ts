@@ -11,7 +11,7 @@ function verticalScene(value: string): Scene {
 }
 
 describe('vertical text with paired cells', () => {
-  it('sets a pair of characters in one cell at a smaller size than a single character', { tags: ['condition'] }, () => {
+  it('sets a pair of characters in one cell at a smaller size than a single character', { tags: ['equivalence'] }, () => {
     const rec = recordingContext();
     renderScene(rec.ctx, verticalScene('a12'), null);
     const drawn = rec.of('fillText').map((a) => a[0]);
@@ -23,7 +23,7 @@ describe('vertical text with paired cells', () => {
     expect(fonts.some((f) => f.includes('40px'))).toBe(true);
   });
 
-  it('turns two exclamation marks into one pair cell', { tags: ['condition'] }, () => {
+  it('turns two exclamation marks into one pair cell', { tags: ['equivalence'] }, () => {
     const rec = recordingContext();
     renderScene(rec.ctx, verticalScene('あ!!'), null);
     expect(rec.of('fillText').map((a) => a[0])).toContain('!!');

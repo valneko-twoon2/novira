@@ -66,7 +66,7 @@ async fn a_real_model_calls_the_apps_tool_and_answers() {
     assert!(!reply.text.is_empty());
 }
 
-// tags: scenario
+// tags: equivalence
 #[tokio::test]
 #[ignore]
 async fn a_model_without_tools_is_reported_as_such() {
@@ -87,7 +87,7 @@ async fn a_model_without_tools_is_reported_as_such() {
 }
 
 /// Run against a server left at Ollama's default context window (4096 tokens), with `NOVIRA_TEST_OLLAMA_SMALL_CONTEXT=1`.
-// tags: boundary, decision-table
+// tags: boundary
 #[tokio::test]
 #[ignore]
 async fn a_small_context_window_is_reported_by_test_connection_and_by_a_request() {

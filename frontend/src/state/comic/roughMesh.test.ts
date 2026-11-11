@@ -6,8 +6,8 @@ import { boxTriangles, cylinderTriangles, FLOOR_HALF, propTriangles, roughTriang
 const count = (out: number[]) => out.length / 9;
 const corners = (out: number[]) => Array.from({ length: out.length / 3 }, (_, i) => v3(out[i * 3]!, out[i * 3 + 1]!, out[i * 3 + 2]!));
 
-describe('the triangles of a rough', () => {
-  it('makes a box of twelve triangles inside its size', { tags: ['condition'] }, () => {
+describe('the triangles of a rough', { tags: [] }, () => {
+  it('makes a box of twelve triangles inside its size', { tags: ['equivalence'] }, () => {
     const out: number[] = [];
     boxTriangles(out, v3(1, 2, 3), [v3(1, 0, 0), v3(0, 1, 0), v3(0, 0, 1)], [0.5, 1, 2]);
     expect(count(out)).toBe(12);
@@ -18,7 +18,7 @@ describe('the triangles of a rough', () => {
     }
   });
 
-  it('makes a closed cylinder round its axis, and nothing for one of no length', { tags: ['condition'] }, () => {
+  it('makes a closed cylinder round its axis, and nothing for one of no length', { tags: ['boundary'] }, () => {
     const out: number[] = [];
     cylinderTriangles(out, v3(0, 0, 0), v3(0, 2, 0), 0.5, 8);
     expect(count(out)).toBe(8 * 4);
@@ -35,7 +35,7 @@ describe('the triangles of a rough', () => {
     for (const p of corners(out)) expect(Math.hypot(p.x, p.y - 1, p.z)).toBeCloseTo(0.2);
   });
 
-  it('stands an upright plane on its place, turned by its yaw', { tags: ['condition'] }, () => {
+  it('stands an upright plane on its place, turned by its yaw', { tags: ['equivalence'] }, () => {
     const out: number[] = [];
     propTriangles(out, { ...newProp('plane', 0, -2, Math.PI / 2), w: 2, h: 3 });
     expect(count(out)).toBe(2);
@@ -47,7 +47,7 @@ describe('the triangles of a rough', () => {
     expect(Math.max(...points.map((p) => p.z)) - Math.min(...points.map((p) => p.z))).toBeCloseTo(2);
   });
 
-  it('gives the floor two triangles to the horizon, a person a mannequin, and an empty set nothing', { tags: ['boundary'] }, () => {
+  it('gives the floor two triangles to the horizon, a person a mannequin, and an empty set nothing', { tags: ['equivalence'] }, () => {
     const floorOnly = roughTriangles({ ...newRough(), people: [] });
     expect(count(floorOnly)).toBe(2);
     expect(Math.max(...corners(floorOnly).map((p) => p.x))).toBe(FLOOR_HALF);

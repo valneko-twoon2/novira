@@ -20,26 +20,30 @@ test('the settings menu opens the hotkeys and about dialogs', { tag: ['@scenario
   await expect(page.getByTestId('about-modal')).toHaveCount(0);
 });
 
-test('the about dialog keeps its size on both tabs, shows the license in full and a package license in place', { tag: ['@scenario'] }, async ({ page }) => {
-  await openApp(page);
-  await openMenuItem(page, 'app.nav.about');
-  const about = page.getByRole('dialog', { name: msg('settings.about.title') });
-  await expect(about.getByTestId('about-license-text')).toContainText('Version 2.0, January 2004');
-  const onLicense = await about.boundingBox();
-  await about.getByRole('tab', { name: msg('settings.about.oss.title') }).click();
-  await expect(page.getByTestId('about-oss-list')).toBeVisible();
-  expect(await about.boundingBox()).toEqual(onLicense);
+test(
+  'the about dialog keeps its size on both tabs, shows the license in full and a package license in place',
+  { tag: ['@boundary'] },
+  async ({ page }) => {
+    await openApp(page);
+    await openMenuItem(page, 'app.nav.about');
+    const about = page.getByRole('dialog', { name: msg('settings.about.title') });
+    await expect(about.getByTestId('about-license-text')).toContainText('Version 2.0, January 2004');
+    const onLicense = await about.boundingBox();
+    await about.getByRole('tab', { name: msg('settings.about.oss.title') }).click();
+    await expect(page.getByTestId('about-oss-list')).toBeVisible();
+    expect(await about.boundingBox()).toEqual(onLicense);
 
-  await page.getByRole('textbox', { name: msg('settings.about.oss.search') }).fill('zustand');
-  const row = page.getByTestId('about-oss-list').getByRole('listitem').first();
-  await row.getByRole('button', { name: msg('settings.about.oss.showLicense') }).click();
-  await expect(row.getByTestId('about-license-text')).toContainText('MIT License');
-  expect(await about.boundingBox()).toEqual(onLicense);
+    await page.getByRole('textbox', { name: msg('settings.about.oss.search') }).fill('zustand');
+    const row = page.getByTestId('about-oss-list').getByRole('listitem').first();
+    await row.getByRole('button', { name: msg('settings.about.oss.showLicense') }).click();
+    await expect(row.getByTestId('about-license-text')).toContainText('MIT License');
+    expect(await about.boundingBox()).toEqual(onLicense);
 
-  await about.getByRole('tab', { name: msg('settings.about.license.title') }).click();
-  await expect(about.getByTestId('about-license-text')).toContainText('Version 2.0, January 2004');
-  expect(await about.boundingBox()).toEqual(onLicense);
-});
+    await about.getByRole('tab', { name: msg('settings.about.license.title') }).click();
+    await expect(about.getByTestId('about-license-text')).toContainText('Version 2.0, January 2004');
+    expect(await about.boundingBox()).toEqual(onLicense);
+  },
+);
 
 test('switching the theme applies at once and survives a reload', { tag: ['@state-transition'] }, async ({ page }) => {
   await openApp(page);

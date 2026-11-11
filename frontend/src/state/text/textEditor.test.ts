@@ -9,7 +9,7 @@ beforeEach(() => {
 });
 
 describe('text editor store', () => {
-  it('adds layers on top and selects the new one', { tags: ['condition'] }, () => {
+  it('adds layers on top and selects the new one', { tags: ['equivalence'] }, () => {
     const a = store().addText('A');
     const b = store().addBubble('round', 'B');
     expect(store().scene.layers.map((l) => l.id)).toEqual([a, b]);
@@ -38,7 +38,7 @@ describe('text editor store', () => {
     expect(store().scene.layers[0]!.x).toBe(store().scene.width / 2);
   });
 
-  it('records one step for a drag made of live moves', { tags: ['condition'] }, () => {
+  it('records one step for a drag made of live moves', { tags: ['state-transition'] }, () => {
     const id = store().addText('A');
     store().checkpoint();
     for (const x of [1, 2, 3]) store().update(id, { x }, { live: true });
@@ -56,7 +56,7 @@ describe('text editor store', () => {
     expect(id).not.toBe(store().selectedId);
   });
 
-  it('reorders, duplicates and removes layers', { tags: ['condition'] }, () => {
+  it('reorders, duplicates and removes layers', { tags: ['equivalence'] }, () => {
     const a = store().addText('A');
     const b = store().addText('B');
     store().reorder(a, 'top');
@@ -76,7 +76,7 @@ describe('text editor store', () => {
     expect(store().scene.height).toBe(4096);
   });
 
-  it('copies a layer deeply so edits to the copy leave the original alone', { tags: ['condition'] }, () => {
+  it('copies a layer deeply so edits to the copy leave the original alone', { tags: ['equivalence'] }, () => {
     const id = store().addText('A');
     store().duplicate(id);
     const [orig, copy] = store().scene.layers;

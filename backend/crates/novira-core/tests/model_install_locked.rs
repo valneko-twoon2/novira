@@ -132,7 +132,7 @@ async fn finish(events: &Events, id: &str) -> ModelInstallJob {
     panic!("install did not finish");
 }
 
-// tags: regression, error-guessing
+// tags: state-transition, error-guessing
 #[tokio::test]
 async fn a_part_that_is_held_for_a_moment_is_moved_in_when_it_is_free_again() {
     let dir = tempfile::tempdir().unwrap();
@@ -152,7 +152,7 @@ async fn a_part_that_is_held_for_a_moment_is_moved_in_when_it_is_free_again() {
         .is_file());
 }
 
-// tags: error-guessing, state-transition
+// tags: state-transition, error-guessing
 #[tokio::test]
 async fn a_part_that_stays_held_fails_the_install_and_the_next_try_works_once_it_is_free() {
     let dir = tempfile::tempdir().unwrap();

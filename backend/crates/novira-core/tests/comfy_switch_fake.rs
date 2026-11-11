@@ -166,7 +166,7 @@ fn serve_pack(name: &str, mode: &str) {
     site().put(&format!("/owner/{name}/zip/HEAD"), Route::bytes(mode));
 }
 
-// tags: regression, state-transition
+// tags: scenario, state-transition
 #[tokio::test]
 async fn a_switch_installs_the_new_version_and_every_pack_again() {
     let world = World::new("v0.4.0", "ok");
@@ -236,7 +236,7 @@ async fn a_package_that_cannot_be_unpacked_leaves_the_old_version_running() {
     engine.shutdown();
 }
 
-// tags: state-transition, decision-table
+// tags: state-transition
 #[tokio::test]
 async fn a_cancelled_pack_install_puts_the_old_version_back() {
     let world = World::new("v0.4.0", "ok");
@@ -262,7 +262,7 @@ async fn a_cancelled_pack_install_puts_the_old_version_back() {
     engine.shutdown();
 }
 
-// tags: scenario
+// tags: state-transition, error-guessing
 #[tokio::test]
 async fn a_new_version_that_does_not_start_is_replaced_by_the_old_one() {
     let world = World::new("v0.4.0", "ok");
@@ -327,7 +327,7 @@ async fn answer_later(delay: Duration) -> (u16, tokio::task::JoinHandle<()>) {
     )
 }
 
-// tags: regression, state-transition
+// tags: condition
 #[tokio::test]
 async fn a_package_change_installs_the_same_version_again() {
     let world = World::new("v0.3.0", "ok");
@@ -350,7 +350,7 @@ async fn a_package_change_installs_the_same_version_again() {
     engine.shutdown();
 }
 
-// tags: scenario
+// tags: error-guessing
 #[tokio::test]
 async fn a_package_change_needs_a_readable_version() {
     let world = World::new("v0.3.0", "ok");

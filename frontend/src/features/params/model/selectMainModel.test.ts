@@ -41,7 +41,7 @@ beforeEach(() => {
 });
 
 describe('selecting a main model', () => {
-  it('applies its own defaults and takes the aspect ratio of its size', { tags: ['decision-table'] }, () => {
+  it('applies its own defaults and takes the aspect ratio of its size', { tags: ['equivalence'] }, () => {
     selectMainModel(model('tuned', 'sdxl', 'main', { steps: 30, cfgScale: 4.5, scheduler: 'euler_a', width: 768, height: 1024 }));
     expect(useParams.getState()).toMatchObject({ modelKey: 'tuned', steps: 30, cfgScale: 4.5, scheduler: 'euler_a', width: 768, height: 1024, aspectRatio: '3:4' });
   });
@@ -63,22 +63,26 @@ describe('selecting a main model', () => {
     expect(useParams.getState()).toMatchObject({ vaeKey: 'vae-xl', loras: [{ key: 'lora-flux', weight: 1, isEnabled: true }] });
   });
 
-  it('drops the VAE and the LoRAs of another base, keeps the ones that fit and those for any base, and says how many went', { tags: ['decision-table'] }, () => {
-    useParams.setState({
-      modelKey: 'main-flux',
-      vaeKey: 'vae-flux',
-      loras: [
-        { key: 'lora-xl', weight: 1, isEnabled: true },
-        { key: 'lora-flux', weight: 0.5, isEnabled: true },
-        { key: 'lora-any', weight: 0.7, isEnabled: false },
-      ],
-    });
-    selectMainModel(model('main-xl2', 'sdxl'));
-    const p = useParams.getState();
-    expect(p.vaeKey).toBeNull();
-    expect(p.loras.map((l) => l.key)).toEqual(['lora-xl', 'lora-any']);
-    expect(useToasts.getState().toasts).toHaveLength(1);
-  });
+  it(
+    'drops the VAE and the LoRAs of another base, keeps the ones that fit and those for any base, and says how many went',
+    { tags: ['decision-table'] },
+    () => {
+      useParams.setState({
+        modelKey: 'main-flux',
+        vaeKey: 'vae-flux',
+        loras: [
+          { key: 'lora-xl', weight: 1, isEnabled: true },
+          { key: 'lora-flux', weight: 0.5, isEnabled: true },
+          { key: 'lora-any', weight: 0.7, isEnabled: false },
+        ],
+      });
+      selectMainModel(model('main-xl2', 'sdxl'));
+      const p = useParams.getState();
+      expect(p.vaeKey).toBeNull();
+      expect(p.loras.map((l) => l.key)).toEqual(['lora-xl', 'lora-any']);
+      expect(useToasts.getState().toasts).toHaveLength(1);
+    },
+  );
 
   it('is quiet about dropped LoRAs when asked to be', { tags: ['condition'] }, () => {
     useParams.setState({ modelKey: 'main-flux', loras: [{ key: 'lora-flux', weight: 1, isEnabled: true }] });
@@ -94,7 +98,7 @@ describe('selecting a main model', () => {
     expect(useParams.getState().refImages.map((r) => r.modelKey)).toEqual(['ip-xl', 'ip-xl', null]);
   });
 
-  it('clears the tile ControlNet of the upscale when it does not fit the new base', { tags: ['decision-table'] }, () => {
+  it('clears the tile ControlNet of the upscale when it does not fit the new base', { tags: ['condition'] }, () => {
     useParams.setState({ modelKey: 'main-flux', upscale: { ...initial.upscale, tileControlnetModelKey: 'lora-flux' } });
     selectMainModel(model('main-xl2', 'sdxl'));
     expect(useParams.getState().upscale.tileControlnetModelKey).toBeNull();
@@ -102,7 +106,7 @@ describe('selecting a main model', () => {
 });
 
 describe('applying the recommended settings', () => {
-  it('selects the model and sets the values of its profile, with the aspect ratio of the profile size', { tags: ['decision-table'] }, () => {
+  it('selects the model and sets the values of its profile, with the aspect ratio of the profile size', { tags: ['equivalence'] }, () => {
     const tuned = model('tuned', 'sdxl', 'main', { steps: 25, width: 1024, height: 1024 });
     applyRecommended(tuned);
     const profile = modelProfile(tuned);

@@ -18,8 +18,8 @@ import {
 
 const json = (o: unknown) => JSON.stringify(o);
 
-describe('the process list', () => {
-  it('reads one object, a list, or nothing, and puts a command line on one line', { tags: ['condition'] }, () => {
+describe('the process list', { tags: [] }, () => {
+  it('reads one object, a list, or nothing, and puts a command line on one line', { tags: ['equivalence', 'boundary'] }, () => {
     const one = { ProcessId: 5, ParentProcessId: 1, Name: 'novira.exe', ExecutablePath: 'C:\\a\\novira.exe', CommandLine: 'novira\r\n--x' };
     expect(parseProcessJson(json(one))).toEqual([{ pid: 5, ppid: 1, name: 'novira.exe', path: 'C:\\a\\novira.exe', cmd: 'novira --x' }]);
     expect(parseProcessJson(json([one, { ProcessId: 0, ParentProcessId: 0, Name: 'System Idle Process', ExecutablePath: null, CommandLine: null }]))[1]).toEqual({
@@ -32,20 +32,24 @@ describe('the process list', () => {
     expect(parseProcessJson('')).toEqual([]);
   });
 
-  it('finds the pythons whose command line holds every needle, letter case ignored, and nothing else', { tags: ['condition'] }, () => {
-    const list = [
-      { pid: 1, name: 'python.exe', cmd: 'E:\\r\\novira-data\\work\\Comfy-Copy\\python.exe main.py --port 8190' },
-      { pid: 2, name: 'pythonw.exe', cmd: 'x\\comfy-copy\\pythonw.exe main.py' },
-      { pid: 3, name: 'python.exe', cmd: 'E:\\r\\novira-data\\comfyui\\python.exe main.py' },
-      { pid: 4, name: 'node.exe', cmd: 'node comfy-copy main.py' },
-    ];
-    expect(pythonsWith(list, 'comfy-copy', 'main.py').map((p: { pid: number }) => p.pid)).toEqual([1, 2]);
-    expect(pythonsWith(list, 'comfy-copy', '--port').map((p: { pid: number }) => p.pid)).toEqual([1]);
-    // A list that could not be read finds nothing (so nothing is stopped).
-    expect(pythonsWith(null, 'comfy-copy')).toEqual([]);
-  });
+  it(
+    'finds the pythons whose command line holds every needle, letter case ignored, and nothing else',
+    { tags: ['equivalence', 'error-guessing'] },
+    () => {
+      const list = [
+        { pid: 1, name: 'python.exe', cmd: 'E:\\r\\novira-data\\work\\Comfy-Copy\\python.exe main.py --port 8190' },
+        { pid: 2, name: 'pythonw.exe', cmd: 'x\\comfy-copy\\pythonw.exe main.py' },
+        { pid: 3, name: 'python.exe', cmd: 'E:\\r\\novira-data\\comfyui\\python.exe main.py' },
+        { pid: 4, name: 'node.exe', cmd: 'node comfy-copy main.py' },
+      ];
+      expect(pythonsWith(list, 'comfy-copy', 'main.py').map((p: { pid: number }) => p.pid)).toEqual([1, 2]);
+      expect(pythonsWith(list, 'comfy-copy', '--port').map((p: { pid: number }) => p.pid)).toEqual([1]);
+      // A list that could not be read finds nothing (so nothing is stopped).
+      expect(pythonsWith(null, 'comfy-copy')).toEqual([]);
+    },
+  );
 
-  it.runIf(process.platform === 'win32')('lists this machine, this process included', { tags: ['condition'] }, () => {
+  it.runIf(process.platform === 'win32')('lists this machine, this process included', { tags: ['equivalence'] }, () => {
     const list = listProcesses();
     expect(list?.some((p: { pid: number }) => p.pid === process.pid)).toBe(true);
     expect(processAlive(process.pid)).toBe(true);
@@ -53,7 +57,7 @@ describe('the process list', () => {
   });
 });
 
-describe('paths and tools', () => {
+describe('paths and tools', { tags: [] }, () => {
   it('takes cargo from the rustup install of the profile, else from PATH', { tags: ['condition'] }, () => {
     const home = mkdtempSync(path.join(tmpdir(), 'cargo-home-'));
     try {
@@ -66,13 +70,17 @@ describe('paths and tools', () => {
     }
   });
 
-  it('says what is inside a folder (not the folder itself, not a neighbour of the same start) and compares paths without case', { tags: ['condition'] }, () => {
-    expect(isInside('E:/r/novira-data/work/x', 'E:/r/novira-data/work')).toBe(true);
-    expect(isInside('E:/r/novira-data/work', 'E:/r/novira-data/work')).toBe(false);
-    expect(isInside('E:/r/novira-data/workshop', 'E:/r/novira-data/work')).toBe(false);
-    expect(isInside('E:/r/novira-data/models', 'E:/r/novira-data/work')).toBe(false);
-    expect(sameFile('E:/R/novira.exe', 'e:\\r\\novira.exe')).toBe(true);
-  });
+  it(
+    'says what is inside a folder (not the folder itself, not a neighbour of the same start) and compares paths without case',
+    { tags: ['boundary'] },
+    () => {
+      expect(isInside('E:/r/novira-data/work/x', 'E:/r/novira-data/work')).toBe(true);
+      expect(isInside('E:/r/novira-data/work', 'E:/r/novira-data/work')).toBe(false);
+      expect(isInside('E:/r/novira-data/workshop', 'E:/r/novira-data/work')).toBe(false);
+      expect(isInside('E:/r/novira-data/models', 'E:/r/novira-data/work')).toBe(false);
+      expect(sameFile('E:/R/novira.exe', 'e:\\r\\novira.exe')).toBe(true);
+    },
+  );
 
   it('builds the verification exe outside the repository unless NOVIRA_VERIFY_TARGET says where', { tags: ['condition'] }, () => {
     expect(verifyTarget({})).toBe(path.resolve(tmpdir(), 'novira-verify'));

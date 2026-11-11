@@ -101,7 +101,7 @@ fn enqueue_of(params: GenerationMetadata) -> EnqueueRequest {
     .unwrap()
 }
 
-// tags: state-transition
+// tags: scenario, state-transition
 #[tokio::test]
 #[ignore = "downloads about 9 GB and uses the GPU"]
 async fn voice_installs_and_speaks() {
@@ -123,7 +123,7 @@ async fn voice_installs_and_speaks() {
     backend.shutdown();
 }
 
-// tags: state-transition
+// tags: scenario, state-transition
 #[tokio::test]
 #[ignore = "downloads about 10 GB and uses the GPU"]
 async fn music_installs_and_composes() {
@@ -149,7 +149,7 @@ async fn music_installs_and_composes() {
     backend.shutdown();
 }
 
-// tags: state-transition
+// tags: scenario, state-transition
 #[tokio::test]
 #[ignore = "downloads about 18 GB and uses the GPU"]
 async fn video_installs_and_animates_a_picture() {

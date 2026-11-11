@@ -285,7 +285,7 @@ async fn a_civitai_file_is_resolved_downloaded_and_given_its_cover_words_and_lic
     );
 }
 
-// tags: boundary
+// tags: boundary, condition
 #[tokio::test]
 async fn a_civitai_model_with_one_mature_picture_keeps_it_as_a_marked_cover_and_no_set() {
     let dir = tempfile::tempdir().unwrap();
@@ -444,7 +444,7 @@ async fn a_hugging_face_file_is_downloaded_with_the_token_and_gets_cover_and_lic
     );
 }
 
-// tags: state-transition
+// tags: condition, error-guessing
 #[tokio::test]
 async fn a_repository_the_hub_does_not_know_still_installs_without_cover_or_licence() {
     let dir = tempfile::tempdir().unwrap();
@@ -529,7 +529,7 @@ async fn covers_and_licences_of_models_found_by_hash_are_filled_in() {
         .any(|e| matches!(e, BackendEvent::ModelAdded { model } if model.path.ends_with("by-hash.safetensors") && model.license.is_some())));
 }
 
-// tags: scenario
+// tags: condition
 #[tokio::test]
 async fn a_file_civitai_does_not_know_is_asked_about_only_once() {
     let dir = tempfile::tempdir().unwrap();
@@ -596,7 +596,7 @@ async fn a_hugging_face_model_with_a_page_address_gets_its_licence_from_the_hub(
     assert_eq!(model.license.as_ref().unwrap().site, "huggingface");
 }
 
-// tags: regression, state-transition
+// tags: state-transition
 #[tokio::test]
 async fn an_install_started_again_continues_the_part_of_the_stopped_one() {
     let dir = tempfile::tempdir().unwrap();
@@ -634,7 +634,7 @@ async fn an_install_started_again_continues_the_part_of_the_stopped_one() {
     assert_eq!(std::fs::read(&model.path).unwrap(), bytes);
 }
 
-// tags: error-guessing, state-transition
+// tags: state-transition
 #[tokio::test]
 async fn a_second_install_of_a_source_that_is_running_is_refused() {
     let dir = tempfile::tempdir().unwrap();

@@ -52,7 +52,7 @@ fn refusal(mode: &str, patch: Value) -> String {
     build(&input(&p, &c, &x)).unwrap_err()
 }
 
-// tags: error-guessing, decision-table
+// tags: equivalence, error-guessing
 #[test]
 fn every_builder_refuses_a_job_without_steps() {
     for mode in ["txt2img", "video"] {
@@ -70,7 +70,7 @@ fn every_builder_refuses_a_job_without_steps() {
     assert_eq!(refusal("music", music), "Steps must be at least 1");
 }
 
-// tags: condition
+// tags: condition, boundary
 #[test]
 fn a_draft_needs_text_or_image_to_image_a_position_inside_the_steps_and_a_job_that_is_not_a_graph()
 {
@@ -91,7 +91,7 @@ fn a_draft_needs_text_or_image_to_image_a_position_inside_the_steps_and_a_job_th
     );
 }
 
-// tags: error-guessing
+// tags: equivalence, boundary
 #[test]
 fn music_time_signatures_map_to_the_models_names_and_unknown_ones_to_four() {
     let (c, x) = (
@@ -116,7 +116,7 @@ fn music_time_signatures_map_to_the_models_names_and_unknown_ones_to_four() {
     }
 }
 
-// tags: boundary
+// tags: error-guessing, condition
 #[test]
 fn a_control_layer_position_that_is_not_a_number_counts_as_the_start() {
     let p = params("txt2img", json!({ "controlLayerCount": 1 }));

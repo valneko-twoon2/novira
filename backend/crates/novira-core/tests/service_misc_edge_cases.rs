@@ -79,7 +79,7 @@ async fn an_engine_without_node_definitions_gives_an_empty_list() {
     assert_eq!(backend.node_defs().await.unwrap(), serde_json::json!({}));
 }
 
-// tags: error-guessing, decision-table
+// tags: error-guessing, condition
 #[test]
 fn saved_keys_that_cannot_be_read_are_skipped_and_the_settings_key_is_used() {
     let dir = tempfile::tempdir().unwrap();
@@ -109,7 +109,7 @@ fn saved_keys_that_cannot_be_read_are_skipped_and_the_settings_key_is_used() {
     assert!(backend.bootstrap().models.is_empty());
 }
 
-// tags: error-guessing, boundary
+// tags: error-guessing
 #[test]
 fn a_models_folder_that_cannot_be_made_stops_the_start_with_an_error() {
     let dir = tempfile::tempdir().unwrap();
@@ -152,7 +152,7 @@ async fn a_stored_picture_that_is_not_a_picture_cannot_be_exported() {
     assert_eq!(std::fs::read_dir(out.path()).unwrap().count(), 0);
 }
 
-// tags: error-guessing
+// tags: boundary, condition
 #[tokio::test]
 async fn pictures_that_are_missing_from_the_gallery_are_skipped_and_counted() {
     let dir = tempfile::tempdir().unwrap();

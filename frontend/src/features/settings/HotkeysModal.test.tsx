@@ -22,8 +22,8 @@ const openIt = () => {
 };
 const headings = () => screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
 
-describe('HotkeysModal', () => {
-  it('renders nothing until the modal is asked for', { tags: ['scenario'] }, () => {
+describe('HotkeysModal', { tags: [] }, () => {
+  it('renders nothing until the modal is asked for', { tags: ['condition'] }, () => {
     render(<HotkeysModal />);
     expect(screen.queryByTestId('hotkeys-modal')).toBeNull();
   });
@@ -37,7 +37,7 @@ describe('HotkeysModal', () => {
     expect([...kbds].some((k) => k.textContent === '←')).toBe(true);
   });
 
-  it('narrows the list by the text of a title, a description or a key, and says when nothing matches', { tags: ['scenario'] }, () => {
+  it('narrows the list by the text of a title, a description or a key, and says when nothing matches', { tags: ['equivalence'] }, () => {
     openIt();
     const box = screen.getByRole('textbox', { name: t('settings.hotkeys.search') });
     const first = HOTKEY_CATEGORIES[0]!.hotkeys[0]!;

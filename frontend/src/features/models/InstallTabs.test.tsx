@@ -32,10 +32,10 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('InstallHuggingFace', () => {
+describe('InstallHuggingFace', { tags: [] }, () => {
   const files = ['turbo.safetensors', 'turbo.fp16.safetensors', 'sub/lora.ckpt'];
 
-  it('looks up a repo, lists its files and installs the checked ones', { tags: ['scenario'] }, async () => {
+  it('looks up a repo, lists its files and installs the checked ones', { tags: ['scenario', 'equivalence'] }, async () => {
     const list = vi.spyOn(backend, 'listHuggingFaceFiles').mockResolvedValue(files);
     ui(<InstallHuggingFace />);
     const input = screen.getByPlaceholderText('stabilityai/sdxl-turbo');
@@ -73,7 +73,7 @@ describe('InstallHuggingFace', () => {
     expect(screen.queryByRole('checkbox')).toBeNull();
   });
 
-  it('installs every listed file for the whole repo, and only after a lookup', { tags: ['scenario'] }, async () => {
+  it('installs every listed file for the whole repo, and only after a lookup', { tags: ['condition'] }, async () => {
     vi.spyOn(backend, 'listHuggingFaceFiles').mockResolvedValue(files);
     ui(<InstallHuggingFace />);
     const repoButton = screen.getByText(t('models.install.hfInstallRepo')).closest('button')!;
@@ -86,7 +86,7 @@ describe('InstallHuggingFace', () => {
   });
 });
 
-describe('InstallScanFolder', () => {
+describe('InstallScanFolder', { tags: [] }, () => {
   const found = [
     { path: 'D:\\m\\a.safetensors', installed: false },
     { path: 'D:\\m\\b.safetensors', installed: true },
@@ -124,7 +124,7 @@ describe('InstallScanFolder', () => {
     expect(screen.queryByText(t('models.install.scanResults', { count: 0 }))).toBeNull();
   });
 
-  it('says a folder is scanned in the desktop app when the page is on the browser server', { tags: ['scenario'] }, () => {
+  it('says a folder is scanned in the desktop app when the page is on the browser server', { tags: ['condition'] }, () => {
     asBrowserServer();
     const scan = vi.spyOn(backend, 'scanFolder');
     ui(<InstallScanFolder />);
@@ -140,7 +140,7 @@ function pickFamily(label: string) {
   fireEvent.click(screen.getByRole('option', { name: label }));
 }
 
-describe('InstallStarter', () => {
+describe('InstallStarter', { tags: [] }, () => {
   beforeEach(() => {
     // The card size slider measures itself.
     vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
@@ -156,7 +156,7 @@ describe('InstallStarter', () => {
   ];
   const model = (source: string): ModelConfig => ({ key: source, name: source, base: 'sdxl', type: 'vae', format: 'diffusers', description: '', path: '', size: 0, source });
 
-  it('starts the cards at the smallest size on a phone, and at 160 on a PC', { tags: ['boundary'] }, async () => {
+  it('starts the cards at the smallest size on a phone, and at 160 on a PC', { tags: ['condition'] }, async () => {
     vi.spyOn(backend, 'listStarterModels').mockResolvedValue(starters);
     const size = () => screen.getByRole('slider', { name: t('models.thumbSize') }).getAttribute('aria-valuenow');
     ui(<InstallStarter />);
@@ -193,7 +193,7 @@ describe('InstallStarter', () => {
     expect((screen.getByText(t('models.starter.bundle', { base: 'SD1.X' })).closest('button') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('sorts the models and the model packs by purpose and family, and counts each choice', { tags: ['scenario'] }, async () => {
+  it('sorts the models and the model packs by purpose and family, and counts each choice', { tags: ['decision-table'] }, async () => {
     const list: StarterModel[] = [
       { id: 'anima', name: 'Anima Base', base: 'anima', type: 'diffusion_model', description: '', source: 'a', dependencies: ['enc'] },
       { id: 'enc', name: 'qwen encoder', base: 'any', type: 'text_encoder', description: '', source: 'e' },
@@ -228,7 +228,7 @@ describe('InstallStarter', () => {
     expect(screen.getByText(t('models.noMatch'))).toBeTruthy();
   });
 
-  it('searches by name, description, base and type, and says when nothing matches', { tags: ['scenario'] }, async () => {
+  it('searches by name, description, base and type, and says when nothing matches', { tags: ['equivalence'] }, async () => {
     vi.spyOn(backend, 'listStarterModels').mockResolvedValue(starters);
     ui(<InstallStarter />);
     await waitFor(() => expect(screen.getAllByTestId('mm-starter')).toHaveLength(3));
@@ -241,15 +241,15 @@ describe('InstallStarter', () => {
     expect(screen.getByText(t('models.noMatch'))).toBeTruthy();
   });
 
-  it('shows a spinner while the list loads', { tags: ['scenario'] }, () => {
+  it('shows a spinner while the list loads', { tags: ['state-transition'] }, () => {
     vi.spyOn(backend, 'listStarterModels').mockReturnValue(new Promise(() => {}));
     ui(<InstallStarter />);
     expect(document.querySelector('.mm-loading')).toBeTruthy();
   });
 });
 
-describe('InstallFromSource', () => {
-  it('installs what was typed and clears the box; empty input does nothing', { tags: ['scenario'] }, async () => {
+describe('InstallFromSource', { tags: [] }, () => {
+  it('installs what was typed and clears the box; empty input does nothing', { tags: ['boundary', 'scenario'] }, async () => {
     ui(<InstallFromSource />);
     const input = screen.getByTestId('mm-source-input') as HTMLInputElement;
     fireEvent.submit(input.closest('form')!);
@@ -260,7 +260,7 @@ describe('InstallFromSource', () => {
     expect(installed).toHaveBeenCalledWith('https://example.com/m.safetensors');
   });
 
-  it('keeps the text when the install did not start', { tags: ['scenario'] }, async () => {
+  it('keeps the text when the install did not start', { tags: ['condition'] }, async () => {
     installed.mockResolvedValueOnce(false);
     ui(<InstallFromSource />);
     const input = screen.getByTestId('mm-source-input') as HTMLInputElement;
@@ -271,7 +271,7 @@ describe('InstallFromSource', () => {
     expect(input.value).toBe('https://example.com/typo.safetensors');
   });
 
-  it('points a path on this PC to Scan Folder instead of sending it', { tags: ['scenario'] }, () => {
+  it('points a path on this PC to Scan Folder instead of sending it', { tags: ['equivalence', 'error-guessing'] }, () => {
     ui(<InstallFromSource />);
     const input = screen.getByTestId('mm-source-input') as HTMLInputElement;
     for (const path of ['C:\\models\\m.safetensors', 'd:/m.safetensors', '\\\\nas\\models\\m.safetensors', '/home/me/m.safetensors']) {
@@ -289,16 +289,16 @@ describe('InstallFromSource', () => {
   });
 });
 
-describe('InstallQueue', () => {
+describe('InstallQueue', { tags: [] }, () => {
   const job = (over: Partial<ModelInstallJob>): ModelInstallJob => ({ id: 'j1', source: 'src', name: 'Model', status: 'downloading', bytes: 512, totalBytes: 1024, ...over });
 
-  it('says when the queue is empty', { tags: ['scenario'] }, () => {
+  it('says when the queue is empty', { tags: ['boundary'] }, () => {
     ui(<InstallQueue />);
     expect(screen.getByText(t('models.queue.empty'))).toBeTruthy();
     expect((screen.getByText(t('models.queue.prune')).closest('button') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('lists each job with its progress and error, cancels active ones and prunes finished ones', { tags: ['scenario'] }, () => {
+  it('lists each job with its progress and error, cancels active ones and prunes finished ones', { tags: ['state-transition'] }, () => {
     const cancel = vi.spyOn(backend, 'cancelInstall').mockResolvedValue(undefined);
     useModels.setState({
       installJobs: [

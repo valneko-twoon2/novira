@@ -22,7 +22,7 @@ inEachTheme((theme) => {
     await snap(page, SCREEN, theme, 'panel-header', page.getByTestId('panel-header'));
   });
 
-  test('prompt boxes', { tag: ['@boundary'] }, async ({ page }) => {
+  test('prompt boxes', { tag: ['@scenario'] }, async ({ page }) => {
     await openDesktop(page);
     await snap(page, SCREEN, theme, 'prompts', page.getByTestId('prompts'));
   });

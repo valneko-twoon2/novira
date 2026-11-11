@@ -15,8 +15,8 @@ const stroke = (patch: Partial<Extract<CanvasObject, { kind: 'stroke' }>> = {}):
   ...patch,
 });
 
-describe('unionRect', () => {
-  it('unions two rectangles and passes a missing one through', { tags: ['condition'] }, () => {
+describe('unionRect', { tags: [] }, () => {
+  it('unions two rectangles and passes a missing one through', { tags: ['condition', 'boundary'] }, () => {
     const a = { x: 0, y: 0, width: 10, height: 10 };
     const b = { x: 20, y: 5, width: 10, height: 10 };
     expect(unionRect(a, b)).toEqual({ x: 0, y: 0, width: 30, height: 15 });
@@ -26,7 +26,7 @@ describe('unionRect', () => {
   });
 });
 
-describe('bounds of drawn content', () => {
+describe('bounds of drawn content', { tags: [] }, () => {
   it('ignores eraser strokes in bounds', { tags: ['condition'] }, () => {
     const b = objectsBounds([
       { kind: 'rect', id: 'r', x: 10, y: 10, width: 20, height: 20, color: black },
@@ -57,14 +57,14 @@ describe('bounds of drawn content', () => {
     expect(objectsBounds([stroke({ clip })])).toBeNull();
   });
 
-  it('ignores a stroke without a full point and empty images and rectangles', { tags: ['error-guessing'] }, () => {
+  it('ignores a stroke without a full point and empty images and rectangles', { tags: ['error-guessing', 'boundary'] }, () => {
     expect(objectsBounds([stroke({ points: [5] })])).toBeNull();
     expect(objectsBounds([stroke({ points: [5, 5] })])).toEqual({ x: -1, y: -1, width: 12, height: 12 });
     expect(objectsBounds([{ kind: 'image', id: 'i', url: 'u', imageName: null, x: 0, y: 0, width: 0, height: 10 }])).toBeNull();
     expect(objectsBounds([{ kind: 'rect', id: 'r', x: 0, y: 0, width: 10, height: -1, color: black }])).toBeNull();
   });
 
-  it('unions an image with a stroke', { tags: ['condition'] }, () => {
+  it('unions an image with a stroke', { tags: ['equivalence'] }, () => {
     const image: CanvasObject = { kind: 'image', id: 'i', url: 'u', imageName: 'n', x: 100, y: 100, width: 50, height: 50 };
     expect(objectsBounds([stroke(), image])).toEqual({ x: 4, y: 4, width: 146, height: 146 });
   });

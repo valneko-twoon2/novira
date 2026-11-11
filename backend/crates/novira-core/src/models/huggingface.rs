@@ -535,7 +535,7 @@ mod tests {
         }
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn query_uses_tags_for_the_kind_and_base_and_the_hub_sort_names() {
         let q = query(&params("LoRA"));
@@ -550,7 +550,7 @@ mod tests {
         assert!(vae.iter().any(|(k, v)| k == "search" && v == "anime vae"));
     }
 
-    // tags: state-transition
+    // tags: equivalence, error-guessing
     #[test]
     fn the_install_list_keeps_single_model_files_that_the_installer_accepts() {
         let siblings = json!([

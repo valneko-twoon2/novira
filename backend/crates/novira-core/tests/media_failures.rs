@@ -109,7 +109,7 @@ fn text_chunks_that_are_cut_short_give_no_text() {
     assert_eq!(images::read_text(&fine, "k").as_deref(), Some("text"));
 }
 
-// tags: scenario
+// tags: condition
 #[test]
 fn a_png_copy_keeps_the_settings_the_picture_was_made_with() {
     let original = images::with_text(&png(8, 8), images::METADATA_KEY, "{\"a\":1}").unwrap();

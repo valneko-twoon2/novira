@@ -55,7 +55,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('ModelDetail facts', () => {
+describe('ModelDetail facts', { tags: [] }, () => {
   it('shows the name, the facts and the license state, and closes with the X button', { tags: ['scenario'] }, () => {
     show();
     expect(screen.getByText('Sunny XL')).toBeTruthy();
@@ -65,7 +65,7 @@ describe('ModelDetail facts', () => {
     expect(useModels.getState().selectedKey).toBeNull();
   });
 
-  it('shows no description line without one, and hides the main-model parts for other types', { tags: ['scenario'] }, () => {
+  it('shows no description line without one, and hides the main-model parts for other types', { tags: ['condition'] }, () => {
     show({ ...model, description: '', type: 'vae', triggerPhrases: undefined, source: 'local' });
     expect(document.querySelector('.mm-detail__desc')).toBeNull();
     expect(screen.queryByTestId('mm-default-settings')).toBeNull();
@@ -73,7 +73,7 @@ describe('ModelDetail facts', () => {
     expect(screen.queryByTestId('mm-page-link')).toBeNull();
   });
 
-  it('opens the page of the URL row through the backend, or only says so in the browser mock', { tags: ['scenario'] }, () => {
+  it('opens the page of the URL row through the backend, or only says so in the browser mock', { tags: ['condition'] }, () => {
     const open = vi.spyOn(backend, 'openSourcePage').mockResolvedValue(undefined);
     show();
     fireEvent.click(screen.getByTestId('mm-page-link'));
@@ -92,7 +92,7 @@ describe('ModelDetail facts', () => {
     await waitFor(() => expect(lastToast()).toMatchObject({ status: 'error', description: 'blocked' }));
   });
 
-  it('copies the path', { tags: ['scenario'] }, async () => {
+  it('copies the path', { tags: ['equivalence'] }, async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal('navigator', { clipboard: { writeText } });
     show();
@@ -103,8 +103,8 @@ describe('ModelDetail facts', () => {
   });
 });
 
-describe('editing', () => {
-  it('saves a new name and description, falling back to the old name when emptied', { tags: ['scenario'] }, async () => {
+describe('editing', { tags: [] }, () => {
+  it('saves a new name and description, falling back to the old name when emptied', { tags: ['scenario', 'condition'] }, async () => {
     show();
     fireEvent.click(screen.getByTestId('mm-edit'));
     const form = within(screen.getByTestId('mm-edit-form'));
@@ -133,8 +133,8 @@ describe('editing', () => {
   });
 });
 
-describe('trigger phrases', () => {
-  it('adds a phrase, refuses a duplicate or empty one, and removes one', { tags: ['error-guessing'] }, async () => {
+describe('trigger phrases', { tags: [] }, () => {
+  it('adds a phrase, refuses a duplicate or empty one, and removes one', { tags: ['error-guessing', 'boundary'] }, async () => {
     show();
     const box = within(screen.getByTestId('mm-trigger-phrases'));
     const input = box.getByLabelText(t('models.triggers.placeholder'));
@@ -158,14 +158,14 @@ describe('trigger phrases', () => {
     await waitFor(() => expect(lastToast()).toMatchObject({ status: 'error', description: 'no space' }));
   });
 
-  it('says when a model has no phrases yet', { tags: ['scenario'] }, () => {
+  it('says when a model has no phrases yet', { tags: ['boundary'] }, () => {
     show({ ...model, triggerPhrases: [] });
     expect(screen.getByText(t('models.triggers.empty'))).toBeTruthy();
   });
 });
 
-describe('default settings', () => {
-  it('saves only the switched-on settings', { tags: ['scenario'] }, async () => {
+describe('default settings', { tags: [] }, () => {
+  it('saves only the switched-on settings', { tags: ['decision-table'] }, async () => {
     show();
     const box = within(screen.getByTestId('mm-default-settings'));
     // Steps was set on the model, so only it is on; turn the CFG scale on too, and the steps off again.
@@ -183,7 +183,7 @@ describe('default settings', () => {
     await waitFor(() => expect(lastToast()?.status).toBe('success'));
   });
 
-  it('starts from 512 px for an SD 1 model, and reports a failed save', { tags: ['error-guessing'] }, async () => {
+  it('starts from 512 px for an SD 1 model, and reports a failed save', { tags: ['condition', 'error-guessing'] }, async () => {
     update.mockRejectedValue(new Error('nope'));
     show({ ...model, base: 'sd-1', defaultSettings: undefined });
     const box = within(screen.getByTestId('mm-default-settings'));
@@ -194,8 +194,8 @@ describe('default settings', () => {
   });
 });
 
-describe('converting and deleting', () => {
-  it('converts a checkpoint after confirmation, and offers nothing for other formats', { tags: ['scenario'] }, async () => {
+describe('converting and deleting', { tags: [] }, () => {
+  it('converts a checkpoint after confirmation, and offers nothing for other formats', { tags: ['scenario', 'condition'] }, async () => {
     show();
     fireEvent.click(screen.getAllByText(t('models.convert'))[0]!);
     const dialog = within(screen.getByRole('dialog'));
@@ -215,7 +215,7 @@ describe('converting and deleting', () => {
     await waitFor(() => expect(lastToast()).toMatchObject({ status: 'error', description: 'too big' }));
   });
 
-  it('deletes the model after confirmation, or reports why it could not', { tags: ['error-guessing'] }, async () => {
+  it('deletes the model after confirmation, or reports why it could not', { tags: ['scenario', 'error-guessing'] }, async () => {
     const del = vi.spyOn(backend, 'deleteModel').mockResolvedValue(undefined);
     show();
     fireEvent.click(screen.getByText(t('common.delete')));
@@ -234,7 +234,7 @@ describe('converting and deleting', () => {
   });
 });
 
-describe('a newer version', () => {
+describe('a newer version', { tags: [] }, () => {
   const newer = { key: 'm1', modelId: '1', installedVersionId: '2', latestVersionId: '3', latestName: 'v3.0', publishedAt: Date.UTC(2026, 9, 20), pageUrl: 'https://civitai.com/models/1?modelVersionId=3' };
   afterEach(() => useModelUpdates.setState({ updates: [] }));
 
@@ -248,7 +248,7 @@ describe('a newer version', () => {
     expect(lastToast()?.title).toBe(t('browse.toast.openMock'));
   });
 
-  it('opens the newer version\'s page through the backend, which checks the address', { tags: ['scenario'] }, () => {
+  it('opens the newer version\'s page through the backend, which checks the address', { tags: ['condition'] }, () => {
     useModelUpdates.setState({ updates: [newer] });
     vi.spyOn(backend, 'kind', 'get').mockReturnValue('tauri');
     const open = vi.spyOn(backend, 'openSourcePage').mockResolvedValue(undefined);
@@ -257,7 +257,7 @@ describe('a newer version', () => {
     expect(open).toHaveBeenCalledWith(newer.pageUrl);
   });
 
-  it('is not shown for a model without an update', { tags: ['scenario'] }, () => {
+  it('is not shown for a model without an update', { tags: ['condition'] }, () => {
     useModelUpdates.setState({ updates: [{ ...newer, key: 'other' }] });
     show();
     expect(screen.queryByTestId('mm-update')).toBeNull();

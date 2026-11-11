@@ -6,20 +6,20 @@ import { runsEverything, run, scopeOf } from '../../scripts/tools/ci-scope.mjs';
 
 const NONE = { vitest: false, rust: false, e2e: false, diff: false };
 
-describe('scopeOf', () => {
-  it('runs nothing for a change that only touches docs', { tags: ['decision-table'] }, () => {
+describe('scopeOf', { tags: [] }, () => {
+  it('runs nothing for a change that only touches docs', { tags: ['equivalence'] }, () => {
     expect(scopeOf(['docs/design/README.md', 'README.md'])).toEqual(NONE);
   });
-  it('runs the frontend jobs for a screen change, not the Rust ones', { tags: ['decision-table'] }, () => {
+  it('runs the frontend jobs for a screen change, not the Rust ones', { tags: ['equivalence'] }, () => {
     expect(scopeOf(['frontend/src/features/text/Text.tsx'])).toEqual({ ...NONE, vitest: true, e2e: true });
   });
-  it('runs the Rust and mock-comparison jobs for a backend change, not vitest or the screen flows', { tags: ['decision-table'] }, () => {
+  it('runs the Rust and mock-comparison jobs for a backend change, not vitest or the screen flows', { tags: ['equivalence'] }, () => {
     expect(scopeOf(['backend/crates/novira-core/src/api.rs'])).toEqual({ vitest: false, rust: true, e2e: false, diff: true });
   });
-  it('treats a change of the mock as a change the comparison must see', { tags: ['decision-table'] }, () => {
+  it('treats a change of the mock as a change the comparison must see', { tags: ['condition'] }, () => {
     expect(scopeOf(['frontend/src/backend/mock/MockBackend.ts']).diff).toBe(true);
   });
-  it('lets a change of the workflow itself run every job', { tags: ['decision-table'] }, () => {
+  it('lets a change of the workflow itself run every job', { tags: ['condition'] }, () => {
     expect(scopeOf(['.github/workflows/test.yml'])).toEqual({ vitest: true, rust: true, e2e: true, diff: true });
   });
   it('matches a prefix only at a folder boundary', { tags: ['boundary'] }, () => {
@@ -30,25 +30,25 @@ describe('scopeOf', () => {
   });
 });
 
-describe('runsEverything', () => {
+describe('runsEverything', { tags: [] }, () => {
   const push = { event: 'push', ref: 'refs/heads/feature', defaultBranch: 'main', before: 'abc123' };
   it('narrows only an ordinary branch push', { tags: ['decision-table'] }, () => {
     expect(runsEverything(push)).toBe(false);
   });
-  it('runs everything on the default branch', { tags: ['decision-table'] }, () => {
+  it('runs everything on the default branch', { tags: ['condition'] }, () => {
     expect(runsEverything({ ...push, ref: 'refs/heads/main' })).toBe(true);
   });
-  it.each(['schedule', 'workflow_dispatch'])('runs everything on %s', { tags: ['decision-table'] }, (event) => {
+  it.each(['schedule', 'workflow_dispatch'])('runs everything on %s', { tags: ['equivalence'] }, (event) => {
     expect(runsEverything({ ...push, event })).toBe(true);
   });
-  it('runs everything on a new branch (before is all zeros) or a missing before', { tags: ['error-guessing'] }, () => {
+  it('runs everything on a new branch (before is all zeros) or a missing before', { tags: ['boundary', 'error-guessing'] }, () => {
     expect(runsEverything({ ...push, before: '0000000000000000000000000000000000000000' })).toBe(true);
     expect(runsEverything({ ...push, before: '' })).toBe(true);
   });
 });
 
-describe('run', () => {
-  it('writes name=value lines, all true on the default branch', { tags: ['decision-table'] }, () => {
+describe('run', { tags: [] }, () => {
+  it('writes name=value lines, all true on the default branch', { tags: ['equivalence'] }, () => {
     expect(run({ EVENT: 'push', REF: 'refs/heads/main', DEFAULT_BRANCH: 'main', BEFORE: 'abc', SHA: 'def' })).toBe('vitest=true\nrust=true\ne2e=true\ndiff=true');
   });
   it('falls back to everything when git cannot give the diff', { tags: ['error-guessing'] }, () => {

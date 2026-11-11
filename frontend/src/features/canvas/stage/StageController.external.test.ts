@@ -66,8 +66,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('a stage over a host document', () => {
-  it('paints in document pixels from the host box, whatever the store viewport says', { tags: ['condition'] }, () => {
+describe('a stage over a host document', { tags: [] }, () => {
+  it('paints in document pixels from the host box, whatever the store viewport says', { tags: ['equivalence', 'condition'] }, () => {
     pointer('pointerdown', 40 + 50, 20 + 100);
     pointer('pointermove', 40 + 250, 20 + 100);
     pointer('pointerup', 40 + 250, 20 + 100);
@@ -84,23 +84,27 @@ describe('a stage over a host document', () => {
     expect(store.getState().entities[0]!.objects[0]).toMatchObject({ points: [100, 100] });
   });
 
-  it('leaves the wheel, the middle button and the view, bbox and pose tools to the host', { tags: ['state-transition'] }, () => {
-    const wheel = new WheelEvent('wheel', { deltaY: -100, cancelable: true, bubbles: true });
-    canvas.dispatchEvent(wheel);
-    expect(wheel.defaultPrevented).toBe(false);
-    expect(store.getState().viewport).toEqual({ x: 7, y: 9, scale: 3 });
-    pointer('pointerdown', 100, 100, { button: 1 });
-    pointer('pointerup', 100, 100, { button: 1 });
-    for (const tool of ['view', 'bbox', 'pose'] as const) {
-      store.getState().setTool(tool);
-      pointer('pointerdown', 100, 100);
-      pointer('pointermove', 200, 200);
-      pointer('pointerup', 200, 200);
-    }
-    expect(store.getState().entities).toEqual([ink]);
-    expect(store.getState().bbox).toEqual(createCanvasStore({ syncParams: false }).getState().bbox);
-    expect(canvas.setPointerCapture).not.toHaveBeenCalled();
-  });
+  it(
+    'leaves the wheel, the middle button and the view, bbox and pose tools to the host',
+    { tags: ['state-transition', 'condition'] },
+    () => {
+      const wheel = new WheelEvent('wheel', { deltaY: -100, cancelable: true, bubbles: true });
+      canvas.dispatchEvent(wheel);
+      expect(wheel.defaultPrevented).toBe(false);
+      expect(store.getState().viewport).toEqual({ x: 7, y: 9, scale: 3 });
+      pointer('pointerdown', 100, 100, { button: 1 });
+      pointer('pointerup', 100, 100, { button: 1 });
+      for (const tool of ['view', 'bbox', 'pose'] as const) {
+        store.getState().setTool(tool);
+        pointer('pointerdown', 100, 100);
+        pointer('pointermove', 200, 200);
+        pointer('pointerup', 200, 200);
+      }
+      expect(store.getState().entities).toEqual([ink]);
+      expect(store.getState().bbox).toEqual(createCanvasStore({ syncParams: false }).getState().bbox);
+      expect(canvas.setPointerCapture).not.toHaveBeenCalled();
+    },
+  );
 
   it('moves and resizes the box with the box tool when the host limits it, through the host limit', { tags: ['boundary'] }, () => {
     controller.dispose();

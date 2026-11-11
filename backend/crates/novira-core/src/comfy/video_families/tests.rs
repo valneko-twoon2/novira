@@ -187,7 +187,7 @@ fn wan_image_to_video_conditions_on_the_start_picture() {
     assert!(err.contains("cannot animate a picture"), "{err}");
 }
 
-// tags: decision-table
+// tags: equivalence
 #[test]
 fn a_wan_22_pair_hands_over_from_the_high_to_the_low_noise_model() {
     let p = video_params();
@@ -216,7 +216,7 @@ fn a_wan_22_pair_hands_over_from_the_high_to_the_low_noise_model() {
     assert_eq!(g.total_steps, 20);
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn the_5b_wan_model_runs_the_pack_graph_with_the_users_files() {
     let p = video_params();
@@ -352,7 +352,7 @@ fn a_missing_vae_or_encoder_is_refused_with_the_file_to_install() {
     assert!(err.contains("could not be read"), "{err}");
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn hunyuan_video_15_samples_with_a_cfg_guider_and_its_own_latent() {
     use crate::models::classify::Variant;
@@ -388,7 +388,7 @@ fn hunyuan_video_15_samples_with_a_cfg_guider_and_its_own_latent() {
         .contains("cannot animate"));
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn ltx2_samples_video_and_sound_together_and_puts_the_sound_in_the_clip() {
     let p = video_params();

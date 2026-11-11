@@ -42,7 +42,7 @@ mod tests {
         Url::parse(s).unwrap()
     }
 
-    // tags: equivalence, error-guessing
+    // tags: equivalence, error-guessing, condition
     #[test]
     fn only_the_apps_own_page_may_be_opened_in_the_window() {
         let dev = url("http://localhost:5173");

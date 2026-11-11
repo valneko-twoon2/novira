@@ -22,7 +22,7 @@ describe('vertical writing', () => {
     expect(verticalUnits('12月').map(unitChar)).toEqual(['12', '月']);
   });
 
-  it('leaves longer numbers and single marks alone', { tags: ['condition'] }, () => {
+  it('leaves longer numbers and single marks alone', { tags: ['boundary'] }, () => {
     expect(verticalUnits('100').map(unitChar)).toEqual(['1', '0', '0']);
     expect(verticalUnits('！').map(unitChar)).toEqual(['！']);
   });

@@ -5,7 +5,7 @@ import { httpLanApi, serverLanApi } from './lan';
 
 const reply = (status: number, body: unknown) => vi.fn<(path: string, init?: RequestInit) => Promise<Response>>(async () => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } }));
 
-describe('the home network calls', () => {
+describe('the home network calls', { tags: [] }, () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     delete window.__NOVIRA_SERVER__;
@@ -17,21 +17,25 @@ describe('the home network calls', () => {
     expect(serverLanApi()).toBe(httpLanApi);
   });
 
-  it('read the state, and nothing when there is none for this page (a phone, a page that cannot read the state)', { tags: ['error-guessing'] }, async () => {
-    const state = { open: false, address: '192.168.1.5', port: null, devices: [], pending: [] };
-    const fetch = reply(200, state);
-    vi.stubGlobal('fetch', fetch);
-    expect(await httpLanApi.state()).toEqual(state);
-    expect(fetch).toHaveBeenCalledWith('/lan/state', { method: 'GET', credentials: 'same-origin' });
-    for (const status of [403, 404]) {
-      vi.stubGlobal('fetch', reply(status, { code: 'x' }));
+  it(
+    'read the state, and nothing when there is none for this page (a phone, a page that cannot read the state)',
+    { tags: ['error-guessing', 'condition'] },
+    async () => {
+      const state = { open: false, address: '192.168.1.5', port: null, devices: [], pending: [] };
+      const fetch = reply(200, state);
+      vi.stubGlobal('fetch', fetch);
+      expect(await httpLanApi.state()).toEqual(state);
+      expect(fetch).toHaveBeenCalledWith('/lan/state', { method: 'GET', credentials: 'same-origin' });
+      for (const status of [403, 404]) {
+        vi.stubGlobal('fetch', reply(status, { code: 'x' }));
+        expect(await httpLanApi.state()).toBeNull();
+      }
+      vi.stubGlobal('fetch', vi.fn(async () => Promise.reject(new Error('offline'))));
       expect(await httpLanApi.state()).toBeNull();
-    }
-    vi.stubGlobal('fetch', vi.fn(async () => Promise.reject(new Error('offline'))));
-    expect(await httpLanApi.state()).toBeNull();
-  });
+    },
+  );
 
-  it('send what the server reads, as JSON', { tags: ['condition'] }, async () => {
+  it('send what the server reads, as JSON', { tags: ['equivalence'] }, async () => {
     const fetch = reply(200, { ok: true });
     vi.stubGlobal('fetch', fetch);
     await httpLanApi.trust('02:11:22:33:44:55', 'home');
@@ -53,16 +57,20 @@ describe('the home network calls', () => {
     ]);
   });
 
-  it('bring a refusal back with its reason and, for an untrusted network, the gateway to confirm', { tags: ['error-guessing'] }, async () => {
-    vi.stubGlobal('fetch', reply(409, { code: 'untrusted_network', error: 'this network is not trusted yet', gatewayMac: '02:11:22:33:44:55' }));
-    expect(await httpLanApi.open()).toEqual({ ok: false, code: 'untrusted_network', message: 'this network is not trusted yet', gatewayMac: '02:11:22:33:44:55' });
-    vi.stubGlobal('fetch', reply(500, 'not json'));
-    expect(await httpLanApi.close()).toMatchObject({ ok: false, code: 'failed' });
-    vi.stubGlobal('fetch', vi.fn(async () => Promise.reject(new Error('offline'))));
-    expect(await httpLanApi.open()).toMatchObject({ ok: false, code: 'offline' });
-  });
+  it(
+    'bring a refusal back with its reason and, for an untrusted network, the gateway to confirm',
+    { tags: ['error-guessing'] },
+    async () => {
+      vi.stubGlobal('fetch', reply(409, { code: 'untrusted_network', error: 'this network is not trusted yet', gatewayMac: '02:11:22:33:44:55' }));
+      expect(await httpLanApi.open()).toEqual({ ok: false, code: 'untrusted_network', message: 'this network is not trusted yet', gatewayMac: '02:11:22:33:44:55' });
+      vi.stubGlobal('fetch', reply(500, 'not json'));
+      expect(await httpLanApi.close()).toMatchObject({ ok: false, code: 'failed' });
+      vi.stubGlobal('fetch', vi.fn(async () => Promise.reject(new Error('offline'))));
+      expect(await httpLanApi.open()).toMatchObject({ ok: false, code: 'offline' });
+    },
+  );
 
-  it('drive the remote listener over its routes', { tags: ['scenario'] }, async () => {
+  it('drive the remote listener over its routes', { tags: ['scenario', 'error-guessing'] }, async () => {
     const fetch = reply(200, { ok: true });
     vi.stubGlobal('fetch', fetch);
     await httpLanApi.remoteEnable();
@@ -94,7 +102,7 @@ describe('the home network calls', () => {
     expect(await httpLanApi.remoteCode()).toBeNull();
   });
 
-  it('take a pairing code only when its modules fill the square', { tags: ['boundary'] }, async () => {
+  it('take a pairing code only when its modules fill the square', { tags: ['boundary', 'error-guessing'] }, async () => {
     const good = { url: 'https://192.168.1.5:8124/pair#c0de', size: 2, modules: '1001', expiresIn: 120 };
     const fetch = reply(200, good);
     vi.stubGlobal('fetch', fetch);

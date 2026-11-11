@@ -144,7 +144,7 @@ const DESIGNED: { name: string; reason: string; explains: (s: Seen) => boolean }
   },
 ];
 
-describe('contract corpus: Rust and types.ts on the same input', () => {
+describe('contract corpus: Rust and types.ts on the same input', { tags: [] }, () => {
   const validator = beforeAllValidator();
 
   it('has a corpus file for every type this test knows, and no other', { tags: ['condition'] }, () => {
@@ -154,14 +154,18 @@ describe('contract corpus: Rust and types.ts on the same input', () => {
     expect(files.sort()).toEqual(Object.keys(TS_TYPES).sort());
   });
 
-  it.runIf(DIR === DEFAULT_DIR)('the committed cases are what the generator makes from the samples now', { tags: ['condition'] }, () => {
-    const made = generate(join(REPO, 'contract')) as Record<string, Case[]>;
-    for (const [fixture, cases] of Object.entries(made)) {
-      const stored = readCases(fixture).map(({ rust: _rust, ...rest }) => rest);
-      const fresh = toLines(cases).split('\n').filter(Boolean).map((line: string) => JSON.parse(line));
-      expect(stored, `${fixture}.jsonl is stale: run node contract/corpus/generate.mjs`).toEqual(fresh);
-    }
-  });
+  it.runIf(DIR === DEFAULT_DIR)(
+    'the committed cases are what the generator makes from the samples now',
+    { tags: ['regression', 'condition'] },
+    () => {
+      const made = generate(join(REPO, 'contract')) as Record<string, Case[]>;
+      for (const [fixture, cases] of Object.entries(made)) {
+        const stored = readCases(fixture).map(({ rust: _rust, ...rest }) => rest);
+        const fresh = toLines(cases).split('\n').filter(Boolean).map((line: string) => JSON.parse(line));
+        expect(stored, `${fixture}.jsonl is stale: run node contract/corpus/generate.mjs`).toEqual(fresh);
+      }
+    },
+  );
 
   it('every case carries a verdict from Rust', { tags: ['condition'] }, () => {
     for (const fixture of Object.keys(TS_TYPES)) {
@@ -170,7 +174,7 @@ describe('contract corpus: Rust and types.ts on the same input', () => {
     }
   });
 
-  it('types.ts and Rust agree on every case, except the designed differences', { tags: ['error-guessing'] }, () => {
+  it('types.ts and Rust agree on every case, except the designed differences', { tags: ['error-guessing', 'decision-table'] }, () => {
     const v = validator();
     const unexplained: string[] = [];
     const used = new Map<string, number>();

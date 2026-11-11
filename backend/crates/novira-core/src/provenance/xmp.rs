@@ -219,7 +219,7 @@ mod tests {
         out.into_inner()
     }
 
-    // tags: scenario, equivalence
+    // tags: equivalence
     #[test]
     fn the_packet_names_the_iptc_code_and_reads_back() {
         let p = packet();
@@ -260,7 +260,7 @@ mod tests {
         }
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn a_webp_becomes_the_extended_format_with_flags_and_canvas_size() {
         let out = add(&encoded(ImageFormat::WebP, true), ImageFormat::WebP).unwrap();
@@ -276,7 +276,7 @@ mod tests {
         assert_eq!(riff + 8, out.len());
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn a_jpeg_segment_goes_after_the_jfif_header() {
         let plain = encoded(ImageFormat::Jpeg, false);
@@ -296,7 +296,7 @@ mod tests {
         assert!(add(&encoded(ImageFormat::Png, false), ImageFormat::Gif).is_err());
     }
 
-    // tags: decision-table
+    // tags: condition
     #[test]
     fn the_source_type_is_read_only_inside_an_xmp_packet() {
         // The address alone (as a C2PA manifest carries it) is not a label.
@@ -350,7 +350,7 @@ http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture</Iptc4xmpExt:Digit
         assert_eq!(digital_source_type(empty.as_bytes()), None);
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn ai_source_codes() {
         assert!(is_ai_source("trainedAlgorithmicMedia"));

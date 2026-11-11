@@ -13,13 +13,13 @@ const shapeOf = ({ x, y, size, neck, back, ...shape }: PoseSpec) => (void [x, y,
 const sceneOf = (id: string) => placePreset(POSE_PRESETS.find((p) => p.id === id)!, area, 4, ['a', 'b', 'c', 'd', 'e', 'f', 'g']);
 
 describe('ready-made poses', () => {
-  it('are about fifty, in several categories, each with a few poses', { tags: ['equivalence'] }, () => {
+  it('are about fifty, in several categories, each with a few poses', { tags: ['boundary'] }, () => {
     expect(single.filter((p) => !p.id.startsWith('manga.')).length).toBeGreaterThanOrEqual(48);
     expect(POSE_CATEGORIES.length).toBeGreaterThanOrEqual(5);
     for (const c of POSE_CATEGORIES) expect(c.presets.length, c.id).toBeGreaterThanOrEqual(6);
   });
 
-  it('hold more than a hundred active poses for manga in their own categories', { tags: ['condition'] }, () => {
+  it('hold more than a hundred active poses for manga in their own categories', { tags: ['boundary'] }, () => {
     const manga = POSE_CATEGORIES.filter((c) => c.id.startsWith('manga.')).flatMap((c) => c.presets);
     expect(manga.length).toBeGreaterThanOrEqual(100);
   });
@@ -37,7 +37,7 @@ describe('ready-made poses', () => {
     expect(POSE_CATEGORIES.filter((c) => c.group === 'panel').every((c) => c.presets.every((p) => p.composed))).toBe(true);
   });
 
-  it('do not set where a single pose stands or how big it is, and only use what the assistant may send', { tags: ['condition'] }, () => {
+  it('do not set where a single pose stands or how big it is, and only use what the assistant may send', { tags: ['equivalence'] }, () => {
     for (const p of single) {
       expect(p.people).toHaveLength(1);
       expect(p.people[0], p.id).not.toHaveProperty('x');
@@ -54,7 +54,7 @@ describe('ready-made poses', () => {
     expect(pt(o.points, J.nose).y).toBeLessThan(pt(o.points, J.neck).y + 1);
   });
 
-  it('put the hands where the name says', { tags: ['condition'] }, () => {
+  it('put the hands where the name says', { tags: ['equivalence'] }, () => {
     const hips = by('handsOnHips');
     expect(Math.abs(pt(hips.points, J.rWrist).y - pt(hips.points, J.rHip).y)).toBeLessThan(40);
     const behind = by('handsBehindHead');
@@ -66,7 +66,7 @@ describe('ready-made poses', () => {
     expect(pt(crossed.points, J.rWrist).x).toBeGreaterThan(pt(crossed.points, J.rElbow).x);
   });
 
-  it('put the legs where the name says', { tags: ['condition'] }, () => {
+  it('put the legs where the name says', { tags: ['equivalence'] }, () => {
     const kick = by('highKick');
     expect(pt(kick.points, J.rAnkle).y).toBeLessThan(pt(kick.points, J.rHip).y);
     const crouch = by('crouching');
@@ -78,7 +78,7 @@ describe('ready-made poses', () => {
 });
 
 describe('compositions for manga panels', () => {
-  it('are more than fifty scenes in five categories', { tags: ['condition'] }, () => {
+  it('are more than fifty scenes in five categories', { tags: ['boundary'] }, () => {
     expect(scenes.length).toBeGreaterThanOrEqual(50);
     expect(POSE_CATEGORIES.filter((c) => c.group === 'panel')).toHaveLength(5);
   });
@@ -94,7 +94,7 @@ describe('compositions for manga panels', () => {
     }
   });
 
-  it('hold two people in the two-person scenes and three or more in the group scenes', { tags: ['condition'] }, () => {
+  it('hold two people in the two-person scenes and three or more in the group scenes', { tags: ['decision-table'] }, () => {
     for (const c of POSE_CATEGORIES.filter((c) => c.group === 'panel')) {
       for (const p of c.presets) {
         if (c.id === 'panel.two') expect(p.people.length, p.id).toBe(2);
@@ -104,22 +104,26 @@ describe('compositions for manga panels', () => {
     }
   });
 
-  it.each(scenes.map((p) => [p.id, p] as const))('%s keeps every person at least partly inside the frame, with finite joints', { tags: ['boundary'] }, (_id, p: PosePreset) => {
-    for (const o of placePreset(p, area, 4, p.people.map((_, i) => `p${i}`))) {
-      expect(o.points.every(Number.isFinite)).toBe(true);
-      const b = jointBounds(o)!;
-      expect(b.x + b.width, p.id).toBeGreaterThan(0);
-      expect(b.x, p.id).toBeLessThan(area.width);
-      expect(b.y + b.height, p.id).toBeGreaterThan(0);
-      expect(b.y, p.id).toBeLessThan(area.height);
-      // The neck is where the scene put it.
-      const spec = p.people[o.id === 'p0' ? 0 : Number(o.id.slice(1))]!;
-      expect(pt(o.points, J.neck).x).toBeCloseTo(spec.neck!.x * area.width, 0);
-      expect(pt(o.points, J.neck).y).toBeCloseTo(spec.neck!.y * area.height, 0);
-    }
-  });
+  it.each(scenes.map((p) => [p.id, p] as const))(
+    '%s keeps every person at least partly inside the frame, with finite joints',
+    { tags: ['boundary'] },
+    (_id, p: PosePreset) => {
+      for (const o of placePreset(p, area, 4, p.people.map((_, i) => `p${i}`))) {
+        expect(o.points.every(Number.isFinite)).toBe(true);
+        const b = jointBounds(o)!;
+        expect(b.x + b.width, p.id).toBeGreaterThan(0);
+        expect(b.x, p.id).toBeLessThan(area.width);
+        expect(b.y + b.height, p.id).toBeGreaterThan(0);
+        expect(b.y, p.id).toBeLessThan(area.height);
+        // The neck is where the scene put it.
+        const spec = p.people[o.id === 'p0' ? 0 : Number(o.id.slice(1))]!;
+        expect(pt(o.points, J.neck).x).toBeCloseTo(spec.neck!.x * area.width, 0);
+        expect(pt(o.points, J.neck).y).toBeCloseTo(spec.neck!.y * area.height, 0);
+      }
+    },
+  );
 
-  it('crop the body at the frame for the close shots and show it whole for the full-body shots', { tags: ['scenario'] }, () => {
+  it('crop the body at the frame for the close shots and show it whole for the full-body shots', { tags: ['equivalence'] }, () => {
     const [bust] = sceneOf('bustUp');
     expect(pt(bust!.points, J.rAnkle).y).toBeGreaterThan(area.height);
     expect(pt(bust!.points, J.neck).y).toBeLessThan(area.height / 2);
@@ -137,17 +141,21 @@ describe('compositions for manga panels', () => {
     expect(pt(back!.points, J.rShoulder).x).toBeGreaterThan(pt(back!.points, J.lShoulder).x);
   });
 
-  it('put two people on either side for facing, and a big back in front of a small figure over the shoulder', { tags: ['condition'] }, () => {
-    const [a, b] = sceneOf('faceToFace');
-    expect(pt(a!.points, J.neck).x).toBeLessThan(pt(b!.points, J.neck).x);
-    const [front, far] = sceneOf('overTheShoulder');
-    expect(front!.hidden).toContain(J.nose);
-    expect(jointBounds(front!)!.height).toBeGreaterThan(jointBounds(far!)!.height);
-    const [adult, child] = sceneOf('adultAndChild');
-    expect(jointBounds(adult!)!.height).toBeGreaterThan(jointBounds(child!)!.height * 1.4);
-  });
+  it(
+    'put two people on either side for facing, and a big back in front of a small figure over the shoulder',
+    { tags: ['equivalence'] },
+    () => {
+      const [a, b] = sceneOf('faceToFace');
+      expect(pt(a!.points, J.neck).x).toBeLessThan(pt(b!.points, J.neck).x);
+      const [front, far] = sceneOf('overTheShoulder');
+      expect(front!.hidden).toContain(J.nose);
+      expect(jointBounds(front!)!.height).toBeGreaterThan(jointBounds(far!)!.height);
+      const [adult, child] = sceneOf('adultAndChild');
+      expect(jointBounds(adult!)!.height).toBeGreaterThan(jointBounds(child!)!.height * 1.4);
+    },
+  );
 
-  it('lay a person down for sleeping: the head and the feet are level', { tags: ['condition'] }, () => {
+  it('lay a person down for sleeping: the head and the feet are level', { tags: ['equivalence'] }, () => {
     const [sleeper] = sceneOf('sleeping');
     expect(Math.abs(pt(sleeper!.points, J.nose).y - pt(sleeper!.points, J.rAnkle).y)).toBeLessThan(area.height * 0.15);
     expect(pt(sleeper!.points, J.rAnkle).x).toBeGreaterThan(pt(sleeper!.points, J.neck).x + area.width * 0.3);
@@ -172,7 +180,7 @@ describe('placing a preset', () => {
     expect(b.height).toBeLessThan(512 * 0.6);
   });
 
-  it('shrinks a single pose with raised arms or a kick to stay inside the box', { tags: ['condition'] }, () => {
+  it('shrinks a single pose with raised arms or a kick to stay inside the box', { tags: ['boundary'] }, () => {
     for (const id of ['armsUp', 'highKick', 'jumping']) {
       const [o] = placePreset(POSE_PRESETS.find((p) => p.id === id)!, area, 4, ids);
       const b = jointBounds(o!)!;

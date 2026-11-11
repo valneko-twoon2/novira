@@ -66,7 +66,7 @@ describe('the home network store', () => {
     await vi.advanceTimersByTimeAsync(60_000);
   });
 
-  it('reads once while closed and then waits for something to change it', { tags: ['scenario'] }, async () => {
+  it('reads once while closed and then waits for something to change it', { tags: ['state-transition'] }, async () => {
     const a = api(() => state(false));
     getLanApi.mockResolvedValue(a);
     await useLan.getState().init();
@@ -76,24 +76,28 @@ describe('the home network store', () => {
     expect(a.state).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps reading while open, faster while the dialog is open, and stops when it is closed again', { tags: ['condition'] }, async () => {
-    let open = true;
-    const a = api(() => state(open));
-    getLanApi.mockResolvedValue(a);
-    await useLan.getState().init();
-    await vi.advanceTimersByTimeAsync(SLOW_MS * 2);
-    expect(a.state).toHaveBeenCalledTimes(3);
-    useLan.getState().setDialogOpen(true);
-    await vi.advanceTimersByTimeAsync(FAST_MS * 3);
-    expect(a.state.mock.calls.length).toBeGreaterThanOrEqual(6);
-    useLan.getState().setDialogOpen(false);
-    open = false;
-    await vi.advanceTimersByTimeAsync(SLOW_MS);
-    const settled = a.state.mock.calls.length;
-    expect(useLan.getState().state?.open).toBe(false);
-    await vi.advanceTimersByTimeAsync(60_000);
-    expect(a.state).toHaveBeenCalledTimes(settled);
-  });
+  it(
+    'keeps reading while open, faster while the dialog is open, and stops when it is closed again',
+    { tags: ['state-transition', 'boundary'] },
+    async () => {
+      let open = true;
+      const a = api(() => state(open));
+      getLanApi.mockResolvedValue(a);
+      await useLan.getState().init();
+      await vi.advanceTimersByTimeAsync(SLOW_MS * 2);
+      expect(a.state).toHaveBeenCalledTimes(3);
+      useLan.getState().setDialogOpen(true);
+      await vi.advanceTimersByTimeAsync(FAST_MS * 3);
+      expect(a.state.mock.calls.length).toBeGreaterThanOrEqual(6);
+      useLan.getState().setDialogOpen(false);
+      open = false;
+      await vi.advanceTimersByTimeAsync(SLOW_MS);
+      const settled = a.state.mock.calls.length;
+      expect(useLan.getState().state?.open).toBe(false);
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(a.state).toHaveBeenCalledTimes(settled);
+    },
+  );
 
   it('reads the remote listener with the home network, and none where the server has none', { tags: ['condition'] }, async () => {
     let on = false;
@@ -114,7 +118,7 @@ describe('the home network store', () => {
     expect(useLan.getState().remote).toBeNull();
   });
 
-  it('forgets the state of a server that stops answering', { tags: ['condition'] }, async () => {
+  it('forgets the state of a server that stops answering', { tags: ['error-guessing'] }, async () => {
     let answer: LanState | null = state(true);
     const a = api(() => answer);
     getLanApi.mockResolvedValue(a);

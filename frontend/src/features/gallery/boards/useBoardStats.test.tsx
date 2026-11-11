@@ -13,7 +13,7 @@ beforeEach(() => useGallery.setState(initial, true));
 afterEach(cleanup);
 
 describe('useBoardStats', () => {
-  it('counts general images and assets separately per board, with uncategorized pictures under none', { tags: ['condition'] }, () => {
+  it('counts general images and assets separately per board, with uncategorized pictures under none', { tags: ['equivalence'] }, () => {
     useGallery.setState({
       images: [
         image({ boardId: 'b1' }),

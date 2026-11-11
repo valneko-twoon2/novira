@@ -37,7 +37,7 @@ describe('the prompt book on a phone', () => {
     expect(screen.queryByTestId('prompt-book-screen')).toBeNull();
   });
 
-  it('closes with Escape', { tags: ['scenario'] }, () => {
+  it('closes with Escape', { tags: ['equivalence'] }, () => {
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(usePromptBook.getState().open).toBe(false);
   });

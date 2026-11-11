@@ -17,23 +17,27 @@ test('pictures chosen in the gallery are exported as clean JPEG downloads', { ta
   expect(downloads.every((name) => name.endsWith('.jpg'))).toBe(true);
 });
 
-test('an export with the watermark switch is found again by the check, which leads to the original', { tag: ['@scenario'] }, async ({ page }) => {
-  await openApp(page);
-  await page.getByTestId('gallery-thumb').nth(0).click({ button: 'right' });
-  await page.getByRole('menuitem', { name: msg('share.menu') }).click();
-  await page.getByRole('switch', { name: msg('share.watermark') }).click();
-  await expect(page.getByText(msg('share.watermarkNote'))).toBeVisible();
-  await page.getByTestId('share-run').click();
-  await expect(page.getByTestId('share-done')).toContainText(msg('share.doneWatermarked.one', { count: 1 }));
-  await page.keyboard.press('Escape');
-  await page.getByTestId('gallery-thumb').nth(0).click({ button: 'right' });
-  await page.getByRole('menuitem', { name: msg('share.check.title') }).click();
-  await page.getByTestId('wm-check-pick').click();
-  await expect(page.getByTestId('wm-check-watermark')).toBeVisible();
-  await expect(page.getByTestId('wm-check-original')).toContainText(msg('share.check.showOriginal'));
-  await page.getByTestId('wm-check-show-original').click();
-  await expect(page.getByTestId('wm-check')).toBeHidden();
-});
+test(
+  'an export with the watermark switch is found again by the check, which leads to the original',
+  { tag: ['@scenario'] },
+  async ({ page }) => {
+    await openApp(page);
+    await page.getByTestId('gallery-thumb').nth(0).click({ button: 'right' });
+    await page.getByRole('menuitem', { name: msg('share.menu') }).click();
+    await page.getByRole('switch', { name: msg('share.watermark') }).click();
+    await expect(page.getByText(msg('share.watermarkNote'))).toBeVisible();
+    await page.getByTestId('share-run').click();
+    await expect(page.getByTestId('share-done')).toContainText(msg('share.doneWatermarked.one', { count: 1 }));
+    await page.keyboard.press('Escape');
+    await page.getByTestId('gallery-thumb').nth(0).click({ button: 'right' });
+    await page.getByRole('menuitem', { name: msg('share.check.title') }).click();
+    await page.getByTestId('wm-check-pick').click();
+    await expect(page.getByTestId('wm-check-watermark')).toBeVisible();
+    await expect(page.getByTestId('wm-check-original')).toContainText(msg('share.check.showOriginal'));
+    await page.getByTestId('wm-check-show-original').click();
+    await expect(page.getByTestId('wm-check')).toBeHidden();
+  },
+);
 
 test('a backup downloads, and a restore stops at the confirmation in the mock', { tag: ['@scenario'] }, async ({ page }) => {
   await openApp(page);

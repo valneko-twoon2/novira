@@ -81,7 +81,7 @@ fn page_node(id: &str, name: &str, downloads: u64) -> serde_json::Value {
     })
 }
 
-// tags: decision-table
+// tags: boundary, condition
 #[tokio::test]
 async fn the_registry_list_is_read_over_every_page_sorted_and_without_repeats() {
     let path = "/nodes";
@@ -120,7 +120,7 @@ fn a_disk_copy_larger_than_any_real_list_is_not_read() {
     assert!(load_cache(&path).is_none());
 }
 
-// tags: error-guessing, boundary
+// tags: boundary, error-guessing
 #[tokio::test]
 async fn a_frontend_page_sent_in_chunks_past_the_script_cap_is_an_error() {
     // No length is announced, so only the bytes read can show that the page is too large.

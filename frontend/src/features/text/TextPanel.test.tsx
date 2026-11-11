@@ -90,7 +90,7 @@ describe('background', () => {
     expect(state().scene.background.kind).toBe('image');
   });
 
-  it('resizes the canvas from the number boxes', { tags: ['scenario'] }, () => {
+  it('resizes the canvas from the number boxes', { tags: ['equivalence'] }, () => {
     setNum(t('text.bg.width'), 640);
     setNum(t('text.bg.height'), 480);
     expect(state().scene).toMatchObject({ width: 640, height: 480 });
@@ -129,7 +129,7 @@ describe('the layer list', () => {
 describe('text properties', () => {
   beforeEach(() => fireEvent.click(screen.getByTestId('text-add-text')));
 
-  it('edits the wording, position, rotation and opacity', { tags: ['scenario'] }, () => {
+  it('edits the wording, position, rotation and opacity', { tags: ['equivalence'] }, () => {
     fireEvent.change(screen.getByTestId('text-content'), { target: { value: 'New\nlines' } });
     expect(text().text).toBe('New\nlines');
     setNum(t('text.position.x'), 100);
@@ -139,7 +139,7 @@ describe('text properties', () => {
     expect(text()).toMatchObject({ x: 100, y: 200, rotation: 15, opacity: 0.5 });
   });
 
-  it('edits the size, spacing, line height and bend', { tags: ['scenario'] }, () => {
+  it('edits the size, spacing, line height and bend', { tags: ['equivalence'] }, () => {
     setNum(t('text.size'), 80);
     setNum(t('text.letterSpacing'), 4);
     setNum(t('text.lineHeight'), 1.5);
@@ -148,7 +148,7 @@ describe('text properties', () => {
     expect(text().bend).toBe(40);
   });
 
-  it('switches between a solid and a gradient fill and edits the colours', { tags: ['scenario'] }, () => {
+  it('switches between a solid and a gradient fill and edits the colours', { tags: ['state-transition'] }, () => {
     fireEvent.change(color(t('text.color')), { target: { value: '#ff0000' } });
     expect(text().style.fill).toEqual({ kind: 'solid', color: '#ff0000' });
     fireEvent.click(within(screen.getByRole('group', { name: t('text.fill') })).getByText(t('text.fill.gradient')));
@@ -160,7 +160,7 @@ describe('text properties', () => {
     expect(text().style.fill).toEqual({ kind: 'solid', color: '#00ff00' });
   });
 
-  it('turns the inner outline, the outer outline and the shadow on, edits and off again', { tags: ['scenario'] }, () => {
+  it('turns the inner outline, the outer outline and the shadow on, edits and off again', { tags: ['state-transition'] }, () => {
     // The new text starts with an inner outline.
     expect(text().style.stroke).not.toBeNull();
     check(t('text.stroke'));
@@ -189,7 +189,7 @@ describe('text properties', () => {
     expect(text().style.shadow).toBeNull();
   });
 
-  it('sets the alignment and the writing direction', { tags: ['scenario'] }, () => {
+  it('sets the alignment and the writing direction', { tags: ['equivalence'] }, () => {
     const align = () => screen.getByRole('group', { name: t('text.align') });
     fireEvent.click(within(align()).getByText(t('text.align.left')));
     expect(text().style.align).toBe('left');
@@ -205,7 +205,7 @@ describe('text properties', () => {
 describe('bubble properties', () => {
   beforeEach(() => addBubble('burst'));
 
-  it('edits the size, colours and border', { tags: ['scenario'] }, () => {
+  it('edits the size, colours and border', { tags: ['equivalence'] }, () => {
     // The background size boxes may share these labels, so look inside the bubble controls.
     const box = within(screen.getByTestId('bubble-controls'));
     for (const [label, value] of [[t('text.bubble.width'), 300], [t('text.bubble.height'), 260]] as const) {
@@ -219,7 +219,7 @@ describe('bubble properties', () => {
     expect(bubble()).toMatchObject({ width: 300, height: 260, fill: '#eeeeee', border: { color: '#101010', width: 6 } });
   });
 
-  it('edits the pointer, shuffles a burst and toggles auto-fit', { tags: ['scenario'] }, () => {
+  it('edits the pointer, shuffles a burst and toggles auto-fit', { tags: ['condition'] }, () => {
     expect(bubble().tail.enabled).toBe(true);
     setNum(t('text.bubble.tail.curve'), 50);
     setNum(t('text.bubble.tail.width'), 120);

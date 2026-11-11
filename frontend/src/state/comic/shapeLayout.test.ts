@@ -40,9 +40,9 @@ const page = (shapes: Shape[] | null, panels = shapes?.length ?? 2): ComicPage =
   canvas: defaultPageCanvas('A4'),
 });
 
-describe('the shape templates', () => {
+describe('the shape templates', { tags: [] }, () => {
   for (const layout of BUILTIN_SHAPE_LAYOUTS) {
-    it(`${layout.id} fills the page with valid panels, with no gap and no overlap`, { tags: ['condition'] }, () => {
+    it(`${layout.id} fills the page with valid panels, with no gap and no overlap`, { tags: ['equivalence'] }, () => {
       const shapes = templateShapes(layout.shapes, aspect, 'ltr');
       expect(shapes.length).toBe(layout.shapes.length);
       for (const s of shapes) {
@@ -68,7 +68,7 @@ describe('the shape templates', () => {
   });
 });
 
-describe('the automatic layout as shapes', () => {
+describe('the automatic layout as shapes', { tags: [] }, () => {
   it('gives one rectangle for each panel, filling the page', { tags: ['equivalence'] }, () => {
     const shapes = autoShapes(4, 2, 'ltr', aspect);
     expect(shapes).toHaveLength(4);
@@ -77,8 +77,8 @@ describe('the automatic layout as shapes', () => {
   });
 });
 
-describe('the geometry of a page', () => {
-  it('gives the automatic boxes for a page without shapes, and the shapes\' own boxes for a reshaped page', { tags: ['equivalence'] }, () => {
+describe('the geometry of a page', { tags: [] }, () => {
+  it('gives the automatic boxes for a page without shapes, and the shapes\' own boxes for a reshaped page', { tags: ['condition'] }, () => {
     const plain = panelGeometry(page(null, 3));
     expect(plain.every((g) => g.shape === null)).toBe(true);
     expect(plain).toHaveLength(3);
@@ -89,7 +89,7 @@ describe('the geometry of a page', () => {
     expect(reshaped[1]!.box.x).toBeCloseTo(shapeBox(shapes[1]!).x);
   });
 
-  it('falls back to the automatic layout when the shapes are not one for each panel', { tags: ['equivalence'] }, () => {
+  it('falls back to the automatic layout when the shapes are not one for each panel', { tags: ['condition'] }, () => {
     const shapes = templateShapes(BUILTIN_SHAPE_LAYOUTS[0]!.shapes, aspect, 'ltr');
     const geometry = panelGeometry(page(shapes, 5));
     expect(geometry.every((g) => g.shape === null)).toBe(true);
@@ -97,13 +97,13 @@ describe('the geometry of a page', () => {
   });
 });
 
-describe('moving points onto a page', () => {
-  it('keeps a point inside the margin all round', { tags: ['equivalence'] }, () => {
+describe('moving points onto a page', { tags: [] }, () => {
+  it('keeps a point inside the margin all round', { tags: ['boundary'] }, () => {
     expect(clampToPage({ x: -1, y: 2 }, aspect)).toEqual({ x: SHAPE_MARGIN, y: 1 - SHAPE_MARGIN / aspect });
     expect(clampToPage({ x: 0.5, y: 0.5 }, aspect)).toEqual({ x: 0.5, y: 0.5 });
   });
 
-  it('maps the corners of the unit page onto the margin', { tags: ['condition'] }, () => {
+  it('maps the corners of the unit page onto the margin', { tags: ['equivalence'] }, () => {
     const corner: ComicPoint = toPage(0, 0, aspect);
     expect(corner.x).toBeCloseTo(SHAPE_MARGIN);
     expect(corner.y).toBeCloseTo(SHAPE_MARGIN / aspect);

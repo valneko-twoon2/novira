@@ -1,4 +1,3 @@
-//! tags: snapshot, decision-table
 //! Snapshots of the prompts built for the newer model families (image and video), so a change to what reaches
 //! ComfyUI for them shows up as a JSON diff, and `node_defs_check` can test every one against the node definitions of
 //! a real ComfyUI. Same files and update command as `graph_snapshots`.
@@ -77,6 +76,7 @@ fn video_params() -> GenerationMetadata {
     p
 }
 
+// tags: equivalence
 #[test]
 fn every_image_family_draws_from_text() {
     let mut p = params(GenerationMode::Txt2img);
@@ -105,6 +105,7 @@ fn every_image_family_draws_from_text() {
     snap("family-auraflow", &p, &job(Family::Auraflow), None);
 }
 
+// tags: condition
 #[test]
 fn a_draft_of_a_newer_family_stops_early() {
     let mut p = params(GenerationMode::Txt2img);
@@ -120,6 +121,7 @@ fn a_draft_of_a_newer_family_stops_early() {
     );
 }
 
+// tags: condition
 #[test]
 fn a_checkpoint_of_a_family_carries_its_parts() {
     let mut split = job(Family::Sd3);
@@ -136,6 +138,7 @@ fn a_checkpoint_of_a_family_carries_its_parts() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn flux_redraws_inpaints_and_upscales_through_the_shared_graph() {
     let split = job(Family::Flux);
@@ -180,6 +183,7 @@ fn controlled(case: &str, f: Family, model: &ComfyRef) {
     assert_snapshot(case, &built_json(&make(&p, &job(f), None, guidance)));
 }
 
+// tags: equivalence
 #[test]
 fn a_controlnet_and_the_model_patches_control_the_newer_families() {
     let cn = r("controlnet", "flux-union.safetensors");
@@ -190,6 +194,7 @@ fn a_controlnet_and_the_model_patches_control_the_newer_families() {
     controlled("family-z-image-patch", Family::ZImage, &patch);
 }
 
+// tags: equivalence
 #[test]
 fn every_video_family_makes_a_clip() {
     let p = video_params();
@@ -240,6 +245,7 @@ fn gguf(case: &str, f: Family) {
     assert_snapshot(case, &built_json(&g));
 }
 
+// tags: condition
 #[test]
 fn quantised_gguf_models_load_through_the_gguf_pack() {
     gguf("family-flux-gguf", Family::Flux);
@@ -265,6 +271,7 @@ fn variant_job(f: Family, v: Variant) -> SplitJob {
     j
 }
 
+// tags: equivalence
 #[test]
 fn flux_fill_inpaints_through_the_conditioning_node() {
     let mut p = params(GenerationMode::Inpaint);
@@ -278,6 +285,7 @@ fn flux_fill_inpaints_through_the_conditioning_node() {
     assert_snapshot("family-flux-fill", &built_json(&g));
 }
 
+// tags: equivalence
 #[test]
 fn the_edit_models_take_the_source_through_their_conditioning() {
     let p = params(GenerationMode::Img2img);
@@ -289,6 +297,7 @@ fn the_edit_models_take_the_source_through_their_conditioning() {
     snap("family-qwen-image-edit-plus", &p, &plus, Some("src.png"));
 }
 
+// tags: equivalence
 #[test]
 fn wan_vace_and_wan_21_image_to_video_have_their_own_nodes() {
     let p = video_params();
@@ -302,6 +311,7 @@ fn wan_vace_and_wan_21_image_to_video_have_their_own_nodes() {
     snap("family-wan-i2v-clip-vision", &p, &i2v, Some("start.png"));
 }
 
+// tags: equivalence
 #[test]
 fn flux2_edits_a_picture_by_reference() {
     let p = params(GenerationMode::Img2img);
@@ -309,6 +319,7 @@ fn flux2_edits_a_picture_by_reference() {
     snap("family-flux2-klein-reference", &p, &klein, Some("src.png"));
 }
 
+// tags: condition
 #[test]
 fn flux2_draws_from_text_with_pictures_given_as_references() {
     // A comic panel: the characters' pictures go to the model itself.
@@ -324,6 +335,7 @@ fn flux2_draws_from_text_with_pictures_given_as_references() {
     );
 }
 
+// tags: equivalence
 #[test]
 fn hunyuan_video_15_and_ltx2_make_clips() {
     let p = video_params();

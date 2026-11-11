@@ -6,17 +6,17 @@ const page = (frameMm: number, insetMm: number, marginMm = 5) => ({ size: 'A4' a
 // A 5 mm margin is a stroke of 10 mm centred on the edge, so 5 mm of white shows inside the panel.
 const G = 2 * (5 / 210);
 
-describe('the strokes of a panel frame', () => {
+describe('the strokes of a panel frame', { tags: [] }, () => {
   it('measures millimetres as a share of the paper width', { tags: ['equivalence'] }, () => {
     expect(mmToPage({ size: 'A4' }, 21)).toBeCloseTo(0.1);
     expect(mmToPage({ size: 'A5' }, 14.8)).toBeCloseTo(0.1);
   });
 
-  it('is only the margin at no frame line and no inset', { tags: ['condition'] }, () => {
+  it('is only the margin at no frame line and no inset', { tags: ['boundary'] }, () => {
     expect(frameStrokes(page(0, 0))).toEqual({ deep: G, line: G, gutter: G });
   });
 
-  it('draws no white at all at no margin (the first setting)', { tags: ['equivalence'] }, () => {
+  it('draws no white at all at no margin (the first setting)', { tags: ['boundary'] }, () => {
     const s = frameStrokes(page(0.6, 0, 0));
     expect(s.gutter).toBe(0);
     expect(s.line).toBeCloseTo(2 * mmToPage({ size: 'A4' }, 0.6));

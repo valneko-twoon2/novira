@@ -244,7 +244,7 @@ mod tests {
         assert!(path.exists());
     }
 
-    // tags: state-transition
+    // tags: error-guessing, state-transition
     #[test]
     fn a_lock_whose_owner_is_gone_is_taken_over() {
         let dir = tempfile::tempdir().unwrap();
@@ -258,7 +258,7 @@ mod tests {
         );
     }
 
-    // tags: state-transition
+    // tags: condition, state-transition
     #[test]
     fn a_lock_held_by_a_live_process_or_by_someone_else_stays() {
         let dir = tempfile::tempdir().unwrap();

@@ -10,10 +10,10 @@ import { apart, ORIGIN, png, same, TOKEN, useBackends } from './harness';
 /** The pictures brought back come in an order neither side promises; the gallery sorts them when it shows them. */
 const newestFirst = (images: ImageDTO[]) => [...images].sort((x, y) => y.createdAt - x.createdAt);
 
-describe.runIf(ORIGIN && TOKEN)('the mock answers as the real backend does', () => {
+describe.runIf(ORIGIN && TOKEN)('the mock answers as the real backend does', { tags: [] }, () => {
   const backends = useBackends();
 
-  it('makes, renames, archives and refuses boards alike', { tags: ['scenario'] }, async () => {
+  it('makes, renames, archives and refuses boards alike', { tags: ['equivalence', 'error-guessing'] }, async () => {
     await same(backends, (b) => [
       () => b.createBoard('  Trimmed  '),
       () => b.createBoard('   '),
@@ -25,7 +25,7 @@ describe.runIf(ORIGIN && TOKEN)('the mock answers as the real backend does', () 
     ]);
   });
 
-  it('saves, replaces and deletes workflows alike', { tags: ['scenario'] }, async () => {
+  it('saves, replaces and deletes workflows alike', { tags: ['equivalence', 'error-guessing'] }, async () => {
     await same(backends, async (b) => {
       const first = await b.saveWorkflow({ name: 'Diff A', description: '', author: '', tags: ['x'], graph: { v: 1 } } as never);
       return [
@@ -40,38 +40,42 @@ describe.runIf(ORIGIN && TOKEN)('the mock answers as the real backend does', () 
     });
   });
 
-  it('keeps comics, the canvas and the screen state alike, and refuses the same bad ones', { tags: ['scenario'] }, async () => {
-    // Only the comics of this case: the sequences (sequences.difftest.ts) save theirs on the same server.
-    const comics = (b: BackendClient) => b.listComics().then((list) => list.filter((c) => ['comic-1', 'comic 2'].includes(c.id)).map((c) => ({ id: c.id, document: c.document })));
-    await same(backends, (b) => [
-      () => b.saveComic('comic-1', { title: 'First', pages: [] }),
-      () => b.saveComic('comic 2', {}),
-      () => b.saveComic('', {}),
-      () => b.saveComic('a/b', {}),
-      () => b.saveComic('x'.repeat(65), {}),
-      () => comics(b),
-      () => b.deleteComic('comic-1'),
-      () => b.deleteComic('comic-none'),
-      () => comics(b),
-      () => b.saveCanvas('{"version":1,"entities":[]}'),
-      () => b.loadCanvas(),
-      () => b.saveCanvas('[1]'),
-      () => b.saveCanvas('not json'),
-      () => b.loadCanvas(),
-      () => b.saveUiState('{"novira.theme":"light"}'),
-      () => b.adoptUiState(null),
-      // Only the keys a page changed: put over the stored state, and the removed ones dropped.
-      () => b.saveUiState('{"novira.y":"2"}', undefined, ['novira.theme', 'novira.never']),
-      () => b.adoptUiState(null),
-      () => b.saveUiState('{"novira.z":"3"}', undefined, []),
-      () => b.adoptUiState(null),
-      () => b.saveUiState('{"novira.q":1}', undefined, []),
-      () => b.saveUiState('{"theme":"light"}'),
-      () => b.saveUiState('{"novira.x":1}'),
-    ]);
-  });
+  it(
+    'keeps comics, the canvas and the screen state alike, and refuses the same bad ones',
+    { tags: ['error-guessing', 'equivalence'] },
+    async () => {
+      // Only the comics of this case: the sequences (sequences.difftest.ts) save theirs on the same server.
+      const comics = (b: BackendClient) => b.listComics().then((list) => list.filter((c) => ['comic-1', 'comic 2'].includes(c.id)).map((c) => ({ id: c.id, document: c.document })));
+      await same(backends, (b) => [
+        () => b.saveComic('comic-1', { title: 'First', pages: [] }),
+        () => b.saveComic('comic 2', {}),
+        () => b.saveComic('', {}),
+        () => b.saveComic('a/b', {}),
+        () => b.saveComic('x'.repeat(65), {}),
+        () => comics(b),
+        () => b.deleteComic('comic-1'),
+        () => b.deleteComic('comic-none'),
+        () => comics(b),
+        () => b.saveCanvas('{"version":1,"entities":[]}'),
+        () => b.loadCanvas(),
+        () => b.saveCanvas('[1]'),
+        () => b.saveCanvas('not json'),
+        () => b.loadCanvas(),
+        () => b.saveUiState('{"novira.theme":"light"}'),
+        () => b.adoptUiState(null),
+        // Only the keys a page changed: put over the stored state, and the removed ones dropped.
+        () => b.saveUiState('{"novira.y":"2"}', undefined, ['novira.theme', 'novira.never']),
+        () => b.adoptUiState(null),
+        () => b.saveUiState('{"novira.z":"3"}', undefined, []),
+        () => b.adoptUiState(null),
+        () => b.saveUiState('{"novira.q":1}', undefined, []),
+        () => b.saveUiState('{"theme":"light"}'),
+        () => b.saveUiState('{"novira.x":1}'),
+      ]);
+    },
+  );
 
-  it('uploads, stars, moves, deletes and brings back pictures alike', { tags: ['scenario'] }, async () => {
+  it('uploads, stars, moves, deletes and brings back pictures alike', { tags: ['state-transition'] }, async () => {
     await same(backends, async (b) => {
       const board = await b.createBoard('Pictures');
       const a = await b.uploadImage(png(16, 12), { boardId: board.id });
@@ -99,40 +103,44 @@ describe.runIf(ORIGIN && TOKEN)('the mock answers as the real backend does', () 
     });
   });
 
-  it('deletes a board with its pictures, keeps the flags of a picture and brings pictures back alike', { tags: ['scenario'] }, async () => {
-    await same(backends, async (b) => {
-      const board = await b.createBoard('With pictures');
-      const kept = await b.createBoard('Kept');
-      const a = await b.uploadImage(png(4, 4), { boardId: board.id, isIntermediate: true });
-      await apart();
-      const c = await b.uploadImage(png(6, 4), { boardId: board.id });
-      await apart();
-      const d = await b.uploadImage(png(4, 6), { boardId: kept.id });
-      const names = [a.name, c.name, d.name];
-      const gallery = async () => (await b.bootstrap()).images.filter((i) => names.includes(i.name));
-      const boards = async () => (await b.bootstrap()).boards.filter((x) => [board.id, kept.id].includes(x.id));
-      return [
-        () => Promise.resolve([a, c, d]),
-        () => b.updateImages([c.name], { isIntermediate: true, starred: true }),
-        () => b.updateImages([], { starred: true }),
-        () => b.updateImages([d.name], { boardId: 'board-none' }),
-        () => gallery(),
-        () => b.deleteBoard(board.id, true),
-        () => boards(),
-        () => gallery(),
-        // Back from the bin into a board that is gone: the pictures land outside any board.
-        () => b.restoreImages([a.name, c.name]).then(newestFirst),
-        () => gallery(),
-        () => b.deleteBoard('board-none', true),
-        () => b.deleteBoard(kept.id, false),
-        () => gallery(),
-        () => b.deleteImages([]),
-        () => b.restoreImages([]),
-      ];
-    });
-  });
+  it(
+    'deletes a board with its pictures, keeps the flags of a picture and brings pictures back alike',
+    { tags: ['state-transition'] },
+    async () => {
+      await same(backends, async (b) => {
+        const board = await b.createBoard('With pictures');
+        const kept = await b.createBoard('Kept');
+        const a = await b.uploadImage(png(4, 4), { boardId: board.id, isIntermediate: true });
+        await apart();
+        const c = await b.uploadImage(png(6, 4), { boardId: board.id });
+        await apart();
+        const d = await b.uploadImage(png(4, 6), { boardId: kept.id });
+        const names = [a.name, c.name, d.name];
+        const gallery = async () => (await b.bootstrap()).images.filter((i) => names.includes(i.name));
+        const boards = async () => (await b.bootstrap()).boards.filter((x) => [board.id, kept.id].includes(x.id));
+        return [
+          () => Promise.resolve([a, c, d]),
+          () => b.updateImages([c.name], { isIntermediate: true, starred: true }),
+          () => b.updateImages([], { starred: true }),
+          () => b.updateImages([d.name], { boardId: 'board-none' }),
+          () => gallery(),
+          () => b.deleteBoard(board.id, true),
+          () => boards(),
+          () => gallery(),
+          // Back from the bin into a board that is gone: the pictures land outside any board.
+          () => b.restoreImages([a.name, c.name]).then(newestFirst),
+          () => gallery(),
+          () => b.deleteBoard('board-none', true),
+          () => b.deleteBoard(kept.id, false),
+          () => gallery(),
+          () => b.deleteImages([]),
+          () => b.restoreImages([]),
+        ];
+      });
+    },
+  );
 
-  it('checks and keeps engine settings alike', { tags: ['scenario'] }, async () => {
+  it('checks and keeps engine settings alike', { tags: ['boundary', 'error-guessing'] }, async () => {
     /** What both sides decide; the folders are each machine's own. */
     const decided = (s: EngineSettings) => ({
       comfyuiPackage: s.comfyuiPackage,
@@ -163,7 +171,7 @@ describe.runIf(ORIGIN && TOKEN)('the mock answers as the real backend does', () 
     ]);
   });
 
-  it('answers calls about things that are not there alike', { tags: ['scenario'] }, async () => {
+  it('answers calls about things that are not there alike', { tags: ['error-guessing'] }, async () => {
     const calls = (b: BackendClient) => [
       () => b.cancelQueueItem(987654),
       () => b.cancelBatch('no-such-batch'),

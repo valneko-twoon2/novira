@@ -129,7 +129,7 @@ fn any_string(value: &Value, test: &dyn Fn(&str) -> bool) -> bool {
     }
 }
 
-// tags: error-guessing
+// tags: error-guessing, condition
 #[test]
 fn picture_urls_are_rewritten_only_from_their_start_and_both_ways_undo_each_other() {
     let data = tempfile::tempdir().unwrap();
@@ -386,7 +386,7 @@ const FILE_PIECES: &[&str] = &[
     "é",
 ];
 
-// tags: error-guessing
+// tags: error-guessing, condition
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn a_paired_phone_reaches_only_clean_paths_of_the_built_in_files() {
     let data = tempfile::tempdir().unwrap();

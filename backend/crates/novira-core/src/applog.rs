@@ -114,7 +114,7 @@ mod tests {
         assert!(e.at > 0);
     }
 
-    // tags: equivalence
+    // tags: scenario, boundary
     #[test]
     fn lines_reach_the_file_and_the_file_rotates() {
         let dir = tempfile::tempdir().unwrap();

@@ -6,7 +6,7 @@ import { addImageInputNode, inputNodePosition } from './actions';
 
 const image = { name: 'pic.png' } as ImageDTO;
 
-describe('image input from the gallery', () => {
+describe('image input from the gallery', { tags: [] }, () => {
   beforeEach(() => useWorkflows.getState().setGraph({ nodes: [], edges: [], form: [], meta: { ...EMPTY_META } }));
 
   it('places the node left of the graph, at its top, or at the origin when empty', { tags: ['boundary'] }, () => {
@@ -14,7 +14,7 @@ describe('image input from the gallery', () => {
     expect(inputNodePosition([{ position: { x: 100, y: 50 } }, { position: { x: 400, y: -20 } }])).toEqual({ x: -280, y: -20 });
   });
 
-  it('adds an image node holding the picture and keeps existing nodes', { tags: ['condition'] }, () => {
+  it('adds an image node holding the picture and keeps existing nodes', { tags: ['equivalence'] }, () => {
     addImageInputNode(image);
     addImageInputNode(image);
     const nodes = useWorkflows.getState().nodes;

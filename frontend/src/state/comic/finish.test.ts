@@ -20,7 +20,7 @@ const page = () => useComic.getState().projects[0]!.pages[0]!;
 
 beforeEach(reset);
 
-describe('the stacking order of panels', () => {
+describe('the stacking order of panels', { tags: [] }, () => {
   it('moves a panel to the front or the back with its shape, one step or all the way', { tags: ['equivalence'] }, () => {
     const id = seed();
     useComic.getState().setPageFree(id, true);
@@ -63,8 +63,8 @@ describe('the stacking order of panels', () => {
   });
 });
 
-describe('putting a panel and its picture back', () => {
-  it('turns a tilted panel upright and keeps its size; "all" gives back the automatic shape', { tags: ['condition'] }, () => {
+describe('putting a panel and its picture back', { tags: [] }, () => {
+  it('turns a tilted panel upright and keeps its size; "all" gives back the automatic shape', { tags: ['equivalence'] }, () => {
     const id = seed();
     useComic.getState().setPageFree(id, true);
     const original = pageShapes(page())[1]!;
@@ -82,7 +82,7 @@ describe('putting a panel and its picture back', () => {
     });
   });
 
-  it('does not reset the shape of a page that is not free', { tags: ['state-transition'] }, () => {
+  it('does not reset the shape of a page that is not free', { tags: ['condition'] }, () => {
     const id = seed();
     expect(useComic.getState().resetPanelShape(id, 0, 'all')).toBe(false);
   });
@@ -110,7 +110,7 @@ describe('putting a panel and its picture back', () => {
   });
 });
 
-describe('the finishing effect', () => {
+describe('the finishing effect', { tags: [] }, () => {
   it('follows the comic unless the page has its own', { tags: ['condition'] }, () => {
     const id = seed();
     useComic.getState().setProjectEffect('ebook');
@@ -122,7 +122,7 @@ describe('the finishing effect', () => {
     expect(effectOf(project(), page())).toBe('ebook');
   });
 
-  it('is saved and read back, a comic saved before it has none, and an unknown name falls back', { tags: ['error-guessing', 'boundary'] }, () => {
+  it('is saved and read back, a comic saved before it has none, and an unknown name falls back', { tags: ['condition'] }, () => {
     const id = seed();
     useComic.getState().setProjectEffect('sepia');
     useComic.getState().setPageEffect(id, 'mono');

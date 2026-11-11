@@ -23,43 +23,47 @@ const paintedPixels = (canvas: Locator) =>
     return n;
   });
 
-test('on a comic page, blur spreads the painted pixels and the bucket fills the empty region, each undone by one undo', { tag: ['@state-transition'] }, async ({ page }) => {
-  test.slow();
-  await openApp(page, '?scenario=empty');
-  await showTab(page, 'comic');
-  await page.getByTestId('comic-project-picker').click();
-  await page.getByTestId('comic-new').click();
-  await page.getByTestId('name-dialog-input').fill('Filters');
-  await page.getByTestId('name-dialog-ok').click();
-  await chooseFirstModel(page);
-  await page.getByTestId('comic-mode-paint').click();
+test(
+  'on a comic page, blur spreads the painted pixels and the bucket fills the empty region, each undone by one undo',
+  { tag: ['@state-transition'] },
+  async ({ page }) => {
+    test.slow();
+    await openApp(page, '?scenario=empty');
+    await showTab(page, 'comic');
+    await page.getByTestId('comic-project-picker').click();
+    await page.getByTestId('comic-new').click();
+    await page.getByTestId('name-dialog-input').fill('Filters');
+    await page.getByTestId('name-dialog-ok').click();
+    await chooseFirstModel(page);
+    await page.getByTestId('comic-mode-paint').click();
 
-  const stage = page.getByTestId('canvas-embedded-stage');
-  const content = page.getByTestId('canvas-embedded-content');
-  await page.getByTestId('canvas-tool-brush').click();
-  await drag(page, stage, [0.2, 0.3], [0.8, 0.3]);
-  await expect.poll(() => paintedPixels(content)).toBeGreaterThan(100);
-  const stroked = await paintedPixels(content);
+    const stage = page.getByTestId('canvas-embedded-stage');
+    const content = page.getByTestId('canvas-embedded-content');
+    await page.getByTestId('canvas-tool-brush').click();
+    await drag(page, stage, [0.2, 0.3], [0.8, 0.3]);
+    await expect.poll(() => paintedPixels(content)).toBeGreaterThan(100);
+    const stroked = await paintedPixels(content);
 
-  // A blur: the layer becomes one picture and its soft edge covers more pixels.
-  await page.getByTestId('canvas-filter').click();
-  await page.getByLabel(msg('canvas.rasterFilter.radius')).fill('12');
-  await page.getByLabel(msg('canvas.rasterFilter.radius')).blur();
-  await page.getByTestId('canvas-filter-apply').click();
-  await expect.poll(() => paintedPixels(content)).toBeGreaterThan(stroked);
-  await page.getByTestId('canvas-undo').click();
-  await expect.poll(() => paintedPixels(content)).toBe(stroked);
+    // A blur: the layer becomes one picture and its soft edge covers more pixels.
+    await page.getByTestId('canvas-filter').click();
+    await page.getByLabel(msg('canvas.rasterFilter.radius')).fill('12');
+    await page.getByLabel(msg('canvas.rasterFilter.radius')).blur();
+    await page.getByTestId('canvas-filter-apply').click();
+    await expect.poll(() => paintedPixels(content)).toBeGreaterThan(stroked);
+    await page.getByTestId('canvas-undo').click();
+    await expect.poll(() => paintedPixels(content)).toBe(stroked);
 
-  // The bucket: a press on the empty page fills all of it up to the stroke, and a press on the stroke fills the stroke.
-  await page.getByTestId('canvas-tool-bucket').click();
-  await page.getByLabel(msg('canvas.toolbar.bucketTolerance')).fill('0');
-  await page.getByLabel(msg('canvas.toolbar.bucketTolerance')).blur();
-  const box = (await stage.boundingBox())!;
-  await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.12);
-  await expect.poll(() => paintedPixels(content)).toBeGreaterThan(stroked * 20);
-  await page.getByTestId('canvas-undo').click();
-  await expect.poll(() => paintedPixels(content)).toBe(stroked);
-});
+    // The bucket: a press on the empty page fills all of it up to the stroke, and a press on the stroke fills the stroke.
+    await page.getByTestId('canvas-tool-bucket').click();
+    await page.getByLabel(msg('canvas.toolbar.bucketTolerance')).fill('0');
+    await page.getByLabel(msg('canvas.toolbar.bucketTolerance')).blur();
+    const box = (await stage.boundingBox())!;
+    await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.12);
+    await expect.poll(() => paintedPixels(content)).toBeGreaterThan(stroked * 20);
+    await page.getByTestId('canvas-undo').click();
+    await expect.poll(() => paintedPixels(content)).toBe(stroked);
+  },
+);
 
 test('on the Image tab, a filter changes the chosen layer and one undo takes it back', { tag: ['@state-transition'] }, async ({ page }) => {
   await openCanvas(page);

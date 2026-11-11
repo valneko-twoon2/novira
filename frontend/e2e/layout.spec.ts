@@ -471,66 +471,85 @@ async function pickPhoneModel(page: Page): Promise<void> {
 
 // The scan must find what it is for: a field wider than its box, a label cut to "…", two buttons with no gap, and it must
 // leave alone what is fine (a joined button group, a name marked as designed to shorten).
-test('the scan finds overflow, truncated text and touching buttons, and passes a sound layout', { tag: ['@condition', '@error-guessing'] }, async ({ page }) => {
-  await page.setContent(`
+test(
+  'the scan finds overflow, truncated text and touching buttons, and passes a sound layout',
+  { tag: ['@condition', '@error-guessing'] },
+  async ({ page }) => {
+    await page.setContent(`
     <div style="width:120px;border:1px solid red;margin-bottom:8px"><select style="width:200px"><option>long</option></select></div>
     <button style="display:block;margin-bottom:8px;width:60px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">a label that is far too long</button>
     <div style="display:flex;margin-bottom:8px"><button style="border:1px solid red;border-radius:4px">A</button><button style="border:1px solid red;border-radius:4px">B</button></div>
     <div style="display:flex;gap:8px;margin-bottom:8px"><button style="border:1px solid red;border-radius:4px">C</button><button style="border:1px solid red;border-radius:4px">D</button></div>
     <div style="display:flex;margin-bottom:8px"><button style="border:1px solid red;border-radius:0">E</button><button style="border:1px solid red;border-radius:0">F</button></div>
     <span data-truncate-ok style="display:block;width:40px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">a file name that is long</span>`);
-  const kinds = (await findLayoutFaults(page)).map((f) => `${f.kind}:${f.text}`).sort();
-  expect(kinds).toEqual(['overflow:long', 'touching:A', 'truncated:a label that is far too long']);
-});
+    const kinds = (await findLayoutFaults(page)).map((f) => `${f.kind}:${f.text}`).sort();
+    expect(kinds).toEqual(['overflow:long', 'touching:A', 'truncated:a label that is far too long']);
+  },
+);
 
 // A sticky bar is a surface of its own: the rows scrolled under it do not overlap it, but two of its own buttons still do.
-test('the scan leaves alone rows scrolled under a sticky bar and finds an overlap inside the bar', { tag: ['@condition', '@error-guessing'] }, async ({ page }) => {
-  const row = '<button style="display:block;height:40px;margin-bottom:8px;border:1px solid red;border-radius:4px">row</button>';
-  await page.setContent(`
+test(
+  'the scan leaves alone rows scrolled under a sticky bar and finds an overlap inside the bar',
+  { tag: ['@condition', '@error-guessing'] },
+  async ({ page }) => {
+    const row = '<button style="display:block;height:40px;margin-bottom:8px;border:1px solid red;border-radius:4px">row</button>';
+    await page.setContent(`
     <div style="height:120px;overflow-y:auto">
       ${row.repeat(6)}
       <div style="position:sticky;bottom:0;display:flex;background:black">
         <button style="border:1px solid red;border-radius:4px">I</button><button style="margin-left:-6px;border:1px solid red;border-radius:4px">J</button>
       </div>
     </div>`);
-  const kinds = (await findLayoutFaults(page)).map((f) => `${f.kind}:${f.text}`);
-  expect(kinds).toEqual(['overlap:I']);
-});
+    const kinds = (await findLayoutFaults(page)).map((f) => `${f.kind}:${f.text}`);
+    expect(kinds).toEqual(['overlap:I']);
+  },
+);
 
 // Switching the theme in place must reach what only the light theme draws: here the borders that make two controls
 // touch, behind a colour transition that would otherwise still show the dark colours.
-test('the light pass finds two controls that touch only where the light theme draws their borders', { tag: ['@condition', '@error-guessing'] }, async ({ page }) => {
-  await page.setContent(`
+test(
+  'the light pass finds two controls that touch only where the light theme draws their borders',
+  { tag: ['@condition', '@error-guessing'] },
+  async ({ page }) => {
+    await page.setContent(`
     <style>
       [role="button"] { display: inline-block; padding: 4px; border: 1px solid transparent; border-radius: 4px; transition: border-color 2s; }
       :root[data-theme='light'] [role="button"] { border-color: red; }
     </style>
     <div style="display:flex"><span role="button">G</span><span role="button">H</span></div>`);
-  await page.evaluate(() => (document.documentElement.dataset.theme = 'dark'));
-  expect(await findLayoutFaults(page)).toEqual([]);
-  const light = await measureInTheme(page, 'light', () => findLayoutFaults(page));
-  expect(light.map((f) => `${f.kind}:${f.text}`)).toEqual(['touching:G']);
-  expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe('dark');
-  expect(await findLayoutFaults(page)).toEqual([]);
-});
+    await page.evaluate(() => (document.documentElement.dataset.theme = 'dark'));
+    expect(await findLayoutFaults(page)).toEqual([]);
+    const light = await measureInTheme(page, 'light', () => findLayoutFaults(page));
+    expect(light.map((f) => `${f.kind}:${f.text}`)).toEqual(['touching:G']);
+    expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBe('dark');
+    expect(await findLayoutFaults(page)).toEqual([]);
+  },
+);
 
 // The text fit must find what it is for: a button that is too narrow and short for its label (the bug that cut a segmented
 // switch in two), text cut off by a box, and a floating surface that runs out of the window.
-test('the fit check finds a label that wraps in a fixed-height button, clipped text and a tooltip outside the window', { tag: ['@condition', '@error-guessing'] }, async ({ page }) => {
-  await page.setContent(`
+test(
+  'the fit check finds a label that wraps in a fixed-height button, clipped text and a tooltip outside the window',
+  { tag: ['@condition', '@error-guessing'] },
+  async ({ page }) => {
+    await page.setContent(`
     <button style="width:90px;height:28px">すべての組み合わせ</button>
     <div style="width:60px;overflow:hidden;white-space:nowrap">a long clipped sentence</div>
     <button style="width:200px;height:28px">Fits</button>
     <div class="ui-tooltip" style="position:fixed;left:-40px;top:10px">cut by the window edge</div>`);
-  const found = await findFitProblems(page);
-  expect(found.map((p) => p.kind).sort()).toEqual(['broken', 'clipped', 'offscreen', 'outside']);
-  expect(found.some((p) => p.text === 'Fits')).toBe(false);
-});
+    const found = await findFitProblems(page);
+    expect(found.map((p) => p.kind).sort()).toEqual(['broken', 'clipped', 'offscreen', 'outside']);
+    expect(found.some((p) => p.text === 'Fits')).toBe(false);
+  },
+);
 
 // The tooltip sweep must open what hovering opened: the tooltip of a button and of a span (which takes focus only for the
 // sweep), check it and close it again, and leave alone a trigger that something else covers.
-test('the tooltip sweep shows the tooltip of each trigger a pointer can reach and finds one outside the window', { tag: ['@condition', '@error-guessing'] }, async ({ page }) => {
-  await page.setContent(`
+test(
+  'the tooltip sweep shows the tooltip of each trigger a pointer can reach and finds one outside the window',
+  { tag: ['@condition', '@error-guessing'] },
+  async ({ page }) => {
+    await page.setContent(`
     <button data-state="closed" data-tip="inside" style="position:fixed;left:200px;top:200px">A</button>
     <span data-state="closed" data-tip="outside" style="position:fixed;left:300px;top:200px">B</span>
     <button data-state="closed" data-tip="covered" style="position:fixed;left:400px;top:200px">C</button>
@@ -548,14 +567,15 @@ test('the tooltip sweep shows the tooltip of each trigger a pointer can reach an
         el.addEventListener('blur', () => document.querySelector('.ui-tooltip')?.remove());
       }
     </script>`);
-  const swept = await sweepTooltips(page);
-  expect(swept.shown).toEqual(['inside', 'outside']);
-  expect(swept.problems.map((p) => `${p.kind}:${p.text}`)).toEqual(['offscreen:outside']);
-  // A trigger inside what `skip` names is left out.
-  expect((await sweepTooltips(page, '[data-tip="outside"]')).shown).toEqual(['inside']);
-  expect(await page.locator('.ui-tooltip').count()).toBe(0);
-  expect(await page.locator('[tabindex]').count()).toBe(0);
-});
+    const swept = await sweepTooltips(page);
+    expect(swept.shown).toEqual(['inside', 'outside']);
+    expect(swept.problems.map((p) => `${p.kind}:${p.text}`)).toEqual(['offscreen:outside']);
+    // A trigger inside what `skip` names is left out.
+    expect((await sweepTooltips(page, '[data-tip="outside"]')).shown).toEqual(['inside']);
+    expect(await page.locator('.ui-tooltip').count()).toBe(0);
+    expect(await page.locator('[tabindex]').count()).toBe(0);
+  },
+);
 
 // The app's own tooltips open only on a keyboard focus, and the scans reach each screen with mouse clicks: the sweep must
 // still open them there, or every tooltip check passes on nothing.
@@ -587,7 +607,7 @@ const layoutLine = (theme: string, step: string, f: LayoutFault) => `${theme} ${
 const fitLine = (step: string, p: FitProblem) => `fit ${step}: ${p.kind} ${p.where} "${p.text}"`;
 
 for (const locale of LOCALES) {
-  test.describe(`layout and text fit in ${locale}`, () => {
+  test.describe(`layout and text fit in ${locale}`, { tag: [] }, () => {
     test.beforeEach(async ({ page }) => {
       test.setTimeout(120_000);
       // The dev log is on, as in a development build, so its entry in the side bar is scanned too.
@@ -599,7 +619,7 @@ for (const locale of LOCALES) {
     for (const [name, open] of Object.entries(SURFACES)) test(name, { tag: ['@equivalence'] }, ({ page }) => scanSurface(page, locale, name, open));
   });
 
-  test.describe(`layout and text fit of the phone layout in ${locale}`, () => {
+  test.describe(`layout and text fit of the phone layout in ${locale}`, { tag: [] }, () => {
     test.beforeEach(async ({ page }) => {
       test.setTimeout(120_000);
       await page.addInitScript((language) => localStorage.setItem('novira.settings', JSON.stringify({ state: { language, theme: 'dark' }, version: 0 })), locale);

@@ -49,35 +49,39 @@ test('a phone that asks while the dialog is closed gets a prompt on this page', 
   await expect(page.locator('[data-testid^="lan-device-"]')).toContainText('iPhone');
 });
 
-test('the away dialog turns the remote listener on, adds a phone with its passkey, and removes it', { tag: ['@state-transition'] }, async ({ page }) => {
-  await openApp(page, '?lan=open&remote');
-  // With a remote listener the item asks which one first: each choice is a dialog of its own.
-  await page.getByTestId('home-link-open').click();
-  await page.getByRole('menuitem', { name: msg('app.lan.menuHome') }).click();
-  await expect(page.getByTestId('home-link-code')).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(page.getByTestId('lan-panel')).toHaveCount(0);
-  await page.getByTestId('home-link-open').click();
-  await page.getByRole('menuitem', { name: msg('app.lan.menuAway') }).click();
-  await page.getByRole('switch', { name: msg('app.remote.switch') }).click();
-  await expect(page.getByTestId('remote-name')).toHaveText('pc.tail1234.ts.net');
-  await page.getByTestId('remote-enrol').click();
-  await expect(page.getByTestId('remote-code')).toBeVisible();
-  // The mock phone asks two seconds after the code.
-  const asking = page.locator('[data-testid^="remote-pending-"]');
-  await expect(asking).toHaveCount(1, { timeout: 15_000 });
-  await expect(asking).toContainText(/\d{3} \d{3}/);
-  await page.locator('[data-testid^="remote-allow-"]').click();
-  const passkey = page.locator('[data-testid^="remote-passkey-"]');
-  await expect(passkey).toContainText('iPhone');
-  await expect(page.getByTestId('remote-log')).toContainText(msg('app.remote.what.enrolled'));
-  // Removing takes a second press.
-  const forget = page.locator('[data-testid^="remote-forget-"]');
-  await forget.click();
-  await expect(passkey).toHaveCount(1);
-  await forget.click();
-  await expect(passkey).toHaveCount(0);
-});
+test(
+  'the away dialog turns the remote listener on, adds a phone with its passkey, and removes it',
+  { tag: ['@state-transition'] },
+  async ({ page }) => {
+    await openApp(page, '?lan=open&remote');
+    // With a remote listener the item asks which one first: each choice is a dialog of its own.
+    await page.getByTestId('home-link-open').click();
+    await page.getByRole('menuitem', { name: msg('app.lan.menuHome') }).click();
+    await expect(page.getByTestId('home-link-code')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('lan-panel')).toHaveCount(0);
+    await page.getByTestId('home-link-open').click();
+    await page.getByRole('menuitem', { name: msg('app.lan.menuAway') }).click();
+    await page.getByRole('switch', { name: msg('app.remote.switch') }).click();
+    await expect(page.getByTestId('remote-name')).toHaveText('pc.tail1234.ts.net');
+    await page.getByTestId('remote-enrol').click();
+    await expect(page.getByTestId('remote-code')).toBeVisible();
+    // The mock phone asks two seconds after the code.
+    const asking = page.locator('[data-testid^="remote-pending-"]');
+    await expect(asking).toHaveCount(1, { timeout: 15_000 });
+    await expect(asking).toContainText(/\d{3} \d{3}/);
+    await page.locator('[data-testid^="remote-allow-"]').click();
+    const passkey = page.locator('[data-testid^="remote-passkey-"]');
+    await expect(passkey).toContainText('iPhone');
+    await expect(page.getByTestId('remote-log')).toContainText(msg('app.remote.what.enrolled'));
+    // Removing takes a second press.
+    const forget = page.locator('[data-testid^="remote-forget-"]');
+    await forget.click();
+    await expect(passkey).toHaveCount(1);
+    await forget.click();
+    await expect(passkey).toHaveCount(0);
+  },
+);
 
 test('the away dialog says why the remote listener cannot open', { tag: ['@error-guessing'] }, async ({ page }) => {
   await openApp(page, '?lan=open&remote=missing');

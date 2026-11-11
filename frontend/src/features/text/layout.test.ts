@@ -7,14 +7,14 @@ const measure = (text: string, size: number) => [...text].length * size * 0.5;
 const style = (patch: Partial<TextStyle> = {}): TextStyle => ({ ...DEFAULT_TEXT_STYLE, fontSize: 20, lineHeight: 1.5, letterSpacing: 0, ...patch });
 
 describe('horizontal layout', () => {
-  it('keeps explicit line breaks and measures the block', { tags: ['condition'] }, () => {
+  it('keeps explicit line breaks and measures the block', { tags: ['equivalence'] }, () => {
     const b = layoutHorizontal('ab\ncdef', style(), null, measure);
     expect(b.lines.map((l) => l.text)).toEqual(['ab', 'cdef']);
     expect(b.width).toBe(40);
     expect(b.height).toBe(20 + 30);
   });
 
-  it('wraps at the box width and keeps English words whole', { tags: ['condition'] }, () => {
+  it('wraps at the box width and keeps English words whole', { tags: ['equivalence'] }, () => {
     const b = layoutHorizontal('hello world again', style(), 100, measure);
     expect(b.lines.map((l) => l.text)).toEqual(['hello', 'world', 'again']);
   });
@@ -37,7 +37,7 @@ describe('horizontal layout', () => {
 });
 
 describe('vertical layout', () => {
-  it('puts the first column on the right and wraps by rows', { tags: ['condition'] }, () => {
+  it('puts the first column on the right and wraps by rows', { tags: ['equivalence'] }, () => {
     const b = layoutVertical('あいうえお', style({ vertical: true }), 40);
     // 20 px cells, 40 px of height: two rows per column.
     expect(b.columns.map((c) => c.length)).toEqual([2, 2, 1]);
@@ -74,7 +74,7 @@ describe('fitting', () => {
     expect(bigger.height > 100.5 || bigger.width > 100.5).toBe(true);
   });
 
-  it('fits vertical text into the box height', { tags: ['condition'] }, () => {
+  it('fits vertical text into the box height', { tags: ['equivalence'] }, () => {
     const size = fitFontSize('あ'.repeat(40), style({ fontSize: 40, vertical: true }), box, measure);
     const block = layoutText('あ'.repeat(40), style({ fontSize: size, vertical: true }), box.height, measure);
     expect(block.width).toBeLessThanOrEqual(100.5);

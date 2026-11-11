@@ -14,8 +14,8 @@ const words = fc.oneof(
 );
 const collapsed = (text: string) => plainText(text).replace(/\s+/g, ' ').trim();
 
-describe('firstWords', () => {
-  it('is one line of at most 16 characters plus an ellipsis, with no space at either end', { tags: ['boundary'] }, () => {
+describe('firstWords', { tags: [] }, () => {
+  it('is one line of at most 16 characters plus an ellipsis, with no space at either end', { tags: ['boundary', 'error-guessing'] }, () => {
     check(
       fc.property(words, (text) => {
         const name = firstWords(text);
@@ -26,20 +26,24 @@ describe('firstWords', () => {
     );
   });
 
-  it('is the whole words when they are short, and otherwise their start followed by an ellipsis', { tags: ['error-guessing'] }, () => {
-    check(
-      fc.property(words, (text) => {
-        const whole = collapsed(text);
-        const name = firstWords(text);
-        if ([...whole].length <= 16) {
-          expect(name).toBe(whole);
-        } else {
-          expect(name.endsWith('…')).toBe(true);
-          expect(whole.startsWith(name.slice(0, -1))).toBe(true);
-        }
-      }),
-    );
-  });
+  it(
+    'is the whole words when they are short, and otherwise their start followed by an ellipsis',
+    { tags: ['boundary', 'condition'] },
+    () => {
+      check(
+        fc.property(words, (text) => {
+          const whole = collapsed(text);
+          const name = firstWords(text);
+          if ([...whole].length <= 16) {
+            expect(name).toBe(whole);
+          } else {
+            expect(name.endsWith('…')).toBe(true);
+            expect(whole.startsWith(name.slice(0, -1))).toBe(true);
+          }
+        }),
+      );
+    },
+  );
 
   it('shows the marks of the words as nothing', { tags: ['error-guessing'] }, () => {
     expect(firstWords('**bold**')).toBe('bold');

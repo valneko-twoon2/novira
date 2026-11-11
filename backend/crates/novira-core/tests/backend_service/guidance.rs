@@ -175,7 +175,7 @@ async fn the_worker_resolves_guidance_models_and_reads_their_pictures() {
     backend.shutdown();
 }
 
-// tags: error-guessing
+// tags: error-guessing, equivalence
 #[tokio::test]
 async fn wrong_or_missing_guidance_models_fail_the_job_with_a_reason() {
     let dir = tempfile::tempdir().unwrap();
@@ -229,7 +229,7 @@ async fn wrong_or_missing_guidance_models_fail_the_job_with_a_reason() {
     backend.shutdown();
 }
 
-// tags: scenario
+// tags: scenario, condition
 #[tokio::test]
 async fn regional_layers_are_kept_with_the_item_read_by_the_worker_and_remembered_by_the_picture() {
     let dir = tempfile::tempdir().unwrap();
@@ -293,7 +293,7 @@ async fn regional_layers_are_kept_with_the_item_read_by_the_worker_and_remembere
     );
     backend.shutdown();
 }
-// tags: error-guessing
+// tags: error-guessing, boundary
 #[tokio::test]
 async fn reference_pictures_are_kept_with_the_item_and_refused_by_a_model_that_cannot_take_them() {
     let dir = tempfile::tempdir().unwrap();

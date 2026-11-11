@@ -616,7 +616,7 @@ mod tests {
         assert_eq!(MAX_IMAGE_SIDE, 20_000);
     }
 
-    // tags: decision-table
+    // tags: state-transition, error-guessing
     #[test]
     fn a_picture_is_in_the_gallery_or_in_the_trash_only_when_its_file_is() {
         let dir = tempfile::tempdir().unwrap();
@@ -700,7 +700,7 @@ mod tests {
         }
     }
 
-    // tags: error-guessing
+    // tags: equivalence, error-guessing
     #[test]
     fn non_png_input_is_converted_and_broken_input_refused() {
         let img = image::RgbImage::from_pixel(5, 5, image::Rgb([0, 0, 0]));
@@ -716,7 +716,7 @@ mod tests {
         assert!(to_png(b"hello").is_err());
     }
 
-    // tags: error-guessing, scenario
+    // tags: error-guessing
     #[test]
     fn a_png_whose_chunks_are_whole_but_whose_pixels_are_damaged_is_refused() {
         // Found by tests/fuzz_inputs.rs: the chunk list read fine, so the file was kept, and the gallery could not show it.
@@ -739,7 +739,7 @@ mod tests {
         }
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn the_pixels_handed_back_are_the_ones_the_stored_png_decodes_to() {
         let img = image::DynamicImage::ImageRgb8(image::RgbImage::from_fn(7, 5, |x, y| {
@@ -795,7 +795,7 @@ mod tests {
         assert!(files.store_video_decoded(&name, b"mp4", &pixels).is_err());
     }
 
-    // tags: condition
+    // tags: scenario
     #[test]
     fn store_writes_original_and_thumbnail() {
         let dir = tempfile::tempdir().unwrap();

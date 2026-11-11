@@ -53,8 +53,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('assistant chat sessions', () => {
-  it('shows the current session and lists past chats most recent first', { tags: ['boundary', 'scenario'] }, async () => {
+describe('assistant chat sessions', { tags: [] }, () => {
+  it('shows the current session and lists past chats most recent first', { tags: ['scenario'] }, async () => {
     renderWindow();
     await screen.findByTestId('agent-session-toggle');
     expect(title()).toBe('a cat on a roof');
@@ -72,7 +72,7 @@ describe('assistant chat sessions', () => {
     expect(screen.getByText('reply to a dog in the rain')).toBeTruthy();
   });
 
-  it('starts a new chat that becomes a session with its first message', { tags: ['boundary', 'state-transition'] }, async () => {
+  it('starts a new chat that becomes a session with its first message', { tags: ['state-transition'] }, async () => {
     let resolve: (r: AgentReply) => void = () => {};
     vi.spyOn(backend, 'agentChat').mockImplementation(() => new Promise<AgentReply>((r) => (resolve = r)));
     renderWindow();
@@ -92,7 +92,7 @@ describe('assistant chat sessions', () => {
     expect(useAgent.getState().sessions).toHaveLength(3);
   });
 
-  it('renames a session from the list, and Escape cancels', { tags: ['state-transition', 'scenario'] }, async () => {
+  it('renames a session from the list, and Escape cancels', { tags: ['state-transition'] }, async () => {
     renderWindow();
     openList();
     fireEvent.click(within(rows()[1]!).getByTestId('agent-session-rename'));
@@ -108,7 +108,7 @@ describe('assistant chat sessions', () => {
     expect(useAgent.getState().sessions.find((s) => s.id === 'older')!.title).toBe('Roof cat');
   });
 
-  it('deletes a session only after confirming', { tags: ['scenario'] }, async () => {
+  it('deletes a session only after confirming', { tags: ['condition'] }, async () => {
     renderWindow();
     openList();
     fireEvent.click(within(rows()[0]!).getByTestId('agent-session-delete'));
@@ -125,7 +125,7 @@ describe('assistant chat sessions', () => {
     expect(screen.getByText(t('agent.session.empty'))).toBeTruthy();
   });
 
-  it('cannot undo a change restored from an earlier run', { tags: ['error-guessing', 'state-transition'] }, async () => {
+  it('cannot undo a change restored from an earlier run', { tags: ['condition'] }, async () => {
     useAgent.setState({
       sessions: [
         {

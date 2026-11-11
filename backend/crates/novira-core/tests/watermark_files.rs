@@ -71,7 +71,7 @@ fn options(format: ExportFormat) -> ExportOptions {
     }
 }
 
-// tags: scenario
+// tags: equivalence
 #[test]
 fn a_picture_keeps_its_type_and_size_and_gives_its_mark_back() {
     let Some(found) = found() else { return };
@@ -106,7 +106,7 @@ fn a_picture_keeps_its_type_and_size_and_gives_its_mark_back() {
     assert_eq!(w.read(texture(256)).unwrap(), None);
 }
 
-// tags: error-guessing
+// tags: boundary, error-guessing
 #[test]
 fn pictures_the_watermark_cannot_take_are_refused() {
     let Some(found) = found() else { return };
@@ -200,7 +200,7 @@ async fn exports_with_the_watermark_download_as_one_file_or_a_zip_and_read_back(
     assert!(!plain.watermark_found && plain.original_name.is_none());
 }
 
-// tags: error-guessing
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_damaged_model_file_fails_the_export_and_is_removed_for_the_next_download() {
     let Some(found) = found() else { return };

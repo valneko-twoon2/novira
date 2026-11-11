@@ -19,7 +19,7 @@ const setup = (initial = 'Old name') => {
   return { onSubmit, onClose, input: screen.getByTestId('name-dialog-input') as HTMLInputElement, ok: screen.getByTestId('name-dialog-ok') as HTMLButtonElement };
 };
 
-describe('NameDialog', () => {
+describe('NameDialog', { tags: [] }, () => {
   it('starts with the current name and submits it trimmed with the save button, then closes', { tags: ['scenario'] }, () => {
     const { onSubmit, onClose, input, ok } = setup();
     expect(input.value).toBe('Old name');
@@ -29,14 +29,14 @@ describe('NameDialog', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('submits with the Enter key too', { tags: ['condition'] }, () => {
+  it('submits with the Enter key too', { tags: ['equivalence'] }, () => {
     const { onSubmit, input } = setup();
     fireEvent.change(input, { target: { value: 'By keyboard' } });
     fireEvent.submit(input.closest('form')!);
     expect(onSubmit).toHaveBeenCalledWith('By keyboard');
   });
 
-  it('refuses a blank name: the button is disabled and nothing is submitted', { tags: ['boundary'] }, () => {
+  it('refuses a blank name: the button is disabled and nothing is submitted', { tags: ['error-guessing', 'boundary'] }, () => {
     const { onSubmit, onClose, input, ok } = setup();
     fireEvent.change(input, { target: { value: '   ' } });
     expect(ok.disabled).toBe(true);

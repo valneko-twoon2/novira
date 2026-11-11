@@ -16,7 +16,7 @@ const picture = fc
   );
 
 describe('opaqueBounds (properties)', () => {
-  it('is null exactly when no pixel is above the threshold, otherwise the tight box of those pixels', { tags: ['error-guessing'] }, () => {
+  it('is null exactly when no pixel is above the threshold, otherwise the tight box of those pixels', { tags: ['boundary'] }, () => {
     check(
       fc.property(picture, fc.integer({ min: 0, max: 40 }), ({ width, height, alphas, data }, threshold) => {
         const box = opaqueBounds({ width, height, data }, threshold);

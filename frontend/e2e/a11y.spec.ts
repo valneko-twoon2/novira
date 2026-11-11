@@ -24,7 +24,7 @@ async function scan(page: Page, surface: string): Promise<void> {
 }
 
 for (const tab of TABS) {
-  test(`${tab} tab has no new accessibility violations`, { tag: ['@scenario'] }, async ({ page }) => {
+  test(`${tab} tab has no new accessibility violations`, { tag: ['@equivalence'] }, async ({ page }) => {
     await openApp(page);
     await showTab(page, tab);
     await scan(page, tab);
@@ -79,7 +79,7 @@ const SURFACES: Record<string, (page: Page) => Promise<void>> = {
 };
 
 for (const [name, open] of Object.entries(SURFACES)) {
-  test(`${name} has no new accessibility violations`, { tag: ['@scenario'] }, async ({ page }) => {
+  test(`${name} has no new accessibility violations`, { tag: ['@equivalence'] }, async ({ page }) => {
     await openApp(page);
     await open(page);
     await page.waitForTimeout(300);
@@ -87,7 +87,7 @@ for (const [name, open] of Object.entries(SURFACES)) {
   });
 }
 
-test.describe('phone layout', () => {
+test.describe('phone layout', { tag: [] }, () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize(PHONE_VIEWPORT);
     await page.goto('/');

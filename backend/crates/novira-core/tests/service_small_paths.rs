@@ -8,7 +8,7 @@ use common::*;
 use novira_core::types::*;
 use std::sync::Arc;
 
-// tags: scenario
+// tags: state-transition
 #[tokio::test]
 async fn a_picture_can_be_marked_as_intermediate_after_the_fact() {
     let dir = tempfile::tempdir().unwrap();
@@ -44,7 +44,7 @@ async fn clearing_the_queue_stops_the_job_that_is_running() {
     assert!(backend.queue_snapshot().items.is_empty());
 }
 
-// tags: scenario
+// tags: state-transition
 #[tokio::test]
 async fn low_memory_mode_can_be_turned_on_and_off_again() {
     let dir = tempfile::tempdir().unwrap();

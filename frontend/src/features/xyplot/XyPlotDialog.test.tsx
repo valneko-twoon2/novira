@@ -84,7 +84,7 @@ const openDialog = async () => {
   await screen.findByTestId('xyplot-dialog');
 };
 
-describe('choosing the axes', () => {
+describe('choosing the axes', { tags: [] }, () => {
   it('asks for an axis first, then fills in a starting list of values and counts the pictures', { tags: ['scenario'] }, async () => {
     await openDialog();
     expect(screen.getByTestId('xyplot-problem').textContent).toBe(t('xyplot.problem.noAxis'));
@@ -96,22 +96,26 @@ describe('choosing the axes', () => {
     expect(screen.getByTestId('xyplot-summary').textContent).toBe(t('xyplot.summary', { columns: 3, rows: 4, count: 12 }));
   });
 
-  it('refuses the same setting twice, unreadable numbers, too many values and an empty list', { tags: ['error-guessing', 'boundary'] }, async () => {
-    await openDialog();
-    pick(xAxis(), 'steps');
-    pick(yAxis(), 'steps');
-    expect(screen.getByTestId('xyplot-problem').textContent).toBe(t('xyplot.problem.sameAxis'));
-    pick(yAxis(), 'none');
-    fireEvent.change(screen.getByTestId('xyplot-x-values'), { target: { value: '10, abc' } });
-    expect(screen.getByText(t('xyplot.error.invalid'))).toBeTruthy();
-    expect((screen.getByTestId('xyplot-run') as HTMLButtonElement).disabled).toBe(true);
-    fireEvent.change(screen.getByTestId('xyplot-x-values'), { target: { value: '1 2 3 4 5 6 7 8 9' } });
-    expect(screen.getByText(t('xyplot.error.tooMany', { max: 8 }))).toBeTruthy();
-    fireEvent.change(screen.getByTestId('xyplot-x-values'), { target: { value: ' ' } });
-    expect(screen.getAllByText(t('xyplot.error.empty')).length).toBeGreaterThan(0);
-  });
+  it(
+    'refuses the same setting twice, unreadable numbers, too many values and an empty list',
+    { tags: ['error-guessing', 'boundary'] },
+    async () => {
+      await openDialog();
+      pick(xAxis(), 'steps');
+      pick(yAxis(), 'steps');
+      expect(screen.getByTestId('xyplot-problem').textContent).toBe(t('xyplot.problem.sameAxis'));
+      pick(yAxis(), 'none');
+      fireEvent.change(screen.getByTestId('xyplot-x-values'), { target: { value: '10, abc' } });
+      expect(screen.getByText(t('xyplot.error.invalid'))).toBeTruthy();
+      expect((screen.getByTestId('xyplot-run') as HTMLButtonElement).disabled).toBe(true);
+      fireEvent.change(screen.getByTestId('xyplot-x-values'), { target: { value: '1 2 3 4 5 6 7 8 9' } });
+      expect(screen.getByText(t('xyplot.error.tooMany', { max: 8 }))).toBeTruthy();
+      fireEvent.change(screen.getByTestId('xyplot-x-values'), { target: { value: ' ' } });
+      expect(screen.getAllByText(t('xyplot.error.empty')).length).toBeGreaterThan(0);
+    },
+  );
 
-  it('refuses a grid of more than 36 pictures', { tags: ['error-guessing', 'boundary'] }, async () => {
+  it('refuses a grid of more than 36 pictures', { tags: ['boundary', 'error-guessing'] }, async () => {
     await openDialog();
     pick(xAxis(), 'seed');
     fireEvent.change(screen.getByTestId('xyplot-x-values'), { target: { value: '1 2 3 4 5 6 7' } });
@@ -120,38 +124,46 @@ describe('choosing the axes', () => {
     expect(screen.getByTestId('xyplot-problem').textContent).toBe(t('xyplot.problem.tooMany', { max: 36 }));
   });
 
-  it('lists the schedulers and the models of the same family as checkboxes, and says when there are none', { tags: ['scenario'] }, async () => {
-    useModels.setState({ models: [] });
-    await openDialog();
-    pick(xAxis(), 'scheduler');
-    const choices = screen.getByTestId('xyplot-x-choices');
-    expect(screen.getByTestId('xyplot-problem').textContent).toBe(t('xyplot.problem.empty'));
-    fireEvent.click(screen.getByLabelText('euler'));
-    fireEvent.click(screen.getByLabelText('dpmpp_2m'));
-    expect(choices.querySelectorAll('input:checked')).toHaveLength(2);
-    fireEvent.click(screen.getByLabelText('euler'));
-    expect(choices.querySelectorAll('input:checked')).toHaveLength(1);
-    pick(yAxis(), 'model');
-    expect(screen.getByText(t('xyplot.noModels'))).toBeTruthy();
-  });
+  it(
+    'lists the schedulers and the models of the same family as checkboxes, and says when there are none',
+    { tags: ['condition'] },
+    async () => {
+      useModels.setState({ models: [] });
+      await openDialog();
+      pick(xAxis(), 'scheduler');
+      const choices = screen.getByTestId('xyplot-x-choices');
+      expect(screen.getByTestId('xyplot-problem').textContent).toBe(t('xyplot.problem.empty'));
+      fireEvent.click(screen.getByLabelText('euler'));
+      fireEvent.click(screen.getByLabelText('dpmpp_2m'));
+      expect(choices.querySelectorAll('input:checked')).toHaveLength(2);
+      fireEvent.click(screen.getByLabelText('euler'));
+      expect(choices.querySelectorAll('input:checked')).toHaveLength(1);
+      pick(yAxis(), 'model');
+      expect(screen.getByText(t('xyplot.noModels'))).toBeTruthy();
+    },
+  );
 
-  it('offers the diffusion models of a newer family as the Generate tab draws them, not only main models', { tags: ['scenario'] }, async () => {
-    useModels.setState({
-      models: [
-        { key: 'a1', name: 'NyaNya Anima', base: 'anima', type: 'diffusion_model', path: 'nyanya.safetensors' },
-        { key: 'a2', name: 'Other Anima', base: 'anima', type: 'diffusion_model', path: 'other.safetensors' },
-        { key: 'x1', name: 'Anime XL', base: 'sdxl', type: 'main', path: 'animeXL.safetensors' },
-        { key: 'l1', name: 'Anima Style', base: 'anima', type: 'lora', path: 'style.safetensors' },
-      ] as never,
-    });
-    useParams.setState({ modelKey: 'a1' });
-    await openDialog();
-    pick(xAxis(), 'model');
-    const choices = screen.getByTestId('xyplot-x-choices');
-    expect([...choices.querySelectorAll('label')].map((l) => l.textContent)).toEqual(['NyaNya Anima', 'Other Anima']);
-  });
+  it(
+    'offers the diffusion models of a newer family as the Generate tab draws them, not only main models',
+    { tags: ['condition'] },
+    async () => {
+      useModels.setState({
+        models: [
+          { key: 'a1', name: 'NyaNya Anima', base: 'anima', type: 'diffusion_model', path: 'nyanya.safetensors' },
+          { key: 'a2', name: 'Other Anima', base: 'anima', type: 'diffusion_model', path: 'other.safetensors' },
+          { key: 'x1', name: 'Anime XL', base: 'sdxl', type: 'main', path: 'animeXL.safetensors' },
+          { key: 'l1', name: 'Anima Style', base: 'anima', type: 'lora', path: 'style.safetensors' },
+        ] as never,
+      });
+      useParams.setState({ modelKey: 'a1' });
+      await openDialog();
+      pick(xAxis(), 'model');
+      const choices = screen.getByTestId('xyplot-x-choices');
+      expect([...choices.querySelectorAll('label')].map((l) => l.textContent)).toEqual(['NyaNya Anima', 'Other Anima']);
+    },
+  );
 
-  it('takes one prompt per line and shows a note for the denoising strength', { tags: ['scenario'] }, async () => {
+  it('takes one prompt per line and shows a note for the denoising strength', { tags: ['equivalence'] }, async () => {
     await openDialog();
     pick(xAxis(), 'prompt');
     expect((screen.getByTestId('xyplot-x-values') as HTMLTextAreaElement).value).toContain('smiling');
@@ -161,7 +173,7 @@ describe('choosing the axes', () => {
   });
 });
 
-describe('making the grid', () => {
+describe('making the grid', { tags: [] }, () => {
   it('runs every cell with the same seed, saves the table to the gallery and opens it in the viewer', { tags: ['scenario'] }, async () => {
     await openDialog();
     pick(xAxis(), 'steps');
@@ -185,7 +197,7 @@ describe('making the grid', () => {
     expect(useXyPlotDialog.getState().isOpen).toBe(false);
   });
 
-  it('draws only one axis with a dash for the unused one in the title', { tags: ['scenario'] }, async () => {
+  it('draws only one axis with a dash for the unused one in the title', { tags: ['condition'] }, async () => {
     await openDialog();
     pick(yAxis(), 'seed');
     fireEvent.click(screen.getByTestId('xyplot-run'));
@@ -207,32 +219,40 @@ describe('making the grid', () => {
     expect(screen.getByText(t('xyplot.partFailed', { count: 2 }))).toBeTruthy();
   });
 
-  it('reports the engine message when every picture fails, and the generic one when none could be loaded', { tags: ['error-guessing'] }, async () => {
-    vi.mocked(runJob).mockRejectedValue(new Error('out of memory'));
-    await openDialog();
-    pick(xAxis(), 'steps');
-    fireEvent.click(screen.getByTestId('xyplot-run'));
-    expect((await screen.findByRole('alert')).textContent).toContain('out of memory');
-    expect(drawGrid).not.toHaveBeenCalled();
+  it(
+    'reports the engine message when every picture fails, and the generic one when none could be loaded',
+    { tags: ['error-guessing'] },
+    async () => {
+      vi.mocked(runJob).mockRejectedValue(new Error('out of memory'));
+      await openDialog();
+      pick(xAxis(), 'steps');
+      fireEvent.click(screen.getByTestId('xyplot-run'));
+      expect((await screen.findByRole('alert')).textContent).toContain('out of memory');
+      expect(drawGrid).not.toHaveBeenCalled();
 
-    vi.mocked(runJob).mockResolvedValue(picture('bad.png'));
-    fireEvent.click(screen.getByTestId('xyplot-run'));
-    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain(t('xyplot.failed')));
-    expect(screen.getByRole('alert').textContent).not.toContain('out of memory');
-  });
+      vi.mocked(runJob).mockResolvedValue(picture('bad.png'));
+      fireEvent.click(screen.getByTestId('xyplot-run'));
+      await waitFor(() => expect(screen.getByRole('alert').textContent).toContain(t('xyplot.failed')));
+      expect(screen.getByRole('alert').textContent).not.toContain('out of memory');
+    },
+  );
 
-  it('says the generation is not set up when no request can be built, and shows non-Error failures as text', { tags: ['error-guessing'] }, async () => {
-    vi.mocked(buildRequestFor).mockResolvedValueOnce(null);
-    await openDialog();
-    pick(xAxis(), 'steps');
-    fireEvent.click(screen.getByTestId('xyplot-run'));
-    expect((await screen.findByRole('alert')).textContent).toContain(t('xyplot.notReady'));
-    vi.mocked(drawGrid).mockRejectedValueOnce('plain text');
-    fireEvent.click(screen.getByTestId('xyplot-run'));
-    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('plain text'));
-  });
+  it(
+    'says the generation is not set up when no request can be built, and shows non-Error failures as text',
+    { tags: ['error-guessing'] },
+    async () => {
+      vi.mocked(buildRequestFor).mockResolvedValueOnce(null);
+      await openDialog();
+      pick(xAxis(), 'steps');
+      fireEvent.click(screen.getByTestId('xyplot-run'));
+      expect((await screen.findByRole('alert')).textContent).toContain(t('xyplot.notReady'));
+      vi.mocked(drawGrid).mockRejectedValueOnce('plain text');
+      fireEvent.click(screen.getByTestId('xyplot-run'));
+      await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('plain text'));
+    },
+  );
 
-  it('cannot start while the Generate form is not ready', { tags: ['scenario'] }, async () => {
+  it('cannot start while the Generate form is not ready', { tags: ['condition'] }, async () => {
     vi.mocked(useReadiness).mockReturnValue(['No model chosen']);
     await openDialog();
     pick(xAxis(), 'steps');
@@ -240,7 +260,7 @@ describe('making the grid', () => {
     expect((screen.getByTestId('xyplot-run') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('shows the progress while running and stops quietly when cancelled', { tags: ['scenario'] }, async () => {
+  it('shows the progress while running and stops quietly when cancelled', { tags: ['state-transition'] }, async () => {
     vi.mocked(runJob).mockImplementation((_request, signal) => new Promise((_resolve, reject) => signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')))));
     await openDialog();
     pick(xAxis(), 'steps');

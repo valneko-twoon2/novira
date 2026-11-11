@@ -120,7 +120,7 @@ fn terminal_events(events: &Events, kind: PackKind) -> usize {
         .count()
 }
 
-// tags: error-guessing, boundary
+// tags: state-transition, condition
 #[test]
 fn a_pack_ends_as_ready_or_failed_exactly_as_its_files_and_the_server_say() {
     let rt = tokio::runtime::Builder::new_multi_thread()

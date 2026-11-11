@@ -23,14 +23,14 @@ const line = (n = 2): ComicStroke => ({ points: Array.from({ length: n * 2 }, (_
 const drawing = (id: string, name: string, strokes: unknown[] = []) => ({ id, kind: 'drawing', name, strokes });
 const strokePoints = (layers: ComicLayer[]) => layers.reduce((n, l) => n + (l.kind === 'drawing' ? l.strokes.reduce((m, s) => m + s.points.length / 2, 0) : 0), 0);
 
-describe('reading saved version 1 layers', () => {
-  it('gives a page saved before there were layers the default stack', { tags: ['condition', 'old-data'] }, () => {
+describe('reading saved version 1 layers', { tags: [] }, () => {
+  it('gives a page saved before there were layers the default stack', { tags: ['old-data', 'condition'] }, () => {
     expect(parseLayers(undefined)).toEqual(defaultLayers());
     expect(parseLayers('not a list')).toEqual(defaultLayers());
     expect(defaultLayers().map((l) => l.id)).toEqual([PANELS_LAYER_ID, BALLOONS_LAYER_ID]);
   });
 
-  it('keeps every field in its range and drops what cannot be read', { tags: ['error-guessing', 'old-data'] }, () => {
+  it('keeps every field in its range and drops what cannot be read', { tags: ['old-data', 'error-guessing', 'boundary'] }, () => {
     const layers = parseLayers([
       { id: 'panels', kind: 'panels', opacity: 7, blend: 'overlay', visible: 'no' },
       { id: 'a', kind: 'drawing', name: ' Line\nart ', opacity: -1, strokes: [{ points: [0.5, 0.5, 9, -9], color: 'red', width: 99, erase: true }, { points: [] }, { points: [0.1, 'x'] }, 'junk'] },
@@ -47,15 +47,19 @@ describe('reading saved version 1 layers', () => {
     expect(layers[2]).toMatchObject({ imageName: null, view: { cx: 2, scale: 0.1 } });
   });
 
-  it('keeps one layer per id and one of each built-in layer, and puts a missing built-in layer back', { tags: ['error-guessing', 'old-data'] }, () => {
-    const user = drawing('ink', 'Ink');
-    const layers = parseLayers([{ id: 'balloons', kind: 'balloons' }, user, { ...user, name: 'Copy' }, { id: 'other', kind: 'balloons' }]);
-    // The balloons were saved under the drawing: they stay there; the panels were missing and go to the bottom.
-    expect(kinds(layers)).toEqual(['panels', 'balloons', 'drawing']);
-    expect(layers.filter((l) => l.id === 'ink')).toHaveLength(1);
-  });
+  it(
+    'keeps one layer per id and one of each built-in layer, and puts a missing built-in layer back',
+    { tags: ['old-data', 'condition'] },
+    () => {
+      const user = drawing('ink', 'Ink');
+      const layers = parseLayers([{ id: 'balloons', kind: 'balloons' }, user, { ...user, name: 'Copy' }, { id: 'other', kind: 'balloons' }]);
+      // The balloons were saved under the drawing: they stay there; the panels were missing and go to the bottom.
+      expect(kinds(layers)).toEqual(['panels', 'balloons', 'drawing']);
+      expect(layers.filter((l) => l.id === 'ink')).toHaveLength(1);
+    },
+  );
 
-  it('cuts a page to the most layers it may hold, keeping the built-in layers', { tags: ['boundary', 'old-data'] }, () => {
+  it('cuts a page to the most layers it may hold, keeping the built-in layers', { tags: ['old-data', 'boundary'] }, () => {
     const many = [...defaultLayers(), ...Array.from({ length: MAX_LAYERS_PER_PAGE + 5 }, (_, i) => drawing(`l${i}`, `L${i}`))];
     const layers = parseLayers(many);
     expect(layers).toHaveLength(MAX_LAYERS_PER_PAGE);
@@ -63,16 +67,20 @@ describe('reading saved version 1 layers', () => {
     expect(layers.at(-1)!.name).toBe(`L${MAX_LAYERS_PER_PAGE - 3}`);
   });
 
-  it('holds the drawings to the most strokes of a layer, points of a stroke and points of a page', { tags: ['boundary', 'old-data'] }, () => {
-    const long = { points: Array.from({ length: (MAX_POINTS_PER_STROKE + 10) * 2 }, () => 0.5) };
-    expect(parseStroke(long)!.points).toHaveLength(MAX_POINTS_PER_STROKE * 2);
-    const crowded = drawing('a', 'A', Array.from({ length: MAX_STROKES_PER_LAYER + 3 }, () => line(1)));
-    expect((parseLayers([crowded])[1] as DrawingLayer).strokes).toHaveLength(MAX_STROKES_PER_LAYER);
-    const heavy = (id: string) => drawing(id, 'H', Array.from({ length: 20 }, () => ({ ...line(0), points: long.points })));
-    expect(strokePoints(parseLayers([heavy('h1'), heavy('h2'), heavy('h3')]))).toBe(MAX_POINTS_PER_PAGE);
-  });
+  it(
+    'holds the drawings to the most strokes of a layer, points of a stroke and points of a page',
+    { tags: ['old-data', 'boundary'] },
+    () => {
+      const long = { points: Array.from({ length: (MAX_POINTS_PER_STROKE + 10) * 2 }, () => 0.5) };
+      expect(parseStroke(long)!.points).toHaveLength(MAX_POINTS_PER_STROKE * 2);
+      const crowded = drawing('a', 'A', Array.from({ length: MAX_STROKES_PER_LAYER + 3 }, () => line(1)));
+      expect((parseLayers([crowded])[1] as DrawingLayer).strokes).toHaveLength(MAX_STROKES_PER_LAYER);
+      const heavy = (id: string) => drawing(id, 'H', Array.from({ length: 20 }, () => ({ ...line(0), points: long.points })));
+      expect(strokePoints(parseLayers([heavy('h1'), heavy('h2'), heavy('h3')]))).toBe(MAX_POINTS_PER_PAGE);
+    },
+  );
 
-  it('keeps a name to one line of at most LAYER_NAME_MAX characters', { tags: ['boundary', 'old-data'] }, () => {
+  it('keeps a name to one line of at most LAYER_NAME_MAX characters', { tags: ['old-data', 'boundary'] }, () => {
     const [, layer] = parseLayers([{ id: 'i', kind: 'image', name: 'x'.repeat(200) }]);
     expect(layer!.name).toHaveLength(LAYER_NAME_MAX);
   });

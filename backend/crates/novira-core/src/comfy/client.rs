@@ -1320,7 +1320,7 @@ mod tests {
         assert_eq!(parse_ws_text("not json", "a"), WsEvent::Other);
     }
 
-    // tags: equivalence
+    // tags: boundary, equivalence
     #[test]
     fn two_sampling_passes_count_on_instead_of_starting_over() {
         // One pass: as ComfyUI sends it.
@@ -1336,7 +1336,7 @@ mod tests {
         );
     }
 
-    // tags: condition
+    // tags: equivalence, error-guessing
     #[test]
     fn previews_become_data_urls() {
         let mut frame = 1u32.to_be_bytes().to_vec();
@@ -1370,7 +1370,7 @@ mod tests {
         );
     }
 
-    // tags: equivalence
+    // tags: decision-table
     #[test]
     fn only_the_end_messages_of_our_own_prompt_end_the_job() {
         let msg = |kind: &str, id: &str, node: &str| {
@@ -1415,7 +1415,7 @@ mod tests {
         ));
     }
 
-    // tags: state-transition
+    // tags: condition
     #[test]
     fn a_history_entry_is_done_when_completed_or_ended_with_a_status() {
         let done = |v: serde_json::Value| is_done(&v);
@@ -1459,7 +1459,7 @@ mod tests {
         );
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn a_result_file_is_told_by_its_extension() {
         let kind = |n: &str| result_kind(n).unwrap();
@@ -1474,7 +1474,7 @@ mod tests {
         }
     }
 
-    // tags: condition
+    // tags: condition, error-guessing
     #[test]
     fn ws_url_follows_the_base_url() {
         let e = ComfyEngine::new("http://127.0.0.1:8188", None, Duration::from_secs(1)).unwrap();

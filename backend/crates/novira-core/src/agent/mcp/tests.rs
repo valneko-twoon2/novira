@@ -120,7 +120,7 @@ async fn bad_arguments_and_unknown_tools_are_tool_errors_that_never_reach_the_ha
     assert!(echo.seen.lock().unwrap().is_empty());
 }
 
-// tags: scenario
+// tags: condition
 #[tokio::test]
 async fn the_read_gated_flag_goes_with_the_call() {
     let (server, echo) = server(10).await;
@@ -176,7 +176,7 @@ async fn requests_without_the_token_or_from_another_host_or_a_web_page_are_refus
     assert_eq!(raw(&server, localhost).await.0, 200);
 }
 
-// tags: boundary
+// tags: boundary, error-guessing
 #[tokio::test]
 async fn bodies_and_heads_are_capped_and_must_be_json_with_a_length() {
     let (server, _) = server(10).await;
@@ -247,7 +247,7 @@ async fn a_request_stops_calling_tools_at_its_cap() {
     assert_eq!(echo.seen.lock().unwrap().len(), 2);
 }
 
-// tags: condition
+// tags: scenario
 #[tokio::test]
 async fn two_requests_on_one_connection_are_both_answered() {
     let (server, _) = server(10).await;
@@ -271,7 +271,7 @@ async fn two_requests_on_one_connection_are_both_answered() {
     );
 }
 
-// tags: error-guessing, state-transition
+// tags: state-transition
 #[tokio::test]
 async fn a_dropped_server_stops_listening() {
     let (server, _) = server(10).await;
@@ -281,7 +281,7 @@ async fn a_dropped_server_stops_listening() {
     assert!(TcpStream::connect(addr).await.is_err());
 }
 
-// tags: scenario
+// tags: condition
 #[test]
 fn a_picture_goes_with_the_text_as_image_content() {
     let plain = call_result(ToolOutcome::ok("words"));

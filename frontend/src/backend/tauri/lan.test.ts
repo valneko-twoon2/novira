@@ -27,10 +27,10 @@ function answer(status: number, body: unknown) {
   });
 }
 
-describe('the desktop app home network calls', () => {
+describe('the desktop app home network calls', { tags: [] }, () => {
   afterEach(() => clearMocks());
 
-  it('name commands the shell registers, with its argument names', { tags: ['condition'] }, async () => {
+  it('name commands the shell registers, with its argument names', { tags: ['equivalence'] }, async () => {
     const shell = shellCommands();
     const registered = read('backend/src-tauri/src/command_list.rs');
     expect([...shell.keys()].sort()).toEqual(Object.values(LAN_COMMANDS).sort());
@@ -81,20 +81,24 @@ describe('the desktop app home network calls', () => {
     expect(calls[0]!.payload).toEqual({ gatewayMac: '02:11:22:33:44:55', label: 'home' });
   });
 
-  it('read the state and a pairing code from the answer, and nothing from a refusal', { tags: ['error-guessing'] }, async () => {
-    const state = { open: true, address: '192.168.1.5', port: 8124, devices: [], pending: [] };
-    answer(200, state);
-    expect(await tauriLanApi.state()).toEqual(state);
-    const code = { url: 'https://192.168.1.5:8124/pair#c0de', size: 2, modules: '1001', expiresIn: 120 };
-    answer(200, code);
-    expect(await tauriLanApi.pairingCode()).toEqual(code);
-    answer(200, { ...code, modules: '100' });
-    expect(await tauriLanApi.pairingCode()).toBeNull();
-    // Before the backend is open the shell answers 404, so the item stays hidden.
-    answer(404, { code: 'no_lan_control', error: 'not started' });
-    expect(await tauriLanApi.state()).toBeNull();
-    expect(await tauriLanApi.pairingCode()).toBeNull();
-  });
+  it(
+    'read the state and a pairing code from the answer, and nothing from a refusal',
+    { tags: ['error-guessing', 'boundary'] },
+    async () => {
+      const state = { open: true, address: '192.168.1.5', port: 8124, devices: [], pending: [] };
+      answer(200, state);
+      expect(await tauriLanApi.state()).toEqual(state);
+      const code = { url: 'https://192.168.1.5:8124/pair#c0de', size: 2, modules: '1001', expiresIn: 120 };
+      answer(200, code);
+      expect(await tauriLanApi.pairingCode()).toEqual(code);
+      answer(200, { ...code, modules: '100' });
+      expect(await tauriLanApi.pairingCode()).toBeNull();
+      // Before the backend is open the shell answers 404, so the item stays hidden.
+      answer(404, { code: 'no_lan_control', error: 'not started' });
+      expect(await tauriLanApi.state()).toBeNull();
+      expect(await tauriLanApi.pairingCode()).toBeNull();
+    },
+  );
 
   it('bring a refusal back with its reason, and a failed call as offline', { tags: ['error-guessing'] }, async () => {
     answer(409, { code: 'untrusted_network', error: 'not trusted yet', gatewayMac: '02:11:22:33:44:55' });

@@ -4,7 +4,7 @@ import { CIVITAI_PAGE_SIZE, searchCivitaiModels } from './civitaiSearch';
 
 const base: CivitaiSearchParams = { query: '', kind: 'all', baseModel: 'all', sort: 'downloads', period: 'all', includeNsfw: true };
 
-describe('searchCivitaiModels', () => {
+describe('searchCivitaiModels', { tags: [] }, () => {
   it('paginates by cursor without overlap', { tags: ['boundary'] }, () => {
     const a = searchCivitaiModels(base);
     expect(a.items).toHaveLength(CIVITAI_PAGE_SIZE);

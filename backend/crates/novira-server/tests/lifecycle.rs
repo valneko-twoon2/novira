@@ -2,7 +2,7 @@
 mod common;
 use common::*;
 
-// tags: scenario
+// tags: state-transition
 #[tokio::test]
 async fn it_listens_on_loopback_only_and_stops() {
     let f = Fixture::start().await;
@@ -20,7 +20,7 @@ async fn it_listens_on_loopback_only_and_stops() {
     );
 }
 
-// tags: error-guessing
+// tags: error-guessing, condition
 #[tokio::test]
 async fn a_folder_without_a_built_frontend_is_refused() {
     let data = tempfile::tempdir().unwrap();

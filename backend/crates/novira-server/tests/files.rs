@@ -3,7 +3,7 @@ mod common;
 use common::*;
 use novira_server::{IMAGE_URL_BASE, TOKEN_HEADER};
 
-// tags: condition
+// tags: equivalence, condition
 #[tokio::test]
 async fn pictures_are_served_by_name_only() {
     let f = Fixture::start().await;

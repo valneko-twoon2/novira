@@ -43,27 +43,31 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('phone layout', () => {
-  it("opens the assistant's chat over the tabs from the title bar, and draws pictures again after a request", { tags: ['scenario'] }, () => {
-    vi.spyOn(backend, 'agentStatus').mockResolvedValue({ provider: null, installed: false, loggedIn: false, models: [] });
-    useAgent.setState({ open: false, busy: false });
-    mount();
-    expect(screen.queryByTestId('phone-chat')).toBeNull();
-    fireEvent.click(screen.getByTestId('phone-chat-open'));
-    expect(screen.getByTestId('phone-chat')).toBeTruthy();
-    expect(screen.getByTestId('phone-shell').hasAttribute('data-chat')).toBe(true);
-    // A tool of the request opened a screen this layout has not; when the request ends the phone draws pictures again.
-    act(() => {
-      useAgent.setState({ busy: true });
-      useUi.getState().setTab('workflows');
-    });
-    expect(useUi.getState().activeTab).toBe('workflows');
-    act(() => useAgent.setState({ busy: false }));
-    expect(useUi.getState().activeTab).toBe('generate');
-    expect(useUi.getState().media).toBe('image');
-    act(() => useAgent.setState({ open: false }));
-    expect(screen.getByTestId('phone-shell').hasAttribute('data-chat')).toBe(false);
-  });
+describe('phone layout', { tags: [] }, () => {
+  it(
+    "opens the assistant's chat over the tabs from the title bar, and draws pictures again after a request",
+    { tags: ['scenario'] },
+    () => {
+      vi.spyOn(backend, 'agentStatus').mockResolvedValue({ provider: null, installed: false, loggedIn: false, models: [] });
+      useAgent.setState({ open: false, busy: false });
+      mount();
+      expect(screen.queryByTestId('phone-chat')).toBeNull();
+      fireEvent.click(screen.getByTestId('phone-chat-open'));
+      expect(screen.getByTestId('phone-chat')).toBeTruthy();
+      expect(screen.getByTestId('phone-shell').hasAttribute('data-chat')).toBe(true);
+      // A tool of the request opened a screen this layout has not; when the request ends the phone draws pictures again.
+      act(() => {
+        useAgent.setState({ busy: true });
+        useUi.getState().setTab('workflows');
+      });
+      expect(useUi.getState().activeTab).toBe('workflows');
+      act(() => useAgent.setState({ busy: false }));
+      expect(useUi.getState().activeTab).toBe('generate');
+      expect(useUi.getState().media).toBe('image');
+      act(() => useAgent.setState({ open: false }));
+      expect(screen.getByTestId('phone-shell').hasAttribute('data-chat')).toBe(false);
+    },
+  );
 
   it('opens on the Generate tab and draws with the Generate screen whatever the desktop layout had open', { tags: ['condition'] }, () => {
     mount();
@@ -76,8 +80,8 @@ describe('phone layout', () => {
   });
 });
 
-describe('phone Generate tab', () => {
-  it('writes the prompts the desktop left panel writes', { tags: ['condition'] }, () => {
+describe('phone Generate tab', { tags: [] }, () => {
+  it('writes the prompts the desktop left panel writes', { tags: ['equivalence'] }, () => {
     mount();
     fireEvent.change(screen.getByTestId('positive-prompt'), { target: { value: 'a cat on a roof' } });
     fireEvent.change(screen.getByTestId('negative-prompt'), { target: { value: 'blurry' } });
@@ -85,7 +89,7 @@ describe('phone Generate tab', () => {
     expect(useParams.getState().negativePrompt).toBe('blurry');
   });
 
-  it('says why it cannot draw yet and keeps the button off, then draws when ready', { tags: ['state-transition'] }, () => {
+  it('says why it cannot draw yet and keeps the button off, then draws when ready', { tags: ['state-transition', 'condition'] }, () => {
     ready(['Pick a model']);
     mount();
     expect(screen.getByTestId('generation-reason').textContent).toBe('Pick a model');
@@ -98,7 +102,7 @@ describe('phone Generate tab', () => {
     expect(invoke).toHaveBeenCalledTimes(1);
   });
 
-  it('shows the progress and how many are queued while it draws', { tags: ['condition'] }, () => {
+  it('shows the progress and how many are queued while it draws', { tags: ['scenario'] }, () => {
     useQueue.setState({ items: [running(3)], status: { ...initial.queue.status, inProgress: 1, pending: 2 }, progress: { itemId: 3, step: 6, totalSteps: 20, progressImageUrl: null, message: '' } });
     mount();
     const button = screen.getByTestId('invoke-button');
@@ -108,8 +112,8 @@ describe('phone Generate tab', () => {
   });
 });
 
-describe('the job being drawn', () => {
-  it('shows nothing while no job runs', { tags: ['condition'] }, () => {
+describe('the job being drawn', { tags: [] }, () => {
+  it('shows nothing while no job runs', { tags: ['boundary'] }, () => {
     mount();
     expect(screen.queryByTestId('phone-live-chip')).toBeNull();
   });
@@ -128,7 +132,7 @@ describe('the job being drawn', () => {
     expect(usePhone.getState().view).toBeNull();
   });
 
-  it('closes full screen with its button', { tags: ['condition'] }, () => {
+  it('closes full screen with its button', { tags: ['scenario'] }, () => {
     useQueue.setState({ items: [running(9)], progress: null });
     mount();
     fireEvent.click(screen.getByTestId('phone-live-chip'));

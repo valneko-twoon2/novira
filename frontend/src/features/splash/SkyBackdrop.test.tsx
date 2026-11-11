@@ -74,7 +74,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('SkyBackdrop', () => {
+describe('SkyBackdrop', { tags: [] }, () => {
   it('draws a frame, with the sky colours read from the page tokens', { tags: ['condition'] }, () => {
     document.documentElement.style.setProperty('--bg-app', '#ffffff');
     render(<SkyBackdrop />);
@@ -148,7 +148,7 @@ describe('SkyBackdrop', () => {
     }
   });
 
-  it('releases the GL resources and the observer on unmount', { tags: ['condition'] }, () => {
+  it('releases the GL resources and the observer on unmount', { tags: ['state-transition'] }, () => {
     const { unmount } = render(<SkyBackdrop />);
     unmount();
     expect(gl!.deleteBuffer).toHaveBeenCalled();
@@ -156,7 +156,7 @@ describe('SkyBackdrop', () => {
     expect(disconnect).toHaveBeenCalled();
   });
 
-  it('stays an empty canvas without WebGL', { tags: ['condition'] }, () => {
+  it('stays an empty canvas without WebGL', { tags: ['error-guessing'] }, () => {
     gl = null;
     render(<SkyBackdrop />);
     expect(screen.getByTestId('splash-sky')).toBeTruthy();

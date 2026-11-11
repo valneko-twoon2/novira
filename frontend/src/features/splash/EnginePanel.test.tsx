@@ -11,15 +11,15 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('formatBytes', () => {
+describe('formatBytes', { tags: [] }, () => {
   it('uses MB below a gigabyte and GB above', { tags: ['boundary'] }, () => {
     expect(formatBytes(5 * 1024 * 1024)).toBe('5 MB');
     expect(formatBytes(1.5 * 1024 ** 3)).toBe('1.50 GB');
   });
 });
 
-describe('useTransferRate', () => {
-  it('says nothing until a second and a half of samples, then the bytes per second', { tags: ['scenario'] }, () => {
+describe('useTransferRate', { tags: [] }, () => {
+  it('says nothing until a second and a half of samples, then the bytes per second', { tags: ['boundary'] }, () => {
     const { result, rerender } = renderHook(({ bytes, active }) => useTransferRate(bytes, active), { initialProps: { bytes: 0, active: true } });
     expect(result.current).toBeNull();
     act(() => void vi.advanceTimersByTime(1000));
@@ -43,8 +43,8 @@ describe('useTransferRate', () => {
   });
 });
 
-describe('EnginePanel', () => {
-  it('marks the steps done, active and waiting, and shows the download figures', { tags: ['scenario'] }, () => {
+describe('EnginePanel', { tags: [] }, () => {
+  it('marks the steps done, active and waiting, and shows the download figures', { tags: ['equivalence'] }, () => {
     render(<EnginePanel status={{ state: 'downloading', bytes: 50 * 1024 * 1024, totalBytes: 200 * 1024 * 1024 } as never} />);
     expect(screen.getByText('25%')).toBeTruthy();
     expect(screen.getByText(t('engine.sizeProgress', { done: '50 MB', total: '200 MB' }))).toBeTruthy();
@@ -53,7 +53,7 @@ describe('EnginePanel', () => {
     expect([...items].map((i) => i.className)).toEqual(['ep__step is-active', 'ep__step', 'ep__step']);
   });
 
-  it('shows the speed and the time left once the rate is known', { tags: ['scenario'] }, () => {
+  it('shows the speed and the time left once the rate is known', { tags: ['condition'] }, () => {
     const view = render(<EnginePanel status={{ state: 'downloading', bytes: 0, totalBytes: 100 * 1024 * 1024 } as never} />);
     act(() => void vi.advanceTimersByTime(2000));
     view.rerender(<EnginePanel status={{ state: 'downloading', bytes: 10 * 1024 * 1024, totalBytes: 100 * 1024 * 1024 } as never} />);
@@ -61,7 +61,7 @@ describe('EnginePanel', () => {
     expect(document.querySelector('.ep__row--meta')).toBeTruthy();
   });
 
-  it('shows an indeterminate bar for the later steps and when the size is unknown', { tags: ['scenario'] }, () => {
+  it('shows an indeterminate bar for the later steps and when the size is unknown', { tags: ['state-transition', 'boundary'] }, () => {
     const view = render(<EnginePanel status={{ state: 'extracting' } as never} />);
     expect([...document.querySelectorAll('.ep__step')].map((i) => i.className)).toEqual(['ep__step is-done', 'ep__step is-active', 'ep__step']);
     expect(screen.queryByText(t('engine.firstRunNote'))).toBeNull();
@@ -72,8 +72,8 @@ describe('EnginePanel', () => {
   });
 });
 
-describe('cards', () => {
-  it('announces an error card as an alert and a plain one as a status', { tags: ['scenario'] }, () => {
+describe('cards', { tags: [] }, () => {
+  it('announces an error card as an alert and a plain one as a status', { tags: ['equivalence'] }, () => {
     render(
       <>
         <StartupCard icon={null} heading="Broken" sub="details" tone="error" testId="bad" />

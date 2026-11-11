@@ -40,8 +40,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('agent sessions', () => {
-  it('creates a session with the first message and adds the reply to it', { tags: ['condition'] }, async () => {
+describe('agent sessions', { tags: [] }, () => {
+  it('creates a session with the first message and adds the reply to it', { tags: ['scenario'] }, async () => {
     replyWith('hello');
     expect(currentMessages(useAgent.getState())).toEqual([]);
     await useAgent.getState().send('  a cat  ');
@@ -54,14 +54,14 @@ describe('agent sessions', () => {
     ]);
   });
 
-  it('ignores blank messages without creating a session', { tags: ['condition'] }, async () => {
+  it('ignores blank messages without creating a session', { tags: ['condition', 'boundary'] }, async () => {
     const chat = replyWith('x');
     await useAgent.getState().send('   ');
     expect(useAgent.getState().sessions).toEqual([]);
     expect(chat).not.toHaveBeenCalled();
   });
 
-  it('sends only the current session history, without failed replies', { tags: ['error-guessing'] }, async () => {
+  it('sends only the current session history, without failed replies', { tags: ['state-transition', 'error-guessing'] }, async () => {
     replyWith('first reply');
     await useAgent.getState().send('first chat');
     const first = useAgent.getState().currentId!;
@@ -99,21 +99,25 @@ describe('agent sessions', () => {
     expect(requests.at(-1)!.history![0]).toEqual({ role: 'user', text: 'first' });
   });
 
-  it('keeps the prompt the assistant writes within the CLIP limit while the token limit is on', { tags: ['boundary'] }, async () => {
-    const long = Array.from({ length: 40 }, (_, i) => `tag${i}`).join(', ');
-    let answer: unknown;
-    replyWith('done', async (call) => {
-      answer = await call('set_generation_settings', { positivePrompt: long });
-    });
-    await useAgent.getState().send('a long prompt');
-    expect(answer).toEqual({ ok: false, content: expect.stringContaining('at most 77 tokens') });
-    expect(useParams.getState().positivePrompt).toBe('original');
-    useAgent.getState().setTokenLimit(false);
-    await useAgent.getState().send('a long prompt');
-    expect(useParams.getState().positivePrompt).toBe(long);
-  });
+  it(
+    'keeps the prompt the assistant writes within the CLIP limit while the token limit is on',
+    { tags: ['boundary', 'condition'] },
+    async () => {
+      const long = Array.from({ length: 40 }, (_, i) => `tag${i}`).join(', ');
+      let answer: unknown;
+      replyWith('done', async (call) => {
+        answer = await call('set_generation_settings', { positivePrompt: long });
+      });
+      await useAgent.getState().send('a long prompt');
+      expect(answer).toEqual({ ok: false, content: expect.stringContaining('at most 77 tokens') });
+      expect(useParams.getState().positivePrompt).toBe('original');
+      useAgent.getState().setTokenLimit(false);
+      await useAgent.getState().send('a long prompt');
+      expect(useParams.getState().positivePrompt).toBe(long);
+    },
+  );
 
-  it('switches only to a session that exists, renames and deletes sessions', { tags: ['condition'] }, async () => {
+  it('switches only to a session that exists, renames and deletes sessions', { tags: ['condition', 'error-guessing'] }, async () => {
     replyWith('ok');
     await useAgent.getState().send('keep');
     const keep = useAgent.getState().currentId!;
@@ -132,7 +136,7 @@ describe('agent sessions', () => {
     expect(useAgent.getState()).toMatchObject({ sessions: [], currentId: null });
   });
 
-  it('shows no answer for a session deleted while waiting', { tags: ['scenario'] }, async () => {
+  it('shows no answer for a session deleted while waiting', { tags: ['state-transition'] }, async () => {
     let resolve: (r: AgentReply) => void = () => {};
     vi.spyOn(backend, 'agentChat').mockImplementation(() => new Promise<AgentReply>((r) => (resolve = r)));
     const pending = useAgent.getState().send('change the prompt');
@@ -144,38 +148,46 @@ describe('agent sessions', () => {
     expect(useAgent.getState()).toMatchObject({ busy: false, busySessionId: null, sessions: [] });
   });
 
-  it('sends the messages written while it works one after the other, as soon as each answer ends', { tags: ['equivalence'] }, async () => {
-    let resolve: (r: AgentReply) => void = () => {};
-    const chat = vi.spyOn(backend, 'agentChat').mockImplementationOnce(() => new Promise<AgentReply>((r) => (resolve = r))).mockResolvedValue({ text: 'next' });
-    const first = useAgent.getState().send('one');
-    useAgent.getState().queue('two');
-    useAgent.getState().queue('  ');
-    useAgent.getState().queue('three', ['a.png']);
-    expect(useAgent.getState().queued.map((q) => q.text)).toEqual(['two', 'three']);
-    resolve({ text: 'first' });
-    await first;
-    await vi.waitFor(() => expect(chat).toHaveBeenCalledTimes(3));
-    await vi.waitFor(() => expect(useAgent.getState().busy).toBe(false));
-    expect(chat.mock.calls.map(([r]) => r.message)).toEqual(['one', 'two', 'three']);
-    expect(chat.mock.calls[2]![0].images).toEqual(['a.png']);
-    expect(useAgent.getState().queued).toEqual([]);
-  });
+  it(
+    'sends the messages written while it works one after the other, as soon as each answer ends',
+    { tags: ['state-transition'] },
+    async () => {
+      let resolve: (r: AgentReply) => void = () => {};
+      const chat = vi.spyOn(backend, 'agentChat').mockImplementationOnce(() => new Promise<AgentReply>((r) => (resolve = r))).mockResolvedValue({ text: 'next' });
+      const first = useAgent.getState().send('one');
+      useAgent.getState().queue('two');
+      useAgent.getState().queue('  ');
+      useAgent.getState().queue('three', ['a.png']);
+      expect(useAgent.getState().queued.map((q) => q.text)).toEqual(['two', 'three']);
+      resolve({ text: 'first' });
+      await first;
+      await vi.waitFor(() => expect(chat).toHaveBeenCalledTimes(3));
+      await vi.waitFor(() => expect(useAgent.getState().busy).toBe(false));
+      expect(chat.mock.calls.map(([r]) => r.message)).toEqual(['one', 'two', 'three']);
+      expect(chat.mock.calls[2]![0].images).toEqual(['a.png']);
+      expect(useAgent.getState().queued).toEqual([]);
+    },
+  );
 
-  it('takes a waiting message out of the line, and gives them back to the box when the request fails', { tags: ['error-guessing'] }, async () => {
-    let fail: (e: Error) => void = () => {};
-    const chat = vi.spyOn(backend, 'agentChat').mockImplementation(() => new Promise<AgentReply>((_, r) => (fail = r)));
-    const first = useAgent.getState().send('one');
-    useAgent.getState().queue('two');
-    useAgent.getState().queue('three', ['a.png']);
-    useAgent.getState().unqueue(useAgent.getState().queued[0]!.id);
-    useAgent.getState().setDraft({ text: 'typing' });
-    fail(new Error('boom'));
-    await first;
-    expect(chat).toHaveBeenCalledTimes(1);
-    expect(useAgent.getState()).toMatchObject({ queued: [], draftText: 'three\ntyping', draftAttached: ['a.png'] });
-  });
+  it(
+    'takes a waiting message out of the line, and gives them back to the box when the request fails',
+    { tags: ['error-guessing', 'state-transition'] },
+    async () => {
+      let fail: (e: Error) => void = () => {};
+      const chat = vi.spyOn(backend, 'agentChat').mockImplementation(() => new Promise<AgentReply>((_, r) => (fail = r)));
+      const first = useAgent.getState().send('one');
+      useAgent.getState().queue('two');
+      useAgent.getState().queue('three', ['a.png']);
+      useAgent.getState().unqueue(useAgent.getState().queued[0]!.id);
+      useAgent.getState().setDraft({ text: 'typing' });
+      fail(new Error('boom'));
+      await first;
+      expect(chat).toHaveBeenCalledTimes(1);
+      expect(useAgent.getState()).toMatchObject({ queued: [], draftText: 'three\ntyping', draftAttached: ['a.png'] });
+    },
+  );
 
-  it('keeps the reply in the session that asked even after switching to a new chat', { tags: ['condition'] }, async () => {
+  it('keeps the reply in the session that asked even after switching to a new chat', { tags: ['state-transition'] }, async () => {
     let resolve: (r: AgentReply) => void = () => {};
     vi.spyOn(backend, 'agentChat').mockImplementation(() => new Promise<AgentReply>((r) => (resolve = r)));
     const pending = useAgent.getState().send('question');
@@ -188,44 +200,52 @@ describe('agent sessions', () => {
   });
 });
 
-describe('what a request carries', () => {
+describe('what a request carries', { tags: [] }, () => {
   afterEach(() => useAgent.setState({ focus: [], pendingAsk: null, open: false }));
 
-  it('names the screen for every tab and kind of media, the language and nothing the tools can read', { tags: ['equivalence'] }, async () => {
-    replyWith('ok');
-    const screens: [Partial<ReturnType<typeof useUi.getState>>, string][] = [
-      [{ activeTab: 'generate', media: 'image' }, 'generate'],
-      [{ activeTab: 'generate', media: 'text' }, 'text'],
-      [{ activeTab: 'generate', media: 'music' }, 'music'],
-      [{ activeTab: 'models' }, 'models'],
-      [{ activeTab: 'extensions' }, 'extensions'],
-    ];
-    for (const [ui, screen] of screens) {
-      useUi.setState(ui);
-      await useAgent.getState().send('where am I');
-      expect(requests.at(-1)!.screen).toBe(screen);
-    }
-    // The model reads the rest through the tools; the trial setting decides a rule, so it travels with the request.
-    const allowed = ['message', 'locale', 'screen', 'history', 'focus', 'agentModel', 'effort', 'trialPictures'];
-    expect(Object.keys(requests[0]!).filter((k) => !allowed.includes(k))).toEqual([]);
-    useUi.setState({ activeTab: 'generate', media: 'image' });
-  });
+  it(
+    'names the screen for every tab and kind of media, the language and nothing the tools can read',
+    { tags: ['equivalence'] },
+    async () => {
+      replyWith('ok');
+      const screens: [Partial<ReturnType<typeof useUi.getState>>, string][] = [
+        [{ activeTab: 'generate', media: 'image' }, 'generate'],
+        [{ activeTab: 'generate', media: 'text' }, 'text'],
+        [{ activeTab: 'generate', media: 'music' }, 'music'],
+        [{ activeTab: 'models' }, 'models'],
+        [{ activeTab: 'extensions' }, 'extensions'],
+      ];
+      for (const [ui, screen] of screens) {
+        useUi.setState(ui);
+        await useAgent.getState().send('where am I');
+        expect(requests.at(-1)!.screen).toBe(screen);
+      }
+      // The model reads the rest through the tools; the trial setting decides a rule, so it travels with the request.
+      const allowed = ['message', 'locale', 'screen', 'history', 'focus', 'agentModel', 'effort', 'trialPictures'];
+      expect(Object.keys(requests[0]!).filter((k) => !allowed.includes(k))).toEqual([]);
+      useUi.setState({ activeTab: 'generate', media: 'image' });
+    },
+  );
 
-  it('asks about extensions chosen in the manager: a new chat, sent once, and the follow-ups keep the focus', { tags: ['condition'] }, async () => {
-    replyWith('ok');
-    await useAgent.getState().send('earlier chat');
-    useAgent.getState().ask('What is ComfyUI-Foo?', ['ComfyUI-Foo']);
-    expect(useAgent.getState()).toMatchObject({ open: true, currentId: null, pendingAsk: 'What is ComfyUI-Foo?' });
-    await useAgent.getState().flushAsk();
-    await useAgent.getState().flushAsk();
-    expect(requests).toHaveLength(2);
-    expect(requests[1]).toMatchObject({ message: 'What is ComfyUI-Foo?', focus: 'ext:ComfyUI-Foo', history: [] });
-    await useAgent.getState().send('how do I use it?');
-    expect(requests[2]!.focus).toBe('ext:ComfyUI-Foo');
-    useAgent.getState().newSession();
-    await useAgent.getState().send('something else');
-    expect(requests[3]!.focus).toBeUndefined();
-  });
+  it(
+    'asks about extensions chosen in the manager: a new chat, sent once, and the follow-ups keep the focus',
+    { tags: ['scenario', 'condition'] },
+    async () => {
+      replyWith('ok');
+      await useAgent.getState().send('earlier chat');
+      useAgent.getState().ask('What is ComfyUI-Foo?', ['ComfyUI-Foo']);
+      expect(useAgent.getState()).toMatchObject({ open: true, currentId: null, pendingAsk: 'What is ComfyUI-Foo?' });
+      await useAgent.getState().flushAsk();
+      await useAgent.getState().flushAsk();
+      expect(requests).toHaveLength(2);
+      expect(requests[1]).toMatchObject({ message: 'What is ComfyUI-Foo?', focus: 'ext:ComfyUI-Foo', history: [] });
+      await useAgent.getState().send('how do I use it?');
+      expect(requests[2]!.focus).toBe('ext:ComfyUI-Foo');
+      useAgent.getState().newSession();
+      await useAgent.getState().send('something else');
+      expect(requests[3]!.focus).toBeUndefined();
+    },
+  );
 
   it('keeps a waiting question until the assistant can send it', { tags: ['condition'] }, async () => {
     const chat = replyWith('ok');
@@ -237,23 +257,27 @@ describe('what a request carries', () => {
   });
 });
 
-describe('tool calls of a request', () => {
-  it('applies each change as it comes, logs it for the chips, and undoes the whole request at once', { tags: ['state-transition'] }, async () => {
-    useParams.getState().set({ steps: 20 });
-    replyWith('done', async (call) => {
-      await call('set_generation_settings', { positivePrompt: 'a fox' });
-      expect(useParams.getState().positivePrompt).toBe('a fox');
-      await call('set_generation_settings', { positivePrompt: 'a red fox', steps: 30 });
-    });
-    await useAgent.getState().send('a fox');
-    const reply = currentMessages(useAgent.getState()).at(-1)!;
-    expect(reply.tools).toEqual([{ kind: 'prompt' }, { kind: 'prompt' }, { kind: 'params', summary: '30 steps' }]);
-    expect(useParams.getState()).toMatchObject({ positivePrompt: 'a red fox', steps: 30 });
-    // One undo goes back to before the request, not to between its calls.
-    useAgent.getState().undo(reply.id);
-    expect(useParams.getState()).toMatchObject({ positivePrompt: 'original', steps: 20 });
-    expect(currentMessages(useAgent.getState()).at(-1)!.undone).toBe(true);
-  });
+describe('tool calls of a request', { tags: [] }, () => {
+  it(
+    'applies each change as it comes, logs it for the chips, and undoes the whole request at once',
+    { tags: ['state-transition', 'scenario'] },
+    async () => {
+      useParams.getState().set({ steps: 20 });
+      replyWith('done', async (call) => {
+        await call('set_generation_settings', { positivePrompt: 'a fox' });
+        expect(useParams.getState().positivePrompt).toBe('a fox');
+        await call('set_generation_settings', { positivePrompt: 'a red fox', steps: 30 });
+      });
+      await useAgent.getState().send('a fox');
+      const reply = currentMessages(useAgent.getState()).at(-1)!;
+      expect(reply.tools).toEqual([{ kind: 'prompt' }, { kind: 'prompt' }, { kind: 'params', summary: '30 steps' }]);
+      expect(useParams.getState()).toMatchObject({ positivePrompt: 'a red fox', steps: 30 });
+      // One undo goes back to before the request, not to between its calls.
+      useAgent.getState().undo(reply.id);
+      expect(useParams.getState()).toMatchObject({ positivePrompt: 'original', steps: 20 });
+      expect(currentMessages(useAgent.getState()).at(-1)!.undone).toBe(true);
+    },
+  );
 
   it('shows what changed while the request runs', { tags: ['scenario'] }, async () => {
     let seen: unknown;
@@ -266,31 +290,35 @@ describe('tool calls of a request', () => {
     expect(useAgent.getState().working).toEqual([]);
   });
 
-  it('tells the model what each answer changed, which one the user undid, and the settings before each request', { tags: ['equivalence'] }, async () => {
-    useSettings.getState().set({ assistantReadAccess: 'always' });
-    setsPrompt('2girls, bob cut');
-    await useAgent.getState().send('make the hair short');
-    setsPrompt('2girls, bob cut, black hair');
-    await useAgent.getState().send('black hair');
-    useAgent.getState().undo(currentMessages(useAgent.getState()).at(-1)!.id);
-    let read: unknown;
-    replyWith('put back', async (call) => {
-      read = (await call('get_generation_settings', { includePrompts: true })).content;
-    });
-    await useAgent.getState().send('the left girl was fine as she was');
-    const history = requests.at(-1)!.history!;
-    expect(history[1]).toEqual({ role: 'assistant', text: 'set 2girls, bob cut\n[This answer rewrote the prompt boxes of the Generate tab.]' });
-    expect(history[3]!.text).toContain('[The user undid these changes with the undo button');
-    expect(history[2]).toEqual({ role: 'user', text: 'black hair' });
-    // The first version is how the user had it; the undone request is marked.
-    expect(read).toMatchObject({
-      positivePrompt: '2girls, bob cut',
-      earlier: [
-        { request: 'make the hair short', settings: { positivePrompt: 'original' } },
-        { request: 'black hair', undone: true, settings: { positivePrompt: '2girls, bob cut' } },
-      ],
-    });
-  });
+  it(
+    'tells the model what each answer changed, which one the user undid, and the settings before each request',
+    { tags: ['scenario'] },
+    async () => {
+      useSettings.getState().set({ assistantReadAccess: 'always' });
+      setsPrompt('2girls, bob cut');
+      await useAgent.getState().send('make the hair short');
+      setsPrompt('2girls, bob cut, black hair');
+      await useAgent.getState().send('black hair');
+      useAgent.getState().undo(currentMessages(useAgent.getState()).at(-1)!.id);
+      let read: unknown;
+      replyWith('put back', async (call) => {
+        read = (await call('get_generation_settings', { includePrompts: true })).content;
+      });
+      await useAgent.getState().send('the left girl was fine as she was');
+      const history = requests.at(-1)!.history!;
+      expect(history[1]).toEqual({ role: 'assistant', text: 'set 2girls, bob cut\n[This answer rewrote the prompt boxes of the Generate tab.]' });
+      expect(history[3]!.text).toContain('[The user undid these changes with the undo button');
+      expect(history[2]).toEqual({ role: 'user', text: 'black hair' });
+      // The first version is how the user had it; the undone request is marked.
+      expect(read).toMatchObject({
+        positivePrompt: '2girls, bob cut',
+        earlier: [
+          { request: 'make the hair short', settings: { positivePrompt: 'original' } },
+          { request: 'black hair', undone: true, settings: { positivePrompt: '2girls, bob cut' } },
+        ],
+      });
+    },
+  );
 
   it('puts the pictures the assistant looked at under its answer and sends the trial setting', { tags: ['condition'] }, async () => {
     useSettings.getState().set({ assistantReadAccess: 'always', assistantTrialPictures: false });
@@ -317,14 +345,14 @@ describe('tool calls of a request', () => {
     expect(useParams.getState().positivePrompt).toBe('original');
   });
 
-  it('keeps the reasoning lines with the reply', { tags: ['condition'] }, async () => {
+  it('keeps the reasoning lines with the reply', { tags: ['equivalence'] }, async () => {
     vi.spyOn(backend, 'agentChat').mockResolvedValue({ thoughts: ['read it as a request for blue'], text: 'done' });
     await useAgent.getState().send('make it blue');
     expect(currentMessages(useAgent.getState()).at(-1)?.thoughts).toEqual(['read it as a request for blue']);
   });
 });
 
-describe('reading pictures and prompts', () => {
+describe('reading pictures and prompts', { tags: [] }, () => {
   const picture = { name: 'a.png', url: '', thumbnailUrl: '', width: 1, height: 1, createdAt: 1, boardId: null, starred: false, isIntermediate: false, category: 'general', metadata: null, workflow: null } as never;
   beforeEach(() => useGallery.setState({ images: [picture] }));
 
@@ -345,7 +373,7 @@ describe('reading pictures and prompts', () => {
     return result!;
   }
 
-  it('asks each time by default: allowed once it reads, and the next request asks again', { tags: ['equivalence'] }, async () => {
+  it('asks each time by default: allowed once it reads, and the next request asks again', { tags: ['state-transition'] }, async () => {
     expect((await readGallery('once')).ok).toBe(true);
     expect(useSettings.getState().assistantReadAccess).toBe('ask');
     expect((await readGallery('once')).ok).toBe(true);
@@ -355,19 +383,19 @@ describe('reading pictures and prompts', () => {
     expect(await readGallery('deny')).toEqual({ ok: false, content: DECLINED });
   });
 
-  it('always allow changes the setting, so later reads are not asked', { tags: ['condition'] }, async () => {
+  it('always allow changes the setting, so later reads are not asked', { tags: ['state-transition', 'condition'] }, async () => {
     expect((await readGallery('always')).ok).toBe(true);
     expect(useSettings.getState().assistantReadAccess).toBe('always');
     expect((await readGallery()).ok).toBe(true);
   });
 
-  it('never refuses without asking', { tags: ['error-guessing'] }, async () => {
+  it('never refuses without asking', { tags: ['condition'] }, async () => {
     useSettings.getState().set({ assistantReadAccess: 'never' });
     expect(await readGallery()).toEqual({ ok: false, content: DECLINED });
   });
 });
 
-describe('looking facts up on the web', () => {
+describe('looking facts up on the web', { tags: [] }, () => {
   /** Runs a request that looks a word up; `answer` answers the question when one is asked. */
   async function lookUp(answer?: 'once' | 'always' | 'deny') {
     let result: { ok: boolean; content: unknown } | undefined;
@@ -389,11 +417,11 @@ describe('looking facts up on the web', () => {
     vi.spyOn(backend, 'lookupReference').mockResolvedValue([{ title: 'Kimono', extract: 'A garment.', url: 'https://en.wikipedia.org/wiki/Kimono' }]);
   });
 
-  it('shows the words that would be sent, and a decline is an answer about the web, not pictures', { tags: ['scenario'] }, async () => {
+  it('shows the words that would be sent, and a decline is an answer about the web, not pictures', { tags: ['equivalence'] }, async () => {
     expect(await lookUp('deny')).toEqual({ ok: false, content: DECLINED_WEB });
   });
 
-  it('allowed once it looks up, and always allow changes only the web setting', { tags: ['condition'] }, async () => {
+  it('allowed once it looks up, and always allow changes only the web setting', { tags: ['decision-table'] }, async () => {
     expect((await lookUp('once')).ok).toBe(true);
     expect(useSettings.getState().assistantWebAccess).toBe('ask');
     expect((await lookUp('always')).ok).toBe(true);
@@ -402,44 +430,52 @@ describe('looking facts up on the web', () => {
     expect((await lookUp()).ok).toBe(true);
   });
 
-  it('a setting of never refuses without asking, and always for pictures does not open the web', { tags: ['error-guessing'] }, async () => {
-    useSettings.getState().set({ assistantWebAccess: 'never' });
-    expect(await lookUp()).toEqual({ ok: false, content: DECLINED_WEB });
-    useSettings.getState().set({ assistantWebAccess: 'ask', assistantReadAccess: 'always' });
-    expect((await lookUp('once')).ok).toBe(true);
-  });
+  it(
+    'a setting of never refuses without asking, and always for pictures does not open the web',
+    { tags: ['decision-table', 'error-guessing'] },
+    async () => {
+      useSettings.getState().set({ assistantWebAccess: 'never' });
+      expect(await lookUp()).toEqual({ ok: false, content: DECLINED_WEB });
+      useSettings.getState().set({ assistantWebAccess: 'ask', assistantReadAccess: 'always' });
+      expect((await lookUp('once')).ok).toBe(true);
+    },
+  );
 });
 
-describe('stopping a request', () => {
+describe('stopping a request', { tags: [] }, () => {
   afterEach(() => useAgent.setState({ busy: false }));
 
-  it('tells the backend, says it was cancelled, and keeps what was changed before so it can be undone', { tags: ['state-transition'] }, async () => {
-    const cancel = vi.spyOn(backend, 'agentCancel').mockResolvedValue();
-    let resolve!: (r: AgentReply) => void;
-    scriptAgent(async (call) => {
-      await call('set_generation_settings', { positivePrompt: 'half done' });
-      return new Promise<AgentReply>((r) => (resolve = r));
-    });
-    const sending = useAgent.getState().send('a cat');
-    await vi.waitFor(() => expect(typeof resolve).toBe('function'));
-    expect(useParams.getState().positivePrompt).toBe('half done');
-    useAgent.getState().cancel();
-    expect(cancel).toHaveBeenCalledTimes(1);
-    resolve({ text: 'late answer' });
-    await sending;
-    const last = currentMessages(useAgent.getState()).at(-1)!;
-    expect(last.text).not.toBe('late answer');
-    expect(last.error).toBeUndefined();
-    expect(last.tools).toEqual([{ kind: 'prompt' }]);
-    useAgent.getState().undo(last.id);
-    expect(useParams.getState().positivePrompt).toBe('original');
-    // The next request is not affected.
-    replyWith('ok');
-    await useAgent.getState().send('again');
-    expect(currentMessages(useAgent.getState()).at(-1)?.text).toBe('ok');
-  });
+  it(
+    'tells the backend, says it was cancelled, and keeps what was changed before so it can be undone',
+    { tags: ['state-transition'] },
+    async () => {
+      const cancel = vi.spyOn(backend, 'agentCancel').mockResolvedValue();
+      let resolve!: (r: AgentReply) => void;
+      scriptAgent(async (call) => {
+        await call('set_generation_settings', { positivePrompt: 'half done' });
+        return new Promise<AgentReply>((r) => (resolve = r));
+      });
+      const sending = useAgent.getState().send('a cat');
+      await vi.waitFor(() => expect(typeof resolve).toBe('function'));
+      expect(useParams.getState().positivePrompt).toBe('half done');
+      useAgent.getState().cancel();
+      expect(cancel).toHaveBeenCalledTimes(1);
+      resolve({ text: 'late answer' });
+      await sending;
+      const last = currentMessages(useAgent.getState()).at(-1)!;
+      expect(last.text).not.toBe('late answer');
+      expect(last.error).toBeUndefined();
+      expect(last.tools).toEqual([{ kind: 'prompt' }]);
+      useAgent.getState().undo(last.id);
+      expect(useParams.getState().positivePrompt).toBe('original');
+      // The next request is not affected.
+      replyWith('ok');
+      await useAgent.getState().send('again');
+      expect(currentMessages(useAgent.getState()).at(-1)?.text).toBe('ok');
+    },
+  );
 
-  it('answers a waiting permission question with no', { tags: ['condition'] }, async () => {
+  it('answers a waiting permission question with no', { tags: ['state-transition'] }, async () => {
     vi.spyOn(backend, 'agentCancel').mockResolvedValue();
     let result: unknown;
     let resolve!: (r: AgentReply) => void;
@@ -456,15 +492,15 @@ describe('stopping a request', () => {
     expect(useAgent.getState().permission).toBeNull();
   });
 
-  it('does nothing when no request is running', { tags: ['state-transition'] }, () => {
+  it('does nothing when no request is running', { tags: ['condition'] }, () => {
     const cancel = vi.spyOn(backend, 'agentCancel').mockResolvedValue();
     useAgent.getState().cancel();
     expect(cancel).not.toHaveBeenCalled();
   });
 });
 
-describe('agent session persistence', () => {
-  it('saves sessions with the chips and without undo snapshots', { tags: ['state-transition'] }, async () => {
+describe('agent session persistence', { tags: [] }, () => {
+  it('saves sessions with the chips and without undo snapshots', { tags: ['equivalence'] }, async () => {
     setsPrompt('saved');
     await useAgent.getState().send('remember me');
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)!) as { version: number; state: Record<string, unknown> };
@@ -479,7 +515,7 @@ describe('agent session persistence', () => {
     expect(currentMessages(useAgent.getState()).at(-1)!.snapshot).toBeDefined();
   });
 
-  it('keeps the token limit switch, on unless it was switched off', { tags: ['boundary'] }, async () => {
+  it('keeps the token limit switch, on unless it was switched off', { tags: ['equivalence', 'error-guessing'] }, async () => {
     for (const [kept, read] of [[false, false], [true, true], [undefined, true], ['no', true]] as const) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, state: { sessions: [], currentId: null, tokenLimit: kept } }));
       await useAgent.persist.rehydrate();
@@ -495,7 +531,7 @@ describe('agent session persistence', () => {
     }
   });
 
-  it('restores saved sessions, and new messages get ids that do not collide', { tags: ['scenario'] }, async () => {
+  it('restores saved sessions, and new messages get ids that do not collide', { tags: ['scenario', 'boundary'] }, async () => {
     const stored = {
       version: 1,
       state: {
@@ -516,14 +552,14 @@ describe('agent session persistence', () => {
     expect(Math.min(...ids.slice(1))).toBeGreaterThan(500);
   });
 
-  it('starts a new chat when the saved current session is gone', { tags: ['condition'] }, async () => {
+  it('starts a new chat when the saved current session is gone', { tags: ['error-guessing'] }, async () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, state: { sessions: 'broken', currentId: 'nope' } }));
     await useAgent.persist.rehydrate();
     expect(useAgent.getState()).toMatchObject({ sessions: [], currentId: null });
   });
 });
 
-describe('attached pictures', () => {
+describe('attached pictures', { tags: [] }, () => {
   it('go with the message and are kept on it; pictures alone ask for a prompt', { tags: ['condition'] }, async () => {
     replyWith('done');
     await useAgent.getState().send('like this', ['a.png', 'b.png']);
@@ -535,14 +571,18 @@ describe('attached pictures', () => {
     expect(requests[1]!.history?.[0]?.text).toMatch(/^like this\n\[The user attached the pictures a\.png, b\.png\./);
   });
 
-  it('are left out when there are none, cut to the limit, and an empty message without pictures sends nothing', { tags: ['boundary'] }, async () => {
-    replyWith('done');
-    await useAgent.getState().send('plain');
-    expect(requests[0]).not.toHaveProperty('images');
-    expect(currentMessages(useAgent.getState()).at(-2)).not.toHaveProperty('images');
-    await useAgent.getState().send('many', ['1.png', '2.png', '3.png', '4.png', '5.png']);
-    expect(requests[1]!.images).toEqual(['1.png', '2.png', '3.png', '4.png']);
-    await useAgent.getState().send('  ', []);
-    expect(requests).toHaveLength(2);
-  });
+  it(
+    'are left out when there are none, cut to the limit, and an empty message without pictures sends nothing',
+    { tags: ['boundary'] },
+    async () => {
+      replyWith('done');
+      await useAgent.getState().send('plain');
+      expect(requests[0]).not.toHaveProperty('images');
+      expect(currentMessages(useAgent.getState()).at(-2)).not.toHaveProperty('images');
+      await useAgent.getState().send('many', ['1.png', '2.png', '3.png', '4.png', '5.png']);
+      expect(requests[1]!.images).toEqual(['1.png', '2.png', '3.png', '4.png']);
+      await useAgent.getState().send('  ', []);
+      expect(requests).toHaveLength(2);
+    },
+  );
 });

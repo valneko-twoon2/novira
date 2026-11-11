@@ -7,8 +7,8 @@ import { durationSeconds, shortId } from './queueFormat';
 
 blockExternalNetwork();
 
-describe('the short form of a batch id (properties)', () => {
-  it('is never empty for an id, and never longer than the id would let it be', { tags: ['boundary'] }, () => {
+describe('the short form of a batch id (properties)', { tags: [] }, () => {
+  it('is never empty for an id, and never longer than the id would let it be', { tags: ['boundary', 'error-guessing'] }, () => {
     check(fc.property(fc.string({ minLength: 1, maxLength: 60 }), (id) => {
       const short = shortId(id);
       expect(short.length).toBeGreaterThan(0);
@@ -16,7 +16,7 @@ describe('the short form of a batch id (properties)', () => {
     }));
   });
 
-  it('never ends with a dash for an id made of a prefix and a hex part', { tags: ['boundary'] }, () => {
+  it('never ends with a dash for an id made of a prefix and a hex part', { tags: ['error-guessing'] }, () => {
     const hex = fc.stringMatching(/^[0-9a-f]{12}$/);
     check(fc.property(fc.constantFrom('batch', 'b', 'job'), hex, fc.option(hex, { nil: undefined }), (prefix, a, b) => {
       const id = [prefix, a, b].filter(Boolean).join('-');
@@ -25,7 +25,7 @@ describe('the short form of a batch id (properties)', () => {
   });
 });
 
-describe('how long a job took (properties)', () => {
+describe('how long a job took (properties)', { tags: [] }, () => {
   it('is null unless both times are known, and never negative', { tags: ['boundary'] }, () => {
     const time = fc.option(fc.integer({ min: 0, max: 2 ** 40 }), { nil: null });
     check(fc.property(time, time, (startedAt, completedAt) => {

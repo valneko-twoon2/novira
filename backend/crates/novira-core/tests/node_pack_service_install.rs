@@ -40,7 +40,7 @@ echo code> "!OUT!\pack-abc\nodes.py"
 exit /b 0
 "#;
 
-// tags: state-transition
+// tags: scenario, state-transition
 #[tokio::test]
 async fn a_pack_installed_through_the_service_ends_ready_and_asks_for_a_restart() {
     site();

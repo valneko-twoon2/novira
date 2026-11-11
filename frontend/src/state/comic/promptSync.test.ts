@@ -28,20 +28,20 @@ afterEach(() => {
   useUi.getState().setTab('generate');
 });
 
-describe('the prompt boxes on the comic screen', () => {
+describe('the prompt boxes on the comic screen', { tags: [] }, () => {
   it('show the first panel when the comic screen opens with no panel selected', { tags: ['condition'] }, () => {
     useUi.getState().setTab('comic');
     expect(useComic.getState().selectedPanelId).toBeNull();
     expect(boxes()).toEqual({ positive: 'prompt 0', negative: 'negative 0' });
   });
 
-  it('follow the selected panel', { tags: ['condition'] }, () => {
+  it('follow the selected panel', { tags: ['equivalence'] }, () => {
     useUi.getState().setTab('comic');
     useComic.getState().selectPanel('panel-2');
     expect(boxes()).toEqual({ positive: 'prompt 2', negative: 'negative 2' });
   });
 
-  it('write what is typed (or applied from a preset) into the selected panel only', { tags: ['state-transition'] }, () => {
+  it('write what is typed (or applied from a preset) into the selected panel only', { tags: ['condition'] }, () => {
     useUi.getState().setTab('comic');
     useComic.getState().selectPanel('panel-1');
     useParams.getState().set({ positivePrompt: 'a girl on a roof' });
@@ -58,7 +58,7 @@ describe('the prompt boxes on the comic screen', () => {
     expect(boxes().positive).toBe('prompt 0');
   });
 
-  it('stay on the panel selected last when the selection is let go, without selecting it again', { tags: ['regression'] }, () => {
+  it('stay on the panel selected last when the selection is let go, without selecting it again', { tags: ['condition'] }, () => {
     useUi.getState().setTab('comic');
     useComic.getState().selectPanel('panel-1');
     useComic.getState().selectPanel('panel-2');

@@ -89,7 +89,7 @@ mod tests {
         // The refusal came first: no database was created.
         assert!(!dir.path().join("novira.sqlite").exists());
     }
-    // tags: state-transition
+    // tags: scenario
     #[test]
     fn a_new_folder_is_locked_and_opened_with_its_database() {
         let dir = tempfile::tempdir().unwrap();

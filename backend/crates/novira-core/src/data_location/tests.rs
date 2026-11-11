@@ -6,7 +6,7 @@ fn put(dir: &Path, name: &str, text: &str) {
     std::fs::write(path, text).unwrap();
 }
 
-// tags: error-guessing, scenario
+// tags: equivalence, error-guessing
 #[test]
 fn the_pointer_reads_back_what_was_written_and_a_broken_one_reads_as_none() {
     let dir = tempfile::tempdir().unwrap();
@@ -28,7 +28,7 @@ fn the_pointer_reads_back_what_was_written_and_a_broken_one_reads_as_none() {
     clear(&pointer).unwrap();
 }
 
-// tags: condition
+// tags: equivalence, condition
 #[test]
 fn a_new_data_folder_is_checked() {
     let dir = tempfile::tempdir().unwrap();
@@ -67,7 +67,7 @@ fn a_new_data_folder_is_checked() {
     assert!(ok(&empty, true).is_ok());
 }
 
-// tags: state-transition, decision-table
+// tags: state-transition, scenario
 #[test]
 fn a_pending_move_carries_the_data_over_and_opens_the_new_folder() {
     let dir = tempfile::tempdir().unwrap();
@@ -103,7 +103,7 @@ fn a_pending_move_carries_the_data_over_and_opens_the_new_folder() {
     assert_eq!(apply_pending(&pointer), Some(new));
 }
 
-// tags: state-transition, scenario
+// tags: state-transition, condition
 #[test]
 fn a_move_into_a_folder_that_holds_other_things_puts_the_data_beside_them() {
     let dir = tempfile::tempdir().unwrap();
@@ -138,7 +138,7 @@ fn a_move_into_a_folder_that_holds_other_things_puts_the_data_beside_them() {
     assert!(read(&pointer).unwrap().move_error.is_none());
 }
 
-// tags: error-guessing, scenario
+// tags: error-guessing, state-transition
 #[test]
 fn a_move_onto_a_name_the_folder_already_has_is_refused_and_the_old_folder_stays_in_use() {
     let dir = tempfile::tempdir().unwrap();
@@ -195,7 +195,7 @@ fn a_move_is_refused_while_another_novira_holds_the_old_folder() {
         .contains("another novira"));
 }
 
-// tags: scenario, equivalence
+// tags: condition
 #[test]
 fn a_pointer_without_a_move_just_names_the_folder() {
     let dir = tempfile::tempdir().unwrap();
@@ -212,7 +212,7 @@ fn a_pointer_without_a_move_just_names_the_folder() {
     assert_eq!(apply_pending(&pointer), Some(dir.path().join("data")));
 }
 
-// tags: state-transition, scenario
+// tags: state-transition
 #[test]
 fn a_move_is_pending_only_while_the_pointer_still_asks_for_it() {
     let dir = tempfile::tempdir().unwrap();
@@ -231,7 +231,7 @@ fn a_move_is_pending_only_while_the_pointer_still_asks_for_it() {
     assert!(!move_pending(&pointer));
 }
 
-// tags: boundary, scenario
+// tags: boundary
 #[test]
 fn a_copy_to_another_drive_reports_its_bytes_up_to_the_whole_size() {
     let dir = tempfile::tempdir().unwrap();
@@ -333,14 +333,14 @@ fn a_pointer_that_cannot_be_removed_or_written_is_an_error() {
     assert!(err.contains("cannot create"), "{err}");
 }
 
-// tags: condition
+// tags: boundary
 #[test]
 fn a_size_of_a_folder_that_is_not_there_is_nothing() {
     let dir = tempfile::tempdir().unwrap();
     assert_eq!(size_of(&dir.path().join("none")), 0);
 }
 
-// tags: condition
+// tags: equivalence, error-guessing
 #[cfg(windows)]
 #[test]
 fn a_first_start_folder_must_be_a_plain_full_path() {
@@ -394,7 +394,7 @@ fn a_move_from_a_folder_that_is_gone_or_cannot_be_locked_is_recorded() {
         .contains("cannot lock the current data folder"));
 }
 
-// tags: error-guessing, scenario
+// tags: error-guessing
 #[cfg(windows)]
 #[test]
 fn a_copy_that_cannot_read_a_file_leaves_nothing_in_the_new_folder() {
@@ -429,7 +429,7 @@ fn a_copy_that_cannot_read_a_file_leaves_nothing_in_the_new_folder() {
         .contains("copying failed"));
 }
 
-// tags: error-guessing, scenario
+// tags: error-guessing, condition
 #[cfg(windows)]
 #[test]
 fn files_that_stay_behind_after_a_copy_are_not_an_error() {
@@ -523,7 +523,7 @@ fn a_pointer_below_a_file_cannot_be_written() {
     assert!(err.contains("cannot create"), "{err}");
 }
 
-// tags: scenario
+// tags: condition
 #[test]
 fn a_move_from_a_folder_that_is_gone_is_not_checked_for_clashes() {
     let dir = tempfile::tempdir().unwrap();
@@ -533,7 +533,7 @@ fn a_move_from_a_folder_that_is_gone_is_not_checked_for_clashes() {
     assert!(check_new(&new, &current, true).is_ok());
 }
 
-// tags: error-guessing, scenario
+// tags: error-guessing
 #[test]
 fn a_move_to_a_place_that_cannot_be_made_fails_with_the_reason() {
     let dir = tempfile::tempdir().unwrap();
@@ -568,7 +568,7 @@ fn a_file_that_cannot_be_moved_or_copied_is_not_left_half_copied() {
     assert!(new.join("keep.txt").is_file());
 }
 
-// tags: state-transition
+// tags: equivalence
 #[test]
 fn a_release_build_keeps_its_data_in_the_user_folder() {
     let app = tempfile::tempdir().unwrap();
@@ -590,7 +590,7 @@ fn a_debug_build_keeps_its_data_beside_the_app() {
     );
 }
 
-// tags: scenario
+// tags: condition
 #[test]
 fn a_copy_with_a_data_folder_beside_it_keeps_using_it() {
     let app = tempfile::tempdir().unwrap();
@@ -609,7 +609,7 @@ fn without_a_user_folder_the_data_stays_beside_the_app() {
     assert_eq!(default_data_dir(app, None, false), app.join(DATA_DIR_NAME));
 }
 
-// tags: condition
+// tags: decision-table
 #[test]
 fn the_apps_data_folder_is_the_chosen_one_before_any_folder_beside_it() {
     let dir = tempfile::tempdir().unwrap();

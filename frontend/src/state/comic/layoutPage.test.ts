@@ -10,8 +10,8 @@ function disjoint(a: Box, b: Box): boolean {
   return w <= EPS || h <= EPS;
 }
 
-describe('the layout of a page with columns and a reading direction', () => {
-  it('allows up to 24 panels on a page', { tags: ['condition'] }, () => {
+describe('the layout of a page with columns and a reading direction', { tags: [] }, () => {
+  it('allows up to 24 panels on a page', { tags: ['boundary'] }, () => {
     expect(MAX_PANELS_PER_PAGE).toBe(24);
     expect(layoutFor(40)).toHaveLength(24);
   });
@@ -25,7 +25,7 @@ describe('the layout of a page with columns and a reading direction', () => {
     }
   });
 
-  it('shares the width of an unfinished row between its panels, with three columns', { tags: ['state-transition'] }, () => {
+  it('shares the width of an unfinished row between its panels, with three columns', { tags: ['boundary'] }, () => {
     const boxes = layoutFor(5, 3);
     // The first row has three panels; the second has two, which are wider than those of the first row.
     expect(boxes[3]!.width).toBeCloseTo(boxes[4]!.width, 9);
@@ -41,25 +41,29 @@ describe('the layout of a page with columns and a reading direction', () => {
     expect(rtl[0]!.width).toBeCloseTo(ltr[0]!.width, 9);
   });
 
-  it('keeps every panel inside the page and apart from the others, for every column count and direction', { tags: ['boundary'] }, () => {
-    for (const columns of [1, 2, 3]) {
-      for (const direction of ['ltr', 'rtl'] as const) {
-        for (let n = 1; n <= MAX_PANELS_PER_PAGE; n++) {
-          const boxes = layoutFor(n, columns, direction);
-          expect(boxes).toHaveLength(n);
-          for (const b of boxes) {
-            expect(b.x).toBeGreaterThanOrEqual(-EPS);
-            expect(b.x + b.width).toBeLessThanOrEqual(1 + EPS);
-            expect(b.y).toBeGreaterThanOrEqual(-EPS);
-            expect(b.y + b.height).toBeLessThanOrEqual(1 + EPS);
+  it(
+    'keeps every panel inside the page and apart from the others, for every column count and direction',
+    { tags: ['decision-table'] },
+    () => {
+      for (const columns of [1, 2, 3]) {
+        for (const direction of ['ltr', 'rtl'] as const) {
+          for (let n = 1; n <= MAX_PANELS_PER_PAGE; n++) {
+            const boxes = layoutFor(n, columns, direction);
+            expect(boxes).toHaveLength(n);
+            for (const b of boxes) {
+              expect(b.x).toBeGreaterThanOrEqual(-EPS);
+              expect(b.x + b.width).toBeLessThanOrEqual(1 + EPS);
+              expect(b.y).toBeGreaterThanOrEqual(-EPS);
+              expect(b.y + b.height).toBeLessThanOrEqual(1 + EPS);
+            }
+            for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) expect(disjoint(boxes[i]!, boxes[j]!)).toBe(true);
           }
-          for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) expect(disjoint(boxes[i]!, boxes[j]!)).toBe(true);
         }
       }
-    }
-  });
+    },
+  );
 
-  it('lays out a page of the default settings as two columns read left to right', { tags: ['condition'] }, () => {
+  it('lays out a page of the default settings as two columns read left to right', { tags: ['equivalence'] }, () => {
     expect(pageBoxes({ panels: [1, 2, 3], columns: 2, direction: 'ltr' })).toEqual(layoutFor(3));
   });
 });

@@ -5,7 +5,7 @@ import { cameraFrame } from './roughView';
 
 const empty = (): ComicRough => ({ ...newRough(), people: [] });
 
-describe('editing a rough from its side panel', () => {
+describe('editing a rough from its side panel', { tags: [] }, () => {
   it('adds people facing the camera, side by side, up to the most a rough holds', { tags: ['boundary'] }, () => {
     let rough = { ...empty(), camera: { ...newRough().camera, yaw: 0.5 } };
     const ids: string[] = [];
@@ -32,7 +32,7 @@ describe('editing a rough from its side panel', () => {
     expect(Math.hypot(box.x, box.z)).toBeGreaterThan(0.5);
   });
 
-  it('adds no prop to a rough that has the most', { tags: ['condition'] }, () => {
+  it('adds no prop to a rough that has the most', { tags: ['boundary'] }, () => {
     const rough = { ...empty(), props: Array.from({ length: ROUGH_PROPS_MAX }, () => newProp('box')) };
     expect(addProp(rough, 'cylinder')).toEqual({ rough, id: null });
   });
@@ -46,7 +46,7 @@ describe('editing a rough from its side panel', () => {
     expect(removeThing(rough, 'gone')).toEqual(rough);
   });
 
-  it('keeps a prop in range when it is changed, and a plane without depth', { tags: ['condition'] }, () => {
+  it('keeps a prop in range when it is changed, and a plane without depth', { tags: ['boundary'] }, () => {
     const box = newProp('box');
     const plane = newProp('plane');
     const rough = { ...empty(), props: [box, plane] };
@@ -55,7 +55,7 @@ describe('editing a rough from its side panel', () => {
     expect(changeProp(rough, plane.id, { d: 2 }).props[1]!.d).toBe(0);
   });
 
-  it('turns and lifts a person, never below the floor', { tags: ['error-guessing', 'boundary'] }, () => {
+  it('turns and lifts a person, never below the floor', { tags: ['boundary'] }, () => {
     const person = newPerson();
     const rough = { ...empty(), people: [person] };
     expect(changePerson(rough, person.id, { yaw: 2 }).people[0]!.yaw).toBe(2);
@@ -89,7 +89,7 @@ describe('editing a rough from its side panel', () => {
     expect(personSize(resizePerson(rough, person.id, 500).people[0]!)).toBe(130);
   });
 
-  it('puts the camera back where a new rough has it', { tags: ['condition'] }, () => {
+  it('puts the camera back where a new rough has it', { tags: ['equivalence'] }, () => {
     const rough = { ...newRough(), camera: { ...newRough().camera, yaw: 2, distance: 9 } };
     expect(resetCamera(rough).camera).toEqual(newRough().camera);
   });

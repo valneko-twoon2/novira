@@ -13,26 +13,30 @@ afterEach(() => {
 });
 
 describe('starting an install', () => {
-  it('counts the source as installing while the request is on its way, and drops a second request for it', { tags: ['condition'] }, async () => {
-    let answer: (j: ModelInstallJob) => void = () => {};
-    const request = vi.fn(() => new Promise<ModelInstallJob>((resolve) => (answer = resolve)));
-    const { result } = renderHook(() => useInstallState('civitai:1/2'));
-    expect(result.current.kind).toBe('idle');
-    let first!: Promise<boolean>;
-    act(() => {
-      first = startInstall('civitai:1/2', request);
-    });
-    expect(result.current).toEqual({ kind: 'queued', progress: 0 });
-    await expect(startInstall('civitai:1/2', request)).resolves.toBe(false);
-    expect(request).toHaveBeenCalledTimes(1);
-    await act(async () => {
-      answer(job('civitai:1/2'));
-      await first;
-    });
-    // The job is in the store at once, so the button stays busy without waiting for the event.
-    expect(useModels.getState().installJobs.map((j) => j.source)).toEqual(['civitai:1/2']);
-    expect(result.current.kind).toBe('queued');
-  });
+  it(
+    'counts the source as installing while the request is on its way, and drops a second request for it',
+    { tags: ['state-transition'] },
+    async () => {
+      let answer: (j: ModelInstallJob) => void = () => {};
+      const request = vi.fn(() => new Promise<ModelInstallJob>((resolve) => (answer = resolve)));
+      const { result } = renderHook(() => useInstallState('civitai:1/2'));
+      expect(result.current.kind).toBe('idle');
+      let first!: Promise<boolean>;
+      act(() => {
+        first = startInstall('civitai:1/2', request);
+      });
+      expect(result.current).toEqual({ kind: 'queued', progress: 0 });
+      await expect(startInstall('civitai:1/2', request)).resolves.toBe(false);
+      expect(request).toHaveBeenCalledTimes(1);
+      await act(async () => {
+        answer(job('civitai:1/2'));
+        await first;
+      });
+      // The job is in the store at once, so the button stays busy without waiting for the event.
+      expect(useModels.getState().installJobs.map((j) => j.source)).toEqual(['civitai:1/2']);
+      expect(result.current.kind).toBe('queued');
+    },
+  );
 
   it('lets the source be asked for again after the request failed', { tags: ['error-guessing'] }, async () => {
     const failing = vi.fn().mockRejectedValue(new Error('no'));

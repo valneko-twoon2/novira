@@ -13,7 +13,7 @@ fn have(key: &str, model: &str, version: &str) -> Installed {
     }
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn a_page_address_gives_the_model_and_the_version() {
     assert_eq!(
@@ -26,7 +26,7 @@ fn a_page_address_gives_the_model_and_the_version() {
     );
 }
 
-// tags: condition
+// tags: equivalence, error-guessing
 #[test]
 fn an_address_that_is_not_a_versioned_civitai_page_gives_nothing() {
     for bad in [
@@ -68,7 +68,7 @@ fn a_newer_version_of_the_same_base_model_is_an_update() {
     assert_eq!(found[0].installed_version_id, "1");
 }
 
-// tags: condition
+// tags: boundary
 #[test]
 fn the_newest_version_installed_is_not_an_update() {
     let body = json!({"items": [{"id": 10, "modelVersions": [
@@ -101,7 +101,7 @@ fn a_version_behind_payment_or_not_public_is_not_offered() {
     assert_eq!(found[0].latest_version_id, "2");
 }
 
-// tags: decision-table
+// tags: equivalence
 #[test]
 fn the_newest_by_date_wins_whatever_the_order_of_the_list() {
     let body = json!({"items": [{"id": 10, "modelVersions": [
@@ -115,7 +115,7 @@ fn the_newest_by_date_wins_whatever_the_order_of_the_list() {
     );
 }
 
-// tags: scenario
+// tags: condition
 #[test]
 fn an_installed_version_that_civitai_no_longer_lists_is_left_alone() {
     let body = json!({"items": [{"id": 10, "modelVersions": [version(3, "SDXL 1.0", "2025-03-01T00:00:00.000Z")]}]});

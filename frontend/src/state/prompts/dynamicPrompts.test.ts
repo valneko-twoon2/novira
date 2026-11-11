@@ -16,14 +16,14 @@ describe('every combination', () => {
     expect(expandPrompt('a {red|blue} {cat|dog}')).toEqual(['a red cat', 'a red dog', 'a blue cat', 'a blue dog']);
   });
 
-  it('supports nested groups and escapes', { tags: ['condition'] }, () => {
+  it('supports nested groups and escapes', { tags: ['equivalence'] }, () => {
     expect(expandPrompt('{x|{y|z}}')).toEqual(['x', 'y', 'z']);
     expect(expandPrompt('a \\{b|c}')).toEqual(['a {b|c}']);
     expect(expandPrompt('a \\__hair__', undefined, lists)).toEqual(['a __hair__']);
     expect(hasDynamicSyntax('plain prompt')).toBe(false);
   });
 
-  it('caps the number of prompts', { tags: ['condition'] }, () => {
+  it('caps the number of prompts', { tags: ['boundary'] }, () => {
     expect(expandPrompt('{a|b|c} {d|e|f}', 4)).toHaveLength(4);
     expect(expandPrompt('__hair__ __hair__ __hair__ {a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p}', 100, lists)).toHaveLength(100);
   });
@@ -72,7 +72,7 @@ describe('problems', () => {
 });
 
 describe('random', () => {
-  it('gives the same prompt for the same seed, and one of the possible prompts', { tags: ['condition'] }, () => {
+  it('gives the same prompt for the same seed, and one of the possible prompts', { tags: ['equivalence'] }, () => {
     const all = expandPrompt('{red|blue} __look__', 1000, lists);
     for (let seed = 0; seed < 50; seed++) {
       const p = randomPrompt('{red|blue} __look__', lists, seed);
@@ -81,12 +81,12 @@ describe('random', () => {
     }
   });
 
-  it('spreads over the options across seeds, also for neighbouring seeds', { tags: ['condition'] }, () => {
+  it('spreads over the options across seeds, also for neighbouring seeds', { tags: ['equivalence'] }, () => {
     const picked = new Set(Array.from({ length: 40 }, (_, i) => randomPrompt('{a|b|c|d}', {}, 1000 + i)));
     expect(picked).toEqual(new Set(['a', 'b', 'c', 'd']));
   });
 
-  it('handles seeds across the whole u32 range and lists it cannot use', { tags: ['error-guessing'] }, () => {
+  it('handles seeds across the whole u32 range and lists it cannot use', { tags: ['boundary', 'error-guessing'] }, () => {
     expect(randomPrompt('{x|y}', {}, 4294967295)).toMatch(/^[xy]$/);
     expect(randomPrompt('__nope__ __loop__', lists, 7)).toBe('__nope__ a b __loop__');
     expect(randomPrompt('plain', lists, 3)).toBe('plain');

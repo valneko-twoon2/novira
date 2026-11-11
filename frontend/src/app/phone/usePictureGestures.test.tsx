@@ -23,8 +23,8 @@ function setup(resetKey = 'a') {
   return { ...hook, onSwipe };
 }
 
-describe('usePictureGestures', () => {
-  it('starts fitted', { tags: ['condition'] }, () => {
+describe('usePictureGestures', { tags: [] }, () => {
+  it('starts fitted', { tags: ['equivalence'] }, () => {
     const { result } = setup();
     expect(result.current.view).toEqual({ scale: 1, x: 0, y: 0 });
     expect(result.current.drag).toBe(0);
@@ -41,19 +41,23 @@ describe('usePictureGestures', () => {
     expect(result.current.drag).toBe(0);
   });
 
-  it('swipes to the previous picture to the right, and ignores a short or mostly vertical move', { tags: ['boundary'] }, () => {
-    const { result, onSwipe } = setup();
-    const h = () => result.current.handlers;
-    act(() => h().onPointerDown(ev(1, 0, 0, 0)));
-    act(() => h().onPointerUp(ev(1, 100, 0, 500)));
-    expect(onSwipe).toHaveBeenLastCalledWith('previous');
-    onSwipe.mockClear();
-    act(() => h().onPointerDown(ev(1, 0, 0, 1000)));
-    act(() => h().onPointerUp(ev(1, 30, 0, 1500)));
-    act(() => h().onPointerDown(ev(1, 0, 0, 2000)));
-    act(() => h().onPointerUp(ev(1, 80, 200, 2500)));
-    expect(onSwipe).not.toHaveBeenCalled();
-  });
+  it(
+    'swipes to the previous picture to the right, and ignores a short or mostly vertical move',
+    { tags: ['equivalence', 'boundary'] },
+    () => {
+      const { result, onSwipe } = setup();
+      const h = () => result.current.handlers;
+      act(() => h().onPointerDown(ev(1, 0, 0, 0)));
+      act(() => h().onPointerUp(ev(1, 100, 0, 500)));
+      expect(onSwipe).toHaveBeenLastCalledWith('previous');
+      onSwipe.mockClear();
+      act(() => h().onPointerDown(ev(1, 0, 0, 1000)));
+      act(() => h().onPointerUp(ev(1, 30, 0, 1500)));
+      act(() => h().onPointerDown(ev(1, 0, 0, 2000)));
+      act(() => h().onPointerUp(ev(1, 80, 200, 2500)));
+      expect(onSwipe).not.toHaveBeenCalled();
+    },
+  );
 
   it('zooms in on a double tap and back out on the next one', { tags: ['state-transition'] }, () => {
     const { result } = setup();
@@ -115,7 +119,7 @@ describe('usePictureGestures', () => {
     expect(onSwipe).not.toHaveBeenCalled();
   });
 
-  it('goes back to fitted when the picture changes', { tags: ['condition'] }, () => {
+  it('goes back to fitted when the picture changes', { tags: ['state-transition'] }, () => {
     const { result, rerender } = setup('a');
     const h = () => result.current.handlers;
     act(() => h().onPointerDown(ev(1, 0, 0, 0)));

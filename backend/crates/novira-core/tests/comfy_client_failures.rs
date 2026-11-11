@@ -155,7 +155,7 @@ async fn failure(engine: &ComfyEngine, job: &EngineJob) -> String {
 
 // Uploads -------------------------------------------------------------------------------------------------------
 
-// tags: error-guessing
+// tags: equivalence, error-guessing
 #[tokio::test]
 async fn a_refused_upload_of_the_source_mask_control_or_reference_picture_fails_the_job() {
     let url = serve(healthy()).await;
@@ -275,7 +275,7 @@ async fn a_video_whose_first_frame_is_missing_is_an_error() {
     assert!(message.contains("without a result file"), "{message}");
 }
 
-// tags: state-transition
+// tags: condition
 #[tokio::test]
 async fn a_picture_job_whose_run_is_only_polled_still_finishes() {
     let url = serve(Cfg {
@@ -295,7 +295,7 @@ async fn a_picture_job_whose_run_is_only_polled_still_finishes() {
 
 // Preview frames ------------------------------------------------------------------------------------------------
 
-// tags: error-guessing
+// tags: boundary, error-guessing
 #[test]
 fn preview_frames_that_are_cut_short_give_no_picture() {
     // A known event without its kind, with a kind but no picture, with a header length that runs past the end, and
@@ -316,7 +316,7 @@ fn preview_frames_that_are_cut_short_give_no_picture() {
 
 // Jobs that cannot be built ----------------------------------------------------------------------------------------
 
-// tags: error-guessing
+// tags: error-guessing, equivalence
 #[tokio::test]
 async fn logo_and_video_jobs_that_cannot_run_are_refused_before_anything_is_sent() {
     let url = serve(healthy()).await;
@@ -347,7 +347,7 @@ async fn logo_and_video_jobs_that_cannot_run_are_refused_before_anything_is_sent
     assert!(refused(engine.validate(&video).await).contains("is not available in ComfyUI"));
 }
 
-// tags: decision-table
+// tags: equivalence
 #[test]
 fn every_scheduler_name_maps_to_a_sampler_and_a_scheduler() {
     use novira_core::comfy::graph::sampler_for;

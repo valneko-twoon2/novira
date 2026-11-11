@@ -27,8 +27,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('the filter button', () => {
-  it('is off until a raster layer of the user is chosen', { tags: ['scenario'] }, () => {
+describe('the filter button', { tags: [] }, () => {
+  it('is off until a raster layer of the user is chosen', { tags: ['condition', 'state-transition'] }, () => {
     show(<RasterFilterMenu />);
     const button = screen.getByTestId('canvas-filter') as HTMLButtonElement;
     expect(button.disabled).toBe(true);
@@ -43,7 +43,7 @@ describe('the filter button', () => {
     expect((screen.getByTestId('canvas-filter') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('applies a blur with the chosen radius to the chosen layer', { tags: ['scenario'] }, async () => {
+  it('applies a blur with the chosen radius to the chosen layer', { tags: ['equivalence'] }, async () => {
     const id = useCanvas.getState().addEntity('raster', { objects: [raster] });
     useCanvas.getState().select(id);
     show(<RasterFilterMenu />);
@@ -56,7 +56,7 @@ describe('the filter button', () => {
     expect(applied).toHaveBeenCalledWith(id, { kind: 'blur', radius: 12 }, useCanvas);
   });
 
-  it('applies grayscale and invert without a radius', { tags: ['scenario'] }, async () => {
+  it('applies grayscale and invert without a radius', { tags: ['equivalence'] }, async () => {
     const id = useCanvas.getState().addEntity('raster', { objects: [raster] });
     useCanvas.getState().select(id);
     show(<RasterFilterMenu />);
@@ -67,7 +67,7 @@ describe('the filter button', () => {
     await waitFor(() => expect(applied).toHaveBeenCalledWith(id, { kind: 'invert' }, useCanvas));
   });
 
-  it('acts on the surrounding store, not the Image tab\'s', { tags: ['scenario'] }, async () => {
+  it('acts on the surrounding store, not the Image tab\'s', { tags: ['condition'] }, async () => {
     const page = createCanvasStore({ syncParams: false });
     const id = page.getState().addEntity('raster', { objects: [raster] });
     page.getState().select(id);
@@ -83,8 +83,8 @@ describe('the filter button', () => {
   });
 });
 
-describe('the bucket', () => {
-  it('has a tool button, and a tolerance box only while it is the tool', { tags: ['scenario'] }, () => {
+describe('the bucket', { tags: [] }, () => {
+  it('has a tool button, and a tolerance box only while it is the tool', { tags: ['condition'] }, () => {
     show(
       <>
         <ToolChooser />

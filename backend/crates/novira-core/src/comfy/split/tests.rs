@@ -81,7 +81,7 @@ fn built(f: Family) -> BuiltGraph {
     build_any(&input(&p, &unet, Some(&vae), &split)).unwrap()
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn anima_uses_a_plain_clip_loader_and_a_real_negative_prompt() {
     let g = built(Family::Anima);
@@ -101,7 +101,7 @@ fn anima_uses_a_plain_clip_loader_and_a_real_negative_prompt() {
     assert_eq!(k["steps"], 20);
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn flux_loads_two_encoders_and_gives_the_strength_to_the_guidance_node() {
     let g = built(Family::Flux);
@@ -261,7 +261,7 @@ fn every_family_of_the_shared_graph_drafts_with_the_advanced_sampler() {
     }
 }
 
-// tags: scenario
+// tags: condition
 #[test]
 fn a_checkpoint_gives_the_parts_it_carries_and_the_rest_are_loaded_beside_it() {
     let p = params(GenerationMode::Txt2img);
@@ -302,7 +302,7 @@ fn a_checkpoint_gives_the_parts_it_carries_and_the_rest_are_loaded_beside_it() {
     );
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn a_lora_goes_between_the_loaders_and_the_shift() {
     let p = params(GenerationMode::Txt2img);
@@ -324,7 +324,7 @@ fn a_lora_goes_between_the_loaders_and_the_shift() {
     );
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn image_to_image_inpaint_and_the_high_resolution_fix_use_the_shared_graph() {
     let unet = r("diffusion_models", "m.safetensors");
@@ -400,7 +400,7 @@ fn a_controlnet_of_the_newer_families_gets_the_vae() {
     assert_eq!(source(&g, &apply["vae"])["class_type"], "VAELoader");
 }
 
-// tags: error-guessing
+// tags: equivalence
 #[test]
 fn a_model_patch_control_changes_the_model_with_the_family_node() {
     let mut p = params(GenerationMode::Txt2img);
@@ -495,7 +495,7 @@ fn model(kind: ModelType, name: &str) -> ModelConfig {
     .unwrap()
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn the_installed_encoder_and_vae_are_found_by_the_words_in_their_names() {
     let models = vec![
@@ -603,7 +603,7 @@ fn a_gguf_file_loads_through_the_gguf_pack_and_a_plain_file_does_not() {
     assert!(super::gguf_nodes(&g.prompt).is_empty());
 }
 
-// tags: condition
+// tags: condition, equivalence
 #[test]
 fn the_gguf_text_loader_matches_the_number_of_encoders() {
     let p = params(GenerationMode::Txt2img);
@@ -627,7 +627,7 @@ fn the_gguf_text_loader_matches_the_number_of_encoders() {
     }
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn flux2_klein_reads_qwen3_where_dev_reads_mistral() {
     use crate::models::classify::Variant;
@@ -703,7 +703,7 @@ fn the_recorded_sampling_is_what_each_picture_family_graph_runs() {
     assert_eq!(count(&g, "KSampler"), 0);
 }
 
-// tags: condition
+// tags: equivalence, condition
 #[test]
 fn anima_runs_the_scheduler_setting_and_plain_euler_is_its_template() {
     let unet = r("diffusion_models", "model.safetensors");
@@ -730,7 +730,7 @@ fn anima_runs_the_scheduler_setting_and_plain_euler_is_its_template() {
         .contains("not available"));
 }
 
-// tags: condition
+// tags: decision-table
 #[test]
 fn the_sampling_is_fixed_for_picture_family_models_in_the_modes_the_picture_graph_draws() {
     let of = |base: &str, kind: &str| -> ModelConfig {
@@ -786,7 +786,7 @@ fn the_sampling_is_fixed_for_picture_family_models_in_the_modes_the_picture_grap
     );
 }
 
-// tags: equivalence
+// tags: decision-table
 #[test]
 fn a_sampler_and_noise_schedule_the_picture_names_win_on_every_family() {
     let unet = r("diffusion_models", "model.safetensors");

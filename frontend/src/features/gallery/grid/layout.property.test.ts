@@ -17,7 +17,7 @@ const initial = useGallery.getState();
 beforeEach(() => useGallery.setState(initial, true));
 
 describe('grid layout (properties)', () => {
-  it('every image sits in exactly one image row of at most `cols`, in order, and rowOf points at it', { tags: ['error-guessing'] }, () => {
+  it('every image sits in exactly one image row of at most `cols`, in order, and rowOf points at it', { tags: ['boundary'] }, () => {
     check(
       fc.property(list, fc.integer({ min: -2, max: 12 }), fc.boolean(), (items, cols, grouped) => {
         const { rows, rowOf } = buildGridLayout(items, cols, grouped);
@@ -38,7 +38,7 @@ describe('grid layout (properties)', () => {
     );
   });
 
-  it('with grouping, a header precedes each run of one day and counts it', { tags: ['error-guessing'] }, () => {
+  it('with grouping, a header precedes each run of one day and counts it', { tags: ['condition'] }, () => {
     check(
       fc.property(list, fc.integer({ min: 1, max: 8 }), (items, cols) => {
         const { rows } = buildGridLayout(items, cols, true);
@@ -55,7 +55,7 @@ describe('grid layout (properties)', () => {
     );
   });
 
-  it('verticalStep always returns a valid index, and moves down then up in the same column', { tags: ['error-guessing'] }, () => {
+  it('verticalStep always returns a valid index, and moves down then up in the same column', { tags: ['boundary', 'condition'] }, () => {
     check(
       fc.property(list.filter((l) => l.length > 0), fc.integer({ min: 1, max: 8 }), fc.boolean(), fc.nat(), (items, cols, grouped, pick) => {
         const layout = buildGridLayout(items, cols, grouped);
@@ -76,7 +76,7 @@ const names = fc.integer({ min: 1, max: 15 }).map((n) => Array.from({ length: n 
 const click = fc.record({ ctrlKey: fc.boolean(), metaKey: fc.boolean(), shiftKey: fc.boolean(), altKey: fc.boolean() });
 
 describe('grid selection (properties)', () => {
-  it('any sequence of clicks and moves keeps a selection of unique names from the list', { tags: ['error-guessing'] }, () => {
+  it('any sequence of clicks and moves keeps a selection of unique names from the list', { tags: ['state-transition'] }, () => {
     check(
       fc.property(
         names,

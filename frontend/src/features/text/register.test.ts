@@ -18,7 +18,7 @@ beforeEach(() => {
 });
 
 describe('text editor for the assistant', () => {
-  it('reports the scene and selection', { tags: ['condition'] }, () => {
+  it('reports the scene and selection', { tags: ['equivalence'] }, () => {
     const layer = { ...newTextLayer(EMPTY_SCENE, 'A'), id: 'a' };
     useTextEditor.setState({ scene: { ...EMPTY_SCENE, layers: [layer] }, selectedId: 'a' });
     expect(editor!.context()).toMatchObject({ selectedLayerId: 'a', scene: { layers: [{ id: 'a' }] } });

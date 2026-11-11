@@ -67,7 +67,7 @@ fn the_maximum_number_of_control_layers_and_references_is_accepted() {
     assert_eq!(with_refs(vec![reference(); MAX_REF_IMAGES]), Ok(()));
 }
 
-// tags: error-guessing, boundary
+// tags: boundary
 #[test]
 fn a_picture_url_of_the_maximum_length_is_accepted_and_one_more_is_refused() {
     let url = |len: usize| "h".repeat(len);
@@ -85,7 +85,7 @@ fn a_picture_url_of_the_maximum_length_is_accepted_and_one_more_is_refused() {
     }
 }
 
-// tags: error-guessing, boundary
+// tags: boundary
 #[test]
 fn a_model_key_of_the_maximum_length_is_accepted_and_one_more_is_refused() {
     for (len, ok) in [(300, true), (301, false)] {

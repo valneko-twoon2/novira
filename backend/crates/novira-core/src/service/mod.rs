@@ -731,7 +731,7 @@ mod seed_tests {
         assert_eq!(batch_seed(7, 3), 10);
     }
 
-    // tags: boundary, scenario
+    // tags: boundary, error-guessing
     #[test]
     fn batch_seeds_do_not_overflow_for_out_of_range_seeds() {
         assert_eq!(

@@ -7,8 +7,8 @@ const notices = readFileSync(new URL('../../../../THIRD_PARTY_NOTICES.txt', impo
 const license = readFileSync(new URL('../../../../LICENSE', import.meta.url), 'utf8');
 const shipped = [...oss.frontend, ...oss.backend];
 
-describe('open-source list', () => {
-  it('names a real license for every package, written as an SPDX expression', { tags: ['condition', 'static'] }, () => {
+describe('open-source list', { tags: [] }, () => {
+  it('names a real license for every package, written as an SPDX expression', { tags: ['static', 'error-guessing'] }, () => {
     for (const e of shipped) {
       expect(e.license, `${e.name}`).not.toBe('UNKNOWN');
       expect(e.license, `${e.name}`).not.toMatch(/\//);
@@ -16,13 +16,13 @@ describe('open-source list', () => {
     }
   });
 
-  it('has the license text of every package in THIRD_PARTY_NOTICES.txt', { tags: ['condition', 'static'] }, () => {
+  it('has the license text of every package in THIRD_PARTY_NOTICES.txt', { tags: ['static', 'equivalence'] }, () => {
     for (const e of shipped) {
       expect(notices, `${e.name} ${e.version}`).toContain(`- ${e.name} ${e.version} (`);
     }
   });
 
-  it('ships novira under the Apache License 2.0, in full', { tags: ['condition', 'static'] }, () => {
+  it('ships novira under the Apache License 2.0, in full', { tags: ['static', 'equivalence'] }, () => {
     expect(license).toContain('Apache License');
     expect(license).toContain('Version 2.0, January 2004');
     expect(license).toContain('limitations under the License.');

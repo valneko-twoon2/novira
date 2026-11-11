@@ -16,7 +16,7 @@ const girl: ComicCharacter = { id: 'girl', name: 'Akane', tags: '1girl', imageNa
 const kage: ComicCharacter = { id: 'kage', name: 'Kage', tags: 'monster', imageName: null, nonHuman: true };
 const project = { cast: [boy, girl, kage] };
 
-describe('castRegions', () => {
+describe('castRegions', { tags: [] }, () => {
   it('is null for a panel with one character, with no pose, or with nobody placed', { tags: ['condition'] }, () => {
     expect(castRegions(project, { cast: ['boy'], poses: [person(0.3)] })).toBeNull();
     expect(castRegions(project, { cast: ['boy', 'girl'], poses: [] })).toBeNull();
@@ -24,7 +24,7 @@ describe('castRegions', () => {
     expect(castRegions(project, { cast: ['boy', 'girl'], poses: [person(0.2), person(0.5), person(0.8)] })).toBeNull();
   });
 
-  it('takes the human characters in the panel order when they are as many as the people', { tags: ['condition'] }, () => {
+  it('takes the human characters in the panel order when they are as many as the people', { tags: ['equivalence'] }, () => {
     const regions = castRegions(project, { cast: ['girl', 'boy', 'kage'], poses: [person(0.25), person(0.75)] })!;
     expect(regions.map((r) => r.character.id)).toEqual(['girl', 'boy', 'kage']);
     expect(regions[0]!.box!.x).toBeLessThan(0.25);
@@ -33,7 +33,7 @@ describe('castRegions', () => {
     expect(regions[2]!.box).toBeNull();
   });
 
-  it('follows the names given to the people, and keeps a box inside the panel', { tags: ['condition'] }, () => {
+  it('follows the names given to the people, and keeps a box inside the panel', { tags: ['condition', 'boundary'] }, () => {
     const regions = castRegions(project, { cast: ['boy', 'girl'], poses: [person(0.02), person(0.75)], poseCast: ['girl', 'boy'] })!;
     const girlBox = regions.find((r) => r.character.id === 'girl')!.box!;
     expect(girlBox.x).toBe(0);
@@ -42,22 +42,26 @@ describe('castRegions', () => {
   });
 });
 
-describe('storeCastRegions', () => {
-  it('stores each mask once: a panel drawn again with the same people in the same places reuses them', { tags: ['regression'] }, async () => {
-    const png = new Blob(['x'], { type: 'image/png' });
-    const canvas = { width: 0, height: 0, getContext: () => ({ fillRect: () => undefined, fillStyle: '' }), toBlob: (cb: (b: Blob) => void) => cb(png) };
-    vi.stubGlobal('document', { createElement: () => canvas });
-    const upload = vi.spyOn(backend, 'uploadImage').mockImplementation(async () => ({ name: `m${upload.mock.calls.length}.png`, url: `novira-image://m${upload.mock.calls.length}.png` }) as ImageDTO);
-    const regions = castRegions(project, { cast: ['girl', 'boy'], poses: [person(0.25), person(0.75)] })!;
-    const first = await storeCastRegions(regions, 640, 480);
-    expect(upload).toHaveBeenCalledTimes(2);
-    const again = await storeCastRegions(regions, 640, 480);
-    expect(upload).toHaveBeenCalledTimes(2);
-    expect(again.map((r) => r.imageUrl)).toEqual(first.map((r) => r.imageUrl));
-    // Another size is another mask.
-    await storeCastRegions(regions, 320, 240);
-    expect(upload).toHaveBeenCalledTimes(4);
-    vi.restoreAllMocks();
-    vi.unstubAllGlobals();
-  });
+describe('storeCastRegions', { tags: [] }, () => {
+  it(
+    'stores each mask once: a panel drawn again with the same people in the same places reuses them',
+    { tags: ['condition'] },
+    async () => {
+      const png = new Blob(['x'], { type: 'image/png' });
+      const canvas = { width: 0, height: 0, getContext: () => ({ fillRect: () => undefined, fillStyle: '' }), toBlob: (cb: (b: Blob) => void) => cb(png) };
+      vi.stubGlobal('document', { createElement: () => canvas });
+      const upload = vi.spyOn(backend, 'uploadImage').mockImplementation(async () => ({ name: `m${upload.mock.calls.length}.png`, url: `novira-image://m${upload.mock.calls.length}.png` }) as ImageDTO);
+      const regions = castRegions(project, { cast: ['girl', 'boy'], poses: [person(0.25), person(0.75)] })!;
+      const first = await storeCastRegions(regions, 640, 480);
+      expect(upload).toHaveBeenCalledTimes(2);
+      const again = await storeCastRegions(regions, 640, 480);
+      expect(upload).toHaveBeenCalledTimes(2);
+      expect(again.map((r) => r.imageUrl)).toEqual(first.map((r) => r.imageUrl));
+      // Another size is another mask.
+      await storeCastRegions(regions, 320, 240);
+      expect(upload).toHaveBeenCalledTimes(4);
+      vi.restoreAllMocks();
+      vi.unstubAllGlobals();
+    },
+  );
 });

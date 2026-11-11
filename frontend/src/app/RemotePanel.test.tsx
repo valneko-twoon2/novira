@@ -40,7 +40,7 @@ async function refresh() {
   });
 }
 
-describe('RemotePanel', () => {
+describe('RemotePanel', { tags: [] }, () => {
   beforeEach(() => resetLan());
   afterEach(() => {
     cleanup();
@@ -68,33 +68,37 @@ describe('RemotePanel', () => {
     expect(screen.queryByTestId('remote-enrol')).toBeNull();
   });
 
-  it('adds a phone: a code, its request with the number, and its passkey once allowed', { tags: ['scenario'] }, async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
-    try {
-      const lan = createMockLan('open', Date.now, 'off');
-      await show(lan);
-      await click(screen.getByRole('switch'));
-      await click(await screen.findByTestId('remote-enrol'));
-      const code = await screen.findByTestId('remote-code');
-      expect(code.getAttribute('viewBox')).toBe('0 0 29 29');
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(2100);
-      });
-      await refresh();
-      const asking = (await lan.remoteState())?.pending[0];
-      const row = await screen.findByTestId(`remote-pending-${asking?.id}`);
-      expect(row.textContent).toContain('iPhone');
-      expect(row.textContent).toMatch(/\d{3} \d{3}/);
-      await click(screen.getByTestId(`remote-allow-${asking?.id}`));
-      expect((await lan.remoteState())?.passkeys).toHaveLength(1);
-      expect(screen.queryByTestId('remote-code')).toBeNull();
-      expect((await screen.findByTestId('remote-log')).textContent).toContain('iPhone');
-    } finally {
-      vi.useRealTimers();
-    }
-  });
+  it(
+    'adds a phone: a code, its request with the number, and its passkey once allowed',
+    { tags: ['scenario', 'state-transition'] },
+    async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      try {
+        const lan = createMockLan('open', Date.now, 'off');
+        await show(lan);
+        await click(screen.getByRole('switch'));
+        await click(await screen.findByTestId('remote-enrol'));
+        const code = await screen.findByTestId('remote-code');
+        expect(code.getAttribute('viewBox')).toBe('0 0 29 29');
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(2100);
+        });
+        await refresh();
+        const asking = (await lan.remoteState())?.pending[0];
+        const row = await screen.findByTestId(`remote-pending-${asking?.id}`);
+        expect(row.textContent).toContain('iPhone');
+        expect(row.textContent).toMatch(/\d{3} \d{3}/);
+        await click(screen.getByTestId(`remote-allow-${asking?.id}`));
+        expect((await lan.remoteState())?.passkeys).toHaveLength(1);
+        expect(screen.queryByTestId('remote-code')).toBeNull();
+        expect((await screen.findByTestId('remote-log')).textContent).toContain('iPhone');
+      } finally {
+        vi.useRealTimers();
+      }
+    },
+  );
 
-  it('removes a passkey only on a second press', { tags: ['condition'] }, async () => {
+  it('removes a passkey only on a second press', { tags: ['state-transition'] }, async () => {
     const lan = createMockLan('open', Date.now, 'on');
     await show(lan);
     const forget = await screen.findByTestId('remote-forget-k0');
@@ -105,13 +109,13 @@ describe('RemotePanel', () => {
     await waitFor(() => expect(screen.queryByTestId('remote-passkey-k0')).toBeNull());
   });
 
-  it('writes a time short, in the screen language, and leaves a bad one as it is', { tags: ['boundary'] }, () => {
+  it('writes a time short, in the screen language, and leaves a bad one as it is', { tags: ['error-guessing', 'equivalence'] }, () => {
     expect(shortTime('2026-11-03T18:20:00+00:00', 'en-US')).toMatch(/11\/\d/);
     expect(shortTime('nope', 'ja')).toBe('nope');
   });
 });
 
-describe('the network item with a remote listener', () => {
+describe('the network item with a remote listener', { tags: [] }, () => {
   beforeEach(() => resetLan());
   afterEach(() => {
     cleanup();

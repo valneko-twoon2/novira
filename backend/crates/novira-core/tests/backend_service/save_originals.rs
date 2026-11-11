@@ -5,7 +5,7 @@ use novira_core::types::*;
 use novira_core::BackendError;
 use std::sync::Arc;
 
-// tags: error-guessing
+// tags: scenario, condition
 #[tokio::test]
 async fn the_originals_are_copied_byte_for_byte_and_never_overwrite() {
     let dir = tempfile::tempdir().unwrap();

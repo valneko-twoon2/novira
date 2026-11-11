@@ -7,7 +7,7 @@ import { missingPacks } from './packRequirements';
 
 blockExternalNetwork();
 
-describe('missingPacks (fuzz)', () => {
+describe('missingPacks (fuzz)', { tags: [] }, () => {
   it('never throws for any text or JSON and gives null or only comfy: types', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(fc.oneof(junkStored, junkJson), (raw) => {
@@ -20,7 +20,7 @@ describe('missingPacks (fuzz)', () => {
     );
   });
 
-  it('reports the unknown pack node types of a file and the packs it declares', { tags: ['error-guessing'] }, () => {
+  it('reports the unknown pack node types of a file and the packs it declares', { tags: ['boundary'] }, () => {
     check(
       fc.property(fc.uniqueArray(fc.stringMatching(/^[A-Za-z0-9_]{1,8}$/), { minLength: 1, maxLength: 4 }), fc.array(fc.stringMatching(/^[A-Za-z0-9_-]{1,8}$/), { maxLength: 3 }), (names, folders) => {
         const file = { nodes: names.map((n) => ({ data: { type: `comfy:unknown-${n}` } })), packs: folders.map((folder) => ({ folder })) };

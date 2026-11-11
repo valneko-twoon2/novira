@@ -96,7 +96,7 @@ fn save_all(dir: &std::path::Path, s: &Settings) {
     }
 }
 
-// tags: decision-table
+// tags: equivalence
 #[test]
 fn loading_then_saving_every_key_and_loading_again_gives_the_same_settings() {
     check_up_to(64, document(), |doc| {
@@ -114,7 +114,7 @@ fn loading_then_saving_every_key_and_loading_again_gives_the_same_settings() {
     });
 }
 
-// tags: state-transition
+// tags: condition
 #[test]
 fn keys_this_version_does_not_know_survive_saving() {
     check_up_to(64, document(), |doc| {
@@ -132,7 +132,7 @@ fn keys_this_version_does_not_know_survive_saving() {
     });
 }
 
-// tags: error-guessing, decision-table
+// tags: condition, equivalence
 #[test]
 fn a_missing_key_takes_its_default_and_saving_one_key_leaves_the_others_as_loaded() {
     check_up_to(
@@ -176,7 +176,7 @@ fn a_saved_value_of_the_right_type_is_what_loads_next() {
     );
 }
 
-// tags: boundary, decision-table
+// tags: boundary
 #[test]
 fn the_start_timeout_and_package_checks_accept_exactly_their_range() {
     check(
@@ -256,7 +256,7 @@ fn a_document_with_swapped_types_is_an_error_or_loads_and_never_panics() {
     assert!(Settings::load(dir.path()).is_err());
 }
 
-// tags: decision-table
+// tags: error-guessing, condition
 #[test]
 fn saving_a_key_into_any_document_either_writes_a_whole_object_or_leaves_the_file_alone() {
     check_up_to(
@@ -299,7 +299,7 @@ fn saving_a_key_into_any_document_either_writes_a_whole_object_or_leaves_the_fil
     );
 }
 
-// tags: error-guessing, boundary
+// tags: boundary, error-guessing
 #[test]
 fn huge_and_odd_strings_are_stored_whole_and_read_back() {
     let dir = tempfile::tempdir().unwrap();

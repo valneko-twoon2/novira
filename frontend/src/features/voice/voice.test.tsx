@@ -27,8 +27,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('voice request', () => {
-  it('needs text, and a description in design mode', { tags: ['scenario'] }, () => {
+describe('voice request', { tags: [] }, () => {
+  it('needs text, and a description in design mode', { tags: ['decision-table'] }, () => {
     const { form } = useVoice.getState();
     const texts = { text: 'text', description: 'description' };
     expect(voiceProblems(form, texts)).toEqual(['text']);
@@ -37,15 +37,15 @@ describe('voice request', () => {
     expect(voiceProblems({ ...form, text: 'hello', mode: 'design', instruct: 'low voice' }, texts)).toEqual([]);
   });
 
-  it('carries the voice settings', { tags: ['scenario'] }, () => {
+  it('carries the voice settings', { tags: ['equivalence'] }, () => {
     const req = buildVoiceRequest({ text: ' こんにちは ', language: 'Japanese', mode: 'preset', speaker: 'Ono_Anna', instruct: ' cheerful ' });
     expect(req.params.generationMode).toBe('voice');
     expect(req.params.voice).toEqual({ text: 'こんにちは', language: 'Japanese', mode: 'preset', speaker: 'Ono_Anna', instruct: 'cheerful' });
   });
 });
 
-describe('voice panel', () => {
-  it('invokes once there is text', { tags: ['scenario'] }, async () => {
+describe('voice panel', { tags: [] }, () => {
+  it('invokes once there is text', { tags: ['condition'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue').mockResolvedValue([]);
     render(<TooltipProvider><VoicePanel /></TooltipProvider>);
     const start = screen.getByTestId('invoke-button') as HTMLButtonElement;
@@ -57,7 +57,7 @@ describe('voice panel', () => {
     expect((enqueue.mock.calls[0]![0] as EnqueueRequest).params.voice?.text).toBe('Hello there');
   });
 
-  it('design mode swaps the speaker list for a description', { tags: ['scenario'] }, () => {
+  it('design mode swaps the speaker list for a description', { tags: ['condition'] }, () => {
     render(<TooltipProvider><VoicePanel /></TooltipProvider>);
     expect(screen.queryByTestId('voice-description')).toBeNull();
     fireEvent.click(screen.getByTestId('voice-mode-design'));
@@ -80,7 +80,7 @@ describe('voice panel', () => {
   });
 });
 
-describe('audio results', () => {
+describe('audio results', { tags: [] }, () => {
   const clip = (name: string, mode: 'music' | 'voice', createdAt: number) =>
     ({
       name,
@@ -93,7 +93,7 @@ describe('audio results', () => {
       metadata: { generationMode: mode, positivePrompt: name, seed: 1, voice: mode === 'voice' ? { text: name, language: 'English', mode: 'preset', speaker: 'Ryan', instruct: '' } : undefined },
     }) as unknown as ImageDTO;
 
-  it('shows only the clips of its own kind, newest first, each with a player', { tags: ['scenario'] }, () => {
+  it('shows only the clips of its own kind, newest first, each with a player', { tags: ['condition'] }, () => {
     useGallery.setState({ images: [clip('old.wav', 'voice', 1), clip('song.flac', 'music', 2), clip('new.wav', 'voice', 3)] });
     render(<TooltipProvider><AudioResults kind="voice" /></TooltipProvider>);
     const clips = screen.getAllByTestId('voice-clip');
@@ -101,7 +101,7 @@ describe('audio results', () => {
     expect(clips[0]!.querySelector('audio')?.getAttribute('src')).toBe('http://x/full/new.wav');
   });
 
-  it('says there is nothing yet when there are no clips', { tags: ['scenario'] }, () => {
+  it('says there is nothing yet when there are no clips', { tags: ['boundary'] }, () => {
     render(<TooltipProvider><AudioResults kind="music" /></TooltipProvider>);
     expect(screen.queryByTestId('music-clip')).toBeNull();
     expect(screen.getByTestId('music-results').textContent).toBe(t('audio.empty.music.title'));

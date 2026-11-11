@@ -64,7 +64,7 @@ describe('RichHeader', () => {
     expect(screen.getByLabelText(t('params.invoke.cancelCurrent'))).toBeTruthy();
   });
 
-  it('adds no note when a line ControlNet is missing, and the button stays usable', { tags: ['error-guessing'] }, () => {
+  it('adds no note when a line ControlNet is missing, and the button stays usable', { tags: ['condition'] }, () => {
     useModels.setState({ models: [model('wai', 'main', 'sdxl')] });
     render(<RichHeader />);
     expect(screen.queryByTestId('text-rich-nomodel')).toBeNull();
@@ -92,7 +92,7 @@ describe('RichHeader', () => {
     expect(screen.queryByText(t('text.rich.select'))).toBeNull();
   });
 
-  it('turns the button on when a text layer gets selected', { tags: ['scenario'] }, () => {
+  it('turns the button on when a text layer gets selected', { tags: ['state-transition'] }, () => {
     useTextEditor.setState({ selectedId: null });
     render(<RichHeader />);
     expect(invokeButton().disabled).toBe(true);

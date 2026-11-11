@@ -30,13 +30,13 @@ function importsOf(file: string): string[] {
   }).map((m) => m.replace(/\.(tsx?|json)$/, ''));
 }
 
-describe('frontend source layout', () => {
-  it('has no catch-all folders (utils, misc, helpers)', { tags: ['condition', 'static'] }, () => {
+describe('frontend source layout', { tags: [] }, () => {
+  it('has no catch-all folders (utils, misc, helpers)', { tags: ['static', 'equivalence'] }, () => {
     const bad = dirs(SRC).filter((d) => FORBIDDEN_DIRS.test(d.split(/[\\/]/).pop()!)).map(rel);
     expect(bad).toEqual([]);
   });
 
-  it('every layer exception is still needed', { tags: ['condition', 'static'] }, () => {
+  it('every layer exception is still needed', { tags: ['static', 'condition'] }, () => {
     const stale = LAYER_EXCEPTIONS.filter(([from, to]) => !existsSync(join(SRC, from)) || !importsOf(from).includes(to));
     expect(stale.map(([from, to]) => `${from} -> ${to}`)).toEqual([]);
   });

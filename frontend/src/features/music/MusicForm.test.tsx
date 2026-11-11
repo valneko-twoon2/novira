@@ -38,14 +38,14 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('music form controls', () => {
-  it('writes the lyrics and style tags into the form', { tags: ['scenario'] }, () => {
+describe('music form controls', { tags: [] }, () => {
+  it('writes the lyrics and style tags into the form', { tags: ['equivalence'] }, () => {
     fireEvent.change(screen.getByTestId('music-lyrics'), { target: { value: 'la la' } });
     fireEvent.change(screen.getByTestId('music-tags'), { target: { value: 'jazz' } });
     expect(form()).toMatchObject({ lyrics: 'la la', tags: 'jazz' });
   });
 
-  it('changes the lyrics language, the time signature and the key from their menus', { tags: ['scenario'] }, () => {
+  it('changes the lyrics language, the time signature and the key from their menus', { tags: ['equivalence'] }, () => {
     choose(t('music.language'), t('music.lang.en'));
     expect(form().language).toBe('en');
     choose(t('music.timeSignature'), '3/4');
@@ -54,7 +54,7 @@ describe('music form controls', () => {
     expect(form().key).toBe('D minor');
   });
 
-  it('keeps the language menu off for an instrumental song', { tags: ['scenario'] }, () => {
+  it('keeps the language menu off for an instrumental song', { tags: ['condition'] }, () => {
     act(() => useMusic.getState().setForm({ instrumental: true }));
     expect((screen.getByLabelText(t('music.language')) as HTMLButtonElement).disabled).toBe(true);
   });
@@ -70,19 +70,23 @@ describe('music form controls', () => {
     expect(form().cfgScale).toBe(2.5);
   });
 
-  it('grays out the seed box and the roll button while a new seed is drawn each time, and takes a seed otherwise', { tags: ['scenario'] }, () => {
-    const box = () => screen.getByLabelText(t('params.seed.label')) as HTMLInputElement;
-    const roll = () => screen.getByRole('button', { name: t('params.seed.shuffle') }) as HTMLButtonElement;
-    expect(form().randomizeSeed).toBe(false);
-    expect([box().disabled, roll().disabled]).toEqual([false, false]);
-    setNum(t('params.seed.label'), 123);
-    expect(form().seed).toBe(123);
-    fireEvent.click(roll());
-    expect(form().seed).not.toBe(123);
-    fireEvent.click(screen.getByTestId('seed-random'));
-    expect(form().randomizeSeed).toBe(true);
-    expect([box().disabled, roll().disabled]).toEqual([true, true]);
-    fireEvent.click(screen.getByTestId('seed-fixed'));
-    expect([box().disabled, roll().disabled]).toEqual([false, false]);
-  });
+  it(
+    'grays out the seed box and the roll button while a new seed is drawn each time, and takes a seed otherwise',
+    { tags: ['condition'] },
+    () => {
+      const box = () => screen.getByLabelText(t('params.seed.label')) as HTMLInputElement;
+      const roll = () => screen.getByRole('button', { name: t('params.seed.shuffle') }) as HTMLButtonElement;
+      expect(form().randomizeSeed).toBe(false);
+      expect([box().disabled, roll().disabled]).toEqual([false, false]);
+      setNum(t('params.seed.label'), 123);
+      expect(form().seed).toBe(123);
+      fireEvent.click(roll());
+      expect(form().seed).not.toBe(123);
+      fireEvent.click(screen.getByTestId('seed-random'));
+      expect(form().randomizeSeed).toBe(true);
+      expect([box().disabled, roll().disabled]).toEqual([true, true]);
+      fireEvent.click(screen.getByTestId('seed-fixed'));
+      expect([box().disabled, roll().disabled]).toEqual([false, false]);
+    },
+  );
 });

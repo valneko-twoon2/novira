@@ -12,7 +12,7 @@ const scene = (op: Record<string, unknown>): Scene => readScene({ panel: 1, ...o
 type Person = { x?: number; y?: number; neck?: { x: number; y: number }; size?: number; back?: boolean; turn?: number; head?: { turn?: number }; who: string; words: string };
 const people = (ops: Record<string, unknown>[]) => (ops.find((o) => o.op === 'pose')!.people as Person[]) ?? [];
 
-describe('readScene', () => {
+describe('readScene', { tags: [] }, () => {
   it('needs a panel number from 1', { tags: ['condition'] }, () => {
     expect(readScene({}).scene).toBeNull();
     expect(readScene({ panel: 0 }).scene).toBeNull();
@@ -31,7 +31,7 @@ describe('readScene', () => {
     expect(notes.some((n) => /at most/.test(n))).toBe(true);
   });
 
-  it('takes a line with a speaker as speech and one without as narration, and drops empty lines', { tags: ['boundary'] }, () => {
+  it('takes a line with a speaker as speech and one without as narration, and drops empty lines', { tags: ['condition'] }, () => {
     const read = scene({ lines: [{ who: 'Mio', text: 'Hi' }, { text: 'Later that day' }, { who: 'Sota', text: '  ' }] });
     expect(read.lines).toEqual([
       { who: 'Mio', text: 'Hi', kind: 'speech' },
@@ -39,7 +39,7 @@ describe('readScene', () => {
     ]);
   });
 
-  it('frames people in full and an empty panel wide when the shot is not given; an unknown shot is told', { tags: ['error-guessing', 'boundary'] }, () => {
+  it('frames people in full and an empty panel wide when the shot is not given; an unknown shot is told', { tags: ['condition'] }, () => {
     expect(scene({ people: [{ who: 'Mio' }] }).shot).toBe('full');
     expect(scene({}).shot).toBe('wide');
     expect(readScene({ panel: 1, shot: 'macro' }).notes[0]).toMatch(/shot is one of/);
@@ -52,62 +52,74 @@ describe('readScene', () => {
   });
 });
 
-describe('scenePrompt', () => {
-  it('says solo for one person, the framing and what they do, and asks for the things more strongly', { tags: ['condition'] }, () => {
+describe('scenePrompt', { tags: [] }, () => {
+  it('says solo for one person, the framing and what they do, and asks for the things more strongly', { tags: ['equivalence'] }, () => {
     const prompt = scenePrompt(scene({ shot: 'chest', people: [{ who: 'Mio', doing: 'holding a cup', face: 'smile' }], things: 'steaming tea, rainbow in the window' }), CAST);
     expect(prompt).toBe(`solo, upper body, holding a cup, smile, (steaming tea:${SCENE_THINGS_WEIGHT}), (rainbow in the window:${SCENE_THINGS_WEIGHT})`);
   });
 
-  it('counts several characters by their own count tags, since they are drawn in regions without them in front', { tags: ['condition'] }, () => {
-    const prompt = scenePrompt(scene({ people: [{ who: 'Mio' }, { who: 'Sota' }], also: ['Goro'] }), CAST);
-    expect(prompt.startsWith('1girl, 1boy, 1dog, full body')).toBe(true);
-    expect(prompt).toContain('looking at another');
-  });
+  it(
+    'counts several characters by their own count tags, since they are drawn in regions without them in front',
+    { tags: ['equivalence'] },
+    () => {
+      const prompt = scenePrompt(scene({ people: [{ who: 'Mio' }, { who: 'Sota' }], also: ['Goro'] }), CAST);
+      expect(prompt.startsWith('1girl, 1boy, 1dog, full body')).toBe(true);
+      expect(prompt).toContain('looking at another');
+    },
+  );
 
-  it('counts a person whose tags hold no count tag by the words they hold, and leaves out an uncounted animal', { tags: ['condition'] }, () => {
-    // A run with Claude Haiku on 2026-10-17 wrote cast tags such as "young adult female".
-    const cast = [
-      { name: 'A', tags: 'young adult female' },
-      { name: 'B', tags: 'young adult male' },
-      { name: 'C', tags: 'elderly shopkeeper' },
-      { name: 'D', tags: 'fox spirit', nonHuman: true },
-    ];
-    expect(scenePrompt(scene({ people: [{ who: 'A' }, { who: 'B' }, { who: 'C' }], also: ['D'] }), cast).startsWith('1girl, 1boy, 1other, full body')).toBe(true);
-    expect(countTagOf('young adult female')).toBeNull();
-    expect(countTagOf('teen, 2girls')).toEqual({ n: 2, noun: 'girl' });
-  });
+  it(
+    'counts a person whose tags hold no count tag by the words they hold, and leaves out an uncounted animal',
+    { tags: ['condition'] },
+    () => {
+      // A run with Claude Haiku on 2026-10-17 wrote cast tags such as "young adult female".
+      const cast = [
+        { name: 'A', tags: 'young adult female' },
+        { name: 'B', tags: 'young adult male' },
+        { name: 'C', tags: 'elderly shopkeeper' },
+        { name: 'D', tags: 'fox spirit', nonHuman: true },
+      ];
+      expect(scenePrompt(scene({ people: [{ who: 'A' }, { who: 'B' }, { who: 'C' }], also: ['D'] }), cast).startsWith('1girl, 1boy, 1other, full body')).toBe(true);
+      expect(countTagOf('young adult female')).toBeNull();
+      expect(countTagOf('teen, 2girls')).toEqual({ n: 2, noun: 'girl' });
+    },
+  );
 
   it('adds up characters of the same kind', { tags: ['equivalence'] }, () => {
     const cast = [...CAST, { name: 'Rin', tags: '1girl' }];
     expect(scenePrompt(scene({ people: [{ who: 'Mio' }, { who: 'Rin' }] }), cast).startsWith('2girls')).toBe(true);
   });
 
-  it('says from behind or from side for one person facing away or sideways, and the angle', { tags: ['condition'] }, () => {
+  it('says from behind or from side for one person facing away or sideways, and the angle', { tags: ['equivalence'] }, () => {
     expect(scenePrompt(scene({ people: [{ who: 'Mio', facing: 'away' }] }), CAST)).toContain('from behind');
     expect(scenePrompt(scene({ people: [{ who: 'Mio', facing: 'left' }], angle: 'above' }), CAST)).toBe('solo, full body, from above, from side');
   });
 
-  it('says no humans for an empty panel and a face shot as a close-up', { tags: ['boundary'] }, () => {
+  it('says no humans for an empty panel and a face shot as a close-up', { tags: ['condition'] }, () => {
     expect(scenePrompt(scene({ things: 'rainbow' }), CAST)).toBe(`no humans, wide shot, (rainbow:${SCENE_THINGS_WEIGHT})`);
     expect(scenePrompt(scene({ shot: 'face', people: [{ who: 'Mio' }] }), CAST)).toBe('solo, close-up, portrait');
   });
 
-  it('says male focus for a panel whose people are all men, with or without an animal, and not when a woman is there', { tags: ['equivalence'] }, () => {
-    // A tag model drew the man of a Haiku run as a woman in every panel; male focus is how Danbooru tags such pictures.
-    expect(scenePrompt(scene({ shot: 'face', people: [{ who: 'Sota' }] }), CAST)).toBe('solo, male focus, close-up, portrait');
-    expect(scenePrompt(scene({ people: [{ who: 'Sota' }], also: ['Goro'] }), CAST).startsWith('1boy, 1dog, male focus, full body')).toBe(true);
-    expect(scenePrompt(scene({ people: [{ who: 'Sota' }, { who: 'Mio' }] }), CAST)).not.toContain('male focus');
-    expect(scenePrompt(scene({ also: ['Goro'] }), CAST)).not.toContain('male focus');
-  });
+  it(
+    'says male focus for a panel whose people are all men, with or without an animal, and not when a woman is there',
+    { tags: ['condition'] },
+    () => {
+      // A tag model drew the man of a Haiku run as a woman in every panel; male focus is how Danbooru tags such pictures.
+      expect(scenePrompt(scene({ shot: 'face', people: [{ who: 'Sota' }] }), CAST)).toBe('solo, male focus, close-up, portrait');
+      expect(scenePrompt(scene({ people: [{ who: 'Sota' }], also: ['Goro'] }), CAST).startsWith('1boy, 1dog, male focus, full body')).toBe(true);
+      expect(scenePrompt(scene({ people: [{ who: 'Sota' }, { who: 'Mio' }] }), CAST)).not.toContain('male focus');
+      expect(scenePrompt(scene({ also: ['Goro'] }), CAST)).not.toContain('male focus');
+    },
+  );
 
-  it('does not say they look at each other when both face the viewer', { tags: ['equivalence'] }, () => {
+  it('does not say they look at each other when both face the viewer', { tags: ['condition'] }, () => {
     const prompt = scenePrompt(scene({ people: [{ who: 'Mio', facing: 'viewer' }, { who: 'Sota', facing: 'viewer' }] }), CAST);
     expect(prompt).not.toContain('looking at another');
   });
 });
 
-describe('sceneOps', () => {
-  it('makes the panel, then the pose, then the balloons, in the order they must run', { tags: ['state-transition'] }, () => {
+describe('sceneOps', { tags: [] }, () => {
+  it('makes the panel, then the pose, then the balloons, in the order they must run', { tags: ['equivalence'] }, () => {
     const { ops } = sceneOps(scene({ people: [{ who: 'Mio' }], lines: [{ who: 'Mio', text: 'Hi' }] }), ctx({ bubbleIds: ['old'] }));
     expect(ops.map((o) => o.op)).toEqual(['panel', 'pose', 'removeBubble', 'addBubble']);
     expect(ops[2]).toEqual({ op: 'removeBubble', id: 'old' });
@@ -133,7 +145,7 @@ describe('sceneOps', () => {
     expect(left!.who).toBe('Mio');
   });
 
-  it('frames a chest shot by the neck and a large size, and stands a person where at says', { tags: ['condition'] }, () => {
+  it('frames a chest shot by the neck and a large size, and stands a person where at says', { tags: ['equivalence'] }, () => {
     const [p] = people(sceneOps(scene({ shot: 'chest', people: [{ who: 'Mio', at: 'right' }] }), ctx()).ops);
     expect(p!.neck).toEqual({ x: 0.73, y: 0.4 });
     expect(p!.size).toBe(1.55);
@@ -154,20 +166,24 @@ describe('sceneOps', () => {
     expect(p!.words).toBe('pouring tea, smile');
   });
 
-  it('aims a line at its speaker, sets Japanese vertically on a page read from the right, and narrates without a speaker', { tags: ['error-guessing'] }, () => {
-    const lines = [
-      { who: 'Sota', text: 'また来ます' },
-      { who: 'Mio', text: 'shh', kind: 'whisper' },
-      { text: 'その夜' },
-    ];
-    const { ops } = sceneOps(scene({ people: [{ who: 'Mio' }, { who: 'Sota' }], lines }), ctx());
-    const balloons = ops.filter((o) => o.op === 'addBubble');
-    expect(balloons[0]).toMatchObject({ kind: 'speech', speaker: 2, vertical: true, text: 'また来ます' });
-    expect(balloons[1]).toMatchObject({ kind: 'speech', line: 'dashed', speaker: 1, vertical: false });
-    expect(balloons[2]).toMatchObject({ kind: 'caption', vertical: true });
-    expect(balloons[2]).not.toHaveProperty('speaker');
-    expect(sceneOps(scene({ people: [{ who: 'Mio' }], lines: [{ who: 'Mio', text: 'はい' }] }), ctx({ rtl: false })).ops.at(-1)).toMatchObject({ vertical: false });
-  });
+  it(
+    'aims a line at its speaker, sets Japanese vertically on a page read from the right, and narrates without a speaker',
+    { tags: ['condition'] },
+    () => {
+      const lines = [
+        { who: 'Sota', text: 'また来ます' },
+        { who: 'Mio', text: 'shh', kind: 'whisper' },
+        { text: 'その夜' },
+      ];
+      const { ops } = sceneOps(scene({ people: [{ who: 'Mio' }, { who: 'Sota' }], lines }), ctx());
+      const balloons = ops.filter((o) => o.op === 'addBubble');
+      expect(balloons[0]).toMatchObject({ kind: 'speech', speaker: 2, vertical: true, text: 'また来ます' });
+      expect(balloons[1]).toMatchObject({ kind: 'speech', line: 'dashed', speaker: 1, vertical: false });
+      expect(balloons[2]).toMatchObject({ kind: 'caption', vertical: true });
+      expect(balloons[2]).not.toHaveProperty('speaker');
+      expect(sceneOps(scene({ people: [{ who: 'Mio' }], lines: [{ who: 'Mio', text: 'はい' }] }), ctx({ rtl: false })).ops.at(-1)).toMatchObject({ vertical: false });
+    },
+  );
 
   it('tells a line whose speaker is not a person of the scene', { tags: ['error-guessing'] }, () => {
     const { notes } = sceneOps(scene({ people: [{ who: 'Mio' }], lines: [{ who: 'Sota', text: 'hello' }] }), ctx());
@@ -175,7 +191,7 @@ describe('sceneOps', () => {
   });
 });
 
-describe('the comic tool and the poses', () => {
+describe('the comic tool and the poses', { tags: [] }, () => {
   it('names only poses a scene can take', { tags: ['condition'] }, () => {
     // The scene operation is described to the assistant on the Rust side; a pose named there must exist here.
     const tools = readFileSync(new URL('../../../../backend/crates/novira-core/src/agent/tools.rs', import.meta.url), 'utf8');

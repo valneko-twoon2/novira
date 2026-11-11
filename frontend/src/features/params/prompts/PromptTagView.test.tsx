@@ -25,7 +25,7 @@ afterEach(() => {
 });
 
 describe('the prompt tag view', () => {
-  it('shows each tag and the strength of a weighted one', { tags: ['scenario'] }, () => {
+  it('shows each tag and the strength of a weighted one', { tags: ['equivalence'] }, () => {
     render(<Harness initial="1girl, (smile:1.3)" />);
     const chips = screen.getAllByTestId('positive-tag');
     expect(chips.map((c) => c.textContent)).toEqual(['1girl', 'smile1.30']);
@@ -70,7 +70,7 @@ describe('the prompt tag view', () => {
     expect(screen.getAllByTestId('positive-tag')[0]!.textContent).toBe('a1.00');
   });
 
-  it('removes a tag from the popover', { tags: ['scenario'] }, () => {
+  it('removes a tag from the popover', { tags: ['equivalence'] }, () => {
     render(<Harness initial="a, b" />);
     fireEvent.click(screen.getAllByTestId('positive-tag')[0]!);
     fireEvent.click(screen.getByLabelText(t('params.prompt.tagRemove')));

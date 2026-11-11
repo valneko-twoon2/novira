@@ -14,7 +14,7 @@ async function ask(message: string, over: Partial<AgentRequest> = {}, answers: R
   return { reply, tools };
 }
 
-describe('the mock assistant on the Generate tab', () => {
+describe('the mock assistant on the Generate tab', { tags: [] }, () => {
   it('reads the models, picks an anime model and fills both prompts for an anime request', { tags: ['scenario'] }, async () => {
     const { tools } = await ask('夕焼けの海辺に立つアニメ風の少女');
     expect(tools.tools()).toEqual(['list_models', 'select_model', 'set_generation_settings']);
@@ -28,7 +28,7 @@ describe('the mock assistant on the Generate tab', () => {
     expect(tools.args('add_lora')).toMatchObject({ key: 'lora-pixel-art-xl' });
   });
 
-  it('asks for more detail, changing nothing, when nothing is recognized', { tags: ['condition'] }, async () => {
+  it('asks for more detail, changing nothing, when nothing is recognized', { tags: ['condition', 'error-guessing'] }, async () => {
     const { reply, tools } = await ask('あれをお願い');
     expect(tools.calls).toEqual([]);
     expect(reply.text).toContain('もう少し教えて');
@@ -40,7 +40,7 @@ describe('the mock assistant on the Generate tab', () => {
   });
 });
 
-describe('the mock assistant answering questions', () => {
+describe('the mock assistant answering questions', { tags: [] }, () => {
   const foo = { id: 'ext:ComfyUI-Foo', name: 'ComfyUI-Foo', about: 'Draws foo', installed: false };
 
   it('looks up the extension asked about from the manager and offers to install one that is missing', { tags: ['condition'] }, async () => {
@@ -58,7 +58,7 @@ describe('the mock assistant answering questions', () => {
     expect(tools.tools()).not.toContain('recommend_packs');
   });
 
-  it('answers a question about a screen from the guide', { tags: ['condition'] }, async () => {
+  it('answers a question about a screen from the guide', { tags: ['equivalence'] }, async () => {
     const guide = [{ id: 'tab.models', name: 'Models', about: 'Lists the installed models' }];
     const { reply } = await ask('Where is Models?', { locale: 'en' }, { get_app_guide: guide, search_extensions: { extensions: [] } });
     expect(reply.text).toContain('Lists the installed models');
@@ -73,8 +73,8 @@ describe('the mock assistant answering questions', () => {
   });
 });
 
-describe('the mock assistant on the other screens', () => {
-  it('places a named pose on the canvas, and leaves other screens and words alone', { tags: ['condition'] }, async () => {
+describe('the mock assistant on the other screens', { tags: [] }, () => {
+  it('places a named pose on the canvas, and leaves other screens and words alone', { tags: ['condition', 'equivalence'] }, async () => {
     const { tools } = await ask('a pose with both arms up', { locale: 'en', screen: 'canvas' });
     expect(tools.args('set_pose')).toEqual({ people: [expect.objectContaining({ rArm: expect.any(Object), lArm: expect.any(Object) })] });
     expect((await ask('座っているポーズ', { screen: 'canvas' })).tools.tools()).toContain('set_pose');
@@ -101,7 +101,7 @@ describe('the mock assistant on the other screens', () => {
   });
 });
 
-describe('the mock assistant in a refinement', () => {
+describe('the mock assistant in a refinement', { tags: [] }, () => {
   const answers = { generate: { queued: [7] }, view_picture: { picture: 'x.png' } };
 
   it('starts one for a request to get closer, and draws the first picture', { tags: ['scenario'] }, async () => {
@@ -111,14 +111,18 @@ describe('the mock assistant in a refinement', () => {
     expect(reply.text).toContain('1 枚目');
   });
 
-  it('draws the next picture for the app\'s automatic message and finishes on the last', { tags: ['state-transition'] }, async () => {
-    const middle = await ask('[Automatic message of the app: refinement picture 2 of 3.]', { trialPictures: true }, answers);
-    expect(middle.tools.tools()).toEqual(['set_generation_settings', 'generate', 'view_picture']);
-    expect(middle.reply.text).toContain('2 枚目');
-    const last = await ask('[Automatic message of the app: refinement picture 3 of 3.]', { trialPictures: true }, answers);
-    expect(last.tools.tools()).toEqual(['set_generation_settings', 'generate', 'view_picture', 'refine']);
-    expect(last.tools.args('refine')).toMatchObject({ action: 'finish' });
-  });
+  it(
+    'draws the next picture for the app\'s automatic message and finishes on the last',
+    { tags: ['state-transition', 'boundary'] },
+    async () => {
+      const middle = await ask('[Automatic message of the app: refinement picture 2 of 3.]', { trialPictures: true }, answers);
+      expect(middle.tools.tools()).toEqual(['set_generation_settings', 'generate', 'view_picture']);
+      expect(middle.reply.text).toContain('2 枚目');
+      const last = await ask('[Automatic message of the app: refinement picture 3 of 3.]', { trialPictures: true }, answers);
+      expect(last.tools.tools()).toEqual(['set_generation_settings', 'generate', 'view_picture', 'refine']);
+      expect(last.tools.args('refine')).toMatchObject({ action: 'finish' });
+    },
+  );
 
   it('leaves a request alone when trial pictures are off', { tags: ['condition'] }, async () => {
     const { tools } = await ask('何枚か生成しながら近づけていって', { trialPictures: false }, answers);

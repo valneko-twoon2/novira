@@ -22,7 +22,7 @@ describe('richFrame', () => {
     }
   });
 
-  it('keeps the letters and their margin inside the picture, never stretched', { tags: ['condition'] }, () => {
+  it('keeps the letters and their margin inside the picture, never stretched', { tags: ['equivalence'] }, () => {
     const half = { hw: 320, hh: 70 };
     const f = richFrame(half, 96, AREA);
     expect(f.boxWidth * f.scale).toBeCloseTo(f.width, 6);
@@ -51,7 +51,7 @@ describe('richFrame', () => {
     expect(f.height).toBe(512);
   });
 
-  it('is the same for the same input', { tags: ['condition'] }, () => {
+  it('is the same for the same input', { tags: ['equivalence'] }, () => {
     expect(richFrame({ hw: 12, hh: 34 }, 20, AREA)).toEqual(richFrame({ hw: 12, hh: 34 }, 20, AREA));
   });
 });

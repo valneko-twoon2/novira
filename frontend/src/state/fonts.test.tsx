@@ -29,8 +29,8 @@ afterEach(() => {
   delete (document as { fonts?: unknown }).fonts;
 });
 
-describe('font definitions', () => {
-  it('finds the app fonts, and falls back to the first one for an unknown family', { tags: ['error-guessing'] }, async () => {
+describe('font definitions', { tags: [] }, () => {
+  it('finds the app fonts, and falls back to the first one for an unknown family', { tags: ['condition', 'error-guessing'] }, async () => {
     const f = await load();
     expect(f.isAppFont('Anton')).toBe(true);
     expect(f.isAppFont('Comic Sans MS')).toBe(false);
@@ -38,7 +38,7 @@ describe('font definitions', () => {
     expect(f.fontOf('nope')).toBe(f.FONTS[0]);
   });
 
-  it('snaps a weight to the nearest the font has, the lower one on a tie', { tags: ['scenario'] }, async () => {
+  it('snaps a weight to the nearest the font has, the lower one on a tie', { tags: ['boundary'] }, async () => {
     const f = await load();
     expect(f.snapWeight('Zen Maru Gothic', 500)).toBe(400);
     expect(f.snapWeight('Zen Maru Gothic', 600)).toBe(700);
@@ -47,7 +47,7 @@ describe('font definitions', () => {
     expect(f.snapWeight('unknown', 650)).toBe(600);
   });
 
-  it('builds the canvas font value and the CSS stack', { tags: ['scenario'] }, async () => {
+  it('builds the canvas font value and the CSS stack', { tags: ['equivalence'] }, async () => {
     const f = await load();
     expect(f.fontCss('Anton', 700, 24)).toBe('400 24px "Anton", "Noto Sans JP Variable", sans-serif');
     expect(f.fontStack('Anton')).toBe('"Anton", "Noto Sans JP Variable", sans-serif');
@@ -56,15 +56,15 @@ describe('font definitions', () => {
   });
 });
 
-describe('loading the app fonts', () => {
-  it('loads the font faces once for any number of callers', { tags: ['scenario'] }, async () => {
+describe('loading the app fonts', { tags: [] }, () => {
+  it('loads the font faces once for any number of callers', { tags: ['condition'] }, async () => {
     const f = await load();
     await Promise.all([f.loadAppFonts(), f.loadAppFonts()]);
     await f.loadAppFonts();
     expect(f.loadedFaces).toHaveBeenCalledTimes(1);
   });
 
-  it('logs a failure, resolves anyway, and tries again next time', { tags: ['error-guessing'] }, async () => {
+  it('logs a failure, resolves anyway, and tries again next time', { tags: ['error-guessing', 'state-transition'] }, async () => {
     const f = await load({ faces: 'fail' });
     await expect(f.loadAppFonts()).resolves.toBeUndefined();
     const entry = f.useDevLog.getState().entries.at(-1)!;
@@ -74,7 +74,7 @@ describe('loading the app fonts', () => {
     expect(f.useDevLog.getState().entries.length).toBe(2);
   });
 
-  it('useAppFonts is false at first and true once the rules are in', { tags: ['scenario'] }, async () => {
+  it('useAppFonts is false at first and true once the rules are in', { tags: ['state-transition'] }, async () => {
     const f = await load();
     const { result } = renderHook(() => f.useAppFonts());
     expect(result.current).toBe(false);
@@ -82,8 +82,8 @@ describe('loading the app fonts', () => {
   });
 });
 
-describe('ensureFont', () => {
-  it('does nothing without document.fonts', { tags: ['scenario'] }, async () => {
+describe('ensureFont', { tags: [] }, () => {
+  it('does nothing without document.fonts', { tags: ['condition'] }, async () => {
     const f = await load();
     await f.ensureFont('Anton', 400, 'x');
     expect(f.loadedFaces).not.toHaveBeenCalled();
@@ -107,8 +107,8 @@ describe('ensureFont', () => {
   });
 });
 
-describe('installed fonts', () => {
-  it('reads the list once, leaving out the fonts the app ships', { tags: ['scenario'] }, async () => {
+describe('installed fonts', { tags: [] }, () => {
+  it('reads the list once, leaving out the fonts the app ships', { tags: ['condition', 'scenario'] }, async () => {
     const f = await load({ fonts: ['Arial', 'Anton', 'Meiryo'] });
     expect(f.useInstalledFonts.getState().loaded).toBe(false);
     f.useInstalledFonts.getState().load();

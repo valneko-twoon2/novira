@@ -24,7 +24,7 @@ fn request() -> AgentRequest {
     serde_json::from_value(json!({"message": "make it blue", "locale": "en"})).unwrap()
 }
 
-// tags: state-transition, decision-table
+// tags: state-transition
 #[tokio::test]
 async fn saving_selects_the_server_and_the_status_shows_it_without_a_key() {
     let dir = tempfile::tempdir().unwrap();
@@ -50,7 +50,7 @@ async fn saving_selects_the_server_and_the_status_shows_it_without_a_key() {
     );
 }
 
-// tags: error-guessing
+// tags: error-guessing, equivalence
 #[tokio::test]
 async fn a_remote_http_server_is_flagged_and_bad_addresses_and_models_are_refused() {
     let dir = tempfile::tempdir().unwrap();
@@ -107,7 +107,7 @@ async fn a_remote_http_server_is_flagged_and_bad_addresses_and_models_are_refuse
     );
 }
 
-// tags: scenario
+// tags: equivalence
 #[tokio::test]
 async fn a_server_has_no_sign_in() {
     let dir = tempfile::tempdir().unwrap();
@@ -120,7 +120,7 @@ async fn a_server_has_no_sign_in() {
     assert!(err.contains("no sign-in"), "{err}");
 }
 
-// tags: decision-table
+// tags: scenario
 #[tokio::test]
 async fn a_request_runs_the_tool_loop_and_the_window_answers_each_call() {
     let dir = tempfile::tempdir().unwrap();
@@ -167,7 +167,7 @@ async fn a_request_runs_the_tool_loop_and_the_window_answers_each_call() {
     );
 }
 
-// tags: error-guessing, state-transition
+// tags: state-transition, error-guessing
 #[tokio::test]
 async fn a_model_without_tools_is_recorded_refused_and_cleared_by_choosing_another() {
     let dir = tempfile::tempdir().unwrap();
@@ -207,7 +207,7 @@ async fn a_model_without_tools_is_recorded_refused_and_cleared_by_choosing_anoth
     assert_eq!(other.endpoint.unwrap().tools, AgentToolsState::Unknown);
 }
 
-// tags: scenario
+// tags: condition
 #[tokio::test]
 async fn test_connection_keeps_its_tools_verdict_for_the_saved_server_only() {
     let dir = tempfile::tempdir().unwrap();
@@ -248,7 +248,7 @@ async fn test_connection_keeps_its_tools_verdict_for_the_saved_server_only() {
 }
 
 #[cfg(windows)]
-// tags: error-guessing, decision-table
+// tags: condition, error-guessing
 #[tokio::test]
 async fn the_key_is_stored_apart_sent_as_a_header_kept_for_the_same_address_and_dropped_for_another(
 ) {
@@ -300,7 +300,7 @@ async fn the_key_is_stored_apart_sent_as_a_header_kept_for_the_same_address_and_
     assert!(!gone.endpoint.unwrap().has_key);
 }
 
-// tags: scenario
+// tags: boundary
 #[tokio::test]
 async fn an_attached_picture_goes_to_the_server_as_a_jpeg_data_url_scaled_down() {
     let dir = tempfile::tempdir().unwrap();

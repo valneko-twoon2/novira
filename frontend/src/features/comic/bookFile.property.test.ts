@@ -42,8 +42,8 @@ function readZip(zip: Uint8Array): { name: string; data: Uint8Array; crc: number
   return out;
 }
 
-describe('buildZip', () => {
-  it('reads back every entry with its name, bytes and CRC, in order', { tags: ['decision-table'] }, () => {
+describe('buildZip', { tags: [] }, () => {
+  it('reads back every entry with its name, bytes and CRC, in order', { tags: ['error-guessing', 'boundary'] }, () => {
     check(
       fc.property(entries, (list: ZipEntry[]) => {
         const read = readZip(buildZip(list, new Date(2024, 4, 6, 7, 8, 10)));
@@ -68,7 +68,7 @@ describe('buildZip', () => {
   });
 });
 
-describe('crc32', () => {
+describe('crc32', { tags: [] }, () => {
   it('is an unsigned 32-bit number that changes when one byte changes', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(bytes(80), fc.nat(), fc.integer({ min: 1, max: 255 }), (data, at, flip) => {
@@ -91,38 +91,42 @@ const pdfPage = fc.record({
   heightMm: fc.integer({ min: 10, max: 1000 }),
 });
 
-describe('buildPdf', () => {
-  it('is a PDF with one page object per picture and a cross-reference table that points at every object', { tags: ['decision-table'] }, () => {
-    check(
-      fc.property(fc.array(pdfPage, { minLength: 1, maxLength: 5 }), fc.boolean(), (pages: PdfPage[], rtl) => {
-        const pdf = buildPdf(pages, rtl);
-        const text = new TextDecoder('latin1').decode(pdf);
-        expect(text.startsWith('%PDF-1.4\n')).toBe(true);
-        expect(text.endsWith('%%EOF\n')).toBe(true);
-        expect(text).toContain(`/Count ${pages.length} `);
-        expect(text).toContain(rtl ? '/Direction /R2L' : '/Direction /L2R');
-        const objects = 2 + pages.length * 3;
-        expect(text).toContain(`/Size ${objects + 1} `);
-        const xref = Number(/startxref\n(\d+)\n/.exec(text)![1]);
-        expect(text.slice(xref, xref + 5)).toBe('xref\n');
-        // Header line "0 N", the free entry, then one row per object.
-        const rows = text.slice(xref).split('\n').slice(3, 3 + objects);
-        rows.forEach((row, i) => {
-          const offset = Number(row.slice(0, 10));
-          expect(text.slice(offset, offset + `${i + 1} 0 obj`.length)).toBe(`${i + 1} 0 obj`);
-        });
-        // Each picture's bytes sit in its stream, as long as /Length says.
-        pages.forEach((page, i) => {
-          const at = Number(rows[2 + i * 3 + 2]!.slice(0, 10));
-          const start = text.indexOf('stream\n', at) + 'stream\n'.length;
-          expect(text.slice(at, start)).toContain(`/Length ${page.jpeg.length} `);
-          expect([...pdf.subarray(start, start + page.jpeg.length)]).toEqual([...page.jpeg]);
-        });
-      }),
-    );
-  });
+describe('buildPdf', { tags: [] }, () => {
+  it(
+    'is a PDF with one page object per picture and a cross-reference table that points at every object',
+    { tags: ['error-guessing', 'boundary'] },
+    () => {
+      check(
+        fc.property(fc.array(pdfPage, { minLength: 1, maxLength: 5 }), fc.boolean(), (pages: PdfPage[], rtl) => {
+          const pdf = buildPdf(pages, rtl);
+          const text = new TextDecoder('latin1').decode(pdf);
+          expect(text.startsWith('%PDF-1.4\n')).toBe(true);
+          expect(text.endsWith('%%EOF\n')).toBe(true);
+          expect(text).toContain(`/Count ${pages.length} `);
+          expect(text).toContain(rtl ? '/Direction /R2L' : '/Direction /L2R');
+          const objects = 2 + pages.length * 3;
+          expect(text).toContain(`/Size ${objects + 1} `);
+          const xref = Number(/startxref\n(\d+)\n/.exec(text)![1]);
+          expect(text.slice(xref, xref + 5)).toBe('xref\n');
+          // Header line "0 N", the free entry, then one row per object.
+          const rows = text.slice(xref).split('\n').slice(3, 3 + objects);
+          rows.forEach((row, i) => {
+            const offset = Number(row.slice(0, 10));
+            expect(text.slice(offset, offset + `${i + 1} 0 obj`.length)).toBe(`${i + 1} 0 obj`);
+          });
+          // Each picture's bytes sit in its stream, as long as /Length says.
+          pages.forEach((page, i) => {
+            const at = Number(rows[2 + i * 3 + 2]!.slice(0, 10));
+            const start = text.indexOf('stream\n', at) + 'stream\n'.length;
+            expect(text.slice(at, start)).toContain(`/Length ${page.jpeg.length} `);
+            expect([...pdf.subarray(start, start + page.jpeg.length)]).toEqual([...page.jpeg]);
+          });
+        }),
+      );
+    },
+  );
 
-  it('refuses a book without pages', { tags: ['error-guessing'] }, () => {
+  it('refuses a book without pages', { tags: ['boundary', 'error-guessing'] }, () => {
     expect(() => buildPdf([], false)).toThrow();
   });
 });

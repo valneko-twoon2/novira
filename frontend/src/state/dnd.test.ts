@@ -18,14 +18,14 @@ function dragEvent(data: Record<string, string> = {}): DragEvent {
   return { dataTransfer } as unknown as DragEvent;
 }
 
-describe('drag payloads', () => {
-  it('passes gallery names through unchanged', { tags: ['condition'] }, async () => {
+describe('drag payloads', { tags: [] }, () => {
+  it('passes gallery names through unchanged', { tags: ['equivalence'] }, async () => {
     const e = dragEvent();
     setDragImages(e, ['a.png', 'b.png']);
     expect(await resolveDropImages(e)).toEqual(['a.png', 'b.png']);
   });
 
-  it('resolves a deferred source through its registered resolver', { tags: ['condition'] }, async () => {
+  it('resolves a deferred source through its registered resolver', { tags: ['scenario'] }, async () => {
     const off = registerDragSource('test-layer', async (id) => `saved-${id}.png`);
     const e = dragEvent();
     setDeferredDrag(e, 'test-layer', 'L1');
@@ -48,7 +48,7 @@ describe('drag payloads', () => {
     expect(await resolveDropImages(dragEvent({ [IMAGE_MIME]: '{"a":1}' }))).toEqual([]);
   });
 
-  it('an unregister call does not remove a newer resolver of the same kind', { tags: ['condition'] }, async () => {
+  it('an unregister call does not remove a newer resolver of the same kind', { tags: ['state-transition', 'regression'] }, async () => {
     const offOld = registerDragSource('k', async () => 'old.png');
     registerDragSource('k', async () => 'new.png');
     offOld();
@@ -57,7 +57,7 @@ describe('drag payloads', () => {
     expect(await resolveDropImages(e)).toEqual(['new.png']);
   });
 
-  it('recognises image, deferred and file drags but not text', { tags: ['condition'] }, () => {
+  it('recognises image, deferred and file drags but not text', { tags: ['equivalence'] }, () => {
     expect(hasDragImages([IMAGE_MIME])).toBe(true);
     expect(hasDragImages([DEFERRED_MIME])).toBe(true);
     expect(hasDragImages(['Files'])).toBe(true);

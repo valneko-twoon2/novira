@@ -75,8 +75,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('picking in the view', () => {
-  it('chooses the person under the pointer and drags it over the floor', { tags: ['condition'] }, () => {
+describe('picking in the view', { tags: [] }, () => {
+  it('chooses the person under the pointer and drags it over the floor', { tags: ['equivalence', 'state-transition'] }, () => {
     startUp(newRough());
     const id = rough.people[0]!.id;
     fire('pointerdown', W / 2, H / 2);
@@ -89,7 +89,7 @@ describe('picking in the view', () => {
     expect(last().people[0]!.x).toBe(moved);
   });
 
-  it('chooses a prop and moves it as well', { tags: ['condition'] }, () => {
+  it('chooses a prop and moves it as well', { tags: ['equivalence'] }, () => {
     const start = newRough();
     start.people = [];
     start.props = [{ ...newProp('box'), y: 0.4 }];
@@ -110,21 +110,25 @@ describe('picking in the view', () => {
   });
 });
 
-describe('the camera', () => {
-  it('turns round what it looks at when the background is dragged, and stops short of straight up', { tags: ['condition'] }, () => {
-    startUp(newRough());
-    fire('pointerdown', 5, 5);
-    fire('pointermove', 45, 25);
-    const camera = last().camera;
-    expect(camera.yaw).toBeLessThan(0);
-    expect(camera.pitch).toBeGreaterThan(rough.camera.pitch);
-    fire('pointermove', 45, 25000);
-    expect(last().camera.pitch).toBeLessThanOrEqual(1.4);
-    fire('pointerup', 45, 25000);
-    expect(selects).toEqual([]);
-  });
+describe('the camera', { tags: [] }, () => {
+  it(
+    'turns round what it looks at when the background is dragged, and stops short of straight up',
+    { tags: ['boundary', 'condition'] },
+    () => {
+      startUp(newRough());
+      fire('pointerdown', 5, 5);
+      fire('pointermove', 45, 25);
+      const camera = last().camera;
+      expect(camera.yaw).toBeLessThan(0);
+      expect(camera.pitch).toBeGreaterThan(rough.camera.pitch);
+      fire('pointermove', 45, 25000);
+      expect(last().camera.pitch).toBeLessThanOrEqual(1.4);
+      fire('pointerup', 45, 25000);
+      expect(selects).toEqual([]);
+    },
+  );
 
-  it('slides the target with Shift or the right button', { tags: ['condition'] }, () => {
+  it('slides the target with Shift or the right button', { tags: ['decision-table'] }, () => {
     startUp(newRough());
     fire('pointerdown', 5, 5, { shiftKey: true });
     fire('pointermove', 105, 5);
@@ -154,10 +158,10 @@ describe('the camera', () => {
   });
 });
 
-describe('the joints of the chosen person', () => {
+describe('the joints of the chosen person', { tags: [] }, () => {
   const pointOf = (joint: number) => at(project(rough.camera, W / H, personJoints(rough.people[0]!)[joint]!));
 
-  it('bends a limb round the joint it hangs from when its coloured joint is dragged', { tags: ['condition'] }, () => {
+  it('bends a limb round the joint it hangs from when its coloured joint is dragged', { tags: ['equivalence'] }, () => {
     startUp(newRough());
     scene.select(rough.people[0]!.id);
     const [x, y] = pointOf(J.rWrist);
@@ -179,8 +183,8 @@ describe('the joints of the chosen person', () => {
   });
 });
 
-describe('a rough changed from outside', () => {
-  it('keeps the choice while the thing is still there and drops it when it is gone', { tags: ['condition'] }, () => {
+describe('a rough changed from outside', { tags: [] }, () => {
+  it('keeps the choice while the thing is still there and drops it when it is gone', { tags: ['condition', 'state-transition'] }, () => {
     startUp(newRough());
     const person = rough.people[0]!;
     scene.select(person.id);
@@ -198,13 +202,13 @@ describe('a rough changed from outside', () => {
     expect(selects.at(-1)).toBe(null);
   });
 
-  it('resizes to the canvas', { tags: ['condition'] }, () => {
+  it('resizes to the canvas', { tags: ['equivalence'] }, () => {
     startUp({ ...newRough(), floor: false });
     scene.resize();
     expect(gl.sizes.at(-1)).toEqual([W, H]);
   });
 
-  it('follows a change of the theme', { tags: ['condition'] }, async () => {
+  it('follows a change of the theme', { tags: ['equivalence'] }, async () => {
     startUp(newRough());
     document.documentElement.setAttribute('data-theme', 'dark');
     await Promise.resolve();
@@ -212,7 +216,7 @@ describe('a rough changed from outside', () => {
     await Promise.resolve();
   });
 
-  it('frees the renderer when it is closed', { tags: ['condition'] }, () => {
+  it('frees the renderer when it is closed', { tags: ['state-transition'] }, () => {
     startUp(newRough());
     scene.dispose();
     expect(gl.disposed).toBe(1);

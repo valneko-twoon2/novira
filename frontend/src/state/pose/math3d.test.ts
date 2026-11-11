@@ -13,7 +13,7 @@ const close = (a: Vec3, b: Vec3, digits = 6) => {
 };
 
 describe('lifting a pose into 3D', () => {
-  it('puts the middle of the visible joints at the origin, with y up and a flat pose at depth 0', { tags: ['condition'] }, () => {
+  it('puts the middle of the visible joints at the origin, with y up and a flat pose at depth 0', { tags: ['equivalence'] }, () => {
     const o = person();
     const { joints, center } = liftPose(o);
     const b = jointBounds(o)!;
@@ -32,14 +32,14 @@ describe('lifting a pose into 3D', () => {
 });
 
 describe('turning the view and baking it back', () => {
-  it('does not change a pose seen from the front', { tags: ['condition'] }, () => {
+  it('does not change a pose seen from the front', { tags: ['boundary'] }, () => {
     const o = person();
     const baked = bakeView(liftPose(o), o.hidden, 0, 0);
     expect(baked.points).toEqual(o.points.map((v) => Math.round(v * 10) / 10));
     expect(baked.depth.every((z) => z === 0)).toBe(true);
   });
 
-  it('turns by quarter turns four times back to where it started', { tags: ['condition'] }, () => {
+  it('turns by quarter turns four times back to where it started', { tags: ['equivalence'] }, () => {
     const p = v3(3, 5, 7);
     let q = p;
     for (let i = 0; i < 4; i++) q = turnView(q, Math.PI / 2, 0);
@@ -49,7 +49,7 @@ describe('turning the view and baking it back', () => {
     close(q, p);
   });
 
-  it('seen from the side the body is thin, and the depth carries what was the width', { tags: ['condition'] }, () => {
+  it('seen from the side the body is thin, and the depth carries what was the width', { tags: ['equivalence'] }, () => {
     const o = person();
     const baked = bakeView(liftPose(o), o.hidden, Math.PI / 2, 0);
     const xs = baked.points.filter((_, i) => i % 2 === 0);
@@ -58,7 +58,7 @@ describe('turning the view and baking it back', () => {
     expect(Math.sign(baked.depth[J.rShoulder]!)).toBe(-Math.sign(baked.depth[J.lShoulder]!));
   });
 
-  it('keeps the middle of the pose where it was and turns back to the same pose', { tags: ['condition'] }, () => {
+  it('keeps the middle of the pose where it was and turns back to the same pose', { tags: ['equivalence'] }, () => {
     const o = person({ lean: 10, lArm: { upper: 120, fore: 150 } });
     const lifted = liftPose(o);
     const baked = bakeView(lifted, o.hidden, 0.7, -0.4);
@@ -128,7 +128,7 @@ describe('swinging a joint', () => {
     expect(wrist[J.rShoulder]).toEqual(joints[J.rShoulder]);
   });
 
-  it('can swing a bone straight towards the viewer, which makes it short in the picture', { tags: ['condition'] }, () => {
+  it('can swing a bone straight towards the viewer, which makes it short in the picture', { tags: ['boundary'] }, () => {
     const elbow = joints[J.rElbow]!;
     const shoulder = joints[J.rShoulder]!;
     const target = v3(shoulder.x, shoulder.y, shoulder.z + length3(v3(elbow.x - shoulder.x, elbow.y - shoulder.y, elbow.z - shoulder.z)));
@@ -139,7 +139,7 @@ describe('swinging a joint', () => {
     expect(flat).toBeLessThan(5);
   });
 
-  it('turns a bone half way round without a break (opposite directions)', { tags: ['condition'] }, () => {
+  it('turns a bone half way round without a break (opposite directions)', { tags: ['boundary'] }, () => {
     const shoulder = joints[J.rShoulder]!;
     const elbow = joints[J.rElbow]!;
     const away = v3(2 * shoulder.x - elbow.x, 2 * shoulder.y - elbow.y, 2 * shoulder.z - elbow.z);
@@ -148,14 +148,18 @@ describe('swinging a joint', () => {
     lengths(swung).forEach((l, i) => expect(l).toBeCloseTo(before[i]!, 4));
   });
 
-  it('moves the whole body when the neck is dragged, and does nothing for a target on the joint', { tags: ['scenario'] }, () => {
-    const moved = swingJoint(joints, J.neck, v3(joints[J.neck]!.x + 10, joints[J.neck]!.y - 5, 3));
-    joints.forEach((p, i) => close(moved[i]!, v3(p.x + 10, p.y - 5, p.z + 3)));
-    const same = swingJoint(joints, J.rElbow, joints[J.rElbow]!);
-    same.forEach((p, i) => close(p, joints[i]!));
-  });
+  it(
+    'moves the whole body when the neck is dragged, and does nothing for a target on the joint',
+    { tags: ['condition', 'boundary'] },
+    () => {
+      const moved = swingJoint(joints, J.neck, v3(joints[J.neck]!.x + 10, joints[J.neck]!.y - 5, 3));
+      joints.forEach((p, i) => close(moved[i]!, v3(p.x + 10, p.y - 5, p.z + 3)));
+      const same = swingJoint(joints, J.rElbow, joints[J.rElbow]!);
+      same.forEach((p, i) => close(p, joints[i]!));
+    },
+  );
 
-  it('gives back the 2D positions with the points unchanged for a swing within the picture plane', { tags: ['condition'] }, () => {
+  it('gives back the 2D positions with the points unchanged for a swing within the picture plane', { tags: ['equivalence'] }, () => {
     const lifted = liftPose(o);
     const shoulder = lifted.joints[J.rShoulder]!;
     const swung = swingJoint(lifted.joints, J.rElbow, v3(shoulder.x - 30, shoulder.y + 10, 0));

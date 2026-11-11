@@ -33,15 +33,19 @@ beforeEach(() => {
 });
 afterEach(() => canvases.restore());
 
-describe('compositeRect', () => {
-  it('draws the layers in order with their opacity and blend, and leaves the canvas normal afterwards', { tags: ['condition'] }, async () => {
-    const out = await compositeRect([raster('a', { opacity: 0.5 }), raster('m', { blend: 'multiply' }), raster('s', { blend: 'screen', x: 4 })], { x: 0, y: 0, width: 20, height: 10 });
-    const rec = canvases.of(out);
-    expect(rec.of('drawImage')).toHaveLength(3);
-    expect(rec.sets.filter((s) => s.name === 'globalCompositeOperation').map((s) => s.value)).toEqual(['source-over', 'multiply', 'screen', 'source-over']);
-    expect(rec.sets.filter((s) => s.name === 'globalAlpha').map((s) => s.value)).toEqual([0.5, 1, 1, 1]);
-    expect(rec.of('drawImage')[2]!.slice(1)).toEqual([4, 0, 10, 10]);
-  });
+describe('compositeRect', { tags: [] }, () => {
+  it(
+    'draws the layers in order with their opacity and blend, and leaves the canvas normal afterwards',
+    { tags: ['scenario', 'decision-table'] },
+    async () => {
+      const out = await compositeRect([raster('a', { opacity: 0.5 }), raster('m', { blend: 'multiply' }), raster('s', { blend: 'screen', x: 4 })], { x: 0, y: 0, width: 20, height: 10 });
+      const rec = canvases.of(out);
+      expect(rec.of('drawImage')).toHaveLength(3);
+      expect(rec.sets.filter((s) => s.name === 'globalCompositeOperation').map((s) => s.value)).toEqual(['source-over', 'multiply', 'screen', 'source-over']);
+      expect(rec.sets.filter((s) => s.name === 'globalAlpha').map((s) => s.value)).toEqual([0.5, 1, 1, 1]);
+      expect(rec.of('drawImage')[2]!.slice(1)).toEqual([4, 0, 10, 10]);
+    },
+  );
 
   it('sizes the canvas to the rect times the scale, never below one pixel', { tags: ['boundary'] }, async () => {
     const out = await compositeRect([], { x: 0, y: 0, width: 100, height: 0.2 }, 0.5);
@@ -49,8 +53,8 @@ describe('compositeRect', () => {
   });
 });
 
-describe('content helpers', () => {
-  it('finds the pictures, the drawn bounds and whether a layer has content', { tags: ['condition'] }, () => {
+describe('content helpers', { tags: [] }, () => {
+  it('finds the pictures, the drawn bounds and whether a layer has content', { tags: ['equivalence', 'boundary'] }, () => {
     const picture: CanvasObject = { kind: 'image', id: 'i', url: '/p.png', imageName: null, x: 30, y: 5, width: 10, height: 10 };
     expect(imageUrlsOf([raster('a', { objects: [square(0), picture] })])).toEqual(['/p.png']);
     expect(contentBounds([raster('a'), raster('b', { x: 20, y: 10 })])).toEqual({ x: 0, y: 0, width: 30, height: 20 });

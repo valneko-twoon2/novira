@@ -44,7 +44,7 @@ fn thoughts_of(block: &str) -> Vec<String> {
 mod tests {
     use super::*;
 
-    // tags: state-transition
+    // tags: equivalence
     #[test]
     fn the_thoughts_block_is_taken_out_of_the_text() {
         let reply = parse_reply(
@@ -57,7 +57,7 @@ mod tests {
         assert_eq!(reply.text, "I set the prompt.");
     }
 
-    // tags: condition
+    // tags: condition, error-guessing
     #[test]
     fn an_answer_without_thoughts_is_all_text() {
         let reply = parse_reply("  Please say more.  ");

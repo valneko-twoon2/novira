@@ -3,10 +3,10 @@ import { agentGuide } from './agentGuide';
 import { agentEditor, registerAgentEditor } from './agentRegistry';
 import { MEDIA_KINDS, TABS } from './ui';
 
-describe('what the assistant is told about the app', () => {
+describe('what the assistant is told about the app', { tags: [] }, () => {
   const guide = agentGuide();
 
-  it('has an entry for every tab and every kind of media, so a new one cannot be forgotten', { tags: ['error-guessing'] }, () => {
+  it('has an entry for every tab and every kind of media, so a new one cannot be forgotten', { tags: ['condition'] }, () => {
     const ids = guide.map((g) => g.id);
     for (const tab of TABS) expect(ids).toContain(`tab.${tab}`);
     for (const kind of MEDIA_KINDS) expect(ids).toContain(`media.${kind}`);
@@ -21,15 +21,15 @@ describe('what the assistant is told about the app', () => {
     expect(guide.find((g) => g.id === 'tab.extensions')?.about).toContain('restart');
   });
 
-  it('stays small enough to send with every message', { tags: ['equivalence'] }, () => {
+  it('stays small enough to send with every message', { tags: ['boundary'] }, () => {
     expect(JSON.stringify(guide).length).toBeLessThan(9000);
   });
 });
 
-describe('screens the app build hides', () => {
+describe('screens the app build hides', { tags: [] }, () => {
   afterEach(() => vi.unstubAllEnvs());
 
-  it('are neither described to the assistant nor editable by it', { tags: ['equivalence'] }, () => {
+  it('are neither described to the assistant nor editable by it', { tags: ['condition'] }, () => {
     registerAgentEditor('comic', { context: () => ({}), apply: () => true, snapshot: () => null, restore: () => {} });
     vi.stubEnv('MODE', 'production');
     const ids = agentGuide().map((g) => g.id);

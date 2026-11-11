@@ -62,7 +62,7 @@ fn request(message: &str) -> AgentRequest {
         .unwrap()
 }
 
-// tags: decision-table
+// tags: scenario
 #[tokio::test]
 #[ignore = "uses your Claude / Codex login"]
 async fn both_tools_set_the_prompt_through_the_apps_mcp_server() {
@@ -96,7 +96,7 @@ async fn both_tools_set_the_prompt_through_the_apps_mcp_server() {
     }
 }
 
-// tags: error-guessing, decision-table
+// tags: scenario, condition
 #[tokio::test]
 #[ignore = "uses your Claude / Codex login"]
 async fn both_tools_go_on_when_reading_the_prompts_is_declined() {
@@ -124,7 +124,7 @@ async fn both_tools_go_on_when_reading_the_prompts_is_declined() {
     }
 }
 
-// tags: decision-table
+// tags: scenario
 #[tokio::test]
 #[ignore = "uses your Claude / Codex login"]
 async fn both_tools_see_an_attached_picture_and_write_a_prompt_from_it() {
@@ -159,7 +159,7 @@ async fn both_tools_see_an_attached_picture_and_write_a_prompt_from_it() {
     }
 }
 
-// tags: decision-table
+// tags: scenario
 #[tokio::test]
 #[ignore = "uses your Claude / Codex login"]
 async fn both_tools_see_the_picture_a_tool_returns() {

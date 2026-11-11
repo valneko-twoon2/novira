@@ -54,15 +54,15 @@ afterEach(() => {
   setLocale('ja');
 });
 
-describe('dragging over the paper', () => {
-  it('shows the overlay for a picture drag, and takes the drag as a copy', { tags: ['scenario'] }, () => {
+describe('dragging over the paper', { tags: [] }, () => {
+  it('shows the overlay for a picture drag, and takes the drag as a copy', { tags: ['condition', 'equivalence'] }, () => {
     seed();
     const event = drag('dragOver', screen.getByTestId('paper'), { types: [IMAGE_MIME] });
     expect(event.defaultPrevented).toBe(true);
     expect(screen.getByTestId('comic-backdrop-drop')).toBeTruthy();
   });
 
-  it('shows nothing for a drag that is not a picture', { tags: ['scenario'] }, () => {
+  it('shows nothing for a drag that is not a picture', { tags: ['condition', 'equivalence'] }, () => {
     seed();
     const event = drag('dragEnter', screen.getByTestId('paper'), { types: ['text/plain'] });
     expect(event.defaultPrevented).toBe(false);
@@ -89,7 +89,7 @@ describe('dragging over the paper', () => {
   });
 });
 
-describe('dropping on the paper', () => {
+describe('dropping on the paper', { tags: [] }, () => {
   it('puts a dropped gallery picture over the page', { tags: ['scenario'] }, async () => {
     seed();
     const paper = screen.getByTestId('paper');
@@ -100,7 +100,7 @@ describe('dropping on the paper', () => {
     expect(screen.queryByTestId('comic-backdrop-drop')).toBeNull();
   });
 
-  it('tells the user when the dropped picture is not in the gallery', { tags: ['scenario'] }, async () => {
+  it('tells the user when the dropped picture is not in the gallery', { tags: ['error-guessing'] }, async () => {
     seed();
     drag('drop', screen.getByTestId('paper'), { types: [IMAGE_MIME], names: ['gone.png'] });
     await waitFor(() => expect(useToasts.getState().toasts).toHaveLength(1));
@@ -108,7 +108,7 @@ describe('dropping on the paper', () => {
     expect(backdrop()).toBeNull();
   });
 
-  it('uploads a dropped image file, and ignores files that are not images', { tags: ['scenario'] }, async () => {
+  it('uploads a dropped image file, and ignores files that are not images', { tags: ['condition', 'equivalence'] }, async () => {
     const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue({ name: 'up.png', url: 'novira://up.png' } as ImageDTO);
     seed();
     const paper = screen.getByTestId('paper');
@@ -120,7 +120,7 @@ describe('dropping on the paper', () => {
     expect(upload).toHaveBeenCalledOnce();
   });
 
-  it('reports a failed upload as a toast and leaves the page alone', { tags: ['error-guessing', 'state-transition'] }, async () => {
+  it('reports a failed upload as a toast and leaves the page alone', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'uploadImage').mockRejectedValue(new Error('disk full'));
     seed();
     drag('drop', screen.getByTestId('paper'), { types: ['Files'], files: [new File(['x'], 'up.png', { type: 'image/png' })] });
@@ -128,7 +128,7 @@ describe('dropping on the paper', () => {
     expect(backdrop()).toBeNull();
   });
 
-  it('does not take a drop that lands on a panel', { tags: ['scenario'] }, async () => {
+  it('does not take a drop that lands on a panel', { tags: ['condition'] }, async () => {
     seed();
     const event = drag('drop', screen.getByTestId('in-panel'), { types: [IMAGE_MIME], names: ['sky.png'] });
     expect(event.defaultPrevented).toBe(false);

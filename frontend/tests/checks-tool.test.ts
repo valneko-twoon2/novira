@@ -11,8 +11,8 @@ import { partsOf, rawCheck } from '../../.claude/hooks/use-checks.mjs';
 const root = fileURLToPath(new URL('../..', import.meta.url));
 const run = (name: string, args: string[] = []): string[] => specOf(name, args).cmd;
 
-describe('checks tool', () => {
-  it('knows every check CI and the commit gates name, and says what each does', { tags: ['scenario'] }, () => {
+describe('checks tool', { tags: [] }, () => {
+  it('knows every check CI and the commit gates name, and says what each does', { tags: ['equivalence'] }, () => {
     for (const name of ['fmt', 'clippy', 'cargo-test', 'lint', 'typecheck', 'vitest', 'e2e', 'phone', 'diff-backends', 'layout', 'docs', 'tla']) {
       expect(CHECKS[name], name).toBeTruthy();
       expect(CHECKS[name].about.length, name).toBeGreaterThan(10);
@@ -27,7 +27,7 @@ describe('checks tool', () => {
     expect(checkFolder('/home/me/novira/', 'backend')).toBe(join('/home/me/novira/', 'backend'));
   });
 
-  it('runs the same commands as CI when no arguments are given', { tags: ['condition'] }, () => {
+  it('runs the same commands as CI when no arguments are given', { tags: ['equivalence'] }, () => {
     expect(run('fmt')).toEqual(['cargo', 'fmt', '--all', '--', '--check']);
     expect(run('clippy')).toEqual(['cargo', 'clippy', '-p', 'novira-core', '-p', 'novira-server', '-p', 'novira', '--tests', '--', '-D', 'warnings']);
     expect(run('cargo-test')).toEqual(['cargo', 'test', '-p', 'novira-core', '--no-fail-fast']);
@@ -46,7 +46,7 @@ describe('checks tool', () => {
     expect(run('e2e', ['e2e/a.spec.ts', '--project=firefox'])).toEqual(['npx', 'playwright', 'test', 'e2e/a.spec.ts', '--project=firefox']);
   });
 
-  it('turns a path written from the repository root into the path the command sees', { tags: ['condition'] }, () => {
+  it('turns a path written from the repository root into the path the command sees', { tags: ['equivalence', 'condition'] }, () => {
     expect(pathFor('frontend', 'frontend/src/a.ts')).toBe('src/a.ts');
     expect(pathFor('frontend', 'frontend\\src\\a.ts')).toBe('src/a.ts');
     expect(pathFor('frontend', 'src/a.ts')).toBe('src/a.ts');
@@ -55,7 +55,7 @@ describe('checks tool', () => {
     expect(run('vitest', ['frontend/src/a.test.ts'])).toEqual(['npx', 'vitest', 'run', 'src/a.test.ts']);
   });
 
-  it('runs a check in the folder it belongs to, and takes the e2e lock for the browser runs only', { tags: ['state-transition'] }, () => {
+  it('runs a check in the folder it belongs to, and takes the e2e lock for the browser runs only', { tags: ['condition'] }, () => {
     expect(specOf('clippy').cwd).toBe('backend');
     expect(specOf('vitest').cwd).toBe('frontend');
     expect(specOf('docs').cwd).toBe('.');
@@ -79,8 +79,8 @@ describe('checks tool', () => {
   });
 });
 
-describe('use-checks hook', () => {
-  it('sends a raw check command to the tool, keeping the arguments', { tags: ['condition'] }, () => {
+describe('use-checks hook', { tags: [] }, () => {
+  it('sends a raw check command to the tool, keeping the arguments', { tags: ['equivalence'] }, () => {
     expect(rawCheck('cd frontend && npx vitest run src/a.test.ts -t foo').run).toBe('node scripts/tools/checks.mjs vitest src/a.test.ts -t foo');
     expect(rawCheck('cargo test -p novira-core --lib queue').run).toBe('node scripts/tools/checks.mjs cargo-test -p novira-core --lib queue');
     expect(rawCheck('cargo test test_name').run).toBe('node scripts/tools/checks.mjs cargo-test test_name');
@@ -97,14 +97,14 @@ describe('use-checks hook', () => {
     expect(rawCheck('cargo fmt --all').run).toBe('node scripts/tools/checks.mjs fmt --fix');
   });
 
-  it('finds the raw command after an environment assignment, a pipe or a second command', { tags: ['condition'] }, () => {
+  it('finds the raw command after an environment assignment, a pipe or a second command', { tags: ['equivalence'] }, () => {
     expect(rawCheck('RUST_LOG=debug cargo test').name).toBe('cargo-test');
     expect(rawCheck('echo start; cargo test -p novira').name).toBe('cargo-test');
     expect(rawCheck('cargo clippy 2>&1 | tail -5').name).toBe('clippy');
     expect(partsOf('a && b || c ; d | e\nf')).toEqual(['a', 'b', 'c', 'd', 'e', 'f']);
   });
 
-  it('lets the tools, other cargo commands and words inside other commands through', { tags: ['condition'] }, () => {
+  it('lets the tools, other cargo commands and words inside other commands through', { tags: ['equivalence'] }, () => {
     for (const ok of [
       'node scripts/tools/checks.mjs vitest src/a.test.ts',
       'node scripts/tools/affected.mjs',

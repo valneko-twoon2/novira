@@ -41,13 +41,13 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('the manga finish dialog', () => {
-  it('stays closed until a picture is chosen', { tags: ['scenario'] }, () => {
+describe('the manga finish dialog', { tags: [] }, () => {
+  it('stays closed until a picture is chosen', { tags: ['condition'] }, () => {
     mount();
     expect(screen.queryByTestId('manga-dialog')).toBeNull();
   });
 
-  it('shows the picture and no try yet, with every value at its default', { tags: ['scenario'] }, () => {
+  it('shows the picture and no try yet, with every value at its default', { tags: ['condition'] }, () => {
     mount();
     showDialog();
     expect(screen.getByTestId('manga-dialog')).toBeTruthy();
@@ -97,7 +97,7 @@ describe('the manga finish dialog', () => {
     await waitFor(() => expect(disabled('manga-try-run')).toBe(false));
   });
 
-  it('offers the install while the pack is missing, then the restart, and waits for both', { tags: ['scenario'] }, async () => {
+  it('offers the install while the pack is missing, then the restart, and waits for both', { tags: ['state-transition'] }, async () => {
     useNodePacks.setState({ packs: { available: true, installed: [], comfyVersion: null, restartNeeded: false } });
     mount();
     showDialog();

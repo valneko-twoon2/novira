@@ -12,7 +12,7 @@ afterEach(() => {
   useComfyUiLocale.setState({ locale: null, words: null });
 });
 
-describe('ComfyUI words', () => {
+describe('ComfyUI words', { tags: [] }, () => {
   it('reads the words of a language once', { tags: ['condition'] }, async () => {
     const read = vi.spyOn(backend, 'comfyUiLocale').mockResolvedValue(words('A'));
     await useComfyUiLocale.getState().load('ja');
@@ -21,7 +21,7 @@ describe('ComfyUI words', () => {
     expect(useComfyUiLocale.getState().words?.comfyNodesHeading).toBe('A');
   });
 
-  it('keeps the words of the newest language when an older answer comes last', { tags: ['condition'] }, async () => {
+  it('keeps the words of the newest language when an older answer comes last', { tags: ['state-transition', 'regression'] }, async () => {
     let answerJa: (w: ComfyUiLocale) => void = () => {};
     vi.spyOn(backend, 'comfyUiLocale').mockImplementation((locale) =>
       locale === 'ja' ? new Promise((r) => (answerJa = r)) : Promise.resolve(words('fr')),

@@ -32,7 +32,7 @@ fn it_is_a_first_start_only_when_no_pointer_and_no_data_exist() {
     );
 }
 
-// tags: condition
+// tags: scenario
 #[test]
 fn a_choice_makes_the_folder_the_setting_and_the_pointer() {
     let dir = tempfile::tempdir().unwrap();
@@ -89,7 +89,7 @@ fn a_bad_choice_changes_nothing_and_stays_a_first_start() {
     assert!(!data.exists());
 }
 
-// tags: state-transition, equivalence
+// tags: equivalence
 #[test]
 fn a_folder_that_already_holds_data_is_accepted_as_it_is() {
     let dir = tempfile::tempdir().unwrap();

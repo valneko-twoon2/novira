@@ -53,12 +53,12 @@ beforeEach(() => {
 });
 afterEach(() => rec.restore());
 
-describe('renderEntity', () => {
+describe('renderEntity', { tags: [] }, () => {
   it('returns null for an entity with no objects', { tags: ['boundary'] }, () => {
     expect(renderEntity(raster([]))).toBeNull();
   });
 
-  it('sizes the canvas to the objects and draws a brush stroke as a line', { tags: ['condition'] }, () => {
+  it('sizes the canvas to the objects and draws a brush stroke as a line', { tags: ['equivalence'] }, () => {
     const out = renderEntity(raster([stroke()]))!;
     expect(out.x).toBeLessThanOrEqual(5);
     expect(out.y).toBeLessThanOrEqual(5);
@@ -71,20 +71,24 @@ describe('renderEntity', () => {
     expect(r.sets.find((s) => s.name === 'strokeStyle')!.value).toBe('rgba(255, 0, 0, 1)');
   });
 
-  it('draws a single point as a dot, an eraser as destination-out and a clipped stroke inside its clip', { tags: ['condition'] }, () => {
-    const dot = renderEntity(raster([stroke({ points: [20, 20] })]))!;
-    expect(rec.of(dot.canvas).of('arc')[0]).toEqual([20, 20, 5, 0, Math.PI * 2]);
-    expect(rec.of(dot.canvas).of('fill')).toHaveLength(1);
+  it(
+    'draws a single point as a dot, an eraser as destination-out and a clipped stroke inside its clip',
+    { tags: ['equivalence', 'condition'] },
+    () => {
+      const dot = renderEntity(raster([stroke({ points: [20, 20] })]))!;
+      expect(rec.of(dot.canvas).of('arc')[0]).toEqual([20, 20, 5, 0, Math.PI * 2]);
+      expect(rec.of(dot.canvas).of('fill')).toHaveLength(1);
 
-    const erased = renderEntity(raster([{ kind: 'rect', id: 'r', x: 0, y: 0, width: 40, height: 40, color: red }, stroke({ tool: 'eraser', clip: { x: 0, y: 0, width: 30, height: 30 } })]))!;
-    const r = rec.of(erased.canvas);
-    expect(r.sets.some((s) => s.name === 'globalCompositeOperation' && s.value === 'destination-out')).toBe(true);
-    expect(r.sets.find((s) => s.name === 'strokeStyle')!.value).toBe('#ffffff');
-    expect(r.of('rect')[0]).toEqual([0, 0, 30, 30]);
-    expect(r.of('clip')).toHaveLength(1);
-  });
+      const erased = renderEntity(raster([{ kind: 'rect', id: 'r', x: 0, y: 0, width: 40, height: 40, color: red }, stroke({ tool: 'eraser', clip: { x: 0, y: 0, width: 30, height: 30 } })]))!;
+      const r = rec.of(erased.canvas);
+      expect(r.sets.some((s) => s.name === 'globalCompositeOperation' && s.value === 'destination-out')).toBe(true);
+      expect(r.sets.find((s) => s.name === 'strokeStyle')!.value).toBe('#ffffff');
+      expect(r.of('rect')[0]).toEqual([0, 0, 30, 30]);
+      expect(r.of('clip')).toHaveLength(1);
+    },
+  );
 
-  it('draws rectangles and loaded images, and skips an image that is still loading', { tags: ['condition'] }, () => {
+  it('draws rectangles and loaded images, and skips an image that is still loading', { tags: ['equivalence', 'condition'] }, () => {
     loaded.set('/a.png', picture);
     const objects: CanvasObject[] = [
       { kind: 'rect', id: 'r', x: 0, y: 0, width: 20, height: 10, color: red },
@@ -120,7 +124,7 @@ describe('renderEntity', () => {
     }
   });
 
-  it('draws mask strokes white so the tint decides the colour', { tags: ['condition'] }, () => {
+  it('draws mask strokes white so the tint decides the colour', { tags: ['equivalence'] }, () => {
     const out = renderEntity(inpaint([stroke()]))!;
     // The strokes go onto the kept raw canvas; the tint is applied on a copy.
     expect(rec.all.some((x) => x.sets.some((s) => s.name === 'strokeStyle' && s.value === '#ffffff'))).toBe(true);
@@ -137,7 +141,7 @@ describe('renderEntity', () => {
     expect(rec.of(pending.canvas).of('drawImage')).toHaveLength(0);
   });
 
-  it('makes dark pixels transparent with the transparency effect', { tags: ['condition'] }, () => {
+  it('makes dark pixels transparent with the transparency effect', { tags: ['equivalence'] }, () => {
     const out = renderEntity(control([stroke()], true))!;
     const r = rec.of(out.canvas);
     const put = r.of('putImageData');
@@ -149,8 +153,8 @@ describe('renderEntity', () => {
   });
 });
 
-describe('renderMaskShape and renderControlImage', () => {
-  it('paints a mask in one grey', { tags: ['condition'] }, () => {
+describe('renderMaskShape and renderControlImage', { tags: [] }, () => {
+  it('paints a mask in one grey', { tags: ['equivalence'] }, () => {
     expect(renderMaskShape(inpaint([]), 128)).toBeNull();
     const out = renderMaskShape(inpaint([stroke()]), 128)!;
     const r = rec.of(out.canvas);
@@ -170,8 +174,8 @@ describe('renderMaskShape and renderControlImage', () => {
   });
 });
 
-describe('mosaic strokes', () => {
-  it('pixelates what was drawn under the stroke on a grid', { tags: ['condition'] }, () => {
+describe('mosaic strokes', { tags: [] }, () => {
+  it('pixelates what was drawn under the stroke on a grid', { tags: ['equivalence'] }, () => {
     const e: CanvasEntity = raster([
       { kind: 'rect', id: 'r', x: 0, y: 0, width: 64, height: 64, color: red },
       stroke({ tool: 'mosaic', block: 8, points: [10, 10], clip: { x: 0, y: 0, width: 64, height: 64 } }),
@@ -186,7 +190,7 @@ describe('mosaic strokes', () => {
     expect(smoothingOff).toBe(true);
   });
 
-  it('draws only the new stroke when one is added, so many mosaics do not get slower', { tags: ['condition'] }, () => {
+  it('draws only the new stroke when one is added, so many mosaics do not get slower', { tags: ['regression', 'condition'] }, () => {
     const lighter = () => rec.all.reduce((n, x) => n + x.sets.filter((s) => s.name === 'globalCompositeOperation' && s.value === 'lighter').length, 0);
     const objects: CanvasObject[] = [{ kind: 'rect', id: 'r', x: 0, y: 0, width: 64, height: 64, color: red }];
     renderEntity(raster([...objects]));
@@ -209,7 +213,7 @@ describe('mosaic strokes', () => {
     expect(rec.of(settled.canvas).calls).toHaveLength(calls);
   });
 
-  it('keeps the pictures of a layer that grows to the left and up', { tags: ['condition'] }, () => {
+  it('keeps the pictures of a layer that grows to the left and up', { tags: ['regression', 'boundary'] }, () => {
     const rect: CanvasObject = { kind: 'rect', id: 'r', x: 20, y: 20, width: 20, height: 20, color: red };
     renderEntity(raster([rect]));
     const out = renderEntity(raster([rect, stroke({ id: 'b', points: [0, 0, 4, 4], width: 4 })]))!;
@@ -218,7 +222,7 @@ describe('mosaic strokes', () => {
     expect(rec.of(out.canvas).of('drawImage')[0]!.slice(1)).toEqual([20 - out.x, 20 - out.y]);
   });
 
-  it('draws a dragged mosaic along its path', { tags: ['condition'] }, () => {
+  it('draws a dragged mosaic along its path', { tags: ['scenario'] }, () => {
     const e = raster([{ kind: 'rect', id: 'r', x: 0, y: 0, width: 64, height: 64, color: red }, stroke({ tool: 'mosaic', points: [5, 5, 50, 50] })]);
     const out = renderEntity(e)!;
     expect(out.canvas.width).toBe(64);
@@ -226,8 +230,8 @@ describe('mosaic strokes', () => {
   });
 });
 
-describe('blendOperation', () => {
-  it('draws a raster layer with its blend and every other layer normally', { tags: ['condition'] }, () => {
+describe('blendOperation', { tags: [] }, () => {
+  it('draws a raster layer with its blend and every other layer normally', { tags: ['decision-table'] }, () => {
     expect(blendOperation(raster([]))).toBe('source-over');
     expect(blendOperation({ ...raster([]), blend: 'normal' })).toBe('source-over');
     expect(blendOperation({ ...raster([]), blend: 'multiply' })).toBe('multiply');
@@ -236,7 +240,7 @@ describe('blendOperation', () => {
   });
 });
 
-describe('createCanvas', () => {
+describe('createCanvas', { tags: [] }, () => {
   it('rounds the size up and never makes an empty canvas', { tags: ['boundary'] }, () => {
     const c = createCanvas(10.2, 0);
     expect([c.width, c.height]).toEqual([11, 1]);

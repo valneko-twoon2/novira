@@ -35,7 +35,7 @@ async fn keys_are_saved_across_restarts_and_a_blank_one_removes_it() {
     assert!(!backend.has_civitai_key() && !backend.has_hf_token());
 }
 
-// tags: scenario
+// tags: condition
 #[tokio::test]
 async fn the_civitai_key_of_the_settings_is_used_when_none_is_saved() {
     let dir = tempfile::tempdir().unwrap();
@@ -54,7 +54,7 @@ async fn the_civitai_key_of_the_settings_is_used_when_none_is_saved() {
     assert!(backend.has_civitai_key());
 }
 
-// tags: boundary
+// tags: condition
 #[tokio::test]
 async fn node_packs_need_a_known_comfyui_folder() {
     let dir = tempfile::tempdir().unwrap();
@@ -77,7 +77,7 @@ async fn node_packs_need_a_known_comfyui_folder() {
     backend.cancel_pack(PackKind::Video);
 }
 
-// tags: scenario
+// tags: equivalence, condition
 #[tokio::test]
 async fn the_comfyui_version_is_only_changed_to_a_plain_release_on_an_engine_novira_installed() {
     let dir = tempfile::tempdir().unwrap();
@@ -95,7 +95,7 @@ async fn the_comfyui_version_is_only_changed_to_a_plain_release_on_an_engine_nov
     ));
 }
 
-// tags: scenario
+// tags: state-transition, condition
 #[tokio::test]
 async fn the_comfyui_version_does_not_change_while_a_job_runs() {
     let dir = tempfile::tempdir().unwrap();
@@ -116,7 +116,7 @@ async fn the_comfyui_version_does_not_change_while_a_job_runs() {
     backend.cancel_queue_item(running[0].id);
 }
 
-// tags: state-transition
+// tags: state-transition, condition
 #[tokio::test]
 async fn the_engine_does_not_restart_while_a_job_runs() {
     let dir = tempfile::tempdir().unwrap();
@@ -169,7 +169,7 @@ async fn the_canvas_document_survives_a_restart_and_bad_ones_are_refused() {
     );
 }
 
-// tags: state-transition, decision-table
+// tags: decision-table, state-transition
 #[tokio::test]
 async fn the_screen_state_is_shared_through_the_database_and_the_backends_wins() {
     let dir = tempfile::tempdir().unwrap();
@@ -231,7 +231,7 @@ async fn the_screen_state_is_shared_through_the_database_and_the_backends_wins()
     );
 }
 
-// tags: state-transition
+// tags: state-transition, error-guessing
 #[tokio::test]
 async fn a_patch_of_the_screen_state_changes_only_its_keys_and_is_announced() {
     let dir = tempfile::tempdir().unwrap();
@@ -291,7 +291,7 @@ async fn a_patch_of_the_screen_state_changes_only_its_keys_and_is_announced() {
     assert_eq!(backend.adopt_ui_state(None).unwrap(), before);
 }
 
-// tags: scenario
+// tags: equivalence, condition
 #[tokio::test]
 async fn the_saved_theme_is_read_for_the_window_frame() {
     let dir = tempfile::tempdir().unwrap();
@@ -323,7 +323,7 @@ async fn the_saved_theme_is_read_for_the_window_frame() {
     assert!(!backend.saved_theme_is_light(), "no settings");
 }
 
-// tags: state-transition
+// tags: state-transition, boundary
 #[tokio::test]
 async fn a_saved_screen_state_is_announced_with_the_savers_id_and_a_growing_revision() {
     let dir = tempfile::tempdir().unwrap();

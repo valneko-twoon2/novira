@@ -55,6 +55,7 @@ Read a reference file when the change adds or changes a status, an event on a st
 ## 4. Write the cases
 
 1. Name each test after the behaviour, in English, in the style of its file. For limits, use the form that exists: "a picture exactly at the size limits is accepted and one more is refused" (`backend/crates/novira-core/tests/mutation_media.rs`).
+1a. Tag each test with the design technique(s) its cases use (`equivalence`, `boundary`, `condition`, `decision-table`, `state-transition`, `error-guessing`, `scenario`, `regression`; `.claude/rules/tests.md`, words in `scripts/tools/test-tags.mjs`): the table in section 3 is the same list, so the technique you picked for the item is the tag.
 2. Assert the outcome (a value, an error kind, a state, an event, a file), not a log line or an internal call. After a refusal also assert that nothing else changed.
 3. Expected values come from the spec or a hand calculation, never from the code's current output.
 4. One behaviour per test. Fakes only at the edges (clock, network, the engine, a temporary folder, a seeded random source); never fake the thing under test.

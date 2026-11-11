@@ -73,7 +73,7 @@ fn pip(data: &Path, report: Option<&str>) -> PathBuf {
     )
 }
 
-// tags: scenario
+// tags: error-guessing, condition
 #[test]
 fn entries_without_the_fields_that_are_needed_are_left_out() {
     let report = json!({"install": [
@@ -89,7 +89,7 @@ fn entries_without_the_fields_that_are_needed_are_left_out() {
     assert_eq!(wanted_files(&tree), [("model.safetensors".to_string(), 5)]);
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing
 #[tokio::test]
 async fn a_pip_report_that_is_missing_or_not_json_stops_the_libraries_step() {
     let data = tempfile::tempdir().unwrap();
@@ -103,7 +103,7 @@ async fn a_pip_report_that_is_missing_or_not_json_stops_the_libraries_step() {
     assert!(err.contains("expected") || err.contains("key"), "{err}");
 }
 
-// tags: error-guessing, boundary
+// tags: error-guessing
 #[tokio::test]
 async fn a_folder_taken_by_a_file_stops_the_libraries_step() {
     let data = tempfile::tempdir().unwrap();

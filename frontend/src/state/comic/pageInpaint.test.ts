@@ -19,13 +19,13 @@ import { activePage, useComic } from './store';
 
 const doc = { width: 1654, height: 2339 };
 
-describe('the generation box on a page', () => {
+describe('the generation box on a page', { tags: [] }, () => {
   it('is fine inside the page and within the size limits', { tags: ['boundary'] }, () => {
     expect(pageBboxProblem({ x: 0, y: 0, width: 1024, height: 1024 }, doc)).toBeNull();
     expect(pageBboxProblem({ x: 630, y: 1315, width: 1024, height: 1024 }, doc)).toBeNull();
   });
 
-  it('names what is wrong with a box', { tags: ['error-guessing'] }, () => {
+  it('names what is wrong with a box', { tags: ['equivalence'] }, () => {
     expect(pageBboxProblem({ x: 0, y: 0, width: 32, height: 512 }, doc)).toBe('tooSmall');
     expect(pageBboxProblem({ x: -8, y: 0, width: 512, height: 512 }, doc)).toBe('outside');
     expect(pageBboxProblem({ x: 700, y: 0, width: 1024, height: 512 }, doc)).toBe('outside');
@@ -58,13 +58,13 @@ describe('the generation box on a page', () => {
     expect(fitted.height / fitted.width).toBeGreaterThan(1.2);
   });
 
-  it('is fitted around its own middle without a mask', { tags: ['error-guessing'] }, () => {
+  it('is fitted around its own middle without a mask', { tags: ['condition'] }, () => {
     const fitted = fitPageBbox({ x: 0, y: 0, width: 1654, height: 2336 }, doc, null);
     expect(pageBboxProblem(fitted, doc)).toBeNull();
   });
 });
 
-describe('the result of a page inpaint', () => {
+describe('the result of a page inpaint', { tags: [] }, () => {
   beforeEach(() => {
     resetPageCanvases();
     resetPageInpaints();
@@ -79,7 +79,7 @@ describe('the result of a page inpaint', () => {
 
   const pages = () => useComic.getState().projects[0]!.pages;
 
-  it('is staged on the store of the page that asked, once', { tags: ['condition'] }, () => {
+  it('is staged on the store of the page that asked, once', { tags: ['state-transition'] }, () => {
     const [first, second] = pages();
     trackPageInpaint([41, 42], first!.id);
     expect(pageOfInpaint(41)).toBe(first!.id);

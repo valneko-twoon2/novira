@@ -18,8 +18,8 @@ const NOW = Date.UTC(2026, 9, 20);
 const entry = (name: string, daysOld: number, extra: Record<string, unknown> = {}) => ({ name, usedAt: NOW - daysOld * DAY, link: false, busy: '', ...extra });
 const actions = (entries: unknown[], opts?: unknown) => Object.fromEntries(planPrune(entries, NOW, opts).map((v: { name: string; action: string }) => [v.name, v.action]));
 
-describe('prune policy', () => {
-  it('gives each kind of entry its own limit, and short-lived scratch to everything else', { tags: ['boundary'] }, () => {
+describe('prune policy', { tags: [] }, () => {
+  it('gives each kind of entry its own limit, and short-lived scratch to everything else', { tags: ['equivalence'] }, () => {
     expect(ruleFor('verify-data').days).toBe(30);
     expect(ruleFor('verify-webview').days).toBe(30);
     expect(ruleFor('comfy-copy').days).toBe(30);
@@ -30,7 +30,7 @@ describe('prune policy', () => {
     for (const name of ['live-test', 'verify-wf', 'verify-data2', 'shot.png', 'run.log', 'test1.mjs', 'x', 'perf-old', 'release-notes-old']) expect(ruleFor(name).days).toBe(3);
   });
 
-  it('gives what lives in logs/ the days of its kind in novira-data/work/', { tags: ['condition'] }, () => {
+  it('gives what lives in logs/ the days of its kind in novira-data/work/', { tags: ['equivalence'] }, () => {
     for (const name of ['coverage', 'mutation', 'models-sweep', 'perf', 'full-check', 'fuzz']) expect(ruleFor(name, true).days, name).toBe(ruleFor(name).days);
     for (const name of ['e2e', 'e2e-novira-wt-x', 'playwright-report']) expect(ruleFor(name, true).days, name).toBe(ruleFor('coverage').days);
   });
@@ -51,7 +51,7 @@ describe('prune policy', () => {
     expect(actions([entry('verify-data', 30), entry('comfy-copy', 31)])).toEqual({ 'verify-data': 'keep', 'comfy-copy': 'delete' });
   });
 
-  it('does not treat a standing-environment look-alike as standing', { tags: ['condition'] }, () => {
+  it('does not treat a standing-environment look-alike as standing', { tags: ['error-guessing'] }, () => {
     expect(actions([entry('verify-data-old', 4), entry('verify-data', 4)])).toEqual({ 'verify-data-old': 'delete', 'verify-data': 'keep' });
   });
 
@@ -61,11 +61,11 @@ describe('prune policy', () => {
     expect(actions([entry('a', 9), entry('b', 1)], { verifyRunning: true })).toEqual({ a: 'skip', b: 'keep' });
   });
 
-  it('reports the age and the limit with the verdict', { tags: ['boundary'] }, () => {
+  it('reports the age and the limit with the verdict', { tags: ['equivalence'] }, () => {
     expect(planPrune([entry('a.log', 5)], NOW)[0]).toMatchObject({ action: 'delete', ageDays: 5, limitDays: 3 });
   });
 
-  it('knows a verification exe by its folder, and a process by the entry it names', { tags: ['condition'] }, () => {
+  it('knows a verification exe by its folder, and a process by the entry it names', { tags: ['equivalence'] }, () => {
     const lines = [
       proc('novira.exe', 'C:\\Temp\\novira-verify\\debug\\novira.exe', '"C:\\Temp\\novira-verify\\debug\\novira.exe"'),
       proc('python.exe', 'E:\\r\\novira-data\\work\\comfy-copy\\python\\python.exe', 'python main.py'),
@@ -77,7 +77,7 @@ describe('prune policy', () => {
   });
 });
 
-describe('prune on disk', () => {
+describe('prune on disk', { tags: [] }, () => {
   let repo: string;
   let work: string;
   beforeEach(() => {
@@ -113,12 +113,12 @@ describe('prune on disk', () => {
     expect(() => assertRoot(work, repo)).not.toThrow();
   });
 
-  it('does nothing when work/ does not exist', { tags: ['condition'] }, () => {
+  it('does nothing when work/ does not exist', { tags: ['boundary'] }, () => {
     rmSync(work, { recursive: true });
     expect(prune({ repo, processes: none })).toEqual({ deleted: [], skipped: [], kept: [] });
   });
 
-  it('deletes stale entries only, files and folders, and lists a dry run without deleting', { tags: ['condition'] }, () => {
+  it('deletes stale entries only, files and folders, and lists a dry run without deleting', { tags: ['scenario'] }, () => {
     folder('old-scratch', 10);
     folder('fresh-scratch', 0);
     folder('coverage', 8);
@@ -211,7 +211,7 @@ describe('prune on disk', () => {
     expect(pruneStale(join(repo, 'missing.mjs'))).toEqual([]);
   });
 
-  describe('of logs/', () => {
+  describe('of logs/', { tags: [] }, () => {
     let logs: string;
     beforeEach(() => {
       logs = join(repo, 'logs');
@@ -225,7 +225,7 @@ describe('prune on disk', () => {
       }
     });
 
-    it('deletes only the stale entries it knows, by the age of their kind', { tags: ['condition'] }, () => {
+    it('deletes only the stale entries it knows, by the age of their kind', { tags: ['equivalence'] }, () => {
       const ages: Array<[string, number]> = [
         ['coverage', 8],
         ['mutation', 6],
@@ -284,7 +284,7 @@ describe('prune on disk', () => {
       expect(existsSync(e2e)).toBe(true);
     });
 
-    it('prunes novira-data/work/ and logs/ together from one list of the processes', { tags: ['condition'] }, () => {
+    it('prunes novira-data/work/ and logs/ together from one list of the processes', { tags: ['scenario'] }, () => {
       folder('old-scratch', 10);
       folderIn(logs, 'fuzz', 10);
       folderIn(logs, 'notes', 10);
@@ -312,7 +312,7 @@ describe('prune on disk', () => {
   });
 });
 
-describe('verify-real-app guards', () => {
+describe('verify-real-app guards', { tags: [] }, () => {
   let repo: string;
   beforeEach(() => {
     repo = mkdtempSync(join(tmpdir(), 'novira-guard-'));
@@ -335,15 +335,19 @@ describe('verify-real-app guards', () => {
     }
   });
 
-  it('from a worktree, takes the data folder from the work folder of the main checkout and keeps the build out of both checkouts', { tags: ['condition'] }, () => {
-    const tree = join(repo, 'wt');
-    const roots = { repo: tree, main: repo, work: work() };
-    expect(() => guard(layout(join(work(), 'verify-data'), join(work(), 'verify-webview')), roots)).not.toThrow();
-    expect(() => guard(layout(join(tree, 'novira-data', 'work', 'verify-data'), join(work(), 'verify-webview')), roots)).toThrow(/refusing: data folder/);
-    for (const target of [join(tree, 'tgt'), join(repo, 'tgt')]) {
-      expect(() => guard({ ...layout(join(work(), 'verify-data'), join(work(), 'verify-webview')), target, exe: join(target, 'debug', 'novira.exe') }, roots)).toThrow(/inside the repository/);
-    }
-  });
+  it(
+    'from a worktree, takes the data folder from the work folder of the main checkout and keeps the build out of both checkouts',
+    { tags: ['condition'] },
+    () => {
+      const tree = join(repo, 'wt');
+      const roots = { repo: tree, main: repo, work: work() };
+      expect(() => guard(layout(join(work(), 'verify-data'), join(work(), 'verify-webview')), roots)).not.toThrow();
+      expect(() => guard(layout(join(tree, 'novira-data', 'work', 'verify-data'), join(work(), 'verify-webview')), roots)).toThrow(/refusing: data folder/);
+      for (const target of [join(tree, 'tgt'), join(repo, 'tgt')]) {
+        expect(() => guard({ ...layout(join(work(), 'verify-data'), join(work(), 'verify-webview')), target, exe: join(target, 'debug', 'novira.exe') }, roots)).toThrow(/inside the repository/);
+      }
+    },
+  );
 
   it('writes the user model folder into modelRoots once, keeping other settings', { tags: ['condition'] }, () => {
     const models = join(repo, 'novira-data', 'models');
@@ -371,12 +375,16 @@ describe('verify-real-app guards', () => {
     expect(() => verifyArgs(['t.mjs', '--engine'])).toThrow(/usage/);
   });
 
-  it('turns the engine off: ComfyUI at the given closed address, no folder or Python, no Civitai lookup, the rest kept', { tags: ['condition'] }, () => {
-    const before = { comfyuiDir: 'C:/copy/ComfyUI', comfyuiPython: 'C:/py.exe', comfyuiUrl: 'http://127.0.0.1:8188', civitaiLookup: true, modelRoots: ['D:/m'] };
-    expect(engineOff(before, 'http://127.0.0.1:1')).toEqual({ comfyuiUrl: 'http://127.0.0.1:1', civitaiLookup: false, modelRoots: ['D:/m'] });
-  });
+  it(
+    'turns the engine off: ComfyUI at the given closed address, no folder or Python, no Civitai lookup, the rest kept',
+    { tags: ['equivalence'] },
+    () => {
+      const before = { comfyuiDir: 'C:/copy/ComfyUI', comfyuiPython: 'C:/py.exe', comfyuiUrl: 'http://127.0.0.1:8188', civitaiLookup: true, modelRoots: ['D:/m'] };
+      expect(engineOff(before, 'http://127.0.0.1:1')).toEqual({ comfyuiUrl: 'http://127.0.0.1:1', civitaiLookup: false, modelRoots: ['D:/m'] });
+    },
+  );
 
-  it('puts the settings file back as it was after --no-engine, or removes the one it created', { tags: ['condition'] }, async () => {
+  it('puts the settings file back as it was after --no-engine, or removes the one it created', { tags: ['state-transition'] }, async () => {
     const data = mkdtempSync(join(tmpdir(), 'novira-engine-off-'));
     try {
       const file = join(data, 'settings.json');

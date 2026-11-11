@@ -3,6 +3,7 @@
 //   node scripts/tools/test-tags.mjs --write              rewrite the section of docs/tests/README.md between the markers
 //   node scripts/tools/test-tags.mjs --check              exit 1 when a tag is unknown or the section is stale (the test in frontend/tests/test-tags.test.ts runs this)
 //   node scripts/tools/test-tags.mjs --untagged [prefix]  list the tests with no technique tag (file:line), for the files under the prefix
+// Editing tags (--list, --set, --wrap): scripts/tools/test-tags-edit.mjs
 //
 // Two axes:
 //   kind       what the test is (unit, property, e2e...). Taken from the file's place and name; an explicit kind tag on a test or a
@@ -60,8 +61,8 @@ export const KINDS = [
   { name: 'live', label: '実エンジン', about: '本物の外部（ComfyUI、Civitai、Hugging Face、モデル）に当てる。普段は回さない' },
 ];
 
-const KIND_NAMES = new Set(KINDS.map((k) => k.name));
-const TECHNIQUE_NAMES = new Set(TECHNIQUES.map((t) => t.name));
+export const KIND_NAMES = new Set(KINDS.map((k) => k.name));
+export const TECHNIQUE_NAMES = new Set(TECHNIQUES.map((t) => t.name));
 export const TAG_NAMES = [...KINDS, ...TECHNIQUES].map((t) => t.name);
 /** The tags as vitest's config wants them (`test.tags`); a tag outside this list stops the run. */
 export const TAG_DEFINITIONS = [...KINDS, ...TECHNIQUES].map((t) => ({ name: t.name, description: `${t.label}: ${t.about}` }));
@@ -128,7 +129,7 @@ export function testFiles(root = ROOT, files = trackedFiles(root)) {
 // ---------------------------------------------------------------------------------------------------------------- TypeScript
 
 let ts;
-function typescript(root) {
+export function typescript(root) {
   ts ??= createRequire(path.join(root, 'frontend', 'package.json'))('typescript');
   return ts;
 }
@@ -139,9 +140,10 @@ const NOT_A_DEFINITION = new Set(['step', 'use', 'beforeEach', 'afterEach', 'bef
 
 /**
  * The tests of one TypeScript source: [{ line, tags: string[] (as written, no `@`), count }].
- * `tags` are the ones given to the test and to every group around it.
+ * `tags` are the ones given to the test and to every group around it. `items`, when given, is filled with every test and group:
+ * { group, line, name, own (the tags written on it, without `@`), tags (with the groups' around it), node }.
  */
-export function parseTypescript(source, fileName, root = ROOT) {
+export function parseTypescript(source, fileName, root = ROOT, items = null) {
   const T = typescript(root);
   const sf = T.createSourceFile(fileName, source, T.ScriptTarget.Latest, true, fileName.endsWith('x') ? T.ScriptKind.TSX : T.ScriptKind.TS);
   const tests = [];
@@ -228,6 +230,8 @@ export function parseTypescript(source, fileName, root = ROOT) {
       if (c && fn && (T.isArrowFunction(fn) || T.isFunctionExpression(fn) || (!c.group && args.length >= 2 && !T.isObjectLiteralExpression(unwrap(T, fn))))) {
         const own = args.length >= 3 ? optionTags(args[1]) : [];
         const tags = [...new Set([...inherited, ...own])];
+        const name = args[0] && T.isStringLiteralLike(unwrap(T, args[0])) ? unwrap(T, args[0]).text : args[0] ? args[0].getText(sf).slice(0, 60) : '';
+        items?.push({ group: c.group, line: line(node), name, own, tags, node });
         if (c.group) {
           if (T.isArrowFunction(fn) || T.isFunctionExpression(fn)) for (const s of fn.body.statements ?? [fn.body]) visit(s, tags, multiplier * c.rows);
           return;
@@ -242,14 +246,14 @@ export function parseTypescript(source, fileName, root = ROOT) {
   return tests;
 }
 
-function unwrap(T, node) {
+export function unwrap(T, node) {
   while (T.isParenthesizedExpression(node) || T.isAsExpression(node) || T.isSatisfiesExpression?.(node) || T.isNonNullExpression(node)) node = node.expression;
   return node;
 }
 
 // ---------------------------------------------------------------------------------------------------------------- Rust
 
-const TAGS_LINE = /^\s*\/\/[!/]?\s*tags:\s*(.*?)\s*$/;
+export const TAGS_LINE = /^\s*\/\/[!/]?\s*tags:\s*(.*?)\s*$/;
 const tagList = (text) => text.split(/[,\s]+/).filter(Boolean);
 
 /** Source with comments, strings and char literals blanked (same length, same newlines), so braces can be counted. */
@@ -301,7 +305,7 @@ export function blankRust(src) {
 }
 
 /** The tests of one Rust source: [{ line, tags, count: 1 }]. */
-export function parseRust(source) {
+export function parseRust(source, items = null) {
   const lines = source.split('\n');
   const blanked = blankRust(source).split('\n');
   const fileTags = [];
@@ -342,7 +346,9 @@ export function parseRust(source) {
     }
     if (testAttr && /\bfn\s+\w+/.test(trimmed)) {
       const inherited = open.flatMap((o) => o.tags);
-      tests.push({ line: testAttr.line, tags: [...new Set([...fileTags, ...inherited, ...testAttr.tags])], count: 1 });
+      const tags = [...new Set([...fileTags, ...inherited, ...testAttr.tags])];
+      items?.push({ group: false, line: testAttr.line, name: /\bfn\s+(\w+)/.exec(trimmed)[1], own: testAttr.tags, tags, fileTags });
+      tests.push({ line: testAttr.line, tags, count: 1 });
       testAttr = null;
     }
     for (const ch of code) {

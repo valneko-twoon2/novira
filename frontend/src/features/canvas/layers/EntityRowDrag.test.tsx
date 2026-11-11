@@ -40,28 +40,32 @@ const dt = () => {
   return { data, effectAllowed: 'none', setData: (k: string, v: string) => (data[k] = v), getData: (k: string) => data[k] ?? '' };
 };
 
-describe('EntityRow dragging', () => {
-  it('moves a layer onto another of the same type and marks the drop target while over it', { tags: ['scenario'] }, () => {
-    const a = state().addEntity('inpaint');
-    const b = state().addEntity('inpaint');
-    const c = state().addEntity('inpaint');
-    show('inpaint');
-    // Rows are listed top-most first: c, b, a.
-    const [rc, , ra] = rows();
-    fireEvent.dragStart(ra!, { dataTransfer: dt() });
-    fireEvent.dragOver(rc!, { dataTransfer: dt() });
-    expect(rc!.closest('.canvas-entity')!.classList.contains('is-drop-target')).toBe(true);
-    fireEvent.dragLeave(rc!);
-    expect(rc!.closest('.canvas-entity')!.classList.contains('is-drop-target')).toBe(false);
-    fireEvent.dragOver(rc!, { dataTransfer: dt() });
-    fireEvent.drop(rc!, { dataTransfer: dt() });
-    const order = state().entities.map((e) => e.id);
-    expect(order.indexOf(a)).toBeGreaterThan(order.indexOf(c));
-    expect(order.sort()).toEqual([a, b, c].sort());
-    expect(rc!.closest('.canvas-entity')!.classList.contains('is-drop-target')).toBe(false);
-  });
+describe('EntityRow dragging', { tags: [] }, () => {
+  it(
+    'moves a layer onto another of the same type and marks the drop target while over it',
+    { tags: ['scenario', 'state-transition'] },
+    () => {
+      const a = state().addEntity('inpaint');
+      const b = state().addEntity('inpaint');
+      const c = state().addEntity('inpaint');
+      show('inpaint');
+      // Rows are listed top-most first: c, b, a.
+      const [rc, , ra] = rows();
+      fireEvent.dragStart(ra!, { dataTransfer: dt() });
+      fireEvent.dragOver(rc!, { dataTransfer: dt() });
+      expect(rc!.closest('.canvas-entity')!.classList.contains('is-drop-target')).toBe(true);
+      fireEvent.dragLeave(rc!);
+      expect(rc!.closest('.canvas-entity')!.classList.contains('is-drop-target')).toBe(false);
+      fireEvent.dragOver(rc!, { dataTransfer: dt() });
+      fireEvent.drop(rc!, { dataTransfer: dt() });
+      const order = state().entities.map((e) => e.id);
+      expect(order.indexOf(a)).toBeGreaterThan(order.indexOf(c));
+      expect(order.sort()).toEqual([a, b, c].sort());
+      expect(rc!.closest('.canvas-entity')!.classList.contains('is-drop-target')).toBe(false);
+    },
+  );
 
-  it('does not take a drop on itself, and a drop after the drag ended', { tags: ['scenario'] }, () => {
+  it('does not take a drop on itself, and a drop after the drag ended', { tags: ['error-guessing', 'condition'] }, () => {
     state().addEntity('inpaint');
     state().addEntity('inpaint');
     show('inpaint');
@@ -76,7 +80,7 @@ describe('EntityRow dragging', () => {
     expect(state().entities.map((e) => e.id)).toEqual(before);
   });
 
-  it('offers a raster layer to other targets as a deferred drag, and a mask only as a move', { tags: ['scenario'] }, () => {
+  it('offers a raster layer to other targets as a deferred drag, and a mask only as a move', { tags: ['condition', 'equivalence'] }, () => {
     state().addEntity('raster');
     const { unmount } = show('raster');
     const raster = dt();
@@ -92,7 +96,7 @@ describe('EntityRow dragging', () => {
     expect(mask.effectAllowed).toBe('move');
   });
 
-  it('does not offer a slot row to other targets', { tags: ['scenario'] }, () => {
+  it('does not offer a slot row to other targets', { tags: ['condition'] }, () => {
     state().addEntity('raster', { slot: 'panels' });
     show('raster');
     const slot = dt();
@@ -101,7 +105,7 @@ describe('EntityRow dragging', () => {
     expect(slot.effectAllowed).toBe('move');
   });
 
-  it('keeps layers of different types apart', { tags: ['scenario'] }, () => {
+  it('keeps layers of different types apart', { tags: ['condition'] }, () => {
     state().addEntity('control');
     show('control');
     const control = rows()[0]!;
@@ -115,13 +119,13 @@ describe('EntityRow dragging', () => {
   });
 });
 
-describe('EntityGroup', () => {
-  it('renders nothing for a type without layers', { tags: ['scenario'] }, () => {
+describe('EntityGroup', { tags: [] }, () => {
+  it('renders nothing for a type without layers', { tags: ['boundary'] }, () => {
     const { container } = show('control');
     expect(container.firstChild).toBeNull();
   });
 
-  it('collapses and expands, showing the count', { tags: ['scenario'] }, () => {
+  it('collapses and expands, showing the count', { tags: ['state-transition'] }, () => {
     state().addEntity('inpaint');
     state().addEntity('inpaint');
     show('inpaint');
@@ -137,7 +141,7 @@ describe('EntityGroup', () => {
     expect(screen.getAllByTestId('canvas-entity')).toHaveLength(2);
   });
 
-  it('hides and shows the whole group on the canvas', { tags: ['scenario'] }, () => {
+  it('hides and shows the whole group on the canvas', { tags: ['state-transition'] }, () => {
     state().addEntity('inpaint');
     show('inpaint');
     fireEvent.click(screen.getByRole('button', { name: t('canvas.groups.hide') }));
@@ -146,7 +150,7 @@ describe('EntityGroup', () => {
     expect(state().groupHidden.inpaint).toBe(false);
   });
 
-  it('adds a layer of its type, unless the host does not allow the type', { tags: ['scenario'] }, () => {
+  it('adds a layer of its type, unless the host does not allow the type', { tags: ['condition'] }, () => {
     state().addEntity('inpaint');
     const { unmount } = show('inpaint');
     fireEvent.click(screen.getByRole('button', { name: t(ADD_LABEL.inpaint) }));

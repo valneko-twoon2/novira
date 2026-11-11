@@ -45,7 +45,7 @@ describe('richPlan', () => {
     expect(plan.control).toBeNull();
   });
 
-  it('falls back to the first drawable model, and to none when nothing draws', { tags: ['decision-table'] }, () => {
+  it('falls back to the first drawable model, and to none when nothing draws', { tags: ['condition', 'boundary'] }, () => {
     expect(richPlan([anima, sdxl], null, 'gone').model?.key).toBe('anima');
     expect(richPlan([lineXl], null, null)).toEqual({ model: null, control: null });
     expect(richPlan([], null, null)).toEqual({ model: null, control: null });
@@ -70,7 +70,7 @@ describe('richDenoise', () => {
 });
 
 describe('richPrompts', () => {
-  it('puts the quality words in front for a tag model, then the user words', { tags: ['decision-table'] }, () => {
+  it('puts the quality words in front for a tag model, then the user words', { tags: ['condition'] }, () => {
     const { positive, negative } = richPrompts(sdxl, 'dragon scales, , sparkles');
     expect(positive.startsWith('masterpiece')).toBe(true);
     expect(positive.endsWith('dragon scales, sparkles')).toBe(true);
@@ -78,24 +78,24 @@ describe('richPrompts', () => {
     expect(negative).toContain('mirror image');
   });
 
-  it('does not repeat a negative word the family already has', { tags: ['decision-table'] }, () => {
+  it('does not repeat a negative word the family already has', { tags: ['condition'] }, () => {
     const words = richPrompts(sdxl, '').negative.split(', ');
     expect(new Set(words.map((w) => w.toLowerCase())).size).toBe(words.length);
   });
 
-  it('puts the quality words after the description for a model that reads sentences', { tags: ['decision-table'] }, () => {
+  it('puts the quality words after the description for a model that reads sentences', { tags: ['condition'] }, () => {
     const flux = model('flux', 'flux', 'main', 'flux-dev');
     const { positive } = richPrompts(flux, 'blue');
     expect(positive.startsWith('blue')).toBe(true);
     expect(positive.indexOf('blue')).toBeLessThan(positive.length - 1);
   });
 
-  it('gives no negative to a family that reads none', { tags: ['decision-table'] }, () => {
+  it('gives no negative to a family that reads none', { tags: ['condition'] }, () => {
     const flux = model('flux', 'flux', 'main', 'flux-dev');
     expect(richPrompts(flux, '', 'blurry').negative).toBe('');
   });
 
-  it('adds the user\'s negative words, each once', { tags: ['decision-table'] }, () => {
+  it('adds the user\'s negative words, each once', { tags: ['equivalence'] }, () => {
     const words = richPrompts(sdxl, '', 'blurry, text').negative.split(', ');
     expect(words).toContain('blurry');
     expect(words.filter((w) => w === 'text')).toHaveLength(1);
@@ -109,7 +109,7 @@ describe('richPrompts', () => {
 describe('buildRichRequest', () => {
   const base = { model: sdxl, words: '', negative: '', iterations: 3, prepend: true, strength: 50, seed: 7, sourceUrl: 'img://base', lineUrl: 'img://line', width: 1024, height: 576 };
 
-  it('queues an image-to-image run kept as an intermediate, with the line ControlNet', { tags: ['decision-table'] }, () => {
+  it('queues an image-to-image run kept as an intermediate, with the line ControlNet', { tags: ['equivalence'] }, () => {
     const r = buildRichRequest({ ...base, control: lineXl });
     expect(r.origin).toBe('generate');
     expect(r.destination).toBe('intermediate');
@@ -127,14 +127,14 @@ describe('buildRichRequest', () => {
     expect(r.controlLayers).toEqual([{ imageUrl: 'img://line', modelKey: 'cn-xl', weight: 1, beginEnd: [0, 1], controlMode: 'balanced', controlType: 'lineart' }]);
   });
 
-  it('with no ControlNet it stays gentle and has no control layer', { tags: ['decision-table'] }, () => {
+  it('with no ControlNet it stays gentle and has no control layer', { tags: ['condition'] }, () => {
     const r = buildRichRequest({ ...base, control: null, lineUrl: null });
     expect(r.params.strength).toBeCloseTo(0.45);
     expect(r.params.controlLayerCount).toBeUndefined();
     expect(r.controlLayers).toBeUndefined();
   });
 
-  it('takes steps, CFG and scheduler from the model profile', { tags: ['decision-table'] }, () => {
+  it('takes steps, CFG and scheduler from the model profile', { tags: ['equivalence'] }, () => {
     const r = buildRichRequest({ ...base, control: null, lineUrl: null });
     expect(r.params.steps).toBeGreaterThan(0);
     expect(r.params.cfgScale).toBeGreaterThan(0);

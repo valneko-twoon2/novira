@@ -40,15 +40,19 @@ function sample() {
   return { first, second, control };
 }
 
-describe('the layers of the canvas file', () => {
-  it('are the raster layers with their name, opacity and visibility, then the control layers hidden; masks are left out', { tags: ['condition'] }, () => {
-    const { first, second, control } = sample();
-    expect(canvasPsdLayers(c()).map((l) => [l.entity.id, l.name, l.opacity, l.hidden])).toEqual([
-      [first, 'Raster Layer 1', 1, false],
-      [second, 'Ink', 0.5, true],
-      [control, 'Control Layer 1', 1, true],
-    ]);
-  });
+describe('the layers of the canvas file', { tags: [] }, () => {
+  it(
+    'are the raster layers with their name, opacity and visibility, then the control layers hidden; masks are left out',
+    { tags: ['decision-table', 'condition'] },
+    () => {
+      const { first, second, control } = sample();
+      expect(canvasPsdLayers(c()).map((l) => [l.entity.id, l.name, l.opacity, l.hidden])).toEqual([
+        [first, 'Raster Layer 1', 1, false],
+        [second, 'Ink', 0.5, true],
+        [control, 'Control Layer 1', 1, true],
+      ]);
+    },
+  );
 
   it('are hidden when their group is hidden', { tags: ['condition'] }, () => {
     sample();
@@ -57,36 +61,44 @@ describe('the layers of the canvas file', () => {
   });
 });
 
-describe('the canvas file', () => {
-  it('is the size of the bounding box, has one layer per drawn layer, and the visible raster layers as its picture', { tags: ['boundary'] }, async () => {
-    sample();
-    const doc = await buildCanvasPsd(c());
-    expect(doc).toMatchObject({ width: 16, height: 12 });
-    expect(doc.layers.map((l) => [l.name, l.opacity ?? 1, !!l.hidden])).toEqual([
-      ['Raster Layer 1', 1, false],
-      ['Ink', 0.5, true],
-      ['Control Layer 1', 1, true],
-    ]);
-    expect(doc.composite.length).toBe(16 * 12 * 4);
-    // Each layer is drawn at full strength; the file carries its opacity.
-    const strengths = canvases.all.flatMap((rec) => rec.sets.filter((s) => s.name === 'globalAlpha').map((s) => s.value));
-    expect(strengths).not.toContain(0.5);
-  });
+describe('the canvas file', { tags: [] }, () => {
+  it(
+    'is the size of the bounding box, has one layer per drawn layer, and the visible raster layers as its picture',
+    { tags: ['boundary', 'scenario'] },
+    async () => {
+      sample();
+      const doc = await buildCanvasPsd(c());
+      expect(doc).toMatchObject({ width: 16, height: 12 });
+      expect(doc.layers.map((l) => [l.name, l.opacity ?? 1, !!l.hidden])).toEqual([
+        ['Raster Layer 1', 1, false],
+        ['Ink', 0.5, true],
+        ['Control Layer 1', 1, true],
+      ]);
+      expect(doc.composite.length).toBe(16 * 12 * 4);
+      // Each layer is drawn at full strength; the file carries its opacity.
+      const strengths = canvases.all.flatMap((rec) => rec.sets.filter((s) => s.name === 'globalAlpha').map((s) => s.value));
+      expect(strengths).not.toContain(0.5);
+    },
+  );
 
-  it('keeps the blend of a raster layer in the file and draws the layer itself normally', { tags: ['condition'] }, async () => {
-    c().addEntity('raster', { objects: square(0), blend: 'multiply' });
-    c().addEntity('raster', { objects: square(5), blend: 'screen' });
-    c().addEntity('raster', { objects: square(2), blend: 'normal' });
-    expect(canvasPsdLayers(c()).map((l) => l.blend)).toEqual(['multiply', 'screen', 'normal']);
-    const doc = await buildCanvasPsd(c());
-    expect(doc.layers.map((l) => l.blend)).toEqual(['multiply', 'screen', undefined]);
-    // The flattened picture is drawn first with the blends; each layer after it alone and normal.
-    const [flat, ...alone] = canvases.all.filter((rec) => rec.of('drawImage').length > 0);
-    expect(flat!.sets.filter((s) => s.name === 'globalCompositeOperation').map((s) => s.value)).toContain('multiply');
-    for (const rec of alone) expect(rec.sets.filter((s) => s.name === 'globalCompositeOperation').map((s) => s.value)).not.toContain('multiply');
-  });
+  it(
+    'keeps the blend of a raster layer in the file and draws the layer itself normally',
+    { tags: ['condition', 'decision-table'] },
+    async () => {
+      c().addEntity('raster', { objects: square(0), blend: 'multiply' });
+      c().addEntity('raster', { objects: square(5), blend: 'screen' });
+      c().addEntity('raster', { objects: square(2), blend: 'normal' });
+      expect(canvasPsdLayers(c()).map((l) => l.blend)).toEqual(['multiply', 'screen', 'normal']);
+      const doc = await buildCanvasPsd(c());
+      expect(doc.layers.map((l) => l.blend)).toEqual(['multiply', 'screen', undefined]);
+      // The flattened picture is drawn first with the blends; each layer after it alone and normal.
+      const [flat, ...alone] = canvases.all.filter((rec) => rec.of('drawImage').length > 0);
+      expect(flat!.sets.filter((s) => s.name === 'globalCompositeOperation').map((s) => s.value)).toContain('multiply');
+      for (const rec of alone) expect(rec.sets.filter((s) => s.name === 'globalCompositeOperation').map((s) => s.value)).not.toContain('multiply');
+    },
+  );
 
-  it('leaves out a layer with nothing inside the bounding box', { tags: ['boundary', 'state-transition'] }, async () => {
+  it('leaves out a layer with nothing inside the bounding box', { tags: ['boundary', 'condition'] }, async () => {
     canvases.restore();
     canvases = installRecordingCanvases({ pixel: () => [0, 0, 0, 0] });
     sample();

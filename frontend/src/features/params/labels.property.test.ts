@@ -17,7 +17,7 @@ const COHERENCE: CoherenceMode[] = ['Gaussian Blur', 'Box Blur', 'Staged'];
 const INFILL: InfillMethod[] = ['patchmatch', 'lama', 'cv2', 'color', 'tile'];
 
 describe('parameter labels (properties)', () => {
-  it('every enum value has a label that is not a raw message key, in every language', { tags: ['error-guessing'] }, () => {
+  it('every enum value has a label that is not a raw message key, in every language', { tags: ['equivalence', 'error-guessing'] }, () => {
     check(
       fc.property(fc.constantFrom(...LOCALES), (locale) => {
         setLocale(locale);
@@ -33,7 +33,7 @@ describe('parameter labels (properties)', () => {
     );
   });
 
-  it('every scheduler has a name', { tags: ['error-guessing'] }, () => {
+  it('every scheduler has a name', { tags: ['equivalence'] }, () => {
     expect(SCHEDULERS.every((s) => SCHEDULER_LABELS[s]?.trim())).toBe(true);
   });
 

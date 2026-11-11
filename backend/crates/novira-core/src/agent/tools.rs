@@ -572,7 +572,7 @@ mod tests {
         assert_eq!(listed["tools"][0]["inputSchema"]["type"], "object");
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn destructive_tools_do_not_exist() {
         for name in [
@@ -588,7 +588,7 @@ mod tests {
         }
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn reading_pictures_and_prompt_boxes_and_the_web_lookup_are_gated_and_nothing_else() {
         let gated = |tool: &str, args: Value| check_call(tool, Some(&args)).unwrap().read_gated;
@@ -629,7 +629,7 @@ mod tests {
         }
     }
 
-    // tags: condition
+    // tags: boundary
     #[test]
     fn viewing_a_comic_page_takes_one_page_number_from_1() {
         assert!(check_call("view_comic_page", Some(&json!({"page": 2}))).is_ok());
@@ -675,7 +675,7 @@ mod tests {
         ));
     }
 
-    // tags: equivalence
+    // tags: equivalence, error-guessing
     #[test]
     fn viewing_a_picture_takes_a_queue_id_or_a_name_and_a_trial_is_a_flag_of_generate() {
         for args in [json!({"queueId": 4}), json!({"name": "a.png"}), json!({})] {
@@ -702,7 +702,7 @@ mod tests {
         .is_err());
     }
 
-    // tags: condition
+    // tags: error-guessing, boundary
     #[test]
     fn the_web_lookup_checks_its_arguments_and_warns_about_the_open_web() {
         let err = |args: Value| check_call("lookup_reference", Some(&args)).unwrap_err();
@@ -736,7 +736,7 @@ mod tests {
         assert_eq!(hint("get_screen"), json!(false));
     }
 
-    // tags: condition
+    // tags: error-guessing, equivalence
     #[test]
     fn arguments_are_checked_against_the_schema() {
         let err = |tool: &str, args: Value| check_call(tool, Some(&args)).unwrap_err();

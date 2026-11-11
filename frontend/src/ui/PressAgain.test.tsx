@@ -5,7 +5,7 @@ import { PressAgainButton } from './PressAgain';
 
 afterEach(cleanup);
 
-describe('PressAgainButton', () => {
+describe('PressAgainButton', { tags: [] }, () => {
   it('acts on the second press, and the first press says so in the label', { tags: ['state-transition'] }, () => {
     const onConfirm = vi.fn();
     render(

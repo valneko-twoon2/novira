@@ -40,8 +40,8 @@ afterEach(() => {
   render.renderPagePsd.mockClear();
 });
 
-describe('the bytes of the whole comic', () => {
-  it('is a ZIP of numbered PNG pages for a CBZ and of numbered PSD pages for a PSD export', { tags: ['condition'] }, async () => {
+describe('the bytes of the whole comic', { tags: [] }, () => {
+  it('is a ZIP of numbered PNG pages for a CBZ and of numbered PSD pages for a PSD export', { tags: ['decision-table'] }, async () => {
     const cbz = await buildBook(project(), 'cbz');
     const text = new TextDecoder('latin1').decode(cbz);
     expect(text).toContain('001.png');
@@ -51,15 +51,15 @@ describe('the bytes of the whole comic', () => {
     expect(render.renderPagePsd).toHaveBeenCalledTimes(2);
   });
 
-  it('is a PDF of JPEG pages otherwise', { tags: ['condition'] }, async () => {
+  it('is a PDF of JPEG pages otherwise', { tags: ['equivalence'] }, async () => {
     const pdf = await buildBook(project(), 'pdf');
     expect(new TextDecoder('latin1').decode(pdf.slice(0, 5))).toBe('%PDF-');
     expect(render.renderPage.mock.calls.every((c) => c[2] === 'jpeg')).toBe(true);
   });
 });
 
-describe('saving the whole comic', () => {
-  it('downloads the file under the name of the comic and says so', { tags: ['condition'] }, async () => {
+describe('saving the whole comic', { tags: [] }, () => {
+  it('downloads the file under the name of the comic and says so', { tags: ['scenario'] }, async () => {
     await saveBook(project(), 'cbz');
     expect(clicked.map((c) => c.download)).toEqual([bookFileName('Story: 1', 'cbz')]);
     expect(lastToast()?.status).toBe('success');
@@ -73,8 +73,8 @@ describe('saving the whole comic', () => {
   });
 });
 
-describe('saving one page', () => {
-  it('keeps the page picture in the gallery', { tags: ['condition'] }, async () => {
+describe('saving one page', { tags: [] }, () => {
+  it('keeps the page picture in the gallery', { tags: ['equivalence'] }, async () => {
     const image = { name: 'page.png', url: '/novira-image/page.png' } as ImageDTO;
     vi.spyOn(backend, 'uploadImage').mockResolvedValue(image);
     const p = project();
@@ -89,7 +89,7 @@ describe('saving one page', () => {
     expect(lastToast()).toMatchObject({ status: 'error', description: 'disk full' });
   });
 
-  it('downloads a page as a PSD named after the comic and the page number', { tags: ['condition'] }, async () => {
+  it('downloads a page as a PSD named after the comic and the page number', { tags: ['equivalence'] }, async () => {
     const p = project();
     await savePagePsd(p, p.pages[1]!);
     expect(clicked.map((c) => c.download)).toEqual(['Story_ 1-2.psd']);

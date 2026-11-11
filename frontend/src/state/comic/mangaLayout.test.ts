@@ -23,8 +23,8 @@ function overlap(a: Shape, b: Shape): boolean {
   return true;
 }
 
-describe('mangaLayout', () => {
-  it('makes valid panels that never overlap, for every count and mood over many seeds', { tags: ['error-guessing'] }, () => {
+describe('mangaLayout', { tags: [] }, () => {
+  it('makes valid panels that never overlap, for every count and mood over many seeds', { tags: ['decision-table', 'boundary'] }, () => {
     for (const mood of MANGA_MOODS) {
       for (let n = 1; n <= MANGA_MAX_PANELS; n++) {
         for (let seed = 1; seed <= 25; seed++) {
@@ -61,7 +61,7 @@ describe('mangaLayout', () => {
     }
   });
 
-  it('keeps a calm page square, with a wider gap between tiers than between panels side by side', { tags: ['condition'] }, () => {
+  it('keeps a calm page square, with a wider gap between tiers than between panels side by side', { tags: ['equivalence'] }, () => {
     const shapes = mangaLayout({ panelCount: 4, mood: 'calm', aspect, seed: 1, direction: 'ltr' });
     for (const s of shapes) {
       const b = box(s);

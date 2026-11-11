@@ -4,8 +4,8 @@ import { clampScale, coverSize, fitImage, moveImage, pictureBox, placePicture, r
 
 const box = { width: 200, height: 100 };
 
-describe('the size of a picture that covers its panel', () => {
-  it('keeps the picture shape and covers the box: a square picture in a wide box is as wide as the box', { tags: ['condition'] }, () => {
+describe('the size of a picture that covers its panel', { tags: [] }, () => {
+  it('keeps the picture shape and covers the box: a square picture in a wide box is as wide as the box', { tags: ['equivalence'] }, () => {
     expect(coverSize({ width: 50, height: 50 }, box)).toEqual({ width: 200, height: 200 });
   });
 
@@ -19,16 +19,16 @@ describe('the size of a picture that covers its panel', () => {
   });
 });
 
-describe('where a picture sits in its panel', () => {
+describe('where a picture sits in its panel', { tags: [] }, () => {
   it('covers the panel from its middle at the default view', { tags: ['condition'] }, () => {
     expect(pictureBox(DEFAULT_IMAGE_VIEW, { width: 50, height: 50 }, box)).toEqual({ cx: 100, cy: 50, width: 200, height: 200 });
   });
 
-  it('is half as large at scale 0.5, centred where its view says', { tags: ['boundary'] }, () => {
+  it('is half as large at scale 0.5, centred where its view says', { tags: ['equivalence'] }, () => {
     expect(pictureBox({ ...DEFAULT_IMAGE_VIEW, cx: 0, cy: 1, scale: 0.5 }, { width: 50, height: 50 }, box)).toEqual({ cx: 0, cy: 100, width: 100, height: 100 });
   });
 
-  it('gives the same place as fractions of the panel and of the page', { tags: ['condition'] }, () => {
+  it('gives the same place as fractions of the panel and of the page', { tags: ['equivalence'] }, () => {
     // A panel in the right half of a page twice as tall as it is wide.
     const { panel, page } = placePicture({ ...DEFAULT_IMAGE_VIEW, cx: 0.25 }, null, { x: 0.5, y: 0, width: 0.5, height: 0.5 }, 2);
     expect(panel).toEqual({ cx: 0.25, cy: 0.5, width: 1, height: 1 });
@@ -36,8 +36,8 @@ describe('where a picture sits in its panel', () => {
   });
 });
 
-describe('the handles of a picture', () => {
-  it('moves the picture with the pointer, as a share of the panel', { tags: ['condition'] }, () => {
+describe('the handles of a picture', { tags: [] }, () => {
+  it('moves the picture with the pointer, as a share of the panel', { tags: ['equivalence'] }, () => {
     expect(moveImage(DEFAULT_IMAGE_VIEW, 50, -25, box)).toMatchObject({ cx: 0.75, cy: 0.25 });
   });
 
@@ -46,17 +46,17 @@ describe('the handles of a picture', () => {
     expect(moveImage(DEFAULT_IMAGE_VIEW, 100000, -100000, box)).toMatchObject({ cx: 2, cy: -1 });
   });
 
-  it('does not move a picture in a panel with no size', { tags: ['condition'] }, () => {
+  it('does not move a picture in a panel with no size', { tags: ['boundary'] }, () => {
     expect(moveImage(DEFAULT_IMAGE_VIEW, 50, 50, { width: 0, height: 0 })).toEqual(DEFAULT_IMAGE_VIEW);
   });
 
-  it('resizes about the centre by how much farther the pointer is from it', { tags: ['condition'] }, () => {
+  it('resizes about the centre by how much farther the pointer is from it', { tags: ['equivalence'] }, () => {
     const centre = { x: 0, y: 0 };
     expect(resizeImage(DEFAULT_IMAGE_VIEW, centre, { x: 10, y: 0 }, { x: 20, y: 0 }).scale).toBeCloseTo(2);
     expect(resizeImage(DEFAULT_IMAGE_VIEW, centre, { x: 0, y: 10 }, { x: 0, y: 5 }).scale).toBeCloseTo(0.5);
   });
 
-  it('keeps the size within its range, and ignores a press on the centre', { tags: ['error-guessing', 'boundary'] }, () => {
+  it('keeps the size within its range, and ignores a press on the centre', { tags: ['boundary'] }, () => {
     const centre = { x: 0, y: 0 };
     expect(resizeImage(DEFAULT_IMAGE_VIEW, centre, { x: 10, y: 0 }, { x: 10000, y: 0 }).scale).toBe(IMAGE_SCALE_RANGE.max);
     expect(resizeImage(DEFAULT_IMAGE_VIEW, centre, { x: 10, y: 0 }, { x: 0, y: 0 }).scale).toBe(IMAGE_SCALE_RANGE.min);
@@ -77,14 +77,14 @@ describe('the handles of a picture', () => {
   });
 });
 
-describe('fitting a picture to its panel', () => {
+describe('fitting a picture to its panel', { tags: [] }, () => {
   const moved = { ...DEFAULT_IMAGE_VIEW, cx: 0.1, cy: 0.9, scale: 3, rotation: 45, flipX: true };
 
-  it('fills the panel: back in the middle, unturned, at scale 1, still mirrored', { tags: ['regression'] }, () => {
+  it('fills the panel: back in the middle, unturned, at scale 1, still mirrored', { tags: ['equivalence'] }, () => {
     expect(fitImage('cover', moved, { width: 50, height: 50 }, box)).toEqual({ ...DEFAULT_IMAGE_VIEW, flipX: true });
   });
 
-  it('shows the whole picture: a square picture in a box twice as wide is half the cover size', { tags: ['condition'] }, () => {
+  it('shows the whole picture: a square picture in a box twice as wide is half the cover size', { tags: ['equivalence'] }, () => {
     expect(fitImage('contain', moved, { width: 50, height: 50 }, box).scale).toBeCloseTo(0.5);
   });
 
@@ -93,8 +93,8 @@ describe('fitting a picture to its panel', () => {
   });
 });
 
-describe('scaling a picture about a point (Alt and the mouse wheel)', () => {
-  it('keeps the point under the pointer where it is', { tags: ['condition'] }, () => {
+describe('scaling a picture about a point (Alt and the mouse wheel)', { tags: [] }, () => {
+  it('keeps the point under the pointer where it is', { tags: ['equivalence'] }, () => {
     const view = { ...DEFAULT_IMAGE_VIEW, cx: 0.4, cy: 0.6 };
     const at = { x: 0.1, y: 0.9 };
     const zoomed = zoomImageAt(view, 2, at);
@@ -104,14 +104,14 @@ describe('scaling a picture about a point (Alt and the mouse wheel)', () => {
     expect((at.y - zoomed.cy) / zoomed.scale).toBeCloseTo((at.y - view.cy) / view.scale);
   });
 
-  it('stops at the ends of the scale range without moving the picture', { tags: ['condition'] }, () => {
+  it('stops at the ends of the scale range without moving the picture', { tags: ['boundary'] }, () => {
     const view = { ...DEFAULT_IMAGE_VIEW, scale: IMAGE_SCALE_RANGE.max };
     expect(zoomImageAt(view, 2, { x: 0, y: 0 })).toEqual(view);
   });
 });
 
-describe('the scale range', () => {
-  it('clamps a scale, and an unknown scale to 1', { tags: ['error-guessing', 'boundary'] }, () => {
+describe('the scale range', { tags: [] }, () => {
+  it('clamps a scale, and an unknown scale to 1', { tags: ['boundary'] }, () => {
     expect(clampScale(0.01)).toBe(IMAGE_SCALE_RANGE.min);
     expect(clampScale(99)).toBe(IMAGE_SCALE_RANGE.max);
     expect(clampScale(Number.NaN)).toBe(1);

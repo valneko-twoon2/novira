@@ -66,7 +66,7 @@ describe('AdvancedSection', () => {
     expect(state().vaePrecision).toBe('fp16');
   });
 
-  it('edits CFG rescale, rounds the CLIP skip and toggles seamless tiling', { tags: ['scenario'] }, () => {
+  it('edits CFG rescale, rounds the CLIP skip and toggles seamless tiling', { tags: ['scenario', 'boundary'] }, () => {
     useModels.setState({ models: [model('main1', 'main')] });
     useParams.setState({ modelKey: 'main1' });
     openSection();
@@ -118,7 +118,7 @@ describe('HiresSection', () => {
     expect(screen.queryByTestId('hires-output')).toBeNull();
   });
 
-  it('shows the size it ends at in the header, also when the second pass has no steps of its own', { tags: ['condition'] }, () => {
+  it('shows the size it ends at in the header, also when the second pass has no steps of its own', { tags: ['boundary'] }, () => {
     useModels.setState({ models: [model('main1', 'main')] });
     useParams.setState({ modelKey: 'main1', width: 4096, height: 4096 });
     state().setHires({ enabled: true, steps: 0 });
@@ -129,7 +129,7 @@ describe('HiresSection', () => {
 });
 
 describe('HiresSection warnings', () => {
-  it('warns when the enlarged size is beyond what the model draws well, only while enabled', { tags: ['boundary'] }, () => {
+  it('warns when the enlarged size is beyond what the model draws well, only while enabled', { tags: ['boundary', 'condition'] }, () => {
     useModels.setState({ models: [model('main1', 'main', 'sd-1')] });
     useParams.setState({ modelKey: 'main1', width: 1024, height: 1024 });
     state().setHires({ enabled: true, scale: 2 });
@@ -163,7 +163,7 @@ describe('AspectControls', () => {
     expect(state().width).toBe(state().height);
   });
 
-  it('draws the preview box for wide and tall pictures', { tags: ['scenario'] }, () => {
+  it('draws the preview box for wide and tall pictures', { tags: ['equivalence'] }, () => {
     useParams.setState({ width: 200, height: 100 });
     const { container } = render(<AspectPreview />);
     const box = () => container.querySelector<HTMLElement>('.pp-aspect__box')!;
@@ -200,15 +200,19 @@ describe('LoraPicker', () => {
     expect(screen.queryByTestId('lora-card')).toBeNull();
   });
 
-  it('adds every trigger word of a long list at once, keeping the prompt it has and skipping the ones already in it', { tags: ['scenario'] }, () => {
-    const many = model('lora2', 'lora', 'sdxl', { triggerPhrases: ['a, b', 'c', 'd'] });
-    useModels.setState({ models: [model('main1', 'main'), many] });
-    useParams.setState({ modelKey: 'main1', positivePrompt: 'cat, c', loras: [{ key: 'lora2', weight: 1, isEnabled: true }] });
-    show(<LoraPicker />);
-    fireEvent.click(screen.getByTestId('lora-triggers'));
-    fireEvent.click(screen.getByText(t('params.lora.triggerAll')));
-    expect(state().positivePrompt).toBe('cat, c, a, b, d');
-  });
+  it(
+    'adds every trigger word of a long list at once, keeping the prompt it has and skipping the ones already in it',
+    { tags: ['condition'] },
+    () => {
+      const many = model('lora2', 'lora', 'sdxl', { triggerPhrases: ['a, b', 'c', 'd'] });
+      useModels.setState({ models: [model('main1', 'main'), many] });
+      useParams.setState({ modelKey: 'main1', positivePrompt: 'cat, c', loras: [{ key: 'lora2', weight: 1, isEnabled: true }] });
+      show(<LoraPicker />);
+      fireEvent.click(screen.getByTestId('lora-triggers'));
+      fireEvent.click(screen.getByText(t('params.lora.triggerAll')));
+      expect(state().positivePrompt).toBe('cat, c, a, b, d');
+    },
+  );
 
   it('marks a LoRA of another base as incompatible and keeps the raw key for an unknown one', { tags: ['error-guessing'] }, () => {
     useModels.setState({ models: [model('main1', 'main'), model('sd1lora', 'lora', 'sd-1')] });
@@ -220,7 +224,7 @@ describe('LoraPicker', () => {
     expect(within(cards[1]!).getByText('ghost')).toBeTruthy();
   });
 
-  it('is disabled when no LoRA is left to add', { tags: ['condition'] }, () => {
+  it('is disabled when no LoRA is left to add', { tags: ['boundary'] }, () => {
     useModels.setState({ models: [model('main1', 'main')] });
     useParams.setState({ modelKey: 'main1' });
     show(<LoraPicker />);
@@ -278,7 +282,7 @@ describe('ModelProfilePopover', () => {
 });
 
 describe('GenerationSection sampler and noise schedule', () => {
-  it('picks a ComfyUI sampler and noise schedule on any model, and Auto gives the choice back', { tags: ['scenario'] }, () => {
+  it('picks a ComfyUI sampler and noise schedule on any model, and Auto gives the choice back', { tags: ['equivalence'] }, () => {
     const models = [model('xl1', 'main', 'sdxl'), model('flux1', 'main', 'flux'), model('anima1', 'main', 'anima')];
     useModels.setState({ models });
     for (const key of ['xl1', 'flux1', 'anima1']) {
@@ -306,33 +310,41 @@ describe('GenerationSection sampler and noise schedule', () => {
 });
 
 describe('GenerationSection scheduler', () => {
-  it('shows the sampling a Flux model always runs, read-only, and the choice for an SDXL or an Anima model', { tags: ['condition'] }, () => {
-    const flux = model('flux1', 'main', 'flux');
-    const xl = model('xl1', 'main', 'sdxl');
-    const anima = model('anima1', 'main', 'anima');
-    useModels.setState({ models: [flux, xl, anima] });
-    useParams.setState({ modelKey: 'flux1', scheduler: 'euler_a' });
-    const { rerender } = show(<GenerationSection showLoras={false} />);
-    expect(screen.getByTestId('sampling-fixed').textContent).toBe('euler / simple');
-    expect(screen.queryByRole('combobox', { name: t('params.generation.scheduler') })).toBeNull();
-    act(() => state().set({ modelKey: 'xl1' }));
-    rerender(<TooltipProvider><GenerationSection showLoras={false} /></TooltipProvider>);
-    expect(screen.queryByTestId('sampling-fixed')).toBeNull();
-    expect(screen.getByLabelText(t('params.generation.scheduler'))).toBeTruthy();
-    act(() => state().set({ modelKey: 'anima1', scheduler: 'euler' }));
-    rerender(<TooltipProvider><GenerationSection showLoras={false} /></TooltipProvider>);
-    expect(screen.queryByTestId('sampling-fixed')).toBeNull();
-    // Anima's own template is euler with the simple scheduler, which plain euler means there.
-    expect(screen.getByLabelText(t('params.generation.scheduler')).textContent).toContain('Euler / simple');
-  });
+  it(
+    'shows the sampling a Flux model always runs, read-only, and the choice for an SDXL or an Anima model',
+    { tags: ['decision-table'] },
+    () => {
+      const flux = model('flux1', 'main', 'flux');
+      const xl = model('xl1', 'main', 'sdxl');
+      const anima = model('anima1', 'main', 'anima');
+      useModels.setState({ models: [flux, xl, anima] });
+      useParams.setState({ modelKey: 'flux1', scheduler: 'euler_a' });
+      const { rerender } = show(<GenerationSection showLoras={false} />);
+      expect(screen.getByTestId('sampling-fixed').textContent).toBe('euler / simple');
+      expect(screen.queryByRole('combobox', { name: t('params.generation.scheduler') })).toBeNull();
+      act(() => state().set({ modelKey: 'xl1' }));
+      rerender(<TooltipProvider><GenerationSection showLoras={false} /></TooltipProvider>);
+      expect(screen.queryByTestId('sampling-fixed')).toBeNull();
+      expect(screen.getByLabelText(t('params.generation.scheduler'))).toBeTruthy();
+      act(() => state().set({ modelKey: 'anima1', scheduler: 'euler' }));
+      rerender(<TooltipProvider><GenerationSection showLoras={false} /></TooltipProvider>);
+      expect(screen.queryByTestId('sampling-fixed')).toBeNull();
+      // Anima's own template is euler with the simple scheduler, which plain euler means there.
+      expect(screen.getByLabelText(t('params.generation.scheduler')).textContent).toContain('Euler / simple');
+    },
+  );
 
-  it('does not count the unused scheduler setting as off the recommended values for a family that fixes it', { tags: ['condition'] }, () => {
-    const flux = model('flux1', 'main', 'flux');
-    useModels.setState({ models: [flux] });
-    useParams.setState({ modelKey: 'flux1', steps: 28, cfgScale: 3.5, scheduler: 'euler_a', width: 1024, height: 1024 });
-    show(<ModelProfilePopover model={flux} />);
-    expect(screen.getByTestId('model-profile-trigger').getAttribute('title')).toBe(t('params.profile.matches'));
-  });
+  it(
+    'does not count the unused scheduler setting as off the recommended values for a family that fixes it',
+    { tags: ['condition'] },
+    () => {
+      const flux = model('flux1', 'main', 'flux');
+      useModels.setState({ models: [flux] });
+      useParams.setState({ modelKey: 'flux1', steps: 28, cfgScale: 3.5, scheduler: 'euler_a', width: 1024, height: 1024 });
+      show(<ModelProfilePopover model={flux} />);
+      expect(screen.getByTestId('model-profile-trigger').getAttribute('title')).toBe(t('params.profile.matches'));
+    },
+  );
 
   it('counts a scheduler other than the recommended one as off for an Anima model', { tags: ['condition'] }, () => {
     const anima = model('anima1', 'main', 'anima');

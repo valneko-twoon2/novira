@@ -9,7 +9,7 @@ const list = (name: string, text = ''): WildcardList => ({ id: name, name, text 
 const used = fc.array(fc.stringMatching(/^[a-z0-9]{1,4}(-[2-5])?$/), { maxLength: 6 }).map((names) => names.map((n) => list(n)));
 
 describe('wildcard lists (properties)', () => {
-  it('wildcardEntries returns trimmed, non-empty lines that are not comments, for any text', { tags: ['boundary'] }, () => {
+  it('wildcardEntries returns trimmed, non-empty lines that are not comments, for any text', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(fc.oneof(junkText, fc.string({ maxLength: 200 })), (text) => {
         for (const e of wildcardEntries(text)) {
@@ -23,7 +23,7 @@ describe('wildcard lists (properties)', () => {
     );
   });
 
-  it('freeWildcardName always returns a valid, unused name', { tags: ['condition'] }, () => {
+  it('freeWildcardName always returns a valid, unused name', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(fc.oneof(junkText, fc.string({ unit: 'grapheme', maxLength: 30 })), used, (wanted, lists) => {
         const name = freeWildcardName(wanted, lists);
@@ -33,7 +33,7 @@ describe('wildcard lists (properties)', () => {
     );
   });
 
-  it('wildcardMap has one entry per list name', { tags: ['condition'] }, () => {
+  it('wildcardMap has one entry per list name', { tags: ['equivalence'] }, () => {
     check(
       fc.property(used, (lists) => {
         const map = wildcardMap(lists);

@@ -12,7 +12,7 @@ function Flaky() {
   return <p>fine</p>;
 }
 
-describe('ErrorBoundary', () => {
+describe('ErrorBoundary', { tags: [] }, () => {
   beforeEach(() => {
     broken = true;
     useDevLog.getState().clear();
@@ -38,7 +38,7 @@ describe('ErrorBoundary', () => {
     expect(useDevLog.getState().entries.some((e) => e.source === 'render: left' && e.message.includes('bad data'))).toBe(true);
   });
 
-  it('renders again on retry', { tags: ['scenario'] }, () => {
+  it('renders again on retry', { tags: ['state-transition'] }, () => {
     render(
       <ErrorBoundary area="left">
         <Flaky />
@@ -49,7 +49,7 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText('fine')).toBeTruthy();
   });
 
-  it('renders again when a reset key changes', { tags: ['condition'] }, () => {
+  it('renders again when a reset key changes', { tags: ['state-transition', 'condition'] }, () => {
     const { rerender } = render(
       <ErrorBoundary area="tab" resetKeys={['generate']}>
         <Flaky />

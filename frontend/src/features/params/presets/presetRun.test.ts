@@ -87,14 +87,14 @@ describe('presetRunRequests', () => {
     for (const r of requests) expect(r).toMatchObject({ iterations: 1, randomizeSeed: false, prepend: false, origin: 'generate', destination: 'gallery' });
   });
 
-  it('draws with every setting of the preset and takes the rest from the form', { tags: ['condition'] }, () => {
+  it('draws with every setting of the preset and takes the rest from the form', { tags: ['equivalence'] }, () => {
     const [a, b] = presetRunRequests([portrait, landscape], 2, { random: sequence(0, 0.5), seed: () => 1 });
     expect(a!.params).toMatchObject({ positivePrompt: 'a girl in a garden', negativePrompt: 'blurry', modelKey: 'anime-xl', width: 832, height: 1216, steps: 28, cfgScale: 5, scheduler: 'euler_a' });
     expect(a!.params.loras).toEqual([lora('style-xl')]);
     expect(b!.params).toMatchObject({ positivePrompt: 'mountains at dawn', negativePrompt: 'people', modelKey: 'photo-xl', width: 1216, height: 832, steps: 40, cfgScale: 7, scheduler: 'dpmpp_2m_k', loras: [] });
   });
 
-  it('leaves the form exactly as it was', { tags: ['condition'] }, () => {
+  it('leaves the form exactly as it was', { tags: ['equivalence'] }, () => {
     const before = formFields();
     const changed = vi.fn();
     const unsubscribe = useParams.subscribe(changed);
@@ -111,12 +111,16 @@ describe('presetRunRequests', () => {
     expect(request!.params).toMatchObject({ modelKey: 'form-xl', steps: 9, positivePrompt: 'my own prompt' });
   });
 
-  it('draws one prompt per picture from a preset with dynamic prompts, even in every-combination mode', { tags: ['decision-table'] }, () => {
-    const dynamic: GenerationPreset = { id: 'p-dyn', name: 'Dynamic', data: { positivePrompt: 'a {red|blue|green} car', dynamicPromptMode: 'combinatorial' } };
-    const requests = presetRunRequests([dynamic], 3, { random: () => 0, seed: sequence(1, 2, 3) });
-    expect(requests).toHaveLength(3);
-    for (const r of requests) expect(r.params.positivePrompt).toMatch(/^a (red|blue|green) car$/);
-  });
+  it(
+    'draws one prompt per picture from a preset with dynamic prompts, even in every-combination mode',
+    { tags: ['decision-table'] },
+    () => {
+      const dynamic: GenerationPreset = { id: 'p-dyn', name: 'Dynamic', data: { positivePrompt: 'a {red|blue|green} car', dynamicPromptMode: 'combinatorial' } };
+      const requests = presetRunRequests([dynamic], 3, { random: () => 0, seed: sequence(1, 2, 3) });
+      expect(requests).toHaveLength(3);
+      for (const r of requests) expect(r.params.positivePrompt).toMatch(/^a (red|blue|green) car$/);
+    },
+  );
 
   it('makes nothing without presets or pictures', { tags: ['boundary'] }, () => {
     expect(presetRunRequests([], 5)).toEqual([]);
@@ -178,7 +182,7 @@ describe('runPresets', () => {
 });
 
 describe('usePresetRun', () => {
-  it('ticks and unticks a preset', { tags: ['condition'] }, () => {
+  it('ticks and unticks a preset', { tags: ['state-transition'] }, () => {
     usePresetRun.getState().toggle('a');
     usePresetRun.getState().toggle('b');
     usePresetRun.getState().toggle('a');

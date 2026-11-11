@@ -31,7 +31,7 @@ describe('richPictureNames', () => {
     expect(richPictureNames(sceneOf([layer('A', 'a.png'), stale, hidden, empty, same1, same2, plain]))).toEqual(['a.png', 'e.png']);
   });
 
-  it('is empty for a scene with no AI fill', { tags: ['condition'] }, () => {
+  it('is empty for a scene with no AI fill', { tags: ['boundary'] }, () => {
     expect(richPictureNames(sceneOf([layer('A', null)]))).toEqual([]);
   });
 });

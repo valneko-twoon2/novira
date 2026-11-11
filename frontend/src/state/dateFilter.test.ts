@@ -29,7 +29,7 @@ function inTimeZone(zone: string) {
   });
 }
 
-describe('day keys in Asia/Tokyo', () => {
+describe('day keys in Asia/Tokyo', { tags: [] }, () => {
   inTimeZone('Asia/Tokyo');
   // Local midnight of 2026-10-05 is 15:00 UTC the day before.
   const midnight = Date.UTC(2026, 9, 4, 15, 0, 0);
@@ -40,7 +40,7 @@ describe('day keys in Asia/Tokyo', () => {
     expect(dayKey(Date.UTC(2026, 9, 5, 0, 0, 0))).toBe('2026-10-05');
   });
 
-  it('filters a timestamp by its local day', { tags: ['condition'] }, () => {
+  it('filters a timestamp by its local day', { tags: ['boundary', 'condition'] }, () => {
     const oct5 = { from: '2026-10-05', to: '2026-10-05' };
     expect(inRange(midnight, oct5)).toBe(true);
     expect(inRange(midnight - 1, oct5)).toBe(false);
@@ -48,7 +48,7 @@ describe('day keys in Asia/Tokyo', () => {
     expect(inRange(midnight + 24 * 3600_000, oct5)).toBe(false);
   });
 
-  it('computes quick ranges from the local day of now', { tags: ['condition'] }, () => {
+  it('computes quick ranges from the local day of now', { tags: ['boundary'] }, () => {
     // 00:30 local on 2026-10-06 is still 2026-10-05 in UTC.
     const now = Date.UTC(2026, 9, 5, 15, 30);
     expect(quickRange('today', now)).toEqual({ from: '2026-10-06', to: '2026-10-06' });
@@ -58,32 +58,32 @@ describe('day keys in Asia/Tokyo', () => {
   });
 });
 
-describe('day keys across daylight saving time (America/New_York)', () => {
+describe('day keys across daylight saving time (America/New_York)', { tags: [] }, () => {
   inTimeZone('America/New_York');
 
-  it('steps whole calendar days over the 23-hour and 25-hour days', { tags: ['scenario'] }, () => {
+  it('steps whole calendar days over the 23-hour and 25-hour days', { tags: ['boundary'] }, () => {
     expect(addDays('2026-03-07', 1)).toBe('2026-03-08');
     expect(addDays('2026-03-08', 1)).toBe('2026-03-09');
     expect(addDays('2026-11-02', -1)).toBe('2026-11-01');
     expect(addDays('2026-11-01', -1)).toBe('2026-10-31');
   });
 
-  it('keeps the last hour of the 25-hour day on that day', { tags: ['condition'] }, () => {
+  it('keeps the last hour of the 25-hour day on that day', { tags: ['boundary'] }, () => {
     // 2026-11-01 23:30 EST is 04:30 UTC on 11-02.
     expect(dayKey(Date.UTC(2026, 10, 2, 4, 30))).toBe('2026-11-01');
     expect(dayKey(Date.UTC(2026, 10, 2, 5, 0))).toBe('2026-11-02');
   });
 
-  it('counts back seven calendar days over the spring change', { tags: ['condition'] }, () => {
+  it('counts back seven calendar days over the spring change', { tags: ['boundary'] }, () => {
     const now = new Date(2026, 2, 10, 0, 30).getTime();
     expect(quickRange('last7', now)).toEqual({ from: '2026-03-04', to: '2026-03-10' });
   });
 });
 
-describe('quick ranges at month and year boundaries', () => {
+describe('quick ranges at month and year boundaries', { tags: [] }, () => {
   const local = (y: number, m: number, d: number) => new Date(y, m - 1, d, 10).getTime();
 
-  it('goes back into the previous month and year', { tags: ['condition'] }, () => {
+  it('goes back into the previous month and year', { tags: ['boundary'] }, () => {
     expect(quickRange('yesterday', local(2026, 3, 1))).toEqual({ from: '2026-02-28', to: '2026-02-28' });
     expect(quickRange('yesterday', local(2028, 3, 1))).toEqual({ from: '2028-02-29', to: '2028-02-29' });
     expect(quickRange('yesterday', local(2027, 1, 1))).toEqual({ from: '2026-12-31', to: '2026-12-31' });
@@ -102,8 +102,8 @@ describe('quick ranges at month and year boundaries', () => {
   });
 });
 
-describe('parsing and cleaning ranges', () => {
-  it('accepts only real YYYY-MM-DD dates', { tags: ['error-guessing'] }, () => {
+describe('parsing and cleaning ranges', { tags: [] }, () => {
+  it('accepts only real YYYY-MM-DD dates', { tags: ['equivalence', 'error-guessing'] }, () => {
     expect(parseDayKey('2026-10-05')?.getDate()).toBe(5);
     expect(parseDayKey('2028-02-29')).not.toBeNull();
     for (const bad of ['2026-02-29', '2026-02-30', '2026-13-01', '2026-00-10', '2026-1-5', 'abc', '', '2026-10-05T00:00']) {
@@ -112,7 +112,7 @@ describe('parsing and cleaning ranges', () => {
     expect(() => addDays('nope', 1)).toThrow();
   });
 
-  it('drops invalid ends, swaps reversed ones, and turns nothing into no filter', { tags: ['error-guessing'] }, () => {
+  it('drops invalid ends, swaps reversed ones, and turns nothing into no filter', { tags: ['condition', 'error-guessing'] }, () => {
     expect(normalizeRange('2026-10-05', '2026-10-01')).toEqual({ from: '2026-10-01', to: '2026-10-05' });
     expect(normalizeRange('2026-10-05', null)).toEqual({ from: '2026-10-05', to: null });
     expect(normalizeRange('garbage', '2026-10-05')).toEqual({ from: null, to: '2026-10-05' });
@@ -130,7 +130,7 @@ describe('parsing and cleaning ranges', () => {
   });
 });
 
-describe('month grids', () => {
+describe('month grids', { tags: [] }, () => {
   it('starts weeks on Sunday and pads with empty cells', { tags: ['boundary'] }, () => {
     // 2026-10-01 is a Thursday.
     const oct = monthGrid({ year: 2026, month: 9 });
@@ -145,17 +145,17 @@ describe('month grids', () => {
     expect(monthGrid({ year: 2028, month: 1 }).flat().filter(Boolean)).toHaveLength(29);
   });
 
-  it('moves between months over year ends', { tags: ['condition'] }, () => {
+  it('moves between months over year ends', { tags: ['boundary'] }, () => {
     expect(addMonths({ year: 2026, month: 11 }, 1)).toEqual({ year: 2027, month: 0 });
     expect(addMonths({ year: 2026, month: 0 }, -1)).toEqual({ year: 2025, month: 11 });
     expect(addMonths({ year: 2026, month: 5 }, -18)).toEqual({ year: 2024, month: 11 });
   });
 });
 
-describe('counting and grouping by day', () => {
+describe('counting and grouping by day', { tags: [] }, () => {
   const at = (day: number, hour: number) => ({ createdAt: new Date(2026, 9, day, hour).getTime(), id: `${day}-${hour}` });
 
-  it('counts items per local day', { tags: ['condition'] }, () => {
+  it('counts items per local day', { tags: ['boundary', 'equivalence'] }, () => {
     const counts = dayCounts([at(5, 0), at(5, 23), at(6, 1)]);
     expect([...counts]).toEqual([
       ['2026-10-05', 2],
@@ -164,7 +164,7 @@ describe('counting and grouping by day', () => {
     expect(dayCounts([]).size).toBe(0);
   });
 
-  it('groups by day in either direction and keeps the order inside a day', { tags: ['condition'] }, () => {
+  it('groups by day in either direction and keeps the order inside a day', { tags: ['decision-table'] }, () => {
     const items = [at(5, 9), at(6, 1), at(5, 3)];
     expect(groupByDay(items, 'desc').map((g) => [g.day, g.items.map((i) => i.id)])).toEqual([
       ['2026-10-06', ['6-1']],

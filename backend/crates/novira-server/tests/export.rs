@@ -47,7 +47,7 @@ fn result(reply: &Reply) -> Value {
     .unwrap()
 }
 
-// tags: equivalence
+// tags: equivalence, boundary
 #[tokio::test]
 async fn one_picture_downloads_as_itself_and_several_as_a_zip() {
     let f = Fixture::start().await;

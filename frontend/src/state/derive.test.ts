@@ -56,8 +56,8 @@ const picture = (over: Partial<ImageDTO> = {}): ImageDTO => ({
 
 const model = { key: 'main-xl', name: 'Main XL', base: 'sdxl', type: 'main', format: 'checkpoint', description: '', path: '', size: 0, source: '' } as ModelConfig;
 
-describe('canDerive', () => {
-  it('is true for pictures made from a prompt, false for the rest', { tags: ['condition'] }, () => {
+describe('canDerive', { tags: [] }, () => {
+  it('is true for pictures made from a prompt, false for the rest', { tags: ['equivalence', 'error-guessing'] }, () => {
     expect(canDerive(picture())).toBe(true);
     expect(canDerive(picture({ metadata: { ...metadata, generationMode: 'inpaint' } }))).toBe(true);
     expect(canDerive(picture({ metadata: { ...metadata, generationMode: 'upscale' } }))).toBe(false);
@@ -71,7 +71,7 @@ describe('canDerive', () => {
   });
 });
 
-describe('buildDerivedRequest', () => {
+describe('buildDerivedRequest', { tags: [] }, () => {
   it('a variation keeps every setting and draws again with a new seed on the same board', { tags: ['equivalence'] }, () => {
     const req = buildDerivedRequest(picture({ metadata: { ...metadata, generationMode: 'img2img', strength: 0.5 } }), 'variation', 4);
     expect(req).toMatchObject({ origin: 'generate', destination: 'gallery', iterations: 4, randomizeSeed: true, boardId: 'b1' });
@@ -81,13 +81,13 @@ describe('buildDerivedRequest', () => {
     expect(req.initImageUrl).toBeUndefined();
   });
 
-  it('a subtle redo starts from the picture itself at a low strength and at its size', { tags: ['state-transition'] }, () => {
+  it('a subtle redo starts from the picture itself at a low strength and at its size', { tags: ['condition'] }, () => {
     const req = buildDerivedRequest(picture(), 'subtle', 1);
     expect(req.params).toMatchObject({ generationMode: 'img2img', strength: SUBTLE_STRENGTH, width: 1024, height: 1536 });
     expect(req.initImageUrl).toBe('http://novira-image.localhost/full/p.png');
   });
 
-  it('a variation keeps the high-resolution fix, a redo of the finished picture drops it', { tags: ['state-transition'] }, () => {
+  it('a variation keeps the high-resolution fix, a redo of the finished picture drops it', { tags: ['decision-table'] }, () => {
     const image = picture({ metadata: { ...metadata, hiresFix: { scale: 1.5, strength: 0.45 } } });
     expect(buildDerivedRequest(image, 'variation', 1).params.hiresFix).toEqual({ scale: 1.5, strength: 0.45 });
     const redo = buildDerivedRequest(image, 'subtle', 1).params;
@@ -95,7 +95,7 @@ describe('buildDerivedRequest', () => {
     expect([redo.width, redo.height]).toEqual([1024, 1536]);
   });
 
-  it('a redo uses the strength it is given', { tags: ['state-transition'] }, () => {
+  it('a redo uses the strength it is given', { tags: ['equivalence'] }, () => {
     expect(buildDerivedRequest(picture(), 'subtle', 1, 0.8).params.strength).toBe(0.8);
   });
 
@@ -107,7 +107,7 @@ describe('buildDerivedRequest', () => {
     expect(metadata.refImageCount).toBe(1);
   });
 
-  it('uses the reference images and control layers stored with the picture, as request fields', { tags: ['condition'] }, () => {
+  it('uses the reference images and control layers stored with the picture, as request fields', { tags: ['decision-table'] }, () => {
     const control = { imageUrl: 'http://novira-image.localhost/full/c.png', modelKey: 'cn', weight: 1, beginEnd: [0, 1] as [number, number], controlMode: 'balanced' as const };
     for (const kind of ['variation', 'subtle'] as const) {
       const req = buildDerivedRequest(picture({ metadata: { ...metadata, refImages: [reference], controlLayers: [control] } }), kind, 2);
@@ -120,10 +120,10 @@ describe('buildDerivedRequest', () => {
   });
 });
 
-describe('regional guidance of a derived picture', () => {
+describe('regional guidance of a derived picture', { tags: [] }, () => {
   const region = { imageUrl: 'http://novira-image.localhost/full/r.png', positivePrompt: 'a red hat', negativePrompt: null, autoNegative: true };
 
-  it('uses the regional layers stored with the picture, as request fields', { tags: ['condition'] }, () => {
+  it('uses the regional layers stored with the picture, as request fields', { tags: ['decision-table', 'regression'] }, () => {
     for (const kind of ['variation', 'subtle'] as const) {
       const req = buildDerivedRequest(picture({ metadata: { ...metadata, regionalGuidanceCount: 1, regionalLayers: [region] } }), kind, 1);
       expect(req.regionalLayers).toEqual([region]);
@@ -137,14 +137,14 @@ describe('regional guidance of a derived picture', () => {
   });
 });
 
-describe('deriveFrom', () => {
+describe('deriveFrom', { tags: [] }, () => {
   beforeEach(() => {
     useModels.getState().setModels([model]);
     useToasts.setState({ toasts: [] });
   });
   afterEach(() => vi.restoreAllMocks());
 
-  it('queues the request and tells what could not be carried over', { tags: ['condition'] }, async () => {
+  it('queues the request and tells what could not be carried over', { tags: ['scenario'] }, async () => {
     const enqueue = vi.spyOn(backend, 'enqueue').mockResolvedValue([]);
     await deriveFrom(picture(), 'variation', 4);
     expect(enqueue).toHaveBeenCalledTimes(1);
@@ -178,8 +178,8 @@ describe('deriveFrom', () => {
   });
 });
 
-describe('pictures a derived picture gave its model as references', () => {
-  it('carries them over as request fields', { tags: ['condition'] }, () => {
+describe('pictures a derived picture gave its model as references', { tags: [] }, () => {
+  it('carries them over as request fields', { tags: ['decision-table'] }, () => {
     const pictures = ['http://novira-image.localhost/full/mina.png'];
     for (const kind of ['variation', 'subtle'] as const) {
       const req = buildDerivedRequest(picture({ metadata: { ...metadata, referencePictures: pictures } }), kind, 1);

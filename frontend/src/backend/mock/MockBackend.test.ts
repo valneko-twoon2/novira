@@ -94,15 +94,19 @@ describe('mock backend: start-up', () => {
     expect(await backend.hardwareInfo()).toEqual({ gpuName: 'Mock GPU', vramBytes: 12 * 1024 ** 3 });
   });
 
-  it('spreads the sample pictures over several days, so the gallery date filter has something to show', { tags: ['condition'] }, async () => {
-    const { boot } = await start('default');
-    const times = boot.images.map((i) => i.createdAt);
-    expect(times.every((t, k) => k === 0 || times[k - 1]! - t === SEED_IMAGE_SPACING_MS)).toBe(true);
-    // Local calendar days, as the gallery's date filter sees them.
-    const days = new Set(times.map((t) => new Date(t).toDateString()));
-    expect(days.size).toBeGreaterThanOrEqual(3);
-    expect(days.size).toBeLessThan(times.length);
-  });
+  it(
+    'spreads the sample pictures over several days, so the gallery date filter has something to show',
+    { tags: ['condition'] },
+    async () => {
+      const { boot } = await start('default');
+      const times = boot.images.map((i) => i.createdAt);
+      expect(times.every((t, k) => k === 0 || times[k - 1]! - t === SEED_IMAGE_SPACING_MS)).toBe(true);
+      // Local calendar days, as the gallery's date filter sees them.
+      const days = new Set(times.map((t) => new Date(t).toDateString()));
+      expect(days.size).toBeGreaterThanOrEqual(3);
+      expect(days.size).toBeLessThan(times.length);
+    },
+  );
 
   it('starts with an empty gallery in the empty scenario but keeps models and workflows', { tags: ['condition'] }, async () => {
     const { boot } = await start('empty');
@@ -122,40 +126,52 @@ describe('mock backend: start-up', () => {
 });
 
 describe('mock backend: generation', () => {
-  it('runs an item through pending, in progress and completed with step progress and the image', { tags: ['state-transition'] }, async () => {
-    const { backend, events, settled } = await start();
-    const [item] = await backend.enqueue(request());
-    const done = await settled(item!.id);
-    expect(statusesOf(events, item!.id)).toEqual(['pending', 'in_progress', 'completed']);
-    const steps = events.flatMap((e) => (e.type === 'invocation_progress' && e.progress.itemId === item!.id ? [e.progress.step] : []));
-    expect(steps).toEqual([1, 2, 3]);
-    const added = events.find((e) => e.type === 'image_added');
-    expect(added?.type === 'image_added' && added.image.name).toBe(done.imageName);
-    expect(added?.type === 'image_added' && added.item?.id).toBe(item!.id);
-    expect(backend.queueStatus()).toMatchObject({ completed: 1, pending: 0, inProgress: 0, total: 1 });
-  });
+  it(
+    'runs an item through pending, in progress and completed with step progress and the image',
+    { tags: ['state-transition'] },
+    async () => {
+      const { backend, events, settled } = await start();
+      const [item] = await backend.enqueue(request());
+      const done = await settled(item!.id);
+      expect(statusesOf(events, item!.id)).toEqual(['pending', 'in_progress', 'completed']);
+      const steps = events.flatMap((e) => (e.type === 'invocation_progress' && e.progress.itemId === item!.id ? [e.progress.step] : []));
+      expect(steps).toEqual([1, 2, 3]);
+      const added = events.find((e) => e.type === 'image_added');
+      expect(added?.type === 'image_added' && added.image.name).toBe(done.imageName);
+      expect(added?.type === 'image_added' && added.item?.id).toBe(item!.id);
+      expect(backend.queueStatus()).toMatchObject({ completed: 1, pending: 0, inProgress: 0, total: 1 });
+    },
+  );
 
-  it('records the sampling a newer family runs in place of the scheduler setting, as the backend does', { tags: ['decision-table'] }, async () => {
-    const { backend, settled } = await start();
-    const images = async () => backend.getImageDetails((await backend.bootstrap()).images.map((i) => i.name));
-    const [flux] = await backend.enqueue(request({}, { modelKey: 'main-flux-schnell', scheduler: 'euler_a' }));
-    await settled(flux!.id);
-    expect((await images())[0]!.metadata).toMatchObject({ scheduler: 'euler_a', sampling: { sampler: 'euler', scheduler: 'simple' } });
-    const [xl] = await backend.enqueue(request({}, { scheduler: 'euler_a', sampling: { sampler: 'euler', scheduler: 'simple' } }));
-    await settled(xl!.id);
-    expect((await images())[0]!.metadata?.sampling).toBeUndefined();
-  });
+  it(
+    'records the sampling a newer family runs in place of the scheduler setting, as the backend does',
+    { tags: ['decision-table'] },
+    async () => {
+      const { backend, settled } = await start();
+      const images = async () => backend.getImageDetails((await backend.bootstrap()).images.map((i) => i.name));
+      const [flux] = await backend.enqueue(request({}, { modelKey: 'main-flux-schnell', scheduler: 'euler_a' }));
+      await settled(flux!.id);
+      expect((await images())[0]!.metadata).toMatchObject({ scheduler: 'euler_a', sampling: { sampler: 'euler', scheduler: 'simple' } });
+      const [xl] = await backend.enqueue(request({}, { scheduler: 'euler_a', sampling: { sampler: 'euler', scheduler: 'simple' } }));
+      await settled(xl!.id);
+      expect((await images())[0]!.metadata?.sampling).toBeUndefined();
+    },
+  );
 
-  it('records the sampler and noise schedule a picture named over the one its family fixes, and keeps the other half', { tags: ['decision-table'] }, async () => {
-    const { backend, settled } = await start();
-    const images = async () => backend.getImageDetails((await backend.bootstrap()).images.map((i) => i.name));
-    const [flux] = await backend.enqueue(request({}, { modelKey: 'main-flux-schnell', samplerName: 'res_multistep' }));
-    await settled(flux!.id);
-    expect((await images())[0]!.metadata).toMatchObject({ samplerName: 'res_multistep', sampling: { sampler: 'res_multistep', scheduler: 'simple' } });
-    const [xl] = await backend.enqueue(request({}, { samplerName: 'ddim', noiseSchedule: 'beta' }));
-    await settled(xl!.id);
-    expect((await images())[0]!.metadata?.sampling).toEqual({ sampler: 'ddim', scheduler: 'beta' });
-  });
+  it(
+    'records the sampler and noise schedule a picture named over the one its family fixes, and keeps the other half',
+    { tags: ['decision-table'] },
+    async () => {
+      const { backend, settled } = await start();
+      const images = async () => backend.getImageDetails((await backend.bootstrap()).images.map((i) => i.name));
+      const [flux] = await backend.enqueue(request({}, { modelKey: 'main-flux-schnell', samplerName: 'res_multistep' }));
+      await settled(flux!.id);
+      expect((await images())[0]!.metadata).toMatchObject({ samplerName: 'res_multistep', sampling: { sampler: 'res_multistep', scheduler: 'simple' } });
+      const [xl] = await backend.enqueue(request({}, { samplerName: 'ddim', noiseSchedule: 'beta' }));
+      await settled(xl!.id);
+      expect((await images())[0]!.metadata?.sampling).toEqual({ sampler: 'ddim', scheduler: 'beta' });
+    },
+  );
 
   it('makes the same picture from the same seed and prompt', { tags: ['condition'] }, async () => {
     const a = await start();
@@ -194,16 +210,20 @@ describe('mock backend: generation', () => {
     expect(events.some((e) => e.type === 'image_added')).toBe(false);
   });
 
-  it('fails an item whose prompt contains [oom] as out of memory, and other failures without a kind', { tags: ['equivalence'] }, async () => {
-    const { backend, settled } = await start();
-    const [oom] = await backend.enqueue(request({}, { positivePrompt: 'a cat [oom]' }));
-    const done = await settled(oom!.id);
-    expect(done.status).toBe('failed');
-    expect(done.errorKind).toBe('out_of_memory');
-    expect(done.error).toMatch(/out of memory/);
-    const [other] = await backend.enqueue(request({}, { positivePrompt: '[fail]' }));
-    expect((await settled(other!.id)).errorKind).toBeNull();
-  });
+  it(
+    'fails an item whose prompt contains [oom] as out of memory, and other failures without a kind',
+    { tags: ['equivalence'] },
+    async () => {
+      const { backend, settled } = await start();
+      const [oom] = await backend.enqueue(request({}, { positivePrompt: 'a cat [oom]' }));
+      const done = await settled(oom!.id);
+      expect(done.status).toBe('failed');
+      expect(done.errorKind).toBe('out_of_memory');
+      expect(done.error).toMatch(/out of memory/);
+      const [other] = await backend.enqueue(request({}, { positivePrompt: '[fail]' }));
+      expect((await settled(other!.id)).errorKind).toBeNull();
+    },
+  );
 
   it('retries an item smaller with the same seed, and refuses sizes the backend would refuse', { tags: ['boundary'] }, async () => {
     const { backend, settled } = await start();
@@ -218,20 +238,24 @@ describe('mock backend: generation', () => {
     await expect(backend.retryQueueItem(video!.id, { width: 256, height: 256 })).rejects.toThrow(/made from a prompt/);
   });
 
-  it('switches low-memory mode with a pretend restart, or waits for the next start while a job runs', { tags: ['state-transition'] }, async () => {
-    const { backend, events } = await start();
-    expect(await backend.lowMemoryMode()).toEqual({ enabled: false, ownedEngine: true, pendingRestart: false });
-    expect(await backend.setLowMemoryMode(true)).toEqual({ enabled: true, ownedEngine: true, pendingRestart: false });
-    expect(events.filter((e) => e.type === 'engine_status').map((e) => e.type === 'engine_status' && e.status.state)).toEqual(['starting', 'ready']);
+  it(
+    'switches low-memory mode with a pretend restart, or waits for the next start while a job runs',
+    { tags: ['state-transition'] },
+    async () => {
+      const { backend, events } = await start();
+      expect(await backend.lowMemoryMode()).toEqual({ enabled: false, ownedEngine: true, pendingRestart: false });
+      expect(await backend.setLowMemoryMode(true)).toEqual({ enabled: true, ownedEngine: true, pendingRestart: false });
+      expect(events.filter((e) => e.type === 'engine_status').map((e) => e.type === 'engine_status' && e.status.state)).toEqual(['starting', 'ready']);
 
-    backend.setStepDelay(50);
-    const [running] = await backend.enqueue(request({}, { steps: 20 }));
-    await vi.waitFor(() => expect(backend.listQueue().find((q) => q.id === running!.id)?.status).toBe('in_progress'));
-    expect(await backend.setLowMemoryMode(false)).toEqual({ enabled: false, ownedEngine: true, pendingRestart: true });
-    await backend.cancelQueueItem(running!.id);
-    await backend.restartEngine();
-    expect((await backend.lowMemoryMode()).pendingRestart).toBe(false);
-  });
+      backend.setStepDelay(50);
+      const [running] = await backend.enqueue(request({}, { steps: 20 }));
+      await vi.waitFor(() => expect(backend.listQueue().find((q) => q.id === running!.id)?.status).toBe('in_progress'));
+      expect(await backend.setLowMemoryMode(false)).toEqual({ enabled: false, ownedEngine: true, pendingRestart: true });
+      await backend.cancelQueueItem(running!.id);
+      await backend.restartEngine();
+      expect((await backend.lowMemoryMode()).pendingRestart).toBe(false);
+    },
+  );
 
   it('fails a job of the removed logo mode with a clear message, as the worker does', { tags: ['error-guessing'] }, async () => {
     const { backend, settled } = await start();
@@ -326,18 +350,22 @@ describe('mock backend: generation', () => {
     expect([image.width, image.height]).toEqual([400, 200]);
   });
 
-  it('enlarges a picture with the high-resolution fix, counts both passes and keeps the first size in its settings', { tags: ['condition'] }, async () => {
-    const { backend, events, settled } = await start();
-    const hiresFix = { scale: 1.5, strength: 0.45, steps: 2 };
-    const [item] = await backend.enqueue(request({}, { width: 512, height: 680, hiresFix }));
-    await settled(item!.id);
-    const image = events.flatMap((e) => (e.type === 'image_added' ? [e.image] : []))[0]!;
-    // 680 x 1.5 = 1020, snapped to 1024 like the backend.
-    expect([image.width, image.height]).toEqual([768, 1024]);
-    expect(image.metadata).toMatchObject({ width: 512, height: 680, hiresFix });
-    const totals = events.flatMap((e) => (e.type === 'invocation_progress' && e.progress.itemId === item!.id ? [e.progress.totalSteps] : []));
-    expect(new Set(totals)).toEqual(new Set([5]));
-  });
+  it(
+    'enlarges a picture with the high-resolution fix, counts both passes and keeps the first size in its settings',
+    { tags: ['condition'] },
+    async () => {
+      const { backend, events, settled } = await start();
+      const hiresFix = { scale: 1.5, strength: 0.45, steps: 2 };
+      const [item] = await backend.enqueue(request({}, { width: 512, height: 680, hiresFix }));
+      await settled(item!.id);
+      const image = events.flatMap((e) => (e.type === 'image_added' ? [e.image] : []))[0]!;
+      // 680 x 1.5 = 1020, snapped to 1024 like the backend.
+      expect([image.width, image.height]).toEqual([768, 1024]);
+      expect(image.metadata).toMatchObject({ width: 512, height: 680, hiresFix });
+      const totals = events.flatMap((e) => (e.type === 'invocation_progress' && e.progress.itemId === item!.id ? [e.progress.totalSteps] : []));
+      expect(new Set(totals)).toEqual(new Set([5]));
+    },
+  );
 
   it('enlarges a picture drawn over a source with the high-resolution fix', { tags: ['condition'] }, async () => {
     const { backend, events, settled } = await start();
@@ -510,17 +538,21 @@ describe('mock backend: models, workflows and packs', () => {
     await expect(backend.deleteUnfinishedDownloads(Array.from({ length: 1000 }, (_, i) => `p${i}`))).resolves.toEqual([]);
   });
 
-  it("offers every node of ComfyUI's own, in ComfyUI's order, with the hand-made ones in their place and no file names", { tags: ['condition'] }, async () => {
-    const { backend } = await start();
-    const defs = await backend.nodeDefs();
-    const core = Object.entries(defs).filter(([, d]) => /^(nodes|comfy_extras)(\.|$)/.test(d.python_module ?? ''));
-    expect(core.length).toBeGreaterThan(600);
-    const names = Object.keys(defs);
-    expect(names.indexOf('KSampler')).toBeLessThan(names.indexOf('SaveVideo'));
-    // The hand-made definition (its model list holds the mock's files) wins over the read one.
-    expect(JSON.stringify(defs.CheckpointLoaderSimple)).toBe(JSON.stringify((await import('./comfyCoreDefs')).CORE_NODE_DEFS.CheckpointLoaderSimple));
-    expect(await backend.comfyUiLocale()).toBeNull();
-  });
+  it(
+    "offers every node of ComfyUI's own, in ComfyUI's order, with the hand-made ones in their place and no file names",
+    { tags: ['condition'] },
+    async () => {
+      const { backend } = await start();
+      const defs = await backend.nodeDefs();
+      const core = Object.entries(defs).filter(([, d]) => /^(nodes|comfy_extras)(\.|$)/.test(d.python_module ?? ''));
+      expect(core.length).toBeGreaterThan(600);
+      const names = Object.keys(defs);
+      expect(names.indexOf('KSampler')).toBeLessThan(names.indexOf('SaveVideo'));
+      // The hand-made definition (its model list holds the mock's files) wins over the read one.
+      expect(JSON.stringify(defs.CheckpointLoaderSimple)).toBe(JSON.stringify((await import('./comfyCoreDefs')).CORE_NODE_DEFS.CheckpointLoaderSimple));
+      expect(await backend.comfyUiLocale()).toBeNull();
+    },
+  );
 
   it('reports an install from a bad source as an error', { tags: ['error-guessing'] }, async () => {
     const { backend, events } = await start();
@@ -618,19 +650,23 @@ describe('mock backend: models, workflows and packs', () => {
     expect((await backend.listComics()).map((c) => c.id)).toEqual(['comic-b']);
   });
 
-  it('keeps the comics across a reload in the storage it is given, and reads damaged storage as none', { tags: ['error-guessing'] }, async () => {
-    const kept = new Map<string, string>();
-    const storage = { getItem: (k: string) => kept.get(k) ?? null, setItem: (k: string, v: string) => void kept.set(k, v) };
-    const first = new MockBackend('empty', false, storage);
-    await first.saveComic('comic-a', { title: 'A' });
-    await first.saveComic('comic-b', { title: 'B' });
-    await first.deleteComic('comic-b');
-    const reloaded = new MockBackend('empty', false, storage);
-    expect((await reloaded.listComics()).map((c) => [c.id, c.document])).toEqual([['comic-a', { title: 'A' }]]);
-    kept.set('novira.mock.comics', '{not json');
-    expect(await new MockBackend('empty', false, storage).listComics()).toEqual([]);
-    expect(await new MockBackend('empty').listComics()).toEqual([]);
-  });
+  it(
+    'keeps the comics across a reload in the storage it is given, and reads damaged storage as none',
+    { tags: ['error-guessing'] },
+    async () => {
+      const kept = new Map<string, string>();
+      const storage = { getItem: (k: string) => kept.get(k) ?? null, setItem: (k: string, v: string) => void kept.set(k, v) };
+      const first = new MockBackend('empty', false, storage);
+      await first.saveComic('comic-a', { title: 'A' });
+      await first.saveComic('comic-b', { title: 'B' });
+      await first.deleteComic('comic-b');
+      const reloaded = new MockBackend('empty', false, storage);
+      expect((await reloaded.listComics()).map((c) => [c.id, c.document])).toEqual([['comic-a', { title: 'A' }]]);
+      kept.set('novira.mock.comics', '{not json');
+      expect(await new MockBackend('empty', false, storage).listComics()).toEqual([]);
+      expect(await new MockBackend('empty').listComics()).toEqual([]);
+    },
+  );
 
   it('accepts only GitHub repository addresses for node packs', { tags: ['equivalence'] }, async () => {
     const { backend } = await start();

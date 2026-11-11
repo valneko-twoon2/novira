@@ -734,7 +734,7 @@ mod tests {
         );
     }
 
-    // tags: error-guessing, decision-table
+    // tags: condition
     #[test]
     fn a_model_file_is_hashed_again_only_when_its_size_or_time_changed() {
         let dir = tempfile::tempdir().unwrap();
@@ -767,7 +767,7 @@ mod tests {
         assert!(hashes.sha256(&path).is_err());
     }
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn the_hash_is_spelled_as_civitai_spells_it() {
         let dir = tempfile::tempdir().unwrap();

@@ -14,12 +14,12 @@ const doc = (unreleased: string, rest: string, ...versions: string[]) => `# 変�
 
 const GOOD = doc('\n### Added\n\n- 新しい機能を追加。\n', '## [0.2.0] - 2026-10-26\n\n### Added\n\n- 何かを追加。\n\n### Fixed\n\n- 何かを直しました。\n\n## [0.1.0] - 2026-10-25\n\n### Added\n\n- 最初の版。\n', '0.2.0', '0.1.0');
 
-describe('changelog', () => {
+describe('changelog', { tags: [] }, () => {
   it('passes the repository CHANGELOG.md', { tags: ['scenario'] }, () => {
     expect(check(readFileSync(FILE, 'utf8'))).toEqual([]);
   });
 
-  it('passes a file in shape, with CRLF too', { tags: ['condition'] }, () => {
+  it('passes a file in shape, with CRLF too', { tags: ['equivalence'] }, () => {
     expect(check(GOOD)).toEqual([]);
     expect(check(GOOD.replace(/\n/g, '\r\n'))).toEqual([]);
   });
@@ -30,12 +30,16 @@ describe('changelog', () => {
     expect(check(GOOD.replace('## [Unreleased]\n', '')).join()).toMatch(/Unreleased/);
   });
 
-  it('refuses a type outside Keep a Changelog, types out of order or twice, and a type with no bullet', { tags: ['error-guessing'] }, () => {
-    expect(check(GOOD.replace('### Fixed', '### 修正')).join()).toMatch(/not one of/);
-    expect(check(GOOD.replace('### Added\n\n- 何かを追加。\n\n### Fixed', '### Fixed\n\n- 何かを追加。\n\n### Added')).join()).toMatch(/out of order/);
-    expect(check(GOOD.replace('### Fixed', '### Added')).join()).toMatch(/out of order/);
-    expect(check(GOOD.replace('### Fixed\n\n- 何かを直しました。\n', '### Fixed\n')).join()).toMatch(/has no bullet/);
-  });
+  it(
+    'refuses a type outside Keep a Changelog, types out of order or twice, and a type with no bullet',
+    { tags: ['error-guessing'] },
+    () => {
+      expect(check(GOOD.replace('### Fixed', '### 修正')).join()).toMatch(/not one of/);
+      expect(check(GOOD.replace('### Added\n\n- 何かを追加。\n\n### Fixed', '### Fixed\n\n- 何かを追加。\n\n### Added')).join()).toMatch(/out of order/);
+      expect(check(GOOD.replace('### Fixed', '### Added')).join()).toMatch(/out of order/);
+      expect(check(GOOD.replace('### Fixed\n\n- 何かを直しました。\n', '### Fixed\n')).join()).toMatch(/has no bullet/);
+    },
+  );
 
   it('refuses a paragraph, a nested bullet, a bullet before any type and an empty version', { tags: ['error-guessing'] }, () => {
     expect(check(GOOD.replace('- 何かを直しました。', '- 何かを直しました。\n  - 細かい点。')).join()).toMatch(/one-line/);
@@ -48,7 +52,7 @@ describe('changelog', () => {
     expect(check(GOOD.replace('### Added\n\n- 新しい機能を追加。\n', ''))).toEqual([]);
   });
 
-  it('refuses a bad version, a bad date, versions out of order or twice', { tags: ['error-guessing'] }, () => {
+  it('refuses a bad version, a bad date, versions out of order or twice', { tags: ['error-guessing', 'boundary'] }, () => {
     expect(check(GOOD.replace('## [0.1.0]', '## [0.1]')).join()).toMatch(/x\.y\.z/);
     expect(check(GOOD.replace('2026-10-25', '2026-02-30')).join()).toMatch(/date/);
     expect(check(GOOD.replace('## [0.1.0] - 2026-10-25', '## [0.1.0]')).join()).toMatch(/date/);
@@ -69,7 +73,7 @@ describe('changelog', () => {
     expect(check(`${GOOD}[extra]: ${REPO}\n`).join()).toMatch(/links/);
   });
 
-  it('gives the body of the tagged version as the notes', { tags: ['condition'] }, () => {
+  it('gives the body of the tagged version as the notes', { tags: ['equivalence'] }, () => {
     expect(notes(GOOD, 'v0.2.0')).toBe('### Added\n\n- 何かを追加。\n\n### Fixed\n\n- 何かを直しました。\n');
     expect(notes(GOOD, 'v0.1.0')).toBe('### Added\n\n- 最初の版。\n');
   });
@@ -80,7 +84,7 @@ describe('changelog', () => {
     expect(() => notes(GOOD, 'vUnreleased')).toThrow(/not a tag/);
   });
 
-  it('cuts a release: [Unreleased] becomes the dated version and the links follow', { tags: ['condition'] }, () => {
+  it('cuts a release: [Unreleased] becomes the dated version and the links follow', { tags: ['scenario'] }, () => {
     const cut = release(GOOD, '0.3.0', '2026-11-02');
     expect(check(cut)).toEqual([]);
     expect(cut).toContain('## [Unreleased]\n\n## [0.3.0] - 2026-11-02\n\n### Added\n\n- 新しい機能を追加。\n\n## [0.2.0]');
@@ -88,12 +92,16 @@ describe('changelog', () => {
     expect(notes(cut, 'v0.3.0')).toBe('### Added\n\n- 新しい機能を追加。\n');
   });
 
-  it('refuses a release with nothing in [Unreleased], an older version, a bad date or a file out of shape', { tags: ['error-guessing'] }, () => {
-    const empty = GOOD.replace('### Added\n\n- 新しい機能を追加。\n', '');
-    expect(() => release(empty, '0.3.0', '2026-11-02')).toThrow(/nothing to release/);
-    expect(() => release(GOOD, '0.2.0', '2026-11-02')).toThrow(/not newer/);
-    expect(() => release(GOOD, '0.3', '2026-11-02')).toThrow(/not a version/);
-    expect(() => release(GOOD, '0.3.0', '2026/11/02')).toThrow(/not a date/);
-    expect(() => release(GOOD.replace('### Fixed', '### 修正'), '0.3.0', '2026-11-02')).toThrow(/not in shape/);
-  });
+  it(
+    'refuses a release with nothing in [Unreleased], an older version, a bad date or a file out of shape',
+    { tags: ['error-guessing', 'condition'] },
+    () => {
+      const empty = GOOD.replace('### Added\n\n- 新しい機能を追加。\n', '');
+      expect(() => release(empty, '0.3.0', '2026-11-02')).toThrow(/nothing to release/);
+      expect(() => release(GOOD, '0.2.0', '2026-11-02')).toThrow(/not newer/);
+      expect(() => release(GOOD, '0.3', '2026-11-02')).toThrow(/not a version/);
+      expect(() => release(GOOD, '0.3.0', '2026/11/02')).toThrow(/not a date/);
+      expect(() => release(GOOD.replace('### Fixed', '### 修正'), '0.3.0', '2026-11-02')).toThrow(/not in shape/);
+    },
+  );
 });

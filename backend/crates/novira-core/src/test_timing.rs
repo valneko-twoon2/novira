@@ -33,7 +33,7 @@ pub(crate) fn retry_pause(real: Duration) -> Duration {
 mod tests {
     use super::*;
 
-    // tags: scenario
+    // tags: boundary
     #[test]
     fn only_a_small_whole_number_of_milliseconds_is_an_override() {
         assert_eq!(parse_override(Some("1")), Some(Duration::from_millis(1)));

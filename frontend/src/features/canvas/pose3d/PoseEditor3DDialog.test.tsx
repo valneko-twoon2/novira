@@ -33,7 +33,7 @@ const mount = () =>
     </TooltipProvider>,
   );
 
-describe('the 3D pose editor dialog', () => {
+describe('the 3D pose editor dialog', { tags: [] }, () => {
   beforeEach(() => {
     vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
     c().replaceEntities([]);
@@ -75,20 +75,24 @@ describe('the 3D pose editor dialog', () => {
     expect(fake.reset).toHaveBeenCalled();
   });
 
-  it('applies the figure as seen: a new pose layer with the flat joints and their depth, and closes', { tags: ['scenario'] }, async () => {
-    mount();
-    usePose3dDialog.getState().show();
-    await waitFor(() => expect(fake.create).toHaveBeenCalled());
-    // The editor hands back the joints it holds; a turn of 180 degrees mirrors x and z around the middle.
-    fake.joints = (fake.create.mock.calls[0] as [unknown, Vec3[]])[1].map((p) => v3(p.x, p.y, 5));
-    fake.view = { yaw: Math.PI, pitch: 0 };
-    await waitFor(() => expect((screen.getByTestId('pose3d-apply') as HTMLButtonElement).disabled).toBe(false));
-    fireEvent.click(screen.getByTestId('pose3d-apply'));
-    expect(poses()).toHaveLength(1);
-    expect(poses()[0]!.depth).toHaveLength(18);
-    expect(poses()[0]!.depth!.every((z) => Math.abs(z + 5) < 0.2)).toBe(true);
-    expect(usePose3dDialog.getState().open).toBe(false);
-  });
+  it(
+    'applies the figure as seen: a new pose layer with the flat joints and their depth, and closes',
+    { tags: ['scenario', 'state-transition'] },
+    async () => {
+      mount();
+      usePose3dDialog.getState().show();
+      await waitFor(() => expect(fake.create).toHaveBeenCalled());
+      // The editor hands back the joints it holds; a turn of 180 degrees mirrors x and z around the middle.
+      fake.joints = (fake.create.mock.calls[0] as [unknown, Vec3[]])[1].map((p) => v3(p.x, p.y, 5));
+      fake.view = { yaw: Math.PI, pitch: 0 };
+      await waitFor(() => expect((screen.getByTestId('pose3d-apply') as HTMLButtonElement).disabled).toBe(false));
+      fireEvent.click(screen.getByTestId('pose3d-apply'));
+      expect(poses()).toHaveLength(1);
+      expect(poses()[0]!.depth).toHaveLength(18);
+      expect(poses()[0]!.depth!.every((z) => Math.abs(z + 5) < 0.2)).toBe(true);
+      expect(usePose3dDialog.getState().open).toBe(false);
+    },
+  );
 
   it('says so when the 3D view cannot start, and does not offer to apply', { tags: ['error-guessing'] }, async () => {
     fake.create.mockImplementation(() => {
@@ -101,7 +105,7 @@ describe('the 3D pose editor dialog', () => {
     fake.create.mockReset();
   });
 
-  it('releases the 3D view when the dialog closes', { tags: ['scenario'] }, async () => {
+  it('releases the 3D view when the dialog closes', { tags: ['state-transition'] }, async () => {
     mount();
     usePose3dDialog.getState().show();
     await waitFor(() => expect(fake.create).toHaveBeenCalled());

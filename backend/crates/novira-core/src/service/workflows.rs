@@ -179,7 +179,7 @@ mod tests {
         assert!(backend.bootstrap().workflows.is_empty());
     }
 
-    // tags: boundary, equivalence
+    // tags: boundary, error-guessing
     #[test]
     fn a_name_must_be_there_and_plain_and_not_too_long() {
         let dir = tempfile::tempdir().unwrap();
@@ -208,7 +208,7 @@ mod tests {
         assert_eq!(backend.bootstrap().workflows.len(), 1);
     }
 
-    // tags: condition
+    // tags: error-guessing
     #[test]
     fn a_description_may_have_line_breaks_but_no_other_control_characters() {
         let dir = tempfile::tempdir().unwrap();
@@ -240,7 +240,7 @@ mod tests {
             .is_ok());
     }
 
-    // tags: condition
+    // tags: error-guessing, boundary
     #[test]
     fn a_graph_must_be_an_object_of_a_sane_size() {
         let dir = tempfile::tempdir().unwrap();

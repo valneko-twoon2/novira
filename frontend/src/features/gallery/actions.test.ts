@@ -73,7 +73,7 @@ describe('moving, starring and deleting', () => {
     expect(useToasts.getState().toasts).toEqual([]);
   });
 
-  it('stars images through the backend', { tags: ['scenario'] }, async () => {
+  it('stars images through the backend', { tags: ['equivalence'] }, async () => {
     const update = vi.spyOn(backend, 'updateImages').mockResolvedValue([image('a', { starred: true })]);
     await setStarred(['a'], true);
     expect(update).toHaveBeenCalledWith(['a'], { starred: true });
@@ -104,28 +104,36 @@ describe('moving, starring and deleting', () => {
 describe('uploadFiles', () => {
   const file = (name: string, type: string) => new File(['x'], name, { type });
 
-  it('uploads only image files into the auto-add board, then shows them selected in the assets view', { tags: ['equivalence'] }, async () => {
-    useGallery.setState({ autoAddBoardId: 'b1', page: 3 });
-    const upload = vi.spyOn(backend, 'uploadImage').mockImplementation(async (f) => image((f as File).name));
-    await uploadFiles([file('a.png', 'image/png'), file('notes.txt', 'text/plain'), file('b.png', 'image/png')]);
-    expect(upload).toHaveBeenCalledTimes(2);
-    expect(upload).toHaveBeenCalledWith(expect.anything(), { boardId: 'b1' });
-    const g = useGallery.getState();
-    expect(g.selectedBoardId).toBe('b1');
-    expect(g.view).toBe('assets');
-    expect(g.page).toBe(0);
-    expect(g.selection).toEqual(['b.png']);
-  });
+  it(
+    'uploads only image files into the auto-add board, then shows them selected in the assets view',
+    { tags: ['equivalence'] },
+    async () => {
+      useGallery.setState({ autoAddBoardId: 'b1', page: 3 });
+      const upload = vi.spyOn(backend, 'uploadImage').mockImplementation(async (f) => image((f as File).name));
+      await uploadFiles([file('a.png', 'image/png'), file('notes.txt', 'text/plain'), file('b.png', 'image/png')]);
+      expect(upload).toHaveBeenCalledTimes(2);
+      expect(upload).toHaveBeenCalledWith(expect.anything(), { boardId: 'b1' });
+      const g = useGallery.getState();
+      expect(g.selectedBoardId).toBe('b1');
+      expect(g.view).toBe('assets');
+      expect(g.page).toBe(0);
+      expect(g.selection).toEqual(['b.png']);
+    },
+  );
 
-  it('uses no board when none is set to receive new pictures, and does nothing when no file is an image', { tags: ['decision-table'] }, async () => {
-    const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue(image('a.png'));
-    await uploadFiles([file('notes.txt', 'text/plain')]);
-    expect(upload).not.toHaveBeenCalled();
-    expect(useToasts.getState().toasts).toEqual([]);
-    await uploadFiles([file('a.png', 'image/png')]);
-    expect(upload).toHaveBeenCalledWith(expect.anything(), { boardId: null });
-    expect(useGallery.getState().selectedBoardId).toBe('none');
-  });
+  it(
+    'uses no board when none is set to receive new pictures, and does nothing when no file is an image',
+    { tags: ['condition', 'boundary'] },
+    async () => {
+      const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue(image('a.png'));
+      await uploadFiles([file('notes.txt', 'text/plain')]);
+      expect(upload).not.toHaveBeenCalled();
+      expect(useToasts.getState().toasts).toEqual([]);
+      await uploadFiles([file('a.png', 'image/png')]);
+      expect(upload).toHaveBeenCalledWith(expect.anything(), { boardId: null });
+      expect(useGallery.getState().selectedBoardId).toBe('none');
+    },
+  );
 });
 
 describe('recall', () => {
@@ -221,7 +229,7 @@ describe('downloadImages', () => {
     expect(lastToast()).toBeUndefined();
   });
 
-  it('says where the desktop app saved them and can open that folder', { tags: ['condition'] }, async () => {
+  it('says where the desktop app saved them and can open that folder', { tags: ['scenario'] }, async () => {
     vi.spyOn(backend, 'saveImages').mockResolvedValue({ count: 2, skipped: 0, watermarked: 0, folder: 'D:\\pictures' });
     const reveal = vi.spyOn(backend, 'revealExportFolder').mockResolvedValue();
     await downloadImages([image('a.png'), image('b.png')]);
@@ -230,16 +238,20 @@ describe('downloadImages', () => {
     expect(reveal).toHaveBeenCalled();
   });
 
-  it('says nothing when the folder dialog is cancelled or nothing is chosen, and reports a failure', { tags: ['error-guessing'] }, async () => {
-    const save = vi.spyOn(backend, 'saveImages').mockResolvedValue(null);
-    await downloadImages([image('a.png')]);
-    await downloadImages([]);
-    expect(save).toHaveBeenCalledTimes(1);
-    expect(lastToast()).toBeUndefined();
-    save.mockRejectedValue(new Error('cannot write into the folder'));
-    await downloadImages([image('a.png')]);
-    expect(lastToast()).toMatchObject({ status: 'error', title: t('gallery.toast.saveFailed'), description: 'cannot write into the folder' });
-  });
+  it(
+    'says nothing when the folder dialog is cancelled or nothing is chosen, and reports a failure',
+    { tags: ['error-guessing'] },
+    async () => {
+      const save = vi.spyOn(backend, 'saveImages').mockResolvedValue(null);
+      await downloadImages([image('a.png')]);
+      await downloadImages([]);
+      expect(save).toHaveBeenCalledTimes(1);
+      expect(lastToast()).toBeUndefined();
+      save.mockRejectedValue(new Error('cannot write into the folder'));
+      await downloadImages([image('a.png')]);
+      expect(lastToast()).toMatchObject({ status: 'error', title: t('gallery.toast.saveFailed'), description: 'cannot write into the folder' });
+    },
+  );
 });
 
 describe('sending pictures elsewhere', () => {

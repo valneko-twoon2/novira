@@ -5,7 +5,7 @@ import { boundaryRadius, bubbleGeometry, commandBounds, seeded } from './bubble'
 const scene = { width: 1000, height: 1000 };
 
 describe('bubble geometry', () => {
-  it('draws every shape as a closed outline inside its size', { tags: ['equivalence'] }, () => {
+  it('draws every shape as a closed outline inside its size', { tags: ['equivalence', 'boundary'] }, () => {
     for (const shape of BUBBLE_SHAPES) {
       const layer = newBubbleLayer(scene, shape, 'text');
       const geo = bubbleGeometry({ ...layer, tail: { ...layer.tail, enabled: false } });
@@ -42,13 +42,13 @@ describe('bubble geometry', () => {
     expect(bubbleGeometry(newBubbleLayer(scene, 'whisper', 'a')).dashed).toBe(true);
   });
 
-  it('makes the same burst from the same seed', { tags: ['condition'] }, () => {
+  it('makes the same burst from the same seed', { tags: ['equivalence'] }, () => {
     const burst = newBubbleLayer(scene, 'burst', 'a');
     expect(bubbleGeometry({ ...burst, seed: 3 }).body).toEqual(bubbleGeometry({ ...burst, seed: 3 }).body);
     expect(bubbleGeometry({ ...burst, seed: 3 }).body).not.toEqual(bubbleGeometry({ ...burst, seed: 4 }).body);
   });
 
-  it('points a burst spike at the target', { tags: ['condition'] }, () => {
+  it('points a burst spike at the target', { tags: ['equivalence'] }, () => {
     const burst = newBubbleLayer(scene, 'burst', 'a');
     const geo = bubbleGeometry({ ...burst, tail: { ...burst.tail, enabled: true, x: 0, y: burst.height * 1.5 } });
     expect(commandBounds(geo.body).maxY).toBe(burst.height * 1.5);
@@ -61,7 +61,7 @@ describe('bubble geometry', () => {
     expect(boundaryRadius('box', 100, 50, Math.PI / 4)).toBeCloseTo(50 * Math.SQRT2);
   });
 
-  it('gives the same random numbers for a seed', { tags: ['condition'] }, () => {
+  it('gives the same random numbers for a seed', { tags: ['equivalence'] }, () => {
     const a = seeded(5);
     const b = seeded(5);
     expect([a(), a(), a()]).toEqual([b(), b(), b()]);

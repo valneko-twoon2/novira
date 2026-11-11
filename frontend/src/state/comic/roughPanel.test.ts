@@ -6,7 +6,7 @@ import { applyRough, roughFor, roughPoses } from './roughPanel';
 import { personJoints, project } from './roughView';
 import { findPanel, useComic } from './store';
 
-describe('the rough of a panel', () => {
+describe('the rough of a panel', { tags: [] }, () => {
   const rough = { ...newRough(), props: [newProp('box', 1, 0)] };
   const flat = (x: number) => Array.from({ length: 18 }, (_, i) => ({ x: x + (i % 3) * 0.01, y: 0.2 + i * 0.03 }));
 
@@ -14,7 +14,7 @@ describe('the rough of a panel', () => {
     expect(roughFor({ rough, depthImageName: 'depth.png', poses: [flat(0.5)] }, 1)).toBe(rough);
   });
 
-  it('keeps the camera and props but stands up the panel pose once the pose was changed another way', { tags: ['state-transition'] }, () => {
+  it('keeps the camera and props but stands up the panel pose once the pose was changed another way', { tags: ['condition'] }, () => {
     const camera = { ...rough.camera, pitch: 0 };
     const pose = personJoints(newPerson(0.3, 0, 0)).map((p) => project(camera, 0.8, p));
     const opened = roughFor({ rough: { ...rough, camera }, poses: [pose] }, 0.8);
@@ -24,7 +24,7 @@ describe('the rough of a panel', () => {
     expect(opened.people[0]!.id).not.toBe(rough.people[0]!.id);
   });
 
-  it('starts a panel without a rough from its pose, or from one standing person', { tags: ['error-guessing', 'state-transition'] }, () => {
+  it('starts a panel without a rough from its pose, or from one standing person', { tags: ['condition'] }, () => {
     expect(roughFor({ poses: [] }, 1).people).toHaveLength(1);
     const pose = personJoints(newPerson()).map((p) => project(newRough().camera, 1, p));
     expect(roughFor({ poses: [pose, pose] }, 1).people).toHaveLength(2);
@@ -32,7 +32,7 @@ describe('the rough of a panel', () => {
     expect(roughFor({ rough, poses: [] }, 1).people).toEqual([]);
   });
 
-  it('gives the people as fractions of the panel', { tags: ['condition'] }, () => {
+  it('gives the people as fractions of the panel', { tags: ['equivalence'] }, () => {
     const points = Array.from({ length: 36 }, (_, i) => (i % 2 ? 50 : 100));
     const [person] = roughPoses([{ points, hidden: [] }], 200, 100);
     expect(person).toHaveLength(18);
@@ -40,7 +40,7 @@ describe('the rough of a panel', () => {
   });
 });
 
-describe('a rough put into its panel', () => {
+describe('a rough put into its panel', { tags: [] }, () => {
   // The state tests run without a DOM: a canvas that takes every drawing call, and a picture that is a plain blob.
   const fakeContext = new Proxy({}, { get: () => () => undefined, set: () => true });
   const fakeCanvas = { width: 0, height: 0, getContext: () => fakeContext, toBlob: (cb: (b: Blob | null) => void) => cb(new Blob(['png'], { type: 'image/png' })) };

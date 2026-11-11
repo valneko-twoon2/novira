@@ -18,8 +18,8 @@ const types = () => c().entities.map((e) => e.type);
 
 const rect = (id: string): RectObject => ({ kind: 'rect', id, x: 0, y: 0, width: 8, height: 8, color: { r: 0, g: 0, b: 0, a: 1 } });
 
-describe('entities', () => {
-  it('numbers entities per type, selects the new one and regroups them by type when arranged', { tags: ['equivalence'] }, () => {
+describe('entities', { tags: [] }, () => {
+  it('numbers entities per type, selects the new one and regroups them by type when arranged', { tags: ['scenario'] }, () => {
     const r1 = c().addEntity('raster');
     const m1 = c().addEntity('inpaint');
     const r2 = c().addEntity('raster');
@@ -34,14 +34,14 @@ describe('entities', () => {
     expect(ids()).toEqual([r2, r1, m1]);
   });
 
-  it('gives regional masks different colors', { tags: ['condition'] }, () => {
+  it('gives regional masks different colors', { tags: ['equivalence'] }, () => {
     const a = c().addEntity('regional');
     const b = c().addEntity('regional');
     const color = (id: string) => (c().entities.find((e) => e.id === id) as Extract<CanvasEntity, { type: 'regional' }>).color;
     expect(color(a)).not.toEqual(color(b));
   });
 
-  it('shows a hidden group again when an entity is added to it', { tags: ['scenario'] }, () => {
+  it('shows a hidden group again when an entity is added to it', { tags: ['condition'] }, () => {
     c().setGroupHidden('control', true);
     c().addEntity('control');
     expect(c().groupHidden.control).toBe(false);
@@ -57,7 +57,7 @@ describe('entities', () => {
     expect(c().filterPreviews).toEqual({});
   });
 
-  it('falls back to any entity, then to none, when no entity of the same type is left', { tags: ['scenario'] }, () => {
+  it('falls back to any entity, then to none, when no entity of the same type is left', { tags: ['boundary', 'condition'] }, () => {
     const m = c().addEntity('inpaint');
     const r = c().addEntity('raster');
     c().removeEntity(r);
@@ -66,7 +66,7 @@ describe('entities', () => {
     expect(c().selectedEntityId).toBeNull();
   });
 
-  it('duplicates an entity right after the source with a fresh number and no name', { tags: ['condition'] }, () => {
+  it('duplicates an entity right after the source with a fresh number and no name', { tags: ['equivalence'] }, () => {
     const a = c().addEntity('raster', { name: 'Sky' });
     const b = c().addEntity('raster');
     c().duplicateEntity(a);
@@ -76,7 +76,7 @@ describe('entities', () => {
     expect(c().selectedEntityId).toBe(copy.id);
   });
 
-  it('moves an entity up and down within its type only', { tags: ['condition'] }, () => {
+  it('moves an entity up and down within its type only', { tags: ['boundary', 'condition'] }, () => {
     const r1 = c().addEntity('raster');
     const r2 = c().addEntity('raster');
     const ctl = c().addEntity('control');
@@ -89,35 +89,43 @@ describe('entities', () => {
     expect(c().past.length).toBe(before);
   });
 
-  it('moves a layer to the position of another layer of the same type, and ignores other types', { tags: ['condition'] }, () => {
-    const a = c().addEntity('raster');
-    const b = c().addEntity('raster');
-    const d = c().addEntity('raster');
-    const m = c().addEntity('inpaint');
-    c().moveEntityTo(a, d);
-    expect(ids().slice(0, 3)).toEqual([b, d, a]);
-    c().moveEntityTo(a, b);
-    expect(ids().slice(0, 3)).toEqual([a, b, d]);
-    const before = c().past.length;
-    c().moveEntityTo(a, m);
-    c().moveEntityTo(a, a);
-    expect(ids().slice(0, 3)).toEqual([a, b, d]);
-    expect(c().past.length).toBe(before);
-  });
+  it(
+    'moves a layer to the position of another layer of the same type, and ignores other types',
+    { tags: ['condition', 'error-guessing'] },
+    () => {
+      const a = c().addEntity('raster');
+      const b = c().addEntity('raster');
+      const d = c().addEntity('raster');
+      const m = c().addEntity('inpaint');
+      c().moveEntityTo(a, d);
+      expect(ids().slice(0, 3)).toEqual([b, d, a]);
+      c().moveEntityTo(a, b);
+      expect(ids().slice(0, 3)).toEqual([a, b, d]);
+      const before = c().past.length;
+      c().moveEntityTo(a, m);
+      c().moveEntityTo(a, a);
+      expect(ids().slice(0, 3)).toEqual([a, b, d]);
+      expect(c().past.length).toBe(before);
+    },
+  );
 
-  it('flips a layer around the given center, mirroring strokes, rects and images, and undoes it', { tags: ['state-transition'] }, () => {
-    const id = c().addEntity('raster');
-    const stroke: StrokeObject = { kind: 'stroke', id: 's1', tool: 'brush', color: { r: 0, g: 0, b: 0, a: 1 }, width: 2, points: [0, 0, 10, 4], clip: null };
-    c().addObject(id, stroke);
-    c().addObject(id, { kind: 'image', id: 'i1', url: 'u', imageName: null, x: 20, y: 0, width: 10, height: 10 });
-    c().flipEntity(id, 'horizontal', 15);
-    const [s, i] = c().entities[0]!.objects;
-    expect(s).toMatchObject({ points: [30, 0, 20, 4] });
-    expect(i).toMatchObject({ x: 0, flipX: true });
-    c().undo();
-    expect(c().entities[0]!.objects[0]).toMatchObject({ points: [0, 0, 10, 4] });
-    expect(c().entities[0]!.objects[1]).not.toHaveProperty('flipX', true);
-  });
+  it(
+    'flips a layer around the given center, mirroring strokes, rects and images, and undoes it',
+    { tags: ['equivalence', 'state-transition'] },
+    () => {
+      const id = c().addEntity('raster');
+      const stroke: StrokeObject = { kind: 'stroke', id: 's1', tool: 'brush', color: { r: 0, g: 0, b: 0, a: 1 }, width: 2, points: [0, 0, 10, 4], clip: null };
+      c().addObject(id, stroke);
+      c().addObject(id, { kind: 'image', id: 'i1', url: 'u', imageName: null, x: 20, y: 0, width: 10, height: 10 });
+      c().flipEntity(id, 'horizontal', 15);
+      const [s, i] = c().entities[0]!.objects;
+      expect(s).toMatchObject({ points: [30, 0, 20, 4] });
+      expect(i).toMatchObject({ x: 0, flipX: true });
+      c().undo();
+      expect(c().entities[0]!.objects[0]).toMatchObject({ points: [0, 0, 10, 4] });
+      expect(c().entities[0]!.objects[1]).not.toHaveProperty('flipX', true);
+    },
+  );
 
   it('flips vertically and restores the picture when flipped twice', { tags: ['scenario'] }, () => {
     const id = c().addEntity('raster');
@@ -131,14 +139,14 @@ describe('entities', () => {
     expect(c().entities[0]!.objects[1]).toMatchObject({ y: 0, flipY: false });
   });
 
-  it('does nothing to a layer without objects', { tags: ['condition'] }, () => {
+  it('does nothing to a layer without objects', { tags: ['boundary'] }, () => {
     const id = c().addEntity('raster');
     const before = c().past.length;
     c().flipEntity(id, 'horizontal', 0);
     expect(c().past.length).toBe(before);
   });
 
-  it('converts between mask types keeping color, fill, opacity and objects', { tags: ['condition'] }, () => {
+  it('converts between mask types keeping color, fill, opacity and objects', { tags: ['equivalence'] }, () => {
     const id = c().addEntity('inpaint', { opacity: 0.3 });
     c().addObject(id, rect('o1'));
     const before = c().entities[0] as Extract<CanvasEntity, { type: 'inpaint' }>;
@@ -148,7 +156,7 @@ describe('entities', () => {
     expect(after.objects.map((o) => o.id)).toEqual(['o1']);
   });
 
-  it('converting a mask to a raster layer takes the raster defaults and re-sorts', { tags: ['condition'] }, () => {
+  it('converting a mask to a raster layer takes the raster defaults and re-sorts', { tags: ['equivalence'] }, () => {
     const r = c().addEntity('raster');
     const m = c().addEntity('inpaint');
     c().convertEntity(m, 'raster');
@@ -174,10 +182,10 @@ describe('entities', () => {
   });
 });
 
-describe('slots', () => {
+describe('slots', { tags: [] }, () => {
   const entity = (id: string) => c().entities.find((e) => e.id === id)!;
 
-  it('tells a slot from an ordinary layer', { tags: ['condition'] }, () => {
+  it('tells a slot from an ordinary layer', { tags: ['equivalence'] }, () => {
     const slot = c().addEntity('raster', { slot: 'panels' });
     const plain = c().addEntity('raster');
     const mask = c().addEntity('inpaint');
@@ -207,7 +215,7 @@ describe('slots', () => {
     expect(c().entities).toBe(before);
   });
 
-  it('stays when the canvas is cleared, and is reordered like any raster layer', { tags: ['condition'] }, () => {
+  it('stays when the canvas is cleared, and is reordered like any raster layer', { tags: ['scenario'] }, () => {
     const below = c().addEntity('raster');
     const slot = c().addEntity('raster', { slot: 'panels' });
     const above = c().addEntity('raster');
@@ -232,8 +240,8 @@ describe('slots', () => {
   });
 });
 
-describe('history', () => {
-  it('undoes and redoes document changes', { tags: ['state-transition'] }, () => {
+describe('history', { tags: [] }, () => {
+  it('undoes and redoes document changes', { tags: ['state-transition', 'boundary'] }, () => {
     const a = c().addEntity('raster');
     c().updateEntity(a, { opacity: 0.5 });
     c().undo();
@@ -256,7 +264,7 @@ describe('history', () => {
     expect(c().future).toEqual([]);
   });
 
-  it('coalesces changes with the same key within a second', { tags: ['condition'] }, () => {
+  it('coalesces changes with the same key within a second', { tags: ['boundary', 'condition'] }, () => {
     vi.useFakeTimers();
     vi.setSystemTime(10_000);
     const id = c().addEntity('raster');
@@ -284,14 +292,14 @@ describe('history', () => {
   });
 });
 
-describe('bbox', () => {
-  it('rounds the bbox and syncs the generation size and aspect ratio', { tags: ['condition'] }, () => {
+describe('bbox', { tags: [] }, () => {
+  it('rounds the bbox and syncs the generation size and aspect ratio', { tags: ['equivalence', 'boundary'] }, () => {
     c().setBbox({ x: 10.4, y: 0, width: 1283, height: 717 });
     expect(c().bbox).toEqual({ x: 10, y: 0, width: 1280, height: 720 });
     expect(useParams.getState()).toMatchObject({ width: 1280, height: 720, aspectRatio: '16:9' });
   });
 
-  it('keeps a locked aspect ratio and skips syncing when asked', { tags: ['condition'] }, () => {
+  it('keeps a locked aspect ratio and skips syncing when asked', { tags: ['decision-table'] }, () => {
     useParams.getState().set({ aspectRatio: '1:1', aspectLocked: true });
     c().setBbox({ x: 0, y: 0, width: 640, height: 480 });
     expect(useParams.getState()).toMatchObject({ width: 640, height: 480, aspectRatio: '1:1' });
@@ -311,13 +319,13 @@ describe('bbox', () => {
   });
 });
 
-describe('tools and staging', () => {
-  it('starts on the view tool', { tags: ['condition'] }, () => {
+describe('tools and staging', { tags: [] }, () => {
+  it('starts on the view tool', { tags: ['equivalence'] }, () => {
     expect(c().tool).toBe('view');
     expect(createCanvasStore({ syncParams: false }).getState().tool).toBe('view');
   });
 
-  it('remembers the previous tool for swapping', { tags: ['condition'] }, () => {
+  it('remembers the previous tool for swapping', { tags: ['state-transition'] }, () => {
     c().setTool('move');
     c().setTool('move');
     expect([c().tool, c().lastTool]).toEqual(['move', 'view']);
@@ -340,7 +348,7 @@ describe('tools and staging', () => {
     expect([c().mosaicWidth, c().mosaicBlock]).toEqual([600, 128]);
   });
 
-  it('shows the newest staged image and wraps around when stepping', { tags: ['scenario'] }, () => {
+  it('shows the newest staged image and wraps around when stepping', { tags: ['boundary', 'scenario'] }, () => {
     c().addStagedImage('a');
     c().addStagedImage('b');
     c().addStagedImage('c');
@@ -351,7 +359,7 @@ describe('tools and staging', () => {
     expect(c().stagedIndex).toBe(2);
   });
 
-  it('keeps the staged index in range after discarding', { tags: ['condition'] }, () => {
+  it('keeps the staged index in range after discarding', { tags: ['boundary', 'state-transition'] }, () => {
     c().addStagedImage('a');
     c().addStagedImage('b');
     c().discardStaged(1);
@@ -361,7 +369,7 @@ describe('tools and staging', () => {
   });
 });
 
-describe('the generating page of staging', () => {
+describe('the generating page of staging', { tags: [] }, () => {
   const page = () => stagedPage(c());
   // The backend reports a job done before its picture arrives, as the worker does.
   const finishLast = (name: string) => {
@@ -369,28 +377,36 @@ describe('the generating page of staging', () => {
     c().addStagedImage(name, { fromQueue: true });
   };
 
-  it('opens on the generating page, stays there while more come and shows the last result at the end', { tags: ['scenario'] }, () => {
-    c().setStagingGenerating(true);
-    expect(page()).toEqual({ index: 0, generating: true });
-    c().addStagedImage('a', { fromQueue: true });
-    expect([stagedPageCount(c()), page()]).toEqual([2, { index: 1, generating: true }]);
-    finishLast('b');
-    expect([stagedPageCount(c()), page()]).toEqual([2, { index: 1, generating: false }]);
-    expect(c().stagedImageNames[page().index]).toBe('b');
-  });
+  it(
+    'opens on the generating page, stays there while more come and shows the last result at the end',
+    { tags: ['state-transition', 'scenario'] },
+    () => {
+      c().setStagingGenerating(true);
+      expect(page()).toEqual({ index: 0, generating: true });
+      c().addStagedImage('a', { fromQueue: true });
+      expect([stagedPageCount(c()), page()]).toEqual([2, { index: 1, generating: true }]);
+      finishLast('b');
+      expect([stagedPageCount(c()), page()]).toEqual([2, { index: 1, generating: false }]);
+      expect(c().stagedImageNames[page().index]).toBe('b');
+    },
+  );
 
-  it('leaves someone looking at a finished result on it while the next ones are made, the last included', { tags: ['condition'] }, () => {
-    c().setStagingGenerating(true);
-    c().addStagedImage('a', { fromQueue: true });
-    c().setStagedIndex(0);
-    expect(page()).toEqual({ index: 0, generating: false });
-    c().addStagedImage('b', { fromQueue: true });
-    expect(page().index).toBe(0);
-    finishLast('c');
-    expect(page()).toEqual({ index: 0, generating: false });
-  });
+  it(
+    'leaves someone looking at a finished result on it while the next ones are made, the last included',
+    { tags: ['state-transition'] },
+    () => {
+      c().setStagingGenerating(true);
+      c().addStagedImage('a', { fromQueue: true });
+      c().setStagedIndex(0);
+      expect(page()).toEqual({ index: 0, generating: false });
+      c().addStagedImage('b', { fromQueue: true });
+      expect(page().index).toBe(0);
+      finishLast('c');
+      expect(page()).toEqual({ index: 0, generating: false });
+    },
+  );
 
-  it('steps through the results and the generating page, wrapping around', { tags: ['condition'] }, () => {
+  it('steps through the results and the generating page, wrapping around', { tags: ['boundary'] }, () => {
     c().setStagingGenerating(true);
     c().addStagedImage('a', { fromQueue: true });
     c().setStagedIndex(2);
@@ -399,17 +415,21 @@ describe('the generating page of staging', () => {
     expect(page()).toEqual({ index: 1, generating: true });
   });
 
-  it('jumps to a new generation\'s page, and back into range when a job ends without a picture', { tags: ['condition'] }, () => {
-    c().addStagedImage('a');
-    c().addStagedImage('b');
-    c().setStagedIndex(0);
-    c().setStagingGenerating(true);
-    expect(page()).toEqual({ index: 2, generating: true });
-    c().setStagingGenerating(false);
-    expect(page()).toEqual({ index: 1, generating: false });
-  });
+  it(
+    'jumps to a new generation\'s page, and back into range when a job ends without a picture',
+    { tags: ['state-transition', 'boundary'] },
+    () => {
+      c().addStagedImage('a');
+      c().addStagedImage('b');
+      c().setStagedIndex(0);
+      c().setStagingGenerating(true);
+      expect(page()).toEqual({ index: 2, generating: true });
+      c().setStagingGenerating(false);
+      expect(page()).toEqual({ index: 1, generating: false });
+    },
+  );
 
-  it('shows a one-off result (an erase) straight away, even while a generation runs', { tags: ['scenario'] }, () => {
+  it('shows a one-off result (an erase) straight away, even while a generation runs', { tags: ['condition'] }, () => {
     c().setStagingGenerating(true);
     c().addStagedImage('a', { fromQueue: true });
     c().addStagedImage('erased');
@@ -418,8 +438,8 @@ describe('the generating page of staging', () => {
   });
 });
 
-describe('separate stores', () => {
-  it('keeps two instances and the global store independent', { tags: ['condition'] }, () => {
+describe('separate stores', { tags: [] }, () => {
+  it('keeps two instances and the global store independent', { tags: ['scenario'] }, () => {
     const a = createCanvasStore({ syncParams: false });
     const b = createCanvasStore({ syncParams: false });
     const id = a.getState().addEntity('raster');
@@ -437,7 +457,7 @@ describe('separate stores', () => {
     expect(a.getState().entities).toHaveLength(1);
   });
 
-  it('never writes the left form when syncParams is false', { tags: ['condition'] }, () => {
+  it('never writes the left form when syncParams is false', { tags: ['decision-table'] }, () => {
     const page = createCanvasStore({ syncParams: false });
     const params = useParams.getState();
     page.getState().setBbox({ x: 0, y: 0, width: 1280, height: 720 });

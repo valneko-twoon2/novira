@@ -20,20 +20,24 @@ const findIn =
 beforeEach(() => useGallery.setState(initialGallery, true));
 afterEach(() => vi.restoreAllMocks());
 
-describe('naming pictures for saving', () => {
-  it('stores a page-only picture once, tells the caller its new address and keeps named pictures as they are', { tags: ['condition'] }, async () => {
-    const store = vi.spyOn(backend, 'saveImageFromUrl').mockResolvedValue(image('layer-1.png'));
-    const onNamed = vi.fn();
-    const named = picture('asset://kept.png', 'kept.png', 'i2');
-    const out = await namedObjects([stroke, picture('blob:doc-a', null), named], onNamed);
-    expect(out[1]).toMatchObject({ url: 'asset://layer-1.png', imageName: 'layer-1.png' });
-    expect(out[2]).toBe(named);
-    expect(onNamed).toHaveBeenCalledTimes(1);
-    expect(useGallery.getState().images.map((i) => i.name)).toContain('layer-1.png');
-    // The same page-only address is not uploaded again.
-    await namedObjects([picture('blob:doc-a', null, 'i3')], onNamed);
-    expect(store).toHaveBeenCalledTimes(1);
-  });
+describe('naming pictures for saving', { tags: [] }, () => {
+  it(
+    'stores a page-only picture once, tells the caller its new address and keeps named pictures as they are',
+    { tags: ['scenario', 'condition'] },
+    async () => {
+      const store = vi.spyOn(backend, 'saveImageFromUrl').mockResolvedValue(image('layer-1.png'));
+      const onNamed = vi.fn();
+      const named = picture('asset://kept.png', 'kept.png', 'i2');
+      const out = await namedObjects([stroke, picture('blob:doc-a', null), named], onNamed);
+      expect(out[1]).toMatchObject({ url: 'asset://layer-1.png', imageName: 'layer-1.png' });
+      expect(out[2]).toBe(named);
+      expect(onNamed).toHaveBeenCalledTimes(1);
+      expect(useGallery.getState().images.map((i) => i.name)).toContain('layer-1.png');
+      // The same page-only address is not uploaded again.
+      await namedObjects([picture('blob:doc-a', null, 'i3')], onNamed);
+      expect(store).toHaveBeenCalledTimes(1);
+    },
+  );
 
   it('leaves out a picture that cannot be stored and keeps the rest', { tags: ['error-guessing'] }, async () => {
     vi.spyOn(backend, 'saveImageFromUrl').mockRejectedValue(new Error('disk full'));
@@ -52,7 +56,7 @@ describe('naming pictures for saving', () => {
     expect(withNamedImage(out, named)).toBe(out);
   });
 
-  it('saves pictures by name only and drops page-only reference addresses', { tags: ['condition'] }, async () => {
+  it('saves pictures by name only and drops page-only reference addresses', { tags: ['equivalence'] }, async () => {
     const regional = {
       ...raster([picture('asset://a.png', 'a.png')]),
       type: 'regional',
@@ -70,16 +74,20 @@ describe('naming pictures for saving', () => {
   });
 });
 
-describe('restoring saved entities', () => {
-  it('looks pictures up through the given lookup and drops the ones that are gone and damaged parts', { tags: ['condition'] }, () => {
-    const entities = restoreEntities(
-      [{ ...raster([]), objects: [stroke, picture('', 'here.png'), picture('', 'gone.png', 'i2'), { kind: 'bogus', id: 'x' }] }, { id: 'e2', type: 'unknown', objects: [] }, 'junk'],
-      findIn('here.png'),
-    );
-    expect(entities).toHaveLength(1);
-    expect(entities[0]!.objects.map((o) => o.id)).toEqual(['s1', 'i1']);
-    expect(entities[0]!.objects[1]).toMatchObject({ url: 'asset://here.png' });
-  });
+describe('restoring saved entities', { tags: [] }, () => {
+  it(
+    'looks pictures up through the given lookup and drops the ones that are gone and damaged parts',
+    { tags: ['condition', 'error-guessing'] },
+    () => {
+      const entities = restoreEntities(
+        [{ ...raster([]), objects: [stroke, picture('', 'here.png'), picture('', 'gone.png', 'i2'), { kind: 'bogus', id: 'x' }] }, { id: 'e2', type: 'unknown', objects: [] }, 'junk'],
+        findIn('here.png'),
+      );
+      expect(entities).toHaveLength(1);
+      expect(entities[0]!.objects.map((o) => o.id)).toEqual(['s1', 'i1']);
+      expect(entities[0]!.objects[1]).toMatchObject({ url: 'asset://here.png' });
+    },
+  );
 
   it('gives a regional reference its address again, or clears its name when the picture is gone', { tags: ['condition'] }, () => {
     const e = restoreEntity(
@@ -92,13 +100,13 @@ describe('restoring saved entities', () => {
     ]);
   });
 
-  it('keeps a pose as it was saved and drops one with the wrong number of joints', { tags: ['error-guessing'] }, () => {
+  it('keeps a pose as it was saved and drops one with the wrong number of joints', { tags: ['boundary', 'error-guessing'] }, () => {
     const pose = { kind: 'pose', id: 'p1', points: Array.from({ length: 36 }, (_, i) => i), hidden: [16], width: 4 };
     const e = restoreEntity({ id: 'c1', type: 'control', objects: [pose, { ...pose, id: 'p2', points: [1, 2] }, { ...pose, id: 'p3', hidden: 'x' }] }, findIn());
     expect(e!.objects).toEqual([pose]);
   });
 
-  it('keeps the depth of a pose and drops a damaged one, leaving the pose flat', { tags: ['condition'] }, () => {
+  it('keeps the depth of a pose and drops a damaged one, leaving the pose flat', { tags: ['condition', 'error-guessing'] }, () => {
     const pose = { kind: 'pose', id: 'p1', points: Array.from({ length: 36 }, (_, i) => i), hidden: [], width: 4 };
     const depth = Array.from({ length: 18 }, (_, i) => i - 5);
     const e = restoreEntity({ id: 'c1', type: 'control', objects: [{ ...pose, depth }, { ...pose, id: 'p2', depth: [1, 2] }, { ...pose, id: 'p3', depth: 'x' }] }, findIn());
@@ -108,24 +116,32 @@ describe('restoring saved entities', () => {
     expect(c).toEqual({ ...pose, id: 'p3' });
   });
 
-  it("keeps a raster layer's blend through saving and restoring, and drops an unknown one", { tags: ['error-guessing'] }, () => {
-    for (const blend of ['normal', 'multiply', 'screen'] as const) {
-      const back = restoreEntity(JSON.parse(JSON.stringify(forSaving({ ...raster([stroke]), blend }))), findIn());
-      expect(back).toMatchObject({ type: 'raster', blend });
-    }
-    expect(restoreEntity({ ...raster([stroke]) }, findIn())).not.toHaveProperty('blend');
-    expect(restoreEntity({ ...raster([stroke]), blend: 'overlay' }, findIn())).not.toHaveProperty('blend');
-    expect(restoreEntity({ ...raster([stroke]), blend: 3 }, findIn())).not.toHaveProperty('blend');
-  });
+  it(
+    "keeps a raster layer's blend through saving and restoring, and drops an unknown one",
+    { tags: ['equivalence', 'error-guessing'] },
+    () => {
+      for (const blend of ['normal', 'multiply', 'screen'] as const) {
+        const back = restoreEntity(JSON.parse(JSON.stringify(forSaving({ ...raster([stroke]), blend }))), findIn());
+        expect(back).toMatchObject({ type: 'raster', blend });
+      }
+      expect(restoreEntity({ ...raster([stroke]) }, findIn())).not.toHaveProperty('blend');
+      expect(restoreEntity({ ...raster([stroke]), blend: 'overlay' }, findIn())).not.toHaveProperty('blend');
+      expect(restoreEntity({ ...raster([stroke]), blend: 3 }, findIn())).not.toHaveProperty('blend');
+    },
+  );
 
-  it('keeps a slot through saving and restoring, without objects, and ignores a slot name that is not text', { tags: ['condition'] }, () => {
-    const back = restoreEntity(JSON.parse(JSON.stringify(forSaving({ ...raster([]), slot: 'panels', opacity: 0.4 }))), findIn());
-    expect(back).toMatchObject({ type: 'raster', slot: 'panels', opacity: 0.4, objects: [] });
-    expect(restoreEntity({ ...raster([stroke]), slot: 'balloons' }, findIn())!.objects).toEqual([]);
-    const notSlot = restoreEntity({ ...raster([stroke]), slot: 7 }, findIn());
-    expect(notSlot).not.toHaveProperty('slot');
-    expect(notSlot!.objects).toEqual([stroke]);
-  });
+  it(
+    'keeps a slot through saving and restoring, without objects, and ignores a slot name that is not text',
+    { tags: ['condition', 'error-guessing'] },
+    () => {
+      const back = restoreEntity(JSON.parse(JSON.stringify(forSaving({ ...raster([]), slot: 'panels', opacity: 0.4 }))), findIn());
+      expect(back).toMatchObject({ type: 'raster', slot: 'panels', opacity: 0.4, objects: [] });
+      expect(restoreEntity({ ...raster([stroke]), slot: 'balloons' }, findIn())!.objects).toEqual([]);
+      const notSlot = restoreEntity({ ...raster([stroke]), slot: 7 }, findIn());
+      expect(notSlot).not.toHaveProperty('slot');
+      expect(notSlot!.objects).toEqual([stroke]);
+    },
+  );
 
   it('refuses what is not an entity', { tags: ['error-guessing'] }, () => {
     expect(restoreEntity(null, findIn())).toBeNull();

@@ -68,7 +68,7 @@ async function openSub(menu: ReturnType<typeof within>, label: string) {
 
 const itemNamed = (name: string) => screen.getByRole('menuitem', { name });
 
-describe('layer row menu', () => {
+describe('layer row menu', { tags: [] }, () => {
   it('duplicates, copies, saves and deletes the layer', { tags: ['scenario'] }, async () => {
     const id = state().addEntity('raster');
     const menu = await openEntityMenu(id);
@@ -88,7 +88,7 @@ describe('layer row menu', () => {
     expect(state().entities.some((e) => e.id === id)).toBe(false);
   });
 
-  it('moves a layer in its group and disables the moves that go nowhere', { tags: ['scenario'] }, async () => {
+  it('moves a layer in its group and disables the moves that go nowhere', { tags: ['boundary', 'condition'] }, async () => {
     const bottom = state().addEntity('raster');
     const top = state().addEntity('raster');
     const menu = await openEntityMenu(bottom);
@@ -106,7 +106,7 @@ describe('layer row menu', () => {
     expect(state().entities.filter((e) => e.type === 'raster').map((e) => e.id)).toEqual([bottom, top]);
   });
 
-  it('steps a layer up and down one place', { tags: ['scenario'] }, async () => {
+  it('steps a layer up and down one place', { tags: ['equivalence'] }, async () => {
     const a = state().addEntity('raster');
     const b = state().addEntity('raster');
     const c = state().addEntity('raster');
@@ -121,7 +121,7 @@ describe('layer row menu', () => {
     expect(order()).toEqual([a, b, c]);
   });
 
-  it('offers only the arrange items for a slot', { tags: ['scenario'] }, async () => {
+  it('offers only the arrange items for a slot', { tags: ['condition'] }, async () => {
     const below = state().addEntity('raster');
     const slot = state().addEntity('raster', { slot: 'panels' });
     const menu = await openEntityMenu(slot);
@@ -137,7 +137,7 @@ describe('layer row menu', () => {
     ['control', 'raster'],
     ['inpaint', 'regional'],
     ['regional', 'inpaint'],
-  ] as [EntityType, EntityType][])('converts a %s layer to %s', { tags: ['decision-table'] }, async (from, to) => {
+  ] as [EntityType, EntityType][])('converts a %s layer to %s', { tags: ['equivalence'] }, async (from, to) => {
     const id = state().addEntity(from);
     const menu = await openEntityMenu(id);
     await openSub(menu, t('canvas.entityMenu.convertTo'));
@@ -147,7 +147,7 @@ describe('layer row menu', () => {
   });
 });
 
-describe('layers panel', () => {
+describe('layers panel', { tags: [] }, () => {
   const show = () =>
     render(
       <TooltipProvider>
@@ -163,36 +163,40 @@ describe('layers panel', () => {
     expect(screen.queryByText(t('canvas.layers.empty'))).toBeNull();
   });
 
-  it('adds a layer of the chosen type from the Add menu', { tags: ['scenario'] }, async () => {
+  it('adds a layer of the chosen type from the Add menu', { tags: ['equivalence'] }, async () => {
     show();
     fireEvent.keyDown(screen.getByTestId('canvas-add-layer'), { key: 'Enter' });
     fireEvent.click(await screen.findByRole('menuitem', { name: t(ADD_LABEL.control) }));
     expect(state().entities.map((e) => e.type)).toEqual(['control']);
   });
 
-  it('disables the add items with the reason when the host says a limit is reached, and adds below it', { tags: ['boundary'] }, async () => {
-    const host = { addable: ['raster' as const], addBlocked: (entities: unknown[]) => (entities.length >= 2 ? 'Too many layers' : null) };
-    state().addEntity('raster');
-    const { rerender } = render(
-      <TooltipProvider>
-        <LayersPanel host={host} />
-      </TooltipProvider>,
-    );
-    fireEvent.keyDown(screen.getByTestId('canvas-add-layer'), { key: 'Enter' });
-    expect(screen.queryByText('Too many layers')).toBeNull();
-    fireEvent.click(await screen.findByRole('menuitem', { name: t(ADD_LABEL.raster) }));
-    expect(state().entities).toHaveLength(2);
-    rerender(
-      <TooltipProvider>
-        <LayersPanel host={host} />
-      </TooltipProvider>,
-    );
-    fireEvent.keyDown(screen.getByTestId('canvas-add-layer'), { key: 'Enter' });
-    expect(await screen.findByText('Too many layers')).toBeTruthy();
-    expect(screen.getByRole('menuitem', { name: t(ADD_LABEL.raster) }).getAttribute('aria-disabled')).toBe('true');
-  });
+  it(
+    'disables the add items with the reason when the host says a limit is reached, and adds below it',
+    { tags: ['boundary', 'condition'] },
+    async () => {
+      const host = { addable: ['raster' as const], addBlocked: (entities: unknown[]) => (entities.length >= 2 ? 'Too many layers' : null) };
+      state().addEntity('raster');
+      const { rerender } = render(
+        <TooltipProvider>
+          <LayersPanel host={host} />
+        </TooltipProvider>,
+      );
+      fireEvent.keyDown(screen.getByTestId('canvas-add-layer'), { key: 'Enter' });
+      expect(screen.queryByText('Too many layers')).toBeNull();
+      fireEvent.click(await screen.findByRole('menuitem', { name: t(ADD_LABEL.raster) }));
+      expect(state().entities).toHaveLength(2);
+      rerender(
+        <TooltipProvider>
+          <LayersPanel host={host} />
+        </TooltipProvider>,
+      );
+      fireEvent.keyDown(screen.getByTestId('canvas-add-layer'), { key: 'Enter' });
+      expect(await screen.findByText('Too many layers')).toBeTruthy();
+      expect(screen.getByRole('menuitem', { name: t(ADD_LABEL.raster) }).getAttribute('aria-disabled')).toBe('true');
+    },
+  );
 
-  it('adds a global reference image and selects it', { tags: ['scenario'] }, async () => {
+  it('adds a global reference image and selects it', { tags: ['equivalence'] }, async () => {
     show();
     fireEvent.keyDown(screen.getByTestId('canvas-add-layer'), { key: 'Enter' });
     fireEvent.click(await screen.findByRole('menuitem', { name: t('canvas.add.globalRef') }));
@@ -201,7 +205,7 @@ describe('layers panel', () => {
     expect(state().selectedEntityId).toBe(refs[0]!.id);
   });
 
-  it('opens the pose dialog from the Add menu', { tags: ['scenario'] }, async () => {
+  it('opens the pose dialog from the Add menu', { tags: ['equivalence'] }, async () => {
     const open = vi.spyOn(usePoseDialog.getState(), 'open');
     usePoseDialog.setState({ open });
     show();
@@ -224,7 +228,7 @@ describe('layers panel', () => {
     await waitFor(() => expect(state().entities).toHaveLength(0));
   });
 
-  it('disables deleting all when there is nothing to delete', { tags: ['scenario'] }, async () => {
+  it('disables deleting all when there is nothing to delete', { tags: ['boundary'] }, async () => {
     show();
     fireEvent.keyDown(screen.getByRole('button', { name: t('canvas.layers.more') }), { key: 'Enter' });
     const item = await screen.findByRole('menuitem', { name: t('canvas.layers.deleteAll') });
@@ -238,7 +242,7 @@ describe('layers panel', () => {
   });
 });
 
-describe('layers panel in another host', () => {
+describe('layers panel in another host', { tags: [] }, () => {
   const host = { addable: ['raster'] as EntityType[], hideGlobalRefs: true, slotLabels: { panels: 'Panels here' } };
   const show = () =>
     render(
@@ -247,7 +251,7 @@ describe('layers panel in another host', () => {
       </TooltipProvider>,
     );
 
-  it('offers only the kinds the host allows, without global references or poses', { tags: ['scenario'] }, async () => {
+  it('offers only the kinds the host allows, without global references or poses', { tags: ['condition'] }, async () => {
     show();
     const quick = within(document.querySelector('.canvas-layers__quick') as HTMLElement).getAllByRole('button');
     expect(quick.map((b) => b.textContent)).toEqual([t(ADD_LABEL.raster)]);
@@ -260,7 +264,7 @@ describe('layers panel in another host', () => {
     expect(state().entities.map((e) => e.type)).toEqual(['raster']);
   });
 
-  it('keeps a group of a kind it cannot add without its add button', { tags: ['error-guessing'] }, () => {
+  it('keeps a group of a kind it cannot add without its add button', { tags: ['condition'] }, () => {
     act(() => {
       state().addEntity('control');
       state().addEntity('raster');
@@ -270,21 +274,25 @@ describe('layers panel in another host', () => {
     expect(within(screen.getByTestId('canvas-group-raster')).getByRole('button', { name: t(ADD_LABEL.raster) })).toBeTruthy();
   });
 
-  it('hides the global reference images, so they alone do not fill the panel', { tags: ['scenario'] }, () => {
+  it('hides the global reference images, so they alone do not fill the panel', { tags: ['condition'] }, () => {
     useParams.getState().addRefImage();
     show();
     expect(screen.getByText(t('canvas.layers.empty'))).toBeTruthy();
     expect(screen.queryByTestId('canvas-group-ref')).toBeNull();
   });
 
-  it('labels a slot row as the host says and cannot delete all while only slots are there', { tags: ['error-guessing'] }, async () => {
-    act(() => {
-      state().addEntity('raster', { slot: 'panels' });
-    });
-    show();
-    expect(screen.getByText('Panels here')).toBeTruthy();
-    fireEvent.keyDown(screen.getByRole('button', { name: t('canvas.layers.more') }), { key: 'Enter' });
-    const item = await screen.findByRole('menuitem', { name: t('canvas.layers.deleteAll') });
-    expect(item.getAttribute('aria-disabled')).toBe('true');
-  });
+  it(
+    'labels a slot row as the host says and cannot delete all while only slots are there',
+    { tags: ['condition', 'boundary'] },
+    async () => {
+      act(() => {
+        state().addEntity('raster', { slot: 'panels' });
+      });
+      show();
+      expect(screen.getByText('Panels here')).toBeTruthy();
+      fireEvent.keyDown(screen.getByRole('button', { name: t('canvas.layers.more') }), { key: 'Enter' });
+      const item = await screen.findByRole('menuitem', { name: t('canvas.layers.deleteAll') });
+      expect(item.getAttribute('aria-disabled')).toBe('true');
+    },
+  );
 });

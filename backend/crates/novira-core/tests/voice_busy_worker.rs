@@ -50,7 +50,7 @@ fn params() -> VoiceParams {
     }
 }
 
-// tags: state-transition
+// tags: state-transition, condition
 #[tokio::test]
 async fn a_worker_that_is_busy_is_not_stopped_by_the_idle_timer() {
     let data = tempfile::tempdir().unwrap();

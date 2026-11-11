@@ -63,7 +63,7 @@ fn image_files_refuse_names_that_are_not_theirs() {
     assert!(files.store_audio("photo.png", b"RIFF").is_err());
 }
 
-// tags: scenario
+// tags: equivalence, error-guessing
 #[test]
 fn stored_audio_must_look_like_audio() {
     let dir = tempfile::tempdir().unwrap();
@@ -73,7 +73,7 @@ fn stored_audio_must_look_like_audio() {
     assert!(err.to_string().contains("not an audio file"), "{err}");
 }
 
-// tags: scenario
+// tags: condition
 #[test]
 fn a_picture_with_transparency_gets_a_png_thumbnail() {
     let dir = tempfile::tempdir().unwrap();
@@ -84,7 +84,7 @@ fn a_picture_with_transparency_gets_a_png_thumbnail() {
     assert_eq!(sniff_content_type(&thumb), "image/png");
 }
 
-// tags: error-guessing
+// tags: equivalence
 #[test]
 fn unknown_bytes_get_the_generic_content_type() {
     assert_eq!(
@@ -110,7 +110,7 @@ fn text_helpers_refuse_bytes_that_are_not_a_png() {
     assert_eq!(with_text(b"not a png", "key", "v"), None);
 }
 
-// tags: scenario
+// tags: error-guessing
 #[test]
 fn a_png_without_an_end_chunk_has_no_text() {
     let mut png = SIGNATURE.to_vec();
@@ -118,7 +118,7 @@ fn a_png_without_an_end_chunk_has_no_text() {
     assert_eq!(read_text(&png, "key"), None);
 }
 
-// tags: scenario
+// tags: equivalence, error-guessing
 #[test]
 fn a_text_chunk_is_read_and_a_compressed_international_chunk_is_not() {
     let mut png = SIGNATURE.to_vec();
@@ -137,7 +137,7 @@ fn a_text_chunk_is_read_and_a_compressed_international_chunk_is_not() {
 
 // Export ----------------------------------------------------------------------------------------------------------
 
-// tags: scenario
+// tags: equivalence
 #[test]
 fn export_formats_have_their_file_extensions() {
     assert_eq!(ExportFormat::Png.extension(), "png");
@@ -145,7 +145,7 @@ fn export_formats_have_their_file_extensions() {
     assert_eq!(ExportFormat::Webp.extension(), "webp");
 }
 
-// tags: scenario
+// tags: decision-table
 #[test]
 fn png_and_webp_copies_keep_or_drop_the_alpha_channel_as_the_picture_has_it() {
     for format in [ExportFormat::Png, ExportFormat::Webp] {
@@ -177,7 +177,7 @@ fn writing_into_a_missing_folder_fails_with_the_io_error() {
     assert_eq!(err.kind(), std::io::ErrorKind::NotFound);
 }
 
-// tags: scenario
+// tags: boundary
 #[test]
 fn the_writer_gives_up_when_ten_thousand_names_are_taken() {
     let dir = tempfile::tempdir().unwrap();
@@ -217,7 +217,7 @@ fn chunk_le(id: &[u8; 4], data: &[u8]) -> Vec<u8> {
     out
 }
 
-// tags: error-guessing
+// tags: error-guessing, boundary
 #[test]
 fn wavs_that_cannot_be_measured_still_get_a_waveform_picture() {
     // 8-bit data, too few samples, and no data chunk at all: each falls back to the stand-in pattern.

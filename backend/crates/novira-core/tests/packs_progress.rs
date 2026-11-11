@@ -88,7 +88,7 @@ async fn the_first_file_is_reported_as_number_one_with_its_announced_size() {
     );
 }
 
-// tags: boundary, state-transition
+// tags: decision-table, condition
 #[tokio::test]
 async fn a_file_already_in_the_models_folder_or_in_a_shared_folder_is_not_downloaded() {
     let _turn = TURN.lock().await;

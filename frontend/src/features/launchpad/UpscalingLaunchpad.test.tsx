@@ -32,8 +32,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('UpscalingLaunchpad', () => {
-  it('asks for a picture, and offers no warning when an upscaler is installed', { tags: ['scenario'] }, () => {
+describe('UpscalingLaunchpad', { tags: [] }, () => {
+  it('asks for a picture, and offers no warning when an upscaler is installed', { tags: ['condition'] }, () => {
     show(<UpscalingLaunchpad />);
     expect(screen.getByText(t('params.launchpad.upscaling.dropTitle'))).toBeTruthy();
     expect(screen.queryByRole('alert')).toBeNull();
@@ -57,7 +57,7 @@ describe('UpscalingLaunchpad', () => {
     expect(useUi.getState().activeTab).toBe('models');
   });
 
-  it('warns when no upscaler is installed, and the button opens the models tab', { tags: ['scenario'] }, () => {
+  it('warns when no upscaler is installed, and the button opens the models tab', { tags: ['condition'] }, () => {
     useModels.setState({ models: [{ key: 'm', name: 'M', type: 'main', base: 'sdxl' } as never] });
     show(<UpscalingLaunchpad />);
     expect(screen.getByRole('alert').textContent).toContain(t('params.upscale.missingUpscaler'));
@@ -66,8 +66,8 @@ describe('UpscalingLaunchpad', () => {
   });
 });
 
-describe('Launchpad', () => {
-  it('gives each tab with its own launchpad that page', { tags: ['scenario'] }, () => {
+describe('Launchpad', { tags: [] }, () => {
+  it('gives each tab with its own launchpad that page', { tags: ['equivalence'] }, () => {
     for (const [tab, testId] of [
       ['canvas', 'lp-draw'],
       ['upscaling', 'lp-upscale-drop'],
@@ -80,7 +80,7 @@ describe('Launchpad', () => {
     }
   });
 
-  it('gives the Generate page to every tab that has no launchpad of its own', { tags: ['scenario'] }, () => {
+  it('gives the Generate page to every tab that has no launchpad of its own', { tags: ['condition'] }, () => {
     const own = new Set(['canvas', 'upscaling', 'workflows']);
     const others = TABS.filter((tab) => !own.has(tab));
     expect(others.length).toBeGreaterThan(0);

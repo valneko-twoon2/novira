@@ -37,15 +37,15 @@ afterEach(() => {
   setLocale('ja');
 });
 
-describe('PanelTakes', () => {
-  it('shows the picture of the panel and the earlier ones, newest first', { tags: ['boundary'] }, async () => {
+describe('PanelTakes', { tags: [] }, () => {
+  it('shows the picture of the panel and the earlier ones, newest first', { tags: ['boundary', 'equivalence'] }, async () => {
     show();
     fireEvent.click(screen.getByTestId('comic-takes'));
     expect((await screen.findByTestId('comic-take-now')).querySelector('img')!.getAttribute('src')).toBe('/thumb/c.png');
     expect(screen.getAllByTestId('comic-take').map((b) => b.querySelector('img')!.getAttribute('src'))).toEqual(['/thumb/b.png', '/thumb/a.png']);
   });
 
-  it('puts an earlier picture back when it is pressed', { tags: ['scenario'] }, async () => {
+  it('puts an earlier picture back when it is pressed', { tags: ['scenario', 'state-transition'] }, async () => {
     show();
     fireEvent.click(screen.getByTestId('comic-takes'));
     fireEvent.click((await screen.findAllByTestId('comic-take'))[1]!);
@@ -61,12 +61,16 @@ describe('PanelTakes', () => {
     expect(useGallery.getState().images.map((i) => i.name)).toContain('b.png');
   });
 
-  it('leaves out a picture the gallery no longer has, and says what the list is for when it is empty', { tags: ['regression', 'boundary'] }, async () => {
-    useGallery.setState({ images: [image('c.png')] });
-    show();
-    fireEvent.click(screen.getByTestId('comic-takes'));
-    expect(await screen.findByTestId('comic-take-now')).toBeTruthy();
-    expect(screen.queryAllByTestId('comic-take')).toHaveLength(0);
-    expect(screen.getByText(/the earlier one stays here/)).toBeTruthy();
-  });
+  it(
+    'leaves out a picture the gallery no longer has, and says what the list is for when it is empty',
+    { tags: ['condition', 'boundary'] },
+    async () => {
+      useGallery.setState({ images: [image('c.png')] });
+      show();
+      fireEvent.click(screen.getByTestId('comic-takes'));
+      expect(await screen.findByTestId('comic-take-now')).toBeTruthy();
+      expect(screen.queryAllByTestId('comic-take')).toHaveLength(0);
+      expect(screen.getByText(/the earlier one stays here/)).toBeTruthy();
+    },
+  );
 });

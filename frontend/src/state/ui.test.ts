@@ -7,7 +7,7 @@ beforeEach(() => useUi.setState(initial, true));
 const ui = () => useUi.getState();
 
 describe('tab number keys', () => {
-  it('number the side bar entries 1 to 8 in order, one key each', { tags: ['condition'] }, () => {
+  it('number the side bar entries 1 to 8 in order, one key each', { tags: ['equivalence'] }, () => {
     expect(NAV.map((nav) => NAV_HOTKEYS[nav])).toEqual(['1', '2', '3', '4', '5', '6', '7', '8']);
     expect(new Set(NAV.map((nav) => NAV_HOTKEYS[nav])).size).toBe(NAV.length);
   });
@@ -38,23 +38,27 @@ describe('ui store', () => {
     expect([ui().leftPanelOpen, ui().rightPanelOpen]).toEqual([true, true]);
   });
 
-  it('keeps a panel width to the fraction, so every screen gets the same columns, and ignores rounding noise', { tags: ['equivalence'] }, () => {
-    ui().setPanelWidth('left', 321.6);
-    expect(ui().panelWidths).toEqual({ left: 321.6, right: 400 });
-    const before = ui().panelWidths;
-    ui().setPanelWidth('left', 321.605);
-    expect(ui().panelWidths).toBe(before);
-    ui().setPanelWidth('left', 321.8);
-    expect(ui().panelWidths.left).toBe(321.8);
-  });
+  it(
+    'keeps a panel width to the fraction, so every screen gets the same columns, and ignores rounding noise',
+    { tags: ['boundary'] },
+    () => {
+      ui().setPanelWidth('left', 321.6);
+      expect(ui().panelWidths).toEqual({ left: 321.6, right: 400 });
+      const before = ui().panelWidths;
+      ui().setPanelWidth('left', 321.605);
+      expect(ui().panelWidths).toBe(before);
+      ui().setPanelWidth('left', 321.8);
+      expect(ui().panelWidths.left).toBe(321.8);
+    },
+  );
 
-  it('sets the main view per tab', { tags: ['condition'] }, () => {
+  it('sets the main view per tab', { tags: ['equivalence'] }, () => {
     ui().setMainView('canvas', 'viewer');
     expect(ui().mainView.canvas).toBe('viewer');
     expect(ui().mainView.generate).toBe(initial.mainView.generate);
   });
 
-  it('shows the viewer only on tabs that have one', { tags: ['scenario'] }, () => {
+  it('shows the viewer only on tabs that have one', { tags: ['condition'] }, () => {
     showViewer('generate');
     expect(ui().mainView.generate).toBe('viewer');
     showViewer('models');
@@ -74,7 +78,7 @@ describe('ui store', () => {
 describe('screens the app build hides', () => {
   afterEach(() => vi.unstubAllEnvs());
 
-  it('cannot be opened from anywhere in the app build, and open everywhere else', { tags: ['error-guessing'] }, () => {
+  it('cannot be opened from anywhere in the app build, and open everywhere else', { tags: ['condition', 'decision-table'] }, () => {
     vi.stubEnv('MODE', 'production');
     expect(isScreenShown('video')).toBe(false);
     expect(isScreenShown('canvas')).toBe(true);

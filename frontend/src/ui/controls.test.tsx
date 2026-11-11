@@ -6,7 +6,7 @@ import { Button, Checkbox, IconButton, NumberInput, ProgressBar, Switch, Tooltip
 
 afterEach(cleanup);
 
-describe('NumberInput', () => {
+describe('NumberInput', { tags: [] }, () => {
   it('commits on blur, clamped to the range', { tags: ['boundary'] }, () => {
     const onChange = vi.fn();
     render(<NumberInput value={5} onChange={onChange} min={1} max={10} aria-label="steps" />);
@@ -46,7 +46,7 @@ describe('NumberInput', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it('shows the value with the given precision', { tags: ['condition'] }, () => {
+  it('shows the value with the given precision', { tags: ['equivalence'] }, () => {
     const onChange = vi.fn();
     render(<NumberInput value={1.5} onChange={onChange} precision={2} aria-label="weight" />);
     const input = screen.getByLabelText('weight') as HTMLInputElement;
@@ -75,7 +75,7 @@ describe('NumberInput', () => {
   });
 });
 
-describe('Button', () => {
+describe('Button', { tags: [] }, () => {
   it('is disabled and shows no left icon while loading', { tags: ['condition'] }, () => {
     const onClick = vi.fn();
     render(
@@ -89,8 +89,8 @@ describe('Button', () => {
   });
 });
 
-describe('IconButton', () => {
-  it('uses the label as accessible name and reports the active state', { tags: ['condition'] }, () => {
+describe('IconButton', { tags: [] }, () => {
+  it('uses the label as accessible name and reports the active state', { tags: ['equivalence'] }, () => {
     render(
       <TooltipProvider>
         <IconButton label="Pin" icon={<span />} isActive />
@@ -100,8 +100,8 @@ describe('IconButton', () => {
   });
 });
 
-describe('Switch and Checkbox', () => {
-  it('switch reports the flipped value', { tags: ['condition'] }, () => {
+describe('Switch and Checkbox', { tags: [] }, () => {
+  it('switch reports the flipped value', { tags: ['equivalence'] }, () => {
     const onChange = vi.fn();
     render(<Switch checked={false} onChange={onChange} aria-label="grid" />);
     const sw = screen.getByRole('switch', { name: 'grid' });
@@ -117,7 +117,7 @@ describe('Switch and Checkbox', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it('checkbox reports the new checked state', { tags: ['condition'] }, () => {
+  it('checkbox reports the new checked state', { tags: ['equivalence'] }, () => {
     const onChange = vi.fn();
     render(<Checkbox checked={false} onChange={onChange} label="Starred" />);
     fireEvent.click(screen.getByLabelText('Starred'));
@@ -125,8 +125,8 @@ describe('Switch and Checkbox', () => {
   });
 });
 
-describe('ProgressBar', () => {
-  it('reports the percentage', { tags: ['condition'] }, () => {
+describe('ProgressBar', { tags: [] }, () => {
+  it('reports the percentage', { tags: ['equivalence'] }, () => {
     render(<ProgressBar value={0.424} />);
     expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('42');
   });

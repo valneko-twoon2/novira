@@ -7,8 +7,8 @@ import { objectsBounds, unionRect } from './bounds';
 const n = fc.integer({ min: -4000, max: 4000 });
 const rect = fc.record({ x: n, y: n, width: fc.integer({ min: 1, max: 4000 }), height: fc.integer({ min: 1, max: 4000 }) });
 
-describe('bounds (properties)', () => {
-  it('unionRect contains both rects and is commutative; null is the identity', { tags: ['condition'] }, () => {
+describe('bounds (properties)', { tags: [] }, () => {
+  it('unionRect contains both rects and is commutative; null is the identity', { tags: ['equivalence', 'boundary'] }, () => {
     check(
       fc.property(rect, rect, (a, b) => {
         const u = unionRect(a, b)!;

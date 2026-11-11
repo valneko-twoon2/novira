@@ -6,7 +6,7 @@ import { ContextMenu, ContextMenuContent, ContextMenuSplitItem, ContextMenuTrigg
 
 afterEach(cleanup);
 
-describe('Section', () => {
+describe('Section', { tags: [] }, () => {
   it('shows its body when open and hides it after toggling', { tags: ['state-transition'] }, () => {
     render(
       <Section title="Advanced" badges={['2', '']}>
@@ -35,8 +35,8 @@ describe('Section', () => {
   });
 });
 
-describe('Modal', () => {
-  it('renders the title, body and footer and closes with the labelled close button', { tags: ['condition'] }, () => {
+describe('Modal', { tags: [] }, () => {
+  it('renders the title, body and footer and closes with the labelled close button', { tags: ['equivalence'] }, () => {
     const onOpenChange = vi.fn();
     render(
       <Modal open onOpenChange={onOpenChange} title="Settings" closeLabel="Close" footer={<span>footer</span>}>
@@ -50,7 +50,7 @@ describe('Modal', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
-  it('closes on Escape and renders nothing while closed', { tags: ['condition'] }, () => {
+  it('closes on Escape and renders nothing while closed', { tags: ['state-transition', 'condition'] }, () => {
     function Harness() {
       const [open, setOpen] = useState(true);
       return (
@@ -65,8 +65,8 @@ describe('Modal', () => {
   });
 });
 
-describe('Tabs', () => {
-  it('shows the panel of the chosen tab', { tags: ['condition'] }, () => {
+describe('Tabs', { tags: [] }, () => {
+  it('shows the panel of the chosen tab', { tags: ['equivalence'] }, () => {
     function Harness() {
       const [tab, setTab] = useState('a');
       return (
@@ -94,7 +94,7 @@ describe('Tabs', () => {
   });
 });
 
-describe('ContextMenuSplitItem', () => {
+describe('ContextMenuSplitItem', { tags: [] }, () => {
   const show = (disabled = false) => {
     const main = vi.fn();
     const side = vi.fn();
@@ -126,7 +126,7 @@ describe('ContextMenuSplitItem', () => {
     expect(first.main).toHaveBeenCalledTimes(1);
   });
 
-  it('turns both off together', { tags: ['condition'] }, () => {
+  it('turns both off together', { tags: ['decision-table'] }, () => {
     show(true);
     expect(screen.getByTestId('side').getAttribute('aria-disabled')).toBe('true');
     expect(screen.getByText('Run').closest('[role=menuitem]')?.getAttribute('aria-disabled')).toBe('true');

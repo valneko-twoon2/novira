@@ -24,11 +24,11 @@ const current = () => useComic.getState().projects[0]!.pages[0]!;
 
 beforeEach(reset);
 
-describe('halvingLines', () => {
+describe('halvingLines', { tags: [] }, () => {
   const wide: Shape = [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 0.2 }, { x: 0, y: 0.2 }];
   const tall: Shape = [{ x: 0, y: 0 }, { x: 0.2, y: 0 }, { x: 0.2, y: 1 }, { x: 0, y: 1 }];
 
-  it('cuts a wide panel with an upright line through its middle first, and a level one second', { tags: ['condition'] }, () => {
+  it('cuts a wide panel with an upright line through its middle first, and a level one second', { tags: ['equivalence'] }, () => {
     const [first, second] = halvingLines(wide, aspect);
     expect(first![0].x).toBeCloseTo(0.5);
     expect(first![1].x).toBeCloseTo(0.5);
@@ -42,7 +42,7 @@ describe('halvingLines', () => {
   });
 });
 
-describe('moveEdge', () => {
+describe('moveEdge', { tags: [] }, () => {
   // Two panels, one above the other, sharing the level line at y 0.5.
   const page: Shape[] = [
     [{ x: 0.1, y: 0.1 }, { x: 0.9, y: 0.1 }, { x: 0.9, y: 0.5 }, { x: 0.1, y: 0.5 }],
@@ -66,7 +66,7 @@ describe('moveEdge', () => {
   });
 });
 
-describe('addPanel', () => {
+describe('addPanel', { tags: [] }, () => {
   it('leaves a page of one big panel as it is drawn and lays the new panel over it, selected', { tags: ['condition'] }, () => {
     const page = seed(1);
     const drawn = frameOutlines(current());
@@ -91,15 +91,15 @@ describe('addPanel', () => {
     expect(current().free).toBe(false);
   });
 
-  it('adds nothing to a full page', { tags: ['error-guessing'] }, () => {
+  it('adds nothing to a full page', { tags: ['boundary'] }, () => {
     const page = seed(MAX_PANELS_PER_PAGE);
     expect(useComic.getState().addPanel(page.id)).toBeNull();
     expect(current().panels).toHaveLength(MAX_PANELS_PER_PAGE);
   });
 });
 
-describe('halvePanel', () => {
-  it('cuts the largest panel in half when none is given, and selects the new one', { tags: ['boundary'] }, () => {
+describe('halvePanel', { tags: [] }, () => {
+  it('cuts the largest panel in half when none is given, and selects the new one', { tags: ['condition'] }, () => {
     const page = seed(2);
     useComic.getState().splitPanel(page.id, 0, { x: 0.3, y: -1 }, { x: 0.3, y: 2 });
     const before = pageShapes(current());
@@ -121,13 +121,13 @@ describe('halvePanel', () => {
     expect(current().panels).toHaveLength(3);
   });
 
-  it('adds nothing to a full page', { tags: ['error-guessing'] }, () => {
+  it('adds nothing to a full page', { tags: ['boundary'] }, () => {
     const page = seed(MAX_PANELS_PER_PAGE);
     expect(useComic.getState().halvePanel(page.id, 0)).toBeNull();
     expect(current().panels).toHaveLength(MAX_PANELS_PER_PAGE);
   });
 
-  it('cuts nothing from a panel too small to make two panels, either way across', { tags: ['error-guessing'] }, () => {
+  it('cuts nothing from a panel too small to make two panels, either way across', { tags: ['boundary', 'error-guessing'] }, () => {
     const page = seed(2);
     // A thin strip under a big panel: each half of it would be smaller than a panel may be.
     const strip: Shape = [{ x: 0.1, y: 0.8 }, { x: 0.9, y: 0.8 }, { x: 0.9, y: 0.805 }, { x: 0.1, y: 0.805 }];
@@ -142,8 +142,8 @@ describe('halvePanel', () => {
   });
 });
 
-describe('the store moveEdge', () => {
-  it('stops the slide at the page margin and says how far it went', { tags: ['condition'] }, () => {
+describe('the store moveEdge', { tags: [] }, () => {
+  it('stops the slide at the page margin and says how far it went', { tags: ['boundary'] }, () => {
     const page = seed(2);
     const top = pageShapes(current())[0]!;
     // The top edge of the first panel, slid far up: it only reaches the margin.
@@ -154,7 +154,7 @@ describe('the store moveEdge', () => {
     expect(moved!.y).toBeGreaterThanOrEqual(-0.5);
   });
 
-  it('moves a shared edge, and the panels stay a valid page', { tags: ['condition'] }, () => {
+  it('moves a shared edge, and the panels stay a valid page', { tags: ['equivalence'] }, () => {
     const page = seed(2);
     const shape = pageShapes(current())[0]!;
     const bottom = shape.findIndex((p, i) => p.y === Math.max(...shape.map((q) => q.y)) && shape[(i + 1) % shape.length]!.y === p.y);
@@ -164,7 +164,7 @@ describe('the store moveEdge', () => {
   });
 });
 
-describe('the balloon editor', () => {
+describe('the balloon editor', { tags: [] }, () => {
   function withBubbles() {
     const page = seed(2);
     const a = newBubble('speech', 0.1, 0.1);
@@ -175,7 +175,7 @@ describe('the balloon editor', () => {
     return { page, a, b };
   }
 
-  it('opens on a balloon, follows another balloon, and closes when no balloon is chosen', { tags: ['condition'] }, () => {
+  it('opens on a balloon, follows another balloon, and closes when no balloon is chosen', { tags: ['state-transition'] }, () => {
     const { a, b } = withBubbles();
     useComic.getState().openBubbleEditor('panel-0', a.id);
     expect(useComic.getState()).toMatchObject({ bubbleEditor: true, selectedPanelId: 'panel-0', selectedBubbleId: a.id });
@@ -185,7 +185,7 @@ describe('the balloon editor', () => {
     expect(useComic.getState().bubbleEditor).toBe(false);
   });
 
-  it('closes when another panel is chosen or its balloon is removed', { tags: ['condition'] }, () => {
+  it('closes when another panel is chosen or its balloon is removed', { tags: ['state-transition'] }, () => {
     const { a } = withBubbles();
     useComic.getState().openBubbleEditor('panel-0', a.id);
     useComic.getState().selectPanel('panel-1');
@@ -195,7 +195,7 @@ describe('the balloon editor', () => {
     expect(useComic.getState().bubbleEditor).toBe(false);
   });
 
-  it('closes by itself and keeps the balloon chosen', { tags: ['condition'] }, () => {
+  it('closes by itself and keeps the balloon chosen', { tags: ['state-transition'] }, () => {
     const { a } = withBubbles();
     useComic.getState().openBubbleEditor('panel-0', a.id);
     useComic.getState().closeBubbleEditor();
@@ -203,8 +203,8 @@ describe('the balloon editor', () => {
   });
 });
 
-describe('removePanel', () => {
-  it('deletes a panel of an automatic page and lays the rest out again', { tags: ['regression'] }, () => {
+describe('removePanel', { tags: [] }, () => {
+  it('deletes a panel of an automatic page and lays the rest out again', { tags: ['condition'] }, () => {
     const page = seed(3);
     expect(useComic.getState().removePanel(page.id, 1)).toBe(true);
     expect(current().panels.map((p) => p.id)).toEqual(['panel-0', 'panel-2']);
@@ -241,7 +241,7 @@ describe('removePanel', () => {
     expect(allValid(current().shapes!)).toBe(true);
   });
 
-  it('keeps the last panel and refuses a panel that is not there', { tags: ['error-guessing'] }, () => {
+  it('keeps the last panel and refuses a panel that is not there', { tags: ['boundary'] }, () => {
     const page = seed(1);
     expect(useComic.getState().removePanel(page.id, 0)).toBe(false);
     const two = seed(2);
@@ -250,7 +250,7 @@ describe('removePanel', () => {
   });
 });
 
-describe('mergeShapes', () => {
+describe('mergeShapes', { tags: [] }, () => {
   const left: Shape = [{ x: 0, y: 0 }, { x: 0.5, y: 0 }, { x: 0.5, y: 1 }, { x: 0, y: 1 }];
   const right: Shape = [{ x: 0.5, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0.5, y: 1 }];
 

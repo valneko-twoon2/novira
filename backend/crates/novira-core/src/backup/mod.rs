@@ -197,7 +197,7 @@ mod tests {
         }
     }
 
-    // tags: state-transition
+    // tags: equivalence, error-guessing
     #[test]
     fn the_ui_state_must_be_novira_keys_with_text_values() {
         assert!(check_ui_state(r#"{"novira.settings":"{\"a\":1}"}"#).is_ok());
@@ -208,7 +208,7 @@ mod tests {
         assert!(check_ui_state("not json").is_err());
     }
 
-    // tags: scenario, equivalence
+    // tags: equivalence
     #[test]
     fn the_default_name_carries_the_date_and_time() {
         let name = default_file_name();

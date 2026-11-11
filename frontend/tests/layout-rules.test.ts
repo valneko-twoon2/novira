@@ -38,8 +38,8 @@ function node(over: Partial<LayoutNode> = {}): LayoutNode {
 const snap = (...nodes: LayoutNode[]): LayoutSnapshot => ({ viewport: { width: 1000, height: 800 }, nodes });
 const kinds = (faults: { kind: string }[]) => faults.map((f) => f.kind);
 
-describe('overflow', () => {
-  it('finds a control wider than the box that holds it, on either side', { tags: ['condition'] }, () => {
+describe('overflow', { tags: [] }, () => {
+  it('finds a control wider than the box that holds it, on either side', { tags: ['equivalence'] }, () => {
     expect(kinds(overflowFaults(snap(node({ rect: rect(10, 0, 200, 20), chain: [step(rect(10, 0, 120, 40))] }))))).toEqual(['overflow']);
     expect(kinds(overflowFaults(snap(node({ rect: rect(5, 0, 50, 20), chain: [step(rect(10, 0, 120, 40))] }))))).toEqual(['overflow']);
   });
@@ -54,7 +54,7 @@ describe('overflow', () => {
     expect(faults).toEqual([expect.objectContaining({ kind: 'overflow', other: 'div.card' })]);
   });
 
-  it('stops at a box that clips or floats, and at a strip that scrolls sideways on purpose', { tags: ['condition'] }, () => {
+  it('stops at a box that clips or floats, and at a strip that scrolls sideways on purpose', { tags: ['equivalence'] }, () => {
     // Past the clipping box, the ancestors further out do not matter (the control does not stick out of the clip).
     expect(overflowFaults(snap(node({ rect: rect(0, 0, 100, 20), chain: [step(rect(0, 0, 120, 40), 'clip'), step(rect(0, 0, 50, 40))] })))).toEqual([]);
     expect(overflowFaults(snap(node({ rect: rect(0, 0, 100, 20), chain: [step(rect(0, 0, 120, 40), 'none', true), step(rect(0, 0, 50, 40))] })))).toEqual([]);
@@ -74,10 +74,10 @@ describe('overflow', () => {
   });
 });
 
-describe('text', () => {
+describe('text', { tags: [] }, () => {
   const text = (over: Partial<LayoutNode>) => node({ hasText: true, scrollWidth: 100, clientWidth: 100, scrollHeight: 20, clientHeight: 20, ...over });
 
-  it('finds text shortened to "…" by an ellipsis or a line clamp', { tags: ['condition'] }, () => {
+  it('finds text shortened to "…" by an ellipsis or a line clamp', { tags: ['equivalence'] }, () => {
     expect(kinds(textFaults(snap(text({ ellipsis: true, scrollWidth: 160 }))))).toEqual(['truncated']);
     expect(kinds(textFaults(snap(text({ clamp: true, scrollHeight: 60 }))))).toEqual(['truncated']);
   });
@@ -100,17 +100,17 @@ describe('text', () => {
   });
 });
 
-describe('spacing', () => {
-  it('finds two buttons side by side with no gap, and two stacked with no gap', { tags: ['condition'] }, () => {
+describe('spacing', { tags: [] }, () => {
+  it('finds two buttons side by side with no gap, and two stacked with no gap', { tags: ['equivalence'] }, () => {
     expect(kinds(spacingFaults(snap(node({ rect: rect(0, 0, 50, 20) }), node({ rect: rect(50, 0, 50, 20) }))))).toEqual(['touching']);
     expect(kinds(spacingFaults(snap(node({ rect: rect(0, 0, 50, 20) }), node({ rect: rect(0, 20.5, 50, 20) }))))).toEqual(['touching']);
   });
 
-  it('finds two boxes that overlap', { tags: ['condition'] }, () => {
+  it('finds two boxes that overlap', { tags: ['equivalence'] }, () => {
     expect(kinds(spacingFaults(snap(node({ rect: rect(0, 0, 50, 20) }), node({ rect: rect(40, 5, 50, 20) }))))).toEqual(['overlap']);
   });
 
-  it('names the left or upper box first', { tags: ['condition'] }, () => {
+  it('names the left or upper box first', { tags: ['equivalence'] }, () => {
     const right = node({ rect: rect(50, 0, 50, 20), where: 'button.right' });
     const left = node({ rect: rect(0, 0, 50, 20), where: 'button.left' });
     expect(spacingFaults(snap(right, left))[0]).toMatchObject({ where: 'button.left', other: 'button.right' });
@@ -133,7 +133,7 @@ describe('spacing', () => {
     expect(kinds(spacingFaults(snap(node({ rect: rect(0, 0, 50, 20), radii: [4, 0, 0, 4] }), node({ rect: rect(50, 0, 50, 20) }))))).toEqual(['touching']);
   });
 
-  it('compares only visible boxes of controls and cards on one surface, not a box and what it holds', { tags: ['condition'] }, () => {
+  it('compares only visible boxes of controls and cards on one surface, not a box and what it holds', { tags: ['decision-table'] }, () => {
     const a = node({ rect: rect(0, 0, 50, 20) });
     expect(spacingFaults(snap(a, node({ rect: rect(50, 0, 50, 20), boxed: false })))).toEqual([]);
     expect(spacingFaults(snap(a, node({ rect: rect(50, 0, 50, 20), layer: 7 })))).toEqual([]);
@@ -147,7 +147,7 @@ describe('spacing', () => {
   });
 });
 
-describe('every fault', () => {
+describe('every fault', { tags: [] }, () => {
   it('lists each distinct fault once', { tags: ['condition'] }, () => {
     const twin = { where: 'button.same', text: 'same' };
     const a = node({ ...twin, hasText: true, ellipsis: true, scrollWidth: 200, clientWidth: 50 });

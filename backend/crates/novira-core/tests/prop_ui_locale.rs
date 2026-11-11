@@ -57,7 +57,7 @@ fn language() -> impl Strategy<Value = String> {
     ]
 }
 
-// tags: equivalence
+// tags: error-guessing
 #[test]
 fn the_finders_only_return_plain_script_names_whatever_the_text() {
     check(
@@ -197,7 +197,7 @@ fn a_module_of_any_text_or_cut_short_is_read_or_refused() {
     );
 }
 
-// tags: error-guessing, boundary
+// tags: boundary, error-guessing
 #[test]
 fn the_words_read_from_any_two_modules_are_never_empty() {
     check((json_value(), json_value()), |(main, nodes)| {

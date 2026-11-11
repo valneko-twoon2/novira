@@ -19,7 +19,7 @@ describe('parseColor / formatColor (properties)', () => {
     );
   });
 
-  it('formatColor then parseColor returns the same colour (alpha to two decimals)', { tags: ['error-guessing'] }, () => {
+  it('formatColor then parseColor returns the same colour (alpha to two decimals)', { tags: ['equivalence', 'boundary'] }, () => {
     check(
       fc.property(hex, fc.integer({ min: 0, max: 100 }), (h, percent) => {
         const alpha = percent / 100;
@@ -42,7 +42,7 @@ describe('parseColor / formatColor (properties)', () => {
   });
 
   // Regression: a malformed alpha ("1.2.3") is not a colour, so the documented fallback (opaque black) applies; it used to give a NaN alpha.
-  it('falls back to opaque black for a malformed alpha, never NaN', { tags: ['error-guessing'] }, () => {
+  it('falls back to opaque black for a malformed alpha, never NaN', { tags: ['regression', 'error-guessing'] }, () => {
     expect(parseColor('rgba(0,0,0,1.2.3)')).toEqual({ hex: '#000000', alpha: 1 });
     expect(parseColor('rgba(9,9,9,..5)')).toEqual({ hex: '#000000', alpha: 1 });
     expect(parseColor('rgba(9,9,9,.5)').alpha).toBe(0.5);

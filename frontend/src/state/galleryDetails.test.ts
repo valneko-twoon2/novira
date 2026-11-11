@@ -38,7 +38,7 @@ afterEach(() => vi.restoreAllMocks());
 const held = (name: string) => useGallery.getState().images.find((i) => i.name === name)!;
 
 describe('ensureDetails', () => {
-  it('reads the details of a summary and puts them into the gallery', { tags: ['condition'] }, async () => {
+  it('reads the details of a summary and puts them into the gallery', { tags: ['equivalence'] }, async () => {
     await ensureDetails(['b.png']);
     expect(details).toHaveBeenCalledWith(['b.png']);
     expect(held('b.png').metadata?.positivePrompt).toBe('prompt of b.png');
@@ -53,13 +53,17 @@ describe('ensureDetails', () => {
     expect(details).toHaveBeenCalledTimes(1);
   });
 
-  it('does not read a picture that arrived whole, and does not ask when nothing is needed', { tags: ['scenario'] }, async () => {
-    await ensureDetails(['unknown.png']);
-    await ensureDetails([]);
-    expect(details).not.toHaveBeenCalled();
-  });
+  it(
+    'does not read a picture that arrived whole, and does not ask when nothing is needed',
+    { tags: ['condition', 'boundary'] },
+    async () => {
+      await ensureDetails(['unknown.png']);
+      await ensureDetails([]);
+      expect(details).not.toHaveBeenCalled();
+    },
+  );
 
-  it('keeps a star or a board that changed while the details were on their way', { tags: ['condition'] }, async () => {
+  it('keeps a star or a board that changed while the details were on their way', { tags: ['error-guessing'] }, async () => {
     let release: (v: ImageDTO[]) => void = () => undefined;
     details.mockImplementation(() => new Promise<ImageDTO[]>((resolve) => (release = resolve)));
     const job = ensureDetails(['a.png']);
@@ -69,20 +73,24 @@ describe('ensureDetails', () => {
     expect(held('a.png')).toMatchObject({ starred: true, boardId: 'board-1', metadata: { positivePrompt: 'prompt of a.png' } });
   });
 
-  it('reads in chunks that stay within what the backend answers, and logs a failure without throwing', { tags: ['error-guessing'] }, async () => {
-    const many = Array.from({ length: DETAILS_CHUNK * 2 + 1 }, (_, i) => image(`m${i}.png`));
-    useGallery.setState({ images: many });
-    markSummaries(many);
-    await ensureDetails(many.map((i) => i.name));
-    expect(details.mock.calls.map(([names]) => names.length)).toEqual([DETAILS_CHUNK, DETAILS_CHUNK, 1]);
-    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    markSummaries(many);
-    details.mockRejectedValue(new Error('down'));
-    await expect(ensureDetails(['m0.png'])).resolves.toBeUndefined();
-    expect(error).toHaveBeenCalled();
-    // Still a summary, so the next ask tries again.
-    expect(summaryCount()).toBe(many.length);
-  });
+  it(
+    'reads in chunks that stay within what the backend answers, and logs a failure without throwing',
+    { tags: ['boundary', 'error-guessing'] },
+    async () => {
+      const many = Array.from({ length: DETAILS_CHUNK * 2 + 1 }, (_, i) => image(`m${i}.png`));
+      useGallery.setState({ images: many });
+      markSummaries(many);
+      await ensureDetails(many.map((i) => i.name));
+      expect(details.mock.calls.map(([names]) => names.length)).toEqual([DETAILS_CHUNK, DETAILS_CHUNK, 1]);
+      const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      markSummaries(many);
+      details.mockRejectedValue(new Error('down'));
+      await expect(ensureDetails(['m0.png'])).resolves.toBeUndefined();
+      expect(error).toHaveBeenCalled();
+      // Still a summary, so the next ask tries again.
+      expect(summaryCount()).toBe(many.length);
+    },
+  );
 
   it('ensureAllDetails reads every summary', { tags: ['equivalence'] }, async () => {
     await ensureAllDetails();
@@ -95,7 +103,7 @@ describe('what is read without being asked', () => {
   let stop: () => void;
   afterEach(() => stop());
 
-  it('reads the selected, viewed and compared pictures', { tags: ['condition'] }, async () => {
+  it('reads the selected, viewed and compared pictures', { tags: ['state-transition'] }, async () => {
     stop = watchGalleryDetails();
     useGallery.getState().setSelection(['a.png']);
     await vi.waitFor(() => expect(held('a.png').metadata).not.toBeNull());
@@ -123,7 +131,7 @@ describe('what is read without being asked', () => {
 });
 
 describe('a gallery read again (a page over the network coming back)', () => {
-  it('keeps the details a picture already has and leaves the others as summaries', { tags: ['condition'] }, async () => {
+  it('keeps the details a picture already has and leaves the others as summaries', { tags: ['equivalence'] }, async () => {
     await ensureDetails(['a.png']);
     const merged = mergeSummaries([image('a.png', { starred: true }), image('b.png'), image('d.png')], useGallery.getState().images);
     expect(merged[0]).toMatchObject({ name: 'a.png', starred: true, metadata: { positivePrompt: 'prompt of a.png' } });

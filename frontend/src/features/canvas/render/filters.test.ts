@@ -29,12 +29,12 @@ const source = (w = 8, h = 4) => {
 };
 const at = (d: Uint8ClampedArray, w: number, x: number, y: number) => Array.from(d.slice((y * w + x) * 4, (y * w + x) * 4 + 4));
 
-describe('applyFilter', () => {
-  it('offers every filter type', { tags: ['decision-table'] }, () => {
+describe('applyFilter', { tags: [] }, () => {
+  it('offers every filter type', { tags: ['equivalence', 'boundary'] }, () => {
     expect(FILTER_TYPES.length).toBeGreaterThan(5);
   });
 
-  it('copies the picture for "none"', { tags: ['condition'] }, () => {
+  it('copies the picture for "none"', { tags: ['equivalence'] }, () => {
     const rec = canvases.start();
     const src = source();
     const out = applyFilter('none', src);
@@ -42,7 +42,7 @@ describe('applyFilter', () => {
     expect(rec.of(out).of('drawImage')[0]![0]).toBe(src);
   });
 
-  it('shrinks and blows the picture up unsmoothed for color_map', { tags: ['condition'] }, () => {
+  it('shrinks and blows the picture up unsmoothed for color_map', { tags: ['equivalence', 'boundary'] }, () => {
     const rec = canvases.start();
     const out = applyFilter('color_map', source(96, 96));
     const draws = rec.of(out).of('drawImage');
@@ -60,7 +60,7 @@ describe('applyFilter', () => {
     expect(at(d, 8, 7, 1)).toEqual([0, 0, 0, 255]);
   });
 
-  it('draws dark lines on white for lineart and light lines on black for hed (after a small blur)', { tags: ['condition'] }, () => {
+  it('draws dark lines on white for lineart and light lines on black for hed (after a small blur)', { tags: ['equivalence'] }, () => {
     const rec = canvases.start();
     const lineart = written(applyFilter('lineart', source()), rec);
     expect(at(lineart, 8, 0, 1)).toEqual([255, 255, 255, 255]);
@@ -72,7 +72,7 @@ describe('applyFilter', () => {
     expect(rec.all.some((r) => r.sets.some((s) => s.name === 'filter' && s.value === 'blur(1px)'))).toBe(true);
   });
 
-  it('stretches the contrast to the full range for depth', { tags: ['condition'] }, () => {
+  it('stretches the contrast to the full range for depth', { tags: ['boundary', 'equivalence'] }, () => {
     const rec = canvases.start();
     const out = applyFilter('depth', source(128, 128));
     const d = written(out, rec);
@@ -81,7 +81,7 @@ describe('applyFilter', () => {
     expect(rec.all.some((r) => r.sets.some((s) => s.name === 'filter' && s.value === 'blur(2px)'))).toBe(true);
   });
 
-  it('encodes surface directions as a normal map', { tags: ['condition'] }, () => {
+  it('encodes surface directions as a normal map', { tags: ['equivalence'] }, () => {
     const rec = canvases.start();
     const d = written(applyFilter('normal', source()), rec);
     // Flat areas point straight at the viewer: (0.5, 0.5, 1.0) in colour.

@@ -21,8 +21,8 @@ function sourceFiles(dir: string): string[] {
 
 const files = sourceFiles(SRC).map((p) => ({ rel: relative(SRC, p).replace(/\\/g, '/'), text: readFileSync(p, 'utf8') }));
 
-describe('i18n catalogs', () => {
-  it('renders placeholders and escaped braces', { tags: ['error-guessing'] }, () => {
+describe('i18n catalogs', { tags: [] }, () => {
+  it('renders placeholders and escaped braces', { tags: ['equivalence'] }, () => {
     expect(renderTemplate('{a} of {{b}}', { a: 1 })).toBe('1 of {b}');
   });
 
@@ -44,22 +44,22 @@ describe('i18n catalogs', () => {
     }
   });
 
-  it('the built-in ja and en hold every area file (a new area is imported in catalog.ts)', { tags: ['condition'] }, () => {
+  it('the built-in ja and en hold every area file (a new area is imported in catalog.ts)', { tags: ['equivalence'] }, () => {
     expect(ja).toEqual(catalogs.ja);
     expect(en).toEqual(catalogs.en);
   });
 
-  it('a language loaded when chosen holds the same messages as its area files', { tags: ['condition'] }, async () => {
+  it('a language loaded when chosen holds the same messages as its area files', { tags: ['equivalence'] }, async () => {
     for (const locale of Object.keys(catalogs) as (keyof typeof catalogs)[]) expect(await loadCatalog(locale), locale).toEqual(catalogs[locale]);
   });
 
-  it('every area file exists for every locale', { tags: ['condition'] }, () => {
+  it('every area file exists for every locale', { tags: ['equivalence'] }, () => {
     const dir = fileURLToPath(new URL('../src/i18n/locales/', import.meta.url));
     const areas = (locale: string) => readdirSync(join(dir, locale)).sort();
     for (const locale of readdirSync(dir)) expect(areas(locale), locale).toEqual(areas('ja'));
   });
 
-  it('every t() key used in source exists in ja', { tags: ['condition'] }, () => {
+  it('every t() key used in source exists in ja', { tags: ['equivalence'] }, () => {
     const missing: string[] = [];
     for (const f of files) {
       for (const m of f.text.matchAll(/\bt\(\s*'([a-zA-Z0-9_.-]+)'/g)) {
@@ -69,7 +69,7 @@ describe('i18n catalogs', () => {
     expect(missing).toEqual([]);
   });
 
-  it('UI source has no hardcoded Japanese', { tags: ['condition'] }, () => {
+  it('UI source has no hardcoded Japanese', { tags: ['equivalence'] }, () => {
     const offenders: string[] = [];
     for (const f of files) {
       if (EXEMPT.some((e) => f.rel.startsWith(e))) continue;

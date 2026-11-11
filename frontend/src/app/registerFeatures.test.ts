@@ -27,14 +27,14 @@ const INVOKE: Record<BuilderKey, true | string> = {
   extensions: 'manages ComfyUI extensions; it makes nothing',
 };
 
-describe('the registries after start-up', () => {
+describe('the registries after start-up', { tags: [] }, () => {
   for (const [key, need] of Object.entries(INVOKE) as [BuilderKey, true | string][]) {
     it(`${key}: ${need === true ? 'has an Invoke builder' : 'has no Invoke builder'}`, { tags: ['equivalence'] }, () => {
       expect(hasInvokeBuilder(key)).toBe(need === true);
     });
   }
 
-  it('gives every screen the assistant can change an editor', { tags: ['condition'] }, () => {
+  it('gives every screen the assistant can change an editor', { tags: ['equivalence'] }, () => {
     expect(EDIT_SCREENS.filter((screen) => !agentEditor(screen))).toEqual([]);
   });
 });

@@ -17,13 +17,13 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('CoverImage', () => {
+describe('CoverImage', { tags: [] }, () => {
   it('shows the model picture when it has one', { tags: ['condition'] }, () => {
     const { container } = render(<CoverImage model={model({ coverImageUrl: 'blob:real' })} />);
     expect(cover(container)!.getAttribute('src')).toBe('blob:real');
   });
 
-  it('stands a mock picture in for a model without one, the same for the same key', { tags: ['condition'] }, () => {
+  it('stands a mock picture in for a model without one, the same for the same key', { tags: ['condition', 'equivalence'] }, () => {
     const first = render(<CoverImage model={model({ key: 'drawn-1' })} />);
     const src = cover(first.container)!.getAttribute('src')!;
     expect(MOCK_PICTURES).toContain(src);
@@ -38,7 +38,7 @@ describe('CoverImage', () => {
     expect(none.container.querySelector('svg')).not.toBeNull();
   });
 
-  it('opens an enlarged view on click when zoomable, and not otherwise', { tags: ['scenario'] }, async () => {
+  it('opens an enlarged view on click when zoomable, and not otherwise', { tags: ['condition'] }, async () => {
     const plain = render(<CoverImage model={model({ coverImageUrl: 'blob:real' })} />);
     fireEvent.click(plain.container.querySelector('.pp-cover')!);
     expect(screen.queryByAltText('Model One')).toBeNull();
@@ -50,26 +50,30 @@ describe('CoverImage', () => {
     expect((await screen.findByAltText('Model One')).getAttribute('src')).toBe(cover(container)!.getAttribute('src'));
   });
 
-  it('goes through all the pictures of the enlarged view, around both ends, and starts from the first each time', { tags: ['boundary'] }, async () => {
-    const urls = ['blob:a', 'blob:b', 'blob:c'];
-    const { container } = render(<CoverImage model={model({ coverImageUrl: 'blob:a', coverImageUrls: urls })} zoomable className="thumb" />);
-    fireEvent.click(container.querySelector('.thumb')!);
-    const shown = () => screen.getByAltText('Model One').getAttribute('src');
-    expect(shown()).toBe('blob:a');
-    expect(screen.getByTestId('cover-zoom-count').textContent).toBe(t('models.detail.imageCount', { index: 1, count: 3 }));
-    fireEvent.click(screen.getByTestId('cover-zoom-next'));
-    expect(shown()).toBe('blob:b');
-    fireEvent.click(screen.getByTestId('cover-zoom-prev'));
-    fireEvent.click(screen.getByTestId('cover-zoom-prev'));
-    expect(shown()).toBe('blob:c');
-    fireEvent.keyDown(screen.getByTestId('cover-zoom'), { key: 'ArrowRight' });
-    expect(shown()).toBe('blob:a');
-    // Closed and opened again, it starts from the first.
-    fireEvent.click(screen.getByTestId('cover-zoom-next'));
-    fireEvent.keyDown(document.body, { key: 'Escape' });
-    fireEvent.click(container.querySelector('.thumb')!);
-    expect(shown()).toBe('blob:a');
-  });
+  it(
+    'goes through all the pictures of the enlarged view, around both ends, and starts from the first each time',
+    { tags: ['boundary', 'state-transition'] },
+    async () => {
+      const urls = ['blob:a', 'blob:b', 'blob:c'];
+      const { container } = render(<CoverImage model={model({ coverImageUrl: 'blob:a', coverImageUrls: urls })} zoomable className="thumb" />);
+      fireEvent.click(container.querySelector('.thumb')!);
+      const shown = () => screen.getByAltText('Model One').getAttribute('src');
+      expect(shown()).toBe('blob:a');
+      expect(screen.getByTestId('cover-zoom-count').textContent).toBe(t('models.detail.imageCount', { index: 1, count: 3 }));
+      fireEvent.click(screen.getByTestId('cover-zoom-next'));
+      expect(shown()).toBe('blob:b');
+      fireEvent.click(screen.getByTestId('cover-zoom-prev'));
+      fireEvent.click(screen.getByTestId('cover-zoom-prev'));
+      expect(shown()).toBe('blob:c');
+      fireEvent.keyDown(screen.getByTestId('cover-zoom'), { key: 'ArrowRight' });
+      expect(shown()).toBe('blob:a');
+      // Closed and opened again, it starts from the first.
+      fireEvent.click(screen.getByTestId('cover-zoom-next'));
+      fireEvent.keyDown(document.body, { key: 'Escape' });
+      fireEvent.click(container.querySelector('.thumb')!);
+      expect(shown()).toBe('blob:a');
+    },
+  );
 
   it('shows no arrows for a model with one picture', { tags: ['boundary'] }, async () => {
     const { container } = render(<CoverImage model={model({ coverImageUrl: 'blob:a', coverImageUrls: ['blob:a'] })} zoomable className="thumb" />);
@@ -78,7 +82,7 @@ describe('CoverImage', () => {
     expect(screen.queryByTestId('cover-zoom-count')).toBeNull();
   });
 
-  it('opens from the keyboard with Enter or Space, and ignores other keys', { tags: ['equivalence'] }, () => {
+  it('opens from the keyboard with Enter or Space, and ignores other keys', { tags: ['condition', 'scenario'] }, () => {
     const { container } = render(<CoverImage model={model({ coverImageUrl: 'blob:a' })} zoomable className="thumb" />);
     const thumb = container.querySelector('.thumb')!;
     expect(thumb.getAttribute('role')).toBe('button');
@@ -92,7 +96,7 @@ describe('CoverImage', () => {
     expect(screen.getByTestId('cover-zoom')).toBeTruthy();
   });
 
-  it('steps with the arrow keys both ways, and ignores them for a single picture', { tags: ['boundary'] }, () => {
+  it('steps with the arrow keys both ways, and ignores them for a single picture', { tags: ['condition', 'boundary'] }, () => {
     const many = render(<CoverImage model={model({ coverImageUrl: 'blob:a', coverImageUrls: ['blob:a', 'blob:b'] })} zoomable className="thumb" />);
     fireEvent.click(many.container.querySelector('.thumb')!);
     const shown = () => screen.getByAltText('Model One').getAttribute('src');

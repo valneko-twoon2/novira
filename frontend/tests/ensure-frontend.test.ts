@@ -32,7 +32,7 @@ function frontend(built: number | null, source: number) {
   return dir;
 }
 
-describe('ensure-frontend', () => {
+describe('ensure-frontend', { tags: [] }, () => {
   it('builds when there is no page yet', { tags: ['condition'] }, () => {
     expect(frontendIsStale(frontend(null, 200))).toBe(true);
   });
@@ -41,7 +41,7 @@ describe('ensure-frontend', () => {
     expect(frontendIsStale(frontend(300, 400))).toBe(true);
   });
 
-  it('does not build when the page is newer than every source, or as new', { tags: ['condition'] }, () => {
+  it('does not build when the page is newer than every source, or as new', { tags: ['boundary'] }, () => {
     expect(frontendIsStale(frontend(500, 400))).toBe(false);
     expect(frontendIsStale(frontend(400, 400))).toBe(false);
   });

@@ -35,7 +35,7 @@ afterEach(() => {
   useLowMemory.setState({ mode: null, busy: false });
 });
 
-describe('out-of-memory notice', () => {
+describe('out-of-memory notice', { tags: [] }, () => {
   it('offers a smaller retry and low-memory mode, and runs them', { tags: ['scenario'] }, async () => {
     useLowMemory.setState({ mode: { enabled: false, ownedEngine: true, pendingRestart: false } });
     const retry = vi.spyOn(backend, 'retryQueueItem').mockResolvedValue(null);

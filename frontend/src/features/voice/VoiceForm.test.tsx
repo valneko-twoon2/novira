@@ -36,25 +36,25 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('the voice form', () => {
-  it('writes the text', { tags: ['scenario'] }, () => {
+describe('the voice form', { tags: [] }, () => {
+  it('writes the text', { tags: ['equivalence'] }, () => {
     fireEvent.change(screen.getByTestId('voice-text'), { target: { value: 'Good morning' } });
     expect(form().text).toBe('Good morning');
   });
 
-  it('chooses the language from the list', { tags: ['scenario'] }, () => {
+  it('chooses the language from the list', { tags: ['equivalence'] }, () => {
     choose(t('voice.language'), t('voice.lang.Japanese'));
     expect(form().language).toBe('Japanese');
   });
 
-  it('chooses the speaker in preset mode, and writes the style', { tags: ['scenario'] }, () => {
+  it('chooses the speaker in preset mode, and writes the style', { tags: ['equivalence'] }, () => {
     choose(t('voice.speaker'), t('voice.speaker.Ryan'));
     expect(form().speaker).toBe('Ryan');
     fireEvent.change(screen.getByTestId('voice-style'), { target: { value: 'whispering' } });
     expect(form().instruct).toBe('whispering');
   });
 
-  it('marks the mode in use and swaps the speaker for the description in design mode', { tags: ['scenario'] }, () => {
+  it('marks the mode in use and swaps the speaker for the description in design mode', { tags: ['state-transition'] }, () => {
     expect(screen.getByTestId('voice-mode-preset').getAttribute('aria-selected')).toBe('true');
     fireEvent.click(screen.getByTestId('voice-mode-design'));
     expect(form().mode).toBe('design');

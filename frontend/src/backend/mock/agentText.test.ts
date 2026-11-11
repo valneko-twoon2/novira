@@ -14,7 +14,7 @@ async function ask(message: string, selected: string | null = 'l1', on: Scene = 
   return { reply, ops: (tools.args('edit_text')?.ops as unknown[]) ?? [], tools };
 }
 
-describe('mock assistant on the text screen', () => {
+describe('mock assistant on the text screen', { tags: [] }, () => {
   it('reads the scene, changes the selected layer and the result applies cleanly', { tags: ['scenario'] }, async () => {
     const { ops, tools } = await ask('赤くして、もっと大きく');
     expect(tools.tools()).toEqual(['get_text_scene', 'edit_text']);
@@ -28,7 +28,7 @@ describe('mock assistant on the text screen', () => {
     expect(out.text).toBe('ありがとう');
   });
 
-  it('adds a styled logo and a speech bubble', { tags: ['condition'] }, async () => {
+  it('adds a styled logo and a speech bubble', { tags: ['equivalence'] }, async () => {
     const logo = applyTextOps(EMPTY_SCENE, (await ask('ポップなロゴを作って', null, EMPTY_SCENE)).ops);
     expect((logo.scene.layers[0] as TextLayer).style.fontFamily).toBe('Dela Gothic One');
     const bubble = applyTextOps(EMPTY_SCENE, (await ask('叫びの吹き出しを追加「やった！」', null, EMPTY_SCENE)).ops);
@@ -37,10 +37,14 @@ describe('mock assistant on the text screen', () => {
     expect(b.text).toBe('やった！');
   });
 
-  it('removes the layer on request and asks, changing nothing, when it does not understand', { tags: ['condition'] }, async () => {
-    expect(applyTextOps(scene, (await ask('消して')).ops, 'l1').scene.layers).toHaveLength(0);
-    const unclear = await ask('うーん');
-    expect(unclear.tools.tools()).toEqual(['get_text_scene']);
-    expect(unclear.reply.text.length).toBeGreaterThan(0);
-  });
+  it(
+    'removes the layer on request and asks, changing nothing, when it does not understand',
+    { tags: ['condition', 'error-guessing'] },
+    async () => {
+      expect(applyTextOps(scene, (await ask('消して')).ops, 'l1').scene.layers).toHaveLength(0);
+      const unclear = await ask('うーん');
+      expect(unclear.tools.tools()).toEqual(['get_text_scene']);
+      expect(unclear.reply.text.length).toBeGreaterThan(0);
+    },
+  );
 });

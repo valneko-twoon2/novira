@@ -31,20 +31,20 @@ const mount = () =>
     </TooltipProvider>,
   );
 
-describe('the Face Rig node widget', () => {
-  it('is disabled and asks for a picture while none is wired in', { tags: ['boundary', 'state-transition'] }, () => {
+describe('the Face Rig node widget', { tags: [] }, () => {
+  it('is disabled and asks for a picture while none is wired in', { tags: ['condition'] }, () => {
     mount();
     expect((screen.getByTestId('rig-open') as HTMLButtonElement).disabled).toBe(true);
     expect(screen.getByText(t('workflows.faceRig.needsImage'))).toBeTruthy();
   });
 
-  it('is disabled when the wired picture node has no picture yet', { tags: ['scenario'] }, () => {
+  it('is disabled when the wired picture node has no picture yet', { tags: ['condition'] }, () => {
     useWorkflows.setState({ nodes: [node('rig', 'comfy:MockFaceRig', {}), node('src', 'image', { image: '' })], edges: [makeEdge('src', 'image', 'rig', 'image')] });
     mount();
     expect((screen.getByTestId('rig-open') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('opens the editor on the wired picture and stores what the editor applies', { tags: ['state-transition', 'scenario'] }, () => {
+  it('opens the editor on the wired picture and stores what the editor applies', { tags: ['scenario'] }, () => {
     useWorkflows.setState({ nodes: [node('rig', 'comfy:MockFaceRig', {}), node('src', 'image', { image: 'a.png' })], edges: [makeEdge('src', 'image', 'rig', 'image')] });
     mount();
     expect(screen.getByText(t('workflows.faceRig.adjusted', { count: 0 }))).toBeTruthy();

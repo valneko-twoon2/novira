@@ -40,8 +40,8 @@ function grainGraph(): { nodes: WorkflowNode[]; edges: WorkflowEdge[] } {
   };
 }
 
-describe('ComfyUI prompt from an editor graph', () => {
-  it('is how every graph runs but a video graph without pack nodes', { tags: ['decision-table'] }, () => {
+describe('ComfyUI prompt from an editor graph', { tags: [] }, () => {
+  it('is how every graph runs but a video graph without pack nodes', { tags: ['condition'] }, () => {
     expect(runsAsPrompt(buildTemplate(GRAPH_TEMPLATES[0]!))).toBe(true);
     expect(runsAsPrompt(grainGraph())).toBe(true);
     const video = node('video_generate', 'video');
@@ -49,7 +49,7 @@ describe('ComfyUI prompt from an editor graph', () => {
     expect(runsAsPrompt({ nodes: [video, node('comfy:MockFilmGrain', 'grain')] })).toBe(true);
   });
 
-  it('turns built-in nodes into ComfyUI core nodes and passes pack nodes through', { tags: ['condition'] }, () => {
+  it('turns built-in nodes into ComfyUI core nodes and passes pack nodes through', { tags: ['equivalence'] }, () => {
     const g = grainGraph();
     const { graph, seed, random } = compileComfyPrompt(g);
     const byClass = (c: string) => Object.entries(graph.prompt).filter(([, n]) => n.class_type === c);
@@ -85,7 +85,7 @@ describe('ComfyUI prompt from an editor graph', () => {
     expect(graph.outputs).toEqual([saveId]);
   });
 
-  it('previews a decoded picture nothing saves, and keeps pack output nodes', { tags: ['boundary'] }, () => {
+  it('previews a decoded picture nothing saves, and keeps pack output nodes', { tags: ['condition'] }, () => {
     const g = grainGraph();
     const save = g.nodes.find((n) => n.data.type === 'save_image')!;
     g.nodes = g.nodes.filter((n) => n !== save);
@@ -96,7 +96,7 @@ describe('ComfyUI prompt from an editor graph', () => {
     expect(graph.prompt['grain:preview']).toEqual({ class_type: 'PreviewImage', inputs: { images: ['grain', 0] } });
   });
 
-  it('uploads gallery pictures and keeps random seeds random', { tags: ['condition'] }, () => {
+  it('uploads gallery pictures and keeps random seeds random', { tags: ['scenario'] }, () => {
     const img = node('image', 'src', { image: 'photo.png' });
     const rig = node('comfy:MockFaceRig', 'rig', { gaze_x: 0.5 });
     const seed = node('rand_int', 'seed');
@@ -139,7 +139,7 @@ describe('ComfyUI prompt from an editor graph', () => {
     expect(() => compileComfyPrompt(g)).toThrow(ComfyGraphError);
   });
 
-  it('reports what blocks a pack graph before it is queued, and queues it as a graph job', { tags: ['state-transition'] }, () => {
+  it('reports what blocks a pack graph before it is queued, and queues it as a graph job', { tags: ['scenario', 'condition'] }, () => {
     const g = grainGraph();
     expect(readinessReasons(g)).toEqual([]);
     const req = buildRequest({ ...g, form: [], meta: { ...EMPTY_META, name: 'Grain' } }, null, { prepend: false });
@@ -157,7 +157,7 @@ describe('ComfyUI prompt from an editor graph', () => {
     expect(readinessReasons(g).join()).toMatch(/まだ実行できません/);
   });
 
-  it('queues a graph of built-in nodes as a graph job too, and describes it for the gallery', { tags: ['state-transition'] }, () => {
+  it('queues a graph of built-in nodes as a graph job too, and describes it for the gallery', { tags: ['scenario'] }, () => {
     const g = grainGraph();
     g.nodes = g.nodes.filter((n) => n.id !== 'grain');
     const decode = g.nodes.find((n) => n.data.type === 'l2i')!;
@@ -177,7 +177,7 @@ describe('ComfyUI prompt from an editor graph', () => {
     expect(req.initImageUrl).toBeUndefined();
   });
 
-  it('runs an IP-Adapter with the other nodes of the graph', { tags: ['condition'] }, () => {
+  it('runs an IP-Adapter with the other nodes of the graph', { tags: ['scenario'] }, () => {
     const g = grainGraph();
     const ip = node('ip_adapter', 'ip', { ip_adapter_model: 'k', image: 'a.png' });
     const denoise = g.nodes.find((n) => n.data.type === 'denoise_latents')!;

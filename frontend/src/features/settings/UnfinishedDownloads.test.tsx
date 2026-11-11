@@ -29,8 +29,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('unfinished downloads', () => {
-  it('says there is nothing unfinished, and offers no delete', { tags: ['scenario'] }, async () => {
+describe('unfinished downloads', { tags: [] }, () => {
+  it('says there is nothing unfinished, and offers no delete', { tags: ['boundary'] }, async () => {
     vi.spyOn(backend, 'listUnfinishedDownloads').mockResolvedValue([]);
     mount();
     expect(await screen.findByText(t('settings.unfinished.empty'))).toBeTruthy();
@@ -67,7 +67,7 @@ describe('unfinished downloads', () => {
     expect(lastToast()).toMatchObject({ status: 'success', title: t('settings.unfinished.deleted') });
   });
 
-  it('asks before deleting all, and deletes all after the confirmation', { tags: ['scenario'] }, async () => {
+  it('asks before deleting all, and deletes all after the confirmation', { tags: ['state-transition'] }, async () => {
     vi.spyOn(backend, 'listUnfinishedDownloads').mockResolvedValue([part, model]);
     const del = vi.spyOn(backend, 'deleteUnfinishedDownloads').mockResolvedValue([]);
     mount();
@@ -83,7 +83,7 @@ describe('unfinished downloads', () => {
     expect(lastToast()).toMatchObject({ status: 'success', title: t('settings.unfinished.deleted') });
   });
 
-  it('warns with the name of the file that is in use and was kept', { tags: ['scenario'] }, async () => {
+  it('warns with the name of the file that is in use and was kept', { tags: ['condition'] }, async () => {
     vi.spyOn(backend, 'listUnfinishedDownloads').mockResolvedValue([part, model]);
     vi.spyOn(backend, 'deleteUnfinishedDownloads').mockResolvedValue([model]);
     mount();

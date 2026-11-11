@@ -9,8 +9,8 @@ import { busyThreshold, judge, lockState, parseGpus } from '../../scripts/tools/
 
 const gpu = (load: number) => [{ name: 'GPU', load, used: 1000, total: 12000 }];
 
-describe('gpu check', () => {
-  it('reads one line per GPU and skips lines that are not numbers', { tags: ['condition'] }, () => {
+describe('gpu check', { tags: [] }, () => {
+  it('reads one line per GPU and skips lines that are not numbers', { tags: ['error-guessing', 'equivalence'] }, () => {
     expect(parseGpus('NVIDIA GeForce RTX 4070 Ti, 3, 1419, 12282\r\nOther, 90, 5000, 8000\n')).toEqual([
       { name: 'NVIDIA GeForce RTX 4070 Ti', load: 3, used: 1419, total: 12282 },
       { name: 'Other', load: 90, used: 5000, total: 8000 },
@@ -38,11 +38,11 @@ describe('gpu check', () => {
   });
 });
 
-describe('gpu lock state', () => {
+describe('gpu lock state', { tags: [] }, () => {
   let dir = '';
   afterEach(() => dir && rmSync(dir, { recursive: true, force: true }));
 
-  it('says whether the lock is unset, free, held by novira or by another program', { tags: ['state-transition'] }, () => {
+  it('says whether the lock is unset, free, held by novira or by another program', { tags: ['equivalence'] }, () => {
     dir = mkdtempSync(join(tmpdir(), 'gpu-lock-'));
     const lock = join(dir, 'gpu.lock');
     expect(lockState('')).toBe('NOVIRA_GPU_LOCK is not set');
@@ -54,7 +54,7 @@ describe('gpu lock state', () => {
   });
 });
 
-describe('the busy threshold', () => {
+describe('the busy threshold', { tags: [] }, () => {
   it('takes 0 to 100 from NOVIRA_GPU_BUSY_PERCENT, 0 meaning any use, and 25 for anything else', { tags: ['boundary'] }, () => {
     expect(busyThreshold('0')).toBe(0);
     expect(busyThreshold('60')).toBe(60);

@@ -74,7 +74,7 @@ fn a_refused_board_change_tells_nothing() {
     assert_eq!(last_boards(&take(&events)), None);
 }
 
-// tags: state-transition
+// tags: scenario
 #[tokio::test]
 async fn picture_edits_deletes_and_restores_tell_the_pages() {
     let dir = tempfile::tempdir().unwrap();
@@ -114,7 +114,7 @@ async fn picture_edits_deletes_and_restores_tell_the_pages() {
     assert_eq!(image_changes(&take(&events)), vec![(back, vec![])]);
 }
 
-// tags: scenario
+// tags: condition
 #[tokio::test]
 async fn deleting_a_board_tells_the_pages_where_its_pictures_went() {
     let dir = tempfile::tempdir().unwrap();

@@ -122,7 +122,7 @@ fn models_ready(models: &Path) {
 
 // Model packs ------------------------------------------------------------------------------------------------------
 
-// tags: error-guessing, state-transition
+// tags: equivalence, state-transition
 #[tokio::test]
 async fn packs_start_as_missing_and_follow_the_files_on_disk() {
     let dir = tempfile::tempdir().unwrap();
@@ -137,7 +137,7 @@ async fn packs_start_as_missing_and_follow_the_files_on_disk() {
     ));
 }
 
-// tags: state-transition
+// tags: state-transition, condition
 #[tokio::test]
 async fn a_pack_with_every_file_in_place_becomes_ready_without_downloading() {
     let dir = tempfile::tempdir().unwrap();
@@ -168,7 +168,7 @@ async fn cancelling_a_file_pack_returns_it_to_what_the_disk_shows() {
     ));
 }
 
-// tags: decision-table
+// tags: condition
 #[tokio::test]
 async fn the_voice_pack_needs_a_python() {
     let dir = tempfile::tempdir().unwrap();
@@ -230,7 +230,7 @@ async fn cancelling_the_voice_pack_stops_pip_and_returns_to_the_disk_state() {
 
 // Custom node packs ------------------------------------------------------------------------------------------------
 
-// tags: state-transition
+// tags: state-transition, error-guessing
 #[tokio::test]
 async fn node_packs_are_listed_removed_and_flag_a_restart() {
     let dir = tempfile::tempdir().unwrap();
@@ -253,7 +253,7 @@ async fn node_packs_are_listed_removed_and_flag_a_restart() {
     assert_eq!(*engine.restarts.lock().unwrap(), 1);
 }
 
-// tags: error-guessing, state-transition
+// tags: state-transition, error-guessing
 #[tokio::test]
 async fn cancelling_a_node_pack_install_reports_it_as_missing() {
     let dir = tempfile::tempdir().unwrap();

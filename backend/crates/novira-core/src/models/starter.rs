@@ -676,7 +676,7 @@ mod tests {
     use crate::models::install::{self, Source};
     use std::collections::HashSet;
 
-    // tags: condition
+    // tags: equivalence
     #[test]
     fn ids_are_unique() {
         let list = starter_models();
@@ -684,7 +684,7 @@ mod tests {
         assert_eq!(ids.len(), list.len());
     }
 
-    // tags: equivalence
+    // tags: boundary
     #[test]
     fn every_dependency_has_a_download_size() {
         let list = starter_models();
@@ -716,7 +716,7 @@ mod tests {
         }
     }
 
-    // tags: scenario, equivalence
+    // tags: equivalence, scenario
     #[test]
     fn a_model_loaded_in_parts_lists_every_file_the_generate_tab_looks_for() {
         use crate::comfy::split::Family;

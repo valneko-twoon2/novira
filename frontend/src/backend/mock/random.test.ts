@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { batchSeed, hashString, MAX_SEED, mulberry32, randomSeed } from './random';
 
-describe('mock random helpers', () => {
-  it('hashes a string to the same unsigned 32-bit number every time', { tags: ['condition'] }, () => {
+describe('mock random helpers', { tags: [] }, () => {
+  it('hashes a string to the same unsigned 32-bit number every time', { tags: ['equivalence', 'boundary'] }, () => {
     expect(hashString('a red fox')).toBe(hashString('a red fox'));
     expect(hashString('a red fox')).not.toBe(hashString('a red fax'));
     // FNV-1a of the empty string is its offset basis.
@@ -13,7 +13,7 @@ describe('mock random helpers', () => {
     }
   });
 
-  it('repeats the same sequence for the same seed and differs for another seed', { tags: ['condition'] }, () => {
+  it('repeats the same sequence for the same seed and differs for another seed', { tags: ['equivalence'] }, () => {
     const take = (seed: number) => {
       const next = mulberry32(seed);
       return Array.from({ length: 5 }, next);

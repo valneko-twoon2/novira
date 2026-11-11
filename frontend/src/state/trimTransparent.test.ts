@@ -47,7 +47,7 @@ afterEach(() => {
 });
 
 describe('trimTransparent', () => {
-  it('saves a crop of the opaque area next to the original and adds it to the gallery', { tags: ['condition'] }, async () => {
+  it('saves a crop of the opaque area next to the original and adds it to the gallery', { tags: ['scenario'] }, async () => {
     stubImage({ width: 10, height: 10 });
     canvases = installRecordingCanvases({ pixel: (x, y) => [0, 0, 0, x >= 2 && x < 6 && y >= 3 && y < 5 ? 255 : 0] });
     const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue(saved);
@@ -72,7 +72,7 @@ describe('trimTransparent', () => {
     expect(created.map((i) => i.crossOrigin)).toEqual(['anonymous', '']);
   });
 
-  it('warns when the whole picture is transparent', { tags: ['scenario'] }, async () => {
+  it('warns when the whole picture is transparent', { tags: ['boundary'] }, async () => {
     stubImage({});
     canvases = installRecordingCanvases({ pixel: () => [0, 0, 0, 0] });
     const upload = vi.spyOn(backend, 'uploadImage');
@@ -81,7 +81,7 @@ describe('trimTransparent', () => {
     expect(upload).not.toHaveBeenCalled();
   });
 
-  it('says so when there is no margin to trim', { tags: ['condition'] }, async () => {
+  it('says so when there is no margin to trim', { tags: ['boundary'] }, async () => {
     stubImage({});
     canvases = installRecordingCanvases({ pixel: () => [0, 0, 0, 255] });
     const upload = vi.spyOn(backend, 'uploadImage');

@@ -22,7 +22,7 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('check', () => {
-  it('keeps the answer and the time, and tells once how many models are new', { tags: ['condition'] }, async () => {
+  it('keeps the answer and the time, and tells once how many models are new', { tags: ['scenario'] }, async () => {
     const ask = vi.spyOn(backend, 'checkModelUpdates').mockResolvedValue([update('a'), update('b')]);
     expect(await useModelUpdates.getState().check()).toBe(true);
     expect(useModelUpdates.getState().updates.map((u) => u.key)).toEqual(['a', 'b']);
@@ -42,13 +42,13 @@ describe('check', () => {
     expect(titles()).toHaveLength(2);
   });
 
-  it('says nothing when nothing is new', { tags: ['condition'] }, async () => {
+  it('says nothing when nothing is new', { tags: ['boundary'] }, async () => {
     vi.spyOn(backend, 'checkModelUpdates').mockResolvedValue([]);
     expect(await useModelUpdates.getState().check()).toBe(true);
     expect(titles()).toEqual([]);
   });
 
-  it('reports a failure unless it is quiet, and keeps the earlier answer', { tags: ['error-guessing'] }, async () => {
+  it('reports a failure unless it is quiet, and keeps the earlier answer', { tags: ['error-guessing', 'condition'] }, async () => {
     useModelUpdates.setState({ updates: [update('a')], checkedAt: 5 });
     vi.spyOn(backend, 'checkModelUpdates').mockRejectedValue(new Error('offline'));
     expect(await useModelUpdates.getState().check({ quiet: true })).toBe(false);
@@ -74,7 +74,7 @@ describe('check', () => {
 });
 
 describe('checkIfStale', () => {
-  it('asks when nothing was kept, and when the answer is a day old', { tags: ['condition'] }, async () => {
+  it('asks when nothing was kept, and when the answer is a day old', { tags: ['boundary'] }, async () => {
     const ask = vi.spyOn(backend, 'checkModelUpdates').mockResolvedValue([]);
     expect(await useModelUpdates.getState().checkIfStale(1000)).toBe(true);
     useModelUpdates.setState({ checkedAt: 1000 });
@@ -82,14 +82,14 @@ describe('checkIfStale', () => {
     expect(ask).toHaveBeenCalledTimes(2);
   });
 
-  it('does not ask while the answer is fresh', { tags: ['condition'] }, async () => {
+  it('does not ask while the answer is fresh', { tags: ['boundary'] }, async () => {
     const ask = vi.spyOn(backend, 'checkModelUpdates').mockResolvedValue([]);
     useModelUpdates.setState({ checkedAt: 1000 });
     expect(await useModelUpdates.getState().checkIfStale(1000 + UPDATE_CHECK_MAX_AGE_MS - 1)).toBeNull();
     expect(ask).not.toHaveBeenCalled();
   });
 
-  it('asks when the clock went back past the kept time', { tags: ['condition'] }, async () => {
+  it('asks when the clock went back past the kept time', { tags: ['error-guessing'] }, async () => {
     const ask = vi.spyOn(backend, 'checkModelUpdates').mockResolvedValue([]);
     useModelUpdates.setState({ checkedAt: 5000 });
     await useModelUpdates.getState().checkIfStale(1000);
@@ -104,7 +104,7 @@ describe('checkIfStale', () => {
 });
 
 describe('forget', () => {
-  it('drops the updates of models that are gone', { tags: ['condition'] }, () => {
+  it('drops the updates of models that are gone', { tags: ['equivalence'] }, () => {
     useModelUpdates.setState({ updates: [update('a'), update('b')] });
     useModelUpdates.getState().forget(['b', 'c']);
     expect(useModelUpdates.getState().updates.map((u) => u.key)).toEqual(['b']);

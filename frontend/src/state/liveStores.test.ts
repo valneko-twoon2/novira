@@ -62,52 +62,64 @@ describe('a running page follows another page', () => {
     vi.restoreAllMocks();
   });
 
-  it('shows the phone\'s prompt, model, LoRAs, settings, presets, prompt book, drafts and finish values on the PC', { tags: ['scenario'] }, async () => {
-    expect(useParams.getState().positivePrompt).toBe('on the PC');
-    // The phone's state, but its settings (theme) are its own and the PC keeps its own.
-    const pcSettings = localStorage.getItem('novira.settings');
-    remote = JSON.stringify({ ...JSON.parse(phone), 'novira.settings': '{"state":{"theme":"dark","language":"en"},"version":0}' });
-    emit({ type: 'ui_state_changed', origin: 'page-phone', revision: 5 });
-    await vi.advanceTimersByTimeAsync(300);
+  it(
+    'shows the phone\'s prompt, model, LoRAs, settings, presets, prompt book, drafts and finish values on the PC',
+    { tags: ['scenario'] },
+    async () => {
+      expect(useParams.getState().positivePrompt).toBe('on the PC');
+      // The phone's state, but its settings (theme) are its own and the PC keeps its own.
+      const pcSettings = localStorage.getItem('novira.settings');
+      remote = JSON.stringify({ ...JSON.parse(phone), 'novira.settings': '{"state":{"theme":"dark","language":"en"},"version":0}' });
+      emit({ type: 'ui_state_changed', origin: 'page-phone', revision: 5 });
+      await vi.advanceTimersByTimeAsync(300);
 
-    const p = useParams.getState();
-    expect(p).toMatchObject({ positivePrompt: 'from the phone', negativePrompt: 'lowres', modelKey: 'phone-model', steps: 33, cfgScale: 4.5 });
-    expect(p.loras.map((l) => l.key)).toEqual(['phone-lora']);
-    expect(useImagePresets.getState().presets.map((x) => x.name)).toEqual(['phone preset']);
-    expect(useImagePresets.getState().selectedId).toBe('pr-phone');
-    expect(usePromptBook.getState().entries[0]).toMatchObject({ id: expect.any(String) as string, ...phoneEntry });
-    expect(useDrafts.getState().groups.map((g) => g.id)).toEqual(['g-phone']);
-    expect(useDrafts.getState().currentId).toBe('g-phone');
-    expect(useMangaFinish.getState().values.screenLines).toBe(333);
-    // Functions of the store survive the read.
-    expect(typeof useParams.getState().set).toBe('function');
-    // The per-device settings are not changed from outside.
-    expect(useSettings.getState().theme).toBe('light');
-    expect(localStorage.getItem('novira.settings')).toBe(pcSettings);
-    // Taking the phone's state is not a change of the PC's: nothing is sent back.
-    await vi.advanceTimersByTimeAsync(5000);
-    expect(save).not.toHaveBeenCalled();
-  });
+      const p = useParams.getState();
+      expect(p).toMatchObject({ positivePrompt: 'from the phone', negativePrompt: 'lowres', modelKey: 'phone-model', steps: 33, cfgScale: 4.5 });
+      expect(p.loras.map((l) => l.key)).toEqual(['phone-lora']);
+      expect(useImagePresets.getState().presets.map((x) => x.name)).toEqual(['phone preset']);
+      expect(useImagePresets.getState().selectedId).toBe('pr-phone');
+      expect(usePromptBook.getState().entries[0]).toMatchObject({ id: expect.any(String) as string, ...phoneEntry });
+      expect(useDrafts.getState().groups.map((g) => g.id)).toEqual(['g-phone']);
+      expect(useDrafts.getState().currentId).toBe('g-phone');
+      expect(useMangaFinish.getState().values.screenLines).toBe(333);
+      // Functions of the store survive the read.
+      expect(typeof useParams.getState().set).toBe('function');
+      // The per-device settings are not changed from outside.
+      expect(useSettings.getState().theme).toBe('light');
+      expect(localStorage.getItem('novira.settings')).toBe(pcSettings);
+      // Taking the phone's state is not a change of the PC's: nothing is sent back.
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(save).not.toHaveBeenCalled();
+    },
+  );
 
-  it('does not touch what the user types on the PC while the other page changes it, and sends the typed text', { tags: ['scenario'] }, async () => {
-    useParams.getState().set({ positivePrompt: 'typing on the PC' });
-    remote = JSON.stringify({ ...JSON.parse(remote), 'novira.params': JSON.stringify({ state: { positivePrompt: 'phone again' }, version: 1 }) });
-    emit({ type: 'ui_state_changed', origin: 'page-phone', revision: 6 });
-    await vi.advanceTimersByTimeAsync(300);
-    expect(useParams.getState().positivePrompt).toBe('typing on the PC');
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(save).toHaveBeenCalledTimes(1);
-    expect(useParams.getState().positivePrompt).toBe('typing on the PC');
-  });
+  it(
+    'does not touch what the user types on the PC while the other page changes it, and sends the typed text',
+    { tags: ['scenario', 'condition'] },
+    async () => {
+      useParams.getState().set({ positivePrompt: 'typing on the PC' });
+      remote = JSON.stringify({ ...JSON.parse(remote), 'novira.params': JSON.stringify({ state: { positivePrompt: 'phone again' }, version: 1 }) });
+      emit({ type: 'ui_state_changed', origin: 'page-phone', revision: 6 });
+      await vi.advanceTimersByTimeAsync(300);
+      expect(useParams.getState().positivePrompt).toBe('typing on the PC');
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(save).toHaveBeenCalledTimes(1);
+      expect(useParams.getState().positivePrompt).toBe('typing on the PC');
+    },
+  );
 });
 
 describe('which keys follow another page', () => {
-  it('has no store for the saved keys of the removed logo screen, so a change of them is never taken or retried', { tags: ['condition'] }, () => {
-    for (const key of ['novira.logo', 'novira.logoPresets']) {
-      expect(liveKeys()).not.toContain(key);
-      expect(canRehydrate(key)).toBe(false);
-    }
-  });
+  it(
+    'has no store for the saved keys of the removed logo screen, so a change of them is never taken or retried',
+    { tags: ['regression'] },
+    () => {
+      for (const key of ['novira.logo', 'novira.logoPresets']) {
+        expect(liveKeys()).not.toContain(key);
+        expect(canRehydrate(key)).toBe(false);
+      }
+    },
+  );
 
   /** Every `novira.*` text the sources name outside the tests: the keys the app writes to the storage. */
   function sourceKeys(): string[] {
@@ -136,7 +148,7 @@ describe('which keys follow another page', () => {
     expect(liveKeys().filter((k) => !sources.has(k))).toEqual([]);
   });
 
-  it('keeps the screens\' own state per page', { tags: ['condition'] }, () => {
+  it('keeps the screens\' own state per page', { tags: ['equivalence'] }, () => {
     for (const key of ['novira.settings', 'novira.gallery', 'novira.agent', 'novira.canvas']) expect(liveKeys()).not.toContain(key);
     for (const key of ['novira.params', 'novira.drafts', 'novira.presets', 'novira.promptBook']) expect(liveKeys()).toContain(key);
   });

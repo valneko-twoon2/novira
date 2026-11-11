@@ -99,7 +99,7 @@ async fn real_example_settings_of_a_version_are_read() {
     println!("{} examples; first: {:?}", found.len(), found[0]);
 }
 
-// tags: error-guessing
+// tags: scenario, error-guessing
 #[tokio::test]
 #[ignore = "needs network"]
 async fn real_older_version_is_reported_and_a_bad_id_is_refused() {

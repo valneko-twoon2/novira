@@ -71,7 +71,7 @@ function pointer(type: string, x: number, y: number, init: MouseEventInit = {}) 
 const key = (k: string, init: KeyboardEventInit = {}) => act(() => void window.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true, ...init })));
 
 describe('TextCanvas drawing', () => {
-  it('shows a hint while the scene is empty and the size in the toolbar', { tags: ['scenario'] }, () => {
+  it('shows a hint while the scene is empty and the size in the toolbar', { tags: ['condition'] }, () => {
     renderCanvas();
     expect(screen.getByText('1024 × 1024')).toBeTruthy();
     expect(document.querySelector('.tx-hint')).toBeTruthy();
@@ -86,7 +86,7 @@ describe('TextCanvas drawing', () => {
     expect(canvases.all.some((r) => r.of('strokeRect').length > 0)).toBe(true);
   });
 
-  it('draws a checkerboard behind a transparent background and while the background picture loads', { tags: ['scenario'] }, () => {
+  it('draws a checkerboard behind a transparent background and while the background picture loads', { tags: ['condition'] }, () => {
     renderCanvas();
     expect(canvases.all.some((r) => r.of('fillRect').length > 0)).toBe(true);
     act(() => state().setBackground({ kind: 'image', imageName: 'missing.png' }));
@@ -124,18 +124,22 @@ describe('TextCanvas editing', () => {
     pointer('pointerup', 6, 6);
   });
 
-  it('shows the quick bar over the selected layer, hides it while the layer is dragged, and shows it again', { tags: ['scenario'] }, () => {
-    renderCanvas();
-    const id = add(() => state().addText('Hi'));
-    expect(screen.getByTestId('text-bar')).toBeTruthy();
-    const { x, y } = state().scene.layers.find((l) => l.id === id)!;
-    pointer('pointerdown', x, y);
-    expect(screen.queryByTestId('text-bar')).toBeNull();
-    pointer('pointermove', x + 10, y + 10);
-    expect(screen.queryByTestId('text-bar')).toBeNull();
-    pointer('pointerup', x + 10, y + 10);
-    expect(screen.getByTestId('text-bar')).toBeTruthy();
-  });
+  it(
+    'shows the quick bar over the selected layer, hides it while the layer is dragged, and shows it again',
+    { tags: ['state-transition'] },
+    () => {
+      renderCanvas();
+      const id = add(() => state().addText('Hi'));
+      expect(screen.getByTestId('text-bar')).toBeTruthy();
+      const { x, y } = state().scene.layers.find((l) => l.id === id)!;
+      pointer('pointerdown', x, y);
+      expect(screen.queryByTestId('text-bar')).toBeNull();
+      pointer('pointermove', x + 10, y + 10);
+      expect(screen.queryByTestId('text-bar')).toBeNull();
+      pointer('pointerup', x + 10, y + 10);
+      expect(screen.getByTestId('text-bar')).toBeTruthy();
+    },
+  );
 
   it('has no quick bar for nothing selected or a hidden layer', { tags: ['condition'] }, () => {
     renderCanvas();
@@ -183,7 +187,7 @@ describe('TextCanvas editing', () => {
     expect(state().scene.layers[0]!.style.fontSize).toBeGreaterThan(before);
   });
 
-  it('drags a bubble\'s pointer and resizes it from a corner', { tags: ['scenario'] }, () => {
+  it('drags a bubble\'s pointer and resizes it from a corner', { tags: ['scenario', 'condition'] }, () => {
     renderCanvas();
     const id = add(() => state().addBubble('round', 'Hi'));
     act(() => state().select(id));
@@ -242,7 +246,7 @@ describe('TextCanvas editing', () => {
 });
 
 describe('TextCanvas toolbar', () => {
-  it('steps the zoom and goes back to fit', { tags: ['scenario'] }, () => {
+  it('steps the zoom and goes back to fit', { tags: ['state-transition'] }, () => {
     renderCanvas();
     const shown = () => document.querySelector('.tx-toolbar__zoom')!.textContent;
     expect(shown()).toBe('100%');
@@ -255,7 +259,7 @@ describe('TextCanvas toolbar', () => {
     expect(shown()).toBe('100%');
   });
 
-  it('undoes and redoes with the buttons', { tags: ['scenario'] }, () => {
+  it('undoes and redoes with the buttons', { tags: ['state-transition'] }, () => {
     renderCanvas();
     add(() => state().addText('Hi'));
     const undo = screen.getByLabelText(t('text.undo'));
@@ -265,7 +269,7 @@ describe('TextCanvas toolbar', () => {
     expect(state().scene.layers).toHaveLength(1);
   });
 
-  it('saves the picture to the gallery and reports success or failure', { tags: ['scenario'] }, async () => {
+  it('saves the picture to the gallery and reports success or failure', { tags: ['scenario', 'error-guessing'] }, async () => {
     const blob = new Blob(['x'], { type: 'image/png' });
     HTMLCanvasElement.prototype.toBlob = function (cb: BlobCallback) {
       cb(blob);

@@ -30,7 +30,7 @@ function openProject(name = 'Undo') {
 
 const prompt = (panelId: string) => findPanel(useComic.getState().projects, panelId)!.panel.prompt;
 
-describe('the comic undo history', () => {
+describe('the comic undo history', { tags: [] }, () => {
   it('leaves the drawing settings, the style and the character references as they are now', { tags: ['condition'] }, () => {
     const { project, panels } = openProject();
     useComic.getState().setPrompt(panels[0]!, 'a cat');
@@ -47,7 +47,7 @@ describe('the comic undo history', () => {
     expect(now.pages[0]!.draw).toEqual({ width: 640 });
   });
 
-  it('takes back the last change to a prompt, and brings it back', { tags: ['condition'] }, () => {
+  it('takes back the last change to a prompt, and brings it back', { tags: ['state-transition'] }, () => {
     const [first] = openProject().panels;
     useComic.getState().setPrompt(first!, 'a cat');
     useComic.getState().undo();
@@ -60,31 +60,35 @@ describe('the comic undo history', () => {
     expect(useComic.getState().future).toHaveLength(0);
   });
 
-  it('typing in one field is one step, a pause starts another, and another field is never joined', { tags: ['error-guessing', 'state-transition'] }, () => {
-    const now = vi.spyOn(Date, 'now');
-    const [first] = openProject().panels;
-    now.mockReturnValue(1000);
-    useComic.getState().setPrompt(first!, 'a');
-    now.mockReturnValue(1200);
-    useComic.getState().setPrompt(first!, 'ab');
-    now.mockReturnValue(1400);
-    useComic.getState().setPrompt(first!, 'abc');
-    expect(useComic.getState().past).toHaveLength(1);
+  it(
+    'typing in one field is one step, a pause starts another, and another field is never joined',
+    { tags: ['boundary', 'state-transition'] },
+    () => {
+      const now = vi.spyOn(Date, 'now');
+      const [first] = openProject().panels;
+      now.mockReturnValue(1000);
+      useComic.getState().setPrompt(first!, 'a');
+      now.mockReturnValue(1200);
+      useComic.getState().setPrompt(first!, 'ab');
+      now.mockReturnValue(1400);
+      useComic.getState().setPrompt(first!, 'abc');
+      expect(useComic.getState().past).toHaveLength(1);
 
-    now.mockReturnValue(5000);
-    useComic.getState().setPrompt(first!, 'abcd');
-    expect(useComic.getState().past).toHaveLength(2);
+      now.mockReturnValue(5000);
+      useComic.getState().setPrompt(first!, 'abcd');
+      expect(useComic.getState().past).toHaveLength(2);
 
-    useComic.getState().undo();
-    expect(prompt(first!)).toBe('abc');
-    useComic.getState().undo();
-    expect(prompt(first!)).toBe('');
+      useComic.getState().undo();
+      expect(prompt(first!)).toBe('abc');
+      useComic.getState().undo();
+      expect(prompt(first!)).toBe('');
 
-    now.mockReturnValue(5100);
-    useComic.getState().setPrompt(first!, 'x');
-    useComic.getState().setPanelNegative(first!, 'y');
-    expect(useComic.getState().past).toHaveLength(2);
-  });
+      now.mockReturnValue(5100);
+      useComic.getState().setPrompt(first!, 'x');
+      useComic.getState().setPanelNegative(first!, 'y');
+      expect(useComic.getState().past).toHaveLength(2);
+    },
+  );
 
   it('keeps the pictures of the panels when a step is taken back', { tags: ['condition'] }, () => {
     const [first] = openProject().panels;
@@ -140,21 +144,25 @@ describe('the comic undo history', () => {
     expect(useComic.getState().past).toHaveLength(0);
   });
 
-  it('undo and redo do nothing without a step, and a new change clears the steps that were taken back', { tags: ['error-guessing', 'state-transition'] }, () => {
-    const [first] = openProject().panels;
-    const before = useComic.getState().projects;
-    useComic.getState().undo();
-    useComic.getState().redo();
-    expect(useComic.getState().projects).toBe(before);
+  it(
+    'undo and redo do nothing without a step, and a new change clears the steps that were taken back',
+    { tags: ['state-transition'] },
+    () => {
+      const [first] = openProject().panels;
+      const before = useComic.getState().projects;
+      useComic.getState().undo();
+      useComic.getState().redo();
+      expect(useComic.getState().projects).toBe(before);
 
-    useComic.getState().setPrompt(first!, 'one');
-    useComic.getState().undo();
-    expect(useComic.getState().future).toHaveLength(1);
-    useComic.getState().setPrompt(first!, 'two');
-    expect(useComic.getState().future).toHaveLength(0);
-  });
+      useComic.getState().setPrompt(first!, 'one');
+      useComic.getState().undo();
+      expect(useComic.getState().future).toHaveLength(1);
+      useComic.getState().setPrompt(first!, 'two');
+      expect(useComic.getState().future).toHaveLength(0);
+    },
+  );
 
-  it('keeps as many steps as the undo setting says', { tags: ['state-transition'] }, () => {
+  it('keeps as many steps as the undo setting says', { tags: ['boundary'] }, () => {
     useSettings.getState().set({ undoLimit: 20 });
     const HISTORY_LIMIT = historyLimit();
     const { pageId } = openProject();
@@ -190,19 +198,23 @@ describe('the comic undo history', () => {
     expect(useComic.getState()).toMatchObject({ selectedPanelId: first, selectedBubbleId: bubble, bubbleEditor: true });
   });
 
-  it('a step of a project deleted since changes nothing and keeps the open project and page', { tags: ['condition'] }, () => {
-    const [a, b, c] = [newProject('A'), newProject('B'), newProject('C')];
-    useComic.getState().setProjects([a, b, c]);
-    useComic.getState().setPrompt(b.pages[0]!.panels[0]!.id, 'in B');
-    useComic.getState().selectProject(c.id);
-    useComic.getState().deleteProject(b.id);
-    const kept = useComic.getState().projects;
+  it(
+    'a step of a project deleted since changes nothing and keeps the open project and page',
+    { tags: ['error-guessing', 'condition'] },
+    () => {
+      const [a, b, c] = [newProject('A'), newProject('B'), newProject('C')];
+      useComic.getState().setProjects([a, b, c]);
+      useComic.getState().setPrompt(b.pages[0]!.panels[0]!.id, 'in B');
+      useComic.getState().selectProject(c.id);
+      useComic.getState().deleteProject(b.id);
+      const kept = useComic.getState().projects;
 
-    useComic.getState().undo();
-    expect(useComic.getState().projects).toEqual(kept);
-    expect(useComic.getState().projects.every((p, i) => p === kept[i])).toBe(true);
-    expect(useComic.getState()).toMatchObject({ activeProjectId: c.id, activePageId: c.pages[0]!.id, past: [] });
-  });
+      useComic.getState().undo();
+      expect(useComic.getState().projects).toEqual(kept);
+      expect(useComic.getState().projects.every((p, i) => p === kept[i])).toBe(true);
+      expect(useComic.getState()).toMatchObject({ activeProjectId: c.id, activePageId: c.pages[0]!.id, past: [] });
+    },
+  );
 
   it('a step of the last project, deleted since, leaves nothing open', { tags: ['condition'] }, () => {
     const { project, panels } = openProject();
@@ -214,7 +226,7 @@ describe('the comic undo history', () => {
   });
 });
 
-describe('restoreProjects', () => {
+describe('restoreProjects', { tags: [] }, () => {
   it('keeps the project object when the snapshot has the same one', { tags: ['condition'] }, () => {
     const project = newProject('Same');
     expect(restoreProjects([project], [project], 1)).toEqual([project]);

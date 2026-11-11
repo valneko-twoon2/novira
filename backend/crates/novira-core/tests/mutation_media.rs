@@ -53,7 +53,7 @@ fn png_declaring(w: u32, h: u32) -> Vec<u8> {
     png
 }
 
-// tags: error-guessing, boundary
+// tags: boundary
 #[test]
 fn a_picture_exactly_at_the_size_limits_is_accepted_and_one_more_is_refused() {
     let side = MAX_IMAGE_SIDE;
@@ -71,7 +71,7 @@ fn a_picture_exactly_at_the_size_limits_is_accepted_and_one_more_is_refused() {
     }
 }
 
-// tags: error-guessing, boundary
+// tags: boundary
 #[test]
 fn a_file_of_exactly_the_byte_limit_is_not_refused_for_its_size() {
     // Zeroed memory is not touched until it is read, so this costs no real memory. It is no picture, so it is

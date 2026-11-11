@@ -43,8 +43,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('Invoke button', () => {
-  it('invokes when ready, and is disabled with the reasons when it cannot', { tags: ['scenario'] }, () => {
+describe('Invoke button', { tags: [] }, () => {
+  it('invokes when ready, and is disabled with the reasons when it cannot', { tags: ['condition'] }, () => {
     mount();
     const button = screen.getByTestId('invoke-button') as HTMLButtonElement;
     expect(button.disabled).toBe(false);
@@ -70,7 +70,7 @@ describe('Invoke button', () => {
     expect(screen.queryByText('25%')).toBeNull();
   });
 
-  it('adds to the back or the front of the queue from the menu', { tags: ['scenario'] }, async () => {
+  it('adds to the back or the front of the queue from the menu', { tags: ['equivalence'] }, async () => {
     mount();
     openMenu(t('params.invoke.moreOptions'));
     fireEvent.click(await screen.findByText(t('params.invoke.addFront')));
@@ -80,7 +80,7 @@ describe('Invoke button', () => {
     expect(invoke).toHaveBeenLastCalledWith();
   });
 
-  it('offers the comparison grid only for image generation', { tags: ['scenario'] }, async () => {
+  it('offers the comparison grid only for image generation', { tags: ['condition'] }, async () => {
     mount();
     openMenu(t('params.invoke.moreOptions'));
     fireEvent.click(await screen.findByText(t('xyplot.menu')));
@@ -94,7 +94,7 @@ describe('Invoke button', () => {
   });
 });
 
-describe('iterations', () => {
+describe('iterations', { tags: [] }, () => {
   it('rounds the count and never goes below one', { tags: ['boundary'] }, () => {
     mount();
     const box = screen.getByLabelText(t('params.invoke.iterations'));
@@ -107,17 +107,17 @@ describe('iterations', () => {
   });
 });
 
-describe('a screen that draws with its own buttons', () => {
+describe('a screen that draws with its own buttons', { tags: [] }, () => {
   beforeEach(() => {
     registerInvokeBuilder('comic', { readiness: () => [], showsInvokeButton: false, build: () => Promise.reject(new Error('unused')) });
   });
 
-  it('shows no Invoke button', { tags: ['scenario'] }, () => {
+  it('shows no Invoke button', { tags: ['condition'] }, () => {
     mount('comic');
     expect(screen.queryByTestId('invoke-button')).toBeNull();
   });
 
-  it('shows the cancel controls only while work is queued', { tags: ['scenario'] }, () => {
+  it('shows the cancel controls only while work is queued', { tags: ['condition'] }, () => {
     mount('comic');
     expect(screen.queryByLabelText(t('params.invoke.cancelCurrent'))).toBeNull();
     cleanup();
@@ -127,10 +127,10 @@ describe('a screen that draws with its own buttons', () => {
   });
 });
 
-describe('CancelControls', () => {
+describe('CancelControls', { tags: [] }, () => {
   const running = { id: 7, status: 'in_progress' } as QueueItem;
 
-  it('cannot cancel when nothing is running', { tags: ['scenario'] }, () => {
+  it('cannot cancel when nothing is running', { tags: ['condition'] }, () => {
     mount();
     expect((screen.getByLabelText(t('params.invoke.cancelCurrent')) as HTMLButtonElement).disabled).toBe(true);
   });
@@ -150,7 +150,7 @@ describe('CancelControls', () => {
     expect(clear).toHaveBeenCalledTimes(1);
   });
 
-  it('pauses, resumes and opens the queue tab', { tags: ['scenario'] }, async () => {
+  it('pauses, resumes and opens the queue tab', { tags: ['state-transition'] }, async () => {
     const pause = vi.spyOn(backend, 'pauseProcessor').mockResolvedValue();
     const resume = vi.spyOn(backend, 'resumeProcessor').mockResolvedValue();
     mount();
@@ -167,22 +167,26 @@ describe('CancelControls', () => {
   });
 });
 
-describe('Draw button of the comic screen', () => {
-  it('is the Invoke button, named after what it draws, and its menu chooses the selected panel or the whole page', { tags: ['scenario'] }, async () => {
-    registerInvokeBuilder('comic', { readiness: () => [], build: () => Promise.reject(new Error('unused')) });
-    useComic.setState({ drawScope: 'panel' });
-    mount('comic');
-    expect(screen.getByTestId('invoke-button').textContent).toContain(t('comic.panel.draw'));
-    openMenu(t('params.invoke.moreOptions'));
-    fireEvent.click(await screen.findByRole('menuitem', { name: t('comic.page.drawAll') }));
-    expect(useComic.getState().drawScope).toBe('page');
-    expect(screen.getByTestId('invoke-button').textContent).toContain(t('comic.page.drawAll'));
-    fireEvent.click(screen.getByTestId('invoke-button'));
-    expect(invoke).toHaveBeenCalledTimes(1);
-    openMenu(t('params.invoke.moreOptions'));
-    fireEvent.click(await screen.findByRole('menuitem', { name: t('comic.comic.drawAll') }));
-    expect(useComic.getState().drawScope).toBe('comic');
-    expect(screen.getByTestId('invoke-button').textContent).toContain(t('comic.comic.drawAll'));
-    useComic.setState({ drawScope: 'panel' });
-  });
+describe('Draw button of the comic screen', { tags: [] }, () => {
+  it(
+    'is the Invoke button, named after what it draws, and its menu chooses the selected panel or the whole page',
+    { tags: ['scenario', 'state-transition'] },
+    async () => {
+      registerInvokeBuilder('comic', { readiness: () => [], build: () => Promise.reject(new Error('unused')) });
+      useComic.setState({ drawScope: 'panel' });
+      mount('comic');
+      expect(screen.getByTestId('invoke-button').textContent).toContain(t('comic.panel.draw'));
+      openMenu(t('params.invoke.moreOptions'));
+      fireEvent.click(await screen.findByRole('menuitem', { name: t('comic.page.drawAll') }));
+      expect(useComic.getState().drawScope).toBe('page');
+      expect(screen.getByTestId('invoke-button').textContent).toContain(t('comic.page.drawAll'));
+      fireEvent.click(screen.getByTestId('invoke-button'));
+      expect(invoke).toHaveBeenCalledTimes(1);
+      openMenu(t('params.invoke.moreOptions'));
+      fireEvent.click(await screen.findByRole('menuitem', { name: t('comic.comic.drawAll') }));
+      expect(useComic.getState().drawScope).toBe('comic');
+      expect(screen.getByTestId('invoke-button').textContent).toContain(t('comic.comic.drawAll'));
+      useComic.setState({ drawScope: 'panel' });
+    },
+  );
 });

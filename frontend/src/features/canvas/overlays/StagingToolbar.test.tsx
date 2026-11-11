@@ -37,13 +37,13 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('StagingToolbar', () => {
-  it('shows nothing while no result is staged', { tags: ['scenario'] }, () => {
+describe('StagingToolbar', { tags: [] }, () => {
+  it('shows nothing while no result is staged', { tags: ['boundary'] }, () => {
     const { container } = show();
     expect(container.firstChild).toBeNull();
   });
 
-  it('counts the staged results and steps through them, wrapping around', { tags: ['scenario'] }, () => {
+  it('counts the staged results and steps through them, wrapping around', { tags: ['boundary', 'state-transition'] }, () => {
     state().addStagedImage('a.png');
     state().addStagedImage('b.png');
     state().addStagedImage('c.png');
@@ -56,7 +56,7 @@ describe('StagingToolbar', () => {
     expect(state().stagedIndex).toBe(2);
   });
 
-  it('disables stepping while there is a single result', { tags: ['scenario'] }, () => {
+  it('disables stepping while there is a single result', { tags: ['boundary'] }, () => {
     state().addStagedImage('a.png');
     show();
     expect(button(`${t('canvas.staging.next')} (→)`).hasAttribute('disabled')).toBe(true);
@@ -76,16 +76,20 @@ describe('StagingToolbar', () => {
     expect(discardAllStaged).toHaveBeenCalledWith(useCanvas);
   });
 
-  it('counts the generating page after the results, with nothing to accept, save or discard on it', { tags: ['scenario'] }, () => {
-    state().setStagingGenerating(true);
-    state().addStagedImage('a.png', { fromQueue: true });
-    show();
-    expect(screen.getByText('2/2')).toBeTruthy();
-    for (const b of [screen.getByTestId('canvas-staging-accept'), button(t('canvas.staging.saveToGallery')), button(t('canvas.staging.discard'))]) expect(b.hasAttribute('disabled')).toBe(true);
-    fireEvent.click(button(`${t('canvas.staging.prev')} (←)`));
-    expect(screen.getByText('1/2')).toBeTruthy();
-    expect(screen.getByTestId('canvas-staging-accept').hasAttribute('disabled')).toBe(false);
-  });
+  it(
+    'counts the generating page after the results, with nothing to accept, save or discard on it',
+    { tags: ['condition', 'boundary'] },
+    () => {
+      state().setStagingGenerating(true);
+      state().addStagedImage('a.png', { fromQueue: true });
+      show();
+      expect(screen.getByText('2/2')).toBeTruthy();
+      for (const b of [screen.getByTestId('canvas-staging-accept'), button(t('canvas.staging.saveToGallery')), button(t('canvas.staging.discard'))]) expect(b.hasAttribute('disabled')).toBe(true);
+      fireEvent.click(button(`${t('canvas.staging.prev')} (←)`));
+      expect(screen.getByText('1/2')).toBeTruthy();
+      expect(screen.getByTestId('canvas-staging-accept').hasAttribute('disabled')).toBe(false);
+    },
+  );
 
   it('toggles whether the staged results are drawn on the canvas', { tags: ['state-transition'] }, () => {
     state().addStagedImage('a.png');
@@ -96,7 +100,7 @@ describe('StagingToolbar', () => {
     expect(state().stagingShowResults).toBe(true);
   });
 
-  it('drags the current result by its name, and marks the inline variant', { tags: ['scenario'] }, () => {
+  it('drags the current result by its name, and marks the inline variant', { tags: ['equivalence'] }, () => {
     state().addStagedImage('a.png');
     state().addStagedImage('b.png');
     state().setStagedIndex(0);

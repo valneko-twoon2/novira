@@ -28,7 +28,7 @@ function setup(extra: { onActualSize?: () => void; menu?: boolean } = {}) {
   return handlers;
 }
 
-describe('ZoomControls', () => {
+describe('ZoomControls', { tags: [] }, () => {
   it('shows the rounded percentage and runs the zoom buttons', { tags: ['scenario'] }, () => {
     const h = setup();
     expect(screen.getByTestId('zoom').textContent).toBe('46%');
@@ -50,7 +50,7 @@ describe('ZoomControls', () => {
     expect(onActualSize).toHaveBeenCalledOnce();
   });
 
-  it('offers zoom presets and extra items in the percentage menu', { tags: ['condition'] }, () => {
+  it('offers zoom presets and extra items in the percentage menu', { tags: ['scenario'] }, () => {
     const h = setup({ menu: true });
     fireEvent.keyDown(screen.getByTestId('zoom'), { key: 'Enter' });
     fireEvent.click(screen.getByRole('menuitem', { name: '200%' }));

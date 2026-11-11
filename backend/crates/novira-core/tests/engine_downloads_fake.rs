@@ -60,7 +60,7 @@ fn package_path(package: &str) -> String {
         .to_string()
 }
 
-// tags: regression
+// tags: equivalence
 #[test]
 fn the_addresses_point_at_the_fake_site_in_a_debug_build() {
     // Starting the site sets the variables, so it comes before the first address is asked for.
@@ -128,7 +128,7 @@ async fn a_package_the_host_does_not_have_is_an_error_and_leaves_no_partial_file
     assert!(!is_installed(root.path()));
 }
 
-// tags: error-guessing
+// tags: scenario, error-guessing
 #[tokio::test]
 async fn a_pack_file_is_downloaded_and_moved_into_place_and_a_refusal_is_explained() {
     let models = tempfile::tempdir().unwrap();

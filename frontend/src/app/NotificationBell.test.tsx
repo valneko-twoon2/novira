@@ -16,7 +16,7 @@ const renderBell = () =>
     </TooltipProvider>,
   );
 
-describe('notification bell', () => {
+describe('notification bell', { tags: [] }, () => {
   it('counts quiet notifications without showing toasts, and lists them when opened', { tags: ['scenario'] }, () => {
     renderBell();
     act(() => {
@@ -47,7 +47,7 @@ describe('notification bell', () => {
     expect(useToasts.getState().history).toEqual([]);
   });
 
-  it('stops holding quiet notifications back once it is unmounted', { tags: ['condition'] }, () => {
+  it('stops holding quiet notifications back once it is unmounted', { tags: ['state-transition'] }, () => {
     const { unmount } = renderBell();
     expect(useToasts.getState().bells).toBe(1);
     unmount();

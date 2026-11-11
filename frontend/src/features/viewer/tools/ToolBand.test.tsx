@@ -72,8 +72,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('the band', () => {
-  it('stays hidden until a tool is opened, and closes with its button', { tags: ['scenario'] }, () => {
+describe('the band', { tags: [] }, () => {
+  it('stays hidden until a tool is opened, and closes with its button', { tags: ['state-transition'] }, () => {
     mount();
     expect(screen.queryByTestId('tool-band')).toBeNull();
     openBand('cutout');
@@ -82,25 +82,29 @@ describe('the band', () => {
     expect(screen.queryByTestId('tool-band')).toBeNull();
   });
 
-  it('runs a tool from its settings, shows the result with the settings it used, and goes back to the settings', { tags: ['scenario'] }, async () => {
-    const job = pendingJob<ImageDTO>();
-    vi.mocked(runJob).mockImplementation(job.impl);
-    mount();
-    openBand('cutout');
-    fireEvent.click(screen.getByTestId('tool-band-run'));
-    expect(status()).toBe('running');
-    expect(screen.getByTestId('tool-band-cancel')).toBeTruthy();
-    expect(screen.queryByTestId('tool-band-edit')).toBeNull();
-    await job.finish(picture('cut.png'));
-    await waitFor(() => expect(status()).toBe('done'));
-    expect(screen.getByTestId('tool-band-used').textContent).toContain('RMBG-2.0');
-    expect(viewer.showResult).toHaveBeenCalledWith('cut.png', 'photo.png');
-    expect(screen.getByTestId('tool-band-trim')).toBeTruthy();
-    fireEvent.click(screen.getByTestId('tool-band-edit'));
-    expect(screen.getByTestId('tool-band-run')).toBeTruthy();
-  });
+  it(
+    'runs a tool from its settings, shows the result with the settings it used, and goes back to the settings',
+    { tags: ['state-transition'] },
+    async () => {
+      const job = pendingJob<ImageDTO>();
+      vi.mocked(runJob).mockImplementation(job.impl);
+      mount();
+      openBand('cutout');
+      fireEvent.click(screen.getByTestId('tool-band-run'));
+      expect(status()).toBe('running');
+      expect(screen.getByTestId('tool-band-cancel')).toBeTruthy();
+      expect(screen.queryByTestId('tool-band-edit')).toBeNull();
+      await job.finish(picture('cut.png'));
+      await waitFor(() => expect(status()).toBe('done'));
+      expect(screen.getByTestId('tool-band-used').textContent).toContain('RMBG-2.0');
+      expect(viewer.showResult).toHaveBeenCalledWith('cut.png', 'photo.png');
+      expect(screen.getByTestId('tool-band-trim')).toBeTruthy();
+      fireEvent.click(screen.getByTestId('tool-band-edit'));
+      expect(screen.getByTestId('tool-band-run')).toBeTruthy();
+    },
+  );
 
-  it('keeps the job running when the band is closed, and shows its end when opened again', { tags: ['scenario'] }, async () => {
+  it('keeps the job running when the band is closed, and shows its end when opened again', { tags: ['state-transition'] }, async () => {
     const job = pendingJob<ImageDTO>();
     vi.mocked(runJob).mockImplementation(job.impl);
     mount();
@@ -115,7 +119,7 @@ describe('the band', () => {
     expect(status()).toBe('done');
   });
 
-  it('cancels the job with its own button', { tags: ['scenario'] }, async () => {
+  it('cancels the job with its own button', { tags: ['state-transition'] }, async () => {
     const job = pendingJob<ImageDTO>();
     vi.mocked(runJob).mockImplementation(job.impl);
     mount();
@@ -137,7 +141,7 @@ describe('the band', () => {
     expect(screen.getByTestId('tool-band-edit')).toBeTruthy();
   });
 
-  it('offers the missing pack instead of the settings, and installs it in the background', { tags: ['scenario'] }, () => {
+  it('offers the missing pack instead of the settings, and installs it in the background', { tags: ['condition'] }, () => {
     const { RMBG: _gone, ...defs } = all;
     useComfyNodes.setState({ defs, status: 'ready' });
     const install = vi.spyOn(backend, 'installNodePack').mockResolvedValue(undefined as never);
@@ -151,7 +155,7 @@ describe('the band', () => {
     expect(Object.keys(useNodePacks.getState().jobs)).toHaveLength(1);
   });
 
-  it('says what is missing when it is not a pack', { tags: ['scenario'] }, () => {
+  it('says what is missing when it is not a pack', { tags: ['condition'] }, () => {
     useModels.getState().setModels([]);
     mount();
     openBand('facefix');
@@ -177,7 +181,7 @@ describe('the band', () => {
   });
 });
 
-describe('results that are not pictures', () => {
+describe('results that are not pictures', { tags: [] }, () => {
   it('puts a description into the prompt', { tags: ['scenario'] }, async () => {
     vi.mocked(runTextJob).mockResolvedValue('1girl, smile');
     useParams.setState({ positivePrompt: 'masterpiece' });
@@ -207,29 +211,33 @@ describe('results that are not pictures', () => {
   });
 });
 
-describe('following the viewer', () => {
-  it('moves to another picture the viewer shows, but stays on the original while its result is shown', { tags: ['scenario'] }, async () => {
-    vi.mocked(runJob).mockResolvedValue(picture('cut.png'));
-    const view = mount('photo.png');
-    openBand('cutout');
-    fireEvent.click(screen.getByTestId('tool-band-run'));
-    await waitFor(() => expect(status()).toBe('done'));
-    view.rerender(
-      <TooltipProvider>
-        <ToolBand shown="cut.png" />
-      </TooltipProvider>,
-    );
-    expect(useToolBand.getState().imageName).toBe('photo.png');
-    view.rerender(
-      <TooltipProvider>
-        <ToolBand shown="other.png" />
-      </TooltipProvider>,
-    );
-    expect(useToolBand.getState().imageName).toBe('other.png');
-    expect(screen.getByTestId('tool-band-run')).toBeTruthy();
-  });
+describe('following the viewer', { tags: [] }, () => {
+  it(
+    'moves to another picture the viewer shows, but stays on the original while its result is shown',
+    { tags: ['condition'] },
+    async () => {
+      vi.mocked(runJob).mockResolvedValue(picture('cut.png'));
+      const view = mount('photo.png');
+      openBand('cutout');
+      fireEvent.click(screen.getByTestId('tool-band-run'));
+      await waitFor(() => expect(status()).toBe('done'));
+      view.rerender(
+        <TooltipProvider>
+          <ToolBand shown="cut.png" />
+        </TooltipProvider>,
+      );
+      expect(useToolBand.getState().imageName).toBe('photo.png');
+      view.rerender(
+        <TooltipProvider>
+          <ToolBand shown="other.png" />
+        </TooltipProvider>,
+      );
+      expect(useToolBand.getState().imageName).toBe('other.png');
+      expect(screen.getByTestId('tool-band-run')).toBeTruthy();
+    },
+  );
 
-  it('offers only the tools the layout can use, and no comparing where the layout cannot', { tags: ['scenario'] }, async () => {
+  it('offers only the tools the layout can use, and no comparing where the layout cannot', { tags: ['condition'] }, async () => {
     vi.mocked(runJob).mockResolvedValue(picture('cut.png'));
     render(
       <TooltipProvider>

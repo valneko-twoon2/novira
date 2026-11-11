@@ -4,7 +4,7 @@ import { useComicSideTab } from './sideTab';
 
 afterEach(() => useComicSideTab.setState({ right: 'assistant' }));
 
-describe('the right tab of the comic screen', () => {
+describe('the right tab of the comic screen', { tags: [] }, () => {
   it('starts on the assistant and switches to the gallery and back', { tags: ['state-transition'] }, () => {
     expect(useComicSideTab.getState().right).toBe('assistant');
     useComicSideTab.getState().setRight('gallery');

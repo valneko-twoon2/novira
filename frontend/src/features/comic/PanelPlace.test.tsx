@@ -44,29 +44,33 @@ afterEach(() => {
   setLocale('ja');
 });
 
-describe('the place of a panel', () => {
-  it('shows no fields while the panel is set nowhere', { tags: ['scenario'] }, () => {
+describe('the place of a panel', { tags: [] }, () => {
+  it('shows no fields while the panel is set nowhere', { tags: ['boundary', 'condition'] }, () => {
     seed([{ id: 'a', name: 'Cafe', tags: '' }]);
     expect(screen.queryByTestId('comic-place')).toBeNull();
     expect(screen.getByTestId('comic-panel-place-select').textContent).toContain(t('comic.place.none'));
   });
 
-  it('sets the panel in a place picked from the list, and takes it out again with "none"', { tags: ['regression'] }, () => {
-    seed([
-      { id: 'a', name: 'Cafe', tags: 'table' },
-      { id: 'b', name: '  ', tags: '' },
-    ]);
-    fireEvent.keyDown(screen.getByTestId('comic-panel-place-select'), { key: 'Enter' });
-    // A place without a name is listed by the general name label.
-    expect(screen.getByRole('option', { name: t('comic.place.name') })).toBeTruthy();
-    fireEvent.click(screen.getByRole('option', { name: 'Cafe' }));
-    expect(placeOfPanel()).toBe('a');
-    expect((screen.getByTestId('comic-place-name') as HTMLInputElement).value).toBe('Cafe');
-    fireEvent.keyDown(screen.getByTestId('comic-panel-place-select'), { key: 'Enter' });
-    fireEvent.click(screen.getByRole('option', { name: t('comic.place.none') }));
-    expect(placeOfPanel()).toBeUndefined();
-    expect(screen.queryByTestId('comic-place')).toBeNull();
-  });
+  it(
+    'sets the panel in a place picked from the list, and takes it out again with "none"',
+    { tags: ['state-transition', 'condition'] },
+    () => {
+      seed([
+        { id: 'a', name: 'Cafe', tags: 'table' },
+        { id: 'b', name: '  ', tags: '' },
+      ]);
+      fireEvent.keyDown(screen.getByTestId('comic-panel-place-select'), { key: 'Enter' });
+      // A place without a name is listed by the general name label.
+      expect(screen.getByRole('option', { name: t('comic.place.name') })).toBeTruthy();
+      fireEvent.click(screen.getByRole('option', { name: 'Cafe' }));
+      expect(placeOfPanel()).toBe('a');
+      expect((screen.getByTestId('comic-place-name') as HTMLInputElement).value).toBe('Cafe');
+      fireEvent.keyDown(screen.getByTestId('comic-panel-place-select'), { key: 'Enter' });
+      fireEvent.click(screen.getByRole('option', { name: t('comic.place.none') }));
+      expect(placeOfPanel()).toBeUndefined();
+      expect(screen.queryByTestId('comic-place')).toBeNull();
+    },
+  );
 
   it('adds a numbered place from its button and sets the panel there', { tags: ['scenario'] }, () => {
     seed([{ id: 'a', name: 'Cafe', tags: '' }]);
@@ -77,12 +81,12 @@ describe('the place of a panel', () => {
     expect(screen.getByTestId('comic-place')).toBeTruthy();
   });
 
-  it('turns the add button off at the most places', { tags: ['scenario'] }, () => {
+  it('turns the add button off at the most places', { tags: ['boundary'] }, () => {
     seed(Array.from({ length: PLACES_MAX }, (_, i) => ({ id: `p${i}`, name: `P${i}`, tags: '' })));
     expect((screen.getByTestId('comic-panel-place-add') as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it('edits the chosen place for every panel, and removes it', { tags: ['decision-table'] }, () => {
+  it('edits the chosen place for every panel, and removes it', { tags: ['decision-table', 'scenario'] }, () => {
     seed([{ id: 'a', name: 'Cafe', tags: '' }]);
     act(() => useComic.getState().setPanelPlace(panelId, 'a'));
     fireEvent.change(screen.getByTestId('comic-place-tags'), { target: { value: 'sunlight' } });

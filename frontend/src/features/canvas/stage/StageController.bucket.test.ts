@@ -58,8 +58,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('the bucket tool', () => {
-  it('fills inside the generation box on a stage of its own', { tags: ['condition'] }, () => {
+describe('the bucket tool', { tags: [] }, () => {
+  it('fills inside the generation box on a stage of its own', { tags: ['equivalence'] }, () => {
     make(false);
     press(40 + 30, 20 + 50);
     expect(filled).toHaveBeenCalledTimes(1);
@@ -71,13 +71,13 @@ describe('the bucket tool', () => {
     expect(area).toEqual({ x: 8, y: 16, width: 128, height: 64 });
   });
 
-  it('fills inside the whole document over a host\'s document, in document pixels', { tags: ['condition'] }, () => {
+  it('fills inside the whole document over a host\'s document, in document pixels', { tags: ['equivalence'] }, () => {
     make(true);
     press(40 + 50, 20 + 100);
     expect(filled).toHaveBeenCalledWith('ink', { x: 100, y: 200 }, { x: 0, y: 0, width: 1000, height: 1400 }, store);
   });
 
-  it('warns when no layer is chosen, and when the layer is a slot', { tags: ['condition'] }, () => {
+  it('warns when no layer is chosen, and when the layer is a slot', { tags: ['condition', 'error-guessing'] }, () => {
     make(true);
     store.getState().select(null);
     press(100, 100);

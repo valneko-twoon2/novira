@@ -11,10 +11,10 @@ vi.mock('@/backend/mock/imageSynth', async (original) => ({
   imageSize: vi.fn(async () => ({ width: 64, height: 48 })),
 }));
 
-describe('text jobs', () => {
+describe('text jobs', { tags: [] }, () => {
   beforeAll(() => backend.setStepDelay(0));
 
-  it('resolves with the text of the finished job', { tags: ['condition'] }, async () => {
+  it('resolves with the text of the finished job', { tags: ['scenario'] }, async () => {
     const source = await backend.uploadImage(new Blob(['x']), { boardId: null });
     const text = await runTextJob(graphRequest(buildCaptionGraph(source.name, { style: 'tags', model: 'm' }), 'intermediate'));
     expect(text.split(', ').length).toBeGreaterThan(3);
@@ -33,7 +33,7 @@ describe('text jobs', () => {
     await expect(runTextJob(graphRequest(buildCaptionGraph('no-such-picture.png', { style: 'tags', model: 'm' }), 'intermediate'))).rejects.toThrow(/deleted/);
   });
 
-  it('cancels the job when aborted', { tags: ['error-guessing'] }, async () => {
+  it('cancels the job when aborted', { tags: ['state-transition', 'error-guessing'] }, async () => {
     backend.setStepDelay(40);
     const source = await backend.uploadImage(new Blob(['x']), { boardId: null });
     const controller = new AbortController();

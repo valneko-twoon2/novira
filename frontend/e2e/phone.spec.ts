@@ -48,29 +48,33 @@ test('a phone gets the phone layout: one tab with the tabs at its foot, no side 
   expect(box!.y).toBeLessThan(page.viewportSize()!.height / 3);
 });
 
-test('draws a picture from the Generate tab, shows it full screen while it is drawn, then the picture it made', { tag: ['@scenario'] }, async ({ page }) => {
-  await openPhone(page, { stepDelay: 1000 });
-  await expect(page.getByTestId('invoke-button')).toBeDisabled();
-  await expect(page.getByTestId('generation-reason')).toBeVisible();
-  await pickFirstModel(page);
-  await page.getByTestId('positive-prompt').fill('a lighthouse on a cliff at dusk');
-  await expect(page.getByTestId('generation-reason')).toHaveCount(0);
-  await page.getByTestId('invoke-button').tap();
-  await expectNoticeAbove(page, 'phone-nav-generate');
+test(
+  'draws a picture from the Generate tab, shows it full screen while it is drawn, then the picture it made',
+  { tag: ['@scenario'] },
+  async ({ page }) => {
+    await openPhone(page, { stepDelay: 1000 });
+    await expect(page.getByTestId('invoke-button')).toBeDisabled();
+    await expect(page.getByTestId('generation-reason')).toBeVisible();
+    await pickFirstModel(page);
+    await page.getByTestId('positive-prompt').fill('a lighthouse on a cliff at dusk');
+    await expect(page.getByTestId('generation-reason')).toHaveCount(0);
+    await page.getByTestId('invoke-button').tap();
+    await expectNoticeAbove(page, 'phone-nav-generate');
 
-  const chip = page.getByTestId('phone-live-chip');
-  await expect(chip).toBeVisible();
-  await chip.tap();
-  await expect(page.getByTestId('phone-view')).toBeVisible();
-  await expect(page.getByTestId('viewer-live-image')).toBeVisible();
-  // When the job ends the full screen shows the picture it made, first in its board, and the chip goes.
-  await expect(page.getByTestId('phone-view-image')).toBeVisible({ timeout: 20_000 });
-  await expect(page.getByTestId('phone-view-place')).toHaveText(msg('phone.place', { index: 1, count: 1 }));
-  await expect(chip).toHaveCount(0);
-  await page.getByTestId('phone-view-close').tap();
-  await page.getByTestId('phone-nav-images').tap();
-  await expect(page.getByTestId('phone-thumb')).toHaveCount(1);
-});
+    const chip = page.getByTestId('phone-live-chip');
+    await expect(chip).toBeVisible();
+    await chip.tap();
+    await expect(page.getByTestId('phone-view')).toBeVisible();
+    await expect(page.getByTestId('viewer-live-image')).toBeVisible();
+    // When the job ends the full screen shows the picture it made, first in its board, and the chip goes.
+    await expect(page.getByTestId('phone-view-image')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId('phone-view-place')).toHaveText(msg('phone.place', { index: 1, count: 1 }));
+    await expect(chip).toHaveCount(0);
+    await page.getByTestId('phone-view-close').tap();
+    await page.getByTestId('phone-nav-images').tap();
+    await expect(page.getByTestId('phone-thumb')).toHaveCount(1);
+  },
+);
 
 test('looks through the pictures of a board full screen: swipe, star, info, delete', { tag: ['@scenario'] }, async ({ page }) => {
   await openPhone(page, { pictures: true });
@@ -104,37 +108,41 @@ test('looks through the pictures of a board full screen: swipe, star, info, dele
   await expect(thumbs).toHaveCount(count - 1);
 });
 
-test('follows the jobs on the Queue tab: its count, cancelling one waiting, trying it again, watching one drawn', { tag: ['@state-transition'] }, async ({ page }) => {
-  await openPhone(page, { stepDelay: 1000 });
-  await pickFirstModel(page);
-  await page.getByTestId('positive-prompt').fill('a quiet harbour in the rain');
-  await page.getByTestId('invoke-button').tap();
-  await page.getByTestId('invoke-button').tap();
-  await expect(page.getByTestId('phone-queue-badge')).toHaveText('2');
-  await page.getByTestId('phone-nav-queue').tap();
-  // Two notices said the jobs were queued: only the newest shows, at the foot, clear of the queue's controls.
-  await expectNoticeAbove(page, 'phone-nav-queue');
-  const cards = page.getByTestId('phone-queue-item');
-  await expect(cards).toHaveCount(2);
-  // Newest first: the one waiting, then the one being drawn.
-  await expect(cards.nth(0)).toHaveAttribute('data-status', 'pending');
-  await expect(cards.nth(1)).toHaveAttribute('data-status', 'in_progress');
-  await cards.nth(0).getByTestId('phone-queue-cancel').tap();
-  await expect(cards.nth(0)).toHaveAttribute('data-status', 'canceled');
-  await expect(page.getByTestId('phone-queue-badge')).toHaveText('1');
-  await cards.nth(0).getByTestId('phone-queue-retry').tap();
-  await expect(cards).toHaveCount(3);
-  await expect(cards.nth(0)).toHaveAttribute('data-status', /pending|in_progress/);
-  // A job being drawn opens full screen, and becomes the picture it made.
-  await page.locator('[data-testid="phone-queue-item"][data-status="in_progress"] .phone-queue__main').first().tap();
-  await expect(page.getByTestId('phone-view')).toBeVisible();
-  await expect(page.getByTestId('phone-view-image')).toBeVisible({ timeout: 20_000 });
-  await page.getByTestId('phone-view-close').tap();
-  await expect(page.getByTestId('phone-queue-badge')).toHaveCount(0, { timeout: 20_000 });
-  await expect(page.getByTestId('phone-queue-prune')).toBeEnabled();
-  await page.getByTestId('phone-queue-prune').tap();
-  await expect(cards).toHaveCount(0);
-});
+test(
+  'follows the jobs on the Queue tab: its count, cancelling one waiting, trying it again, watching one drawn',
+  { tag: ['@state-transition'] },
+  async ({ page }) => {
+    await openPhone(page, { stepDelay: 1000 });
+    await pickFirstModel(page);
+    await page.getByTestId('positive-prompt').fill('a quiet harbour in the rain');
+    await page.getByTestId('invoke-button').tap();
+    await page.getByTestId('invoke-button').tap();
+    await expect(page.getByTestId('phone-queue-badge')).toHaveText('2');
+    await page.getByTestId('phone-nav-queue').tap();
+    // Two notices said the jobs were queued: only the newest shows, at the foot, clear of the queue's controls.
+    await expectNoticeAbove(page, 'phone-nav-queue');
+    const cards = page.getByTestId('phone-queue-item');
+    await expect(cards).toHaveCount(2);
+    // Newest first: the one waiting, then the one being drawn.
+    await expect(cards.nth(0)).toHaveAttribute('data-status', 'pending');
+    await expect(cards.nth(1)).toHaveAttribute('data-status', 'in_progress');
+    await cards.nth(0).getByTestId('phone-queue-cancel').tap();
+    await expect(cards.nth(0)).toHaveAttribute('data-status', 'canceled');
+    await expect(page.getByTestId('phone-queue-badge')).toHaveText('1');
+    await cards.nth(0).getByTestId('phone-queue-retry').tap();
+    await expect(cards).toHaveCount(3);
+    await expect(cards.nth(0)).toHaveAttribute('data-status', /pending|in_progress/);
+    // A job being drawn opens full screen, and becomes the picture it made.
+    await page.locator('[data-testid="phone-queue-item"][data-status="in_progress"] .phone-queue__main').first().tap();
+    await expect(page.getByTestId('phone-view')).toBeVisible();
+    await expect(page.getByTestId('phone-view-image')).toBeVisible({ timeout: 20_000 });
+    await page.getByTestId('phone-view-close').tap();
+    await expect(page.getByTestId('phone-queue-badge')).toHaveCount(0, { timeout: 20_000 });
+    await expect(page.getByTestId('phone-queue-prune')).toBeEnabled();
+    await page.getByTestId('phone-queue-prune').tap();
+    await expect(cards).toHaveCount(0);
+  },
+);
 
 test('makes drafts on the Drafts tab, looks at one large and finishes it', { tag: ['@scenario'] }, async ({ page }) => {
   await openPhone(page);
@@ -191,7 +199,7 @@ test('opening a picker raises no keyboard: the search box is focused only when t
   expect(await focusedField()).toBe(true);
 });
 
-test('every text field of the tabs is 16px or more, so iOS Safari does not zoom in on it', { tag: ['@equivalence'] }, async ({ page }) => {
+test('every text field of the tabs is 16px or more, so iOS Safari does not zoom in on it', { tag: ['@boundary'] }, async ({ page }) => {
   await openPhone(page, { pictures: true });
   for (const tab of ['generate', 'images', 'drafts', 'queue', 'models', 'browse'] as const) {
     await page.getByTestId(`phone-nav-${tab}`).tap();
@@ -222,65 +230,73 @@ async function signInOnDesktop(page: Page): Promise<void> {
   await expect(page.getByTestId('phone-shell')).toBeVisible();
 }
 
-test('the assistant opens from the title bar and says it is set up on the PC while it is not', { tag: ['@scenario'] }, async ({ page }) => {
-  await openPhone(page);
-  await page.getByTestId('phone-chat-open').tap();
-  const chat = page.getByTestId('phone-chat');
-  await expect(chat.getByTestId('phone-chat-setup')).toHaveText(msg('phone.agentSetup'));
-  // No sign-in or server form on a phone, and nothing to send to.
-  await expect(chat.getByTestId('agent-choose-claude')).toHaveCount(0);
-  await expect(chat.getByTestId('agent-input')).toHaveCount(0);
-  await chat.getByTestId('phone-chat-close').tap();
-  await expect(chat).toBeHidden();
-  await expect(page.getByTestId('phone-generate')).toBeVisible();
-});
+test(
+  'the assistant opens from the title bar and says it is set up on the PC while it is not',
+  { tag: ['@condition'] },
+  async ({ page }) => {
+    await openPhone(page);
+    await page.getByTestId('phone-chat-open').tap();
+    const chat = page.getByTestId('phone-chat');
+    await expect(chat.getByTestId('phone-chat-setup')).toHaveText(msg('phone.agentSetup'));
+    // No sign-in or server form on a phone, and nothing to send to.
+    await expect(chat.getByTestId('agent-choose-claude')).toHaveCount(0);
+    await expect(chat.getByTestId('agent-input')).toHaveCount(0);
+    await chat.getByTestId('phone-chat-close').tap();
+    await expect(chat).toBeHidden();
+    await expect(page.getByTestId('phone-generate')).toBeVisible();
+  },
+);
 
-test('chats with the assistant full screen: it sets the Generate tab, keeps past chats and starts new ones', { tag: ['@scenario'] }, async ({ page }) => {
-  await openPhone(page, { pictures: true });
-  await signInOnDesktop(page);
-  await page.getByTestId('phone-chat-open').tap();
-  const chat = page.getByTestId('phone-chat');
-  // The chat fills the screen: its top bar at the top and the message box at the foot, over the tabs.
-  const view = page.viewportSize()!;
-  const box = (await chat.boundingBox())!;
-  expect(box.y).toBe(0);
-  expect(box.height).toBeGreaterThan(view.height - 2);
-  const form = (await chat.getByTestId('agent-form').boundingBox())!;
-  expect(form.y + form.height).toBeGreaterThan(view.height - 4);
-  await expect(page.getByRole('navigation', { name: msg('phone.nav') })).not.toBeInViewport({ ratio: 1 }).catch(() => undefined);
+test(
+  'chats with the assistant full screen: it sets the Generate tab, keeps past chats and starts new ones',
+  { tag: ['@scenario'] },
+  async ({ page }) => {
+    await openPhone(page, { pictures: true });
+    await signInOnDesktop(page);
+    await page.getByTestId('phone-chat-open').tap();
+    const chat = page.getByTestId('phone-chat');
+    // The chat fills the screen: its top bar at the top and the message box at the foot, over the tabs.
+    const view = page.viewportSize()!;
+    const box = (await chat.boundingBox())!;
+    expect(box.y).toBe(0);
+    expect(box.height).toBeGreaterThan(view.height - 2);
+    const form = (await chat.getByTestId('agent-form').boundingBox())!;
+    expect(form.y + form.height).toBeGreaterThan(view.height - 4);
+    await expect(page.getByRole('navigation', { name: msg('phone.nav') })).not.toBeInViewport({ ratio: 1 }).catch(() => undefined);
 
-  // A starting suggestion goes out at once; Stop shows while the assistant works.
-  await chat.getByRole('button', { name: msg('agent.suggestion.anime') }).tap();
-  await expect(chat.getByTestId('agent-msg-user')).toHaveText([msg('agent.suggestion.anime')]);
-  await expect(chat.getByTestId('agent-stop')).toBeVisible();
-  const answer = chat.locator('[data-testid="agent-msg-assistant"]:not(.agent-msg--thinking)');
-  await expect(answer).toHaveCount(1, { timeout: 15_000 });
-  await expect(answer.getByTestId('agent-undo')).toBeEnabled();
-  await expect(chat.getByTestId('agent-session-title')).toHaveText(msg('agent.suggestion.anime'));
+    // A starting suggestion goes out at once; Stop shows while the assistant works.
+    await chat.getByRole('button', { name: msg('agent.suggestion.anime') }).tap();
+    await expect(chat.getByTestId('agent-msg-user')).toHaveText([msg('agent.suggestion.anime')]);
+    await expect(chat.getByTestId('agent-stop')).toBeVisible();
+    const answer = chat.locator('[data-testid="agent-msg-assistant"]:not(.agent-msg--thinking)');
+    await expect(answer).toHaveCount(1, { timeout: 15_000 });
+    await expect(answer.getByTestId('agent-undo')).toBeEnabled();
+    await expect(chat.getByTestId('agent-session-title')).toHaveText(msg('agent.suggestion.anime'));
 
-  // On a phone Enter starts a new line; the button sends. The box grows with the text.
-  const input = chat.getByTestId('agent-input');
-  await input.fill('first line');
-  const oneLine = (await input.boundingBox())!.height;
-  await input.press('Enter');
-  await input.pressSequentially('second line');
-  await expect(input).toHaveValue('first line\nsecond line');
-  expect((await input.boundingBox())!.height).toBeGreaterThan(oneLine);
-  await input.fill('');
+    // On a phone Enter starts a new line; the button sends. The box grows with the text.
+    const input = chat.getByTestId('agent-input');
+    await input.fill('first line');
+    const oneLine = (await input.boundingBox())!.height;
+    await input.press('Enter');
+    await input.pressSequentially('second line');
+    await expect(input).toHaveValue('first line\nsecond line');
+    expect((await input.boundingBox())!.height).toBeGreaterThan(oneLine);
+    await input.fill('');
 
-  // The change was made on this page's Generate tab.
-  await chat.getByTestId('phone-chat-close').tap();
-  await expect(page.getByTestId('positive-prompt')).not.toHaveValue('');
+    // The change was made on this page's Generate tab.
+    await chat.getByTestId('phone-chat-close').tap();
+    await expect(page.getByTestId('positive-prompt')).not.toHaveValue('');
 
-  // A new chat, then the first one again from the past chats.
-  await page.getByTestId('phone-chat-open').tap();
-  await chat.getByTestId('phone-chat-new').tap();
-  await expect(chat.getByTestId('agent-session-title')).toHaveText(msg('agent.session.untitled'));
-  await expect(chat.getByTestId('agent-msg-user')).toHaveCount(0);
-  await chat.getByTestId('phone-chat-history').tap();
-  const sheet = page.getByTestId('phone-chat-sheet');
-  await expect(sheet.getByTestId('agent-session')).toHaveCount(1);
-  await sheet.getByText(msg('agent.suggestion.anime')).tap();
-  await expect(sheet).toHaveCount(0);
-  await expect(chat.getByTestId('agent-msg-user')).toHaveCount(1);
-});
+    // A new chat, then the first one again from the past chats.
+    await page.getByTestId('phone-chat-open').tap();
+    await chat.getByTestId('phone-chat-new').tap();
+    await expect(chat.getByTestId('agent-session-title')).toHaveText(msg('agent.session.untitled'));
+    await expect(chat.getByTestId('agent-msg-user')).toHaveCount(0);
+    await chat.getByTestId('phone-chat-history').tap();
+    const sheet = page.getByTestId('phone-chat-sheet');
+    await expect(sheet.getByTestId('agent-session')).toHaveCount(1);
+    await sheet.getByText(msg('agent.suggestion.anime')).tap();
+    await expect(sheet).toHaveCount(0);
+    await expect(chat.getByTestId('agent-msg-user')).toHaveCount(1);
+  },
+);

@@ -18,7 +18,7 @@ fn quiet() -> Settings {
     }
 }
 
-// tags: scenario
+// tags: equivalence
 #[test]
 fn novira_own_comfyui_is_the_default_and_nothing_starts_until_it_is_needed() {
     let dir = tempfile::tempdir().unwrap();
@@ -30,7 +30,7 @@ fn novira_own_comfyui_is_the_default_and_nothing_starts_until_it_is_needed() {
     let _ = backend.engine_status();
 }
 
-// tags: scenario
+// tags: equivalence
 #[test]
 fn a_server_at_a_url_is_used_as_it_is() {
     let dir = tempfile::tempdir().unwrap();
@@ -41,7 +41,7 @@ fn a_server_at_a_url_is_used_as_it_is() {
     assert!(open(dir.path(), settings).is_ok());
 }
 
-// tags: boundary
+// tags: equivalence
 #[test]
 fn a_comfyui_folder_and_python_of_the_users_are_accepted() {
     let dir = tempfile::tempdir().unwrap();
@@ -56,7 +56,7 @@ fn a_comfyui_folder_and_python_of_the_users_are_accepted() {
     assert!(open(dir.path(), settings).is_ok());
 }
 
-// tags: boundary
+// tags: decision-table, equivalence
 #[test]
 fn a_comfyui_folder_started_at_a_url_must_be_on_this_pc() {
     // With both settings, novira starts the folder's ComfyUI listening on the URL's address: only this PC is accepted.
@@ -95,7 +95,7 @@ fn a_comfyui_folder_started_at_a_url_must_be_on_this_pc() {
     assert!(open(dir.path(), remote).is_ok());
 }
 
-// tags: error-guessing
+// tags: error-guessing, equivalence
 #[test]
 fn an_unusable_url_is_refused_by_name() {
     let dir = tempfile::tempdir().unwrap();
@@ -157,7 +157,7 @@ fn a_blocked_temporary_file_fails_the_save_and_keeps_the_old_file() {
     );
 }
 
-// tags: error-guessing, boundary
+// tags: error-guessing
 #[test]
 fn saving_into_a_folder_that_does_not_exist_fails() {
     let dir = tempfile::tempdir().unwrap();

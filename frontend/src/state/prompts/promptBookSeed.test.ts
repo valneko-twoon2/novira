@@ -3,7 +3,7 @@ import seed from './seed/promptBook.json';
 import { usePromptBook, withNewSeedEntries } from './promptBook';
 
 describe('the prompt book seed', () => {
-  it('has no empty field and no tag twice within a category', { tags: ['boundary'] }, () => {
+  it('has no empty field and no tag twice within a category', { tags: ['equivalence'] }, () => {
     const keys = new Set<string>();
     for (const e of seed) {
       expect(e.tag.trim()).not.toBe('');
@@ -15,7 +15,7 @@ describe('the prompt book seed', () => {
     }
   });
 
-  it('covers poses, motions, expressions, relations and composition', { tags: ['condition'] }, () => {
+  it('covers poses, motions, expressions, relations and composition', { tags: ['boundary'] }, () => {
     const count = (c: string) => seed.filter((e) => e.category === c).length;
     for (const c of ['ポーズ', '動き', '表情', '人物の関係・やりとり', '構図']) expect(count(c), c).toBeGreaterThanOrEqual(60);
   });
@@ -27,7 +27,7 @@ describe('the prompt book seed', () => {
 });
 
 describe('bringing new seed words to a saved book', () => {
-  it('keeps what is saved, adds the missing seed words once and does not duplicate a held one', { tags: ['error-guessing'] }, () => {
+  it('keeps what is saved, adds the missing seed words once and does not duplicate a held one', { tags: ['condition'] }, () => {
     const saved = [
       { id: 'pb-1', tag: 'my word', meaning: 'mine', category: '自作', note: '' },
       { id: 'seed-0', tag: 'LONG HAIR', meaning: 'edited', category: '髪型', note: '' },

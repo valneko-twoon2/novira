@@ -19,7 +19,7 @@ beforeEach(() => {
 });
 afterEach(() => resetPageCanvases());
 
-describe('starting to paint', () => {
+describe('starting to paint', { tags: [] }, () => {
   it('adds a raster layer to a page without one, and chooses it', { tags: ['condition'] }, () => {
     useComic.getState().selectPanel(page().panels[0]!.id);
     useComic.getState().setCutting(true);
@@ -51,8 +51,8 @@ describe('starting to paint', () => {
   });
 });
 
-describe('stopping', () => {
-  it('lets go of the painted layer, and of nothing when not painting', { tags: ['condition'] }, () => {
+describe('stopping', { tags: [] }, () => {
+  it('lets go of the painted layer, and of nothing when not painting', { tags: ['state-transition'] }, () => {
     startPainting(page().id);
     stopPainting(page().id);
     expect(usePagePaint.getState().painting).toBe(false);
@@ -64,7 +64,7 @@ describe('stopping', () => {
   });
 });
 
-describe('following the layer choice', () => {
+describe('following the layer choice', { tags: [] }, () => {
   it('starts painting on a raster of the user and goes back to the page on a slot', { tags: ['state-transition'] }, () => {
     const id = store().getState().addEntity('raster');
     followLayerChoice(page().id, id);

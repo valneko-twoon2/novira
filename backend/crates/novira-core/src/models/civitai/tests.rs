@@ -38,7 +38,7 @@ fn answer_model(id: u64, total: u64, versions: &[(u64, &str, u64, u64, &str)]) -
     })
 }
 
-// tags: condition
+// tags: decision-table
 #[test]
 fn several_base_models_in_a_popularity_sort_are_searched_one_at_a_time() {
     let mut p = params();
@@ -180,7 +180,7 @@ fn a_version_without_stats_leaves_the_models_totals() {
     assert_eq!(version_totals(&m), None);
 }
 
-// tags: condition
+// tags: scenario
 #[test]
 fn a_model_found_under_two_base_models_is_one_card_with_both_counts_and_versions() {
     let pony = map_response_by_base(&json!({"items": [answer_model(1, 9_000, &[(11, "Pony", 3_000, 30, "2026-08-01T00:00:00Z")])]}), false).items;
@@ -201,7 +201,7 @@ fn a_model_found_under_two_base_models_is_one_card_with_both_counts_and_versions
     assert_eq!(versions, ["12", "11"]);
 }
 
-// tags: equivalence
+// tags: equivalence, error-guessing
 #[test]
 fn license_creator_and_checkpoint_type_filters_go_to_the_site() {
     let mut p = params();
@@ -244,7 +244,7 @@ fn license_creator_and_checkpoint_type_filters_go_to_the_site() {
     }
 }
 
-// tags: equivalence
+// tags: decision-table
 #[test]
 fn the_answer_is_cut_to_the_permissions_and_files_asked_for() {
     let mk = |commercial: Value, derivatives: Value, format: &str| {
@@ -341,14 +341,14 @@ fn response_maps_to_the_frontend_shape() {
     assert_eq!(m.description, "d");
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn html_descriptions_become_plain_text() {
     let html = "<p>Hello &amp; welcome</p><h3 id=\"x\"><span style=\"color:red\">Usage</span></h3><ul><li>one</li><li>two</li></ul><br/><br/><br/><p>end</p>";
     assert_eq!(html_to_text(html), "Hello & welcome\nUsage\none\ntwo\nend");
 }
 
-// tags: decision-table, equivalence
+// tags: decision-table
 #[test]
 fn permissions_follow_the_creator_flags() {
     let m = json!({
@@ -374,7 +374,7 @@ fn permissions_follow_the_creator_flags() {
     );
 }
 
-// tags: condition
+// tags: equivalence, boundary
 #[test]
 fn commercial_use_levels() {
     let commercial =
@@ -395,7 +395,7 @@ fn commercial_use_levels() {
     assert_eq!(commercial(json!(["Rent", "Sell"])), "limited");
 }
 
-// tags: boundary, state-transition
+// tags: boundary
 #[test]
 fn a_summary_with_an_unstated_commercial_use_is_limited() {
     let p = |k: &str, allowed: Option<bool>| Permission {
@@ -520,7 +520,7 @@ fn pictures_come_before_the_frames_of_videos() {
     );
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn full_size_covers_are_swapped_for_resized_ones() {
     assert_eq!(
@@ -574,7 +574,7 @@ fn model_with_paid_access(id: &str, paid_access: serde_json::Value) -> CivitaiMo
     model(m, true, false).unwrap()
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn a_version_says_whether_and_until_when_civitai_asks_for_payment() {
     let free = model_with_paid_access("1", json!(null));
@@ -594,7 +594,7 @@ fn a_version_says_whether_and_until_when_civitai_asks_for_payment() {
     assert!(!free.versions[0].is_paid_at(0));
 }
 
-// tags: condition
+// tags: decision-table
 #[test]
 fn the_price_filter_keeps_free_or_paid_models_by_their_newest_version() {
     let free = model_with_paid_access("1", json!(null));

@@ -30,17 +30,21 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('renderGif', () => {
-  it('asks the pack for each pose, sending the picture only with the first request, and reports progress', { tags: ['boundary', 'state-transition'] }, async () => {
-    const progress = vi.fn();
-    const gif = await renderGif('face.png', poses, 10, progress, new AbortController().signal);
-    expect(String.fromCharCode(...gif.slice(0, 6))).toBe('GIF89a');
-    expect(preview).toHaveBeenCalledTimes(3);
-    expect(preview.mock.calls.map((c) => (c[0] as { image: string | null }).image)).toEqual(['face.png', null, null]);
-    expect(progress.mock.calls.map((c) => c[0])).toEqual([1, 2, 3]);
-    const keys = new Set(preview.mock.calls.map((c) => (c[0] as { nodeKey: string }).nodeKey));
-    expect(keys.size).toBe(1);
-  });
+describe('renderGif', { tags: [] }, () => {
+  it(
+    'asks the pack for each pose, sending the picture only with the first request, and reports progress',
+    { tags: ['boundary'] },
+    async () => {
+      const progress = vi.fn();
+      const gif = await renderGif('face.png', poses, 10, progress, new AbortController().signal);
+      expect(String.fromCharCode(...gif.slice(0, 6))).toBe('GIF89a');
+      expect(preview).toHaveBeenCalledTimes(3);
+      expect(preview.mock.calls.map((c) => (c[0] as { image: string | null }).image)).toEqual(['face.png', null, null]);
+      expect(progress.mock.calls.map((c) => c[0])).toEqual([1, 2, 3]);
+      const keys = new Set(preview.mock.calls.map((c) => (c[0] as { nodeKey: string }).nodeKey));
+      expect(keys.size).toBe(1);
+    },
+  );
 
   it('sends the picture again when the pack lost it', { tags: ['regression'] }, async () => {
     preview.mockResolvedValueOnce({ image: 'blob:a' } as never).mockResolvedValueOnce({ needsFrame: true } as never);
@@ -70,7 +74,7 @@ describe('renderGif', () => {
   });
 });
 
-describe('video', () => {
+describe('video', { tags: [] }, () => {
   class FakeRecorder {
     static isTypeSupported = (type: string) => type === 'video/webm;codecs=vp8';
     ondataavailable: ((e: { data: Blob }) => void) | null = null;
@@ -99,7 +103,7 @@ describe('video', () => {
     expect(videoType()).toBeNull();
   });
 
-  it('records the frames one after another and releases the stream', { tags: ['boundary'] }, async () => {
+  it('records the frames one after another and releases the stream', { tags: ['scenario'] }, async () => {
     vi.useFakeTimers();
     const frames = [1, 2, 3].map(() => ({ data: new Uint8ClampedArray(16), width: 2, height: 2 }));
     const pending = encodeVideo(frames, 100, new AbortController().signal);
@@ -112,18 +116,22 @@ describe('video', () => {
     vi.useRealTimers();
   });
 
-  it('refuses without frames or a canvas and stops the recording when aborted', { tags: ['error-guessing', 'state-transition'] }, async () => {
-    await expect(encodeVideo([], 10, new AbortController().signal)).rejects.toThrow('no frames');
-    const frame = { data: new Uint8ClampedArray(4), width: 1, height: 1 };
-    const abort = new AbortController();
-    abort.abort();
-    await expect(encodeVideo([frame], 10, abort.signal)).rejects.toMatchObject({ name: 'AbortError' });
-    canvases.restore();
-    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
-    await expect(encodeVideo([frame], 10, new AbortController().signal)).rejects.toThrow('no canvas');
-  });
+  it(
+    'refuses without frames or a canvas and stops the recording when aborted',
+    { tags: ['error-guessing', 'state-transition'] },
+    async () => {
+      await expect(encodeVideo([], 10, new AbortController().signal)).rejects.toThrow('no frames');
+      const frame = { data: new Uint8ClampedArray(4), width: 1, height: 1 };
+      const abort = new AbortController();
+      abort.abort();
+      await expect(encodeVideo([frame], 10, abort.signal)).rejects.toMatchObject({ name: 'AbortError' });
+      canvases.restore();
+      vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+      await expect(encodeVideo([frame], 10, new AbortController().signal)).rejects.toThrow('no canvas');
+    },
+  );
 
-  it('renders the poses and then records them', { tags: ['state-transition'] }, async () => {
+  it('renders the poses and then records them', { tags: ['scenario'] }, async () => {
     vi.useFakeTimers();
     const pending = renderVideo('face.png', poses, 100, () => {}, new AbortController().signal);
     await vi.advanceTimersByTimeAsync(500);

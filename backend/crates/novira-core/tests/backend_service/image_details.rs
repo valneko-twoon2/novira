@@ -20,7 +20,7 @@ async fn generated(backend: &novira_core::Backend, prompt: &str, size: u32) -> I
         .unwrap()
 }
 
-// tags: state-transition
+// tags: equivalence, boundary
 #[tokio::test]
 async fn bootstrap_sends_summaries_and_image_details_gives_the_rest() {
     let dir = tempfile::tempdir().unwrap();
@@ -76,7 +76,7 @@ async fn image_details_answers_at_most_the_limit() {
     assert_eq!(backend.image_details(&names).len(), 1);
 }
 
-// tags: boundary, state-transition
+// tags: boundary
 #[tokio::test]
 async fn a_start_up_answer_stays_small_for_a_large_gallery() {
     // The budget: what the screens read at start-up is the grid's fields, not every prompt. 300 pictures with a 1000-character

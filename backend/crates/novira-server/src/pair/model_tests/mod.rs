@@ -83,7 +83,7 @@ fn the_documented_limits_are_the_ones_the_model_uses() {
     assert_eq!(LABEL_MAX, 40);
 }
 
-// tags: state-transition
+// tags: state-transition, error-guessing
 #[test]
 fn the_store_follows_the_model_over_random_operation_sequences() {
     check(prop::collection::vec(op(), 1..=MAX_OPS), |ops| {

@@ -36,7 +36,7 @@ async function openMenu() {
   return within(await screen.findByRole('menu'));
 }
 
-describe('CanvasSettingsMenu', () => {
+describe('CanvasSettingsMenu', { tags: [] }, () => {
   it.each([
     ['canvas.settings.showGrid', 'showGrid'],
     ['canvas.settings.snapToGrid', 'snapToGrid'],
@@ -45,7 +45,7 @@ describe('CanvasSettingsMenu', () => {
     ['canvas.settings.clipToBbox', 'clipToBbox'],
     ['canvas.settings.preserveMask', 'preserveMask'],
     ['canvas.settings.autoProcess', 'autoProcess'],
-  ] as const)('%s flips the %s setting and keeps the menu open', { tags: ['decision-table'] }, async (label, key) => {
+  ] as const)('%s flips the %s setting and keeps the menu open', { tags: ['equivalence', 'decision-table'] }, async (label, key) => {
     const before = state().settings[key];
     const menu = await openMenu();
     fireEvent.click(menu.getByText(t(label)));
@@ -63,25 +63,29 @@ describe('CanvasSettingsMenu', () => {
     expect(fitBboxToLayers).toHaveBeenCalled();
   });
 
-  it('turns clearing off while there is nothing to clear, and clears the history, the canvas and the staging area', { tags: ['scenario'] }, async () => {
-    let menu = await openMenu();
-    expect(menu.getByText(t('canvas.actions.clearHistory')).closest('[role=menuitem]')!.getAttribute('aria-disabled')).toBe('true');
-    expect(menu.getByText(t('canvas.actions.clearCanvas')).closest('[role=menuitem]')!.getAttribute('aria-disabled')).toBe('true');
-    fireEvent.keyDown(menu.getByText(t('canvas.settings.title')), { key: 'Escape' });
-    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+  it(
+    'turns clearing off while there is nothing to clear, and clears the history, the canvas and the staging area',
+    { tags: ['boundary', 'state-transition'] },
+    async () => {
+      let menu = await openMenu();
+      expect(menu.getByText(t('canvas.actions.clearHistory')).closest('[role=menuitem]')!.getAttribute('aria-disabled')).toBe('true');
+      expect(menu.getByText(t('canvas.actions.clearCanvas')).closest('[role=menuitem]')!.getAttribute('aria-disabled')).toBe('true');
+      fireEvent.keyDown(menu.getByText(t('canvas.settings.title')), { key: 'Escape' });
+      await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
 
-    state().addEntity('raster');
-    state().addStagedImage('a.png');
-    menu = await openMenu();
-    fireEvent.click(menu.getByText(t('canvas.actions.clearHistory')));
-    expect(state().past).toHaveLength(0);
-    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
-    menu = await openMenu();
-    fireEvent.click(menu.getByText(t('canvas.actions.clearStaging')));
-    expect(state().stagedImageNames).toEqual([]);
-    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
-    menu = await openMenu();
-    fireEvent.click(menu.getByText(t('canvas.actions.clearCanvas')));
-    expect(state().entities).toEqual([]);
-  });
+      state().addEntity('raster');
+      state().addStagedImage('a.png');
+      menu = await openMenu();
+      fireEvent.click(menu.getByText(t('canvas.actions.clearHistory')));
+      expect(state().past).toHaveLength(0);
+      await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+      menu = await openMenu();
+      fireEvent.click(menu.getByText(t('canvas.actions.clearStaging')));
+      expect(state().stagedImageNames).toEqual([]);
+      await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+      menu = await openMenu();
+      fireEvent.click(menu.getByText(t('canvas.actions.clearCanvas')));
+      expect(state().entities).toEqual([]);
+    },
+  );
 });

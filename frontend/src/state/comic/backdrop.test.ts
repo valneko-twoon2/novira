@@ -17,21 +17,25 @@ const page = () => useComic.getState().projects[0]!.pages[0]!;
 
 beforeEach(reset);
 
-describe('the page backdrop in a saved comic', () => {
+describe('the page backdrop in a saved comic', { tags: [] }, () => {
   const read = (backdrop: unknown) => parseComicProject({ version: 1, id: 'c', pages: [{ id: 'p', panels: [{ id: 'x' }], backdrop }] })!.pages[0]!.backdrop;
 
   it('reads the picture and its view, keeping the view within its range', { tags: ['boundary'] }, () => {
     expect(read({ imageName: 'a.png', view: { cx: 0.2, cy: 0.9, scale: 99, rotation: 450, flipX: true } })).toMatchObject({ imageName: 'a.png', view: { cx: 0.2, cy: 0.9, scale: 8, rotation: 90, flipX: true, flipY: false } });
   });
 
-  it('is none without a picture, and a page saved before it has none; a view that is missing covers the page', { tags: ['error-guessing', 'boundary'] }, () => {
-    expect(read({ view: {} })).toBeNull();
-    expect(read({ imageName: '' })).toBeNull();
-    expect(read(undefined)).toBeNull();
-    expect(read({ imageName: 'a.png' })!.view).toMatchObject({ cx: 0.5, cy: 0.5, scale: 1, rotation: 0 });
-  });
+  it(
+    'is none without a picture, and a page saved before it has none; a view that is missing covers the page',
+    { tags: ['condition'] },
+    () => {
+      expect(read({ view: {} })).toBeNull();
+      expect(read({ imageName: '' })).toBeNull();
+      expect(read(undefined)).toBeNull();
+      expect(read({ imageName: 'a.png' })!.view).toMatchObject({ cx: 0.5, cy: 0.5, scale: 1, rotation: 0 });
+    },
+  );
 
-  it('is saved and read back as it was', { tags: ['condition'] }, () => {
+  it('is saved and read back as it was', { tags: ['scenario'] }, () => {
     const id = seed();
     useComic.getState().setBackdrop(id, 'a.png');
     useComic.getState().setBackdropView(id, { scale: 2, rotation: 30 });
@@ -40,8 +44,8 @@ describe('the page backdrop in a saved comic', () => {
   });
 });
 
-describe('putting a backdrop in', () => {
-  it('starts a new picture covering the page, and keeps the view of the same picture', { tags: ['state-transition'] }, () => {
+describe('putting a backdrop in', { tags: [] }, () => {
+  it('starts a new picture covering the page, and keeps the view of the same picture', { tags: ['condition'] }, () => {
     const id = seed();
     useComic.getState().setBackdrop(id, 'a.png');
     useComic.getState().setBackdropView(id, { scale: 3, cx: 0.2 });
@@ -62,20 +66,24 @@ describe('putting a backdrop in', () => {
     expect(page().backdrop!.imageName).toBe('a.png');
   });
 
-  it('changes the view of a backdrop that is there only, within the range, and a drag is one undo step', { tags: ['boundary', 'state-transition'] }, () => {
-    const id = seed();
-    useComic.getState().setBackdropView(id, { scale: 2 });
-    expect(page().backdrop).toBeNull();
-    useComic.getState().setBackdrop(id, 'a.png');
-    const steps = useComic.getState().past.length;
-    useComic.getState().setBackdropView(id, { scale: 100, cx: 0.4 });
-    useComic.getState().setBackdropView(id, { cx: 0.6 });
-    expect(page().backdrop!.view).toMatchObject({ scale: 8, cx: 0.6 });
-    expect(useComic.getState().past.length).toBe(steps + 1);
-  });
+  it(
+    'changes the view of a backdrop that is there only, within the range, and a drag is one undo step',
+    { tags: ['boundary', 'state-transition'] },
+    () => {
+      const id = seed();
+      useComic.getState().setBackdropView(id, { scale: 2 });
+      expect(page().backdrop).toBeNull();
+      useComic.getState().setBackdrop(id, 'a.png');
+      const steps = useComic.getState().past.length;
+      useComic.getState().setBackdropView(id, { scale: 100, cx: 0.4 });
+      useComic.getState().setBackdropView(id, { cx: 0.6 });
+      expect(page().backdrop!.view).toMatchObject({ scale: 8, cx: 0.6 });
+      expect(useComic.getState().past.length).toBe(steps + 1);
+    },
+  );
 });
 
-describe('editing the backdrop', () => {
+describe('editing the backdrop', { tags: [] }, () => {
   it('lets go of the panel and the picture selected, and a panel chosen after it ends the editing', { tags: ['state-transition'] }, () => {
     const id = seed();
     const panel = page().panels[0]!.id;

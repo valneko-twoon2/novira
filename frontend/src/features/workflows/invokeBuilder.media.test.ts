@@ -19,7 +19,7 @@ afterEach(() => setExtensionTemplates([]));
 
 const graphOf = (id: string): EditorGraph => ({ ...buildTemplate(GRAPH_TEMPLATES.find((t) => t.id === id)!), form: [], meta: { ...EMPTY_META, name: id } });
 
-describe('the ready-made sound and video graphs', () => {
+describe('the ready-made sound and video graphs', { tags: [] }, () => {
   it('are ready to run once the models they name are in ComfyUI\'s lists', { tags: ['scenario'] }, () => {
     expect(readinessReasons(graphOf('musicAceStep'))).toEqual([]);
     expect(readinessReasons(graphOf('videoWan22'))).toEqual([]);
@@ -39,7 +39,7 @@ describe('the ready-made sound and video graphs', () => {
     expect(readinessReasons(graphOf('videoWan22')).join()).toMatch(/選べるファイルがありません/);
   });
 
-  it('do not ask about the choices of a format that is not the one chosen', { tags: ['boundary'] }, () => {
+  it('do not ask about the choices of a format that is not the one chosen', { tags: ['condition'] }, () => {
     // The MP3 and Opus qualities and the codecs only count while their format is chosen; FLAC and MP4 ask for none.
     expect(readinessReasons(graphOf('musicAceStep'))).toEqual([]);
     const g = graphOf('musicAceStep');
@@ -49,7 +49,7 @@ describe('the ready-made sound and video graphs', () => {
     expect(readinessReasons(g).join()).toMatch(/not a quality/);
   });
 
-  it('wait for the start picture of the picture-to-video graph', { tags: ['state-transition'] }, () => {
+  it('wait for the start picture of the picture-to-video graph', { tags: ['condition'] }, () => {
     const g = graphOf('videoWan22Image');
     expect(readinessReasons(g).join()).toMatch(/画像/);
     g.nodes.find((n) => n.data.type === 'image')!.data.inputs.image = 'photo.png';
@@ -57,41 +57,49 @@ describe('the ready-made sound and video graphs', () => {
   });
 });
 
-describe('the request of a sound or video graph', () => {
-  it('describes a song by the style tags, the sampler and the model it loads, and takes a new seed each run', { tags: ['decision-table'] }, () => {
-    const g = graphOf('musicAceStep');
-    const req = buildRequest(g, {}, { prepend: false });
-    expect(req.params).toMatchObject({
-      generationMode: 'graph',
-      positivePrompt: expect.stringContaining('city pop'),
-      modelName: 'ace_step_1.5_turbo_aio.safetensors',
-      steps: 8,
-      cfgScale: 1,
-      workflowName: 'musicAceStep',
-    });
-    expect(req.randomizeSeed).toBe(true);
-    expect(req.comfyGraph!.outputs).toEqual([g.nodes.find((n) => n.data.type === 'comfy:SaveAudioAdvanced')!.id]);
-    expect(req.comfyGraph!.thumbnail).toBeUndefined();
-  });
+describe('the request of a sound or video graph', { tags: [] }, () => {
+  it(
+    'describes a song by the style tags, the sampler and the model it loads, and takes a new seed each run',
+    { tags: ['equivalence'] },
+    () => {
+      const g = graphOf('musicAceStep');
+      const req = buildRequest(g, {}, { prepend: false });
+      expect(req.params).toMatchObject({
+        generationMode: 'graph',
+        positivePrompt: expect.stringContaining('city pop'),
+        modelName: 'ace_step_1.5_turbo_aio.safetensors',
+        steps: 8,
+        cfgScale: 1,
+        workflowName: 'musicAceStep',
+      });
+      expect(req.randomizeSeed).toBe(true);
+      expect(req.comfyGraph!.outputs).toEqual([g.nodes.find((n) => n.data.type === 'comfy:SaveAudioAdvanced')!.id]);
+      expect(req.comfyGraph!.thumbnail).toBeUndefined();
+    },
+  );
 
-  it('describes a video by its prompts, size, frames and speed, and names the node that gives its first frame', { tags: ['boundary'] }, () => {
-    const g = graphOf('videoWan22');
-    const req = buildRequest(g, {}, { prepend: false });
-    const save = g.nodes.find((n) => n.data.type === 'comfy:SaveVideo')!.id;
-    expect(req.params).toMatchObject({
-      generationMode: 'graph',
-      positivePrompt: expect.stringContaining('puppy'),
-      negativePrompt: expect.stringContaining('blurry'),
-      modelName: 'wan2.2_ti2v_5B_fp16.safetensors',
-      steps: 20,
-      cfgScale: 5,
-      width: 832,
-      height: 480,
-      videoFrames: 49,
-      videoFps: 24,
-    });
-    expect(req.comfyGraph!.outputs).toEqual([save]);
-    expect(req.comfyGraph!.thumbnail).toBe(`${save}:frame`);
-    expect(req.randomizeSeed).toBe(true);
-  });
+  it(
+    'describes a video by its prompts, size, frames and speed, and names the node that gives its first frame',
+    { tags: ['equivalence'] },
+    () => {
+      const g = graphOf('videoWan22');
+      const req = buildRequest(g, {}, { prepend: false });
+      const save = g.nodes.find((n) => n.data.type === 'comfy:SaveVideo')!.id;
+      expect(req.params).toMatchObject({
+        generationMode: 'graph',
+        positivePrompt: expect.stringContaining('puppy'),
+        negativePrompt: expect.stringContaining('blurry'),
+        modelName: 'wan2.2_ti2v_5B_fp16.safetensors',
+        steps: 20,
+        cfgScale: 5,
+        width: 832,
+        height: 480,
+        videoFrames: 49,
+        videoFps: 24,
+      });
+      expect(req.comfyGraph!.outputs).toEqual([save]);
+      expect(req.comfyGraph!.thumbnail).toBe(`${save}:frame`);
+      expect(req.randomizeSeed).toBe(true);
+    },
+  );
 });

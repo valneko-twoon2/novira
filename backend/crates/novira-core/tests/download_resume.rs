@@ -274,7 +274,7 @@ async fn an_interrupted_download_continues_from_its_part_with_the_validator_of_t
     );
 }
 
-// tags: scenario
+// tags: condition, state-transition
 #[tokio::test]
 async fn a_file_that_changed_on_the_server_comes_back_whole_and_is_not_joined_to_the_old_part() {
     let old = bytes(1000, 1);
@@ -316,7 +316,7 @@ async fn a_file_that_changed_on_the_server_comes_back_whole_and_is_not_joined_to
     );
 }
 
-// tags: state-transition
+// tags: condition
 #[tokio::test]
 async fn a_part_without_its_record_is_not_resumed() {
     let body = bytes(1000, 3);
@@ -345,7 +345,7 @@ async fn a_part_without_its_record_is_not_resumed() {
     assert_eq!(std::fs::read(&dest).unwrap(), body);
 }
 
-// tags: regression, error-guessing
+// tags: error-guessing, condition
 #[tokio::test]
 async fn a_server_that_refuses_the_range_starts_the_file_again() {
     let body = bytes(1000, 4);
@@ -378,7 +378,7 @@ async fn a_server_that_refuses_the_range_starts_the_file_again() {
     assert_eq!(std::fs::read(&dest).unwrap(), body);
 }
 
-// tags: boundary
+// tags: boundary, error-guessing
 #[tokio::test]
 async fn a_stalled_connection_is_given_up_in_time_and_keeps_its_part() {
     let site = Site::start(bytes(1000, 5), "v1");
@@ -412,7 +412,7 @@ async fn a_stalled_connection_is_given_up_in_time_and_keeps_its_part() {
     );
 }
 
-// tags: scenario
+// tags: state-transition
 #[tokio::test]
 async fn a_part_being_downloaded_is_kept_by_a_delete_until_the_download_ends() {
     let site = Site::start(bytes(1000, 6), "v1");

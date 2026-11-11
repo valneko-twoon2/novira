@@ -137,38 +137,42 @@ const RUNS = TABS.flatMap((tab) => [
 ]);
 
 for (const [n, { tab, query, library }] of RUNS.entries()) {
-  test(`random actions on the ${tab} screen with ${library} break nothing`, { tag: ['@error-guessing'] }, async ({ page, errors }, testInfo) => {
-    // An action takes well under a second alone, up to about three with six workers on a busy machine.
-    test.setTimeout(30_000 + ACTIONS * 3_000);
-    const seed = SEED + n;
-    const next = random(seed);
-    // A page the app opens (a source page, a model's site) is closed: only the app is under test.
-    page.context().on('page', (other) => void other.close());
-    await openApp(page, query);
-    await showTab(page, tab);
-    const log: string[] = [];
-    try {
-      for (let i = 0; i < ACTIONS; i++) {
-        const started = Date.now();
-        log.push(await act(page, next));
-        if (process.env.NOVIRA_MONKEY_TRACE) console.log(`${i + 1}. ${log.at(-1)} (${Date.now() - started} ms)`);
-        const failed = await page.getByTestId('error-boundary').count();
-        // A reload the screen asked for (after a data change) takes the app away for a moment.
-        const app = await page
-          .locator('.app')
-          .waitFor({ timeout: 20_000 })
-          .then(
-            () => true,
-            () => false,
-          );
-        if (failed > 0 || !app || errors.length > 0) {
-          const why = failed > 0 ? `an area failed: ${await page.getByTestId('error-boundary').first().innerText()}` : !app ? 'the app is gone' : errors.join('\n');
-          throw new Error(`seed ${seed}, action ${i + 1}: ${why}\n${log.map((a, k) => `${k + 1}. ${a}`).join('\n')}`);
+  test(
+    `random actions on the ${tab} screen with ${library} break nothing`,
+    { tag: ['@error-guessing'] },
+    async ({ page, errors }, testInfo) => {
+      // An action takes well under a second alone, up to about three with six workers on a busy machine.
+      test.setTimeout(30_000 + ACTIONS * 3_000);
+      const seed = SEED + n;
+      const next = random(seed);
+      // A page the app opens (a source page, a model's site) is closed: only the app is under test.
+      page.context().on('page', (other) => void other.close());
+      await openApp(page, query);
+      await showTab(page, tab);
+      const log: string[] = [];
+      try {
+        for (let i = 0; i < ACTIONS; i++) {
+          const started = Date.now();
+          log.push(await act(page, next));
+          if (process.env.NOVIRA_MONKEY_TRACE) console.log(`${i + 1}. ${log.at(-1)} (${Date.now() - started} ms)`);
+          const failed = await page.getByTestId('error-boundary').count();
+          // A reload the screen asked for (after a data change) takes the app away for a moment.
+          const app = await page
+            .locator('.app')
+            .waitFor({ timeout: 20_000 })
+            .then(
+              () => true,
+              () => false,
+            );
+          if (failed > 0 || !app || errors.length > 0) {
+            const why = failed > 0 ? `an area failed: ${await page.getByTestId('error-boundary').first().innerText()}` : !app ? 'the app is gone' : errors.join('\n');
+            throw new Error(`seed ${seed}, action ${i + 1}: ${why}\n${log.map((a, k) => `${k + 1}. ${a}`).join('\n')}`);
+          }
         }
+      } finally {
+        // Also on a time-out: the action after the last one logged is the one that did not return.
+        await testInfo.attach('actions', { body: `seed ${seed}\n${log.map((a, k) => `${k + 1}. ${a}`).join('\n')}`, contentType: 'text/plain' });
       }
-    } finally {
-      // Also on a time-out: the action after the last one logged is the one that did not return.
-      await testInfo.attach('actions', { body: `seed ${seed}\n${log.map((a, k) => `${k + 1}. ${a}`).join('\n')}`, contentType: 'text/plain' });
-    }
-  });
+    },
+  );
 }

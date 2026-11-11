@@ -18,20 +18,24 @@ const name = fc.oneof(
   fc.array(fc.constantFrom('.', ' ', 'a', '\\', ':', '|', '\u0000', '\t'), { maxLength: 12 }).map((a) => a.join('')),
 );
 
-describe('fileBase', () => {
-  it('is never empty and has no forbidden character, control character, or trailing dot or space', { tags: ['error-guessing', 'boundary'] }, () => {
-    check(
-      fc.property(name, (n) => {
-        const base = fileBase(n);
-        expect(base.length).toBeGreaterThan(0);
-        expect(FORBIDDEN.test(base)).toBe(false);
-        expect(noControl(base)).toBe(true);
-        expect(/[. ]$/.test(base)).toBe(false);
-      }),
-    );
-  });
+describe('fileBase', { tags: [] }, () => {
+  it(
+    'is never empty and has no forbidden character, control character, or trailing dot or space',
+    { tags: ['error-guessing', 'boundary'] },
+    () => {
+      check(
+        fc.property(name, (n) => {
+          const base = fileBase(n);
+          expect(base.length).toBeGreaterThan(0);
+          expect(FORBIDDEN.test(base)).toBe(false);
+          expect(noControl(base)).toBe(true);
+          expect(/[. ]$/.test(base)).toBe(false);
+        }),
+      );
+    },
+  );
 
-  it('is idempotent on ASCII names and keeps a name that is already safe as it is', { tags: ['error-guessing'] }, () => {
+  it('is idempotent on ASCII names and keeps a name that is already safe as it is', { tags: ['error-guessing', 'condition'] }, () => {
     check(
       fc.property(fc.stringMatching(/^[a-zA-Z0-9 ._\\/:*?"<>|-]{0,24}$/), (n) => {
         const once = fileBase(n);
@@ -46,16 +50,20 @@ describe('fileBase', () => {
   });
 });
 
-describe('bookFileName', () => {
-  it('is the safe base followed by the ending of the format, and the ending differs per format', { tags: ['error-guessing'] }, () => {
-    check(
-      fc.property(name, format, (n, f) => {
-        const file = bookFileName(n, f);
-        expect(file.startsWith(fileBase(n))).toBe(true);
-        expect(file.slice(fileBase(n).length)).toBe({ pdf: '.pdf', cbz: '.cbz', psd: '-psd.zip' }[f]);
-        expect(FORBIDDEN.test(file)).toBe(false);
-      }),
-    );
-    expect(new Set((['pdf', 'cbz', 'psd'] as const).map((f) => bookFileName('x', f))).size).toBe(3);
-  });
+describe('bookFileName', { tags: [] }, () => {
+  it(
+    'is the safe base followed by the ending of the format, and the ending differs per format',
+    { tags: ['error-guessing', 'decision-table'] },
+    () => {
+      check(
+        fc.property(name, format, (n, f) => {
+          const file = bookFileName(n, f);
+          expect(file.startsWith(fileBase(n))).toBe(true);
+          expect(file.slice(fileBase(n).length)).toBe({ pdf: '.pdf', cbz: '.cbz', psd: '-psd.zip' }[f]);
+          expect(FORBIDDEN.test(file)).toBe(false);
+        }),
+      );
+      expect(new Set((['pdf', 'cbz', 'psd'] as const).map((f) => bookFileName('x', f))).size).toBe(3);
+    },
+  );
 });

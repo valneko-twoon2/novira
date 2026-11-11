@@ -17,8 +17,8 @@ const aspect = fc.constantFrom(...PAGE_SIZES).map((size) => pageAspect(size));
 
 const overlap = (a: Box, b: Box) => Math.max(0, Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y));
 
-describe('layoutFor', () => {
-  it('gives one box per panel (at most the limit), whatever the count and columns', { tags: ['boundary'] }, () => {
+describe('layoutFor', { tags: [] }, () => {
+  it('gives one box per panel (at most the limit), whatever the count and columns', { tags: ['boundary', 'error-guessing'] }, () => {
     check(
       fc.property(fc.integer({ min: -5, max: 60 }), fc.integer({ min: -2, max: 6 }), direction, aspect, (n, c, d, a) => {
         const boxes = layoutFor(n, c, d, a);
@@ -27,7 +27,7 @@ describe('layoutFor', () => {
     );
   });
 
-  it('keeps every box inside the page with a real size, and no two boxes overlap', { tags: ['boundary'] }, () => {
+  it('keeps every box inside the page with a real size, and no two boxes overlap', { tags: ['boundary', 'error-guessing'] }, () => {
     check(
       fc.property(count, columns, direction, aspect, (n, c, d, a) => {
         const boxes = layoutFor(n, c, d, a);
@@ -44,25 +44,29 @@ describe('layoutFor', () => {
     );
   });
 
-  it('mirrors the whole layout for a page read from the right, leaving the heights alone', { tags: ['condition'] }, () => {
-    check(
-      fc.property(count, columns, aspect, (n, c, a) => {
-        const ltr = layoutFor(n, c, 'ltr', a);
-        const rtl = layoutFor(n, c, 'rtl', a);
-        ltr.forEach((b, i) => {
-          const m = rtl[i]!;
-          expect(m.width).toBeCloseTo(b.width, 9);
-          expect(m.y).toBeCloseTo(b.y, 9);
-          expect(m.height).toBeCloseTo(b.height, 9);
-          expect(m.x + m.width / 2).toBeCloseTo(1 - (b.x + b.width / 2), 9);
-        });
-      }),
-    );
-  });
+  it(
+    'mirrors the whole layout for a page read from the right, leaving the heights alone',
+    { tags: ['condition', 'error-guessing'] },
+    () => {
+      check(
+        fc.property(count, columns, aspect, (n, c, a) => {
+          const ltr = layoutFor(n, c, 'ltr', a);
+          const rtl = layoutFor(n, c, 'rtl', a);
+          ltr.forEach((b, i) => {
+            const m = rtl[i]!;
+            expect(m.width).toBeCloseTo(b.width, 9);
+            expect(m.y).toBeCloseTo(b.y, 9);
+            expect(m.height).toBeCloseTo(b.height, 9);
+            expect(m.x + m.width / 2).toBeCloseTo(1 - (b.x + b.width / 2), 9);
+          });
+        }),
+      );
+    },
+  );
 });
 
-describe('panelPixels', () => {
-  it('gives sides that are multiples of 64 between 256 and 2048', { tags: ['condition'] }, () => {
+describe('panelPixels', { tags: [] }, () => {
+  it('gives sides that are multiples of 64 between 256 and 2048', { tags: ['boundary', 'error-guessing'] }, () => {
     check(
       fc.property(
         fc.record({ x: fc.double({ min: 0, max: 1, noNaN: true }), y: fc.double({ min: 0, max: 1, noNaN: true }), width: fc.double({ min: 0.01, max: 1, noNaN: true }), height: fc.double({ min: 0.01, max: 1, noNaN: true }) }),

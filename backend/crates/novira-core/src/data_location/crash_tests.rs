@@ -1,4 +1,3 @@
-//! tags: state-transition, error-guessing
 //! A move of the data folder cut off at each of its steps (the power goes, the process is killed), then the next start.
 //! Wherever it stopped, the next start opens one whole data folder: the new one with everything in it, the pointer
 //! naming it, and nothing of the move left behind.
@@ -69,6 +68,7 @@ fn quiet(from: &Path) -> Progress<'static> {
     Progress::new(from, &|_, _| {})
 }
 
+// tags: state-transition, boundary
 #[test]
 fn a_move_into_a_folder_cut_off_after_any_entry_is_finished_by_the_next_start() {
     for k in 0..=FILES.len() {
@@ -81,6 +81,7 @@ fn a_move_into_a_folder_cut_off_after_any_entry_is_finished_by_the_next_start() 
     }
 }
 
+// tags: error-guessing, state-transition
 #[test]
 fn a_copy_cut_off_half_way_through_a_file_is_copied_again_whole() {
     let dir = tempfile::tempdir().unwrap();
@@ -92,6 +93,7 @@ fn a_copy_cut_off_half_way_through_a_file_is_copied_again_whole() {
     assert_moved(&old, &new, &pointer, opened, "half a copy");
 }
 
+// tags: state-transition, error-guessing
 #[test]
 fn a_move_into_a_new_folder_cut_off_before_the_pointer_was_written_opens_the_new_folder() {
     let dir = tempfile::tempdir().unwrap();
@@ -102,6 +104,7 @@ fn a_move_into_a_new_folder_cut_off_before_the_pointer_was_written_opens_the_new
     assert_moved(&old, &new, &pointer, opened, "renamed whole");
 }
 
+// tags: state-transition, error-guessing
 #[test]
 fn a_copy_to_a_new_folder_cut_off_part_way_is_finished_by_the_next_start() {
     let dir = tempfile::tempdir().unwrap();
@@ -125,6 +128,7 @@ fn a_copy_to_a_new_folder_cut_off_part_way_is_finished_by_the_next_start() {
     assert_moved(&old, &new, &pointer, opened, "copy cut off");
 }
 
+// tags: state-transition, error-guessing
 #[test]
 fn a_start_cut_off_while_the_old_folder_was_removed_opens_the_new_one_and_drops_the_marker() {
     let dir = tempfile::tempdir().unwrap();
@@ -146,6 +150,7 @@ fn a_start_cut_off_while_the_old_folder_was_removed_opens_the_new_one_and_drops_
     assert!(new.join("novira.sqlite").is_file());
 }
 
+// tags: error-guessing
 #[test]
 fn a_damaged_marker_moves_nothing_and_keeps_the_old_folder_in_use() {
     let dir = tempfile::tempdir().unwrap();
@@ -160,6 +165,7 @@ fn a_damaged_marker_moves_nothing_and_keeps_the_old_folder_in_use() {
         .contains("damaged"));
 }
 
+// tags: state-transition, error-guessing
 #[test]
 fn a_move_that_fails_after_a_cut_off_start_puts_back_what_both_starts_moved() {
     let dir = tempfile::tempdir().unwrap();

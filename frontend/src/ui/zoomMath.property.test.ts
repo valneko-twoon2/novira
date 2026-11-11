@@ -27,8 +27,8 @@ const box = fc.record({ x: fc.integer({ min: -5000, max: 5000 }), y: fc.integer(
 const size = fc.record({ width: length, height: length });
 const near = (a: number, b: number, tol = 1e-6) => Math.abs(a - b) <= tol * Math.max(1, Math.abs(a), Math.abs(b));
 
-describe('zoomMath (properties)', () => {
-  it('maps document to screen and back to the same point', { tags: ['condition'] }, () => {
+describe('zoomMath (properties)', { tags: [] }, () => {
+  it('maps document to screen and back to the same point', { tags: ['equivalence'] }, () => {
     check(
       fc.property(point, view, (p, v) => {
         const back = screenToDoc(docToScreen(p, v), v);
@@ -77,7 +77,7 @@ describe('zoomMath (properties)', () => {
     );
   });
 
-  it('fitRect centres the rect on the stage and, when not clamped, fits inside the padding', { tags: ['condition'] }, () => {
+  it('fitRect centres the rect on the stage and, when not clamped, fits inside the padding', { tags: ['boundary', 'condition'] }, () => {
     check(
       fc.property(box, size, fc.integer({ min: 0, max: 200 }), (rect, stage, padding) => {
         const v = fitRect(rect, stage.width, stage.height, padding);
@@ -127,7 +127,7 @@ describe('zoomMath (properties)', () => {
     );
   });
 
-  it('wheelZoomFactor is positive, finite and inverts for opposite deltas', { tags: ['boundary'] }, () => {
+  it('wheelZoomFactor is positive, finite and inverts for opposite deltas', { tags: ['boundary', 'error-guessing'] }, () => {
     check(
       fc.property(fc.double({ min: -2000, max: 2000, noNaN: true }), fc.constantFrom(0, 1, 2), (deltaY, deltaMode) => {
         const f = wheelZoomFactor({ deltaY, deltaMode });
@@ -139,7 +139,7 @@ describe('zoomMath (properties)', () => {
     );
   });
 
-  it('containIn returns a centred box that fits the rect (whole pixels)', { tags: ['condition'] }, () => {
+  it('containIn returns a centred box that fits the rect (whole pixels)', { tags: ['boundary'] }, () => {
     check(
       fc.property(length, length, box, (w, h, r) => {
         const out = containIn(w, h, r);

@@ -372,7 +372,7 @@ fn fail(seed: u64, case: u64, name: &str, args: &Value, what: String) -> ! {
     );
 }
 
-// tags: error-guessing
+// tags: error-guessing, boundary
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn damaged_arguments_of_every_local_command_are_answered_or_refused() {
     let cases = setting("NOVIRA_FUZZ_ITERATIONS", 300);

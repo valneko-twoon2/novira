@@ -48,8 +48,8 @@ const setNum = (label: string, value: number) => {
   fireEvent.blur(num(label));
 };
 
-describe('VideoPanel form', () => {
-  it('switches between text and image mode', { tags: ['scenario'] }, () => {
+describe('VideoPanel form', { tags: [] }, () => {
+  it('switches between text and image mode', { tags: ['state-transition'] }, () => {
     panel();
     expect(screen.queryByText(t('video.pickFromGallery'))).toBeNull();
     fireEvent.click(screen.getByTestId('video-mode-image'));
@@ -72,26 +72,30 @@ describe('VideoPanel form', () => {
     expect(form()).toMatchObject({ fps: 12, steps: 30, cfgScale: 7.5, seconds: 4 });
   });
 
-  it('turns on the light settings, and grays out the seed box and the roll button while a new seed is drawn each time', { tags: ['scenario'] }, () => {
-    panel();
-    const light = within(screen.getByTestId('video-light'));
-    fireEvent.click(light.getByLabelText(t('video.light.fp8')));
-    fireEvent.click(light.getByLabelText(t('video.light.tiled')));
-    expect(form()).toMatchObject({ fp8: true, tiledDecode: true });
-    const box = () => screen.getByLabelText(t('params.seed.label')) as HTMLInputElement;
-    const roll = () => screen.getByRole('button', { name: t('params.seed.shuffle') }) as HTMLButtonElement;
-    expect(form().randomizeSeed).toBe(true);
-    expect([box().disabled, roll().disabled]).toEqual([true, true]);
-    fireEvent.click(screen.getByTestId('seed-fixed'));
-    expect(form().randomizeSeed).toBe(false);
-    expect([box().disabled, roll().disabled]).toEqual([false, false]);
-    setNum(t('params.seed.label'), 99);
-    expect(form().seed).toBe(99);
-    fireEvent.click(roll());
-    expect(form().seed).not.toBe(99);
-  });
+  it(
+    'turns on the light settings, and grays out the seed box and the roll button while a new seed is drawn each time',
+    { tags: ['condition'] },
+    () => {
+      panel();
+      const light = within(screen.getByTestId('video-light'));
+      fireEvent.click(light.getByLabelText(t('video.light.fp8')));
+      fireEvent.click(light.getByLabelText(t('video.light.tiled')));
+      expect(form()).toMatchObject({ fp8: true, tiledDecode: true });
+      const box = () => screen.getByLabelText(t('params.seed.label')) as HTMLInputElement;
+      const roll = () => screen.getByRole('button', { name: t('params.seed.shuffle') }) as HTMLButtonElement;
+      expect(form().randomizeSeed).toBe(true);
+      expect([box().disabled, roll().disabled]).toEqual([true, true]);
+      fireEvent.click(screen.getByTestId('seed-fixed'));
+      expect(form().randomizeSeed).toBe(false);
+      expect([box().disabled, roll().disabled]).toEqual([false, false]);
+      setNum(t('params.seed.label'), 99);
+      expect(form().seed).toBe(99);
+      fireEvent.click(roll());
+      expect(form().seed).not.toBe(99);
+    },
+  );
 
-  it('chooses the model with its pack card while a model is missing', { tags: ['scenario'] }, () => {
+  it('chooses the model with its pack card while a model is missing', { tags: ['condition'] }, () => {
     usePacks.getState().setPack('video', { state: 'missing', totalBytes: 1e9 });
     usePacks.getState().setPack('turbo', { state: 'missing', totalBytes: 1e9 });
     panel();
@@ -102,10 +106,10 @@ describe('VideoPanel form', () => {
   });
 });
 
-describe('an installed video model', () => {
+describe('an installed video model', { tags: [] }, () => {
   const wan = { key: 'wan-1', name: 'wan2.1_t2v_1.3B', base: 'wan', type: 'diffusion_model', format: 'checkpoint', description: '', path: 'p', size: 1, source: 'local' } as ModelConfig;
 
-  it('needs no download card and no pack, and says which family it is', { tags: ['scenario'] }, () => {
+  it('needs no download card and no pack, and says which family it is', { tags: ['condition'] }, () => {
     usePacks.getState().setPack('video', { state: 'missing', totalBytes: 1e9 });
     usePacks.getState().setPack('turbo', { state: 'missing', totalBytes: 1e9 });
     useModels.setState({ models: [wan] });
@@ -124,10 +128,10 @@ describe('an installed video model', () => {
   });
 });
 
-describe('the source picture', () => {
+describe('the source picture', { tags: [] }, () => {
   beforeEach(() => useVideo.getState().setForm({ mode: 'image' }));
 
-  it('takes the picture selected in the gallery, but not a video or nothing', { tags: ['scenario'] }, () => {
+  it('takes the picture selected in the gallery, but not a video or nothing', { tags: ['equivalence', 'condition'] }, () => {
     useGallery.setState({ images: [picture('a.png'), picture('v.mp4', { mediaType: 'video' })], selection: [] });
     panel();
     fireEvent.click(screen.getByText(t('video.pickFromGallery')));
@@ -158,7 +162,7 @@ describe('the source picture', () => {
     await waitFor(() => expect(lastToast()).toMatchObject({ status: 'error', description: 'too large' }));
   });
 
-  it('takes a picture dragged from the gallery, but not a video', { tags: ['scenario'] }, () => {
+  it('takes a picture dragged from the gallery, but not a video', { tags: ['equivalence'] }, () => {
     useGallery.setState({ images: [picture('a.png'), picture('v.mp4', { mediaType: 'video' })] });
     panel();
     const zone = screen.getByText(t('video.sourceHint')).closest('.vv-source')!;
@@ -170,7 +174,7 @@ describe('the source picture', () => {
   });
 });
 
-describe('VideoResults', () => {
+describe('VideoResults', { tags: [] }, () => {
   const results = () =>
     render(
       <TooltipProvider>
@@ -178,25 +182,29 @@ describe('VideoResults', () => {
       </TooltipProvider>,
     );
 
-  it('shows the empty state until there is a clip', { tags: ['scenario'] }, () => {
+  it('shows the empty state until there is a clip', { tags: ['boundary'] }, () => {
     results();
     expect(screen.getByText(t('video.empty.title'))).toBeTruthy();
   });
 
-  it('lists the clips newest first with their length and seed, opens the finishing dialog and deletes a clip', { tags: ['scenario'] }, async () => {
-    const clip = (name: string, createdAt: number, meta = true) =>
-      picture(name, { mediaType: 'video', createdAt, metadata: meta ? ({ positivePrompt: `prompt ${name}`, seed: 5, videoFrames: 48, videoFps: 24 } as never) : null });
-    useGallery.setState({ images: [clip('old.mp4', 1), clip('new.mp4', 2), clip('bare.mp4', 0, false), picture('still.png')] });
-    const del = vi.spyOn(backend, 'deleteImages').mockResolvedValue(undefined);
-    results();
-    const clips = screen.getAllByTestId('video-clip');
-    expect(clips.map((c) => c.querySelector('.vv-clip__prompt')?.textContent)).toEqual(['prompt new.mp4', 'prompt old.mp4', '']);
-    expect(clips[0]!.querySelector('.vv-clip__info')!.textContent).toContain('seed 5');
-    expect(clips[0]!.querySelector('.vv-clip__info')!.textContent).toContain('832×480');
-    fireEvent.click(within(clips[0]!).getByTestId('video-finish'));
-    expect(useFinish.getState().name).toBe('new.mp4');
-    fireEvent.click(within(clips[1]!).getByLabelText(t('video.delete')));
-    await waitFor(() => expect(del).toHaveBeenCalledWith(['old.mp4']));
-    await waitFor(() => expect(useGallery.getState().images.some((i) => i.name === 'old.mp4')).toBe(false));
-  });
+  it(
+    'lists the clips newest first with their length and seed, opens the finishing dialog and deletes a clip',
+    { tags: ['scenario'] },
+    async () => {
+      const clip = (name: string, createdAt: number, meta = true) =>
+        picture(name, { mediaType: 'video', createdAt, metadata: meta ? ({ positivePrompt: `prompt ${name}`, seed: 5, videoFrames: 48, videoFps: 24 } as never) : null });
+      useGallery.setState({ images: [clip('old.mp4', 1), clip('new.mp4', 2), clip('bare.mp4', 0, false), picture('still.png')] });
+      const del = vi.spyOn(backend, 'deleteImages').mockResolvedValue(undefined);
+      results();
+      const clips = screen.getAllByTestId('video-clip');
+      expect(clips.map((c) => c.querySelector('.vv-clip__prompt')?.textContent)).toEqual(['prompt new.mp4', 'prompt old.mp4', '']);
+      expect(clips[0]!.querySelector('.vv-clip__info')!.textContent).toContain('seed 5');
+      expect(clips[0]!.querySelector('.vv-clip__info')!.textContent).toContain('832×480');
+      fireEvent.click(within(clips[0]!).getByTestId('video-finish'));
+      expect(useFinish.getState().name).toBe('new.mp4');
+      fireEvent.click(within(clips[1]!).getByLabelText(t('video.delete')));
+      await waitFor(() => expect(del).toHaveBeenCalledWith(['old.mp4']));
+      await waitFor(() => expect(useGallery.getState().images.some((i) => i.name === 'old.mp4')).toBe(false));
+    },
+  );
 });

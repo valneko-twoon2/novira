@@ -7,12 +7,12 @@ import { PRIMARY_LOCALES as APP } from '@/i18n/catalog';
 // @ts-expect-error -- plain ESM script without types
 import { CHAPTER_FILE, CHAPTER_NAME, PRIMARY_LOCALES } from '../scripts/locales.mjs';
 
-describe('what the frontend scripts share about languages', () => {
-  it('names the same primary languages as the app', { tags: ['condition', 'static'] }, () => {
+describe('what the frontend scripts share about languages', { tags: [] }, () => {
+  it('names the same primary languages as the app', { tags: ['static', 'equivalence'] }, () => {
     expect(PRIMARY_LOCALES).toEqual([...APP]);
   });
 
-  it('takes every chapter file of the manual and nothing else', { tags: ['condition', 'static'] }, () => {
+  it('takes every chapter file of the manual and nothing else', { tags: ['static', 'equivalence'] }, () => {
     const ja = readdirSync(fileURLToPath(new URL('../../docs/manual/ja', import.meta.url)));
     const chapters = ja.filter((f) => CHAPTER_FILE.test(f));
     expect(chapters.length).toBeGreaterThan(5);

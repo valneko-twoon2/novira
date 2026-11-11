@@ -26,8 +26,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('CompareToolbar', () => {
-  it('marks the mode in use and switches between the three modes', { tags: ['scenario'] }, () => {
+describe('CompareToolbar', { tags: [] }, () => {
+  it('marks the mode in use and switches between the three modes', { tags: ['equivalence'] }, () => {
     show();
     const radio = (key: Parameters<typeof t>[0]) => screen.getByRole('radio', { name: t(key) });
     expect(radio('gallery.compare.slider').getAttribute('aria-checked')).toBe('true');

@@ -22,23 +22,23 @@ beforeEach(() => {
   useVoice.setState({ form: { text: 'old', language: 'Auto', mode: 'preset', speaker: 'Ono_Anna', instruct: '' } });
 });
 
-describe('assistant fields', () => {
-  it('keeps valid music fields, clamps numbers and drops unknown choices', { tags: ['boundary'] }, () => {
+describe('assistant fields', { tags: [] }, () => {
+  it('keeps valid music fields, clamps numbers and drops unknown choices', { tags: ['boundary', 'error-guessing'] }, () => {
     expect(musicPatch({ tags: ' lofi ', seconds: 9999, bpm: 5, key: 'H major', language: 'ja', timeSignature: 5, extra: 1 })).toEqual({ tags: 'lofi', seconds: 240, bpm: 40, language: 'ja' });
   });
 
-  it('keeps valid voice fields and drops unknown choices', { tags: ['condition'] }, () => {
+  it('keeps valid voice fields and drops unknown choices', { tags: ['equivalence', 'error-guessing'] }, () => {
     expect(voicePatch({ text: ' hi ', speaker: 'Nobody', language: 'English', mode: 'design' })).toEqual({ text: 'hi', language: 'English', mode: 'design' });
   });
 });
 
-describe('video fields', () => {
+describe('video fields', { tags: [] }, () => {
   it('keeps a listed size, clamps the length and drops the rest', { tags: ['boundary'] }, () => {
     expect(videoPatch({ prompt: ' a cat ', size: '480x832', seconds: 99, fps: 24, mode: 'audio', x: 1 })).toEqual({ positivePrompt: 'a cat', width: 480, height: 832, seconds: 10, fps: 24 });
     expect(videoPatch({ size: '1x1' })).toEqual({});
   });
 
-  it('is filled from the video screen and undone', { tags: ['condition'] }, async () => {
+  it('is filled from the video screen and undone', { tags: ['scenario'] }, async () => {
     useUi.setState({ activeTab: 'generate', media: 'video' });
     useVideo.getState().setForm({ positivePrompt: 'old', seconds: 2 });
     await useAgent.getState().send('a dog running');
@@ -49,8 +49,8 @@ describe('video fields', () => {
   });
 });
 
-describe('assistant on the music and voice screens', () => {
-  it('sends the form, fills it, and undoes the change', { tags: ['condition'] }, async () => {
+describe('assistant on the music and voice screens', { tags: [] }, () => {
+  it('sends the form, fills it, and undoes the change', { tags: ['scenario'] }, async () => {
     useUi.setState({ activeTab: 'generate', media: 'music' });
     const chat = vi.spyOn(backend, 'agentChat');
     await useAgent.getState().send('calm piano, instrumental');
@@ -64,7 +64,7 @@ describe('assistant on the music and voice screens', () => {
     expect(useMusic.getState().form.instrumental).toBe(false);
   });
 
-  it('fills the voice text', { tags: ['condition'] }, async () => {
+  it('fills the voice text', { tags: ['scenario'] }, async () => {
     useUi.setState({ activeTab: 'generate', media: 'voice' });
     await useAgent.getState().send('Good morning');
     expect(useVoice.getState().form.text).toBe('Good morning');

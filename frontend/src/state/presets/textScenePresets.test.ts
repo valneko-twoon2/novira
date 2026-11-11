@@ -24,7 +24,7 @@ describe('scaleLayer', () => {
     expect(scaled.text).toBe(t.text);
   });
 
-  it('scales a bubble\'s size, border and tail by the smaller factor', { tags: ['condition'] }, () => {
+  it('scales a bubble\'s size, border and tail by the smaller factor', { tags: ['equivalence'] }, () => {
     const scaled = scaleLayer(bubble(EMPTY_SCENE), 0.5, 1) as BubbleLayer;
     expect(scaled).toMatchObject({ x: 250, y: 100, width: 200, height: 100, border: { width: 5 }, tail: { x: 20, y: 75, width: 30 } });
   });
@@ -42,7 +42,7 @@ describe('scaleLayer', () => {
     expect((scaleLayer(t, 2, 2) as TextLayer).rich).toEqual(t.rich);
   });
 
-  it('keeps everything at a factor of 1', { tags: ['condition'] }, () => {
+  it('keeps everything at a factor of 1', { tags: ['boundary'] }, () => {
     const b = bubble(EMPTY_SCENE);
     expect(scaleLayer(b, 1, 1)).toMatchObject({ x: b.x, y: b.y, width: b.width, height: b.height, border: b.border, tail: b.tail });
   });

@@ -61,8 +61,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('the tabs', () => {
-  it('shows one tab at a time, and none of the switches that did nothing', { tags: ['scenario'] }, () => {
+describe('the tabs', { tags: [] }, () => {
+  it('shows one tab at a time, and none of the switches that did nothing', { tags: ['equivalence'] }, () => {
     expect(screen.getByTestId('settings-pane-general')).toBeTruthy();
     expect(screen.getByTestId('settings-tab-general').getAttribute('aria-selected')).toBe('true');
     for (const id of ['generation', 'gallery', 'edit', 'comicText', 'engine', 'accounts', 'data', 'developer']) {
@@ -73,23 +73,27 @@ describe('the tabs', () => {
     expect(screen.queryByText(/CPU/)).toBeNull();
   });
 
-  it('has no version line: the About window says it', { tags: ['scenario'] }, () => {
+  it('has no version line: the About window says it', { tags: ['condition'] }, () => {
     expect(modal().queryByText(APP_VERSION, { exact: false })).toBeNull();
   });
 
-  it('in the app build, where the comic screen is hidden (with video, music and voice), keeps the text settings and leaves out the comic ones', { tags: ['scenario'] }, () => {
-    cleanup();
-    vi.stubEnv('MODE', 'production');
-    show();
-    expect(screen.getByTestId('settings-tab-engine')).toBeTruthy();
-    expect(screen.getByTestId('settings-tab-comicText').textContent).toBe(t('settings.tab.text'));
-    openTab('comicText');
-    expect(screen.getByTestId('settings-text-font')).toBeTruthy();
-    expect(screen.queryByTestId('settings-comic-font')).toBeNull();
-    expect(screen.queryByTestId('settings-comic-size')).toBeNull();
-  });
+  it(
+    'in the app build, where the comic screen is hidden (with video, music and voice), keeps the text settings and leaves out the comic ones',
+    { tags: ['condition'] },
+    () => {
+      cleanup();
+      vi.stubEnv('MODE', 'production');
+      show();
+      expect(screen.getByTestId('settings-tab-engine')).toBeTruthy();
+      expect(screen.getByTestId('settings-tab-comicText').textContent).toBe(t('settings.tab.text'));
+      openTab('comicText');
+      expect(screen.getByTestId('settings-text-font')).toBeTruthy();
+      expect(screen.queryByTestId('settings-comic-font')).toBeNull();
+      expect(screen.queryByTestId('settings-comic-size')).toBeNull();
+    },
+  );
 
-  it('opens again on the tab last open', { tags: ['scenario'] }, () => {
+  it('opens again on the tab last open', { tags: ['state-transition'] }, () => {
     openTab('data');
     cleanup();
     show();
@@ -102,7 +106,7 @@ describe('the tabs', () => {
   });
 });
 
-describe('general', () => {
+describe('general', { tags: [] }, () => {
   it('chooses the tab the app opens on and how long a notification stays', { tags: ['scenario'] }, async () => {
     fireEvent.click(screen.getByTestId('settings-start-tab'));
     expect(screen.getByRole('option', { name: t('app.tabs.models') })).toBeTruthy();
@@ -119,7 +123,7 @@ describe('general', () => {
   });
 });
 
-describe('generation, gallery, editing and developer', () => {
+describe('generation, gallery, editing and developer', { tags: [] }, () => {
   it('flips their switches and writes their numbers', { tags: ['scenario'] }, () => {
     openTab('generation');
     toggle(t('settings.antialiasProgressImages'));
@@ -147,7 +151,7 @@ describe('generation, gallery, editing and developer', () => {
     expect(useSettings.getState().showDevLog).toBe(!devLog);
   });
 
-  it('chooses whether the assistant may read pictures and prompts', { tags: ['scenario'] }, async () => {
+  it('chooses whether the assistant may read pictures and prompts', { tags: ['equivalence'] }, async () => {
     openTab('generation');
     expect(useSettings.getState().assistantReadAccess).toBe('ask');
     await choose('settings-assistant-read', t('settings.assistantRead.never'));
@@ -156,7 +160,7 @@ describe('generation, gallery, editing and developer', () => {
     expect(useSettings.getState().assistantReadAccess).toBe('always');
   });
 
-  it('chooses whether the assistant may look things up on Wikipedia, apart from reading pictures', { tags: ['scenario'] }, async () => {
+  it('chooses whether the assistant may look things up on Wikipedia, apart from reading pictures', { tags: ['equivalence'] }, async () => {
     openTab('generation');
     expect(useSettings.getState().assistantWebAccess).toBe('ask');
     await choose('settings-assistant-web', t('settings.assistantRead.never'));
@@ -167,10 +171,10 @@ describe('generation, gallery, editing and developer', () => {
   });
 });
 
-describe('clearing intermediates', () => {
+describe('clearing intermediates', { tags: [] }, () => {
   beforeEach(() => openTab('gallery'));
 
-  it('is off without intermediate pictures', { tags: ['scenario'] }, () => {
+  it('is off without intermediate pictures', { tags: ['boundary'] }, () => {
     expect((modal().getByText(tCount('settings.clearIntermediatesButton', 0)).closest('button') as HTMLButtonElement).disabled).toBe(true);
   });
 
@@ -200,7 +204,7 @@ describe('clearing intermediates', () => {
   });
 });
 
-describe('resetting', () => {
+describe('resetting', { tags: [] }, () => {
   beforeEach(() => openTab('data'));
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -211,20 +215,24 @@ describe('resetting', () => {
     fireEvent.click(screen.getByTestId('settings-reset-confirm'));
   };
 
-  it('puts the settings back at once by default, asking first, and leaves the rest of the saved state', { tags: ['scenario'] }, () => {
-    localStorage.setItem('novira.params', '{}');
-    useSettings.getState().set({ confirmOnDelete: false });
-    fireEvent.click(screen.getByTestId('settings-reset'));
-    fireEvent.click(modal().getByText(t('common.cancel')));
-    expect(useSettings.getState().confirmOnDelete).toBe(false);
-    resetNow();
-    expect(useSettings.getState().confirmOnDelete).toBe(true);
-    expect(localStorage.getItem('novira.params')).toBe('{}');
-    expect(screen.queryByTestId('settings-reset-done')).toBeNull();
-    expect(lastToast()?.status).toBe('success');
-  });
+  it(
+    'puts the settings back at once by default, asking first, and leaves the rest of the saved state',
+    { tags: ['state-transition', 'condition'] },
+    () => {
+      localStorage.setItem('novira.params', '{}');
+      useSettings.getState().set({ confirmOnDelete: false });
+      fireEvent.click(screen.getByTestId('settings-reset'));
+      fireEvent.click(modal().getByText(t('common.cancel')));
+      expect(useSettings.getState().confirmOnDelete).toBe(false);
+      resetNow();
+      expect(useSettings.getState().confirmOnDelete).toBe(true);
+      expect(localStorage.getItem('novira.params')).toBe('{}');
+      expect(screen.queryByTestId('settings-reset-done')).toBeNull();
+      expect(lastToast()?.status).toBe('success');
+    },
+  );
 
-  it('clears only the chosen part, says what it clears, and offers a reload', { tags: ['scenario'] }, async () => {
+  it('clears only the chosen part, says what it clears, and offers a reload', { tags: ['equivalence'] }, async () => {
     localStorage.setItem('novira.agent', '{}');
     localStorage.setItem('novira.params', '{}');
     await choose('settings-reset-scope', t('settings.reset.scope.assistant'));
@@ -237,7 +245,7 @@ describe('resetting', () => {
     expect(screen.getByTestId('settings-reset-done')).toBeTruthy();
   });
 
-  it('clears every saved key of the app for everything, and nothing outside it', { tags: ['scenario'] }, async () => {
+  it('clears every saved key of the app for everything, and nothing outside it', { tags: ['equivalence'] }, async () => {
     localStorage.setItem(`${PERSIST_PREFIX}test`, '1');
     localStorage.setItem('other-key', '1');
     await choose('settings-reset-scope', t('settings.reset.scope.all'));
@@ -265,8 +273,8 @@ describe('resetting', () => {
   });
 });
 
-describe('the desktop app', () => {
-  it('offers the UI zoom', { tags: ['scenario'] }, () => {
+describe('the desktop app', { tags: [] }, () => {
+  it('offers the UI zoom', { tags: ['condition'] }, () => {
     cleanup();
     vi.spyOn(backend, 'kind', 'get').mockReturnValue('tauri' as never);
     show();
@@ -277,7 +285,7 @@ describe('the desktop app', () => {
   });
 });
 
-describe('comic and text', () => {
+describe('comic and text', { tags: [] }, () => {
   beforeEach(() => openTab('comicText'));
 
   it('sets the default balloon font from the app and computer fonts, and back to the standard one', { tags: ['scenario'] }, async () => {
@@ -301,7 +309,7 @@ describe('comic and text', () => {
   });
 });
 
-describe('the engine', () => {
+describe('the engine', { tags: [] }, () => {
   it('turns the Civitai lookup on, and says it applies at the next start', { tags: ['scenario'] }, async () => {
     const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
@@ -312,61 +320,69 @@ describe('the engine', () => {
     expect(await screen.findByTestId('settings-engine-restart')).toBeTruthy();
   });
 
-  it('shows where the data and the engine are, and changes the package, the start wait and the model folders', { tags: ['scenario'] }, async () => {
-    const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
-    vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
-    const set = vi.spyOn(backend, 'setEngineSettings').mockImplementation(async (p) => ({ ...engine, ...p, restartNeeded: true }));
-    vi.spyOn(backend, 'addModelRoot').mockResolvedValueOnce({ ...engine, modelRoots: ['D:\\Models'], restartNeeded: true }).mockResolvedValueOnce(null);
-    const remove = vi.spyOn(backend, 'removeModelRoot').mockResolvedValue(engine);
-    openTab('engine');
-    expect((await screen.findByTestId('settings-engine-data-dir')).textContent).toBe('C:\\data');
-    expect(screen.getByTestId('settings-engine-mode').textContent).toBe('C:\\data\\comfyui');
-    expect(screen.getByText(t('settings.engine.modelRoots.none'))).toBeTruthy();
-    expect(screen.queryByTestId('settings-engine-restart')).toBeNull();
+  it(
+    'shows where the data and the engine are, and changes the package, the start wait and the model folders',
+    { tags: ['scenario'] },
+    async () => {
+      const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
+      vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
+      const set = vi.spyOn(backend, 'setEngineSettings').mockImplementation(async (p) => ({ ...engine, ...p, restartNeeded: true }));
+      vi.spyOn(backend, 'addModelRoot').mockResolvedValueOnce({ ...engine, modelRoots: ['D:\\Models'], restartNeeded: true }).mockResolvedValueOnce(null);
+      const remove = vi.spyOn(backend, 'removeModelRoot').mockResolvedValue(engine);
+      openTab('engine');
+      expect((await screen.findByTestId('settings-engine-data-dir')).textContent).toBe('C:\\data');
+      expect(screen.getByTestId('settings-engine-mode').textContent).toBe('C:\\data\\comfyui');
+      expect(screen.getByText(t('settings.engine.modelRoots.none'))).toBeTruthy();
+      expect(screen.queryByTestId('settings-engine-restart')).toBeNull();
 
-    await choose('settings-engine-package', t('settings.engine.package.amd'));
-    await waitFor(() => expect(set).toHaveBeenCalledWith({ comfyuiPackage: 'amd' }));
-    expect(await screen.findByTestId('settings-engine-restart')).toBeTruthy();
+      await choose('settings-engine-package', t('settings.engine.package.amd'));
+      await waitFor(() => expect(set).toHaveBeenCalledWith({ comfyuiPackage: 'amd' }));
+      expect(await screen.findByTestId('settings-engine-restart')).toBeTruthy();
 
-    // The start wait is saved once, after the box rests.
-    typeNumber(t('settings.engine.timeout.label'), '300');
-    await waitFor(() => expect(set).toHaveBeenCalledWith({ comfyuiStartTimeoutSecs: 300 }));
-    expect(set).toHaveBeenCalledTimes(2);
+      // The start wait is saved once, after the box rests.
+      typeNumber(t('settings.engine.timeout.label'), '300');
+      await waitFor(() => expect(set).toHaveBeenCalledWith({ comfyuiStartTimeoutSecs: 300 }));
+      expect(set).toHaveBeenCalledTimes(2);
 
-    fireEvent.click(screen.getByTestId('settings-engine-root-add'));
-    expect(await screen.findByText('D:\\Models')).toBeTruthy();
-    // A cancelled folder dialog changes nothing.
-    fireEvent.click(screen.getByTestId('settings-engine-root-add'));
-    await waitFor(() => expect((screen.getByTestId('settings-engine-root-add') as HTMLButtonElement).disabled).toBe(false));
-    expect(screen.getByText('D:\\Models')).toBeTruthy();
-    fireEvent.click(screen.getByTestId('settings-engine-root-remove'));
-    await waitFor(() => expect(remove).toHaveBeenCalledWith(0));
-    await waitFor(() => expect(screen.queryByText('D:\\Models')).toBeNull());
-  });
+      fireEvent.click(screen.getByTestId('settings-engine-root-add'));
+      expect(await screen.findByText('D:\\Models')).toBeTruthy();
+      // A cancelled folder dialog changes nothing.
+      fireEvent.click(screen.getByTestId('settings-engine-root-add'));
+      await waitFor(() => expect((screen.getByTestId('settings-engine-root-add') as HTMLButtonElement).disabled).toBe(false));
+      expect(screen.getByText('D:\\Models')).toBeTruthy();
+      fireEvent.click(screen.getByTestId('settings-engine-root-remove'));
+      await waitFor(() => expect(remove).toHaveBeenCalledWith(0));
+      await waitFor(() => expect(screen.queryByText('D:\\Models')).toBeNull());
+    },
+  );
 
-  it('changes the data folder after asking what happens to the data, and cancels a change that waits', { tags: ['scenario'] }, async () => {
-    const engine = { dataDir: 'C:\\data', dataDirChangeable: true, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
-    vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
-    const choose = vi.spyOn(backend, 'chooseDataDir').mockImplementation(async (moveData) => ({ ...engine, dataDirNext: 'D:\\data2', dataDirMoves: moveData, restartNeeded: true }));
-    const cancel = vi.spyOn(backend, 'cancelDataDirChange').mockResolvedValue(engine);
-    openTab('engine');
-    fireEvent.click(await screen.findByTestId('settings-engine-data-dir-change'));
-    // The folder dialog opens only after the choice about the data.
-    expect(choose).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByTestId('settings-engine-data-dir-move'));
-    await waitFor(() => expect(choose).toHaveBeenCalledWith(true));
-    expect((await screen.findByTestId('settings-engine-data-dir-next')).textContent).toBe(t('settings.engine.dataDir.nextMove', { path: 'D:\\data2' }));
-    expect(screen.getByTestId('settings-engine-restart')).toBeTruthy();
-    // The folder in use is still the one shown.
-    expect(screen.getByTestId('settings-engine-data-dir').textContent).toBe('C:\\data');
-    fireEvent.click(screen.getByTestId('settings-engine-data-dir-change'));
-    fireEvent.click(screen.getByTestId('settings-engine-data-dir-use'));
-    await waitFor(() => expect(choose).toHaveBeenLastCalledWith(false));
-    expect((await screen.findByTestId('settings-engine-data-dir-next')).textContent).toBe(t('settings.engine.dataDir.nextUse', { path: 'D:\\data2' }));
-    fireEvent.click(screen.getByTestId('settings-engine-data-dir-cancel'));
-    await waitFor(() => expect(cancel).toHaveBeenCalled());
-    await waitFor(() => expect(screen.queryByTestId('settings-engine-data-dir-next')).toBeNull());
-  });
+  it(
+    'changes the data folder after asking what happens to the data, and cancels a change that waits',
+    { tags: ['state-transition'] },
+    async () => {
+      const engine = { dataDir: 'C:\\data', dataDirChangeable: true, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
+      vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
+      const choose = vi.spyOn(backend, 'chooseDataDir').mockImplementation(async (moveData) => ({ ...engine, dataDirNext: 'D:\\data2', dataDirMoves: moveData, restartNeeded: true }));
+      const cancel = vi.spyOn(backend, 'cancelDataDirChange').mockResolvedValue(engine);
+      openTab('engine');
+      fireEvent.click(await screen.findByTestId('settings-engine-data-dir-change'));
+      // The folder dialog opens only after the choice about the data.
+      expect(choose).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByTestId('settings-engine-data-dir-move'));
+      await waitFor(() => expect(choose).toHaveBeenCalledWith(true));
+      expect((await screen.findByTestId('settings-engine-data-dir-next')).textContent).toBe(t('settings.engine.dataDir.nextMove', { path: 'D:\\data2' }));
+      expect(screen.getByTestId('settings-engine-restart')).toBeTruthy();
+      // The folder in use is still the one shown.
+      expect(screen.getByTestId('settings-engine-data-dir').textContent).toBe('C:\\data');
+      fireEvent.click(screen.getByTestId('settings-engine-data-dir-change'));
+      fireEvent.click(screen.getByTestId('settings-engine-data-dir-use'));
+      await waitFor(() => expect(choose).toHaveBeenLastCalledWith(false));
+      expect((await screen.findByTestId('settings-engine-data-dir-next')).textContent).toBe(t('settings.engine.dataDir.nextUse', { path: 'D:\\data2' }));
+      fireEvent.click(screen.getByTestId('settings-engine-data-dir-cancel'));
+      await waitFor(() => expect(cancel).toHaveBeenCalled());
+      await waitFor(() => expect(screen.queryByTestId('settings-engine-data-dir-next')).toBeNull());
+    },
+  );
 
   it('cannot change a data folder that is fixed, and shows why a move did not happen', { tags: ['error-guessing'] }, async () => {
     const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: 'not empty', comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
@@ -401,7 +417,7 @@ describe('the engine', () => {
     await waitFor(() => expect(lastToast()).toMatchObject({ status: 'error', title: t('settings.engine.failed'), description: 'already listed' }));
   });
 
-  it('says an extra model folder is added in the desktop app when the page is on the browser server', { tags: ['scenario'] }, async () => {
+  it('says an extra model folder is added in the desktop app when the page is on the browser server', { tags: ['condition'] }, async () => {
     asBrowserServer();
     const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: ['D:\\Models'], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
@@ -412,7 +428,7 @@ describe('the engine', () => {
     expect(screen.getByTestId('settings-engine-root-remove')).toBeTruthy();
   });
 
-  describe('the package choice when novira has installed ComfyUI', () => {
+  describe('the package choice when novira has installed ComfyUI', { tags: [] }, () => {
     /** An owned engine as the backend reports it: the package saved, and what novira installed (null when unknown). */
     const engineFor = (over: Partial<EngineSettings>): EngineSettings => ({
       dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui',
@@ -432,7 +448,7 @@ describe('the engine', () => {
     const echoSave = (engine: EngineSettings) =>
       vi.spyOn(backend, 'setEngineSettings').mockImplementation(async (p) => ({ ...engine, ...p, restartNeeded: true }));
 
-    it('changes the package at once when no ComfyUI is installed yet', { tags: ['scenario'] }, async () => {
+    it('changes the package at once when no ComfyUI is installed yet', { tags: ['condition'] }, async () => {
       const engine = engineFor({});
       vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
       const set = echoSave(engine);
@@ -443,31 +459,35 @@ describe('the engine', () => {
       expect(screen.queryByText(t('settings.engine.package.reinstall'))).toBeNull();
     });
 
-    it('asks before another package reinstalls ComfyUI; Cancel saves nothing, confirm saves the package', { tags: ['scenario'] }, async () => {
-      const engine = engineFor({ comfyuiInstalled: true, installedComfyuiPackage: 'nvidia' });
-      vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
-      const set = echoSave(engine);
-      openTab('engine');
+    it(
+      'asks before another package reinstalls ComfyUI; Cancel saves nothing, confirm saves the package',
+      { tags: ['state-transition'] },
+      async () => {
+        const engine = engineFor({ comfyuiInstalled: true, installedComfyuiPackage: 'nvidia' });
+        vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
+        const set = echoSave(engine);
+        openTab('engine');
 
-      await choose('settings-engine-package', t('settings.engine.package.amd'));
-      expect(await screen.findByText(t('settings.engine.package.reinstall'))).toBeTruthy();
-      expect(screen.getByTestId('settings-engine-package').textContent).toBe(t('settings.engine.package.amd'));
-      expect(set).not.toHaveBeenCalled();
+        await choose('settings-engine-package', t('settings.engine.package.amd'));
+        expect(await screen.findByText(t('settings.engine.package.reinstall'))).toBeTruthy();
+        expect(screen.getByTestId('settings-engine-package').textContent).toBe(t('settings.engine.package.amd'));
+        expect(set).not.toHaveBeenCalled();
 
-      fireEvent.click(screen.getByTestId('settings-engine-package-cancel'));
-      expect(screen.queryByTestId('settings-engine-package-confirm')).toBeNull();
-      expect(screen.getByTestId('settings-engine-package').textContent).toBe(t('settings.engine.package.nvidia'));
-      expect(set).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByTestId('settings-engine-package-cancel'));
+        expect(screen.queryByTestId('settings-engine-package-confirm')).toBeNull();
+        expect(screen.getByTestId('settings-engine-package').textContent).toBe(t('settings.engine.package.nvidia'));
+        expect(set).not.toHaveBeenCalled();
 
-      await choose('settings-engine-package', t('settings.engine.package.amd'));
-      fireEvent.click(await screen.findByTestId('settings-engine-package-confirm'));
-      await waitFor(() => expect(set).toHaveBeenCalledWith({ comfyuiPackage: 'amd' }));
-      expect(set).toHaveBeenCalledTimes(1);
-      expect(await screen.findByTestId('settings-engine-restart')).toBeTruthy();
-      await waitFor(() => expect(screen.queryByTestId('settings-engine-package-confirm')).toBeNull());
-    });
+        await choose('settings-engine-package', t('settings.engine.package.amd'));
+        fireEvent.click(await screen.findByTestId('settings-engine-package-confirm'));
+        await waitFor(() => expect(set).toHaveBeenCalledWith({ comfyuiPackage: 'amd' }));
+        expect(set).toHaveBeenCalledTimes(1);
+        expect(await screen.findByTestId('settings-engine-restart')).toBeTruthy();
+        await waitFor(() => expect(screen.queryByTestId('settings-engine-package-confirm')).toBeNull());
+      },
+    );
 
-    it('does not ask when the package is the one the install came from', { tags: ['scenario'] }, async () => {
+    it('does not ask when the package is the one the install came from', { tags: ['condition'] }, async () => {
       // Saved amd, installed from nvidia (the change waits for the next start): choosing nvidia again saves at once.
       const engine = engineFor({ comfyuiInstalled: true, installedComfyuiPackage: 'nvidia', comfyuiPackage: 'amd', restartNeeded: true });
       vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
@@ -478,7 +498,7 @@ describe('the engine', () => {
       expect(screen.queryByTestId('settings-engine-package-confirm')).toBeNull();
     });
 
-    it('takes an install of unknown origin to be the saved package, so another package asks first', { tags: ['scenario'] }, async () => {
+    it('takes an install of unknown origin to be the saved package, so another package asks first', { tags: ['condition'] }, async () => {
       const engine = engineFor({ comfyuiInstalled: true, installedComfyuiPackage: null, comfyuiPackage: 'nvidia' });
       vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
       const set = echoSave(engine);
@@ -490,7 +510,7 @@ describe('the engine', () => {
   });
 });
 
-describe('openSettings of the ui state', () => {
+describe('openSettings of the ui state', { tags: [] }, () => {
   it('opens the modal on the chosen tab', { tags: ['scenario'] }, () => {
     cleanup();
     useUi.setState({ ...initial.ui, modal: null }, true);

@@ -6,22 +6,22 @@ import { paidBadge, paidReason } from './paid';
 const DAY = 86_400_000;
 const now = Date.UTC(2026, 9, 26);
 
-describe('paid versions', () => {
-  it('is not paid when the answer says nothing, and not on Hugging Face', { tags: ['boundary'] }, () => {
+describe('paid versions', { tags: [] }, () => {
+  it('is not paid when the answer says nothing, and not on Hugging Face', { tags: ['condition'] }, () => {
     expect(isPaid(undefined, now)).toBe(false);
     expect(isPaid({}, now)).toBe(false);
     expect(paidBadge({}, now)).toBeNull();
     expect(paidReason({ paid: false, paidUntil: null }, now)).toBeNull();
   });
 
-  it('is paid for good without an end date, and for ever after', { tags: ['error-guessing'] }, () => {
+  it('is paid for good without an end date, and for ever after', { tags: ['condition'] }, () => {
     expect(isPaid({ paid: true, paidUntil: null }, now)).toBe(true);
     expect(isPaid({ paid: true }, now + 1000 * DAY)).toBe(true);
     expect(paidBadge({ paid: true }, now)).toBe('有料');
     expect(paidReason({ paid: true }, now)).toContain('購入');
   });
 
-  it('is paid in early access until its end, free from that moment', { tags: ['condition'] }, () => {
+  it('is paid in early access until its end, free from that moment', { tags: ['boundary'] }, () => {
     const until = now + 5 * DAY;
     expect(isPaid({ paid: true, paidUntil: until }, until - 1)).toBe(true);
     expect(isPaid({ paid: true, paidUntil: until }, until)).toBe(false);

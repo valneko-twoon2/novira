@@ -11,7 +11,7 @@ afterEach(() => vi.useRealTimers());
 const titles = () => useToasts.getState().toasts.map((t) => t.title);
 
 describe('toasts', () => {
-  it('dismisses a toast after its duration', { tags: ['condition'] }, () => {
+  it('dismisses a toast after its duration', { tags: ['boundary'] }, () => {
     const id = toast({ status: 'info', title: 'a' }, 1000);
     expect(useToasts.getState().toasts.map((t) => t.id)).toEqual([id]);
     vi.advanceTimersByTime(999);
@@ -20,7 +20,7 @@ describe('toasts', () => {
     expect(titles()).toEqual([]);
   });
 
-  it('stays as long as the setting says when no duration is given', { tags: ['condition'] }, () => {
+  it('stays as long as the setting says when no duration is given', { tags: ['boundary'] }, () => {
     useSettings.getState().set({ toastSeconds: 6 });
     toast({ status: 'info', title: 'b' });
     vi.advanceTimersByTime(5999);
@@ -30,7 +30,7 @@ describe('toasts', () => {
     useSettings.getState().reset();
   });
 
-  it('keeps a toast with no duration until it is dismissed', { tags: ['condition'] }, () => {
+  it('keeps a toast with no duration until it is dismissed', { tags: ['boundary'] }, () => {
     const id = toast({ status: 'error', title: 'sticky' }, 0);
     vi.advanceTimersByTime(60_000);
     expect(titles()).toEqual(['sticky']);
@@ -90,7 +90,7 @@ describe('notification history', () => {
     expect(useToasts.getState().history[0]?.actions).toBeUndefined();
   });
 
-  it('marks everything read, forgets one notification or all of them', { tags: ['condition'] }, () => {
+  it('marks everything read, forgets one notification or all of them', { tags: ['equivalence'] }, () => {
     const a = toast({ status: 'info', title: 'a' }, 0);
     toast({ status: 'info', title: 'b' }, 0);
     useToasts.getState().markRead();

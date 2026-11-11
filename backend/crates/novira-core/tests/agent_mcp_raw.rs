@@ -45,7 +45,7 @@ async fn a_request_line_without_a_version_is_a_bad_request() {
     assert!(answer.starts_with("HTTP/1.1 400 Bad Request"), "{answer}");
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing
 #[tokio::test]
 async fn another_http_major_version_is_refused_with_a_plain_status_text() {
     let server = mcp::start(Arc::new(Nothing), 5).await.unwrap();
@@ -53,7 +53,7 @@ async fn another_http_major_version_is_refused_with_a_plain_status_text() {
     assert!(answer.starts_with("HTTP/1.1 505 Error"), "{answer}");
 }
 
-// tags: error-guessing
+// tags: error-guessing, condition
 #[tokio::test]
 async fn get_is_refused_and_connection_close_ends_the_connection() {
     let server = mcp::start(Arc::new(Nothing), 5).await.unwrap();
@@ -64,7 +64,7 @@ async fn get_is_refused_and_connection_close_ends_the_connection() {
     assert!(answer.contains("Connection: close"), "{answer}");
 }
 
-// tags: error-guessing, state-transition
+// tags: error-guessing
 #[tokio::test]
 async fn a_body_the_client_never_finishes_is_a_bad_request() {
     let server = mcp::start(Arc::new(Nothing), 5).await.unwrap();
@@ -80,7 +80,7 @@ async fn a_body_the_client_never_finishes_is_a_bad_request() {
     assert!(answer.starts_with("HTTP/1.1 400 Bad Request"), "{answer}");
 }
 
-// tags: error-guessing, decision-table
+// tags: error-guessing
 #[tokio::test]
 async fn a_tool_call_without_a_name_is_a_tool_error() {
     let server = mcp::start(Arc::new(Nothing), 5).await.unwrap();
@@ -101,7 +101,7 @@ async fn a_tool_call_without_a_name_is_a_tool_error() {
     assert!(answer.contains("\"isError\":true"), "{answer}");
 }
 
-// tags: scenario
+// tags: condition
 #[tokio::test]
 async fn get_without_connection_close_keeps_the_connection_for_the_next_request() {
     let server = mcp::start(Arc::new(Nothing), 5).await.unwrap();

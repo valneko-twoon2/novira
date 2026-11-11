@@ -33,8 +33,8 @@ const filter: fc.Arbitrary<ModelFilter> = fc.record({
   favorites: fc.array(fc.nat(30).map((n) => `k${n}`), { maxLength: 6 }),
 });
 
-describe('filterModels (properties)', () => {
-  it('returns a subset that matches the filter, without changing the input', { tags: ['condition'] }, () => {
+describe('filterModels (properties)', { tags: [] }, () => {
+  it('returns a subset that matches the filter, without changing the input', { tags: ['decision-table', 'error-guessing'] }, () => {
     check(
       fc.property(models, filter, (list, f) => {
         const before = JSON.stringify(list);
@@ -55,7 +55,7 @@ describe('filterModels (properties)', () => {
     );
   });
 
-  it('is ordered by the sort key, and idempotent', { tags: ['condition'] }, () => {
+  it('is ordered by the sort key, and idempotent', { tags: ['equivalence', 'error-guessing'] }, () => {
     check(
       fc.property(models, filter, (list, f) => {
         const out = filterModels(list, f);

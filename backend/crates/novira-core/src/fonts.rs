@@ -185,7 +185,7 @@ mod tests {
         );
     }
 
-    // tags: equivalence
+    // tags: equivalence, error-guessing
     #[test]
     fn bitmap_fonts_vertical_variants_and_unusable_names_are_left_out() {
         assert_eq!(
@@ -204,7 +204,7 @@ mod tests {
         );
     }
 
-    // tags: boundary, equivalence
+    // tags: boundary
     #[test]
     fn a_very_long_name_and_a_very_long_list_are_cut() {
         let long = format!("{} (TrueType)", "x".repeat(MAX_NAME_CHARS + 1));

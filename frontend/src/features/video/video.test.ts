@@ -4,7 +4,7 @@ import { VIDEO_FAMILY_PRESETS, VIDEO_PRESETS, useVideo } from '@/state/media/vid
 import { useModels } from '@/state/models';
 import type { ModelConfig } from '@/backend';
 
-describe('the video models', () => {
+describe('the video models', { tags: [] }, () => {
   beforeEach(() => useVideo.setState({ form: { ...useVideo.getState().form, model: 'standard', ...VIDEO_PRESETS.standard } }));
 
   it('asks the backend for the fast model only when it is picked', { tags: ['condition'] }, () => {
@@ -26,13 +26,13 @@ describe('the video models', () => {
     useVideo.getState().setForm({ fp8: false, tiledDecode: false });
   });
 
-  it('keeps the fast model inside what the form allows', { tags: ['condition'] }, () => {
+  it('keeps the fast model inside what the form allows', { tags: ['boundary'] }, () => {
     expect(VIDEO_PRESETS.fast.steps).toBeGreaterThanOrEqual(4);
     expect(VIDEO_PRESETS.fast.cfgScale).toBeGreaterThanOrEqual(1);
   });
 });
 
-describe('an installed video model', () => {
+describe('an installed video model', { tags: [] }, () => {
   const wan = { key: 'wan-1', name: 'wan2.1_t2v_1.3B', base: 'wan', type: 'diffusion_model', format: 'checkpoint', description: '', path: 'p', size: 1, source: 'local' } as ModelConfig;
   beforeEach(() => {
     useModels.setState({ models: [wan] });
@@ -51,7 +51,7 @@ describe('an installed video model', () => {
     expect(buildVideoRequest(useVideo.getState().form).params.modelKey).toBe('');
   });
 
-  it('has settings for each family the backend runs', { tags: ['condition'] }, () => {
+  it('has settings for each family the backend runs', { tags: ['boundary'] }, () => {
     expect(Object.keys(VIDEO_FAMILY_PRESETS).sort()).toEqual(['hunyuan-video', 'hunyuan-video-15', 'ltx-video', 'ltx2', 'wan']);
     for (const p of Object.values(VIDEO_FAMILY_PRESETS)) {
       expect(p.steps).toBeGreaterThanOrEqual(4);

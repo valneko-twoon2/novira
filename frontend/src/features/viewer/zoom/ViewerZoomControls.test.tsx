@@ -25,13 +25,13 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('ViewerZoomControls', () => {
-  it('shows the zoom as a rounded percentage', { tags: ['scenario'] }, () => {
+describe('ViewerZoomControls', { tags: [] }, () => {
+  it('shows the zoom as a rounded percentage', { tags: ['boundary'] }, () => {
     show(1.256);
     expect(screen.getByTestId('viewer-zoom').textContent).toBe('126%');
   });
 
-  it('zooms in and out, shows the actual size and fits', { tags: ['scenario'] }, () => {
+  it('zooms in and out, shows the actual size and fits', { tags: ['equivalence'] }, () => {
     const fns = show(1);
     fireEvent.click(screen.getByRole('button', { name: new RegExp(t('common.zoomIn')) }));
     expect(fns.zoomIn).toHaveBeenCalledTimes(1);
@@ -43,7 +43,7 @@ describe('ViewerZoomControls', () => {
     expect(fns.fit).toHaveBeenCalledTimes(1);
   });
 
-  it('zooms to a preset and fits from the menu', { tags: ['scenario'] }, async () => {
+  it('zooms to a preset and fits from the menu', { tags: ['equivalence'] }, async () => {
     const fns = show(1);
     fireEvent.keyDown(screen.getByTestId('viewer-zoom'), { key: 'Enter' });
     fireEvent.click(await screen.findByRole('menuitem', { name: '200%' }));

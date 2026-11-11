@@ -21,13 +21,13 @@ function saved(panelIds: string[], shapes: unknown, templateShapes: unknown = nu
   };
 }
 
-describe('reading the shapes of a saved page', () => {
+describe('reading the shapes of a saved page', { tags: [] }, () => {
   it('keeps shapes that are one for each panel', { tags: ['equivalence'] }, () => {
     const project = parseComicProject(saved(['a', 'b'], [triangle, triangle]));
     expect(project!.pages[0]!.shapes).toEqual([triangle, triangle]);
   });
 
-  it('takes the automatic layout when the shapes are not one for each panel', { tags: ['equivalence'] }, () => {
+  it('takes the automatic layout when the shapes are not one for each panel', { tags: ['condition'] }, () => {
     expect(parseComicProject(saved(['a', 'b'], [triangle]))!.pages[0]!.shapes).toBeNull();
   });
 

@@ -38,7 +38,7 @@ beforeEach(() => {
   registerWorkflowsFeature();
 });
 
-describe('pack nodes', () => {
+describe('pack nodes', { tags: [] }, () => {
   it('join the catalog when ComfyUI reports its definitions', { tags: ['condition'] }, () => {
     expect(getTemplate('comfy:MockFilmGrain')).toBeUndefined();
     useComfyNodes.setState({ defs: MOCK_NODE_DEFS });
@@ -54,13 +54,13 @@ describe('pack nodes', () => {
   });
 });
 
-describe('store actions', () => {
-  it('are filled in for the editor', { tags: ['condition'] }, () => {
+describe('store actions', { tags: [] }, () => {
+  it('are filled in for the editor', { tags: ['equivalence'] }, () => {
     const s = useWorkflows.getState();
     expect([typeof s.loadWorkflow, typeof s.canLoadImage, typeof s.loadImage, typeof s.addImageInput]).toEqual(['function', 'function', 'function', 'function']);
   });
 
-  it('open a picked file at once, or after asking when unsaved changes would be lost', { tags: ['state-transition'] }, () => {
+  it('open a picked file at once, or after asking when unsaved changes would be lost', { tags: ['condition'] }, () => {
     const file = new File(['{}'], 'flow.json');
     useWorkflows.setState({ isTouched: false });
     useWorkflows.getState().loadFile(file);
@@ -75,8 +75,8 @@ describe('store actions', () => {
   });
 });
 
-describe('the assistant hooks', () => {
-  it('offers the workflow as context, a snapshot and a restore', { tags: ['condition'] }, () => {
+describe('the assistant hooks', { tags: [] }, () => {
+  it('offers the workflow as context, a snapshot and a restore', { tags: ['equivalence'] }, () => {
     const snap = editor().snapshot() as { nodes: unknown[] };
     expect(Array.isArray(snap.nodes)).toBe(true);
     expect(editor().context()).toBeTruthy();
@@ -95,7 +95,7 @@ describe('the assistant hooks', () => {
     expect(useWorkflows.getState().nodes.some((n) => n.id === 'added')).toBe(true);
   });
 
-  it('opens a workflow the assistant wrote, tolerating a graph that is not an object', { tags: ['state-transition'] }, () => {
+  it('opens a workflow the assistant wrote, tolerating a graph that is not an object', { tags: ['error-guessing'] }, () => {
     const opener = captured.opener as (name: string, graph: unknown) => void;
     opener('From chat', 'garbage');
     opener('From chat', { nodes: [], edges: [] });
@@ -103,8 +103,8 @@ describe('the assistant hooks', () => {
   });
 });
 
-describe('the Invoke builder', () => {
-  it('reports what is missing, builds a request and tells when the graph changes', { tags: ['error-guessing'] }, async () => {
+describe('the Invoke builder', { tags: [] }, () => {
+  it('reports what is missing, builds a request and tells when the graph changes', { tags: ['scenario'] }, async () => {
     expect(Array.isArray(builder().readiness())).toBe(true);
     useWorkflows.setState({ nodes: [], edges: [] });
     expect(builder().readiness().length).toBeGreaterThan(0);
@@ -118,7 +118,7 @@ describe('the Invoke builder', () => {
     stop();
   });
 
-  it('builds a request for a graph that is ready, and refuses one with nothing to run', { tags: ['error-guessing', 'boundary'] }, async () => {
+  it('builds a request for a graph that is ready, and refuses one with nothing to run', { tags: ['condition', 'boundary'] }, async () => {
     await expect(builder().build({ prepend: false })).rejects.toMatchObject({ reason: 'noOutput' });
     const { nodes, edges } = buildTemplate(GRAPH_TEMPLATES.find((t) => t.id === 'text2image')!);
     nodes.find((n) => n.data.type === 'sdxl_model_loader')!.data.inputs.model = 'sdxl-key';

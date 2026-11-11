@@ -1,4 +1,3 @@
-//! tags: state-transition, error-guessing
 //! A start-up restore cut off after each of its steps (the power goes, the process is killed), then the next start.
 //! Whatever step it stopped at, the next start ends with one whole data folder: the restored one when the backup is
 //! good, the previous one when it is refused. Nothing is left half moved, and no restore folder stays behind.
@@ -123,6 +122,7 @@ fn cut_off_after(data: &Path, k: usize) -> bool {
     (0..k).any(|_| run.step() != Next::More)
 }
 
+// tags: state-transition, error-guessing
 #[test]
 fn a_good_restore_cut_off_after_any_step_is_finished_by_the_next_start() {
     for k in 0.. {
@@ -138,6 +138,7 @@ fn a_good_restore_cut_off_after_any_step_is_finished_by_the_next_start() {
     }
 }
 
+// tags: state-transition, error-guessing
 #[test]
 fn a_refused_restore_cut_off_after_any_step_puts_the_previous_data_back_at_the_next_start() {
     for k in 0.. {
@@ -153,6 +154,7 @@ fn a_refused_restore_cut_off_after_any_step_puts_the_previous_data_back_at_the_n
     }
 }
 
+// tags: state-transition, error-guessing
 #[test]
 fn a_start_cut_off_while_the_previous_data_was_being_removed_finishes_the_removal() {
     let dir = tempfile::tempdir().unwrap();
@@ -170,6 +172,7 @@ fn a_start_cut_off_while_the_previous_data_was_being_removed_finishes_the_remova
     assert_restored(&data, usize::MAX);
 }
 
+// tags: state-transition, error-guessing
 #[test]
 fn a_start_cut_off_while_the_staging_folder_was_being_removed_applies_nothing_again() {
     let dir = tempfile::tempdir().unwrap();
@@ -194,6 +197,7 @@ fn a_start_cut_off_while_the_staging_folder_was_being_removed_applies_nothing_ag
     assert!(matches!(take_outcome(&data), RestoreOutcome::Failed { .. }));
 }
 
+// tags: error-guessing
 #[test]
 fn a_damaged_journal_changes_nothing() {
     let dir = tempfile::tempdir().unwrap();
@@ -222,6 +226,7 @@ fn a_damaged_journal_changes_nothing() {
     assert_eq!(which(&data).as_deref(), Some("current"));
 }
 
+// tags: state-transition, boundary
 #[test]
 fn a_refused_restore_into_an_empty_data_folder_says_the_data_was_kept() {
     let dir = tempfile::tempdir().unwrap();
@@ -241,6 +246,7 @@ fn a_refused_restore_into_an_empty_data_folder_says_the_data_was_kept() {
     assert!(leftovers(&data).is_empty());
 }
 
+// tags: error-guessing, state-transition
 #[test]
 fn a_folder_of_the_previous_data_that_cannot_be_removed_is_named() {
     let dir = tempfile::tempdir().unwrap();

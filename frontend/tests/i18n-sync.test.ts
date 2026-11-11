@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
 import { changedKeys, unsyncedKeys } from '../scripts/check-i18n-sync.mjs';
 
-describe('check-i18n-sync', () => {
-  it('finds added, removed and rewritten keys', { tags: ['condition'] }, () => {
+describe('check-i18n-sync', { tags: [] }, () => {
+  it('finds added, removed and rewritten keys', { tags: ['equivalence', 'boundary'] }, () => {
     expect(changedKeys({ a: '1', b: '2', c: '3' }, { a: '1', b: 'two', d: '4' }).sort()).toEqual(['b', 'c', 'd']);
     expect(changedKeys({ a: '1' }, { a: '1' })).toEqual([]);
   });
@@ -18,7 +18,7 @@ describe('check-i18n-sync', () => {
     expect(changedKeys({ a: 'novira' }, { a: 'novira to' })).toEqual(['a']);
   });
 
-  it('wants ja and en to change the same keys', { tags: ['condition'] }, () => {
+  it('wants ja and en to change the same keys', { tags: ['equivalence'] }, () => {
     expect(unsyncedKeys({ ja: ['x', 'y'], en: ['x'] })).toEqual({ en: ['y'] });
     expect(unsyncedKeys({ ja: ['x'], en: ['x'] })).toEqual({});
   });
@@ -29,7 +29,7 @@ describe('check-i18n-sync', () => {
     expect(unsyncedKeys({ ja: ['x'], en: ['x'], ko: [] }, [], { ko: new Set() })).toEqual({});
   });
 
-  it('accepts a translation made on its own, and a text that was updated or removed', { tags: ['condition'] }, () => {
+  it('accepts a translation made on its own, and a text that was updated or removed', { tags: ['equivalence'] }, () => {
     expect(unsyncedKeys({ ja: [], en: [], ko: ['x', 'y'] })).toEqual({});
     expect(unsyncedKeys({ ja: ['z'], en: ['z'], ko: ['z'] }, [], { ko: new Set(['z']) })).toEqual({});
   });

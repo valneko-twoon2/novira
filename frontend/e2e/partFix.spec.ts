@@ -44,35 +44,39 @@ test('a part painted on the canvas is cut out into the gallery and erased into s
   await expect(page.getByTestId('canvas-entity')).toHaveCount(3);
 });
 
-test('a finished result stays on its page while the next ones are made, and the progress shows on the last page', { tag: ['@state-transition'] }, async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('novira.settings', JSON.stringify({ state: { mockStepDelay: 120 }, version: 0 })));
-  await openPartFix(page);
-  await paint(page);
-  const iterations = page.getByLabel(msg('params.invoke.iterations'), { exact: true }).locator('visible=true').first();
-  await iterations.fill('3');
-  await iterations.press('Tab');
-  await page.getByTestId('canvas-mask-redraw').click();
-  // Held after the first job (it runs on; the other two wait), so a busy machine cannot finish the second one before
-  // the first result is looked at.
-  await showTab(page, 'queue');
-  await expect(page.locator('[data-testid="queue-item"][data-status="in_progress"]')).toHaveCount(1, { timeout: 20_000 });
-  await page.getByTestId('queue-pause').click();
-  await showTab(page, 'canvas');
+test(
+  'a finished result stays on its page while the next ones are made, and the progress shows on the last page',
+  { tag: ['@state-transition'] },
+  async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('novira.settings', JSON.stringify({ state: { mockStepDelay: 120 }, version: 0 })));
+    await openPartFix(page);
+    await paint(page);
+    const iterations = page.getByLabel(msg('params.invoke.iterations'), { exact: true }).locator('visible=true').first();
+    await iterations.fill('3');
+    await iterations.press('Tab');
+    await page.getByTestId('canvas-mask-redraw').click();
+    // Held after the first job (it runs on; the other two wait), so a busy machine cannot finish the second one before
+    // the first result is looked at.
+    await showTab(page, 'queue');
+    await expect(page.locator('[data-testid="queue-item"][data-status="in_progress"]')).toHaveCount(1, { timeout: 20_000 });
+    await page.getByTestId('queue-pause').click();
+    await showTab(page, 'canvas');
 
-  // The first result is in; the view stays on the generating page, where nothing can be accepted yet.
-  const count = page.getByTestId('canvas-staging-count');
-  await expect(count).toHaveText('2/2', { timeout: 20_000 });
-  await expect(page.getByTestId('canvas-staging-accept')).toBeDisabled();
-  await page.getByTestId('canvas-staging-next').click();
-  await expect(count).toHaveText('1/2');
-  await expect(page.getByTestId('canvas-staging-accept')).toBeEnabled();
-  // The others arrive without moving the view off the first result.
-  await showTab(page, 'queue');
-  await page.getByTestId('queue-resume').click();
-  await showTab(page, 'canvas');
-  await expect(count).toHaveText('1/3', { timeout: 30_000 });
-  await expect(page.getByTestId('canvas-staging-accept')).toBeEnabled();
-});
+    // The first result is in; the view stays on the generating page, where nothing can be accepted yet.
+    const count = page.getByTestId('canvas-staging-count');
+    await expect(count).toHaveText('2/2', { timeout: 20_000 });
+    await expect(page.getByTestId('canvas-staging-accept')).toBeDisabled();
+    await page.getByTestId('canvas-staging-next').click();
+    await expect(count).toHaveText('1/2');
+    await expect(page.getByTestId('canvas-staging-accept')).toBeEnabled();
+    // The others arrive without moving the view off the first result.
+    await showTab(page, 'queue');
+    await page.getByTestId('queue-resume').click();
+    await showTab(page, 'canvas');
+    await expect(count).toHaveText('1/3', { timeout: 30_000 });
+    await expect(page.getByTestId('canvas-staging-accept')).toBeEnabled();
+  },
+);
 
 test('a painted part is redrawn from a written instruction into staging', { tag: ['@scenario'] }, async ({ page }) => {
   await openPartFix(page);

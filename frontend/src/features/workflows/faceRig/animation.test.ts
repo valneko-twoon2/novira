@@ -7,8 +7,8 @@ const same = (a: RigState | undefined, b: RigState) => expect(serializeRig(a!)).
 
 const smile: RigState = { w: { au12: 1 }, p: { happy: 0.6 }, rot: [0, 20, 0] };
 
-describe('face rig animation poses', () => {
-  it('blends axes, presets and head turn, treating a missing axis as 0', { tags: ['error-guessing', 'boundary'] }, () => {
+describe('face rig animation poses', { tags: [] }, () => {
+  it('blends axes, presets and head turn, treating a missing axis as 0', { tags: ['equivalence', 'boundary'] }, () => {
     const half = blendRig(EMPTY_RIG, smile, 0.5);
     expect(half.w.au12).toBe(0.5);
     expect(half.p.happy).toBeCloseTo(0.3);
@@ -42,14 +42,14 @@ describe('face rig animation poses', () => {
   });
 });
 
-describe('face rig GIF', () => {
+describe('face rig GIF', { tags: [] }, () => {
   const frame = (shade: number) => {
     const data = new Uint8ClampedArray(8 * 8 * 4);
     for (let i = 0; i < data.length; i += 4) data.set([shade, 255 - shade, 80, 255], i);
     return { data, width: 8, height: 8 };
   };
 
-  it('writes a looping GIF with one frame per picture at the frame delay', { tags: ['boundary', 'decision-table'] }, () => {
+  it('writes a looping GIF with one frame per picture at the frame delay', { tags: ['boundary'] }, () => {
     const bytes = encodeGif([frame(0), frame(100), frame(200)], 10);
     expect(String.fromCharCode(...bytes.slice(0, 6))).toBe('GIF89a');
     expect(bytes[bytes.length - 1]).toBe(0x3b);
@@ -65,7 +65,7 @@ describe('face rig GIF', () => {
     expect(() => encodeGif([], 10)).toThrow();
   });
 
-  it('offers a video only where the browser can record one', { tags: ['boundary'] }, async () => {
+  it('offers a video only where the browser can record one', { tags: ['condition'] }, async () => {
     // jsdom has no MediaRecorder.
     expect(videoType()).toBeNull();
     await expect(encodeVideo([{ data: new Uint8ClampedArray(4), width: 1, height: 1 }], 10, new AbortController().signal)).rejects.toThrow('cannot record');

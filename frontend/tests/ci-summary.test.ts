@@ -19,14 +19,14 @@ const CARGO = [
 
 const spec = (file: string, tests: { projectName: string; status: string }[]) => ({ file, specs: [{ file, tests }], suites: [] });
 
-describe('ci-summary', () => {
+describe('ci-summary', { tags: [] }, () => {
   let dir = '';
   afterEach(() => {
     if (dir) rmSync(dir, { recursive: true, force: true });
     dir = '';
   });
 
-  it('reads one row per cargo test binary, with its name', { tags: ['condition'] }, () => {
+  it('reads one row per cargo test binary, with its name', { tags: ['equivalence'] }, () => {
     expect(parseCargo(CARGO)).toEqual([
       { name: 'src/lib.rs', passed: 3, failed: 0, ignored: 0 },
       { name: 'comfy_client_jobs.rs', passed: 5, failed: 2, ignored: 1 },
@@ -34,12 +34,12 @@ describe('ci-summary', () => {
     ]);
   });
 
-  it('gives no rows for output without results', { tags: ['condition'] }, () => {
+  it('gives no rows for output without results', { tags: ['boundary', 'error-guessing'] }, () => {
     expect(parseCargo('')).toEqual([]);
     expect(parseCargo('error: could not compile')).toEqual([]);
   });
 
-  it('totals a crate and folds the binaries behind it', { tags: ['condition'] }, () => {
+  it('totals a crate and folds the binaries behind it', { tags: ['equivalence', 'condition'] }, () => {
     const md = cargoMarkdown('cargo test', [{ name: 'novira-core', rows: parseCargo(CARGO), missing: false }, { name: 'novira-server', rows: [], missing: true }]);
     expect(md).toContain('**8 passed, 2 failed, 1 ignored** in 3 test binaries');
     expect(md).toContain('<b>novira-core</b>: 8 passed, 2 failed, 1 ignored (3 binaries)');
@@ -47,7 +47,7 @@ describe('ci-summary', () => {
     expect(md).toContain('`novira-server`: no log');
   });
 
-  it('counts a Playwright test once by its final status, per project and per file', { tags: ['condition'] }, () => {
+  it('counts a Playwright test once by its final status, per project and per file', { tags: ['equivalence'] }, () => {
     const report = {
       suites: [
         spec('a.spec.ts', [{ projectName: 'chromium', status: 'expected' }, { projectName: 'chromium', status: 'flaky' }, { projectName: 'phone', status: 'unexpected' }]),
@@ -61,7 +61,7 @@ describe('ci-summary', () => {
     expect(playwrightMarkdown('E2E', { projects, files })).toContain('**1 passed, 1 failed, 1 flaky, 1 skipped**');
   });
 
-  it('counts a vitest report per folder and per file, whatever the path style', { tags: ['decision-table'] }, () => {
+  it('counts a vitest report per folder and per file, whatever the path style', { tags: ['equivalence'] }, () => {
     const report = {
       testResults: [
         { name: String.raw`E:\Code\novira\frontend\src\state\a.test.ts`, assertionResults: [{ status: 'passed' }, { status: 'failed' }] },
@@ -89,7 +89,7 @@ describe('ci-summary', () => {
     expect(run(['bogus'])).toContain('usage');
   });
 
-  it('names a crate by its log file', { tags: ['condition'] }, () => {
+  it('names a crate by its log file', { tags: ['equivalence'] }, () => {
     dir = mkdtempSync(join(tmpdir(), 'ci-summary-'));
     writeFileSync(join(dir, 'novira-core.log'), CARGO);
     expect(run(['cargo', 'cargo test', join(dir, 'novira-core.log')])).toContain('<b>novira-core</b>');

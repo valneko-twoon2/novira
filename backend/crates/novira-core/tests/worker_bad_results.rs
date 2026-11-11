@@ -138,7 +138,7 @@ async fn bytes_that_are_no_picture_fail_the_job() {
     );
 }
 
-// tags: error-guessing, boundary
+// tags: error-guessing, equivalence
 #[tokio::test]
 async fn a_gallery_folder_that_is_gone_fails_the_save_of_every_kind_of_result() {
     let dir = tempfile::tempdir().unwrap();
@@ -184,7 +184,7 @@ async fn voice_error(dir: &Path, voice: Voice) -> (QueueItemStatus, Option<Strin
     (item.status, item.error)
 }
 
-// tags: state-transition
+// tags: state-transition, condition
 #[tokio::test]
 async fn a_voice_engine_that_writes_no_file_or_gives_up_ends_the_job_without_a_saved_result() {
     let dir = tempfile::tempdir().unwrap();
@@ -212,7 +212,7 @@ async fn a_voice_engine_that_writes_no_file_or_gives_up_ends_the_job_without_a_s
     assert_eq!(error, None);
 }
 
-// tags: error-guessing, boundary
+// tags: error-guessing
 #[tokio::test]
 async fn a_folder_for_the_temporary_audio_that_cannot_be_made_fails_the_voice_job() {
     let dir = tempfile::tempdir().unwrap();
@@ -245,7 +245,7 @@ impl Engine for Panicking {
     }
 }
 
-// tags: error-guessing, decision-table
+// tags: error-guessing, state-transition
 #[tokio::test]
 async fn a_job_that_panics_fails_and_the_worker_goes_on() {
     let dir = tempfile::tempdir().unwrap();

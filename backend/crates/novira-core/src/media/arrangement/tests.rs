@@ -32,7 +32,7 @@ fn picture(name: &str, board_id: Option<&str>, is_intermediate: bool) -> ImageDT
 
 const NAME: &str = "0123456789abcdef0123456789abcdef.png";
 
-// tags: equivalence
+// tags: equivalence, boundary
 #[test]
 fn a_board_name_becomes_a_folder_name_windows_accepts() {
     assert_eq!(safe_folder("風景 / 夜"), "風景 _ 夜");
@@ -46,7 +46,7 @@ fn a_board_name_becomes_a_folder_name_windows_accepts() {
     assert_eq!(safe_folder(&"長".repeat(100)).chars().count(), 60);
 }
 
-// tags: equivalence
+// tags: condition
 #[test]
 fn boards_of_the_same_folder_name_are_told_apart_and_the_older_keeps_the_plain_one() {
     let boards = [
@@ -67,7 +67,7 @@ fn boards_of_the_same_folder_name_are_told_apart_and_the_older_keeps_the_plain_o
     assert_eq!(folders["b5"], "Portraits");
 }
 
-// tags: equivalence
+// tags: condition
 #[test]
 fn a_subfolder_sits_inside_its_board_and_is_told_apart_from_its_siblings_only() {
     let mut cat = board("c1", "Cats", 2);
@@ -110,7 +110,7 @@ fn a_subfolder_sits_inside_its_board_and_is_told_apart_from_its_siblings_only() 
     );
 }
 
-// tags: condition
+// tags: scenario
 #[test]
 fn a_file_in_a_subfolder_is_found_again_and_an_emptied_subfolder_is_removed() {
     let dir = tempfile::tempdir().unwrap();
@@ -140,7 +140,7 @@ fn a_file_in_a_subfolder_is_found_again_and_an_emptied_subfolder_is_removed() {
     );
 }
 
-// tags: condition
+// tags: equivalence
 #[test]
 fn a_file_is_named_by_when_it_was_made_and_found_again_by_its_name() {
     let file = file_name(NAME, 0);
@@ -153,7 +153,7 @@ fn a_file_is_named_by_when_it_was_made_and_found_again_by_its_name() {
     assert_eq!(name_in(&format!("{NAME}.tmp")), None);
 }
 
-// tags: condition
+// tags: decision-table
 #[test]
 fn a_picture_goes_to_its_board_or_the_uncategorized_or_the_drafts_folder() {
     let folders = folder_names(&[board("b1", "風景", 1)]);
@@ -170,7 +170,7 @@ fn a_picture_goes_to_its_board_or_the_uncategorized_or_the_drafts_folder() {
     assert_eq!(folder(&picture(NAME, Some("b1"), true)), Path::new(DRAFTS));
 }
 
-// tags: boundary, state-transition
+// tags: scenario, state-transition
 #[test]
 fn arranging_moves_files_into_their_folders_follows_a_rename_and_leaves_no_empty_folder() {
     let dir = tempfile::tempdir().unwrap();
@@ -198,7 +198,7 @@ fn arranging_moves_files_into_their_folders_follows_a_rename_and_leaves_no_empty
     assert_eq!(again.read_original(NAME).unwrap(), b"png");
 }
 
-// tags: condition
+// tags: error-guessing, condition
 #[test]
 fn a_file_already_at_the_place_is_never_replaced() {
     let dir = tempfile::tempdir().unwrap();
@@ -248,7 +248,7 @@ fn arranging_a_few_pictures_looks_only_at_the_folders_they_left() {
     assert!(!outputs.join("Old board").exists());
 }
 
-// tags: state-transition
+// tags: condition, state-transition
 #[test]
 fn a_folder_that_still_holds_something_stays_when_one_picture_leaves() {
     let dir = tempfile::tempdir().unwrap();
@@ -298,7 +298,7 @@ fn trashing_the_last_picture_of_a_folder_removes_the_folder_and_never_outputs_it
     assert!(outputs.is_dir());
 }
 
-// tags: condition
+// tags: boundary
 #[test]
 fn a_parent_made_in_the_same_instant_as_its_subfolder_still_comes_first() {
     let mut inner = board("a", "Inner", 1);
@@ -357,7 +357,7 @@ fn a_file_in_a_board_nested_three_levels_deep_is_found_by_its_name() {
     assert_eq!(files.read_original(NAME).unwrap(), b"png");
 }
 
-// tags: equivalence
+// tags: boundary
 #[test]
 fn a_file_is_found_at_every_level_boards_can_nest_to() {
     for levels in 1..=crate::service::MAX_BOARD_DEPTH {
@@ -369,7 +369,7 @@ fn a_file_is_found_at_every_level_boards_can_nest_to() {
     }
 }
 
-// tags: boundary, equivalence
+// tags: boundary
 #[test]
 fn empty_folders_are_removed_at_every_level_boards_can_nest_to_and_a_folder_with_a_file_stays() {
     let dir = tempfile::tempdir().unwrap();

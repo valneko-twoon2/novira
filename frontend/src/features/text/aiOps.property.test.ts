@@ -45,7 +45,7 @@ const op = fc.oneof(
 const finiteDeep = (v: unknown): boolean => (typeof v === 'number' ? Number.isFinite(v) : Array.isArray(v) ? v.every(finiteDeep) : v && typeof v === 'object' ? Object.values(v).every(finiteDeep) : true);
 
 describe('applyTextOps (fuzz)', () => {
-  it('never throws, keeps the scene valid and JSON-safe, and does not touch the input', { tags: ['error-guessing'] }, () => {
+  it('never throws, keeps the scene valid and JSON-safe, and does not touch the input', { tags: ['error-guessing', 'boundary'] }, () => {
     check(
       fc.property(fc.array(op, { maxLength: 12 }), fc.constantFrom(scene, withLayers), (ops, start) => {
         const before = JSON.stringify(start);
@@ -92,7 +92,7 @@ describe('applyTextOps (fuzz)', () => {
   });
 
   // Regression: a colour with a broken alpha is refused like any other bad colour (it used to become a NaN alpha that JSON turns into null).
-  it('keeps a colour with a broken alpha out of the scene', { tags: ['error-guessing'] }, () => {
+  it('keeps a colour with a broken alpha out of the scene', { tags: ['regression', 'error-guessing'] }, () => {
     const r = applyTextOps(scene, [{ op: 'add', layer: { type: 'text', text: 'x', style: { shadow: { color: 'rgba(0,0,0,1.2.3)' } } } }]);
     expect(JSON.stringify(r.scene)).not.toContain('NaN');
     expect(finiteDeep(r.scene)).toBe(true);

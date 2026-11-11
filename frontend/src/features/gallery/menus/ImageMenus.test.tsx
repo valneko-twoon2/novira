@@ -110,7 +110,7 @@ describe('SingleImageMenu', () => {
     expect(useShareDialog.getState().names).toEqual(['a.png']);
   });
 
-  it('recalls the settings of the picture', { tags: ['scenario'] }, async () => {
+  it('recalls the settings of the picture', { tags: ['equivalence'] }, async () => {
     showMenu(<SingleImageMenu image={image()} />);
     for (const [label, mode] of [
       ['gallery.menu.remix', 'remix'],

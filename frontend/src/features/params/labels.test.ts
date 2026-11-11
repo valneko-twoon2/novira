@@ -25,7 +25,7 @@ describe('parameter labels', () => {
     expect(new Set(labels).size).toBe(labels.length);
   });
 
-  it('picks the optimal square side from the model base, defaulting to 1024', { tags: ['condition'] }, () => {
+  it('picks the optimal square side from the model base, defaulting to 1024', { tags: ['condition', 'boundary'] }, () => {
     expect(optimalDimension('sd-1')).toBe(512);
     expect(optimalDimension('sd-2')).toBe(768);
     expect(optimalDimension('sdxl')).toBe(1024);

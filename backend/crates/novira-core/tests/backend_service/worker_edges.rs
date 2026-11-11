@@ -187,7 +187,7 @@ async fn a_graph_whose_speech_is_cancelled_in_the_voice_engine_ends_canceled() {
     backend.shutdown();
 }
 
-// tags: decision-table
+// tags: equivalence, condition
 #[tokio::test]
 async fn a_lora_given_as_the_main_model_and_an_unknown_tile_controlnet_are_told_apart() {
     let dir = tempfile::tempdir().unwrap();
@@ -291,7 +291,7 @@ const T5: &[&str] = &[
     "shared.weight",
 ];
 
-// tags: decision-table
+// tags: condition
 #[tokio::test]
 async fn a_hunyuan_video_15_image_model_needs_the_sigclip_vision_file() {
     let dir = tempfile::tempdir().unwrap();
@@ -324,7 +324,7 @@ async fn a_hunyuan_video_15_image_model_needs_the_sigclip_vision_file() {
     assert!(error.contains("HunyuanVideo 1.5 image to video"), "{error}");
 }
 
-// tags: decision-table
+// tags: condition, equivalence
 #[tokio::test]
 async fn a_gguf_wan_model_is_told_apart_by_its_name_alone() {
     let dir = tempfile::tempdir().unwrap();

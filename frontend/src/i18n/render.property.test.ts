@@ -10,7 +10,7 @@ const argName = fc.stringMatching(/^[a-zA-Z0-9_]{1,8}$/);
 const args: fc.Arbitrary<MessageArgs> = fc.dictionary(argName, argValue, { maxKeys: 4 });
 const escapeBraces = (s: string) => s.replace(/[{}]/g, (c) => c + c);
 
-describe('renderTemplate (properties)', () => {
+describe('renderTemplate (properties)', { tags: [] }, () => {
   it('never throws for an arbitrary template and arbitrary arguments', { tags: ['error-guessing'] }, () => {
     check(
       fc.property(junkText, fc.dictionary(junkText, argValue, { maxKeys: 4 }), (template, a) => {
@@ -23,11 +23,11 @@ describe('renderTemplate (properties)', () => {
     check(fc.property(fc.string({ maxLength: 60 }).filter((s) => !/[{}]/.test(s)), args, (s, a) => renderTemplate(s, a) === s));
   });
 
-  it('turns an escaped literal back into the original text', { tags: ['condition'] }, () => {
+  it('turns an escaped literal back into the original text', { tags: ['equivalence'] }, () => {
     check(fc.property(junkText, args, (s, a) => renderTemplate(escapeBraces(s), a) === s));
   });
 
-  it('substitutes a known placeholder with the String() of its value', { tags: ['condition'] }, () => {
+  it('substitutes a known placeholder with the String() of its value', { tags: ['equivalence'] }, () => {
     check(
       fc.property(argName, argValue, fc.string({ maxLength: 10 }).map(escapeBraces), fc.string({ maxLength: 10 }).map(escapeBraces), (name, v, pre, post) => {
         expect(renderTemplate(`${pre}{${name}}${post}`, { [name]: v })).toBe(`${renderTemplate(pre)}${String(v)}${renderTemplate(post)}`);
@@ -35,11 +35,11 @@ describe('renderTemplate (properties)', () => {
     );
   });
 
-  it('keeps an unknown placeholder visible as written', { tags: ['condition'] }, () => {
+  it('keeps an unknown placeholder visible as written', { tags: ['condition', 'error-guessing'] }, () => {
     check(fc.property(argName.filter((n) => !(n in {})), (name) => renderTemplate(`{${name}}`, { zzzzzzzzzz: 1 }) === `{${name}}`));
   });
 
-  it('lists every placeholder of a template that placeholders() finds, sorted and unique', { tags: ['condition'] }, () => {
+  it('lists every placeholder of a template that placeholders() finds, sorted and unique', { tags: ['equivalence'] }, () => {
     check(
       fc.property(fc.array(argName, { maxLength: 5 }), (names) => {
         const template = names.map((n) => `{${n}}`).join(' ');
