@@ -275,10 +275,11 @@ function Cell({
         draggable={generation && !!image}
         onDragStart={(e) => image && setDragImages(e, [image.name])}
       >
-        {image ? (
-          <img src={image.thumbnailUrl || image.url} alt="" draggable={false} />
-        ) : live?.progressImageUrl ? (
+        {live?.progressImageUrl ? (
+          // What is being drawn now wins over the draft it finishes: the step shows how far it has come.
           <img src={live.progressImageUrl} alt="" draggable={false} style={antialias ? undefined : { imageRendering: 'pixelated' }} />
+        ) : image ? (
+          <img src={image.thumbnailUrl || image.url} alt="" draggable={false} />
         ) : failed ? null : (
           <Spinner size={18} />
         )}

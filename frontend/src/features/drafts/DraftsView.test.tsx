@@ -395,6 +395,36 @@ describe('candidates', () => {
   });
 });
 
+describe('a draft being drawn or finished', () => {
+  const setup = (over: Partial<DraftCandidate>) => {
+    useDrafts.setState({ groups: [group('g', [candidate(1, over)])], currentId: 'g' });
+    useGallery.setState({ images: [picture('d1.png')] as never });
+    show();
+    return () => screen.getByTestId('draft-cell');
+  };
+  afterEach(() => act(() => useQueue.getState().setProgress(null)));
+
+  it('shows the draft being drawn with its step, and ignores the progress of other jobs', () => {
+    const cell = setup({ imageName: null, status: 'running', itemId: 4 });
+    expect(cell().querySelector('img')).toBeNull();
+    act(() => useQueue.getState().setProgress({ itemId: 4, step: 3, totalSteps: 8, progressImageUrl: 'blob:draft-live' } as never));
+    expect(cell().querySelector('img')?.getAttribute('src')).toBe('blob:draft-live');
+    expect(within(cell()).getByText('3/8', { exact: false })).toBeTruthy();
+    act(() => useQueue.getState().setProgress({ itemId: 5, step: 1, totalSteps: 8, progressImageUrl: 'blob:other' } as never));
+    expect(cell().querySelector('img')).toBeNull();
+  });
+
+  it('shows the picture being finished in place of the draft it comes from, and the draft again once it is done', () => {
+    const cell = setup({ finalItemId: 9, finalStatus: 'running' });
+    expect(cell().querySelector('img')?.getAttribute('src')).toBe('blob:t-d1.png');
+    act(() => useQueue.getState().setProgress({ itemId: 9, step: 10, totalSteps: 30, progressImageUrl: 'blob:final-live' } as never));
+    expect(cell().querySelector('img')?.getAttribute('src')).toBe('blob:final-live');
+    expect(within(cell()).getByText('10/30', { exact: false })).toBeTruthy();
+    act(() => useQueue.getState().setProgress(null));
+    expect(cell().querySelector('img')?.getAttribute('src')).toBe('blob:t-d1.png');
+  });
+});
+
 describe('a generation batch', () => {
   const made = (over: Partial<DraftCandidate> = {}) => candidate(1, { itemId: null, imageName: null, finalItemId: 1, finalImageName: 'g1.png', finalStatus: 'ready', ...over });
   const batch = (candidates: DraftCandidate[], boardId: string | null = null): DraftGroup => ({ ...group('g', candidates), kind: 'generation', position: 1, boardId });
