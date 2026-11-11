@@ -55,7 +55,7 @@ Merge progress:
 
 ## 2. Bring the branch up to date
 
-1. `git fetch origin`, then in the branch `git rebase origin/main` when `main` moved under it (or `git merge origin/main` when the branch is shared). Conflicts: keep both sides unless one is clearly replaced. Typical ones and what to do:
+1. `git fetch origin`; when `main` moved and the branch touches the same files, bring it up to date: `git rebase origin/main` only before the branch's first push, `git merge origin/main` once it is pushed (a rebase of a pushed branch needs `--force`, which is not allowed; the squash merge keeps `main`'s history clean anyway). Conflicts: keep both sides unless one is clearly replaced. Typical ones and what to do:
    - i18n catalogs (`agent.json` and others): both sides append keys at the end; keep both and add the comma to the older last line; `JSON.parse` the file after.
    - Map pages and the manual: keep both sides' rows; recheck `docs-check`.
 2. Write edit scripts so that they keep LF (or use the Edit tool); check `git diff --stat` for files changed on every line.

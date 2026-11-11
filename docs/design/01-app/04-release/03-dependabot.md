@@ -13,7 +13,7 @@ covers:
 依存の更新は、脆弱性の通知と更新の PR を Dependabot に任せ、その PR の判断を `.github/workflows/dependabot-triage.yml` に任せる。
 
 - **脆弱性の通知と security updates。** リポジトリの設定で有効にする（ファイルは持たない）。既知の脆弱性がある依存を直す PR が自動で出る。見つけるのは `Audit`、直す PR を作るのが Dependabot。
-- **version updates。** `.github/dependabot.yml`。cargo（`/backend`）と npm（`/frontend`）は毎週月曜 04:00 JST に確かめ、minor と patch は 1 つの PR（`minor-and-patch` グループ）にまとめる。major は 1 件ずつ別の PR。GitHub Actions（`/`）は毎月、すべての更新を 1 つの PR（`github-actions` グループ）にまとめ、同時に開くのは 1 件まで。コミットの接頭辞は `chore`。PR の向き先は既定ブランチ（main）。`release/*` は版ごとに作って消すので、向き先に固定できない。main に入った更新は、次のマージでリリースブランチへ届く。
+- **version updates。** `.github/dependabot.yml`。cargo（`/backend`）と npm（`/frontend`）は毎週月曜 04:00 JST に確かめ、minor と patch は 1 つの PR（`minor-and-patch` グループ）にまとめる。major は 1 件ずつ別の PR。GitHub Actions（`/`）は毎月、すべての更新を 1 つの PR（`github-actions` グループ）にまとめ、同時に開くのは 1 件まで。コミットの接頭辞は `chore`。PR の向き先は既定ブランチ（main）。作業ブランチは main から短く切るので、main に入った更新は次のブランチから届き、PR の検査は「ブランチ + 今の main」で走る（[../../../development.md](../../../development.md) の「ブランチと PR」）。
 - **cooldown（7 日）。** 新しい版は、公開から 7 日たつまで PR にしない。すぐ取り下げられる版（壊れた版や悪意のある版）が PR にならず、PR の数も減る。security updates は待たない。
 - **判断（`Dependabot triage`、`scripts/tools/dependabot-triage.mjs`）。** 4 時間ごと（と手動。手動は既定で `--dry`）に、開いている Dependabot の PR を 1 件ずつ見る。判断はタイトル、ラベル、経過日数、検査の状態だけで決まる関数で、`gh` を呼ぶのは `run` だけ。
   - 検査の状態は、head のコミットに対する `Test` と `Supply chain`（と、走っていれば `Audit`）の実行から決める。必須の 2 つが成功なら成功、どれかが失敗なら失敗、実行中なら保留、実行がなければ `none`。`cancelled`（新しい push に置き換えられた実行）は数えない。

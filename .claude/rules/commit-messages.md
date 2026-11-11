@@ -11,7 +11,7 @@ A commit message says what the commit is, so a reader of `git log` can find it. 
 
 ## Before committing
 
-Stage only your own files (`git status` first, `git diff --cached` after). Run `npm run check:eol` in `frontend/`. `data/`, `outputs/`, `out/`, `logs/`, `novira-data/` (with the harness output in `novira-data/work/`), `config.json`, `.env*`, API keys and generated files are never committed (the pre-commit hook refuses them). A subagent's work branch is deleted after the merge (see `/gatekeeper`).
+Stage only your own files (`git status` first, `git diff --cached` after). Run `npm run check:eol` in `frontend/`. `data/`, `outputs/`, `out/`, `logs/`, `novira-data/` (with the harness output in `novira-data/work/`), `config.json`, `.env*`, API keys and generated files are never committed (the pre-commit hook refuses them). A work branch is deleted after its pull request is merged (`/ship`).
 
 ## Shape
 
@@ -41,7 +41,7 @@ feat(comic): ページ帯に各ページを縮小表示する
 - 吹き出しは 15 の形、線、黒塗り、揺れ。輪郭は点で形を直せる
 ```
 
-A merge of a subagent's branch uses the type of what comes in: `feat: 画面状態のライブ同期を取り込む`.
+`main` gets one squashed commit per pull request, and its subject is the pull request's title: the title follows these rules too, with the type of the main change (`scripts/tools/pr.mjs open` checks it).
 
 ## Enforcement
 

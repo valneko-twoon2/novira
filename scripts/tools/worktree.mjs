@@ -44,13 +44,39 @@ export function isFresh(path, now = Date.now()) {
   }
 }
 
-/** The branches whose pull request GitHub merged (a squash merge leaves no merge in git); empty when `gh` cannot say. */
-export function prMergedBranches(cwd, run = (args) => execFileSync('gh', args, { cwd, encoding: 'utf8', timeout: 60000, stdio: ['ignore', 'pipe', 'ignore'] })) {
+/**
+ * The head commits of the pull requests GitHub merged, by branch name (a squash merge leaves no merge in git): Map<branch, commit[]>.
+ * Empty when `gh` cannot say, so nothing is deleted on a guess.
+ */
+export function prMergedHeads(cwd, run = (args) => execFileSync('gh', args, { cwd, encoding: 'utf8', timeout: 60000, stdio: ['ignore', 'pipe', 'ignore'] })) {
   try {
-    return new Set(JSON.parse(run(['pr', 'list', '--state', 'merged', '--limit', '200', '--json', 'headRefName'])).map((p) => p.headRefName));
+    const heads = new Map();
+    for (const p of JSON.parse(run(['pr', 'list', '--state', 'merged', '--limit', '200', '--json', 'headRefName,headRefOid']))) {
+      heads.set(p.headRefName, [...(heads.get(p.headRefName) ?? []), p.headRefOid]);
+    }
+    return heads;
   } catch {
-    return new Set();
+    return new Map();
   }
+}
+
+/**
+ * Whether the local branch `branch` at commit `tip` is all in a merged pull request: its tip is the head that was merged, or behind it.
+ * A commit made after the merge, or a new branch that reuses an old name, is not: such a branch is deleted only with -d (refused).
+ */
+export function mergedByPullRequest(branch, tip, heads, isAncestor) {
+  return (heads.get(branch) ?? []).some((head) => head === tip || isAncestor(tip, head));
+}
+
+function isAncestorIn(cwd) {
+  return (a, b) => {
+    try {
+      execFileSync('git', ['merge-base', '--is-ancestor', a, b], { cwd, stdio: 'ignore' });
+      return true;
+    } catch {
+      return false;
+    }
+  };
 }
 
 const git = (cwd, ...args) => execFileSync('git', args, { cwd, encoding: 'utf8', timeout: 60000, maxBuffer: 32 * 1024 * 1024 });
@@ -124,13 +150,16 @@ function main(argv) {
     git(main, 'worktree', 'remove', '-f', '-f', dir);
     git(main, 'worktree', 'prune');
     if (tree.branch) {
-      // -d refuses an unmerged branch (ask the user); a branch whose pull request GitHub squash-merged is merged too.
-      const squashed = prMergedBranches(main).has(tree.branch);
+      // -d refuses an unmerged branch (ask the user); a branch all in a pull request GitHub squash-merged is merged too.
+      const tip = git(main, 'rev-parse', tree.branch).trim();
+      const squashed = mergedByPullRequest(tree.branch, tip, prMergedHeads(main), isAncestorIn(main));
       console.log(git(main, 'branch', squashed ? '-D' : '-d', tree.branch).trim());
     }
     console.log(`removed ${dir}`);
   } else if (cmd === 'list') {
-    const merged = new Set([...git(main, 'branch', '--merged', 'main', '--format=%(refname:short)').split(/\r?\n/).filter(Boolean), ...prMergedBranches(main)]);
+    const heads = prMergedHeads(main);
+    const squashed = trees.filter((t) => t.branch && mergedByPullRequest(t.branch, git(main, 'rev-parse', t.branch).trim(), heads, isAncestorIn(main))).map((t) => t.branch);
+    const merged = new Set([...git(main, 'branch', '--merged', 'main', '--format=%(refname:short)').split(/\r?\n/).filter(Boolean), ...squashed]);
     const done = finished(trees, { merged, dirty: (p) => git(p, 'status', '--porcelain').trim() !== '', missing: (p) => !existsSync(p), fresh: isFresh });
     for (const t of done) console.log(t.path);
   } else {

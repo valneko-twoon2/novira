@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { isJunction, linkFolder, prMergedBranches, validName } from '../../scripts/tools/worktree.mjs';
+import { isJunction, linkFolder, mergedByPullRequest, prMergedHeads, validName } from '../../scripts/tools/worktree.mjs';
 
 const made: string[] = [];
 afterEach(() => {
@@ -43,15 +43,30 @@ describe.runIf(process.platform === 'win32')('links to the main checkout (Window
 });
 
 describe('branches merged on GitHub', () => {
-  it('are the head branches of the merged pull requests (a squash merge is invisible to git)', { tags: ['equivalence'] }, () => {
-    const run = () => JSON.stringify([{ headRefName: '20261112_github-flow' }, { headRefName: 'dependabot/npm/x' }]);
-    expect([...prMergedBranches('.', run)]).toEqual(['20261112_github-flow', 'dependabot/npm/x']);
+  const heads = (rows: { headRefName: string; headRefOid: string }[]) => prMergedHeads('.', () => JSON.stringify(rows));
+  const never = () => false;
+
+  it('are the head commits of the merged pull requests, by branch (a squash merge is invisible to git)', { tags: ['equivalence'] }, () => {
+    const map = heads([{ headRefName: 'fix', headRefOid: 'c1' }, { headRefName: 'fix', headRefOid: 'c2' }, { headRefName: 'feat', headRefOid: 'c3' }]);
+    expect([...map]).toEqual([['fix', ['c1', 'c2']], ['feat', ['c3']]]);
   });
 
   it('are none when gh fails or answers nonsense, so nothing is deleted on a guess', { tags: ['error-guessing'] }, () => {
-    expect(prMergedBranches('.', () => {
+    expect(prMergedHeads('.', () => {
       throw new Error('gh: not logged in');
     }).size).toBe(0);
-    expect(prMergedBranches('.', () => 'not json').size).toBe(0);
+    expect(prMergedHeads('.', () => 'not json').size).toBe(0);
+  });
+
+  it('count a branch whose tip is the merged head, or behind it', { tags: ['condition'] }, () => {
+    const map = heads([{ headRefName: 'fix', headRefOid: 'c2' }]);
+    expect(mergedByPullRequest('fix', 'c2', map, never)).toBe(true);
+    expect(mergedByPullRequest('fix', 'c1', map, (a: string, b: string) => a === 'c1' && b === 'c2')).toBe(true);
+  });
+
+  it('do not count a commit made after the merge, or a new branch that reuses a merged name', { tags: ['error-guessing', 'regression'] }, () => {
+    const map = heads([{ headRefName: 'fix', headRefOid: 'c2' }]);
+    expect(mergedByPullRequest('fix', 'c3', map, never)).toBe(false);
+    expect(mergedByPullRequest('other', 'c2', map, () => true)).toBe(false);
   });
 });

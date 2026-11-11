@@ -43,12 +43,12 @@ Release progress:
 
 ## 3. Ship the release pull request
 
-`/ship` the branch with the title `chore: v<version> をリリースする` and the version's section as the body. The reviewer also checks the section against the range: a user-visible change missing, a line that is not true, a development change that slipped in, the shape of section 6.
+`/ship` the branch with the title `chore: v<version> をリリースする` and the version's section as the body. After its merge `/ship` does not judge a release again: continue with section 4. The reviewer also checks the section against the range: a user-visible change missing, a line that is not true, a development change that slipped in, the shape of section 6.
 
 ## 4. Tag
 
-1. After the merge: `git fetch origin`; the merge commit is `origin/main` (check that its subject is the release pull request's).
-2. `git tag -a v<version> -m "novira v<version>" origin/main`, then `git push origin v<version>`.
+1. After the merge: `git fetch origin`; the commit to tag is the release pull request's merge commit, `gh pr view <n> --json mergeCommit --jq .mergeCommit.oid` (not whatever `origin/main` is now: another pull request may have landed after it).
+2. `git tag -a v<version> -m "novira v<version>" <that commit>`, then `git push origin v<version>`.
 3. The release workflow starts on the tag push: it checks the tag against the version and `CHANGELOG.md`, builds (about 15 minutes) and makes the draft release titled `v<version>` with the section as its body (a pre-release when the tag has a hyphen). Wait for it: `gh run watch <id> --exit-status` (the id from `gh run list --workflow release --limit 1`).
 4. If it fails: read the log (`gh run view <id> --log-failed`), fix on a branch through `/ship`, and ask the user before re-running it on the tag or moving the tag. Do not publish.
 
