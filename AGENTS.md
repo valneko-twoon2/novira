@@ -60,9 +60,10 @@
 | `/i18n`、`/manual` | 文言・言語・翻訳、マニュアル（ja・en 以外の言語の追いつきも） |
 | `/testing` | テストケースの選び方、カバレッジのレポート、Rust のミューテーションテスト |
 | `/verify-real-app` | IPC・シェル・起動・エンジン・モデル・GPU に触れた変更を本物のエンジンで確かめる |
-| `/gatekeeper` | サブエージェントの成果を取り込む（依頼文の書き方、worktree の作り方も） |
+| `/ship` | 終わった作業ブランチを `main` に入れる: PR、別のエージェントによる GitHub 上のレビュー、CI、squash マージ、リリースの判断 |
+| `/gatekeeper` | サブエージェントの成果を確かめてから `/ship` に渡す（依頼文の書き方、worktree の作り方も） |
 | `/hardening-harness` | 繰り返す失敗を検査・フックで止める、スキルを作る・直す、ハーネス全体の見直し |
-| `/release-notes` | ユーザーが実行したときだけ。コミットから `CHANGELOG.md` の版の節を書き、コミット、タグを push する。`CHANGELOG.md` はこのときだけ書く |
+| `/release-notes` | `main` へのマージのたびに、リリースが要るかを判断し、要れば版を決め、`CHANGELOG.md` の版の節を書いたリリース PR を `/ship` し、タグを打って公開まで行う。`CHANGELOG.md` はこのときだけ書く |
 
 ## 3. 原則
 
@@ -81,7 +82,7 @@
 - **テスト結果とレポートはリポジトリ直下の `logs/`（git の対象外）に置き、ハーネスが作るほかのものは `novira-data/work/` の下だけに置く**（検証用データ、ビルド、一時ファイル。`out/` は使わない。data-guard フック）。古くなったものは `scripts/tools/prune-stale.mjs` が消す。
 - **GPU を使う作業の前に GPU ロック（`NOVIRA_GPU_LOCK`）を取る。** ユーザーが GPU を使っているときは生成しない（[verification.md](docs/verification.md)）。
 - **worktree は `node scripts/tools/worktree.mjs add <名前>` で作り、取り込んだらその場で `node scripts/tools/worktree.mjs remove <パス>` で消す。** 手で `git worktree remove` しない（`node_modules` の junction をたどって本体の中身が消える。残ると Stop フックが差し戻す）。
-- **push してよいのは、取り込んだ後の `main` だけ**（常時許可）。別ブランチの push、`--force`、`--no-verify`、履歴の書き換えはユーザーが明示したときだけ。
+- **ブランチ運用は GitHub Flow。** コードや文書を変える作業は、`main` から切ったブランチ（worktree）で、作業 1 つにつき 1 本、エージェントが自分の判断で作る。`main` には PR のマージでだけ入る（ブランチ保護が直接の push を拒む）。作業ブランチの push、PR の作成、レビューの投稿、`scripts/tools/pr.mjs` が許すマージ、リリースのタグの push と公開は常時許可（`/ship`、`/release-notes`）。`--force`、`--no-verify`、履歴の書き換え、push 済みのタグの移動・削除はユーザーが明示したときだけ。
 
 表記
 
@@ -92,7 +93,7 @@
 
 ## 4. 完了条件
 
-検証と差分の確認を終え、自分の変更をコミットしてから報告する（区切りごとのコミットは常時許可。未コミットは Stop フックが 1 回差し戻す）。機能の追加・修正・削除には、同じコミットで次を伴わせる。
+検証と差分の確認を終え、自分の変更をコミットし、`/ship` で `main` に入れてから報告する（区切りごとのコミットは常時許可。未コミットは Stop フックが 1 回差し戻す）。機能の追加・修正・削除には、同じコミットで次を伴わせる。
 
 - テスト（[tests.md](.claude/rules/tests.md)。回す対象は `node scripts/tools/affected.mjs`）
 - 文言は ja と en（[i18n.md](.claude/rules/i18n.md)）、利用者に見える変更ならマニュアル（[manual.md](.claude/rules/manual.md)）

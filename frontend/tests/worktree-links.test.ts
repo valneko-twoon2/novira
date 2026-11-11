@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { isJunction, linkFolder, validName } from '../../scripts/tools/worktree.mjs';
+import { isJunction, linkFolder, mergedBranches, mergedByPullRequest, prMergedHeads, validName } from '../../scripts/tools/worktree.mjs';
 
 const made: string[] = [];
 afterEach(() => {
@@ -39,5 +39,50 @@ describe.runIf(process.platform === 'win32')('links to the main checkout (Window
     expect(isJunction(link)).toBe(true);
     expect(isJunction(target)).toBe(false);
     expect(isJunction(join(root, 'missing'))).toBe(false);
+  });
+});
+
+describe('branches merged on GitHub', () => {
+  const heads = (rows: { headRefName: string; headRefOid: string }[]) => prMergedHeads('.', () => JSON.stringify(rows));
+  const never = () => false;
+
+  it('are the head commits of the merged pull requests, by branch (a squash merge is invisible to git)', { tags: ['equivalence'] }, () => {
+    const map = heads([{ headRefName: 'fix', headRefOid: 'c1' }, { headRefName: 'fix', headRefOid: 'c2' }, { headRefName: 'feat', headRefOid: 'c3' }]);
+    expect([...map]).toEqual([['fix', ['c1', 'c2']], ['feat', ['c3']]]);
+  });
+
+  it('are none when gh fails or answers nonsense, so nothing is deleted on a guess', { tags: ['error-guessing'] }, () => {
+    expect(prMergedHeads('.', () => {
+      throw new Error('gh: not logged in');
+    }).size).toBe(0);
+    expect(prMergedHeads('.', () => 'not json').size).toBe(0);
+  });
+
+  it('count a branch whose tip is the merged head, or behind it', { tags: ['condition'] }, () => {
+    const map = heads([{ headRefName: 'fix', headRefOid: 'c2' }]);
+    expect(mergedByPullRequest('fix', 'c2', map, never)).toBe(true);
+    expect(mergedByPullRequest('fix', 'c1', map, (a: string, b: string) => a === 'c1' && b === 'c2')).toBe(true);
+  });
+
+  it('do not count a commit made after the merge, or a new branch that reuses a merged name', { tags: ['error-guessing', 'regression'] }, () => {
+    const map = heads([{ headRefName: 'fix', headRefOid: 'c2' }]);
+    expect(mergedByPullRequest('fix', 'c3', map, never)).toBe(false);
+    expect(mergedByPullRequest('other', 'c2', map, () => true)).toBe(false);
+  });
+});
+
+describe('finished branches (worktree list and the Stop hook)', () => {
+  const heads = new Map([['20261112_done', ['c2']]]);
+  const tips: Record<string, string> = { '20261112_done': 'c2', '20261112_more': 'c9', 'old-merge': 'c0' };
+  const tipOf = (b: string) => tips[b];
+  const trees = [{ branch: 'main' }, { branch: '20261112_done' }, { branch: '20261112_more' }, { branch: 'old-merge' }, { branch: null }];
+
+  it('are the ones merged into main and the ones all in a merged pull request, and no other', { tags: ['decision-table', 'regression'] }, () => {
+    const merged = mergedBranches(trees, { mergedIntoMain: ['main', 'old-merge'], heads: new Map([...heads, ['20261112_more', ['c3']]]), tipOf, isAncestor: () => false });
+    expect([...merged].sort()).toEqual(['20261112_done', 'main', 'old-merge']);
+  });
+
+  it('are only the ones merged into main when gh said nothing', { tags: ['error-guessing'] }, () => {
+    expect([...mergedBranches(trees, { mergedIntoMain: ['old-merge'], heads: new Map(), tipOf, isAncestor: () => true })]).toEqual(['old-merge']);
   });
 });

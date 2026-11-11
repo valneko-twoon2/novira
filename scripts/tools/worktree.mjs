@@ -1,6 +1,7 @@
 // Git worktrees for work that must not touch the main checkout (the user's dev server watches it).
 //   node scripts/tools/worktree.mjs add <name>        a sibling folder ../novira-wt-<name> on a new branch, with frontend/node_modules linked
-//   node scripts/tools/worktree.mjs remove <path>     takes the links out first, then removes the worktree and its branch (merged only);
+//   node scripts/tools/worktree.mjs remove <path>     takes the links out first, then removes the worktree and its branch (merged only: into main,
+//                                             or by a pull request that GitHub merged, which a squash merge hides from git);
 //                                             refuses a worktree with uncommitted changes unless --force
 //   node scripts/tools/worktree.mjs list              worktrees that are finished and should be removed
 // `git worktree remove` follows a junction and empties the folder it points to, so the main checkout's node_modules is lost
@@ -41,6 +42,51 @@ export function isFresh(path, now = Date.now()) {
   } catch {
     return false;
   }
+}
+
+/**
+ * The head commits of the pull requests GitHub merged, by branch name (a squash merge leaves no merge in git): Map<branch, commit[]>.
+ * Empty when `gh` cannot say, so nothing is deleted on a guess.
+ */
+export function prMergedHeads(cwd, run = (args) => execFileSync('gh', args, { cwd, encoding: 'utf8', timeout: 60000, stdio: ['ignore', 'pipe', 'ignore'] })) {
+  try {
+    const heads = new Map();
+    for (const p of JSON.parse(run(['pr', 'list', '--state', 'merged', '--limit', '200', '--json', 'headRefName,headRefOid']))) {
+      heads.set(p.headRefName, [...(heads.get(p.headRefName) ?? []), p.headRefOid]);
+    }
+    return heads;
+  } catch {
+    return new Map();
+  }
+}
+
+/**
+ * Whether the local branch `branch` at commit `tip` is all in a merged pull request: its tip is the head that was merged, or behind it.
+ * A commit made after the merge, or a new branch that reuses an old name, is not: such a branch is deleted only with -d (refused).
+ */
+export function mergedByPullRequest(branch, tip, heads, isAncestor) {
+  return (heads.get(branch) ?? []).some((head) => head === tip || isAncestor(tip, head));
+}
+
+/**
+ * The branches of `trees` that are done with: merged into main (`mergedIntoMain`, from `git branch --merged main`), or all in a
+ * pull request GitHub merged (`heads` from `prMergedHeads`; a squash merge is invisible to git). Shared by `list` and the Stop hook.
+ */
+export function mergedBranches(trees, { mergedIntoMain, heads, tipOf, isAncestor }) {
+  const out = new Set(mergedIntoMain);
+  for (const t of trees) if (t.branch && !out.has(t.branch) && heads.has(t.branch) && mergedByPullRequest(t.branch, tipOf(t.branch), heads, isAncestor)) out.add(t.branch);
+  return out;
+}
+
+export function isAncestorIn(cwd) {
+  return (a, b) => {
+    try {
+      execFileSync('git', ['merge-base', '--is-ancestor', a, b], { cwd, stdio: 'ignore' });
+      return true;
+    } catch {
+      return false;
+    }
+  };
 }
 
 const git = (cwd, ...args) => execFileSync('git', args, { cwd, encoding: 'utf8', timeout: 60000, maxBuffer: 32 * 1024 * 1024 });
@@ -94,7 +140,15 @@ function main(argv) {
   if (cmd === 'add' && arg) {
     if (!validName(arg)) throw new Error(`${arg} is not a worktree name: use letters, digits, ., _ and - only`);
     const dir = resolve(main, '..', `novira-wt-${arg}`);
-    git(main, 'worktree', 'add', '-b', `${new Date().toISOString().slice(0, 10).replaceAll('-', '')}_${arg}`, dir, 'main');
+    // From GitHub's main, not the local one: the main checkout may lag behind merged pull requests (GitHub Flow, docs/development.md).
+    let base = 'main';
+    try {
+      git(main, 'fetch', 'origin', 'main');
+      base = 'origin/main';
+    } catch {
+      console.error('worktree: could not fetch origin; the branch starts from the local main');
+    }
+    git(main, 'worktree', 'add', '--no-track', '-b', `${new Date().toISOString().slice(0, 10).replaceAll('-', '')}_${arg}`, dir, base);
     for (const [a, b] of LINKED) {
       const src = join(main, a, b);
       if (existsSync(src) && a === 'frontend') linkFolder(src, join(dir, a, b));
@@ -113,10 +167,20 @@ function main(argv) {
     }
     git(main, 'worktree', 'remove', '-f', '-f', dir);
     git(main, 'worktree', 'prune');
-    if (tree.branch) console.log(git(main, 'branch', '-d', tree.branch).trim()); // refuses an unmerged branch: ask the user
+    if (tree.branch) {
+      // -d refuses an unmerged branch (ask the user); a branch all in a pull request GitHub squash-merged is merged too.
+      const tip = git(main, 'rev-parse', tree.branch).trim();
+      const squashed = mergedByPullRequest(tree.branch, tip, prMergedHeads(main), isAncestorIn(main));
+      console.log(git(main, 'branch', squashed ? '-D' : '-d', tree.branch).trim());
+    }
     console.log(`removed ${dir}`);
   } else if (cmd === 'list') {
-    const merged = new Set(git(main, 'branch', '--merged', 'main', '--format=%(refname:short)').split(/\r?\n/).filter(Boolean));
+    const merged = mergedBranches(trees, {
+      mergedIntoMain: git(main, 'branch', '--merged', 'main', '--format=%(refname:short)').split(/\r?\n/).filter(Boolean),
+      heads: prMergedHeads(main),
+      tipOf: (b) => git(main, 'rev-parse', b).trim(),
+      isAncestor: isAncestorIn(main),
+    });
     const done = finished(trees, { merged, dirty: (p) => git(p, 'status', '--porcelain').trim() !== '', missing: (p) => !existsSync(p), fresh: isFresh });
     for (const t of done) console.log(t.path);
   } else {

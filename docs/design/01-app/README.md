@@ -9,4 +9,4 @@
 | [01-core/](01-core/README.md) | 実行時の構成（層、データフォルダとロック、保存、子プロセス、ビルド）、初回起動、全機能に共通するセキュリティ設計 |
 | [02-screens/](02-screens/README.md) | 画面の移り方（サイドバー、数字キー、メディア行）、ブラウザページのスマートフォンレイアウト、PC とスマートフォンで共有する画面状態 |
 | [03-engine/](03-engine/README.md) | 設定とエンジン設定、低メモリモード、未完了のダウンロード、バックアップと復元、ComfyUI のカスタムノードパック（拡張機能）、ComfyUI のインストールとバージョン切り替え |
-| [04-release/](04-release/README.md) | バージョンタグを push したときに GitHub で作るリリース、ブランチの push ごとに GitHub が回す検査と、検査を足していく順序 |
+| [04-release/](04-release/README.md) | バージョンタグを push したときに GitHub で作るリリース、PR ごとに GitHub が回す検査と、検査を足していく順序、Dependabot |
