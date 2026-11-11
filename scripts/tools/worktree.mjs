@@ -6,8 +6,8 @@
 // `git worktree remove` follows a junction and empties the folder it points to, so the main checkout's node_modules is lost
 // when the junction is still there. `remove` unlinks it first; never remove a worktree by hand.
 import { execFileSync } from 'node:child_process';
-import { existsSync, lstatSync, readdirSync, rmdirSync, statSync, unlinkSync } from 'node:fs';
-import { basename, dirname, join, resolve } from 'node:path';
+import { existsSync, lstatSync, readdirSync, readlinkSync, rmdirSync, statSync, symlinkSync, unlinkSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const LINKED = [['frontend', 'node_modules'], ['backend', 'target']];
@@ -49,7 +49,7 @@ const git = (cwd, ...args) => execFileSync('git', args, { cwd, encoding: 'utf8',
 function unlink(path) {
   try {
     if (!lstatSync(path).isSymbolicLink()) {
-      // On Windows a junction is reported as a directory by some Node versions: an empty-or-not check cannot tell it apart, so ask `fsutil`.
+      // On Windows a junction is reported as a directory by some Node versions: an empty-or-not check cannot tell it apart, so read the link.
       if (process.platform !== 'win32' || !isJunction(path)) return false;
     }
     try {
@@ -63,12 +63,27 @@ function unlink(path) {
   }
 }
 
-function isJunction(path) {
+/**
+ * Whether `path` is a junction or a symbolic link. Reading the link's target works for both and fails for a real folder or a
+ * missing path, whatever `lstat` reports for a junction. No shell is involved, so a path with `&` in it is only a path.
+ */
+export function isJunction(path) {
   try {
-    return /Junction|Symbolic/i.test(execFileSync('cmd', ['/c', 'dir', '/AL', dirname(path)], { encoding: 'utf8' }).split(/\r?\n/).filter((l) => l.includes(`[`) && l.includes(basename(path))).join('\n'));
+    readlinkSync(path);
+    return true;
   } catch {
     return false;
   }
+}
+
+/** Makes `link` a junction to the folder `target` (no administrator rights needed, unlike a symbolic link). */
+export function linkFolder(target, link) {
+  symlinkSync(target, link, 'junction');
+}
+
+/** A worktree name names a folder and a branch: letters, digits, `.`, `_` and `-` only, not starting with a dot or a dash. */
+export function validName(name) {
+  return /^[A-Za-z0-9_][\w.-]*$/.test(name) && !name.includes('..');
 }
 
 function main(argv) {
@@ -77,11 +92,12 @@ function main(argv) {
   const main = trees[0].path;
   const [cmd, arg] = argv;
   if (cmd === 'add' && arg) {
+    if (!validName(arg)) throw new Error(`${arg} is not a worktree name: use letters, digits, ., _ and - only`);
     const dir = resolve(main, '..', `novira-wt-${arg}`);
     git(main, 'worktree', 'add', '-b', `${new Date().toISOString().slice(0, 10).replaceAll('-', '')}_${arg}`, dir, 'main');
     for (const [a, b] of LINKED) {
       const src = join(main, a, b);
-      if (existsSync(src) && a === 'frontend') execFileSync('cmd', ['/c', 'mklink', '/J', join(dir, a, b), src], { stdio: 'ignore' });
+      if (existsSync(src) && a === 'frontend') linkFolder(src, join(dir, a, b));
     }
     console.log(dir);
   } else if (cmd === 'remove' && arg) {
