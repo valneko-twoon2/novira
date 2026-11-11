@@ -34,7 +34,7 @@ trustmark = "=0.4.0"
 # novira.exe need the Visual C++ runtime (MSVCP140.dll) just to start. Pinned to the version trustmark uses.
 ort = { version = "=2.0.0-rc.10", default-features = false, features = ["load-dynamic"] }
 # C2PA content credentials on exports (MIT/Apache-2.0); pure-Rust crypto, no HTTP, no file I/O.
-c2pa = { version = "=0.91.10", default-features = false, features = ["rust_native_crypto"] }
+c2pa = { version = "=0.91.11", default-features = false, features = ["rust_native_crypto"] }
 # The per-installation signing certificate for those credentials (MIT/Apache-2.0).
 rcgen = "0.14"
 serde_bytes = "0.11"
@@ -49,4 +49,4 @@ axum = { version = "0.8", features = ["ws", "multipart"] }
 tempfile = "3"
 flate2 = "1"
 # Property and fuzz-style tests (tests/prop_*.rs): generated inputs, in-process only; pinned so a new release cannot change the generated cases.
-proptest = { version = "=1.11.0", default-features = false, features = ["std", "bit-set"] }
+proptest = { version = "=1.12.0", default-features = false, features = ["std", "bit-set"] }

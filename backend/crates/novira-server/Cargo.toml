@@ -56,7 +56,7 @@ tauri-winres = "0.3"
 [dev-dependencies]
 tempfile = "3"
 # The seeded model-based test of the pairing store (MIT/Apache-2.0; the exact version novira-core pins).
-proptest = { version = "=1.11.0", default-features = false, features = ["std", "bit-set"] }
+proptest = { version = "=1.12.0", default-features = false, features = ["std", "bit-set"] }
 image = { version = "0.25", default-features = false, features = ["png"] }
 # A WebSocket client for the `/events` tests (MIT; the version axum uses).
 tokio-tungstenite = { version = "0.29", default-features = false, features = ["connect"] }
