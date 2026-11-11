@@ -63,7 +63,7 @@ GitHub Flow で進める。`main` はいつでもリリースできる状態に�
 
 1. **ブランチ。** 作業 1 つ（機能 1 つ、修正 1 つ）ごとに、`main` から `node scripts/tools/worktree.mjs add <名前>` で worktree とブランチを作る。エージェントは自分の判断で作る。
 2. **PR。** 終わったら `/ship`。説明は `.github/pull_request_template.md` の節（目的、変えないこと、変更、証拠、範囲、テスト。meta/astryx の PR と同じ形）で書き、`node scripts/tools/pr.mjs open` で push して PR を開く。新しいエージェントが GitHub 上でレビューする（`pr.mjs review`。判定の見出しと総評、「前回の指摘」「指摘」「任意」の節。指摘は `ファイル:行` と「問題」「直し方」）。指摘があれば直して、レビューをやり直す。
-3. **マージ。** `pr.mjs merge` が、すべての必須の検査（CI）が通り、今の head に対するレビューが ok で、CodeQL の未解決の警告がないときだけ squash でマージする。`main` のブランチ保護が、PR を通さない push と、検査の通らないマージを拒む。
+3. **マージ。** `pr.mjs merge` が、すべての必須の検査（CI）と CodeQL の解析が通り、今の head に対するレビューが ok で、CodeQL の未解決の警告がないときだけ squash でマージする。`main` のブランチ保護が、PR を通さない push と、検査の通らないマージを拒む。
 4. **リリース。** マージのたびに `/release-notes` が、前のタグから利用者に見える変更があるかを判断する。あれば版を決め、`CHANGELOG.md` の節を書いたリリース PR を同じ流れで入れ、タグを push し、リリースのワークフローが通ったら公開する。
 5. **依存の更新。** Dependabot の PR も `main` 向け。小さな更新は検査が通れば自動でマージされる（[design/01-app/04-release/03-dependabot.md](design/01-app/04-release/03-dependabot.md)）。ブランチは短く、PR の検査は「ブランチ + 今の `main`」をマージした状態で走るので、`main` に入った更新はそのまま作業に届く。
 

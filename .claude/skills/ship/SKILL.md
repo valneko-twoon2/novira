@@ -71,7 +71,7 @@ On `changes`: fix on the branch (a bug the review found gets its test first, AGE
 
 ## 4. Merge
 
-`node scripts/tools/pr.mjs merge <n> --wait`: waits for the required checks (also the ones not started yet), then squash-merges only if every one passed, the review of the head is `ok`, the title and the description still pass their checks, and no code scanning alert is open on the pull request; the commit on `main` is the title with no body. It deletes the remote branch and fast-forwards the main checkout. When it refuses:
+`node scripts/tools/pr.mjs merge <n> --wait`: waits for the required checks and the CodeQL analyses (also the ones not started yet), then squash-merges only if every one passed, the review of the head is `ok`, the title and the description still pass their checks, and the code scanning alerts of the pull request can be read and none is open; the commit on `main` is the title with no body. It deletes the remote branch and fast-forwards the main checkout. When it refuses:
 
 - a check failed: read it (`gh run view <id> --log-failed`), fix on the branch, push, review again. A failure that is also on `main` is reported with the evidence, not fixed by weakening the check;
 - an open code scanning alert (CodeQL) on the pull request: read it (`gh api "repos/{owner}/{repo}/code-scanning/alerts?ref=refs/pull/<n>/merge&state=open"`), and fix the code yourself with a test (do not commit the suggested autofix unread). A false positive is reported to the user with the reason; dismissing it is their call;

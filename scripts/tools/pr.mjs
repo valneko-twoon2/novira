@@ -46,7 +46,7 @@ export function reviewVerdict(reviews, sha, author) {
   return mine.length ? mine[mine.length - 1].m[1] : 'none';
 }
 
-/** 'pass', 'fail' or 'pending' from `gh pr checks --required --json name,bucket` (a skipped job passes; none at all is pending). */
+/** 'pass', 'fail' or 'pending' from the gating checks, as `gh pr checks --json name,bucket` gives them (a skipped job passes; none at all is pending). */
 export function checksState(checks) {
   if (!checks.length) return 'pending';
   if (checks.some((c) => c.bucket === 'fail' || c.bucket === 'cancel')) return 'fail';
@@ -60,7 +60,16 @@ export function withMissing(checks, required) {
   return [...checks, ...required.filter((name) => !seen.has(name)).map((name) => ({ name, bucket: 'pending' }))];
 }
 
-/** { merge, wait, reason } from the required checks, the review verdict of the head and the pull request itself. */
+/** The jobs of .github/workflows/codeql.yml: not required by the branch protection, but the alerts are only known once they end. */
+export const CODEQL_CHECKS = ['analyze (actions)', 'analyze (javascript-typescript)', 'analyze (python)', 'analyze (rust)'];
+
+/** The checks a merge waits for, out of every check of the pull request: the required ones and the CodeQL analyses, those not started as pending. */
+export function gatingChecks(all, required) {
+  const names = new Set([...required, ...CODEQL_CHECKS]);
+  return withMissing(all.filter((c) => names.has(c.name)), [...names]);
+}
+
+/** { merge, wait, reason } from the required checks, the review verdict of the head and the pull request itself; `alerts` null is unknown. */
 export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, base = 'main', fork = false, title = [], body = [], alerts = 0 }) {
   if (state !== 'OPEN') return { merge: false, wait: false, reason: `the pull request is ${state.toLowerCase()}` };
   if (base !== 'main') return { merge: false, wait: false, reason: `the pull request goes to ${base}, not main` };
@@ -68,6 +77,7 @@ export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, 
   if (draft) return { merge: false, wait: false, reason: 'the pull request is a draft' };
   if (title.length) return { merge: false, wait: false, reason: `the title cannot be the commit on main (${title[0]}): fix it with pr.mjs open --title` };
   if (body.length) return { merge: false, wait: false, reason: `the description is not complete (${body[0]}): fill in .github/pull_request_template.md` };
+  if (alerts === null) return { merge: false, wait: true, reason: 'the code scanning alerts cannot be read (gh failed): no merge until they can' };
   if (alerts > 0) return { merge: false, wait: false, reason: `${alerts} open code scanning alert(s) on the pull request: fix each, or report why it is a false positive` };
   if (verdict === 'changes') return { merge: false, wait: false, reason: 'the agent review of the current head asks for changes' };
   if (verdict !== 'ok') return { merge: false, wait: false, reason: 'no agent review of the current head (pushed after the review?): review it first' };
@@ -187,7 +197,7 @@ export function reviewProblems(verdict, text) {
   if (verdict === 'changes' && !items.length) problems.push('changes is asked without a finding under "#### 指摘"');
   if (verdict === 'ok' && items.length) problems.push('ok is given with a finding under "#### 指摘"; move it to "#### 任意" or ask for changes');
   for (const it of items) {
-    if (!/^\d+\. \*\*`[^`\s]+\.[\w]+:\d+`\*\*$/.test(it.head)) problems.push(`a finding starts with its place alone, "1. **\`file.ext:line\`**": "${it.head.slice(0, 50)}"`);
+    if (!/^\d+\. \*\*`[^`\s]+:\d+`\*\*$/.test(it.head)) problems.push(`a finding starts with its place alone, "1. **\`file.ext:line\`**": "${it.head.slice(0, 50)}"`);
     if (!it.problem || !it.fix) problems.push(`a finding needs the lines "   - 問題: ..." and "   - 直し方: ...": "${it.head.slice(0, 50)}"`);
   }
   return problems;
@@ -201,14 +211,14 @@ function view(n) {
   return JSON.parse(gh(['pr', 'view', String(n), '--json', 'number,title,body,state,isDraft,headRefOid,headRefName,baseRefName,isCrossRepository,reviews,url']));
 }
 
-function requiredChecks(n) {
+function allChecks(n) {
   try {
-    return JSON.parse(gh(['pr', 'checks', String(n), '--required', '--json', 'name,bucket']));
+    return JSON.parse(gh(['pr', 'checks', String(n), '--json', 'name,bucket']));
   } catch (e) {
     // `gh pr checks` exits non-zero while checks fail or run; its JSON is still on stdout.
     const out = e.stdout?.toString() ?? '';
     if (out.trim().startsWith('[')) return JSON.parse(out);
-    if (/no (required )?checks reported/i.test(`${e.stderr}`)) return [];
+    if (/no checks reported/i.test(`${e.stderr}`)) return [];
     throw e;
   }
 }
@@ -227,18 +237,19 @@ function requiredNames() {
   return required;
 }
 
-/** The open code scanning (CodeQL) alerts of the pull request's merge result; 0 when GitHub cannot say (no scanning yet). */
+/** The open code scanning (CodeQL) alerts of the pull request's merge result (GitHub answers [] before any scan); null when gh fails. */
 function openAlerts(n) {
   try {
-    return Number(gh(['api', `repos/{owner}/{repo}/code-scanning/alerts?ref=refs/pull/${n}/merge&state=open&per_page=100`, '--jq', 'length']).trim()) || 0;
+    const count = Number(gh(['api', `repos/{owner}/{repo}/code-scanning/alerts?ref=refs/pull/${n}/merge&state=open&per_page=100`, '--jq', 'length']).trim());
+    return Number.isInteger(count) ? count : null;
   } catch {
-    return 0;
+    return null;
   }
 }
 
 function decisionOf(n) {
   const pr = view(n);
-  const checks = withMissing(requiredChecks(n), requiredNames());
+  const checks = gatingChecks(allChecks(n), requiredNames());
   const verdict = reviewVerdict(pr.reviews ?? [], pr.headRefOid, me());
   const decision = mergeDecision({
     checks: checksState(checks),
@@ -339,7 +350,7 @@ function main(argv) {
     }
     return 0;
   }
-  console.error('usage: node scripts/tools/pr.mjs open [--title t] | review <n> --verdict ok|changes --sha <commit> --body-file <f> | status <n> | merge <n> [--wait]');
+  console.error('usage: node scripts/tools/pr.mjs open --body-file <f> [--title t] | review <n> --verdict ok|changes --sha <commit> --body-file <f> | status <n> | merge <n> [--wait]');
   return 2;
 }
 

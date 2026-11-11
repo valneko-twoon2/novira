@@ -43,6 +43,6 @@
 | `npx vitest run <file>.property.test.ts`（`npm run check` の一部。fast-check、共通の準備は `frontend/src/propertyTest.testkit.ts`） | 純粋なフロントのロジックとストアに届く、悪意のある・ランダムな入力。プロセス内だけ（`fetch` は投げる）。実行回数と種は固定（`NOVIRA_PBT_RUNS`、`NOVIRA_PBT_SEED`）。既知の不具合は `known bug:` コメント付きの `it.fails` テスト |
 | novira-core の `prop_*` テスト（`--test prop_paths` ほか） | 純粋関数やパーサーに届く、悪意のある・ランダムな入力: フォルダを抜け出す、デバイスや別ホストを指すパス、リンクが宙に浮く・循環する・null 入力を持つプロンプト、panic やオーバーフローするパーサー、往復で変わる契約型。種は固定 | ジェネレーター\| ジェネレーターが届く範囲だけ: 本物のエンジン、ネットワーク、GPU はなく、生成した形の外の不具合は見つからない |
 | main のブランチ保護（GitHub の設定。[02-ci.md](../design/01-app/04-release/02-ci.md)） | PR を通さない main への push（管理者も）、必須の検査（`Test` と `Supply chain` のジョブ）が通らない PR のマージ |
-| `scripts/tools/pr.mjs`（`/ship`。`tests/pr-tool.test.ts`） | 今の head に対するエージェントのレビュー（サインインしたアカウントのもの）が ok でない PR、まだ始まっていない必須の検査、main 以外への PR とフォークからの PR、コミットの規則に合わないタイトル、テンプレートの節が欠けた説明、決まった書式でないレビューのマージや投稿 |
+| `scripts/tools/pr.mjs`（`/ship`。`tests/pr-tool.test.ts`） | 今の head に対するエージェントのレビュー（サインインしたアカウントのもの）が ok でない PR、まだ始まっていない必須の検査と終わっていない CodeQL の解析、未解決の・読めない code scanning の警告、main 以外への PR とフォークからの PR、コミットの規則に合わないタイトル、テンプレートの節が欠けた説明、決まった書式でないレビューのマージや投稿 |
 | `.github/workflows/supply-chain.yml`（`backend/deny.toml`、`.gitleaks.toml`。main 向けの PR、main への push、手動、毎週） | 許可リストにないライセンス、ワイルドカードのバージョン、未知のレジストリや git 依存（cargo-deny）、ファイルと git 履歴の中の秘密（gitleaks、既定の規則）。アドバイザリ（`audit.yml`）とコードの欠陥は対象外 |
 | `backend/rustfmt.toml`（`newline_style = "Unix"`） | Rust の改行 |

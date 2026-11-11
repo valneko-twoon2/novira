@@ -1,10 +1,14 @@
 // The merge rule of a work branch's pull request (scripts/tools/pr.mjs): green required checks and an agent review, by the signed-in
 // account, that says ok for exactly the head commit; only a pull request of this repository into main; and the title that becomes the
 // squashed commit on main.
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { bodyProblems, checksState, deleteBranchArgs, mergeArgs, mergeDecision, reviewMark, reviewProblems, reviewVerdict, titleFor, titleProblems, withMissing, withoutComments } from '../../scripts/tools/pr.mjs';
+import { CODEQL_CHECKS, bodyProblems, checksState, deleteBranchArgs, gatingChecks, mergeArgs, mergeDecision, reviewMark, reviewProblems, reviewVerdict, titleFor, titleProblems, withMissing, withoutComments } from '../../scripts/tools/pr.mjs';
 
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const HEAD = 'a'.repeat(40);
 const OLD = 'b'.repeat(40);
 const ME = 'owner';
@@ -95,6 +99,27 @@ describe('the required checks that have not reported', () => {
     expect(checksState(checks)).toBe('pending');
     expect(withMissing([{ name: 'static', bucket: 'pass' }], [])).toEqual([{ name: 'static', bucket: 'pass' }]);
   });
+
+  it('include the CodeQL analyses, so a merge waits for the scan of the head', { tags: ['condition', 'regression'] }, () => {
+    const all = [
+      { name: 'static', bucket: 'pass' },
+      { name: 'analyze (actions)', bucket: 'pass' },
+      { name: 'analyze (rust)', bucket: 'pending' },
+      { name: 'flaky', bucket: 'skipping' },
+    ];
+    const checks = gatingChecks(all, ['static']);
+    expect(checks.map((c: { name: string }) => c.name)).not.toContain('flaky');
+    expect(checksState(checks)).toBe('pending');
+    // An analysis that has not started yet also waits.
+    const started = gatingChecks([{ name: 'static', bucket: 'pass' }], ['static']);
+    expect(started.filter((c: { bucket: string }) => c.bucket === 'pending').map((c: { name: string }) => c.name)).toEqual(CODEQL_CHECKS);
+  });
+
+  it('name each language CodeQL scans', { tags: ['equivalence'] }, () => {
+    const workflow = readFileSync(path.join(ROOT, '.github/workflows/codeql.yml'), 'utf8');
+    const languages = (/language: \[([^\]]+)\]/.exec(workflow)?.[1] ?? '').split(',').map((l) => l.trim());
+    expect(CODEQL_CHECKS).toEqual(languages.map((l) => `analyze (${l})`));
+  });
 });
 
 describe('the squash merge', () => {
@@ -175,6 +200,7 @@ describe('the shape of a review (after meta/astryx review bot, laid out to read 
     expect(reviewProblems('changes', noFinding).join()).toContain('without a finding');
     expect(reviewProblems('ok', ok.replace('#### 任意', '#### 指摘\n1. **`a.ts:1`**\n   - 問題: 壊れる\n   - 直し方: 直す\n\n#### 任意')).join()).toContain('ok is given with a finding');
     expect(reviewProblems('changes', changes.replace('**`scripts/tools/pr.mjs:173`**', 'pr.mjs のどこか')).join()).toContain('its place alone');
+    expect(reviewProblems('changes', changes.replace('**`scripts/tools/pr.mjs:173`**', '**`.githooks/pre-commit:3`**'))).toEqual([]);
     expect(reviewProblems('changes', changes.replace('   - 直し方: `--subject` を渡す\n', '')).join()).toContain('直し方');
   });
 
@@ -188,5 +214,9 @@ describe('code scanning alerts', () => {
   it('stop the merge until each is fixed or explained, whatever the checks say', { tags: ['condition', 'regression'] }, () => {
     expect(mergeDecision({ checks: 'pass', verdict: 'ok', alerts: 1 })).toMatchObject({ merge: false, wait: false, reason: expect.stringContaining('code scanning') });
     expect(mergeDecision({ checks: 'pass', verdict: 'ok', alerts: 0 })).toMatchObject({ merge: true });
+  });
+
+  it('that cannot be read stop the merge too, and it waits', { tags: ['error-guessing', 'regression'] }, () => {
+    expect(mergeDecision({ checks: 'pass', verdict: 'ok', alerts: null })).toMatchObject({ merge: false, wait: true, reason: expect.stringContaining('code scanning') });
   });
 });
