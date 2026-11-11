@@ -17,7 +17,7 @@ Follow this when changing `frontend/` or `backend/`. How to choose the cases (pa
 | Change | Tests |
 |---|---|
 | A feature added | Tests of the new behaviour: the normal case and at least one failure, empty or boundary case. A new screen flow (tab, dialog, generation steps) gets a Playwright spec that is run; a new screen also a spec of its own in `e2e/visual/` (both themes, the whole screen and its parts) |
-| A bug fixed | A test that fails before the fix and passes after |
+| A bug fixed | **Test first.** Write the test that reproduces the bug, run it and see it fail for the reason the bug gives, then fix and see it pass. Do this for every bug found, also one found while doing something else, and then look for the same kind of bug elsewhere (a test for each one found). The `fix` commit stages the test, or a `Test: <why not>` trailer says why it cannot have one (`.githooks/commit-msg.mjs` refuses it otherwise) |
 | A spec changed | Rewrite the tests to the new spec; do not just copy the new output into the expected values |
 | A feature or code removed | Delete the tests that checked only it, and their fixtures, mocks, helpers, snapshots and baseline images |
 | A rename or move | Move the tests, their names and `describe` blocks too (tests sit next to the code) |

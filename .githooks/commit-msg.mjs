@@ -9,6 +9,10 @@
 // The summary and every bullet are written in Japanese. Only the messages Git writes itself ("Merge branch '...'",
 // "Revert \"...\"", fixup!, squash!, amend!) are not checked; a merge written by hand follows the
 // same shape. What it cannot see: whether the bullets say the right thing.
+//
+// A "fix" commit that changes the code of the app or of the harness must also stage a test (a bug is fixed test first: the
+// test fails before the fix and passes after, .claude/rules/tests.md). A fix that cannot have one says why in a "Test: ..."
+// trailer (a look only checked with shot.mjs, a setting). What it cannot see: whether the test fails without the fix.
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
@@ -28,8 +32,32 @@ const CO_AUTHOR = /^co-authored-by:/im;
 // Names of work branches (a subagent's worktree branch, a claude/ branch) and archive tags: the log does not need them.
 const BRANCH_NAME = /\b(?:worktree-agent-\w+|claude\/[\w.-]+|archive\/[\w.-]+)/;
 
+const TEST_PATH = /(^|\/)(tests?|e2e|difftest|__snapshots__)\/|\.(test|spec|property\.test|difftest)\.(ts|tsx|mjs)$|(^|\/)tests\.rs$|_test\.rs$|\.testkit\.tsx?$/;
+/** Code a test can reach: the app's sources (not styles, catalogs or fixtures) and the scripts and hooks of the harness. */
+const FIX_CODE = /^(frontend\/src\/.+\.tsx?|backend\/.+\/src\/.+\.rs|scripts\/.+\.mjs|\.githooks\/.+\.mjs|\.claude\/hooks\/.+\.mjs)$/;
+const INLINE_TEST = /^\+\s*#\[(tokio::)?test\b/;
+const TEST_TRAILER = /^Test: \S/m;
+const NEWLINE = String.fromCharCode(10);
+
+/** True for a path that holds tests (or what only tests use). */
+export const isTestPath = (file) => TEST_PATH.test(file);
+
+/**
+ * The problem of a "fix" commit that stages code and no test, or null. `staged` is `{ files, addedLines }`: the staged paths and
+ * the lines the commit adds (a Rust file keeps its tests inside, so an added `#[test]` counts).
+ */
+export function fixWithoutTest(subject, message, staged) {
+  const header = HEADER.exec(subject);
+  if (!header || header[1] !== 'fix') return null;
+  const files = staged.files.map((f) => f.split(String.fromCharCode(92)).join('/'));
+  if (!files.some((f) => FIX_CODE.test(f) && !isTestPath(f))) return null;
+  if (files.some(isTestPath) || staged.addedLines.some((l) => INLINE_TEST.test(l))) return null;
+  if (TEST_TRAILER.test(message)) return null;
+  return 'A "fix" changes code but stages no test. Write the test that fails without the fix, run it, see it fail, then fix and stage both; if it cannot be tested, add a trailer line "Test: <why not, and how it was checked>".';
+}
+
 /** The problems of a commit message, one sentence each (an empty list means the message is fine). */
-export function messageProblems(message, { branch = '' } = {}) {
+export function messageProblems(message, { branch = '', staged = null } = {}) {
   const lines = message
     .replace(/\r\n/g, '\n')
     .split('\n')
@@ -44,6 +72,8 @@ export function messageProblems(message, { branch = '' } = {}) {
   if (subject.length > SUBJECT_MAX) problems.push(`Line 1 is ${subject.length} characters; keep the summary within ${SUBJECT_MAX}.`);
   if (/[.。]$/.test(subject)) problems.push('Line 1 ends with a full stop; drop it.');
   const header = HEADER.exec(subject);
+  const untested = staged ? fixWithoutTest(subject, lines.join(NEWLINE), staged) : null;
+  if (untested) problems.push(untested);
   if (!header || !TYPES.includes(header[1])) problems.push(`Line 1 starts with a type and a colon: "<type>: ..." or "<type>(scope): ...", the type one of ${TYPES.join(', ')}.`);
   else if (!JAPANESE.test(header[3])) problems.push('Write the summary after the type in Japanese.');
 
@@ -83,13 +113,25 @@ function currentBranch() {
   }
 }
 
+/** The staged paths and the lines the commit adds; null when git cannot say (then the test check is skipped). */
+function stagedChanges() {
+  try {
+    const git = (args) => execFileSync('git', args, { encoding: 'utf8', timeout: 15000, maxBuffer: 64 * 1024 * 1024 });
+    const files = git(['diff', '--cached', '--name-only']).split(NEWLINE).filter(Boolean);
+    const addedLines = git(['diff', '--cached', '-U0', '--', '*.rs']).split(NEWLINE).filter((l) => l.startsWith('+'));
+    return { files, addedLines };
+  } catch {
+    return null;
+  }
+}
+
 function main(argv) {
   const file = argv[0];
   if (!file) {
     console.error('usage: node .githooks/commit-msg.mjs <message file>');
     return 2;
   }
-  const problems = messageProblems(readFileSync(file, 'utf8'), { branch: currentBranch() });
+  const problems = messageProblems(readFileSync(file, 'utf8'), { branch: currentBranch(), staged: stagedChanges() });
   if (problems.length === 0) return 0;
   console.error('commit-msg: the message does not follow .claude/rules/commit-messages.md:');
   for (const p of problems) console.error(`  - ${p}`);

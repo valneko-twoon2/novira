@@ -19,7 +19,7 @@ Stage only your own files (`git status` first, `git diff --cached` after). Run `
 |---|---|
 | Line 1 | `<type>: <summary>` (or `<type>(<scope>): ...`, `!` before the colon for a breaking change). The type is one of `feat` (a new feature), `fix` (a bug fix), `docs`, `style` (formatting only), `refactor`, `perf`, `test`, `build`, `ci`, `chore` (tooling, harness, upkeep), `revert`. The summary is Japanese: the point of the whole commit in one line, at most 72 characters in all, no full stop (`。` or `.`). Name what changed and, if short, what for. Do not list several unrelated changes with 「と」; if you must, the commit is probably two commits |
 | Body | Only when line 1 is not enough. A blank line, then at most 8 lines, each one a Japanese bullet that starts with `- `, at most 100 characters, one line each (do not wrap). Code names, paths and commands stay as they are inside the Japanese |
-| Trailers | No `Co-Authored-By:` line, ever (the hook refuses it, and `.claude/settings.json` turns off Claude Code's own co-author line). Other trailers go after a blank line and do not count toward the limits |
+| Trailers | No `Co-Authored-By:` line, ever (the hook refuses it, and `.claude/settings.json` turns off Claude Code's own co-author line). A `fix` that changes code needs a test staged with it, or a `Test: <why not, how it was checked>` trailer (the hook refuses it otherwise; `.claude/rules/tests.md`). Other trailers go after a blank line and do not count toward the limits |
 
 A small or obvious change (a typo, a rename, one fix) is **line 1 only**.
 

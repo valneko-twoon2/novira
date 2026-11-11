@@ -81,3 +81,50 @@ describe('commit message shape', () => {
     expect(problems('feat: 足す\r\n\r\n- ひとつ\r\n- ふたつ\r\n')).toEqual([]);
   });
 });
+
+describe('a fix is committed with its test', () => {
+  const check = (message: string, files: string[], addedLines: string[] = []) => messageProblems(message, { staged: { files, addedLines } }) as string[];
+  const NO_TEST = 'stages no test';
+
+  it('refuses a fix that changes app or harness code and stages no test', () => {
+    expect(check('fix: 画像が開けない\n', ['backend/crates/novira-core/src/media/images.rs']).join()).toContain(NO_TEST);
+    expect(check('fix: 候補の表示を直す\n', ['frontend/src/features/drafts/DraftsView.tsx', 'docs/design/a.md']).join()).toContain(NO_TEST);
+    expect(check('fix(harness): 検査を直す\n', ['scripts/tools/models-sweep-app.mjs']).join()).toContain(NO_TEST);
+    expect(check('fix: フックを直す\n', ['.githooks/commit-msg.mjs']).join()).toContain(NO_TEST);
+    // A path as Windows writes it.
+    expect(check('fix: 直す\n', ['frontend\\src\\state\\params.ts']).join()).toContain(NO_TEST);
+  });
+
+  it('lets a fix through that stages a test of any kind', () => {
+    const code = 'frontend/src/features/drafts/DraftsView.tsx';
+    for (const test of ['frontend/src/features/drafts/DraftsView.test.tsx', 'frontend/tests/ci-scope.test.ts', 'frontend/e2e/drafts.spec.ts', 'backend/crates/novira-core/tests/x.rs', 'backend/crates/novira-core/src/strict/tests.rs', 'frontend/src/state/a.property.test.ts']) {
+      expect(check('fix: 直す\n', [code, test])).toEqual([]);
+    }
+  });
+
+  it('counts a test added inside a Rust file', () => {
+    const files = ['backend/crates/novira-core/src/media/images.rs'];
+    expect(check('fix: 直す\n', files, ['+    #[test]', '+fn a() {}'])).toEqual([]);
+    expect(check('fix: 直す\n', files, ['+    #[tokio::test]'])).toEqual([]);
+    expect(check('fix: 直す\n', files, ['+    // not a #[test] attribute']).join()).toContain(NO_TEST);
+  });
+
+  it('lets a fix through that says in a Test trailer why it has none', () => {
+    const files = ['frontend/src/features/drafts/DraftsView.tsx'];
+    expect(check('fix: 直す\n\nTest: なし（見た目だけ。shot.mjs で見た）\n', files)).toEqual([]);
+    expect(check('fix: 直す\n\nTest:\n', files).join()).toContain(NO_TEST);
+  });
+
+  it('does not ask for a test where none can be written, or of another type', () => {
+    expect(check('fix: 色を直す\n', ['frontend/src/features/params/params.css'])).toEqual([]);
+    expect(check('fix: 文言を直す\n', ['frontend/src/i18n/locales/ja/params.json'])).toEqual([]);
+    expect(check('fix: 手順を直す\n', ['docs/design/README.md', '.claude/rules/tests.md'])).toEqual([]);
+    expect(check('feat: 足す\n', ['backend/crates/novira-core/src/media/images.rs'])).toEqual([]);
+    expect(check('chore: 整える\n', ['frontend/src/state/params.ts'])).toEqual([]);
+    expect(check('fix: 直す\n', [])).toEqual([]);
+  });
+
+  it('skips the check when nothing is known about the staged files', () => {
+    expect(messageProblems('fix: 直す\n')).toEqual([]);
+  });
+});
