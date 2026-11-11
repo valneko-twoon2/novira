@@ -8,8 +8,9 @@
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { runCheck, specOf } from './checks.mjs';
+import { upperDrive } from './harness-paths.mjs';
 
-const ROOT = fileURLToPath(new URL('../..', import.meta.url));
+const ROOT = upperDrive(fileURLToPath(new URL('../..', import.meta.url)));
 
 const RUST = /^backend\/.*\.(rs|toml)$|^backend\/Cargo\.lock$/;
 const FRONTEND_LINT = /^frontend\/.*\.(tsx?|mts|m?js|css)$/;

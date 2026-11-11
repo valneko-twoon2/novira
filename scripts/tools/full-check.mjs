@@ -11,9 +11,9 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { harnessRoots } from './harness-paths.mjs';
+import { harnessRoots, upperDrive } from './harness-paths.mjs';
 
-const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const REPO = upperDrive(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..'));
 const OUTPUT_TAIL = 40;
 
 export function parseArgs(argv) {

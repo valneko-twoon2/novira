@@ -25,14 +25,14 @@ import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { runCommand } from './e2e-lock.mjs';
-import { harnessRoots } from './harness-paths.mjs';
+import { harnessRoots, upperDrive } from './harness-paths.mjs';
 import { isSweepTrigger } from './models-sweep-lib.mjs';
 import { isLayoutSource } from './layout-scan.mjs';
 import { pruneTarget } from './prune-target.mjs';
 import { referencesIn, testIdDefined, testIdsIn } from './ui-refs.mjs';
 import { isScreenSource } from './visual-baselines.mjs';
 
-const ROOT = fileURLToPath(new URL('../..', import.meta.url));
+const ROOT = upperDrive(fileURLToPath(new URL('../..', import.meta.url)));
 const CORE = 'backend/crates/novira-core';
 
 /** Build settings and dependencies: a change here can break anything on that side, so the whole side is checked. */

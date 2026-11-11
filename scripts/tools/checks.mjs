@@ -16,9 +16,9 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { acquire, runCommand } from './e2e-lock.mjs';
-import { harnessRoots } from './harness-paths.mjs';
+import { harnessRoots, upperDrive } from './harness-paths.mjs';
 
-const ROOT = fileURLToPath(new URL('../..', import.meta.url));
+const ROOT = upperDrive(fileURLToPath(new URL('../..', import.meta.url)));
 
 /** The Rust packages every Rust check covers when none is named: what CI's clippy covers. */
 const CI_PACKAGES = ['-p', 'novira-core', '-p', 'novira-server', '-p', 'novira'];
@@ -69,10 +69,19 @@ export function envFor(spec, base = process.env, root = ROOT, exists = existsSyn
   return env;
 }
 
+/**
+ * The folder a check runs in, with a Windows drive letter in capitals. A shell started in `e:\...` gives Node a lower-case
+ * drive, and vitest then loads its own module once as `e:` and once as `E:`: every test file fails with "Cannot read
+ * properties of undefined (reading 'config')".
+ */
+export function checkFolder(root, cwd) {
+  return upperDrive(join(root, cwd));
+}
+
 /** Runs one check and returns its exit status. */
 export async function runCheck(name, args = [], { root = ROOT, log = console.log } = {}) {
   const spec = specOf(name, args);
-  const opts = { cwd: join(root, spec.cwd), env: envFor(spec, process.env, root) };
+  const opts = { cwd: checkFolder(root, spec.cwd), env: envFor(spec, process.env, root) };
   log(`checks: ${name}: ${spec.cmd.join(' ')}  (in ${spec.cwd === '.' ? 'the repository root' : spec.cwd})`);
   if (!spec.lock) return runCommand(spec.cmd, opts);
   const release = await acquire({ what: spec.cmd.join(' ') });

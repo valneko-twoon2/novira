@@ -11,10 +11,10 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { harnessRoots } from './harness-paths.mjs';
+import { harnessRoots, upperDrive } from './harness-paths.mjs';
 import { ensureBuilt, startServer } from './server-run.mjs';
 
-const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const REPO = upperDrive(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..'));
 
 /** vitest's JSON report goes to the file named by NOVIRA_VITEST_JSON (CI turns it into the job summary); the list reporter stays. */
 function jsonReport() {

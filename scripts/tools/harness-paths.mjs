@@ -11,7 +11,17 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseWorktrees } from './worktree.mjs';
 
-const HERE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+/**
+ * A path with a Windows drive letter in capitals. A shell started in `e:\...` gives Node a lower-case drive, so a folder a
+ * script finds from its own place is `e:\...`; a child run there (vitest) then loads its own module once as `e:` and once as
+ * `E:`, and every test file fails with "Cannot read properties of undefined (reading 'config')". The repository folder of every
+ * tool goes through this.
+ */
+export function upperDrive(p) {
+  return p.replace(/^([a-z]):/, (_, drive) => `${drive.toUpperCase()}:`);
+}
+
+const HERE = upperDrive(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..'));
 
 /**
  * The Vite mode of the harness build of the frontend (one build for the layout scan, the verification app and the browser

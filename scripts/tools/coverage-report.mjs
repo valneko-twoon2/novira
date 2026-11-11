@@ -14,9 +14,9 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { coverageDir } from './harness-paths.mjs';
+import { coverageDir, upperDrive } from './harness-paths.mjs';
 
-const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const REPO = upperDrive(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..'));
 
 /** The coverage runs: the files they may leave (best first), and the folder their relative source paths start from. */
 export const INPUTS = [

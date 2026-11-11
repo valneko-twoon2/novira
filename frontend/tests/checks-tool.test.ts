@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { CHECKS, envFor, pathFor, specOf } from '../../scripts/tools/checks.mjs';
+import { CHECKS, checkFolder, envFor, pathFor, specOf } from '../../scripts/tools/checks.mjs';
 // @ts-expect-error -- plain ESM script without types
 import { partsOf, rawCheck } from '../../.claude/hooks/use-checks.mjs';
 
@@ -17,6 +17,14 @@ describe('checks tool', () => {
       expect(CHECKS[name], name).toBeTruthy();
       expect(CHECKS[name].about.length, name).toBeGreaterThan(10);
     }
+  });
+
+  it('runs a check in its folder with the drive letter in capitals, whatever case the shell started in', () => {
+    // A shell started in `e:\...` gives Node a lower-case drive; vitest then loads its own module twice (`e:` and `E:`) and
+    // every test file fails with "Cannot read properties of undefined (reading 'config')".
+    expect(checkFolder('e:\\Code\\novira\\', 'frontend')).toBe(join('E:\\Code\\novira\\', 'frontend'));
+    expect(checkFolder('E:\\Code\\novira\\', '.')).toBe(join('E:\\Code\\novira\\', '.'));
+    expect(checkFolder('/home/me/novira/', 'backend')).toBe(join('/home/me/novira/', 'backend'));
   });
 
   it('runs the same commands as CI when no arguments are given', () => {

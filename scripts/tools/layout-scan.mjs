@@ -21,10 +21,10 @@ import { availableParallelism } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { acquire } from './e2e-lock.mjs';
-import { harnessRoots } from './harness-paths.mjs';
+import { harnessRoots, upperDrive } from './harness-paths.mjs';
 import { markUsed } from './prune-stale.mjs';
 
-const ROOT = fileURLToPath(new URL('../..', import.meta.url));
+const ROOT = upperDrive(fileURLToPath(new URL('../..', import.meta.url)));
 /** The languages a recorded pass must include. */
 export const REQUIRED_LOCALES = ['ja', 'en'];
 /** How many passes the record keeps (switching branches back and forth finds its pass again). */

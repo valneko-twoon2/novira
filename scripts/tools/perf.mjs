@@ -27,12 +27,12 @@ import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { harnessRoots } from './harness-paths.mjs';
+import { harnessRoots, upperDrive } from './harness-paths.mjs';
 import { cargoCommand, isInside, listProcesses } from './harness-process.mjs';
 import { ENGINE_GRACE_MS, median, parseArgs as parseStartupArgs, runStartup, SPLASH_FLOOR_MS, startNumbers } from './perf-startup.mjs';
 import { markUsed } from './prune-stale.mjs';
 
-const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const REPO = upperDrive(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..'));
 const PARTS = ['backend', 'startup', 'app'];
 const CDP_URL = 'http://127.0.0.1:9333';
 /** frontend/src/backend/perf.ts */
