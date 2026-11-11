@@ -49,4 +49,4 @@ axum = { version = "0.8", features = ["ws", "multipart"] }
 tempfile = "3"
 flate2 = "1"
 # Property and fuzz-style tests (tests/prop_*.rs): generated inputs, in-process only; pinned so a new release cannot change the generated cases.
-proptest = { version = "=1.11.0", default-features = false, features = ["std", "bit-set"] }
+proptest = { version = "=1.12.0", default-features = false, features = ["std", "bit-set"] }
