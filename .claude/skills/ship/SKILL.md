@@ -26,24 +26,43 @@ Ship progress:
 
 ## 2. Open
 
-`node scripts/tools/pr.mjs open` in the worktree: pushes the branch and opens the pull request to `main` (body: the commits). The title becomes the subject of the squashed commit on `main`, so it follows `.claude/rules/commit-messages.md` (the tool checks it before pushing): a branch of one commit takes that commit's subject; a branch of several needs `--title "<type>: <要約>"` naming the main change (a `feat:` branch with a later `docs:` commit is `feat:`, or `/release-notes` misjudges it). Give a body with `--body-file` when the commits do not say what changed and why, in Japanese. It prints the number.
+Write the description in Japanese from `.github/pull_request_template.md` (the sections of meta/astryx's pull requests) into `novira-data/work/scratch/pr/<branch>-body.md`, every section filled in:
+
+- **目的**: what was wrong, for whom.
+- **変えないこと**: what must stay as it is (the invariant the reviewer checks the change against).
+- **変更**: what changed and how; also what it does not do (left out, or for another pull request).
+- **証拠**: what was verified and how, before and after: the checks run and their results, numbers, shots. Not verified is written as such.
+- **範囲**: tick the lines that hold; an unticked line says why next to it.
+- **テスト**: the tests added or changed and what each one proves.
+
+Then `node scripts/tools/pr.mjs open --body-file <that file>` in the worktree: it pushes the branch and opens the pull request to `main`, after checking the description has every section (`bodyProblems`) and the title. The title becomes the subject of the squashed commit on `main`, so it follows `.claude/rules/commit-messages.md`: a branch of one commit takes that commit's subject; a branch of several needs `--title "<type>: <要約>"` naming the main change (a `feat:` branch with a later `docs:` commit is `feat:`, or `/release-notes` misjudges it). On a pull request already open, `open` pushes and updates the title or description given. It prints the number.
 
 ## 3. Review
 
 The author never reviews its own work. Start a **fresh** agent (Agent tool, a new one each round, not a fork) with:
 
-- the pull request number and the repository path, and the instruction to read the diff with `gh pr diff <n>` and the changed files in full where the diff is not enough;
-- what to judge: correctness (a bug, a missed case, a broken caller), the tests (one per behaviour, they fail without the change, a bug fix has its regression test), the rules of `AGENTS.md` and `.claude/rules/` the diff touches (the table of `/gatekeeper` section 1), texts in ja and en, the map and design pages;
-- to report the head commit it read (`gh pr view <n> --json headRefOid`) on its first line as `SHA: <40 hex>`;
-- to answer with a verdict `ok` or `changes` and a Japanese review: each finding with the file and line, what goes wrong, and what to do; no praise, no summary of the diff. Findings that are only taste do not make `changes`.
+- the pull request number and the repository path; to read the description (`gh pr view <n>`), the diff (`gh pr diff <n>`), the changed files in full where the diff is not enough, and the earlier reviews (`gh api repos/{owner}/{repo}/pulls/<n>/reviews`);
+- what to judge: whether the change does what **変更** says and keeps what **変えないこと** says; whether **証拠** and **テスト** really show it (a claim with nothing behind it is a finding); correctness (a bug, a missed case, a broken caller); the tests (one per behaviour, they fail without the change, a bug fix has its regression test); the rules of `AGENTS.md` and `.claude/rules/` the diff touches (the table of `/gatekeeper` section 1); texts in ja and en; the map and design pages;
+- to answer in exactly this shape (the shape of meta/astryx's review bot; `pr.mjs review` refuses any other), in Japanese except code and identifiers:
 
-Post its answer as the review: write it to `novira-data/work/scratch/pr/<n>-review.md`, then `node scripts/tools/pr.mjs review <n> --verdict <ok|changes> --sha <the SHA it read> --body-file <that file>`. The tool refuses when the head moved past that commit, and the merge counts only a review of the current head by the signed-in account, so a later push needs a new review.
+```
+SHA: <the 40-hex head commit it read: gh pr view <n> --json headRefOid>
+VERDICT: changes            (or ok)
+**変更を求めます:** <one sentence: what the change gets right, and what is wrong>      (for ok: **問題ありません:** <one sentence>)
+前回の指摘: <what became of each earlier finding, or なし>
+- `path/file.ext:line` — what goes wrong — what to do, with the wording or the code when it helps
+- 任意: <a finding that does not block the merge>
+```
+
+  Few findings, each concrete. A blocking finding names a file and a line; matters of taste are `任意:`. `changes` needs at least one blocking finding, `ok` none. No praise beyond the one sentence, no summary of the diff.
+
+Post its answer as the review: write the lines after `VERDICT` to `novira-data/work/scratch/pr/<n>-review.md`, then `node scripts/tools/pr.mjs review <n> --verdict <ok|changes> --sha <the SHA it read> --body-file <that file>`. The tool checks the shape (`reviewProblems`), refuses when the head moved past that commit, and the merge counts only a review of the current head by the signed-in account, so a later push needs a new review.
 
 On `changes`: fix on the branch (a bug the review found gets its test first, AGENTS.md section 4), commit, push (`pr.mjs open` pushes again), and review again with a new agent. Disagreeing with a finding is allowed when the code or the spec shows it is wrong: say why in a reply on the pull request (`gh pr comment <n> --body-file`), then a new review.
 
 ## 4. Merge
 
-`node scripts/tools/pr.mjs merge <n> --wait`: waits for the checks, then squash-merges only if every check passed and the review of the head is `ok`, deletes the remote branch and fast-forwards the main checkout. When it refuses:
+`node scripts/tools/pr.mjs merge <n> --wait`: waits for the required checks (also the ones not started yet), then squash-merges only if every one passed, the review of the head is `ok`, and the title and the description still pass their checks; the commit on `main` is the title with no body. It deletes the remote branch and fast-forwards the main checkout. When it refuses:
 
 - a check failed: read it (`gh run view <id> --log-failed`), fix on the branch, push, review again. A failure that is also on `main` is reported with the evidence, not fixed by weakening the check;
 - no review of the head: section 3.
