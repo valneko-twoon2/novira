@@ -42,7 +42,7 @@
 | `scripts/tools/` の外 | 中身 |
 |---|---|
 | `.githooks/` | Git フック。`pre-commit` と `commit-msg`（sh のラッパー。`npm install` で有効になる）が `pre-commit.mjs` / `commit-msg.mjs` を実行する |
-| `.github/workflows/` | `test.yml` はブランチの push で検査を回し（[02-ci.md](../design/01-app/04-release/02-ci.md)）、`release.yml` はタグでリリースをビルドする（[01-release-workflow.md](../design/01-app/04-release/01-release-workflow.md)）。`supply-chain.yml` と `audit.yml` は依存の検査（[04-guards.md](04-guards.md)） |
+| `.github/workflows/` | `test.yml` は PR と main への push で検査を回し（[02-ci.md](../design/01-app/04-release/02-ci.md)）、`release.yml` はタグでリリースをビルドする（[01-release-workflow.md](../design/01-app/04-release/01-release-workflow.md)）。`supply-chain.yml` と `audit.yml` は依存の検査（[04-guards.md](04-guards.md)） |
 | `frontend/scripts/` | フロントに結びつくスクリプト: ローカルの lint 規則（`eslint-*.mjs`）、テキストとマニュアルの検査、`shot.mjs`、`e2e-server.mjs`（レイアウトスキャンのキャッシュ済みビルド、`novira-data/work/e2e-build/`） |
 | `.claude/hooks/`、`.claude/settings.json` | Claude Code のフック（[04-guards.md](04-guards.md)） |
 

@@ -64,6 +64,12 @@ describe('decide', { tags: [] }, () => {
     expect(d.action).toBe('leave');
     expect(d.reason.length).toBeGreaterThan(0);
   });
+
+  it('leaves the monthly GitHub Actions group for a person, however old and green: it can hold a major update', { tags: ['equivalence'] }, () => {
+    const title = 'chore: bump the github-actions group with 5 updates';
+    expect(bumpKind(title)).toBeNull();
+    expect(decide({ title, labels: ['dependencies'], ageDays: 99, ci: 'success' }).action).toBe('leave');
+  });
 });
 
 describe('ciState', { tags: [] }, () => {

@@ -1,4 +1,4 @@
-# Judges the open pull requests of Dependabot every few hours (scripts/tools/dependabot-triage.mjs, docs/design/01-app/04-release/02-ci.md):
+# Judges the open pull requests of Dependabot every few hours (scripts/tools/dependabot-triage.mjs, docs/design/01-app/04-release/03-dependabot.md):
 # a minor or patch update whose Test, Supply chain and (when it ran) Audit workflows all passed is merged, a major update and a
 # small one that stayed open for three weeks without passing are closed with the reason, the rest wait. A security update is never
 # closed by this rule. A schedule runs on the default branch with this repository's own token, so it needs no secret.

@@ -1,4 +1,4 @@
-// Judges the open pull requests of Dependabot (docs/design/01-app/04-release/02-ci.md): a small update whose checks all passed is
+// Judges the open pull requests of Dependabot (docs/design/01-app/04-release/03-dependabot.md): a small update whose checks all passed is
 // merged, an update that needs a person's judgement or has gone stale is closed with the reason, the rest wait.
 //   node scripts/tools/dependabot-triage.mjs [--dry]     reads GH_REPO and GH_TOKEN (the `gh` command's own), changes nothing with --dry
 // The decision is a pure function of the title, the labels, the age and the state of the checks; only `run` talks to GitHub.

@@ -1,5 +1,5 @@
-# The checks GitHub runs on every push to main and release/**, on every pull request to main (a Dependabot branch is checked once,
-# as its pull request, not again for each push; tags run release.yml instead), and every night on the default branch.
+# The checks GitHub runs on every pull request to main or release/** (a draft only once it is ready for review), on a push to main
+# (a merge), and every night on the default branch; a push to any other branch runs nothing (tags run release.yml instead).
 # The long jobs run only when the push or the pull request changed what they read (scripts/tools/ci-scope.mjs); the default branch, the night
 # and a manual run run all of them. It starts with the checks that read the
 # sources and need no build, no browser and no Windows: types, lint, line ends, the product name, the docs and UI
@@ -10,9 +10,11 @@ name: Test
 
 on:
   push:
-    branches: [main, 'release/**']
-  pull_request:
     branches: [main]
+  pull_request:
+    # A draft runs nothing until it is ready for review.
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [main, 'release/**']
   schedule:
     - cron: '23 18 * * *'
   workflow_dispatch:
@@ -27,6 +29,7 @@ concurrency:
 jobs:
   # Which of the long jobs this push needs. The cheap jobs (static, rust-format) always run.
   changes:
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -54,6 +57,7 @@ jobs:
         run: node scripts/tools/ci-scope.mjs | tee -a "$GITHUB_OUTPUT"
 
   static:
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -105,6 +109,7 @@ jobs:
         run: node scripts/tools/changelog.mjs --check
 
   rust-format:
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
