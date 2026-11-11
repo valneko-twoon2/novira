@@ -2,6 +2,8 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 // @ts-expect-error -- plain ESM script without types
 import { coverageDir } from '../scripts/tools/harness-paths.mjs';
+// @ts-expect-error -- plain ESM script without types
+import { TAG_DEFINITIONS } from '../scripts/tools/test-tags.mjs';
 
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -19,6 +21,8 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}', 'tests/**/*.test.{ts,tsx}'],
     exclude: ['e2e/**', 'node_modules/**', 'dist/**'],
     environment: 'node',
+    // The words a test may be tagged with (scripts/tools/test-tags.mjs): a tag that is not here stops the run, so a typo cannot hide a test.
+    tags: TAG_DEFINITIONS,
     // Ten workers, not one per core: with coverage on, the heaviest files passed alone and timed out (5 s) in a full run
     // on a 16-core machine (2026-10-29).
     maxWorkers: 10,

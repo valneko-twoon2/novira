@@ -26,7 +26,7 @@
 | `affected.mjs` | 変更したファイルに必要な検査だけ |
 | `coverage-report.mjs` | 計測した全部分を 1 つにまとめたグラフィカルなカバレッジレポート（ReportGenerator。`.config/dotnet-tools.json` で固定） |
 | `tla.mjs` | `backend/crates/novira-core/formal/` の TLA+ 仕様を TLC でモデル検査する（`checks.mjs tla`）。初回だけ持ち運べる JDK 17 と `tla2tools.jar` を `novira-data/work/tools/` に取得する（[形式検証](../tests/11-formal.md)） |
-| `typecheck.mjs`、`commit-gates.mjs`、`docs-check.mjs`、`ui-refs.mjs`、`visual-baselines.mjs`、`check-eol.mjs`、`fix-eol.mjs`、`eol.mjs`、`check-name.mjs`、`changelog.mjs`、`ci-summary.mjs`、`ci-scope.mjs`、`dependabot-triage.mjs` | リポジトリ全体の検査: 型、コミットが通すべき CI ジョブ（Rust の整形、clippy、lint、モックと本物のバックエンドの比較、スマホ）、地図と設計ページ、存在しないテスト ID と文言キー、画面を変えうる変更の判定（基準画像）、改行、名前の綴り、変更履歴の形、CI のテスト数、CI で回す長いジョブの選別、Dependabot の PR のマージ・クローズの判断 |
+| `typecheck.mjs`、`commit-gates.mjs`、`docs-check.mjs`、`ui-refs.mjs`、`visual-baselines.mjs`、`check-eol.mjs`、`fix-eol.mjs`、`eol.mjs`、`check-name.mjs`、`changelog.mjs`、`ci-summary.mjs`、`ci-scope.mjs`、`dependabot-triage.mjs`、`test-tags.mjs` | リポジトリ全体の検査: 型、コミットが通すべき CI ジョブ（Rust の整形、clippy、lint、モックと本物のバックエンドの比較、スマホ）、地図と設計ページ、存在しないテスト ID と文言キー、画面を変えうる変更の判定（基準画像）、改行、名前の綴り、変更履歴の形、CI のテスト数、CI で回す長いジョブの選別、Dependabot の PR のマージ・クローズの判断、テストの手法・設計技法のタグの集計（docs/tests/README.md の件数表） |
 | `layout-scan.mjs`、`e2e-lock.mjs` | レイアウトスキャン（テキストの収まりを含む）とその合格記録。重い Playwright の実行を一度に 1 つにするロック |
 | `worktree.mjs` | サブエージェントの worktree を作って消す |
 | `repeat-test.mjs` | 1 つのコマンドを N 回（既定 20、`--parallel` で負荷をかける）実行し、不安定なテストや競合するテストを捕まえる。最初の失敗の出力は `logs/repeat-test/` に残る |
