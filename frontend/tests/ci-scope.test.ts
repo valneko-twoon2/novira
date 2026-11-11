@@ -38,6 +38,9 @@ describe('runsEverything', { tags: [] }, () => {
   it('runs everything on the default branch', { tags: ['condition'] }, () => {
     expect(runsEverything({ ...push, ref: 'refs/heads/main' })).toBe(true);
   });
+  it('narrows a pull request like a push, to the diff against its base', { tags: ['equivalence'] }, () => {
+    expect(runsEverything({ ...push, event: 'pull_request', ref: 'refs/pull/7/merge' })).toBe(false);
+  });
   it.each(['schedule', 'workflow_dispatch'])('runs everything on %s', { tags: ['equivalence'] }, (event) => {
     expect(runsEverything({ ...push, event })).toBe(true);
   });

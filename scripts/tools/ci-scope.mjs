@@ -26,7 +26,8 @@ export function scopeOf(files) {
 
 /** True when this run must run every job, whatever changed. Pure. */
 export function runsEverything({ event, ref, defaultBranch, before }) {
-  if (event !== 'push') return true;
+  // A pull request is read like a push: `before` is the base of the pull request (the diff the checks must cover)
+  if (event !== 'push' && event !== 'pull_request') return true;
   if (ref === `refs/heads/${defaultBranch}`) return true;
   return !before || /^0+$/.test(before);
 }

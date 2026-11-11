@@ -1,6 +1,6 @@
 # Looks for known vulnerabilities in the dependencies that ship in the app: `cargo audit` over backend/Cargo.lock and
 # `npm audit --omit=dev` over frontend/package-lock.json. It runs weekly, because an advisory appears without any change
-# of ours, and on a push of a branch that changes a lock file. The advisories already judged are listed with their reasons
+# of ours, and on a push to main or release/** and a pull request to main that change a lock file. The advisories already judged are listed with their reasons
 # in backend/.cargo/audit.toml; a new one fails the run (docs/design/01-app/04-release/02-ci.md).
 # Only actions of GitHub's own (actions/*) are used; nothing here has a secret or write access.
 name: Audit
@@ -9,7 +9,14 @@ on:
   schedule:
     - cron: '17 3 * * 1'
   push:
-    branches: ['**']
+    branches: [main, 'release/**']
+    paths:
+      - 'backend/Cargo.lock'
+      - 'frontend/package-lock.json'
+      - 'backend/.cargo/audit.toml'
+      - '.github/workflows/audit.yml'
+  pull_request:
+    branches: [main]
     paths:
       - 'backend/Cargo.lock'
       - 'frontend/package-lock.json'

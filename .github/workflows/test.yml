@@ -1,5 +1,6 @@
-# The checks GitHub runs on every push to a branch (tags run release.yml instead), and every night on the default branch.
-# The long jobs run only when the push changed what they read (scripts/tools/ci-scope.mjs); the default branch, the night
+# The checks GitHub runs on every push to main and release/**, on every pull request to main (a Dependabot branch is checked once,
+# as its pull request, not again for each push; tags run release.yml instead), and every night on the default branch.
+# The long jobs run only when the push or the pull request changed what they read (scripts/tools/ci-scope.mjs); the default branch, the night
 # and a manual run run all of them. It starts with the checks that read the
 # sources and need no build, no browser and no Windows: types, lint, line ends, the product name, the docs and UI
 # references, the term list, the changelog and the Rust formatting, then vitest, clippy, cargo test and the Playwright flows and phone layouts, and the mock against the real backend. The others
@@ -9,7 +10,9 @@ name: Test
 
 on:
   push:
-    branches: ['**']
+    branches: [main, 'release/**']
+  pull_request:
+    branches: [main]
   schedule:
     - cron: '23 18 * * *'
   workflow_dispatch:
@@ -46,7 +49,7 @@ jobs:
           EVENT: ${{ github.event_name }}
           REF: ${{ github.ref }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-          BEFORE: ${{ github.event.before }}
+          BEFORE: ${{ github.event.pull_request.base.sha || github.event.before }}
           SHA: ${{ github.sha }}
         run: node scripts/tools/ci-scope.mjs | tee -a "$GITHUB_OUTPUT"
 
