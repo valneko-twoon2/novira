@@ -6,6 +6,7 @@ import { backend, type EnqueueRequest, type GenerationMetadata, type ImageDTO, t
 import { dropAdopted, heldPictures, syncGroups, useDrafts, type DraftGroup } from './drafts';
 import { useGallery } from './gallery';
 import { useGalleryUndo } from './galleryUndo';
+import { useQueue } from './queue';
 import { useToasts } from './toasts';
 
 const item = (id: number, over: Partial<QueueItem> = {}): QueueItem =>
@@ -22,6 +23,7 @@ beforeEach(() => {
   useGallery.setState({ images: [], boards: [{ id: 'board', name: 'Cats', archived: false, createdAt: 1, parentId: null }] });
   useToasts.setState({ toasts: [] });
   useGalleryUndo.setState({ undo: [], redo: [] });
+  useQueue.setState({ items: [] });
 });
 afterEach(() => vi.restoreAllMocks());
 
@@ -35,6 +37,14 @@ describe('registering what one press of Invoke made', () => {
       [101, null, 1, 'queued', 'ready'],
       [102, null, 2, 'queued', 'ready'],
     ]);
+  });
+
+  it('shows a picture as being drawn when its job started before the batch was made', () => {
+    // An idle queue starts the job at once: its "in progress" change arrives before the enqueue call returns, and nothing
+    // changes in the queue again until the picture is done.
+    useQueue.setState({ items: [item(1, { status: 'in_progress' }), item(2)] });
+    state().addGeneration([item(1), item(2)], request);
+    expect(only().candidates.map((c) => c.finalStatus)).toEqual(['running', 'queued']);
   });
 
   it('makes nothing from no items', () => {

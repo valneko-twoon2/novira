@@ -119,8 +119,21 @@ export function isItemOf(item: QueueItem | undefined, group: DraftGroup, candida
   return kind === 'draft' ? item.params.draftAt !== undefined : item.params.draftAt === undefined;
 }
 
-/** Applies the queue's view of each candidate's items to the groups; returns the same array when nothing changed. */
-export function syncGroups(groups: DraftGroup[], items: QueueItem[]): DraftGroup[] {
+/**
+ * The groups with the queue as it is now. A batch is made after the enqueue call returns, and an idle queue has started the
+ * job by then: its change to "in progress" came before the batch knew the item, and the queue does not change again until
+ * the picture is done, so without this the picture would show as waiting all the while it is drawn.
+ */
+function withQueue(groups: DraftGroup[]): DraftGroup[] {
+  return syncGroups(groups, useQueue.getState().items, { keepUnknown: true });
+}
+
+/**
+ * Applies the queue's view of each candidate's items to the groups; returns the same array when nothing changed. An item the
+ * queue does not hold is gone (failed, or done when its picture is known), unless `keepUnknown`: then the queue may not have
+ * heard of it yet, and the candidate keeps its state.
+ */
+export function syncGroups(groups: DraftGroup[], items: QueueItem[], { keepUnknown = false } = {}): DraftGroup[] {
   const byId = new Map(items.map((i) => [i.id, i]));
   let changed = false;
   const next = groups.map((g) => {
@@ -133,8 +146,8 @@ export function syncGroups(groups: DraftGroup[], items: QueueItem[]): DraftGroup
       const final = isItemOf(foundFinal, g, c, 'final') ? foundFinal : undefined;
       const imageName = draft?.imageName ?? c.imageName;
       const finalImageName = final?.imageName ?? c.finalImageName;
-      const status = c.itemId === null ? c.status : statusOf(draft, !!imageName);
-      const finalStatus = c.finalItemId === null ? null : statusOf(final, !!finalImageName);
+      const status = c.itemId === null || (keepUnknown && !found) ? c.status : statusOf(draft, !!imageName);
+      const finalStatus = c.finalItemId === null ? null : keepUnknown && !foundFinal ? c.finalStatus : statusOf(final, !!finalImageName);
       const error = draft?.error ?? (status === 'failed' ? c.error : (final?.error ?? (finalStatus === 'failed' ? c.error : null)));
       const same = status === c.status && finalStatus === c.finalStatus && imageName === c.imageName && finalImageName === c.finalImageName && error === c.error;
       if (same) return c;
@@ -374,7 +387,7 @@ export const useDrafts = create<DraftsState>()(
               verdict: null,
             })),
           };
-          set({ groups: [...get().groups, group], currentId: group.id, selection: [] });
+          set({ groups: withQueue([...get().groups, group]), currentId: group.id, selection: [] });
           return null;
         } finally {
           set({ busy: false });
@@ -402,7 +415,7 @@ export const useDrafts = create<DraftsState>()(
             verdict: null,
           })),
         };
-        set({ groups: [...get().groups, group], currentId: group.id, selection: [] });
+        set({ groups: withQueue([...get().groups, group]), currentId: group.id, selection: [] });
       },
       adopt: async (groupId, candidateIds) => {
         const group = get().groups.find((g) => g.id === groupId);
@@ -468,10 +481,12 @@ export const useDrafts = create<DraftsState>()(
             if (item) started.set(cid, item.id);
           }
           set({
-            groups: get().groups.map((g) =>
-              g.id !== groupId
-                ? g
-                : { ...g, candidates: g.candidates.map((c) => (started.has(c.id) ? { ...c, finalItemId: started.get(c.id)!, finalStatus: 'queued' as const, finalImageName: null } : c)) },
+            groups: withQueue(
+              get().groups.map((g) =>
+                g.id !== groupId
+                  ? g
+                  : { ...g, candidates: g.candidates.map((c) => (started.has(c.id) ? { ...c, finalItemId: started.get(c.id)!, finalStatus: 'queued' as const, finalImageName: null } : c)) },
+              ),
             ),
             selection: get().selection.filter((s) => !started.has(s)),
           });
@@ -500,15 +515,17 @@ export const useDrafts = create<DraftsState>()(
             if (item) restarted.set(c.id, item.id);
           }
           set({
-            groups: get().groups.map((g) =>
-              g.id !== groupId
-                ? g
-                : {
-                    ...g,
-                    candidates: g.candidates.map((c) =>
-                      restarted.has(c.id) ? { ...c, itemId: restarted.get(c.id)!, status: 'queued' as const, error: null, imageName: null } : c,
-                    ),
-                  },
+            groups: withQueue(
+              get().groups.map((g) =>
+                g.id !== groupId
+                  ? g
+                  : {
+                      ...g,
+                      candidates: g.candidates.map((c) =>
+                        restarted.has(c.id) ? { ...c, itemId: restarted.get(c.id)!, status: 'queued' as const, error: null, imageName: null } : c,
+                      ),
+                    },
+              ),
             ),
           });
         } finally {

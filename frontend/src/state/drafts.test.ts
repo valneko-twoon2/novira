@@ -3,6 +3,7 @@ import { backend, draftStep, type EnqueueRequest, type QueueItem, type RefImageI
 import type { GenerationMetadata, ImageDTO, ModelConfig } from '@/backend';
 import { registerInvokeBuilder } from './invoke';
 import { useModels } from './models';
+import { useQueue } from './queue';
 import { draftModels, draftRefusal, modelsWithoutDrafts, repairGroups, syncGroups, useDrafts, withModel, type DraftGroup } from './drafts';
 
 const candidate = (over: Partial<DraftGroup['candidates'][number]> = {}): DraftGroup['candidates'][number] => ({
@@ -242,6 +243,68 @@ describe('draft batches with reference images', () => {
     const g = useDrafts.getState().groups.at(-1)!;
     await useDrafts.getState().finish(g.id, [g.candidates[0]!.id]);
     expect(enqueue.mock.calls.map(([r]) => r.params.hiresFix)).toEqual([undefined, hiresFix]);
+  });
+});
+
+describe('a job that starts before the batch knows of it', () => {
+  // An idle queue starts the job at once: its "in progress" change arrives before the enqueue call returns, and the queue does
+  // not change again until the picture is done. The batch must show it as being drawn, not as waiting.
+  const request = {
+    origin: 'generate',
+    destination: 'gallery',
+    params: { generationMode: 'txt2img', seed: 1, steps: 20 } as GenerationMetadata,
+    iterations: 1,
+    randomizeSeed: false,
+    prepend: false,
+    boardId: null,
+  } satisfies EnqueueRequest;
+  const started = (id: number, params: GenerationMetadata) => ({ id, status: 'in_progress', params, createdAt: Date.now(), imageName: null, error: null }) as QueueItem;
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    useQueue.setState({ items: [] });
+  });
+
+  it('shows a draft as being drawn', async () => {
+    registerInvokeBuilder('generate', { readiness: () => [], build: async () => request });
+    vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => {
+      const item = started(41, r.params);
+      useQueue.setState({ items: [item] });
+      return [{ ...item, status: 'pending' }];
+    });
+    expect(await useDrafts.getState().start(1, 0.35, null)).toBeNull();
+    expect(useDrafts.getState().groups.at(-1)!.candidates[0]!.status).toBe('running');
+  });
+
+  it('shows a picture being finished as being drawn', async () => {
+    registerInvokeBuilder('generate', { readiness: () => [], build: async () => request });
+    vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => [{ ...started(51, r.params), status: 'completed', imageName: 'd.png' }]);
+    await useDrafts.getState().start(1, 0.35, null);
+    const g = useDrafts.getState().groups.at(-1)!;
+    useQueue.setState({ items: [] });
+    vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => {
+      const item = started(52, r.params);
+      useQueue.setState({ items: [item] });
+      return [{ ...item, status: 'pending' }];
+    });
+    await useDrafts.getState().finish(g.id, [g.candidates[0]!.id]);
+    expect(useDrafts.getState().groups.find((x) => x.id === g.id)!.candidates[0]!.finalStatus).toBe('running');
+  });
+
+  it('shows a failed draft drawn again as being drawn', async () => {
+    registerInvokeBuilder('generate', { readiness: () => [], build: async () => request });
+    vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => [{ ...started(61, r.params), status: 'failed', error: 'out of memory' }]);
+    await useDrafts.getState().start(1, 0.35, null);
+    const g = useDrafts.getState().groups.at(-1)!;
+    useDrafts.getState().sync([{ ...started(61, { ...g.params, seed: g.candidates[0]!.seed, draftAt: 0.35 }), status: 'failed', error: 'out of memory' }]);
+    expect(useDrafts.getState().groups.at(-1)!.candidates[0]!.status).toBe('failed');
+    vi.spyOn(backend, 'enqueue').mockImplementation(async (r) => {
+      const item = started(62, r.params);
+      useQueue.setState({ items: [item] });
+      return [{ ...item, status: 'pending' }];
+    });
+    await useDrafts.getState().retryFailed(g.id);
+    expect(useDrafts.getState().groups.at(-1)!.candidates[0]!.status).toBe('running');
   });
 });
 
