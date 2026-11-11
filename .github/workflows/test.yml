@@ -319,6 +319,54 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  # The look of every screen in both themes against the committed baselines (`frontend/e2e/__screenshots__/visual/**/*-win32.png`),
+  # which is why it runs on Windows. A change that moves a picture commits the new baselines with it
+  # (`npm run e2e:visual -- --update-snapshots=changed`, looking at each).
+  e2e-visual:
+    needs: changes
+    if: ${{ needs.changes.outputs.e2e == 'true' }}
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install the frontend packages and Chromium
+        working-directory: frontend
+        shell: cmd
+        run: |
+          call npm ci
+          if errorlevel 1 exit /b 1
+          call npx playwright install chromium
+
+      - name: Playwright visual regression
+        working-directory: frontend
+        shell: cmd
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}playwright-visual.json
+        run: npx playwright test --project=visual --reporter=list,html,json
+
+      - name: Count of tests
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: node scripts/tools/ci-summary.mjs playwright "Playwright visual regression" "$RUNNER_TEMP/playwright-visual.json" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep the report and the pictures of a failed run
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-visual
+          path: |
+            logs/playwright-report
+            logs/e2e
+          if-no-files-found: ignore
+          retention-days: 7
+
   diff-backends:
     needs: changes
     if: ${{ needs.changes.outputs.diff == 'true' }}

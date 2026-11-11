@@ -8,7 +8,7 @@ How to add each kind, with the real files. The cases inside a test come from `SK
 | Contract | a wire type, command or sample changes | yes | 2 |
 | Snapshot / golden | a ComfyUI graph builder changes | yes | 3 |
 | E2E | a screen flow is added or changed | yes (mock in CI, real app by hand) | 4 |
-| Visual regression | a screen's look changes | partly (not in CI) | 5 |
+| Visual regression | a screen's look changes | yes (CI job `e2e-visual`, not at commit) | 5 |
 | Cross browser / device | the phone layout or shared CSS changes | yes (no Firefox) | 6 |
 | Accessibility | a screen, menu or dialog is added | yes (no contrast, no keyboard order) | 7 |
 | Crash-time consistency | a multi-step write on disk is added or changed | partly | 8 |
