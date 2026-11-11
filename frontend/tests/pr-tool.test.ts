@@ -3,7 +3,7 @@
 // squashed commit on main.
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { bodyProblems, checksState, mergeArgs, mergeDecision, reviewMark, reviewProblems, reviewVerdict, titleFor, titleProblems, withMissing } from '../../scripts/tools/pr.mjs';
+import { bodyProblems, checksState, deleteBranchArgs, mergeArgs, mergeDecision, reviewMark, reviewProblems, reviewVerdict, titleFor, titleProblems, withMissing, withoutComments } from '../../scripts/tools/pr.mjs';
 
 const HEAD = 'a'.repeat(40);
 const OLD = 'b'.repeat(40);
@@ -125,24 +125,68 @@ describe('the description of a pull request (the sections of meta/astryx)', () =
   });
 });
 
-describe('the shape of a review (the shape of meta/astryx review bot)', () => {
-  const changes = ['**変更を求めます:** マージ条件は直ったが、件名が main に入らない。', '前回の指摘: 10 件すべて直った。', '- `scripts/tools/pr.mjs:173` — 件名を渡していない — `--subject` を渡す。', '- 任意: 説明を足す。'].join('\n');
-  const ok = ['**問題ありません:** 前回の指摘は直り、ほかに要るものはない。', '前回の指摘: 2 件とも直った。', '- 任意: `docs/a.md:3` の言い回し。'].join('\n');
+describe('the template hints in a description', () => {
+  it('are all removed, also when one is nested in another or left open, so a hint alone is an empty section', { tags: ['error-guessing', 'regression'] }, () => {
+    expect(withoutComments('a <!-- hint --> b')).toBe('a  b');
+    expect(withoutComments('<!-<!---->-')).not.toContain('<!--');
+    expect(withoutComments('<!<!-- x -->-- y -->').trim()).toBe('');
+    expect(withoutComments('words <!-- never closed')).toBe('words ');
+    expect(bodyProblems(FULL.replace('検査が通った', '<!-<!-- x -->- hint -->'))).toEqual(['the section "## 証拠" is empty']);
+  });
+});
 
-  it('takes a changes review with a blocking finding, and an ok review with only optional ones', { tags: ['equivalence'] }, () => {
+describe('deleting the merged branch', () => {
+  it('leases it at the merged head, so a commit pushed after the merge is kept', { tags: ['regression'] }, () => {
+    expect(deleteBranchArgs({ headRefName: '20261112_x', headRefOid: HEAD })).toEqual(['push', `--force-with-lease=20261112_x:${HEAD}`, 'origin', '--delete', '20261112_x']);
+  });
+});
+
+describe('the shape of a review (after meta/astryx review bot, laid out to read at a glance)', () => {
+  const changes = [
+    '**変更を求めます**',
+    'マージ条件は直ったが、件名が main に入らない。',
+    '',
+    '#### 前回の指摘',
+    '- 1 回目（10 件）: すべて直った',
+    '',
+    '#### 指摘',
+    '1. **`scripts/tools/pr.mjs:173`**',
+    '   - 問題: 件名を渡していない',
+    '   - 直し方: `--subject` を渡す',
+    '',
+    '#### 任意',
+    '- **`docs/a.md:3`** 言い回し',
+  ].join('\n');
+  const ok = ['**問題ありません**', '前回の指摘は直り、ほかに要るものはない。', '', '#### 前回の指摘', '- 2 件とも直った', '', '#### 任意', '- 説明を足してもよい'].join('\n');
+
+  it('takes a changes review with a finding under 指摘, and an ok review with none', { tags: ['equivalence'] }, () => {
     expect(reviewProblems('changes', changes)).toEqual([]);
     expect(reviewProblems('ok', ok)).toEqual([]);
   });
 
-  it('refuses a summary that does not match the verdict, and a missing line about the earlier findings', { tags: ['decision-table'] }, () => {
-    expect(reviewProblems('ok', changes).length).toBeGreaterThan(0);
-    expect(reviewProblems('changes', changes.replace('前回の指摘: 10 件すべて直った。\n', ''))).toEqual(['a line "前回の指摘: <what became of them, or なし>" is needed']);
-    expect(reviewProblems('changes', changes.replace('マージ条件は直ったが、件名が main に入らない。', ''))).toHaveLength(1);
+  it('refuses a heading that does not match the verdict, a missing summary, and a missing section about the earlier findings', { tags: ['decision-table'] }, () => {
+    expect(reviewProblems('ok', changes).join()).toContain('**問題ありません**');
+    expect(reviewProblems('changes', changes.replace('マージ条件は直ったが、件名が main に入らない。\n', '')).join()).toContain('summary');
+    expect(reviewProblems('changes', changes.replace('#### 前回の指摘\n- 1 回目（10 件）: すべて直った\n', '')).join()).toContain('前回の指摘');
   });
 
-  it('refuses changes without a blocking finding, ok with one, and a blocking finding without a file and line', { tags: ['decision-table', 'boundary'] }, () => {
-    expect(reviewProblems('changes', changes.replace(/^- `scripts.*$/m, '')).join()).toContain('without a blocking finding');
-    expect(reviewProblems('ok', `${ok}\n- \`a.ts:1\` — 壊れる — 直す。`).join()).toContain('ok is given with a blocking finding');
-    expect(reviewProblems('changes', changes.replace('`scripts/tools/pr.mjs:173`', 'pr.mjs')).join()).toContain('names no file:line');
+  it('refuses changes without a finding, ok with one, and a finding without its place, problem or fix', { tags: ['decision-table', 'boundary'] }, () => {
+    const noFinding = changes.replace(/#### 指摘\n[\s\S]*?\n\n/, '');
+    expect(reviewProblems('changes', noFinding).join()).toContain('without a finding');
+    expect(reviewProblems('ok', ok.replace('#### 任意', '#### 指摘\n1. **`a.ts:1`**\n   - 問題: 壊れる\n   - 直し方: 直す\n\n#### 任意')).join()).toContain('ok is given with a finding');
+    expect(reviewProblems('changes', changes.replace('**`scripts/tools/pr.mjs:173`**', 'pr.mjs のどこか')).join()).toContain('its place alone');
+    expect(reviewProblems('changes', changes.replace('   - 直し方: `--subject` を渡す\n', '')).join()).toContain('直し方');
+  });
+
+  it('refuses the sections out of order', { tags: ['boundary'] }, () => {
+    const swapped = changes.replace('#### 前回の指摘\n- 1 回目（10 件）: すべて直った\n\n', '') + '\n\n#### 前回の指摘\n- なし';
+    expect(reviewProblems('changes', swapped).join()).toContain('out of order');
+  });
+});
+
+describe('code scanning alerts', () => {
+  it('stop the merge until each is fixed or explained, whatever the checks say', { tags: ['condition', 'regression'] }, () => {
+    expect(mergeDecision({ checks: 'pass', verdict: 'ok', alerts: 1 })).toMatchObject({ merge: false, wait: false, reason: expect.stringContaining('code scanning') });
+    expect(mergeDecision({ checks: 'pass', verdict: 'ok', alerts: 0 })).toMatchObject({ merge: true });
   });
 });

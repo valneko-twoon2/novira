@@ -40,4 +40,4 @@ covers:
 
 ## 未実装
 
-- リリースは `test` ワークフローを待たない。タグは、自身の push でチェックが走った `main` から push する。`test` ワークフローがまだ走らせないテストは手作業のままで（`scripts\check.bat`、`scripts\checks\full-check.bat`）、ライブテスト、ミューテーションの実行、実アプリも同じ。
+- リリースは `test` ワークフローを待たない。タグは、リリース PR のマージコミットに打つ（そのコミットは PR の検査を通ったもの。`/release-notes`）。`test` ワークフローがまだ走らせないテストは手作業のままで（`scripts\check.bat`、`scripts\checks\full-check.bat`）、ライブテスト、ミューテーションの実行、実アプリも同じ。

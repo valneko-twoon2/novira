@@ -61,13 +61,14 @@ export function withMissing(checks, required) {
 }
 
 /** { merge, wait, reason } from the required checks, the review verdict of the head and the pull request itself. */
-export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, base = 'main', fork = false, title = [], body = [] }) {
+export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, base = 'main', fork = false, title = [], body = [], alerts = 0 }) {
   if (state !== 'OPEN') return { merge: false, wait: false, reason: `the pull request is ${state.toLowerCase()}` };
   if (base !== 'main') return { merge: false, wait: false, reason: `the pull request goes to ${base}, not main` };
   if (fork) return { merge: false, wait: false, reason: 'the pull request comes from another repository: a person merges it' };
   if (draft) return { merge: false, wait: false, reason: 'the pull request is a draft' };
   if (title.length) return { merge: false, wait: false, reason: `the title cannot be the commit on main (${title[0]}): fix it with pr.mjs open --title` };
   if (body.length) return { merge: false, wait: false, reason: `the description is not complete (${body[0]}): fill in .github/pull_request_template.md` };
+  if (alerts > 0) return { merge: false, wait: false, reason: `${alerts} open code scanning alert(s) on the pull request: fix each, or report why it is a false positive` };
   if (verdict === 'changes') return { merge: false, wait: false, reason: 'the agent review of the current head asks for changes' };
   if (verdict !== 'ok') return { merge: false, wait: false, reason: 'no agent review of the current head (pushed after the review?): review it first' };
   if (checks === 'fail') return { merge: false, wait: false, reason: 'a required check failed' };
@@ -106,10 +107,29 @@ export function bodyProblems(body) {
     last = at;
     const rest = text.slice(at).split('\n').slice(1);
     const end = rest.findIndex((l) => l.startsWith('## '));
-    const content = (end < 0 ? rest : rest.slice(0, end)).join('\n').replace(/<!--[\s\S]*?-->/g, '').trim();
-    if (!content) problems.push(`the section "## ${name}" is empty`);
+    if (!withoutComments((end < 0 ? rest : rest.slice(0, end)).join('\n')).trim()) problems.push(`the section "## ${name}" is empty`);
   }
   return problems;
+}
+
+/** The push that deletes the merged branch on origin only while it is still at the merged head. */
+export function deleteBranchArgs(pr) {
+  return ['push', `--force-with-lease=${pr.headRefName}:${pr.headRefOid}`, 'origin', '--delete', pr.headRefName];
+}
+
+/**
+ * `text` without its HTML comments (the hints of the template), removed until none is left: one pass over `<!-<!---->-` would leave
+ * `<!--` behind. Only used to tell whether a section has words of its own; nothing here is shown as HTML.
+ */
+export function withoutComments(text) {
+  let out = text;
+  for (;;) {
+    const open = out.indexOf('<!--');
+    if (open < 0) return out;
+    const close = out.indexOf('-->', open + 4);
+    // An unclosed comment hides everything after it, as it does on GitHub.
+    out = close < 0 ? out.slice(0, open) : out.slice(0, open) + out.slice(close + 3);
+  }
 }
 
 /** The arguments of the squash merge: the title is the commit's subject on main, with no body (GitHub would list every commit). */
@@ -117,24 +137,59 @@ export function mergeArgs(n, pr) {
   return ['pr', 'merge', String(n), '--squash', '--match-head-commit', pr.headRefOid, '--subject', pr.title, '--body', ''];
 }
 
+/** The headings of a review, in order; 指摘 holds the findings that block the merge, 任意 the ones that do not. */
+export const REVIEW_SECTIONS = ['前回の指摘', '指摘', '任意'];
+
 /**
- * Why `text` is not a review in the agreed shape (the shape of meta/astryx's review bot), for `verdict`:
- *   **変更を求めます:** <one sentence: what is right and what is wrong>      (or **問題ありません:** ...)
- *   前回の指摘: <what became of the earlier findings, or なし>
- *   - `path/to/file.ext:12` — what goes wrong — what to do              (a finding that blocks the merge)
- *   - 任意: ...                                                          (a finding that does not)
- * A `changes` verdict needs at least one blocking finding and an `ok` one none; a blocking finding names a file and a line.
+ * Why `text` is not a review in the agreed shape (after meta/astryx's review bot, laid out to read at a glance), for `verdict`:
+ *   **変更を求めます**                       (or **問題ありません**)
+ *   <the summary: one or two sentences, what is right and what is wrong>
+ *
+ *   #### 前回の指摘
+ *   - <what became of the earlier findings, or なし>
+ *
+ *   #### 指摘                                 (changes: one item or more; ok: none, the section left out)
+ *   1. **`path/to/file.ext:12`**
+ *      - 問題: <what goes wrong>
+ *      - 直し方: <what to do>
+ *
+ *   #### 任意                                 (optional)
+ *   - **`path/to/file.ext:3`** <a finding that does not block the merge>
  */
 export function reviewProblems(verdict, text) {
-  const lines = (text ?? '').replace(/\r\n/g, '\n').split('\n').map((l) => l.trim()).filter(Boolean);
+  const lines = (text ?? '').replace(/\r\n/g, '\n').split('\n').map((l) => l.trimEnd());
+  const solid = lines.filter((l) => l.trim());
   const problems = [];
-  const lead = verdict === 'ok' ? '**問題ありません:**' : '**変更を求めます:**';
-  if (!lines[0]?.startsWith(lead) || lines[0].length <= lead.length + 1) problems.push(`the first line is the summary "${lead} <one sentence>"`);
-  if (!lines.some((l) => l.startsWith('前回の指摘:'))) problems.push('a line "前回の指摘: <what became of them, or なし>" is needed');
-  const blocking = lines.filter((l) => l.startsWith('- ') && !l.startsWith('- 任意:'));
-  if (verdict === 'changes' && !blocking.length) problems.push('changes is asked without a blocking finding ("- `file:line` — ... — ...")');
-  if (verdict === 'ok' && blocking.length) problems.push('ok is given with a blocking finding; mark it "- 任意:" or ask for changes');
-  for (const b of blocking) if (!/[\w./-]+\.[\w]+:\d+/.test(b)) problems.push(`a blocking finding names no file:line: "${b.slice(0, 50)}"`);
+  const lead = verdict === 'ok' ? '**問題ありません**' : '**変更を求めます**';
+  if (solid[0]?.trim() !== lead) problems.push(`the first line is "${lead}" alone`);
+  if (!solid[1] || solid[1].startsWith('#')) problems.push('the second line is the summary: one or two sentences');
+  const section = (name) => {
+    const at = lines.findIndex((l) => l.trim() === `#### ${name}`);
+    if (at < 0) return null;
+    const end = lines.findIndex((l, i) => i > at && /^#{1,4} /.test(l.trim()));
+    return lines.slice(at + 1, end < 0 ? lines.length : end).filter((l) => l.trim());
+  };
+  let last = -1;
+  for (const name of REVIEW_SECTIONS) {
+    const at = lines.findIndex((l) => l.trim() === `#### ${name}`);
+    if (at >= 0 && at < last) problems.push(`the section "#### ${name}" is out of order`);
+    if (at >= 0) last = at;
+  }
+  const earlier = section('前回の指摘');
+  if (!earlier?.length) problems.push('the section "#### 前回の指摘" is needed, with "- なし" in a first review');
+  const findings = section('指摘') ?? [];
+  const items = [];
+  for (const l of findings) {
+    if (/^\d+\. /.test(l)) items.push({ head: l, problem: false, fix: false });
+    else if (items.length && /^\s+- 問題: \S/.test(l)) items[items.length - 1].problem = true;
+    else if (items.length && /^\s+- 直し方: \S/.test(l)) items[items.length - 1].fix = true;
+  }
+  if (verdict === 'changes' && !items.length) problems.push('changes is asked without a finding under "#### 指摘"');
+  if (verdict === 'ok' && items.length) problems.push('ok is given with a finding under "#### 指摘"; move it to "#### 任意" or ask for changes');
+  for (const it of items) {
+    if (!/^\d+\. \*\*`[^`\s]+\.[\w]+:\d+`\*\*$/.test(it.head)) problems.push(`a finding starts with its place alone, "1. **\`file.ext:line\`**": "${it.head.slice(0, 50)}"`);
+    if (!it.problem || !it.fix) problems.push(`a finding needs the lines "   - 問題: ..." and "   - 直し方: ...": "${it.head.slice(0, 50)}"`);
+  }
   return problems;
 }
 
@@ -172,6 +227,15 @@ function requiredNames() {
   return required;
 }
 
+/** The open code scanning (CodeQL) alerts of the pull request's merge result; 0 when GitHub cannot say (no scanning yet). */
+function openAlerts(n) {
+  try {
+    return Number(gh(['api', `repos/{owner}/{repo}/code-scanning/alerts?ref=refs/pull/${n}/merge&state=open&per_page=100`, '--jq', 'length']).trim()) || 0;
+  } catch {
+    return 0;
+  }
+}
+
 function decisionOf(n) {
   const pr = view(n);
   const checks = withMissing(requiredChecks(n), requiredNames());
@@ -185,6 +249,7 @@ function decisionOf(n) {
     fork: pr.isCrossRepository,
     title: titleProblems(pr.title),
     body: bodyProblems(pr.body),
+    alerts: openAlerts(n),
   });
   return { pr, checks, decision, verdict };
 }
@@ -256,10 +321,11 @@ function main(argv) {
     // --match-head-commit: GitHub refuses the merge if a commit arrived after the review was read.
     gh(mergeArgs(n, state.pr));
     try {
-      // The head branch is in this repository (mergeDecision refuses a fork), so this is the branch the pull request merged.
-      git(['push', 'origin', '--delete', state.pr.headRefName]);
+      // The head branch is in this repository (mergeDecision refuses a fork). The lease deletes it only while it is still at the merged
+      // head: a commit pushed to it after the merge is kept.
+      git(deleteBranchArgs(state.pr));
     } catch {
-      // already deleted (the repository may delete merged branches itself)
+      // already deleted (the repository may delete merged branches itself), or moved since the merge (kept)
     }
     console.log(`pr: #${n} merged (${state.pr.url})`);
     try {

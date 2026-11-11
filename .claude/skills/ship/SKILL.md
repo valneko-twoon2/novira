@@ -43,28 +43,38 @@ The author never reviews its own work. Start a **fresh** agent (Agent tool, a ne
 
 - the pull request number and the repository path; to read the description (`gh pr view <n>`), the diff (`gh pr diff <n>`), the changed files in full where the diff is not enough, and the earlier reviews (`gh api repos/{owner}/{repo}/pulls/<n>/reviews`);
 - what to judge: whether the change does what **変更** says and keeps what **変えないこと** says; whether **証拠** and **テスト** really show it (a claim with nothing behind it is a finding); correctness (a bug, a missed case, a broken caller); the tests (one per behaviour, they fail without the change, a bug fix has its regression test); the rules of `AGENTS.md` and `.claude/rules/` the diff touches (the table of `/gatekeeper` section 1); texts in ja and en; the map and design pages;
-- to answer in exactly this shape (the shape of meta/astryx's review bot; `pr.mjs review` refuses any other), in Japanese except code and identifiers:
+- to answer in exactly this shape (after meta/astryx's review bot, laid out to read at a glance; `pr.mjs review` refuses any other), in Japanese except code and identifiers:
 
 ```
 SHA: <the 40-hex head commit it read: gh pr view <n> --json headRefOid>
 VERDICT: changes            (or ok)
-**変更を求めます:** <one sentence: what the change gets right, and what is wrong>      (for ok: **問題ありません:** <one sentence>)
-前回の指摘: <what became of each earlier finding, or なし>
-- `path/file.ext:line` — what goes wrong — what to do, with the wording or the code when it helps
-- 任意: <a finding that does not block the merge>
+**変更を求めます**            (for ok: **問題ありません**)
+<the summary: one or two sentences, what the change gets right and what is wrong>
+
+#### 前回の指摘
+- <what became of each earlier finding; - なし in a first review>
+
+#### 指摘                     (changes: one item or more; ok: leave the section out)
+1. **`path/file.ext:line`**
+   - 問題: <what goes wrong>
+   - 直し方: <what to do, with the wording or the code when it helps>
+
+#### 任意                     (findings that do not block the merge; leave out when none)
+- **`path/file.ext:line`** <the finding>
 ```
 
-  Few findings, each concrete. A blocking finding names a file and a line; matters of taste are `任意:`. `changes` needs at least one blocking finding, `ok` none. No praise beyond the one sentence, no summary of the diff.
+  Few findings, each concrete; matters of taste go under 任意. No praise beyond the summary, no summary of the diff.
 
-Post its answer as the review: write the lines after `VERDICT` to `novira-data/work/scratch/pr/<n>-review.md`, then `node scripts/tools/pr.mjs review <n> --verdict <ok|changes> --sha <the SHA it read> --body-file <that file>`. The tool checks the shape (`reviewProblems`), refuses when the head moved past that commit, and the merge counts only a review of the current head by the signed-in account, so a later push needs a new review.
+Post its answer as the review: write the lines after `VERDICT` (keep the blank lines) to `novira-data/work/scratch/pr/<n>-review.md`, then `node scripts/tools/pr.mjs review <n> --verdict <ok|changes> --sha <the SHA it read> --body-file <that file>`. The tool checks the shape (`reviewProblems`), refuses when the head moved past that commit, and the merge counts only a review of the current head by the signed-in account, so a later push needs a new review.
 
 On `changes`: fix on the branch (a bug the review found gets its test first, AGENTS.md section 4), commit, push (`pr.mjs open` pushes again), and review again with a new agent. Disagreeing with a finding is allowed when the code or the spec shows it is wrong: say why in a reply on the pull request (`gh pr comment <n> --body-file`), then a new review.
 
 ## 4. Merge
 
-`node scripts/tools/pr.mjs merge <n> --wait`: waits for the required checks (also the ones not started yet), then squash-merges only if every one passed, the review of the head is `ok`, and the title and the description still pass their checks; the commit on `main` is the title with no body. It deletes the remote branch and fast-forwards the main checkout. When it refuses:
+`node scripts/tools/pr.mjs merge <n> --wait`: waits for the required checks (also the ones not started yet), then squash-merges only if every one passed, the review of the head is `ok`, the title and the description still pass their checks, and no code scanning alert is open on the pull request; the commit on `main` is the title with no body. It deletes the remote branch and fast-forwards the main checkout. When it refuses:
 
 - a check failed: read it (`gh run view <id> --log-failed`), fix on the branch, push, review again. A failure that is also on `main` is reported with the evidence, not fixed by weakening the check;
+- an open code scanning alert (CodeQL) on the pull request: read it (`gh api "repos/{owner}/{repo}/code-scanning/alerts?ref=refs/pull/<n>/merge&state=open"`), and fix the code yourself with a test (do not commit the suggested autofix unread). A false positive is reported to the user with the reason; dismissing it is their call;
 - no review of the head: section 3.
 
 Then remove the worktree: `node scripts/tools/worktree.mjs remove <path>` (it deletes the branch, merged by the pull request).
