@@ -39,7 +39,7 @@ c2pa = { version = "=0.91.10", default-features = false, features = ["rust_nativ
 rcgen = "0.14"
 serde_bytes = "0.11"
 # Loads the ONNX Runtime DLL once by itself first, so a missing Visual C++ runtime is an error, not a panic in `ort`.
-libloading = "0.8"
+libloading = "0.9"
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_Security_Credentials", "Win32_Security_Cryptography", "Win32_System_JobObjects", "Win32_System_Registry", "Win32_System_Threading"] }
