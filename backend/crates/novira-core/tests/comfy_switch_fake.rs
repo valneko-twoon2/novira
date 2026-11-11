@@ -305,14 +305,16 @@ async fn a_new_version_that_does_not_start_is_replaced_by_the_old_one() {
     engine.shutdown();
 }
 
-/// A ComfyUI stand-in on a free port that refuses (503) until `delay` has passed (the new package "starts" late). A
-/// closed port is not used: Windows retries a refused loopback connection for seconds.
+/// A ComfyUI stand-in on a free port that refuses (503) until `delay` has passed since the first look at it (the new
+/// package "starts" late). The clock starts at the first request, not at creation: a slow machine would otherwise find
+/// it already up and skip the change. A closed port is not used: Windows retries a refused loopback connection for
+/// seconds.
 async fn answer_later(delay: Duration) -> (u16, tokio::task::JoinHandle<()>) {
-    let started = std::time::Instant::now();
+    let first = std::sync::Arc::new(std::sync::OnceLock::<std::time::Instant>::new());
     let app = axum::Router::new().route(
         "/system_stats",
         axum::routing::get(move || async move {
-            if started.elapsed() >= delay {
+            if first.get_or_init(std::time::Instant::now).elapsed() >= delay {
                 axum::http::StatusCode::OK
             } else {
                 axum::http::StatusCode::SERVICE_UNAVAILABLE
@@ -327,7 +329,7 @@ async fn answer_later(delay: Duration) -> (u16, tokio::task::JoinHandle<()>) {
     )
 }
 
-// tags: condition
+// tags: condition, regression
 #[tokio::test]
 async fn a_package_change_installs_the_same_version_again() {
     let world = World::new("v0.3.0", "ok");
@@ -337,6 +339,9 @@ async fn a_package_change_installs_the_same_version_again() {
     novira_core::comfy::install::adopt_package(world.root(), "nvidia").unwrap();
     let (port, server) = answer_later(Duration::from_millis(500)).await;
     let engine = world.engine_on(port, "amd");
+    // A slow machine (the CI runner) reaches the first look at the engine late; the stand-in must not count that as
+    // "already running".
+    tokio::time::sleep(Duration::from_millis(600)).await;
     engine.prepare(&CancellationToken::new()).await.unwrap();
     assert_eq!(
         std::fs::read_to_string(comfyui_dir(world.root()).join("main.py")).unwrap(),

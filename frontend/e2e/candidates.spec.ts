@@ -19,29 +19,27 @@ test(
     // The start screen gives way to the Candidates view, and the pictures come in as they are drawn.
     const grid = page.getByTestId('drafts-grid');
     await expect(grid).toBeVisible();
-    await expect(page.getByTestId('draft-cell').first().locator('img')).toBeVisible({ timeout: 20_000 });
-    const cells = await page.getByTestId('draft-cell').count();
+    // Every cell is there from the start; a picture being drawn shows its progress but cannot be chosen or dragged yet,
+    // so the steps below wait for all three to be done (a slow machine is still drawing the later ones).
+    const cells = page.getByTestId('draft-cell');
+    await expect(cells).toHaveCount(3);
+    await expect(cells.filter({ hasText: msg('drafts.badge.finished') })).toHaveCount(3, { timeout: 30_000 });
     // Nothing reached the gallery: the board is empty, and the viewer shows nothing new.
     await expect(page.getByTestId('gallery-thumb')).toHaveCount(0);
 
     // Choosing a picture and moving it to the board.
-    await page.getByTestId('draft-cell').first().locator('.dv-img').click();
+    await cells.first().locator('.dv-img').click();
     await page.getByTestId('drafts-adopt').click();
     await expect(page.getByTestId('gallery-thumb')).toHaveCount(1);
-    await expect(page.getByTestId('draft-cell')).toHaveCount(cells - 1);
+    await expect(cells).toHaveCount(2);
 
     // Dragging a picture onto a board row moves it too, and the board row is the target.
-    if (cells > 1) {
-      await page.getByTestId('draft-cell').first().locator('.dv-img').dragTo(page.getByTestId('board-row').first());
-      await expect(page.getByTestId('gallery-thumb')).toHaveCount(2);
-    }
+    await cells.first().locator('.dv-img').dragTo(page.getByTestId('board-row').first());
+    await expect(page.getByTestId('gallery-thumb')).toHaveCount(2);
 
     // Double click opens a candidate large in the viewer, as a draft does.
-    const left = page.getByTestId('draft-cell');
-    if ((await left.count()) > 0) {
-      await left.first().locator('.dv-img').dblclick();
-      await expect(page.getByTestId('viewer-image')).toBeVisible();
-    }
+    await cells.first().locator('.dv-img').dblclick();
+    await expect(page.getByTestId('viewer-image')).toBeVisible();
   },
 );
 
