@@ -23,7 +23,7 @@ jobs:
     outputs:
       name: ${{ steps.pack.outputs.name }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: The tag names the version
         shell: bash
