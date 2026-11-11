@@ -81,7 +81,7 @@
     "jsdom": "30.1.1",
     "monocart-coverage-reports": "2.13.1",
     "prettier": "3.9.9",
-    "stylelint": "17.16.0",
+    "stylelint": "18.0.0",
     "typescript": "6.0.3",
     "typescript-eslint": "8.71.0",
     "vite": "8.3.2",
