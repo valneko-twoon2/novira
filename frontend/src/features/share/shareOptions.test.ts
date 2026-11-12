@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ExportFormat, ImageDTO } from '@/backend';
-import { DEFAULT_FORM, MAX_SIDE, MIN_SIDE, hasQuality, infoIsLost, splitMedia, toExportOptions } from './shareOptions';
+import { DEFAULT_FORM, MAX_SIDE, MIN_SIDE, hasQuality, infoIsLost, splitMedia, toExportOptions, withPreset } from './shareOptions';
 
 describe('share options', { tags: [] }, () => {
   it('keeps the generation info and the original size and adds no watermark by default', { tags: ['equivalence'] }, () => {
@@ -27,6 +27,16 @@ describe('share options', { tags: [] }, () => {
     expect(infoIsLost({ ...DEFAULT_FORM, removeInfo: false, format: 'jpeg' })).toBe(true);
     expect(infoIsLost({ ...DEFAULT_FORM, removeInfo: false, format: 'png' })).toBe(false);
     expect(infoIsLost({ ...DEFAULT_FORM, removeInfo: true, format: 'webp' })).toBe(false);
+  });
+
+  it('puts the assistant\'s choices in, a listed side as its choice and another one typed, and keeps the rest', { tags: ['equivalence', 'boundary'] }, () => {
+    const last = { ...DEFAULT_FORM, watermark: true, size: '1024' as const };
+    expect(withPreset(last, { format: 'jpeg', quality: 92 })).toEqual({ ...last, format: 'jpeg', quality: 92 });
+    expect(withPreset(last, { maxSide: 2048 })).toMatchObject({ size: '2048' });
+    expect(withPreset(last, { maxSide: 3000 })).toMatchObject({ size: 'custom', customSide: 3000 });
+    expect(withPreset(last, { maxSide: 1, quality: 500, removeInfo: true })).toMatchObject({ size: 'custom', customSide: MIN_SIDE, quality: 100, removeInfo: true });
+    // Nothing given: the form stays as last used.
+    expect(withPreset(last, {})).toEqual(last);
   });
 
   it('exports still pictures and leaves videos and audio out', { tags: ['equivalence'] }, () => {

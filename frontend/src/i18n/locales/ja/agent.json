@@ -91,6 +91,8 @@
   "agent.effort.ultra": "ウルトラ",
   "agent.inputResize": "入力欄の高さを変える（ドラッグか上下キー）",
   "agent.action.queued": "生成の順番待ちに追加（{count} 件）",
+  "agent.action.canceled": "順番待ちを取り消し（{count} 件）",
+  "agent.action.export": "書き出しの画面を開く（{count} 枚）",
   "agent.permission.title": "AI が画像やプロンプトを読もうとしています",
   "agent.permission.gallery": "読むもの: ギャラリーの画像の一覧と、そのプロンプト",
   "agent.permission.image": "読むもの: 1 枚の画像の生成情報（プロンプト、モデル、設定）",

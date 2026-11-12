@@ -215,6 +215,7 @@ pub fn engine_settings(v: &Value) {
         comfyui_dir: get(v, "comfyuiDir"),
         comfyui_install_dir: get(v, "comfyuiInstallDir"),
         comfyui_root: get(v, "comfyuiRoot"),
+        comfyui_output_dir: get(v, "comfyuiOutputDir"),
         comfyui_package: get(v, "comfyuiPackage"),
         comfyui_installed: get(v, "comfyuiInstalled"),
         installed_comfyui_package: get(v, "installedComfyuiPackage"),

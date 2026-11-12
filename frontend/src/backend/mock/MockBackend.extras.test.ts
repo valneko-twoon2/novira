@@ -169,6 +169,7 @@ describe('engine settings', { tags: [] }, () => {
       dataDirMoves: false,
       dataDirNote: null,
       comfyuiRoot: 'C:\\Users\\you\\novira-data\\comfyui',
+      comfyuiOutputDir: 'C:\\Users\\you\\novira-data\\comfyui\\portable\\ComfyUI\\output',
       comfyuiMode: 'owned',
       comfyuiUrl: null,
       comfyuiDir: null,
