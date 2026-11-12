@@ -69,7 +69,7 @@ El marco de puntos del lienzo es «el área donde se crea una imagen esta vez».
 
 ## Capas
 
-En **{{ui:canvas.layers.title}}**, abajo a la derecha, se listan las cosas colocadas en el lienzo. Se añaden con el botón **{{ui:common.add}}**.
+En **{{ui:canvas.layers.title}}**, abajo a la derecha, se listan las cosas colocadas en el lienzo. Se añaden con el botón **+** ({{ui:common.add}}).
 
 ![El menú Añadir de las capas abierto](shot:canvas-add-layer)
 
@@ -150,7 +150,7 @@ Los ajustes son los siguientes.
 
 Se puede decidir una pose moviendo una figura de palos. Es útil cuando especificar una pose con palabras no funciona bien.
 
-1. En la pestaña **{{ui:app.tabs.canvas}}**, pulse **{{ui:common.add}}** en las capas y elija **{{ui:pose.menu}}**.
+1. En la pestaña **{{ui:app.tabs.canvas}}**, pulse **+** ({{ui:common.add}}) en las capas y elija **{{ui:pose.menu}}**.
 2. En **{{ui:pose.preset}}**, elija la pose más cercana a lo que quiere ({{ui:pose.preset.standing}}, {{ui:pose.preset.armsUp}}, {{ui:pose.preset.sitting}}, {{ui:pose.preset.walking}}).
 3. Arrastre los círculos de las articulaciones para cambiar la postura. También se puede seleccionar un círculo y moverlo con las teclas de flecha (con `Shift` pulsada se mueve mucho). **{{ui:pose.mirror}}** la voltea de izquierda a derecha y **{{ui:pose.reset}}** la devuelve a la plantilla original.
 4. Elija el **{{ui:pose.size}}**. Normalmente basta con el tamaño del lienzo.

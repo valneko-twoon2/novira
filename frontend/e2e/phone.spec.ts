@@ -149,6 +149,7 @@ test('makes drafts on the Drafts tab, looks at one large and finishes it', { tag
   await pickFirstModel(page);
   await page.getByTestId('positive-prompt').fill('a red fox in the snow');
   await page.getByTestId('phone-nav-drafts').tap();
+  await page.getByTestId('drafts-form-toggle').tap();
   await page.getByTestId('drafts-start').tap();
   const cells = page.getByTestId('draft-cell');
   await expect(cells).toHaveCount(4);
@@ -160,8 +161,8 @@ test('makes drafts on the Drafts tab, looks at one large and finishes it', { tag
   await expect(page.getByRole('button', { name: msg('gallery.viewer.next') })).toHaveCount(0);
   await expect(page.getByRole('button', { name: msg('gallery.viewer.prev') })).toHaveCount(0);
   await page.getByTestId('phone-view-close').tap();
-  await first.getByRole('button', { name: /^seed / }).tap();
-  await page.getByTestId('drafts-finish').tap();
+  // ✓ shows on every picture where there is no hover.
+  await first.getByTestId('draft-accept').tap();
   await expect(first).toContainText(msg('drafts.badge.finished'), { timeout: 20_000 });
   await page.getByTestId('phone-nav-images').tap();
   await expect(page.getByTestId('phone-thumb')).toHaveCount(1);

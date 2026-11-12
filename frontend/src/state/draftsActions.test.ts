@@ -51,6 +51,35 @@ describe('groups and selection', { tags: [] }, () => {
     expect(state().selection).toEqual([]);
   });
 
+  it('replaces the selection, and closing a group lets go of its candidates chosen with others', { tags: ['state-transition'] }, () => {
+    useDrafts.setState({ groups: [group('a', [candidate(1)]), group('b', [candidate(2)])], currentId: 'b' });
+    state().setSelection(['c1', 'c2']);
+    expect(state().selection).toEqual(['c1', 'c2']);
+    state().closeGroup('a');
+    expect(state().selection).toEqual(['c2']);
+  });
+
+  it(
+    'throws away chosen drafts: cancels what they still wait for or draw, forgets them and deletes no picture',
+    { tags: ['state-transition', 'condition'] },
+    async () => {
+      const cancel = vi.spyOn(backend, 'cancelQueueItem').mockResolvedValue();
+      const del = vi.spyOn(backend, 'deleteImages').mockResolvedValue();
+      useDrafts.setState({
+        groups: [group('a', [candidate(1), candidate(2, { status: 'ready', finalItemId: 7, finalStatus: 'running' }), candidate(3, { status: 'ready' })])],
+        currentId: 'a',
+        selection: ['c1', 'c3'],
+      });
+      state().discard('a', ['c1', 'c2']);
+      expect(state().groups[0]!.candidates.map((c) => c.id)).toEqual(['c3']);
+      expect(state().selection).toEqual(['c3']);
+      await vi.waitFor(() => expect(cancel.mock.calls.map(([id]) => id).sort()).toEqual([1, 7]));
+      expect(del).not.toHaveBeenCalled();
+      state().discard('a', ['c3']);
+      expect(state()).toMatchObject({ groups: [], currentId: null });
+    },
+  );
+
   it('marks a candidate and unmarks it by marking the same verdict again', { tags: ['state-transition', 'condition'] }, () => {
     useDrafts.setState({ groups: [group('a', [candidate(1)]), group('b', [candidate(2)])] });
     state().mark('a', 'c1', 'keep');
@@ -63,14 +92,14 @@ describe('groups and selection', { tags: [] }, () => {
   });
 
   it(
-    'closes a group; closing the current one shows the last remaining, and another one changes nothing',
+    'closes a group; closing the current one shows the last remaining; the selection loses only the candidates of the closed group',
     { tags: ['state-transition', 'condition'] },
     () => {
       useDrafts.setState({ groups: [group('a', []), group('b', []), group('c', [])], currentId: 'c', selection: ['x'] });
       state().closeGroup('a');
       expect(state()).toMatchObject({ currentId: 'c', selection: ['x'] });
       state().closeGroup('c');
-      expect(state()).toMatchObject({ currentId: 'b', selection: [] });
+      expect(state()).toMatchObject({ currentId: 'b', selection: ['x'] });
       state().closeGroup('b');
       expect(state().currentId).toBeNull();
     },

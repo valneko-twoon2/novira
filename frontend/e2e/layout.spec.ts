@@ -222,6 +222,7 @@ const SURFACES: Record<string, Surface> = {
   'draft history': async (page, _locale, scan) => {
     await page.getByTestId('positive-prompt').fill('a lighthouse on a cliff');
     await page.getByTestId('view-drafts').click();
+    await page.getByTestId('drafts-form-toggle').click();
     await page.getByTestId('drafts-start').click();
     await expect(page.getByTestId('draft-cell').first()).toBeVisible();
     await page.getByTestId('drafts-history-button').click();
@@ -432,6 +433,8 @@ const PHONE_SURFACES: Record<string, Surface> = {
     await pickPhoneModel(page);
     await page.getByTestId('phone-nav-drafts').click();
     await scan('drafts empty', ALL);
+    // The draft form is one of the openers the scan above opened and checked.
+    await page.getByTestId('drafts-form-toggle').click();
     await page.getByTestId('drafts-start').click();
     await expect(page.getByTestId('draft-open')).toHaveCount(4, { timeout: 20_000 });
     await scan('drafts', ALL);

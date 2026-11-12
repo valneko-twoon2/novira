@@ -69,7 +69,7 @@
 
 ## 圖層
 
-右下的 **{{ui:canvas.layers.title}}**，會以清單顯示放在畫布上的東西。用 **{{ui:common.add}}** 按鈕新增。
+右下的 **{{ui:canvas.layers.title}}**，會以清單顯示放在畫布上的東西。用 **+**（{{ui:common.add}}） 按鈕新增。
 
 ![展開圖層「新增」選單的樣子](shot:canvas-add-layer)
 
@@ -150,7 +150,7 @@
 
 可以移動火柴人來決定姿勢。用文字指定姿勢卻不順利時很方便。
 
-1. 在 **{{ui:app.tabs.canvas}}** 分頁，按下圖層的 **{{ui:common.add}}**，選擇 **{{ui:pose.menu}}**。
+1. 在 **{{ui:app.tabs.canvas}}** 分頁，按下圖層的 **+**（{{ui:common.add}}），選擇 **{{ui:pose.menu}}**。
 2. 從 **{{ui:pose.preset}}** 選擇接近的姿勢（{{ui:pose.preset.standing}}、{{ui:pose.preset.armsUp}}、{{ui:pose.preset.sitting}}、{{ui:pose.preset.walking}}）。
 3. 拖曳關節的圓點來改變姿態。選取圓點後，也可以用方向鍵移動（按住 `Shift` 會大幅移動）。用 **{{ui:pose.mirror}}** 可以左右翻轉，用 **{{ui:pose.reset}}** 會回到最初的範本。
 4. 選擇 **{{ui:pose.size}}**。通常使用畫布的大小即可。

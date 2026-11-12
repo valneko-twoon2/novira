@@ -11,6 +11,7 @@ test(
     await openApp(page, '?scenario=empty');
     await page.getByTestId('positive-prompt').fill('a red fox in the snow');
     await page.getByTestId('view-drafts').click();
+    await page.getByTestId('drafts-form-toggle').click();
     await page.getByTestId('drafts-start').click();
     const cells = page.getByTestId('draft-cell');
     await expect(cells).toHaveCount(4);
@@ -20,7 +21,7 @@ test(
 
     const first = cells.first();
     await first.getByRole('button', { name: /^seed / }).click();
-    await page.getByTestId('drafts-finish').click();
+    await page.getByTestId('drafts-selection-accept').click();
     await expect(first).toContainText(msg('drafts.badge.finishing'));
 
     // Cancel it in the queue before it is drawn.
@@ -33,9 +34,8 @@ test(
     await expect(first).toContainText(msg('drafts.badge.failed'), { timeout: 20_000 });
 
     // The draft is still good: choose it and finish it again.
-    await first.getByRole('button', { name: /^seed / }).click();
-    await expect(page.getByTestId('drafts-finish')).toBeEnabled();
-    await page.getByTestId('drafts-finish').click();
+    await first.hover();
+    await first.getByTestId('draft-accept').click();
     // The finished picture lands in the gallery (the view switches to it); back on the Drafts tab the cell says finished.
     await expect(page.getByTestId('gallery-thumb')).toHaveCount(1, { timeout: 90_000 });
     await page.getByTestId('view-drafts').click();
