@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { isJunction, linkFolder, mergedBranches, mergedByPullRequest, prMergedHeads, validName } from '../../scripts/tools/worktree.mjs';
+import { branchName, isJunction, linkFolder, mergedBranches, mergedByPullRequest, prMergedHeads, validName } from '../../scripts/tools/worktree.mjs';
 
 const made: string[] = [];
 afterEach(() => {
@@ -84,5 +84,11 @@ describe('finished branches (worktree list and the Stop hook)', () => {
 
   it('are only the ones merged into main when gh said nothing', { tags: ['error-guessing'] }, () => {
     expect([...mergedBranches(trees, { mergedIntoMain: ['old-merge'], heads: new Map(), tipOf, isAncestor: () => true })]).toEqual(['old-merge']);
+  });
+});
+
+describe('the branch of a new worktree', () => {
+  it('starts with the local calendar day, not the UTC one', { tags: ['boundary', 'regression'] }, () => {
+    expect(branchName('review-format', { getFullYear: () => 2026, getMonth: () => 10, getDate: () => 12, toISOString: () => '2026-11-11T22:50:00.000Z' } as unknown as Date)).toBe('20261112_review-format');
   });
 });

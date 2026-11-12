@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- a plain .mjs tool without types
-import { check, FILE, notes, release, REPO } from '../../scripts/tools/changelog.mjs';
+import { check, FILE, notes, release, releaseDate, REPO } from '../../scripts/tools/changelog.mjs';
 
 const links = (...versions: string[]) =>
   [
@@ -104,4 +104,10 @@ describe('changelog', { tags: [] }, () => {
       expect(() => release(GOOD.replace('### Fixed', '### 修正'), '0.3.0', '2026-11-02')).toThrow(/not in shape/);
     },
   );
+});
+
+describe('the date of a release', () => {
+  it('is the local calendar day, not the UTC one (a release cut at 07:50 in Japan is dated that day)', { tags: ['boundary', 'regression'] }, () => {
+    expect(releaseDate({ getFullYear: () => 2026, getMonth: () => 10, getDate: () => 12, toISOString: () => '2026-11-11T22:50:00.000Z' } as unknown as Date)).toBe('2026-11-12');
+  });
 });

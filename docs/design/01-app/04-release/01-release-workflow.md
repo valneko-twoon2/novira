@@ -20,7 +20,7 @@ covers:
   3. `scripts\release\package.bat build`: フロントエンドと、アプリとサーバーをリリースモードで `artifacts\` にビルドする。
   4. ビルドしたものに `scripts/tools/release-smoke.mjs` を実行する: 空のフォルダと各旧データのフィクスチャでサーバーを、エンジンなしで `novira.exe` を動かす（[development.md](../../../development.md)）。GPU は使わない。ランナー上でだけ、`novira.exe` は `scripts/tools/start-medium.ps1` が通常ユーザーのトークン（administrators グループは deny-only、Medium 整合性）で起動する。スクリプトが作業フォルダに書く `.cmd` から、変数を設定し、トークンのグループを記録する。デスクトップ上では直接起動する。
   5. `package-release.mjs`: `novira-<version>-windows-x64.zip` とその `.sha256` を、同名のビルド成果物（`novira-<version>-windows-x64`）としてアップロードする。ドラフトジョブがこれをダウンロードする。
-- **ドラフトジョブ**（`ubuntu-latest`）: zip とチェックサムを付けて `gh release create <tag> --draft --verify-tag --title <tag>` を実行し、ダウンロードした `release-notes` を本文にする。タグにハイフンがあれば（`v0.5.0-beta.1`）プレリリースにする。公開するのは人。リリースが既にあるタグの再実行は、ファイルを置き換えるだけ（`--clobber`）で、題名、本文、状態は変えない。
+- **ドラフトジョブ**（`ubuntu-latest`）: zip とチェックサムを付けて `gh release create <tag> --draft --verify-tag --title <tag>` を実行し、ダウンロードした `release-notes` を本文にする。タグにハイフンがあれば（`v0.5.0-beta.1`）プレリリースにする。下書きを公開するのは `/release-notes`（エージェントがワークフローの成功を確かめてから `gh release edit --draft=false`）。リリースが既にあるタグの再実行は、ファイルを置き換えるだけ（`--clobber`）で、題名、本文、状態は変えない。
 - `package.bat` は `CI` が設定されているとき、キー入力を待たない（ランナーには押す人がいない）。
 
 ## 境界

@@ -12,6 +12,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { localDay } from './local-day.mjs';
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 export const FILE = join(ROOT, 'CHANGELOG.md');
@@ -160,6 +161,12 @@ export function release(text, version, date) {
   return `${blocks.join('\n\n')}\n`;
 }
 
+/** The date of a release cut now (YYYY-MM-DD): the local calendar day. toISOString() is the UTC day, which in Japan before 09:00
+ * is still yesterday. */
+export function releaseDate(d = new Date()) {
+  return localDay(d);
+}
+
 function main(argv) {
   const [command, value] = argv;
   const option = (name) => {
@@ -187,7 +194,7 @@ function main(argv) {
     return 0;
   }
   if (command === '--release') {
-    writeFileSync(FILE, release(text, value, option('--date') ?? new Date().toISOString().slice(0, 10)));
+    writeFileSync(FILE, release(text, value, option('--date') ?? releaseDate()));
     console.log(`changelog: [Unreleased] is now [${value}]`);
     return 0;
   }
