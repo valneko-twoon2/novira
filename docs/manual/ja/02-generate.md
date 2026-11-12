@@ -302,7 +302,7 @@ Anima・Flux・FLUX.2・Chroma・Qwen-Image・Z-Image・SD3・HiDream・AuraFlow
 - 項目の数の内訳（{{ui:queue.status.pending}}、{{ui:queue.status.inProgress}}、{{ui:queue.status.completed}}、{{ui:queue.status.failed}}、{{ui:queue.status.canceled}}）。
 - 右上に、いま描いている項目の進み具合。
 
-ボタンの働きは次のとおりです。
+ボタンはアイコンだけで、マウスを重ねると名前が出ます。働きは次のとおりです。
 
 | ボタン | 働き |
 |---|---|
