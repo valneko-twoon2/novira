@@ -227,6 +227,19 @@
   background: var(--bg-panel);
 }
 
+.tx-addicon {
+  position: relative;
+  display: inline-flex;
+}
+
+.tx-addicon__plus {
+  position: absolute;
+  top: -5px;
+  right: -7px;
+  width: 9px;
+  height: 9px;
+}
+
 .tx-toolbar__sep {
   align-self: stretch;
   width: 1px;
