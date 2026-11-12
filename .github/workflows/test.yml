@@ -1,4 +1,4 @@
-# The checks GitHub runs on every pull request to main (a draft only once it is ready for review), on a push to main
+# The checks GitHub runs on every pull request to main or develop (a draft only once it is ready for review), on a push to main or develop
 # (a merge), and every night on the default branch; a push to any other branch runs nothing (tags run release.yml instead).
 # The long jobs run only when the push or the pull request changed what they read (scripts/tools/ci-scope.mjs); the default branch, the night
 # and a manual run run all of them. It starts with the checks that read the
@@ -10,11 +10,11 @@ name: Test
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
     # A draft runs nothing until it is ready for review.
     types: [opened, synchronize, reopened, ready_for_review]
-    branches: [main]
+    branches: [main, develop]
   schedule:
     - cron: '23 18 * * *'
   workflow_dispatch:
