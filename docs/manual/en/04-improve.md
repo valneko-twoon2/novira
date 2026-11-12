@@ -304,9 +304,9 @@ When you no longer need one, close it with the ✕ on its tab or in the history,
 The pictures you make on the **{{ui:app.tabs.generate}}** tab first line up in this **{{ui:app.views.drafts}}** tab. They do not go to a board, so a lot of generating does not flood your boards.
 
 - When you start generating from the start screen, the center switches to the **{{ui:app.views.drafts}}** tab. Each press adds one tab at the top. The pictures line up in the order they are finished and show "{{ui:drafts.badge.finished}}".
-- Click the pictures you want to choose (click again to deselect), then press "Move N pictures to “board name”" at the bottom right. They go to the board that was selected when you started generating. Dragging a picture onto a board in the gallery on the right moves it to that board too.
+- Click the pictures you want to choose (click again to deselect), then press "Move N pictures to the board" at the bottom right. They go to the board selected in the gallery on the right at that moment (not the one that was selected when you started generating; Uncategorized when no board is selected). Dragging a picture onto a board in the gallery on the right moves it to that board too.
 - Double-click a picture to see it large in the viewer.
-- Send the pictures you do not want to the trash together with "{{ui:drafts.discardRest}}" at the bottom. Closing the tab with its ✕ also sends the rest to the trash. Pictures you take back with "Undo" in the notice return to their old board.
+- Close the tab with its ✕ and the pictures you did not choose go to the trash. Pictures you take back with "Undo" in the notice return to their old board.
 - If you want generated pictures to go to a board at once, turn off "{{ui:gallery.settings.newToCandidates}}" in {{ui:gallery.settings.title}} (the gear button).
 
 ## Processing in bulk

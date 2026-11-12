@@ -1,5 +1,5 @@
 // Drafts view: draw many seeds only part of the way, look at them side by side, and finish only the ones you like.
-import { ArrowsOut, Check, FolderPlus, Lightning, Star, Trash, X } from '@phosphor-icons/react';
+import { ArrowsOut, Check, FolderPlus, Lightning, Star, X } from '@phosphor-icons/react';
 import { useState } from 'react';
 import type { ImageDTO } from '@/backend';
 import { t, tCount } from '@/i18n';
@@ -15,7 +15,6 @@ import {
   type DraftCandidate,
   type DraftGroup,
 } from '@/state/drafts';
-import { boardLabel } from '@/state/boardTree';
 import { useDraftForm } from '@/state/draftForm';
 import { setDragImages } from '@/state/dnd';
 import { useGallery } from '@/state/gallery';
@@ -126,9 +125,7 @@ function GroupGrid({ group, onOpen }: { group: DraftGroup; onOpen: ((imageName: 
   const clear = useDrafts((s) => s.clearSelection);
   const finish = useDrafts((s) => s.finish);
   const adopt = useDrafts((s) => s.adopt);
-  const discardRest = useDrafts((s) => s.discardRest);
   const retryFailed = useDrafts((s) => s.retryFailed);
-  const boards = useGallery((s) => s.boards);
   const generation = group.kind === 'generation';
   const [page, setPage] = useState(0);
   const pages = Math.max(1, Math.ceil(group.candidates.length / PER_PAGE));
@@ -139,8 +136,6 @@ function GroupGrid({ group, onOpen }: { group: DraftGroup; onOpen: ((imageName: 
   // A generation batch: what can move to the board is a picture that is done and still held back.
   const held = new Set(heldPictures(group, images).map((i) => i.name));
   const adoptable = group.candidates.filter((c) => selection.includes(c.id) && c.finalImageName !== null && held.has(c.finalImageName));
-  const board = boards.find((b) => b.id === group.boardId);
-  const boardName = board ? boardLabel(boards, board) : t('gallery.boards.uncategorized');
 
   return (
     <>
@@ -171,22 +166,17 @@ function GroupGrid({ group, onOpen }: { group: DraftGroup; onOpen: ((imageName: 
           {t('drafts.clearSelection')}
         </Button>
         {generation ? (
-          <>
-            <Button size="sm" variant="outline" leftIcon={<Trash size={14} />} disabled={busy} onClick={() => void discardRest(group.id)} data-testid="drafts-discard">
-              {t('drafts.discardRest')}
-            </Button>
-            <Button
-              size="sm"
-              variant="solid"
-              scheme="invoke"
-              leftIcon={<FolderPlus size={14} />}
-              disabled={busy || adoptable.length === 0}
-              onClick={() => void adopt(group.id, adoptable.map((c) => c.id))}
-              data-testid="drafts-adopt"
-            >
-              {tCount('drafts.adopt', adoptable.length, { board: boardName })}
-            </Button>
-          </>
+          <Button
+            size="sm"
+            variant="solid"
+            scheme="invoke"
+            leftIcon={<FolderPlus size={14} />}
+            disabled={busy || adoptable.length === 0}
+            onClick={() => void adopt(group.id, adoptable.map((c) => c.id))}
+            data-testid="drafts-adopt"
+          >
+            {tCount('drafts.adopt', adoptable.length)}
+          </Button>
         ) : (
           <Button
             size="sm"

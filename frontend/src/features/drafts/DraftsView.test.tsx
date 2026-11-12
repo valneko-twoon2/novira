@@ -477,26 +477,24 @@ describe('a generation batch', { tags: [] }, () => {
     },
   );
 
-  it('offers moving the chosen pictures to the board and throwing the rest away, and not finishing drafts', { tags: ['scenario'] }, () => {
+  it('offers moving the chosen pictures to the board, and not throwing the rest away or finishing drafts', { tags: ['scenario'] }, () => {
     const adopt = vi.fn().mockResolvedValue(undefined);
-    const discard = vi.fn().mockResolvedValue(undefined);
-    useDrafts.setState({ adopt, discardRest: discard });
+    useDrafts.setState({ adopt });
     showBatch(batch([made(), made({ id: 'c2', finalImageName: 'g2.png' })]), [held('g1.png'), held('g2.png')]);
     expect(screen.queryByTestId('drafts-finish')).toBeNull();
     expect(screen.getByTestId('drafts-adopt').hasAttribute('disabled')).toBe(true);
     fireEvent.click(screen.getAllByRole('button', { name: /seed/ })[0]!);
-    expect(screen.getByTestId('drafts-adopt').textContent).toContain(tCount('drafts.adopt', 1, { board: t('gallery.boards.uncategorized') }));
+    expect(screen.getByTestId('drafts-adopt').textContent).toBe(tCount('drafts.adopt', 1));
     fireEvent.click(screen.getByTestId('drafts-adopt'));
     expect(adopt).toHaveBeenCalledWith('g', ['c1']);
-    fireEvent.click(screen.getByTestId('drafts-discard'));
-    expect(discard).toHaveBeenCalledWith('g');
+    expect(screen.queryByTestId('drafts-discard')).toBeNull();
   });
 
-  it('names the board the pictures were made for', { tags: ['condition'] }, () => {
+  it('does not name a board on the button, whichever board the pictures were made for', { tags: ['condition', 'regression'] }, () => {
     useGallery.setState({ boards: [{ id: 'b1', name: 'Cats', archived: false, createdAt: 1, parentId: null }] as never });
     showBatch(batch([made()], 'b1'), [held('g1.png')]);
     fireEvent.click(screen.getAllByRole('button', { name: /seed/ })[0]!);
-    expect(screen.getByTestId('drafts-adopt').textContent).toContain('Cats');
+    expect(screen.getByTestId('drafts-adopt').textContent).not.toContain('Cats');
   });
 
   it('does not select a picture that is not drawn yet', { tags: ['condition'] }, () => {

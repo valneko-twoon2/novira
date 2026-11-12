@@ -230,10 +230,8 @@ interface DraftsState {
   retryFailed: (groupId: string) => Promise<void>;
   /** Keeps what one press of Invoke queued (to the `candidates` destination) as a batch of its own, with the pictures it makes. */
   addGeneration: (items: QueueItem[], request: EnqueueRequest) => void;
-  /** Moves the chosen finished pictures of a generation batch to the board it was made for, and out of the batch. */
+  /** Moves the chosen finished pictures of a generation batch to the board selected in the gallery now (Uncategorized when none is), and out of the batch. */
   adopt: (groupId: string, candidateIds: string[]) => Promise<void>;
-  /** Throws away what is left of a generation batch (its pictures go to the trash) and closes it. */
-  discardRest: (groupId: string) => Promise<void>;
 }
 
 /** The pictures of a generation batch that are still held back: not moved to a board, not deleted. */
@@ -260,9 +258,10 @@ export function dropAdopted(groups: DraftGroup[], images: ImageDTO[]): DraftGrou
   return changed ? next : groups;
 }
 
-/** The board a generation batch's pictures go to: the one it was made for, or Uncategorized when that board is gone. */
-function boardOfGroup(group: DraftGroup): string | null {
-  return group.boardId && useGallery.getState().boards.some((b) => b.id === group.boardId) ? group.boardId : null;
+/** The board adopted pictures go to: the one selected in the gallery now, or Uncategorized when none is (or the selected one is gone). */
+function selectedBoard(): string | null {
+  const { selectedBoardId, boards } = useGallery.getState();
+  return selectedBoardId !== 'none' && boards.some((b) => b.id === selectedBoardId) ? selectedBoardId : null;
 }
 
 /** Stops what is still waiting or drawing in a generation batch and trashes the pictures held back; they can be taken back from the toast. */
@@ -425,7 +424,7 @@ export const useDrafts = create<DraftsState>()(
         if (!picked.length) return;
         set({ busy: true });
         try {
-          const boardId = boardOfGroup(group);
+          const boardId = selectedBoard();
           const updated = await backend.updateImages(
             picked.map((c) => c.finalImageName!),
             { boardId, isIntermediate: false },
@@ -447,14 +446,6 @@ export const useDrafts = create<DraftsState>()(
         } finally {
           set({ busy: false });
         }
-      },
-      discardRest: async (groupId) => {
-        const group = get().groups.find((g) => g.id === groupId);
-        if (!group) return;
-        // Closed first, so a second press finds nothing; the pictures follow.
-        const groups = get().groups.filter((g) => g.id !== groupId);
-        set({ groups, currentId: get().currentId === groupId ? (groups.at(-1)?.id ?? null) : get().currentId, selection: [] });
-        await throwAway(group);
       },
       finish: async (groupId, candidateIds) => {
         const group = get().groups.find((g) => g.id === groupId);
