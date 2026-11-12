@@ -77,13 +77,13 @@ describe('finished branches (worktree list and the Stop hook)', () => {
   const tipOf = (b: string) => tips[b];
   const trees = [{ branch: 'main' }, { branch: '20261112_done' }, { branch: '20261112_more' }, { branch: 'old-merge' }, { branch: null }];
 
-  it('are the ones merged into main and the ones all in a merged pull request, and no other', { tags: ['decision-table', 'regression'] }, () => {
-    const merged = mergedBranches(trees, { mergedIntoMain: ['main', 'old-merge'], heads: new Map([...heads, ['20261112_more', ['c3']]]), tipOf, isAncestor: () => false });
+  it('are the ones merged into develop and the ones all in a merged pull request, and no other', { tags: ['decision-table', 'regression'] }, () => {
+    const merged = mergedBranches(trees, { mergedIntoWork: ['main', 'old-merge'], heads: new Map([...heads, ['20261112_more', ['c3']]]), tipOf, isAncestor: () => false });
     expect([...merged].sort()).toEqual(['20261112_done', 'main', 'old-merge']);
   });
 
-  it('are only the ones merged into main when gh said nothing', { tags: ['error-guessing'] }, () => {
-    expect([...mergedBranches(trees, { mergedIntoMain: ['old-merge'], heads: new Map(), tipOf, isAncestor: () => true })]).toEqual(['old-merge']);
+  it('are only the ones merged into develop when gh said nothing', { tags: ['error-guessing'] }, () => {
+    expect([...mergedBranches(trees, { mergedIntoWork: ['old-merge'], heads: new Map(), tipOf, isAncestor: () => true })]).toEqual(['old-merge']);
   });
 });
 

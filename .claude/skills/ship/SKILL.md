@@ -1,28 +1,28 @@
 ---
 name: ship
-description: "Takes a finished work branch into main the GitHub Flow way: pushes it, opens its pull request, has a fresh reviewer agent review it on GitHub, fixes what the review or CI finds, squash-merges when every check passed and the review of the head is ok, removes the worktree, and then judges whether the merged work calls for a release (/release-notes). Use when work on a branch is done and committed (your own or a subagent's after /gatekeeper's checks), or when the user says to take it in (PR にして, マージして, main に入れて, 出して)."
+description: "Takes a finished work branch into develop the GitHub Flow way: pushes it, opens its pull request, has a fresh reviewer agent review it on GitHub, fixes what the review finds, squash-merges when the review of the head is ok (no CI or CodeQL runs on a pull request into develop), removes the worktree, and then judges whether develop calls for a release (/release-notes). Use when work on a branch is done and committed (your own or a subagent's after /gatekeeper's checks), or when the user says to take it in (PR にして, マージして, develop に入れて, 出して)."
 argument-hint: "The worktree or branch to ship (default: the current one)"
 user-invocable: true
 disable-model-invocation: false
 ---
 
-`main` changes only by a merged pull request (branch protection refuses a direct push). Every step below is allowed without asking (AGENTS.md section 3): push the work branch, open its pull request, post the review, merge it when the rule of `scripts/tools/pr.mjs` says so. Never `--force`, never `--no-verify`, never merge by hand around `pr.mjs`.
+`develop` (where work happens) and `main` (what is released) change only by a merged pull request (branch protection refuses a direct push). Work branches go into `develop`; `main` takes only a release, from `develop` (`/release-notes`). Every step below is allowed without asking (AGENTS.md section 3): push the work branch, open its pull request, post the review, merge it when the rule of `scripts/tools/pr.mjs` says so. Never `--force`, never `--no-verify`, never merge by hand around `pr.mjs`.
 
 ```
 Ship progress:
 - [ ] 1. Branch ready: committed, local checks of the change passed
 - [ ] 2. Pull request open
 - [ ] 3. Reviewed by a fresh agent on GitHub; changes made and reviewed again until ok
-- [ ] 4. Checks green, merged by pr.mjs, worktree removed
+- [ ] 4. Review ok, merged by pr.mjs, worktree removed
 - [ ] 5. Release judged
 - [ ] 6. Reported
 ```
 
 ## 1. Ready
 
-- The work is on a branch made from `main` (`node scripts/tools/worktree.mjs add <name>`; one branch per piece of work: one feature, one fix, one change of the harness). Everything is committed with Japanese messages (the hooks check them).
-- The checks that fit the change passed locally (`node scripts/tools/affected.mjs`, `.claude/rules/tests.md`). CI runs the rest; do not run every test "to be safe".
-- `git fetch origin`; when `main` moved and the branch touches the same files, bring it up to date: `git rebase origin/main` only before the branch's first push, `git merge origin/main` once it is pushed (a rebase of a pushed branch needs `--force`, which is not allowed; the squash merge keeps `main`'s history clean anyway). A conflict is solved here, not on GitHub.
+- The work is on a branch made from `develop` (`node scripts/tools/worktree.mjs add <name>`; one branch per piece of work: one feature, one fix, one change of the harness). Everything is committed with Japanese messages (the hooks check them).
+- The checks that fit the change passed locally (`node scripts/tools/affected.mjs`, `.claude/rules/tests.md`). A pull request into `develop` runs no CI and no CodeQL, so what the change needs must pass here, before it is pushed; the release pull request into `main` runs everything. Do not run every test "to be safe".
+- `git fetch origin`; when `develop` moved and the branch touches the same files, bring it up to date: `git rebase origin/develop` only before the branch's first push, `git merge origin/develop` once it is pushed (a rebase of a pushed branch needs `--force`, which is not allowed; the squash merge keeps `develop`'s history clean anyway). A conflict is solved here, not on GitHub.
 
 ## 2. Open
 
@@ -35,7 +35,7 @@ Write the description in Japanese from `.github/pull_request_template.md` (meta/
 - **チェックリスト**: tick the lines that hold; an unticked line says why next to it.
 - **追加・変更したテスト**: the tests added or changed and what each one proves (they stay in the repository; 確認結果 is what was run for this change).
 
-Then `node scripts/tools/pr.mjs open --body-file <that file>` in the worktree: it pushes the branch and opens the pull request to `main` **as a draft** (no CI runs on a draft: the review rounds cost no runner time), after checking the description has every section (`bodyProblems`) and the title. The title becomes the subject of the squashed commit on `main`, so it follows `.claude/rules/commit-messages.md`: a branch of one commit takes that commit's subject; a branch of several needs `--title "<type>: <要約>"` naming the main change (a `feat:` branch with a later `docs:` commit is `feat:`, or `/release-notes` misjudges it). On a pull request already open, `open` pushes and updates the title or description given. It prints the number.
+Then `node scripts/tools/pr.mjs open --body-file <that file>` in the worktree: it pushes the branch and opens the pull request to `develop` (nothing runs on it), after checking the description has every section (`bodyProblems`) and the title. The title becomes the subject of the squashed commit on `develop`, so it follows `.claude/rules/commit-messages.md`: a branch of one commit takes that commit's subject; a branch of several needs `--title "<type>: <要約>"` naming the main change (a `feat:` branch with a later `docs:` commit is `feat:`, or `/release-notes` misjudges it). On a pull request already open, `open` pushes and updates the title or description given. It prints the number.
 
 ## 3. Review
 
@@ -74,20 +74,19 @@ On `changes`: fix on the branch (a bug the review found gets its test first, AGE
 
 ## 4. Merge
 
-`node scripts/tools/pr.mjs merge <n> --wait`: when the pull request is still a draft and the review of its head is `ok`, it makes it ready for review, which starts CI and CodeQL (runs from the draft time do not count). It waits for the required checks and the CodeQL analyses (also the ones not started yet), then squash-merges only if every one passed, the review of the head is `ok`, the title and the description still pass their checks, and the code scanning alerts of the pull request can be read and none is open; the commit on `main` is the title with no body. It deletes the remote branch and fast-forwards the main checkout. When it refuses:
+`node scripts/tools/pr.mjs merge <n>`: into `develop` it squash-merges when the review of the head is `ok` and the title and the description pass their checks (no CI, no CodeQL, no alerts are read); the commit on `develop` is the title with no body. It deletes the remote branch and fast-forwards the main checkout when that is on `develop`. When it refuses:
 
-- a check failed: `merge` makes the pull request a draft again, so the pushes that fix it run no CI. Read the failure (`gh run view <id> --log-failed`), fix on the branch, push, review again, then `merge` again. A failure that is also on `main` is reported with the evidence, not fixed by weakening the check;
-- an open code scanning alert (CodeQL) on the pull request: `merge` makes it a draft again too. Read it (`gh api "repos/{owner}/{repo}/code-scanning/alerts?ref=refs/pull/<n>/merge&state=open"`), and fix the code yourself with a test (do not commit the suggested autofix unread). A false positive is reported to the user with the reason; dismissing it is their call;
+- (a release pull request into `main`, `/release-notes`: `merge --wait` makes it ready, which starts CI and CodeQL, waits for the required checks and the CodeQL analyses, and merges only if every one passed and no code scanning alert of the pull request is open. A failed check or an open alert sends it back to a draft: read the failure (`gh run view <id> --log-failed`) or the alert (`gh api "repos/{owner}/{repo}/code-scanning/alerts?ref=refs/pull/<n>/merge&state=open"`), fix on `develop` through a work branch, review again. A failure that is also on `develop` is reported with the evidence, not fixed by weakening the check; a false positive is reported to the user with the reason, and dismissing it is their call);
 - no review of the head: section 3.
 
 Then remove the worktree: `node scripts/tools/worktree.mjs remove <path>` (it deletes the branch, merged by the pull request).
 
 ## 5. Release?
 
-After every merge except the release pull request's own (`chore: v<version> をリリースする`: go back to `/release-notes` section 4 instead), judge whether `main` should be released now, by the rule of `/release-notes` section 1 (user-visible fix or feature since the last tag, security, nothing but development changes). If yes, run `/release-notes`; if not, say in the report why it waits.
+After every merge into `develop` except the one that holds a release's version and CHANGELOG (`chore: v<version> のリリースを用意する`: go back to `/release-notes` section 3 instead), judge whether `develop` should be released now, by the rule of `/release-notes` section 1 (user-visible fix or feature since the last tag, security, nothing but development changes). If yes, run `/release-notes`; if not, say in the report why it waits.
 
 ## 6. Report
 
-The pull request (number, link) and its merge commit; the review rounds and what they changed; the checks (CI) and the local ones run; what was not verified and why; whether a release followed, and its tag.
+The pull request (number, link) and its merge commit; the review rounds and what they changed; the local checks run (no CI runs into develop); what was not verified and why; whether a release followed, and its tag.
 
 Request: $ARGUMENTS
