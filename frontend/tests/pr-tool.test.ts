@@ -2,20 +2,22 @@
 // that says ok for exactly the head commit (nothing is tested there); develop goes into main as a release, also on green required checks
 // and CodeQL; main goes back into develop when that changes nothing in develop; only pull requests of this repository; and the title
 // that becomes the squashed commit.
-import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { BODY_SECTIONS, CODEQL_CHECKS, bodyProblems, checksState, deleteBranchArgs, freshChecks, gatingChecks, readyFrom, mergeArgs, mergeDecision, reviewMark, reviewProblems, reviewVerdict, titleFor, titleProblems, withMissing, withoutComments } from '../../scripts/tools/pr.mjs';
+import { BODY_SECTIONS, CODEQL_CHECKS, bodyProblems, checksState, deleteBranchArgs, freshChecks, gatingChecks, isAncestorOf, isReleaseBranch, mergeKeepsTree, releaseBranchName, readyFrom, mergeArgs, mergeDecision, reviewMark, reviewProblems, reviewVerdict, titleFor, titleProblems, withMissing, withoutComments } from '../../scripts/tools/pr.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const HEAD = 'a'.repeat(40);
 const OLD = 'b'.repeat(40);
 const ME = 'owner';
 const review = (body: string, submittedAt: string, login = ME) => ({ author: { login }, body, submittedAt });
-// A release: develop into main, the one pull request whose checks and code scanning alerts a merge waits for.
-const release = (o: Record<string, unknown>) => mergeDecision({ base: 'main', head: 'develop', ...o });
+// A release: a snapshot of develop into main, the one pull request whose checks and code scanning alerts a merge waits for.
+const release = (o: Record<string, unknown>) => mergeDecision({ base: 'main', head: 'release/v1.0.0', snapshot: true, ...o });
 
 describe('the agent review mark', () => {
   it('is read back for the commit it names, and the latest review of that commit wins', { tags: ['state-transition'] }, () => {
@@ -74,10 +76,21 @@ describe('the merge decision', () => {
     expect(release({ checks: 'pass', verdict: 'ok', fork: true })).toMatchObject({ merge: false, reason: expect.stringContaining('another repository') });
   });
 
-  it('lets only develop into main: a work branch is never a release', { tags: ['condition', 'regression'] }, () => {
+  it('lets only a release snapshot into main: a work branch, and develop itself, are never a release', { tags: ['condition', 'regression'] }, () => {
     expect(mergeDecision({ checks: 'pass', verdict: 'ok', base: 'main', head: '20261112_x' })).toMatchObject({ merge: false, reason: expect.stringContaining('only a release') });
     expect(mergeDecision({ checks: 'pass', verdict: 'ok', base: 'main', head: '' })).toMatchObject({ merge: false });
-    expect(mergeDecision({ checks: 'pass', verdict: 'ok', base: 'main', head: 'develop' })).toMatchObject({ merge: true });
+    expect(mergeDecision({ checks: 'pass', verdict: 'ok', base: 'main', head: 'develop' })).toMatchObject({ merge: false });
+    expect(mergeDecision({ checks: 'pass', verdict: 'ok', base: 'main', head: 'release/v1.0.0', snapshot: true })).toMatchObject({ merge: true });
+  });
+
+  it('lets a release branch into main only while it holds nothing that develop does not: the name alone proves nothing', { tags: ['condition', 'regression'] }, () => {
+    expect(mergeDecision({ checks: 'pass', verdict: 'ok', base: 'main', head: 'release/x', snapshot: false })).toMatchObject({ merge: false, reason: expect.stringContaining('not a snapshot') });
+    expect(mergeDecision({ checks: 'pass', verdict: 'ok', base: 'main', head: 'release/x', snapshot: null })).toMatchObject({ merge: false, reason: expect.stringContaining('cannot be told') });
+    expect(mergeDecision({ checks: 'pass', verdict: 'ok', base: 'main', head: 'release/x' })).toMatchObject({ merge: false });
+  });
+
+  it('never takes a release snapshot as a work branch into develop', { tags: ['condition'] }, () => {
+    expect(mergeDecision({ verdict: 'ok', base: 'develop', head: 'release/v1.0.0' })).toMatchObject({ merge: false, reason: expect.stringContaining('release snapshot') });
   });
 
   it('asks for a review before it waits for checks, so a missing review is never waited out', { tags: ['condition'] }, () => {
@@ -101,6 +114,77 @@ describe('a pull request into develop', () => {
     expect(into({ verdict: 'ok', body: bodyProblems('') })).toMatchObject({ merge: false, reason: expect.stringContaining('description') });
     expect(into({ verdict: 'ok', fork: true })).toMatchObject({ merge: false });
     expect(into({ verdict: 'ok', draft: true })).toMatchObject({ merge: false, ready: true });
+  });
+});
+
+describe('the snapshot branch of a release', () => {
+  it('is release/<name>, with the name from the version in the title or from --name', { tags: ['equivalence'] }, () => {
+    expect(releaseBranchName('chore: v0.6.0 をリリースする', undefined)).toBe('release/v0.6.0');
+    expect(releaseBranchName('chore: v1.0.0-rc.1 をリリースする', undefined)).toBe('release/v1.0.0-rc.1');
+    expect(releaseBranchName('chore: develop の運用を main に入れる', 'develop-flow')).toBe('release/develop-flow');
+  });
+
+  it('is refused for a title without a version and no name, and for a name that is not a branch name part', { tags: ['error-guessing', 'boundary'] }, () => {
+    expect(() => releaseBranchName('chore: 運用を入れる', undefined)).toThrow('version in the title');
+    expect(() => releaseBranchName(undefined, undefined)).toThrow();
+    expect(() => releaseBranchName('chore: v1.0.0 をリリースする', '../x')).toThrow('--name');
+    expect(() => releaseBranchName('chore: v1.0.0 をリリースする', 'a b')).toThrow('--name');
+  });
+
+  it('is recognised by its prefix and nothing looser', { tags: ['boundary'] }, () => {
+    expect(isReleaseBranch('release/v0.6.0')).toBe(true);
+    for (const no of ['develop', 'main', 'release', 'release/', 'releases/v1', 'x/release/v1', 'release/../x', '', undefined]) expect(isReleaseBranch(no)).toBe(false);
+  });
+});
+
+describe('the git questions of the merge rules, in a real repository', () => {
+  const dir = mkdtempSync(path.join(os.tmpdir(), 'novira-pr-'));
+  const git = (...args: string[]) => execFileSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@example.com', '-c', 'commit.gpgsign=false', ...args], { cwd: dir, encoding: 'utf8' });
+  const put = (file: string, text: string, msg: string) => {
+    writeFileSync(path.join(dir, file), text);
+    git('add', '-A');
+    git('commit', '-q', '-m', msg);
+  };
+  const lines = (...n: string[]) => `${n.join('\n')}\n`;
+
+  it('tell a snapshot of develop from a branch with commits of its own, and whether main still changes develop', { tags: ['regression', 'state-transition'] }, () => {
+    try {
+      git('init', '-q', '-b', 'base');
+      put('version.txt', lines('1', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'), 'start');
+      put('other.txt', 'x', 'other');
+      // develop gets the release preparation; the snapshot is that commit; main is a squash of it
+      git('checkout', '-q', '-b', 'develop', 'base');
+      put('version.txt', lines('2', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'), 'prepare');
+      git('branch', 'release/v2', 'develop');
+      git('checkout', '-q', '-b', 'main', 'base');
+      git('merge', '--squash', 'release/v2');
+      git('commit', '-q', '-m', 'release');
+      git('checkout', '-q', '-b', 'stray', 'base');
+      put('stray.txt', 'x', 'stray');
+      const oid = (ref: string) => git('rev-parse', ref).trim();
+      // the snapshot is on develop; a branch with its own commit is not
+      expect(isAncestorOf(dir, oid('release/v2'), 'develop')).toBe(true);
+      expect(isAncestorOf(dir, oid('stray'), 'develop')).toBe(false);
+      expect(isAncestorOf(dir, 'not-a-commit', 'develop')).toBeNull();
+      // develop takes more work: in another file (clean) or at the other end of the same file (clean), then in the very line the release changed
+      git('checkout', '-q', 'develop');
+      put('other.txt', 'y', 'more work in another file');
+      expect(mergeKeepsTree(dir, 'develop', 'main')).toBe(true);
+      put('version.txt', lines('2', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'j'), 'more work at the other end');
+      expect(mergeKeepsTree(dir, 'develop', 'main')).toBe(true);
+      put('version.txt', lines('3', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'j'), 'more work in the line the release changed');
+      expect(mergeKeepsTree(dir, 'develop', 'main')).toBe(false);
+      // a change only main has is never a no-op
+      git('checkout', '-q', 'main');
+      put('hotfix.txt', 'z', 'a change made on main alone');
+      git('checkout', '-q', 'base');
+      git('checkout', '-q', '-b', 'develop2', 'release/v2');
+      expect(mergeKeepsTree(dir, 'develop2', 'main')).toBe(false);
+      // git answers a ref it cannot merge with the status of a conflict: read as "changes develop", the safe side
+      expect(mergeKeepsTree(dir, 'develop', 'no-such-ref')).toBe(false);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
 
@@ -174,7 +258,7 @@ describe('the required checks that have not reported', () => {
 describe('the squash merge', () => {
   it('writes the title as the subject and no body, for the head that was reviewed', { tags: ['regression'] }, () => {
     expect(mergeArgs(21, { headRefOid: HEAD, title: 'feat: まとめ', baseRefName: 'develop', headRefName: '20261112_x' })).toEqual(['pr', 'merge', '21', '--squash', '--match-head-commit', HEAD, '--subject', 'feat: まとめ', '--body', '']);
-    expect(mergeArgs(22, { headRefOid: HEAD, title: 'chore: v1.0.0 をリリースする', baseRefName: 'main', headRefName: 'develop' })).toContain('--squash');
+    expect(mergeArgs(22, { headRefOid: HEAD, title: 'chore: v1.0.0 をリリースする', baseRefName: 'main', headRefName: 'release/v1.0.0' })).toContain('--squash');
   });
 
   it('is a merge commit for main going back into develop, so develop then has main\'s history', { tags: ['regression'] }, () => {
@@ -225,6 +309,7 @@ describe('deleting the merged branch', () => {
   });
 
   it('never deletes develop or main, the heads of a release and of the merge back', { tags: ['regression', 'error-guessing'] }, () => {
+    expect(deleteBranchArgs({ headRefName: 'release/v1.0.0', headRefOid: HEAD })).toEqual(['push', `--force-with-lease=release/v1.0.0:${HEAD}`, 'origin', '--delete', 'release/v1.0.0']);
     expect(deleteBranchArgs({ headRefName: 'develop', headRefOid: HEAD })).toBeNull();
     expect(deleteBranchArgs({ headRefName: 'main', headRefOid: HEAD })).toBeNull();
   });

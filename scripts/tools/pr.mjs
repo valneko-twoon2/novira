@@ -4,8 +4,11 @@
 //                                                    sections of .github/pull_request_template.md (bodyProblems). A branch of two or more
 //                                                    commits needs --title: the title becomes the subject of the squashed commit on develop,
 //                                                    so it is checked like a commit message.
-//   node scripts/tools/pr.mjs open --release --title <t> --body-file <f>   the release pull request: origin/develop into main, as a draft
-//                                                    (CI and CodeQL run once it is ready, as for any pull request to main).
+//   node scripts/tools/pr.mjs open --release --title <t> --body-file <f> [--name <n>]   the release pull request: a snapshot of origin/develop
+//                                                    (the branch release/<n>; n is the version in the title, v1.2.3) into main, as a draft (CI and
+//                                                    CodeQL run once it is ready, as for any pull request to main). A snapshot, so develop goes on
+//                                                    taking work while the release is reviewed and tested; run it again to bring the snapshot up to
+//                                                    develop (a fast-forward).
 //   node scripts/tools/pr.mjs sync                   after a release: the pull request that merges main back into develop (no review: merging
 //                                                    main must leave develop's own tree as it is, `syncSafe`).
 //   node scripts/tools/pr.mjs review <n> --verdict ok|changes --sha <commit read> --body-file <f>   (the shape: reviewProblems)
@@ -19,8 +22,8 @@
 //                                                    --wait waits for running checks (up to 60 minutes). A failed check makes it a draft again.
 //                                                    Then deletes the branch on origin (never develop or main) and fast-forwards the main
 //                                                    checkout when it is on develop.
-// The merge rule is `mergeDecision`: only a pull request of this repository, from a work branch into develop, from develop into main (a
-// release, on green required checks and CodeQL) or from main into develop (`sync`), on an `ok` verdict written by the signed-in user's
+// The merge rule is `mergeDecision`: only a pull request of this repository, from a work branch into develop, from a release branch
+// (release/<n>, a snapshot of develop) into main (a release, on green required checks and CodeQL) or from main into develop (`sync`), on an `ok` verdict written by the signed-in user's
 // account for exactly its head commit (not for `sync`); a push after the review needs a new review.
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -72,6 +75,25 @@ export function withMissing(checks, required) {
 /** The jobs of .github/workflows/codeql.yml: not required by the branch protection, but the alerts are only known once they end. */
 export const CODEQL_CHECKS = ['analyze (actions)', 'analyze (javascript-typescript)', 'analyze (python)', 'analyze (rust)'];
 
+/** The branch a release pull request comes from: a snapshot of develop, so develop can go on taking work while it is reviewed and tested. */
+export const RELEASE_PREFIX = 'release/';
+
+/** Whether `name` is the snapshot branch of a release (release/<n>). */
+export function isReleaseBranch(name) {
+  return typeof name === 'string' && /^release\/[A-Za-z0-9][A-Za-z0-9._-]*$/.test(name);
+}
+
+/** The branch of a release pull request: release/<name>, or release/v<version> from a title "chore: v1.2.3 をリリースする". */
+export function releaseBranchName(title, name) {
+  if (name) {
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(name)) throw new Error(`--name is letters, digits, ., _ and - only, not ${name}`);
+    return `${RELEASE_PREFIX}${name}`;
+  }
+  const version = /^chore: (v\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?) /.exec(title ?? '')?.[1];
+  if (!version) throw new Error('the release branch is named by the version in the title ("chore: v1.2.3 をリリースする"), or by --name <n>');
+  return `${RELEASE_PREFIX}${version}`;
+}
+
 /** The checks a merge waits for, out of every check of the pull request: the required ones and the CodeQL analyses, those not started as pending. */
 export function gatingChecks(all, required) {
   const names = new Set([...required, ...CODEQL_CHECKS]);
@@ -84,11 +106,15 @@ export function gatingChecks(all, required) {
  * starts the checks. A failed check or an open code scanning alert sends it back to a draft (`toDraft`), so the pushes that fix it
  * run no CI until the next ok review.
  */
-export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, base = WORK_BRANCH, head = '', fork = false, title = [], body = [], alerts = 0, syncSafe = null }) {
+export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, base = WORK_BRANCH, head = '', fork = false, title = [], body = [], alerts = 0, syncSafe = null, snapshot = null }) {
   if (state !== 'OPEN') return { merge: false, wait: false, reason: `the pull request is ${state.toLowerCase()}` };
   if (fork) return { merge: false, wait: false, reason: 'the pull request comes from another repository: a person merges it' };
   if (base !== WORK_BRANCH && base !== RELEASE_BRANCH) return { merge: false, wait: false, reason: `the pull request goes to ${base}, not ${WORK_BRANCH} or ${RELEASE_BRANCH}` };
-  if (base === RELEASE_BRANCH && head !== WORK_BRANCH) return { merge: false, wait: false, reason: `only a release (from ${WORK_BRANCH}) goes into ${RELEASE_BRANCH}, not ${head || 'this branch'}` };
+  if (base === RELEASE_BRANCH && !isReleaseBranch(head)) return { merge: false, wait: false, reason: `only a release (from a ${RELEASE_PREFIX}<n> snapshot of ${WORK_BRANCH}) goes into ${RELEASE_BRANCH}, not ${head || 'this branch'}` };
+  // A release is develop's own content: its branch must hold nothing that develop does not (a name alone proves nothing).
+  if (base === RELEASE_BRANCH && snapshot !== true) return { merge: false, wait: false, reason: snapshot === false ? `${head} holds commits that ${WORK_BRANCH} does not: it is not a snapshot of ${WORK_BRANCH}` : `whether ${head} is a snapshot of ${WORK_BRANCH} cannot be told here (git failed)` };
+  // A snapshot branch is opened with --release, never as a work branch into develop.
+  if (base === WORK_BRANCH && isReleaseBranch(head)) return { merge: false, wait: false, reason: `${head} is a release snapshot: it goes into ${RELEASE_BRANCH}, not ${WORK_BRANCH}` };
   if (title.length) return { merge: false, wait: false, reason: `the title cannot be the commit on ${base} (${title[0]}): fix it with pr.mjs open --title` };
   if (body.length) return { merge: false, wait: false, reason: `the description is not complete (${body[0]}): fill in .github/pull_request_template.md` };
   // main into develop: nothing new to review when merging main changes nothing in develop's tree.
@@ -321,6 +347,30 @@ function requiredNames() {
   return required;
 }
 
+/** Whether `oid` is an ancestor of `ref` in the repository at `cwd`: true, false, or null when git cannot answer. */
+export function isAncestorOf(cwd, oid, ref) {
+  try {
+    execFileSync('git', ['merge-base', '--is-ancestor', oid, ref], { cwd, stdio: 'ignore' });
+    return true;
+  } catch (e) {
+    return e.status === 1 ? false : null;
+  }
+}
+
+/**
+ * Whether merging `theirs` into `ours` leaves the tree of `ours` as it is (`git merge-tree`, nothing is written to a branch): true when
+ * `theirs` brings nothing new. False for a conflict or a change only `theirs` has; null when git cannot answer.
+ */
+export function mergeKeepsTree(cwd, ours, theirs) {
+  const g = (args) => execFileSync('git', args, { encoding: 'utf8', cwd, maxBuffer: 32 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
+  try {
+    const merged = g(['merge-tree', '--write-tree', ours, theirs]).trim().split(/\r?\n/)[0];
+    return merged === g(['rev-parse', `${ours}^{tree}`]).trim();
+  } catch (e) {
+    return e.status === 1 ? false : null;
+  }
+}
+
 /**
  * Whether merging main into develop leaves develop's tree as it is (`git merge-tree` of the two, against develop's own tree): true after a
  * squash release whose content develop already has. False for a conflict or a change only main has; null when git cannot answer.
@@ -330,10 +380,9 @@ function syncIsSafe(headOid) {
     git(['fetch', 'origin', WORK_BRANCH, RELEASE_BRANCH]);
     // The tree tried is that of the pull request's own head, not of a main that moved since.
     if (git(['rev-parse', `origin/${RELEASE_BRANCH}`]).trim() !== headOid) return null;
-    const merged = git(['merge-tree', '--write-tree', `origin/${WORK_BRANCH}`, `origin/${RELEASE_BRANCH}`]).trim().split(/\r?\n/)[0];
-    return merged === git(['rev-parse', `origin/${WORK_BRANCH}^{tree}`]).trim();
-  } catch (e) {
-    return e.status === 1 ? false : null;
+    return mergeKeepsTree(process.cwd(), `origin/${WORK_BRANCH}`, `origin/${RELEASE_BRANCH}`);
+  } catch {
+    return null;
   }
 }
 
@@ -372,6 +421,15 @@ function decisionOf(n, guard = { before: null, floor: null }) {
   const checks = gated ? gatingChecks(freshChecks(allChecks(n), since), requiredNames()) : [];
   const verdict = reviewVerdict(pr.reviews ?? [], pr.headRefOid, me());
   const sync = pr.baseRefName === WORK_BRANCH && pr.headRefName === RELEASE_BRANCH;
+  let snapshot = null;
+  if (gated) {
+    try {
+      git(['fetch', 'origin', WORK_BRANCH]);
+      snapshot = isAncestorOf(process.cwd(), pr.headRefOid, `origin/${WORK_BRANCH}`);
+    } catch {
+      snapshot = null;
+    }
+  }
   const decision = mergeDecision({
     checks: gated ? checksState(checks) : 'pass',
     verdict,
@@ -384,6 +442,7 @@ function decisionOf(n, guard = { before: null, floor: null }) {
     body: bodyProblems(pr.body),
     alerts: gated ? openAlerts(n) : 0,
     syncSafe: sync ? syncIsSafe(pr.headRefOid) : null,
+    snapshot,
   });
   return { pr, checks, decision, verdict };
 }
@@ -395,14 +454,25 @@ function main(argv) {
   const [cmd, n] = argv;
   if (cmd === 'open') {
     const release = argv.includes('--release');
-    // A release is the remote develop into the remote main, whatever this checkout holds; a work branch is the checked out one.
-    const branch = release ? WORK_BRANCH : git(['rev-parse', '--abbrev-ref', 'HEAD']).trim();
+    // A release is a snapshot of the remote develop (a release/<n> branch) into main, whatever this checkout holds; a work branch is the checked out one.
+    let branch = release ? null : git(['rev-parse', '--abbrev-ref', 'HEAD']).trim();
     if (!release && [RELEASE_BRANCH, WORK_BRANCH, 'HEAD'].includes(branch)) throw new Error(`open a pull request from a work branch, not from ${branch}`);
+    if (!release && isReleaseBranch(branch)) throw new Error(`${branch} is a release snapshot: open it with --release`);
     const base = release ? RELEASE_BRANCH : WORK_BRANCH;
-    git(['fetch', 'origin', base]);
+    git(['fetch', 'origin', WORK_BRANCH, base]);
+    if (release) {
+      // an open release pull request, to update its description or bring its snapshot up to develop
+      const opened = JSON.parse(gh(['pr', 'list', '--base', RELEASE_BRANCH, '--state', 'open', '--json', 'headRefName'])).map((p) => p.headRefName).filter(isReleaseBranch);
+      if (arg(argv, '--title') || arg(argv, '--name')) {
+        branch = releaseBranchName(arg(argv, '--title'), arg(argv, '--name'));
+        const other = opened.filter((b) => b !== branch);
+        if (other.length) throw new Error(`the release pull request ${other[0]} is open: finish or close it first (or run this with no --title to update it)`);
+      } else {
+        if (opened.length !== 1) throw new Error(`--title "chore: v<version> をリリースする" (or --name) is needed: ${opened.length} release pull requests are open`);
+        branch = opened[0];
+      }
+    }
     const subjects = release ? ['release'] : git(['log', '--format=%s', `origin/${WORK_BRANCH}..HEAD`]).split(/\r?\n/).filter(Boolean).reverse();
-    const releaseOpen = release ? JSON.parse(gh(['pr', 'list', '--head', WORK_BRANCH, '--base', RELEASE_BRANCH, '--state', 'open', '--json', 'number'])) : [];
-    if (release && !releaseOpen.length && !arg(argv, '--title')) throw new Error('--title "chore: v<version> をリリースする" is needed');
     const open = JSON.parse(gh(['pr', 'list', '--head', branch, '--state', 'open', '--json', 'number,url']));
     // Checked before anything leaves the machine: the title becomes the commit on the base, the body is the description.
     const given = arg(argv, '--title');
@@ -414,7 +484,9 @@ function main(argv) {
     if (!open.length && body === null) throw new Error('--body-file <description> is needed: fill in .github/pull_request_template.md');
     const bodyIssues = body === null ? [] : bodyProblems(body);
     if (bodyIssues.length) throw new Error(`the description is not complete:\n  ${bodyIssues.join('\n  ')}`);
-    if (!release) git(['push', '-u', 'origin', 'HEAD']);
+    // The snapshot: origin/develop as it is now, onto the release branch (a fast-forward: nothing is forced).
+    if (release) git(['push', 'origin', `origin/${WORK_BRANCH}:refs/heads/${branch}`]);
+    else git(['push', '-u', 'origin', 'HEAD']);
     if (open.length) {
       const edit = [...(title ? ['--title', title] : []), ...(body !== null ? ['--body', body] : [])];
       if (edit.length) gh(['pr', 'edit', String(open[0].number), ...edit]);

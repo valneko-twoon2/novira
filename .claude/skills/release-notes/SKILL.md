@@ -14,7 +14,7 @@ The whole release is the agent's: deciding that one is due, the changelog, the p
 Release progress:
 - [ ] 1. Judged: release due, version chosen (or: waits, and why)
 - [ ] 2. Release branch: version set, [Unreleased] written and cut, shipped into develop
-- [ ] 3. Release pull request develop into main: reviewed, CI and CodeQL green, merged
+- [ ] 3. Release pull request (a snapshot of develop) into main: reviewed, CI and CodeQL green, merged
 - [ ] 4. Tag pushed on main, release workflow passed
 - [ ] 5. Release published, main merged back into develop
 - [ ] 6. Reported
@@ -43,7 +43,7 @@ Release progress:
 
 ## 3. The release pull request
 
-`develop` now holds everything of the release. Write the description into `novira-data/work/scratch/pr/release-v<version>-body.md`, then `node scripts/tools/pr.mjs open --release --title "chore: v<version> をリリースする" --body-file <that file>` (it opens `develop` into `main` as a draft, from GitHub's `develop`, whatever the checkout holds). Review it like any pull request (`/ship` section 3, a fresh agent), then `node scripts/tools/pr.mjs merge <n> --wait`: it makes the draft ready, which starts CI and CodeQL, and squash-merges when every check and CodeQL analysis passed and no code scanning alert is open (a failure sends it back to a draft: fix on `develop` through a work branch, `/ship` section 4). Its description follows `.github/pull_request_template.md` like any other (`pr.mjs` refuses anything else): **背景** why a release is due now (section 1), **変更内容** the version and the version's section quoted as it is, **確認結果** the range (`<last>..`, N commits) and what was left out by kind, **追加・変更したテスト** none, with `changelog.mjs --check` and `package-release.mjs --check-tag` passing. After its merge do not judge a release again: continue with section 4. The reviewer also checks the section against the range: a user-visible change missing, a line that is not true, a development change that slipped in, the shape of section 6.
+`develop` now holds everything of the release. Other work goes on: more branches may be merged into `develop` while the release pull request is reviewed and tested, because the release pull request is a snapshot, not `develop` itself. Write the description into `novira-data/work/scratch/pr/release-v<version>-body.md`, then `node scripts/tools/pr.mjs open --release --title "chore: v<version> をリリースする" --body-file <that file>` (it pushes GitHub's `develop` as it is now to the branch `release/v<version>` and opens that into `main` as a draft, whatever the checkout holds; run it again, with no title, to bring the snapshot up to `develop` after a fix, a fast-forward that takes in everything merged since, also work that has no CHANGELOG line, which then counts again in the next release's range; `merge` refuses a `release/` branch that holds a commit `develop` does not). Review it like any pull request (`/ship` section 3, a fresh agent), then `node scripts/tools/pr.mjs merge <n> --wait`: it makes the draft ready, which starts CI and CodeQL, and squash-merges when every check and CodeQL analysis passed and no code scanning alert is open (a failure sends it back to a draft: fix on `develop` through a work branch, `/ship` section 4). Its description follows `.github/pull_request_template.md` like any other (`pr.mjs` refuses anything else): **背景** why a release is due now (section 1), **変更内容** the version and the version's section quoted as it is, **確認結果** the range (`release-range.mjs`, N commits) and what was left out by kind, **追加・変更したテスト** none, with `changelog.mjs --check` and `package-release.mjs --check-tag` passing. After its merge do not judge a release again: continue with section 4. The reviewer also checks the section against the range: a user-visible change missing, a line that is not true, a development change that slipped in, the shape of section 6.
 
 ## 4. Tag
 
@@ -56,7 +56,7 @@ Release progress:
 
 `gh release edit v<version> --draft=false` (keep the pre-release flag the workflow set); `gh release view v<version>` then shows it published with the zip attached.
 
-Then merge `main` back into `develop`: `node scripts/tools/pr.mjs sync` opens the pull request (a squash release leaves `main`'s history out of `develop`'s, so the next release would show the old changes again), and `node scripts/tools/pr.mjs merge <n>` merges it as a merge commit, with no review, once `git merge-tree` shows that `develop`'s tree stays as it is. When it refuses (a conflict, or a change only `main` has), report it: a person looks.
+Then merge `main` back into `develop`: `node scripts/tools/pr.mjs sync` opens the pull request (a squash release leaves `main`'s history out of `develop`'s, so the next release would show the old changes again), and `node scripts/tools/pr.mjs merge <n>` merges it as a merge commit, with no review, once `git merge-tree` shows that `develop`'s tree stays as it is. When it refuses (work merged into `develop` after the snapshot changed the same lines as the release, or a change only `main` has), report it: a person looks.
 
 ## 6. What goes into CHANGELOG.md, and how
 
