@@ -10,6 +10,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, lstatSync, readdirSync, readlinkSync, rmdirSync, statSync, symlinkSync, unlinkSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { localDay } from './harness-paths.mjs';
 
 const LINKED = [['frontend', 'node_modules'], ['backend', 'target']];
 
@@ -128,6 +129,11 @@ export function linkFolder(target, link) {
 }
 
 /** A worktree name names a folder and a branch: letters, digits, `.`, `_` and `-` only, not starting with a dot or a dash. */
+/** The branch of a new worktree: the local calendar day (not the UTC one), then the name. */
+export function branchName(name, d = new Date()) {
+  return `${localDay(d).replaceAll('-', '')}_${name}`;
+}
+
 export function validName(name) {
   return /^[A-Za-z0-9_][\w.-]*$/.test(name) && !name.includes('..');
 }
@@ -148,7 +154,7 @@ function main(argv) {
     } catch {
       console.error('worktree: could not fetch origin; the branch starts from the local main');
     }
-    git(main, 'worktree', 'add', '--no-track', '-b', `${new Date().toISOString().slice(0, 10).replaceAll('-', '')}_${arg}`, dir, base);
+    git(main, 'worktree', 'add', '--no-track', '-b', branchName(arg), dir, base);
     for (const [a, b] of LINKED) {
       const src = join(main, a, b);
       if (existsSync(src) && a === 'frontend') linkFolder(src, join(dir, a, b));
