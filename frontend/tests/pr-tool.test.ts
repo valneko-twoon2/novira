@@ -228,14 +228,22 @@ describe('the merge back when develop changed what the release changed', () => {
       expect(git('rev-list', '--parents', '-n', '1', commit).split(' ').slice(1)).toEqual([git('rev-parse', 'develop'), git('rev-parse', 'main')]);
       git('branch', 'sync/x', commit);
       expect(syncBranchIsSafe(dir, 'sync/x', 'develop', 'main')).toBe(true);
-      // a branch with a tree of its own is not just the merge back
+      // develop goes on after the branch was made: the branch is still only the merge back (it changes nothing against its first parent)
+      git('checkout', '-q', 'develop');
+      put('later.txt', 'l', 'work that came later');
+      expect(syncBranchIsSafe(dir, 'sync/x', 'develop', 'main')).toBe(true);
+      // a branch with a tree of its own, or a single parent, is not just the merge back
       git('checkout', '-q', 'sync/x');
       put('extra.txt', 'x', 'something else');
       expect(syncBranchIsSafe(dir, 'sync/x', 'develop', 'main')).toBe(false);
-      // a main with a change develop never had is not a state of develop: no merge commit is made for it
+      // a main with a change develop never had is not a state of develop: no merge commit is made for it, and a branch someone made
+      // with develop's tree and main as a parent (dropping the change) is refused too
       git('checkout', '-q', 'main');
       put('hotfix.txt', 'z', 'a change made on main alone');
       expect(mainIsAStateOfDevelop(dir, 'main', 'develop')).toBe(false);
+      const forged = syncCommit(dir, 'main', 'develop', 'forged');
+      git('branch', 'sync/forged', forged);
+      expect(syncBranchIsSafe(dir, 'sync/forged', 'develop', 'main')).toBe(false);
       expect(syncBranchIsSafe(dir, 'no-such-branch', 'develop', 'main')).toBeNull();
     } finally {
       rmSync(dir, { recursive: true, force: true });

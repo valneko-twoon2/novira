@@ -405,14 +405,21 @@ export function syncCommit(cwd, mainRef, developRef, message) {
 }
 
 /**
- * Whether `headRef` (a sync/<id> branch) is only the merge of main into develop: develop's own tree, with develop and main both in its
- * history. True, false, or null when git cannot answer.
+ * Whether `headRef` (a sync/<id> branch) is only the merge of main into develop, whoever pushed it: two parents, the first one a commit of
+ * develop and the second one of main; the tree of its first parent, unchanged; and the tree of the main parent a tree develop once had (the
+ * same condition `sync` checks before it makes the branch: a branch that drops a change only main has is not it). True, false, or null
+ * when git cannot answer. develop may have moved since the branch was made: merging a commit that changes nothing against its first
+ * parent leaves the newer develop as it is, so the branch need not be at develop's tip.
  */
 export function syncBranchIsSafe(cwd, headRef, developRef, mainRef) {
   const g = (args) => execFileSync('git', args, { encoding: 'utf8', cwd, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
   try {
-    const same = g(['rev-parse', `${headRef}^{tree}`]) === g(['rev-parse', `${developRef}^{tree}`]);
-    return same && isAncestorOf(cwd, developRef, headRef) === true && isAncestorOf(cwd, mainRef, headRef) === true;
+    const parents = g(['rev-list', '--parents', '-n', '1', headRef]).split(' ').slice(1);
+    if (parents.length !== 2) return false;
+    const [fromDevelop, fromMain] = parents;
+    if (g(['rev-parse', `${headRef}^{tree}`]) !== g(['rev-parse', `${fromDevelop}^{tree}`])) return false;
+    if (isAncestorOf(cwd, fromDevelop, developRef) !== true || isAncestorOf(cwd, fromMain, mainRef) !== true) return false;
+    return mainIsAStateOfDevelop(cwd, fromMain, developRef) === true;
   } catch {
     return null;
   }
@@ -434,9 +441,10 @@ function syncIsSafe(headOid) {
 }
 
 /** Whether the sync/<id> branch at `headOid` is only the merge of main into develop (`syncBranchIsSafe`); null when git cannot answer. */
-function syncBranchSafe(headOid) {
+function syncBranchSafe(headOid, headName) {
   try {
-    git(['fetch', 'origin', WORK_BRANCH, RELEASE_BRANCH]);
+    // The head commit may not be here yet (another clone, another day): fetched by its branch name.
+    git(['fetch', 'origin', WORK_BRANCH, RELEASE_BRANCH, headName]);
     return syncBranchIsSafe(process.cwd(), headOid, `origin/${WORK_BRANCH}`, `origin/${RELEASE_BRANCH}`);
   } catch {
     return null;
@@ -498,7 +506,7 @@ function decisionOf(n, guard = { before: null, floor: null }) {
     title: titleProblems(pr.title),
     body: bodyProblems(pr.body),
     alerts: gated ? openAlerts(n) : 0,
-    syncSafe: sync ? (pr.headRefName === RELEASE_BRANCH ? syncIsSafe(pr.headRefOid) : syncBranchSafe(pr.headRefOid)) : null,
+    syncSafe: sync ? (pr.headRefName === RELEASE_BRANCH ? syncIsSafe(pr.headRefOid) : syncBranchSafe(pr.headRefOid, pr.headRefName)) : null,
     snapshot,
   });
   return { pr, checks, decision, verdict };
@@ -576,7 +584,8 @@ function main(argv) {
         console.error(`pr: merging ${RELEASE_BRANCH} into ${WORK_BRANCH} conflicts, and ${RELEASE_BRANCH} is not a state ${WORK_BRANCH} once had: a person looks at it`);
         return 1;
       }
-      const sha = git(['rev-parse', '--short=8', `origin/${RELEASE_BRANCH}`]).trim();
+      // Named by both tips: the same main after develop moved is another merge, not the same branch pushed again.
+      const sha = `${git(['rev-parse', '--short=8', `origin/${RELEASE_BRANCH}`]).trim()}-${git(['rev-parse', '--short=8', `origin/${WORK_BRANCH}`]).trim()}`;
       head = `${SYNC_PREFIX}${sha}`;
       const commit = syncCommit(process.cwd(), `origin/${RELEASE_BRANCH}`, `origin/${WORK_BRANCH}`, SYNC_TITLE);
       git(['push', 'origin', `${commit}:refs/heads/${head}`]);
