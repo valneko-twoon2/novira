@@ -43,7 +43,7 @@ Release progress:
 
 ## 3. Ship the release pull request
 
-`/ship` the branch with the title `chore: v<version> をリリースする`. Its description follows `.github/pull_request_template.md` like any other (`pr.mjs` refuses anything else): **目的** why a release is due now (section 1), **変更** the version and the version's section quoted as it is, **証拠** the range (`<last>..`, N commits) and what was left out by kind, **テスト** `changelog.mjs --check` and `package-release.mjs --check-tag`. After its merge `/ship` does not judge a release again: continue with section 4. The reviewer also checks the section against the range: a user-visible change missing, a line that is not true, a development change that slipped in, the shape of section 6.
+`/ship` the branch with the title `chore: v<version> をリリースする`. Its description follows `.github/pull_request_template.md` like any other (`pr.mjs` refuses anything else): **背景** why a release is due now (section 1), **変更内容** the version and the version's section quoted as it is, **確認結果** the range (`<last>..`, N commits) and what was left out by kind, **追加・変更したテスト** none, with `changelog.mjs --check` and `package-release.mjs --check-tag` passing. After its merge `/ship` does not judge a release again: continue with section 4. The reviewer also checks the section against the range: a user-visible change missing, a line that is not true, a development change that slipped in, the shape of section 6.
 
 ## 4. Tag
 

@@ -74,7 +74,8 @@ export function gatingChecks(all, required) {
 /**
  * { merge, wait, reason, ready?, toDraft? } from the gating checks, the review verdict of the head and the pull request itself; `alerts`
  * null is unknown. A draft is reviewed with no CI: once the review of its head is ok, `ready` asks to make it ready for review, which
- * starts the checks. A failed check sends it back to a draft (`toDraft`), so the pushes that fix it run no CI until the next ok review.
+ * starts the checks. A failed check or an open code scanning alert sends it back to a draft (`toDraft`), so the pushes that fix it
+ * run no CI until the next ok review.
  */
 export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, base = 'main', fork = false, title = [], body = [], alerts = 0 }) {
   if (state !== 'OPEN') return { merge: false, wait: false, reason: `the pull request is ${state.toLowerCase()}` };
@@ -115,7 +116,7 @@ export function titleFor(given, subjects) {
 }
 
 /** The sections of a pull request's description, in order (.github/pull_request_template.md; the shape of meta/astryx's). */
-export const BODY_SECTIONS = ['目的', '変えないこと', '変更', '証拠', '範囲', 'テスト'];
+export const BODY_SECTIONS = ['背景', '変わらないこと', '変更内容', '確認結果', 'チェックリスト', '追加・変更したテスト'];
 
 /** Why `body` is not a complete description: a section missing, out of order, or empty (an HTML comment alone is empty). */
 export function bodyProblems(body) {
@@ -163,12 +164,16 @@ export function mergeArgs(n, pr) {
 }
 
 /** The headings of a review, in order; 指摘 holds the findings that block the merge, 任意 the ones that do not. */
-export const REVIEW_SECTIONS = ['前回の指摘', '指摘', '任意'];
+export const REVIEW_SECTIONS = ['総評', '前回の指摘', '指摘', '任意'];
 
 /**
- * Why `text` is not a review in the agreed shape (after meta/astryx's review bot, laid out to read at a glance), for `verdict`:
- *   **変更を求めます**                       (or **問題ありません**)
- *   <the summary: one or two sentences, what is right and what is wrong>
+ * Why `text` is not a review in the agreed shape, for `verdict` and the commit `sha` it read: a GitHub alert box with the verdict,
+ * the counts and the commit, then the sections in order.
+ *   > [!CAUTION]                              (ok: > [!TIP])
+ *   > **判定: NG**　指摘 1 件・任意 2 件（e8051a61 を確認）     (ok: **判定: OK**; the counts are those of the sections below)
+ *
+ *   #### 総評
+ *   <one or two sentences, what is right and what is wrong>
  *
  *   #### 前回の指摘
  *   - <what became of the earlier findings, or なし>
@@ -181,13 +186,16 @@ export const REVIEW_SECTIONS = ['前回の指摘', '指摘', '任意'];
  *   #### 任意                                 (optional)
  *   - **`path/to/file.ext:3`** <a finding that does not block the merge>
  */
-export function reviewProblems(verdict, text) {
+export function reviewProblems(verdict, text, sha) {
   const lines = (text ?? '').replace(/\r\n/g, '\n').split('\n').map((l) => l.trimEnd());
   const solid = lines.filter((l) => l.trim());
   const problems = [];
-  const lead = verdict === 'ok' ? '**問題ありません**' : '**変更を求めます**';
-  if (solid[0]?.trim() !== lead) problems.push(`the first line is "${lead}" alone`);
-  if (!solid[1] || solid[1].startsWith('#')) problems.push('the second line is the summary: one or two sentences');
+  const box = verdict === 'ok' ? '> [!TIP]' : '> [!CAUTION]';
+  const word = verdict === 'ok' ? 'OK' : 'NG';
+  if (solid[0]?.trim() !== box) problems.push(`the first line is "${box}" alone`);
+  const head = /^> \*\*判定: (OK|NG)\*\*\s+指摘 (\d+) 件・任意 (\d+) 件（([0-9a-f]{8}) を確認）$/.exec(solid[1]?.trim() ?? '');
+  if (!head) problems.push(`the second line is "> **判定: ${word}**　指摘 N 件・任意 M 件（<the first 8 of the commit> を確認）"`);
+  else if (head[1] !== word) problems.push(`the verdict is "判定: ${word}" for ${verdict}`);
   const section = (name) => {
     const at = lines.findIndex((l) => l.trim() === `#### ${name}`);
     if (at < 0) return null;
@@ -200,6 +208,7 @@ export function reviewProblems(verdict, text) {
     if (at >= 0 && at < last) problems.push(`the section "#### ${name}" is out of order`);
     if (at >= 0) last = at;
   }
+  if (!section('総評')?.length) problems.push('the section "#### 総評" is needed: one or two sentences');
   const earlier = section('前回の指摘');
   if (!earlier?.length) problems.push('the section "#### 前回の指摘" is needed, with "- なし" in a first review');
   const findings = section('指摘') ?? [];
@@ -209,12 +218,16 @@ export function reviewProblems(verdict, text) {
     else if (items.length && /^\s+- 問題: \S/.test(l)) items[items.length - 1].problem = true;
     else if (items.length && /^\s+- 直し方: \S/.test(l)) items[items.length - 1].fix = true;
   }
+  const optional = (section('任意') ?? []).filter((l) => l.startsWith('- ')).length;
   if (verdict === 'changes' && !items.length) problems.push('changes is asked without a finding under "#### 指摘"');
   if (verdict === 'ok' && items.length) problems.push('ok is given with a finding under "#### 指摘"; move it to "#### 任意" or ask for changes');
   for (const it of items) {
     if (!/^\d+\. \*\*`[^`\s]+:\d+`\*\*$/.test(it.head)) problems.push(`a finding starts with its place alone, "1. **\`file.ext:line\`**": "${it.head.slice(0, 50)}"`);
     if (!it.problem || !it.fix) problems.push(`a finding needs the lines "   - 問題: ..." and "   - 直し方: ...": "${it.head.slice(0, 50)}"`);
   }
+  if (head && Number(head[2]) !== items.length) problems.push(`the box says 指摘 ${head[2]} 件; the section has 指摘 ${items.length} 件`);
+  if (head && Number(head[3]) !== optional) problems.push(`the box says 任意 ${head[3]} 件; the section has 任意 ${optional} 件`);
+  if (head && sha && head[4] !== sha.slice(0, 8)) problems.push(`the box names ${head[4]}; the commit reviewed is ${sha.slice(0, 8)}`);
   return problems;
 }
 
@@ -268,9 +281,16 @@ function readySince(n) {
   return times.split(/\r?\n/).filter(Boolean).sort().pop() ?? null;
 }
 
-function decisionOf(n) {
+/** The later of two ISO times (either may be null). */
+export function laterOf(a, b) {
+  if (!a) return b ?? null;
+  if (!b) return a;
+  return a > b ? a : b;
+}
+
+function decisionOf(n, floor = null) {
   const pr = view(n);
-  const checks = gatingChecks(freshChecks(allChecks(n), pr.isDraft ? null : readySince(n)), requiredNames());
+  const checks = gatingChecks(freshChecks(allChecks(n), pr.isDraft ? null : laterOf(readySince(n), floor)), requiredNames());
   const verdict = reviewVerdict(pr.reviews ?? [], pr.headRefOid, me());
   const decision = mergeDecision({
     checks: checksState(checks),
@@ -324,7 +344,7 @@ function main(argv) {
     const file = arg(argv, '--body-file');
     if (!file || !read) throw new Error('--sha <the commit the reviewer read> and --body-file <review text> are needed');
     const text = readFileSync(file, 'utf8').trim();
-    const shape = reviewProblems(verdict, text);
+    const shape = reviewProblems(verdict, text, read);
     if (shape.length) throw new Error(`the review is not in the agreed shape:\n  ${shape.join('\n  ')}`);
     const pr = view(n);
     if (pr.headRefOid !== read) throw new Error(`the head is ${pr.headRefOid.slice(0, 8)}, not the ${read.slice(0, 8)} that was reviewed: review the new head`);
@@ -342,23 +362,19 @@ function main(argv) {
   if (cmd === 'merge' && n) {
     const deadline = Date.now() + 60 * 60_000;
     let state = decisionOf(n);
+    // The events API can lag behind `gh pr ready`: until it shows this ready_for_review, the runs of an earlier round would count as
+    // fresh. So the runs counted are never older than the moment before `gh pr ready` (30 seconds back, for the clocks).
+    let floor = null;
     const ready = () => {
-      // The events API can lag: until it shows this ready_for_review (a time later than the last one), the runs of an earlier round
-      // would count as fresh. Judge only once it is there (or after two minutes, when the CodeQL names still keep the checks pending).
-      const before = readySince(n);
+      floor = new Date(Date.now() - 30_000).toISOString().replace(/\.\d+Z$/, 'Z');
       gh(['pr', 'ready', String(n)]);
       console.log(`pr: #${n} made ready for review: the checks start`);
-      for (let i = 0; i < 24; i++) {
-        const now = readySince(n);
-        if (now && (!before || now > before)) break;
-        sleep(5_000);
-      }
-      state = decisionOf(n);
+      state = decisionOf(n, floor);
     };
     if (state.decision.ready) ready();
     while (argv.includes('--wait') && state.decision.wait && Date.now() < deadline) {
       sleep(30_000);
-      state = decisionOf(n);
+      state = decisionOf(n, floor);
       if (state.decision.ready) ready();
     }
     if (!state.decision.merge) {
