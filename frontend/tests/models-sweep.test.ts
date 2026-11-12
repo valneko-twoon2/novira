@@ -466,7 +466,7 @@ describe('the Stop hook and the sweep', { tags: [] }, () => {
     expect(reminder({}, [], false, [], [])).toBeNull();
   });
 
-  it('reads the commits of each work tree since main and checks the records against its HEAD', { tags: ['scenario'] }, () => {
+  it('reads the commits of each work tree since develop and checks the records against its HEAD', { tags: ['scenario'] }, () => {
     const calls: string[] = [];
     const git = (root: string, args: string[]) => {
       calls.push(`${root} ${args.join(' ')}`);
@@ -478,7 +478,7 @@ describe('the Stop hook and the sweep', { tags: [] }, () => {
     const record = { complete: true, head: 'abc', dirty: { 'frontend/src/state/models.ts': 'blob1' } };
     expect(sweepReminders(['E:/main', 'E:/wt'], { git, records: [record] })).toEqual([]);
     expect(calls).toContain('E:/main log --format= --name-only @{upstream}..HEAD');
-    expect(calls).toContain('E:/wt log --format= --name-only main..HEAD');
+    expect(calls).toContain('E:/wt log --format= --name-only origin/develop..HEAD');
     const stale = sweepReminders(['E:/main', 'E:/wt'], { git, records: [{ ...record, dirty: {} }] });
     expect(stale).toHaveLength(1);
     expect(stale[0]).toContain('E:/wt');
