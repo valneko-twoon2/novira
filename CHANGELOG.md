@@ -4,6 +4,23 @@
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-13
+
+### Added
+
+- AI アシスタントに、生成の回数を指定する、ボードの名前で画像を選んで形式・品質・大きさを入れた「共有用に書き出す」の画面を開く、自分が入れた順番待ちを取り消す、ComfyUI のフォルダの場所を答える機能を追加。
+
+### Changed
+
+- 「候補」の画面を、組ごとに 1 本に並ぶ一覧と、矢印キーで前後に移れる大きな表示で、✓ と ✕ で選ぶ形に変更。
+- 候補の絵を、そのとき選んでいるボードへ入れるように変更。
+- キューの操作とレイヤーの追加を、名前をツールチップに出すアイコンだけのボタンに変更。
+- 「テキスト」の画面の「文字を追加」「吹き出しを追加」を、ほかのツールバーと同じ + のアイコンのボタンに変更。
+
+### Removed
+
+- 「候補」の画面の「お気に入りにする」「違った」の目印と「残りをゴミ箱へ」のボタンを削除。
+
 ## [0.5.0] - 2026-11-12
 
 ### Added
@@ -175,7 +192,8 @@
 - AI アシスタントと拡張パックを追加。
 - スマホから使えるブラウザ版（`novira-server`）を追加。
 
-[unreleased]: https://github.com/valneko-twoon2/novira/compare/v0.5.0...HEAD
+[unreleased]: https://github.com/valneko-twoon2/novira/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/valneko-twoon2/novira/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/valneko-twoon2/novira/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/valneko-twoon2/novira/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/valneko-twoon2/novira/compare/v0.2.0...v0.3.0
