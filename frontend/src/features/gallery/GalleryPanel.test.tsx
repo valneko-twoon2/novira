@@ -52,6 +52,9 @@ beforeEach(() => {
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({ x: 0, y: 0, left: 0, top: 0, right: 420, bottom: 600, width: 420, height: 600, toJSON: () => ({}) });
   vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(600);
   vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(420);
+  // @tanstack/virtual-core 3.14.2x reads the scroll element's size from clientWidth and clientHeight (0 in jsdom).
+  vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(600);
+  vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(420);
   vi.useFakeTimers({ toFake: ['Date'], now: NOW });
   useGallery.setState(initial.gallery, true);
   useUi.setState(initial.ui, true);
