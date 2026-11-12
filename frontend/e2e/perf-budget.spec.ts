@@ -87,9 +87,11 @@ test('switching between the main screens stays within its budget', { tag: ['@bou
   withinBudget(TAB_SWITCH, median(costs.map((c) => c.painted)));
 });
 
+// 400 ms (was 200, the user's call): the CI runner measured 219 ms and 209 ms on the retry, on a change that did not touch the
+// text screen (PR #25). The budget keeps room for a busy runner and still catches a step that makes adding a layer much slower.
 const ADD_LAYER: Budget = {
   what: 'Adding a text layer to a scene that already has several',
-  ms: 200,
+  ms: 400,
   look: 'state/text/textEditor.ts (history copies), features/text/useScenePreview.ts (the redraw), TextLayersPanel.tsx',
 };
 
