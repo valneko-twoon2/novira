@@ -1,4 +1,7 @@
-# What CodeQL leaves out (.github/workflows/codeql.yml, docs/design/01-app/04-release/02-ci.md): the tests. A fixed seed or a
+# What CodeQL leaves out (.github/workflows/codeql.yml, docs/design/01-app/04-release/02-ci.md): the tests, and the frontend's
+# developer scripts (frontend/scripts/: the manual builder, lint rules, the e2e mock server, licence lists), which run on the
+# developer's machine and in CI over the repository's own files and never ship in the app. scripts/ stays in: its tools run
+# with the repository's token (the Dependabot triage, pr.mjs). A fixed seed or a
 # secret printed by a test is not a weakness of the app, and the tests are checked by running them. The paths follow where
 # the repository keeps its tests (.claude/rules/tests.md). Every language here is scanned without a build, so this applies to all.
 name: novira
@@ -14,3 +17,4 @@ paths-ignore:
   - '**/*.testkit.tsx'
   - 'frontend/e2e/**'
   - 'frontend/difftest/**'
+  - 'frontend/scripts/**'
