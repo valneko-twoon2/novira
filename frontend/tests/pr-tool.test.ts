@@ -9,7 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { BODY_SECTIONS, CODEQL_CHECKS, bodyProblems, checksState, deleteBranchArgs, freshChecks, gatingChecks, isAncestorOf, isReleaseBranch, mergeKeepsTree, releaseBranchName, readyFrom, mergeArgs, mergeDecision, reviewMark, reviewProblems, reviewVerdict, titleFor, titleProblems, withMissing, withoutComments } from '../../scripts/tools/pr.mjs';
+import { BODY_SECTIONS, CODEQL_CHECKS, bodyProblems, checksState, deleteBranchArgs, freshChecks, gatingChecks, isAncestorOf, isReleaseBranch, isSyncBranch, isSyncPullRequest, mainIsAStateOfDevelop, mergeKeepsTree, releaseBranchName, syncBranchIsSafe, syncCommit, readyFrom, mergeArgs, mergeDecision, reviewMark, reviewProblems, reviewVerdict, titleFor, titleProblems, withMissing, withoutComments } from '../../scripts/tools/pr.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const HEAD = 'a'.repeat(40);
@@ -182,6 +182,111 @@ describe('the git questions of the merge rules, in a real repository', () => {
       expect(mergeKeepsTree(dir, 'develop2', 'main')).toBe(false);
       // git answers a ref it cannot merge with the status of a conflict: read as "changes develop", the safe side
       expect(mergeKeepsTree(dir, 'develop', 'no-such-ref')).toBe(false);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('the merge back when develop changed what the release changed', () => {
+  it('is a sync/<id> branch, merged like the one from main', { tags: ['equivalence', 'boundary'] }, () => {
+    expect(isSyncBranch('sync/90b1d6c0')).toBe(true);
+    for (const no of ['sync', 'sync/', 'syncs/x', 'x/sync/a', 'sync/../x', 'main', undefined]) expect(isSyncBranch(no)).toBe(false);
+    expect(isSyncPullRequest('develop', 'main')).toBe(true);
+    expect(isSyncPullRequest('develop', 'sync/90b1d6c0')).toBe(true);
+    expect(isSyncPullRequest('develop', '20261112_x')).toBe(false);
+    expect(isSyncPullRequest('main', 'sync/90b1d6c0')).toBe(false);
+    expect(mergeDecision({ base: 'develop', head: 'sync/90b1d6c0', syncSafe: true })).toMatchObject({ merge: true });
+    expect(mergeDecision({ base: 'develop', head: 'sync/90b1d6c0', syncSafe: false })).toMatchObject({ merge: false });
+    expect(mergeDecision({ base: 'main', head: 'sync/90b1d6c0', checks: 'pass', verdict: 'ok', snapshot: true })).toMatchObject({ merge: false });
+    expect(mergeArgs(41, { headRefOid: HEAD, title: 'chore: main を develop に戻す', baseRefName: 'develop', headRefName: 'sync/90b1d6c0' })).toContain('--merge');
+  });
+
+  it('is made only when main is a state develop once had, and keeps develop\'s tree with both as parents', { tags: ['regression', 'state-transition'] }, () => {
+    const dir = mkdtempSync(path.join(os.tmpdir(), 'novira-sync-'));
+    const git = (...args: string[]) => execFileSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@example.com', '-c', 'commit.gpgsign=false', ...args], { cwd: dir, encoding: 'utf8' }).trim();
+    const put = (file: string, text: string, msg: string) => {
+      writeFileSync(path.join(dir, file), text);
+      git('add', '-A');
+      git('commit', '-q', '-m', msg);
+    };
+    try {
+      git('init', '-q', '-b', 'base');
+      put('table.txt', 'rows: 10\n', 'start');
+      git('checkout', '-q', '-b', 'develop', 'base');
+      put('table.txt', 'rows: 11\n', 'work in the table, then the release');
+      git('checkout', '-q', '-b', 'main', 'base');
+      git('merge', '--squash', 'develop');
+      git('commit', '-q', '-m', 'release');
+      git('checkout', '-q', 'develop');
+      put('table.txt', 'rows: 12\n', 'more work in the very line the release changed');
+      // the plain merge conflicts, but main is a state develop had
+      expect(mergeKeepsTree(dir, 'develop', 'main')).toBe(false);
+      expect(mainIsAStateOfDevelop(dir, 'main', 'develop')).toBe(true);
+      const commit = syncCommit(dir, 'main', 'develop', 'chore: main を develop に戻す');
+      expect(git('rev-parse', `${commit}^{tree}`)).toBe(git('rev-parse', 'develop^{tree}'));
+      expect(git('rev-list', '--parents', '-n', '1', commit).split(' ').slice(1)).toEqual([git('rev-parse', 'develop'), git('rev-parse', 'main')]);
+      git('branch', 'sync/x', commit);
+      expect(syncBranchIsSafe(dir, 'sync/x', 'develop', 'main')).toBe(true);
+      // develop goes on after the branch was made: the branch is still only the merge back (it changes nothing against its first parent)
+      git('checkout', '-q', 'develop');
+      put('later.txt', 'l', 'work that came later');
+      expect(syncBranchIsSafe(dir, 'sync/x', 'develop', 'main')).toBe(true);
+      // a branch with a tree of its own, or a single parent, is not just the merge back
+      git('checkout', '-q', 'sync/x');
+      put('extra.txt', 'x', 'something else');
+      expect(syncBranchIsSafe(dir, 'sync/x', 'develop', 'main')).toBe(false);
+      // a main with a change develop never had is not a state of develop: no merge commit is made for it, and a branch someone made
+      // with develop's tree and main as a parent (dropping the change) is refused too
+      git('checkout', '-q', 'main');
+      put('hotfix.txt', 'z', 'a change made on main alone');
+      expect(mainIsAStateOfDevelop(dir, 'main', 'develop')).toBe(false);
+      const forged = syncCommit(dir, 'main', 'develop', 'forged');
+      git('branch', 'sync/forged', forged);
+      expect(syncBranchIsSafe(dir, 'sync/forged', 'develop', 'main')).toBe(false);
+      expect(syncBranchIsSafe(dir, 'no-such-branch', 'develop', 'main')).toBeNull();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('a sync branch whose first parent is older than an earlier sync', () => {
+  it('is refused when merging it would revert develop\'s later work (two merge bases)', { tags: ['regression', 'state-transition'] }, () => {
+    const dir = mkdtempSync(path.join(os.tmpdir(), 'novira-sync2-'));
+    const git = (...args: string[]) => execFileSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@example.com', '-c', 'commit.gpgsign=false', ...args], { cwd: dir, encoding: 'utf8' }).trim();
+    const put = (file: string, msg: string) => {
+      writeFileSync(path.join(dir, file), file);
+      git('add', '-A');
+      git('commit', '-q', '-m', msg);
+    };
+    try {
+      git('init', '-q', '-b', 'main');
+      put('a.txt', 'a');
+      git('checkout', '-q', '-b', 'develop');
+      git('branch', 'c1');
+      put('b.txt', 'c2');
+      // the first release: main takes develop's state (a squash), and the first sync merges main back
+      git('checkout', '-q', 'main');
+      git('merge', '--squash', 'develop');
+      git('commit', '-q', '-m', 'release 1');
+      git('checkout', '-q', 'develop');
+      git('merge', '-q', '--no-ff', '-m', 'sync 1', 'main');
+      put('c.txt', 'c3');
+      // the second release
+      git('checkout', '-q', 'main');
+      git('merge', '--squash', 'develop');
+      git('commit', '-q', '-m', 'release 2');
+      // a branch with develop's OLD tree (c1) as the first parent and the new main as the second: it passes the parent checks
+      const forged = git('commit-tree', 'c1^{tree}', '-p', 'c1', '-p', 'main', '-m', 'forged');
+      git('branch', 'sync/old', forged);
+      expect(mainIsAStateOfDevelop(dir, 'main', 'develop')).toBe(true);
+      expect(isAncestorOf(dir, 'c1', 'develop')).toBe(true);
+      expect(mergeKeepsTree(dir, 'develop', 'sync/old')).toBe(false);
+      expect(syncBranchIsSafe(dir, 'sync/old', 'develop', 'main')).toBe(false);
+      // the branch sync makes (develop's tip as the first parent) is fine
+      git('branch', 'sync/new', syncCommit(dir, 'main', 'develop', 'chore: main を develop に戻す'));
+      expect(syncBranchIsSafe(dir, 'sync/new', 'develop', 'main')).toBe(true);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

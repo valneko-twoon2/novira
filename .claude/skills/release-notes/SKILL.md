@@ -56,7 +56,7 @@ Release progress:
 
 `gh release edit v<version> --draft=false` (keep the pre-release flag the workflow set); `gh release view v<version>` then shows it published with the zip attached.
 
-Then merge `main` back into `develop`: `node scripts/tools/pr.mjs sync` opens the pull request (a squash release leaves `main`'s history out of `develop`'s, so the next release would show the old changes again), and `node scripts/tools/pr.mjs merge <n>` merges it as a merge commit, with no review, once `git merge-tree` shows that `develop`'s tree stays as it is. When it refuses (work merged into `develop` after the snapshot changed the same lines as the release, or a change only `main` has), report it: a person looks.
+Then merge `main` back into `develop`: `node scripts/tools/pr.mjs sync` opens the pull request (a squash release leaves `main`'s history out of `develop`'s, so the next release would show the old changes again), and `node scripts/tools/pr.mjs merge <n>` merges it as a merge commit, with no review, once `git merge-tree` shows that `develop`'s tree stays as it is. When the plain merge conflicts (work merged into `develop` after the snapshot changed the same lines as the release, a generated table for one), `sync` pushes `sync/<id>` instead: `develop`'s own tree with `develop` and `main` as parents, made only when `main`'s tree is a state `develop` once had. When it refuses (a change only `main` has), report it: a person looks.
 
 ## 6. What goes into CHANGELOG.md, and how
 
