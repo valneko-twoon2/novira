@@ -16095,7 +16095,7 @@ SOFTWARE.
 
 License text 263 of 350
 Used by:
-- react-resizable-panels 4.18.0 (npm, MIT) https://github.com/bvaughn/react-resizable-panels
+- react-resizable-panels 4.18.1 (npm, MIT) https://github.com/bvaughn/react-resizable-panels
 
 ----------------------------------------------------------------------
 The MIT License (MIT)
