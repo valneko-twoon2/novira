@@ -1,5 +1,5 @@
 // The pull request of a work branch, from opening to merge (the `/ship` skill; docs/development.md, "ブランチと PR").
-//   node scripts/tools/pr.mjs open --body-file <f> [--title <t>]   push the current branch and open its pull request to main; on an open
+//   node scripts/tools/pr.mjs open --body-file <f> [--title <t>]   push the current branch and open its pull request to main as a draft; on an open
 //                                                    one, push and update the title or the description given. The description has the
 //                                                    sections of .github/pull_request_template.md (bodyProblems). A branch of two or more
 //                                                    commits needs --title: the title becomes the subject of the squashed commit on main,
@@ -8,10 +8,12 @@
 //                                                    post an agent's review of the commit it read (a comment review: GitHub lets nobody
 //                                                    approve their own pull request, and the agents act as the user). Refused when the
 //                                                    head moved past that commit.
-//   node scripts/tools/pr.mjs status <n>             the required checks, the agent review of the current head and whether it may merge
-//   node scripts/tools/pr.mjs merge <n> [--wait]     squash-merge when every required check passed and the agent review of the current
-//                                                    head is ok; --wait waits for running checks (up to 60 minutes). Then deletes the
-//                                                    branch on origin and fast-forwards the main checkout when it is on main.
+//   node scripts/tools/pr.mjs status <n>             the checks, the agent review of the current head and whether it may merge
+//   node scripts/tools/pr.mjs merge <n> [--wait]     a draft with an ok review of its head is made ready (the checks start); then
+//                                                    squash-merge when every check (required and CodeQL) passed and the review of the
+//                                                    head is ok; --wait waits for running checks (up to 60 minutes). A failed check
+//                                                    makes it a draft again. Then deletes the branch on origin and fast-forwards the
+//                                                    main checkout when it is on main.
 // The merge rule is `mergeDecision`: only a pull request of this repository into main, on green required checks and an `ok` verdict
 // written by the signed-in user's account for exactly its head commit; a push after the review needs a new review.
 import { execFileSync } from 'node:child_process';
@@ -69,21 +71,34 @@ export function gatingChecks(all, required) {
   return withMissing(all.filter((c) => names.has(c.name)), [...names]);
 }
 
-/** { merge, wait, reason } from the required checks, the review verdict of the head and the pull request itself; `alerts` null is unknown. */
+/**
+ * { merge, wait, reason, ready?, toDraft? } from the gating checks, the review verdict of the head and the pull request itself; `alerts`
+ * null is unknown. A draft is reviewed with no CI: once the review of its head is ok, `ready` asks to make it ready for review, which
+ * starts the checks. A failed check sends it back to a draft (`toDraft`), so the pushes that fix it run no CI until the next ok review.
+ */
 export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, base = 'main', fork = false, title = [], body = [], alerts = 0 }) {
   if (state !== 'OPEN') return { merge: false, wait: false, reason: `the pull request is ${state.toLowerCase()}` };
   if (base !== 'main') return { merge: false, wait: false, reason: `the pull request goes to ${base}, not main` };
   if (fork) return { merge: false, wait: false, reason: 'the pull request comes from another repository: a person merges it' };
-  if (draft) return { merge: false, wait: false, reason: 'the pull request is a draft' };
   if (title.length) return { merge: false, wait: false, reason: `the title cannot be the commit on main (${title[0]}): fix it with pr.mjs open --title` };
   if (body.length) return { merge: false, wait: false, reason: `the description is not complete (${body[0]}): fill in .github/pull_request_template.md` };
-  if (alerts === null) return { merge: false, wait: true, reason: 'the code scanning alerts cannot be read (gh failed): no merge until they can' };
-  if (alerts > 0) return { merge: false, wait: false, reason: `${alerts} open code scanning alert(s) on the pull request: fix each, or report why it is a false positive` };
   if (verdict === 'changes') return { merge: false, wait: false, reason: 'the agent review of the current head asks for changes' };
   if (verdict !== 'ok') return { merge: false, wait: false, reason: 'no agent review of the current head (pushed after the review?): review it first' };
-  if (checks === 'fail') return { merge: false, wait: false, reason: 'a required check failed' };
-  if (checks === 'pending') return { merge: false, wait: true, reason: 'required checks are still running' };
-  return { merge: true, wait: false, reason: 'every required check passed and the agent review of the head is ok' };
+  if (draft) return { merge: false, wait: true, ready: true, reason: 'the review of the draft is ok: it is made ready for review, which starts the checks' };
+  if (alerts === null) return { merge: false, wait: true, reason: 'the code scanning alerts cannot be read (gh failed): no merge until they can' };
+  if (checks === 'fail') return { merge: false, wait: false, toDraft: true, reason: 'a check failed (required or CodeQL): it goes back to a draft; fix, push, review again' };
+  if (checks === 'pending') return { merge: false, wait: true, reason: 'checks (required and CodeQL) are still running' };
+  if (alerts > 0) return { merge: false, wait: false, toDraft: true, reason: `${alerts} open code scanning alert(s) on the pull request: it goes back to a draft; fix each, or report why it is a false positive` };
+  return { merge: true, wait: false, reason: 'every check (required and CodeQL) passed and the agent review of the head is ok' };
+}
+
+/**
+ * The checks with the runs started before the pull request was last made ready for review (`since`, an ISO time) counted as pending:
+ * those are the runs of the draft, whose jobs skipped. Null `since` (never a draft) keeps every run.
+ */
+export function freshChecks(checks, since) {
+  if (!since) return checks;
+  return checks.map((c) => (c.startedAt && !c.startedAt.startsWith('0001-') && c.startedAt >= since ? c : { ...c, bucket: 'pending' }));
 }
 
 /** Why `title` cannot be the subject of the squashed commit on main (the rules of .githooks/commit-msg.mjs), or [] when it can. */
@@ -213,7 +228,7 @@ function view(n) {
 
 function allChecks(n) {
   try {
-    return JSON.parse(gh(['pr', 'checks', String(n), '--json', 'name,bucket']));
+    return JSON.parse(gh(['pr', 'checks', String(n), '--json', 'name,bucket,startedAt']));
   } catch (e) {
     // `gh pr checks` exits non-zero while checks fail or run; its JSON is still on stdout.
     const out = e.stdout?.toString() ?? '';
@@ -247,9 +262,15 @@ function openAlerts(n) {
   }
 }
 
+/** When the pull request was last made ready for review (ISO time), or null when it never was a draft. */
+function readySince(n) {
+  const times = gh(['api', '--paginate', `repos/{owner}/{repo}/issues/${n}/events`, '--jq', '.[] | select(.event == "ready_for_review") | .created_at']);
+  return times.split(/\r?\n/).filter(Boolean).sort().pop() ?? null;
+}
+
 function decisionOf(n) {
   const pr = view(n);
-  const checks = gatingChecks(allChecks(n), requiredNames());
+  const checks = gatingChecks(freshChecks(allChecks(n), pr.isDraft ? null : readySince(n)), requiredNames());
   const verdict = reviewVerdict(pr.reviews ?? [], pr.headRefOid, me());
   const decision = mergeDecision({
     checks: checksState(checks),
@@ -293,7 +314,8 @@ function main(argv) {
       console.log(`pr: pushed${edit.length ? ' and updated' : ''}; #${open[0].number} is open: ${open[0].url}`);
       return 0;
     }
-    console.log(gh(['pr', 'create', '--base', 'main', '--head', branch, '--title', title, '--body', body]).trim());
+    // A draft: reviewed with no CI; `merge` makes it ready once the review of its head is ok (mergeDecision).
+    console.log(gh(['pr', 'create', '--draft', '--base', 'main', '--head', branch, '--title', title, '--body', body]).trim());
     return 0;
   }
   if (cmd === 'review' && n) {
@@ -314,19 +336,38 @@ function main(argv) {
   if (cmd === 'status' && n) {
     const { checks, decision, verdict, pr } = decisionOf(n);
     for (const c of checks) console.log(`  ${c.bucket.padEnd(8)} ${c.name}`);
-    console.log(`pr: #${n} head ${pr.headRefOid.slice(0, 8)}, required checks ${checksState(checks)}, agent review ${verdict}: ${decision.reason}`);
+    console.log(`pr: #${n} head ${pr.headRefOid.slice(0, 8)}, checks ${checksState(checks)}, agent review ${verdict}: ${decision.reason}`);
     return decision.merge ? 0 : 1;
   }
   if (cmd === 'merge' && n) {
     const deadline = Date.now() + 60 * 60_000;
     let state = decisionOf(n);
+    const ready = () => {
+      // The events API can lag: until it shows this ready_for_review (a time later than the last one), the runs of an earlier round
+      // would count as fresh. Judge only once it is there (or after two minutes, when the CodeQL names still keep the checks pending).
+      const before = readySince(n);
+      gh(['pr', 'ready', String(n)]);
+      console.log(`pr: #${n} made ready for review: the checks start`);
+      for (let i = 0; i < 24; i++) {
+        const now = readySince(n);
+        if (now && (!before || now > before)) break;
+        sleep(5_000);
+      }
+      state = decisionOf(n);
+    };
+    if (state.decision.ready) ready();
     while (argv.includes('--wait') && state.decision.wait && Date.now() < deadline) {
       sleep(30_000);
       state = decisionOf(n);
+      if (state.decision.ready) ready();
     }
     if (!state.decision.merge) {
       console.error(`pr: #${n} not merged: ${state.decision.reason}`);
       for (const c of state.checks.filter((x) => x.bucket !== 'pass' && x.bucket !== 'skipping')) console.error(`  ${c.bucket} ${c.name}`);
+      if (state.decision.toDraft && !state.pr.isDraft) {
+        gh(['pr', 'ready', String(n), '--undo']);
+        console.error(`pr: #${n} is a draft again: fix, push, review, then merge again`);
+      }
       return 1;
     }
     // --match-head-commit: GitHub refuses the merge if a commit arrived after the review was read.

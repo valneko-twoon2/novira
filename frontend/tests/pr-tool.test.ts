@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { CODEQL_CHECKS, bodyProblems, checksState, deleteBranchArgs, gatingChecks, mergeArgs, mergeDecision, reviewMark, reviewProblems, reviewVerdict, titleFor, titleProblems, withMissing, withoutComments } from '../../scripts/tools/pr.mjs';
+import { CODEQL_CHECKS, bodyProblems, checksState, deleteBranchArgs, freshChecks, gatingChecks, mergeArgs, mergeDecision, reviewMark, reviewProblems, reviewVerdict, titleFor, titleProblems, withMissing, withoutComments } from '../../scripts/tools/pr.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const HEAD = 'a'.repeat(40);
@@ -63,7 +63,6 @@ describe('the merge decision', () => {
     expect(mergeDecision({ checks: 'pass', verdict: 'changes' })).toMatchObject({ merge: false, wait: false });
     expect(mergeDecision({ checks: 'fail', verdict: 'ok' })).toMatchObject({ merge: false, wait: false });
     expect(mergeDecision({ checks: 'pending', verdict: 'ok' })).toMatchObject({ merge: false, wait: true });
-    expect(mergeDecision({ checks: 'pass', verdict: 'ok', draft: true })).toMatchObject({ merge: false });
     expect(mergeDecision({ checks: 'pass', verdict: 'ok', state: 'MERGED' })).toMatchObject({ merge: false });
   });
 
@@ -119,6 +118,12 @@ describe('the required checks that have not reported', () => {
     const workflow = readFileSync(path.join(ROOT, '.github/workflows/codeql.yml'), 'utf8');
     const languages = (/language: \[([^\]]+)\]/.exec(workflow)?.[1] ?? '').split(',').map((l) => l.trim());
     expect(CODEQL_CHECKS).toEqual(languages.map((l) => `analyze (${l})`));
+  });
+
+  it('skip a draft, as the Test workflow does, and start when it is made ready', { tags: ['condition'] }, () => {
+    const workflow = readFileSync(path.join(ROOT, '.github/workflows/codeql.yml'), 'utf8');
+    expect(workflow).toContain('types: [opened, synchronize, reopened, ready_for_review]');
+    expect(workflow).toContain("if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}");
   });
 });
 
@@ -210,10 +215,53 @@ describe('the shape of a review (after meta/astryx review bot, laid out to read 
   });
 });
 
+describe('a draft pull request', () => {
+  it('is reviewed with no CI, and is made ready for its checks only once the review of its head is ok', { tags: ['decision-table'] }, () => {
+    // The checks a draft shows are the ones its workflows skipped: they say nothing, whatever their bucket.
+    expect(mergeDecision({ checks: 'pass', verdict: 'ok', draft: true })).toMatchObject({ merge: false, wait: true, ready: true });
+    expect(mergeDecision({ checks: 'pending', verdict: 'ok', draft: true })).toMatchObject({ merge: false, wait: true, ready: true });
+    expect(mergeDecision({ checks: 'pass', verdict: 'none', draft: true })).toMatchObject({ merge: false, wait: false, reason: expect.stringContaining('review') });
+    expect(mergeDecision({ checks: 'pass', verdict: 'changes', draft: true })).toMatchObject({ merge: false, wait: false, reason: expect.stringContaining('changes') });
+    expect(mergeDecision({ checks: 'pass', verdict: 'ok' }).ready).toBeFalsy();
+  });
+
+  it('goes back to a draft when a check fails, so the pushes that fix it run no CI', { tags: ['state-transition'] }, () => {
+    expect(mergeDecision({ checks: 'fail', verdict: 'ok' })).toMatchObject({ merge: false, wait: false, toDraft: true });
+    expect(mergeDecision({ checks: 'pending', verdict: 'ok' }).toDraft).toBeFalsy();
+  });
+});
+
+describe('the checks after a draft is made ready', () => {
+  const READY = '2026-11-12T10:00:00Z';
+  it('count only runs started after it was made ready: the earlier ones are the draft runs that skipped', { tags: ['boundary', 'regression'] }, () => {
+    const checks = [
+      { name: 'static', bucket: 'skipping', startedAt: '2026-11-12T09:59:59Z' },
+      { name: 'vitest', bucket: 'pass', startedAt: '2026-11-12T10:00:00Z' },
+      { name: 'clippy', bucket: 'pending', startedAt: '0001-01-01T00:00:00Z' },
+    ];
+    expect(freshChecks(checks, READY)).toEqual([
+      { name: 'static', bucket: 'pending', startedAt: '2026-11-12T09:59:59Z' },
+      { name: 'vitest', bucket: 'pass', startedAt: '2026-11-12T10:00:00Z' },
+      { name: 'clippy', bucket: 'pending', startedAt: '0001-01-01T00:00:00Z' },
+    ]);
+    expect(checksState(freshChecks(checks, READY))).toBe('pending');
+    // A pull request that was never a draft keeps every run.
+    expect(freshChecks(checks, null)).toEqual(checks);
+  });
+});
+
 describe('code scanning alerts', () => {
   it('stop the merge until each is fixed or explained, whatever the checks say', { tags: ['condition', 'regression'] }, () => {
     expect(mergeDecision({ checks: 'pass', verdict: 'ok', alerts: 1 })).toMatchObject({ merge: false, wait: false, reason: expect.stringContaining('code scanning') });
     expect(mergeDecision({ checks: 'pass', verdict: 'ok', alerts: 0 })).toMatchObject({ merge: true });
+  });
+
+  it('send the pull request back to a draft, like a failed check, so the fix runs no CI until it is reviewed', { tags: ['state-transition'] }, () => {
+    expect(mergeDecision({ checks: 'pass', verdict: 'ok', alerts: 1 })).toMatchObject({ toDraft: true });
+  });
+
+  it('left from the analysis before a fix are waited out while the checks still run', { tags: ['condition'] }, () => {
+    expect(mergeDecision({ checks: 'pending', verdict: 'ok', alerts: 1 })).toMatchObject({ merge: false, wait: true });
   });
 
   it('that cannot be read stop the merge too, and it waits', { tags: ['error-guessing', 'regression'] }, () => {
