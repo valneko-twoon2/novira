@@ -1,4 +1,4 @@
-# Version updates of Dependabot (docs/design/01-app/04-release/03-dependabot.md). The pull requests go to the default branch (main);
+# Version updates of Dependabot (docs/design/01-app/04-release/03-dependabot.md). The pull requests go to develop (target-branch; the working branch);
 # .github/workflows/dependabot-triage.yml judges them.
 # - cargo and npm: weekly; the minor and patch updates of an ecosystem in one pull request, which the triage merges once its checks
 #   pass. A major update is a pull request of its own, which the triage closes for a person to read.
@@ -16,6 +16,7 @@ updates:
       timezone: Asia/Tokyo
     cooldown:
       default-days: 7
+    target-branch: develop
     open-pull-requests-limit: 5
     commit-message:
       prefix: 'chore'
@@ -33,6 +34,7 @@ updates:
       timezone: Asia/Tokyo
     cooldown:
       default-days: 7
+    target-branch: develop
     open-pull-requests-limit: 5
     commit-message:
       prefix: 'chore'
@@ -49,6 +51,7 @@ updates:
       timezone: Asia/Tokyo
     cooldown:
       default-days: 7
+    target-branch: develop
     open-pull-requests-limit: 1
     commit-message:
       prefix: 'chore'
