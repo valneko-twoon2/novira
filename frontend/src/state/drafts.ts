@@ -216,11 +216,18 @@ interface DraftsState {
   busy: boolean;
   setCurrent: (id: string) => void;
   toggleSelect: (candidateId: string) => void;
+  /** Replaces the selection (a click, or a Shift click over a range of the Candidates view). */
+  setSelection: (candidateIds: string[]) => void;
   clearSelection: () => void;
   mark: (groupId: string, candidateId: string, verdict: Verdict) => void;
   closeGroup: (id: string) => void;
   /** Closes several groups at once (the older ones of the history). */
   closeGroups: (ids: string[]) => void;
+  /**
+   * Throws the chosen candidates of a group away: what they still wait for or draw is cancelled, the pictures a generation
+   * batch holds back go to the trash (as `closeGroup` does with the rest), and they leave the group; a group left empty closes.
+   */
+  discard: (groupId: string, candidateIds: string[]) => void;
   sync: (items: QueueItem[]) => void;
   /** Starts a batch from the Generate tab's current settings, with another main model when `modelKey` is given. Resolves with a reason when it cannot start. */
   start: (count: number, position: number, modelKey?: string | null) => Promise<{ error: 'no-builder' | 'edit-model' } | null>;
@@ -264,13 +271,21 @@ function selectedBoard(): string | null {
   return selectedBoardId !== 'none' && boards.some((b) => b.id === selectedBoardId) ? selectedBoardId : null;
 }
 
-/** Stops what is still waiting or drawing in a generation batch and trashes the pictures held back; they can be taken back from the toast. */
-async function throwAway(group: DraftGroup): Promise<void> {
+const waiting = (status: DraftStatus | null) => status === 'queued' || status === 'running';
+
+/**
+ * Stops what the candidates (all of the group when none are given) still wait for or draw, and trashes the pictures a
+ * generation batch holds back for them; they can be taken back from the toast. A batch of drafts keeps its pictures, as
+ * closing it does.
+ */
+async function throwAway(group: DraftGroup, candidates: DraftCandidate[] = group.candidates): Promise<void> {
   try {
-    for (const c of group.candidates) {
-      if (c.finalItemId !== null && (c.finalStatus === 'queued' || c.finalStatus === 'running')) await backend.cancelQueueItem(c.finalItemId).catch(() => undefined);
+    for (const c of candidates) {
+      if (c.finalItemId !== null && waiting(c.finalStatus)) await backend.cancelQueueItem(c.finalItemId).catch(() => undefined);
+      if (group.kind !== 'generation' && c.itemId !== null && waiting(c.status)) await backend.cancelQueueItem(c.itemId).catch(() => undefined);
     }
-    const names = heldPictures(group, useGallery.getState().images).map((i) => i.name);
+    if (group.kind !== 'generation') return;
+    const names = heldPictures({ ...group, candidates }, useGallery.getState().images).map((i) => i.name);
     if (!names.length) return;
     // Visible again before they go to the trash, so taking them back brings them to their board and not to a hidden place.
     await backend.updateImages(names, { isIntermediate: false });
@@ -324,6 +339,7 @@ export const useDrafts = create<DraftsState>()(
       busy: false,
       setCurrent: (id) => set({ currentId: id, selection: [] }),
       toggleSelect: (cid) => set({ selection: get().selection.includes(cid) ? get().selection.filter((s) => s !== cid) : [...get().selection, cid] }),
+      setSelection: (selection) => set({ selection }),
       clearSelection: () => set({ selection: [] }),
       mark: (groupId, candidateId, verdict) =>
         set({
@@ -337,7 +353,23 @@ export const useDrafts = create<DraftsState>()(
         for (const g of get().groups) if (g.kind === 'generation' && ids.includes(g.id)) void throwAway(g);
         const groups = get().groups.filter((g) => !ids.includes(g.id));
         const wasCurrent = ids.includes(get().currentId ?? '');
-        set({ groups, currentId: wasCurrent ? (groups[groups.length - 1]?.id ?? null) : get().currentId, selection: wasCurrent ? [] : get().selection });
+        // The selection may span groups: the candidates of the closed ones leave it.
+        const gone = new Set(get().groups.filter((g) => ids.includes(g.id)).flatMap((g) => g.candidates.map((c) => c.id)));
+        set({ groups, currentId: wasCurrent ? (groups[groups.length - 1]?.id ?? null) : get().currentId, selection: wasCurrent ? [] : get().selection.filter((s) => !gone.has(s)) });
+      },
+      discard: (groupId, candidateIds) => {
+        const group = get().groups.find((g) => g.id === groupId);
+        const picked = group?.candidates.filter((c) => candidateIds.includes(c.id)) ?? [];
+        if (!group || !picked.length) return;
+        void throwAway(group, picked);
+        const gone = new Set(picked.map((c) => c.id));
+        const rest = group.candidates.filter((c) => !gone.has(c.id));
+        const groups = get().groups.flatMap((g) => (g.id !== groupId ? [g] : rest.length ? [{ ...g, candidates: rest }] : []));
+        set({
+          groups,
+          currentId: get().currentId === groupId && !rest.length ? (groups.at(-1)?.id ?? null) : get().currentId,
+          selection: get().selection.filter((s) => !gone.has(s)),
+        });
       },
       sync: (items) => {
         const groups = syncGroups(get().groups, items);

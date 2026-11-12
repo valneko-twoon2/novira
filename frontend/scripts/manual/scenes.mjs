@@ -520,6 +520,7 @@ export const SCENES = [
       await s.testid('positive-prompt').fill(PROMPT);
       await s.testid('view-drafts').click();
       await s.testid('drafts-view').waitFor();
+      await s.testid('drafts-form-toggle').click();
       await s.testid('drafts-start').click();
       await s.testid('draft-cell').first().waitFor({ timeout: 30_000 });
       await s.shot();

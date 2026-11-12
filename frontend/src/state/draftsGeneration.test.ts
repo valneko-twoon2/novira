@@ -236,3 +236,67 @@ describe('a held picture taken to a board by hand', { tags: [] }, () => {
     },
   );
 });
+
+describe('throwing chosen pictures away', { tags: [] }, () => {
+  const made = () => {
+    state().addGeneration([item(1), item(2), item(3)], request);
+    useDrafts.setState({
+      groups: state().groups.map((g) => ({
+        ...g,
+        candidates: g.candidates.map((c, i) => (i < 2 ? { ...c, finalStatus: 'ready' as const, finalImageName: `p${i}.png` } : { ...c, finalStatus: 'running' as const })),
+      })),
+    });
+    useGallery.setState({ images: [picture('p0.png'), picture('p1.png')] });
+    return only().candidates.map((c) => c.id);
+  };
+
+  it(
+    'trashes the chosen held pictures with a way back, cancels a chosen one still drawn, and keeps the rest and their selection',
+    { tags: ['state-transition'] },
+    async () => {
+      const [a, b, c] = made();
+      useDrafts.setState({ selection: [a!, b!] });
+      const cancel = vi.spyOn(backend, 'cancelQueueItem').mockResolvedValue();
+      const update = vi.spyOn(backend, 'updateImages').mockResolvedValue([]);
+      const del = vi.spyOn(backend, 'deleteImages').mockResolvedValue();
+      state().discard(only().id, [a!, c!]);
+      expect(only().candidates.map((x) => x.id)).toEqual([b]);
+      expect(state().selection).toEqual([b]);
+      await vi.waitFor(() => expect(del).toHaveBeenCalledWith(['p0.png']));
+      expect(cancel).toHaveBeenCalledWith(3);
+      expect(cancel).toHaveBeenCalledTimes(1);
+      expect(update).toHaveBeenCalledWith(['p0.png'], { isIntermediate: false });
+      expect(useGallery.getState().images.map((i) => i.name)).toEqual(['p1.png']);
+      expect(useGalleryUndo.getState().undo).toEqual([['p0.png']]);
+    },
+  );
+
+  it('closes the batch when the last pictures are thrown away', { tags: ['boundary', 'state-transition'] }, async () => {
+    const ids = made();
+    vi.spyOn(backend, 'cancelQueueItem').mockResolvedValue();
+    vi.spyOn(backend, 'updateImages').mockResolvedValue([]);
+    const del = vi.spyOn(backend, 'deleteImages').mockResolvedValue();
+    state().discard(only().id, ids);
+    expect(state()).toMatchObject({ groups: [], currentId: null });
+    await vi.waitFor(() => expect(del).toHaveBeenCalledWith(['p0.png', 'p1.png']));
+  });
+
+  it('does nothing for an unknown batch or no known picture', { tags: ['error-guessing'] }, () => {
+    made();
+    const del = vi.spyOn(backend, 'deleteImages').mockResolvedValue();
+    const before = state().groups;
+    state().discard('missing', [only().candidates[0]!.id]);
+    state().discard(only().id, ['nope']);
+    state().discard(only().id, []);
+    expect(state().groups).toBe(before);
+    expect(del).not.toHaveBeenCalled();
+  });
+
+  it('says so when the pictures could not be trashed, and they leave the batch either way', { tags: ['error-guessing'] }, async () => {
+    const [a] = made();
+    vi.spyOn(backend, 'updateImages').mockRejectedValue(new Error('disk'));
+    state().discard(only().id, [a!]);
+    expect(only().candidates).toHaveLength(2);
+    await vi.waitFor(() => expect(useToasts.getState().toasts.at(-1)?.status).toBe('error'));
+  });
+});

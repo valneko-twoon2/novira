@@ -274,39 +274,43 @@ The finished table is saved in the gallery as one picture. **{{ui:xyplot.open}}*
 
 A picture changes greatly depending on the seed. Drafts is a feature that draws many seeds only "part of the way" and then draws to the end only the compositions you like. It saves time.
 
-Open the **{{ui:app.views.drafts}}** tab in the center of the **{{ui:app.tabs.generate}}** tab.
+Open the **{{ui:app.views.drafts}}** tab in the center of the **{{ui:app.tabs.generate}}** tab. The **{{ui:drafts.form}}** button at the top opens the draft form.
 
 1. Choose the **{{ui:drafts.model}}**. At first, the model of the Generate tab is selected. Every picture model the Generate tab offers can be chosen: SDXL and SD1.X, and also the models that come without their text encoders and VAE, such as Anima, Flux, FLUX.2 and Z-Image. Edit models (Flux Fill, Flux Kontext, Qwen-Image-Edit) only change a picture you give them, so they are not in the list; when you have some, their names are shown below.
 2. Decide the **{{ui:drafts.count}}** (1 to 24 pictures; 4 at first, which you can change with **{{ui:settings.draftCount.label}}** in the settings). The count and the position stay as you set them when you switch to other screens, until you close the app.
 3. Decide the **{{ui:drafts.position}}** (25 to 60%; 35% at first). The smaller it is, the faster it is done, but the rougher the pictures.
-4. Press **{{ui:drafts.start}}**.
+4. Press **{{ui:drafts.start}}**. The form closes.
 
 The draft pictures line up in the order they are finished. The prompt and other settings from the Generate tab are used.
 
-Click a picture to choose it (click it again to deselect it). Double-click to see it large in the viewer. The star button (**{{ui:drafts.keep}}**) and the ✕ (**{{ui:drafts.reject}}**) are marks for your own use. Press the "{{ui:manual.drafts.finish}} N images" button at the lower right (N is the number you chose) and the chosen pictures are drawn to the end. To choose again, press **{{ui:drafts.clearSelection}}**.
+Point at a picture and a ✓ (**{{ui:drafts.accept.draft}}**) and a ✕ (**{{ui:drafts.discard}}**) appear at its bottom. ✓ draws that picture to the end. ✕ takes the draft out of the list. To handle several at once, click pictures to choose them (`Ctrl`+click adds one, `Shift`+click a range). With pictures chosen, a bar at the bottom shows how many and a ✓ and a ✕ for them.
 
-Pictures drawn to the end go into the gallery just like a normal generation, and "{{ui:drafts.badge.finished}}" appears over the draft. If some drafts failed, a "{{ui:manual.drafts.retry}} N failed" button appears.
+Pictures drawn to the end go into the gallery just like a normal generation, and "{{ui:drafts.badge.finished}}" appears over the draft. If some drafts failed, a **{{ui:manual.drafts.retry}}** button appears in the header of the set.
 
 > Although it says "{{ui:manual.drafts.finish}}", it does not resume from the middle. It draws again from beginning to end with the same seed. Because of this, the time it takes to finish is the same as a normal generation. You get a picture with the composition you saw in the draft.
 
 > Drafts can be used for generation that makes pictures from text, and for redrawing a picture put in the **{{ui:params.i2i.title}}** section. With {{ui:params.i2i.title}}, a draft is drawn to the position share of the steps actually drawn, which depend on the **{{ui:params.image.strength}}**. Draft pictures are not lined up in the gallery list.
 
-Drafts line up in the tabs at the top "in the order you started them". Only the latest 5 stay as tabs. Every draft is on the **{{ui:drafts.history.title}}** screen that the "History" button at the left of the tabs opens.
+Drafts and generated pictures line up set by set in one list, newest first. The header of a set shows the time, the model, the start of the prompt and the count. The ✓ at the right of the header acts on the whole set, and the ✕ closes the set. A set of drafts that are all finished leaves the list. The slider at the top changes the size of the pictures.
+
+Double-click a picture (or choose it and press `Enter`) to see it large. `←` and `→` go to the picture before or after. `Enter` is the same as ✓ and `Delete` as ✕, and both then move on to the next picture. `Esc` goes back to the list. The strip at the bottom shows the rest of the pictures.
+
+Every set is on the **{{ui:drafts.history.title}}** screen that the clock button at the top (its number is how many sets there are) opens.
 
 - Choose a period ({{ui:drafts.history.period.today}}, {{ui:drafts.history.period.yesterday}}, {{ui:drafts.history.period.week}}, {{ui:drafts.history.period.older}}) and a model in the left column to see only those drafts. The box at the top finds drafts by words of their prompts or model names.
 - The drafts are split by day and show the pictures drawn then, the time, the size and how many drafts and finished pictures there are.
-- **{{ui:drafts.history.open}}** opens a draft, and **{{ui:drafts.history.reuse}}** puts its settings back in the Generate form.
+- **{{ui:drafts.history.open}}** brings a set into the list, and **{{ui:drafts.history.reuse}}** puts its settings back in the Generate form.
 
-When you no longer need one, close it with the ✕ on its tab or in the history, or close all the older ones that are not tabs at once with "{{ui:drafts.closeOlder}}" on the history screen.
+The ✕ in the history closes a set too, and "{{ui:drafts.closeOlder}}" on the history screen closes all but the latest 5 at once.
 
 ### Choosing among generated pictures
 
 The pictures you make on the **{{ui:app.tabs.generate}}** tab first line up in this **{{ui:app.views.drafts}}** tab. They do not go to a board, so a lot of generating does not flood your boards.
 
-- When you start generating from the start screen, the center switches to the **{{ui:app.views.drafts}}** tab. Each press adds one tab at the top. The pictures line up in the order they are finished and show "{{ui:drafts.badge.finished}}".
-- Click the pictures you want to choose (click again to deselect), then press "Move N pictures to the board" at the bottom right. They go to the board selected in the gallery on the right at that moment (not the one that was selected when you started generating; Uncategorized when no board is selected). Dragging a picture onto a board in the gallery on the right moves it to that board too.
-- Double-click a picture to see it large in the viewer.
-- Close the tab with its ✕ and the pictures you did not choose go to the trash. Pictures you take back with "Undo" in the notice return to their old board.
+- When you start generating from the start screen, the center switches to the **{{ui:app.views.drafts}}** tab. Each press adds one set at the top of the list. The pictures line up in the order they are finished.
+- ✓ (**{{ui:drafts.accept.generation}}**) moves a picture you want to the board shown in **{{ui:drafts.target}}** at the top. It is the board selected in the gallery on the right, and changing it here changes the gallery's choice too (Uncategorized when no board is selected). The ✓ in the bottom bar moves the chosen pictures together. Dragging a picture onto a board in the gallery on the right moves it to that board too.
+- Double-click a picture to see it large (the same as for drafts).
+- ✕ sends a picture you do not want to the trash, and the ✕ in the header sends the rest of the set. Pictures you take back with "Undo" in the notice return to their old board.
 - If you want generated pictures to go to a board at once, turn off "{{ui:gallery.settings.newToCandidates}}" in {{ui:gallery.settings.title}} (the gear button).
 
 ## Processing in bulk

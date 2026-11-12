@@ -1,4 +1,4 @@
-/* Drafts view: new-batch controls, group tabs, candidate grid. */
+/* Candidates view: the top bar, one flow of batches with a header line and a grid each, the selection bar, the large view. */
 .dv {
   display: flex;
   flex-direction: column;
@@ -10,75 +10,69 @@
   overflow: hidden;
 }
 
-.dv-new {
+.dv-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--border);
+}
+
+.dv-target {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--text-muted);
+}
+
+.dv-target .ui-select {
+  width: 180px;
+}
+
+.dv-size {
+  flex: none;
+  width: 120px;
+}
+
+/* A narrow window (the phone) keeps its two columns: no size slider. */
+@media (width <= 720px) {
+  .dv-size {
+    display: none;
+  }
+}
+
+.dv-spacer {
+  flex: 1;
+}
+
+/* The draft form in its popover. */
+.dv-form {
+  width: 320px;
+}
+
+.dv-new {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
 .dv-field {
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
+  flex-direction: column;
+  gap: var(--space-1);
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: var(--fs-xs);
 }
 
 .dv-field .ui-number {
-  width: 72px;
-}
-
-.dv-field--slider {
-  width: 280px;
-}
-
-.dv-field--model {
-  width: 280px;
-}
-
-.dv-field--model .ui-select {
-  flex: 1;
-  min-width: 0;
+  width: 88px;
 }
 
 .dv-hint {
-  flex-basis: 100%;
   margin: 0;
   color: var(--text-faint);
-  font-size: 12px;
-}
-
-.dv-groups {
-  display: flex;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  border-bottom: 1px solid var(--border);
-  overflow-x: auto;
-}
-
-.dv-group {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  white-space: nowrap;
-}
-
-.dv-group.is-on {
-  border-color: var(--blue-400);
-  background: var(--bg-elevated);
-}
-
-.dv-group > button:first-child {
-  padding: var(--space-1) var(--space-2);
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font-size: 12px;
-  cursor: pointer;
+  font-size: var(--fs-xs);
 }
 
 .dv-empty {
@@ -88,21 +82,69 @@
   justify-content: center;
 }
 
-.dv-grid {
-  display: grid;
+.dv-flow {
+  display: flex;
   flex: 1;
-  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
-  align-content: start;
-  gap: var(--space-3);
-  padding: var(--space-4);
+  flex-direction: column;
+  gap: var(--space-4);
   min-height: 0;
+  padding: var(--space-3) var(--space-4) var(--space-4);
   overflow-y: auto;
 }
 
-.dv-cell {
+.dv-group {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-2);
+}
+
+.dv-group__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
+.dv-group__model {
+  flex: 0 1 auto;
+  max-width: 30%;
+  overflow: hidden;
+  color: var(--text);
+  font-weight: 600;
+  text-overflow: ellipsis;
+}
+
+.dv-group__prompt {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dv-group__when,
+.dv-group__count {
+  flex: none;
+  color: var(--text-faint);
+}
+
+.dv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--dv-thumb, 168px), 1fr));
+  gap: var(--space-2);
+}
+
+.dv-more {
+  display: flex;
+  justify-content: center;
+}
+
+.dv-cell {
+  position: relative;
   min-width: 0;
 }
 
@@ -122,10 +164,6 @@
   border-color: var(--blue-400);
 }
 
-.dv-cell.is-rejected .dv-img img {
-  opacity: 0.35;
-}
-
 .dv-cell.is-failed .dv-img {
   border-color: var(--danger);
 }
@@ -140,7 +178,7 @@
 .dv-check {
   position: absolute;
   top: var(--space-1);
-  left: var(--space-1);
+  right: var(--space-1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -156,93 +194,135 @@
 }
 
 .dv-busy {
-  left: auto;
-  right: var(--space-1);
   top: auto;
   bottom: var(--space-1);
 }
 
-.dv-star {
-  position: absolute;
-  top: var(--space-1);
-  right: var(--space-1);
-  display: flex;
-  padding: 3px;
-  border: 0;
-  border-radius: var(--radius);
-  background: var(--base-900);
-  color: var(--text-muted);
-  cursor: pointer;
-}
-
-.dv-star.is-on {
-  color: var(--blue-400);
-}
-
-/* Opens the picture large where the view is shown in another layout (the phone's). */
-.dv-open {
+/* The state of a picture, small, over its top left corner. */
+.dv-badge {
   position: absolute;
   top: var(--space-1);
   left: var(--space-1);
-  display: flex;
-  padding: 3px;
-  border: 0;
-  border-radius: var(--radius);
-  background: var(--base-900);
-  color: var(--text-muted);
-  cursor: pointer;
-}
-
-.dv-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: 11px;
-}
-
-.dv-badge {
-  flex: 1 0 100%;
-  min-width: 0;
+  max-width: calc(100% - 36px);
+  padding: 1px var(--space-1);
   overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--overlay);
+  color: var(--on-overlay);
+  font-size: var(--fs-xs);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.dv-seed {
-  flex: 1;
-  color: var(--text-faint);
+/* ✓ and × over the bottom of a picture: shown on hover or focus, always where there is no hover (touch). */
+.dv-actions {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dv-cell:hover .dv-actions,
+.dv-cell:focus-within .dv-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (hover: none) {
+  .dv-actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 .dv-foot {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-2) var(--space-4);
   border-top: 1px solid var(--border);
 }
 
-.dv-spacer {
-  flex: 1;
+.dv-foot__count {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
 }
 
-.dv-pages {
-  display: inline-flex;
+/* The large view: the bar, the picture between ← and →, the strip of pictures. */
+.dv-large {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+  padding: var(--space-2) var(--space-3);
+  outline: none;
+}
+
+.dv-large__bar {
+  display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: 12px;
 }
 
-.dv-field > span {
-  white-space: nowrap;
+.dv-large__stage {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 0;
 }
 
-.dv-older {
+.dv-large__picture {
+  position: relative;
+  flex: 1;
+  align-self: stretch;
+  min-width: 0;
+}
+
+/* Fills the stage, keeping its proportions, however small the file is. */
+.dv-large__picture img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.dv-strip {
+  display: flex;
   flex: none;
+  gap: var(--space-1);
+  padding-bottom: var(--space-1);
+  overflow-x: auto;
 }
 
-.dv-older.is-on {
+.dv-strip__thumb {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.dv-strip__thumb.is-current {
   border-color: var(--blue-400);
+}
+
+.dv-strip__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* The history screen: periods and models at the left, the batches by day at the right. */

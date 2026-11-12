@@ -3,7 +3,7 @@
 import { getLocale } from '@/i18n';
 import type { DraftGroup } from '@/state/drafts';
 
-/** How many of the latest batches are shown as tabs; the rest are on the history screen only. */
+/** How many of the latest batches "close the older ones" on the history screen keeps. */
 export const RECENT_GROUPS = 5;
 
 export type HistoryPeriod = 'all' | 'today' | 'yesterday' | 'week' | 'older';

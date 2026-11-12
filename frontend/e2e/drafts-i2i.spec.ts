@@ -11,6 +11,7 @@ test('drafts start from the image to image source and a chosen one is finished o
   const before = await page.getByTestId('gallery-thumb').count();
 
   await page.getByTestId('view-drafts').click();
+  await page.getByTestId('drafts-form-toggle').click();
   await page.getByTestId('drafts-start').click();
   const cells = page.getByTestId('draft-cell');
   await expect(cells).toHaveCount(4);
@@ -19,7 +20,7 @@ test('drafts start from the image to image source and a chosen one is finished o
 
   const first = cells.first();
   await first.getByRole('button', { name: /^seed / }).click();
-  await page.getByTestId('drafts-finish').click();
+  await page.getByTestId('drafts-selection-accept').click();
   await expect(page.getByTestId('gallery-thumb')).toHaveCount(before + 1, { timeout: 90_000 });
   await page.getByTestId('view-drafts').click();
   await expect(first).toContainText(msg('drafts.badge.finished'));

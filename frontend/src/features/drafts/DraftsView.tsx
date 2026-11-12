@@ -1,329 +1,230 @@
-// Drafts view: draw many seeds only part of the way, look at them side by side, and finish only the ones you like.
-import { ArrowsOut, Check, FolderPlus, Lightning, Star, X } from '@phosphor-icons/react';
-import { useState } from 'react';
-import type { ImageDTO } from '@/backend';
+// Candidates view: what Invoke made and the batches of drafts, in one scrolling flow, newest first. Each picture is put on
+// the board (a draft: finished) with ✓ or thrown away with ×, alone, chosen together, or a whole batch at once; a double
+// click shows it large to go through them one by one.
+import { ArrowClockwise, CaretDown, Checks, ClockCounterClockwise, Lightning, SelectionSlash, Tray, X } from '@phosphor-icons/react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type Ref } from 'react';
 import { t, tCount } from '@/i18n';
-import {
-  canFinish,
-  draftModels,
-  draftStepOf,
-  heldPictures,
-  modelsWithoutDrafts,
-  POSITION_MAX,
-  POSITION_MIN,
-  useDrafts,
-  type DraftCandidate,
-  type DraftGroup,
-} from '@/state/drafts';
-import { useDraftForm } from '@/state/draftForm';
-import { setDragImages } from '@/state/dnd';
+import { boardLabel } from '@/state/boardTree';
+import { useDrafts, type DraftGroup } from '@/state/drafts';
+import { THUMB_SIZE, useDraftForm } from '@/state/draftForm';
 import { useGallery } from '@/state/gallery';
-import { useModels } from '@/state/models';
-import { useParams } from '@/state/params';
-import { useQueue } from '@/state/queue';
-import { DRAFT_COUNT_RANGE, useSettings } from '@/state/settings';
-import { toast } from '@/state/toasts';
-import { showViewer } from '@/state/ui';
-import { Button, cx, EmptyState, IconButton, ModelPicker, NumberInput, SliderNumber, Spinner } from '@/ui';
-import { GroupTabs } from './GroupTabs';
-import { pictureOf } from './pictures';
+import { Button, EmptyState, IconButton, Select, Slider, Tooltip } from '@/ui';
+import { Cell } from './Cell';
+import { DraftForm } from './DraftForm';
+import { DraftHistory } from './DraftHistory';
+import { accept, FLOW_GROUPS, flowGroups, flowOrder, isAcceptable, isSelectable, rangeOf, whenLabel } from './flow';
+import { LargeView } from './LargeView';
 import './drafts.css';
 
-const PER_PAGE = 24;
-
-const PROBLEMS = { 'no-builder': 'drafts.notReady', 'edit-model': 'drafts.editModel' } as const;
-
 /**
- * `onOpen` shows a candidate's picture large in another place than the desktop viewer (the phone layout's): with it, each
- * picture also gets a button for that, since a double tap is not a double click on every phone.
+ * `onOpen` shows a candidate's picture large in another place than this view's large view (the phone layout's): with it,
+ * each picture also gets a button for that, since a double tap is not a double click on every phone.
  */
 export function DraftsView({ onOpen }: { onOpen?: (imageName: string) => void } = {}) {
   const groups = useDrafts((s) => s.groups);
   const currentId = useDrafts((s) => s.currentId);
-  const group = groups.find((g) => g.id === currentId) ?? groups[groups.length - 1];
+  const images = useGallery((s) => s.images);
+  const [limit, setLimit] = useState(FLOW_GROUPS);
+  const [viewing, setViewing] = useState<string | null>(null);
+  const { shown, total } = useMemo(() => flowGroups(groups, images, currentId, limit), [groups, images, currentId, limit]);
+  const flow = useRef<HTMLDivElement>(null);
+  const large = onOpen ? null : viewing;
+
+  // A batch opened from the history (or just started) is brought into sight.
+  useEffect(() => {
+    if (currentId && large === null) flow.current?.querySelector(`[data-group-id="${CSS.escape(currentId)}"]`)?.scrollIntoView?.({ block: 'nearest' });
+  }, [currentId, large]);
+  const closeLarge = useCallback(() => setViewing(null), []);
+
   return (
     <div className="dv" data-testid="drafts-view">
-      <NewDrafts />
-      <GroupTabs groups={groups} currentId={group?.id ?? null} />
-      {group ? (
-        <GroupGrid key={group.id} group={group} onOpen={onOpen} />
+      <TopBar count={groups.length} onOpened={closeLarge} />
+      {large !== null ? (
+        <LargeView groups={shown} id={large} onMove={setViewing} onClose={closeLarge} />
+      ) : shown.length ? (
+        <Flow flowRef={flow} groups={shown} more={total > shown.length} onMore={() => setLimit(limit + FLOW_GROUPS)} onLarge={setViewing} onOpen={onOpen} />
       ) : (
         <div className="dv-empty">
-          <EmptyState icon={<Lightning size={28} />} title={t('drafts.empty.title')} description={t('drafts.empty.description')} />
+          <EmptyState icon={<Lightning size={28} />} title={t('drafts.empty.title')} />
+        </div>
+      )}
+      {large === null && <SelectionBar groups={shown} />}
+    </div>
+  );
+}
+
+function TopBar({ count, onOpened }: { count: number; onOpened: () => void }) {
+  const thumb = useDraftForm((s) => s.thumbSize);
+  const [history, setHistory] = useState(false);
+  return (
+    <div className="dv-bar">
+      <DraftForm />
+      <BoardPicker />
+      <span className="dv-spacer" />
+      <Slider
+        className="dv-size"
+        value={thumb}
+        min={THUMB_SIZE.min}
+        max={THUMB_SIZE.max}
+        step={8}
+        onChange={(v) => useDraftForm.getState().set({ thumbSize: v })}
+        aria-label={t('gallery.settings.thumbnailSize')}
+      />
+      {count > 0 && (
+        <Tooltip content={t('drafts.history.title')}>
+          <Button size="sm" variant="ghost" leftIcon={<ClockCounterClockwise />} aria-label={t('drafts.history.title')} onClick={() => setHistory(true)} data-testid="drafts-history-button">
+            {count}
+          </Button>
+        </Tooltip>
+      )}
+      <DraftHistory open={history} onClose={() => setHistory(false)} onOpened={onOpened} />
+    </div>
+  );
+}
+
+/** Where ✓ puts the pictures: the board selected in the gallery, changed here as there. */
+function BoardPicker() {
+  const boards = useGallery((s) => s.boards);
+  const selected = useGallery((s) => s.selectedBoardId);
+  const value = selected !== 'none' && boards.some((b) => b.id === selected) ? selected : 'none';
+  const options = [
+    { value: 'none', label: t('gallery.boards.uncategorized') },
+    ...boards.filter((b) => !b.archived || b.id === value).map((b) => ({ value: b.id, label: boardLabel(boards, b) })),
+  ];
+  return (
+    <span className="dv-target">
+      <Tray size={16} aria-hidden />
+      <Select value={value} onChange={(id) => useGallery.getState().selectBoard(id)} options={options} aria-label={t('drafts.target')} data-testid="drafts-target" />
+    </span>
+  );
+}
+
+function Flow({
+  flowRef,
+  groups,
+  more,
+  onMore,
+  onLarge,
+  onOpen,
+}: {
+  flowRef: Ref<HTMLDivElement>;
+  groups: DraftGroup[];
+  more: boolean;
+  onMore: () => void;
+  onLarge: (id: string) => void;
+  onOpen: ((imageName: string) => void) | undefined;
+}) {
+  const images = useGallery((s) => s.images);
+  const selection = useDrafts((s) => s.selection);
+  const thumb = useDraftForm((s) => s.thumbSize);
+  // Where a Shift click starts from: the last picture clicked without Shift.
+  const anchor = useRef<string | null>(null);
+  const pick = (id: string, e: MouseEvent) => {
+    const { setSelection, toggleSelect } = useDrafts.getState();
+    if (e.shiftKey) {
+      const selectable = new Set(groups.flatMap((g) => g.candidates.filter((c) => isSelectable(g, c, images)).map((c) => c.id)));
+      setSelection(rangeOf(flowOrder(groups), anchor.current, id).filter((x) => selectable.has(x)));
+      return;
+    }
+    anchor.current = id;
+    if (e.ctrlKey || e.metaKey) toggleSelect(id);
+    else setSelection(selection.length === 1 && selection[0] === id ? [] : [id]);
+  };
+  return (
+    <div className="dv-flow" ref={flowRef} style={{ '--dv-thumb': `${thumb}px` } as CSSProperties} data-testid="drafts-grid">
+      {groups.map((g) => (
+        <section key={g.id} className="dv-group" data-group-id={g.id} data-testid="drafts-group">
+          <GroupHead group={g} />
+          <div className="dv-grid">
+            {g.candidates.map((c) => (
+              <Cell
+                key={c.id}
+                group={g}
+                c={c}
+                images={images}
+                selected={selection.includes(c.id)}
+                selectable={isSelectable(g, c, images)}
+                onPick={(e) => pick(c.id, e)}
+                onToggle={() => {
+                  anchor.current = c.id;
+                  useDrafts.getState().toggleSelect(c.id);
+                }}
+                onLarge={() => onLarge(c.id)}
+                onOpen={onOpen}
+              />
+            ))}
+          </div>
+        </section>
+      ))}
+      {more && (
+        <div className="dv-more">
+          <IconButton label={t('drafts.more')} icon={<CaretDown />} variant="outline" onClick={onMore} data-testid="drafts-more" />
         </div>
       )}
     </div>
   );
 }
 
-function NewDrafts() {
-  const start = useDrafts((s) => s.start);
+function GroupHead({ group: g }: { group: DraftGroup }) {
+  const images = useGallery((s) => s.images);
   const busy = useDrafts((s) => s.busy);
-  // The count and the position start at what the settings give and stay as they are set, also when another screen is shown between.
-  const settingsCount = useSettings((s) => s.draftCount);
-  const settingsPercent = useSettings((s) => s.draftPosition);
-  const count = useDraftForm((s) => s.count) ?? settingsCount;
-  const percent = useDraftForm((s) => s.percent) ?? settingsPercent;
-  const setCount = (n: number) => useDraftForm.getState().set({ count: n });
-  const setPercent = (n: number) => useDraftForm.getState().set({ percent: n });
-  // Another model for the drafts; until one is picked they follow the Generate tab's model.
-  const models = useModels((s) => s.models);
-  const generateModel = useParams((s) => s.modelKey);
-  const [picked, setPicked] = useState<string | null>(null);
-  // Every model the Generate tab draws with, diffusion models of the newer families included, less the edit models.
-  const mains = draftModels(models);
-  const leftOut = modelsWithoutDrafts(models);
-  const shownModel = picked && mains.some((m) => m.key === picked) ? picked : generateModel;
-
-  const run = async () => {
-    try {
-      const problem = await start(count, percent / 100, picked);
-      if (problem) toast({ status: 'warning', title: t(PROBLEMS[problem.error]) });
-    } catch (err) {
-      toast({ status: 'error', title: t('drafts.failed'), description: err instanceof Error ? err.message : String(err) });
-    }
-  };
-
+  const generation = g.kind === 'generation';
+  const acceptable = g.candidates.filter((c) => isAcceptable(g, c, images));
+  const failed = g.candidates.filter((c) => c.status === 'failed').length;
+  const prompt = g.params.positivePrompt ?? '';
   return (
-    <div className="dv-new">
-      <div className="dv-field dv-field--model">
-        <span>{t('drafts.model')}</span>
-        <ModelPicker models={mains} value={shownModel} onPick={(m) => setPicked(m.key)} placeholder={mains.length ? t('params.model.select') : t('params.model.noModels')} aria-label={t('drafts.model')} testId="drafts-model" />
-      </div>
-      <label className="dv-field">
-        <span>{t('drafts.count')}</span>
-        <NumberInput value={count} onChange={setCount} min={DRAFT_COUNT_RANGE.min} max={DRAFT_COUNT_RANGE.max} aria-label={t('drafts.count')} data-testid="drafts-count" />
-      </label>
-      <div className="dv-field dv-field--slider">
-        <span>{t('drafts.position')}</span>
-        <SliderNumber
-          value={percent}
-          onChange={setPercent}
-          min={POSITION_MIN * 100}
-          max={POSITION_MAX * 100}
-          step={5}
-          aria-label={t('drafts.position')}
-        />
-      </div>
-      <Button variant="solid" scheme="invoke" leftIcon={<Lightning weight="fill" />} isLoading={busy} onClick={() => void run()} data-testid="drafts-start">
-        {t('drafts.start')}
-      </Button>
-      {leftOut.length > 0 && (
-        <p className="dv-hint" data-testid="drafts-left-out">
-          {t('drafts.leftOut', { names: leftOut.map((m) => m.name).join(', ') })}
-        </p>
+    <header className="dv-group__head">
+      <span className="dv-group__when">{whenLabel(g.createdAt)}</span>
+      <span className="dv-group__model" data-truncate-ok="a model name in one line of the batch's header">
+        {g.params.modelName}
+      </span>
+      <span className="dv-group__prompt" title={prompt} data-truncate-ok="the start of the prompt in one line; the whole prompt is its tooltip">
+        {prompt}
+      </span>
+      <span className="dv-group__count">{tCount(generation ? 'drafts.history.pictures' : 'drafts.history.drafts', g.candidates.length)}</span>
+      {failed > 0 && !generation && (
+        <IconButton size="xs" label={tCount('drafts.retry', failed)} icon={<ArrowClockwise />} disabled={busy} onClick={() => void useDrafts.getState().retryFailed(g.id)} data-testid="drafts-group-retry" />
       )}
-    </div>
+      <IconButton
+        size="xs"
+        label={t(generation ? 'drafts.acceptAll.generation' : 'drafts.acceptAll.draft')}
+        icon={<Checks />}
+        disabled={busy || acceptable.length === 0}
+        onClick={() => accept(g, acceptable.map((c) => c.id), images)}
+        data-testid="drafts-group-accept"
+      />
+      <IconButton size="xs" label={t(generation ? 'drafts.closeGroupHeld' : 'drafts.closeGroup')} icon={<X />} onClick={() => useDrafts.getState().closeGroup(g.id)} data-testid="drafts-group-discard" />
+    </header>
   );
 }
 
-function GroupGrid({ group, onOpen }: { group: DraftGroup; onOpen: ((imageName: string) => void) | undefined }) {
-  const images = useGallery((s) => s.images);
+/** With pictures chosen: how many, ✓ for them, × for them, and letting them go. Nothing while none is chosen. */
+function SelectionBar({ groups }: { groups: DraftGroup[] }) {
   const selection = useDrafts((s) => s.selection);
   const busy = useDrafts((s) => s.busy);
-  const toggle = useDrafts((s) => s.toggleSelect);
-  const clear = useDrafts((s) => s.clearSelection);
-  const finish = useDrafts((s) => s.finish);
-  const adopt = useDrafts((s) => s.adopt);
-  const retryFailed = useDrafts((s) => s.retryFailed);
-  const generation = group.kind === 'generation';
-  const [page, setPage] = useState(0);
-  const pages = Math.max(1, Math.ceil(group.candidates.length / PER_PAGE));
-  const shown = group.candidates.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
-  const finishable = group.candidates.filter((c) => selection.includes(c.id) && canFinish(c, !!c.finalImageName && images.some((i) => i.name === c.finalImageName)));
-  const failed = group.candidates.filter((c) => c.status === 'failed').length;
-  const step = draftStepOf(group);
-  // A generation batch: what can move to the board is a picture that is done and still held back.
-  const held = new Set(heldPictures(group, images).map((i) => i.name));
-  const adoptable = group.candidates.filter((c) => selection.includes(c.id) && c.finalImageName !== null && held.has(c.finalImageName));
-
+  const images = useGallery((s) => s.images);
+  const picked = groups.map((g) => ({ g, ids: g.candidates.filter((c) => selection.includes(c.id)).map((c) => c.id) })).filter((p) => p.ids.length > 0);
+  const count = picked.reduce((n, p) => n + p.ids.length, 0);
+  if (count === 0) return null;
+  const kinds = new Set(picked.map((p) => p.g.kind === 'generation'));
+  const label = kinds.size > 1 ? 'drafts.accept.mixed' : kinds.has(true) ? 'drafts.accept.generation' : 'drafts.accept.draft';
+  const acceptable = picked.some((p) => p.g.candidates.some((c) => p.ids.includes(c.id) && isAcceptable(p.g, c, images)));
+  const { clearSelection, discard } = useDrafts.getState();
   return (
-    <>
-      <div className="dv-grid" data-testid="drafts-grid">
-        {shown.map((c) => (
-          <Cell key={c.id} group={group} c={c} step={step} images={images} selected={selection.includes(c.id)} onToggle={() => toggle(c.id)} onOpen={onOpen} />
-        ))}
-      </div>
-      <div className="dv-foot">
-        {pages > 1 && (
-          <span className="dv-pages">
-            <Button size="xs" variant="ghost" disabled={page === 0} onClick={() => setPage(page - 1)}>
-              ‹
-            </Button>
-            {page + 1} / {pages}
-            <Button size="xs" variant="ghost" disabled={page >= pages - 1} onClick={() => setPage(page + 1)}>
-              ›
-            </Button>
-          </span>
-        )}
-        <span className="dv-spacer" />
-        {failed > 0 && !generation && (
-          <Button size="sm" variant="outline" disabled={busy} onClick={() => void retryFailed(group.id)}>
-            {tCount('drafts.retry', failed)}
-          </Button>
-        )}
-        <Button size="sm" variant="ghost" disabled={selection.length === 0} onClick={clear}>
-          {t('drafts.clearSelection')}
-        </Button>
-        {generation ? (
-          <Button
-            size="sm"
-            variant="solid"
-            scheme="invoke"
-            leftIcon={<FolderPlus size={14} />}
-            disabled={busy || adoptable.length === 0}
-            onClick={() => void adopt(group.id, adoptable.map((c) => c.id))}
-            data-testid="drafts-adopt"
-          >
-            {tCount('drafts.adopt', adoptable.length)}
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            variant="solid"
-            scheme="invoke"
-            disabled={busy || finishable.length === 0}
-            onClick={() => void finish(group.id, finishable.map((c) => c.id))}
-            data-testid="drafts-finish"
-          >
-            {tCount('drafts.finish', finishable.length)}
-          </Button>
-        )}
-      </div>
-    </>
-  );
-}
-
-function Cell({
-  group,
-  c,
-  step,
-  images,
-  selected,
-  onToggle,
-  onOpen,
-}: {
-  group: DraftGroup;
-  c: DraftCandidate;
-  step: number;
-  images: ImageDTO[];
-  selected: boolean;
-  onToggle: () => void;
-  onOpen: ((imageName: string) => void) | undefined;
-}) {
-  const mark = useDrafts((s) => s.mark);
-  const { image, finished } = pictureOf(c, images);
-  const generation = group.kind === 'generation';
-  // The picture being drawn right now, as the grid of the gallery shows it: what it looks like so far and the step.
-  const liveItemId = c.finalStatus === 'running' ? c.finalItemId : c.status === 'running' ? c.itemId : null;
-  const live = useQueue((s) => (liveItemId !== null && s.progress?.itemId === liveItemId ? s.progress : null));
-  const antialias = useSettings((s) => s.antialiasProgressImages);
-  const working = c.status === 'queued' || c.status === 'running' || c.finalStatus === 'queued' || c.finalStatus === 'running';
-  const failed = c.status === 'failed' || c.finalStatus === 'failed';
-  // A picture of a generation batch is drawn to the end at once: it is waiting, being drawn, or done.
-  const badge = failed
-    ? t('drafts.badge.failed')
-    : finished
-      ? t('drafts.badge.finished')
-      : generation
-        ? t(c.finalStatus === 'running' ? 'drafts.badge.generating' : 'drafts.badge.queued')
-        : c.finalStatus
-          ? t('drafts.badge.finishing')
-          : c.status === 'queued'
-            ? t('drafts.badge.queued')
-            : c.status === 'running'
-              ? t('drafts.badge.drawing')
-              : t('drafts.badge.draft', { percent: Math.round(group.position * 100), steps: group.params.steps, step });
-  const ready = generation ? c.finalStatus === 'ready' && !!image : c.status === 'ready';
-  const openLarge = () => {
-    if (!image) return;
-    if (onOpen) {
-      onOpen(image.name);
-      return;
-    }
-    useGallery.getState().setSelection([image.name]);
-    showViewer('generate');
-  };
-  return (
-    <div className={cx('dv-cell', selected && 'is-selected', c.verdict === 'reject' && 'is-rejected', failed && 'is-failed')} data-testid="draft-cell">
-      <div
-        className="dv-img"
-        style={{ aspectRatio: `${group.params.width} / ${group.params.height}` }}
-        role="button"
-        tabIndex={0}
-        aria-pressed={selected}
-        aria-label={`seed ${c.seed}`}
-        onClick={() => ready && onToggle()}
-        onKeyDown={(e) => {
-          if (e.key === ' ' || e.key === 'Enter') {
-            e.preventDefault();
-            if (ready) onToggle();
-          }
-        }}
-        onDoubleClick={openLarge}
-        // A held picture can be dragged onto a board in the gallery, like a picture of the gallery.
-        draggable={generation && !!image}
-        onDragStart={(e) => image && setDragImages(e, [image.name])}
-      >
-        {live?.progressImageUrl ? (
-          // What is being drawn now wins over the draft it finishes: the step shows how far it has come.
-          <img src={live.progressImageUrl} alt="" draggable={false} style={antialias ? undefined : { imageRendering: 'pixelated' }} />
-        ) : image ? (
-          <img src={image.thumbnailUrl || image.url} alt="" draggable={false} />
-        ) : failed ? null : (
-          <Spinner size={18} />
-        )}
-        {image && working && (
-          <span className="dv-busy">
-            <Spinner size={12} />
-          </span>
-        )}
-        {selected && (
-          <span className="dv-check">
-            <Check size={12} weight="bold" />
-          </span>
-        )}
-        {onOpen && image && (
-          <button
-            type="button"
-            className="dv-open"
-            aria-label={t('drafts.open')}
-            data-testid="draft-open"
-            onClick={(e) => {
-              e.stopPropagation();
-              openLarge();
-            }}
-            onDoubleClick={(e) => e.stopPropagation()}
-          >
-            <ArrowsOut size={14} />
-          </button>
-        )}
-        <button
-          type="button"
-          className={cx('dv-star', c.verdict === 'keep' && 'is-on')}
-          aria-label={t(c.verdict === 'keep' ? 'drafts.unkeep' : 'drafts.keep')}
-          aria-pressed={c.verdict === 'keep'}
-          onClick={(e) => {
-            e.stopPropagation();
-            mark(group.id, c.id, 'keep');
-          }}
-          onDoubleClick={(e) => e.stopPropagation()}
-        >
-          <Star size={14} weight={c.verdict === 'keep' ? 'fill' : 'regular'} />
-        </button>
-      </div>
-      <div className="dv-meta">
-        <span className="dv-badge" title={c.error ?? undefined}>
-          {live && !finished ? `${badge} ${live.step}/${live.totalSteps}` : badge}
-        </span>
-        <span className="dv-seed">seed {c.seed}</span>
-        <IconButton
-          size="xs"
-          label={t(c.verdict === 'reject' ? 'drafts.unreject' : 'drafts.reject')}
-          icon={<X />}
-          onClick={() => mark(group.id, c.id, 'reject')}
-        />
-      </div>
+    <div className="dv-foot" data-testid="drafts-selection-bar">
+      <span className="dv-foot__count">{tCount('drafts.selected', count)}</span>
+      <span className="dv-spacer" />
+      <IconButton
+        label={t(label)}
+        icon={<Checks />}
+        variant="solid"
+        scheme="invoke"
+        disabled={busy || !acceptable}
+        onClick={() => picked.forEach((p) => accept(p.g, p.ids, images))}
+        data-testid="drafts-selection-accept"
+      />
+      <IconButton label={t('drafts.discard')} icon={<X />} variant="outline" onClick={() => picked.forEach((p) => discard(p.g.id, p.ids))} data-testid="drafts-selection-discard" />
+      <IconButton label={t('drafts.clearSelection')} icon={<SelectionSlash />} onClick={clearSelection} data-testid="drafts-selection-clear" />
     </div>
   );
 }
