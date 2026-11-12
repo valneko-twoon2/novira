@@ -88,7 +88,7 @@ export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, 
   if (alerts === null) return { merge: false, wait: true, reason: 'the code scanning alerts cannot be read (gh failed): no merge until they can' };
   if (checks === 'fail') return { merge: false, wait: false, toDraft: true, reason: 'a check failed (required or CodeQL): it goes back to a draft; fix, push, review again' };
   if (checks === 'pending') return { merge: false, wait: true, reason: 'checks (required and CodeQL) are still running' };
-  if (alerts > 0) return { merge: false, wait: false, reason: `${alerts} open code scanning alert(s) on the pull request: fix each, or report why it is a false positive` };
+  if (alerts > 0) return { merge: false, wait: false, toDraft: true, reason: `${alerts} open code scanning alert(s) on the pull request: it goes back to a draft; fix each, or report why it is a false positive` };
   return { merge: true, wait: false, reason: 'every check (required and CodeQL) passed and the agent review of the head is ok' };
 }
 
@@ -343,8 +343,16 @@ function main(argv) {
     const deadline = Date.now() + 60 * 60_000;
     let state = decisionOf(n);
     const ready = () => {
+      // The events API can lag: until it shows this ready_for_review (a time later than the last one), the runs of an earlier round
+      // would count as fresh. Judge only once it is there (or after two minutes, when the CodeQL names still keep the checks pending).
+      const before = readySince(n);
       gh(['pr', 'ready', String(n)]);
       console.log(`pr: #${n} made ready for review: the checks start`);
+      for (let i = 0; i < 24; i++) {
+        const now = readySince(n);
+        if (now && (!before || now > before)) break;
+        sleep(5_000);
+      }
       state = decisionOf(n);
     };
     if (state.decision.ready) ready();
