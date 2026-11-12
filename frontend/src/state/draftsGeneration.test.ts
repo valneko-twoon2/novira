@@ -20,7 +20,7 @@ const only = (): DraftGroup => state().groups[0]!;
 beforeEach(() => {
   localStorage.clear();
   useDrafts.setState({ groups: [], currentId: null, selection: [], busy: false });
-  useGallery.setState({ images: [], boards: [{ id: 'board', name: 'Cats', archived: false, createdAt: 1, parentId: null }] });
+  useGallery.setState({ images: [], selectedBoardId: 'none', boards: [{ id: 'board', name: 'Cats', archived: false, createdAt: 1, parentId: null }, { id: 'other', name: 'Dogs', archived: false, createdAt: 1, parentId: null }] });
   useToasts.setState({ toasts: [] });
   useGalleryUndo.setState({ undo: [], redo: [] });
   useQueue.setState({ items: [] });
@@ -79,10 +79,11 @@ describe('moving pictures to the board', { tags: [] }, () => {
   });
 
   it(
-    'moves the chosen ones to the board of the batch, shows them there and takes them out of the batch',
+    'moves the chosen ones to the board selected in the gallery, shows them there and takes them out of the batch',
     { tags: ['scenario'] },
     async () => {
       made(['a.png', 'b.png']);
+      useGallery.setState({ selectedBoardId: 'board' });
       const update = vi.spyOn(backend, 'updateImages').mockResolvedValue([picture('a.png', { isIntermediate: false })]);
       await state().adopt(only().id, [only().candidates[0]!.id]);
       expect(update).toHaveBeenCalledWith(['a.png'], { boardId: 'board', isIntermediate: false });
@@ -92,6 +93,15 @@ describe('moving pictures to the board', { tags: [] }, () => {
     },
   );
 
+  it('goes to the board selected now, not the one the batch was made for', { tags: ['condition', 'regression'] }, async () => {
+    made(['a.png']);
+    // The batch was made for 'board'; the user is on 'other' when they move the picture.
+    useGallery.setState({ selectedBoardId: 'other' });
+    const update = vi.spyOn(backend, 'updateImages').mockResolvedValue([picture('a.png', { isIntermediate: false, boardId: 'other' })]);
+    await state().adopt(only().id, [only().candidates[0]!.id]);
+    expect(update).toHaveBeenCalledWith(['a.png'], { boardId: 'other', isIntermediate: false });
+  });
+
   it('closes the batch when its last picture has gone to a board', { tags: ['boundary', 'state-transition'] }, async () => {
     made(['a.png']);
     vi.spyOn(backend, 'updateImages').mockResolvedValue([picture('a.png', { isIntermediate: false })]);
@@ -99,9 +109,12 @@ describe('moving pictures to the board', { tags: [] }, () => {
     expect(state()).toMatchObject({ groups: [], currentId: null });
   });
 
-  it('uses Uncategorized when the board of the batch is gone', { tags: ['condition'] }, async () => {
+  it.each([
+    ['none is selected', 'none', true],
+    ['the selected one is gone', 'gone-board', true],
+  ])('uses Uncategorized when %s', { tags: ['condition', 'boundary'] }, async (_why, selected) => {
     made(['a.png']);
-    useGallery.setState({ boards: [] });
+    useGallery.setState({ selectedBoardId: selected });
     const update = vi.spyOn(backend, 'updateImages').mockResolvedValue([picture('a.png', { isIntermediate: false, boardId: null })]);
     await state().adopt(only().id, [only().candidates[0]!.id]);
     expect(update).toHaveBeenCalledWith(['a.png'], { boardId: null, isIntermediate: false });
@@ -127,7 +140,7 @@ describe('moving pictures to the board', { tags: [] }, () => {
   );
 });
 
-describe('throwing away what is left', { tags: [] }, () => {
+describe('throwing away what is left when the batch is closed', { tags: [] }, () => {
   const held = () => {
     state().addGeneration([item(1), item(2), item(3)], request);
     useDrafts.setState({
@@ -147,7 +160,8 @@ describe('throwing away what is left', { tags: [] }, () => {
       const cancel = vi.spyOn(backend, 'cancelQueueItem').mockResolvedValue();
       const update = vi.spyOn(backend, 'updateImages').mockResolvedValue([]);
       const del = vi.spyOn(backend, 'deleteImages').mockResolvedValue();
-      await state().discardRest(only().id);
+      state().closeGroup(only().id);
+      await vi.waitFor(() => expect(del).toHaveBeenCalledWith(['p0.png']));
       expect(state().groups).toEqual([]);
       expect(cancel).toHaveBeenCalledWith(3);
       // Only p0 is held back: p1 is on a board already and stays.
@@ -158,17 +172,8 @@ describe('throwing away what is left', { tags: [] }, () => {
     },
   );
 
-  it('closing a generation batch does the same, and closing a batch of drafts only closes it', { tags: ['condition'] }, async () => {
-    held();
+  it('closing a batch of drafts only closes it', { tags: ['condition'] }, async () => {
     const del = vi.spyOn(backend, 'deleteImages').mockResolvedValue();
-    vi.spyOn(backend, 'cancelQueueItem').mockResolvedValue();
-    vi.spyOn(backend, 'updateImages').mockResolvedValue([]);
-    const id = only().id;
-    state().closeGroup(id);
-    await vi.waitFor(() => expect(del).toHaveBeenCalledWith(['p0.png']));
-    expect(state().groups).toEqual([]);
-
-    del.mockClear();
     useDrafts.setState({ groups: [{ ...only2(), id: 'd' }] });
     state().closeGroup('d');
     await Promise.resolve();
@@ -179,8 +184,9 @@ describe('throwing away what is left', { tags: [] }, () => {
     held();
     vi.spyOn(backend, 'cancelQueueItem').mockResolvedValue();
     vi.spyOn(backend, 'updateImages').mockRejectedValue(new Error('disk'));
-    await state().discardRest(only().id);
-    expect(useToasts.getState().toasts.at(-1)?.status).toBe('error');
+    state().closeGroup(only().id);
+    await vi.waitFor(() => expect(useToasts.getState().toasts.at(-1)?.status).toBe('error'));
+    expect(state().groups).toEqual([]);
   });
 });
 

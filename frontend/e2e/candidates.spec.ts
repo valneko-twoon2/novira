@@ -43,18 +43,12 @@ test(
   },
 );
 
-test('the rest of a batch goes to the trash, and closing the batch does the same', { tag: ['@state-transition'] }, async ({ page }) => {
+test('closing a batch sends the rest of it to the trash, and the bar has no button to trash the rest', { tag: ['@state-transition'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await prompt(page, 'a lantern in the rain');
   await page.getByTestId('invoke-button').click();
   await expect(page.getByTestId('draft-cell').first().locator('img')).toBeVisible({ timeout: 20_000 });
-  await page.getByTestId('drafts-discard').click();
-  await expect(page.getByTestId('drafts-grid')).toHaveCount(0);
-  await expect(page.getByTestId('gallery-thumb')).toHaveCount(0);
-
-  await prompt(page, 'a lantern in the rain, again');
-  await page.getByTestId('invoke-button').click();
-  await expect(page.getByTestId('draft-cell').first().locator('img')).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByTestId('drafts-adopt')).not.toContainText('「');
   await page.getByRole('button', { name: msg('drafts.closeGroupHeld') }).first().click();
   await expect(page.getByTestId('drafts-grid')).toHaveCount(0);
 });
