@@ -50,6 +50,10 @@ export function toolLabel(log: AgentToolLog): string {
       return t('agent.action.pose', { count: log.count ?? 0 });
     case 'queued':
       return t('agent.action.queued', { count: log.count ?? 0 });
+    case 'canceled':
+      return t('agent.action.canceled', { count: log.count ?? 0 });
+    case 'export':
+      return t('agent.action.export', { count: log.count ?? 0 });
     case 'packs':
       return '';
   }

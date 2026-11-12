@@ -347,7 +347,7 @@ describe('the Generate tab', { tags: [] }, () => {
 
   it('queues what the screen would, and reports why nothing was queued', { tags: ['equivalence', 'condition'] }, async () => {
     enqueue.mockResolvedValueOnce({ items: [{ id: 7 }, { id: 8 }] }).mockResolvedValueOnce({ problems: ['No model'] });
-    expect(await call('generate', { target: 'screen' })).toEqual({ ok: true, content: { queued: [7, 8] } });
+    expect(await call('generate', { target: 'screen' })).toEqual({ ok: true, content: { queued: [7, 8], note: expect.stringContaining('count box') } });
     expect(run.log).toEqual([{ kind: 'queued', count: 2 }]);
     expect(await call('generate', { target: 'screen' })).toEqual({ ok: false, content: 'Nothing was queued: No model' });
   });

@@ -355,6 +355,8 @@ export interface EngineSettings {
   comfyuiInstallDir: string | null;
   /** Where novira's own ComfyUI is installed now (owned mode). */
   comfyuiRoot: string;
+  /** The folder the running ComfyUI saves into (its `output`), for display; null when it is reached by URL only. */
+  comfyuiOutputDir: string | null;
   comfyuiPackage: ComfyuiPackage;
   /** novira's own ComfyUI is installed in the data folder (owned mode only). */
   comfyuiInstalled: boolean;

@@ -845,6 +845,8 @@ pub struct EngineSettings {
     pub comfyui_install_dir: Option<String>,
     /// Where novira's own ComfyUI is installed now (owned mode).
     pub comfyui_root: String,
+    /// The folder the running ComfyUI saves into (its `output`), for display; `None` when it is reached by URL only.
+    pub comfyui_output_dir: Option<String>,
     pub comfyui_package: ComfyuiPackage,
     /// novira's own ComfyUI is installed in the data folder (owned mode only).
     pub comfyui_installed: bool,

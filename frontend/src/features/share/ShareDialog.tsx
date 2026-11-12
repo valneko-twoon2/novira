@@ -2,7 +2,7 @@
 // made by AI (watermark, IPTC label, content credentials). The desktop app asks for the folder in a native
 // dialog; the browser downloads the files.
 import { FolderOpen } from '@phosphor-icons/react';
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { backend, type ExportResult, type WatermarkStatus } from '@/backend';
 import { t, tCount } from '@/i18n';
 import { useShareDialog } from '@/state/dialogs/share';
@@ -20,6 +20,7 @@ import {
   infoIsLost,
   splitMedia,
   toExportOptions,
+  withPreset,
   type ShareForm,
   type SizeChoice,
 } from './shareOptions';
@@ -93,6 +94,7 @@ export function ShareDialog() {
   const all = useGallery((s) => s.images);
   const { pictures, others } = useMemo(() => splitMedia(names ? imagesNamed(all, names) : []), [names, all]);
   const [form, setFormState] = useState<ShareForm>(lastForm);
+  const preset = useShareDialog((s) => s.preset);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<ExportResult | null>(null);
   const { status: watermark, retry } = useWatermarkStatus(!!names && form.watermark);
@@ -103,6 +105,14 @@ export function ShareDialog() {
       lastForm = { ...f, ...patch };
       return lastForm;
     });
+  // The assistant opened the dialog with its choices: start the form from them once (the user can still change any),
+  // then forget them, so a dialog mounted again later does not put them back over the user's own choices.
+  useEffect(() => {
+    if (!preset) return;
+    setForm(withPreset(lastForm, preset.choices));
+    useShareDialog.getState().takePreset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only a new preset (seq) applies, not every render
+  }, [preset?.seq]);
   const finish = () => {
     setResult(null);
     close();

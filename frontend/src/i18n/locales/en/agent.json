@@ -91,6 +91,8 @@
   "agent.effort.ultra": "Ultra",
   "agent.inputResize": "Change the height of the message box (drag, or the up and down keys)",
   "agent.action.queued": "Queued for generation ({count})",
+  "agent.action.canceled": "Canceled in the queue ({count})",
+  "agent.action.export": "Opened the export dialog ({count})",
   "agent.permission.title": "The AI wants to read your pictures or prompts",
   "agent.permission.gallery": "What it reads: the list of pictures in the gallery, with their prompts",
   "agent.permission.image": "What it reads: how one picture was made (prompts, model, settings)",
