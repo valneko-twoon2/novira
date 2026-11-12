@@ -105,9 +105,12 @@ export function ShareDialog() {
       lastForm = { ...f, ...patch };
       return lastForm;
     });
-  // The assistant opened the dialog with its choices: start the form from them (the user can still change any).
+  // The assistant opened the dialog with its choices: start the form from them once (the user can still change any),
+  // then forget them, so a dialog mounted again later does not put them back over the user's own choices.
   useEffect(() => {
-    if (preset) setForm(withPreset(lastForm, preset.choices));
+    if (!preset) return;
+    setForm(withPreset(lastForm, preset.choices));
+    useShareDialog.getState().takePreset();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only a new preset (seq) applies, not every render
   }, [preset?.seq]);
   const finish = () => {

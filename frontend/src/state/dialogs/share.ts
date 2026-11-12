@@ -14,15 +14,21 @@ export interface SharePreset {
 
 interface ShareDialogState {
   names: string[] | null;
-  /** The choices of the latest open that set some, with a number that changes on each such open. */
+  /** The choices of an open that set some, until the dialog takes them; the number changes on each such open. */
   preset: { choices: SharePreset; seq: number } | null;
   open: (names: string[], preset?: SharePreset) => void;
+  /** The dialog has put the preset into its form: it is used once. */
+  takePreset: () => void;
   close: () => void;
 }
 
-export const useShareDialog = create<ShareDialogState>()((set, get) => ({
+/** Counts the opens with a preset, so the same choices given twice still apply again. */
+let seq = 0;
+
+export const useShareDialog = create<ShareDialogState>()((set) => ({
   names: null,
   preset: null,
-  open: (names, preset) => set(preset ? { names, preset: { choices: preset, seq: (get().preset?.seq ?? 0) + 1 } } : { names }),
-  close: () => set({ names: null }),
+  open: (names, preset) => set(preset ? { names, preset: { choices: preset, seq: ++seq } } : { names, preset: null }),
+  takePreset: () => set({ preset: null }),
+  close: () => set({ names: null, preset: null }),
 }));

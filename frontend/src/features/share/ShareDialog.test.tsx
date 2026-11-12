@@ -146,4 +146,22 @@ describe('export for sharing dialog', { tags: [] }, () => {
     await waitFor(() => expect(run).toHaveBeenCalledTimes(1));
     expect(run.mock.calls[0]).toEqual([['a.png', 'b.png'], expect.objectContaining({ format: 'jpeg', quality: 92, maxSide: 2048 })]);
   });
+  it('uses the choices of the assistant once: the own later choices of the user stay after the dialog is mounted again', { tags: ['regression', 'state-transition'] }, async () => {
+    const run = vi.spyOn(backend, 'exportImages').mockResolvedValue(null);
+    const first = mount();
+    useShareDialog.getState().open(['a.png'], { format: 'jpeg', quality: 92 });
+    await screen.findByTestId('share');
+    // The user picks PNG instead and closes.
+    fireEvent.click(screen.getByTestId('share-format-png'));
+    useShareDialog.getState().close();
+    first.unmount();
+    // The layout changes and the dialog is mounted again; the user opens it on their own.
+    mount();
+    useShareDialog.getState().open(['a.png']);
+    await screen.findByTestId('share');
+    expect(screen.getByTestId('share-format-png').getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(screen.getByTestId('share-run'));
+    await waitFor(() => expect(run).toHaveBeenCalledTimes(1));
+    expect(run.mock.calls[0]![1]).toMatchObject({ format: 'png' });
+  });
 });
