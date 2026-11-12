@@ -69,7 +69,7 @@ Der gestrichelte Rahmen in der Leinwand ist der Bereich, in dem diesmal ein Bild
 
 ## Ebenen
 
-Unter **{{ui:canvas.layers.title}}** unten rechts werden die Dinge aufgelistet, die Sie auf der Leinwand platziert haben. Mit der Schaltfläche **{{ui:common.add}}** fügen Sie welche hinzu.
+Unter **{{ui:canvas.layers.title}}** unten rechts werden die Dinge aufgelistet, die Sie auf der Leinwand platziert haben. Mit der Schaltfläche **+** ({{ui:common.add}}) fügen Sie welche hinzu.
 
 ![Das geöffnete Menü „Hinzufügen“ der Ebenen](shot:canvas-add-layer)
 
@@ -150,7 +150,7 @@ Die Einstellungen sind folgende.
 
 Sie können eine Pose festlegen, indem Sie eine Strichfigur bewegen. Das ist praktisch, wenn die Angabe einer Pose in Worten nicht gut funktioniert.
 
-1. Klicken Sie im Tab **{{ui:app.tabs.canvas}}** bei den Ebenen auf **{{ui:common.add}}** und wählen Sie **{{ui:pose.menu}}**.
+1. Klicken Sie im Tab **{{ui:app.tabs.canvas}}** bei den Ebenen auf **+** ({{ui:common.add}}) und wählen Sie **{{ui:pose.menu}}**.
 2. Wählen Sie unter **{{ui:pose.preset}}** eine ähnliche Pose ({{ui:pose.preset.standing}}, {{ui:pose.preset.armsUp}}, {{ui:pose.preset.sitting}}, {{ui:pose.preset.walking}}).
 3. Ziehen Sie die Kreise an den Gelenken, um die Haltung zu ändern. Sie können einen Kreis auch auswählen und mit den Pfeiltasten bewegen (mit gedrückter `Shift`-Taste in größeren Schritten). **{{ui:pose.mirror}}** spiegelt die Figur seitlich, und **{{ui:pose.reset}}** stellt die ursprüngliche Vorlage wieder her.
 4. Wählen Sie die **{{ui:pose.size}}**. Meist genügt die Größe der Leinwand.
