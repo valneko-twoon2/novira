@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-12
+
+### Changed
+
+- 候補の「ボードへ入れる」を、生成したときのボードでなく、いま選んでいるボードへ入れるように変更。ボタンの表記もボード名によらないものにし、「ゴミ箱へ」のボタンを削除。
+
 ## [0.5.0] - 2026-11-12
 
 ### Added
@@ -175,7 +181,8 @@
 - AI アシスタントと拡張パックを追加。
 - スマホから使えるブラウザ版（`novira-server`）を追加。
 
-[unreleased]: https://github.com/valneko-twoon2/novira/compare/v0.5.0...HEAD
+[unreleased]: https://github.com/valneko-twoon2/novira/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/valneko-twoon2/novira/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/valneko-twoon2/novira/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/valneko-twoon2/novira/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/valneko-twoon2/novira/compare/v0.2.0...v0.3.0
