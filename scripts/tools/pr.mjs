@@ -408,8 +408,8 @@ export function syncCommit(cwd, mainRef, developRef, message) {
  * Whether `headRef` (a sync/<id> branch) is only the merge of main into develop, whoever pushed it: two parents, the first one a commit of
  * develop and the second one of main; the tree of its first parent, unchanged; and the tree of the main parent a tree develop once had (the
  * same condition `sync` checks before it makes the branch: a branch that drops a change only main has is not it). True, false, or null
- * when git cannot answer. develop may have moved since the branch was made: merging a commit that changes nothing against its first
- * parent leaves the newer develop as it is, so the branch need not be at develop's tip.
+ * when git cannot answer. develop may have moved since the branch was made, so the branch need not be at develop's tip, but the merge
+ * into develop as it is now must leave develop's tree as it is (`mergeKeepsTree`): checked on the real merge, not argued from the parents.
  */
 export function syncBranchIsSafe(cwd, headRef, developRef, mainRef) {
   const g = (args) => execFileSync('git', args, { encoding: 'utf8', cwd, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
@@ -419,7 +419,10 @@ export function syncBranchIsSafe(cwd, headRef, developRef, mainRef) {
     const [fromDevelop, fromMain] = parents;
     if (g(['rev-parse', `${headRef}^{tree}`]) !== g(['rev-parse', `${fromDevelop}^{tree}`])) return false;
     if (isAncestorOf(cwd, fromDevelop, developRef) !== true || isAncestorOf(cwd, fromMain, mainRef) !== true) return false;
-    return mainIsAStateOfDevelop(cwd, fromMain, developRef) === true;
+    if (mainIsAStateOfDevelop(cwd, fromMain, developRef) !== true) return false;
+    // What the merge into develop really leaves: with an old first parent the merge base is not that parent (two merge bases after an earlier
+    // sync), so "changes nothing against its first parent" is not enough: develop's newer work could be reverted.
+    return mergeKeepsTree(cwd, developRef, headRef) === true;
   } catch {
     return null;
   }

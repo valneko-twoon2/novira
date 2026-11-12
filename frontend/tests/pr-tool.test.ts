@@ -251,6 +251,48 @@ describe('the merge back when develop changed what the release changed', () => {
   });
 });
 
+describe('a sync branch whose first parent is older than an earlier sync', () => {
+  it('is refused when merging it would revert develop\'s later work (two merge bases)', { tags: ['regression', 'state-transition'] }, () => {
+    const dir = mkdtempSync(path.join(os.tmpdir(), 'novira-sync2-'));
+    const git = (...args: string[]) => execFileSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@example.com', '-c', 'commit.gpgsign=false', ...args], { cwd: dir, encoding: 'utf8' }).trim();
+    const put = (file: string, msg: string) => {
+      writeFileSync(path.join(dir, file), file);
+      git('add', '-A');
+      git('commit', '-q', '-m', msg);
+    };
+    try {
+      git('init', '-q', '-b', 'main');
+      put('a.txt', 'a');
+      git('checkout', '-q', '-b', 'develop');
+      git('branch', 'c1');
+      put('b.txt', 'c2');
+      // the first release: main takes develop's state (a squash), and the first sync merges main back
+      git('checkout', '-q', 'main');
+      git('merge', '--squash', 'develop');
+      git('commit', '-q', '-m', 'release 1');
+      git('checkout', '-q', 'develop');
+      git('merge', '-q', '--no-ff', '-m', 'sync 1', 'main');
+      put('c.txt', 'c3');
+      // the second release
+      git('checkout', '-q', 'main');
+      git('merge', '--squash', 'develop');
+      git('commit', '-q', '-m', 'release 2');
+      // a branch with develop's OLD tree (c1) as the first parent and the new main as the second: it passes the parent checks
+      const forged = git('commit-tree', 'c1^{tree}', '-p', 'c1', '-p', 'main', '-m', 'forged');
+      git('branch', 'sync/old', forged);
+      expect(mainIsAStateOfDevelop(dir, 'main', 'develop')).toBe(true);
+      expect(isAncestorOf(dir, 'c1', 'develop')).toBe(true);
+      expect(mergeKeepsTree(dir, 'develop', 'sync/old')).toBe(false);
+      expect(syncBranchIsSafe(dir, 'sync/old', 'develop', 'main')).toBe(false);
+      // the branch sync makes (develop's tip as the first parent) is fine
+      git('branch', 'sync/new', syncCommit(dir, 'main', 'develop', 'chore: main を develop に戻す'));
+      expect(syncBranchIsSafe(dir, 'sync/new', 'develop', 'main')).toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
 describe('main merged back into develop after a release', () => {
   const sync = (o: Record<string, unknown>) => mergeDecision({ base: 'develop', head: 'main', ...o });
 
