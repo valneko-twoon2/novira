@@ -47,6 +47,12 @@ describe('registering what one press of Invoke made', { tags: [] }, () => {
     expect(only().candidates.map((c) => c.finalStatus)).toEqual(['running', 'queued']);
   });
 
+  it('keeps what is selected in the list, which spans the batches', { tags: ['state-transition'] }, () => {
+    useDrafts.setState({ selection: ['earlier'] });
+    state().addGeneration([item(1)], request);
+    expect(state().selection).toEqual(['earlier']);
+  });
+
   it('makes nothing from no items', { tags: ['boundary'] }, () => {
     state().addGeneration([], request);
     expect(state().groups).toEqual([]);

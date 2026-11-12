@@ -92,14 +92,14 @@ describe('groups and selection', { tags: [] }, () => {
   });
 
   it(
-    'closes a group; closing the current one shows the last remaining, and another one changes nothing',
+    'closes a group; closing the current one shows the last remaining; the selection loses only the candidates of the closed group',
     { tags: ['state-transition', 'condition'] },
     () => {
       useDrafts.setState({ groups: [group('a', []), group('b', []), group('c', [])], currentId: 'c', selection: ['x'] });
       state().closeGroup('a');
       expect(state()).toMatchObject({ currentId: 'c', selection: ['x'] });
       state().closeGroup('c');
-      expect(state()).toMatchObject({ currentId: 'b', selection: [] });
+      expect(state()).toMatchObject({ currentId: 'b', selection: ['x'] });
       state().closeGroup('b');
       expect(state().currentId).toBeNull();
     },

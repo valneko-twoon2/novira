@@ -44,7 +44,7 @@
   "drafts.history.finished.other": "{count} finished",
   "drafts.closeGroupHeld": "Close (the rest goes to the trash)",
   "drafts.adoptFailed": "Could not move the pictures to the board",
-  "drafts.discardFailed": "Could not clear the rest of the pictures",
+  "drafts.discardFailed": "Could not clear the pictures",
   "drafts.badge.generating": "Generating",
   "drafts.history.pictures.one": "{count} picture",
   "drafts.history.pictures.other": "{count} pictures",

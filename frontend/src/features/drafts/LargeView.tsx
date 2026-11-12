@@ -39,6 +39,12 @@ export function LargeView({ groups, id, onMove, onClose }: { groups: DraftGroup[
     else if (entry.c.id !== id) onMove(entry.c.id);
   }, [entry, id, onMove, onClose]);
   useEffect(() => root.current?.focus(), []);
+  // A focused button that went away (a strip picture thrown away) or turned off (next at the end) drops the focus to the page
+  // body, where the keys no longer reach the view: take it back then, but never from something else the person focused.
+  useEffect(() => {
+    const active = document.activeElement;
+    if (root.current && (active === null || active === document.body)) root.current.focus();
+  });
 
   if (!entry) return null;
   const { group, c } = entry;

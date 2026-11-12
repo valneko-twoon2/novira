@@ -44,7 +44,7 @@
   "drafts.history.finished.other": "仕上げ {count} 枚",
   "drafts.closeGroupHeld": "閉じる（残りの絵はゴミ箱へ）",
   "drafts.adoptFailed": "ボードへ入れられませんでした",
-  "drafts.discardFailed": "残りの絵を片付けられませんでした",
+  "drafts.discardFailed": "絵を片付けられませんでした",
   "drafts.badge.generating": "生成中",
   "drafts.history.pictures.one": "{count} 枚",
   "drafts.history.pictures.other": "{count} 枚",

@@ -112,6 +112,29 @@ describe('the large view', { tags: [] }, () => {
     expect(useDrafts.getState().groups.find((g) => g.id === 'g')!.candidates).toHaveLength(3);
   });
 
+  it('keeps the keys working after the focused button goes away or turns off', { tags: ['regression', 'error-guessing'] }, () => {
+    // Keys go where the focus is, as in a browser: a removed or disabled button must not leave the focus on the page body.
+    const press = (k: string) => fireEvent.keyDown(document.activeElement ?? document.body, { key: k });
+    setup();
+    fireEvent.doubleClick(cellButton(1));
+    const current = screen.getAllByTestId('drafts-strip-thumb')[1]!;
+    current.focus();
+    fireEvent.click(current);
+    press('Delete');
+    expect(shownName()).toBe('g5.png');
+    press('ArrowLeft');
+    expect(shownName()).toBe('g3.png');
+    // To the end with the next button: it turns off there, and ← still works.
+    const next = screen.getByTestId('drafts-large-next') as HTMLButtonElement;
+    next.focus();
+    fireEvent.click(next);
+    fireEvent.click(next);
+    expect(next.disabled).toBe(true);
+    if (document.activeElement === next) next.blur();
+    press('ArrowLeft');
+    expect(shownName()).toBe('g5.png');
+  });
+
   it('gives way to the next picture when the one shown leaves by other means', { tags: ['error-guessing'] }, () => {
     setup();
     fireEvent.doubleClick(cellButton(1));

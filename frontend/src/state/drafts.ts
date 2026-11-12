@@ -355,7 +355,7 @@ export const useDrafts = create<DraftsState>()(
         const wasCurrent = ids.includes(get().currentId ?? '');
         // The selection may span groups: the candidates of the closed ones leave it.
         const gone = new Set(get().groups.filter((g) => ids.includes(g.id)).flatMap((g) => g.candidates.map((c) => c.id)));
-        set({ groups, currentId: wasCurrent ? (groups[groups.length - 1]?.id ?? null) : get().currentId, selection: wasCurrent ? [] : get().selection.filter((s) => !gone.has(s)) });
+        set({ groups, currentId: wasCurrent ? (groups[groups.length - 1]?.id ?? null) : get().currentId, selection: get().selection.filter((s) => !gone.has(s)) });
       },
       discard: (groupId, candidateIds) => {
         const group = get().groups.find((g) => g.id === groupId);
@@ -418,7 +418,7 @@ export const useDrafts = create<DraftsState>()(
               verdict: null,
             })),
           };
-          set({ groups: withQueue([...get().groups, group]), currentId: group.id, selection: [] });
+          set({ groups: withQueue([...get().groups, group]), currentId: group.id });
           return null;
         } finally {
           set({ busy: false });
@@ -446,7 +446,7 @@ export const useDrafts = create<DraftsState>()(
             verdict: null,
           })),
         };
-        set({ groups: withQueue([...get().groups, group]), currentId: group.id, selection: [] });
+        set({ groups: withQueue([...get().groups, group]), currentId: group.id });
       },
       adopt: async (groupId, candidateIds) => {
         const group = get().groups.find((g) => g.id === groupId);
