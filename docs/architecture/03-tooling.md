@@ -29,6 +29,7 @@
 | `typecheck.mjs`、`commit-gates.mjs`、`docs-check.mjs`、`ui-refs.mjs`、`visual-baselines.mjs`、`check-eol.mjs`、`fix-eol.mjs`、`eol.mjs`、`check-name.mjs`、`changelog.mjs`、`ci-summary.mjs`、`ci-scope.mjs`、`dependabot-triage.mjs`、`test-tags.mjs`、`test-tags-edit.mjs` | リポジトリ全体の検査: 型、コミットが通すべき CI ジョブ（Rust の整形、clippy、lint、モックと本物のバックエンドの比較、スマホ）、地図と設計ページ、存在しないテスト ID と文言キー、画面を変えうる変更の判定（基準画像）、改行、名前の綴り、変更履歴の形、CI のテスト数、CI で回す長いジョブの選別、Dependabot の PR のマージ・クローズの判断、テストの手法・設計技法のタグの集計（docs/tests/README.md の件数表）と、タグの一覧・設定・長い見出しの折り返し |
 | `layout-scan.mjs`、`e2e-lock.mjs` | レイアウトスキャン（テキストの収まりを含む）とその合格記録。重い Playwright の実行を一度に 1 つにするロック |
 | `worktree.mjs` | 作業ブランチの worktree を作って消す（PR で squash マージされたブランチも消す） |
+| `local-day.mjs` | 人が読む日付（`changelog.mjs --release` の版の日付、`worktree.mjs add` のブランチ名）を、UTC でなく手元の暦の日にする |
 | `pr.mjs` | 作業ブランチの PR: 下書きで開く、エージェントのレビューを投稿する、レビューが ok なら下書きを外して検査を回し、通ったら squash マージする（`/ship`） |
 | `repeat-test.mjs` | 1 つのコマンドを N 回（既定 20、`--parallel` で負荷をかける）実行し、不安定なテストや競合するテストを捕まえる。最初の失敗の出力は `logs/repeat-test/` に残る |
 | `prune-stale.mjs` | `novira-data/work/` と `logs/` の古い項目を消す（下記） |

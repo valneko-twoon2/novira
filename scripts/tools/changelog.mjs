@@ -12,7 +12,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { localDay } from './harness-paths.mjs';
+import { localDay } from './local-day.mjs';
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 export const FILE = join(ROOT, 'CHANGELOG.md');
@@ -139,12 +139,6 @@ export function notes(text, tag) {
 }
 
 /** The text with [Unreleased] moved into a new section for the version, dated `date`, and the links rewritten. */
-/** The date of a release cut now (YYYY-MM-DD): the local calendar day. toISOString() is the UTC day, which in Japan before 09:00
- * is still yesterday. */
-export function releaseDate(d = new Date()) {
-  return localDay(d);
-}
-
 export function release(text, version, date) {
   if (!VERSION.test(version ?? '')) throw new Error(`"${version}" is not a version x.y.z`);
   if (!validDate(date ?? '')) throw new Error(`"${date}" is not a date YYYY-MM-DD`);
@@ -165,6 +159,12 @@ export function release(text, version, date) {
       .join('\n'),
   ];
   return `${blocks.join('\n\n')}\n`;
+}
+
+/** The date of a release cut now (YYYY-MM-DD): the local calendar day. toISOString() is the UTC day, which in Japan before 09:00
+ * is still yesterday. */
+export function releaseDate(d = new Date()) {
+  return localDay(d);
 }
 
 function main(argv) {

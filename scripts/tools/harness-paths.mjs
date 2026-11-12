@@ -17,12 +17,6 @@ import { parseWorktrees } from './worktree.mjs';
  * `E:`, and every test file fails with "Cannot read properties of undefined (reading 'config')". The repository folder of every
  * tool goes through this.
  */
-/** The local calendar day of `d` as YYYY-MM-DD (the user's day: toISOString() would give the UTC one). */
-export function localDay(d = new Date()) {
-  const two = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`;
-}
-
 export function upperDrive(p) {
   return p.replace(/^([a-z]):/, (_, drive) => `${drive.toUpperCase()}:`);
 }

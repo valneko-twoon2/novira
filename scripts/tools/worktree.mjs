@@ -10,7 +10,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, lstatSync, readdirSync, readlinkSync, rmdirSync, statSync, symlinkSync, unlinkSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { localDay } from './harness-paths.mjs';
+import { localDay } from './local-day.mjs';
 
 const LINKED = [['frontend', 'node_modules'], ['backend', 'target']];
 
@@ -129,13 +129,13 @@ export function linkFolder(target, link) {
 }
 
 /** A worktree name names a folder and a branch: letters, digits, `.`, `_` and `-` only, not starting with a dot or a dash. */
+export function validName(name) {
+  return /^[A-Za-z0-9_][\w.-]*$/.test(name) && !name.includes('..');
+}
+
 /** The branch of a new worktree: the local calendar day (not the UTC one), then the name. */
 export function branchName(name, d = new Date()) {
   return `${localDay(d).replaceAll('-', '')}_${name}`;
-}
-
-export function validName(name) {
-  return /^[A-Za-z0-9_][\w.-]*$/.test(name) && !name.includes('..');
 }
 
 function main(argv) {
