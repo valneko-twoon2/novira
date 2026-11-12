@@ -13,7 +13,7 @@ const initial = { queue: useQueue.getState(), toasts: useToasts.getState() };
 const lastToast = () => useToasts.getState().toasts.at(-1);
 const status = (over: object = {}) => ({ isPaused: false, total: 3, pending: 1, completed: 1, failed: 1, canceled: 0, inProgress: 1, ...over }) as never;
 const item = (id: number, state: string) => ({ id, status: state }) as never;
-const button = (label: string) => screen.getByText(label).closest('button') as HTMLButtonElement;
+const button = (label: string) => screen.getByRole('button', { name: label }) as HTMLButtonElement;
 
 beforeEach(() => {
   useQueue.setState({ ...initial.queue, status: status(), items: [item(1, 'in_progress'), item(2, 'pending'), item(3, 'pending'), item(4, 'completed')] }, true);
@@ -70,6 +70,12 @@ describe('QueueControls', { tags: [] }, () => {
     fireEvent.click(await screen.findByTestId('queue-clear-confirm'));
     await waitFor(() => expect(clear).toHaveBeenCalled());
     await waitFor(() => expect(lastToast()?.title).toBe(t('queue.toast.cleared')));
+  });
+
+  it('shows icons only: each button is named by its label, with no text printed', { tags: ['equivalence'] }, () => {
+    for (const label of ['queue.action.pause', 'queue.action.cancelCurrent', 'queue.action.cancelAllExceptCurrent', 'queue.action.prune', 'queue.action.clear'] as const) {
+      expect(button(t(label)).textContent).toBe('');
+    }
   });
 
   it('turns off what has nothing to act on', { tags: ['boundary'] }, () => {

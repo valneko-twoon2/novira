@@ -302,7 +302,7 @@ At the top of the screen there are the following.
 - The breakdown of the item counts ({{ui:queue.status.pending}}, {{ui:queue.status.inProgress}}, {{ui:queue.status.completed}}, {{ui:queue.status.failed}}, {{ui:queue.status.canceled}}).
 - At the upper right, the progress of the item being drawn now.
 
-The buttons do the following.
+The buttons are icons; hold the mouse over one to see its name. They do the following.
 
 | Button | What it does |
 |---|---|

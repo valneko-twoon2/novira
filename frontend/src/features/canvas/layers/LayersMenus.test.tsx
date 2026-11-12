@@ -165,6 +165,9 @@ describe('layers panel', { tags: [] }, () => {
 
   it('adds a layer of the chosen type from the Add menu', { tags: ['equivalence'] }, async () => {
     show();
+    // The Add button is a plus alone, named by its label
+    expect(screen.getByTestId('canvas-add-layer').textContent).toBe('');
+    expect(screen.getByTestId('canvas-add-layer').getAttribute('aria-label')).toBe(t('common.add'));
     fireEvent.keyDown(screen.getByTestId('canvas-add-layer'), { key: 'Enter' });
     fireEvent.click(await screen.findByRole('menuitem', { name: t(ADD_LABEL.control) }));
     expect(state().entities.map((e) => e.type)).toEqual(['control']);
