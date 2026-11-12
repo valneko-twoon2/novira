@@ -10,7 +10,10 @@
 //                                                    taking work while the release is reviewed and tested; run it again to bring the snapshot up to
 //                                                    develop (a fast-forward).
 //   node scripts/tools/pr.mjs sync                   after a release: the pull request that merges main back into develop (no review: merging
-//                                                    main must leave develop's own tree as it is, `syncSafe`).
+//                                                    main must leave develop's own tree as it is, `syncSafe`). When develop changed lines the
+//                                                    release also changed (a generated table, say), that merge conflicts: the pull request then comes
+//                                                    from sync/<id>, a merge commit of develop and main that keeps develop's tree, made only when
+//                                                    main's tree is a state develop once had (the release was a snapshot of develop).
 //   node scripts/tools/pr.mjs review <n> --verdict ok|changes --sha <commit read> --body-file <f>   (the shape: reviewProblems)
 //                                                    post an agent's review of the commit it read (a comment review: GitHub lets nobody
 //                                                    approve their own pull request, and the agents act as the user). Refused when the
@@ -78,6 +81,19 @@ export const CODEQL_CHECKS = ['analyze (actions)', 'analyze (javascript-typescri
 /** The branch a release pull request comes from: a snapshot of develop, so develop can go on taking work while it is reviewed and tested. */
 export const RELEASE_PREFIX = 'release/';
 
+/** The branch of a merge of main into develop made by `sync` when the plain merge conflicts. */
+export const SYNC_PREFIX = 'sync/';
+
+/** Whether `name` is such a branch (sync/<id>). */
+export function isSyncBranch(name) {
+  return typeof name === 'string' && /^sync\/[A-Za-z0-9][A-Za-z0-9._-]*$/.test(name);
+}
+
+/** Whether the pull request merges main back into develop: from main itself, or from a sync/<id> branch. */
+export function isSyncPullRequest(base, head) {
+  return base === WORK_BRANCH && (head === RELEASE_BRANCH || isSyncBranch(head));
+}
+
 /** Whether `name` is the snapshot branch of a release (release/<n>). */
 export function isReleaseBranch(name) {
   return typeof name === 'string' && /^release\/[A-Za-z0-9][A-Za-z0-9._-]*$/.test(name);
@@ -118,7 +134,7 @@ export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, 
   if (title.length) return { merge: false, wait: false, reason: `the title cannot be the commit on ${base} (${title[0]}): fix it with pr.mjs open --title` };
   if (body.length) return { merge: false, wait: false, reason: `the description is not complete (${body[0]}): fill in .github/pull_request_template.md` };
   // main into develop: nothing new to review when merging main changes nothing in develop's tree.
-  if (base === WORK_BRANCH && head === RELEASE_BRANCH) {
+  if (isSyncPullRequest(base, head)) {
     if (syncSafe === null) return { merge: false, wait: false, reason: 'the merge of main into develop cannot be tried here (git failed)' };
     if (!syncSafe) return { merge: false, wait: false, reason: 'merging main into develop would change develop (a conflict, or a change only main has): a person looks at it' };
     return { merge: true, wait: false, reason: "merging main into develop leaves develop's tree as it is" };
@@ -239,7 +255,7 @@ export function withoutComments(text) {
  * request that merges main back into develop is a merge commit instead (a squash would leave main's history out of develop's again).
  */
 export function mergeArgs(n, pr) {
-  const how = pr.baseRefName === WORK_BRANCH && pr.headRefName === RELEASE_BRANCH ? '--merge' : '--squash';
+  const how = isSyncPullRequest(pr.baseRefName, pr.headRefName) ? '--merge' : '--squash';
   return ['pr', 'merge', String(n), how, '--match-head-commit', pr.headRefOid, '--subject', pr.title, '--body', ''];
 }
 
@@ -371,6 +387,37 @@ export function mergeKeepsTree(cwd, ours, theirs) {
   }
 }
 
+/** Whether the tree of `mainRef` is the tree of some commit in the history of `developRef`: true after a release that was a snapshot of develop. */
+export function mainIsAStateOfDevelop(cwd, mainRef, developRef) {
+  const g = (args) => execFileSync('git', args, { encoding: 'utf8', cwd, maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
+  try {
+    const tree = g(['rev-parse', `${mainRef}^{tree}`]).trim();
+    return g(['log', '--format=%T', developRef]).split(/\r?\n/).includes(tree);
+  } catch {
+    return null;
+  }
+}
+
+/** The merge commit `sync` pushes when the plain merge conflicts: develop's own tree, with develop and main as parents. Nothing is checked out. */
+export function syncCommit(cwd, mainRef, developRef, message) {
+  const g = (args) => execFileSync('git', args, { encoding: 'utf8', cwd, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  return g(['commit-tree', `${developRef}^{tree}`, '-p', developRef, '-p', mainRef, '-m', message]);
+}
+
+/**
+ * Whether `headRef` (a sync/<id> branch) is only the merge of main into develop: develop's own tree, with develop and main both in its
+ * history. True, false, or null when git cannot answer.
+ */
+export function syncBranchIsSafe(cwd, headRef, developRef, mainRef) {
+  const g = (args) => execFileSync('git', args, { encoding: 'utf8', cwd, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  try {
+    const same = g(['rev-parse', `${headRef}^{tree}`]) === g(['rev-parse', `${developRef}^{tree}`]);
+    return same && isAncestorOf(cwd, developRef, headRef) === true && isAncestorOf(cwd, mainRef, headRef) === true;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Whether merging main into develop leaves develop's tree as it is (`git merge-tree` of the two, against develop's own tree): true after a
  * squash release whose content develop already has. False for a conflict or a change only main has; null when git cannot answer.
@@ -381,6 +428,16 @@ function syncIsSafe(headOid) {
     // The tree tried is that of the pull request's own head, not of a main that moved since.
     if (git(['rev-parse', `origin/${RELEASE_BRANCH}`]).trim() !== headOid) return null;
     return mergeKeepsTree(process.cwd(), `origin/${WORK_BRANCH}`, `origin/${RELEASE_BRANCH}`);
+  } catch {
+    return null;
+  }
+}
+
+/** Whether the sync/<id> branch at `headOid` is only the merge of main into develop (`syncBranchIsSafe`); null when git cannot answer. */
+function syncBranchSafe(headOid) {
+  try {
+    git(['fetch', 'origin', WORK_BRANCH, RELEASE_BRANCH]);
+    return syncBranchIsSafe(process.cwd(), headOid, `origin/${WORK_BRANCH}`, `origin/${RELEASE_BRANCH}`);
   } catch {
     return null;
   }
@@ -420,7 +477,7 @@ function decisionOf(n, guard = { before: null, floor: null }) {
   const since = pr.isDraft || !gated ? null : readyFrom(readySince(n), guard.before, guard.floor);
   const checks = gated ? gatingChecks(freshChecks(allChecks(n), since), requiredNames()) : [];
   const verdict = reviewVerdict(pr.reviews ?? [], pr.headRefOid, me());
-  const sync = pr.baseRefName === WORK_BRANCH && pr.headRefName === RELEASE_BRANCH;
+  const sync = isSyncPullRequest(pr.baseRefName, pr.headRefName);
   let snapshot = null;
   if (gated) {
     try {
@@ -441,7 +498,7 @@ function decisionOf(n, guard = { before: null, floor: null }) {
     title: titleProblems(pr.title),
     body: bodyProblems(pr.body),
     alerts: gated ? openAlerts(n) : 0,
-    syncSafe: sync ? syncIsSafe(pr.headRefOid) : null,
+    syncSafe: sync ? (pr.headRefName === RELEASE_BRANCH ? syncIsSafe(pr.headRefOid) : syncBranchSafe(pr.headRefOid)) : null,
     snapshot,
   });
   return { pr, checks, decision, verdict };
@@ -458,6 +515,7 @@ function main(argv) {
     let branch = release ? null : git(['rev-parse', '--abbrev-ref', 'HEAD']).trim();
     if (!release && [RELEASE_BRANCH, WORK_BRANCH, 'HEAD'].includes(branch)) throw new Error(`open a pull request from a work branch, not from ${branch}`);
     if (!release && isReleaseBranch(branch)) throw new Error(`${branch} is a release snapshot: open it with --release`);
+    if (!release && isSyncBranch(branch)) throw new Error(`${branch} is made by pr.mjs sync: run that instead`);
     const base = release ? RELEASE_BRANCH : WORK_BRANCH;
     git(['fetch', 'origin', WORK_BRANCH, base]);
     if (release) {
@@ -505,12 +563,25 @@ function main(argv) {
       console.log(`pr: ${WORK_BRANCH} already has everything of ${RELEASE_BRANCH}: nothing to merge back`);
       return 0;
     }
-    const open = JSON.parse(gh(['pr', 'list', '--head', RELEASE_BRANCH, '--base', WORK_BRANCH, '--state', 'open', '--json', 'number,url']));
+    const open = JSON.parse(gh(['pr', 'list', '--base', WORK_BRANCH, '--state', 'open', '--json', 'number,url,headRefName'])).filter((p) => isSyncPullRequest(WORK_BRANCH, p.headRefName));
     if (open.length) {
       console.log(`pr: #${open[0].number} is open: ${open[0].url}`);
       return 0;
     }
-    console.log(gh(['pr', 'create', '--base', WORK_BRANCH, '--head', RELEASE_BRANCH, '--title', SYNC_TITLE, '--body', SYNC_BODY]).trim());
+    let head = RELEASE_BRANCH;
+    if (syncIsSafe(git(['rev-parse', `origin/${RELEASE_BRANCH}`]).trim()) !== true) {
+      // The plain merge conflicts (develop changed lines the release changed too). Safe only when main is a state develop once had: then
+      // the merge commit that keeps develop's tree loses nothing of main.
+      if (mainIsAStateOfDevelop(process.cwd(), `origin/${RELEASE_BRANCH}`, `origin/${WORK_BRANCH}`) !== true) {
+        console.error(`pr: merging ${RELEASE_BRANCH} into ${WORK_BRANCH} conflicts, and ${RELEASE_BRANCH} is not a state ${WORK_BRANCH} once had: a person looks at it`);
+        return 1;
+      }
+      const sha = git(['rev-parse', '--short=8', `origin/${RELEASE_BRANCH}`]).trim();
+      head = `${SYNC_PREFIX}${sha}`;
+      const commit = syncCommit(process.cwd(), `origin/${RELEASE_BRANCH}`, `origin/${WORK_BRANCH}`, SYNC_TITLE);
+      git(['push', 'origin', `${commit}:refs/heads/${head}`]);
+    }
+    console.log(gh(['pr', 'create', '--base', WORK_BRANCH, '--head', head, '--title', SYNC_TITLE, '--body', SYNC_BODY]).trim());
     return 0;
   }
   if (cmd === 'review' && n) {
