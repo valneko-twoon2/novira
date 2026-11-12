@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { BODY_SECTIONS, CODEQL_CHECKS, bodyProblems, checksState, deleteBranchArgs, freshChecks, gatingChecks, laterOf, mergeArgs, mergeDecision, reviewMark, reviewProblems, reviewVerdict, titleFor, titleProblems, withMissing, withoutComments } from '../../scripts/tools/pr.mjs';
+import { BODY_SECTIONS, CODEQL_CHECKS, bodyProblems, checksState, deleteBranchArgs, freshChecks, gatingChecks, readyFrom, mergeArgs, mergeDecision, reviewMark, reviewProblems, reviewVerdict, titleFor, titleProblems, withMissing, withoutComments } from '../../scripts/tools/pr.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const HEAD = 'a'.repeat(40);
@@ -228,6 +228,10 @@ describe('the shape of a review (a verdict box, then the sections, to read at a 
     expect(reviewProblems('changes', changes, 'b'.repeat(40)).join()).toContain('bbbbbbbb');
   });
 
+  it('refuses a blank line between the box and the 判定 line: GitHub then draws two quotes, not a coloured box', { tags: ['boundary'] }, () => {
+    expect(reviewProblems('changes', changes.replace('> [!CAUTION]\n', '> [!CAUTION]\n\n'), SHA).join()).toContain('right under');
+  });
+
   it('refuses changes without a finding, ok with one, and a finding without its place, problem or fix', { tags: ['decision-table', 'boundary'] }, () => {
     const noFinding = changes.replace(/#### 指摘\n[\s\S]*?\n\n/, '').replace('指摘 1 件', '指摘 0 件');
     expect(reviewProblems('changes', noFinding, SHA).join()).toContain('without a finding');
@@ -278,12 +282,20 @@ describe('the checks after a draft is made ready', () => {
     expect(freshChecks(checks, null)).toEqual(checks);
   });
 
-  it('never count a run older than the moment before the pull request was made ready, even while the events API still shows an earlier time', { tags: ['boundary', 'regression'] }, () => {
-    expect(laterOf('2026-11-12T09:00:00Z', '2026-11-12T10:00:00Z')).toBe('2026-11-12T10:00:00Z');
-    expect(laterOf('2026-11-12T11:00:00Z', '2026-11-12T10:00:00Z')).toBe('2026-11-12T11:00:00Z');
-    expect(laterOf(null, '2026-11-12T10:00:00Z')).toBe('2026-11-12T10:00:00Z');
-    expect(laterOf('2026-11-12T09:00:00Z', null)).toBe('2026-11-12T09:00:00Z');
-    expect(laterOf(null, null)).toBeNull();
+  it('start, after `gh pr ready`, at the moment before it until the events API shows the new ready time, then at that time', { tags: ['state-transition', 'regression'] }, () => {
+    const before = '2026-11-12T09:00:00Z';
+    const floor = '2026-11-12T10:00:00Z';
+    // The events API still shows the earlier ready time: the moment before `gh pr ready` wins.
+    expect(readyFrom(before, before, floor)).toBe(floor);
+    expect(readyFrom(null, null, floor)).toBe(floor);
+    // It shows the new one: that time alone, so a local clock running ahead cannot hold fresh runs back.
+    expect(readyFrom('2026-11-12T09:59:40Z', before, floor)).toBe('2026-11-12T09:59:40Z');
+    expect(readyFrom('2026-11-12T09:59:40Z', null, floor)).toBe('2026-11-12T09:59:40Z');
+    // A merge that did not make it ready itself: the events API alone.
+    expect(readyFrom('2026-11-12T09:00:00Z', null, null)).toBe('2026-11-12T09:00:00Z');
+    // A failed run of the earlier round is pending until the fresh runs come.
+    const checks = [{ name: 'vitest', bucket: 'fail', startedAt: '2026-11-12T09:30:00Z' }];
+    expect(checksState(freshChecks(checks, readyFrom(before, before, floor)))).toBe('pending');
   });
 });
 

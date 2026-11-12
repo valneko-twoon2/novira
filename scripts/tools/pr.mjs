@@ -193,6 +193,8 @@ export function reviewProblems(verdict, text, sha) {
   const box = verdict === 'ok' ? '> [!TIP]' : '> [!CAUTION]';
   const word = verdict === 'ok' ? 'OK' : 'NG';
   if (solid[0]?.trim() !== box) problems.push(`the first line is "${box}" alone`);
+  const first = lines.findIndex((l) => l.trim());
+  if (first >= 0 && !lines[first + 1]?.trim()) problems.push('the 判定 line goes right under the box line, with no blank line (or GitHub draws no box)');
   const head = /^> \*\*判定: (OK|NG)\*\*\s+指摘 (\d+) 件・任意 (\d+) 件（([0-9a-f]{8}) を確認）$/.exec(solid[1]?.trim() ?? '');
   if (!head) problems.push(`the second line is "> **判定: ${word}**　指摘 N 件・任意 M 件（<the first 8 of the commit> を確認）"`);
   else if (head[1] !== word) problems.push(`the verdict is "判定: ${word}" for ${verdict}`);
@@ -281,16 +283,21 @@ function readySince(n) {
   return times.split(/\r?\n/).filter(Boolean).sort().pop() ?? null;
 }
 
-/** The later of two ISO times (either may be null). */
-export function laterOf(a, b) {
-  if (!a) return b ?? null;
-  if (!b) return a;
-  return a > b ? a : b;
+/**
+ * The time from which runs count (`freshChecks`): `shown` is the last ready time the events API shows now, `before` the one it showed
+ * before this `merge` ran `gh pr ready`, `floor` the local moment before that call (null when this `merge` did not make it ready). The
+ * events API can lag: until it shows a time after `before`, the floor holds the runs of an earlier round back; once it does, that time
+ * alone, so a local clock running ahead cannot hold the fresh runs back. A `merge` run again later has no floor and trusts the events.
+ */
+export function readyFrom(shown, before, floor) {
+  if (!floor) return shown ?? null;
+  return shown && (!before || shown > before) ? shown : floor;
 }
 
-function decisionOf(n, floor = null) {
+function decisionOf(n, guard = { before: null, floor: null }) {
   const pr = view(n);
-  const checks = gatingChecks(freshChecks(allChecks(n), pr.isDraft ? null : laterOf(readySince(n), floor)), requiredNames());
+  const since = pr.isDraft ? null : readyFrom(readySince(n), guard.before, guard.floor);
+  const checks = gatingChecks(freshChecks(allChecks(n), since), requiredNames());
   const verdict = reviewVerdict(pr.reviews ?? [], pr.headRefOid, me());
   const decision = mergeDecision({
     checks: checksState(checks),
@@ -363,18 +370,19 @@ function main(argv) {
     const deadline = Date.now() + 60 * 60_000;
     let state = decisionOf(n);
     // The events API can lag behind `gh pr ready`: until it shows this ready_for_review, the runs of an earlier round would count as
-    // fresh. So the runs counted are never older than the moment before `gh pr ready` (30 seconds back, for the clocks).
-    let floor = null;
+    // fresh (readyFrom). This holds within one `merge`; a `merge` started again right after `gh pr ready` trusts the events API.
+    const guard = { before: null, floor: null };
     const ready = () => {
-      floor = new Date(Date.now() - 30_000).toISOString().replace(/\.\d+Z$/, 'Z');
+      guard.before = readySince(n);
+      guard.floor = new Date(Date.now() - 30_000).toISOString().replace(/\.\d+Z$/, 'Z');
       gh(['pr', 'ready', String(n)]);
       console.log(`pr: #${n} made ready for review: the checks start`);
-      state = decisionOf(n, floor);
+      state = decisionOf(n, guard);
     };
     if (state.decision.ready) ready();
     while (argv.includes('--wait') && state.decision.wait && Date.now() < deadline) {
       sleep(30_000);
-      state = decisionOf(n, floor);
+      state = decisionOf(n, guard);
       if (state.decision.ready) ready();
     }
     if (!state.decision.merge) {
