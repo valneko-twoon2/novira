@@ -29,6 +29,8 @@
 | `typecheck.mjs`、`commit-gates.mjs`、`docs-check.mjs`、`ui-refs.mjs`、`visual-baselines.mjs`、`check-eol.mjs`、`fix-eol.mjs`、`eol.mjs`、`check-name.mjs`、`changelog.mjs`、`ci-summary.mjs`、`ci-scope.mjs`、`dependabot-triage.mjs`、`test-tags.mjs`、`test-tags-edit.mjs` | リポジトリ全体の検査: 型、コミットが通すべき CI ジョブ（Rust の整形、clippy、lint、モックと本物のバックエンドの比較、スマホ）、地図と設計ページ、存在しないテスト ID と文言キー、画面を変えうる変更の判定（基準画像）、改行、名前の綴り、変更履歴の形、CI のテスト数、CI で回す長いジョブの選別、Dependabot の PR のマージ・クローズの判断、テストの手法・設計技法のタグの集計（docs/tests/README.md の件数表）と、タグの一覧・設定・長い見出しの折り返し |
 | `layout-scan.mjs`、`e2e-lock.mjs` | レイアウトスキャン（テキストの収まりを含む）とその合格記録。重い Playwright の実行を一度に 1 つにするロック |
 | `worktree.mjs` | 作業ブランチの worktree を作って消す（PR で squash マージされたブランチも消す） |
+| `release-range.mjs` | リリースに入るコミット（前のリリースを用意した develop のコミットから今まで）を出す。squash のリリースでは、タグから `develop` までの範囲に前のリリースが混ざるため |
+| `branches.mjs` | 長く続く 2 本のブランチの名前（作業の幹の `develop`、リリースしたものだけの `main`）。`pr.mjs`・`worktree.mjs` と Stop フックが読む |
 | `local-day.mjs` | 人が読む日付（`changelog.mjs --release` の版の日付、`worktree.mjs add` のブランチ名）を、UTC でなく手元の暦の日にする |
 | `pr.mjs` | 作業ブランチの PR: 下書きで開く、エージェントのレビューを投稿する、レビューが ok なら下書きを外して検査を回し、通ったら squash マージする（`/ship`） |
 | `repeat-test.mjs` | 1 つのコマンドを N 回（既定 20、`--parallel` で負荷をかける）実行し、不安定なテストや競合するテストを捕まえる。最初の失敗の出力は `logs/repeat-test/` に残る |
@@ -44,7 +46,7 @@
 | `scripts/tools/` の外 | 中身 |
 |---|---|
 | `.githooks/` | Git フック。`pre-commit` と `commit-msg`（sh のラッパー。`npm install` で有効になる）が `pre-commit.mjs` / `commit-msg.mjs` を実行する |
-| `.github/workflows/` | `test.yml` は PR と main への push で検査を回し（[02-ci.md](../design/01-app/04-release/02-ci.md)）、`release.yml` はタグでリリースをビルドする（[01-release-workflow.md](../design/01-app/04-release/01-release-workflow.md)）。`supply-chain.yml` と `audit.yml` は依存の検査（[04-guards.md](04-guards.md)） |
+| `.github/workflows/` | `test.yml` は main 向けの PR（リリース）と main・Dependabot のブランチへの push、毎晩の develop で検査を回し（[02-ci.md](../design/01-app/04-release/02-ci.md)）、`release.yml` はタグでリリースをビルドする（[01-release-workflow.md](../design/01-app/04-release/01-release-workflow.md)）。`supply-chain.yml` と `audit.yml` は依存の検査（[04-guards.md](04-guards.md)） |
 | `frontend/scripts/` | フロントに結びつくスクリプト: ローカルの lint 規則（`eslint-*.mjs`）、テキストとマニュアルの検査、`shot.mjs`、`e2e-server.mjs`（レイアウトスキャンのキャッシュ済みビルド、`novira-data/work/e2e-build/`） |
 | `.claude/hooks/`、`.claude/settings.json` | Claude Code のフック（[04-guards.md](04-guards.md)） |
 
@@ -65,7 +67,7 @@
 | スキル | 用途 |
 |---|---|
 | `i18n/`、`manual/` | 画面文言、マニュアル（ほかの言語の追いつきも） |
-| `ship/`、`gatekeeper/`、`verify-real-app/` | 作業ブランチを PR・レビュー・CI・マージで main に入れる、サブエージェントの成果を確かめてから渡す、本物のアプリを隔離して動かす |
+| `ship/`、`gatekeeper/`、`verify-real-app/` | 作業ブランチを PR・レビュー・マージで develop に入れる（リリースは develop から main）、サブエージェントの成果を確かめてから渡す、本物のアプリを隔離して動かす |
 | `testing/`、`hardening-harness/`、`release-notes/` | テストケース、カバレッジ、ミュータント、ガード・スキル・ハーネス見直し、リリースの判断から公開まで（変更履歴、リリース PR、タグ） |
 
 ## 何が何を守るか

@@ -3,7 +3,7 @@
 //
 // Usage (from the repository root):
 //   node scripts/tools/affected.mjs                  the working tree against HEAD: staged, unstaged and untracked files
-//   node scripts/tools/affected.mjs --base <ref>     also everything committed since <ref> (a branch's work: --base main)
+//   node scripts/tools/affected.mjs --base <ref>     also everything committed since <ref> (a branch's work: --base develop)
 //   node scripts/tools/affected.mjs <path>...        these paths only
 //   --list   print the checks without running them
 //   --e2e    also run the Playwright flows of the changed features and the visual regression (otherwise only named)
