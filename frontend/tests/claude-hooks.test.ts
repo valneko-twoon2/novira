@@ -28,7 +28,7 @@ describe('worktree script', { tags: [] }, () => {
   });
 
   it(
-    'calls a worktree finished when its folder is gone, or it is clean and its branch is merged into main',
+    'calls a worktree finished when its folder is gone, or it is clean and its branch is merged into develop',
     { tags: ['decision-table'] },
     () => {
       const trees = parseTrees(porcelain);

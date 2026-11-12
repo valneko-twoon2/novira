@@ -8,6 +8,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { WORK_BRANCH } from '../../scripts/tools/branches.mjs';
 import { harnessRoots } from '../../scripts/tools/harness-paths.mjs';
 import { readRecords, recordCoversHead, sweepReminder } from '../../scripts/tools/models-sweep-lib.mjs';
 import { finished, isAncestorIn, isFresh, mergedBranches, parseWorktrees, prMergedHeads } from '../../scripts/tools/worktree.mjs';
@@ -31,7 +32,7 @@ export function reminder(input, changed, inMerge, leftover = [], sweep = []) {
   if (!changed.length && !leftover.length && sweep.length) return ['AGENTS.md and .claude/rules/models.md: model changes are checked in the real app.', ...sweep].join(NL);
   if (!changed.length && leftover.length) {
     return [
-      'AGENTS.md: these worktrees are finished (clean, and their branch is merged into main, or the folder is gone). Remove each one now:',
+      'AGENTS.md: these worktrees are finished (clean, and their branch is merged into develop, or the folder is gone). Remove each one now:',
       ...leftover,
       'Use `node scripts/tools/worktree.mjs remove <path>`, never `git worktree remove` by hand: it unlinks node_modules first, or the main checkout loses its own.',
     ].join('\n');
@@ -59,7 +60,7 @@ export function sweepReminders(roots, { git, records }) {
   const out = [];
   roots.forEach((root, i) => {
     try {
-      const committed = git(root, ['log', '--format=', '--name-only', `${i === 0 ? '@{upstream}' : 'main'}..HEAD`]).split(NL).map((l) => l.trim()).filter(Boolean);
+      const committed = git(root, ['log', '--format=', '--name-only', `${i === 0 ? '@{upstream}' : `origin/${WORK_BRANCH}`}..HEAD`]).split(NL).map((l) => l.trim()).filter(Boolean);
       const blobAtHead = (p) => {
         try {
           return git(root, ['rev-parse', `HEAD:${p}`]).trim();
@@ -124,7 +125,7 @@ if (isMain)
       // A branch squash-merged by its pull request (the GitHub Flow of /ship) is merged too. gh is asked only when there is a worktree,
       // briefly, and its failure counts as none merged.
       const merged = mergedBranches(trees, {
-        mergedIntoMain: git(roots[0], ['branch', '--merged', 'main', '--format=%(refname:short)']).split(String.fromCharCode(10)).map((b) => b.trim()).filter(Boolean),
+        mergedIntoWork: git(roots[0], ['branch', '--merged', `origin/${WORK_BRANCH}`, '--format=%(refname:short)']).split(String.fromCharCode(10)).map((b) => b.trim()).filter(Boolean),
         heads: trees.length > 1 ? prMergedHeads(roots[0], (args) => execFileSync('gh', args, { cwd: roots[0], encoding: 'utf8', timeout: 10000, stdio: ['ignore', 'pipe', 'ignore'] })) : new Map(),
         tipOf: (b) => git(roots[0], ['rev-parse', b]).trim(),
         isAncestor: isAncestorIn(roots[0]),

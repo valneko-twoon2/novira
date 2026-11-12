@@ -1,6 +1,7 @@
-// The merge rule of a work branch's pull request (scripts/tools/pr.mjs): green required checks and an agent review, by the signed-in
-// account, that says ok for exactly the head commit; only a pull request of this repository into main; and the title that becomes the
-// squashed commit on main.
+// The merge rule of a pull request (scripts/tools/pr.mjs): a work branch goes into develop on an agent review, by the signed-in account,
+// that says ok for exactly the head commit (nothing is tested there); develop goes into main as a release, also on green required checks
+// and CodeQL; main goes back into develop when that changes nothing in develop; only pull requests of this repository; and the title
+// that becomes the squashed commit.
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,6 +14,8 @@ const HEAD = 'a'.repeat(40);
 const OLD = 'b'.repeat(40);
 const ME = 'owner';
 const review = (body: string, submittedAt: string, login = ME) => ({ author: { login }, body, submittedAt });
+// A release: develop into main, the one pull request whose checks and code scanning alerts a merge waits for.
+const release = (o: Record<string, unknown>) => mergeDecision({ base: 'main', head: 'develop', ...o });
 
 describe('the agent review mark', () => {
   it('is read back for the commit it names, and the latest review of that commit wins', { tags: ['state-transition'] }, () => {
@@ -58,21 +61,62 @@ describe('the required checks of a pull request', () => {
 
 describe('the merge decision', () => {
   it('merges only an open, ready pull request with passing checks and an ok review of its head', { tags: ['decision-table'] }, () => {
-    expect(mergeDecision({ checks: 'pass', verdict: 'ok' })).toMatchObject({ merge: true });
-    expect(mergeDecision({ checks: 'pass', verdict: 'none' })).toMatchObject({ merge: false, wait: false });
-    expect(mergeDecision({ checks: 'pass', verdict: 'changes' })).toMatchObject({ merge: false, wait: false });
-    expect(mergeDecision({ checks: 'fail', verdict: 'ok' })).toMatchObject({ merge: false, wait: false });
-    expect(mergeDecision({ checks: 'pending', verdict: 'ok' })).toMatchObject({ merge: false, wait: true });
-    expect(mergeDecision({ checks: 'pass', verdict: 'ok', state: 'MERGED' })).toMatchObject({ merge: false });
+    expect(release({ checks: 'pass', verdict: 'ok' })).toMatchObject({ merge: true });
+    expect(release({ checks: 'pass', verdict: 'none' })).toMatchObject({ merge: false, wait: false });
+    expect(release({ checks: 'pass', verdict: 'changes' })).toMatchObject({ merge: false, wait: false });
+    expect(release({ checks: 'fail', verdict: 'ok' })).toMatchObject({ merge: false, wait: false });
+    expect(release({ checks: 'pending', verdict: 'ok' })).toMatchObject({ merge: false, wait: true });
+    expect(release({ checks: 'pass', verdict: 'ok', state: 'MERGED' })).toMatchObject({ merge: false });
   });
 
-  it('merges only into main, and never a pull request from another repository', { tags: ['condition', 'regression'] }, () => {
-    expect(mergeDecision({ checks: 'pass', verdict: 'ok', base: 'release/v1' })).toMatchObject({ merge: false, reason: expect.stringContaining('not main') });
-    expect(mergeDecision({ checks: 'pass', verdict: 'ok', fork: true })).toMatchObject({ merge: false, reason: expect.stringContaining('another repository') });
+  it('merges only into develop or main, and never a pull request from another repository', { tags: ['condition', 'regression'] }, () => {
+    expect(release({ checks: 'pass', verdict: 'ok', base: 'release/v1' })).toMatchObject({ merge: false, reason: expect.stringContaining('not develop or main') });
+    expect(release({ checks: 'pass', verdict: 'ok', fork: true })).toMatchObject({ merge: false, reason: expect.stringContaining('another repository') });
+  });
+
+  it('lets only develop into main: a work branch is never a release', { tags: ['condition', 'regression'] }, () => {
+    expect(mergeDecision({ checks: 'pass', verdict: 'ok', base: 'main', head: '20261112_x' })).toMatchObject({ merge: false, reason: expect.stringContaining('only a release') });
+    expect(mergeDecision({ checks: 'pass', verdict: 'ok', base: 'main', head: '' })).toMatchObject({ merge: false });
+    expect(mergeDecision({ checks: 'pass', verdict: 'ok', base: 'main', head: 'develop' })).toMatchObject({ merge: true });
   });
 
   it('asks for a review before it waits for checks, so a missing review is never waited out', { tags: ['condition'] }, () => {
-    expect(mergeDecision({ checks: 'pending', verdict: 'none' })).toMatchObject({ merge: false, wait: false, reason: expect.stringContaining('review') });
+    expect(release({ checks: 'pending', verdict: 'none' })).toMatchObject({ merge: false, wait: false, reason: expect.stringContaining('review') });
+  });
+});
+
+describe('a pull request into develop', () => {
+  const into = (o: Record<string, unknown>) => mergeDecision({ base: 'develop', head: '20261112_x', ...o });
+
+  it('needs the ok review of its head and nothing else: no CI, no CodeQL, no alerts', { tags: ['decision-table', 'regression'] }, () => {
+    // The checks and alerts of a pull request into develop are never read: whatever they are, they do not decide.
+    expect(into({ checks: 'pending', verdict: 'ok', alerts: 3 })).toMatchObject({ merge: true, wait: false });
+    expect(into({ checks: 'fail', verdict: 'ok' })).toMatchObject({ merge: true });
+    expect(into({ checks: 'pass', verdict: 'none' })).toMatchObject({ merge: false, wait: false, reason: expect.stringContaining('review') });
+    expect(into({ checks: 'pass', verdict: 'changes' })).toMatchObject({ merge: false, wait: false });
+  });
+
+  it('is still refused for a bad title or description, another repository, or a draft (made ready first)', { tags: ['error-guessing'] }, () => {
+    expect(into({ verdict: 'ok', title: titleProblems('update stuff') })).toMatchObject({ merge: false, reason: expect.stringContaining('title') });
+    expect(into({ verdict: 'ok', body: bodyProblems('') })).toMatchObject({ merge: false, reason: expect.stringContaining('description') });
+    expect(into({ verdict: 'ok', fork: true })).toMatchObject({ merge: false });
+    expect(into({ verdict: 'ok', draft: true })).toMatchObject({ merge: false, ready: true });
+  });
+});
+
+describe('main merged back into develop after a release', () => {
+  const sync = (o: Record<string, unknown>) => mergeDecision({ base: 'develop', head: 'main', ...o });
+
+  it('needs no review, only that the merge leaves develop as it is', { tags: ['decision-table', 'regression'] }, () => {
+    expect(sync({ verdict: 'none', syncSafe: true })).toMatchObject({ merge: true });
+    expect(sync({ verdict: 'none', syncSafe: false })).toMatchObject({ merge: false, reason: expect.stringContaining('would change develop') });
+    expect(sync({ verdict: 'ok', syncSafe: null })).toMatchObject({ merge: false, reason: expect.stringContaining('cannot be tried') });
+  });
+
+  it('is still refused for a bad title, description or another repository', { tags: ['error-guessing'] }, () => {
+    expect(sync({ syncSafe: true, title: titleProblems('update stuff') })).toMatchObject({ merge: false });
+    expect(sync({ syncSafe: true, body: bodyProblems('') })).toMatchObject({ merge: false });
+    expect(sync({ syncSafe: true, fork: true })).toMatchObject({ merge: false });
   });
 });
 
@@ -128,13 +172,18 @@ describe('the required checks that have not reported', () => {
 });
 
 describe('the squash merge', () => {
-  it('writes the title as the subject on main and no body, for the head that was reviewed', { tags: ['regression'] }, () => {
-    expect(mergeArgs(21, { headRefOid: HEAD, title: 'feat: まとめ' })).toEqual(['pr', 'merge', '21', '--squash', '--match-head-commit', HEAD, '--subject', 'feat: まとめ', '--body', '']);
+  it('writes the title as the subject and no body, for the head that was reviewed', { tags: ['regression'] }, () => {
+    expect(mergeArgs(21, { headRefOid: HEAD, title: 'feat: まとめ', baseRefName: 'develop', headRefName: '20261112_x' })).toEqual(['pr', 'merge', '21', '--squash', '--match-head-commit', HEAD, '--subject', 'feat: まとめ', '--body', '']);
+    expect(mergeArgs(22, { headRefOid: HEAD, title: 'chore: v1.0.0 をリリースする', baseRefName: 'main', headRefName: 'develop' })).toContain('--squash');
+  });
+
+  it('is a merge commit for main going back into develop, so develop then has main\'s history', { tags: ['regression'] }, () => {
+    expect(mergeArgs(23, { headRefOid: HEAD, title: 'chore: main を develop に戻す', baseRefName: 'develop', headRefName: 'main' })).toEqual(['pr', 'merge', '23', '--merge', '--match-head-commit', HEAD, '--subject', 'chore: main を develop に戻す', '--body', '']);
   });
 
   it('is refused when the title was changed on GitHub into one that breaks the commit rules, or the description is incomplete', { tags: ['error-guessing'] }, () => {
-    expect(mergeDecision({ checks: 'pass', verdict: 'ok', title: titleProblems('update stuff') })).toMatchObject({ merge: false, reason: expect.stringContaining('title') });
-    expect(mergeDecision({ checks: 'pass', verdict: 'ok', body: bodyProblems('') })).toMatchObject({ merge: false, reason: expect.stringContaining('description') });
+    expect(release({ checks: 'pass', verdict: 'ok', title: titleProblems('update stuff') })).toMatchObject({ merge: false, reason: expect.stringContaining('title') });
+    expect(release({ checks: 'pass', verdict: 'ok', body: bodyProblems('') })).toMatchObject({ merge: false, reason: expect.stringContaining('description') });
   });
 });
 
@@ -173,6 +222,11 @@ describe('the template hints in a description', () => {
 describe('deleting the merged branch', () => {
   it('leases it at the merged head, so a commit pushed after the merge is kept', { tags: ['regression'] }, () => {
     expect(deleteBranchArgs({ headRefName: '20261112_x', headRefOid: HEAD })).toEqual(['push', `--force-with-lease=20261112_x:${HEAD}`, 'origin', '--delete', '20261112_x']);
+  });
+
+  it('never deletes develop or main, the heads of a release and of the merge back', { tags: ['regression', 'error-guessing'] }, () => {
+    expect(deleteBranchArgs({ headRefName: 'develop', headRefOid: HEAD })).toBeNull();
+    expect(deleteBranchArgs({ headRefName: 'main', headRefOid: HEAD })).toBeNull();
   });
 });
 
@@ -251,16 +305,16 @@ describe('the shape of a review (a verdict box, then the sections, to read at a 
 describe('a draft pull request', () => {
   it('is reviewed with no CI, and is made ready for its checks only once the review of its head is ok', { tags: ['decision-table'] }, () => {
     // The checks a draft shows are the ones its workflows skipped: they say nothing, whatever their bucket.
-    expect(mergeDecision({ checks: 'pass', verdict: 'ok', draft: true })).toMatchObject({ merge: false, wait: true, ready: true });
-    expect(mergeDecision({ checks: 'pending', verdict: 'ok', draft: true })).toMatchObject({ merge: false, wait: true, ready: true });
-    expect(mergeDecision({ checks: 'pass', verdict: 'none', draft: true })).toMatchObject({ merge: false, wait: false, reason: expect.stringContaining('review') });
-    expect(mergeDecision({ checks: 'pass', verdict: 'changes', draft: true })).toMatchObject({ merge: false, wait: false, reason: expect.stringContaining('changes') });
-    expect(mergeDecision({ checks: 'pass', verdict: 'ok' }).ready).toBeFalsy();
+    expect(release({ checks: 'pass', verdict: 'ok', draft: true })).toMatchObject({ merge: false, wait: true, ready: true });
+    expect(release({ checks: 'pending', verdict: 'ok', draft: true })).toMatchObject({ merge: false, wait: true, ready: true });
+    expect(release({ checks: 'pass', verdict: 'none', draft: true })).toMatchObject({ merge: false, wait: false, reason: expect.stringContaining('review') });
+    expect(release({ checks: 'pass', verdict: 'changes', draft: true })).toMatchObject({ merge: false, wait: false, reason: expect.stringContaining('changes') });
+    expect(release({ checks: 'pass', verdict: 'ok' }).ready).toBeFalsy();
   });
 
   it('goes back to a draft when a check fails, so the pushes that fix it run no CI', { tags: ['state-transition'] }, () => {
-    expect(mergeDecision({ checks: 'fail', verdict: 'ok' })).toMatchObject({ merge: false, wait: false, toDraft: true });
-    expect(mergeDecision({ checks: 'pending', verdict: 'ok' }).toDraft).toBeFalsy();
+    expect(release({ checks: 'fail', verdict: 'ok' })).toMatchObject({ merge: false, wait: false, toDraft: true });
+    expect(release({ checks: 'pending', verdict: 'ok' }).toDraft).toBeFalsy();
   });
 });
 
@@ -301,19 +355,19 @@ describe('the checks after a draft is made ready', () => {
 
 describe('code scanning alerts', () => {
   it('stop the merge until each is fixed or explained, whatever the checks say', { tags: ['condition', 'regression'] }, () => {
-    expect(mergeDecision({ checks: 'pass', verdict: 'ok', alerts: 1 })).toMatchObject({ merge: false, wait: false, reason: expect.stringContaining('code scanning') });
-    expect(mergeDecision({ checks: 'pass', verdict: 'ok', alerts: 0 })).toMatchObject({ merge: true });
+    expect(release({ checks: 'pass', verdict: 'ok', alerts: 1 })).toMatchObject({ merge: false, wait: false, reason: expect.stringContaining('code scanning') });
+    expect(release({ checks: 'pass', verdict: 'ok', alerts: 0 })).toMatchObject({ merge: true });
   });
 
   it('send the pull request back to a draft, like a failed check, so the fix runs no CI until it is reviewed', { tags: ['state-transition'] }, () => {
-    expect(mergeDecision({ checks: 'pass', verdict: 'ok', alerts: 1 })).toMatchObject({ toDraft: true });
+    expect(release({ checks: 'pass', verdict: 'ok', alerts: 1 })).toMatchObject({ toDraft: true });
   });
 
   it('left from the analysis before a fix are waited out while the checks still run', { tags: ['condition'] }, () => {
-    expect(mergeDecision({ checks: 'pending', verdict: 'ok', alerts: 1 })).toMatchObject({ merge: false, wait: true });
+    expect(release({ checks: 'pending', verdict: 'ok', alerts: 1 })).toMatchObject({ merge: false, wait: true });
   });
 
   it('that cannot be read stop the merge too, and it waits', { tags: ['error-guessing', 'regression'] }, () => {
-    expect(mergeDecision({ checks: 'pass', verdict: 'ok', alerts: null })).toMatchObject({ merge: false, wait: true, reason: expect.stringContaining('code scanning') });
+    expect(release({ checks: 'pass', verdict: 'ok', alerts: null })).toMatchObject({ merge: false, wait: true, reason: expect.stringContaining('code scanning') });
   });
 });

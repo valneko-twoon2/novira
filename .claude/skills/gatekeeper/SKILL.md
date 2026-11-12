@@ -1,6 +1,6 @@
 ---
 name: gatekeeper
-description: "Checks a subagent's branch or worktree before it goes to main: reads its report against the diff and checks the AGENTS.md rules on the diff, then hands the branch to /ship (pull request, agent review, CI, squash merge) and removes the worktree safely; also how to brief the subagent and make its worktree. Use before taking in a subagent's work, before handing work to a subagent in a worktree, or when the user says to take a subagent's branch in (取り込んで, マージして, main に入れて)."
+description: "Checks a subagent's branch or worktree before it goes to develop: reads its report against the diff and checks the AGENTS.md rules on the diff, then hands the branch to /ship (pull request, agent review, CI, squash merge) and removes the worktree safely; also how to brief the subagent and make its worktree. Use before taking in a subagent's work, before handing work to a subagent in a worktree, or when the user says to take a subagent's branch in (取り込んで, マージして, main に入れて)."
 argument-hint: "The branch or worktree to take in"
 user-invocable: true
 disable-model-invocation: false
@@ -14,7 +14,7 @@ For a merge, copy this and tick it as you go:
 Merge progress:
 - [ ] 1. Main tree clean; each report claim found in the diff
 - [ ] 1. Rule table passed on the branch
-- [ ] 2. Branch up to date with origin/main, conflicts resolved, LF kept
+- [ ] 2. Branch up to date with origin/develop, conflicts resolved, LF kept
 - [ ] 3. Shipped (/ship): pull request reviewed, checks green, merged
 - [ ] 4. Subagent's processes stopped, worktree removed by the script, node_modules intact
 - [ ] 5. Report written
@@ -36,7 +36,7 @@ Merge progress:
 
 ## 1. Before the merge (in the subagent's branch, read only)
 
-1. `git status` in the main tree: own changes must be committed first, so the merge starts clean. `git log main..<branch> --oneline` and `git diff --stat main...<branch>`.
+1. `git status` in the main tree: own changes must be committed first, so the merge starts clean. `git log origin/develop..<branch> --oneline` and `git diff --stat origin/develop...<branch>`.
 2. **Report against the diff.** For each claim of the report (a feature, a test, a doc, a file added) find it in the diff. A claim with nothing behind it, or a change the report does not mention, is sent back to the subagent (SendMessage) or fixed by you, and the report to the user says so.
 3. **Rules on the diff**, by the table below. Anything that fails goes back; do not weaken a check to pass it.
 
@@ -55,7 +55,7 @@ Merge progress:
 
 ## 2. Bring the branch up to date
 
-1. `git fetch origin`; when `main` moved and the branch touches the same files, bring it up to date: `git rebase origin/main` only before the branch's first push, `git merge origin/main` once it is pushed (a rebase of a pushed branch needs `--force`, which is not allowed; the squash merge keeps `main`'s history clean anyway). Conflicts: keep both sides unless one is clearly replaced. Typical ones and what to do:
+1. `git fetch origin`; when `develop` moved and the branch touches the same files, bring it up to date: `git rebase origin/develop` only before the branch's first push, `git merge origin/develop` once it is pushed (a rebase of a pushed branch needs `--force`, which is not allowed; the squash merge keeps `develop`'s history clean anyway). Conflicts: keep both sides unless one is clearly replaced. Typical ones and what to do:
    - i18n catalogs (`agent.json` and others): both sides append keys at the end; keep both and add the comma to the older last line; `JSON.parse` the file after.
    - Map pages and the manual: keep both sides' rows; recheck `docs-check`.
 2. Write edit scripts so that they keep LF (or use the Edit tool); check `git diff --stat` for files changed on every line.

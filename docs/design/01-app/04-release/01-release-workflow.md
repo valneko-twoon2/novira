@@ -9,7 +9,7 @@ covers:
 
 一覧に戻る: [README.md](README.md)
 
-バージョンタグを push すると、GitHub が Windows 向けのリリースをビルドし、タグ名を題名、`CHANGELOG.md` のそのタグの節をノートとするドラフトのリリースを残す。実行が成功したら、`/release-notes` のエージェントが公開する（リリースの判断から公開まで、[../../../development.md](../../../development.md) の「ブランチと PR」）。同じビルドは `scripts\release\package.bat` から手でも動く。ワークフローは、このスクリプトをまっさらなマシンで動かすもの。
+リリースは `develop` から `main` への PR（検査が通ってから squash マージ）で `main` に入り、その `main` のコミットにバージョンタグを push する。バージョンタグを push すると、GitHub が Windows 向けのリリースをビルドし、タグ名を題名、`CHANGELOG.md` のそのタグの節をノートとするドラフトのリリースを残す。実行が成功したら、`/release-notes` のエージェントが公開する（リリースの判断から公開まで、[../../../development.md](../../../development.md) の「ブランチと PR」）。同じビルドは `scripts\release\package.bat` から手でも動く。ワークフローは、このスクリプトをまっさらなマシンで動かすもの。
 
 ## 動作
 

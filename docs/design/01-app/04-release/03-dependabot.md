@@ -22,7 +22,7 @@ covers:
   - 検査が通らないまま 21 日開いている小さな更新は、閉じる（次の版で新しい PR が出る）。
   - `security` ラベルの PR は、規則では閉じない。小さくて検査が成功したものだけマージし、残りは人を待つ。
   - タイトルから版が読めない PR は、何もしない。毎月の `github-actions` グループもここに入る（major を含みうるので、人が読む）。
-- **検査。** 更新の PR は、ほかの PR と同じく `Test`・`Supply chain`・`Audit` を PR として 1 回ずつ走らせる（[02-ci.md](02-ci.md)）。ブランチへの push では走らないので、Dependabot が一度に多くの PR を作っても、push の分の検査は重ならない。
+- **検査。** 更新の PR は develop 向けで、develop 向けの PR では検査が回らない（[02-ci.md](02-ci.md)）。代わりに、Dependabot のブランチ（`dependabot/**`）への push で `Test`・`Supply chain`・`Audit` が回り、判断はその実行を読む。Dependabot が PR を載せ直すたびに push があり、検査もやり直しになる。
 
 ## 境界
 

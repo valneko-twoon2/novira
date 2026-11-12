@@ -41,7 +41,7 @@ feat(comic): ページ帯に各ページを縮小表示する
 - 吹き出しは 15 の形、線、黒塗り、揺れ。輪郭は点で形を直せる
 ```
 
-`main` gets one squashed commit per pull request, and its subject is the pull request's title: the title follows these rules too, with the type of the main change (`scripts/tools/pr.mjs open` checks it).
+`develop` gets one squashed commit per pull request (and `main` one per release, titled `chore: v<version> をリリースする`), and its subject is the pull request's title: the title follows these rules too, with the type of the main change (`scripts/tools/pr.mjs open` checks it).
 
 ## Enforcement
 

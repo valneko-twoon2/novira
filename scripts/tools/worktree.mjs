@@ -1,6 +1,6 @@
 // Git worktrees for work that must not touch the main checkout (the user's dev server watches it).
-//   node scripts/tools/worktree.mjs add <name>        a sibling folder ../novira-wt-<name> on a new branch, with frontend/node_modules linked
-//   node scripts/tools/worktree.mjs remove <path>     takes the links out first, then removes the worktree and its branch (merged only: into main,
+//   node scripts/tools/worktree.mjs add <name>        a sibling folder ../novira-wt-<name> on a new branch from develop, with frontend/node_modules linked
+//   node scripts/tools/worktree.mjs remove <path>     takes the links out first, then removes the worktree and its branch (merged only: into develop,
 //                                             or by a pull request that GitHub merged, which a squash merge hides from git);
 //                                             refuses a worktree with uncommitted changes unless --force
 //   node scripts/tools/worktree.mjs list              worktrees that are finished and should be removed
@@ -10,6 +10,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, lstatSync, readdirSync, readlinkSync, rmdirSync, statSync, symlinkSync, unlinkSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { WORK_BRANCH } from './branches.mjs';
 import { localDay } from './local-day.mjs';
 
 const LINKED = [['frontend', 'node_modules'], ['backend', 'target']];
@@ -27,7 +28,7 @@ export function parseWorktrees(porcelain) {
   return trees;
 }
 
-/** The worktrees that are done with: the folder is gone, or it is clean, its branch is merged into main, and it is not one made
+/** The worktrees that are done with: the folder is gone, or it is clean, its branch is merged into develop, and it is not one made
  * a moment ago that nobody has used yet (`fresh`: an idle new worktree looks exactly like a finished one). */
 export function finished(trees, { merged, dirty, missing, fresh = () => false }) {
   return trees.slice(1).filter((t) => missing(t.path) || (!dirty(t.path) && (t.branch === null || merged.has(t.branch)) && !fresh(t.path)));
@@ -70,11 +71,11 @@ export function mergedByPullRequest(branch, tip, heads, isAncestor) {
 }
 
 /**
- * The branches of `trees` that are done with: merged into main (`mergedIntoMain`, from `git branch --merged main`), or all in a
+ * The branches of `trees` that are done with: merged into develop (`mergedIntoWork`, from `git branch --merged origin/develop`), or all in a
  * pull request GitHub merged (`heads` from `prMergedHeads`; a squash merge is invisible to git). Shared by `list` and the Stop hook.
  */
-export function mergedBranches(trees, { mergedIntoMain, heads, tipOf, isAncestor }) {
-  const out = new Set(mergedIntoMain);
+export function mergedBranches(trees, { mergedIntoWork, heads, tipOf, isAncestor }) {
+  const out = new Set(mergedIntoWork);
   for (const t of trees) if (t.branch && !out.has(t.branch) && heads.has(t.branch) && mergedByPullRequest(t.branch, tipOf(t.branch), heads, isAncestor)) out.add(t.branch);
   return out;
 }
@@ -146,13 +147,13 @@ function main(argv) {
   if (cmd === 'add' && arg) {
     if (!validName(arg)) throw new Error(`${arg} is not a worktree name: use letters, digits, ., _ and - only`);
     const dir = resolve(main, '..', `novira-wt-${arg}`);
-    // From GitHub's main, not the local one: the main checkout may lag behind merged pull requests (GitHub Flow, docs/development.md).
-    let base = 'main';
+    // From GitHub's develop, not the local one: the main checkout may lag behind merged pull requests (GitHub Flow, docs/development.md).
+    let base = WORK_BRANCH;
     try {
-      git(main, 'fetch', 'origin', 'main');
-      base = 'origin/main';
+      git(main, 'fetch', 'origin', WORK_BRANCH);
+      base = `origin/${WORK_BRANCH}`;
     } catch {
-      console.error('worktree: could not fetch origin; the branch starts from the local main');
+      console.error(`worktree: could not fetch origin; the branch starts from the local ${WORK_BRANCH}`);
     }
     git(main, 'worktree', 'add', '--no-track', '-b', branchName(arg), dir, base);
     for (const [a, b] of LINKED) {
@@ -182,7 +183,7 @@ function main(argv) {
     console.log(`removed ${dir}`);
   } else if (cmd === 'list') {
     const merged = mergedBranches(trees, {
-      mergedIntoMain: git(main, 'branch', '--merged', 'main', '--format=%(refname:short)').split(/\r?\n/).filter(Boolean),
+      mergedIntoWork: git(main, 'branch', '--merged', `origin/${WORK_BRANCH}`, '--format=%(refname:short)').split(/\r?\n/).filter(Boolean),
       heads: prMergedHeads(main),
       tipOf: (b) => git(main, 'rev-parse', b).trim(),
       isAncestor: isAncestorIn(main),
