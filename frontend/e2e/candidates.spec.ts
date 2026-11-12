@@ -43,7 +43,7 @@ test(
   },
 );
 
-test('closing a batch sends the rest of it to the trash, and the bar has no button to trash the rest', { tag: ['@state-transition'] }, async ({ page }) => {
+test('closing a batch sends the rest of it to the trash, and the button to move pictures names no board', { tag: ['@state-transition'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await prompt(page, 'a lantern in the rain');
   await page.getByTestId('invoke-button').click();

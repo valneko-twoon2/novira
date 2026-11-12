@@ -100,6 +100,8 @@ describe('moving pictures to the board', { tags: [] }, () => {
     const update = vi.spyOn(backend, 'updateImages').mockResolvedValue([picture('a.png', { isIntermediate: false, boardId: 'other' })]);
     await state().adopt(only().id, [only().candidates[0]!.id]);
     expect(update).toHaveBeenCalledWith(['a.png'], { boardId: 'other', isIntermediate: false });
+    // The notice names the board that took the picture.
+    expect(useToasts.getState().toasts.at(-1)?.title).toContain('Dogs');
   });
 
   it('closes the batch when its last picture has gone to a board', { tags: ['boundary', 'state-transition'] }, async () => {
