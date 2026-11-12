@@ -6,7 +6,7 @@ user-invocable: true
 disable-model-invocation: false
 ---
 
-A subagent's report says what it believes it did. This skill is the gate between that report and the pull request: nothing goes to `main` on the report alone. The rules it checks are in `AGENTS.md` and `.claude/rules/`; this page only orders the steps. The way into `main` is `/ship` (a pull request merged by `scripts/tools/pr.mjs`); a direct push of `main` is refused by branch protection.
+A subagent's report says what it believes it did. This skill is the gate between that report and the pull request: nothing goes to `develop` on the report alone. The rules it checks are in `AGENTS.md` and `.claude/rules/`; this page only orders the steps. The way into `develop` is `/ship` (a pull request merged by `scripts/tools/pr.mjs`); a direct push of `main` is refused by branch protection.
 
 For a merge, copy this and tick it as you go:
 
@@ -63,12 +63,12 @@ Merge progress:
 
 ## 3. Ship
 
-Run `/ship` for the branch: it opens the pull request, has a fresh agent review it on GitHub, waits for CI and merges. A failure that is also on a clean `main` is reported as existing, with the evidence; any other failure is fixed on the branch first. A change that touches the engine, the queue, the GPU, models or packs is not verified until `/verify-real-app` ran, or the report says it was not.
+Run `/ship` for the branch: it opens the pull request, has a fresh agent review it on GitHub, merges once the review is ok (no CI runs into `develop`). A failure that is also on a clean `develop` is reported as existing, with the evidence; any other failure is fixed on the branch first. A change that touches the engine, the queue, the GPU, models or packs is not verified until `/verify-real-app` ran, or the report says it was not.
 
 ## 4. Clean up
 
 1. Stop what the subagent left running (its dev servers, polling shells, a stray `ollama` it started). Never the user's `novira.exe` or ComfyUI.
-2. **A worktree holds junctions** (`node_modules`) that point into the main tree, and `git worktree remove` can follow them and delete the main tree's contents. Remove it only with `node scripts/tools/worktree.mjs remove <path>` (it unlinks first and deletes the branch when merged into main or by its pull request; an unmerged branch is never deleted with `-D`: ask). After this, `ls frontend/node_modules` in the main tree must still list packages.
+2. **A worktree holds junctions** (`node_modules`) that point into the main tree, and `git worktree remove` can follow them and delete the main tree's contents. Remove it only with `node scripts/tools/worktree.mjs remove <path>` (it unlinks first and deletes the branch when merged into develop or by its pull request; an unmerged branch is never deleted with `-D`: ask). After this, `ls frontend/node_modules` in the main tree must still list packages.
 3. If the folder is still held by a process, find it (`Get-CimInstance Win32_Process` by command line), stop only the subagent's own, then remove.
 
 ## 5. Report

@@ -8,7 +8,7 @@ disable-model-invocation: false
 
 # Release: from develop to a published release
 
-The whole release is the agent's: deciding that one is due, the changelog, the pull request, the tag and the publication (the user's standing word, 2026-11-12). Do not stop to ask between the steps; stop only on a failed check below, and say why. `CHANGELOG.md` is written only here (section 6).
+The whole release is the agent's: deciding that one is due, the changelog, the pull request, the tag and the publication (the user's standing word, 2026-11-12). Release as soon as section 1 says one is due, after each merge into `develop` that makes it due: do not wait for changes to pile up (the user's word, 2026-11-12: go fast, `develop` is not a place to collect a batch). Do not stop to ask between the steps; stop only on a failed check below, and say why. `CHANGELOG.md` is written only here (section 6).
 
 ```
 Release progress:
@@ -24,7 +24,7 @@ Release progress:
 
 ## 1. Judge
 
-1. `git fetch origin --tags`. The last release: `git describe --tags --abbrev=0 origin/main`. The range: `git log --no-merges --format="%h %s" <last>..origin/develop` (the merge commits that bring `main` back into `develop` are left out by `--no-merges`).
+1. `git fetch origin --tags`. The last release: `git describe --tags --abbrev=0 origin/main`. The range: `node scripts/tools/release-range.mjs` (the commits on `develop` since its commit that prepared the last release, newest first; `<last>..origin/develop` would list every earlier release again, because a squash release leaves `develop`'s own commits out of the tag's history). Without a start commit it fails: then take the commits since the tag's date (`git log --no-merges --since`) and say so in the report.
 2. Sort the range as section 6 says (what a user of the app sees). The release is due when the range holds a security fix (release now) or a user-visible fix or feature (a line section 6 would write). Only development changes (tests, CI, hooks, skills, docs, refactors, dependency updates nobody notices): **wait**, say so in the report, and do nothing else.
 3. The version, from the last tag `X.Y.Z`: a feature or a changed behaviour raises the minor (`X.Y+1.0`), fixes only raise the patch (`X.Y.Z+1`); before 1.0 a breaking change raises the minor too. A version named in the argument wins. When `backend/Cargo.toml` already declares a version above the last tag that no tag has, release that one.
 4. Not taken: `git ls-remote --tags origin v<version>` prints nothing and `gh release view v<version>` fails. If the tag exists with no published release (a failed run), stop and report: a pushed tag is not moved without the user.

@@ -325,9 +325,11 @@ function requiredNames() {
  * Whether merging main into develop leaves develop's tree as it is (`git merge-tree` of the two, against develop's own tree): true after a
  * squash release whose content develop already has. False for a conflict or a change only main has; null when git cannot answer.
  */
-function syncIsSafe() {
+function syncIsSafe(headOid) {
   try {
     git(['fetch', 'origin', WORK_BRANCH, RELEASE_BRANCH]);
+    // The tree tried is that of the pull request's own head, not of a main that moved since.
+    if (git(['rev-parse', `origin/${RELEASE_BRANCH}`]).trim() !== headOid) return null;
     const merged = git(['merge-tree', '--write-tree', `origin/${WORK_BRANCH}`, `origin/${RELEASE_BRANCH}`]).trim().split(/\r?\n/)[0];
     return merged === git(['rev-parse', `origin/${WORK_BRANCH}^{tree}`]).trim();
   } catch (e) {
@@ -381,7 +383,7 @@ function decisionOf(n, guard = { before: null, floor: null }) {
     title: titleProblems(pr.title),
     body: bodyProblems(pr.body),
     alerts: gated ? openAlerts(n) : 0,
-    syncSafe: sync ? syncIsSafe() : null,
+    syncSafe: sync ? syncIsSafe(pr.headRefOid) : null,
   });
   return { pr, checks, decision, verdict };
 }
@@ -399,7 +401,8 @@ function main(argv) {
     const base = release ? RELEASE_BRANCH : WORK_BRANCH;
     git(['fetch', 'origin', base]);
     const subjects = release ? ['release'] : git(['log', '--format=%s', `origin/${WORK_BRANCH}..HEAD`]).split(/\r?\n/).filter(Boolean).reverse();
-    if (release && !arg(argv, '--title')) throw new Error('--title "chore: v<version> をリリースする" is needed');
+    const releaseOpen = release ? JSON.parse(gh(['pr', 'list', '--head', WORK_BRANCH, '--base', RELEASE_BRANCH, '--state', 'open', '--json', 'number'])) : [];
+    if (release && !releaseOpen.length && !arg(argv, '--title')) throw new Error('--title "chore: v<version> をリリースする" is needed');
     const open = JSON.parse(gh(['pr', 'list', '--head', branch, '--state', 'open', '--json', 'number,url']));
     // Checked before anything leaves the machine: the title becomes the commit on the base, the body is the description.
     const given = arg(argv, '--title');
