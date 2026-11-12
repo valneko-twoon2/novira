@@ -26,14 +26,14 @@ Ship progress:
 
 ## 2. Open
 
-Write the description in Japanese from `.github/pull_request_template.md` (the sections of meta/astryx's pull requests) into `novira-data/work/scratch/pr/<branch>-body.md`, every section filled in:
+Write the description in Japanese from `.github/pull_request_template.md` (meta/astryx's sections, named in plain Japanese) into `novira-data/work/scratch/pr/<branch>-body.md`, every section filled in:
 
-- **目的**: what was wrong, for whom.
-- **変えないこと**: what must stay as it is (the invariant the reviewer checks the change against).
-- **変更**: what changed and how; also what it does not do (left out, or for another pull request).
-- **証拠**: what was verified and how, before and after: the checks run and their results, numbers, shots. Not verified is written as such.
-- **範囲**: tick the lines that hold; an unticked line says why next to it.
-- **テスト**: the tests added or changed and what each one proves.
+- **背景**: what was wrong, for whom.
+- **変わらないこと**: what must stay as it is (the invariant the reviewer checks the change against).
+- **変更内容**: what changed and how; also what it does not do (left out, or for another pull request).
+- **確認結果**: what was verified and how, before and after: the checks run and their results, numbers, shots. Not verified is written as such (未確認).
+- **チェックリスト**: tick the lines that hold; an unticked line says why next to it.
+- **追加・変更したテスト**: the tests added or changed and what each one proves (they stay in the repository; 確認結果 is what was run for this change).
 
 Then `node scripts/tools/pr.mjs open --body-file <that file>` in the worktree: it pushes the branch and opens the pull request to `main` **as a draft** (no CI runs on a draft: the review rounds cost no runner time), after checking the description has every section (`bodyProblems`) and the title. The title becomes the subject of the squashed commit on `main`, so it follows `.claude/rules/commit-messages.md`: a branch of one commit takes that commit's subject; a branch of several needs `--title "<type>: <要約>"` naming the main change (a `feat:` branch with a later `docs:` commit is `feat:`, or `/release-notes` misjudges it). On a pull request already open, `open` pushes and updates the title or description given. It prints the number.
 
@@ -42,14 +42,17 @@ Then `node scripts/tools/pr.mjs open --body-file <that file>` in the worktree: i
 The author never reviews its own work. Start a **fresh** agent (Agent tool, a new one each round, not a fork) with:
 
 - the pull request number and the repository path; to read the description (`gh pr view <n>`), the diff (`gh pr diff <n>`), the changed files in full where the diff is not enough, and the earlier reviews (`gh api repos/{owner}/{repo}/pulls/<n>/reviews`);
-- what to judge: whether the change does what **変更** says and keeps what **変えないこと** says; whether **証拠** and **テスト** really show it (a claim with nothing behind it is a finding); correctness (a bug, a missed case, a broken caller); the tests (one per behaviour, they fail without the change, a bug fix has its regression test); the rules of `AGENTS.md` and `.claude/rules/` the diff touches (the table of `/gatekeeper` section 1); texts in ja and en; the map and design pages;
-- to answer in exactly this shape (after meta/astryx's review bot, laid out to read at a glance; `pr.mjs review` refuses any other), in Japanese except code and identifiers:
+- what to judge: whether the change does what **変更内容** says and keeps what **変わらないこと** says; whether **確認結果** and **追加・変更したテスト** really show it (a claim with nothing behind it is a finding); correctness (a bug, a missed case, a broken caller); the tests (one per behaviour, they fail without the change, a bug fix has its regression test); the rules of `AGENTS.md` and `.claude/rules/` the diff touches (the table of `/gatekeeper` section 1); texts in ja and en; the map and design pages;
+- to answer in exactly this shape (a verdict box GitHub draws in colour, then the sections; `pr.mjs review` refuses any other: the box, the counts against the sections, the commit against `--sha`), in Japanese except code and identifiers. Code that holds a backtick goes in double backticks (``` `` a`b `` ```), or it breaks the page:
 
 ```
 SHA: <the 40-hex head commit it read: gh pr view <n> --json headRefOid>
 VERDICT: changes            (or ok)
-**変更を求めます**            (for ok: **問題ありません**)
-<the summary: one or two sentences, what the change gets right and what is wrong>
+> [!CAUTION]                                                   (for ok: > [!TIP])
+> **判定: NG**　指摘 1 件・任意 2 件（<the first 8 of the SHA> を確認）   (for ok: **判定: OK**, 指摘 0 件)
+
+#### 総評
+<one or two sentences: what the change gets right and what is wrong>
 
 #### 前回の指摘
 - <what became of each earlier finding; - なし in a first review>
@@ -63,7 +66,7 @@ VERDICT: changes            (or ok)
 - **`path/file.ext:line`** <the finding>
 ```
 
-  Few findings, each concrete; matters of taste go under 任意. No praise beyond the summary, no summary of the diff.
+  Few findings, each concrete; matters of taste go under 任意. No praise beyond the 総評, no summary of the diff.
 
 Post its answer as the review: write the lines after `VERDICT` (keep the blank lines) to `novira-data/work/scratch/pr/<n>-review.md`, then `node scripts/tools/pr.mjs review <n> --verdict <ok|changes> --sha <the SHA it read> --body-file <that file>`. The tool checks the shape (`reviewProblems`), refuses when the head moved past that commit, and the merge counts only a review of the current head by the signed-in account, so a later push needs a new review.
 

@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { CODEQL_CHECKS, bodyProblems, checksState, deleteBranchArgs, freshChecks, gatingChecks, mergeArgs, mergeDecision, reviewMark, reviewProblems, reviewVerdict, titleFor, titleProblems, withMissing, withoutComments } from '../../scripts/tools/pr.mjs';
+import { BODY_SECTIONS, CODEQL_CHECKS, bodyProblems, checksState, deleteBranchArgs, freshChecks, gatingChecks, readyFrom, mergeArgs, mergeDecision, reviewMark, reviewProblems, reviewVerdict, titleFor, titleProblems, withMissing, withoutComments } from '../../scripts/tools/pr.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const HEAD = 'a'.repeat(40);
@@ -138,20 +138,25 @@ describe('the squash merge', () => {
   });
 });
 
-const FULL = ['## 目的', '困っていた', '## 変えないこと', '画面', '## 変更', '直した', '## 証拠', '検査が通った', '## 範囲', '- [x] ja と en', '## テスト', 'pr-tool.test.ts'].join('\n');
+const FULL = ['## 背景', '困っていた', '## 変わらないこと', '画面', '## 変更内容', '直した', '## 確認結果', '検査が通った', '## チェックリスト', '- [x] ja と en', '## 追加・変更したテスト', 'pr-tool.test.ts'].join('\n');
 
-describe('the description of a pull request (the sections of meta/astryx)', () => {
+describe('the description of a pull request (the sections of meta/astryx, named in plain Japanese)', () => {
   it('is complete with every section in order and something in each', { tags: ['equivalence'] }, () => {
     expect(bodyProblems(FULL)).toEqual([]);
     expect(bodyProblems(FULL.replace(/\n/g, '\r\n'))).toEqual([]);
   });
 
   it('names a section that is missing, empty (a template comment alone is empty) or out of order', { tags: ['error-guessing'] }, () => {
-    expect(bodyProblems(FULL.replace('## 証拠\n検査が通った\n', ''))).toEqual(['the section "## 証拠" is missing']);
-    expect(bodyProblems(FULL.replace('検査が通った', '<!-- 確かめたこと -->'))).toEqual(['the section "## 証拠" is empty']);
-    const swapped = FULL.replace('## 目的\n困っていた\n', '').replace('## テスト', '## 目的\n困っていた\n## テスト');
-    expect(bodyProblems(swapped)).toContain('the section "## 変えないこと" is out of order');
+    expect(bodyProblems(FULL.replace('## 確認結果\n検査が通った\n', ''))).toEqual(['the section "## 確認結果" is missing']);
+    expect(bodyProblems(FULL.replace('検査が通った', '<!-- 確かめたこと -->'))).toEqual(['the section "## 確認結果" is empty']);
+    const swapped = FULL.replace('## 背景\n困っていた\n', '').replace('## 追加・変更したテスト', '## 背景\n困っていた\n## 追加・変更したテスト');
+    expect(bodyProblems(swapped)).toContain('the section "## 変わらないこと" is out of order');
     expect(bodyProblems('')).toHaveLength(6);
+  });
+
+  it('are the headings of .github/pull_request_template.md, in its order', { tags: ['equivalence'] }, () => {
+    const template = readFileSync(path.join(ROOT, '.github/pull_request_template.md'), 'utf8');
+    expect([...template.matchAll(/^## (.+)$/gm)].map((m) => (m[1] ?? '').trim())).toEqual(BODY_SECTIONS);
   });
 });
 
@@ -161,7 +166,7 @@ describe('the template hints in a description', () => {
     expect(withoutComments('<!-<!---->-')).not.toContain('<!--');
     expect(withoutComments('<!<!-- x -->-- y -->').trim()).toBe('');
     expect(withoutComments('words <!-- never closed')).toBe('words ');
-    expect(bodyProblems(FULL.replace('検査が通った', '<!-<!-- x -->- hint -->'))).toEqual(['the section "## 証拠" is empty']);
+    expect(bodyProblems(FULL.replace('検査が通った', '<!-<!-- x -->- hint -->'))).toEqual(['the section "## 確認結果" is empty']);
   });
 });
 
@@ -171,9 +176,13 @@ describe('deleting the merged branch', () => {
   });
 });
 
-describe('the shape of a review (after meta/astryx review bot, laid out to read at a glance)', () => {
+describe('the shape of a review (a verdict box, then the sections, to read at a glance)', () => {
+  const SHA = 'e8051a615184dbd2b19ef00b37a521e13b189104';
   const changes = [
-    '**変更を求めます**',
+    '> [!CAUTION]',
+    '> **判定: NG**　指摘 1 件・任意 1 件（e8051a61 を確認）',
+    '',
+    '#### 総評',
     'マージ条件は直ったが、件名が main に入らない。',
     '',
     '#### 前回の指摘',
@@ -187,31 +196,55 @@ describe('the shape of a review (after meta/astryx review bot, laid out to read 
     '#### 任意',
     '- **`docs/a.md:3`** 言い回し',
   ].join('\n');
-  const ok = ['**問題ありません**', '前回の指摘は直り、ほかに要るものはない。', '', '#### 前回の指摘', '- 2 件とも直った', '', '#### 任意', '- 説明を足してもよい'].join('\n');
+  const ok = [
+    '> [!TIP]',
+    '> **判定: OK**　指摘 0 件・任意 1 件（e8051a61 を確認）',
+    '',
+    '#### 総評',
+    '前回の指摘は直り、ほかに要るものはない。',
+    '',
+    '#### 前回の指摘',
+    '- 2 件とも直った',
+    '',
+    '#### 任意',
+    '- 説明を足してもよい',
+  ].join('\n');
 
-  it('takes a changes review with a finding under 指摘, and an ok review with none', { tags: ['equivalence'] }, () => {
-    expect(reviewProblems('changes', changes)).toEqual([]);
-    expect(reviewProblems('ok', ok)).toEqual([]);
+  it('takes a changes review (NG) with a finding under 指摘, and an ok review (OK) with none', { tags: ['equivalence'] }, () => {
+    expect(reviewProblems('changes', changes, SHA)).toEqual([]);
+    expect(reviewProblems('ok', ok, SHA)).toEqual([]);
   });
 
-  it('refuses a heading that does not match the verdict, a missing summary, and a missing section about the earlier findings', { tags: ['decision-table'] }, () => {
-    expect(reviewProblems('ok', changes).join()).toContain('**問題ありません**');
-    expect(reviewProblems('changes', changes.replace('マージ条件は直ったが、件名が main に入らない。\n', '')).join()).toContain('summary');
-    expect(reviewProblems('changes', changes.replace('#### 前回の指摘\n- 1 回目（10 件）: すべて直った\n', '')).join()).toContain('前回の指摘');
+  it('refuses a box or a 判定 that does not match the verdict, and a missing 総評 or section about the earlier findings', { tags: ['decision-table'] }, () => {
+    expect(reviewProblems('ok', changes, SHA).join()).toContain('[!TIP]');
+    expect(reviewProblems('changes', changes.replace('判定: NG', '判定: OK'), SHA).join()).toContain('判定: NG');
+    expect(reviewProblems('changes', changes.replace('#### 総評\nマージ条件は直ったが、件名が main に入らない。\n', ''), SHA).join()).toContain('総評');
+    expect(reviewProblems('changes', changes.replace('#### 前回の指摘\n- 1 回目（10 件）: すべて直った\n', ''), SHA).join()).toContain('前回の指摘');
+  });
+
+  it('refuses counts in the box that differ from the findings, and a commit other than the one reviewed', { tags: ['boundary', 'regression'] }, () => {
+    expect(reviewProblems('changes', changes.replace('指摘 1 件', '指摘 2 件'), SHA).join()).toContain('指摘 1 件');
+    expect(reviewProblems('changes', changes.replace('任意 1 件', '任意 0 件'), SHA).join()).toContain('任意 1 件');
+    expect(reviewProblems('changes', changes, 'b'.repeat(40)).join()).toContain('bbbbbbbb');
+  });
+
+  it('refuses a blank line between the box and the 判定 line: GitHub then draws two quotes, not a coloured box', { tags: ['boundary'] }, () => {
+    expect(reviewProblems('changes', changes.replace('> [!CAUTION]\n', '> [!CAUTION]\n\n'), SHA).join()).toContain('right under');
   });
 
   it('refuses changes without a finding, ok with one, and a finding without its place, problem or fix', { tags: ['decision-table', 'boundary'] }, () => {
-    const noFinding = changes.replace(/#### 指摘\n[\s\S]*?\n\n/, '');
-    expect(reviewProblems('changes', noFinding).join()).toContain('without a finding');
-    expect(reviewProblems('ok', ok.replace('#### 任意', '#### 指摘\n1. **`a.ts:1`**\n   - 問題: 壊れる\n   - 直し方: 直す\n\n#### 任意')).join()).toContain('ok is given with a finding');
-    expect(reviewProblems('changes', changes.replace('**`scripts/tools/pr.mjs:173`**', 'pr.mjs のどこか')).join()).toContain('its place alone');
-    expect(reviewProblems('changes', changes.replace('**`scripts/tools/pr.mjs:173`**', '**`.githooks/pre-commit:3`**'))).toEqual([]);
-    expect(reviewProblems('changes', changes.replace('   - 直し方: `--subject` を渡す\n', '')).join()).toContain('直し方');
+    const noFinding = changes.replace(/#### 指摘\n[\s\S]*?\n\n/, '').replace('指摘 1 件', '指摘 0 件');
+    expect(reviewProblems('changes', noFinding, SHA).join()).toContain('without a finding');
+    const okWithOne = ok.replace('#### 任意', '#### 指摘\n1. **`a.ts:1`**\n   - 問題: 壊れる\n   - 直し方: 直す\n\n#### 任意').replace('指摘 0 件', '指摘 1 件');
+    expect(reviewProblems('ok', okWithOne, SHA).join()).toContain('ok is given with a finding');
+    expect(reviewProblems('changes', changes.replace('**`scripts/tools/pr.mjs:173`**', 'pr.mjs のどこか'), SHA).join()).toContain('its place alone');
+    expect(reviewProblems('changes', changes.replace('**`scripts/tools/pr.mjs:173`**', '**`.githooks/pre-commit:3`**'), SHA)).toEqual([]);
+    expect(reviewProblems('changes', changes.replace('   - 直し方: `--subject` を渡す\n', ''), SHA).join()).toContain('直し方');
   });
 
   it('refuses the sections out of order', { tags: ['boundary'] }, () => {
     const swapped = changes.replace('#### 前回の指摘\n- 1 回目（10 件）: すべて直った\n\n', '') + '\n\n#### 前回の指摘\n- なし';
-    expect(reviewProblems('changes', swapped).join()).toContain('out of order');
+    expect(reviewProblems('changes', swapped, SHA).join()).toContain('out of order');
   });
 });
 
@@ -247,6 +280,22 @@ describe('the checks after a draft is made ready', () => {
     expect(checksState(freshChecks(checks, READY))).toBe('pending');
     // A pull request that was never a draft keeps every run.
     expect(freshChecks(checks, null)).toEqual(checks);
+  });
+
+  it('start, after `gh pr ready`, at the moment before it until the events API shows the new ready time, then at that time', { tags: ['state-transition', 'regression'] }, () => {
+    const before = '2026-11-12T09:00:00Z';
+    const floor = '2026-11-12T10:00:00Z';
+    // The events API still shows the earlier ready time: the moment before `gh pr ready` wins.
+    expect(readyFrom(before, before, floor)).toBe(floor);
+    expect(readyFrom(null, null, floor)).toBe(floor);
+    // It shows the new one: that time alone, so a local clock running ahead cannot hold fresh runs back.
+    expect(readyFrom('2026-11-12T09:59:40Z', before, floor)).toBe('2026-11-12T09:59:40Z');
+    expect(readyFrom('2026-11-12T09:59:40Z', null, floor)).toBe('2026-11-12T09:59:40Z');
+    // A merge that did not make it ready itself: the events API alone.
+    expect(readyFrom('2026-11-12T09:00:00Z', null, null)).toBe('2026-11-12T09:00:00Z');
+    // A failed run of the earlier round is pending until the fresh runs come.
+    const checks = [{ name: 'vitest', bucket: 'fail', startedAt: '2026-11-12T09:30:00Z' }];
+    expect(checksState(freshChecks(checks, readyFrom(before, before, floor)))).toBe('pending');
   });
 });
 
