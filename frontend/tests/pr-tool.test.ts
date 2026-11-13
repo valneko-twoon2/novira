@@ -150,6 +150,9 @@ describe('the git questions of the merge rules, in a real repository', () => {
   it('tell a snapshot of develop from a branch with commits of its own, and whether main still changes develop', { tags: ['regression', 'state-transition'] }, () => {
     try {
       git('init', '-q', '-b', 'base');
+      // syncCommit runs its own git: the repository's identity lets it commit where no global one is set (CI)
+      git('config', 'user.name', 't');
+      git('config', 'user.email', 't@example.com');
       put('version.txt', lines('1', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'), 'start');
       put('other.txt', 'x', 'other');
       // develop gets the release preparation; the snapshot is that commit; main is a squash of it
@@ -212,6 +215,9 @@ describe('the merge back when develop changed what the release changed', () => {
     };
     try {
       git('init', '-q', '-b', 'base');
+      // syncCommit runs its own git: the repository's identity lets it commit where no global one is set (CI)
+      git('config', 'user.name', 't');
+      git('config', 'user.email', 't@example.com');
       put('table.txt', 'rows: 10\n', 'start');
       git('checkout', '-q', '-b', 'develop', 'base');
       put('table.txt', 'rows: 11\n', 'work in the table, then the release');
@@ -262,6 +268,9 @@ describe('a sync branch whose first parent is older than an earlier sync', () =>
     };
     try {
       git('init', '-q', '-b', 'main');
+      // syncCommit runs its own git: the repository's identity lets it commit where no global one is set (CI)
+      git('config', 'user.name', 't');
+      git('config', 'user.email', 't@example.com');
       put('a.txt', 'a');
       git('checkout', '-q', '-b', 'develop');
       git('branch', 'c1');
