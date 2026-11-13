@@ -599,6 +599,20 @@ describe('a pull request into develop that changes only the changelog, the test 
     for (const p of ['frontend/e2e/a11yKnown.ts', 'frontend/e2e/perfBudget.ts', 'frontend/e2e/layoutRules.ts', 'frontend/e2e/fixtures.ts', 'frontend/tests/helper.mjs']) expect(reviewFree([p]), p).toBe(false);
   });
 
+  it('frees a Rust test file at the top of tests/, not the helpers, the test modules in a folder or the fixtures', { tags: ['equivalence', 'regression'] }, () => {
+    for (const p of ['backend/crates/novira-core/tests/models_live.rs', 'backend/crates/novira-server/tests/auth.rs']) expect(reviewFree([p]), p).toBe(true);
+    for (const p of [
+      'backend/crates/novira-server/tests/common/mod.rs',
+      'backend/crates/novira-core/tests/backend_service/common.rs',
+      'backend/crates/novira-core/tests/backend_service/main.rs',
+      'backend/crates/novira-core/tests/agent_endpoint/server.rs',
+      'backend/crates/novira-core/tests/fake_site/mod.rs',
+      'backend/crates/novira-core/tests/fixtures/data-v0.3.0/novira.sqlite',
+      'backend/crates/novira-core/tests/fixtures/data-v0.3.0/settings.json',
+    ])
+      expect(reviewFree([p]), p).toBe(false);
+  });
+
   it('merges into develop with no agent review, but a review that asks for changes still stops it, and main always needs one', { tags: ['decision-table'] }, () => {
     expect(mergeDecision({ verdict: 'none', base: 'develop', head: '20261113_x', reviewFree: true })).toMatchObject({ merge: true });
     expect(mergeDecision({ verdict: 'none', base: 'develop', head: '20261113_x', reviewFree: false })).toMatchObject({ merge: false });
