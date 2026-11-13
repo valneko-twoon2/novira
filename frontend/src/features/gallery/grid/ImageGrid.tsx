@@ -18,7 +18,7 @@ import { FolderTile } from './FolderTile';
 import { LiveThumbnail } from './LiveThumbnail';
 import { clickImage } from './selection';
 import { Thumbnail } from './Thumbnail';
-import { useBoardStats } from '../boards/useBoardStats';
+import { useBoardStats } from '@/state/boardStats';
 import { useGridHotkeys } from './useGridHotkeys';
 
 const GAP = 4;

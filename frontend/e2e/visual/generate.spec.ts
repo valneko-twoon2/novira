@@ -96,4 +96,17 @@ inEachTheme((theme) => {
     await expect(page.getByTestId('invoke-button')).toHaveText(msg('params.invoke.invoke'));
     await snap(page, SCREEN, theme, 'candidates');
   });
+
+  test('candidates board list', { tag: ['@scenario'] }, async ({ page }) => {
+    await galleryDefaults(page, { newPicturesToCandidates: true });
+    await openDesktop(page);
+    await page.getByTestId('seed-fixed').click();
+    await page.getByTestId('positive-prompt').fill('a harbour at dawn');
+    await page.getByTestId('invoke-button').click();
+    await expect(page.getByTestId('draft-cell').locator('img')).toHaveCount(1, { timeout: 20_000 });
+    await expect(page.getByTestId('invoke-button')).toHaveText(msg('params.invoke.invoke'));
+    await page.getByTestId('drafts-target').click();
+    await expect(page.getByTestId('drafts-target-list')).toBeVisible();
+    await snap(page, SCREEN, theme, 'candidates-boards');
+  });
 });

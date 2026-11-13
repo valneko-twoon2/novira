@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { ImageDTO } from '@/backend';
 import { check } from '@/propertyTest.testkit';
 import { useGallery } from '@/state/gallery';
-import { useBoardStats } from './useBoardStats';
+import { useBoardStats } from './boardStats';
 
 afterEach(() => {
   cleanup();

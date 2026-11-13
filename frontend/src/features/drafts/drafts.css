@@ -19,12 +19,79 @@
 .dv-target {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  color: var(--text-muted);
+  gap: var(--space-2);
+  min-width: 0;
 }
 
-.dv-target .ui-select {
-  width: 180px;
+.dv-target__label {
+  flex: none;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.dv-target__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 220px;
+  min-width: 0;
+}
+
+.dv-target__trigger .ui-select__value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+/* The board list: the gallery's board rows, as a tree with each board's cover and counts. */
+.dv-board {
+  padding-left: calc(var(--space-1) + var(--dv-board-depth, 0) * 16px);
+}
+
+.dv-board.is-archived {
+  opacity: 0.6;
+}
+
+.dv-board__cover {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-faint);
+}
+
+.dv-target__trigger .dv-board__cover {
+  width: 20px;
+  height: 20px;
+}
+
+.dv-board__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dv-board__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dv-board__meta {
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+}
+
+.dv-boards .pp-picker__list {
+  gap: 2px;
 }
 
 .dv-size {
