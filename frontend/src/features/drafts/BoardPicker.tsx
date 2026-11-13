@@ -13,6 +13,8 @@ interface Row {
   id: BoardId;
   board: BoardDTO | null;
   depth: number;
+  /** Shown by its whole path, outside the tree: the selected board inside an archived board. */
+  alone?: boolean;
 }
 
 export function BoardPicker() {
@@ -21,11 +23,16 @@ export function BoardPicker() {
   const stats = useBoardStats();
   const value: BoardId = selected !== 'none' && boards.some((b) => b.id === selected) ? selected : 'none';
   const current = boards.find((b) => b.id === value) ?? null;
-  // Every board unfolded (the gallery's folding is for its own list); an archived board, or one inside it, only while selected.
+  // Every board unfolded (the gallery's folding is for its own list). An archived board, or one inside it, only while
+  // selected: an archived board in its place in the tree, a board inside one alone by its path, so the archived board
+  // around it is not listed (the tree would bring it along, and it could be chosen).
   const rows = useMemo<Row[]>(() => {
-    const shown = (b: BoardDTO) => b.id === value || (!b.archived && !ancestorsOf(boards, b).some((x) => x.archived));
-    return [{ id: 'none', board: null, depth: 0 }, ...boardTree(boards, shown).map(({ board, depth }) => ({ id: board.id, board, depth }))];
-  }, [boards, value]);
+    const inArchived = (b: BoardDTO) => ancestorsOf(boards, b).some((x) => x.archived);
+    const shown = (b: BoardDTO) => !inArchived(b) && (!b.archived || b.id === value);
+    const tree: Row[] = boardTree(boards, shown).map(({ board, depth }) => ({ id: board.id, board, depth }));
+    const alone: Row[] = current && inArchived(current) ? [{ id: current.id, board: current, depth: 0, alone: true }] : [];
+    return [{ id: 'none', board: null, depth: 0 }, ...alone, ...tree];
+  }, [boards, value, current]);
   const nameOf = (board: BoardDTO | null) => (board ? boardLabel(boards, board) : t('gallery.boards.uncategorized'));
 
   return (
@@ -65,7 +72,7 @@ export function BoardPicker() {
             >
               <Cover board={r.board} stats={s} />
               <span className="dv-board__body">
-                <span className="pp-picker__name">{r.board?.name ?? t('gallery.boards.uncategorized')}</span>
+                <span className="pp-picker__name">{r.alone ? nameOf(r.board) : (r.board?.name ?? t('gallery.boards.uncategorized'))}</span>
                 <span className="dv-board__meta">{t('gallery.boards.counts', { images: s?.images ?? 0, assets: s?.assets ?? 0 })}</span>
               </span>
               {r.id === value && <Check size={12} />}

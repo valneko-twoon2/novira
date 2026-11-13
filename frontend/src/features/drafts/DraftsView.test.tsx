@@ -320,6 +320,36 @@ describe('the top bar', { tags: [] }, () => {
     expect(items().map((i) => i.dataset.boardId)).toEqual(['c']);
   });
 
+  it('leaves out archived boards and what is inside them, but shows the selected one by its path, and never its archived board', { tags: ['decision-table', 'regression'] }, () => {
+    const boards = [
+      { id: 'live', name: 'Live', archived: false, createdAt: 3, parentId: null },
+      { id: 'arch', name: 'Arch', archived: true, createdAt: 2, parentId: null },
+      { id: 'sub', name: 'Sub', archived: false, createdAt: 1, parentId: 'arch' },
+    ];
+    const ids = () => screen.getAllByTestId('drafts-target-item').map((i) => i.dataset.boardId);
+    // nothing archived is selected: the archived board and its subfolder are left out
+    useGallery.setState({ boards: boards as never, selectedBoardId: 'live' });
+    const first = show();
+    fireEvent.click(screen.getByTestId('drafts-target'));
+    expect(ids()).toEqual(['none', 'live']);
+    first.unmount();
+    // the archived board itself selected: it is shown, marked as selected
+    useGallery.setState({ selectedBoardId: 'arch' });
+    const second = show();
+    fireEvent.click(screen.getByTestId('drafts-target'));
+    expect(ids()).toEqual(['none', 'live', 'arch']);
+    expect(screen.getAllByTestId('drafts-target-item')[2]!.getAttribute('aria-current')).toBe('true');
+    second.unmount();
+    // a subfolder of an archived board selected: it is shown alone by its path, its archived board is not
+    useGallery.setState({ selectedBoardId: 'sub' });
+    show();
+    fireEvent.click(screen.getByTestId('drafts-target'));
+    expect(ids()).toEqual(['none', 'sub', 'live']);
+    const sub = screen.getAllByTestId('drafts-target-item')[1]!;
+    expect(sub.textContent).toContain('Arch / Sub');
+    expect(sub.style.getPropertyValue('--dv-board-depth')).toBe('');
+  });
+
   it('shows Uncategorized when the selected board is gone', { tags: ['error-guessing'] }, () => {
     useGallery.setState({ boards: [], selectedBoardId: 'gone' });
     show();
