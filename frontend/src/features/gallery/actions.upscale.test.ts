@@ -34,6 +34,19 @@ describe('the gallery upscale', { tags: [] }, () => {
     expect(useBatch.getState().names).toBeNull();
   });
 
+  it('does nothing for a video or a sound, in the app or with the Upscaling tab: no dialog with nothing to enlarge', { tags: ['equivalence', 'regression'] }, () => {
+    for (const mediaType of ['video', 'audio'] as const) {
+      const media = { ...image, name: `m.${mediaType}`, mediaType } as ImageDTO;
+      vi.stubEnv('MODE', 'production');
+      sendToUpscale(media);
+      expect(useBatch.getState().names, mediaType).toBeNull();
+      vi.unstubAllEnvs();
+      sendToUpscale(media);
+      expect(useUi.getState().activeTab, mediaType).not.toBe('upscaling');
+      expect(useParams.getState().upscale.initialImage, mediaType).toBeNull();
+    }
+  });
+
   it('opens the batch dialog for no particular operation unless told one', { tags: ['equivalence'] }, () => {
     useBatch.getState().open(['a.png'], 'upscale');
     useBatch.getState().close();

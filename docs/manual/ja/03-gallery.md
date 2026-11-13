@@ -113,7 +113,7 @@
 | **{{ui:gallery.menu.sendToVideo}}** | 動画の最初の絵にする |
 | **{{ui:gallery.menu.sendToWorkflow}}** | 開いているワークフローに、画像の入力として足す |
 | **{{ui:gallery.menu.sendToText}}** | テキストの背景にする |
-| **{{ui:gallery.menu.upscale}}**（`Shift+U`） | アップスケールのタブに送る。そのタブが出ていないときは、この 1 枚で **{{ui:batch.title}}** を **{{ui:batch.op.upscale.title}}** の状態で開く（拡大用のモデルで大きくし、描き直さない） |
+| **{{ui:gallery.menu.upscale}}**（`Shift+U`） | アップスケールのタブに送る。そのタブが出ていないときは、この 1 枚で **{{ui:batch.title}}** を **{{ui:batch.op.upscale.title}}** の状態で開く（拡大用のモデルで大きくし、描き直さない）。動画と音声では選べません |
 | **{{ui:gallery.menu.segment}}** | 絵をキャンバスで開き、直したい部分をブラシで塗って、消したり切り抜いたり描き直したりする |
 | **{{ui:gallery.derive.menu}}** | この絵の設定で、別のシードや少しだけ変えた絵を作る |
 | **{{ui:gallery.tools.heading}}** | {{ui:facefix.menu}}、{{ui:cutout.menu}}、{{ui:caption.menu}}、{{ui:canvas.poseFromImage.menu}}。選ぶと前回の設定ですぐに実行し、右の歯車で先に設定を開きます（[絵を直す・使い回す](04-improve.md)） |

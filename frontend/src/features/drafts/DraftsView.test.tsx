@@ -57,6 +57,16 @@ describe('the flow', { tags: [] }, () => {
     expect(screen.queryByTestId('drafts-more')).toBeNull();
   });
 
+  it('keeps a batch past the limit listed after its picture was shown large and the view was closed', { tags: ['state-transition', 'regression'] }, () => {
+    // the view came back (a screen switch) showing a picture of the oldest batch, past the first 8
+    useDrafts.setState({ groups: Array.from({ length: 10 }, (_, i) => group(`g${i + 1}`, [candidate(i + 1)])), viewing: 'c1' });
+    useGallery.setState({ images: Array.from({ length: 10 }, (_, i) => picture(`d${i + 1}.png`)) });
+    show();
+    expect(screen.queryByTestId('drafts-group')).toBeNull();
+    fireEvent.click(screen.getByTestId('drafts-large-back'));
+    expect(screen.getAllByTestId('drafts-group').map((g) => g.dataset.groupId)).toContain('g1');
+  });
+
   it('accepts a whole batch from its header: a generation batch to the board, a batch of drafts finished', { tags: ['decision-table'] }, () => {
     const adopt = vi.fn().mockResolvedValue(undefined);
     const finish = vi.fn().mockResolvedValue(undefined);
@@ -262,7 +272,7 @@ describe('choosing', { tags: [] }, () => {
 });
 
 describe('the top bar', { tags: [] }, () => {
-  it('shows the board the pictures go to and changes the board selected in the gallery', { tags: ['scenario'] }, () => {
+  it('shows the board the pictures go to under the word Board, and changes the board selected in the gallery', { tags: ['scenario'] }, () => {
     useGallery.setState({
       boards: [
         { id: 'b1', name: 'Cats', archived: false, createdAt: 1, parentId: null },
@@ -271,11 +281,73 @@ describe('the top bar', { tags: [] }, () => {
       selectedBoardId: 'b1',
     });
     show();
+    expect(screen.getByText(t('gallery.boards.title'))).toBeTruthy();
     expect(screen.getByTestId('drafts-target').textContent).toContain('Cats');
     fireEvent.click(screen.getByTestId('drafts-target'));
-    expect(screen.queryByRole('option', { name: 'Old' })).toBeNull();
-    fireEvent.click(screen.getByRole('option', { name: t('gallery.boards.uncategorized') }));
+    const items = () => screen.getAllByTestId('drafts-target-item');
+    expect(items().map((i) => i.dataset.boardId)).toEqual(['none', 'b1']);
+    expect(items()[1]!.getAttribute('aria-current')).toBe('true');
+    fireEvent.click(items()[0]!);
     expect(useGallery.getState().selectedBoardId).toBe('none');
+    expect(screen.queryByTestId('drafts-target-list')).toBeNull();
+  });
+
+  it('lists the boards as a tree with the latest picture and the counts of each board, and finds a subfolder by its path', { tags: ['scenario', 'equivalence'] }, () => {
+    const pic = (name: string, boardId: string | null, createdAt: number, category = 'general') => ({ ...(picture(name, false) as object), boardId, createdAt, category });
+    useGallery.setState({
+      boards: [
+        { id: 'p', name: 'Ganyu', archived: false, createdAt: 2, parentId: null },
+        { id: 'c', name: 'Originals', archived: false, createdAt: 3, parentId: 'p' },
+        { id: 'q', name: 'Empty', archived: false, createdAt: 1, parentId: null },
+      ] as never,
+      images: [pic('old.png', 'c', 1), pic('new.png', 'c', 5), pic('ref.png', 'c', 2, 'user')] as never,
+      selectedBoardId: 'c',
+    });
+    show();
+    const trigger = screen.getByTestId('drafts-target');
+    expect(trigger.textContent).toContain('Ganyu / Originals');
+    expect(trigger.querySelector('img')?.getAttribute('src')).toBe('blob:t-new.png');
+    fireEvent.click(trigger);
+    const items = () => screen.getAllByTestId('drafts-target-item');
+    expect(items().map((i) => i.dataset.boardId)).toEqual(['none', 'p', 'c', 'q']);
+    const sub = items()[2]!;
+    expect(sub.style.getPropertyValue('--dv-board-depth')).toBe('1');
+    expect(sub.querySelector('img')?.getAttribute('src')).toBe('blob:t-new.png');
+    expect(sub.textContent).toContain(t('gallery.boards.counts', { images: 2, assets: 1 }));
+    // a board with no picture shows a folder, not an empty picture
+    expect(items()[3]!.querySelector('img')).toBeNull();
+    fireEvent.change(screen.getByLabelText(t('gallery.boards.searchPlaceholder')), { target: { value: 'ganyu / orig' } });
+    expect(items().map((i) => i.dataset.boardId)).toEqual(['c']);
+  });
+
+  it('leaves out archived boards and what is inside them, but shows the selected one by its path, and never its archived board', { tags: ['decision-table', 'regression'] }, () => {
+    const boards = [
+      { id: 'live', name: 'Live', archived: false, createdAt: 3, parentId: null },
+      { id: 'arch', name: 'Arch', archived: true, createdAt: 2, parentId: null },
+      { id: 'sub', name: 'Sub', archived: false, createdAt: 1, parentId: 'arch' },
+    ];
+    const ids = () => screen.getAllByTestId('drafts-target-item').map((i) => i.dataset.boardId);
+    // nothing archived is selected: the archived board and its subfolder are left out
+    useGallery.setState({ boards: boards as never, selectedBoardId: 'live' });
+    const first = show();
+    fireEvent.click(screen.getByTestId('drafts-target'));
+    expect(ids()).toEqual(['none', 'live']);
+    first.unmount();
+    // the archived board itself selected: it is shown, marked as selected
+    useGallery.setState({ selectedBoardId: 'arch' });
+    const second = show();
+    fireEvent.click(screen.getByTestId('drafts-target'));
+    expect(ids()).toEqual(['none', 'live', 'arch']);
+    expect(screen.getAllByTestId('drafts-target-item')[2]!.getAttribute('aria-current')).toBe('true');
+    second.unmount();
+    // a subfolder of an archived board selected: it is shown alone by its path, its archived board is not
+    useGallery.setState({ selectedBoardId: 'sub' });
+    show();
+    fireEvent.click(screen.getByTestId('drafts-target'));
+    expect(ids()).toEqual(['none', 'sub', 'live']);
+    const sub = screen.getAllByTestId('drafts-target-item')[1]!;
+    expect(sub.textContent).toContain('Arch / Sub');
+    expect(sub.style.getPropertyValue('--dv-board-depth')).toBe('');
   });
 
   it('shows Uncategorized when the selected board is gone', { tags: ['error-guessing'] }, () => {

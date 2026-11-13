@@ -59,7 +59,7 @@ covers:
 
 ### ボード
 
-ボードは `boards` テーブルの行: id（`board-` と 16 進 12 桁）、名前、`archived`、`createdAt`、`parentId`（サブフォルダのボード。`backend/crates/novira-core/src/service/boards.rs`）。画像は `boardId` で 1 つのボードに属し、`null` は未分類。ページが枚数とカバーを計算する（`frontend/src/features/gallery/boards/useBoardStats.ts`）。中間画像は除き、`general` は画像、それ以外はアセットとして数える。
+ボードは `boards` テーブルの行: id（`board-` と 16 進 12 桁）、名前、`archived`、`createdAt`、`parentId`（サブフォルダのボード。`backend/crates/novira-core/src/service/boards.rs`）。画像は `boardId` で 1 つのボードに属し、`null` は未分類。ページが枚数とカバーを計算する（`frontend/src/state/boardStats.ts`。候補の画面のボードの選択も使う）。中間画像は除き、`general` は画像、それ以外はアセットとして数える。
 
 - 作成と名前変更は名前をトリムし、空白のみを拒否する。
 - アーカイブはフラグを立てるだけ。アーカイブ済みのボードは、アーカイブ表示がオンでなければ隠れ、そのとき選択中のボードをアーカイブすると未分類が選択される。自動追加のボードをアーカイブすると、その設定が解除される（`frontend/src/features/gallery/boards/boardActions.ts`）。

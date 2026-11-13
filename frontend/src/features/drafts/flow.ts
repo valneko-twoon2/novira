@@ -57,6 +57,18 @@ export function flowGroups(
   return { shown, total: open.length };
 }
 
+/**
+ * The limit that keeps the batch of `viewingId` in the list once the large view closes: it is shown past the limit only while
+ * it is viewed (`flowGroups`), so closing the view would drop it out of sight. Raised in steps of `FLOW_GROUPS`, as "Show
+ * more" does; never lowered.
+ */
+export function limitShowing(groups: DraftGroup[], images: ImageDTO[], currentId: string | null, limit: number, viewingId: string | null): number {
+  if (viewingId === null) return limit;
+  const open = groups.filter((g) => g.id === currentId || g.candidates.some((c) => !isDecided(g, c, images))).reverse();
+  const at = open.findIndex((g) => g.candidates.some((c) => c.id === viewingId));
+  return at < limit ? limit : Math.ceil((at + 1) / FLOW_GROUPS) * FLOW_GROUPS;
+}
+
 /** The ids of every candidate in the flow, in the order shown: what a Shift click selects a range of. */
 export const flowOrder = (groups: DraftGroup[]): string[] => groups.flatMap((g) => g.candidates.map((c) => c.id));
 

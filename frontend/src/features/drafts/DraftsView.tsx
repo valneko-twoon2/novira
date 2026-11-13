@@ -1,18 +1,18 @@
 // Candidates view: what Invoke made and the batches of drafts, in one scrolling flow, newest first. Each picture is put on
 // the board (a draft: finished) with ✓ or thrown away with ×, alone, chosen together, or a whole batch at once; a double
 // click shows it large to go through them one by one.
-import { ArrowClockwise, CaretDown, Checks, ClockCounterClockwise, Lightning, SelectionSlash, Tray, X } from '@phosphor-icons/react';
+import { ArrowClockwise, CaretDown, Checks, ClockCounterClockwise, Lightning, SelectionSlash, X } from '@phosphor-icons/react';
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type Ref } from 'react';
 import { t, tCount } from '@/i18n';
-import { boardLabel } from '@/state/boardTree';
 import { useDrafts, type DraftGroup } from '@/state/drafts';
 import { THUMB_SIZE, useDraftForm } from '@/state/draftForm';
 import { useGallery } from '@/state/gallery';
-import { Button, EmptyState, IconButton, Select, Slider, Tooltip } from '@/ui';
+import { Button, EmptyState, IconButton, Slider, Tooltip } from '@/ui';
+import { BoardPicker } from './BoardPicker';
 import { Cell } from './Cell';
 import { DraftForm } from './DraftForm';
 import { DraftHistory } from './DraftHistory';
-import { accept, FLOW_GROUPS, flowGroups, flowOrder, isAcceptable, isSelectable, rangeOf, whenLabel } from './flow';
+import { accept, FLOW_GROUPS, flowGroups, flowOrder, isAcceptable, isSelectable, limitShowing, rangeOf, whenLabel } from './flow';
 import { LargeView } from './LargeView';
 import './drafts.css';
 
@@ -35,7 +35,12 @@ export function DraftsView({ onOpen }: { onOpen?: (imageName: string) => void } 
   useEffect(() => {
     if (currentId && large === null) flow.current?.querySelector(`[data-group-id="${CSS.escape(currentId)}"]`)?.scrollIntoView?.({ block: 'nearest' });
   }, [currentId, large]);
-  const closeLarge = useCallback(() => setViewing(null), [setViewing]);
+  // Closing keeps the viewed batch listed: past the limit it was there only while viewed.
+  const closeLarge = useCallback(() => {
+    const { groups: all, currentId: current, viewing: id } = useDrafts.getState();
+    setLimit((l) => limitShowing(all, useGallery.getState().images, current, l, id));
+    setViewing(null);
+  }, [setViewing]);
 
   return (
     <div className="dv" data-testid="drafts-view">
@@ -80,23 +85,6 @@ function TopBar({ count, onOpened }: { count: number; onOpened: () => void }) {
       )}
       <DraftHistory open={history} onClose={() => setHistory(false)} onOpened={onOpened} />
     </div>
-  );
-}
-
-/** Where ✓ puts the pictures: the board selected in the gallery, changed here as there. */
-function BoardPicker() {
-  const boards = useGallery((s) => s.boards);
-  const selected = useGallery((s) => s.selectedBoardId);
-  const value = selected !== 'none' && boards.some((b) => b.id === selected) ? selected : 'none';
-  const options = [
-    { value: 'none', label: t('gallery.boards.uncategorized') },
-    ...boards.filter((b) => !b.archived || b.id === value).map((b) => ({ value: b.id, label: boardLabel(boards, b) })),
-  ];
-  return (
-    <span className="dv-target">
-      <Tray size={16} aria-hidden />
-      <Select value={value} onChange={(id) => useGallery.getState().selectBoard(id)} options={options} aria-label={t('drafts.target')} data-testid="drafts-target" />
-    </span>
   );
 }
 

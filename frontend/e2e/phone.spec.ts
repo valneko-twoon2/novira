@@ -153,6 +153,10 @@ test('makes drafts on the Drafts tab, looks at one large and finishes it', { tag
   await page.getByTestId('drafts-start').tap();
   const cells = page.getByTestId('draft-cell');
   await expect(cells).toHaveCount(4);
+  // The top bar stays one line: the board field leaves room for the history button.
+  const field = await page.getByTestId('drafts-target').boundingBox();
+  const history = await page.getByTestId('drafts-history-button').boundingBox();
+  expect(Math.abs(field!.y + field!.height / 2 - (history!.y + history!.height / 2))).toBeLessThan(4);
   const first = cells.first();
   await expect(first.getByTestId('draft-open')).toBeVisible({ timeout: 20_000 });
   await first.getByTestId('draft-open').tap();

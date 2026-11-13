@@ -4,6 +4,18 @@
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-14
+
+### Changed
+
+- 「候補」の画面のボード欄を、ギャラリーと同じくボードをサブフォルダごとのツリーで、いちばん新しい絵と枚数つきで並べ、名前で探せる形に変更。
+- 「候補」の画面の履歴のポップアップの題名を「履歴」に変更。
+
+### Fixed
+
+- 動画や音声で「アップスケール」を押すと、対象のない「まとめて処理」が開いていたのを直しました。動画や音声では選べなくなりました。
+- 「候補」の画面で「さらに表示」の先の組の絵を大きく出してから一覧へ戻ると、その組が一覧から消えていたのを直しました。
+
 ## [0.6.0] - 2026-11-13
 
 ### Added
@@ -200,7 +212,8 @@
 - AI アシスタントと拡張パックを追加。
 - スマホから使えるブラウザ版（`novira-server`）を追加。
 
-[unreleased]: https://github.com/valneko-twoon2/novira/compare/v0.6.0...HEAD
+[unreleased]: https://github.com/valneko-twoon2/novira/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/valneko-twoon2/novira/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/valneko-twoon2/novira/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/valneko-twoon2/novira/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/valneko-twoon2/novira/compare/v0.3.0...v0.4.0

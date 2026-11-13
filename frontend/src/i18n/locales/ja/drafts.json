@@ -21,7 +21,7 @@
   "drafts.leftOut": "一覧にないモデル: {names}（編集用のモデルは元の画像を直すためのもので、下書きには使えません）",
   "drafts.open": "大きく見る",
   "drafts.closeOlder": "古い履歴を全て閉じる",
-  "drafts.history.title": "候補の履歴",
+  "drafts.history.title": "履歴",
   "drafts.history.periods": "期間",
   "drafts.history.period.all": "全て",
   "drafts.history.period.today": "今日",

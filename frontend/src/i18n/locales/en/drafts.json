@@ -21,7 +21,7 @@
   "drafts.leftOut": "Not in the list: {names} (edit models only change a source picture and cannot make drafts)",
   "drafts.open": "View large",
   "drafts.closeOlder": "Close all older batches",
-  "drafts.history.title": "Candidate history",
+  "drafts.history.title": "History",
   "drafts.history.periods": "Period",
   "drafts.history.period.all": "All",
   "drafts.history.period.today": "Today",

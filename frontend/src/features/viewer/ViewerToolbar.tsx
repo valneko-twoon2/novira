@@ -116,7 +116,7 @@ export function ViewerToolbar({ image }: { image: ImageDTO | undefined }) {
           </MenuContent>
         </Menu>
         <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('gallery.menu.useAsReference')} icon={<Images />} disabled={none} onClick={act(addAsReference)} />
-        <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('gallery.menu.upscale')} tooltip={tip(t('gallery.menu.upscale'), 'Shift+U')} icon={<ArrowsOut />} disabled={none} onClick={act(sendToUpscale)} />
+        <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('gallery.menu.upscale')} tooltip={tip(t('gallery.menu.upscale'), 'Shift+U')} icon={<ArrowsOut />} disabled={none || (image.mediaType ?? 'image') !== 'image'} onClick={act(sendToUpscale)} data-testid="viewer-upscale" />
         <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('gallery.menu.segment')} icon={<Crosshair />} disabled={none || (image.mediaType ?? 'image') !== 'image'} onClick={act(fixPartOnCanvas)} data-testid="viewer-segment" />
         <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('cutout.menu')} icon={<Scissors />} {...toolButton('cutout')} data-testid="viewer-cutout" />
         <IconButton size={TOOLBAR_BUTTON_SIZE} label={t('facefix.menu')} icon={<Smiley />} {...toolButton('facefix')} data-testid="viewer-facefix" />
