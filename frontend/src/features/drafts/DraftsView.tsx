@@ -12,7 +12,7 @@ import { Button, EmptyState, IconButton, Select, Slider, Tooltip } from '@/ui';
 import { Cell } from './Cell';
 import { DraftForm } from './DraftForm';
 import { DraftHistory } from './DraftHistory';
-import { accept, FLOW_GROUPS, flowGroups, flowOrder, isAcceptable, isSelectable, rangeOf, whenLabel } from './flow';
+import { accept, FLOW_GROUPS, flowGroups, flowOrder, isAcceptable, isSelectable, limitShowing, rangeOf, whenLabel } from './flow';
 import { LargeView } from './LargeView';
 import './drafts.css';
 
@@ -35,7 +35,12 @@ export function DraftsView({ onOpen }: { onOpen?: (imageName: string) => void } 
   useEffect(() => {
     if (currentId && large === null) flow.current?.querySelector(`[data-group-id="${CSS.escape(currentId)}"]`)?.scrollIntoView?.({ block: 'nearest' });
   }, [currentId, large]);
-  const closeLarge = useCallback(() => setViewing(null), [setViewing]);
+  // Closing keeps the viewed batch listed: past the limit it was there only while viewed.
+  const closeLarge = useCallback(() => {
+    const { groups: all, currentId: current, viewing: id } = useDrafts.getState();
+    setLimit((l) => limitShowing(all, useGallery.getState().images, current, l, id));
+    setViewing(null);
+  }, [setViewing]);
 
   return (
     <div className="dv" data-testid="drafts-view">
