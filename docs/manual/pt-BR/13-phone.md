@@ -116,7 +116,7 @@ Mesmo ao abrir listas de modelos, LoRAs, predefinições etc., o teclado não ap
 
 ![O agente no celular. O pedido e o que o agente configurou](shot:phone-chat)
 
-Ao pressionar o botão de brilhos (**{{ui:agent.open}}**), na barra de título, o agente se abre ocupando a tela inteira. O que ele faz é o mesmo do computador ([O agente](09-assistant-settings.md#o-agente)).
+Ao pressionar o botão de brilhos (**{{ui:agent.open}}**), na barra de título, o agente se abre ocupando a tela inteira. O que ele faz é o mesmo do computador ([O agente](09-assistant-settings.md)).
 
 - Escreva no campo de baixo a imagem que quer criar ou o que quer perguntar, e envie com o botão de enviar, à direita. Enter faz uma quebra de linha. Com o botão de clipe, à esquerda, é possível anexar fotos do celular.
 - As configurações que o agente muda entram na aba **{{ui:app.tabs.generate}}** do celular. Com **{{ui:agent.generate}}**, abaixo da resposta, você gera na hora, e com **{{ui:agent.undo}}** volta ao que era.

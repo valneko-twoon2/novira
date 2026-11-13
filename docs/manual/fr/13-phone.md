@@ -116,7 +116,7 @@ Quand vous ouvrez une liste de modèles, de LoRA, de préréglages, etc., le cla
 
 ![L'agent sur le téléphone. La demande et ce que l'agent a réglé](shot:phone-chat)
 
-Un appui sur le bouton en forme d'étincelles (**{{ui:agent.open}}**) de la barre du haut ouvre l'agent sur tout l'écran. Il fait la même chose que sur l'ordinateur ([Agent](09-assistant-settings.md#agent)).
+Un appui sur le bouton en forme d'étincelles (**{{ui:agent.open}}**) de la barre du haut ouvre l'agent sur tout l'écran. Il fait la même chose que sur l'ordinateur ([Agent](09-assistant-settings.md)).
 
 - Dans le champ du bas, écrivez l'image que vous voulez ou votre question, et envoyez avec le bouton d'envoi à droite. La touche Entrée fait un retour à la ligne. Le bouton en forme de trombone, à gauche, permet de joindre une photo du téléphone.
 - Les réglages modifiés par l'agent entrent dans l'onglet **{{ui:app.tabs.generate}}** du téléphone. **{{ui:agent.generate}}**, sous la réponse, permet de générer tout de suite, et **{{ui:agent.undo}}** de revenir en arrière.
