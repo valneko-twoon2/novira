@@ -209,6 +209,8 @@ function openGenerateMedia(media: 'video' | 'text') {
 }
 
 export function sendToUpscale(image: ImageDTO) {
+  // Only a picture is enlarged: a video or a sound would open the batch dialog with nothing in it (the menus grey the item out).
+  if ((image.mediaType ?? 'image') !== 'image') return;
   // Without the Upscaling tab (hidden in the app) the picture is enlarged by an upscale model alone, as the batch dialog does.
   if (!isScreenShown('upscaling')) {
     useBatch.getState().open([image.name], 'upscale');
