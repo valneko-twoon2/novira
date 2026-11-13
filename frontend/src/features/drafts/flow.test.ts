@@ -40,6 +40,13 @@ describe('the flow', { tags: [] }, () => {
     },
   );
 
+  it('also shows the batch of the picture the large view shows, past the limit', { tags: ['boundary', 'regression'] }, () => {
+    const groups = Array.from({ length: 5 }, (_, i) => group(`g${i + 1}`, [candidate(`c${i + 1}`)]));
+    expect(flowGroups(groups, [], null, 2, 'c1').shown.map((g) => g.id)).toEqual(['g5', 'g4', 'g1']);
+    expect(flowGroups(groups, [], null, 2, 'c5').shown.map((g) => g.id)).toEqual(['g5', 'g4']);
+    expect(flowGroups(groups, [], null, 2, 'gone').shown.map((g) => g.id)).toEqual(['g5', 'g4']);
+  });
+
   it('shows at most the limit, counts them all, and always shows the batch opened from the history', { tags: ['boundary'] }, () => {
     const groups = Array.from({ length: 5 }, (_, i) => group(`g${i + 1}`, [candidate(`c${i + 1}`)]));
     expect(flowGroups(groups, [], null, 2)).toMatchObject({ total: 5, shown: [{ id: 'g5' }, { id: 'g4' }] });

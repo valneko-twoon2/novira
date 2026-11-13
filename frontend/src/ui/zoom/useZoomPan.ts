@@ -2,8 +2,9 @@
 // the cursor, drag (or Space+drag, middle-button drag) to pan, double-click to toggle fit and 100%, and the shared zoom
 // hotkeys. One state can drive several surfaces (side-by-side compare), so their zoom and pan stay in sync.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useHotkey, ZOOM_HOTKEYS } from '@/ui';
-import { canPan, clampPan, fitRect, stepZoom, wheelZoomFactor, zoomAt, type Point, type Size, type ViewTransform } from '@/ui/zoomMath';
+import { useHotkey } from '../useHotkey';
+import { ZOOM_HOTKEYS } from '../zoomHotkeys';
+import { canPan, clampPan, fitRect, stepZoom, wheelZoomFactor, zoomAt, type Point, type Size, type ViewTransform } from '../zoomMath';
 
 /** Space between the fitted image and the stage edges. */
 export const FIT_PADDING = 16;
