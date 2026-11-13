@@ -1,5 +1,6 @@
 // Every value of each plain enum that Rust also has as an enum.
 import type {
+  HiresMode,
   AgentProvider,
   AgentToolsState,
   BaseModel,
@@ -23,6 +24,7 @@ import type {
 import { allOf, type MediaType } from './helpers';
 
 export const enums = {
+  HiresMode: allOf<HiresMode>()(['redraw', 'upscale']),
   BaseModel: allOf<BaseModel>()(['sd-1', 'sd-2', 'sdxl', 'sd-3', 'flux', 'flux2', 'anima', 'chroma', 'qwen-image', 'z-image', 'hidream', 'auraflow', 'hunyuan-image', 'hunyuan-dit', 'wan', 'hunyuan-video', 'hunyuan-video-15', 'ltx-video', 'ltx2', 'any']),
   ModelType: allOf<ModelType>()([
     'main',

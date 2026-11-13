@@ -1,5 +1,5 @@
 use super::*;
-use crate::types::{HiresFix, MangaScreen};
+use crate::types::{HiresFix, HiresMode, MangaScreen};
 
 pub(crate) fn params(mode: GenerationMode) -> GenerationMetadata {
     serde_json::from_value(json!({
@@ -164,6 +164,7 @@ fn an_image_to_image_draft_starts_where_the_denoise_starts() {
 
 fn hires(scale: f64, strength: f64, model: Option<&str>, steps: Option<u32>) -> HiresFix {
     HiresFix {
+        mode: None,
         scale,
         strength,
         upscale_model_key: model.map(Into::into),
@@ -276,6 +277,45 @@ fn hires_fix_over_image_to_image_enlarges_the_picture_drawn_over_the_source() {
         (Some(1536), Some(1152))
     );
     assert_eq!(g.total_steps, 40);
+}
+
+// tags: equivalence, boundary
+#[test]
+fn hires_fix_that_only_enlarges_keeps_the_enlarged_picture_without_a_second_pass() {
+    let mut p = params(GenerationMode::Txt2img);
+    p.width = 832;
+    p.height = 1216;
+    // Strength and steps of a second pass are not used, so values a redraw refuses are let through.
+    p.hires_fix = Some(HiresFix {
+        mode: Some(HiresMode::Upscale),
+        ..hires(2.0, 0.0, Some("up-4x"), Some(0))
+    });
+    let (c, up) = (ckpt(), r("upscale_models", "4x.pth"));
+    let g = build(&GraphInput {
+        upscale_model: Some(&up),
+        ..input(&p, &c, None)
+    })
+    .unwrap();
+    assert_eq!(by_class(&g, "KSampler").len(), 1, "no second pass");
+    assert!(by_class(&g, "VAEEncode").is_empty());
+    assert_eq!(by_class(&g, "VAEDecode").len(), 1);
+    let scale = by_class(&g, "ImageScale")[0];
+    assert_eq!(class_of(&g, &scale["image"]), "ImageUpscaleWithModel");
+    assert_eq!(
+        (scale["width"].as_u64(), scale["height"].as_u64()),
+        (Some(1664), Some(2432))
+    );
+    // The kept picture is the enlarged one.
+    let shown = &by_class(&g, "PreviewImage")[0]["images"];
+    assert_eq!(class_of(&g, shown), "ImageScale");
+    assert_eq!(g.total_steps, p.steps);
+    // The same values with a redraw are still refused.
+    p.hires_fix.as_mut().unwrap().mode = Some(HiresMode::Redraw);
+    assert!(build(&GraphInput {
+        upscale_model: Some(&up),
+        ..input(&p, &c, None)
+    })
+    .is_err());
 }
 
 // tags: error-guessing, condition
@@ -1055,6 +1095,7 @@ fn seamless_tiling_circles_the_model_and_the_decode_through_the_tiling_pack() {
     let mut p = params(GenerationMode::Txt2img);
     p.seamless_x = true;
     p.hires_fix = Some(HiresFix {
+        mode: None,
         scale: 1.5,
         strength: 0.4,
         steps: None,

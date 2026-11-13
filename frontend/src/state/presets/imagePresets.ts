@@ -106,7 +106,8 @@ export function presetPatch(p: ParamsFields, data: PresetData): Partial<ParamsFi
         postProcessingModelKey: installedOr(upscale.postProcessingModelKey, p.upscale.postProcessingModelKey),
       },
     }),
-    ...(hires && { hires: { ...p.hires, ...hires, upscaleModelKey: installedOr(hires.upscaleModelKey, p.hires.upscaleModelKey) } }),
+    // A preset saved before the finish choice has no mode: it redraws, as it did when it was saved.
+    ...(hires && { hires: { ...p.hires, mode: 'redraw', ...hires, upscaleModelKey: installedOr(hires.upscaleModelKey, p.hires.upscaleModelKey) } }),
   };
 }
 

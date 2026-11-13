@@ -6,6 +6,7 @@
     "04-improve.md",
     "07-media.md",
     "08-models.md",
+    "09-assistant-settings.md",
     "10-troubleshooting.md"
   ],
   "es": [
@@ -15,6 +16,7 @@
     "04-improve.md",
     "07-media.md",
     "08-models.md",
+    "09-assistant-settings.md",
     "10-troubleshooting.md"
   ],
   "fr": [
@@ -24,6 +26,7 @@
     "04-improve.md",
     "07-media.md",
     "08-models.md",
+    "09-assistant-settings.md",
     "10-troubleshooting.md"
   ],
   "ko": [
@@ -33,6 +36,7 @@
     "04-improve.md",
     "07-media.md",
     "08-models.md",
+    "09-assistant-settings.md",
     "10-troubleshooting.md"
   ],
   "pt-BR": [
@@ -42,6 +46,7 @@
     "04-improve.md",
     "07-media.md",
     "08-models.md",
+    "09-assistant-settings.md",
     "10-troubleshooting.md"
   ],
   "ru": [
@@ -51,6 +56,7 @@
     "04-improve.md",
     "07-media.md",
     "08-models.md",
+    "09-assistant-settings.md",
     "10-troubleshooting.md"
   ],
   "zh-CN": [
@@ -60,6 +66,7 @@
     "04-improve.md",
     "07-media.md",
     "08-models.md",
+    "09-assistant-settings.md",
     "10-troubleshooting.md"
   ],
   "zh-TW": [
@@ -69,6 +76,7 @@
     "04-improve.md",
     "07-media.md",
     "08-models.md",
+    "09-assistant-settings.md",
     "10-troubleshooting.md"
   ]
 }

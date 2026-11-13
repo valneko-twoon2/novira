@@ -70,7 +70,7 @@ function NumberRow({ k, label, help, range, testId }: { k: 'toastSeconds' | 'und
 export function GeneralPane() {
   const s = useSettings();
   const mock = backend.kind === 'mock';
-  const startOptions: { value: StartTab; label: string }[] = [{ value: 'last', label: t('settings.startTab.last') }, ...NAV.map((tab) => ({ value: tab, label: t(TAB_LABEL[tab]) }))];
+  const startOptions: { value: StartTab; label: string }[] = [{ value: 'last', label: t('settings.startTab.last') }, ...NAV.filter(isScreenShown).map((tab) => ({ value: tab, label: t(TAB_LABEL[tab]) }))];
   return (
     <>
       <SectionBlock title={t('settings.section.look')}>

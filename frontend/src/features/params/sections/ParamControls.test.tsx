@@ -128,6 +128,36 @@ describe('HiresSection', () => {
   });
 });
 
+describe('HiresSection finish choice', () => {
+  it('enlarges only without the redraw fields, goes up to 4x, and comes back to the redraw range', { tags: ['state-transition', 'boundary'] }, () => {
+    useModels.setState({ models: [model('main1', 'main'), model('up1', 'spandrel_image_to_image')] });
+    useParams.setState({ modelKey: 'main1' });
+    state().setHires({ enabled: true });
+    show(<HiresSection />);
+    expect(screen.queryAllByLabelText(t('params.hires.strength')).length).toBeGreaterThan(0);
+    choose(t('params.hires.mode'), t('params.hires.modeUpscale'));
+    expect(state().hires.mode).toBe('upscale');
+    // Strength and pass-2 steps belong to the redraw only.
+    expect(screen.queryAllByLabelText(t('params.hires.strength'))).toHaveLength(0);
+    expect(screen.queryAllByLabelText(t('params.hires.steps'))).toHaveLength(0);
+    setNum(t('params.hires.scale'), 4);
+    expect(state().hires.scale).toBe(4);
+    // Back to the redraw, the scale returns into its range.
+    choose(t('params.hires.mode'), t('params.hires.modeRedraw'));
+    expect(state().hires).toMatchObject({ mode: 'redraw', scale: 2 });
+    expect(screen.queryAllByLabelText(t('params.hires.strength')).length).toBeGreaterThan(0);
+  });
+
+  it('gives no size warning when it only enlarges', { tags: ['condition'] }, () => {
+    useModels.setState({ models: [model('main1', 'main', 'sd-1')] });
+    useParams.setState({ modelKey: 'main1', width: 1024, height: 1024 });
+    state().setHires({ enabled: true, scale: 2, mode: 'upscale' });
+    registerParamsFeature();
+    show(<HiresSection />);
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+});
+
 describe('HiresSection warnings', () => {
   it('warns when the enlarged size is beyond what the model draws well, only while enabled', { tags: ['boundary', 'condition'] }, () => {
     useModels.setState({ models: [model('main1', 'main', 'sd-1')] });

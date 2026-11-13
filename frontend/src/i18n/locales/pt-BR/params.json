@@ -240,8 +240,6 @@
   "params.profile.range": "{min}–{max} ({value})",
   "params.profile.applyOne": "Clique para usar o valor recomendado",
   "params.hires.title": "Correção em alta resolução",
-  "params.hires.enable": "Segundo passe",
-  "params.hires.info": "Desenha a imagem, amplia e desenha de novo com a mesma seed e os mesmos ajustes, para que a imagem maior ganhe detalhes reais. Leva cerca do dobro do tempo.",
   "params.hires.scale": "Escala",
   "params.hires.scaleInfo": "Quanto maior que a primeira imagem. O tamanho final é arredondado para múltiplos de 8.",
   "params.hires.strength": "Intensidade do redesenho",

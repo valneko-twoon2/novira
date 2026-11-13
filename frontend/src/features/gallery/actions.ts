@@ -14,7 +14,8 @@ import { recalledModelNote, type RecalledModel } from '@/state/recallModel';
 import { useTextEditor } from '@/state/text/textEditor';
 import { useTextSources } from '@/state/text/textSources';
 import { toast } from '@/state/toasts';
-import { useUi } from '@/state/ui';
+import { useBatch } from '@/state/dialogs/batch';
+import { isScreenShown, useUi } from '@/state/ui';
 import { useWorkflows } from '@/state/workflows/workflows';
 import { canWriteClipboardImage, writeClipboardImage, writeClipboardText } from '@/ui';
 
@@ -208,6 +209,11 @@ function openGenerateMedia(media: 'video' | 'text') {
 }
 
 export function sendToUpscale(image: ImageDTO) {
+  // Without the Upscaling tab (hidden in the app) the picture is enlarged by an upscale model alone, as the batch dialog does.
+  if (!isScreenShown('upscaling')) {
+    useBatch.getState().open([image.name], 'upscale');
+    return;
+  }
   useParams.getState().setUpscale({ initialImage: image });
   useUi.getState().setTab('upscaling');
   toast({ status: 'success', title: t('gallery.toast.sentToUpscale') });

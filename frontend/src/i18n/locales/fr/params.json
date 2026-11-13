@@ -240,8 +240,6 @@
   "params.profile.range": "{min}–{max} ({value})",
   "params.profile.applyOne": "Cliquer pour utiliser la valeur recommandée",
   "params.hires.title": "Correction haute résolution",
-  "params.hires.enable": "Deuxième passe",
-  "params.hires.info": "Dessine l'image, l'agrandit puis la redessine avec la même seed et les mêmes réglages, pour que l'image agrandie gagne de vrais détails. Dure environ deux fois plus longtemps.",
   "params.hires.scale": "Échelle",
   "params.hires.scaleInfo": "Facteur d'agrandissement par rapport à la première image. La taille finale est arrondie à un multiple de 8.",
   "params.hires.strength": "Force du redessin",

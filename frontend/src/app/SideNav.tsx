@@ -6,7 +6,7 @@ import { t, type MessageKey } from '@/i18n';
 import { useDevLog } from '@/state/devLog';
 import { useQueue } from '@/state/queue';
 import { useSettings } from '@/state/settings';
-import { NAV, NAV_HOTKEYS, navOf, useUi, type NavName } from '@/state/ui';
+import { isScreenShown, NAV, NAV_HOTKEYS, navOf, useUi, type NavName } from '@/state/ui';
 import { Badge, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, Tooltip, withVisibleText } from '@/ui';
 import { NetworkButton } from './NetworkButton';
 
@@ -61,7 +61,7 @@ export function SideNav() {
       </Tooltip>
       <div className="sidenav__tabs">
         <div className="sidenav__tablist" role="tablist" aria-orientation="vertical">
-        {NAV.filter((tab) => tab !== 'extensions').map((tab) => (
+        {NAV.filter((tab) => tab !== 'extensions' && isScreenShown(tab)).map((tab) => (
           <Tooltip key={tab} content={`${t(TAB_LABEL_KEYS[tab])} (${NAV_HOTKEYS[tab]})`} side="right">
             <button
               type="button"

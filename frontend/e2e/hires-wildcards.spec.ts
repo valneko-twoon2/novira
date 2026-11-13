@@ -14,6 +14,23 @@ test('the high-resolution fix makes a larger picture from the Generate tab', { t
   await expect(page.getByTestId('viewer-info')).toContainText('1536');
 });
 
+test('the high-resolution fix can only enlarge, without the redraw settings', { tag: ['@scenario'] }, async ({ page }) => {
+  await openApp(page, '?scenario=empty');
+  await page.getByRole('button', { name: msg('params.hires.title') }).click();
+  await page.getByRole('switch', { name: msg('params.hires.enable') }).click();
+  await expect(page.getByLabel(msg('params.hires.strength')).first()).toBeVisible();
+  await page.getByRole('combobox', { name: msg('params.hires.mode') }).click();
+  await page.getByRole('option', { name: msg('params.hires.modeUpscale') }).click();
+  await expect(page.getByRole('combobox', { name: msg('params.hires.mode') })).toHaveText(msg('params.hires.modeUpscale'));
+  // The strength and the steps of a second pass are gone.
+  await expect(page.getByLabel(msg('params.hires.strength'))).toHaveCount(0);
+  await expect(page.getByLabel(msg('params.hires.steps'))).toHaveCount(0);
+  await page.getByTestId('positive-prompt').fill('a lighthouse on a cliff at dusk');
+  await page.getByTestId('invoke-button').click();
+  await expect(page.getByTestId('gallery-thumb')).toHaveCount(1);
+  await expect(page.getByTestId('viewer-info')).toContainText('1536');
+});
+
 test('an unknown wildcard blocks Invoke until its list exists', { tag: ['@error-guessing', '@condition'] }, async ({ page }) => {
   await openApp(page, '?scenario=empty');
   await page.getByTestId('positive-prompt').fill('1girl, __hair-color__, __pose__');

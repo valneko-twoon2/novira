@@ -240,8 +240,6 @@
   "params.profile.range": "{min}~{max} ({value})",
   "params.profile.applyOne": "클릭하여 권장값으로 설정",
   "params.hires.title": "고해상도 보정",
-  "params.hires.enable": "2차 다시 그리기",
-  "params.hires.info": "그린 그림을 확대한 뒤 같은 시드와 설정으로 다시 그려 세부를 더합니다. 시간은 두 번 그리는 만큼 걸립니다.",
   "params.hires.scale": "확대율",
   "params.hires.scaleInfo": "첫 번째 그림 크기에 곱하는 배율입니다. 최종 크기는 8의 배수로 맞춥니다.",
   "params.hires.strength": "다시 그리기 강도",

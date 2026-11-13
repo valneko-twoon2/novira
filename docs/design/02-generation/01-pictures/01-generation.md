@@ -45,12 +45,12 @@ covers:
 
 - 参照画像を除き、コアノードだけを使う。共通部分は `CheckpointLoaderSimple`（または `VAELoader`）、有効な LoRA ごとに `LoraLoader` 1 つ、CLIP スキップ用の `CLIPSetLastLayer`、CFG リスケールが 0 より大きいときの `RescaleCFG`、2 つの `CLIPTextEncode`、出力の `PreviewImage`。
 - モード: テキストから画像（`KSampler`）、画像から画像（ノイズ除去 = 変化量、既定 0.7）、インペイントとアウトペイント（下記）、アップスケール（任意の `UpscaleModelLoader` と `ImageUpscaleWithModel`、目標サイズへの `ImageScale`、画像から画像の 1 パス。タイル ControlNet と後処理モデルは任意）。出力が 1 タイルより大きいときはタイルごとに描き直す（`comfy/tiles.rs`）。タイルは正方形で、元画像の面積を 64 に丸めて 512 から 1024 に収め（`tile_side`）、少なくとも `OVERLAP` 重ねる。各タイルは切り出し（`ImageCrop`）、その切り出しをタイル ControlNet のガイドにしてサンプリング、デコードし、拡大画像へ行ごとに重ねる（`ImageCompositeMasked`、重なりには `FeatherMask`）。進捗はタイル数で数える。シームレスタイリングは 1 パスのまま。出力の辺が `MAX_UPSCALE_SIDE` を超えると断る。画面はメインモデルと同じベースのタイル ControlNet があれば選び、なければ使わない。別のベースの保存済みのものは送らない（`buildUpscaleRequest`）。
-- 高解像度修正（テキストから画像と画像から画像。画像から画像は、元画像の上に最初のパスを自分の変化量で描く）: 最初のパスの後に画像を拡大し（アップスケールモデル、続いて Lanczos の `ImageScale`）、再びエンコードして、同じシードで修正の強さとステップ数で描き直す。倍率は 1 から 4、強さは 0 より大きく 1 以下。
+- 高解像度修正（テキストから画像と画像から画像。後者は元画像の上に最初のパスを自分の変化量で描く）: 最初のパスの画像を拡大し（アップスケールモデルと Lanczos の `ImageScale`）、再びエンコードして、同じシードで修正の強さとステップ数で描き直す。倍率は 1〜4、強さは 0 超〜1。`mode: upscale` は拡大で止める。
 - スケジューラー名はサンプラーとスケジューラーの組へ対応づける（`sampler_for`）。
 - インペイントとアウトペイント: マスク（白は描き直し、灰色は弱く）を出力サイズに拡縮し、広げてぼかす（ぼかしの既定は 16）。マスクはエンコードした元画像のノイズマスクになり（`SetLatentNoiseMask`、灰色の値には `DifferentialDiffusion`）、結果は `ImageCompositeMasked` で貼り戻すので、マスク外の画素は元画像のまま残る。アウトペイントでは、キャンバスが先に空の部分を埋める（`frontend/src/features/canvas/render/generationInputs.ts`）。インペイント専用モデルは要らない。
 - コントロールレイヤー: モデルごとに `ControlNetLoader` 1 つ、レイヤーごとに肯定側と否定側へ `ControlNetApplyAdvanced`。強さが重み、`start_percent` と `end_percent` が開始と終了。`more_control` は否定側に制御をかけない。`more_prompt` は balanced として動く（コアに同等のものはない）。レイヤーは画像が何を表すか（`controlType`）を指定でき、SD ファミリーの union ControlNet（`is_union_controlnet`: 名前、ファイル、取得元で判定）には、ローダーの後に `SetUnionControlNetType` を付ける。
 - 参照画像（IP-Adapter）には ComfyUI_IPAdapter_plus ノードパックが要る。ファイルごとに `IPAdapterModelLoader` と `CLIPVisionLoader`、画像ごとに `LoadImage` と、モデルへの `IPAdapterAdvanced`（`combine_embeds: concat`、`embeds_scaling: V only`）。`regionImageUrl` を持つ参照は、その画像を `attn_mask` にする。方式はパックの `weight_type` に対応する（`ipadapter_weight_type`）。エンコーダーは、希望サイズ（ViT-H、ViT-G、ViT-L。ファイル名かレイヤー数で判定）のインストール済み CLIP vision モデル。パックがなければ、アップロードの前に検証が失敗する（準備の検査: `frontend/src/state/comfy/packNeeds.ts`）。
-- ジョブの画像は実行時に ComfyUI の入力フォルダーへアップロードする。成功は `/history` で読む。進捗とプレビューは `/ws` から来る（プレビューは各 1 回、自分のフレームつきで出し、窓は続くステップの間保つ）。ソケットがないときはポーリングする。
+- ジョブの画像は実行時に ComfyUI の入力フォルダーへアップロードする。成功は `/history` で読む。進捗とプレビューは `/ws` から来る（プレビューは各 1 回、自分のフレームつきで出し、窓は続くステップの間保つ）。ソケットが無ければポーリング。
 - メモリ不足の失敗の後は、次のジョブの前に `POST /free` で ComfyUI のモデルを解放する。
 - 実アプリでの確認: インペイントとアウトペイントはマスク外の画素を 8 ビット 1 段階以内で保ち、canny のコントロールレイヤーは元画像の輪郭に沿った。
 

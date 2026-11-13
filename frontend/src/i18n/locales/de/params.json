@@ -240,8 +240,6 @@
   "params.profile.range": "{min}–{max} ({value})",
   "params.profile.applyOne": "Klicken, um den empfohlenen Wert zu verwenden",
   "params.hires.title": "Hires-Fix",
-  "params.hires.enable": "Zweiter Durchgang",
-  "params.hires.info": "Zeichnet das Bild, vergrößert es und zeichnet es mit demselben Seed und denselben Einstellungen erneut, sodass das größere Bild echte Details erhält. Dauert etwa doppelt so lange.",
   "params.hires.scale": "Faktor",
   "params.hires.scaleInfo": "Um wie viel größer als das erste Bild. Die endgültige Größe wird auf Vielfache von 8 gerundet.",
   "params.hires.strength": "Neuzeichnungsstärke",
