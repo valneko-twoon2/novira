@@ -105,12 +105,17 @@ describe('batch dialog', { tags: [] }, () => {
     const graph = (enqueue.mock.calls[0]![0] as EnqueueRequest).comfyGraph!;
     expect(graph.prompt.model!.inputs.model_name).toEqual({ $model: 'up-1' });
   });
-  it('starts on the operation it was opened for, and on removing the background the next time', { tags: ['state-transition'] }, async () => {
+  it('starts on the operation it was opened for, and a plain open keeps the one chosen last', { tags: ['state-transition'] }, async () => {
     mount();
     useBatch.getState().open(['a.png'], 'upscale');
     expect((await screen.findByTestId('batch-op-upscale')).getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(screen.getByTestId('batch-op-removeBackground'));
     act(() => useBatch.getState().close());
     act(() => useBatch.getState().open(['a.png']));
     await waitFor(() => expect(screen.getByTestId('batch-op-removeBackground').getAttribute('aria-checked')).toBe('true'));
+    fireEvent.click(screen.getByTestId('batch-op-upscale'));
+    act(() => useBatch.getState().close());
+    act(() => useBatch.getState().open(['a.png']));
+    expect(screen.getByTestId('batch-op-upscale').getAttribute('aria-checked')).toBe('true');
   });
 });

@@ -14,7 +14,7 @@ const image = { name: 'a.png', url: 'blob:a', thumbnailUrl: 'blob:t', width: 640
 beforeEach(() => {
   useUi.setState(initial.ui, true);
   useParams.setState(initial.params, true);
-  useBatch.setState({ names: null, op: 'removeBackground' });
+  useBatch.setState({ names: null, op: null });
 });
 afterEach(() => vi.unstubAllEnvs());
 
@@ -34,10 +34,10 @@ describe('the gallery upscale', { tags: [] }, () => {
     expect(useBatch.getState().names).toBeNull();
   });
 
-  it('opens the batch dialog on removing the background unless told otherwise', { tags: ['equivalence'] }, () => {
+  it('opens the batch dialog for no particular operation unless told one', { tags: ['equivalence'] }, () => {
     useBatch.getState().open(['a.png'], 'upscale');
     useBatch.getState().close();
     useBatch.getState().open(['b.png']);
-    expect(useBatch.getState()).toMatchObject({ names: ['b.png'], op: 'removeBackground' });
+    expect(useBatch.getState()).toMatchObject({ names: ['b.png'], op: null });
   });
 });

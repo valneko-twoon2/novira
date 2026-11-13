@@ -7,15 +7,15 @@ export type BatchOpName = 'removeBackground' | 'upscale';
 
 interface BatchState {
   names: string[] | null;
-  /** The operation the dialog starts on. */
-  op: BatchOpName;
+  /** The operation the dialog was opened for; null keeps the one chosen last. */
+  op: BatchOpName | null;
   open: (names: string[], op?: BatchOpName) => void;
   close: () => void;
 }
 
 export const useBatch = create<BatchState>()((set) => ({
   names: null,
-  op: 'removeBackground',
-  open: (names, op = 'removeBackground') => set({ names, op }),
+  op: null,
+  open: (names, op) => set({ names, op: op ?? null }),
   close: () => set({ names: null }),
 }));

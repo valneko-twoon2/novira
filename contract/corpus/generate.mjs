@@ -161,7 +161,7 @@ function mutations(root, p, rnd, lists) {
  */
 const FIXED = [
   ['enqueue-request', 'wrong-type', ['comfyGraph', 'prompt', '1', 'inputs'], 'not an object'],
-  // GenerationMetadata keeps an unknown field in \`extra\` (rust-keeps-unknown-fields); a sample change can move the
+  // GenerationMetadata keeps an unknown field in `extra` (rust-keeps-unknown-fields); a sample change can move the
   // seeded picks off every unknown-field case, so one is always there.
   ['generation-metadata', 'unknown-field', ['zzUnknown'], 1],
 ];

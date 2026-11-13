@@ -41,10 +41,10 @@ export function BatchDialog() {
   const all = useGallery((s) => s.images);
   const pictures = useMemo(() => (names ? imagesNamed(all, names).filter((i) => (i.mediaType ?? 'image') === 'image') : []), [names, all]);
   const [op, setOp] = useState<BatchOp>('removeBackground');
-  // Each open starts on the operation it was opened for (the gallery's upscale opens it on "upscale").
+  // An open for one operation (the gallery's upscale) starts on it; a plain open keeps the one chosen last.
   const startOp = useBatch((s) => s.op);
   useEffect(() => {
-    if (names) setOp(startOp);
+    if (names && startOp) setOp(startOp);
   }, [names, startOp]);
   const [upscalerKey, setUpscalerKey] = useState<string | null>(null);
   const models = useModels((s) => s.models);
