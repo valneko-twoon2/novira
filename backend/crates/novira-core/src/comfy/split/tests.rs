@@ -351,6 +351,7 @@ fn image_to_image_inpaint_and_the_high_resolution_fix_use_the_shared_graph() {
     // The high-resolution fix samples twice, both at the family's CFG (Flux: 1).
     let mut p = params(GenerationMode::Txt2img);
     p.hires_fix = Some(HiresFix {
+        mode: None,
         scale: 1.5,
         strength: 0.4,
         steps: None,

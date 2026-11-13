@@ -112,6 +112,7 @@ async fn a_hires_fix_resolves_its_upscale_model_and_stores_the_first_pass_size()
         .key;
     tokio::spawn(backend.clone().run_worker());
     let hires = |model: Option<String>| HiresFix {
+        mode: None,
         scale: 1.5,
         strength: 0.45,
         upscale_model_key: model,

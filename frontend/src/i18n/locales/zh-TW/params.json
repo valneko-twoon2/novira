@@ -240,8 +240,6 @@
   "params.profile.range": "{min}～{max}（{value}）",
   "params.profile.applyOne": "點擊以設為建議值",
   "params.hires.title": "高解析度修復",
-  "params.hires.enable": "第二遍重繪",
-  "params.hires.info": "先畫出圖像，放大後用相同的種子和設定再畫一遍，為大圖補上細節。耗時約為兩倍。",
   "params.hires.scale": "放大倍率",
   "params.hires.scaleInfo": "相對第一遍尺寸的倍率。最終尺寸取整為 8 的倍數。",
   "params.hires.strength": "重繪強度",

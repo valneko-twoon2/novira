@@ -248,7 +248,12 @@ export interface HiresFix {
   upscaleModelKey?: string;
   /** Steps of the second pass; absent = as many as the first pass. */
   steps?: number;
+  /** What follows the enlargement: absent or `redraw` = the second pass; `upscale` = none, the enlarged picture is kept. */
+  mode?: HiresMode;
 }
+
+/** How the high-resolution fix finishes the enlarged first picture: drawn again, or kept as enlarged. */
+export type HiresMode = 'redraw' | 'upscale';
 
 export interface MusicParams {
   lyrics: string;

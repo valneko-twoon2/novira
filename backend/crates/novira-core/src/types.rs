@@ -395,6 +395,27 @@ pub struct HiresFix {
     /// Steps of the second pass; absent = as many as the first pass.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub steps: Option<u32>,
+    /// What follows the enlargement: absent or `redraw` = the second pass; `upscale` = none, the enlarged first picture
+    /// is the result (faithful to it, and quicker). Strength and steps then do nothing.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mode: Option<HiresMode>,
+}
+
+/// How the high-resolution fix finishes the enlarged first picture.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum HiresMode {
+    /// Drawn again at the strength (the second pass).
+    Redraw,
+    /// Kept as enlarged: no second pass.
+    Upscale,
+}
+
+impl HiresFix {
+    /// Whether the enlarged picture is drawn again (the default) or kept as it is.
+    pub fn redraws(&self) -> bool {
+        self.mode != Some(HiresMode::Upscale)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

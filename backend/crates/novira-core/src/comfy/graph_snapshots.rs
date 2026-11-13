@@ -9,8 +9,8 @@ use super::graph::{
 };
 use super::user_graph::{fill_images, prepare};
 use crate::types::{
-    ComfyGraph, ComfyRef, ControlMode, GenerationMetadata, GenerationMode, HiresFix, MusicParams,
-    RefImageMethod,
+    ComfyGraph, ComfyRef, ControlMode, GenerationMetadata, GenerationMode, HiresFix, HiresMode,
+    MusicParams, RefImageMethod,
 };
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -262,6 +262,7 @@ fn txt2img_loras_vae_clip_skip_rescale() {
 
 fn hires(scale: f64, strength: f64, model: Option<&str>, steps: Option<u32>) -> HiresFix {
     HiresFix {
+        mode: None,
         scale,
         strength,
         upscale_model_key: model.map(Into::into),
@@ -276,6 +277,22 @@ fn txt2img_hires_smooth() {
     let mut p = params(GenerationMode::Txt2img);
     p.hires_fix = Some(hires(1.5, 0.45, None, None));
     snapshot_built("txt2img-hires-smooth", &Models::image(), &p, None);
+}
+
+// tags: equivalence
+#[test]
+fn txt2img_hires_upscale_only() {
+    // The model enlarges (4x), the picture is resized to exactly 2x and kept: no encode, no second sampler.
+    let mut p = params(GenerationMode::Txt2img);
+    p.hires_fix = Some(HiresFix {
+        mode: Some(HiresMode::Upscale),
+        ..hires(2.0, 0.45, Some("upscale-4x"), None)
+    });
+    let models = Models {
+        upscale: Some(r("upscale_models", "4x-UltraSharp.pth")),
+        ..Models::image()
+    };
+    snapshot_built("txt2img-hires-upscale-only", &models, &p, None);
 }
 
 // tags: equivalence

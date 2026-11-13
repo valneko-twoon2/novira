@@ -285,10 +285,11 @@ fn check_hires(input: &GraphInput<'_>) -> Result<(), String> {
     if !(h.scale.is_finite() && (1.0..=4.0).contains(&h.scale)) {
         return Err("The high-resolution fix needs a scale between 1 and 4".into());
     }
-    if !(h.strength.is_finite() && h.strength > 0.0 && h.strength <= 1.0) {
+    // Without a second pass the strength and its steps are not used, so they are not checked.
+    if h.redraws() && !(h.strength.is_finite() && h.strength > 0.0 && h.strength <= 1.0) {
         return Err("The high-resolution fix needs a strength above 0 and at most 1".into());
     }
-    if h.steps == Some(0) {
+    if h.redraws() && h.steps == Some(0) {
         return Err("The second pass needs at least 1 step".into());
     }
     if h.upscale_model_key.is_some() != input.upscale_model.is_some() {
@@ -866,29 +867,34 @@ pub fn build(input: &GraphInput<'_>) -> Result<BuiltGraph, String> {
                 "ImageScale",
                 json!({ "image": pixels, "upscale_method": "lanczos", "width": w2, "height": h2, "crop": "disabled" }),
             );
-            let encoded = g.add(
-                "VAEEncode",
-                json!({ "pixels": link(&scaled, 0), "vae": vae }),
-            );
-            let steps2 = h.steps.unwrap_or(p.steps);
-            let second = g.add(
-                "KSampler",
-                json!({
-                    "model": model,
-                    "seed": p.seed,
-                    "steps": steps2,
-                    "cfg": cfg,
-                    "sampler_name": sampler,
-                    "scheduler": scheduler,
-                    "positive": positive,
-                    "negative": negative,
-                    "latent_image": link(&encoded, 0),
-                    "denoise": h.strength,
-                }),
-            );
-            passes = vec![(sampled.clone(), 0), (second.clone(), total_steps)];
-            total_steps += steps2;
-            result = decode(&mut g, link(&second, 0));
+            if !h.redraws() {
+                // Enlarge only: the enlarged first picture is the result, untouched by a second pass.
+                result = link(&scaled, 0);
+            } else {
+                let encoded = g.add(
+                    "VAEEncode",
+                    json!({ "pixels": link(&scaled, 0), "vae": vae }),
+                );
+                let steps2 = h.steps.unwrap_or(p.steps);
+                let second = g.add(
+                    "KSampler",
+                    json!({
+                        "model": model,
+                        "seed": p.seed,
+                        "steps": steps2,
+                        "cfg": cfg,
+                        "sampler_name": sampler,
+                        "scheduler": scheduler,
+                        "positive": positive,
+                        "negative": negative,
+                        "latent_image": link(&encoded, 0),
+                        "denoise": h.strength,
+                    }),
+                );
+                passes = vec![(sampled.clone(), 0), (second.clone(), total_steps)];
+                total_steps += steps2;
+                result = decode(&mut g, link(&second, 0));
+            }
         }
     }
     // Upscaling with a post-processing model: it finishes the drawn picture, which is then fitted to the output size.

@@ -155,17 +155,18 @@ The larger the size, the longer it takes and the heavier the load on your comput
 
 ![The high-resolution fix section opened and turned on](shot:hires-fix)
 
-Drawing at a large size from the start often gives two people instead of one, or broken shapes. **{{ui:params.hires.title}}** first draws at the size you set, enlarges the picture, and then draws it again with the same seed and settings. One generation gives a large picture with detail throughout. This section is on the {{ui:app.tabs.generate}} tab and the {{ui:app.tabs.comic}} tab.
+Drawing at a large size from the start often gives two people instead of one, or broken shapes. **{{ui:params.hires.title}}** first draws at the size you set, then enlarges the picture and finishes it. One generation gives a large picture. This section is on the {{ui:app.tabs.generate}} tab and the {{ui:app.tabs.comic}} tab.
 
 - **{{ui:params.hires.enable}}**: turn it on to use it.
-- **{{ui:params.hires.scale}}**: 1.25 to 2 times. The final size shows in the section heading.
-- **{{ui:params.hires.strength}}**: 0.2 to 0.75. Low keeps the first picture almost as it is; high redraws more. The default is 0.45.
+- **{{ui:params.hires.mode}}**: **{{ui:params.hires.modeRedraw}}** draws the enlarged picture again with the same seed and settings and adds detail; the picture changes a little. **{{ui:params.hires.modeUpscale}}** only enlarges it and does not draw again, so the picture stays as drawn and it is quick. For a sharper result, pick an upscale model in **{{ui:params.hires.method}}**.
+- **{{ui:params.hires.scale}}**: 1.25 to 2 times with **{{ui:params.hires.modeRedraw}}**, 1.25 to 4 times with **{{ui:params.hires.modeUpscale}}**. The final size shows in the section heading.
+- **{{ui:params.hires.strength}}** (with **{{ui:params.hires.modeRedraw}}** only): 0.2 to 0.75. Low keeps the first picture almost as it is; high redraws more. The default is 0.45.
 - **{{ui:params.hires.method}}**: **{{ui:params.hires.methodSmooth}}** enlarges without a model. If upscale models (the ones the {{ui:app.tabs.upscaling}} tab uses) are installed, you can pick one of them too.
-- **{{ui:params.hires.steps}}**: the steps of the second pass. 0 uses as many as the first pass.
+- **{{ui:params.hires.steps}}** (with **{{ui:params.hires.modeRedraw}}** only): the steps of the second pass. 0 uses as many as the first pass.
 
-It takes about as long as drawing twice. The progress counts both passes together. LoRAs and reference images are used in the second pass too.
+With **{{ui:params.hires.modeRedraw}}** it takes about as long as drawing twice. The progress counts both passes together. LoRAs and reference images are used in the second pass too.
 
-When the result is much larger than the model draws well (about 2048 px on the long side for SDXL, 1536 px for SD1.X), a note shows under the generate button. You can still generate; if the picture breaks up, lower the scale.
+With **{{ui:params.hires.modeRedraw}}**, when the result is much larger than the model draws well (about 2048 px on the long side for SDXL, 1536 px for SD1.X), a note shows under the generate button. You can still generate; if the picture breaks up, lower the scale.
 
 The image keeps the first-pass size and the {{ui:params.hires.title}} settings. Loading it with "{{ui:gallery.menu.useAll}}" in the gallery sets the {{ui:params.hires.title}} as it was.
 

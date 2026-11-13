@@ -30,6 +30,7 @@ macro_rules! check_enum {
 
 pub fn enums(v: &Value) {
     let mut checked = vec![
+        check_enum!(v, HiresMode, [Redraw, Upscale]),
         check_enum!(
             v,
             BaseModel,

@@ -240,8 +240,6 @@
   "params.profile.range": "{min}–{max} ({value})",
   "params.profile.applyOne": "Clic para usar el valor recomendado",
   "params.hires.title": "Corrección de alta resolución",
-  "params.hires.enable": "Segunda pasada",
-  "params.hires.info": "Dibuja la imagen, la amplía y la vuelve a dibujar con la misma semilla y los mismos ajustes, de modo que la imagen más grande gane detalle real. Tarda aproximadamente el doble.",
   "params.hires.scale": "Escala",
   "params.hires.scaleInfo": "Cuánto más grande que la primera imagen. El tamaño final se redondea a múltiplos de 8.",
   "params.hires.strength": "Intensidad de redibujado",

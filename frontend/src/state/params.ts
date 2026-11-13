@@ -1,7 +1,7 @@
 // Generation parameters edited in the left panel (shared by Generate, Canvas, Upscaling), kept across starts.
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { ClipVisionModel, GenerationMetadata, HiresFix, ImageDTO, LoRAParam, RefImageInput, RefImageMethod, SchedulerName } from '@/backend';
+import type { ClipVisionModel, GenerationMetadata, HiresFix, HiresMode, ImageDTO, LoRAParam, RefImageInput, RefImageMethod, SchedulerName } from '@/backend';
 import { randomSeed } from '@/backend';
 import { useGallery } from './gallery';
 import { useModels } from './models';
@@ -58,11 +58,15 @@ export interface HiresParams {
   upscaleModelKey: string | null;
   /** Steps of the second pass; 0 = as many as the first pass. */
   steps: number;
+  /** Draw the enlarged picture again, or keep it as enlarged. Absent (a form saved before the choice) = redraw. */
+  mode?: HiresMode;
 }
 
 /** The ranges and defaults the form offers. */
 export const HIRES_RANGE = {
   scale: { min: 1.25, max: 2, step: 0.05, default: 1.5 },
+  /** Enlarging only keeps the picture as it is, so it may go further (the backend takes up to 4). */
+  scaleUpscaleMax: 4,
   strength: { min: 0.2, max: 0.75, step: 0.05, default: 0.45 },
   steps: { min: 0, max: 100, default: 0 },
 } as const;
@@ -73,7 +77,11 @@ export const DEFAULT_HIRES: HiresParams = {
   strength: HIRES_RANGE.strength.default,
   upscaleModelKey: null,
   steps: HIRES_RANGE.steps.default,
+  mode: 'redraw',
 };
+
+/** Whether the high-resolution fix draws the enlarged picture again (the default) or only enlarges it. */
+export const hiresRedraws = (h: { mode?: HiresMode }): boolean => h.mode !== 'upscale';
 
 /** How {a|b} groups and __wildcards__ become prompts: every combination, or one prompt per picture picked at random. */
 export type DynamicPromptMode = 'combinatorial' | 'random';
@@ -441,7 +449,7 @@ export const newRandomSeed = () => useParams.getState().set({ seed: randomSeed()
 /** The form's high-resolution fix for what a picture stored: on with its values, or off (the other values kept). */
 export function hiresFromMetadata(h: HiresFix | undefined, current: HiresParams): HiresParams {
   if (!h) return { ...current, enabled: false };
-  return { enabled: true, scale: h.scale, strength: h.strength, upscaleModelKey: h.upscaleModelKey ?? null, steps: h.steps ?? 0 };
+  return { enabled: true, scale: h.scale, strength: h.strength, upscaleModelKey: h.upscaleModelKey ?? null, steps: h.steps ?? 0, mode: h.mode ?? 'redraw' };
 }
 
 /** The high-resolution fix as the queue receives it; undefined when it is off. */
@@ -452,6 +460,7 @@ export function hiresFixInput(h: HiresParams): HiresFix | undefined {
     strength: h.strength,
     ...(h.upscaleModelKey ? { upscaleModelKey: h.upscaleModelKey } : {}),
     ...(h.steps > 0 ? { steps: h.steps } : {}),
+    ...(hiresRedraws(h) ? {} : { mode: 'upscale' as const }),
   };
 }
 

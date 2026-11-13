@@ -1,7 +1,7 @@
 // "Process several at once": one operation on every selected picture. Each picture becomes one queue item, so the
 // Queue tab shows the progress and the results appear in the gallery, on the board of their source.
 import { ArrowClockwise, DownloadSimple } from '@phosphor-icons/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { backend } from '@/backend';
 import { t, tCount, type MessageKey } from '@/i18n';
 import { useBatch } from '@/state/dialogs/batch';
@@ -41,6 +41,11 @@ export function BatchDialog() {
   const all = useGallery((s) => s.images);
   const pictures = useMemo(() => (names ? imagesNamed(all, names).filter((i) => (i.mediaType ?? 'image') === 'image') : []), [names, all]);
   const [op, setOp] = useState<BatchOp>('removeBackground');
+  // Each open starts on the operation it was opened for (the gallery's upscale opens it on "upscale").
+  const startOp = useBatch((s) => s.op);
+  useEffect(() => {
+    if (names) setOp(startOp);
+  }, [names, startOp]);
   const [upscalerKey, setUpscalerKey] = useState<string | null>(null);
   const models = useModels((s) => s.models);
   const upscalers = useMemo(() => models.filter((m) => m.type === 'spandrel_image_to_image'), [models]);

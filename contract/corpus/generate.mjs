@@ -159,7 +159,12 @@ function mutations(root, p, rnd, lists) {
  * Cases every corpus has whatever the seed, so a designed difference the test lists is always met: `[fixture, mutation
  * name, JSON pointer parts, new value]`.
  */
-const FIXED = [['enqueue-request', 'wrong-type', ['comfyGraph', 'prompt', '1', 'inputs'], 'not an object']];
+const FIXED = [
+  ['enqueue-request', 'wrong-type', ['comfyGraph', 'prompt', '1', 'inputs'], 'not an object'],
+  // GenerationMetadata keeps an unknown field in \`extra\` (rust-keeps-unknown-fields); a sample change can move the
+  // seeded picks off every unknown-field case, so one is always there.
+  ['generation-metadata', 'unknown-field', ['zzUnknown'], 1],
+];
 
 /** The cases of one fixture: the sample itself, then `count - 1` seeded variants with one or two mutations each. */
 export function casesFor(fixture, sample, { seed = DEFAULT_SEED, count = DEFAULT_CASES, lists = [] } = {}) {

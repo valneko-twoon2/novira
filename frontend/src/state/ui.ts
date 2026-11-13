@@ -68,7 +68,7 @@ export type MediaKind = (typeof MEDIA_KINDS)[number];
  * Screens left out of the app's own build for now (Vite mode `production`); the dev server, the tests and every harness
  * build (mode `harness`, scripts/tools/harness-paths.mjs) show them all. Empty this set to bring them back.
  */
-export const HIDDEN_TABS: ReadonlySet<MediaKind | TabName> = new Set<MediaKind | TabName>(['video', 'music', 'voice', 'comic']);
+export const HIDDEN_TABS: ReadonlySet<MediaKind | TabName> = new Set<MediaKind | TabName>(['video', 'music', 'voice', 'comic', 'upscaling']);
 
 /**
  * Whether a screen can be opened in this build. The store refuses to open a hidden one, so no way in (an icon, the

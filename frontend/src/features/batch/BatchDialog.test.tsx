@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { backend, type EnqueueRequest, type ImageDTO } from '@/backend';
 import { MOCK_NODE_DEFS } from '@/backend/mock/comfyNodeDefs';
@@ -104,5 +104,13 @@ describe('batch dialog', { tags: [] }, () => {
     await waitFor(() => expect(enqueue).toHaveBeenCalledTimes(2));
     const graph = (enqueue.mock.calls[0]![0] as EnqueueRequest).comfyGraph!;
     expect(graph.prompt.model!.inputs.model_name).toEqual({ $model: 'up-1' });
+  });
+  it('starts on the operation it was opened for, and on removing the background the next time', { tags: ['state-transition'] }, async () => {
+    mount();
+    useBatch.getState().open(['a.png'], 'upscale');
+    expect((await screen.findByTestId('batch-op-upscale')).getAttribute('aria-checked')).toBe('true');
+    act(() => useBatch.getState().close());
+    act(() => useBatch.getState().open(['a.png']));
+    await waitFor(() => expect(screen.getByTestId('batch-op-removeBackground').getAttribute('aria-checked')).toBe('true'));
   });
 });
