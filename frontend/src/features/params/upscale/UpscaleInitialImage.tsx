@@ -8,8 +8,9 @@ import { imageFromNames, uploadFirst } from '../refImages/useImageDrop';
 export function UpscaleInitialImage() {
   const image = useParams((s) => s.upscale.initialImage);
   const setUpscale = useParams((s) => s.setUpscale);
+  // Only a picture is enlarged: a dropped video or sound is left out, as the gallery's Upscale leaves it out.
   const setImage = (img: typeof image | undefined) => {
-    if (img) setUpscale({ initialImage: img });
+    if (img && (img.mediaType ?? 'image') === 'image') setUpscale({ initialImage: img });
   };
   return (
     <ImageDropZone
