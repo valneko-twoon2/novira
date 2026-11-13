@@ -228,7 +228,7 @@ describe('SingleImageMenu', () => {
     const menu = await screen.findByRole('menu');
     expect(within(menu).getByText(t('gallery.menu.unstar'))).toBeTruthy();
     expect(within(menu).queryByText(t('gallery.menu.openInNewTab'))).toBeNull();
-    for (const label of [t('common.copy'), t('share.menu'), t('gallery.menu.remix'), t('gallery.menu.loadWorkflow'), t('gallery.menu.sendToVideo'), t('cutout.menu'), t('caption.menu')]) {
+    for (const label of [t('common.copy'), t('share.menu'), t('gallery.menu.remix'), t('gallery.menu.loadWorkflow'), t('gallery.menu.sendToVideo'), t('gallery.menu.upscale'), t('cutout.menu'), t('caption.menu')]) {
       expect(within(menu).getByText(label).closest('[role=menuitem]')!.getAttribute('aria-disabled')).toBe('true');
     }
     vi.mocked(actions.canOpenInNewTab).mockReturnValue(true);

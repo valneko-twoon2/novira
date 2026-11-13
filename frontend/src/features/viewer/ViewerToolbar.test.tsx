@@ -166,6 +166,7 @@ describe('ViewerToolbar without a picture or settings', { tags: [] }, () => {
     expect(button(t('gallery.menu.remix')).disabled).toBe(true);
     expect(button(t('gallery.menu.loadWorkflow')).disabled).toBe(true);
     expect((screen.getByTestId('viewer-segment') as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByTestId('viewer-upscale') as HTMLButtonElement).disabled).toBe(true);
     expect((screen.getByTestId('viewer-share') as HTMLButtonElement).disabled).toBe(true);
     expect(screen.queryByLabelText(t('gallery.menu.openInNewTab'))).toBeNull();
     expect(button(t('gallery.menu.useAsReference')).disabled).toBe(false);
