@@ -119,10 +119,12 @@ export function gatingChecks(all, required) {
 /**
  * Files a pull request into develop may change with no agent review (the user's choice, 2026-11-13: the review made small pull requests
  * slow): the changelog, docs/tests/README.md (the test techniques and their generated counts), and tests: test files, the e2e specs and
- * their baselines, the Rust integration tests. One file of anything else (the app, a script, a rule, a document, the lists of what a
- * check allows such as frontend/e2e/a11yKnown.ts or perfBudget.ts, the helpers the specs run on) needs the review.
+ * their baselines, a Rust integration test file at the top of a crate's tests/ (each one is a test of its own). One file of anything
+ * else (the app, a script, a rule, a document, the lists of what a check allows such as frontend/e2e/a11yKnown.ts or perfBudget.ts, the
+ * helpers the specs run on, a folder under tests/: the shared helpers, fake servers, multi-file tests and the old-data fixtures) needs
+ * the review.
  */
-const REVIEW_FREE = [/^CHANGELOG\.md$/, /^docs\/tests\/README\.md$/, /\.test\.(ts|tsx|js|mjs)$/, /^frontend\/e2e\/.+\.spec\.ts$/, /^frontend\/e2e\/__screenshots__\//, /^backend\/crates\/[^/]+\/tests\//];
+const REVIEW_FREE = [/^CHANGELOG\.md$/, /^docs\/tests\/README\.md$/, /\.test\.(ts|tsx|js|mjs)$/, /^frontend\/e2e\/.+\.spec\.ts$/, /^frontend\/e2e\/__screenshots__\//, /^backend\/crates\/[^/]+\/tests\/[^/]+\.rs$/];
 
 /**
  * Whether every one of a pull request's files (a path, or `{ path, changeType }` as `gh pr view --json files` gives) is of the kinds that

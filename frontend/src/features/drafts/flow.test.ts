@@ -3,7 +3,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ImageDTO } from '@/backend';
 import { useDrafts, type DraftCandidate, type DraftGroup } from '@/state/drafts';
-import { accept, flowGroups, flowOrder, isAcceptable, isDecided, isSelectable, rangeOf, whenLabel } from './flow';
+import { accept, flowGroups, flowOrder, isAcceptable, isDecided, isSelectable, limitShowing, rangeOf, whenLabel } from './flow';
 
 const candidate = (id: string, over: Partial<DraftCandidate> = {}): DraftCandidate => ({
   id,
@@ -45,6 +45,20 @@ describe('the flow', { tags: [] }, () => {
     expect(flowGroups(groups, [], null, 2, 'c1').shown.map((g) => g.id)).toEqual(['g5', 'g4', 'g1']);
     expect(flowGroups(groups, [], null, 2, 'c5').shown.map((g) => g.id)).toEqual(['g5', 'g4']);
     expect(flowGroups(groups, [], null, 2, 'gone').shown.map((g) => g.id)).toEqual(['g5', 'g4']);
+  });
+
+  it('raises the limit to keep the viewed batch listed once the large view closes, in steps of the page', { tags: ['boundary', 'regression'] }, () => {
+    const groups = Array.from({ length: 20 }, (_, i) => group(`g${i + 1}`, [candidate(`c${i + 1}`)]));
+    // newest first: c20 is at 0, c12 at 8 (the first past a limit of 8), c1 at 19
+    expect(limitShowing(groups, [], null, 8, 'c20')).toBe(8);
+    expect(limitShowing(groups, [], null, 8, 'c13')).toBe(8);
+    expect(limitShowing(groups, [], null, 8, 'c12')).toBe(16);
+    expect(limitShowing(groups, [], null, 8, 'c1')).toBe(24);
+    expect(flowGroups(groups, [], null, limitShowing(groups, [], null, 8, 'c1')).shown.map((g) => g.id)).toContain('g1');
+    // never lowered; nothing viewed or a picture gone leaves it as it is
+    expect(limitShowing(groups, [], null, 24, 'c20')).toBe(24);
+    expect(limitShowing(groups, [], null, 8, null)).toBe(8);
+    expect(limitShowing(groups, [], null, 8, 'gone')).toBe(8);
   });
 
   it('shows at most the limit, counts them all, and always shows the batch opened from the history', { tags: ['boundary'] }, () => {
