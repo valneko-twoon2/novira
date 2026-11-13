@@ -186,7 +186,7 @@ export function SingleImageMenu({ image, phone = false }: { image: ImageDTO; pho
         </ContextMenuItem>
       )}
       {!phone && (
-        <ContextMenuItem icon={<ArrowsOut />} onSelect={() => sendToUpscale(image)} shortcut="Shift+U">
+        <ContextMenuItem icon={<ArrowsOut />} disabled={!isStill} onSelect={() => sendToUpscale(image)} shortcut="Shift+U">
           {t('gallery.menu.upscale')}
         </ContextMenuItem>
       )}

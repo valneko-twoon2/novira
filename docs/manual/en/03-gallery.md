@@ -113,7 +113,7 @@ When you right-click a thumbnail, a list of the operations available for that pi
 | **{{ui:gallery.menu.sendToVideo}}** | Makes it the first picture of a video |
 | **{{ui:gallery.menu.sendToWorkflow}}** | Adds it to the open workflow as an image input |
 | **{{ui:gallery.menu.sendToText}}** | Makes it the background of a text image |
-| **{{ui:gallery.menu.upscale}}** (`Shift+U`) | Sends it to the Upscaling tab. Where that tab is not shown, opens **{{ui:batch.title}}** on this picture with **{{ui:batch.op.upscale.title}}**: an upscale model enlarges it without drawing it again |
+| **{{ui:gallery.menu.upscale}}** (`Shift+U`) | Sends it to the Upscaling tab. Where that tab is not shown, opens **{{ui:batch.title}}** on this picture with **{{ui:batch.op.upscale.title}}**: an upscale model enlarges it without drawing it again. Not available for a video or a sound |
 | **{{ui:gallery.menu.segment}}** | Opens the picture on the canvas so you can paint over a part and erase, cut out or repaint it |
 | **{{ui:gallery.derive.menu}}** | Makes other pictures with this picture's settings, using a different seed or slight changes |
 | **{{ui:gallery.tools.heading}}** | {{ui:facefix.menu}}, {{ui:cutout.menu}}, {{ui:caption.menu}}, {{ui:canvas.poseFromImage.menu}}. Choosing one runs it at once with the settings of the last time; the gear at its right opens the settings first (see [Fixing and Reusing Pictures](04-improve.md)) |
