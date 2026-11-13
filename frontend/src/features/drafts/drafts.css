@@ -104,6 +104,11 @@
   .dv-size {
     display: none;
   }
+
+  /* The bar wraps rather than shrinks: a narrower board field keeps the history button on its line. */
+  .dv-target__trigger {
+    width: 150px;
+  }
 }
 
 .dv-spacer {
