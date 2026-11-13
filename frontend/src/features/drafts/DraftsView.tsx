@@ -27,7 +27,7 @@ export function DraftsView({ onOpen }: { onOpen?: (imageName: string) => void } 
   const [limit, setLimit] = useState(FLOW_GROUPS);
   const viewing = useDrafts((s) => s.viewing);
   const setViewing = useDrafts((s) => s.setViewing);
-  const { shown, total } = useMemo(() => flowGroups(groups, images, currentId, limit), [groups, images, currentId, limit]);
+  const { shown, total } = useMemo(() => flowGroups(groups, images, currentId, limit, viewing), [groups, images, currentId, limit, viewing]);
   const flow = useRef<HTMLDivElement>(null);
   const large = onOpen ? null : viewing;
 

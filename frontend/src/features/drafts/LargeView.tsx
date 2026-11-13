@@ -28,9 +28,10 @@ export function LargeView({ groups, id, onMove, onClose }: { groups: DraftGroup[
   // Only candidates with a picture to look at.
   const entries: Entry[] = groups.flatMap((group) => group.candidates.filter((c) => pictureOf(c, images).image).map((c) => ({ group, c })));
   const found = entries.findIndex((e) => e.c.id === id);
-  // A picture that left (taken to a board by a drag, thrown away elsewhere) gives way to the one now at its place.
-  const last = useRef(0);
-  const index = found >= 0 ? found : Math.min(last.current, entries.length - 1);
+  // A picture that left while shown (taken to a board by a drag, thrown away elsewhere) gives way to the one now at its
+  // place. One already gone when the view opens (it came back after its batch was closed) has no place: back to the list.
+  const last = useRef(-1);
+  const index = found >= 0 ? found : last.current >= 0 ? Math.min(last.current, entries.length - 1) : -1;
   if (index >= 0) last.current = index;
   const entry = entries[index];
   const root = useRef<HTMLDivElement>(null);

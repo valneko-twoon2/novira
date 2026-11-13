@@ -45,30 +45,7 @@
   opacity: 1;
 }
 
-.vimg {
-  position: relative;
-  flex: none;
-  overflow: hidden;
-  border-radius: var(--radius);
-  background-color: var(--checker-a);
-  background-image:
-    linear-gradient(45deg, var(--checker-b) 25%, transparent 25%),
-    linear-gradient(-45deg, var(--checker-b) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, var(--checker-b) 75%),
-    linear-gradient(-45deg, transparent 75%, var(--checker-b) 75%);
-  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
-  background-size: 16px 16px;
-  box-shadow: var(--shadow);
-}
-
-.vimg img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  user-select: none;
-}
-
+/* .vimg (the picture frame) and .vimg img are in ui/ui.css with the zoom parts that draw them. */
 .vimg video {
   display: block;
   width: 100%;
@@ -82,10 +59,6 @@
   bottom: var(--space-2);
   left: var(--space-2);
   width: calc(100% - 2 * var(--space-2));
-}
-
-.vimg img.is-pixelated {
-  image-rendering: pixelated;
 }
 
 /* The zoom surface (ui/zoom, its styles in ui/ui.css) fills the stage. */

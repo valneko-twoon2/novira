@@ -25,6 +25,23 @@ function setup() {
 }
 
 describe('the large view', { tags: [] }, () => {
+  it('opened again on a picture no longer in the flow returns to the list instead of showing another picture', { tags: ['regression', 'error-guessing'] }, () => {
+    setup();
+    act(() => useDrafts.getState().setViewing('gone'));
+    expect(screen.queryByTestId('drafts-large')).toBeNull();
+    expect(useDrafts.getState().viewing).toBeNull();
+    expect(screen.getAllByTestId('draft-cell')).toHaveLength(5);
+  });
+
+  it('opened again on a picture of a batch past the limit shows that very picture', { tags: ['regression', 'boundary'] }, () => {
+    const many = Array.from({ length: 9 }, (_, i) => batch(`b${i}`, [made(10 + i)]));
+    useDrafts.setState({ groups: many });
+    useGallery.setState({ images: many.map((_, i) => picture(`g${10 + i}.png`)) });
+    useDrafts.getState().setViewing(many[0]!.candidates[0]!.id);
+    show();
+    expect(shownName()).toBe('g10.png');
+  });
+
   it('opens on a double click or Enter, and Esc or the back button returns to the list', { tags: ['state-transition'] }, () => {
     setup();
     fireEvent.doubleClick(cellButton(1));
