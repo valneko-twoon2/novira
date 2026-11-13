@@ -10,7 +10,9 @@
 //! clip), `NOVIRA_LIVE_PROMPT`, `NOVIRA_LIVE_NEGATIVE`, `NOVIRA_LIVE_STEPS`, `NOVIRA_LIVE_CFG`, `NOVIRA_LIVE_SIZE` (`WxH`), `NOVIRA_LIVE_FRAMES`, `NOVIRA_LIVE_OUT`
 //! (a folder that gets the result file), `NOVIRA_LIVE_REGION_MASK` and `NOVIRA_LIVE_REGION_PROMPT` (a regional guidance
 //! layer), `NOVIRA_LIVE_SEAMLESS` (`x`, `y` or `xy`, seamless tiling), `NOVIRA_LIVE_DRAFT` (a draft position, 0 to 1),
-//! `NOVIRA_LIVE_UPSCALE` (a scale: upscale `NOVIRA_LIVE_IMAGE` with the first upscale model installed).
+//! `NOVIRA_LIVE_UPSCALE` (a scale: upscale `NOVIRA_LIVE_IMAGE` with the first upscale model installed),
+//! `NOVIRA_LIVE_HIRES` (`<redraw|upscale>:<scale>`: the high-resolution fix with the first upscale model installed; the
+//! result must come out at the enlarged size).
 use novira_core::types::*;
 use novira_core::{Backend, BackendConfig, Settings};
 use std::path::PathBuf;
@@ -160,6 +162,33 @@ async fn a_model_makes_a_picture_or_a_clip() {
         }
     }
     request.params.draft_at = env("NOVIRA_LIVE_DRAFT").and_then(|v| v.parse().ok());
+    // The high-resolution fix: NOVIRA_LIVE_HIRES=<redraw|upscale>:<scale>.
+    let hires = env("NOVIRA_LIVE_HIRES").map(|v| {
+        let (mode, scale) = v
+            .split_once(':')
+            .expect("NOVIRA_LIVE_HIRES=<redraw|upscale>:<scale>");
+        let mode = match mode {
+            "redraw" => HiresMode::Redraw,
+            "upscale" => HiresMode::Upscale,
+            other => panic!("unknown hires mode {other}"),
+        };
+        let scale: f64 = scale.parse().expect("a number after the colon");
+        let up = models
+            .iter()
+            .find(|m| m.kind == ModelType::SpandrelImageToImage);
+        println!(
+            "hires {mode:?} x{scale} with {}",
+            up.map_or("no model (Lanczos)", |m| m.name.as_str())
+        );
+        request.params.hires_fix = Some(HiresFix {
+            scale,
+            strength: 0.45,
+            upscale_model_key: up.map(|m| m.key.clone()),
+            steps: None,
+            mode: Some(mode),
+        });
+        novira_core::comfy::graph::hires_size(&request.params, scale)
+    });
 
     // A regional guidance layer: NOVIRA_LIVE_REGION_MASK (white inside) with NOVIRA_LIVE_REGION_PROMPT.
     if let (Some(path), Some(prompt)) = (
@@ -232,5 +261,8 @@ async fn a_model_makes_a_picture_or_a_clip() {
         println!("saved {}", file.display());
     }
     assert!(bytes.len() > 20_000);
+    if let Some(size) = hires {
+        assert_eq!((result.width, result.height), size, "the enlarged size");
+    }
     backend.shutdown();
 }
