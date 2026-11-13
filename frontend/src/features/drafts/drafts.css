@@ -286,8 +286,15 @@
   min-width: 0;
 }
 
-/* Fills the stage, keeping its proportions, however small the file is. */
-.dv-large__picture img {
+/* The zoom surface of a drawn picture fills the stage. */
+.dv-large__zoom,
+.dv-large__zoom > .vzoom {
+  position: absolute;
+  inset: 0;
+}
+
+/* A picture being drawn fills the stage, keeping its proportions, however small the file is. */
+.dv-large__picture > img {
   position: absolute;
   inset: 0;
   width: 100%;

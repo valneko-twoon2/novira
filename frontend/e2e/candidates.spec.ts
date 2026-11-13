@@ -124,3 +124,27 @@ test('with the setting off a picture goes straight to its board', { tag: ['@cond
   await page.getByTestId('invoke-button').click();
   await expect(page.getByTestId('gallery-thumb')).toHaveCount(1, { timeout: 20_000 });
 });
+
+test('the large view stays open when the viewer is shown and the Candidates view comes back', { tag: ['@regression', '@state-transition'] }, async ({ page }) => {
+  await openApp(page, '?scenario=empty');
+  const cells = await generate(page, 'a quiet library', 3);
+  await cells.nth(1).locator('.dv-img').dblclick();
+  await expect(page.getByTestId('drafts-large')).toBeVisible();
+  await page.getByTestId('view-viewer').click();
+  await page.getByTestId('view-drafts').click();
+  await expect(page.getByTestId('drafts-large')).toBeVisible();
+  await expect(page.getByTestId('drafts-strip-thumb').nth(1)).toHaveAttribute('aria-current', 'true');
+});
+
+test('the large view zooms the picture like the viewer, and the next picture starts fitted again', { tag: ['@regression', '@scenario'] }, async ({ page }) => {
+  await openApp(page, '?scenario=empty');
+  const cells = await generate(page, 'a quiet library', 2);
+  await cells.first().locator('.dv-img').dblclick();
+  const large = page.getByTestId('drafts-large');
+  const percent = large.getByTestId('viewer-zoom');
+  const fitted = await percent.textContent();
+  await large.getByRole('button', { name: msg('common.zoomIn') }).click();
+  await expect(percent).not.toHaveText(fitted!);
+  await page.getByTestId('drafts-large-next').click();
+  await expect(percent).toHaveText(fitted!);
+});

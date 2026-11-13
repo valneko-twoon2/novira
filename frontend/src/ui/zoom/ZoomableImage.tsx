@@ -1,10 +1,10 @@
 // A still image in the viewer that can be zoomed and panned like the canvas, with its zoom controls.
 import type { ImageDTO } from '@/backend';
-import { cx } from '@/ui';
-import { PIXELATED_SCALE } from '@/ui/zoomMath';
-import { useZoomPan } from './zoom/useZoomPan';
-import { ViewerZoomControls } from './zoom/ViewerZoomControls';
-import { ZoomFrame } from './zoom/ZoomFrame';
+import { cx } from '../controls';
+import { PIXELATED_SCALE } from '../zoomMath';
+import { useZoomPan } from './useZoomPan';
+import { ViewerZoomControls } from './ViewerZoomControls';
+import { ZoomFrame } from './ZoomFrame';
 
 export function ZoomableImage({ image }: { image: ImageDTO }) {
   const zoom = useZoomPan({ content: { width: image.width, height: image.height }, resetKey: image.name });
