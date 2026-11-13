@@ -1,7 +1,7 @@
 // A document-space box (an image) placed on its zoom surface through the current view, over the checkerboard.
 import type { CSSProperties, ReactNode } from 'react';
-import { cx } from '@/ui';
-import { boxToScreen, type Box, type ViewTransform } from '@/ui/zoomMath';
+import { cx } from '../controls';
+import { boxToScreen, type Box, type ViewTransform } from '../zoomMath';
 
 interface Props {
   view: ViewTransform;

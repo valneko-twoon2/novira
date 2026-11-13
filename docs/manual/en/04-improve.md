@@ -293,7 +293,7 @@ Pictures drawn to the end go into the gallery just like a normal generation, and
 
 Drafts and generated pictures line up set by set in one list, newest first. The header of a set shows the time, the model, the start of the prompt and the count. The ✓ at the right of the header acts on the whole set, and the ✕ closes the set. A set of drafts that are all finished leaves the list. The slider at the top changes the size of the pictures.
 
-Double-click a picture (or choose it and press `Enter`) to see it large. `←` and `→` go to the picture before or after. `Enter` is the same as ✓ and `Delete` as ✕, and both then move on to the next picture. `Esc` goes back to the list. The strip at the bottom shows the rest of the pictures.
+Double-click a picture (or choose it and press `Enter`) to see it large. `←` and `→` go to the picture before or after. `Enter` is the same as ✓ and `Delete` as ✕, and both then move on to the next picture. `Esc` goes back to the list. The strip at the bottom shows the rest of the pictures. As in the viewer, you can zoom into the large picture with the mouse wheel or the zoom buttons at the bottom right, and drag it around. Switching to the viewer and back keeps the large picture open.
 
 Every set is on the **{{ui:drafts.history.title}}** screen that the clock button at the top (its number is how many sets there are) opens.
 

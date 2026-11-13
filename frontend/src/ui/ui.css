@@ -1450,3 +1450,68 @@ button.browse-commercial:focus-visible {
 .ui-install-state.is-installed {
   color: var(--success-text);
 }
+
+/* Zoom / pan surface: the image frame is placed by the view transform, at the top left plus a translation. */
+.vzoom {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+
+.vzoom.is-grab {
+  cursor: grab;
+}
+
+.vzoom.is-panning {
+  cursor: grabbing;
+}
+
+.vzoom__frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.vzoom-controls {
+  position: absolute;
+  right: var(--space-2);
+  bottom: var(--space-2);
+  z-index: 2;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow);
+}
+
+/* The picture frame of the zoom surface and the viewer: a checkerboard under transparent pictures. */
+.vimg {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background-color: var(--checker-a);
+  background-image:
+    linear-gradient(45deg, var(--checker-b) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--checker-b) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--checker-b) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--checker-b) 75%);
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  background-size: 16px 16px;
+  box-shadow: var(--shadow);
+}
+
+.vimg img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+}
+
+.vimg img.is-pixelated {
+  image-rendering: pixelated;
+}

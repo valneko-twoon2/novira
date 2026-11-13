@@ -6,6 +6,7 @@ import { t } from '@/i18n';
 import { useDrafts, type DraftCandidate, type DraftGroup } from '@/state/drafts';
 import { useGallery } from '@/state/gallery';
 import { cx, IconButton, Kbd } from '@/ui';
+import { ZoomableImage } from '@/ui/zoom/ZoomableImage';
 import { Badge, useLive } from './Cell';
 import { accept, isAcceptable } from './flow';
 import { pictureOf } from './pictures';
@@ -27,9 +28,10 @@ export function LargeView({ groups, id, onMove, onClose }: { groups: DraftGroup[
   // Only candidates with a picture to look at.
   const entries: Entry[] = groups.flatMap((group) => group.candidates.filter((c) => pictureOf(c, images).image).map((c) => ({ group, c })));
   const found = entries.findIndex((e) => e.c.id === id);
-  // A picture that left (taken to a board by a drag, thrown away elsewhere) gives way to the one now at its place.
-  const last = useRef(0);
-  const index = found >= 0 ? found : Math.min(last.current, entries.length - 1);
+  // A picture that left while shown (taken to a board by a drag, thrown away elsewhere) gives way to the one now at its
+  // place. One already gone when the view opens (it came back after its batch was closed) has no place: back to the list.
+  const last = useRef(-1);
+  const index = found >= 0 ? found : last.current >= 0 ? Math.min(last.current, entries.length - 1) : -1;
   if (index >= 0) last.current = index;
   const entry = entries[index];
   const root = useRef<HTMLDivElement>(null);
@@ -134,10 +136,20 @@ function Picture({ entry: { group, c } }: { entry: Entry }) {
   const images = useGallery((s) => s.images);
   const { image, finished } = pictureOf(c, images);
   const live = useLive(c);
-  const src = live?.progressImageUrl ?? image?.url;
+  const progress = live?.progressImageUrl;
+  // A drawn picture zooms and pans like the viewer's (wheel, the controls, the zoom keys), fitted again for the next one;
+  // a picture still being drawn shows its progress as it is.
   return (
     <div className="dv-large__picture">
-      {src && <img src={src} alt="" draggable={false} data-testid="drafts-large-image" data-name={image?.name} />}
+      {progress ? (
+        <img src={progress} alt="" draggable={false} data-testid="drafts-large-image" />
+      ) : (
+        image && (
+          <div className="dv-large__zoom" data-testid="drafts-large-image" data-name={image.name}>
+            <ZoomableImage image={image} />
+          </div>
+        )
+      )}
       <Badge group={group} c={c} finished={finished} live={live} />
     </div>
   );

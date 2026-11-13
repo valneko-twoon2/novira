@@ -1,6 +1,9 @@
 // Floating zoom controls at the bottom right of the viewer stage (the canvas toolbar's zoom group).
 import { t } from '@/i18n';
-import { chordLabel, MenuItem, ZOOM_HOTKEYS, ZoomControls } from '@/ui';
+import { MenuItem } from '../overlays';
+import { chordLabel } from '../useHotkey';
+import { ZoomControls } from '../ZoomControls';
+import { ZOOM_HOTKEYS } from '../zoomHotkeys';
 import type { ZoomPan } from './useZoomPan';
 
 export function ViewerZoomControls({ zoom }: { zoom: ZoomPan }) {

@@ -213,7 +213,11 @@ interface DraftsState {
   picturesRepaired: boolean;
   /** Selected candidate ids of the current group. */
   selection: string[];
+  /** The candidate the large view shows; null shows the list. Kept here, not in the view, so switching to the viewer and
+   * back finds it open again (the view is unmounted meanwhile). Not stored on disk. */
+  viewing: string | null;
   busy: boolean;
+  setViewing: (candidateId: string | null) => void;
   setCurrent: (id: string) => void;
   toggleSelect: (candidateId: string) => void;
   /** Replaces the selection (a click, or a Shift click over a range of the Candidates view). */
@@ -336,7 +340,9 @@ export const useDrafts = create<DraftsState>()(
       currentId: null,
       picturesRepaired: false,
       selection: [],
+      viewing: null,
       busy: false,
+      setViewing: (viewing) => set({ viewing }),
       setCurrent: (id) => set({ currentId: id, selection: [] }),
       toggleSelect: (cid) => set({ selection: get().selection.includes(cid) ? get().selection.filter((s) => s !== cid) : [...get().selection, cid] }),
       setSelection: (selection) => set({ selection }),

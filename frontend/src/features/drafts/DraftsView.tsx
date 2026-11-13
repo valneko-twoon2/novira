@@ -25,8 +25,9 @@ export function DraftsView({ onOpen }: { onOpen?: (imageName: string) => void } 
   const currentId = useDrafts((s) => s.currentId);
   const images = useGallery((s) => s.images);
   const [limit, setLimit] = useState(FLOW_GROUPS);
-  const [viewing, setViewing] = useState<string | null>(null);
-  const { shown, total } = useMemo(() => flowGroups(groups, images, currentId, limit), [groups, images, currentId, limit]);
+  const viewing = useDrafts((s) => s.viewing);
+  const setViewing = useDrafts((s) => s.setViewing);
+  const { shown, total } = useMemo(() => flowGroups(groups, images, currentId, limit, viewing), [groups, images, currentId, limit, viewing]);
   const flow = useRef<HTMLDivElement>(null);
   const large = onOpen ? null : viewing;
 
@@ -34,7 +35,7 @@ export function DraftsView({ onOpen }: { onOpen?: (imageName: string) => void } 
   useEffect(() => {
     if (currentId && large === null) flow.current?.querySelector(`[data-group-id="${CSS.escape(currentId)}"]`)?.scrollIntoView?.({ block: 'nearest' });
   }, [currentId, large]);
-  const closeLarge = useCallback(() => setViewing(null), []);
+  const closeLarge = useCallback(() => setViewing(null), [setViewing]);
 
   return (
     <div className="dv" data-testid="drafts-view">

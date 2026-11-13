@@ -39,11 +39,21 @@ export function accept(group: DraftGroup, candidateIds: string[], images: ImageD
  * (`currentId`) even when everything in it is decided. `total` counts them all; `shown` is at most `limit` of them, but
  * always holds the opened one.
  */
-export function flowGroups(groups: DraftGroup[], images: ImageDTO[], currentId: string | null, limit: number): { shown: DraftGroup[]; total: number } {
+export function flowGroups(
+  groups: DraftGroup[],
+  images: ImageDTO[],
+  currentId: string | null,
+  limit: number,
+  viewingId: string | null = null,
+): { shown: DraftGroup[]; total: number } {
   const open = groups.filter((g) => g.id === currentId || g.candidates.some((c) => !isDecided(g, c, images))).reverse();
   const shown = open.slice(0, limit);
+  // The batch opened from the history, and the batch of the picture the large view shows (it may lie past the limit when
+  // the view comes back with fewer batches listed), are always there.
   const opened = open.find((g) => g.id === currentId);
   if (opened && !shown.includes(opened)) shown.push(opened);
+  const viewed = viewingId === null ? undefined : open.find((g) => g.candidates.some((c) => c.id === viewingId));
+  if (viewed && !shown.includes(viewed)) shown.push(viewed);
   return { shown, total: open.length };
 }
 
