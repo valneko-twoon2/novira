@@ -57,6 +57,16 @@ describe('the flow', { tags: [] }, () => {
     expect(screen.queryByTestId('drafts-more')).toBeNull();
   });
 
+  it('keeps a batch past the limit listed after its picture was shown large and the view was closed', { tags: ['state-transition', 'regression'] }, () => {
+    // the view came back (a screen switch) showing a picture of the oldest batch, past the first 8
+    useDrafts.setState({ groups: Array.from({ length: 10 }, (_, i) => group(`g${i + 1}`, [candidate(i + 1)])), viewing: 'c1' });
+    useGallery.setState({ images: Array.from({ length: 10 }, (_, i) => picture(`d${i + 1}.png`)) });
+    show();
+    expect(screen.queryByTestId('drafts-group')).toBeNull();
+    fireEvent.click(screen.getByTestId('drafts-large-back'));
+    expect(screen.getAllByTestId('drafts-group').map((g) => g.dataset.groupId)).toContain('g1');
+  });
+
   it('accepts a whole batch from its header: a generation batch to the board, a batch of drafts finished', { tags: ['decision-table'] }, () => {
     const adopt = vi.fn().mockResolvedValue(undefined);
     const finish = vi.fn().mockResolvedValue(undefined);
