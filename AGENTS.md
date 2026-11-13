@@ -82,7 +82,7 @@
 - **テスト結果とレポートはリポジトリ直下の `logs/`（git の対象外）に置き、ハーネスが作るほかのものは `novira-data/work/` の下だけに置く**（検証用データ、ビルド、一時ファイル。`out/` は使わない。data-guard フック）。古くなったものは `scripts/tools/prune-stale.mjs` が消す。
 - **GPU を使う作業の前に GPU ロック（`NOVIRA_GPU_LOCK`）を取る。** ユーザーが GPU を使っているときは生成しない（[verification.md](docs/verification.md)）。
 - **worktree は `node scripts/tools/worktree.mjs add <名前>` で作り、取り込んだらその場で `node scripts/tools/worktree.mjs remove <パス>` で消す。** 手で `git worktree remove` しない（`node_modules` の junction をたどって本体の中身が消える。残ると Stop フックが差し戻す）。
-- **ブランチ運用は GitHub Flow。** ブランチは `develop`（作業の幹。既定のブランチ）と `main`（リリースしたものだけ）の 2 本。コードや文書を変える作業は、`develop` から切ったブランチ（worktree）で、作業 1 つにつき 1 本、エージェントが自分の判断で作り、`develop` へ PR で入れる（CI と CodeQL は回さず、レビューが通れば入る）。`main` へは、リリースのときだけ `develop` から PR で入る（CI と CodeQL が通ってから）。リリースは、まとまるのを待たず、要ると判断したらその都度、エージェントが版の更新・`CHANGELOG.md`・公開まで行う。どちらも PR のマージでだけ入る（ブランチ保護が直接の push を拒む）。作業ブランチの push、PR の作成、レビューの投稿、`scripts/tools/pr.mjs` が許すマージ、リリースのタグの push と公開は常時許可（`/ship`、`/release-notes`）。`--force`、`--no-verify`、履歴の書き換え、push 済みのタグの移動・削除はユーザーが明示したときだけ。
+- **ブランチ運用は GitHub Flow。** ブランチは `develop`（作業の幹。既定のブランチ）と `main`（リリースしたものだけ）の 2 本。コードや文書を変える作業は、`develop` から切ったブランチ（worktree）で、作業 1 つにつき 1 本、エージェントが自分の判断で作り、`develop` へ PR で入れる（CI と CodeQL は回さず、レビューが通れば入る。変更履歴・`docs/tests/README.md`・テストのファイルだけの PR はレビューなしで入る）。`main` へは、リリースのときだけ `develop` から PR で入る（CI と CodeQL が通ってから）。リリースは、まとまるのを待たず、要ると判断したらその都度、エージェントが版の更新・`CHANGELOG.md`・公開まで行う。どちらも PR のマージでだけ入る（ブランチ保護が直接の push を拒む）。作業ブランチの push、PR の作成、レビューの投稿、`scripts/tools/pr.mjs` が許すマージ、リリースのタグの push と公開は常時許可（`/ship`、`/release-notes`）。`--force`、`--no-verify`、履歴の書き換え、push 済みのタグの移動・削除はユーザーが明示したときだけ。
 
 表記
 

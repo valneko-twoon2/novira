@@ -9,7 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { BODY_SECTIONS, CODEQL_CHECKS, bodyProblems, checksState, deleteBranchArgs, freshChecks, gatingChecks, isAncestorOf, isReleaseBranch, isSyncBranch, isSyncPullRequest, mainIsAStateOfDevelop, mergeKeepsTree, releaseBranchName, syncBranchIsSafe, syncCommit, readyFrom, mergeArgs, mergeDecision, reviewMark, reviewProblems, reviewVerdict, titleFor, titleProblems, withMissing, withoutComments } from '../../scripts/tools/pr.mjs';
+import { BODY_SECTIONS, CODEQL_CHECKS, bodyProblems, checksState, deleteBranchArgs, freshChecks, gatingChecks, isAncestorOf, isReleaseBranch, isSyncBranch, isSyncPullRequest, mainIsAStateOfDevelop, mergeKeepsTree, releaseBranchName, syncBranchIsSafe, syncCommit, readyFrom, mergeArgs, mergeDecision, reviewFree, reviewMark, reviewProblems, reviewVerdict, titleFor, titleProblems, withMissing, withoutComments } from '../../scripts/tools/pr.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const HEAD = 'a'.repeat(40);
@@ -568,5 +568,43 @@ describe('code scanning alerts', () => {
 
   it('that cannot be read stop the merge too, and it waits', { tags: ['error-guessing', 'regression'] }, () => {
     expect(release({ checks: 'pass', verdict: 'ok', alerts: null })).toMatchObject({ merge: false, wait: true, reason: expect.stringContaining('code scanning') });
+  });
+});
+
+describe('a pull request into develop that changes only the changelog, the test counts or tests', { tags: [] }, () => {
+  it('is told apart by its files: all of them of those kinds, none of the app', { tags: ['equivalence', 'boundary'] }, () => {
+    expect(reviewFree(['CHANGELOG.md'])).toBe(true);
+    expect(reviewFree(['docs/tests/README.md', 'frontend/tests/pr-tool.test.ts'])).toBe(true);
+    expect(reviewFree(['frontend/src/features/drafts/flow.test.ts', 'frontend/src/ui/zoom/ZoomableImage.test.tsx'])).toBe(true);
+    expect(reviewFree(['frontend/e2e/candidates.spec.ts', 'frontend/e2e/__screenshots__/visual/generate/dark/candidates-win32.png'])).toBe(true);
+    expect(reviewFree(['backend/crates/novira-core/tests/models_live.rs'])).toBe(true);
+    // one file of the app, the docs, a script or a rule is enough to need the review
+    expect(reviewFree(['frontend/tests/pr-tool.test.ts', 'scripts/tools/pr.mjs'])).toBe(false);
+    expect(reviewFree(['CHANGELOG.md', 'backend/Cargo.toml'])).toBe(false);
+    expect(reviewFree(['frontend/src/features/drafts/flow.ts'])).toBe(false);
+    expect(reviewFree(['docs/design/README.md'])).toBe(false);
+    expect(reviewFree(['.claude/rules/tests.md'])).toBe(false);
+    expect(reviewFree(['backend/crates/novira-core/src/agent/tools.rs'])).toBe(false);
+    // no files listed (the list could not be read) is not free
+    expect(reviewFree([])).toBe(false);
+  });
+
+  it('needs the review for a file renamed or copied (only its new name is listed) and for the lists that loosen a check', { tags: ['error-guessing', 'regression'] }, () => {
+    // scripts/tools/pr.mjs moved to frontend/tests/pr.mjs shows only the new path
+    expect(reviewFree([{ path: 'frontend/tests/pr.mjs', changeType: 'RENAMED' }])).toBe(false);
+    expect(reviewFree([{ path: 'frontend/e2e/x.spec.ts', changeType: 'COPIED' }])).toBe(false);
+    expect(reviewFree([{ path: 'frontend/e2e/x.spec.ts', changeType: 'MODIFIED' }, { path: 'CHANGELOG.md', changeType: 'ADDED' }])).toBe(true);
+    expect(reviewFree([{ path: 'frontend/e2e/old.spec.ts', changeType: 'DELETED' }])).toBe(true);
+    // what the checks allow, and the helpers the specs run on, are not tests of their own
+    for (const p of ['frontend/e2e/a11yKnown.ts', 'frontend/e2e/perfBudget.ts', 'frontend/e2e/layoutRules.ts', 'frontend/e2e/fixtures.ts', 'frontend/tests/helper.mjs']) expect(reviewFree([p]), p).toBe(false);
+  });
+
+  it('merges into develop with no agent review, but a review that asks for changes still stops it, and main always needs one', { tags: ['decision-table'] }, () => {
+    expect(mergeDecision({ verdict: 'none', base: 'develop', head: '20261113_x', reviewFree: true })).toMatchObject({ merge: true });
+    expect(mergeDecision({ verdict: 'none', base: 'develop', head: '20261113_x', reviewFree: false })).toMatchObject({ merge: false });
+    expect(mergeDecision({ verdict: 'changes', base: 'develop', head: '20261113_x', reviewFree: true })).toMatchObject({ merge: false });
+    expect(release({ checks: 'pass', verdict: 'none', reviewFree: true })).toMatchObject({ merge: false });
+    // the title and the description are still checked
+    expect(mergeDecision({ verdict: 'none', base: 'develop', head: '20261113_x', reviewFree: true, body: ['missing'] })).toMatchObject({ merge: false });
   });
 });

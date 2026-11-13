@@ -117,12 +117,30 @@ export function gatingChecks(all, required) {
 }
 
 /**
+ * Files a pull request into develop may change with no agent review (the user's choice, 2026-11-13: the review made small pull requests
+ * slow): the changelog, docs/tests/README.md (the test techniques and their generated counts), and tests: test files, the e2e specs and
+ * their baselines, the Rust integration tests. One file of anything else (the app, a script, a rule, a document, the lists of what a
+ * check allows such as frontend/e2e/a11yKnown.ts or perfBudget.ts, the helpers the specs run on) needs the review.
+ */
+const REVIEW_FREE = [/^CHANGELOG\.md$/, /^docs\/tests\/README\.md$/, /\.test\.(ts|tsx|js|mjs)$/, /^frontend\/e2e\/.+\.spec\.ts$/, /^frontend\/e2e\/__screenshots__\//, /^backend\/crates\/[^/]+\/tests\//];
+
+/**
+ * Whether every one of a pull request's files (a path, or `{ path, changeType }` as `gh pr view --json files` gives) is of the kinds that
+ * need no agent review. A renamed or copied file needs it: only its new path is listed, so moving a script among the tests would pass.
+ * None listed is not free.
+ */
+export function reviewFree(files) {
+  const all = files.map((f) => (typeof f === 'string' ? { path: f, changeType: 'MODIFIED' } : f));
+  return all.length > 0 && all.every((f) => f.changeType !== 'RENAMED' && f.changeType !== 'COPIED' && REVIEW_FREE.some((re) => re.test(f.path)));
+}
+
+/**
  * { merge, wait, reason, ready?, toDraft? } from the gating checks, the review verdict of the head and the pull request itself; `alerts`
  * null is unknown. A draft is reviewed with no CI: once the review of its head is ok, `ready` asks to make it ready for review, which
  * starts the checks. A failed check or an open code scanning alert sends it back to a draft (`toDraft`), so the pushes that fix it
- * run no CI until the next ok review.
+ * run no CI until the next ok review. `reviewFree` merges a pull request into develop with no review (the function of that name).
  */
-export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, base = WORK_BRANCH, head = '', fork = false, title = [], body = [], alerts = 0, syncSafe = null, snapshot = null }) {
+export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, base = WORK_BRANCH, head = '', fork = false, title = [], body = [], alerts = 0, syncSafe = null, snapshot = null, reviewFree: free = false }) {
   if (state !== 'OPEN') return { merge: false, wait: false, reason: `the pull request is ${state.toLowerCase()}` };
   if (fork) return { merge: false, wait: false, reason: 'the pull request comes from another repository: a person merges it' };
   if (base !== WORK_BRANCH && base !== RELEASE_BRANCH) return { merge: false, wait: false, reason: `the pull request goes to ${base}, not ${WORK_BRANCH} or ${RELEASE_BRANCH}` };
@@ -140,6 +158,7 @@ export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, 
     return { merge: true, wait: false, reason: "merging main into develop leaves develop's tree as it is" };
   }
   if (verdict === 'changes') return { merge: false, wait: false, reason: 'the agent review of the current head asks for changes' };
+  if (verdict !== 'ok' && base === WORK_BRANCH && free && !draft) return { merge: true, wait: false, reason: `only the changelog, the test counts or tests change: no agent review is needed into ${WORK_BRANCH}` };
   if (verdict !== 'ok') return { merge: false, wait: false, reason: 'no agent review of the current head (pushed after the review?): review it first' };
   // Into develop nothing runs on the pull request (a work branch is reviewed, not tested here): the ok review is the whole condition.
   if (base === WORK_BRANCH && draft) return { merge: false, wait: true, ready: true, reason: 'the review of the draft is ok: it is made ready for review' };
@@ -334,7 +353,7 @@ const gh = (args, opts) => run('gh', args, opts);
 const git = (args, opts) => run('git', args, opts);
 
 function view(n) {
-  return JSON.parse(gh(['pr', 'view', String(n), '--json', 'number,title,body,state,isDraft,headRefOid,headRefName,baseRefName,isCrossRepository,reviews,url']));
+  return JSON.parse(gh(['pr', 'view', String(n), '--json', 'number,title,body,state,isDraft,headRefOid,headRefName,baseRefName,isCrossRepository,reviews,url,files,changedFiles']));
 }
 
 function allChecks(n) {
@@ -511,6 +530,8 @@ function decisionOf(n, guard = { before: null, floor: null }) {
     alerts: gated ? openAlerts(n) : 0,
     syncSafe: sync ? (pr.headRefName === RELEASE_BRANCH ? syncIsSafe(pr.headRefOid) : syncBranchSafe(pr.headRefOid, pr.headRefName)) : null,
     snapshot,
+    // every file listed (gh lists at most 100), or it is not known to be free
+    reviewFree: (pr.files ?? []).length === pr.changedFiles && reviewFree(pr.files ?? []),
   });
   return { pr, checks, decision, verdict };
 }
