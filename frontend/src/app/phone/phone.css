@@ -770,8 +770,6 @@ body:has(.phone) .toast__close {
 .phone__tab .dv {
   height: auto;
   min-height: 100%;
-  border: 0;
-  border-radius: 0;
   overflow: visible;
 }
 
