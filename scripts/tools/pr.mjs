@@ -117,23 +117,29 @@ export function gatingChecks(all, required) {
 }
 
 /**
+ * Files a pull request into develop may change with no agent review (the user's choice, 2026-11-13: the review made small pull requests
+ * slow): the changelog, docs/tests/README.md (the test techniques and their generated counts), and tests: test files, the e2e specs and
+ * their baselines, the Rust integration tests. One file of anything else (the app, a script, a rule, a document, the lists of what a
+ * check allows such as frontend/e2e/a11yKnown.ts or perfBudget.ts, the helpers the specs run on) needs the review.
+ */
+const REVIEW_FREE = [/^CHANGELOG\.md$/, /^docs\/tests\/README\.md$/, /\.test\.(ts|tsx|js|mjs)$/, /^frontend\/e2e\/.+\.spec\.ts$/, /^frontend\/e2e\/__screenshots__\//, /^backend\/crates\/[^/]+\/tests\//];
+
+/**
+ * Whether every one of a pull request's files (a path, or `{ path, changeType }` as `gh pr view --json files` gives) is of the kinds that
+ * need no agent review. A renamed or copied file needs it: only its new path is listed, so moving a script among the tests would pass.
+ * None listed is not free.
+ */
+export function reviewFree(files) {
+  const all = files.map((f) => (typeof f === 'string' ? { path: f, changeType: 'MODIFIED' } : f));
+  return all.length > 0 && all.every((f) => f.changeType !== 'RENAMED' && f.changeType !== 'COPIED' && REVIEW_FREE.some((re) => re.test(f.path)));
+}
+
+/**
  * { merge, wait, reason, ready?, toDraft? } from the gating checks, the review verdict of the head and the pull request itself; `alerts`
  * null is unknown. A draft is reviewed with no CI: once the review of its head is ok, `ready` asks to make it ready for review, which
  * starts the checks. A failed check or an open code scanning alert sends it back to a draft (`toDraft`), so the pushes that fix it
- * run no CI until the next ok review.
+ * run no CI until the next ok review. `reviewFree` merges a pull request into develop with no review (the function of that name).
  */
-/**
- * Files a pull request into develop may change with no agent review (the user's choice, 2026-11-13: the review made small pull requests
- * slow): the changelog, the generated table of test counts, and tests (test files, the whole-source tests, the e2e specs with their
- * baselines, the Rust integration tests). One file of anything else (the app, a script, a rule, a document) needs the review.
- */
-const REVIEW_FREE = [/^CHANGELOG\.md$/, /^docs\/tests\/README\.md$/, /\.test\.(ts|tsx|js|mjs)$/, /^frontend\/tests\//, /^frontend\/e2e\//, /^backend\/crates\/[^/]+\/tests\//];
-
-/** Whether every one of `paths` (a pull request's files) is of the kinds that need no agent review; none listed is not free. */
-export function reviewFree(paths) {
-  return paths.length > 0 && paths.every((p) => REVIEW_FREE.some((re) => re.test(p)));
-}
-
 export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, base = WORK_BRANCH, head = '', fork = false, title = [], body = [], alerts = 0, syncSafe = null, snapshot = null, reviewFree: free = false }) {
   if (state !== 'OPEN') return { merge: false, wait: false, reason: `the pull request is ${state.toLowerCase()}` };
   if (fork) return { merge: false, wait: false, reason: 'the pull request comes from another repository: a person merges it' };
@@ -525,7 +531,7 @@ function decisionOf(n, guard = { before: null, floor: null }) {
     syncSafe: sync ? (pr.headRefName === RELEASE_BRANCH ? syncIsSafe(pr.headRefOid) : syncBranchSafe(pr.headRefOid, pr.headRefName)) : null,
     snapshot,
     // every file listed (gh lists at most 100), or it is not known to be free
-    reviewFree: (pr.files ?? []).length === pr.changedFiles && reviewFree((pr.files ?? []).map((x) => x.path)),
+    reviewFree: (pr.files ?? []).length === pr.changedFiles && reviewFree(pr.files ?? []),
   });
   return { pr, checks, decision, verdict };
 }

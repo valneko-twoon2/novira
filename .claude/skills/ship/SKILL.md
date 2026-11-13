@@ -39,7 +39,7 @@ Then `node scripts/tools/pr.mjs open --body-file <that file>` in the worktree: i
 
 ## 3. Review
 
-**Skip this section for a pull request into `develop` that changes only the changelog, `docs/tests/README.md` or tests** (test files, `frontend/tests/`, `frontend/e2e/` with its baselines, `backend/crates/*/tests/`): `pr.mjs merge` merges it with no review (`reviewFree` in `scripts/tools/pr.mjs`; the user's choice, 2026-11-13, because the review made small pull requests slow). One file of anything else (the app, a script, a rule, a document, a version file) needs the review below, and so does every release pull request into `main`.
+**Skip this section for a pull request into `develop` that changes only the changelog, `docs/tests/README.md` or tests** (`*.test.(ts|tsx|js|mjs)`, the `frontend/e2e/` specs and baselines, `backend/crates/*/tests/`; no file renamed or copied): `pr.mjs merge` merges it with no review (`reviewFree` in `scripts/tools/pr.mjs`; the user's choice, 2026-11-13, because the review made small pull requests slow). One file of anything else (the app, a script, a rule, a document, a version file, a list of what a check allows such as `frontend/e2e/a11yKnown.ts`, a helper the specs run on) needs the review below, and so does every release pull request into `main`.
 
 The author never reviews its own work. Start a **fresh** agent (Agent tool, a new one each round, not a fork) with:
 

@@ -589,6 +589,16 @@ describe('a pull request into develop that changes only the changelog, the test 
     expect(reviewFree([])).toBe(false);
   });
 
+  it('needs the review for a file renamed or copied (only its new name is listed) and for the lists that loosen a check', { tags: ['error-guessing', 'regression'] }, () => {
+    // scripts/tools/pr.mjs moved to frontend/tests/pr.mjs shows only the new path
+    expect(reviewFree([{ path: 'frontend/tests/pr.mjs', changeType: 'RENAMED' }])).toBe(false);
+    expect(reviewFree([{ path: 'frontend/e2e/x.spec.ts', changeType: 'COPIED' }])).toBe(false);
+    expect(reviewFree([{ path: 'frontend/e2e/x.spec.ts', changeType: 'MODIFIED' }, { path: 'CHANGELOG.md', changeType: 'ADDED' }])).toBe(true);
+    expect(reviewFree([{ path: 'frontend/e2e/old.spec.ts', changeType: 'DELETED' }])).toBe(true);
+    // what the checks allow, and the helpers the specs run on, are not tests of their own
+    for (const p of ['frontend/e2e/a11yKnown.ts', 'frontend/e2e/perfBudget.ts', 'frontend/e2e/layoutRules.ts', 'frontend/e2e/fixtures.ts', 'frontend/tests/helper.mjs']) expect(reviewFree([p]), p).toBe(false);
+  });
+
   it('merges into develop with no agent review, but a review that asks for changes still stops it, and main always needs one', { tags: ['decision-table'] }, () => {
     expect(mergeDecision({ verdict: 'none', base: 'develop', head: '20261113_x', reviewFree: true })).toMatchObject({ merge: true });
     expect(mergeDecision({ verdict: 'none', base: 'develop', head: '20261113_x', reviewFree: false })).toMatchObject({ merge: false });
