@@ -104,7 +104,11 @@ test('✓ puts the pictures on the board picked at the top of the view', { tag: 
   await openApp(page);
   const cells = await generate(page, 'a mountain lake', 1);
   await page.getByTestId('drafts-target').click();
-  await page.getByRole('option', { name: 'Landscapes' }).click();
+  // the list shows the boards with their covers, as the gallery does
+  const list = page.getByTestId('drafts-target-list');
+  await expect(list.getByTestId('drafts-target-item').filter({ hasText: 'Landscapes' }).locator('img')).toBeVisible();
+  await list.getByTestId('drafts-target-item').filter({ hasText: 'Landscapes' }).click();
+  await expect(list).toHaveCount(0);
   await expect(page.getByTestId('drafts-target')).toContainText('Landscapes');
   // The gallery shows the same board.
   await expect(page.getByTestId('board-row').filter({ hasText: 'Landscapes' })).toHaveClass(/is-selected/);

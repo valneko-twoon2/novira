@@ -9,7 +9,7 @@ import { useGallery, type BoardId } from '@/state/gallery';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, cx, Tooltip } from '@/ui';
 import { moveImagesToBoard, uploadFiles } from '../actions';
 import { downloadBoard, renameBoard, setBoardArchived } from './boardActions';
-import type { BoardStats } from './useBoardStats';
+import type { BoardStats } from '@/state/boardStats';
 
 interface Props {
   id: BoardId;

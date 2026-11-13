@@ -10,7 +10,7 @@ import { boardName } from '../actions';
 import { createBoard } from './boardActions';
 import { BoardRow } from './BoardRow';
 import { DeleteBoardModal } from './DeleteBoardModal';
-import { useBoardStats } from './useBoardStats';
+import { useBoardStats } from '@/state/boardStats';
 
 const MIN_LIST = 64;
 
