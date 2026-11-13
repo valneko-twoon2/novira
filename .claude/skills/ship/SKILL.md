@@ -1,6 +1,6 @@
 ---
 name: ship
-description: "Takes a finished work branch into develop the GitHub Flow way: pushes it, opens its pull request, has a fresh reviewer agent review it on GitHub, fixes what the review finds, squash-merges when the review of the head is ok (no CI or CodeQL runs on a pull request into develop), removes the worktree, and then judges whether develop calls for a release (/release-notes). Use when work on a branch is done and committed (your own or a subagent's after /gatekeeper's checks), or when the user says to take it in (PR にして, マージして, develop に入れて, 出して)."
+description: "Takes a finished work branch into develop the GitHub Flow way: pushes it, opens its pull request, has a fresh reviewer agent review it on GitHub (not a pull request of only the changelog or tests), fixes what the review finds, squash-merges when the review of the head is ok (no CI or CodeQL runs on a pull request into develop), removes the worktree, and then judges whether develop calls for a release (/release-notes). Use when work on a branch is done and committed (your own or a subagent's after /gatekeeper's checks), or when the user says to take it in (PR にして, マージして, develop に入れて, 出して)."
 argument-hint: "The worktree or branch to ship (default: the current one)"
 user-invocable: true
 disable-model-invocation: false
@@ -39,6 +39,8 @@ Then `node scripts/tools/pr.mjs open --body-file <that file>` in the worktree: i
 
 ## 3. Review
 
+**Skip this section for a pull request into `develop` that changes only the changelog, `docs/tests/README.md` or tests** (test files, `frontend/tests/`, `frontend/e2e/` with its baselines, `backend/crates/*/tests/`): `pr.mjs merge` merges it with no review (`reviewFree` in `scripts/tools/pr.mjs`; the user's choice, 2026-11-13, because the review made small pull requests slow). One file of anything else (the app, a script, a rule, a document, a version file) needs the review below, and so does every release pull request into `main`.
+
 The author never reviews its own work. Start a **fresh** agent (Agent tool, a new one each round, not a fork) with:
 
 - the pull request number and the repository path; to read the description (`gh pr view <n>`), the diff (`gh pr diff <n>`), the changed files in full where the diff is not enough, and the earlier reviews (`gh api repos/{owner}/{repo}/pulls/<n>/reviews`);
@@ -74,7 +76,7 @@ On `changes`: fix on the branch (a bug the review found gets its test first, AGE
 
 ## 4. Merge
 
-`node scripts/tools/pr.mjs merge <n>`: into `develop` it squash-merges when the review of the head is `ok` and the title and the description pass their checks (no CI, no CodeQL, no alerts are read); the commit on `develop` is the title with no body. It deletes the remote branch and fast-forwards the main checkout when that is on `develop`. When it refuses:
+`node scripts/tools/pr.mjs merge <n>`: into `develop` it squash-merges when the review of the head is `ok` (or none is needed, section 3) and the title and the description pass their checks (no CI, no CodeQL, no alerts are read); the commit on `develop` is the title with no body. It deletes the remote branch and fast-forwards the main checkout when that is on `develop`. When it refuses:
 
 - (a release pull request into `main`, `/release-notes`: `merge --wait` makes it ready, which starts CI and CodeQL, waits for the required checks and the CodeQL analyses, and merges only if every one passed and no code scanning alert of the pull request is open. A failed check or an open alert sends it back to a draft: read the failure (`gh run view <id> --log-failed`) or the alert (`gh api "repos/{owner}/{repo}/code-scanning/alerts?ref=refs/pull/<n>/merge&state=open"`), fix on `develop` through a work branch, review again. A failure that is also on `develop` is reported with the evidence, not fixed by weakening the check; a false positive is reported to the user with the reason, and dismissing it is their call);
 - no review of the head: section 3.
