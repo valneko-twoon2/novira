@@ -116,7 +116,7 @@ Auch wenn Sie eine Liste von Modellen, LoRAs, Vorgaben und Ähnlichem öffnen, e
 
 ![Der Assistent auf dem Smartphone. Eine Bitte und die Einstellungen, die der Assistent vorgenommen hat](shot:phone-chat)
 
-Tippen Sie in der Kopfleiste auf die Funkel-Schaltfläche (**{{ui:agent.open}}**), öffnet sich der Assistent über den ganzen Bildschirm. Er kann dasselbe wie am Computer ([KI-Assistent](09-assistant-settings.md#ki-assistent)).
+Tippen Sie in der Kopfleiste auf die Funkel-Schaltfläche (**{{ui:agent.open}}**), öffnet sich der Assistent über den ganzen Bildschirm. Er kann dasselbe wie am Computer ([KI-Assistent](09-assistant-settings.md)).
 
 - Schreiben Sie unten ins Feld, was Sie zeichnen lassen oder fragen möchten, und senden Sie mit der Schaltfläche rechts. Enter macht einen Zeilenumbruch. Mit der Büroklammer-Schaltfläche links lassen sich Fotos vom Smartphone anhängen.
 - Die Einstellungen, die der Assistent ändert, landen im Tab **{{ui:app.tabs.generate}}** des Smartphones. Mit **{{ui:agent.generate}}** unter der Antwort erzeugen Sie sofort, und mit **{{ui:agent.undo}}** machen Sie es rückgängig.

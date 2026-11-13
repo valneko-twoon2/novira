@@ -1,4 +1,8 @@
 {
+  "HiresMode": [
+    "redraw",
+    "upscale"
+  ],
   "BaseModel": [
     "sd-1",
     "sd-2",

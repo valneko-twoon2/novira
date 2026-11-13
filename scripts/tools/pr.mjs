@@ -10,7 +10,10 @@
 //                                                    taking work while the release is reviewed and tested; run it again to bring the snapshot up to
 //                                                    develop (a fast-forward).
 //   node scripts/tools/pr.mjs sync                   after a release: the pull request that merges main back into develop (no review: merging
-//                                                    main must leave develop's own tree as it is, `syncSafe`).
+//                                                    main must leave develop's own tree as it is, `syncSafe`). When develop changed lines the
+//                                                    release also changed (a generated table, say), that merge conflicts: the pull request then comes
+//                                                    from sync/<id>, a merge commit of develop and main that keeps develop's tree, made only when
+//                                                    main's tree is a state develop once had (the release was a snapshot of develop).
 //   node scripts/tools/pr.mjs review <n> --verdict ok|changes --sha <commit read> --body-file <f>   (the shape: reviewProblems)
 //                                                    post an agent's review of the commit it read (a comment review: GitHub lets nobody
 //                                                    approve their own pull request, and the agents act as the user). Refused when the
@@ -78,6 +81,19 @@ export const CODEQL_CHECKS = ['analyze (actions)', 'analyze (javascript-typescri
 /** The branch a release pull request comes from: a snapshot of develop, so develop can go on taking work while it is reviewed and tested. */
 export const RELEASE_PREFIX = 'release/';
 
+/** The branch of a merge of main into develop made by `sync` when the plain merge conflicts. */
+export const SYNC_PREFIX = 'sync/';
+
+/** Whether `name` is such a branch (sync/<id>). */
+export function isSyncBranch(name) {
+  return typeof name === 'string' && /^sync\/[A-Za-z0-9][A-Za-z0-9._-]*$/.test(name);
+}
+
+/** Whether the pull request merges main back into develop: from main itself, or from a sync/<id> branch. */
+export function isSyncPullRequest(base, head) {
+  return base === WORK_BRANCH && (head === RELEASE_BRANCH || isSyncBranch(head));
+}
+
 /** Whether `name` is the snapshot branch of a release (release/<n>). */
 export function isReleaseBranch(name) {
   return typeof name === 'string' && /^release\/[A-Za-z0-9][A-Za-z0-9._-]*$/.test(name);
@@ -101,12 +117,30 @@ export function gatingChecks(all, required) {
 }
 
 /**
+ * Files a pull request into develop may change with no agent review (the user's choice, 2026-11-13: the review made small pull requests
+ * slow): the changelog, docs/tests/README.md (the test techniques and their generated counts), and tests: test files, the e2e specs and
+ * their baselines, the Rust integration tests. One file of anything else (the app, a script, a rule, a document, the lists of what a
+ * check allows such as frontend/e2e/a11yKnown.ts or perfBudget.ts, the helpers the specs run on) needs the review.
+ */
+const REVIEW_FREE = [/^CHANGELOG\.md$/, /^docs\/tests\/README\.md$/, /\.test\.(ts|tsx|js|mjs)$/, /^frontend\/e2e\/.+\.spec\.ts$/, /^frontend\/e2e\/__screenshots__\//, /^backend\/crates\/[^/]+\/tests\//];
+
+/**
+ * Whether every one of a pull request's files (a path, or `{ path, changeType }` as `gh pr view --json files` gives) is of the kinds that
+ * need no agent review. A renamed or copied file needs it: only its new path is listed, so moving a script among the tests would pass.
+ * None listed is not free.
+ */
+export function reviewFree(files) {
+  const all = files.map((f) => (typeof f === 'string' ? { path: f, changeType: 'MODIFIED' } : f));
+  return all.length > 0 && all.every((f) => f.changeType !== 'RENAMED' && f.changeType !== 'COPIED' && REVIEW_FREE.some((re) => re.test(f.path)));
+}
+
+/**
  * { merge, wait, reason, ready?, toDraft? } from the gating checks, the review verdict of the head and the pull request itself; `alerts`
  * null is unknown. A draft is reviewed with no CI: once the review of its head is ok, `ready` asks to make it ready for review, which
  * starts the checks. A failed check or an open code scanning alert sends it back to a draft (`toDraft`), so the pushes that fix it
- * run no CI until the next ok review.
+ * run no CI until the next ok review. `reviewFree` merges a pull request into develop with no review (the function of that name).
  */
-export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, base = WORK_BRANCH, head = '', fork = false, title = [], body = [], alerts = 0, syncSafe = null, snapshot = null }) {
+export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, base = WORK_BRANCH, head = '', fork = false, title = [], body = [], alerts = 0, syncSafe = null, snapshot = null, reviewFree: free = false }) {
   if (state !== 'OPEN') return { merge: false, wait: false, reason: `the pull request is ${state.toLowerCase()}` };
   if (fork) return { merge: false, wait: false, reason: 'the pull request comes from another repository: a person merges it' };
   if (base !== WORK_BRANCH && base !== RELEASE_BRANCH) return { merge: false, wait: false, reason: `the pull request goes to ${base}, not ${WORK_BRANCH} or ${RELEASE_BRANCH}` };
@@ -118,12 +152,13 @@ export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, 
   if (title.length) return { merge: false, wait: false, reason: `the title cannot be the commit on ${base} (${title[0]}): fix it with pr.mjs open --title` };
   if (body.length) return { merge: false, wait: false, reason: `the description is not complete (${body[0]}): fill in .github/pull_request_template.md` };
   // main into develop: nothing new to review when merging main changes nothing in develop's tree.
-  if (base === WORK_BRANCH && head === RELEASE_BRANCH) {
+  if (isSyncPullRequest(base, head)) {
     if (syncSafe === null) return { merge: false, wait: false, reason: 'the merge of main into develop cannot be tried here (git failed)' };
     if (!syncSafe) return { merge: false, wait: false, reason: 'merging main into develop would change develop (a conflict, or a change only main has): a person looks at it' };
     return { merge: true, wait: false, reason: "merging main into develop leaves develop's tree as it is" };
   }
   if (verdict === 'changes') return { merge: false, wait: false, reason: 'the agent review of the current head asks for changes' };
+  if (verdict !== 'ok' && base === WORK_BRANCH && free && !draft) return { merge: true, wait: false, reason: `only the changelog, the test counts or tests change: no agent review is needed into ${WORK_BRANCH}` };
   if (verdict !== 'ok') return { merge: false, wait: false, reason: 'no agent review of the current head (pushed after the review?): review it first' };
   // Into develop nothing runs on the pull request (a work branch is reviewed, not tested here): the ok review is the whole condition.
   if (base === WORK_BRANCH && draft) return { merge: false, wait: true, ready: true, reason: 'the review of the draft is ok: it is made ready for review' };
@@ -239,7 +274,7 @@ export function withoutComments(text) {
  * request that merges main back into develop is a merge commit instead (a squash would leave main's history out of develop's again).
  */
 export function mergeArgs(n, pr) {
-  const how = pr.baseRefName === WORK_BRANCH && pr.headRefName === RELEASE_BRANCH ? '--merge' : '--squash';
+  const how = isSyncPullRequest(pr.baseRefName, pr.headRefName) ? '--merge' : '--squash';
   return ['pr', 'merge', String(n), how, '--match-head-commit', pr.headRefOid, '--subject', pr.title, '--body', ''];
 }
 
@@ -318,7 +353,7 @@ const gh = (args, opts) => run('gh', args, opts);
 const git = (args, opts) => run('git', args, opts);
 
 function view(n) {
-  return JSON.parse(gh(['pr', 'view', String(n), '--json', 'number,title,body,state,isDraft,headRefOid,headRefName,baseRefName,isCrossRepository,reviews,url']));
+  return JSON.parse(gh(['pr', 'view', String(n), '--json', 'number,title,body,state,isDraft,headRefOid,headRefName,baseRefName,isCrossRepository,reviews,url,files,changedFiles']));
 }
 
 function allChecks(n) {
@@ -371,6 +406,47 @@ export function mergeKeepsTree(cwd, ours, theirs) {
   }
 }
 
+/** Whether the tree of `mainRef` is the tree of some commit in the history of `developRef`: true after a release that was a snapshot of develop. */
+export function mainIsAStateOfDevelop(cwd, mainRef, developRef) {
+  const g = (args) => execFileSync('git', args, { encoding: 'utf8', cwd, maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
+  try {
+    const tree = g(['rev-parse', `${mainRef}^{tree}`]).trim();
+    return g(['log', '--format=%T', developRef]).split(/\r?\n/).includes(tree);
+  } catch {
+    return null;
+  }
+}
+
+/** The merge commit `sync` pushes when the plain merge conflicts: develop's own tree, with develop and main as parents. Nothing is checked out. */
+export function syncCommit(cwd, mainRef, developRef, message) {
+  const g = (args) => execFileSync('git', args, { encoding: 'utf8', cwd, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  return g(['commit-tree', `${developRef}^{tree}`, '-p', developRef, '-p', mainRef, '-m', message]);
+}
+
+/**
+ * Whether `headRef` (a sync/<id> branch) is only the merge of main into develop, whoever pushed it: two parents, the first one a commit of
+ * develop and the second one of main; the tree of its first parent, unchanged; and the tree of the main parent a tree develop once had (the
+ * same condition `sync` checks before it makes the branch: a branch that drops a change only main has is not it). True, false, or null
+ * when git cannot answer. develop may have moved since the branch was made, so the branch need not be at develop's tip, but the merge
+ * into develop as it is now must leave develop's tree as it is (`mergeKeepsTree`): checked on the real merge, not argued from the parents.
+ */
+export function syncBranchIsSafe(cwd, headRef, developRef, mainRef) {
+  const g = (args) => execFileSync('git', args, { encoding: 'utf8', cwd, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  try {
+    const parents = g(['rev-list', '--parents', '-n', '1', headRef]).split(' ').slice(1);
+    if (parents.length !== 2) return false;
+    const [fromDevelop, fromMain] = parents;
+    if (g(['rev-parse', `${headRef}^{tree}`]) !== g(['rev-parse', `${fromDevelop}^{tree}`])) return false;
+    if (isAncestorOf(cwd, fromDevelop, developRef) !== true || isAncestorOf(cwd, fromMain, mainRef) !== true) return false;
+    if (mainIsAStateOfDevelop(cwd, fromMain, developRef) !== true) return false;
+    // What the merge into develop really leaves: with an old first parent the merge base is not that parent (two merge bases after an earlier
+    // sync), so "changes nothing against its first parent" is not enough: develop's newer work could be reverted.
+    return mergeKeepsTree(cwd, developRef, headRef) === true;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Whether merging main into develop leaves develop's tree as it is (`git merge-tree` of the two, against develop's own tree): true after a
  * squash release whose content develop already has. False for a conflict or a change only main has; null when git cannot answer.
@@ -381,6 +457,17 @@ function syncIsSafe(headOid) {
     // The tree tried is that of the pull request's own head, not of a main that moved since.
     if (git(['rev-parse', `origin/${RELEASE_BRANCH}`]).trim() !== headOid) return null;
     return mergeKeepsTree(process.cwd(), `origin/${WORK_BRANCH}`, `origin/${RELEASE_BRANCH}`);
+  } catch {
+    return null;
+  }
+}
+
+/** Whether the sync/<id> branch at `headOid` is only the merge of main into develop (`syncBranchIsSafe`); null when git cannot answer. */
+function syncBranchSafe(headOid, headName) {
+  try {
+    // The head commit may not be here yet (another clone, another day): fetched by its branch name.
+    git(['fetch', 'origin', WORK_BRANCH, RELEASE_BRANCH, headName]);
+    return syncBranchIsSafe(process.cwd(), headOid, `origin/${WORK_BRANCH}`, `origin/${RELEASE_BRANCH}`);
   } catch {
     return null;
   }
@@ -420,7 +507,7 @@ function decisionOf(n, guard = { before: null, floor: null }) {
   const since = pr.isDraft || !gated ? null : readyFrom(readySince(n), guard.before, guard.floor);
   const checks = gated ? gatingChecks(freshChecks(allChecks(n), since), requiredNames()) : [];
   const verdict = reviewVerdict(pr.reviews ?? [], pr.headRefOid, me());
-  const sync = pr.baseRefName === WORK_BRANCH && pr.headRefName === RELEASE_BRANCH;
+  const sync = isSyncPullRequest(pr.baseRefName, pr.headRefName);
   let snapshot = null;
   if (gated) {
     try {
@@ -441,8 +528,10 @@ function decisionOf(n, guard = { before: null, floor: null }) {
     title: titleProblems(pr.title),
     body: bodyProblems(pr.body),
     alerts: gated ? openAlerts(n) : 0,
-    syncSafe: sync ? syncIsSafe(pr.headRefOid) : null,
+    syncSafe: sync ? (pr.headRefName === RELEASE_BRANCH ? syncIsSafe(pr.headRefOid) : syncBranchSafe(pr.headRefOid, pr.headRefName)) : null,
     snapshot,
+    // every file listed (gh lists at most 100), or it is not known to be free
+    reviewFree: (pr.files ?? []).length === pr.changedFiles && reviewFree(pr.files ?? []),
   });
   return { pr, checks, decision, verdict };
 }
@@ -458,6 +547,7 @@ function main(argv) {
     let branch = release ? null : git(['rev-parse', '--abbrev-ref', 'HEAD']).trim();
     if (!release && [RELEASE_BRANCH, WORK_BRANCH, 'HEAD'].includes(branch)) throw new Error(`open a pull request from a work branch, not from ${branch}`);
     if (!release && isReleaseBranch(branch)) throw new Error(`${branch} is a release snapshot: open it with --release`);
+    if (!release && isSyncBranch(branch)) throw new Error(`${branch} is made by pr.mjs sync: run that instead`);
     const base = release ? RELEASE_BRANCH : WORK_BRANCH;
     git(['fetch', 'origin', WORK_BRANCH, base]);
     if (release) {
@@ -505,12 +595,26 @@ function main(argv) {
       console.log(`pr: ${WORK_BRANCH} already has everything of ${RELEASE_BRANCH}: nothing to merge back`);
       return 0;
     }
-    const open = JSON.parse(gh(['pr', 'list', '--head', RELEASE_BRANCH, '--base', WORK_BRANCH, '--state', 'open', '--json', 'number,url']));
+    const open = JSON.parse(gh(['pr', 'list', '--base', WORK_BRANCH, '--state', 'open', '--json', 'number,url,headRefName'])).filter((p) => isSyncPullRequest(WORK_BRANCH, p.headRefName));
     if (open.length) {
       console.log(`pr: #${open[0].number} is open: ${open[0].url}`);
       return 0;
     }
-    console.log(gh(['pr', 'create', '--base', WORK_BRANCH, '--head', RELEASE_BRANCH, '--title', SYNC_TITLE, '--body', SYNC_BODY]).trim());
+    let head = RELEASE_BRANCH;
+    if (syncIsSafe(git(['rev-parse', `origin/${RELEASE_BRANCH}`]).trim()) !== true) {
+      // The plain merge conflicts (develop changed lines the release changed too). Safe only when main is a state develop once had: then
+      // the merge commit that keeps develop's tree loses nothing of main.
+      if (mainIsAStateOfDevelop(process.cwd(), `origin/${RELEASE_BRANCH}`, `origin/${WORK_BRANCH}`) !== true) {
+        console.error(`pr: merging ${RELEASE_BRANCH} into ${WORK_BRANCH} conflicts, and ${RELEASE_BRANCH} is not a state ${WORK_BRANCH} once had: a person looks at it`);
+        return 1;
+      }
+      // Named by both tips: the same main after develop moved is another merge, not the same branch pushed again.
+      const sha = `${git(['rev-parse', '--short=8', `origin/${RELEASE_BRANCH}`]).trim()}-${git(['rev-parse', '--short=8', `origin/${WORK_BRANCH}`]).trim()}`;
+      head = `${SYNC_PREFIX}${sha}`;
+      const commit = syncCommit(process.cwd(), `origin/${RELEASE_BRANCH}`, `origin/${WORK_BRANCH}`, SYNC_TITLE);
+      git(['push', 'origin', `${commit}:refs/heads/${head}`]);
+    }
+    console.log(gh(['pr', 'create', '--base', WORK_BRANCH, '--head', head, '--title', SYNC_TITLE, '--body', SYNC_BODY]).trim());
     return 0;
   }
   if (cmd === 'review' && n) {

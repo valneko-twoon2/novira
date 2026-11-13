@@ -9,6 +9,7 @@
   "comfyuiDir": "D:\\ComfyUI",
   "comfyuiInstallDir": "D:\\engine",
   "comfyuiRoot": "C:\\Users\\you\\novira-data\\comfyui",
+  "comfyuiOutputDir": "D:\\ComfyUI\\output",
   "comfyuiPackage": "amd",
   "comfyuiInstalled": false,
   "installedComfyuiPackage": null,

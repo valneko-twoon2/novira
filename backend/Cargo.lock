@@ -3509,7 +3509,7 @@ checksum = "0676bb32a98c1a483ce53e500a81ad9c3d5b3f7c920c28c24e9cb0980d0b5bc8"
 
 [[package]]
 name = "novira"
-version = "0.5.0"
+version = "0.6.0"
 dependencies = [
  "async-trait",
  "image",
@@ -3528,7 +3528,7 @@ dependencies = [
 
 [[package]]
 name = "novira-core"
-version = "0.5.0"
+version = "0.6.0"
 dependencies = [
  "async-trait",
  "axum",
@@ -3562,7 +3562,7 @@ dependencies = [
 
 [[package]]
 name = "novira-server"
-version = "0.5.0"
+version = "0.6.0"
 dependencies = [
  "axum",
  "base64 0.22.1",

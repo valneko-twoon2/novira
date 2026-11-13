@@ -111,7 +111,8 @@
       "scale": 1.5,
       "strength": 0.45,
       "upscaleModelKey": "upscale-4x",
-      "steps": 12
+      "steps": 12,
+      "mode": "redraw"
     },
     "mangaScreen": {
       "screenLines": 240,

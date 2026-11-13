@@ -1,5 +1,6 @@
 // The export-for-sharing form: its choices, defaults and how it becomes the backend's ExportOptions.
 import type { ExportFormat, ExportOptions, ImageDTO } from '@/backend';
+import type { SharePreset } from '@/state/dialogs/share';
 
 export const FORMATS: ExportFormat[] = ['png', 'jpeg', 'webp'];
 export const FORMAT_LABELS: Record<ExportFormat, string> = { png: 'PNG', jpeg: 'JPEG', webp: 'WebP' };
@@ -33,6 +34,24 @@ const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(mi
 export function toExportOptions(form: ShareForm): ExportOptions {
   const maxSide = form.size === 'original' ? null : form.size === 'custom' ? clamp(form.customSide, MIN_SIDE, MAX_SIDE) : Number(form.size);
   return { format: form.format, quality: clamp(form.quality, 1, 100), maxSide, removeInfo: form.removeInfo, watermark: form.watermark };
+}
+
+/** The form with the assistant's choices put in: a longest side that is one of the listed sizes picks it, another one is typed. */
+export function withPreset(form: ShareForm, preset: SharePreset): ShareForm {
+  const next = { ...form };
+  if (preset.format) next.format = preset.format;
+  if (preset.quality !== undefined) next.quality = clamp(preset.quality, 1, 100);
+  if (preset.removeInfo !== undefined) next.removeInfo = preset.removeInfo;
+  if (preset.maxSide !== undefined) {
+    const side = clamp(preset.maxSide, MIN_SIDE, MAX_SIDE);
+    const listed = SIZE_CHOICES.find((s) => s === String(side));
+    if (listed) next.size = listed;
+    else {
+      next.size = 'custom';
+      next.customSide = side;
+    }
+  }
+  return next;
 }
 
 /** Only JPEG has a quality setting (WebP is lossless). */

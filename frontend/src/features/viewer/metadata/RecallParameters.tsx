@@ -50,7 +50,7 @@ function rows(m: GenerationMetadata, loraName: (key: string) => string): Row[] {
     out.push({ label: 'gallery.meta.seamless', value: [m.seamlessX && 'X', m.seamlessY && 'Y'].filter(Boolean).join(' / '), patch: { seamlessX: m.seamlessX, seamlessY: m.seamlessY } });
   if (m.strength !== undefined) out.push({ label: 'gallery.meta.strength', value: m.strength, patch: { strength: m.strength } });
   const hires = m.hiresFix;
-  if (hires) out.push({ label: 'gallery.meta.hiresFix', value: `×${hires.scale} · ${hires.strength}`, patch: () => ({ hires: hiresFromMetadata(hires, useParams.getState().hires) }) });
+  if (hires) out.push({ label: 'gallery.meta.hiresFix', value: hires.mode === 'upscale' ? `×${hires.scale} · ${t('params.hires.modeUpscale')}` : `×${hires.scale} · ${hires.strength}`, patch: () => ({ hires: hiresFromMetadata(hires, useParams.getState().hires) }) });
   for (const l of m.loras) {
     out.push({ label: 'gallery.meta.lora', value: `${loraName(l.key)} (${l.weight})`, patch: () => ({ loras: [...useParams.getState().loras.filter((x) => x.key !== l.key), { ...l }] }) });
   }

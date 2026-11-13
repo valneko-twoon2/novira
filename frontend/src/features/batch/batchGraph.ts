@@ -1,8 +1,9 @@
 // The ComfyUI prompts of the operations the batch dialog runs on each picture. One prompt per picture; the queue
 // runs them one after another and each result lands on the board of its source.
 import type { ComfyGraph } from '@/backend';
+import type { BatchOpName } from '@/state/dialogs/batch';
 
-export type BatchOp = 'removeBackground' | 'upscale';
+export type BatchOp = BatchOpName;
 export const BATCH_OPS: BatchOp[] = ['removeBackground', 'upscale'];
 
 /** The node of the background-removal pack (ComfyUI-RMBG, catalog id `rmbg`). */

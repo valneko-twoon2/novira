@@ -2,7 +2,8 @@
 // and relays it here (`agent_tool_call`); this module reads or changes the app through the same appliers the editors
 // use (they check every operation and field again), keeps an undo snapshot before the first change of each kind, logs
 // what changed for the chat's chips, and asks the user before reading pictures or prompts, or looking something up on the web (the permission settings).
-import { backend, SCHEDULERS, type AgentScreen, type AgentToolCall, type GenerationMetadata, type ImageDTO, type ModelConfig, type QueueItem } from '@/backend';
+import { backend, SCHEDULERS, type AgentScreen, type AgentToolCall, type BoardDTO, type ExportFormat, type GenerationMetadata, type ImageDTO, type ModelConfig, type QueueItem } from '@/backend';
+import { ancestorsOf } from '@/backend/boardNesting';
 import { agentExtensions, extensionId, folderOfExtensionId, questionWords } from './agentExtensions';
 import { agentGuide } from './agentGuide';
 import { mangaGuide } from './comic/mangaGuide';
@@ -11,6 +12,8 @@ import type { EarlierSettings } from './agentHistory';
 import type { AgentToolLog, EditScreen } from './agentSessions';
 import { buildItems } from './comfy/extensionList';
 import { useNodePacks } from './comfy/nodePacks';
+import { useShareDialog } from './dialogs/share';
+import { useEngine } from './engine';
 import { agentPacks } from './comfy/packCatalog';
 import { useRegistry } from './comfy/registry';
 import { useGallery } from './gallery';
@@ -183,9 +186,39 @@ function modelSummary(m: ModelConfig) {
   };
 }
 
+/** A board's path from the top board, its names joined by "/" ("Characters/Ganyu/Done"). */
+function boardPath(boards: BoardDTO[], board: BoardDTO): string {
+  return [...ancestorsOf(boards, board).reverse(), board].map((b) => b.name).join('/');
+}
+
+/** A board name as the user may type it: width, case and spaces around the slashes do not count. */
+const boardKey = (s: string) =>
+  s
+    .normalize('NFKC')
+    .toLowerCase()
+    .split('/')
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .join('/');
+
+/**
+ * The boards a name or path given by the model means: the one whose whole path is that, else the ones whose path ends
+ * with it ("Done" or "Ganyu/Done" for "Characters/Ganyu/Done").
+ */
+export function boardsNamed(boards: BoardDTO[], query: string): BoardDTO[] {
+  const want = boardKey(query);
+  if (!want) return [];
+  const keyed = boards.map((b) => ({ b, key: boardKey(boardPath(boards, b)) }));
+  const whole = keyed.filter((k) => k.key === want);
+  if (whole.length) return whole.map((k) => k.b);
+  return keyed.filter((k) => k.key.endsWith(`/${want}`)).map((k) => k.b);
+}
+
 /** A picture's generation info in short, for the model. */
 function imageSummary(image: ImageDTO, withMeta: boolean) {
   const m = image.metadata;
+  const boards = useGallery.getState().boards;
+  const board = image.boardId ? boards.find((b) => b.id === image.boardId) : undefined;
   return {
     name: image.name,
     kind: image.mediaType ?? 'image',
@@ -193,6 +226,7 @@ function imageSummary(image: ImageDTO, withMeta: boolean) {
     height: image.height,
     createdAt: new Date(image.createdAt).toISOString(),
     starred: image.starred,
+    ...(board ? { board: boardPath(boards, board) } : {}),
     ...(m ? { model: m.modelName ?? m.modelKey, prompt: m.positivePrompt?.slice(0, withMeta ? 4000 : 300) } : {}),
   };
 }
@@ -226,6 +260,13 @@ async function newQueueItems(before: Set<number>): Promise<number[]> {
 }
 
 type Handler = (args: Record<string, unknown>, run: ToolRun) => ToolResult | Promise<ToolResult>;
+
+/** Queue items the assistant queued in this run of the app: the only ones cancel_queue may cancel. */
+const assistantQueued = new Set<number>();
+const remember = (ids: number[]) => ids.forEach((id) => assistantQueued.add(id));
+
+/** The export dialog's choices the model may set. */
+const EXPORT_FORMATS: readonly ExportFormat[] = ['png', 'jpeg', 'webp'];
 
 /** How long view_picture waits for a queue item to finish (the relay gives a read-gated call 600 s, the question included). */
 export const PICTURE_WAIT_MS = 240_000;
@@ -385,17 +426,25 @@ const HANDLERS: Record<string, Handler> = {
         return fail('Nothing was queued: no comic is open, no panel in that scope has a prompt, or no model is chosen on the Generate tab.');
       }
       const ids = await newQueueItems(before);
+      remember(ids);
       run.log.push({ kind: 'queued', count: ids.length });
       return done({ queued: ids, note: 'The panels with a prompt were queued; get_queue_status tells their progress.' });
     }
     // A trial picture is one picture the assistant draws on its own to check what the user means; the user can turn it off.
     const trial = args.trial === true;
     if (trial && !useSettings.getState().assistantTrialPictures) return fail('Trial pictures are turned off in the settings: ask the user in words instead.');
-    const outcome = await enqueueActive(trial ? { pictures: 1 } : {});
+    // A count from the model replaces the screen's count box, as a trial picture does.
+    const count = num(args.count);
+    const outcome = await enqueueActive(trial ? { pictures: 1 } : count !== undefined ? { pictures: Math.max(1, Math.min(100, Math.round(count))) } : {});
     if ('problems' in outcome) return fail(`Nothing was queued: ${outcome.problems.join(' ')}`);
     if ('error' in outcome) return fail(`Queuing failed: ${outcome.error}`);
-    run.log.push({ kind: 'queued', count: outcome.items.length });
-    return done({ queued: outcome.items.map((i) => i.id), ...(trial ? { note: 'Look at it with view_picture and the queue id.' } : {}) });
+    const ids = outcome.items.map((i) => i.id);
+    remember(ids);
+    run.log.push({ kind: 'queued', count: ids.length });
+    if (trial) return done({ queued: ids, note: 'Look at it with view_picture and the queue id.' });
+    // The count box decided how many runs: say so, since one run was often meant (a workflow handles all its pictures at once).
+    if (count === undefined && ids.length > 1) return done({ queued: ids, note: `The screen's count box made this ${ids.length} runs of the same thing. If one run was meant, cancel the others now with cancel_queue.` });
+    return done({ queued: ids });
   },
 
   // A gallery picture shown to the model (the backend reads it by its name) and under the answer; a queue id waits for it.
@@ -435,6 +484,45 @@ const HANDLERS: Record<string, Handler> = {
     const items = useQueue.getState().items;
     const picked = ids ? items.filter((i) => ids.has(i.id)) : items.slice(-20);
     return done(picked.map((i) => ({ id: i.id, status: i.status, ...(i.error ? { error: i.error.slice(0, 300) } : {}), ...(i.imageName ? { picture: i.imageName } : {}) })));
+  },
+
+  cancel_queue: async (args, run) => {
+    const ids = Array.isArray(args.ids) ? [...new Set(args.ids.filter((x): x is number => typeof x === 'number'))] : [];
+    if (!ids.length) return fail('Give the ids of the queue items to cancel.');
+    const items = new Map(useQueue.getState().items.map((i) => [i.id, i]));
+    const canceled: number[] = [];
+    const left: string[] = [];
+    for (const id of ids) {
+      const item = items.get(id);
+      if (!assistantQueued.has(id)) left.push(`${id}: not queued by you (the user cancels it in the queue)`);
+      else if (!item) left.push(`${id}: not in the queue`);
+      else if (item.status !== 'pending' && item.status !== 'in_progress') left.push(`${id}: already ${item.status}`);
+      else {
+        try {
+          await backend.cancelQueueItem(id);
+          canceled.push(id);
+        } catch (e) {
+          left.push(`${id}: ${String(e instanceof Error ? e.message : e).slice(0, 200)}`);
+        }
+      }
+    }
+    if (!canceled.length) return fail(`Nothing was canceled: ${left.join('; ')}`);
+    run.log.push({ kind: 'canceled', count: canceled.length });
+    return done({ canceled, ...(left.length ? { notCanceled: left } : {}) });
+  },
+
+  get_engine_info: async () => {
+    const e = await backend.engineSettings();
+    const how = e.comfyuiMode === 'owned' ? 'novira installs and runs its own ComfyUI' : e.comfyuiMode === 'folder' ? "novira runs the user's own ComfyUI folder" : 'novira reaches a ComfyUI by its address';
+    return done({
+      engine: how,
+      state: useEngine.getState().status.state,
+      ...(e.comfyuiMode === 'owned' ? { installFolder: e.comfyuiRoot } : {}),
+      ...(e.comfyuiMode === 'folder' && e.comfyuiDir ? { comfyuiFolder: e.comfyuiDir } : {}),
+      ...(e.comfyuiMode === 'url' && e.comfyuiUrl ? { address: e.comfyuiUrl } : {}),
+      outputFolder: e.comfyuiOutputDir ?? 'not known: ComfyUI is reached by its address, so its folders are on that side',
+      dataFolder: e.dataDir,
+    });
   },
 
   get_comic_page: () => {
@@ -516,11 +604,37 @@ const HANDLERS: Record<string, Handler> = {
     const limit = Math.min(50, Math.max(1, num(args.limit) ?? 20));
     const offset = Math.max(0, num(args.offset) ?? 0);
     const search = (str(args.search) ?? '').toLowerCase();
+    // A board by name or path; with no match (or several) the boards are listed instead, so the model can pick or ask.
+    const asked = str(args.board)?.trim();
+    let board: string | null | undefined;
+    if (asked) {
+      const boards = useGallery.getState().boards;
+      const named = asked.toLowerCase() === 'none' ? null : boardsNamed(boards, asked);
+      if (named === null) board = null;
+      else if (named.length === 1) board = named[0]?.id;
+      else {
+        return done({
+          total: 0,
+          images: [],
+          note: named.length ? `Several boards match "${asked}": give the whole path.` : `No board is named "${asked}".`,
+          boards: (named.length ? named : boards)
+            .map((b) => boardPath(boards, b))
+            .sort()
+            .slice(0, 200),
+        });
+      }
+    }
     // The gallery holds summaries (no prompts): a search reads them all, a plain list only the page it answers with.
     if (search) await ensureAllDetails();
     const images = useGallery
       .getState()
-      .images.filter((i) => !i.isIntermediate && (args.starredOnly !== true || i.starred) && (!search || (i.metadata?.positivePrompt ?? '').toLowerCase().includes(search)))
+      .images.filter(
+        (i) =>
+          !i.isIntermediate &&
+          (board === undefined || i.boardId === board) &&
+          (args.starredOnly !== true || i.starred) &&
+          (!search || (i.metadata?.positivePrompt ?? '').toLowerCase().includes(search)),
+      )
       .sort((a, b) => b.createdAt - a.createdAt);
     const page = images.slice(offset, offset + limit);
     await ensureDetails(page.map((i) => i.name));
@@ -533,6 +647,30 @@ const HANDLERS: Record<string, Handler> = {
     const image = useGallery.getState().images.find((i) => i.name === args.name && !i.isIntermediate);
     if (!image) return fail(`No picture is named ${String(args.name)}: use a name from list_gallery_images.`);
     return done({ ...imageSummary(image, true), ...(image.metadata ? { generation: metadataOf(image.metadata) } : {}) });
+  },
+
+  export_pictures: (args, run) => {
+    const format = EXPORT_FORMATS.find((f) => f === args.format);
+    if (!format) return fail('format must be png, jpeg or webp.');
+    const asked = Array.isArray(args.names) ? [...new Set(args.names.filter((x): x is string => typeof x === 'string'))] : [];
+    const known = new Set(useGallery.getState().images.filter((i) => !i.isIntermediate).map((i) => i.name));
+    const names = asked.filter((n) => known.has(n));
+    const missing = asked.filter((n) => !known.has(n));
+    if (!names.length) return fail('None of these pictures is in the gallery: use names from list_gallery_images.');
+    const quality = num(args.quality);
+    const maxSide = num(args.maxSide);
+    useShareDialog.getState().open(names, {
+      format,
+      ...(quality !== undefined ? { quality } : {}),
+      ...(maxSide !== undefined ? { maxSide } : {}),
+      ...(typeof args.removeInfo === 'boolean' ? { removeInfo: args.removeInfo } : {}),
+    });
+    run.log.push({ kind: 'export', count: names.length });
+    return done({
+      opened: names.length,
+      ...(missing.length ? { notFound: missing.slice(0, 20) } : {}),
+      note: 'The export dialog is open with these choices. Nothing is written until the user presses its export button and picks a folder; the dialog then shows the folder and a button that opens it.',
+    });
   },
 
   search_extensions: async (args) => {

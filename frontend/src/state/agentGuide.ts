@@ -46,7 +46,7 @@ const MEDIA_NAME: Record<MediaKind, MessageKey> = {
 };
 
 const MEDIA_ABOUT: Record<MediaKind, string> = {
-  image: 'Icon at the top of the Generate tab left panel. Makes pictures. Steps, CFG, size, seed, hires fix, reference images and presets are in the left panel. The shuffle button by the preset card queues N pictures, each with a random ticked preset and seed.',
+  image: 'Icon at the top of the Generate tab left panel. Makes pictures. Steps, CFG, size, seed, hires fix (redraw or enlarge only), reference images and presets are in the left panel. The shuffle button by the preset card queues N pictures, each with a random ticked preset and seed.',
   video: 'Icon at the top of the Generate tab left panel. Makes a short clip from a prompt (or from a picture). Needs the video model, downloaded once from a card in the left panel. Choices: size, length, frame rate, standard or fast model.',
   music: 'Icon at the top of the Generate tab left panel. Makes a song from style tags and lyrics (or an instrumental). Needs the music model, downloaded once from a card.',
   voice: 'Icon at the top of the Generate tab left panel. Reads text aloud with a preset speaker or a voice described in words. Needs the voice model, downloaded once from a card.',
@@ -59,7 +59,7 @@ const FEATURES: { id: string; name: MessageKey; about: string }[] = [
     id: 'gallery',
     name: 'app.tabs.generate',
     about:
-      'The right panel on most tabs: boards (folders) and thumbnails of everything made. Click to open in the viewer, right-click for a menu, select several for batch actions, search, filter by date, star, delete, upload, download, export clean or AI-watermarked copies.',
+      'The right panel on most tabs: boards (folders) and thumbnails of everything made. Click to open in the viewer, right-click for a menu, select several for batch actions, search, filter by date, star, delete, upload, download, export copies (PNG, JPEG, WebP; smaller; AI mark).',
   },
   {
     id: 'afterEffects',

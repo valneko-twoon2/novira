@@ -9,7 +9,7 @@ export const EDIT_SCREENS = ['text', 'workflows', 'video', 'music', 'voice', 'ca
 export type EditScreen = (typeof EDIT_SCREENS)[number];
 
 /** What a chip under an answer says about one tool call that did something. */
-export const TOOL_LOG_KINDS = ['model', 'lora', 'prompt', 'params', 'workflow', 'editText', 'editWorkflow', 'editComic', 'video', 'music', 'voice', 'pose', 'queued', 'packs'] as const;
+export const TOOL_LOG_KINDS = ['model', 'lora', 'prompt', 'params', 'workflow', 'editText', 'editWorkflow', 'editComic', 'video', 'music', 'voice', 'pose', 'queued', 'canceled', 'export', 'packs'] as const;
 export type ToolLogKind = (typeof TOOL_LOG_KINDS)[number];
 
 /** One tool call that changed something, queued something or showed extensions, as the chat shows it. */

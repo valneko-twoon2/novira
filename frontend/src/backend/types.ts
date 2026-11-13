@@ -248,7 +248,12 @@ export interface HiresFix {
   upscaleModelKey?: string;
   /** Steps of the second pass; absent = as many as the first pass. */
   steps?: number;
+  /** What follows the enlargement: absent or `redraw` = the second pass; `upscale` = none, the enlarged picture is kept. */
+  mode?: HiresMode;
 }
+
+/** How the high-resolution fix finishes the enlarged first picture: drawn again, or kept as enlarged. */
+export type HiresMode = 'redraw' | 'upscale';
 
 export interface MusicParams {
   lyrics: string;
@@ -355,6 +360,8 @@ export interface EngineSettings {
   comfyuiInstallDir: string | null;
   /** Where novira's own ComfyUI is installed now (owned mode). */
   comfyuiRoot: string;
+  /** The folder the running ComfyUI saves into (its `output`), for display; null when it is reached by URL only. */
+  comfyuiOutputDir: string | null;
   comfyuiPackage: ComfyuiPackage;
   /** novira's own ComfyUI is installed in the data folder (owned mode only). */
   comfyuiInstalled: boolean;

@@ -5,9 +5,9 @@ import type { ImageDTO } from '@/backend';
 import { useGallery } from '@/state/gallery';
 import { cx } from '@/ui';
 import { boxToScreen, clamp, containIn, PIXELATED_SCALE, type Box } from '@/ui/zoomMath';
-import { useZoomPan, type ZoomPan } from '../zoom/useZoomPan';
-import { ViewerZoomControls } from '../zoom/ViewerZoomControls';
-import { ZoomFrame } from '../zoom/ZoomFrame';
+import { useZoomPan, type ZoomPan } from '@/ui/zoom/useZoomPan';
+import { ViewerZoomControls } from '@/ui/zoom/ViewerZoomControls';
+import { ZoomFrame } from '@/ui/zoom/ZoomFrame';
 import { CompareToolbar } from './CompareToolbar';
 
 interface Props {

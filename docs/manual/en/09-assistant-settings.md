@@ -57,12 +57,15 @@ From your text, the agent decides the following and fills it into the settings. 
 | Adding a LoRA | Adds a LoRA that fits the art style |
 | Prompt | Writes the prompt and the negative prompt |
 | Changing settings | Size, steps, CFG, scheduler, seed |
-| Workflow | Builds a graph, or fixes the graph that is open (music, video and speech graphs made of ComfyUI's own nodes too; you run it yourself with the **{{ui:params.invoke.invoke}}** button) |
+| Workflow | Builds a graph, or fixes the graph that is open (music, video and speech graphs made of ComfyUI's own nodes too). When you ask, it runs it once and looks at the result before it answers |
 | Text | Fixes the text and speech bubbles open in **{{ui:media.tab.text}}** |
 | Video, music, voice | Changes the settings of each of those screens |
 | Comic | On **{{ui:app.tabs.comic}}**, changes the panel layout, adds and cuts panels, and changes each panel's prompt and pose, and the balloons (see "Getting help with a comic" below) |
 | Pose | Places a figure for a pose you ask for in words, on **{{ui:app.tabs.canvas}}** (see [Drawing more on the canvas](05-canvas.md#making-a-pose-on-the-canvas)) |
-| Generating | Only when you ask (and for a trial picture, below), queues the current settings or the comic's panels for generation |
+| Generating | Only when you ask (and for a trial picture, below), queues the current settings or the comic's panels for generation, as many times as you say |
+| Canceling in the queue | Cancels what it queued itself and has not finished (never what you queued) |
+| Exporting | Picks pictures by the name of their board and opens **{{ui:share.title}}** with the format (PNG, JPEG, WebP), quality and size filled in. Files are written only when you press **{{ui:share.run}}** and choose a folder |
+| Where things are | Gives the full path of the ComfyUI folder and of the folder where save nodes of a workflow write files |
 | Extension recommendations | Points you to extensions that suit what you want to do, which you can install from a button |
 | Questions about the app | Answers with the names of the screens and where to press |
 | Explaining extensions | Says what an extension does and how to use it (see "Asking about the app and extensions" below) |
@@ -160,7 +163,7 @@ For an extension you have installed, it also names the nodes the extension adds 
 
 ### Undoing
 
-A reply that changed settings or edits gets an **{{ui:agent.undo}}** button. Pressing it puts back, all at once, the settings and edits that request changed, to what they were before it. What it queued for generation is not canceled (cancel it in the queue).
+A reply that changed settings or edits gets an **{{ui:agent.undo}}** button. Pressing it puts back, all at once, the settings and edits that request changed, to what they were before it. What it queued for generation is not canceled by this button: cancel it in the queue, or ask the agent to cancel it.
 
 However, after you reopen the app, changes made before that cannot be undone (the button can no longer be pressed).
 

@@ -4,7 +4,7 @@ import { t } from '@/i18n';
 import { refImagesEncoderReason, refImagesPackReason } from '@/state/comfy/packNeeds';
 import { modelPartsReason } from '@/state/modelParts';
 import { BASE_LABELS, isDrawable, useModels } from '@/state/models';
-import { hiresSize, useParams, type ParamsFields } from '@/state/params';
+import { hiresRedraws, hiresSize, useParams, type ParamsFields } from '@/state/params';
 import { useWildcards, wildcardMap } from '@/state/prompts/wildcards';
 import { MAX_WILDCARD_DEPTH, wildcardProblems } from '@/state/prompts/dynamicPrompts';
 
@@ -75,7 +75,8 @@ export const HIRES_COMFORT_SIDE: Partial<Record<BaseModel, number>> = { 'sd-1': 
 /** Hints that do not block Invoke: a second pass larger than the model draws well. */
 export function generateWarnings(): string[] {
   const p = useParams.getState();
-  if (!p.hires.enabled) return [];
+  // Only a second pass draws at the larger size; enlarging only does not strain the model.
+  if (!p.hires.enabled || !hiresRedraws(p.hires)) return [];
   const base = useModels.getState().models.find((m) => m.key === p.modelKey && isDrawable(m))?.base;
   const max = base ? HIRES_COMFORT_SIDE[base] : undefined;
   const { width, height } = hiresSize(p.width, p.height, p.hires.scale);

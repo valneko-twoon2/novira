@@ -37,9 +37,7 @@ function AddMenu() {
   return (
     <Menu>
       <MenuTrigger asChild>
-        <Button size="xs" leftIcon={<Plus />} data-testid="canvas-add-layer">
-          {t('common.add')}
-        </Button>
+        <IconButton size="xs" label={t('common.add')} icon={<Plus weight="bold" />} data-testid="canvas-add-layer" />
       </MenuTrigger>
       <MenuContent align="end">
         {!host.hideGlobalRefs && (

@@ -1,5 +1,5 @@
-// The draft history screen: every batch on one screen, narrowed by period and model, searched by prompt, opened, and
-// its settings put back in the Generate form.
+// The draft history screen: every batch on one screen, narrowed by period and model, searched by prompt, opened in the
+// flow of the Candidates view, and its settings put back in the Generate form.
 import { expect, msg, openApp, test } from './fixtures';
 
 const DAY = 86_400_000;
@@ -30,7 +30,10 @@ test(
     }, DAY);
     await openApp(page, '?scenario=empty');
     await page.getByTestId('view-drafts').click();
-    await expect(page.locator('.dv-groups:visible [role="tab"]')).toHaveCount(5);
+    // Every batch still has a draft to decide (a failed one), so all six are in the flow, newest first.
+    await expect(page.getByTestId('drafts-group')).toHaveCount(6);
+    await expect(page.getByTestId('drafts-group').first()).toContainText('a ship at sea');
+    await expect(page.getByTestId('drafts-history-button')).toHaveText('6');
     await page.getByTestId('drafts-history-button').click();
     const cards = page.getByTestId('drafts-history-card');
     await expect(cards).toHaveCount(6);
@@ -49,13 +52,13 @@ test(
     await cards.first().getByTestId('drafts-history-reuse').click();
     await expect(page.getByTestId('positive-prompt')).toHaveValue('a cat in the snow');
 
-    // The oldest batch is not a tab; opening it from here makes it the current one.
+    // Opening the oldest batch from here brings it into sight in the flow.
     await page.getByTestId('drafts-history-search').fill('');
     await page.getByTestId('drafts-history-search').fill('roof');
     await cards.first().getByTestId('drafts-history-open').click();
     await expect(page.getByTestId('drafts-history')).toHaveCount(0);
-    await expect(page.getByTestId('drafts-history-button')).toHaveClass(/is-on/);
-    await expect(page.getByTestId('draft-cell')).toHaveCount(1);
-    await expect(page.getByTestId('draft-cell')).toContainText(msg('drafts.badge.failed'));
+    const oldest = page.getByTestId('drafts-group').filter({ hasText: 'a cat on a roof' });
+    await expect(oldest).toBeInViewport();
+    await expect(oldest.getByTestId('draft-cell')).toContainText(msg('drafts.badge.failed'));
   },
 );

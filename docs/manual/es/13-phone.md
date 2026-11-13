@@ -116,7 +116,7 @@ Abrir una lista como la del modelo, los LoRA o los ajustes predefinidos no hace 
 
 ![El agente en un móvil: una petición y lo que el agente configuró](shot:phone-chat)
 
-Toque el botón de destellos de la barra de título (**{{ui:agent.open}}**) y el agente se abre sobre toda la pantalla. Hace lo mismo que en el ordenador ([El agente](09-assistant-settings.md#el-agente)).
+Toque el botón de destellos de la barra de título (**{{ui:agent.open}}**) y el agente se abre sobre toda la pantalla. Hace lo mismo que en el ordenador ([El agente](09-assistant-settings.md)).
 
 - Escriba la imagen que quiere o su pregunta en el cuadro de abajo y envíela con el botón de su derecha. Intro inicia una línea nueva. El botón del clip, a la izquierda, adjunta fotos del móvil.
 - Los ajustes que cambia el agente pasan a la pestaña **{{ui:app.tabs.generate}}** del móvil. **{{ui:agent.generate}}**, bajo su respuesta, dibuja de inmediato, y **{{ui:agent.undo}}** lo deja todo como estaba.

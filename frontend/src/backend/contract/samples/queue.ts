@@ -40,6 +40,7 @@ export const hiresFix = {
   strength: 0.45,
   upscaleModelKey: 'upscale-4x',
   steps: 12,
+  mode: 'redraw',
 } satisfies Required<HiresFix>;
 export const mangaScreen = {
   screenLines: 240,

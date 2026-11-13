@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { GenerationMetadata, ModelConfig } from '@/backend';
 import { useModels } from './models';
-import { DEFAULT_HIRES, hiresFixInput, hiresSize, useParams } from './params';
+import { DEFAULT_HIRES, hiresFixInput, hiresFromMetadata, hiresSize, useParams } from './params';
 
 const initial = useParams.getState();
 const initialModels = useModels.getState();
@@ -205,7 +205,7 @@ describe('recall', () => {
 
   it('turns the high-resolution fix on with the stored values, and off for a picture without it', { tags: ['condition'] }, () => {
     p().recallAll(metadata({ hiresFix: { scale: 1.75, strength: 0.3, upscaleModelKey: 'up', steps: 10 } }));
-    expect(p().hires).toEqual({ enabled: true, scale: 1.75, strength: 0.3, upscaleModelKey: 'up', steps: 10 });
+    expect(p().hires).toEqual({ enabled: true, scale: 1.75, strength: 0.3, upscaleModelKey: 'up', steps: 10, mode: 'redraw' });
     p().recallAll(metadata({ hiresFix: { scale: 1.5, strength: 0.45 } }));
     expect(p().hires).toMatchObject({ enabled: true, upscaleModelKey: null, steps: 0 });
     p().recallAll(metadata());
@@ -225,6 +225,15 @@ describe('high-resolution fix', () => {
     expect(hiresFixInput(DEFAULT_HIRES)).toBeUndefined();
     expect(hiresFixInput({ ...DEFAULT_HIRES, enabled: true })).toEqual({ scale: 1.5, strength: 0.45 });
     expect(hiresFixInput({ ...DEFAULT_HIRES, enabled: true, upscaleModelKey: 'up', steps: 12 })).toEqual({ scale: 1.5, strength: 0.45, upscaleModelKey: 'up', steps: 12 });
+  });
+
+  it('sends the enlarge-only choice and reads it back; an old form or record without it redraws', { tags: ['equivalence', 'regression'] }, () => {
+    expect(hiresFixInput({ ...DEFAULT_HIRES, enabled: true, mode: 'upscale' })).toEqual({ scale: 1.5, strength: 0.45, mode: 'upscale' });
+    expect(hiresFixInput({ ...DEFAULT_HIRES, enabled: true, mode: 'redraw' })).toEqual({ scale: 1.5, strength: 0.45 });
+    const { mode: _left, ...saved } = DEFAULT_HIRES;
+    expect(hiresFixInput({ ...saved, enabled: true })).toEqual({ scale: 1.5, strength: 0.45 });
+    expect(hiresFromMetadata({ scale: 2, strength: 0.4, mode: 'upscale' }, DEFAULT_HIRES)).toMatchObject({ enabled: true, mode: 'upscale', scale: 2 });
+    expect(hiresFromMetadata({ scale: 2, strength: 0.4 }, { ...DEFAULT_HIRES, mode: 'upscale' })).toMatchObject({ mode: 'redraw' });
   });
 
   it('computes the second-pass size like the backend (multiples of 8)', { tags: ['equivalence'] }, () => {

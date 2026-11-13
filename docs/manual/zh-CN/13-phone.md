@@ -116,7 +116,7 @@ novira 用在这台电脑上制作的证书（novira local CA）来加密与手�
 
 ![手机的智能体。请求，以及智能体设置的内容](shot:phone-chat)
 
-点击标题栏中的闪光按钮（**{{ui:agent.open}}**），智能体会占满整个屏幕打开。能做的事与电脑相同（[智能体](09-assistant-settings.md#智能体)）。
+点击标题栏中的闪光按钮（**{{ui:agent.open}}**），智能体会占满整个屏幕打开。能做的事与电脑相同（[智能体](09-assistant-settings.md)）。
 
 - 在下方的栏中写下想画的图或想问的事，用右侧的发送按钮发送。Enter 是换行。用左侧的回形针按钮，可以附上手机里的照片。
 - 智能体更改的设置，会填入手机的 **{{ui:app.tabs.generate}}** 标签页。用回答下方的 **{{ui:agent.generate}}** 可以立即生成，用 **{{ui:agent.undo}}** 可以恢复原状。

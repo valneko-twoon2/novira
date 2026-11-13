@@ -5,6 +5,16 @@
 use super::*;
 use crate::{data_location, settings};
 
+/// The `output` folder of the ComfyUI the app started with: inside novira's own install, inside the user's own
+/// ComfyUI folder, or unknown for one reached by URL only.
+fn output_dir(started: &Settings, root: &std::path::Path) -> Option<std::path::PathBuf> {
+    match started.comfyui_mode() {
+        ComfyuiMode::Owned => Some(crate::comfy::install::comfyui_dir(root).join("output")),
+        ComfyuiMode::Folder => started.comfyui_dir.as_ref().map(|d| d.join("output")),
+        ComfyuiMode::Url => None,
+    }
+}
+
 impl Backend {
     /// Whether the app started with the Civitai lookup on (the lookup runs at start only, so this is the value that counts).
     pub fn civitai_lookup_at_start(&self) -> bool {
@@ -52,6 +62,8 @@ impl Backend {
                 .as_ref()
                 .map(|d| d.to_string_lossy().into_owned()),
             comfyui_root: root.to_string_lossy().into_owned(),
+            comfyui_output_dir: output_dir(started, &root)
+                .map(|d| d.to_string_lossy().into_owned()),
             comfyui_package: saved.package(),
             comfyui_installed,
             installed_comfyui_package,
@@ -669,5 +681,30 @@ mod tests {
             std::fs::read_to_string(data.join(SETTINGS_FILE)).unwrap(),
             "{"
         );
+    }
+    // tags: equivalence
+    #[test]
+    fn the_output_folder_follows_the_comfyui_the_app_started_with() {
+        let root = Path::new("R");
+        let owned = Settings::default();
+        assert_eq!(
+            output_dir(&owned, root),
+            Some(root.join("portable").join("ComfyUI").join("output"))
+        );
+        let folder = Settings {
+            comfyui_dir: Some("D:/ComfyUI".into()),
+            ..Settings::default()
+        };
+        assert_eq!(
+            output_dir(&folder, root),
+            Some(Path::new("D:/ComfyUI").join("output"))
+        );
+        // Reached by address: the folder it saves into is not known here.
+        let url = Settings {
+            comfyui_url: Some("http://127.0.0.1:8188".into()),
+            comfyui_dir: Some("D:/ComfyUI".into()),
+            ..Settings::default()
+        };
+        assert_eq!(output_dir(&url, root), None);
     }
 }

@@ -1,5 +1,5 @@
 // The draft history: every batch on one large screen, narrowed by period and model, searched by prompt, split by day.
-// A card opens its batch, puts its settings back in the Generate form, or closes it.
+// A card opens its batch in the flow of the Candidates view, puts its settings back in the Generate form, or closes it.
 import { ArrowCounterClockwise, CalendarBlank, Cube, FolderOpen, MagnifyingGlass, X } from '@phosphor-icons/react';
 import { useMemo, useState, type ReactNode } from 'react';
 import { t, tCount, type MessageKey } from '@/i18n';
@@ -23,15 +23,23 @@ const PERIOD_LABEL: Record<HistoryPeriod, MessageKey> = {
   older: 'drafts.history.period.older',
 };
 
-export function DraftHistory({ open, onClose }: { open: boolean; onClose: () => void }) {
+/** `onOpened` is told when a batch is opened, after it became the current one. */
+export function DraftHistory({ open, onClose, onOpened }: { open: boolean; onClose: () => void; onOpened?: () => void }) {
   return (
     <Modal open={open} onOpenChange={(o) => !o && onClose()} title={t('drafts.history.title')} size="xl" closeLabel={t('common.close')}>
-      {open && <HistoryBody onClose={onClose} />}
+      {open && (
+        <HistoryBody
+          onOpened={() => {
+            onClose();
+            onOpened?.();
+          }}
+        />
+      )}
     </Modal>
   );
 }
 
-function HistoryBody({ onClose }: { onClose: () => void }) {
+function HistoryBody({ onOpened }: { onOpened: () => void }) {
   const groups = useDrafts((s) => s.groups);
   const currentId = useDrafts((s) => s.currentId);
   const [period, setPeriod] = useState<HistoryPeriod>('all');
@@ -40,13 +48,13 @@ function HistoryBody({ onClose }: { onClose: () => void }) {
   const [sort, setSort] = useState<HistorySort>('newest');
   const models = useMemo(() => historyModels(groups), [groups]);
   const days = useMemo(() => historyDays(groups, { period, model, text, sort }), [groups, period, model, text, sort]);
-  // The batches older than the tabs, which "close the older ones" closes.
+  // The batches older than the latest few, which "close the older ones" closes.
   const older = groups.slice(0, Math.max(0, groups.length - RECENT_GROUPS));
-  // Each batch keeps the number its tab shows.
+  // Each batch keeps its number in the order of starting.
   const numberOf = (g: DraftGroup) => groups.indexOf(g) + 1;
   const openBatch = (g: DraftGroup) => {
     useDrafts.getState().setCurrent(g.id);
-    onClose();
+    onOpened();
   };
   return (
     <div className="dh" data-testid="drafts-history">

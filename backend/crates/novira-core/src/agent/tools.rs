@@ -208,13 +208,14 @@ pub static TOOLS: &[ToolDef] = &[
     },
     ToolDef {
         name: "generate",
-        description: "Queues generation. target screen does what the Invoke button of the screen the user is on does (the Generate tab's picture, the canvas, a video, a song, a voice). target comic queues the comic's panels with scope panel (with panel), page or comic. Returns the queue item ids, or why nothing could be queued. Generate only when the user asks for pictures or sounds, or as a trial picture; it takes a while, so say what you queued. trial true (target screen, the Generate tab's picture) queues one picture whatever the count box says, to check with view_picture that you understood the user; it is refused when the user turned trial pictures off.",
+        description: "Queues generation. target screen does what the Invoke button of the screen the user is on does (the Generate tab's picture, the canvas, a video, a song, a voice, the workflow editor's graph). Without count it runs as many times as the screen's count box says (the answer says how many); count replaces that number. One run of a workflow runs every node of the graph once (all its loaders and saves), so a graph that handles many pictures at once needs count 1. target comic queues the comic's panels with scope panel (with panel), page or comic. Returns the queue item ids, or why nothing could be queued. Generate only when the user asks for pictures or sounds, or as a trial picture; it takes a while, so say what you queued. trial true (target screen, the Generate tab's picture) queues one picture whatever the count box says, to check with view_picture that you understood the user; it is refused when the user turned trial pictures off.",
         read_only: false,
         schema: || json!({"type": "object", "required": ["target"], "properties": {
             "target": {"type": "string", "enum": ["screen", "comic"]},
             "scope": {"type": "string", "enum": ["panel", "page", "comic"]},
             "panel": {"type": "integer", "minimum": 1, "maximum": 1000},
-            "trial": {"type": "boolean"}
+            "trial": {"type": "boolean"},
+            "count": {"type": "integer", "minimum": 1, "maximum": 100}
         }, "additionalProperties": false}),
     },
     ToolDef {
@@ -245,6 +246,20 @@ pub static TOOLS: &[ToolDef] = &[
         schema: || json!({"type": "object", "properties": {
             "ids": {"type": "array", "maxItems": 50, "items": {"type": "integer", "minimum": 0}}
         }, "additionalProperties": false}),
+    },
+    ToolDef {
+        name: "cancel_queue",
+        description: "Cancels queue items that you queued with generate in this run of the app and that have not finished (pending or in progress), by id. Use it at once when you queued something by mistake or more than meant (a wrong count, a graph you changed to test); then say what you canceled. Items the user queued are refused: the user cancels those in the queue.",
+        read_only: false,
+        schema: || json!({"type": "object", "required": ["ids"], "properties": {
+            "ids": {"type": "array", "minItems": 1, "maxItems": 100, "items": {"type": "integer", "minimum": 0}}
+        }, "additionalProperties": false}),
+    },
+    ToolDef {
+        name: "get_engine_info",
+        description: "Where the engine (ComfyUI) is and whether it runs: how novira reaches it (its own install, the user's own ComfyUI folder, or an address), the full path of its folder, of its output folder (where save nodes of a workflow write files, in subfolders by their prefix) and of novira's data folder, and the engine's state. Use it when the user asks where something is on the PC; give the full path. Pictures that reach the gallery are in novira, not in this folder.",
+        read_only: true,
+        schema: empty,
     },
     ToolDef {
         name: "get_manga_guide",
@@ -347,13 +362,26 @@ pub static TOOLS: &[ToolDef] = &[
     },
     ToolDef {
         name: "list_gallery_images",
-        description: "The newest pictures of the gallery (name, size, date, model and prompt), optionally only starred ones or ones whose prompt contains search. Reading them needs the user's permission; when they decline, go on without them and do not ask again.",
+        description: "The newest pictures of the gallery (name, size, date, board, model and prompt), optionally only the ones of a board, only starred ones or ones whose prompt contains search. board is a board's name, or its path from the top board with / between the names as the user writes it (\"Characters/Ganyu/Done\"; names match whole, case and width aside), and \"none\" for the pictures in no board; a board does not take in the pictures of its subfolders. When no board matches, the answer lists the boards (boards) instead: pick the one the user means, or ask. Reading them needs the user's permission; when they decline, go on without them and do not ask again.",
         read_only: true,
         schema: || json!({"type": "object", "properties": {
             "limit": {"type": "integer", "minimum": 1, "maximum": 50},
             "offset": {"type": "integer", "minimum": 0, "maximum": 100000},
+            "board": {"type": "string", "minLength": 1, "maxLength": 300},
             "starredOnly": {"type": "boolean"},
             "search": {"type": "string", "maxLength": 200}
+        }, "additionalProperties": false}),
+    },
+    ToolDef {
+        name: "export_pictures",
+        description: "Opens the gallery's export dialog (export for sharing) on gallery pictures (names from list_gallery_images) with its choices set: format png, jpeg or webp (webp is lossless), quality for jpeg (1 to 100; 90 to 95 keeps the look), maxSide to shrink the longest side (left out keeps the size), removeInfo to leave out the prompt and settings. This is how pictures already in the gallery are converted, compressed, resized or copied out of novira as files: do not build a workflow for it. Nothing is written yet: the user checks the choices, presses the export button and picks the folder; the dialog then shows where the files went and a button that opens that folder. Say that in your answer, and that any file sizes you give are estimates.",
+        read_only: false,
+        schema: || json!({"type": "object", "required": ["names", "format"], "properties": {
+            "names": {"type": "array", "minItems": 1, "maxItems": 500, "items": {"type": "string", "minLength": 1, "maxLength": 200}},
+            "format": {"type": "string", "enum": ["png", "jpeg", "webp"]},
+            "quality": {"type": "integer", "minimum": 1, "maximum": 100},
+            "maxSide": {"type": "integer", "minimum": 16, "maximum": 16384},
+            "removeInfo": {"type": "boolean"}
         }, "additionalProperties": false}),
     },
     ToolDef {
@@ -700,6 +728,73 @@ mod tests {
             Some(&json!({"target": "screen", "trial": "yes"}))
         )
         .is_err());
+    }
+
+    // tags: boundary, equivalence
+    #[test]
+    fn runs_cancels_boards_and_exports_take_bounded_arguments_and_none_reads_without_asking() {
+        let ok = |tool: &str, args: Value| check_call(tool, Some(&args)).is_ok();
+        assert!(ok("generate", json!({"target": "screen", "count": 1})));
+        assert!(ok("generate", json!({"target": "screen", "count": 100})));
+        assert!(!ok("generate", json!({"target": "screen", "count": 0})));
+        assert!(!ok("generate", json!({"target": "screen", "count": 101})));
+        assert!(ok("cancel_queue", json!({"ids": [9387, 9388]})));
+        assert!(!ok("cancel_queue", json!({"ids": []})));
+        assert!(!ok("cancel_queue", json!({})));
+        assert!(!ok("cancel_queue", json!({"ids": [-1]})));
+        assert!(!ok(
+            "cancel_queue",
+            json!({"ids": (0..101).collect::<Vec<_>>()})
+        ));
+        assert!(ok("list_gallery_images", json!({"board": "Ganyu/Done"})));
+        assert!(!ok("list_gallery_images", json!({"board": ""})));
+        assert!(!ok(
+            "list_gallery_images",
+            json!({"board": "b".repeat(301)})
+        ));
+        assert!(ok(
+            "export_pictures",
+            json!({"names": ["a.png"], "format": "jpeg", "quality": 92})
+        ));
+        assert!(ok(
+            "export_pictures",
+            json!({"names": ["a.png"], "format": "png", "maxSide": 16})
+        ));
+        assert!(!ok(
+            "export_pictures",
+            json!({"names": [], "format": "jpeg"})
+        ));
+        assert!(!ok(
+            "export_pictures",
+            json!({"names": ["a.png"], "format": "gif"})
+        ));
+        assert!(!ok("export_pictures", json!({"names": ["a.png"]})));
+        assert!(!ok(
+            "export_pictures",
+            json!({"names": ["a.png"], "format": "jpeg", "quality": 101})
+        ));
+        assert!(!ok(
+            "export_pictures",
+            json!({"names": ["a.png"], "format": "jpeg", "maxSide": 15})
+        ));
+        assert!(!ok(
+            "export_pictures",
+            json!({"names": ["a.png"], "format": "jpeg", "folder": "C:/"})
+        ));
+        assert!(ok("get_engine_info", json!({})));
+        assert!(!ok("get_engine_info", json!({"path": "C:/"})));
+        // The export only opens the dialog (the user presses export and picks the folder), and the engine's folders
+        // are not the user's pictures or prompts: neither asks first. Listing a board's pictures still does.
+        assert!(!is_read_gated(
+            "export_pictures",
+            &json!({"names": ["a.png"], "format": "jpeg"})
+        ));
+        assert!(!is_read_gated("get_engine_info", &json!({})));
+        assert!(!is_read_gated("cancel_queue", &json!({"ids": [1]})));
+        assert!(is_read_gated(
+            "list_gallery_images",
+            &json!({"board": "Ganyu"})
+        ));
     }
 
     // tags: error-guessing, boundary

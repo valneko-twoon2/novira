@@ -15,7 +15,7 @@ import { ToolBand } from './tools/ToolBand';
 import { useViewerHotkeys } from './useViewerHotkeys';
 import { ViewerNav } from './ViewerNav';
 import { ViewerToolbar } from './ViewerToolbar';
-import { ZoomableImage } from './ZoomableImage';
+import { ZoomableImage } from '@/ui/zoom/ZoomableImage';
 import './viewer.css';
 
 const PAD = 16;

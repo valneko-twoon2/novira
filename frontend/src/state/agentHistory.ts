@@ -116,6 +116,8 @@ const NOTE: Record<ToolLogKind, (log: AgentToolLog) => string> = {
   voice: () => 'set the voice form',
   pose: () => 'set the pose',
   queued: (l) => `queued ${l.count ?? 1} job(s)`,
+  canceled: (l) => `canceled ${l.count ?? 1} queued job(s)`,
+  export: (l) => `opened the export dialog on ${l.count ?? 1} picture(s)`,
   packs: () => 'suggested extensions',
 };
 

@@ -69,7 +69,7 @@ A moldura pontilhada dentro da tela é a “área em que a imagem será criada d
 
 ## Camadas
 
-Em **{{ui:canvas.layers.title}}**, embaixo à direita, aparece a lista do que foi colocado na tela. Acrescente com o botão **{{ui:common.add}}**.
+Em **{{ui:canvas.layers.title}}**, embaixo à direita, aparece a lista do que foi colocado na tela. Acrescente com o botão **+** ({{ui:common.add}}).
 
 ![O menu “Adicionar” das camadas aberto](shot:canvas-add-layer)
 
@@ -150,7 +150,7 @@ As configurações são estas:
 
 Movendo um boneco de palitos, é possível definir a pose. É útil quando indicar a pose por texto não dá certo.
 
-1. Na aba **{{ui:app.tabs.canvas}}**, clique em **{{ui:common.add}}**, nas camadas, e escolha **{{ui:pose.menu}}**.
+1. Na aba **{{ui:app.tabs.canvas}}**, clique em **+** ({{ui:common.add}}), nas camadas, e escolha **{{ui:pose.menu}}**.
 2. Escolha em **{{ui:pose.preset}}** uma pose parecida ({{ui:pose.preset.standing}}, {{ui:pose.preset.armsUp}}, {{ui:pose.preset.sitting}}, {{ui:pose.preset.walking}}).
 3. Arraste os círculos das articulações para mudar a postura. Também é possível selecionar um círculo e movê-lo com as teclas de seta (com `Shift`, ele se move mais). **{{ui:pose.mirror}}** inverte esquerda e direita, e **{{ui:pose.reset}}** volta ao modelo inicial.
 4. Escolha **{{ui:pose.size}}**. Normalmente o tamanho da tela serve.

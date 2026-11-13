@@ -564,7 +564,7 @@ export class MockBackend implements BackendClient {
     // Images show a mock picture; a video is cut from frames drawn on a canvas.
     const picture = mockPicture(`${p.seed}|${p.positivePrompt}`);
     const canvas = isVideo ? (await synthesize({ width, height, seed: p.seed, prompt: p.positivePrompt, initImageUrl: item.initImageUrl, strength, maskImageUrl: item.maskImageUrl })).canvas : null;
-    const total = Math.max(1, p.steps + (hires ? (hires.steps ?? p.steps) : 0));
+    const total = Math.max(1, p.steps + (hires && hires.mode !== 'upscale' ? (hires.steps ?? p.steps) : 0));
     const stopAt = p.draftAt !== undefined ? draftStep(total, p.draftAt) : total;
     for (let step = 1; step <= stopAt; step++) {
       if (run.cancelled) return;

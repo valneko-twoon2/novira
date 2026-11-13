@@ -157,6 +157,7 @@ fn flux_redraws_inpaints_and_upscales_through_the_shared_graph() {
     );
     let mut p = params(GenerationMode::Txt2img);
     p.hires_fix = Some(HiresFix {
+        mode: None,
         scale: 1.5,
         strength: 0.4,
         steps: None,

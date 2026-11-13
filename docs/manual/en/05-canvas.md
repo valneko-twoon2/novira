@@ -69,7 +69,7 @@ The dotted frame in the canvas is "the area where a picture is made this time". 
 
 ## Layers
 
-In **{{ui:canvas.layers.title}}** at the lower right, the things you placed on the canvas are listed. Add them with the **{{ui:common.add}}** button.
+In **{{ui:canvas.layers.title}}** at the lower right, the things you placed on the canvas are listed. Add them with the **+** button ({{ui:common.add}}).
 
 ![The Add menu of the layers opened](shot:canvas-add-layer)
 
@@ -150,7 +150,7 @@ The settings are as follows.
 
 You can decide a pose by moving a stick figure. It is handy when specifying a pose in words does not work well.
 
-1. On the **{{ui:app.tabs.canvas}}** tab, press the layer **{{ui:common.add}}** and choose **{{ui:pose.menu}}**.
+1. On the **{{ui:app.tabs.canvas}}** tab, press the layers **+** ({{ui:common.add}}) and choose **{{ui:pose.menu}}**.
 2. From **{{ui:pose.preset}}**, choose the pose closest to what you want ({{ui:pose.preset.standing}}, {{ui:pose.preset.armsUp}}, {{ui:pose.preset.sitting}}, {{ui:pose.preset.walking}}).
 3. Drag the circles at the joints to change the posture. You can also select a circle and move it with the arrow keys (hold `Shift` to move it a lot). **{{ui:pose.mirror}}** flips it left and right, and **{{ui:pose.reset}}** returns it to the original template.
 4. Choose the **{{ui:pose.size}}**. Usually the canvas size is fine.

@@ -69,7 +69,7 @@
 
 ## レイヤー
 
-右下の **{{ui:canvas.layers.title}}** に、キャンバスに置いたものが一覧で出ます。**{{ui:common.add}}** ボタンで足します。
+右下の **{{ui:canvas.layers.title}}** に、キャンバスに置いたものが一覧で出ます。**＋**（{{ui:common.add}}）ボタンで足します。
 
 ![レイヤーの「追加」メニューを開いたところ](shot:canvas-add-layer)
 
@@ -150,7 +150,7 @@
 
 棒人間を動かして、ポーズを決められます。文章でポーズを指定してもうまくいかないときに便利です。
 
-1. **{{ui:app.tabs.canvas}}** タブの、レイヤーの **{{ui:common.add}}** を押し、**{{ui:pose.menu}}** を選びます。
+1. **{{ui:app.tabs.canvas}}** タブの、レイヤーの **＋**（{{ui:common.add}}）を押し、**{{ui:pose.menu}}** を選びます。
 2. **{{ui:pose.preset}}** から、近いポーズを選びます（{{ui:pose.preset.standing}}、{{ui:pose.preset.armsUp}}、{{ui:pose.preset.sitting}}、{{ui:pose.preset.walking}}）。
 3. 関節の丸をドラッグして、姿勢を変えます。丸を選んで、矢印キーでも動かせます（`Shift` を押すと大きく動きます）。**{{ui:pose.mirror}}** で左右を反転でき、**{{ui:pose.reset}}** で最初のひな形に戻ります。
 4. **{{ui:pose.size}}** を選びます。普通は、キャンバスの大きさでかまいません。

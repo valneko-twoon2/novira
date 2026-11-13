@@ -69,7 +69,7 @@
 
 ## 레이어
 
-오른쪽 아래의 **{{ui:canvas.layers.title}}**에 캔버스에 놓은 것이 목록으로 나옵니다. **{{ui:common.add}}** 버튼으로 추가합니다.
+오른쪽 아래의 **{{ui:canvas.layers.title}}**에 캔버스에 놓은 것이 목록으로 나옵니다. **+**({{ui:common.add}}) 버튼으로 추가합니다.
 
 ![레이어의 '추가' 메뉴를 연 모습](shot:canvas-add-layer)
 
@@ -150,7 +150,7 @@
 
 막대 인간을 움직여서 포즈를 정할 수 있습니다. 문장으로 포즈를 지정해도 잘 되지 않을 때 편리합니다.
 
-1. **{{ui:app.tabs.canvas}}** 탭의 레이어에서 **{{ui:common.add}}** 버튼을 누르고 **{{ui:pose.menu}}**을 선택합니다.
+1. **{{ui:app.tabs.canvas}}** 탭의 레이어에서 **+**({{ui:common.add}}) 버튼을 누르고 **{{ui:pose.menu}}**을 선택합니다.
 2. **{{ui:pose.preset}}**에서 가까운 포즈를 선택합니다({{ui:pose.preset.standing}}, {{ui:pose.preset.armsUp}}, {{ui:pose.preset.sitting}}, {{ui:pose.preset.walking}}).
 3. 관절의 동그라미를 드래그해서 자세를 바꿉니다. 동그라미를 선택하고 화살표 키로도 움직일 수 있습니다(`Shift`를 누르면 크게 움직입니다). **{{ui:pose.mirror}}**으로 좌우를 반전할 수 있고 **{{ui:pose.reset}}**로 처음 상태로 돌아갑니다.
 4. **{{ui:pose.size}}**를 선택합니다. 보통은 캔버스의 크기로 괜찮습니다.

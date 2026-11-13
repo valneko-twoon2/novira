@@ -155,17 +155,18 @@ Anima・Flux・FLUX.2・Chroma・Qwen-Image・Z-Image・SD3・HiDream・AuraFlow
 
 ![高解像度補正の区画を開いて、オンにしたところ](shot:hires-fix)
 
-最初から大きなサイズで描くと、人物が 2 人になったり、形が崩れたりしやすくなります。**{{ui:params.hires.title}}** は、まず設定したサイズで描き、それを拡大してから、同じシードと設定でもう一度描き直します。1 回の生成で、細部まで描かれた大きな絵ができます。この区画は {{ui:app.tabs.generate}} タブと {{ui:app.tabs.comic}} タブにあります。
+最初から大きなサイズで描くと、人物が 2 人になったり、形が崩れたりしやすくなります。**{{ui:params.hires.title}}** は、まず設定したサイズで描き、それを拡大して仕上げます。1 回の生成で、大きな絵ができます。この区画は {{ui:app.tabs.generate}} タブと {{ui:app.tabs.comic}} タブにあります。
 
 - **{{ui:params.hires.enable}}**：オンにすると使います。
-- **{{ui:params.hires.scale}}**：1.25〜2 倍です。仕上がりの大きさは、区画の見出しに出ます。
-- **{{ui:params.hires.strength}}**：0.2〜0.75 です。低いと 1 回目の絵をほぼ保ち、高いと大きく描き直します。はじめは 0.45 です。
+- **{{ui:params.hires.mode}}**：**{{ui:params.hires.modeRedraw}}** は、拡大した絵を同じシードと設定でもう一度描き、細部を足します。絵は少し変わります。**{{ui:params.hires.modeUpscale}}** は、拡大するだけで描き直しません。描いた絵のまま、速く仕上がります。くっきりさせたいときは、**{{ui:params.hires.method}}** でアップスケールモデルを選びます。
+- **{{ui:params.hires.scale}}**：**{{ui:params.hires.modeRedraw}}** では 1.25〜2 倍、**{{ui:params.hires.modeUpscale}}** では 1.25〜4 倍です。仕上がりの大きさは、区画の見出しに出ます。
+- **{{ui:params.hires.strength}}**（**{{ui:params.hires.modeRedraw}}** のときだけ）：0.2〜0.75 です。低いと 1 回目の絵をほぼ保ち、高いと大きく描き直します。はじめは 0.45 です。
 - **{{ui:params.hires.method}}**：**{{ui:params.hires.methodSmooth}}** は、モデルを使わずに拡大します。{{ui:app.tabs.upscaling}} タブで使うアップスケールモデルがインストールされていれば、それも選べます。
-- **{{ui:params.hires.steps}}**：2 回目のステップ数です。0 のときは 1 回目と同じ数で描きます。
+- **{{ui:params.hires.steps}}**（**{{ui:params.hires.modeRedraw}}** のときだけ）：2 回目のステップ数です。0 のときは 1 回目と同じ数で描きます。
 
-時間は 2 回描く分かかります。進み具合は、2 回分を通して数えます。LoRA と参照画像は、2 回目にも使われます。
+**{{ui:params.hires.modeRedraw}}** では、時間は 2 回描く分かかります。進み具合は、2 回分を通して数えます。LoRA と参照画像は、2 回目にも使われます。
 
-仕上がりが、モデルの得意な大きさを大きく超えるとき（長い辺が SDXL では 2048 px、SD1.X では 1536 px ほど）は、生成ボタンの下に注意が出ます。生成はできますが、絵が崩れたら拡大率を下げてください。
+**{{ui:params.hires.modeRedraw}}** で、仕上がりがモデルの得意な大きさを大きく超えるとき（長い辺が SDXL では 2048 px、SD1.X では 1536 px ほど）は、生成ボタンの下に注意が出ます。生成はできますが、絵が崩れたら拡大率を下げてください。
 
 絵には、1 回目のサイズと{{ui:params.hires.title}}の値が保存されます。ギャラリーの「{{ui:gallery.menu.useAll}}」で読み込むと、{{ui:params.hires.title}}もそのとおりに入ります。
 
@@ -302,7 +303,7 @@ Anima・Flux・FLUX.2・Chroma・Qwen-Image・Z-Image・SD3・HiDream・AuraFlow
 - 項目の数の内訳（{{ui:queue.status.pending}}、{{ui:queue.status.inProgress}}、{{ui:queue.status.completed}}、{{ui:queue.status.failed}}、{{ui:queue.status.canceled}}）。
 - 右上に、いま描いている項目の進み具合。
 
-ボタンの働きは次のとおりです。
+ボタンはアイコンだけで、マウスを重ねると名前が出ます。働きは次のとおりです。
 
 | ボタン | 働き |
 |---|---|

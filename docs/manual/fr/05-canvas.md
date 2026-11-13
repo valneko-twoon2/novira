@@ -69,7 +69,7 @@ Le cadre en pointillés sur la toile est « la zone où l'image est créée cett
 
 ## Calques
 
-Les éléments placés sur la toile sont listés dans **{{ui:canvas.layers.title}}**, en bas à droite. Le bouton **{{ui:common.add}}** en ajoute.
+Les éléments placés sur la toile sont listés dans **{{ui:canvas.layers.title}}**, en bas à droite. Le bouton **+** ({{ui:common.add}}) en ajoute.
 
 ![Le menu « Ajouter » des calques ouvert](shot:canvas-add-layer)
 
@@ -150,7 +150,7 @@ Voici les réglages.
 
 Vous pouvez fixer une pose en faisant bouger un bonhomme en fil de fer. C'est pratique quand une pose décrite par écrit ne donne pas de bons résultats.
 
-1. Dans l'onglet **{{ui:app.tabs.canvas}}**, appuyez sur **{{ui:common.add}}** dans les calques et choisissez **{{ui:pose.menu}}**.
+1. Dans l'onglet **{{ui:app.tabs.canvas}}**, appuyez sur **+** ({{ui:common.add}}) dans les calques et choisissez **{{ui:pose.menu}}**.
 2. Choisissez dans **{{ui:pose.preset}}** une pose proche ({{ui:pose.preset.standing}}, {{ui:pose.preset.armsUp}}, {{ui:pose.preset.sitting}}, {{ui:pose.preset.walking}}).
 3. Faites glisser les cercles des articulations pour changer la posture. Vous pouvez aussi sélectionner un cercle et le déplacer avec les touches fléchées (avec `Shift`, il bouge davantage). **{{ui:pose.mirror}}** inverse la gauche et la droite, et **{{ui:pose.reset}}** revient au modèle de départ.
 4. Choisissez **{{ui:pose.size}}**. En général, la taille de la toile convient.

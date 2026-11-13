@@ -46,6 +46,7 @@ inEachTheme((theme) => {
       await expect(page.locator('[data-testid="phone-queue-item"][data-status="completed"] img')).toBeVisible();
       await snap(page, 'phone', theme, 'queue');
       await page.getByTestId('phone-nav-drafts').tap();
+      await page.getByTestId('drafts-form-toggle').tap();
       await page.getByTestId('drafts-start').tap();
       await expect(page.getByTestId('draft-open')).toHaveCount(4);
       await expect(page.getByTestId('phone-queue-badge')).toHaveCount(0);
