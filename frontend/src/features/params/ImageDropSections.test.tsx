@@ -172,7 +172,7 @@ describe('UpscaleInitialImage', () => {
   it('ignores a dropped video or sound, from the gallery or as a file: only a picture is enlarged', { tags: ['equivalence', 'regression'] }, async () => {
     const video = { ...picture, name: 'clip.mp4', mediaType: 'video' } as ImageDTO;
     useGallery.setState({ images: [picture, video] });
-    vi.spyOn(backend, 'uploadImage').mockResolvedValue({ ...video, name: 'up.mp4' });
+    const upload = vi.spyOn(backend, 'uploadImage').mockResolvedValue({ ...video, name: 'up.mp4' });
     const { container } = show(<UpscaleInitialImage />);
     dropNames(container.querySelector('.pp-upimg')!, ['clip.mp4']);
     dropFile(container.querySelector('.pp-upimg')!, new File(['x'], 'drop.mp4', { type: 'video/mp4' }));
@@ -180,6 +180,11 @@ describe('UpscaleInitialImage', () => {
       await Promise.resolve();
     });
     expect(image()).toBeFalsy();
+    // a video file is not uploaded into the gallery just to be thrown away (the drop zone passes on only picture files)
+    expect(upload).not.toHaveBeenCalled();
+    // a video dragged first with a picture: the picture is taken
+    dropNames(container.querySelector('.pp-upimg')!, ['clip.mp4', 'pic.png']);
+    await waitFor(() => expect(image()).toMatchObject({ name: 'pic.png' }));
   });
 
   it('uploads a dropped file, and ignores an unknown name', { tags: ['error-guessing'] }, async () => {
