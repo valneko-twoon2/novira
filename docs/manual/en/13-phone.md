@@ -100,8 +100,20 @@ Opening a list such as the model, the LoRAs or the presets does not bring up the
 - When it is not zoomed, swipe sideways to go to the next picture of the board. The side buttons do the same.
 - Tap twice to switch between zoomed in and the full picture.
 - The **{{ui:gallery.viewer.toggleMetadata}}** button shows the prompts, model, seed and size.
-- The three-line button at the top right (**{{ui:phone.pictureMenu}}**) opens the same menu as right-clicking a picture on the computer. Pressing and holding the picture opens it too. Items that send the picture to a place the phone does not have, such as the canvas or workflows, are left out. **{{ui:gallery.menu.upscale}}** opens **{{ui:batch.title}}**, which enlarges the picture with an upscale model.
+- The three-line button at the top right (**{{ui:phone.pictureMenu}}**) opens the same menu as right-clicking a picture on the computer. Pressing and holding the picture opens it too. **{{ui:canvas.phone.edit}}** in the menu fixes the picture on the phone's canvas (next section). Items that send the picture to a place the phone does not have, such as workflows or video, are left out. **{{ui:gallery.menu.upscale}}** opens **{{ui:batch.title}}**, which enlarges the picture with an upscale model.
 - The buttons at the foot are **{{ui:gallery.menu.star}}**, **{{ui:common.download}}**, **{{ui:phone.useSettings}}** (puts the picture's settings in the Generate tab) and **{{ui:common.delete}}**. Whether it asks before deleting follows **{{ui:settings.confirmOnDelete}}** in Settings.
+
+### Fixing a picture on the canvas
+
+Choose **{{ui:canvas.phone.edit}}** from the menu of a picture open full screen, and a canvas holding only that picture fills the screen. Stroke with one finger to paint with the tool chosen at the foot. Spread or pinch two fingers to zoom in or out, and move them to move the picture.
+
+- **{{ui:canvas.tool.mosaic}}**: puts a mosaic where you stroke. **{{ui:canvas.toolbar.mosaicWidth}}** sets how wide it is and **{{ui:canvas.toolbar.mosaicBlock}}** how big its blocks are.
+- **{{ui:canvas.phone.mask}}**: paint the part you want to fix. **{{ui:canvas.phone.erase}}** removes the painted part, filled in to match what is around it. **{{ui:canvas.phone.redraw}}** draws it again as written in the box above (the Generate tab's prompt when the box is empty). Redrawing needs a model chosen on the Generate tab.
+- **{{ui:canvas.tool.eraser}}**: wipes paint that went too far.
+
+The result of erasing or redrawing shows over the picture for now, and the buttons at the foot turn into the result's. Step through the results with the arrows, compare with the picture under them with the eye button, and **{{ui:canvas.phone.discard}}** one or **{{ui:canvas.staging.accept}}** it into the picture. Accepting wipes the paint, so you can paint the next part. The arrow buttons at the top undo and redo.
+
+When you are done, **{{ui:canvas.staging.saveToGallery}}** at the top right saves it as a new picture (the original stays as it was). While a result is shown, accept or discard it first. The × at the top left closes it. The phone's canvas is separate from the computer's: what is being edited there does not change.
 
 ### Working with the queue
 
@@ -123,4 +135,4 @@ Tap the sparkle button in the title bar (**{{ui:agent.open}}**) and the agent op
 - The buttons on the right of the top bar open **{{ui:agent.session.history}}** or start a **{{ui:agent.session.new}}**. The arrow on the left goes back to the screen you were on.
 - Choosing the AI and signing in is done on the computer's screen. Until then, the phone says so.
 
-Everything that is not on the six tabs, such as the canvas, workflows, comics and settings, is used on the computer.
+Everything that is not on the six tabs, such as the computer's canvas (layers, prompts for regions and the like), workflows, comics and settings, is used on the computer.

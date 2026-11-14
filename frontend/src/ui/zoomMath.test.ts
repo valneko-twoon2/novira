@@ -9,6 +9,7 @@ import {
   containIn,
   docToScreen,
   fitRect,
+  pinchView,
   screenToDoc,
   stepZoom,
   wheelZoomFactor,
@@ -70,5 +71,21 @@ describe('zoom math', { tags: [] }, () => {
 
   it('contains a box in a rect, centered, in whole pixels', { tags: ['equivalence'] }, () => {
     expect(containIn(200, 100, { x: 0, y: 0, width: 100, height: 100 })).toEqual({ x: 0, y: 25, width: 100, height: 50 });
+  });
+
+  it('pins the document point under two fingers to their midpoint and scales with their spread', { tags: ['equivalence', 'boundary'] }, () => {
+    const v = { x: 10, y: 20, scale: 1 };
+    const from = [{ x: 100, y: 100 }, { x: 200, y: 100 }] as const;
+    // Spread doubled and the midpoint moved by (30, 40).
+    const to = [{ x: 80, y: 140 }, { x: 280, y: 140 }] as const;
+    const z = pinchView(v, from, to);
+    expect(z.scale).toBeCloseTo(2);
+    const under = screenToDoc({ x: 150, y: 100 }, v);
+    const shown = docToScreen(under, z);
+    expect(shown.x).toBeCloseTo(180);
+    expect(shown.y).toBeCloseTo(140);
+    // Fingers that start on one point only pan; a huge spread stops at the largest scale.
+    expect(pinchView(v, [{ x: 5, y: 5 }, { x: 5, y: 5 }], [{ x: 15, y: 5 }, { x: 15, y: 5 }])).toEqual({ x: 20, y: 20, scale: 1 });
+    expect(pinchView(v, from, [{ x: 0, y: 0 }, { x: 100_000, y: 0 }]).scale).toBe(MAX_SCALE);
   });
 });

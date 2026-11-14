@@ -63,7 +63,8 @@ export function registerCanvasFeature() {
   // Keep the bbox size in sync with the width/height parameters.
   useParams.subscribe((p, prev) => {
     if (p.width === prev.width && p.height === prev.height) return;
-    const { bbox, setBbox } = useCanvas.getState();
+    const { bbox, setBbox, sizeSync } = useCanvas.getState();
+    if (!sizeSync) return;
     if (bbox.width === p.width && bbox.height === p.height) return;
     setBbox({ ...bbox, width: p.width, height: p.height }, { history: false, syncParams: false });
   });

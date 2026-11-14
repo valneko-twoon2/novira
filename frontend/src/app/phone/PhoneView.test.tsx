@@ -5,6 +5,8 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { backend, type BoardDTO, type GenerationMetadata, type ImageDTO, type QueueItem } from '@/backend';
 import { t } from '@/i18n';
+import { installRecordingCanvases } from '@/backend/mock/canvas2dRecorder.testkit';
+import { useCanvas } from '@/state/canvas';
 import { useGallery } from '@/state/gallery';
 import { useParams } from '@/state/params';
 import { useQueue } from '@/state/queue';
@@ -49,7 +51,7 @@ beforeEach(() => {
   useGallery.setState(initial.gallery, true);
   useQueue.setState(initial.queue, true);
   useParams.setState(initial.params, true);
-  usePhone.setState({ tab: 'generate', view: null });
+  usePhone.setState({ tab: 'generate', view: null, editing: false });
   useSettings.getState().set({ confirmOnDelete: false });
   useGallery.getState().setBoards([board('b1', 'Foxes')]);
   useGallery.getState().setImages([
@@ -193,10 +195,29 @@ describe('a picture full screen', { tags: [] }, () => {
       fireEvent.click(screen.getByTestId('phone-view-menu'));
       const items = (await screen.findAllByRole('menuitem')).map((e) => e.textContent ?? '');
       const has = (key: Parameters<typeof t>[0]) => items.some((text) => text.startsWith(t(key)));
-      for (const key of ['gallery.menu.remix', 'gallery.menu.star', 'caption.menu', 'gallery.menu.useAsReference', 'gallery.menu.changeBoard', 'gallery.menu.delete', 'gallery.menu.upscale'] as const) expect(has(key), key).toBe(true);
+      for (const key of ['gallery.menu.remix', 'gallery.menu.star', 'caption.menu', 'gallery.menu.useAsReference', 'gallery.menu.changeBoard', 'gallery.menu.delete', 'canvas.phone.edit', 'gallery.menu.upscale'] as const) expect(has(key), key).toBe(true);
       for (const key of ['gallery.menu.openInViewer', 'gallery.menu.compare', 'gallery.menu.loadWorkflow', 'gallery.menu.sendToCanvas', 'gallery.menu.segment'] as const) expect(has(key), key).toBe(false);
     },
   );
+
+  it('opens the picture in the canvas editor from its menu, and closes back to the layout', { tags: ['scenario', 'state-transition'] }, async () => {
+    const canvases = installRecordingCanvases();
+    try {
+      openPicture('new.png');
+      fireEvent.click(screen.getByTestId('phone-view-menu'));
+      fireEvent.click(await screen.findByRole('menuitem', { name: t('canvas.phone.edit') }));
+      expect(await screen.findByTestId('phone-canvas')).toBeTruthy();
+      expect(screen.queryByTestId('phone-view')).toBeNull();
+      expect(useCanvas.getState().entities[0]?.objects[0]).toMatchObject({ imageName: 'new.png' });
+      expect(useCanvas.getState().sizeSync).toBe(false);
+      fireEvent.click(screen.getByTestId('phone-canvas-close'));
+      expect(screen.queryByTestId('phone-canvas')).toBeNull();
+      expect(usePhone.getState().editing).toBe(false);
+      expect(useCanvas.getState().sizeSync).toBe(true);
+    } finally {
+      canvases.restore();
+    }
+  });
 
   it('asks before deleting when the setting says so', { tags: ['condition'] }, () => {
     useSettings.getState().set({ confirmOnDelete: true });

@@ -1,6 +1,7 @@
 ---
 covers:
   - frontend/src/app/phone/**
+  - frontend/src/features/canvas/phone/**
   - frontend/src/state/layout.ts
 ---
 # スマートフォンのレイアウト
@@ -16,7 +17,8 @@ covers:
 - 描画中のジョブ（`useGeneratingItems`、[01-gallery-view.md](../../04-gallery/02-viewer/01-gallery-view.md)）は、描画途中の画像とステップとともにタイトルバーに出る。押すと全画面で開く（`PhoneView`、ビューアーの `LiveView`）。ジョブが終わると、全画面は作った画像を表示し、作らなかった（失敗、キャンセル）ときは閉じる。
 - 生成タブ（`PhoneGenerate`）: デスクトップの左パネルそのもの（`ParametersPanel`、タブ `generate`）なので、操作部品もその順序もデスクトップと同じ。プリセット、シードと生成の行、モデルカード、プロンプト（プリセット、動的プロンプト、画像の説明、トークン数、推奨値）、参照画像、画像、生成、高解像度補正、詳細の各セクション。`phone.css` が、シードと生成の行を上に固定した、スクロールする 1 カラムに並べる。パネルが開くダイアログは `PhoneShell` に載る。動的プロンプトのポップオーバーは、スマートフォンではボタンの下に開く。
 - ギャラリータブ（`PhoneImages`。ボードと画像をまとめたスマートフォンでの呼び名で、デスクトップでは右パネル全体にあたる）: ボード（`selectBoard`。デスクトップのボード一覧と同じ。アーカイブ済みのボードはギャラリーが表示するときだけ）、件数、ギャラリーの順で 1 行に 3 枚並べたボードの画像（`usePhoneImages`: デスクトップの検索と日付フィルターを除いた images ビュー）。そのボード向けに描かれているジョブが先頭に来る。セルは、一覧の末尾が見えてくるたびに 1 ページ（`PAGE`）ずつ作る。
-- 全画面の画像（`PhoneView`）: ボード内の位置、ピンチは指の中心でズーム、指 1 本で拡大した画像をパン、画面に収まっているときは横スワイプか両脇のボタンで隣へ、ダブルタップでズームの入り切り（`gestures.ts`、`usePictureGestures.ts`）。情報ボタンはプロンプト、モデル、シード、サイズを示す。メニューボタンはデスクトップの画像メニュー（`phone` 付きの `SingleImageMenu`。スマートフォンに無い画面にだけ行くもの、つまりビューアー、比較、ワークフロー、キャンバス、動画、テキスト、セグメンテーション、画像からのポーズは外す。アップスケールは、アップスケールの画面が無いので、アプリと同じく一括処理のダイアログ `BatchDialog` の拡大で開く）を開く。画像の長押しでも開く。足元のボタンはデスクトップのもの。スター（`setStarred`）、ダウンロード（`downloadImages`）、設定を使う（`recall` の all の後に生成タブ）、削除（`requestDeleteImages`。設定で求められていれば先に確認する）。表示中に削除した画像は、その場所に来た画像に譲るか、最後の画像なら閉じる。
+- 全画面の画像（`PhoneView`）: ボード内の位置、ピンチは指の中心でズーム、指 1 本で拡大した画像をパン、画面に収まっているときは横スワイプか両脇のボタンで隣へ、ダブルタップでズームの入り切り（`gestures.ts`、`usePictureGestures.ts`）。情報ボタンはプロンプト、モデル、シード、サイズを示す。メニューボタンはデスクトップの画像メニュー（`phone` 付きの `SingleImageMenu`。スマートフォンに無い画面にだけ行くもの、つまりビューアー、比較、ワークフロー、キャンバスへ送る、動画、テキスト、セグメンテーション、画像からのポーズは外し、代わりにスマートフォンのキャンバスエディターを開く項目 `onEditOnCanvas` を置く。アップスケールは、アップスケールの画面が無いので、アプリと同じく一括処理のダイアログ `BatchDialog` の拡大で開く）を開く。画像の長押しでも開く。足元のボタンはデスクトップのもの。スター（`setStarred`）、ダウンロード（`downloadImages`）、設定を使う（`recall` の all の後に生成タブ）、削除（`requestDeleteImages`。設定で求められていれば先に確認する）。表示中に削除した画像は、その場所に来た画像に譲るか、最後の画像なら閉じる。
+- キャンバスエディター（`PhoneCanvasEditor`、`frontend/src/features/canvas/phone/`）: 画像のメニューから、全画面の画像に代わって、レイアウトの上に全画面で開く（`usePhone` の `editing`。7 番目のタブではない）。`openForPhoneEdit` は、Image タブのキャンバス（`useCanvas`）を空にし、bbox をその画像の大きさにして画像のラスターレイヤーと空のインペイントマスクを置き、仮置きを捨て、モザイクを持たせ、取り消しの履歴をそこから始める。開いている間は bbox と左のフォームの大きさを連動させない（`sizeSync`。取り消しや別ページからのパラメーターの変化で、生成タブの大きさも画像の大きさも変わらない）。閉じると連動を戻す。上のバーは閉じる、取り消し、やり直し、ギャラリーに保存（`saveCanvasToGallery`。見えるラスターレイヤーを bbox で平らにして新しい画像にする。仮置きがある間は押せない）。ステージはデスクトップの `CanvasStage` で、指 1 本は持っている道具で塗り、2 本目の指が触れるとそれまでの線を捨ててピンチになり（`StageController`、`pinchView`）、指の中点の下の点を指に付いて動かしつつ拡大・縮小する。ピンチの後に残った指は、すべての指が離れるまで塗らない。ペンとマウスは今までどおり。足元は道具の 3 つ（`PHONE_TOOLS`: モザイクは一番上のラスターレイヤー、範囲を塗るはマスクにブラシ、消しゴムはマスクに消しゴム）と、その幅（モザイクは粗さも）。マスクの道具では、指示の欄、消す（`eraseMaskedPart`）、描き直す（`redrawMaskedPart`）が並ぶ。仮置き（結果か、キャンバス向けのジョブの生成中のページ）がある間は、足元が結果の切り替え、結果の表示の切り替え、破棄（`discardCurrentStaged`）、採用（`acceptOnPhone`: 結果をラスターレイヤーとして重ね、塗った部分は済んだのでマスクを空にする。1 回の取り消しで両方が戻る）に変わる。通知は足元の上に出る（足元の高さが道具で変わるので、エディターが測って `--phone-canvas-foot` に入れる）。
 - キュータブ（`PhoneQueue`）: プロセッサーの状態と、一時停止か再開、完了したジョブの整理（`pruneQueue`）、そして新しい順にすべてのジョブをカードとして示す。カードは、画像（描画中は途中の画像）、状態、ステップ、ギャラリー以外の行き先、プロンプト、モデルとサイズ、失敗したジョブのエラーを持つ。カードを押すと、ギャラリー向けに描画中のジョブか、完了したジョブの画像が全画面で開く。待機中か実行中のジョブはキャンセルでき（`cancelQueueItem`）、失敗かキャンセルのジョブは再試行できる（`retryQueueItem`）。
 - 下書きタブ: デスクトップの `DraftsView`（独自のモデル、件数、位置、グループ、選択と仕上げ）を、1 カラムで 1 行に候補 2 つ、仕上げバーを足元に固定して並べる。`onOpen` が渡されると、各候補にボタンが付き、デスクトップのビューアーの代わりにここで画像を全画面で開く。下書きはボードの外の補助画像なので、そこには位置も隣も無い。
 - モデルと探すのタブ: デスクトップの `ModelManager` と `ModelBrowser`。`phone.css` がマネージャーのカテゴリ一覧を帯にする。探すの操作部品（ソース、種類、検索、フィルター、カードサイズ）は 1 つのメニューボタンの奥にたたまれ（`BrowseBar`、`isPhoneLayout` 経由）、スクロールする画面の一部に開く。カードサイズ（`useBrowse` の `cardSize`。スマートフォンでは小さく始まる）は、どのレイアウトでもグリッドの列幅を決める。モデルの詳細（`ModelDetail`）は、探すのドロワーと同じくタブ全体を使い、閉じる操作はその上のバーに置く。
@@ -26,7 +28,9 @@ covers:
 - 入力欄は高さ 40 px 以上（メニューは 44 px。画面の中でスクロールする）。
 - キーボードは勝手に上がらない。ポップオーバーを開いてもフォーカスはそのまま（`PopoverContent`、`isPhoneLayout` 経由）で、ピッカーと Hugging Face の検索ボックスはここでは自動フォーカスしない。キーボードは欄をタップしたときに出る。大きいプロンプトエディターもスマートフォンでは欄にフォーカスせず、2 つのプロンプトを縦に積む。小さい確認（`ui-modal--sm`）以外のダイアログはすべて全画面になり（`phone.css`）、ポーズのダイアログは設定を画像の下に置く。メニューの画像ツール（顔の修正、背景の除去、プロンプトとして説明。キャンバスが要るポーズの読み取りは除く）は、全画面で表示した画像（`PhoneView`）の上にバーを開き、ツールの切り替えは専用の行に置き、比較ボタンは無い。スマートフォンはツールの結果を、代わりに全画面で表示する（`PhoneShell` の `setToolViewer`）。LoRA のトリガーワードと参照画像の設定は、ボタンの横ではなく画面の中央に開く（`phone.css` が Radix のラッパーを固定する）。レイアウトのすべてのテキスト欄は、ポップオーバーとダイアログのものを含めて 16 px 以上（`phone.css` の 1 つの規則）。iOS Safari は、フォーカスされた欄が小さいとページを拡大するため。ビューポートはピンチズームを保つ。
 
-テスト: `frontend/src/state/layout.test.ts`、`frontend/src/app/phone/PhoneShell.test.tsx`、`frontend/src/app/phone/PhoneView.test.tsx`、`frontend/src/app/phone/PhoneQueue.test.tsx`、`frontend/src/features/agent/PhoneChat.test.tsx`、`frontend/src/app/phone/gestures.test.ts`、`frontend/src/features/params/promptbook/PromptBookDialog.phone.test.tsx`、`frontend/src/features/drafts/DraftsView.test.tsx` の開くボタン。Playwright の `phone` プロジェクト（Pixel 7、タッチ）の `frontend/e2e/phone.spec.ts`。`frontend/e2e/layout.spec.ts` のスマートフォン向けの面と、`frontend/e2e/visual/phone.spec.ts` のスマートフォンのショット。
+- スマートフォンのページはキャンバスの文書をバックエンドに保存しない（`canvasPersistence.ts`）。PC のために保存された文書は、スマートフォンでの編集で上書きされない。
+
+テスト: `frontend/src/state/layout.test.ts`、`frontend/src/features/canvas/phone/phoneEdit.test.ts`、`frontend/src/features/canvas/stage/StageController.touch.test.ts`、`frontend/src/ui/zoomMath.test.ts` のピンチ、`frontend/src/state/canvasPersistence.test.ts` のスマートフォン、`frontend/src/app/phone/PhoneShell.test.tsx`、`frontend/src/app/phone/PhoneView.test.tsx`、`frontend/src/app/phone/PhoneQueue.test.tsx`、`frontend/src/features/agent/PhoneChat.test.tsx`、`frontend/src/app/phone/gestures.test.ts`、`frontend/src/features/params/promptbook/PromptBookDialog.phone.test.tsx`、`frontend/src/features/drafts/DraftsView.test.tsx` の開くボタン。Playwright の `phone` プロジェクト（Pixel 7、タッチ）の `frontend/e2e/phone.spec.ts` と `frontend/e2e/phone-canvas.spec.ts`。`frontend/e2e/layout.spec.ts` のスマートフォン向けの面と、`frontend/e2e/visual/phone.spec.ts` のスマートフォンのショット。
 
 ## 境界
 
@@ -34,6 +38,7 @@ covers:
 
 ## 既知の限界
 
-- タブの外のすべて（キャンバス、ワークフロー、漫画、拡張機能、設定）はデスクトップレイアウト（コンピューター）が要る。アシスタントのサインインとそのサーバーの設定も同じ。アシスタントのリクエストは送ったページから行われ、PC からのリクエストはスマートフォンでは追従しない。
+- タブの外のすべて（キャンバスエディターの 3 つの道具以外のキャンバス、つまりレイヤー、領域ごとのプロンプト、bbox、ポーズ、合成。ワークフロー、漫画、拡張機能、設定）はデスクトップレイアウト（コンピューター）が要る。アシスタントのサインインとそのサーバーの設定も同じ。アシスタントのリクエストは送ったページから行われ、PC からのリクエストはスマートフォンでは追従しない。
+- キャンバス向けのジョブの結果（`image_added` の `destination` が `canvas`）は、そのジョブを送ったページを区別せず、開いているすべてのページの仮置きに入る。スマートフォンで描き直した結果は、同時に開いている PC のキャンバスの仮置きにも出て、PC の結果もスマートフォンのエディターに出る。キューの項目に送ったページの印が無いため。
 - ジョブの詳細（バッチ、時間、パラメーター）と、多数を一度にキャンセルまたは消すこと（バッチ、現在のジョブ以外すべて、キュー全体）にはデスクトップレイアウトが要る。
 - 複数の画像の選択、比較、デスクトップの画面へ行く画像の操作にはデスクトップレイアウトが要る。画像にスターを付けると、スター付きを先頭に並べるボードでは先頭へ移るので、その場所が変わる。

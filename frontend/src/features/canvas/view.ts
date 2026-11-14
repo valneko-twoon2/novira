@@ -61,10 +61,11 @@ export function resetView(store: CanvasStore = useCanvas) {
   s.setViewport(fitRect(target, stage.width, stage.height));
 }
 
-export function fitBbox(store: CanvasStore = useCanvas) {
+/** Fit the bbox into the stage, `padding` screen pixels from its edges (48 by default; a phone has less room). */
+export function fitBbox(store: CanvasStore = useCanvas, padding?: number) {
   const s = store.getState();
   const stage = viewOf(store);
-  s.setViewport(fitRect(s.bbox, stage.width, stage.height));
+  s.setViewport(fitRect(s.bbox, stage.width, stage.height, padding));
 }
 
 /** Resize the bbox around the visible layer content. */

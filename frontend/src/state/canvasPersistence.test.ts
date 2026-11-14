@@ -103,4 +103,23 @@ describe('restoring', { tags: [] }, () => {
     expect(JSON.parse(save.mock.calls[0]![0]).entities).toHaveLength(3);
     vi.useRealTimers();
   });
+
+  it('saves nothing while the phone layout is shown, so the document kept for the PC stays', { tags: ['condition'] }, async () => {
+    vi.useFakeTimers();
+    vi.spyOn(backend, 'loadCanvas').mockResolvedValue(null);
+    const save = vi.spyOn(backend, 'saveCanvas').mockResolvedValue();
+    await restoreAndWatchCanvas();
+    vi.stubGlobal('window', { matchMedia: () => ({ matches: true, addEventListener() {}, removeEventListener() {} }) });
+    try {
+      useCanvas.getState().addEntity('raster');
+      await vi.advanceTimersByTimeAsync(1500);
+      expect(save).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    useCanvas.getState().addEntity('raster');
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(save).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
+  });
 });

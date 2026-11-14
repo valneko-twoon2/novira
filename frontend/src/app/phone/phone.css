@@ -589,6 +589,11 @@ body:has(.phone[data-viewing]) .toaster {
   --phone-foot: 61px;
 }
 
+/* The canvas editor: its foot, whose height changes with the tool, as the editor measures it. */
+body:has(.phone[data-editing]) .toaster {
+  --phone-foot: var(--phone-canvas-foot, 61px);
+}
+
 body:has(.phone) .toast {
   align-items: center;
   padding: var(--space-1) 0 var(--space-1) var(--space-3);

@@ -5,6 +5,8 @@ import { Cards, Compass, Cube, Images, ListBullets, MagicWand } from '@phosphor-
 import { Activity, useEffect, useRef, type ReactNode } from 'react';
 import { PhoneChatLayer } from '@/features/agent/PhoneChat';
 import { BatchDialog } from '@/features/batch';
+import { closePhoneEdit } from '@/features/canvas/phone/phoneEdit';
+import { PhoneCanvasEditor } from '@/features/canvas/phone/PhoneCanvasEditor';
 import { ModelBrowser } from '@/features/browse/ModelBrowser';
 import { DraftsView } from '@/features/drafts/DraftsView';
 import { DeleteImagesModal } from '@/features/gallery/DeleteImagesModal';
@@ -49,6 +51,11 @@ const BODIES: Record<PhoneTab, () => ReactNode> = {
   browse: () => <ModelBrowser />,
 };
 
+function closeEditor() {
+  closePhoneEdit();
+  usePhone.getState().setEditing(false);
+}
+
 /** The phone layout draws with the Generate tab's settings and builder. */
 function drawFromGenerate() {
   const ui = useUi.getState();
@@ -59,10 +66,19 @@ function drawFromGenerate() {
 export function PhoneShell() {
   const tab = usePhone((s) => s.tab);
   const viewing = usePhone((s) => s.view !== null);
+  const editing = usePhone((s) => s.editing);
   const chatting = useAgent((s) => s.open);
   // Whatever the desktop layout had open; and again after each request of the assistant, whose tools open the screen
   // they change (a screen this layout has not), so the Generate button keeps drawing pictures.
   // The picture tools show their picture and its result full screen here, as the desktop shows them in the viewer.
+  // The window widening to the desktop layout unmounts this layout with the editor open: end the editing, so the
+  // desktop canvas box and the Generate tab's size follow each other again.
+  useEffect(
+    () => () => {
+      if (usePhone.getState().editing) closeEditor();
+    },
+    [],
+  );
   useEffect(() => {
     const show = (name: string) => usePhone.getState().show({ kind: 'image', name });
     setToolViewer({ showPicture: show, showResult: show });
@@ -76,7 +92,7 @@ export function PhoneShell() {
   }, []);
   return (
     // What is in front, for the notices to rise above its foot (phone.css, phoneChat.css).
-    <div className="phone" data-tab={tab} data-viewing={viewing || undefined} data-chat={chatting || undefined} data-testid="phone-shell">
+    <div className="phone" data-tab={tab} data-viewing={viewing || undefined} data-chat={chatting || undefined} data-editing={editing || undefined} data-testid="phone-shell">
       <PhoneHeader />
       <main className="phone__main">
         <Tabs tab={tab} />
@@ -87,6 +103,11 @@ export function PhoneShell() {
       <ErrorBoundary area="phone picture">
         <PhoneView />
       </ErrorBoundary>
+      {editing && (
+        <ErrorBoundary area="phone canvas">
+          <PhoneCanvasEditor onClose={closeEditor} />
+        </ErrorBoundary>
+      )}
       <ErrorBoundary area="dialogs">
         <DeleteImagesModal />
         {/* What the Generate tab's panel opens, as on the desktop. */}

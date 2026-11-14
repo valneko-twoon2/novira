@@ -403,6 +403,18 @@ const PHONE_SURFACES: Record<string, Surface> = {
       await scan(step, ALL);
     }
   },
+  'phone canvas editor': async (page, locale, scan) => {
+    // The picture menu opens the canvas editor: the mosaic's two sliders, then the mask's instruction and actions.
+    await page.getByTestId('phone-nav-images').click();
+    await page.getByTestId('phone-thumb').nth(1).click();
+    await page.getByTestId('phone-view-menu').click();
+    await page.getByRole('menuitem', { name: msg('canvas.phone.edit', {}, locale) }).click();
+    await expect(page.getByTestId('phone-canvas')).toBeVisible();
+    await scan('mosaic', ALL);
+    await page.getByTestId('phone-canvas-tool-mask').click();
+    await expect(page.getByTestId('phone-canvas-redraw')).toBeVisible();
+    await scan('mask', ALL);
+  },
   'phone models tab': async (page, _locale, scan) => {
     await page.getByTestId('phone-nav-models').click();
     await expect(page.getByTestId('model-manager')).toBeVisible();

@@ -320,6 +320,12 @@ export interface CanvasState extends Doc {
   replaceEntities: (entities: CanvasEntity[]) => void;
   clearCanvas: () => void;
   setBbox: (rect: Rect, opts?: { history?: boolean | string; syncParams?: boolean }) => void;
+  /**
+   * Whether the bbox size and the left form's size follow each other (only in a store made with `syncParams`). The
+   * phone's editor turns it off while it works on a picture of its own size.
+   */
+  sizeSync: boolean;
+  setSizeSync: (on: boolean) => void;
 
   setFilterPreview: (id: string, preview: FilterPreview | null) => void;
   setStagedIndex: (i: number) => void;
@@ -438,7 +444,7 @@ const persistedSlice = (s: CanvasState) => ({
 /** Makes a canvas store. Subscriptions elsewhere (saving, request building, staging) stay bound to `useCanvas`. */
 export function createCanvasStore({ persistKey, syncParams, limits, onLimit }: CanvasStoreOptions): CanvasStore {
   const syncSize = (width: number, height: number) => {
-    if (syncParams) syncParamsSize(width, height);
+    if (syncParams && store.getState().sizeSync) syncParamsSize(width, height);
   };
   const init = (set: StoreApi<CanvasState>['setState'], get: () => CanvasState): CanvasState => {
     const doc = (): Doc => ({ entities: get().entities, bbox: get().bbox });
@@ -673,6 +679,9 @@ export function createCanvasStore({ persistKey, syncParams, limits, onLimit }: C
         set({ bbox: next });
         if (opts?.syncParams !== false) syncSize(next.width, next.height);
       },
+
+      sizeSync: true,
+      setSizeSync: (sizeSync) => set({ sizeSync }),
 
       setFilterPreview: (id, preview) => {
         const { [id]: _old, ...rest } = get().filterPreviews;

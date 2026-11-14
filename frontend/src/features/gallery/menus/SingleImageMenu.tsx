@@ -82,10 +82,11 @@ const TOOL_ICONS: Record<ImageToolId, ReactNode> = {
 };
 
 /**
- * `phone` leaves out what only switches to a screen the phone layout has not (the viewer, the canvas, workflows, video,
- * text, comparing), so every item shown does something there; Upscale opens the batch enlargement there.
+ * `phone` leaves out what only switches to a screen the phone layout has not (the viewer, the desktop canvas, workflows,
+ * video, text, comparing), so every item shown does something there; Upscale opens the batch enlargement there.
+ * `onEditOnCanvas` is the phone's own canvas editor, offered in place of sending to the canvas.
  */
-export function SingleImageMenu({ image, phone = false }: { image: ImageDTO; phone?: boolean }) {
+export function SingleImageMenu({ image, phone = false, onEditOnCanvas }: { image: ImageDTO; phone?: boolean; onEditOnCanvas?: (image: ImageDTO) => void }) {
   const hasMeta = image.metadata !== null;
   const isStill = (image.mediaType ?? 'image') === 'image';
   // Pictures saved from the Text tab keep their layers, to open again.
@@ -153,6 +154,11 @@ export function SingleImageMenu({ image, phone = false }: { image: ImageDTO; pho
         {t('gallery.menu.useSize')}
       </ContextMenuItem>
       <ContextMenuSeparator />
+      {phone && onEditOnCanvas && (
+        <ContextMenuItem icon={<PaintBrush />} disabled={!isStill} onSelect={() => onEditOnCanvas(image)}>
+          {t('canvas.phone.edit')}
+        </ContextMenuItem>
+      )}
       {!phone && (
         <ContextSubMenu icon={<PaintBrush />} label={t('gallery.menu.sendToCanvas')}>
           {CANVAS_TARGETS.map(({ target, label }) => (

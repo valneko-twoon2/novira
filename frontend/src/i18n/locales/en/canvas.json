@@ -491,5 +491,10 @@
   "canvas.partFix.redraw": "Redraw painted area",
   "canvas.partFix.instruction": "What to draw",
   "canvas.partFix.instructionPlaceholder": "How to redraw it. Blank uses the Generate tab's prompt",
-  "canvas.partFix.redrawing": "Redraw of the painted area queued. The result appears in staging."
+  "canvas.partFix.redrawing": "Redraw of the painted area queued. The result appears in staging.",
+  "canvas.phone.edit": "Edit on canvas",
+  "canvas.phone.mask": "Paint area",
+  "canvas.phone.erase": "Erase",
+  "canvas.phone.redraw": "Redraw",
+  "canvas.phone.discard": "Discard"
 }

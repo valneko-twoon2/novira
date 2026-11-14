@@ -22,7 +22,7 @@ import { useParams } from '@/state/params';
 import { useQueue } from '@/state/queue';
 import { overlayImageUrl } from './overlayImage';
 import { toast } from '@/state/toasts';
-import { wheelZoomFactor } from '@/ui/zoomMath';
+import { pinchView, wheelZoomFactor } from '@/ui/zoomMath';
 import { docToScreen, HANDLE_CURSORS, hitBbox, normalizeRect, resizeRect, screenToDoc, snap, zoomAt, type BboxHandle, type Point } from '../geometry';
 import { addPoseLayer, bucketFill, fillPolygon } from '../actions';
 import { onImageLoaded } from '@/ui/canvasDraw/imageCache';
@@ -72,6 +72,12 @@ export class StageController {
   private cursor: Point | null = null;
   private screenCursor: Point | null = null;
   private spaceHeld = false;
+  /** Fingers on the stage (touch pointers) and where they are now. */
+  private touches = new Map<number, Point>();
+  /** Two fingers zoom and pan the view: which two, where they started and the view then. */
+  private pinch: { ids: [number, number]; from: [Point, Point]; vp: Viewport } | null = null;
+  /** After a pinch the finger left on the stage paints nothing until every finger is lifted. */
+  private touchHeld = false;
   private cleanup: (() => void)[] = [];
 
   constructor(
@@ -271,7 +277,49 @@ export class StageController {
     return target;
   }
 
+  /** Whether a finger's press is the stage's own: a second finger turns what the first began into a pinch. */
+  private touchDown(e: PointerEvent): boolean {
+    if (e.pointerType !== 'touch' || this.external) return false;
+    this.touches.set(e.pointerId, this.point(e));
+    if (this.touches.size < 2) return this.touchHeld;
+    if (this.pinch) return true;
+    // The stroke the first finger began is dropped; it was the start of a pinch.
+    this.drag = null;
+    const [a, b] = [...this.touches.entries()];
+    if (!a || !b) return true;
+    this.canvas.setPointerCapture(e.pointerId);
+    this.pinch = { ids: [a[0], b[0]], from: [a[1], b[1]], vp: this.store.getState().viewport };
+    this.touchHeld = true;
+    this.cursor = null;
+    this.invalidate();
+    return true;
+  }
+
+  /** Whether a finger's move is the pinch's (or belongs to the finger left after it). */
+  private touchMove(e: PointerEvent): boolean {
+    if (e.pointerType !== 'touch' || !this.touches.has(e.pointerId)) return false;
+    this.touches.set(e.pointerId, this.point(e));
+    const pinch = this.pinch;
+    if (pinch) {
+      const a = this.touches.get(pinch.ids[0]);
+      const b = this.touches.get(pinch.ids[1]);
+      if (a && b) this.store.getState().setViewport(pinchView(pinch.vp, pinch.from, [a, b]));
+    }
+    return this.touchHeld;
+  }
+
+  /** Whether a finger's lift ends the pinch (or the finger left after it). */
+  private touchUp(e: PointerEvent): boolean {
+    if (e.pointerType !== 'touch' || !this.touches.delete(e.pointerId)) return false;
+    if (this.pinch?.ids.includes(e.pointerId)) this.pinch = null;
+    const held = this.touchHeld;
+    if (this.touches.size === 0) this.touchHeld = false;
+    if (held && this.canvas.hasPointerCapture(e.pointerId)) this.canvas.releasePointerCapture(e.pointerId);
+    return held;
+  }
+
   private onPointerDown(e: PointerEvent) {
+    if (this.touchDown(e)) return;
     if (e.button === 2 || this.drag) return;
     const s = this.store.getState();
     const p = this.point(e);
@@ -386,6 +434,10 @@ export class StageController {
   }
 
   private onPointerMove(e: PointerEvent) {
+    if (this.touchMove(e)) {
+      this.invalidate();
+      return;
+    }
     const s = this.store.getState();
     const p = this.point(e);
     const view = this.viewport();
@@ -465,6 +517,10 @@ export class StageController {
   }
 
   private onPointerUp(e: PointerEvent) {
+    if (this.touchUp(e)) {
+      this.invalidate();
+      return;
+    }
     const d = this.drag;
     this.drag = null;
     if (this.canvas.hasPointerCapture(e.pointerId)) this.canvas.releasePointerCapture(e.pointerId);

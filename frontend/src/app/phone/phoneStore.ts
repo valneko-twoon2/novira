@@ -25,15 +25,20 @@ export type PhoneView = { kind: 'live'; itemId: number } | { kind: 'image'; name
 interface PhoneState {
   tab: PhoneTab;
   view: PhoneView;
+  /** The canvas editor is open over the layout (on the picture it was opened with). */
+  editing: boolean;
   setTab: (tab: PhoneTab) => void;
   show: (view: PhoneView) => void;
+  setEditing: (editing: boolean) => void;
 }
 
 export const usePhone = create<PhoneState>()((set) => ({
   tab: 'generate',
   view: null,
+  editing: false,
   setTab: (tab) => set({ tab }),
   show: (view) => set({ view }),
+  setEditing: (editing) => set({ editing }),
 }));
 
 /**

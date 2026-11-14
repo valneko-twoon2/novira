@@ -1,4 +1,5 @@
-// Visual regression of the phone layout: the tabs of a phone held upright, a picture full screen and the assistant's chat.
+// Visual regression of the phone layout: the tabs of a phone held upright, a picture full screen, the canvas editor and
+// the assistant's chat.
 import { msg } from '../fixtures';
 import { expect, inEachTheme, snap, test } from './shared';
 
@@ -23,6 +24,17 @@ inEachTheme((theme) => {
       await page.getByTestId('phone-view-info').tap();
       await expect(page.getByTestId('phone-view-meta')).toBeVisible();
       await snap(page, 'phone', theme, 'picture');
+    });
+
+    test('canvas editor', { tag: ['@scenario'] }, async ({ page }) => {
+      await page.goto('/');
+      await page.getByTestId('phone-nav-images').tap();
+      await page.getByTestId('phone-thumb').nth(1).tap();
+      await page.getByTestId('phone-view-menu').tap();
+      await page.getByRole('menuitem', { name: msg('canvas.phone.edit') }).tap();
+      await page.getByTestId('phone-canvas-tool-mask').tap();
+      await expect(page.getByTestId('phone-canvas-redraw')).toBeVisible();
+      await snap(page, 'phone', theme, 'canvas');
     });
 
     test('queue tab and drafts tab', { tag: ['@scenario'] }, async ({ page }) => {

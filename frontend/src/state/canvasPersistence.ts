@@ -5,6 +5,7 @@ import { backend } from '@/backend';
 import { ENTITY_TYPES, useCanvas, type CanvasState, type EntityType, type ImageObject, type Rect, type Viewport } from './canvas';
 import { entitiesForSaving, isNumber, isObject, isRect, restoreEntities, withNamedImage } from './canvasDocument';
 import { findImage } from './gallery';
+import { isPhoneLayout } from './layout';
 
 const VERSION = 1;
 const SAVE_DELAY_MS = 1000;
@@ -95,7 +96,7 @@ function schedule() {
 let watching = false;
 
 /**
- * Reads the saved canvas into the store, then starts saving changes. Called once after the gallery is loaded (the
+ * Reads the saved canvas into the store, then starts saving changes (not while the phone layout is shown). Called once after the gallery is loaded (the
  * pictures are looked up there). If the saved document cannot be read, saving does not start, so it is not overwritten.
  */
 export async function restoreAndWatchCanvas(): Promise<void> {
@@ -114,6 +115,8 @@ export async function restoreAndWatchCanvas(): Promise<void> {
   }
   watching = true;
   useCanvas.subscribe((s, prev) => {
+    // The phone edits one picture at a time and saves it to the gallery; the document kept for the PC stays as it was.
+    if (isPhoneLayout()) return;
     if (s.entities !== prev.entities || s.bbox !== prev.bbox || s.selectedEntityId !== prev.selectedEntityId || s.groupHidden !== prev.groupHidden) schedule();
   });
 }

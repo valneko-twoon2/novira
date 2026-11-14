@@ -491,5 +491,10 @@
   "canvas.partFix.redraw": "塗った部分を描き直す",
   "canvas.partFix.instruction": "描き直す内容",
   "canvas.partFix.instructionPlaceholder": "どう描き直すか。空なら生成タブのプロンプトを使います",
-  "canvas.partFix.redrawing": "塗った部分の描き直しをキューに入れました。結果は仮置きに出ます。"
+  "canvas.partFix.redrawing": "塗った部分の描き直しをキューに入れました。結果は仮置きに出ます。",
+  "canvas.phone.edit": "キャンバスで編集",
+  "canvas.phone.mask": "範囲を塗る",
+  "canvas.phone.erase": "消す",
+  "canvas.phone.redraw": "描き直す",
+  "canvas.phone.discard": "破棄"
 }

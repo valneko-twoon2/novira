@@ -1,0 +1,150 @@
+/* The phone's canvas editor: the whole screen over the phone layout, a top bar, the stage, and the foot with the tool's
+   options and the tools (or the results waiting). Rows a finger hits are 44px or more. */
+.phone-canvas {
+  position: fixed;
+  z-index: var(--z-phone-view);
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-app);
+  color: var(--text);
+}
+
+.phone-canvas__top {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-1);
+  height: 52px;
+  padding: 0 var(--space-2) 0 var(--space-1);
+}
+
+.phone-canvas__spacer {
+  flex: 1;
+}
+
+.phone-canvas__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text);
+}
+
+.phone-canvas__icon:disabled {
+  color: var(--text-faint);
+}
+
+.phone-canvas__top .ui-btn {
+  min-height: 40px;
+}
+
+/* The stage takes the fingers: one paints, two zoom and pan (StageController). */
+.phone-canvas__stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.phone-canvas__foot {
+  flex: none;
+  border-top: 1px solid var(--border);
+  background: var(--bg-panel);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.phone-canvas__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+}
+
+.phone-canvas__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+}
+
+.phone-canvas__label {
+  flex: none;
+  min-width: 72px;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.phone-canvas__row .ui-number {
+  min-height: 40px;
+}
+
+.phone-canvas__instruction {
+  width: 100%;
+  resize: none;
+}
+
+.phone-canvas__part {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.phone-canvas__part .ui-btn {
+  min-height: 44px;
+}
+
+.phone-canvas__bar {
+  display: flex;
+  align-items: stretch;
+  border-top: 1px solid var(--border);
+}
+
+.phone-canvas__foot > .phone-canvas__bar:first-child {
+  border-top: 0;
+}
+
+.phone-canvas__action {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  min-height: 60px;
+  padding: 0 2px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: var(--fs-xs);
+  text-align: center;
+}
+
+.phone-canvas__action:disabled {
+  color: var(--text-faint);
+}
+
+.phone-canvas__action.is-on {
+  color: var(--accent);
+}
+
+.phone-canvas__action.is-danger:not(:disabled) {
+  color: var(--danger-text);
+}
+
+.phone-canvas__action.is-accept:not(:disabled) {
+  color: var(--accent);
+}
+
+.phone-canvas__count {
+  display: grid;
+  flex: none;
+  place-items: center;
+  min-width: 40px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}

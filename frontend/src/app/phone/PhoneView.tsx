@@ -3,6 +3,7 @@
 import { CaretLeft, CaretRight, DownloadSimple, Info, Lightning, List, Star, Trash, X } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import type { ImageDTO, QueueItem } from '@/backend';
+import { openForPhoneEdit } from '@/features/canvas/phone/phoneEdit';
 import { downloadImages, recall, setStarred } from '@/features/gallery/actions';
 import { SingleImageMenu } from '@/features/gallery/menus/SingleImageMenu';
 import { requestDeleteImages } from '@/features/gallery/deleteRequest';
@@ -144,7 +145,7 @@ function PictureStage({ image, index, count, onStep }: { image: ImageDTO; index:
           </div>
         </ContextMenuTrigger>
         <ContextMenuContent>
-          <SingleImageMenu image={image} phone />
+          <SingleImageMenu image={image} phone onEditOnCanvas={editOnCanvas} />
         </ContextMenuContent>
       </ContextMenu>
       {/* Outside the stage: it holds on to the fingers it tracks, which would take a press of these buttons. */}
@@ -195,6 +196,12 @@ function PictureStage({ image, index, count, onStep }: { image: ImageDTO; index:
       </div>
     </div>
   );
+}
+
+/** Opens the picture in the canvas editor, in place of the picture. */
+function editOnCanvas(image: ImageDTO) {
+  openForPhoneEdit(image);
+  usePhone.setState({ view: null, editing: true });
 }
 
 /** What the picture was made with, over the foot of the screen. */

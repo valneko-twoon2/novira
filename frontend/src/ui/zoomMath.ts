@@ -58,6 +58,21 @@ export function zoomAt(v: ViewTransform, anchor: Point, scale: number): ViewTran
   return { scale: s, x: anchor.x - doc.x * s, y: anchor.y - doc.y * s };
 }
 
+/**
+ * The view while two fingers move from `from` to `to` (screen points) over the view `v` they started on: the document
+ * point under the fingers' first midpoint follows their midpoint, and the scale (clamped) follows their spread.
+ */
+export function pinchView(v: ViewTransform, from: readonly [Point, Point], to: readonly [Point, Point]): ViewTransform {
+  const mid = (a: Point, b: Point) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+  const spread = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
+  const m0 = mid(from[0], from[1]);
+  const m1 = mid(to[0], to[1]);
+  const d0 = spread(from[0], from[1]);
+  const ratio = d0 > 0 ? spread(to[0], to[1]) / d0 : 1;
+  const panned = { scale: v.scale, x: v.x + m1.x - m0.x, y: v.y + m1.y - m0.y };
+  return zoomAt(panned, m1, v.scale * ratio);
+}
+
 /** Next zoom preset in a direction (+1 in, -1 out). */
 export function stepZoom(scale: number, dir: 1 | -1): number {
   if (dir > 0) return ZOOM_STEPS.find((z) => z > scale + 1e-3) ?? MAX_SCALE;
