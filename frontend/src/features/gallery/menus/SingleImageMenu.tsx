@@ -83,7 +83,7 @@ const TOOL_ICONS: Record<ImageToolId, ReactNode> = {
 
 /**
  * `phone` leaves out what only switches to a screen the phone layout has not (the viewer, the canvas, workflows, video,
- * text, upscaling, comparing), so every item shown does something there.
+ * text, comparing), so every item shown does something there; Upscale opens the batch enlargement there.
  */
 export function SingleImageMenu({ image, phone = false }: { image: ImageDTO; phone?: boolean }) {
   const hasMeta = image.metadata !== null;
@@ -185,11 +185,9 @@ export function SingleImageMenu({ image, phone = false }: { image: ImageDTO; pho
           {t('gallery.menu.sendToText')}
         </ContextMenuItem>
       )}
-      {!phone && (
-        <ContextMenuItem icon={<ArrowsOut />} disabled={!isStill} onSelect={() => sendToUpscale(image)} shortcut="Shift+U">
-          {t('gallery.menu.upscale')}
-        </ContextMenuItem>
-      )}
+      <ContextMenuItem icon={<ArrowsOut />} disabled={!isStill} onSelect={() => sendToUpscale(image, { phone })} shortcut={phone ? undefined : 'Shift+U'}>
+        {t('gallery.menu.upscale')}
+      </ContextMenuItem>
       {!phone && (
         <ContextMenuItem icon={<Crosshair />} disabled={(image.mediaType ?? 'image') !== 'image'} onSelect={() => fixPartOnCanvas(image)}>
           {t('gallery.menu.segment')}

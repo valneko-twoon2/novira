@@ -305,3 +305,15 @@ test(
     await expect(chat.getByTestId('agent-msg-user')).toHaveCount(1);
   },
 );
+
+test('upscales a picture from its menu, with the batch enlargement (no Upscaling tab on a phone)', { tag: ['@scenario', '@regression'] }, async ({ page }) => {
+  await openPhone(page, { pictures: true });
+  await page.getByTestId('phone-nav-images').tap();
+  await page.getByTestId('phone-thumb').first().tap();
+  await expect(page.getByTestId('phone-view-image')).toBeVisible();
+  await page.getByTestId('phone-view-menu').tap();
+  await page.getByRole('menuitem', { name: msg('gallery.menu.upscale') }).tap();
+  const dialog = page.getByTestId('batch');
+  await expect(dialog).toBeVisible();
+  await expect(page.getByTestId('batch-op-upscale')).toHaveAttribute('aria-checked', 'true');
+});

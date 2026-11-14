@@ -27,6 +27,13 @@ describe('the gallery upscale', { tags: [] }, () => {
     expect(useParams.getState().upscale.initialImage).toBeNull();
   });
 
+  it('opens the model-only enlargement on a phone, which has no Upscaling tab', { tags: ['decision-table'] }, () => {
+    sendToUpscale(image, { phone: true });
+    expect(useBatch.getState()).toMatchObject({ names: ['a.png'], op: 'upscale' });
+    expect(useUi.getState().activeTab).not.toBe('upscaling');
+    expect(useParams.getState().upscale.initialImage).toBeNull();
+  });
+
   it('sends the picture to the Upscaling tab where it is shown', { tags: ['decision-table'] }, () => {
     sendToUpscale(image);
     expect(useUi.getState().activeTab).toBe('upscaling');

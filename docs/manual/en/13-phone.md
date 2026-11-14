@@ -100,7 +100,7 @@ Opening a list such as the model, the LoRAs or the presets does not bring up the
 - When it is not zoomed, swipe sideways to go to the next picture of the board. The side buttons do the same.
 - Tap twice to switch between zoomed in and the full picture.
 - The **{{ui:gallery.viewer.toggleMetadata}}** button shows the prompts, model, seed and size.
-- The three-line button at the top right (**{{ui:phone.pictureMenu}}**) opens the same menu as right-clicking a picture on the computer. Pressing and holding the picture opens it too. Items that send the picture to a place the phone does not have, such as the canvas or workflows, are left out.
+- The three-line button at the top right (**{{ui:phone.pictureMenu}}**) opens the same menu as right-clicking a picture on the computer. Pressing and holding the picture opens it too. Items that send the picture to a place the phone does not have, such as the canvas or workflows, are left out. **{{ui:gallery.menu.upscale}}** opens **{{ui:batch.title}}**, which enlarges the picture with an upscale model.
 - The buttons at the foot are **{{ui:gallery.menu.star}}**, **{{ui:common.download}}**, **{{ui:phone.useSettings}}** (puts the picture's settings in the Generate tab) and **{{ui:common.delete}}**. Whether it asks before deleting follows **{{ui:settings.confirmOnDelete}}** in Settings.
 
 ### Working with the queue

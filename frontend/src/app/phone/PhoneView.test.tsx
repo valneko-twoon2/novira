@@ -193,8 +193,8 @@ describe('a picture full screen', { tags: [] }, () => {
       fireEvent.click(screen.getByTestId('phone-view-menu'));
       const items = (await screen.findAllByRole('menuitem')).map((e) => e.textContent ?? '');
       const has = (key: Parameters<typeof t>[0]) => items.some((text) => text.startsWith(t(key)));
-      for (const key of ['gallery.menu.remix', 'gallery.menu.star', 'caption.menu', 'gallery.menu.useAsReference', 'gallery.menu.changeBoard', 'gallery.menu.delete'] as const) expect(has(key), key).toBe(true);
-      for (const key of ['gallery.menu.openInViewer', 'gallery.menu.compare', 'gallery.menu.loadWorkflow', 'gallery.menu.sendToCanvas', 'gallery.menu.upscale', 'gallery.menu.segment'] as const) expect(has(key), key).toBe(false);
+      for (const key of ['gallery.menu.remix', 'gallery.menu.star', 'caption.menu', 'gallery.menu.useAsReference', 'gallery.menu.changeBoard', 'gallery.menu.delete', 'gallery.menu.upscale'] as const) expect(has(key), key).toBe(true);
+      for (const key of ['gallery.menu.openInViewer', 'gallery.menu.compare', 'gallery.menu.loadWorkflow', 'gallery.menu.sendToCanvas', 'gallery.menu.segment'] as const) expect(has(key), key).toBe(false);
     },
   );
 

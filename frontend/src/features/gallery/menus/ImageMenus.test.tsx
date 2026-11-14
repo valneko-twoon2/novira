@@ -203,6 +203,12 @@ describe('SingleImageMenu', () => {
     expect(screen.getByTestId('menu-tool-settings-caption')).toBeTruthy();
   });
 
+  it('offers Upscale on a phone too, as the batch enlargement', { tags: ['condition', 'regression'] }, async () => {
+    showMenu(<SingleImageMenu image={image()} phone />);
+    await choose(t('gallery.menu.upscale'));
+    expect(actions.sendToUpscale).toHaveBeenCalledWith(expect.objectContaining({ name: 'a.png' }), { phone: true });
+  });
+
   it('derives new pictures from it', { tags: ['scenario'] }, async () => {
     showMenu(<SingleImageMenu image={image({ metadata: { modelKey: 'm', generationMode: 'txt2img' } as never })} />);
     await chooseInSub(t('gallery.derive.menu'), t('gallery.derive.custom'));

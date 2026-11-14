@@ -208,11 +208,12 @@ function openGenerateMedia(media: 'video' | 'text') {
   ui.setMedia(media);
 }
 
-export function sendToUpscale(image: ImageDTO) {
+/** `phone`: the phone layout, which has no Upscaling tab either. */
+export function sendToUpscale(image: ImageDTO, { phone = false }: { phone?: boolean } = {}) {
   // Only a picture is enlarged: a video or a sound would open the batch dialog with nothing in it (the menus grey the item out).
   if ((image.mediaType ?? 'image') !== 'image') return;
-  // Without the Upscaling tab (hidden in the app) the picture is enlarged by an upscale model alone, as the batch dialog does.
-  if (!isScreenShown('upscaling')) {
+  // Without the Upscaling tab (hidden in the app, absent on a phone) the picture is enlarged by an upscale model alone, as the batch dialog does.
+  if (phone || !isScreenShown('upscaling')) {
     useBatch.getState().open([image.name], 'upscale');
     return;
   }

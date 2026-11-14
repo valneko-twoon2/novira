@@ -7,7 +7,8 @@
     "07-media.md",
     "08-models.md",
     "09-assistant-settings.md",
-    "10-troubleshooting.md"
+    "10-troubleshooting.md",
+    "13-phone.md"
   ],
   "es": [
     "01-start.md",
@@ -17,7 +18,8 @@
     "07-media.md",
     "08-models.md",
     "09-assistant-settings.md",
-    "10-troubleshooting.md"
+    "10-troubleshooting.md",
+    "13-phone.md"
   ],
   "fr": [
     "01-start.md",
@@ -27,7 +29,8 @@
     "07-media.md",
     "08-models.md",
     "09-assistant-settings.md",
-    "10-troubleshooting.md"
+    "10-troubleshooting.md",
+    "13-phone.md"
   ],
   "ko": [
     "01-start.md",
@@ -37,7 +40,8 @@
     "07-media.md",
     "08-models.md",
     "09-assistant-settings.md",
-    "10-troubleshooting.md"
+    "10-troubleshooting.md",
+    "13-phone.md"
   ],
   "pt-BR": [
     "01-start.md",
@@ -47,7 +51,8 @@
     "07-media.md",
     "08-models.md",
     "09-assistant-settings.md",
-    "10-troubleshooting.md"
+    "10-troubleshooting.md",
+    "13-phone.md"
   ],
   "ru": [
     "01-start.md",
@@ -57,7 +62,8 @@
     "07-media.md",
     "08-models.md",
     "09-assistant-settings.md",
-    "10-troubleshooting.md"
+    "10-troubleshooting.md",
+    "13-phone.md"
   ],
   "zh-CN": [
     "01-start.md",
@@ -67,7 +73,8 @@
     "07-media.md",
     "08-models.md",
     "09-assistant-settings.md",
-    "10-troubleshooting.md"
+    "10-troubleshooting.md",
+    "13-phone.md"
   ],
   "zh-TW": [
     "01-start.md",
@@ -77,6 +84,7 @@
     "07-media.md",
     "08-models.md",
     "09-assistant-settings.md",
-    "10-troubleshooting.md"
+    "10-troubleshooting.md",
+    "13-phone.md"
   ]
 }

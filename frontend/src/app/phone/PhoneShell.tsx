@@ -4,6 +4,7 @@
 import { Cards, Compass, Cube, Images, ListBullets, MagicWand } from '@phosphor-icons/react';
 import { Activity, useEffect, useRef, type ReactNode } from 'react';
 import { PhoneChatLayer } from '@/features/agent/PhoneChat';
+import { BatchDialog } from '@/features/batch';
 import { ModelBrowser } from '@/features/browse/ModelBrowser';
 import { DraftsView } from '@/features/drafts/DraftsView';
 import { DeleteImagesModal } from '@/features/gallery/DeleteImagesModal';
@@ -97,6 +98,7 @@ export function PhoneShell() {
         <ShareDialog />
         <WatermarkCheckDialog />
         <DeriveDialog />
+        <BatchDialog />
       </ErrorBoundary>
     </div>
   );
