@@ -627,3 +627,13 @@ describe('a work branch that changes only the changelog, the test counts or test
     expect(release({ checks: 'pass', verdict: 'none' })).toMatchObject({ merge: false });
   });
 });
+
+describe('who starts a release', () => {
+  it('keeps /release-notes out of the agent\'s own hands: only the user starts a release (2026-11-14)', { tags: ['regression'] }, () => {
+    const skill = readFileSync(path.join(ROOT, '.claude/skills/release-notes/SKILL.md'), 'utf8');
+    const front = skill.split('\n---')[0];
+    expect(front).toMatch(/^disable-model-invocation: true$/m);
+    const ship = readFileSync(path.join(ROOT, '.claude/skills/ship/SKILL.md'), 'utf8');
+    expect(ship).not.toMatch(/run `\/release-notes`/);
+  });
+});

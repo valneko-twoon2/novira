@@ -1,6 +1,6 @@
 ---
 name: ship
-description: "Takes a finished work branch into develop with no pull request: a light review by a fresh agent whose every suspected problem on a program is checked by a run (a test that fails, the program driven) before it counts, fixes what the run showed real, then lands the branch as one squashed commit on develop with scripts/tools/land.mjs, removes the worktree, and judges whether develop calls for a release (/release-notes). Changelog- and test-only branches land with no review. Use when work on a branch is done and committed (your own or a subagent's after /gatekeeper's checks), or when the user says to take it in (マージして, develop に入れて, 出して)."
+description: "Takes a finished work branch into develop with no pull request: a light review by a fresh agent whose every suspected problem on a program is checked by a run (a test that fails, the program driven) before it counts, fixes what the run showed real, then lands the branch as one squashed commit on develop with scripts/tools/land.mjs, removes the worktree, and reports what develop now holds unreleased (a release runs only when the user asks). Changelog- and test-only branches land with no review. Use when work on a branch is done and committed (your own or a subagent's after /gatekeeper's checks), or when the user says to take it in (マージして, develop に入れて, 出して)."
 argument-hint: "The worktree or branch to ship (default: the current one)"
 user-invocable: true
 disable-model-invocation: false
@@ -14,7 +14,7 @@ Ship progress:
 - [ ] 2. Reviewed by a fresh agent; each suspicion on a program run, only the real ones are findings
 - [ ] 3. Findings fixed (with the test that showed them), reviewed again until ok
 - [ ] 4. Landed by land.mjs, worktree removed
-- [ ] 5. Release judged
+- [ ] 5. Unreleased user-visible changes noted (no release unless the user asks)
 - [ ] 6. Reported
 ```
 
@@ -75,10 +75,10 @@ Never pipe `land.mjs` into another command when something follows (a hidden fail
 
 Then remove the worktree: `node scripts/tools/worktree.mjs remove <path>` (it deletes the landed branch).
 
-## 5. Release?
+## 5. No release on your own
 
-After every land except the one that holds a release's version and CHANGELOG (`chore: v<version> のリリースを用意する`: go back to `/release-notes` section 3 instead), judge whether `develop` should be released now, by the rule of `/release-notes` section 1. If yes, run `/release-notes`; if not, say in the report why it waits.
+The land of a release's version and CHANGELOG (`chore: v<version> のリリースを用意する`) goes back to `/release-notes` section 3. After any other land, do not start a release: when and at which version to release is the user's call (2026-11-14). Say in the report, in one line, that develop holds user-visible changes not yet released (by `node scripts/tools/release-range.mjs`), so the user can ask for `/release-notes` when they want one.
 
 ## 6. Report
 
-The commit on `develop`; the review rounds, the findings each one showed by a run, and the suspicions it set aside; the local checks run; what was not verified and why; whether a release followed, and its tag.
+The commit on `develop`; the review rounds, the findings each one showed by a run, and the suspicions it set aside; the local checks run; what was not verified and why; the unreleased user-visible changes on develop, in one line.
