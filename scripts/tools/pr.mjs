@@ -1,33 +1,30 @@
-// The pull request of a work branch, from opening to merge (the `/ship` skill; docs/development.md, "ブランチと PR").
-//   node scripts/tools/pr.mjs open --body-file <f> [--title <t>]   push the current branch and open its pull request to develop; on an open
-//                                                    one, push and update the title or the description given. The description has the
-//                                                    sections of .github/pull_request_template.md (bodyProblems). A branch of two or more
-//                                                    commits needs --title: the title becomes the subject of the squashed commit on develop,
-//                                                    so it is checked like a commit message.
+// The pull requests of a release and of the merge back (the `/release-notes` skill; docs/development.md, "ブランチと PR"). A work branch
+// has no pull request: it goes into develop with scripts/tools/land.mjs (the user's rule, 2026-11-14).
 //   node scripts/tools/pr.mjs open --release --title <t> --body-file <f> [--name <n>]   the release pull request: a snapshot of origin/develop
 //                                                    (the branch release/<n>; n is the version in the title, v1.2.3) into main, as a draft (CI and
-//                                                    CodeQL run once it is ready, as for any pull request to main). A snapshot, so develop goes on
-//                                                    taking work while the release is reviewed and tested; run it again to bring the snapshot up to
-//                                                    develop (a fast-forward).
+//                                                    CodeQL run once it is ready). A snapshot, so develop goes on taking work while the release is
+//                                                    reviewed and tested; run it again (no title) to bring the snapshot up to develop (a fast-forward)
+//                                                    or with --body-file to update the description. The description has the sections of
+//                                                    .github/pull_request_template.md (bodyProblems).
 //   node scripts/tools/pr.mjs sync                   after a release: the pull request that merges main back into develop (no review: merging
 //                                                    main must leave develop's own tree as it is, `syncSafe`). When develop changed lines the
 //                                                    release also changed (a generated table, say), that merge conflicts: the pull request then comes
 //                                                    from sync/<id>, a merge commit of develop and main that keeps develop's tree, made only when
 //                                                    main's tree is a state develop once had (the release was a snapshot of develop).
-//   node scripts/tools/pr.mjs review <n> --verdict ok|changes --sha <commit read> --body-file <f>   (the shape: reviewProblems)
-//                                                    post an agent's review of the commit it read (a comment review: GitHub lets nobody
-//                                                    approve their own pull request, and the agents act as the user). Refused when the
-//                                                    head moved past that commit.
+//   node scripts/tools/pr.mjs review <n> --verdict ok|changes --sha <commit read> --body-file <f>   (the shape: reviewProblems; a finding on
+//                                                    a program is shown real by a run) post an agent's review of the commit it read (a comment
+//                                                    review: GitHub lets nobody approve their own pull request, and the agents act as the user).
+//                                                    Refused when the head moved past that commit.
 //   node scripts/tools/pr.mjs status <n>             the checks, the agent review of the current head and whether it may merge
-//   node scripts/tools/pr.mjs merge <n> [--wait]     into develop: squash-merge when the review of the head is ok (no CI or CodeQL is required).
-//                                                    Into main (a release): a draft with an ok review is made ready (the checks start); then
+//   node scripts/tools/pr.mjs merge <n> [--wait]     into main (a release): a draft with an ok review is made ready (the checks start); then
 //                                                    squash-merge when every check (required and CodeQL) passed and the review of the head is ok;
 //                                                    --wait waits for running checks (up to 60 minutes). A failed check makes it a draft again.
-//                                                    Then deletes the branch on origin (never develop or main) and fast-forwards the main
-//                                                    checkout when it is on develop.
-// The merge rule is `mergeDecision`: only a pull request of this repository, from a work branch into develop, from a release branch
-// (release/<n>, a snapshot of develop) into main (a release, on green required checks and CodeQL) or from main into develop (`sync`), on an `ok` verdict written by the signed-in user's
-// account for exactly its head commit (not for `sync`); a push after the review needs a new review.
+//                                                    main into develop (sync): a merge commit when it leaves develop's tree as it is. Then deletes
+//                                                    the branch on origin (never develop or main) and fast-forwards the main checkout when it is on
+//                                                    develop.
+// The merge rule is `mergeDecision`: only a pull request of this repository, from a release branch (release/<n>, a snapshot of develop)
+// into main (on green required checks and CodeQL and an `ok` verdict written by the signed-in user's account for exactly its head
+// commit; a push after the review needs a new review) or from main into develop (`sync`).
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -117,7 +114,7 @@ export function gatingChecks(all, required) {
 }
 
 /**
- * Files a pull request into develop may change with no agent review (the user's choice, 2026-11-13: the review made small pull requests
+ * Files a work branch may change and go into develop with no agent review (scripts/tools/land.mjs) (the user's choice, 2026-11-13: the review made small pull requests
  * slow): the changelog, docs/tests/README.md (the test techniques and their generated counts), and tests: test files, the e2e specs and
  * their baselines, a Rust integration test file at the top of a crate's tests/ (each one is a test of its own). One file of anything
  * else (the app, a script, a rule, a document, the lists of what a check allows such as frontend/e2e/a11yKnown.ts or perfBudget.ts, the
@@ -140,9 +137,9 @@ export function reviewFree(files) {
  * { merge, wait, reason, ready?, toDraft? } from the gating checks, the review verdict of the head and the pull request itself; `alerts`
  * null is unknown. A draft is reviewed with no CI: once the review of its head is ok, `ready` asks to make it ready for review, which
  * starts the checks. A failed check or an open code scanning alert sends it back to a draft (`toDraft`), so the pushes that fix it
- * run no CI until the next ok review. `reviewFree` merges a pull request into develop with no review (the function of that name).
+ * run no CI until the next ok review. A work branch has no pull request: it goes into develop with scripts/tools/land.mjs.
  */
-export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, base = WORK_BRANCH, head = '', fork = false, title = [], body = [], alerts = 0, syncSafe = null, snapshot = null, reviewFree: free = false }) {
+export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, base = WORK_BRANCH, head = '', fork = false, title = [], body = [], alerts = 0, syncSafe = null, snapshot = null }) {
   if (state !== 'OPEN') return { merge: false, wait: false, reason: `the pull request is ${state.toLowerCase()}` };
   if (fork) return { merge: false, wait: false, reason: 'the pull request comes from another repository: a person merges it' };
   if (base !== WORK_BRANCH && base !== RELEASE_BRANCH) return { merge: false, wait: false, reason: `the pull request goes to ${base}, not ${WORK_BRANCH} or ${RELEASE_BRANCH}` };
@@ -151,7 +148,7 @@ export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, 
   if (base === RELEASE_BRANCH && snapshot !== true) return { merge: false, wait: false, reason: snapshot === false ? `${head} holds commits that ${WORK_BRANCH} does not: it is not a snapshot of ${WORK_BRANCH}` : `whether ${head} is a snapshot of ${WORK_BRANCH} cannot be told here (git failed)` };
   // A snapshot branch is opened with --release, never as a work branch into develop.
   if (base === WORK_BRANCH && isReleaseBranch(head)) return { merge: false, wait: false, reason: `${head} is a release snapshot: it goes into ${RELEASE_BRANCH}, not ${WORK_BRANCH}` };
-  if (title.length) return { merge: false, wait: false, reason: `the title cannot be the commit on ${base} (${title[0]}): fix it with pr.mjs open --title` };
+  if (title.length) return { merge: false, wait: false, reason: `the title cannot be the commit on ${base} (${title[0]}): fix it with pr.mjs open --release --title` };
   if (body.length) return { merge: false, wait: false, reason: `the description is not complete (${body[0]}): fill in .github/pull_request_template.md` };
   // main into develop: nothing new to review when merging main changes nothing in develop's tree.
   if (isSyncPullRequest(base, head)) {
@@ -159,12 +156,10 @@ export function mergeDecision({ checks, verdict, state = 'OPEN', draft = false, 
     if (!syncSafe) return { merge: false, wait: false, reason: 'merging main into develop would change develop (a conflict, or a change only main has): a person looks at it' };
     return { merge: true, wait: false, reason: "merging main into develop leaves develop's tree as it is" };
   }
+  // A work branch goes into develop with no pull request (the user's rule, 2026-11-14): scripts/tools/land.mjs.
+  if (base === WORK_BRANCH) return { merge: false, wait: false, reason: `a work branch goes into ${WORK_BRANCH} with no pull request: node scripts/tools/land.mjs in its worktree` };
   if (verdict === 'changes') return { merge: false, wait: false, reason: 'the agent review of the current head asks for changes' };
-  if (verdict !== 'ok' && base === WORK_BRANCH && free && !draft) return { merge: true, wait: false, reason: `only the changelog, the test counts or tests change: no agent review is needed into ${WORK_BRANCH}` };
   if (verdict !== 'ok') return { merge: false, wait: false, reason: 'no agent review of the current head (pushed after the review?): review it first' };
-  // Into develop nothing runs on the pull request (a work branch is reviewed, not tested here): the ok review is the whole condition.
-  if (base === WORK_BRANCH && draft) return { merge: false, wait: true, ready: true, reason: 'the review of the draft is ok: it is made ready for review' };
-  if (base === WORK_BRANCH) return { merge: true, wait: false, reason: `the agent review of the head is ok (no CI or CodeQL is required into ${WORK_BRANCH})` };
   if (draft) return { merge: false, wait: true, ready: true, reason: 'the review of the draft is ok: it is made ready for review, which starts the checks' };
   if (alerts === null) return { merge: false, wait: true, reason: 'the code scanning alerts cannot be read (gh failed): no merge until they can' };
   if (checks === 'fail') return { merge: false, wait: false, toDraft: true, reason: 'a check failed (required or CodeQL): it goes back to a draft; fix, push, review again' };
@@ -280,8 +275,33 @@ export function mergeArgs(n, pr) {
   return ['pr', 'merge', String(n), how, '--match-head-commit', pr.headRefOid, '--subject', pr.title, '--body', ''];
 }
 
-/** The headings of a review, in order; 指摘 holds the findings that block the merge, 任意 the ones that do not. */
-export const REVIEW_SECTIONS = ['総評', '前回の指摘', '指摘', '任意'];
+/**
+ * The headings of a review, in order; 指摘 holds the findings that block the merge, each one shown real by a run (検証); 退けた候補 the
+ * suspicions a run did not bear out; 任意 the findings that do not block (the user's rule, 2026-11-14: the review is light, a run
+ * decides whether a problem is real).
+ */
+export const REVIEW_SECTIONS = ['総評', '前回の指摘', '指摘', '退けた候補', '任意'];
+
+/**
+ * Whether a finding at `place` (file:line) is about a document rather than a program: the manual, the docs, the rules and skills, the
+ * screen texts. Those are judged by reading, as before; a finding on a program is shown by a run.
+ */
+export function isDocumentPlace(place) {
+  const file = place.replace(/:\d+$/, '');
+  return /\.(md|txt)$/.test(file) || file.startsWith('frontend/src/i18n/locales/');
+}
+
+/**
+ * Why the 検証 line of a finding at `place` does not show it real, or null: on a program it names what was run in backticks (a test, a
+ * command) and says 再現した; on a document it says why the text is wrong, in any words.
+ */
+export function verifyProblem(place, line) {
+  const text = (line ?? '').replace(/^\s*- 検証:/, '').trim();
+  if (!text) return `a finding needs the line "   - 検証: ..." (${place})`;
+  if (isDocumentPlace(place)) return null;
+  if (!/`[^`]+`/.test(text) || !text.includes('再現した')) return `a finding on a program is shown by a run: "   - 検証: <the test or command run, in backticks> ... 再現した" (${place})`;
+  return null;
+}
 
 /**
  * Why `text` is not a review in the agreed shape, for `verdict` and the commit `sha` it read: a GitHub alert box with the verdict,
@@ -298,7 +318,11 @@ export const REVIEW_SECTIONS = ['総評', '前回の指摘', '指摘', '任意']
  *   #### 指摘                                 (changes: one item or more; ok: none, the section left out)
  *   1. **`path/to/file.ext:12`**
  *      - 問題: <what goes wrong>
+ *      - 検証: <a program: `the test or command run` and what it showed, 再現した; a document: why the text is wrong>
  *      - 直し方: <what to do>
+ *
+ *   #### 退けた候補                           (optional: suspicions a run did not bear out)
+ *   - **`path/to/file.ext:3`** <the suspicion> 検証: <what was run and what it showed>
  *
  *   #### 任意                                 (optional)
  *   - **`path/to/file.ext:3`** <a finding that does not block the merge>
@@ -333,8 +357,9 @@ export function reviewProblems(verdict, text, sha) {
   const findings = section('指摘') ?? [];
   const items = [];
   for (const l of findings) {
-    if (/^\d+\. /.test(l)) items.push({ head: l, problem: false, fix: false });
+    if (/^\d+\. /.test(l)) items.push({ head: l, problem: false, fix: false, verify: null });
     else if (items.length && /^\s+- 問題: \S/.test(l)) items[items.length - 1].problem = true;
+    else if (items.length && /^\s+- 検証:/.test(l)) items[items.length - 1].verify = l;
     else if (items.length && /^\s+- 直し方: \S/.test(l)) items[items.length - 1].fix = true;
   }
   const optional = (section('任意') ?? []).filter((l) => l.startsWith('- ')).length;
@@ -343,6 +368,11 @@ export function reviewProblems(verdict, text, sha) {
   for (const it of items) {
     if (!/^\d+\. \*\*`[^`\s]+:\d+`\*\*$/.test(it.head)) problems.push(`a finding starts with its place alone, "1. **\`file.ext:line\`**": "${it.head.slice(0, 50)}"`);
     if (!it.problem || !it.fix) problems.push(`a finding needs the lines "   - 問題: ..." and "   - 直し方: ...": "${it.head.slice(0, 50)}"`);
+    const bad = verifyProblem(/`([^`\s]+)`/.exec(it.head)?.[1] ?? '', it.verify);
+    if (bad) problems.push(bad);
+  }
+  for (const l of (section('退けた候補') ?? []).filter((x) => x.startsWith('- '))) {
+    if (!/検証: \S/.test(l)) problems.push(`a dismissed suspicion says what was run: "- ... 検証: ...": "${l.slice(0, 50)}"`);
   }
   if (head && Number(head[2]) !== items.length) problems.push(`the box says 指摘 ${head[2]} 件; the section has 指摘 ${items.length} 件`);
   if (head && Number(head[3]) !== optional) problems.push(`the box says 任意 ${head[3]} 件; the section has 任意 ${optional} 件`);
@@ -532,10 +562,21 @@ function decisionOf(n, guard = { before: null, floor: null }) {
     alerts: gated ? openAlerts(n) : 0,
     syncSafe: sync ? (pr.headRefName === RELEASE_BRANCH ? syncIsSafe(pr.headRefOid) : syncBranchSafe(pr.headRefOid, pr.headRefName)) : null,
     snapshot,
-    // every file listed (gh lists at most 100), or it is not known to be free
-    reviewFree: (pr.files ?? []).length === pr.changedFiles && reviewFree(pr.files ?? []),
   });
   return { pr, checks, decision, verdict };
+}
+
+/** Fast-forwards the main checkout of the repository at `cwd` to origin/develop when it is on develop (after a merge or a land); a failure is only reported. */
+export function fastForwardMainCheckout(tag, cwd = ROOT) {
+  try {
+    const mainTree = git(['worktree', 'list', '--porcelain'], { cwd }).split(/\r?\n/).find((l) => l.startsWith('worktree '))?.slice(9).trim();
+    if (mainTree && git(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: mainTree }).trim() === WORK_BRANCH) {
+      git(['pull', '--ff-only', 'origin', WORK_BRANCH], { cwd: mainTree });
+      console.log(`${tag}: ${mainTree} fast-forwarded to origin/${WORK_BRANCH}`);
+    }
+  } catch (e) {
+    console.error(`${tag}: could not fast-forward the main checkout (${`${e.stderr ?? e.message}`.trim().split('\n')[0]}); run git pull --ff-only there`);
+  }
 }
 
 const sleep = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
@@ -545,12 +586,10 @@ function main(argv) {
   const [cmd, n] = argv;
   if (cmd === 'open') {
     const release = argv.includes('--release');
-    // A release is a snapshot of the remote develop (a release/<n> branch) into main, whatever this checkout holds; a work branch is the checked out one.
-    let branch = release ? null : git(['rev-parse', '--abbrev-ref', 'HEAD']).trim();
-    if (!release && [RELEASE_BRANCH, WORK_BRANCH, 'HEAD'].includes(branch)) throw new Error(`open a pull request from a work branch, not from ${branch}`);
-    if (!release && isReleaseBranch(branch)) throw new Error(`${branch} is a release snapshot: open it with --release`);
-    if (!release && isSyncBranch(branch)) throw new Error(`${branch} is made by pr.mjs sync: run that instead`);
-    const base = release ? RELEASE_BRANCH : WORK_BRANCH;
+    // A release is a snapshot of the remote develop (a release/<n> branch) into main, whatever this checkout holds.
+    if (!release) throw new Error(`a work branch goes into ${WORK_BRANCH} with no pull request: node scripts/tools/land.mjs --review-file <f> in its worktree (only a release opens one: open --release)`);
+    let branch = null;
+    const base = RELEASE_BRANCH;
     git(['fetch', 'origin', WORK_BRANCH, base]);
     if (release) {
       // an open release pull request, to update its description or bring its snapshot up to develop
@@ -679,18 +718,10 @@ function main(argv) {
       // already deleted (the repository may delete merged branches itself), or moved since the merge (kept)
     }
     console.log(`pr: #${n} merged (${state.pr.url})`);
-    try {
-      const mainTree = git(['worktree', 'list', '--porcelain'], { cwd: ROOT }).split(/\r?\n/).find((l) => l.startsWith('worktree '))?.slice(9).trim();
-      if (mainTree && git(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: mainTree }).trim() === WORK_BRANCH) {
-        git(['pull', '--ff-only', 'origin', WORK_BRANCH], { cwd: mainTree });
-        console.log(`pr: ${mainTree} fast-forwarded to origin/${WORK_BRANCH}`);
-      }
-    } catch (e) {
-      console.error(`pr: could not fast-forward the main checkout (${`${e.stderr ?? e.message}`.trim().split('\n')[0]}); run git pull --ff-only there`);
-    }
+    fastForwardMainCheckout('pr');
     return 0;
   }
-  console.error('usage: node scripts/tools/pr.mjs open [--release] --body-file <f> [--title t] | sync | review <n> --verdict ok|changes --sha <commit> --body-file <f> | status <n> | merge <n> [--wait]');
+  console.error('usage: node scripts/tools/pr.mjs open --release [--title t] [--body-file <f>] | sync | review <n> --verdict ok|changes --sha <commit> --body-file <f> | status <n> | merge <n> [--wait]');
   return 2;
 }
 

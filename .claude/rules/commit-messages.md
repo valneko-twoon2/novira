@@ -41,7 +41,7 @@ feat(comic): ページ帯に各ページを縮小表示する
 - 吹き出しは 15 の形、線、黒塗り、揺れ。輪郭は点で形を直せる
 ```
 
-`develop` gets one squashed commit per pull request (and `main` one per release, titled `chore: v<version> をリリースする`), and its subject is the pull request's title: the title follows these rules too, with the type of the main change (`scripts/tools/pr.mjs open` checks it).
+`develop` gets one squashed commit per work branch (`scripts/tools/land.mjs`; and `main` one per release pull request, titled `chore: v<version> をリリースする`), and its subject is the branch's only commit subject or the `--title` given: it follows these rules too, with the type of the main change (`land.mjs` and `pr.mjs open` check it).
 
 ## Enforcement
 

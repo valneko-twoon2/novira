@@ -1,12 +1,12 @@
 ---
 name: gatekeeper
-description: "Checks a subagent's branch or worktree before it goes to develop: reads its report against the diff and checks the AGENTS.md rules on the diff, then hands the branch to /ship (pull request, agent review, CI, squash merge) and removes the worktree safely; also how to brief the subagent and make its worktree. Use before taking in a subagent's work, before handing work to a subagent in a worktree, or when the user says to take a subagent's branch in (取り込んで, マージして, main に入れて)."
+description: "Checks a subagent's branch or worktree before it goes to develop: reads its report against the diff and checks the AGENTS.md rules on the diff, then hands the branch to /ship (a light agent review checked by runs, land.mjs into develop) and removes the worktree safely; also how to brief the subagent and make its worktree. Use before taking in a subagent's work, before handing work to a subagent in a worktree, or when the user says to take a subagent's branch in (取り込んで, マージして, main に入れて)."
 argument-hint: "The branch or worktree to take in"
 user-invocable: true
 disable-model-invocation: false
 ---
 
-A subagent's report says what it believes it did. This skill is the gate between that report and the pull request: nothing goes to `develop` on the report alone. The rules it checks are in `AGENTS.md` and `.claude/rules/`; this page only orders the steps. The way into `develop` is `/ship` (a pull request merged by `scripts/tools/pr.mjs`); a direct push of `main` is refused by branch protection.
+A subagent's report says what it believes it did. This skill is the gate between that report and `/ship`: nothing goes to `develop` on the report alone. The rules it checks are in `AGENTS.md` and `.claude/rules/`; this page only orders the steps. The way into `develop` is `/ship` (a review checked by runs, then `scripts/tools/land.mjs`, with no pull request); a direct push of `main` is refused by branch protection.
 
 For a merge, copy this and tick it as you go:
 
@@ -15,7 +15,7 @@ Merge progress:
 - [ ] 1. Main tree clean; each report claim found in the diff
 - [ ] 1. Rule table passed on the branch
 - [ ] 2. Branch up to date with origin/develop, conflicts resolved, LF kept
-- [ ] 3. Shipped (/ship): pull request reviewed, checks green, merged
+- [ ] 3. Shipped (/ship): reviewed, findings shown by runs fixed, landed
 - [ ] 4. Subagent's processes stopped, worktree removed by the script, node_modules intact
 - [ ] 5. Report written
 ```
@@ -23,7 +23,7 @@ Merge progress:
 ## 0. Briefing a subagent (before it starts)
 
 - Give it the absolute path of the novira repository (or of its worktree); never run it in another folder such as ComfyUI.
-- Put in the brief: the facts you already checked, the rules it must keep (comments and test names in English, line ends as `npm run check:eol` requires, commit only its own files, no push: the branch is pushed by /ship), and the first pages to read: `docs/architecture/README.md` plus `frontend.md` or `backend.md` for its area.
+- Put in the brief: the facts you already checked, the rules it must keep (comments and test names in English, line ends as `npm run check:eol` requires, commit only its own files, no push: /ship lands the branch), and the first pages to read: `docs/architecture/README.md` plus `frontend.md` or `backend.md` for its area.
 - Use the model and effort the user named for subagents, if they named one.
 - Say "write the report in Japanese"; pass on to the user only the part that matters, rewritten in Japanese, never an English report as it came.
 
@@ -55,7 +55,7 @@ Merge progress:
 
 ## 2. Bring the branch up to date
 
-1. `git fetch origin`; when `develop` moved and the branch touches the same files, bring it up to date: `git rebase origin/develop` only before the branch's first push, `git merge origin/develop` once it is pushed (a rebase of a pushed branch needs `--force`, which is not allowed; the squash merge keeps `develop`'s history clean anyway). Conflicts: keep both sides unless one is clearly replaced. Typical ones and what to do:
+1. `git fetch origin`; when `develop` moved and the branch touches the same files, bring it up to date: `git rebase origin/develop` (work branches are never pushed). Conflicts: keep both sides unless one is clearly replaced. Typical ones and what to do:
    - i18n catalogs (`agent.json` and others): both sides append keys at the end; keep both and add the comma to the older last line; `JSON.parse` the file after.
    - Map pages and the manual: keep both sides' rows; recheck `docs-check`.
 2. Write edit scripts so that they keep LF (or use the Edit tool); check `git diff --stat` for files changed on every line.
@@ -63,16 +63,16 @@ Merge progress:
 
 ## 3. Ship
 
-Run `/ship` for the branch: it opens the pull request, has a fresh agent review it on GitHub, merges once the review is ok (no CI runs into `develop`). A failure that is also on a clean `develop` is reported as existing, with the evidence; any other failure is fixed on the branch first. A change that touches the engine, the queue, the GPU, models or packs is not verified until `/verify-real-app` ran, or the report says it was not.
+Run `/ship` for the branch: a fresh agent reviews it lightly and shows each suspicion by a run, the real findings are fixed, and `land.mjs` puts it on `develop` once the review is ok (no CI runs into `develop`). A failure that is also on a clean `develop` is reported as existing, with the evidence; any other failure is fixed on the branch first. A change that touches the engine, the queue, the GPU, models or packs is not verified until `/verify-real-app` ran, or the report says it was not.
 
 ## 4. Clean up
 
 1. Stop what the subagent left running (its dev servers, polling shells, a stray `ollama` it started). Never the user's `novira.exe` or ComfyUI.
-2. **A worktree holds junctions** (`node_modules`) that point into the main tree, and `git worktree remove` can follow them and delete the main tree's contents. Remove it only with `node scripts/tools/worktree.mjs remove <path>` (it unlinks first and deletes the branch when merged into develop or by its pull request; an unmerged branch is never deleted with `-D`: ask). After this, `ls frontend/node_modules` in the main tree must still list packages.
+2. **A worktree holds junctions** (`node_modules`) that point into the main tree, and `git worktree remove` can follow them and delete the main tree's contents. Remove it only with `node scripts/tools/worktree.mjs remove <path>` (it unlinks first and deletes the branch when merged into develop, landed by land.mjs, or merged by a pull request; an unmerged branch is never deleted with `-D`: ask). After this, `ls frontend/node_modules` in the main tree must still list packages.
 3. If the folder is still held by a process, find it (`Get-CimInstance Win32_Process` by command line), stop only the subagent's own, then remove.
 
 ## 5. Report
 
-The branch, its pull request and merge commit; claims of the subagent that the diff did not support; what was sent back; the checks run (local and CI) and their results; existing failures with their evidence; what was not verified (and why); what was cleaned up.
+The branch and its commit on develop; claims of the subagent that the diff did not support; what was sent back; the checks run (local and CI) and their results; existing failures with their evidence; what was not verified (and why); what was cleaned up.
 
 Request: $ARGUMENTS

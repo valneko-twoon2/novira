@@ -1,19 +1,19 @@
 ---
 name: ship
-description: "Takes a finished work branch into develop the GitHub Flow way: pushes it, opens its pull request, has a fresh reviewer agent review it on GitHub (not a pull request of only the changelog or tests), fixes what the review finds, squash-merges when the review of the head is ok (no CI or CodeQL runs on a pull request into develop), removes the worktree, and then judges whether develop calls for a release (/release-notes). Use when work on a branch is done and committed (your own or a subagent's after /gatekeeper's checks), or when the user says to take it in (PR にして, マージして, develop に入れて, 出して)."
+description: "Takes a finished work branch into develop with no pull request: a light review by a fresh agent whose every suspected problem on a program is checked by a run (a test that fails, the program driven) before it counts, fixes what the run showed real, then lands the branch as one squashed commit on develop with scripts/tools/land.mjs, removes the worktree, and judges whether develop calls for a release (/release-notes). Changelog- and test-only branches land with no review. Use when work on a branch is done and committed (your own or a subagent's after /gatekeeper's checks), or when the user says to take it in (マージして, develop に入れて, 出して)."
 argument-hint: "The worktree or branch to ship (default: the current one)"
 user-invocable: true
 disable-model-invocation: false
 ---
 
-`develop` (where work happens) and `main` (what is released) change only by a merged pull request (branch protection refuses a direct push). Work branches go into `develop`; `main` takes only a release, from `develop` (`/release-notes`). Every step below is allowed without asking (AGENTS.md section 3): push the work branch, open its pull request, post the review, merge it when the rule of `scripts/tools/pr.mjs` says so. Never `--force`, never `--no-verify`, never merge by hand around `pr.mjs`.
+`develop` (where work happens) takes a work branch with no pull request: `scripts/tools/land.mjs` squashes it into one commit on top of `origin/develop` and pushes it as a fast-forward. `main` (what is released) changes only by the release pull request (`/release-notes`). The review is light and a run decides (the user's rule, 2026-11-14): a suspected problem in a program counts only when a test or a run shows it, so a review does not stall on cases that hardly happen. Every step below is allowed without asking (AGENTS.md section 3). Never `--force`, never `--no-verify`, never push `develop` by hand around `land.mjs`.
 
 ```
 Ship progress:
-- [ ] 1. Branch ready: committed, local checks of the change passed
-- [ ] 2. Pull request open
-- [ ] 3. Reviewed by a fresh agent on GitHub; changes made and reviewed again until ok
-- [ ] 4. Review ok, merged by pr.mjs, worktree removed
+- [ ] 1. Branch ready: committed, local checks of the change passed, up to date with origin/develop
+- [ ] 2. Reviewed by a fresh agent; each suspicion on a program run, only the real ones are findings
+- [ ] 3. Findings fixed (with the test that showed them), reviewed again until ok
+- [ ] 4. Landed by land.mjs, worktree removed
 - [ ] 5. Release judged
 - [ ] 6. Reported
 ```
@@ -21,74 +21,64 @@ Ship progress:
 ## 1. Ready
 
 - The work is on a branch made from `develop` (`node scripts/tools/worktree.mjs add <name>`; one branch per piece of work: one feature, one fix, one change of the harness). Everything is committed with Japanese messages (the hooks check them).
-- The checks that fit the change passed locally (`node scripts/tools/affected.mjs`, `.claude/rules/tests.md`). A pull request into `develop` runs no CI and no CodeQL, so what the change needs must pass here, before it is pushed; the release pull request into `main` runs everything. Do not run every test "to be safe".
-- `git fetch origin`; when `develop` moved and the branch touches the same files, bring it up to date: `git rebase origin/develop` only before the branch's first push, `git merge origin/develop` once it is pushed (a rebase of a pushed branch needs `--force`, which is not allowed; the squash merge keeps `develop`'s history clean anyway). A conflict is solved here, not on GitHub.
+- The checks that fit the change passed locally (`node scripts/tools/affected.mjs`, `.claude/rules/tests.md`). Nothing runs on GitHub for `develop`; the release pull request into `main` runs everything. Do not run every test "to be safe".
+- `git fetch origin`; when `develop` moved, `git rebase origin/develop` (the branch is never pushed, so a rebase is fine) and solve conflicts here; then run the checks the conflict touched again.
 
-## 2. Open
+## 2. Review (light, then a run decides)
 
-Write the description in Japanese from `.github/pull_request_template.md` (meta/astryx's sections, named in plain Japanese) into `novira-data/work/scratch/pr/<branch>-body.md`, every section filled in:
-
-- **背景**: what was wrong, for whom.
-- **変わらないこと**: what must stay as it is (the invariant the reviewer checks the change against).
-- **変更内容**: what changed and how; also what it does not do (left out, or for another pull request).
-- **確認結果**: what was verified and how, before and after: the checks run and their results, numbers, shots. Not verified is written as such (未確認).
-- **チェックリスト**: tick the lines that hold; an unticked line says why next to it.
-- **追加・変更したテスト**: the tests added or changed and what each one proves (they stay in the repository; 確認結果 is what was run for this change).
-
-Then `node scripts/tools/pr.mjs open --body-file <that file>` in the worktree: it pushes the branch and opens the pull request to `develop` (nothing runs on it), after checking the description has every section (`bodyProblems`) and the title. The title becomes the subject of the squashed commit on `develop`, so it follows `.claude/rules/commit-messages.md`: a branch of one commit takes that commit's subject; a branch of several needs `--title "<type>: <要約>"` naming the main change (a `feat:` branch with a later `docs:` commit is `feat:`, or `/release-notes` misjudges it). On a pull request already open, `open` pushes and updates the title or description given. It prints the number.
-
-## 3. Review
-
-**Skip this section for a pull request into `develop` that changes only the changelog, `docs/tests/README.md` or tests** (`*.test.(ts|tsx|js|mjs)`, the `frontend/e2e/` specs and baselines, a `backend/crates/*/tests/*.rs` file at the top of `tests/`; no file renamed or copied): `pr.mjs merge` merges it with no review (`reviewFree` in `scripts/tools/pr.mjs`; the user's choice, 2026-11-13, because the review made small pull requests slow). One file of anything else (the app, a script, a rule, a document, a version file, a list of what a check allows such as `frontend/e2e/a11yKnown.ts`, a helper the specs run on, a folder under a crate's `tests/` such as `common/` or `fixtures/`) needs the review below, and so does every release pull request into `main`.
+Branches that change only the changelog, `docs/tests/README.md` and tests (`reviewFree` of `scripts/tools/pr.mjs`) skip to section 4 with no review.
 
 The author never reviews its own work. Start a **fresh** agent (Agent tool, a new one each round, not a fork) with:
 
-- the pull request number and the repository path; to read the description (`gh pr view <n>`), the diff (`gh pr diff <n>`), the changed files in full where the diff is not enough, and the earlier reviews (`gh api repos/{owner}/{repo}/pulls/<n>/reviews`);
-- what to judge: whether the change does what **変更内容** says and keeps what **変わらないこと** says; whether **確認結果** and **追加・変更したテスト** really show it (a claim with nothing behind it is a finding); correctness (a bug, a missed case, a broken caller); the tests (one per behaviour, they fail without the change, a bug fix has its regression test); the rules of `AGENTS.md` and `.claude/rules/` the diff touches (the table of `/gatekeeper` section 1); texts in ja and en; the map and design pages;
-- to answer in exactly this shape (a verdict box GitHub draws in colour, then the sections; `pr.mjs review` refuses any other: the box, the counts against the sections, the commit against `--sha`), in Japanese except code and identifiers. Code that holds a backtick goes in double backticks (``` `` a`b `` ```), or it breaks the page:
+- the worktree's absolute path and the base: `git diff origin/develop...HEAD`, `git log origin/develop..HEAD`, the changed files in full where the diff is not enough, the earlier reviews of this branch (`novira-data/work/scratch/review/<branch>-<round>.md`), and what the change is meant to do (one paragraph from you: the request, what must stay as it is);
+- what to look at, briefly: does the change do what it says, does it keep what must stay, a bug or a missed case a user would really meet, a broken caller, missing tests (one per behaviour, a bug fix with its regression test), the rules of `AGENTS.md` and `.claude/rules/` the diff touches (the table of `/gatekeeper` section 1), ja and en texts, the map and the design pages;
+- **how to decide a finding**: a suspicion about a program (code, scripts, hooks, tests) becomes a finding only when the reviewer showed it by a run: a test written for it that fails (put it next to the code as the project's tests are, run it with `node scripts/tools/checks.mjs vitest <file>` or the fitting check, and leave it in the worktree uncommitted so the author keeps it as the regression test), or the program run with the input that breaks it. What a run did not bear out goes under 退けた候補 with what was run, and the test written for it is deleted. What cannot be run in reasonable time is not a finding: it may go under 任意 as one line. A finding about a document (the manual, `docs/`, rules and skills, screen texts) is judged by reading, as before;
+- not to change anything else in the worktree, and not to commit;
+- to answer in exactly this shape, in Japanese except code and identifiers (`land.mjs` checks it with `reviewProblems`; code that holds a backtick goes in double backticks):
 
 ```
-SHA: <the 40-hex head commit it read: gh pr view <n> --json headRefOid>
+SHA: <the 40-hex commit it read: git rev-parse HEAD in the worktree>
 VERDICT: changes            (or ok)
 > [!CAUTION]                                                   (for ok: > [!TIP])
 > **判定: NG**　指摘 1 件・任意 2 件（<the first 8 of the SHA> を確認）   (for ok: **判定: OK**, 指摘 0 件)
 
 #### 総評
-<one or two sentences: what the change gets right and what is wrong>
+<one or two sentences>
 
 #### 前回の指摘
 - <what became of each earlier finding; - なし in a first review>
 
 #### 指摘                     (changes: one item or more; ok: leave the section out)
 1. **`path/file.ext:line`**
-   - 問題: <what goes wrong>
-   - 直し方: <what to do, with the wording or the code when it helps>
+   - 問題: <what goes wrong, for whom>
+   - 検証: <a program: `the test file or command run` and what it showed, 再現した; a document: why the text is wrong>
+   - 直し方: <what to do>
 
-#### 任意                     (findings that do not block the merge; leave out when none)
+#### 退けた候補               (suspicions a run did not bear out; leave out when none)
+- **`path/file.ext:line`** <the suspicion> 検証: <what was run and what it showed>
+
+#### 任意                     (findings that do not block; leave out when none)
 - **`path/file.ext:line`** <the finding>
 ```
 
-  Few findings, each concrete; matters of taste go under 任意. No praise beyond the 総評, no summary of the diff.
+Save its answer, the SHA and VERDICT lines included, to `novira-data/work/scratch/review/<branch>-<round>.md`.
 
-Post its answer as the review: write the lines after `VERDICT` (keep the blank lines) to `novira-data/work/scratch/pr/<n>-review.md`, then `node scripts/tools/pr.mjs review <n> --verdict <ok|changes> --sha <the SHA it read> --body-file <that file>`. The tool checks the shape (`reviewProblems`), refuses when the head moved past that commit, and the merge counts only a review of the current head by the signed-in account, so a later push needs a new review.
+## 3. Fix
 
-On `changes`: fix on the branch (a bug the review found gets its test first, AGENTS.md section 4), commit, push (`pr.mjs open` pushes again), and review again with a new agent. A later round reads the earlier reviews and judges the change since the last one (`git diff <the reviewed sha>..HEAD`): whether each earlier finding was handled, and a new blocking finding only for an error in the changed lines. Findings under 任意 never block: take them now when they are small, or leave them for a later pull request and say so in the report. Disagreeing with a finding is allowed when the code or the spec shows it is wrong: say why in a reply on the pull request (`gh pr comment <n> --body-file`), then a new review.
+On `changes`: commit the reproducing test the reviewer left with the fix (AGENTS.md section 4: the test fails before, passes after), run the checks again, and review again with a new agent. A later round reads the earlier reviews and judges the change since the last one (`git diff <the reviewed sha>..HEAD`): whether each earlier finding was handled, and a new finding only for an error in the changed lines, shown by a run as before. Findings under 任意 never block: take them now when they are small, or name them in the report. Disagreeing with a finding is allowed when its run does not show what it says: run it yourself and say why in the next review's brief.
 
-## 4. Merge
+## 4. Land
 
-`node scripts/tools/pr.mjs merge <n>`: into `develop` it squash-merges when the review of the head is `ok` (or none is needed, section 3) and the title and the description pass their checks (no CI, no CodeQL, no alerts are read); the commit on `develop` is the title with no body. It deletes the remote branch and fast-forwards the main checkout when that is on `develop`. When it refuses:
+In the worktree: `node scripts/tools/land.mjs --review-file <the last review> [--title "<type>: <要約>"]` (no `--review-file` for a review-free branch). It refuses a dirty worktree, a branch that does not hold `origin/develop`, a title that breaks the commit rules (a branch of several commits needs `--title` naming the main change: a `feat:` branch with a later `docs:` commit is `feat:`, or `/release-notes` misjudges it), and a review that is not ok, not in the shape, or of another change (a review of the head, or of a commit before a rebase with no conflict, counts). It then pushes one commit, the title with no body, to `develop`, marks the branch landed, and fast-forwards the main checkout. When `develop` moved meanwhile, the push is refused: rebase, run the checks the update touched, and land again.
 
-- (a release pull request into `main`, `/release-notes`: `merge --wait` makes it ready, which starts CI and CodeQL, waits for the required checks and the CodeQL analyses, and merges only if every one passed and no code scanning alert of the pull request is open. A failed check or an open alert sends it back to a draft: read the failure (`gh run view <id> --log-failed`) or the alert (`gh api "repos/{owner}/{repo}/code-scanning/alerts?ref=refs/pull/<n>/merge&state=open"`), fix on `develop` through a work branch, review again. A failure that is also on `develop` is reported with the evidence, not fixed by weakening the check; a false positive is reported to the user with the reason, and dismissing it is their call);
-- no review of the head: section 3.
+Never pipe `land.mjs` into another command when something follows (a hidden failure once removed a worktree whose work had not gone in): chain with `&&`, or write its output to a file and check the exit code.
 
-Then remove the worktree: `node scripts/tools/worktree.mjs remove <path>` (it deletes the branch, merged by the pull request).
+Then remove the worktree: `node scripts/tools/worktree.mjs remove <path>` (it deletes the landed branch).
 
 ## 5. Release?
 
-After every merge into `develop` except the one that holds a release's version and CHANGELOG (`chore: v<version> のリリースを用意する`: go back to `/release-notes` section 3 instead), judge whether `develop` should be released now, by the rule of `/release-notes` section 1 (user-visible fix or feature since the last tag, security, nothing but development changes). If yes, run `/release-notes`; if not, say in the report why it waits.
+After every land except the one that holds a release's version and CHANGELOG (`chore: v<version> のリリースを用意する`: go back to `/release-notes` section 3 instead), judge whether `develop` should be released now, by the rule of `/release-notes` section 1. If yes, run `/release-notes`; if not, say in the report why it waits.
 
 ## 6. Report
 
-The pull request (number, link) and its merge commit; the review rounds and what they changed; the local checks run (no CI runs into develop); what was not verified and why; whether a release followed, and its tag.
-
-Request: $ARGUMENTS
+The commit on `develop`; the review rounds, the findings each one showed by a run, and the suspicions it set aside; the local checks run; what was not verified and why; whether a release followed, and its tag.
