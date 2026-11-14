@@ -4,6 +4,15 @@
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-14
+
+### Changed
+
+- 「テキスト」の画面の背景（画像・色・透明）と大きさの設定を、左の列から真ん中のキャンバスの上のツールバーへ移動。文字のないキャンバスには、使い方の案内をカードで出すように変更。
+- 「テキスト」の画面の「生成の詳細」の見出しを「仕上がりの調整」に変更。
+- 「候補」の画面のボード欄で名前を探すと、当たったボードをどのボードの中かが分かるパスつきで出すように変更。
+- 「候補」の画面で絵を大きく出したときの戻るボタンを、矢印と「一覧へ戻る」の文字つきの目立つボタンに変更。
+
 ## [0.7.0] - 2026-11-14
 
 ### Changed
@@ -212,7 +221,8 @@
 - AI アシスタントと拡張パックを追加。
 - スマホから使えるブラウザ版（`novira-server`）を追加。
 
-[unreleased]: https://github.com/valneko-twoon2/novira/compare/v0.7.0...HEAD
+[unreleased]: https://github.com/valneko-twoon2/novira/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/valneko-twoon2/novira/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/valneko-twoon2/novira/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/valneko-twoon2/novira/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/valneko-twoon2/novira/compare/v0.4.0...v0.5.0
