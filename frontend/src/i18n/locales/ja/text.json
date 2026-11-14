@@ -105,9 +105,10 @@
   "text.rich.redo": "作り直す",
   "text.rich.clear": "元の塗りに戻す",
   "text.rich.failed": "生成に失敗しました",
-  "text.rich.details": "生成の詳細",
+  "text.rich.details": "仕上がりの調整",
   "text.bar": "選んだレイヤーの操作",
   "text.template.hint": "文字と吹き出しのレイヤーと、その配置を保存します。背景の画像は保存せず、呼び出すと今の画像に合わせて置きます",
   "text.template.summary": "文字 {texts} · 吹き出し {bubbles} · {width}×{height}",
-  "text.style": "文字の見た目"
+  "text.style": "文字の見た目",
+  "text.empty.title": "テキストがありません"
 }

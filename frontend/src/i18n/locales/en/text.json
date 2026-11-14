@@ -105,9 +105,10 @@
   "text.rich.redo": "Redo",
   "text.rich.clear": "Back to the plain fill",
   "text.rich.failed": "Could not generate the text",
-  "text.rich.details": "Generate details",
+  "text.rich.details": "Finish adjustments",
   "text.bar": "Controls for the selected layer",
   "text.template.hint": "Saves the text and bubble layers and where they are. The background picture is not saved; a template is placed to fit the picture you have",
   "text.template.summary": "{texts} text · {bubbles} bubbles · {width}×{height}",
-  "text.style": "Text style"
+  "text.style": "Text style",
+  "text.empty.title": "No text yet"
 }

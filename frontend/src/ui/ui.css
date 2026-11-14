@@ -587,6 +587,35 @@ button .ui-spinner {
   font-size: var(--fs-sm);
 }
 
+/* Empty drawing area: a card centred over it that lets the pointer through */
+.ui-empty-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-width: 420px;
+  padding: var(--space-4) var(--space-5);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--scrim-light);
+  text-align: center;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.ui-empty-overlay__title {
+  margin-bottom: var(--space-1);
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.ui-empty-overlay__desc {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+
 /* Progress */
 .ui-progress {
   position: relative;

@@ -261,6 +261,32 @@
   white-space: nowrap;
 }
 
+.tx-bgbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: var(--space-2);
+}
+
+.tx-bgbar .tx-seg {
+  width: auto;
+}
+
+.tx-bgbar__size {
+  width: auto;
+  min-width: 112px;
+}
+
+.tx-bgbar .tx-bgbar__num {
+  width: 64px;
+}
+
+.tx-bgbar__times {
+  color: var(--text-faint);
+  font-size: var(--fs-xs);
+}
+
 .tx-toolbar__spacer {
   flex: 1;
 }
@@ -293,16 +319,6 @@
 
 .tx-overlay {
   touch-action: none;
-}
-
-.tx-hint {
-  position: absolute;
-  inset: auto 0 var(--space-4);
-  margin: 0;
-  color: var(--text-muted);
-  font-size: var(--fs-sm);
-  text-align: center;
-  pointer-events: none;
 }
 
 .tx-rich__cands {

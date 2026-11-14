@@ -1,16 +1,17 @@
-// Main area of the Text tab: the canvas (preview and direct editing) with its toolbar.
+// Main area of the Text tab: the canvas (preview and direct editing) with its toolbar (layers, undo, zoom, background and size).
 import { ArrowClockwise, ArrowCounterClockwise, ArrowsOut, FloppyDisk, MagnifyingGlassMinus, MagnifyingGlassPlus } from '@phosphor-icons/react';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { t } from '@/i18n';
 import { findImage } from '@/state/gallery';
 import { useTextEditor } from '@/state/text/textEditor';
 import { toast } from '@/state/toasts';
-import { Button, IconButton, ImageDropZone } from '@/ui';
+import { Button, EmptyOverlay, IconButton, ImageDropZone } from '@/ui';
 import { measureCtx } from './canvasDraw';
 import { layerHalfSize } from './render';
 import { saveSceneToGallery } from './saveScene';
 import { TextFloatingBar } from './TextFloatingBar';
 import { TextAddBar } from './TextAddBar';
+import { TextBackgroundBar } from './TextBackgroundBar';
 import { TextCandidates } from './TextCandidates';
 import { useCanvasEditing } from './useCanvasEditing';
 import { useScenePreview } from './useScenePreview';
@@ -83,9 +84,7 @@ export function TextCanvas() {
         <span className="tx-toolbar__zoom">{Math.round(cssScale * 100)}%</span>
         <IconButton label={t('text.zoom.in')} icon={<MagnifyingGlassPlus />} size="sm" onClick={() => stepZoom(1)} />
         <IconButton label={t('text.zoom.fit')} icon={<ArrowsOut />} size="sm" onClick={() => setZoom(null)} />
-        <span className="tx-toolbar__size">
-          {scene.width} × {scene.height}
-        </span>
+        <TextBackgroundBar />
         <span className="tx-toolbar__spacer" />
         <Button variant="solid" scheme="invoke" leftIcon={<FloppyDisk />} isLoading={saving} onClick={() => void save()} data-testid="text-save">
           {t('text.save')}
@@ -105,7 +104,7 @@ export function TextCanvas() {
             <canvas ref={overlay} className="tx-canvas tx-overlay" style={{ width: cssW, height: cssH }} {...pointer} onPointerDown={(e) => { pointer.onPointerDown(e); setDragging(true); }} onPointerUp={(e) => { pointer.onPointerUp(e); setDragging(false); }} onPointerCancel={(e) => { pointer.onPointerCancel(e); setDragging(false); }} data-testid="text-overlay" />
             {selected && selectedHalf && !dragging && <TextFloatingBar layer={selected} half={selectedHalf} scale={cssScale} sheet={{ width: cssW, height: cssH }} />}
           </div>
-          {scene.layers.length === 0 && <p className="tx-hint">{t('text.hint.empty')}</p>}
+          {scene.layers.length === 0 && <EmptyOverlay title={t('text.empty.title')} description={t('text.hint.empty')} data-testid="text-empty" />}
         </div>
       </ImageDropZone>
       <TextCandidates />

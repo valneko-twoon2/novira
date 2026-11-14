@@ -179,9 +179,9 @@ The first generation takes a little time to load the model. If you do not use it
 
 ### Deciding the background
 
-With **{{ui:text.bg.title}}**, you choose what the text is placed on.
+**{{ui:text.bg.title}}** is in the toolbar above the center of the screen, to the right of the zoom buttons. You choose what the text is placed on.
 
-- **{{ui:text.bg.image}}**: Uses an image as the background. Show an image in the gallery and press this button, or drop an image onto this screen. It is saved at the same size as the image.
+- **{{ui:text.bg.image}}**: Uses an image as the background. Show an image in the gallery and press this button, or drop an image onto this screen. It is saved at the same size as the image, and the toolbar shows that size.
 - **{{ui:text.bg.color}}**: A single-color background. For the size, choose from the list, such as 1024×1024 or 1920×1080, or enter the width and height as numbers.
 - **{{ui:text.bg.transparent}}**: No background. You can make just the text as a transparent image.
 
@@ -189,7 +189,7 @@ There is also a way to right-click an image in the gallery and choose **{{ui:gal
 
 ### Adding text and speech bubbles
 
-Use the buttons at the top of the center screen.
+Use the buttons at the top of the center screen. While there is nothing yet, **{{ui:text.empty.title}}** shows in the middle of the image.
 
 - **{{ui:text.add.text}}**: Adds a text layer.
 - **{{ui:text.add.bubble}}**: Adds a speech bubble. From the menu, choose the shape: **{{ui:text.shape.round}}**, **{{ui:text.shape.box}}**, **{{ui:text.shape.cloud}}**, **{{ui:text.shape.burst}}**, **{{ui:text.shape.whisper}}** and **{{ui:text.shape.narration}}**.
