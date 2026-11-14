@@ -320,6 +320,34 @@ describe('the top bar', { tags: [] }, () => {
     expect(items().map((i) => i.dataset.boardId)).toEqual(['c']);
   });
 
+  it('shows the boards a search finds by their whole path, outside the tree, and the tree again once the search is empty', { tags: ['state-transition', 'equivalence'] }, () => {
+    useGallery.setState({
+      boards: [
+        { id: 'p', name: 'Ganyu', archived: false, createdAt: 2, parentId: null },
+        { id: 'c', name: 'Originals', archived: false, createdAt: 3, parentId: 'p' },
+        { id: 'q', name: 'Originals', archived: false, createdAt: 1, parentId: null },
+      ] as never,
+      selectedBoardId: 'none',
+    });
+    show();
+    fireEvent.click(screen.getByTestId('drafts-target'));
+    const items = () => screen.getAllByTestId('drafts-target-item');
+    const name = (i: HTMLElement) => i.querySelector('.pp-picker__name')?.textContent;
+    const search = (value: string) => fireEvent.change(screen.getByLabelText(t('gallery.boards.searchPlaceholder')), { target: { value } });
+    // no search: the tree, a subfolder by its own name and indented
+    expect(items().map(name)).toEqual([t('gallery.boards.uncategorized'), 'Ganyu', 'Originals', 'Originals']);
+    expect(items()[2]!.style.getPropertyValue('--dv-board-depth')).toBe('1');
+    // a search: every match by its path and not indented, so two boards of the same name are told apart
+    search('orig');
+    expect(items().map((i) => i.dataset.boardId)).toEqual(['c', 'q']);
+    expect(items().map(name)).toEqual(['Ganyu / Originals', 'Originals']);
+    expect(items().map((i) => i.style.getPropertyValue('--dv-board-depth'))).toEqual(['', '']);
+    // blanks only count as no search
+    search('  ');
+    expect(items()[2]!.style.getPropertyValue('--dv-board-depth')).toBe('1');
+    expect(name(items()[2]!)).toBe('Originals');
+  });
+
   it('leaves out archived boards and what is inside them, but shows the selected one by its path, and never its archived board', { tags: ['decision-table', 'regression'] }, () => {
     const boards = [
       { id: 'live', name: 'Live', archived: false, createdAt: 3, parentId: null },

@@ -24,8 +24,8 @@ export interface SearchPickerProps<T> {
   /** Group headings: always, or only when more than one group has items. */
   groupLabels?: 'always' | 'multiple';
   sort?: (a: T, b: T) => number;
-  /** One row; `close` closes the popover. */
-  renderItem: (item: T, close: () => void) => ReactNode;
+  /** One row; `close` closes the popover, `query` is the search typed (trimmed, '' for none). */
+  renderItem: (item: T, close: () => void, query: string) => ReactNode;
   searchLabel: string;
   /** Shown when the list has no items at all. */
   emptyText: ReactNode;
@@ -63,6 +63,7 @@ export function SearchPicker<T>({
     setQuery('');
   };
 
+  const typed = query.trim();
   const shownGroups = useMemo(() => {
     const q = query.trim().toLowerCase();
     const shown = items.filter((i) => !q || textOf(i).toLowerCase().includes(q));
@@ -87,7 +88,7 @@ export function SearchPicker<T>({
             <section key={g.key}>
               {labelled && g.label && <h4 className="pp-picker__group">{g.label}</h4>}
               {g.items.map((item) => (
-                <Fragment key={itemKey(item)}>{renderItem(item, close)}</Fragment>
+                <Fragment key={itemKey(item)}>{renderItem(item, close, typed)}</Fragment>
               ))}
             </section>
           ))}

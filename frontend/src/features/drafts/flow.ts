@@ -35,9 +35,16 @@ export function accept(group: DraftGroup, candidateIds: string[], images: ImageD
 }
 
 /**
- * The batches of the flow, newest first: those with a candidate still to decide, and the one opened from the history
- * (`currentId`) even when everything in it is decided. `total` counts them all; `shown` is at most `limit` of them, but
- * always holds the opened one.
+ * Every batch the flow can list, newest first: those with a candidate still to decide, and the one opened from the history
+ * (`currentId`) even when everything in it is decided.
+ */
+function openGroups(groups: DraftGroup[], images: ImageDTO[], currentId: string | null): DraftGroup[] {
+  return groups.filter((g) => g.id === currentId || g.candidates.some((c) => !isDecided(g, c, images))).reverse();
+}
+
+/**
+ * The batches of the flow (`openGroups`). `total` counts them all; `shown` is at most `limit` of them, but always holds the
+ * opened one.
  */
 export function flowGroups(
   groups: DraftGroup[],
@@ -46,7 +53,7 @@ export function flowGroups(
   limit: number,
   viewingId: string | null = null,
 ): { shown: DraftGroup[]; total: number } {
-  const open = groups.filter((g) => g.id === currentId || g.candidates.some((c) => !isDecided(g, c, images))).reverse();
+  const open = openGroups(groups, images, currentId);
   const shown = open.slice(0, limit);
   // The batch opened from the history, and the batch of the picture the large view shows (it may lie past the limit when
   // the view comes back with fewer batches listed), are always there.
@@ -64,7 +71,7 @@ export function flowGroups(
  */
 export function limitShowing(groups: DraftGroup[], images: ImageDTO[], currentId: string | null, limit: number, viewingId: string | null): number {
   if (viewingId === null) return limit;
-  const open = groups.filter((g) => g.id === currentId || g.candidates.some((c) => !isDecided(g, c, images))).reverse();
+  const open = openGroups(groups, images, currentId);
   const at = open.findIndex((g) => g.candidates.some((c) => c.id === viewingId));
   return at < limit ? limit : Math.ceil((at + 1) / FLOW_GROUPS) * FLOW_GROUPS;
 }

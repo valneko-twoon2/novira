@@ -61,6 +61,17 @@ describe('the flow', { tags: [] }, () => {
     expect(limitShowing(groups, [], null, 8, 'gone')).toBe(8);
   });
 
+  it('counts the place of the viewed batch among the batches the flow lists, not the decided ones', { tags: ['decision-table'] }, () => {
+    // g11 to g20 (the newest) are batches of drafts all finished, so the flow lists g10 to g1 only
+    const groups = Array.from({ length: 20 }, (_, i) => group(`g${i + 1}`, [i >= 10 ? finished(`c${i + 1}`) : candidate(`c${i + 1}`)]));
+    const images = Array.from({ length: 10 }, (_, i) => image(`f-c${i + 11}.png`));
+    expect(limitShowing(groups, images, null, 8, 'c3')).toBe(8);
+    expect(limitShowing(groups, images, null, 8, 'c1')).toBe(16);
+    // the batch opened from the history is listed though decided, and moves the others down one
+    expect(limitShowing(groups, images, 'g20', 8, 'c3')).toBe(16);
+    expect(flowGroups(groups, images, 'g20', limitShowing(groups, images, 'g20', 8, 'c3')).shown.map((g) => g.id)).toContain('g3');
+  });
+
   it('shows at most the limit, counts them all, and always shows the batch opened from the history', { tags: ['boundary'] }, () => {
     const groups = Array.from({ length: 5 }, (_, i) => group(`g${i + 1}`, [candidate(`c${i + 1}`)]));
     expect(flowGroups(groups, [], null, 2)).toMatchObject({ total: 5, shown: [{ id: 'g5' }, { id: 'g4' }] });

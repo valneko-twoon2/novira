@@ -1,5 +1,6 @@
 // Where ✓ puts the pictures: the board selected in the gallery, changed here as there. The list shows the boards as the
-// gallery does, as a tree with each board's cover and counts, so a board is found by its pictures, not only its name.
+// gallery does, as a tree with each board's cover and counts, so a board is found by its pictures, not only its name. A
+// search shows its matches flat, each by its whole path.
 import { CaretDown, Check, FolderSimple, Tray } from '@phosphor-icons/react';
 import { useMemo, type CSSProperties } from 'react';
 import type { BoardDTO } from '@/backend';
@@ -54,13 +55,15 @@ export function BoardPicker() {
         noMatchText={t('gallery.boards.noMatch')}
         className="dv-boards"
         listTestId="drafts-target-list"
-        renderItem={(r, close) => {
+        renderItem={(r, close, query) => {
           const s = stats.get(r.id);
+          // While searching, the tree is broken up: a match is shown flat by its whole path, so a subfolder says which board it is in.
+          const flat = r.alone || query !== '';
           return (
             <button
               type="button"
               className={cx('pp-picker__item dv-board', r.id === value && 'is-current', r.board?.archived && 'is-archived')}
-              style={r.depth > 0 ? ({ '--dv-board-depth': r.depth } as CSSProperties) : undefined}
+              style={!flat && r.depth > 0 ? ({ '--dv-board-depth': r.depth } as CSSProperties) : undefined}
               title={nameOf(r.board)}
               aria-current={r.id === value || undefined}
               data-testid="drafts-target-item"
@@ -72,7 +75,7 @@ export function BoardPicker() {
             >
               <Cover board={r.board} stats={s} />
               <span className="dv-board__body">
-                <span className="pp-picker__name">{r.alone ? nameOf(r.board) : (r.board?.name ?? t('gallery.boards.uncategorized'))}</span>
+                <span className="pp-picker__name">{flat ? nameOf(r.board) : (r.board?.name ?? t('gallery.boards.uncategorized'))}</span>
                 <span className="dv-board__meta">{t('gallery.boards.counts', { images: s?.images ?? 0, assets: s?.assets ?? 0 })}</span>
               </span>
               {r.id === value && <Check size={12} />}
