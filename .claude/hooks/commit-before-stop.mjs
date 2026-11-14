@@ -11,7 +11,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { WORK_BRANCH } from '../../scripts/tools/branches.mjs';
 import { harnessRoots } from '../../scripts/tools/harness-paths.mjs';
 import { readRecords, recordCoversHead, sweepReminder } from '../../scripts/tools/models-sweep-lib.mjs';
-import { finished, isAncestorIn, isFresh, mergedBranches, parseWorktrees, prMergedHeads } from '../../scripts/tools/worktree.mjs';
+import { finished, isAncestorIn, isFresh, joinHeads, landedHeads, mergedBranches, parseWorktrees, prMergedHeads } from '../../scripts/tools/worktree.mjs';
 import { worktreeRoots } from './worktrees.mjs';
 
 // novira-data/ (user data, and novira-data/work/ where the harness writes) and logs/ (test results) are never reported as pending.
@@ -122,11 +122,11 @@ if (isMain)
       });
       const git = (cwd, args) => execFileSync('git', args, { cwd, encoding: 'utf8', timeout: 15000, maxBuffer: 32 * 1024 * 1024 });
       const trees = parseWorktrees(git(roots[0], ['worktree', 'list', '--porcelain']));
-      // A branch squash-merged by its pull request (the GitHub Flow of /ship) is merged too. gh is asked only when there is a worktree,
-      // briefly, and its failure counts as none merged.
+      // A branch squashed into develop by land.mjs, or by a pull request GitHub merged, is merged too. gh is asked only when there is a
+      // worktree, briefly, and its failure counts as none merged.
       const merged = mergedBranches(trees, {
         mergedIntoWork: git(roots[0], ['branch', '--merged', `origin/${WORK_BRANCH}`, '--format=%(refname:short)']).split(String.fromCharCode(10)).map((b) => b.trim()).filter(Boolean),
-        heads: trees.length > 1 ? prMergedHeads(roots[0], (args) => execFileSync('gh', args, { cwd: roots[0], encoding: 'utf8', timeout: 10000, stdio: ['ignore', 'pipe', 'ignore'] })) : new Map(),
+        heads: trees.length > 1 ? joinHeads(landedHeads(roots[0]), prMergedHeads(roots[0], (args) => execFileSync('gh', args, { cwd: roots[0], encoding: 'utf8', timeout: 10000, stdio: ['ignore', 'pipe', 'ignore'] }))) : new Map(),
         tipOf: (b) => git(roots[0], ['rev-parse', b]).trim(),
         isAncestor: isAncestorIn(roots[0]),
       });

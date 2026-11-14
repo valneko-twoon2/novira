@@ -1,7 +1,7 @@
 // Git worktrees for work that must not touch the main checkout (the user's dev server watches it).
 //   node scripts/tools/worktree.mjs add <name>        a sibling folder ../novira-wt-<name> on a new branch from develop, with frontend/node_modules linked
 //   node scripts/tools/worktree.mjs remove <path>     takes the links out first, then removes the worktree and its branch (merged only: into develop,
-//                                             or by a pull request that GitHub merged, which a squash merge hides from git);
+//                                             by scripts/tools/land.mjs, or by a pull request that GitHub merged: a squash hides both from git);
 //                                             refuses a worktree with uncommitted changes unless --force
 //   node scripts/tools/worktree.mjs list              worktrees that are finished and should be removed
 // `git worktree remove` follows a junction and empties the folder it points to, so the main checkout's node_modules is lost
@@ -60,6 +60,32 @@ export function prMergedHeads(cwd, run = (args) => execFileSync('gh', args, { cw
   } catch {
     return new Map();
   }
+}
+
+/**
+ * The heads land.mjs squashed into develop, by branch (it marks each with git config branch.<name>.landed <head>): Map<branch, commit[]>,
+ * the shape of `prMergedHeads`. Empty when none is marked.
+ */
+export function landedHeads(cwd, run = (args) => execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })) {
+  const out = new Map();
+  let text = '';
+  try {
+    text = run(['config', '--get-regexp', '^branch\\..*\\.landed$']);
+  } catch {
+    return out; // no branch is marked: git config exits 1
+  }
+  for (const l of text.split(/\r?\n/)) {
+    const m = /^branch\.(.+)\.landed\s+([0-9a-f]{40})$/.exec(l.trim());
+    if (m) out.set(m[1], [...(out.get(m[1]) ?? []), m[2]]);
+  }
+  return out;
+}
+
+/** Two maps of merged heads by branch (`prMergedHeads`, `landedHeads`) as one. */
+export function joinHeads(a, b) {
+  const out = new Map(a);
+  for (const [k, v] of b) out.set(k, [...(out.get(k) ?? []), ...v]);
+  return out;
 }
 
 /**
@@ -175,16 +201,16 @@ function main(argv) {
     git(main, 'worktree', 'remove', '-f', '-f', dir);
     git(main, 'worktree', 'prune');
     if (tree.branch) {
-      // -d refuses an unmerged branch (ask the user); a branch all in a pull request GitHub squash-merged is merged too.
+      // -d refuses an unmerged branch (ask the user); a branch all in a squash (land.mjs, or a pull request GitHub merged) is merged too.
       const tip = git(main, 'rev-parse', tree.branch).trim();
-      const squashed = mergedByPullRequest(tree.branch, tip, prMergedHeads(main), isAncestorIn(main));
+      const squashed = mergedByPullRequest(tree.branch, tip, joinHeads(landedHeads(main), prMergedHeads(main)), isAncestorIn(main));
       console.log(git(main, 'branch', squashed ? '-D' : '-d', tree.branch).trim());
     }
     console.log(`removed ${dir}`);
   } else if (cmd === 'list') {
     const merged = mergedBranches(trees, {
       mergedIntoWork: git(main, 'branch', '--merged', `origin/${WORK_BRANCH}`, '--format=%(refname:short)').split(/\r?\n/).filter(Boolean),
-      heads: prMergedHeads(main),
+      heads: joinHeads(landedHeads(main), prMergedHeads(main)),
       tipOf: (b) => git(main, 'rev-parse', b).trim(),
       isAncestor: isAncestorIn(main),
     });

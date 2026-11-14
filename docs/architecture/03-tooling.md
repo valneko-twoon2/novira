@@ -28,11 +28,12 @@
 | `tla.mjs` | `backend/crates/novira-core/formal/` の TLA+ 仕様を TLC でモデル検査する（`checks.mjs tla`）。初回だけ持ち運べる JDK 17 と `tla2tools.jar` を `novira-data/work/tools/` に取得する（[形式検証](../tests/11-formal.md)） |
 | `typecheck.mjs`、`commit-gates.mjs`、`docs-check.mjs`、`ui-refs.mjs`、`visual-baselines.mjs`、`check-eol.mjs`、`fix-eol.mjs`、`eol.mjs`、`check-name.mjs`、`changelog.mjs`、`ci-summary.mjs`、`ci-scope.mjs`、`dependabot-triage.mjs`、`test-tags.mjs`、`test-tags-edit.mjs` | リポジトリ全体の検査: 型、コミットが通すべき CI ジョブ（Rust の整形、clippy、lint、モックと本物のバックエンドの比較、スマホ）、地図と設計ページ、存在しないテスト ID と文言キー、画面を変えうる変更の判定（基準画像）、改行、名前の綴り、変更履歴の形、CI のテスト数、CI で回す長いジョブの選別、Dependabot の PR のマージ・クローズの判断、テストの手法・設計技法のタグの集計（docs/tests/README.md の件数表）と、タグの一覧・設定・長い見出しの折り返し |
 | `layout-scan.mjs`、`e2e-lock.mjs` | レイアウトスキャン（テキストの収まりを含む）とその合格記録。重い Playwright の実行を一度に 1 つにするロック |
-| `worktree.mjs` | 作業ブランチの worktree を作って消す（PR で squash マージされたブランチも消す） |
+| `worktree.mjs` | 作業ブランチの worktree を作って消す（`land.mjs` や PR で squash されたブランチも消す） |
 | `release-range.mjs` | リリースに入るコミット（前のリリースを用意した develop のコミットから今まで）を出す。squash のリリースでは、タグから `develop` までの範囲に前のリリースが混ざるため |
 | `branches.mjs` | 長く続く 2 本のブランチの名前（作業の幹の `develop`、リリースしたものだけの `main`）。`pr.mjs`・`worktree.mjs` と Stop フックが読む |
 | `local-day.mjs` | 人が読む日付（`changelog.mjs --release` の版の日付、`worktree.mjs add` のブランチ名）を、UTC でなく手元の暦の日にする |
-| `pr.mjs` | 作業ブランチの PR: 下書きで開く、エージェントのレビューを投稿する、レビューが ok なら下書きを外して検査を回し、通ったら squash マージする（`/ship`） |
+| `land.mjs` | 作業ブランチを PR なしで `develop` に入れる: きれいな worktree、`origin/develop` を含むこと、検証つきのレビューが ok であることを確かめ、1 つのコミットにまとめて早送りで push する（`/ship`） |
+| `pr.mjs` | リリースの PR と main を develop に戻す PR: 下書きで開く、エージェントのレビューを投稿する、レビューが ok なら下書きを外して検査を回し、通ったら squash マージする（`/release-notes`）。レビューの書式（`reviewProblems`）は `land.mjs` と共用 |
 | `repeat-test.mjs` | 1 つのコマンドを N 回（既定 20、`--parallel` で負荷をかける）実行し、不安定なテストや競合するテストを捕まえる。最初の失敗の出力は `logs/repeat-test/` に残る |
 | `prune-stale.mjs` | `novira-data/work/` と `logs/` の古い項目を消す（下記） |
 | `prune-target.mjs` | 毎日、Rust の検査の前に: 50 GB を超えたら `cargo clean --profile dev`。そこからプログラムが動いていれば行わない |
@@ -67,7 +68,7 @@
 | スキル | 用途 |
 |---|---|
 | `i18n/`、`manual/` | 画面文言、マニュアル（ほかの言語の追いつきも） |
-| `ship/`、`gatekeeper/`、`verify-real-app/` | 作業ブランチを PR・レビュー・マージで develop に入れる（リリースは develop から main）、サブエージェントの成果を確かめてから渡す、本物のアプリを隔離して動かす |
+| `ship/`、`gatekeeper/`、`verify-real-app/` | 作業ブランチを検証つきのレビューと `land.mjs` で develop に入れる（リリースは develop から main への PR）、サブエージェントの成果を確かめてから渡す、本物のアプリを隔離して動かす |
 | `testing/`、`hardening-harness/`、`release-notes/` | テストケース、カバレッジ、ミュータント、ガード・スキル・ハーネス見直し、リリースの判断から公開まで（変更履歴、リリース PR、タグ） |
 
 ## 何が何を守るか

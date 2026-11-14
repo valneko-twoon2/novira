@@ -1,7 +1,7 @@
-// The merge rule of a pull request (scripts/tools/pr.mjs): a work branch goes into develop on an agent review, by the signed-in account,
-// that says ok for exactly the head commit (nothing is tested there); develop goes into main as a release, also on green required checks
-// and CodeQL; main goes back into develop when that changes nothing in develop; only pull requests of this repository; and the title
-// that becomes the squashed commit.
+// The merge rule of a pull request (scripts/tools/pr.mjs): develop goes into main as a release, on an agent review by the signed-in
+// account that says ok for exactly the head commit and on green required checks and CodeQL; main goes back into develop when that
+// changes nothing in develop; a work branch has no pull request (scripts/tools/land.mjs); only pull requests of this repository; the
+// title that becomes the squashed commit; and the shape of a review, whose findings on a program are shown real by a run.
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
@@ -9,7 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- plain ESM script without types
-import { BODY_SECTIONS, CODEQL_CHECKS, bodyProblems, checksState, deleteBranchArgs, freshChecks, gatingChecks, isAncestorOf, isReleaseBranch, isSyncBranch, isSyncPullRequest, mainIsAStateOfDevelop, mergeKeepsTree, releaseBranchName, syncBranchIsSafe, syncCommit, readyFrom, mergeArgs, mergeDecision, reviewFree, reviewMark, reviewProblems, reviewVerdict, titleFor, titleProblems, withMissing, withoutComments } from '../../scripts/tools/pr.mjs';
+import { BODY_SECTIONS, CODEQL_CHECKS, bodyProblems, isDocumentPlace, checksState, deleteBranchArgs, freshChecks, gatingChecks, isAncestorOf, isReleaseBranch, isSyncBranch, isSyncPullRequest, mainIsAStateOfDevelop, mergeKeepsTree, releaseBranchName, syncBranchIsSafe, syncCommit, readyFrom, mergeArgs, mergeDecision, reviewFree, reviewMark, reviewProblems, reviewVerdict, titleFor, titleProblems, withMissing, withoutComments } from '../../scripts/tools/pr.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const HEAD = 'a'.repeat(40);
@@ -98,22 +98,12 @@ describe('the merge decision', () => {
   });
 });
 
-describe('a pull request into develop', () => {
+describe('a pull request of a work branch into develop', () => {
   const into = (o: Record<string, unknown>) => mergeDecision({ base: 'develop', head: '20261112_x', ...o });
 
-  it('needs the ok review of its head and nothing else: no CI, no CodeQL, no alerts', { tags: ['decision-table', 'regression'] }, () => {
-    // The checks and alerts of a pull request into develop are never read: whatever they are, they do not decide.
-    expect(into({ checks: 'pending', verdict: 'ok', alerts: 3 })).toMatchObject({ merge: true, wait: false });
-    expect(into({ checks: 'fail', verdict: 'ok' })).toMatchObject({ merge: true });
-    expect(into({ checks: 'pass', verdict: 'none' })).toMatchObject({ merge: false, wait: false, reason: expect.stringContaining('review') });
-    expect(into({ checks: 'pass', verdict: 'changes' })).toMatchObject({ merge: false, wait: false });
-  });
-
-  it('is still refused for a bad title or description, another repository, or a draft (made ready first)', { tags: ['error-guessing'] }, () => {
-    expect(into({ verdict: 'ok', title: titleProblems('update stuff') })).toMatchObject({ merge: false, reason: expect.stringContaining('title') });
-    expect(into({ verdict: 'ok', body: bodyProblems('') })).toMatchObject({ merge: false, reason: expect.stringContaining('description') });
-    expect(into({ verdict: 'ok', fork: true })).toMatchObject({ merge: false });
-    expect(into({ verdict: 'ok', draft: true })).toMatchObject({ merge: false, ready: true });
+  it('is never merged, whatever its review: a work branch goes into develop with land.mjs', { tags: ['decision-table', 'regression'] }, () => {
+    for (const verdict of ['ok', 'none', 'changes']) expect(into({ checks: 'pass', verdict })).toMatchObject({ merge: false, wait: false, reason: expect.stringContaining('land.mjs') });
+    expect(into({ verdict: 'ok', draft: true })).toMatchObject({ merge: false, wait: false });
   });
 });
 
@@ -444,6 +434,7 @@ describe('the shape of a review (a verdict box, then the sections, to read at a 
     '#### 指摘',
     '1. **`scripts/tools/pr.mjs:173`**',
     '   - 問題: 件名を渡していない',
+    '   - 検証: `checks.mjs vitest tests/pr-tool.test.ts` に足した件名の例が落ちた。再現した',
     '   - 直し方: `--subject` を渡す',
     '',
     '#### 任意',
@@ -488,11 +479,30 @@ describe('the shape of a review (a verdict box, then the sections, to read at a 
   it('refuses changes without a finding, ok with one, and a finding without its place, problem or fix', { tags: ['decision-table', 'boundary'] }, () => {
     const noFinding = changes.replace(/#### 指摘\n[\s\S]*?\n\n/, '').replace('指摘 1 件', '指摘 0 件');
     expect(reviewProblems('changes', noFinding, SHA).join()).toContain('without a finding');
-    const okWithOne = ok.replace('#### 任意', '#### 指摘\n1. **`a.ts:1`**\n   - 問題: 壊れる\n   - 直し方: 直す\n\n#### 任意').replace('指摘 0 件', '指摘 1 件');
+    const okWithOne = ok.replace('#### 任意', '#### 指摘\n1. **`a.ts:1`**\n   - 問題: 壊れる\n   - 検証: `a.test.ts` が落ちた。再現した\n   - 直し方: 直す\n\n#### 任意').replace('指摘 0 件', '指摘 1 件');
     expect(reviewProblems('ok', okWithOne, SHA).join()).toContain('ok is given with a finding');
     expect(reviewProblems('changes', changes.replace('**`scripts/tools/pr.mjs:173`**', 'pr.mjs のどこか'), SHA).join()).toContain('its place alone');
     expect(reviewProblems('changes', changes.replace('**`scripts/tools/pr.mjs:173`**', '**`.githooks/pre-commit:3`**'), SHA)).toEqual([]);
     expect(reviewProblems('changes', changes.replace('   - 直し方: `--subject` を渡す\n', ''), SHA).join()).toContain('直し方');
+  });
+
+  it('refuses a finding on a program that no run showed, and takes a finding on a document judged by reading', { tags: ['decision-table', 'regression'] }, () => {
+    const verify = '   - 検証: `checks.mjs vitest tests/pr-tool.test.ts` に足した件名の例が落ちた。再現した';
+    expect(reviewProblems('changes', changes.replace(verify + '\n', ''), SHA).join()).toContain('検証');
+    expect(reviewProblems('changes', changes.replace(verify, '   - 検証: 読んだかぎり起きそう'), SHA).join()).toContain('shown by a run');
+    expect(reviewProblems('changes', changes.replace(verify, '   - 検証: `a.test.ts` は通った'), SHA).join()).toContain('shown by a run');
+    const onDoc = changes.replace('scripts/tools/pr.mjs:173', 'docs/development.md:40').replace(verify, '   - 検証: 文書のため読んで判断。手順が古い');
+    expect(reviewProblems('changes', onDoc, SHA)).toEqual([]);
+    const onText = changes.replace('scripts/tools/pr.mjs:173', 'frontend/src/i18n/locales/ja/text.json:3').replace(verify, '   - 検証: 用語集と違う');
+    expect(reviewProblems('changes', onText, SHA)).toEqual([]);
+    expect(isDocumentPlace('scripts/tools/pr.mjs:1')).toBe(false);
+    expect(isDocumentPlace('.claude/skills/ship/SKILL.md:9')).toBe(true);
+  });
+
+  it('takes suspicions a run did not bear out, each with what was run', { tags: ['equivalence', 'error-guessing'] }, () => {
+    const withDismissed = ok.replace('#### 任意', '#### 退けた候補\n- **`a.ts:4`** 空のときに落ちる疑い 検証: `a.test.ts` に空の例を足して通った\n\n#### 任意');
+    expect(reviewProblems('ok', withDismissed, SHA)).toEqual([]);
+    expect(reviewProblems('ok', withDismissed.replace(' 検証: `a.test.ts` に空の例を足して通った', ''), SHA).join()).toContain('dismissed');
   });
 
   it('refuses the sections out of order', { tags: ['boundary'] }, () => {
@@ -571,7 +581,7 @@ describe('code scanning alerts', () => {
   });
 });
 
-describe('a pull request into develop that changes only the changelog, the test counts or tests', { tags: [] }, () => {
+describe('a work branch that changes only the changelog, the test counts or tests (lands with no review)', { tags: [] }, () => {
   it('is told apart by its files: all of them of those kinds, none of the app', { tags: ['equivalence', 'boundary'] }, () => {
     expect(reviewFree(['CHANGELOG.md'])).toBe(true);
     expect(reviewFree(['docs/tests/README.md', 'frontend/tests/pr-tool.test.ts'])).toBe(true);
@@ -613,12 +623,7 @@ describe('a pull request into develop that changes only the changelog, the test 
       expect(reviewFree([p]), p).toBe(false);
   });
 
-  it('merges into develop with no agent review, but a review that asks for changes still stops it, and main always needs one', { tags: ['decision-table'] }, () => {
-    expect(mergeDecision({ verdict: 'none', base: 'develop', head: '20261113_x', reviewFree: true })).toMatchObject({ merge: true });
-    expect(mergeDecision({ verdict: 'none', base: 'develop', head: '20261113_x', reviewFree: false })).toMatchObject({ merge: false });
-    expect(mergeDecision({ verdict: 'changes', base: 'develop', head: '20261113_x', reviewFree: true })).toMatchObject({ merge: false });
-    expect(release({ checks: 'pass', verdict: 'none', reviewFree: true })).toMatchObject({ merge: false });
-    // the title and the description are still checked
-    expect(mergeDecision({ verdict: 'none', base: 'develop', head: '20261113_x', reviewFree: true, body: ['missing'] })).toMatchObject({ merge: false });
+  it('never lets a release into main without a review, whatever its files', { tags: ['condition'] }, () => {
+    expect(release({ checks: 'pass', verdict: 'none' })).toMatchObject({ merge: false });
   });
 });

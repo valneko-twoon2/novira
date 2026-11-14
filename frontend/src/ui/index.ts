@@ -11,6 +11,7 @@ export { ModelPicker } from './ModelPicker';
 export { NameDialog } from './NameDialog';
 export { SearchPicker, type PickerGroupDef } from './SearchPicker';
 export { FontPicker } from './FontPicker';
+export { EmptyOverlay } from './EmptyOverlay';
 export { PresetPicker, type PresetItem } from './PresetPicker';
 export { PresetBar } from './PresetBar';
 export { ZoomControls } from './ZoomControls';

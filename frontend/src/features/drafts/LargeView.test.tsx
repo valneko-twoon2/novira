@@ -3,6 +3,7 @@
 // (Delete) then on to the next, Esc back to the list; the phone layout keeps its own large view.
 import { act, fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { t } from '@/i18n';
 import { useDrafts } from '@/state/drafts';
 import { useGallery } from '@/state/gallery';
 import { batch, candidate, cleanupDrafts, group, made, picture, resetDrafts, show } from './drafts.testkit';
@@ -58,6 +59,15 @@ describe('the large view', { tags: [] }, () => {
     // A candidate with no picture yet does not open.
     fireEvent.doubleClick(cellButton(4));
     expect(screen.queryByTestId('drafts-large')).toBeNull();
+  });
+
+  it('shows the way back to the list as a button with its words, not an icon alone', { tags: ['regression'] }, () => {
+    setup();
+    fireEvent.doubleClick(cellButton(0));
+    const back = screen.getByTestId('drafts-large-back');
+    expect(back.textContent).toBe(t('drafts.view.back'));
+    expect(back.querySelector('svg')).not.toBeNull();
+    expect(back.classList.contains('ui-btn--ghost')).toBe(false);
   });
 
   it('moves through the pictures of the flow with the arrows and the buttons, stopping at both ends', { tags: ['boundary'] }, () => {

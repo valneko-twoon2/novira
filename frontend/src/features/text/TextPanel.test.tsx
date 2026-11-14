@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-// The Text tab's side panel with the add buttons (canvas toolbar) and the layer list (right column) it works with: adding layers, the
-// background, the layer list and the property controls of text and bubbles.
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+// The Text tab's side panel with the add buttons (canvas toolbar) and the layer list (right column) it works with: adding layers,
+// the layer list and the property controls of text and bubbles.
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { t } from '@/i18n';
 import { useGallery } from '@/state/gallery';
@@ -61,39 +61,6 @@ describe('adding layers', () => {
     for (const shape of ['round', 'box', 'cloud', 'burst', 'whisper', 'narration']) addBubble(shape);
     expect(layers().map((l) => l.type)).toEqual(['text', 'bubble', 'bubble', 'bubble', 'bubble', 'bubble', 'bubble']);
     expect(screen.getByTestId('bubble-controls')).toBeTruthy();
-  });
-});
-
-describe('background', () => {
-  it('switches between a colour, transparent and a picture from the viewer', { tags: ['scenario'] }, () => {
-    click(t('text.bg.color'));
-    expect(state().scene.background).toEqual({ kind: 'color', color: '#ffffff' });
-    fireEvent.change(color(t('text.color')), { target: { value: '#336699' } });
-    expect(state().scene.background).toEqual({ kind: 'color', color: '#336699' });
-    click(t('text.bg.transparent'));
-    expect(state().scene.background).toEqual({ kind: 'color', color: null });
-    // No picture in the viewer: the image button is off.
-    expect((screen.getByText(t('text.bg.image')) as HTMLButtonElement).disabled).toBe(true);
-    expect(screen.queryByTestId('text-use-viewer')).toBeNull();
-
-  });
-
-  it('uses the picture open in the viewer as the background and sizes the canvas to it', { tags: ['scenario'] }, () => {
-    act(() => useGallery.setState({ images: [{ name: 'v.png', url: 'u', width: 800, height: 600 } as never], viewerImageName: 'v.png' }));
-    // There is no extra button for it: the Image choice takes the picture of the viewer.
-    expect(screen.queryByTestId('text-use-viewer')).toBeNull();
-    click(t('text.bg.image'));
-    expect(state().scene).toMatchObject({ width: 800, height: 600, background: { kind: 'image', imageName: 'v.png' } });
-    expect(screen.getByText(t('text.bg.imageNote', { name: 'v.png' }))).toBeTruthy();
-    click(t('text.bg.color'));
-    click(t('text.bg.image'));
-    expect(state().scene.background.kind).toBe('image');
-  });
-
-  it('resizes the canvas from the number boxes', { tags: ['equivalence'] }, () => {
-    setNum(t('text.bg.width'), 640);
-    setNum(t('text.bg.height'), 480);
-    expect(state().scene).toMatchObject({ width: 640, height: 480 });
   });
 });
 

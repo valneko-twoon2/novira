@@ -219,12 +219,19 @@ const SURFACES: Record<string, Surface> = {
     await expect(page.getByTestId('tool-band-compare').or(page.getByTestId('tool-band-trim'))).toBeVisible({ timeout: 20_000 });
     await scan('picture result');
   },
-  'draft history': async (page, _locale, scan) => {
+  'draft large view and history': async (page, _locale, scan) => {
     await page.getByTestId('positive-prompt').fill('a lighthouse on a cliff');
     await page.getByTestId('view-drafts').click();
     await page.getByTestId('drafts-form-toggle').click();
     await page.getByTestId('drafts-start').click();
     await expect(page.getByTestId('draft-cell').first()).toBeVisible();
+    // The large view with its labelled way back, then back to the list for the history.
+    await expect(page.getByTestId('draft-cell').first().locator('img')).toBeVisible({ timeout: 20_000 });
+    await page.getByTestId('draft-cell').first().getByRole('button', { name: /seed/ }).dblclick();
+    await expect(page.getByTestId('drafts-large-back')).toBeVisible();
+    await settle(page);
+    await scan('large view');
+    await page.getByTestId('drafts-large-back').click();
     await page.getByTestId('drafts-history-button').click();
     await expect(page.getByTestId('drafts-history-card')).toHaveCount(1);
     await settle(page);

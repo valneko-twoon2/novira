@@ -71,12 +71,15 @@ function pointer(type: string, x: number, y: number, init: MouseEventInit = {}) 
 const key = (k: string, init: KeyboardEventInit = {}) => act(() => void window.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true, ...init })));
 
 describe('TextCanvas drawing', () => {
-  it('shows a hint while the scene is empty and the size in the toolbar', { tags: ['condition'] }, () => {
+  it('shows the empty card while the scene has no layer and the size in the toolbar', { tags: ['condition'] }, () => {
     renderCanvas();
-    expect(screen.getByText('1024 × 1024')).toBeTruthy();
-    expect(document.querySelector('.tx-hint')).toBeTruthy();
+    expect((screen.getByLabelText(t('text.bg.width')) as HTMLInputElement).value).toBe('1024');
+    expect((screen.getByLabelText(t('text.bg.height')) as HTMLInputElement).value).toBe('1024');
+    const empty = screen.getByTestId('text-empty');
+    expect(empty.textContent).toContain(t('text.empty.title'));
+    expect(empty.textContent).toContain(t('text.hint.empty'));
     add(() => state().addText('Hello'));
-    expect(document.querySelector('.tx-hint')).toBeNull();
+    expect(screen.queryByTestId('text-empty')).toBeNull();
   });
 
   it('draws the layers and the frame of the selected one', { tags: ['scenario'] }, async () => {

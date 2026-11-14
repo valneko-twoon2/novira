@@ -31,6 +31,27 @@ test('layers are added in the canvas toolbar and listed in the right column', { 
   await expect(layers.locator('li')).toHaveCount(0);
 });
 
+test('the background and the size are in the canvas toolbar, and an empty canvas shows a card that lets the pointer through', { tag: ['@scenario'] }, async ({ page }) => {
+  await openText(page);
+  const canvas = page.getByTestId('text-canvas');
+  const bg = canvas.getByTestId('text-background');
+  await expect(bg).toBeVisible();
+  await expect(page.getByTestId('text-panel').getByTestId('text-background')).toHaveCount(0);
+  await bg.getByRole('button', { name: msg('text.bg.color'), exact: true }).click();
+  await bg.getByRole('spinbutton', { name: msg('text.bg.width') }).fill('800');
+  await bg.getByRole('spinbutton', { name: msg('text.bg.width') }).press('Enter');
+  await expect(bg.getByRole('spinbutton', { name: msg('text.bg.width') })).toHaveValue('800');
+  // 800×1024 is not in the list, so the list shows the free size.
+  await expect(bg.getByRole('combobox', { name: msg('text.bg.size') })).toContainText(msg('text.bg.custom'));
+
+  const empty = canvas.getByTestId('text-empty');
+  await expect(empty).toBeVisible();
+  await expect(empty).toContainText(msg('text.empty.title'));
+  await expect(empty).toHaveCSS('pointer-events', 'none');
+  await canvas.getByTestId('text-add-text').click();
+  await expect(empty).toHaveCount(0);
+});
+
 test(
   'the run button comes first in the left column and the candidates appear under the canvas',
   { tag: ['@scenario'] },

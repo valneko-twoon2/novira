@@ -5,7 +5,7 @@ import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { t } from '@/i18n';
 import { useDrafts, type DraftCandidate, type DraftGroup } from '@/state/drafts';
 import { useGallery } from '@/state/gallery';
-import { cx, IconButton, Kbd } from '@/ui';
+import { Button, cx, IconButton, Kbd, Tooltip } from '@/ui';
 import { ZoomableImage } from '@/ui/zoom/ZoomableImage';
 import { Badge, useLive } from './Cell';
 import { accept, isAcceptable } from './flow';
@@ -91,7 +91,12 @@ export function LargeView({ groups, id, onMove, onClose }: { groups: DraftGroup[
   return (
     <div className="dv-large" ref={root} tabIndex={-1} onKeyDown={onKeyDown} data-testid="drafts-large">
       <div className="dv-large__bar">
-        <IconButton label={t('drafts.view.back')} tooltip={hint(t('drafts.view.back'), 'Esc')} icon={<ArrowLeft />} onClick={onClose} data-testid="drafts-large-back" />
+        {/* The way back is a button with its words: an arrow alone was easy to miss. */}
+        <Tooltip content={hint(t('drafts.view.back'), 'Esc')}>
+          <Button size="sm" variant="outline" scheme="accent" leftIcon={<ArrowLeft />} onClick={onClose} data-testid="drafts-large-back">
+            {t('drafts.view.back')}
+          </Button>
+        </Tooltip>
         <span className="dv-spacer" />
         <IconButton
           label={t(group.kind === 'generation' ? 'drafts.accept.generation' : 'drafts.accept.draft')}

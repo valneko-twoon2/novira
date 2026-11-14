@@ -199,34 +199,6 @@
   font-family: var(--font);
 }
 
-.canvas-empty {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  max-width: 420px;
-  padding: var(--space-4) var(--space-5);
-  border: 1px dashed var(--border-strong);
-  border-radius: var(--radius-lg);
-  background: var(--scrim-light);
-  text-align: center;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
-
-.canvas-empty__title {
-  margin-bottom: var(--space-1);
-  font-family: var(--font-display);
-  font-size: var(--fs-lg);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-}
-
-.canvas-empty__desc {
-  color: var(--text-muted);
-  font-size: var(--fs-sm);
-  line-height: 1.5;
-}
-
 /* Staging toolbar */
 .canvas-staging {
   position: absolute;
